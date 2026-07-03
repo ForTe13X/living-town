@@ -1,0 +1,134 @@
+extends SceneTree
+## bench/Harness.gd — Causal Bench S0：不变量回归门，跨 seed 网格 + 真确定性校验。
+## 用法：godot --headless --path . --script res://bench/Harness.gd -- [--suite S0] [--seeds 1-12] [--days 60] [--det 3]
+##   --seeds  种子范围 "a-b" 或单值（默认 1-12）          --days  每局天数（默认 60，覆盖 S2 谣言变冷轨迹）
+##   --det    抽样 N 个种子做"同 seed 两跑摘要一致"校验（默认 3，0=跳过）
+## 输出：每 seed 一行 [S0]{json}（JSONL，便于机读）+ 每不变量跨 seed 通过率表 + 最终红绿门；任一失败 quit(1)。
+## 纪律同 sim_soak：--script 不加载 autoload → preload Sim/Invariants 实例化，backend=null 走确定性 logic。
+
+const SimScript = preload("res://scripts/Sim.gd")
+const Inv = preload("res://bench/Invariants.gd")
+
+func _init() -> void:
+	var seeds := _parse_seeds("1-12")
+	var days := 60
+	var det_n := 3
+	var args := OS.get_cmdline_user_args()
+	for i in args.size():
+		if args[i] == "--seeds" and i + 1 < args.size():
+			seeds = _parse_seeds(args[i + 1])
+		elif args[i] == "--days" and i + 1 < args.size():
+			days = int(args[i + 1])
+		elif args[i] == "--det" and i + 1 < args.size():
+			det_n = int(args[i + 1])
+		elif args[i] == "--suite" and i + 1 < args.size():
+			pass  # 目前仅 S0；保留位给 S5
+
+	print("=== Causal Bench S0 · 不变量回归门  seeds=%s days=%d ===" % [str(seeds), days])
+	var inv_pass := {}      # id -> 通过的 seed 数
+	var inv_name := {}      # id -> 名称
+	var inv_fail_eg := {}   # id -> 一个失败样例 "seed N: detail"
+	var seed_pass := 0
+	var first_run_digest := {}  # seed -> 批量摘要（供确定性校验）
+	var first_run_edig := {}    # seed -> 增量滚动摘要（L4，独立见证）
+
+	for sd in seeds:
+		var res := _run_once(sd, days)
+		var S = res["S"]
+		first_run_digest[sd] = Inv.digest(S)
+		first_run_edig[sd] = S.event_digest
+		var checks: Array = Inv.check_all(S, int(res["starved"]))
+		var fails: Array = []
+		for c in checks:
+			inv_name[c["id"]] = c["name"]
+			if c["ok"]:
+				inv_pass[c["id"]] = int(inv_pass.get(c["id"], 0)) + 1
+			else:
+				fails.append(int(c["id"]))
+				if not inv_fail_eg.has(c["id"]):
+					inv_fail_eg[c["id"]] = "seed %d: %s" % [sd, c["detail"]]
+		if fails.is_empty():
+			seed_pass += 1
+		# JSONL 机读行
+		print("[S0] " + JSON.stringify({"seed": sd, "days": days, "pass": fails.is_empty(),
+			"fails": fails, "events": S.event_log.size(), "digest": first_run_digest[sd]}))
+		_dispose(S)
+
+	# ── 确定性校验：抽样种子两跑，摘要必须一致 ──
+	var det_seeds: Array = seeds.slice(0, mini(det_n, seeds.size()))
+	var det_ok := 0
+	var det_fail: Array = []
+	for sd in det_seeds:
+		var res2 := _run_once(sd, days)
+		var d2: int = Inv.digest(res2["S"])
+		var e2: int = res2["S"].event_digest
+		_dispose(res2["S"])
+		# 两路摘要(批量 + 增量滚动)都须一致 → 双独立见证确定性
+		if d2 == int(first_run_digest[sd]) and e2 == int(first_run_edig[sd]):
+			det_ok += 1
+		else:
+			det_fail.append(sd)
+
+	# ── 报告 ──
+	print("\n— 不变量跨 seed 通过率 —")
+	var any_inv_fail := false
+	for id in range(1, 34):
+		var p := int(inv_pass.get(id, 0))
+		var mark := "✅" if p == seeds.size() else "❌"
+		if p != seeds.size():
+			any_inv_fail = true
+		var line := "  %s #%02d %s  %d/%d" % [mark, id, String(inv_name.get(id, "?")), p, seeds.size()]
+		if inv_fail_eg.has(id):
+			line += "   首违 " + String(inv_fail_eg[id])
+		print(line)
+
+	print("\n— 确定性 —")
+	if det_n <= 0:
+		print("  (跳过)")
+	elif det_fail.is_empty():
+		print("  ✅ 同 seed 两跑摘要一致(批量+增量滚动)  %d/%d" % [det_ok, det_seeds.size()])
+	else:
+		print("  ❌ 非确定 seeds=%s" % str(det_fail))
+
+	var gate_ok := (seed_pass == seeds.size()) and (det_n <= 0 or det_fail.is_empty())
+	print("\n=== S0 GATE: %s  (seed %d/%d 全过, 不变量%s, det %d/%d) ===" % [
+		"PASS ✅" if gate_ok else "FAIL ❌", seed_pass, seeds.size(),
+		"全绿" if not any_inv_fail else "有红", det_ok, det_seeds.size()])
+	quit(0 if gate_ok else 1)
+
+## 跑一局确定性仿真，返回 {S, starved}。S 由调用方 _dispose。
+func _run_once(seed: int, days: int) -> Dictionary:
+	var S = SimScript.new()
+	get_root().add_child(S)
+	S._load_data()
+	S.auto_run = false
+	S.backend = null
+	S.start_new(seed)
+	var total: int = days * int(S.TICKS_PER_DAY)
+	var starved := 0
+	for t in range(total):
+		S.tick()
+		for ag in S.agents:
+			for nid in ag["needs"]:
+				if float(ag["needs"][nid]) <= 0.5:
+					starved += 1
+	return {"S": S, "starved": starved}
+
+func _dispose(S) -> void:
+	get_root().remove_child(S)
+	S.free()
+
+func _parse_seeds(spec: String) -> Array:
+	var out: Array = []
+	if "-" in spec:
+		var ab := spec.split("-")
+		var a := int(ab[0])
+		var b := int(ab[1])
+		for s in range(a, b + 1):
+			out.append(s)
+	elif "," in spec:
+		for s in spec.split(","):
+			out.append(int(s))
+	else:
+		out.append(int(spec))
+	return out

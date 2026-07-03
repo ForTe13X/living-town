@@ -1,0 +1,11 @@
+# LLM model weights — download separately (see docs/03 / docs/11); never commit
+game/models/*.gguf
+# Godot editor caches
+.godot/
+game/.godot/
+*.tmp
+# local scratch
+*.log
+# NobodyWho GDExtension binaries (~140MB) — install from upstream release (see README setup note)
+game/addons/nobodywho/*.dll
+game/addons/nobodywho/*.so

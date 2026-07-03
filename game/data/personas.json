@@ -1,0 +1,8 @@
+{
+  "aria": {"name": "阿丽", "color": "#e89ab8", "traits": ["热情", "爱八卦"],   "bio": "咖啡馆老板，认识镇上每个人，消息最灵通。", "style": "语气活泼、爱用感叹号、喜欢打听新鲜事", "sprite": "Mage-Red"},
+  "ben":  {"name": "阿本", "color": "#c8a25a", "traits": ["务实", "寡言"],     "bio": "工坊木匠，话不多但手很巧，重承诺。",       "style": "简短、实在、偶尔冷幽默", "sprite": "Warrior-Blue"},
+  "coco": {"name": "可可", "color": "#8fb0e0", "traits": ["内向", "敏感"],     "bio": "画家，常在广场写生，容易多想。",           "style": "轻声细语、用比喻、容易自我怀疑", "sprite": "Mage-Cyan"},
+  "dan":  {"name": "老邓", "color": "#7fbf9a", "traits": ["豁达", "爱讲古"],   "bio": "退休老船长，住镇上最久，故事一箩筐。",     "style": "热心、爱回忆往事、称呼别人‘小子/丫头’", "sprite": "Soldier-Yellow"},
+  "evy":  {"name": "小薇", "color": "#d8c46a", "traits": ["好奇", "莽撞"],     "bio": "刚来的学生，对一切都新鲜，精力旺盛。",     "style": "语速快、爱发问、口头禅‘真的假的’", "sprite": "Archer-Green"},
+  "fei":  {"name": "阿菲", "color": "#b89ad8", "traits": ["温柔", "细心"],     "bio": "镇上医生，关心每个人的身体，沉稳可靠。",   "style": "温和、会叮嘱、用敬语", "sprite": "Archer-Purple"}
+}

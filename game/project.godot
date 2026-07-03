@@ -1,0 +1,26 @@
+; Godot 4 工程：小镇有灵 / Living Town（像素 LLM 生活模拟 · 骨架）
+; 复用《小鱼岛》范式：autoload headless 引擎 + 信号驱动 UI + 确定性种子 RNG + 可插拔 LLM 后端。
+
+config_version=5
+
+[application]
+
+config/name="小镇有灵 Living Town"
+run/main_scene="res://scenes/Main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+
+[autoload]
+
+Art="*res://scripts/Art.gd"
+Sim="*res://scripts/Sim.gd"
+AIBackend="*res://scripts/AIBackend.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=768
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

@@ -1,0 +1,12 @@
+{
+  "_doc": "示例·纯数据驱动场景（docs/14 §1）：在话题 cafe_expand 上把镇子劈成对立两派（阿丽/阿本 强赞成 vs 可可/老邓 强反对），测派系/极化/放逐。零 GDScript：仅此文件 + DataScenarioProvider。",
+  "harmony": true,
+  "agents": [
+    {"id": "aria", "attitudes": {"cafe_expand": 0.9}},
+    {"id": "ben",  "attitudes": {"cafe_expand": 0.85}},
+    {"id": "coco", "attitudes": {"cafe_expand": -0.9}},
+    {"id": "dan",  "attitudes": {"cafe_expand": -0.85}},
+    {"id": "evy",  "attitudes": {"cafe_expand": 0.8}},
+    {"id": "fei",  "attitudes": {"cafe_expand": -0.8}}
+  ]
+}

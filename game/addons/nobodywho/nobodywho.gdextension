@@ -1,0 +1,18 @@
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = 4.5
+reloadable = true
+
+[libraries]
+; debug 也指向 release（编辑器/headless 二进制按 debug 解析；省去大体积 debug 库）。
+; Linux x86_64 = 容器(gamecraft-slm:24) CPU 验证；Windows x86_64 = 本机原生 GPU(AMD Vulkan)。
+linux.debug.x86_64 =     "res://addons/nobodywho/libnobodywho-godot-x86_64-unknown-linux-gnu-release.so"
+linux.release.x86_64 =   "res://addons/nobodywho/libnobodywho-godot-x86_64-unknown-linux-gnu-release.so"
+windows.debug.x86_64 =   "res://addons/nobodywho/libnobodywho-godot-x86_64-pc-windows-msvc-release.dll"
+windows.release.x86_64 = "res://addons/nobodywho/libnobodywho-godot-x86_64-pc-windows-msvc-release.dll"
+
+[icons]
+NobodyWhoModel =            "res://addons/nobodywho/icon.svg"
+NobodyWhoChat =             "res://addons/nobodywho/icon.svg"
+NobodyWhoEmbedding =             "res://addons/nobodywho/icon.svg"
+NobodyWhoCrossEncoder =             "res://addons/nobodywho/icon.svg"

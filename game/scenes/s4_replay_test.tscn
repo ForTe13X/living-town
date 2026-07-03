@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b26tws4replay1"]
+
+[ext_resource type="Script" path="res://scripts/s4_replay_test.gd" id="1_s4"]
+
+[node name="S4ReplayTest" type="Node"]
+script = ExtResource("1_s4")

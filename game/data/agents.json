@@ -1,0 +1,11 @@
+{
+  "_note": "占位 NPC 配置：persona 指向 personas.json，home/spawn 为格子坐标。最终题材与人设可整体替换（见 docs/05 路线图）。",
+  "agents": [
+    {"id": "aria", "persona": "aria", "home": [3, 3], "spawn": [20, 4]},
+    {"id": "ben",  "persona": "ben",  "home": [6, 4], "spawn": [19, 12]},
+    {"id": "coco", "persona": "coco", "home": [3, 3], "spawn": [11, 8]},
+    {"id": "dan",  "persona": "dan",  "home": [6, 4], "spawn": [13, 9]},
+    {"id": "evy",  "persona": "evy",  "home": [3, 3], "spawn": [11, 8]},
+    {"id": "fei",  "persona": "fei",  "home": [6, 4], "spawn": [4, 12]}
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "needs": [
+    {"id": "hunger",  "label": "饥饿", "decay": 0.28, "low": 30.0},
+    {"id": "energy",  "label": "精力", "decay": 0.18, "low": 25.0},
+    {"id": "social",  "label": "社交", "decay": 0.15, "low": 30.0},
+    {"id": "fun",     "label": "趣味", "decay": 0.16, "low": 30.0},
+    {"id": "hygiene", "label": "卫生", "decay": 0.11, "low": 25.0}
+  ]
+}

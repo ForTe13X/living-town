@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bplayeragency001"]
+
+[ext_resource type="Script" path="res://scripts/player_agency_test.gd" id="1"]
+
+[node name="PlayerAgencyTest" type="Node"]
+script = ExtResource("1")

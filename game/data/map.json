@@ -1,0 +1,21 @@
+{
+  "width": 24,
+  "height": 16,
+  "areas": {
+    "home":  {"label": "住宅区", "rect": [1, 1, 8, 6]},
+    "cafe":  {"label": "咖啡馆", "rect": [15, 1, 8, 6]},
+    "plaza": {"label": "广场",   "rect": [9, 6, 6, 6]},
+    "wash":  {"label": "澡堂",   "rect": [1, 10, 7, 5]},
+    "work":  {"label": "工坊",   "rect": [16, 10, 7, 5]}
+  },
+  "objects": [
+    {"id": "bed_1",    "type": "床",   "area": "home",  "pos": [3, 3],   "advertises": [{"action": "睡觉", "need": "energy",  "amount": 62, "duration": 40}]},
+    {"id": "bed_2",    "type": "床",   "area": "home",  "pos": [6, 4],   "advertises": [{"action": "睡觉", "need": "energy",  "amount": 62, "duration": 40}]},
+    {"id": "stove_1",  "type": "灶台", "area": "cafe",  "pos": [18, 3],  "advertises": [{"action": "吃饭", "need": "hunger",  "amount": 55, "duration": 18}]},
+    {"id": "counter_1","type": "吧台", "area": "cafe",  "pos": [20, 4],  "advertises": [{"action": "闲聊", "need": "social",  "amount": 42, "duration": 20}]},
+    {"id": "bench_1",  "type": "长椅", "area": "plaza", "pos": [11, 8],  "advertises": [{"action": "社交", "need": "social",  "amount": 40, "duration": 18}, {"action": "晒太阳", "need": "fun", "amount": 30, "duration": 16}]},
+    {"id": "arcade_1", "type": "游戏机","area": "plaza","pos": [13, 9],  "advertises": [{"action": "玩耍", "need": "fun",     "amount": 55, "duration": 22}]},
+    {"id": "bath_1",   "type": "浴池", "area": "wash",  "pos": [4, 12],  "advertises": [{"action": "洗澡", "need": "hygiene", "amount": 60, "duration": 16}]},
+    {"id": "desk_1",   "type": "工作台","area": "work", "pos": [19, 12], "advertises": [{"action": "做活", "need": "fun",     "amount": 26, "duration": 28}]}
+  ]
+}

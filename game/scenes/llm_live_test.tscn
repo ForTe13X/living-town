@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b26twllmlive1"]
+
+[ext_resource type="Script" path="res://scripts/llm_live_test.gd" id="1_llm"]
+
+[node name="LLMLiveTest" type="Node"]
+script = ExtResource("1_llm")

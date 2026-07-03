@@ -1,0 +1,17 @@
+{
+  "_doc": "行为效用/接受权重表（docs/14 §1 步骤4）。改这里即可调平衡，无需改代码；缺任一键 → 回落代码默认(逐字节不变)。当前值=代码默认。",
+  "_accept": "各社交动作的接受阈值（越低越容易被接受）。决策 = 好感+名声(+派系+抖动) > 阈值。",
+  "accept_greet": 0.0,
+  "accept_invite": -2.0,
+  "accept_give": -60.0,
+  "accept_gossip": 0.0,
+  "accept_discuss": 0.0,
+  "accept_confide": -10.0,
+  "accept_leak": 0.0,
+  "accept_endorse": -50.0,
+  "accept_aid": -50.0,
+
+  "_score": "候选打分权重（越高越优先发起/前往）。",
+  "obj_dist_penalty": 0.4,
+  "greet_base": 6.0
+}

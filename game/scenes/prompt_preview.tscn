@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bprompt0preview01"]
+
+[ext_resource type="Script" path="res://scripts/prompt_preview.gd" id="1"]
+
+[node name="PromptPreview" type="Node"]
+script = ExtResource("1")
