@@ -15,11 +15,14 @@
 - **三档 AI 后端**:`logic`(纯规则,零模型依赖)/ `llm`(LM Studio 等本地 OpenAI 兼容服务)/ `slm`(NobodyWho 嵌入式 GGUF,进程内推理)。三档跑同一套引擎,随时切换。
 - **真机实测**:嵌入式 1.5B-Q4 在多台消费级机器(核显/APU/CPU)上决策延迟 1–2.5 s;3B 约 2.9 s。启动时探针实测延迟,自动定截止线,超时降级规则——**永不卡帧**。
 
+<p>
+  <img src="docs/media/demo_slm.gif" width="53%" alt="嵌入式 SLM 实机驱动:NPC 约见与对话气泡">
+  <img src="docs/media/demo_s3.gif" width="45%" alt="社交演化切片:关系、赠礼与事件流">
+</p>
+
 演示视频:[主演示(3 分钟,中文旁白+双语字幕)](docs/media/living_town_demo.mp4) ·
 [派系与盟约](docs/media/s3_social_demo.mp4) ·
 [嵌入式 SLM 实机驱动](docs/media/slm_gpu_demo.mp4)
-
-![成片字幕样式](docs/media/shot-06-subtitled-demo.png)
 
 ## 为什么值得一看(工程侧)
 
