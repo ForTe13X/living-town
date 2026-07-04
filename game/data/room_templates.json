@@ -1,0 +1,26 @@
+{
+  "_note": "房间类型→家具集。dpos=相对房间左上角的格偏移；slot=渲染前缀(复用既有 CC0 精灵/兜底色块)；advertises 空=纯装饰(只渲染，不生成候选、零行为扰动)。variants=同型房间微差，_compile_buildings 用 _hash01(房间id) 确定性选一个 add 进去。新增家具的 action 都走 fun 需求且与工资动作不同名(不碰经济/社交满足不变量)。",
+  "templates": {
+    "parlor": {
+      "furniture": [
+        {"slot": "counter", "type": "茶几", "dpos": [1, 1], "advertises": [{"action": "品茶", "need": "fun", "amount": 30, "duration": 18}]},
+        {"slot": "vase", "type": "花瓶", "dpos": [0, 0], "advertises": []}
+      ],
+      "variants": [
+        {"add": [{"slot": "scroll", "type": "字画", "dpos": [2, 0], "advertises": []}]},
+        {"add": [{"slot": "lamp", "type": "座灯", "dpos": [2, 2], "advertises": []}]}
+      ]
+    },
+    "workshop": {
+      "furniture": [
+        {"slot": "desk", "type": "工作台", "dpos": [1, 1], "advertises": [{"action": "打磨", "need": "fun", "amount": 26, "duration": 26}]},
+        {"slot": "logs", "type": "木料堆", "dpos": [0, 0], "advertises": []}
+      ]
+    },
+    "quietroom": {
+      "furniture": [
+        {"slot": "bench", "type": "蒲团", "dpos": [1, 1], "advertises": [{"action": "打坐", "need": "fun", "amount": 28, "duration": 20}]}
+      ]
+    }
+  }
+}

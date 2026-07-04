@@ -116,6 +116,7 @@ var secrets := {}               # {seeds:[{owner:id, claim:str}]}；每条给 ow
 # ── Wave 2a 职业（docs/15 §3）：data/jobs.json 驱动；缺文件→_wage_for≡economy.wages 查表=逐字节不变 ──
 var jobs := {}                  # {jobs:{holder:{title,action,wage,shift:[相位]}}, extra_advertises:[{object,action,need,amount,duration}]}
 var _jobs_injected := false     # extra_advertises 只注入一次（防 _load_data 重入翻倍）
+var _buildings_compiled := false # 阶段2 室内编译只跑一次（防重入翻倍家具）
 # ── Wave 1b 经济（docs/15 §3）：data/economy.json 驱动；缺文件→_econ_on()=false→全部短路=逐字节不变 ──
 var economy := {}               # {start_coin, town_start, prices:{action:int}, wages:{action:int}}
 var town_coin := 0              # 镇库（吃饭收费流入、做活工资流出 → 闭环）
@@ -219,6 +220,7 @@ func _read_json(path: String) -> Dictionary:
 func _load_data() -> void:
 	needs_def = _read_json("res://data/needs.json").get("needs", [])
 	world = _read_json("res://data/map.json")
+	_compile_buildings()                            # 阶段2：buildings.json 编译期展开室内(直接写 world 数组/字典，须在 objects 转字典之前)
 	rhythm = _read_json("res://data/rhythm.json")   # 昼夜节律偏好表（缺文件→空→_phase_pref 恒返 1.0=零扰动）
 	utility = _read_json("res://data/utility.json") # 行为效用/接受权重（缺文件/缺键→_w 返代码默认=零扰动）
 	economy = _read_json("res://data/economy.json") # Wave 1b 经济（缺文件→_econ_on()=false 全短路=零扰动）
@@ -239,6 +241,51 @@ func _load_data() -> void:
 	for o in world.get("objects", []):
 		o["pos"] = Vector2i(int(o["pos"][0]), int(o["pos"][1]))
 		objs[o["id"]] = o
+	world["objects"] = objs
+
+## 阶段2（docs/16 §10+）：把 data/buildings.json 编译期展开进 world（rooms + 家具 objects）。
+## 确定性红线：直接写 world 字典/数组、【不经 spawn_object】(那会写 event→digest 漂/破 off 门)；
+## 无 RNG/Time/计数器——变体用 _hash01(房间id) 选、authored 顺序遍历、家具 id=slot:房间:序(唯一确定)。
+## 纯追加、不覆盖 map.json 手写房间。缺 buildings.json → 不编译 → 阶段1 逐字节不变(off 门)。
+## 必须在 _load_data 里 objects 数组→字典转换【之前】调用（追加进数组，随后统一转字典/设区）。
+func _compile_buildings() -> void:
+	if _buildings_compiled:
+		return
+	var bdata := _read_json("res://data/buildings.json")
+	if bdata.is_empty():
+		return
+	_buildings_compiled = true
+	var templates: Dictionary = _read_json("res://data/room_templates.json").get("templates", {})
+	var rooms: Dictionary = world.get("rooms", {})
+	var objs: Array = world.get("objects", [])
+	for b in bdata.get("buildings", []):
+		var bid := String((b as Dictionary).get("id", ""))
+		for rm in (b as Dictionary).get("rooms", []):
+			var rd: Dictionary = rm
+			var rid := String(rd.get("id", ""))
+			if rid == "" or rooms.has(rid):
+				continue                                    # 不覆盖 map.json 已有房间
+			var rr: Array = rd.get("rect", [0, 0, 0, 0])
+			var rtype := String(rd.get("type", rid))
+			rooms[rid] = {"rect": rr, "enclosed": bool(rd.get("enclosed", true)),
+				"type": rtype, "building": bid, "owner": String(rd.get("owner", ""))}
+			var tmpl: Dictionary = templates.get(String(rd.get("furnish", rtype)), {})
+			var furni: Array = (tmpl.get("furniture", []) as Array).duplicate(true)
+			var variants: Array = tmpl.get("variants", [])
+			if not variants.is_empty():
+				var vi := int(_hash01(rid + ":var") * float(variants.size())) % variants.size()
+				for extra in ((variants[vi] as Dictionary).get("add", []) as Array):
+					furni.append(extra)
+			var fseq := 0
+			for f in furni:
+				var fd: Dictionary = f
+				var dp: Array = fd.get("dpos", [0, 0])
+				var apos := Vector2i(int(rr[0]) + int(dp[0]), int(rr[1]) + int(dp[1]))
+				objs.append({"id": "%s_%s_%d" % [String(fd.get("slot", "obj")), rid, fseq],
+					"type": String(fd.get("type", "")), "area": _area_at(apos),
+					"pos": [apos.x, apos.y], "advertises": (fd.get("advertises", []) as Array).duplicate(true)})
+				fseq += 1
+	world["rooms"] = rooms
 	world["objects"] = objs
 
 func start_new(p_seed: int = 12345) -> void:
