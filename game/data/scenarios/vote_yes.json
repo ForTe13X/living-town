@@ -1,0 +1,12 @@
+{
+  "_note": "示例场景：镇上多数支持咖啡馆扩建 → 选举(Wave 3a)通过 → on_pass WorldPatch 扩建咖啡馆现身。用于演示『集体决定改变世界』。attitudes 即选票。",
+  "harmony": true,
+  "agents": [
+    {"id": "aria", "attitudes": {"cafe_expand": 0.9}},
+    {"id": "ben",  "attitudes": {"cafe_expand": 0.7}},
+    {"id": "coco", "attitudes": {"cafe_expand": 0.6}},
+    {"id": "dan",  "attitudes": {"cafe_expand": 0.8}},
+    {"id": "evy",  "attitudes": {"cafe_expand": -0.5}},
+    {"id": "fei",  "attitudes": {"cafe_expand": 0.5}}
+  ]
+}

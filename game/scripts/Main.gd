@@ -213,6 +213,10 @@ func _update_status() -> void:
 	elif hh >= 17 and hh < 21: phase = "暮 evening"
 	var spd := ("×%.0f" % Sim.speed) if Sim.running else "⏸ 暂停"
 	var wx := ("  ·  %s" % Sim.weather_today) if Sim.weather_today != "" else ""   # Wave 1c 天气
+	var etxt := ""                                                                # Wave 3a 选举：状态栏显示最近一次表决结果
+	if not Sim.last_election.is_empty():
+		var le: Dictionary = Sim.last_election
+		etxt = "  ·  🗳 %s %s %d:%d" % [String(le["topic"]), ("通过" if bool(le["pass"]) else "否决"), int(le["yea"]), int(le["nay"])]
 	var meets_active := 0
 	for c in Sim.commitments:
 		if String(c["status"]) == "active":
@@ -233,8 +237,8 @@ func _update_status() -> void:
 					pmeets.append("和%s约在%s(剩%dt)" % [Sim._name(Sim.get_agent(other)), Sim._area_label_id(String(c["area"])), int(c["deadline"]) - Sim.tick_no])
 			ptxt = "\n[color=#ffd700]你：礼物×%d  WASD移动  选中居民后 G打招呼 F送礼 B八卦 Y约见 T理论 P道歉 M调解 C聊天%s[/color]" % [
 				int(pl["inventory"].get("gift", 0)), ("  📌 " + "；".join(pmeets)) if not pmeets.is_empty() else ""]
-	_status.text = "[color=#e6e9f2]小镇有灵 Living Town  ·  第 %d 天 %s %s%s  ·  %s  ·  NPC %d  ｜  事件 %d  约会 %d(活%d)  冲突 %d(活%d)[/color]%s" % [
-		Sim.day, clock, phase, wx, spd, Sim.agents.size(), Sim.event_log.size(), Sim.commitments.size(), meets_active, Sim.conflicts.size(), conf_active, ptxt]
+	_status.text = "[color=#e6e9f2]小镇有灵 Living Town  ·  第 %d 天 %s %s%s%s  ·  %s  ·  NPC %d  ｜  事件 %d  约会 %d(活%d)  冲突 %d(活%d)[/color]%s" % [
+		Sim.day, clock, phase, wx, etxt, spd, Sim.agents.size(), Sim.event_log.size(), Sim.commitments.size(), meets_active, Sim.conflicts.size(), conf_active, ptxt]
 
 # ── 观察台 / 时间轴 ────────────────────────────────────────────────────────
 func _update_scrubber() -> void:

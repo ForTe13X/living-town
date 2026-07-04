@@ -388,9 +388,10 @@ func start_new(p_seed: int = 12345) -> void:
 	econ_total0 = money_total()
 	election_log.clear(); last_election = {}   # Wave 3a：per-run 重置（goto_tick 反复 start_new）
 	weather_today = _weather_of_day(day)   # Wave 1c：开局天气（日界在 tick() 重算）
-	# Wave 2b：world 只在 _load_data 载一次 → start_new(含 goto_tick 重演)必须清上一局残留的节日对象再重开
+	# Wave 2b/3a：world 只在 _load_data 载一次 → start_new(含 goto_tick 重演)必须清上一局残留的动态对象再重开。
+	# fest_=节日临时对象；civic_=选举通过的永久 WorldPatch（本局内永存，但换局/回放重演须清，靠选举日重新 spawn 确定重建）。
 	for oid in world.get("objects", {}).keys():
-		if String(oid).begins_with("fest_"):
+		if String(oid).begins_with("fest_") or String(oid).begins_with("civic_"):
 			world["objects"].erase(oid)
 	_fest_objects.clear()
 	festival_active = ""
@@ -1736,6 +1737,14 @@ func _update_election() -> void:
 	last_election = res
 	# 事件溯源：accepted=是否通过（town→topic）。不 emit social（治理非社交，与 pay/world 同类，inv2/3 已排除 election）。
 	_log_event("election", "town", topic, topic, bool(res["pass"]), [], "pass" if bool(res["pass"]) else "fail")
+	# V2：通过 → 发 WorldPatch（镇子照集体决定改样：如扩建咖啡馆的 civic 对象，本局内永久留存）。
+	# 确定：id=civic_话题_日（spawn_object 幂等防重）；缺 on_pass 或否决 → 无世界效果 = V1 逐字节。goto_tick 重演靠选举日重新 spawn 确定重建。
+	if bool(res["pass"]) and elections.has("on_pass"):
+		var op: Dictionary = elections.get("on_pass", {})
+		if op.has("object") and (op["object"] is Dictionary):
+			var def: Dictionary = (op["object"] as Dictionary).duplicate(true)
+			def["id"] = "civic_%s_%d" % [topic, day]
+			spawn_object(def)
 	var verdict := "通过" if bool(res["pass"]) else "否决"
 	for ag in agents:
 		if bool(ag.get("is_player", false)):

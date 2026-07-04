@@ -341,7 +341,7 @@ static func check_all(S, starved: int) -> Array:
 	var sp_ev := 0
 	var dsp_ev := 0
 	for e in log:
-		if String(e["type"]) == "world":
+		if String(e["type"]) == "world" and String(e["target"]).begins_with("fest_"):  # 只数节日对象事件（civic_ 选举 WorldPatch 不参与配对）
 			if String(e.get("note", "")) == "spawn": sp_ev += 1
 			elif String(e.get("note", "")) == "despawn": dsp_ev += 1
 	var fest_ok: bool = (fest_now == 0 or String(S.festival_active) != "") and (sp_ev - dsp_ev == fest_now)
