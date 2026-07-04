@@ -73,6 +73,12 @@ func distorts_harmony(sid: String) -> bool:
 	var p = _scenarios.get(sid)
 	return p != null and bool(p.distorts_harmony())
 
+## 周更编剧：日界把当前 active 场景 provider 的 schedule 中 day==当天 的补丁注入（provider 无 seed_day → 跳过=零扰动）。
+func seed_day(S: Object, sid: String, day: int) -> void:
+	var p = _scenarios.get(sid)
+	if p != null and p.has_method("seed_day"):
+		p.seed_day(S, day)
+
 func candidates(S: Object, ag: Dictionary) -> Array:
 	var out: Array = []
 	for p in _cand:

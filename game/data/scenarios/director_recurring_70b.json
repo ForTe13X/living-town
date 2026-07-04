@@ -1,0 +1,55 @@
+{
+  "agents": [],
+  "harmony": true,
+  "schedule": [
+    {
+      "agents": [
+        {
+          "id": "aria",
+          "relationships": {
+            "ben": {
+              "affinity": 26.0
+            }
+          }
+        },
+        {
+          "id": "ben",
+          "relationships": {
+            "coco": {
+              "affinity": -5.0,
+              "resentment": 6.0
+            },
+            "fei": {
+              "affinity": 28.0
+            }
+          }
+        },
+        {
+          "id": "coco",
+          "relationships": {
+            "dan": {
+              "affinity": 26.0
+            }
+          }
+        },
+        {
+          "id": "dan",
+          "relationships": {
+            "coco": {
+              "affinity": 26.0
+            }
+          }
+        },
+        {
+          "id": "fei",
+          "relationships": {
+            "ben": {
+              "affinity": 28.0
+            }
+          }
+        }
+      ],
+      "day": 14
+    }
+  ]
+}

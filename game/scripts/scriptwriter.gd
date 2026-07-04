@@ -26,6 +26,8 @@ func _run() -> void:
 	var out_id := "director_1"
 	var mock := false
 	var days := 30
+	var recurring := 0     # >0：周更编剧 N 周（离线编排：跑一段→快照→70B→冻进 schedule→再跑）
+	var interval := 7      # 每几天一次编剧介入
 	var args := OS.get_cmdline_user_args()
 	for i in args.size():
 		var nx: String = args[i + 1] if i + 1 < args.size() else ""
@@ -34,7 +36,13 @@ func _run() -> void:
 		elif args[i] == "--model": _model = nx
 		elif args[i] == "--endpoint": _endpoint = nx
 		elif args[i] == "--days": days = int(nx)
+		elif args[i] == "--recurring": recurring = int(nx)
+		elif args[i] == "--interval": interval = maxi(1, int(nx))
 		elif args[i] == "--mock": mock = true
+
+	if recurring > 0:
+		await _orchestrate(seed, recurring, interval, out_id, mock)
+		return
 
 	# 1) 载入一局干净镇（无场景）→ 提炼镇情摘要供编剧
 	var S = SimScript.new()
@@ -225,3 +233,112 @@ func _run_scenario(out_id: String, seed: int, days: int) -> Array:
 	get_root().remove_child(S)
 	S.free()
 	return r
+
+## ── 周更编剧编排器（--recurring）──────────────────────────────────────────────
+## 每周：用【当前部分 schedule】从头重跑到本周边界（前几周补丁经 seed_day 到点注入=反映累积剧情）→ 快照 → 70B →
+## 净化 → 追进 schedule。sim 只消费冻结的 schedule；70B 的非确定全在这个引擎外循环里。最后冻结落盘 + 两跑自检。
+## 从头重跑保证「编排器状态==回放状态」（两者都经同一 seed_day 路径注入），O(周²) tick 但确定、简单、对得上。
+func _orchestrate(seed: int, weeks: int, interval: int, out_id: String, mock: bool) -> void:
+	print("=== Scriptwriter·周更编剧  seed=%d weeks=%d interval=%d out=%s mock=%s ===" % [seed, weeks, interval, out_id, str(mock)])
+	var schedule: Array = []
+	for w in range(1, weeks + 1):
+		var day_target := w * interval
+		var S = SimScript.new()
+		get_root().add_child(S)
+		S._load_data()
+		S.auto_run = false
+		S.backend = null
+		S.scenario = out_id
+		var ext := SimExt.new()
+		var prov := DataScen.new(out_id)
+		prov.set_data({"harmony": true, "agents": [], "schedule": schedule})   # 内存部分 schedule，免中途落盘
+		ext.register_scenario(prov)
+		ext.freeze()
+		S.ext = ext
+		S.start_new(seed)
+		for i in day_target * int(S.TICKS_PER_DAY):
+			S.tick()
+		var snap := _state_summary(S)
+		print("\n— 第 %d 周（到第 %d 天）镇情 —\n%s" % [w, day_target, snap])
+		var raw: Dictionary
+		if mock:
+			raw = _mock_week_patch(w)
+		else:
+			print("→ 第 %d 周调 70B…" % w)
+			raw = await _generate_patch(snap)
+		var clean := _validate(raw, S)                # 复用净化护栏（合法 id/话题、越界钳制）
+		get_root().remove_child(S)
+		S.free()
+		if (clean.get("agents", []) as Array).is_empty():
+			print("⚠ 第 %d 周产出净化后为空，跳过本周" % w)
+			continue
+		schedule.append({"day": day_target, "agents": clean["agents"]})
+		print("✅ 第 %d 周补丁冻进 schedule（day=%d，%d 处改动）" % [w, day_target, (clean["agents"] as Array).size()])
+	var doc := {"harmony": true, "agents": [], "schedule": schedule}
+	var path := "res://data/scenarios/%s.json" % out_id
+	var f := FileAccess.open(path, FileAccess.WRITE)
+	if f == null:
+		print("❌ 写盘失败: " + path); quit(1); return
+	f.store_string(JSON.stringify(doc, "  "))
+	f.close()
+	print("\n✅ 周更剧本已冻结（%d 周补丁）→ res://data/scenarios/%s.json" % [schedule.size(), out_id])
+	print(JSON.stringify(doc, "  "))
+	var vdays := weeks * interval + interval
+	var d1 := _run_scenario(out_id, seed, vdays)
+	var d2 := _run_scenario(out_id, seed, vdays)
+	var ok: bool = d1[0] == d2[0] and d1[1] == d2[1]
+	print("确定性自检（%d 天·同 schedule 两跑）：digest %d/%d vs %d/%d → %s" % [
+		vdays, d1[0], d1[1], d2[0], d2[1], "✅ 逐字节一致（周更回放不破）" if ok else "❌ 漂移"])
+	quit(0 if ok else 1)
+
+## 中途镇情（比开局摘要更细：当前显著关系/怨气 + 明显观点，供编剧顺势推进）。
+func _state_summary(S) -> String:
+	var lines: Array = ["第 %d 天。" % S.day]
+	for ag in S.agents:
+		var rels: Array = []
+		for oid in ag["relationships"]:
+			var r: Dictionary = ag["relationships"][oid]
+			var aff := float(r.get("affinity", 0.0))
+			var res := float(r.get("resentment", 0.0))
+			if absf(aff) >= 25.0 or res >= 6.0:
+				rels.append("%s好感%d%s" % [S._name(S.get_agent(oid)), int(aff), ("怨%d" % int(res)) if res >= 6.0 else ""])
+		var att: Array = []
+		for t in S.TOPICS:
+			var a := float(ag["attitudes"].get(t, 0.0))
+			if absf(a) >= 0.3: att.append("%s%.1f" % [t, a])
+		lines.append("- %s(%s)：%s%s" % [ag["id"], S._name(ag),
+			("关系[" + "，".join(rels) + "]") if not rels.is_empty() else "关系平淡",
+			("  观点[" + "，".join(att) + "]") if not att.is_empty() else ""])
+	return "\n".join(lines)
+
+func _user_prompt_week(summary: String, ids: String, topics: String) -> String:
+	return "小镇现况：\n%s\n\n合法角色 id：%s\n合法话题：%s\n\n你是这个镇的编剧。基于【现况】为接下来一周埋一个【推进剧情】的小转折（新恩怨/和解苗头/新秘密/观点转向），输出 JSON（schema：{agents:[{id,attitudes,relationships,beliefs}]}）。要求：①只用合法 id/话题；②顺着现况自然推进、别重置已有张力；③克制，1-2 处改动；④只输出 JSON。" % [summary, ids, topics]
+
+func _generate_patch(summary: String) -> Dictionary:
+	var ids := ", ".join(["aria", "ben", "coco", "dan", "evy", "fei"])
+	var topics := ", ".join(["cafe_expand", "night_market", "old_tales"])
+	var http := HTTPRequest.new()
+	get_root().add_child(http)
+	http.timeout = 600.0
+	var body := {"model": _model, "temperature": 0.9, "max_tokens": 1000, "stream": false,
+		"messages": [{"role": "system", "content": _sys_prompt()},
+			{"role": "user", "content": _user_prompt_week(summary, ids, topics)}]}
+	if http.request(_endpoint, ["Content-Type: application/json"], HTTPClient.METHOD_POST, JSON.stringify(body)) != OK:
+		print("❌ HTTP 发起失败"); http.queue_free(); return {}
+	var res: Array = await http.request_completed
+	http.queue_free()
+	if int(res[1]) != 200:
+		print("❌ HTTP code=%d" % int(res[1])); return {}
+	var j: Variant = JSON.parse_string((res[3] as PackedByteArray).get_string_from_utf8())
+	if not (j is Dictionary) or not (j as Dictionary).has("choices"):
+		print("❌ 响应缺 choices"); return {}
+	return _extract_json(String(j["choices"][0].get("message", {}).get("content", "")))
+
+## 确定性罐头周补丁（--mock）：循环三种小转折，验证编排逻辑+确定性，无需真模型。
+func _mock_week_patch(w: int) -> Dictionary:
+	var wk := [
+		{"agents": [{"id": "ben", "relationships": {"aria": {"resentment": 18.0, "affinity": -20.0}}}]},
+		{"agents": [{"id": "coco", "beliefs": [{"id": "S_wk_coco", "claim": "可可这周攒下一桩没说出口的心事", "subject": "coco", "secret": true}]}]},
+		{"agents": [{"id": "dan", "attitudes": {"old_tales": 0.9}, "relationships": {"evy": {"affinity": 40.0, "trust": 30.0}}}]}
+	]
+	return wk[(w - 1) % wk.size()]

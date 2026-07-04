@@ -685,6 +685,8 @@ func tick() -> void:
 		weather_today = _weather_of_day(day)   # Wave 1c：日界换天气（纯 f(seed,day)）
 		_update_festival()                     # Wave 2b：昨日节日清场 → 今日按 日取模+天气 开节（确定）
 		_update_election()                     # Wave 3a：到期把话题付诸投票（S2 attitude 即选票，快照纯函数计票）
+		if ext != null:
+			ext.seed_day(self, scenario, day)  # 周更编剧：schedule 里 day==当天的补丁到点确定性注入（无 schedule→零扰动）
 		_nightly()
 		emit_signal("day_changed", day)
 	emit_signal("ticked", tick_no)

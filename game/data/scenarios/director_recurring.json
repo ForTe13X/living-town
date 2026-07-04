@@ -1,0 +1,53 @@
+{
+  "agents": [],
+  "harmony": true,
+  "schedule": [
+    {
+      "agents": [
+        {
+          "id": "ben",
+          "relationships": {
+            "aria": {
+              "affinity": -20.0,
+              "resentment": 18.0
+            }
+          }
+        }
+      ],
+      "day": 7
+    },
+    {
+      "agents": [
+        {
+          "beliefs": [
+            {
+              "claim": "可可这周攒下一桩没说出口的心事",
+              "id": "S_wk_coco",
+              "secret": true,
+              "subject": "coco"
+            }
+          ],
+          "id": "coco"
+        }
+      ],
+      "day": 14
+    },
+    {
+      "agents": [
+        {
+          "attitudes": {
+            "old_tales": 0.9
+          },
+          "id": "dan",
+          "relationships": {
+            "evy": {
+              "affinity": 40.0,
+              "trust": 30.0
+            }
+          }
+        }
+      ],
+      "day": 21
+    }
+  ]
+}

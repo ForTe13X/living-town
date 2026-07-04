@@ -1,0 +1,11 @@
+{
+  "_note": "测试用：周更编剧 schedule 机制的确定性罐头。开局 aria 略挺扩建；第7天注入 ben→aria 恩怨；第14天注入 coco 一条新秘密。验证 seed_day 到点注入 + 逐字节回放。",
+  "harmony": true,
+  "agents": [
+    {"id": "aria", "attitudes": {"cafe_expand": 0.5}}
+  ],
+  "schedule": [
+    {"day": 7,  "agents": [{"id": "ben", "relationships": {"aria": {"resentment": 20.0, "affinity": -25.0}}}]},
+    {"day": 14, "agents": [{"id": "coco", "beliefs": [{"id": "S_rec_coco", "claim": "可可周中才敢想的一桩心事", "subject": "coco", "secret": true}]}]}
+  ]
+}
