@@ -258,35 +258,67 @@ func _compile_buildings() -> void:
 	var templates: Dictionary = _read_json("res://data/room_templates.json").get("templates", {})
 	var rooms: Dictionary = world.get("rooms", {})
 	var objs: Array = world.get("objects", [])
+	# 健壮性护栏（stage-2 review 五条 CONFIRMED）：编译管线把"JSON 数据正确性"升成了确定性红线的一部分，
+	# 一个数据笔误可能静默破 digest / 崩载入半改 world / 每 tick 崩。以下护栏对合规数据全是 no-op（逐字节不变），
+	# 只把畸形项【确定性地跳过 + push_error】而非中止/半改（rooms/objs 是 world 活引用，early-return 也会留残缺）。
 	for b in bdata.get("buildings", []):
+		if not (b is Dictionary):
+			continue
 		var bid := String((b as Dictionary).get("id", ""))
-		for rm in (b as Dictionary).get("rooms", []):
+		for rm in _as_arr((b as Dictionary).get("rooms", [])):
+			if not (rm is Dictionary):
+				continue                                    # 非对象房间项 → 跳过（否则 `var rd: Dictionary = rm` 崩）
 			var rd: Dictionary = rm
 			var rid := String(rd.get("id", ""))
 			if rid == "" or rooms.has(rid):
 				continue                                    # 不覆盖 map.json 已有房间
-			var rr: Array = rd.get("rect", [0, 0, 0, 0])
+			var rr: Array = _as_arr(rd.get("rect", [0, 0, 0, 0]))
+			if rr.size() < 4:
+				push_error("buildings 房间 rect 非法(需4元)，跳过整间: " + rid)
+				continue                                    # 畸形 rect → 跳过（否则 int(rr[0..3]) 越界读中止函数、半改 world）
 			var rtype := String(rd.get("type", rid))
 			rooms[rid] = {"rect": rr, "enclosed": bool(rd.get("enclosed", true)),
 				"type": rtype, "building": bid, "owner": String(rd.get("owner", ""))}
-			var tmpl: Dictionary = templates.get(String(rd.get("furnish", rtype)), {})
-			var furni: Array = (tmpl.get("furniture", []) as Array).duplicate(true)
-			var variants: Array = tmpl.get("variants", [])
+			var tv = templates.get(String(rd.get("furnish", rtype)), {})
+			var tmpl: Dictionary = tv if tv is Dictionary else {}
+			var furni: Array = _as_arr(tmpl.get("furniture", [])).duplicate(true)
+			var variants: Array = _as_arr(tmpl.get("variants", []))
 			if not variants.is_empty():
 				var vi := int(_hash01(rid + ":var") * float(variants.size())) % variants.size()
-				for extra in ((variants[vi] as Dictionary).get("add", []) as Array):
-					furni.append(extra)
+				if variants[vi] is Dictionary:
+					for extra in _as_arr((variants[vi] as Dictionary).get("add", [])):
+						furni.append(extra)
 			var fseq := 0
 			for f in furni:
+				var oid := "%s_%s_%d" % [String((f as Dictionary).get("slot", "obj")) if f is Dictionary else "obj", rid, fseq]
+				fseq += 1                                   # 先占号：畸形/撞车项被跳过时后续家具 id 仍稳定
+				if not (f is Dictionary):
+					continue
 				var fd: Dictionary = f
-				var dp: Array = fd.get("dpos", [0, 0])
+				var dp: Array = _as_arr(fd.get("dpos", [0, 0]))
+				if dp.size() < 2:
+					push_error("buildings 家具 dpos 非法(需2元)，跳过: " + oid)
+					continue                                # 畸形 dpos → 跳过（否则 int(dp[0..1]) 越界读中止函数）
 				var apos := Vector2i(int(rr[0]) + int(dp[0]), int(rr[1]) + int(dp[1]))
-				objs.append({"id": "%s_%s_%d" % [String(fd.get("slot", "obj")), rid, fseq],
-					"type": String(fd.get("type", "")), "area": _area_at(apos),
-					"pos": [apos.x, apos.y], "advertises": (fd.get("advertises", []) as Array).duplicate(true)})
-				fseq += 1
+				var dup := false
+				for eo in objs:
+					if String((eo as Dictionary).get("id", "")) == oid:
+						dup = true; break
+				if dup:
+					push_error("buildings 家具 id 撞车，跳过(否则静默覆盖→改候选集→破 digest): " + oid)
+					continue
+				var ar := _area_at(apos)
+				if ar == "":
+					push_error("buildings 家具越界(area='')，跳过(否则凭空候选→漂 digest): " + oid)
+					continue
+				objs.append({"id": oid, "type": String(fd.get("type", "")), "area": ar,
+					"pos": [apos.x, apos.y], "advertises": _as_arr(fd.get("advertises", [])).duplicate(true)})
 	world["rooms"] = rooms
 	world["objects"] = objs
+
+## Variant→Array 强转（缺失/错类型的 JSON 数组字段一律退化为空，守"错类型=零扰动"契约，替代会崩的 `as Array`）。
+func _as_arr(v: Variant) -> Array:
+	return v if v is Array else []
 
 func start_new(p_seed: int = 12345) -> void:
 	seed_base = p_seed
@@ -861,29 +893,36 @@ func _object_candidates(ag: Dictionary) -> Array:
 	for id in world["objects"]:
 		var o: Dictionary = world["objects"][id]
 		for adv in o.get("advertises", []):
-			if int(adv["amount"]) <= 0:
+			# 健壮性（stage-2 review #4）：改数据后可能出现残缺 advertises；用 .get() 取值+非对象跳过，
+			# 避免"缺键裸括号"每 tick 崩。合规条目(四键齐全)取值与旧逐字节一致 → 不新增/移动候选 → digest 不漂。
+			if not (adv is Dictionary):
 				continue
-			var need_id: String = adv["need"]
+			var amount := int(adv.get("amount", 0))
+			if amount <= 0:
+				continue
+			var need_id := String(adv.get("need", ""))
+			var action := String(adv.get("action", ""))
+			var duration := int(adv.get("duration", 0))
 			var cur := float(ag["needs"].get(need_id, 100.0))
 			var urgency := 100.0 - cur
 			if urgency <= 5.0:
 				continue
 			var dist := absi(ag["pos"].x - o["pos"].x) + absi(ag["pos"].y - o["pos"].y)
-			var benefit := urgency * (float(adv["amount"]) / 60.0)
+			var benefit := urgency * (float(amount) / 60.0)
 			if rhythm_on:
 				benefit *= _phase_pref(need_id, tod)      # 只缩放收益项、不动距离惩罚；生存路径不乘(上门控)
 			if wx_on:
-				benefit *= _weather_mult(String(adv["action"]))  # Wave 1c：坏天压户外偏好(≤1 dampen-only)
+				benefit *= _weather_mult(action)          # Wave 1c：坏天压户外偏好(≤1 dampen-only)
 			var score := benefit - float(dist) * _w("obj_dist_penalty", 0.4)
 			# Wave 1b 经济动机环：穷(coin<poor_line)时有薪动作加分 → 缺钱→去做活→挣了付饭钱(闭环)。
 			# 确定性、数据门控；只加分不减分 → 生存(urgency 主导)不受威胁；economy.json 缺失恒不触发。
 			# Wave 2a：工资经 _wage_for（本职在班=职位工资>零工价 → 班次时间自然被工作吸引；jobs 缺失≡旧查表）。
-			if _econ_on() and _wage_for(ag, String(adv["action"])) > 0 \
+			if _econ_on() and _wage_for(ag, action) > 0 \
 					and _coin_of(String(ag["id"])) < int(economy.get("poor_line", 6)):
 				score += float(economy.get("work_urgency", 8.0))
 			out.append({
-				"kind": "object", "action": adv["action"], "target": id, "need": need_id,
-				"amount": int(adv["amount"]), "dur_total": int(adv["duration"]),
+				"kind": "object", "action": action, "target": id, "need": need_id,
+				"amount": amount, "dur_total": duration,
 				"score": score, "say": "",
 			})
 	return out
