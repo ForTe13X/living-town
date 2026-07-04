@@ -119,11 +119,38 @@ func _init() -> void:
 	if not S.world.get("rooms", {}).is_empty():
 		var conf_n := 0
 		var leak_n := 0
+		var betray_n := 0
 		for e in S.event_log:
 			if String(e["type"]) == "confide" and bool(e["accepted"]): conf_n += 1
 			elif String(e["type"]) == "leak" and bool(e["accepted"]): leak_n += 1
+			elif String(e["type"]) == "betray": betray_n += 1
 		print("室内隐私: rooms=%d(enclosed 私密门开)  吐露心事=%d  说漏秘密=%d （应仍>0=未因隐私门饿死）" % [
 			S.world["rooms"].size(), conf_n, leak_n])
+		# 私密秘密激活度：默认沙盘每人一条 self-subject 秘密 → 期望 confide>种子基线、并偶发 leak/betray 戏剧
+		if not S.secrets.is_empty():
+			var owned := 0
+			var spread := 0            # 秘密被吐露/说漏到 owner 以外的人手里 = 秘密"流动"起来了
+			for ag in S.agents:
+				for cid in ag["beliefs"]:
+					var b: Dictionary = ag["beliefs"][cid]
+					if not bool(b.get("secret", false)): continue
+					if String(b.get("owner", "")) == String(ag["id"]) and String(b.get("via", "")) == "seed": owned += 1
+					else: spread += 1
+			# 瓶颈探针（final-state 代理）：owner 有可吐露秘密、且对某人 trust≥门&aff≥门 = "关系已就绪"（忽略隐私/同室）。
+			# 若"就绪对"远多于实际 confide → 卡点在隐私/同室共处，不在关系建立。
+			var ready := 0
+			for ag in S.agents:
+				var has_secret := false
+				for cid in ag["beliefs"]:
+					var b: Dictionary = ag["beliefs"][cid]
+					if bool(b.get("secret", false)) and String(b.get("owner", "")) == String(ag["id"]): has_secret = true; break
+				if not has_secret: continue
+				for oid in ag["relationships"]:
+					var r: Dictionary = ag["relationships"][oid]
+					if float(r.get("trust", 0.0)) >= S.CONFIDE_TRUST and float(r.get("affinity", 0.0)) >= S.SECRET_AFF_FLOOR:
+						ready += 1
+			print("秘密博弈: 播种=%d 条  已流动=%d 份  背叛=%d 次  ｜关系就绪对=%d（忽略隐私）vs 实际吐露=%d → 卡点%s" % [
+				owned, spread, betray_n, ready, conf_n, ("在隐私/同室共处" if ready > conf_n + 1 else "在关系建立")])
 	if fest_days > 0:
 		var fd := float(maxi(1, fest_days))
 		var nd := float(maxi(1, days - fest_days))

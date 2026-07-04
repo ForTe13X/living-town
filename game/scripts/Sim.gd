@@ -73,6 +73,7 @@ const PACT_BREAK_RESENT := 8.0
 const PACT_RECONCILE_COOLDOWN := 4
 const COMPLEMENT_LOW := 35.0
 const COMPLEMENT_HIGH := 60.0
+const EARSHOT := 2              # 秘密私语的"耳边"半径（曼哈顿格）：此内有第三者=会被听见=不算独处
 const CONFIDE_TRUST := 25.0
 const SECRET_AFF_FLOOR := 10.0
 const CONFIDE_TRUST_GAIN := 8.0
@@ -110,6 +111,8 @@ var festival_active := ""       # 当日进行中的节日名（""=无）
 var _fest_objects: Array = []   # 当前节日 spawn 的对象 id（despawn/start_new 清场用）
 # ── Wave 2c 技能（docs/15 §3）：data/skills.json 驱动；缺文件→_skill_level≡0=逐字节不变 ──
 var skills := {}                # {per_level:int, max_level:int, wage_bonus:int}
+# ── 私密秘密（docs/16 秘密博弈激活）：data/secrets.json 驱动；缺文件→无种子→逐字节不变；仅默认沙盘场景播种，保留定向场景纯净 ──
+var secrets := {}               # {seeds:[{owner:id, claim:str}]}；每条给 owner 一条 self-subject 秘密 → 走 confide/leak/betray 专道
 # ── Wave 2a 职业（docs/15 §3）：data/jobs.json 驱动；缺文件→_wage_for≡economy.wages 查表=逐字节不变 ──
 var jobs := {}                  # {jobs:{holder:{title,action,wage,shift:[相位]}}, extra_advertises:[{object,action,need,amount,duration}]}
 var _jobs_injected := false     # extra_advertises 只注入一次（防 _load_data 重入翻倍）
@@ -223,6 +226,7 @@ func _load_data() -> void:
 	jobs = _read_json("res://data/jobs.json")       # Wave 2a 职业（缺文件→_wage_for 退化=零扰动）
 	skills = _read_json("res://data/skills.json")   # Wave 2c 技能（缺文件→_skill_level=0=零扰动）
 	festivals = _read_json("res://data/festivals.json")  # Wave 2b 节日（缺文件→零扰动）
+	secrets = _read_json("res://data/secrets.json") # 私密秘密（缺文件→无种子=零扰动）
 	# 职业自带工位：extra_advertises 注入 world（跟 jobs.json 同门控 → OFF 时 map 原样=逐字节不变）；只注一次防重入
 	if not jobs.is_empty() and not _jobs_injected:
 		_jobs_injected = true
@@ -281,6 +285,16 @@ func start_new(p_seed: int = 12345) -> void:
 	if _agent_by_id.has("aria"):
 		_agent_by_id["aria"]["beliefs"]["R1"] = {
 			"claim": "可可最近心事重重", "subject": "coco", "source": "__seed__", "via": "seed", "tick": 0}
+	# 私密秘密：只在默认沙盘（scenario 空）给每人一条 self-subject 秘密 → 有信任知己时才 confide，被转述即 leak/betray。
+	# 缺 secrets.json 或非默认场景 → 不播种 → 逐字节不变（off 门）；定向场景(betray/faction/freerider)保持纯净可机检。
+	if scenario == "" and not secrets.is_empty():
+		for s in secrets.get("seeds", []):
+			var oid := String(s.get("owner", ""))
+			if not _agent_by_id.has(oid):
+				continue
+			var sid := "S_own_" + oid              # 唯一 id，与 betray 的 S_coco 不撞
+			_agent_by_id[oid]["beliefs"][sid] = {"claim": String(s.get("claim", "")), "subject": oid,
+				"source": oid, "via": "seed", "tick": 0, "secret": true, "owner": oid, "confidedBy": {}}
 	# Wave 1b 经济：镇库注资 + 记录开局货币总量（守恒硬不变量基准）。缺 economy.json → 全为 0 零扰动。
 	town_coin = int(economy.get("town_start", 0)) if not economy.is_empty() else 0
 	econ_stats = {"meals_paid": 0, "meals_free": 0, "wages_paid": 0, "wages_skipped": 0}
@@ -867,9 +881,8 @@ func _social_candidates(ag: Dictionary) -> Array:
 			var gossipy := 8.0 if "爱八卦" in ag.get("persona", {}).get("traits", []) else 0.0
 			out.append({"kind": "social", "action": "gossip", "partner": o["id"], "subject": cid,
 				"need": "social", "score": urgency * 0.6 + aff * 0.1 + gossipy + 5.0, "say": ""})
-		# docs/16 阶段1 隐私门：铺了 rooms 数据时，秘密只在【同一 enclosed 房间】才吐露/说漏（"关起门说的悄悄话"）。
-		# 顶层数据门：rooms 缺失 → priv_ok 恒 true → 走旧"任意同区"路径 → 逐字节不变（off 门）。
-		var priv_ok: bool = (world.get("rooms", {}) as Dictionary).is_empty() or _same_enclosed_room(ag, o)
+		# docs/16 隐私门（广义版，见 _secret_private）：封闭房间 或 独处无旁人 才吐露/说漏；缺 rooms→恒 true=逐字节不变。
+		var priv_ok := _secret_private(ag, o)
 		# S3c confide —— 仅 owner 向高 trust+aff 者吐露心事（最脆弱条件投资，门高于 give/invite）
 		if priv_ok and float(r["trust"]) >= CONFIDE_TRUST and aff >= SECRET_AFF_FLOOR:
 			var cs := _confidable_secret(ag, o)
@@ -1770,6 +1783,29 @@ func _same_enclosed_room(ag: Dictionary, o: Dictionary) -> bool:
 	if rid == "" or String(o.get("room", "")) != rid:
 		return false
 	return bool(world.get("rooms", {}).get(rid, {}).get("enclosed", false))
+
+## 秘密可私下吐露/说漏的隐私判定（docs/16 隐私门·广义版）：
+##   • 无 rooms 数据 → 恒 true（旧行为，同区即可）→ 逐字节不变（off 门）。
+##   • 有 rooms → 同一封闭房间(墙保证私密，哪怕人多) 或 "独处"(同区且无第三者在场=没人偷听)。
+## 起因：稀疏地图上"仅同封闭房间"把 confide 卡死（实测 6 就绪对→仅 1 吐露，卡点在同室共处）；
+## 广义"无旁人偷听"既解卡又更真实，且墙仍有意义(闹市中也私密)。仅读 area/room 缓存 → 确定性。
+func _secret_private(ag: Dictionary, o: Dictionary) -> bool:
+	if (world.get("rooms", {}) as Dictionary).is_empty():
+		return true
+	if _same_enclosed_room(ag, o):
+		return true
+	var my_area := String(ag.get("area", ""))
+	if my_area == "" or String(o.get("area", "")) != my_area:
+		return false
+	# earshot：说话者 EARSHOT 格内无第三者才算独处（闹市一角也能私语，比"整片区无人"更真实/解卡）。
+	var apos: Vector2i = ag.get("pos", Vector2i.ZERO)
+	for x in agents:
+		if String(x["id"]) == String(ag["id"]) or String(x["id"]) == String(o["id"]):
+			continue
+		var xp: Vector2i = x.get("pos", Vector2i.ZERO)
+		if absi(apos.x - xp.x) + absi(apos.y - xp.y) <= EARSHOT:
+			return false                 # 有旁人在耳边 → 会被听见 → 不算私密
+	return true
 
 func _area_at(pos: Vector2i) -> String:
 	for id in world.get("areas", {}):
