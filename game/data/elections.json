@@ -1,0 +1,7 @@
+{
+  "_note": "治理/选举(Wave 3a·收获期)：到期把某话题付诸投票——S2 attitude 即选票(|a|<abstain_below 弃权)，快照纯函数计票 → 记 election 事件溯源 + 全镇里程碑记忆。缺此文件=不选举=逐字节不变(off 门)。计票纯确定；LLM 演讲(若接)纯渲染一票不改；结果的世界效果(WorldPatch/调参键)留 V2。topic 须∈TOPICS(cafe_expand/night_market/old_tales)。",
+  "topic": "cafe_expand",
+  "every_days": 14,
+  "offset": 0,
+  "abstain_below": 0.15
+}

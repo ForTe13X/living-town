@@ -80,7 +80,7 @@ func _init() -> void:
 	var hard_red := false
 	var soft_red := false
 	var soft_min := seeds.size() - 1
-	for id in range(1, 37):
+	for id in range(1, 38):
 		var p := int(inv_pass.get(id, 0))
 		var is_hard: bool = id in Inv.HARD_IDS
 		var need := seeds.size() if is_hard else soft_min

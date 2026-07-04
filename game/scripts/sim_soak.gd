@@ -156,6 +156,14 @@ func _init() -> void:
 		var nd := float(maxi(1, days - fest_days))
 		print("节日: %d 天  灯会人气=%d agent-tick  社交密度 节日%.1f/天 vs 平日%.1f/天" % [
 			fest_days, fest_att, float(fest_social) / fd, float(norm_social) / nd])
+	# Wave 3a 选举：每场投票结果（S2 意见+S3 派系的收获期；elections.json 缺失则跳过）
+	if not S.election_log.is_empty():
+		var parts := []
+		for r in S.election_log:
+			parts.append("第%d天『%s』%s(%d赞/%d反/%d弃)" % [
+				int(r["day"]), String(r["topic"]), ("通过" if bool(r["pass"]) else "否决"),
+				int(r["yea"]), int(r["nay"]), int(r["abstain"])])
+		print("选举: %d 场 → %s （S2 意见即选票，派系分块投）" % [S.election_log.size(), "  ".join(parts)])
 	if _trace:
 		_report_rhythm(S, days, day_need, phase_serve)
 	var code := _report_and_check(S, days, seed, starved)

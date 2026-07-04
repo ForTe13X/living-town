@@ -9,8 +9,8 @@ static func check_all(S, starved: int) -> Array:
 	var log: Array = S.event_log
 	var accepted: Array = []
 	for e in log:
-		if bool(e["accepted"]) and not (String(e["type"]) in ["pay", "world"]):
-			accepted.append(e)   # 经济(pay)/世界变更(world)事件不算社交参与——否则 inv2/3 被稀释成空门
+		if bool(e["accepted"]) and not (String(e["type"]) in ["pay", "world", "election"]):
+			accepted.append(e)   # 经济(pay)/世界变更(world)/治理(election)事件不算社交参与——否则 inv2/3 被稀释成空门
 
 	var harmony: bool = String(S.scenario) == ""   # 定向场景(faction/betray/freerider)会扭曲关系/致饿穿 → 豁免和睦不变量
 	var small_n: bool = S.agents.size() <= 12       # 涌现/单源传播类只在设计 N(≤12)硬断言；大 N 单源谣言 fizzle 是现实(docs/12 L4)
@@ -346,6 +346,26 @@ static func check_all(S, starved: int) -> Array:
 			elif String(e.get("note", "")) == "despawn": dsp_ev += 1
 	var fest_ok: bool = (fest_now == 0 or String(S.festival_active) != "") and (sp_ev - dsp_ev == fest_now)
 	R.append(_chk(36, "节日对象配对无残留", fest_ok, "现存=%d 活动=%s spawn=%d despawn=%d" % [fest_now, String(S.festival_active), sp_ev, dsp_ev]))
+	# #37 选举计票自洽（Wave 3a 硬不变量，docs/15「计票=快照纯函数=硬不变量」）：每场选举 票数守恒(yea+nay+abstain=选民数)
+	#   + 结果与票数一致(pass=yea>nay) + election 事件数=选举场次。elections 关→election_log 空→恒真(off 门不引约束)。
+	var elec_ok := true
+	var elec_detail := "无选举"
+	if not S.election_log.is_empty():
+		var eligible := 0
+		for ag in S.agents:
+			if not bool(ag.get("is_player", false)): eligible += 1
+		var elec_events := 0
+		for e in log:
+			if String(e["type"]) == "election": elec_events += 1
+		for r in S.election_log:
+			var rd: Dictionary = r
+			var sumv := int(rd["yea"]) + int(rd["nay"]) + int(rd["abstain"])
+			if sumv != int(rd["voters"]) or sumv != eligible or bool(rd["pass"]) != (int(rd["yea"]) > int(rd["nay"])):
+				elec_ok = false; break
+		if elec_ok and elec_events != S.election_log.size():
+			elec_ok = false
+		elec_detail = "%d 场 选民=%d 事件=%d" % [S.election_log.size(), eligible, elec_events]
+	R.append(_chk(37, "选举计票自洽", elec_ok, elec_detail))
 	return R
 
 static func _chk(id: int, name: String, ok: bool, detail: String) -> Dictionary:
@@ -357,7 +377,7 @@ static func _chk(id: int, name: String, ok: bool, detail: String) -> Dictionary:
 ##  · 软（涌现统计）= 需要活动才会显现的量（社交发生、分化、放逐锐利度、观点演化…），
 ##    已按 场景/大N 豁免；激进 LOD 下远端=背景群演，软不变量按设计会漂。
 ## 消费方：激进 LOD 门只查硬不变量（split_fails().hard==0）；soak/Harness 仍查全 33 条。
-const HARD_IDS := [1, 6, 7, 9, 10, 12, 13, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]
+const HARD_IDS := [1, 6, 7, 9, 10, 12, 13, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37]
 
 static func split_fails(S, starved: int) -> Dictionary:
 	var hard := 0
