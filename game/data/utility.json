@@ -13,5 +13,8 @@
 
   "_score": "候选打分权重（越高越优先发起/前往）。",
   "obj_dist_penalty": 0.4,
-  "greet_base": 6.0
+  "greet_base": 6.0,
+
+  "_confide": "docs/17 选项B：憋着未吐的秘密的倾诉压力系数（0=关=逐字节不变）。压力=此系数×ramp(秘密龄,30天饱和)，加进 confide 候选分，让稀缺的私下吐露在效用竞争里更有底气。",
+  "confide_secret_pressure": 4.0
 }

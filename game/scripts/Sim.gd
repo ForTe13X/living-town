@@ -973,8 +973,15 @@ func _social_candidates(ag: Dictionary) -> Array:
 		if priv_ok and float(r["trust"]) >= CONFIDE_TRUST and aff >= SECRET_AFF_FLOOR:
 			var cs := _confidable_secret(ag, o)
 			if cs != "":
+				# docs/17 选项B：憋着未吐的秘密随持有时长累积"倾诉压力"，给 confide 在效用竞争里加分。
+				# 纯 score、不新增候选=不动 tie-break salt；_w 缺键→系数 0→sp≡0→`+0.0` 逐字节不变(off 门)。
+				# 压力 = 系数 × ramp(秘密龄 0→1，30 天饱和)：越憋越想说，但仍与紧急需求竞争、不夺生存。
+				var sp := _w("confide_secret_pressure", 0.0)
+				if sp != 0.0:
+					var age := tick_no - int((ag["beliefs"][cs] as Dictionary).get("tick", 0))
+					sp *= minf(1.0, float(maxi(0, age)) / float(TICKS_PER_DAY * 30))
 				out.append({"kind": "social", "action": "confide", "partner": o["id"], "subject": cs,
-					"need": "social", "score": urgency * 0.4 + (float(r["trust"]) - CONFIDE_TRUST) * 0.3 + fam * 0.2 + 9.0, "say": ""})
+					"need": "social", "score": urgency * 0.4 + (float(r["trust"]) - CONFIDE_TRUST) * 0.3 + fam * 0.2 + 9.0 + sp, "say": ""})
 		# S3c leak —— 把别人吐露给我的秘密外传=背叛（无 trust 门；愧疚抑制，对托付者积怨则报复）
 		var ls := _leakable_secret(ag, o) if priv_ok else ""
 		if ls != "":
