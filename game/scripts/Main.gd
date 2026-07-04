@@ -212,7 +212,8 @@ func _update_status() -> void:
 	elif hh >= 11 and hh < 17: phase = "昼 day"
 	elif hh >= 17 and hh < 21: phase = "暮 evening"
 	var spd := ("×%.0f" % Sim.speed) if Sim.running else "⏸ 暂停"
-	var wx := ("  ·  %s" % Sim.weather_today) if Sim.weather_today != "" else ""   # Wave 1c 天气
+	var sn := ("%s " % Sim.season_today) if Sim.season_today != "" else ""          # Wave 3b 季节（贴在天气前）
+	var wx := ("  ·  %s%s" % [sn, Sim.weather_today]) if (Sim.weather_today != "" or sn != "") else ""   # Wave 1c 天气 + 3b 季节
 	var etxt := ""                                                                # Wave 3a 选举：状态栏显示最近一次表决结果
 	if not Sim.last_election.is_empty():
 		var le: Dictionary = Sim.last_election

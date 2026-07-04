@@ -105,6 +105,9 @@ var utility := {}               # 效用/接受权重表 data/utility.json（doc
 # ── Wave 1c 天气（docs/15 §3 挂点#3 最小版）：weather(day)=纯哈希查权重表——不消耗 RNG 流、不存历史，goto_tick 天然复现 ──
 var weather := {}               # data/weather.json：{types:{名:{w:权重}}, mults:{天气:{动作:乘子≤1}}}；缺文件→恒晴=零扰动
 var weather_today := ""         # 当日天气（start_new/日界重算；纯 f(seed_base,day)）
+# ── Wave 3b 生命周期（docs/15 §3.3）：季节(纯 day 函数，按序轮转)+活动乘子(≤1 dampen)；agent 年龄/阶段(纯确定)。缺文件→零扰动 ──
+var lifecycle := {}             # data/lifecycle.json：{season_length_days, seasons:{order:[...], mults:{季:{动作:≤1}}}, aging:{days_per_year, ages:{id:岁}, stages:[{max,name}]}}
+var season_today := ""          # 当季（start_new/日界重算；纯 f(day)，按 春→夏→秋→冬 顺序，非随机）
 # ── Wave 2b 节日（docs/15 §3 原语#4 WorldPatch）：data/festivals.json 驱动；缺文件→零扰动 ──
 var festivals := {}             # {festivals:{名:{every_days,offset,weather_req:[],objects:[{id,pos,advertises}]}}}
 var festival_active := ""       # 当日进行中的节日名（""=无）
@@ -237,6 +240,7 @@ func _load_data() -> void:
 	secrets = _read_json("res://data/secrets.json") # 私密秘密（缺文件→无种子=零扰动）
 	housing = _read_json("res://data/housing.json") # Wave 3c 住房租金（缺文件→无租金=零扰动）
 	elections = _read_json("res://data/elections.json") # Wave 3a 选举（缺文件→不选举=零扰动）
+	lifecycle = _read_json("res://data/lifecycle.json") # Wave 3b 生命周期（缺文件→无季节无年龄=零扰动）
 	# 职业自带工位：extra_advertises 注入 world（跟 jobs.json 同门控 → OFF 时 map 原样=逐字节不变）；只注一次防重入
 	if not jobs.is_empty() and not _jobs_injected:
 		_jobs_injected = true
@@ -388,6 +392,7 @@ func start_new(p_seed: int = 12345) -> void:
 	econ_total0 = money_total()
 	election_log.clear(); last_election = {}   # Wave 3a：per-run 重置（goto_tick 反复 start_new）
 	weather_today = _weather_of_day(day)   # Wave 1c：开局天气（日界在 tick() 重算）
+	season_today = _season_of_day(day)     # Wave 3b：开局当季（日界在 tick() 重算；纯 f(day)）
 	# Wave 2b/3a：world 只在 _load_data 载一次 → start_new(含 goto_tick 重演)必须清上一局残留的动态对象再重开。
 	# fest_=节日临时对象；civic_=选举通过的永久 WorldPatch（本局内永存，但换局/回放重演须清，靠选举日重新 spawn 确定重建）。
 	for oid in world.get("objects", {}).keys():
@@ -683,6 +688,9 @@ func tick() -> void:
 	if tick_no % TICKS_PER_DAY == 0:
 		day += 1
 		weather_today = _weather_of_day(day)   # Wave 1c：日界换天气（纯 f(seed,day)）
+		var _prev_season := season_today
+		season_today = _season_of_day(day)     # Wave 3b：换季（纯 f(day)，按序 春夏秋冬）
+		_update_lifecycle(_prev_season)        # Wave 3b：换季/生日里程碑（喂 voice grounding）
 		_update_festival()                     # Wave 2b：昨日节日清场 → 今日按 日取模+天气 开节（确定）
 		_update_election()                     # Wave 3a：到期把话题付诸投票（S2 attitude 即选票，快照纯函数计票）
 		if ext != null:
@@ -913,6 +921,7 @@ func _object_candidates(ag: Dictionary) -> Array:
 	var mods_ok := _min_need(ag) >= SURVIVAL_GATE            # 共用生存门：紧急需求时一切偏好乘子关闭，纯 urgency 主导
 	var rhythm_on := not rhythm.is_empty() and mods_ok
 	var wx_on := weather_today != "" and mods_ok             # Wave 1c：天气与节律独立门控（各自缺数据文件即各自关闭）
+	var sn_on := season_today != "" and mods_ok              # Wave 3b：季节乘子同样只在非紧急时塑形（生存优先不受季节影响）
 	var tod := time_of_day()
 	for id in world["objects"]:
 		var o: Dictionary = world["objects"][id]
@@ -937,6 +946,8 @@ func _object_candidates(ag: Dictionary) -> Array:
 				benefit *= _phase_pref(need_id, tod)      # 只缩放收益项、不动距离惩罚；生存路径不乘(上门控)
 			if wx_on:
 				benefit *= _weather_mult(action)          # Wave 1c：坏天压户外偏好(≤1 dampen-only)
+			if sn_on:
+				benefit *= _season_mult(action)           # Wave 3b：当季压某些活动偏好(≤1 dampen-only)
 			var score := benefit - float(dist) * _w("obj_dist_penalty", 0.4)
 			# Wave 1b 经济动机环：穷(coin<poor_line)时有薪动作加分 → 缺钱→去做活→挣了付饭钱(闭环)。
 			# 确定性、数据门控；只加分不减分 → 生存(urgency 主导)不受威胁；economy.json 缺失恒不触发。
@@ -1624,6 +1635,53 @@ func _weather_mult(action: String) -> float:
 	if m.is_empty():
 		return 1.0
 	return clampf(float(m.get(action, 1.0)), 0.3, 1.0)
+
+## Wave 3b：当季 = 纯 day 函数，按 seasons.order【顺序】轮转（非随机；春→夏→秋→冬→…）。缺表→""=零扰动。
+func _season_of_day(d: int) -> String:
+	var order: Array = lifecycle.get("seasons", {}).get("order", [])
+	if order.is_empty():
+		return ""
+	var slen := maxi(1, int(lifecycle.get("season_length_days", 15)))
+	return String(order[((d - 1) / slen) % order.size()])
+
+## 动作在当季的收益乘子（≤1 dampen-only，同 weather 教训：只压不放大→不触发全镇同步崩溃）；缺表/缺键→1.0。
+func _season_mult(action: String) -> float:
+	if season_today == "":
+		return 1.0
+	var m: Dictionary = lifecycle.get("seasons", {}).get("mults", {}).get(season_today, {})
+	if m.is_empty():
+		return 1.0
+	return clampf(float(m.get(action, 1.0)), 0.3, 1.0)
+
+## agent 当前年龄 = 起始龄 + 已过整年（纯确定 (day-1)/days_per_year）。缺 aging→0。
+func _age_of(id: String) -> int:
+	var agd: Dictionary = lifecycle.get("aging", {})
+	if agd.is_empty():
+		return 0
+	var start := int((agd.get("ages", {}) as Dictionary).get(id, agd.get("default_start_age", 30)))
+	return start + (day - 1) / maxi(1, int(agd.get("days_per_year", 30)))
+
+## 年龄→人生阶段名（stages 按 max 升序，取首个 age<=max）。缺→""。
+func _stage_of(age: int) -> String:
+	for st in lifecycle.get("aging", {}).get("stages", []):
+		if age <= int((st as Dictionary).get("max", 999)):
+			return String((st as Dictionary).get("name", ""))
+	return ""
+
+## Wave 3b 日界：换季 + 生日里程碑（纯确定的记忆写入，喂 voice/观察台；只写 memory 不产生 event→不入 digest）。
+func _update_lifecycle(prev_season: String) -> void:
+	if lifecycle.is_empty():
+		return
+	if season_today != "" and prev_season != "" and season_today != prev_season:
+		for ag in agents:
+			ag["memory"].add("入%s了" % season_today, 3, tick_no, ["season", season_today])
+	var agd: Dictionary = lifecycle.get("aging", {})
+	if not agd.is_empty():
+		var dpy := maxi(1, int(agd.get("days_per_year", 30)))
+		if day > 1 and (day - 1) % dpy == 0:              # 跨年 → 各自长一岁
+			for ag in agents:
+				var a := _age_of(String(ag["id"]))
+				ag["memory"].add("又长了一岁，%d 岁了（%s）" % [a, _stage_of(a)], 4, tick_no, ["birthday", "age"])
 
 # ── Wave 2a 职业：差异工资 + 班次（数据驱动；jobs.json 缺失时 _wage_for ≡ economy.wages 查表=零扰动）──
 func _job_of(id: String) -> Dictionary:

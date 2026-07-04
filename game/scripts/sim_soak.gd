@@ -164,6 +164,19 @@ func _init() -> void:
 				int(r["day"]), String(r["topic"]), ("通过" if bool(r["pass"]) else "否决"),
 				int(r["yea"]), int(r["nay"]), int(r["abstain"])])
 		print("选举: %d 场 → %s （S2 意见即选票，派系分块投）" % [S.election_log.size(), "  ".join(parts)])
+	# Wave 3b 生命周期：当季 + 各人年龄/阶段（lifecycle.json 缺失则跳过）
+	if not S.lifecycle.is_empty():
+		var order: Array = S.lifecycle.get("seasons", {}).get("order", [])
+		var seen := []
+		for d in range(1, days + 1):
+			var s := S._season_of_day(d)
+			if seen.is_empty() or String(seen[seen.size() - 1]) != s: seen.append(s)
+		var ages := []
+		for ag in S.agents:
+			var a := S._age_of(String(ag["id"]))
+			ages.append("%s%d岁·%s" % [S._name(ag), a, S._stage_of(a)])
+		print("生命周期: 当季=%s  %d天/季走过 %s  年龄: %s" % [
+			S.season_today, int(S.lifecycle.get("season_length_days", 15)), "→".join(seen), "  ".join(ages)])
 	if _trace:
 		_report_rhythm(S, days, day_need, phase_serve)
 	var code := _report_and_check(S, days, seed, starved)

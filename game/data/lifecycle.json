@@ -1,0 +1,21 @@
+{
+  "_note": "生命周期(Wave 3b)：季节按【顺序】轮转(纯 day 函数，非随机)+季节活动乘子(≤1 dampen-only，同 weather 教训)；agent 年龄(纯确定=起始龄+已过整年)+人生阶段+生日/换季里程碑(只写 memory 不入 digest)。缺此文件=无季节无年龄=逐字节不变(off 门)。无生老病死(那会改 N、破确定性与多条不变量，留 3c/后续)。季节乘子的 action 须是既有对象广告动作(晒太阳/玩耍/打坐/睡觉…)。",
+  "season_length_days": 15,
+  "seasons": {
+    "order": ["春", "夏", "秋", "冬"],
+    "mults": {
+      "冬": {"晒太阳": 0.5, "玩耍": 0.85},
+      "夏": {"打坐": 0.85}
+    }
+  },
+  "aging": {
+    "days_per_year": 30,
+    "default_start_age": 30,
+    "ages": {"aria": 26, "ben": 44, "coco": 22, "dan": 61, "evy": 19, "fei": 31},
+    "stages": [
+      {"max": 17, "name": "少年"},
+      {"max": 59, "name": "成年"},
+      {"max": 200, "name": "长者"}
+    ]
+  }
+}
