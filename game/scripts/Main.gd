@@ -62,6 +62,13 @@ func _ready() -> void:
 			warmup_days = int(args[i + 1])     # 录 demo：跳到第 N 天开场（确定，goto_tick 同款重演）
 	AIBackend.backend = backend
 
+	# L7：--scenario 指向 data/scenarios/<id>.json（含 70B 编剧产出）→ 注册数据驱动场景 provider（窗口里也能演）。
+	# 空/内建场景(faction/betray/freerider 无此文件)→ 不注册 → 回落内建 _seed_scenario；默认 ""→ Sim.ext 保持 null 逐字节不变。
+	if Sim.scenario != "" and FileAccess.file_exists("res://data/scenarios/%s.json" % Sim.scenario):
+		var ext := preload("res://scripts/SimExtensions.gd").new()
+		ext.register_scenario(preload("res://scripts/DataScenarioProvider.gd").new(Sim.scenario))
+		ext.freeze()
+		Sim.ext = ext
 	Sim.start_new(seed)
 	if warmup_days > 0:
 		Sim.goto_tick((warmup_days - 1) * int(Sim.TICKS_PER_DAY) + 8)   # 跳到第 N 天开场（节日已在日界 spawn）
