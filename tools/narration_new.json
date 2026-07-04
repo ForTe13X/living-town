@@ -1,0 +1,15 @@
+[
+  {"cn": "《小镇有灵》的新进展：在确定性的社交底座之上，叠起了一整层数据驱动的世界系统。", "en": "Living Town's latest: on top of the deterministic social floor, a whole layer of data-driven world systems."},
+  {"cn": "经济、天气、职业、节日、技能——每一个都只是一个数据文件；删掉它，小镇就逐字节回到从前。", "en": "Economy, weather, jobs, festivals, skills — each is just one data file; remove it, and the town is byte-for-byte as before."},
+  {"cn": "有手艺的人挣得更多，房客向房东交租，贫富差距就这样自然长了出来。", "en": "Skilled residents earn more, tenants pay rent to landlords, and inequality grows all on its own."},
+  {"cn": "建筑与室内也被数据化：一个 buildings 文件，就编译出带家具的封闭房间。", "en": "Buildings and interiors are data-driven too: one buildings file compiles into furnished, enclosed rooms."},
+  {"cn": "而秘密，只有在关起门的私密处，才敢说出口。", "en": "And secrets are only spoken behind closed doors, in private."},
+  {"cn": "每个居民心里都揣着一个秘密。吐露给信任的人，是心事；被转述出去，就是背叛。", "en": "Every resident holds a secret. Sharing it with someone trusted is confiding; passing it on is betrayal."},
+  {"cn": "背叛会重挫名声、点燃冲突——而且永远能溯源到最初那一次吐露。", "en": "Betrayal wrecks reputation and ignites conflict — and always traces back to that first confiding."},
+  {"cn": "当观点分化到一定程度，小镇就投票。每个人的态度，就是他手里的一票。", "en": "When opinions diverge enough, the town votes. Each resident's attitude is their ballot."},
+  {"cn": "派系天然成了票仓；一旦通过，镇子就照集体的决定改样——咖啡馆，真的扩建了。", "en": "Factions become voting blocs; once a vote passes, the town changes by its collective decision — the cafe really expands."},
+  {"cn": "最激进的一步：让一个七百亿参数的大模型，来当这座镇的编剧。", "en": "The boldest step: a seventy-billion-parameter model as the town's scriptwriter."},
+  {"cn": "它在引擎外离线写下开场的恩怨与秘密，冻结成数据；引擎只读数据，回放逐字节一致。", "en": "Offline, it writes the opening feuds and secrets, frozen into data; the engine only reads data, and replay stays byte-for-byte identical."},
+  {"cn": "它甚至能每周回看小镇的演变，顺势续写下一段剧情。", "en": "It can even look back weekly at how the town has evolved, and write the next chapter accordingly."},
+  {"cn": "从经济到 70B 编剧——三十七条不变量、跨种子回放、逐字节确定性，一寸没让。", "en": "From the economy to a 70B scriptwriter — thirty-seven invariants, cross-seed replay, byte-exact determinism: not one inch given up."}
+]
