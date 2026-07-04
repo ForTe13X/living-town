@@ -1,0 +1,10 @@
+{
+  "_note": "住房产权最小闭环(Wave 3c)：每夜房客经 Ledger 向房东转租金(守恒；付不起自动跳过→货币非负)。缺此文件=无租金=逐字节不变(off 门)。房东=有正业+自有房(aria咖啡师/ben木匠)，房客=其余。租金流深化贫富分化、并给'穷→做活'动机环加压。不建租房市场撮合(docs/15 止步于此)。",
+  "rent": 2,
+  "tenancies": [
+    {"tenant": "coco", "landlord": "aria"},
+    {"tenant": "dan",  "landlord": "ben"},
+    {"tenant": "evy",  "landlord": "aria"},
+    {"tenant": "fei",  "landlord": "ben"}
+  ]
+}

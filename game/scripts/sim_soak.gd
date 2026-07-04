@@ -252,6 +252,23 @@ func _report_and_check(S, days: int, seed: int, starved: int) -> int:
 		print("经济: 镇库=%d  付费餐=%d 免费餐=%d 发薪=%d 欠薪=%d  | %s  (Σ=%d 基准=%d)" % [
 			S.town_coin, S.econ_stats["meals_paid"], S.econ_stats["meals_free"],
 			S.econ_stats["wages_paid"], S.econ_stats["wages_skipped"], " ".join(coins), S.money_total(), S.econ_total0])
+		# Wave 3c 住房：租金流 + 房东/房客财富分化（housing.json 缺失则跳过）
+		if not S.housing.is_empty():
+			var rent_paid := 0
+			for e in S.event_log:
+				if String(e["type"]) == "pay" and String(e.get("note", "")) == "rent":
+					rent_paid += 1
+			var landlords := {}
+			var tenants := {}
+			for t in S.housing.get("tenancies", []):
+				landlords[String((t as Dictionary).get("landlord", ""))] = true
+				tenants[String((t as Dictionary).get("tenant", ""))] = true
+			var lw := 0; var tw := 0
+			for ag in S.agents:
+				if landlords.has(String(ag["id"])): lw += int(ag["inventory"].get("coin", 0))
+				elif tenants.has(String(ag["id"])): tw += int(ag["inventory"].get("coin", 0))
+			print("住房: 收租 %d 笔(rent=%d/晚)  房东共 %d 币 vs 房客共 %d 币 （租金流→深化分化）" % [
+				rent_paid, int(S.housing.get("rent", 0)), lw, tw])
 		# Wave 2c 技能诊断（skills.json 缺失则跳过）
 		if not S.skills.is_empty():
 			var sk := []
