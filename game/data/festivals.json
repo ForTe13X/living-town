@@ -1,0 +1,18 @@
+{
+  "_doc": "Wave 2b 节日（docs/15 §3）。缺此文件=无节日(引擎逐字节不变)。调度=确定函数 day%every_days==offset 且天气∈weather_req(不合则顺延——天气→节日解锁链)。objects=当日 spawn 的机会地形(WorldPatch 唯一通道,id=fest_名_日_序,次日清场,写 world 事件溯源)；高吸引力 advertise 让人群自发聚拢,不写剧本。",
+  "festivals": {
+    "灯会": {
+      "every_days": 7,
+      "offset": 3,
+      "weather_req": ["晴", "阴"],
+      "objects": [
+        {
+          "pos": [12, 7],
+          "advertises": [
+            { "action": "逛灯会", "need": "fun", "amount": 62, "duration": 14 }
+          ]
+        }
+      ]
+    }
+  }
+}

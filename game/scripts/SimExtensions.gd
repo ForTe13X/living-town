@@ -10,6 +10,8 @@ class_name SimExtensions
 ##   CandidateProvider  : id()->String, candidates(S, ag)->Array
 ##   AcceptanceModifier : id()->String, modify(S, actor, target, action, subject)->float
 ##   NightlyHook        : id()->String, order()->int, run(S)->void
+##   ActionExecutor     : id()->String, execute(S, ag, opt)->bool —— 新动作的效果提交（docs/15 §3 挂点#2）。
+##                        处理则返 true；效果自负（改账本须走 S 的既有通道并 _log_event 记账保溯源/digest）。
 ##
 ## 确定性铁律（docs/14 §1 两坑）：
 ##  · 无 live RNG（provider 抖动一律经 S._rng_at(salt,who) 子流）、无 Time/墙钟、无字典插入序依赖。
@@ -21,6 +23,7 @@ var _scenarios := {}       # id -> ScenarioProvider
 var _cand: Array = []      # CandidateProvider（freeze 后按 id 定序）
 var _accept: Array = []    # AcceptanceModifier（freeze 后按 id 定序）
 var _nightly: Array = []   # NightlyHook（freeze 后按 (order,id) 定序）
+var _execs: Array = []     # ActionExecutor（freeze 后按 id 定序）
 var _weights := {}         # 数据驱动效用权重（name -> float）
 
 # ── 注册（只在注入时调，绝不在 start_new 内）───────────────────────────
@@ -35,6 +38,9 @@ func register_acceptance(p: Object) -> void:
 
 func register_nightly(p: Object) -> void:
 	_nightly.append(p)
+
+func register_executor(p: Object) -> void:
+	_execs.append(p)
 
 func load_weights(path: String) -> void:
 	if FileAccess.file_exists(path):
@@ -53,6 +59,7 @@ func freeze() -> void:
 		var oa := int(a.order()); var ob := int(b.order())
 		if oa != ob: return oa < ob
 		return String(a.id()) < String(b.id()))
+	_execs.sort_custom(func(a, b): return String(a.id()) < String(b.id()))
 
 # ── 分发（Sim 挂点调用）──────────────────────────────────────────────
 func seed_scenario(S: Object, sid: String) -> bool:
@@ -81,3 +88,10 @@ func accept_delta(S: Object, actor: Dictionary, target: Dictionary, action: Stri
 func nightly(S: Object) -> void:
 	for h in _nightly:
 		h.run(S)
+
+## 效果提交分发（docs/15 §3 挂点#2）：按 id 定序轮询，首个认领者执行并返 true；无人认领返 false（调用方不落任何通用效果）。
+func execute(S: Object, ag: Dictionary, opt: Dictionary) -> bool:
+	for e in _execs:
+		if bool(e.execute(S, ag, opt)):
+			return true
+	return false

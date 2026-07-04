@@ -101,6 +101,23 @@ var needs_def: Array = []       # [{id,label,decay,low}]
 var world := {}                 # {width,height,areas,objects:{id:obj}}
 var rhythm := {}                # 昼夜节律偏好表 data/rhythm.json：{phases:{name:[lo,hi)}, prefs:{need:{phase:factor}}, default}
 var utility := {}               # 效用/接受权重表 data/utility.json（docs/14 §1 步骤4）：行为调参数据化，缺键→代码默认(逐字节不变)
+# ── Wave 1c 天气（docs/15 §3 挂点#3 最小版）：weather(day)=纯哈希查权重表——不消耗 RNG 流、不存历史，goto_tick 天然复现 ──
+var weather := {}               # data/weather.json：{types:{名:{w:权重}}, mults:{天气:{动作:乘子≤1}}}；缺文件→恒晴=零扰动
+var weather_today := ""         # 当日天气（start_new/日界重算；纯 f(seed_base,day)）
+# ── Wave 2b 节日（docs/15 §3 原语#4 WorldPatch）：data/festivals.json 驱动；缺文件→零扰动 ──
+var festivals := {}             # {festivals:{名:{every_days,offset,weather_req:[],objects:[{id,pos,advertises}]}}}
+var festival_active := ""       # 当日进行中的节日名（""=无）
+var _fest_objects: Array = []   # 当前节日 spawn 的对象 id（despawn/start_new 清场用）
+# ── Wave 2c 技能（docs/15 §3）：data/skills.json 驱动；缺文件→_skill_level≡0=逐字节不变 ──
+var skills := {}                # {per_level:int, max_level:int, wage_bonus:int}
+# ── Wave 2a 职业（docs/15 §3）：data/jobs.json 驱动；缺文件→_wage_for≡economy.wages 查表=逐字节不变 ──
+var jobs := {}                  # {jobs:{holder:{title,action,wage,shift:[相位]}}, extra_advertises:[{object,action,need,amount,duration}]}
+var _jobs_injected := false     # extra_advertises 只注入一次（防 _load_data 重入翻倍）
+# ── Wave 1b 经济（docs/15 §3）：data/economy.json 驱动；缺文件→_econ_on()=false→全部短路=逐字节不变 ──
+var economy := {}               # {start_coin, town_start, prices:{action:int}, wages:{action:int}}
+var town_coin := 0              # 镇库（吃饭收费流入、做活工资流出 → 闭环）
+var econ_total0 := 0            # 开局货币总量（金钱守恒硬不变量的基准：Σagent coin + town_coin 恒等于它）
+var econ_stats := {"meals_paid": 0, "meals_free": 0, "wages_paid": 0, "wages_skipped": 0}  # 诊断计数
 var agents: Array = []          # [agent dict]
 var _agent_by_id := {}
 var spawn_count := 0            # >0：克隆扩容到该 agent 数（扩 N 测试用；0=用数据原样 6 个）
@@ -201,6 +218,19 @@ func _load_data() -> void:
 	world = _read_json("res://data/map.json")
 	rhythm = _read_json("res://data/rhythm.json")   # 昼夜节律偏好表（缺文件→空→_phase_pref 恒返 1.0=零扰动）
 	utility = _read_json("res://data/utility.json") # 行为效用/接受权重（缺文件/缺键→_w 返代码默认=零扰动）
+	economy = _read_json("res://data/economy.json") # Wave 1b 经济（缺文件→_econ_on()=false 全短路=零扰动）
+	weather = _read_json("res://data/weather.json") # Wave 1c 天气（缺文件→weather_today=""=零扰动）
+	jobs = _read_json("res://data/jobs.json")       # Wave 2a 职业（缺文件→_wage_for 退化=零扰动）
+	skills = _read_json("res://data/skills.json")   # Wave 2c 技能（缺文件→_skill_level=0=零扰动）
+	festivals = _read_json("res://data/festivals.json")  # Wave 2b 节日（缺文件→零扰动）
+	# 职业自带工位：extra_advertises 注入 world（跟 jobs.json 同门控 → OFF 时 map 原样=逐字节不变）；只注一次防重入
+	if not jobs.is_empty() and not _jobs_injected:
+		_jobs_injected = true
+		for ea in jobs.get("extra_advertises", []):
+			var oid := String(ea.get("object", ""))
+			if world["objects"].has(oid):
+				(world["objects"][oid]["advertises"] as Array).append({
+					"action": ea["action"], "need": ea["need"], "amount": int(ea["amount"]), "duration": int(ea["duration"])})
 	var objs := {}
 	for o in world.get("objects", []):
 		o["pos"] = Vector2i(int(o["pos"][0]), int(o["pos"][1]))
@@ -251,6 +281,18 @@ func start_new(p_seed: int = 12345) -> void:
 	if _agent_by_id.has("aria"):
 		_agent_by_id["aria"]["beliefs"]["R1"] = {
 			"claim": "可可最近心事重重", "subject": "coco", "source": "__seed__", "via": "seed", "tick": 0}
+	# Wave 1b 经济：镇库注资 + 记录开局货币总量（守恒硬不变量基准）。缺 economy.json → 全为 0 零扰动。
+	town_coin = int(economy.get("town_start", 0)) if not economy.is_empty() else 0
+	econ_stats = {"meals_paid": 0, "meals_free": 0, "wages_paid": 0, "wages_skipped": 0}
+	econ_total0 = money_total()
+	weather_today = _weather_of_day(day)   # Wave 1c：开局天气（日界在 tick() 重算）
+	# Wave 2b：world 只在 _load_data 载一次 → start_new(含 goto_tick 重演)必须清上一局残留的节日对象再重开
+	for oid in world.get("objects", {}).keys():
+		if String(oid).begins_with("fest_"):
+			world["objects"].erase(oid)
+	_fest_objects.clear()
+	festival_active = ""
+	_update_festival()
 	if ext != null:
 		ext.freeze()                 # 幂等排序（注册在注入时已做；这里只保证 goto_tick 反复 start_new 前 ext 就绪、定序）
 	_seed_scenario()                 # S3 定向场景种子（faction/betray/freerider；空=默认）
@@ -305,6 +347,7 @@ func _make_agent(adef: Dictionary, personas: Dictionary) -> Dictionary:
 		"stifled": {}, "metKnower": {},
 		"faction": "", "faction_size": 1,
 		"pacts": {}, "complementSeen": {},
+		"skills": {},                # Wave 2c：本职动作熟练度计数（缺 skills.json 时恒空、不读=零扰动）
 		"thinking": false,
 		"last_say": "",
 		"memory": MemoryStreamScript.new(),
@@ -319,6 +362,9 @@ func _make_agent(adef: Dictionary, personas: Dictionary) -> Dictionary:
 		ag["attitude0"][t] = a0
 		ag["attitudes"][t] = a0
 	ag["area"] = _area_at(ag["pos"])
+	ag["room"] = _room_at(ag["pos"])   # docs/16：与 area 同址缓存（缺 rooms→""）
+	if not economy.is_empty():
+		ag["inventory"]["coin"] = int(economy.get("start_coin", 10))   # Wave 1b：经济开启才有钱（缺文件零扰动）
 	return ag
 
 func get_agent(id: String) -> Dictionary:
@@ -328,6 +374,8 @@ func get_agent(id: String) -> Dictionary:
 ## 玩家入镇（仅窗口模式调用；headless bench 从不加 → 确定性地板零回归）。
 ## 入 agents 即入社交图：NPC 会主动找玩家 greet/gossip/confide/邀约；接受规则/关系账本/记忆/旁观者对玩家全部生效。
 const MEDIATE_AFF := 5.0        # 调解门槛：冲突双方对玩家好感 ≥ 此才听得进劝
+# 引擎内建社交动作全集（conflict 类在 _commit_social 上游单独分流）；不在此集=扩展动作 → 走 ext.execute（L7 挂点#2）
+const KNOWN_SOCIAL_ACTIONS := ["greet", "give", "gossip", "gossip_rep", "discuss", "invite", "confide", "leak", "endorse", "aid", "mediate"]
 func add_player(pos: Vector2i = Vector2i(-1, -1)) -> Dictionary:
 	if _agent_by_id.has("player"):
 		return _agent_by_id["player"]
@@ -341,6 +389,7 @@ func add_player(pos: Vector2i = Vector2i(-1, -1)) -> Dictionary:
 		pl["needs"][nid] = 100.0    # M1：玩家需求冻结（不衰减）；后续可开生存玩法
 	agents.append(pl)
 	_agent_by_id["player"] = pl
+	econ_total0 += int(pl["inventory"].get("coin", 0))   # 玩家带钱入镇 → 守恒基准同步上调（钱不凭空出现）
 	emit_signal("agent_changed", "player")
 	return pl
 
@@ -530,6 +579,8 @@ func tick() -> void:
 	_sweep_conflicts()                  # 久未对质的冲突 → lingering
 	if tick_no % TICKS_PER_DAY == 0:
 		day += 1
+		weather_today = _weather_of_day(day)   # Wave 1c：日界换天气（纯 f(seed,day)）
+		_update_festival()                     # Wave 2b：昨日节日清场 → 今日按 日取模+天气 开节（确定）
 		_nightly()
 		emit_signal("day_changed", day)
 	emit_signal("ticked", tick_no)
@@ -648,6 +699,15 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 	if opt["phase"] == "travel":
 		if ag["pos"] == target_obj["pos"]:
 			opt["phase"] = "use"
+			# Wave 1b 收费点：有价动作(吃饭等)开用时向镇库付费。付不起→照用不误(meals_free)——
+			# 生存永不被钱门住(守"无饿穿"硬不变量)，钱只造分化/戏剧，不造饿死。
+			if _econ_on():
+				var price := int(economy.get("prices", {}).get(String(opt["action"]), 0))
+				if price > 0:
+					if transfer(String(ag["id"]), "town", price, "price:" + String(opt["action"])):
+						econ_stats["meals_paid"] += 1
+					else:
+						econ_stats["meals_free"] += 1
 		else:
 			_move_agent(ag, _step_toward(ag["pos"], target_obj["pos"]))
 		emit_signal("agent_changed", ag["id"])
@@ -658,6 +718,26 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 		opt["remaining"] = int(opt["remaining"]) - 1
 		if int(opt["remaining"]) <= 0:
 			ag["memory"].add("在%s%s了" % [target_obj.get("area", ""), opt["action"]], 3, tick_no, [opt["need"], opt["target"]])
+			# Wave 1b 发薪点：有薪动作(做活)完成时镇库付工资。镇库空→跳过(wages_skipped)——闭环:饭钱流入、工资流出。
+			# Wave 2a：工资经 _wage_for（本职在班拿职位工资；差异工资→贫富分化）；本职完成写"上工"记忆(voice grounding)。
+			if _econ_on():
+				# Wave 2c 技能：本职动作完成 → 熟练度+1，升级写里程碑记忆(voice grounding)。先涨技能再算工资 → 升级当次即涨薪。数据门控。
+				if not skills.is_empty():
+					var jb1 := _job_of(String(ag["id"]))
+					if not jb1.is_empty() and String(jb1.get("action", "")) == String(opt["action"]):
+						var lv0 := _skill_level(ag, String(opt["action"]))
+						ag["skills"][String(opt["action"])] = int((ag["skills"] as Dictionary).get(String(opt["action"]), 0)) + 1
+						if _skill_level(ag, String(opt["action"])) > lv0:
+							ag["memory"].add("手艺又精进了，%s越发得心应手" % String(jb1.get("title", "")), 5, tick_no, ["skill", "job"])
+				var wage := _wage_for(ag, String(opt["action"]))
+				if wage > 0:
+					if transfer("town", String(ag["id"]), wage, "wage:" + String(opt["action"])):
+						econ_stats["wages_paid"] += 1
+						var jb := _job_of(String(ag["id"]))
+						if not jb.is_empty() and String(jb.get("action", "")) == String(opt["action"]):
+							ag["memory"].add("上工%s，挣了%d个钱" % [String(jb.get("title", "")), wage], 4, tick_no, ["job", "coin"])
+					else:
+						econ_stats["wages_skipped"] += 1
 			ag["option"] = null
 		emit_signal("agent_changed", ag["id"])
 
@@ -680,6 +760,9 @@ func _nightly() -> void:
 		if lod_aggregate and lod_near_cap > 0 and not _near_set.is_empty() and not _near_set.has(ag["id"]):
 			continue
 		_reflect_agent(ag)
+	# Wave 2a+ 阶层 gossip：财富被同区邻居目击 → firsthand belief(via=seen) → 走既有 gossip 管线传播(S1 原样复用)。
+	if _econ_on() and economy.has("wealth_gossip"):
+		_observe_wealth()
 	_recompute_factions()      # S3a：每夜从 attitudes 重算派系（先于名声漂移）
 	_dissolve_freeriders()     # S3b：先解 free-rider 盟约
 	_form_pacts_greedy()       # S3b：再单遍贪心结盟
@@ -710,7 +793,9 @@ func _object_candidates(ag: Dictionary) -> Array:
 	var out: Array = []
 	# 昼夜节律（docs/14）：仅当 agent 无紧急需求(min≥SURVIVAL_GATE)时，用时段偏好乘子塑造"何时"满足需求(睡偏夜/吃偏三餐)。
 	# 有任一紧急需求 → 节律关闭 → 纯 urgency 主导 → 绝不因时段延误进食 → 守 HARD#1 无饿穿。缺 rhythm.json → 恒关=零扰动。
-	var rhythm_on := not rhythm.is_empty() and _min_need(ag) >= SURVIVAL_GATE
+	var mods_ok := _min_need(ag) >= SURVIVAL_GATE            # 共用生存门：紧急需求时一切偏好乘子关闭，纯 urgency 主导
+	var rhythm_on := not rhythm.is_empty() and mods_ok
+	var wx_on := weather_today != "" and mods_ok             # Wave 1c：天气与节律独立门控（各自缺数据文件即各自关闭）
 	var tod := time_of_day()
 	for id in world["objects"]:
 		var o: Dictionary = world["objects"][id]
@@ -726,7 +811,15 @@ func _object_candidates(ag: Dictionary) -> Array:
 			var benefit := urgency * (float(adv["amount"]) / 60.0)
 			if rhythm_on:
 				benefit *= _phase_pref(need_id, tod)      # 只缩放收益项、不动距离惩罚；生存路径不乘(上门控)
+			if wx_on:
+				benefit *= _weather_mult(String(adv["action"]))  # Wave 1c：坏天压户外偏好(≤1 dampen-only)
 			var score := benefit - float(dist) * _w("obj_dist_penalty", 0.4)
+			# Wave 1b 经济动机环：穷(coin<poor_line)时有薪动作加分 → 缺钱→去做活→挣了付饭钱(闭环)。
+			# 确定性、数据门控；只加分不减分 → 生存(urgency 主导)不受威胁；economy.json 缺失恒不触发。
+			# Wave 2a：工资经 _wage_for（本职在班=职位工资>零工价 → 班次时间自然被工作吸引；jobs 缺失≡旧查表）。
+			if _econ_on() and _wage_for(ag, String(adv["action"])) > 0 \
+					and _coin_of(String(ag["id"])) < int(economy.get("poor_line", 6)):
+				score += float(economy.get("work_urgency", 8.0))
 			out.append({
 				"kind": "object", "action": adv["action"], "target": id, "need": need_id,
 				"amount": int(adv["amount"]), "dur_total": int(adv["duration"]),
@@ -774,14 +867,17 @@ func _social_candidates(ag: Dictionary) -> Array:
 			var gossipy := 8.0 if "爱八卦" in ag.get("persona", {}).get("traits", []) else 0.0
 			out.append({"kind": "social", "action": "gossip", "partner": o["id"], "subject": cid,
 				"need": "social", "score": urgency * 0.6 + aff * 0.1 + gossipy + 5.0, "say": ""})
+		# docs/16 阶段1 隐私门：铺了 rooms 数据时，秘密只在【同一 enclosed 房间】才吐露/说漏（"关起门说的悄悄话"）。
+		# 顶层数据门：rooms 缺失 → priv_ok 恒 true → 走旧"任意同区"路径 → 逐字节不变（off 门）。
+		var priv_ok: bool = (world.get("rooms", {}) as Dictionary).is_empty() or _same_enclosed_room(ag, o)
 		# S3c confide —— 仅 owner 向高 trust+aff 者吐露心事（最脆弱条件投资，门高于 give/invite）
-		if float(r["trust"]) >= CONFIDE_TRUST and aff >= SECRET_AFF_FLOOR:
+		if priv_ok and float(r["trust"]) >= CONFIDE_TRUST and aff >= SECRET_AFF_FLOOR:
 			var cs := _confidable_secret(ag, o)
 			if cs != "":
 				out.append({"kind": "social", "action": "confide", "partner": o["id"], "subject": cs,
 					"need": "social", "score": urgency * 0.4 + (float(r["trust"]) - CONFIDE_TRUST) * 0.3 + fam * 0.2 + 9.0, "say": ""})
 		# S3c leak —— 把别人吐露给我的秘密外传=背叛（无 trust 门；愧疚抑制，对托付者积怨则报复）
-		var ls := _leakable_secret(ag, o)
+		var ls := _leakable_secret(ag, o) if priv_ok else ""
 		if ls != "":
 			var teller_id := String((ag["beliefs"][ls]["confidedBy"] as Dictionary).keys()[0])
 			var rt2 := _rel(ag, teller_id)
@@ -942,6 +1038,13 @@ func _commit_social(ag: Dictionary, opt: Dictionary) -> void:
 		return
 	if action == "rally_oust":
 		_resolve_rally_oust(ag, target, witnesses)
+		return
+	# L7 ActionExecutor（docs/15 §3 #2，最大真缺口）：未知动作在进入通用接受/效果【之前】拦截——
+	# 否则会被误套 greet 语义（social+16/affinity/事件/记忆）污染事件流与 digest。无人认领 → 不落任何通用效果。
+	# 今日引擎不产未知动作 → 本分支恒不触发 → 逐字节零回归；CandidateProvider 的新动作由 ActionExecutor 认领落效果。
+	if not (action in KNOWN_SOCIAL_ACTIONS):
+		if ext != null:
+			ext.execute(self, ag, opt)
 		return
 	var accepted := _acceptance_rule(ag, target, action, subject)
 	var ra := _rel(ag, target["id"])
@@ -1364,6 +1467,174 @@ func _reflect_llm(ag: Dictionary, floor_insight: String) -> void:
 func _w(key: String, default: float) -> float:
 	return float(utility.get(key, default))
 
+# ── Wave 1c 天气（docs/15 §3）：纯函数、无状态、无 RNG 流消耗 ────────────────
+## 当日天气 = _hash01(seed:day) 按权重表落桶。确定：同 seed 同 day 恒同天气；goto_tick 重演天然一致。
+func _weather_of_day(d: int) -> String:
+	var types: Dictionary = weather.get("types", {})
+	if types.is_empty():
+		return ""
+	var names: Array = types.keys()
+	names.sort()                       # 定序（不依赖字典插入序）
+	var total := 0.0
+	for n in names:
+		total += float(types[n].get("w", 1.0))
+	var r := _hash01("%d:wx:%d" % [seed_base, d]) * total
+	var acc := 0.0
+	for n in names:
+		acc += float(types[n].get("w", 1.0))
+		if r < acc:
+			return String(n)
+	return String(names[names.size() - 1])
+
+## 动作在当日天气下的收益乘子（≤1 dampen-only：坏天只压户外偏好、不放大任何欲望）；缺表/缺键→1.0。
+func _weather_mult(action: String) -> float:
+	if weather_today == "":
+		return 1.0
+	var m: Dictionary = weather.get("mults", {}).get(weather_today, {})
+	if m.is_empty():
+		return 1.0
+	return clampf(float(m.get(action, 1.0)), 0.3, 1.0)
+
+# ── Wave 2a 职业：差异工资 + 班次（数据驱动；jobs.json 缺失时 _wage_for ≡ economy.wages 查表=零扰动）──
+func _job_of(id: String) -> Dictionary:
+	return jobs.get("jobs", {}).get(id, {}) if not jobs.is_empty() else {}
+
+## 是否在自己的班次相位内。空 shift=全天；rhythm 缺失(_phase_of 返 "")=视为在班（优雅降级）。
+func _in_shift(job: Dictionary) -> bool:
+	var sh: Array = job.get("shift", [])
+	if sh.is_empty():
+		return true
+	var ph := _phase_of(time_of_day())
+	return ph == "" or ph in sh
+
+## Wave 2c 技能等级：本职动作完成数 / per_level，封顶 max_level。缺 skills.json → 恒 0（零扰动）。
+func _skill_level(ag: Dictionary, action: String) -> int:
+	if skills.is_empty():
+		return 0
+	var c := int((ag.get("skills", {}) as Dictionary).get(action, 0))
+	return mini(int(skills.get("max_level", 5)), c / maxi(1, int(skills.get("per_level", 15))))
+
+## 某 agent 做某动作此刻的工资：本职工作且在班 → 职位工资 + 技能加成（熟练工挣更多→深化分化）；否则 → 基础零工价。
+func _wage_for(ag: Dictionary, action: String) -> int:
+	var job := _job_of(String(ag["id"]))
+	if not job.is_empty() and String(job.get("action", "")) == action and _in_shift(job):
+		return int(job.get("wage", 0)) + _skill_level(ag, action) * int(skills.get("wage_bonus", 0) if not skills.is_empty() else 0)
+	return int(economy.get("wages", {}).get(action, 0))
+
+# ── Wave 2b·WorldPatch 原语（docs/15 §3 原语#4）：动态对象增删的【唯一通道】，写 event 溯源 ─────
+## spawn：id 由调用方给定（须确定=f(名,day,序)，绝不用计数器/RNG）；写 event(type=world, note=spawn)。
+func spawn_object(def: Dictionary) -> void:
+	var oid := String(def["id"])
+	if world["objects"].has(oid):
+		return
+	var od := def.duplicate(true)
+	od["pos"] = Vector2i(int(def["pos"][0]), int(def["pos"][1])) if def["pos"] is Array else def["pos"]
+	od["area"] = _area_at(od["pos"])
+	world["objects"][oid] = od
+	_log_event("world", "town", oid, "", true, [], "spawn")
+
+func despawn_object(oid: String) -> void:
+	if not world["objects"].has(oid):
+		return
+	world["objects"].erase(oid)
+	# 清引用：正在用/赶往该对象的 agent 作废其 option（下 tick 重决策；确定）
+	for ag in agents:
+		var opt = ag.get("option")
+		if opt != null and String(opt.get("kind", "object")) == "object" and String(opt.get("target", "")) == oid:
+			ag["option"] = null
+	_log_event("world", "town", oid, "", true, [], "despawn")
+
+## Wave 2b 节日调度（Director v1=纯规则体,"只撒机会地形不写剧情"）：日界调用。
+## 确定性：day 取模 + weather_today（本身纯函数）；对象 id=名:day:序。昨日节日先清场，再开今日的。
+func _update_festival() -> void:
+	if festival_active != "":
+		for oid in _fest_objects:
+			despawn_object(String(oid))
+		_fest_objects.clear()
+		festival_active = ""
+	if festivals.is_empty():
+		return
+	var names: Array = festivals.get("festivals", {}).keys()
+	names.sort()
+	for nm in names:
+		var f: Dictionary = festivals["festivals"][nm]
+		var every := maxi(1, int(f.get("every_days", 7)))
+		if day % every != int(f.get("offset", 0)):
+			continue
+		var req: Array = f.get("weather_req", [])
+		if not req.is_empty() and not (weather_today in req):
+			continue                      # 天气不合 → 顺延（天气→节日解锁链）
+		festival_active = String(nm)
+		var seq := 0
+		for od in f.get("objects", []):
+			var def: Dictionary = (od as Dictionary).duplicate(true)
+			def["id"] = "fest_%s_%d_%d" % [nm, day, seq]
+			seq += 1
+			spawn_object(def)
+			_fest_objects.append(def["id"])
+		break                             # 一日一节
+
+## Wave 2a+ 阶层 gossip：每夜同区邻居目击贫富 → 生成一手 belief（via=seen，inv6 豁免溯源）。
+## 之后由既有 gossip 机制自然传播（_unspread_belief 会挑中它）——"财富传闻"零新管线。确定（定序遍历，无 RNG）。
+func _observe_wealth() -> void:
+	var wg: Dictionary = economy.get("wealth_gossip", {})
+	var rich := int(wg.get("rich_line", 6))
+	for aid in _nightly_active_ids():
+		var A: Dictionary = _agent_by_id[aid]
+		for B in _nearby_agents(A):
+			if B.get("is_player", false):
+				continue                     # 玩家钱冻结(M1)，传闻无意义
+			var c := int(B["inventory"].get("coin", 0))
+			var bid := ""
+			var claim := ""
+			if c >= rich:
+				bid = "W:%s:rich" % B["id"]
+				claim = "%s最近手头挺阔绰" % _name(B)
+			elif c <= 0:
+				bid = "W:%s:broke" % B["id"]
+				claim = "%s最近手头紧巴巴的" % _name(B)
+			if bid != "" and not A["beliefs"].has(bid):
+				A["beliefs"][bid] = {"claim": claim, "subject": String(B["id"]), "source": "__seen__", "via": "seen", "tick": tick_no}
+
+# ── Wave 1b 经济·Ledger 原语（docs/15 §3 原语#5）────────────────────────────
+func _econ_on() -> bool:
+	return not economy.is_empty()
+
+## 金钱增减的【唯一通道】：整数、不足即拒、写 event_log 溯源（type=pay，note=reason）。
+## from/to = agent id 或 "town"（镇库）。守恒由"只此一门"结构保证 → 硬不变量 #34 可机检。
+func transfer(from_id: String, to_id: String, amt: int, reason: String) -> bool:
+	if amt <= 0:
+		return false
+	var from_coin := _coin_of(from_id)
+	if from_coin < amt:
+		return false
+	_set_coin(from_id, from_coin - amt)
+	_set_coin(to_id, _coin_of(to_id) + amt)
+	var ev := _log_event("pay", from_id, to_id, "", true, [], reason)
+	var _e = ev   # 事件仅作账本溯源（不 emit social_event——经济事务非社交）
+	return true
+
+func _coin_of(id: String) -> int:
+	if id == "town":
+		return town_coin
+	var ag: Dictionary = _agent_by_id.get(id, {})
+	return int(ag.get("inventory", {}).get("coin", 0)) if not ag.is_empty() else 0
+
+func _set_coin(id: String, v: int) -> void:
+	if id == "town":
+		town_coin = v
+		return
+	var ag: Dictionary = _agent_by_id.get(id, {})
+	if not ag.is_empty():
+		ag["inventory"]["coin"] = v
+
+## 全镇货币总量（守恒不变量用）。
+func money_total() -> int:
+	var s := town_coin
+	for ag in agents:
+		s += int(ag["inventory"].get("coin", 0))
+	return s
+
 ## 确定性 [0,1) 哈希（字符串→稳定小数；天生立场用）。
 func _hash01(s: String) -> float:
 	var h := 2166136261
@@ -1390,36 +1661,41 @@ func _acceptance_rule(actor: Dictionary, target: Dictionary, action: String, sub
 	var need := float(target["needs"].get("social", 100.0))
 	var jitter := (_rng_at(31, _aid(target)).randf() - 0.5) * 20.0   # 接受由 target 决定 → 用 target 的子流
 	var traits: Array = target.get("persona", {}).get("traits", [])
-	var fac := _faction_term(target, actor)   # S3a：同派系更易接受、跨派系更难（涌现放逐加剧）
+	var fac := _faction_term(target, actor)   # S3a：同派系更易接受、跨派系更难（涌现放逐加剧）——内建修正保持内联(null-ext 等值)
+	# L7 挂点(docs/15 §3 #1)：外置接受修正叠加项。ext=null → 0.0，x+0.0==x(IEEE) → 与既往逐字节一致。
+	# 注：性格短路分支(爱八卦 return true)不叠 extra——modifier 只调阈值和，不推翻性格硬规则。
+	var extra := 0.0
+	if ext != null:
+		extra = float(ext.accept_delta(self, actor, target, action, subject))
 	if action == "discuss":
 		# Deffuant 有界信任：观点差在信任带 ε 内才谈得拢（软门）；差太大 → 拒谈（记一笔）；同派系更谈得拢
 		var diff := absf(float(actor["attitudes"].get(subject, 0.0)) - float(target["attitudes"].get(subject, 0.0)))
-		var okk := (float(target["eps"]) - diff) * 30.0 + aff + st + fac + jitter > _w("accept_discuss", 0.0)
+		var okk := (float(target["eps"]) - diff) * 30.0 + aff + st + fac + jitter + extra > _w("accept_discuss", 0.0)
 		if not okk:
 			refused_by_bound += 1
 		return okk
 	if action == "confide":
-		return aff + st + jitter > _w("accept_confide", -10.0)   # 一般都愿听心事（不叠 fac：吐露是私人信任）
+		return aff + st + jitter + extra > _w("accept_confide", -10.0)   # 一般都愿听心事（不叠 fac：吐露是私人信任）
 	if action == "leak":                                      # 听秘密=收八卦：同 gossip 矜持门
 		if "爱八卦" in traits:
 			return true
 		var reservedl := -15.0 if ("寡言" in traits or "温柔" in traits) else 0.0
-		return aff + reservedl + st + jitter > _w("accept_leak", 0.0)
+		return aff + reservedl + st + jitter + extra > _w("accept_leak", 0.0)
 	if action == "endorse":
-		return aff + st + fac > _w("accept_endorse", -50.0)  # 同派系背书：几乎必接（fac=+K）
+		return aff + st + fac + extra > _w("accept_endorse", -50.0)  # 同派系背书：几乎必接（fac=+K）
 	if action == "aid":
-		return aff + st > _w("accept_aid", -50.0)            # 盟友善意：几乎总收（走自己门，不叠 fac）
+		return aff + st + extra > _w("accept_aid", -50.0)            # 盟友善意：几乎总收（走自己门，不叠 fac）
 	if action == "give":
-		return aff + st + fac > _w("accept_give", -60.0)     # 一般都收礼，除非极度反感/极坏名声
+		return aff + st + fac + extra > _w("accept_give", -60.0)     # 一般都收礼，除非极度反感/极坏名声
 	if action == "gossip" or action == "gossip_rep":
 		if "爱八卦" in traits:
 			return true                                      # 爱八卦者来者不拒
 		var reserved := -15.0 if ("寡言" in traits or "温柔" in traits) else 0.0  # 寡言/温柔者矜持
-		return aff + reserved + st + fac + jitter > _w("accept_gossip", 0.0)
+		return aff + reserved + st + fac + jitter + extra > _w("accept_gossip", 0.0)
 	if action == "invite":
-		return (100.0 - need) * 0.35 + aff + st + fac + jitter > _w("accept_invite", -2.0)   # 约见：缺社交/有好感/好名声/同派系更易答应
+		return (100.0 - need) * 0.35 + aff + st + fac + jitter + extra > _w("accept_invite", -2.0)   # 约见：缺社交/有好感/好名声/同派系更易答应
 	# greet: 对方越缺社交/越有好感/名声越好/同派系越易接受
-	return (100.0 - need) * 0.4 + aff + st + fac + jitter > _w("accept_greet", 0.0)
+	return (100.0 - need) * 0.4 + aff + st + fac + jitter + extra > _w("accept_greet", 0.0)
 
 # ── 关系账本 / belief / 事件账本 / 工具 ─────────────────────────────────────
 func _rel(ag: Dictionary, other_id: String) -> Dictionary:
@@ -1479,6 +1755,22 @@ func _impt(self_ag: Dictionary, other: Dictionary, aff_delta: float, negative: b
 		v += 2
 	return mini(10, v)
 
+# ── 建筑/室内（docs/16 阶段1）：房间=独立 rooms dict 的矩形，_area_at 的孪生纯函数 ───────
+## 返回 pos 所在房间 id（rooms 字典书写序=定序，首个命中；无则 ""）。rooms 是独立 dict，不与 areas 重叠 → 无插入序陷阱。
+func _room_at(pos: Vector2i) -> String:
+	for id in world.get("rooms", {}):
+		var r: Array = world["rooms"][id].get("rect", [0, 0, 0, 0])
+		if pos.x >= int(r[0]) and pos.x < int(r[0]) + int(r[2]) and pos.y >= int(r[1]) and pos.y < int(r[1]) + int(r[3]):
+			return id
+	return ""
+
+## actor 与 target 是否同处一个 enclosed 房间（秘密的私密门；rooms 缺失时调用方走顶层数据门跳过）。
+func _same_enclosed_room(ag: Dictionary, o: Dictionary) -> bool:
+	var rid := String(ag.get("room", ""))
+	if rid == "" or String(o.get("room", "")) != rid:
+		return false
+	return bool(world.get("rooms", {}).get(rid, {}).get("enclosed", false))
+
 func _area_at(pos: Vector2i) -> String:
 	for id in world.get("areas", {}):
 		var a: Dictionary = world["areas"][id]
@@ -1491,6 +1783,7 @@ func _area_at(pos: Vector2i) -> String:
 func _move_agent(ag: Dictionary, newpos: Vector2i) -> void:
 	ag["pos"] = newpos
 	ag["area"] = _area_at(newpos)
+	ag["room"] = _room_at(newpos)   # docs/16：与 area 同址刷新（缺 rooms→""）
 
 ## 同区其他 agent（用缓存 area，去掉 _area_at 的 areas 内循环；遍历仍按 agents 固定序 → 字节一致）。
 func _nearby_agents(ag: Dictionary) -> Array:
@@ -1556,7 +1849,9 @@ func _step_toward(from: Vector2i, to: Vector2i) -> Vector2i:
 	return p
 
 func _name(ag: Dictionary) -> String:
-	return str(ag.get("persona", {}).get("name", ag["id"]))
+	if ag.is_empty():
+		return "?"                     # 空 dict（如社交对象已离场/id 查空）→ 安全占位，不崩
+	return str(ag.get("persona", {}).get("name", ag.get("id", "?")))
 
 func _area_label(pos: Vector2i) -> String:
 	var a := _area_at(pos)

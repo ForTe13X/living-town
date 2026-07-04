@@ -34,6 +34,7 @@ func _ready() -> void:
 	var seed := 20260626
 	var backend := "logic"
 	var spd := 1.0
+	var warmup_days := 0                   # --warmup N：开局前静默推进到第 N 天（录 demo 跳到节日日用）
 	var args := OS.get_cmdline_user_args()
 	for i in args.size():
 		if args[i] == "--backend" and i + 1 < args.size():
@@ -57,9 +58,14 @@ func _ready() -> void:
 		elif args[i] == "--player-demo":
 			_player_mode = true                # 录 demo 用：脚本化玩家 autopilot（确定性按 tick 触发动作）
 			_demo_mode = true
+		elif args[i] == "--warmup" and i + 1 < args.size():
+			warmup_days = int(args[i + 1])     # 录 demo：跳到第 N 天开场（确定，goto_tick 同款重演）
 	AIBackend.backend = backend
 
 	Sim.start_new(seed)
+	if warmup_days > 0:
+		Sim.goto_tick((warmup_days - 1) * int(Sim.TICKS_PER_DAY) + 8)   # 跳到第 N 天开场（节日已在日界 spawn）
+		_selected_id = "ben"                # 录 demo：默认选中木匠(有职业+钱) → 观察台展示经济/职业行
 	Sim.backend = AIBackend   # 窗口模式注入可插拔后端；headless/soak 时 Sim.backend=null 走内置 logic
 	Sim.speed = spd
 	# 启动算力探测：测一发暖决策 → 自适应截止线 + 太慢自动降 logic（docs/11 §12：测 p50→选 路C/logic）
@@ -199,6 +205,7 @@ func _update_status() -> void:
 	elif hh >= 11 and hh < 17: phase = "昼 day"
 	elif hh >= 17 and hh < 21: phase = "暮 evening"
 	var spd := ("×%.0f" % Sim.speed) if Sim.running else "⏸ 暂停"
+	var wx := ("  ·  %s" % Sim.weather_today) if Sim.weather_today != "" else ""   # Wave 1c 天气
 	var meets_active := 0
 	for c in Sim.commitments:
 		if String(c["status"]) == "active":
@@ -219,8 +226,8 @@ func _update_status() -> void:
 					pmeets.append("和%s约在%s(剩%dt)" % [Sim._name(Sim.get_agent(other)), Sim._area_label_id(String(c["area"])), int(c["deadline"]) - Sim.tick_no])
 			ptxt = "\n[color=#ffd700]你：礼物×%d  WASD移动  选中居民后 G打招呼 F送礼 B八卦 Y约见 T理论 P道歉 M调解 C聊天%s[/color]" % [
 				int(pl["inventory"].get("gift", 0)), ("  📌 " + "；".join(pmeets)) if not pmeets.is_empty() else ""]
-	_status.text = "[color=#e6e9f2]小镇有灵 Living Town  ·  第 %d 天 %s %s  ·  %s  ·  NPC %d  ｜  事件 %d  约会 %d(活%d)  冲突 %d(活%d)[/color]%s" % [
-		Sim.day, clock, phase, spd, Sim.agents.size(), Sim.event_log.size(), Sim.commitments.size(), meets_active, Sim.conflicts.size(), conf_active, ptxt]
+	_status.text = "[color=#e6e9f2]小镇有灵 Living Town  ·  第 %d 天 %s %s%s  ·  %s  ·  NPC %d  ｜  事件 %d  约会 %d(活%d)  冲突 %d(活%d)[/color]%s" % [
+		Sim.day, clock, phase, wx, spd, Sim.agents.size(), Sim.event_log.size(), Sim.commitments.size(), meets_active, Sim.conflicts.size(), conf_active, ptxt]
 
 # ── 观察台 / 时间轴 ────────────────────────────────────────────────────────
 func _update_scrubber() -> void:
@@ -284,6 +291,14 @@ func _panel_text() -> String:
 	if opt != null:
 		doing = ("%s→%s" % [str(opt.get("action", "")), Sim._name(Sim.get_agent(String(opt.get("partner", ""))))]) if String(opt.get("kind", "")) == "social" else str(opt.get("action", ""))
 	L.append("当前：[color=#cfe8ff]%s[/color]" % doing)
+	if not Sim.economy.is_empty():
+		L.append("钱：[color=#ffd166]%d 币[/color]" % int(ag["inventory"].get("coin", 0)))   # Wave 1b
+	var _jb: Dictionary = Sim._job_of(_selected_id)
+	if not _jb.is_empty():
+		var _lv := Sim._skill_level(ag, String(_jb.get("action", "")))   # Wave 2c
+		var _sk := ("  熟练 Lv%d" % _lv) if _lv > 0 else ""
+		L.append("职业：[color=#9ad0ff]%s[/color] [color=#9aa0b5](班次 %s · 薪 %d)[/color][color=#ffd166]%s[/color]" % [
+			String(_jb.get("title", "")), "/".join(_jb.get("shift", [])), int(_jb.get("wage", 0)), _sk])   # Wave 2a/2c
 	L.append("")
 	L.append("[color=#cfd3e0]需求[/color]")
 	for n in Sim.needs_def:

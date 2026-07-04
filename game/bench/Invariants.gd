@@ -9,8 +9,8 @@ static func check_all(S, starved: int) -> Array:
 	var log: Array = S.event_log
 	var accepted: Array = []
 	for e in log:
-		if bool(e["accepted"]):
-			accepted.append(e)
+		if bool(e["accepted"]) and not (String(e["type"]) in ["pay", "world"]):
+			accepted.append(e)   # 经济(pay)/世界变更(world)事件不算社交参与——否则 inv2/3 被稀释成空门
 
 	var harmony: bool = String(S.scenario) == ""   # 定向场景(faction/betray/freerider)会扭曲关系/致饿穿 → 豁免和睦不变量
 	var small_n: bool = S.agents.size() <= 12       # 涌现/单源传播类只在设计 N(≤12)硬断言；大 N 单源谣言 fizzle 是现实(docs/12 L4)
@@ -50,8 +50,8 @@ static func check_all(S, starved: int) -> Array:
 	for ag in S.agents:
 		for cid in ag["beliefs"]:
 			var b: Dictionary = ag["beliefs"][cid]
-			if String(b.get("via", "")) == "seed":
-				continue
+			if String(b.get("via", "")) in ["seed", "seen"]:
+				continue   # seed=开局种子 / seen=亲眼所见(阶层 gossip 的财富目击)——一手知识无上游事件,豁免溯源
 			var has_source: bool = S._agent_by_id.has(b.get("source", ""))
 			var has_event := false
 			for e in log:
@@ -321,6 +321,31 @@ static func check_all(S, starved: int) -> Array:
 	for p in S.pacts_index:
 		if String(p["status"]) == "broken" and int(S._agent_by_id[p["a"]]["complementSeen"].get(p["b"], 0)) == 0: pact_e_bad += 1
 	R.append(_chk(33, "I-PACT解体可恢复", pact_e_bad == 0, "complementSeen被清=%d" % pact_e_bad))
+
+	# ── Wave 1b 经济 (34-35，economy.json 缺失时恒过=零扰动) ──
+	var econ_on: bool = not S.economy.is_empty()
+	var neg_coin := 0
+	for ag in S.agents:
+		if int(ag["inventory"].get("coin", 0)) < 0: neg_coin += 1
+	# 34) 金钱守恒：Σagent coin + 镇库 恒等于开局总量（transfer 唯一通道的结构保证，机检兜底）
+	R.append(_chk(34, "金钱守恒", (not econ_on) or int(S.money_total()) == int(S.econ_total0),
+		"总量=%d 基准=%d (应相等)" % [int(S.money_total()), int(S.econ_total0)]))
+	# 35) 货币非负：transfer 不足即拒 → 任何人不可能透支
+	R.append(_chk(35, "货币非负", neg_coin == 0 and S.town_coin >= 0, "负余额agent=%d 镇库=%d" % [neg_coin, int(S.town_coin)]))
+
+	# ── Wave 2b 节日 (36，festivals.json 缺失时恒过) ──
+	# 36) 节日无残留且账实相符：fest_ 对象只在节日进行中存在；spawn-despawn 事件差 == 现存 fest 对象数
+	var fest_now := 0
+	for oid in S.world.get("objects", {}):
+		if String(oid).begins_with("fest_"): fest_now += 1
+	var sp_ev := 0
+	var dsp_ev := 0
+	for e in log:
+		if String(e["type"]) == "world":
+			if String(e.get("note", "")) == "spawn": sp_ev += 1
+			elif String(e.get("note", "")) == "despawn": dsp_ev += 1
+	var fest_ok: bool = (fest_now == 0 or String(S.festival_active) != "") and (sp_ev - dsp_ev == fest_now)
+	R.append(_chk(36, "节日对象配对无残留", fest_ok, "现存=%d 活动=%s spawn=%d despawn=%d" % [fest_now, String(S.festival_active), sp_ev, dsp_ev]))
 	return R
 
 static func _chk(id: int, name: String, ok: bool, detail: String) -> Dictionary:
@@ -332,7 +357,7 @@ static func _chk(id: int, name: String, ok: bool, detail: String) -> Dictionary:
 ##  · 软（涌现统计）= 需要活动才会显现的量（社交发生、分化、放逐锐利度、观点演化…），
 ##    已按 场景/大N 豁免；激进 LOD 下远端=背景群演，软不变量按设计会漂。
 ## 消费方：激进 LOD 门只查硬不变量（split_fails().hard==0）；soak/Harness 仍查全 33 条。
-const HARD_IDS := [1, 6, 7, 9, 10, 12, 13, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33]
+const HARD_IDS := [1, 6, 7, 9, 10, 12, 13, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]
 
 static func split_fails(S, starved: int) -> Dictionary:
 	var hard := 0

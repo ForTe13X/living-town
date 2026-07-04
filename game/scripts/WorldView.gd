@@ -254,6 +254,16 @@ func _draw() -> void:
 		var ac := Art.area_color(area); ac.a = 0.32
 		draw_rect(rect, ac, true)
 		draw_string(Art.font(), Vector2(rect.position.x + 6, rect.position.y + 20), str(a.get("label", area)), HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color(1, 1, 1, 0.55))
+	# 室内房间（docs/16 阶段1）：enclosed 房间画木地板色 + 墙框 + 名，让"关起门的私密空间"可见。纯渲染。
+	for rid in Sim.world.get("rooms", {}):
+		var rm: Dictionary = Sim.world["rooms"][rid]
+		var rr: Array = rm.get("rect", [0, 0, 0, 0])
+		var rrect := Rect2(rr[0] * T, rr[1] * T, rr[2] * T, rr[3] * T)
+		draw_rect(rrect, Color("#6b4a2f", 0.42), true)                 # 木地板暖色
+		var wall := Color("#caa46a") if bool(rm.get("enclosed", false)) else Color(1, 1, 1, 0.5)
+		draw_rect(rrect, wall, false, 2.5)                             # 墙框（enclosed 更亮）
+		var nm := "🚪" if bool(rm.get("enclosed", false)) else ""
+		draw_string(Art.font(), rrect.position + Vector2(5, 16), nm + str(rm.get("type", rid)), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("#ffe0b0"))
 	# 网格线
 	for x in range(w + 1):
 		draw_line(Vector2(x * T, 0), Vector2(x * T, h * T), Art.grid_line, 1.0)
@@ -291,6 +301,7 @@ func _draw() -> void:
 		match slot:
 			"bed": _draw_bed(base)
 			"stove": _draw_stove(base)
+			"fest": _draw_festival(base)   # Wave 2b：节日机会地形（灯笼，暖光）
 			_:
 				var otex := Art.object_tex(slot)
 				if otex != null:
@@ -457,6 +468,23 @@ func _draw_stove(base: Vector2) -> void:
 	draw_circle(Vector2(x + w - 8, y + 8), 1.6, Color("#ffd166"))
 	draw_rect(Rect2(x + 3, y + h - 7, w - 6, 5), Color("#26262d"), true)        # 烤箱门
 	draw_rect(Rect2(x, y, w, h), Color(0, 0, 0, 0.35), false, 1.5)
+
+## Wave 2b 节日灯笼（暖光晕 + 灯身 + 挑杆），一眼可辨"这里在办节日"。纯渲染。
+func _draw_festival(base: Vector2) -> void:
+	var c := base + Vector2(T * 0.5, T * 0.5)
+	# 呼吸光晕（用 tick 相位做确定性明暗，不引 RNG）
+	var pulse := 0.35 + 0.12 * sin(float(Sim.tick_no) * 0.15)
+	draw_circle(c, T * 0.55, Color(1.0, 0.72, 0.30, pulse * 0.5))
+	draw_circle(c, T * 0.34, Color(1.0, 0.80, 0.40, pulse))
+	# 挑杆
+	draw_line(base + Vector2(T * 0.5, 2), c + Vector2(0, -T * 0.18), Color("#6b4a2a"), 2.0)
+	# 灯身（红灯笼）
+	var lw := T * 0.30
+	var lh := T * 0.34
+	draw_rect(Rect2(c.x - lw * 0.5, c.y - lh * 0.35, lw, lh), Color("#d8443a"), true)
+	draw_rect(Rect2(c.x - lw * 0.5, c.y - lh * 0.35, lw, lh), Color("#ffd88a"), false, 1.5)
+	draw_line(Vector2(c.x, c.y + lh * 0.55), Vector2(c.x, c.y + lh * 0.78), Color("#ffd166"), 2.0)  # 流苏
+	draw_string(Art.font(), c + Vector2(-7, -lh * 0.55 - 4), "灯会", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("#ffe08a"))
 
 func _draw_urgent_need(center: Vector2, ag: Dictionary) -> void:
 	var worst := 100.0

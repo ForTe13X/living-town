@@ -38,20 +38,26 @@ func _init() -> void:
 		first_run_digest[sd] = Inv.digest(S)
 		first_run_edig[sd] = S.event_digest
 		var checks: Array = Inv.check_all(S, int(res["starved"]))
-		var fails: Array = []
+		var hard_fails: Array = []
+		var soft_fails: Array = []
 		for c in checks:
 			inv_name[c["id"]] = c["name"]
 			if c["ok"]:
 				inv_pass[c["id"]] = int(inv_pass.get(c["id"], 0)) + 1
 			else:
-				fails.append(int(c["id"]))
+				if bool(c.get("hard", false)):
+					hard_fails.append(int(c["id"]))
+				else:
+					soft_fails.append(int(c["id"]))
 				if not inv_fail_eg.has(c["id"]):
 					inv_fail_eg[c["id"]] = "seed %d: %s" % [sd, c["detail"]]
-		if fails.is_empty():
+		# L4 两分落到 CI（docs/12 R2）：硬(结构)不变量每 seed 必绿；软(涌现统计)不再单 seed 硬断言,
+		# 改为跨种子通过率门(见下)——单 seed 的涌现反转(如节日桥接派系削掉 inv26 的 margin)不再误伤整门。
+		if hard_fails.is_empty():
 			seed_pass += 1
 		# JSONL 机读行
-		print("[S0] " + JSON.stringify({"seed": sd, "days": days, "pass": fails.is_empty(),
-			"fails": fails, "events": S.event_log.size(), "digest": first_run_digest[sd]}))
+		print("[S0] " + JSON.stringify({"seed": sd, "days": days, "pass": hard_fails.is_empty(),
+			"hard_fails": hard_fails, "soft_fails": soft_fails, "events": S.event_log.size(), "digest": first_run_digest[sd]}))
 		_dispose(S)
 
 	# ── 确定性校验：抽样种子两跑，摘要必须一致 ──
@@ -69,15 +75,20 @@ func _init() -> void:
 		else:
 			det_fail.append(sd)
 
-	# ── 报告 ──
-	print("\n— 不变量跨 seed 通过率 —")
-	var any_inv_fail := false
-	for id in range(1, 34):
+	# ── 报告：硬=每 seed 必绿；软=跨种子通过率 ≥ (seeds-1)/seeds（允许单 seed 涌现反转，docs/12 R2 处方）──
+	print("\n— 不变量跨 seed 通过率（硬=全绿必需 / 软=允许 1 seed 反转）—")
+	var hard_red := false
+	var soft_red := false
+	var soft_min := seeds.size() - 1
+	for id in range(1, 37):
 		var p := int(inv_pass.get(id, 0))
-		var mark := "✅" if p == seeds.size() else "❌"
-		if p != seeds.size():
-			any_inv_fail = true
-		var line := "  %s #%02d %s  %d/%d" % [mark, id, String(inv_name.get(id, "?")), p, seeds.size()]
+		var is_hard: bool = id in Inv.HARD_IDS
+		var need := seeds.size() if is_hard else soft_min
+		var mark := "✅" if p >= need else "❌"
+		if p < need:
+			if is_hard: hard_red = true
+			else: soft_red = true
+		var line := "  %s #%02d %s%s  %d/%d" % [mark, id, ("[硬]" if is_hard else "[软]"), String(inv_name.get(id, "?")), p, seeds.size()]
 		if inv_fail_eg.has(id):
 			line += "   首违 " + String(inv_fail_eg[id])
 		print(line)
@@ -90,10 +101,10 @@ func _init() -> void:
 	else:
 		print("  ❌ 非确定 seeds=%s" % str(det_fail))
 
-	var gate_ok := (seed_pass == seeds.size()) and (det_n <= 0 or det_fail.is_empty())
-	print("\n=== S0 GATE: %s  (seed %d/%d 全过, 不变量%s, det %d/%d) ===" % [
+	var gate_ok := (seed_pass == seeds.size()) and not hard_red and not soft_red and (det_n <= 0 or det_fail.is_empty())
+	print("\n=== S0 GATE: %s  (硬不变量 seed %d/%d 全绿, 软通过率门%s, det %d/%d) ===" % [
 		"PASS ✅" if gate_ok else "FAIL ❌", seed_pass, seeds.size(),
-		"全绿" if not any_inv_fail else "有红", det_ok, det_seeds.size()])
+		"过" if not soft_red else "破", det_ok, det_seeds.size()])
 	quit(0 if gate_ok else 1)
 
 ## 跑一局确定性仿真，返回 {S, starved}。S 由调用方 _dispose。

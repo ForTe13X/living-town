@@ -1,0 +1,10 @@
+{
+  "_doc": "Wave 1b 经济最小闭环（docs/15 §3）。缺此文件=经济关闭(引擎逐字节不变)。钱只造分化/戏剧不造饿死：付不起照吃(meals_free)。闭环：吃饭付费入镇库 → 做活镇库发薪。守恒=硬不变量#34(transfer 唯一通道)。",
+  "start_coin": 12,
+  "town_start": 60,
+  "prices": { "吃饭": 2 },
+  "wages":  { "做活": 3 },
+  "poor_line": 6,
+  "work_urgency": 8.0,
+  "wealth_gossip": { "rich_line": 6 }
+}

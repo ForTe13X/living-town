@@ -1,0 +1,6 @@
+{
+  "_doc": "Wave 2c 技能成长（docs/15 §3）。缺此文件=无技能(引擎逐字节不变)。本职动作每完成 per_level 次=熟练+1级(封顶 max_level)，每级 wage_bonus 加薪→熟练工挣更多→深化贫富分化。升级写里程碑记忆(voice grounding)。单调整数、零 RNG、确定。",
+  "per_level": 12,
+  "max_level": 5,
+  "wage_bonus": 1
+}

@@ -64,6 +64,14 @@ func _init() -> void:
 	var starved := 0            # 任一需求触底的 tick 计数
 	var day_need := {}          # day -> {need -> [sum,cnt]}（need 均值随天数）
 	var phase_serve := {}       # phase 标签 -> {need -> cnt}（各时段正被满足的需求）
+	var wx_days := {}           # Wave 1c 诊断：天气 -> 天数
+	var wx_out := {}            # 天气 -> [户外动作 agent-tick, 全物件动作 agent-tick]（坏天户外占比应降="活着"信号）
+	var fest_days := 0          # Wave 2b 诊断：节日天数
+	var fest_att := 0           # 节日对象上的 agent-tick（人群聚拢="活着"信号）
+	var fest_social := 0        # 节日当天的已接受社交事件数（密度加速器信号）
+	var norm_social := 0        # 非节日天的
+	var _prev_ev := 0
+	var _last_day := -1
 	var _t_loop := Time.get_ticks_msec()   # ⏱ 分相计时（仅诊断,不入 sim 状态）
 	for t in range(total):
 		S.tick()
@@ -73,9 +81,54 @@ func _init() -> void:
 					starved += 1
 		if _trace:
 			_sample_rhythm(S, day_need, phase_serve)
+		if S.weather_today != "":
+			if S.day != _last_day:
+				_last_day = S.day
+				wx_days[S.weather_today] = int(wx_days.get(S.weather_today, 0)) + 1
+				if S.festival_active != "":
+					fest_days += 1
+			var acc: Array = wx_out.get(S.weather_today, [0, 0])
+			for ag in S.agents:
+				var opt = ag.get("option")
+				if opt != null and String(opt.get("kind", "")) == "object":
+					acc[1] = int(acc[1]) + 1
+					if String(opt.get("action", "")) in ["晒太阳", "玩耍"]:
+						acc[0] = int(acc[0]) + 1
+					if String(opt.get("target", "")).begins_with("fest_"):
+						fest_att += 1
+			wx_out[S.weather_today] = acc
+		# 节日 vs 平日社交密度（新接受事件按当日归类）
+		var _ev_now: int = S.event_log.size()
+		if _ev_now > _prev_ev:
+			for i in range(_prev_ev, _ev_now):
+				var e: Dictionary = S.event_log[i]
+				if bool(e["accepted"]) and not (String(e["type"]) in ["pay", "world"]):
+					if S.festival_active != "": fest_social += 1
+					else: norm_social += 1
+			_prev_ev = _ev_now
 
 	var _loop_ms := Time.get_ticks_msec() - _t_loop
 	print("⏱ tick-loop=%d ms (%.3f ms/tick, N=%d)" % [_loop_ms, float(_loop_ms) / float(maxi(1, total)), S.agents.size()])
+	if not wx_days.is_empty():
+		var parts := []
+		for w in ["晴", "阴", "雨"]:
+			if wx_days.has(w):
+				var acc2: Array = wx_out.get(w, [0, 1])
+				parts.append("%s×%d天(户外%.0f%%)" % [w, int(wx_days[w]), 100.0 * float(acc2[0]) / float(maxi(1, int(acc2[1])))])
+		print("天气: " + "  ".join(parts))
+	if not S.world.get("rooms", {}).is_empty():
+		var conf_n := 0
+		var leak_n := 0
+		for e in S.event_log:
+			if String(e["type"]) == "confide" and bool(e["accepted"]): conf_n += 1
+			elif String(e["type"]) == "leak" and bool(e["accepted"]): leak_n += 1
+		print("室内隐私: rooms=%d(enclosed 私密门开)  吐露心事=%d  说漏秘密=%d （应仍>0=未因隐私门饿死）" % [
+			S.world["rooms"].size(), conf_n, leak_n])
+	if fest_days > 0:
+		var fd := float(maxi(1, fest_days))
+		var nd := float(maxi(1, days - fest_days))
+		print("节日: %d 天  灯会人气=%d agent-tick  社交密度 节日%.1f/天 vs 平日%.1f/天" % [
+			fest_days, fest_att, float(fest_social) / fd, float(norm_social) / nd])
 	if _trace:
 		_report_rhythm(S, days, day_need, phase_serve)
 	var code := _report_and_check(S, days, seed, starved)
@@ -164,6 +217,33 @@ func _report_and_check(S, days: int, seed: int, starved: int) -> int:
 
 	# 系统指标（LOD ablation 用：lod off/on 下 PI/cascade/Gini 应分布不漂）
 	print("系统指标: PI %.3f  cascade %d  Gini %.3f" % [Met.polarization(S), Met.cascade_max(S), Met.gini_acceptance(S)])
+	# Wave 1b 经济诊断（economy.json 缺失则跳过）
+	if not S.economy.is_empty():
+		var coins := []
+		for ag in S.agents:
+			coins.append("%s=%d" % [S._name(ag), int(ag["inventory"].get("coin", 0))])
+		print("经济: 镇库=%d  付费餐=%d 免费餐=%d 发薪=%d 欠薪=%d  | %s  (Σ=%d 基准=%d)" % [
+			S.town_coin, S.econ_stats["meals_paid"], S.econ_stats["meals_free"],
+			S.econ_stats["wages_paid"], S.econ_stats["wages_skipped"], " ".join(coins), S.money_total(), S.econ_total0])
+		# Wave 2c 技能诊断（skills.json 缺失则跳过）
+		if not S.skills.is_empty():
+			var sk := []
+			for ag in S.agents:
+				var jb: Dictionary = S._job_of(String(ag["id"]))
+				if not jb.is_empty():
+					sk.append("%s:%s Lv%d" % [S._name(ag), String(jb.get("title", "")), S._skill_level(ag, String(jb.get("action", "")))])
+			if not sk.is_empty():
+				print("技能: " + "  ".join(sk) + " （熟练工工资更高→深化分化）")
+		# 阶层 gossip 诊断：一手目击(seen) vs 二手传闻(gossip 传开的 W:*)
+		var seen_n := 0
+		var heard_n := 0
+		for ag in S.agents:
+			for cid in ag["beliefs"]:
+				if String(cid).begins_with("W:"):
+					if String(ag["beliefs"][cid].get("via", "")) == "seen": seen_n += 1
+					else: heard_n += 1
+		if seen_n + heard_n > 0:
+			print("阶层传闻: 目击 %d 条 · 听说 %d 条（二手=gossip 管线传开的）" % [seen_n, heard_n])
 
 	# ── 不变量（单一真相源 bench/Invariants.gd；与多 seed Harness 共用，避免逻辑漂移）──
 	var _tc := Time.get_ticks_msec()

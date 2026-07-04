@@ -1,0 +1,11 @@
+{
+  "_doc": "Wave 2a 职业（docs/15 §3）。缺此文件=无职业(引擎逐字节不变)。holder 在班次相位做本职动作拿职位工资(差异化→贫富分化)，其余人做同动作拿 economy.wages 零工价。extra_advertises=职业自带工位(随本文件门控注入 map，OFF 时地图原样)。shift 相位名对应 rhythm.json phases。",
+  "jobs": {
+    "aria": { "title": "咖啡师", "action": "看摊", "wage": 4, "shift": ["dawn", "day"] },
+    "ben":  { "title": "木匠",   "action": "做活", "wage": 5, "shift": ["day", "dusk"] },
+    "dan":  { "title": "杂役",   "action": "做活", "wage": 3, "shift": ["dawn", "day"] }
+  },
+  "extra_advertises": [
+    { "object": "counter_1", "action": "看摊", "need": "fun", "amount": 20, "duration": 24 }
+  ]
+}
