@@ -1,0 +1,91 @@
+{
+  "agents": [
+    {
+      "attitudes": {
+        "cafe_expand": 1.0
+      },
+      "beliefs": [
+        {
+          "claim": "阿本不愿意支持咖啡馆扩建是因为他对变化很抵触。",
+          "id": "S_aria",
+          "secret": false,
+          "subject": "ben"
+        }
+      ],
+      "id": "aria",
+      "relationships": {
+        "ben": {
+          "affinity": -20.0,
+          "resentment": 30.0,
+          "standing": -10.0,
+          "trust": 0.0
+        }
+      }
+    },
+    {
+      "attitudes": {
+        "night_market": -1.0
+      },
+      "id": "ben",
+      "relationships": {
+        "aria": {
+          "affinity": -15.0,
+          "resentment": 20.0,
+          "standing": 10.0,
+          "trust": 0.0
+        }
+      }
+    },
+    {
+      "beliefs": [
+        {
+          "claim": "我一直感到很孤独，希望有人能理解我。",
+          "id": "S_coco",
+          "secret": true,
+          "subject": "coco"
+        }
+      ],
+      "id": "coco"
+    },
+    {
+      "attitudes": {
+        "old_tales": 1.0
+      },
+      "id": "dan",
+      "relationships": {
+        "evy": {
+          "affinity": 50.0,
+          "resentment": 0.0,
+          "standing": 60.0,
+          "trust": 80.0
+        }
+      }
+    },
+    {
+      "attitudes": {
+        "cafe_expand": -1.0
+      },
+      "id": "evy",
+      "relationships": {
+        "fei": {
+          "affinity": 30.0,
+          "resentment": 10.0,
+          "standing": 20.0,
+          "trust": 40.0
+        }
+      }
+    },
+    {
+      "beliefs": [
+        {
+          "claim": "小薇对咖啡馆扩建的看法是出于她自己的利益。",
+          "id": "R_fei",
+          "secret": false,
+          "subject": "evy"
+        }
+      ],
+      "id": "fei"
+    }
+  ],
+  "harmony": false
+}

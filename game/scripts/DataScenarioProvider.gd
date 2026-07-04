@@ -50,3 +50,17 @@ func seed(S: Object) -> void:
 			for k in patch["relationships"][oid]:
 				if rr.has(k):
 					rr[k] = float(patch["relationships"][oid][k])
+		# 70B 编剧扩展：种信念——谣言(经 gossip 扩散)或自持秘密(喂 confide 秘密博弈)。via=seed 走秘密专道(#21 允许)。
+		# 确定性：只按 JSON 设值、via 固定、无 RNG。subject/owner 缺省=本人；已存在同 id 则跳过。
+		for bel in patch.get("beliefs", []):
+			var bd: Dictionary = bel if bel is Dictionary else {}
+			var bid := String(bd.get("id", ""))
+			if bid == "" or ag["beliefs"].has(bid):
+				continue
+			var rec := {"claim": String(bd.get("claim", "")), "subject": String(bd.get("subject", aid)),
+				"source": "__seed__", "via": "seed", "tick": 0}
+			if bool(bd.get("secret", false)):
+				rec["secret"] = true
+				rec["owner"] = aid            # V1：仅自持秘密(owner=self)，confidedBy 空；转述由引擎自演
+				rec["confidedBy"] = {}
+			ag["beliefs"][bid] = rec

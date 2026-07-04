@@ -1,0 +1,47 @@
+{
+  "agents": [
+    {
+      "attitudes": {
+        "cafe_expand": 0.9
+      },
+      "id": "aria",
+      "relationships": {
+        "ben": {
+          "affinity": -25.0,
+          "resentment": 14.0,
+          "standing": -3.0
+        }
+      }
+    },
+    {
+      "attitudes": {
+        "cafe_expand": -0.85
+      },
+      "id": "ben",
+      "relationships": {
+        "aria": {
+          "affinity": -20.0,
+          "resentment": 10.0
+        }
+      }
+    },
+    {
+      "beliefs": [
+        {
+          "claim": "可可偷偷记着一笔没跟人说的旧账",
+          "id": "S_mock_coco",
+          "secret": true,
+          "subject": "coco"
+        }
+      ],
+      "id": "coco"
+    },
+    {
+      "attitudes": {
+        "night_market": 0.7
+      },
+      "id": "dan"
+    }
+  ],
+  "harmony": true
+}
