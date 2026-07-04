@@ -16,3 +16,6 @@ build/
 # Godot editor import cache (regenerated on editor open)
 *.import
 *.uid
+
+# Godot Android gradle build template (editor re-installs via "Install Android Build Template")
+game/android/

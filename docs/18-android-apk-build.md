@@ -21,7 +21,7 @@
 ## 现状（2026-07-04 本次做到哪）
 **工具链已由我装好并验证齐全**：JDK 17（Temurin）、Android SDK（platform-tools + build-tools;34.0.0 + platforms;android-34，adb/apksigner 都在）、Godot 4.6.2 导出模板、debug keystore、editor settings 里 SDK/Java 路径已填。arm64 安卓 SLM 库 + gdextension 条目 + 安卓模型路径都接好了，`Android` 导出预设也写好了（`game/export_presets.cfg`，arm64-only、排除桌面库）。
 
-**但 headless CLI 导出卡住了**：`godot --headless --export-debug "Android"` 反复报一个**空的**「配置错误」（"Cannot export project with preset Android due to configuration errors:" 后面没有任何具体行），关掉签名还会 segfault。这是 Godot headless 安卓导出侧的坑，本环境**无 GUI 编辑器**无法看到/交互修复真正的配置校验项——**这最后一步得在你机器的 Godot 编辑器 GUI 里点一下完成**（几秒钟的事，工具链我都铺好了）。
+**但 headless CLI 导出卡死在一个查不出的坑**：`godot --headless --export-debug "Android"` 反复报一个**空的**「配置错误」（"Cannot export project with preset Android due to configuration errors:" 后面**没有任何具体行**）。我把能试的都试遍了，全是同一个空错误：填好 SDK/Java 路径、keystore 就位、apksigner/adb 齐全、**去掉 nobodywho 扩展**、**关签名（还 segfault）**、**装了 Android Build Template + `use_gradle_build=true`**、**补装 SDK 35 + build-tools 35**（消掉了"target SDK 不匹配"的告警但错误依旧）。结论：这是 Godot **headless** 安卓导出的坑，那个空错误只有 **GUI 编辑器的导出对话框**才会把真正缺的校验项显出来。本环境无 GUI → **这一步得在你机器的 Godot 编辑器里完成**（工具链 + 预设 + 扩展 + 模型路径我都铺好了，就差 GUI 点一下）。预设已设 `use_gradle_build=true`、Android Build Template 也在（`game/android/`，被 gitignore，编辑器会按需重装）。
 
 ## 构建（在你机器的 Godot 4.6.2 编辑器 GUI 里）
 1. 用 Godot 4.6.2 打开 `game/` 工程。
