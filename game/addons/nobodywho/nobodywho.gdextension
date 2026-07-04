@@ -1,7 +1,7 @@
 [configuration]
 entry_symbol = "gdext_rust_init"
 compatibility_minimum = 4.5
-reloadable = true
+reloadable = false
 
 [libraries]
 ; debug 也指向 release（编辑器/headless 二进制按 debug 解析；省去大体积 debug 库）。

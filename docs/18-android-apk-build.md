@@ -18,6 +18,21 @@
 
 `tools/build_android.ps1` 把 2–4 + 导出串起来（设 `ANDROID_HOME`/`JAVA_HOME`、写 editor settings 的 SDK/keystore 路径、跑 `godot --headless --export-debug "Android"`）。
 
+## ★★★ APK 已产出（2026-07-04，headless 一把过）
+
+`build/out/livingtown.apk`（**117.7 MB**，arm64-v8a，签名 `CN=Android Debug`，package `com.forte13x.livingtown`，label「小镇有灵 Living Town」，minSdk 24 / targetSdk 35）。`lib/arm64-v8a/` 含 `libgodot_android.so`(引擎) + **`libnobodywho-godot-aarch64-linux-android-release.so`(端上 LLM)** + `libc++_shared.so`。**纯 headless CLI 产出，无需 GUI。**
+
+**制胜配方（那个空配置错误的真凶 + 全部修法，按序）**：
+1. **`project.godot` 开 `[rendering] textures/vram_compression/import_etc2_astc=true`**——**这才是空错误的真凶**：`has_valid_project_configuration()`（export_plugin.cpp）未开此项时把 valid 置 false 却【不落任何错误文字】（Godot **issue #89910**，4.7 才补文字，4.6.2 留空）。安卓导出必需。开后**删 `game/.godot/imported` 强制重导**（`--headless --editor --quit-after 2000`）生成 ETC2/ASTC 纹理变体。
+2. **`addons/nobodywho/nobodywho.gdextension` 设 `reloadable = false`**——`reloadable=true` 时 Godot 在 Windows 上把 dll 复制成 `~` 临时副本再加载、复制失败 → 另一路空错误/segfault（issue #107089 / #66231）。headless 不需热重载。
+3. **装 `build-tools;35.0.1`**——Build Template `config.gradle` 写死 `buildTools '35.0.1'`；只装 34/35.0.0 会报"build tools 与 Target SDK 不匹配"。
+4. **`use_gradle_build=true` + 装 Android Build Template**（GDExtension 原生库走自定义 gradle 构建；`--headless --editor --quit` 或从 export_templates 的 android_source.zip 解到 `game/android/build/`，`.build_version`="4.6.2.stable"）。
+5. **导出**：`godot --headless --export-debug "Android" out.apk`（gradle 首跑 ~4-6 分钟拉依赖，**别用 2 分钟超时误判卡死**；保持 `package/signed=true`——关签名会 segfault）。
+
+装机：`adb install -r build/out/livingtown.apk`。端上 LLM：把一个 gguf 侧载到 `user://model.gguf`（`adb push <model>.gguf /storage/emulated/0/Android/data/com.forte13x.livingtown/files/model.gguf`）；缺模型自动降 logic 地板，镇子照跑。**（引擎侧全绿；端上渲染/SLM 推理以你设备实测为准。）**
+
+---
+
 ## 现状（2026-07-04 本次做到哪）
 **工具链已由我装好并验证齐全**：JDK 17（Temurin）、Android SDK（platform-tools + build-tools;34.0.0 + platforms;android-34，adb/apksigner 都在）、Godot 4.6.2 导出模板、debug keystore、editor settings 里 SDK/Java 路径已填。arm64 安卓 SLM 库 + gdextension 条目 + 安卓模型路径都接好了，`Android` 导出预设也写好了（`game/export_presets.cfg`，arm64-only、排除桌面库）。
 
