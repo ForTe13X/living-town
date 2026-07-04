@@ -9,3 +9,6 @@ game/.godot/
 # NobodyWho GDExtension binaries (~140MB) — install from upstream release (see README setup note)
 game/addons/nobodywho/*.dll
 game/addons/nobodywho/*.so
+
+# Android build toolchain + downloads + APK output (see docs/18)
+build/

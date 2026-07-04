@@ -117,10 +117,18 @@ func _budget_gate(id: String, agent: Dictionary) -> bool:
 func _ensure_slm_model() -> Object:
 	if _slm_model == null and ClassDB.class_exists("NobodyWhoModel"):
 		_slm_model = ClassDB.instantiate("NobodyWhoModel")
-		_slm_model.set("model_path", slm_model_path)
+		_slm_model.set("model_path", _resolve_model_path())
 		_slm_model.set("use_gpu_if_available", slm_use_gpu)
 		add_child(_slm_model)
 	return _slm_model
+
+## NobodyWho/llama.cpp 需要能 mmap 的【真实文件系统路径】。安卓上 res:// 在 PCK 内不是真实文件 →
+## 改用 user://model.gguf（安卓映射到应用外部 files 目录=真实路径）；用户把一个 gguf 侧载到那里即可，
+## 缺文件则加载失败→算力探针超时→自动降确定性 logic（镇子照常运转）。桌面沿用原 res:// 行为不变。
+func _resolve_model_path() -> String:
+	if OS.has_feature("android"):
+		return ProjectSettings.globalize_path("user://model.gguf")
+	return slm_model_path
 
 # ── 启动算力探测（测一发暖决策 → 分档 + 自适应截止线 + 太慢自动降 logic）────────────
 ## 实测依据(docs/11 §12)：现代机决策 1–5s 都在 12s 线内；>~8s 即不实用 → 降确定性 logic。

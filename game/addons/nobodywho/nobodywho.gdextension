@@ -10,6 +10,9 @@ linux.debug.x86_64 =     "res://addons/nobodywho/libnobodywho-godot-x86_64-unkno
 linux.release.x86_64 =   "res://addons/nobodywho/libnobodywho-godot-x86_64-unknown-linux-gnu-release.so"
 windows.debug.x86_64 =   "res://addons/nobodywho/libnobodywho-godot-x86_64-pc-windows-msvc-release.dll"
 windows.release.x86_64 = "res://addons/nobodywho/libnobodywho-godot-x86_64-pc-windows-msvc-release.dll"
+; Android arm64（NobodyWho v9.4.0 官方安卓库；debug 也指向 release 省体积）——骁龙 8 Elite 端上 SLM
+android.debug.arm64 =    "res://addons/nobodywho/libnobodywho-godot-aarch64-linux-android-release.so"
+android.release.arm64 =  "res://addons/nobodywho/libnobodywho-godot-aarch64-linux-android-release.so"
 
 [icons]
 NobodyWhoModel =            "res://addons/nobodywho/icon.svg"
