@@ -24,12 +24,14 @@ func font() -> Font:
 	if _font != null:
 		return _font
 	var path := "res://assets/fonts/cjk.ttf"
-	if FileAccess.file_exists(path):
+	if ResourceLoader.exists(path):                 # 导入的 FontFile：导出 PCK 里裸 .ttf 被剥离，只剩它；load() 走 .import 重映射取到
+		_font = load(path) as Font
+	elif FileAccess.file_exists(path):              # 未导入的裸 .ttf（编辑器/未导入工程）
 		var f := FontFile.new()
 		f.data = FileAccess.get_file_as_bytes(path)
 		_font = f
-	else:
-		_font = ThemeDB.fallback_font
+	if _font == null:
+		_font = ThemeDB.fallback_font               # 都没有 → 豆腐块占位
 	return _font
 
 ## ── CC0 像素资产（Puny World / Puny Characters，见 assets/art/library/*/LICENSE.txt）──
@@ -43,7 +45,9 @@ func tex(path: String) -> Texture2D:
 	if _tex_cache.has(path):
 		return _tex_cache[path]
 	var t: Texture2D = null
-	if FileAccess.file_exists(path):
+	if ResourceLoader.exists(path):                 # 导入的 .ctex：导出 PCK 里裸 png 被剥离、只剩它；load() 走 .import 重映射取到（编辑器同理）
+		t = load(path) as Texture2D
+	elif FileAccess.file_exists(path):              # 未导入的裸 png（pro/ 运行时覆盖等）→ 直接解码
 		var img := Image.new()
 		if img.load(path) == OK:
 			t = ImageTexture.create_from_image(img)
@@ -57,34 +61,25 @@ func ground_tex() -> Texture2D:
 func agent_tex(sprite_name: String) -> Texture2D:
 	if sprite_name == "":
 		return null
-	# 三级回退：pro/ 覆盖 > 自带 png
-	var pro := "res://assets/art/pro/%s.png" % sprite_name
-	if FileAccess.file_exists(pro):
-		return tex(pro)
-	return tex(CHAR_DIR + sprite_name + ".png")
+	# 三级回退：pro/ 覆盖 > 自带 png（tex() 内部判存在，缺则返回 null）
+	var pro := tex("res://assets/art/pro/%s.png" % sprite_name)
+	return pro if pro != null else tex(CHAR_DIR + sprite_name + ".png")
 
 ## 社交事件 emote 图标（greet/give/gossip/invite/meet_fulfilled/meet_broken/conflict/confront/apologize_ok/apologize_no）
 func emote_tex(event_key: String) -> Texture2D:
-	var p := "res://assets/art/emote/%s.png" % event_key
-	return tex(p) if FileAccess.file_exists(p) else null
+	return tex("res://assets/art/emote/%s.png" % event_key)
 
 ## 物件精灵（slot 取自 object id 前缀，如 bench/bath/counter/desk/arcade）；缺则 null → 渲染层程序化兜底。
 func object_tex(slot: String) -> Texture2D:
-	var pro := "res://assets/art/pro/obj_%s.png" % slot
-	if FileAccess.file_exists(pro):
-		return tex(pro)
-	var p := "res://assets/art/obj/%s.png" % slot
-	return tex(p) if FileAccess.file_exists(p) else null
+	var pro := tex("res://assets/art/pro/obj_%s.png" % slot)
+	return pro if pro != null else tex("res://assets/art/obj/%s.png" % slot)
 
 ## 地形/装饰/建筑瓦片（来自 overworld tileset 切片，视觉大改用）。缺则 null。
 func terrain_tex(name: String) -> Texture2D:
-	var p := "res://assets/art/terrain/%s.png" % name
-	return tex(p) if FileAccess.file_exists(p) else null
+	return tex("res://assets/art/terrain/%s.png" % name)
 
 func decor_tex(name: String) -> Texture2D:
-	var p := "res://assets/art/decor/%s.png" % name
-	return tex(p) if FileAccess.file_exists(p) else null
+	return tex("res://assets/art/decor/%s.png" % name)
 
 func building_tex(name: String) -> Texture2D:
-	var p := "res://assets/art/building/%s.png" % name
-	return tex(p) if FileAccess.file_exists(p) else null
+	return tex("res://assets/art/building/%s.png" % name)

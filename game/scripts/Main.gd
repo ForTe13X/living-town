@@ -24,6 +24,7 @@ var _demo_steps: Array = []           # [{type:walk_to|select|act|chat|wait, ...
 var _demo_i := 0
 var _chat_in: LineEdit                # 玩家→NPC 对话输入框
 var _backend_btn: Button              # 后端切换按钮（手机无 CLI：点按在 logic/slm/… 间轮换；桌面也可点）
+var _shot_path := ""                  # --shot <abs.png>：渲一帧存图退出（dev 验证/出图；需真 framebuffer=Xvfb 或带窗口，纯 --headless 得空图）
 var _max_tick := 0                    # 见过的最大 tick（scrub 范围上限）
 var _scrubbing := false
 const SCRUB_X0 := 584.0
@@ -61,6 +62,8 @@ func _ready() -> void:
 			_demo_mode = true
 		elif args[i] == "--warmup" and i + 1 < args.size():
 			warmup_days = int(args[i + 1])     # 录 demo：跳到第 N 天开场（确定，goto_tick 同款重演）
+		elif args[i] == "--shot" and i + 1 < args.size():
+			_shot_path = args[i + 1]           # dev 出图：渲一帧存 png 退出（需真 framebuffer：Xvfb 或带窗口）
 	AIBackend.backend = backend
 	# 后端优先级：CLI --backend 显式 > user://settings.cfg（手机 UI 存的默认）> 默认 logic。
 	# headless CI 不经此路（Harness/soak 直接 Sim.backend=null）→ 确定性逐字节不变。
@@ -117,6 +120,12 @@ func _ready() -> void:
 	if OS.has_feature("android"):           # 手机上无控制台：把模型是否就位讲出来，缺则玩家知道往哪放 gguf
 		var ms := AIBackend.model_status()
 		_push("[color=#9ad0ff]端上模型 %s\n%s[/color]" % [("✓ 就位" if ms["exists"] else "未找到 → 用 logic 地板（把 gguf 放进 Documents 后重开）"), ms["path"]])
+	if _shot_path != "":                    # dev 出图：等 1.5s 让世界渲染+纹理加载，再存一帧退出
+		get_tree().create_timer(1.5).timeout.connect(func():
+			var img := get_viewport().get_texture().get_image()
+			if img != null:
+				img.save_png(_shot_path)
+			get_tree().quit())
 
 func _build_hud() -> void:
 	var layer := CanvasLayer.new()
