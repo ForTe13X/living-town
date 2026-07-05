@@ -35,6 +35,9 @@ var _perf_on := false
 var _perf_dt_acc := 0.0               # 采样窗口累计秒
 var _perf_last_tick := 0             # 上个采样窗口的 tick_no（算 tick/s）
 var _perf_rate := 0.0                 # 平滑后的 sim tick/s
+var _model_btn: Button                # 设置面板里的 SLM 模型选择钮（循环手选 gguf）
+var _models: Array = []               # 扫到的 *.gguf 绝对路径列表
+var _model_idx := 0
 var _max_tick := 0                    # 见过的最大 tick（scrub 范围上限）
 var _scrubbing := false
 const SCRUB_X0 := 584.0
@@ -91,6 +94,7 @@ func _ready() -> void:
 			Sim.spawn_count = _n
 	if not ("--speed" in args):
 		spd = float(_scfg.get_value("sim", "speed", spd))
+	AIBackend.slm_model_override = String(_scfg.get_value("slm", "model_path", ""))   # 上次在设置里手选的 gguf
 
 	# L7：--scenario 指向 data/scenarios/<id>.json（含 70B 编剧产出）→ 注册数据驱动场景 provider（窗口里也能演）。
 	# 空/内建场景(faction/betray/freerider 无此文件)→ 不注册 → 回落内建 _seed_scenario；默认 ""→ Sim.ext 保持 null 逐字节不变。
@@ -327,6 +331,13 @@ func _build_settings(layer: CanvasLayer, fnt: Font) -> void:
 		bcyc.text = AIBackend.backend_requested)
 	rb.add_child(bcyc)
 
+	# SLM 模型（扫 Documents/Download/user:// 里的 *.gguf，点按循环手选；换模型 A/B 用）
+	var rm := _settings_row(vb, fnt, "SLM 模型")
+	_model_btn = _mk_sbtn(fnt, "—", 200)
+	_model_btn.pressed.connect(_cycle_model)
+	rm.add_child(_model_btn)
+	_rescan_models()
+
 	# NPC 数量
 	var rn := _settings_row(vb, fnt, "NPC 数量")
 	var minus := _mk_sbtn(fnt, "−", 46)
@@ -391,6 +402,38 @@ func _mk_sbtn(fnt: Font, txt: String, w: int) -> Button:
 func _toggle_settings() -> void:
 	if _settings_panel != null:
 		_settings_panel.visible = not _settings_panel.visible
+		if _settings_panel.visible:
+			_rescan_models()          # 每次打开重扫（用户可能刚拷了新 gguf 进 Documents）
+
+## 扫一遍可放模型的目录，对齐当前选中项。
+func _rescan_models() -> void:
+	_models = AIBackend.list_models()
+	_model_idx = _models.find(AIBackend.slm_model_override)
+	if _model_idx < 0:
+		_model_idx = 0
+	_sync_model_btn()
+
+func _sync_model_btn() -> void:
+	if _model_btn == null:
+		return
+	if _models.is_empty():
+		_model_btn.text = "无 gguf(放 Documents)"
+	else:
+		var nm := String(_models[_model_idx]).get_file().trim_suffix(".gguf")
+		if nm.length() > 22:
+			nm = nm.substr(0, 21) + "…"
+		_model_btn.text = nm
+
+## 循环选下一个 gguf → 记住 + 存盘 + 卸旧模型（下次 slm 决策按新路径重载）。
+func _cycle_model() -> void:
+	if _models.is_empty():
+		_rescan_models()              # 可能刚放进去，再扫一次
+		if _models.is_empty():
+			return
+	_model_idx = (_model_idx + 1) % _models.size()
+	AIBackend.set_model_path(String(_models[_model_idx]))
+	_sync_model_btn()
+	_push("[color=#9ad0ff]SLM 模型 → %s（下次 slm 决策重载）[/color]" % String(_models[_model_idx]).get_file())
 
 func _sync_npc_val() -> void:
 	if _npc_val != null:

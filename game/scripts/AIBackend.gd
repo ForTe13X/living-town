@@ -32,6 +32,7 @@ func reset_stats() -> void:
 	_budget_used = 0
 # ── 嵌入式 SLM（NobodyWho GDExtension + 本地 GGUF）──实测：Godot 4.6.2 加载需 glibc≥2.38 + libvulkan1 loader。
 var slm_model_path := "res://models/qwen2.5-3b-instruct-q4_k_m.gguf"   # 默认 3B-Q4：中端 780M 实测 ~2.9s、质量明显优于 1.5B(docs/11 §12.2b)
+var slm_model_override := ""                      # 设置面板里手选的 gguf 绝对路径（存 settings.cfg）；非空且存在则优先（换模型 A/B 用）
 # 轻量备选(极致包体/最低端)：res://models/qwen2.5-1.5b-instruct-q4_k_m.gguf（~1.3s，质量中）。capability 探针太慢会自动降 logic。
 var slm_use_gpu := true                          # 真机优先 GPU(Vulkan)；无设备自动回退 CPU（容器实测 CPU ~1字/s，故真机才实用）
 var _slm_model: Object = null                    # 共享 NobodyWhoModel（懒加载，~1GB 仅载一次）
@@ -154,6 +155,8 @@ func _ensure_slm_model() -> Object:
 ##   ② user://model.gguf（app 私有外部 files 目录=真实路径，免权限，但需 adb push 送达）。
 ## 都没有 → 返回 user:// 路径（加载失败→算力探针超时→自动降确定性 logic，镇子照常运转）。桌面沿用 res:// 不变。
 func _resolve_model_path() -> String:
+	if slm_model_override != "" and FileAccess.file_exists(slm_model_override):
+		return slm_model_override                 # 设置面板手选优先（桌面/安卓都认）
 	if not OS.has_feature("android"):
 		return slm_model_path
 	for p in _android_model_candidates():
@@ -178,6 +181,48 @@ func _android_model_candidates() -> Array:
 func model_status() -> Dictionary:
 	var p := _resolve_model_path()
 	return {"path": p, "exists": FileAccess.file_exists(p)}
+
+## 扫可放模型的目录，列出所有 *.gguf 的绝对路径（设置面板供手选/A-B 换模型）。
+func list_models() -> Array:
+	var dirs := []
+	if OS.has_feature("android"):
+		var docs := OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS)
+		var dl := OS.get_system_dir(OS.SYSTEM_DIR_DOWNLOADS)
+		if docs != "":
+			dirs.append(docs)
+			dirs.append(docs.path_join("LivingTown"))
+		if dl != "":
+			dirs.append(dl)
+		dirs.append(ProjectSettings.globalize_path("user://"))
+	else:
+		dirs.append(ProjectSettings.globalize_path("res://models"))
+		dirs.append(ProjectSettings.globalize_path("user://"))
+	var out := []
+	for d in dirs:
+		var da := DirAccess.open(d)
+		if da == null:
+			continue
+		da.list_dir_begin()
+		var f := da.get_next()
+		while f != "":
+			if not da.current_is_dir() and f.to_lower().ends_with(".gguf"):
+				var full: String = d.path_join(f)
+				if not (full in out):
+					out.append(full)
+			f = da.get_next()
+		da.list_dir_end()
+	return out
+
+## 设置面板选定某个 gguf：记住路径 + 存盘 + 释放已加载的共享模型（下次 slm 决策按新路径重载）。
+func set_model_path(path: String) -> void:
+	slm_model_override = path
+	var cfg := ConfigFile.new()
+	cfg.load("user://settings.cfg")
+	cfg.set_value("slm", "model_path", path)
+	cfg.save("user://settings.cfg")
+	if _slm_model != null and is_instance_valid(_slm_model):
+		_slm_model.queue_free()      # 卸掉旧模型 → _ensure_slm_model 会按新 override 重载
+	_slm_model = null
 
 # ── 启动算力探测（测一发暖决策 → 分档 + 自适应截止线 + 太慢自动降 logic）────────────
 ## 实测依据(docs/11 §12)：现代机决策 1–5s 都在 12s 线内；>~8s 即不实用 → 降确定性 logic。
