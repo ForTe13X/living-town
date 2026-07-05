@@ -25,6 +25,10 @@ var _demo_i := 0
 var _chat_in: LineEdit                # 玩家→NPC 对话输入框
 var _backend_btn: Button              # 后端切换按钮（手机无 CLI：点按在 logic/slm/… 间轮换；桌面也可点）
 var _shot_path := ""                  # --shot <abs.png>：渲一帧存图退出（dev 验证/出图；需真 framebuffer=Xvfb 或带窗口，纯 --headless 得空图）
+var _settings_panel: ColorRect        # ⚙ 设置面板（NPC 数量/速度/后端；⚙ 按钮或 O 键开关）
+var _npc_val: Label                   # 设置面板里的 NPC 数量数字
+var _npc_target := 6                  # 当前目标 NPC 数（改动→同种子重开 sim）
+var _seed := 0                        # 记住开局种子，供设置里"改 NPC 数重开"复用
 var _max_tick := 0                    # 见过的最大 tick（scrub 范围上限）
 var _scrubbing := false
 const SCRUB_X0 := 584.0
@@ -71,6 +75,16 @@ func _ready() -> void:
 		AIBackend._load_user_settings()          # 可能把 AIBackend.backend 改成上次选的 slm/mock
 	AIBackend.backend_requested = AIBackend.backend
 	backend = AIBackend.backend                  # 让下方 probe 判定用最终值
+	_seed = seed
+	# NPC 数量 + 速度：同款优先级 CLI > user://settings.cfg > 默认（改 NPC 数会同种子重开小镇，故也存这里）。
+	var _scfg := ConfigFile.new()
+	_scfg.load("user://settings.cfg")
+	if not ("--agents" in args):
+		var _n := int(_scfg.get_value("sim", "npc_count", 0))
+		if _n > 0:
+			Sim.spawn_count = _n
+	if not ("--speed" in args):
+		spd = float(_scfg.get_value("sim", "speed", spd))
 
 	# L7：--scenario 指向 data/scenarios/<id>.json（含 70B 编剧产出）→ 注册数据驱动场景 provider（窗口里也能演）。
 	# 空/内建场景(faction/betray/freerider 无此文件)→ 不注册 → 回落内建 _seed_scenario；默认 ""→ Sim.ext 保持 null 逐字节不变。
@@ -85,6 +99,7 @@ func _ready() -> void:
 		_selected_id = "ben"                # 录 demo：默认选中木匠(有职业+钱) → 观察台展示经济/职业行
 	Sim.backend = AIBackend   # 窗口模式注入可插拔后端；headless/soak 时 Sim.backend=null 走内置 logic
 	Sim.speed = spd
+	_npc_target = maxi(6, Sim.spawn_count)   # 设置面板 NPC 数量初值（spawn_count 0→基础 6，>6→克隆总数）
 	# 启动算力探测：测一发暖决策 → 自适应截止线 + 太慢自动降 logic（docs/11 §12：测 p50→选 路C/logic）
 	if backend == "slm" or backend == "llm":
 		Sim.auto_run = false
@@ -132,7 +147,18 @@ func _build_hud() -> void:
 	add_child(layer)
 	var fnt := Art.font()
 
-	_status = _mk_label(layer, fnt, 17, Vector2(12, 6), Vector2(1120, 28))   # 右端留给后端切换按钮
+	_status = _mk_label(layer, fnt, 17, Vector2(52, 6), Vector2(1082, 28))   # 左留 ⚙ 设置钮，右留后端切换钮
+
+	# ⚙ 设置钮（左上角；点开 NPC 数量/速度/后端面板。O 键同款开关）
+	var gear := Button.new()
+	gear.text = "⚙"
+	gear.add_theme_font_override("font", fnt)
+	gear.add_theme_font_size_override("font_size", 18)
+	gear.position = Vector2(10, 4)
+	gear.size = Vector2(36, 30)
+	gear.focus_mode = Control.FOCUS_NONE
+	gear.pressed.connect(_toggle_settings)
+	layer.add_child(gear)
 
 	# 左下角滚动事件日志：把看不见的社交戏剧讲出来
 	_mk_panel(layer, Vector2(8, 470), Vector2(560, 246))
@@ -185,6 +211,8 @@ func _build_hud() -> void:
 	_backend_btn.pressed.connect(_on_toggle_backend)
 	layer.add_child(_backend_btn)
 	_sync_backend_btn()
+
+	_build_settings(layer, fnt)
 
 func _mk_panel(layer: CanvasLayer, pos: Vector2, sz: Vector2) -> void:
 	var p := ColorRect.new()
@@ -245,6 +273,132 @@ func _sync_backend_btn() -> void:
 	if _backend_btn == null:
 		return
 	_backend_btn.text = "🤖 %s" % AIBackend.backend_requested
+
+# ── ⚙ 设置面板（NPC 数量 / 速度 / 后端；持久化到 user://settings.cfg 的 [sim] 段）───────────
+func _build_settings(layer: CanvasLayer, fnt: Font) -> void:
+	_settings_panel = ColorRect.new()
+	_settings_panel.color = Color(0.05, 0.06, 0.09, 0.96)
+	_settings_panel.position = Vector2(430, 168)
+	_settings_panel.size = Vector2(420, 424)
+	_settings_panel.mouse_filter = Control.MOUSE_FILTER_STOP   # 面板挡住背后世界点选
+	_settings_panel.visible = false
+	layer.add_child(_settings_panel)
+	var vb := VBoxContainer.new()
+	vb.position = Vector2(24, 20)
+	vb.custom_minimum_size = Vector2(372, 384)
+	vb.add_theme_constant_override("separation", 16)
+	_settings_panel.add_child(vb)
+
+	var title := Label.new()
+	title.text = "⚙ 设置 Settings"
+	title.add_theme_font_override("font", fnt)
+	title.add_theme_font_size_override("font_size", 20)
+	vb.add_child(title)
+
+	# 后端
+	var rb := _settings_row(vb, fnt, "后端 Backend")
+	var bcyc := _mk_sbtn(fnt, AIBackend.backend_requested, 160)
+	bcyc.pressed.connect(func():
+		_on_toggle_backend()
+		bcyc.text = AIBackend.backend_requested)
+	rb.add_child(bcyc)
+
+	# NPC 数量
+	var rn := _settings_row(vb, fnt, "NPC 数量")
+	var minus := _mk_sbtn(fnt, "−", 46)
+	minus.pressed.connect(func(): _apply_npc(-2))
+	rn.add_child(minus)
+	_npc_val = Label.new()
+	_npc_val.add_theme_font_override("font", fnt)
+	_npc_val.add_theme_font_size_override("font_size", 18)
+	_npc_val.custom_minimum_size = Vector2(60, 0)
+	_npc_val.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	rn.add_child(_npc_val)
+	var plus := _mk_sbtn(fnt, "+", 46)
+	plus.pressed.connect(func(): _apply_npc(2))
+	rn.add_child(plus)
+	_sync_npc_val()
+
+	# 速度
+	var rs := _settings_row(vb, fnt, "速度 Speed")
+	for sv in [0.0, 1.0, 2.0, 4.0, 8.0]:
+		var b := _mk_sbtn(fnt, ("⏸" if sv == 0.0 else "%d×" % int(sv)), 52)
+		b.pressed.connect(func(): _set_speed(sv))
+		rs.add_child(b)
+
+	var hint := Label.new()
+	hint.text = "改 NPC 数量 → 同种子重开小镇（确定性）"
+	hint.add_theme_font_override("font", fnt)
+	hint.add_theme_font_size_override("font_size", 13)
+	hint.modulate = Color(0.66, 0.7, 0.82)
+	vb.add_child(hint)
+
+	var close := _mk_sbtn(fnt, "关闭 Close", 130)
+	close.pressed.connect(func(): _settings_panel.visible = false)
+	vb.add_child(close)
+
+func _settings_row(vb: VBoxContainer, fnt: Font, label: String) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	var l := Label.new()
+	l.text = label
+	l.add_theme_font_override("font", fnt)
+	l.add_theme_font_size_override("font_size", 16)
+	l.custom_minimum_size = Vector2(148, 0)
+	row.add_child(l)
+	vb.add_child(row)
+	return row
+
+func _mk_sbtn(fnt: Font, txt: String, w: int) -> Button:
+	var b := Button.new()
+	b.text = txt
+	b.add_theme_font_override("font", fnt)
+	b.add_theme_font_size_override("font_size", 16)
+	b.custom_minimum_size = Vector2(w, 40)
+	b.focus_mode = Control.FOCUS_NONE
+	return b
+
+func _toggle_settings() -> void:
+	if _settings_panel != null:
+		_settings_panel.visible = not _settings_panel.visible
+
+func _sync_npc_val() -> void:
+	if _npc_val != null:
+		_npc_val.text = str(_npc_target)
+
+## 改 NPC 数量 → 用同种子重开小镇（确定性；spawn_count=目标总数，克隆到 N）。
+func _apply_npc(delta: int) -> void:
+	var n := clampi(_npc_target + delta, 6, 60)
+	if n == _npc_target:
+		return
+	_npc_target = n
+	Sim.spawn_count = n
+	Sim.start_new(_seed)
+	Sim.auto_run = true
+	if _player_mode:
+		Sim.add_player()
+	_selected_id = ""
+	_max_tick = 0
+	_save_sim_setting("npc_count", n)
+	_sync_npc_val()
+	_update_status()
+	_update_obs()
+	_update_scrubber()
+
+func _set_speed(v: float) -> void:
+	if v <= 0.0:
+		Sim.running = false
+	else:
+		Sim.running = true
+		Sim.speed = v
+		_save_sim_setting("speed", v)
+	_update_status()
+
+func _save_sim_setting(key: String, val: Variant) -> void:
+	var cfg := ConfigFile.new()
+	cfg.load("user://settings.cfg")   # 保留其他键（backend 等）
+	cfg.set_value("sim", key, val)
+	cfg.save("user://settings.cfg")
 
 func _update_status() -> void:
 	if _status == null:
@@ -624,6 +778,7 @@ func _unhandled_input(e: InputEvent) -> void:
 			KEY_EQUAL, KEY_KP_ADD: _cam.zoom = (_cam.zoom * 1.15).clamp(ZOOM_MIN, ZOOM_MAX)
 			KEY_MINUS, KEY_KP_SUBTRACT: _cam.zoom = (_cam.zoom / 1.15).clamp(ZOOM_MIN, ZOOM_MAX)
 			KEY_TAB: _cycle_selection(-1 if e.shift_pressed else 1)
+			KEY_O: _toggle_settings()                            # ⚙ 设置面板开关（NPC 数量/速度/后端）
 			KEY_ESCAPE: _selected_id = ""; _update_obs()
 			KEY_C: _on_player_say("你好，最近怎么样？")        # 快捷：对选中居民打个招呼（也便于无键盘验证）
 			# ── 玩家能动性（--player）：WASD 移动 + 对选中居民 G打招呼/F送礼/B八卦/Y约见/P道歉/M调解 ──
