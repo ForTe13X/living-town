@@ -11,7 +11,8 @@ extends Node
 ##   {}（空）          → 放弃（脏输出/超时/不可用）→ Sim 用 logic 兜底
 ##   非空 intent       → 解析出的合法候选（cands[pick] + say）→ Sim 落地
 
-var backend := "logic"                          # "logic" | "llm" | "slm" | "mock"
+var backend := "logic"                          # "logic" | "llm" | "slm" | "mock"（当前生效档；可能被算力探测自动降级）
+var backend_requested := "logic"                # 用户意图档（手机 UI 切换/settings 持久化）；生效滞后到 decide() 安全点，与 backend 分离以免降级抹掉意图
 var endpoint := "http://127.0.0.1:1234/v1/chat/completions"  # LM Studio 默认
 var model := "qwen-3-8b-instruct"               # 实测选型：中文/JSON/速度均衡；推理由 no_think 关闭
 var api_key := "lm-studio"
@@ -85,6 +86,31 @@ func available_backends() -> Array:
 		out.append("slm")
 	return out
 
+## 运行期切换后端（手机 UI 调用）：记录意图 + 持久化到 user://settings.cfg；真正生效在 decide() 安全点（无在飞请求时）。
+## slm/llm 无需在此重探测：慢请求各自到截止线(默认 12s)超时 → 逐个 agent 回落 logic，仍确定兜底、不卡死。
+func request_backend(mode: String) -> void:
+	if not mode in available_backends():
+		return
+	backend_requested = mode
+	save_user_settings()
+
+## 读 user://settings.cfg 的默认后端（仅窗口启动、且无 --backend 显式参数时调用）。
+## 纪律：CLI --backend 永远优先；headless CI（Harness/soak 用 Sim.backend=null，从不经此路）→ 逐字节不变。
+func _load_user_settings() -> void:
+	var cfg := ConfigFile.new()
+	if cfg.load("user://settings.cfg") != OK:      # 缺文件/损坏 → 保持默认 logic
+		return
+	var m := String(cfg.get_value("backend", "mode", ""))
+	if m != "" and m in available_backends():
+		backend = m
+		backend_requested = m
+
+func save_user_settings() -> void:
+	var cfg := ConfigFile.new()
+	cfg.load("user://settings.cfg")                # 保留其他键（若有）
+	cfg.set_value("backend", "mode", backend_requested)
+	cfg.save("user://settings.cfg")
+
 ## L5 发声优先级 = 陈旧度(距上次发声的 sim-日数，无上界→反饿死) + 戏剧显著性(需求危机/卷入未了结冲突)。确定，无 RNG。
 func _priority(id: String, agent: Dictionary) -> float:
 	var last := int(_last_llm.get(id, Sim.tick_no - Sim.TICKS_PER_DAY))   # 从没发过声 → 视为已陈旧一天
@@ -122,13 +148,36 @@ func _ensure_slm_model() -> Object:
 		add_child(_slm_model)
 	return _slm_model
 
-## NobodyWho/llama.cpp 需要能 mmap 的【真实文件系统路径】。安卓上 res:// 在 PCK 内不是真实文件 →
-## 改用 user://model.gguf（安卓映射到应用外部 files 目录=真实路径）；用户把一个 gguf 侧载到那里即可，
-## 缺文件则加载失败→算力探针超时→自动降确定性 logic（镇子照常运转）。桌面沿用原 res:// 行为不变。
+## NobodyWho/llama.cpp 需要能 mmap 的【真实文件系统路径】。安卓上按序找一个存在的 gguf：
+##   ① 公共可 MTP 拖放位置（Documents/LivingTown、Documents、Download）——用户经「此电脑\手机\Documents」直接拷入，
+##      免 adb；读公共位置需一次性授「所有文件访问」权限（见 docs/18）。
+##   ② user://model.gguf（app 私有外部 files 目录=真实路径，免权限，但需 adb push 送达）。
+## 都没有 → 返回 user:// 路径（加载失败→算力探针超时→自动降确定性 logic，镇子照常运转）。桌面沿用 res:// 不变。
 func _resolve_model_path() -> String:
-	if OS.has_feature("android"):
-		return ProjectSettings.globalize_path("user://model.gguf")
-	return slm_model_path
+	if not OS.has_feature("android"):
+		return slm_model_path
+	for p in _android_model_candidates():
+		if FileAccess.file_exists(p):
+			return p
+	return ProjectSettings.globalize_path("user://model.gguf")
+
+## 安卓上按优先级列出候选 gguf 路径（存在与否不判，判在调用方）。
+func _android_model_candidates() -> Array:
+	var out := []
+	var docs := OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS)     # 通常 /storage/emulated/0/Documents
+	var dl := OS.get_system_dir(OS.SYSTEM_DIR_DOWNLOADS)
+	if docs != "":
+		out.append(docs.path_join("LivingTown/model.gguf"))
+		out.append(docs.path_join("model.gguf"))
+	if dl != "":
+		out.append(dl.path_join("model.gguf"))
+	out.append(ProjectSettings.globalize_path("user://model.gguf"))
+	return out
+
+## 供 UI 展示（手机上无控制台）：解析到的模型路径 + 是否就位。缺则玩家知道往哪放。
+func model_status() -> Dictionary:
+	var p := _resolve_model_path()
+	return {"path": p, "exists": FileAccess.file_exists(p)}
 
 # ── 启动算力探测（测一发暖决策 → 分档 + 自适应截止线 + 太慢自动降 logic）────────────
 ## 实测依据(docs/11 §12)：现代机决策 1–5s 都在 12s 线内；>~8s 即不实用 → 降确定性 logic。
@@ -151,6 +200,8 @@ func probe_capability(agent: Dictionary, candidates: Array, ctx: Dictionary, cb:
 	deadline_ms = clampi(6 * p50_ms, 3000, DEADLINE_MS)
 	if p50_ms > 8000:                             # 太慢：降级到确定性 logic（仍完整可玩）
 		backend = "logic"
+		backend_requested = "logic"               # 关键：同步意图，否则 decide() 的运行期切换会立刻把降级撤销（评审确认的回归）。
+		                                          # 磁盘上的持久化意图只由显式 toggle 写入 → 不受影响，下次启动仍会重试 slm 并重新探测。
 		tier = "demoted_logic"
 	cb.call({"tier": tier, "p50_ms": p50_ms, "deadline_ms": deadline_ms, "backend": backend})
 
@@ -191,6 +242,11 @@ func _probe_once(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Strin
 
 # ── 同步入口（Sim 每 tick 调）──────────────────────────────────────────────
 func decide(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Dictionary:
+	# 运行期后端切换（手机上无 CLI 参数）：仅在无在飞请求时应用 backend_requested，
+	# 否则旧后端的异步回包会被新后端的解析逻辑误读。logic 模式 digest 不受影响——
+	# _logic_decide 的 RNG 只依赖 (seed,tick,salt,who)，与 backend 无关（红线守恒）。
+	if backend != backend_requested and _pending.is_empty() and _inflight == 0:
+		backend = backend_requested
 	if backend == "logic":
 		return Sim._logic_decide(agent, candidates)
 	var id := String(agent["id"])

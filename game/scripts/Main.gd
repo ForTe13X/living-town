@@ -23,6 +23,7 @@ var _demo_mode := false               # --player-demo：脚本化玩家 autopilo
 var _demo_steps: Array = []           # [{type:walk_to|select|act|chat|wait, ...}] 顺序执行
 var _demo_i := 0
 var _chat_in: LineEdit                # 玩家→NPC 对话输入框
+var _backend_btn: Button              # 后端切换按钮（手机无 CLI：点按在 logic/slm/… 间轮换；桌面也可点）
 var _max_tick := 0                    # 见过的最大 tick（scrub 范围上限）
 var _scrubbing := false
 const SCRUB_X0 := 584.0
@@ -61,6 +62,12 @@ func _ready() -> void:
 		elif args[i] == "--warmup" and i + 1 < args.size():
 			warmup_days = int(args[i + 1])     # 录 demo：跳到第 N 天开场（确定，goto_tick 同款重演）
 	AIBackend.backend = backend
+	# 后端优先级：CLI --backend 显式 > user://settings.cfg（手机 UI 存的默认）> 默认 logic。
+	# headless CI 不经此路（Harness/soak 直接 Sim.backend=null）→ 确定性逐字节不变。
+	if not ("--backend" in args):
+		AIBackend._load_user_settings()          # 可能把 AIBackend.backend 改成上次选的 slm/mock
+	AIBackend.backend_requested = AIBackend.backend
+	backend = AIBackend.backend                  # 让下方 probe 判定用最终值
 
 	# L7：--scenario 指向 data/scenarios/<id>.json（含 70B 编剧产出）→ 注册数据驱动场景 provider（窗口里也能演）。
 	# 空/内建场景(faction/betray/freerider 无此文件)→ 不注册 → 回落内建 _seed_scenario；默认 ""→ Sim.ext 保持 null 逐字节不变。
@@ -107,13 +114,16 @@ func _ready() -> void:
 	_update_status()
 	_update_obs()
 	_update_scrubber()
+	if OS.has_feature("android"):           # 手机上无控制台：把模型是否就位讲出来，缺则玩家知道往哪放 gguf
+		var ms := AIBackend.model_status()
+		_push("[color=#9ad0ff]端上模型 %s\n%s[/color]" % [("✓ 就位" if ms["exists"] else "未找到 → 用 logic 地板（把 gguf 放进 Documents 后重开）"), ms["path"]])
 
 func _build_hud() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
 	var fnt := Art.font()
 
-	_status = _mk_label(layer, fnt, 17, Vector2(12, 6), Vector2(1256, 28))
+	_status = _mk_label(layer, fnt, 17, Vector2(12, 6), Vector2(1120, 28))   # 右端留给后端切换按钮
 
 	# 左下角滚动事件日志：把看不见的社交戏剧讲出来
 	_mk_panel(layer, Vector2(8, 470), Vector2(560, 246))
@@ -154,6 +164,18 @@ func _build_hud() -> void:
 	_chat_in.visible = false
 	_chat_in.text_submitted.connect(_on_player_say)
 	layer.add_child(_chat_in)
+
+	# 后端切换按钮（右上角）。手机上无 CLI → 靠这个在 logic/slm/… 间轮换；emulate_mouse_from_touch 默认开 → 点按即触发。
+	# Button 独占自身矩形，不干扰世界点选；FOCUS_NONE 免抢键盘焦点（否则空格/快捷键失灵）。
+	_backend_btn = Button.new()
+	_backend_btn.add_theme_font_override("font", fnt)
+	_backend_btn.add_theme_font_size_override("font_size", 14)
+	_backend_btn.position = Vector2(1140, 4)
+	_backend_btn.size = Vector2(132, 30)
+	_backend_btn.focus_mode = Control.FOCUS_NONE
+	_backend_btn.pressed.connect(_on_toggle_backend)
+	layer.add_child(_backend_btn)
+	_sync_backend_btn()
 
 func _mk_panel(layer: CanvasLayer, pos: Vector2, sz: Vector2) -> void:
 	var p := ColorRect.new()
@@ -200,6 +222,21 @@ func _daylight(tod: float) -> Color:
 			return (a[1] as Color).lerp(b[1] as Color, f)
 	return Color(1, 1, 1)
 
+## 轮换后端（logic → llm → mock → slm → …，仅含 available_backends()）。记录意图 + 持久化；
+## 真正切换发生在 AIBackend.decide() 的安全点（无在飞请求时），本 tick 状态栏即显示「→目标…」排队中。
+func _on_toggle_backend() -> void:
+	var avail := AIBackend.available_backends()
+	var i := avail.find(AIBackend.backend_requested)
+	var nxt := String(avail[(i + 1) % avail.size()]) if i >= 0 else "logic"
+	AIBackend.request_backend(nxt)               # 意图 + 存 user://settings.cfg；下次启动也记住
+	_sync_backend_btn()
+	_push("[color=#9ad0ff]后端 → %s（生效于下个安全点；慢则各自超时回落 logic）[/color]" % nxt)
+
+func _sync_backend_btn() -> void:
+	if _backend_btn == null:
+		return
+	_backend_btn.text = "🤖 %s" % AIBackend.backend_requested
+
 func _update_status() -> void:
 	if _status == null:
 		return
@@ -212,6 +249,9 @@ func _update_status() -> void:
 	elif hh >= 11 and hh < 17: phase = "昼 day"
 	elif hh >= 17 and hh < 21: phase = "暮 evening"
 	var spd := ("×%.0f" % Sim.speed) if Sim.running else "⏸ 暂停"
+	var btxt := "🤖%s" % AIBackend.backend                                          # 当前生效后端（诚实显示：可能已被降级/正在排队切换）
+	if AIBackend.backend != AIBackend.backend_requested:
+		btxt += "→%s…" % AIBackend.backend_requested                              # 切换排队中（等在飞请求清空）
 	var sn := ("%s " % Sim.season_today) if Sim.season_today != "" else ""          # Wave 3b 季节（贴在天气前）
 	var wx := ("  ·  %s%s" % [sn, Sim.weather_today]) if (Sim.weather_today != "" or sn != "") else ""   # Wave 1c 天气 + 3b 季节
 	var etxt := ""                                                                # Wave 3a 选举：状态栏显示最近一次表决结果
@@ -238,8 +278,8 @@ func _update_status() -> void:
 					pmeets.append("和%s约在%s(剩%dt)" % [Sim._name(Sim.get_agent(other)), Sim._area_label_id(String(c["area"])), int(c["deadline"]) - Sim.tick_no])
 			ptxt = "\n[color=#ffd700]你：礼物×%d  WASD移动  选中居民后 G打招呼 F送礼 B八卦 Y约见 T理论 P道歉 M调解 C聊天%s[/color]" % [
 				int(pl["inventory"].get("gift", 0)), ("  📌 " + "；".join(pmeets)) if not pmeets.is_empty() else ""]
-	_status.text = "[color=#e6e9f2]小镇有灵 Living Town  ·  第 %d 天 %s %s%s%s  ·  %s  ·  NPC %d  ｜  事件 %d  约会 %d(活%d)  冲突 %d(活%d)[/color]%s" % [
-		Sim.day, clock, phase, wx, etxt, spd, Sim.agents.size(), Sim.event_log.size(), Sim.commitments.size(), meets_active, Sim.conflicts.size(), conf_active, ptxt]
+	_status.text = "[color=#e6e9f2]小镇有灵 Living Town  ·  第 %d 天 %s %s%s%s  ·  %s  ·  %s  ·  NPC %d  ｜  事件 %d  约会 %d(活%d)  冲突 %d(活%d)[/color]%s" % [
+		Sim.day, clock, phase, wx, etxt, spd, btxt, Sim.agents.size(), Sim.event_log.size(), Sim.commitments.size(), meets_active, Sim.conflicts.size(), conf_active, ptxt]
 
 # ── 观察台 / 时间轴 ────────────────────────────────────────────────────────
 func _update_scrubber() -> void:

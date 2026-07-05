@@ -31,6 +31,20 @@
 
 装机：`adb install -r build/out/livingtown.apk`。端上 LLM：把一个 gguf 侧载到 `user://model.gguf`（`adb push <model>.gguf /storage/emulated/0/Android/data/com.forte13x.livingtown/files/model.gguf`）；缺模型自动降 logic 地板，镇子照跑。**（引擎侧全绿；端上渲染/SLM 推理以你设备实测为准。）**
 
+## ★★ 手机可用性升级（2026-07-05：应用内切后端 + MTP 放模型 + release 签名）
+
+**都已 headless 验证：parse 绿、Main 场景 smoke 绿、12-seed S0 门 digest 与基线逐字节一致（确定性红线一寸没让）、对抗式评审（15 findings→13 refuted→1 真 bug 已修）。**
+
+- **应用内 logic↔slm 切换**（手机无 CLI）：`AIBackend` 拆 `backend`(生效档，可被算力探测降级) / `backend_requested`(用户意图)，`decide()` 仅在**无在飞请求的安全点**才应用切换（否则旧后端异步回包会被新后端误解析）；右上角 `Button` 轮换（emulate_mouse_from_touch 默认开→点按即触发），状态栏诚实显示当前生效档（`🤖slm` / 切换排队 `🤖logic→slm…`）。持久化到 `user://settings.cfg`；**优先级 CLI --backend > settings.cfg > 默认 logic**；headless CI 走 `Sim.backend=null` 根本不经此路 → 确定性不受影响。**评审修的真 bug**：算力探测 `>8s` 自动降级 logic 时也要同步 `backend_requested`，否则运行期切换会立刻把降级撤销（慢机每决策空烧 12s）。
+- **端上模型改走公共可 MTP 位置**（红魔 MTP 只暴露 `Documents`、不暴露 `Android/data/<pkg>`）：`_resolve_model_path()` 安卓按序找 `Documents/LivingTown/model.gguf` → `Documents/model.gguf` → `Download/model.gguf` → `user://model.gguf`(adb)。加 `MANAGE_EXTERNAL_STORAGE`（"所有文件访问"）权限——**用户需在 设置→应用→小镇有灵→权限→文件 里手动开一次**（此权限不能运行时弹窗授予）。boot 时 log 面板打印"模型✓就位/未找到 + 路径"给无控制台的手机反馈。
+- **release 签名版**：`build/release.keystore`（alias `livingtown`，RSA-4096，PKCS12，100yr；**在 build/ 被 gitignore，密码不入库**）。`export_presets.cfg` 只填 `keystore/release` 路径 + user，密码走环境变量 `GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD`（Godot 4.6 支持，**免把密码提交进 git**）。`godot --headless --export-release "Android"` 产出 `livingtown-release.apk`（**111 MB，签名 `CN=Living Town, O=ForTe13X`**，非 debug 证书）。
+- **手机显示**：`project.godot` 加 `window/stretch/mode=canvas_items` + `aspect=keep` + `handheld/orientation=landscape`（1280×768 桌面下是恒等变换→桌面/录屏行为不变，只在手机上等比放大 HUD）。
+- **gradle 卡死教训**：`godot --export` 起的 gradle daemon(java) 会**继承后台任务的输出管道不放**→任务显示"永远在跑"（其实 APK 早在 ~2 分钟产出）。修法：`game/android/build/gradle.properties` 加 `org.gradle.daemon=false`（重建 ~36s 干净退出）。
+
+**装机两法**（package 同名但签名不同的 debug/release **不能相互覆盖安装**，Android 报 `INSTALL_FAILED_UPDATE_INCOMPATIBLE` → 先 `adb uninstall com.forte13x.livingtown` 再装另一个）：
+- **release**：`adb install -r build/out/livingtown-release.apk`（或手机侧载）。
+- 放模型（推荐免 adb）：把一个 gguf 用资源管理器拷到 `此电脑\手机\...\Documents\model.gguf` → 设置里给 app 开"所有文件访问" → 重开 app（log 面板应显示"✓就位"）。骁龙 8 Elite 推荐 `qwen2.5-3b-instruct-q4_k_m`(~2GB)。备选 adb：`adb push <gguf> /storage/emulated/0/Android/data/com.forte13x.livingtown/files/model.gguf`。
+
 ---
 
 ## 现状（2026-07-04 本次做到哪）
