@@ -82,9 +82,12 @@ func _decide_interval() -> int:
 		_: return 1                               # instant/未探测：不额外节流
 
 func available_backends() -> Array:
-	var out := ["logic", "llm", "mock"]
-	if ClassDB.class_exists("NobodyWhoModel"):     # 嵌入式 SLM 需 NobodyWho GDExtension 已加载
+	var out := ["logic"]
+	if ClassDB.class_exists("NobodyWhoModel"):     # 嵌入式 SLM 需 NobodyWho GDExtension 已加载（手机上主力）
 		out.append("slm")
+	out.append("mock")
+	if not OS.has_feature("android"):              # llm=HTTP→LM Studio；手机默认 127.0.0.1 不可达，不进手机轮换（免误选空转 3000 次）
+		out.append("llm")
 	return out
 
 ## 运行期切换后端（手机 UI 调用）：记录意图 + 持久化到 user://settings.cfg；真正生效在 decide() 安全点（无在飞请求时）。

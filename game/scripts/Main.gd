@@ -228,7 +228,7 @@ func _build_hud() -> void:
 	var pperf := ColorRect.new()
 	pperf.color = Color(0.02, 0.03, 0.05, 0.74)
 	pperf.position = Vector2(10, 42)
-	pperf.size = Vector2(300, 176)
+	pperf.size = Vector2(384, 152)
 	pperf.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pperf.visible = false
 	layer.add_child(pperf)
@@ -238,7 +238,7 @@ func _build_hud() -> void:
 	_perf.add_theme_font_override("normal_font", fnt)
 	_perf.add_theme_font_size_override("normal_font_size", 14)
 	_perf.position = Vector2(10, 6)
-	_perf.size = Vector2(284, 164)
+	_perf.size = Vector2(368, 140)
 	_perf.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pperf.add_child(_perf)
 
@@ -490,14 +490,16 @@ func _process(dt: float) -> void:
 		_perf_rate = float(Sim.tick_no - _perf_last_tick) / _perf_dt_acc
 		_perf_last_tick = Sim.tick_no
 		_perf_dt_acc = 0.0
-	var ft := Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0
-	var mem := Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0
+	var fps := Engine.get_frames_per_second()
+	var frame_ms := (1000.0 / fps) if fps > 0.0 else 0.0        # 帧时由 FPS 反推，直观一致（TIME_PROCESS 在导出里会误导）
+	var membytes := OS.get_static_memory_usage()               # 导出/release 里内存追踪常被编译掉→0，此时显示 n/a 而非骗人的 0
+	var memtxt := ("%.0f MB" % (membytes / 1048576.0)) if membytes > 0 else "n/a"
 	var objs := int(Performance.get_monitor(Performance.OBJECT_COUNT))
 	var nodes := int(Performance.get_monitor(Performance.OBJECT_NODE_COUNT))
 	var draws := int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
 	var st: Dictionary = AIBackend.stats
-	_perf.text = "[color=#7ed957]● PERF[/color]  FPS %d [color=#9aa0b5](%.1fms)[/color]\n内存 %.0f MB\n对象 %d  节点 %d  绘制 %d\nNPC %d  tick %d [color=#9aa0b5](%.1f/s ×%.0f)[/color]\n后端 [color=#ffd166]%s[/color]  在飞 %d\nLLM 发起 %d 落地 %d 超时 %d 脏 %d" % [
-		Engine.get_frames_per_second(), ft, mem, objs, nodes, draws,
+	_perf.text = "[color=#7ed957]● PERF[/color]  FPS %d · %.1fms\n内存 %s · 对象 %d · 节点 %d · 绘制 %d\nNPC %d · tick %d (%.1f/s ×%.0f)\n后端 [color=#ffd166]%s[/color] · 并发 %d\nLLM 发起 %d · 成功 %d · 超时 %d · 无效 %d" % [
+		fps, frame_ms, memtxt, objs, nodes, draws,
 		Sim.agents.size(), Sim.tick_no, _perf_rate, Sim.speed,
 		AIBackend.backend, AIBackend._inflight,
 		int(st.get("fired", 0)), int(st.get("landed", 0)), int(st.get("timeout", 0)), int(st.get("bad_parse", 0))]
