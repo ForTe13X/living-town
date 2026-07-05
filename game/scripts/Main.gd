@@ -29,6 +29,12 @@ var _settings_panel: ColorRect        # ⚙ 设置面板（NPC 数量/速度/后
 var _npc_val: Label                   # 设置面板里的 NPC 数量数字
 var _npc_target := 6                  # 当前目标 NPC 数（改动→同种子重开 sim）
 var _seed := 0                        # 记住开局种子，供设置里"改 NPC 数重开"复用
+# ── dev 性能 overlay（类 RTSS：FPS/内存/绘制/对象/NPC/tick 率/LLM stats）──
+var _perf: RichTextLabel              # 左上角实时资源监控（F3 或设置里开关）
+var _perf_on := false
+var _perf_dt_acc := 0.0               # 采样窗口累计秒
+var _perf_last_tick := 0             # 上个采样窗口的 tick_no（算 tick/s）
+var _perf_rate := 0.0                 # 平滑后的 sim tick/s
 var _max_tick := 0                    # 见过的最大 tick（scrub 范围上限）
 var _scrubbing := false
 const SCRUB_X0 := 584.0
@@ -214,6 +220,24 @@ func _build_hud() -> void:
 
 	_build_settings(layer, fnt)
 
+	# dev 性能 overlay（默认隐藏；F3 或设置面板里开）。label 挂在 panel 下 → 一起显隐。
+	var pperf := ColorRect.new()
+	pperf.color = Color(0.02, 0.03, 0.05, 0.74)
+	pperf.position = Vector2(10, 42)
+	pperf.size = Vector2(300, 176)
+	pperf.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pperf.visible = false
+	layer.add_child(pperf)
+	_perf = RichTextLabel.new()
+	_perf.bbcode_enabled = true
+	_perf.scroll_active = false
+	_perf.add_theme_font_override("normal_font", fnt)
+	_perf.add_theme_font_size_override("normal_font_size", 14)
+	_perf.position = Vector2(10, 6)
+	_perf.size = Vector2(284, 164)
+	_perf.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pperf.add_child(_perf)
+
 func _mk_panel(layer: CanvasLayer, pos: Vector2, sz: Vector2) -> void:
 	var p := ColorRect.new()
 	p.color = Color(0, 0, 0, 0.42)
@@ -326,6 +350,12 @@ func _build_settings(layer: CanvasLayer, fnt: Font) -> void:
 		b.pressed.connect(func(): _set_speed(sv))
 		rs.add_child(b)
 
+	# 性能监控（dev）
+	var rp := _settings_row(vb, fnt, "性能监控 Dev")
+	var pbtn := _mk_sbtn(fnt, "开/关 (F3)", 150)
+	pbtn.pressed.connect(_toggle_perf)
+	rp.add_child(pbtn)
+
 	var hint := Label.new()
 	hint.text = "改 NPC 数量 → 同种子重开小镇（确定性）"
 	hint.add_theme_font_override("font", fnt)
@@ -399,6 +429,34 @@ func _save_sim_setting(key: String, val: Variant) -> void:
 	cfg.load("user://settings.cfg")   # 保留其他键（backend 等）
 	cfg.set_value("sim", key, val)
 	cfg.save("user://settings.cfg")
+
+func _toggle_perf() -> void:
+	_perf_on = not _perf_on
+	if _perf != null:
+		_perf.get_parent().visible = _perf_on     # 连同背景 panel 一起显隐
+	_perf_last_tick = Sim.tick_no
+	_perf_dt_acc = 0.0
+
+## dev 性能 overlay 每帧刷（FPS 要每帧才平滑；关时早退，零开销）。
+func _process(dt: float) -> void:
+	if not _perf_on or _perf == null:
+		return
+	_perf_dt_acc += dt
+	if _perf_dt_acc >= 0.5:                        # 每 0.5s 采一次 tick 率
+		_perf_rate = float(Sim.tick_no - _perf_last_tick) / _perf_dt_acc
+		_perf_last_tick = Sim.tick_no
+		_perf_dt_acc = 0.0
+	var ft := Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0
+	var mem := Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0
+	var objs := int(Performance.get_monitor(Performance.OBJECT_COUNT))
+	var nodes := int(Performance.get_monitor(Performance.OBJECT_NODE_COUNT))
+	var draws := int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
+	var st: Dictionary = AIBackend.stats
+	_perf.text = "[color=#7ed957]● PERF[/color]  FPS %d [color=#9aa0b5](%.1fms)[/color]\n内存 %.0f MB\n对象 %d  节点 %d  绘制 %d\nNPC %d  tick %d [color=#9aa0b5](%.1f/s ×%.0f)[/color]\n后端 [color=#ffd166]%s[/color]  在飞 %d\nLLM 发起 %d 落地 %d 超时 %d 脏 %d" % [
+		Engine.get_frames_per_second(), ft, mem, objs, nodes, draws,
+		Sim.agents.size(), Sim.tick_no, _perf_rate, Sim.speed,
+		AIBackend.backend, AIBackend._inflight,
+		int(st.get("fired", 0)), int(st.get("landed", 0)), int(st.get("timeout", 0)), int(st.get("bad_parse", 0))]
 
 func _update_status() -> void:
 	if _status == null:
@@ -779,6 +837,7 @@ func _unhandled_input(e: InputEvent) -> void:
 			KEY_MINUS, KEY_KP_SUBTRACT: _cam.zoom = (_cam.zoom / 1.15).clamp(ZOOM_MIN, ZOOM_MAX)
 			KEY_TAB: _cycle_selection(-1 if e.shift_pressed else 1)
 			KEY_O: _toggle_settings()                            # ⚙ 设置面板开关（NPC 数量/速度/后端）
+			KEY_F3: _toggle_perf()                               # dev 性能 overlay 开关
 			KEY_ESCAPE: _selected_id = ""; _update_obs()
 			KEY_C: _on_player_say("你好，最近怎么样？")        # 快捷：对选中居民打个招呼（也便于无键盘验证）
 			# ── 玩家能动性（--player）：WASD 移动 + 对选中居民 G打招呼/F送礼/B八卦/Y约见/P道歉/M调解 ──
