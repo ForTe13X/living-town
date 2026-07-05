@@ -5,6 +5,10 @@
     {"tenant": "coco", "landlord": "aria"},
     {"tenant": "dan",  "landlord": "ben"},
     {"tenant": "evy",  "landlord": "aria"},
-    {"tenant": "fei",  "landlord": "ben"}
+    {"tenant": "fei",  "landlord": "ben"},
+    {"tenant": "lin",  "landlord": "hai"},
+    {"tenant": "tie",  "landlord": "hai"},
+    {"tenant": "mei",  "landlord": "shu"},
+    {"tenant": "qin",  "landlord": "shu"}
   ]
 }

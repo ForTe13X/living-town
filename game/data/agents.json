@@ -6,6 +6,12 @@
     {"id": "coco", "persona": "coco", "home": [3, 3], "spawn": [11, 8]},
     {"id": "dan",  "persona": "dan",  "home": [6, 4], "spawn": [13, 9]},
     {"id": "evy",  "persona": "evy",  "home": [3, 3], "spawn": [11, 8]},
-    {"id": "fei",  "persona": "fei",  "home": [6, 4], "spawn": [4, 12]}
+    {"id": "fei",  "persona": "fei",  "home": [6, 4], "spawn": [4, 12]},
+    {"id": "lin",  "persona": "lin",  "home": [4, 2], "spawn": [16, 3]},
+    {"id": "hai",  "persona": "hai",  "home": [7, 2], "spawn": [3, 13]},
+    {"id": "shu",  "persona": "shu",  "home": [2, 5], "spawn": [13, 7]},
+    {"id": "mei",  "persona": "mei",  "home": [5, 5], "spawn": [18, 5]},
+    {"id": "qin",  "persona": "qin",  "home": [7, 5], "spawn": [11, 9]},
+    {"id": "tie",  "persona": "tie",  "home": [3, 6], "spawn": [19, 11]}
   ]
 }

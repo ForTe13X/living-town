@@ -109,7 +109,7 @@ func _ready() -> void:
 		_selected_id = "ben"                # 录 demo：默认选中木匠(有职业+钱) → 观察台展示经济/职业行
 	Sim.backend = AIBackend   # 窗口模式注入可插拔后端；headless/soak 时 Sim.backend=null 走内置 logic
 	Sim.speed = spd
-	_npc_target = maxi(6, Sim.spawn_count)   # 设置面板 NPC 数量初值（spawn_count 0→基础 6，>6→克隆总数）
+	_npc_target = maxi(6, Sim.agents.size())   # 设置面板 NPC 数量初值 = 实际居民数（基础 cast=agents.json，或 spawn_count 克隆总数）
 	# 启动算力探测：测一发暖决策 → 自适应截止线 + 太慢自动降 logic（docs/11 §12：测 p50→选 路C/logic）
 	if backend == "slm" or backend == "llm":
 		Sim.auto_run = false
@@ -450,6 +450,7 @@ func _apply_npc(delta: int) -> void:
 	Sim.auto_run = true
 	if _player_mode:
 		Sim.add_player()
+	_npc_target = maxi(6, Sim.agents.size() - (1 if _player_mode else 0))   # 低于基础 cast 时克隆环不减→回读实际数，显示不骗人
 	_selected_id = ""
 	_max_tick = 0
 	_save_sim_setting("npc_count", n)

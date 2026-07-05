@@ -4,5 +4,11 @@
   "coco": {"name": "可可", "color": "#8fb0e0", "traits": ["内向", "敏感"],     "bio": "画家，常在广场写生，容易多想。",           "style": "轻声细语、用比喻、容易自我怀疑", "sprite": "Mage-Cyan"},
   "dan":  {"name": "老邓", "color": "#7fbf9a", "traits": ["豁达", "爱讲古"],   "bio": "退休老船长，住镇上最久，故事一箩筐。",     "style": "热心、爱回忆往事、称呼别人‘小子/丫头’", "sprite": "Soldier-Yellow"},
   "evy":  {"name": "小薇", "color": "#d8c46a", "traits": ["好奇", "莽撞"],     "bio": "刚来的学生，对一切都新鲜，精力旺盛。",     "style": "语速快、爱发问、口头禅‘真的假的’", "sprite": "Archer-Green"},
-  "fei":  {"name": "阿菲", "color": "#b89ad8", "traits": ["温柔", "细心"],     "bio": "镇上医生，关心每个人的身体，沉稳可靠。",   "style": "温和、会叮嘱、用敬语", "sprite": "Archer-Purple"}
+  "fei":  {"name": "阿菲", "color": "#b89ad8", "traits": ["温柔", "细心"],     "bio": "镇上医生，关心每个人的身体，沉稳可靠。",   "style": "温和、会叮嘱、用敬语", "sprite": "Archer-Purple"},
+  "lin":  {"name": "阿林", "color": "#e0a060", "traits": ["勤快", "唠叨"],     "bio": "面点铺师傅，天不亮就起，热汤热包管够。",   "style": "热络、爱念叨、招呼人吃东西", "sprite": "Warrior-Red"},
+  "hai":  {"name": "老海", "color": "#5a8fc8", "traits": ["耿直", "好酒"],     "bio": "渔夫，一身海腥味，讲话直，认死理。",       "style": "粗声粗气、爱说渔谚、认准的事不改口", "sprite": "Soldier-Blue"},
+  "shu":  {"name": "沈书", "color": "#b06a6a", "traits": ["严谨", "固执"],     "bio": "教书先生，字斟句酌，最重规矩体面。",       "style": "文绉绉、爱引古话、说教口吻", "sprite": "Soldier-Red"},
+  "mei":  {"name": "阿梅", "color": "#9aa0b0", "traits": ["细致", "多疑"],     "bio": "裁缝，一针一线不含糊，看人很准。",         "style": "话少、观察入微、点到为止", "sprite": "Character-Base"},
+  "qin":  {"name": "苏琴", "color": "#6ac0b0", "traits": ["浪漫", "散漫"],     "bio": "街头琴师，日子随性，一曲换一餐。",         "style": "慢悠悠、爱比方、常走神", "sprite": "Archer-Purple"},
+  "tie":  {"name": "铁牛", "color": "#d08040", "traits": ["豪爽", "急躁"],     "bio": "铁匠，膀大腰圆，嗓门大心却软。",           "style": "大嗓门、直来直去、刀子嘴豆腐心", "sprite": "Soldier-Yellow"}
 }
