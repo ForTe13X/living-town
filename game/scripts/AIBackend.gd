@@ -266,8 +266,7 @@ func _probe_once(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Strin
 		chat.set("allow_thinking", false)
 		add_child(chat)
 		chat.call("start_worker")
-		if chat.has_method("set_sampler_preset_constrain_with_json_schema"):
-			chat.call("set_sampler_preset_constrain_with_json_schema", JSON.stringify(DECISION_SCHEMA))
+		# 不设 json_schema 受限解码：worker 异步起、配置常在 ask 前未就绪被丢弃(WARN 刷屏)；且长 prompt 下受限解码实测卡死只吐"{"(见 _fire_slm)。靠 parse_decision 抽 {…} 最稳。
 		chat.call("ask", usr)
 		var resp = await chat.response_finished
 		if is_instance_valid(chat): chat.queue_free()
@@ -441,9 +440,8 @@ func _fire_slm(id: String, agent: Dictionary, candidates: Array, ctx: Dictionary
 	chat.set("allow_thinking", false)
 	add_child(chat)
 	_pending[id]["slm_chat"] = chat                 # 存句柄：超时(_finish)时可停止+释放，避免堆积
-	chat.call("start_worker")                       # 必须先起 worker，sampler 才生效
-	if chat.has_method("set_sampler_preset_constrain_with_json_schema"):
-		chat.call("set_sampler_preset_constrain_with_json_schema", JSON.stringify(DECISION_SCHEMA))
+	chat.call("start_worker")
+	# 不设 json_schema 受限解码：NobodyWho worker 异步起，配置常在 ask 前未就绪被丢弃(WARN×N)；且长 prompt(多候选)下受限解码实测卡死只吐"{"。去掉它，靠 _system_prompt 的 /no_think + parse_decision 抽 {…} 最稳。
 	chat.connect("response_finished", func(resp):
 		if _pending.has(id):
 			_pending[id]["raw"] = String(resp)
