@@ -10,6 +10,12 @@
 
 ---
 
+## 2026-07-05 · GPU 之谜坐实(CPU-only) + 异步启动探测(真机验证不再黑屏)
+
+💡🛠 两件事收口。**① GPU vs CPU 坐实**：三路证据都指 **NobodyWho v9.4.0 的 arm64-android 是 CPU-only**——(a) 反查我们自己那个 `.so`：`grep -a` 里 vulkan/ggml_vulkan/opencl/adreno **全 0**，而 Windows dll 是 vulkan×16/ggml_vulkan×13（且真跑到 AMD Vulkan）；(b) NobodyWho `Cargo.toml` 的 `vulkan` feature 明确 `not(target_os="android")`，安卓只给 `android-static-stdcxx`；(c) 官方文档白纸黑字"Mobile platforms currently run CPU-only"。`use_gpu_if_available` 在安卓是**空操作**。**关键洞察**：我们量到的 ~40s/发 比 3B CPU decode 还慢 → 是 **prefill 主导**（长 system prompt + grammar），不是纯 decode。所以端上要能用：**0.5B(稳)/1.5B(勉强)** + 砍 prompt + **Q4_0**(ARM 有快 repack GEMV，比 Q4_K_M 快)。GPU 想要得换 OpenCL-Adreno 自编 llama.cpp + 别的绑定，且只快 prefill 不快 decode。
+
+⚠️🛠 **② 异步启动探测**：真机上"启动进 slm 黑屏 85s"的根是 `Main._ready` 在建 WorldView/HUD **之前** `await probe_capability`（1.9GB 模型 load+2 暖发）。修法：**先建视图/HUD、镇子立刻跑 logic 地板，探测改后台异步**——`probe_capability(be,…)` 收显式目标后端，**够快才切 be**（原来是"太慢降 logic"，现在反过来"够快才升 slm"），boot 与运行期 toggle 共用 `_probe_and_activate`。**真机验证**：uninstall→install debug→授权→toggle slm→重启进 slm，8s 就出镇子（旧版黑 85s），状态栏 logic、日志印"模型加载+探测中…镇子先跑 logic 地板"，送礼社交照流——**黑屏没了、镇子探测中也不冻**。顺带修了 toggle 进 slm 不重探测→静默 100% 超时冻镇（现在 toggle 也走 `_probe_and_activate`）。**桌面红线守住**：默认 logic digest 3858030099 逐字节不变、S0 全绿（异步探测只在窗口 slm/llm 路，不碰 CI）。
+
 ## 2026-07-05 · adb 真机环打通 → 一口气挖出端上 SLM 全貌（4 个真机专有 bug）
 
 🍀🛠 用户搭了 `Dev/godot-android-loop`（无线 adb：export→install→launch→logcat 一条命令 + `screencap` 给 agent 看），**桌面再也验不到的端侧终于可驱动**。一轮 deploy→screencap→Read→logcat 就把"手机上 SLM 到底行不行"从完全黑箱挖成全貌：
