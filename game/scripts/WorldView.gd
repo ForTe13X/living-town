@@ -147,12 +147,12 @@ func _set_dialogue(e: Dictionary) -> void:
 	var target := String(e.get("target", ""))
 	var until := Sim.tick_no + SAY_TICKS
 	var actor_set := false
-	# 真模型：把发起者决策里的 last_say（LLM 生成）顶上气泡，覆盖罐头、不限 DIALOG 内类型
-	if AIBackend.backend == "llm" or AIBackend.backend == "slm":
-		var ls := String(Sim.get_agent(actor).get("last_say", "")).strip_edges()
-		if ls != "":
-			_say[actor] = {"text": ls, "until": until}
-			actor_set = true
+	# 发起者决策台词优先顶上气泡：llm/slm=模型实时生成；logic=Sim._canned_say（冻结·70B 语音库→人设台词，缺库回落通用罐头）。
+	# 有词就用它、覆盖 DIALOG 类型化罐头；为空才回落 DIALOG。（WorldView 是纯视图，动不了 digest。）
+	var ls := String(Sim.get_agent(actor).get("last_say", "")).strip_edges()
+	if ls != "":
+		_say[actor] = {"text": ls, "until": until}
+		actor_set = true
 	if not DIALOG.has(t):
 		return
 	var bank: Dictionary = DIALOG[t]

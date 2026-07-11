@@ -116,6 +116,10 @@ var _fest_objects: Array = []   # 当前节日 spawn 的对象 id（despawn/star
 var skills := {}                # {per_level:int, max_level:int, wage_bonus:int}
 # ── 私密秘密（docs/16 秘密博弈激活）：data/secrets.json 驱动；缺文件→无种子→逐字节不变；仅默认沙盘场景播种，保留定向场景纯净 ──
 var secrets := {}               # {seeds:[{owner:id, claim:str}]}；每条给 owner 一条 self-subject 秘密 → 走 confide/leak/betray 专道
+# ── 冻结·70B 语音库（frozen-70B voice）：data/voicebank.json = {persona_id:{action:[台词…]}}；70B 离线著作、冻成数据 ──
+# _canned_say 按 tick/agent 确定性挑一条 → LLM 质感、零端上推理、逐字节可回放。缺文件→{}→回落通用罐头(逐字节不变，off 门)。
+# 说明：台词只进 UI 气泡/记忆视图，不进 event_log digest（digest 只哈希 id:type:actor:target:accepted:subject:tick），故语音是纯呈现、动不了红线。
+var voicebank := {}
 # ── Wave 2a 职业（docs/15 §3）：data/jobs.json 驱动；缺文件→_wage_for≡economy.wages 查表=逐字节不变 ──
 var jobs := {}                  # {jobs:{holder:{title,action,wage,shift:[相位]}}, extra_advertises:[{object,action,need,amount,duration}]}
 var _jobs_injected := false     # extra_advertises 只注入一次（防 _load_data 重入翻倍）
@@ -238,6 +242,7 @@ func _load_data() -> void:
 	skills = _read_json("res://data/skills.json")   # Wave 2c 技能（缺文件→_skill_level=0=零扰动）
 	festivals = _read_json("res://data/festivals.json")  # Wave 2b 节日（缺文件→零扰动）
 	secrets = _read_json("res://data/secrets.json") # 私密秘密（缺文件→无种子=零扰动）
+	voicebank = _read_json("res://data/voicebank.json")  # 冻结·70B 语音库（缺文件→通用罐头=逐字节不变）
 	housing = _read_json("res://data/housing.json") # Wave 3c 住房租金（缺文件→无租金=零扰动）
 	elections = _read_json("res://data/elections.json") # Wave 3a 选举（缺文件→不选举=零扰动）
 	lifecycle = _read_json("res://data/lifecycle.json") # Wave 3b 生命周期（缺文件→无季节无年龄=零扰动）
@@ -440,6 +445,7 @@ func _make_agent(adef: Dictionary, personas: Dictionary) -> Dictionary:
 	var ag := {
 		"id": adef["id"],
 		"persona": personas.get(adef["persona"], {}),
+		"persona_key": String(adef.get("persona", "")),   # 人设 id（voicebank/scriptwriter 按此键；克隆继承基座人设 id）
 		"pos": Vector2i(int(adef["spawn"][0]), int(adef["spawn"][1])),
 		"home": Vector2i(int(adef["home"][0]), int(adef["home"][1])),
 		"needs": {},
@@ -2084,8 +2090,15 @@ func _logic_decide(ag: Dictionary, cands: Array) -> Dictionary:
 	best["say"] = _canned_say(ag, best)
 	return best
 
-func _canned_say(_ag: Dictionary, intent: Dictionary) -> String:
-	match str(intent.get("action", "")):
+func _canned_say(ag: Dictionary, intent: Dictionary) -> String:
+	var action := str(intent.get("action", ""))
+	# 冻结·70B 语音库优先：取该【人设】该【动作】的台词库，按 tick/agent 确定性挑一条 → LLM 质感、零推理、逐字节可回放。
+	# 缺 voicebank.json（voicebank={}）或该键无词 → 回落下方通用罐头（逐字节不变，off 门）。
+	if not voicebank.is_empty():
+		var bank = (voicebank.get(String(ag.get("persona_key", "")), {}) as Dictionary).get(action, [])
+		if bank is Array and not (bank as Array).is_empty():
+			return String(bank[_rng_at(6007, _aid(ag)).randi() % bank.size()])   # 6007=voice 专用盐；独立 RNG 流，不扰其他抖动
+	match action:
 		"吃饭": return "有点饿了，去吃点东西。"
 		"睡觉": return "困了，回去歇会儿。"
 		"社交", "闲聊": return "去找人唠两句。"
