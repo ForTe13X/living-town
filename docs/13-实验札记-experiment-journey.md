@@ -16,6 +16,8 @@
 
 ⚠️🛠 **② 异步启动探测**：真机上"启动进 slm 黑屏 85s"的根是 `Main._ready` 在建 WorldView/HUD **之前** `await probe_capability`（1.9GB 模型 load+2 暖发）。修法：**先建视图/HUD、镇子立刻跑 logic 地板，探测改后台异步**——`probe_capability(be,…)` 收显式目标后端，**够快才切 be**（原来是"太慢降 logic"，现在反过来"够快才升 slm"），boot 与运行期 toggle 共用 `_probe_and_activate`。**真机验证**：uninstall→install debug→授权→toggle slm→重启进 slm，8s 就出镇子（旧版黑 85s），状态栏 logic、日志印"模型加载+探测中…镇子先跑 logic 地板"，送礼社交照流——**黑屏没了、镇子探测中也不冻**。顺带修了 toggle 进 slm 不重探测→静默 100% 超时冻镇（现在 toggle 也走 `_probe_and_activate`）。**桌面红线守住**：默认 logic digest 3858030099 逐字节不变、S0 全绿（异步探测只在窗口 slm/llm 路，不碰 CI）。
 
+**真机标定（1.5B live 探测）**：推 qwen2.5-1.5B-Q4_K_M 到设备、重启进 slm live 探测——**p50=9680ms（~9.7s/发）→ demoted_logic**（8s 线就差一点点）。3B 是 ~40s，1.5B 是 9.7s。**关键**：9.7s 里绝大半是 **12 居民长 prompt 的 prefill**（research 预言中）——不是 decode。所以过线的最省路是**砍 prompt/缓存静态前缀**，或换 **0.5B**（~2-3x 快 → 3-5s → 稳过），或把 demote 阈值放宽到接受 ~10s/发（能跑但 LLM 节奏慢）。异步探测期间镇子全程 logic 地板活着、24s 截图还在探、30s 才出 demoted——**首帧不黑、探测不冻，真机实锤**。
+
 ## 2026-07-05 · adb 真机环打通 → 一口气挖出端上 SLM 全貌（4 个真机专有 bug）
 
 🍀🛠 用户搭了 `Dev/godot-android-loop`（无线 adb：export→install→launch→logcat 一条命令 + `screencap` 给 agent 看），**桌面再也验不到的端侧终于可驱动**。一轮 deploy→screencap→Read→logcat 就把"手机上 SLM 到底行不行"从完全黑箱挖成全貌：
