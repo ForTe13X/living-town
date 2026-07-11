@@ -230,15 +230,17 @@ func set_model_path(path: String) -> void:
 # ── 启动算力探测（测一发暖决策 → 分档 + 自适应截止线 + 太慢自动降 logic）────────────
 ## 实测依据(docs/11 §12)：现代机决策 1–5s 都在 12s 线内；>~8s 即不实用 → 降确定性 logic。
 ## cb 收到 {tier, p50_ms, deadline_ms, backend}。logic/mock 立即返回（无需探测）。
-func probe_capability(agent: Dictionary, candidates: Array, ctx: Dictionary, cb: Callable) -> void:
-	if backend == "logic" or backend == "mock":
+## be=想启用的后端(slm/llm)。调用前 backend/backend_requested 已置 logic → 探测期间镇子跑地板(不冻/不黑屏，
+## 真机 1.9GB 模型 load+2 暖发要 ~85s)；够快(≤8s/发)才切到 be，太慢/坏则留 logic。
+func probe_capability(be: String, agent: Dictionary, candidates: Array, ctx: Dictionary, cb: Callable) -> void:
+	if be == "logic" or be == "mock":
 		tier = "instant"
 		cb.call({"tier": tier, "p50_ms": 0, "deadline_ms": deadline_ms, "backend": backend})
 		return
 	var warm := 0
-	for i in 2:                                   # 第1发付冷载，取第2发为暖延迟
+	for i in 2:                                   # 第1发付冷载(含模型 mmap)，取第2发为暖延迟
 		var t0 := Time.get_ticks_msec()
-		await _probe_once(agent, candidates, ctx)
+		await _probe_once(be, agent, candidates, ctx)
 		warm = Time.get_ticks_msec() - t0
 	p50_ms = warm
 	if p50_ms < 1500: tier = "fast"
@@ -246,18 +248,18 @@ func probe_capability(agent: Dictionary, candidates: Array, ctx: Dictionary, cb:
 	elif p50_ms < 15000: tier = "slow"
 	else: tier = "toolslow"
 	deadline_ms = clampi(6 * p50_ms, 3000, DEADLINE_MS)
-	if p50_ms > 8000:                             # 太慢：降级到确定性 logic（仍完整可玩）
-		backend = "logic"
-		backend_requested = "logic"               # 关键：同步意图，否则 decide() 的运行期切换会立刻把降级撤销（评审确认的回归）。
-		                                          # 磁盘上的持久化意图只由显式 toggle 写入 → 不受影响，下次启动仍会重试 slm 并重新探测。
+	if p50_ms > 8000:                             # 太慢(>8s/发)：不启用，留在确定性 logic 地板（镇子照常）
 		tier = "demoted_logic"
+	else:                                         # 够快：启用目标后端（backend_requested 同步，decide() 才不会又切回 logic）
+		backend = be
+		backend_requested = be
 	cb.call({"tier": tier, "p50_ms": p50_ms, "deadline_ms": deadline_ms, "backend": backend})
 
 ## 直连一发计时决策（绕过 pending 状态机），返回 raw 串。
-func _probe_once(agent: Dictionary, candidates: Array, ctx: Dictionary) -> String:
+func _probe_once(be: String, agent: Dictionary, candidates: Array, ctx: Dictionary) -> String:
 	var sys := _system_prompt()
 	var usr := build_prompt(agent, candidates, ctx)
-	if backend == "slm" and ClassDB.class_exists("NobodyWhoModel"):
+	if be == "slm" and ClassDB.class_exists("NobodyWhoModel"):
 		var model := _ensure_slm_model()
 		if model == null: return ""
 		var chat: Object = ClassDB.instantiate("NobodyWhoChat")

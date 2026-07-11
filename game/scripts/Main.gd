@@ -110,18 +110,11 @@ func _ready() -> void:
 	Sim.backend = AIBackend   # 窗口模式注入可插拔后端；headless/soak 时 Sim.backend=null 走内置 logic
 	Sim.speed = spd
 	_npc_target = maxi(6, Sim.agents.size())   # 设置面板 NPC 数量初值 = 实际居民数（基础 cast=agents.json，或 spawn_count 克隆总数）
-	# 启动算力探测：测一发暖决策 → 自适应截止线 + 太慢自动降 logic（docs/11 §12：测 p50→选 路C/logic）
-	if backend == "slm" or backend == "llm":
-		Sim.auto_run = false
-		var pag: Dictionary = Sim.agents[0]
-		await AIBackend.probe_capability(pag, Sim.agent_candidates(pag), Sim._context(pag), func(info):
-			print("[算力探测] tier=%s p50=%dms deadline=%dms backend=%s" % [info["tier"], int(info["p50_ms"]), int(info["deadline_ms"]), info["backend"]]))
-		backend = AIBackend.backend   # 可能已被降级为 logic
 	if _player_mode:
 		Sim.add_player()              # 玩家入社交图：NPC 会主动搭话/接受规则/账本/记忆全生效
 	if _demo_mode:
 		_demo_setup()                 # 舞台布置（首帧前，无可见跳变）+ 动作剧本
-	Sim.auto_run = true
+	Sim.auto_run = true               # 镇子立刻跑（logic 地板）——slm/llm 探测改后台异步，不再挡首帧
 
 	_view = preload("res://scripts/WorldView.gd").new()
 	add_child(_view)
@@ -145,6 +138,10 @@ func _ready() -> void:
 	if OS.has_feature("android"):           # 手机上无控制台：把模型是否就位讲出来，缺则玩家知道往哪放 gguf
 		var ms := AIBackend.model_status()
 		_push("[color=#9ad0ff]端上模型 %s\n%s[/color]" % [("✓ 就位" if ms["exists"] else "未找到 → 用 logic 地板（把 gguf 放进 Documents 后重开）"), ms["path"]])
+	# 端上模型：首帧/HUD 已建好，才【异步】探测——真机 1.9GB 模型 load+2 暖发要 ~85s，绝不能挡首帧(否则黑屏)。
+	# 探测期间镇子跑 logic 地板(活着)；够快切 slm/llm，太慢/坏留 logic。（headless CI 不经窗口路 → 逐字节不变。）
+	if backend == "slm" or backend == "llm":
+		_probe_and_activate(backend)        # 不 await：后台跑，首帧已可见
 	if _shot_path != "":                    # dev 出图：等 1.5s 让世界渲染+纹理加载，再存一帧退出
 		get_tree().create_timer(1.5).timeout.connect(func():
 			var img := get_viewport().get_texture().get_image()
@@ -287,15 +284,32 @@ func _daylight(tod: float) -> Color:
 			return (a[1] as Color).lerp(b[1] as Color, f)
 	return Color(1, 1, 1)
 
-## 轮换后端（logic → llm → mock → slm → …，仅含 available_backends()）。记录意图 + 持久化；
-## 真正切换发生在 AIBackend.decide() 的安全点（无在飞请求时），本 tick 状态栏即显示「→目标…」排队中。
+## 异步探测端上模型再启用（够快切 want，太慢/坏留 logic 地板）。探测期间 backend/requested 都置 logic →
+## 镇子跑地板不冻/不黑屏（真机 1.9GB 模型 load+2 暖发要 ~85s）。boot 与运行期 toggle 共用此路。
+func _probe_and_activate(want: String) -> void:
+	if Sim.agents.is_empty():
+		return
+	AIBackend.backend = "logic"                  # 探测期间跑地板；两者都 logic → decide() 的安全点切换不误动
+	AIBackend.backend_requested = "logic"
+	_sync_backend_btn()
+	_push("[color=#9ad0ff]端上模型加载+探测中…（镇子先跑 logic 地板，够快才切 %s）[/color]" % want)
+	var pag: Dictionary = Sim.agents[0]
+	await AIBackend.probe_capability(want, pag, Sim.agent_candidates(pag), Sim._context(pag), func(info):
+		_push("[color=#9ad0ff][算力探测] %s · p50=%dms · 后端 → %s[/color]" % [String(info.get("tier", "?")), int(info.get("p50_ms", 0)), String(info.get("backend", "logic"))]))
+	_sync_backend_btn()
+
+## 轮换后端（仅含 available_backends()；手机 = logic→slm→mock）。logic/mock 即时切；slm/llm 走异步探测。
 func _on_toggle_backend() -> void:
 	var avail := AIBackend.available_backends()
 	var i := avail.find(AIBackend.backend_requested)
 	var nxt := String(avail[(i + 1) % avail.size()]) if i >= 0 else "logic"
-	AIBackend.request_backend(nxt)               # 意图 + 存 user://settings.cfg；下次启动也记住
-	_sync_backend_btn()
-	_push("[color=#9ad0ff]后端 → %s（生效于下个安全点；慢则各自超时回落 logic）[/color]" % nxt)
+	AIBackend.request_backend(nxt)               # 记录意图 + 存 user://settings.cfg；下次启动也记住
+	if nxt == "slm" or nxt == "llm":
+		_push("[color=#9ad0ff]后端 → %s（探测端上模型中…够快启用，太慢留 logic）[/color]" % nxt)
+		_probe_and_activate(nxt)                 # 异步：镇子跑地板探测，够快才启用（不再静默 100% 超时冻镇）
+	else:
+		_sync_backend_btn()
+		_push("[color=#9ad0ff]后端 → %s[/color]" % nxt)
 
 func _sync_backend_btn() -> void:
 	if _backend_btn == null:
