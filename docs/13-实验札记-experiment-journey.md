@@ -10,6 +10,17 @@
 
 ---
 
+## 2026-07-05 · adb 真机环打通 → 一口气挖出端上 SLM 全貌（4 个真机专有 bug）
+
+🍀🛠 用户搭了 `Dev/godot-android-loop`（无线 adb：export→install→launch→logcat 一条命令 + `screencap` 给 agent 看），**桌面再也验不到的端侧终于可驱动**。一轮 deploy→screencap→Read→logcat 就把"手机上 SLM 到底行不行"从完全黑箱挖成全貌：
+- ✅ **美术真机加载正常**（地形/精灵/家具全在）——之前那个"导出剥裸资源"的修复真机坐实。✅ **12 独立居民**真机各异渲染。✅ 模型文件解析到（`✓ 就位 /Documents/model.gguf`，1.93GB）。
+- ⚠️ **但 SLM 100% 超时**：perf overlay `发起 68 · 成功 0 · 超时 66`，且**内存仅 176MB**——2GB 的模型根本没 load 进内存。🔑 根因 `appops`：**`MANAGE_EXTERNAL_STORAGE: default; rejected`**——权限被拒 → 公共 Documents 的 gguf 能 `stat` 却不能 `mmap` 读 → 模型永远载不上 → 每发必超时。`adb shell appops set … allow` 后重启，`dumpsys meminfo` **TOTAL PSS 2.43GB（~1.9GB clean=模型 mmap）**——模型真载上了。
+- 🚧 **但启动进 slm 会黑屏 ~85s**：`Main._ready` 在建 WorldView/HUD **之前** `await probe_capability`（载模型+2 发暖推理），1.9GB 模型在真机上这一步就是 85s 黑屏。**修法：先建视图再异步探测。**
+- 🚧 **运行期 toggle 进 slm 不重探测**（我当初为省事跳过的）→ 无自适应截止线、无降级 → 模型慢/坏时**静默 100% 超时、镇子冻住**。而**启动进 slm 会探测** → 正确降级：真机 probe 测出 3B **p50≫8s**（~40s/发，几乎肯定 arm64 无 Adreno GPU、纯 CPU）→ 自动降 logic，镇子照活。
+- 🐛 小 bug 两枚：`list_models` 的 `DirAccess` 枚举公共 scoped-storage 目录失败 → 设置里显示"无 gguf"（但 `file_exists` 解析成功，故照跑）；设置面板后端显示是启动时的旧值（stale）。
+
+**结晶**：① 端侧 gguf 别放公共 Documents（要 all-files 权限，多数用户会拒）——放 app 私有 `user://`(Android/data/<pkg>/files) 免权限，或运行期申请权限。② **3B 在这机器上太慢**（CPU），端上要 **1.5B/0.5B** 或坐实 GPU 加速。③ 别用 `await probe` 挡首帧。④ **真机专有 bug 桌面一个都测不到**——这套 adb 环是端侧 vibe-coding 的命门。见 [[reference-godot-android-loop]]。
+
 ## 2026-07-05 · 端上 SLM 真跑通了（118/120 落地）+ 一个删掉才对的 sampler
 
 🍀🛠 用户报"slm 没声音"，一查截图——在 **llm** 后端（HTTP→127.0.0.1 LM Studio，手机上根本没有），发起 3006 全废。换个思路，本机把 slm 路径整条验一遍：NobodyWho 的 Windows dll + 真 qwen2.5-1.5b gguf，跑 `--backend slm`。**AMD Vulkan GPU 直接吃下**（arch qwen2、gpu_layers=29），算力探针 tier=fast p50~365ms，40s 内 **发起 120 · 成功 118 · 超时 0 · 无效 0**——**端上 LLM 声音是真的能跑，98% 落地**。arm64 安卓库同一套 API，手机（Adreno）只会更快。
