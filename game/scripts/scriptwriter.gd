@@ -9,6 +9,9 @@ extends SceneTree
 ##        --seed 20260626 --out director_1 [--model llama-3.3-70b-instruct] [--mock] [--days 30] \
 ##        [--endpoint http://127.0.0.1:1234/v1/chat/completions]
 ##   --mock：跳过 LLM，写一份确定性罐头剧本（快速验证管线+确定性，无需真模型）。
+##   --voicebank：另一条产出线——为 personas.json 每个人设一次 70B 调用批量著作台词，冻进 data/voicebank.json
+##     （冻结·70B 语音路：LLM 质感、零端上推理、逐字节可回放）。配 --mock 出占位版验证管线。
+##     例：godot --headless --path . --script res://scripts/scriptwriter.gd -- --voicebank --model llama-3.3-70b-instruct
 
 const SimScript = preload("res://scripts/Sim.gd")
 const SimExt = preload("res://scripts/SimExtensions.gd")
@@ -25,6 +28,7 @@ func _run() -> void:
 	var seed := 20260626
 	var out_id := "director_1"
 	var mock := false
+	var voicebank := false   # --voicebank：为每个人设批量著作语音库 data/voicebank.json（冻结·70B 语音路）
 	var days := 30
 	var recurring := 0     # >0：周更编剧 N 周（离线编排：跑一段→快照→70B→冻进 schedule→再跑）
 	var interval := 7      # 每几天一次编剧介入
@@ -39,7 +43,11 @@ func _run() -> void:
 		elif args[i] == "--recurring": recurring = int(nx)
 		elif args[i] == "--interval": interval = maxi(1, int(nx))
 		elif args[i] == "--mock": mock = true
+		elif args[i] == "--voicebank": voicebank = true
 
+	if voicebank:
+		await _gen_voicebank(seed, days, mock)   # 冻结·70B 语音库（另一条离线产出线，非 scenario）
+		return
 	if recurring > 0:
 		await _orchestrate(seed, recurring, interval, out_id, mock)
 		return
@@ -342,3 +350,144 @@ func _mock_week_patch(w: int) -> Dictionary:
 		{"agents": [{"id": "dan", "attitudes": {"old_tales": 0.9}, "relationships": {"evy": {"affinity": 40.0, "trust": 30.0}}}]}
 	]
 	return wk[(w - 1) % wk.size()]
+
+## ── 冻结·70B 语音库生成器（--voicebank）─────────────────────────────────────
+## 读 data/personas.json → 每人设一次 70B 调用（要它按【口吻+性格】为各动作写台词）→ 净化 → 冻进 data/voicebank.json。
+## Sim._canned_say 之后按 _rng_at 确定性挑一条；缺库/未列动作→回落通用罐头（逐字节不变）。台词不进 digest = 纯呈现。
+## 自检：同 seed，【有/无语音库】两跑 digest 必须逐字节一致 → 坐实"语音动不了红线"。
+func _gen_voicebank(seed: int, days: int, mock: bool) -> void:
+	print("=== Scriptwriter·冻结70B语音库  model=%s  mock=%s ===" % [_model, str(mock)])
+	var pj: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/personas.json"))
+	if not (pj is Dictionary):
+		print("❌ 读 personas.json 失败"); quit(1); return
+	var personas: Dictionary = pj
+	var actions := _voice_actions()
+	var valid_keys := {}
+	for a in actions:
+		valid_keys[String(a["k"])] = true
+	var bank := {"_note": "冻结·70B 语音库（scriptwriter.gd --voicebank 产出）：{persona_id:{action:[台词]}}。Sim._canned_say 按 _rng_at 确定性挑一条；缺文件/未列动作→回落通用罐头(逐字节不变)。台词只进 UI 气泡/记忆视图，不进 digest。"}
+	for pid in personas:
+		if String(pid).begins_with("_"):
+			continue
+		var p: Dictionary = personas[pid] if personas[pid] is Dictionary else {}
+		var raw: Dictionary
+		if mock:
+			raw = _mock_voice_persona(p, actions)
+		else:
+			print("→ 70B 为【%s %s】写台词…" % [pid, p.get("name", "")])
+			raw = await _gen_voice_persona(p, actions)
+		var clean := _validate_voice(raw, valid_keys)
+		if clean.is_empty():
+			print("  ⚠ %s 净化后为空，跳过（该人设回落通用罐头）" % pid)
+			continue
+		bank[String(pid)] = clean
+		print("  ✅ %s：%d 个动作有台词" % [pid, clean.size()])
+	var path := "res://data/voicebank.json"
+	var f := FileAccess.open(path, FileAccess.WRITE)
+	if f == null:
+		print("❌ 写盘失败: " + path); quit(1); return
+	f.store_string(JSON.stringify(bank, "  "))
+	f.close()
+	print("✅ 语音库已冻结 → res://data/voicebank.json（%d 个人设有词）" % (bank.size() - 1))
+	# 红线自检：语音是纯呈现——同 seed 有/无语音库两跑，digest 必须逐字节一致
+	var dw := _voicebank_digest(seed, days, true)
+	var dn := _voicebank_digest(seed, days, false)
+	var ok: bool = dw[0] == dn[0] and dw[1] == dn[1]
+	print("红线自检（%d 天·有/无语音库两跑）：digest %d/%d vs %d/%d → %s" % [
+		days, dw[0], dw[1], dn[0], dn[1], "✅ 逐字节一致（语音=纯呈现，回放不破）" if ok else "❌ 语音竟改了 digest！"])
+	quit(0 if ok else 1)
+
+## 要著作的动作 + 中文语义（喂 70B 让它知道每个动作的场合）。物件动作用中文键（与 Sim 动作名一致）。
+func _voice_actions() -> Array:
+	return [
+		{"k": "greet", "d": "跟人打招呼/寒暄"},
+		{"k": "give", "d": "送对方一件小礼物"},
+		{"k": "gossip", "d": "跟对方咬耳朵说个小道消息"},
+		{"k": "gossip_rep", "d": "提醒对方某个第三者风评不好"},
+		{"k": "discuss", "d": "聊自己对某件事的看法"},
+		{"k": "endorse", "d": "跟同伙统一口径、表态站一队"},
+		{"k": "invite", "d": "约对方改天一起聚聚"},
+		{"k": "confront", "d": "当面找对方把话说开/理论"},
+		{"k": "apologize", "d": "向对方道歉认错"},
+		{"k": "confide", "d": "对信得过的人吐露一桩心事"},
+		{"k": "aid", "d": "主动搭把手帮衬对方"},
+		{"k": "吃饭", "d": "自言自语：该去吃点东西"},
+		{"k": "做活", "d": "自言自语：该去干本职活儿"},
+		{"k": "玩耍", "d": "自言自语：忙里偷闲玩一会儿"},
+	]
+
+func _voice_sys_prompt() -> String:
+	return "你是一个像素小镇生活模拟游戏的『台词作者』。给定一位居民的人设，为其在各种行动/社交场合写贴合【口吻+性格】的短台词。只输出严格合法的 JSON，不要任何解释、不要 markdown 围栏、不要多余文字。"
+
+func _voice_user_prompt(p: Dictionary, actions: Array) -> String:
+	var al: Array = []
+	for a in actions:
+		al.append("%s（%s）" % [a["k"], a["d"]])
+	return "居民人设：\n名字：%s\n性格：%s\n口吻：%s\n背景：%s\n\n为下列每个【动作/场合】写恰好 3 条这位居民会说的短台词——每条≤15字、纯中文、贴其【口吻+性格】、像真人随口说的一句，别复述动作名、别泛泛天气/寒暄套话、别夹英文。\n动作列表：\n%s\n\n只输出 JSON：键=上面括号前的动作名（原样，含中文键），值=3 条台词的字符串数组。形如：\n{\"greet\":[\"…\",\"…\",\"…\"],\"give\":[\"…\",\"…\",\"…\"],\"吃饭\":[\"…\",\"…\",\"…\"]}\n只输出 JSON。" % [
+		String(p.get("name", "")), "·".join(p.get("traits", [])), String(p.get("style", "")), String(p.get("bio", "")), "\n".join(al)]
+
+## 单个人设一次 HTTP → 70B 写全动作台词。返回解析后的 {action:[lines]}（失败=空）。
+func _gen_voice_persona(p: Dictionary, actions: Array) -> Dictionary:
+	var http := HTTPRequest.new()
+	get_root().add_child(http)
+	http.timeout = 600.0
+	var body := {"model": _model, "temperature": 0.9, "max_tokens": 1200, "stream": false,
+		"messages": [{"role": "system", "content": _voice_sys_prompt()},
+			{"role": "user", "content": _voice_user_prompt(p, actions)}]}
+	if http.request(_endpoint, ["Content-Type: application/json"], HTTPClient.METHOD_POST, JSON.stringify(body)) != OK:
+		print("  ❌ HTTP 发起失败（LM Studio 未开/端口不对？）"); http.queue_free(); return {}
+	var res: Array = await http.request_completed
+	http.queue_free()
+	if int(res[1]) != 200:
+		print("  ❌ HTTP code=%d" % int(res[1])); return {}
+	var j: Variant = JSON.parse_string((res[3] as PackedByteArray).get_string_from_utf8())
+	if not (j is Dictionary) or not (j as Dictionary).has("choices"):
+		print("  ❌ 响应缺 choices"); return {}
+	return _extract_json(String(j["choices"][0].get("message", {}).get("content", "")))
+
+## 确定性罐头语音（--mock）：占位台词，验证管线+确定性自检，无需真模型（真跑用 70B 出质感）。
+func _mock_voice_persona(p: Dictionary, actions: Array) -> Dictionary:
+	var nm := String(p.get("name", ""))
+	var out := {}
+	for a in actions:
+		out[a["k"]] = ["（%s·%s·占位）" % [nm, a["k"]], "（%s·%s·占位二）" % [nm, a["k"]]]
+	return out
+
+## 净化 70B 原样输出：只留合法动作键、非空中文短句（≤20字，去英文说明/去重、每动作≤4 条）。冻结前最后护栏。
+func _validate_voice(raw: Dictionary, valid_keys: Dictionary) -> Dictionary:
+	var out := {}
+	for k in raw:
+		if not valid_keys.has(String(k)):
+			continue
+		if not (raw[k] is Array):
+			continue
+		var lines: Array = []
+		for ln in (raw[k] as Array):
+			var s := String(ln).strip_edges()
+			if s == "" or s.length() > 20:      # 空/过长（可能夹带说明）→ 弃
+				continue
+			if s in lines:                       # 去重
+				continue
+			lines.append(s)
+			if lines.size() >= 4:
+				break
+		if not lines.is_empty():
+			out[String(k)] = lines
+	return out
+
+## 红线自检辅助：跑一局 days 天，返回 [inv_digest, event_digest]。with_voice=false 时清空 voicebank 对照。
+func _voicebank_digest(seed: int, days: int, with_voice: bool) -> Array:
+	var S = SimScript.new()
+	get_root().add_child(S)
+	S._load_data()
+	if not with_voice:
+		S.voicebank = {}                        # 对照组：无语音库
+	S.auto_run = false
+	S.backend = null
+	S.start_new(seed)
+	for i in days * int(S.TICKS_PER_DAY):
+		S.tick()
+	var r := [int(Inv.digest(S)), int(S.event_digest)]
+	get_root().remove_child(S)
+	S.free()
+	return r
