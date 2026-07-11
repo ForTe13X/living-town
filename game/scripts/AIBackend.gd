@@ -253,6 +253,7 @@ func probe_capability(be: String, agent: Dictionary, candidates: Array, ctx: Dic
 	else:                                         # 够快：启用目标后端（backend_requested 同步，decide() 才不会又切回 logic）
 		backend = be
 		backend_requested = be
+	print("[算力探测] be=%s tier=%s p50=%dms deadline=%dms → backend=%s" % [be, tier, p50_ms, deadline_ms, backend])   # 真机 logcat 可读（UI 日志会被社交事件刷掉）
 	cb.call({"tier": tier, "p50_ms": p50_ms, "deadline_ms": deadline_ms, "backend": backend})
 
 ## 直连一发计时决策（绕过 pending 状态机），返回 raw 串。
@@ -601,10 +602,9 @@ func _system_prompt() -> String:
 	# 静态前缀（可被 prompt-cache 复用）：世界规则 + 输出契约
 	# 实测(qwen3@LM Studio)：①不加 /no_think → 思考烧满 token、content 空、37s finish=length；
 	#   ②json_schema 受限解码在长 prompt(9候选)下卡死只吐 "{"。故：去 json_schema + 加 /no_think + 靠 parse_decision 抽 {…}，最稳(~4.3s)。
-	return "你在扮演一个像素小镇的居民。只能从【候选】里按下标 pick 选一个行动，并给≤2句符合人设的台词。" \
-		+ "台词只用中文、不夹英文，要具体贴合[人设]的性格口吻 + [此刻]心情 + [状态]最想满足的需求 + [近事] + 与对方的关系(候选里括号提示)，" \
-		+ "像真人随口说的一句话，避免泛泛的天气/寒暄套话，别复述行动名。" \
-		+ "严格只输出 JSON：{\"pick\":整数下标,\"speech\":\"台词\",\"emotion\":\"neutral|happy|angry|sad|anxious|fond\",\"affinity_delta\":-3到3}。" \
+	# 端上 CPU 上 prefill 是主成本(真机实测 1.5B~9.7s，大半在这段系统 prompt)——保留输出契约、砍冗长指导，缩 prefill。
+	return "扮演像素小镇居民。从【候选】按下标 pick 选一个行动，配一句≤15字中文台词：贴人设口吻+此刻心情+与对方关系，像真人随口说，别复述行动名、别寒暄套话。" \
+		+ "只输出 JSON：{\"pick\":整数,\"speech\":\"台词\",\"emotion\":\"neutral|happy|angry|sad|anxious|fond\",\"affinity_delta\":-3到3}。" \
 		+ (" /no_think" if no_think else "")
 
 # ── 语音深化辅助（docs/03）：把 agent 当下处境喂给模型，产更贴人设/更 grounded 的台词 ──
@@ -665,14 +665,14 @@ func build_prompt(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Stri
 	var p: Dictionary = agent.get("persona", {})
 	var traits: Array = p.get("traits", [])
 	var lines := []
-	lines.append("[人设] 你是%s：%s 性格:%s 口吻:%s" % [p.get("name", ""), p.get("bio", ""), "·".join(traits), p.get("style", "")])
+	lines.append("[人设] %s：性格%s，口吻%s" % [p.get("name", ""), "·".join(traits), p.get("style", "")])   # 砍 bio：口吻+性格已够定调，省 prefill
 	var m := _mood(agent)
 	lines.append("[此刻] 第%d天·%s，%s" % [int(ctx.get("day", 1)), _phase_zh(float(ctx.get("tod", 0.0))), String(m[0])])
 	if String(m[1]) != "":
 		lines.append("[状态] 最想满足:%s(%d/100)" % [NEED_ZH.get(m[1], m[1]), int(m[2])])
 	var mem_obj = agent.get("memory")
 	if mem_obj != null:
-		var mem: Array = mem_obj.retrieve([], int(ctx.get("tick", 0)), 3)
+		var mem: Array = mem_obj.retrieve([], int(ctx.get("tick", 0)), 2)   # 3→2：省 prefill
 		if not mem.is_empty():
 			lines.append("[近事] " + "；".join(mem))
 	var opts := []
