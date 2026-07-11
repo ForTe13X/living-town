@@ -254,16 +254,42 @@ func _draw() -> void:
 		var ac := Art.area_color(area); ac.a = 0.32
 		draw_rect(rect, ac, true)
 		draw_string(Art.font(), Vector2(rect.position.x + 6, rect.position.y + 20), str(a.get("label", area)), HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color(1, 1, 1, 0.55))
-	# 室内房间（docs/16 阶段1）：enclosed 房间画木地板色 + 墙框 + 名，让"关起门的私密空间"可见。纯渲染。
+	# 室内房间（docs/16 / docs/19 §9 呈现）：画成"切开屋顶的俯视室内"——按房型上色的地板+木纹、立体墙(内暗影+亮墙沿)、
+	# 屋檐暗边、有人在内时暖光（"此刻有人住着"）。纯渲染，台词/占用不进 digest，红线不动。
 	for rid in Sim.world.get("rooms", {}):
 		var rm: Dictionary = Sim.world["rooms"][rid]
 		var rr: Array = rm.get("rect", [0, 0, 0, 0])
 		var rrect := Rect2(rr[0] * T, rr[1] * T, rr[2] * T, rr[3] * T)
-		draw_rect(rrect, Color("#6b4a2f", 0.42), true)                 # 木地板暖色
-		var wall := Color("#caa46a") if bool(rm.get("enclosed", false)) else Color(1, 1, 1, 0.5)
-		draw_rect(rrect, wall, false, 2.5)                             # 墙框（enclosed 更亮）
-		var nm := "🚪" if bool(rm.get("enclosed", false)) else ""
-		draw_string(Art.font(), rrect.position + Vector2(5, 16), nm + str(rm.get("type", rid)), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("#ffe0b0"))
+		var rtype := str(rm.get("type", rid))
+		var enclosed := bool(rm.get("enclosed", false))
+		# 地板：按房型上色，比开阔地实 → 读作"室内地面"
+		var floor := Color("#6b4a2f", 0.52)
+		if "bed" in rtype: floor = Color("#7a5230", 0.60)
+		elif "parlor" in rtype or "cafe" in rtype: floor = Color("#7a5838", 0.58)
+		elif "work" in rtype: floor = Color("#565248", 0.60)
+		elif "quiet" in rtype: floor = Color("#544a66", 0.56)
+		elif "wash" in rtype or "bath" in rtype: floor = Color("#3a5a5f", 0.56)
+		elif "shop" in rtype: floor = Color("#6f5528", 0.58)
+		draw_rect(rrect, floor, true)
+		# 木纹：几条横向暗线（地板质感）
+		var py := rrect.position.y + T
+		while py < rrect.end.y - 1.0:
+			draw_line(Vector2(rrect.position.x + 1, py), Vector2(rrect.end.x - 1, py), Color(0, 0, 0, 0.09), 1.0)
+			py += T
+		# 立体墙：内暗影(墙厚) + 亮墙沿(enclosed 更亮)
+		draw_rect(rrect.grow(-2.0), Color(0, 0, 0, 0.22), false, 3.0)
+		var edge := Color("#e0bc82") if enclosed else Color(0.9, 0.9, 0.9, 0.42)
+		draw_rect(rrect, edge, false, 2.5)
+		# 屋檐：顶边暗檐（暗示屋顶被切开=这是室内）
+		draw_rect(Rect2(rrect.position, Vector2(rrect.size.x, 5.0)), Color(0, 0, 0, 0.28), true)
+		# 有人在内 → 暖光（人越多越暖）
+		var occ := 0
+		for ag in Sim.agents:
+			if rrect.has_point(Vector2(ag["pos"].x * T + T * 0.5, ag["pos"].y * T + T * 0.5)):
+				occ += 1
+		if occ > 0:
+			draw_rect(rrect, Color("#ffdca0", 0.05 + minf(0.11, occ * 0.045)), true)
+		draw_string(Art.font(), rrect.position + Vector2(6, 16), ("🚪 " if enclosed else "") + rtype, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("#ffe6c2"))
 	# 网格线
 	for x in range(w + 1):
 		draw_line(Vector2(x * T, 0), Vector2(x * T, h * T), Art.grid_line, 1.0)
