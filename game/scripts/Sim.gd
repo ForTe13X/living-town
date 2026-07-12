@@ -151,6 +151,7 @@ var event_log: Array = []       # 不可变事件账本（replay/debug/bench 的
 var _next_event_id := 1
 # S4：模型决策当「外部输入」记入 trace → 即使模型非确定，回放也可复现（docs/11 §5）
 var decision_trace: Array = []  # [{tick,agent,kind,action,partner,subject,say,cand_hash}]（落地的模型决策）
+var decision_sink: Callable = Callable()  # Phase-0 对拍数据集：默认空=off；设了则每次 logic 决策把 (ag,cands,pick_i) 喂给它。不抽 RNG、不进 event_log/digest、CI 恒空 → 红线零影响。
 var record_decisions := false   # true → 记录模型决策
 var replay_trace := {}          # "tick:agent_id" -> 记录的 intent（回放时用,绕过模型,确定性）
 var replay_drift := 0           # 回放时记录的 pick 已不在当前合法候选(引擎逻辑变了) → 计数+兜底
@@ -2079,6 +2080,7 @@ func _best(cands: Array) -> Dictionary:
 func _logic_decide(ag: Dictionary, cands: Array) -> Dictionary:
 	var best: Dictionary = {}
 	var best_s := -INF
+	var best_i := -1
 	var who := _aid(ag)   # 决策者维 → 同 tick 不同 agent 的平局抖动不再撞同一流
 	for i in cands.size():
 		var c: Dictionary = cands[i]
@@ -2086,8 +2088,11 @@ func _logic_decide(ag: Dictionary, cands: Array) -> Dictionary:
 		if s > best_s:
 			best_s = s
 			best = c
+			best_i = i
 	best = best.duplicate()
 	best["say"] = _canned_say(ag, best)
+	if decision_sink.is_valid() and cands.size() >= 2:   # Phase-0 数据集钩子（off 默认；只读、不抽 RNG、不进 digest）
+		decision_sink.call(ag, cands, best_i)
 	return best
 
 func _canned_say(ag: Dictionary, intent: Dictionary) -> String:
