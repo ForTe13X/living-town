@@ -513,3 +513,14 @@ headless dump 出 Living Town **真实**决策 prompt（`bench/dump_decide_promp
 
 **🐛 dump 真 prompt 顺手抓到 latent bug：候选 >36 时索引标签溢出 Z→标点。**
 `_idx_label(i)` 只算 `0-9` 然后 `char(65+i-10)`，i≥36 落到 `[ \ ] ^ _ …`（阿丽 41 候选实际触发）。当前 slm 路对高候选 agent 喂非字母数字标签、模型易乱/越界。**又一条「decision=classification」的佐证**：单 token 索引编码本就不该扛 40-way 选择；**Tier 1 ranker（argmax over N 分数）天然免疫**，LLM 路须截 top-36。**只有 dump 真 prompt 才暴露——合成 prompt 永远碰不到 41 候选这种尾态。**
+真机确认后修：`_cap_for_llm` 截 score-top-36（logic 兜底仍看全量）。且原 `_idx_label` 的 >36 兜底更隐蔽——回落多位数 "36"，而 `parse_decision` 只读首字符→读成 pick 3（**静默选错候选**）。数据集实测 3.8% 决策 >36 候选（最坏 68），非罕见。
+
+---
+
+## Phase-0 对拍数据集（bake-off 地基）
+
+**💡 引擎地板太会过日子——19.6K 决策里 crisis=0%，"戏"全在社交层。**
+`decision_sink` 钩子 + `bench/log_decisions.gd` 跑 6 seed×30 天 = **19594 决策 / 18 秒**。实测 min_need<危机 **0.0%**、<45 仅 0.1%：**效用引擎把需求维持得太好，need-crisis 几乎不存在** → 计划里"过采样危机态"是空谈。真正的决策戏在**社交层**（logic 选 confront 773 / apologize 626 / rally_oust 434 / endorse 836 / gossip_rep 3344 次）。**这恰锁定 LLM 可能增值处**：不是"饿了去吃"（效用够了），而是"这八卦跟谁说、这冲突要不要当面摊、这联合施压跟不跟"这类贴人设的社交抉择。**stratify 该 over-sample 社交/戏剧决策、非 crisis**——数据里这些管够。
+
+**🛠 数据钩子零红线：+5 行 Callable、S0 digest 未动。**
+`Sim.decision_sink: Callable`（空默认=off；设了则 `_logic_decide` 把 `(ag,cands,pick_i)` 喂它）——不抽 RNG、不进 event_log/digest、CI 恒空。改后 S0 seed12 digest 仍 **3858030099**、不变量全绿、det 1/1。**红线不是"别碰 Sim.gd"，是"别扰动 (seed,tick,salt,who)→RNG 与被 digest 的离散字段"**——只读旁路钩子完全安全。
