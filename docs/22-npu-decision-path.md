@@ -23,7 +23,8 @@
   - **唯一要补的线**：`goto_tick` 须 `load_replay(decision_trace)` 且模型会话保持 `record_decisions=true`，否则时间轴 scrub 会重推而发散（机制已有、自动接线是缺口）。`cand_hash` 守卫让过期 trace 安全降级到 logic 地板、而非污染 digest。
 - **RL2 无模型可玩**：结构性完好——默认 `logic`、probe 降级、tick 落空回落 `_logic_decide`。
 - **RL3 移动端**：Tier 1 KB 级、零热/尺寸成本；Tier 2 加几十 MB 专有 QNN `.so` + sideload 的 W4A16 bundle（24GB RAM 无压力），prefill-burst（~1 decode token）躲开持续 decode 的热崖，且在 HTP 上不抢 Adreno 渲染预算。
-- **RL4 版权**：Tier 1 全净（自训权重 + MIT/BSD/Apache 工具）；**Tier 2 唯一红旗**=专有 QAIRT/Genie/QnnHtp `.so`（见 §4 blocker）；权重 Qwen=Apache 净。**绝不从 Llama/Gemma 输出蒸馏 Tier 1**（其条款禁止用输出改进他模型）——只用 70B voicebank 作者 / Qwen-Apache / logic 地板打标。
+- **RL4 版权**：Tier 1 全净（自训权重 + MIT/BSD/Apache 工具）；**Tier 2 唯一红旗**=专有 QAIRT/Genie/QnnHtp `.so`（见 §4 blocker）；发行 SLM 权重 Qwen2.5-0.5B=Apache 净。
+  - **教师许可（蒸馏出的 ranker 要发行，故看教师的"输出用于训练他模型"条款；实测核过）**：**Nemotron-3-Super-120B-A12B = NVIDIA Nemotron Open Model License ≈ Apache**（"NVIDIA does not claim ownership to any outputs"、无品牌前缀命名负担、商用可、仅留 attribution notice）→ **最干净、选它**。Qwen2.5-72B=Qwen License（输出可训他模型、须"Built with Qwen"、基座 >1亿 MAU 需商授）。Llama-3.3-70B=允许但**衍生模型名须以 `Llama-` 起头** + "Built with Llama"（此前"绝不从 Llama 蒸馏"是**误判**、其实允许-带命名）。故教师取 **Nemotron-120B**（离线在桌面跑、永不发行；MoE 仅 12B active 故快、Q4_K_M ~65-70GB 落 96GB）。
 - **RL5 复用优先**：Tier 1 复用 voicebank 离线著作 pipeline + 现有特征；Tier 2 复用姊妹 lab 已在本机跑通的 binary + 现有 localhost 异步后端。
 
 ## 3. 硅 / runtime 现实（调研核实）
@@ -56,7 +57,7 @@
 
 ## 5. 分阶段 roadmap（质量优先——先用便宜干净的 Tier 1 回答「语言推理是否值」，再决定贵的 Tier 2）
 - **Phase 0 · 质量对拍 + 免费 CPU 赢（离线、无设备，最枢纽最便宜）**
-  - (a) **对拍**：logic 地板多 seed 跑、记每个决策点 `{persona,needs,ctx,候选+特征+score}`（仿真便宜确定性、百万态零成本、**过采样危机/冲突稀有态**）→ 采 10-50K 态、同一 70B（voicebank 作者）打「入戏 index」标 → 蒸 GBDT(LightGBM/MIT) 或 MLP(PyTorch/BSD) → **留出集评**：ranker 对 70B 教师的命中率、是否超 1.5B 的 pick、**并挂守恒不变量**（记 2026-07-05 克隆秘密把决策分布挪动→炸掉 #34 money 守恒的教训）。**这个实验决定 Tier 2 是否值得建。**
+  - (a) **对拍**：logic 地板多 seed 跑、记每个决策点 `{persona,needs,ctx,候选+特征+score}`（仿真便宜确定性、百万态零成本、**过采样危机/冲突稀有态**）→ 采 10-50K 态、**license-clean 教师 Nemotron-3-Super-120B-A12B**（LM Studio `127.0.0.1:1234`）打「入戏 index」标 → 蒸 GBDT(LightGBM/MIT) 或 MLP(PyTorch/BSD) → **留出集评**：ranker 对 70B 教师的命中率、是否超 1.5B 的 pick、**并挂守恒不变量**（记 2026-07-05 克隆秘密把决策分布挪动→炸掉 #34 money 守恒的教训）。**这个实验决定 Tier 2 是否值得建。**
   - (b) **今天就拿的免费赢**：给现 NobodyWho CPU 路加 1-char GBNF mask（`root ::= [0-9A-Z]`）+ prompt-cache → 零新依赖、当下就保证合法决策。
 - **Phase 1 · 出 Tier 1 蒸馏 ranker**：`ranker` 后端（GBDT 整数 eval，~50 行 GDScript 前向），probe/demote 门后 opt-in、pick 记 trace、权重当 data 发（如 `utility.json`/`voicebank.json`）；**真机录一段 sub-ms flavored 决策 clip**（record-on-stage-change）。零 .so、零 export 改动。
 - **Phase 2 · NPU-LLM 手机 spike（≈edge-npu G4）+ 审计**：把姊妹 lab 已构建的 `genie-t2t-run` + Qwen2.5-0.5B W4A16 QNN bundle 推上机，喂 **Living Town 真实 ~327-tok 候选 prompt**（逐字、think-off、fail-closed HTP 断言防静默回落）、`--profile ×2` → **本机本 prompt 的真决策延迟**。**【已首测 ✅ §3.1：典型 118ms / 最坏 294ms（4B unmasked greedy）——旗舰坐实】** 余：masked E2E（用已构建的 masked-sampler binary）、QNN v79 `.so` 集的确切 APK/尺寸、QAIRT 再分发许可对 RL4 的书面裁决。
