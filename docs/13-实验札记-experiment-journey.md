@@ -524,3 +524,12 @@ headless dump 出 Living Town **真实**决策 prompt（`bench/dump_decide_promp
 
 **🛠 数据钩子零红线：+5 行 Callable、S0 digest 未动。**
 `Sim.decision_sink: Callable`（空默认=off；设了则 `_logic_decide` 把 `(ag,cands,pick_i)` 喂它）——不抽 RNG、不进 event_log/digest、CI 恒空。改后 S0 seed12 digest 仍 **3858030099**、不变量全绿、det 1/1。**红线不是"别碰 Sim.gd"，是"别扰动 (seed,tick,salt,who)→RNG 与被 digest 的离散字段"**——只读旁路钩子完全安全。
+
+**💡 教师不是"更好的决策者"，是"另一种决策者"——120B 做 need-greedy 现实主义，logic 地板做游戏戏剧。**
+预飞 30 态测：think-off↔think-on pick 一致 **76%**，但**两者对 logic 地板都只 14%（社交态）/ 40%（自然分布）**。挖原因（dump 真 reasoning）：prompt `[状态]最想满足:饥饿(67/100)` → 教师完美理性地"饿了就吃 T"；而 logic 地板凭 `[近事]老邓两次婉拒` 的社交机制选"当面理论→老邓"。**换社交前置的 prompt 也扳不动教师**（仍挑 吃饭/玩耍）。**关键洞察**：一个饿着的务实寡言 NPC 去吃饭，比去"confront"更**真实**——但更**无聊**。logic 地板是被刻意调"过量戏剧"（游戏有趣性），LLM 默认现实主义。**没有 gold 决策，是 drama-vs-realism 的设计取舍**；对"游戏"而言，蒸 need-greedy 教师会让镇子变平淡。
+
+**🔬 baseline bake-off：蒸馏机制坐实（57.6%），但非质量赢。**
+1000 标签（think-off，45min，0 unparse）→ 留出 n=224，top-1 对教师：**tiny GBDT ranker 57.6% ≫ logic 18.3% ≫ random 8.6%**（难例追回 49%）。特征重要度 `action_id`0.49+`need_deficit`0.27 主导。**sub-1M 参 GBDT（微秒级）能把 120B 教师学到 57.6%（3.1×地板）→「决策=可蒸馏分类、塞得进 NPU-tiny-policy」立住**；但学到的是 need-greedy，非地板的社交戏剧 → **机制赢、非质量赢**。**这恰恰指路 re-aim**：LLM 增值不在"规则已覆盖的态上选更好动作"，而在**规则覆盖不到的**——玩家自由文本 / 涌现新局 / 大世界 scaling。当前 logic 自产的数据集**测的是错的东西**（拿 logic 生成的态问"谁更懂这些态"，地板按设计赢）。
+
+**🛠 Nemotron-3-Super think-off 只有一个开关：预填 `</think>`。**
+`detailed thinking off`/`/no_think`/`chat_template_kwargs{enable_thinking:false}`/`reasoning_effort:low` **全部无效**（恒 reasoning，LM Studio 把它塞进 `reasoning_content`、`max_tokens` 太小则 content 空、`finish_reason=length`）。唯一可靠：messages 末尾加 `{"role":"assistant","content":"</think>\n\n"}` 强制闭合思考 → 直接吐编号（0.3-3s/label vs think-on 9-34s、>256 reasoning tok）。decode ~32 tok/s、prefill ~1.1s（先前"慢"是误读）。
