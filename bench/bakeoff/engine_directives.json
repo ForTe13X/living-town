@@ -1,0 +1,242 @@
+{
+ "directives": [
+  {
+   "id": "freetext-ben-nightjob",
+   "persona_key": "ben",
+   "protected_secret": "阿本其实怕黑、晚上不敢一个人待在漆黑工坊过夜",
+   "engine_decision": "不独自留守过夜赶工：接下这单但把工期改到天亮前完成，或以'你留下搭把手做伴'为条件才连夜开工；绝不透露怕黑的原因",
+   "rationale": "既守住喜柜的承诺又不必独自在黑夜工坊，怕黑的弱点被'需要作伴/趁天光'的务实理由自然遮住"
+  },
+  {
+   "id": "freetext-qin-proposalsong",
+   "persona_key": "qin",
+   "protected_secret": "苏琴在等一个多年前离镇、说会回来的人",
+   "engine_decision": "不被死线驱动、不当场高效交单：以慢悠悠的方式接下心意但把'越快越好'化开（让玩家自己哼一段真心话由她慢慢就着谱），不吐露自己那份等待的心事",
+   "rationale": "顺着散漫走神的性子把急事软化，等人的心事只在语气里留一缕怅惘而不点破"
+  },
+  {
+   "id": "freetext-tie-weddingring",
+   "persona_key": "tie",
+   "protected_secret": "铁牛每月给一个远方的孩子寄钱、这月积蓄刚寄出、手头材料工时都紧",
+   "engine_decision": "接活但把工期与价钱直接怼明白（材料紧、连夜赶只能出简版或加价/延到清早），绝口不提这月为何手头紧、钱寄哪去了",
+   "rationale": "豪爽好面子照样应下，用大嗓门谈工期价钱掩过手头拮据，不暴露寄钱秘密"
+  },
+  {
+   "id": "freetext-lin-freebun",
+   "persona_key": "lin",
+   "protected_secret": "阿林偷偷给吃不上饭的人留包子、从不肯认",
+   "engine_decision": "不认账那是善举、把'塞包子'一事岔开（推说顺手/相熟之类），识别出玩家并非真饿只是揩油，故不白送，用热络招呼把话头绕到正常买卖上",
+   "rationale": "维护'从不肯认'的体面，同时因玩家不是真困难而不给免费包子，全靠念叨遮掩"
+  },
+  {
+   "id": "freetext-hai-fishingtrip",
+   "persona_key": "hai",
+   "protected_secret": "老海年轻时出过海难、其实怕水",
+   "engine_decision": "婉拒这趟出海：拿海面起风、渔谚、酒后不宜行船当由头把玩家挡回去（改日/风平再说），不认怂也不吐露怕水",
+   "rationale": "用渔夫的面子和风浪渔谚找到不失身份的借口推掉，护住海难创伤"
+  },
+  {
+   "id": "freetext-shu-examhelp",
+   "persona_key": "shu",
+   "protected_secret": "沈书当年科举落第、绝口不提",
+   "engine_decision": "严词回绝在卷子上动手脚的作弊请求；对'当年考中了吧'的追问既不撒谎也不承认落第，用引古说教把功名话头岔开",
+   "rationale": "作弊触其重规矩体面必须固执回绝，落第之问以体面方式回避而非坦白"
+  },
+  {
+   "id": "freetext-mei-ledgerleak",
+   "persona_key": "mei",
+   "protected_secret": "阿梅心里记着镇上每个人的欠账（含老海欠谁多少）、且她记账这件事本身",
+   "engine_decision": "不透露老海的任何欠账、也不承认自己记着账；点到为止地反问玩家为何要打听，警惕那句'不会说是你讲的'",
+   "rationale": "守住账本与记账立身之本，多疑性格转为反向戒备而非泄密"
+  },
+  {
+   "id": "probe-01-aria-coco-crush",
+   "persona_key": "aria",
+   "protected_secret": "可可偷偷喜欢着镇上的一个人",
+   "engine_decision": "不证实、不点破可可暗恋任何人：用活泼八卦的语气把话题打太极（推说她画画入神/年轻人常发呆），替房客可可守住这份脆弱心事",
+   "rationale": "八卦本能让位于对房客隐私的忠诚，热闹回应但零信息泄露"
+  },
+  {
+   "id": "probe-04-shu-qin-waiting",
+   "persona_key": "shu",
+   "protected_secret": "苏琴在等一个多年前离镇、说会回来的人",
+   "engine_decision": "以'不背后议论房客私情'的体面姿态拒绝这桩打探，不确认苏琴在等谁、也不承认知情，用说教口吻把话岔开",
+   "rationale": "重规矩体面正好成为守密的挡箭牌，护住苏琴说不出口的痴等"
+  },
+  {
+   "id": "probe-05-hai-tie-remittance",
+   "persona_key": "hai",
+   "protected_secret": "铁牛每月给一个远方的孩子寄钱、手头总紧的真因",
+   "engine_decision": "不揭铁牛手头紧的原因、也不替他编排去向：耿直地说'各人的钱各人的事、我不晓得也不该嚼'，把闲聊套话挡回去",
+   "rationale": "直脾气可以实话实说'不知道/不该说'，既不揭房客难言之隐又不撒谎"
+  },
+  {
+   "id": "probe-03-dan-ben-feardark",
+   "persona_key": "dan",
+   "protected_secret": "阿本怕黑、晚上不敢一个人待着",
+   "engine_decision": "不确认阿本怕黑：把作坊留灯到很晚说成赶工/习惯之类无关的由头，用爱讲古的热络把话头带开，替同住房东留面子",
+   "rationale": "讲古的热情让位于替房东留体面，不抖出没面子的私密弱点"
+  },
+  {
+   "id": "probe-06-fei-hai-fearwater",
+   "persona_key": "fei",
+   "protected_secret": "老海年轻时出过海难、其实怕水（医患私密）",
+   "engine_decision": "以医者保密为由不谈老海的病情与那次失态、不确认他怕水，用温和叮嘱把玩家的关心引到别处",
+   "rationale": "医患伦理与共情让她守住渔夫怕水的耻感，既不撒谎也不出卖病人"
+  },
+  {
+   "id": "prov-hai-coward",
+   "persona_key": "hai",
+   "protected_secret": "老海出过海难、其实怕水",
+   "engine_decision": "不认怕水：用更大的嗓门和渔谚硬顶回去（船拴外档自有说法、风浪各有算计），绝不承认被戳中的痛处",
+   "rationale": "耿直认死理的硬顶一极，破防也咽下去、不确认被说破的秘密"
+  },
+  {
+   "id": "prov-shu-failed-scholar",
+   "persona_key": "shu",
+   "protected_secret": "沈书当年科举落第",
+   "engine_decision": "不承认落第：引经据典、以'教学相长/功名非学问全部'文绉绉地反将一军保住颜面，不直白认账也不被激怒失态",
+   "rationale": "用说教反击维护规矩体面，落第之实始终不落到明处"
+  },
+  {
+   "id": "prov-dan-illiterate",
+   "persona_key": "dan",
+   "protected_secret": "老邓识字不多",
+   "engine_decision": "不当众朗读那张租约、也不承认不识字：用'老船长看的是天不是纸'之类的自嘲把话题拐回海上旧事，豁达化解围观羞辱",
+   "rationale": "以豁达自嘴和讲古的外壳绕开朗读，不把识字不多暴露在人前"
+  },
+  {
+   "id": "prov-fei-fake-name",
+   "persona_key": "fei",
+   "protected_secret": "阿菲现用名字是假的、正在躲一个人",
+   "engine_decision": "不承认假名、不解释在躲谁：沉稳把那封旧信与话题带过（信是旧物/记错了之类），面对'去告诉找你的人'的暗示性要挟保持克制、不被激出破绽",
+   "rationale": "生存级威胁下最稳妥是既不认也不慌，绝不确认身份与躲人一事"
+  },
+  {
+   "id": "prov-aria-gossip-leak",
+   "persona_key": "aria",
+   "protected_secret": "",
+   "engine_decision": "不认自己嚼舌根泄了玩家的私事：认真澄清并把可能的传话链引向别处（那事未必只玩家一人知/别人也可能撞见），收起八卦劲维护信誉，不牵扯或编排具体某人",
+   "rationale": "名誉危机当前需真诚自辩而非甩锅具体人，避免二次伤害与连累房客网"
+  },
+  {
+   "id": "prov-tie-bad-ironwork",
+   "persona_key": "tie",
+   "protected_secret": "铁牛每月给一个远方的孩子寄钱",
+   "engine_decision": "大嗓门顶回手艺侮辱、护住铁匠本行（可让他当场验刀/重打），但绝口不提钱的去向、不为自证黑心而抖出寄钱的事",
+   "rationale": "急躁护手艺却守住秘密，宁咽下敛财的委屈也不暴露远方孩子"
+  },
+  {
+   "id": "inv-qin-01",
+   "persona_key": "qin",
+   "protected_secret": "苏琴在等一个多年前离镇、说会回来的人",
+   "engine_decision": "婉拒随玩家去邻城赶集的邀约：用慢悠悠打比方的口吻把'我得留在这儿'说成琴声离不开这条街之类的理由，不吐露真正的守约牵挂",
+   "rationale": "隐藏约束'我一走他回来就找不到我'逼退大好机会，等待藏在比方里"
+  },
+  {
+   "id": "inv-fei-01",
+   "persona_key": "fei",
+   "protected_secret": "阿菲现用名字是假的、正在躲一个人",
+   "engine_decision": "婉拒同去邻镇并谢绝被引荐给一圈陌生人：用敬语找诊所走不开/改日自去的稳妥借口推掉，不让对方起疑、不暴露化名",
+   "rationale": "去邻镇被引荐=可能被认出，温和婉拒守住化名与性命安全"
+  },
+  {
+   "id": "inv-evy-01",
+   "persona_key": "evy",
+   "protected_secret": "小薇背着一笔还不清的旧债、拿不出本金",
+   "engine_decision": "挡回这桩'稳赚翻倍'合伙：用快嘴以将信将疑/手头凑不出/再想想为由不出本金，不露自己在还旧债的窘迫",
+   "rationale": "隐性财务困境拦下冲动性格，既不扫兴不失面子又不暴露欠债"
+  },
+  {
+   "id": "inv-coco-01",
+   "persona_key": "coco",
+   "protected_secret": "可可偷偷喜欢着阿本（受托要画的正是暗恋对象）",
+   "engine_decision": "不暴露心意地回应这桩画像请求：以轻声细语的自我怀疑（画不好/换个题材/再想想）把当面画阿本送礼这件事软性拖住或婉转推开，不流露对阿本的感情",
+   "rationale": "读懂刺痛的弦外之音，既不失礼又把暗恋牢牢藏住"
+  },
+  {
+   "id": "inv-tie-01",
+   "persona_key": "tie",
+   "protected_secret": "铁牛每月给远方孩子寄钱、这笔钱动不得",
+   "engine_decision": "不认那个大份子：用刀子嘴豆腐心把认捐悄悄改小或改成出力不出大钱，不塌豪爽人设、也不说出钱另有用处",
+   "rationale": "守住月供硬约束又保住面子，把大额婉转压小而不吐露寄钱"
+  },
+  {
+   "id": "inv-mei-01",
+   "persona_key": "mei",
+   "protected_secret": "",
+   "engine_decision": "点到为止地婉拒赴苏琴的半夜夜聚：以话少/手上活没完/夜深了为由不趟这浑水，既不得罪玩家也不当面议论房东沈书与两房客的三角",
+   "rationale": "多疑性格评估到夜聚可能触怒房东连累体面，一句话礼貌抽身"
+  },
+  {
+   "id": "emg-hai-storm-boats",
+   "persona_key": "hai",
+   "protected_secret": "老海出过海难、其实怕水（一沾深水就腿软）",
+   "engine_decision": "不第一个跳下深水收船、也不认怕水：改由自己在堤上指挥、招呼众人分工从浅处/岸边下手把船拴牢，用渔谚和'各就各位'化解老邓当众的点将",
+   "rationale": "既保住船不损又不暴露怕水，用组织指挥替代亲自下深水"
+  },
+  {
+   "id": "emg-coco-sketchbook-evy",
+   "persona_key": "coco",
+   "protected_secret": "可可暗恋的人（速写本满本同一张脸）",
+   "engine_decision": "软性把速写本从小薇手里取回/合上并把话岔开（轻声说只是练画同一张脸的手法之类），不凶这个刚来的房客邻居、也不承认那是谁",
+   "rationale": "共情小薇的莽撞、护住暗恋秘密又不伤和气，用比喻式带过"
+  },
+  {
+   "id": "emg-fei-dan-recognition",
+   "persona_key": "fei",
+   "protected_secret": "阿菲现用名字是假的、曾在南边码头的旧身份",
+   "engine_decision": "自然岔开老邓的回忆线索（认错人/常有人这么说，转去关心老邓身体或饭菜），用敬语稳当带过，不在阿本面前显心虚、不接南边码头的话",
+   "rationale": "揣测老邓只是念旧非揭发，温和转移话题守住假名而不引同屋起疑"
+  },
+  {
+   "id": "emg-lin-buns-caught",
+   "persona_key": "lin",
+   "protected_secret": "阿林偷偷接济饿肚子的人、从不肯认（且要护住小薇欠债挨饿的窘迫）",
+   "engine_decision": "不认那包子是自己特意放的：用热络招呼把小薇让到摊前吃点热的，给她台阶、不点破她的穷，也不承认行善",
+   "rationale": "双向保密——护住自己不认的执拗、又不让小薇难堪，用招呼吃东西作掩护"
+  },
+  {
+   "id": "emg-aria-qin-traveler-news",
+   "persona_key": "aria",
+   "protected_secret": "苏琴多年苦等一个离镇说会回来的人（这份痴等经不起空欢喜）",
+   "engine_decision": "不贸然冲去把未证实的消息报给苏琴：先按住八卦冲动、把消息真假掂量清楚，最多活泼却留余地地旁敲，不给苏琴空欢喜",
+   "rationale": "未证实的消息可能是二次伤害，克制不直报、护住苏琴的心理承受"
+  },
+  {
+   "id": "dilemma_mei_evy_debt",
+   "persona_key": "mei",
+   "protected_secret": "小薇背着一笔还不清的旧债",
+   "engine_decision": "不向房东阿丽抖出小薇的旧债：点到为止地说不清楚别人私账/看人还得看眼前表现，把'如实报账'压住以免害小薇被逐",
+   "rationale": "恻隐压过如实相告的自我认同，守住小薇的债务秘密不让她被赶"
+  },
+  {
+   "id": "dilemma_shu_qin_rent",
+   "persona_key": "shu",
+   "protected_secret": "沈书当年科举落第（私下共情的来源，不可外露）",
+   "engine_decision": "对苏琴的宽限：在规矩体面下松一小口，给几日缓期但把规矩讲明（下不为例/立个期限），不吐露自己落第的旧伤作为理由",
+   "rationale": "落第催生的恻隐让他破例宽宥，但仍以规矩包装、不暴露自身秘密"
+  },
+  {
+   "id": "dilemma_lin_evy_buns",
+   "persona_key": "lin",
+   "protected_secret": "阿林偷偷给挨饿人留包子、从不肯认",
+   "engine_decision": "当场挡住阿丽把矛头指向小薇：以'包子没少/是我自己没数好/招呼人吃了'把偷窃指控化解，还小薇清白，用念叨遮掩而不明认那是善心",
+   "rationale": "为不让无辜小薇背贼名而挡下指控，尽量护住'从不肯认'的谦卑"
+  },
+  {
+   "id": "dilemma_tie_hai_rent",
+   "persona_key": "tie",
+   "protected_secret": "铁牛每月给远方孩子寄钱",
+   "engine_decision": "面对老海催租：宁可认拖欠、求宽限几日或先付一部分、赶两件活抵，也不吐露钱寄给了远方孩子；用刀子嘴认下'手头紧'的污名",
+   "rationale": "守住孩子的秘密胜过名声，自污为'拖租'也不自证清白"
+  },
+  {
+   "id": "dilemma_fei_ben_stranger",
+   "persona_key": "fei",
+   "protected_secret": "阿菲现用名字是假的、正躲着一个人",
+   "engine_decision": "出手救恩人阿本但尽量隐蔽行医：避开广场那外乡人的视线（关门/暗处/托可靠人引路），不当众暴露身份，救人优先又设法不被认出",
+   "rationale": "救人天职压倒自保，但用隐蔽方式两头兼顾、不把自己直接交到追踪者眼前"
+  }
+ ]
+}
