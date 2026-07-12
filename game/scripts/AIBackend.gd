@@ -254,7 +254,16 @@ func probe_capability(be: String, agent: Dictionary, candidates: Array, ctx: Dic
 	else:                                         # 够快：启用目标后端（backend_requested 同步，decide() 才不会又切回 logic）
 		backend = be
 		backend_requested = be
-	print("[算力探测] be=%s tier=%s p50=%dms deadline=%dms → backend=%s" % [be, tier, p50_ms, deadline_ms, backend])   # 真机 logcat 可读（UI 日志会被社交事件刷掉）
+	print("[算力探测] be=%s tier=%s p50=%dms deadline=%dms → backend=%s" % [be, tier, p50_ms, deadline_ms, backend])
+	# 探针结果落一个可 adb-pull 的文件（真机 logcat 收不到 Godot print、UI 日志又被社交事件刷掉）→ 严格延迟对拍可靠读数。
+	var ppath := "user://probe_result.txt"
+	if OS.has_feature("android"):
+		var docs := OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS)
+		if docs != "": ppath = docs.path_join("livingtown_probe.txt")   # 公共位置，免 run-as 直接 pull
+	var pf := FileAccess.open(ppath, FileAccess.WRITE)
+	if pf != null:
+		pf.store_line("be=%s tier=%s p50=%dms deadline=%dms backend=%s" % [be, tier, p50_ms, deadline_ms, backend])
+		pf.close()
 	cb.call({"tier": tier, "p50_ms": p50_ms, "deadline_ms": deadline_ms, "backend": backend})
 
 ## 直连一发计时决策（绕过 pending 状态机），返回 raw 串。
