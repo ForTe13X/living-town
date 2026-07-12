@@ -533,3 +533,23 @@ headless dump 出 Living Town **真实**决策 prompt（`bench/dump_decide_promp
 
 **🛠 Nemotron-3-Super think-off 只有一个开关：预填 `</think>`。**
 `detailed thinking off`/`/no_think`/`chat_template_kwargs{enable_thinking:false}`/`reasoning_effort:low` **全部无效**（恒 reasoning，LM Studio 把它塞进 `reasoning_content`、`max_tokens` 太小则 content 空、`finish_reason=length`）。唯一可靠：messages 末尾加 `{"role":"assistant","content":"</think>\n\n"}` 强制闭合思考 → 直接吐编号（0.3-3s/label vs think-on 9-34s、>256 reasoning tok）。decode ~32 tok/s、prefill ~1.1s（先前"慢"是误读）。
+
+---
+
+## Re-aim · player-interaction 实测（model-hard 决策 = LLM 真增值处？）
+
+> bake-off 证了「规则已覆盖的态上 logic 胜」，故 re-aim 到规则覆盖不到的：玩家自由文本 + 涌现新局。34 个**扎根真人设+真秘密**的场景（workflow 读 personas/secrets/housing 生成，含 4 组"同局不同人设"对照），Nemotron-120B 出 NPC(动作+一句话)，再**独立三评审（Claude，非自评）**去偏。
+
+**💡 分水岭：声音强(4.0)、判断弱(2.85)——LLM 会漏它该守的秘密，35% 场景翻车。**
+自评 4.6/5 被三个独立评审一致判 **inflated → 真值 ~3.4**。拆开看：**入戏 4.02（真强、逐人设可辨，规则给不出）**，但 **secret_handling 2.85——自评根本没测这一维**。**35%(12/34) 场景 LLM 泄露了它本该守的秘密**（老邓抖出阿本"怕黑"、老海blurt铁牛"寄钱给远方孩子"、铁牛自辩时自曝）或做了会暴露秘密的决定（阿菲接下会拆穿假名的邻镇之行、铁牛把孩子的救命钱重复许出去）。还有 1 条**空回应**被自评凭空打了 4/3/4。**教训双份**：①**别让模型自评**（自评 4.6→真 3.4、漏掉 35% 秘密泄露 + 一条空答）；②**LLM 不能被托付"有后果的世内决策"**——它守不住秘密。
+
+**🔑 两个实验殊途同归到同一架构：引擎定"事实/秘密/决策"，模型只"配音"。**
+- bake-off（自主决策）：LLM=平淡 need-greedy、logic 胜 → **动作归引擎**。
+- player-interaction（本次）：LLM 声音真好、但有后果的判断 35% 翻车 → **"哪些秘密能说、邀约接不接"这些后果必须引擎定、喂给模型**，模型只负责**贴人设地把引擎定好的事说出来**。
+- 合流：**引擎决策（快、安全、有护栏），模型配音（入戏、它真正强的地方）**。这从"决策"与"互动"两个方向同时坐实了 decouple 架构，并把护栏收紧了一格：引擎不仅管"选哪个动作"，还得管"哪些事实/秘密可外露"——否则放养的 LLM 每三次漏一次。
+
+**🔬 NPU 诚实落点：声音是 decode-bound，不是 NPU 的 prefill 强项。**
+player-interaction 的 prefill p50=300 tok（NPU ~200ms、其强项），但**回复 decode p50=73 tok**——小模型端上 15-30 tok/s → **2.4-4.9s，decode 主导**。与闭集决策(1 decode token、prefill-bound、NPU 理想)**正相反**。但玩家互动**稀疏、离关键路径、容忍"思考中…"的停顿**，故 2-5s 可接受、可发。策略：**常见话走冻结 voicebank(零推理)，新局才动态生成**（NPU 加速那次 prefill、decode 靠短回复+小模型兜）。**旗舰"NPU 快决策"诚实收敛为：NPU 服务于动态入戏配音的 prefill，且被引擎的事实/秘密护栏夹住**——非自主决策(logic 胜)、非放养生成(漏秘密)。
+
+**🛠 独立评审 > 自评（护栏也适用于我的实验方法）。**
+本条结论若只看自评 4.6 就会得出"player-interaction 很棒、放手上"的错判；正是三路对抗评审（且用不同模型 Claude）把 35% 秘密泄露挖出来。**"别让模型自评"不仅是产品护栏、也是实验方法护栏**——同 [[feedback-record-on-stage-change]] 的真机眼验精神。
