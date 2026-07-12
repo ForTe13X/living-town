@@ -54,7 +54,8 @@ var _budget_used := 0
 var llm_aging := true          # true=优先+老化门控(仅 llm_budget>0 时起作用)；false=FCFS(旧行为)
 const AGING_GATE := 1.5        # 预算耗尽比例=1 时要求的最低优先级
 var _fire_count := {}          # id -> 本 run 该 agent 触发 LLM 的次数（bench 测发声公平性/反饿死）
-const MAX_TOKENS := 128   # 决策 JSON(含台词)约 80–120 字符；80 token 会截断台词，故 128
+const MAX_TOKENS := 128   # 自由对话(chat)用；决策见 DECIDE_MAX_TOKENS
+const DECIDE_MAX_TOKENS := 8   # 决策=闭集选号(单字符 0-9/A-Z)，decode≈1 token → 与 80-token JSON 解耦(voice 走冻结语音库)。据 edge-npu-8elite「决策≠生成」洞察
 
 # NPC 决策 schema（结构化输出契约，详见 docs/03 §3）：模型只输出 pick 下标 + 台词/情绪。
 const DECISION_SCHEMA := {
@@ -277,7 +278,7 @@ func _probe_once(be: String, agent: Dictionary, candidates: Array, ctx: Dictiona
 	# llm：HTTPRequest 直连
 	var http := HTTPRequest.new()
 	add_child(http)
-	var body := {"model": model, "max_tokens": MAX_TOKENS, "temperature": 0.6,
+	var body := {"model": model, "max_tokens": DECIDE_MAX_TOKENS, "temperature": 0.6,
 		"messages": [{"role": "system", "content": sys}, {"role": "user", "content": usr}]}
 	var err := http.request(endpoint, ["Content-Type: application/json", "Authorization: Bearer " + api_key], HTTPClient.METHOD_POST, JSON.stringify(body))
 	if err != OK:
@@ -319,6 +320,8 @@ func decide(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Dictionary
 		else:
 			stats["landed"] += 1                                    # 合法落地
 			_last_llm[id] = Sim.tick_no                             # 记录发言时刻 → 节流计时
+			if not intent.has("say"):                               # decouple：闭集选号无台词 → 从冻结·70B 语音库补（pick=模型 / voice=冻结数据·确定性）
+				intent["say"] = Sim._canned_say(agent, intent)
 		return intent
 	# 超时（实时墙钟）→ 引擎兜底
 	if Time.get_ticks_msec() >= int(p["due_ms"]):
@@ -344,27 +347,45 @@ func _finish(id: String, agent: Dictionary) -> void:
 func parse_decision(raw: String, candidates: Array) -> Dictionary:
 	if raw.strip_edges() == "" or candidates.is_empty():
 		return {}
-	var data: Variant = JSON.parse_string(raw)
+	var s := raw.strip_edges()
+	# 主路（闭集选号）：前几字符里第一个合法编号(0-9/A-Z) → 候选下标。台词不在此，由 decide() 从冻结语音库补。
+	for i in mini(s.length(), 6):                        # 只看前几字符：防 prose 里的字母被误当编号
+		var pk := _label_idx(s.substr(i, 1))
+		if pk >= 0 and pk < candidates.size():
+			return (candidates[pk] as Dictionary).duplicate()
+	# 兼容旧 JSON({"pick":N,speech,emotion,...})：单测 + llm 老路仍可能这么回（含台词则保留）
+	var data: Variant = JSON.parse_string(s)
 	if not (data is Dictionary):
-		# 抠出第一个 {...} 子串再试（模型常带前后缀/markdown）
-		var s := raw.find("{")
-		var e := raw.rfind("}")
-		if s >= 0 and e > s:
-			data = JSON.parse_string(raw.substr(s, e - s + 1))
-	if not (data is Dictionary) or not data.has("pick"):
+		var a := s.find("{")
+		var b := s.rfind("}")
+		if a >= 0 and b > a:
+			data = JSON.parse_string(s.substr(a, b - a + 1))
+	if not (data is Dictionary) or not (data as Dictionary).has("pick"):
 		return {}
-	var pick := int(data.get("pick", -1))
+	var pick := int((data as Dictionary).get("pick", -1))
 	if pick < 0 or pick >= candidates.size():            # 越界 → 兜底
 		return {}
 	var intent: Dictionary = (candidates[pick] as Dictionary).duplicate()
-	var speech := String(data.get("speech", "")).strip_edges()
+	var speech := String((data as Dictionary).get("speech", "")).strip_edges()
 	if speech != "":
 		intent["say"] = speech.substr(0, 60)
-	if data.has("emotion"):
-		intent["emotion"] = String(data["emotion"])
-	if data.has("affinity_delta"):
-		intent["affinity_delta"] = clampi(int(data["affinity_delta"]), -3, 3)
+	if (data as Dictionary).has("emotion"):
+		intent["emotion"] = String((data as Dictionary)["emotion"])
+	if (data as Dictionary).has("affinity_delta"):
+		intent["affinity_delta"] = clampi(int((data as Dictionary)["affinity_delta"]), -3, 3)
 	return intent
+
+## 候选下标 ↔ 单字符编号（0-9 → A-Z，共 36）。闭集决策让模型只回一个字符 → decode≈1 token。
+func _idx_label(i: int) -> String:
+	if i < 10: return str(i)
+	if i < 36: return String.chr(65 + i - 10)            # A-Z
+	return str(i)                                        # >36：多字符(罕见)，回落数字
+func _label_idx(c: String) -> int:
+	if c.length() != 1: return -1
+	var code := c.unicode_at(0)
+	if code >= 48 and code <= 57: return code - 48        # 0-9
+	if code >= 65 and code <= 90: return code - 65 + 10   # A-Z（大写，小写不认→JSON 里的字母不会误读）
+	return -1
 
 # ── 发起异步请求 ─────────────────────────────────────────────────────────
 func _fire(id: String, agent: Dictionary, candidates: Array, ctx: Dictionary) -> void:
@@ -392,7 +413,7 @@ func _mock_raw(agent: Dictionary, candidates: Array) -> String:
 		if s > bs:
 			bs = s
 			bi = i
-	return JSON.stringify({"pick": bi, "speech": "嗯，就这么办。", "emotion": "neutral", "affinity_delta": 1})
+	return _idx_label(bi)   # 闭集编号（与新决策契约一致；台词由 decide() 从语音库补）
 
 ## llm：OpenAI 兼容 chat-completions（异步 HTTPRequest）。完成回调把 content 存入 pending.raw。
 func _fire_http(id: String, agent: Dictionary, candidates: Array, ctx: Dictionary) -> void:
@@ -416,7 +437,7 @@ func _fire_http(id: String, agent: Dictionary, candidates: Array, ctx: Dictionar
 	# 注：不发 response_format/json_schema——实测它在 qwen3 长 prompt 下受限解码卡死(只吐"{")；
 	# 改靠 /no_think 压思考 + parse_decision 抽 {…}，实测 ~4.3s 稳定。(DECISION_SCHEMA 仅保留给 slm 的 GBNF 约束。)
 	var body := {
-		"model": model, "max_tokens": MAX_TOKENS, "temperature": 0.7,
+		"model": model, "max_tokens": DECIDE_MAX_TOKENS, "temperature": 0.7,
 		"messages": [
 			{"role": "system", "content": _system_prompt()},
 			{"role": "user", "content": build_prompt(agent, candidates, ctx)},
@@ -599,12 +620,9 @@ func _chat_slm(agent: Dictionary, player_text: String, ctx: Dictionary, cb: Call
 	chat.call("ask", player_text)
 
 func _system_prompt() -> String:
-	# 静态前缀（可被 prompt-cache 复用）：世界规则 + 输出契约
-	# 实测(qwen3@LM Studio)：①不加 /no_think → 思考烧满 token、content 空、37s finish=length；
-	#   ②json_schema 受限解码在长 prompt(9候选)下卡死只吐 "{"。故：去 json_schema + 加 /no_think + 靠 parse_decision 抽 {…}，最稳(~4.3s)。
-	# 端上 CPU 上 prefill 是主成本(真机实测 1.5B~9.7s，大半在这段系统 prompt)——保留输出契约、砍冗长指导，缩 prefill。
-	return "扮演像素小镇居民。从【候选】按下标 pick 选一个行动，配一句≤15字中文台词：贴人设口吻+此刻心情+与对方关系，像真人随口说，别复述行动名、别寒暄套话。" \
-		+ "只输出 JSON：{\"pick\":整数,\"speech\":\"台词\",\"emotion\":\"neutral|happy|angry|sad|anxious|fond\",\"affinity_delta\":-3到3}。" \
+	# 决策=闭集选号（edge-npu-8elite「决策≠生成」洞察）：只让模型出一个编号 → decode≈1 token（不再生成 80-token JSON），
+	# 台词改由冻结·70B 语音库补（decouple）。系统 prompt 缩到最短，prefill 也随之降。/no_think 关思考(否则烧满 token)。
+	return "你是像素小镇的居民。从下面【候选】里挑一个此刻最想做的行动，只回它的【编号】（一个字符，如 3 或 A），别回任何其它字。" \
 		+ (" /no_think" if no_think else "")
 
 # ── 语音深化辅助（docs/03）：把 agent 当下处境喂给模型，产更贴人设/更 grounded 的台词 ──
@@ -683,6 +701,6 @@ func build_prompt(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Stri
 		if String(c.get("kind", "")) == "social":
 			var pid := String(c.get("partner", ""))
 			label += "→%s(%s)" % [Sim._name(Sim.get_agent(pid)), _rel_hint(agent, pid)]
-		opts.append("%d=%s" % [i, label])
+		opts.append("%s=%s" % [_idx_label(i), label])   # 单字符编号(0-9/A-Z)→ 模型只回这一个字符
 	lines.append("[候选] " + " ".join(opts))
 	return "\n".join(lines)
