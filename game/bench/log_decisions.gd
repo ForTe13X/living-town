@@ -58,6 +58,17 @@ func _mood(agent: Dictionary) -> Array:
 func _idx_label(i: int) -> String:
 	return str(i) if i < 10 else char(65 + i - 10)
 
+## top-36 by score, deterministic (score desc, 平手取原下标小者) → 与 AIBackend._cap_for_llm 同义、但稳定可复现。
+func _cap_order(cands: Array) -> Array:
+	var idx := []
+	for i in cands.size(): idx.append(i)
+	idx.sort_custom(func(a, b):
+		var sa := float((cands[a] as Dictionary).get("score", 0.0))
+		var sb := float((cands[b] as Dictionary).get("score", 0.0))
+		if sa != sb: return sa > sb
+		return a < b)
+	return idx.slice(0, mini(36, idx.size()))
+
 func _build_prompt(S, agent: Dictionary, cands: Array, ctx: Dictionary) -> String:
 	var p: Dictionary = agent.get("persona", {})
 	var traits: Array = p.get("traits", [])
@@ -106,14 +117,18 @@ func _on_decision(ag, cands, pick_i) -> void:
 			rec["trust"] = float(rel.get("trust", 0.0))
 		cand_recs.append(rec)
 	var min_need: float = _S._min_need(ag)
+	var order := _cap_order(cands)              # top-36 by score (稳定平手)：喂 LLM/teacher 的闭集，标签 0-9/A-Z
 	var row := {
 		"seed": _seed, "tick": _S.tick_no, "day": _S.day, "tod": _S.time_of_day(),
 		"agent": String(ag.get("id", "")), "persona": String(ag.get("persona_key", "")),
 		"needs": ag.get("needs", {}), "min_need": min_need, "crisis": min_need < float(_S.NEED_CRISIS),
 		"n": cands.size(), "pick": pick_i, "cands": cand_recs,
+		"cap_order": order, "pick_in_cap": order.find(pick_i),   # teacher 回标签 k → order[k]=原下标；pick_in_cap=logic 选择的标签位(-1=被裁,罕见)
 	}
 	if _with_prompt:
-		var user := _build_prompt(_S, ag, cands, _S._context(ag))
+		var capped := []
+		for j in order: capped.append(cands[j])
+		var user := _build_prompt(_S, ag, capped, _S._context(ag))
 		row["prompt"] = "<|im_start|>system\n%s<|im_end|>\n<|im_start|>user\n%s<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n" % [_sys_prompt(), user]
 	_f.store_line(JSON.stringify(row))
 	_n += 1

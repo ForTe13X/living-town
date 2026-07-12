@@ -313,6 +313,7 @@ func decide(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Dictionary
 	# 算力档节流：距上次 LLM 决策还不够久 → 直接走引擎（省一次 fire+可能的超时），快档 interval=1 几乎不节流
 	if not _pending.has(id) and Sim.tick_no - int(_last_llm.get(id, -99999)) < _decide_interval():
 		return Sim._logic_decide(agent, candidates)
+	candidates = _cap_for_llm(candidates)   # 闭集选号：LLM 只看 score 最高的 ≤36 个 → 标签恒 0-9/A-Z 单字符单 token（logic 兜底在上、用全量不受此限）
 	var p: Dictionary = _pending.get(id, {})
 	if p.is_empty():
 		if _inflight >= MAX_INFLIGHT:
@@ -383,6 +384,15 @@ func parse_decision(raw: String, candidates: Array) -> Dictionary:
 	if (data as Dictionary).has("affinity_delta"):
 		intent["affinity_delta"] = clampi(int((data as Dictionary)["affinity_delta"]), -3, 3)
 	return intent
+
+## 闭集选号上限=36（单字符 0-9/A-Z 全是单 token）。候选 >36 时取 score 最高的 36 个喂 LLM；
+## 低分候选（logic 几乎不会选）被裁掉，顺带缩 prefill。只作用于 LLM prompt，logic 兜底看全量。
+func _cap_for_llm(candidates: Array) -> Array:
+	if candidates.size() <= 36:
+		return candidates
+	var dup := candidates.duplicate()
+	dup.sort_custom(func(a, b): return float((a as Dictionary).get("score", 0.0)) > float((b as Dictionary).get("score", 0.0)))
+	return dup.slice(0, 36)
 
 ## 候选下标 ↔ 单字符编号（0-9 → A-Z，共 36）。闭集决策让模型只回一个字符 → decode≈1 token。
 func _idx_label(i: int) -> String:
