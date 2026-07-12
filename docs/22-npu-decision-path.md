@@ -32,6 +32,18 @@
 - **本机已实测的承重数据点**（edge-npu G3）：65-token、think-off 决策 prompt、4B W4A16、Genie/QAIRT 2.45 → TTFT **58.7 / 60.7ms**（1071-1107 tok/s prefill）。**NPU 是 prefill-强、decode-弱**——与手机 CPU 的短板正好互补，故「只 prefill、~0 decode」的决策是 NPU 的理想负载。
 - Adreno 830（llama.cpp OpenCL / MLC / ncnn）：GPU prefill 在骁龙上常仅 CPU 同级，抢 Godot 渲染预算，且 NobodyWho Android 构建本就关了 Vulkan → **仅 fallback 档**。实验性 llama.cpp-Hexagon backend prefill ~35-37 tok/s（300-tok≈9s，不过 8s 门）→ 观望。
 
+## 3.1 · Phase-2 spike 实测（本会话已跑，本机 · 本 prompt · 真数字）
+把 Living Town **真实决策 prompt**（headless `bench/dump_decide_prompt.gd` dump 出、Genie/Qwen think-off 模板）推上本机、经 edge-npu 已构建的 `genie-t2t-run` + 4B W4A16 bundle（HTP v79）跑 `--profile ×2`：
+
+| 决策 | 候选数 | prompt tokens | **TTFT＝决策延迟** | prefill | vs CPU 5.2s(暖) |
+|---|---|---|---|---|---|
+| **典型**(阿本·10 候选) | 10 | 189 | **118 / 119 ms** | ~1597 tok/s | **~44×** |
+| **最坏**(阿丽·41 候选) | 41 | 568 | **294 / 305 ms** | ~1862-1934 tok/s | **~18×** |
+
+- **旗舰坐实**：典型决策 **~118ms**、最坏 **~294ms**——比 docs 外推（~150-300ms）还好，且这是 **4B**（要发的 0.5B 会再快数倍，典型或 ~30-50ms）。手机 CPU 5.2s 暖 → NPU 让**端上活体 LLM 决策真正可行**（~8 决策/秒 vs CPU 0.19）。模型都挑了合理动作（阿丽饥饿→`0 吃饭`；阿本→`3`，确定性两跑一致）。
+- **诚实**：(1) 这是 **unmasked greedy**——masked argmax 仍未在本机证（但 mask=对 ≤36 个候选 id 的 CPU 端 argmax、不动 TTFT，故 118/294ms 对 masked 也成立）；(2) `init-time ~3-4s` 是**一次性** mmap 模型载入、跨会话所有决策摊薄 → **模型须常驻**（服务保持 context）；(3) 用的是机上现成 4B bundle，发行用的 0.5B/许可仍待办；(4) **快 ≠ 值**——语言是否胜过 ranker 仍是 Phase-0 问题。
+- **🐛 顺带抓到真 bug**：`_idx_label(i)` 候选 >36 时溢出 Z → 落到标点 `[ \ ] ^ _ …`（阿丽 41 候选实际触发）。当前 slm 路对高候选 agent 会喂非字母数字标签、模型易乱/越界。**Tier 1 ranker 天然免疫（argmax over N 分数、无标签上限）**；LLM 路须截候选到 ≤36（按 score 取 top-36，顺带降 prefill）或换双字符标签。
+
 ## 4. 对抗验证结论（8 条承重假设 × 3 镜）
 **站住的（可信）**：`event_digest` 只折离散字段→整数 pick digest-invariant（CLAIM 1，三镜 SUPPORTED）；决策=已算好特征上的 pointwise rank（CLAIM 2 核心 SUPPORTED）；record-and-replay 对账 sound（CLAIM 7 确定性镜 SUPPORTED）；现有异步 `llm` 后端可重指向 localhost NPU 服务（`AIBackend.gd:90` 一个 android 门 + `_fire_http`→127.0.0.1，代码核实）。
 
@@ -47,7 +59,7 @@
   - (a) **对拍**：logic 地板多 seed 跑、记每个决策点 `{persona,needs,ctx,候选+特征+score}`（仿真便宜确定性、百万态零成本、**过采样危机/冲突稀有态**）→ 采 10-50K 态、同一 70B（voicebank 作者）打「入戏 index」标 → 蒸 GBDT(LightGBM/MIT) 或 MLP(PyTorch/BSD) → **留出集评**：ranker 对 70B 教师的命中率、是否超 1.5B 的 pick、**并挂守恒不变量**（记 2026-07-05 克隆秘密把决策分布挪动→炸掉 #34 money 守恒的教训）。**这个实验决定 Tier 2 是否值得建。**
   - (b) **今天就拿的免费赢**：给现 NobodyWho CPU 路加 1-char GBNF mask（`root ::= [0-9A-Z]`）+ prompt-cache → 零新依赖、当下就保证合法决策。
 - **Phase 1 · 出 Tier 1 蒸馏 ranker**：`ranker` 后端（GBDT 整数 eval，~50 行 GDScript 前向），probe/demote 门后 opt-in、pick 记 trace、权重当 data 发（如 `utility.json`/`voicebank.json`）；**真机录一段 sub-ms flavored 决策 clip**（record-on-stage-change）。零 .so、零 export 改动。
-- **Phase 2 · NPU-LLM 手机 spike（≈edge-npu G4）+ 审计**：把姊妹 lab 已构建的 `genie-t2t-run` + Qwen2.5-0.5B W4A16 QNN bundle 推上机，喂 **Living Town 真实 ~327-tok 候选 prompt**（逐字、think-off、fail-closed HTP 断言防静默回落）、`--profile ×2` → **本机本 prompt 的真 masked 决策 p50/p95**；并出 QNN v79 `.so` 集的确切 APK/尺寸 + QAIRT 再分发许可对 RL4 的书面裁决。近零新代码、约半天。
+- **Phase 2 · NPU-LLM 手机 spike（≈edge-npu G4）+ 审计**：把姊妹 lab 已构建的 `genie-t2t-run` + Qwen2.5-0.5B W4A16 QNN bundle 推上机，喂 **Living Town 真实 ~327-tok 候选 prompt**（逐字、think-off、fail-closed HTP 断言防静默回落）、`--profile ×2` → **本机本 prompt 的真决策延迟**。**【已首测 ✅ §3.1：典型 118ms / 最坏 294ms（4B unmasked greedy）——旗舰坐实】** 余：masked E2E（用已构建的 masked-sampler binary）、QNN v79 `.so` 集的确切 APK/尺寸、QAIRT 再分发许可对 RL4 的书面裁决。
 - **Phase 3 · Tier 2 opt-in NPU-LLM（有条件：Phase 0 存在质量缺口 ∧ Phase 2 延迟+许可双过）**：`npu` 后端=Genie masked-sampler 服务经现 localhost 后端接入、android 门翻转、`goto_tick` 接 `load_replay`。
 
 ## 6. 诚实边界（别外推）
