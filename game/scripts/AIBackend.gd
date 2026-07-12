@@ -519,6 +519,23 @@ func _canned_reply(agent: Dictionary, _player_text: String) -> String:
 	if "好奇" in traits: return "真的假的？！快跟我讲讲！"
 	return "嗨，找我有事吗？"
 
+## 引擎事实护栏（chat 用）：把"这个 NPC 知道、但绝不可外露的秘密"这条引擎事实喂给模型 → 对话安全靠构造。
+## 收 agent.beliefs 里所有 secret==true 的 claim（自己的秘密 + 别人吐露/说漏给它的）。
+## 对拍验证（docs/22 护栏）：喂此约束后对话泄密率 35%→0%、入戏不降反升。只读旁路：不抽 RNG、不进 digest，
+## 且 chat 玩家发起、CI(backend=null) 从不触达 → 红线零影响。放养的 LLM 每三次漏一次秘密，故这条是必需。
+func _secret_guard(agent: Dictionary) -> String:
+	var beliefs: Dictionary = agent.get("beliefs", {})
+	var claims := []
+	for subj in beliefs:
+		var b = beliefs[subj]
+		if b is Dictionary and bool(b.get("secret", false)):
+			var c := String(b.get("claim", "")).strip_edges()
+			if c != "" and not claims.has(c):
+				claims.append(c)
+	if claims.is_empty():
+		return ""
+	return " 【护栏·守口如瓶】以下私密你知道、但绝不可向人透露、暗示或让人推断出来：%s。被追问就用你的口吻自然岔开、否认或沉默，绝不说破。" % "；".join(claims)
+
 ## LLM 反思润色（可选皮肤，docs/03）：把引擎地板洞察 + 近期记忆 → 一句更自然的内心独白，异步写回记忆。
 ## 限预算(复用 L5 令牌桶)；纯 logic/超预算/无模型 → 直接返回(保留地板洞察)。Sim._reflect_llm 调用。
 func reflect(agent: Dictionary, floor_insight: String, recent: Array, cb: Callable) -> void:
@@ -601,8 +618,8 @@ func _chat_http(agent: Dictionary, player_text: String, ctx: Dictionary, cb: Cal
 			mem = " 你近期记得：" + "；".join(ms) + "。"
 	var mm := _mood(agent)
 	var sit := "此刻是%s，你%s。" % [_phase_zh(float(ctx.get("tod", 0.0))), String(mm[0])]
-	var sys := "你在扮演像素小镇居民 %s（%s，性格:%s，口吻:%s）。%s%s 用第一人称、你的口吻，贴合当下心情对玩家自然回 1-2 句，只输出台词本身、别复述设定。%s" % [
-		p.get("name", ""), p.get("bio", ""), "·".join(p.get("traits", [])), p.get("style", ""), sit, mem, (" /no_think" if no_think else "")]
+	var sys := "你在扮演像素小镇居民 %s（%s，性格:%s，口吻:%s）。%s%s%s 用第一人称、你的口吻，贴合当下心情对玩家自然回 1-2 句，只输出台词本身、别复述设定。%s" % [
+		p.get("name", ""), p.get("bio", ""), "·".join(p.get("traits", [])), p.get("style", ""), sit, mem, _secret_guard(agent), (" /no_think" if no_think else "")]
 	var reqbody := {"model": model, "max_tokens": MAX_TOKENS, "temperature": 0.8,
 		"messages": [{"role": "system", "content": sys}, {"role": "user", "content": player_text}]}
 	var err := http.request(endpoint, ["Content-Type: application/json", "Authorization: Bearer " + api_key], HTTPClient.METHOD_POST, JSON.stringify(reqbody))
@@ -623,8 +640,8 @@ func _chat_slm(agent: Dictionary, player_text: String, ctx: Dictionary, cb: Call
 		if not ms.is_empty():
 			mem = " 你近期记得：" + "；".join(ms) + "。"
 	var mm := _mood(agent)
-	var sys := "你在扮演像素小镇居民 %s（%s，性格:%s，口吻:%s）。此刻是%s，你%s。%s 用第一人称、你的口吻，贴合当下心情对玩家自然回 1-2 句，只输出台词本身、别复述设定。" % [
-		p.get("name", ""), p.get("bio", ""), "·".join(p.get("traits", [])), p.get("style", ""), _phase_zh(float(ctx.get("tod", 0.0))), String(mm[0]), mem]
+	var sys := "你在扮演像素小镇居民 %s（%s，性格:%s，口吻:%s）。此刻是%s，你%s。%s%s 用第一人称、你的口吻，贴合当下心情对玩家自然回 1-2 句，只输出台词本身、别复述设定。" % [
+		p.get("name", ""), p.get("bio", ""), "·".join(p.get("traits", [])), p.get("style", ""), _phase_zh(float(ctx.get("tod", 0.0))), String(mm[0]), mem, _secret_guard(agent)]
 	var chat: Object = ClassDB.instantiate("NobodyWhoChat")
 	chat.set("model_node", model)
 	chat.set("system_prompt", sys)
