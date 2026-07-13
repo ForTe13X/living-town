@@ -247,19 +247,25 @@ func _load_data() -> void:
 	housing = _read_json("res://data/housing.json") # Wave 3c 住房租金（缺文件→无租金=零扰动）
 	elections = _read_json("res://data/elections.json") # Wave 3a 选举（缺文件→不选举=零扰动）
 	lifecycle = _read_json("res://data/lifecycle.json") # Wave 3b 生命周期（缺文件→无季节无年龄=零扰动）
-	# 职业自带工位：extra_advertises 注入 world（跟 jobs.json 同门控 → OFF 时 map 原样=逐字节不变）；只注一次防重入
-	if not jobs.is_empty() and not _jobs_injected:
-		_jobs_injected = true
-		for ea in jobs.get("extra_advertises", []):
-			var oid := String(ea.get("object", ""))
-			if world["objects"].has(oid):
-				(world["objects"][oid]["advertises"] as Array).append({
-					"action": ea["action"], "need": ea["need"], "amount": int(ea["amount"]), "duration": int(ea["duration"])})
 	var objs := {}
 	for o in world.get("objects", []):
 		o["pos"] = Vector2i(int(o["pos"][0]), int(o["pos"][1]))
 		objs[o["id"]] = o
 	world["objects"] = objs
+	# 职业自带工位：extra_advertises 注入 world（跟 jobs.json 同门控 → OFF 时 map 原样）；只注一次防重入。
+	# P1-5 修复：必须在 objects 数组→字典【之后】注入——此前 world["objects"] 还是 Array，.has(oid) 对字符串 id
+	# 恒 false，看摊等职业工位从未真正加进 advertises（阿丽/阿林技能 30 天恒 Lv0）。字段访问加默认防脏数据。
+	if not jobs.is_empty() and not _jobs_injected:
+		_jobs_injected = true
+		for ea in jobs.get("extra_advertises", []):
+			var oid := String(ea.get("object", ""))
+			if world["objects"].has(oid):
+				var od: Dictionary = world["objects"][oid]
+				if not od.has("advertises"):
+					od["advertises"] = []
+				(od["advertises"] as Array).append({
+					"action": String(ea.get("action", "")), "need": String(ea.get("need", "")),
+					"amount": int(ea.get("amount", 0)), "duration": int(ea.get("duration", 0))})
 
 ## 阶段2（docs/16 §10+）：把 data/buildings.json 编译期展开进 world（rooms + 家具 objects）。
 ## 确定性红线：直接写 world 字典/数组、【不经 spawn_object】(那会写 event→digest 漂/破 off 门)；

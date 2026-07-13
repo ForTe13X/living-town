@@ -358,10 +358,18 @@ func parse_decision(raw: String, candidates: Array) -> Dictionary:
 	if raw.strip_edges() == "" or candidates.is_empty():
 		return {}
 	var s := raw.strip_edges()
-	# 主路（闭集选号）：前几字符里第一个合法编号(0-9/A-Z) → 候选下标。台词不在此，由 decide() 从冻结语音库补。
-	for i in mini(s.length(), 6):                        # 只看前几字符：防 prose 里的字母被误当编号
-		var pk := _label_idx(s.substr(i, 1))
-		if pk >= 0 and pk < candidates.size():
+	# 主路（闭集选号）：仅当响应本质就是编号——首字符是合法编号(0-9/A-Z)、且其后无任何字母/数字续接。
+	# fail-closed 防 prose（P2-3）："The answer is 2"(T=29)、"I choose A"(I)、"2 talk" 都不当编号 → 落 JSON 兜底/logic。
+	# 台词不在此，由 decide() 从冻结语音库补。
+	var pk := _label_idx(s.substr(0, 1))
+	if pk >= 0 and pk < candidates.size():
+		var pure := true
+		var rest := s.substr(1)
+		for j in rest.length():                          # 编号后若有任何字母/数字 → 是 prose，不采纳
+			if _is_alnum_ascii(rest.substr(j, 1)):
+				pure = false
+				break
+		if pure:
 			return (candidates[pk] as Dictionary).duplicate()
 	# 兼容旧 JSON({"pick":N,speech,emotion,...})：单测 + llm 老路仍可能这么回（含台词则保留）
 	var data: Variant = JSON.parse_string(s)
@@ -405,6 +413,11 @@ func _label_idx(c: String) -> int:
 	if code >= 48 and code <= 57: return code - 48        # 0-9
 	if code >= 65 and code <= 90: return code - 65 + 10   # A-Z（大写，小写不认→JSON 里的字母不会误读）
 	return -1
+## ASCII 字母/数字判定（parse_decision 的 fail-closed prose 检测用）。
+func _is_alnum_ascii(c: String) -> bool:
+	if c.length() == 0: return false
+	var o := c.unicode_at(0)
+	return (o >= 48 and o <= 57) or (o >= 65 and o <= 90) or (o >= 97 and o <= 122)
 
 # ── 发起异步请求 ─────────────────────────────────────────────────────────
 func _fire(id: String, agent: Dictionary, candidates: Array, ctx: Dictionary) -> void:

@@ -582,6 +582,11 @@ func _update_obs() -> void:
 			_chat_in.visible = true
 			_chat_in.placeholder_text = "对 %s 说…（Enter 发送）" % _nm(_selected_id)
 
+## BBCode 转义（P2-9）：不可信文本（玩家输入 / 模型回复）拼入 RichTextLabel 前把 [ 换成 [lb]，
+## 防 [url]/[color] 等标签伪造界面。[lb] 在 BBCode 里正好渲染成字面 [。
+func _esc(s: String) -> String:
+	return s.replace("[", "[lb]")
+
 ## 玩家对选中 NPC 说话 → AIBackend.chat（llm/mock/罐头）→ 头顶回复气泡 + 日志 + 写入 NPC 记忆。
 func _on_player_say(text: String) -> void:
 	text = text.strip_edges()
@@ -591,16 +596,16 @@ func _on_player_say(text: String) -> void:
 	var ag := Sim.get_agent(id)
 	if ag.is_empty():
 		return
-	_push("[color=#9ad0ff]你 → %s：%s[/color]" % [_nm(id), text])
+	_push("[color=#9ad0ff]你 → %s：%s[/color]" % [_nm(id), _esc(text)])   # P2-9：不可信文本转义 [，防 BBCode 注入
 	ag["thinking"] = true
 	AIBackend.chat(ag, text, {"tick": Sim.tick_no, "day": Sim.day}, func(reply: String):
 		ag["thinking"] = false
 		if _view != null and _view.has_method("show_say"):
-			_view.show_say(id, reply, 90)
-		_push("[color=#cfe8ff]%s：%s[/color]" % [_nm(id), reply])
+			_view.show_say(id, reply, 90)                       # 气泡走 draw_string，用原文（非 BBCode，无需转义）
+		_push("[color=#cfe8ff]%s：%s[/color]" % [_nm(id), _esc(reply)])   # 日志是 RichTextLabel(BBCode) → 转义模型回复
 		var mem = ag.get("memory")
 		if mem != null:
-			mem.add("玩家问『%s』，我答『%s』" % [text.substr(0, 18), reply.substr(0, 18)], 5, Sim.tick_no, [id, "player", "chat"])
+			mem.add("玩家问『%s』，我答『%s』" % [_esc(text.substr(0, 18)), _esc(reply.substr(0, 18))], 5, Sim.tick_no, [id, "player", "chat"])
 	)
 	if _chat_in != null:
 		_chat_in.text = ""
