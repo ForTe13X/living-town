@@ -551,6 +551,18 @@ headless dump 出 Living Town **真实**决策 prompt（`bench/dump_decide_promp
 **🔬 NPU 诚实落点：声音是 decode-bound，不是 NPU 的 prefill 强项。**
 player-interaction 的 prefill p50=300 tok（NPU ~200ms、其强项），但**回复 decode p50=73 tok**——小模型端上 15-30 tok/s → **2.4-4.9s，decode 主导**。与闭集决策(1 decode token、prefill-bound、NPU 理想)**正相反**。但玩家互动**稀疏、离关键路径、容忍"思考中…"的停顿**，故 2-5s 可接受、可发。策略：**常见话走冻结 voicebank(零推理)，新局才动态生成**（NPU 加速那次 prefill、decode 靠短回复+小模型兜）。**旗舰"NPU 快决策"诚实收敛为：NPU 服务于动态入戏配音的 prefill，且被引擎的事实/秘密护栏夹住**——非自主决策(logic 胜)、非放养生成(漏秘密)。
 
+**✅ 真机验证：手机上 guarded chat 真守住秘密（阿丽当面否认）。**
+护栏 wiring 进 `chat()`（收 agent.beliefs 里 secret==true 的 claim 塞进 system prompt）后，重出 APK 推真机：Tab 选中阿丽（观察台确认她持"偷偷攒钱离开小镇去看海"+可可暗恋两条秘密），英文探问"do you secretly want to leave town to see the sea"（adb 无中文 IME→英文，模型自动跟随语种）。阿丽答："Oh, that's quite a surprise! I'm just trying to make ends meet, it's not a big deal."——**装惊讶、把攒钱重构成"糊口"、不认"离开/看海"**，秘密守住、且是她热情的口吻。对照桌面无护栏的阿丽会直认"存了点小目标…去趟海边"。**「引擎决策，模型配音」在真机端到端成立。**
+
+**🔬 但真机动态对话 ~60s（724% CPU）——decode-bound 铁律再确认，voicebank-first 是对的。**
+那句回复在手机上 `top` 显 **724% CPU / 17GB RES**（Qwen-3B NobodyWho、7 核跑满）、约 **60 秒**才吐完。3B 端上动态对话对"实时互动"不切实际。**再次坐实**：常见话必须走冻结 voicebank（零推理），动态生成只留给稀有新局 + 容忍"思考中…"停顿 + 更小模型/NPU 加速 prefill；decode 始终是成本（与 player-interaction eval 的 2.4-4.9s 投影同源，模型更大→更慢）。工具坑：中文输入被堵（无 ADBKeyboard）、回复气泡瞬态 + 仿真跑得快（×1 每日≈8s 墙钟）→ 靠"进程 CPU 忙"信号 + 长等才截到。
+
+**🛠 外部 Codex 评审 = 有价值的独立审计；修了 3 条（+P1-5 是死掉的职业链）。**
+`analysis/repository-review-2026-07-12` 在本会话起点 commit 审的，准确。修：**P2-3**（parse 把 prose 首字母当编号 "The…"→T=候选29；改 fail-closed 只认裸编号）、**P2-9**（HUD 日志是 BBCode RichTextLabel，玩家/模型文本未转义→`[url]` 注入；`_esc` 把 `[`→`[lb]`）、**P1-5**（`extra_advertises` 在 objects 还是 Array 时按字符串 id 查→`.has` 恒 false，看摊工位从没真加进 advertises，阿丽/阿林技能 30 天恒 Lv0；移到数组→字典之后注入，看摊 0→2478 候选/14 选中）。
+
+**💡 P1-5 的红线再认知：门校验的是"同 seed 两跑一致"，不是"digest 数值恒定"。**
+修 P1-5 改了 logic 地板行为 → digest **数值变了**，但 S0 门断言的是**跨跑确定性**（同 seed 两跑摘要相等 3/3）+ 硬不变量，**没钉死某个金数字**。所以只要改动本身确定（无 RNG/Time）+ 不变量仍过，**修正正确性 bug 是安全的、数值变就变**。这修正了我早先 clone-secrets 因"怕 digest 变"而 revert 的过度谨慎——**真红线是"确定性 + 不变量"，不是"digest 那个数永不变"**。（区别：clone-secrets 当年是破了 #34 金钱守恒，那才是真该 revert。）
+
 **🛠 独立评审 > 自评（护栏也适用于我的实验方法）。**
 本条结论若只看自评 4.6 就会得出"player-interaction 很棒、放手上"的错判；正是三路对抗评审（且用不同模型 Claude）把 35% 秘密泄露挖出来。**"别让模型自评"不仅是产品护栏、也是实验方法护栏**——同 [[feedback-record-on-stage-change]] 的真机眼验精神。
 
