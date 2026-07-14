@@ -17,6 +17,8 @@ signal agent_changed(agent_id: String)
 signal day_changed(day: int)
 signal log_line(text: String)
 signal social_event(event: Dictionary)   # 视图可订阅：渲染气泡/连线
+signal world_reset                        # start_new 时发：AIBackend 订阅→cancel_all(bump epoch)，防旧世界回包污染新局(P1-3)。仅信号，Sim 不识 backend；CI 无监听=无操作，零 digest 影响。
+var replaying := false                     # goto_tick 重演期间为 true → AIBackend.decide 直接走 logic，不在回放里发 live 请求(P1-6)
 
 const TICKS_PER_DAY := 240
 const GRID := Vector2i(24, 16)
@@ -345,6 +347,7 @@ func _as_arr(v: Variant) -> Array:
 	return v if v is Array else []
 
 func start_new(p_seed: int = 12345) -> void:
+	emit_signal("world_reset")             # 新世界 → 通知 AIBackend 取消所有在飞请求 + 进新 epoch（旧回包作废）。CI 无监听=no-op。
 	seed_base = p_seed
 	tick_no = 0
 	day = 1
@@ -673,9 +676,11 @@ func goto_tick(target: int) -> void:
 		p_pos = _agent_by_id["player"]["pos"]
 		p_inv = (_agent_by_id["player"]["inventory"] as Dictionary).duplicate()
 	start_new(seed_base)
+	replaying = true                       # 回放期间 AIBackend.decide 走 logic，不发 live 请求(P1-6)
 	var t := maxi(0, target)
 	while tick_no < t:
 		tick()
+	replaying = false
 	if had_player:
 		var pl := add_player(p_pos)
 		pl["inventory"] = p_inv
