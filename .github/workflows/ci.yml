@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+# Cancel superseded runs on the same ref
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Godot 4.6.2 (headless)
+        run: |
+          set -e
+          GV=4.6.2-stable
+          curl -fLo godot.zip "https://github.com/godotengine/godot/releases/download/${GV}/Godot_v${GV}_linux.x86_64.zip"
+          unzip -q godot.zip
+          sudo mv "Godot_v${GV}_linux.x86_64" /usr/local/bin/godot
+          sudo chmod +x /usr/local/bin/godot
+          godot --version
+
+      - name: Import project (headless)
+        run: godot --headless --path game --import || true
+
+      - name: CI gate (lints + S0 + test scenes)
+        env:
+          GODOT: godot
+          PYTHON: python3
+        run: bash tools/ci.sh

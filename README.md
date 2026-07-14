@@ -21,7 +21,7 @@
 - [派系与盟约](docs/media/s3_social_demo.mp4)
 - [嵌入式 SLM 实机驱动](docs/media/slm_gpu_demo.mp4)
 
-![成片字幕样式](docs/media/shot-06-subtitled-demo.png)
+![成片字幕样式](docs/media/shot-05-subtitled-demo.png)
 
 ## 工程设计
 

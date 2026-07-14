@@ -21,7 +21,7 @@ Demo videos:
 - [Factions and alliances](docs/media/s3_social_demo.mp4)
 - [Embedded SLM on local hardware](docs/media/slm_gpu_demo.mp4)
 
-![Subtitle style from the rendered demo](docs/media/shot-06-subtitled-demo.png)
+![Subtitle style from the rendered demo](docs/media/shot-05-subtitled-demo.png)
 
 ## Engineering Design
 

@@ -42,7 +42,7 @@ func _ready() -> void:
 
 	# ── 0) 入镇 ──
 	var pl := Sim.add_player()
-	_ck("入镇", Sim.agents.size() == 7 and pl.get("is_player", false) and Sim.get_agent("player") == pl, "agents=%d" % Sim.agents.size())
+	_ck("入镇", Sim.agents.size() == 13 and pl.get("is_player", false) and Sim.get_agent("player") == pl, "agents=%d (12-cast + player)" % Sim.agents.size())
 	Sim.player_move(Vector2i(1, 0))
 	_ck("移动", true, "pos=%s area=%s" % [str(pl["pos"]), Sim._area_at(pl["pos"])])
 
