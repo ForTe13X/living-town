@@ -246,65 +246,27 @@ func _draw() -> void:
 			for xx in range(int(pr[0]), int(pr[0]) + int(pr[2])):
 				draw_texture_rect(dirt, Rect2(xx * T, yy * T, T, T), false)
 
-	# 区域块（半透明，让草地透出）+ 标签
+	# 区域：只留一层极淡的"街区底色"（0.32→0.10）+ 低调标签。建筑一旦有了体积，空间就该由【房子】定义，
+	# 而不是由半透明色块定义——旧的 0.32 色洗盖在建筑上，把砖木都洗成灰紫，是"简陋感"的主因之一。
 	for area in Sim.world.get("areas", {}):
 		var a: Dictionary = Sim.world["areas"][area]
 		var r: Array = a.get("rect", [0, 0, 0, 0])
 		var rect := Rect2(r[0] * T, r[1] * T, r[2] * T, r[3] * T)
-		var ac := Art.area_color(area); ac.a = 0.32
+		var ac := Art.area_color(area); ac.a = 0.10
 		draw_rect(rect, ac, true)
-		draw_string(Art.font(), Vector2(rect.position.x + 6, rect.position.y + 20), str(a.get("label", area)), HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color(1, 1, 1, 0.55))
-	# 室内房间（docs/16 / docs/19 §9 呈现）：画成"切开屋顶的俯视室内"——按房型上色的地板+木纹、立体墙(内暗影+亮墙沿)、
-	# 屋檐暗边、有人在内时暖光（"此刻有人住着"）。纯渲染，台词/占用不进 digest，红线不动。
+		draw_string(Art.font(), Vector2(rect.position.x + 6, rect.position.y + 16), str(a.get("label", area)), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 1, 1, 0.28))
+	# 室内房间 → 画成【真·建筑】（docs/16 / docs/19 §9）：外墙有厚度 + 落地阴影 + 屋檐、南墙开门、北墙开窗、
+	# 室内按房型铺材质地板，有人时透暖光。参照 Stardew / Stoneshard / ZeroSievert 的"切顶俯视"读法：
+	# 建筑必须有体积，人才有比例——旧版把 6x4 的房间画成一块半透明色块 + 文字标签，读作"色区"而非"房子"。
+	# 纯渲染：不进 digest、不抽 RNG（门窗变体用 Sim._hash01(room_id) 确定性选）。红线不动。
 	for rid in Sim.world.get("rooms", {}):
 		var rm: Dictionary = Sim.world["rooms"][rid]
 		var rr: Array = rm.get("rect", [0, 0, 0, 0])
-		var rrect := Rect2(rr[0] * T, rr[1] * T, rr[2] * T, rr[3] * T)
-		var rtype := str(rm.get("type", rid))
-		var enclosed := bool(rm.get("enclosed", false))
-		# 地板：按房型上色，比开阔地实 → 读作"室内地面"
-		var floor := Color("#6b4a2f", 0.52)
-		if "bed" in rtype: floor = Color("#7a5230", 0.60)
-		elif "parlor" in rtype or "cafe" in rtype: floor = Color("#7a5838", 0.58)
-		elif "work" in rtype: floor = Color("#565248", 0.60)
-		elif "quiet" in rtype: floor = Color("#544a66", 0.56)
-		elif "wash" in rtype or "bath" in rtype: floor = Color("#3a5a5f", 0.56)
-		elif "shop" in rtype: floor = Color("#6f5528", 0.58)
-		draw_rect(rrect, floor, true)
-		# 木纹：几条横向暗线（地板质感）
-		var py := rrect.position.y + T
-		while py < rrect.end.y - 1.0:
-			draw_line(Vector2(rrect.position.x + 1, py), Vector2(rrect.end.x - 1, py), Color(0, 0, 0, 0.09), 1.0)
-			py += T
-		# 立体墙：内暗影(墙厚) + 亮墙沿(enclosed 更亮)
-		draw_rect(rrect.grow(-2.0), Color(0, 0, 0, 0.22), false, 3.0)
-		var edge := Color("#e0bc82") if enclosed else Color(0.9, 0.9, 0.9, 0.42)
-		draw_rect(rrect, edge, false, 2.5)
-		# 屋檐：顶边暗檐（暗示屋顶被切开=这是室内）
-		draw_rect(Rect2(rrect.position, Vector2(rrect.size.x, 5.0)), Color(0, 0, 0, 0.28), true)
-		# 有人在内 → 暖光（人越多越暖）
-		var occ := 0
-		for ag in Sim.agents:
-			if rrect.has_point(Vector2(ag["pos"].x * T + T * 0.5, ag["pos"].y * T + T * 0.5)):
-				occ += 1
-		if occ > 0:
-			draw_rect(rrect, Color("#ffdca0", 0.05 + minf(0.11, occ * 0.045)), true)
-		draw_string(Art.font(), rrect.position + Vector2(6, 16), ("🚪 " if enclosed else "") + rtype, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("#ffe6c2"))
-	# 网格线
-	for x in range(w + 1):
-		draw_line(Vector2(x * T, 0), Vector2(x * T, h * T), Art.grid_line, 1.0)
-	for y in range(h + 1):
-		draw_line(Vector2(0, y * T), Vector2(w * T, y * T), Art.grid_line, 1.0)
-	# 区域地标：每个区角放一座小屋（让分区像"街区"）
-	var hut := Art.building_tex("hut")
-	if hut != null:
-		var hw := float(hut.get_width()) * (float(T) / 16.0)
-		var hh := float(hut.get_height()) * (float(T) / 16.0)
-		for area in Sim.world.get("areas", {}):
-			var rr: Array = Sim.world["areas"][area].get("rect", [0, 0, 1, 1])
-			var bx := int(rr[0])
-			var by := int(rr[1])
-			draw_texture_rect_region(hut, Rect2(bx * T + 3, (by + 1) * T - hh, hw, hh), Rect2(0, 0, hut.get_width(), hut.get_height()))
+		_draw_building(str(rid), Rect2(rr[0] * T, rr[1] * T, rr[2] * T, rr[3] * T),
+			str(rm.get("type", rid)), bool(rm.get("enclosed", false)))
+	# （网格线已移除：Stardew/Stoneshard/ZeroSievert 都不画格子——硬网格是最大的"原型感"来源。
+	#   瓦片结构由草地变体/地板纹理自然读出。需要格子时走 dev overlay，不进玩家视图。）
+	# （1 格小屋地标已移除：那正是"房子=人一般大"的比例谎言来源；建筑现由上面的真·建筑体现。）
 
 	# 装饰散布（区域外草地上的树/花/草丛，确定性布局；在物件与居民之下）
 	if not _decor_built:
@@ -469,6 +431,171 @@ func _draw_agent(ag: Dictionary) -> void:
 	_draw_urgent_need(center, ag)
 
 ## 程序化像素床（顶视角）：木框 + 床单 + 枕头 + 被子。base=格左上像素。
+## ── 建筑（切顶俯视）────────────────────────────────────────────────────────
+const WALL := 13.0     # 外墙厚(px)≈0.27 格：够读出体积，又不吃室内——室内可走面积仍是房间 rect 本身（墙向外长）
+
+## 墙比地板【暗】一档：屋顶被切掉后墙体仍处在背光面，明度差才让"墙/地"分得开（旧版两者同明度 → 一块板）。
+func _mat_wall(rtype: String) -> Color:
+	if "work" in rtype or "shop" in rtype: return Color("#4c463d")     # 石/土墙
+	if "wash" in rtype or "bath" in rtype: return Color("#3f4b50")
+	if "quiet" in rtype: return Color("#484054")
+	return Color("#5a4028")                                             # 木墙（居室/茶座）
+
+## 夜量 0..1（夜=1、昼=0，晨昏平滑）。与 Main._daylight 的色停同频——它把整块世界画布乘暗，
+## 所以室内要靠【相对】暖度把自己从冷夜里拉出来。
+func _night_amt() -> float:
+	var tod := Sim.time_of_day()
+	if tod < 0.20: return 1.0
+	if tod < 0.32: return 1.0 - (tod - 0.20) / 0.12
+	if tod < 0.72: return 0.0
+	if tod < 0.88: return (tod - 0.72) / 0.16
+	return 1.0
+
+func _mat_floor(rtype: String) -> Color:
+	if "bed" in rtype: return Color("#8a6038")
+	if "parlor" in rtype or "cafe" in rtype: return Color("#8a6440")
+	if "work" in rtype: return Color("#6a655a")
+	if "quiet" in rtype: return Color("#5f5478")
+	if "wash" in rtype or "bath" in rtype: return Color("#46686e")
+	if "shop" in rtype: return Color("#7f6030")
+	return Color("#7a5230")
+
+## 一栋建筑：落地影 → 外墙(屋檐/受光高光) → 室内地板+材质纹理 → 内墙投影 → 南门 → 北窗 → 有人透暖光。
+func _draw_building(rid: String, inner: Rect2, rtype: String, enclosed: bool) -> void:
+	var outer := inner.grow(WALL)
+	var wc := _mat_wall(rtype)
+	var fc := _mat_floor(rtype)
+	# 落地阴影（右下偏移）→ 体积感：让房子"坐"在地上而不是浮在草上
+	draw_rect(Rect2(outer.position + Vector2(4.0, 5.0), outer.size), Color(0, 0, 0, 0.30), true)
+	# 外墙实心 + 屋檐暗带 + 上/左受光高光 + 外缘描边
+	draw_rect(outer, wc, true)
+	draw_rect(Rect2(outer.position, Vector2(outer.size.x, WALL * 0.55)), Color(0, 0, 0, 0.30), true)
+	draw_line(outer.position, Vector2(outer.end.x, outer.position.y), wc.lightened(0.30), 2.0)
+	draw_line(outer.position, Vector2(outer.position.x, outer.end.y), wc.lightened(0.16), 2.0)
+	draw_rect(outer, Color(0, 0, 0, 0.38), false, 1.5)
+	# 室内地板
+	draw_rect(inner, fc, true)
+	# 地板材质：湿区/铺面走方砖，其余走木纹横板
+	if "wash" in rtype or "bath" in rtype or "shop" in rtype:
+		var gx := inner.position.x + T * 0.5
+		while gx < inner.end.x - 1.0:
+			draw_line(Vector2(gx, inner.position.y + 1), Vector2(gx, inner.end.y - 1), Color(0, 0, 0, 0.10), 1.0)
+			gx += T * 0.5
+		var gy := inner.position.y + T * 0.5
+		while gy < inner.end.y - 1.0:
+			draw_line(Vector2(inner.position.x + 1, gy), Vector2(inner.end.x - 1, gy), Color(0, 0, 0, 0.10), 1.0)
+			gy += T * 0.5
+	else:
+		var py := inner.position.y + T * 0.5
+		while py < inner.end.y - 1.0:
+			draw_line(Vector2(inner.position.x + 1, py), Vector2(inner.end.x - 1, py), Color(0, 0, 0, 0.11), 1.0)
+			py += T * 0.5
+	# 陈设：地毯 + 靠墙杂物（"住着人"的密度——空房间是"简陋"的另一半主因）
+	_draw_room_decor(rid, inner, rtype)
+	# 内墙投影：墙在室内投下的暗边 → 读出"墙有厚度"
+	draw_rect(Rect2(inner.position, Vector2(inner.size.x, 4.0)), Color(0, 0, 0, 0.26), true)
+	draw_rect(Rect2(inner.position, Vector2(4.0, inner.size.y)), Color(0, 0, 0, 0.16), true)
+	# 南墙开门（确定性位置）：门洞露地板色 + 深色门槛
+	var dw := minf(T * 0.85, inner.size.x)
+	var dspan := maxf(0.0, inner.size.x - dw)
+	var dx := inner.position.x + Sim._hash01(rid + ":door") * dspan
+	draw_rect(Rect2(dx, inner.end.y, dw, WALL), fc.darkened(0.12), true)
+	draw_rect(Rect2(dx, inner.end.y + WALL - 3.0, dw, 3.0), Color("#3a2a1c"), true)
+	# 有人在内？（灯火强度用）
+	var occ := 0
+	for ag in Sim.agents:
+		if inner.has_point(Vector2(ag["pos"].x * T + T * 0.5, ag["pos"].y * T + T * 0.5)):
+			occ += 1
+	# ── 灯火（Stoneshard/ZeroSievert 的招牌：暖池 vs 冷夜）────────────────────
+	# 夜里 enclosed 房间点灯（有人更旺）。CanvasModulate 会把整幅世界乘暗，故这里要下得【重】——
+	# 乘暗后剩下的"暖 vs 冷"相对差，才是玩家读到的那盏灯。
+	var night := _night_amt()
+	# 平铺底光压低（0.52→0.26）：整块均匀刷色会把地毯/杂物/木纹全洗平——光要有【落点】，
+	# 所以大头交给中心的径向暖池，底光只负责"这屋是亮的"。
+	var lit := 0.0
+	if enclosed:
+		lit += 0.26 * night
+	lit += minf(0.14, occ * 0.05) * (0.45 + 0.55 * night)
+	if lit > 0.001:
+		draw_rect(inner, Color("#ffbe63", lit), true)         # 偏橙灯火色：被夜蓝乘过后仍咬得住暖调
+	# 灯芯：房间中心的径向暖池（"光源在屋里"的层次）——夜里最明显，白天几乎不见
+	var pool := (0.30 * night + minf(0.20, occ * 0.07))
+	if pool > 0.01:
+		var cen := inner.get_center()
+		var rad := minf(inner.size.x, inner.size.y) * 0.55
+		for k in 4:
+			var f := 1.0 - float(k) / 4.0
+			draw_circle(cen, rad * (0.30 + 0.24 * float(k)), Color("#ffd27a", pool * 0.13 * f))
+	# 北墙开窗（enclosed 才有；1-2 扇，确定性）；夜里从窗口向北洒一片暖光到地上
+	if enclosed:
+		var n := 1 + int(Sim._hash01(rid + ":win") * 2.0)
+		for i in n:
+			var ww := minf(T * 0.55, inner.size.x * 0.5)
+			var t := (float(i) + 0.5) / float(n)
+			var wx := inner.position.x + t * inner.size.x - ww * 0.5
+			var wy := outer.position.y + WALL * 0.42
+			var glow := 0.30 * night + minf(0.25, occ * 0.08) * night
+			if glow > 0.01:                                    # 窗口洒光（越远越淡，三层叠出衰减）
+				for k in 3:
+					var sp := float(k + 1)
+					draw_rect(Rect2(wx - sp * 3.0, outer.position.y - sp * 7.0, ww + sp * 6.0, sp * 7.0),
+						Color("#ffc978", glow * (0.30 - 0.07 * float(k))), true)
+			# 窗本体：夜里点亮（暖黄），白天冷玻璃
+			var wcol := Color("#ffd98f").lerp(Color("#2b3a46"), 1.0 - night) if glow > 0.01 else Color("#2b3a46")
+			draw_rect(Rect2(wx, wy, ww, WALL * 0.52), wcol, true)
+			draw_rect(Rect2(wx, wy, ww, WALL * 0.52), Color("#9fd4e8", 0.45), false, 1.0)
+	# 房型标签：压低存在感（不再是主视觉）
+	draw_string(Art.font(), inner.position + Vector2(6, 15), rtype, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("#ffe6c2", 0.45))
+
+## 室内陈设（Stardew 的"住着人"密度）：地毯 + 靠墙杂物。全确定性（_hash01(room_id:key)），纯渲染不进 digest。
+func _draw_room_decor(rid: String, inner: Rect2, rtype: String) -> void:
+	# 地毯：够大的房间才铺；按房型给花色
+	if inner.size.x >= T * 2.5 and inner.size.y >= T * 2.0:
+		var rw := inner.size.x * (0.42 + 0.16 * Sim._hash01(rid + ":rugw"))
+		var rh := inner.size.y * (0.38 + 0.16 * Sim._hash01(rid + ":rugh"))
+		var rug := Rect2(inner.get_center() - Vector2(rw, rh) * 0.5, Vector2(rw, rh))
+		var rc := Color("#7d3f3f")
+		if "quiet" in rtype: rc = Color("#3f4a7d")
+		elif "parlor" in rtype or "cafe" in rtype: rc = Color("#6d5a2a")
+		elif "work" in rtype or "shop" in rtype: rc = Color("#4f4a40")
+		elif "wash" in rtype or "bath" in rtype: rc = Color("#2f5a5f")
+		draw_rect(rug, rc.darkened(0.22), true)
+		draw_rect(rug.grow(-4.0), rc, true)
+		draw_rect(rug.grow(-4.0), rc.lightened(0.28), false, 1.0)
+	# 靠墙杂物：2-4 件，沿内墙确定性摆放（小件、贴墙 → 不与床/桌打架）
+	var n := 2 + int(Sim._hash01(rid + ":clutn") * 3.0)
+	for i in n:
+		var t := (float(i) + 0.5) / float(n)
+		var side := int(Sim._hash01(rid + ":side" + str(i)) * 3.0)
+		var p := Vector2.ZERO
+		match side:
+			0: p = Vector2(inner.position.x + T * 0.34, inner.position.y + t * inner.size.y)
+			1: p = Vector2(inner.end.x - T * 0.34, inner.position.y + t * inner.size.y)
+			_: p = Vector2(inner.position.x + t * inner.size.x, inner.position.y + T * 0.42)
+		_draw_prop(p, int(Sim._hash01(rid + ":prop" + str(i)) * 4.0))
+
+## 程序化小杂物：0=木箱 1=陶罐 2=书堆 3=盆栽（包里没有的就程序化画——docs/13 的老规矩）
+func _draw_prop(p: Vector2, kind: int) -> void:
+	var s := T * 0.30
+	match kind:
+		0:
+			draw_rect(Rect2(p - Vector2(s, s) * 0.5, Vector2(s, s)), Color("#6b4a2a"), true)
+			draw_rect(Rect2(p - Vector2(s, s) * 0.5, Vector2(s, s)), Color("#33220f"), false, 1.0)
+			draw_line(Vector2(p.x - s * 0.5, p.y), Vector2(p.x + s * 0.5, p.y), Color("#8a6338"), 1.0)
+		1:
+			draw_circle(p, s * 0.44, Color("#8a5a3c"))
+			draw_circle(p, s * 0.44, Color("#4a2c1a"))
+			draw_circle(p - Vector2(0, s * 0.06), s * 0.36, Color("#9c6845"))
+			draw_rect(Rect2(p.x - s * 0.15, p.y - s * 0.58, s * 0.30, s * 0.22), Color("#6b4028"), true)
+		2:
+			for k in 3:
+				draw_rect(Rect2(p.x - s * 0.40, p.y + s * 0.26 - float(k) * 4.0, s * 0.80, 3.2),
+					[Color("#7d3f3f"), Color("#3f5a7d"), Color("#6d6a2a")][k], true)
+		_:
+			draw_rect(Rect2(p.x - s * 0.26, p.y, s * 0.52, s * 0.34), Color("#8a5a3c"), true)
+			draw_circle(p - Vector2(0, s * 0.16), s * 0.32, Color("#3f6b3a"))
+			draw_circle(p - Vector2(s * 0.12, s * 0.26), s * 0.16, Color("#4f8048"))
+
 func _draw_bed(base: Vector2) -> void:
 	var x := base.x + 8.0
 	var y := base.y + 5.0
