@@ -1143,12 +1143,31 @@ func agent_apply(ag: Dictionary, intent: Dictionary) -> void:
 		"attend": ag["option"] = {"kind": "attend", "area": intent["area"], "commit": intent["commit"]}
 		_: _apply_object(ag, intent)
 
+## P2-2 合法边界：object intent 是否可信。只检 target 存在不够——可插拔 backend / 扩展 / 迟到回包
+## 可能塞来残缺或非法字段：dur_total<=0 会在推进时【除零】、未知 need 会【索引失败】。
+## 引擎自产候选恒满足此式 → 对 logic 路是恒真的 no-op（digest 逐字节不变）。
+func _object_intent_ok(ag: Dictionary, intent: Dictionary) -> bool:
+	if intent == null or intent.is_empty():
+		return false
+	for k in ["action", "target", "need", "amount", "dur_total"]:
+		if not intent.has(k):
+			return false
+	if not world["objects"].has(str(intent["target"])):
+		return false
+	if int(intent["dur_total"]) <= 0:                                   # 除零护栏
+		return false
+	if not (ag.get("needs", {}) as Dictionary).has(str(intent["need"])):  # 未知 need 护栏
+		return false
+	return true
+
 func _apply_object(ag: Dictionary, intent: Dictionary) -> void:
-	if not intent.has("target") or not world["objects"].has(intent.get("target")):
+	if not _object_intent_ok(ag, intent):
 		var c := _object_candidates(ag)
 		if c.is_empty():
 			return
 		intent = _best(c)
+		if not _object_intent_ok(ag, intent):   # 引擎候选本应恒合法；仍不合法（数据脏）→ 放弃本 tick，永不崩
+			return
 	ag["option"] = {
 		"kind": "object",
 		"action": intent["action"], "target": intent["target"], "need": intent["need"],
@@ -1160,12 +1179,18 @@ func _apply_object(ag: Dictionary, intent: Dictionary) -> void:
 	emit_signal("agent_changed", ag["id"])
 
 func _apply_social(ag: Dictionary, intent: Dictionary) -> void:
-	var partner: Dictionary = _agent_by_id.get(intent.get("partner", ""), {})
+	# P2-2：残缺 intent（无动作/无对象）不信 → 本 tick 不动。动作【合法性】另由 _social_transaction 的
+	# KNOWN_SOCIAL_ACTIONS 门把关（未知动作不落通用效果，见 L7 ActionExecutor 注释）。引擎候选恒带这两字段 → no-op。
+	var action := str(intent.get("action", ""))
+	var pid := str(intent.get("partner", ""))
+	if action == "" or pid == "":
+		return
+	var partner: Dictionary = _agent_by_id.get(pid, {})
 	# 兜底：对方不存在/正忙/不同区 → 本 tick 不动，下 tick 重选（永不破坏仿真）
 	if partner.is_empty() or int(partner["talking"]) > 0 or _area_at(ag["pos"]) != _area_at(partner["pos"]):
 		return
 	ag["option"] = {
-		"kind": "social", "action": intent["action"], "partner": intent["partner"],
+		"kind": "social", "action": action, "partner": pid,
 		"subject": str(intent.get("subject", "")), "remaining": CONVERSE_TICKS,
 	}
 	ag["talking"] = CONVERSE_TICKS
@@ -2395,34 +2420,50 @@ func _form_pact(ag: Dictionary, o: Dictionary) -> void:
 	o["memory"].add("和%s结成了互助盟约" % _name(ag), 6, tick_no, [ag["id"], "pact", "form"])
 
 # ── S4：模型决策记录 / 确定性回放（LLM 输出当外部输入，引擎主体保持纯确定）──────
-## 候选集稳定哈希（回放 drift 检测：记录的 pick 必须仍在候选里）。
+## P2-1 候选稳定身份：**完整字段**（旧版只折 action/partner/subject → 多张床这类"同 action 不同 target"
+## 无法区分）。与 AIBackend._cand_key 同义（那边守异步回包，这边守回放）。
+func _cand_key(c: Dictionary) -> String:
+	return "%s|%s|%s|%s|%s|%s|%s|%s" % [
+		str(c.get("kind", "object")), str(c.get("action", "")), str(c.get("partner", "")),
+		str(c.get("target", "")), str(c.get("subject", "")), str(c.get("need", "")),
+		str(c.get("amount", "")), str(c.get("dur_total", ""))]
+
+## 候选集稳定哈希（回放 drift 检测）。P2-1：**不排序**——顺序也是身份的一部分；旧版排序后重排也算"没变"，
+## 而 _resolve_replay 却按下标取 → 静默取错候选。
 func _cand_hash(cands: Array) -> int:
 	var parts := PackedStringArray()
 	for c in cands:
-		parts.append("%s>%s>%s" % [str(c.get("action", "")), str(c.get("partner", "")), str(c.get("subject", ""))])
-	parts.sort()
+		parts.append(_cand_key(c))
 	return "|".join(parts).hash()
 
 ## 记录一条落地的模型决策：pick 下标 + cand_hash（回放靠下标精确复现，hash 检 drift；不记 prompt/思维链）。
 func _record_decision(ag: Dictionary, cands: Array, intent: Dictionary) -> void:
+	var key := _cand_key(intent)              # P2-1：记 stable key（回放按 key 找，不靠脆弱下标）
 	var idx := -1
 	for i in cands.size():
-		var c: Dictionary = cands[i]
-		if str(c.get("action", "")) == str(intent.get("action", "")) and str(c.get("partner", "")) == str(intent.get("partner", "")) \
-			and str(c.get("subject", "")) == str(intent.get("subject", "")) and str(c.get("target", "")) == str(intent.get("target", "")):
+		if _cand_key(cands[i]) == key:
 			idx = i
 			break
 	decision_trace.append({
-		"tick": tick_no, "agent": String(ag["id"]), "pick": idx,
+		"tick": tick_no, "agent": String(ag["id"]), "pick": idx, "key": key,
 		"action": str(intent.get("action", "")), "say": str(intent.get("say", "")), "cand_hash": _cand_hash(cands)})
 
-## 回放：cand_hash 一致则按记录下标取候选（精确复现）；否则（引擎逻辑改了→候选集变）→ drift 计数 + 引擎兜底。
+## 回放：**按记录的 stable key 在当前候选里找**（P2-1：不再按脆弱下标——候选重排/同 action 换 target 会静默取错）。
+## 找到→精确复现；找不到（引擎逻辑改了→候选集变）→ drift 计数 + 引擎兜底。无 key 的旧 trace 走下标+hash 兼容路。
 func _resolve_replay(ag: Dictionary, cands: Array, rec: Dictionary) -> Dictionary:
-	var pick := int(rec.get("pick", -1))
-	if int(rec.get("cand_hash", 0)) == _cand_hash(cands) and pick >= 0 and pick < cands.size():
-		var it: Dictionary = (cands[pick] as Dictionary).duplicate()
-		it["say"] = str(rec.get("say", ""))
-		return it
+	var key := str(rec.get("key", ""))
+	if key != "":
+		for c in cands:
+			if _cand_key(c) == key:
+				var it: Dictionary = (c as Dictionary).duplicate()
+				it["say"] = str(rec.get("say", ""))
+				return it
+	else:                                     # 兼容：旧 trace 无 key → 下标 + hash 门
+		var pick := int(rec.get("pick", -1))
+		if int(rec.get("cand_hash", 0)) == _cand_hash(cands) and pick >= 0 and pick < cands.size():
+			var it2: Dictionary = (cands[pick] as Dictionary).duplicate()
+			it2["say"] = str(rec.get("say", ""))
+			return it2
 	replay_drift += 1
 	return _logic_decide(ag, cands)
 
