@@ -11,6 +11,13 @@ var _log_lines: Array = []
 const LOG_CAP := 12
 const ZOOM_MIN := Vector2(0.6, 0.6)
 const ZOOM_MAX := Vector2(3.0, 3.0)
+const CAM_MARGIN := 96          # 相机边界余量(px)：靠边时仍留一点镇外草地，不硬切
+const DRAG_THRESH := 8.0        # 点选 vs 拖拽阈值(px)：手机上 emulate_mouse_from_touch → 单指拖=左键拖，
+                                # 所以"按下先当可能点选、拖过阈值才转拖镜头"，一套逻辑同时满足鼠标与触屏。
+var _panning := false
+var _pan_last := Vector2.ZERO
+var _press_pos := Vector2.ZERO
+var _maybe_tap := false
 
 # ── 观察台 / 回放 ──────────────────────────────────────────────────────────
 var _obs: RichTextLabel               # 右侧角色明细面板
@@ -119,8 +126,16 @@ func _ready() -> void:
 	_view = preload("res://scripts/WorldView.gd").new()
 	add_child(_view)
 
+	# 相机：可拖可缩的"探针"。红线（docs/19 §3）：相机【纯视图】——只决定画哪、怎么映射输入，
+	# 绝不喂 Sim.lod_focus。若"精细模拟哪块"取决于人眼在看哪，小镇历史就成了观察路径的函数 →
+	# 同存档不同看法回放出不同 event_log → digest 不可复现、回放红线破。渲染可以跟相机，仿真分级不行。
 	_cam = Camera2D.new()
 	_cam.position = Vector2(Sim.GRID.x * 48 * 0.5, Sim.GRID.y * 48 * 0.5)
+	# 边界：镜头留在镇子里（含一点余量，靠边时不至于把镇子推出画面）
+	_cam.limit_left = -CAM_MARGIN
+	_cam.limit_top = -CAM_MARGIN
+	_cam.limit_right = int(Sim.GRID.x * 48) + CAM_MARGIN
+	_cam.limit_bottom = int(Sim.GRID.y * 48) + CAM_MARGIN
 	add_child(_cam)
 	_cam.make_current()
 
@@ -927,14 +942,32 @@ func _unhandled_input(e: InputEvent) -> void:
 			_cam.zoom = (_cam.zoom * 1.12).clamp(ZOOM_MIN, ZOOM_MAX)
 		elif e.button_index == MOUSE_BUTTON_WHEEL_DOWN and e.pressed:
 			_cam.zoom = (_cam.zoom / 1.12).clamp(ZOOM_MIN, ZOOM_MAX)
+		elif e.button_index == MOUSE_BUTTON_MIDDLE or e.button_index == MOUSE_BUTTON_RIGHT:
+			_panning = e.pressed                       # 中键/右键：显式拖镜头
+			_pan_last = e.position
 		elif e.button_index == MOUSE_BUTTON_LEFT:
 			if e.pressed:
 				if _in_scrub(e.position):
 					_scrubbing = true
 					_scrub_to_x(e.position.x)
 				else:
-					_select_at_mouse()
+					_press_pos = e.position            # 先记着：拖过阈值=拖镜头，没拖=点选（松手时判）
+					_pan_last = e.position
+					_maybe_tap = true
 			else:
+				if _maybe_tap and e.position.distance_to(_press_pos) <= DRAG_THRESH:
+					_select_at_mouse()                 # 真·点选（get_global_mouse_position 已含相机变换）
+				_maybe_tap = false
+				_panning = false
 				_scrubbing = false
-	elif e is InputEventMouseMotion and _scrubbing:
-		_scrub_to_x(e.position.x)
+	elif e is InputEventMouseMotion:
+		if _scrubbing:
+			_scrub_to_x(e.position.x)
+		elif _panning or (_maybe_tap and e.position.distance_to(_press_pos) > DRAG_THRESH):
+			_panning = true                            # 越过阈值 → 从"可能点选"转成拖拽
+			_cam.position -= (e.position - _pan_last) / _cam.zoom   # 屏幕位移→世界位移(除 zoom)
+			_pan_last = e.position
+	elif e is InputEventMagnifyGesture:                 # 触屏/触控板双指捏合
+		_cam.zoom = (_cam.zoom * e.factor).clamp(ZOOM_MIN, ZOOM_MAX)
+	elif e is InputEventPanGesture:                     # 触控板双指平移
+		_cam.position -= e.delta * 12.0 / _cam.zoom
