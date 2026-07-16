@@ -212,7 +212,38 @@ func _agent_frame(ag: Dictionary) -> Dictionary:
 	_facing_left[id] = flip
 	return {"col": Sim.tick_no % 4, "row": row, "flip": flip}
 
+## P1：Probe 切到非 town 的 Space 时，画该 Space/Floor 的占位（bounds + 楼层 + Portal 锚点）。
+## 诚实边界：test_loft 没有内容——这里只证明"active Space/Floor 渲染与 hit-test 走得通"，
+## 不假装它是一栋建筑。真内容在 P3（阿丽咖啡馆 1F/2F）按同一合同长出来。
+func _draw_space_placeholder() -> void:
+	var main := get_parent()
+	var sg = main.get("_sg")
+	var probe = main.get("_probe")
+	var sid := String(probe.active_space)
+	var fid := String(probe.active_floor)
+	var b: Rect2 = sg.bounds_px(sid)
+	draw_rect(b, Color("#1a1d26"), true)
+	draw_rect(b, Color("#5a6478"), false, 2.0)
+	for gx in range(int(b.size.x / T) + 1):
+		draw_line(Vector2(b.position.x + gx * T, b.position.y), Vector2(b.position.x + gx * T, b.end.y), Color(1, 1, 1, 0.05), 1.0)
+	for gy in range(int(b.size.y / T) + 1):
+		draw_line(Vector2(b.position.x, b.position.y + gy * T), Vector2(b.end.x, b.position.y + gy * T), Color(1, 1, 1, 0.05), 1.0)
+	draw_string(Art.font(), b.position + Vector2(10, 26), "%s / %s（Probe inspect · 无内容占位）" % [sg.label_of(sid), fid],
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color("#cfe8ff"))
+	for pt in sg.portals_from(sid, fid):          # Portal 锚点：看得见"这层通向哪"
+		var to: Dictionary = pt["to"]
+		var pos: Array = to.get("pos", [0, 0])
+		var c := Vector2(float(pos[0]) * T + T * 0.5, float(pos[1]) * T + T * 0.5)
+		draw_circle(c, 10.0, Color("#ffd166", 0.85))
+		draw_string(Art.font(), c + Vector2(12, 4), "%s→%s/%s" % [pt["kind"], to.get("space", ""), to.get("floor", "")],
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("#ffd166"))
+
 func _draw() -> void:
+	var _main := get_parent()
+	var _pb = _main.get("_probe") if _main != null else null
+	if _pb != null and String(_pb.active_space) != "town":
+		_draw_space_placeholder()                 # 非 town：只画该 Space/Floor（active-space 渲染）
+		return
 	if Sim.world.is_empty():
 		return
 	var w: int = int(Sim.world.get("width", 24))

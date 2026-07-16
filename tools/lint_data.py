@@ -62,6 +62,37 @@ for t in housing.get("tenancies", []) if isinstance(housing.get("tenancies"), li
         for f in ("tenant", "renter", "guest"):
             if f in t: fk(f"housing.tenancies.{f}", t[f], agent_ids, "agent id")
 
+# 7) P1 空间合同：Space/Floor/Portal 无悬挂引用（analysis §9 P1 Gate）。与 SpaceGraph.validate 同源。
+spaces_d = load("spaces") or {}
+sp = spaces_d.get("spaces", {}) if isinstance(spaces_d, dict) else {}
+portals = spaces_d.get("portals", []) if isinstance(spaces_d, dict) else []
+for sid, s in (sp.items() if isinstance(sp, dict) else []):
+    b = s.get("bounds", [])
+    if len(b) != 4 or b[2] <= 0 or b[3] <= 0:
+        errs.append(f"space '{sid}': bounds must be [x,y,w,h] with w/h>0")
+    fl = s.get("floors", [])
+    if not fl:
+        errs.append(f"space '{sid}': floors must not be empty")
+    if "default_floor" in s and s["default_floor"] not in fl:
+        errs.append(f"space '{sid}': default_floor '{s['default_floor']}' not in floors {fl}")
+seen_pid = set()
+for p in (portals if isinstance(portals, list) else []):
+    pid = p.get("id", "")
+    if not pid:
+        errs.append("portal missing id"); continue
+    if pid in seen_pid:
+        errs.append(f"duplicate portal id '{pid}'")
+    seen_pid.add(pid)
+    for side in ("from", "to"):
+        e = p.get(side, {})
+        sid, fid = e.get("space", ""), e.get("floor", "")
+        if sid not in sp:
+            errs.append(f"portal '{pid}'.{side}: unknown space '{sid}'")
+        elif fid not in sp[sid].get("floors", []):
+            errs.append(f"portal '{pid}'.{side}: space '{sid}' has no floor '{fid}'")
+        if len(e.get("pos", [])) != 2:
+            errs.append(f"portal '{pid}'.{side}: pos must be [x,y]")
+
 n_json = len(glob.glob(os.path.join(ROOT, "*.json")))
 if errs:
     print(f"lint_data: FAIL ({len(errs)} issue(s)):")

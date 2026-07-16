@@ -4,6 +4,7 @@ extends Node2D
 
 var _view: Node2D
 var _probe: Node                      # ProbeController：拥有 Camera2D + 观察状态（纯 View，不写 Sim）
+var _sg: RefCounted                   # SpaceGraph：Space/Floor/Portal 合同（纯数据查询；兼容期 town/outdoor 兜底）
 var _modulate: CanvasModulate
 var _status: RichTextLabel
 var _logbox: RichTextLabel
@@ -133,6 +134,8 @@ func _ready() -> void:
 	# 相机：可拖可缩的"探针"。红线（docs/19 §3）：相机【纯视图】——只决定画哪、怎么映射输入，
 	# 绝不喂 Sim.lod_focus。若"精细模拟哪块"取决于人眼在看哪，小镇历史就成了观察路径的函数 →
 	# 同存档不同看法回放出不同 event_log → digest 不可复现、回放红线破。渲染可以跟相机，仿真分级不行。
+	_sg = preload("res://scripts/SpaceGraph.gd").new()
+	_sg.load_from()                              # 缺 spaces.json → 空图 → bounds 回落 Sim.GRID（off 门）
 	_probe = preload("res://scripts/ProbeController.gd").new()
 	add_child(_probe)
 	_probe.setup(self, _space_bounds())          # 边界来自 active Space（兼容期=town；P1 起由 SpaceGraph 给）
@@ -917,6 +920,9 @@ func _unhandled_input(e: InputEvent) -> void:
 			KEY_MINUS, KEY_KP_SUBTRACT: _probe.zoom_at(1.0 / 1.15, _vp() * 0.5, _vp())
 			KEY_L: _toggle_follow()                              # Probe 跟随/取消（F 已被"送礼"占用）
 			KEY_HOME: _probe.go_home()                           # 回到全镇
+			KEY_I: _probe_toggle_space()                         # Probe 进/出测试 Space（P1 Gate）
+			KEY_PAGEUP: _probe_cycle_floor(1)                    # 换楼层（Probe inspect）
+			KEY_PAGEDOWN: _probe_cycle_floor(-1)
 			KEY_TAB: _cycle_selection(-1 if e.shift_pressed else 1)
 			KEY_O: _toggle_settings()                            # ⚙ 设置面板开关（NPC 数量/速度/后端）
 			KEY_F9: _write_digest()                             # dev：把当前 digest 写盘（--digest-out）
@@ -962,9 +968,32 @@ func _unhandled_input(e: InputEvent) -> void:
 func _vp() -> Vector2:
 	return get_viewport_rect().size
 
-## active Space 的世界边界。兼容期=town 全图；P1 起由 SpaceGraph 按 active_space 提供。
+## active Space 的世界边界 —— 由 SpaceGraph 按 active_space 给（不再直读 Sim.GRID）。
+## 缺 spaces.json / 未知 space → SpaceGraph 回落 Sim.GRID 全图 → 兼容期行为不变。
 func _space_bounds() -> Rect2:
-	return Rect2(Vector2.ZERO, Vector2(Sim.GRID.x * 48, Sim.GRID.y * 48))
+	var sid := "town"
+	if _probe != null:
+		sid = String(_probe.active_space)
+	return _sg.bounds_px(sid)
+
+## P1 Gate：Probe 切 Space/Floor（inspect-only，绝不移动任何 Agent）。I=进/出测试 Space，PgUp/PgDn=换层。
+func _probe_toggle_space() -> void:
+	var target := "test_loft" if String(_probe.active_space) == "town" else "town"
+	if not _sg.has_space(target):
+		return
+	_probe.set_space(target, _sg.default_floor(target), _sg.bounds_px(target))
+	_push("[color=#9ad0ff]Probe → %s / %s（观察者切空间；居民没动）[/color]" % [_sg.label_of(target), _probe.active_floor])
+	_update_status()
+
+func _probe_cycle_floor(dir: int) -> void:
+	var fl: Array = _sg.floors_of(String(_probe.active_space))
+	if fl.size() <= 1:
+		return
+	var i := fl.find(String(_probe.active_floor))
+	var nf := String(fl[(maxi(i, 0) + dir + fl.size()) % fl.size()])
+	_probe.active_floor = nf                      # 同 Space 内换层：不动相机边界
+	_push("[color=#9ad0ff]Probe → %s / %s 层[/color]" % [_sg.label_of(String(_probe.active_space)), nf])
+	_update_status()
 
 ## Probe 点选 → 角色 hit-test（选择语义留 Main；Probe 只报"点了世界哪一点"）。
 func _on_probe_tap(world_pos: Vector2) -> void:

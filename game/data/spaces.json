@@ -1,0 +1,40 @@
+{
+  "_note": "P1 空间合同（analysis §5.1）：Space=可独立寻址/渲染的 2D 平面；Floor=Space 内的垂直层；Portal=跨 Space/Floor 的【唯一】合法通道。兼容期：现有 24x16 全部属于 town/outdoor，agent 不带 spatial_address 时由 SpaceGraph.address_of 兜底成 town/outdoor → Sim 一行不改、digest 逐字节不变。floor_id 用稳定字符串(b1/1f/2f)而非数组下标——将来插入 basement/mezzanine 不会让引用漂移。Probe 可直接 inspect 任意 Space/Floor；Agent 必须走 Portal（那是后续 P3 的事，本阶段只立合同+校验）。bounds 单位=格(tile)，[x,y,w,h]。",
+  "spaces": {
+    "town": {
+      "kind": "outdoor",
+      "label": "小镇",
+      "bounds": [0, 0, 24, 16],
+      "floors": ["outdoor"],
+      "default_floor": "outdoor"
+    },
+    "test_loft": {
+      "_why": "P1 Gate 用的最小测试 Space：只为验证『Probe 能切 Space/Floor + 返回栈 + 校验器』，不含内容、不参与 Sim。P3 的真建筑（阿丽咖啡馆 1F/2F）按同一合同长出来。",
+      "kind": "interior",
+      "label": "测试阁楼",
+      "bounds": [0, 0, 6, 5],
+      "floors": ["1f", "2f"],
+      "default_floor": "1f"
+    }
+  },
+  "portals": [
+    {
+      "id": "p_loft_door",
+      "kind": "door",
+      "from": { "space": "town", "floor": "outdoor", "pos": [3, 3] },
+      "to": { "space": "test_loft", "floor": "1f", "pos": [3, 4] },
+      "bidirectional": true,
+      "access": "public",
+      "traversal_cost": 1
+    },
+    {
+      "id": "p_loft_stairs",
+      "kind": "stairs",
+      "from": { "space": "test_loft", "floor": "1f", "pos": [1, 1] },
+      "to": { "space": "test_loft", "floor": "2f", "pos": [1, 1] },
+      "bidirectional": true,
+      "access": "owner",
+      "traversal_cost": 2
+    }
+  ]
+}
