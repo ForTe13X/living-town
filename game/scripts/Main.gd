@@ -3,21 +3,13 @@ extends Node2D
 ## 解析 CLI（--backend / --seed / --speed），启动 Sim，挂上 WorldView 渲染与 HUD（状态 + 滚动事件日志 + 图例）。
 
 var _view: Node2D
-var _cam: Camera2D
+var _probe: Node                      # ProbeController：拥有 Camera2D + 观察状态（纯 View，不写 Sim）
 var _modulate: CanvasModulate
 var _status: RichTextLabel
 var _logbox: RichTextLabel
 var _log_lines: Array = []
 const LOG_CAP := 12
-const ZOOM_MIN := Vector2(0.6, 0.6)
-const ZOOM_MAX := Vector2(3.0, 3.0)
-const CAM_MARGIN := 96          # 相机边界余量(px)：靠边时仍留一点镇外草地，不硬切
-const DRAG_THRESH := 8.0        # 点选 vs 拖拽阈值(px)：手机上 emulate_mouse_from_touch → 单指拖=左键拖，
-                                # 所以"按下先当可能点选、拖过阈值才转拖镜头"，一套逻辑同时满足鼠标与触屏。
-var _panning := false
-var _pan_last := Vector2.ZERO
-var _press_pos := Vector2.ZERO
-var _maybe_tap := false
+# 相机/观察状态已全部搬进 ProbeController（P0-b）：Main 只做装配 + HUD/时间轴输入仲裁。
 
 # ── 观察台 / 回放 ──────────────────────────────────────────────────────────
 var _obs: RichTextLabel               # 右侧角色明细面板
@@ -141,15 +133,11 @@ func _ready() -> void:
 	# 相机：可拖可缩的"探针"。红线（docs/19 §3）：相机【纯视图】——只决定画哪、怎么映射输入，
 	# 绝不喂 Sim.lod_focus。若"精细模拟哪块"取决于人眼在看哪，小镇历史就成了观察路径的函数 →
 	# 同存档不同看法回放出不同 event_log → digest 不可复现、回放红线破。渲染可以跟相机，仿真分级不行。
-	_cam = Camera2D.new()
-	_cam.position = Vector2(Sim.GRID.x * 48 * 0.5, Sim.GRID.y * 48 * 0.5)
-	# 边界：镜头留在镇子里（含一点余量，靠边时不至于把镇子推出画面）
-	_cam.limit_left = -CAM_MARGIN
-	_cam.limit_top = -CAM_MARGIN
-	_cam.limit_right = int(Sim.GRID.x * 48) + CAM_MARGIN
-	_cam.limit_bottom = int(Sim.GRID.y * 48) + CAM_MARGIN
-	add_child(_cam)
-	_cam.make_current()
+	_probe = preload("res://scripts/ProbeController.gd").new()
+	add_child(_probe)
+	_probe.setup(self, _space_bounds())          # 边界来自 active Space（兼容期=town；P1 起由 SpaceGraph 给）
+	_probe.tapped.connect(_on_probe_tap)
+	_probe.double_tapped.connect(_on_probe_double_tap)
 
 	# 昼夜光照：CanvasModulate 只染世界画布，不染 HUD（HUD 在独立 CanvasLayer）
 	_modulate = CanvasModulate.new()
@@ -873,20 +861,6 @@ func _cycle_selection(dir: int) -> void:
 	_selected_id = String(ids[i])
 	_update_obs()
 
-func _select_at_mouse() -> void:
-	var w := get_global_mouse_position()
-	var best := ""
-	var bestd := 1.0e9
-	for a in Sim.agents:
-		var c := Vector2(a["pos"].x * 48 + 24, a["pos"].y * 48 + 24)
-		var d := c.distance_to(w)
-		if d < bestd:
-			bestd = d
-			best = String(a["id"])
-	if bestd <= 42.0:
-		_selected_id = best
-		_update_obs()
-
 func _in_scrub(pos: Vector2) -> bool:
 	return pos.x >= SCRUB_X0 - 8 and pos.x <= SCRUB_X1 + 8 and pos.y >= SCRUB_Y - 12 and pos.y <= SCRUB_Y + SCRUB_H + 12
 
@@ -939,13 +913,19 @@ func _unhandled_input(e: InputEvent) -> void:
 			KEY_2, KEY_KP_2: Sim.running = true; Sim.speed = 2.0
 			KEY_3, KEY_KP_3: Sim.running = true; Sim.speed = 4.0
 			KEY_4, KEY_KP_4: Sim.running = true; Sim.speed = 8.0
-			KEY_EQUAL, KEY_KP_ADD: _cam.zoom = (_cam.zoom * 1.15).clamp(ZOOM_MIN, ZOOM_MAX)
-			KEY_MINUS, KEY_KP_SUBTRACT: _cam.zoom = (_cam.zoom / 1.15).clamp(ZOOM_MIN, ZOOM_MAX)
+			KEY_EQUAL, KEY_KP_ADD: _probe.zoom_at(1.15, _vp() * 0.5, _vp())
+			KEY_MINUS, KEY_KP_SUBTRACT: _probe.zoom_at(1.0 / 1.15, _vp() * 0.5, _vp())
+			KEY_L: _toggle_follow()                              # Probe 跟随/取消（F 已被"送礼"占用）
+			KEY_HOME: _probe.go_home()                           # 回到全镇
 			KEY_TAB: _cycle_selection(-1 if e.shift_pressed else 1)
 			KEY_O: _toggle_settings()                            # ⚙ 设置面板开关（NPC 数量/速度/后端）
 			KEY_F9: _write_digest()                             # dev：把当前 digest 写盘（--digest-out）
 			KEY_F3: _toggle_perf()                               # dev 性能 overlay 开关
-			KEY_ESCAPE: _selected_id = ""; _update_obs()
+			KEY_ESCAPE:                                          # 先退观察态(focus/follow/历史)，否则才清选中
+				if _probe.mode != 0 or not _probe.go_back():
+					_probe.unfollow()
+					_selected_id = ""
+					_update_obs()
 			KEY_C: _on_player_say("你好，最近怎么样？")        # 快捷：对选中居民打个招呼（也便于无键盘验证）
 			# ── 玩家能动性（--player）：WASD 移动 + 对选中居民 G打招呼/F送礼/B八卦/Y约见/P道歉/M调解 ──
 			KEY_W, KEY_UP: if _player_mode: Sim.player_move(Vector2i(0, -1))
@@ -964,37 +944,59 @@ func _unhandled_input(e: InputEvent) -> void:
 			KEY_BRACKETLEFT: Sim.running = false; Sim.goto_tick(maxi(0, Sim.tick_no - Sim.TICKS_PER_DAY)); _after_jump()
 			KEY_BRACKETRIGHT: Sim.running = false; Sim.goto_tick(Sim.tick_no + Sim.TICKS_PER_DAY); _after_jump()
 		_update_status()
-	elif e is InputEventMouseButton:
-		if e.button_index == MOUSE_BUTTON_WHEEL_UP and e.pressed:
-			_cam.zoom = (_cam.zoom * 1.12).clamp(ZOOM_MIN, ZOOM_MAX)
-		elif e.button_index == MOUSE_BUTTON_WHEEL_DOWN and e.pressed:
-			_cam.zoom = (_cam.zoom / 1.12).clamp(ZOOM_MIN, ZOOM_MAX)
-		elif e.button_index == MOUSE_BUTTON_MIDDLE or e.button_index == MOUSE_BUTTON_RIGHT:
-			_panning = e.pressed                       # 中键/右键：显式拖镜头
-			_pan_last = e.position
-		elif e.button_index == MOUSE_BUTTON_LEFT:
-			if e.pressed:
-				if _in_scrub(e.position):
-					_scrubbing = true
-					_scrub_to_x(e.position.x)
-				else:
-					_press_pos = e.position            # 先记着：拖过阈值=拖镜头，没拖=点选（松手时判）
-					_pan_last = e.position
-					_maybe_tap = true
-			else:
-				if _maybe_tap and e.position.distance_to(_press_pos) <= DRAG_THRESH:
-					_select_at_mouse()                 # 真·点选（get_global_mouse_position 已含相机变换）
-				_maybe_tap = false
-				_panning = false
+	elif e is InputEventMouseButton or e is InputEventMouseMotion 			or e is InputEventMagnifyGesture or e is InputEventPanGesture:
+		# 输入仲裁（analysis §4.3）：HUD/时间轴【先吃】——拖时间轴绝不能带动世界；剩下的才交给 Probe。
+		if e is InputEventMouseButton and e.button_index == MOUSE_BUTTON_LEFT:
+			if e.pressed and _in_scrub(e.position):
+				_scrubbing = true
+				_scrub_to_x(e.position.x)
+				return
+			if not e.pressed and _scrubbing:
 				_scrubbing = false
-	elif e is InputEventMouseMotion:
-		if _scrubbing:
+				return
+		if e is InputEventMouseMotion and _scrubbing:
 			_scrub_to_x(e.position.x)
-		elif _panning or (_maybe_tap and e.position.distance_to(_press_pos) > DRAG_THRESH):
-			_panning = true                            # 越过阈值 → 从"可能点选"转成拖拽
-			_cam.position -= (e.position - _pan_last) / _cam.zoom   # 屏幕位移→世界位移(除 zoom)
-			_pan_last = e.position
-	elif e is InputEventMagnifyGesture:                 # 触屏/触控板双指捏合
-		_cam.zoom = (_cam.zoom * e.factor).clamp(ZOOM_MIN, ZOOM_MAX)
-	elif e is InputEventPanGesture:                     # 触控板双指平移
-		_cam.position -= e.delta * 12.0 / _cam.zoom
+			return
+		_probe.handle_input(e, _vp())
+
+func _vp() -> Vector2:
+	return get_viewport_rect().size
+
+## active Space 的世界边界。兼容期=town 全图；P1 起由 SpaceGraph 按 active_space 提供。
+func _space_bounds() -> Rect2:
+	return Rect2(Vector2.ZERO, Vector2(Sim.GRID.x * 48, Sim.GRID.y * 48))
+
+## Probe 点选 → 角色 hit-test（选择语义留 Main；Probe 只报"点了世界哪一点"）。
+func _on_probe_tap(world_pos: Vector2) -> void:
+	_select_at_world(world_pos)
+
+## Probe 双击 → 聚焦所点房间（analysis §4.2 Focus）。
+func _on_probe_double_tap(world_pos: Vector2) -> void:
+	for rid in Sim.world.get("rooms", {}):
+		var rm: Dictionary = Sim.world["rooms"][rid]
+		var r: Array = rm.get("rect", [0, 0, 0, 0])
+		var rect := Rect2(r[0] * 48, r[1] * 48, r[2] * 48, r[3] * 48)
+		if rect.has_point(world_pos):
+			_probe.focus_on(rect.get_center(), String(rid))
+			return
+	_probe.focus_on(world_pos)
+
+## L：Probe 跟随/取消跟随选中居民（Probe 跟随 ≠ Agent 移动）。
+func _toggle_follow() -> void:
+	if _probe.mode == 2:
+		_probe.unfollow()
+	elif _selected_id != "":
+		_probe.follow(_selected_id)
+
+func _select_at_world(w: Vector2) -> void:
+	var best := ""
+	var bestd := 1.0e9
+	for a in Sim.agents:
+		var c := Vector2(a["pos"].x * 48 + 24, a["pos"].y * 48 + 24)
+		var d := c.distance_to(w)
+		if d < bestd:
+			bestd = d
+			best = String(a["id"])
+	if bestd <= 42.0:
+		_selected_id = best
+		_update_obs()
