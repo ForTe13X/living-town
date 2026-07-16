@@ -32,6 +32,14 @@ var _demo_i := 0
 var _chat_in: LineEdit                # 玩家→NPC 对话输入框
 var _backend_btn: Button              # 后端切换按钮（手机无 CLI：点按在 logic/slm/… 间轮换；桌面也可点）
 var _shot_path := ""                  # --shot <abs.png>：渲一帧存图退出（dev 验证/出图；需真 framebuffer=Xvfb 或带窗口，纯 --headless 得空图）
+var _digest_at := -1                  # --digest-at <tick>：跑到该 tick 时【自动】写 digest 并退出。
+                                      # 为何不靠数按键：注入 40 次单步里丢 1 次，两跑就差 1 tick，
+                                      # 于是比的是"按键可靠性"而非"相机是否影响历史"（第一版就这么假 FAIL 了）。
+                                      # 定 tick 写盘 → 两跑必然在【同一 tick】比较，多按几次也无所谓。
+var _digest_out := ""                 # --digest-out <abs.txt>：按 F9 把 (tick, digest, event_digest) 写盘。
+                                      # 用途=Probe 观察者无关性【硬门】：同 seed、同步进步数，一次不碰相机、一次狂拖狂缩，
+                                      # 两边 digest 必须逐字节相同。截图差分证明不了这件事（analysis §11 的正确批评）。
+const Inv = preload("res://bench/Invariants.gd")
 var _settings_panel: ColorRect        # ⚙ 设置面板（NPC 数量/速度/后端；⚙ 按钮或 O 键开关）
 var _npc_val: Label                   # 设置面板里的 NPC 数量数字
 var _npc_target := 6                  # 当前目标 NPC 数（改动→同种子重开 sim）
@@ -82,6 +90,10 @@ func _ready() -> void:
 			_demo_mode = true
 		elif args[i] == "--warmup" and i + 1 < args.size():
 			warmup_days = int(args[i + 1])     # 录 demo：跳到第 N 天开场（确定，goto_tick 同款重演）
+		elif args[i] == "--digest-at" and i + 1 < args.size():
+			_digest_at = int(args[i + 1])
+		elif args[i] == "--digest-out" and i + 1 < args.size():
+			_digest_out = args[i + 1]          # dev 硬门：F9 写 digest（见变量注释）
 		elif args[i] == "--shot" and i + 1 < args.size():
 			_shot_path = args[i + 1]           # dev 出图：渲一帧存 png 退出（需真 framebuffer：Xvfb 或带窗口）
 	AIBackend.backend = backend
@@ -275,6 +287,11 @@ func _mk_label(layer: CanvasLayer, fnt: Font, fsize: int, pos: Vector2, sz: Vect
 	return l
 
 func _on_tick(_t: int) -> void:
+	if _digest_at > 0 and Sim.tick_no >= _digest_at:      # dev 硬门：到点写 digest 并退出（两跑必在同一 tick 比较）
+		_digest_at = -1
+		_write_digest()
+		get_tree().quit()
+		return
 	if _demo_mode:
 		_demo_tick()               # --player-demo：剧本驱动玩家（确定性）
 	_modulate.color = _daylight(Sim.time_of_day())
@@ -625,6 +642,15 @@ func _on_player_say(text: String) -> void:
 	if _chat_in != null:
 		_chat_in.text = ""
 
+## dev：把 (tick, 批量 digest, 增量 event_digest) 写到 --digest-out。供 Probe 观察者无关性硬门比对。
+func _write_digest() -> void:
+	if _digest_out == "":
+		return
+	var f := FileAccess.open(_digest_out, FileAccess.WRITE)
+	if f != null:
+		f.store_string("%d %d %d" % [Sim.tick_no, Inv.digest(Sim), Sim.event_digest])
+		f.close()
+
 func _bar(v: float) -> String:
 	var n := int(round(clampf(v, 0.0, 100.0) / 10.0))
 	return "█".repeat(n) + "·".repeat(10 - n)
@@ -917,6 +943,7 @@ func _unhandled_input(e: InputEvent) -> void:
 			KEY_MINUS, KEY_KP_SUBTRACT: _cam.zoom = (_cam.zoom / 1.15).clamp(ZOOM_MIN, ZOOM_MAX)
 			KEY_TAB: _cycle_selection(-1 if e.shift_pressed else 1)
 			KEY_O: _toggle_settings()                            # ⚙ 设置面板开关（NPC 数量/速度/后端）
+			KEY_F9: _write_digest()                             # dev：把当前 digest 写盘（--digest-out）
 			KEY_F3: _toggle_perf()                               # dev 性能 overlay 开关
 			KEY_ESCAPE: _selected_id = ""; _update_obs()
 			KEY_C: _on_player_say("你好，最近怎么样？")        # 快捷：对选中居民打个招呼（也便于无键盘验证）
