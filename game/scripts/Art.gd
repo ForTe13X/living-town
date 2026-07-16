@@ -23,7 +23,7 @@ var _font: Font = null
 func font() -> Font:
 	if _font != null:
 		return _font
-	var path := "res://assets/fonts/cjk.ttf"
+	var path := "res://assets/fonts/smiley-sans.ttf"   # 得意黑 Smiley Sans（OFL-1.1，可嵌入再发行；换掉无授权的 SimHei）
 	if ResourceLoader.exists(path):                 # 导入的 FontFile：导出 PCK 里裸 .ttf 被剥离，只剩它；load() 走 .import 重映射取到
 		_font = load(path) as Font
 	elif FileAccess.file_exists(path):              # 未导入的裸 .ttf（编辑器/未导入工程）

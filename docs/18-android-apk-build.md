@@ -73,4 +73,4 @@
 - **端上切 slm 后端的入口**：当前窗口构建默认 logic；手机上想开 LLM 需一个 UI 开关或改默认（小改，装机确认 logic 能跑后再加）。
 - **存储/权限**：用 `user://`（应用外部 files 目录）免运行时存储权限；若改走 `/sdcard/Download` 则需 `MANAGE_EXTERNAL_STORAGE`。
 - **触控**：镇子自主运行 + 点选居民（tap=click）即观察台可用；玩家 WASD/快捷键在手机上无键盘（观察模式已足够；触控玩法后续）。
-- **首帧 CJK 字体**：`Art.font()` 运行时喂 `assets/fonts/cjk.ttf` 字节——安卓上路径/加载须实测（大概率 OK，同 headless）。
+- **首帧 CJK 字体**：`Art.font()` 运行时喂 `assets/fonts/smiley-sans.ttf` 字节——安卓上路径/加载须实测（大概率 OK，同 headless）。
