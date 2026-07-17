@@ -99,3 +99,5 @@ llm    proposal_prior:    prefer Intent by 0.75*dcg(rank(Intent))
 - ✅ TheorySnapshot 种子：`log_decisions.gd` 已产 typed `grievances`（row 级）。P0-1..4 已修验。
 - ⏭ v1 落地顺序：`TheorySnapshot` 全字段导出（+ known_by 强制）→ opportunity/intent 枚举 → 15–30 条 weighted 规则 + MAP（GDScript 侧 or 先离线 Python 原型）→ 离线对照 → judge。
 - 数据纪律：`salience_probe_v0` 隔离，不进 judge/训练；judge workflow 已建、暂 park。
+
+> **实现进展 2026-07-18**：CHARACTER 层(默认 defer + 直性子 confront)与 **DRAMA 导演层**(对 escalated/高severity 的憋久心结安排对质)均已 wired 进 Sim `_advertise_social`，各带 `CHARACTER_DEFER`/`DRAMA_DIRECTOR` 独立开关，纯 f(state) 确定性，full CI 绿。三档 confront 场次 logic 802 / CHARACTER 59 / +DRAMA 271(6s×60d)。

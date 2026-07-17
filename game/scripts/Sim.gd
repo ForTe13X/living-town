@@ -39,6 +39,16 @@ const FORGIVE_CAP := 22.0       # 冲突 severity 高于此则难被原谅
 # 日后可为推进剧情按需重新抬起对质——两轴分开，绝不加权混合。BLUNT_TRAITS 是"会为小事对质"的人设标记。
 const CHARACTER_DEFER := true
 const BLUNT_TRAITS := ["耿直"]  # 直性子/认死理 → 会当面把话说开；其余默认让小怨气过去
+# DRAMA 层（导演，独立轴——绝不与 CHARACTER 加权混合）：CHARACTER 让大多数小怨气默认憋着，
+# 但一段【憋太久没说开】的心结应当被安排一场对质来推进剧情（否则 arc 悬着、冲突 dangling）。
+# 越重/被反复冒犯(escalated)的怨越早爆；纯 f(age,severity,escalations)，无 RNG/Time → 确定性、可回放。
+# 触发即重新广告 confront（其分自然压过维护 → 当选 → 对质→道歉→和解，冲突清账）。v1 用"憋够久"作 pacing；
+# 更精细的场景预算(每日限 N 场/叙事弧)留后续。
+const DRAMA_DIRECTOR := true
+const DRAMA_ERUPT_AFTER := 1200   # ~5 天(TICKS_PER_DAY=240)没说开 → 导演安排对质（远长于 LINGER_AFTER=350）
+const DRAMA_ERUPT_FLOOR := 480    # 最早也要 ~2 天，避免刚结怨就爆
+const DRAMA_ERUPT_SEV := 9        # 只有够重(>=此)或被反复冒犯(escalated)的心结才值一场戏；其余小怨就让它淡着——
+                                  # 否则每段怨都爆→都和解→没人攒下持久坏名声→涌现放逐(#15)被抹平。这也是更好的戏剧：戏留给要紧的冲突。
 # S1（声誉×八卦×宽恕，docs/10 §A/§B）
 const STANDING_CAP := 3.0       # standing 范围 [-CAP,+CAP]；sign=good/bad
 const STANDING_K := 6.0         # 接受规则里 standing 权重 → 涌现放逐
@@ -1207,7 +1217,7 @@ func _social_candidates(ag: Dictionary) -> Array:
 				"need": "social", "score": urgency * 0.45 + aff * 0.15 + fam * 0.18 + 4.0 + pinv, "say": ""})
 		# confront —— 我对 o 积怨成冲突 → 想当面说开（越严重越想）
 		var cf := _find_conflict(ag["id"], o["id"], ["simmering", "escalated", "lingering"])
-		if not cf.is_empty() and (not CHARACTER_DEFER or _is_blunt(ag)):   # CHARACTER 层：非直性子对小怨气默认 defer（held-out 盲评 98%）
+		if not cf.is_empty() and (not CHARACTER_DEFER or _is_blunt(ag) or _drama_erupts(cf)):   # CHARACTER 默认 defer；DRAMA 导演对憋太久的心结安排对质
 			out.append({"kind": "social", "action": "confront", "partner": o["id"], "subject": "",
 				"need": "social", "score": 30.0 + minf(float(cf["severity"]), 20.0), "say": ""})
 		# apologize —— o 对我有冲突且已被我对质（我已知错）→ 想道歉
@@ -1580,6 +1590,21 @@ func _is_blunt(ag: Dictionary) -> bool:
 		if t in BLUNT_TRAITS:
 			return true
 	return false
+
+## DRAMA 层判据：一段被 CHARACTER 默认憋着的心结是否憋够久、该由导演安排一场对质推进剧情。
+## 越重(severity)/越被反复冒犯(escalations)的怨越早爆；纯 f(age,severity,escalations)，确定性、可回放。
+func _drama_erupts(cf: Dictionary) -> bool:
+	if not DRAMA_DIRECTOR:
+		return false
+	var sev: int = int(round(minf(float(cf.get("severity", 0.0)), 20.0)))
+	var escalated: bool = int(cf.get("escalations", 0)) > 0
+	if not (escalated or sev >= DRAMA_ERUPT_SEV):   # 只有够戏剧性的冲突才安排场；小怨留着不爆 → 保住社会分层
+		return false
+	var age: int = tick_no - int(cf.get("triggered", tick_no))
+	var horizon: int = DRAMA_ERUPT_AFTER - sev * 25
+	if escalated:
+		horizon -= 200
+	return age >= maxi(DRAMA_ERUPT_FLOOR, horizon)
 
 func _find_conflict(a_id: String, b_id: String, statuses: Array) -> Dictionary:
 	for c in conflicts:
