@@ -135,6 +135,75 @@ func _known_facts(ag: Dictionary) -> Array:
 			if claim != "": out.append(claim + tag)
 	return out
 
+## 秘密（TYPED，TheorySnapshot OBSERVED）：v1 只有【自己的秘密】被授权外露；他人的秘密外露=leak=背叛（HARD 层禁止）。
+func _secrets_typed(ag: Dictionary) -> Array:
+	var out := []
+	var aid := String(ag["id"])
+	for subj in ag.get("beliefs", {}):
+		var b = ag["beliefs"][subj]
+		if b is Dictionary and bool(b.get("secret", false)):
+			var owner := String(b.get("owner", ""))
+			out.append({"subject": subj, "subject_name": _S._name(_S.get_agent(subj)),
+				"owner": owner, "claim": String(b.get("claim", "")).strip_edges(),
+				"self": owner == aid, "authorized": owner == aid})
+	return out
+
+const CONFLICT_STATUS_ZH := {
+	"simmering": "还在心里憋着，没当面说开",
+	"escalated": "已经激化，火气更大了",
+	"lingering": "拖成了冷战，很久没提起",
+	"confronted": "已当面挑明，正等对方的态度",
+}
+
+## 心结（TYPED，知识边界正确）：只保留【当前 agent 既知情又可行动】的冲突。
+## - 委屈方(a)：simmering/escalated/lingering —— confront 可行，且 a 知道自己的怨气。
+## - 冒犯方(b)：仅 confronted —— a 已当面挑明后 b 才知情（apologize 可行）；否则会泄漏 a 的私下怨气。
+## 返回 typed 记录（role/other/other_id/severity/status/age/escalations）；展示串另由 _grievance_lines 生成。
+func _grievances(ag: Dictionary) -> Array:
+	var out := []
+	var aid := String(ag["id"])
+	for c in _S.conflicts:
+		var st := String(c.get("status", ""))
+		var a := String(c.get("a", ""))   # 委屈方
+		var b := String(c.get("b", ""))   # 冒犯方
+		var role := ""
+		if aid == a and (st in ["simmering", "escalated", "lingering"]): role = "aggrieved"
+		elif aid == b and st == "confronted": role = "offender"
+		else: continue
+		var other := b if role == "aggrieved" else a
+		out.append({"role": role, "other": _S._name(_S.get_agent(other)), "other_id": other,
+			"severity": int(round(float(c.get("severity", 0.0)))), "status": st,
+			"age": _S.tick_no - int(c.get("triggered", _S.tick_no)),
+			"escalations": int(c.get("escalations", 0))})
+	return out
+
+## 心结 typed → 展示串（角色第一人称，喂给 teacher/judge；不再自相矛盾，不泄漏未挑明的怨气）。
+func _grievance_lines(gs: Array) -> Array:
+	var out := []
+	for g in gs:
+		var other := String(g["other"]); var sev := int(g["severity"]); var age := int(g["age"])
+		var esc := ("，已激化 %d 次" % int(g["escalations"])) if int(g["escalations"]) > 0 else ""
+		if String(g["role"]) == "aggrieved":
+			out.append("你觉得受了委屈——是 %s 冒犯了你，怨气 %d（超过 22 才算难释怀），一直憋着还没当面说开（约 %d tick%s）" % [other, sev, age, esc])
+		else:
+			out.append("%s 已经当面把话挑明了，这事你也知道自己不占理，可你还没回应或道歉（对峙至今约 %d tick%s）" % [other, age, esc])
+	return out
+
+## 待办约定：当前 agent 未决的碰面承诺（约定=决定性的"该赴约了吗"）。
+func _due_commitments(ag: Dictionary) -> Array:
+	var out := []
+	var aid := String(ag["id"])
+	for c in _S._active_commitments:
+		if String(c.get("status", "")) != "active": continue
+		var a := String(c.get("a", "")); var b := String(c.get("b", ""))
+		if aid != a and aid != b: continue
+		var other := b if aid == a else a
+		var left: int = int(c.get("deadline", 0)) - _S.tick_no
+		out.append({"对象": _S._name(_S.get_agent(other)),
+			"内容": "答应了在「%s」碰面" % _S._area_label_id(String(c.get("area", ""))),
+			"还剩": ("%d tick 到约定时间" % left) if left > 0 else "已过约定时间"})
+	return out
+
 func _need_block(ag: Dictionary) -> Dictionary:
 	var needs := {}
 	var urgent := []
@@ -178,8 +247,8 @@ func _action_meaning(ag: Dictionary, c: Dictionary) -> String:
 		"invite": return "约%s改天见一面" % pn
 		"confide": return "向%s吐露一桩自己的心事" % pn
 		"leak": return "把%s的秘密说给%s听" % [sn, pn]
-		"endorse": return "和%s统一口径、一起说%s的好话" % [pn, sn]
-		"rally_oust": return "联合%s一起孤立/施压%s" % [pn, sn]
+		"endorse": return "和%s咬耳朵、统一对%s的说法（一道贬低、疏远他）" % [pn, sn]
+		"rally_oust": return "撺掇旁人，在众人面前一起孤立、施压%s" % pn
 		"confront": return "当面找%s把话说开/理论" % pn
 		"apologize": return "向%s道歉、把疙瘩解开" % pn
 		"aid": return "搭把手帮%s一下" % pn
@@ -189,7 +258,7 @@ func _action_meaning(ag: Dictionary, c: Dictionary) -> String:
 			return "去%s%s" % [String(ACTION_ZH.get(act, act)), ("（休整%s）" % NEED_ZH.get(nd, nd) if nd != "" else "")]
 
 ## 战前分层（在两个策略选择【之前】按候选构成定义）→ 不用 logic 的输出定义 social stratum（评审 #4）。
-func _strata(ag: Dictionary, cands: Array, nb: Dictionary) -> Dictionary:
+func _strata(ag: Dictionary, cands: Array, nb: Dictionary, has_griev: bool, has_due: bool) -> Dictionary:
 	var kinds := {}
 	var acts := {}
 	for c in cands:
@@ -200,6 +269,8 @@ func _strata(ag: Dictionary, cands: Array, nb: Dictionary) -> Dictionary:
 		"has_secret_cand": acts.has("confide") or acts.has("leak") or acts.has("gossip"),
 		"has_reputation_cand": acts.has("endorse") or acts.has("rally_oust") or acts.has("gossip_rep"),
 		"has_social_cand": kinds.has("social"),
+		"has_grievance": has_griev,      # 真实冲突状态（非仅候选存在）— 决定性重采样用
+		"has_commitment": has_due,       # 真实未决约定
 		"object_only": not kinds.has("social"),
 		"need_urgent": not (nb["urgent"] as Array).is_empty(),
 		"persona": String(ag.get("persona_key", "")),
@@ -220,7 +291,9 @@ func _case_packet(ag: Dictionary, cands: Array, ctx: Dictionary, pick_i: int) ->
 	var logic_pick_id := ""
 	for oi in order:
 		var c: Dictionary = cands[oi]
-		var cid := "c%x" % (_hstr("%d:%d:%s:%d" % [_seed, _S.tick_no, aid, oi]) % 0xffff)
+		# P0-1: 24-bit hash + 冲突时确定性加后缀 → id_map 内保证唯一（16-bit 曾在同案内碰撞、覆盖 id_map）。
+		var cid := "c%x" % (_hstr("%d:%d:%s:%d" % [_seed, _S.tick_no, aid, oi]) % 0xffffff)
+		while id_map.has(cid): cid += "e"
 		id_map[cid] = oi
 		if oi == pick_i: logic_pick_id = cid
 		var pid := String(c.get("partner", ""))
@@ -240,7 +313,12 @@ func _case_packet(ag: Dictionary, cands: Array, ctx: Dictionary, pick_i: int) ->
 		"我知道的私密": _known_facts(ag),
 		"候选": cand_out,
 	}
-	return {"case": case, "id_map": id_map, "logic_pick_id": logic_pick_id, "strata": _strata(ag, cands, nb)}
+	var griev := _grievances(ag)                     # typed
+	if not griev.is_empty(): case["心结"] = _grievance_lines(griev)   # 展示串（string list）
+	var due := _due_commitments(ag)
+	if not due.is_empty(): case["待办约定"] = due
+	return {"case": case, "id_map": id_map, "logic_pick_id": logic_pick_id, "grievances": griev,
+		"strata": _strata(ag, cands, nb, not griev.is_empty(), not due.is_empty())}
 
 # --- logging state ---
 var _packet := false
@@ -278,6 +356,8 @@ func _on_decision(ag, cands, pick_i) -> void:
 		row["case"] = pk["case"]
 		row["id_map"] = pk["id_map"]
 		row["logic_pick_id"] = pk["logic_pick_id"]
+		row["grievances"] = pk["grievances"]     # typed（TheorySnapshot OBSERVED；DSL 读它，不解析展示串）
+		row["secrets"] = _secrets_typed(ag)      # typed OBSERVED（HARD 秘密边界规则用）
 		row["strata"] = pk["strata"]
 	elif _with_prompt:
 		var capped := []

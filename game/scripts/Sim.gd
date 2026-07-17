@@ -33,6 +33,12 @@ const CONFLICT_TRIGGER := 6.0   # resentment 累积到此 → 触发一段冲突
 const ESC_THRESH := 2           # 升级次数到此 → escalated
 const LINGER_AFTER := 350       # 触发后 tick 未对质 → lingering（冷战）
 const FORGIVE_CAP := 22.0       # 冲突 severity 高于此则难被原谅
+# CHARACTER 层（docs/24；两轮独立盲评 held-out 验证：char 规则 98% vs logic 6% in-character）：
+# 委屈方对"小怨气"默认【不当面理论、让它过去】；只有直性子(耿直，本镇=老海)才会为此对质。
+# 这是纯人设函数（无 RNG/Time，确定性），把决策从 logic 死规则升级到贴人设。DRAMA 层（导演，另一轴）
+# 日后可为推进剧情按需重新抬起对质——两轴分开，绝不加权混合。BLUNT_TRAITS 是"会为小事对质"的人设标记。
+const CHARACTER_DEFER := true
+const BLUNT_TRAITS := ["耿直"]  # 直性子/认死理 → 会当面把话说开；其余默认让小怨气过去
 # S1（声誉×八卦×宽恕，docs/10 §A/§B）
 const STANDING_CAP := 3.0       # standing 范围 [-CAP,+CAP]；sign=good/bad
 const STANDING_K := 6.0         # 接受规则里 standing 权重 → 涌现放逐
@@ -1201,7 +1207,7 @@ func _social_candidates(ag: Dictionary) -> Array:
 				"need": "social", "score": urgency * 0.45 + aff * 0.15 + fam * 0.18 + 4.0 + pinv, "say": ""})
 		# confront —— 我对 o 积怨成冲突 → 想当面说开（越严重越想）
 		var cf := _find_conflict(ag["id"], o["id"], ["simmering", "escalated", "lingering"])
-		if not cf.is_empty():
+		if not cf.is_empty() and (not CHARACTER_DEFER or _is_blunt(ag)):   # CHARACTER 层：非直性子对小怨气默认 defer（held-out 盲评 98%）
 			out.append({"kind": "social", "action": "confront", "partner": o["id"], "subject": "",
 				"need": "social", "score": 30.0 + minf(float(cf["severity"]), 20.0), "say": ""})
 		# apologize —— o 对我有冲突且已被我对质（我已知错）→ 想道歉
@@ -1568,6 +1574,13 @@ func _resolve_commitments() -> void:
 	_active_commitments = survivors
 
 # ── 冲突生命周期（GPT-5.5 §7.2/§9.3：积怨→对质→道歉→修复/冷战）─────────────────
+## CHARACTER 层判据：此人设是否"会为小怨气当面理论"（直性子）。纯人设函数，确定性。
+func _is_blunt(ag: Dictionary) -> bool:
+	for t in ag.get("persona", {}).get("traits", []):
+		if t in BLUNT_TRAITS:
+			return true
+	return false
+
 func _find_conflict(a_id: String, b_id: String, statuses: Array) -> Dictionary:
 	for c in conflicts:
 		if c["a"] == a_id and c["b"] == b_id and String(c["status"]) in statuses:
