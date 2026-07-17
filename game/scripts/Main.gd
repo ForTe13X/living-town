@@ -360,6 +360,15 @@ func _build_settings(layer: CanvasLayer, fnt: Font) -> void:
 	title.add_theme_font_size_override("font_size", 20)
 	vb.add_child(title)
 
+	# 存档 / 读档（R0-2）：手机没有 F5/F8，从这里进
+	var rsl := _settings_row(vb, fnt, "存档 Save")
+	var bsave := _mk_sbtn(fnt, "💾 存档 (F5)", 130)
+	bsave.pressed.connect(_quick_save)
+	rsl.add_child(bsave)
+	var bload := _mk_sbtn(fnt, "📂 读档 (F8)", 130)
+	bload.pressed.connect(_quick_load)
+	rsl.add_child(bload)
+
 	# 后端
 	var rb := _settings_row(vb, fnt, "后端 Backend")
 	var bcyc := _mk_sbtn(fnt, AIBackend.backend_requested, 160)
@@ -925,6 +934,8 @@ func _unhandled_input(e: InputEvent) -> void:
 			KEY_PAGEDOWN: _probe_cycle_floor(-1)
 			KEY_TAB: _cycle_selection(-1 if e.shift_pressed else 1)
 			KEY_O: _toggle_settings()                            # ⚙ 设置面板开关（NPC 数量/速度/后端）
+			KEY_F5: _quick_save()                                # R0-2：快速存档
+			KEY_F8: _quick_load()                                # R0-2：快速读档
 			KEY_F9: _write_digest()                             # dev：把当前 digest 写盘（--digest-out）
 			KEY_F3: _toggle_perf()                               # dev 性能 overlay 开关
 			KEY_ESCAPE:                                          # 先退观察态(focus/follow/历史)，否则才清选中
@@ -964,6 +975,31 @@ func _unhandled_input(e: InputEvent) -> void:
 			_scrub_to_x(e.position.x)
 			return
 		_probe.handle_input(e, _vp())
+
+const QUICKSAVE := "user://quicksave.dat"
+
+func _quick_save() -> void:
+	var ok: bool = Sim.save_game(QUICKSAVE, {"name": "quicksave", "day": Sim.day})
+	_push("[color=#9ad0ff]💾 存档%s（第 %d 天 · tick %d）[/color]" % [("成功" if ok else "失败"), Sim.day, Sim.tick_no])
+
+func _quick_load() -> void:
+	if not FileAccess.file_exists(QUICKSAVE):
+		_push("[color=#ff8c42]没有存档（先按 F5 / 设置里存一份）[/color]")
+		return
+	var ok: bool = Sim.load_game(QUICKSAVE)          # load 内部发 world_reset → AIBackend.cancel_all
+	if ok:
+		_after_load()
+	_push("[color=#9ad0ff]📂 读档%s（第 %d 天 · tick %d）[/color]" % [("成功" if ok else "失败：坏档或版本不符"), Sim.day, Sim.tick_no])
+
+## 读档后的 UI 对齐（同 _after_jump 的精神：世界换了，视图全部重对齐）。
+func _after_load() -> void:
+	Sim.running = false
+	_max_tick = maxi(_max_tick, Sim.tick_no)
+	_modulate.color = _daylight(Sim.time_of_day())
+	_selected_id = ""
+	_update_status()
+	_update_obs()
+	_update_scrubber()
 
 func _vp() -> Vector2:
 	return get_viewport_rect().size

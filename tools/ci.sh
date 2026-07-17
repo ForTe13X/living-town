@@ -29,7 +29,7 @@ echo "### 4. S0 gate (invariants + determinism; seeds=$CI_SEEDS days=$CI_DAYS de
 [ $? -eq 0 ] && ok "S0 gate" || bad "S0 gate"
 
 echo "### 5. unit / integration scenes"
-for scene in m2_test reqlife_test player_agency_test s4_replay_test space_test; do
+for scene in m2_test reqlife_test player_agency_test s4_replay_test space_test save_load_test; do
   "$GODOT" --headless --path game "res://scenes/$scene.tscn" >/tmp/lt_$scene.log 2>&1
   code=$?
   if [ $code -eq 0 ]; then ok "$scene"; else tail -8 /tmp/lt_$scene.log; bad "$scene (exit $code)"; fi

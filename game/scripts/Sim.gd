@@ -697,6 +697,132 @@ func export_trace(path: String) -> void:
 		f.store_string(JSON.stringify({"seed": seed_base, "tick": tick_no, "events": event_log}, "  "))
 		f.close()
 
+# ── R0-2 存档 / 读档（可恢复的"过日子"存档）─────────────────────────────────
+## 设计（analysis §Phase-2 / codex 评审 R0-2）：**全量状态快照**（provenance 无关——玩家动作/模型选择/
+## 场景补丁怎么来的都不管，只存最终权威状态）。用反射抓【每个脚本 var】→ 完整性不靠手列（新增 var 自动纳入），
+## 跳过 Object/Callable（backend/ext/decision_sink 是运行期接线、非状态，且反序列化不该实例化对象=安全）。
+## ★关键事实：RNG 无状态（`_rng_at` 纯 f(seed_base,tick_no)）→ 没有 RNG 态要存，seed+tick 已在 var 里。
+## 红线：save 只读状态+写文件（不动 digest）；load 只在用户显式读档时调（CI/tick 从不经此）→ digest 零影响。
+const SAVE_MAGIC := "LTSAVE"
+const SAVE_SCHEMA := 1
+
+func save_game(path: String, meta := {}) -> bool:
+	# 派生引用结构【不入档】：它们只是 agents[]/commitments[] 的别名视图，存了也只能得到孤儿副本；
+	# 读档后由 _rebuild_after_load 从真源重建（_active_commitments 靠下面存的 id 列表还原成员资格）。
+	const DERIVED := ["_agent_by_id", "_active_commitments", "_near_set"]
+	var state := {}
+	for p in get_property_list():
+		if not (int(p["usage"]) & PROPERTY_USAGE_SCRIPT_VARIABLE):
+			continue
+		if String(p["name"]) in DERIVED:
+			continue
+		var v = get(p["name"])
+		if v is Object or v is Callable:            # backend/ext/decision_sink：接线非状态，不入档
+			continue
+		state[p["name"]] = v
+	# agent["memory"] 是【嵌套 Object】（MemoryStream）——store_var 会把它编码成 EncodedObjectAsID 死壳，
+	# 读回后 mem.add() 直接崩（硬门抓到的头号 bug）。→ 存它的 items 数据，读档时重建对象。
+	var ser_agents := []
+	for ag in agents:
+		var d: Dictionary = (ag as Dictionary).duplicate(true)   # 深拷贝纯数据；Object 引用照抄→下一行替换掉
+		var mem = ag.get("memory")
+		d["memory"] = {"__mem_items__": (mem.items as Array).duplicate(true) if mem is Object and "items" in mem else []}
+		ser_agents.append(d)
+	state["agents"] = ser_agents
+	# fail-closed：状态里若还残留任何嵌套 Object/Callable（未来有人加新对象字段），宁可拒存也不写坏档。
+	var leaks: Array = []
+	_scan_objects(state, "state", leaks)
+	if not leaks.is_empty():
+		push_error("save_game REFUSED — nested Object/Callable in state (serialize them like memory): %s" % ", ".join(leaks))
+		return false
+	var active_ids := []                            # 活跃承诺的成员资格（id）——重建工作集用
+	for c in _active_commitments:
+		active_ids.append(int(c.get("id", -1)))
+	var blob := {
+		"magic": SAVE_MAGIC, "schema": SAVE_SCHEMA,
+		"game_version": String(ProjectSettings.get_setting("application/config/version", "dev")),
+		"saved_tick": tick_no, "saved_day": day, "seed": seed_base, "meta": meta,
+		"active_commit_ids": active_ids, "state": state,
+	}
+	var f := FileAccess.open(path, FileAccess.WRITE)
+	if f == null:
+		push_warning("save_game: cannot open %s" % path)
+		return false
+	f.store_32(SAVE_SCHEMA)                          # 头 4 字节=schema：坏档/旧档快速判，不误读
+	f.store_var(blob)                               # store_var=var_to_bytes（默认不含 Object=安全，我们本就跳过）
+	f.close()
+	return true
+
+## 读档头（不落地状态）：给 UI 列存档用。坏档/版本不符 → 返回 {}。
+func peek_save(path: String) -> Dictionary:
+	if not FileAccess.file_exists(path):
+		return {}
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null or f.get_length() < 8 or f.get_32() != SAVE_SCHEMA:
+		return {}
+	var blob = f.get_var()
+	f.close()
+	if not (blob is Dictionary) or blob.get("magic") != SAVE_MAGIC:
+		return {}
+	blob.erase("state")                             # 只回头信息
+	return blob
+
+func load_game(path: String) -> bool:
+	if not FileAccess.file_exists(path):
+		return false
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null or f.get_length() < 8:
+		return false
+	var sch := f.get_32()
+	if sch != SAVE_SCHEMA:                           # 版本不符 → 拒绝，绝不静默套错格式
+		f.close()
+		push_warning("load_game: schema %d != %d, refusing" % [sch, SAVE_SCHEMA])
+		return false
+	var blob = f.get_var()
+	f.close()
+	if not (blob is Dictionary) or blob.get("magic") != SAVE_MAGIC:
+		return false
+	var state: Dictionary = blob.get("state", {})
+	for k in state:
+		set(k, state[k])
+	_rebuild_after_load(blob.get("active_commit_ids", []))
+	emit_signal("world_reset")               # 读档=换世界：AIBackend cancel_all(bump epoch)，在飞旧回包一律作废（P1-3 同款）
+	return true
+
+## 深扫状态树找残留 Object/Callable（save_game 的 fail-closed 门用）。
+func _scan_objects(v, path: String, out: Array) -> void:
+	if v is Object or v is Callable:
+		out.append(path)
+	elif v is Dictionary:
+		for k in v:
+			_scan_objects(v[k], path + "." + str(k), out)
+	elif v is Array:
+		for i in (v as Array).size():
+			_scan_objects(v[i], path + "[%d]" % i, out)
+
+## 反序列化后：agents[] 与 _agent_by_id / _active_commitments 已成【各自独立副本】——
+## 必须重建成【同一引用】，否则经其一改状态不动另一处 → 续跑立刻漂（这就是全套硬门要抓的头号 bug）。
+func _rebuild_after_load(active_commit_ids: Array = []) -> void:
+	for ag in agents:                                # 记忆：从 items 数据重建 MemoryStream 对象
+		var m = ag.get("memory")
+		if m is Dictionary and (m as Dictionary).has("__mem_items__"):
+			var mem = MemoryStreamScript.new()
+			mem.items = (m["__mem_items__"] as Array)
+			ag["memory"] = mem
+		elif not (m is Object):                      # 缺/坏 → 空记忆兜底（老档也能开）
+			ag["memory"] = MemoryStreamScript.new()
+	_agent_by_id.clear()
+	for ag in agents:
+		_agent_by_id[String(ag["id"])] = ag
+	var want := {}                                   # 档里存的活跃 id → 映回 commitments[] 的真引用
+	for i in active_commit_ids:
+		want[int(i)] = true
+	_active_commitments = []
+	for c in commitments:
+		if want.has(int(c.get("id", -1))):
+			_active_commitments.append(c)
+	_near_set = {}                                   # 每 tick 重算，清空即可
+
 # ── 主循环 ───────────────────────────────────────────────────────────────
 func tick() -> void:
 	tick_no += 1
