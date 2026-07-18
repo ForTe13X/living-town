@@ -697,3 +697,7 @@ find_endorse（看 endorse_events 计数逐 tick 跳变，因 endorse 不进 eve
 
 **✅ 真机端到端：新决策逻辑在手机上跑通、且验证 in-character 政策就地成立。**
 用当前决策代码重出 debug APK（`godot --export-debug`，android-sdk 在 build/android-sdk、debug.keystore、ETC2 已导入）、装 FY25011102BB（wireless-adb 192.168.1.113:34475，daemon 会掉线→需 reconnect；截黑屏是手机 Dozing→KEYCODE_WAKEUP 后即出画）。真机截图：小镇正常渲染（第4天夜、NPC12、backend=**logic**、观察台/事件流/时间轴俱全），且事件流里 **「阿丽·endorse·沈书」**+ 阿丽头顶气泡「这事，你我一条心!」（统一口径）——**唯一被盲评验证的 endorse 人设阿丽，就地在手机上 endorse**；旁边阿林「算 睡觉。」（非直性子默认不 confront、去做别的）。四类 opportunity 的 in-character 政策 = 确定性 typed 规则，**端上零运行时推理跑通**、行为与离线盲评一致。docs/media 存证帧。（合成见 docs/25。）
+
+**✅ 真机端到端补齐：阿丽泄密在手机上逮个正着（补上 secret 轴的端上一帧）。**
+端上截 endorse 后补 leak：seed2 阿丽 tick11145 泄阿本秘密（"阿本其实怕黑"）。用 `--warmup-tick`(baked 默认，goto_tick 纯 logic 确定重演、不受端上 SLM 探测干扰)定格到 day48、观察台选中阿本——**阿本对阿丽 亲75/信62/怨14**（对照错 tick 的 seed11 帧是 怨0），怨气过 CONFLICT_TRIGGER(6)→会触发冲突。**leak→被背叛者积怨** 的后果链真机成立，与桌面 betray 帧同源、且是 secret 轴的端上定格。
+**🛠 坑：改了决策规则后，旧 seed/tick 的事件坐标会漂。** 先用 endorse/faction/SURVIVAL_GATE 之前的 seed11@11038 定格，端上却是 怨0——因这些提交改了轨迹、betray 挪位。重跑 find_betray（当前码）得 seed2@11145 才对上。教训：眼验定格用的 seed/tick 必须在**当前码**上重取。（无线 adb 又掉线一次，pair 码 625390 + connect 34475 复联。）
