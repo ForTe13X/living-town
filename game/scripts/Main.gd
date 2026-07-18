@@ -58,6 +58,8 @@ func _ready() -> void:
 	var backend := "logic"
 	var spd := 1.0
 	var warmup_days := 0                   # --warmup N：开局前静默推进到第 N 天（录 demo 跳到节日日用）
+	var warmup_tick := 0                   # --warmup-tick T：静默推进到精确 tick T（眼验：定格某一瞬的社交事件）
+	var _sel_arg := ""                     # --select id：定格后观察台默认选中此角色（眼验居中到当事人）
 	var args := OS.get_cmdline_user_args()
 	for i in args.size():
 		if args[i] == "--backend" and i + 1 < args.size():
@@ -83,6 +85,10 @@ func _ready() -> void:
 			_demo_mode = true
 		elif args[i] == "--warmup" and i + 1 < args.size():
 			warmup_days = int(args[i + 1])     # 录 demo：跳到第 N 天开场（确定，goto_tick 同款重演）
+		elif args[i] == "--warmup-tick" and i + 1 < args.size():
+			warmup_tick = int(args[i + 1])     # 眼验：精确定格到 tick T（goto_tick 同款确定重演）
+		elif args[i] == "--select" and i + 1 < args.size():
+			_sel_arg = args[i + 1]             # 眼验：定格后默认选中此角色
 		elif args[i] == "--digest-at" and i + 1 < args.size():
 			_digest_at = int(args[i + 1])
 		elif args[i] == "--digest-out" and i + 1 < args.size():
@@ -116,9 +122,14 @@ func _ready() -> void:
 		ext.freeze()
 		Sim.ext = ext
 	Sim.start_new(seed)
-	if warmup_days > 0:
+	if warmup_tick > 0:
+		Sim.goto_tick(warmup_tick)          # 眼验：精确定格到某一 tick
+		_selected_id = "ben"
+	elif warmup_days > 0:
 		Sim.goto_tick((warmup_days - 1) * int(Sim.TICKS_PER_DAY) + 8)   # 跳到第 N 天开场（节日已在日界 spawn）
 		_selected_id = "ben"                # 录 demo：默认选中木匠(有职业+钱) → 观察台展示经济/职业行
+	if _sel_arg != "":
+		_selected_id = _sel_arg             # --select 覆盖默认选中（眼验居中到当事人）
 	Sim.backend = AIBackend   # 窗口模式注入可插拔后端；headless/soak 时 Sim.backend=null 走内置 logic
 	Sim.speed = spd
 	_npc_target = maxi(6, Sim.agents.size())   # 设置面板 NPC 数量初值 = 实际居民数（基础 cast=agents.json，或 spawn_count 克隆总数）
