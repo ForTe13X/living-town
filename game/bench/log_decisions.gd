@@ -120,6 +120,12 @@ func _band_fam(v: float) -> String:
 	if v >= 2.0: return "点头之交"
 	return "几乎不熟"
 
+## 风评/名声（standing，范围[-3,3]）：只在明显偏坏时标注——rally_oust/endorse 的判断需要"此人是否名声差"这个上下文。
+func _band_standing(v: float) -> String:
+	if v <= -2.0: return "在你眼里名声很差"
+	if v <= -0.8: return "在你眼里风评有点差"
+	return ""
+
 func _role_of(aid: String) -> String:
 	var jobs: Dictionary = _S.jobs.get("jobs", {}) if _S.jobs is Dictionary else {}
 	return String((jobs.get(aid, {}) as Dictionary).get("title", ""))
@@ -251,9 +257,12 @@ func _rels_for(ag: Dictionary, pids: Dictionary) -> Array:
 	var out := []
 	for pid in pids:
 		var rel: Dictionary = (ag.get("relationships", {}) as Dictionary).get(pid, {})
-		out.append({"who": _S._name(_S.get_agent(pid)),
+		var e := {"who": _S._name(_S.get_agent(pid)),
 			"交情": _band_aff(float(rel.get("affinity", 0.0))),
-			"熟悉度": _band_fam(float(rel.get("familiarity", 0.0)))})
+			"熟悉度": _band_fam(float(rel.get("familiarity", 0.0)))}
+		var st := _band_standing(float(rel.get("standing", 0.0)))
+		if st != "": e["风评"] = st
+		out.append(e)
 	return out
 
 ## 主题/对象描述：人→名字；信念 cid→其 claim（gossip 说的是"什么事"，不是原始 belief key）；topic→原样。

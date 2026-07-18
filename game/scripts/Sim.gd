@@ -56,6 +56,12 @@ const DRAMA_GOSSIP_LEAK := true
 const GOSSIP_TRAITS := ["爱八卦"]
 const GOSSIP_LEAK_AFTER := 600    # 拿到秘密憋 ~2.5 天后才忍不住说漏（TICKS_PER_DAY=240）
 const GOSSIP_LEAK_BOOST := 26.0   # 憋够久的话痨：把 leak 分抬到压过维护 → 当选（抖出去）
+# CHARACTER 层 · 派系合围（faction-moment 盲评：p_eff(rally_oust)=0.014、CI[0,0.028]、【无人设例外】）：
+# 撺掇公开孤立/施压一个外群人，对本镇【每一个人设都极不入戏】——logic 却 49% 就这么干。默认弃权。
+# 唯一保留：DRAMA 让"众人合围一个真·过街老鼠"成一场罕见的戏——对象名声极差(众怒)且已有【激化】的冲突时。
+# 保 DRAMA 出口是为了不抹平涌现放逐(#15)/派系协同(#25-28)——同 confront 的 CHARACTER/DRAMA 两轴分法。
+const FACTION_MOB_DEFER := true
+const MOB_ERUPT_STANDING := -2.5  # 对象在 ag 眼里名声极差(≤此，比 REP_GOSSIP_TH=-2 更狠) → 才够格被合围
 # S1（声誉×八卦×宽恕，docs/10 §A/§B）
 const STANDING_CAP := 3.0       # standing 范围 [-CAP,+CAP]；sign=good/bad
 const STANDING_K := 6.0         # 接受规则里 standing 权重 → 涌现放逐
@@ -1254,7 +1260,10 @@ func _social_candidates(ag: Dictionary) -> Array:
 			# rally_oust —— o 是外群且 ag 对 o 有冲突/坏名声 → 协同施压（评分 < confront，私下对质优先）
 			if String(o["faction"]) != String(ag["faction"]):
 				var cfo := _find_conflict(ag["id"], o["id"], ["simmering", "escalated", "lingering"])
-				if not cfo.is_empty() or float(_rel(ag, o["id"])["standing"]) <= REP_GOSSIP_TH:
+				var st_o := float(_rel(ag, o["id"])["standing"])
+				# CHARACTER：撺掇公开合围极不入戏（盲评 p_eff 0.014、无人设例外）→ 默认弃权；
+				# DRAMA：仅当对象名声极差 + 冲突已激化，才让"众人合围一个真麻烦"成一场罕见的戏。
+				if (not cfo.is_empty() or st_o <= REP_GOSSIP_TH) and (not FACTION_MOB_DEFER or _mob_erupts(cfo, st_o)):
 					out.append({"kind": "social", "action": "rally_oust", "partner": o["id"], "subject": "",
 						"need": "social", "score": OUST_BASE + minf(float(cfo.get("severity", 0.0)), 15.0), "say": ""})
 		# ── S3b aid（仅当 o 是 active pact 伙伴且其某 need 低）──
@@ -1628,6 +1637,12 @@ func _drama_erupts(cf: Dictionary) -> bool:
 	if escalated:
 		horizon -= 200
 	return age >= maxi(DRAMA_ERUPT_FLOOR, horizon)
+
+## DRAMA 层判据 · 派系合围：只有对象是真·过街老鼠（名声极差 + 已激化的冲突）才让"众人合围"成一场罕见戏。
+func _mob_erupts(cfo: Dictionary, standing: float) -> bool:
+	if not DRAMA_DIRECTOR:
+		return false
+	return standing <= MOB_ERUPT_STANDING and not cfo.is_empty() and int(cfo.get("escalations", 0)) > 0
 
 func _find_conflict(a_id: String, b_id: String, statuses: Array) -> Dictionary:
 	for c in conflicts:

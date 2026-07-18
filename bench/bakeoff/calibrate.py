@@ -21,6 +21,7 @@ K_PERS="性格"; K_JOB="职业"; K_BIO="身份"
 K_LOC="位置"; K_TOD="时段"; K_DAY="第几天"
 K_URGENT="迫切需求"; K_NEED="需求"; K_SCALE="需求量表"
 K_GRIEV="心结"; K_STANCE="立场"; K_RESENT="怨气"; K_STATE="状态"; K_BACKLOG="积压"; K_ESC="已激化"
+K_STANDING="风评"
 K_DUE="待办约定"; K_CONTENT="内容"; K_LEFT="还剩"
 K_STAKE="秘密处境"
 
@@ -104,7 +105,10 @@ def render_case(case, order, salient=True):
             else: L.append("【待办约定】%s%s，还剩%s"%(d.get("对象",""), d.get(K_CONTENT,""), d.get(K_LEFT,"")))
     rels=case.get(K_REL,[])
     if rels:
-        L.append("【关系】"+"；".join("%s：%s·%s"%(x.get("who",""),x.get(K_AFF,""),x.get(K_FAM,"")) for x in rels))
+        def _rel1(x):
+            base="%s：%s·%s"%(x.get("who",""),x.get(K_AFF,""),x.get(K_FAM,""))
+            return base+("·"+x[K_STANDING] if x.get(K_STANDING) else "")
+        L.append("【关系】"+"；".join(_rel1(x) for x in rels))
     sec=case.get(K_SEC,[])
     L.append("【我知道的私密】"+("；".join(sec) if sec else "（无）"))
     rec=case.get(K_RECENT,[])
