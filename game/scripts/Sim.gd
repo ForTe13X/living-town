@@ -32,7 +32,7 @@ const GIFT_START := 3           # 每个 NPC 初始礼物数（give 破冰用）
 const MEET_HORIZON := 40        # invite 创建的 meet 承诺：deadline = now + 此
 const ATTEND_WINDOW := 16       # 离 deadline ≤ 此 → 引擎给「赴约」加权
 const NEED_CRISIS := 15.0       # 任一需求 < 此 → 放弃赴约（真危机才爽约 → broken）
-const SURVIVAL_GATE := 24.0     # 任一需求 < 此 → 本 tick 不社交，先去吃/睡（留赶路缓冲，防大 N 饿穿）。
+const SURVIVAL_GATE := 28.0     # 任一需求 < 此 → 本 tick 不社交，先去吃/睡（留赶路缓冲，防大 N 饿穿）。
                                 # 20→24：给 need-floor 更足缓冲，使 #01 无饿穿对【决策扰动】鲁棒（endorse 抑制曾令阿本社交需求饿穿）。
 const CONFLICT_TRIGGER := 6.0   # resentment 累积到此 → 触发一段冲突（simmering）
 const ESC_THRESH := 2           # 升级次数到此 → escalated
@@ -143,6 +143,7 @@ var _accum := 0.0
 var needs_def: Array = []       # [{id,label,decay,low}]
 var world := {}                 # {width,height,areas,objects:{id:obj}}
 var _blocked := {}              # 导航阻挡格集合 idx(y*W+x)->true（家具占用 + 未来 blockers 层）；start_new 重建
+var _path_cache := {}           # aid -> {goal,path,i}：算一次跟着走(大图性能)；transient(DERIVED、不入 digest/存档)
 var rhythm := {}                # 昼夜节律偏好表 data/rhythm.json：{phases:{name:[lo,hi)}, prefs:{need:{phase:factor}}, default}
 var utility := {}               # 效用/接受权重表 data/utility.json（docs/14 §1 步骤4）：行为调参数据化，缺键→代码默认(逐字节不变)
 # ── Wave 1c 天气（docs/15 §3 挂点#3 最小版）：weather(day)=纯哈希查权重表——不消耗 RNG 流、不存历史，goto_tick 天然复现 ──
@@ -460,6 +461,7 @@ func start_new(p_seed: int = 12345) -> void:
 			world["objects"].erase(oid)
 	_fest_objects.clear()
 	_build_nav()                        # 导航网：清完动态对象后按静态家具重建（每局同一张确定网）
+	_path_cache = {}                    # 路径缓存 per-run 清空（goto_tick 重演一致）
 	festival_active = ""
 	_update_festival()
 	if ext != null:
@@ -751,7 +753,7 @@ const SAVE_SCHEMA := 1
 func save_game(path: String, meta := {}) -> bool:
 	# 派生引用结构【不入档】：它们只是 agents[]/commitments[] 的别名视图，存了也只能得到孤儿副本；
 	# 读档后由 _rebuild_after_load 从真源重建（_active_commitments 靠下面存的 id 列表还原成员资格）。
-	const DERIVED := ["_agent_by_id", "_active_commitments", "_near_set"]
+	const DERIVED := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache"]
 	var state := {}
 	for p in get_property_list():
 		if not (int(p["usage"]) & PROPERTY_USAGE_SCRIPT_VARIABLE):
@@ -992,7 +994,7 @@ func _advance_attend(ag: Dictionary, opt: Dictionary) -> void:
 		ag["option"] = null
 		return
 	if _area_at(ag["pos"]) != String(c["area"]):
-		_move_agent(ag, _nav_step(ag["pos"], _area_centroid(String(c["area"]))))  # 未到则前往；到了守在该区等对方
+		_move_agent(ag, _nav_step(ag, _area_centroid(String(c["area"]))))  # 未到则前往；到了守在该区等对方
 		emit_signal("agent_changed", ag["id"])
 
 func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
@@ -1013,7 +1015,7 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 					else:
 						econ_stats["meals_free"] += 1
 		else:
-			_move_agent(ag, _nav_step(ag["pos"], target_obj["pos"]))
+			_move_agent(ag, _nav_step(ag, target_obj["pos"]))
 		emit_signal("agent_changed", ag["id"])
 	else:  # use
 		var per := float(opt["amount"]) / float(opt["dur_total"])
@@ -2407,27 +2409,52 @@ func _manh(a: Vector2i, b: Vector2i) -> int:
 	return absi(a.x - b.x) + absi(a.y - b.y)
 
 ## 确定性 A*：起点/终点恒可入(终点=家具交互格)；中间须 walkable。tie-break 全序 (f,h,idx) → 同 seed 逐字节同路径。
-## 返回含端点的完整格路径；不可达返回 []。O(open²)/次(小图够快；大图 P2-2 再优化路径缓存)。
+## 返回含端点的完整格路径；不可达返回 []。二叉最小堆 open set + 懒删除 → O(E log V)/次(64×48 也够快)。
+## 堆项 [f,h,idx,cell]，全序 (f,h,idx) → 与旧 O(open²) 版逐格同路径，纯提速。
+func _heap_less(a: Array, b: Array) -> bool:
+	if a[0] != b[0]: return a[0] < b[0]
+	if a[1] != b[1]: return a[1] < b[1]
+	return a[2] < b[2]
+func _heap_push(heap: Array, e: Array) -> void:
+	heap.append(e); var i := heap.size() - 1
+	while i > 0:
+		var par := (i - 1) >> 1
+		if _heap_less(heap[i], heap[par]):
+			var t: Array = heap[i]; heap[i] = heap[par]; heap[par] = t; i = par
+		else: break
+func _heap_pop(heap: Array) -> Array:
+	var top: Array = heap[0]; var last: Array = heap.pop_back()
+	if not heap.is_empty():
+		heap[0] = last; var i := 0; var n := heap.size()
+		while true:
+			var l := 2 * i + 1; var r := 2 * i + 2; var s := i
+			if l < n and _heap_less(heap[l], heap[s]): s = l
+			if r < n and _heap_less(heap[r], heap[s]): s = r
+			if s == i: break
+			var t: Array = heap[i]; heap[i] = heap[s]; heap[s] = t; i = s
+	return top
 func _astar_path(start: Vector2i, goal: Vector2i) -> Array:
 	var W := int(world.get("width", GRID.x)); var H := int(world.get("height", GRID.y))
 	var gi := goal.y * W + goal.x
 	var si := start.y * W + start.x
-	var open := {si: {"c": start, "g": 0, "h": _manh(start, goal), "f": _manh(start, goal)}}
+	var g0 := _manh(start, goal)
+	var gscore := {si: 0}
 	var came := {}          # idx -> 前驱 cell
 	var closed := {}
-	while not open.is_empty():
-		var ci := -1; var cf := 1 << 30; var ch := 1 << 30
-		for i in open:
-			var n: Dictionary = open[i]; var nf := int(n["f"]); var nh := int(n["h"])
-			if nf < cf or (nf == cf and (nh < ch or (nh == ch and (ci == -1 or i < ci)))):
-				cf = nf; ch = nh; ci = i
-		var cur: Vector2i = open[ci]["c"]; var cg := int(open[ci]["g"])
+	var heap: Array = []
+	_heap_push(heap, [g0, g0, si, start])
+	while not heap.is_empty():
+		var e: Array = _heap_pop(heap)
+		var ci := int(e[2])
+		if closed.has(ci): continue         # 懒删除：过期项跳过
+		closed[ci] = true
+		var cur: Vector2i = e[3]
 		if ci == gi:
 			var path: Array = [cur]; var k := ci
 			while came.has(k):
 				var pc: Vector2i = came[k]; path.push_front(pc); k = pc.y * W + pc.x
 			return path
-		open.erase(ci); closed[ci] = true
+		var cg := int(gscore[ci])
 		for d in NAV_DIRS:
 			var nb: Vector2i = cur + d
 			if nb.x < 0 or nb.y < 0 or nb.x >= W or nb.y >= H:
@@ -2438,18 +2465,33 @@ func _astar_path(start: Vector2i, goal: Vector2i) -> Array:
 			if ni != gi and not _cell_walkable(nb):    # 终点豁免
 				continue
 			var ng := cg + 1
-			if not open.has(ni) or ng < int(open[ni]["g"]):
-				came[ni] = cur
-				open[ni] = {"c": nb, "g": ng, "h": _manh(nb, goal), "f": ng + _manh(nb, goal)}
+			if not gscore.has(ni) or ng < int(gscore[ni]):
+				gscore[ni] = ng; came[ni] = cur
+				var hh := _manh(nb, goal)
+				_heap_push(heap, [ng + hh, hh, ni, nb])
 	return []
 
 ## 朝 to 走一格：绕开阻挡的确定性 A* 次步；不可达则 Manhattan 兜底(不冻结)。
-func _nav_step(from: Vector2i, to: Vector2i) -> Vector2i:
+func _nav_step(ag: Dictionary, to: Vector2i) -> Vector2i:
+	var from: Vector2i = ag["pos"]
 	if not NAV_PATHFIND or from == to:
 		return _step_toward(from, to)
+	var aid := String(ag["id"])
+	# 缓存复用：算一次跟着走(大图 O(open²) A* 不能每步重算)。有效条件=同目标+当前格正好在缓存路径 i 处+下一格仍可走。
+	var c: Dictionary = _path_cache.get(aid, {})
+	if not c.is_empty() and c["goal"] == to:
+		var pth: Array = c["path"]; var i := int(c["i"])
+		if i < pth.size() - 1 and pth[i] == from:
+			var nxt: Vector2i = pth[i + 1]
+			if nxt == to or _cell_walkable(nxt):
+				c["i"] = i + 1
+				return nxt
+	# 重算并缓存：返回 path[1]、i 记为 1（=agent 下一 tick 所在格，令后续走缓存命中）
 	var path := _astar_path(from, to)
 	if path.size() >= 2:
+		_path_cache[aid] = {"goal": to, "path": path, "i": 1}
 		return path[1]
+	_path_cache.erase(aid)
 	return _step_toward(from, to)
 
 func _name(ag: Dictionary) -> String:

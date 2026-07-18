@@ -21,9 +21,11 @@ func _ready() -> void:
 
 	# ── bounds：Probe 相机边界来源（不再直读 Sim.GRID）──
 	var tb: Rect2 = sg.bounds_px("town")
-	ck(tb.size == Vector2(Sim.GRID.x * 48, Sim.GRID.y * 48), "town bounds = 全图 %s" % str(tb.size))
+	# town 有 spaces.json 显式 bounds（P2-2 起 = 64×48 大镇）→ 对齐真图尺寸（world.width/height），不再 = Sim.GRID
+	ck(tb.size == Vector2(int(Sim.world.get("width", 24)) * 48, int(Sim.world.get("height", 16)) * 48), "town bounds = 真图 %s" % str(tb.size))
 	ck(sg.bounds_px("test_loft").size == Vector2(6 * 48, 5 * 48), "test_loft bounds = 6x5 格")
-	ck(sg.bounds_px("no_such").size == tb.size, "未知 space → 回落全图（off 门，不崩）")
+	# 未知 space 无 bounds → 回落 Sim.GRID（保守小兜底，与 town 的显式 bounds 现在不同了）
+	ck(sg.bounds_px("no_such").size == Vector2(Sim.GRID.x * 48, Sim.GRID.y * 48), "未知 space → 回落 Sim.GRID（off 门，不崩）")
 
 	# ── Portal：双向边的反向查询也要能查到 ──
 	var pt_town: Array = sg.portals_from("town", "outdoor")

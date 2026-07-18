@@ -708,3 +708,14 @@ find_endorse（看 endorse_events 计数逐 tick 跳变，因 endorse 不进 eve
 `_step_toward`(X 优先 Manhattan、无避障)换成 `_nav_step`：家具占用格入 `_blocked` 网、A* 绕障走到目标，**起点/终点恒可入**(终点=家具交互格，NPC 仍能走到灶台/床用它；起点=允许从当前格离开)、不可达则 Manhattan 兜底(不冻结)。tie-break 全序 `(f,h,cell_idx)` → 同 seed 逐字节同路径。`_build_nav()` 在 start_new 清完 fest_/civic_ 动态对象后按静态家具重建 → **每局同一张确定网**(动态对象 v1 不入 nav，留增量2)。
 验证四连：① `NAV_PATHFIND=false` **逐字节回退基线**(3 seed digest 与 HEAD 完全一致 68722783/2600847389/982215813)——干净 opt-in；② on 全 CI 绿(37 不变量 12/12、det 3/3、六场景含 player_agency 移动测)；③ A* 单测（墙中留缝）`crosses_wall=false / detour_through_gap=true / deterministic=true`；④ 性能 O(open²)/次小图够快、12×60 = 1m31s。
 **🛠 复用 CHARACTER 那条教训**：先在 3×20 看到 #08 承诺生命周期 0/3、没误判——软涌现(承诺)本就需满 60 天，换 12×60 即全绿。改移动=改轨迹→digest 变但门校验"跨跑一致+不变量"、非金数字。**大图 walls/water/64×48 graybox + 路径缓存 + 交互格留增量2**。
+
+## Town-World P2 · 增量2：64×48 灰盒（MapSpec + walls/water + 共用寻路）
+
+**✅ 大镇落地：5 个带墙+门的街区紧凑环绕中央广场、外围可探索荒野、共用确定性 A*+路径缓存，full CI 绿。**
+`tools/gen_town.py` 确定性生成：map.json(64×48、area/blockers[墙+树+水]/repositioned objects)+agents.json(spawn)+patch spaces.json town bounds=64×48(相机 window≠world)+清 buildings.json(旧 24×16 坐标室内→留 P3 咖啡馆竖切片重画)；内建 reachability + ≥2 路线审计(全可达、门/家具/spawn 可达、验证过)。8 base objects 覆盖全需求。
+
+**🛠 三个坑串起来教会大图寻路的三件事：**
+① **A* O(open²) 大图直接爆**：小图(384 格)每步全算没事，64×48(3072 格)3×20 就 3min 超时。换**二叉最小堆 open set + 懒删除**→O(E log V)、且 (f,h,idx) 全序 → 与旧版逐格同路径、纯提速。
+② **路径缓存的经典 off-by-one**：重算时返回 path[1] 却把 `i` 记成 0 → 下一 tick `path[0]≠当前格`(已移到 path[1]) → cache miss → 仍每步重算(~1 A*/agent/tick)。修 `i=1`(指向 agent 下一格) → 命中、**快 100×**(3min→15s)。教训：缓存索引要指向"下一步之后 agent 的实际位置"。
+③ **角落街区饿穿**：街区摆四角(trek 40-66 格)→ 需求赶不上路程 → #01 无饿穿 10/12 破。raise gate(24→32)只补到 11/12(whack-a-mole、且压平社交)。**根治=紧凑中央簇**(4 街区贴广场、survival trek~15)+SURVIVAL_GATE 24→28 → #01 **12/12**。教训：改地图尺度先算"最远 survival 需求 trek vs 需求衰减预算"，别靠抬 gate 硬扛。
+`space_test` 顺带修：town 现有显式 bounds(64×48)≠未知 space 的 Sim.GRID 兜底(24×16)，旧断言把两者混为一谈 → 拆开(town 对齐真图 world.w/h、未知回落 GRID)。交互格/室内多楼层/overlay 留 P2-3/P3。

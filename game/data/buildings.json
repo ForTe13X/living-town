@@ -1,14 +1,4 @@
 {
-  "_note": "编译期室内展开：每个 building 的 rooms 在 _load_data 直接写入 world.rooms/world.objects(不经 spawn_object=不写 event=off 逐字节不变)。furnish 指向 room_templates 模板名(缺省=type)。owner=产权铺垫(housing 前哨，暂只存不计租)。缺此文件=不编译=阶段1原样(off 门)。rect 须落在对应 area 内且不与已有家具/手写房间重叠。",
-  "buildings": [
-    {"id": "cafe", "rooms": [
-      {"id": "cafe_booth", "rect": [15, 1, 3, 3], "type": "parlor", "enclosed": true, "owner": "aria"}
-    ]},
-    {"id": "work", "rooms": [
-      {"id": "work_backroom", "rect": [16, 10, 3, 3], "type": "workshop", "enclosed": true, "owner": "ben"}
-    ]},
-    {"id": "wash", "rooms": [
-      {"id": "wash_quiet", "rect": [5, 10, 3, 3], "type": "quietroom", "enclosed": true, "owner": ""}
-    ]}
-  ]
+ "_note": "编译期室内展开：每个 building 的 rooms 在 _load_data 直接写入 world.rooms/world.objects(不经 spawn_object=不写 event=off 逐字节不变)。furnish 指向 room_templates 模板名(缺省=type)。owner=产权铺垫(housing 前哨，暂只存不计租)。缺此文件=不编译=阶段1原样(off 门)。rect 须落在对应 area 内且不与已有家具/手写房间重叠。",
+ "buildings": []
 }
