@@ -28,7 +28,8 @@ const GIFT_START := 3           # 每个 NPC 初始礼物数（give 破冰用）
 const MEET_HORIZON := 40        # invite 创建的 meet 承诺：deadline = now + 此
 const ATTEND_WINDOW := 16       # 离 deadline ≤ 此 → 引擎给「赴约」加权
 const NEED_CRISIS := 15.0       # 任一需求 < 此 → 放弃赴约（真危机才爽约 → broken）
-const SURVIVAL_GATE := 20.0     # 任一需求 < 此 → 本 tick 不社交，先去吃/睡（留赶路缓冲，防大 N 饿穿）
+const SURVIVAL_GATE := 24.0     # 任一需求 < 此 → 本 tick 不社交，先去吃/睡（留赶路缓冲，防大 N 饿穿）。
+                                # 20→24：给 need-floor 更足缓冲，使 #01 无饿穿对【决策扰动】鲁棒（endorse 抑制曾令阿本社交需求饿穿）。
 const CONFLICT_TRIGGER := 6.0   # resentment 累积到此 → 触发一段冲突（simmering）
 const ESC_THRESH := 2           # 升级次数到此 → escalated
 const LINGER_AFTER := 350       # 触发后 tick 未对质 → lingering（冷战）
@@ -64,10 +65,10 @@ const FACTION_MOB_DEFER := true
 const MOB_ERUPT_STANDING := -2.5  # 对象在 ag 眼里名声极差(≤此，比 REP_GOSSIP_TH=-2 更狠) → 才够格被合围
 # CHARACTER 层 · endorse（"和 X 咬耳朵、统一对 Y 的说法、一道贬低疏远他"）：盲评 p_eff(endorse)=0.043、
 # 但【只有爱八卦的阿丽】in-character(0.43)、余 9 人设皆 0——endorse 本质是【八卦串谋】、落在 gossip 轴而非 mob 轴
-# （故有 1 个人设例外、不同于 rally_oust 的零例外）。开启后仅 _is_gossipy(爱八卦=阿丽) 拉人统一口径。
-# ⚠ 默认【关】：全面弃权会蝴蝶扰动到 seed-4 的 #01 无饿穿(硬不变量)——endorse 是四类里最温和的动作，
-#   不值得为它破一条硬正确性门。规则已 wired + flag 可开；开需一个"不扰动 need-floor 的更温和抑制"(后续)。
-const FACTION_ENDORSE_DEFER := false
+# （故有 1 个人设例外、不同于 rally_oust 的零例外）。ON：仅 _is_gossipy(爱八卦=阿丽) 拉人统一口径、余弃权。
+# #01-safe：全面弃权曾蝴蝶到 seed-4 的 #01 无饿穿——根因是抑制 endorse 减了全镇社交吞吐、阿本社交需求赶不上；
+#   解法不是缩抑制、而是把 SURVIVAL_GATE 20→24 给 need-floor 更足赶路缓冲（真·鲁棒性升级，见其定义处）→ 12/12 绿。
+const FACTION_ENDORSE_DEFER := true
 # S1（声誉×八卦×宽恕，docs/10 §A/§B）
 const STANDING_CAP := 3.0       # standing 范围 [-CAP,+CAP]；sign=good/bad
 const STANDING_K := 6.0         # 接受规则里 standing 权重 → 涌现放逐
