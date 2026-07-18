@@ -148,6 +148,39 @@ func _secrets_typed(ag: Dictionary) -> Array:
 				"self": owner == aid, "authorized": owner == aid})
 	return out
 
+## 秘密处境（TYPED，secret-stake OBSERVED）：手里有【别人吐露给我/我知情】的秘密——说出去=背叛托付者。
+## 带我对托付者的感受（怨气/好感/信任），这正是"该守信还是背叛"的显著度。
+func _secret_stakes(ag: Dictionary) -> Array:
+	var out := []
+	var aid := String(ag["id"])
+	for subj in ag.get("beliefs", {}):
+		var b = ag["beliefs"][subj]
+		if not (b is Dictionary and bool(b.get("secret", false))): continue
+		var owner := String(b.get("owner", ""))
+		if owner == aid: continue                       # 自己的秘密——外露不算背叛
+		var cb: Dictionary = b.get("confidedBy", {})
+		var teller := String(cb.keys()[0]) if not cb.is_empty() else owner
+		var rel: Dictionary = (ag.get("relationships", {}) as Dictionary).get(teller, {})
+		out.append({"about": _S._name(_S.get_agent(owner)), "about_id": owner,
+			"confided_by": _S._name(_S.get_agent(teller)), "teller_id": teller,
+			"claim": String(b.get("claim", "")).strip_edges(),
+			"resent_teller": int(round(float(rel.get("resentment", 0.0)))),
+			"affinity_teller": int(round(float(rel.get("affinity", 0.0)))),
+			"trust_teller": int(round(float(rel.get("trust", 0.0))))})
+	return out
+
+## 秘密处境 typed → 展示串（第一人称，喂 teacher/judge）。
+func _secret_stake_lines(ss: Array) -> Array:
+	var out := []
+	for s in ss:
+		var feel := ""
+		if int(s["resent_teller"]) > 0: feel = "你对%s还憋着气(怨气%d)" % [s["confided_by"], int(s["resent_teller"])]
+		elif int(s["affinity_teller"]) >= 20: feel = "你和%s交情不错(好感%d)" % [s["confided_by"], int(s["affinity_teller"])]
+		else: feel = "你和%s关系一般" % s["confided_by"]
+		out.append("%s把「%s」这桩私密吐露给了你——说出去就是背叛%s。%s。" % [
+			s["confided_by"], s["claim"], s["confided_by"], feel])
+	return out
+
 const CONFLICT_STATUS_ZH := {
 	"simmering": "还在心里憋着，没当面说开",
 	"escalated": "已经激化，火气更大了",
@@ -317,7 +350,10 @@ func _case_packet(ag: Dictionary, cands: Array, ctx: Dictionary, pick_i: int) ->
 	if not griev.is_empty(): case["心结"] = _grievance_lines(griev)   # 展示串（string list）
 	var due := _due_commitments(ag)
 	if not due.is_empty(): case["待办约定"] = due
+	var stakes := _secret_stakes(ag)                 # typed secret-stake
+	if not stakes.is_empty(): case["秘密处境"] = _secret_stake_lines(stakes)
 	return {"case": case, "id_map": id_map, "logic_pick_id": logic_pick_id, "grievances": griev,
+		"secret_stakes": stakes,
 		"strata": _strata(ag, cands, nb, not griev.is_empty(), not due.is_empty())}
 
 # --- logging state ---
@@ -358,6 +394,7 @@ func _on_decision(ag, cands, pick_i) -> void:
 		row["logic_pick_id"] = pk["logic_pick_id"]
 		row["grievances"] = pk["grievances"]     # typed（TheorySnapshot OBSERVED；DSL 读它，不解析展示串）
 		row["secrets"] = _secrets_typed(ag)      # typed OBSERVED（HARD 秘密边界规则用）
+		row["secret_stakes"] = pk["secret_stakes"]   # typed secret-stake（背叛决策显著度）
 		row["strata"] = pk["strata"]
 	elif _with_prompt:
 		var capped := []

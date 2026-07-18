@@ -22,6 +22,7 @@ K_LOC="位置"; K_TOD="时段"; K_DAY="第几天"
 K_URGENT="迫切需求"; K_NEED="需求"; K_SCALE="需求量表"
 K_GRIEV="心结"; K_STANCE="立场"; K_RESENT="怨气"; K_STATE="状态"; K_BACKLOG="积压"; K_ESC="已激化"
 K_DUE="待办约定"; K_CONTENT="内容"; K_LEFT="还剩"
+K_STAKE="秘密处境"
 
 def call(payload, timeout=600, retries=5):
     """POST with retry+backoff. The 120B MoE server intermittently 500s under sustained load
@@ -96,6 +97,8 @@ def render_case(case, order, salient=True):
     if salient:
         for line in case.get(K_GRIEV,[]):
             L.append("【心结】"+(line if isinstance(line,str) else str(line)))
+        for line in case.get(K_STAKE,[]):
+            L.append("【秘密处境】"+(line if isinstance(line,str) else str(line)))
         for d in case.get(K_DUE,[]):
             if isinstance(d,str): L.append("【待办约定】"+d)
             else: L.append("【待办约定】%s%s，还剩%s"%(d.get("对象",""), d.get(K_CONTENT,""), d.get(K_LEFT,"")))

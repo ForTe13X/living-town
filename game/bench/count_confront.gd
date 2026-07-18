@@ -12,11 +12,18 @@ func _init():
 		S.start_new(sd)
 		for t in range(days * int(S.TICKS_PER_DAY)):
 			S.tick()
-		var conf := 0; var apol := 0
+		var conf := 0; var apol := 0; var leaks := 0
+		var leaker := {}
 		for e in S.event_log:
 			var ty := String(e.get("type", ""))
 			if ty == "confront": conf += 1
 			elif ty == "apologize": apol += 1
+			elif ty == "betray" or ty == "leak":
+				leaks += 1
+				var lid := String(e.get("actor", ""))
+				leaker[lid] = int(leaker.get(lid, 0)) + 1
+		if leaks > 0:
+			print("  seed %d leaks=%d by %s" % [sd, leaks, str(leaker)])
 		var ling := 0; var repd := 0
 		for c in S.conflicts:
 			var st := String(c["status"])
