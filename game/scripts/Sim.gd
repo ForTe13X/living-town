@@ -22,6 +22,10 @@ var replaying := false                     # goto_tick 重演期间为 true → 
 
 const TICKS_PER_DAY := 240
 const GRID := Vector2i(24, 16)
+# 导航（town-world P2 增量1）：权威 walkability + 确定性 A* 次步，取代裸 Manhattan step。
+# off=NAV_PATHFIND=false 逐字节回退 _step_toward。纯 f(state)、无 RNG/Time；起点/终点恒可入(终点=交互格)。
+const NAV_PATHFIND := true
+const NAV_DIRS := [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1)]
 const CONVERSE_TICKS := 10      # 一次社交对话占用的 tick（双方绑定/暂停）——够读完一句台词
 const SOCIAL_FULL := 88.0       # social 高于此不再主动发起社交
 const GIFT_START := 3           # 每个 NPC 初始礼物数（give 破冰用）
@@ -138,6 +142,7 @@ var _accum := 0.0
 
 var needs_def: Array = []       # [{id,label,decay,low}]
 var world := {}                 # {width,height,areas,objects:{id:obj}}
+var _blocked := {}              # 导航阻挡格集合 idx(y*W+x)->true（家具占用 + 未来 blockers 层）；start_new 重建
 var rhythm := {}                # 昼夜节律偏好表 data/rhythm.json：{phases:{name:[lo,hi)}, prefs:{need:{phase:factor}}, default}
 var utility := {}               # 效用/接受权重表 data/utility.json（docs/14 §1 步骤4）：行为调参数据化，缺键→代码默认(逐字节不变)
 # ── Wave 1c 天气（docs/15 §3 挂点#3 最小版）：weather(day)=纯哈希查权重表——不消耗 RNG 流、不存历史，goto_tick 天然复现 ──
@@ -454,6 +459,7 @@ func start_new(p_seed: int = 12345) -> void:
 		if String(oid).begins_with("fest_") or String(oid).begins_with("civic_"):
 			world["objects"].erase(oid)
 	_fest_objects.clear()
+	_build_nav()                        # 导航网：清完动态对象后按静态家具重建（每局同一张确定网）
 	festival_active = ""
 	_update_festival()
 	if ext != null:
@@ -986,7 +992,7 @@ func _advance_attend(ag: Dictionary, opt: Dictionary) -> void:
 		ag["option"] = null
 		return
 	if _area_at(ag["pos"]) != String(c["area"]):
-		_move_agent(ag, _step_toward(ag["pos"], _area_centroid(String(c["area"]))))  # 未到则前往；到了守在该区等对方
+		_move_agent(ag, _nav_step(ag["pos"], _area_centroid(String(c["area"]))))  # 未到则前往；到了守在该区等对方
 		emit_signal("agent_changed", ag["id"])
 
 func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
@@ -1007,7 +1013,7 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 					else:
 						econ_stats["meals_free"] += 1
 		else:
-			_move_agent(ag, _step_toward(ag["pos"], target_obj["pos"]))
+			_move_agent(ag, _nav_step(ag["pos"], target_obj["pos"]))
 		emit_signal("agent_changed", ag["id"])
 	else:  # use
 		var per := float(opt["amount"]) / float(opt["dur_total"])
@@ -2377,6 +2383,74 @@ func _step_toward(from: Vector2i, to: Vector2i) -> Vector2i:
 	elif p.y != to.y:
 		p.y += signi(to.y - p.y)
 	return p
+
+## ── 导航（town-world P2 增量1）──────────────────────────────────────────────
+## 静态 walkability：家具占用格阻挡（fest_/civic_ 动态对象 v1 不入 nav → 每局同一张确定网）。
+func _build_nav() -> void:
+	_blocked = {}
+	var W := int(world.get("width", GRID.x))
+	for b in world.get("blockers", []):            # 未来 64×48 地图的显式阻挡层(墙/水/树)，缺则空
+		_blocked[int(b[1]) * W + int(b[0])] = true
+	for oid in world.get("objects", {}):
+		if String(oid).begins_with("fest_") or String(oid).begins_with("civic_"):
+			continue
+		var p: Vector2i = world["objects"][oid].get("pos", Vector2i.ZERO)
+		_blocked[p.y * W + p.x] = true
+
+func _cell_walkable(c: Vector2i) -> bool:
+	var W := int(world.get("width", GRID.x)); var H := int(world.get("height", GRID.y))
+	if c.x < 0 or c.y < 0 or c.x >= W or c.y >= H:
+		return false
+	return not _blocked.has(c.y * W + c.x)
+
+func _manh(a: Vector2i, b: Vector2i) -> int:
+	return absi(a.x - b.x) + absi(a.y - b.y)
+
+## 确定性 A*：起点/终点恒可入(终点=家具交互格)；中间须 walkable。tie-break 全序 (f,h,idx) → 同 seed 逐字节同路径。
+## 返回含端点的完整格路径；不可达返回 []。O(open²)/次(小图够快；大图 P2-2 再优化路径缓存)。
+func _astar_path(start: Vector2i, goal: Vector2i) -> Array:
+	var W := int(world.get("width", GRID.x)); var H := int(world.get("height", GRID.y))
+	var gi := goal.y * W + goal.x
+	var si := start.y * W + start.x
+	var open := {si: {"c": start, "g": 0, "h": _manh(start, goal), "f": _manh(start, goal)}}
+	var came := {}          # idx -> 前驱 cell
+	var closed := {}
+	while not open.is_empty():
+		var ci := -1; var cf := 1 << 30; var ch := 1 << 30
+		for i in open:
+			var n: Dictionary = open[i]; var nf := int(n["f"]); var nh := int(n["h"])
+			if nf < cf or (nf == cf and (nh < ch or (nh == ch and (ci == -1 or i < ci)))):
+				cf = nf; ch = nh; ci = i
+		var cur: Vector2i = open[ci]["c"]; var cg := int(open[ci]["g"])
+		if ci == gi:
+			var path: Array = [cur]; var k := ci
+			while came.has(k):
+				var pc: Vector2i = came[k]; path.push_front(pc); k = pc.y * W + pc.x
+			return path
+		open.erase(ci); closed[ci] = true
+		for d in NAV_DIRS:
+			var nb: Vector2i = cur + d
+			if nb.x < 0 or nb.y < 0 or nb.x >= W or nb.y >= H:
+				continue
+			var ni := nb.y * W + nb.x
+			if closed.has(ni):
+				continue
+			if ni != gi and not _cell_walkable(nb):    # 终点豁免
+				continue
+			var ng := cg + 1
+			if not open.has(ni) or ng < int(open[ni]["g"]):
+				came[ni] = cur
+				open[ni] = {"c": nb, "g": ng, "h": _manh(nb, goal), "f": ng + _manh(nb, goal)}
+	return []
+
+## 朝 to 走一格：绕开阻挡的确定性 A* 次步；不可达则 Manhattan 兜底(不冻结)。
+func _nav_step(from: Vector2i, to: Vector2i) -> Vector2i:
+	if not NAV_PATHFIND or from == to:
+		return _step_toward(from, to)
+	var path := _astar_path(from, to)
+	if path.size() >= 2:
+		return path[1]
+	return _step_toward(from, to)
 
 func _name(ag: Dictionary) -> String:
 	if ag.is_empty():

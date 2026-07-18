@@ -701,3 +701,10 @@ find_endorse（看 endorse_events 计数逐 tick 跳变，因 endorse 不进 eve
 **✅ 真机端到端补齐：阿丽泄密在手机上逮个正着（补上 secret 轴的端上一帧）。**
 端上截 endorse 后补 leak：seed2 阿丽 tick11145 泄阿本秘密（"阿本其实怕黑"）。用 `--warmup-tick`(baked 默认，goto_tick 纯 logic 确定重演、不受端上 SLM 探测干扰)定格到 day48、观察台选中阿本——**阿本对阿丽 亲75/信62/怨14**（对照错 tick 的 seed11 帧是 怨0），怨气过 CONFLICT_TRIGGER(6)→会触发冲突。**leak→被背叛者积怨** 的后果链真机成立，与桌面 betray 帧同源、且是 secret 轴的端上定格。
 **🛠 坑：改了决策规则后，旧 seed/tick 的事件坐标会漂。** 先用 endorse/faction/SURVIVAL_GATE 之前的 seed11@11038 定格，端上却是 怨0——因这些提交改了轨迹、betray 挪位。重跑 find_betray（当前码）得 seed2@11145 才对上。教训：眼验定格用的 seed/tick 必须在**当前码**上重取。（无线 adb 又掉线一次，pair 码 625390 + connect 34475 复联。）
+
+## Town-World P2 · 增量1：权威 walkability + 确定性 A* 寻路
+
+**✅ NPC 绕开阻挡不再穿模——裸 Manhattan step → 确定性 A* 次步，红线全绿。**
+`_step_toward`(X 优先 Manhattan、无避障)换成 `_nav_step`：家具占用格入 `_blocked` 网、A* 绕障走到目标，**起点/终点恒可入**(终点=家具交互格，NPC 仍能走到灶台/床用它；起点=允许从当前格离开)、不可达则 Manhattan 兜底(不冻结)。tie-break 全序 `(f,h,cell_idx)` → 同 seed 逐字节同路径。`_build_nav()` 在 start_new 清完 fest_/civic_ 动态对象后按静态家具重建 → **每局同一张确定网**(动态对象 v1 不入 nav，留增量2)。
+验证四连：① `NAV_PATHFIND=false` **逐字节回退基线**(3 seed digest 与 HEAD 完全一致 68722783/2600847389/982215813)——干净 opt-in；② on 全 CI 绿(37 不变量 12/12、det 3/3、六场景含 player_agency 移动测)；③ A* 单测（墙中留缝）`crosses_wall=false / detour_through_gap=true / deterministic=true`；④ 性能 O(open²)/次小图够快、12×60 = 1m31s。
+**🛠 复用 CHARACTER 那条教训**：先在 3×20 看到 #08 承诺生命周期 0/3、没误判——软涌现(承诺)本就需满 60 天，换 12×60 即全绿。改移动=改轨迹→digest 变但门校验"跨跑一致+不变量"、非金数字。**大图 walls/water/64×48 graybox + 路径缓存 + 交互格留增量2**。
