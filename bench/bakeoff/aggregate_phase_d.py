@@ -49,7 +49,12 @@ for kind in ["conflict","secret","endorse","faction"]:
     print("############ %s  (aggressive=%s)  cases=%d seeds=%d N=%d ############"%(kind,agg,ncases,nseeds,len(rows)))
     for ak,an in AXES:
         pe=p_eff(rows,ak,agg); lo,hi=boot_ci(rows,ak,agg)
-        print("  %-13s p_eff(%s)=%.3f  CI95[%.3f,%.3f]"%(an,agg,pe,lo or 0,hi or 0))
+        # mirror consistency: same verdict regardless of A/B position (position-bias robustness).
+        byc=defaultdict(dict)
+        for r in rows: byc[r["key"]][r["orient"]]=r[ak]
+        both=[(d[0],d[1]) for d in byc.values() if 0 in d and 1 in d]
+        mc=(sum(1 for a,b in both if a==b)/len(both)) if both else 0.0
+        print("  %-13s p_eff(%s)=%.3f  CI95[%.3f,%.3f]  mirror-consistent=%.0f%%"%(an,agg,pe,lo or 0,hi or 0,100*mc))
     # control tie-rate (in_character axis; A=A so aggressive/passive labels collapse → tie is correct)
     ctl=controls.get(kind,[])
     if ctl:

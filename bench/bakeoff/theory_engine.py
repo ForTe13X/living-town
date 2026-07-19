@@ -116,9 +116,11 @@ def decide(snap, petty_th):
         cid=ins.get(intent)
         if cid and hard_secret_ok(snap,cid):
             return cid, (intent=="engage"), intent
-    # FAIL-CLOSED fallback (Phase D): both intents' candidates were guard-blocked → NEVER re-select a
-    # forbidden disclosure. Prefer logic_id only if it too passes the guard; else the best SAFE
-    # (non-leak/confide) candidate by score; only in the degenerate no-safe case fall to logic_id.
+    # FAIL-CLOSED fallback (Phase D + audit): both intents' candidates were guard-blocked → NEVER re-select
+    # a forbidden disclosure. Prefer logic_id only if it too passes the guard; else the best SAFE
+    # (non-leak/confide) candidate by score; and in the degenerate no-safe case return a NO-OP (abstain) —
+    # NOT logic_id (which may be the forbidden leak). Truly fail-closed: an unauthorized disclosure can never
+    # slip through any path.
     if hard_secret_ok(snap, snap["logic_id"]):
         return snap["logic_id"], None, "fallback"
     safe=[c for c in snap["cands"] if c["action"] not in ("leak","confide")]
@@ -126,7 +128,7 @@ def decide(snap, petty_th):
         best=max(safe,key=lambda c:c.get("score",0.0))
         sid=_id_for_index(snap,best["i"])
         if sid: return sid, None, "fallback_safe"
-    return snap["logic_id"], None, "fallback"
+    return None, None, "fail_closed_noop"   # no safe pick exists → abstain, never emit a guarded disclosure
 
 # ── load ──
 rows=[]

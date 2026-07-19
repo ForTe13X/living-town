@@ -38,7 +38,8 @@ func _init():
 		if not char_on:                                # CHARACTER 门全关 → 退回 logic 地板（恒对质/泄密/合围/串谋）
 			S.CHARACTER_DEFER = false; S.DRAMA_GOSSIP_LEAK = false
 			S.FACTION_MOB_DEFER = false; S.FACTION_ENDORSE_DEFER = false
-		if blunt == "old": S.BLUNT_TRAITS = ["耿直"]    # 旧规则：仅耿直 confront
+		# 显式两档（不靠 Sim 默认——默认现已回退为仅耿直，否则 new==old、C/D 档无法复现）：
+		S.BLUNT_TRAITS = ["耿直"] if blunt == "old" else ["耿直", "莽撞", "爽快"]
 		S.DRAMA_FORGIVE_FADE = fade                     # 宽恕归档开关
 		S.start_new(seed)
 		var TPD := int(S.TICKS_PER_DAY)

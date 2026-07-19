@@ -19,3 +19,7 @@ build/
 
 # Godot Android gradle build template (editor re-installs via "Install Android Build Template")
 game/android/
+
+# Phase-D regenerable eval data (huge packets); repro pack lives in bench/bakeoff/phase_d_repro/
+analysis/
+bench/bakeoff/__pycache__/

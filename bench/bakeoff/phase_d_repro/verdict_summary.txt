@@ -1,0 +1,33 @@
+Phase-D confirmatory judge — all four opportunities (neutral prompt, 3 axes, first-class passive)
+total verdicts: 380  | real: 352  | controls: 28
+
+############ conflict  (aggressive=confront)  cases=22 seeds=15 N=88 ############
+  in_character  p_eff(confront)=0.330  CI95[0.111,0.571]  mirror-consistent=95%
+  appropriate   p_eff(confront)=0.006  CI95[0.000,0.017]  mirror-consistent=95%
+  dramatic      p_eff(confront)=1.000  CI95[1.000,1.000]  mirror-consistent=100%
+  A=A control tie-rate (in_character): 1.00  (N=6 ctrl)  [高=judge 会正确判平]
+   直/莽/爽(blunt-ish)   in_character p_eff(confront)=1.000 CI[1.000,1.000] N=28
+   其余(default-defer)  in_character p_eff(confront)=0.017 CI[0.000,0.050] N=60
+   per-persona in_character p_eff(confront): hai=1.00(N16)  evy=1.00(N4)  tie=1.00(N8)  coco=0.12(N8)  lin=0.00(N4)  shu=0.00(N12)  mei=0.00(N4)  qin=0.00(N8)  dan=0.00(N8)  ben=0.00(N8)  aria=0.00(N8)
+
+############ secret  (aggressive=leak)  cases=22 seeds=16 N=88 ############
+  in_character  p_eff(leak)=0.045  CI95[0.000,0.136]  mirror-consistent=100%
+  appropriate   p_eff(leak)=0.000  CI95[0.000,0.000]  mirror-consistent=100%
+  dramatic      p_eff(leak)=0.989  CI95[0.966,1.000]  mirror-consistent=100%
+  A=A control tie-rate (in_character): 1.00  (N=8 ctrl)  [高=judge 会正确判平]
+   per-persona in_character p_eff(leak): evy=1.00(N4)  lin=0.00(N12)  fei=0.00(N4)  mei=0.00(N16)  tie=0.00(N12)  ben=0.00(N4)  qin=0.00(N4)  hai=0.00(N8)  dan=0.00(N4)  coco=0.00(N12)  shu=0.00(N8)
+
+############ endorse  (aggressive=endorse)  cases=22 seeds=22 N=88 ############
+  in_character  p_eff(endorse)=0.852  CI95[0.750,0.943]  mirror-consistent=82%
+  appropriate   p_eff(endorse)=0.000  CI95[0.000,0.000]  mirror-consistent=100%
+  dramatic      p_eff(endorse)=1.000  CI95[1.000,1.000]  mirror-consistent=100%
+  A=A control tie-rate (in_character): 1.00  (N=6 ctrl)  [高=judge 会正确判平]
+   per-persona in_character p_eff(endorse): aria=0.85(N88)
+
+############ faction  (aggressive=rally_oust)  cases=22 seeds=18 N=88 ############
+  in_character  p_eff(rally_oust)=0.091  CI95[0.011,0.202]  mirror-consistent=95%
+  appropriate   p_eff(rally_oust)=0.000  CI95[0.000,0.000]  mirror-consistent=100%
+  dramatic      p_eff(rally_oust)=1.000  CI95[1.000,1.000]  mirror-consistent=100%
+  A=A control tie-rate (in_character): 1.00  (N=8 ctrl)  [高=judge 会正确判平]
+   per-persona in_character p_eff(rally_oust): evy=1.00(N4)  tie=0.25(N12)  aria=0.25(N4)  mei=0.00(N8)  qin=0.00(N12)  coco=0.00(N8)  dan=0.00(N16)  lin=0.00(N12)  ben=0.00(N8)  shu=0.00(N4)
+
