@@ -7,7 +7,7 @@
       "furniture": [
         {"slot": "stairs", "pos": [1, 1], "label": "上楼"},
         {"slot": "shelf", "pos": [6, 1]},
-        {"slot": "counter", "pos": [4, 1], "label": "咖啡吧台"},
+        {"slot": "counter", "pos": [4, 1], "label": "咖啡吧台", "advertises": [{"action": "看摊", "need": "fun", "amount": 30, "duration": 24}, {"action": "闲聊", "need": "social", "amount": 40, "duration": 20}]},
         {"slot": "coffee", "pos": [5, 1], "label": "咖啡机"},
         {"slot": "table", "pos": [2, 3]},
         {"slot": "chair", "pos": [2, 4]},
@@ -22,7 +22,7 @@
       "floor": "wood",
       "furniture": [
         {"slot": "stairs", "pos": [1, 1], "label": "下楼"},
-        {"slot": "bed", "pos": [2, 2], "label": "床"},
+        {"slot": "bed", "pos": [2, 2], "label": "床", "advertises": [{"action": "睡觉", "need": "energy", "amount": 62, "duration": 40}]},
         {"slot": "desk", "pos": [5, 2], "label": "书桌"},
         {"slot": "shelf", "pos": [6, 1]},
         {"slot": "rug", "pos": [3, 3]},

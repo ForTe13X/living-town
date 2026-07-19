@@ -23,6 +23,8 @@ func _summon(id: String) -> void:
 	var ag: Dictionary = Sim.get_agent(id)
 	ag["option"] = null
 	ag["talking"] = 0
+	ag["space"] = pl.get("space", "town")        # P3 Tier-B：召到玩家身边=同【平面】（aria 现住 cafe/2f，
+	ag["floor"] = pl.get("floor", "outdoor")     # 只挪 pos 会把她留在咖啡馆层→隔平面搭不上话，与真游戏一致）
 	Sim._move_agent(ag, pl["pos"] + Vector2i(1, 0))
 
 ## 在 event_log[from..] 中找 (type, actor, target) 的最新事件；无 → {}。

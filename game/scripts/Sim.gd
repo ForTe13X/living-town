@@ -26,6 +26,10 @@ const GRID := Vector2i(24, 16)
 # off=NAV_PATHFIND=false 逐字节回退 _step_toward。纯 f(state)、无 RNG/Time；起点/终点恒可入(终点=交互格)。
 const NAV_PATHFIND := true
 const NAV_DIRS := [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1)]
+# café 居民办完镇上差事(各需求都≥HOME_COMFORT 舒适)就回店。回家分数适中：压过舒适时的镇上闲逛，但远低于任何
+# 偏紧需求对象/赶路(urgency 主导)→ 饿/脏/困到偏紧仍先就近满足→守 #01。让阿丽"住在咖啡馆楼上"的居家感更足。
+const HOME_COMFORT := 55.0
+const HOME_RETURN_SCORE := 18.0
 const CONVERSE_TICKS := 10      # 一次社交对话占用的 tick（双方绑定/暂停）——够读完一句台词
 const SOCIAL_FULL := 88.0       # social 高于此不再主动发起社交
 const GIFT_START := 3           # 每个 NPC 初始礼物数（give 破冰用）
@@ -143,8 +147,13 @@ var _accum := 0.0
 
 var needs_def: Array = []       # [{id,label,decay,low}]
 var world := {}                 # {width,height,areas,objects:{id:obj}}
-var _blocked := {}              # 导航阻挡格集合 idx(y*W+x)->true（家具占用 + 未来 blockers 层）；start_new 重建
+var _blocked := {}              # town/outdoor 导航阻挡格 idx(y*W+x)->true（家具+blockers）；start_new 重建
 var _path_cache := {}           # aid -> {goal,path,i}：算一次跟着走(大图性能)；transient(DERIVED、不入 digest/存档)
+# P3 Tier-B 多平面：Space/Floor/Portal + 每平面导航网。纯 f(数据)，start_new 重建，不入 digest（transient/派生）。
+var _spaces := {}               # spaces.json spaces：id -> {kind,label,bounds,floors,default_floor}
+var _portals := []              # spaces.json portals：[{id,kind,from:{space,floor,pos},to,bidirectional,...}]
+var _interiors_data := {}       # interiors.json：space -> floor -> {label,floor,furniture[]}
+var _nav_grids := {}            # space -> floor -> {w,h,blocked}：每平面独立导航网（town 复用 _blocked 引用）
 var rhythm := {}                # 昼夜节律偏好表 data/rhythm.json：{phases:{name:[lo,hi)}, prefs:{need:{phase:factor}}, default}
 var utility := {}               # 效用/接受权重表 data/utility.json（docs/14 §1 步骤4）：行为调参数据化，缺键→代码默认(逐字节不变)
 # ── Wave 1c 天气（docs/15 §3 挂点#3 最小版）：weather(day)=纯哈希查权重表——不消耗 RNG 流、不存历史，goto_tick 天然复现 ──
@@ -296,6 +305,12 @@ func _load_data() -> void:
 	housing = _read_json("res://data/housing.json") # Wave 3c 住房租金（缺文件→无租金=零扰动）
 	elections = _read_json("res://data/elections.json") # Wave 3a 选举（缺文件→不选举=零扰动）
 	lifecycle = _read_json("res://data/lifecycle.json") # Wave 3b 生命周期（缺文件→无季节无年龄=零扰动）
+	# P3 Tier-B：Space/Floor/Portal 合同 + 室内内容（缺 spaces.json → 空 → 全 town/outdoor → 逐字节不变）。
+	var _sp := _read_json("res://data/spaces.json")
+	_spaces = _sp.get("spaces", {})
+	_portals = _sp.get("portals", [])
+	_interiors_data = _read_json("res://data/interiors.json")
+	_compile_interiors()                            # 把带 advertises 的室内家具编译成 world 对象(标平面)，须在数组→字典之前
 	var objs := {}
 	for o in world.get("objects", []):
 		o["pos"] = Vector2i(int(o["pos"][0]), int(o["pos"][1]))
@@ -387,6 +402,38 @@ func _compile_buildings() -> void:
 				objs.append({"id": oid, "type": String(fd.get("type", "")), "area": ar,
 					"pos": [apos.x, apos.y], "advertises": _as_arr(fd.get("advertises", [])).duplicate(true)})
 	world["rooms"] = rooms
+	world["objects"] = objs
+
+## P3 Tier-B：把 interiors.json 里【带 advertises】的室内家具编译成 world 对象（标平面 space/floor/area）。
+## 纯装饰家具(无 advertises)不进 world（只 WorldView 渲染）。确定性：authored 顺序、id=space+floor+slot、无 RNG/Time。
+## 非-town 平面 → _object_candidates 按平面门只对该层居民可见、_build_nav 只进该层网（绝不进 town _blocked）。
+## 缺 interiors.json / 无 advertises → 不加对象 → 全 town → 逐字节不变。须在 objects 数组→字典【之前】调。
+func _compile_interiors() -> void:
+	if _interiors_data.is_empty():
+		return
+	var objs: Array = world.get("objects", [])
+	for space in _interiors_data:
+		if String(space).begins_with("_") or not (_interiors_data[space] is Dictionary):
+			continue
+		for floor in (_interiors_data[space] as Dictionary):
+			var content = _interiors_data[space][floor]
+			if not (content is Dictionary):
+				continue
+			for fu in _as_arr((content as Dictionary).get("furniture", [])):
+				if not (fu is Dictionary):
+					continue
+				var adv: Array = _as_arr((fu as Dictionary).get("advertises", []))
+				if adv.is_empty():
+					continue                        # 纯装饰 → 不进 world（只渲染）
+				var pos: Array = _as_arr((fu as Dictionary).get("pos", [0, 0]))
+				if pos.size() < 2:
+					continue
+				var slot := String((fu as Dictionary).get("slot", "obj"))
+				objs.append({
+					"id": "%s%s_%s" % [space, floor, slot], "type": String((fu as Dictionary).get("label", slot)),
+					"pos": [int(pos[0]), int(pos[1])],
+					"space": String(space), "floor": String(floor), "area": String(space) + ":" + String(floor),
+					"advertises": adv.duplicate(true)})
 	world["objects"] = objs
 
 ## Variant→Array 强转（缺失/错类型的 JSON 数组字段一律退化为空，守"错类型=零扰动"契约，替代会崩的 `as Array`）。
@@ -501,18 +548,20 @@ func _seed_scenario() -> void:
 
 ## 构建一个 agent（数据 def 或克隆 def 共用；确定性，天生立场由 id hash）。
 func _make_agent(adef: Dictionary, personas: Dictionary) -> Dictionary:
+	# P3 Tier-B 平面地址：带 spatial_address{space_id,floor_id,position} 的居民住非-town 平面（如阿丽 cafe/2f）；
+	# pos 是【该 floor 内】的格。缺 spatial_address → town/outdoor + spawn（其余 11 人一行不变、逐字节一致）。
+	var sa: Dictionary = adef.get("spatial_address", {}) if adef.get("spatial_address", {}) is Dictionary else {}
+	var a_space := String(sa.get("space_id", "town"))
+	var a_floor := String(sa.get("floor_id", "outdoor"))
+	var a_pos: Vector2i = _v2i(sa["position"]) if sa.has("position") else Vector2i(int(adef["spawn"][0]), int(adef["spawn"][1]))
 	var ag := {
 		"id": adef["id"],
 		"persona": personas.get(adef["persona"], {}),
 		"persona_key": String(adef.get("persona", "")),   # 人设 id（voicebank/scriptwriter 按此键；克隆继承基座人设 id）
-		"pos": Vector2i(int(adef["spawn"][0]), int(adef["spawn"][1])),
+		"pos": a_pos,
 		"home": Vector2i(int(adef["home"][0]), int(adef["home"][1])),
-		# P3 Tier-B 平面地址：pos 是【该 floor 内】的格。缺省 town/outdoor → 与旧版逐字节一致（没人读=惰性）。
-		# 咖啡馆居民(阿丽)由 agents.json 的 spatial_address 覆盖成 cafe/2f（家）。home_space/floor = 睡觉/归属层。
-		"space": String((adef.get("spatial_address", {}) as Dictionary).get("space", "town")),
-		"floor": String((adef.get("spatial_address", {}) as Dictionary).get("floor", "outdoor")),
-		"home_space": String((adef.get("spatial_address", {}) as Dictionary).get("space", "town")),
-		"home_floor": String((adef.get("spatial_address", {}) as Dictionary).get("floor", "outdoor")),
+		"space": a_space, "floor": a_floor,
+		"home_space": a_space, "home_floor": a_floor,     # 家=起始平面（阿丽=cafe/2f）→ 回家 traverse 目标
 		"needs": {},
 		"option": null,
 		"mood": "neutral",
@@ -760,7 +809,7 @@ const SAVE_SCHEMA := 1
 func save_game(path: String, meta := {}) -> bool:
 	# 派生引用结构【不入档】：它们只是 agents[]/commitments[] 的别名视图，存了也只能得到孤儿副本；
 	# 读档后由 _rebuild_after_load 从真源重建（_active_commitments 靠下面存的 id 列表还原成员资格）。
-	const DERIVED := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache"]
+	const DERIVED := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids"]
 	var state := {}
 	for p in get_property_list():
 		if not (int(p["usage"]) & PROPERTY_USAGE_SCRIPT_VARIABLE):
@@ -873,6 +922,8 @@ func _rebuild_after_load(active_commit_ids: Array = []) -> void:
 		if want.has(int(c.get("id", -1))):
 			_active_commitments.append(c)
 	_near_set = {}                                   # 每 tick 重算，清空即可
+	_build_nav()                                     # P3：从 world/_spaces 重建 town _blocked + 各平面 _nav_grids（派生，不入档）
+	_path_cache = {}
 
 # ── 主循环 ───────────────────────────────────────────────────────────────
 func tick() -> void:
@@ -992,7 +1043,22 @@ func _advance_agent(ag: Dictionary) -> void:
 	match String(opt.get("kind", "object")):
 		"social": _advance_social(ag, opt)
 		"attend": _advance_attend(ag, opt)
+		"traverse": _advance_traverse(ag, opt)
 		_: _advance_object(ag, opt)
+
+## P3 Tier-B：朝本层 portal 口走；到口即跨平面并【清 option】→ 下 tick 在新平面原生重枚举（绝不把整条跨平面路当一个 option）。
+func _advance_traverse(ag: Dictionary, opt: Dictionary) -> void:
+	var hop: Dictionary = opt.get("hop", {})
+	if hop.is_empty():
+		ag["option"] = null
+		return
+	var portal_cell: Vector2i = hop["from_pos"]
+	if ag["pos"] == portal_cell:
+		_traverse_portal(ag, hop)          # 到口 → 跨过去
+		ag["option"] = null                # 新平面重新决策
+	else:
+		_move_agent(ag, _nav_step(ag, portal_cell))
+	emit_signal("agent_changed", ag["id"])
 
 func _advance_attend(ag: Dictionary, opt: Dictionary) -> void:
 	var c := _find_commitment(int(opt["commit"]))
@@ -1113,8 +1179,61 @@ func agent_candidates(ag: Dictionary) -> Array:
 	var out := _object_candidates(ag)
 	out.append_array(_social_candidates(ag))
 	out.append_array(_attend_candidates(ag))
+	out.append_array(_traverse_candidates(ag))       # P3 Tier-B：跨平面元候选（冻结在 ext 前的固定位；仅 café 居民非空 → town 零扰动）
 	if ext != null:
 		out.append_array(ext.candidates(self, ag))   # 注册的 CandidateProvider 追加（排在内建之后，不改内建枚举序 → 回放安全）
+	return out
+
+## P3 Tier-B：跨平面元候选。仅【café 居民】(home_space≠town) 触发 → town 居民恒返 [] → town 逐字节不变。
+## (1) 本平面对象满足不了的偏紧 need → 朝有满足者的平面走【下一跳 portal】；(2) 离家在外且无紧急事 → 回家。
+## social 不进（由社交系统 + 同平面 counter 的"闲聊"对象满足，处处有人/有吧台，绝不为社交跨平面）。确定：portal 文件序、无 RNG。
+func _traverse_candidates(ag: Dictionary) -> Array:
+	if String(ag.get("home_space", "town")) == "town" or ag.get("is_player", false):
+		return []
+	var aspace := String(ag.get("space", "town"))
+	var afloor := String(ag.get("floor", "outdoor"))
+	var out: Array = []
+	var covered := {}                                # 本平面对象覆盖的 need
+	for id in world["objects"]:
+		var o: Dictionary = world["objects"][id]
+		if String(o.get("space", "town")) == aspace and String(o.get("floor", "outdoor")) == afloor:
+			for adv in _as_arr(o.get("advertises", [])):
+				if adv is Dictionary:
+					covered[String(adv.get("need", ""))] = true
+	for nid in ag["needs"]:                          # (1) 偏紧且本平面无满足的 need（social 由社交系统满足，不跨平面）
+		if nid == "social" or covered.has(nid):
+			continue
+		var urg := 100.0 - float(ag["needs"][nid])
+		if urg <= 20.0:                              # 只在偏紧才跨平面（避免高频往返 → 守 #01）
+			continue
+		var best_score := -1.0e18
+		var best_hop := {}
+		for id in world["objects"]:
+			var o: Dictionary = world["objects"][id]
+			var os := String(o.get("space", "town")); var of := String(o.get("floor", "outdoor"))
+			if os == aspace and of == afloor:
+				continue
+			var amt := 0
+			for adv in _as_arr(o.get("advertises", [])):
+				if adv is Dictionary and String(adv.get("need", "")) == nid:
+					amt = maxi(amt, int(adv.get("amount", 0)))
+			if amt <= 0:
+				continue
+			var hop := _route_next_hop(aspace, afloor, os, of)
+			if hop.is_empty():
+				continue
+			var d := _manh(ag["pos"], hop["from_pos"]) + int(hop.get("cost", 1)) * 2
+			var score := urg * (float(amt) / 60.0) - float(d) * _w("obj_dist_penalty", 0.4)
+			if score > best_score:
+				best_score = score; best_hop = hop
+		if not best_hop.is_empty():
+			out.append({"kind": "traverse", "action": "赶路", "need": nid, "hop": best_hop, "score": best_score, "say": ""})
+	# (2) 回家：离家在外 + 各需求都挺舒适(min≥HOME_COMFORT，没有要紧事) → 朝家平面走。分数适中：压过舒适时的常规
+	# 镇上闲逛，但远低于任何偏紧需求对象/赶路(urgency 主导)→ 饿/脏/困到偏紧仍先就近满足→守#01。给阿丽"办完事就回店"的居家感。
+	if (aspace != String(ag.get("home_space", "town")) or afloor != String(ag.get("home_floor", "outdoor"))) and _min_need(ag) >= HOME_COMFORT:
+		var hh := _route_next_hop(aspace, afloor, String(ag.get("home_space", "town")), String(ag.get("home_floor", "outdoor")))
+		if not hh.is_empty():
+			out.append({"kind": "traverse", "action": "回家", "need": "__home__", "hop": hh, "score": HOME_RETURN_SCORE, "say": ""})
 	return out
 
 func _object_candidates(ag: Dictionary) -> Array:
@@ -1128,6 +1247,9 @@ func _object_candidates(ag: Dictionary) -> Array:
 	var tod := time_of_day()
 	for id in world["objects"]:
 		var o: Dictionary = world["objects"][id]
+		if String(o.get("space", "town")) != String(ag.get("space", "town")) \
+				or String(o.get("floor", "outdoor")) != String(ag.get("floor", "outdoor")):
+			continue                        # P3：只枚举【同平面】对象（跨平面走 _traverse_candidates 元候选）。town 居民↔town 对象 → 与旧一致
 		for adv in o.get("advertises", []):
 			# 健壮性（stage-2 review #4）：改数据后可能出现残缺 advertises；用 .get() 取值+非对象跳过，
 			# 避免"缺键裸括号"每 tick 崩。合规条目(四键齐全)取值与旧逐字节一致 → 不新增/移动候选 → digest 不漂。
@@ -1337,6 +1459,7 @@ func agent_apply(ag: Dictionary, intent: Dictionary) -> void:
 	match String(intent.get("kind", "object")):
 		"social": _apply_social(ag, intent)
 		"attend": ag["option"] = {"kind": "attend", "area": intent["area"], "commit": intent["commit"]}
+		"traverse": ag["option"] = {"kind": "traverse", "hop": intent.get("hop", {}), "need": String(intent.get("need", "")), "action": String(intent.get("action", "赶路"))}  # P3：跨平面赶路
 		_: _apply_object(ag, intent)
 
 ## P2-2 合法边界：object intent 是否可信。只检 target 存在不够——可插拔 backend / 扩展 / 迟到回包
@@ -2417,20 +2540,127 @@ func _step_toward(from: Vector2i, to: Vector2i) -> Vector2i:
 ## 静态 walkability：家具占用格阻挡（fest_/civic_ 动态对象 v1 不入 nav → 每局同一张确定网）。
 func _build_nav() -> void:
 	_blocked = {}
+	_nav_grids = {}
 	var W := int(world.get("width", GRID.x))
-	for b in world.get("blockers", []):            # 未来 64×48 地图的显式阻挡层(墙/水/树)，缺则空
+	var H := int(world.get("height", GRID.y))
+	for b in world.get("blockers", []):            # 64×48 显式阻挡层(墙/水/树)，缺则空
 		_blocked[int(b[1]) * W + int(b[0])] = true
 	for oid in world.get("objects", {}):
 		if String(oid).begins_with("fest_") or String(oid).begins_with("civic_"):
 			continue
-		var p: Vector2i = world["objects"][oid].get("pos", Vector2i.ZERO)
+		var o: Dictionary = world["objects"][oid]
+		if String(o.get("space", "town")) != "town":   # P3：非-town 家具进各自平面网，绝不进 town _blocked（坐标会撞）
+			continue
+		var p: Vector2i = o.get("pos", Vector2i.ZERO)
 		_blocked[p.y * W + p.x] = true
+	_nav_grids["town"] = {"outdoor": {"w": W, "h": H, "blocked": _blocked}}   # town 网复用 _blocked 引用（逐字节同旧）
+	_build_interior_grids()                        # 各非-town Space/Floor 独立网（P3 Tier-B）
 
-func _cell_walkable(c: Vector2i) -> bool:
-	var W := int(world.get("width", GRID.x)); var H := int(world.get("height", GRID.y))
+## 每个非-town (space,floor) 建导航网：spaces.json bounds 外墙边框(门口那格放行) + interiors 家具挡格
+## (楼梯/装饰 slot 可踩、portal 格必放行)。纯 f(数据)，无 RNG/Time。缺 spaces/interiors → 无非-town 网。
+func _build_interior_grids() -> void:
+	const WALKABLE_SLOTS := ["stairs", "rug", "window"]
+	for space in _spaces:
+		if String(space) == "town" or not (_spaces[space] is Dictionary):
+			continue
+		var b: Array = _as_arr((_spaces[space] as Dictionary).get("bounds", []))
+		if b.size() < 4:
+			continue
+		var w := int(b[2]); var h := int(b[3])
+		for floor in _as_arr((_spaces[space] as Dictionary).get("floors", [])):
+			var fl := String(floor)
+			var portal_cells := {}                 # portal 端点落在本层 → 必可走(门缺口+楼梯)
+			for p in _portals:
+				for side in ["from", "to"]:
+					var e: Dictionary = p.get(side, {})
+					if String(e.get("space", "")) == String(space) and String(e.get("floor", "")) == fl:
+						var ep: Array = _as_arr(e.get("pos", [0, 0]))
+						if ep.size() >= 2:
+							portal_cells[int(ep[1]) * w + int(ep[0])] = true
+			var blocked := {}
+			for x in range(w):                     # 外墙边框
+				for y in range(h):
+					if x == 0 or x == w - 1 or y == 0 or y == h - 1:
+						var idx := y * w + x
+						if not portal_cells.has(idx):
+							blocked[idx] = true
+			var content: Dictionary = (_interiors_data.get(space, {}) as Dictionary).get(fl, {}) if _interiors_data.get(space, {}) is Dictionary else {}
+			for fu in _as_arr(content.get("furniture", [])):
+				if not (fu is Dictionary) or String((fu as Dictionary).get("slot", "")) in WALKABLE_SLOTS:
+					continue
+				var fp: Array = _as_arr((fu as Dictionary).get("pos", [0, 0]))
+				if fp.size() < 2:
+					continue
+				var fi := int(fp[1]) * w + int(fp[0])
+				if not portal_cells.has(fi):
+					blocked[fi] = true
+			if not _nav_grids.has(space):
+				_nav_grids[space] = {}
+			_nav_grids[space][fl] = {"w": w, "h": h, "blocked": blocked}
+
+## agent 当前平面的导航网；缺 → 回落 town/全图（兼容期）。
+func _grid_for(space: String, floor: String) -> Dictionary:
+	var sg = _nav_grids.get(space, {})
+	if sg is Dictionary and (sg as Dictionary).has(floor):
+		return sg[floor]
+	return {"w": int(world.get("width", GRID.x)), "h": int(world.get("height", GRID.y)), "blocked": _blocked}
+
+# ── P3 Tier-B：Portal 跨平面 ─────────────────────────────────────────────────
+func _v2i(a) -> Vector2i:
+	var arr := _as_arr(a)
+	return Vector2i(int(arr[0]), int(arr[1])) if arr.size() >= 2 else Vector2i.ZERO
+
+## 从 (space,floor) 出发能走的 portal（含双向反向边）：[{from_pos(本层格),to_space,to_floor,to_pos,cost}]。spaces.json 顺序=确定序。
+func _portals_from(space: String, floor: String) -> Array:
+	var out: Array = []
+	for p in _portals:
+		var fr: Dictionary = p.get("from", {})
+		var to: Dictionary = p.get("to", {})
+		if String(fr.get("space", "")) == space and String(fr.get("floor", "")) == floor:
+			out.append({"from_pos": _v2i(fr.get("pos")), "to_space": String(to.get("space", "")), "to_floor": String(to.get("floor", "")), "to_pos": _v2i(to.get("pos")), "cost": int(p.get("traversal_cost", 1))})
+		elif bool(p.get("bidirectional", false)) and String(to.get("space", "")) == space and String(to.get("floor", "")) == floor:
+			out.append({"from_pos": _v2i(to.get("pos")), "to_space": String(fr.get("space", "")), "to_floor": String(fr.get("floor", "")), "to_pos": _v2i(fr.get("pos")), "cost": int(p.get("traversal_cost", 1))})
+	return out
+
+## 从 (fromS,fromF) 到 (toS,toF) 的【下一跳 portal】（BFS，FIFO+portal 文件序 → 确定）。同层→{}。不可达→{}。
+func _route_next_hop(fromS: String, fromF: String, toS: String, toF: String) -> Dictionary:
+	var start := fromS + "/" + fromF
+	var goal := toS + "/" + toF
+	if start == goal:
+		return {}
+	var q: Array = [start]
+	var parent := {start: ""}
+	var via := {}                                   # node -> 到达它所走的 hop
+	while not q.is_empty():
+		var node: String = q.pop_front()
+		if node == goal:
+			break
+		var pr := node.split("/")
+		for hop in _portals_from(pr[0], pr[1]):
+			var nb := String(hop["to_space"]) + "/" + String(hop["to_floor"])
+			if not parent.has(nb):
+				parent[nb] = node
+				via[nb] = hop
+				q.append(nb)
+	if not parent.has(goal):
+		return {}
+	var cur := goal                                 # 回溯到"父==start"的那个节点 → 它的 hop 即第一跳
+	while String(parent.get(cur, "")) != start and String(parent.get(cur, "")) != "":
+		cur = String(parent[cur])
+	return via.get(cur, {})
+
+## 跨 portal：原子改 (space,floor,pos) 到对面，刷新平面感知缓存，清该 agent 路径缓存。整数格、无 RNG。
+func _traverse_portal(ag: Dictionary, hop: Dictionary) -> void:
+	ag["space"] = String(hop["to_space"])
+	ag["floor"] = String(hop["to_floor"])
+	_move_agent(ag, hop["to_pos"])                  # 更新 pos + _area_key 平面感知 area/room
+	_path_cache.erase(String(ag["id"]))
+
+func _cell_walkable(grid: Dictionary, c: Vector2i) -> bool:
+	var W := int(grid.get("w", 0)); var H := int(grid.get("h", 0))
 	if c.x < 0 or c.y < 0 or c.x >= W or c.y >= H:
 		return false
-	return not _blocked.has(c.y * W + c.x)
+	return not (grid.get("blocked", {}) as Dictionary).has(c.y * W + c.x)
 
 func _manh(a: Vector2i, b: Vector2i) -> int:
 	return absi(a.x - b.x) + absi(a.y - b.y)
@@ -2460,8 +2690,8 @@ func _heap_pop(heap: Array) -> Array:
 			if s == i: break
 			var t: Array = heap[i]; heap[i] = heap[s]; heap[s] = t; i = s
 	return top
-func _astar_path(start: Vector2i, goal: Vector2i) -> Array:
-	var W := int(world.get("width", GRID.x)); var H := int(world.get("height", GRID.y))
+func _astar_path(grid: Dictionary, start: Vector2i, goal: Vector2i) -> Array:
+	var W := int(grid.get("w", 0)); var H := int(grid.get("h", 0))
 	var gi := goal.y * W + goal.x
 	var si := start.y * W + start.x
 	var g0 := _manh(start, goal)
@@ -2489,7 +2719,7 @@ func _astar_path(start: Vector2i, goal: Vector2i) -> Array:
 			var ni := nb.y * W + nb.x
 			if closed.has(ni):
 				continue
-			if ni != gi and not _cell_walkable(nb):    # 终点豁免
+			if ni != gi and not _cell_walkable(grid, nb):    # 终点豁免
 				continue
 			var ng := cg + 1
 			if not gscore.has(ni) or ng < int(gscore[ni]):
@@ -2503,6 +2733,7 @@ func _nav_step(ag: Dictionary, to: Vector2i) -> Vector2i:
 	var from: Vector2i = ag["pos"]
 	if not NAV_PATHFIND or from == to:
 		return _step_toward(from, to)
+	var grid := _grid_for(String(ag.get("space", "town")), String(ag.get("floor", "outdoor")))   # P3：agent 当前平面网
 	var aid := String(ag["id"])
 	# 缓存复用：算一次跟着走(大图 O(open²) A* 不能每步重算)。有效条件=同目标+当前格正好在缓存路径 i 处+下一格仍可走。
 	var c: Dictionary = _path_cache.get(aid, {})
@@ -2510,11 +2741,11 @@ func _nav_step(ag: Dictionary, to: Vector2i) -> Vector2i:
 		var pth: Array = c["path"]; var i := int(c["i"])
 		if i < pth.size() - 1 and pth[i] == from:
 			var nxt: Vector2i = pth[i + 1]
-			if nxt == to or _cell_walkable(nxt):
+			if nxt == to or _cell_walkable(grid, nxt):
 				c["i"] = i + 1
 				return nxt
 	# 重算并缓存：返回 path[1]、i 记为 1（=agent 下一 tick 所在格，令后续走缓存命中）
-	var path := _astar_path(from, to)
+	var path := _astar_path(grid, from, to)
 	if path.size() >= 2:
 		_path_cache[aid] = {"goal": to, "path": path, "i": 1}
 		return path[1]

@@ -379,6 +379,11 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 	for fr in content.get("furniture", []):
 		var fp: Array = (fr as Dictionary).get("pos", [0, 0])
 		_draw_interior_furniture(String((fr as Dictionary).get("slot", "")), Vector2(ox + int(fp[0]) * T, oy + int(fp[1]) * T))
+	# P3 Tier-B：画【此刻真在这层】的居民（阿丽在自家咖啡馆睡觉/看摊）。Space bounds 从原点起 → _draw_agent 用
+	# ag.pos*T 的室内局部坐标即落在本层画面里。纯 View、只读 ag 平面字段。
+	for ag in Sim.agents:
+		if String(ag.get("space", "town")) == sid and String(ag.get("floor", "outdoor")) == fid:
+			_draw_agent(ag)
 	# 楼层标签
 	draw_string(Art.font(), b.position + Vector2(T + 8, 22), "%s · %s" % [sg.label_of(sid), content.get("label", fid)],
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("#3a2a1a"))
@@ -587,6 +592,8 @@ func _draw() -> void:
 	_draw_relationship_lines()
 	_draw_talking_links()
 	for ag in Sim.agents:
+		if String(ag.get("space", "town")) != "town":
+			continue            # P3 Tier-B：非-town 平面的居民(在咖啡馆室内的阿丽)不画在镇上——否则会用室内格坐标在镇上"鬼影"
 		_draw_agent(ag)
 
 	if dbg_nav:                 # P2-4 开发叠层（N 键）：可视化导航权威数据——阻挡格 + 交互格

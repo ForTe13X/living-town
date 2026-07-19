@@ -11,7 +11,15 @@
    "spawn": [
     19,
     14
-   ]
+   ],
+   "spatial_address": {
+    "space_id": "cafe",
+    "floor_id": "2f",
+    "position": [
+     2,
+     2
+    ]
+   }
   },
   {
    "id": "ben",
