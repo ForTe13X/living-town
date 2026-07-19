@@ -40,12 +40,18 @@ for l in open(DATA,encoding="utf-8"):
     d=json.loads(l)
     if key(d) in exclude: continue
     if any(c["action"]=="endorse" for c in d["case"][K_CAND]): rows.append(d)
+_seen={}; _dd=[]                                # Phase D 事件窗口去重：每(seed,agent)一例→案例独立
+for r in sorted(rows,key=lambda r:(r["seed"],r["tick"])):
+    ek=(r["seed"],r["agent"])
+    if ek in _seen: continue
+    _seen[ek]=1; _dd.append(r)
+rows=_dd
 buck=defaultdict(list)
 for r in sorted(rows,key=key): buck[r["persona"]].append(r)
 per=max(1,N//max(1,len(buck))); sample=[]
 for k in sorted(buck):
     a=buck[k]; sample+=a[::max(1,len(a)//per)][:per]
-sample=sorted(sample,key=key)[:N]
+_s=sorted(sample,key=lambda r:(r["seed"],r["tick"])); sample=_s[::max(1,len(_s)//N)][:N]  # Phase D：铺满 seed（见 conflict builder 注释）
 
 tasks=[]; controls=0
 for idx,r in enumerate(sample):

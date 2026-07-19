@@ -69,13 +69,17 @@ for r in sorted(rows, key=lambda r:(r["seed"], r["agent"], r["tick"])):
     if ek in seen_ep: continue
     seen_ep[ek]=1; dedup.append(r)
 rows=dedup
+# Phase D：按【人设】分层（不再叠 status → 桶数从 ~36 降到 ~12，每桶 per≥3 → 桶内按数值 seed 等距抽 → 铺满 seed；
+# 旧的 status×persona 桶太多 → per=1 → 每桶只取字典序最小 seed(1) → 全挤在 seed 1）。status 仍在样本里、事后可分层报。
 buck=defaultdict(list)
-for r in sorted(rows,key=key):
-    tg=target_griev(r); buck[(tg["status"],r["persona"])].append(r)
+for r in sorted(rows,key=lambda r:(r["seed"],r["tick"])):
+    buck[r["persona"]].append(r)
 per=max(1,N//max(1,len(buck))); sample=[]
 for k in sorted(buck):
     a=buck[k]; sample+=a[::max(1,len(a)//per)][:per]
-sample=sorted(sample,key=key)[:N]
+# Phase D：按【数值 seed】排序后【等距抽样】到 N，让样本铺满所有 seed（旧 sorted(key)[:N] 是字符串序+截断→
+# 只覆盖少数低 seed，cluster-bootstrap 虚。now spans the full seed range → 有效 by-seed CI）。
+_s=sorted(sample,key=lambda r:(r["seed"],r["tick"])); sample=_s[::max(1,len(_s)//N)][:N]
 
 tasks=[]; controls=0
 for idx,r in enumerate(sample):

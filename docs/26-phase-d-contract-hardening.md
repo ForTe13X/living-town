@@ -44,9 +44,43 @@
 3. **🔍 新发现：直性子例外可能不止"耿直"**。evy(莽撞) 与 tie(爽快/护短) 的 in_character 也一致判 confront（p_eff=1.0）——
    当前 `BLUNT_TRAITS := ["耿直"]` 欠覆盖。**但每人 N=4，是假设不是定论**，需更大样本（closed-loop / 更大 judge run）确认。
 
-**诚实的局限**（不夸大）：① 这 20 案子样本只覆盖 6 seeds（CI 偏宽；预注册门 CI 下界>0.55 需 30-50 seeds 的更大 judge run）。
-② 本轮 payload 未含 A=A control（tie 校准未测；镜像翻转仍在，位置偏置有控）。③ 单一模型族（Claude）；审计建议再加
-第二模型族或人工抽审。④ 只做了 conflict 这一类；secret/endorse/faction 的一等-defer builder 已改好，但确认性 judge 未跑。
+**诚实的局限**（不夸大）：① 这 20 案子样本只覆盖 6 seeds（采样 bug：sorted(key) 是字符串序+截断→挤在低 seed）。
+② 本轮 payload 未含 A=A control。③ 单一模型族（Claude）。④ 只做了 conflict。→ **下面 Step 2-scaled 全部补上。**
+
+## Step 2-scaled（DONE）：四类机会 + A=A controls + 铺满 seed
+- **采样修复**：四个 builder 的 `sorted(key)[:N]` 是【字符串序+截断】→ 只覆盖少数低 seed；改成【数值 seed 排序 + 等距/轮转抽样】。
+  非-conflict 三类加事件窗口去重（每 (seed,agent) 一例）；conflict 从 status×persona 桶（~36 桶→per=1→挤 seed1）改成
+  persona 桶（~12 桶→per≥3→桶内按 seed 铺开）。
+- **合并盲评**：四类各 22 案（铺满 15/16/22/18 seeds）+ 每类 3-4 个 A=A control，× 镜像 × 2 pass = **380 个独立盲评**，
+  统一中性 3 轴 prompt（做法 A/B 自带具体机会）。judge=Claude，独立。
+
+**结果（p_eff = judge 判【激进动作】为该选的概率；cluster-bootstrap by seed）：**
+
+| 机会 | in_character（激进） | appropriate | dramatic | A=A tie率 | 裁决 |
+|---|---|---:|---:|---:|---|
+| **confront** | 直/莽/爽 **1.000**[1.0,1.0] N28 · 其余 **0.017**[0,0.05] N60 | 0.006 | 1.000 | **1.00** | 默认 defer + 直性子 confront ✓ |
+| **leak** | **0.045**[0,0.14] | 0.000 | 0.989 | **1.00** | 默认 guard 守信 ✓ |
+| **endorse** | 阿丽(爱八卦) **0.852**[0.75,0.94] N88 | 0.000 | 1.000 | **1.00** | 八卦人设 endorse 例外 ✓ |
+| **rally_oust** | **0.091**[0.01,0.20] | 0.000 | 1.000 | **1.00** | 默认 abstain·零例外 ✓ |
+
+**三条强结论：**
+1. **四类规则方向全部在 clean comparator 上复现**（一等-passive + 中性 prompt + 铺满 seed）：confront 默认忍/直性子说开、
+   leak 默认守信、endorse 只八卦人设、rally 默认置身事外——审计担心的"defer=maintenance 混淆"修掉后没一个垮。
+2. **A=A control tie率四类全 1.00** → judge 校准可信（对相同 A/B 一致判平，不是瞎选），大幅抬高结论效力。
+3. **三轴是三个不同信号，四类通吃**：appropriate 一律偏 passive(≈0)、dramatic 一律偏 aggressive(≈1)、in_character 才人设相关。
+   这正是审计的核心诉求——**分开评才看得清**，且四类都成立。
+
+**🔧 一条被验证、可落地的规则修正：`BLUNT_TRAITS` 欠覆盖。** 直性子 confront 例外不止"耿直(hai)"——莽撞(evy N4)+爽快(tie N8)
+在 in_character 上同样一致判 confront（合并 N28、p_eff=1.000、CI[1.0,1.0]），其余人设 0.017。建议 `["耿直"]→["耿直","莽撞","爽快"]`
+（改 Sim → 动 digest，需过 S0 CI；这是 Step 3 闭环 A/B 顺带验的第一项）。次要：莽撞(evy) 在 leak/rally 上也偏激进（各 N4，样本小、
+存疑）；阿丽的 gossip-leak 本轮没被抽到 secret 案（无 aria secret 样本），是待补的一个缺口。
+
+## Step 3-4（TODO）：闭环 A/B + 架构 go/no-go
+- **闭环因果 A/B**：old/new CHARACTER gates（含 `BLUNT_TRAITS` 扩项）× SURVIVAL_GATE 20/24，看 need floor / 社交动作率 /
+  冲突完成率 / 悬空 arc / 事件多样性 / drama cadence。
+- **架构 go/no-go（现在证据更足）**：四类机会上**简单 typed 规则都抓住了 in_character 方向**、三轴可分离、judge 校准可信——
+  **没有任何证据支持重启 GBDT**（门：learned ranker whole-seed held-out 稳定 ≥3-5pp 且闭环无回归）。规则侧唯一实锤待办 =
+  扩 `BLUNT_TRAITS`。LLM 若入场只作 bounded/shadow prior，hard epistemic 规则永远优先。
 
 ## Step 3-4（TODO）：闭环 A/B + 架构 go/no-go
 - **闭环因果 A/B**：old/new CHARACTER gates × SURVIVAL_GATE 20/24，看 need floor / 社交动作率 / 冲突完成率 / 悬空 arc /
