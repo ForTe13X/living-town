@@ -719,3 +719,14 @@ find_endorse（看 endorse_events 计数逐 tick 跳变，因 endorse 不进 eve
 ② **路径缓存的经典 off-by-one**：重算时返回 path[1] 却把 `i` 记成 0 → 下一 tick `path[0]≠当前格`(已移到 path[1]) → cache miss → 仍每步重算(~1 A*/agent/tick)。修 `i=1`(指向 agent 下一格) → 命中、**快 100×**(3min→15s)。教训：缓存索引要指向"下一步之后 agent 的实际位置"。
 ③ **角落街区饿穿**：街区摆四角(trek 40-66 格)→ 需求赶不上路程 → #01 无饿穿 10/12 破。raise gate(24→32)只补到 11/12(whack-a-mole、且压平社交)。**根治=紧凑中央簇**(4 街区贴广场、survival trek~15)+SURVIVAL_GATE 24→28 → #01 **12/12**。教训：改地图尺度先算"最远 survival 需求 trek vs 需求衰减预算"，别靠抬 gate 硬扛。
 `space_test` 顺带修：town 现有显式 bounds(64×48)≠未知 space 的 Sim.GRID 兜底(24×16)，旧断言把两者混为一谈 → 拆开(town 对齐真图 world.w/h、未知回落 GRID)。交互格/室内多楼层/overlay 留 P2-3/P3。
+
+## Town-World P2 · 增量3：把墙/水/树画出来（typed layers，纯渲染不动红线）
+
+**✅ 灰盒的阻挡层从"隐形导航格"变"看得见的镇子"：石墙街区(带门+家具)、青水塘、成片挡路树——full CI 仍绿、digest 逐字节不变。**
+关键抽象：`gen_town.py` 把 blockers **拆成 typed 三层** walls/water/trees，map.json 里**与 blockers 并集并存**——导航照读 `blockers`(那条 sha 一字节没变：`636c85f…`、108+80+156=344=blockers)，渲染读三层。于是**改的是"怎么画"、不是"怎么走"**：轨迹/digest 不变 → 无需重验、full CI(12/12 硬、det 3/3)照绿。这是"纯渲染改动不碰红线"的干净范式：**新增派生数据、绝不改权威源**。
+`WorldView._draw()` 加三段：石墙(切顶俯视——落地阴影+石灰面+顶棱高光，1 格墙读作有厚度；buildings.json 清空后街区的"体积"全靠这层墙撑起来)、水塘(water.png)、authored 挡路树(tree_big 底对齐)。**程序化装饰同步去掉 tree_big/tree_small 并跳过 blocker 格** → 每一棵看得见的树都是真挡路的、可踩的花草石与之视觉区分开(不再"有的树挡有的不挡"骗玩家)。
+
+**🛠 眼验踩的坑串成"整镇出图"这件事：**
+① **跟随相机看不了全镇**：`--shot` 默认跟着 agent → 1280×768 只框到 1/6 张图、墙在画外。② **盲裁 PNG 靠不住**：想按 world→screen 反推裁四个街区，但相机竖向被跟随/窗口高度(要 2304 却给 1843)带偏、裁歪到广场。③ **缩到 ZOOM_MIN 仍不够+夜черный+HUD 遮边**：go_home 只到 zoom 1.0(48px/格、48 格镇只露 26×16)；ZOOM_MIN=0.6 也塞不下 48 格进 768px；且首帧是夜(蓝洗)、两个水塘贴上下边缘正好被顶栏/聊天框吃掉。
+**根治 = `--shot-fit` 专用出图相机**：缩放算成 `(视口 - HUD余量(120,240)) / 整图` 取 min、**绕过 ZOOM_MIN 夹取**、居中镇心 → 整镇+两水塘都避开面板入画；配 `--warmup-tick 600`(day3 13:47 昼、白天不蓝洗)。且**门控在 `--shot-fit`**：缺省 `--shot` 保留跟随相机(find_betray/endorse 的角色特写眼验要它)——别把验证工具的默认行为改了。纯 dev(只 `--shot` 时触发)、只碰 Probe 相机(纯 View 不写 Sim)、headless/digest 无感。
+存证 `docs/media/shot-town64-walls-water.png`：四街区带墙带门带家具、上下两青塘、左右两片挡路树林、中央广场。提交 db7984e。
