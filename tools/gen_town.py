@@ -40,31 +40,30 @@ def rect_cells(x, y, w, h):
             yield (x + i, y + j)
 
 def build():
-    blockers = set()
+    walls, water, trees = set(), set(), set()   # typed layers (rendering); nav blocks the union
     areas = {}
     doors = {}
-    # districts: walls on border minus the door; label the whole rect as the area
     labels = {"home": "住宅区", "cafe": "咖啡馆", "wash": "澡堂", "work": "工坊"}
     for name, (x, y, w, h, side, off) in DISTRICTS.items():
         areas[name] = {"label": labels[name], "rect": [x, y, w, h]}
         for i in range(w):
-            blockers.add((x + i, y)); blockers.add((x + i, y + h - 1))
+            walls.add((x + i, y)); walls.add((x + i, y + h - 1))
         for j in range(h):
-            blockers.add((x, y + j)); blockers.add((x + w - 1, y + j))
+            walls.add((x, y + j)); walls.add((x + w - 1, y + j))
         if side == "S":  d = (x + off, y + h - 1)
         elif side == "N": d = (x + off, y)
         elif side == "W": d = (x, y + off)
         else:             d = (x + w - 1, y + off)
-        blockers.discard(d)                      # carve the door
-        blockers.discard((d[0], d[1] - 1)); blockers.discard((d[0], d[1] + 1))  # keep the threshold clear
+        walls.discard(d)                         # carve the door
+        walls.discard((d[0], d[1] - 1)); walls.discard((d[0], d[1] + 1))
         doors[name] = d
     areas["plaza"] = {"label": "广场", "rect": list(PLAZA)}   # open, no walls
-    # wilderness clusters
-    for _, (x0, y0, x1, y1) in CLUSTERS:
+    for kind, (x0, y0, x1, y1) in CLUSTERS:
+        s = water if kind == "water" else trees
         for x in range(x0, x1 + 1):
             for y in range(y0, y1 + 1):
-                blockers.add((x, y))
-    return blockers, areas, doors
+                s.add((x, y))
+    return walls, water, trees, areas, doors
 
 def obj_abs(oid):
     dist, (ox, oy) = OBJ_POS[oid]
@@ -137,7 +136,8 @@ def audit(blockers, areas, doors, agents, objects):
 def main():
     base_map = json.load(open(p("map.json"), encoding="utf-8"))
     id2obj = {o["id"]: o for o in base_map["objects"]}
-    blockers, areas, doors = build()
+    walls, water, trees, areas, doors = build()
+    blockers = walls | water | trees        # nav blocks the union; the typed layers are for rendering
     # reposition objects (keep everything else — type/advertises — verbatim)
     objects = []
     for oid in OBJ_POS:
@@ -162,7 +162,11 @@ def main():
     if "--write" not in sys.argv:
         print("(dry-run; pass --write to emit files)"); return
     out = {"width": W, "height": H, "areas": areas,
-           "blockers": sorted([list(b) for b in blockers]), "objects": objects}
+           "blockers": sorted([list(b) for b in blockers]),   # nav union — _build_nav reads this (unchanged)
+           "walls":  sorted([list(b) for b in walls]),        # typed layers for rendering only
+           "water":  sorted([list(b) for b in water]),
+           "trees":  sorted([list(b) for b in trees]),
+           "objects": objects}
     json.dump(out, open(p("map.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     json.dump(ag, open(p("agents.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     # patch spaces.json town bounds → 64x48 (spaces is a dict keyed by id; bounds_px reads this → camera free-explores whole town)

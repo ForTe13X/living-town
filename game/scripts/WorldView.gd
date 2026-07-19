@@ -69,6 +69,11 @@ const DIALOG := {
 var _grass: Array = []   # 草地变体纹理（带权）
 var _decor_items: Array = []  # [{tex, cell:Vector2i, h_tiles}]
 var _decor_built := false
+# P2-2 地形层：map.json 的 walls/water/trees（纯渲染；导航走 blockers 并集，与此无关）。start_new 时重建。
+var _wall_set := {}      # idx(y*W+x) -> true（墙格，用于画石墙 + 装饰避让）
+var _water_set := {}     # idx -> true（水格）
+var _tree_cells: Array = []  # [Vector2i]（authored 阻挡树，替代程序化装饰树）
+var _terrain_built := false
 
 func _ready() -> void:
 	texture_filter = TEXTURE_FILTER_NEAREST  # 像素清晰，不糊
@@ -90,7 +95,8 @@ func _build_decor() -> void:
 	_decor_built = true
 	_decor_items.clear()
 	var pool := []
-	for nm in ["tree_big", "tree_small", "bush", "flower_red", "flower_yellow", "flower_white", "rock", "stump", "mushroom"]:
+	# 树不再散布：P2-2 的可见树 = authored 阻挡树（_tree_cells）。程序化装饰只留贴地花草石（可踩，纯装饰）。
+	for nm in ["bush", "flower_red", "flower_yellow", "flower_white", "rock", "stump", "mushroom"]:
 		var t := Art.decor_tex(nm)
 		if t != null:
 			var tall := 2 if nm == "tree_big" else 1
@@ -105,7 +111,7 @@ func _build_decor() -> void:
 	var h: int = int(Sim.world.get("height", 16))
 	for y in range(h):
 		for x in range(w):
-			if _in_area(x, y) or _is_object(x, y):
+			if _in_area(x, y) or _is_object(x, y) or _is_blocked(x, y):
 				continue
 			if _hash(x, y, 7) % 100 >= 22:   # ~22% 密度
 				continue
@@ -115,6 +121,29 @@ func _build_decor() -> void:
 				if r < 0:
 					_decor_items.append({"tex": p["t"], "cell": Vector2i(x, y), "h": int(p["h"])})
 					break
+
+## 从 map.json 的 walls/water/trees 建渲染集合（纯渲染；导航仍走 Sim 的 blockers 并集）。世界重载即失效。
+func _build_terrain() -> void:
+	_terrain_built = true
+	_wall_set.clear(); _water_set.clear(); _tree_cells.clear()
+	var wd: int = int(Sim.world.get("width", 24))
+	for c in Sim.world.get("walls", []):
+		_wall_set[int(c[1]) * wd + int(c[0])] = true
+	for c in Sim.world.get("water", []):
+		_water_set[int(c[1]) * wd + int(c[0])] = true
+	for c in Sim.world.get("trees", []):
+		_tree_cells.append(Vector2i(int(c[0]), int(c[1])))
+
+func _is_blocked(x: int, y: int) -> bool:
+	if not _terrain_built:
+		_build_terrain()
+	var idx := y * int(Sim.world.get("width", 24)) + x
+	if _wall_set.has(idx) or _water_set.has(idx):
+		return true
+	for c in _tree_cells:
+		if c.x == x and c.y == y:
+			return true
+	return false
 
 func _in_area(x: int, y: int) -> bool:
 	for a in Sim.world.get("areas", {}).values():
@@ -277,6 +306,22 @@ func _draw() -> void:
 			for xx in range(int(pr[0]), int(pr[0]) + int(pr[2])):
 				draw_texture_rect(dirt, Rect2(xx * T, yy * T, T, T), false)
 
+	# 水面（map.json water 层）：铺在草地之上、区域/建筑之下，作为地形读。深蓝底 + 浅蓝格纹岸边微光，
+	# 用确定性 _hash 做静态涟漪（不抽 RNG、不进 digest）。
+	if not _terrain_built:
+		_build_terrain()
+	var wtile := Art.terrain_tex("water")
+	for idx in _water_set:
+		var wx: int = idx % w
+		var wy: int = idx / w
+		var wr := Rect2(wx * T, wy * T, T, T)
+		if wtile != null:
+			draw_texture_rect(wtile, wr, false)
+		else:
+			draw_rect(wr, Color("#2f6d86"), true)
+			if _hash(wx, wy, 21) % 100 < 30:   # 静态涟漪高光
+				draw_rect(Rect2(wx * T + T * 0.18, wy * T + T * 0.30, T * 0.42, T * 0.12), Color(0.72, 0.86, 0.94, 0.35), true)
+
 	# 区域：只留一层极淡的"街区底色"（0.32→0.10）+ 低调标签。建筑一旦有了体积，空间就该由【房子】定义，
 	# 而不是由半透明色块定义——旧的 0.32 色洗盖在建筑上，把砖木都洗成灰紫，是"简陋感"的主因之一。
 	for area in Sim.world.get("areas", {}):
@@ -299,6 +344,21 @@ func _draw() -> void:
 	#   瓦片结构由草地变体/地板纹理自然读出。需要格子时走 dev overlay，不进玩家视图。）
 	# （1 格小屋地标已移除：那正是"房子=人一般大"的比例谎言来源；建筑现由上面的真·建筑体现。）
 
+	# 石墙（map.json walls 层）：graybox 的区块围墙——buildings.json 清空后，districts 的体积就靠这层石墙读出。
+	# 切顶俯视：格底落地阴影 + 石灰岩面 + 高光顶棱，让 1 格墙读作有厚度的墙，而不是灰色块。门缺口天然留白。
+	var wtx := Art.terrain_tex("stone")
+	for idx in _wall_set:
+		var sx: int = idx % w
+		var sy: int = idx / w
+		var sr := Rect2(sx * T, sy * T, T, T)
+		draw_rect(Rect2(sx * T + 2, sy * T + T * 0.55, T, T * 0.5), Color(0, 0, 0, 0.22), true)  # 落地阴影
+		if wtx != null:
+			draw_texture_rect(wtx, sr, false)
+		else:
+			draw_rect(sr, Color("#7d8390"), true)                                    # 石灰岩墙面
+			draw_rect(Rect2(sx * T, sy * T, T, T * 0.22), Color("#9aa0ac"), true)     # 顶棱高光
+			draw_rect(Rect2(sx * T, sy * T + T * 0.86, T, T * 0.14), Color("#5b606b"), true)  # 墙脚暗边
+
 	# 装饰散布（区域外草地上的树/花/草丛，确定性布局；在物件与居民之下）
 	if not _decor_built:
 		_build_decor()
@@ -310,6 +370,20 @@ func _draw() -> void:
 		var dh := float(dtex.get_height()) * (float(T) / 16.0)
 		# 底对齐格子（高物件如树向上伸出）
 		draw_texture_rect_region(dtex, Rect2(c.x * T + (T - dw) * 0.5, (c.y + 1) * T - dh, dw, dh), Rect2(0, 0, dtex.get_width(), dtex.get_height()))
+
+	# authored 阻挡树（map.json trees 层）：这些是【会挡路】的真树（与上面可踩的程序化花草区分开）。
+	# 用 tree_big 切图底对齐画；缺切图则程序化画树冠+树干。占满格 → 玩家一眼读出"这里过不去"。
+	var ttex := Art.decor_tex("tree_big")
+	for tc in _tree_cells:
+		if ttex != null:
+			var tdw := float(ttex.get_width()) * (float(T) / 16.0)
+			var tdh := float(ttex.get_height()) * (float(T) / 16.0)
+			draw_texture_rect_region(ttex, Rect2(tc.x * T + (T - tdw) * 0.5, (tc.y + 1) * T - tdh, tdw, tdh), Rect2(0, 0, ttex.get_width(), ttex.get_height()))
+		else:
+			var cx: float = tc.x * T + T * 0.5
+			draw_rect(Rect2(tc.x * T + T * 0.30, tc.y * T + T * 0.55, T * 0.40, T * 0.45), Color("#6b4a2b"), true)  # 树干
+			draw_circle(Vector2(cx, tc.y * T + T * 0.42), T * 0.42, Color("#2f6d3a"))                                # 树冠
+			draw_circle(Vector2(cx - T * 0.18, tc.y * T + T * 0.30), T * 0.24, Color("#3c8a4a"))                      # 高光叶
 
 	# 对象：CC0 物件精灵（slot=id 前缀，如 bench/bath/counter/desk/arcade）；缺则程序化色块兜底
 	for id in Sim.world.get("objects", {}):

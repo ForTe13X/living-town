@@ -25,6 +25,7 @@ var _demo_i := 0
 var _chat_in: LineEdit                # 玩家→NPC 对话输入框
 var _backend_btn: Button              # 后端切换按钮（手机无 CLI：点按在 logic/slm/… 间轮换；桌面也可点）
 var _shot_path := ""                  # --shot <abs.png>：渲一帧存图退出（dev 验证/出图；需真 framebuffer=Xvfb 或带窗口，纯 --headless 得空图）
+var _shot_fit := false                # --shot-fit：出图整镇入画（否则用跟随相机的角色特写，供 find_betray/endorse 眼验）
 var _digest_at := -1                  # --digest-at <tick>：跑到该 tick 时【自动】写 digest 并退出。
                                       # 为何不靠数按键：注入 40 次单步里丢 1 次，两跑就差 1 tick，
                                       # 于是比的是"按键可靠性"而非"相机是否影响历史"（第一版就这么假 FAIL 了）。
@@ -95,6 +96,8 @@ func _ready() -> void:
 			_digest_out = args[i + 1]          # dev 硬门：F9 写 digest（见变量注释）
 		elif args[i] == "--shot" and i + 1 < args.size():
 			_shot_path = args[i + 1]           # dev 出图：渲一帧存 png 退出（需真 framebuffer：Xvfb 或带窗口）
+		elif args[i] == "--shot-fit":
+			_shot_fit = true                   # 出图整镇入画（缩放到整图-HUD 余量）；缺省保留跟随相机（角色特写眼验）
 	AIBackend.backend = backend
 	# 后端优先级：CLI --backend 显式 > user://settings.cfg（手机 UI 存的默认）> 默认 logic。
 	# headless CI 不经此路（Harness/soak 直接 Sim.backend=null）→ 确定性逐字节不变。
@@ -172,6 +175,14 @@ func _ready() -> void:
 	if backend == "slm" or backend == "llm":
 		_probe_and_activate(backend)        # 不 await：后台跑，首帧已可见
 	if _shot_path != "":                    # dev 出图：等 1.5s 让世界渲染+纹理加载，再存一帧退出
+		if _shot_fit and _probe != null:    # --shot-fit：整镇入画，缩放到【整图 - HUD 余量】刚好塞进视口，美术/地形看全局
+			_probe.go_home()
+			var _mapsz: Vector2 = _space_bounds().size
+			var _vpsz := Vector2(get_viewport().get_visible_rect().size)
+			var _pad := Vector2(120, 240)   # 顶部状态栏 + 底部聊天/时间轴 HUD 余量（避免边缘水塘被面板遮住）
+			var _fit: Vector2 = (_vpsz - _pad) / _mapsz
+			_probe.cam.zoom = Vector2.ONE * minf(_fit.x, _fit.y)   # 出图专用：绕过 ZOOM_MIN 夹取，整图入画
+			_probe.cam.position = _space_bounds().get_center()
 		get_tree().create_timer(1.5).timeout.connect(func():
 			var img := get_viewport().get_texture().get_image()
 			if img != null:
