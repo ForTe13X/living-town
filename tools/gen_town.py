@@ -18,6 +18,11 @@ DISTRICTS = {
     "wash": (18, 28, 9, 7, "N", 4),
     "work": (37, 28, 9, 7, "N", 4),
 }
+# 建筑【类型】→ 驱动分类型外观（住宅/商业/公共/工坊/广场）。纯元数据：进 map.json 的 areas[*].type、
+# 不进 blockers/digest（渲染读它分风格；导航不看）。plaza=开放广场（无墙）。
+BLD_TYPE = {
+    "home": "residential", "cafe": "commercial", "wash": "public", "work": "workshop", "plaza": "plaza",
+}
 PLAZA = (28, 21, 8, 6)   # open central hub (no walls) — all 4 districts hug it (short survival treks)
 # object id -> (district, interior-offset from district origin); interior floor = x 1..w-2, y 1..h-2
 OBJ_POS = {
@@ -45,7 +50,7 @@ def build():
     doors = {}
     labels = {"home": "住宅区", "cafe": "咖啡馆", "wash": "澡堂", "work": "工坊"}
     for name, (x, y, w, h, side, off) in DISTRICTS.items():
-        areas[name] = {"label": labels[name], "rect": [x, y, w, h]}
+        areas[name] = {"label": labels[name], "rect": [x, y, w, h], "type": BLD_TYPE.get(name, "residential")}
         for i in range(w):
             walls.add((x + i, y)); walls.add((x + i, y + h - 1))
         for j in range(h):
@@ -57,7 +62,7 @@ def build():
         walls.discard(d)                         # carve the door
         walls.discard((d[0], d[1] - 1)); walls.discard((d[0], d[1] + 1))
         doors[name] = d
-    areas["plaza"] = {"label": "广场", "rect": list(PLAZA)}   # open, no walls
+    areas["plaza"] = {"label": "广场", "rect": list(PLAZA), "type": "plaza"}   # open, no walls
     for kind, (x0, y0, x1, y1) in CLUSTERS:
         s = water if kind == "water" else trees
         for x in range(x0, x1 + 1):

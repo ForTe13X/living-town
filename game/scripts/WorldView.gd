@@ -73,7 +73,16 @@ var _decor_built := false
 var _wall_set := {}      # idx(y*W+x) -> true（墙格，用于画石墙 + 装饰避让）
 var _water_set := {}     # idx -> true（水格）
 var _tree_cells: Array = []  # [Vector2i]（authored 阻挡树，替代程序化装饰树）
+var _wall_type := {}     # P2-4 idx -> 建筑类型（住宅/商业/公共/工坊）→ 墙面按类型上色
 var _terrain_built := false
+var dbg_nav := false     # P2-4 导航开发叠层开关（Main 的 N 键切换）：阻挡格 + 交互格可视化
+# P2-4 分类型建筑外观：墙面(face/top/foot 三段做体积)+屋檐(roof)+招牌图标，让"住宅/商业/公共/工坊"一眼可辨。
+const BLD_PAL := {
+	"residential": {"face": Color("#c2a071"), "top": Color("#d8bd93"), "foot": Color("#836a48"), "roof": Color("#a8443a"), "icon": Color("#c85a4e")},  # 暖木墙+红瓦顶
+	"commercial":  {"face": Color("#8a6238"), "top": Color("#a67f4e"), "foot": Color("#5e4326"), "roof": Color("#b5484a"), "icon": Color("#efe4cc")},  # 棕木店面+红白条纹遮阳+咖啡招牌
+	"public":      {"face": Color("#7c8a92"), "top": Color("#9fabb2"), "foot": Color("#556169"), "roof": Color("#5a86b0"), "icon": Color("#eaf3f8")},  # 灰蓝石+蓝瓦+♨蒸汽
+	"workshop":    {"face": Color("#82868f"), "top": Color("#a0a4ac"), "foot": Color("#585c64"), "roof": Color("#3e4a5a"), "icon": Color("#cfcfcf")},  # 灰石+深蓝灰顶+烟囱黑烟
+}
 
 func _ready() -> void:
 	texture_filter = TEXTURE_FILTER_NEAREST  # 像素清晰，不糊
@@ -125,7 +134,7 @@ func _build_decor() -> void:
 ## 从 map.json 的 walls/water/trees 建渲染集合（纯渲染；导航仍走 Sim 的 blockers 并集）。世界重载即失效。
 func _build_terrain() -> void:
 	_terrain_built = true
-	_wall_set.clear(); _water_set.clear(); _tree_cells.clear()
+	_wall_set.clear(); _water_set.clear(); _tree_cells.clear(); _wall_type.clear()
 	var wd: int = int(Sim.world.get("width", 24))
 	for c in Sim.world.get("walls", []):
 		_wall_set[int(c[1]) * wd + int(c[0])] = true
@@ -133,6 +142,20 @@ func _build_terrain() -> void:
 		_water_set[int(c[1]) * wd + int(c[0])] = true
 	for c in Sim.world.get("trees", []):
 		_tree_cells.append(Vector2i(int(c[0]), int(c[1])))
+	# 给每个墙格标上所属建筑【类型】（住宅/商业/公共/工坊）→ 墙面按类型上色。用 area.rect 的边框判定归属。
+	for aid in Sim.world.get("areas", {}):
+		var a: Dictionary = Sim.world["areas"][aid]
+		var typ := String(a.get("type", "workshop"))
+		if typ == "plaza":
+			continue
+		var r: Array = a.get("rect", [0, 0, 0, 0])
+		var x0 := int(r[0]); var y0 := int(r[1]); var bw := int(r[2]); var bh := int(r[3])
+		for i in range(bw):
+			_wall_type[(y0) * wd + (x0 + i)] = typ
+			_wall_type[(y0 + bh - 1) * wd + (x0 + i)] = typ
+		for j in range(bh):
+			_wall_type[(y0 + j) * wd + x0] = typ
+			_wall_type[(y0 + j) * wd + (x0 + bw - 1)] = typ
 
 func _is_blocked(x: int, y: int) -> bool:
 	if not _terrain_built:
@@ -144,6 +167,46 @@ func _is_blocked(x: int, y: int) -> bool:
 		if c.x == x and c.y == y:
 			return true
 	return false
+
+## P2-4：每栋（非广场）沿顶墙悬挑一条 roof 色屋檐 + 门顶挂类型招牌图标。不铺满屋顶（否则遮住室内家具/居民）。
+func _draw_building_dressing(w: int) -> void:
+	for aid in Sim.world.get("areas", {}):
+		var a: Dictionary = Sim.world["areas"][aid]
+		var typ := String(a.get("type", ""))
+		if typ == "" or typ == "plaza":
+			continue
+		var pal: Dictionary = BLD_PAL.get(typ, BLD_PAL["workshop"])
+		var r: Array = a.get("rect", [0, 0, 0, 0])
+		var x0 := int(r[0]); var y0 := int(r[1]); var bw := int(r[2])
+		var eave := Rect2(x0 * T - T * 0.12, y0 * T - T * 0.16, bw * T + T * 0.24, T * 0.46)  # 悬挑屋檐
+		if typ == "commercial":                         # 商业：红白条纹遮阳篷（最醒目的类型信号）
+			var stripe := eave.size.x / float(bw * 2)
+			for s in range(bw * 2):
+				var col: Color = pal["roof"] if s % 2 == 0 else pal["icon"]
+				draw_rect(Rect2(eave.position.x + s * stripe, eave.position.y, stripe + 1.0, eave.size.y), col, true)
+		else:
+			draw_rect(eave, pal["roof"], true)
+			draw_rect(Rect2(eave.position.x, eave.position.y, eave.size.x, T * 0.12), (pal["roof"] as Color).lightened(0.28), true)  # 脊线高光
+		_draw_sign(typ, pal, (x0 + bw * 0.5) * T, y0 * T - T * 0.5)
+
+func _draw_sign(typ: String, pal: Dictionary, cx: float, cy: float) -> void:
+	match typ:
+		"commercial":                                   # 咖啡杯 + 蒸汽
+			draw_rect(Rect2(cx - T * 0.2, cy - T * 0.14, T * 0.34, T * 0.28), Color("#f4ecd6"), true)
+			draw_rect(Rect2(cx - T * 0.2, cy - T * 0.14, T * 0.34, T * 0.07), Color("#7a4a2c"), true)
+			draw_circle(Vector2(cx - T * 0.02, cy - T * 0.26), T * 0.045, Color(1, 1, 1, 0.55))
+		"public":                                       # ♨ 蓝底温泉标（澡堂）：蓝圆盘 + 三缕上升蒸汽
+			draw_circle(Vector2(cx, cy), T * 0.24, pal["roof"])
+			draw_circle(Vector2(cx, cy), T * 0.24, (pal["roof"] as Color).lightened(0.3), false, 2.0)
+			for k in range(3):
+				draw_rect(Rect2(cx - T * 0.14 + k * T * 0.13, cy - T * 0.02, T * 0.05, T * 0.14), pal["icon"], true)
+		"workshop":                                     # 烟囱 + 烟
+			draw_rect(Rect2(cx - T * 0.1, cy - T * 0.12, T * 0.2, T * 0.34), Color("#4c3a28"), true)
+			draw_circle(Vector2(cx, cy - T * 0.24), T * 0.09, Color(0.82, 0.82, 0.82, 0.6))
+			draw_circle(Vector2(cx + T * 0.09, cy - T * 0.4), T * 0.07, Color(0.82, 0.82, 0.82, 0.4))
+		"residential":                                  # 山墙小屋剪影 + 烟囱
+			draw_colored_polygon(PackedVector2Array([Vector2(cx, cy - T * 0.32), Vector2(cx - T * 0.26, cy), Vector2(cx + T * 0.26, cy)]), pal["roof"])
+			draw_rect(Rect2(cx - T * 0.06, cy - T * 0.4, T * 0.1, T * 0.18), Color("#6b4a2b"), true)
 
 func _in_area(x: int, y: int) -> bool:
 	for a in Sim.world.get("areas", {}).values():
@@ -344,20 +407,18 @@ func _draw() -> void:
 	#   瓦片结构由草地变体/地板纹理自然读出。需要格子时走 dev overlay，不进玩家视图。）
 	# （1 格小屋地标已移除：那正是"房子=人一般大"的比例谎言来源；建筑现由上面的真·建筑体现。）
 
-	# 石墙（map.json walls 层）：graybox 的区块围墙——buildings.json 清空后，districts 的体积就靠这层石墙读出。
-	# 切顶俯视：格底落地阴影 + 石灰岩面 + 高光顶棱，让 1 格墙读作有厚度的墙，而不是灰色块。门缺口天然留白。
-	var wtx := Art.terrain_tex("stone")
+	# 分类型建筑外墙（map.json walls 层，按所属建筑 type 上色）：buildings.json 清空后，districts 的体积就靠这层墙读出。
+	# 切顶俯视：落地阴影 + 三段墙面(顶棱高光/主面/墙脚暗边)让 1 格墙读作有厚度；颜色由类型区分（住宅暖木/商业米黄/公共蓝灰/工坊灰石）。门缺口天然留白。
 	for idx in _wall_set:
 		var sx: int = idx % w
 		var sy: int = idx / w
-		var sr := Rect2(sx * T, sy * T, T, T)
-		draw_rect(Rect2(sx * T + 2, sy * T + T * 0.55, T, T * 0.5), Color(0, 0, 0, 0.22), true)  # 落地阴影
-		if wtx != null:
-			draw_texture_rect(wtx, sr, false)
-		else:
-			draw_rect(sr, Color("#7d8390"), true)                                    # 石灰岩墙面
-			draw_rect(Rect2(sx * T, sy * T, T, T * 0.22), Color("#9aa0ac"), true)     # 顶棱高光
-			draw_rect(Rect2(sx * T, sy * T + T * 0.86, T, T * 0.14), Color("#5b606b"), true)  # 墙脚暗边
+		var pal: Dictionary = BLD_PAL.get(String(_wall_type.get(idx, "workshop")), BLD_PAL["workshop"])
+		draw_rect(Rect2(sx * T + 2, sy * T + T * 0.55, T, T * 0.5), Color(0, 0, 0, 0.22), true)      # 落地阴影
+		draw_rect(Rect2(sx * T, sy * T, T, T), pal["face"], true)                                     # 墙主面
+		draw_rect(Rect2(sx * T, sy * T, T, T * 0.22), pal["top"], true)                               # 顶棱高光
+		draw_rect(Rect2(sx * T, sy * T + T * 0.86, T, T * 0.14), pal["foot"], true)                   # 墙脚暗边
+	# 屋檐 + 招牌：每栋（非广场）沿顶墙内侧铺一条屋檐色带 + 门上方挂类型招牌图标 → 类型一眼可辨。
+	_draw_building_dressing(w)
 
 	# 装饰散布（区域外草地上的树/花/草丛，确定性布局；在物件与居民之下）
 	if not _decor_built:
@@ -412,6 +473,23 @@ func _draw() -> void:
 	_draw_talking_links()
 	for ag in Sim.agents:
 		_draw_agent(ag)
+
+	if dbg_nav:                 # P2-4 开发叠层（N 键）：可视化导航权威数据——阻挡格 + 交互格
+		_draw_nav_overlay(w)
+
+## P2-4 导航开发叠层：红=Sim._blocked 阻挡权威集（墙/水/树/家具），绿点=家具的可走正交邻格（居民站着用的交互格）。
+## 纯 View、只读 Sim._blocked/objects，绝不写 Sim；只有 dbg_nav 开时才画（默认关，玩家视图不受影响）。
+func _draw_nav_overlay(w: int) -> void:
+	for idx in Sim._blocked:
+		var bx: int = idx % w; var by: int = idx / w
+		draw_rect(Rect2(bx * T, by * T, T, T), Color(0.92, 0.22, 0.22, 0.22), true)
+		draw_rect(Rect2(bx * T, by * T, T, T), Color(0.92, 0.22, 0.22, 0.5), false, 1.0)
+	for oid in Sim.world.get("objects", {}):
+		var op: Vector2i = Sim.world["objects"][oid].get("pos", Vector2i.ZERO)
+		for d in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+			var n: Vector2i = op + d
+			if n.x >= 0 and n.y >= 0 and n.x < w and not Sim._blocked.has(n.y * w + n.x):
+				draw_rect(Rect2(n.x * T + T * 0.3, n.y * T + T * 0.3, T * 0.4, T * 0.4), Color(0.3, 0.95, 0.42, 0.6), true)
 
 func _center(ag: Dictionary) -> Vector2:
 	var p: Vector2i = ag["pos"]

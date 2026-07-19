@@ -15,6 +15,9 @@ bad(){ echo "  ❌ FAIL: $1"; FAIL=1; }
 echo "### 1. data lint (json parse + foreign keys)"
 "$PY" tools/lint_data.py && ok "lint_data" || bad "lint_data"
 
+echo "### 1b. map audit (town-world 导航自洽：typed-layers 一致 + 全可达 + 每家具有交互格 + ≥2 路线)"
+"$PY" tools/audit_map.py && ok "audit_map" || bad "audit_map"
+
 echo "### 2. link lint (markdown relative links)"
 "$PY" tools/lint_links.py && ok "lint_links" || bad "lint_links"
 

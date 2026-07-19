@@ -61,6 +61,7 @@ func _ready() -> void:
 	var warmup_days := 0                   # --warmup N：开局前静默推进到第 N 天（录 demo 跳到节日日用）
 	var warmup_tick := 0                   # --warmup-tick T：静默推进到精确 tick T（眼验：定格某一瞬的社交事件）
 	var _sel_arg := ""                     # --select id：定格后观察台默认选中此角色（眼验居中到当事人）
+	var _dbg_nav_arg := false              # --dbg-nav：启动/出图即开导航叠层
 	var args := OS.get_cmdline_user_args()
 	for i in args.size():
 		if args[i] == "--backend" and i + 1 < args.size():
@@ -98,6 +99,8 @@ func _ready() -> void:
 			_shot_path = args[i + 1]           # dev 出图：渲一帧存 png 退出（需真 framebuffer：Xvfb 或带窗口）
 		elif args[i] == "--shot-fit":
 			_shot_fit = true                   # 出图整镇入画（缩放到整图-HUD 余量）；缺省保留跟随相机（角色特写眼验）
+		elif args[i] == "--dbg-nav":
+			_dbg_nav_arg = true                # 出图/启动即开导航叠层（阻挡格+交互格）
 	AIBackend.backend = backend
 	# 后端优先级：CLI --backend 显式 > user://settings.cfg（手机 UI 存的默认）> 默认 logic。
 	# headless CI 不经此路（Harness/soak 直接 Sim.backend=null）→ 确定性逐字节不变。
@@ -143,6 +146,7 @@ func _ready() -> void:
 	Sim.auto_run = true               # 镇子立刻跑（logic 地板）——slm/llm 探测改后台异步，不再挡首帧
 
 	_view = preload("res://scripts/WorldView.gd").new()
+	_view.dbg_nav = _dbg_nav_arg      # --dbg-nav：出图/启动即开导航叠层（否则运行时按 N 切）
 	add_child(_view)
 
 	# 相机：可拖可缩的"探针"。红线（docs/19 §3）：相机【纯视图】——只决定画哪、怎么映射输入，
@@ -971,6 +975,11 @@ func _unhandled_input(e: InputEvent) -> void:
 					_selected_id = ""
 					_update_obs()
 			KEY_C: _on_player_say("你好，最近怎么样？")        # 快捷：对选中居民打个招呼（也便于无键盘验证）
+			KEY_N:                                               # P2-4 导航开发叠层：阻挡格(红)+交互格(绿) 可视化
+				if _view != null:
+					_view.dbg_nav = not _view.dbg_nav
+					_view.queue_redraw()
+					_push("[color=#9ad0ff]NAV 叠层 %s（红=阻挡格 绿=交互格）[/color]" % ("开" if _view.dbg_nav else "关"))
 			# ── 玩家能动性（--player）：WASD 移动 + 对选中居民 G打招呼/F送礼/B八卦/Y约见/P道歉/M调解 ──
 			KEY_W, KEY_UP: if _player_mode: Sim.player_move(Vector2i(0, -1))
 			KEY_S, KEY_DOWN: if _player_mode: Sim.player_move(Vector2i(0, 1))
