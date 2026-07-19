@@ -751,3 +751,17 @@ find_endorse（看 endorse_events 计数逐 tick 跳变，因 endorse 不进 eve
 **🔧 导航开发叠层（N 键 / --dbg-nav）**：红=Sim._blocked 权威阻挡集（墙/水/树/家具）、绿=每个家具的可走正交邻格（P2-3 交互格）。纯 View 只读 Sim、默认关。**地图审计门 `tools/audit_map.py` 入 CI**：直接校验【落盘】map.json——typed-layers 并集==blockers、全可达、每家具有可达交互格（否则饿穿）、每 area 可达、≥2 户外路线（在门外草地测冗余，绕开"区内单门"这个刻意瓶颈）。独立于生成器→抓任何手改/漂移。
 
 **🛑 丰富小镇踩的坑：加建筑 = 改 blockers = 轨迹蝶变 → 边缘 seed 饿穿。** P2-4b 加了 3 栋外围建筑（home2/shop/library，纯墙无家具→不动需求经济）+ 广场水井/告示板。第一版把地标设成【阻挡】→ #01 破 11/12（seed11 阿本赴咖啡馆途中饿到 0.28）。用 `find_starve` 定位到阿本在 (40,20)、doing=吃饭——**是赴食途中饿穿、非卡死**。去掉地标阻挡后 seed11 仍同点饿穿 → 才认清：**根因不是某个阻挡格，是"加任何 blocker 都会重排整条确定轨迹"的蝶变**（与当年 endorse 抑制蝶变成 seed4 饿穿同源）。两手：① 地标改**可踩装饰**（不进 blockers、零导航扰动，同程序化花草）——中央枢纽塞阻挡格最易扰动生存路径；② `SURVIVAL_GATE 28→30`——给 need-floor 更足赶路缓冲、吸收地图扰动（沿用 endorse 那次的既定解法）。重验 full CI：#01 无饿穿 12/12、软门过（社交没被压平）、det 3/3、六场景全过。教训：**中央广场是所有人穿行的枢纽，别在那儿放阻挡；地图尺度一动就按"轨迹会整体蝶变"来重验 #01、别假设"远处的墙不影响近处的人"。** 存证 shot-p24-building-types / nav-overlay / enriched-town / plaza-landmarks。提交 c2adab3 + 95775c8。
+
+## Town-World P3 · 咖啡馆竖切片：真·多层室内（Tier-A inspect-only）
+
+**✅ 阿丽的咖啡馆成了可 Probe 进入的真·两层室内（1F 咖啡区 / 2F 阿丽居所），沿用 P1 的 Space/Floor/Portal 合同长出来。Tier-A：只观察者 inspect、居民不进 → town 仿真一行不动、digest 逐字节不变、det 3/3 不变。**
+先派 6-agent recon workflow 摸清架构：确认 **两套室内系统别混**——buildings.json→world.rooms 是【镇上平面】的房间（`_area_at` 硬限制在 town area 内、furniture 带 advertises 会加候选改 digest），spaces.json 的 Space/Floor 才是【独立可寻址平面】的多层室内。缺口在【非-town Space 没有内容模型也没渲染】(test_loft 只有 bounds、WorldView 只画"无内容占位"网格) + spatial_address **全 Sim 没人读**(只 SpaceGraph.address_of 兜底 + space_test)。所以 Tier-A 全是 View/Probe/数据侧的活、碰不到仿真红线。
+
+**做法（每一处都在渲染/观察/数据校验侧）：**
+- `spaces.json`：加 `cafe` Space（interior、8×6、floors 1f/2f）+ 两 portal：`p_cafe_door`(town/outdoor 41,19 ↔ cafe/1f 4,5，正好接商业区那扇街门) + `p_cafe_stairs`(1f↔2f，owner 权限=私人上层)。
+- **`interiors.json`(新)** = 内容模型 `space→floor→{label, floor材质, furniture[]}`，**只 View/Probe 侧读、对 Sim/digest 完全惰性**。1F 公共咖啡区(吧台/咖啡机/书架/两桌两椅/地毯/盆栽/楼梯)、2F 阿丽居所(床/书桌/书架/地毯/盆栽/窗/楼梯)。选 interiors.json 而非 spaces.json floors(那得保持字符串数组、has_floor/lint 都靠它) 或 buildings.json(写镇上平面、进不了 Space)。
+- `WorldView`：非-town Space 有 interiors 内容就画【真室内】(木地板+三段体积外墙+街门缺口画成木门+按 slot 程序化家具+楼层标签)，否则回落占位网格。~11 种程序化家具。
+- `Main`：`I` 改成**循环所有 Space**(town→咖啡馆→阁楼→…)、咖啡馆才够得着；`--probe-space/--probe-floor` 出图旗 + shot-fit 里"非-town 别 go_home 拽回镇"。`space_test`：把"town 恰好 1 门"放宽成"阁楼门+咖啡馆门都在" + 加咖啡馆 space/floor/portal 合同校验。
+- `lint_data.py`：校验 interiors.json(space/floor 键指向真 Space/Floor、家具坐标在 bounds 内)——室内版的地图审计门。
+
+**🎯 为什么 Tier-A 逐字节不变**：Sim 对 spatial_address/SpaceGraph/interiors **零引用**、digest 只折叠 event_log → 只要没 agent 解析成非-town 地址，event_log 就一字节不差。唯一要改的测试(space_test 的门数断言)recon 一眼揪出、当场改掉。**Tier-B（居民真走 portal 进店、在楼层里被仿真）会让 `_area_at`/`_nearby_agents`/earshot/LOD/A\* 全得变"平面感知"、digest 必变、要重 baseline 12 seed**——那是独立里程碑，本次不做。存证 shot-p3-cafe-1f / shot-p3-cafe-2f。提交 514eec0。
