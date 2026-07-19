@@ -507,6 +507,12 @@ func _make_agent(adef: Dictionary, personas: Dictionary) -> Dictionary:
 		"persona_key": String(adef.get("persona", "")),   # 人设 id（voicebank/scriptwriter 按此键；克隆继承基座人设 id）
 		"pos": Vector2i(int(adef["spawn"][0]), int(adef["spawn"][1])),
 		"home": Vector2i(int(adef["home"][0]), int(adef["home"][1])),
+		# P3 Tier-B 平面地址：pos 是【该 floor 内】的格。缺省 town/outdoor → 与旧版逐字节一致（没人读=惰性）。
+		# 咖啡馆居民(阿丽)由 agents.json 的 spatial_address 覆盖成 cafe/2f（家）。home_space/floor = 睡觉/归属层。
+		"space": String((adef.get("spatial_address", {}) as Dictionary).get("space", "town")),
+		"floor": String((adef.get("spatial_address", {}) as Dictionary).get("floor", "outdoor")),
+		"home_space": String((adef.get("spatial_address", {}) as Dictionary).get("space", "town")),
+		"home_floor": String((adef.get("spatial_address", {}) as Dictionary).get("floor", "outdoor")),
 		"needs": {},
 		"option": null,
 		"mood": "neutral",
@@ -534,7 +540,7 @@ func _make_agent(adef: Dictionary, personas: Dictionary) -> Dictionary:
 		var a0 := _hash01(str(adef["id"]) + ":" + t) * 2.0 - 1.0
 		ag["attitude0"][t] = a0
 		ag["attitudes"][t] = a0
-	ag["area"] = _area_at(ag["pos"])
+	ag["area"] = _area_key(ag["space"], ag["floor"], ag["pos"])   # P3 Tier-B：平面感知 area（town 恒等旧值）
 	ag["room"] = _room_at(ag["pos"])   # docs/16：与 area 同址缓存（缺 rooms→""）
 	if not economy.is_empty():
 		ag["inventory"]["coin"] = int(economy.get("start_coin", 10))   # Wave 1b：经济开启才有钱（缺文件零扰动）
@@ -587,9 +593,9 @@ func player_act(action: String, target_id: String) -> String:
 	if tgt.is_empty() or tgt.get("is_player", false):
 		return "先点选一位居民"
 	# 邻近判定（对抗审查#6）：须同一【非空】区域，或曼哈顿距离≤2——堵住"区域外空地 '' == '' 隔全图社交"漏洞
-	var here := _area_at(pl["pos"])
+	var here := String(pl.get("area", ""))
 	var mdist := absi(pl["pos"].x - tgt["pos"].x) + absi(pl["pos"].y - tgt["pos"].y)
-	if not ((here != "" and here == _area_at(tgt["pos"])) or mdist <= 2):
+	if not ((here != "" and here == String(tgt.get("area", ""))) or mdist <= 2):
 		return "太远了，走近点（同一区域或贴身）"
 	if int(pl["talking"]) > 0:
 		return "正在交谈中"
@@ -658,8 +664,8 @@ func player_mediate(target_id: String) -> String:
 	var B: Dictionary = _agent_by_id.get(String(c["b"]), {})
 	if A.is_empty() or B.is_empty():
 		return "冲突另一方不在了"
-	var here := _area_at(pl["pos"])
-	if here == "" or _area_at(A["pos"]) != here or _area_at(B["pos"]) != here:
+	var here := String(pl.get("area", ""))
+	if here == "" or String(A.get("area", "")) != here or String(B.get("area", "")) != here:
 		return "得把 %s 和 %s 都请到同一区域才好说和" % [_name(A), _name(B)]
 	var witnesses: Array = []
 	for w in _nearby_agents(pl):
@@ -994,7 +1000,7 @@ func _advance_attend(ag: Dictionary, opt: Dictionary) -> void:
 	if c.is_empty() or String(c["status"]) != "active" or tick_no >= int(c["deadline"]) or _min_need(ag) < NEED_CRISIS:
 		ag["option"] = null
 		return
-	if _area_at(ag["pos"]) != String(c["area"]):
+	if String(ag.get("area", "")) != String(c["area"]):
 		_move_agent(ag, _nav_step(ag, _area_centroid(String(c["area"]))))  # 未到则前往；到了守在该区等对方
 		emit_signal("agent_changed", ag["id"])
 
@@ -1054,7 +1060,7 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 
 func _advance_social(ag: Dictionary, opt: Dictionary) -> void:
 	var partner: Dictionary = _agent_by_id.get(opt["partner"], {})
-	if partner.is_empty() or _area_at(ag["pos"]) != _area_at(partner["pos"]):
+	if partner.is_empty() or String(ag.get("area", "")) != String(partner.get("area", "")):
 		ag["option"] = null      # 对方离开 → 作废
 		ag["talking"] = 0
 		return
@@ -1377,7 +1383,7 @@ func _apply_social(ag: Dictionary, intent: Dictionary) -> void:
 		return
 	var partner: Dictionary = _agent_by_id.get(pid, {})
 	# 兜底：对方不存在/正忙/不同区 → 本 tick 不动，下 tick 重选（永不破坏仿真）
-	if partner.is_empty() or int(partner["talking"]) > 0 or _area_at(ag["pos"]) != _area_at(partner["pos"]):
+	if partner.is_empty() or int(partner["talking"]) > 0 or String(ag.get("area", "")) != String(partner.get("area", "")):
 		return
 	ag["option"] = {
 		"kind": "social", "action": action, "partner": pid,
@@ -1395,7 +1401,7 @@ func _apply_social(ag: Dictionary, intent: Dictionary) -> void:
 # ── SocialTransaction：发起 → 评估(接受/拒绝) → 提交 → 双方+旁观者写视角记忆 ─────
 func _commit_social(ag: Dictionary, opt: Dictionary) -> void:
 	var target: Dictionary = _agent_by_id.get(opt["partner"], {})
-	if target.is_empty() or _area_at(ag["pos"]) != _area_at(target["pos"]):
+	if target.is_empty() or String(ag.get("area", "")) != String(target.get("area", "")):
 		return
 	var action := String(opt["action"])
 	var subject := String(opt.get("subject", ""))
@@ -1459,7 +1465,7 @@ func _commit_social(ag: Dictionary, opt: Dictionary) -> void:
 			aff_a = 1.0; aff_t = 1.0
 		"invite":
 			# 创建 meet 承诺：约在【当下两人所在的同一区】于 deadline 前再聚（赴约由 attend 驱动，需求危机会爽约 → broken）
-			var area := _area_at(ag["pos"])
+			var area := String(ag.get("area", ""))
 			if area == "":
 				area = "plaza"
 			var _cmt := {"id": _next_commit_id, "type": "meet", "a": ag["id"], "b": target["id"],
@@ -1583,8 +1589,8 @@ func _resolve_commitments() -> void:
 		if A.is_empty() or B.is_empty():
 			survivors.append(c)              # 异常（agent 缺失）：留待下 tick
 			continue
-		var in_a := _area_at(A["pos"]) == String(c["area"])
-		var in_b := _area_at(B["pos"]) == String(c["area"])
+		var in_a := String(A.get("area", "")) == String(c["area"])
+		var in_b := String(B.get("area", "")) == String(c["area"])
 		if in_a and in_b:
 			c["status"] = "fulfilled"
 			var ra := _rel(A, B["id"])
@@ -2298,6 +2304,8 @@ func _secret_private(ag: Dictionary, o: Dictionary) -> bool:
 	for x in agents:
 		if String(x["id"]) == String(ag["id"]) or String(x["id"]) == String(o["id"]):
 			continue
+		if not _same_plane(x, ag):
+			continue                     # P3：跨平面(不同 floor)的人听不见——café-local 坐标会和 town 坐标撞，必须先按平面门
 		var xp: Vector2i = x.get("pos", Vector2i.ZERO)
 		if absi(apos.x - xp.x) + absi(apos.y - xp.y) <= EARSHOT:
 			return false                 # 有旁人在耳边 → 会被听见 → 不算私密
@@ -2311,20 +2319,34 @@ func _area_at(pos: Vector2i) -> String:
 			return id
 	return ""
 
+## P3 Tier-B 平面感知 area：town/outdoor → 原镇上 area 矩形；非-town floor → 整层作一个命名空间 area
+## "space:floor"。这样所有"同 area 才共处"的社交/见证/赴约判定【自动按楼层隔离】——楼上楼下互不感知、
+## 咖啡馆里的人和镇上的人不会隔着墙社交。town 恒等于旧 _area_at → 全员 town 时逐字节不变。
+func _area_key(space: String, floor: String, pos: Vector2i) -> String:
+	if space == "town" and floor == "outdoor":
+		return _area_at(pos)
+	return space + ":" + floor
+
 ## L1：移动 agent 并刷新缓存的所在区（让 _nearby_agents 无需每次 _area_at）。
 func _move_agent(ag: Dictionary, newpos: Vector2i) -> void:
 	ag["pos"] = newpos
-	ag["area"] = _area_at(newpos)
+	ag["area"] = _area_key(String(ag.get("space", "town")), String(ag.get("floor", "outdoor")), newpos)  # P3：平面感知
 	ag["room"] = _room_at(newpos)   # docs/16：与 area 同址刷新（缺 rooms→""）
 
+## P3 Tier-B：同平面判定（space+floor）。town 居民彼此恒同平面 → 全员 town 时所有下游判定逐字节不变。
+func _same_plane(a: Dictionary, b: Dictionary) -> bool:
+	return String(a.get("space", "town")) == String(b.get("space", "town")) \
+		and String(a.get("floor", "outdoor")) == String(b.get("floor", "outdoor"))
+
 ## 同区其他 agent（用缓存 area，去掉 _area_at 的 areas 内循环；遍历仍按 agents 固定序 → 字节一致）。
+## P3：先按平面(space,floor)门，再按 area——楼上楼下/店内店外互不"在场"。town 全同平面 → 与旧版一致。
 func _nearby_agents(ag: Dictionary) -> Array:
 	var my_area := String(ag.get("area", ""))
 	var out: Array = []
 	if my_area == "":
 		return out
 	for o in agents:
-		if o["id"] != ag["id"] and String(o.get("area", "")) == my_area:
+		if o["id"] != ag["id"] and _same_plane(o, ag) and String(o.get("area", "")) == my_area:
 			out.append(o)
 	return out
 
