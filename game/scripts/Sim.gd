@@ -1003,7 +1003,11 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 		ag["option"] = null
 		return
 	if opt["phase"] == "travel":
-		if ag["pos"] == target_obj["pos"]:
+		# 交互格（town-world P2-3）：站在家具【旁】用它，不再踩到家具格上。抵达=与家具正交相邻(曼哈顿≤1)。
+		# 导航目标仍是家具格(A* 终点豁免)，A* 的正交逐格路径必然经过"家具的某个可走邻格"(曼哈顿1)→ 在那一格即触发
+		# use、绝不迈上家具格。那个邻格由 A* 走到=保证可达(gen_town 审计每个家具≥1 可达邻格)→ 无饿穿零风险，
+		# 且比旧"踩上家具"早一格到达(需求更早满足、更安全)。同区邻格 → area 门控(社交/赴约)不变。
+		if _manh(ag["pos"], target_obj["pos"]) <= 1:
 			opt["phase"] = "use"
 			# Wave 1b 收费点：有价动作(吃饭等)开用时向镇库付费。付不起→照用不误(meals_free)——
 			# 生存永不被钱门住(守"无饿穿"硬不变量)，钱只造分化/戏剧，不造饿死。

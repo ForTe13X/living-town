@@ -175,6 +175,7 @@ func _ready() -> void:
 	if backend == "slm" or backend == "llm":
 		_probe_and_activate(backend)        # 不 await：后台跑，首帧已可见
 	if _shot_path != "":                    # dev 出图：等 1.5s 让世界渲染+纹理加载，再存一帧退出
+		Sim.auto_run = false                # 定格：冻结在 warmup tick，等待期间不再推进（tick-precise 眼验，防漂）
 		if _shot_fit and _probe != null:    # --shot-fit：整镇入画，缩放到【整图 - HUD 余量】刚好塞进视口，美术/地形看全局
 			_probe.go_home()
 			var _mapsz: Vector2 = _space_bounds().size
@@ -183,6 +184,10 @@ func _ready() -> void:
 			var _fit: Vector2 = (_vpsz - _pad) / _mapsz
 			_probe.cam.zoom = Vector2.ONE * minf(_fit.x, _fit.y)   # 出图专用：绕过 ZOOM_MIN 夹取，整图入画
 			_probe.cam.position = _space_bounds().get_center()
+		elif _selected_id != "" and _probe != null:   # --select（无 --shot-fit）：特写居中到当事人（角色眼验）
+			var _sag := Sim.get_agent(_selected_id)
+			if not _sag.is_empty():
+				_probe.focus_on(Vector2(int(_sag["pos"].x) * 48 + 24, int(_sag["pos"].y) * 48 + 24), _selected_id)
 		get_tree().create_timer(1.5).timeout.connect(func():
 			var img := get_viewport().get_texture().get_image()
 			if img != null:
