@@ -446,6 +446,8 @@ func _draw() -> void:
 			draw_circle(Vector2(cx, tc.y * T + T * 0.42), T * 0.42, Color("#2f6d3a"))                                # 树冠
 			draw_circle(Vector2(cx - T * 0.18, tc.y * T + T * 0.30), T * 0.24, Color("#3c8a4a"))                      # 高光叶
 
+	_draw_landmarks()          # P2-4 公共地标（水井 / 告示板）：程序化画在地形层、居民之下
+
 	# 对象：CC0 物件精灵（slot=id 前缀，如 bench/bath/counter/desk/arcade）；缺则程序化色块兜底
 	for id in Sim.world.get("objects", {}):
 		var o: Dictionary = Sim.world["objects"][id]
@@ -490,6 +492,30 @@ func _draw_nav_overlay(w: int) -> void:
 			var n: Vector2i = op + d
 			if n.x >= 0 and n.y >= 0 and n.x < w and not Sim._blocked.has(n.y * w + n.x):
 				draw_rect(Rect2(n.x * T + T * 0.3, n.y * T + T * 0.3, T * 0.4, T * 0.4), Color(0.3, 0.95, 0.42, 0.6), true)
+
+## P2-4 公共基础设施地标：程序化画水井（石圈+蓝顶）与告示板（木板+红顶+纸），风格与分类型建筑一致。
+func _draw_landmarks() -> void:
+	for lm in Sim.world.get("landmarks", []):
+		var lp: Array = lm.get("pos", [0, 0])
+		var bx := int(lp[0]) * T; var by := int(lp[1]) * T
+		match String(lm.get("type", "")):
+			"well":
+				draw_rect(Rect2(bx + 2, by + T * 0.6, T - 4, T * 0.34), Color(0, 0, 0, 0.2), true)                 # 阴影
+				draw_rect(Rect2(bx + T * 0.15, by + T * 0.45, T * 0.7, T * 0.45), Color("#8a8f98"), true)          # 石圈
+				draw_rect(Rect2(bx + T * 0.15, by + T * 0.45, T * 0.7, T * 0.1), Color("#a6abb4"), true)           # 井沿高光
+				draw_rect(Rect2(bx + T * 0.3, by + T * 0.56, T * 0.4, T * 0.28), Color("#20242c"), true)           # 井口暗
+				draw_rect(Rect2(bx + T * 0.2, by + T * 0.1, T * 0.06, T * 0.4), Color("#6b4a2b"), true)            # 立柱
+				draw_rect(Rect2(bx + T * 0.74, by + T * 0.1, T * 0.06, T * 0.4), Color("#6b4a2b"), true)
+				draw_colored_polygon(PackedVector2Array([Vector2(bx + T * 0.5, by - T * 0.02), Vector2(bx + T * 0.08, by + T * 0.16), Vector2(bx + T * 0.92, by + T * 0.16)]), Color("#5a86b0"))  # 蓝顶
+			"board":
+				draw_rect(Rect2(bx + 2, by + T * 0.62, T - 4, T * 0.3), Color(0, 0, 0, 0.2), true)                 # 阴影
+				draw_rect(Rect2(bx + T * 0.18, by + T * 0.55, T * 0.06, T * 0.4), Color("#5a3f28"), true)          # 支柱
+				draw_rect(Rect2(bx + T * 0.76, by + T * 0.55, T * 0.06, T * 0.4), Color("#5a3f28"), true)
+				draw_rect(Rect2(bx + T * 0.12, by + T * 0.2, T * 0.76, T * 0.42), Color("#8a6238"), true)          # 木板
+				draw_rect(Rect2(bx + T * 0.12, by + T * 0.2, T * 0.76, T * 0.42), Color(0, 0, 0, 0.3), false, 2.0)
+				draw_rect(Rect2(bx + T * 0.08, by + T * 0.1, T * 0.84, T * 0.14), Color("#b5484a"), true)          # 红顶
+				draw_rect(Rect2(bx + T * 0.2, by + T * 0.28, T * 0.22, T * 0.26), Color("#efe4cc"), true)          # 纸
+				draw_rect(Rect2(bx + T * 0.5, by + T * 0.3, T * 0.24, T * 0.2), Color("#dfe8f0"), true)
 
 func _center(ag: Dictionary) -> Vector2:
 	var p: Vector2i = ag["pos"]

@@ -32,8 +32,9 @@ const GIFT_START := 3           # 每个 NPC 初始礼物数（give 破冰用）
 const MEET_HORIZON := 40        # invite 创建的 meet 承诺：deadline = now + 此
 const ATTEND_WINDOW := 16       # 离 deadline ≤ 此 → 引擎给「赴约」加权
 const NEED_CRISIS := 15.0       # 任一需求 < 此 → 放弃赴约（真危机才爽约 → broken）
-const SURVIVAL_GATE := 28.0     # 任一需求 < 此 → 本 tick 不社交，先去吃/睡（留赶路缓冲，防大 N 饿穿）。
-                                # 20→24：给 need-floor 更足缓冲，使 #01 无饿穿对【决策扰动】鲁棒（endorse 抑制曾令阿本社交需求饿穿）。
+const SURVIVAL_GATE := 30.0     # 任一需求 < 此 → 本 tick 不社交，先去吃/睡（留赶路缓冲，防大 N 饿穿）。
+                                # 20→24→28→30：每次给 need-floor 更足缓冲，使 #01 无饿穿对【决策/地图扰动】鲁棒
+                                # （endorse 抑制曾令阿本社交需求饿穿；P2-4 加建筑改 blockers→轨迹蝶变，seed11 阿本赴咖啡馆途中饿穿）。
 const CONFLICT_TRIGGER := 6.0   # resentment 累积到此 → 触发一段冲突（simmering）
 const ESC_THRESH := 2           # 升级次数到此 → escalated
 const LINGER_AFTER := 350       # 触发后 tick 未对质 → lingering（冷战）

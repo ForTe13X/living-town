@@ -49,6 +49,7 @@ def main():
     for key in ("walls", "water", "trees"):
         for x, y in m.get(key, []):
             typed.add((int(x), int(y)))
+    # 地标（well/board）是【可踩装饰】、不进 blockers（挡路会扰动中央生存路径→#01 破）；故不计入并集。
     objcells = set((int(o["pos"][0]), int(o["pos"][1])) for o in m["objects"])
     # blockers = 墙/水/树（家具运行期另加，不在 map.json blockers 里）→ typed 并集应 == blockers
     if typed != blk:

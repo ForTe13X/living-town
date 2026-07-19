@@ -18,10 +18,23 @@ DISTRICTS = {
     "wash": (18, 28, 9, 7, "N", 4),
     "work": (37, 28, 9, 7, "N", 4),
 }
+# 额外建筑（P2-4 丰富小镇的建筑类型混合）：外围荒野里的纯视觉结构（有墙+门+类型、无家具/居民）——
+# 不改需求经济（不新增 advertises→#01/工资守恒不动），只让"商业/公共/住宅"的建筑类型更齐全。放在远荒野，
+# 绝不挡中央生存路径（trek 不变→无饿穿稳）。district: name -> (x, y, w, h, door_side, door-offset)
+EXTRA_BUILDINGS = {
+    "home2":   (9, 4, 6, 5, "S", 3),     # 上左：又一户住宅
+    "shop":    (49, 5, 7, 6, "S", 3),    # 上右：杂货铺（商业）
+    "library": (9, 38, 7, 6, "N", 3),    # 下左：图书馆（公共基础设施）
+}
+# 广场地标（公共基础设施）：单格类型化【装饰】（不进 blockers→不挡路、零导航扰动，同程序化花草）。放广场南沿。
+# 【为何不阻挡】中央广场是所有人穿行的枢纽，在这里塞阻挡格会给某个边缘 agent 的生存路程 +1~2 tick →
+# seed11 阿本赴咖啡馆途中饿到 0.28（#01 破 11/12）。地标改纯装饰（可踩）→ 中央导航与 P2-4a 逐字节同 → #01 稳。
+LANDMARKS = [("well", 30, 26), ("board", 33, 26)]   # 水井 + 告示板（广场南沿，居民桌椅之下）
 # 建筑【类型】→ 驱动分类型外观（住宅/商业/公共/工坊/广场）。纯元数据：进 map.json 的 areas[*].type、
-# 不进 blockers/digest（渲染读它分风格；导航不看）。plaza=开放广场（无墙）。
+# 不进 digest（渲染读它分风格；导航看 blockers）。plaza=开放广场（无墙）。
 BLD_TYPE = {
     "home": "residential", "cafe": "commercial", "wash": "public", "work": "workshop", "plaza": "plaza",
+    "home2": "residential", "shop": "commercial", "library": "public",
 }
 PLAZA = (28, 21, 8, 6)   # open central hub (no walls) — all 4 districts hug it (short survival treks)
 # object id -> (district, interior-offset from district origin); interior floor = x 1..w-2, y 1..h-2
@@ -48,9 +61,10 @@ def build():
     walls, water, trees = set(), set(), set()   # typed layers (rendering); nav blocks the union
     areas = {}
     doors = {}
-    labels = {"home": "住宅区", "cafe": "咖啡馆", "wash": "澡堂", "work": "工坊"}
-    for name, (x, y, w, h, side, off) in DISTRICTS.items():
-        areas[name] = {"label": labels[name], "rect": [x, y, w, h], "type": BLD_TYPE.get(name, "residential")}
+    labels = {"home": "住宅区", "cafe": "咖啡馆", "wash": "澡堂", "work": "工坊",
+              "home2": "民居", "shop": "杂货铺", "library": "图书馆"}
+    for name, (x, y, w, h, side, off) in {**DISTRICTS, **EXTRA_BUILDINGS}.items():
+        areas[name] = {"label": labels.get(name, name), "rect": [x, y, w, h], "type": BLD_TYPE.get(name, "residential")}
         for i in range(w):
             walls.add((x + i, y)); walls.add((x + i, y + h - 1))
         for j in range(h):
@@ -68,7 +82,8 @@ def build():
         for x in range(x0, x1 + 1):
             for y in range(y0, y1 + 1):
                 s.add((x, y))
-    return walls, water, trees, areas, doors
+    landmarks = [{"type": t, "pos": [x, y]} for (t, x, y) in LANDMARKS]   # 单格类型化地标（well/board）
+    return walls, water, trees, landmarks, areas, doors
 
 def obj_abs(oid):
     dist, (ox, oy) = OBJ_POS[oid]
@@ -141,8 +156,8 @@ def audit(blockers, areas, doors, agents, objects):
 def main():
     base_map = json.load(open(p("map.json"), encoding="utf-8"))
     id2obj = {o["id"]: o for o in base_map["objects"]}
-    walls, water, trees, areas, doors = build()
-    blockers = walls | water | trees        # nav blocks the union; the typed layers are for rendering
+    walls, water, trees, landmarks, areas, doors = build()
+    blockers = walls | water | trees   # nav blocks walls/water/trees; landmarks are walkable decor (不挡路)
     # reposition objects (keep everything else — type/advertises — verbatim)
     objects = []
     for oid in OBJ_POS:
@@ -167,10 +182,11 @@ def main():
     if "--write" not in sys.argv:
         print("(dry-run; pass --write to emit files)"); return
     out = {"width": W, "height": H, "areas": areas,
-           "blockers": sorted([list(b) for b in blockers]),   # nav union — _build_nav reads this (unchanged)
+           "blockers": sorted([list(b) for b in blockers]),   # nav union — _build_nav reads this
            "walls":  sorted([list(b) for b in walls]),        # typed layers for rendering only
            "water":  sorted([list(b) for b in water]),
            "trees":  sorted([list(b) for b in trees]),
+           "landmarks": landmarks,                            # 单格类型化地标（well/board）
            "objects": objects}
     json.dump(out, open(p("map.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     json.dump(ag, open(p("agents.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
