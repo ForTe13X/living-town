@@ -7,11 +7,11 @@
       "furniture": [
         {"slot": "stairs", "pos": [1, 1], "label": "上楼"},
         {"slot": "shelf", "pos": [6, 1]},
-        {"slot": "counter", "pos": [4, 1], "label": "咖啡吧台", "advertises": [{"action": "看摊", "need": "fun", "amount": 30, "duration": 24}, {"action": "闲聊", "need": "social", "amount": 40, "duration": 20}]},
+        {"slot": "counter", "pos": [4, 1], "label": "咖啡吧台", "staff": true, "advertises": [{"action": "看摊", "need": "fun", "amount": 30, "duration": 24}, {"action": "闲聊", "need": "social", "amount": 40, "duration": 20}]},
         {"slot": "coffee", "pos": [5, 1], "label": "咖啡机"},
         {"slot": "table", "pos": [2, 3]},
         {"slot": "chair", "pos": [2, 4]},
-        {"slot": "table", "pos": [5, 3]},
+        {"slot": "table", "pos": [5, 3], "advertises": [{"action": "喝咖啡", "need": "fun", "amount": 32, "duration": 16}]},
         {"slot": "chair", "pos": [5, 4]},
         {"slot": "plant", "pos": [1, 4]},
         {"slot": "rug", "pos": [3, 2]}

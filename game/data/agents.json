@@ -55,7 +55,8 @@
    "spawn": [
     22,
     14
-   ]
+   ],
+   "cafe_regular": true
   },
   {
    "id": "evy",
@@ -103,7 +104,8 @@
    "spawn": [
     19,
     15
-   ]
+   ],
+   "cafe_regular": true
   },
   {
    "id": "shu",
@@ -127,7 +129,8 @@
    "spawn": [
     22,
     15
-   ]
+   ],
+   "cafe_regular": true
   },
   {
    "id": "qin",

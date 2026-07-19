@@ -32,6 +32,12 @@ const NAV_DIRS := [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, 
 const HOME_NEEDS := ["energy", "fun"]
 const JOURNEY_URGENT := 30.0    # 偏紧(need<70)才发起跨平面行程（本地已无满足者时）
 const PREEMPT_CRISIS := 12.0    # 承诺行程执行中，若【另一】需求跌破此危机线且当前行程目标本身不急 → 中止改救急（守 #01）
+# 顾客进店（多人室内）：镇上的【常客】(cafe_regular)在营业时段、fun 偏低且无紧急事时 → 承诺行程进咖啡馆喝咖啡，
+# 进去后与阿丽/其他客人同平面自然社交(闲坐/串门/八卦)，某需求偏紧再承诺行程出店办事。让咖啡馆成活的社交枢纽。
+const CAFE_VISIT_FUN := 68.0    # fun<此(营业时段) → 常客动了"去喝杯咖啡"的心思（抢在就近游戏机之前）
+const CAFE_VISIT_BONUS := 22.0  # 进店行程加成：让"专程去咖啡馆"稳压就近的镇上游戏机(否则路远永不选)→ 常客真会来
+const CAFE_OPEN_LO := 0.15      # 营业时段 tod∈[lo,hi)（清晨到午后；夜里不揽客 → 顾客回家/镇上过夜）
+const CAFE_OPEN_HI := 0.62
 const CONVERSE_TICKS := 10      # 一次社交对话占用的 tick（双方绑定/暂停）——够读完一句台词
 const SOCIAL_FULL := 88.0       # social 高于此不再主动发起社交
 const GIFT_START := 3           # 每个 NPC 初始礼物数（give 破冰用）
@@ -435,6 +441,7 @@ func _compile_interiors() -> void:
 					"id": "%s%s_%s" % [space, floor, slot], "type": String((fu as Dictionary).get("label", slot)),
 					"pos": [int(pos[0]), int(pos[1])],
 					"space": String(space), "floor": String(floor), "area": String(space) + ":" + String(floor),
+					"staff": bool((fu as Dictionary).get("staff", false)),   # P3：员工专属对象(吧台)——只有该店主人用；顾客用公共桌
 					"advertises": adv.duplicate(true)})
 	world["objects"] = objs
 
@@ -564,6 +571,7 @@ func _make_agent(adef: Dictionary, personas: Dictionary) -> Dictionary:
 		"home": Vector2i(int(adef["home"][0]), int(adef["home"][1])),
 		"space": a_space, "floor": a_floor,
 		"home_space": a_space, "home_floor": a_floor,     # 家=起始平面（阿丽=cafe/2f）→ 回家 traverse 目标
+		"cafe_regular": bool(adef.get("cafe_regular", false)),   # P3：咖啡馆常客(营业时段进店喝咖啡+社交)；缺=false=不进店
 		"needs": {},
 		"option": null,
 		"mood": "neutral",
@@ -954,6 +962,11 @@ func tick() -> void:
 func time_of_day() -> float:
 	return float(tick_no % TICKS_PER_DAY) / float(TICKS_PER_DAY)  # 0..1
 
+## 咖啡馆营业时段（纯 f(tick)，无 RNG/Time）→ 顾客进店只在白天揽客窗口。
+func _cafe_open() -> bool:
+	var tod := time_of_day()
+	return tod >= CAFE_OPEN_LO and tod < CAFE_OPEN_HI
+
 ## 昼夜节律（"行动↔时间同频"，docs/14）：确定性纯查表——tod=f(tick_no)，无 RNG/无 Time/区间不重叠故不依赖字典序。
 ## 时段名 = phases 里首个覆盖 tod 的半开区间 [lo,hi)；缺表/缺键 → 空/default。
 func _phase_of(tod: float) -> String:
@@ -1069,7 +1082,7 @@ func _advance_journey(ag: Dictionary, opt: Dictionary) -> void:
 		_advance_object(ag, opt)
 		return
 	var hop := _route_next_hop(String(ag.get("space", "town")), String(ag.get("floor", "outdoor")),
-		String(opt.get("dest_space", "town")), String(opt.get("dest_floor", "outdoor")))
+		String(opt.get("dest_space", "town")), String(opt.get("dest_floor", "outdoor")), ag)
 	if hop.is_empty():
 		ag["option"] = null                # 不可达 → 放弃（下 tick 重新决策）
 		return
@@ -1203,60 +1216,85 @@ func agent_candidates(ag: Dictionary) -> Array:
 		out.append_array(ext.candidates(self, ag))   # 注册的 CandidateProvider 追加（排在内建之后，不改内建枚举序 → 回放安全）
 	return out
 
-## P3 Tier-B 决策规划：跨平面【承诺式行程 journey】元候选。仅【café 居民】(home_space≠town) 非空 → town 逐字节不变。
-## 对每个"本平面(对她)无满足 + 偏紧"的 need，锁定【他平面最优满足对象】，产出一条带完整对象参数的 journey 候选：
-## 一旦被选中 → agent_apply 建 journey option → _advance_journey 承诺执行(跨 portal→到对象→用它)，中途不重挑(只危机打断)。
-## 这消除了"多需求在门口/楼梯每 tick 反复横跳"的 livelock。social 不进(社交系统+同平面吧台满足)。确定：对象/portal 文件序、无 RNG。
+## P3 Tier-B 决策规划：跨平面【承诺式行程 journey】元候选。两类，都产出带完整对象参数的 journey 候选(选中→agent_apply
+## 建 journey option→_advance_journey 承诺执行：跨 portal→到对象所在平面→交回普通对象逻辑用它，中途不重挑，只危机打断)：
+##   (A) 顾客进店：镇上【常客】(cafe_regular)在营业时段、fun 偏低且无紧急事 → 去咖啡馆喝咖啡（进店后自然社交）。
+##   (B) 离家在外(顾客在店/阿丽在镇)或 café 居民 → 本平面无满足的偏紧 need 承诺行程去有满足者的平面。
+## 普通镇上居民(home=town、非常客/未进店) → 恒返 [] → town 逐字节不变。确定：对象/portal 文件序、无 RNG。
 func _journey_candidates(ag: Dictionary) -> Array:
-	if String(ag.get("home_space", "town")) == "town" or ag.get("is_player", false):
+	if ag.get("is_player", false):
 		return []
 	var aspace := String(ag.get("space", "town"))
 	var afloor := String(ag.get("floor", "outdoor"))
 	var home_space := String(ag.get("home_space", "town"))
 	var out: Array = []
-	var covered := {}                                # 本平面【对她可用】的对象覆盖的 need（含家绑定）
-	for id in world["objects"]:
-		var o: Dictionary = world["objects"][id]
-		if String(o.get("space", "town")) == aspace and String(o.get("floor", "outdoor")) == afloor:
-			for adv in _as_arr(o.get("advertises", [])):
-				if adv is Dictionary:
-					var n := String(adv.get("need", ""))
-					if not (n in HOME_NEEDS and aspace != home_space):   # 镇上的床/游戏机不算覆盖她的 energy/fun
-						covered[n] = true
-	for nid in ag["needs"]:
-		if nid == "social" or covered.has(nid):      # social 由社交系统满足；本平面能满足的 need 就地办(不跨平面)
-			continue
-		var urg := 100.0 - float(ag["needs"][nid])
-		if urg <= JOURNEY_URGENT:                    # 偏紧(need<70)才发起行程 → 每次在一个平面多办几件、少往返
-			continue
-		# 锁定他平面满足此 need 的【最优对象】(家绑定：energy/fun 只认家 Space；其余任意平面)
-		var best_score := -1.0e18
-		var best: Dictionary = {}
+	# (A) 常客进店：镇上常客、营业时段、fun<阈值、无紧急事 → 去咖啡馆喝杯咖啡（进店行程；只认 café 的 fun 对象）。
+	var wants_visit := aspace == "town" and home_space == "town" and bool(ag.get("cafe_regular", false)) \
+			and _cafe_open() and float(ag["needs"].get("fun", 100.0)) < CAFE_VISIT_FUN and _min_need(ag) >= SURVIVAL_GATE
+	if wants_visit:
+		var vc := _best_satisfier_journey(ag, "fun", aspace, afloor, home_space, true)
+		if not vc.is_empty():
+			out.append(vc)
+	# (B) 离家在外 或 café 居民 → 为本平面无满足的偏紧 need 承诺行程。普通镇上居民(都在 town)不进此块。
+	if aspace != "town" or home_space != "town":
+		var covered := {}
 		for id in world["objects"]:
 			var o: Dictionary = world["objects"][id]
-			var os := String(o.get("space", "town")); var of := String(o.get("floor", "outdoor"))
-			if os == aspace and of == afloor:
+			if String(o.get("space", "town")) == aspace and String(o.get("floor", "outdoor")) == afloor:
+				for adv in _as_arr(o.get("advertises", [])):
+					if adv is Dictionary:
+						var n := String(adv.get("need", ""))
+						if not (n in HOME_NEEDS and aspace != home_space):   # 镇上的床/游戏机不算覆盖【居民】的 energy/fun
+							covered[n] = true
+		for nid in ag["needs"]:
+			if nid == "social" or covered.has(nid):
 				continue
-			if nid in HOME_NEEDS and os != home_space:   # 她的 energy/fun 只回家 Space 满足
+			if 100.0 - float(ag["needs"][nid]) <= JOURNEY_URGENT:
 				continue
-			var amt := 0; var dur := 0; var act := ""
-			for adv in _as_arr(o.get("advertises", [])):
-				if adv is Dictionary and String(adv.get("need", "")) == nid and int(adv.get("amount", 0)) > amt:
-					amt = int(adv.get("amount", 0)); dur = int(adv.get("duration", 0)); act = String(adv.get("action", ""))
-			if amt <= 0:
-				continue
-			var hop := _route_next_hop(aspace, afloor, os, of)
-			if hop.is_empty():
-				continue
-			var d := _manh(ag["pos"], hop["from_pos"]) + int(hop.get("cost", 1)) * 3   # 估路程：到本层 portal 口 + 过 portal 成本
-			var score := urg * (float(amt) / 60.0) - float(d) * _w("obj_dist_penalty", 0.4)
-			if score > best_score:
-				best_score = score
-				best = {"kind": "journey", "action": act, "target": String(id), "need": nid,
-					"dest_space": os, "dest_floor": of, "amount": amt, "dur_total": dur, "score": score, "say": ""}
-		if not best.is_empty():
-			out.append(best)
+			var jc := _best_satisfier_journey(ag, nid, aspace, afloor, home_space, false)
+			if not jc.is_empty():
+				out.append(jc)
 	return out
+
+## 锁定他平面满足 nid 的【最优对象】→ 一条 journey 候选。家绑定：【居民】的 energy/fun 只回家 Space(顾客 home=town 不受限)。
+## is_visit=进店行程：只认咖啡馆对象、路程惩罚减半+进店加成(值得为一杯咖啡跑一趟，压过就近的镇上游戏机)。带 ag 走权限门(owner 楼梯)。
+func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor: String, home_space: String, is_visit: bool) -> Dictionary:
+	var urg := 100.0 - float(ag["needs"].get(nid, 100.0))
+	var best_score := -1.0e18
+	var best: Dictionary = {}
+	for id in world["objects"]:
+		var o: Dictionary = world["objects"][id]
+		var os := String(o.get("space", "town")); var of := String(o.get("floor", "outdoor"))
+		if os == aspace and of == afloor:
+			continue
+		if is_visit and os != "cafe":
+			continue
+		if not _staff_ok(ag, o):                                # 顾客的进店行程不冲吧台(员工专属)→ 锁定公共桌"喝咖啡"
+			continue
+		if nid in HOME_NEEDS and home_space != "town" and os != home_space:   # 居民的 energy/fun 只回家 Space
+			continue
+		var amt := 0; var dur := 0; var act := ""
+		for adv in _as_arr(o.get("advertises", [])):
+			if adv is Dictionary and String(adv.get("need", "")) == nid and int(adv.get("amount", 0)) > amt:
+				amt = int(adv.get("amount", 0)); dur = int(adv.get("duration", 0)); act = String(adv.get("action", ""))
+		if amt <= 0:
+			continue
+		var hop := _route_next_hop(aspace, afloor, os, of, ag)
+		if hop.is_empty():
+			continue
+		var d := _manh(ag["pos"], hop["from_pos"]) + int(hop.get("cost", 1)) * 3   # 估路程：到本层 portal 口 + 过 portal 成本
+		var pen: float = _w("obj_dist_penalty", 0.4) * (0.5 if is_visit else 1.0)
+		var score := urg * (float(amt) / 60.0) - float(d) * pen + (CAFE_VISIT_BONUS if is_visit else 0.0)
+		if score > best_score:
+			best_score = score
+			best = {"kind": "journey", "action": act, "target": String(id), "need": nid,
+				"dest_space": os, "dest_floor": of, "amount": amt, "dur_total": dur, "score": score, "say": ""}
+	return best
+
+## 员工专属对象门：staff 对象(阿丽的吧台)只有该店主人(home_space==对象 Space)能用；顾客/外人不枚举它。
+## 非 staff 对象恒真 → town 全员 + 所有旧对象逐字节不变。
+func _staff_ok(ag: Dictionary, o: Dictionary) -> bool:
+	return not bool(o.get("staff", false)) or String(ag.get("home_space", "town")) == String(o.get("space", "town"))
 
 func _object_candidates(ag: Dictionary) -> Array:
 	var out: Array = []
@@ -1272,6 +1310,8 @@ func _object_candidates(ag: Dictionary) -> Array:
 		if String(o.get("space", "town")) != String(ag.get("space", "town")) \
 				or String(o.get("floor", "outdoor")) != String(ag.get("floor", "outdoor")):
 			continue                        # P3：只枚举【同平面】对象（跨平面走 _journey_candidates 承诺行程）。town 居民↔town 对象 → 与旧一致
+		if not _staff_ok(ag, o):
+			continue                        # P3：员工专属对象(阿丽的吧台)只有店主人枚举；顾客不"看摊"，改用公共桌"喝咖啡"
 		for adv in o.get("advertises", []):
 			# 健壮性（stage-2 review #4）：改数据后可能出现残缺 advertises；用 .get() 取值+非对象跳过，
 			# 避免"缺键裸括号"每 tick 崩。合规条目(四键齐全)取值与旧逐字节一致 → 不新增/移动候选 → digest 不漂。
@@ -2643,11 +2683,17 @@ func _v2i(a) -> Vector2i:
 	return Vector2i(int(arr[0]), int(arr[1])) if arr.size() >= 2 else Vector2i.ZERO
 
 ## 从 (space,floor) 出发能走的 portal（含双向反向边）：[{from_pos(本层格),to_space,to_floor,to_pos,cost}]。spaces.json 顺序=确定序。
-func _portals_from(space: String, floor: String) -> Array:
+## access="owner" 的 portal（如咖啡馆私人楼梯）只有【该室内的主人】(home_space==该 Space)能走 → 顾客进不了阿丽的 2F 私宅。
+## ag 缺省(空)=不设访问门(渲染/校验用)；带 ag 走访问门(导航/决策用)。
+func _portals_from(space: String, floor: String, ag: Dictionary = {}) -> Array:
 	var out: Array = []
 	for p in _portals:
 		var fr: Dictionary = p.get("from", {})
 		var to: Dictionary = p.get("to", {})
+		if String(p.get("access", "public")) == "owner" and not ag.is_empty():
+			var owned := String(fr.get("space", "")) if String(fr.get("space", "")) != "town" else String(to.get("space", ""))
+			if String(ag.get("home_space", "town")) != owned:
+				continue                    # 非主人 → 私有 portal(楼梯)走不了
 		if String(fr.get("space", "")) == space and String(fr.get("floor", "")) == floor:
 			out.append({"from_pos": _v2i(fr.get("pos")), "to_space": String(to.get("space", "")), "to_floor": String(to.get("floor", "")), "to_pos": _v2i(to.get("pos")), "cost": int(p.get("traversal_cost", 1))})
 		elif bool(p.get("bidirectional", false)) and String(to.get("space", "")) == space and String(to.get("floor", "")) == floor:
@@ -2655,7 +2701,8 @@ func _portals_from(space: String, floor: String) -> Array:
 	return out
 
 ## 从 (fromS,fromF) 到 (toS,toF) 的【下一跳 portal】（BFS，FIFO+portal 文件序 → 确定）。同层→{}。不可达→{}。
-func _route_next_hop(fromS: String, fromF: String, toS: String, toF: String) -> Dictionary:
+## 带 ag → BFS 只走该 agent 有权限的 portal（顾客路不到阿丽的 owner-only 2F → 那床对顾客"不可达"→ 不会去睡）。
+func _route_next_hop(fromS: String, fromF: String, toS: String, toF: String, ag: Dictionary = {}) -> Dictionary:
 	var start := fromS + "/" + fromF
 	var goal := toS + "/" + toF
 	if start == goal:
@@ -2668,7 +2715,7 @@ func _route_next_hop(fromS: String, fromF: String, toS: String, toF: String) -> 
 		if node == goal:
 			break
 		var pr := node.split("/")
-		for hop in _portals_from(pr[0], pr[1]):
+		for hop in _portals_from(pr[0], pr[1], ag):
 			var nb := String(hop["to_space"]) + "/" + String(hop["to_floor"])
 			if not parent.has(nb):
 				parent[nb] = node
