@@ -61,6 +61,14 @@ for l in open(DATA,encoding="utf-8"):
     if key(d) in exclude_keys: continue
     tg=target_griev(d)
     if tg and tg["role"]=="aggrieved": rows.append(d)
+# Phase D 事件窗口去重：同一心结(seed,agent,对象)在同一 status 阶段会横跨很多 tick → 近似重复。每个
+# (episode × 阶段) 只留最早一例 → 案例相互独立（后续按 seed cluster-bootstrap 才不虚增有效样本）。
+seen_ep={}; dedup=[]
+for r in sorted(rows, key=lambda r:(r["seed"], r["agent"], r["tick"])):
+    tg=target_griev(r); ek=(r["seed"], r["agent"], tg["other_id"], tg["status"])
+    if ek in seen_ep: continue
+    seen_ep[ek]=1; dedup.append(r)
+rows=dedup
 buck=defaultdict(list)
 for r in sorted(rows,key=key):
     tg=target_griev(r); buck[(tg["status"],r["persona"])].append(r)
