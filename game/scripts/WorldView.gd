@@ -564,6 +564,7 @@ func _draw() -> void:
 			draw_circle(Vector2(cx, tc.y * T + T * 0.42), T * 0.42, Color("#2f6d3a"))                                # 树冠
 			draw_circle(Vector2(cx - T * 0.18, tc.y * T + T * 0.30), T * 0.24, Color("#3c8a4a"))                      # 高光叶
 
+	_draw_town_doors()         # P3 UX：给能进的建筑画醒目木门 + 招牌（点门进店）
 	_draw_landmarks()          # P2-4 公共地标（水井 / 告示板）：程序化画在地形层、居民之下
 
 	# 对象：CC0 物件精灵（slot=id 前缀，如 bench/bath/counter/desk/arcade）；缺则程序化色块兜底
@@ -614,6 +615,32 @@ func _draw_nav_overlay(w: int) -> void:
 				draw_rect(Rect2(n.x * T + T * 0.3, n.y * T + T * 0.3, T * 0.4, T * 0.4), Color(0.3, 0.95, 0.42, 0.6), true)
 
 ## P2-4 公共基础设施地标：程序化画水井（石圈+蓝顶）与告示板（木板+红顶+纸），风格与分类型建筑一致。
+## P3 UX：镇上给每个【能进的建筑】画一扇醒目木门 + 悬挂招牌（portal from=town/outdoor 的 door）→ 玩家一眼看出可点进入。
+func _draw_town_doors() -> void:
+	var main := get_parent()
+	var sg = main.get("_sg") if main != null else null
+	if sg == null:
+		return
+	for p in sg.portals:
+		var fr: Dictionary = p.get("from", {})
+		if String(fr.get("space", "")) != "town" or String(fr.get("floor", "")) != "outdoor" or String(p.get("kind", "")) != "door":
+			continue
+		var pos: Array = fr.get("pos", [0, 0])
+		var x := int(pos[0]) * T; var y := int(pos[1]) * T
+		draw_rect(Rect2(x + 2, y + T * 0.5, T - 4, T * 0.5), Color(0, 0, 0, 0.25), true)          # 落地阴影
+		draw_rect(Rect2(x + T * 0.1, y + T * 0.06, T * 0.8, T * 0.9), Color("#3a291a"), true)      # 门框
+		draw_rect(Rect2(x + T * 0.16, y + T * 0.12, T * 0.68, T * 0.82), Color("#7a5230"), true)   # 门板
+		draw_rect(Rect2(x + T * 0.16, y + T * 0.12, T * 0.68, T * 0.1), Color("#f0d68a", 0.5), true)  # 门楣暖光
+		draw_rect(Rect2(x + T * 0.48, y + T * 0.12, T * 0.03, T * 0.82), Color("#3a291a"), true)   # 门缝
+		draw_circle(Vector2(x + T * 0.72, y + T * 0.55), T * 0.055, Color("#f0d060"))              # 门把
+		var to: Dictionary = p.get("to", {})
+		var label := String(sg.label_of(String(to.get("space", ""))))
+		var sw: float = 8.0 + Art.font().get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13).x
+		var sx := x + T * 0.5 - sw * 0.5
+		draw_rect(Rect2(sx, y - T * 0.52, sw, T * 0.36), Color("#5a3f28"), true)                   # 招牌木板
+		draw_rect(Rect2(sx, y - T * 0.52, sw, T * 0.36), Color("#e0c060", 0.8), false, 1.5)        # 金边
+		draw_string(Art.font(), Vector2(sx + 5, y - T * 0.52 + 14), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("#f0e0b0"))
+
 func _draw_landmarks() -> void:
 	for lm in Sim.world.get("landmarks", []):
 		var lp: Array = lm.get("pos", [0, 0])

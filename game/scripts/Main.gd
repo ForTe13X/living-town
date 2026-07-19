@@ -1080,7 +1080,40 @@ func _probe_cycle_floor(dir: int) -> void:
 	_update_status()
 
 ## Probe 点选 → 角色 hit-test（选择语义留 Main；Probe 只报"点了世界哪一点"）。
+## 自然穿门 UX（替代 I/PgUp/PgDn 开发键）：点 portal 格 → 进店 / 上下楼 / 出门。命中门则不再当作选人。
+func _portal_click(world_pos: Vector2) -> bool:
+	if _sg == null:
+		return false
+	var cell := Vector2i(int(floor(world_pos.x / 48.0)), int(floor(world_pos.y / 48.0)))
+	var asp := String(_probe.active_space); var afl := String(_probe.active_floor)
+	for p in _sg.portals:
+		for side in ["from", "to"]:
+			var e: Dictionary = p.get(side, {})
+			if String(e.get("space", "")) != asp or String(e.get("floor", "")) != afl:
+				continue
+			var pos: Array = e.get("pos", [0, 0])
+			if Vector2i(int(pos[0]), int(pos[1])) != cell:
+				continue
+			var other: Dictionary = p.get("to") if side == "from" else p.get("from")
+			var os := String(other.get("space", "town")); var of := String(other.get("floor", "outdoor"))
+			var b: Rect2 = _sg.bounds_px(os)
+			_probe.set_space(os, of, b)                # 入历史栈 → ESC 可原路退回
+			if os == "town":
+				_probe.go_home()                       # 出门 → 回全镇视角
+			else:                                      # 进店/换层 → 缩放到室内刚好入画
+				var fit: Vector2 = (_vp() - Vector2(120.0, 200.0)) / b.size
+				_probe.cam.zoom = Vector2.ONE * clampf(minf(fit.x, fit.y), _probe.ZOOM_MIN.x, _probe.ZOOM_MAX.x)
+				_probe.cam.position = b.get_center()
+			_selected_id = ""
+			var verb := "上下楼" if String(p.get("kind", "")) == "stairs" else ("进门" if os != "town" else "出门")
+			_push("[color=#9ad0ff]%s / %s 层（点%s）[/color]" % [_sg.label_of(os), of, verb])
+			_update_status()
+			return true
+	return false
+
 func _on_probe_tap(world_pos: Vector2) -> void:
+	if _portal_click(world_pos):                       # 先看点没点门/楼梯；点了就穿，不再选人
+		return
 	_select_at_world(world_pos)
 
 ## Probe 双击 → 聚焦所点房间（analysis §4.2 Focus）。

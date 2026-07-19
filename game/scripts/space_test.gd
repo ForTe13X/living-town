@@ -6,6 +6,16 @@ func ck(c: bool, m: String) -> void:
 	if not c: _fails += 1
 	print(("  OK   " if c else "  FAIL ") + m)
 
+## Main._portal_click 的查表：点 (space,floor,cell) 落在哪条 portal 上 → 目的地 [space,floor]；无则 ["",""]。
+func _portal_dest(sg, sp: String, fl: String, cell: Vector2i) -> Array:
+	for p in sg.portals:
+		for side in ["from", "to"]:
+			var e: Dictionary = p[side]
+			if String(e["space"]) == sp and String(e["floor"]) == fl and Vector2i(int(e["pos"][0]), int(e["pos"][1])) == cell:
+				var o: Dictionary = p["to"] if side == "from" else p["from"]
+				return [String(o["space"]), String(o["floor"])]
+	return ["", ""]
+
 func _ready() -> void:
 	Sim.start_new(1)
 	var sg = preload("res://scripts/SpaceGraph.gd").new()
@@ -41,6 +51,13 @@ func _ready() -> void:
 	ck("p_cafe_door" in cafe1_ids and "p_cafe_stairs" in cafe1_ids, "cafe/1f 有街门（反查）+ 上楼梯")
 	var pt_cafe2: Array = sg.portals_from("cafe", "2f")
 	ck(pt_cafe2.size() == 1 and String(pt_cafe2[0]["to"]["floor"]) == "1f", "cafe/2f 经双向楼梯反查回 1f")
+
+	# ── P3 UX：点门/楼梯穿越（Main._portal_click 的查表逻辑，纳入 CI）──
+	ck(_portal_dest(sg, "town", "outdoor", Vector2i(41, 19)) == ["cafe", "1f"], "点镇上咖啡馆门 → cafe/1f（进店）")
+	ck(_portal_dest(sg, "cafe", "1f", Vector2i(1, 1)) == ["cafe", "2f"], "点 1F 楼梯 → cafe/2f（上楼）")
+	ck(_portal_dest(sg, "cafe", "2f", Vector2i(1, 1)) == ["cafe", "1f"], "点 2F 楼梯 → cafe/1f（下楼）")
+	ck(_portal_dest(sg, "cafe", "1f", Vector2i(4, 5)) == ["town", "outdoor"], "点 1F 门 → town/outdoor（出门）")
+	ck(_portal_dest(sg, "town", "outdoor", Vector2i(9, 9)) == ["", ""], "点空地 → 无 portal（不误穿）")
 
 	# ── 兼容层：不带 spatial_address 的老 agent 一律 town/outdoor（Sim 一行没改）──
 	var ag: Dictionary = Sim.agents[0]
