@@ -75,12 +75,49 @@
 （改 Sim → 动 digest，需过 S0 CI；这是 Step 3 闭环 A/B 顺带验的第一项）。次要：莽撞(evy) 在 leak/rally 上也偏激进（各 N4，样本小、
 存疑）；阿丽的 gossip-leak 本轮没被抽到 secret 案（无 aria secret 样本），是待补的一个缺口。
 
-## Step 3-4（TODO）：闭环 A/B + 架构 go/no-go
-- **闭环因果 A/B**：old/new CHARACTER gates（含 `BLUNT_TRAITS` 扩项）× SURVIVAL_GATE 20/24，看 need floor / 社交动作率 /
-  冲突完成率 / 悬空 arc / 事件多样性 / drama cadence。
-- **架构 go/no-go（现在证据更足）**：四类机会上**简单 typed 规则都抓住了 in_character 方向**、三轴可分离、judge 校准可信——
-  **没有任何证据支持重启 GBDT**（门：learned ranker whole-seed held-out 稳定 ≥3-5pp 且闭环无回归）。规则侧唯一实锤待办 =
-  扩 `BLUNT_TRAITS`。LLM 若入场只作 bounded/shadow prior，hard epistemic 规则永远优先。
+## Step 3（DONE）：闭环因果 A/B —— 并【否决】了 judge 验过的 BLUNT 扩项
+把 6 个门（CHARACTER_DEFER / BLUNT_TRAITS / DRAMA_GOSSIP_LEAK / FACTION_MOB_DEFER / FACTION_ENDORSE_DEFER / SURVIVAL_GATE）
+从 const 改 var（配置项，不进 digest、默认不变→CI 逐字节不变）供换档；把 Step-2 验过的 `BLUNT_TRAITS` 扩项
+（`["耿直"]→["耿直","莽撞","爽快"]`）先【暂挂上】跑闭环 + S0。`bench/ab_metrics.gd` 在四档 × 12 seeds × 45 天下量下游产出：
+
+| 指标（12seed×45d 均值） | A 逻辑地板(char off) | B CHARACTER(耿直) | C CHARACTER(+莽撞+爽快) | D C@gate22 |
+|---|---:|---:|---:|---:|
+| need_floor / **饿穿** | 19.4 / **0** | 17.4 / **0** | 17.9 / **0** | 16.2 / **0** |
+| confront/局 | **82** | 35 | 44 | 43 |
+| rally_oust/局 | **34** | 14 | 14 | 15 |
+| 冲突完成率 | **0.89** | 0.38 | 0.45 | 0.45 |
+| 悬空弧/局 | **10** | 53 | 50 | 50 |
+| drama/天 | **2.58** | 1.09 | 1.29 | 1.28 |
+| 事件熵 | 3.06 | 2.79 | 2.79 | 2.78 |
+
+**读法：**
+1. **CHARACTER 规则确实把镇子变了个活法**（vs 逻辑地板）：对质 ~减半(82→35~44)、公开合围 ~减 60%(34→14)、drama 节拍变缓
+   (2.58→1.3/天)、小怨气更多地【搁着不了】（悬空弧 10→50）。这【正是设计意图】——一个"大多数小别扭就让它过去、不机械地逢怨必对质"
+   的镇子（Step 2 盲评也说这更 in_character）。
+2. **代价是明摆着的、是个旋钮不是 bug**：逻辑地板"完成率 0.89"是因为它逢怨必对质→必道歉→必和解；CHARACTER 让怨气 linger
+   （完成率 0.45、50 条悬空）——更真实（真实的怨很多就是拖着），但开着的弧更多。DRAMA 导演(1200 tick 才爆)在 45 天里还没引爆足够多的
+   长 linger 怨 → **一条可调线索：想抬完成率就调 DRAMA 爆发节奏**（这是 DRAMA 轴、与 CHARACTER 规则正交）。
+3. **#01 无饿穿在【所有】配置下都成立**（starved=0，连 SURVIVAL_GATE=22 也是）→ need-floor 稳。
+
+**🚩 头号结论——闭环【否决】了 judge 验过的 BLUNT 扩项。** ab_metrics 看 C（扩项）像个温和改进（对质 35→44、完成率 +7pp、
+need_floor 略升、饿穿 0）；但**同一次 S0 CI 抓出它破了软不变量 #15 涌现放逐（10/12 < 门）**：多两个人设逢怨即对质→更多怨被
+引爆和解→没人攒下【持久】坏名声→放逐涌现被抹平（正应验 `DRAMA_ERUPT_SEV` 注释早写下的警告）。**judge 验过 ≠ 能上**——把 BLUNT
+【退回仅耿直】后 #15 立即回 12/12、S0 全绿。这正是审计要求"persona 例外必须单独过 CI gate"、也正是要做闭环因果 A/B 的全部意义：
+盲评（in_character，N=4/人，样本小）说该扩，闭环（因果、全 12 seed）说不该。**以闭环为准 → 不扩。**
+
+## Step 4：架构 go / no-go（证据齐了）
+- **KEEP 简单 typed CHARACTER 规则（仅耿直）。** 两路证据合流：Step 2 说规则 in_character 方向对（四类 + A=A 校准），Step 3 说
+  规则在闭环里产出一个可辨、更贴人设、#01 安全、#15 放逐不被抹平的镇子。规则纯 f(persona/state)、零运行时推理。
+- **BLUNT 扩项：REJECTED（被闭环否决）。** 判据侧 N=4 的小信号不敌闭环侧的 #15 代价。莽撞/爽快待【更大样本】+ 一个【不抹平 #15
+  的 DRAMA 侧做法】再议——不是永久否，是"证据不够 + 有已知副作用，先不上"。
+- **NO-GO 重启 GBDT。** 没有证据满足门槛（learned ranker whole-seed held-out 稳定 ≥3-5pp 且闭环无回归）：规则简单、在 judge 与
+  closed-loop 两面都验住了，看不到 learned ranker 能赢的缝。LLM 若入场只作 bounded/shadow prior，hard epistemic 规则永远优先。
+- **副产品**：6 门变可配置（const→var，digest 中性）→ 以后做 A/B / 设置档 / shadow-mode 都有抓手。留作 DRAMA 轴调参：悬空弧偏高
+  → 调 `DRAMA_ERUPT_*` 把长 linger 的要紧怨更多引爆结清（这才是"抬完成率又不抹平 #15"的正解，正交于 CHARACTER）。
+
+**Phase D 收尾**：审计 3 条 P1 全修、语义契约立起、四类机会 clean-comparator 确认性复现、闭环 A/B 给因果证据【并否决了一个 judge
+验过的改动】、go/no-go 落定（保仅-耿直规则、BLUNT 扩项被闭环否决、不上 GBDT）。**核心方法论收获：judge preference 与 closed-loop
+causality 都要过，缺一不可——本次正是闭环拦下了盲评放行的改动。** 全部在 `phase-d-contract-hardening` 分支。
 
 ## Step 3-4（TODO）：闭环 A/B + 架构 go/no-go
 - **闭环因果 A/B**：old/new CHARACTER gates × SURVIVAL_GATE 20/24，看 need floor / 社交动作率 / 冲突完成率 / 悬空 arc /
