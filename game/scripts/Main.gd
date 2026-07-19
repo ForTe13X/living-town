@@ -62,6 +62,8 @@ func _ready() -> void:
 	var warmup_tick := 0                   # --warmup-tick T：静默推进到精确 tick T（眼验：定格某一瞬的社交事件）
 	var _sel_arg := ""                     # --select id：定格后观察台默认选中此角色（眼验居中到当事人）
 	var _dbg_nav_arg := false              # --dbg-nav：启动/出图即开导航叠层
+	var _probe_space_arg := ""             # --probe-space id：启动即把 Probe 切到该 Space（P3 咖啡馆室内眼验）
+	var _probe_floor_arg := ""             # --probe-floor id：配 --probe-space 指定楼层
 	var args := OS.get_cmdline_user_args()
 	for i in args.size():
 		if args[i] == "--backend" and i + 1 < args.size():
@@ -101,6 +103,10 @@ func _ready() -> void:
 			_shot_fit = true                   # 出图整镇入画（缩放到整图-HUD 余量）；缺省保留跟随相机（角色特写眼验）
 		elif args[i] == "--dbg-nav":
 			_dbg_nav_arg = true                # 出图/启动即开导航叠层（阻挡格+交互格）
+		elif args[i] == "--probe-space" and i + 1 < args.size():
+			_probe_space_arg = args[i + 1]     # 出图/启动即把 Probe 切到某 Space（眼验 P3 咖啡馆室内）
+		elif args[i] == "--probe-floor" and i + 1 < args.size():
+			_probe_floor_arg = args[i + 1]     # 配 --probe-space：指定楼层（1f/2f）
 	AIBackend.backend = backend
 	# 后端优先级：CLI --backend 显式 > user://settings.cfg（手机 UI 存的默认）> 默认 logic。
 	# headless CI 不经此路（Harness/soak 直接 Sim.backend=null）→ 确定性逐字节不变。
@@ -159,6 +165,9 @@ func _ready() -> void:
 	_probe.setup(self, _space_bounds())          # 边界来自 active Space（兼容期=town；P1 起由 SpaceGraph 给）
 	_probe.tapped.connect(_on_probe_tap)
 	_probe.double_tapped.connect(_on_probe_double_tap)
+	if _probe_space_arg != "" and _sg.has_space(_probe_space_arg):   # --probe-space：启动即进某 Space（P3 室内眼验）
+		var _pf: String = _probe_floor_arg if _probe_floor_arg != "" else _sg.default_floor(_probe_space_arg)
+		_probe.set_space(_probe_space_arg, _pf, _sg.bounds_px(_probe_space_arg))
 
 	# 昼夜光照：CanvasModulate 只染世界画布，不染 HUD（HUD 在独立 CanvasLayer）
 	_modulate = CanvasModulate.new()
@@ -180,8 +189,9 @@ func _ready() -> void:
 		_probe_and_activate(backend)        # 不 await：后台跑，首帧已可见
 	if _shot_path != "":                    # dev 出图：等 1.5s 让世界渲染+纹理加载，再存一帧退出
 		Sim.auto_run = false                # 定格：冻结在 warmup tick，等待期间不再推进（tick-precise 眼验，防漂）
-		if _shot_fit and _probe != null:    # --shot-fit：整镇入画，缩放到【整图 - HUD 余量】刚好塞进视口，美术/地形看全局
-			_probe.go_home()
+		if _shot_fit and _probe != null:    # --shot-fit：整镇（或当前室内 Space）入画，缩放到【bounds - HUD 余量】刚好塞进视口
+			if String(_probe.active_space) == "town":
+				_probe.go_home()            # town 才回全镇；非-town(咖啡馆室内)保持已进的 Space，别被 go_home 拽回 town
 			var _mapsz: Vector2 = _space_bounds().size
 			var _vpsz := Vector2(get_viewport().get_visible_rect().size)
 			var _pad := Vector2(120, 240)   # 顶部状态栏 + 底部聊天/时间轴 HUD 余量（避免边缘水塘被面板遮住）
@@ -1048,11 +1058,13 @@ func _space_bounds() -> Rect2:
 		sid = String(_probe.active_space)
 	return _sg.bounds_px(sid)
 
-## P1 Gate：Probe 切 Space/Floor（inspect-only，绝不移动任何 Agent）。I=进/出测试 Space，PgUp/PgDn=换层。
+## P1 Gate + P3：Probe 切 Space/Floor（inspect-only，绝不移动任何 Agent）。I=循环空间（town→咖啡馆→测试阁楼→…），PgUp/PgDn=换层。
 func _probe_toggle_space() -> void:
-	var target := "test_loft" if String(_probe.active_space) == "town" else "town"
-	if not _sg.has_space(target):
+	var ids: Array = _sg.spaces.keys()          # 循环所有 Space（含 P3 咖啡馆真室内）
+	if ids.is_empty():
 		return
+	var i := ids.find(String(_probe.active_space))
+	var target := String(ids[(i + 1) % ids.size()])
 	_probe.set_space(target, _sg.default_floor(target), _sg.bounds_px(target))
 	_push("[color=#9ad0ff]Probe → %s / %s（观察者切空间；居民没动）[/color]" % [_sg.label_of(target), _probe.active_floor])
 	_update_status()

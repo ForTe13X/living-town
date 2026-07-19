@@ -76,6 +76,8 @@ var _tree_cells: Array = []  # [Vector2i]（authored 阻挡树，替代程序化
 var _wall_type := {}     # P2-4 idx -> 建筑类型（住宅/商业/公共/工坊）→ 墙面按类型上色
 var _terrain_built := false
 var dbg_nav := false     # P2-4 导航开发叠层开关（Main 的 N 键切换）：阻挡格 + 交互格可视化
+var _interiors := {}     # P3 室内内容 interiors.json：space -> floor -> {label,floor,furniture[]}
+var _interiors_loaded := false
 # P2-4 分类型建筑外观：墙面(face/top/foot 三段做体积)+屋檐(roof)+招牌图标，让"住宅/商业/公共/工坊"一眼可辨。
 const BLD_PAL := {
 	"residential": {"face": Color("#c2a071"), "top": Color("#d8bd93"), "foot": Color("#836a48"), "roof": Color("#a8443a"), "icon": Color("#c85a4e")},  # 暖木墙+红瓦顶
@@ -307,6 +309,19 @@ func _agent_frame(ag: Dictionary) -> Dictionary:
 ## P1：Probe 切到非 town 的 Space 时，画该 Space/Floor 的占位（bounds + 楼层 + Portal 锚点）。
 ## 诚实边界：test_loft 没有内容——这里只证明"active Space/Floor 渲染与 hit-test 走得通"，
 ## 不假装它是一栋建筑。真内容在 P3（阿丽咖啡馆 1F/2F）按同一合同长出来。
+func _load_interiors() -> void:
+	_interiors_loaded = true
+	if not FileAccess.file_exists("res://data/interiors.json"):
+		return
+	var f := FileAccess.open("res://data/interiors.json", FileAccess.READ)
+	if f == null:
+		return
+	var d: Variant = JSON.parse_string(f.get_as_text())
+	f.close()
+	if d is Dictionary:
+		_interiors = d
+
+## Probe 进入非-town Space：有 interiors.json 内容 → 画【真室内】（地板/墙/家具/门/楼梯）；否则回落占位网格。
 func _draw_space_placeholder() -> void:
 	var main := get_parent()
 	var sg = main.get("_sg")
@@ -314,6 +329,12 @@ func _draw_space_placeholder() -> void:
 	var sid := String(probe.active_space)
 	var fid := String(probe.active_floor)
 	var b: Rect2 = sg.bounds_px(sid)
+	if not _interiors_loaded:
+		_load_interiors()
+	var content: Dictionary = (_interiors.get(sid, {}) as Dictionary).get(fid, {})
+	if not content.is_empty():
+		_draw_interior(sg, sid, fid, b, content)
+		return
 	draw_rect(b, Color("#1a1d26"), true)
 	draw_rect(b, Color("#5a6478"), false, 2.0)
 	for gx in range(int(b.size.x / T) + 1):
@@ -329,6 +350,98 @@ func _draw_space_placeholder() -> void:
 		draw_circle(c, 10.0, Color("#ffd166", 0.85))
 		draw_string(Art.font(), c + Vector2(12, 4), "%s→%s/%s" % [pt["kind"], to.get("space", ""), to.get("floor", "")],
 			HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("#ffd166"))
+
+## 画一层真室内：木地板 + 外墙(门口留缺) + 家具(程序化) + 门/上下楼提示 + 楼层标签。纯 View、只读数据。
+func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary) -> void:
+	var wc := int(b.size.x / T); var hc := int(b.size.y / T)
+	var ox := b.position.x; var oy := b.position.y
+	# 门缺口：扫 portal 端点落在本层的门(kind=door)格 → 那格墙留缺
+	var door_gap := {}
+	for p in sg.portals:
+		for side in ["from", "to"]:
+			var e: Dictionary = p.get(side, {})
+			if String(e.get("space", "")) == sid and String(e.get("floor", "")) == fid and String(p.get("kind", "")) == "door":
+				var ep: Array = e.get("pos", [0, 0])
+				door_gap[int(ep[1]) * wc + int(ep[0])] = true
+	# 木地板
+	draw_rect(b, Color("#caa26e"), true)
+	for gy in range(hc):
+		if gy % 2 == 0:
+			draw_rect(Rect2(ox, oy + gy * T, b.size.x, 3), Color("#a6814e", 0.4), true)
+	# 外墙（边框），门口那格留缺、画成门
+	for gx in range(wc):
+		_interior_wall(sg, ox + gx * T, oy, door_gap.has(gx))                          # 上墙
+		_interior_wall(sg, ox + gx * T, oy + (hc - 1) * T, door_gap.has((hc - 1) * wc + gx))  # 下墙
+	for gy in range(hc):
+		_interior_wall(sg, ox, oy + gy * T, door_gap.has(gy * wc))                      # 左墙
+		_interior_wall(sg, ox + (wc - 1) * T, oy + gy * T, door_gap.has(gy * wc + wc - 1))  # 右墙
+	# 家具（按 slot 程序化）
+	for fr in content.get("furniture", []):
+		var fp: Array = (fr as Dictionary).get("pos", [0, 0])
+		_draw_interior_furniture(String((fr as Dictionary).get("slot", "")), Vector2(ox + int(fp[0]) * T, oy + int(fp[1]) * T))
+	# 楼层标签
+	draw_string(Art.font(), b.position + Vector2(T + 8, 22), "%s · %s" % [sg.label_of(sid), content.get("label", fid)],
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("#3a2a1a"))
+
+func _interior_wall(sg, x: float, y: float, is_door: bool) -> void:
+	if is_door:                                    # 门：地板延伸 + 门框 + 木门
+		draw_rect(Rect2(x + T * 0.12, y + T * 0.1, T * 0.76, T * 0.8), Color("#6e4d31"), true)
+		draw_rect(Rect2(x + T * 0.12, y + T * 0.1, T * 0.76, T * 0.8), Color("#3a291a"), false, 2.0)
+		draw_circle(Vector2(x + T * 0.72, y + T * 0.5), T * 0.05, Color("#e0c060"))   # 门把
+		return
+	draw_rect(Rect2(x, y, T, T), Color("#8a7256"), true)             # 墙主面（暖石灰）
+	draw_rect(Rect2(x, y, T, T * 0.24), Color("#a08a6c"), true)      # 顶棱高光
+	draw_rect(Rect2(x, y + T * 0.86, T, T * 0.14), Color("#5f4c38"), true)  # 墙脚暗边
+
+func _draw_interior_furniture(slot: String, base: Vector2) -> void:
+	match slot:
+		"bed": _draw_bed(base)
+		"coffee":                                   # 咖啡机：深色金属机身 + 红灯 + 杯
+			draw_rect(Rect2(base.x + T * 0.2, base.y + T * 0.15, T * 0.6, T * 0.62), Color("#3a3f47"), true)
+			draw_rect(Rect2(base.x + T * 0.2, base.y + T * 0.15, T * 0.6, T * 0.14), Color("#565c66"), true)
+			draw_circle(Vector2(base.x + T * 0.68, base.y + T * 0.3), T * 0.05, Color("#e05a4e"))
+			draw_rect(Rect2(base.x + T * 0.42, base.y + T * 0.52, T * 0.16, T * 0.14), Color("#efe4cc"), true)
+		"counter":                                  # 吧台：长木身 + 台面高光
+			draw_rect(Rect2(base.x + 2, base.y + T * 0.6, T - 4, T * 0.35), Color(0, 0, 0, 0.18), true)
+			draw_rect(Rect2(base.x + T * 0.03, base.y + T * 0.32, T * 0.94, T * 0.5), Color("#6e4d31"), true)
+			draw_rect(Rect2(base.x + T * 0.03, base.y + T * 0.32, T * 0.94, T * 0.1), Color("#8a6238"), true)
+		"table":                                    # 餐桌
+			draw_rect(Rect2(base.x + T * 0.24, base.y + T * 0.5, T * 0.1, T * 0.34), Color("#5a3f28"), true)
+			draw_rect(Rect2(base.x + T * 0.66, base.y + T * 0.5, T * 0.1, T * 0.34), Color("#5a3f28"), true)
+			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.3, T * 0.7, T * 0.24), Color("#8a6238"), true)
+			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.3, T * 0.7, T * 0.08), Color("#a67f4e"), true)
+		"chair":                                    # 椅子
+			draw_rect(Rect2(base.x + T * 0.34, base.y + T * 0.2, T * 0.32, T * 0.5), Color("#6e4d31"), true)
+			draw_rect(Rect2(base.x + T * 0.34, base.y + T * 0.44, T * 0.32, T * 0.13), Color("#8a6238"), true)
+		"shelf":                                    # 书架/货架
+			draw_rect(Rect2(base.x + T * 0.1, base.y + T * 0.05, T * 0.8, T * 0.85), Color("#5a3f28"), true)
+			var bookcols := [Color("#a3443a"), Color("#4a7a5a"), Color("#47688a")]
+			for k in range(3):
+				draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.24 + k * T * 0.22, T * 0.7, T * 0.04), Color("#3a291a"), true)
+				draw_rect(Rect2(base.x + T * 0.18, base.y + T * 0.12 + k * T * 0.22, T * 0.5, T * 0.11), bookcols[k], true)
+		"plant":                                    # 盆栽
+			draw_rect(Rect2(base.x + T * 0.34, base.y + T * 0.56, T * 0.32, T * 0.28), Color("#8a5a3a"), true)
+			draw_circle(Vector2(base.x + T * 0.5, base.y + T * 0.42), T * 0.24, Color("#2f6d3a"))
+			draw_circle(Vector2(base.x + T * 0.4, base.y + T * 0.32), T * 0.14, Color("#3c8a4a"))
+		"rug":                                       # 地毯
+			draw_rect(Rect2(base.x + T * 0.08, base.y + T * 0.15, T * 0.84, T * 0.7), Color("#8a4a4a", 0.75), true)
+			draw_rect(Rect2(base.x + T * 0.08, base.y + T * 0.15, T * 0.84, T * 0.7), Color("#e0c060", 0.5), false, 2.0)
+		"desk":                                      # 书桌 + 纸
+			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.35, T * 0.7, T * 0.28), Color("#6e4d31"), true)
+			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.35, T * 0.7, T * 0.08), Color("#8a6238"), true)
+			draw_rect(Rect2(base.x + T * 0.2, base.y + T * 0.55, T * 0.09, T * 0.28), Color("#5a3f28"), true)
+			draw_rect(Rect2(base.x + T * 0.71, base.y + T * 0.55, T * 0.09, T * 0.28), Color("#5a3f28"), true)
+			draw_rect(Rect2(base.x + T * 0.26, base.y + T * 0.22, T * 0.2, T * 0.14), Color("#efe4cc"), true)
+		"window":                                    # 窗（画在墙上）：天光 + 木框 + 十字
+			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.12, T * 0.7, T * 0.5), Color("#8fc0e0"), true)
+			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.12, T * 0.7, T * 0.5), Color("#5a3f28"), false, 3.0)
+			draw_line(Vector2(base.x + T * 0.5, base.y + T * 0.12), Vector2(base.x + T * 0.5, base.y + T * 0.62), Color("#5a3f28"), 2.0)
+		"stairs":                                    # 楼梯：斜阶
+			for k in range(4):
+				draw_rect(Rect2(base.x + T * 0.12 + k * T * 0.17, base.y + T * 0.62 - k * T * 0.13, T * 0.2, T * 0.15), Color("#7a6a52"), true)
+				draw_rect(Rect2(base.x + T * 0.12 + k * T * 0.17, base.y + T * 0.62 - k * T * 0.13, T * 0.2, T * 0.04), Color("#9a8a70"), true)
+		_:
+			draw_rect(Rect2(base.x + 9, base.y + 12, T - 18, T - 18), Color("#8a6a45"), true)
 
 func _draw() -> void:
 	var _main := get_parent()

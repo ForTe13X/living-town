@@ -93,6 +93,23 @@ for p in (portals if isinstance(portals, list) else []):
         if len(e.get("pos", [])) != 2:
             errs.append(f"portal '{pid}'.{side}: pos must be [x,y]")
 
+# 7b) P3 室内内容 interiors.json：space/floor 键须指向真 Space/Floor；家具坐标须落在该 Space 的 bounds 内。
+interiors_d = load("interiors") or {}
+for isid, floors in (interiors_d.items() if isinstance(interiors_d, dict) else []):
+    if isid.startswith("_"):
+        continue
+    if isid not in sp:
+        errs.append(f"interiors: unknown space '{isid}'"); continue
+    b = sp[isid].get("bounds", [0, 0, 0, 0])
+    bw, bh = int(b[2]), int(b[3])
+    for ifid, content in (floors.items() if isinstance(floors, dict) else []):
+        if ifid not in sp[isid].get("floors", []):
+            errs.append(f"interiors '{isid}': unknown floor '{ifid}'"); continue
+        for fu in (content.get("furniture", []) if isinstance(content, dict) else []):
+            pos = fu.get("pos", [])
+            if len(pos) != 2 or not (0 <= pos[0] < bw and 0 <= pos[1] < bh):
+                errs.append(f"interiors '{isid}/{ifid}': furniture '{fu.get('slot','?')}' pos {pos} 越界 {bw}x{bh}")
+
 n_json = len(glob.glob(os.path.join(ROOT, "*.json")))
 if errs:
     print(f"lint_data: FAIL ({len(errs)} issue(s)):")

@@ -30,6 +30,22 @@
     "2f"
    ],
    "default_floor": "1f"
+  },
+  "cafe": {
+   "_why": "P3 竖切片：阿丽的咖啡馆真室内。1F 公共咖啡区(吧台/桌椅/咖啡机)、2F 阿丽私人居所(床/书桌)。街门 portal 接 town/outdoor 的咖啡馆门(41,19)，楼梯 portal 接 1F→2F(owner 权限=私人上层)。内容在 interiors.json、渲染走非-town active-space 路径。Tier-A：只 Probe inspect，居民不进(town 仿真一行不动、digest 逐字节不变)。",
+   "kind": "interior",
+   "label": "阿丽的咖啡馆",
+   "bounds": [
+    0,
+    0,
+    8,
+    6
+   ],
+   "floors": [
+    "1f",
+    "2f"
+   ],
+   "default_floor": "1f"
   }
  },
  "portals": [
@@ -69,6 +85,52 @@
    },
    "to": {
     "space": "test_loft",
+    "floor": "2f",
+    "pos": [
+     1,
+     1
+    ]
+   },
+   "bidirectional": true,
+   "access": "owner",
+   "traversal_cost": 2
+  },
+  {
+   "id": "p_cafe_door",
+   "kind": "door",
+   "from": {
+    "space": "town",
+    "floor": "outdoor",
+    "pos": [
+     41,
+     19
+    ]
+   },
+   "to": {
+    "space": "cafe",
+    "floor": "1f",
+    "pos": [
+     4,
+     5
+    ]
+   },
+   "bidirectional": true,
+   "access": "public",
+   "traversal_cost": 1
+  },
+  {
+   "id": "p_cafe_stairs",
+   "kind": "stairs",
+   "from": {
+    "space": "cafe",
+    "floor": "1f",
+    "pos": [
+     1,
+     1
+    ]
+   },
+   "to": {
+    "space": "cafe",
     "floor": "2f",
     "pos": [
      1,

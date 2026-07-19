@@ -28,10 +28,19 @@ func _ready() -> void:
 	ck(sg.bounds_px("no_such").size == Vector2(Sim.GRID.x * 48, Sim.GRID.y * 48), "未知 space → 回落 Sim.GRID（off 门，不崩）")
 
 	# ── Portal：双向边的反向查询也要能查到 ──
+	# P3：town/outdoor 现在有两扇门（测试阁楼 p_loft_door + 阿丽咖啡馆 p_cafe_door）——从"恰好 1 扇"放宽到"两扇都在"。
 	var pt_town: Array = sg.portals_from("town", "outdoor")
-	ck(pt_town.size() == 1 and String(pt_town[0]["id"]) == "p_loft_door", "town/outdoor 出发有 door portal")
+	var town_ids := pt_town.map(func(p): return String(p["id"]))
+	ck("p_loft_door" in town_ids and "p_cafe_door" in town_ids, "town/outdoor 出发有测试阁楼门 + 咖啡馆门")
 	var pt_2f: Array = sg.portals_from("test_loft", "2f")
 	ck(pt_2f.size() == 1 and String(pt_2f[0]["to"]["floor"]) == "1f", "2f 经双向楼梯反查回 1f")
+	# P3：咖啡馆 Space 合同——1f/2f 存在、街门反查、楼梯反查回 1f
+	ck(sg.has_space("cafe") and sg.has_floor("cafe", "1f") and sg.has_floor("cafe", "2f"), "cafe/1f/2f 存在")
+	var pt_cafe1: Array = sg.portals_from("cafe", "1f")
+	var cafe1_ids := pt_cafe1.map(func(p): return String(p["id"]))
+	ck("p_cafe_door" in cafe1_ids and "p_cafe_stairs" in cafe1_ids, "cafe/1f 有街门（反查）+ 上楼梯")
+	var pt_cafe2: Array = sg.portals_from("cafe", "2f")
+	ck(pt_cafe2.size() == 1 and String(pt_cafe2[0]["to"]["floor"]) == "1f", "cafe/2f 经双向楼梯反查回 1f")
 
 	# ── 兼容层：不带 spatial_address 的老 agent 一律 town/outdoor（Sim 一行没改）──
 	var ag: Dictionary = Sim.agents[0]
