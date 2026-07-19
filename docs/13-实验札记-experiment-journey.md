@@ -765,3 +765,19 @@ find_endorse（看 endorse_events 计数逐 tick 跳变，因 endorse 不进 eve
 - `lint_data.py`：校验 interiors.json(space/floor 键指向真 Space/Floor、家具坐标在 bounds 内)——室内版的地图审计门。
 
 **🎯 为什么 Tier-A 逐字节不变**：Sim 对 spatial_address/SpaceGraph/interiors **零引用**、digest 只折叠 event_log → 只要没 agent 解析成非-town 地址，event_log 就一字节不差。唯一要改的测试(space_test 的门数断言)recon 一眼揪出、当场改掉。**Tier-B（居民真走 portal 进店、在楼层里被仿真）会让 `_area_at`/`_nearby_agents`/earshot/LOD/A\* 全得变"平面感知"、digest 必变、要重 baseline 12 seed**——那是独立里程碑，本次不做。存证 shot-p3-cafe-1f / shot-p3-cafe-2f。提交 514eec0。
+
+## Town-World P3 · Tier-B：居民真住进咖啡馆（跨平面生活，#01 全绿）
+
+**✅ 阿丽真的"住在咖啡馆楼上"了：夜里在 2F 自家床上睡觉(精力→100)、白天在 1F 吧台看摊闲聊、饿了脏了穿过街门去镇上，全程 12 seed 确定、#01 无饿穿 12/12、full CI 绿。** 先跑了两个 workflow(5 路 recon + 5 路穷举审计+架构综合)把"单平面假设"全摸清再动核心。分两步落：
+
+**① Tier-B/1 平面感知感知层（逐字节 no-op，提交 7ddf7ca）**：给 agent 加 (space,floor) 地址(缺省 town/outdoor)。关键技巧 **`_area_key`**：town → 原镇上 area 矩形；非-town 层 → 命名空间 area `"space:floor"`——于是所有"同 area 才共处"的社交/见证/赴约判定【自动按楼层隔离】(楼上楼下、店内店外互不感知)，只有 raw-pos 扫描的 earshot 要单独加 `_same_plane` 门。全员还在 town 时 → **digest 与 514eec0 逐字节相同**(seed 1-4 摘要一字不差)，把大重构的正确性在"全员 town"基线上先证成 no-op，再谈行为。教训：**改确定性核心，先做能证成 no-op 的重构、再叠行为**——no-op 那步的字节相等是最强的回归保险。
+
+**② Tier-B/2 让阿丽住进去（re-baseline，提交 ae8cf4b）**：多平面导航网(`_nav_grids` per space/floor，town 复用 `_blocked` 引用→镇上路径不变)、Portal 穿越(`_route_next_hop` BFS+`_traverse_portal` 原子换 space/floor/pos，A\* 永不跨平面)、跨平面元候选(`_object_candidates` 按平面门、`_traverse_candidates` 只对 café 居民非空→town 零扰动)。内容：咖啡馆床告示 睡觉/energy、吧台告示 看摊/fun+闲聊/social(**吧台 advertises social→独自看摊也能解社交、孤守店里绝不社交饿穿**，这是 #01 的关键)；阿丽 agents.json 给 spatial_address(cafe/2f)。
+
+**🛠 行为调参踩了三连坑(全是"多需求跨平面"的经典难题)：**
+① **门口乒乓 + 饿穿**：饿(镇)和困(店)两个紧急需求让她每 tick 在门口反复横跳、谁都够不着 → 加"本平面还有偏紧的活能干就先就地办、绝不跨平面"的 local-first 门。
+② **home-binding 按 floor → 楼梯 livelock**：把"energy/fun 只在家满足"按 home_floor(2f) 判，1F 的吧台(fun)也被排除 → 楼上楼下互相排斥、卡在楼梯饿穿。**家是整个 Space(咖啡馆整栋)不是某一层** → 改按 space 判。
+③ **local-first 太狠 → 楼下看摊、楼上饿睡**：只要本层有偏紧的活(吧台 fun)就赖着不走，楼上 energy 饿穿。
+**收敛结论**：严格的"家绑定 need→plane"分离要真正无 livelock 需要**决策黏性/分层规划**(她该"决定回家睡觉"后一路走到床、而非每 tick 按当下最紧的需求重挑)——那是独立里程碑。本次落**温和回家元候选**(舒适 min≥55 才回家、分 18 压过闲逛但远低于任何偏紧需求→urgency 恒主导→守 #01)：她真住店(夜里回 2F 睡、精力 100)但白天多在镇上跑(像个"住店上班、常出门办事"的老板娘)。#01 12/12 稳。
+**🛠 顺带修 player_agency_test**：`_summon` 现在把被召的 NPC 也拉到玩家【平面】——阿丽成了咖啡馆居民后，镇上的玩家【隔着墙真搭不上她的话】(平面门正确)，测试要把她召到镇上才行(9 fail→0)。
+存证 find_aria.gd(追踪她 cafe/2f↔1f↔town 的一天) + shot-p3-tierb-aria-cafe-1f/2f(她在店里：楼上睡觉精力 100、楼下吧台边)。**留作后续里程碑**：更强的居家感(需决策规划的家绑定)、顾客进店(多人室内)、平面感知 LOD(上规模)。
