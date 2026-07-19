@@ -40,12 +40,13 @@ func _init():
 	print("  阿丽全程最低需求: %.1f  %s" % [min_need, "✅ 不饿穿" if min_need > 0.5 else "❌ 饿穿!"])
 	# 采样：找几个阿丽在咖啡馆各层的定格 tick（供 --shot 眼验）
 	S.start_new(seed)
-	var t1f := -1; var t2f := -1
+	var t1f := -1; var t2f := -1; var t1f_mid := -1
 	for t in range(days * TPD):
 		S.tick()
 		var a2: Dictionary = S.get_agent("aria")
 		if String(a2.get("space")) == "cafe":
 			if String(a2.get("floor")) == "1f" and t1f < 0: t1f = S.tick_no
 			if String(a2.get("floor")) == "2f" and t2f < 0 and S.tick_no > 30: t2f = S.tick_no
-	print("  眼验 tick：cafe/1f=%d  cafe/2f=%d" % [t1f, t2f])
+			if String(a2.get("floor")) == "1f" and t1f_mid < 0 and S.tick_no > 700: t1f_mid = S.tick_no
+	print("  眼验 tick：cafe/1f=%d  cafe/2f=%d  cafe/1f(中段>700)=%d" % [t1f, t2f, t1f_mid])
 	quit()

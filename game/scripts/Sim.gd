@@ -26,10 +26,12 @@ const GRID := Vector2i(24, 16)
 # off=NAV_PATHFIND=false 逐字节回退 _step_toward。纯 f(state)、无 RNG/Time；起点/终点恒可入(终点=交互格)。
 const NAV_PATHFIND := true
 const NAV_DIRS := [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1)]
-# café 居民办完镇上差事(各需求都≥HOME_COMFORT 舒适)就回店。回家分数适中：压过舒适时的镇上闲逛，但远低于任何
-# 偏紧需求对象/赶路(urgency 主导)→ 饿/脏/困到偏紧仍先就近满足→守 #01。让阿丽"住在咖啡馆楼上"的居家感更足。
-const HOME_COMFORT := 55.0
-const HOME_RETURN_SCORE := 18.0
+# café 居民的这些需求只在【家 Space 内】满足（睡自家 2F 床、在 1F 吧台看摊）→ 镇上只为吃饭/洗澡/串门。
+# 关键靠【承诺式行程 journey】落地(见 _journey_candidates/_advance_journey)：一旦决定"回家睡觉"就一路走到床、
+# 中途不每 tick 按当下最紧需求重挑(那会在门口/楼梯 livelock 饿穿)——只有真危机(下面 PREEMPT)才打断。
+const HOME_NEEDS := ["energy", "fun"]
+const JOURNEY_URGENT := 30.0    # 偏紧(need<70)才发起跨平面行程（本地已无满足者时）
+const PREEMPT_CRISIS := 12.0    # 承诺行程执行中，若【另一】需求跌破此危机线且当前行程目标本身不急 → 中止改救急（守 #01）
 const CONVERSE_TICKS := 10      # 一次社交对话占用的 tick（双方绑定/暂停）——够读完一句台词
 const SOCIAL_FULL := 88.0       # social 高于此不再主动发起社交
 const GIFT_START := 3           # 每个 NPC 初始礼物数（give 破冰用）
@@ -1040,24 +1042,41 @@ func _advance_agent(ag: Dictionary) -> void:
 			intent = _logic_decide(ag, cands)
 		agent_apply(ag, intent)
 		return
+	# P3 承诺 pre-empt：正办一件【不急】的事(当前 option 的 need 还舒适≥SURVIVAL_GATE)，却有【另一】需求跌破危机线
+	# → 中止改救急 → 下 tick 重新决策(会挑最紧的)。只打断"不急的承诺"、绝不打断"正在救急的行程"→ 既有决策黏性(消 livelock)
+	# 又不会饿穿(守 #01)。仅对带 need 的 option(object/journey)；无 need 的(social/attend)不受影响。
+	if opt is Dictionary and opt.has("need") and not ag.get("is_player", false):
+		var onid := String(opt["need"])
+		if ag["needs"].has(onid) and float(ag["needs"][onid]) >= SURVIVAL_GATE and _min_need(ag) < PREEMPT_CRISIS:
+			ag["option"] = null
+			return
 	match String(opt.get("kind", "object")):
 		"social": _advance_social(ag, opt)
 		"attend": _advance_attend(ag, opt)
-		"traverse": _advance_traverse(ag, opt)
+		"journey": _advance_journey(ag, opt)
 		_: _advance_object(ag, opt)
 
-## P3 Tier-B：朝本层 portal 口走；到口即跨平面并【清 option】→ 下 tick 在新平面原生重枚举（绝不把整条跨平面路当一个 option）。
-func _advance_traverse(ag: Dictionary, opt: Dictionary) -> void:
-	var hop: Dictionary = opt.get("hop", {})
-	if hop.is_empty():
-		ag["option"] = null
+## P3 Tier-B 承诺行程：一路走到【目标对象所在平面】(可跨多个 portal)，到那个平面即把 option 交回普通 object 逻辑
+## (走到对象交互格→用它)。中途【不重挑】——承诺执行到底，只被 _advance_agent 的危机 pre-empt 打断。这就是消除
+## livelock 的"决策黏性/分层规划"：决定"回家睡觉"后一直走到床、而非每 tick 按当下最紧需求重挑。A* 永不跨平面。
+func _advance_journey(ag: Dictionary, opt: Dictionary) -> void:
+	if not world["objects"].has(String(opt.get("target", ""))):
+		ag["option"] = null                # 目标对象没了 → 放弃
 		return
-	var portal_cell: Vector2i = hop["from_pos"]
-	if ag["pos"] == portal_cell:
-		_traverse_portal(ag, hop)          # 到口 → 跨过去
-		ag["option"] = null                # 新平面重新决策
+	if String(ag.get("space", "town")) == String(opt.get("dest_space", "town")) \
+			and String(ag.get("floor", "outdoor")) == String(opt.get("dest_floor", "outdoor")):
+		opt["kind"] = "object"             # 已到目标平面 → 交回普通对象逻辑（走到对象+用它，复用交互格/收费/工资/记忆）
+		_advance_object(ag, opt)
+		return
+	var hop := _route_next_hop(String(ag.get("space", "town")), String(ag.get("floor", "outdoor")),
+		String(opt.get("dest_space", "town")), String(opt.get("dest_floor", "outdoor")))
+	if hop.is_empty():
+		ag["option"] = null                # 不可达 → 放弃（下 tick 重新决策）
+		return
+	if ag["pos"] == hop["from_pos"]:
+		_traverse_portal(ag, hop)          # 到本层 portal 口 → 跨过去（【不清 option】，承诺继续）
 	else:
-		_move_agent(ag, _nav_step(ag, portal_cell))
+		_move_agent(ag, _nav_step(ag, hop["from_pos"]))
 	emit_signal("agent_changed", ag["id"])
 
 func _advance_attend(ag: Dictionary, opt: Dictionary) -> void:
@@ -1179,61 +1198,64 @@ func agent_candidates(ag: Dictionary) -> Array:
 	var out := _object_candidates(ag)
 	out.append_array(_social_candidates(ag))
 	out.append_array(_attend_candidates(ag))
-	out.append_array(_traverse_candidates(ag))       # P3 Tier-B：跨平面元候选（冻结在 ext 前的固定位；仅 café 居民非空 → town 零扰动）
+	out.append_array(_journey_candidates(ag))        # P3 Tier-B：跨平面承诺行程元候选（冻结在 ext 前的固定位；仅 café 居民非空 → town 零扰动）
 	if ext != null:
 		out.append_array(ext.candidates(self, ag))   # 注册的 CandidateProvider 追加（排在内建之后，不改内建枚举序 → 回放安全）
 	return out
 
-## P3 Tier-B：跨平面元候选。仅【café 居民】(home_space≠town) 触发 → town 居民恒返 [] → town 逐字节不变。
-## (1) 本平面对象满足不了的偏紧 need → 朝有满足者的平面走【下一跳 portal】；(2) 离家在外且无紧急事 → 回家。
-## social 不进（由社交系统 + 同平面 counter 的"闲聊"对象满足，处处有人/有吧台，绝不为社交跨平面）。确定：portal 文件序、无 RNG。
-func _traverse_candidates(ag: Dictionary) -> Array:
+## P3 Tier-B 决策规划：跨平面【承诺式行程 journey】元候选。仅【café 居民】(home_space≠town) 非空 → town 逐字节不变。
+## 对每个"本平面(对她)无满足 + 偏紧"的 need，锁定【他平面最优满足对象】，产出一条带完整对象参数的 journey 候选：
+## 一旦被选中 → agent_apply 建 journey option → _advance_journey 承诺执行(跨 portal→到对象→用它)，中途不重挑(只危机打断)。
+## 这消除了"多需求在门口/楼梯每 tick 反复横跳"的 livelock。social 不进(社交系统+同平面吧台满足)。确定：对象/portal 文件序、无 RNG。
+func _journey_candidates(ag: Dictionary) -> Array:
 	if String(ag.get("home_space", "town")) == "town" or ag.get("is_player", false):
 		return []
 	var aspace := String(ag.get("space", "town"))
 	var afloor := String(ag.get("floor", "outdoor"))
+	var home_space := String(ag.get("home_space", "town"))
 	var out: Array = []
-	var covered := {}                                # 本平面对象覆盖的 need
+	var covered := {}                                # 本平面【对她可用】的对象覆盖的 need（含家绑定）
 	for id in world["objects"]:
 		var o: Dictionary = world["objects"][id]
 		if String(o.get("space", "town")) == aspace and String(o.get("floor", "outdoor")) == afloor:
 			for adv in _as_arr(o.get("advertises", [])):
 				if adv is Dictionary:
-					covered[String(adv.get("need", ""))] = true
-	for nid in ag["needs"]:                          # (1) 偏紧且本平面无满足的 need（social 由社交系统满足，不跨平面）
-		if nid == "social" or covered.has(nid):
+					var n := String(adv.get("need", ""))
+					if not (n in HOME_NEEDS and aspace != home_space):   # 镇上的床/游戏机不算覆盖她的 energy/fun
+						covered[n] = true
+	for nid in ag["needs"]:
+		if nid == "social" or covered.has(nid):      # social 由社交系统满足；本平面能满足的 need 就地办(不跨平面)
 			continue
 		var urg := 100.0 - float(ag["needs"][nid])
-		if urg <= 20.0:                              # 只在偏紧才跨平面（避免高频往返 → 守 #01）
+		if urg <= JOURNEY_URGENT:                    # 偏紧(need<70)才发起行程 → 每次在一个平面多办几件、少往返
 			continue
+		# 锁定他平面满足此 need 的【最优对象】(家绑定：energy/fun 只认家 Space；其余任意平面)
 		var best_score := -1.0e18
-		var best_hop := {}
+		var best: Dictionary = {}
 		for id in world["objects"]:
 			var o: Dictionary = world["objects"][id]
 			var os := String(o.get("space", "town")); var of := String(o.get("floor", "outdoor"))
 			if os == aspace and of == afloor:
 				continue
-			var amt := 0
+			if nid in HOME_NEEDS and os != home_space:   # 她的 energy/fun 只回家 Space 满足
+				continue
+			var amt := 0; var dur := 0; var act := ""
 			for adv in _as_arr(o.get("advertises", [])):
-				if adv is Dictionary and String(adv.get("need", "")) == nid:
-					amt = maxi(amt, int(adv.get("amount", 0)))
+				if adv is Dictionary and String(adv.get("need", "")) == nid and int(adv.get("amount", 0)) > amt:
+					amt = int(adv.get("amount", 0)); dur = int(adv.get("duration", 0)); act = String(adv.get("action", ""))
 			if amt <= 0:
 				continue
 			var hop := _route_next_hop(aspace, afloor, os, of)
 			if hop.is_empty():
 				continue
-			var d := _manh(ag["pos"], hop["from_pos"]) + int(hop.get("cost", 1)) * 2
+			var d := _manh(ag["pos"], hop["from_pos"]) + int(hop.get("cost", 1)) * 3   # 估路程：到本层 portal 口 + 过 portal 成本
 			var score := urg * (float(amt) / 60.0) - float(d) * _w("obj_dist_penalty", 0.4)
 			if score > best_score:
-				best_score = score; best_hop = hop
-		if not best_hop.is_empty():
-			out.append({"kind": "traverse", "action": "赶路", "need": nid, "hop": best_hop, "score": best_score, "say": ""})
-	# (2) 回家：离家在外 + 各需求都挺舒适(min≥HOME_COMFORT，没有要紧事) → 朝家平面走。分数适中：压过舒适时的常规
-	# 镇上闲逛，但远低于任何偏紧需求对象/赶路(urgency 主导)→ 饿/脏/困到偏紧仍先就近满足→守#01。给阿丽"办完事就回店"的居家感。
-	if (aspace != String(ag.get("home_space", "town")) or afloor != String(ag.get("home_floor", "outdoor"))) and _min_need(ag) >= HOME_COMFORT:
-		var hh := _route_next_hop(aspace, afloor, String(ag.get("home_space", "town")), String(ag.get("home_floor", "outdoor")))
-		if not hh.is_empty():
-			out.append({"kind": "traverse", "action": "回家", "need": "__home__", "hop": hh, "score": HOME_RETURN_SCORE, "say": ""})
+				best_score = score
+				best = {"kind": "journey", "action": act, "target": String(id), "need": nid,
+					"dest_space": os, "dest_floor": of, "amount": amt, "dur_total": dur, "score": score, "say": ""}
+		if not best.is_empty():
+			out.append(best)
 	return out
 
 func _object_candidates(ag: Dictionary) -> Array:
@@ -1249,7 +1271,7 @@ func _object_candidates(ag: Dictionary) -> Array:
 		var o: Dictionary = world["objects"][id]
 		if String(o.get("space", "town")) != String(ag.get("space", "town")) \
 				or String(o.get("floor", "outdoor")) != String(ag.get("floor", "outdoor")):
-			continue                        # P3：只枚举【同平面】对象（跨平面走 _traverse_candidates 元候选）。town 居民↔town 对象 → 与旧一致
+			continue                        # P3：只枚举【同平面】对象（跨平面走 _journey_candidates 承诺行程）。town 居民↔town 对象 → 与旧一致
 		for adv in o.get("advertises", []):
 			# 健壮性（stage-2 review #4）：改数据后可能出现残缺 advertises；用 .get() 取值+非对象跳过，
 			# 避免"缺键裸括号"每 tick 崩。合规条目(四键齐全)取值与旧逐字节一致 → 不新增/移动候选 → digest 不漂。
@@ -1259,6 +1281,12 @@ func _object_candidates(ag: Dictionary) -> Array:
 			if amount <= 0:
 				continue
 			var need_id := String(adv.get("need", ""))
+			# 家绑定：café 居民的 energy/fun 只在【家 Space】(咖啡馆整栋)满足；镇上的床/游戏机对她不产候选
+			# → 在镇上 energy/fun"无满足"→ _journey_candidates 发起【回咖啡馆】的承诺行程。按 SPACE 判(非 floor：否则
+			# 楼上床/楼下吧台互相排除)。town 居民 home=town → 恒 false → 逐字节不变。
+			if need_id in HOME_NEEDS and String(ag.get("home_space", "town")) != "town" \
+					and String(ag.get("space", "town")) != String(ag.get("home_space", "town")):
+				continue
 			var action := String(adv.get("action", ""))
 			var duration := int(adv.get("duration", 0))
 			var cur := float(ag["needs"].get(need_id, 100.0))
@@ -1459,7 +1487,11 @@ func agent_apply(ag: Dictionary, intent: Dictionary) -> void:
 	match String(intent.get("kind", "object")):
 		"social": _apply_social(ag, intent)
 		"attend": ag["option"] = {"kind": "attend", "area": intent["area"], "commit": intent["commit"]}
-		"traverse": ag["option"] = {"kind": "traverse", "hop": intent.get("hop", {}), "need": String(intent.get("need", "")), "action": String(intent.get("action", "赶路"))}  # P3：跨平面赶路
+		"journey": ag["option"] = {"kind": "journey", "target": String(intent.get("target", "")),   # P3：承诺式跨平面行程（到对象所在平面→用它）
+			"dest_space": String(intent.get("dest_space", "town")), "dest_floor": String(intent.get("dest_floor", "outdoor")),
+			"need": String(intent.get("need", "")), "action": String(intent.get("action", "")),
+			"amount": int(intent.get("amount", 0)), "dur_total": int(intent.get("dur_total", 1)),
+			"remaining": int(intent.get("dur_total", 1)), "phase": "travel"}
 		_: _apply_object(ag, intent)
 
 ## P2-2 合法边界：object intent 是否可信。只检 target 存在不够——可插拔 backend / 扩展 / 迟到回包
