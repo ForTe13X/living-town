@@ -24,13 +24,12 @@ def endorse_id(r):
     for c in r["case"][K_CAND]:
         if c["action"]=="endorse": return c["id"]
     return None
-def abstain_id(r):
-    best=None; bs=-1e9
-    for c in r["case"][K_CAND]:
-        if c["action"] in AGGRESSION: continue
-        oi=r["id_map"].get(c["id"]); sc=r["cands"][oi].get("score",0.0) if oi is not None else 0.0
-        if sc>bs: bs=sc; best=c["id"]
-    return best
+def response_options():
+    # Phase D 语义契约：abstain 是【针对同一 endorse 机会的一等 ResponseIntent】——consciously stay out，
+    # 不再冒充"最高分非攻击动作"。两项对称的结构化意图描述(具体对象由 packet 语境交代)→ 评的是【选择】。
+    endorse=("【和派系里的人咬耳朵、统一口径】——一道贬损、疏远那个跟你们不对付的人。")
+    abstain=("【不掺和这场统一口径】——不跟着贬损谁，保持中立，各是各的。")
+    return endorse,abstain
 
 exclude=set()
 if len(sys.argv)>4 and os.path.exists(sys.argv[4]):
@@ -50,9 +49,9 @@ sample=sorted(sample,key=key)[:N]
 
 tasks=[]; controls=0
 for idx,r in enumerate(sample):
-    ei=endorse_id(r); ai=abstain_id(r)
-    if not ei or not ai: continue
-    en=mean_of(r["case"],ei); ab=mean_of(r["case"],ai); ctx=context_text(r["case"])
+    ei=endorse_id(r)
+    if not ei: continue                        # 只在"统一口径"确为合法候选的局里比
+    en,ab=response_options(); ctx=context_text(r["case"])
     for orient in (0,1):
         if orient==0: A,B,As,Bs=en,ab,"endorse","abstain"
         else:         A,B,As,Bs=ab,en,"abstain","endorse"

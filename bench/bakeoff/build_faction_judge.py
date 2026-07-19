@@ -24,13 +24,12 @@ def rally_id(r):
     for c in r["case"][K_CAND]:
         if c["action"]=="rally_oust": return c["id"]
     return None
-def abstain_id(r):
-    best=None; bs=-1e9
-    for c in r["case"][K_CAND]:
-        if c["action"] in AGGRESSION: continue
-        oi=r["id_map"].get(c["id"]); sc=r["cands"][oi].get("score",0.0) if oi is not None else 0.0
-        if sc>bs: bs=sc; best=c["id"]
-    return best
+def response_options():
+    # Phase D 语义契约：abstain 是【针对同一 rally_oust 机会的一等 ResponseIntent】——consciously stay out，
+    # 不再冒充"最高分非攻击动作"。两项对称的结构化意图描述(具体对象由 packet 语境交代)→ 评的是【选择】。
+    rally=("【当众发难、联合大家一起施压】——把那个跟你们不对付的人排挤出去。")
+    abstain=("【不参与这场围攻】——不煽动也不跟着起哄，置身事外。")
+    return rally,abstain
 
 exclude=set()
 if len(sys.argv)>4 and os.path.exists(sys.argv[4]):
@@ -50,9 +49,9 @@ sample=sorted(sample,key=key)[:N]
 
 tasks=[]; controls=0
 for idx,r in enumerate(sample):
-    ri=rally_id(r); ai=abstain_id(r)
-    if not ri or not ai: continue
-    ro=mean_of(r["case"],ri); ab=mean_of(r["case"],ai); ctx=context_text(r["case"])
+    ri=rally_id(r)
+    if not ri: continue                        # 只在"联合施压"确为合法候选的局里比
+    ro,ab=response_options(); ctx=context_text(r["case"])
     for orient in (0,1):
         if orient==0: A,B,As,Bs=ro,ab,"rally_oust","abstain"
         else:         A,B,As,Bs=ab,ro,"abstain","rally_oust"

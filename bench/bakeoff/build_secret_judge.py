@@ -30,13 +30,12 @@ def leak_id(r):
         oi=r["id_map"].get(c["id"]); sc=r["cands"][oi].get("score",0.0) if oi is not None else 0.0
         if sc>bs: bs=sc; best=c["id"]
     return best
-def guard_id(r):
-    best=None; bs=-1e9
-    for c in r["case"][K_CAND]:
-        if c["action"] in AGGRESSION: continue
-        oi=r["id_map"].get(c["id"]); sc=r["cands"][oi].get("score",0.0) if oi is not None else 0.0
-        if sc>bs: bs=sc; best=c["id"]
-    return best
+def response_options():
+    # Phase D 语义契约：guard 是【针对同一桩秘密的一等 ResponseIntent】——consciously keep faith，
+    # 不再冒充"最高分非攻击动作"。两项对称的结构化意图描述(具体秘密/对象由 packet 语境交代)→ 评的是【选择】。
+    leak=("【把你知道的这桩私密说出去】——抖落给对方听，背弃当初信任你的人。")
+    guard=("【守口如瓶】——把这桩私密咽在肚子里，守住当初的信任，绝不外传。")
+    return leak,guard
 def max_resent(r):
     return max([s.get("resent_teller",0) for s in r.get("secret_stakes",[])] or [0])
 
@@ -56,9 +55,9 @@ sample=sorted(sample,key=key)[:N]
 
 tasks=[]; controls=0
 for idx,r in enumerate(sample):
-    li=leak_id(r); gi=guard_id(r)
-    if not li or not gi: continue
-    leak=mean_of(r["case"],li); guard=mean_of(r["case"],gi); ctx=context_text(r["case"])
+    li=leak_id(r)
+    if not li: continue                        # 只在"泄密"确为合法候选的局里比
+    leak,guard=response_options(); ctx=context_text(r["case"])
     for orient in (0,1):
         if orient==0: A,B,As,Bs=leak,guard,"leak","guard"
         else:         A,B,As,Bs=guard,leak,"guard","leak"

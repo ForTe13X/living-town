@@ -210,9 +210,14 @@ func _grievances(ag: Dictionary) -> Array:
 		elif aid == b and st == "confronted": role = "offender"
 		else: continue
 		var other := b if role == "aggrieved" else a
+		# Phase D P1 修复：age 按角色取起点。aggrieved=从 triggered 起（憋着没说开的时长）；offender=从 confronted 起
+		# （被当面挑明后拖着没回应的时长）。旧代码两者都从 triggered 算 → 冒犯方"对峙至今"被夸大成"心结存在至今"。
+		var ref_tick := int(c.get("triggered", _S.tick_no))
+		if role == "offender" and int(c.get("confronted", 0)) > 0:
+			ref_tick = int(c["confronted"])
 		out.append({"role": role, "other": _S._name(_S.get_agent(other)), "other_id": other,
 			"severity": int(round(float(c.get("severity", 0.0)))), "status": st,
-			"age": _S.tick_no - int(c.get("triggered", _S.tick_no)),
+			"age": _S.tick_no - ref_tick,
 			"escalations": int(c.get("escalations", 0))})
 	return out
 
