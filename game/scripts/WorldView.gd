@@ -241,6 +241,55 @@ func _draw_sign(typ: String, pal: Dictionary, cx: float, cy: float) -> void:
 			draw_colored_polygon(PackedVector2Array([Vector2(cx, cy - T * 0.32), Vector2(cx - T * 0.26, cy), Vector2(cx + T * 0.26, cy)]), pal["roof"])
 			draw_rect(Rect2(cx - T * 0.06, cy - T * 0.4, T * 0.1, T * 0.18), Color("#6b4a2b"), true)
 
+## P3 打磨：外墙细节——沿上/下墙等距开窗（跳过转角与门口），住宅/工坊再加一根冒烟的烟囱。
+## 夜里窗透暖光（tod 判昼夜）→ 一眼看出"屋里有人住"。纯渲染、无 RNG（位置由 rect 等距推出）。
+func _draw_facades() -> void:
+	var doorset := {}
+	for d in Sim.world.get("doors", []):
+		var dp: Array = (d as Dictionary).get("pos", [0, 0])
+		doorset[Vector2i(int(dp[0]), int(dp[1]))] = true
+	var tod := Sim.time_of_day()
+	var night := tod < 0.24 or tod > 0.78
+	for aid in Sim.world.get("areas", {}):
+		var a: Dictionary = Sim.world["areas"][aid]
+		var typ := String(a.get("type", ""))
+		if typ == "" or typ == "plaza":
+			continue
+		var pal: Dictionary = BLD_PAL.get(typ, BLD_PAL["workshop"])
+		var r: Array = a.get("rect", [0, 0, 0, 0])
+		var x0 := int(r[0]); var y0 := int(r[1]); var bw := int(r[2]); var bh := int(r[3])
+		for i in range(1, bw - 1):                       # 跳过两端转角
+			if i % 2 == 0:
+				continue                                 # 等距（隔一格）开窗
+			for wy in [y0, y0 + bh - 1]:                 # 上墙 + 下墙
+				if doorset.has(Vector2i(x0 + i, wy)):
+					continue                             # 门口不开窗
+				_draw_window((x0 + i) * T, wy * T, pal, night)
+		for j in range(1, bh - 1):                       # 左墙 + 右墙（四面都开，别只有正背面有细节）
+			if j % 2 == 0:
+				continue
+			for wx in [x0, x0 + bw - 1]:
+				if doorset.has(Vector2i(wx, y0 + j)):
+					continue
+				_draw_window(wx * T, (y0 + j) * T, pal, night)
+		if typ == "residential" or typ == "workshop":    # 烟囱：坐在顶墙右段，飘两团烟
+			var chx := float(x0 + bw - 2) * T
+			var chy := float(y0) * T
+			draw_rect(Rect2(chx + T * 0.28, chy - T * 0.52, T * 0.4, T * 0.5), Color("#6b4a2b"), true)
+			draw_rect(Rect2(chx + T * 0.24, chy - T * 0.58, T * 0.48, T * 0.13), Color("#4c3a28"), true)
+			draw_circle(Vector2(chx + T * 0.5, chy - T * 0.8), T * 0.11, Color(0.86, 0.86, 0.86, 0.40))
+			draw_circle(Vector2(chx + T * 0.63, chy - T * 1.02), T * 0.085, Color(0.86, 0.86, 0.86, 0.26))
+
+func _draw_window(x: float, y: float, pal: Dictionary, night: bool) -> void:
+	var glass: Color = Color("#f2d489") if night else Color("#5d7f96")   # 夜=透暖光 / 昼=映天色
+	draw_rect(Rect2(x + T * 0.22, y + T * 0.24, T * 0.56, T * 0.44), pal["foot"], true)            # 窗洞（深）
+	draw_rect(Rect2(x + T * 0.26, y + T * 0.28, T * 0.48, T * 0.36), glass, true)                  # 玻璃
+	if night:
+		draw_rect(Rect2(x + T * 0.16, y + T * 0.18, T * 0.68, T * 0.56), Color(0.98, 0.85, 0.55, 0.15), true)  # 外溢暖光
+	draw_line(Vector2(x + T * 0.5, y + T * 0.28), Vector2(x + T * 0.5, y + T * 0.64), pal["foot"], 1.5)        # 竖棂
+	draw_line(Vector2(x + T * 0.26, y + T * 0.46), Vector2(x + T * 0.74, y + T * 0.46), pal["foot"], 1.5)      # 横棂
+	draw_rect(Rect2(x + T * 0.22, y + T * 0.24, T * 0.56, T * 0.44), (pal["top"] as Color).lightened(0.18), false, 1.5)  # 窗框
+
 func _in_area(x: int, y: int) -> bool:
 	for a in Sim.world.get("areas", {}).values():
 		var r: Array = a.get("rect", [0, 0, 0, 0])
@@ -577,7 +626,8 @@ func _draw() -> void:
 		draw_rect(Rect2(sx * T, sy * T, T, T * 0.22), pal["top"], true)                               # 顶棱高光
 		draw_rect(Rect2(sx * T, sy * T + T * 0.86, T, T * 0.14), pal["foot"], true)                   # 墙脚暗边
 	# 屋檐 + 招牌：每栋（非广场）沿顶墙内侧铺一条屋檐色带 + 门上方挂类型招牌图标 → 类型一眼可辨。
-	_draw_building_dressing(w)
+	_draw_facades()            # P3 打磨：开窗（夜透暖光）+ 住宅/工坊烟囱——先画在墙面上
+	_draw_building_dressing(w) # 再压屋檐/招牌（自然遮住顶墙窗上沿，像真的屋檐）
 
 	# 装饰散布（区域外草地上的树/花/草丛，确定性布局；在物件与居民之下）
 	if not _decor_built:
