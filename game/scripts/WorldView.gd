@@ -70,6 +70,8 @@ var _grass: Array = []   # 草地变体纹理（带权）
 var _decor_items: Array = []  # [{tex, cell:Vector2i, h_tiles}]
 var _decor_built := false
 # P2-2 地形层：map.json 的 walls/water/trees（纯渲染；导航走 blockers 并集，与此无关）。start_new 时重建。
+var _path_set := {}      # idx(y*W+x) -> true（土路格：广场↔各家门口；渲染 + 装饰避让）
+var _paths_built := false
 var _wall_set := {}      # idx(y*W+x) -> true（墙格，用于画石墙 + 装饰避让）
 var _water_set := {}     # idx -> true（水格）
 var _tree_cells: Array = []  # [Vector2i]（authored 阻挡树，替代程序化装饰树）
@@ -105,6 +107,8 @@ func _hash(x: int, y: int, salt: int) -> int:
 func _build_decor() -> void:
 	_decor_built = true
 	_decor_items.clear()
+	if not _paths_built:
+		_build_paths()                    # 先有路，散装饰时才能避开它
 	var pool := []
 	# 树不再散布：P2-2 的可见树 = authored 阻挡树（_tree_cells）。程序化装饰只留贴地花草石（可踩，纯装饰）。
 	for nm in ["bush", "flower_red", "flower_yellow", "flower_white", "rock", "stump", "mushroom"]:
@@ -122,8 +126,8 @@ func _build_decor() -> void:
 	var h: int = int(Sim.world.get("height", 16))
 	for y in range(h):
 		for x in range(w):
-			if _in_area(x, y) or _is_object(x, y) or _is_blocked(x, y):
-				continue
+			if _in_area(x, y) or _is_object(x, y) or _is_blocked(x, y) or _path_set.has(y * w + x):
+				continue                      # 区域/家具/阻挡/土路 上都不散装饰（路面保持干净）
 			if _hash(x, y, 7) % 100 >= 22:   # ~22% 密度
 				continue
 			var r := _hash(x, y, 13) % total_w
@@ -158,6 +162,33 @@ func _build_terrain() -> void:
 		for j in range(bh):
 			_wall_type[(y0 + j) * wd + x0] = typ
 			_wall_type[(y0 + j) * wd + (x0 + bw - 1)] = typ
+
+## P3 打磨：土路网——每家门口通到中央广场。L 形（先垂直离开建筑、再拐向广场），只铺在可走格上。
+## 纯渲染（map.json 的 doors 层是渲染用、不进导航/digest）；装饰会避开土路，路面才干净。
+func _build_paths() -> void:
+	_paths_built = true
+	_path_set.clear()
+	var areas: Dictionary = Sim.world.get("areas", {})
+	if not areas.has("plaza"):
+		return
+	var pr: Array = (areas["plaza"] as Dictionary).get("rect", [0, 0, 0, 0])
+	var px0 := int(pr[0]); var py0 := int(pr[1])
+	var px1 := px0 + int(pr[2]) - 1; var py1 := py0 + int(pr[3]) - 1
+	var wd: int = int(Sim.world.get("width", 24))
+	var outdir := {"S": Vector2i(0, 1), "N": Vector2i(0, -1), "W": Vector2i(-1, 0), "E": Vector2i(1, 0)}
+	for d in Sim.world.get("doors", []):
+		var dp: Array = (d as Dictionary).get("pos", [0, 0])
+		var od: Vector2i = outdir.get(String((d as Dictionary).get("face", "S")), Vector2i(0, 1))
+		var cur := Vector2i(int(dp[0]), int(dp[1])) + od           # 门外第一格（不铺在门格本身）
+		var gx: int = clampi(cur.x, px0, px1)                      # 广场最近的 x/y 带
+		var gy: int = clampi(cur.y, py0, py1)
+		while cur.y != gy:                                         # 竖腿：先离开建筑
+			if not _is_blocked(cur.x, cur.y): _path_set[cur.y * wd + cur.x] = true
+			cur.y += signi(gy - cur.y)
+		while cur.x != gx:                                         # 横腿：再拐向广场
+			if not _is_blocked(cur.x, cur.y): _path_set[cur.x + cur.y * wd] = true
+			cur.x += signi(gx - cur.x)
+		if not _is_blocked(cur.x, cur.y): _path_set[cur.y * wd + cur.x] = true
 
 func _is_blocked(x: int, y: int) -> bool:
 	if not _terrain_built:
@@ -502,6 +533,16 @@ func _draw() -> void:
 			draw_rect(wr, Color("#2f6d86"), true)
 			if _hash(wx, wy, 21) % 100 < 30:   # 静态涟漪高光
 				draw_rect(Rect2(wx * T + T * 0.18, wy * T + T * 0.30, T * 0.42, T * 0.12), Color(0.72, 0.86, 0.94, 0.35), true)
+
+	# 土路网（广场↔各家门口）：铺在草地之上、区域/建筑之下 → 一眼读出"路"。装饰会避开它，路面才干净。
+	if not _paths_built:
+		_build_paths()
+	if dirt != null:
+		for idx in _path_set:
+			var rx: int = idx % w
+			var ry: int = idx / w
+			draw_texture_rect(dirt, Rect2(rx * T, ry * T, T, T), false)
+			draw_rect(Rect2(rx * T, ry * T, T, T), Color("#6b5a3e", 0.16), true)   # 压一层暖褐：比广场更"踩实"，两者可区分
 
 	# 区域：只留一层极淡的"街区底色"（0.32→0.10）+ 低调标签。建筑一旦有了体积，空间就该由【房子】定义，
 	# 而不是由半透明色块定义——旧的 0.32 色洗盖在建筑上，把砖木都洗成灰紫，是"简陋感"的主因之一。

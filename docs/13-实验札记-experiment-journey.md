@@ -816,5 +816,17 @@ find_endorse（看 endorse_events 计数逐 tick 跳变，因 endorse 不进 eve
   点 1F 楼梯→2f、点 2F 楼梯→1f、点 1F 门→出镇、点空地→无 portal 不误穿，全绿。
 
 纯 View/输入/测试改动（不碰 Sim/digest）；full CI 绿（S0 12/12、det 3/3、六场景含 space_test/save_load/s4_replay）。存证
-shot-town-cafe-door（镇上咖啡馆的木门+招牌，门在南墙缺口、店内 aria 在灶台边）。**留作视觉打磨后续增量**：道路层次（广场↔各门的土路）、
-建筑外观细节、室内美术、以及数据驱动的通用建筑/室内模板 + 其它建筑不再是空壳。
+shot-town-cafe-door（镇上咖啡馆的木门+招牌，门在南墙缺口、店内 aria 在灶台边）。提交 6a2ddaf。
+
+## Town-World 视觉/UX 打磨 · 第 2 增量：土路网（道路层次）
+
+**✅ 小镇有路了——中央广场向【七家门口】辐射出土路，一眼读出聚落结构（审计说的"道路层次"）。**
+- `gen_town.py` 多吐一层 **doors**（name/pos/face，取自 `{**DISTRICTS, **EXTRA_BUILDINGS}`——注意 home2/shop/library
+  这三栋 P2-4b 加的建筑也有门，只查 DISTRICTS 会 KeyError）。**纯渲染层**：blockers 一字节没动（sha 复核）→ Sim 不读 doors
+  → digest 逐字节不变，full CI 绿（audit_map / S0 12/12 / det 3/3 / space_test）。
+- `WorldView._build_paths()`：每扇门从【门外第一格】起，先竖腿离开建筑、再横腿拐向广场最近的 x/y 带（L 形），
+  只铺在可走格上（撞到墙/水/树就断，不会画穿障碍）。`_draw_paths` 铺在草地之上、区域/建筑之下 → 读作"路"而非"地块"。
+- **装饰避让土路**：`_build_decor` 把 path 格也跳过 → 路面干净，不会长出花草石头。
+
+七条路 = 4 个中央街区（住宅/咖啡馆/澡堂/工坊）+ 3 栋外围建筑（民居/杂货铺/图书馆），在广场汇成 hub-and-spoke。
+存证 shot-town-roads。**留作后续增量**：建筑外观细节（雨棚/窗框/烟囱/分色）、其它建筑做成可进的真室内（数据驱动模板）、室内美术。

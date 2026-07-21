@@ -3331,6 +3331,64 @@
    ]
   }
  ],
+ "doors": [
+  {
+   "name": "cafe",
+   "pos": [
+    41,
+    19
+   ],
+   "face": "S"
+  },
+  {
+   "name": "home",
+   "pos": [
+    22,
+    19
+   ],
+   "face": "S"
+  },
+  {
+   "name": "home2",
+   "pos": [
+    12,
+    8
+   ],
+   "face": "S"
+  },
+  {
+   "name": "library",
+   "pos": [
+    12,
+    38
+   ],
+   "face": "N"
+  },
+  {
+   "name": "shop",
+   "pos": [
+    52,
+    10
+   ],
+   "face": "S"
+  },
+  {
+   "name": "wash",
+   "pos": [
+    22,
+    28
+   ],
+   "face": "N"
+  },
+  {
+   "name": "work",
+   "pos": [
+    41,
+    28
+   ],
+   "face": "N"
+  }
+ ],
  "objects": [
   {
    "id": "bed_1",

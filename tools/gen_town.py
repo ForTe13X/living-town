@@ -187,6 +187,10 @@ def main():
            "water":  sorted([list(b) for b in water]),
            "trees":  sorted([list(b) for b in trees]),
            "landmarks": landmarks,                            # 单格类型化地标（well/board）
+           # 门（名字/格/朝向）——纯渲染用：WorldView 据此画土路（广场↔各家门口）+ 门/招牌可视线索。
+           # 不进导航（blockers 不变）→ digest 逐字节不变。
+           "doors": [{"name": n, "pos": list(doors[n]), "face": {**DISTRICTS, **EXTRA_BUILDINGS}[n][4]}
+                     for n in sorted(doors)],
            "objects": objects}
     json.dump(out, open(p("map.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     json.dump(ag, open(p("agents.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
