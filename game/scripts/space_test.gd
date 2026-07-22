@@ -58,6 +58,15 @@ func _ready() -> void:
 	ck(_portal_dest(sg, "cafe", "2f", Vector2i(1, 1)) == ["cafe", "1f"], "点 2F 楼梯 → cafe/1f（下楼）")
 	ck(_portal_dest(sg, "cafe", "1f", Vector2i(4, 5)) == ["town", "outdoor"], "点 1F 门 → town/outdoor（出门）")
 	ck(_portal_dest(sg, "town", "outdoor", Vector2i(9, 9)) == ["", ""], "点空地 → 无 portal（不误穿）")
+	# P3 数据驱动室内：镇上【每一扇门】都要能点进一个真 Space（且该层有室内内容）——没有空壳建筑。
+	var doors_ok := true; var doors_n := 0; var bad := ""
+	for d in Sim.world.get("doors", []):
+		var dp: Array = (d as Dictionary).get("pos", [0, 0])
+		var dest := _portal_dest(sg, "town", "outdoor", Vector2i(int(dp[0]), int(dp[1])))
+		doors_n += 1
+		if dest[0] == "" or not sg.has_floor(dest[0], dest[1]):
+			doors_ok = false; bad = String(d.get("name", "?"))
+	ck(doors_ok and doors_n > 0, "镇上 %d 扇门都能进真 Space（无空壳）%s" % [doors_n, ("← 坏门:" + bad) if not doors_ok else ""])
 
 	# ── 兼容层：不带 spatial_address 的老 agent 一律 town/outdoor（Sim 一行没改）──
 	var ag: Dictionary = Sim.agents[0]

@@ -443,11 +443,20 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 			if String(e.get("space", "")) == sid and String(e.get("floor", "")) == fid and String(p.get("kind", "")) == "door":
 				var ep: Array = e.get("pos", [0, 0])
 				door_gap[int(ep[1]) * wc + int(ep[0])] = true
-	# 木地板
-	draw_rect(b, Color("#caa26e"), true)
-	for gy in range(hc):
-		if gy % 2 == 0:
-			draw_rect(Rect2(ox, oy + gy * T, b.size.x, 3), Color("#a6814e", 0.4), true)
+	# 地板：按 interiors.json 的 floor 材质画（wood=暖木条纹 / stone=冷灰石板缝）→ 澡堂/工坊/图书馆一进门就和木屋不同
+	if String(content.get("floor", "wood")) == "stone":
+		draw_rect(b, Color("#9a9490"), true)
+		for gy in range(hc):
+			for gx in range(wc):
+				if (gx + gy) % 2 == 0:
+					draw_rect(Rect2(ox + gx * T, oy + gy * T, T, T), Color("#a8a29c", 0.55), true)   # 交错石板
+		for gy in range(hc):
+			draw_rect(Rect2(ox, oy + gy * T, b.size.x, 2), Color("#6f6a66", 0.45), true)             # 横缝
+	else:
+		draw_rect(b, Color("#caa26e"), true)
+		for gy in range(hc):
+			if gy % 2 == 0:
+				draw_rect(Rect2(ox, oy + gy * T, b.size.x, 3), Color("#a6814e", 0.4), true)
 	# 外墙（边框），门口那格留缺、画成门
 	for gx in range(wc):
 		_interior_wall(sg, ox + gx * T, oy, door_gap.has(gx))                          # 上墙
@@ -521,6 +530,26 @@ func _draw_interior_furniture(slot: String, base: Vector2) -> void:
 			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.12, T * 0.7, T * 0.5), Color("#8fc0e0"), true)
 			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.12, T * 0.7, T * 0.5), Color("#5a3f28"), false, 3.0)
 			draw_line(Vector2(base.x + T * 0.5, base.y + T * 0.12), Vector2(base.x + T * 0.5, base.y + T * 0.62), Color("#5a3f28"), 2.0)
+		"bath":                                      # 浴池：石沿 + 水面 + 蒸汽
+			draw_rect(Rect2(base.x + T * 0.1, base.y + T * 0.2, T * 0.8, T * 0.66), Color("#8b93a0"), true)
+			draw_rect(Rect2(base.x + T * 0.17, base.y + T * 0.27, T * 0.66, T * 0.52), Color("#4f9dc4"), true)
+			draw_rect(Rect2(base.x + T * 0.17, base.y + T * 0.27, T * 0.66, T * 0.12), Color("#8fd0e8", 0.8), true)
+			draw_circle(Vector2(base.x + T * 0.36, base.y + T * 0.14), T * 0.07, Color(1, 1, 1, 0.35))
+			draw_circle(Vector2(base.x + T * 0.6, base.y + T * 0.07), T * 0.055, Color(1, 1, 1, 0.22))
+		"bench":                                     # 条凳：长座板 + 两腿
+			draw_rect(Rect2(base.x + T * 0.08, base.y + T * 0.42, T * 0.84, T * 0.17), Color("#8a6238"), true)
+			draw_rect(Rect2(base.x + T * 0.08, base.y + T * 0.42, T * 0.84, T * 0.05), Color("#a67f4e"), true)
+			draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.59, T * 0.1, T * 0.24), Color("#5a3f28"), true)
+			draw_rect(Rect2(base.x + T * 0.74, base.y + T * 0.59, T * 0.1, T * 0.24), Color("#5a3f28"), true)
+		"crate":                                     # 木箱：板条 + 对角加固
+			draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.3, T * 0.68, T * 0.56), Color("#9a7042"), true)
+			draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.3, T * 0.68, T * 0.56), Color("#5a3f28"), false, 2.0)
+			draw_line(Vector2(base.x + T * 0.16, base.y + T * 0.86), Vector2(base.x + T * 0.84, base.y + T * 0.3), Color("#5a3f28"), 2.0)
+			draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.3, T * 0.68, T * 0.08), Color("#b5854e"), true)
+		"stool":                                     # 圆凳
+			draw_circle(Vector2(base.x + T * 0.5, base.y + T * 0.5), T * 0.22, Color("#8a6238"))
+			draw_circle(Vector2(base.x + T * 0.5, base.y + T * 0.47), T * 0.18, Color("#a67f4e"))
+			draw_rect(Rect2(base.x + T * 0.44, base.y + T * 0.62, T * 0.12, T * 0.22), Color("#5a3f28"), true)
 		"stairs":                                    # 楼梯：斜阶
 			for k in range(4):
 				draw_rect(Rect2(base.x + T * 0.12 + k * T * 0.17, base.y + T * 0.62 - k * T * 0.13, T * 0.2, T * 0.15), Color("#7a6a52"), true)

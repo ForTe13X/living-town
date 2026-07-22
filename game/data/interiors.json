@@ -1,34 +1,466 @@
 {
-  "_note": "P3 竖切片室内内容：space -> floor -> {label, floor(地板材质), furniture[]}。纯渲染 / Probe inspect-only（Tier-A）：不进 Sim 仿真、不生成候选、不抽 RNG → digest 逐字节不变。furniture={slot(渲染前缀,决定程序化画法), pos:[x,y]（该 Space 内的格,从 0,0）, label?}。外墙由 Space bounds 边框自动画（门口那格留缺）、门/楼梯锚点用 spaces.json 的 portal。缺此文件=非-town Space 回落占位网格。",
-  "cafe": {
-    "1f": {
-      "label": "一层 · 咖啡区",
-      "floor": "wood",
-      "furniture": [
-        {"slot": "stairs", "pos": [1, 1], "label": "上楼"},
-        {"slot": "shelf", "pos": [6, 1]},
-        {"slot": "counter", "pos": [4, 1], "label": "咖啡吧台", "staff": true, "advertises": [{"action": "看摊", "need": "fun", "amount": 30, "duration": 24}, {"action": "闲聊", "need": "social", "amount": 40, "duration": 20}]},
-        {"slot": "coffee", "pos": [5, 1], "label": "咖啡机"},
-        {"slot": "table", "pos": [2, 3]},
-        {"slot": "chair", "pos": [2, 4]},
-        {"slot": "table", "pos": [5, 3], "advertises": [{"action": "喝咖啡", "need": "fun", "amount": 32, "duration": 16}]},
-        {"slot": "chair", "pos": [5, 4]},
-        {"slot": "plant", "pos": [1, 4]},
-        {"slot": "rug", "pos": [3, 2]}
-      ]
+ "_note": "P3 竖切片室内内容：space -> floor -> {label, floor(地板材质), furniture[]}。纯渲染 / Probe inspect-only（Tier-A）：不进 Sim 仿真、不生成候选、不抽 RNG → digest 逐字节不变。furniture={slot(渲染前缀,决定程序化画法), pos:[x,y]（该 Space 内的格,从 0,0）, label?}。外墙由 Space bounds 边框自动画（门口那格留缺）、门/楼梯锚点用 spaces.json 的 portal。缺此文件=非-town Space 回落占位网格。",
+ "cafe": {
+  "1f": {
+   "label": "一层 · 咖啡区",
+   "floor": "wood",
+   "furniture": [
+    {
+     "slot": "stairs",
+     "pos": [
+      1,
+      1
+     ],
+     "label": "上楼"
     },
-    "2f": {
-      "label": "二层 · 阿丽的居所",
-      "floor": "wood",
-      "furniture": [
-        {"slot": "stairs", "pos": [1, 1], "label": "下楼"},
-        {"slot": "bed", "pos": [2, 2], "label": "床", "advertises": [{"action": "睡觉", "need": "energy", "amount": 62, "duration": 40}]},
-        {"slot": "desk", "pos": [5, 2], "label": "书桌"},
-        {"slot": "shelf", "pos": [6, 1]},
-        {"slot": "rug", "pos": [3, 3]},
-        {"slot": "plant", "pos": [6, 4]},
-        {"slot": "window", "pos": [7, 3]}
-      ]
+    {
+     "slot": "shelf",
+     "pos": [
+      6,
+      1
+     ]
+    },
+    {
+     "slot": "counter",
+     "pos": [
+      4,
+      1
+     ],
+     "label": "咖啡吧台",
+     "staff": true,
+     "advertises": [
+      {
+       "action": "看摊",
+       "need": "fun",
+       "amount": 30,
+       "duration": 24
+      },
+      {
+       "action": "闲聊",
+       "need": "social",
+       "amount": 40,
+       "duration": 20
+      }
+     ]
+    },
+    {
+     "slot": "coffee",
+     "pos": [
+      5,
+      1
+     ],
+     "label": "咖啡机"
+    },
+    {
+     "slot": "table",
+     "pos": [
+      2,
+      3
+     ]
+    },
+    {
+     "slot": "chair",
+     "pos": [
+      2,
+      4
+     ]
+    },
+    {
+     "slot": "table",
+     "pos": [
+      5,
+      3
+     ],
+     "advertises": [
+      {
+       "action": "喝咖啡",
+       "need": "fun",
+       "amount": 32,
+       "duration": 16
+      }
+     ]
+    },
+    {
+     "slot": "chair",
+     "pos": [
+      5,
+      4
+     ]
+    },
+    {
+     "slot": "plant",
+     "pos": [
+      1,
+      4
+     ]
+    },
+    {
+     "slot": "rug",
+     "pos": [
+      3,
+      2
+     ]
     }
+   ]
+  },
+  "2f": {
+   "label": "二层 · 阿丽的居所",
+   "floor": "wood",
+   "furniture": [
+    {
+     "slot": "stairs",
+     "pos": [
+      1,
+      1
+     ],
+     "label": "下楼"
+    },
+    {
+     "slot": "bed",
+     "pos": [
+      2,
+      2
+     ],
+     "label": "床",
+     "advertises": [
+      {
+       "action": "睡觉",
+       "need": "energy",
+       "amount": 62,
+       "duration": 40
+      }
+     ]
+    },
+    {
+     "slot": "desk",
+     "pos": [
+      5,
+      2
+     ],
+     "label": "书桌"
+    },
+    {
+     "slot": "shelf",
+     "pos": [
+      6,
+      1
+     ]
+    },
+    {
+     "slot": "rug",
+     "pos": [
+      3,
+      3
+     ]
+    },
+    {
+     "slot": "plant",
+     "pos": [
+      6,
+      4
+     ]
+    },
+    {
+     "slot": "window",
+     "pos": [
+      7,
+      3
+     ]
+    }
+   ]
   }
+ },
+ "home": {
+  "1f": {
+   "label": "一层",
+   "floor": "wood",
+   "furniture": [
+    {
+     "slot": "bed",
+     "pos": [
+      1,
+      1
+     ]
+    },
+    {
+     "slot": "shelf",
+     "pos": [
+      4,
+      1
+     ]
+    },
+    {
+     "slot": "table",
+     "pos": [
+      1,
+      3
+     ]
+    },
+    {
+     "slot": "chair",
+     "pos": [
+      2,
+      3
+     ]
+    },
+    {
+     "slot": "rug",
+     "pos": [
+      3,
+      3
+     ]
+    },
+    {
+     "slot": "plant",
+     "pos": [
+      5,
+      3
+     ]
+    }
+   ]
+  }
+ },
+ "wash": {
+  "1f": {
+   "label": "一层",
+   "floor": "stone",
+   "furniture": [
+    {
+     "slot": "bath",
+     "pos": [
+      1,
+      1
+     ]
+    },
+    {
+     "slot": "bench",
+     "pos": [
+      3,
+      1
+     ]
+    },
+    {
+     "slot": "shelf",
+     "pos": [
+      5,
+      1
+     ]
+    },
+    {
+     "slot": "plant",
+     "pos": [
+      1,
+      3
+     ]
+    },
+    {
+     "slot": "rug",
+     "pos": [
+      3,
+      3
+     ]
+    },
+    {
+     "slot": "bench",
+     "pos": [
+      5,
+      3
+     ]
+    }
+   ]
+  }
+ },
+ "work": {
+  "1f": {
+   "label": "一层",
+   "floor": "stone",
+   "furniture": [
+    {
+     "slot": "desk",
+     "pos": [
+      1,
+      1
+     ]
+    },
+    {
+     "slot": "crate",
+     "pos": [
+      3,
+      1
+     ]
+    },
+    {
+     "slot": "shelf",
+     "pos": [
+      5,
+      1
+     ]
+    },
+    {
+     "slot": "stool",
+     "pos": [
+      1,
+      3
+     ]
+    },
+    {
+     "slot": "crate",
+     "pos": [
+      2,
+      3
+     ]
+    },
+    {
+     "slot": "rug",
+     "pos": [
+      4,
+      3
+     ]
+    }
+   ]
+  }
+ },
+ "home2": {
+  "1f": {
+   "label": "一层",
+   "floor": "wood",
+   "furniture": [
+    {
+     "slot": "bed",
+     "pos": [
+      1,
+      1
+     ]
+    },
+    {
+     "slot": "shelf",
+     "pos": [
+      4,
+      1
+     ]
+    },
+    {
+     "slot": "table",
+     "pos": [
+      1,
+      3
+     ]
+    },
+    {
+     "slot": "chair",
+     "pos": [
+      2,
+      3
+     ]
+    },
+    {
+     "slot": "rug",
+     "pos": [
+      3,
+      3
+     ]
+    }
+   ]
+  }
+ },
+ "shop": {
+  "1f": {
+   "label": "一层",
+   "floor": "wood",
+   "furniture": [
+    {
+     "slot": "counter",
+     "pos": [
+      1,
+      1
+     ]
+    },
+    {
+     "slot": "shelf",
+     "pos": [
+      3,
+      1
+     ]
+    },
+    {
+     "slot": "shelf",
+     "pos": [
+      4,
+      1
+     ]
+    },
+    {
+     "slot": "crate",
+     "pos": [
+      1,
+      3
+     ]
+    },
+    {
+     "slot": "crate",
+     "pos": [
+      2,
+      3
+     ]
+    },
+    {
+     "slot": "rug",
+     "pos": [
+      4,
+      3
+     ]
+    }
+   ]
+  }
+ },
+ "library": {
+  "1f": {
+   "label": "一层",
+   "floor": "stone",
+   "furniture": [
+    {
+     "slot": "shelf",
+     "pos": [
+      1,
+      1
+     ]
+    },
+    {
+     "slot": "shelf",
+     "pos": [
+      2,
+      1
+     ]
+    },
+    {
+     "slot": "shelf",
+     "pos": [
+      5,
+      1
+     ]
+    },
+    {
+     "slot": "desk",
+     "pos": [
+      3,
+      3
+     ]
+    },
+    {
+     "slot": "stool",
+     "pos": [
+      4,
+      3
+     ]
+    },
+    {
+     "slot": "plant",
+     "pos": [
+      1,
+      3
+     ]
+    }
+   ]
+  }
+ }
 }

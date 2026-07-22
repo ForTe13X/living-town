@@ -36,6 +36,8 @@ BLD_TYPE = {
     "home": "residential", "cafe": "commercial", "wash": "public", "work": "workshop", "plaza": "plaza",
     "home2": "residential", "shop": "commercial", "library": "public",
 }
+LABELS = {"home": "住宅区", "cafe": "咖啡馆", "wash": "澡堂", "work": "工坊",
+          "home2": "民居", "shop": "杂货铺", "library": "图书馆"}   # 建筑显示名（区域标签 + 室内 Space label + 门口招牌共用）
 PLAZA = (28, 21, 8, 6)   # open central hub (no walls) — all 4 districts hug it (short survival treks)
 # object id -> (district, interior-offset from district origin); interior floor = x 1..w-2, y 1..h-2
 OBJ_POS = {
@@ -61,10 +63,8 @@ def build():
     walls, water, trees = set(), set(), set()   # typed layers (rendering); nav blocks the union
     areas = {}
     doors = {}
-    labels = {"home": "住宅区", "cafe": "咖啡馆", "wash": "澡堂", "work": "工坊",
-              "home2": "民居", "shop": "杂货铺", "library": "图书馆"}
     for name, (x, y, w, h, side, off) in {**DISTRICTS, **EXTRA_BUILDINGS}.items():
-        areas[name] = {"label": labels.get(name, name), "rect": [x, y, w, h], "type": BLD_TYPE.get(name, "residential")}
+        areas[name] = {"label": LABELS.get(name, name), "rect": [x, y, w, h], "type": BLD_TYPE.get(name, "residential")}
         for i in range(w):
             walls.add((x + i, y)); walls.add((x + i, y + h - 1))
         for j in range(h):
@@ -198,7 +198,46 @@ def main():
     sp = json.load(open(p("spaces.json"), encoding="utf-8"))
     if isinstance(sp.get("spaces"), dict) and "town" in sp["spaces"]:
         sp["spaces"]["town"]["bounds"] = [0, 0, W, H]
+    # ── P3 数据驱动室内：给【每栋楼】按类型模板生成 Space + 街门 portal + 室内内容 ──────────────
+    # 手工精修的 cafe 与 P1 的 test_loft 原样保留；上一轮生成的（_gen=true）全部丢弃后重建 → 幂等可重跑。
+    # 纯渲染/inspect：不进 blockers、不产候选 → 导航与 digest 一字节不动。
+    tpl = json.load(open(p("interior_templates.json"), encoding="utf-8")).get("templates", {})
+    KEEP = {"town", "test_loft", "cafe"}
+    sp["spaces"] = {k: v for k, v in sp["spaces"].items() if k in KEEP or not v.get("_gen")}
+    sp["portals"] = [q for q in sp.get("portals", []) if not q.get("_gen")]
+    interiors = json.load(open(p("interiors.json"), encoding="utf-8")) if os.path.exists(p("interiors.json")) else {}
+    interiors = {k: v for k, v in interiors.items() if k.startswith("_") or k == "cafe"}
+    OUTD = {"S": (0, 1), "N": (0, -1), "W": (-1, 0), "E": (1, 0)}
+    n_gen = 0
+    for name, (bx, by, bw, bh, side, off) in {**DISTRICTS, **EXTRA_BUILDINGS}.items():
+        if name == "cafe":
+            continue                                        # 手写的咖啡馆（1F/2F）不覆盖
+        typ = BLD_TYPE.get(name, "residential")
+        t = tpl.get(name) or tpl.get(typ)         # 先按建筑名找专属模板（图书馆/杂货铺），再回落到粗类型
+        if not t:
+            continue
+        # 室内门格 = 与外门同侧同偏移（进门位置对得上，读起来才连贯）
+        if side == "S":   idoor = (off, bh - 1)
+        elif side == "N": idoor = (off, 0)
+        elif side == "W": idoor = (0, off)
+        else:             idoor = (bw - 1, off)
+        sp["spaces"][name] = {"_gen": True, "kind": "interior", "label": LABELS[name],
+                              "bounds": [0, 0, bw, bh], "floors": ["1f"], "default_floor": "1f"}
+        sp["portals"].append({"_gen": True, "id": "p_%s_door" % name, "kind": "door",
+                              "from": {"space": "town", "floor": "outdoor", "pos": list(doors[name])},
+                              "to": {"space": name, "floor": "1f", "pos": list(idoor)},
+                              "bidirectional": True, "access": "public", "traversal_cost": 1})
+        furn = []
+        for f in t.get("furniture", []):
+            fx, fy = 1 + int(f["d"][0]), 1 + int(f["d"][1])   # 相对可用格(1,1)
+            if not (1 <= fx <= bw - 2 and 1 <= fy <= bh - 2): continue   # 小楼放不下 → 丢弃
+            if (fx, fy) == idoor: continue                                # 门口不摆家具
+            furn.append({"slot": f["slot"], "pos": [fx, fy]})
+        interiors[name] = {"1f": {"label": "一层", "floor": t.get("floor", "wood"), "furniture": furn}}
+        n_gen += 1
     json.dump(sp, open(p("spaces.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    json.dump(interiors, open(p("interiors.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    print("generated %d building interiors (cafe hand-authored, preserved)" % n_gen)
     # buildings.json rooms are authored at OLD 24x16 coords → orphaned on the 64x48 map. Clear for the
     # graybox (base objects cover every need); real multi-floor interiors get re-authored in P3 (café slice).
     bj = json.load(open(p("buildings.json"), encoding="utf-8"))

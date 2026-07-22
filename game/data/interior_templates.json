@@ -1,0 +1,74 @@
+{
+  "_note": "按【建筑类型】的室内家具模板（P3 数据驱动室内）。gen_town 据此为每栋建筑生成 Space + 街门 portal + interiors 内容，于是每栋楼都能点门进去，而不用手写七份。d=相对室内左上可用格(1,1)的偏移；gen_town 会裁进室内范围(1..w-2,1..h-2)、并跳过门格，放不下的家具自动丢弃 → 小楼(6x5)也不会溢出。slot 决定 WorldView 的程序化画法。阿丽的咖啡馆是手工精修的，不走模板（gen_town 跳过 cafe）。纯渲染/inspect：不进导航、不产候选、不动 digest。",
+  "templates": {
+    "residential": {
+      "floor": "wood",
+      "furniture": [
+        {"slot": "bed",   "d": [0, 0]},
+        {"slot": "shelf", "d": [3, 0]},
+        {"slot": "table", "d": [0, 2]},
+        {"slot": "chair", "d": [1, 2]},
+        {"slot": "rug",   "d": [2, 2]},
+        {"slot": "plant", "d": [4, 2]}
+      ]
+    },
+    "commercial": {
+      "floor": "wood",
+      "furniture": [
+        {"slot": "counter", "d": [0, 0]},
+        {"slot": "coffee",  "d": [1, 0]},
+        {"slot": "shelf",   "d": [3, 0]},
+        {"slot": "crate",   "d": [4, 0]},
+        {"slot": "table",   "d": [0, 2]},
+        {"slot": "chair",   "d": [1, 2]},
+        {"slot": "rug",     "d": [3, 2]}
+      ]
+    },
+    "public": {
+      "floor": "stone",
+      "furniture": [
+        {"slot": "bath",  "d": [0, 0]},
+        {"slot": "bench", "d": [2, 0]},
+        {"slot": "shelf", "d": [4, 0]},
+        {"slot": "plant", "d": [0, 2]},
+        {"slot": "rug",   "d": [2, 2]},
+        {"slot": "bench", "d": [4, 2]}
+      ]
+    },
+    "workshop": {
+      "floor": "stone",
+      "furniture": [
+        {"slot": "desk",  "d": [0, 0]},
+        {"slot": "crate", "d": [2, 0]},
+        {"slot": "shelf", "d": [4, 0]},
+        {"slot": "stool", "d": [0, 2]},
+        {"slot": "crate", "d": [1, 2]},
+        {"slot": "rug",   "d": [3, 2]}
+      ]
+    },
+
+    "_by_name_note": "按【建筑名】的专属模板，优先于上面的类型模板——因为粗类型会串味：图书馆和澡堂同属 public，套类型模板会给图书馆摆浴缸；杂货铺和咖啡馆同属 commercial，会给杂货铺摆咖啡机。",
+    "library": {
+      "floor": "stone",
+      "furniture": [
+        {"slot": "shelf", "d": [0, 0]},
+        {"slot": "shelf", "d": [1, 0]},
+        {"slot": "shelf", "d": [4, 0]},
+        {"slot": "desk",  "d": [2, 2]},
+        {"slot": "stool", "d": [3, 2]},
+        {"slot": "plant", "d": [0, 2]}
+      ]
+    },
+    "shop": {
+      "floor": "wood",
+      "furniture": [
+        {"slot": "counter", "d": [0, 0]},
+        {"slot": "shelf",   "d": [2, 0]},
+        {"slot": "shelf",   "d": [3, 0]},
+        {"slot": "crate",   "d": [0, 2]},
+        {"slot": "crate",   "d": [1, 2]},
+        {"slot": "rug",     "d": [3, 2]}
+      ]
+    }
+  }
+}

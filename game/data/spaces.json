@@ -46,6 +46,96 @@
     "2f"
    ],
    "default_floor": "1f"
+  },
+  "home": {
+   "_gen": true,
+   "kind": "interior",
+   "label": "住宅区",
+   "bounds": [
+    0,
+    0,
+    9,
+    7
+   ],
+   "floors": [
+    "1f"
+   ],
+   "default_floor": "1f"
+  },
+  "wash": {
+   "_gen": true,
+   "kind": "interior",
+   "label": "澡堂",
+   "bounds": [
+    0,
+    0,
+    9,
+    7
+   ],
+   "floors": [
+    "1f"
+   ],
+   "default_floor": "1f"
+  },
+  "work": {
+   "_gen": true,
+   "kind": "interior",
+   "label": "工坊",
+   "bounds": [
+    0,
+    0,
+    9,
+    7
+   ],
+   "floors": [
+    "1f"
+   ],
+   "default_floor": "1f"
+  },
+  "home2": {
+   "_gen": true,
+   "kind": "interior",
+   "label": "民居",
+   "bounds": [
+    0,
+    0,
+    6,
+    5
+   ],
+   "floors": [
+    "1f"
+   ],
+   "default_floor": "1f"
+  },
+  "shop": {
+   "_gen": true,
+   "kind": "interior",
+   "label": "杂货铺",
+   "bounds": [
+    0,
+    0,
+    7,
+    6
+   ],
+   "floors": [
+    "1f"
+   ],
+   "default_floor": "1f"
+  },
+  "library": {
+   "_gen": true,
+   "kind": "interior",
+   "label": "图书馆",
+   "bounds": [
+    0,
+    0,
+    7,
+    6
+   ],
+   "floors": [
+    "1f"
+   ],
+   "default_floor": "1f"
   }
  },
  "portals": [
@@ -140,6 +230,150 @@
    "bidirectional": true,
    "access": "owner",
    "traversal_cost": 2
+  },
+  {
+   "_gen": true,
+   "id": "p_home_door",
+   "kind": "door",
+   "from": {
+    "space": "town",
+    "floor": "outdoor",
+    "pos": [
+     22,
+     19
+    ]
+   },
+   "to": {
+    "space": "home",
+    "floor": "1f",
+    "pos": [
+     4,
+     6
+    ]
+   },
+   "bidirectional": true,
+   "access": "public",
+   "traversal_cost": 1
+  },
+  {
+   "_gen": true,
+   "id": "p_wash_door",
+   "kind": "door",
+   "from": {
+    "space": "town",
+    "floor": "outdoor",
+    "pos": [
+     22,
+     28
+    ]
+   },
+   "to": {
+    "space": "wash",
+    "floor": "1f",
+    "pos": [
+     4,
+     0
+    ]
+   },
+   "bidirectional": true,
+   "access": "public",
+   "traversal_cost": 1
+  },
+  {
+   "_gen": true,
+   "id": "p_work_door",
+   "kind": "door",
+   "from": {
+    "space": "town",
+    "floor": "outdoor",
+    "pos": [
+     41,
+     28
+    ]
+   },
+   "to": {
+    "space": "work",
+    "floor": "1f",
+    "pos": [
+     4,
+     0
+    ]
+   },
+   "bidirectional": true,
+   "access": "public",
+   "traversal_cost": 1
+  },
+  {
+   "_gen": true,
+   "id": "p_home2_door",
+   "kind": "door",
+   "from": {
+    "space": "town",
+    "floor": "outdoor",
+    "pos": [
+     12,
+     8
+    ]
+   },
+   "to": {
+    "space": "home2",
+    "floor": "1f",
+    "pos": [
+     3,
+     4
+    ]
+   },
+   "bidirectional": true,
+   "access": "public",
+   "traversal_cost": 1
+  },
+  {
+   "_gen": true,
+   "id": "p_shop_door",
+   "kind": "door",
+   "from": {
+    "space": "town",
+    "floor": "outdoor",
+    "pos": [
+     52,
+     10
+    ]
+   },
+   "to": {
+    "space": "shop",
+    "floor": "1f",
+    "pos": [
+     3,
+     5
+    ]
+   },
+   "bidirectional": true,
+   "access": "public",
+   "traversal_cost": 1
+  },
+  {
+   "_gen": true,
+   "id": "p_library_door",
+   "kind": "door",
+   "from": {
+    "space": "town",
+    "floor": "outdoor",
+    "pos": [
+     12,
+     38
+    ]
+   },
+   "to": {
+    "space": "library",
+    "floor": "1f",
+    "pos": [
+     3,
+     0
+    ]
+   },
+   "bidirectional": true,
+   "access": "public",
+   "traversal_cost": 1
   }
  ]
 }

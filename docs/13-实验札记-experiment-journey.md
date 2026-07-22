@@ -843,3 +843,20 @@ shot-town-cafe-door（镇上咖啡馆的木门+招牌，门在南墙缺口、店
 纯渲染（不碰数据/Sim/digest）；full CI 绿（S0 12/12、det 3/3）。存证 shot-town-facades（夜里的住宅：四面亮窗+烟囱冒烟+红瓦檐+门口接土路）。
 **留作后续**：其它建筑做成可进的真室内（数据驱动模板）、室内美术、地标构图。
 
+## Town-World 视觉/UX 打磨 · 第 4 增量：数据驱动室内——七栋楼无一空壳
+
+**✅ 审计清单的最后一块大缺口补上：全镇 7 扇门【每一扇都能点进真室内】，用模板生成、不用手写七份。**
+- **`interior_templates.json`（新）**：按【建筑类型】的家具模板（residential/commercial/public/workshop），
+  再叠【按建筑名】的专属模板优先——**粗类型会串味**：图书馆和澡堂同属 public、套类型模板会给图书馆摆浴缸；
+  杂货铺和咖啡馆同属 commercial、会摆咖啡机。名字模板（library=三书架+阅读桌、shop=柜台+货箱）修正语义。
+- **`gen_town.py` 生成管线**：每栋楼（除手工精修的 cafe）→ `_gen:true` 的 Space + 街门 portal（室内门格与外门同侧同偏移，
+  进出位置连贯）+ interiors 内容（家具裁进室内可用格、跳过门格、小楼放不下自动丢弃）。**幂等**：重跑先清 `_gen` 项再生成，
+  cafe/test_loft 永不覆盖。纯渲染：blockers sha 复核一字节不变。
+- **渲染补齐**：新家具槽（bath 浴池带蒸汽 / bench 条凳 / crate 板条箱 / stool 圆凳）+ **地板按材质画**
+  （wood=暖木条纹 / stone=交错石板——澡堂/工坊/图书馆一进门就和木屋气质不同）。
+- **CI 门**：space_test 新断言【镇上每扇门都要能进真 Space 且该层有内容】——"无空壳"从这次起是被 CI 保住的性质，
+  以后加建筑忘了配室内会直接红。
+
+full CI 绿（lint 21 json / audit_map / S0 12/12 / det 3/3 / space_test）。存证 shot-int-wash（澡堂：浴池+条凳+石地板）
++ shot-int-library（图书馆：三书架+阅读桌+石地板）。**至此审计的 Town-World 三件套（自然进门 UX / 道路层次 / 无空壳建筑+
+数据驱动模板）全部落地**；留后续：室内美术再打磨、地标构图、居民真正【使用】这些新室内（Tier-C：家在 home 的人回家睡）。
