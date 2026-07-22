@@ -232,7 +232,10 @@ def main():
             fx, fy = 1 + int(f["d"][0]), 1 + int(f["d"][1])   # 相对可用格(1,1)
             if not (1 <= fx <= bw - 2 and 1 <= fy <= bh - 2): continue   # 小楼放不下 → 丢弃
             if (fx, fy) == idoor: continue                                # 门口不摆家具
-            furn.append({"slot": f["slot"], "pos": [fx, fy]})
+            e = {"slot": f["slot"], "pos": [fx, fy]}
+            if f.get("label"): e["label"] = f["label"]
+            if f.get("advertises"): e["advertises"] = f["advertises"]   # 带 advertises 的家具会被 Sim 编成真对象（住人的房子才有）
+            furn.append(e)
         interiors[name] = {"1f": {"label": "一层", "floor": t.get("floor", "wood"), "furniture": furn}}
         n_gen += 1
     json.dump(sp, open(p("spaces.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)

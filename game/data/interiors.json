@@ -180,6 +180,15 @@
      "pos": [
       1,
       1
+     ],
+     "label": "床",
+     "advertises": [
+      {
+       "action": "睡觉",
+       "need": "energy",
+       "amount": 62,
+       "duration": 40
+      }
      ]
     },
     {
@@ -194,6 +203,15 @@
      "pos": [
       1,
       3
+     ],
+     "label": "桌子",
+     "advertises": [
+      {
+       "action": "歇着",
+       "need": "fun",
+       "amount": 28,
+       "duration": 18
+      }
      ]
     },
     {
@@ -330,6 +348,15 @@
      "pos": [
       1,
       1
+     ],
+     "label": "床",
+     "advertises": [
+      {
+       "action": "睡觉",
+       "need": "energy",
+       "amount": 62,
+       "duration": 40
+      }
      ]
     },
     {
@@ -344,6 +371,15 @@
      "pos": [
       1,
       3
+     ],
+     "label": "桌子",
+     "advertises": [
+      {
+       "action": "歇着",
+       "need": "fun",
+       "amount": 28,
+       "duration": 18
+      }
      ]
     },
     {

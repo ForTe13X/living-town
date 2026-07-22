@@ -572,6 +572,7 @@ func _make_agent(adef: Dictionary, personas: Dictionary) -> Dictionary:
 		"space": a_space, "floor": a_floor,
 		"home_space": a_space, "home_floor": a_floor,     # 家=起始平面（阿丽=cafe/2f）→ 回家 traverse 目标
 		"cafe_regular": bool(adef.get("cafe_regular", false)),   # P3：咖啡馆常客(营业时段进店喝咖啡+社交)；缺=false=不进店
+		"home_needs": _as_arr(adef.get("home_needs", [])),       # P3 Tier-C：家绑定 need（缺=用全局 HOME_NEEDS）
 		"needs": {},
 		"option": null,
 		"mood": "neutral",
@@ -1244,7 +1245,7 @@ func _journey_candidates(ag: Dictionary) -> Array:
 				for adv in _as_arr(o.get("advertises", [])):
 					if adv is Dictionary:
 						var n := String(adv.get("need", ""))
-						if not (n in HOME_NEEDS and aspace != home_space):   # 镇上的床/游戏机不算覆盖【居民】的 energy/fun
+						if not (n in _home_needs(ag) and aspace != home_space):   # 镇上的床/游戏机不算覆盖【居民】的 energy/fun
 							covered[n] = true
 		for nid in ag["needs"]:
 			if nid == "social" or covered.has(nid):
@@ -1271,7 +1272,7 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 			continue
 		if not _staff_ok(ag, o):                                # 顾客的进店行程不冲吧台(员工专属)→ 锁定公共桌"喝咖啡"
 			continue
-		if nid in HOME_NEEDS and home_space != "town" and os != home_space:   # 居民的 energy/fun 只回家 Space
+		if nid in _home_needs(ag) and home_space != "town" and os != home_space:   # 居民的 energy/fun 只回家 Space
 			continue
 		var amt := 0; var dur := 0; var act := ""
 		for adv in _as_arr(o.get("advertises", [])):
@@ -1290,6 +1291,14 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 			best = {"kind": "journey", "action": act, "target": String(id), "need": nid,
 				"dest_space": os, "dest_floor": of, "amount": amt, "dur_total": dur, "score": score, "say": ""}
 	return best
+
+## P3 Tier-C：家绑定的 need 集【按居民可配】——agents.json 的 home_needs 覆盖全局 HOME_NEEDS。
+## 为何要可配：绑定项越多、在外面越久就越危险——ben 把 energy+fun 都绑在家，镇上 62% 时间 fun 无处可满足，
+## 又因"承诺执行中只在当前目标不急时才被危机打断"，他在赶另一件急事时 fun 归零饿穿(seed1 实测)。
+## 阿丽能扛住是因为咖啡馆有【两个】fun 源(吧台+桌)且她驻店 45%。故：开店的绑 energy+fun，普通居民只绑 energy(回家睡觉)。
+func _home_needs(ag: Dictionary) -> Array:
+	var hn = ag.get("home_needs")
+	return hn if hn is Array and not (hn as Array).is_empty() else HOME_NEEDS
 
 ## 员工专属对象门：staff 对象(阿丽的吧台)只有该店主人(home_space==对象 Space)能用；顾客/外人不枚举它。
 ## 非 staff 对象恒真 → town 全员 + 所有旧对象逐字节不变。
@@ -1324,7 +1333,7 @@ func _object_candidates(ag: Dictionary) -> Array:
 			# 家绑定：café 居民的 energy/fun 只在【家 Space】(咖啡馆整栋)满足；镇上的床/游戏机对她不产候选
 			# → 在镇上 energy/fun"无满足"→ _journey_candidates 发起【回咖啡馆】的承诺行程。按 SPACE 判(非 floor：否则
 			# 楼上床/楼下吧台互相排除)。town 居民 home=town → 恒 false → 逐字节不变。
-			if need_id in HOME_NEEDS and String(ag.get("home_space", "town")) != "town" \
+			if need_id in _home_needs(ag) and String(ag.get("home_space", "town")) != "town" \
 					and String(ag.get("space", "town")) != String(ag.get("home_space", "town")):
 				continue
 			var action := String(adv.get("action", ""))

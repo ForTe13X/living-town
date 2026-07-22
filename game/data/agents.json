@@ -31,6 +31,17 @@
    "spawn": [
     20,
     14
+   ],
+   "spatial_address": {
+    "space_id": "home",
+    "floor_id": "1f",
+    "position": [
+     6,
+     2
+    ]
+   },
+   "home_needs": [
+    "energy"
    ]
   },
   {
@@ -43,6 +54,17 @@
    "spawn": [
     21,
     14
+   ],
+   "spatial_address": {
+    "space_id": "home",
+    "floor_id": "1f",
+    "position": [
+     2,
+     2
+    ]
+   },
+   "home_needs": [
+    "energy"
    ]
   },
   {

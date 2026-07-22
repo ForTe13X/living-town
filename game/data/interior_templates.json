@@ -3,10 +3,13 @@
   "templates": {
     "residential": {
       "floor": "wood",
+      "_functional": "住宅是唯一【有人住】的类型：床/桌带 advertises → _compile_interiors 会编成真对象，住在这里的居民才能回家睡觉/歇着（HOME_NEEDS=energy+fun 两项都得在家 Space 内有满足者，否则家绑定会把人饿穿）。其余类型暂纯装饰（没人住）。",
       "furniture": [
-        {"slot": "bed",   "d": [0, 0]},
+        {"slot": "bed",   "d": [0, 0], "label": "床",
+         "advertises": [{"action": "睡觉", "need": "energy", "amount": 62, "duration": 40}]},
         {"slot": "shelf", "d": [3, 0]},
-        {"slot": "table", "d": [0, 2]},
+        {"slot": "table", "d": [0, 2], "label": "桌子",
+         "advertises": [{"action": "歇着", "need": "fun", "amount": 28, "duration": 18}]},
         {"slot": "chair", "d": [1, 2]},
         {"slot": "rug",   "d": [2, 2]},
         {"slot": "plant", "d": [4, 2]}
