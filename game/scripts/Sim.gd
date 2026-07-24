@@ -89,6 +89,16 @@ const FACTION_ENDORSE_DEFER := true
 # S1（声誉×八卦×宽恕，docs/10 §A/§B）
 const STANDING_CAP := 3.0       # standing 范围 [-CAP,+CAP]；sign=good/bad
 const STANDING_K := 6.0         # 接受规则里 standing 权重 → 涌现放逐
+# 涌现放逐加固（exile-hardening 实验）：greet/invite 的"缺社交越急越接受"孤独项，会被强坏名声【抑制】——
+# "我再孤独，也不至于欢迎镇上人人喊打的人"。间接互惠/image-scoring：声誉压过一时的寂寞，让放逐在人群分散
+# （住户各回室内）时仍咬得住。tunable var（Harness 可 --exile-damp 覆盖）；默认 0.0 → 孤独项一字不改、digest 逐字节不变。
+# 抑制量 = damp × (坏名声占满程度 -standing/CAP，仅 standing<0 段)：standing 0→不抑制，-CAP→抑制到 (1-damp)。
+var EXILE_NEED_DAMP := 0.0
+# 涌现放逐加固·变体B（image-score / 间接互惠·全局版）：接受时【额外】按发起者的镇内综合声誉（他人对他 standing 的均值）
+# 扣分——哪怕你个人不讨厌他，"全镇都说他坏"也让你冷淡三分。这才真正针对 #15 的失败机理（分裂声誉：中立/好友照单全收
+# 把 rw 拉高，而恨他的人把 perceived 拉到 ≤-0.8）。代价存疑：会让【好友也随大流疏远】→ 从众压过私交，且可能伤 #17（坏名声可恢复）。
+# tunable var（Harness --image-k）；默认 0.0 → 一字不加、digest 逐字节不变。只在综合声誉<0 时扣（不奖励高声誉，保守）。
+var IMAGE_SCORE_K := 0.0
 const REP_GOSSIP_TH := -2.0     # standing ≤ 此 → 可对外传其坏名声(gossip_rep)
 const INVEST_TRUST := -8.0      # 脆弱动作(give/invite)条件投资门：trust ≥ 此才发起
 const RESENT_DECAY := 0.4       # 每日 resentment 衰减（宽恕：不永久世仇）
@@ -2381,10 +2391,21 @@ func _fj_update(i: Dictionary, j: Dictionary, t: String) -> void:
 	i["attitudes"][t] = clampf(float(i["xi"]) * blended + (1.0 - float(i["xi"])) * float(i["attitude0"][t]), -1.0, 1.0)
 
 ## 接受规则（确定性，含 _rng_at 种子抖动；非法强度永远交给引擎，模型只管选+说）。
+## 发起者的镇内综合声誉 = 其他 agent 对他 standing 的均值（仅数已建关系，不 auto-create → 无副作用/确定性一致）。
+## 变体B image-score 用；O(N)，仅在 IMAGE_SCORE_K>0 的实验里被调用。
+func _town_image(actor_id: String) -> float:
+	var s := 0.0; var n := 0
+	for b in agents:
+		if String(b["id"]) != actor_id and (b["relationships"] as Dictionary).has(actor_id):
+			s += float(b["relationships"][actor_id]["standing"]); n += 1
+	return s / float(maxi(1, n))
+
 func _acceptance_rule(actor: Dictionary, target: Dictionary, action: String, subject: String = "") -> bool:
 	var rr := _rel(target, actor["id"])
 	var aff := float(rr["affinity"])
 	var st := float(rr["standing"]) * STANDING_K   # 声誉门：坏名声更难被接受 → 涌现放逐
+	if IMAGE_SCORE_K > 0.0:                          # 变体B：全局声誉冷淡（仅综合声誉<0 时扣，不奖励高声誉）
+		st += IMAGE_SCORE_K * minf(0.0, _town_image(String(actor["id"])))
 	var need := float(target["needs"].get("social", 100.0))
 	var jitter := (_rng_at(31, _aid(target)).randf() - 0.5) * 20.0   # 接受由 target 决定 → 用 target 的子流
 	var traits: Array = target.get("persona", {}).get("traits", [])
@@ -2420,9 +2441,21 @@ func _acceptance_rule(actor: Dictionary, target: Dictionary, action: String, sub
 		var reserved := -15.0 if ("寡言" in traits or "温柔" in traits) else 0.0  # 寡言/温柔者矜持
 		return aff + reserved + st + fac + jitter + extra > _w("accept_gossip", 0.0)
 	if action == "invite":
-		return (100.0 - need) * 0.35 + aff + st + fac + jitter + extra > _w("accept_invite", -2.0)   # 约见：缺社交/有好感/好名声/同派系更易答应
+		return _need_boost(0.35, need, rr) + aff + st + fac + jitter + extra > _w("accept_invite", -2.0)   # 约见：缺社交/有好感/好名声/同派系更易答应
 	# greet: 对方越缺社交/越有好感/名声越好/同派系越易接受
-	return (100.0 - need) * 0.4 + aff + st + fac + jitter + extra > _w("accept_greet", 0.0)
+	return _need_boost(0.4, need, rr) + aff + st + fac + jitter + extra > _w("accept_greet", 0.0)
+
+## greet/invite 的孤独驱动接受项 (100-need)*k，被【对发起者的强坏名声】抑制（涌现放逐加固）。
+## EXILE_NEED_DAMP=0 → 返回原值 (100-need)*k 逐字节不变；>0 时对 standing<0 的发起者按坏名声占比削减孤独项。
+func _need_boost(k: float, need: float, rr: Dictionary) -> float:
+	var base := (100.0 - need) * k
+	if EXILE_NEED_DAMP <= 0.0:
+		return base
+	var stnd := float(rr["standing"])
+	if stnd >= 0.0:
+		return base                                   # 名声不坏 → 孤独项不动（好名声/中性者逐字节不变）
+	var damp := 1.0 - EXILE_NEED_DAMP * minf(1.0, -stnd / STANDING_CAP)   # 坏名声越满，孤独项越被压
+	return base * damp
 
 # ── 关系账本 / belief / 事件账本 / 工具 ─────────────────────────────────────
 func _rel(ag: Dictionary, other_id: String) -> Dictionary:

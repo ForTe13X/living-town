@@ -9,6 +9,9 @@ extends SceneTree
 const SimScript = preload("res://scripts/Sim.gd")
 const Inv = preload("res://bench/Invariants.gd")
 
+var _exile_damp := 0.0   # --exile-damp X：实验性涌现放逐加固门（Sim.EXILE_NEED_DAMP），默认 0=关（逐字节不变）
+var _image_k := 0.0      # --image-k X：实验性 image-score 全局声誉门（Sim.IMAGE_SCORE_K），默认 0=关
+
 func _init() -> void:
 	var seeds := _parse_seeds("1-12")
 	var days := 60
@@ -21,6 +24,10 @@ func _init() -> void:
 			days = int(args[i + 1])
 		elif args[i] == "--det" and i + 1 < args.size():
 			det_n = int(args[i + 1])
+		elif args[i] == "--exile-damp" and i + 1 < args.size():
+			_exile_damp = float(args[i + 1])   # 实验：涌现放逐加固门（0=关）
+		elif args[i] == "--image-k" and i + 1 < args.size():
+			_image_k = float(args[i + 1])       # 实验：image-score 全局声誉门（0=关）
 		elif args[i] == "--suite" and i + 1 < args.size():
 			pass  # 目前仅 S0；保留位给 S5
 
@@ -114,6 +121,8 @@ func _run_once(seed: int, days: int) -> Dictionary:
 	S._load_data()
 	S.auto_run = false
 	S.backend = null
+	S.EXILE_NEED_DAMP = _exile_damp   # 实验门：默认 0 → 逐字节不变
+	S.IMAGE_SCORE_K = _image_k        # 实验门：默认 0 → 逐字节不变
 	S.start_new(seed)
 	var total: int = days * int(S.TICKS_PER_DAY)
 	var starved := 0
