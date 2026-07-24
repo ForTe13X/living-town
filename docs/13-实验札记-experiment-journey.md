@@ -940,3 +940,23 @@ seed1 扫 8 天，home/1f 深夜同室峰值 **7 人**、`night=1.00`、`lit=0.3
 即"深夜+居民在家+床被占"三项输入全部成立，配合"技法是搬已眼验过的地图夜光"，给出合理但**非完全**的信心。
 **真机像素眼验列为待办**：显示面一恢复（或上手机）即补一张，出图命令 `--shot <png> --shot-fit --probe-space home --probe-floor 1f --warmup-tick <t_intnight 给的峰值 tick>`。
 教训：环境把眼验堵死时，不假装 headless=眼验，而是明写缺口 + 留可复现的 headless 验证器 + 待办，别让"看着对"的视觉改动蒙混过关。
+
+## #15 涌现放逐加固 · 负结果 + 双 AI 对抗性评审（"irreducible"被证伪、撤回）
+
+**尝试：让 #15 在住户搬进室内、人群夜间分散后仍咬得住。两个接受机制干预都被否决——但我一度下的"#15 残余 ~5% 不可约"结论是【过度外推】，被两路独立 AI 评审各自证伪，已撤回。** 全文 branch `exile-hardening` 的 docs/27；master 一行代码不动。
+
+- **Lever A `EXILE_NEED_DAMP`**（按二元坏名声抑制 greet/invite 孤独项）：纯搅动（base 2/42→damp 2-3/42，修好目标 seed 别处冒新的，失败率不降），无回归也无收益。
+- **Lever B `IMAGE_SCORE_K`**（全局 image-score）：有害——#15 更差 + 击穿硬红线 #01 无饿穿（img-k8 三个 seed 饿穿）+ #05 谣言传播回归。
+
+**双评审（GPT-5 Pro 思考 21m + Codex desktop 全仓 git-fetch 只读核验 ~20m，各自独立、逐条收敛）**——这一步是这轮最大的价值：它们抓出了我单跑没看见的东西。
+- **"不合入"对，但"任何接受机制都不可约"错**：Lever A 只改 greet/invite 且只碰【已经负】的二元 responder——恰恰放过诊断出的"中立/友好者过度接受"这条致因链；只证明了"对已负 dyad 再抑制无净收益"，没证明"responder 侧干预不可行"。
+- **Lever B 根本没测它声称的东西**（真 bug）：`_town_image` 只对【已建关系】求均值，而不变量 `perceived` 走 `_rel()` 把缺失 dyad【零填充】（已核实 `_rel` 确会建 key）——稀疏观测下 B 的 image 负得多，是"已建-dyad 负值放大器"而非全镇 image。B 还双计 responder 自己的 standing、无封顶、作用于全动作、对任意负 image 触发。**它的"有害"部分是实现假象。**
+- **"不可约 5%"统计立不住**：2/42，Wilson 95% 区间约 1.3%–15.8%；且软门是【固定 1-flip】非失败率门（1/12=8.3% vs 1/42=2.4%，本身自相矛盾）。
+- **#15 指标本身口径混乱**（两评审一致：改指标比改机制更诚实）：终态声誉解释全程接受、5 动作混池、均值分不清"共识公敌"与"极化领袖"、自选遭遇 + 重复 dyad 伪重复（seed17：21 次决策仅 2 个 responder）、不变量非只读（`perceived` 走 `_rel` 会 mutate）。
+- **诚实修正**："默认 0 逐字节不变"对 **event digest** 成立、对 **save blob 不成立**（新增 script 变量会被反射序列化）——我原措辞不够精确。
+
+**真正该走的路（两评审收敛给出，优先于继续加机制）**：① 先建 **shadow 反事实探针**（把 `_acceptance_rule` 拆出无副作用的 margin 函数，bench-only 记录每次决策【当时】各分项 + 各 lever 反事实 margin，只 commit baseline）——直接量"lever 会翻哪些决策"，把它和"世界后续演化"分开，绕过确定性仿真的轨迹搅动混淆。② **#15v2**：日级事前快照 + 三态(PASS/FAIL/**INCONCLUSIVE**) + 弱关系接受/网络放逐/忠实支持三拆 + 遭遇代表性(coverage 低→INCONCLUSIVE)。③ 三个单变量 arm 分别测：gossip 定向传播 / 公共空间接触桥接 / partner-selection 回避；seeds 1-42 只作开发，冻结后在全新 seeds 43-126 确认。
+
+**本轮落地**：docs/27 负结果写清（撤回 irreducible、逐条列 bug）；`_town_image`/gate 加"已知口径缺陷见 docs/27"注释 + fail-closed 夹取（`EXILE_NEED_DAMP>1` 会把孤独救济翻成惩罚）；`find_exile.gd` 加 `--image-k` 复现 B。12-seed 门 PASS（#01 12/12、det 3/3、#15 11/12 seed12 边缘，与改前逐字节同）。**#15 观察项【重新定性】**：不是"加机制去修的 headroom 问题"，而是"指标本身要先修 + 现有 5% 是极化/遭遇偏差的混淆"——`shadow 探针 + #15v2` 才是正门。
+
+**元教训（并入方法论）**：**结构性/负结果类判断，值得再上一道独立 AI 对抗性评审**（让它【尽力反驳】而非附和）。这轮两路独立评审各自抓出：我把"2 个具体 lever 失败"过度外推成"机制不可约"、Lever B 有个让结论半失效的实现 bug、#15 指标本身的多重混淆——都是我单跑闭环没看见的。见 [[feedback-record-on-stage-change]] 的姊妹条：**眼验之外，关键结论再加一层"外部模型对抗性复核"**。
