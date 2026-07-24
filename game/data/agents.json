@@ -19,7 +19,10 @@
      2,
      2
     ]
-   }
+   },
+   "home_needs": [
+    "energy"
+   ]
   },
   {
    "id": "ben",
@@ -78,7 +81,18 @@
     22,
     14
    ],
-   "cafe_regular": true
+   "cafe_regular": true,
+   "spatial_address": {
+    "space_id": "home",
+    "floor_id": "1f",
+    "position": [
+     3,
+     2
+    ]
+   },
+   "home_needs": [
+    "energy"
+   ]
   },
   {
    "id": "evy",
@@ -90,6 +104,17 @@
    "spawn": [
     23,
     14
+   ],
+   "spatial_address": {
+    "space_id": "home",
+    "floor_id": "1f",
+    "position": [
+     5,
+     2
+    ]
+   },
+   "home_needs": [
+    "energy"
    ]
   },
   {
@@ -114,6 +139,17 @@
    "spawn": [
     25,
     14
+   ],
+   "spatial_address": {
+    "space_id": "home",
+    "floor_id": "1f",
+    "position": [
+     7,
+     2
+    ]
+   },
+   "home_needs": [
+    "energy"
    ]
   },
   {
@@ -127,7 +163,18 @@
     19,
     15
    ],
-   "cafe_regular": true
+   "cafe_regular": true,
+   "spatial_address": {
+    "space_id": "home",
+    "floor_id": "1f",
+    "position": [
+     4,
+     3
+    ]
+   },
+   "home_needs": [
+    "energy"
+   ]
   },
   {
    "id": "shu",
@@ -176,6 +223,17 @@
    "spawn": [
     24,
     15
+   ],
+   "spatial_address": {
+    "space_id": "home",
+    "floor_id": "1f",
+    "position": [
+     6,
+     3
+    ]
+   },
+   "home_needs": [
+    "energy"
    ]
   }
  ]

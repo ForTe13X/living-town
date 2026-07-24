@@ -420,6 +420,7 @@ func _compile_interiors() -> void:
 	if _interiors_data.is_empty():
 		return
 	var objs: Array = world.get("objects", [])
+	var used := {}                                      # id 去重：同层同 slot 多件家具（如两张床）用 _N 后缀，避免 dict 覆盖
 	for space in _interiors_data:
 		if String(space).begins_with("_") or not (_interiors_data[space] is Dictionary):
 			continue
@@ -437,8 +438,14 @@ func _compile_interiors() -> void:
 				if pos.size() < 2:
 					continue
 				var slot := String((fu as Dictionary).get("slot", "obj"))
+				var oid := "%s%s_%s" % [space, floor, slot]
+				if used.has(oid):                   # 同 id 已用 → 追加序号（authored 顺序 → 确定、可复现）
+					used[oid] = int(used[oid]) + 1
+					oid = "%s_%d" % [oid, int(used[oid])]
+				else:
+					used[oid] = 0
 				objs.append({
-					"id": "%s%s_%s" % [space, floor, slot], "type": String((fu as Dictionary).get("label", slot)),
+					"id": oid, "type": String((fu as Dictionary).get("label", slot)),
 					"pos": [int(pos[0]), int(pos[1])],
 					"space": String(space), "floor": String(floor), "area": String(space) + ":" + String(floor),
 					"staff": bool((fu as Dictionary).get("staff", false)),   # P3：员工专属对象(吧台)——只有该店主人用；顾客用公共桌
@@ -1229,8 +1236,9 @@ func _journey_candidates(ag: Dictionary) -> Array:
 	var afloor := String(ag.get("floor", "outdoor"))
 	var home_space := String(ag.get("home_space", "town"))
 	var out: Array = []
-	# (A) 常客进店：镇上常客、营业时段、fun<阈值、无紧急事 → 去咖啡馆喝杯咖啡（进店行程；只认 café 的 fun 对象）。
-	var wants_visit := aspace == "town" and home_space == "town" and bool(ag.get("cafe_regular", false)) \
+	# (A) 常客进店：常客【此刻人在镇上、且不是去咖啡馆本身】、营业时段、fun<阈值、无紧急事 → 去喝杯咖啡（只认 café 的 fun 对象）。
+	# 门从 home_space=="town" 放宽到 aspace=="town"：有了家的常客（阿梅/老邓）出门在镇上时照样会拐去咖啡馆，不因搬家就不进店。
+	var wants_visit := aspace == "town" and home_space != "cafe" and bool(ag.get("cafe_regular", false)) \
 			and _cafe_open() and float(ag["needs"].get("fun", 100.0)) < CAFE_VISIT_FUN and _min_need(ag) >= SURVIVAL_GATE
 	if wants_visit:
 		var vc := _best_satisfier_journey(ag, "fun", aspace, afloor, home_space, true)

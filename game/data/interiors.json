@@ -192,6 +192,22 @@
      ]
     },
     {
+     "slot": "bed",
+     "pos": [
+      6,
+      1
+     ],
+     "label": "床",
+     "advertises": [
+      {
+       "action": "睡觉",
+       "need": "energy",
+       "amount": 62,
+       "duration": 40
+      }
+     ]
+    },
+    {
      "slot": "shelf",
      "pos": [
       4,

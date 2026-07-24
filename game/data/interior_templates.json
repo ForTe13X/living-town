@@ -7,6 +7,8 @@
       "furniture": [
         {"slot": "bed",   "d": [0, 0], "label": "床",
          "advertises": [{"action": "睡觉", "need": "energy", "amount": 62, "duration": 40}]},
+        {"slot": "bed",   "d": [5, 0], "label": "床",
+         "advertises": [{"action": "睡觉", "need": "energy", "amount": 62, "duration": 40}]},
         {"slot": "shelf", "d": [3, 0]},
         {"slot": "table", "d": [0, 2], "label": "桌子",
          "advertises": [{"action": "歇着", "need": "fun", "amount": 28, "duration": 18}]},

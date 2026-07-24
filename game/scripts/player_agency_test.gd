@@ -165,6 +165,7 @@ func _ready() -> void:
 	Sim._move_agent(pl, Vector2i(0, 0))         # 区域外走廊
 	var dan: Dictionary = Sim.get_agent("dan")
 	dan["option"] = null; dan["talking"] = 0
+	dan["space"] = "town"; dan["floor"] = "outdoor"   # P3：dan 现住 home/1f；本用例是【镇上贴身社交】→ 把他放回镇平面（_move_agent 只改 pos 不改平面）
 	Sim._move_agent(dan, Vector2i(14, 2))       # 另一片区域外，距离>2
 	_ck("区外隔图社交被挡", Sim.player_act("greet", "dan") != "", Sim.player_act("greet", "dan"))
 	Sim._move_agent(dan, Vector2i(1, 0))        # 贴身(dist≤2)则放行（同为区外也行）
