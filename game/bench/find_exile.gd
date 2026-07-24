@@ -5,14 +5,16 @@ extends SceneTree
 const SimScript = preload("res://scripts/Sim.gd")
 
 func _init():
-	var seed := 17; var damp := 0.0; var days := 60
+	var seed := 17; var damp := 0.0; var days := 60; var image_k := 0.0
 	var a := OS.get_cmdline_user_args()
 	if a.size() > 0: seed = int(a[0])
 	if a.size() > 1: damp = float(a[1])
 	if a.size() > 2: days = int(a[2])
+	if a.size() > 3: image_k = float(a[3])   # 复现变体B（IMAGE_SCORE_K），补 GPT-5 Pro 指出的复现缺口
 	var S = SimScript.new(); get_root().add_child(S)
 	S._load_data(); S.auto_run = false; S.backend = null
 	S.EXILE_NEED_DAMP = damp
+	S.IMAGE_SCORE_K = image_k
 	S.start_new(seed)
 	for t in range(days * int(S.TICKS_PER_DAY)): S.tick()
 	# perceived + actives + worst（镜像 Invariants）

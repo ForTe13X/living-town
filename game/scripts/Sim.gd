@@ -2391,8 +2391,10 @@ func _fj_update(i: Dictionary, j: Dictionary, t: String) -> void:
 	i["attitudes"][t] = clampf(float(i["xi"]) * blended + (1.0 - float(i["xi"])) * float(i["attitude0"][t]), -1.0, 1.0)
 
 ## 接受规则（确定性，含 _rng_at 种子抖动；非法强度永远交给引擎，模型只管选+说）。
-## 发起者的镇内综合声誉 = 其他 agent 对他 standing 的均值（仅数已建关系，不 auto-create → 无副作用/确定性一致）。
+## 发起者的镇内综合声誉 = 其他 agent 对他 standing 的均值。非只读安全（用 .has 不 auto-create）。
 ## 变体B image-score 用；O(N)，仅在 IMAGE_SCORE_K>0 的实验里被调用。
+## ⚠️ 已知口径缺陷（见 docs/27）：这里只对【已建关系】求均值，而 #15 不变量的 perceived 走 _rel() 会把缺失 dyad
+## 零填充——两者口径不一致，稀疏观测下本函数负得多。故变体B 的负结果部分是实现假象，不该据此下"image-score 无用"结论。
 func _town_image(actor_id: String) -> float:
 	var s := 0.0; var n := 0
 	for b in agents:
@@ -2404,8 +2406,9 @@ func _acceptance_rule(actor: Dictionary, target: Dictionary, action: String, sub
 	var rr := _rel(target, actor["id"])
 	var aff := float(rr["affinity"])
 	var st := float(rr["standing"]) * STANDING_K   # 声誉门：坏名声更难被接受 → 涌现放逐
-	if IMAGE_SCORE_K > 0.0:                          # 变体B：全局声誉冷淡（仅综合声誉<0 时扣，不奖励高声誉）
-		st += IMAGE_SCORE_K * minf(0.0, _town_image(String(actor["id"])))
+	if IMAGE_SCORE_K > 0.0:                          # 变体B（实验/已否决，见 docs/27）：全局声誉冷淡
+		var k := maxf(0.0, IMAGE_SCORE_K) if is_finite(IMAGE_SCORE_K) else 0.0   # fail-closed 夹取
+		st += k * minf(0.0, _town_image(String(actor["id"])))
 	var need := float(target["needs"].get("social", 100.0))
 	var jitter := (_rng_at(31, _aid(target)).randf() - 0.5) * 20.0   # 接受由 target 决定 → 用 target 的子流
 	var traits: Array = target.get("persona", {}).get("traits", [])
@@ -2449,12 +2452,13 @@ func _acceptance_rule(actor: Dictionary, target: Dictionary, action: String, sub
 ## EXILE_NEED_DAMP=0 → 返回原值 (100-need)*k 逐字节不变；>0 时对 standing<0 的发起者按坏名声占比削减孤独项。
 func _need_boost(k: float, need: float, rr: Dictionary) -> float:
 	var base := (100.0 - need) * k
-	if EXILE_NEED_DAMP <= 0.0:
+	var d := clampf(EXILE_NEED_DAMP, 0.0, 1.0) if is_finite(EXILE_NEED_DAMP) else 0.0   # fail-closed 夹取[0,1]（>1 会把孤独救济翻成惩罚）
+	if d <= 0.0:
 		return base
 	var stnd := float(rr["standing"])
 	if stnd >= 0.0:
 		return base                                   # 名声不坏 → 孤独项不动（好名声/中性者逐字节不变）
-	var damp := 1.0 - EXILE_NEED_DAMP * minf(1.0, -stnd / STANDING_CAP)   # 坏名声越满，孤独项越被压
+	var damp := 1.0 - d * minf(1.0, -stnd / STANDING_CAP)   # 坏名声越满，孤独项越被压
 	return base * damp
 
 # ── 关系账本 / belief / 事件账本 / 工具 ─────────────────────────────────────
