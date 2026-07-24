@@ -56,9 +56,17 @@ def analyze_seed(recs):
 
 def main(path, old_fails):
     by_seed = defaultdict(list)
+    seen = set(); dropped = 0   # dedup 防护：--shadow-dump 若被并发写者(僵尸 godot)重复追加会翻倍污染，按 (seed,tick,actor,target,action) 去重
     for l in open(path, encoding="utf-8"):
-        if l.strip():
-            r = json.loads(l); by_seed[r["seed"]].append(r)
+        if not l.strip():
+            continue
+        r = json.loads(l)
+        k = (r["seed"], r["tick"], r["actor"], r["target"], r["action"])
+        if k in seen:
+            dropped += 1; continue
+        seen.add(k); by_seed[r["seed"]].append(r)
+    if dropped:
+        print("⚠ 去重丢弃 %d 条重复记录（trace 疑被并发写者污染，见 docs/32）\n" % dropped)
     tally = {"FAIL": [], "PASS": [], "INCONCLUSIVE": []}
     print("seed | verdict      | evaluable outcasts (actor perc n dyads: rate/town)")
     print("-" * 96)

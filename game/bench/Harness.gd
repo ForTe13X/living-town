@@ -11,6 +11,7 @@ const Inv = preload("res://bench/Invariants.gd")
 
 var _shadow := false        # --shadow：开 shadow 探针（Sim.shadow_on）——纯观测，digest 应逐字节不变
 var _shadow_dump := ""      # --shadow-dump <path>：把每 seed 的 shadow_trace 追加成 JSONL（供反事实 / #15v2 分析）
+var _agents := 0            # --agents N：克隆扩容到 N 个 agent（Sim.spawn_count）；0=数据原样 cast，逐字节不变
 
 func _init() -> void:
 	var seeds := _parse_seeds("1-12")
@@ -24,6 +25,8 @@ func _init() -> void:
 			days = int(args[i + 1])
 		elif args[i] == "--det" and i + 1 < args.size():
 			det_n = int(args[i + 1])
+		elif args[i] == "--agents" and i + 1 < args.size():
+			_agents = int(args[i + 1])   # 扩 N 规模诊断
 		elif args[i] == "--shadow":
 			_shadow = true
 		elif args[i] == "--shadow-dump" and i + 1 < args.size():
@@ -127,6 +130,8 @@ func _run_once(seed: int, days: int) -> Dictionary:
 	S.auto_run = false
 	S.backend = null
 	S.shadow_on = _shadow   # 探针开关（默认 false → 逐字节不变）；set before start_new
+	if _agents > 0:
+		S.spawn_count = _agents   # 扩 N 规模诊断（克隆扩容；0=数据原样 cast）
 	S.start_new(seed)
 	var total: int = days * int(S.TICKS_PER_DAY)
 	var starved := 0
