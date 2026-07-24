@@ -10,6 +10,7 @@ func _init():
 	var S = SimScript.new(); get_root().add_child(S)
 	S._load_data(); S.auto_run = false; S.backend = null
 	S.spawn_count = N; S.decide_period = 4; S.lod_near_radius = 8; S.lod_near_cap = 12; S.lod_aggregate = true
+	S.far_drift_enabled = true   # 实验开关：本 bench 专门测漂移行为，显式开启
 	S.lod_focus = Vector2i(1, 1)   # 焦点放角落 → 全镇几乎都是 far（隔离观察 far 迁移，不被 near 全量跑干扰）
 	S.start_new(1)
 	var TPD := int(S.TICKS_PER_DAY)

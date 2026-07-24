@@ -33,6 +33,24 @@
 
 _3-8 seed 探针，非大样本；N=96 仅 3-6 seed。结论为方向性。master 代码未动（本分支 + 已合并的 shadow 探针）。_
 
+## ⚠️ Codex 评审重挫（两处硬伤，推翻了本文的两大结论）
+把规模+liveness 送 Codex desktop 对抗评审(只读、全仓核验，已确认 master 未触碰)。它抓出【两处会推翻结论的硬伤】——都属实、已复核：
+
+**硬伤①：激进 LOD 不是出货路径——本文"数百 NPC 已达成"测的是【游戏根本不用的 bench-only 配置】。**
+`Main.gd:159` 明确【绝不喂 lod_focus】，注释写清理由："若精细模拟哪块取决于人眼在看哪，小镇历史就成了观察路径的函数"——这是**核心设计原则：镇子怎么活不依赖你看哪**（否则回放/确定性破）。所以真机 `lod_focus` 恒为默认(12,8)、`lod_aggregate` 从不开启、**真机跑全量 sim**。我 N=200/500 "绿"全是 `lod_aggregate=true`+设定焦点的 bench 配置，**真机不这么跑**。**⇒ "数百 NPC 引擎能力已达成" 撤回**——真机(全量 sim、观察无关)会撞上资源密度(hunger 饭点)+全量成本，天花板远低于 bench 的 N=500。真要出货数百 NPC，得先定义一个【观察无关的 canonical LOD policy】(不能靠相机焦点)，这是尚未做的大设计题。
+
+**硬伤②：far-drift liveness 是【有 bug 的原型】，我过早说"已验证"。**
+- 卡墙(评审 P1, Sim.gd:2055)：贪心 2-轴避障在真实建筑几何里 route 不过去。我复现：N=48 迁移 OK(午到广场 9.2)，但 **N=200 午到广场 13.5 > 到家 9.0 = 没迁成，大量个体卡墙**。均值掩盖了个体卡死。
+- 陈旧 near-id(评审 P1, Sim.gd:464)：`_near_set`/`_day_anchor` start_new 不重置 → 复用实例 restart/goto/save-load 可能带旧 near 集 → 回放不一致。**已修**(start_new 清)。
+- tick 中改社交态(评审 P1, Sim.gd:2041)：`_far_drift` 里 `_move_agent` 会改 far agent 的 pos/area → 影响【同 tick 后续】agent 的 near 判定，是顺序相关的语义瑕疵(确定但不干净)。
+- 我的"已验证"过头了：det 只做了同实例两跑，没覆盖 goto/save-load/fresh-vs-restart；行为验证只在 N=48 过、没在 scale 上跑。**Codex 自己的 bench 抓出了我 bench 漏的。**
+
+**处置(已做)**：far-drift 降为【实验开关 `far_drift_enabled`(默认 false，与 lod_aggregate 解耦)】，标注原型/有已知 bug/未出货；`_near_set`/`_day_anchor` per-run 重置；红线复验：全量 sim(lod off)与 master 逐字节一致(seed digest 全 match)。**remote liveness = 原型，不算完成、不算出货。**
+
+**评审给的真·解阻顺序(8 步，未做)**：①修 start_new/goto 与 _near_set 生命周期(part done)；②加完整 state digest + fresh/restart/goto/save-load 对拍；③flow-field/A* + walkable 分布式锚点替换 greedy(治卡墙)；④定义 talking/commitment 与 tick staging；⑤plane-aware near cohort + 室内 coarse journey；⑥warm ring/hysteresis/turnover 计数；⑦correctness 与 performance bench 分开(后者报 p50/p95/p99/max+内存+phase 卡顿)；⑧真接入 Main 的 canonical LOD policy 后再做相机眼验 + N=200/500 渲染 FPS（WorldView:751 仍遍历画全部 town agents，headless 没覆盖这块渲染成本）。
+
+**⇒ 元教训(再次)**：我这轮又过早宣告了两个"正面结论"(数百已达成 / liveness 已验证)，都被外部对抗评审推翻。**结构性/正面结论必须过外部对抗评审 + 覆盖 goto/save-load/scale 的验证，别只测顺手的那条路。**
+
 ## Codex desktop 评审校正（全仓核验，只读；重要，改了本诊断的可信度边界）
 把本轮送 Codex 对抗评审，它抓出几处让结论必须收窄的方法学问题——都属实，逐条校正：
 1. **资源密度是【未证实】的推断，不是确诊**：我从"1 个饭点喂 96 人"推出"资源密度导致 #01"，但【没确认到底哪个 need 触底】（Harness 的 #01 只报"触底 need·tick=9"，不报 need 名）。可能是 hunger 抢不到饭点，也可能是寻路/travel-time/对象占用排队/energy(床)等。**须先加 need-分解遥测确认哪个 need 饿穿，再谈修法**。当前"扩满足物密度"只是候选修法，未验证根因。
