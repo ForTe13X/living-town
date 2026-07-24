@@ -9,6 +9,9 @@ extends SceneTree
 const SimScript = preload("res://scripts/Sim.gd")
 const Inv = preload("res://bench/Invariants.gd")
 
+var _shadow := false        # --shadow：开 shadow 探针（Sim.shadow_on）——纯观测，digest 应逐字节不变
+var _shadow_dump := ""      # --shadow-dump <path>：把每 seed 的 shadow_trace 追加成 JSONL（供反事实 / #15v2 分析）
+
 func _init() -> void:
 	var seeds := _parse_seeds("1-12")
 	var days := 60
@@ -21,8 +24,15 @@ func _init() -> void:
 			days = int(args[i + 1])
 		elif args[i] == "--det" and i + 1 < args.size():
 			det_n = int(args[i + 1])
+		elif args[i] == "--shadow":
+			_shadow = true
+		elif args[i] == "--shadow-dump" and i + 1 < args.size():
+			_shadow = true; _shadow_dump = args[i + 1]
 		elif args[i] == "--suite" and i + 1 < args.size():
 			pass  # 目前仅 S0；保留位给 S5
+	if _shadow_dump != "":
+		var f0 := FileAccess.open(_shadow_dump, FileAccess.WRITE)   # 清空/新建
+		if f0: f0.close()
 
 	print("=== Causal Bench S0 · 不变量回归门  seeds=%s days=%d ===" % [str(seeds), days])
 	var inv_pass := {}      # id -> 通过的 seed 数
@@ -58,6 +68,8 @@ func _init() -> void:
 		# JSONL 机读行
 		print("[S0] " + JSON.stringify({"seed": sd, "days": days, "pass": hard_fails.is_empty(),
 			"hard_fails": hard_fails, "soft_fails": soft_fails, "events": S.event_log.size(), "digest": first_run_digest[sd]}))
+		if _shadow_dump != "":
+			_dump_shadow(sd, S.shadow_trace)   # 只在主循环 dump 一次（det 复跑不再重复）
 		_dispose(S)
 
 	# ── 确定性校验：抽样种子两跑，摘要必须一致 ──
@@ -114,6 +126,7 @@ func _run_once(seed: int, days: int) -> Dictionary:
 	S._load_data()
 	S.auto_run = false
 	S.backend = null
+	S.shadow_on = _shadow   # 探针开关（默认 false → 逐字节不变）；set before start_new
 	S.start_new(seed)
 	var total: int = days * int(S.TICKS_PER_DAY)
 	var starved := 0
@@ -123,7 +136,19 @@ func _run_once(seed: int, days: int) -> Dictionary:
 			for nid in ag["needs"]:
 				if float(ag["needs"][nid]) <= 0.5:
 					starved += 1
-	return {"S": S, "starved": starved}
+	return {"S": S, "starved": starved}   # 注：dump 不在此做——否则 det 复跑(也调 _run_once)会把同 seed 追加两次（评审 P1）
+
+## 把一 seed 的 shadow_trace 追加进 JSONL（每行一条决策，带 seed 前缀）。
+func _dump_shadow(seed: int, trace: Array) -> void:
+	var f := FileAccess.open(_shadow_dump, FileAccess.READ_WRITE)
+	if f == null:
+		return
+	f.seek_end()
+	for rec in trace:
+		var r: Dictionary = (rec as Dictionary).duplicate()
+		r["seed"] = seed
+		f.store_line(JSON.stringify(r))
+	f.close()
 
 func _dispose(S) -> void:
 	get_root().remove_child(S)
