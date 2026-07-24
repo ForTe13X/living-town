@@ -78,11 +78,17 @@ def _id_for_index(snap,i):
     return snap["_idx2id"].get(i)
 
 def hard_secret_ok(snap,cid):
-    """HARD: forbid leak/confide of a secret the agent isn't authorized to disclose."""
+    """HARD: forbid leak/confide of the SPECIFIC secret this candidate targets, unless the actor is
+    authorized to disclose it. Phase D fix: candidate-specific (bind to the candidate's own subject,
+    not 'any unauthorized secret in play') + FAIL-CLOSED (unidentifiable/unknown secret → forbid)."""
     c=cand_by_id(snap["case"],cid)
     if not c or c["action"] not in ("leak","confide"): return True
-    # any non-authorized secret in play → forbid (v1: only own secret authorized)
-    return not any(not s.get("authorized",False) for s in snap["secrets"])
+    subj=snap.get("_id2subject",{}).get(cid)
+    if not subj: return False                      # fail-closed: leak/confide with no identifiable secret → forbid
+    for s in snap["secrets"]:
+        if s.get("subject")==subj:
+            return bool(s.get("authorized",False))  # forbid iff THIS secret isn't the actor's to disclose
+    return False                                    # fail-closed: candidate's secret not in the known set → forbid
 
 def decide(snap, petty_th):
     """deterministic weighted-MAP over intents → concrete candidate id + engaged?"""
@@ -110,7 +116,19 @@ def decide(snap, petty_th):
         cid=ins.get(intent)
         if cid and hard_secret_ok(snap,cid):
             return cid, (intent=="engage"), intent
-    return snap["logic_id"], None, "fallback"
+    # FAIL-CLOSED fallback (Phase D + audit): both intents' candidates were guard-blocked → NEVER re-select
+    # a forbidden disclosure. Prefer logic_id only if it too passes the guard; else the best SAFE
+    # (non-leak/confide) candidate by score; and in the degenerate no-safe case return a NO-OP (abstain) —
+    # NOT logic_id (which may be the forbidden leak). Truly fail-closed: an unauthorized disclosure can never
+    # slip through any path.
+    if hard_secret_ok(snap, snap["logic_id"]):
+        return snap["logic_id"], None, "fallback"
+    safe=[c for c in snap["cands"] if c["action"] not in ("leak","confide")]
+    if safe:
+        best=max(safe,key=lambda c:c.get("score",0.0))
+        sid=_id_for_index(snap,best["i"])
+        if sid: return sid, None, "fallback_safe"
+    return None, None, "fail_closed_noop"   # no safe pick exists → abstain, never emit a guarded disclosure
 
 # ── load ──
 rows=[]
@@ -121,10 +139,11 @@ for l in open(DATA,encoding="utf-8"):
 # precompute id<->index maps per row
 for r in rows:
     inv={v:k for k,v in r["id_map"].items()}
-    id2partner={}
+    id2partner={}; id2subject={}
     for cid,i in r["id_map"].items():
         id2partner[cid]=r["cands"][i].get("partner")
-    r["_snap_idx2id"]=inv; r["_snap_id2partner"]=id2partner
+        id2subject[cid]=r["cands"][i].get("subject")   # Phase D：leak/confide 候选针对的【具体秘密 subject】
+    r["_snap_idx2id"]=inv; r["_snap_id2partner"]=id2partner; r["_snap_id2subject"]=id2subject
 
 llm_engage={}
 if CEIL and os.path.exists(CEIL):
@@ -135,7 +154,7 @@ if CEIL and os.path.exists(CEIL):
 def run(petty_th):
     m=defaultdict(lambda: {"n":0,"dsl_eng":0,"match":0,"llm_agree":0,"llm_n":0,"llm_eng":0})
     for r in rows:
-        snap=snapshot(r); snap["_idx2id"]=r["_snap_idx2id"]; snap["_id2partner"]=r["_snap_id2partner"]
+        snap=snapshot(r); snap["_idx2id"]=r["_snap_idx2id"]; snap["_id2partner"]=r["_snap_id2partner"]; snap["_id2subject"]=r["_snap_id2subject"]
         cid,eng,intent=decide(snap,petty_th)
         if eng is None: continue
         role=snap["grievance"]["role"]
