@@ -468,6 +468,8 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 	for fr in content.get("furniture", []):
 		var fp: Array = (fr as Dictionary).get("pos", [0, 0])
 		_draw_interior_furniture(String((fr as Dictionary).get("slot", "")), Vector2(ox + int(fp[0]) * T, oy + int(fp[1]) * T))
+	# P3 打磨：夜间氛围（暖底光 + 每盏灯源暖池，占用的床更旺）——画在家具之上、居民之下，居民自身仍清晰
+	_draw_interior_night(b, content, sid, fid)
 	# P3 Tier-B：画【此刻真在这层】的居民（阿丽在自家咖啡馆睡觉/看摊）。Space bounds 从原点起 → _draw_agent 用
 	# ag.pos*T 的室内局部坐标即落在本层画面里。纯 View、只读 ag 平面字段。
 	for ag in Sim.agents:
@@ -476,6 +478,40 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 	# 楼层标签
 	draw_string(Art.font(), b.position + Vector2(T + 8, 22), "%s · %s" % [sg.label_of(sid), content.get("label", fid)],
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("#3a2a1a"))
+
+## P3 打磨：室内夜间氛围。CanvasModulate 把整幅世界画布乘暗（室内也不例外）→ 夜里进屋本是【冷灰洞】：
+## 暖木地板被夜蓝乘平。这里靠【相对暖光】把屋子从冷夜拉出来：整层压一层暖底光 + 每件光源家具
+## （床/桌/吧台/咖啡机/书桌/灶）落一盏径向暖池；被人【占着】的（如睡在床上）那盏更旺 = 床头灯。
+## 于是深夜点开住宅，一眼看出"这屋有人、亮着灯"。白昼无人 → 一笔不画（日间室内原样）。纯 View、只读、digest 不变。
+func _draw_interior_night(b: Rect2, content: Dictionary, sid: String, fid: String) -> void:
+	var night := _night_amt()
+	var occ := 0
+	var occ_cells := {}
+	for ag in Sim.agents:
+		if String(ag.get("space", "town")) == sid and String(ag.get("floor", "outdoor")) == fid:
+			occ += 1
+			occ_cells[Vector2i(ag["pos"])] = true
+	var lit := 0.20 * night + minf(0.12, occ * 0.04) * (0.5 + 0.5 * night)
+	if lit <= 0.001:
+		return                                        # 白昼无人：日间室内保持原样
+	draw_rect(b, Color("#ffbe63", lit), true)         # 暖底光：偏橙、被夜蓝乘过后仍咬得住暖调
+	var ox := b.position.x; var oy := b.position.y
+	var light_slots := {"bed": true, "table": true, "counter": true, "coffee": true, "desk": true, "stove": true}
+	for fr in content.get("furniture", []):
+		var slot := String((fr as Dictionary).get("slot", ""))
+		if not light_slots.has(slot):
+			continue
+		var fp: Array = (fr as Dictionary).get("pos", [0, 0])
+		var cell := Vector2i(int(fp[0]), int(fp[1]))
+		# 有人占着这盏灯（同格或紧邻上下——睡在床上/坐在桌前）→ 更旺
+		var occupied := occ_cells.has(cell) or occ_cells.has(cell + Vector2i(0, 1)) or occ_cells.has(cell + Vector2i(0, -1))
+		var pool := 0.20 * night + (0.16 if occupied else 0.0)
+		if pool <= 0.01:
+			continue
+		var cen := Vector2(ox + float(cell.x) * T + T * 0.5, oy + float(cell.y) * T + T * 0.5)
+		for k in 4:                                   # 四层同心：内亮外淡，叠出"光源在这"的衰减
+			var f := 1.0 - float(k) / 4.0
+			draw_circle(cen, T * (0.55 + 0.5 * float(k)), Color("#ffd27a", pool * 0.14 * f))
 
 func _interior_wall(sg, x: float, y: float, is_door: bool) -> void:
 	if is_door:                                    # 门：地板延伸 + 门框 + 木门
