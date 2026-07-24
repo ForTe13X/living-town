@@ -960,3 +960,21 @@ seed1 扫 8 天，home/1f 深夜同室峰值 **7 人**、`night=1.00`、`lit=0.3
 **本轮落地**：docs/27 负结果写清（撤回 irreducible、逐条列 bug）；`_town_image`/gate 加"已知口径缺陷见 docs/27"注释 + fail-closed 夹取（`EXILE_NEED_DAMP>1` 会把孤独救济翻成惩罚）；`find_exile.gd` 加 `--image-k` 复现 B。12-seed 门 PASS（#01 12/12、det 3/3、#15 11/12 seed12 边缘，与改前逐字节同）。**#15 观察项【重新定性】**：不是"加机制去修的 headroom 问题"，而是"指标本身要先修 + 现有 5% 是极化/遭遇偏差的混淆"——`shadow 探针 + #15v2` 才是正门。
 
 **元教训（并入方法论）**：**结构性/负结果类判断，值得再上一道独立 AI 对抗性评审**（让它【尽力反驳】而非附和）。这轮两路独立评审各自抓出：我把"2 个具体 lever 失败"过度外推成"机制不可约"、Lever B 有个让结论半失效的实现 bug、#15 指标本身的多重混淆——都是我单跑闭环没看见的。见 [[feedback-record-on-stage-change]] 的姊妹条：**眼验之外，关键结论再加一层"外部模型对抗性复核"**。
+
+## #15 涌现放逐 · 结案：残余从来不是真失败，是度量假象（shadow 探针 + 修泄漏 + held-out 确认）
+
+**✅ #15 残余问题结案：126/126 seed（dev 1-42 + held-out 43-126）全 INCONCLUSIVE——修掉度量的时间泄漏后，"放逐没咬住"的信号消失。它从来不是机制缺陷，是指标混淆。不加任何机制。** 全链在分支 `shadow-instrumentation`（master 代码一行未动），docs/27-31。
+
+按评审处方（先修指标 + 建反事实探针，再谈机制），一路做下来：
+1. **shadow 反事实探针**（byte-identical）：把 `_acceptance_rule` 拆成无副作用 `_acceptance_margin`（branch@off vs master 0 digest 差异、on vs off 0 差异、gate 全绿），bench-only `shadow_trace` 侧信道 + `--shadow-dump`。
+2. **反事实分析器** `shadow_analyze.py`：在【同一批决策】上量某 lever 会翻哪些决策（绕轨迹搅动）——量化了双评审：被否的 Lever A on_target 精准率 **0%**、B **2%**、GPT-5 Pro 定向 lever recall 62%@0 附带。即那俩 lever 根本没瞄准病灶。
+3. **#15v2 分类器** `exile_v2.py`：三态(consensus_outcast/polarized/insufficient_expo) + 弱关系接受口径。
+4. **Codex desktop 全仓评审**（可读 repo history）抓出：det-dump 重复 bug、save-blob 非逐字节（新 script 变量被序列化）、100% 精准率是【构造性】(应报 recall)、**终态选人 + 全程接受率的时间泄漏**。逐条修（含把 shadow 变量排除存档，还原 save 逐字节）。
+5. **预注册 metric card**（docs/30）：看 held-out 前先冻结语义 + 阈值 + 停止条件（防 overfit）。
+6. **修时间泄漏**：改用【每决策当时的同期声誉快照】、只在共识 outcast 窗口内计接受。**dev 立刻 42/42 INCONCLUSIVE；held-out 84/84 INCONCLUSIVE 确认。**
+
+**根因**：老 #15 用【终态】声誉判 outcast、却用【全程】接受率算 rw——把此人还没成公敌时的接受也算进了。修正后：共识-outcast 状态本就罕见（~3-4% 决策）且晚，12 人密镇 60 天里单个 outcast 在【真公敌窗口内】遇到的中立弱关系 greet/invite 最多 6-7 次，**够不到可评的 8 次**——这个尺度根本不产生足够的"共识放逐"接触去判放逐是否咬住。
+
+**留存价值**：#15v2 = 诚实诊断（在当前尺度报 INCONCLUSIVE 而非假阳 FAIL）；shadow 探针 = 可复用测量地基（将来任何"某社会机制会翻哪些决策"都能用）。**规模洞察**：共识放逐是【扩容】路线（更多 agent/公共混合/更长时程）才谈得上的涌现，不是 12 人镇的边缘 bug。
+
+**元教训**：**"看着像 5% 残余失败、想加机制修"的直觉，被"反事实探针 + 事前窗口 + 冻结阈值 + held-out"一路证伪成度量假象**。没有这套纪律，我会去修一个不存在的问题（正如最初那两个 lever）。见 [[project-15-metric-repair]]（已结案）。
