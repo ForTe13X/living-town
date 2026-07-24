@@ -107,6 +107,12 @@ def main(path, old_fails):
     print("旧标记 old-FAIL 的 seed %s 在 #15v2 下归类：%s" % (old_fails, dict(old_fail_klass)))
     print("解读：#15v2 把'分裂人物(polarized)'从失败里摘出，只留'共识 outcast 仍被中立者过度接受'的真失败——")
     print("      这才是该咬住的放逐；据此可判残余到底是指标假象、还是真需要定向机制。")
+    print("\n⚠ 现状与限制（评审 P1，未冻结）：")
+    print("  1) 时间泄漏：用【终态】声誉选最坏者，却用【全程】接受率/弱关系率——outcast 身份是终态、接受发生在他还没成 outcast 时也被算进。")
+    print("     正解=日级【事前】快照，只在 outcast 窗口内计接受（本切片用终态近似，隐患见 docs/30）。")
+    print("  2) cov 恒 1.0（12 人密镇）→ insufficient_expo 从不触发；遭遇代表性要到规模/分散后才生效。")
+    print("  3) 阈值(FRIEND_AFF/WEAK_TIE/neg/margin)是【看过 12/17/35 后】写的 → 有 overfit 嫌疑；弱关系样本 n≈15-19 偏小。")
+    print("  ⇒ #15v2 现为【诊断指标，非冻结、非 gate】。须先按 docs/30 的 metric card 预注册语义+停止条件，再在【全新 seed 43-126】确认。")
 
 if __name__ == "__main__":
     path = sys.argv[1] if len(sys.argv) > 1 else "shadow_trace_42.jsonl"

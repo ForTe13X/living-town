@@ -63,8 +63,9 @@ def main(path):
     print("trace: %d decisions (%d non-hard). '本应放逐'目标决策(共识outcast的弱关系greet/invite): %d, 其中被接受 %d"
           % (len(recs), len(nonhard), len(outcast_targets), len(accepted_targets)))
     print("  → #15 的病灶就是这 %d 个'被接受的本应放逐'决策。理想 lever：翻掉它们，别碰别的。\n" % len(accepted_targets))
-    print("%-16s | %8s | %8s | %10s | %10s | %s" % ("lever", "applies", "flips", "on_target", "collateral", "精准率"))
-    print("-" * 78)
+    n_les = len(accepted_targets)
+    print("%-16s | %8s | %8s | %10s | %10s | %s | %s" % ("lever", "applies", "flips", "on_target", "collateral", "精准", "recall"))
+    print("-" * 92)
     for name, fn in LEVERS.items():
         applies = flips = ft = fc = 0
         for r in nonhard:
@@ -78,9 +79,12 @@ def main(path):
                 if classify(r) == "on_target": ft += 1
                 else: fc += 1
         prec = (100.0 * ft / flips) if flips else 0.0
-        print("%-16s | %8d | %8d | %10d | %10d | %5.0f%%" % (name, applies, flips, ft, fc, prec))
-    print("\n精准率 = on_target / flips：定向 lever 应接近满分且 flips 覆盖上面的病灶；A 应几乎不 on_target（放过中立者）；")
-    print("B 应低精准（全动作+误伤好友/非 outcast）。这把'2 个 lever 失败'量化成了'各自翻错了哪些决策'。")
+        recall = (100.0 * ft / n_les) if n_les else 0.0
+        print("%-16s | %8d | %8d | %10d | %10d | %4.0f%% | %4.0f%% (%d/%d)"
+              % (name, applies, flips, ft, fc, prec, recall, ft, n_les))
+    print("\n⚠ 诚实口径（评审 P1）：targeted lever 的 applies() 门 ≈ on_target 判据本身，故其'精准率'近乎【构造性 100%】——")
+    print("  不是独立证据。真正有信息量的是 recall(翻掉了几个病灶) 与'门外附带'(按定义为 0)；把本表当【post-hoc oracle")
+    print("  alignment】而非 closed-loop 证据看。A 的 0%/B 的 2% 才是强信号：它们【没瞄准】病灶。真实效力仍须闭环 + held-out。")
 
 if __name__ == "__main__":
     main(sys.argv[1] if len(sys.argv) > 1 else "shadow_trace.jsonl")

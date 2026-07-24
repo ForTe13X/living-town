@@ -833,11 +833,14 @@ func save_game(path: String, meta := {}) -> bool:
 	# 派生引用结构【不入档】：它们只是 agents[]/commitments[] 的别名视图，存了也只能得到孤儿副本；
 	# 读档后由 _rebuild_after_load 从真源重建（_active_commitments 靠下面存的 id 列表还原成员资格）。
 	const DERIVED := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids"]
+	# 探针状态不入档：shadow_on 是 bench 开关、shadow_trace 是 bench 遥测——存了会改变 save-blob 字节
+	# （评审指出：默认 0 对 event digest 逐字节不变，但若存档反射所有 script 变量则 save-blob 会变）→ 显式排除，还原 save 逐字节一致。
+	const BENCH_ONLY := ["shadow_on", "shadow_trace"]
 	var state := {}
 	for p in get_property_list():
 		if not (int(p["usage"]) & PROPERTY_USAGE_SCRIPT_VARIABLE):
 			continue
-		if String(p["name"]) in DERIVED:
+		if String(p["name"]) in DERIVED or String(p["name"]) in BENCH_ONLY:
 			continue
 		var v = get(p["name"])
 		if v is Object or v is Callable:            # backend/ext/decision_sink：接线非状态，不入档

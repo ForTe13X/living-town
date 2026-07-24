@@ -68,6 +68,8 @@ func _init() -> void:
 		# JSONL 机读行
 		print("[S0] " + JSON.stringify({"seed": sd, "days": days, "pass": hard_fails.is_empty(),
 			"hard_fails": hard_fails, "soft_fails": soft_fails, "events": S.event_log.size(), "digest": first_run_digest[sd]}))
+		if _shadow_dump != "":
+			_dump_shadow(sd, S.shadow_trace)   # 只在主循环 dump 一次（det 复跑不再重复）
 		_dispose(S)
 
 	# ── 确定性校验：抽样种子两跑，摘要必须一致 ──
@@ -134,9 +136,7 @@ func _run_once(seed: int, days: int) -> Dictionary:
 			for nid in ag["needs"]:
 				if float(ag["needs"][nid]) <= 0.5:
 					starved += 1
-	if _shadow_dump != "":
-		_dump_shadow(seed, S.shadow_trace)
-	return {"S": S, "starved": starved}
+	return {"S": S, "starved": starved}   # 注：dump 不在此做——否则 det 复跑(也调 _run_once)会把同 seed 追加两次（评审 P1）
 
 ## 把一 seed 的 shadow_trace 追加进 JSONL（每行一条决策，带 seed 前缀）。
 func _dump_shadow(seed: int, trace: Array) -> void:
