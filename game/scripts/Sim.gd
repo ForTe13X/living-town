@@ -140,6 +140,7 @@ const BETRAY_STANDING := -2.0
 var lod_near_radius := 8          # 到焦点曼哈顿距离 ≤ 此 = near(全保真)；窗口随相机缩放/视野调（var 以便 bench/相机调）
 var lod_near_cap := 0             # >0：near cohort=距焦点最近的 K 个 agent（其余 far）；=0 按半径。小地图上比半径更可控（=相机周围 K 人）
 var _near_set := {}               # lod_near_cap>0 时每 tick 重算的近端 id 集
+var _day_anchor := Vector2i(-1, -1)   # 广场心（远端 agent 白天氛围漂移锚点）；lazily 算一次，map 固定不随 run 变
 const LOD_NEAR_RADIUS := 8        # 兼容旧引用（默认值）
 const LOD_FAR_MULT := 3           # far agent 的决策周期 = decide_period × 此（降频）
 
@@ -2037,6 +2038,38 @@ func _far_maintain(ag: Dictionary) -> void:
 	for nid in ag["needs"]:
 		if float(ag["needs"][nid]) < 50.0:
 			ag["needs"][nid] = minf(100.0, float(ag["needs"][nid]) + AGG_RELIEF)
+	# liveness：远端不再是冻住的雕像——向【时段锚点】漂一步（随作息迁移），让 pan 过去时像"活的镇"而非死城。
+	if String(ag.get("space", "town")) == "town" and String(ag.get("floor", "outdoor")) == "outdoor":
+		_far_drift(ag)
+
+## 远端 agent 的廉价氛围漂移：夜/late→回家、白天→广场，每(降频)tick 迈一步、避阻挡。确定(无 RNG/Time)、near-zero 成本。
+## 仅 lod_aggregate 且 town/outdoor 平面调用（见 _far_maintain 门）；室内远端 agent 不漂（可能撞墙、且室内本就小）。
+func _far_drift(ag: Dictionary) -> void:
+	if _day_anchor.x < 0:
+		_day_anchor = _area_centroid("plaza")
+	var ph := _phase_of(time_of_day())
+	var anchor: Vector2i = ag["home"] if (ph == "night" or ph == "late") else _day_anchor
+	var p: Vector2i = ag["pos"]
+	if p == anchor:
+		return
+	var dx := anchor.x - p.x
+	var dy := anchor.y - p.y
+	# 先走差距大的轴；被挡则试另一轴（避免卡墙）。只挪 1 格。
+	var s1 := Vector2i(signi(dx), 0) if absi(dx) >= absi(dy) else Vector2i(0, signi(dy))
+	var s2 := Vector2i(0, signi(dy)) if s1.x != 0 else Vector2i(signi(dx), 0)
+	for s in [s1, s2]:
+		if s == Vector2i.ZERO:
+			continue
+		var np: Vector2i = p + s
+		if not _far_cell_blocked(np):
+			_move_agent(ag, np)
+			return
+
+func _far_cell_blocked(p: Vector2i) -> bool:
+	var w := int(world.get("width", GRID.x)); var h := int(world.get("height", GRID.y))
+	if p.x < 0 or p.y < 0 or p.x >= w or p.y >= h:
+		return true
+	return _blocked.has(p.y * w + p.x)
 
 func _min_need(ag: Dictionary) -> float:
 	var m := 100.0
