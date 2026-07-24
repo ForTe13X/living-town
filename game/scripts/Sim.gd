@@ -243,6 +243,10 @@ var _next_commit_id := 1
 var conflicts: Array = []       # [{id,a(委屈方),b(冒犯方),status,triggered,severity,escalations,confronted,repaired}]
 var st_neg_events := 0          # S1：累计负向 standing 评判次数（坏名声 L3 路径生效证据）
 var refused_by_bound := 0       # S2：因 |Δattitude|>ε 拒谈次数（Deffuant 有界信任门生效证据）
+# Shadow 反事实探针（docs/27 路线①）：bench-only，记录每次接受决策的分项 margin + 遭遇代表性，供 #15v2 / 反事实分析。
+# 纯观测：不进 event_log、不消耗额外 RNG、不 mutate → shadow_on 开或关都逐字节不变（prod 默认关，trace 恒空）。
+var shadow_on := false          # bench 打开；prod 恒 false
+var shadow_trace: Array = []    # [{tick,action,actor,target,accepted,hard,margin,standing,aff,need,fac,img,cov,neg}...]
 var _next_conflict_id := 1
 # S3 度量 + 派生表/台账
 var endorse_events := 0
@@ -479,6 +483,7 @@ func start_new(p_seed: int = 12345) -> void:
 	confide_events = 0; betray_events = 0; freerider_dissolves = 0; aid_accepted = 0
 	factions.clear(); pacts_index.clear(); _next_pact_id = 1; last_broken_with.clear(); _st_delta.clear()
 	decision_trace.clear(); replay_drift = 0   # S4 per-run 重置（replay_trace 由调用方控制，不在此清）
+	shadow_trace.clear()   # shadow 探针数据 per-run 清（shadow_on 是 bench 配的开关，不在此动）
 	_replay_ptr = {}
 	for aid in _replay_ticks:
 		_replay_ptr[aid] = 0
@@ -2381,7 +2386,17 @@ func _fj_update(i: Dictionary, j: Dictionary, t: String) -> void:
 	i["attitudes"][t] = clampf(float(i["xi"]) * blended + (1.0 - float(i["xi"])) * float(i["attitude0"][t]), -1.0, 1.0)
 
 ## 接受规则（确定性，含 _rng_at 种子抖动；非法强度永远交给引擎，模型只管选+说）。
+## 薄封装：判定逻辑全在 _acceptance_margin（逐字节一致）；shadow_on 时旁路记录一条遥测（纯读，不动 digest）。
 func _acceptance_rule(actor: Dictionary, target: Dictionary, action: String, subject: String = "") -> bool:
+	var m := _acceptance_margin(actor, target, action, subject)
+	if shadow_on:
+		_shadow_record(actor, target, action, m)
+	return bool(m["accepted"])
+
+## 接受决策的【可观测】版本：与旧 _acceptance_rule 逐字节一致——同序消费 jitter RNG、同 `>` 比较、同 refused_by_bound
+## 副作用；返回 {accepted, hard, sum, threshold, 各分项}。sum/threshold 供 shadow 探针算 margin=sum-threshold（仅观测，不参与判定）。
+## docs/27 路线①：把"判定"暴露成"数值 margin + 硬规则"，才能量"同一提议与状态下某 lever 会翻哪些决策"，绕过轨迹搅动。
+func _acceptance_margin(actor: Dictionary, target: Dictionary, action: String, subject: String = "") -> Dictionary:
 	var rr := _rel(target, actor["id"])
 	var aff := float(rr["affinity"])
 	var st := float(rr["standing"]) * STANDING_K   # 声誉门：坏名声更难被接受 → 涌现放逐
@@ -2389,40 +2404,76 @@ func _acceptance_rule(actor: Dictionary, target: Dictionary, action: String, sub
 	var jitter := (_rng_at(31, _aid(target)).randf() - 0.5) * 20.0   # 接受由 target 决定 → 用 target 的子流
 	var traits: Array = target.get("persona", {}).get("traits", [])
 	var fac := _faction_term(target, actor)   # S3a：同派系更易接受、跨派系更难（涌现放逐加剧）——内建修正保持内联(null-ext 等值)
-	# L7 挂点(docs/15 §3 #1)：外置接受修正叠加项。ext=null → 0.0，x+0.0==x(IEEE) → 与既往逐字节一致。
-	# 注：性格短路分支(爱八卦 return true)不叠 extra——modifier 只调阈值和，不推翻性格硬规则。
+	# L7 挂点：外置接受修正叠加项。ext=null → 0.0，x+0.0==x(IEEE) → 逐字节一致。性格短路(爱八卦)不叠 extra。
 	var extra := 0.0
 	if ext != null:
 		extra = float(ext.accept_delta(self, actor, target, action, subject))
-	if action == "discuss":
-		# Deffuant 有界信任：观点差在信任带 ε 内才谈得拢（软门）；差太大 → 拒谈（记一笔）；同派系更谈得拢
-		var diff := absf(float(actor["attitudes"].get(subject, 0.0)) - float(target["attitudes"].get(subject, 0.0)))
-		var okk := (float(target["eps"]) - diff) * 30.0 + aff + st + fac + jitter + extra > _w("accept_discuss", 0.0)
-		if not okk:
-			refused_by_bound += 1
-		return okk
-	if action == "confide":
-		return aff + st + jitter + extra > _w("accept_confide", -10.0)   # 一般都愿听心事（不叠 fac：吐露是私人信任）
-	if action == "leak":                                      # 听秘密=收八卦：同 gossip 矜持门
-		if "爱八卦" in traits:
-			return true
-		var reservedl := -15.0 if ("寡言" in traits or "温柔" in traits) else 0.0
-		return aff + reservedl + st + jitter + extra > _w("accept_leak", 0.0)
-	if action == "endorse":
-		return aff + st + fac + extra > _w("accept_endorse", -50.0)  # 同派系背书：几乎必接（fac=+K）
-	if action == "aid":
-		return aff + st + extra > _w("accept_aid", -50.0)            # 盟友善意：几乎总收（走自己门，不叠 fac）
-	if action == "give":
-		return aff + st + fac + extra > _w("accept_give", -60.0)     # 一般都收礼，除非极度反感/极坏名声
-	if action == "gossip" or action == "gossip_rep":
-		if "爱八卦" in traits:
-			return true                                      # 爱八卦者来者不拒
-		var reserved := -15.0 if ("寡言" in traits or "温柔" in traits) else 0.0  # 寡言/温柔者矜持
-		return aff + reserved + st + fac + jitter + extra > _w("accept_gossip", 0.0)
-	if action == "invite":
-		return (100.0 - need) * 0.35 + aff + st + fac + jitter + extra > _w("accept_invite", -2.0)   # 约见：缺社交/有好感/好名声/同派系更易答应
-	# greet: 对方越缺社交/越有好感/名声越好/同派系越易接受
-	return (100.0 - need) * 0.4 + aff + st + fac + jitter + extra > _w("accept_greet", 0.0)
+	var sum := 0.0            # 判定式左端；硬短路(爱八卦)时不参与
+	var thr := 0.0            # 阈值 _w(...)
+	var hard := false        # 性格硬规则直接 accept（爱八卦收八卦/秘密来者不拒）
+	match action:
+		"discuss":
+			# Deffuant 有界信任：观点差在信任带 ε 内才谈得拢；差太大 → 拒谈（记一笔）；同派系更谈得拢
+			var diff := absf(float(actor["attitudes"].get(subject, 0.0)) - float(target["attitudes"].get(subject, 0.0)))
+			sum = (float(target["eps"]) - diff) * 30.0 + aff + st + fac + jitter + extra
+			thr = _w("accept_discuss", 0.0)
+			if not (sum > thr):
+				refused_by_bound += 1
+		"confide":
+			sum = aff + st + jitter + extra; thr = _w("accept_confide", -10.0)   # 一般都愿听心事（不叠 fac）
+		"leak":                                                   # 听秘密=收八卦：同 gossip 矜持门
+			if "爱八卦" in traits:
+				hard = true
+			else:
+				var reservedl := -15.0 if ("寡言" in traits or "温柔" in traits) else 0.0
+				sum = aff + reservedl + st + jitter + extra; thr = _w("accept_leak", 0.0)
+		"endorse":
+			sum = aff + st + fac + extra; thr = _w("accept_endorse", -50.0)   # 同派系背书几乎必接（fac=+K）
+		"aid":
+			sum = aff + st + extra; thr = _w("accept_aid", -50.0)             # 盟友善意几乎总收（不叠 fac）
+		"give":
+			sum = aff + st + fac + extra; thr = _w("accept_give", -60.0)      # 一般都收礼，除非极坏名声
+		"gossip", "gossip_rep":
+			if "爱八卦" in traits:
+				hard = true                                      # 爱八卦者来者不拒
+			else:
+				var reserved := -15.0 if ("寡言" in traits or "温柔" in traits) else 0.0
+				sum = aff + reserved + st + fac + jitter + extra; thr = _w("accept_gossip", 0.0)
+		"invite":
+			sum = (100.0 - need) * 0.35 + aff + st + fac + jitter + extra; thr = _w("accept_invite", -2.0)   # 约见
+		_:                                                       # greet（默认）：缺社交/有好感/名声好/同派系更易接受
+			sum = (100.0 - need) * 0.4 + aff + st + fac + jitter + extra; thr = _w("accept_greet", 0.0)
+	return {"accepted": hard or (sum > thr), "hard": hard, "sum": sum, "threshold": thr,
+		"aff": aff, "st_raw": float(rr["standing"]), "need": need, "fac": fac, "jitter": jitter}
+
+## bench-only：把一次接受决策的分项 + 发起者的镇内遭遇代表性(image/coverage/负向占比) 记进 shadow_trace。
+## 纯读（image 统计用 .has 不 auto-create），不消耗 RNG、不 mutate → 不影响 digest。prod 恒不调用（shadow_on=false）。
+func _shadow_record(actor: Dictionary, target: Dictionary, action: String, m: Dictionary) -> void:
+	var img := _town_image_stats(String(actor["id"]))
+	shadow_trace.append({
+		"tick": tick_no, "action": action, "actor": String(actor["id"]), "target": String(target["id"]),
+		"accepted": bool(m["accepted"]), "hard": bool(m["hard"]),
+		"margin": float(m["sum"]) - float(m["threshold"]),
+		"standing": float(m["st_raw"]), "aff": float(m["aff"]), "need": float(m["need"]),
+		"fac": float(m["fac"]), "jitter": float(m["jitter"]),
+		"img": float(img["mean"]), "cov": float(img["coverage"]), "neg": float(img["neg_share"]),
+	})
+
+## 发起者镇内综合声誉统计（非只读安全，.has 不 auto-create）：均值 + 覆盖率(已建 dyad/(N-1)) + 负向占比(standing<=-1)。
+## 供 shadow 遭遇代表性判定（#15v2：coverage 低 + encounter_image 偏 town_image 大 → 判 INCONCLUSIVE）。仅 bench 调用。
+func _town_image_stats(actor_id: String) -> Dictionary:
+	var s := 0.0; var n := 0; var neg := 0
+	for b in agents:
+		if String(b["id"]) == actor_id:
+			continue
+		var rels: Dictionary = b["relationships"]
+		if rels.has(actor_id):
+			var stnd := float(rels[actor_id]["standing"])
+			s += stnd; n += 1
+			if stnd <= -1.0:
+				neg += 1
+	return {"mean": s / float(maxi(1, n)), "coverage": float(n) / float(maxi(1, agents.size() - 1)),
+		"neg_share": float(neg) / float(maxi(1, n))}
 
 # ── 关系账本 / belief / 事件账本 / 工具 ─────────────────────────────────────
 func _rel(ag: Dictionary, other_id: String) -> Dictionary:
