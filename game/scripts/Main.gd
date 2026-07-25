@@ -8,8 +8,13 @@ var _sg: RefCounted                   # SpaceGraph：Space/Floor/Portal 合同�
 var _modulate: CanvasModulate
 var _status: RichTextLabel
 var _logbox: RichTextLabel
-var _log_lines: Array = []
-const LOG_CAP := 12
+# 播报分两栏（docs/B2 小镇编年史）：置顶「大事」= 高显著度事件（背叛/盟约/选举/冲突…），
+# 「近况」= 时间序尾巴。一天里一半事件是打招呼，单一滚动条会把一次背叛在三秒内挤出屏幕。
+var _log_hot: Array = []               # 置顶大事（按发生序，保留最后 LOG_HOT_CAP 条）
+var _log_recent: Array = []            # 近况尾巴（含系统提示：存读档/后端切换…）
+const LOG_HOT_CAP := 4
+const LOG_RECENT_CAP := 6
+const FEED_RESCAN := 200               # 回放/读档后从 event_log 尾部回扫多少条来重建播报
 # 相机/观察状态已全部搬进 ProbeController（P0-b）：Main 只做装配 + HUD/时间轴输入仲裁。
 
 # ── 观察台 / 回放 ──────────────────────────────────────────────────────────
@@ -53,6 +58,20 @@ const SCRUB_X0 := 584.0
 const SCRUB_X1 := 1268.0
 const SCRUB_Y := 724.0
 const SCRUB_H := 16.0
+var _scrub_pending := -1              # 待应用的 scrub 目标 tick；每帧至多 flush 一次（见 _flush_scrub）
+
+## 事件显著度（纯视图评分——**不**调 Sim._impt：那个吃 agent 字典、属于仿真侧，视图不该碰）。
+## >= SALIENT_MIN 进置顶「大事」区，其余只落「近况」尾巴。
+const SALIENCE := {
+	"betray": 100, "pact": 88, "election": 86, "conflict": 80, "rally_oust": 76,
+	"leak": 74, "confront": 70, "apologize": 66, "mediate": 64, "aid": 62,
+	"meet": 58, "confide": 56,
+	"endorse": 44, "gossip_rep": 40, "discuss": 34, "gossip": 30, "invite": 28, "give": 20, "greet": 10,
+}
+const SALIENT_MIN := 55
+const FEED_SKIP := ["pay", "world"]   # 账本/世界事务不进社交播报（Sim 侧同样不 emit social_event）
+const TOPIC_LABEL := {"cafe_expand": "扩建咖啡馆", "night_market": "办夜市", "old_tales": "老故事"}
+const OBS_MAX_LINES := 34             # 观察台可见行数预算（294x676 面板 · 字号 14）——超出的只能砍长尾
 
 func _ready() -> void:
 	var seed := 20260626
@@ -187,7 +206,7 @@ func _ready() -> void:
 	_update_scrubber()
 	if OS.has_feature("android"):           # 手机上无控制台：把模型是否就位讲出来，缺则玩家知道往哪放 gguf
 		var ms := AIBackend.model_status()
-		_push("[color=#9ad0ff]端上模型 %s\n%s[/color]" % [("✓ 就位" if ms["exists"] else "未找到 → 用 logic 地板（把 gguf 放进 Documents 后重开）"), ms["path"]])
+		_push("[color=#9ad0ff]端上模型 %s\n%s[/color]" % [("已就位" if ms["exists"] else "未找到 → 用 logic 地板（把 gguf 放进 Documents 后重开）"), ms["path"]])
 	# 端上模型：首帧/HUD 已建好，才【异步】探测——真机 1.9GB 模型 load+2 暖发要 ~85s，绝不能挡首帧(否则黑屏)。
 	# 探测期间镇子跑 logic 地板(活着)；够快切 slm/llm，太慢/坏留 logic。（headless CI 不经窗口路 → 逐字节不变。）
 	if backend == "slm" or backend == "llm":
@@ -220,9 +239,10 @@ func _build_hud() -> void:
 
 	_status = _mk_label(layer, fnt, 17, Vector2(52, 6), Vector2(1082, 28))   # 左留 ⚙ 设置钮，右留后端切换钮
 
-	# ⚙ 设置钮（左上角；点开 NPC 数量/速度/后端面板。O 键同款开关）
+	# 设置钮（左上角；点开 NPC 数量/速度/后端面板。O 键同款开关）
+	# 字形纪律：随包字体 Smiley Sans 是 CJK 显示体，无 emoji 覆盖 —— HUD 里一律用汉字/ASCII，否则真机上是豆腐块。
 	var gear := Button.new()
-	gear.text = "⚙"
+	gear.text = "设"
 	gear.add_theme_font_override("font", fnt)
 	gear.add_theme_font_size_override("font_size", 18)
 	gear.position = Vector2(10, 4)
@@ -234,10 +254,16 @@ func _build_hud() -> void:
 	# 左下角滚动事件日志：把看不见的社交戏剧讲出来
 	_mk_panel(layer, Vector2(8, 470), Vector2(560, 246))
 	_logbox = _mk_label(layer, fnt, 15, Vector2(16, 476), Vector2(548, 236))
+	# 【仅】日志面板改为吃鼠标：每行是 [url=<居民id>]，点一行 → 选中当事人并把镜头飞过去。
+	# 其余 HUD 面板保持 MOUSE_FILTER_IGNORE（世界点选/缩放照旧穿透）。手机无键盘，这是唯一能跟戏的入口。
+	_logbox.mouse_filter = Control.MOUSE_FILTER_STOP
+	_logbox.meta_clicked.connect(_on_log_meta)
 
-	# 右侧观察台明细面板（点选角色后显示其完整状态）
-	_mk_panel(layer, Vector2(978, 36), Vector2(294, 600))
-	_obs = _mk_label(layer, fnt, 14, Vector2(986, 42), Vector2(280, 588))
+	# 右侧观察台明细面板（点选角色后显示其完整状态）。
+	# 高度从 600 加到 676（下沿与日志面板齐平，让位给它的是右下角聊天框的宽度）——
+	# 多出的 ~4 行正好把"冲突 / 近期记忆"这两块（回答"这人为什么生气"）完整留在折叠线以上。
+	_mk_panel(layer, Vector2(978, 36), Vector2(294, 676))
+	_obs = _mk_label(layer, fnt, 14, Vector2(986, 42), Vector2(280, 664))
 
 	# 底部时间轴 scrubber
 	_scrub_track = ColorRect.new()
@@ -266,7 +292,7 @@ func _build_hud() -> void:
 	_chat_in.add_theme_font_override("font", fnt)
 	_chat_in.add_theme_font_size_override("font_size", 15)
 	_chat_in.position = Vector2(584, 648)
-	_chat_in.size = Vector2(684, 30)
+	_chat_in.size = Vector2(380, 30)   # 让开右侧观察台（它加高到 y=712）
 	_chat_in.visible = false
 	_chat_in.text_submitted.connect(_on_player_say)
 	layer.add_child(_chat_in)
@@ -383,7 +409,7 @@ func _on_toggle_backend() -> void:
 func _sync_backend_btn() -> void:
 	if _backend_btn == null:
 		return
-	_backend_btn.text = "🤖 %s" % AIBackend.backend_requested
+	_backend_btn.text = "推理 %s" % AIBackend.backend_requested
 
 # ── ⚙ 设置面板（NPC 数量 / 速度 / 后端；持久化到 user://settings.cfg 的 [sim] 段）───────────
 func _build_settings(layer: CanvasLayer, fnt: Font) -> void:
@@ -401,17 +427,17 @@ func _build_settings(layer: CanvasLayer, fnt: Font) -> void:
 	_settings_panel.add_child(vb)
 
 	var title := Label.new()
-	title.text = "⚙ 设置 Settings"
+	title.text = "设置 Settings"
 	title.add_theme_font_override("font", fnt)
 	title.add_theme_font_size_override("font_size", 20)
 	vb.add_child(title)
 
 	# 存档 / 读档（R0-2）：手机没有 F5/F8，从这里进
 	var rsl := _settings_row(vb, fnt, "存档 Save")
-	var bsave := _mk_sbtn(fnt, "💾 存档 (F5)", 130)
+	var bsave := _mk_sbtn(fnt, "存档 (F5)", 130)
 	bsave.pressed.connect(_quick_save)
 	rsl.add_child(bsave)
-	var bload := _mk_sbtn(fnt, "📂 读档 (F8)", 130)
+	var bload := _mk_sbtn(fnt, "读档 (F8)", 130)
 	bload.pressed.connect(_quick_load)
 	rsl.add_child(bload)
 
@@ -432,7 +458,7 @@ func _build_settings(layer: CanvasLayer, fnt: Font) -> void:
 
 	# NPC 数量
 	var rn := _settings_row(vb, fnt, "NPC 数量")
-	var minus := _mk_sbtn(fnt, "−", 46)
+	var minus := _mk_sbtn(fnt, "-", 46)
 	minus.pressed.connect(func(): _apply_npc(-2))
 	rn.add_child(minus)
 	_npc_val = Label.new()
@@ -449,7 +475,7 @@ func _build_settings(layer: CanvasLayer, fnt: Font) -> void:
 	# 速度
 	var rs := _settings_row(vb, fnt, "速度 Speed")
 	for sv in [0.0, 1.0, 2.0, 4.0, 8.0]:
-		var b := _mk_sbtn(fnt, ("⏸" if sv == 0.0 else "%d×" % int(sv)), 52)
+		var b := _mk_sbtn(fnt, ("暂停" if sv == 0.0 else "%d×" % int(sv)), 52)
 		b.pressed.connect(func(): _set_speed(sv))
 		rs.add_child(b)
 
@@ -575,6 +601,7 @@ func _toggle_perf() -> void:
 
 ## dev 性能 overlay 每帧刷（FPS 要每帧才平滑；关时早退，零开销）。
 func _process(dt: float) -> void:
+	_flush_scrub()                                 # 时间轴拖动合并点：每【渲染帧】至多一次 goto_tick
 	if not _perf_on or _perf == null:
 		return
 	_perf_dt_acc += dt
@@ -607,8 +634,8 @@ func _update_status() -> void:
 	if hh >= 5 and hh < 11: phase = "晨 morning"
 	elif hh >= 11 and hh < 17: phase = "昼 day"
 	elif hh >= 17 and hh < 21: phase = "暮 evening"
-	var spd := ("×%.0f" % Sim.speed) if Sim.running else "⏸ 暂停"
-	var btxt := "🤖%s" % AIBackend.backend                                          # 当前生效后端（诚实显示：可能已被降级/正在排队切换）
+	var spd := ("×%.0f" % Sim.speed) if Sim.running else "已暂停"
+	var btxt := "推理 %s" % AIBackend.backend                                        # 当前生效后端（诚实显示：可能已被降级/正在排队切换）
 	if AIBackend.backend != AIBackend.backend_requested:
 		btxt += "→%s…" % AIBackend.backend_requested                              # 切换排队中（等在飞请求清空）
 	var sn := ("%s " % Sim.season_today) if Sim.season_today != "" else ""          # Wave 3b 季节（贴在天气前）
@@ -616,7 +643,7 @@ func _update_status() -> void:
 	var etxt := ""                                                                # Wave 3a 选举：状态栏显示最近一次表决结果
 	if not Sim.last_election.is_empty():
 		var le: Dictionary = Sim.last_election
-		etxt = "  ·  🗳 %s %s %d:%d" % [String(le["topic"]), ("通过" if bool(le["pass"]) else "否决"), int(le["yea"]), int(le["nay"])]
+		etxt = "  ·  选举 %s %s %d:%d" % [String(TOPIC_LABEL.get(String(le["topic"]), le["topic"])), ("通过" if bool(le["pass"]) else "否决"), int(le["yea"]), int(le["nay"])]
 	var meets_active := 0
 	for c in Sim.commitments:
 		if String(c["status"]) == "active":
@@ -636,7 +663,7 @@ func _update_status() -> void:
 					var other := String(c["b"]) if String(c["a"]) == "player" else String(c["a"])
 					pmeets.append("和%s约在%s(剩%dt)" % [Sim._name(Sim.get_agent(other)), Sim._area_label_id(String(c["area"])), int(c["deadline"]) - Sim.tick_no])
 			ptxt = "\n[color=#ffd700]你：礼物×%d  WASD移动  选中居民后 G打招呼 F送礼 B八卦 Y约见 T理论 P道歉 M调解 C聊天%s[/color]" % [
-				int(pl["inventory"].get("gift", 0)), ("  📌 " + "；".join(pmeets)) if not pmeets.is_empty() else ""]
+				int(pl["inventory"].get("gift", 0)), ("  约定：" + "；".join(pmeets)) if not pmeets.is_empty() else ""]
 	_status.text = "[color=#e6e9f2]小镇有灵 Living Town  ·  第 %d 天 %s %s%s%s  ·  %s  ·  %s  ·  NPC %d  ｜  事件 %d  约会 %d(活%d)  冲突 %d(活%d)[/color]%s" % [
 		Sim.day, clock, phase, wx, etxt, spd, btxt, Sim.agents.size(), Sim.event_log.size(), Sim.commitments.size(), meets_active, Sim.conflicts.size(), conf_active, ptxt]
 
@@ -714,7 +741,12 @@ func _panel_text() -> String:
 	var opt = ag.get("option")
 	var doing := "闲着"
 	if opt != null:
-		doing = ("%s→%s" % [str(opt.get("action", "")), Sim._name(Sim.get_agent(String(opt.get("partner", ""))))]) if String(opt.get("kind", "")) == "social" else str(opt.get("action", ""))
+		# 社交动作走 Sim._verb（引擎里的中文动词表）——此前直接打 action id，观察台上会出现 "gossip_rep→阿丽"。
+		# 物件动作的 action 本身就是中文（"洗澡"/"吃饭"），原样显示。
+		if String(opt.get("kind", "")) == "social":
+			doing = "%s → %s" % [Sim._verb(String(opt.get("action", ""))), Sim._name(Sim.get_agent(String(opt.get("partner", ""))))]
+		else:
+			doing = str(opt.get("action", ""))
 	L.append("当前：[color=#cfe8ff]%s[/color]" % doing)
 	if not Sim.economy.is_empty():
 		L.append("钱：[color=#ffd166]%d 币[/color]" % int(ag["inventory"].get("coin", 0)))   # Wave 1b
@@ -748,48 +780,10 @@ func _panel_text() -> String:
 		var stv := int(r.get("standing", 0))
 		var sttag := (" [color=#ffd166]名%+d[/color]" % stv) if stv != 0 else ""
 		L.append("%s [color=%s]亲%d[/color] 信%d 怨%d%s" % [Sim._name(Sim.get_agent(oid)), ac, int(r["affinity"]), int(r.get("trust", 0)), int(r.get("resentment", 0)), sttag])
-	# 信念
-	var bel: Dictionary = ag["beliefs"]
-	if not bel.is_empty():
-		L.append("")
-		L.append("[color=#cfd3e0]知道的事[/color]")
-		for cid in bel:
-			var b: Dictionary = bel[cid]
-			var src := String(b.get("source", ""))
-			var src_name := "亲历/听闻" if src == "__seed__" else ("听 %s 说" % Sim._name(Sim.get_agent(src)))
-			L.append("[color=#d9c2ff]%s[/color] [color=#9aa0b5](%s)[/color]" % [str(b.get("claim", cid)), src_name])
-	# 观点（S2：每话题 attitude，+绿/-红；偏离天生立场=被说动过）
-	var att: Dictionary = ag.get("attitudes", {})
-	if not att.is_empty():
-		L.append("")
-		L.append("[color=#cfd3e0]观点[/color]")
-		var topic_label := {"cafe_expand": "扩建咖啡馆", "night_market": "办夜市", "old_tales": "老故事"}
-		for t in att:
-			var v := float(att[t])
-			var c2 := "#7ed957" if v >= 0.0 else "#e85a5a"
-			L.append("%s [color=%s]%+.2f[/color]" % [str(topic_label.get(t, t)), c2, v])
-	# S3 派系 / 盟约 / 秘密
-	var fac := String(ag.get("faction", ""))
-	if fac != "":
-		var fsz := int(ag.get("faction_size", 1))
-		L.append("")
-		L.append("[color=#cfd3e0]派系[/color] [color=#d9c2ff]%s 派（%d人）[/color]" % [Sim._name(Sim.get_agent(fac)), fsz])
-	var pacts: Dictionary = ag.get("pacts", {})
-	var pact_names := []
-	for oid2 in pacts:
-		if String(pacts[oid2].get("status", "")) == "active":
-			pact_names.append("%s(给%d/收%d)" % [Sim._name(Sim.get_agent(oid2)), int(pacts[oid2].get("given", 0)), int(pacts[oid2].get("received", 0))])
-	if not pact_names.is_empty():
-		L.append("[color=#cfd3e0]互助盟约[/color] [color=#39d4c8]%s[/color]" % "  ".join(pact_names))
-	var sec_own := 0
-	var sec_held := 0
-	for cid3 in ag.get("beliefs", {}):
-		var bb: Dictionary = ag["beliefs"][cid3]
-		if bool(bb.get("secret", false)):
-			if String(bb.get("owner", "")) == _selected_id: sec_own += 1
-			else: sec_held += 1
-	if sec_own + sec_held > 0:
-		L.append("[color=#cfd3e0]秘密[/color] [color=#c792ea]自有%d · 被托付%d[/color]" % [sec_own, sec_held])
+	# ── 版式次序（B2 修正）：面板高度固定 600px（约 OBS_MAX_LINES 行），而信念列表无上限。
+	# 原次序把"冲突 / 近期记忆"排在信念之后 → 信念一多就被推到看不见的折叠线下面，
+	# 而这两块恰是回答"这人为什么生气"的那两块（项目的招牌主张）。故把它们提到长尾之前，
+	# 并给信念列表按剩余行数封顶 —— 手机上没有滚轮，靠排序+封顶而不是靠滚动才是可达的。
 	# 冲突
 	var cf := []
 	for c in Sim.conflicts:
@@ -797,11 +791,14 @@ func _panel_text() -> String:
 		if (s == "simmering" or s == "escalated" or s == "confronted" or s == "lingering") and (c["a"] == _selected_id or c["b"] == _selected_id):
 			var other: String = c["b"] if c["a"] == _selected_id else c["a"]
 			var role := "怨" if c["a"] == _selected_id else "被怨"
-			cf.append("%s %s [color=#ff8c42]%s[/color]" % [role, Sim._name(Sim.get_agent(other)), s])
+			cf.append("%s %s [color=#ff8c42]%s[/color]" % [role, Sim._name(Sim.get_agent(other)), CONFLICT_STATUS.get(s, s)])
 	if not cf.is_empty():
 		L.append("")
 		L.append("[color=#cfd3e0]冲突[/color]")
-		L.append_array(cf)
+		for i in mini(4, cf.size()):
+			L.append(cf[i])
+		if cf.size() > 4:
+			L.append("[color=#9aa0b5]…还有 %d 段[/color]" % (cf.size() - 4))
 	# 近期记忆
 	var mem = ag.get("memory")
 	if mem != null and not mem.items.is_empty():
@@ -810,7 +807,70 @@ func _panel_text() -> String:
 		var items: Array = mem.items
 		for i in range(maxi(0, items.size() - 4), items.size()):
 			L.append("[color=#b8c0d0]· %s[/color]" % str(items[i]["text"]))
+	# S3 派系 / 盟约 / 秘密（三小项共用一个空行分隔，缺项时不留孤零零的空段）
+	var s3 := []
+	var fac := String(ag.get("faction", ""))
+	if fac != "":
+		s3.append("[color=#cfd3e0]派系[/color] [color=#d9c2ff]%s 派（%d人）[/color]" % [Sim._name(Sim.get_agent(fac)), int(ag.get("faction_size", 1))])
+	var pacts: Dictionary = ag.get("pacts", {})
+	var pact_names := []
+	for oid2 in pacts:
+		if String(pacts[oid2].get("status", "")) == "active":
+			pact_names.append("%s(给%d/收%d)" % [Sim._name(Sim.get_agent(oid2)), int(pacts[oid2].get("given", 0)), int(pacts[oid2].get("received", 0))])
+	if not pact_names.is_empty():
+		s3.append("[color=#cfd3e0]互助盟约[/color] [color=#39d4c8]%s[/color]" % "  ".join(pact_names))
+	var sec_own := 0
+	var sec_held := 0
+	for cid3 in ag.get("beliefs", {}):
+		var bb: Dictionary = ag["beliefs"][cid3]
+		if bool(bb.get("secret", false)):
+			if String(bb.get("owner", "")) == _selected_id: sec_own += 1
+			else: sec_held += 1
+	if sec_own + sec_held > 0:
+		s3.append("[color=#cfd3e0]秘密[/color] [color=#c792ea]自有%d · 被托付%d[/color]" % [sec_own, sec_held])
+	if not s3.is_empty():
+		L.append("")
+		L.append_array(s3)
+	# 观点（S2：每话题 attitude，+绿/-红；偏离天生立场=被说动过）
+	var att: Dictionary = ag.get("attitudes", {})
+	if not att.is_empty():
+		L.append("")
+		L.append("[color=#cfd3e0]观点[/color]")
+		for t in att:
+			var v := float(att[t])
+			var c2 := "#7ed957" if v >= 0.0 else "#e85a5a"
+			L.append("%s [color=%s]%+.2f[/color]" % [String(TOPIC_LABEL.get(t, t)), c2, v])
+	# 信念（长尾，按剩余行数封顶）。诚实边界：一个 11 条信念的居民仍装不下整块 ——
+	# 但被砍的是这条长尾，而不是上面的冲突/记忆，且条数写进标题，绝不静默消失。
+	var bel: Dictionary = ag["beliefs"]
+	if not bel.is_empty():
+		L.append("")
+		var cids: Array = bel.keys()
+		var room := maxi(2, OBS_MAX_LINES - L.size() - 2)   # 留 1 行标题 + 1 行"…还有 N 条"
+		var shown := mini(room, cids.size())
+		L.append("[color=#cfd3e0]知道的事[/color] [color=#9aa0b5]%d 条[/color]" % cids.size() if shown < cids.size() else "[color=#cfd3e0]知道的事[/color]")
+		for i in shown:
+			var cid = cids[i]
+			var b: Dictionary = bel[cid]
+			L.append("[color=#d9c2ff]%s[/color] [color=#9aa0b5](%s)[/color]" % [str(b.get("claim", cid)), _belief_src(b)])
+		if cids.size() > shown:
+			L.append("[color=#9aa0b5]…还有 %d 条[/color]" % (cids.size() - shown))
 	return "\n".join(L)
+
+const CONFLICT_STATUS := {"simmering": "憋着", "escalated": "闹大了", "confronted": "已挑明", "lingering": "余温未消"}
+
+## 信念来源措辞。Sim.gd 对亲眼撞见的传闻写 source="__seen__"（30 天一局里 ~108 条 vs 二手 ~3 条，
+## 是绝对主流），而它不是任何 agent 的 id —— 旧代码把它喂给 Sim._name 得到 "?"，于是满屏"(听 ? 说)"。
+func _belief_src(b: Dictionary) -> String:
+	var src := String(b.get("source", ""))
+	if src == "__seen__":
+		return "亲眼所见"
+	if src == "" or src == "__seed__":
+		return "亲历/听闻"
+	var sag := Sim.get_agent(src)
+	if sag.is_empty():
+		return "亲历/听闻"     # 查不到来源（人已离场/id 非人）→ 退到中性说法，绝不渲染 "听 ? 说"
+	return "听 %s 说" % Sim._name(sag)
 
 # ── --player-demo：脚本化玩家 autopilot（录 demo 用；确定性按 tick 执行剧本）─────────
 ## 舞台布置：预埋一段 ben-coco 冲突（双方在广场、对玩家有基础好感）→ 剧本=调解→找阿丽 打招呼/送礼/约见/聊天。
@@ -916,16 +976,38 @@ func _cycle_selection(dir: int) -> void:
 		return
 	var i := ids.find(_selected_id)
 	i = (i + dir + ids.size()) % ids.size()
-	_selected_id = String(ids[i])
-	_update_obs()
+	_focus_agent(String(ids[i]))   # Tab 轮换也把镜头带过去（此前只换面板文字，人还在屏幕外）
 
 func _in_scrub(pos: Vector2) -> bool:
 	return pos.x >= SCRUB_X0 - 8 and pos.x <= SCRUB_X1 + 8 and pos.y >= SCRUB_Y - 12 and pos.y <= SCRUB_Y + SCRUB_H + 12
 
-func _scrub_to_x(x: float) -> void:
+func _tick_at_x(x: float) -> int:
 	var f := clampf((x - SCRUB_X0) / (SCRUB_X1 - SCRUB_X0), 0.0, 1.0)
+	return int(round(f * _max_tick))
+
+func _scrub_to_x(x: float) -> void:
 	Sim.running = false
-	Sim.goto_tick(int(round(f * _max_tick)))
+	Sim.goto_tick(_tick_at_x(x))
+	_after_jump()
+
+## 拖动时【只】挪手柄（不重演）：真正的 goto_tick 每帧最多一次，在 _flush_scrub 里做。
+## 一次 goto_tick = start_new(seed) + 从 0 重跑到目标 tick（Sim.gd:802-826，~0.4ms/tick），
+## 而一次拖拽会喷几十个 MouseMotion —— 逐个跑等于第 30 天每采样卡 ~3 秒。
+func _preview_scrub(t: int) -> void:
+	if _scrub_fill == null:
+		return
+	var f := clampf(float(t) / float(maxi(1, _max_tick)), 0.0, 1.0)
+	var w := SCRUB_X1 - SCRUB_X0
+	_scrub_fill.size = Vector2(w * f, SCRUB_H)
+	_scrub_handle.position = Vector2(SCRUB_X0 + w * f - 2.0, SCRUB_Y - 4.0)
+
+func _flush_scrub() -> void:
+	if _scrub_pending < 0:
+		return
+	var t := _scrub_pending
+	_scrub_pending = -1
+	Sim.running = false
+	Sim.goto_tick(t)
 	_after_jump()
 
 func _after_jump() -> void:
@@ -933,34 +1015,148 @@ func _after_jump() -> void:
 	_update_status()
 	_update_scrubber()
 	_update_obs()
+	_rebuild_feed()   # 时间线换了：播报必须照当前 event_log 重建，不能留上一条时间线的字
 
 func _nm(id: Variant) -> String:
 	var a := Sim.get_agent(String(id))
 	return str(a.get("persona", {}).get("name", id)) if not a.is_empty() else String(id)
 
-func _on_social(e: Dictionary) -> void:
-	var A := _nm(e["actor"])
-	var B := _nm(e["target"])
-	var ok := bool(e["accepted"])
-	var line := ""
-	match String(e["type"]):
-		"greet": line = "[color=#cfe8ff]%s 找 %s 唠了两句[/color]" % [A, B]
-		"give": line = "[color=#cfe8ff]%s 送了 %s 一份小礼物[/color]" % [A, B]
-		"gossip": line = "[color=#d9c2ff]%s 悄悄向 %s 传了个八卦[/color]" % [A, B]
-		"invite": line = "[color=#bfe6c8]%s 约了 %s 稍后见面[/color]" % [A, B]
-		"meet": line = ("[color=#7ed957]%s 与 %s 如约见面，更亲近了[/color]" % [A, B]) if ok else ("[color=#e85a5a]%s 与 %s 的约会泡汤了（有人爽约）[/color]" % [A, B])
-		"conflict": line = "[color=#ffb3b3]%s 对 %s 渐渐积起了怨气[/color]" % [A, B]
-		"confront": line = ("[color=#ffd166]%s 当面找 %s 把话说开[/color]" % [A, B]) if ok else ("[color=#ff8c42]%s 质问 %s，对方不认（冲突升级）[/color]" % [A, B])
-		"apologize": line = ("[color=#7ed957]%s 向 %s 道了歉，两人和解[/color]" % [A, B]) if ok else ("[color=#e85a5a]%s 道歉，%s 一时还无法原谅[/color]" % [A, B])
-		_: line = "[color=#aaaaaa]%s · %s · %s[/color]" % [A, String(e["type"]), B]
-	_push(line)
+## 居民名；查不到（如 election 的 actor="town"、秘密 id）返回空串，供调用方走"不提名字"的措辞。
+## 纪律：绝不把英文 id 兜底抖到屏幕上 —— 那正是这批改动要消灭的东西。
+func _nm_opt(id: Variant) -> String:
+	var a := Sim.get_agent(String(id))
+	if a.is_empty():
+		return ""
+	return str(a.get("persona", {}).get("name", ""))
 
+## 事件 → 中文散文（唯一的成文口径：实时播报与回放重建共用）。
+func _event_prose(e: Dictionary) -> String:
+	var t := String(e.get("type", ""))
+	var A := _nm(e.get("actor", ""))
+	var B := _nm(e.get("target", ""))
+	var C := _nm_opt(e.get("subject", ""))     # subject 可能是人(gossip_rep/endorse)，也可能是秘密/议题 id
+	var ok := bool(e.get("accepted", false))
+	var note := String(e.get("note", ""))
+	match t:
+		"greet": return "[color=#cfe8ff]%s 找 %s 唠了两句[/color]" % [A, B]
+		"give": return "[color=#cfe8ff]%s 送了 %s 一份小礼物[/color]" % [A, B]
+		"gossip": return "[color=#d9c2ff]%s 悄悄向 %s 传了个八卦[/color]" % [A, B]
+		"invite": return "[color=#bfe6c8]%s 约了 %s 稍后见面[/color]" % [A, B]
+		"meet": return ("[color=#7ed957]%s 与 %s 如约见面，更亲近了[/color]" % [A, B]) if ok else ("[color=#e85a5a]%s 与 %s 的约会泡汤了（有人爽约）[/color]" % [A, B])
+		"conflict": return "[color=#ffb3b3]%s 对 %s 渐渐积起了怨气[/color]" % [A, B]
+		"confront": return ("[color=#ffd166]%s 当面找 %s 把话说开[/color]" % [A, B]) if ok else ("[color=#ff8c42]%s 质问 %s，对方不认（冲突升级）[/color]" % [A, B])
+		"apologize": return ("[color=#7ed957]%s 向 %s 道了歉，两人和解[/color]" % [A, B]) if ok else ("[color=#e85a5a]%s 道歉，%s 一时还无法原谅[/color]" % [A, B])
+		"mediate": return ("[color=#7ed957]%s 从中说和，%s 那边的火气消了些[/color]" % [A, B]) if ok else ("[color=#9aa0b5]%s 想替 %s 说和，话没递进去[/color]" % [A, B])
+		"betray":
+			# 五个"此前静默"的事件类型之一（Sim.gd 里刚接上 social_event）。
+			return ("[color=#ff5c5c]%s 把 %s 托付的秘密说了出去[/color]" % [A, B]) if C == "" else ("[color=#ff5c5c]%s 把 %s 托付的秘密说了出去，%s 全听见了[/color]" % [A, B, C])
+		"confide": return "[color=#c792ea]%s 对 %s 吐露了心事[/color]" % [A, B]
+		"leak": return "[color=#ff8c42]%s 在 %s 面前说漏了嘴[/color]" % [A, B]
+		"gossip_rep": return ("[color=#d9c2ff]%s 向 %s 议论起 %s 的为人[/color]" % [A, B, C]) if C != "" else ("[color=#d9c2ff]%s 向 %s 说起了别人的长短[/color]" % [A, B])
+		"endorse": return ("[color=#d9c2ff]%s 和 %s 对 %s 统一了口径[/color]" % [A, B, C]) if C != "" else ("[color=#d9c2ff]%s 和 %s 把话说到了一处[/color]" % [A, B])
+		"discuss": return "[color=#bfe6c8]%s 和 %s 聊起了各自的看法[/color]" % [A, B]
+		"aid": return "[color=#39d4c8]%s 在 %s 难处时搭了把手[/color]" % [A, B]
+		"rally_oust":
+			var backers := 0
+			if note.begins_with("backers:"):
+				backers = int(note.substr(8))
+			if backers > 0:
+				return "[color=#ff8c42]%s 串联了 %d 个人，一起给 %s 施压[/color]" % [A, backers, B]
+			return "[color=#9aa0b5]%s 想拉人一起排挤 %s，没人应和[/color]" % [A, B]
+		"pact":
+			if note.begins_with("dissolved"):
+				return "[color=#ff8c42]%s 和 %s 的互助盟约散了 —— 一直只拿不给[/color]" % [A, B]
+			return "[color=#39d4c8]%s 与 %s 结成了互助盟约[/color]" % [A, B]
+		"election":
+			# actor="town"、target=议题 id（TOPICS）、accepted=是否通过。
+			var topic := String(TOPIC_LABEL.get(String(e.get("target", "")), "镇上的议题"))
+			return ("[color=#ffe08a]全镇表决：%s —— 通过[/color]" % topic) if ok else ("[color=#9aa0b5]全镇表决：%s —— 否决[/color]" % topic)
+		"world":
+			return ("[color=#ffe08a]镇上多了点新东西[/color]") if note == "spawn" else ("[color=#9aa0b5]镇上的临时布置撤了[/color]")
+	# 兜底：先问 Sim._verb（引擎里早就写好的中文动词表），再退到不提类型的说法。绝不打印英文 id。
+	var v := String(Sim._verb(t))
+	if v != t:
+		return "[color=#cfe8ff]%s 对 %s %s[/color]" % [A, B, v] if B != "" else "[color=#cfe8ff]%s %s[/color]" % [A, v]
+	return "[color=#9aa0b5]%s 和 %s 之间起了点事[/color]" % [A, B] if B != "" else "[color=#9aa0b5]%s 那边有了动静[/color]" % A
+
+## 显著度：类型分 + 失败/破裂加成（爽约、否认、盟约散伙通常更有戏）。
+func _salience(e: Dictionary) -> int:
+	var s := int(SALIENCE.get(String(e.get("type", "")), 60))   # 未知类型按偏高处理：宁可多讲，也不让新机制静默
+	if not bool(e.get("accepted", true)):
+		s += 6
+	return s
+
+## 成文 + 包一层 [url=<居民id>]：点日志一行 → 选中当事人并把镜头飞过去（见 _on_log_meta）。
+func _fmt_event(e: Dictionary) -> String:
+	var body := _event_prose(e)
+	var focus := String(e.get("actor", ""))
+	if Sim.get_agent(focus).is_empty():
+		focus = String(e.get("target", ""))     # 如 election：actor="town" 不是人，退到 target
+	if focus == "" or Sim.get_agent(focus).is_empty():
+		return body
+	return "[url=%s]%s[/url]" % [focus, body]
+
+func _on_social(e: Dictionary) -> void:
+	_push_event(e)
+
+func _push_event(e: Dictionary) -> void:
+	if String(e.get("type", "")) in FEED_SKIP:
+		return
+	var line := _fmt_event(e)
+	if _salience(e) >= SALIENT_MIN:
+		_log_hot.append(line)
+		if _log_hot.size() > LOG_HOT_CAP:
+			_log_hot = _log_hot.slice(_log_hot.size() - LOG_HOT_CAP, _log_hot.size())
+	_log_recent.append(line)
+	_render_log()
+
+## 系统提示（存读档/后端切换/操作反馈）只进「近况」，不占大事位。
 func _push(line: String) -> void:
-	_log_lines.append(line)
-	if _log_lines.size() > LOG_CAP:
-		_log_lines = _log_lines.slice(_log_lines.size() - LOG_CAP, _log_lines.size())
-	if _logbox != null:
-		_logbox.text = "\n".join(_log_lines)
+	_log_recent.append(line)
+	_render_log()
+
+func _render_log() -> void:
+	if _log_recent.size() > LOG_RECENT_CAP:
+		_log_recent = _log_recent.slice(_log_recent.size() - LOG_RECENT_CAP, _log_recent.size())
+	if _logbox == null:
+		return
+	var out: Array = []
+	if not _log_hot.is_empty():
+		out.append("[color=#ff8c42]— 镇上的大事 —[/color]")
+		out.append_array(_log_hot)
+		out.append("[color=#5a6072]— 近况 —[/color]")
+	out.append_array(_log_recent)
+	_logbox.text = "\n".join(out)
+
+## 回放/读档后重建播报：旧时间线的字必须清干净，否则 scrub 完屏幕上还在讲一段已被抹掉的历史。
+func _rebuild_feed() -> void:
+	_log_hot.clear()
+	_log_recent.clear()
+	var evs: Array = Sim.event_log
+	for i in range(maxi(0, evs.size() - FEED_RESCAN), evs.size()):
+		var e: Dictionary = evs[i]
+		if String(e.get("type", "")) in FEED_SKIP:
+			continue
+		var line := _fmt_event(e)
+		if _salience(e) >= SALIENT_MIN:
+			_log_hot.append(line)
+		_log_recent.append(line)
+	if _log_hot.size() > LOG_HOT_CAP:
+		_log_hot = _log_hot.slice(_log_hot.size() - LOG_HOT_CAP, _log_hot.size())
+	_render_log()
+
+## 点日志里的居民名 → 选中 + 镜头飞过去（ProbeController 只被调用，不被改）。
+func _on_log_meta(meta: Variant) -> void:
+	_focus_agent(String(meta))
+
+func _focus_agent(id: String) -> void:
+	var ag := Sim.get_agent(id)
+	if ag.is_empty():
+		return
+	_selected_id = id
+	if _probe != null:
+		_probe.focus_on(Vector2(int(ag["pos"].x) * 48 + 24, int(ag["pos"].y) * 48 + 24), id)
+	_update_obs()
 
 func _unhandled_input(e: InputEvent) -> void:
 	if e is InputEventKey and e.pressed and not e.echo:
@@ -1021,9 +1217,11 @@ func _unhandled_input(e: InputEvent) -> void:
 				return
 			if not e.pressed and _scrubbing:
 				_scrubbing = false
+				_flush_scrub()          # 松手立刻落到最后一个采样点（不等下一帧）
 				return
 		if e is InputEventMouseMotion and _scrubbing:
-			_scrub_to_x(e.position.x)
+			_scrub_pending = _tick_at_x(e.position.x)   # 合并：每帧最多一次 goto_tick（见 _flush_scrub）
+			_preview_scrub(_scrub_pending)
 			return
 		_probe.handle_input(e, _vp())
 
@@ -1031,7 +1229,7 @@ const QUICKSAVE := "user://quicksave.dat"
 
 func _quick_save() -> void:
 	var ok: bool = Sim.save_game(QUICKSAVE, {"name": "quicksave", "day": Sim.day})
-	_push("[color=#9ad0ff]💾 存档%s（第 %d 天 · tick %d）[/color]" % [("成功" if ok else "失败"), Sim.day, Sim.tick_no])
+	_push("[color=#9ad0ff]存档%s（第 %d 天 · tick %d）[/color]" % [("成功" if ok else "失败"), Sim.day, Sim.tick_no])
 
 func _quick_load() -> void:
 	if not FileAccess.file_exists(QUICKSAVE):
@@ -1040,7 +1238,7 @@ func _quick_load() -> void:
 	var ok: bool = Sim.load_game(QUICKSAVE)          # load 内部发 world_reset → AIBackend.cancel_all
 	if ok:
 		_after_load()
-	_push("[color=#9ad0ff]📂 读档%s（第 %d 天 · tick %d）[/color]" % [("成功" if ok else "失败：坏档或版本不符"), Sim.day, Sim.tick_no])
+	_push("[color=#9ad0ff]读档%s（第 %d 天 · tick %d）[/color]" % [("成功" if ok else "失败：坏档或版本不符"), Sim.day, Sim.tick_no])
 
 ## 读档后的 UI 对齐（同 _after_jump 的精神：世界换了，视图全部重对齐）。
 func _after_load() -> void:
@@ -1051,6 +1249,7 @@ func _after_load() -> void:
 	_update_status()
 	_update_obs()
 	_update_scrubber()
+	_rebuild_feed()   # 读档=换世界：播报同样按新 event_log 重建
 
 func _vp() -> Vector2:
 	return get_viewport_rect().size
