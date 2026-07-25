@@ -68,4 +68,17 @@
 
 **交付路线图的真修正**：LOD 观察无关+确定性+红线安全都成立，headless 稀疏/早期也确省。但【唯一能上真机的大镇=克隆镇】过度社交、把 LOD 打废——所以我【还不能】在真机上证明"LOD 交付流畅数百 NPC"。真正的前置【不是】渲染裁剪、【不是】接 Main，而是**一个真·稀疏大镇（各有家/作息、散得开的人设，即 docs/19 fork2 大地图）**。N=200 也【非出货档】（UI clamp 60；N≤60 真机 90 FPS 顺）。
 
-**元教训**：①这次宣告 done 前先过评审——纪律用对了（见 memory `feedback-adversarial-external-review`）。②【真机连拍 > headless 单点】：用户一句"连续帧"挡住了我基于早期单帧的错误结论"sim-bound、LOD 5x 修好"。眼验必须看【时间演化】，不是一帧（见 `feedback-record-on-stage-change`）。
+## 7. 真机【微秒分拆计时】——终于是【实测】不是推断（Codex 结构评审第 1 条：别推断，测）
+
+§6 的"渲染不是瓶颈"是【被暂停测试误导】的错判：暂停同时抽走了 sim-tick + 每 tick 触发的 `_draw` 重算（Codex 抓出此混淆）。改用【一次性 usec 计时】埋点（Sim.tick 与 WorldView 社交+agent 绘制块，投到 overlay），真机实测：
+
+**N=200，day3，全量 sim，帧 166.7ms：`分拆 sim-tick 63.9ms · draw社交 59.5ms`**（→ 静态地图重绘+杂项 ~43ms）
+
+**帧 ≈ 三等份**：sim-tick 64ms(⅓) + 社交/agent 绘制 59.5ms(⅓) + 全图静态重绘+杂项 ~43ms(⅓)。这一次性解释了全部前面的困惑：
+- **暂停→90 FPS** 因为暂停抽走【三者全部】（无 tick → 无 sim 且无 queue_redraw → `_draw` 不重算）。§6 误判为"仅 sim"。
+- **LOD 单开只 6→7 FPS** 因为它只砍 ⅓（那 64ms sim-tick）。
+- **没有单一杠杆能救 N=200**：要顺跑数百须【三管齐下】——sim LOD(sim-tick) + 渲染裁剪(社交/agent 绘制，WorldView:747-754 O(N²) 关系线) + 静态地图缓存(全图每帧重绘，Codex #2)，各值 ⅓。
+
+**每个评审者都对了一部分，而我每个"单一瓶颈"结论都错了**（sim-only→render-only→sim-only，来回三次）。诚实交付路线（若真要手机数百）：三个正交优化，非任何一个。sim LOD（本篇主体）是三分之一的必要件，非充分件。N≤60（出货档）真机 90 FPS 顺，不需要这些。
+
+**元教训**：①宣告 done 前先过评审（见 `feedback-adversarial-external-review`）。②真机连拍 > headless 单点（用户"连续帧"挡住早期单帧错判，见 `feedback-record-on-stage-change`）。③**别推断瓶颈，埋计时器【测】**——我连错三次单一瓶颈判断，直到真机 usec 分拆才看清是三等份。Codex"别推断，测"是关键。
