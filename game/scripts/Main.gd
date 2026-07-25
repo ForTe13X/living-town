@@ -64,6 +64,7 @@ func _ready() -> void:
 	var _dbg_nav_arg := false              # --dbg-nav：启动/出图即开导航叠层
 	var _probe_space_arg := ""             # --probe-space id：启动即把 Probe 切到该 Space（P3 咖啡馆室内眼验）
 	var _probe_floor_arg := ""             # --probe-floor id：配 --probe-space 指定楼层
+	var _lod_agg_arg := false              # --lod-agg：仅【测量/眼验】用，启用观察无关 aggregate LOD（CLI-only，绝不进 boot/面板出货路径；默认 off=逐字节不变）
 	var args := OS.get_cmdline_user_args()
 	for i in args.size():
 		if args[i] == "--backend" and i + 1 < args.size():
@@ -107,6 +108,8 @@ func _ready() -> void:
 			_probe_space_arg = args[i + 1]     # 出图/启动即把 Probe 切到某 Space（眼验 P3 咖啡馆室内）
 		elif args[i] == "--probe-floor" and i + 1 < args.size():
 			_probe_floor_arg = args[i + 1]     # 配 --probe-space：指定楼层（1f/2f）
+		elif args[i] == "--lod-agg":
+			_lod_agg_arg = true                # 测量/眼验：启用观察无关 aggregate LOD（docs/32）。只在此 CLI 口，不接出货窗口（休眠靠"窗口从不设 LOD 标志"不变量）
 	AIBackend.backend = backend
 	# 后端优先级：CLI --backend 显式 > user://settings.cfg（手机 UI 存的默认）> 默认 logic。
 	# headless CI 不经此路（Harness/soak 直接 Sim.backend=null）→ 确定性逐字节不变。
@@ -133,6 +136,8 @@ func _ready() -> void:
 		ext.register_scenario(preload("res://scripts/DataScenarioProvider.gd").new(Sim.scenario))
 		ext.freeze()
 		Sim.ext = ext
+	if _lod_agg_arg:
+		Sim.lod_aggregate = true            # 置于 start_new 前 → warmup goto_tick + 出图定格都跑聚合档，前缀与 live 同档、goto_tick 逐字节可复现，截到的正是聚合档
 	Sim.start_new(seed)
 	if warmup_tick > 0:
 		Sim.goto_tick(warmup_tick)          # 眼验：精确定格到某一 tick
