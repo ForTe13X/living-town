@@ -82,7 +82,14 @@ brief 里的行号、数字、机制描述大多是**二手的**（上一棒的�
     gamecraft-runner:4.6.2 bash /tools/shot1.sh /out/x.png <seed> <warmup_days>
   ```
   然后**真的把 PNG 读出来看**（可用 PIL 裁剪放大）。改前拍一张、改后拍一张、自己对比。
-- **两条已知的工具链盲区**：①`--shot` **永远拍不到 emote/气泡**（`WorldView` 在 `goto_tick` 暖机之后才建，
+- **三条已知的工具链盲区**：①`--shot` **永远拍不到 emote/气泡**（`WorldView` 在 `goto_tick` 暖机之后才建，
   重演的信号到不了视图层）→ 表情类必须走**录制**路径；②**任何"靠信号累积"的 UI 在 `--warmup` 开局都是空的**，
-  除非它在 HUD 建好后按 `event_log` 重建过。
+  除非它在 HUD 建好后按 `event_log` 重建过；③**`--shot` 拍不出 letterbox 黑边**——
+  `get_viewport().get_texture().get_image()` 只返回**内容区**，所以 `aspect=keep` 下丢掉的 24.6% 屏幕
+  只体现在 **PNG 的尺寸**上、画面内容里一条黑边都没有。**凡是"画幅/缩放/视口"类问题，必须看输出图的
+  `im.size`，不能只看画面**（B15 实测：谁去眼验那张图都会得出"没问题"）。
+- **数值 diff 比肉眼强，且要用它守"不该变"的那一半**：改视图时对**未受影响的分辨率**做逐像素 diff
+  （PIL `ImageChops.difference` 的 bbox 应为 `None`）。B15 靠它抓到一个纯肉眼绝对看不见的 1px 回归：
+  `LineEdit.size` 在 `add_child` **之前**赋值不走主题最小尺寸钳制（高 30），入树后再赋同一常量会被钳到 31、
+  连带 placeholder 基线偏移。**"看起来一样"不是证据，bbox=None 才是。**
 - 纯视图层改动**不应**移动 digest。若动了 → 你改到仿真了，回滚并查因。
