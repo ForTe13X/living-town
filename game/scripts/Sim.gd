@@ -142,12 +142,9 @@ var lod_near_cap := 0             # >0：near cohort=距焦点最近的 K 个 ag
 var _near_set := {}               # lod_near_cap>0 时每 tick 重算的近端 id 集
 var _day_anchor := Vector2i(-1, -1)   # 广场心（远端 agent 白天氛围漂移锚点）；lazily 算一次，map 固定不随 run 变
 var far_drift_enabled := false     # 远端 liveness 漂移：独立【实验】开关（评审建议：别只挂 lod_aggregate 门）。原型/有已知 bug(卡墙/多平面)，未出货，见 docs/32。
-# 观察无关 aggregate LOD（workflow 设计 docs/32）：cohort = salient ∪ 无状态轮转，纯 sim 态选，绝不看相机 lod_focus。
-var lod_rotate_span := 30          # 无状态轮转周期：每 id 每 span tick 保证一个满帧（liveness floor + #01 兜底）
+# 观察无关 aggregate LOD（workflow 设计 docs/32，Codex 评审后收窄）：cohort = salient(工作态) ∪ 无状态轮转，纯 sim 态选，绝不看相机 lod_focus。
+var lod_rotate_span := 31          # 无状态轮转周期(素数，【不整除】TICKS_PER_DAY=240 → 夜间反思/结算不被固定相位偏置)：每 id 每 span tick 保证一满帧
 var lod_player_r := 12             # 玩家 avatar(sim 实体，非相机)曼哈顿半径内的 agent 强制满帧
-var _commit_ids := {}              # 每 tick 从【存档权威】commitments 数组建的活跃承诺端点 id 集（非派生 _active_commitments 缓存）
-var _conflict_ids := {}            # 活跃冲突端点 id 集
-var _pact_ids := {}                # 活跃盟约端点 id 集
 var _player_pos := Vector2i(-1, -1) # 玩家 avatar(sim 实体，非相机)位置，每 tick 由 _compute_lod_cohort 刷新；(-1,-1)=无玩家(bench)
 const LOD_NEAR_RADIUS := 8        # 兼容旧引用（默认值）
 const LOD_FAR_MULT := 3           # far agent 的决策周期 = decide_period × 此（降频）
@@ -495,7 +492,7 @@ func start_new(p_seed: int = 12345) -> void:
 	shadow_trace.clear()   # shadow 探针数据 per-run 清（shadow_on 是 bench 配的开关，不在此动）
 	_near_set = {}         # 评审 P1：LOD 近端集 per-run 清（否则复用实例 restart/goto 会带旧 near id → 回放不一致）
 	_day_anchor = Vector2i(-1, -1)   # 远端漂移锚点 per-run 清（防复用实例带旧值；map 固定时值不变，清了也确定）
-	_commit_ids = {}; _conflict_ids = {}; _pact_ids = {}; _player_pos = Vector2i(-1, -1)  # cohort id-caches per-run 清（每 tick 重建，此为复用实例卫生）
+	_player_pos = Vector2i(-1, -1)   # cohort 玩家位缓存 per-run 清（每 tick 重建，此为复用实例卫生）
 	_replay_ptr = {}
 	for aid in _replay_ticks:
 		_replay_ptr[aid] = 0
@@ -844,8 +841,7 @@ const SAVE_SCHEMA := 1
 func save_game(path: String, meta := {}) -> bool:
 	# 派生引用结构【不入档】：它们只是 agents[]/commitments[] 的别名视图，存了也只能得到孤儿副本；
 	# 读档后由 _rebuild_after_load 从真源重建（_active_commitments 靠下面存的 id 列表还原成员资格）。
-	const DERIVED := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids",
-		"_commit_ids", "_conflict_ids", "_pact_ids", "_player_pos"]  # cohort id-caches：每 tick 从存档权威数组重建，别名视图不入档
+	const DERIVED := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos"]  # 派生/每 tick 重建，别名视图不入档
 	# 探针状态不入档：shadow_on 是 bench 开关、shadow_trace 是 bench 遥测——存了会改变 save-blob 字节
 	# （评审指出：默认 0 对 event digest 逐字节不变，但若存档反射所有 script 变量则 save-blob 会变）→ 显式排除，还原 save 逐字节一致。
 	const BENCH_ONLY := ["shadow_on", "shadow_trace"]
@@ -961,7 +957,7 @@ func _rebuild_after_load(active_commit_ids: Array = []) -> void:
 		if want.has(int(c.get("id", -1))):
 			_active_commitments.append(c)
 	_near_set = {}                                   # 每 tick 重算，清空即可
-	_commit_ids = {}; _conflict_ids = {}; _pact_ids = {}; _player_pos = Vector2i(-1, -1)  # cohort id-caches：load 后清（每 tick 由 _compute_lod_cohort 从存档权威数组重建）
+	_player_pos = Vector2i(-1, -1)   # cohort 玩家位缓存：load 后清（每 tick 由 _compute_lod_cohort 重建）
 	_build_nav()                                     # P3：从 world/_spaces 重建 town _blocked + 各平面 _nav_grids（派生，不入档）
 	_path_cache = {}
 
@@ -1204,8 +1200,8 @@ func _nightly() -> void:
 	# M3 反思（Stanford 生成式 agent）：每夜从社会状态提炼一条洞察写回记忆 → 丰富语音 grounding。
 	# 引擎地板=确定性合成(下)；模型后端可再 LLM 润色(AIBackend.reflect)。far agent(激进 LOD)跳过=背景群演。
 	for ag in agents:
-		if lod_aggregate and lod_near_cap > 0 and not _near_set.is_empty() and not _near_set.has(ag["id"]):
-			continue
+		if lod_aggregate and not _near_set.is_empty() and not _near_set.has(ag["id"]):
+			continue   # 评审 F1：夜间反思也走观察无关 cohort（原门是 lod_near_cap>0，激进档 cap=0 → 曾错跑全量）
 		_reflect_agent(ag)
 	# Wave 3c 住房：每夜房客经 Ledger 向房东转租金（transfer 守恒 + 付不起自动跳过→#34/#35 保）。缺 housing.json/经济关→零扰动。
 	# 置于阶层 gossip 之前 → 当晚被目击的财富已含租金流动（房东更富/房客更穷 → 阶层信号更利落）。
@@ -2036,16 +2032,14 @@ func _is_far(ag: Dictionary) -> bool:
 		return not _near_set.has(ag["id"])      # 保守档 camera near_cap（bench-only，_compute_near_set）
 	return (absi(ag["pos"].x - lod_focus.x) + absi(ag["pos"].y - lod_focus.y)) > lod_near_radius
 
-## 观察无关显著性：处于「有计划 / 危机 / 社交活跃」态 → 必须满帧，降级会吞掉进行中的历史。
-## 纯 committed sim 态判定（绝不看相机）。cheap⟺无计划(option==null) → cheap agent 永不寻路 → 天然绕开卡墙 bug。
+## 观察无关显著性：只看【正在发生的工作】。纯 committed sim 态判定（绝不看相机）。cheap⟺无计划(option==null) → cheap agent 永不寻路 → 天然绕开卡墙 bug。
+## 【评审 F6】刻意【不】把 has-pact / has-conflict / has-commitment 当 salient：那是【持久关系】不是【正在做的事】——
+##   稠密关系镇里几乎人人有 pact/lingering-conflict → cohort 会涨到≈N、LOD 名存实亡。真要行动时(赴约/对质/互助)会以
+##   option!=null / talking>0 / 需求危机 的形式冒出来，被下面的工作项抓住；平时靠轮转保证周期性满帧即可。附带好处：不再每 tick 扫全历史数组(F2)。
 func _is_salient(ag: Dictionary) -> bool:
 	if int(ag.get("talking", 0)) > 0: return true          # 正在对话
 	if ag.get("option") != null: return true               # 有计划(赶路/办事)——降级=丢计划；且钉死 cheap⟺无计划
 	if _min_need(ag) < SURVIVAL_GATE: return true           # 需求危机——必须全量去满足
-	var id = ag["id"]
-	if _commit_ids.has(id): return true                    # 有活跃承诺(待办 meet，含赶路)
-	if _conflict_ids.has(id): return true                  # 卷入活跃冲突(戏在演)
-	if _pact_ids.has(id): return true                      # 活跃盟约端点(互助)
 	if _player_pos.x >= 0 and (absi(int(ag["pos"].x) - _player_pos.x) + absi(int(ag["pos"].y) - _player_pos.y)) <= lod_player_r:
 		return true                                        # 玩家 avatar(sim 实体)近旁——玩家眼前必须满帧
 	return false
@@ -2054,23 +2048,13 @@ func _is_salient(ag: Dictionary) -> bool:
 ## 纯 committed sim 态选（不读相机 lod_focus）→ 历史不依赖观察路径（红线，Main.gd:159）。每 tick 一次 O(N) 谓词扫（比旧 _compute_near_set 的 O(N log N) 排序更省）。
 func _compute_lod_cohort() -> void:
 	_near_set = {}
-	# 从【存档权威】数组预建活跃端点 id 集（非派生 _active_commitments 缓存——load 后可能未重建）。
-	_commit_ids = {}; _conflict_ids = {}; _pact_ids = {}
-	for c in commitments:
-		if String(c.get("status", "")) == "active":
-			_commit_ids[c["a"]] = true; _commit_ids[c["b"]] = true
-	for c in conflicts:
-		if String(c.get("status", "")) in ["simmering", "escalated", "confronted", "lingering"]:
-			_conflict_ids[c["a"]] = true; _conflict_ids[c["b"]] = true
-	for p in pacts_index:
-		if String(p.get("status", "")) == "active":
-			_pact_ids[p["a"]] = true; _pact_ids[p["b"]] = true
 	# 玩家 avatar 位置（sim 实体，非相机）——供 salient 的近玩家项；bench 无玩家 → 保持 (-1,-1) 关闭该项。
 	_player_pos = Vector2i(-1, -1)
 	for ag in agents:
 		if bool(ag.get("is_player", false)):
 			_player_pos = ag["pos"]; break
-	# 满帧集：玩家 ∪ salient ∪ 无状态轮转（每 id 每 span tick 保证一帧 → liveness floor + #01 兜底，无游标 → 回放/存档无关）。
+	# 满帧集：玩家 ∪ salient(工作态) ∪ 无状态轮转（每 id 每 span tick 保证一帧 → liveness floor + #01 兜底，无游标 → 回放/存档无关）。
+	# 纯 O(N) 谓词扫——【不】扫全历史 commitments/conflicts/pacts（评审 F2：那会随游戏时长膨胀，且持久关系≠工作，见 _is_salient）。
 	var span := maxi(1, lod_rotate_span)
 	var phase := tick_no % span
 	for ag in agents:
@@ -3188,11 +3172,12 @@ func _dissolve_pact(p: Dictionary, victim: Dictionary, freerider: Dictionary, ga
 	freerider_dissolves += 1
 	victim["memory"].add("和%s的盟约散了，被白嫖了" % _name(freerider), 7, tick_no, [freerider["id"], "pact", "dissolve"])
 	freerider["memory"].add("背弃了和%s的盟约" % _name(victim), 6, tick_no, [victim["id"], "pact", "dissolve"])
-## 夜间机制的活跃 id 集（docs/14 §3 R1）：激进 LOD 下只含 near 集 → 把夜间 O(N²)(结盟/派系) 降到 O(cap²)。
-## 语义：far=背景群演，关系冻结(不社交→trust/fam 不涨)，本就到不了结盟门 → 只跑 near 与全量等价、但便宜。确定(near 集每 tick 定序算)。
+## 夜间机制的活跃 id 集（docs/14 §3 R1；评审 F1 后接观察无关 cohort）：激进 LOD 下只含【当夜满帧 cohort】 → 把夜间 O(N²)(结盟/派系) 降到 O(cohort²)。
+## 语义(诚实)：这是【近似】不是等价——cohort 里的 idle agent 由轮转周期性进出，故某 agent 只在【轮到它的夜】参与结盟/派系；
+##   span=31 不整除 240 → residue 逐夜转 → 长期每 agent 都会轮到，无永久排除。确定(cohort 每 tick 定序算)。旧门 lod_near_cap>0 在激进档恒 false → 曾错跑全量(F1)。
 func _nightly_active_ids() -> Array:
 	var out: Array = []
-	if lod_aggregate and lod_near_cap > 0 and not _near_set.is_empty():
+	if lod_aggregate and not _near_set.is_empty():
 		for k in _near_set:
 			if String(k) != "player":
 				out.append(String(k))
