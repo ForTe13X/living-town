@@ -20,6 +20,11 @@ var mock := false                               # true → 强制走确定性 mo
 var no_think := true                            # 追加 /no_think 关推理模型(Qwen3)的思考——否则烧 token 返回空（实测）
 var debug_llm := false                           # true → 在 _fire_http 完成回调打印 LLM 返回（诊断用）
 var stats := {"fired": 0, "landed": 0, "bad_parse": 0, "timeout": 0}  # bench 用：合法率/截止线命中率埋点
+# SLM 熔断器（docs/34：真机 Adreno Vulkan 下推理挂死→全超时+卡死 worker 释放不了原生上下文→无界泄漏 OOM）：
+# 连续 N 次超时(SLM 实质死了) → 停发 SLM、永久回退 logic，把泄漏封顶、防崩。backend=slm 本就非确定(live 模型)→不碰红线。
+var _slm_fail_streak := 0
+var _slm_circuit_open := false
+const SLM_CIRCUIT_TRIP := 6      # 连续超时阈值（>MAX_INFLIGHT，给足重试余量；健康 SLM 不会连超 6 次）
 
 # ── AI 请求生命周期（评审 P1-1/2/3/4 修复）───────────────────────────────────
 # 每个在飞请求带 (epoch, req_id) + 候选快照。回包只在 _pending[id] 仍是同一 (epoch,req_id) 时才写回
@@ -357,6 +362,8 @@ func decide(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Dictionary
 		backend = backend_requested
 	if backend == "logic" or Sim.replaying:              # P1-6：回放(scrub)期不发 live 请求，走确定性 logic
 		return Sim._logic_decide(agent, candidates)
+	if _slm_circuit_open:                                # 熔断后：不再 fire 注定挂死的推理（防原生泄漏），走 logic 地板
+		return Sim._logic_decide(agent, candidates)
 	var id := String(agent["id"])
 	# 算力档节流：距上次 LLM 决策还不够久 → 直接走引擎（省一次 fire+可能的超时），快档 interval=1 几乎不节流
 	if not _pending.has(id) and Sim.tick_no - int(_last_llm.get(id, -99999)) < _decide_interval():
@@ -391,6 +398,7 @@ func decide(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Dictionary
 			return {}
 		var intent: Dictionary = (chosen as Dictionary).duplicate()
 		stats["landed"] += 1
+		_slm_fail_streak = 0                                     # 有成功 → 熔断计数清零
 		_last_llm[id] = Sim.tick_no
 		intent["say"] = String(picked["say"]) if picked.has("say") else Sim._canned_say(agent, intent)  # 有模型台词(JSON 老路)则留，否则冻结语音库
 		if picked.has("emotion"): intent["emotion"] = picked["emotion"]
@@ -400,6 +408,12 @@ func decide(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Dictionary
 	if Time.get_ticks_msec() >= int(p["due_ms"]):
 		_finish(id, agent)
 		stats["timeout"] += 1
+		if backend == "slm":                                    # SLM 超时累计 → 到阈值熔断（防挂死 worker 无界泄漏 OOM，docs/34）
+			_slm_fail_streak += 1
+			if _slm_fail_streak >= SLM_CIRCUIT_TRIP and not _slm_circuit_open:
+				_slm_circuit_open = true
+				push_warning("[SLM] 熔断触发：连续 %d 次超时且无成功 → 停发 SLM、永久回退 logic 地板（防原生内存泄漏 OOM，见 docs/34）" % _slm_fail_streak)
+				cancel_all()                                    # 清在飞 + 尽力释放，止血
 		return {}
 	return {"_wait": true}                                # 仍在等
 
@@ -624,7 +638,7 @@ func _secret_guard(agent: Dictionary) -> String:
 ## LLM 反思润色（可选皮肤，docs/03）：把引擎地板洞察 + 近期记忆 → 一句更自然的内心独白，异步写回记忆。
 ## 限预算(复用 L5 令牌桶)；纯 logic/超预算/无模型 → 直接返回(保留地板洞察)。Sim._reflect_llm 调用。
 func reflect(agent: Dictionary, floor_insight: String, recent: Array, cb: Callable) -> void:
-	if backend == "logic":
+	if backend == "logic" or _slm_circuit_open:      # 熔断后不发 SLM 反思（保留引擎地板洞察，同 logic）
 		return
 	if llm_budget > 0:                               # 复用 L5 全镇令牌桶的窗口+硬顶（反思是后台任务，不走老化优先门）
 		var w := int(Sim.tick_no / Sim.TICKS_PER_DAY)
@@ -665,6 +679,9 @@ func _gen_http(sys: String, user: String, cb: Callable) -> void:
 
 ## 通用一次性生成 —— NobodyWho（嵌入式 SLM）。reflect 复用。
 func _gen_slm(sys: String, user: String, cb: Callable) -> void:
+	if _slm_circuit_open:                             # 熔断后不发 SLM（reflect/chat 共用此路）→ 调用方走罐头兜底
+		cb.call("")
+		return
 	var model_node := _ensure_slm_model()
 	if model_node == null:
 		cb.call("")

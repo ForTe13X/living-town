@@ -22,6 +22,23 @@
 - **探测路径**：给 `_probe_once` 的 `await` 加超时兜底 + 无条件 free（别裸 await 挂死信号）。
 - **可观测**：把 Native Heap（`dumpsys meminfo`）纳入真机 perf 检查——`OS.get_static_memory_usage` 看不到原生泄漏。
 
+## 更新（同日）：根因收窄 + 熔断器已修并【真机验证】
+
+**根因收窄到 Adreno GPU Vulkan**：写了 `bench/slm_smoke.gd`（最小推理冒烟）在【桌面】跑同一个 gguf——
+- CPU：✅ 1498ms 返回 `{"i":1}`；GPU（AMD Radeon 8060S Vulkan）：✅ 1207ms 返回。
+- 即 **NobodyWho 集成 + 模型本身在桌面 CPU/GPU 都好**（~1.2-1.5s，合 README）。→ 真机挂死是 **arm64 / Adreno GPU Vulkan 特定**（llama.cpp/ggml 的 Adreno Vulkan compute 是出了名的坑）。`slm_use_gpu` 默认 true → 真机走 Adreno GPU → 挂死。另观察到**模型 LOAD 本身也会卡住主线程**（真机启动探测期 FPS 掉到 1）。
+
+**熔断器已修 + 真机验证通过**（AIBackend.gd）：连续 `SLM_CIRCUIT_TRIP=6` 次超时 → 开熔断、停发 SLM、永久回退 logic（decide/reflect/chat=_gen_slm 三处 fire 全门控）+ `cancel_all` 止血。真机实测对比：
+| | 无熔断 | 熔断后 |
+|---|---|---|
+| LLM stats | 发起40·成功0·超时38 | **发起7·超时6→触发熔断**、并发0 |
+| Native Heap | 3→7.5→**16GB**(OOM) | **~2.3GB 封顶不涨** |
+| FPS | 卡死 | **恢复 79**、tick 12/s |
+| 镇子 | — | logic 地板照常活（八卦/discuss/送礼） |
+熔断器为 slm-only + 默认关 → logic 确定性红线不受影响（V1 逐字节验证）。残留 ~1.2GB（6-7 个卡死 worker 未释放）已封顶不涨，可接受（防了 OOM）。
+
+**剩余（交专门一轮，见 spawn_task）**：治本 Adreno GPU 挂死——①真机试 CPU 推理(`slm_use_gpu=false`，但容器测 ~1字/s 恐太慢，需 8Elite CPU 实测)；②升级/换 NobodyWho arm64 构建或换 llama.cpp Vulkan 后端；③`_probe_once` 裸 await 加超时兜底 + 无条件 free（现在探测挂死漏 1 worker + 卡主线程）。
+
 ## 影响评级
 
-**高**：旗舰功能（端侧 SLM 决策 + 语音）在真机上【完全不生效】且【会 OOM 崩溃】。出货前必修（至少上熔断器防崩 + 治本恢复 SLM）。logic 地板不受影响（红线：无模型也能玩）。
+**高**：旗舰功能（端侧 SLM 决策 + 语音）在真机上【完全不生效】。**熔断器已消除 OOM 崩溃风险**（降级到 logic 地板，红线：无模型也能玩），但要真正恢复 SLM 还需治本 Adreno GPU 挂死。
