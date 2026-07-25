@@ -204,6 +204,10 @@ func _ready() -> void:
 	_update_status()
 	_update_obs()
 	_update_scrubber()
+	# 播报按【当前 event_log】重建一次：--warmup/--warmup-tick 靠 goto_tick 静默跳到第 N 天（录 demo/出图的主路径），
+	# 那些事件发生在 social_event 接线【之前】，只靠信号的话开局播报是【空】的——15 天的镇子却一行戏都没有。
+	# 眼验发现（headless bench 看不见）：本行让"跳转开局"与 scrub/读档(_after_jump/_after_load)走同一套重建，三路一致。
+	_rebuild_feed()
 	if OS.has_feature("android"):           # 手机上无控制台：把模型是否就位讲出来，缺则玩家知道往哪放 gguf
 		var ms := AIBackend.model_status()
 		_push("[color=#9ad0ff]端上模型 %s\n%s[/color]" % [("已就位" if ms["exists"] else "未找到 → 用 logic 地板（把 gguf 放进 Documents 后重开）"), ms["path"]])
