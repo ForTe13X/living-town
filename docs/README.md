@@ -1,6 +1,6 @@
 # 文档索引 · Living Town
 
-本树上有 33 篇编号文档（00-25、28-34；26 与 27 只存在于未并入的分支，见下）+ 若干附录。
+本树上有编号文档 00-25、28-37、39（26 与 27 只存在于未并入的分支，见下）+ 若干附录。
 文档以中文为主，**按写作时的真实过程记录**——包括被推翻的结论和负结果，
 这些不会被事后删改（见 [13 实验札记](13-实验札记-experiment-journey.md) 与 [31 #15 结案](31-15-resolution.md)）。
 
@@ -52,6 +52,14 @@
 | [30 #15v2 Metric Card](30-15v2-metric-card.md) | **预注册**指标卡，冻结于看 held-out 之前，用于防止"看着结果调指标" |
 | [31 #15 结案](31-15-resolution.md) | 126/126 seed 全 INCONCLUSIVE：残余是**度量的时间泄漏**，不是机制缺陷 → **不加任何机制** |
 | [`bench/bakeoff/README.md`](../bench/bakeoff/README.md) | 3 命令可复现的蒸馏 bake-off；含两个诚实负结果（ranker 赢是"机制赢不是质量赢"；LLM 自评法官不可靠） |
+| [39 Node 端口处置](39-node-port-disposition.md) | `tools/sim_social_port.mjs` **退役**为历史文物：根因二分到单个 commit，且它自己 33% 的 seed 就是红的 |
+
+> **`tools/sim_social_port.mjs` 的状态：已退役（2026-07-26），历史文物，不入 CI，不验证引擎。**
+> 它的逻辑冻结在 2026-07-03，读的却是仍在演进的 `game/data/*.json`——自"阵容 6→12 人"
+> （`251ab9f`, 07-05）起就已分叉，今天 12 个 seed 里 7 个红；且它没有 space/floor 模型，
+> 对引擎不变量 #34-#37 零覆盖。**它的红不是引擎回归**（同 seed 下 Godot 全绿）。
+> 处置理由与全部实测见 [39](39-node-port-disposition.md)；确定性红线的真正跨进程锚是
+> `tools/ci.sh` 第 4 步的金标 + 逐 tick 前缀链，不是这个端口。
 
 > #15 这条链的**起点**是 docs/27@exile-hardening（负结果原文，未并入 master）：
 > `git show exile-hardening:docs/27-exile-hardening-negative-result.md`。

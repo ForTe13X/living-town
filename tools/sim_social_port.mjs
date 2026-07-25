@@ -1,14 +1,62 @@
 #!/usr/bin/env node
-// sim_social_port.mjs — 确定性社交底座「垂直切片」的可执行验证端口（本机无 Godot 时用）。
-// 它忠实镜像 game/scripts/Sim.gd 计划实现的社交逻辑：感知(同区) → 社交候选(greet/give/gossip)
-// → SocialTransaction(发起·评估接受/拒绝·提交) → 关系账本 + belief/知识边界 + 不可变 event log
-// → 双方+旁观者写视角记忆 + 承诺系统(invite→meet：发起/赴约/兑现/爽约)。读真实 game/data/*.json。
-// 跑 soak 并断言 10 条不变量(含承诺生命周期)，违反即 exit(1)。
+// ╔══════════════════════════════════════════════════════════════════════════════════╗
+// ║  已退役的历史文物 — RETIRED HISTORICAL ARTEFACT （退役日 2026-07-26，见 docs/39）  ║
+// ║  这不是活的第二实现，不验证引擎，不是任何东西的门。别把它接进 CI。                 ║
+// ╚══════════════════════════════════════════════════════════════════════════════════╝
 //
-// 用法: node tools/sim_social_port.mjs [--days 30] [--seed 20260626] [--verbose]
+// sim_social_port.mjs — 社交底座垂直切片的 JS 再实现，写于 2026-07-03（ebac5a3），
+// 此后逻辑一行未动。它当年确实办成了一件事：同一套社交规则在两种 RNG 实现下
+// （本端口 mulberry32 / Godot RandomNumberGenerator）性质同时成立——即那些不变量是
+// 【设计的性质】，不是某一份实现的巧合。这份历史价值保留，下面是它为什么不再算证据。
 //
-// 注意: 本端口用于验证「逻辑与不变量」，非与 Godot RNG 逐字节一致；determinism 不变量在端口内自检
-// (同 seed 跑两次结果一致)。GDScript 用 RandomNumberGenerator(同 seed 公式) 各自可复现。
+// 【为什么退役】三条实测结论（复现步骤与全部数据见 docs/39-node-port-disposition.md）：
+//
+// 1) 逻辑冻结，输入却是活的。本文件读 game/data/{needs,map,personas,agents}.json —— 那是
+//    仍在演进的真实数据。拿历史数据快照对本文件做二分，红/绿的翻转精确落在【一个 commit】：
+//    251ab9f (2026-07-05)「default cast 6 → 12 distinct residents」。
+//      · 6 人镇数据 + seed 20260626 → 33/33 全绿
+//      · 12 人镇数据（及其后每一个快照，含今天）→ 恒定 3 红（#5 谣言传播 / #8 承诺生命周期 / #20 谣言变冷）
+//    机制：本端口的候选打分把【按 urgency 缩放】的关系动作和【定值高分】的冲突/派系动作混在
+//    一个 argmax 里—— confront=30+min(sev,20)、apologize=32、rally_oust=20+min(sev,15) 是定值，
+//    而 invite=urgency*0.45+aff*0.15+fam*0.18+4 是全表里 urgency 系数最低、定值加成也最低的一个。
+//    人数翻倍 → 每 tick 邻居翻倍 → 拒绝/积怨翻倍 → 冲突 7 次涨到 121 次(17×)，同时第三方变多让
+//    gossip_rep(2→95)/endorse(0→90)/rally_oust(0→118) 全部解禁。定值高分从此吃掉每一个社交时机：
+//    invite 35→0、gossip 2→0。三条红是【同一个根因】：#8 = invite 归零；#5 = gossip 归零(R1 出不了 aria)；
+//    #20 = #5 的下游(没人遇得到知情者，自然没有 stifler)。
+//
+// 2) 已经不只是标定问题，是语义分叉。引擎自 1a7e6d6 (P3) 起社交地址是 _area_key(space, floor, pos)
+//    ——阿丽现在住 cafe/2f。本端口【完全没有 space/floor 概念】，感知是纯 2D 的 areaAt(pos)，
+//    表达不了今天的世界拓扑。它还只读 22 个数据文件里的 4 个：经济/选举/节日/职业/住房/生涯/
+//    技能/空间/室内/天气/作息一概没有，对应引擎不变量 #34-#37 零覆盖。
+//
+// 3) 它自己的断言本来就不是可靠的门。12 个 seed × 30 天扫下来：
+//      · 今天的数据：7/12 seed 红      · 它自己 2026-07-03 的数据：4/12 seed 红
+//    因为 #5/#8/#15/#20 都是【单局涌现时机】断言（"30 天里恰好发生过吗"），
+//    最敏感的那类统计量。"seed 20260626 绿"从来不是门成立，只是表格里运气好的一格。
+//    （同一个毛病的另一处实例见 game/scripts/player_agency_test.gd 第 14 节——那里改成了
+//     跨种子分布门；本端口每次调用只跑一局，拿不到分布，没有同样的救法。）
+//
+// 【它不是 differential test】——这点常被误读。本端口从不与引擎比对状态，只各自跑各自的
+// 轨迹再查同一份不变量清单（见下方原注）。真正逐字节的跨进程锚是 tools/ci.sh 第 4 步的
+// 金标 + 逐 tick 前缀链，那个才是确定性红线的证据。
+//
+// 用法（仍可跑，作为历史参考；非零退出码【不代表引擎有问题】）:
+//   node tools/sim_social_port.mjs [--days 30] [--seed 20260626] [--verbose]
+//   若只想看它当年绿的样子: --seed 1 或 --seed 42
+//
+// 原注（保留）: 本端口用于验证「逻辑与不变量」，非与 Godot RNG 逐字节一致；determinism 不变量
+// 在端口内自检(同 seed 跑两次结果一致)。GDScript 用 RandomNumberGenerator(同 seed 公式) 各自可复现。
+// 断言共 33 条（原注写"10 条"是 2026-07-03 之前的旧数，成功行打印的 okCount 才是真数）。
+
+const RETIRED_BANNER = [
+  '┌───────────────────────────────────────────────────────────────────────────────┐',
+  '│ ⚠  已退役的历史文物（2026-07-26）。它【不验证引擎】，也不是任何门。            │',
+  '│    逻辑冻结于 2026-07-03，但读的是活的 game/data/*.json —— 自 12 人镇         │',
+  '│    (251ab9f) 起就已分叉；今天 12 个 seed 里有 7 个红，且无 space/floor 模型。  │',
+  '│    非零退出码是【端口自己的断言】没过，不是引擎的判决。详见 docs/39。          │',
+  '└───────────────────────────────────────────────────────────────────────────────┘',
+].join('\n')
+console.log(RETIRED_BANNER)
 
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -1272,8 +1320,13 @@ if (VERBOSE) {
 console.log('\n— 不变量 —')
 if (fails.length === 0) {
   console.log(`✅ 全部 ${okCount} 条断言通过（需求+社交+承诺+冲突+S1 声誉+S2 意见+S3 派系/盟约/秘密；determinism 见 digest）。`)
+  console.log('（提醒：本端口已退役——绿也只说明这一局的旧规则自洽，不构成对引擎的任何验证。docs/39）')
   process.exit(0)
 } else {
   for (const f of fails) console.log('❌ ' + f)
+  console.log(RETIRED_BANNER)
+  console.log('↑ 这些红【不是引擎回归】。同 seed 下 Godot 引擎全绿（S0 gate PASS）；红的是这份 2026-07-03')
+  console.log('  冻结逻辑在 12 人镇数据上的标定失配（invite/gossip 被定值高分的冲突动作挤出 argmax）。')
+  console.log('  根因二分、机制、逐 seed 数据见 docs/39-node-port-disposition.md。')
   process.exit(1)
 }
