@@ -21,6 +21,18 @@ var no_think := true                            # 追加 /no_think 关推理模�
 var debug_llm := false                           # true → 在 _fire_http 完成回调打印 LLM 返回（诊断用）
 var stats := {"fired": 0, "landed": 0, "bad_parse": 0, "timeout": 0}  # bench 用：合法率/截止线命中率埋点
 
+# ── 熔断器（防 OOM，docs/34）───────────────────────────────────────────────
+# 真机实测：backend=slm 下 SLM worker 挂死不返回(response_finished 从不触发) → 每次超时 _finish 也回收不了那块
+# 原生 llama 上下文(native 线程卡死) → 每漏 ~400MB × 40 发 ≈ 16GB → 几分钟 OOM。旗舰 SLM【实际从未生效】(全回退 logic)。
+# 熔断：连续 BREAKER_MAX_FAILS 次决策失败(超时/脏解析、其间 0 成功) → 判定本档模型不可用 → 【永久回退 logic 地板、停发模型】，
+# 不再 fire 注定挂死的推理堆积泄漏。红线不破：无模型也能玩，logic digest 与 backend 无关。
+# 复位（给修好的模型/新档一次新机会）只在【显式动作】：reset_stats(bench 换 seed)、request_backend(用户切档)、set_model_path(换模型)。
+# 单纯新开局/读档【不】自动复位（不静默重试已知坏的模型）——要恢复 SLM 得用户手动切一次后端。
+const BREAKER_MAX_FAILS := 5   # 连续失败达此 → 熔断（约漏 5×400MB≈2GB 后停，12-16GB 机安全；一行可调）
+var _consec_fail := 0          # 距上次成功落地的连续失败数（任何一次成功清零）
+var breaker_tripped := false   # 已熔断 → backend 钉死 logic（本 run 内；仅显式动作复位）
+var breaker_reason := ""       # 熔断原因（perf overlay / 诊断文件展示）
+
 # ── AI 请求生命周期（评审 P1-1/2/3/4 修复）───────────────────────────────────
 # 每个在飞请求带 (epoch, req_id) + 候选快照。回包只在 _pending[id] 仍是同一 (epoch,req_id) 时才写回
 # → 迟到/跨局回包一律作废(P1-2/3)；落地时用「模型当初看到的候选」在【当前】候选里按 stable key 重找
@@ -36,6 +48,7 @@ func reset_stats() -> void:
 	cancel_all()                                # 清 _pending + 释放在飞节点 + 进新 epoch（旧回包作废）
 	_budget_window = -1
 	_budget_used = 0
+	_reset_breaker()                            # 换 seed = 全新 run：给模型一次新机会
 
 func _ready() -> void:
 	# 订阅世界重置 → 取消所有在飞请求。deferred 确保 Sim 自动加载已就绪（autoload 顺序无关）。
@@ -69,6 +82,52 @@ func _free_transport(http, slm_chat) -> void:
 	if slm_chat != null and is_instance_valid(slm_chat):
 		if slm_chat.has_method("stop_generation"): slm_chat.call("stop_generation")
 		slm_chat.queue_free()
+
+## 熔断记账：一次决策成功落地 → 连败清零（模型在正常工作，别误熔断）。
+func _note_ai_ok() -> void:
+	_consec_fail = 0
+
+## 熔断记账：一次决策失败(超时/脏解析) → 连败+1；达阈值即熔断。已熔断则不再累计。
+func _note_ai_fail(kind: String) -> void:
+	if breaker_tripped:
+		return
+	_consec_fail += 1
+	if _consec_fail >= BREAKER_MAX_FAILS:
+		_trip_breaker(kind)
+
+## 触发熔断：钉死 logic 地板、作废+释放所有在飞请求、落一条 adb-pull 得到的诊断行。
+## 注：挂死 worker 的原生 llama 上下文本就难回收（native 线程卡死），熔断只保证【不再新增】泄漏，把损失封顶。
+func _trip_breaker(kind: String) -> void:
+	if breaker_tripped:
+		return
+	var tripped_backend := backend
+	breaker_tripped = true
+	breaker_reason = kind
+	push_warning("[熔断] 连续 %d 次推理失败(%s)、0 成功 → 永久回退 logic 地板、停发 %s（防 OOM，见 docs/34）" % [_consec_fail, kind, tripped_backend])
+	cancel_all()                         # 作废+释放在飞请求(epoch++)；native 上下文难回收，但不再 fire 新的
+	backend = "logic"                    # 立即钉死：本 tick 后 decide() 顶部 backend=="logic" 即走地板
+	backend_requested = "logic"          # 必须同步，否则 decide() 安全点又把 backend 切回模型
+	_write_breaker_diag(tripped_backend, kind)
+
+## 熔断诊断落盘（真机 logcat 常收不到 Godot print；写公共 Documents 便于 adb pull 复盘）。桌面写 user://。
+func _write_breaker_diag(tripped_backend: String, kind: String) -> void:
+	var path := "user://breaker_result.txt"
+	if OS.has_feature("android"):
+		var docs := OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS)
+		if docs != "": path = docs.path_join("livingtown_breaker.txt")
+	var f := FileAccess.open(path, FileAccess.WRITE)
+	if f != null:
+		f.store_line("TRIPPED backend=%s reason=%s consec_fail=%d fired=%d landed=%d timeout=%d bad_parse=%d tick=%d" % [
+			tripped_backend, kind, _consec_fail,
+			int(stats.get("fired", 0)), int(stats.get("landed", 0)),
+			int(stats.get("timeout", 0)), int(stats.get("bad_parse", 0)), Sim.tick_no])
+		f.close()
+
+## 复位熔断（显式动作调用：换 seed / 用户切后端 / 换模型 → 给模型一次新机会）。
+func _reset_breaker() -> void:
+	_consec_fail = 0
+	breaker_tripped = false
+	breaker_reason = ""
 
 ## 候选稳定 key（完整身份，含 P2-1 遗漏的 kind/target/need/amount/duration）：等待期间候选重排/替换后仍能重认同一动作。
 func _cand_key(c: Dictionary) -> String:
@@ -144,6 +203,7 @@ func request_backend(mode: String) -> void:
 		return
 	backend_requested = mode
 	cancel_all()                          # 切后端：作废旧后端所有在飞请求（不同解析/传输，别让旧回包被新后端误读）
+	_reset_breaker()                      # 用户显式切档 = 给（可能已修好的）模型一次新机会；熔断只在无人工干预时永久生效
 	save_user_settings()
 
 ## 读 user://settings.cfg 的默认后端（仅窗口启动、且无 --backend 显式参数时调用）。
@@ -272,6 +332,7 @@ func set_model_path(path: String) -> void:
 	cfg.set_value("slm", "model_path", path)
 	cfg.save("user://settings.cfg")
 	cancel_all()                     # 换模型：先作废在飞 slm 请求（它们的 worker 绑旧模型）；cancel_all 只扫 chat，不碰 _slm_model
+	_reset_breaker()                 # 换模型 = 给新模型一次新机会（旧模型熔断不该连坐新模型）
 	if _slm_model != null and is_instance_valid(_slm_model):
 		_slm_model.queue_free()      # 卸掉旧模型 → _ensure_slm_model 会按新 override 重载
 	_slm_model = null
@@ -329,12 +390,18 @@ func _probe_once(be: String, agent: Dictionary, candidates: Array, ctx: Dictiona
 		chat.call("start_worker")
 		# 不设 json_schema 受限解码：worker 异步起、配置常在 ask 前未就绪被丢弃(WARN 刷屏)；且长 prompt 下受限解码实测卡死只吐"{"(见 _fire_slm)。靠 parse_decision 抽 {…} 最稳。
 		chat.call("ask", usr)
-		var resp = await chat.response_finished
-		if is_instance_valid(chat): chat.queue_free()
-		return String(resp)
+		# 超时兜底(docs/34)：真机上 response_finished 可能【永不触发】(worker 挂死)——裸 await 会让本函数永阻、
+		# probe_capability 永不返回、chat 永不 free、cancel_all/_finish 都够不着它。改为 deadline_ms 内轮询等信号，
+		# 到点【无条件】停 worker + 释放节点（挂死的原生上下文虽难回收，但至少不再裸 await 挂着、不占探测流程）。
+		var resp := await _await_signal_or_timeout(chat, "response_finished", deadline_ms)
+		if is_instance_valid(chat):
+			if chat.has_method("stop_generation"): chat.call("stop_generation")
+			chat.queue_free()
+		return resp
 	# llm：HTTPRequest 直连
 	var http := HTTPRequest.new()
 	add_child(http)
+	http.timeout = float(deadline_ms) / 1000.0        # 别让 llm 探测也裸挂：到点自发 request_completed(result=timeout)
 	var body := {"model": model, "max_tokens": DECIDE_MAX_TOKENS, "temperature": 0.6,
 		"messages": [{"role": "system", "content": sys}, {"role": "user", "content": usr}]}
 	var err := http.request(endpoint, ["Content-Type: application/json", "Authorization: Bearer " + api_key], HTTPClient.METHOD_POST, JSON.stringify(body))
@@ -347,6 +414,22 @@ func _probe_once(be: String, agent: Dictionary, candidates: Array, ctx: Dictiona
 		if j is Dictionary and j.has("choices"):
 			return String(j["choices"][0].get("message", {}).get("content", ""))
 	return ""
+
+## 等 obj 的 sig 信号，最多 timeout_ms 毫秒；到点仍未触发返回 ""（替代裸 await——挂死信号不再永阻）。
+## 非阻塞：每帧 await process_frame 让出，NobodyWho worker 在自己线程跑，主线程/镇子继续渲染与 tick。
+func _await_signal_or_timeout(obj: Object, sig: String, timeout_ms: int) -> String:
+	var box := {"resp": "", "done": false}
+	var on_sig := func(r = ""):
+		if not box["done"]:
+			box["resp"] = String(r)
+			box["done"] = true
+	obj.connect(sig, on_sig, CONNECT_ONE_SHOT)
+	var t0 := Time.get_ticks_msec()
+	while not box["done"] and (Time.get_ticks_msec() - t0) < timeout_ms:
+		await get_tree().process_frame
+	if is_instance_valid(obj) and obj.is_connected(sig, on_sig):
+		obj.disconnect(sig, on_sig)                 # 超时未触发：手动断开(CONNECT_ONE_SHOT 只在触发后才自动断)
+	return String(box["resp"])
 
 # ── 同步入口（Sim 每 tick 调）──────────────────────────────────────────────
 func decide(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Dictionary:
@@ -377,6 +460,7 @@ func decide(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Dictionary
 		var picked := parse_decision(String(p["raw"]), snap)         # snap[pick]（+JSON 老路的台词/情绪）；{}=脏/越界
 		if picked.is_empty():
 			stats["bad_parse"] += 1
+			_note_ai_fail("bad_parse")                              # 模型返回脏/越界 = 真失败（模型跑得动但输出没用）→ 计入熔断
 			return {}
 		# 等待期间世界会变：模型选的候选必须在【当前】候选里仍存在（同 stable key）→ 用当前候选做基底落地；
 		# 不在了(需求已满足/对象离开/候选重排) → 兜底 logic，绝不把旧选择套到变了的世界(P1-1)。
@@ -388,9 +472,11 @@ func decide(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Dictionary
 				break
 		if chosen.is_empty():
 			stats["bad_parse"] += 1
+			_note_ai_ok()                                           # 模型给了合法 pick，只是等待期世界变了(P1-1)——模型活着、无泄漏 → 视为健康信号，清连败
 			return {}
 		var intent: Dictionary = (chosen as Dictionary).duplicate()
 		stats["landed"] += 1
+		_note_ai_ok()                                               # 成功落地 → 清连败
 		_last_llm[id] = Sim.tick_no
 		intent["say"] = String(picked["say"]) if picked.has("say") else Sim._canned_say(agent, intent)  # 有模型台词(JSON 老路)则留，否则冻结语音库
 		if picked.has("emotion"): intent["emotion"] = picked["emotion"]
@@ -400,6 +486,7 @@ func decide(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Dictionary
 	if Time.get_ticks_msec() >= int(p["due_ms"]):
 		_finish(id, agent)
 		stats["timeout"] += 1
+		_note_ai_fail("timeout")                                    # 挂死/超时 = OOM 关键信号（worker 卡死→原生上下文漏）→ 计入熔断
 		return {}
 	return {"_wait": true}                                # 仍在等
 

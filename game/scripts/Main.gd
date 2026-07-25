@@ -590,10 +590,17 @@ func _process(dt: float) -> void:
 	var nodes := int(Performance.get_monitor(Performance.OBJECT_NODE_COUNT))
 	var draws := int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
 	var st: Dictionary = AIBackend.stats
-	_perf.text = "[color=#7ed957]● PERF[/color]  FPS %d · %.1fms\n内存 %s · 对象 %d · 节点 %d · 绘制 %d\nNPC %d · tick %d (%.1f/s ×%.0f)\n后端 [color=#ffd166]%s[/color] · 并发 %d\nLLM 发起 %d · 成功 %d · 超时 %d · 无效 %d" % [
+	# 熔断状态（docs/34）：熔断后 backend 已钉死 logic，这里显式标出「为何回退」——真机就是靠此 overlay 诊断的，
+	# 别让"后端 logic"看起来像用户主动选的。未熔断但已有连败时也提示，便于观察逼近阈值。
+	var brk := ""
+	if AIBackend.breaker_tripped:
+		brk = "  [color=#ff5a5a]🔴熔断→logic(%s)[/color]" % AIBackend.breaker_reason
+	elif AIBackend._consec_fail > 0:
+		brk = "  [color=#ffb347]连败 %d/%d[/color]" % [AIBackend._consec_fail, AIBackend.BREAKER_MAX_FAILS]
+	_perf.text = "[color=#7ed957]● PERF[/color]  FPS %d · %.1fms\n内存 %s · 对象 %d · 节点 %d · 绘制 %d\nNPC %d · tick %d (%.1f/s ×%.0f)\n后端 [color=#ffd166]%s[/color] · 并发 %d%s\nLLM 发起 %d · 成功 %d · 超时 %d · 无效 %d" % [
 		fps, frame_ms, memtxt, objs, nodes, draws,
 		Sim.agents.size(), Sim.tick_no, _perf_rate, Sim.speed,
-		AIBackend.backend, AIBackend._inflight,
+		AIBackend.backend, AIBackend._inflight, brk,
 		int(st.get("fired", 0)), int(st.get("landed", 0)), int(st.get("timeout", 0)), int(st.get("bad_parse", 0))]
 
 func _update_status() -> void:
