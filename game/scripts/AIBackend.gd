@@ -20,7 +20,13 @@ var mock := false                               # true → 强制走确定性 mo
 var no_think := true                            # 追加 /no_think 关推理模型(Qwen3)的思考——否则烧 token 返回空（实测）
 var debug_llm := false                           # true → 在 _fire_http 完成回调打印 LLM 返回（诊断用）
 ## bench 埋点。calls/waits 是【诚实分母】的原料，别只看 fired（详见 decision_stats 的长注释与 docs/35）。
-var stats := {"fired": 0, "landed": 0, "bad_parse": 0, "timeout": 0, "calls": 0, "waits": 0}
+## shadow_* / delta_* 是【真影响力】的原料：landed 只是上界，覆写率 Δ/C 才是模型真的改了什么（docs/36）。
+var stats := {"fired": 0, "landed": 0, "bad_parse": 0, "timeout": 0, "calls": 0, "waits": 0,
+	"shadow_n": 0, "delta": 0, "delta_full": 0, "delta_action": 0, "capped_n": 0,
+	"cand_sum": 0, "pick_sum": 0, "pick0": 0, "inv_cand_sum": 0.0,
+	"rank_sum": 0.0, "gap_sum": 0.0, "gap_rand_sum": 0.0, "exp_kind_sum": 0.0,
+	"parse_fail": 0, "stale_cand": 0}
+var _pick_hist := {}   # 落地选择在候选集里的下标 → 次数。判"模型在行使判断" vs "退化成总答同一个号/瞎猜"（docs/36 §退化排查）
 # SLM 熔断器（docs/34：真机 Adreno Vulkan 下推理挂死→全超时+卡死 worker 释放不了原生上下文→无界泄漏 OOM）：
 # 连续 N 次超时(SLM 实质死了) → 停发 SLM、永久回退 logic，把泄漏封顶、防崩。backend=slm 本就非确定(live 模型)→不碰红线。
 var _slm_fail_streak := 0
@@ -35,7 +41,12 @@ var world_epoch := 0                            # 世界重置(start_new/scrub/�
 var _req_seq := 0                               # 单调请求号
 
 func reset_stats() -> void:
-	stats = {"fired": 0, "landed": 0, "bad_parse": 0, "timeout": 0, "calls": 0, "waits": 0}
+	stats = {"fired": 0, "landed": 0, "bad_parse": 0, "timeout": 0, "calls": 0, "waits": 0,
+		"shadow_n": 0, "delta": 0, "delta_full": 0, "delta_action": 0, "capped_n": 0,
+		"cand_sum": 0, "pick_sum": 0, "pick0": 0, "inv_cand_sum": 0.0,
+		"rank_sum": 0.0, "gap_sum": 0.0, "gap_rand_sum": 0.0, "exp_kind_sum": 0.0,
+		"parse_fail": 0, "stale_cand": 0}
+	_pick_hist = {}
 	# L5 per-run 状态清零（否则跨 seed 的陈旧度/发声计数/预算窗口会串味）
 	_fire_count = {}
 	_last_llm = {}
@@ -562,11 +573,114 @@ func decision_stats() -> Dictionary:
 	var decisions := maxi(0, calls - waits)          # 真·落地决策数（引擎的 + 模型的）
 	var fired := int(stats.get("fired", 0))
 	var landed := int(stats.get("landed", 0))
+	var delta := int(stats.get("delta", 0))
 	return {
 		"calls": calls, "waits": waits, "decisions": decisions, "fired": fired, "landed": landed,
 		"landed_over_fired": (float(landed) / float(fired)) if fired > 0 else 0.0,          # 截止线命中率（旧口径）
-		"landed_over_decisions": (float(landed) / float(decisions)) if decisions > 0 else 0.0,  # 决策占比（诚实口径）
+		"landed_over_decisions": (float(landed) / float(decisions)) if decisions > 0 else 0.0,  # 决策占比（【上界】，docs/35）
+		# docs/36 真影响力：landed 只说"下标被采纳"，Δ 才说"和引擎自己会挑的不一样"。
+		"delta": delta, "delta_full": int(stats.get("delta_full", 0)),
+		"delta_action": int(stats.get("delta_action", 0)), "shadow_n": int(stats.get("shadow_n", 0)),
+		"delta_over_decisions": (float(delta) / float(decisions)) if decisions > 0 else 0.0,   # ★ 真·覆写率 Δ/C
+		"delta_over_landed": (float(delta) / float(landed)) if landed > 0 else 0.0,            # 落地时的分歧率 Δ/L
+		# 退化排查原料：没有这三个，Δ/L 高到底是"有主见"还是"扔骰子"分不清（docs/36）
+		"parse_fail": int(stats.get("parse_fail", 0)), "stale_cand": int(stats.get("stale_cand", 0)),
+		"cand_sum": int(stats.get("cand_sum", 0)), "pick_sum": int(stats.get("pick_sum", 0)),
+		"pick0": int(stats.get("pick0", 0)),
+		"mean_cands": (float(stats.get("cand_sum", 0)) / float(landed)) if landed > 0 else 0.0,
+		"mean_pick": (float(stats.get("pick_sum", 0)) / float(landed)) if landed > 0 else 0.0,
+		# 若模型在候选集里【均匀瞎猜】，期望分歧率就是这个数 = 1 − mean(1/|C_i|)。Δ/L 贴着它 ⇒ 无法与随机区分。
+		"random_null_delta_over_landed": (1.0 - float(stats.get("inv_cand_sum", 0.0)) / float(landed)) if landed > 0 else 0.0,
 	}
+
+## ── 影子基线：landed ≠ drove（docs/36）──────────────────────────────────────
+## 外部对抗评审的一击，我们接了：模型「落地」只说明它给的下标被采纳，【不】说明它改变了什么——
+## 闭集里分数最高的那个候选，引擎自己也会挑。于是 landed/decisions 只是影响力的【上界】。
+## 真正的量是【覆写率】Δ/C：在所有落地决策里，模型实际应用的选择与引擎策略在同一候选集上的
+## 选择【不同】的比例。Δ/L 则是"它落地时有多爱唱反调"。
+##
+## ★ 这个影子调用为什么不破逐字节确定性（红线#1）——已逐行核对，非推测：
+##   ① Sim._logic_decide 的唯一随机源是 Sim._rng_at(salt, who)，而它每次都【新建】一个
+##      RandomNumberGenerator 并按 (seed_base + tick_no*911 + salt*7919 + who*104729) 播种
+##      （Sim.gd:301-304）——纯 f(seed,tick,salt,who)，不从任何共享/序列态取数。
+##      ⇒ 调用【次数】不进入任何后续抽样，多调一次与不调完全等价。（Sim.gd:845 自己也这么写着：
+##        「RNG 无状态（_rng_at 纯 f(seed_base,tick_no)）→ 没有 RNG 态要存」。）
+##   ② 函数体只读 cands；best 先 duplicate() 再写 say ⇒ 不改候选原字典；不写任何 Sim 态、
+##      不进 event_log/digest。
+##   ③ 唯一的外部副作用是 Phase-0 数据集钩子 decision_sink（Sim.gd:2735）——影子调用期间显式
+##      摘掉再还原，保证即便 bench/log_decisions.gd 正在采集也不会被注入一条幽灵样本。
+##   ④ CI 恒 Sim.backend=null ⇒ decide() 根本不被调用 ⇒ 本段代码在金标路径上零执行。
+## 结论：属于「无状态、可安全重复调用」那一类，无需把基线挪到发起前，也无需离线重建。
+var shadow_baseline := false   # bench 打开；出货默认关（测量设施不进热路径）
+
+## 在【落地那一刻】把模型的选择与引擎策略对拍。两个基线，都在同一 tick 求值（RNG 盐同源）：
+##   frozen = 模型这次实际挑选的那个闭集（decide 的 capped，top-36）——评审要的"同一冻结候选集"口径，
+##            剔掉了"裁到 36 个"这个混淆项，纯粹量【模型 vs 引擎策略】的分歧。
+##   full   = 本 tick 的【全量】候选——这才是真·反事实：模型若返回 {}，Sim.gd:1090 走的正是
+##            _logic_decide(ag, cands) 全量这一支。候选 ≤36 时两者同集，Δ 必然相等。
+## 注意口径边界：这是【逐次决策的直接覆写率】，不是"关掉模型重跑一局"的世界级反事实——
+## 前面的覆写会改变世界态，且等待期(_wait)那几 tick agent 什么也不做，这条影响通道 Δ 完全没数进去。
+func _shadow_compare(agent: Dictionary, applied: Dictionary, frozen: Array, full: Array) -> void:
+	var sink_saved: Callable = Sim.decision_sink
+	Sim.decision_sink = Callable()                       # 摘钩子：影子调用绝不进 Phase-0 数据集（唯一副作用，见上 ③）
+	var base_frozen: Dictionary = Sim._logic_decide(agent, frozen)
+	var base_full: Dictionary = Sim._logic_decide(agent, full)
+	Sim.decision_sink = sink_saved                       # 原样还原：读-改-还原，退出时与进入时逐字段相同
+	var k_applied := _cand_key(applied)
+	stats["shadow_n"] = int(stats.get("shadow_n", 0)) + 1
+	if full.size() > 36:
+		stats["capped_n"] = int(stats.get("capped_n", 0)) + 1
+	# ── 退化排查（docs/36 §四）：光有高 Δ 不等于"模型在行使判断" ──────────────
+	# 一个【均匀瞎猜】的模型 Δ 同样很高（期望 Δ/L = 1 − mean(1/|C|)）。要把"有主见"和"扔骰子"
+	# 分开，光看 Δ 不够，必须拿模型的选择去对**引擎自己的效用函数（score）**：
+	#   · 分数名次   随机=0.5、argmax=0   → 模型有没有偏好高分候选
+	#   · 效用落差   与"随机挑一个"的期望落差比 → 模型放弃了多少效用，比随机少放弃吗
+	#   · 动作种类   与"随机挑一个"的期望换种率比 → 覆写是不是只是随机换了个动作
+	# 这三条都是逐候选 O(|C|) 的纯读取，与上面的 Δ 同源同 tick。
+	var n := frozen.size()
+	stats["cand_sum"] = int(stats.get("cand_sum", 0)) + n
+	if n > 0:   # 累加 Σ1/|C_i|：均匀瞎猜的期望分歧率是 1 − mean(1/|C_i|)，
+		stats["inv_cand_sum"] = float(stats.get("inv_cand_sum", 0.0)) + 1.0 / float(n)   # 【不是】1 − 1/mean|C_i|（Jensen 不等式，两者不等）
+	var s_applied := float(applied.get("score", 0.0))
+	var s_base := float(base_frozen.get("score", 0.0))
+	var b_action := String(base_frozen.get("action", ""))
+	var b_kind := String(base_frozen.get("kind", ""))
+	var score_sum := 0.0
+	var rank := 0          # 比 applied 分高的候选个数 = applied 的分数名次（0 = 全场最高分）
+	var kind_diff := 0     # 与引擎基线【动作种类】不同的候选个数 → 随机换种率的精确期望
+	for c in frozen:
+		var cd: Dictionary = c
+		var sc := float(cd.get("score", 0.0))
+		score_sum += sc
+		if sc > s_applied:
+			rank += 1
+		if String(cd.get("action", "")) != b_action or String(cd.get("kind", "")) != b_kind:
+			kind_diff += 1
+	if n > 1:
+		stats["rank_sum"] = float(stats.get("rank_sum", 0.0)) + float(rank) / float(n - 1)   # 归一化名次：0=最高分, 0.5=随机, 1=最低分
+	stats["gap_sum"] = float(stats.get("gap_sum", 0.0)) + (s_base - s_applied)               # 实际放弃的效用
+	if n > 0:
+		stats["gap_rand_sum"] = float(stats.get("gap_rand_sum", 0.0)) + (s_base - score_sum / float(n))  # 随机挑一个会放弃的效用（期望）
+		stats["exp_kind_sum"] = float(stats.get("exp_kind_sum", 0.0)) + float(kind_diff) / float(n)      # 随机挑一个会换动作种类的概率
+	var idx := -1
+	for i in n:
+		if _cand_key(frozen[i]) == k_applied:
+			idx = i
+			break
+	if idx >= 0:
+		stats["pick_sum"] = int(stats.get("pick_sum", 0)) + idx
+		if idx == 0:
+			stats["pick0"] = int(stats.get("pick0", 0)) + 1
+		_pick_hist[idx] = int(_pick_hist.get(idx, 0)) + 1
+	if k_applied != _cand_key(base_frozen):
+		stats["delta"] = int(stats.get("delta", 0)) + 1
+		# 廉价的"到底有没有所谓"信号：覆写后的【立即动作种类】是否也变了。
+		# 同 action 不同 partner/target（例如"找张三聊"→"找李四聊"）不计入——那是同一种行为换了对象。
+		if String(applied.get("action", "")) != String(base_frozen.get("action", "")) \
+				or String(applied.get("kind", "")) != String(base_frozen.get("kind", "")):
+			stats["delta_action"] = int(stats.get("delta_action", 0)) + 1
+	if k_applied != _cand_key(base_full):
+		stats["delta_full"] = int(stats.get("delta_full", 0)) + 1
 
 ## 串行 worker 的全镇吞吐天花板（次/ sim-日），与 N 无关。decode_s = 单发解码秒数（真机 CPU 实测 3-8s）。
 ## 供 bench/docs 直接引用，免得每次手算又抄错常数。
@@ -609,6 +723,7 @@ func decide(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Dictionary
 		var picked := parse_decision(String(p["raw"]), snap)         # snap[pick]（+JSON 老路的台词/情绪）；{}=脏/越界
 		if picked.is_empty():
 			stats["bad_parse"] += 1
+			stats["parse_fail"] = int(stats.get("parse_fail", 0)) + 1   # 分账①：模型【输出本身】不合格（脏串/越界/prose）
 			return {}
 		# 等待期间世界会变：模型选的候选必须在【当前】候选里仍存在（同 stable key）→ 用当前候选做基底落地；
 		# 不在了(需求已满足/对象离开/候选重排) → 兜底 logic，绝不把旧选择套到变了的世界(P1-1)。
@@ -620,9 +735,12 @@ func decide(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Dictionary
 				break
 		if chosen.is_empty():
 			stats["bad_parse"] += 1
+			stats["stale_cand"] = int(stats.get("stale_cand", 0)) + 1   # 分账②：输出【合格】，但等待期世界变了，它选的候选已不存在（P1-1 重验落空）
 			return {}
 		var intent: Dictionary = (chosen as Dictionary).duplicate()
 		stats["landed"] += 1
+		if shadow_baseline:                                      # docs/36：落地 ≠ 驱动 → 当场对拍引擎基线，量真覆写率 Δ
+			_shadow_compare(agent, intent, capped, candidates)   # （纯函数、无状态 RNG，见 _shadow_compare 的红线论证）
 		_slm_fail_streak = 0                                     # 有成功 → 熔断计数清零
 		_last_llm[id] = Sim.tick_no
 		intent["say"] = String(picked["say"]) if picked.has("say") else Sim._canned_say(agent, intent)  # 有模型台词(JSON 老路)则留，否则冻结语音库

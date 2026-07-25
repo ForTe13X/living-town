@@ -13,6 +13,7 @@ const M = preload("res://bench/Metrics.gd")
 
 var _swap_at := -1     # >=0：在该 tick 调 AIBackend.set_model_path（测 C1 换模型延后拆不崩）
 var _realtime := false # true：按 Sim.tick_interval 墙钟推进（出货节奏），量真实决策占比
+var _shadow := true    # true：每次模型落地时顺手求一次引擎基线 → 覆写率 Δ/C（docs/36；纯函数，不扰仿真）
 
 func _ready() -> void:
 	var backend := "logic"
@@ -33,6 +34,8 @@ func _ready() -> void:
 		elif args[i] == "--budget" and i + 1 < args.size(): AIBackend.llm_budget = int(args[i + 1])  # L5 全镇令牌桶
 		elif args[i] == "--aging" and i + 1 < args.size(): AIBackend.llm_aging = args[i + 1] != "off"  # L5 老化优先门(默认 on)
 		elif args[i] == "--realtime": _realtime = true   # 出货节奏（1 sim-日=19.2s 墙钟）→ landed/decisions 才可外推
+		elif args[i] == "--no-shadow": _shadow = false   # 关影子基线对拍（默认开；只影响埋点，不影响仿真）
+	AIBackend.shadow_baseline = _shadow                  # docs/36：落地时顺手求一次引擎基线 → 量真覆写率 Δ/C
 	var is_async := backend == "slm" or backend == "llm"
 	if days <= 0:
 		days = 8 if is_async else 40       # 异步真模型 days 小（每决策秒级）；确定性后端可大网格
@@ -55,6 +58,21 @@ func _run(backend: String, seed_list: Array, days: int, is_async: bool) -> void:
 	var vzeros: Array = []   # L5 从未发声的 agent 数（饿死之声）
 	var calls := 0           # 诚实分母原料：decide() 被叫的总次数
 	var waits := 0           #               其中"思考中，本 tick 不落地"的次数
+	var delta := 0           # docs/36 真影响力：落地的模型选择 ≠ 引擎在【同一冻结候选集】上会挑的那个
+	var delta_full := 0      #               ≠ 引擎在【本 tick 全量候选】上会挑的那个（真·反事实支：Sim.gd:1090）
+	var delta_action := 0    #               其中连"立即动作种类"都换了的（廉价的"有没有所谓"信号）
+	var capped_n := 0        #               落地时候选 >36（被裁过）的次数 → 判 frozen/full 两口径该不该分家
+	var cand_sum := 0        # 退化排查：Σ|候选集|、Σ选中下标、选 0 号次数、Σ1/|候选集|
+	var pick_sum := 0        #   —— 没有这几个数，"Δ/L 很高"分不清是【有主见】还是【扔骰子】
+	var pick0 := 0
+	var inv_cand_sum := 0.0
+	var pick_hist := {}      #   选号分布（合并各 seed）：总答同一个号 = 退化
+	var rank_sum := 0.0      # Σ归一化分数名次（0=最高分,0.5=随机,1=最低分）——比选号分布硬得多的判据
+	var gap_sum := 0.0       # Σ(引擎基线 score − 模型选择 score) = 模型实际放弃的效用
+	var gap_rand_sum := 0.0  # Σ(引擎基线 score − 候选均值 score) = 【随机挑一个】会放弃的效用（期望）
+	var exp_kind_sum := 0.0  # Σ P(随机挑一个会换动作种类) = 随机换动作种类率的精确期望
+	var parse_fail := 0      # bad_parse 分账①：模型输出本身不合格（格式不遵从）
+	var stale_cand := 0      # bad_parse 分账②：输出合格但等待期候选失效（世界变了，不是模型的错）
 	var wall_ms := 0         # 墙钟耗时（算 sim-日实际时长 → 判 --realtime 是否真跑到了出货节奏）
 	var sim_ticks := 0
 	var samples: Array = []
@@ -100,11 +118,27 @@ func _run(backend: String, seed_list: Array, days: int, is_async: bool) -> void:
 		timeout += int(AIBackend.stats["timeout"])
 		calls += int(ds["calls"])
 		waits += int(ds["waits"])
+		delta += int(ds["delta"])
+		delta_full += int(ds["delta_full"])
+		delta_action += int(ds["delta_action"])
+		capped_n += int(AIBackend.stats.get("capped_n", 0))
+		cand_sum += int(ds["cand_sum"]); pick_sum += int(ds["pick_sum"]); pick0 += int(ds["pick0"])
+		inv_cand_sum += float(AIBackend.stats.get("inv_cand_sum", 0.0))
+		rank_sum += float(AIBackend.stats.get("rank_sum", 0.0))
+		gap_sum += float(AIBackend.stats.get("gap_sum", 0.0))
+		gap_rand_sum += float(AIBackend.stats.get("gap_rand_sum", 0.0))
+		exp_kind_sum += float(AIBackend.stats.get("exp_kind_sum", 0.0))
+		parse_fail += int(ds["parse_fail"]); stale_cand += int(ds["stale_cand"])
+		for k in AIBackend._pick_hist:
+			pick_hist[k] = int(pick_hist.get(k, 0)) + int(AIBackend._pick_hist[k])
 		wall_ms += Time.get_ticks_msec() - t_run0
 		sim_ticks += total
-		print("[BB] " + JSON.stringify({"backend": backend, "seed": sd, "fired": int(AIBackend.stats["fired"]),
+		# event_digest：L4 增量滚动摘要，本局全程事件的确定性见证。印出来是为了能做【影子基线开/关】的
+		# 逐字节 A/B——CI 的金标恒 Sim.backend=null，证不到 decide() 路径上的影子调用无扰动（docs/36 §二）。
+		print("[BB] " + JSON.stringify({"backend": backend, "seed": sd, "digest": Sim.event_digest, "fired": int(AIBackend.stats["fired"]),
 			"landed": int(AIBackend.stats["landed"]), "bad": int(AIBackend.stats["bad_parse"]), "timeout": int(AIBackend.stats["timeout"]),
 			"decisions": int(ds["decisions"]), "calls": int(ds["calls"]), "waits": int(ds["waits"]),
+			"delta": int(ds["delta"]), "delta_full": int(ds["delta_full"]), "delta_action": int(ds["delta_action"]),
 			"PI": snappedf(M.polarization(Sim), 0.001), "cascade": M.cascade_max(Sim), "Gini": snappedf(M.gini_acceptance(Sim), 0.001)}))
 
 	var resolved := landed + bad + timeout
@@ -120,9 +154,61 @@ func _run(backend: String, seed_list: Array, days: int, is_async: bool) -> void:
 		print("  模型决策: fired=%d landed=%d bad_parse=%d timeout=%d" % [fired, landed, bad, timeout])
 		print("  合法率 = %.1f%% (landed/resolved)   截止线命中率 = %.1f%% ((landed+bad)/fired)" % [
 			100.0 * float(landed) / float(maxi(1, resolved)), 100.0 * float(landed + bad) / float(fired)])
+		# bad_parse 的两笔账必须分开：一笔怪模型（格式不遵从），一笔怪世界（等待期候选失效）。
+		# 混在一起会把"世界变太快"记到模型的格式能力头上——这是读 1.5B 合法率时最容易犯的错。
+		print("    其中 bad_parse 分账: 格式不遵从(模型的锅)=%d (%.1f%% of fired) | 候选失效(等待期世界变了,不是模型的锅)=%d (%.1f%% of fired)" % [
+			parse_fail, 100.0 * float(parse_fail) / float(maxi(1, fired)),
+			stale_cand, 100.0 * float(stale_cand) / float(maxi(1, fired))])
 		print("  ★ 决策占比 = %.2f%% (landed/落地决策)   ← 诚实口径；对照 landed/fired = %.1f%%（只说发出去的按时回来几成）" % [
 			100.0 * float(landed) / float(maxi(1, decisions)), 100.0 * float(landed) / float(fired)])
 		print("    模型决策 %.2f 次/sim-日（全镇；串行 worker → 与 N 无关的墙钟天花板）" % [float(landed) / maxf(0.001, sim_days)])
+		# ── docs/36 真影响力：landed ≠ drove ─────────────────────────────────
+		# 上面那个 landed/C 只是【上界】：模型挑中的很可能正是引擎自己也会挑的那个。
+		# 下面的 Δ 是落地时【真的和引擎选得不一样】的次数 —— 这才是"模型改变了什么"的直接度量。
+		if _shadow:
+			print("  ★★ 真影响力(影子基线对拍): Δ=%d  →  Δ/C = %.2f%%（★真·覆写率）| L/C = %.2f%%（上界）| Δ/L = %.1f%%（落地时的分歧率）" % [
+				delta, 100.0 * float(delta) / float(maxi(1, decisions)),
+				100.0 * float(landed) / float(maxi(1, decisions)), 100.0 * float(delta) / float(maxi(1, landed))])
+			print("     其中换了【立即动作种类】的: %d (%.1f%% of Δ, %.2f%% of C) ← 廉价的\"有没有所谓\"信号；同 action 换对象不计" % [
+				delta_action, 100.0 * float(delta_action) / float(maxi(1, delta)),
+				100.0 * float(delta_action) / float(maxi(1, decisions))])
+			print("     全量候选口径 Δ_full=%d (%.2f%% of C) ← 真·反事实支(Sim.gd:1090 模型弃权时走全量 _logic_decide)；落地时候选>36 被裁过 %d 次%s" % [
+				delta_full, 100.0 * float(delta_full) / float(maxi(1, decisions)), capped_n,
+				"（=0 → 两口径同集，Δ 应恒等）" if capped_n == 0 else "（>0 → 两口径分家，差值即裁剪引入的）"])
+			# ── 退化排查：高 Δ ≠ 有判断力 ────────────────────────────────────
+			# 一个【均匀瞎猜】的模型期望分歧率 = 1 − mean(1/|C|)；一个【总答 0 号】的模型 Δ 也不低。
+			# 所以 Δ/L 必须对着这条随机基线读，并看选号分布是否塌成一个点。
+			var rnull := 100.0 * (1.0 - inv_cand_sum / maxf(1.0, float(landed)))
+			var dl := 100.0 * float(delta) / float(maxi(1, landed))
+			print("     退化排查: 平均候选集 %.1f 个 | 平均选中下标 %.2f | 选 0 号 %d 次(%.1f%%) | 不同下标 %d 种" % [
+				float(cand_sum) / maxf(1.0, float(landed)), float(pick_sum) / maxf(1.0, float(landed)),
+				pick0, 100.0 * float(pick0) / float(maxi(1, landed)), pick_hist.size()])
+			print("     ⚠ 随机基线: 均匀瞎猜的期望 Δ/L = %.1f%%；实测 Δ/L = %.1f%% → %s" % [rnull, dl,
+				"实测【低于】随机基线 %.1f pt：模型确实在向引擎的偏好靠拢，分歧是有结构的，不是掷骰子。" % (rnull - dl) if dl < rnull - 5.0
+				else ("实测与随机基线仅差 %.1f pt → 【无法与均匀瞎猜区分】，Δ 不可解读为\"判断力\"。" % absf(rnull - dl) if absf(rnull - dl) <= 5.0
+				else "实测【高于】随机基线 %.1f pt → 比瞎猜还爱唱反调（系统性偏离引擎偏好，需查 prompt/解析）。" % (dl - rnull))])
+			# ── 三条对着【引擎自己的效用函数 score】的硬判据 ────────────────────
+			# 选号分布只说"有没有塌成一个点"；下面三条才回答"这些覆写是不是就等于随机换一个"。
+			var Lf := maxf(1.0, float(landed))
+			var mrank := rank_sum / Lf                    # 0=总挑最高分, 0.5=与随机不可分, 1=总挑最低分
+			var mgap := gap_sum / Lf                      # 实际放弃的效用
+			var mgap_r := gap_rand_sum / Lf               # 随机挑一个会放弃的效用（期望）
+			var mkind := float(delta_action) / Lf         # 实测换动作种类率
+			var mkind_r := exp_kind_sum / Lf              # 随机挑一个的换种率（期望）
+			print("     ── 对引擎效用函数(score)的三条硬判据 ──")
+			print("     ① 分数名次: 模型选择的归一化名次 %.3f  (0=总挑最高分 / 0.5=与随机不可分 / 1=总挑最低分)" % mrank)
+			print("     ② 效用落差: 实测放弃 %.3f 分 vs 随机挑一个会放弃 %.3f 分  → 保住了随机损失的 %.1f%%" % [
+				mgap, mgap_r, 100.0 * (1.0 - mgap / maxf(0.0001, mgap_r))])
+			print("     ③ 换动作种类: 实测 %.1f%% vs 随机期望 %.1f%%  → %s" % [100.0 * mkind, 100.0 * mkind_r,
+				"低于随机，覆写偏保守" if mkind < mkind_r - 0.05 else ("与随机不可分" if absf(mkind - mkind_r) <= 0.05 else "高于随机")])
+			var hist_keys := pick_hist.keys()
+			hist_keys.sort()
+			var hs: Array = []
+			for k in hist_keys:
+				hs.append("%s:%d" % [str(k), int(pick_hist[k])])
+			print("     选号分布(下标:次数): " + ", ".join(hs))
+		else:
+			print("  真影响力: 未测（--no-shadow）。landed/C 只是上界，别当成\"模型驱动了几成决策\"。")
 		if not vginis.is_empty():
 			print("  发声公平(L5 aging=%s): Gini %s | 从未发声 agent 数 %s (越低越均/越少饿死)" % [str(AIBackend.llm_aging), _stat(vginis), _stat(vzeros)])
 	else:
