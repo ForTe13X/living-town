@@ -43,7 +43,9 @@ Demo videos, newest build first:
 - [A 70B model as the director layer](docs/media/director_70b_demo.mp4) (1:06)
 - [Player agency](docs/media/player_agency_demo.mp4) (0:30)
 
-![The town in the current build](docs/media/shot-town-home-full.png)
+![Current build: the Town Chronicle](docs/media/town_chronicle.gif)
+
+> Desktop capture (`logic` backend, [full 0:60 clip](docs/media/town_chronicle_demo.mp4)). Bottom-left is the **Town Chronicle**: what the engine does is split into "big news" and "recent", written as prose (`苏琴 rallied 1 person to pressure 可可`) instead of printing raw event enum ids. That panel previously could only narrate greetings; betrayals, pacts, elections, grudges and reconciliations now surface on their own.
 
 Older clips, kept for history (they look noticeably different from the current build):
 [main demo, 3:52, Chinese narration with bilingual subtitles](docs/media/living_town_demo.mp4) ·

@@ -43,7 +43,9 @@
 - [70B 当编剧（导演层）](docs/media/director_70b_demo.mp4)（1:06）
 - [玩家能动性](docs/media/player_agency_demo.mp4)（0:30）
 
-![当前构建的小镇](docs/media/shot-town-home-full.png)
+![当前构建：小镇编年史](docs/media/town_chronicle.gif)
+
+> 桌面实录（`logic` 后端，[完整片段 0:60](docs/media/town_chronicle_demo.mp4)）：左下角是**小镇编年史**——引擎里发生的事被分成「镇上的大事」与「近况」两栏，用中文讲出来（`苏琴 串联了 1 个人，一起给 可可 施压`），而不是打印事件枚举名。这一栏此前只讲得出打招呼；现在背叛、盟约、选举、结怨、和解都会自己浮上来。
 
 更早的片子留作历史（画面与当前构建差别较大）：
 [主演示，3:52，中文旁白 + 中英字幕](docs/media/living_town_demo.mp4) ·
