@@ -391,15 +391,20 @@ const HARD_IDS := [1, 6, 7, 9, 10, 12, 13, 21, 22, 23, 24, 25, 27, 28, 29, 30, 3
 ##    唯一破软门的项（22/24），把整个软容差预算全吃掉——正是「不该为噪声付预算」的教科书例子。
 const DIAG_IDS := [15]
 
+## ⚠ 诊断档(DIAG_IDS，现为 #15)【不计入 soft】：Harness/DetGate/LodAblation 各自都已跳过它，唯独本函数
+## 还把它算作软失败——任何新消费方照此把门就会被一个【已知有时间泄漏、docs/31 判定无效】的指标拖红。
+## 单列 diag 桶：既堵住这个陷阱，又不丢信息。（LodAblation 自算 fh/fs 不走本函数 → 既有门判定不受影响。）
 static func split_fails(S, starved: int) -> Dictionary:
 	var hard := 0
 	var soft := 0
+	var diag := 0
 	for c in check_all(S, starved):
 		if bool(c["ok"]):
 			continue
-		if bool(c["hard"]): hard += 1
+		if int(c["id"]) in DIAG_IDS: diag += 1
+		elif bool(c["hard"]): hard += 1
 		else: soft += 1
-	return {"hard": hard, "soft": soft}
+	return {"hard": hard, "soft": soft, "diag": diag}
 
 ## event_log 确定性摘要：同 seed 两跑应得同一值（覆盖 id/类型/双方/接受/主题/时刻 + 见证人 + note）。
 ## ⚠ 为什么要多覆盖 witnesses/note：Sim._log_event 的滚动 event_digest（Sim.gd:2603）折的是
