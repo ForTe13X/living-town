@@ -142,6 +142,13 @@ var lod_near_cap := 0             # >0：near cohort=距焦点最近的 K 个 ag
 var _near_set := {}               # lod_near_cap>0 时每 tick 重算的近端 id 集
 var _day_anchor := Vector2i(-1, -1)   # 广场心（远端 agent 白天氛围漂移锚点）；lazily 算一次，map 固定不随 run 变
 var far_drift_enabled := false     # 远端 liveness 漂移：独立【实验】开关（评审建议：别只挂 lod_aggregate 门）。原型/有已知 bug(卡墙/多平面)，未出货，见 docs/32。
+# 观察无关 aggregate LOD（workflow 设计 docs/32）：cohort = salient ∪ 无状态轮转，纯 sim 态选，绝不看相机 lod_focus。
+var lod_rotate_span := 30          # 无状态轮转周期：每 id 每 span tick 保证一个满帧（liveness floor + #01 兜底）
+var lod_player_r := 12             # 玩家 avatar(sim 实体，非相机)曼哈顿半径内的 agent 强制满帧
+var _commit_ids := {}              # 每 tick 从【存档权威】commitments 数组建的活跃承诺端点 id 集（非派生 _active_commitments 缓存）
+var _conflict_ids := {}            # 活跃冲突端点 id 集
+var _pact_ids := {}                # 活跃盟约端点 id 集
+var _player_pos := Vector2i(-1, -1) # 玩家 avatar(sim 实体，非相机)位置，每 tick 由 _compute_lod_cohort 刷新；(-1,-1)=无玩家(bench)
 const LOD_NEAR_RADIUS := 8        # 兼容旧引用（默认值）
 const LOD_FAR_MULT := 3           # far agent 的决策周期 = decide_period × 此（降频）
 
@@ -488,6 +495,7 @@ func start_new(p_seed: int = 12345) -> void:
 	shadow_trace.clear()   # shadow 探针数据 per-run 清（shadow_on 是 bench 配的开关，不在此动）
 	_near_set = {}         # 评审 P1：LOD 近端集 per-run 清（否则复用实例 restart/goto 会带旧 near id → 回放不一致）
 	_day_anchor = Vector2i(-1, -1)   # 远端漂移锚点 per-run 清（防复用实例带旧值；map 固定时值不变，清了也确定）
+	_commit_ids = {}; _conflict_ids = {}; _pact_ids = {}; _player_pos = Vector2i(-1, -1)  # cohort id-caches per-run 清（每 tick 重建，此为复用实例卫生）
 	_replay_ptr = {}
 	for aid in _replay_ticks:
 		_replay_ptr[aid] = 0
@@ -836,7 +844,8 @@ const SAVE_SCHEMA := 1
 func save_game(path: String, meta := {}) -> bool:
 	# 派生引用结构【不入档】：它们只是 agents[]/commitments[] 的别名视图，存了也只能得到孤儿副本；
 	# 读档后由 _rebuild_after_load 从真源重建（_active_commitments 靠下面存的 id 列表还原成员资格）。
-	const DERIVED := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids"]
+	const DERIVED := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids",
+		"_commit_ids", "_conflict_ids", "_pact_ids", "_player_pos"]  # cohort id-caches：每 tick 从存档权威数组重建，别名视图不入档
 	# 探针状态不入档：shadow_on 是 bench 开关、shadow_trace 是 bench 遥测——存了会改变 save-blob 字节
 	# （评审指出：默认 0 对 event digest 逐字节不变，但若存档反射所有 script 变量则 save-blob 会变）→ 显式排除，还原 save 逐字节一致。
 	const BENCH_ONLY := ["shadow_on", "shadow_trace"]
@@ -952,14 +961,17 @@ func _rebuild_after_load(active_commit_ids: Array = []) -> void:
 		if want.has(int(c.get("id", -1))):
 			_active_commitments.append(c)
 	_near_set = {}                                   # 每 tick 重算，清空即可
+	_commit_ids = {}; _conflict_ids = {}; _pact_ids = {}; _player_pos = Vector2i(-1, -1)  # cohort id-caches：load 后清（每 tick 由 _compute_lod_cohort 从存档权威数组重建）
 	_build_nav()                                     # P3：从 world/_spaces 重建 town _blocked + 各平面 _nav_grids（派生，不入档）
 	_path_cache = {}
 
 # ── 主循环 ───────────────────────────────────────────────────────────────
 func tick() -> void:
 	tick_no += 1
-	if lod_near_cap > 0 and (lod or lod_aggregate):
-		_compute_near_set()
+	if lod_aggregate:
+		_compute_lod_cohort()                        # 观察无关 cohort（salient ∪ 轮转，不读相机）
+	elif lod and lod_near_cap > 0:
+		_compute_near_set()                          # 保守档 camera near_cap（bench-only）
 	for ag in agents:
 		_decay_needs(ag)
 		_advance_agent(ag)
@@ -2015,11 +2027,55 @@ func _find_commitment(id: int) -> Dictionary:
 			return c
 	return {}
 
-## 远/近判定：lod_near_cap>0 → 不在「最近 K」集即为 far；否则按到焦点的曼哈顿半径。
+## 远/近判定。lod_aggregate（观察无关档，出货候选）→ 用 _compute_lod_cohort 建的满帧集；
+## 保守 lod_near_cap 档（bench-only）→ camera near_cap 集；末路兜底 = 焦点半径（保守无 cap 角例，未测）。
 func _is_far(ag: Dictionary) -> bool:
+	if lod_aggregate:
+		return not _near_set.has(ag["id"])      # 观察无关 cohort（不读 lod_focus，红线 Main.gd:159）
 	if lod_near_cap > 0:
-		return not _near_set.has(ag["id"])
+		return not _near_set.has(ag["id"])      # 保守档 camera near_cap（bench-only，_compute_near_set）
 	return (absi(ag["pos"].x - lod_focus.x) + absi(ag["pos"].y - lod_focus.y)) > lod_near_radius
+
+## 观察无关显著性：处于「有计划 / 危机 / 社交活跃」态 → 必须满帧，降级会吞掉进行中的历史。
+## 纯 committed sim 态判定（绝不看相机）。cheap⟺无计划(option==null) → cheap agent 永不寻路 → 天然绕开卡墙 bug。
+func _is_salient(ag: Dictionary) -> bool:
+	if int(ag.get("talking", 0)) > 0: return true          # 正在对话
+	if ag.get("option") != null: return true               # 有计划(赶路/办事)——降级=丢计划；且钉死 cheap⟺无计划
+	if _min_need(ag) < SURVIVAL_GATE: return true           # 需求危机——必须全量去满足
+	var id = ag["id"]
+	if _commit_ids.has(id): return true                    # 有活跃承诺(待办 meet，含赶路)
+	if _conflict_ids.has(id): return true                  # 卷入活跃冲突(戏在演)
+	if _pact_ids.has(id): return true                      # 活跃盟约端点(互助)
+	if _player_pos.x >= 0 and (absi(int(ag["pos"].x) - _player_pos.x) + absi(int(ag["pos"].y) - _player_pos.y)) <= lod_player_r:
+		return true                                        # 玩家 avatar(sim 实体)近旁——玩家眼前必须满帧
+	return false
+
+## 观察无关 aggregate LOD cohort（workflow 设计，docs/32）：满帧集 = 玩家 ∪ salient ∪ 无状态轮转。
+## 纯 committed sim 态选（不读相机 lod_focus）→ 历史不依赖观察路径（红线，Main.gd:159）。每 tick 一次 O(N) 谓词扫（比旧 _compute_near_set 的 O(N log N) 排序更省）。
+func _compute_lod_cohort() -> void:
+	_near_set = {}
+	# 从【存档权威】数组预建活跃端点 id 集（非派生 _active_commitments 缓存——load 后可能未重建）。
+	_commit_ids = {}; _conflict_ids = {}; _pact_ids = {}
+	for c in commitments:
+		if String(c.get("status", "")) == "active":
+			_commit_ids[c["a"]] = true; _commit_ids[c["b"]] = true
+	for c in conflicts:
+		if String(c.get("status", "")) in ["simmering", "escalated", "confronted", "lingering"]:
+			_conflict_ids[c["a"]] = true; _conflict_ids[c["b"]] = true
+	for p in pacts_index:
+		if String(p.get("status", "")) == "active":
+			_pact_ids[p["a"]] = true; _pact_ids[p["b"]] = true
+	# 玩家 avatar 位置（sim 实体，非相机）——供 salient 的近玩家项；bench 无玩家 → 保持 (-1,-1) 关闭该项。
+	_player_pos = Vector2i(-1, -1)
+	for ag in agents:
+		if bool(ag.get("is_player", false)):
+			_player_pos = ag["pos"]; break
+	# 满帧集：玩家 ∪ salient ∪ 无状态轮转（每 id 每 span tick 保证一帧 → liveness floor + #01 兜底，无游标 → 回放/存档无关）。
+	var span := maxi(1, lod_rotate_span)
+	var phase := tick_no % span
+	for ag in agents:
+		if bool(ag.get("is_player", false)) or _is_salient(ag) or (absi(_aid(ag)) % span) == phase:
+			_near_set[ag["id"]] = true
 
 ## 计算 near cohort = 距焦点最近的 K 个 agent（曼哈顿距离，按 _aid 做确定 tie-break）。每 tick 调用一次。
 func _compute_near_set() -> void:
@@ -2036,8 +2092,8 @@ func _compute_near_set() -> void:
 ## L3 激进：远端 agent 的统计维持。每 LOD_FAR_MULT tick（按 _aid 错相位均摊）把偏低需求补一点，
 ## 模拟「在所处区域被动生活」——不寻路、不枚举候选、不参与社交。确定（无 RNG）→ 可回放。
 func _far_maintain(ag: Dictionary) -> void:
-	if (tick_no % LOD_FAR_MULT) != (absi(_aid(ag)) % LOD_FAR_MULT):
-		return
+	# 观察无关 cohort 下【无相位门】：+AGG_RELIEF 每 tick 无条件补（杀 span/%3 混叠；vs hunger 0.28/tick 衰减 ~21x 余量）。
+	# 旧 %LOD_FAR_MULT 相位门已删——轮转已保证每 agent span 内必满帧一次，无需再错相位均摊。
 	for nid in ag["needs"]:
 		if float(ag["needs"][nid]) < 50.0:
 			ag["needs"][nid] = minf(100.0, float(ag["needs"][nid]) + AGG_RELIEF)
