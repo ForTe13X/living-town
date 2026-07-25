@@ -2,7 +2,10 @@
 # Living Town CI — runs locally and in GitHub Actions. Fails (exit 1) on any red step.
 #   GODOT     path to the Godot 4.6.2 headless binary (default: godot on PATH)
 #   CI_SEEDS  S0 seed range (default 1-12)      CI_DAYS  S0 days (default 60)   CI_DET  det seeds (default 3)
-# Fast local plumbing check: CI_SEEDS=1-3 CI_DAYS=20 bash tools/ci.sh
+# Fast local plumbing check: CI_SEEDS=1-3 CI_DAYS=30 bash tools/ci.sh
+#   （原注释写的是 CI_DAYS=20 —— 实测在【改动之前的树上就已经是红的】：软不变量 #08「承诺生命周期」
+#     在 20 天里 0/3（invite→meet 的赴约要更长的 horizon），所以那条"快跑"从来跑不绿。30 天是实测最近的绿点。
+#     注意 CI_DAYS≠60 时金标无可比行（摘要与天数绑定），会打印"0 条可比"——快跑只查管路，不构成跨进程锚。）
 set -uo pipefail
 cd "$(dirname "$0")/.."
 GODOT="${GODOT:-godot}"
@@ -12,7 +15,31 @@ FAIL=0
 ok(){ echo "  ✅ $1"; }
 bad(){ echo "  ❌ FAIL: $1"; FAIL=1; }
 
-echo "### 1. data lint (json parse + foreign keys)"
+# ── 运行期错误哨兵 ──────────────────────────────────────────────────────────
+# 为什么需要：GDScript 的 push_error() / SCRIPT ERROR 【不改变进程退出码】。
+# 例：Sim.gd:304 在数据文件缺失时 push_error("缺数据文件: ...") 然后继续跑——整条 CI 依旧全绿。
+# 所以每个【运行期】步骤（4 / 4b / 4c / 5）的输出都必须做模式扫描，只靠 exit code 是不够的。
+# 白名单只有一条：NobodyWho（端侧 SLM）的 GDExtension 动态库是【故意不入库】的（红线#4：不分发权重/二进制），
+#   于是 headless 每次启动必打这 4 行 ERROR。除此之外任何 ERROR/SCRIPT ERROR/USER ERROR 一律致命。
+ERR_PAT='SCRIPT ERROR|USER ERROR|Parse Error|Failed to load script|ERROR:'
+ERR_OK='nobodywho|GDExtension|open_dynamic_library|load_extensions|Condition "!FileAccess::exists\(path\)" is true'
+scan(){  # scan <label> <logfile> [额外白名单正则]
+  local allow="$ERR_OK"
+  [ $# -ge 3 ] && allow="$allow|$3"
+  local hits
+  hits=$(grep -aE "$ERR_PAT" "$2" 2>/dev/null | grep -avE "$allow")
+  if [ -n "$hits" ]; then echo "$hits" | head -12; bad "$1 (运行期错误行，见上)"; fi
+}
+
+echo "### 0. 版权红线：git 里不得有模型权重 / 预编译二进制"
+# 红线#4。.gitignore 今天只挡 game/models/*.gguf —— 换个目录放权重就会被静默入库。
+# 这里对【整棵已跟踪树】把关，而不是对某个目录。
+BIN_TRACKED=$(git ls-files | grep -iE '\.(gguf|so|dll|bin|safetensors|pt)$')
+if [ -n "$BIN_TRACKED" ]; then
+  echo "$BIN_TRACKED" | head -20; bad "tracked weights/binaries (红线#4：权重与二进制一律不入库)"
+else ok "no tracked weights/binaries"; fi
+
+echo "### 1. data lint (json parse + foreign keys + 必需数据文件在位)"
 "$PY" tools/lint_data.py && ok "lint_data" || bad "lint_data"
 
 echo "### 1b. map audit (town-world 导航自洽：typed-layers 一致 + 全可达 + 每家具有交互格 + ≥2 路线)"
@@ -27,21 +54,40 @@ if grep -qiE 'SCRIPT ERROR|Parse Error|Failed to load script' /tmp/lt_import.log
   grep -iE 'SCRIPT ERROR|Parse Error|Failed to load script' /tmp/lt_import.log | head; bad "godot parse"
 else ok "import/parse clean"; fi
 
-echo "### 4. S0 gate (invariants + determinism; seeds=$CI_SEEDS days=$CI_DAYS det=$CI_DET)"
-"$GODOT" --headless --path game --script res://bench/Harness.gd -- --seeds "$CI_SEEDS" --days "$CI_DAYS" --det "$CI_DET"
-[ $? -eq 0 ] && ok "S0 gate" || bad "S0 gate"
+echo "### 4. S0 gate (invariants + determinism + 金标; seeds=$CI_SEEDS days=$CI_DAYS det=$CI_DET)"
+# --golden：跨进程/跨提交/跨引擎版本锚（红线#1）。没有它，CI 只证明「同一二进制同一进程内跑两次一样」。
+"$GODOT" --headless --path game --script res://bench/Harness.gd -- \
+  --seeds "$CI_SEEDS" --days "$CI_DAYS" --det "$CI_DET" \
+  --golden game/bench/golden_digests.json 2>&1 | tee /tmp/lt_s0.log
+[ "${PIPESTATUS[0]}" -eq 0 ] && ok "S0 gate" || bad "S0 gate"
+scan "S0 gate" /tmp/lt_s0.log
 
 echo "### 4b. LOD 观察无关红线 (V2 相机路径无关 + V3 确定性/存读/fresh-restart)"
 # 永久门：aggregate LOD 的 cohort 必须【只由 committed sim 态】选、绝不读相机 lod_focus。
 # 若日后有人把 cohort 从相机取回，V2(5 个 lod_focus→同 digest) 立即变红（Main.gd:159 红线机器化）。
-"$GODOT" --headless --path game --script res://bench/lod_verify.gd -- "${CI_LOD_N:-48}" "${CI_LOD_DAYS:-3}"
-[ $? -eq 0 ] && ok "LOD viewer-independence gate" || bad "LOD viewer-independence gate"
+"$GODOT" --headless --path game --script res://bench/lod_verify.gd -- "${CI_LOD_N:-48}" "${CI_LOD_DAYS:-3}" 2>&1 | tee /tmp/lt_lod.log
+[ "${PIPESTATUS[0]}" -eq 0 ] && ok "LOD viewer-independence gate" || bad "LOD viewer-independence gate"
+scan "LOD gate" /tmp/lt_lod.log
+
+echo "### 4c. DetGate 场景确定性门 (default / faction / betray / freerider)"
+# Invariants.gd:15 对任何非空 scenario 豁免硬不变量 #1，且 Harness 没有 --scenario ——
+# 在此门落地之前，三条内置定向场景在 CI 里跑过 0 次（docs/17 早就开了这个方子）。
+"$GODOT" --headless --path game --script res://bench/DetGate.gd -- \
+  --seeds "${CI_DG_SEEDS:-1-4}" --days "${CI_DG_DAYS:-20}" 2>&1 | tee /tmp/lt_detgate.log
+[ "${PIPESTATUS[0]}" -eq 0 ] && ok "DetGate scenario determinism" || bad "DetGate scenario determinism"
+scan "DetGate" /tmp/lt_detgate.log
 
 echo "### 5. unit / integration scenes"
 for scene in m2_test reqlife_test player_agency_test s4_replay_test space_test save_load_test; do
   "$GODOT" --headless --path game "res://scenes/$scene.tscn" >/tmp/lt_$scene.log 2>&1
   code=$?
   if [ $code -eq 0 ]; then ok "$scene"; else tail -8 /tmp/lt_$scene.log; bad "$scene (exit $code)"; fi
+  case "$scene" in
+    # m2_test 是【负例测试】：故意把畸形 JSON 喂给 AIBackend.parse_decision(:560) 验证它拒收，
+    # 引擎因此必打两行 "Parse JSON failed"。这是被断言的行为，不是回归 → 只对本场景放行这一条。
+    m2_test) scan "$scene" /tmp/lt_$scene.log 'Parse JSON failed' ;;
+    *)       scan "$scene" /tmp/lt_$scene.log ;;
+  esac
 done
 
 echo

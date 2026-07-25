@@ -1,0 +1,270 @@
+{
+  "_meta": {
+    "backend": "null (零模型 logic 底座；红线#2)",
+    "baked_by": "godot --headless --path game --script res://bench/Harness.gd -- --seeds 1-12 --days 60 --bake-golden game/bench/golden_digests.json",
+    "days": 60,
+    "godot": "4.6.2-stable (official).71f334935",
+    "liveness_observed": {
+      "apologize": {
+        "count": 348.0,
+        "seeds": 12.0
+      },
+      "confide": {
+        "count": 73.0,
+        "seeds": 12.0
+      },
+      "conflict": {
+        "count": 908.0,
+        "seeds": 12.0
+      },
+      "confront": {
+        "count": 360.0,
+        "seeds": 12.0
+      },
+      "discuss": {
+        "count": 1308.0,
+        "seeds": 12.0
+      },
+      "election": {
+        "count": 48.0,
+        "seeds": 12.0
+      },
+      "endorse": {
+        "count": 250.0,
+        "seeds": 12.0
+      },
+      "festival_despawn": {
+        "count": 80.0,
+        "seeds": 12.0
+      },
+      "festival_spawn": {
+        "count": 80.0,
+        "seeds": 12.0
+      },
+      "give": {
+        "count": 432.0,
+        "seeds": 12.0
+      },
+      "gossip": {
+        "count": 177.0,
+        "seeds": 12.0
+      },
+      "gossip_rep": {
+        "count": 5344.0,
+        "seeds": 12.0
+      },
+      "greet": {
+        "count": 5997.0,
+        "seeds": 12.0
+      },
+      "invite": {
+        "count": 1345.0,
+        "seeds": 12.0
+      },
+      "meet": {
+        "count": 1344.0,
+        "seeds": 12.0
+      },
+      "pact_formed": {
+        "count": 1.0,
+        "seeds": 1.0
+      },
+      "pay": {
+        "count": 8381.0,
+        "seeds": 12.0
+      },
+      "rally_oust": {
+        "count": 203.0,
+        "seeds": 12.0
+      },
+      "world_other": {
+        "count": 45.0,
+        "seeds": 12.0
+      }
+    },
+    "note": "跨进程金标：红线#1『逐字节可回放』的机检锚。只在【有意的行为变更】后重烘，且重烘必须与该变更同一个 commit、并在 commit message 里写明为什么摘要该动。CI 意外变红时，正确反应是查代码，不是重烘。摘要以【字符串】存：event_digest 可达 2^63，JSON number 会丢精度。",
+    "scenarios_baked_by": "godot --headless --path game --script res://bench/DetGate.gd -- --seeds 1-4 --days 20 --bake-golden game/bench/golden_digests.json",
+    "scenarios_godot": "4.6.2-stable (official).71f334935",
+    "seeds": "1-12"
+  },
+  "scenarios": {
+    "betray": {
+      "1": {
+        "days": 20,
+        "digest": "3262556757",
+        "event_digest": "1688483686693653181",
+        "events": 810
+      },
+      "2": {
+        "days": 20,
+        "digest": "2864832546",
+        "event_digest": "7960194543038679088",
+        "events": 676
+      },
+      "3": {
+        "days": 20,
+        "digest": "1589191971",
+        "event_digest": "8294540862710086177",
+        "events": 803
+      },
+      "4": {
+        "days": 20,
+        "digest": "2436256822",
+        "event_digest": "4556729593862384026",
+        "events": 776
+      }
+    },
+    "default": {
+      "1": {
+        "days": 20,
+        "digest": "1191881762",
+        "event_digest": "2287911253326570515",
+        "events": 810
+      },
+      "2": {
+        "days": 20,
+        "digest": "3948385889",
+        "event_digest": "1236340515370793708",
+        "events": 760
+      },
+      "3": {
+        "days": 20,
+        "digest": "135122733",
+        "event_digest": "1429422165047117594",
+        "events": 746
+      },
+      "4": {
+        "days": 20,
+        "digest": "3220323292",
+        "event_digest": "7146771451973293931",
+        "events": 708
+      }
+    },
+    "faction": {
+      "1": {
+        "days": 20,
+        "digest": "1979075077",
+        "event_digest": "2665718844389433550",
+        "events": 684
+      },
+      "2": {
+        "days": 20,
+        "digest": "1120383041",
+        "event_digest": "1809595302040609334",
+        "events": 708
+      },
+      "3": {
+        "days": 20,
+        "digest": "1667709319",
+        "event_digest": "3461416737370084846",
+        "events": 654
+      },
+      "4": {
+        "days": 20,
+        "digest": "4219100855",
+        "event_digest": "5686616381909665565",
+        "events": 705
+      }
+    },
+    "freerider": {
+      "1": {
+        "days": 20,
+        "digest": "3516010152",
+        "event_digest": "5165547089057613180",
+        "events": 882
+      },
+      "2": {
+        "days": 20,
+        "digest": "2721516523",
+        "event_digest": "5986804974943284599",
+        "events": 762
+      },
+      "3": {
+        "days": 20,
+        "digest": "2281636625",
+        "event_digest": "2403397570930521612",
+        "events": 774
+      },
+      "4": {
+        "days": 20,
+        "digest": "305143331",
+        "event_digest": "6034313155831766686",
+        "events": 709
+      }
+    }
+  },
+  "seeds": {
+    "1": {
+      "days": 60,
+      "digest": "4007803605",
+      "event_digest": "8047557685933648429",
+      "events": 2457
+    },
+    "10": {
+      "days": 60,
+      "digest": "3237156856",
+      "event_digest": "1301593003581583982",
+      "events": 2141
+    },
+    "11": {
+      "days": 60,
+      "digest": "2851518590",
+      "event_digest": "894657639870493149",
+      "events": 2318
+    },
+    "12": {
+      "days": 60,
+      "digest": "1709008379",
+      "event_digest": "5571425839361586216",
+      "events": 2158
+    },
+    "2": {
+      "days": 60,
+      "digest": "138897773",
+      "event_digest": "5662388625198983316",
+      "events": 2231
+    },
+    "3": {
+      "days": 60,
+      "digest": "1738042457",
+      "event_digest": "9163155853237679697",
+      "events": 2126
+    },
+    "4": {
+      "days": 60,
+      "digest": "4215670497",
+      "event_digest": "9120471518101516034",
+      "events": 2153
+    },
+    "5": {
+      "days": 60,
+      "digest": "1056368859",
+      "event_digest": "6058377963344776372",
+      "events": 2258
+    },
+    "6": {
+      "days": 60,
+      "digest": "993865667",
+      "event_digest": "4978680406829770740",
+      "events": 2226
+    },
+    "7": {
+      "days": 60,
+      "digest": "3553538697",
+      "event_digest": "3782204309943227579",
+      "events": 2088
+    },
+    "8": {
+      "days": 60,
+      "digest": "753838278",
+      "event_digest": "5573657396050348718",
+      "events": 2230
+    },
+    "9": {
+      "days": 60,
+      "digest": "1575332866",
+      "event_digest": "4850968363715222222",
+      "events": 2338
+    }
+  }
+}
