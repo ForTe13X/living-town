@@ -32,7 +32,22 @@ func font() -> Font:
 		_font = f
 	if _font == null:
 		_font = ThemeDB.fallback_font               # 都没有 → 豆腐块占位
+	_install_fallbacks()
 	return _font
+
+## 字体回退链：得意黑是【中文显示体】，没有 emoji、也不保证覆盖生僻拉丁/符号——不挂回退时这些字直接画成豆腐块
+## （截图里的 🤝/🤖/💾 就是这么来的）。挂上引擎自带 fallback_font 后，缺字自动向下找，不用换字体、不新增资源。
+func _install_fallbacks() -> void:
+	if not (_font is FontFile):
+		return                                      # ThemeDB.fallback_font 本身是共享资源，别往它身上挂（会自指）
+	var ff := _font as FontFile
+	if not ff.fallbacks.is_empty():
+		return                                      # 已挂过
+	var fb := ThemeDB.fallback_font
+	if fb == null or fb == _font:
+		return
+	var chain: Array[Font] = [fb]
+	ff.fallbacks = chain
 
 ## ── CC0 像素资产（Puny World / Puny Characters，见 assets/art/library/*/LICENSE.txt）──
 ## 运行时直接解码 PNG（项目未导入也能用，同字体加载思路）。三级回退留作后续 pro/ 覆盖。
