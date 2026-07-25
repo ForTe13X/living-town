@@ -1749,6 +1749,7 @@ func _commit_social(ag: Dictionary, opt: Dictionary) -> void:
 				rbv["affinity"] = clampf(float(rbv["affinity"]) + BETRAY_AFF_CRASH, -100.0, 100.0)
 				_adjust_standing(betrayed, ag["id"], BETRAY_STANDING); st_neg_events += 1
 				var be := _log_event("betray", ag["id"], String(teller_id), subject, true, witnesses, "leaked")
+				emit_signal("social_event", be)   # 视图可见：说漏别人托付的秘密（此前只进账本，玩家永远看不到这一幕）
 				rbv["last_neg"] = be["id"]
 				_bump_resentment(betrayed, ag["id"], BETRAY_RESENT)   # >CONFLICT_TRIGGER → 必触发一段冲突
 				betray_events += 1
@@ -1924,7 +1925,8 @@ func _bump_resentment(holder: Dictionary, toward_id: String, amt: float) -> void
 		conflicts.append({"id": _next_conflict_id, "a": holder["id"], "b": toward_id, "status": "simmering",
 			"triggered": tick_no, "lastEscalate": tick_no, "severity": float(r["resentment"]), "escalations": 0, "confronted": 0, "repaired": 0})
 		_next_conflict_id += 1
-		_log_event("conflict", holder["id"], toward_id, "", false, [])
+		var ce := _log_event("conflict", holder["id"], toward_id, "", false, [])
+		emit_signal("social_event", ce)   # 视图可见：一段怨气成形（冲突弧的起点，此前静默）
 		holder["memory"].add("对%s积了怨气" % _name(_agent_by_id[toward_id]), 5, tick_no, [toward_id, "conflict", "trigger"])
 
 ## confront —— A(委屈方)当面对质 B(冒犯方)。B 接茬→confronted(通往和解)；B 否认/回避→escalated。
@@ -2368,8 +2370,10 @@ func _update_election() -> void:
 	res["day"] = day
 	election_log.append(res)
 	last_election = res
-	# 事件溯源：accepted=是否通过（town→topic）。不 emit social（治理非社交，与 pay/world 同类，inv2/3 已排除 election）。
-	_log_event("election", "town", topic, topic, bool(res["pass"]), [], "pass" if bool(res["pass"]) else "fail")
+	# 事件溯源：accepted=是否通过（town→topic）。inv2/3 已排除 election（它不是"两人之间的社交"）。
+	# 但 social_event 是【纯视图播报通道】，与不变量无关：全镇表决是最该被讲出来的一幕，故照发（actor="town"）。
+	var ele := _log_event("election", "town", topic, topic, bool(res["pass"]), [], "pass" if bool(res["pass"]) else "fail")
+	emit_signal("social_event", ele)
 	# V2：通过 → 发 WorldPatch（镇子照集体决定改样：如扩建咖啡馆的 civic 对象，本局内永久留存）。
 	# 确定：id=civic_话题_日（spawn_object 幂等防重）；缺 on_pass 或否决 → 无世界效果 = V1 逐字节。goto_tick 重演靠选举日重新 spawn 确定重建。
 	if bool(res["pass"]) and elections.has("on_pass"):
@@ -3169,6 +3173,7 @@ func _dissolve_pact(p: Dictionary, victim: Dictionary, freerider: Dictionary, ga
 	rv["affinity"] = clampf(float(rv["affinity"]) - 8.0, -100.0, 100.0)
 	_judge_actor(victim, freerider["id"], false, victim["id"])
 	var ev := _log_event("pact", victim["id"], freerider["id"], "", false, [], "dissolved:freerider")
+	emit_signal("social_event", ev)   # 视图可见：盟约因白嫖散伙（此前静默）
 	rv["last_neg"] = ev["id"]
 	_bump_resentment(victim, freerider["id"], PACT_BREAK_RESENT)
 	freerider_dissolves += 1
@@ -3231,7 +3236,8 @@ func _form_pact(ag: Dictionary, o: Dictionary) -> void:
 	_next_pact_id += 1
 	_rel(ag, o["id"])["trust"] = clampf(float(_rel(ag, o["id"])["trust"]) + 2.0, -100.0, 100.0)
 	_rel(o, ag["id"])["trust"] = clampf(float(_rel(o, ag["id"])["trust"]) + 2.0, -100.0, 100.0)
-	_log_event("pact", ag["id"], o["id"], "", true, [], "formed")
+	var pe := _log_event("pact", ag["id"], o["id"], "", true, [], "formed")
+	emit_signal("social_event", pe)   # 视图可见：互助盟约成立（此前静默）
 	ag["memory"].add("和%s结成了互助盟约" % _name(o), 6, tick_no, [o["id"], "pact", "form"])
 	o["memory"].add("和%s结成了互助盟约" % _name(ag), 6, tick_no, [ag["id"], "pact", "form"])
 
