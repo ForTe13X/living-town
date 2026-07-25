@@ -9,11 +9,35 @@ extends Node
 ## logic/mock 容器跑（快、验宏观不变性）；slm 本机原生 --gpu 跑（量真模型合法率+口吻，days 小即可）。
 ## 后端宏观矩阵需此 scene（AIBackend.decide 引用全局 Sim，--script 跑不了）。
 
+## ── docs/38 追加：产品侧三方对拍（logic vs random vs slm）─────────────────────
+## docs/36 已坐实"模型的覆写在【引擎效用轴】上与均匀瞎猜不可区分"，但它明确没答的是：
+## 那些偏离在【产品轴】上买到了什么？——事件构成、戏剧事件活性、行为多样性、迟疑成本。
+## 所以下面加的全是【产品层】读数，且三条臂用【同一段代码】采集，保证可比：
+##   · 事件构成 event_mix：全镇各类事件的占比（"小镇做的事不一样了"，而不只是"多少次不一样"）
+##   · 戏剧事件活性：aid/confide/leak/betray/pact/… 的次数 + 出现过的 seed 数（罕见事件看活性比看均值有意义）
+##   · 行为多样性：已提交动作分布的香农熵 + 人均动作种类数
+##   · 迟疑账：全镇 agent-tick 里 option==null 的比例（_wait 的产品侧影子）
+## 采集一律是【只读观测】：每 tick 末扫一遍 Sim.agents、末态扫 event_log，不写 sim 态、不抽 RNG ⇒ digest 零扰动（红线#1）。
 const M = preload("res://bench/Metrics.gd")
+## 罕见但"有戏"的事件。前三条是社交动作（Sim 用 _log_event(action,…) 记），后几条是引擎专道事件。
+const DRAMA := ["aid", "confide", "leak", "betray", "pact", "rally_oust", "mediate", "confront", "apologize"]
 
 var _swap_at := -1     # >=0：在该 tick 调 AIBackend.set_model_path（测 C1 换模型延后拆不崩）
 var _realtime := false # true：按 Sim.tick_interval 墙钟推进（出货节奏），量真实决策占比
 var _shadow := true    # true：每次模型落地时顺手求一次引擎基线 → 覆写率 Δ/C（docs/36；纯函数，不扰仿真）
+
+# ── per-seed 产品侧采集器（每个 seed 开跑前清零）──────────────────────────────
+var _prev_opt := {}    # agent id → 上一 tick 末 option 的身份串（""=空闲）；用来把"新提交的一次动作"数出来
+var _act_count := {}   # action → 提交次数（全镇本 seed）
+var _act_agents := {}  # agent id → {action:true} → 人均行为种类数
+var _idle_ticks := 0   # Σ(option==null 的 agent-tick)：迟疑的【产品侧】影子，三条臂同法可比
+var _agent_ticks := 0  # Σ(agent × tick)：上式的分母
+## ★ 这两条是"玩家看不看得见"的硬读数，也是 CI 结构上【永远查不到】的那一块：
+##   金标恒 Sim.backend=null ⇒ decide() 不被调用 ⇒ 硬不变量 #01「无饿穿」只在【引擎地板】上被验过，
+##   从没在任何模型/随机后端下被验过。这里用与 Harness._run_once 逐字一致的口径（need ≤ 0.5 的 agent-tick）
+##   把它补上——若某条臂 starve>0，那就是 CI 全绿但产品已破的情形。
+var _starve_ticks := 0 # Σ(任一 need ≤ 0.5 的 agent-tick)：硬不变量 #01「无饿穿」的口径（Harness.gd:599-601 同款）
+var _crisis_ticks := 0 # Σ(min_need < NEED_CRISIS 的 agent-tick)：没到饿穿、但已进"危机"的生活质量读数
 
 func _ready() -> void:
 	var backend := "logic"
@@ -35,12 +59,21 @@ func _ready() -> void:
 		elif args[i] == "--aging" and i + 1 < args.size(): AIBackend.llm_aging = args[i + 1] != "off"  # L5 老化优先门(默认 on)
 		elif args[i] == "--realtime": _realtime = true   # 出货节奏（1 sim-日=19.2s 墙钟）→ landed/decisions 才可外推
 		elif args[i] == "--no-shadow": _shadow = false   # 关影子基线对拍（默认开；只影响埋点，不影响仿真）
+		# docs/38：把 slm 的【剂量】复制给合成臂 —— K 个 tick 的解码时延 + 全镇串行。
+		# 出货节奏下 1 tick = 0.08s ⇒ K = 解码秒数/0.08。用 tick 而非墙钟 ⇒ 这条臂无需 --realtime 也能复现剂量，且逐字节可复现。
+		elif args[i] == "--decode-ticks" and i + 1 < args.size(): AIBackend.sim_decode_ticks = int(args[i + 1])
+		# docs/38 迟疑账：思考期不阻塞该 agent（发起同 tick 先按引擎地板行动，答案留给下一次决策点）
+		elif args[i] == "--nowait": AIBackend.block_while_thinking = false
+		# docs/38 §机制：位置鹦鹉对照臂——逗号分隔的下标权重（喂 slm 实测选号直方图 → 只复制"位置偏好"，看不见候选内容）
+		elif args[i] == "--pick-dist" and i + 1 < args.size():
+			AIBackend.rand_pick_weights = Array(args[i + 1].split(",")).map(func(s): return float(s))
 	AIBackend.shadow_baseline = _shadow                  # docs/36：落地时顺手求一次引擎基线 → 量真覆写率 Δ/C
 	var is_async := backend == "slm" or backend == "llm"
 	if days <= 0:
 		days = 8 if is_async else 40       # 异步真模型 days 小（每决策秒级）；确定性后端可大网格
-	print("=== BackendBench  backend=%s seeds=%s days=%d gpu=%s N=%d realtime=%s ===" % [
-		backend, seeds, days, str(AIBackend.slm_use_gpu), Sim.spawn_count, str(_realtime)])
+	print("=== BackendBench  backend=%s seeds=%s days=%d gpu=%s N=%d realtime=%s decode_ticks=%d block=%s ===" % [
+		backend, seeds, days, str(AIBackend.slm_use_gpu), Sim.spawn_count, str(_realtime),
+		AIBackend.sim_decode_ticks, str(AIBackend.block_while_thinking)])
 	await _run(backend, _parse_seeds(seeds), days, is_async)
 	get_tree().quit(0)
 
@@ -75,6 +108,21 @@ func _run(backend: String, seed_list: Array, days: int, is_async: bool) -> void:
 	var stale_cand := 0      # bad_parse 分账②：输出合格但等待期候选失效（世界变了，不是模型的错）
 	var wall_ms := 0         # 墙钟耗时（算 sim-日实际时长 → 判 --realtime 是否真跑到了出货节奏）
 	var sim_ticks := 0
+	var agent_ticks_tot := 0 # Σ(agent × tick)：迟疑账的分母（waits 占它多少）
+	var nowait := 0          # docs/38：不阻塞档下"本可空等、改为照常行动"的次数
+	# ── docs/38 产品侧（逐 seed 存，报 per-seed 散布而不只是均值）────────────────
+	var evmix: Array = []    # 每 seed 的 {事件类型: 次数}
+	var evtot: Array = []    # 每 seed 的事件总数
+	var acc_rate: Array = [] # 每 seed 的社交提议被接受率
+	var acts: Array = []     # 每 seed 的 {动作: 提交次数}
+	var ents: Array = []     # 每 seed 的动作分布香农熵(bit)
+	var varis: Array = []    # 每 seed 的人均动作种类数
+	var commits: Array = []  # 每 seed 的提交动作总数
+	var idles: Array = []    # 每 seed 的空闲 agent-tick 占比（迟疑的产品侧影子）
+	var needs_mean: Array = []  # 每 seed 末态全镇需求均值（"玩家看得见吗"的最粗读数）
+	var needs_min: Array = []   # 每 seed 末态全镇最低需求（生存压力）
+	var starves: Array = []     # 每 seed 的饿穿 agent-tick（硬不变量 #01 口径）
+	var crises: Array = []      # 每 seed 的"需求危机" agent-tick 占比
 	var samples: Array = []
 	var seen := {}
 	for sd in seed_list:
@@ -82,6 +130,7 @@ func _run(backend: String, seed_list: Array, days: int, is_async: bool) -> void:
 		Sim.backend = AIBackend
 		Sim.auto_run = false
 		AIBackend.reset_stats()
+		_reset_probe()
 		var total: int = days * int(Sim.TICKS_PER_DAY)
 		var t_run0 := Time.get_ticks_msec()
 		for t in range(total):
@@ -89,6 +138,7 @@ func _run(backend: String, seed_list: Array, days: int, is_async: bool) -> void:
 				print("[BB] set_model_path @tick %d (fired so far=%d)" % [t, int(AIBackend.stats["fired"])])
 				AIBackend.set_model_path(AIBackend.slm_model_path)
 			Sim.tick()
+			_sample_tick()                # docs/38 只读观测：提交动作 + 空闲 agent-tick（不写 sim 态、不抽 RNG）
 			if _realtime:
 				# 复刻 Sim._process 的累加器：第 k 个 tick 的墙钟目标 = t0 + k×tick_interval；
 				# 已经落后就【立刻】跑下一 tick（不补睡），正如掉帧时 while 循环会连补——sim 时间只会落后、不会被拉长。
@@ -108,6 +158,23 @@ func _run(backend: String, seed_list: Array, days: int, is_async: bool) -> void:
 		pis.append(M.polarization(Sim))
 		casc.append(M.cascade_max(Sim))
 		ginis.append(M.gini_acceptance(Sim))
+		# docs/38 产品侧收口（全部只读末态/日志）
+		var mix := _event_mix()
+		evmix.append(mix)
+		var mtot := 0
+		for k in mix: mtot += int(mix[k])
+		evtot.append(mtot)
+		acc_rate.append(_accept_rate())
+		acts.append(_act_count.duplicate())
+		ents.append(_entropy(_act_count))
+		varis.append(_variety())
+		var ctot := 0
+		for k in _act_count: ctot += int(_act_count[k])
+		commits.append(ctot)
+		idles.append(float(_idle_ticks) / maxf(1.0, float(_agent_ticks)))
+		var nm := _needs_stat()
+		needs_mean.append(nm["mean"]); needs_min.append(nm["min"])
+		starves.append(_starve_ticks); crises.append(float(_crisis_ticks) / maxf(1.0, float(_agent_ticks)))
 		if int(AIBackend.stats["fired"]) > 0:            # L5：本 seed 发声分布（在 reset 前抓）
 			var vf := _voice_fair(AIBackend._fire_count, Sim.agents)
 			vginis.append(vf["gini"]); vzeros.append(vf["zeros"])
@@ -118,6 +185,7 @@ func _run(backend: String, seed_list: Array, days: int, is_async: bool) -> void:
 		timeout += int(AIBackend.stats["timeout"])
 		calls += int(ds["calls"])
 		waits += int(ds["waits"])
+		nowait += int(ds.get("nowait", 0))
 		delta += int(ds["delta"])
 		delta_full += int(ds["delta_full"])
 		delta_action += int(ds["delta_action"])
@@ -133,23 +201,48 @@ func _run(backend: String, seed_list: Array, days: int, is_async: bool) -> void:
 			pick_hist[k] = int(pick_hist.get(k, 0)) + int(AIBackend._pick_hist[k])
 		wall_ms += Time.get_ticks_msec() - t_run0
 		sim_ticks += total
+		agent_ticks_tot += _agent_ticks
 		# event_digest：L4 增量滚动摘要，本局全程事件的确定性见证。印出来是为了能做【影子基线开/关】的
 		# 逐字节 A/B——CI 的金标恒 Sim.backend=null，证不到 decide() 路径上的影子调用无扰动（docs/36 §二）。
 		print("[BB] " + JSON.stringify({"backend": backend, "seed": sd, "digest": Sim.event_digest, "fired": int(AIBackend.stats["fired"]),
 			"landed": int(AIBackend.stats["landed"]), "bad": int(AIBackend.stats["bad_parse"]), "timeout": int(AIBackend.stats["timeout"]),
-			"decisions": int(ds["decisions"]), "calls": int(ds["calls"]), "waits": int(ds["waits"]),
+			"decisions": int(ds["decisions"]), "calls": int(ds["calls"]), "waits": int(ds["waits"]), "nowait": int(ds.get("nowait", 0)),
 			"delta": int(ds["delta"]), "delta_full": int(ds["delta_full"]), "delta_action": int(ds["delta_action"]),
-			"PI": snappedf(M.polarization(Sim), 0.001), "cascade": M.cascade_max(Sim), "Gini": snappedf(M.gini_acceptance(Sim), 0.001)}))
+			"PI": snappedf(M.polarization(Sim), 0.001), "cascade": M.cascade_max(Sim), "Gini": snappedf(M.gini_acceptance(Sim), 0.001),
+			# ── docs/38 产品侧 per-seed 原始数据（下游脚本按此行做三方对拍与散布统计）──
+			"ev_total": mtot, "ev_mix": mix, "accept": snappedf(_accept_rate(), 0.0001),
+			"acts": _act_count, "commits": ctot, "entropy": snappedf(_entropy(_act_count), 0.0001),
+			"variety": snappedf(_variety(), 0.001), "idle_frac": snappedf(float(_idle_ticks) / maxf(1.0, float(_agent_ticks)), 0.0001),
+			"agent_ticks": _agent_ticks, "needs_mean": snappedf(nm["mean"], 0.01), "needs_min": snappedf(nm["min"], 0.01),
+			"starve_ticks": _starve_ticks, "crisis_frac": snappedf(float(_crisis_ticks) / maxf(1.0, float(_agent_ticks)), 0.0001)}))
 
 	var resolved := landed + bad + timeout
 	var decisions := maxi(0, calls - waits)
 	var sim_days := float(sim_ticks) / float(Sim.TICKS_PER_DAY)
 	print("\n— 后端 %s 汇总（%d seed × %d 天, N=%d）—" % [backend, seed_list.size(), days, Sim.agents.size()])
 	print("  宏观指标: PI %s | cascade %s | Gini %s" % [_stat(pis), _stat(casc), _stat(ginis)])
+	# ── docs/38 产品侧：三条臂就是拿这一段互相比 ─────────────────────────────
+	print("  ── 产品侧（docs/38）──")
+	print("  提交动作: 总数 %s | 香农熵 %s bit | 人均动作种类 %s" % [_stat(commits), _stat(ents), _stat(varis)])
+	print("  事件: 总数 %s | 社交提议被接受率 %s" % [_stat(evtot), _stat(acc_rate)])
+	print("  迟疑: 空闲 agent-tick 占比 %s（option==null；_wait 的产品侧影子）" % _stat(idles))
+	print("  末态需求: 均值 %s | 最低 %s" % [_stat(needs_mean), _stat(needs_min)])
+	# ★ CI 结构上查不到的那一块：金标恒 backend=null ⇒「无饿穿」从没在模型/随机后端下被验过（见变量处长注释）。
+	print("  生存: 饿穿 agent-tick %s（硬不变量 #01 要求 =0）| 需求危机 agent-tick 占比 %s" % [
+		_stat(starves), _stat(crises)])
+	print("  事件构成(占比%，按总数降序): " + _mix_line(evmix))
+	print("  戏剧事件活性(次数均值 / 出现过的 seed 数): " + _drama_line(evmix, seed_list.size()))
+	print("  动作构成(占比%，按总数降序): " + _mix_line(acts))
 	# 分母审计：这几行才是"模型到底做了几成决策"的原始证据。落地决策 = decide() 调用数 − 思考中(_wait)次数
 	# （对照 Sim.gd:1076-1086：非 _wait 的返回一律 agent_apply 落地，空 {} 由引擎兜底后落地）。
 	print("  决策分母: decide()调用=%d  其中思考中(_wait)=%d  → 落地决策=%d  (%.1f 次/sim-日)" % [
 		calls, waits, decisions, float(decisions) / maxf(0.001, sim_days)])
+	if not AIBackend.block_while_thinking:
+		print("  ★ 不阻塞档(--nowait)：思考期照常按引擎地板行动 %d 次（这些【是】落地决策，故 waits=%d 应≈0）" % [nowait, waits])
+	# docs/38 迟疑账：_wait 的每一次都精确等于"某个 agent 这一 tick 什么也没做"。
+	if waits > 0:
+		print("  ★ 迟疑账: 因思考而作废的 agent-tick = %d，占全镇 agent-tick 的 %.2f%%（%d 个 agent × %d tick）" % [
+			waits, 100.0 * float(waits) / maxf(1.0, float(agent_ticks_tot)), Sim.agents.size(), sim_ticks])
 	if fired > 0:
 		print("  模型决策: fired=%d landed=%d bad_parse=%d timeout=%d" % [fired, landed, bad, timeout])
 		print("  合法率 = %.1f%% (landed/resolved)   截止线命中率 = %.1f%% ((landed+bad)/fired)" % [
@@ -225,6 +318,131 @@ func _run(backend: String, seed_list: Array, days: int, is_async: bool) -> void:
 		print("  台词采样:")
 		for s in samples:
 			print("    · " + s)
+
+# ── docs/38 产品侧采集/统计 ───────────────────────────────────────────────────
+## 每个 seed 开跑前清零（否则跨 seed 的动作分布/空闲计数会串味，正是 reset_stats 那个坑的孪生）。
+func _reset_probe() -> void:
+	_prev_opt = {}
+	_act_count = {}
+	_act_agents = {}
+	_idle_ticks = 0
+	_agent_ticks = 0
+	_starve_ticks = 0
+	_crisis_ticks = 0
+
+## 每 tick 末的只读观测。两件事：
+##   ① 数【新提交的一次动作】——option 的身份串从上一 tick 变了且非空 ⇒ 这 tick 该 agent 提交了一次新动作。
+##      为什么可靠：Sim 是"这一 tick 把 option 置 null → 下一 tick 才重决策"（_advance_agent 顶部先判 opt==null），
+##      所以两次相邻动作之间必有至少一个 option==null 的 tick 落在观测点上 ⇒ 连做两次同样的事也不会漏数。
+##   ② 数【空闲 agent-tick】——option==null 就是"这一 tick 这个人没在干任何事"，
+##      正是 _wait 迟疑在产品侧的影子；三条臂同法采集，故可比。
+func _sample_tick() -> void:
+	for ag in Sim.agents:
+		_agent_ticks += 1
+		for nid in ag["needs"]:                                  # 口径与 Harness._run_once 逐字一致
+			if float(ag["needs"][nid]) <= 0.5:
+				_starve_ticks += 1
+				break
+		if Sim._min_need(ag) < Sim.NEED_CRISIS:
+			_crisis_ticks += 1
+		var opt = ag.get("option")
+		var key := ""
+		if opt is Dictionary:
+			key = "%s|%s|%s|%s|%s" % [String((opt as Dictionary).get("kind", "")), String((opt as Dictionary).get("action", "")),
+				String((opt as Dictionary).get("target", "")), String((opt as Dictionary).get("partner", "")),
+				String((opt as Dictionary).get("area", ""))]
+		else:
+			_idle_ticks += 1
+		var id := String(ag["id"])
+		if key != "" and key != String(_prev_opt.get(id, "")):
+			var a := String((opt as Dictionary).get("action", ""))
+			if a == "":
+				a = String((opt as Dictionary).get("kind", "?"))     # attend 没有 action 字段 → 用 kind 记
+			_act_count[a] = int(_act_count.get(a, 0)) + 1
+			if not _act_agents.has(id):
+				_act_agents[id] = {}
+			(_act_agents[id] as Dictionary)[a] = true
+		_prev_opt[id] = key
+
+## 事件构成：末态 event_log 的 {类型: 次数}。这是"小镇【做了什么】"的直接读数，
+## 与 PI/cascade/Gini 那三个标量互补——后者只说强度，说不出构成变没变。
+func _event_mix() -> Dictionary:
+	var m := {}
+	for e in Sim.event_log:
+		var t := String(e["type"])
+		m[t] = int(m.get(t, 0)) + 1
+	return m
+
+## 社交提议被接受率（与 Metrics.gini_acceptance 同一套提议类型，保持口径一致）。
+func _accept_rate() -> float:
+	var prop := 0
+	var acc := 0
+	for e in Sim.event_log:
+		if String(e["type"]) in ["greet", "give", "gossip", "invite", "gossip_rep", "discuss"]:
+			prop += 1
+			if bool(e["accepted"]): acc += 1
+	return float(acc) / maxf(1.0, float(prop))
+
+## 香农熵(bit)：分布越平越大。"多样性"这个词很滑，落到熵上才可证伪。
+func _entropy(counts: Dictionary) -> float:
+	var tot := 0.0
+	for k in counts: tot += float(counts[k])
+	if tot <= 0.0: return 0.0
+	var h := 0.0
+	for k in counts:
+		var p := float(counts[k]) / tot
+		if p > 0.0: h -= p * (log(p) / log(2.0))
+	return h
+
+## 人均动作种类数：熵是全镇层面的，这条是【个体】层面的——"每个人自己花样多不多"。
+## 两者可以背离：全镇熵高也可能是每人各做一件不同的事（个体单调）。
+func _variety() -> float:
+	if Sim.agents.is_empty(): return 0.0
+	var s := 0.0
+	for ag in Sim.agents:
+		s += float((_act_agents.get(String(ag["id"]), {}) as Dictionary).size())
+	return s / float(Sim.agents.size())
+
+## 末态需求：均值 + 全镇最低（"玩家看不看得出来"的最粗读数；掉太低=生活质量被搞坏了）。
+func _needs_stat() -> Dictionary:
+	var s := 0.0
+	var n := 0
+	var mn := INF
+	for ag in Sim.agents:
+		for nid in ag["needs"]:
+			var v := float(ag["needs"][nid])
+			s += v; n += 1; mn = minf(mn, v)
+	return {"mean": s / maxf(1.0, float(n)), "min": (0.0 if mn == INF else mn)}
+
+## 把 per-seed 的若干 {键:次数} 合并成"占比%（每 seed 的次数散布）"一行，按总数降序，最多 12 项。
+func _mix_line(per_seed: Array) -> String:
+	var tot := {}
+	var grand := 0
+	for m in per_seed:
+		for k in m:
+			tot[k] = int(tot.get(k, 0)) + int((m as Dictionary)[k])
+			grand += int((m as Dictionary)[k])
+	var keys := tot.keys()
+	keys.sort_custom(func(a, b): return int(tot[a]) > int(tot[b]))
+	var out: Array = []
+	for i in mini(12, keys.size()):
+		var k = keys[i]
+		out.append("%s %.1f%%(n=%d)" % [str(k), 100.0 * float(tot[k]) / maxf(1.0, float(grand)), int(tot[k])])
+	return ", ".join(out) if not out.is_empty() else "—"
+
+## 戏剧事件：罕见事件报【均值 + 活性(出现过的 seed 数)】。只报均值会把"4 个 seed 里 1 个爆了 8 次"
+## 和"4 个 seed 各 2 次"混为一谈，而这两件事在产品上完全不同（前者是偶发奇观，后者是常态）。
+func _drama_line(per_seed: Array, nseeds: int) -> String:
+	var out: Array = []
+	for k in DRAMA:
+		var tot := 0
+		var live := 0
+		for m in per_seed:
+			var c := int((m as Dictionary).get(k, 0))
+			tot += c
+			if c > 0: live += 1
+		out.append("%s %.2f/%d" % [k, float(tot) / maxf(1.0, float(nseeds)), live])
+	return ", ".join(out) + "  (seed 总数 %d)" % nseeds
 
 ## L5 发声公平：per-agent 触发次数的 Gini + 从未发声的 agent 数（覆盖全体 agent，缺席者计 0）。
 func _voice_fair(fire_count: Dictionary, agents: Array) -> Dictionary:

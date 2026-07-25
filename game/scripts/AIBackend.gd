@@ -1,9 +1,10 @@
 extends Node
-## AIBackend.gd — autoload "AIBackend"：三档可插拔后端（复用《小鱼岛》Game.gd 的 ai_backend 范式）。
+## AIBackend.gd — autoload "AIBackend"：可插拔后端（复用《小鱼岛》Game.gd 的 ai_backend 范式）。
 ##   logic ── 纯需求/效用脚本，零模型，确定性，bench/Web/无 GPU 的默认与兜底（Sim._logic_decide 单一真相源）
 ##   llm   ── OpenAI 兼容 chat（HTTPRequest → LM Studio / Ollama / 远程），异步、结构化 JSON
 ##   slm   ── 本地 GGUF（NobodyWho GDExtension，扩展内异步 worker+信号，动态实例化，缺扩展即回退）
-##   mock  ── 测试用：不联网，确定性返回合规 JSON，验证「异步→解析→pick glue→落地→兜底」全链
+##   mock  ── 测试用：不联网，确定性【总挑最高分】(复读机)，验证「异步→解析→pick glue→落地→兜底」全链
+##   random ─ 量具用：在同一候选集里【均匀】挑一个 = docs/36 那条"随机零假设"做成可运行的对照臂（docs/38）
 ## 纪律：模型只在 Sim 给的「合法候选」里挑(pick 下标) + 给一句台词；非法/越界/超时/缺失 → 引擎兜底，永不破坏仿真。
 ##
 ## 异步契约（decide 的返回）：
@@ -11,7 +12,7 @@ extends Node
 ##   {}（空）          → 放弃（脏输出/超时/不可用）→ Sim 用 logic 兜底
 ##   非空 intent       → 解析出的合法候选（cands[pick] + say）→ Sim 落地
 
-var backend := "logic"                          # "logic" | "llm" | "slm" | "mock"（当前生效档；可能被算力探测自动降级）
+var backend := "logic"                          # "logic" | "llm" | "slm" | "mock" | "random"（当前生效档；可能被算力探测自动降级）
 var backend_requested := "logic"                # 用户意图档（手机 UI 切换/settings 持久化）；生效滞后到 decide() 安全点，与 backend 分离以免降级抹掉意图
 var endpoint := "http://127.0.0.1:1234/v1/chat/completions"  # LM Studio 默认
 var model := "qwen-3-8b-instruct"               # 实测选型：中文/JSON/速度均衡；推理由 no_think 关闭
@@ -33,6 +34,45 @@ var _slm_fail_streak := 0
 var _slm_circuit_open := false
 const SLM_CIRCUIT_TRIP := 6      # 连续超时阈值（>MAX_INFLIGHT，给足重试余量；健康 SLM 不会连超 6 次）
 
+# ── random 后端 + 合成延迟（docs/38「决策路径值不值」）────────────────────────
+## docs/36 的结论是「模型的覆写与均匀瞎猜在统计上不可区分」，但那条随机基线是【算出来的期望值】，
+## 不是【跑出来的一局镇子】。要回答"这些偏离在产品层买到了什么"，必须把零假设做成一条真能跑的臂：
+##   random ── 在 slm 看到的【同一个】闭集（top-36）里均匀挑一个。
+##
+## ★ 随机源必须是项目自己的确定性种子流 Sim._rng_at(RANDOM_SALT, who)，绝不用 randi()：
+##   ① 可复现：同 (seed, tick, agent) → 同一选择 ⇒ 整条 random 臂逐字节可重跑。slm 臂做不到这点，
+##      于是"对照臂本身有多少 run-to-run 噪声"这个问题在 random 上是【零】，比较才干净。
+##   ② 零扰动：_rng_at 每次 new 一个 RNG、种子是纯 f(seed_base, tick_no, salt, who)，不从任何共享
+##      序列态取数（docs/36 §2.1 逐行验过，存档系统本身就赌在这条性质上）⇒ 多抽一次与不抽逐比特等价，
+##      不会挪动 logic/null 路的任何数字（红线#1）。
+##   ③ 独占盐：991733 与 _logic_decide 的 _cand_salt(=fnv1a32&0x7FFFFFFF) 以及 71/73/31/6007/74213
+##      全部不同源；即便偶然撞上某个 _cand_salt，因 ① 的无状态性也不构成干扰（只是两条流取到同一序列）。
+const RANDOM_SALT := 991733
+
+## 位置鹦鹉（docs/38 §机制）：random 不再均匀抽，而是按一条【给定的下标权重】抽。
+## 用途是回答一个致命的追问——"slm 与均匀随机确实有产品级差异"这件事，到底是【判断力】还是
+## 【闭集选号的位置/格式伪影】？实测 slm 的选号直方图是塌的：index 0 一次也不选（0/3285），
+## 30% 压在 index 3、19% 压在 index 5。把这条【纯位置】分布喂给一个【完全看不见候选内容】的抽样器，
+## 若它复现 slm 的产品指纹，那 slm 那点"差异"就与候选内容无关，不能算判断力。
+## 空数组 = 均匀（默认）。权重按下标对齐；候选数 n 小于权重表长时只在 [0,n) 上重归一化。
+var rand_pick_weights: Array = []
+
+## 合成解码延迟（tick 计），只对 random / mock 这两个【合成】后端生效，>0 时它们模拟一个真 SLM worker：
+##   · 串行：全镇同时只有一发在飞（对齐 _slm_busy 门）
+##   · 有延迟：发起后 sim_decode_ticks 个 tick 才就绪（对齐真解码时延）
+## 为什么用 tick 而不是墙钟：出货节奏下 1 tick = Sim.tick_interval = 0.08s，所以 D 秒解码 ≡ D/0.08 个 tick；
+## 用 tick 表达之后这条臂【不需要 --realtime】也能复现出货剂量，且完全脱离墙钟 ⇒ 逐字节可复现。
+## 这正是 docs/38 的关键手法：把 slm 的【剂量】(L/C 与 _wait 迟疑) 复制给对照臂，
+## 于是三条臂之间唯一的差别就只剩「挑哪个候选」——不再被"模型慢所以只驱动了 16%"这个混淆项污染。
+var sim_decode_ticks := 0        # 0=不模拟（random 同步全剂量落地；mock 保持旧 MOCK_DELAY 行为，docs/36 可复现）
+var _synth_busy_until := -1      # 合成 worker 的解码完成 tick；tick_no < 此值 ⇒ 忙，别人这 tick 走引擎地板
+const SYNTH_NO_DEADLINE_MS := 86400000   # 合成臂不吃墙钟截止线（它的时延是 tick 计的）→ due_ms 推到 24h 外
+
+## 思考期是否【阻塞】该 agent（docs/38 §迟疑账）。true = 现状：decide 返回 {"_wait":true}，Sim 直接 return，
+## 那几个 tick 该 agent 什么也不做。false = "不阻塞"备选：发起请求的同一 tick 先按引擎地板行动，
+## 模型的答案留给该 agent【下一次】决策点再消费（过期就走 stale_cand 兜底）。用来量"迟疑到底值多少"。
+var block_while_thinking := true
+
 # ── AI 请求生命周期（评审 P1-1/2/3/4 修复）───────────────────────────────────
 # 每个在飞请求带 (epoch, req_id) + 候选快照。回包只在 _pending[id] 仍是同一 (epoch,req_id) 时才写回
 # → 迟到/跨局回包一律作废(P1-2/3)；落地时用「模型当初看到的候选」在【当前】候选里按 stable key 重找
@@ -45,7 +85,7 @@ func reset_stats() -> void:
 		"shadow_n": 0, "delta": 0, "delta_full": 0, "delta_action": 0, "capped_n": 0,
 		"cand_sum": 0, "pick_sum": 0, "pick0": 0, "inv_cand_sum": 0.0,
 		"rank_sum": 0.0, "gap_sum": 0.0, "gap_rand_sum": 0.0, "exp_kind_sum": 0.0,
-		"parse_fail": 0, "stale_cand": 0}
+		"parse_fail": 0, "stale_cand": 0, "nowait": 0}
 	_pick_hist = {}
 	# L5 per-run 状态清零（否则跨 seed 的陈旧度/发声计数/预算窗口会串味）
 	_fire_count = {}
@@ -53,6 +93,7 @@ func reset_stats() -> void:
 	cancel_all()                                # 清 _pending + 释放在飞节点 + 进新 epoch（旧回包作废）
 	_budget_window = -1
 	_budget_used = 0
+	_synth_busy_until = -1                      # 合成 worker 空闲（跨 seed 别把上一局的忙态带进来）
 
 func _ready() -> void:
 	# 端上默认走 CPU 推理（docs/34 真机 A/B 实测：8Elite 满负载下 Adreno GPU 决策解码 ~16-20s（渲染抢 GPU）、
@@ -77,6 +118,7 @@ func cancel_all() -> void:
 		_free_transport(p.get("http"), p.get("slm_chat"))
 	_pending = {}
 	_inflight = 0
+	_synth_busy_until = -1                        # 合成(random/mock)串行 worker 一并释放
 	# 池化 SLM worker：作废在飞发（world_epoch 已自增 → 迟包按 epoch 丢弃）+ 停当前生成，但【不 free】——持久复用。
 	_slm_busy = false
 	if _slm_chat != null and is_instance_valid(_slm_chat) and _slm_chat.has_method("stop_generation"):
@@ -166,6 +208,9 @@ func _decide_interval() -> int:
 		"slow", "toolslow": return Sim.TICKS_PER_DAY  # ~每 sim-日/人：很稀疏，大多走引擎
 		_: return 1                               # instant/未探测：不额外节流
 
+## 玩家可选档位。刻意【不含 random】——它是量具（docs/38 的零假设对照臂），不是出货玩法：
+## 放进轮换会让玩家在设置里选到"随机 NPC"，而 request_backend 又拿本表当白名单。bench 直接赋
+## AIBackend.backend/backend_requested，不经本表 ⇒ --backend random 照常可跑。
 func available_backends() -> Array:
 	var out := ["logic"]
 	if ClassDB.class_exists("NobodyWhoModel"):     # 嵌入式 SLM 需 NobodyWho GDExtension 已加载（手机上主力）
@@ -576,6 +621,7 @@ func decision_stats() -> Dictionary:
 	var delta := int(stats.get("delta", 0))
 	return {
 		"calls": calls, "waits": waits, "decisions": decisions, "fired": fired, "landed": landed,
+		"nowait": int(stats.get("nowait", 0)),   # block_while_thinking=false 时"本可以空等、但改为照常行动"的次数（docs/38 迟疑账）
 		"landed_over_fired": (float(landed) / float(fired)) if fired > 0 else 0.0,          # 截止线命中率（旧口径）
 		"landed_over_decisions": (float(landed) / float(decisions)) if decisions > 0 else 0.0,  # 决策占比（【上界】，docs/35）
 		# docs/36 真影响力：landed 只说"下标被采纳"，Δ 才说"和引擎自己会挑的不一样"。
@@ -705,15 +751,25 @@ func decide(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Dictionary
 	if not _pending.has(id) and Sim.tick_no - int(_last_llm.get(id, -99999)) < _decide_interval():
 		return Sim._logic_decide(agent, candidates)
 	var capped := _cap_for_llm(candidates)  # 仅喂 LLM(_fire) + 回包重验用 top-36；logic 兜底/过载仍用全量 candidates
+	# random 全剂量档（不模拟解码时延）：本 tick 就地均匀挑一个并落地，零 _wait、零在飞。
+	# 它是"如果每一次决策都掷骰子，小镇会变成什么样"的上界臂 —— 也是产品指标的【灵敏度标定】：
+	# 若连 100% 随机都推不动某条指标，那条指标对 slm 也必然是瞎的，不可用来下结论（docs/38 §量具功效）。
+	if backend == "random" and sim_decode_ticks <= 0:
+		return _instant_random(agent, capped, candidates)
 	var p: Dictionary = _pending.get(id, {})
 	if p.is_empty():
 		if _inflight >= MAX_INFLIGHT:
 			return Sim._logic_decide(agent, candidates)  # P1-4：过载立即走 logic，不让 agent 干等到 need 触底
 		if backend == "slm" and _slm_busy:
 			return Sim._logic_decide(agent, candidates)  # 池化 worker 正忙（另一发在飞）→ 本 tick 走 logic，不空烧 fire/预算
+		if sim_decode_ticks > 0 and Sim.tick_no < _synth_busy_until:
+			return Sim._logic_decide(agent, candidates)  # 合成串行 worker 正忙 → 与上面 slm 那条门【同义】，保证剂量可比
 		if not _budget_gate(id, agent):
 			return {}                                    # L5 预算耗尽/被老化门挡下 → 本 tick 走引擎地板(LLM ∝ 预算而非 N；发声由优先级+老化公平分配)
 		_fire(id, agent, capped, ctx)                    # 只把 top-36 喂给模型
+		if not block_while_thinking:                     # 不阻塞档：本 tick 先按引擎地板行动，答案留给下一次决策点
+			stats["nowait"] = int(stats.get("nowait", 0)) + 1
+			return Sim._logic_decide(agent, candidates)  #   → 这【是】一次落地决策，故不进 waits（诚实分母不变形）
 		stats["waits"] = int(stats.get("waits", 0)) + 1  # 本 tick 未落地任何决策 → 不进诚实分母
 		return {"_wait": true}
 	# 已就绪（且到「揭晓」tick）→ 用「模型看到的候选快照」解析，再对【当前】候选按 stable key 重验(P1-1)
@@ -758,6 +814,9 @@ func decide(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Dictionary
 				push_warning("[SLM] 熔断触发：连续 %d 次超时且无成功 → 停发 SLM、永久回退 logic 地板（防原生内存泄漏 OOM，见 docs/34）" % _slm_fail_streak)
 				cancel_all()                                    # 清在飞 + 尽力释放，止血
 		return {}
+	if not block_while_thinking:                          # 不阻塞档：还没就绪也照样行动（引擎地板），不空转一 tick
+		stats["nowait"] = int(stats.get("nowait", 0)) + 1
+		return Sim._logic_decide(agent, candidates)
 	stats["waits"] = int(stats.get("waits", 0)) + 1        # 同上：等待期轮询不算一次决策
 	return {"_wait": true}                                # 仍在等
 
@@ -851,14 +910,73 @@ func _fire(id: String, agent: Dictionary, candidates: Array, ctx: Dictionary) ->
 		"epoch": world_epoch, "req_id": _req_seq, "prompt_tick": Sim.tick_no,
 		"snapshot": candidates.duplicate(true),          # 模型看到的候选(decide 已截 top-36)：回包按此解析、再对当前候选重验
 		"due_ms": Time.get_ticks_msec() + deadline_ms, "ready": Sim.tick_no, "raw": "", "has": false, "http": null, "slm_chat": null}
-	if backend == "mock" or mock:
+	if backend == "random":
+		_pending[id]["raw"] = _rand_raw(agent, candidates)    # 均匀选号（确定性 _rng_at 流）
+		_pending[id]["has"] = true
+		_synth_delay(id)
+	elif backend == "mock" or mock:
 		_pending[id]["raw"] = _mock_raw(agent, candidates)
 		_pending[id]["has"] = true
-		_pending[id]["ready"] = Sim.tick_no + MOCK_DELAY      # 模拟推理延迟
+		if sim_decode_ticks > 0:
+			_synth_delay(id)                                 # 剂量对齐档：复读机也吃同一份时延+串行，用来隔离"迟疑"这一个变量
+		else:
+			_pending[id]["ready"] = Sim.tick_no + MOCK_DELAY # 旧行为（docs/36 的 mock 对照可原样复现）
 	elif backend == "slm" and ClassDB.class_exists("NobodyWhoModel"):
 		_fire_slm(id, agent, candidates, ctx)
 	else:
 		_fire_http(id, agent, candidates, ctx)
+
+## 合成解码时延：本发在 sim_decode_ticks 个 tick 后就绪，期间全镇串行（对齐真 SLM worker）。
+## _synth_busy_until 用【就绪 tick】而不是"消费 tick"：真 worker 是回包即空闲，不等 agent 来读，
+## 这样 nowait 档下也不会出现"agent 抱着答案不放 → worker 被人质挟持"的失真。
+## due_ms 推到 24h 外：合成臂的时延是 tick 计的，不该被墙钟截止线提前判超时（否则跑得快的机器剂量会不同）。
+func _synth_delay(id: String) -> void:
+	var k := maxi(1, sim_decode_ticks)
+	_pending[id]["ready"] = Sim.tick_no + k
+	_pending[id]["due_ms"] = Time.get_ticks_msec() + SYNTH_NO_DEADLINE_MS
+	_synth_busy_until = Sim.tick_no + k
+
+## random：在候选集里挑一个的确定性下标。见 RANDOM_SALT 的长注释（为什么不用 randi()）。
+## rand_pick_weights 为空 → 均匀（零假设本体）；非空 → 按该位置分布抽（位置鹦鹉对照臂）。
+func _rand_index(agent: Dictionary, n: int) -> int:
+	if n <= 1:
+		return 0
+	var r := Sim._rng_at(RANDOM_SALT, Sim._aid(agent))
+	if rand_pick_weights.is_empty():
+		return int(r.randi() % n)
+	# 逆 CDF 抽样，权重表只截到 [0,n) 再重归一化（候选比表短时；表覆盖不到的高位下标权重视为 0）。
+	var tot := 0.0
+	for i in mini(n, rand_pick_weights.size()):
+		tot += maxf(0.0, float(rand_pick_weights[i]))
+	if tot <= 0.0:
+		return int(r.randi() % n)                  # 该 n 下权重全 0（例：n=1 而表首项为 0）→ 退回均匀，绝不卡死
+	var u := r.randf() * tot
+	var acc := 0.0
+	for i in mini(n, rand_pick_weights.size()):
+		acc += maxf(0.0, float(rand_pick_weights[i]))
+		if u < acc:
+			return i
+	return mini(n, rand_pick_weights.size()) - 1   # 浮点收尾兜底
+
+func _rand_raw(agent: Dictionary, candidates: Array) -> String:
+	return _idx_label(_rand_index(agent, candidates.size()))   # 与 slm/mock 同一条闭集选号契约
+
+## random 全剂量档：本 tick 就地落地。刻意走与 slm 落地路【同一套】埋点（fired/landed/_shadow_compare/
+## _last_llm/_fire_count），于是 docs/36 那四条判据在这条臂上也能读出来 —— 既是零假设，也是量具的端到端标定：
+## 名次应 ≈0.5、效用保住率应 ≈0%、Δ/L 应贴住 1−mean(1/|C|)。读不出这三条 ⇒ 量具坏了，别信它对 slm 的读数。
+func _instant_random(agent: Dictionary, capped: Array, candidates: Array) -> Dictionary:
+	if capped.is_empty():
+		return Sim._logic_decide(agent, candidates)
+	var id := String(agent["id"])
+	stats["fired"] += 1
+	_fire_count[id] = int(_fire_count.get(id, 0)) + 1
+	var intent: Dictionary = (capped[_rand_index(agent, capped.size())] as Dictionary).duplicate()
+	stats["landed"] += 1
+	if shadow_baseline:
+		_shadow_compare(agent, intent, capped, candidates)
+	_last_llm[id] = Sim.tick_no
+	intent["say"] = Sim._canned_say(agent, intent)             # 台词仍走冻结语音库（决策≠生成）
+	return intent
 
 ## mock：确定性挑最高分候选 + 一句台词（仅供链路验证；真模型给真选择）。
 func _mock_raw(agent: Dictionary, candidates: Array) -> String:
