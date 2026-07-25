@@ -113,8 +113,10 @@
 - **端到端眼验（CPU 版 overlay，跑到第 19 sim-日）**：`后端 slm·并发 1 · 发起 51·成功 34·超时 1·无效 15`——**落地率 ~67%（34/51）**、超时仅 1、**熔断未跳·SLM 持续产出**（对比 GPU/旧版=成功 1 后熔断冻死）。即**手机上 NPC 决策 2/3 真由端侧 SLM 驱动**（其余 15 无效=1.5B 偶回 prose 非纯编号，parse_decision 兜底、优雅退 logic）。**诚实权衡**：CPU 推理活跃时 FPS 88→34（推理与游戏主循环抢 CPU 核；决策已按 host 档节流，34 FPS 仍可玩）——若要更高 FPS 可换更小模型/限核/降节流频率。
 - **deadline 提到 15s（已做+真机验证）**：`DEADLINE_MS 12000→15000`（clamp 上限同步）——把少数暖发 8-14s 也捞回落地。**真机复测**（重打包装机、`deadline=15000` 实测）：暖发 4-10s **全落 15s 线内**、`超时` 降到**只剩冷启首发一次**（#1=35s 含模型 load）；overlay `发起18·成功11·超时1·无效5`——非落地主因已从"超时"变成"无效"(1.5B 偶回 prose 非纯编号，parse_decision 兜底)，即**瓶颈从延迟转到模型输出质量**（后续可换更规整的蒸馏模型/加约束解码）。红线：仅 slm/llm 异步路读 deadline_ms，logic/CI 不碰→det 逐字节一致。
 
-### ⚠️ 多 agent 并行
-本轮 #34 治本是多 worktree fan-out——`objective-sinoussi`(已提交熔断+probe超时)、主 worktree(未提交 C1/C2/C3 生命周期修)、silly-wiles(本段·真机眼验+旋钮+埋点+GPU/CPU A/B+端上 CPU 默认)。合并取并集：主的 C1/C2/C3 + sinoussi 的熔断/probe + 本段的埋点/旋钮/**真机证据/CPU 默认**。**装机验证的 APK = silly-wiles 分支**（已含 C1/C2/C3）。
+### ⚠️ 多 agent 并行 → 已合并（scale-diagnostic `5707247`）
+本轮 #34 治本是多 worktree fan-out——`objective-sinoussi`(已提交熔断+probe超时)、主 worktree(C1/C2/C3 生命周期修)、silly-wiles(真机眼验+旋钮+埋点+GPU/CPU A/B+端上 CPU 默认)。**已 3-way 合并取并集**：以主的 C1/C2/C3 为 `AIBackend.gd` 基座（生命周期更稳：换模型延后拆、`PROBE_TIMEOUT_MS=150s` 池化探测、finish 投递后仅 owner 清 busy），叠加 silly-wiles 的 CPU 默认 / 熔断-streak-reset / `_slm_log` 埋点 / `slm_use_gpu` 旋钮(沿用 C1 延后拆) / `DEADLINE_MS 15000`。桌面复验：det 逐字节一致、S0 37/6-6+det 3/3、BackendBench slm 79.7% 落地。
+
+**合并版装机眼验（`livingtown-merged.apk`，CPU）**：overlay `发起22·成功13·超时0·无效8`——**超时=0**（对方池化探测【预热】worker→无 35s 冷启决策，所有在飞解码 4-12.5s 全落 15s 线内）、Heap ~400MB 平、FPS 46。比 silly-wiles 单独版（timeout=1 冷启/FPS34）更好。**延迟已彻底不是失败模式**——非落地只剩 `无效`=1.5B 偶回 prose（parse_decision 兜底）→ 下一步杠杆是模型输出质量（更规整的蒸馏模型/约束解码），非引擎。
 
 ## 影响评级
 
@@ -122,4 +124,4 @@
 - **崩溃与 OOM 泄漏已治本【真机满负载坐实】**（Native Heap 3.2GB→217MB 封顶、13 日 0 崩、FPS 88-91）。
 - **手机 SLM 产出决策的路也通了**：根因坐实为【满负载 Adreno GPU 解码 16-20s 超 12s 线】（非挂死）；**改端上默认 CPU 推理→暖发 3-8s 多数落线内→决策真落地**（真机 A/B 实测，埋点为证）。
 - 桌面 SLM 完全可用（78% 合致）、手机 CPU 下 SLM 真生效、无模型/极慢仍优雅降 logic 地板（红线：无模型也能玩）。
-- 残留仅小调优（冷启首发/贴线暖发的 deadline 微调，可选，数据已在 `livingtown_slm.txt`）+ 多 agent 分支合并。
+- **多 agent 三支已合并**（scale-diagnostic `5707247`）+ **合并版装机眼验通过**（CPU 下 timeout=0、Heap 平、FPS46）。残留只剩模型输出质量（bad_parse=偶回 prose），非引擎/非延迟——后续换更规整蒸馏模型即可再提落地率。
