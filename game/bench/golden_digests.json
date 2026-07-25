@@ -5,24 +5,32 @@
     "days": 60,
     "godot": "4.6.2-stable (official).71f334935",
     "liveness_observed": {
+      "aid": {
+        "count": 73.0,
+        "seeds": 11.0
+      },
       "apologize": {
-        "count": 348.0,
+        "count": 315.0,
         "seeds": 12.0
       },
+      "betray": {
+        "count": 2.0,
+        "seeds": 2.0
+      },
       "confide": {
-        "count": 73.0,
+        "count": 104.0,
         "seeds": 12.0
       },
       "conflict": {
-        "count": 908.0,
+        "count": 857.0,
         "seeds": 12.0
       },
       "confront": {
-        "count": 360.0,
+        "count": 335.0,
         "seeds": 12.0
       },
       "discuss": {
-        "count": 1308.0,
+        "count": 1335.0,
         "seeds": 12.0
       },
       "election": {
@@ -30,7 +38,7 @@
         "seeds": 12.0
       },
       "endorse": {
-        "count": 250.0,
+        "count": 195.0,
         "seeds": 12.0
       },
       "festival_despawn": {
@@ -46,43 +54,54 @@
         "seeds": 12.0
       },
       "gossip": {
-        "count": 177.0,
+        "count": 168.0,
         "seeds": 12.0
       },
       "gossip_rep": {
-        "count": 5344.0,
+        "count": 4994.0,
         "seeds": 12.0
       },
       "greet": {
-        "count": 5997.0,
+        "count": 6184.0,
         "seeds": 12.0
       },
       "invite": {
-        "count": 1345.0,
+        "count": 1305.0,
         "seeds": 12.0
+      },
+      "leak": {
+        "count": 2.0,
+        "seeds": 2.0
       },
       "meet": {
-        "count": 1344.0,
+        "count": 1304.0,
         "seeds": 12.0
       },
+      "pact_dissolved": {
+        "count": 2.0,
+        "seeds": 2.0
+      },
       "pact_formed": {
-        "count": 1.0,
-        "seeds": 1.0
+        "count": 37.0,
+        "seeds": 12.0
       },
       "pay": {
-        "count": 8381.0,
+        "count": 8451.0,
         "seeds": 12.0
       },
       "rally_oust": {
-        "count": 203.0,
+        "count": 184.0,
         "seeds": 12.0
       },
       "world_other": {
-        "count": 45.0,
+        "count": 46.0,
         "seeds": 12.0
       }
     },
     "note": "跨进程金标：红线#1『逐字节可回放』的机检锚。只在【有意的行为变更】后重烘，且重烘必须与该变更同一个 commit、并在 commit message 里写明为什么摘要该动。CI 意外变红时，正确反应是查代码，不是重烘。摘要以【字符串】存：event_digest 可达 2^63，JSON number 会丢精度。",
+    "rebake_history": [
+      "2026-07-25 · B7 唤醒社交沉睡的一半（有意的行为变更，非意外漂移）：S3b 互助盟约的三个门原按 needs.json 的 low(25-30=弃社交去救急的危机线)标定，而 agent 在社交时段的 need 实测落在 45-80 —— 于是 aid 的窗口从未打开(aid_offered=0)、互补证据几乎攒不出(命中 11/4253)，pact/aid/pact_dissolved/leak/betray 在默认沙盘里全年零发生，使硬不变量 #22/#23/#24/#29 空转(前件恒假=真空为真)。改动：COMPLEMENT_LOW 35→50、AID_NEED_TH 30→60、AID_BASE 16→30(aid 是唯一无 urgency 项的社交候选，基分需与 confront 同级)、utility.json 的 confide_secret_pressure 4→20；该压力调高会蝶变 seed6 的 #01 无饿穿(二分坐实肇因)，照旧循『加缓冲而非缩抑制』把 SURVIVAL_GATE 30→32 修复。活性(seeds 1-12 × 60d)：pact_formed 1→37、aid 0→73、leak 0→2、betray 0→2、pact_dissolved 0→2、confide 73→104；greet/gossip_rep 仍占绝对多数(6184/4994)，镇子的日常性格未变。S0 硬不变量 12/12、det 3/3、DetGate 16/16。"
+    ],
     "scenarios_baked_by": "godot --headless --path game --script res://bench/DetGate.gd -- --seeds 1-4 --days 20 --bake-golden game/bench/golden_digests.json",
     "scenarios_godot": "4.6.2-stable (official).71f334935",
     "seeds": "1-12"
@@ -97,9 +116,9 @@
       },
       "2": {
         "days": 20,
-        "digest": "2864832546",
-        "event_digest": "7960194543038679088",
-        "events": 676
+        "digest": "2606470085",
+        "event_digest": "2633812252392221378",
+        "events": 675
       },
       "3": {
         "days": 20,
@@ -117,9 +136,9 @@
     "default": {
       "1": {
         "days": 20,
-        "digest": "1191881762",
-        "event_digest": "2287911253326570515",
-        "events": 810
+        "digest": "3027757062",
+        "event_digest": "4048848175489497240",
+        "events": 791
       },
       "2": {
         "days": 20,
@@ -155,9 +174,9 @@
       },
       "3": {
         "days": 20,
-        "digest": "1667709319",
-        "event_digest": "3461416737370084846",
-        "events": 654
+        "digest": "520561053",
+        "event_digest": "6334019065032096858",
+        "events": 655
       },
       "4": {
         "days": 20,
@@ -169,102 +188,102 @@
     "freerider": {
       "1": {
         "days": 20,
-        "digest": "3516010152",
-        "event_digest": "5165547089057613180",
-        "events": 882
+        "digest": "4169329085",
+        "event_digest": "2715570431038023322",
+        "events": 802
       },
       "2": {
         "days": 20,
-        "digest": "2721516523",
-        "event_digest": "5986804974943284599",
-        "events": 762
+        "digest": "1783362260",
+        "event_digest": "1398801137574825544",
+        "events": 657
       },
       "3": {
         "days": 20,
-        "digest": "2281636625",
-        "event_digest": "2403397570930521612",
-        "events": 774
+        "digest": "2254270470",
+        "event_digest": "2927021611887436790",
+        "events": 714
       },
       "4": {
         "days": 20,
-        "digest": "305143331",
-        "event_digest": "6034313155831766686",
-        "events": 709
+        "digest": "3713743094",
+        "event_digest": "2586719543101611580",
+        "events": 748
       }
     }
   },
   "seeds": {
     "1": {
       "days": 60,
-      "digest": "4007803605",
-      "event_digest": "8047557685933648429",
-      "events": 2457
+      "digest": "2699611561",
+      "event_digest": "1748078575493159899",
+      "events": 2325
     },
     "10": {
       "days": 60,
-      "digest": "3237156856",
-      "event_digest": "1301593003581583982",
-      "events": 2141
+      "digest": "3606239756",
+      "event_digest": "1632912112689806447",
+      "events": 2165
     },
     "11": {
       "days": 60,
-      "digest": "2851518590",
-      "event_digest": "894657639870493149",
-      "events": 2318
+      "digest": "727786639",
+      "event_digest": "3711287874482741456",
+      "events": 2249
     },
     "12": {
       "days": 60,
-      "digest": "1709008379",
-      "event_digest": "5571425839361586216",
-      "events": 2158
+      "digest": "531719903",
+      "event_digest": "8909766594001593738",
+      "events": 2196
     },
     "2": {
       "days": 60,
-      "digest": "138897773",
-      "event_digest": "5662388625198983316",
-      "events": 2231
+      "digest": "3286284859",
+      "event_digest": "5208286182525829911",
+      "events": 2155
     },
     "3": {
       "days": 60,
-      "digest": "1738042457",
-      "event_digest": "9163155853237679697",
-      "events": 2126
+      "digest": "3068371040",
+      "event_digest": "7763693157682826074",
+      "events": 2172
     },
     "4": {
       "days": 60,
-      "digest": "4215670497",
-      "event_digest": "9120471518101516034",
-      "events": 2153
+      "digest": "2053937161",
+      "event_digest": "2647203431658331654",
+      "events": 2207
     },
     "5": {
       "days": 60,
-      "digest": "1056368859",
-      "event_digest": "6058377963344776372",
-      "events": 2258
+      "digest": "3057231429",
+      "event_digest": "5971827391459445325",
+      "events": 2283
     },
     "6": {
       "days": 60,
-      "digest": "993865667",
-      "event_digest": "4978680406829770740",
-      "events": 2226
+      "digest": "3209464286",
+      "event_digest": "6192401291467700376",
+      "events": 2228
     },
     "7": {
       "days": 60,
-      "digest": "3553538697",
-      "event_digest": "3782204309943227579",
-      "events": 2088
+      "digest": "3643919236",
+      "event_digest": "478033422447963704",
+      "events": 2070
     },
     "8": {
       "days": 60,
-      "digest": "753838278",
-      "event_digest": "5573657396050348718",
-      "events": 2230
+      "digest": "3602456843",
+      "event_digest": "470749322192282928",
+      "events": 2150
     },
     "9": {
       "days": 60,
-      "digest": "1575332866",
-      "event_digest": "4850968363715222222",
-      "events": 2338
+      "digest": "4045035352",
+      "event_digest": "4562683886573334875",
+      "events": 2333
     }
   }
 }

@@ -44,9 +44,11 @@ const GIFT_START := 3           # 每个 NPC 初始礼物数（give 破冰用）
 const MEET_HORIZON := 40        # invite 创建的 meet 承诺：deadline = now + 此
 const ATTEND_WINDOW := 16       # 离 deadline ≤ 此 → 引擎给「赴约」加权
 const NEED_CRISIS := 15.0       # 任一需求 < 此 → 放弃赴约（真危机才爽约 → broken）
-const SURVIVAL_GATE := 30.0     # 任一需求 < 此 → 本 tick 不社交，先去吃/睡（留赶路缓冲，防大 N 饿穿）。
-                                # 20→24→28→30：每次给 need-floor 更足缓冲，使 #01 无饿穿对【决策/地图扰动】鲁棒
+const SURVIVAL_GATE := 32.0     # 任一需求 < 此 → 本 tick 不社交，先去吃/睡（留赶路缓冲，防大 N 饿穿）。
+                                # 20→24→28→30→32：每次给 need-floor 更足缓冲，使 #01 无饿穿对【决策/地图扰动】鲁棒
                                 # （endorse 抑制曾令阿本社交需求饿穿；P2-4 加建筑改 blockers→轨迹蝶变，seed11 阿本赴咖啡馆途中饿穿）。
+                                # 30→32(B7,2026-07-25)：confide 倾诉压力调高后 seed6 蝶变饿穿(#01 11/12)——二分坐实肇因是
+                                # utility.json 的 confide_secret_pressure，与 S3b 三门无关；照旧循「加缓冲而非缩抑制」的老方子修复。
 const CONFLICT_TRIGGER := 6.0   # resentment 累积到此 → 触发一段冲突（simmering）
 const ESC_THRESH := 2           # 升级次数到此 → escalated
 const LINGER_AFTER := 350       # 触发后 tick 未对质 → lingering（冷战）
@@ -114,9 +116,14 @@ const PACT_TRUST_TH := 12.0
 const PACT_FAM_TH := 6.0
 const PACT_COMPLEMENT_TH := 3
 const PACT_CAP := 2
-const AID_NEED_TH := 30.0
+# B7 复活「温暖的一半」(2026-07-25)：S3b 三个门原按 needs.json 的 low(25-30，=弃社交去救急的【危机线】)标定，
+# 但 agent 在【社交时段】的 need 实测落在 45-80（中位 ~63，183 次盟友同处采样中【0 次】低于 30）——
+# 于是 aid 的窗口从来没打开过（aid_offered=0），互补证据也几乎攒不出（comp 命中 11/4253）。
+# 三个门重标到「agent 真正占据的那条带」上：低于六成=需要搭把手；aid 分数与 confront(30) 同级，
+# 因为 aid 是【唯一没有 urgency 项】的社交候选，基分不到位就永远被 greet/gossip_rep 的 urgency 项压死。
+const AID_NEED_TH := 60.0       # 盟友某 need 低于此 → 可雪中送炭（原 30=危机线，社交时段实测触不到）
 const AID_RELIEF := 18.0
-const AID_BASE := 16.0
+const AID_BASE := 30.0          # 无 urgency 项 → 基分需与 confront(30) 同级才竞争得过日常寒暄
 const AID_TRUST := 3.0
 const PACT_INVITE_BONUS := 6.0
 const PACT_ATTEND_BONUS := 12.0
@@ -126,7 +133,9 @@ const PACT_MIN_EXCHANGES := 3
 const PACT_BREAK_TRUST := 10.0
 const PACT_BREAK_RESENT := 8.0
 const PACT_RECONCILE_COOLDOWN := 4
-const COMPLEMENT_LOW := 35.0
+const COMPLEMENT_LOW := 50.0    # B7：原 35 —— SURVIVAL_GATE=30 使发起方的"低"带只剩 [30,35) 这 5 分宽的缝，
+                                #     且全镇 need 被同一昼夜节律拉成【相关】而非互补 → 命中率 11/4253(0.26%)。
+                                #     50=低于六成；与 HIGH=60 之间仍留 ≥10 分的真互补落差。命中 128/4254(3%)。
 const COMPLEMENT_HIGH := 60.0
 const EARSHOT := 2              # 秘密私语的"耳边"半径（曼哈顿格）：此内有第三者=会被听见=不算独处
 const CONFIDE_TRUST := 25.0
