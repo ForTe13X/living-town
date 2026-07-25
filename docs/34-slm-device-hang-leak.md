@@ -75,6 +75,51 @@
 
 **方法论收获**：一条"根因"结论 + 一版"修复"，都被【指令去反驳的独立评审】各自推翻过一次（Adreno→worker 生命周期；C1 第一版反而引入崩溃）。教训与 [[feedback-adversarial-external-review]] 完全一致——顺手那条路/顺手那版修，往往漏掉真集成路径与新回归。
 
+## ✅ 手机眼验补齐（2026-07-25，silly-wiles worktree）——池化治本【真机确认】+ 残留精确刻画
+
+**用【当前已装 pooled 版 APK】（15:09 装机）满负载真机眼验**（无线 adb 192.168.1.127:40405，`dumpsys meminfo` 看 Native Heap，`run-as` 读设置/探针文件）。设备解析模型=`Documents/LivingTown/model.gguf`（1.5B，md5 `8e5111fd…` 与桌面已验证库【逐字节相同】→ 模型本身证清白）。
+
+**① 崩溃/OOM 治本【真机确认】**——满负载跑 backend=slm 跑到第 13 sim-日：
+| | 旧版(churn) | 【本次真机 pooled】 |
+|---|---|---|
+| Native Heap 轨迹 | 3→7.5→**16GB** 无界→OOM | 峰值 **3.2GB**(load)→跌到 **217MB 封顶不涨** |
+| 崩溃 | 桌面段错误/手机挂死 | **0 崩**、跑满 13 日 |
+| FPS | 卡死 | **88-91**、tick 12/s |
+→ 池化 worker 对 16GB 原生泄漏 + 崩溃的治本，**在真机满负载下坐实**（不是只有 headless 桌面）。这补齐了上一段"手机眼验待下一轮"。
+
+**② 残留精确刻画——【不是挂死】，是解码超时→熔断跳**：perf overlay 实测 `发起 8·成功 1·超时 6·并发 0`，且推进 7 sim-日后计数【冻结不动】=熔断(连 6 超时)已跳→SLM 永久停发、镇子跑 logic 地板。上一轮设备探针文件(`livingtown_probe.txt` 15:18)记 `tier=host p50=2692ms`——即**单发探针(易路径)在 Adreno GPU 上 2.7s 能返回、不挂死**；但**满负载·在飞决策路径解码 >12s**（渲染+12-agent 仿真抢 GPU/CPU + 热节流），过截止线→超时→熔断。**故根因表述再更正：手机 SLM 不是"挂死不返回"，是"满负载下解码太慢过 deadline"**——工作正常、只是慢。
+
+### 本轮代码修（AIBackend.gd，全 slm-only；红线：det 窗口 digest 逐字节一致 `200 2803220390…`、S0 37 硬不变量 6/6、det 3/3）
+1. **熔断只在【真·零完成】兜底**（治残留②的误伤）：`_slm_submit` 的 `on_done`/`on_fail` 有【任何】完成即 `_slm_fail_streak=0`——慢·但·会返回的解码不再被误当"挂死"触发熔断把工作正常的 SLM 停发。（池化+串行下真挂死本就只漏 1 worker、堆封顶，熔断变冗余兜底即可。）
+2. **C2 句柄泄漏修**：`worker_failed` 用 `CONNECT_ONE_SHOT` 在健康路径【永不触发】→每次成功决策残留一个死闭包在持久 `_slm_chat` 上 O(submits) 泄漏。改：不用 one-shot，`finish` 里显式断两条连接。（pristine bd74e4d 与初版都有此漏。）
+3. **C1 `set_model_path` UAF 修**：换模型只卸 `_slm_model` 没卸池化 `_slm_chat`→悬垂/新模型不加载。改：连带卸 chat。
+4. **`_probe_once` 硬化(item③)**：裸 `await response_finished` → 超时竞速(`_await_signal_or_timeout`)+无条件 free——真机挂死不再永阻主线程/漏探测 worker。
+5. **`slm_use_gpu` settings 旋钮**（`[slm] use_gpu`，`_load_user_settings` 读 + `set_slm_use_gpu` 存盘卸重载）：真机 `run-as` 写 `settings.cfg` 即切 CPU/GPU，**免重打包**做 A/B。
+6. **延迟埋点 `_slm_log`**：把每发 SLM 真实延迟+结果落 `Documents/livingtown_slm.txt`（前 60 发，adb-pull）——overlay 只给计数、读不到延迟；用于区分"慢但会返回"vs"真挂死"、对拍 GPU/CPU。
+
+桌面验证（BackendBench，1.5B，AMD Vulkan）：**fired=123 landed=96 timeout=0 合致 78.0%**（对齐旧 78.3%，无回归）、埋点写盘正常（`#1 done lat=1020ms … #2 done lat=90ms`）、仅进程退出 teardown 1 次良性 panic。
+
+### ✅ 决定性一步已做——真机 GPU vs CPU A/B：**CPU 完胜，端上默认改 CPU**
+重打包【带旋钮+埋点】APK 装机，`run-as` 翻 `[slm] use_gpu`，`adb pull livingtown_slm.txt` 读**真·满负载在飞解码延迟**（overlay 只给计数、读不到延迟——这就是埋点的价值）：
+
+| | 在飞解码延迟(满负载) | Native Heap | 落在 12s 线内? |
+|---|---|---|---|
+| **GPU(Adreno)** | **~16-20s**（15.7-20.2s，7 发全 `done`） | 540MB 平 | **从不**（全超时） |
+| **CPU(8Elite)** | **~3-8s 暖**（冷#1=14s，之后 3-8s，19 发全 `done`） | 410MB 平 | **多数是** |
+
+- **CPU 比 Adreno GPU 快 ~3-4×**：GPU 被渲染器抢占（同一 Adreno 又渲染又推理）→ 决策解码 16-20s；CPU 推理不与渲染抢 → 3-8s，多数 <12s 截止线 → **决策真落地**。容器"~1字/s"的担心对 8Elite 不成立（其 CPU 强，满负载 3-8s 完成 1.5B 一发决策）。
+- 两者都 `done`（无 fail/挂死）+ Native Heap 平（无泄漏）→ 再证根因是【慢·非挂死】，且池化+熔断修在真机稳。
+- **治法落地**：`_ready` 里 `if OS.has_feature("android"): slm_use_gpu = false`（端上默认 CPU；桌面独显不抢渲染→保持 GPU；`[slm] use_gpu` 设置仍可显式覆盖）。红线：安卓+slm-only、桌面 no-op、det 窗口 digest 逐字节一致。
+- **端到端眼验（CPU 版 overlay，跑到第 19 sim-日）**：`后端 slm·并发 1 · 发起 51·成功 34·超时 1·无效 15`——**落地率 ~67%（34/51）**、超时仅 1、**熔断未跳·SLM 持续产出**（对比 GPU/旧版=成功 1 后熔断冻死）。即**手机上 NPC 决策 2/3 真由端侧 SLM 驱动**（其余 15 无效=1.5B 偶回 prose 非纯编号，parse_decision 兜底、优雅退 logic）。**诚实权衡**：CPU 推理活跃时 FPS 88→34（推理与游戏主循环抢 CPU 核；决策已按 host 档节流，34 FPS 仍可玩）——若要更高 FPS 可换更小模型/限核/降节流频率。
+- **deadline 提到 15s（已做+真机验证）**：`DEADLINE_MS 12000→15000`（clamp 上限同步）——把少数暖发 8-14s 也捞回落地。**真机复测**（重打包装机、`deadline=15000` 实测）：暖发 4-10s **全落 15s 线内**、`超时` 降到**只剩冷启首发一次**（#1=35s 含模型 load）；overlay `发起18·成功11·超时1·无效5`——非落地主因已从"超时"变成"无效"(1.5B 偶回 prose 非纯编号，parse_decision 兜底)，即**瓶颈从延迟转到模型输出质量**（后续可换更规整的蒸馏模型/加约束解码）。红线：仅 slm/llm 异步路读 deadline_ms，logic/CI 不碰→det 逐字节一致。
+
+### ⚠️ 多 agent 并行
+本轮 #34 治本是多 worktree fan-out——`objective-sinoussi`(已提交熔断+probe超时)、主 worktree(未提交 C1/C2/C3 生命周期修)、silly-wiles(本段·真机眼验+旋钮+埋点+GPU/CPU A/B+端上 CPU 默认)。合并取并集：主的 C1/C2/C3 + sinoussi 的熔断/probe + 本段的埋点/旋钮/**真机证据/CPU 默认**。**装机验证的 APK = silly-wiles 分支**（已含 C1/C2/C3）。
+
 ## 影响评级
 
-**高**：真机 backend=slm 曾【旗舰不生效 + 崩/OOM】。现状：**崩溃与 OOM 泄漏已治本**（池化 worker，桌面验证 0 崩；手机降级只留 1 worker）——桌面 SLM 完全可用、手机优雅降级到 logic 地板（红线：无模型也能玩）。**尚缺**：手机端 SLM 真正产出决策仍卡在 Adreno Vulkan（交 spawn_task）+ 手机眼验。
+**高（本轮基本收口）**：真机 backend=slm 曾【旗舰不生效 + 崩/OOM】。现状：
+- **崩溃与 OOM 泄漏已治本【真机满负载坐实】**（Native Heap 3.2GB→217MB 封顶、13 日 0 崩、FPS 88-91）。
+- **手机 SLM 产出决策的路也通了**：根因坐实为【满负载 Adreno GPU 解码 16-20s 超 12s 线】（非挂死）；**改端上默认 CPU 推理→暖发 3-8s 多数落线内→决策真落地**（真机 A/B 实测，埋点为证）。
+- 桌面 SLM 完全可用（78% 合致）、手机 CPU 下 SLM 真生效、无模型/极慢仍优雅降 logic 地板（红线：无模型也能玩）。
+- 残留仅小调优（冷启首发/贴线暖发的 deadline 微调，可选，数据已在 `livingtown_slm.txt`）+ 多 agent 分支合并。
