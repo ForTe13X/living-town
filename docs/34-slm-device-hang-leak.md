@@ -96,7 +96,7 @@
 - 两者都 `done`（无 fail/挂死）+ Native Heap 平（无泄漏）→ 再证根因是【慢·非挂死】，且池化+熔断修在真机稳。
 - **治法落地**：`_ready` 里 `if OS.has_feature("android"): slm_use_gpu = false`（端上默认 CPU；桌面独显不抢渲染→保持 GPU；`[slm] use_gpu` 设置仍可显式覆盖）。红线：安卓+slm-only、桌面 no-op、det 窗口 digest 逐字节一致。
 - **端到端眼验（CPU 版 overlay，跑到第 19 sim-日）**：`后端 slm·并发 1 · 发起 51·成功 34·超时 1·无效 15`——**落地率 ~67%（34/51）**、超时仅 1、**熔断未跳·SLM 持续产出**（对比 GPU/旧版=成功 1 后熔断冻死）。即**手机上 NPC 决策 2/3 真由端侧 SLM 驱动**（其余 15 无效=1.5B 偶回 prose 非纯编号，parse_decision 兜底、优雅退 logic）。**诚实权衡**：CPU 推理活跃时 FPS 88→34（推理与游戏主循环抢 CPU 核；决策已按 host 档节流，34 FPS 仍可玩）——若要更高 FPS 可换更小模型/限核/降节流频率。
-- **deadline 提到 15s（已做）**：`DEADLINE_MS 12000→15000`（clamp 上限同步）——把少数暖发 8-14s、含冷启附近的解码也捞回落地（host 档决策稀疏、等待期跑 logic，多等几秒代价可接受）。红线：仅 slm/llm 异步路读 deadline_ms，logic/CI 不碰→det 逐字节一致。冷启首发极端值仍可能超线（一次性）。
+- **deadline 提到 15s（已做+真机验证）**：`DEADLINE_MS 12000→15000`（clamp 上限同步）——把少数暖发 8-14s 也捞回落地。**真机复测**（重打包装机、`deadline=15000` 实测）：暖发 4-10s **全落 15s 线内**、`超时` 降到**只剩冷启首发一次**（#1=35s 含模型 load）；overlay `发起18·成功11·超时1·无效5`——非落地主因已从"超时"变成"无效"(1.5B 偶回 prose 非纯编号，parse_decision 兜底)，即**瓶颈从延迟转到模型输出质量**（后续可换更规整的蒸馏模型/加约束解码）。红线：仅 slm/llm 异步路读 deadline_ms，logic/CI 不碰→det 逐字节一致。
 
 ### ⚠️ 多 agent 并行
 本轮 #34 治本是多 worktree fan-out——`objective-sinoussi`(已提交熔断+probe超时)、主 worktree(未提交 C1/C2/C3 生命周期修)、silly-wiles(本段·真机眼验+旋钮+埋点+GPU/CPU A/B+端上 CPU 默认)。合并取并集：主的 C1/C2/C3 + sinoussi 的熔断/probe + 本段的埋点/旋钮/**真机证据/CPU 默认**。**装机验证的 APK = silly-wiles 分支**（已含 C1/C2/C3）。
