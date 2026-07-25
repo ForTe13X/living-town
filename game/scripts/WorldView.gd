@@ -593,6 +593,9 @@ func _draw_interior_furniture(slot: String, base: Vector2) -> void:
 		_:
 			draw_rect(Rect2(base.x + 9, base.y + 12, T - 18, T - 18), Color("#8a6a45"), true)
 
+var _rc_conflict_ids := {}   # 每帧预建：卷入活跃冲突的 agent 端点集（渲染缓存，_draw_agent 用 O(1) 查）
+var _rc_meet_ids := {}       # 每帧预建：有活跃约会的 agent 端点集
+
 func _draw() -> void:
 	var _main := get_parent()
 	var _pb = _main.get("_probe") if _main != null else null
@@ -744,6 +747,16 @@ func _draw() -> void:
 					draw_string(Art.font(), Vector2(base.x + 4, base.y + T - 3), str(o.get("type", "")), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 1, 1, 0.7))
 
 	# ── 社交层（在 Agent 之下先画连线，再画 Agent 与标记）──────────────────
+	# 每帧预建冲突/约会端点集 → _draw_agent 用 O(1) 查代替 per-agent 线性扫 Sim.conflicts/commitments（N 大时省 O(N×|conflicts|)）。
+	_rc_conflict_ids = {}
+	for _c in Sim.conflicts:
+		var _s := String(_c["status"])
+		if _s == "simmering" or _s == "escalated" or _s == "confronted" or _s == "lingering":
+			_rc_conflict_ids[_c["a"]] = true; _rc_conflict_ids[_c["b"]] = true
+	_rc_meet_ids = {}
+	for _c in Sim.commitments:
+		if String(_c["status"]) == "active":
+			_rc_meet_ids[_c["a"]] = true; _rc_meet_ids[_c["b"]] = true
 	_draw_faction_rings()      # S3a：派系归属（同色脚环）
 	_draw_pact_links()         # S3b：互助盟约（青色双线 + 🤝）
 	_draw_relationship_lines()
@@ -1180,14 +1193,7 @@ func _draw_urgent_need(center: Vector2, ag: Dictionary) -> void:
 	draw_rect(Rect2(bar.position, Vector2(bar.size.x * frac, bar.size.y)), c, true)
 
 func _in_conflict(id: String) -> bool:
-	for c in Sim.conflicts:
-		var s := String(c["status"])
-		if (s == "simmering" or s == "escalated" or s == "confronted" or s == "lingering") and (c["a"] == id or c["b"] == id):
-			return true
-	return false
+	return _rc_conflict_ids.has(id)   # 集在 _draw 每帧预建（语义同旧的线性扫，O(1) 查）
 
 func _has_meet(id: String) -> bool:
-	for c in Sim.commitments:
-		if String(c["status"]) == "active" and (c["a"] == id or c["b"] == id):
-			return true
-	return false
+	return _rc_meet_ids.has(id)
