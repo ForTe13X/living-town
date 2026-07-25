@@ -978,3 +978,18 @@ seed1 扫 8 天，home/1f 深夜同室峰值 **7 人**、`night=1.00`、`lit=0.3
 **留存价值**：#15v2 = 诚实诊断（在当前尺度报 INCONCLUSIVE 而非假阳 FAIL）；shadow 探针 = 可复用测量地基（将来任何"某社会机制会翻哪些决策"都能用）。**规模洞察**：共识放逐是【扩容】路线（更多 agent/公共混合/更长时程）才谈得上的涌现，不是 12 人镇的边缘 bug。
 
 **元教训**：**"看着像 5% 残余失败、想加机制修"的直觉，被"反事实探针 + 事前窗口 + 冻结阈值 + held-out"一路证伪成度量假象**。没有这套纪律，我会去修一个不存在的问题（正如最初那两个 lever）。见 [[project-15-metric-repair]]（已结案）。
+
+## 端侧 SLM 旗舰 · 真机挖出 use-after-free：一个根因、一版修复，各被对抗评审推翻一次（docs/34）
+
+**✅ 真机 backend=slm 的"全超时 0 成功 + 16GB 泄漏 → OOM"治本：真根因是 worker 生命周期 use-after-free（非 Adreno GPU），池化持久 worker 修好、桌面 0 运行中崩、det 逐字节 1/1。** 三 commit 到 master（703eca7→bd74e4d→081a1a0），全程 slm 后端隔离、logic 地板红线未动。
+
+一条把我教育了两次的链子：
+1. **真机现象**（红魔 8Elite/Adreno）：overlay `发起40·成功0·超时38`、`dumpsys meminfo` Native Heap `3→7.5→16GB` 无界涨。旗舰 SLM 决策/语音【从未生效】（每次回退 logic），几分钟必 OOM。**坑**：`OS.get_static_memory_usage`（overlay 内存行）看不到原生泄漏——必须 `dumpsys meminfo` 看 Native Heap。
+2. **第一版根因（错）**："Adreno GPU Vulkan 特定"——依据 `bench/slm_smoke.gd`（最小单 worker 冒烟）在桌面 CPU/GPU 都跑通。**这是"只测了方便那条路"**：smoke 单 worker、await 到底、之后才 free，根本没碰真集成。
+3. **自我推翻**：补 `bench/BackendBench.tscn`（跑真·游戏内 `AIBackend.decide` 路径），桌面 AMD Vulkan **同样段错误崩**（EXIT139），panic 直白：`NobodyWhoChat::clone: access to instance after it has been freed`。→ 真根因 = 旧实现【每次决策/反思/对话都 new 一个 chat + start_worker + 完成即 queue_free】（日志 116 worker 对 46 决策），worker 在飞时 free 它 → 异步回包访问已释放节点。**统一解释**：桌面模型快→free 抢在回包前→崩；手机 Adreno 挂死→worker 释放不掉→泄漏。同一个 bug 两张脸。
+4. **修法**：全局养【一个】持久池化 `NobodyWhoChat`，`reset_context()` 复用、串行（`_slm_busy`）、绝不 mid-flight free；signal 用【每发一次性闭包捕获 `world_epoch`】（cancel_all 后迟包按 epoch 作废）+ `fired[]` 去重。churn 116→2、运行中 0 崩、3 日 fired=129/landed=101/timeout=0。
+5. **两轮对抗评审（repo-grounded subagent + 4-lens workflow，均指令 REFUTE）→ 3 个 follow-up**：**C1**（我第一版"顺手"把换模型时的 chat 也同步 free → 又把池化本要消灭的 UAF 请回来了，第二轮逮到 → 终修改延后到 finish 收尾拆）、**C2**（`worker_failed` 的 one-shot 健康路径永不消费 → O(submits) 泄漏 → 改显式断两条）、**C3**（探测 `_probe_once` 仍 per-call + 裸 await 无超时 → 改池化 + 墙钟超时 + 一发超时即收手）。核心竞态设计（epoch 守卫、串行、去重）与红线（det 1/1、CI backend=null 不进 decide）两轮都无法证伪。
+
+**留存价值**：`BackendBench.tscn`（真集成路径的后端矩阵）+ `nw_api.gd`（探 NobodyWho API）+ `--swap` 旗（测换模型不崩）= 可复用的端侧 SLM 验证地基。池化 worker 的附带收益：手机端 `_slm_busy` 门第一次挂死即封→只留 1 worker（比熔断器 6 个更早封顶）。
+
+**元教训**：**一条"根因"和一版"修复"，都被【指令去反驳的独立评审】各自推翻过一次**——Adreno→worker 生命周期；C1 第一版反而引入崩溃。规律恒定（[[feedback-adversarial-external-review]]）：顺手那条测试路径、顺手那版修，最会漏掉【真集成路径】与【新回归】。**剩余**：手机 SLM 本身仍因 Adreno Vulkan 挂死【不产出决策】（池化只让它优雅降级不崩不泄），真正跑起来 = 试 CPU 推理/换 NobodyWho（spawn_task）+ 手机眼验（重出 APK）。见 [[reference-godot-android-loop]]。
