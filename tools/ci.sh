@@ -31,6 +31,12 @@ echo "### 4. S0 gate (invariants + determinism; seeds=$CI_SEEDS days=$CI_DAYS de
 "$GODOT" --headless --path game --script res://bench/Harness.gd -- --seeds "$CI_SEEDS" --days "$CI_DAYS" --det "$CI_DET"
 [ $? -eq 0 ] && ok "S0 gate" || bad "S0 gate"
 
+echo "### 4b. LOD 观察无关红线 (V2 相机路径无关 + V3 确定性/存读/fresh-restart)"
+# 永久门：aggregate LOD 的 cohort 必须【只由 committed sim 态】选、绝不读相机 lod_focus。
+# 若日后有人把 cohort 从相机取回，V2(5 个 lod_focus→同 digest) 立即变红（Main.gd:159 红线机器化）。
+"$GODOT" --headless --path game --script res://bench/lod_verify.gd -- "${CI_LOD_N:-48}" "${CI_LOD_DAYS:-3}"
+[ $? -eq 0 ] && ok "LOD viewer-independence gate" || bad "LOD viewer-independence gate"
+
 echo "### 5. unit / integration scenes"
 for scene in m2_test reqlife_test player_agency_test s4_replay_test space_test save_load_test; do
   "$GODOT" --headless --path game "res://scenes/$scene.tscn" >/tmp/lt_$scene.log 2>&1
