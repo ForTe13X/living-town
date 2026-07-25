@@ -60,6 +60,32 @@ const SCRUB_Y := 724.0
 const SCRUB_H := 16.0
 var _scrub_pending := -1              # 待应用的 scrub 目标 tick；每帧至多 flush 一次（见 _flush_scrub）
 
+# ── B15 视口自适应 ────────────────────────────────────────────────────────
+# project.godot 的 window/stretch/aspect 从 "keep" 改成 "expand"。
+#   keep：按设计比 1280x768(=1.67:1) 等比缩放后【左右打黑边】。真机 Redmagic 8 Elite 是 2688x1216(=2.21:1)，
+#         实测渲染区只有 2026x1216 —— 屏幕两侧共 662px（24.6%）是纯黑，白扔掉四分之一块屏。
+#   expand：同样等比缩放（scale=min(w/1280,h/768)），但把多出来的那一维【补进设计空间】而不是补黑边。
+#         2688x1216 → get_viewport_rect() 实测 1697x768（算出来是 1698.0，引擎取整到 1697；
+#         别照抄纸上算的那个数——本文件一律用运行时 vp，不写死）。原点仍在左上，多出来的宽全在右边。
+# 代价正是此前把这件事一直押后的理由：本文件的 HUD 全是对 1280x768 的绝对坐标，
+# 多出来的 417 会变成右侧一条【没有任何 HUD】的空带（后端钮孤零零悬在半空、时间轴右端早早断掉）。
+# 故所有 HUD 元素改为按 (dx, dy) = 视口 − 设计基准 重新定位（见 _relayout_hud）。
+# ★硬约束：dx=dy=0（桌面/CI 的 1280x768）时每个元素都必须回到与改动前【逐像素相同】的几何，
+#   所以下面一律写成「基准常量 + 增量」，绝不改写基准本身。
+const DESIGN := Vector2(1280.0, 768.0)
+
+# 需要跟随视口的 HUD 节点（⚙ 钮、性能 overlay 锚在左上角，天然不用动，故不记引用）
+var _log_pan: ColorRect               # 左下播报底板（跟底边）
+var _obs_pan: ColorRect               # 右侧观察台底板（跟右边，高度跟底边）
+var _scrub_pan: ColorRect             # 时间轴底板（跟底边 + 右边）
+var _scrub_hint: RichTextLabel        # 时间轴提示行
+# 时间轴运行时几何：常量是 1280x768 设计基准，实际值由 _relayout_hud 加宽/下移。
+# 命中测试(_in_scrub)、x→tick 换算(_tick_at_x)、绘制(_update_scrubber/_preview_scrub)
+# 必须吃【同一套】运行时值 —— 否则手指按在槽上、goto_tick 却按老坐标算，会整体错开 dx。
+var _sx0 := SCRUB_X0
+var _sx1 := SCRUB_X1
+var _sy := SCRUB_Y
+
 ## 事件显著度（纯视图评分——**不**调 Sim._impt：那个吃 agent 字典、属于仿真侧，视图不该碰）。
 ## >= SALIENT_MIN 进置顶「大事」区，其余只落「近况」尾巴。
 const SALIENCE := {
@@ -256,7 +282,7 @@ func _build_hud() -> void:
 	layer.add_child(gear)
 
 	# 左下角滚动事件日志：把看不见的社交戏剧讲出来
-	_mk_panel(layer, Vector2(8, 470), Vector2(560, 246))
+	_log_pan = _mk_panel(layer, Vector2(8, 470), Vector2(560, 246))
 	_logbox = _mk_label(layer, fnt, 15, Vector2(16, 476), Vector2(548, 236))
 	# 【仅】日志面板改为吃鼠标：每行是 [url=<居民id>]，点一行 → 选中当事人并把镜头飞过去。
 	# 其余 HUD 面板保持 MOUSE_FILTER_IGNORE（世界点选/缩放照旧穿透）。手机无键盘，这是唯一能跟戏的入口。
@@ -266,13 +292,13 @@ func _build_hud() -> void:
 	# 右侧观察台明细面板（点选角色后显示其完整状态）。
 	# 高度从 600 加到 676（下沿与日志面板齐平，让位给它的是右下角聊天框的宽度）——
 	# 多出的 ~4 行正好把"冲突 / 近期记忆"这两块（回答"这人为什么生气"）完整留在折叠线以上。
-	_mk_panel(layer, Vector2(978, 36), Vector2(294, 676))
+	_obs_pan = _mk_panel(layer, Vector2(978, 36), Vector2(294, 676))
 	_obs = _mk_label(layer, fnt, 14, Vector2(986, 42), Vector2(280, 664))
 
 	# 底部时间轴 scrubber
 	# 先铺底板再铺控件（CanvasLayer 按添加序叠放）：提示行原本是 #9aa0b5 直接画在草地上，眼验实测几乎读不出
 	# （B3 视觉复核指出，但它属 Main.gd 不在其归属内）。与日志/观察台同款半透明底板，成本一行、不碰仿真。
-	_mk_panel(layer, Vector2(SCRUB_X0 - 8, SCRUB_Y - 26), Vector2(SCRUB_X1 - SCRUB_X0 + 16, SCRUB_H + 34))
+	_scrub_pan = _mk_panel(layer, Vector2(SCRUB_X0 - 8, SCRUB_Y - 26), Vector2(SCRUB_X1 - SCRUB_X0 + 16, SCRUB_H + 34))
 	_scrub_track = ColorRect.new()
 	_scrub_track.color = Color(1, 1, 1, 0.14)
 	_scrub_track.position = Vector2(SCRUB_X0, SCRUB_Y)
@@ -291,8 +317,8 @@ func _build_hud() -> void:
 	_scrub_handle.position = Vector2(SCRUB_X0, SCRUB_Y - 4)
 	_scrub_handle.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(_scrub_handle)
-	var hint := _mk_label(layer, fnt, 12, Vector2(SCRUB_X0, SCRUB_Y - 22), Vector2(700, 18))
-	hint.text = "[color=#9aa0b5]时间轴：拖动回放（确定性重演）· 空格暂停 · , . 单步 · [ ] 跳天 · Tab 切角色 · 点居民查看[/color]"
+	_scrub_hint = _mk_label(layer, fnt, 12, Vector2(SCRUB_X0, SCRUB_Y - 22), Vector2(700, 18))
+	_scrub_hint.text = "[color=#9aa0b5]时间轴：拖动回放（确定性重演）· 空格暂停 · , . 单步 · [ ] 跳天 · Tab 切角色 · 点居民查看[/color]"
 
 	# 玩家 → NPC 对话输入框（选中居民后出现；Enter 发送）。M2：经 AIBackend.chat → LLM/mock/罐头。
 	_chat_in = LineEdit.new()
@@ -336,13 +362,68 @@ func _build_hud() -> void:
 	_perf.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pperf.add_child(_perf)
 
-func _mk_panel(layer: CanvasLayer, pos: Vector2, sz: Vector2) -> void:
+	# B15：按当前视口锚定一次；并接 size_changed —— 手机转屏/桌面拉窗口都会重排（这是唯一入口）。
+	_relayout_hud()
+	var _vpn := get_viewport()
+	if _vpn != null:
+		_vpn.size_changed.connect(_relayout_hud)
+
+func _mk_panel(layer: CanvasLayer, pos: Vector2, sz: Vector2) -> ColorRect:
 	var p := ColorRect.new()
 	p.color = Color(0, 0, 0, 0.42)
 	p.position = pos
 	p.size = sz
 	p.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(p)
+	return p
+
+## B15：把 HUD 从「对 1280x768 的绝对像素」改成「对当前视口的锚定」。
+## 为什么不用 Control 的 anchor：这些控件直接挂在 CanvasLayer 下（没有 Control 父节点当锚框），
+## anchor 要靠父 Control 的 rect 变化来传播；在 CanvasLayer 下做这件事要么加一层全屏容器重排整棵 HUD，
+## 要么依赖"无 Control 父节点时退回 viewport rect"这条不那么显式的规则。既然本文件的版式本来就是
+## 一串手写坐标，这里就【显式】按 (dx,dy) 摆一次，比装成布局系统更诚实，也更好对着截图 debug。
+## 每条规则都是「设计基准常量 + 增量」→ dx=dy=0 时逐像素回到改动前。
+func _relayout_hud() -> void:
+	if _status == null:
+		return
+	var vp := get_viewport_rect().size
+	var dx := maxf(0.0, vp.x - DESIGN.x)      # 多出来的宽（手机 2688x1216 → 实测 417）
+	var dy := maxf(0.0, vp.y - DESIGN.y)      # 多出来的高（比设计更"方"的屏，如 4:3 平板）
+	# 顶部状态栏：左端钉在 ⚙ 钮右边，右端跟着后端钮一起外扩
+	_status.size = Vector2(1082.0 + dx, 28.0)
+	if _backend_btn != null:                   # 后端切换钮：跟右边
+		_backend_btn.position = Vector2(1140.0 + dx, 4.0)
+	if _log_pan != null:                       # 左下播报：跟底边（宽度不变——它的行长是按 560 调的）
+		_log_pan.position = Vector2(8.0, 470.0 + dy)
+	if _logbox != null:
+		_logbox.position = Vector2(16.0, 476.0 + dy)
+	if _obs_pan != null:                       # 右侧观察台：跟右边；高度跟底边（多出来的高＝多几行明细）
+		_obs_pan.position = Vector2(978.0 + dx, 36.0)
+		_obs_pan.size = Vector2(294.0, 676.0 + dy)
+	if _obs != null:
+		_obs.position = Vector2(986.0 + dx, 42.0)
+		_obs.size = Vector2(280.0, 664.0 + dy)
+	# 时间轴：左端不动（紧挨播报面板），右端跟右边 → 屏幕越宽，时间轴刻度越细
+	_sx0 = SCRUB_X0
+	_sx1 = SCRUB_X1 + dx
+	_sy = SCRUB_Y + dy
+	if _scrub_pan != null:
+		_scrub_pan.position = Vector2(_sx0 - 8.0, _sy - 26.0)
+		_scrub_pan.size = Vector2(_sx1 - _sx0 + 16.0, SCRUB_H + 34.0)
+	if _scrub_track != null:
+		_scrub_track.position = Vector2(_sx0, _sy)
+		_scrub_track.size = Vector2(_sx1 - _sx0, SCRUB_H)
+	if _scrub_hint != null:
+		_scrub_hint.position = Vector2(_sx0, _sy - 22.0)
+		_scrub_hint.size = Vector2(700.0 + dx, 18.0)
+	if _chat_in != null:                       # 聊天框：跟底边；宽度吃掉观察台让出的那段，保持 14px 间隙
+		# ★高度只读不写：构造期（入树前）写的 30 会在入树后被主题最小高抬到 31；此处若照抄常量 30
+		# 又会把它压回去，文字基线上移 1px —— 桌面基准的「逐像素不变」就毁在这一个像素上（已被 PIL 差分抓到）。
+		_chat_in.position = Vector2(584.0, 648.0 + dy)
+		_chat_in.size = Vector2(380.0 + dx, _chat_in.size.y)
+	if _settings_panel != null:                # 设置面板：保持居中（1280x768 下算出来正好是原来的 430,168）
+		_settings_panel.position = Vector2(430.0 + dx * 0.5, 168.0 + dy * 0.5)
+	_update_scrubber()                         # fill/handle 由它按新的 _sx0/_sx1/_sy 重画
 
 func _mk_label(layer: CanvasLayer, fnt: Font, fsize: int, pos: Vector2, sz: Vector2) -> RichTextLabel:
 	var l := RichTextLabel.new()
@@ -680,9 +761,10 @@ func _update_scrubber() -> void:
 		return
 	var m := maxi(1, _max_tick)
 	var f := clampf(float(Sim.tick_no) / float(m), 0.0, 1.0)
-	var w := SCRUB_X1 - SCRUB_X0
+	var w := _sx1 - _sx0
+	_scrub_fill.position = Vector2(_sx0, _sy)
 	_scrub_fill.size = Vector2(w * f, SCRUB_H)
-	_scrub_handle.position = Vector2(SCRUB_X0 + w * f - 2.0, SCRUB_Y - 4.0)
+	_scrub_handle.position = Vector2(_sx0 + w * f - 2.0, _sy - 4.0)
 
 func _update_obs() -> void:
 	if _obs != null:
@@ -986,10 +1068,10 @@ func _cycle_selection(dir: int) -> void:
 	_focus_agent(String(ids[i]))   # Tab 轮换也把镜头带过去（此前只换面板文字，人还在屏幕外）
 
 func _in_scrub(pos: Vector2) -> bool:
-	return pos.x >= SCRUB_X0 - 8 and pos.x <= SCRUB_X1 + 8 and pos.y >= SCRUB_Y - 12 and pos.y <= SCRUB_Y + SCRUB_H + 12
+	return pos.x >= _sx0 - 8 and pos.x <= _sx1 + 8 and pos.y >= _sy - 12 and pos.y <= _sy + SCRUB_H + 12
 
 func _tick_at_x(x: float) -> int:
-	var f := clampf((x - SCRUB_X0) / (SCRUB_X1 - SCRUB_X0), 0.0, 1.0)
+	var f := clampf((x - _sx0) / (_sx1 - _sx0), 0.0, 1.0)
 	return int(round(f * _max_tick))
 
 func _scrub_to_x(x: float) -> void:
@@ -1004,9 +1086,9 @@ func _preview_scrub(t: int) -> void:
 	if _scrub_fill == null:
 		return
 	var f := clampf(float(t) / float(maxi(1, _max_tick)), 0.0, 1.0)
-	var w := SCRUB_X1 - SCRUB_X0
+	var w := _sx1 - _sx0
 	_scrub_fill.size = Vector2(w * f, SCRUB_H)
-	_scrub_handle.position = Vector2(SCRUB_X0 + w * f - 2.0, SCRUB_Y - 4.0)
+	_scrub_handle.position = Vector2(_sx0 + w * f - 2.0, _sy - 4.0)
 
 func _flush_scrub() -> void:
 	if _scrub_pending < 0:
