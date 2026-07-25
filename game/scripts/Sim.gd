@@ -44,7 +44,8 @@ const GIFT_START := 3           # 每个 NPC 初始礼物数（give 破冰用）
 const MEET_HORIZON := 40        # invite 创建的 meet 承诺：deadline = now + 此
 const ATTEND_WINDOW := 16       # 离 deadline ≤ 此 → 引擎给「赴约」加权
 const NEED_CRISIS := 15.0       # 任一需求 < 此 → 放弃赴约（真危机才爽约 → broken）
-const SURVIVAL_GATE := 30.0     # 任一需求 < 此 → 本 tick 不社交，先去吃/睡（留赶路缓冲，防大 N 饿穿）。
+var SURVIVAL_GATE := 30.0       # 任一需求 < 此 → 本 tick 不社交，先去吃/睡（留赶路缓冲，防大 N 饿穿）。
+                                # Phase-D：const→var（配置项，非 event 态→不进 digest；默认不变→CI 逐字节不变），供闭环 A/B 换档。
                                 # 20→24→28→30：每次给 need-floor 更足缓冲，使 #01 无饿穿对【决策/地图扰动】鲁棒
                                 # （endorse 抑制曾令阿本社交需求饿穿；P2-4 加建筑改 blockers→轨迹蝶变，seed11 阿本赴咖啡馆途中饿穿）。
 const CONFLICT_TRIGGER := 6.0   # resentment 累积到此 → 触发一段冲突（simmering）
@@ -55,8 +56,12 @@ const FORGIVE_CAP := 22.0       # 冲突 severity 高于此则难被原谅
 # 委屈方对"小怨气"默认【不当面理论、让它过去】；只有直性子(耿直，本镇=老海)才会为此对质。
 # 这是纯人设函数（无 RNG/Time，确定性），把决策从 logic 死规则升级到贴人设。DRAMA 层（导演，另一轴）
 # 日后可为推进剧情按需重新抬起对质——两轴分开，绝不加权混合。BLUNT_TRAITS 是"会为小事对质"的人设标记。
-const CHARACTER_DEFER := true
-const BLUNT_TRAITS := ["耿直"]  # 直性子/认死理 → 会当面把话说开；其余默认让小怨气过去
+var CHARACTER_DEFER := true     # Phase-D：const→var（配置，供 A/B 关掉→退回 logic 恒对质）
+# Phase-D 双面裁决：确认性盲评（30-seed、一等-defer、中性 3 轴、A=A tie 率 1.0）说 in_character 上 莽撞(evy)/爽快(tie)
+# 也一致判 confront（N28、p_eff=1.000）——但 Step-3 闭环 A/B 一票【否决】了这个扩项：多两个人设逢怨即对质→更多怨被
+# 引爆和解→没人攒下持久坏名声→【涌现放逐 #15 被抹平】（10/12 破软门，正应验 DRAMA_ERUPT 注释的警告）。judge 验过 ≠ 能上，
+# 必须过 CI gate——这正是要做闭环因果 A/B 的原因。故【保持仅耿直】。莽撞/爽快待更大样本 + DRAMA 侧不抹平 #15 的做法再议。
+var BLUNT_TRAITS := ["耿直"]    # 直性子/认死理 → 会当面把话说开；其余默认让小怨气过去
 # DRAMA 层（导演，独立轴——绝不与 CHARACTER 加权混合）：CHARACTER 让大多数小怨气默认憋着，
 # 但一段【憋太久没说开】的心结应当被安排一场对质来推进剧情（否则 arc 悬着、冲突 dangling）。
 # 越重/被反复冒犯(escalated)的怨越早爆；纯 f(age,severity,escalations)，无 RNG/Time → 确定性、可回放。
@@ -65,12 +70,15 @@ const BLUNT_TRAITS := ["耿直"]  # 直性子/认死理 → 会当面把话说�
 const DRAMA_DIRECTOR := true
 const DRAMA_ERUPT_AFTER := 1200   # ~5 天(TICKS_PER_DAY=240)没说开 → 导演安排对质（远长于 LINGER_AFTER=350）
 const DRAMA_ERUPT_FLOOR := 480    # 最早也要 ~2 天，避免刚结怨就爆
+var DRAMA_FORGIVE_FADE := true    # Phase-D 调参：夜间把"怨气已衰到触发线下"的未爆小怨归档成 faded 终态（宽恕落地）。
+                                  # 诊断实测：severe 完成率已 0.88(导演够勤)、低完成全是小怨该淡着(保#15)、但 30% 悬空其实气早消了只是没标终态
+                                  # → 这条纯重标签把完成率抬到更诚实的值、且不引爆任何怨(不碰#15)。const→var 供 A/B。
 const DRAMA_ERUPT_SEV := 9        # 只有够重(>=此)或被反复冒犯(escalated)的心结才值一场戏；其余小怨就让它淡着——
                                   # 否则每段怨都爆→都和解→没人攒下持久坏名声→涌现放逐(#15)被抹平。这也是更好的戏剧：戏留给要紧的冲突。
 # DRAMA 戏剧节拍 · 八卦泄密（secret-stake 盲评 held-out：默认守信 in-character、唯一例外=爱八卦人设 leak 率 100%）：
 # 话痨(GOSSIP_TRAITS=爱八卦，本镇=阿丽)憋不住、把托付给她的秘密当谈资抖出去——但要憋够久(非一拿到就说)。
 # 其余人设默认守信(logic 本就从不 leak，已验证 in-character)。纯 f(trait,age) 确定性；泄密→被背叛者积怨→冲突(既有后果)。
-const DRAMA_GOSSIP_LEAK := true
+var DRAMA_GOSSIP_LEAK := true   # Phase-D：const→var（A/B 关掉→退回 logic 恒 leak/rally/endorse）
 const GOSSIP_TRAITS := ["爱八卦"]
 const GOSSIP_LEAK_AFTER := 600    # 拿到秘密憋 ~2.5 天后才忍不住说漏（TICKS_PER_DAY=240）
 const GOSSIP_LEAK_BOOST := 26.0   # 憋够久的话痨：把 leak 分抬到压过维护 → 当选（抖出去）
@@ -78,14 +86,14 @@ const GOSSIP_LEAK_BOOST := 26.0   # 憋够久的话痨：把 leak 分抬到压�
 # 撺掇公开孤立/施压一个外群人，对本镇【每一个人设都极不入戏】——logic 却 49% 就这么干。默认弃权。
 # 唯一保留：DRAMA 让"众人合围一个真·过街老鼠"成一场罕见的戏——对象名声极差(众怒)且已有【激化】的冲突时。
 # 保 DRAMA 出口是为了不抹平涌现放逐(#15)/派系协同(#25-28)——同 confront 的 CHARACTER/DRAMA 两轴分法。
-const FACTION_MOB_DEFER := true
+var FACTION_MOB_DEFER := true   # Phase-D：const→var（A/B 关掉→退回 logic 恒 leak/rally/endorse）
 const MOB_ERUPT_STANDING := -2.5  # 对象在 ag 眼里名声极差(≤此，比 REP_GOSSIP_TH=-2 更狠) → 才够格被合围
 # CHARACTER 层 · endorse（"和 X 咬耳朵、统一对 Y 的说法、一道贬低疏远他"）：盲评 p_eff(endorse)=0.043、
 # 但【只有爱八卦的阿丽】in-character(0.43)、余 9 人设皆 0——endorse 本质是【八卦串谋】、落在 gossip 轴而非 mob 轴
 # （故有 1 个人设例外、不同于 rally_oust 的零例外）。ON：仅 _is_gossipy(爱八卦=阿丽) 拉人统一口径、余弃权。
 # #01-safe：全面弃权曾蝴蝶到 seed-4 的 #01 无饿穿——根因是抑制 endorse 减了全镇社交吞吐、阿本社交需求赶不上；
 #   解法不是缩抑制、而是把 SURVIVAL_GATE 20→24 给 need-floor 更足赶路缓冲（真·鲁棒性升级，见其定义处）→ 12/12 绿。
-const FACTION_ENDORSE_DEFER := true
+var FACTION_ENDORSE_DEFER := true   # Phase-D：const→var（A/B 关掉→退回 logic 恒 leak/rally/endorse）
 # S1（声誉×八卦×宽恕，docs/10 §A/§B）
 const STANDING_CAP := 3.0       # standing 范围 [-CAP,+CAP]；sign=good/bad
 const STANDING_K := 6.0         # 接受规则里 standing 权重 → 涌现放逐
@@ -1231,6 +1239,20 @@ func _nightly() -> void:
 				r["resentment"] = maxf(0.0, float(r["resentment"]) - RESENT_DECAY)
 			if drift and float(r["standing"]) != 0.0:
 				r["standing"] = float(r["standing"]) - signf(float(r["standing"]))
+	# DRAMA pacing（Phase-D 调参）：把【被时间原谅的小怨】归档成终态 faded——委屈方怨气已衰到触发线(CONFLICT_TRIGGER)下、
+	# 且是没被引爆的 simmering/lingering。纯重标签：不动 resentment/standing、不引爆、不新增冲突 → 靠【持久坏名声】的涌现放逐
+	# (#15) 一分不受影响；只把"其实气早消了、只是没标终态"的怨从悬空弧挪出去 → 冲突完成率更诚实、且直性子不会再去翻已消的旧账。
+	if DRAMA_FORGIVE_FADE:
+		for c in conflicts:
+			var st := String(c.get("status", ""))
+			if st != "simmering" and st != "lingering":
+				continue
+			var ha: Dictionary = _agent_by_id.get(String(c.get("a", "")), {})
+			if ha.is_empty():
+				continue
+			var rr: Dictionary = (ha.get("relationships", {}) as Dictionary).get(String(c.get("b", "")), {})
+			if float(rr.get("resentment", 99.0)) < CONFLICT_TRIGGER:
+				c["status"] = "faded"; c["faded"] = tick_no
 	if ext != null:
 		ext.nightly(self)          # 注册的 NightlyHook（按 (order,id) 定序，排在内建夜间机制之后）
 
