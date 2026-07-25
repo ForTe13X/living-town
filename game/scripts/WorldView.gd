@@ -6,6 +6,32 @@ extends Node2D
 const T := 48  # 与 Art.TILE 一致
 const EMOTE_TICKS := 24  # 头顶 emote 显示时长
 
+# ── 整数像素尺（TEXTURE_FILTER_NEAREST 下的"不融化"前提）────────────────────────
+# 地面/装饰一直是 T/16 = 3x 整数倍，可角色曾按 32→46(1.4375x)、物件 16→40(2.5x)、emote 20→26(1.3x) 画：
+# nearest 采样下这些非整数倍让一部分源像素占 1 个屏幕像素、另一部分占 2 个 → 精灵在清晰的地形上读作"融化的"。
+# 全部改成整数倍后，一个源像素恒等于 N 个屏幕像素。
+const AGENT_PX := 64.0   # 32px 源帧 × 2
+const EMOTE_PX := 40.0   # 20px 源帧 × 2
+const OBJ_PX := 48.0     # 16px 源帧 × 3（= T，与地面/装饰同一个像素尺）
+# 角色源帧 32x32 里人物实际占的行区间（用 alpha bbox 实测：y 5..24，x 9..23）。
+# 用它把【脚】对齐落脚线、把【头顶】算出来给名字/emote 让位——不然放大后人会"浮"在影子上方。
+const CHAR_FEET_ROW := 24.0
+const CHAR_HEAD_ROW := 5.0
+
+# ── 画面 LOD / 裁剪（纯 DRAW 侧）────────────────────────────────────────────────
+# ★红线：本节的一切【只决定画什么】，绝不回喂 Sim——不写 Sim.lod_focus、不改 Sim 任何字段。
+#   机器门：game/bench/lod_verify.gd（tools/ci.sh 步骤 4b）拿 5 个不同 lod_focus 跑，digest 必须逐字节相同。
+const LABEL_MIN_ZOOM := 0.45   # 低于此缩放：名字/气泡/emote/需求条一律不画（那时它们只是几像素糊斑，白烧填充率）
+var _vis := Rect2()            # 本帧可见世界矩形（每帧 _draw 开头刷新）
+var _zoom := 1.0               # 本帧 世界→屏幕 缩放
+
+# ── 关系连线（S1 起最贵也最乱的一层）──────────────────────────────────────────
+enum RelMode { ALL, SELECTED, OFF }
+const REL_TOP_K := 3           # 每人只保留最强的 K 条（一条边在任一端的 top-K 里就留 → 强关系不会被单侧挤掉）
+const REL_MIN_AFF := 20.0
+const REL_FADE_PX := 520.0     # 屏幕长度超过它开始变淡：横穿全镇的长线信息密度最低，却最挡视线
+var rel_mode: int = RelMode.ALL   # Main 可直接改这个属性（本 baton 不动 Main，故不加键位）
+
 var _prev_pos := {}      # id -> Vector2i（推断朝向/行走）
 var _emote := {}         # id -> {tex, until}
 var _say := {}           # id -> {text, until}（对话罐头台词；M2 换 LLM 生成）
@@ -16,6 +42,12 @@ const SAY_TICKS := 40
 # 实现：首次用到时把精灵 CPU 色相旋转成一张 ImageTexture 变体并缓存（Godot 4 immediate-mode 无法 per-draw 换 material）。
 const HUE_BUCKETS := 24   # 色相分桶数（bucket0=原图）
 var _hued := {}          # "sprite#bucket" -> ImageTexture（懒建缓存）
+
+## 实际被采样的表区域：_agent_frame 只取 col 0-3 / row 0-3（idle+行走三向），即左上角 128x128。
+## 整张表是 768x256 = 196,608 像素，而用到的只有 16,384——旧实现每建一个色相变体都要 GDScript 逐像素扫全表
+## （12x 空转 + 每变体多留 ~720 KB），且变体是扩 N 时【边玩边建】的，卡顿正好落在最需要帧时间的时候。
+## 裁到用到的区域即可：变体纹理与原图共用左上角坐标系，src Rect2(col*32,row*32,32,32) 两边通用，取帧代码一行不用改。
+const CHAR_USED := Vector2i(128, 128)
 
 ## 克隆按 id 取确定性色相变体；命名原型(非 npc_)或 bucket0 直接返回原图。绕 HSV 色相环旋转→保亮度=真换色，非压暗 modulate。
 func _hued_tex(spr_name: String, id: String) -> Texture2D:
@@ -34,6 +66,9 @@ func _hued_tex(spr_name: String, id: String) -> Texture2D:
 	img = img.duplicate()
 	if img.is_compressed():
 		img.decompress()
+	var rw := mini(CHAR_USED.x, img.get_width())
+	var rh := mini(CHAR_USED.y, img.get_height())
+	img = img.get_region(Rect2i(0, 0, rw, rh))     # 只留被采样的左上角帧区（12x 少扫、~12x 少留内存）
 	var shift := float(bucket) / float(HUE_BUCKETS)
 	for y in img.get_height():
 		for x in img.get_width():
@@ -86,6 +121,16 @@ const BLD_PAL := {
 	"commercial":  {"face": Color("#8a6238"), "top": Color("#a67f4e"), "foot": Color("#5e4326"), "roof": Color("#b5484a"), "icon": Color("#efe4cc")},  # 棕木店面+红白条纹遮阳+咖啡招牌
 	"public":      {"face": Color("#7c8a92"), "top": Color("#9fabb2"), "foot": Color("#556169"), "roof": Color("#5a86b0"), "icon": Color("#eaf3f8")},  # 灰蓝石+蓝瓦+♨蒸汽
 	"workshop":    {"face": Color("#82868f"), "top": Color("#a0a4ac"), "foot": Color("#585c64"), "roof": Color("#3e4a5a"), "icon": Color("#cfcfcf")},  # 灰石+深蓝灰顶+烟囱黑烟
+}
+## 分类型【地板】：与 BLD_PAL 的墙色同族但更亮（屋顶被切掉，地面才是受光面）。
+## 旧版只有广场有真地板，其余七个区只压一层 0.10 alpha 的淡色罩 —— 于是每栋建筑读作"围了圈墙的草坪院子"，
+## 床和灶台直接摆在草上。这是整镇"灰盒原型感"的头号来源，而它整个在 View 层。
+const FLOOR_PAL := {
+	"residential": {"base": Color("#c8a273"), "line": Color("#9c7748"), "mode": "plank"},   # 暖木地板
+	"commercial":  {"base": Color("#bf9257"), "line": Color("#8c6533"), "mode": "plank"},   # 深一档的店面木地板
+	"public":      {"base": Color("#96a5ab"), "line": Color("#6c7b83"), "mode": "slab"},    # 冷灰石板（澡堂/图书馆）
+	"workshop":    {"base": Color("#9b968d"), "line": Color("#6d6a61"), "mode": "slab"},    # 暖灰石板（工坊）
+	"plaza":       {"base": Color("#c3a97a"), "line": Color("#9a8253"), "mode": "paving"},  # 中央广场铺装
 }
 
 func _ready() -> void:
@@ -290,6 +335,87 @@ func _draw_window(x: float, y: float, pal: Dictionary, night: bool) -> void:
 	draw_line(Vector2(x + T * 0.26, y + T * 0.46), Vector2(x + T * 0.74, y + T * 0.46), pal["foot"], 1.5)      # 横棂
 	draw_rect(Rect2(x + T * 0.22, y + T * 0.24, T * 0.56, T * 0.44), (pal["top"] as Color).lightened(0.18), false, 1.5)  # 窗框
 
+## 本帧的可见世界矩形 + 世界→屏幕缩放（纯读画布变换）。裁剪与标签 LOD 都吃它。
+## ★这是【画】的裁剪，不是【算】的裁剪：Sim 看不到它，lod_verify 的相机无关门因此不受影响。
+func _refresh_view_metrics() -> void:
+	var ct := get_global_transform_with_canvas()
+	var sc := ct.get_scale()
+	_zoom = maxf(0.0001, (absf(sc.x) + absf(sc.y)) * 0.5)
+	var inv := ct.affine_inverse()
+	var vs: Vector2 = get_viewport_rect().size
+	var r := Rect2(inv * Vector2.ZERO, Vector2.ZERO)
+	r = r.expand(inv * Vector2(vs.x, 0.0)).expand(inv * Vector2(0.0, vs.y)).expand(inv * vs)
+	_vis = r.grow(T * 2.0)          # 留两格余量：贴边的精灵/连线不会在边缘闪掉
+
+## 每个 district 铺【真地板】：dirt 瓦片打底（保住 3x 像素颗粒，纯色地板在像素游戏里读作"没画完"）
+## → 类型底色半透盖上 → 类型纹样（木条 / 石板 / 铺装）→ 内缘压暗让地板"沉"进墙里。
+## 只读 Sim.world['areas']，不改 game/data/**、不造房间。
+func _draw_area_floors(dirt: Texture2D) -> void:
+	for aid in Sim.world.get("areas", {}):
+		var a: Dictionary = Sim.world["areas"][aid]
+		var r: Array = a.get("rect", [0, 0, 0, 0])
+		var x0 := int(r[0]); var y0 := int(r[1]); var bw := int(r[2]); var bh := int(r[3])
+		if bw <= 0 or bh <= 0:
+			continue
+		var rect := Rect2(x0 * T, y0 * T, bw * T, bh * T)
+		if not _vis.intersects(rect):
+			continue
+		var pal: Dictionary = FLOOR_PAL.get(String(a.get("type", "")), FLOOR_PAL["workshop"])
+		var base: Color = pal["base"]
+		var line: Color = pal["line"]
+		if dirt != null:
+			for yy in range(y0, y0 + bh):
+				for xx in range(x0, x0 + bw):
+					draw_texture_rect(dirt, Rect2(xx * T, yy * T, T, T), false)
+			draw_rect(rect, Color(base.r, base.g, base.b, 0.80), true)
+		else:
+			draw_rect(rect, base, true)
+		match String(pal["mode"]):
+			"plank":                                   # 木地板：半格宽长板 + 错缝短接头
+				var py := rect.position.y
+				var row := 0
+				while py < rect.end.y - 1.0:
+					draw_rect(Rect2(rect.position.x, py, rect.size.x, 1.0), Color(line.r, line.g, line.b, 0.50), true)
+					var sx := rect.position.x + (T * 0.5 if row % 2 == 1 else 0.0) + T
+					while sx < rect.end.x - 1.0:
+						draw_rect(Rect2(sx, py, 1.0, T * 0.5), Color(line.r, line.g, line.b, 0.34), true)
+						sx += T * 1.5
+					py += T * 0.5
+					row += 1
+			"slab":                                    # 石板：交错明暗方砖 + 横竖石缝
+				for yy in range(bh):
+					for xx in range(bw):
+						if (xx + yy) % 2 == 0:
+							draw_rect(Rect2(rect.position.x + xx * T, rect.position.y + yy * T, T, T), Color(1, 1, 1, 0.08), true)
+					draw_rect(Rect2(rect.position.x, rect.position.y + yy * T, rect.size.x, 1.0), Color(line.r, line.g, line.b, 0.42), true)
+				for xx in range(bw):
+					draw_rect(Rect2(rect.position.x + xx * T, rect.position.y, 1.0, rect.size.y), Color(line.r, line.g, line.b, 0.32), true)
+			_:                                         # 广场：大方砖十字缝（比土路"踩实"，两者可区分）
+				for yy in range(bh):
+					draw_rect(Rect2(rect.position.x, rect.position.y + yy * T, rect.size.x, 1.0), Color(line.r, line.g, line.b, 0.28), true)
+				for xx in range(bw):
+					draw_rect(Rect2(rect.position.x + xx * T, rect.position.y, 1.0, rect.size.y), Color(line.r, line.g, line.b, 0.28), true)
+		draw_rect(rect, Color(0, 0, 0, 0.20), false, 3.0)
+
+## 区名：旧版画在 rect 左上角、字号 12、alpha 0.28 —— 那格正好是顶墙，墙随后盖上去，于是【一个字也看不见】。
+## 现在画在墙之后、地板第一行上，并把字号按缩放反比放大 → 缩到全镇俯瞰时区名仍读得出来（这才是"地图可读"）。
+func _draw_area_labels() -> void:
+	var fnt := Art.font()
+	var fs := int(clampf(13.0 / _zoom, 13.0, 52.0))
+	for aid in Sim.world.get("areas", {}):
+		var a: Dictionary = Sim.world["areas"][aid]
+		var r: Array = a.get("rect", [0, 0, 0, 0])
+		if int(r[2]) <= 0 or int(r[3]) <= 0:
+			continue
+		var rect := Rect2(int(r[0]) * T, int(r[1]) * T, int(r[2]) * T, int(r[3]) * T)
+		if not _vis.intersects(rect):
+			continue
+		var txt := str(a.get("label", aid))
+		var sz := fnt.get_string_size(txt, HORIZONTAL_ALIGNMENT_LEFT, -1, fs)
+		var p := Vector2(rect.get_center().x - sz.x * 0.5, rect.position.y + T * 1.10 + sz.y * 0.5)
+		draw_rect(Rect2(p.x - 6.0, p.y - sz.y + 2.0, sz.x + 12.0, sz.y + 3.0), Color(0, 0, 0, 0.42), true)
+		draw_string(fnt, p, txt, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, Color(1, 1, 1, 0.82))
+
 func _in_area(x: int, y: int) -> bool:
 	for a in Sim.world.get("areas", {}).values():
 		var r: Array = a.get("rect", [0, 0, 0, 0])
@@ -400,6 +526,32 @@ func _load_interiors() -> void:
 	f.close()
 	if d is Dictionary:
 		_interiors = d
+
+## 室内背景。一层至多 432x336 px，塞进 1280x768 后四周是一大片【默认 clear color 的死灰】
+## （docs/media/shot-p3-patrons-cafe.png 里那条灰带就是它）。铺暗底 + 四周暗角 + 房子外圈落影 + 极淡暖边，
+## 读法变成"镜头在屋外的暗处往里看"，而不是"一个方块浮在空白画布上"。纯 View。
+func _draw_interior_backdrop(main: Node, probe) -> void:
+	draw_rect(_vis, Color("#0e1017"), true)
+	# 暗角：由外向内 6 圈，越外越沉（随后室内地板会不透明地盖回中间，暗角只作用在虚空上）
+	var bw := minf(_vis.size.x, _vis.size.y) * 0.05
+	for k in 6:
+		var inset := float(k) * bw
+		var vg := Color(0, 0, 0, 0.10 * (1.0 - float(k) / 6.0))
+		var iw := _vis.size.x - inset * 2.0
+		var ih := _vis.size.y - inset * 2.0
+		if iw <= 0.0 or ih <= 0.0:
+			break
+		draw_rect(Rect2(_vis.position.x + inset, _vis.position.y + inset, iw, bw), vg, true)
+		draw_rect(Rect2(_vis.position.x + inset, _vis.end.y - inset - bw, iw, bw), vg, true)
+		draw_rect(Rect2(_vis.position.x + inset, _vis.position.y + inset, bw, ih), vg, true)
+		draw_rect(Rect2(_vis.end.x - inset - bw, _vis.position.y + inset, bw, ih), vg, true)
+	var sg = main.get("_sg") if main != null else null
+	if sg == null:
+		return
+	var b: Rect2 = sg.bounds_px(String(probe.active_space))
+	for k in range(8, 0, -1):                       # 外圈落影：由外向内叠，越贴墙越暗 → 房子"坐"在暗处
+		draw_rect(b.grow(float(k) * 9.0), Color(0, 0, 0, 0.06), true)
+	draw_rect(b.grow(4.0), Color("#f2dca8", 0.07), true)   # 极淡暖边：屋里透出来的一点光
 
 ## Probe 进入非-town Space：有 interiors.json 内容 → 画【真室内】（地板/墙/家具/门/楼梯）；否则回落占位网格。
 func _draw_space_placeholder() -> void:
@@ -597,9 +749,11 @@ var _rc_conflict_ids := {}   # 每帧预建：卷入活跃冲突的 agent 端点
 var _rc_meet_ids := {}       # 每帧预建：有活跃约会的 agent 端点集
 
 func _draw() -> void:
+	_refresh_view_metrics()
 	var _main := get_parent()
 	var _pb = _main.get("_probe") if _main != null else null
 	if _pb != null and String(_pb.active_space) != "town":
+		_draw_interior_backdrop(_main, _pb)        # 先铺暗底/暗角/外圈落影，室内不再泡在一片死灰里
 		_draw_space_placeholder()                 # 非 town：只画该 Space/Floor（active-space 渲染）
 		return
 	if Sim.world.is_empty():
@@ -611,8 +765,15 @@ func _draw() -> void:
 		var tw := 0
 		for g in _grass:
 			tw += int(g["w"])
-		for ty in range(h):
-			for tx in range(w):
+		# 只画【看得见的】格子。旧版每帧无条件铺满 64x48 = 3072 个 draw_texture_rect，
+		# 而 1280x768 视口在 zoom=1 时只装得下约 27x16 ≈ 430 格 —— 其余 85% 是纯浪费的填充率，
+		# 这是手机上最便宜的一笔回收。变体仍由 _hash(tx,ty) 决定，与看哪儿无关 → 画面逐像素不变。
+		var tx0 := maxi(0, int(floor(_vis.position.x / float(T))))
+		var ty0 := maxi(0, int(floor(_vis.position.y / float(T))))
+		var tx1 := mini(w, int(ceil(_vis.end.x / float(T))))
+		var ty1 := mini(h, int(ceil(_vis.end.y / float(T))))
+		for ty in range(ty0, ty1):
+			for tx in range(tx0, tx1):
 				var r := _hash(tx, ty, 3) % tw
 				var chosen: Texture2D = _grass[0]["t"]
 				for g in _grass:
@@ -627,14 +788,7 @@ func _draw() -> void:
 			draw_texture_rect(grass, Rect2(0, 0, w * T, h * T), true)
 		else:
 			draw_rect(Rect2(0, 0, w * T, h * T), Art.ground, true)
-	# 广场铺 dirt 地面（中央集市感）
 	var dirt := Art.terrain_tex("dirt")
-	if dirt != null and Sim.world.get("areas", {}).has("plaza"):
-		var pr: Array = Sim.world["areas"]["plaza"].get("rect", [0, 0, 0, 0])
-		for yy in range(int(pr[1]), int(pr[1]) + int(pr[3])):
-			for xx in range(int(pr[0]), int(pr[0]) + int(pr[2])):
-				draw_texture_rect(dirt, Rect2(xx * T, yy * T, T, T), false)
-
 	# 水面（map.json water 层）：铺在草地之上、区域/建筑之下，作为地形读。深蓝底 + 浅蓝格纹岸边微光，
 	# 用确定性 _hash 做静态涟漪（不抽 RNG、不进 digest）。
 	if not _terrain_built:
@@ -661,15 +815,9 @@ func _draw() -> void:
 			draw_texture_rect(dirt, Rect2(rx * T, ry * T, T, T), false)
 			draw_rect(Rect2(rx * T, ry * T, T, T), Color("#6b5a3e", 0.16), true)   # 压一层暖褐：比广场更"踩实"，两者可区分
 
-	# 区域：只留一层极淡的"街区底色"（0.32→0.10）+ 低调标签。建筑一旦有了体积，空间就该由【房子】定义，
-	# 而不是由半透明色块定义——旧的 0.32 色洗盖在建筑上，把砖木都洗成灰紫，是"简陋感"的主因之一。
-	for area in Sim.world.get("areas", {}):
-		var a: Dictionary = Sim.world["areas"][area]
-		var r: Array = a.get("rect", [0, 0, 0, 0])
-		var rect := Rect2(r[0] * T, r[1] * T, r[2] * T, r[3] * T)
-		var ac := Art.area_color(area); ac.a = 0.10
-		draw_rect(rect, ac, true)
-		draw_string(Art.font(), Vector2(rect.position.x + 6, rect.position.y + 16), str(a.get("label", area)), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 1, 1, 0.28))
+	# 区域【真地板】：每个 district 按 type 铺木/石/铺装地板（旧版只有广场有地板，其余七个区只有一层
+	# 0.10 alpha 的淡色罩 —— 那层淡到什么也读不出来，于是墙里全是草，房子读作"围了圈墙的院子"）。
+	_draw_area_floors(dirt)
 	# 室内房间 → 画成【真·建筑】（docs/16 / docs/19 §9）：外墙有厚度 + 落地阴影 + 屋檐、南墙开门、北墙开窗、
 	# 室内按房型铺材质地板，有人时透暖光。参照 Stardew / Stoneshard / ZeroSievert 的"切顶俯视"读法：
 	# 建筑必须有体积，人才有比例——旧版把 6x4 的房间画成一块半透明色块 + 文字标签，读作"色区"而非"房子"。
@@ -696,6 +844,7 @@ func _draw() -> void:
 	# 屋檐 + 招牌：每栋（非广场）沿顶墙内侧铺一条屋檐色带 + 门上方挂类型招牌图标 → 类型一眼可辨。
 	_draw_facades()            # P3 打磨：开窗（夜透暖光）+ 住宅/工坊烟囱——先画在墙面上
 	_draw_building_dressing(w) # 再压屋檐/招牌（自然遮住顶墙窗上沿，像真的屋檐）
+	_draw_area_labels()        # 区名画在墙【之后】（旧版画在顶墙格上，被墙盖掉，等于没画）
 
 	# 装饰散布（区域外草地上的树/花/草丛，确定性布局；在物件与居民之下）
 	if not _decor_built:
@@ -703,6 +852,8 @@ func _draw() -> void:
 	for it in _decor_items:
 		var dtex: Texture2D = it["tex"]
 		var c: Vector2i = it["cell"]
+		if not _vis.has_point(Vector2(c.x * T, c.y * T)):
+			continue                       # 视口外的花草石不画（布局仍由 _build_decor 一次性确定，与相机无关）
 		var th: int = int(it["h"])
 		var dw := float(dtex.get_width()) * (float(T) / 16.0)
 		var dh := float(dtex.get_height()) * (float(T) / 16.0)
@@ -739,7 +890,7 @@ func _draw() -> void:
 			_:
 				var otex := Art.object_tex(slot)
 				if otex != null:
-					var s := 40.0
+					var s := OBJ_PX          # 16px 源 × 3（= 整格）：与地面/装饰同一个像素尺，不再 2.5x 融化
 					draw_texture_rect_region(otex, Rect2(base.x + (T - s) * 0.5, base.y + (T - s) * 0.5, s, s), Rect2(0, 0, otex.get_width(), otex.get_height()))
 				else:
 					draw_rect(Rect2(base.x + 9, base.y + 12, T - 18, T - 18), Color("#8a6a45"), true)
@@ -842,23 +993,76 @@ func _center(ag: Dictionary) -> Vector2:
 func _in_town(ag: Dictionary) -> bool:
 	return String(ag.get("space", "town")) == "town"
 
+## Main 当前选中的居民（只读，View→View）。没有选中或拿不到 → 空串。
+func _selected_id() -> String:
+	var m := get_parent()
+	if m == null:
+		return ""
+	var v = m.get("_selected_id")
+	return String(v) if v != null else ""
+
+## 关系连线。旧版：|affinity|>20 的【每一对】都画，无上限、无衰减、无裁剪 —— N=12 时最多 66 条，
+## N=60 时上千条，第 48 天变成一张横穿全镇的洋红蛛网；真机实测这一趟吃掉 166.7ms 帧里的 59.5ms。
+## 现在四道闸：每人只留最强 K 条 → 屏幕长度衰减 → 视口裁剪 → 选中某人时其余线退到背景。
+## 全是 DRAW 侧取舍，Sim 读不到任何一个（相机无关红线：game/bench/lod_verify.gd）。
 func _draw_relationship_lines() -> void:
+	if rel_mode == RelMode.OFF:
+		return
+	var sel := _selected_id()
+	if rel_mode == RelMode.SELECTED and sel == "":
+		return
+	# 1) 每人取 top-K：一条边只要落在任一端的 top-K 里就保留（否则单侧的强关系会被对方的更强关系挤掉）
+	var keep := {}
 	for ag in Sim.agents:
 		if not _in_town(ag):
 			continue   # 室内居民不在镇上画关系线（否则室内局部坐标鬼影）
+		var aid := String(ag["id"])
+		if rel_mode == RelMode.SELECTED and aid != sel:
+			continue
+		var top := []      # ≤K 条，按 |affinity| 降序；同强度先到先得（relationships 是有序字典 → 确定，画面不闪）
 		for oid in ag["relationships"]:
-			if String(ag["id"]) >= String(oid):
-				continue   # 去重（只画 id 较小一侧）
-			var other: Dictionary = Sim.get_agent(oid)
-			if other.is_empty() or not _in_town(other):
-				continue
 			var aff := float(ag["relationships"][oid].get("affinity", 0.0))
-			if absf(aff) <= 20.0:
+			var mag := absf(aff)
+			if mag <= REL_MIN_AFF:
 				continue
-			var t := clampf(absf(aff) / 100.0, 0.0, 1.0)
-			var col := (Color("#7ed957") if aff > 0 else Color("#e85a5a"))
-			col.a = 0.18 + t * 0.5
-			draw_line(_center(ag), _center(other), col, 1.0 + t * 3.0)
+			if top.size() >= REL_TOP_K and mag <= float(top[top.size() - 1]["mag"]):
+				continue
+			var ins := top.size()
+			for i in top.size():
+				if mag > float(top[i]["mag"]):
+					ins = i
+					break
+			top.insert(ins, {"id": String(oid), "aff": aff, "mag": mag})
+			if top.size() > REL_TOP_K:
+				top.resize(REL_TOP_K)
+		for e in top:
+			var oid2 := String(e["id"])
+			var k := (aid + ">" + oid2) if aid < oid2 else (oid2 + ">" + aid)
+			keep[k] = e["aff"]
+	# 2) 画：视口裁剪 + 屏幕长度衰减 + 选中聚焦
+	for k in keep:
+		var ids := String(k).split(">")
+		var a: Dictionary = Sim.get_agent(ids[0])
+		var b: Dictionary = Sim.get_agent(ids[1])
+		if a.is_empty() or b.is_empty() or not _in_town(a) or not _in_town(b):
+			continue
+		var p1 := _center(a)
+		var p2 := _center(b)
+		if not _vis.intersects(Rect2(p1, Vector2.ZERO).expand(p2)):
+			continue                                   # 整段在视口外 → 一笔不画
+		var aff2 := float(keep[k])
+		var t := clampf(absf(aff2) / 100.0, 0.0, 1.0)
+		var screen_len := p1.distance_to(p2) * _zoom
+		var fade := clampf(1.0 - (screen_len - REL_FADE_PX) / REL_FADE_PX, 0.25, 1.0)
+		var focus := 1.0
+		var width := 1.2 + t * 2.4
+		if sel != "" and rel_mode == RelMode.ALL and ids[0] != sel and ids[1] != sel:
+			focus = 0.55                               # 选了人 → 别人的线退半档背景，ta 的关系站出来（不是抹掉：全镇结构仍要看得见）
+		elif sel != "":
+			width += 1.2                               # 选中当事人的线加粗一档
+		var col := (Color("#7ed957") if aff2 > 0.0 else Color("#e85a5a"))
+		col.a = (0.26 + t * 0.52) * fade * focus
+		draw_line(p1, p2, col, width)
 
 ## S3a 派系：同派系成员脚下画同色环（颜色由派系 medoid id 确定性派生）。
 func _draw_faction_rings() -> void:
@@ -870,8 +1074,10 @@ func _draw_faction_rings() -> void:
 			continue
 		var col := _faction_color(fac)
 		col.a = 0.85
-		var c := _center(ag) + Vector2(0, T * 0.34)
-		draw_arc(c, T * 0.30, 0.0, TAU, 20, col, 2.5)
+		var c := _center(ag) + Vector2(0, T * 0.30)   # 落脚线（与影子/精灵底边同一条）
+		if not _vis.has_point(c):
+			continue
+		draw_arc(c, T * 0.20, 0.0, TAU, 16, col, 2.5)  # 收小到 0.20 格：不再穿过头顶名牌与脚下气泡
 
 func _faction_color(fac: String) -> Color:
 	var h := absi(fac.hash())
@@ -896,11 +1102,16 @@ func _draw_pact_links() -> void:
 				continue
 			var a := _center(ag)
 			var b := _center(other)
+			if not _vis.intersects(Rect2(a, Vector2.ZERO).expand(b)):
+				continue
 			var perp := (b - a).orthogonal().normalized() * 2.0
 			var cyan := Color("#39d4c8", 0.7)
 			draw_line(a + perp, b + perp, cyan, 1.6)
 			draw_line(a - perp, b - perp, cyan, 1.6)
-			draw_string(ThemeDB.fallback_font, (a + b) * 0.5 - Vector2(6, -4), "🤝", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, cyan)
+			# 中点标记：原本是 🤝，但它走 ThemeDB.fallback_font 而那张表【没有 emoji】→ 每条盟约中点都是一个豆腐框。
+			# 换成自带中文字体一定有的「盟」，零新增资源、手机上同样成立。
+			if _zoom >= LABEL_MIN_ZOOM:
+				_draw_plate_text((a + b) * 0.5 + Vector2(0, 5), "盟", 13, cyan, Color(0, 0, 0, 0.5))
 
 ## 对话连线：正在一次社交事务里的两人之间画一条暖黄线。
 func _draw_talking_links() -> void:
@@ -911,45 +1122,84 @@ func _draw_talking_links() -> void:
 		if opt != null and String(opt.get("kind", "")) == "social":
 			var other: Dictionary = Sim.get_agent(String(opt.get("partner", "")))
 			if not other.is_empty() and _in_town(other):
-				draw_line(_center(ag), _center(other), Color("#ffd166", 0.85), 2.5)
+				var p1 := _center(ag)
+				var p2 := _center(other)
+				if _vis.intersects(Rect2(p1, Vector2.ZERO).expand(p2)):
+					draw_line(p1, p2, Color("#ffd166", 0.85), 2.5)
+
+## 居中的「深色底板 + 文字」。anchor = 文字基线中点；返回底板矩形，供旁边的标记贴边摆放。
+## 旧版的名字是【无描边无底板的纯白 draw_string】——在草地上勉强能读，一压到这次新铺的木/石地板就糊没了。
+func _draw_plate_text(anchor: Vector2, txt: String, fs: int, fg: Color, bg: Color) -> Rect2:
+	var fnt := Art.font()
+	var sz := fnt.get_string_size(txt, HORIZONTAL_ALIGNMENT_LEFT, -1, fs)
+	var plate := Rect2(anchor.x - sz.x * 0.5 - 4.0, anchor.y - sz.y + 2.0, sz.x + 8.0, sz.y + 3.0)
+	draw_rect(plate, bg, true)
+	draw_string(fnt, Vector2(anchor.x - sz.x * 0.5, anchor.y), txt, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, fg)
+	return plate
+
+## 头顶气泡的动作文案：社交动作在 Sim 里是英文 id（greet/give/gossip_rep/…），直接 str() 出来就是生英文。
+## 走 Sim._verb（只读 Sim.gd，不改它）转中文；物件/行程动作本来就是中文，_verb 对未匹配项原样返回 → 不受影响。
+func _action_label(opt: Dictionary) -> String:
+	var act := str(opt.get("action", ""))
+	if act == "":
+		return ""
+	return Sim._verb(act) if String(opt.get("kind", "")) == "social" else act
 
 func _draw_agent(ag: Dictionary) -> void:
 	var center := _center(ag)
+	var feet := center.y + T * 0.30          # 落脚线：影子 / 派系环 / 精灵底边都对齐它
 	var col := Color(str(ag.get("persona", {}).get("color", "#ffffff")))
 	var spr := _hued_tex(str(ag.get("persona", {}).get("sprite", "")), String(ag["id"]))  # L6：克隆取确定性色相变体，命名 6 人=正典
+	var head := center.y - T * 0.32          # 头顶（fallback 圆的情形）
 	if spr != null:
-		# 软阴影 + 按移动选行走帧（cols0-3 循环，左向水平翻转）放大居中（脚踩格心）
+		# 软阴影 + 按移动选行走帧（cols0-3 循环，左向水平翻转）。整数 2x 缩放，且把源帧里人物的【脚】压在落脚线上
 		var fr := _agent_frame(ag)
-		draw_circle(center + Vector2(0, T * 0.30), T * 0.22, Color(0, 0, 0, 0.25))
-		var sz := 46.0
+		draw_circle(Vector2(center.x, feet), T * 0.22, Color(0, 0, 0, 0.25))
+		var sz := AGENT_PX
+		var top := feet - sz * (CHAR_FEET_ROW / 32.0)
+		head = top + sz * (CHAR_HEAD_ROW / 32.0)
 		var src := Rect2(int(fr["col"]) * Art.CHAR_FRAME.x, int(fr["row"]) * Art.CHAR_FRAME.y, Art.CHAR_FRAME.x, Art.CHAR_FRAME.y)
 		if bool(fr["flip"]):
-			draw_set_transform(center, 0.0, Vector2(-1, 1))
-			draw_texture_rect_region(spr, Rect2(-sz * 0.5, -sz * 0.72, sz, sz), src)
+			draw_set_transform(Vector2(center.x, top), 0.0, Vector2(-1, 1))
+			draw_texture_rect_region(spr, Rect2(-sz * 0.5, 0.0, sz, sz), src)
 			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		else:
-			draw_texture_rect_region(spr, Rect2(center.x - sz * 0.5, center.y - sz * 0.72, sz, sz), src)
+			draw_texture_rect_region(spr, Rect2(center.x - sz * 0.5, top, sz, sz), src)
 	else:
 		draw_circle(center, T * 0.32, col)
 		draw_circle(center, T * 0.32, Color(0, 0, 0, 0.4), false, 2.0)
 	# 玩家标识：金色外环（--player 模式一眼可辨"这是我"）
 	if ag.get("is_player", false):
 		draw_circle(center, T * 0.42, Color("#ffd700"), false, 2.5)
-	# 头顶 emote（社交事件触发，短暂显示）
+	if _zoom < LABEL_MIN_ZOOM:
+		return          # 全镇俯瞰档：名字/emote/气泡/需求条缩到几像素只剩糊斑 —— 不画，画面更干净、填充率也省下来
+	# 最紧迫需求条（落脚线正下方）
+	_draw_urgent_need(Vector2(center.x, feet + T * 0.20), ag)
+	# 头顶 emote（社交事件触发，短暂显示）：20px 源 × 2 整数倍
+	var name_y := head - T * 0.12            # 名字基线：紧贴头顶上方
 	var em = _emote.get(ag["id"])
 	if em != null and Sim.tick_no < int(em["until"]):
 		var et: Texture2D = em["tex"]
-		var es := 26.0
-		draw_texture_rect_region(et, Rect2(center.x - es * 0.5, center.y - T * 1.02, es, es), Rect2(0, 0, et.get_width(), et.get_height()))
-	# 名字
+		draw_texture_rect_region(et, Rect2(center.x - EMOTE_PX * 0.5, name_y - T * 0.50 - EMOTE_PX, EMOTE_PX, EMOTE_PX), Rect2(0, 0, et.get_width(), et.get_height()))
+	# 名牌：名字 + 冲突「!」+ 约见「约」画进【同一块底板】。
+	# 旧版把两个标记按固定像素偏移丢在名字外面，人挨着站时标记落在【邻居的名字】旁边，读不出是谁在闹。
 	var nm := str(ag.get("persona", {}).get("name", ag["id"]))
-	draw_string(Art.font(), center + Vector2(-18, -T * 0.42), nm, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color.WHITE)
-	# 冲突 / 约见 标记（名字上方；用字体里一定有的字形）
-	if _in_conflict(ag["id"]):
-		draw_string(Art.font(), center + Vector2(-26, -T * 0.66), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color("#e85a5a"))
-	if _has_meet(ag["id"]):
-		draw_string(Art.font(), center + Vector2(12, -T * 0.66), "约", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("#ffd166"))
-	# 气泡：交谈台词（短暂）优先，其次当前动作
+	var fnt := Art.font()
+	var nsz := fnt.get_string_size(nm, HORIZONTAL_ALIGNMENT_LEFT, -1, 14)
+	var has_cf := _in_conflict(ag["id"])
+	var has_mt := _has_meet(ag["id"])
+	var lw := 11.0 if has_cf else 0.0
+	var rw := 18.0 if has_mt else 0.0
+	var total := nsz.x + lw + rw
+	draw_rect(Rect2(center.x - total * 0.5 - 4.0, name_y - nsz.y + 2.0, total + 8.0, nsz.y + 3.0), Color(0, 0, 0, 0.62), true)
+	var tx := center.x - total * 0.5
+	if has_cf:
+		draw_string(fnt, Vector2(tx, name_y), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color("#ff6b6b"))
+		tx += lw
+	draw_string(fnt, Vector2(tx, name_y), nm, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1, 1, 1, 0.97))
+	if has_mt:
+		draw_string(fnt, Vector2(tx + nsz.x + 4.0, name_y), "约", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("#ffd166"))
+	# 气泡：交谈台词（短暂）优先，其次当前动作。放在需求条下方 → 与派系环/需求条不再互相穿插
 	var bubble := ""
 	var sy = _say.get(ag["id"])
 	if sy != null and Sim.tick_no < int(sy["until"]):
@@ -957,15 +1207,9 @@ func _draw_agent(ag: Dictionary) -> void:
 	else:
 		var opt = ag.get("option")
 		if opt != null:
-			bubble = str(opt.get("action", ""))
+			bubble = _action_label(opt)
 	if bubble != "":
-		var fnt := Art.font()
-		var sz := fnt.get_string_size(bubble, HORIZONTAL_ALIGNMENT_LEFT, -1, 12)
-		var bpos := center + Vector2(-sz.x * 0.5, T * 0.5)
-		draw_rect(Rect2(bpos + Vector2(-4, -12), sz + Vector2(8, 6)), Color(0, 0, 0, 0.55), true)
-		draw_string(fnt, bpos, bubble, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 1, 1, 0.92))
-	# 最紧迫需求条
-	_draw_urgent_need(center, ag)
+		_draw_plate_text(Vector2(center.x, feet + T * 0.64), bubble, 12, Color(1, 1, 1, 0.95), Color(0, 0, 0, 0.72))
 
 ## 程序化像素床（顶视角）：木框 + 床单 + 枕头 + 被子。base=格左上像素。
 ## ── 建筑（切顶俯视）────────────────────────────────────────────────────────
@@ -1176,7 +1420,8 @@ func _draw_festival(base: Vector2) -> void:
 	draw_line(Vector2(c.x, c.y + lh * 0.55), Vector2(c.x, c.y + lh * 0.78), Color("#ffd166"), 2.0)  # 流苏
 	draw_string(Art.font(), c + Vector2(-7, -lh * 0.55 - 4), "灯会", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("#ffe08a"))
 
-func _draw_urgent_need(center: Vector2, ag: Dictionary) -> void:
+## at = 需求条的【上边中点】（由 _draw_agent 按落脚线给，不再是"格心 +30px"的硬编码）。
+func _draw_urgent_need(at: Vector2, ag: Dictionary) -> void:
 	var worst := 100.0
 	var worst_id := ""
 	for nid in ag["needs"]:
@@ -1186,7 +1431,7 @@ func _draw_urgent_need(center: Vector2, ag: Dictionary) -> void:
 			worst_id = nid
 	if worst_id == "":
 		return
-	var bar := Rect2(center.x - 16, center.y + 30, 32, 4)
+	var bar := Rect2(at.x - 16, at.y, 32, 4)
 	draw_rect(bar, Color(0, 0, 0, 0.5), true)
 	var frac := clampf(worst / 100.0, 0.0, 1.0)
 	var c := Color("#7ed957") if worst > 35.0 else Color("#e85a5a")
