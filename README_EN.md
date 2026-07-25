@@ -6,6 +6,10 @@
 
 The game keeps running when the model is unavailable. Network failures, timeouts, or invalid outputs fall back to rule decisions, so model integration changes presentation rather than state reliability.
 
+![Living Town · live demo](docs/media/town_demo.gif)
+
+> Recorded on a physical Android device (`logic` backend): after nightfall, residents keep appointments, chat, spread gossip, and fall out — every step driven by the same deterministic social engine.
+
 ![Living Town cover](docs/media/cover.png)
 
 ## Current State
@@ -23,10 +27,28 @@ Demo videos:
 
 ![Subtitle style from the rendered demo](docs/media/shot-05-subtitled-demo.png)
 
+## Technical Highlights & Innovations
+
+**1. Deterministic and observation-independent: how the town lives does not depend on where you look.**
+The decision logic uses no wall-clock time and no global random — all randomness is stably derived from `seed + tick + salt(+agent)` (never wall-clock or a global RNG). The same seed is byte-identical, and the replay observatory reconstructs the world exactly from any tick. A stronger red line: **rendering may follow the camera, but the simulation LOD that decides *who* gets simulated in detail must not depend on it** — otherwise the same save viewed differently would replay a different history. This observation-independence runs through the whole engine.
+
+**2. An observation-independent aggregate LOD (the focus of this stage).**
+Scaling the town to hundreds of residents means reducing fidelity for distant ones; the hard part is that a conventional LOD keyed on camera distance would make history depend on the observation path, breaking the determinism red line above. So the full-detail cohort is chosen entirely from committed simulation state (who is doing work / a stateless rotation / near the player), never from the camera (the one older conservative branch that dims by camera radius is bench-diagnostic only, not shipped). It passes six checks: byte-identical when off, **camera-path invariance** (5 fixed `lod_focus` values → one digest), deterministic across save/load and fresh-vs-restart, hard invariants at scale, honest cost, and a liveness floor — of which camera-path invariance and determinism are wired into CI as permanent gates.
+> Stated honestly: this is an **observation-independent prototype**, not "hundreds of NPCs delivered." Microsecond profiling on a real phone showed the frame splits roughly into thirds — sim tick / social drawing / static redraw — so the LOD is a necessary third, not a sufficient fix. The methodological lesson (in [docs/33](docs/33-viewer-independent-lod-delivery.md)): **don't infer the bottleneck, instrument and measure it** — I misjudged the single bottleneck three times before the on-device microsecond split made it clear.
+
+**3. Decision and expression are decoupled: the model never mutates world state.**
+The engine enumerates legal candidates; the model only reads candidates and context and returns one candidate index plus optional dialogue. The world advances purely through the deterministic engine — the model never writes state directly. Invalid output, timeout, or a missing model all fall back safely to rules. The presentation layer is swappable (canned lines / local SLM / cloud LLM) without changing the reliability of the world.
+
+**4. Emergent social dynamics.**
+Gossip spreads third-party reputation → consensus forms → it can escalate into collective avoidance; disagreement crystallizes into factions; mutual-aid pacts carry GTFT-style forgiveness. None of this is scripted — it emerges from rule interactions, and every step traces back to a concrete event, so the system can explain why a resident is angry or trusts someone.
+
+**5. Invariant regression gates plus a shadow counterfactual probe.**
+A 30-day soak checks 37 social invariants (belief provenance, promise settlement, money conservation, private-channel secrecy, and more). Going further, a "shadow probe" measures — **without changing the trajectory** — exactly which decisions an intervention flips, turning "does this mechanism actually matter" from anecdote into a number.
+
 ## Engineering Design
 
 1. **The model does not mutate state directly.** The engine enumerates legal candidates; the model returns a candidate index and optional dialogue. Invalid output, timeout, or missing service falls back to deterministic rules.
-2. **Invariants act as regression gates.** The 30-day soak checks 35 properties of the simulated society, including belief provenance, promise settlement, apology flow, reputation effects, private-channel secrecy, money conservation, and no overdraft. The full list is in [docs/08-测试与验证.md](docs/08-测试与验证.md).
+2. **Invariants act as regression gates.** The 30-day soak checks 37 properties of the simulated society, including belief provenance, promise settlement, apology flow, reputation effects, private-channel secrecy, money conservation, and no overdraft. The methodology and list are in [docs/08-测试与验证.md](docs/08-测试与验证.md).
 3. **Event sourcing enables replay.** Randomness is derived from `seed + tick + salt`, without wall-clock time or global random state. The same seed produces byte-identical summaries, and the replay observatory rebuilds the world from any tick.
 4. **Two runtimes share the same logic.** The Node port gives fast iteration; Godot 4.6.2 runs the actual game shell. Both pass the same invariant suite, separating logic errors from engine integration issues.
 
