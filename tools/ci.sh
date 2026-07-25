@@ -10,6 +10,10 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 GODOT="${GODOT:-godot}"
 CI_SEEDS="${CI_SEEDS:-1-12}"; CI_DAYS="${CI_DAYS:-60}"; CI_DET="${CI_DET:-3}"
+# 日志目录按【本仓库路径 + PID】隔离：多 worktree 并行跑 CI 时，固定的 /tmp/lt_*.log 会互相覆盖——
+# 判定本身走 PIPESTATUS 不受影响，但 scan 步骤会去读【别人的】日志，误报/漏报都可能（B10 实测踩到）。
+LT_LOG="${LT_LOG:-/tmp/lt-$(printf '%s' "$PWD" | tr -c 'A-Za-z0-9' '_' | tail -c 40)-$$}"
+mkdir -p "$LT_LOG"
 PY="${PYTHON:-python}"
 FAIL=0
 ok(){ echo "  ✅ $1"; }
@@ -49,44 +53,44 @@ echo "### 2. link lint (markdown relative links)"
 "$PY" tools/lint_links.py && ok "lint_links" || bad "lint_links"
 
 echo "### 3. godot import + parse smoke"
-"$GODOT" --headless --path game --import >/tmp/lt_import.log 2>&1 || true
-if grep -qiE 'SCRIPT ERROR|Parse Error|Failed to load script' /tmp/lt_import.log; then
-  grep -iE 'SCRIPT ERROR|Parse Error|Failed to load script' /tmp/lt_import.log | head; bad "godot parse"
+"$GODOT" --headless --path game --import >"$LT_LOG/import.log" 2>&1 || true
+if grep -qiE 'SCRIPT ERROR|Parse Error|Failed to load script' "$LT_LOG/import.log"; then
+  grep -iE 'SCRIPT ERROR|Parse Error|Failed to load script' "$LT_LOG/import.log" | head; bad "godot parse"
 else ok "import/parse clean"; fi
 
 echo "### 4. S0 gate (invariants + determinism + 金标; seeds=$CI_SEEDS days=$CI_DAYS det=$CI_DET)"
 # --golden：跨进程/跨提交/跨引擎版本锚（红线#1）。没有它，CI 只证明「同一二进制同一进程内跑两次一样」。
 "$GODOT" --headless --path game --script res://bench/Harness.gd -- \
   --seeds "$CI_SEEDS" --days "$CI_DAYS" --det "$CI_DET" \
-  --golden game/bench/golden_digests.json 2>&1 | tee /tmp/lt_s0.log
+  --golden game/bench/golden_digests.json 2>&1 | tee "$LT_LOG/s0.log"
 [ "${PIPESTATUS[0]}" -eq 0 ] && ok "S0 gate" || bad "S0 gate"
-scan "S0 gate" /tmp/lt_s0.log
+scan "S0 gate" "$LT_LOG/s0.log"
 
 echo "### 4b. LOD 观察无关红线 (V2 相机路径无关 + V3 确定性/存读/fresh-restart)"
 # 永久门：aggregate LOD 的 cohort 必须【只由 committed sim 态】选、绝不读相机 lod_focus。
 # 若日后有人把 cohort 从相机取回，V2(5 个 lod_focus→同 digest) 立即变红（Main.gd:159 红线机器化）。
-"$GODOT" --headless --path game --script res://bench/lod_verify.gd -- "${CI_LOD_N:-48}" "${CI_LOD_DAYS:-3}" 2>&1 | tee /tmp/lt_lod.log
+"$GODOT" --headless --path game --script res://bench/lod_verify.gd -- "${CI_LOD_N:-48}" "${CI_LOD_DAYS:-3}" 2>&1 | tee "$LT_LOG/lod.log"
 [ "${PIPESTATUS[0]}" -eq 0 ] && ok "LOD viewer-independence gate" || bad "LOD viewer-independence gate"
-scan "LOD gate" /tmp/lt_lod.log
+scan "LOD gate" "$LT_LOG/lod.log"
 
 echo "### 4c. DetGate 场景确定性门 (default / faction / betray / freerider)"
 # Invariants.gd:15 对任何非空 scenario 豁免硬不变量 #1，且 Harness 没有 --scenario ——
 # 在此门落地之前，三条内置定向场景在 CI 里跑过 0 次（docs/17 早就开了这个方子）。
 "$GODOT" --headless --path game --script res://bench/DetGate.gd -- \
-  --seeds "${CI_DG_SEEDS:-1-4}" --days "${CI_DG_DAYS:-20}" 2>&1 | tee /tmp/lt_detgate.log
+  --seeds "${CI_DG_SEEDS:-1-4}" --days "${CI_DG_DAYS:-20}" 2>&1 | tee "$LT_LOG/detgate.log"
 [ "${PIPESTATUS[0]}" -eq 0 ] && ok "DetGate scenario determinism" || bad "DetGate scenario determinism"
-scan "DetGate" /tmp/lt_detgate.log
+scan "DetGate" "$LT_LOG/detgate.log"
 
 echo "### 5. unit / integration scenes"
 for scene in m2_test reqlife_test player_agency_test s4_replay_test space_test save_load_test; do
-  "$GODOT" --headless --path game "res://scenes/$scene.tscn" >/tmp/lt_$scene.log 2>&1
+  "$GODOT" --headless --path game "res://scenes/$scene.tscn" >"$LT_LOG/$scene.log" 2>&1
   code=$?
-  if [ $code -eq 0 ]; then ok "$scene"; else tail -8 /tmp/lt_$scene.log; bad "$scene (exit $code)"; fi
+  if [ $code -eq 0 ]; then ok "$scene"; else tail -8 "$LT_LOG/$scene.log"; bad "$scene (exit $code)"; fi
   case "$scene" in
     # m2_test 是【负例测试】：故意把畸形 JSON 喂给 AIBackend.parse_decision(:560) 验证它拒收，
     # 引擎因此必打两行 "Parse JSON failed"。这是被断言的行为，不是回归 → 只对本场景放行这一条。
-    m2_test) scan "$scene" /tmp/lt_$scene.log 'Parse JSON failed' ;;
-    *)       scan "$scene" /tmp/lt_$scene.log ;;
+    m2_test) scan "$scene" "$LT_LOG/$scene.log" 'Parse JSON failed' ;;
+    *)       scan "$scene" "$LT_LOG/$scene.log" ;;
   esac
 done
 
