@@ -25,6 +25,6 @@
 
 ## 方法论收获（这条弯路值得）
 双 AI 对抗评审 + 预注册 metric card + held-out 确认，把一个"看着像 5% 残余失败、想加机制去修"的直觉，一路证伪成"度量假象"。
-**没有这套（反事实探针 + 事前窗口 + 冻结阈值 + held-out），我会去修一个不存在的问题**（就像最初那两个 lever）。见 docs/27-30 全链，[[project-15-metric-repair]]、[[feedback-adversarial-external-review]]。
+**没有这套（反事实探针 + 事前窗口 + 冻结阈值 + held-out），我会去修一个不存在的问题**（就像最初那两个 lever）。全链：起点 docs/27@exile-hardening（负结果，未并入 master），落点 [docs/28](28-shadow-counterfactual-result.md) / [29](29-exile-v2-result.md) / [30](30-15v2-metric-card.md) 与本文。另见 [[project-15-metric-repair]]、[[feedback-adversarial-external-review]]。
 
 _dev+held-out 共 126 seed × 60 天，frozen #15v2；双评审 GPT-5 Pro + Codex desktop。master 代码一行未动（全在本分支）。_

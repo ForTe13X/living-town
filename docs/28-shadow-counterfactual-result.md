@@ -1,6 +1,6 @@
 # Shadow 反事实：把"2 个 lever 失败"量化成"各自翻错了哪些决策"
 
-分支 `shadow-instrumentation`。docs/27 路线①落地：`_acceptance_margin` 暴露每次接受决策的数值 margin，`--shadow-dump`
+分支 `shadow-instrumentation`。docs/27@exile-hardening（负结果，未并入 master；`git show exile-hardening:docs/27-exile-hardening-negative-result.md`）路线①落地：`_acceptance_margin` 暴露每次接受决策的数值 margin，`--shadow-dump`
 导出 14926 条决策（12 seed × 60 天），`tools/shadow_analyze.py` 在【同一批提议 + 同一状态】上直接算某假想 lever
 会翻哪些决策——**绕过确定性仿真的轨迹搅动**（正是这条混淆让 exile-hardening 的两个 lever 无法解释）。
 
