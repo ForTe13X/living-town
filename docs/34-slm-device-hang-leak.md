@@ -39,6 +39,27 @@
 
 **剩余（交专门一轮，见 spawn_task）**：治本 Adreno GPU 挂死——①真机试 CPU 推理(`slm_use_gpu=false`，但容器测 ~1字/s 恐太慢，需 8Elite CPU 实测)；②升级/换 NobodyWho arm64 构建或换 llama.cpp Vulkan 后端；③`_probe_once` 裸 await 加超时兜底 + 无条件 free（现在探测挂死漏 1 worker + 卡主线程）。
 
+## ⚠️ 更正（同日、深挖后）：根因【不是】Adreno——是 worker 生命周期 use-after-free
+
+上一段"根因收窄到 Adreno GPU Vulkan"**被我自己的后续测试证伪**——典型的"只测了方便那条路"（见 memory `feedback-adversarial-external-review`）。`slm_smoke.gd` 是【最小路径】：单 worker、await 到底、之后才 free，**根本没碰真实集成**。补了 `bench/BackendBench.tscn`（跑真·游戏内 `AIBackend.decide` 路径）在桌面 AMD Vulkan 上一测：
+
+- **桌面照样崩**（EXIT 139 段错误）。panic 明确：`NobodyWhoChat::clone: access to instance … after it has been freed`。
+- 崩前统计：**fired=46 landed=35 timeout=0 合致 77.8%**——SLM 功能其实是好的、模型也快（timeout=0），**崩在 teardown**。
+- 日志：**116 个 "Initializing worker" 对 46 次决策**——旧实现【每次决策/反思/对话都 new 一个 NobodyWhoChat + start_worker + 完成即 queue_free】，高频决策下每秒起/放几十个 worker；一旦在 worker 仍在飞时 free 它（超时/落地/cancel_all/下一发），扩展的异步回包访问【已释放】节点 → godot-rust panic → 崩。
+
+**统一解释（桌面崩 vs 手机泄漏 = 同一 bug 两种表现）**：per-call worker churn + mid-flight free。桌面模型快 → free 抢在回包前 → use-after-free 崩；手机 Adreno 挂死 → worker 卡在原生 compute 释放不掉 → 16GB 泄漏。
+
+### 治本修法（已实现 + 桌面验证）：池化持久 worker（commit 见 git）
+
+全局只养【一个】持久 NobodyWhoChat，`reset_context()` 复用，串行（一次一发，本地推理本就串行），**绝不在在飞时 free**；signal 用【每发一次性闭包捕获 `world_epoch`】（cancel_all 后迟包按 epoch 作废，不污染复用 worker）+ `fired[]` 去重防双触发。决策/反思/对话三路统一走 `_slm_submit`。
+
+- 桌面验证（BackendBench，1.5B，AMD Vulkan GPU）：**运行中 0 panic**（旧=段错误崩）；worker churn **116→2**；3 sim-日 fired=129 landed=101 timeout=0 **合致 78.3%**（含夜间 reflect cb 路径）。
+- **红线**：改动纯 slm 后端；**确定性逐字节 det 1/1、37 硬不变量全绿**（S0 gate；软 #26 是既有 flap，`git stash` 对照证实与本改无关）。
+- **手机附带收益**：`_slm_busy` 门在【第一次 Adreno 挂死后即封住】→ 后续决策全走 logic、**只留 1 个 hung worker**（比熔断器的 6 个更早封顶）；熔断器保留为冗余兜底。
+- 残留：仅【进程退出 teardown】时 1 次良性 panic（NobodyWho 关停线程序问题，旧代码也有；进程本在退出，EXIT 0 不影响）。
+
+**旗舰级仍待办**：手机上 SLM 本身仍因 Adreno Vulkan 挂死【不产出决策】（池化只让它优雅降级、不崩不泄）。真正让端侧 SLM 在 8Elite 上跑起来 = 试 CPU 推理 / 换 NobodyWho 后端——见 spawn_task。**手机眼验（重出 APK + dumpsys Native Heap）待下一轮**。
+
 ## 影响评级
 
-**高**：旗舰功能（端侧 SLM 决策 + 语音）在真机上【完全不生效】。**熔断器已消除 OOM 崩溃风险**（降级到 logic 地板，红线：无模型也能玩），但要真正恢复 SLM 还需治本 Adreno GPU 挂死。
+**高**：真机 backend=slm 曾【旗舰不生效 + 崩/OOM】。现状：**崩溃与 OOM 泄漏已治本**（池化 worker，桌面验证 0 崩；手机降级只留 1 worker）——桌面 SLM 完全可用、手机优雅降级到 logic 地板（红线：无模型也能玩）。**尚缺**：手机端 SLM 真正产出决策仍卡在 Adreno Vulkan（交 spawn_task）+ 手机眼验。

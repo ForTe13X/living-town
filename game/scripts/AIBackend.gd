@@ -60,8 +60,14 @@ func cancel_all() -> void:
 		_free_transport(p.get("http"), p.get("slm_chat"))
 	_pending = {}
 	_inflight = 0
-	# 兜底：扫掉仍挂在 AIBackend 下的一次性请求节点（chat/reflect 不进 _pending）。不碰共享 _slm_model(NobodyWhoModel)。
+	# 池化 SLM worker：作废在飞发（world_epoch 已自增 → 迟包按 epoch 丢弃）+ 停当前生成，但【不 free】——持久复用。
+	_slm_busy = false
+	if _slm_chat != null and is_instance_valid(_slm_chat) and _slm_chat.has_method("stop_generation"):
+		_slm_chat.call("stop_generation")
+	# 兜底：扫掉仍挂在 AIBackend 下的一次性请求节点（旧 http/chat 路径）。不碰共享 _slm_model 与持久池化 _slm_chat。
 	for c in get_children():
+		if c == _slm_model or c == _slm_chat:
+			continue
 		if c is HTTPRequest or c.get_class() == "NobodyWhoChat":
 			if c.has_method("cancel_request"): c.call("cancel_request")
 			if c.has_method("stop_generation"): c.call("stop_generation")
@@ -87,6 +93,12 @@ var slm_model_override := ""                      # 设置面板里手选的 ggu
 # 轻量备选(极致包体/最低端)：res://models/qwen2.5-1.5b-instruct-q4_k_m.gguf（~1.3s，质量中）。capability 探针太慢会自动降 logic。
 var slm_use_gpu := true                          # 真机优先 GPU(Vulkan)；无设备自动回退 CPU（容器实测 CPU ~1字/s，故真机才实用）
 var _slm_model: Object = null                    # 共享 NobodyWhoModel（懒加载，~1GB 仅载一次）
+# 池化持久 SLM chat worker（docs/34 根治）：旧实现每次决策/反思/对话都 new 一个 NobodyWhoChat + start_worker + 完成即 queue_free，
+# 高频决策下每秒起/放几十个 worker；一旦在 worker 仍在飞时释放它（超时/落地/cancel_all），扩展的异步回包会访问【已释放】的节点
+# → godot-rust panic「access to instance after freed」→ 桌面段错误崩溃；手机 Adreno 挂死时 worker 释放不掉原生上下文 → 16GB 泄漏。
+# 修法：全局只养一个持久 chat，reset_context 复用；串行(一次一发，本地推理本就串行)；绝不在在飞时 free。
+var _slm_chat: Object = null                     # 持久池化 chat worker（只建一次，reset_context 复用）
+var _slm_busy := false                           # 串行在飞标志：一次只跑一发 SLM 生成（决策/反思/对话共用此 worker）
 
 const DEADLINE_MS := 12000     # 截止线上限/默认（实时墙钟毫秒）
 var deadline_ms := DEADLINE_MS # 自适应实时截止线：probe_capability 据本机 p50 设 clamp(6×p50,3000,12000)
@@ -204,6 +216,67 @@ func _ensure_slm_model() -> Object:
 		_slm_model.set("use_gpu_if_available", slm_use_gpu)
 		add_child(_slm_model)
 	return _slm_model
+
+## 懒加载持久池化 chat worker（绝不 per-call 起/放）。缺扩展/模型 → null（调用方兜底）。
+func _ensure_slm_chat() -> Object:
+	if _slm_chat != null and is_instance_valid(_slm_chat):
+		return _slm_chat
+	var model := _ensure_slm_model()
+	if model == null:
+		return null
+	_slm_chat = ClassDB.instantiate("NobodyWhoChat")
+	_slm_chat.set("model_node", model)
+	_slm_chat.set("allow_thinking", false)
+	add_child(_slm_chat)
+	_slm_chat.call("start_worker")                # 预热一次；后续 reset_context 复用，不再起新 worker
+	return _slm_chat
+
+## 串行提交一发 SLM 生成（决策/反思/对话统一入口）。返回 true=受理(占用 worker)；false=忙/不可用→调用方兜底。
+## route: {"mode":"decide","id","epoch","req"} 写回 _pending；{"mode":"cb","cb","cap","fallback"} 回调。
+## 关键：signal 用【每发一次性闭包】捕获 world_epoch → cancel_all 后到达的迟包按 epoch 作废，不污染复用的 worker；
+## 且用 fired[] 去重，防 response_finished/worker_failed 双触发导致重复投递。绝不在此 free chat（持久复用）。
+func _slm_submit(sys: String, usr: String, route: Dictionary) -> bool:
+	if _slm_busy:
+		return false                              # 串行：上一发未回 → 拒绝（调用方走地板/罐头）
+	var chat := _ensure_slm_chat()
+	if chat == null:
+		return false
+	_slm_busy = true
+	var my_epoch := world_epoch                   # 捕获：cancel_all 会自增 world_epoch → 迟包作废
+	var fired := [false]                          # 去重：response_finished 与 worker_failed 只认第一个
+	var on_done := func(resp):
+		if fired[0]: return
+		fired[0] = true
+		_slm_busy = false
+		if world_epoch == my_epoch:               # 未被 cancel_all 作废 → 投递
+			_deliver_slm(route, String(resp), false)
+	chat.connect("response_finished", on_done, CONNECT_ONE_SHOT)
+	if chat.has_signal("worker_failed"):
+		var on_fail := func(_msg = ""):
+			if fired[0]: return
+			fired[0] = true
+			_slm_busy = false
+			if world_epoch == my_epoch:
+				_deliver_slm(route, "", true)
+		chat.connect("worker_failed", on_fail, CONNECT_ONE_SHOT)
+	chat.call("reset_context")                    # 清上一发历史（复用 worker 的关键）
+	chat.set("system_prompt", sys)
+	chat.call("ask", usr)
+	return true
+
+## 把一发 SLM 结果投给它的去向。decide→按 (epoch,req) 重验写回 _pending；cb→回调(失败/空则兜底串)。
+func _deliver_slm(route: Dictionary, resp: String, failed: bool) -> void:
+	if route.get("mode") == "decide":
+		var id: String = route["id"]
+		if _match(id, int(route["epoch"]), int(route["req"])):   # 仍是同一 (epoch,req) 才写回
+			_pending[id]["raw"] = ("" if failed else resp)
+			_pending[id]["has"] = true
+			_pending[id]["ready"] = Sim.tick_no
+	elif route.get("mode") == "cb":
+		var cb: Callable = route["cb"]
+		if cb.is_valid():
+			var out := resp.strip_edges()
+			cb.call(out.substr(0, int(route.get("cap", 60))) if (out != "" and not failed) else String(route.get("fallback", "")))
 
 ## NobodyWho/llama.cpp 需要能 mmap 的【真实文件系统路径】。安卓上按序找一个存在的 gguf：
 ##   ① 公共可 MTP 拖放位置（Documents/LivingTown、Documents、Download）——用户经「此电脑\手机\Documents」直接拷入，
@@ -373,6 +446,8 @@ func decide(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Dictionary
 	if p.is_empty():
 		if _inflight >= MAX_INFLIGHT:
 			return Sim._logic_decide(agent, candidates)  # P1-4：过载立即走 logic，不让 agent 干等到 need 触底
+		if backend == "slm" and _slm_busy:
+			return Sim._logic_decide(agent, candidates)  # 池化 worker 正忙（另一发在飞）→ 本 tick 走 logic，不空烧 fire/预算
 		if not _budget_gate(id, agent):
 			return {}                                    # L5 预算耗尽/被老化门挡下 → 本 tick 走引擎地板(LLM ∝ 预算而非 N；发声由优先级+老化公平分配)
 		_fire(id, agent, capped, ctx)                    # 只把 top-36 喂给模型
@@ -569,30 +644,12 @@ func _fire_http(id: String, agent: Dictionary, candidates: Array, ctx: Dictionar
 ## 每次决策起一个一次性 chat worker（json_schema 受限解码）→ response_finished 写回 raw → 释放。
 ## 注：per-call worker 略重（worker 启动开销），但能避免并发 ask 串扰；MAX_INFLIGHT 限并发。真机 GPU 下可接受。
 func _fire_slm(id: String, agent: Dictionary, candidates: Array, ctx: Dictionary) -> void:
-	var model := _ensure_slm_model()
-	if model == null:
-		_pending[id]["has"] = true                 # 无扩展/模型 → 空 → 兜底
+	# 走池化持久 worker（根治 per-call churn 的 use-after-free 崩溃 + worker 原生泄漏）。
+	# 不设 json_schema 受限解码：长 prompt 下实测卡死只吐"{"；靠 _system_prompt 的 /no_think + parse_decision 抽 {…} 最稳。
+	var route := {"mode": "decide", "id": id, "epoch": world_epoch, "req": int(_pending[id]["req_id"])}
+	if not _slm_submit(_system_prompt(), build_prompt(agent, candidates, ctx), route):
+		_pending[id]["has"] = true                 # worker 忙/不可用 → 空 → 本发兜底 logic（decide 下 tick 消费）
 		_pending[id]["raw"] = ""
-		return
-	var chat: Object = ClassDB.instantiate("NobodyWhoChat")
-	chat.set("model_node", model)
-	chat.set("system_prompt", _system_prompt())
-	chat.set("allow_thinking", false)
-	add_child(chat)
-	_pending[id]["slm_chat"] = chat                 # 存句柄：超时(_finish)/cancel_all 时停止+释放
-	var ep := world_epoch
-	var rq := int(_pending[id]["req_id"])
-	chat.call("start_worker")
-	# 不设 json_schema 受限解码：NobodyWho worker 异步起，配置常在 ask 前未就绪被丢弃(WARN×N)；且长 prompt(多候选)下受限解码实测卡死只吐"{"。去掉它，靠 _system_prompt 的 /no_think + parse_decision 抽 {…} 最稳。
-	chat.connect("response_finished", func(resp):
-		if _match(id, ep, rq):                       # 仅同一 (epoch,req_id) 才写回(P1-2/3)
-			_pending[id]["raw"] = String(resp)
-			_pending[id]["has"] = true
-			_pending[id]["ready"] = Sim.tick_no
-		if is_instance_valid(chat):                 # _finish/cancel_all 可能已先释放
-			chat.queue_free()
-	, CONNECT_ONE_SHOT)
-	chat.call("ask", build_prompt(agent, candidates, ctx))
 
 ## ── 玩家 → NPC 自由对话（自由文本回复，区别于 decide 的 pick）──────────────
 ## 玩家面对的对话：不设 deadline-to-罐头（docs/07 §10），等真回复；缺模型/出错 → 人设化罐头兜底。
@@ -682,21 +739,8 @@ func _gen_slm(sys: String, user: String, cb: Callable) -> void:
 	if _slm_circuit_open:                             # 熔断后不发 SLM（reflect/chat 共用此路）→ 调用方走罐头兜底
 		cb.call("")
 		return
-	var model_node := _ensure_slm_model()
-	if model_node == null:
-		cb.call("")
-		return
-	var chat: Object = ClassDB.instantiate("NobodyWhoChat")
-	chat.set("model_node", model_node)
-	chat.set("system_prompt", sys)
-	chat.set("allow_thinking", false)
-	add_child(chat)
-	chat.call("start_worker")
-	chat.connect("response_finished", func(resp):
-		cb.call(String(resp).strip_edges().substr(0, 60))
-		chat.queue_free()
-	, CONNECT_ONE_SHOT)
-	chat.call("ask", user)
+	if not _slm_submit(sys, user, {"mode": "cb", "cb": cb, "cap": 60, "fallback": ""}):
+		cb.call("")                                  # 池化 worker 忙/不可用 → 调用方兜底（reflect 保留地板洞察）
 
 func _chat_http(agent: Dictionary, player_text: String, ctx: Dictionary, cb: Callable) -> void:
 	var http := HTTPRequest.new()
@@ -731,10 +775,6 @@ func _chat_http(agent: Dictionary, player_text: String, ctx: Dictionary, cb: Cal
 
 ## slm 自由对话（NobodyWho，自由文本，无 json 约束）：一次性 chat worker → response_finished 回调。
 func _chat_slm(agent: Dictionary, player_text: String, ctx: Dictionary, cb: Callable) -> void:
-	var model := _ensure_slm_model()
-	if model == null:
-		cb.call(_canned_reply(agent, player_text))
-		return
 	var p: Dictionary = agent.get("persona", {})
 	var mem := ""
 	if agent.get("memory") != null:
@@ -744,18 +784,8 @@ func _chat_slm(agent: Dictionary, player_text: String, ctx: Dictionary, cb: Call
 	var mm := _mood(agent)
 	var sys := "你在扮演像素小镇居民 %s（%s，性格:%s，口吻:%s）。此刻是%s，你%s。%s%s 用第一人称、你的口吻，贴合当下心情对玩家自然回 1-2 句，只输出台词本身、别复述设定。" % [
 		p.get("name", ""), p.get("bio", ""), "·".join(p.get("traits", [])), p.get("style", ""), _phase_zh(float(ctx.get("tod", 0.0))), String(mm[0]), mem, _secret_guard(agent)]
-	var chat: Object = ClassDB.instantiate("NobodyWhoChat")
-	chat.set("model_node", model)
-	chat.set("system_prompt", sys)
-	chat.set("allow_thinking", false)
-	add_child(chat)
-	chat.call("start_worker")
-	chat.connect("response_finished", func(resp):
-		var reply := String(resp).strip_edges()
-		cb.call(reply if reply != "" else _canned_reply(agent, player_text))
-		chat.queue_free()
-	, CONNECT_ONE_SHOT)
-	chat.call("ask", player_text)
+	if not _slm_submit(sys, player_text, {"mode": "cb", "cb": cb, "cap": 200, "fallback": _canned_reply(agent, player_text)}):
+		cb.call(_canned_reply(agent, player_text))    # 池化 worker 忙/不可用 → 罐头兜底
 
 func _system_prompt() -> String:
 	# 决策=闭集选号（edge-npu-8elite「决策≠生成」洞察）：只让模型出一个编号 → decode≈1 token（不再生成 80-token JSON），

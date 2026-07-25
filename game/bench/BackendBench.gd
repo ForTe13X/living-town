@@ -17,6 +17,8 @@ func _ready() -> void:
 		elif args[i] == "--seeds" and i + 1 < args.size(): seeds = args[i + 1]
 		elif args[i] == "--days" and i + 1 < args.size(): days = int(args[i + 1])
 		elif args[i] == "--endpoint" and i + 1 < args.size(): AIBackend.endpoint = args[i + 1]
+		elif args[i] == "--model" and i + 1 < args.size(): AIBackend.slm_model_path = args[i + 1]  # 指定 gguf（默认 3B 不在仓里时用）
+		elif args[i] == "--cpu": AIBackend.slm_use_gpu = false                                     # 强制 CPU 推理（对照 GPU）
 		elif args[i] == "--gpu": AIBackend.slm_use_gpu = true
 		elif args[i] == "--tier" and i + 1 < args.size(): AIBackend.tier = args[i + 1]   # 强制算力档(测节流)
 		elif args[i] == "--agents" and i + 1 < args.size(): Sim.spawn_count = int(args[i + 1])  # 扩 N
@@ -31,6 +33,7 @@ func _ready() -> void:
 
 func _run(backend: String, seed_list: Array, days: int, is_async: bool) -> void:
 	AIBackend.backend = backend
+	AIBackend.backend_requested = backend   # 必须同步：否则 decide() 的运行期切换逻辑(backend!=requested→回退)会把 backend 立刻拽回 logic → fired=0
 	var pis: Array = []
 	var casc: Array = []
 	var ginis: Array = []
