@@ -9,6 +9,8 @@ extends Node
 ##
 ## 断言（全部是"上一次真出过的 bug"的直接对应物）：
 ##   A. 进程活着退出（旧 per-call churn 版在此处段错误 EXIT 139）
+##      ⚠ A【本进程自己判不了】——它看不见自己的 teardown。A 的裁决权在【调用方的 exit code】。
+##        故下面那句 PASS 只覆盖 B/C/D/E；跑完务必 `echo $?`。已知残留见 docs/35 §四。
 ##   B. 池化不繁殖：AIBackend 底下活着的 NobodyWhoChat / NobodyWhoModel 恒 ≤ 2（池化=1，容一个拆建重叠）
 ##   C. C2 信号句柄不累积：response_finished 的连接数恒 ≤ 2；且空闲(_slm_busy=false)时必须归 0
 ##      —— 这正是 CONNECT_ONE_SHOT 泄漏的直接探针（旧版每成功一发就残留一个死闭包，O(submits) 涨）
@@ -31,6 +33,7 @@ var _max_chat := 0
 var _max_model := 0
 var _max_conn := 0
 var _idle_conn_leak := 0
+var _teardowns := 0    # 触发过几次 model 拆建（set_model_path / set_slm_use_gpu）——与退出期段错误强相关
 
 func _ready() -> void:
 	var model_path := ""
@@ -71,8 +74,13 @@ func _ready() -> void:
 	if _max_model > 2: _violations.append("B: 存活 model 峰值 %d > 2" % _max_model)
 	if _max_conn > 2: _violations.append("C: response_finished 连接峰值 %d > 2（信号句柄在累积，C2 回归）" % _max_conn)
 	if _idle_conn_leak > 0: _violations.append("C: 空闲期仍有 %d 次采样到未断开的连接（finish 没断干净，C2 回归）" % _idle_conn_leak)
+	print("  ⚠ 已知残留：桌面 SLM 路径会在【进程退出时】间歇段错误(EXIT 139)，本轮实测约 1/3 的跑。")
+	print("    它发生在所有输出打完【之后】，不是运行中的 use-after-free（那个崩在运行中）。本跑 model 拆建 %d 次。" % _teardowns)
+	print("    触发条件尚未定位（拆建臂 4/8、对照臂 1/7，p≈0.28 不足以判因果）。详见 docs/35 §4.1。")
+	print("    **断言 A 必须由你 `echo $?` 判定；且因为它是间歇的，单次绿的 exit code 不构成证据。**")
 	if _violations.is_empty():
-		print("=== SLM LIFECYCLE SOAK: PASS ✅（无崩溃、池化不繁殖、信号不累积、换模型撞在飞不崩）===")
+		print("=== SLM LIFECYCLE SOAK: 运行中断言 PASS ✅（池化不繁殖 / 信号不累积 / 换模型撞在飞不崩于运行中）===")
+		print("    注意：断言 A「进程干净退出」不在此判定——本进程看不见自己的 teardown，请看 exit code。")
 		get_tree().quit(0)
 	else:
 		for v in _violations: print("  ❌ " + v)
@@ -103,9 +111,11 @@ func _soak() -> void:
 			match phase % 3:
 				0:
 					print("[soak] set_model_path（撞在飞=%s）" % str(AIBackend._slm_busy))
+					_teardowns += 1
 					AIBackend.set_model_path(AIBackend._resolve_model_path())
 				1:
 					print("[soak] set_slm_use_gpu(%s)（撞在飞=%s）" % [str(not AIBackend.slm_use_gpu), str(AIBackend._slm_busy)])
+					_teardowns += 1
 					AIBackend.set_slm_use_gpu(not AIBackend.slm_use_gpu)
 				2:
 					print("[soak] cancel_all（世界重置：迟包必须按 epoch 作废，撞在飞=%s）" % str(AIBackend._slm_busy))
