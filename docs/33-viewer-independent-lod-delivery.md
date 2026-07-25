@@ -47,4 +47,25 @@
 - 若真机证明 render-bound → 做渲染视口裁剪（先修 3 致命项 + 门控 `size>=THRESHOLD` 休眠）。
 - sim LOD 接 Main / 抬 UI clamp / 资源密度缩放 / 非克隆多样人设 → 仅走 docs/19 大地图 fork2 时做，须先烘 lod-on 金标。
 
-**元教训**：这次是【宣告 done 前】先过评审——纪律用对了。见 memory `feedback-adversarial-external-review`。
+## 6. 真机帧测结果（NX789J / RedMagic，2026-07-25）——【推翻了我的干净结论】
+
+用户提醒"记得连续帧，是 game 卡死了"→ 单帧快照会骗人，连拍才看出真相。设 `settings.cfg` npc_count=200 + backend logic（绕 UI clamp），F3 开 overlay 读 FPS/绘制/tick，空格暂停隔离渲染。
+
+| N=200（clone 镇） | FPS | 绘制 | 内存 | tick/s |
+|---|---|---|---|---|
+| N=12 基线（跑） | 90 | 2514 | 142MB | 12 |
+| N=200 全量 sim，早期(day3) | 16 | 3864 | 172MB | 11.4 |
+| N=200 全量 sim，**day4** | **6** | 4548 | 268MB | 13.3（活冲突 49） |
+| N=200 **LOD**，day4 | **7** | 4054 | 240MB | 13.4（活冲突 6） |
+| N=200 **暂停**（纯渲染，day10） | **90** | 4229 | 273MB | 0 |
+
+**三条硬结论（都和我之前的干净故事相左）：**
+1. **渲染【不是】瓶颈**：暂停（冻结 sim）→ 90 FPS，即便 day10 关系线爆炸、200 agent、绘制 4229。→ **渲染视口裁剪不必做**（这点评审对、我对）。WorldView:751/828 遍历全 agent 在此规模真机上够快。
+2. **N=200 在真机上跑不顺**：全量 sim 与 LOD 都在 day4 掉到 **6-7 FPS**（"卡死"感）。tick/s 仍达标（13/s）说明 sim 在推进、但每 tick ~70-150ms 吃满主线程帧预算。
+3. **LOD 在克隆镇上几乎不救场**：day4 只 6→7 FPS（~17%），**远非 headless 的 79%**。根因：**克隆镇病态过度社交**——200 个克隆共享 ~12 个目标点、全挤广场、无休止互动 → 多数 agent `option!=null` → salient → **cohort≈N → LOD 失效**。headless 79% 是【前 5 天累计均值】（前期稀疏主导）；社交饱和后的【瞬时】收益坍缩。（LOD 确在起作用：活冲突 6 vs 49、绘制更低——远端被粗仿了，只是省下的 cohort 不够大。O(N) 基线成本 decay/`_far_maintain`/移动在解释执行的 GDScript 上也可能压过 LOD 省的社交枚举，需 profiling 定论。）
+
+**这正是 Codex/workflow 反复警告的"克隆镇不可靠"，如今在真机上被实证。** 内存也随时长涨到 240-268MB（累积社交态），长时高 N 需盯 OOM。
+
+**交付路线图的真修正**：LOD 观察无关+确定性+红线安全都成立，headless 稀疏/早期也确省。但【唯一能上真机的大镇=克隆镇】过度社交、把 LOD 打废——所以我【还不能】在真机上证明"LOD 交付流畅数百 NPC"。真正的前置【不是】渲染裁剪、【不是】接 Main，而是**一个真·稀疏大镇（各有家/作息、散得开的人设，即 docs/19 fork2 大地图）**。N=200 也【非出货档】（UI clamp 60；N≤60 真机 90 FPS 顺）。
+
+**元教训**：①这次宣告 done 前先过评审——纪律用对了（见 memory `feedback-adversarial-external-review`）。②【真机连拍 > headless 单点】：用户一句"连续帧"挡住了我基于早期单帧的错误结论"sim-bound、LOD 5x 修好"。眼验必须看【时间演化】，不是一帧（见 `feedback-record-on-stage-change`）。
