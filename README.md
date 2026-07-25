@@ -95,8 +95,8 @@
 
 1. **模型不直接改状态。** 引擎枚举合法候选，模型只返回候选 index 与可选台词。非法输出、超时或服务缺失都会回退到确定性规则。
 2. **不变量作为回归门。** 30 天 soak 会检查 37 条社会性质，包括信念来源、承诺结算、道歉流程、声誉影响、私聊秘密边界、金钱守恒和不可透支。**权威清单是代码本身**：[`game/bench/Invariants.gd`](game/bench/Invariants.gd)（每条带 id、中文名与失败详情）。方法学见 [docs/08](docs/08-测试与验证.md)。
-3. **事件溯源支持回放。** 随机性由 `seed + tick + salt` 派生，不依赖墙钟或全局随机。同一 seed 生成逐字节一致的摘要，回放观察台可从任意 tick 重建世界。
-4. **Godot 是权威；Node 端口是历史交叉验证。** [`tools/sim_social_port.mjs`](tools/sim_social_port.mjs) 镜像 M1-S3 的社交内核用于秒级迭代，自查 **33 条**断言（对应引擎的 #1-#33）——它确实证过"这套逻辑对 RNG 实现是鲁棒的"（端口用 mulberry32，Godot 用 `RandomNumberGenerator`，两边数值不同而性质同时成立）。
+3. **事件溯源支持回放。** 随机性由 `seed + tick + salt + agent` 派生（`_rng_at` 每次新建 RNG、纯输入播种、无状态），不依赖墙钟或全局随机。同一 seed 生成逐字节一致的摘要，回放观察台可从任意 tick 重建世界。
+4. **Godot 是权威；Node 端口是历史交叉验证。** [`tools/sim_social_port.mjs`](tools/sim_social_port.mjs) 曾镜像 M1-S3 的社交内核用于秒级迭代，自查 **33 条**断言（对应引擎的 #1-#33），并确实证过"这套逻辑对 RNG 实现是鲁棒的"（端口用 mulberry32，Godot 用 `RandomNumberGenerator`，两边数值不同而性质同时成立）。**但它已于 2026-07-26 正式退役**（[docs/39](docs/39-node-port-disposition.md)）：其逻辑冻结在 2026-07-03、两天后即被"阵容 6→12"打破，且它**从不比对状态**（两边各跑各的轨迹），今天在 12 seed 里有 7 个是红的。**现在不要把它当验证依据。**
    但**它不是当前的门**，说清楚：它**不覆盖** #34-#37（金钱守恒 / 货币非负 / 节日配对 / 选举计票），与 Godot **不逐字节可比**，**不在 `tools/ci.sh` 里**，自 2026-07-03 首次公开快照后**未再更新**，而且**部分 seed 已经跑红**（`--seed 20260626 --days 30` 退出 1；seed 1 与 42 仍 33/33 全过）。逐条核对见 [docs/08 §1](docs/08-测试与验证.md)。**回归门只有一个，在 Godot 侧。**
 
 ## 快速开始
@@ -109,7 +109,9 @@
 GODOT=/path/to/godot bash tools/ci.sh
 ```
 
-7 道关：数据 lint、地图审计、markdown 链接 lint、Godot 解析冒烟、S0 不变量门（37 条 × 12 seed × 60 天 + determinism 双跑）、LOD 观察无关门、6 个集成场景。任一红即退出 1。
+9 道关：版权红线（整棵已跟踪树里不得有权重/二进制）、数据 lint、地图审计、markdown 链接 lint、Godot 解析冒烟、**S0 不变量门**（37 条 × 12 seed × 60 天 + determinism 三跑 + **已提交金标**跨进程锚 + **逐 tick 前缀链** + 套件级活性）、LOD 观察无关门、**DetGate 场景确定性门**（default/faction/betray/freerider 四轨）、6 个集成场景。任一红即退出 1。
+
+> ⚠️ 一处诚实边界：CI 钉 `Sim.backend=null`，因此**上述硬不变量从未在模型路径上被检查过**——而 `backend=slm` 下 #01「无饿穿」实测 8/8 seed 被违反（[docs/38](docs/38-does-the-decision-path-earn-it.md)）。红线#2「无模型也能玩」安全，但"开着模型时红线#1 仍成立"是**未经检验的继承假设**。
 
 窗口模式：
 
