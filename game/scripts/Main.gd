@@ -270,6 +270,9 @@ func _build_hud() -> void:
 	_obs = _mk_label(layer, fnt, 14, Vector2(986, 42), Vector2(280, 664))
 
 	# 底部时间轴 scrubber
+	# 先铺底板再铺控件（CanvasLayer 按添加序叠放）：提示行原本是 #9aa0b5 直接画在草地上，眼验实测几乎读不出
+	# （B3 视觉复核指出，但它属 Main.gd 不在其归属内）。与日志/观察台同款半透明底板，成本一行、不碰仿真。
+	_mk_panel(layer, Vector2(SCRUB_X0 - 8, SCRUB_Y - 26), Vector2(SCRUB_X1 - SCRUB_X0 + 16, SCRUB_H + 34))
 	_scrub_track = ColorRect.new()
 	_scrub_track.color = Color(1, 1, 1, 0.14)
 	_scrub_track.position = Vector2(SCRUB_X0, SCRUB_Y)
