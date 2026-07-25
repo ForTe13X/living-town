@@ -825,13 +825,19 @@ func _center(ag: Dictionary) -> Vector2:
 	return Vector2(p.x * T + T * 0.5, p.y * T + T * 0.5)
 
 ## 关系连线：|affinity|>20 才画；绿=亲密、红=敌意，粗细/透明度随强度。
+## 是否在镇上平面（非咖啡馆等室内）——室内居民用室内局部坐标，画在镇上会"鬼影"，与 agent 主循环(:752)同款过滤。
+func _in_town(ag: Dictionary) -> bool:
+	return String(ag.get("space", "town")) == "town"
+
 func _draw_relationship_lines() -> void:
 	for ag in Sim.agents:
+		if not _in_town(ag):
+			continue   # 室内居民不在镇上画关系线（否则室内局部坐标鬼影）
 		for oid in ag["relationships"]:
 			if String(ag["id"]) >= String(oid):
 				continue   # 去重（只画 id 较小一侧）
 			var other: Dictionary = Sim.get_agent(oid)
-			if other.is_empty():
+			if other.is_empty() or not _in_town(other):
 				continue
 			var aff := float(ag["relationships"][oid].get("affinity", 0.0))
 			if absf(aff) <= 20.0:
@@ -844,6 +850,8 @@ func _draw_relationship_lines() -> void:
 ## S3a 派系：同派系成员脚下画同色环（颜色由派系 medoid id 确定性派生）。
 func _draw_faction_rings() -> void:
 	for ag in Sim.agents:
+		if not _in_town(ag):
+			continue   # 室内居民不在镇上画派系环
 		var fac := String(ag.get("faction", ""))
 		if fac == "":
 			continue
@@ -860,6 +868,8 @@ func _faction_color(fac: String) -> Color:
 func _draw_pact_links() -> void:
 	var drawn := {}
 	for ag in Sim.agents:
+		if not _in_town(ag):
+			continue   # 室内居民不在镇上画盟约连线
 		for oid in ag.get("pacts", {}):
 			var p: Dictionary = ag["pacts"][oid]
 			if String(p.get("status", "")) != "active":
@@ -869,7 +879,7 @@ func _draw_pact_links() -> void:
 				continue
 			drawn[key] = true
 			var other: Dictionary = Sim.get_agent(oid)
-			if other.is_empty():
+			if other.is_empty() or not _in_town(other):
 				continue
 			var a := _center(ag)
 			var b := _center(other)
@@ -882,10 +892,12 @@ func _draw_pact_links() -> void:
 ## 对话连线：正在一次社交事务里的两人之间画一条暖黄线。
 func _draw_talking_links() -> void:
 	for ag in Sim.agents:
+		if not _in_town(ag):
+			continue   # 室内居民不在镇上画对话连线
 		var opt = ag.get("option")
 		if opt != null and String(opt.get("kind", "")) == "social":
 			var other: Dictionary = Sim.get_agent(String(opt.get("partner", "")))
-			if not other.is_empty():
+			if not other.is_empty() and _in_town(other):
 				draw_line(_center(ag), _center(other), Color("#ffd166", 0.85), 2.5)
 
 func _draw_agent(ag: Dictionary) -> void:
