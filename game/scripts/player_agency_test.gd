@@ -2,6 +2,16 @@ extends Node
 ## player_agency_test.gd — 玩家能动性 M1 headless 验证（scene 模式，autoload Sim 可用）。
 ## 断言：玩家入社交图、greet/give/gossip/invite 走完整 SocialTransaction（账本/记忆/事件/知识边界）、
 ## 约见靠"人到场"兑现、坏关系会被拒、调解成功/失败两分支、NPC 会主动找玩家。任一失败 quit(1)。
+##
+## "NPC 会主动找玩家"这条见第 14 节：它是【跨种子分布门】，不是单局首达计时（原因与实测见那里）。
+
+# ── 第 14 节（挂机社交分布门）的标定常量 ────────────────────────────────────
+# 阈值全部由实测定，不猜。测量方法与数据见 14 节注释。
+const AGENCY_SEEDS: Array = [1, 2, 3, 4, 5, 6, 7, 8]
+const AGENCY_DAYS := 4            # 每个 seed 的挂机时长
+const AGENCY_MIN_TOTAL := 50      # 8 seed 合计接触次数下限（实测地板 101 → 2.0× 余量）
+const AGENCY_MIN_SEEDS := 6       # 至少几个 seed 要"有人来搭话"（实测 8/8 → 可先坏掉 2 个 seed 才红）
+const AGENCY_MIN_ACTORS := 4      # 合计有多少个【不同】NPC 来找过（实测 11-12/12 → 挡"一个人刷满"的空过）
 
 var _fails := 0
 
@@ -144,19 +154,19 @@ func _ready() -> void:
 			thanks = true
 	_ck("当事人感谢玩家", thanks)
 
-	# ── 7) NPC 主动找玩家：挂机若干天，应有 NPC 发起指向玩家的社交 ──
-	# 窗口 2 天 → 4 天（2026-07-26, B9）。这是一条【涌现时机】断言，不是结构断言：它问的是
-	# "在固定的 N 个 tick 内恰好有人来搭话吗"，而"谁先走到玩家旁边"对轨迹极敏感。
-	# 实测（seed 7，挂机 30 天探针）：B9 之前首次 NPC→player 在 +190 tick，之后在 +523 tick——
-	# 两者都只是轨迹抖动，全程社交总量反而略升（161 → 172 次）。也就是说 2 天窗口本来就贴着边界，
-	# 任何合法的轨迹变动都能把它推翻。改成 4 天：对新旧两条轨迹都留出 ≥2 倍余量，断言的语义
-	# （"挂机会有人主动来找你"）一字未改，只是不再拿单个早到事件当运气。
+	# ── 7) 挂机推进世界（本节【不再断言】；"NPC 会主动找玩家"已移到第 14 节的分布门）──
+	# 这里保留原样的 4 天推进，只为让下面 8-13 节看到与从前一致的世界态；本局这个计数
+	# 只作现场参考打印。理由：单局单窗口的首达计时是【涌现时机】量，对轨迹极敏感——
+	# B9 的候选加盐把 seed 7 的首次 NPC→player 从 +190 tick 推到 +523 tick，而 30 天社交
+	# 总量反而从 161 升到 172。也就是说它红过一次不是社交退化，是断言坐在边界上。
+	# 把窗口从 2 天放宽到 4 天只是治标：下一次轨迹扰动照样能推红，而"再放宽一次"会一路
+	# 把门蚀空。真正的门在第 14 节：跨 8 个 seed 的【分布】，见那里的实测标定。
 	_tickn(4 * int(Sim.TICKS_PER_DAY))
 	var npc_to_player := 0
 	for e in Sim.event_log:
 		if String(e["target"]) == "player" and String(e["actor"]) != "player":
 			npc_to_player += 1
-	_ck("NPC 主动找玩家", npc_to_player > 0, "被动收到 %d 次社交" % npc_to_player)
+	print("  ·  (参考，不断言) 本局 seed 7 前置扰动后挂机 4 天：被动收到 %d 次社交" % npc_to_player)
 
 	# ── 8) 对抗审查回归：invite 叠约门（#7）──
 	var fake := {"id": 9999, "type": "meet", "a": "player", "b": "aria", "area": "plaza",
@@ -205,6 +215,56 @@ func _ready() -> void:
 	var pl2: Dictionary = Sim.get_agent("player")
 	_ck("scrub 后玩家健在", not pl2.is_empty() and int(pl2["inventory"].get("gift", 0)) == inv_before,
 		"gift=%d(应%d)" % [int(pl2.get("inventory", {}).get("gift", -1)), inv_before])
+
+	# ── 14) NPC 主动找玩家：跨种子【分布】门（取代原第 7 节的单样本首达断言）──────────
+	# 意图一字未改：一个【什么都不做】的玩家不该被小镇社交无视。变的是怎么问这句话。
+	#
+	# 为什么不能问单局：单局"首次被搭话在第几 tick"是一个【最小值统计量】——整局里最早的
+	# 那一次。最小值对轨迹扰动的敏感度是所有统计量里最高的，任何合法改动（换 tie-break、
+	# 挪一栋房子、改一条 need 曲线）都能把它翻倍，而社交总量纹丝不动。B9 就是这么红的。
+	#
+	# 改成问分布：8 个 seed 各自新开世界、放一个纯挂机玩家、跑 4 天，然后看【合起来】的
+	# 三个量。跨 seed 求和把轨迹噪声平均掉了——单 seed 的 4 天接触数在 6-29 之间摆（约 5 倍），
+	# 8 seed 合计却几乎不动。
+	#
+	# 实测标定（本棒，Godot 4.6.2 headless，共 14 组独立的 8-seed 合计）：
+	#   · 轨迹扰动敏感度——让世界先空跑 W tick 再放玩家进去（"谁恰好路过"整体换人，
+	#     与 B9 加盐同类的扰动），W ∈ {0,1,2,3,5,13,37,97,240,617}：
+	#       合计 = 102 102 102 102 103 104 111 123 138 153   （只升不降，地板在 W=0）
+	#       有人搭话的 seed = 8/8（全部 10 组）   单 seed 最小值 = 6..11   不同 NPC = 11-12
+	#   · 种子总体敏感度——四组互不相交的 seed（1-8 / 9-16 / 17-24 / 31,37,41,43,47,53,59,61）：
+	#       合计 = 102 / 101 / 110 / 107（±4.5%）   有人搭话 = 8/8 全部四组   不同 NPC = 11-12
+	#   · 单 seed 首达 tick（32 个 seed）：min 141 / max 395，全部 < 960（=4 天窗口）→ 2.4× 余量。
+	# 阈值即由此定：合计地板实测 101 → 门取 50（2.0×，社交要腰斩才红）；seed 命中实测 8/8 →
+	# 门取 6/8（可以先坏掉 2 个 seed）；不同 NPC 实测 11-12/12 → 门取 4（≈3×，且挡住
+	# "一个 NPC 刷满次数"的空过）。轨迹噪声实测只能让合计动 ±5%，推不动 2 倍的余量。
+	var tpd := int(Sim.TICKS_PER_DAY)
+	var agency_total := 0
+	var agency_seeds_hit := 0
+	var agency_actors := {}
+	var agency_per_seed: Array = []
+	for s in AGENCY_SEEDS:
+		Sim.start_new(int(s))
+		Sim.add_player()                      # 纯挂机：入镇后不发任何指令
+		var base := Sim.event_log.size()
+		_tickn(AGENCY_DAYS * tpd)
+		var n := 0
+		var elog: Array = Sim.event_log
+		for i in range(base, elog.size()):
+			var e2: Dictionary = elog[i]
+			if String(e2["target"]) == "player" and String(e2["actor"]) != "player":
+				agency_actors[String(e2["actor"])] = true
+				n += 1
+		agency_total += n
+		agency_per_seed.append(n)
+		if n > 0:
+			agency_seeds_hit += 1
+	_ck("挂机社交·合计接触量", agency_total >= AGENCY_MIN_TOTAL,
+		"%d 次 / %d seed × %d 天 (门 %d；实测地板 101)" % [agency_total, AGENCY_SEEDS.size(), AGENCY_DAYS, AGENCY_MIN_TOTAL])
+	_ck("挂机社交·没有被无视的 seed", agency_seeds_hit >= AGENCY_MIN_SEEDS,
+		"%d/%d seed 有人主动搭话 (门 %d) 各 seed=%s" % [agency_seeds_hit, AGENCY_SEEDS.size(), AGENCY_MIN_SEEDS, str(agency_per_seed)])
+	_ck("挂机社交·搭话者不止一人", agency_actors.size() >= AGENCY_MIN_ACTORS,
+		"%d 个不同 NPC 找过玩家 (门 %d)" % [agency_actors.size(), AGENCY_MIN_ACTORS])
 
 	print("=== 玩家能动性: %s (%d fail) ===" % [("PASS ✅" if _fails == 0 else "FAIL ❌"), _fails])
 	get_tree().quit(0 if _fails == 0 else 1)
