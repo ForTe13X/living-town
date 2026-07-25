@@ -19,7 +19,8 @@ var api_key := "lm-studio"
 var mock := false                               # true → 强制走确定性 mock（不联网）
 var no_think := true                            # 追加 /no_think 关推理模型(Qwen3)的思考——否则烧 token 返回空（实测）
 var debug_llm := false                           # true → 在 _fire_http 完成回调打印 LLM 返回（诊断用）
-var stats := {"fired": 0, "landed": 0, "bad_parse": 0, "timeout": 0}  # bench 用：合法率/截止线命中率埋点
+## bench 埋点。calls/waits 是【诚实分母】的原料，别只看 fired（详见 decision_stats 的长注释与 docs/35）。
+var stats := {"fired": 0, "landed": 0, "bad_parse": 0, "timeout": 0, "calls": 0, "waits": 0}
 # SLM 熔断器（docs/34：真机 Adreno Vulkan 下推理挂死→全超时+卡死 worker 释放不了原生上下文→无界泄漏 OOM）：
 # 连续 N 次超时(SLM 实质死了) → 停发 SLM、永久回退 logic，把泄漏封顶、防崩。backend=slm 本就非确定(live 模型)→不碰红线。
 var _slm_fail_streak := 0
@@ -34,7 +35,7 @@ var world_epoch := 0                            # 世界重置(start_new/scrub/�
 var _req_seq := 0                               # 单调请求号
 
 func reset_stats() -> void:
-	stats = {"fired": 0, "landed": 0, "bad_parse": 0, "timeout": 0}
+	stats = {"fired": 0, "landed": 0, "bad_parse": 0, "timeout": 0, "calls": 0, "waits": 0}
 	# L5 per-run 状态清零（否则跨 seed 的陈旧度/发声计数/预算窗口会串味）
 	_fire_count = {}
 	_last_llm = {}
@@ -330,11 +331,32 @@ func _resolve_model_path() -> String:
 	if slm_model_override != "" and FileAccess.file_exists(slm_model_override):
 		return slm_model_override                 # 设置面板手选优先（桌面/安卓都认）
 	if not OS.has_feature("android"):
+		# 桌面：配置路径【存在才用】。旧实现无条件返回 slm_model_path（默认 3B 文件名），而仓里的本地模型
+		# 是 1.5B —— 照 README 往 game/models/ 放一个别的文件名的 gguf，加载必失败 → 探针 150s 超时
+		# → 静默降级 logic，桌面【一句提示都没有】（Main 的"模型未就位"提示是安卓专属）。
+		# 修法：缺文件就扫 game/models/（排序后取第一个，确定性：同样的目录内容 → 同样的选择），并明确打日志。
+		if FileAccess.file_exists(slm_model_path):
+			return slm_model_path
+		var scanned := _scan_local_gguf()
+		if scanned != "":
+			print("[SLM] 配置的模型不存在：%s → 自动改用扫描到的 %s（要指定请用 --model / 设置面板）" % [slm_model_path, scanned])
+			return scanned
+		push_warning("[SLM] 未找到任何 *.gguf（%s 不存在，res://models/ 与 user:// 也没有）→ 算力探针会超时并留在确定性 logic 地板" % slm_model_path)
 		return slm_model_path
 	for p in _android_model_candidates():
 		if FileAccess.file_exists(p):
 			return p
 	return ProjectSettings.globalize_path("user://model.gguf")
+
+## 桌面兜底扫描：list_models() 的结果【排序后】取第一个真实存在的 gguf。
+## 排序是刻意的——DirAccess 的枚举序是文件系统序，不排序会让"同一台机器同样的目录"在不同时刻选中不同模型。
+func _scan_local_gguf() -> String:
+	var found := list_models()
+	found.sort()
+	for p in found:
+		if FileAccess.file_exists(p):
+			return String(p)
+	return ""
 
 ## 安卓上按优先级列出候选 gguf 路径（存在与否不判，判在调用方）。
 func _android_model_candidates() -> Array:
@@ -515,8 +537,46 @@ func _probe_once(be: String, agent: Dictionary, candidates: Array, ctx: Dictiona
 			return String(j["choices"][0].get("message", {}).get("content", ""))
 	return ""
 
+## ── 诚实分母（docs/35）────────────────────────────────────────────────────
+## landed/fired 回答的是「我们【选择发出】的请求里，有多少按时回来了」。
+## 它【不】回答「全镇的 NPC 决策里，有几成真的是模型做的」——那个问题的分母是【落地的决策总数】。
+## 为什么必须区分：SLM worker 是严格串行的（_slm_submit 的 _slm_busy 一次只放一发），
+## 于是全镇每 sim-日能产出的模型决策数被【墙钟】封顶，与 N 无关：
+##     1 sim-日 = TICKS_PER_DAY(240) × tick_interval(0.08s) = 19.2 s 实时（Sim._process 用累加器，
+##     掉帧只会多补 tick，不会拉长 sim-日）→ 每发解码 D 秒 ⇒ 全镇上限 ≈ 19.2/D 次/ sim-日。
+## 而分母（全镇决策数/ sim-日）随 N 线性涨。所以 N 越大，模型的真实份额越小——
+## 但 landed/fired 完全看不出这件事，因为忙时我们干脆【不发】(decide 早退走 logic)，
+## 没发出去的请求既不进分子也不进分母。分母越"方便"，结论越好看，正是本项目一再自查的失败模式。
+##
+## 怎么数才对（对照 Sim.gd:1076-1086 的 backend 路径）：
+##   · 非空 intent  → agent_apply 落地（模型决策）
+##   · 空 {}        → Sim 用 _logic_decide 兜底后落地（引擎决策，仍然是一次决策）
+##   · {"_wait":true} → 本 tick 不落地，下 tick 用同一 agent 再问一次
+## ⇒ 落地的决策数 = calls − waits。等待期的重复轮询【必须】剔掉：它不但虚增分母，
+##    虚增幅度还与推理延迟正相关（模型越慢，轮询越多，分母越大）——留着会让慢模型显得更"忙"。
+## 注：CI 恒 Sim.backend=null，decide 根本不被调用；这两个计数器只在 window/bench 里动，
+##    不读不写任何 sim 态、不抽 RNG ⇒ 对 digest 零扰动（红线 #1 守恒）。
+func decision_stats() -> Dictionary:
+	var calls := int(stats.get("calls", 0))
+	var waits := int(stats.get("waits", 0))
+	var decisions := maxi(0, calls - waits)          # 真·落地决策数（引擎的 + 模型的）
+	var fired := int(stats.get("fired", 0))
+	var landed := int(stats.get("landed", 0))
+	return {
+		"calls": calls, "waits": waits, "decisions": decisions, "fired": fired, "landed": landed,
+		"landed_over_fired": (float(landed) / float(fired)) if fired > 0 else 0.0,          # 截止线命中率（旧口径）
+		"landed_over_decisions": (float(landed) / float(decisions)) if decisions > 0 else 0.0,  # 决策占比（诚实口径）
+	}
+
+## 串行 worker 的全镇吞吐天花板（次/ sim-日），与 N 无关。decode_s = 单发解码秒数（真机 CPU 实测 3-8s）。
+## 供 bench/docs 直接引用，免得每次手算又抄错常数。
+func slm_ceiling_per_sim_day(decode_s: float) -> float:
+	var day_s := float(Sim.TICKS_PER_DAY) * Sim.tick_interval
+	return day_s / maxf(0.001, decode_s)
+
 # ── 同步入口（Sim 每 tick 调）──────────────────────────────────────────────
 func decide(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Dictionary:
+	stats["calls"] = int(stats.get("calls", 0)) + 1   # 诚实分母原料：见 decision_stats
 	# 运行期后端切换（手机上无 CLI 参数）：仅在无在飞请求时应用 backend_requested，
 	# 否则旧后端的异步回包会被新后端的解析逻辑误读。logic 模式 digest 不受影响——
 	# _logic_decide 的 RNG 只依赖 (seed,tick,salt,who)，与 backend 无关（红线守恒）。
@@ -540,6 +600,7 @@ func decide(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Dictionary
 		if not _budget_gate(id, agent):
 			return {}                                    # L5 预算耗尽/被老化门挡下 → 本 tick 走引擎地板(LLM ∝ 预算而非 N；发声由优先级+老化公平分配)
 		_fire(id, agent, capped, ctx)                    # 只把 top-36 喂给模型
+		stats["waits"] = int(stats.get("waits", 0)) + 1  # 本 tick 未落地任何决策 → 不进诚实分母
 		return {"_wait": true}
 	# 已就绪（且到「揭晓」tick）→ 用「模型看到的候选快照」解析，再对【当前】候选按 stable key 重验(P1-1)
 	if bool(p["has"]) and Sim.tick_no >= int(p["ready"]):
@@ -579,6 +640,7 @@ func decide(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Dictionary
 				push_warning("[SLM] 熔断触发：连续 %d 次超时且无成功 → 停发 SLM、永久回退 logic 地板（防原生内存泄漏 OOM，见 docs/34）" % _slm_fail_streak)
 				cancel_all()                                    # 清在飞 + 尽力释放，止血
 		return {}
+	stats["waits"] = int(stats.get("waits", 0)) + 1        # 同上：等待期轮询不算一次决策
 	return {"_wait": true}                                # 仍在等
 
 func _finish(id: String, agent: Dictionary) -> void:
