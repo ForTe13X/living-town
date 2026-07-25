@@ -170,7 +170,12 @@ static func check_all(S, starved: int) -> Array:
 			ostracism_ok = rw <= town_acc + 0.08
 	# 14) standing 分化
 	R.append(_chk(14, "standing分化", st_max - st_min > 0.0, "跨度 %.0f..%.0f" % [st_min, st_max]))
-	# 15) 涌现放逐
+	# 15) 涌现放逐 —— ⚠ DIAGNOSTIC ONLY，见 DIAG_IDS：本指标已知有时间泄漏（temporal leakage），不作门。
+	#   泄漏在哪：perceived 由「跑完后的终态 standing」算（上面 :140-149），而 prop_a/acc_a 数的是「整局全程」的
+	#   提议/接受 —— 于是被放逐者在【变坏之前】那段时间的高接受率也被算进分母，指标必然被稀释/反转。
+	#   项目已就此结案：修正版指标 #15v2（tools/exile_v2.py，只数「standing 跌破阈值之后」的窗口）在 126 个
+	#   held-out seed 上返回 INCONCLUSIVE，故 docs/31-15-resolution.md 明确决定【不落任何机制、不设门】。
+	#   保留检查是为了保留观测（残留 ~5% 是度量伪影而非真实放逐失败），但它永远不得让 CI 变红。
 	R.append(_chk(15, "涌现放逐", ostracism_ok or not small_n, ostr + (" (大N豁免:密集社交下放逐不锐利)" if not small_n else "")))
 	# 16) 声誉传播
 	var bad_rep_exists := st_min <= float(S.REP_GOSSIP_TH)
@@ -379,6 +384,13 @@ static func _chk(id: int, name: String, ok: bool, detail: String) -> Dictionary:
 ## 消费方：激进 LOD 门只查硬不变量（split_fails().hard==0）；soak/Harness 仍查全 33 条。
 const HARD_IDS := [1, 6, 7, 9, 10, 12, 13, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37]
 
+## 第三档：诊断（DIAGNOSTIC）——【报告但永不成门】（既不入 hard_red 也不入 soft_red）。
+## 收录标准只有一条：该指标本身已被证明是度量伪影，把它做成门就是在给噪声上锁。
+##  · #15 涌现放逐：终态 standing × 全程接受率 = 时间泄漏；修正版 #15v2 在 126 个 held-out seed 上
+##    INCONCLUSIVE，docs/31-15-resolution.md 已决定不落机制、不设门。实测 seeds 1-24 × 60d 下它是
+##    唯一破软门的项（22/24），把整个软容差预算全吃掉——正是「不该为噪声付预算」的教科书例子。
+const DIAG_IDS := [15]
+
 static func split_fails(S, starved: int) -> Dictionary:
 	var hard := 0
 	var soft := 0
@@ -389,12 +401,25 @@ static func split_fails(S, starved: int) -> Dictionary:
 		else: soft += 1
 	return {"hard": hard, "soft": soft}
 
-## event_log 确定性摘要：同 seed 两跑应得同一值（覆盖 id/类型/双方/接受/主题/时刻）。
+## event_log 确定性摘要：同 seed 两跑应得同一值（覆盖 id/类型/双方/接受/主题/时刻 + 见证人 + note）。
+## ⚠ 为什么要多覆盖 witnesses/note：Sim._log_event 的滚动 event_digest（Sim.gd:2603）折的是
+##   "id:type:actor:target:accepted:subject:tick" —— 与本函数原先【逐字符相同】的串。也就是说
+##   Harness 号称的「双独立见证」其实是同一个见证人被哈希了两遍，等价于只有一路证据。
+##   witnesses（旁观者集合，决定 _judge_actor 的声誉扩散）与 note 都是语义承重的：
+##     · #36 靠 note 分 spawn/despawn（本文件 :345-346）
+##     · #30 靠 note=="dissolved:freerider" 溯源（:300）
+##   把它们并入本摘要后，两路摘要覆盖的字段集才真正不同 → 双见证名副其实。
 static func digest(S) -> int:
 	var parts := PackedStringArray()
 	for e in S.event_log:
-		parts.append("%d:%s:%s:%s:%d:%s:%d" % [
+		var wits: Array = e.get("witnesses", [])
+		var wstr := ""
+		for i in wits.size():
+			if i > 0: wstr += ","
+			wstr += String(wits[i])
+		parts.append("%d:%s:%s:%s:%d:%s:%d:%s:%s" % [
 			int(e.get("id", 0)), String(e.get("type", "")), String(e.get("actor", "")),
 			String(e.get("target", "")), int(bool(e.get("accepted", false))),
-			String(e.get("subject", "")), int(e.get("tick", 0))])
+			String(e.get("subject", "")), int(e.get("tick", 0)),
+			wstr, String(e.get("note", ""))])
 	return "|".join(parts).hash()

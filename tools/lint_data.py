@@ -14,6 +14,30 @@ def load(name):
         errs.append(f"PARSE {name}.json: {e}")
         return None
 
+# 0) REQUIRED data files must EXIST and parse.
+# Why this is a separate check from (1): (1) only walks the files that are *there*, so deleting or
+# renaming a data file makes the lint pass with one fewer file. Several subsystems are wired to
+# switch themselves OFF when their data file is missing, and their invariants are written to be
+# vacuously true in that state:
+#   economy.json  -> Sim.economy empty -> invariants #34 (money conservation) and #35 (no negative
+#                    balance) auto-pass (Invariants.gd:331,:334) and every `pay` event disappears
+#   festivals.json-> no festivals -> #36 (festival object pairing) auto-passes (Invariants.gd:347)
+#   elections.json-> election_log empty -> #37 (vote tally self-consistency) auto-passes (:353)
+#   skills.json   -> skill/complement signal gone -> pact formation gate (#31) loses its input
+# i.e. deleting one file silently switches off a whole subsystem with CI 100% green. Not any more.
+REQUIRED = ["personas", "agents", "jobs", "housing", "secrets", "map", "spaces", "interiors",
+            "economy", "festivals", "elections", "skills", "needs", "rhythm", "utility"]
+for name in REQUIRED:
+    p = os.path.join(ROOT, name + ".json")
+    if not os.path.exists(p):
+        errs.append(f"MISSING required data file: game/data/{name}.json "
+                    f"(deleting it silently switches off a subsystem while its invariants auto-pass)")
+        continue
+    try:
+        json.load(open(p, encoding="utf-8"))
+    except Exception as e:
+        errs.append(f"PARSE required {name}.json: {e}")
+
 # 1) every data json parses
 for p in sorted(glob.glob(os.path.join(ROOT, "*.json"))):
     try:
@@ -115,5 +139,5 @@ if errs:
     print(f"lint_data: FAIL ({len(errs)} issue(s)):")
     for e in errs: print("  -", e)
     sys.exit(1)
-print(f"lint_data: OK — {n_json} json parsed, FKs resolve "
+print(f"lint_data: OK — {n_json} json parsed, {len(REQUIRED)} required files present, FKs resolve "
       f"({len(agent_ids)} agents, {len(persona_ids)} personas, {len(object_ids)} objects)")
