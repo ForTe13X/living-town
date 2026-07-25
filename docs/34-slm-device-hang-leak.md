@@ -60,6 +60,21 @@
 
 **旗舰级仍待办**：手机上 SLM 本身仍因 Adreno Vulkan 挂死【不产出决策】（池化只让它优雅降级、不崩不泄）。真正让端侧 SLM 在 8Elite 上跑起来 = 试 CPU 推理 / 换 NobodyWho 后端——见 spawn_task。**手机眼验（重出 APK + dumpsys Native Heap）待下一轮**。
 
+## 对抗评审两轮 → 三个 follow-up 修复（C1/C2/C3）
+
+池化修法 push 后，过两轮独立对抗评审（repo-grounded subagent + 4-lens workflow，均指令"尽力 REFUTE"），抓出 3 个真缺陷，含一个【我自己引入的回归】：
+
+- **C1（换模型 UAF）**：`set_model_path`（设置面板 A/B 换 gguf）原本只 free `_slm_model`、留着 chat（model_node 悬垂 → 静默 no-op）。我第一版"顺手"把 chat 也 `queue_free`——**却重新引入了池化本要消灭的 use-after-free**：换模型时若正好有决策在飞，同步 free 掉 worker 仍会回包的 chat → 崩。第二轮评审逮到。**终修**：绝不同步 free 在飞 chat——有在飞 → 标 `_slm_reload_pending` + cancel_all，真正的拆由该 worker 的 finish 收尾时执行（那时它已完成）；期间 `_slm_submit` 被 pending 挡住不起新活。桌面测：运行中 tick 60 换模型（撞在飞决策）**0 运行中崩、SLM 重建续跑（fired 3→24）**。
+- **C2（信号连接泄漏）**：per-submit 的 `worker_failed` 用 CONNECT_ONE_SHOT，健康路径永不触发 → 永不消费 → 每次成功决策残留一个死闭包在持久 chat 上，O(submits) 累积。**修**：改显式"触发即断开两条连接"。
+- **C3（探测路径同款反模式）**：`_probe_once` 仍 per-call new chat + 【裸 await 无超时】（Adreno 挂死 → 永阻卡启动，且这是真机【最先】走的路径）。**修**：改走池化 worker + 墙钟轮询超时（`PROBE_TIMEOUT_MS=150s`）+ 探测发占用 `_slm_busy`（防换模型误拆正在用的 chat）+ 一发超时即收手不跑第 2 发（否则挂死 worker 的迟包会触发第 2 发 handler → 误判"快" → 错误启用 slm）。注：轮询超时只兜 **worker 线程级挂死**（镇子仍跑 FPS79，正是真机实测所见）；整卡 GPU 锁死连渲染帧都停则全 app 冻结、非引擎内超时可救、非本修范围。
+- 另修评审 finding-5 / C2-d：finish 里 `_slm_busy=false` 移到投递【后】且仅当 epoch 匹配才清 → 陈旧迟包不再抹掉活跃后继的 busy、同步重入的 cb 不会在信号发射中被误纳。
+
+**红线复核（评审 lens-4 无法证伪）**：三处改动全在 slm 后端 / UI / 探测-slm 路径；CI 用 `backend=null` 从不进 `AIBackend.decide`，`logic` 也在 `_slm_busy` 门【之前】return；无新增类级成员（仅一个 const）→ 不入 save/load 与 digest。桌面复验：**det 逐字节 1/1、37 硬不变量全绿、BackendBench 0 运行中崩**。
+
+**熔断器角色更正**：池化后 `_slm_busy` 门在第一次挂死即封住（只留 1 worker），比 `SLM_CIRCUIT_TRIP=6` 更早触顶——故熔断器不再是"挂死"路径的主力，而是覆盖"慢但仍回包"退化的互补层（连续 6 次超时但 worker 仍活 → 熔断）。二者互补，非死码。
+
+**方法论收获**：一条"根因"结论 + 一版"修复"，都被【指令去反驳的独立评审】各自推翻过一次（Adreno→worker 生命周期；C1 第一版反而引入崩溃）。教训与 [[feedback-adversarial-external-review]] 完全一致——顺手那条路/顺手那版修，往往漏掉真集成路径与新回归。
+
 ## 影响评级
 
 **高**：真机 backend=slm 曾【旗舰不生效 + 崩/OOM】。现状：**崩溃与 OOM 泄漏已治本**（池化 worker，桌面验证 0 崩；手机降级只留 1 worker）——桌面 SLM 完全可用、手机优雅降级到 logic 地板（红线：无模型也能玩）。**尚缺**：手机端 SLM 真正产出决策仍卡在 Adreno Vulkan（交 spawn_task）+ 手机眼验。

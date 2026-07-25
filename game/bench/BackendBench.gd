@@ -7,6 +7,8 @@ extends Node
 
 const M = preload("res://bench/Metrics.gd")
 
+var _swap_at := -1     # >=0：在该 tick 调 AIBackend.set_model_path（测 C1 换模型延后拆不崩）
+
 func _ready() -> void:
 	var backend := "logic"
 	var seeds := "1-4"
@@ -19,6 +21,7 @@ func _ready() -> void:
 		elif args[i] == "--endpoint" and i + 1 < args.size(): AIBackend.endpoint = args[i + 1]
 		elif args[i] == "--model" and i + 1 < args.size(): AIBackend.slm_model_path = args[i + 1]  # 指定 gguf（默认 3B 不在仓里时用）
 		elif args[i] == "--cpu": AIBackend.slm_use_gpu = false                                     # 强制 CPU 推理（对照 GPU）
+		elif args[i] == "--swap" and i + 1 < args.size(): _swap_at = int(args[i + 1])              # 在第 N tick 调 set_model_path（测 C1 换模型不崩）
 		elif args[i] == "--gpu": AIBackend.slm_use_gpu = true
 		elif args[i] == "--tier" and i + 1 < args.size(): AIBackend.tier = args[i + 1]   # 强制算力档(测节流)
 		elif args[i] == "--agents" and i + 1 < args.size(): Sim.spawn_count = int(args[i + 1])  # 扩 N
@@ -52,6 +55,9 @@ func _run(backend: String, seed_list: Array, days: int, is_async: bool) -> void:
 		AIBackend.reset_stats()
 		var total: int = days * int(Sim.TICKS_PER_DAY)
 		for t in range(total):
+			if t == _swap_at and AIBackend.slm_model_path != "":       # C1 测：运行中换模型（很可能撞上在飞决策→测 busy-defer 分支不崩）
+				print("[BB] set_model_path @tick %d (fired so far=%d)" % [t, int(AIBackend.stats["fired"])])
+				AIBackend.set_model_path(AIBackend.slm_model_path)
 			Sim.tick()
 			if is_async:
 				await get_tree().create_timer(0.03).timeout   # 给 HTTP/worker 回调真时落地

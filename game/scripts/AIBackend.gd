@@ -99,8 +99,10 @@ var _slm_model: Object = null                    # 共享 NobodyWhoModel（懒�
 # 修法：全局只养一个持久 chat，reset_context 复用；串行(一次一发，本地推理本就串行)；绝不在在飞时 free。
 var _slm_chat: Object = null                     # 持久池化 chat worker（只建一次，reset_context 复用）
 var _slm_busy := false                           # 串行在飞标志：一次只跑一发 SLM 生成（决策/反思/对话共用此 worker）
+var _slm_reload_pending := false                 # 换模型延后拆：有在飞时不可同步 free（会 UAF 崩），标记后等 worker 收尾/空闲再拆重建
 
 const DEADLINE_MS := 12000     # 截止线上限/默认（实时墙钟毫秒）
+const PROBE_TIMEOUT_MS := 150000  # 算力探测单发超时兜底（真机模型 load+暖发 ~85s；Adreno 挂死则 150s 后放弃→留 logic）
 var deadline_ms := DEADLINE_MS # 自适应实时截止线：probe_capability 据本机 p50 设 clamp(6×p50,3000,12000)
 var p50_ms := 0                # 启动探测得的暖决策中位延迟
 var tier := "logic"            # 算力档：fast(<1.5s)|host(<6s)|slow(<15s)|logic（探测后设）
@@ -236,29 +238,35 @@ func _ensure_slm_chat() -> Object:
 ## 关键：signal 用【每发一次性闭包】捕获 world_epoch → cancel_all 后到达的迟包按 epoch 作废，不污染复用的 worker；
 ## 且用 fired[] 去重，防 response_finished/worker_failed 双触发导致重复投递。绝不在此 free chat（持久复用）。
 func _slm_submit(sys: String, usr: String, route: Dictionary) -> bool:
-	if _slm_busy:
-		return false                              # 串行：上一发未回 → 拒绝（调用方走地板/罐头）
+	if _slm_busy or _slm_reload_pending:
+		return false                              # 串行(上一发未回) 或 换模型待重建中 → 拒绝（调用方走地板/罐头）
 	var chat := _ensure_slm_chat()
 	if chat == null:
 		return false
 	_slm_busy = true
 	var my_epoch := world_epoch                   # 捕获：cancel_all 会自增 world_epoch → 迟包作废
 	var fired := [false]                          # 去重：response_finished 与 worker_failed 只认第一个
-	var on_done := func(resp):
+	var hs := []                                  # 两个 handler 引用（Array 引用型→闭包创建后 append 仍可见）
+	# 触发即【显式断开两个连接】：worker_failed 在健康路径永不触发，若用 CONNECT_ONE_SHOT 其连接永不消费 → 每次成功
+	# 决策都残留一个死闭包在持久 _slm_chat 上，O(submits) 累积泄漏(C2)。故不用 one-shot，靠 finish 断两条。
+	var finish := func(resp: String, failed: bool):
 		if fired[0]: return
 		fired[0] = true
-		_slm_busy = false
-		if world_epoch == my_epoch:               # 未被 cancel_all 作废 → 投递
-			_deliver_slm(route, String(resp), false)
-	chat.connect("response_finished", on_done, CONNECT_ONE_SHOT)
+		if is_instance_valid(chat):
+			if hs.size() >= 1 and chat.is_connected("response_finished", hs[0]): chat.disconnect("response_finished", hs[0])
+			if hs.size() >= 2 and chat.is_connected("worker_failed", hs[1]): chat.disconnect("worker_failed", hs[1])
+		if world_epoch == my_epoch:               # 仅当前 owner：先投递、再清 busy——
+			_deliver_slm(route, resp, failed)     #   ①清 busy 放投递【后】：同步重入的 cb 再 _slm_submit 会被 busy 挡下，不在信号发射中重入(评审 C2-d)
+			_slm_busy = false                     #   ②仅 owner 清：陈旧(被 cancel)迟包 epoch 不匹配→不清，避免抹掉活跃后继的 busy(评审 finding5)
+		if _slm_reload_pending and not _slm_busy: # 换模型延后拆：本发 worker 已完成 → 此刻安全 free 池化 chat（见 set_model_path）
+			_teardown_slm_worker()
+	var on_done := func(resp): finish.call(String(resp), false)
+	hs.append(on_done)
+	chat.connect("response_finished", on_done)
 	if chat.has_signal("worker_failed"):
-		var on_fail := func(_msg = ""):
-			if fired[0]: return
-			fired[0] = true
-			_slm_busy = false
-			if world_epoch == my_epoch:
-				_deliver_slm(route, "", true)
-		chat.connect("worker_failed", on_fail, CONNECT_ONE_SHOT)
+		var on_fail := func(_msg = ""): finish.call("", true)
+		hs.append(on_fail)
+		chat.connect("worker_failed", on_fail)
 	chat.call("reset_context")                    # 清上一发历史（复用 worker 的关键）
 	chat.set("system_prompt", sys)
 	chat.call("ask", usr)
@@ -349,10 +357,27 @@ func set_model_path(path: String) -> void:
 	cfg.load("user://settings.cfg")
 	cfg.set_value("slm", "model_path", path)
 	cfg.save("user://settings.cfg")
-	cancel_all()                     # 换模型：先作废在飞 slm 请求（它们的 worker 绑旧模型）；cancel_all 只扫 chat，不碰 _slm_model
+	# 换模型：绝不在 worker 在飞时【同步 free】池化 chat——扩展异步回包会访问已释放节点 → UAF 崩（docs/34 + 对抗评审 C1）。
+	# 有在飞 → 只作废其结果(cancel_all epoch++) + 标记延后拆；真正的 free 由该 worker 的 finish 收尾时执行（那时它已完成）。
+	# 期间 _slm_submit 被 _slm_reload_pending 挡住不起新活 → 避免"新发在旧 chat 上跑、又被延后拆 free 掉"的竞态。
+	# 无在飞 → 立刻安全拆（没有 worker 会回包）。slm_model_override 已在上面设好 → 重建走新路径。
+	if _slm_busy:
+		_slm_reload_pending = true
+		cancel_all()                 # 作废在飞结果（epoch++）；stop_generation 但不 free
+	else:
+		_teardown_slm_worker()
+
+## 安全拆掉池化 SLM worker（chat+model）并置空 → 下次 _ensure_slm_chat 按当前 override 重建。
+## 【只可在无在飞生成时调用】（set_model_path 空闲分支 / finish 收尾）——否则 free 掉 worker 仍在写的节点会 UAF 崩。
+func _teardown_slm_worker() -> void:
+	if _slm_chat != null and is_instance_valid(_slm_chat):
+		if _slm_chat.has_method("stop_generation"): _slm_chat.call("stop_generation")
+		_slm_chat.queue_free()
+	_slm_chat = null
 	if _slm_model != null and is_instance_valid(_slm_model):
-		_slm_model.queue_free()      # 卸掉旧模型 → _ensure_slm_model 会按新 override 重载
+		_slm_model.queue_free()
 	_slm_model = null
+	_slm_reload_pending = false
 
 # ── 启动算力探测（测一发暖决策 → 分档 + 自适应截止线 + 太慢自动降 logic）────────────
 ## 实测依据(docs/11 §12)：现代机决策 1–5s 都在 12s 线内；>~8s 即不实用 → 降确定性 logic。
@@ -369,6 +394,9 @@ func probe_capability(be: String, agent: Dictionary, candidates: Array, ctx: Dic
 		var t0 := Time.get_ticks_msec()
 		await _probe_once(be, agent, candidates, ctx)
 		warm = Time.get_ticks_msec() - t0
+		if warm >= PROBE_TIMEOUT_MS - 1000:       # 该发超时(含 Adreno 挂死)→ 判不可用即刻收手：别复用挂死 worker 跑第2发
+			warm = PROBE_TIMEOUT_MS               #   （其迟包会触发第2发的 handler → 误判为"快"→错误启用 slm，评审 C3-d）
+			break
 	p50_ms = warm
 	if p50_ms < 1500: tier = "fast"
 	elif p50_ms < 6000: tier = "host"
@@ -397,19 +425,29 @@ func _probe_once(be: String, agent: Dictionary, candidates: Array, ctx: Dictiona
 	var sys := _system_prompt()
 	var usr := build_prompt(agent, candidates, ctx)
 	if be == "slm" and ClassDB.class_exists("NobodyWhoModel"):
-		var model := _ensure_slm_model()
-		if model == null: return ""
-		var chat: Object = ClassDB.instantiate("NobodyWhoChat")
-		chat.set("model_node", model)
+		# C3 修：走池化持久 worker（不再 per-call new+free，避免与决策路径同款 use-after-free），且给 await 加【超时兜底】——
+		# 旧实现【裸 await response_finished】在 Adreno 挂死时永阻 → probe_capability 的 cb 永不触发、卡启动探测。
+		# 注：超时靠 await process_frame 轮询墙钟——只兜得住 worker 线程级挂死（此时镇子仍跑、帧继续，正是真机实测所见 FPS79）；
+		#    若真机整卡 GPU 锁死连渲染帧都停（实测未见此模式），则全 app 冻结，无任何引擎内超时可救——那是不可恢复态，非本修范围。
+		var chat := _ensure_slm_chat()
+		if chat == null: return ""
+		_slm_busy = true                            # 占用池化 worker：防探测 await 期间 set_model_path 走空闲分支把正在用的 chat 同步 free（UAF）
+		var got := [false, ""]
+		var h := func(r): got[0] = true; got[1] = String(r)
+		chat.connect("response_finished", h, CONNECT_ONE_SHOT)
+		chat.call("reset_context")
 		chat.set("system_prompt", sys)
-		chat.set("allow_thinking", false)
-		add_child(chat)
-		chat.call("start_worker")
-		# 不设 json_schema 受限解码：worker 异步起、配置常在 ask 前未就绪被丢弃(WARN 刷屏)；且长 prompt 下受限解码实测卡死只吐"{"(见 _fire_slm)。靠 parse_decision 抽 {…} 最稳。
-		chat.call("ask", usr)
-		var resp = await chat.response_finished
-		if is_instance_valid(chat): chat.queue_free()
-		return String(resp)
+		chat.call("ask", usr)                       # 长 prompt 不设 json_schema 受限解码（实测卡死只吐"{"）；靠 parse_decision 抽 {…}
+		var t0 := Time.get_ticks_msec()
+		while not got[0] and Time.get_ticks_msec() - t0 < PROBE_TIMEOUT_MS:
+			await get_tree().process_frame
+		_slm_busy = false
+		if not got[0] and is_instance_valid(chat):  # 超时（含 Adreno 挂死）→ 断连+停生成 → 返回空 → probe 判太慢 → 留 logic 地板
+			if chat.is_connected("response_finished", h): chat.disconnect("response_finished", h)
+			if chat.has_method("stop_generation"): chat.call("stop_generation")
+		if _slm_reload_pending:                     # 探测期间发生换模型 → 此刻本发已收/停 → 安全拆，下发按新路径重建
+			_teardown_slm_worker()
+		return String(got[1]) if got[0] else ""
 	# llm：HTTPRequest 直连
 	var http := HTTPRequest.new()
 	add_child(http)
