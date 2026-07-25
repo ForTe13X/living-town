@@ -3,17 +3,29 @@ extends SceneTree
 ## 用法：godot --headless --path . --script res://bench/Harness.gd -- [--suite S0] [--seeds 1-12] [--days 60] [--det 3]
 ##   --seeds  种子范围 "a-b" 或单值（默认 1-12）          --days  每局天数（默认 60，覆盖 S2 谣言变冷轨迹）
 ##   --det    抽样 N 个种子做"同 seed 两跑摘要一致"校验（默认 3，0=跳过）
-##   --golden <path>       载入金标表比对（任一 seed 的 digest/event_digest 对不上 → 门红 exit 1）
+##   --golden <path>       载入金标表比对（任一 seed 的 digest/event_digest/chain 对不上 → 门红 exit 1）
 ##   --bake-golden <path>  重烘金标表（仅在【有意的行为变更】后手工执行；会覆盖 seeds 段，保留 scenarios 段）
+##   --chain-dump <path>   把逐 tick 前缀链全量写出（每 seed 一行）——排查"第几 tick 开始分叉"的参照物
+##   --chain-ref <path>    与一份 --chain-dump 比对，报出【精确到 tick】的首个分叉点
+##   --permute N           仅测试：N!=0 时打乱候选数组再评分（1=逆序 2=洗牌 3=枚举出口洗牌）。
+##                         置换不变性机检——tie-break 的盐取自候选身份而非下标，故 digest 应【一字不变】。
 ## 输出：每 seed 一行 [S0]{json}（JSONL，便于机读）+ 每不变量跨 seed 通过率表 + 套件级活性表 + 最终红绿门；任一失败 quit(1)。
 ## 纪律同 sim_soak：--script 不加载 autoload → preload Sim/Invariants 实例化，backend=null 走确定性 logic。
 ##
-## 三层证据（为什么要金标）：
+## 四层证据（为什么要金标 + 前缀链）：
 ##   L1 同进程同 seed 两跑一致（--det）      → 只证「同一二进制、同一进程内可复现」
 ##   L2 两路摘要（批量 Inv.digest + 增量 Sim.event_digest）覆盖不同字段集 → 双独立见证
 ##   L3 【金标】跨进程/跨提交/跨引擎版本比对已提交的期望值 → 才真正锚住红线#1「逐字节可回放」。
-##   没有 L3 时，Godot 升级或一次候选枚举重构可以把全部历史改写而 CI 全绿
-##   （_aid() 用引擎内部的 String.hash() 播种；tie-break 抖动按候选【数组下标】加盐）。
+##   L4 【逐 tick 前缀链 chain】H_t = h(H_{t-1} ‖ 状态_t ‖ 事件_t)：
+##      L1-L3 全是【终态/滚动汇总】——中途分叉、末尾又合流的轨迹能把差异抹平（自愈路径确实存在：
+##      LOD 生存兜底、承诺 pre-empt、需求钳位），且它们说不出【第一个分叉的 tick】。
+##      链把每个 tick 的活状态串成不可复原的前缀 → 瞬时分叉也留痕，并能定位首个分叉 tick。
+##
+## 【B9】此前的两颗雷已拆（见 Sim.gd）：
+##   (a) tie-break 抖动曾按候选的【数组下标】加盐 → 任何不改候选集合、只改枚举次序的重构都会静默改写全部历史。
+##       现改为按候选【身份】(_cand_salt) 加盐 → --permute 可机检"置换不变"。
+##   (b) _aid()/event_digest/Inv.digest 曾用引擎内部的 String.hash() → Godot 换版本即改写金标。
+##       现改为仓库自有的 FNV-1a/32（Sim.fnv1a32，带提交进源码的测试向量），启动即自检。
 
 const SimScript = preload("res://scripts/Sim.gd")
 const Inv = preload("res://bench/Invariants.gd")
@@ -51,9 +63,18 @@ const LIVENESS_GATED := {
 	"confide": 60,
 }
 
+## 前缀链在金标里的落盘粒度：每 CHAIN_STRIDE tick 存一个检查点（=1 天，Sim.TICKS_PER_DAY）。
+## 为什么不逐 tick 落盘：60 天 = 14400 个值 × 12 seed ≈ 1.5MB，把一份人要 review 的金标撑爆。
+## 每天一个点 → 金标只涨 ~7KB，就能把首个分叉锁进一个 240-tick 的窗口；
+## 要【精确到 tick】用 --chain-dump 存一份参照，再 --chain-ref 比对（全量逐 tick，不进仓库）。
+const CHAIN_STRIDE := 240
+
 var _shadow := false        # --shadow：开 shadow 探针（Sim.shadow_on）——纯观测，digest 应逐字节不变
 var _shadow_dump := ""      # --shadow-dump <path>：把每 seed 的 shadow_trace 追加成 JSONL（供反事实 / #15v2 分析）
 var _agents := 0            # --agents N：克隆扩容到 N 个 agent（Sim.spawn_count）；0=数据原样 cast，逐字节不变
+var _permute := 0           # --permute N：仅测试，打乱候选数组（置换不变性机检）；0=off 逐字节不变
+var _chain_dump := ""       # --chain-dump <path>：逐 tick 前缀链全量写出（每 seed 一行）
+var _chain_ref := ""        # --chain-ref <path>：与一份 dump 比对，报精确到 tick 的首个分叉
 
 func _init() -> void:
 	var seeds := _parse_seeds("1-12")
@@ -80,13 +101,35 @@ func _init() -> void:
 			golden_path = norm_path(args[i + 1])
 		elif args[i] == "--bake-golden" and i + 1 < args.size():
 			bake_path = norm_path(args[i + 1])
+		elif args[i] == "--permute" and i + 1 < args.size():
+			_permute = int(args[i + 1])          # 置换不变性机检（仅测试；0=off）
+		elif args[i] == "--chain-dump" and i + 1 < args.size():
+			_chain_dump = args[i + 1]
+		elif args[i] == "--chain-ref" and i + 1 < args.size():
+			_chain_ref = args[i + 1]
 		elif args[i] == "--suite" and i + 1 < args.size():
 			pass  # 目前仅 S0；保留位给 S5
 	if _shadow_dump != "":
 		var f0 := FileAccess.open(_shadow_dump, FileAccess.WRITE)   # 清空/新建
 		if f0: f0.close()
+	if _chain_dump != "":
+		var fc := FileAccess.open(_chain_dump, FileAccess.WRITE)
+		if fc: fc.close()
 
-	print("=== Causal Bench S0 · 不变量回归门  seeds=%s days=%d ===" % [str(seeds), days])
+	# ── 哈希自检（红线#1 的地基）：仿真的每个随机流、每个金标数字都由 Sim.fnv1a32 定义。
+	#    先证明它没变，后面的一切比对才有意义（否则"金标不符"到底是行为变了还是尺子变了分不清）。
+	var hash_bad := SimScript.hash_self_test()
+	if hash_bad != "":
+		print("❌ 项目自有哈希测试向量不符：%s" % hash_bad)
+		print("   → Sim.fnv1a32/mix32 的实现或其 UTF-8 输入路径被改动了。这不是行为回归，是【尺子变了】：")
+		print("     在修好之前，任何金标比对都无意义。")
+		quit(1)
+		return
+	print("  ✅ 哈希自检：%d 条 fnv1a32 + %d 条 mix32 测试向量全对（项目自有哈希，不依赖引擎 String.hash()）"
+		% [SimScript.HASH_VECTORS.size(), SimScript.MIX_VECTORS.size()])
+
+	print("=== Causal Bench S0 · 不变量回归门  seeds=%s days=%d%s ===" % [str(seeds), days,
+		("  【--permute %d：候选数组被打乱，digest 应一字不变】" % _permute) if _permute != 0 else ""])
 	var inv_pass := {}      # id -> 通过的 seed 数
 	var inv_name := {}      # id -> 名称
 	var inv_fail_eg := {}   # id -> 一个失败样例 "seed N: detail"
@@ -95,6 +138,8 @@ func _init() -> void:
 	var first_run_digest := {}  # seed -> 批量摘要（供确定性校验）
 	var first_run_edig := {}    # seed -> 增量滚动摘要（L4，独立见证）
 	var first_run_events := {}  # seed -> 事件数（金标附带信息）
+	var first_run_chain := {}   # seed -> 逐 tick 前缀链的终值（L4）
+	var first_run_ticks := {}   # seed -> PackedInt64Array 全量逐 tick 链（dump/ref 用，不落金标）
 	var live_total := {}    # 活性：类 -> 全网格出现次数
 	var live_seeds := {}    # 活性：类 -> 出现过该类的 seed 数
 
@@ -104,6 +149,8 @@ func _init() -> void:
 		first_run_digest[sd] = Inv.digest(S)
 		first_run_edig[sd] = S.event_digest
 		first_run_events[sd] = S.event_log.size()
+		first_run_chain[sd] = int(res["chain"])
+		first_run_ticks[sd] = res["chain_ticks"]
 		_tally_liveness(S, live_total, live_seeds)
 		var checks: Array = Inv.check_all(S, int(res["starved"]))
 		var hard_fails: Array = []
@@ -131,9 +178,11 @@ func _init() -> void:
 		print("[S0] " + JSON.stringify({"seed": sd, "days": days, "pass": hard_fails.is_empty(),
 			"hard_fails": hard_fails, "soft_fails": soft_fails, "diag_fails": diag_fails,
 			"events": S.event_log.size(), "digest": str(first_run_digest[sd]),
-			"event_digest": str(first_run_edig[sd])}))
+			"event_digest": str(first_run_edig[sd]), "chain": str(first_run_chain[sd])}))
 		if _shadow_dump != "":
 			_dump_shadow(sd, S.shadow_trace)   # 只在主循环 dump 一次（det 复跑不再重复）
+		if _chain_dump != "":
+			_write_chain_dump(sd, days, first_run_ticks[sd])
 		_dispose(S)
 
 	# ── 确定性校验：抽样种子两跑，摘要必须一致 ──
@@ -144,12 +193,16 @@ func _init() -> void:
 		var res2 := _run_once(sd, days)
 		var d2: int = Inv.digest(res2["S"])
 		var e2: int = res2["S"].event_digest
+		var c2: int = int(res2["chain"])
+		var t2: PackedInt64Array = res2["chain_ticks"]
 		_dispose(res2["S"])
-		# 两路摘要(批量 + 增量滚动)都须一致 → 双独立见证确定性
-		if d2 == int(first_run_digest[sd]) and e2 == int(first_run_edig[sd]):
+		# 三路摘要(批量 + 增量滚动 + 逐 tick 前缀链)都须一致 → 独立见证确定性
+		if d2 == int(first_run_digest[sd]) and e2 == int(first_run_edig[sd]) and c2 == int(first_run_chain[sd]):
 			det_ok += 1
 		else:
-			det_fail.append(sd)
+			# 同 seed 两跑手上都有【全量逐 tick 链】→ 这里能给出精确到 tick 的首个分叉点
+			var ft := first_tick_mismatch(first_run_ticks[sd], t2)
+			det_fail.append("seed %d%s" % [sd, tick_label(ft) if ft >= 0 else "  （链一致，分歧只在终态摘要）"])
 
 	# ── 报告：硬=每 seed 必绿；软=跨种子通过率门（比率制）；诊断=只报告 ──
 	var soft_min := soft_threshold(seeds.size())
@@ -209,23 +262,36 @@ func _init() -> void:
 	var golden_note := "(未启用 --golden)"
 	if bake_path != "":
 		golden_note = _bake_golden(bake_path, seeds_spec, days, seeds, first_run_digest, first_run_edig,
-			first_run_events, live_total, live_seeds)
+			first_run_events, first_run_chain, first_run_ticks, live_total, live_seeds)
 	if golden_path != "":
-		var gres := _check_golden(golden_path, days, seeds, first_run_digest, first_run_edig)
+		var gres := _check_golden(golden_path, days, seeds, first_run_digest, first_run_edig,
+			first_run_chain, first_run_ticks)
 		golden_red = bool(gres["red"])
 		golden_note = String(gres["note"])
 	print("\n— 金标（跨进程锚）—\n  " + golden_note)
+
+	# ── 逐 tick 前缀链：与一份 --chain-dump 参照物比对 → 精确到 tick 的首个分叉 ──
+	var chain_ref_red := false
+	if _chain_ref != "":
+		var rres := _check_chain_ref(_chain_ref, days, seeds, first_run_ticks)
+		chain_ref_red = bool(rres["red"])
+		print("\n— 逐 tick 前缀链 vs 参照 —\n  " + String(rres["note"]))
+	if _chain_dump != "":
+		print("\n— 逐 tick 前缀链 —\n  🔨 已写出 %d 个 seed 的全量逐 tick 链到 %s（用 --chain-ref 与之比对可定位首个分叉 tick）"
+			% [seeds.size(), _chain_dump])
 
 	print("\n— 确定性 —")
 	if det_n <= 0:
 		print("  (跳过)")
 	elif det_fail.is_empty():
-		print("  ✅ 同 seed 两跑摘要一致(批量+增量滚动)  %d/%d" % [det_ok, det_seeds.size()])
+		print("  ✅ 同 seed 两跑摘要一致(批量+增量滚动+逐tick前缀链)  %d/%d" % [det_ok, det_seeds.size()])
 	else:
-		print("  ❌ 非确定 seeds=%s" % str(det_fail))
+		print("  ❌ 非确定：")
+		for f in det_fail:
+			print("     " + String(f))
 
 	var gate_ok := (seed_pass == seeds.size()) and not hard_red and not soft_red \
-		and live_red.is_empty() and not golden_red and (det_n <= 0 or det_fail.is_empty())
+		and live_red.is_empty() and not golden_red and not chain_ref_red and (det_n <= 0 or det_fail.is_empty())
 	print("\n=== S0 GATE: %s  (硬不变量 seed %d/%d 全绿, 软通过率门 ≥%d/%d(%d%%) %s, 活性 %s, 金标 %s, det %d/%d) ===" % [
 		"PASS ✅" if gate_ok else "FAIL ❌", seed_pass, seeds.size(),
 		soft_min, seeds.size(), int(round(SOFT_RATE * 100.0)),
@@ -326,6 +392,7 @@ static func godot_version() -> String:
 
 func _bake_golden(path: String, seeds_spec: String, days: int, seeds: Array,
 		dig: Dictionary, edig: Dictionary, evs: Dictionary,
+		chain: Dictionary, chain_ticks: Dictionary,
 		live_total: Dictionary, live_seeds: Dictionary) -> String:
 	var doc := load_golden(path)        # 保留 DetGate 烘的 scenarios 段
 	var tbl := {}
@@ -335,6 +402,8 @@ func _bake_golden(path: String, seeds_spec: String, days: int, seeds: Array,
 			"event_digest": str(int(edig[sd])),
 			"days": days,
 			"events": int(evs[sd]),
+			"chain": str(int(chain[sd])),
+			"chain_ck": ck_encode(chain_ticks[sd], CHAIN_STRIDE),
 		}
 	var live_obs := {}
 	for k in live_total:
@@ -355,7 +424,8 @@ func _bake_golden(path: String, seeds_spec: String, days: int, seeds: Array,
 		return "🔨 已烘 %d 个 seed 到 %s（godot %s, days=%d）" % [seeds.size(), path, godot_version(), days]
 	return "❌ 写入失败：%s" % path
 
-func _check_golden(path: String, days: int, seeds: Array, dig: Dictionary, edig: Dictionary) -> Dictionary:
+func _check_golden(path: String, days: int, seeds: Array, dig: Dictionary, edig: Dictionary,
+		chain: Dictionary, chain_ticks: Dictionary) -> Dictionary:
 	var doc := load_golden(path)
 	if doc.is_empty():
 		return {"red": true, "note": "❌ 金标文件缺失/不可解析：%s" % path}
@@ -364,6 +434,7 @@ func _check_golden(path: String, days: int, seeds: Array, dig: Dictionary, edig:
 		return {"red": true, "note": "❌ 金标文件无 seeds 段：%s" % path}
 	var gmeta: Dictionary = doc.get("_meta", {})
 	var cmp_n := 0
+	var chain_cmp_n := 0
 	var bad: Array = []
 	for sd in seeds:
 		var key := str(sd)
@@ -381,19 +452,127 @@ func _check_golden(path: String, days: int, seeds: Array, dig: Dictionary, edig:
 			bad.append("seed %d digest       期望 %s  实得 %s" % [sd, exp_d, got_d])
 		if exp_e != got_e:
 			bad.append("seed %d event_digest 期望 %s  实得 %s" % [sd, exp_e, got_e])
+		# L4 逐 tick 前缀链：既抓"中途分叉又合流"（终态摘要抓不到），又报出首个分叉在哪一段
+		var exp_c := String(row.get("chain", ""))
+		if exp_c != "":
+			chain_cmp_n += 1
+			var got_c := str(int(chain[sd]))
+			if exp_c != got_c:
+				var loc := _locate_by_ck(String(row.get("chain_ck", "")), chain_ticks[sd])
+				bad.append("seed %d chain        期望 %s  实得 %s%s" % [sd, exp_c, got_c, loc])
 	if not bad.is_empty():
 		var msg := "❌ 金标不符（%d 处；金标烘于 godot %s）：\n" % [bad.size(), String(gmeta.get("godot", "?"))]
 		for b in bad:
 			msg += "      " + b + "\n"
 		msg += "    → 行为变了。若是【无意】的（引擎升级 / 候选枚举重构 / _aid() 播种变化），这是红线#1 被破，查代码；\n"
-		msg += "      若是【有意】的基线移动，才重烘：--bake-golden game/bench/golden_digests.json（与该变更同一 commit）。"
+		msg += "      若是【有意】的基线移动，才重烘：--bake-golden game/bench/golden_digests.json（与该变更同一 commit）。\n"
+		msg += "    → 要把首个分叉【精确到 tick】：先在已知良好的提交上 --chain-dump /tmp/ref.chain，\n"
+		msg += "      再在本提交上 --chain-ref /tmp/ref.chain（逐 tick 比对，直接报 tick 号）。"
 		return {"red": true, "note": msg}
 	if cmp_n == 0:
 		return {"red": false, "note": "⚠ 金标 0 条可比（seed/days 与金标表不重叠）——本跑未构成跨进程校验"}
-	return {"red": false, "note": "✅ 金标一致 %d/%d seed（烘于 godot %s，本机 %s）" % [
-		cmp_n, seeds.size(), String(gmeta.get("godot", "?")), godot_version()]}
+	return {"red": false, "note": "✅ 金标一致 %d/%d seed（含逐 tick 前缀链 %d 条；烘于 godot %s，本机 %s）" % [
+		cmp_n, seeds.size(), chain_cmp_n, String(gmeta.get("godot", "?")), godot_version()]}
 
-## 跑一局确定性仿真，返回 {S, starved}。S 由调用方 _dispose。
+# ── 逐 tick 前缀链的编码 / 定位 ──────────────────────────────────────────────
+## 检查点编码：每 stride 个 tick 取一个链值，逗号分隔的小写十六进制。
+## 存的是 tick=stride, 2*stride, … 处的 H（不存 tick 0，因为 chain[0] 是第 1 个 tick 之后的值）。
+static func ck_encode(ticks: PackedInt64Array, stride: int) -> String:
+	var parts := PackedStringArray()
+	var i := stride - 1
+	while i < ticks.size():
+		parts.append("%x" % ticks[i])
+		i += stride
+	return ",".join(parts)
+
+## 链下标 i ↔ Sim.tick_no：Sim.tick() 一进门就 tick_no += 1，故第 i 个链值对应 tick_no = i + 1。
+## 报告一律用【tick_no】（人和 log 里看到的那个号），不用数组下标。
+static func tick_label(idx: int) -> String:
+	var tno := idx + 1
+	return "  首个分叉 tick_no=%d（第 %d 天 · 当天第 %d tick）" % [tno, idx / CHAIN_STRIDE + 1, idx % CHAIN_STRIDE + 1]
+
+## 两条全量逐 tick 链的首个不同下标（= 首个分叉 tick 的 0-based 序号；tick_no = 它 + 1）。-1 = 完全一致。
+static func first_tick_mismatch(a: PackedInt64Array, b: PackedInt64Array) -> int:
+	var n: int = mini(a.size(), b.size())
+	for i in n:
+		if a[i] != b[i]:
+			return i
+	if a.size() != b.size():
+		return n           # 长度不同 → 短的那条结束处即首个分歧
+	return -1
+
+## 拿金标里的天级检查点，把首个分叉锁进一个 CHAIN_STRIDE 宽的 tick 窗口。
+func _locate_by_ck(ck: String, ticks: PackedInt64Array) -> String:
+	if ck == "":
+		return "  （金标无 chain_ck，无法定位；重烘一次即可获得天级检查点）"
+	var exp: PackedStringArray = ck.split(",", false)
+	var got: PackedStringArray = ck_encode(ticks, CHAIN_STRIDE).split(",", false)
+	var n: int = mini(exp.size(), got.size())
+	for i in n:
+		if exp[i] != got[i]:
+			return "\n        ↳ 首个分叉落在 tick_no [%d..%d]（第 %d 天）——该天之前的逐日检查点全部吻合" % [
+				i * CHAIN_STRIDE + 1, (i + 1) * CHAIN_STRIDE, i + 1]
+	if exp.size() != got.size():
+		return "\n        ↳ 逐日检查点在第 %d 天处长度不同（天数/步长变了？）" % (n + 1)
+	return "\n        ↳ 逐日检查点全吻合，分歧只出现在最后一天的尾段（tick_no > %d）" % (n * CHAIN_STRIDE)
+
+## 把一个 seed 的全量逐 tick 链追加进 dump 文件（每 seed 一行：seed<TAB>days<TAB>hex,hex,…）。
+func _write_chain_dump(sd: int, days: int, ticks: PackedInt64Array) -> void:
+	var f := FileAccess.open(_chain_dump, FileAccess.READ_WRITE)
+	if f == null:
+		return
+	f.seek_end()
+	f.store_line("%d\t%d\t%s" % [sd, days, ck_encode(ticks, 1)])
+	f.close()
+
+## 与一份 --chain-dump 参照物逐 tick 比对 → 精确到 tick 的首个分叉。
+func _check_chain_ref(path: String, days: int, seeds: Array, ticks: Dictionary) -> Dictionary:
+	if not FileAccess.file_exists(path):
+		return {"red": true, "note": "❌ 参照文件不存在：%s" % path}
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null:
+		return {"red": true, "note": "❌ 参照文件打不开：%s" % path}
+	var ref := {}
+	while not f.eof_reached():
+		var line := f.get_line()
+		if line.strip_edges() == "":
+			continue
+		var cols: PackedStringArray = line.split("\t")
+		if cols.size() < 3:
+			continue
+		ref["%s:%s" % [cols[0], cols[1]]] = cols[2]
+	f.close()
+	var cmp_n := 0
+	var bad: Array = []
+	for sd in seeds:
+		var key := "%d:%d" % [sd, days]
+		if not ref.has(key):
+			continue
+		cmp_n += 1
+		var exp: PackedStringArray = String(ref[key]).split(",", false)
+		var got: PackedStringArray = ck_encode(ticks[sd], 1).split(",", false)
+		var n: int = mini(exp.size(), got.size())
+		var first := -1
+		for i in n:
+			if exp[i] != got[i]:
+				first = i
+				break
+		if first < 0 and exp.size() != got.size():
+			first = n
+		if first >= 0:
+			bad.append("seed %d：%s  参照 H=%s  实得 H=%s" % [sd, tick_label(first).strip_edges(),
+				(exp[first] if first < exp.size() else "(无)"), (got[first] if first < got.size() else "(无)")])
+	if not bad.is_empty():
+		var msg := "❌ 逐 tick 前缀链与参照不符（%d 个 seed）：\n" % bad.size()
+		for b in bad:
+			msg += "      " + b + "\n"
+		return {"red": true, "note": msg.rstrip("\n")}
+	if cmp_n == 0:
+		return {"red": false, "note": "⚠ 参照 0 条可比（seed/days 不重叠）"}
+	return {"red": false, "note": "✅ 逐 tick 前缀链与参照逐 tick 一致 %d/%d seed" % [cmp_n, seeds.size()]}
+
+## 跑一局确定性仿真，返回 {S, starved, chain, chain_ticks}。S 由调用方 _dispose。
+## chain_ticks[i] = 第 i+1 个 tick 结束后的前缀链值（全量留在内存里：60 天 = 14400 个 int64 ≈ 115KB，可忽略）。
 func _run_once(seed: int, days: int) -> Dictionary:
 	var S = SimScript.new()
 	get_root().add_child(S)
@@ -401,18 +580,27 @@ func _run_once(seed: int, days: int) -> Dictionary:
 	S.auto_run = false
 	S.backend = null
 	S.shadow_on = _shadow   # 探针开关（默认 false → 逐字节不变）；set before start_new
+	S.cand_permute = _permute   # 置换不变性机检（默认 0=off → Sim 里一条分支都不进）
 	if _agents > 0:
 		S.spawn_count = _agents   # 扩 N 规模诊断（克隆扩容；0=数据原样 cast）
 	S.start_new(seed)
 	var total: int = days * int(S.TICKS_PER_DAY)
 	var starved := 0
+	var chain: int = Inv.CHAIN_INIT
+	var chain_ticks := PackedInt64Array()
+	chain_ticks.resize(total)
+	var ev_seen: int = S.event_log.size()   # 开局种子事件不算任何一个 tick 的产物
 	for t in range(total):
 		S.tick()
+		chain = Inv.chain_step(chain, S, ev_seen)   # H_t = h(H_{t-1} ‖ 状态_t ‖ 本 tick 新事件)
+		ev_seen = S.event_log.size()
+		chain_ticks[t] = chain
 		for ag in S.agents:
 			for nid in ag["needs"]:
 				if float(ag["needs"][nid]) <= 0.5:
 					starved += 1
-	return {"S": S, "starved": starved}   # 注：dump 不在此做——否则 det 复跑(也调 _run_once)会把同 seed 追加两次（评审 P1）
+	# 注：dump 不在此做——否则 det 复跑(也调 _run_once)会把同 seed 追加两次（评审 P1）
+	return {"S": S, "starved": starved, "chain": chain, "chain_ticks": chain_ticks}
 
 ## 把一 seed 的 shadow_trace 追加进 JSONL（每行一条决策，带 seed 前缀）。
 func _dump_shadow(seed: int, trace: Array) -> void:

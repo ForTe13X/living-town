@@ -226,6 +226,13 @@ var lod_focus := Vector2i(12, 8)
 const AGG_RELIEF := 6.0        # 激进 far：每次被动维持给最低需求补的量
 const SURVIVAL_NET_FLOOR := 8.0  # LOD 兜底：need 跌破此值就地小补（仅 LOD 开启时，补 LOD 节流/远端化造成的进食延迟；off 永不触发）
 var cand_calls := 0            # 成本探针：本 run 累计候选枚举次数（LOD 收益的客观度量）
+## ★仅 bench/测试用的置换开关（默认 0=off → 一条分支都不进 → 逐字节不变）。
+## 用途：机检「tie-break 与候选【枚举顺序】无关」这条不变量。旧实现按数组下标加盐，任何重排都改写历史；
+## 现在盐取自候选身份(_cand_salt)，于是打乱数组应当【选出同一个动作、跑出同一份 digest】。
+##   1 = 在 _logic_decide 入口把候选逆序（最简、最狠的重排）
+##   2 = 在 _logic_decide 入口按 (tick, agent) 确定性洗牌（Fisher-Yates，用独立 RNG 盐，不扰仿真流）
+##   3 = 在 agent_candidates 出口洗牌（更强：连"谁先被枚举"都换掉，覆盖 backend/replay 路径）
+var cand_permute := 0
 var event_digest := 0          # L4 增量滚动摘要：每事件 O(1) 折叠出的全程确定性见证（见 _log_event）
 
 var event_log: Array = []       # 不可变事件账本（replay/debug/bench 的根）
@@ -296,6 +303,78 @@ func _process(delta: float) -> void:
 		_accum -= tick_interval
 		tick()
 
+# ── 项目自有哈希（红线#1 的地基）────────────────────────────────────────────
+## 为什么不用 GDScript 的 String.hash()：它是【引擎内部实现】，Godot 换个小版本就可以换算法。
+## 而这个值曾经播种 RNG 子流(_aid)、决定决策切片相位、并且直接构成金标摘要(event_digest / Inv.digest)
+## —— 也就是说「引擎升级 → 全部历史被改写」是一个只会在 CI 变红时才被发现的静默雷。
+## 这里换成【本仓库自己拥有的】FNV-1a/32：定义在源码里、逐字节可读、带固定测试向量断言（HASH_VECTORS），
+## 任何引擎/平台变化都改不动它；测试向量对不上 → 门直接红，且指名道姓说是哈希本身变了。
+## 输入一律走 UTF-8 字节（to_utf8_buffer 是标准编码，不是引擎内部约定）→ 跨平台同值。
+## 输出恒在 [0, 2^32)（非负）→ 老代码里的 absi() 变成无害 no-op。
+const HASH_MASK32 := 0xFFFFFFFF
+const HASH_OFFSET32 := 2166136261     # FNV-1a 32 offset basis
+const HASH_PRIME32 := 16777619        # FNV-1a 32 prime
+
+## 固定测试向量（提交进源码 = 断言）。改动哈希实现 / 引擎换 UTF-8 行为 → 这里立刻红。
+## 值由 hash_self_test() 在 bench 启动时机检（Harness.gd / DetGate.gd 都调）。
+## 前三条是 FNV-1a/32 规范自带的公开测试向量（""/"a"/"abc" = 0x811c9dc5 / 0xe40c292c / 0x1a47e90b），
+## 拿它们做锚 = 证明本实现【就是】标准 FNV-1a，而不是"随便一个自洽的函数"；后三条锁住本仓库的真实输入
+## （agent id / 中文 UTF-8 / 候选身份串），确保 UTF-8 编码路径也被钉死。
+const HASH_VECTORS := {
+	"": 2166136261,
+	"a": 3826002220,
+	"abc": 440920331,
+	"aria": 2465267608,
+	"小镇有灵": 1224117696,
+	"object|吃饭|coffee|food|30|4": 2596958460,
+}
+
+## FNV-1a/32：字符串 → [0, 2^32)。
+static func fnv1a32(s: String) -> int:
+	var h := HASH_OFFSET32
+	var b := s.to_utf8_buffer()
+	for i in b.size():
+		h = ((h ^ b[i]) * HASH_PRIME32) & HASH_MASK32
+	return h
+
+## FNV-1a/32 续折：把 s 折进已有的 h（前缀链/流式用，免拼大串）。
+static func fnv1a32_into(h0: int, s: String) -> int:
+	var h := h0
+	var b := s.to_utf8_buffer()
+	for i in b.size():
+		h = ((h ^ b[i]) * HASH_PRIME32) & HASH_MASK32
+	return h
+
+## FNV-1a/32 折一个 64 位整数（小端 8 字节）→ 数值字段免建串直接混，用于逐 tick 前缀链的热路径。
+static func mix32(h0: int, v: int) -> int:
+	var h := h0
+	for k in 8:
+		h = ((h ^ ((v >> (k * 8)) & 0xFF)) * HASH_PRIME32) & HASH_MASK32
+	return h
+
+## mix32 的固定测试向量：[h0, v] -> 期望值。同样是提交进源码的断言。
+const MIX_VECTORS := [
+	[2166136261, 0, 2615243109],
+	[2166136261, 1, 1048580676],
+	[0, -1, 2976959224],
+	[1268118805, 4294967296, 2450531236],
+]
+
+## 哈希自检：返回 "" = 全部向量对上；否则返回失败详情（调用方应据此把门判红）。
+static func hash_self_test() -> String:
+	for s in HASH_VECTORS:
+		var got := fnv1a32(String(s))
+		var want := int(HASH_VECTORS[s])
+		if got != want:
+			return "fnv1a32(%s) 期望 %d 实得 %d" % [JSON.stringify(String(s)), want, got]
+	for v in MIX_VECTORS:
+		var g := mix32(int(v[0]), int(v[1]))
+		if g != int(v[2]):
+			return "mix32(%d, %d) 期望 %d 实得 %d" % [int(v[0]), int(v[1]), int(v[2]), g]
+	if fnv1a32_into(HASH_OFFSET32, "abc") != fnv1a32("abc"):
+		return "fnv1a32_into 与 fnv1a32 不一致"
+	return ""
+
 # ── 确定性 RNG（per-agent 计数器子流，docs/12 §L0）：种子混入 agent 维 who → 同 tick 同 salt 的
 # 不同 agent 不再撞同一随机流(WSC15 相关坑)，且扩 N 时各 agent 的流不随 N 漂。who=0 兼容旧的非 per-agent 调用。
 func _rng_at(salt: int, who: int = 0) -> RandomNumberGenerator:
@@ -303,9 +382,17 @@ func _rng_at(salt: int, who: int = 0) -> RandomNumberGenerator:
 	r.seed = seed_base + tick_no * 911 + salt * 7919 + who * 104729
 	return r
 
-## agent 维种子分量（id 的稳定哈希）。
+## agent 维种子分量（id 的稳定哈希）。用项目自有 FNV-1a/32（见上）而非引擎的 String.hash()。
+## 缓存：_aid 在 _near_cohort 的 sort_custom / 每 tick 相位判定里是热点，扩 N 时 O(N log N) 次调用。
+## id→hash 是纯函数，故缓存无需随局清（start_new 复用同一实例也永远正确）。
+var _aid_cache := {}
 func _aid(ag: Dictionary) -> int:
-	return String(ag["id"]).hash()
+	var id := String(ag["id"])
+	var v = _aid_cache.get(id)
+	if v == null:
+		v = fnv1a32(id)
+		_aid_cache[id] = v
+	return int(v)
 
 # ── 数据加载 ─────────────────────────────────────────────────────────────
 func _read_json(path: String) -> Dictionary:
@@ -1253,6 +1340,8 @@ func agent_candidates(ag: Dictionary) -> Array:
 	out.append_array(_journey_candidates(ag))        # P3 Tier-B：跨平面承诺行程元候选（冻结在 ext 前的固定位；仅 café 居民非空 → town 零扰动）
 	if ext != null:
 		out.append_array(ext.candidates(self, ag))   # 注册的 CandidateProvider 追加（排在内建之后，不改内建枚举序 → 回放安全）
+	if cand_permute == 3:
+		out = _permute_cands(out, _aid(ag))          # 仅测试用（默认 off）：连枚举出口都打乱，验证顺序无关
 	return out
 
 ## P3 Tier-B 决策规划：跨平面【承诺式行程 journey】元候选。两类，都产出带完整对象参数的 journey 候选(选中→agent_apply
@@ -2614,7 +2703,8 @@ func _log_event(type: String, actor_id: String, target_id: String, subject: Stri
 	event_log.append(ev)
 	# L4 增量滚动摘要：每事件 O(1) 折叠 → 不必末尾遍历整条 event_log 即得全程确定性见证（大规模/长跑友好）。
 	var es := "%d:%s:%s:%s:%d:%s:%d" % [int(ev["id"]), type, actor_id, target_id, int(accepted), subject, tick_no]
-	event_digest = ((event_digest * 1099511628211) ^ es.hash()) & 0x7FFFFFFFFFFFFFFF
+	# 折进来的每事件哈希用【项目自有】fnv1a32，不用引擎的 String.hash()——否则 Godot 换版本就能改写金标。
+	event_digest = ((event_digest * 1099511628211) ^ fnv1a32(es)) & 0x7FFFFFFFFFFFFFFF
 	return ev
 
 ## importance 写入期派生（评审一致：别恒为常数）。
@@ -2718,14 +2808,23 @@ func _best(cands: Array) -> Dictionary:
 
 ## 内置确定性逻辑决策（logic 后端）：用 _rng_at(种子+tick*911+salt) 做平局抖动 →
 ## 确定可复现，且不再因严格 > 退化（俩同分候选总抢同一个）。AIBackend.decide 的 logic 档亦委托至此。
+##
+## ★平局抖动的盐 = 候选的【稳定身份】(_cand_salt)，不是它在数组里的【下标】。
+## 旧实现 `_rng_at(i * 7 + 1, who)` 把「候选枚举顺序」焊进了仿真契约：任何不改变候选【集合】、
+## 只改变枚举次序的重构（换个 for 的遍历顺序、给 _object_candidates 加个提前 continue、
+## ext provider 插队）都会静默改写全镇全部历史，而金标只会告诉你「雷炸了」，说不出为什么。
+## 现在盐只取决于候选是【什么】(kind/action/target/partner/subject/need/area/commit/amount/dur_total)，
+## 于是「打乱候选数组 → 选中的动作不变」成为可机检的性质（bench 的 cand_permute 开关就是干这个的）。
 func _logic_decide(ag: Dictionary, cands: Array) -> Dictionary:
+	if cand_permute != 0:
+		cands = _permute_cands(cands, _aid(ag))   # 仅测试用（默认 0=off，逐字节不变）：置换不变性机检
 	var best: Dictionary = {}
 	var best_s := -INF
 	var best_i := -1
 	var who := _aid(ag)   # 决策者维 → 同 tick 不同 agent 的平局抖动不再撞同一流
 	for i in cands.size():
 		var c: Dictionary = cands[i]
-		var s := float(c["score"]) + _rng_at(i * 7 + 1, who).randf() * 0.5
+		var s := float(c["score"]) + _rng_at(_cand_salt(c), who).randf() * 0.5
 		if s > best_s:
 			best_s = s
 			best = c
@@ -3253,11 +3352,34 @@ func _form_pact(ag: Dictionary, o: Dictionary) -> void:
 # ── S4：模型决策记录 / 确定性回放（LLM 输出当外部输入，引擎主体保持纯确定）──────
 ## P2-1 候选稳定身份：**完整字段**（旧版只折 action/partner/subject → 多张床这类"同 action 不同 target"
 ## 无法区分）。与 AIBackend._cand_key 同义（那边守异步回包，这边守回放）。
+## B9 补齐 area/commit：attend 候选只有这两个字段区分彼此，旧 key 里【全部 attend 候选同 key】
+##   —— 手头两个临期约会时，回放按 key 找会取错那一个。补上后四类内建候选各自唯一。
+## 顺序无关：本函数只读【候选是什么】，不含任何位置/下标信息 → 同时是 tie-break 盐的来源(_cand_salt)。
 func _cand_key(c: Dictionary) -> String:
-	return "%s|%s|%s|%s|%s|%s|%s|%s" % [
+	return "%s|%s|%s|%s|%s|%s|%s|%s|%s|%s" % [
 		str(c.get("kind", "object")), str(c.get("action", "")), str(c.get("partner", "")),
 		str(c.get("target", "")), str(c.get("subject", "")), str(c.get("need", "")),
+		str(c.get("area", "")), str(c.get("commit", "")),
 		str(c.get("amount", "")), str(c.get("dur_total", ""))]
+
+## 候选身份 → tie-break 抖动的盐。取 31 位非负（_rng_at 里还要 *7919，留足 int64 余量）。
+## 实测（seeds 1-3 × 60d）：本式 38.3s；改成"逐字段折叠 + 记忆化"反而 40.3s，"字符串记忆化"38.25s(噪声内)。
+## 也就是说热点是【拼身份串】本身、不是 FNV 循环 —— 哈希已经足够便宜，没有再优化的必要，故取最直白的写法。
+func _cand_salt(c: Dictionary) -> int:
+	return fnv1a32(_cand_key(c)) & 0x7FFFFFFF
+
+## 仅测试用（cand_permute != 0 时才被调用）：确定性地重排候选数组。见 cand_permute 的注释。
+## 独立 RNG 盐 74213（无状态 _rng_at → 不消耗、不干扰任何仿真随机流）。
+func _permute_cands(cands: Array, who: int) -> Array:
+	var out := cands.duplicate()
+	if cand_permute == 1:
+		out.reverse()
+		return out
+	var r := _rng_at(74213, who)
+	for i in range(out.size() - 1, 0, -1):
+		var j := int(r.randi() % (i + 1))
+		var t = out[i]; out[i] = out[j]; out[j] = t
+	return out
 
 ## 候选集稳定哈希（回放 drift 检测）。P2-1：**不排序**——顺序也是身份的一部分；旧版排序后重排也算"没变"，
 ## 而 _resolve_replay 却按下标取 → 静默取错候选。
@@ -3265,7 +3387,7 @@ func _cand_hash(cands: Array) -> int:
 	var parts := PackedStringArray()
 	for c in cands:
 		parts.append(_cand_key(c))
-	return "|".join(parts).hash()
+	return fnv1a32("|".join(parts))      # 项目自有哈希（不用引擎 String.hash()，见 fnv1a32 注释）
 
 ## 记录一条落地的模型决策：pick 下标 + cand_hash（回放靠下标精确复现，hash 检 drift；不记 prompt/思维链）。
 func _record_decision(ag: Dictionary, cands: Array, intent: Dictionary) -> void:

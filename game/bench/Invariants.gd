@@ -1,5 +1,8 @@
 extends RefCounted
 class_name BenchInvariants
+## preload 而非全局类名/autoload：--script 模式下不加载 autoload（同 Sim.gd 顶部的纪律）。
+## 只用它的【静态】哈希（fnv1a32/mix32）——不实例化、不持有状态。
+const SimScript = preload("res://scripts/Sim.gd")
 ## bench/Invariants.gd — 把「确定性社交底座」的 20 条机检不变量抽成单一真相源（语义照搬 sim_soak.gd / sim_social_port.mjs）。
 ## check_all(S, starved) → [{id:int, name:String, ok:bool, detail:String}]，供 bench Harness 跨 seed 网格与 soak 共用。
 ## 注：现为「终态断言」（跑完整局后评估），非逐 tick；首违 tick 粒度留作后续细化。
@@ -427,4 +430,44 @@ static func digest(S) -> int:
 			String(e.get("target", "")), int(bool(e.get("accepted", false))),
 			String(e.get("subject", "")), int(e.get("tick", 0)),
 			wstr, String(e.get("note", ""))])
-	return "|".join(parts).hash()
+	# ★用【项目自有】Sim.fnv1a32 而不是引擎的 String.hash()：金标的每一个数字都必须由本仓库的源码定义，
+	#   否则 Godot 升级换一次内部哈希实现，全部金标一起漂，而行为其实一个字节没变（红线#1 假红/假绿两头都占）。
+	return SimScript.fnv1a32("|".join(parts))
+
+# ── 逐 tick 前缀哈希链（B9）────────────────────────────────────────────────
+## 为什么终态摘要不够：digest / event_digest 都是【全程汇总】。
+##   1) 中途分叉、末尾又合流的轨迹（LOD 生存兜底、承诺 pre-empt、需求钳位这类"自愈"路径）
+##      能把差异抹平 → 终态一致 → 静默漏过；
+##   2) 就算它们红了，也只会说「不一样」，说不出【第一个不一样的 tick】——排查得靠人肉二分。
+## 前缀链 H_t = h(H_{t-1} ‖ canon_state_t ‖ canon_events_t)：任一 tick 出现差异，此后每个 H 都不同，
+## 且逐 tick 留痕 → 能报出首个分叉 tick（见 Harness 的 --chain-dump / --chain-ref 与金标 chain_ck）。
+##
+## canon_state 取【会驱动后续决策的活状态】：位置、需求（定点量化）、说话中、当前 option 签名。
+## 需求量化到 1/65536：远细于任何真实行为差异（need 一步至少 0.01 量级），又挡住 float 末位噪声的假红。
+const CHAIN_INIT := 2166136261        # = Sim.HASH_OFFSET32
+const CHAIN_NEED_Q := 65536.0
+
+static func chain_step(prev: int, S, ev_from: int) -> int:
+	var h: int = prev
+	h = SimScript.mix32(h, int(S.tick_no))
+	for ag in S.agents:
+		h = SimScript.mix32(h, S._aid(ag))                    # id（走 Sim 的缓存，热路径不重算哈希）
+		var p: Vector2i = ag["pos"]
+		h = SimScript.mix32(h, int(p.x) * 65536 + int(p.y))
+		for nid in ag["needs"]:                               # Dictionary 保序（插入序）→ 确定
+			h = SimScript.mix32(h, int(round(float(ag["needs"][nid]) * CHAIN_NEED_Q)))
+		h = SimScript.mix32(h, int(ag.get("talking", 0)))
+		var opt = ag["option"]
+		if opt is Dictionary:
+			h = SimScript.fnv1a32_into(h, "%s|%s|%s|%s|%s|%s" % [
+				str(opt.get("kind", "")), str(opt.get("target", "")), str(opt.get("partner", "")),
+				str(opt.get("area", "")), str(opt.get("phase", "")), str(opt.get("remaining", ""))])
+		else:
+			h = SimScript.mix32(h, -1)
+	for i in range(ev_from, S.event_log.size()):              # 本 tick 新产生的事件（canon_events_t）
+		var e: Dictionary = S.event_log[i]
+		h = SimScript.fnv1a32_into(h, "%d:%s:%s:%s:%d:%s:%s" % [
+			int(e.get("id", 0)), String(e.get("type", "")), String(e.get("actor", "")),
+			String(e.get("target", "")), int(bool(e.get("accepted", false))),
+			String(e.get("subject", "")), String(e.get("note", ""))])
+	return h

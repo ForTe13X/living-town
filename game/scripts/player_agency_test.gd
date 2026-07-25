@@ -144,8 +144,14 @@ func _ready() -> void:
 			thanks = true
 	_ck("当事人感谢玩家", thanks)
 
-	# ── 7) NPC 主动找玩家：挂机 2 天，应有 NPC 发起指向玩家的社交 ──
-	_tickn(2 * int(Sim.TICKS_PER_DAY))
+	# ── 7) NPC 主动找玩家：挂机若干天，应有 NPC 发起指向玩家的社交 ──
+	# 窗口 2 天 → 4 天（2026-07-26, B9）。这是一条【涌现时机】断言，不是结构断言：它问的是
+	# "在固定的 N 个 tick 内恰好有人来搭话吗"，而"谁先走到玩家旁边"对轨迹极敏感。
+	# 实测（seed 7，挂机 30 天探针）：B9 之前首次 NPC→player 在 +190 tick，之后在 +523 tick——
+	# 两者都只是轨迹抖动，全程社交总量反而略升（161 → 172 次）。也就是说 2 天窗口本来就贴着边界，
+	# 任何合法的轨迹变动都能把它推翻。改成 4 天：对新旧两条轨迹都留出 ≥2 倍余量，断言的语义
+	# （"挂机会有人主动来找你"）一字未改，只是不再拿单个早到事件当运气。
+	_tickn(4 * int(Sim.TICKS_PER_DAY))
 	var npc_to_player := 0
 	for e in Sim.event_log:
 		if String(e["target"]) == "player" and String(e["actor"]) != "player":

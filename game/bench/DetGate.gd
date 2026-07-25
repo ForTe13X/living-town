@@ -43,6 +43,13 @@ func _init() -> void:
 		elif args[i] == "--bake-golden" and i + 1 < args.size():
 			bake_path = H.norm_path(args[i + 1])
 
+	# 哈希自检（同 Harness）：仿真的随机流与金标数字都由 Sim.fnv1a32 定义，先证明尺子没变。
+	var hash_bad := SimScript.hash_self_test()
+	if hash_bad != "":
+		print("❌ 项目自有哈希测试向量不符：%s（尺子变了，任何比对无意义）" % hash_bad)
+		quit(1)
+		return
+
 	print("=== DetGate · 场景确定性门  tracks=%s seeds=%s days=%d ===" % [str(TRACKS), seeds_spec, days])
 	var doc := H.load_golden(golden_path)
 	var gold: Dictionary = doc.get("scenarios", {})
@@ -74,24 +81,35 @@ func _init() -> void:
 					hard_fails.append("#%d %s — %s" % [int(c["id"]), String(c["name"]), String(c["detail"])])
 			var d1: int = Inv.digest(r1["S"])
 			var e1: int = r1["S"].event_digest
+			var c1: int = int(r1["chain"])
+			var t1: PackedInt64Array = r1["chain_ticks"]
 			var nev: int = r1["S"].event_log.size()
 			_dispose(r1["S"])
 
 			var r2 := _run(track, sd, days)                    # 同 seed 二跑 → 真确定性
 			var d2: int = Inv.digest(r2["S"])
 			var e2: int = r2["S"].event_digest
+			var c2: int = int(r2["chain"])
+			var t2: PackedInt64Array = r2["chain_ticks"]
 			_dispose(r2["S"])
-			var det_ok: bool = (d1 == d2) and (e1 == e2)
+			var det_ok: bool = (d1 == d2) and (e1 == e2) and (c1 == c2)
+			var det_where := ""
+			if not det_ok:
+				var ft := H.first_tick_mismatch(t1, t2)         # 逐 tick 前缀链 → 精确到 tick 的首个分叉
+				det_where = H.tick_label(ft) if ft >= 0 else "  （链一致，分歧只在终态摘要）"
 
 			var gold_mark := "—"
 			if have_gold and (gold.get(_gkey(track), {}) as Dictionary).has(str(sd)):
 				var row: Dictionary = (gold[_gkey(track)] as Dictionary)[str(sd)]
 				if int(row.get("days", -1)) == days:
 					n_gold_cmp += 1
-					if String(row.get("digest", "")) == str(d1) and String(row.get("event_digest", "")) == str(e1):
+					var exp_c := String(row.get("chain", ""))
+					if String(row.get("digest", "")) == str(d1) and String(row.get("event_digest", "")) == str(e1) \
+							and (exp_c == "" or exp_c == str(c1)):
 						gold_mark = "✅"; n_gold_ok += 1
 					else:
-						gold_mark = "❌ 期望 %s/%s 实得 %s/%s" % [String(row.get("digest", "")), String(row.get("event_digest", "")), str(d1), str(e1)]
+						gold_mark = "❌ 期望 %s/%s/%s 实得 %s/%s/%s" % [String(row.get("digest", "")),
+							String(row.get("event_digest", "")), exp_c, str(d1), str(e1), str(c1)]
 						red = true
 			if hard_fails.is_empty(): n_hard_ok += 1
 			else: red = true
@@ -101,9 +119,10 @@ func _init() -> void:
 			print("  [%s] seed=%d 事件=%-5d 硬=%s 确定=%s 金标=%s" % [
 				label, sd, nev,
 				"✅" if hard_fails.is_empty() else ("❌ " + "; ".join(hard_fails)),
-				"✅" if det_ok else "❌ digest %d/%d vs %d/%d" % [d1, e1, d2, e2],
+				"✅" if det_ok else ("❌ digest %d/%d/%d vs %d/%d/%d%s" % [d1, e1, c1, d2, e2, c2, det_where]),
 				gold_mark])
-			tbake[str(sd)] = {"digest": str(d1), "event_digest": str(e1), "days": days, "events": nev}
+			tbake[str(sd)] = {"digest": str(d1), "event_digest": str(e1), "days": days, "events": nev,
+				"chain": str(c1)}
 		baked[_gkey(track)] = tbake
 
 	if bake_path != "":
@@ -143,13 +162,20 @@ func _run(scen: String, seed: int, days: int) -> Dictionary:
 	S.start_new(seed)
 	var total: int = days * int(S.TICKS_PER_DAY)
 	var starved := 0
+	var chain: int = Inv.CHAIN_INIT              # L4 逐 tick 前缀链（同 Harness）：中途分叉再合流也留痕
+	var chain_ticks := PackedInt64Array()
+	chain_ticks.resize(total)
+	var ev_seen: int = S.event_log.size()
 	for t in range(total):
 		S.tick()
+		chain = Inv.chain_step(chain, S, ev_seen)
+		ev_seen = S.event_log.size()
+		chain_ticks[t] = chain
 		for ag in S.agents:
 			for nid in ag["needs"]:
 				if float(ag["needs"][nid]) <= 0.5:
 					starved += 1
-	return {"S": S, "starved": starved}
+	return {"S": S, "starved": starved, "chain": chain, "chain_ticks": chain_ticks}
 
 func _dispose(S) -> void:
 	get_root().remove_child(S)
