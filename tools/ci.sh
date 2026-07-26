@@ -108,7 +108,10 @@ echo "### 4e. ModelPathGate 出货 prompt 编码门 (闭集编号字母表 / 示
 scan "ModelPathGate" "$LT_LOG/modelpath.log" 'Parse JSON failed'
 
 echo "### 5. unit / integration scenes"
-for scene in m2_test reqlife_test player_agency_test s4_replay_test space_test save_load_test; do
+# player_touch_test：C3 的 31 条 + C8 的 13 条断言（触屏按钮路径 ≡ 按键路径、7 个动词可分辨、
+#   观察台两档"卡片是详情的逐行前缀"）。它在 2026-07-26 Wave C 里写好后【一直没进 CI】——
+#   docs/43 §1.2d 曾把它写成"已落地"，而 C8 查出这里的场景列表根本没有它。补上。
+for scene in m2_test reqlife_test player_agency_test player_touch_test s4_replay_test space_test save_load_test; do
   "$GODOT" --headless --path game "res://scenes/$scene.tscn" >"$LT_LOG/$scene.log" 2>&1
   code=$?
   if [ $code -eq 0 ]; then ok "$scene"; else tail -8 "$LT_LOG/$scene.log"; bad "$scene (exit $code)"; fi
