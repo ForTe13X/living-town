@@ -26,7 +26,7 @@ const FEED_RESCAN := 200               # 回放/读档后从 event_log 尾部回
 ##   ②时间线一换就整份重算（`_rebuild_feed`，与播报共用同一个入口）。
 ##   机器证明在 scenes/goals_test.tscn。
 var _goals: RefCounted                 # Goals.gd 实例
-var _goals_pan: ColorRect              # 展开档面板（默认【隐藏】：docs/46 §一 #5 已经在说 chrome 太多）
+var _goals_pan: TextureRect            # 展开档面板（默认【隐藏】：docs/46 §一 #5 已经在说 chrome 太多）；羽化 scrim，见 _mk_scrim
 var _goals_box: RichTextLabel
 var _goals_open := false
 var _goals_line := ""                  # 缓存的一行摘要：只有它变了才重画播报（免每 tick join 一次）
@@ -194,6 +194,7 @@ const OBS_MAX_LINES := 34             # 观察台可见行数预算（294x676 �
 const GOALS_X := 10.0
 const GOALS_Y := 42.0
 const GOALS_SZ := Vector2(344.0, 280.0)
+const GOALS_FEATH := 40.0                 # 展开档 scrim 的羽化带宽（绝对 px，同 OBS_FEATH 的理由）；只用于右/下两边
 
 func _ready() -> void:
 	var seed := 20260626
@@ -526,13 +527,13 @@ func _build_hud() -> void:
 	# 为什么默认隐藏、且收起档只在播报框里占**一行**：docs/46 §一 #5 记着"25.5% 的屏幕已经是 chrome"，
 	# 再挂一块常驻面板就是往那个数字上加。收起档的成本是 1 行文字，且它长在**已经存在**的播报底板里，
 	# 不新增任何底板/接缝（C7 的教训：沿边界多描一个矩形比原来那条硬边更糟）。
-	_goals_pan = ColorRect.new()
-	_goals_pan.color = Color(0.02, 0.03, 0.05, 0.74)
-	_goals_pan.position = Vector2(GOALS_X, GOALS_Y)
-	_goals_pan.size = GOALS_SZ
-	_goals_pan.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# ★ 展开档必须走 _mk_scrim 而不是 ColorRect。D2 的像素验收只测了【收起档】，于是展开档带着一条
+	# 和 C8 刚刚抹掉的那条一模一样的硬边回来了：实测右缘 x=354 逐行亮度跃变 **中位数 110.99，且 median==max**
+	# （每一行都是同一个 111 的台阶 = 教科书式的硬边），而隔壁 C8 羽化过的播报右缘同一量法是 **0.93**。
+	# 左/上两边贴着屏幕角 ⇒ 不需要羽化；只羽化右边与下边（这两条才压在世界上）。
+	_goals_pan = _mk_scrim(layer, Vector2(GOALS_X, GOALS_Y), GOALS_SZ + Vector2(GOALS_FEATH, GOALS_FEATH),
+		0.0, GOALS_FEATH / (GOALS_SZ.x + GOALS_FEATH), 0.0, GOALS_FEATH / (GOALS_SZ.y + GOALS_FEATH))
 	_goals_pan.visible = _goals_open
-	layer.add_child(_goals_pan)
 	_goals_box = RichTextLabel.new()
 	_goals_box.bbcode_enabled = true
 	_goals_box.scroll_active = false
