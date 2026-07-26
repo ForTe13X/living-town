@@ -19,3 +19,13 @@ build/
 
 # Godot Android gradle build template (editor re-installs via "Install Android Build Template")
 game/android/
+
+# Python bytecode caches (tools/*.py 与 bench/bakeoff/*.py 跑一次就会生成)
+__pycache__/
+*.pyc
+
+# LLM-judge 负载：analysis/phase_d/packet_c30.jsonl 638MB + packet_smoke.jsonl 84MB（2026-07-19 那轮）。
+# 只挡这两类大包，【不】挡整个 analysis/ —— analysis/ 在 codex/repository-review-2026-07-12 上是
+# 【被跟踪路径】(analysis/repository-review-2026-07-12/、analysis/cross-disciplinary-.../)，
+# 整目录 ignore 会在那条分支合回来时静默吞掉 11 份评审文档。
+analysis/**/packet_*.jsonl
