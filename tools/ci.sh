@@ -23,16 +23,38 @@ bad(){ echo "  ❌ FAIL: $1"; FAIL=1; }
 # ── 运行期错误哨兵 ──────────────────────────────────────────────────────────
 # 为什么需要：GDScript 的 push_error() / SCRIPT ERROR 【不改变进程退出码】。
 # 例：Sim.gd:304 在数据文件缺失时 push_error("缺数据文件: ...") 然后继续跑——整条 CI 依旧全绿。
-# 所以每个【运行期】步骤（4 / 4b / 4c / 5）的输出都必须做模式扫描，只靠 exit code 是不够的。
-# 白名单只有一条：NobodyWho（端侧 SLM）的 GDExtension 动态库是【故意不入库】的（红线#4：不分发权重/二进制），
-#   于是 headless 每次启动必打这 4 行 ERROR。除此之外任何 ERROR/SCRIPT ERROR/USER ERROR 一律致命。
+# 所以每个【运行期】步骤（4 / 4b / 4c / 4d / 4e / 5）的输出都必须做模式扫描，只靠 exit code 是不够的。
+#
+# ── 白名单纪律（2026-07-26 D1 收窄）────────────────────────────────────────
+# 唯一合法的噪声是 NobodyWho（端侧 SLM）GDExtension 的开场白：红线#4 不许 .so/.dll 入库，于是
+# `--import` 之后【每一次】godot 启动都固定打这 4 行（实测：--script 与 scene 两种模式都恰好 4 行）。
+# 旧白名单是 `nobodywho|GDExtension|open_dynamic_library|load_extensions|Condition "!FileAccess::exists(path)" is true`，
+# 按【裸子串】放行，于是那条 Condition 把**每一个被扫步骤里的任何 FileAccess::exists 失败**都遮住了
+# ——数据文件、场景、存档、资源缺失全在内（docs/43 §1.2j-④ 点的名）。现在改成【绑上下文】：
+#   · 两行指名 nobodywho ⇒ 按名放行。换成别的扩展缺失，名字对不上 ⇒ 红。
+#   · 两行是裸的 Condition ⇒ 只在它紧随的 "at:" 行是 `open_dynamic_library` 时放行；
+#     且任何多出来的缺失动态库都会同时产生一条【指名】的 "not found: '<path>'" ⇒ 那条名字对不上 ⇒ 红。
+#     （全仓库 .gd 里没有任何 `OS.open_dynamic_library` 调用，故不存在"只有裸行、没有指名行"的路径。）
+# 额外白名单（第 3 参）现在必须带【预期条数】（第 4 参）：放行的是**被断言的那一条**，不是这个模式的所有出现。
 ERR_PAT='SCRIPT ERROR|USER ERROR|Parse Error|Failed to load script|ERROR:'
-ERR_OK='nobodywho|GDExtension|open_dynamic_library|load_extensions|Condition "!FileAccess::exists\(path\)" is true'
-scan(){  # scan <label> <logfile> [额外白名单正则]
-  local allow="$ERR_OK"
-  [ $# -ge 3 ] && allow="$allow|$3"
-  local hits
-  hits=$(grep -aE "$ERR_PAT" "$2" 2>/dev/null | grep -avE "$allow")
+ERR_OK='(GDExtension dynamic library not found|Error loading extension): .res://addons/nobodywho/|Condition "!FileAccess::exists\(path\)" is true\..* at: open_dynamic_library '
+
+# Godot 的一条错误占两行（"ERROR: ..." + "   at: fn (file:line)"）。把它们拼成一条记录再过滤，
+# 白名单才可能要求上下文。顺带去掉 CRLF 的 \r（Windows 上的 godot 写的是 \r\n）。
+pair_errs(){ awk -v P="$ERR_PAT" '{ gsub(/\r/,""); l[NR]=$0 }
+  END { for (i=1;i<=NR;i++) if (l[i] ~ P) { r=l[i]; if (l[i+1] ~ /^[ \t]*at: /) r = r " " l[i+1]; print r } }' "$1"; }
+
+scan(){  # scan <label> <logfile> [额外白名单正则] [该正则的预期条数]
+  local extra="${3:-}" want="${4:-}" hits n
+  hits=$(pair_errs "$2" 2>/dev/null | grep -avE "$ERR_OK")
+  if [ -n "$extra" ]; then
+    n=$(printf '%s\n' "$hits" | grep -acE "$extra")
+    hits=$(printf '%s\n' "$hits" | grep -avE "$extra")
+    if [ -n "$want" ] && [ "$n" -ne "$want" ]; then
+      bad "$1 (白名单 '$extra' 出现 $n 次，预期恰好 $want 次 —— 多了=新的未解释错误，少了=那条被断言的负例没跑到)"
+    fi
+  fi
+  hits=$(printf '%s' "$hits" | grep -av '^[[:space:]]*$')
   if [ -n "$hits" ]; then echo "$hits" | head -12; bad "$1 (运行期错误行，见上)"; fi
 }
 
@@ -82,16 +104,20 @@ echo "### 4c. DetGate 场景确定性门 (default / faction / betray / freerider
 [ "${PIPESTATUS[0]}" -eq 0 ] && ok "DetGate scenario determinism" || bad "DetGate scenario determinism"
 scan "DetGate" "$LT_LOG/detgate.log"
 
-echo "### 4d. BackendGate 外部后端硬不变量门 (#01「无饿穿」在【模型/随机后端挑】的那条路上)"
+echo "### 4d. BackendGate 外部后端门 (硬不变量含#01 / 同seed两跑一致 / 闭集封闭)"
 # 为什么必须单独有这一步：上面每一道门（金标 / LOD / DetGate）都恒 Sim.backend=null（红线#2 的零模型地板）
 # ⇒ AIBackend.decide() 从不被调用 ⇒ 硬不变量 #01 只在【引擎自己挑】的路径上验过。
 # docs/38 §五 实测：同一份配置下 logic 0/8 seed 饿穿，random/slm 都是 8/8 —— CI 全绿与产品已破可以同时成立。
 # 用 random 而不是 slm：random 的选号来自 Sim._rng_at(RANDOM_SALT) 确定性流、时延按 tick 计，逐字节可重跑
 #   （本门自己把这条性质机检了：每个 seed 跑两遍比 digest/链）；slm 有 run-to-run 噪声，永远不进 CI。
 #   两条臂走的是【同一条落地路】(decide→闭集选号→重验→agent_apply)，故这条路上的护栏一旦立住，两者同时受保护。
+# 三条臂（2026-07-26 D1 起，此前第三条是假的——它与第一条的 #01 逐位同一个谓词）：
+#   A 硬不变量全绿  B 同 seed 两跑 digest/事件/逐tick前缀链一致  C 闭集封闭（后端交回的 intent 必在本次候选里）
+# C 守的是红线#2 的后半句，而【引擎自己不强制它】：Sim.gd:1185-1201 只做生存/视野否决，
+#   一个凭空捏造的 intent 只要不违反生存否决就会被 agent_apply 原样落地。
 "$GODOT" --headless --path game res://bench/BackendGate.tscn -- \
   --seeds "${CI_BG_SEEDS:-1-4}" --days "${CI_BG_DAYS:-8}" --agents "${CI_BG_N:-12}" 2>&1 | tee "$LT_LOG/backendgate.log"
-[ "${PIPESTATUS[0]}" -eq 0 ] && ok "BackendGate 外部后端 #01 门" || bad "BackendGate 外部后端 #01 门"
+[ "${PIPESTATUS[0]}" -eq 0 ] && ok "BackendGate 外部后端门（硬不变量/两跑一致/闭集封闭）" || bad "BackendGate 外部后端门（硬不变量/两跑一致/闭集封闭）"
 scan "BackendGate" "$LT_LOG/backendgate.log"
 
 echo "### 4e. ModelPathGate 出货 prompt 编码门 (闭集编号字母表 / 示例编号 / 裁剪保序)"
@@ -101,11 +127,15 @@ echo "### 4e. ModelPathGate 出货 prompt 编码门 (闭集编号字母表 / 示
 #   ② 字符 '0' 的先验让模型从不选 0 号槽，而 index 0 有 74.84% 是吃饭/睡觉 ⇒ 系统性跳过维生动作；
 #   ③ 裁剪路径若按 score 重排候选，会把引擎 argmax 顶到首位——那正是 docs/42 §9-4 判定
 #      bench/log_decisions.gd 不可用于位置研究的同一个混淆，且它会悄悄抵消 ① ② 的修复。
-# 允许 'Parse JSON failed'：fail-closed 规则下模型回 prose 会先撞 JSON 兼容路，同 m2_test 的既有豁免。
+# 允许 'Parse JSON failed'【恰好 1 次】：那是 A 段最后一条断言（prose fail-closed）故意喂 "A 去 eat"，
+#   引擎在 JSON 兼容路上必打的一行（AIBackend.gd:886）。多一次 = 新的、没人解释过的错误；
+#   少一次 = 那条负例断言已经不再跑到那条路上（门悄悄少了一条），两边都该红。
+# C 段现在比对提交锚 game/bench/modelpath_anchor.json（此前它零条断言、只 print digest）。
+#   锚移动了且是蓄意的 → --bake-anchor 重烘并在 _meta.rebake_history 里补一条原因（docs/41 §3）。
 "$GODOT" --headless --path game res://bench/ModelPathGate.tscn -- \
   --seeds "${CI_MP_SEEDS:-1-4}" --days "${CI_MP_DAYS:-8}" --agents "${CI_MP_N:-12}" 2>&1 | tee "$LT_LOG/modelpath.log"
 [ "${PIPESTATUS[0]}" -eq 0 ] && ok "ModelPathGate 模型路径编码门" || bad "ModelPathGate 模型路径编码门"
-scan "ModelPathGate" "$LT_LOG/modelpath.log" 'Parse JSON failed'
+scan "ModelPathGate" "$LT_LOG/modelpath.log" 'Parse JSON failed' 1
 
 echo "### 5. unit / integration scenes"
 # player_touch_test：C3 的 31 条 + C8 的 13 条断言（触屏按钮路径 ≡ 按键路径、7 个动词可分辨、
@@ -116,9 +146,9 @@ for scene in m2_test reqlife_test player_agency_test player_touch_test s4_replay
   code=$?
   if [ $code -eq 0 ]; then ok "$scene"; else tail -8 "$LT_LOG/$scene.log"; bad "$scene (exit $code)"; fi
   case "$scene" in
-    # m2_test 是【负例测试】：故意把畸形 JSON 喂给 AIBackend.parse_decision(:560) 验证它拒收，
-    # 引擎因此必打两行 "Parse JSON failed"。这是被断言的行为，不是回归 → 只对本场景放行这一条。
-    m2_test) scan "$scene" "$LT_LOG/$scene.log" 'Parse JSON failed' ;;
+    # m2_test 是【负例测试】：故意把畸形 JSON 喂给 AIBackend.parse_decision 验证它拒收，
+    # 引擎因此必打【恰好两行】"Parse JSON failed"（实测）。这是被断言的行为，不是回归 → 只对本场景、只放行这两条。
+    m2_test) scan "$scene" "$LT_LOG/$scene.log" 'Parse JSON failed' 2 ;;
     *)       scan "$scene" "$LT_LOG/$scene.log" ;;
   esac
 done

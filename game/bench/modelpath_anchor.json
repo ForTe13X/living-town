@@ -1,0 +1,39 @@
+{
+  "_meta": {
+    "baked_by": "godot --headless --path game res://bench/ModelPathGate.tscn -- --seeds 1-4 --days 8 --agents 12 --bake-anchor game/bench/modelpath_anchor.json",
+    "godot": "4.6.2-stable (official)",
+    "rebake_history": [
+      "2026-07-26 D1 · 首烘。C 段此前零条断言（只 print digest），本文件把它变成真门。锚的对象是 random(full) 臂——模型路径上唯一的跨进程/跨提交锚（golden_digests.json 恒 Sim.backend=null，看不见这条路）。"
+    ]
+  },
+  "random_full": {
+    "days8_n12": {
+      "1": {
+        "digest": "3244270114",
+        "event_digest": "8007888912914705654",
+        "landed": 647
+      },
+      "2": {
+        "digest": "3425279767",
+        "event_digest": "2329632004684415148",
+        "landed": 653
+      },
+      "3": {
+        "digest": "3194463556",
+        "event_digest": "1507499112834390867",
+        "landed": 671
+      },
+      "4": {
+        "digest": "3417328427",
+        "event_digest": "2206288779063916849",
+        "landed": 644
+      },
+      "_scale": {
+        "max_n": 57,
+        "n_dec": 2615,
+        "over_cap": 112,
+        "over_old": 14
+      }
+    }
+  }
+}
