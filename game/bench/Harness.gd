@@ -10,7 +10,7 @@ extends SceneTree
 ##   --permute N           仅测试：N!=0 时打乱候选数组再评分（1=逆序 2=洗牌 3=枚举出口洗牌）。
 ##                         置换不变性机检——tie-break 的盐取自候选身份而非下标，故 digest 应【一字不变】。
 ## 输出：每 seed 一行 [S0]{json}（JSONL，便于机读）+ 每不变量跨 seed 通过率表 + 套件级活性表 + 最终红绿门；任一失败 quit(1)。
-## 纪律同 sim_soak：--script 不加载 autoload → preload Sim/Invariants 实例化，backend=null 走确定性 logic。
+## 纪律同 sim_soak：--script 的 _init() 阶段 autoload 尚未挂上（docs/41 §2 更正：autoload 其实是加载的） → preload Sim/Invariants 实例化，backend=null 走确定性 logic。
 ##
 ## 四层证据（为什么要金标 + 前缀链）：
 ##   L1 同进程同 seed 两跑一致（--det）      → 只证「同一二进制、同一进程内可复现」

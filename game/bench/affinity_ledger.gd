@@ -1,7 +1,7 @@
 extends SceneTree
 ## bench/affinity_ledger.gd — B11 诊断台（只读）：全镇 affinity 收支账本 + gossip_rep 拒绝解剖。
 ##
-## 用法（--script 不加载 autoload → preload Sim 实例化，同 Harness.gd 纪律）：
+## 用法（--script 的 _init() 阶段 autoload 尚未挂上（docs/41 §2 更正：autoload 其实是加载的） → preload Sim 实例化，同 Harness.gd 纪律）：
 ##   godot --headless --path game --script res://bench/affinity_ledger.gd -- \
 ##       [--seeds 1-12] [--days 60] [--out /tmp/lt_ledger.json]
 ##

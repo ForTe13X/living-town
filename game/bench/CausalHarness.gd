@@ -4,7 +4,7 @@ extends SceneTree
 ## 方法：同 seed 同初态，对目标 agent 只翻转一个干预位 do(X=high)/do(X=low)/control，跑确定性轨迹对比结果 Y。
 ##   PS=P(Y|do高) 在 control 无 Y 的 seed；PN=P(¬Y|do低) 在 control 有 Y 的 seed；ACE=mean(Y_high−Y_low)。
 ##   纯注入式干预（不改 Sim）；后端宏观矩阵(legality/macro-drift)因 AIBackend 引用全局 Sim 留作 scene 模式。
-## 纪律同 soak/S0：--script 不加载 autoload → preload 实例化，backend=null 走确定性 logic。
+## 纪律同 soak/S0：--script 的 _init() 阶段 autoload 尚未挂上（docs/41 §2 更正：autoload 其实是加载的） → preload 实例化，backend=null 走确定性 logic。
 
 const SimScript = preload("res://scripts/Sim.gd")
 const M = preload("res://bench/Metrics.gd")

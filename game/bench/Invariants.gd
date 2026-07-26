@@ -1,6 +1,6 @@
 extends RefCounted
 class_name BenchInvariants
-## preload 而非全局类名/autoload：--script 模式下不加载 autoload（同 Sim.gd 顶部的纪律）。
+## preload 而非全局类名/autoload：--script 的 _init() 阶段 autoload 尚未挂上（docs/41 §2 更正：autoload 其实是加载的）（同 Sim.gd 顶部的纪律）。
 ## 只用它的【静态】哈希（fnv1a32/mix32）——不实例化、不持有状态。
 const SimScript = preload("res://scripts/Sim.gd")
 ## bench/Invariants.gd — 把「确定性社交底座」的 20 条机检不变量抽成单一真相源（语义照搬 sim_soak.gd / sim_social_port.mjs）。

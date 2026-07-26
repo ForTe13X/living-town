@@ -2,7 +2,7 @@ extends SceneTree
 ## bench/lod_verify.gd — 观察无关 aggregate LOD 的红线验证（V2 相机路径无关 + V3 确定性/存读/fresh-vs-restart）。
 ## 用法：godot --headless --path . --script res://bench/lod_verify.gd -- [N] [days]
 ##   全程 lod_aggregate=true。摘要 = [Inv.digest(S), S.event_digest] 双见证。任一 FAIL → quit(1)。
-## 纪律：backend=null 走确定性 logic；不加载 autoload → preload 实例化。
+## 纪律：backend=null 走确定性 logic；_init() 阶段 autoload 尚未挂上（docs/41 §2）→ preload 实例化。
 const SimScript = preload("res://scripts/Sim.gd")
 const Inv = preload("res://bench/Invariants.gd")
 
