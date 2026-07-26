@@ -1,0 +1,47 @@
+GIMP Palette
+Name: Living Town
+Columns: 8
+# 目标调色板 (A-art-0)。来源与推导见 docs/44-art-direction.md。
+# 注意：这是【目标】不是【现状】——2026-07-26 实测 game/scripts/*.gd 里有 134 个不同的硬编码色值，
+#       本表 40 色只覆盖户外/建筑外壳/UI 这一层。收敛工作本身是一根独立的棒，见 docs/44 第 4 节。
+#
+133 166  67	grass-summer  # 地面草地/夏季 · 植被中亮
+168 191  97	grass-spring  # 地面草地/春季 · 植被嫩叶 · 好感正
+181 154  74	grass-autumn  # 地面草地/秋季 · UI 警告
+167 179 186	grass-winter  # 地面草地/冬季霜草 · public 墙 top · UI 次级文字
+ 95 123  52	foliage-deep  # 植被/深叶与树冠阴影
+120 147  63	foliage-mid  # 植被/标准叶色
+134 183 200	water-lit  # 水/高光与浅水
+ 90 142 166	water-base  # 水/base
+ 54  95 115	water-deep  # 水/深水与岸线
+184 178 166	road-kerb  # 道路/路缘石与高光
+155 150 141	stone-base  # 道路/base · workshop 地板/base
+109 106  97	stone-line  # 道路/缝线 · workshop 地板/line · 界外环内缘
+195 169 122	plaza-base  # 广场铺装/base
+154 130  83	plaza-line  # 广场铺装/line
+194 160 113	res-wall-face  # residential 墙 face
+216 189 147	res-wall-top  # residential 墙 top
+131 106  72	res-wall-foot  # residential 墙 foot · 裸土与枯草暗部
+168  68  58	res-roof  # residential 屋顶
+154 108  64	com-wall-face  # commercial 墙 face（由 #8A6238 提亮）
+185 137  86	com-wall-top  # commercial 墙 top（由 #A67F4E 提亮）
+ 90  64  40	com-wall-foot  # commercial 墙 foot · 室内墙/住宅（替代 #5E4326）
+181  72  74	com-roof  # commercial 屋顶 · 好感负
+124 138 146	pub-wall-face  # public 墙 face
+ 85  97 105	pub-wall-foot  # public 墙 foot
+ 90 134 176	pub-roof  # public 屋顶 · UI 选中
+130 134 143	wrk-wall-face  # workshop 墙 face
+160 164 172	wrk-wall-top  # workshop 墙 top
+ 88  92 100	wrk-wall-foot  # workshop 墙 foot · 界外环中层
+ 63  75  80	wrk-roof  # workshop 屋顶 · 室内墙/public · 界外环外层（替代 #3E4A5A）
+200 162 115	res-floor-base  # residential 地板/base
+156 119  72	res-floor-line  # residential 地板/line
+191 146  87	com-floor-base  # commercial 地板/base
+140 101  51	com-floor-line  # commercial 地板/line
+150 165 171	pub-floor-base  # public 地板/base
+108 123 131	pub-floor-line  # public 地板/line
+ 76  70  61	int-wall-com  # 室内墙/commercial
+ 72  64  84	int-wall-wrk  # 室内墙/workshop
+232 225 210	ui-text  # UI/主文字与图标高光
+ 34  37  42	ui-panel  # UI/面板 · 最深轮廓 · 界外环最外层
+ 89  98 127	night-multiply  # 夜间叠加乘色（Multiply 35%-55%）

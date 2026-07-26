@@ -94,6 +94,19 @@ echo "### 4d. BackendGate 外部后端硬不变量门 (#01「无饿穿」在【�
 [ "${PIPESTATUS[0]}" -eq 0 ] && ok "BackendGate 外部后端 #01 门" || bad "BackendGate 外部后端 #01 门"
 scan "BackendGate" "$LT_LOG/backendgate.log"
 
+echo "### 4e. ModelPathGate 出货 prompt 编码门 (闭集编号字母表 / 示例编号 / 裁剪保序)"
+# 为什么和 4d 分开：4d 守的是【落地之后】的世界（硬不变量 #01、两跑一致），
+# 4e 守的是【问出去之前】那一份 prompt 的编码性质——docs/42 量到的三条病都活在这里：
+#   ① 系统 prompt 里的字面示例编号把三成决策焊在一个候选位上；
+#   ② 字符 '0' 的先验让模型从不选 0 号槽，而 index 0 有 74.84% 是吃饭/睡觉 ⇒ 系统性跳过维生动作；
+#   ③ 裁剪路径若按 score 重排候选，会把引擎 argmax 顶到首位——那正是 docs/42 §9-4 判定
+#      bench/log_decisions.gd 不可用于位置研究的同一个混淆，且它会悄悄抵消 ① ② 的修复。
+# 允许 'Parse JSON failed'：fail-closed 规则下模型回 prose 会先撞 JSON 兼容路，同 m2_test 的既有豁免。
+"$GODOT" --headless --path game res://bench/ModelPathGate.tscn -- \
+  --seeds "${CI_MP_SEEDS:-1-4}" --days "${CI_MP_DAYS:-8}" --agents "${CI_MP_N:-12}" 2>&1 | tee "$LT_LOG/modelpath.log"
+[ "${PIPESTATUS[0]}" -eq 0 ] && ok "ModelPathGate 模型路径编码门" || bad "ModelPathGate 模型路径编码门"
+scan "ModelPathGate" "$LT_LOG/modelpath.log" 'Parse JSON failed'
+
 echo "### 5. unit / integration scenes"
 for scene in m2_test reqlife_test player_agency_test s4_replay_test space_test save_load_test; do
   "$GODOT" --headless --path game "res://scenes/$scene.tscn" >"$LT_LOG/$scene.log" 2>&1
