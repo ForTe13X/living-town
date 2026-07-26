@@ -79,6 +79,32 @@ var _log_pan: ColorRect               # 左下播报底板（跟底边）
 var _obs_pan: ColorRect               # 右侧观察台底板（跟右边，高度跟底边）
 var _scrub_pan: ColorRect             # 时间轴底板（跟底边 + 右边）
 var _scrub_hint: RichTextLabel        # 时间轴提示行
+var _status_pan: ColorRect            # 顶栏底板（跟右边；宽度=整屏，见 _build_hud 里的注释）
+var _act_pan: ColorRect               # 玩家动作条底板（跟底边；仅玩家模式可见）
+var _act_btns: Array = []             # 7 个动词按钮（顺序 = PLAYER_VERBS）
+var _player_btn: Button               # 设置面板里的「玩家模式」开关
+
+# ── 玩家动词（触屏动作条 ≡ 物理键，同一条 _player_do 路径）──────────────────
+# ★这张表是【单一真源】：键位分发(_unhandled_input)、动作条按钮(_build_action_bar)、
+#   状态栏第二行提示(_update_status) 全部由它生成 —— 三处各写一份就一定会漂。
+const PLAYER_VERBS := [
+	{"verb": "greet",     "label": "招呼", "key": "G"},
+	{"verb": "give",      "label": "送礼", "key": "F"},
+	{"verb": "gossip",    "label": "八卦", "key": "B"},
+	{"verb": "invite",    "label": "约见", "key": "Y"},
+	{"verb": "confront",  "label": "理论", "key": "T"},
+	{"verb": "apologize", "label": "道歉", "key": "P"},
+	{"verb": "mediate",   "label": "调解", "key": "M"},
+]
+const ACT_X := 584.0                  # 动作条左端（与聊天框对齐）
+const ACT_Y := 606.0                  # 动作条顶（聊天框 y=648 之上，留 11px 间隙）
+const ACT_BW := 52.0
+const ACT_BH := 34.0
+const ACT_STEP := 54.0
+# 顶栏高度：玩家模式下状态栏是【两行】（第二行是 7 个动词的键位）。
+# 改动前 _status.size.y 恒为 28 → 第二行被 Control 裁掉，实测只剩字形顶端 ~6px，整行不可读。
+const STATUS_H1 := 28.0
+const STATUS_H2 := 52.0
 # 时间轴运行时几何：常量是 1280x768 设计基准，实际值由 _relayout_hud 加宽/下移。
 # 命中测试(_in_scrub)、x→tick 换算(_tick_at_x)、绘制(_update_scrubber/_preview_scrub)
 # 必须吃【同一套】运行时值 —— 否则手指按在槽上、goto_tick 却按老坐标算，会整体错开 dx。
@@ -172,6 +198,11 @@ func _ready() -> void:
 			Sim.spawn_count = _n
 	if not ("--speed" in args):
 		spd = float(_scfg.get_value("sim", "speed", spd))
+	# 玩家模式：同款优先级 CLI --player > user://settings.cfg > 默认【关】。
+	# 默认必须是关：开着会调 Sim.add_player() 从而合法地移动 digest（docs/41 §3），
+	# 而 tools/probe_digest_test.sh 之类的容器跑用的是全新的 user://，读到的就是这个默认值。
+	if not ("--player" in args) and not ("--player-demo" in args):
+		_player_mode = bool(_scfg.get_value("sim", "player", false))
 	AIBackend.slm_model_override = String(_scfg.get_value("slm", "model_path", ""))   # 上次在设置里手选的 gguf
 
 	# L7：--scenario 指向 data/scenarios/<id>.json（含 70B 编剧产出）→ 注册数据驱动场景 provider（窗口里也能演）。
@@ -213,6 +244,14 @@ func _ready() -> void:
 	_probe = preload("res://scripts/ProbeController.gd").new()
 	add_child(_probe)
 	_probe.setup(self, _space_bounds())          # 边界来自 active Space（兼容期=town；P1 起由 SpaceGraph 给）
+	# ★开局取景（docs/43 §1.1 / §三-C3-4）：setup() 只把相机放到 bounds 中心，zoom 保持 Camera2D 默认的 1.0。
+	# 64×48 格 × 48px = 3072×2304 的镇子在 1280×768 里只露 (1280×768)/(3072×2304) = 13.9% —— 一开局就是"贴脸"，
+	# 玩家看不到自己在哪个镇上。Home 键（go_home）早就修好了这件事，只是【从来没人替他按过第一次】。
+	# 复用 go_home 而不是另写一份 fit：它是"回到全镇"的唯一真源（--shot-fit、点门出屋也都走它）。
+	_probe.go_home()
+	# 但要把它顺手压进返回栈的那一帧丢掉：否则开局第一次按 ESC 会「退回」到上面那个 13.9% 的坏取景，
+	# 而不是按既有语义清掉选中。历史栈这时必然是空的，clear 不会误伤任何用户操作。
+	_probe._history.clear()
 	_probe.tapped.connect(_on_probe_tap)
 	_probe.double_tapped.connect(_on_probe_double_tap)
 	if _probe_space_arg != "" and _sg.has_space(_probe_space_arg):   # --probe-space：启动即进某 Space（P3 室内眼验）
@@ -222,6 +261,14 @@ func _ready() -> void:
 	# 昼夜光照：CanvasModulate 只染世界画布，不染 HUD（HUD 在独立 CanvasLayer）
 	_modulate = CanvasModulate.new()
 	add_child(_modulate)
+	# ★首帧就上色（docs/41 §6 盲区④ / docs/43 R4-④ 的修复点）。
+	# CanvasModulate 建出来是【白】的，而 _daylight 此前只在 _on_tick / _after_jump / _after_load 三处施加——
+	# 这三条路 --shot 一条都不走（它把 auto_run=false 定格在 warmup tick），于是所有静帧一律按正午渲染：
+	# 实测 before_night_t488.png（HUD 写「第 3 天 00:48 夜」）与 before_noon_t600.png 的主草地色
+	# 逐字节都是 (133,166,67)，两张图的世界区差分 bbox 只来自钟点文字与居民位置。
+	# 后果不是"截图不好看"，而是【这个项目所有视觉判断用的尺子是坏的】：任何"偏亮/偏暗"的结论都不可信。
+	# 这里在 warmup(goto_tick) 之后、首帧之前施加一次 —— 出图、录屏首帧、真机开局三条路一起修好。
+	_modulate.color = _daylight(Sim.time_of_day())
 
 	_build_hud()
 	Sim.ticked.connect(_on_tick)
@@ -267,7 +314,21 @@ func _build_hud() -> void:
 	add_child(layer)
 	var fnt := Art.font()
 
-	_status = _mk_label(layer, fnt, 17, Vector2(52, 6), Vector2(1082, 28))   # 左留 ⚙ 设置钮，右留后端切换钮
+	# 顶栏底板。为什么它此前【没有】：日志(:_log_pan)、观察台(:_obs_pan)、时间轴(:_scrub_pan) 三块都补过板，
+	# 唯独全屏最密的这一行是裸的 —— 实测 before_town_day5.png 的 y=10 整行有 1112/1280 px 亮度 ≥40%，
+	# 草地 (133,166,67) 与浅墙 (216,189,147) 直接透到白字底下。
+	# 用比 _mk_panel(黑 0.42) 更实的一档（同 dev overlay 的 0.02/0.03/0.05 @0.74）：0.42 压不住浅墙——
+	# 算过：0.58×(216,189,147) 亮度仍有 43.7%，而 0.74 档只剩 22.6%。
+	# 它【必须】先于 _status/⚙钮/后端钮入树：CanvasLayer 按添加序叠放，晚了就盖住字。
+	# 宽度取整屏（不是 _status 的 1082）：⚙ 钮在 x=10、后端钮在 x=1140，两端都要有底。
+	_status_pan = ColorRect.new()
+	_status_pan.color = Color(0.02, 0.03, 0.05, 0.74)
+	_status_pan.position = Vector2.ZERO
+	_status_pan.size = Vector2(DESIGN.x, STATUS_H1 + 12.0)
+	_status_pan.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(_status_pan)
+
+	_status = _mk_label(layer, fnt, 17, Vector2(52, 6), Vector2(1082, STATUS_H1))   # 左留 ⚙ 设置钮，右留后端切换钮
 
 	# 设置钮（左上角；点开 NPC 数量/速度/后端面板。O 键同款开关）
 	# 字形纪律：随包字体 Smiley Sans 是 CJK 显示体，无 emoji 覆盖 —— HUD 里一律用汉字/ASCII，否则真机上是豆腐块。
@@ -318,7 +379,10 @@ func _build_hud() -> void:
 	_scrub_handle.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(_scrub_handle)
 	_scrub_hint = _mk_label(layer, fnt, 12, Vector2(SCRUB_X0, SCRUB_Y - 22), Vector2(700, 18))
-	_scrub_hint.text = "[color=#9aa0b5]时间轴：拖动回放（确定性重演）· 空格暂停 · , . 单步 · [ ] 跳天 · Tab 切角色 · 点居民查看[/color]"
+	# 键位提示。改动前只列了 6 个绑定（_unhandled_input 里实有 30 个动作 / 37 个 keycode），
+	# 而漏掉的恰好是 Home —— 就是那个能把"开局只看得见 13.9% 的镇子"一键修好的键（docs/43 §1.1）。
+	# 实测原文只用掉 700px 里的约 376px，所以补进 Home/L/O/F5-F8 之后仍是单行（出图复核过不换行）。
+	_scrub_hint.text = "[color=#9aa0b5]时间轴：拖动回放（确定性重演）· 空格暂停 · , . 单步 · [ ] 跳天 · Tab 切角色 · [color=#ffd166]Home 回全镇[/color] · L 跟随 · O 设置 · F5/F8 存读档 · 点居民查看[/color]"
 
 	# 玩家 → NPC 对话输入框（选中居民后出现；Enter 发送）。M2：经 AIBackend.chat → LLM/mock/罐头。
 	_chat_in = LineEdit.new()
@@ -329,6 +393,8 @@ func _build_hud() -> void:
 	_chat_in.visible = false
 	_chat_in.text_submitted.connect(_on_player_say)
 	layer.add_child(_chat_in)
+
+	_build_action_bar(layer, fnt)
 
 	# 后端切换按钮（右上角）。手机上无 CLI → 靠这个在 logic/slm/… 间轮换；emulate_mouse_from_touch 默认开 → 点按即触发。
 	# Button 独占自身矩形，不干扰世界点选；FOCUS_NONE 免抢键盘焦点（否则空格/快捷键失灵）。
@@ -368,6 +434,55 @@ func _build_hud() -> void:
 	if _vpn != null:
 		_vpn.size_changed.connect(_relayout_hud)
 
+## 触屏动作条：7 个玩家动词各一个屏幕按钮，走【与物理键完全同一条】的 _player_do。
+## 为什么这件事是出货级的：出货目标是 Android APK，而 7 个动词此前全锁在
+## 「--player 启动旗标 + 物理键盘」后面 —— 手机上两样都没有，Living Town 在真出货平台上是一块屏保。
+## 纪律：不新开动作路径。按钮只 emit 一次 _player_do(verb)，与 KEY_G/F/B/Y/T/P/M 落到同一个函数、
+## 同一份前置校验、同一条 Sim.player_act —— 「按钮路径 ≡ 按键路径」因此是【构造上成立】而非靠测试维持，
+## 测试(scripts/player_touch_test.gd)只是把这句话钉死，防后人分叉。
+func _build_action_bar(layer: CanvasLayer, fnt: Font) -> void:
+	_act_pan = ColorRect.new()
+	_act_pan.color = Color(0, 0, 0, 0.42)
+	_act_pan.position = Vector2(ACT_X - 8.0, ACT_Y - 6.0)
+	_act_pan.size = Vector2(ACT_STEP * PLAYER_VERBS.size() + 12.0, ACT_BH + 12.0)
+	_act_pan.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_act_pan.visible = _player_mode          # 非玩家模式：整条隐藏（隐藏的 Control 不吃输入，世界点选照旧）
+	layer.add_child(_act_pan)
+	_act_btns.clear()
+	for i in PLAYER_VERBS.size():
+		var v: Dictionary = PLAYER_VERBS[i]
+		var b := Button.new()
+		b.text = String(v["label"])
+		b.tooltip_text = "%s（键 %s）" % [String(v["label"]), String(v["key"])]
+		b.add_theme_font_override("font", fnt)
+		b.add_theme_font_size_override("font_size", 15)
+		b.position = Vector2(ACT_X + ACT_STEP * i, ACT_Y)
+		b.size = Vector2(ACT_BW, ACT_BH)
+		b.focus_mode = Control.FOCUS_NONE     # 不抢键盘焦点，否则空格/快捷键全失灵（同 ⚙/后端钮）
+		b.visible = _player_mode
+		var verb := String(v["verb"])
+		b.pressed.connect(func(): _player_do(verb))
+		layer.add_child(b)
+		_act_btns.append(b)
+
+## keycode → 动词（PLAYER_VERBS 的 "key" 字段是唯一真源）。查不到 → ""，_player_do 会当作未知动作交给 Sim 拒绝。
+func verb_for_key(kc: int) -> String:
+	for v in PLAYER_VERBS:
+		if OS.find_keycode_from_string(String(v["key"])) == kc:
+			return String(v["verb"])
+	return ""
+
+## 动作条显隐 + 重排（玩家模式开关、视口变化两处共用）。
+func _sync_action_bar(dx: float = 0.0, dy: float = 0.0) -> void:
+	if _act_pan == null:
+		return
+	_act_pan.visible = _player_mode
+	_act_pan.position = Vector2(ACT_X - 8.0, ACT_Y - 6.0 + dy)
+	for i in _act_btns.size():
+		var b: Button = _act_btns[i]
+		b.visible = _player_mode
+		b.position = Vector2(ACT_X + ACT_STEP * i, ACT_Y + dy)
+
 func _mk_panel(layer: CanvasLayer, pos: Vector2, sz: Vector2) -> ColorRect:
 	var p := ColorRect.new()
 	p.color = Color(0, 0, 0, 0.42)
@@ -390,7 +505,11 @@ func _relayout_hud() -> void:
 	var dx := maxf(0.0, vp.x - DESIGN.x)      # 多出来的宽（手机 2688x1216 → 实测 417）
 	var dy := maxf(0.0, vp.y - DESIGN.y)      # 多出来的高（比设计更"方"的屏，如 4:3 平板）
 	# 顶部状态栏：左端钉在 ⚙ 钮右边，右端跟着后端钮一起外扩
-	_status.size = Vector2(1082.0 + dx, 28.0)
+	# 高度只有玩家模式才是两行 —— dx=dy=0 且非玩家模式时仍是 28，逐像素回到改动前。
+	var sh := STATUS_H2 if _player_mode else STATUS_H1
+	_status.size = Vector2(1082.0 + dx, sh)
+	if _status_pan != null:                    # 顶栏底板：整屏宽（含 ⚙ 钮与后端钮），高度跟状态栏行数
+		_status_pan.size = Vector2(DESIGN.x + dx, sh + 12.0)
 	if _backend_btn != null:                   # 后端切换钮：跟右边
 		_backend_btn.position = Vector2(1140.0 + dx, 4.0)
 	if _log_pan != null:                       # 左下播报：跟底边（宽度不变——它的行长是按 560 调的）
@@ -421,8 +540,9 @@ func _relayout_hud() -> void:
 		# 又会把它压回去，文字基线上移 1px —— 桌面基准的「逐像素不变」就毁在这一个像素上（已被 PIL 差分抓到）。
 		_chat_in.position = Vector2(584.0, 648.0 + dy)
 		_chat_in.size = Vector2(380.0 + dx, _chat_in.size.y)
-	if _settings_panel != null:                # 设置面板：保持居中（1280x768 下算出来正好是原来的 430,168）
-		_settings_panel.position = Vector2(430.0 + dx * 0.5, 168.0 + dy * 0.5)
+	_sync_action_bar(dx, dy)                   # 动作条：跟底边（左端与聊天框对齐，宽度不随 dx 变——按钮是定宽的）
+	if _settings_panel != null:                # 设置面板：保持居中（1280x768 下算出来正好是 _build_settings 里的 430,124）
+		_settings_panel.position = Vector2(430.0 + dx * 0.5, 124.0 + dy * 0.5)
 	_update_scrubber()                         # fill/handle 由它按新的 _sx0/_sx1/_sy 重画
 
 func _mk_label(layer: CanvasLayer, fnt: Font, fsize: int, pos: Vector2, sz: Vector2) -> RichTextLabel:
@@ -503,15 +623,20 @@ func _sync_backend_btn() -> void:
 func _build_settings(layer: CanvasLayer, fnt: Font) -> void:
 	_settings_panel = ColorRect.new()
 	_settings_panel.color = Color(0.05, 0.06, 0.09, 0.96)
-	_settings_panel.position = Vector2(430, 168)
-	_settings_panel.size = Vector2(420, 424)
+	# 版式（数字都是 player_touch_test.gd 用 get_combined_minimum_size() 实测的，不是估的）：
+	# 加了「玩家模式」这一行后真实内容高 474px。改动前是 9 个子项 / separation 16 → 内容 454px，
+	# 而老底板 424px 里 vb 从 y=20 起只有 404px 可用 —— 超 50px，「关闭 Close」钮实际挂在暗底板【外面】。
+	# 这里把 separation 收到 12、底板加到 520（20+474+20=514 ≤ 520），
+	# 并把纵向居中常量从 168 改成 124（=(768-520)/2），仍是"设计基准 + 增量"的写法。
+	_settings_panel.position = Vector2(430, 124)
+	_settings_panel.size = Vector2(420, 520)
 	_settings_panel.mouse_filter = Control.MOUSE_FILTER_STOP   # 面板挡住背后世界点选
 	_settings_panel.visible = false
 	layer.add_child(_settings_panel)
 	var vb := VBoxContainer.new()
 	vb.position = Vector2(24, 20)
-	vb.custom_minimum_size = Vector2(372, 384)
-	vb.add_theme_constant_override("separation", 16)
+	vb.custom_minimum_size = Vector2(372, 480)
+	vb.add_theme_constant_override("separation", 12)
 	_settings_panel.add_child(vb)
 
 	var title := Label.new()
@@ -528,6 +653,14 @@ func _build_settings(layer: CanvasLayer, fnt: Font) -> void:
 	var bload := _mk_sbtn(fnt, "读档 (F8)", 130)
 	bload.pressed.connect(_quick_load)
 	rsl.add_child(bload)
+
+	# 玩家模式（gameplay M1）。此前【只有】--player 启动旗标 —— 出货目标是 Android APK，手机上没有 CLI，
+	# 于是 7 个玩家动词在真出货平台上一个都够不着。这一行是把它们解锁的唯一入口。
+	var rpl := _settings_row(vb, fnt, "玩家模式 Player")
+	_player_btn = _mk_sbtn(fnt, "—", 200)
+	_player_btn.pressed.connect(_toggle_player_mode)
+	rpl.add_child(_player_btn)
+	_sync_player_btn()
 
 	# 后端
 	var rb := _settings_row(vb, fnt, "后端 Backend")
@@ -574,7 +707,7 @@ func _build_settings(layer: CanvasLayer, fnt: Font) -> void:
 	rp.add_child(pbtn)
 
 	var hint := Label.new()
-	hint.text = "改 NPC 数量 → 同种子重开小镇（确定性）"
+	hint.text = "改 NPC 数量 / 玩家模式 → 同种子重开小镇（确定性）"
 	hint.add_theme_font_override("font", fnt)
 	hint.add_theme_font_size_override("font_size", 13)
 	hint.modulate = Color(0.66, 0.7, 0.82)
@@ -645,6 +778,35 @@ func _sync_npc_val() -> void:
 	if _npc_val != null:
 		_npc_val.text = str(_npc_target)
 
+func _sync_player_btn() -> void:
+	if _player_btn != null:
+		_player_btn.text = "开（你已入镇）" if _player_mode else "关（只观察）"
+
+## 玩家模式开关（⚙ 面板）。
+## ★这是 docs/41 §3「会移动 digest 的改动」里的【受控动作】：开 = Sim.add_player() 把玩家写进社交图，
+##   历史从此不同——这是玩家自己按下的意图，不是回归。**关着的时候必须逐字节等于金标**（默认 false，
+##   且 headless CI 走 Harness/DetGate 根本不经本文件）。
+## 为什么两个方向都重开世界：引擎侧【没有】Sim.remove_player()（docs/43 §三-C3 要求不得改 Sim.gd），
+##   所以"退镇"只能靠同种子 start_new。两个方向对称走同一条路 → 开/关任意次数后，
+##   同 (seed, npc_count, player) 三元组必然给出同一部历史，仍然可复现。走的正是 _apply_npc 那条既有路径。
+func _toggle_player_mode() -> void:
+	_player_mode = not _player_mode
+	Sim.start_new(_seed)
+	Sim.auto_run = true
+	if _player_mode:
+		Sim.add_player()
+	_selected_id = ""
+	_max_tick = 0
+	_save_sim_setting("player", _player_mode)       # 手机上没有 CLI：下次启动记住（--player 显式给出时不读这里）
+	_sync_player_btn()
+	_sync_action_bar()                              # 动作条随之显隐
+	_relayout_hud()                                 # 顶栏从 1 行变 2 行（或反过来）
+	_push("[color=#9ad0ff]玩家模式 → %s（同种子第 %d 号重开小镇）[/color]" % [("开" if _player_mode else "关"), _seed])
+	_update_status()
+	_update_obs()
+	_update_scrubber()
+	_rebuild_feed()   # 世界换了：播报必须照新的（空）event_log 重建，否则屏幕上还留着上一条时间线的字
+
 ## 改 NPC 数量 → 用同种子重开小镇（确定性；spawn_count=目标总数，克隆到 N）。
 func _apply_npc(delta: int) -> void:
 	var n := clampi(_npc_target + delta, 6, 60)
@@ -664,6 +826,9 @@ func _apply_npc(delta: int) -> void:
 	_update_status()
 	_update_obs()
 	_update_scrubber()
+	_rebuild_feed()   # ★本行是 brief 之外的顺手修（同文件、一行）：start_new 已清空 event_log，
+	                  # 而播报此前不重建 → 改完 NPC 数量，屏幕上继续讲一段已经被抹掉的历史。
+	                  # 与 _after_jump/_after_load/_toggle_player_mode 三处同一纪律。
 
 func _set_speed(v: float) -> void:
 	if v <= 0.0:
@@ -750,8 +915,11 @@ func _update_status() -> void:
 				if String(c["status"]) == "active" and (String(c["a"]) == "player" or String(c["b"]) == "player"):
 					var other := String(c["b"]) if String(c["a"]) == "player" else String(c["a"])
 					pmeets.append("和%s约在%s(剩%dt)" % [Sim._name(Sim.get_agent(other)), Sim._area_label_id(String(c["area"])), int(c["deadline"]) - Sim.tick_no])
-			ptxt = "\n[color=#ffd700]你：礼物×%d  WASD移动  选中居民后 G打招呼 F送礼 B八卦 Y约见 T理论 P道歉 M调解 C聊天%s[/color]" % [
-				int(pl["inventory"].get("gift", 0)), ("  约定：" + "；".join(pmeets)) if not pmeets.is_empty() else ""]
+			var vkeys := []
+			for v in PLAYER_VERBS:                                             # 单一真源：与动作条按钮同表，不再各写一份
+				vkeys.append("%s%s" % [String(v["key"]), String(v["label"])])
+			ptxt = "\n[color=#ffd700]你：礼物×%d  WASD移动  选中居民后 %s C聊天（或点下方动作条）%s[/color]" % [
+				int(pl["inventory"].get("gift", 0)), " ".join(vkeys), ("  约定：" + "；".join(pmeets)) if not pmeets.is_empty() else ""]
 	_status.text = "[color=#e6e9f2]小镇有灵 Living Town  ·  第 %d 天 %s %s%s%s  ·  %s  ·  %s  ·  NPC %d  ｜  事件 %d  约会 %d(活%d)  冲突 %d(活%d)[/color]%s" % [
 		Sim.day, clock, phase, wx, etxt, spd, btxt, Sim.agents.size(), Sim.event_log.size(), Sim.commitments.size(), meets_active, Sim.conflicts.size(), conf_active, ptxt]
 
@@ -1044,15 +1212,18 @@ func _demo_tick() -> void:
 			_demo_i += 1
 
 ## 玩家社交动作分发（--player 模式，目标=当前选中居民）；不可行原因打进事件日志。
-func _player_do(action: String) -> void:
+## 物理键(KEY_G/F/B/Y/T/P/M) 与触屏动作条按钮【共用本函数】——这是"按钮 ≡ 按键"的构造性保证。
+## 返回值 = Sim 给的不可行原因（""=已发起），供 headless 断言比对；UI 侧行为与改动前一致。
+func _player_do(action: String) -> String:
 	if not _player_mode:
-		return
+		return "未开玩家模式"
 	if _selected_id == "" or _selected_id == "player":
 		_push("[color=#f2a3a3]（先用 Tab/点选一位居民，再按动作键）[/color]")
-		return
+		return "未选中居民"
 	var msg := Sim.player_mediate(_selected_id) if action == "mediate" else Sim.player_act(action, _selected_id)
 	if msg != "":
 		_push("[color=#f2a3a3]（%s）[/color]" % msg)
+	return msg
 
 func _cycle_selection(dir: int) -> void:
 	if Sim.agents.is_empty():
@@ -1285,13 +1456,10 @@ func _unhandled_input(e: InputEvent) -> void:
 			KEY_S, KEY_DOWN: if _player_mode: Sim.player_move(Vector2i(0, 1))
 			KEY_A, KEY_LEFT: if _player_mode: Sim.player_move(Vector2i(-1, 0))
 			KEY_D, KEY_RIGHT: if _player_mode: Sim.player_move(Vector2i(1, 0))
-			KEY_G: _player_do("greet")
-			KEY_F: _player_do("give")
-			KEY_B: _player_do("gossip")
-			KEY_Y: _player_do("invite")
-			KEY_T: _player_do("confront")
-			KEY_P: _player_do("apologize")
-			KEY_M: _player_do("mediate")
+			# 7 个动词键：改动前是 7 行硬编码 KEY_x → 字面量动词，与动作条按钮各写一份 ——
+			# 那样"按钮 ≡ 按键"就只是【巧合】，靠人盯着两处不漂。现在两边都从 PLAYER_VERBS 查，
+			# 等价性变成构造性的；player_touch_test.gd 再把这句话钉死。
+			KEY_G, KEY_F, KEY_B, KEY_Y, KEY_T, KEY_P, KEY_M: _player_do(verb_for_key(e.keycode))
 			KEY_PERIOD: if not Sim.running: Sim.tick()                                   # 单步 +1
 			KEY_COMMA: Sim.running = false; Sim.goto_tick(maxi(0, Sim.tick_no - 1)); _after_jump()
 			KEY_BRACKETLEFT: Sim.running = false; Sim.goto_tick(maxi(0, Sim.tick_no - Sim.TICKS_PER_DAY)); _after_jump()
