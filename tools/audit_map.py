@@ -3,7 +3,8 @@
 # 独立于 gen_town.py（后者是生成器）：这里读【落盘数据】→ 抓任何漂移/手改/未重生成导致的地图回归。
 # 校验：① typed layers 与 blockers 并集一致；② 全图可达性(BFS)；③ 每个居民 home/spawn 在可达可走格；
 #       ④ 每个家具有≥1 可达可走正交邻格(P2-3 交互格必存在，否则饿穿)；⑤ 每个 area 内部可达；
-#       ⑥ ≥2 条不相交路线(район对之间，路网冗余)。任一失败 → 退出 1（CI 红）。
+#       ⑥ ≥2 条不相交路线(район对之间，路网冗余)；⑦ 节日对象(festivals.json，可选)坐标合法。
+#       任一失败 → 退出 1（CI 红）。
 import json, sys, os
 from collections import deque
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -12,7 +13,11 @@ def p(*a): return os.path.join(ROOT, "game", "data", *a)
 def load():
     m = json.load(open(p("map.json"), encoding="utf-8"))
     ag = json.load(open(p("agents.json"), encoding="utf-8"))
-    return m, ag
+    # festivals.json 按契约是【可选】的（缺文件=无节日=引擎逐字节不变，Sim.gd:2416）→ 缺失即空 dict，绝不报错。
+    # 解析错误不在这里兜：步骤 1 的 lint_data.py 先跑，JSON 语法问题在那儿就红了。
+    fp = p("festivals.json")
+    fe = json.load(open(fp, encoding="utf-8")) if os.path.exists(fp) else {}
+    return m, ag, fe
 
 def neigh(c):
     x, y = c
@@ -40,7 +45,7 @@ def shortest(a, b, walk):
     return None
 
 def main():
-    m, ag = load()
+    m, ag, fe = load()
     W, H = int(m["width"]), int(m["height"])
     blk = set((int(x), int(y)) for x, y in m["blockers"])
     fails = []
@@ -103,11 +108,48 @@ def main():
         walk2 = walk - set(sp[1:-1])
         if not shortest(exits[a], exits[b], walk2):
             fails.append("只有一条户外路线 %s->%s（缺冗余）" % (a, b))
-    print("audit_map: %dx%d walkable=%d blockers=%d objects=%d agents=%d"
-          % (W, H, len(walk), len(blk), len(m["objects"]), len(ag["agents"])))
+    # ⑦ 节日对象（festivals.json，按契约可选）：此前【零 CI 覆盖】——B17 实测灯会长期坐在 [12,7]（home2 屋内）而全绿。
+    # 节日对象经 spawn_object 进 world.objects，于是和家具受同一条到位判据约束（Sim.gd:1241 曼哈顿≤1 才 use）
+    # → 没有可达交互格 = 当天 advertise 空转、没人够得着。故沿用④的三条同规校验。
+    # 与家具的差别只在阻挡：_build_nav(Sim.gd:2882) 显式跳过 fest_/civic_，节日对象【不进 _blocked】、堵不死谁；
+    # 它那格本身可走，而 BFS 只能经邻格进来 → ①③过关时"格自身可达"与"≥1 可达邻格"等价，④的写法直接成立。
+    # id 是运行期才生成的（fest_名_day_序），落盘数据里没有 → 用 "节日名 obj#序" 定位。
+    objby = dict(((int(o["pos"][0]), int(o["pos"][1])), o["id"]) for o in m["objects"])
+    lmby = dict(((int(l["pos"][0]), int(l["pos"][1])), l.get("type", "landmark"))
+                for l in m.get("landmarks", []))
+    nfest = 0
+    fdefs = fe.get("festivals", {}) if isinstance(fe, dict) else {}
+    if not isinstance(fdefs, dict):
+        fails.append("festivals.json 的 festivals 非法（应为对象）: %r" % (fdefs,)); fdefs = {}
+    for fname in sorted(fdefs.keys()):
+        objs = fdefs[fname].get("objects", []) if isinstance(fdefs[fname], dict) else None
+        if not isinstance(objs, list):
+            fails.append("festival %s objects 非法（应为数组）: %r" % (fname, objs)); continue
+        for i, od in enumerate(objs):
+            nfest += 1
+            if not isinstance(od, dict):
+                fails.append("festival %s obj#%d 非法（应为对象）: %r" % (fname, i, od)); continue
+            pos = od.get("pos")
+            # 先验形状再 int()：手改的 "12,7" / null / 三元组会让 int() 抛栈，那样 CI 虽也红但读不出错在哪。
+            if not (isinstance(pos, (list, tuple)) and len(pos) == 2
+                    and all(isinstance(v, (int, float)) for v in pos)):
+                fails.append("festival %s obj#%d pos 缺失/非法（应为 [x,y]）: %r" % (fname, i, pos)); continue
+            c = (int(pos[0]), int(pos[1]))
+            if not (0 <= c[0] < W and 0 <= c[1] < H):
+                fails.append("festival %s obj#%d %s 出界 (%dx%d)" % (fname, i, c, W, H)); continue
+            if c in blk:
+                fails.append("festival %s obj#%d %s 落在 blockers 上（墙/水/树）" % (fname, i, c))
+            if c in objby:
+                fails.append("festival %s obj#%d %s 与家具 %s 同格" % (fname, i, c, objby[c]))
+            if c in lmby:
+                fails.append("festival %s obj#%d %s 与地标 %s 同格" % (fname, i, c, lmby[c]))
+            if not any(n in reach for n in neigh(c)):
+                fails.append("festival %s obj#%d %s 无可达交互格 → 节日当天没人够得着" % (fname, i, c))
+    print("audit_map: %dx%d walkable=%d blockers=%d objects=%d agents=%d festival-objects=%d"
+          % (W, H, len(walk), len(blk), len(m["objects"]), len(ag["agents"]), nfest))
     if fails:
         print("AUDIT FAIL:"); [print("  -", f) for f in fails[:20]]; sys.exit(1)
-    print("AUDIT PASS: typed-layers 一致 + 全可达 + 每家具有交互格 + ≥2 路线")
+    print("AUDIT PASS: typed-layers 一致 + 全可达 + 每家具有交互格 + ≥2 路线 + 节日对象合法")
 
 if __name__ == "__main__":
     main()
