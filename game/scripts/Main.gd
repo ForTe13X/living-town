@@ -19,6 +19,8 @@ const FEED_RESCAN := 200               # 回放/读档后从 event_log 尾部回
 
 # ── 观察台 / 回放 ──────────────────────────────────────────────────────────
 var _obs: RichTextLabel               # 右侧角色明细面板
+var _obs_expanded := false            # 观察台档位：false=名片档（人设+当下+需求），true=完整卷宗
+var _obs_btn: Button                  # 「详情 / 收起」——手机上唯一够得着的入口（V 键是桌面同款）
 var _scrub_track: ColorRect           # 时间轴底槽
 var _scrub_fill: ColorRect            # 已播放进度
 var _scrub_handle: ColorRect          # 拖动手柄
@@ -75,8 +77,8 @@ var _scrub_pending := -1              # 待应用的 scrub 目标 tick；每帧�
 const DESIGN := Vector2(1280.0, 768.0)
 
 # 需要跟随视口的 HUD 节点（⚙ 钮、性能 overlay 锚在左上角，天然不用动，故不记引用）
-var _log_pan: ColorRect               # 左下播报底板（跟底边）
-var _obs_pan: ColorRect               # 右侧观察台底板（跟右边，高度跟底边）
+var _log_pan: TextureRect             # 左下播报底板（跟底边）——羽化 scrim，见 _mk_scrim
+var _obs_pan: TextureRect             # 右侧观察台底板（跟右边，高度跟底边）——羽化 scrim
 var _scrub_pan: ColorRect             # 时间轴底板（跟底边 + 右边）
 var _scrub_hint: RichTextLabel        # 时间轴提示行
 var _status_pan: ColorRect            # 顶栏底板（跟右边；宽度=整屏，见 _build_hud 里的注释）
@@ -105,6 +107,50 @@ const ACT_STEP := 54.0
 # 改动前 _status.size.y 恒为 28 → 第二行被 Control 裁掉，实测只剩字形顶端 ~6px，整行不可读。
 const STATUS_H1 := 28.0
 const STATUS_H2 := 52.0
+
+# ── HUD scrim 版式（C8）─────────────────────────────────────────────────────
+# 硬边矩形贴在世界上会切出一条【直线】。实测（未改动的树，--warmup-tick 600 --shot-fit）：
+#   编年史右边 x=568 相邻像素亮度跃变 中位 65.8 / 最大 94.3；上边 y=470 中位 65.8 / 最大 131.1；
+#   观察台左边 x=978 中位 65.8 / 最大 141.0（跟随相机那一帧上三条边都在 57-71）。
+# 这正是 C7 在世界层量到的同一种病（docs/41 §6：等距连续的硬边比它想藏起来的东西更刺眼），
+# 只不过 C7 那条边在地图边界上、这三条在 HUD 边界上。解法同样是【把边界抹掉】而不是换个颜色：
+#   ① 能贴屏幕边的就贴到边（左/下/右各自到 0 或 DESIGN）——贴边的那一侧根本不存在接缝；
+#   ② 够不着屏幕边的那一两条边用 alpha 斜坡羽化（_mk_scrim）。
+# 底色用 C3 已经量过的那一档 (0.02,0.03,0.05)：0.42 黑压不住浅墙（0.58×(216,189,147) 仍有 43.7% 亮度），
+# 0.74+ 档只剩 ~22%。这里取 0.84 —— 编年史正文是全屏第二密的文字，且在跟随相机下整片背景都是亮草地。
+const SCRIM_COL := Color(0.02, 0.03, 0.05, 0.84)
+const SCRIM_TEX := 64                 # scrim 纹理边长（靠 TEXTURE_FILTER_LINEAR 拉伸成平滑斜坡；1 个 draw call）
+# 编年史 scrim：贴住屏幕【左下角】，只羽化右边与上边。
+const LOG_SCRIM_TOP := 414.0          # 上边（羽化到 y=470 才满不透明，正文从 476 起 ⇒ 第一行已在满档上）
+const LOG_SCRIM_W := 576.0            # 右缘（正文框 548 宽 + 边距；核心满档到 400，之后 176px 斜坡到 0）
+const LOG_CORE_R := 400.0
+# 观察台：右缘贴屏幕右边（DESIGN.x）⇒ 右侧无接缝；只羽化左边与下边。
+# ★两档而不是一个开关：名片档保住"随时看得见这个人是谁/在干嘛/缺什么"，
+#   完整卷宗（关系/记忆/派系/观点/信念）退到【一次交互】之外，而不是被删掉。
+const OBS_TOP := 36.0
+const OBS_PAD := 6.0                  # 正文相对面板的上内边距 —— 刻意仍是 6（正文 y=42，与改动前逐像素同位）。
+                                      # ★第一版把「详情」钮做成面板自己的标题行（30px），实测立刻出事：
+                                      #   完整卷宗正文实测 653px，而改前可用 664px —— 只剩 11px 余量，
+                                      #   一个标题行就把正文推到 y=719，压进时间轴面板底下（那块是后加的，画在观察台之上）。
+                                      #   是 player_touch_test 的 get_content_height() 断言抓住的，肉眼绝对看不出来。
+                                      #   ⇒ 钮改放【顶栏】里、后端钮左边：同样在屏幕右上角、正对着它控制的面板，
+                                      #   但不吃观察台一个像素，于是展开档的可用高度与改动前实质相同（662 vs 664）。
+# 两档的尺寸都是【量出来的】不是估的：player_touch_test.gd 用 RichTextLabel.get_content_height()
+# 对同一 fixture 比正文高度与可用高度。第一版 (232,300) 实测正文 293px / 可用 262px —— 溢出，
+# 而且 240 宽正好让人物简介那一行不再折行（少一行 19.5px）：**宽一点反而矮得多**。
+const OBS_CARD := Vector2(240.0, 340.0)   # 名片档：屏宽 18.75% / 屏面积 8.30%（改前 22.97% / 20.22%）
+const OBS_FULL := Vector2(302.0, 676.0)   # 完整卷宗：左缘 x=978，与改动前同位（宽多出的 8 是贴边补的）
+const OBS_FEATH := 40.0                   # 观察台 scrim 的羽化带宽（设计 px，**绝对值**）。
+                                          # ★两条实测教训都在这一个常量上：
+                                          #   ① 羽化带必须落在【正文矩形之外】——第一版让斜坡压在正文左侧与下侧，
+                                          #      名片档最后两行（恰恰是那两行在指路"完整卷宗在哪"）直接糊在草地上；
+                                          #   ② 羽化宽度不能写成"占面板边长的比例"——同一张纹理被两档共用，
+                                          #      比例式会让名片档(340 高)的下斜坡只有卷宗档(676 高)的一半，两档不可能同时对。
+                                          # 40px 把 ~65 的边界跃变摊成 ~1.6/px，低于像素画本身的噪声地板。
+const OBS_BTN_W := 62.0                   # 「详情/收起」钮（顶栏内，后端钮左边）
+const OBS_BTN_X := 1140.0 - 6.0 - OBS_BTN_W
+const STATUS_W := OBS_BTN_X - 52.0 - 6.0  # 状态栏文本宽：从 ⚙ 钮右边到「详情」钮左边（改前 1082 → 1014）。
+                                          # 实测状态栏那一行在 NPC 12 时只用掉约 690px，玩家模式第二行约 640px ⇒ 余量充足。
 # 时间轴运行时几何：常量是 1280x768 设计基准，实际值由 _relayout_hud 加宽/下移。
 # 命中测试(_in_scrub)、x→tick 换算(_tick_at_x)、绘制(_update_scrubber/_preview_scrub)
 # 必须吃【同一套】运行时值 —— 否则手指按在槽上、goto_tick 却按老坐标算，会整体错开 dx。
@@ -123,7 +169,9 @@ const SALIENCE := {
 const SALIENT_MIN := 55
 const FEED_SKIP := ["pay", "world"]   # 账本/世界事务不进社交播报（Sim 侧同样不 emit social_event）
 const TOPIC_LABEL := {"cafe_expand": "扩建咖啡馆", "night_market": "办夜市", "old_tales": "老故事"}
-const OBS_MAX_LINES := 34             # 观察台可见行数预算（294x676 面板 · 字号 14）——超出的只能砍长尾
+const OBS_MAX_LINES := 34             # 观察台可见行数预算（294x676 面板 · 字号 14）——超出的只能砍长尾。
+                                      # C8 保持 34：展开档可用高 662px vs 改前 664px，实质未变（见 OBS_PAD 的注释：
+                                      # 「详情」钮放进顶栏而不是面板里，正是为了不动这个预算）。
 
 func _ready() -> void:
 	var seed := 20260626
@@ -135,6 +183,7 @@ func _ready() -> void:
 	var _dbg_nav_arg := false              # --dbg-nav：启动/出图即开导航叠层
 	var _probe_space_arg := ""             # --probe-space id：启动即把 Probe 切到该 Space（P3 咖啡馆室内眼验）
 	var _probe_floor_arg := ""             # --probe-floor id：配 --probe-space 指定楼层
+	var _obs_arg := false                  # --obs-full：启动即展开观察台完整卷宗（出图对照用；默认档是名片档）
 	var _lod_agg_arg := false              # --lod-agg：仅【测量/眼验】用，启用观察无关 aggregate LOD（CLI-only，绝不进 boot/面板出货路径；默认 off=逐字节不变）
 	var args := OS.get_cmdline_user_args()
 	for i in args.size():
@@ -179,6 +228,8 @@ func _ready() -> void:
 			_probe_space_arg = args[i + 1]     # 出图/启动即把 Probe 切到某 Space（眼验 P3 咖啡馆室内）
 		elif args[i] == "--probe-floor" and i + 1 < args.size():
 			_probe_floor_arg = args[i + 1]     # 配 --probe-space：指定楼层（1f/2f）
+		elif args[i] == "--obs-full":
+			_obs_arg = true                    # 出图/眼验：直接以【完整卷宗】档启动（否则出图只拍得到名片档，没法对照）
 		elif args[i] == "--lod-agg":
 			_lod_agg_arg = true                # 测量/眼验：启用观察无关 aggregate LOD（docs/32）。只在此 CLI 口，不接出货窗口（休眠靠"窗口从不设 LOD 标志"不变量）
 	AIBackend.backend = backend
@@ -204,6 +255,9 @@ func _ready() -> void:
 	if not ("--player" in args) and not ("--player-demo" in args):
 		_player_mode = bool(_scfg.get_value("sim", "player", false))
 	AIBackend.slm_model_override = String(_scfg.get_value("slm", "model_path", ""))   # 上次在设置里手选的 gguf
+	# 观察台档位（纯视图偏好，不进仿真）。默认【名片档】——研究用法（钉住卷宗刷时间轴）按一次就回来，
+	# 而且会被记住；出图/CI 走全新的 user:// ⇒ 恒为默认档，截图可复现。
+	_obs_expanded = _obs_arg or bool(_scfg.get_value("ui", "obs_expanded", false))
 
 	# L7：--scenario 指向 data/scenarios/<id>.json（含 70B 编剧产出）→ 注册数据驱动场景 provider（窗口里也能演）。
 	# 空/内建场景(faction/betray/freerider 无此文件)→ 不注册 → 回落内建 _seed_scenario；默认 ""→ Sim.ext 保持 null 逐字节不变。
@@ -328,7 +382,7 @@ func _build_hud() -> void:
 	_status_pan.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(_status_pan)
 
-	_status = _mk_label(layer, fnt, 17, Vector2(52, 6), Vector2(1082, STATUS_H1))   # 左留 ⚙ 设置钮，右留后端切换钮
+	_status = _mk_label(layer, fnt, 17, Vector2(52, 6), Vector2(STATUS_W, STATUS_H1))   # 左留 ⚙ 设置钮，右留「详情」+ 后端切换钮
 
 	# 设置钮（左上角；点开 NPC 数量/速度/后端面板。O 键同款开关）
 	# 字形纪律：随包字体 Smiley Sans 是 CJK 显示体，无 emoji 覆盖 —— HUD 里一律用汉字/ASCII，否则真机上是豆腐块。
@@ -342,19 +396,28 @@ func _build_hud() -> void:
 	gear.pressed.connect(_toggle_settings)
 	layer.add_child(gear)
 
-	# 左下角滚动事件日志：把看不见的社交戏剧讲出来
-	_log_pan = _mk_panel(layer, Vector2(8, 470), Vector2(560, 246))
+	# 左下角滚动事件日志：把看不见的社交戏剧讲出来。
+	# 底板从「(8,470) 560×246 的硬边黑 0.42 矩形」换成【贴住左下角的羽化 scrim】：
+	#   · 左边到 x=0、下边到屏幕底 ⇒ 这两条边根本不在画面里，不可能成为接缝；
+	#   · 右边与上边用 alpha 斜坡抹掉（改前中位跃变 65.8 / 71.0，是画面上第二刺眼的直线）；
+	#   · 核心档 0.84 而不是 0.42 —— 跟随相机那一帧上，改前正文背景均值亮度高达 102/255（40.1%），
+	#     白字压在亮草地上基本读不出，"既读不清字、又挡着世界"两头不讨好。
+	_log_pan = _mk_scrim(layer, Vector2(0, LOG_SCRIM_TOP), Vector2(LOG_SCRIM_W, DESIGN.y - LOG_SCRIM_TOP),
+		0.0, 1.0 - LOG_CORE_R / LOG_SCRIM_W, (476.0 - LOG_SCRIM_TOP) / (DESIGN.y - LOG_SCRIM_TOP), 0.0)
 	_logbox = _mk_label(layer, fnt, 15, Vector2(16, 476), Vector2(548, 236))
 	# 【仅】日志面板改为吃鼠标：每行是 [url=<居民id>]，点一行 → 选中当事人并把镜头飞过去。
 	# 其余 HUD 面板保持 MOUSE_FILTER_IGNORE（世界点选/缩放照旧穿透）。手机无键盘，这是唯一能跟戏的入口。
 	_logbox.mouse_filter = Control.MOUSE_FILTER_STOP
 	_logbox.meta_clicked.connect(_on_log_meta)
 
-	# 右侧观察台明细面板（点选角色后显示其完整状态）。
-	# 高度从 600 加到 676（下沿与日志面板齐平，让位给它的是右下角聊天框的宽度）——
-	# 多出的 ~4 行正好把"冲突 / 近期记忆"这两块（回答"这人为什么生气"）完整留在折叠线以上。
-	_obs_pan = _mk_panel(layer, Vector2(978, 36), Vector2(294, 676))
-	_obs = _mk_label(layer, fnt, 14, Vector2(986, 42), Vector2(280, 664))
+	# 右侧观察台明细面板。**它是本项目最独特的能力（任意 tick 检查任意居民），所以一行功能都不删**——
+	# 改的是"默认占多大"：改前恒占屏宽 22.97% / 屏面积 20.22%，且是 OBS_MAX_LINES=34 行的调试密度文本，
+	# 这是整张图上"这是工具不是游戏"的最大单一来源。现在分两档：
+	#   名片档（默认）：谁 / 在哪 / 在干嘛 / 钱与职业 / 5 条需求 —— 屏宽 18.75% / 屏面积 8.30%；
+	#   完整卷宗（点「详情」或 V）：关系 / 冲突 / 记忆 / 派系 / 盟约 / 秘密 / 观点 / 信念，版式与改前逐行相同。
+	# 两档共用同一个 RichTextLabel 与同一份 _panel_text()，**没有第二套渲染**（同 C3 的动作条纪律）。
+	_obs_pan = _mk_scrim(layer, Vector2(DESIGN.x - OBS_FULL.x, OBS_TOP), OBS_FULL, 0.26, 0.0, 0.0, 0.18)
+	_obs = _mk_label(layer, fnt, 14, Vector2(986, OBS_TOP + OBS_PAD), Vector2(286, OBS_FULL.y - OBS_PAD * 2.0))
 
 	# 底部时间轴 scrubber
 	# 先铺底板再铺控件（CanvasLayer 按添加序叠放）：提示行原本是 #9aa0b5 直接画在草地上，眼验实测几乎读不出
@@ -382,9 +445,13 @@ func _build_hud() -> void:
 	# 键位提示。改动前只列了 6 个绑定（_unhandled_input 里实有 30 个动作 / 37 个 keycode），
 	# 而漏掉的恰好是 Home —— 就是那个能把"开局只看得见 13.9% 的镇子"一键修好的键（docs/43 §1.1）。
 	# 实测原文只用掉 700px 里的约 376px，所以补进 Home/L/O/F5-F8 之后仍是单行（出图复核过不换行）。
-	_scrub_hint.text = "[color=#9aa0b5]时间轴：拖动回放（确定性重演）· 空格暂停 · , . 单步 · [ ] 跳天 · Tab 切角色 · [color=#ffd166]Home 回全镇[/color] · L 跟随 · O 设置 · F5/F8 存读档 · 点居民查看[/color]"
+	_scrub_hint.text = "[color=#9aa0b5]时间轴：拖动回放（确定性重演）· 空格暂停 · , . 单步 · [ ] 跳天 · Tab 切角色 · [color=#ffd166]Home 回全镇[/color] · L 跟随 · [color=#ffd166]V 详情[/color] · O 设置 · F5/F8 存读档 · 点居民查看[/color]"
 
-	# 玩家 → NPC 对话输入框（选中居民后出现；Enter 发送）。M2：经 AIBackend.chat → LLM/mock/罐头。
+	# 玩家 → NPC 对话输入框（**玩家模式下**选中居民后出现；Enter 发送）。M2：经 AIBackend.chat → LLM/mock/罐头。
+	# ★改前它只 gate 在"选中了人"上，没有 gate 在玩家模式上 —— 于是纯观察模式下点任何一个居民，
+	#   都会在世界正中央浮出一个"对 XX 说…"的输入框，而那个模式里根本没有"你"可以说话。
+	#   （它甚至出现在 --shot 的每一张出图上：warmup 会置 _selected_id="ben"。）
+	#   位置不动：玩家模式下它与动作条(y=606)在同一列，两者构成底部中央的一簇，不再是孤零零一条。
 	_chat_in = LineEdit.new()
 	_chat_in.add_theme_font_override("font", fnt)
 	_chat_in.add_theme_font_size_override("font_size", 15)
@@ -395,6 +462,17 @@ func _build_hud() -> void:
 	layer.add_child(_chat_in)
 
 	_build_action_bar(layer, fnt)
+
+	# 观察台档位钮（顶栏右侧，后端钮左边）。放在这里而不是面板里的理由见 OBS_PAD 的注释。
+	# 手机上没有键盘 ⇒ 这一个按钮就是「完整卷宗」的唯一入口（V 键只是桌面同款，走同一个 _toggle_obs）。
+	_obs_btn = Button.new()
+	_obs_btn.add_theme_font_override("font", fnt)
+	_obs_btn.add_theme_font_size_override("font_size", 14)
+	_obs_btn.position = Vector2(OBS_BTN_X, 4)
+	_obs_btn.size = Vector2(OBS_BTN_W, 30)
+	_obs_btn.focus_mode = Control.FOCUS_NONE   # 不抢键盘焦点（同 ⚙/后端/动作条钮）
+	_obs_btn.pressed.connect(_toggle_obs)
+	layer.add_child(_obs_btn)
 
 	# 后端切换按钮（右上角）。手机上无 CLI → 靠这个在 logic/slm/… 间轮换；emulate_mouse_from_touch 默认开 → 点按即触发。
 	# Button 独占自身矩形，不干扰世界点选；FOCUS_NONE 免抢键盘焦点（否则空格/快捷键失灵）。
@@ -507,21 +585,20 @@ func _relayout_hud() -> void:
 	# 顶部状态栏：左端钉在 ⚙ 钮右边，右端跟着后端钮一起外扩
 	# 高度只有玩家模式才是两行 —— dx=dy=0 且非玩家模式时仍是 28，逐像素回到改动前。
 	var sh := STATUS_H2 if _player_mode else STATUS_H1
-	_status.size = Vector2(1082.0 + dx, sh)
+	_status.size = Vector2(STATUS_W + dx, sh)
 	if _status_pan != null:                    # 顶栏底板：整屏宽（含 ⚙ 钮与后端钮），高度跟状态栏行数
 		_status_pan.size = Vector2(DESIGN.x + dx, sh + 12.0)
 	if _backend_btn != null:                   # 后端切换钮：跟右边
 		_backend_btn.position = Vector2(1140.0 + dx, 4.0)
-	if _log_pan != null:                       # 左下播报：跟底边（宽度不变——它的行长是按 560 调的）
-		_log_pan.position = Vector2(8.0, 470.0 + dy)
+	if _obs_btn != null:                       # 观察台档位钮：跟右边（紧贴后端钮左侧）
+		_obs_btn.position = Vector2(OBS_BTN_X + dx, 4.0)
+		_obs_btn.text = "收起" if _obs_expanded else "详情"
+	if _log_pan != null:                       # 左下播报 scrim：贴住左下角（下边跟屏幕底 ⇒ 永远没有下接缝）
+		_log_pan.position = Vector2(0.0, LOG_SCRIM_TOP + dy)
+		_log_pan.size = Vector2(LOG_SCRIM_W, DESIGN.y + dy - (LOG_SCRIM_TOP + dy))
 	if _logbox != null:
 		_logbox.position = Vector2(16.0, 476.0 + dy)
-	if _obs_pan != null:                       # 右侧观察台：跟右边；高度跟底边（多出来的高＝多几行明细）
-		_obs_pan.position = Vector2(978.0 + dx, 36.0)
-		_obs_pan.size = Vector2(294.0, 676.0 + dy)
-	if _obs != null:
-		_obs.position = Vector2(986.0 + dx, 42.0)
-		_obs.size = Vector2(280.0, 664.0 + dy)
+	_sync_obs_panel(dx, dy)                    # 右侧观察台：按当前档位摆面板与正文（「详情」钮在顶栏，上面已摆）
 	# 时间轴：左端不动（紧挨播报面板），右端跟右边 → 屏幕越宽，时间轴刻度越细
 	_sx0 = SCRUB_X0
 	_sx1 = SCRUB_X1 + dx
@@ -544,6 +621,72 @@ func _relayout_hud() -> void:
 	if _settings_panel != null:                # 设置面板：保持居中（1280x768 下算出来正好是 _build_settings 里的 430,124）
 		_settings_panel.position = Vector2(430.0 + dx * 0.5, 124.0 + dy * 0.5)
 	_update_scrubber()                         # fill/handle 由它按新的 _sx0/_sx1/_sy 重画
+
+## 观察台两档几何（_relayout_hud 与 _toggle_obs 共用；dx/dy 见 B15 的"基准 + 增量"写法）。
+## 展开档的左缘刻意仍是 x=978 —— 与改动前逐像素同位，便于差分只归因于"档位"而不是"我顺手挪了面板"。
+func _sync_obs_panel(dx: float = 0.0, dy: float = 0.0) -> void:
+	if _obs_pan == null:
+		return
+	var sz: Vector2 = OBS_FULL if _obs_expanded else OBS_CARD
+	if _obs_expanded:
+		sz.y += dy                                   # 屏更高 ⇒ 卷宗多几行；名片档是定高的（内容有上限）
+	var x0 := DESIGN.x + dx - sz.x                    # 右缘贴屏幕右边 ⇒ 右侧不存在接缝
+	# scrim 比【正文矩形】向左、向下各多出 OBS_FEATH：羽化带落在正文之外（见 OBS_FEATH 的注释）。
+	# 上缘不羽化——它压在顶栏底板下面；右缘不羽化——它就是屏幕边。
+	var pw := sz.x + OBS_FEATH
+	var ph := sz.y + OBS_FEATH
+	_obs_pan.position = Vector2(x0 - OBS_FEATH, OBS_TOP)
+	_obs_pan.size = Vector2(pw, ph)
+	_obs_pan.texture = _scrim_tex(OBS_FEATH / pw, 0.0, 0.0, OBS_FEATH / ph)
+	if _obs != null:
+		_obs.position = Vector2(x0 + 8.0, OBS_TOP + OBS_PAD)
+		_obs.size = Vector2(sz.x - 16.0, sz.y - OBS_PAD * 2.0)
+
+## 观察台档位开关（「详情/收起」钮 与 V 键共用；纯视图，不碰 Sim）。
+func _toggle_obs() -> void:
+	_obs_expanded = not _obs_expanded
+	_save_ui_setting("obs_expanded", _obs_expanded)
+	_relayout_hud()
+	_update_obs()
+
+## 带 alpha 斜坡的 HUD 底板（scrim）。
+## 为什么不是 ColorRect：ColorRect 只能画硬边矩形，而硬边贴在世界上就是一条直线——
+## 实测（未改动的树）观察台左边界的相邻像素亮度跃变中位 65.8、最大 141.0，编年史右边界中位 65.8。
+## C7 已经在世界层付过一次学费：**沿边界连续的硬边比它想藏起来的那个矩形更刺眼**（docs/41 §6）。
+## 实现：烘一张 SCRIM_TEX² 的 RGBA 小图（RGB 恒为底色，A = 基础 alpha × 四条边的 smoothstep 斜坡），
+## 用 TEXTURE_FILTER_LINEAR 拉伸成面板大小 —— 1 个节点、1 个 draw call，且缩放到任何分辨率都平滑。
+## 参数 fl/fr/ft/fb 是各边羽化宽度【占面板边长的比例】，0 = 该边不羽化（因为它贴着屏幕边或压在别的面板下）。
+func _mk_scrim(layer: CanvasLayer, pos: Vector2, sz: Vector2, fl: float, fr: float, ft: float, fb: float) -> TextureRect:
+	var tr := TextureRect.new()
+	tr.texture = _scrim_tex(fl, fr, ft, fb)
+	tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tr.stretch_mode = TextureRect.STRETCH_SCALE
+	tr.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR   # 显式写死：默认是"继承项目设置"，别人改了像素画滤波就会把斜坡切成台阶
+	tr.position = pos
+	tr.size = sz
+	tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(tr)
+	return tr
+
+## 烘一张 SCRIM_TEX² 的 RGBA 斜坡图。fl/fr/ft/fb = 各边羽化宽度【占该边长度的比例】。
+## 观察台两档尺寸不同 ⇒ 同一组比例给不出同一个像素宽度，故档位切换时按【绝对 px / 当前边长】重烘一次（约 4k 次写点）。
+func _scrim_tex(fl: float, fr: float, ft: float, fb: float) -> ImageTexture:
+	var img := Image.create(SCRIM_TEX, SCRIM_TEX, false, Image.FORMAT_RGBA8)
+	for iy in SCRIM_TEX:
+		var v := (float(iy) + 0.5) / float(SCRIM_TEX)
+		var ay := _ramp(v, ft) * _ramp(1.0 - v, fb)
+		for ix in SCRIM_TEX:
+			var u := (float(ix) + 0.5) / float(SCRIM_TEX)
+			img.set_pixel(ix, iy, Color(SCRIM_COL.r, SCRIM_COL.g, SCRIM_COL.b,
+				SCRIM_COL.a * ay * _ramp(u, fl) * _ramp(1.0 - u, fr)))
+	return ImageTexture.create_from_image(img)
+
+## 距某条边 t（归一化 0..1）处的 smoothstep 斜坡；w<=0 表示这条边不羽化。
+func _ramp(t: float, w: float) -> float:
+	if w <= 0.0:
+		return 1.0
+	var s := clampf(t / w, 0.0, 1.0)
+	return s * s * (3.0 - 2.0 * s)
 
 func _mk_label(layer: CanvasLayer, fnt: Font, fsize: int, pos: Vector2, sz: Vector2) -> RichTextLabel:
 	var l := RichTextLabel.new()
@@ -845,6 +988,14 @@ func _save_sim_setting(key: String, val: Variant) -> void:
 	cfg.set_value("sim", key, val)
 	cfg.save("user://settings.cfg")
 
+## 纯视图偏好（观察台档位…）。刻意与 [sim] 分段：[sim] 里的键都会改变世界（人数/玩家/速度），
+## 而这一段一个都不会 —— 分开写，后来人一眼看得出哪一段动得了 digest。
+func _save_ui_setting(key: String, val: Variant) -> void:
+	var cfg := ConfigFile.new()
+	cfg.load("user://settings.cfg")
+	cfg.set_value("ui", key, val)
+	cfg.save("user://settings.cfg")
+
 func _toggle_perf() -> void:
 	_perf_on = not _perf_on
 	if _perf != null:
@@ -936,9 +1087,10 @@ func _update_scrubber() -> void:
 
 func _update_obs() -> void:
 	if _obs != null:
-		_obs.text = _panel_text()
+		_obs.text = _panel_text(not _obs_expanded)
 	if _chat_in != null:
-		if _selected_id == "":
+		# ★ gate 在【玩家模式】上（C8 item 3）：非玩家模式里没有"你"，那个输入框只是浮在世界中间的一块 UI。
+		if not _player_mode or _selected_id == "":
 			_chat_in.visible = false
 		elif not _chat_in.has_focus():
 			_chat_in.visible = true
@@ -985,8 +1137,12 @@ func _bar(v: float) -> String:
 	var n := int(round(clampf(v, 0.0, 100.0) / 10.0))
 	return "█".repeat(n) + "·".repeat(10 - n)
 
-func _panel_text() -> String:
+## 观察台正文。brief=true 是【名片档】：只到需求为止（谁 / 在哪 / 在干嘛 / 钱与职业 / 5 条需求）。
+## 名片档【不是另一份实现】——它就是本函数在需求那一行提前 return，所以两档永远不可能讲出两套事实。
+func _panel_text(brief: bool = false) -> String:
 	if _selected_id == "":
+		if brief:
+			return "[color=#9aa0b5]点一个居民（或 Tab）\n看他此刻在做什么。[/color]"
 		return "[color=#cfd3e0]观察台 Observatory[/color]\n\n[color=#9aa0b5]点选一个居民（或按 Tab 轮换），查看其需求 / 关系 / 信念 / 冲突 / 记忆。[/color]"
 	var ag := Sim.get_agent(_selected_id)
 	if ag.is_empty():
@@ -1020,6 +1176,12 @@ func _panel_text() -> String:
 		var v := float(ag["needs"].get(nid, 0))
 		var c := "#7ed957" if v > 35.0 else "#e85a5a"
 		L.append("%s [color=%s]%s[/color] %d" % [str(n["label"]), c, _bar(v), int(v)])
+	# ★名片档到此为止。**下面每一块都还在**，只是退到一次点击之外 ——
+	#   最后一行明写它们去哪了，否则"收起"读起来会像"这个项目没有这些东西"。
+	if brief:
+		L.append("")
+		L.append("[color=#9aa0b5]关系 · 冲突 · 记忆 · 观点 · 信念\n→ 点右上「详情」（或 V）[/color]")
+		return "\n".join(L)
 	# 关系 top3
 	L.append("")
 	L.append("[color=#cfd3e0]关系[/color]")
@@ -1436,6 +1598,7 @@ func _unhandled_input(e: InputEvent) -> void:
 			KEY_PAGEDOWN: _probe_cycle_floor(-1)
 			KEY_TAB: _cycle_selection(-1 if e.shift_pressed else 1)
 			KEY_O: _toggle_settings()                            # ⚙ 设置面板开关（NPC 数量/速度/后端）
+			KEY_V: _toggle_obs()                                 # 观察台名片档 ⇄ 完整卷宗（手机走右上「详情」钮，同一函数）
 			KEY_F5: _quick_save()                                # R0-2：快速存档
 			KEY_F8: _quick_load()                                # R0-2：快速读档
 			KEY_F9: _write_digest()                             # dev：把当前 digest 写盘（--digest-out）
@@ -1446,6 +1609,10 @@ func _unhandled_input(e: InputEvent) -> void:
 					_selected_id = ""
 					_update_obs()
 			KEY_C: _on_player_say("你好，最近怎么样？")        # 快捷：对选中居民打个招呼（也便于无键盘验证）
+			                                                 # ★C8 刻意【不】把这个键 gate 在玩家模式上：
+			                                                 # tools/chat-shoot.sh:20 就是在【不带 --player】的情况下按 c 出图的，
+			                                                 # 加 gate 会让那个脚本静默产出"没有对话"的截图（而 tools/ 归 C4，我不能改）。
+			                                                 # 收起来的只是那个浮在世界中间的【输入框】，不是这条路径本身。
 			KEY_N:                                               # P2-4 导航开发叠层：阻挡格(红)+交互格(绿) 可视化
 				if _view != null:
 					_view.dbg_nav = not _view.dbg_nav

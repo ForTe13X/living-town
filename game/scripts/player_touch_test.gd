@@ -178,6 +178,92 @@ func _ready() -> void:
 	_ck("设置面板装得下内容", used <= _main._settings_panel.size.y,
 		"需要 %.0fpx，底板 %.0fpx" % [used, _main._settings_panel.size.y])
 
+	# ── 2.6) C8：HUD 不再压在世界上 ────────────────────────────────────────
+	# 这一节守的命题与 C3 那一节同源：**收起 ≠ 删功能**。
+	# 所以除了"默认收起"，还必须钉住"完整卷宗一次交互就回得来，且两档由同一个 _panel_text 生成"——
+	# 否则日后有人把名片档另写一份，两档就会讲出两套事实，而没有任何门会红。
+	_main._player_mode = true
+	_main._selected_id = "aria"
+	var feath: float = _main.OBS_FEATH
+	var card_scrim: Vector2 = _main.OBS_CARD + Vector2(feath, feath)
+	var full_scrim: Vector2 = _main.OBS_FULL + Vector2(feath, feath)
+	_ck("观察台默认名片档", not _main._obs_expanded and _main._obs_pan != null
+		and _main._obs_pan.size == card_scrim, "scrim size=%s" % str(_main._obs_pan.size))
+	# 羽化带必须整条落在【正文之外】——否则斜坡会把正文自己的背景抽掉（第一版就是这么把名片档最后两行糊掉的）
+	var gap_l: float = _main._obs.position.x - _main._obs_pan.position.x
+	var gap_b: float = (_main._obs_pan.position.y + _main._obs_pan.size.y) \
+		- (_main._obs.position.y + _main._obs.get_content_height())
+	_ck("羽化带在正文之外", gap_l >= feath and gap_b >= feath,
+		"左余 %.0fpx / 下余 %.0fpx（需 ≥ %.0f）" % [gap_l, gap_b, feath])
+	var a_card: float = _main.OBS_CARD.x * _main.OBS_CARD.y
+	var a_full: float = _main.OBS_FULL.x * _main.OBS_FULL.y
+	_ck("名片档占屏面积 < 展开档一半", a_card < 0.5 * a_full,
+		"名片 %.0fpx(%.2f%%屏) vs 卷宗 %.0fpx(%.2f%%屏)"
+		% [a_card, 100.0 * a_card / (1280.0 * 768.0), a_full, 100.0 * a_full / (1280.0 * 768.0)])
+	# 两档正文：名片档必须是完整卷宗的【逐行前缀】（尾部两行是指路文案，不算内容）
+	var t_brief: String = _main._panel_text(true)
+	var t_full: String = _main._panel_text(false)
+	var bl: PackedStringArray = t_brief.split("\n")
+	var fl: PackedStringArray = t_full.split("\n")
+	var pre_ok := bl.size() > 2 and fl.size() > bl.size()
+	for i in maxi(0, bl.size() - 2):
+		if i >= fl.size() or bl[i] != fl[i]:
+			pre_ok = false
+	_ck("名片档 ≡ 卷宗的逐行前缀（单一真源）", pre_ok, "名片 %d 行 / 卷宗 %d 行" % [bl.size(), fl.size()])
+	# 能力没被删：卷宗里那几块必须还在，且名片档明写它们去哪了
+	var lost := []
+	for k in ["关系", "近期记忆", "观点", "知道的事"]:
+		if not (k in t_full):
+			lost.append(k)
+	_ck("完整卷宗未丢任何一块", lost.is_empty(), "缺失=%s" % str(lost))
+	_ck("名片档指出详情在哪", ("详情" in t_brief) and ("需求" in t_brief))
+	# 两档都必须【真的装得下】自己的正文（同 2.5 节的纪律：用 get_content_height() 量，不用行数估）。
+	# 卷宗档尤其要量：C8 把正文下移了一个标题行(30px)，若不量，被裁掉的正是信念长尾的最后一两条。
+	_main._obs.text = t_brief
+	var h_brief: float = _main._obs.get_content_height()
+	var cap_brief: float = _main.OBS_CARD.y - _main.OBS_PAD * 2.0
+	_ck("名片档装得下", h_brief > 0.0 and h_brief <= cap_brief, "内容 %.0fpx / 可用 %.0fpx" % [h_brief, cap_brief])
+	_main._obs_expanded = true
+	_main._sync_obs_panel()
+	_main._obs.text = t_full
+	var h_full: float = _main._obs.get_content_height()
+	var cap_full: float = _main.OBS_FULL.y - _main.OBS_PAD * 2.0
+	_ck("完整卷宗装得下", h_full > 0.0 and h_full <= cap_full, "内容 %.0fpx / 可用 %.0fpx" % [h_full, cap_full])
+	_main._obs_expanded = false
+	_main._sync_obs_panel()
+	# 一次交互就回得来：按钮 与 V 键 走同一个 _toggle_obs
+	_main._obs_btn.pressed.emit()
+	_ck("点「详情」→ 展开", _main._obs_expanded and _main._obs_pan.size == full_scrim
+		and _main._obs_btn.text == "收起", "scrim size=%s text='%s'" % [str(_main._obs_pan.size), _main._obs_btn.text])
+	var evv := InputEventKey.new()
+	evv.keycode = KEY_V
+	evv.pressed = true
+	_main._unhandled_input(evv)
+	_ck("V 键 ≡ 「详情」钮（同一 _toggle_obs）", not _main._obs_expanded
+		and _main._obs_pan.size == card_scrim and _main._obs_btn.text == "详情",
+		"scrim size=%s text='%s'" % [str(_main._obs_pan.size), _main._obs_btn.text])
+	# scrim 是【羽化】的而不是硬边矩形 —— 改前 _log_pan 是 ColorRect，这条在改前的树上必红
+	var limg: Image = _main._log_pan.texture.get_image()
+	var lw := limg.get_width(); var lh := limg.get_height()
+	var a_core := limg.get_pixel(0, lh - 1).a
+	var a_edge := limg.get_pixel(lw - 1, lh - 1).a
+	_ck("编年史 scrim 右缘是 alpha 斜坡", a_core > 0.7 and a_edge < 0.05,
+		"核心 a=%.3f → 右缘 a=%.3f" % [a_core, a_edge])
+	var oimg: Image = _main._obs_pan.texture.get_image()
+	_ck("观察台 scrim 左缘是 alpha 斜坡",
+		oimg.get_pixel(oimg.get_width() - 1, 0).a > 0.7 and oimg.get_pixel(0, 0).a < 0.05,
+		"核心 a=%.3f → 左缘 a=%.3f" % [oimg.get_pixel(oimg.get_width() - 1, 0).a, oimg.get_pixel(0, 0).a])
+	# 聊天框 gate 在玩家模式上（改前只 gate 在"选中了人"上 ⇒ 这两条在改前的树上一红一绿）
+	_main._player_mode = true
+	_main._selected_id = "aria"
+	_main._update_obs()
+	_ck("玩家模式 + 选中 → 聊天框在", _main._chat_in.visible)
+	_main._player_mode = false
+	_main._update_obs()
+	_ck("非玩家模式 → 聊天框收起", not _main._chat_in.visible)
+	_main._selected_id = ""
+	_main._player_mode = true      # 还原：下面那条断言要的是"关回去"这个动作本身
+
 	# ── 3) 关回去：玩家退镇（同种子重开）──
 	_main._player_btn.pressed.emit()
 	_ck("关 → 玩家退镇 + 动作条收起",
