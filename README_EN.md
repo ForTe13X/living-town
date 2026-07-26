@@ -31,7 +31,7 @@ The **world and social systems** below all ship, and each has a CI gate behind i
 - **Three AI backends**: `logic` for pure rules, `llm` for local OpenAI-compatible services, and `slm` for embedded GGUF inference through NobodyWho. All backends run the same engine and can fall back safely.
 - **Measured local inference**: Qwen2.5-1.5B-Q4 through embedded SLM runs in roughly 1-2.5 seconds on tested consumer GPU/APU machines; 3B is around 2.9 seconds. Startup probes set deadlines from the current machine.
 
-**What is not there yet** (see [docs/05](docs/05-路线图与里程碑.md)): the game is **completely silent** (no audio of any kind); on a phone it can be watched but not played (all 7 player verbs are keyboard-only); the five most dramatic social event types currently **never reach the event log**; and the warm half of the social sim runs cold (a default month-long run produces 2 dates, 0 pacts, 0 aid).
+**What is not there yet** (see [docs/05](docs/05-路线图与里程碑.md), [docs/43](docs/43-wave-c-plan.md)): the game is **completely silent** (no audio of any kind); on a phone it can be watched but not played — the 7 player verbs are not only keyboard-only, they sit behind a `--player` launch flag, while the shipping target is an Android APK; the opening camera shows ~14% of the map, and in the whole-town view ~58% of the frame is the engine's default clear colour; residents have no movement interpolation (they teleport 12.5×/second); seasons and weather take effect in the simulation every day but render pixel-identically; and there is no goal, no onboarding, no session shape.
 
 Demo videos, newest build first:
 

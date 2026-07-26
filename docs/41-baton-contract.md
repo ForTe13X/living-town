@@ -82,12 +82,19 @@ brief 里的行号、数字、机制描述大多是**二手的**（上一棒的�
     gamecraft-runner:4.6.2 bash /tools/shot1.sh /out/x.png <seed> <warmup_days>
   ```
   然后**真的把 PNG 读出来看**（可用 PIL 裁剪放大）。改前拍一张、改后拍一张、自己对比。
-- **三条已知的工具链盲区**：①`--shot` **永远拍不到 emote/气泡**（`WorldView` 在 `goto_tick` 暖机之后才建，
+- **五条已知的工具链盲区**：①`--shot` **永远拍不到 emote/气泡**（`WorldView` 在 `goto_tick` 暖机之后才建，
   重演的信号到不了视图层）→ 表情类必须走**录制**路径；②**任何"靠信号累积"的 UI 在 `--warmup` 开局都是空的**，
   除非它在 HUD 建好后按 `event_log` 重建过；③**`--shot` 拍不出 letterbox 黑边**——
   `get_viewport().get_texture().get_image()` 只返回**内容区**，所以 `aspect=keep` 下丢掉的 24.6% 屏幕
   只体现在 **PNG 的尺寸**上、画面内容里一条黑边都没有。**凡是"画幅/缩放/视口"类问题，必须看输出图的
   `im.size`，不能只看画面**（B15 实测：谁去眼验那张图都会得出"没问题"）。
+  ④**`--shot` 永远渲不出昼夜**（2026-07-26 Wave C 实测）——`_modulate` 建出来是白的（`Main.gd:223`），
+  `_daylight` 只在 `_on_tick`(`:448`)/`_after_jump`(`:1103`)/`_after_load`(`:1336`) 里施加，
+  而 `--shot` 把 `auto_run=false`（`:245`），**三条路一条都不走**。
+  **证据**：`docs/media/town_integrated.png`（HUD 写 `00:38 夜`）与 `shot-town-roads.png`（`12:00 昼`）的
+  主草地色**逐字节都是 (133,166,67)**。⇒ **这把尺子本身是坏的，所有"看起来偏亮/偏暗"的视觉判断在修好它之前都不可信。**
+  ⑤**`--shot` 恒显示 `第N天 00:48 夜`，`--speed` 不推进时钟**（`b7780c8` 记录）——
+  想拍别的时刻必须走 `shot_tick.sh` 或录制路径。
 - **数值 diff 比肉眼强，且要用它守"不该变"的那一半**：改视图时对**未受影响的分辨率**做逐像素 diff
   （PIL `ImageChops.difference` 的 bbox 应为 `None`）。B15 靠它抓到一个纯肉眼绝对看不见的 1px 回归：
   `LineEdit.size` 在 `add_child` **之前**赋值不走主题最小尺寸钳制（高 30），入树后再赋同一常量会被钳到 31、

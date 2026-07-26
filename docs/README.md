@@ -1,6 +1,6 @@
 # 文档索引 · Living Town
 
-本树上有编号文档 00-25、28-37、39（26 与 27 只存在于未并入的分支，见下）+ 若干附录。
+本树上有编号文档 00-25、28-43（26 与 27 只存在于未并入的分支，见下）+ 若干附录。
 文档以中文为主，**按写作时的真实过程记录**——包括被推翻的结论和负结果，
 这些不会被事后删改（见 [13 实验札记](13-实验札记-experiment-journey.md) 与 [31 #15 结案](31-15-resolution.md)）。
 
@@ -52,7 +52,12 @@
 | [30 #15v2 Metric Card](30-15v2-metric-card.md) | **预注册**指标卡，冻结于看 held-out 之前，用于防止"看着结果调指标" |
 | [31 #15 结案](31-15-resolution.md) | 126/126 seed 全 INCONCLUSIVE：残余是**度量的时间泄漏**，不是机制缺陷 → **不加任何机制** |
 | [`bench/bakeoff/README.md`](../bench/bakeoff/README.md) | 3 命令可复现的蒸馏 bake-off；含两个诚实负结果（ranker 赢是"机制赢不是质量赢"；LLM 自评法官不可靠） |
+| [38 决策路值不值](38-does-the-decision-path-earn-it.md) | 把「均匀随机」做成可跑的臂：模型可与随机区分，但没有一条差异指向好的方向；并报出 CI 结构上查不到的硬不变量 #01 破损 |
 | [39 Node 端口处置](39-node-port-disposition.md) | `tools/sim_social_port.mjs` **退役**为历史文物：根因二分到单个 commit，且它自己 33% 的 seed 就是红的 |
+| [40 出货交叉点 N=60 × 端上 SLM](40-device-n60-slm-the-shipping-intersection.md) | 从未测过的那一格：真出货配置下模型只驱动全镇 **0.04%** 的决策 |
+| [41 分棒契约](41-baton-contract.md) | **所有并行子任务的共同约束**——红线、验证契约、报告契约、统计纪律，以及视觉棒的五条工具链盲区 |
+| [42 编码病理 vs 能力天花板](42-prompt-pathology-or-capability-ceiling.md) | 把出货那一份 prompt 原样喂给 31B：编码可读**且** 1.5B 有天花板，两者并存；顺带解释了「模型把人饿穿」的机理 |
+| [43 Wave C 计划](43-wave-c-plan.md) | **当前这一波的权威计划**：从「研究仓库」转向「像个游戏」；路线图差量、共同规则 R1-R6、逐棒 brief 与验收 |
 
 > **`tools/sim_social_port.mjs` 的状态：已退役（2026-07-26），历史文物，不入 CI，不验证引擎。**
 > 它的逻辑冻结在 2026-07-03，读的却是仍在演进的 `game/data/*.json`——自"阵容 6→12 人"
