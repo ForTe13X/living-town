@@ -241,12 +241,22 @@ def main():
     json.dump(sp, open(p("spaces.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     json.dump(interiors, open(p("interiors.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print("generated %d building interiors (cafe hand-authored, preserved)" % n_gen)
-    # buildings.json rooms are authored at OLD 24x16 coords → orphaned on the 64x48 map. Clear for the
-    # graybox (base objects cover every need); real multi-floor interiors get re-authored in P3 (café slice).
+    # buildings.json：历史上这里会【无条件清空】——原因是那批房间还是 24x16 老坐标、在 64x48 地图上成孤儿。
+    # 但 2026-07-26 起 buildings.json 里是**按当前 64x48 地图内缩坐标重新编写**的 12 个房间（B16），
+    # 无条件清空会让那份内容只有"一条命令的半衰期"，且清空会静默改变仿真：`_secret_private()` 顶上有条数据闸
+    # `if rooms.is_empty(): return true`——房间没了，吐露秘密就从"按 docs/16 规则"退回"无条件私密"，digest 随之变。
+    # 故改为：只在【明确要求】时清空（--clear-buildings），否则原样保留并提示校验。
     bj = json.load(open(p("buildings.json"), encoding="utf-8"))
-    bj["buildings"] = []
-    json.dump(bj, open(p("buildings.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    print("WROTE map.json + agents.json + spaces.json + cleared buildings.json (interiors → P3)")
+    n_rooms = sum(len(b.get("rooms", [])) for b in bj.get("buildings", []))
+    if "--clear-buildings" in sys.argv:
+        bj["buildings"] = []
+        json.dump(bj, open(p("buildings.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        print("WROTE map.json + agents.json + spaces.json + CLEARED buildings.json (--clear-buildings)")
+    else:
+        print("WROTE map.json + agents.json + spaces.json; buildings.json 保留不动（%d 个房间）" % n_rooms)
+        if n_rooms:
+            print("  ⚠ 地图刚被重新生成，但 buildings.json 的房间坐标是【上一版地图】的内缩坐标——"
+                  "请核对每个 rect 仍落在对应 area 内缩区内（要清空用 --clear-buildings）。")
 
 if __name__ == "__main__":
     main()
