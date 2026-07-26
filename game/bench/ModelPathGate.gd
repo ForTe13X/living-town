@@ -1,6 +1,7 @@
 extends Node
 ## bench/ModelPathGate.gd — 【模型路径】的可证伪对照（Wave C · C6）。
 ## 用法：godot --headless --path game res://bench/ModelPathGate.tscn -- [--seeds 1-4] [--days 8] [--agents 12]
+##       [--anchor res://bench/modelpath_anchor.json] [--bake-anchor game/bench/modelpath_anchor.json]
 ##
 ## 为什么必须单独有它（docs/41 §2）：
 ##   CI 的每一道门（金标 / LOD / DetGate）都恒 `Sim.backend = null` ⇒ `AIBackend.decide()` 从不被进入，
@@ -13,11 +14,23 @@ extends Node
 ## 三段，每段都能单独变红：
 ##   A. 闭集选号契约（C6-a）—— 纯函数自检，零 Sim
 ##   B. 熔断器复位（C6-b）—— 先证明它**真的开了**，再证明该复位的路复位了、**不该复位的路仍然是开的**
-##   C. random 臂零扰动锚（C6-a 的副作用守门）—— cap 36→26 若挪动了 random 臂的轨迹，这里的 digest 会变
+##   C. random 臂【跨进程锚】（C6-a 的副作用守门）—— 逐 seed digest 比对 modelpath_anchor.json
 ## exit 0/1。
+##
+## ⚠ 2026-07-26（D1）修正：C 段此前**零条断言**——它只 `print` digest，`_fails` 一次也没被碰过，
+##   收据自己的算术就露了馅（9✅ + 8✅ + 0 = 17）。「改前跑一遍、改后跑一遍、逐字节对」是**人**的纪律，
+##   不是门。现在它比对一份**提交进库**的锚（`modelpath_anchor.json`），锚缺失/网格对不上一律**红**，
+##   绝不静默跳过（docs/41 §3 的"0 条可比"空过就是这么来的）。
+##   为什么这条锚值得多一个要重烘的文件：`_instant_random` 的下标模数就是 `capped.size()`
+##   （AIBackend.gd:1029 ← :788 的 `_cap_for_llm`），而**实测 112/2615 个决策点 |C|>26**（max|C|=57，
+##   旧上限 36 时只有 14/2615）⇒ 这条臂的轨迹是 `LLM_PICK_CAP` 与裁剪序的**活函数**。
+##   而 `golden_digests.json` 恒 `Sim.backend=null` ⇒ 它**看不见这条路**；4d BackendGate 只证"同进程两跑一致"，
+##   **证不了"两个 commit 之间行为没变"**。这是模型路径上**唯一**的跨进程/跨提交锚，故这个文件是挣得的。
 
 const Inv = preload("res://bench/Invariants.gd")
 const SimScript = preload("res://scripts/Sim.gd")
+const H = preload("res://bench/Harness.gd")     # 只用它的静态工具（norm_path / load_golden / save_golden），不实例化
+const ANCHOR_DEFAULT := "res://bench/modelpath_anchor.json"
 
 ## 期望值【写死在门里】，故意不从 AIBackend 读常量：
 ##   ① 从被测对象取期望值 = 同义反复，门永远绿；
@@ -37,11 +50,15 @@ func _ready() -> void:
 	var seeds_spec := "1-4"
 	var days := 8
 	var agents := 12
+	var anchor_path := ANCHOR_DEFAULT
+	var bake_path := ""
 	var args := OS.get_cmdline_user_args()
 	for i in args.size():
 		if args[i] == "--seeds" and i + 1 < args.size(): seeds_spec = args[i + 1]
 		elif args[i] == "--days" and i + 1 < args.size(): days = int(args[i + 1])
 		elif args[i] == "--agents" and i + 1 < args.size(): agents = int(args[i + 1])
+		elif args[i] == "--anchor" and i + 1 < args.size(): anchor_path = H.norm_path(args[i + 1])
+		elif args[i] == "--bake-anchor" and i + 1 < args.size(): bake_path = H.norm_path(args[i + 1])
 
 	var hash_bad := SimScript.hash_self_test()
 	if hash_bad != "":
@@ -52,7 +69,7 @@ func _ready() -> void:
 	print("=== ModelPathGate · 模型路径对照 seeds=%s days=%d N=%d ===" % [seeds_spec, days, agents])
 	_part_a()
 	_part_b(agents)
-	_part_c(_parse_seeds(seeds_spec), days, agents)
+	_part_c(_parse_seeds(seeds_spec), days, agents, anchor_path, bake_path)
 
 	print("\n=== ModelPathGate: %s  (失败 %d)" % ["PASS ✅" if _fails.is_empty() else "FAIL ❌", _fails.size()])
 	for f in _fails:
@@ -253,17 +270,25 @@ func _on_decision(ag, cands, _pick_i) -> void:
 		_fx = {"agent": ag, "cands": (cands as Array).duplicate(true), "ctx": Sim._context(ag)}
 
 
-# ── C. random 臂零扰动锚（C6-a 的副作用守门）──────────────────────────────
-## `_cap_for_llm` 的 36→26 会改变 random/mock/slm 三条臂在 |C|>26 时看到的闭集 ⇒ 可能挪动 random 臂轨迹。
-## 这是【模型路径上的行为变更】，本来就在允许范围内（4d 那道门存在的理由），但必须**量出来**而不是猜。
-## 打印逐 seed 的 Inv.digest / event_digest：改前跑一遍、改后跑一遍，逐字节对。
-func _part_c(seeds: Array, days: int, agents: int) -> void:
-	print("  [C] random(full) 臂逐 seed 摘要（改前/改后逐字节对比用）")
+# ── C. random 臂跨进程锚（C6-a 的副作用守门）──────────────────────────────
+## `_cap_for_llm` 的 36→26 改变 random/mock/slm 三条臂在 |C|>cap 时看到的闭集，而 `_instant_random`
+## 拿 `capped.size()` 当 RNG 模数（AIBackend.gd:1029）⇒ 这条臂的轨迹**确实**随 cap 移动。
+## 这是【模型路径上的行为变更】，本来就在允许范围内（4d 那道门存在的理由），但必须**被门守着**而不是被打印出来。
+##
+## 锚的形状（`modelpath_anchor.json`）：
+##   random_full.<网格键 daysD_nN>.<seed> = {digest, event_digest, landed}
+##   random_full.<网格键>._scale         = {max_n, over_cap, over_old, n_dec}   ← 见下
+## `_scale` 那一行守的是**这条锚自己的前提**：若哪天候选枚举收窄到 |C| 恒 ≤26，裁剪就再也不生效，
+## 逐 seed digest 会照样全绿，而这道门**已经不再测量它自称在测量的东西**。把规模数也钉住，
+## 那种"门还在、判别力没了"的静默死亡就会变成一次显式的红 + 一次显式的重烘。
+func _part_c(seeds: Array, days: int, agents: int, anchor_path: String, bake_path: String) -> void:
+	print("  [C] random(full) 臂逐 seed 摘要 ×【提交锚】比对")
 	# 只读探针：Sim.backend 是鸭子类型（Sim.gd:1181 只查 has_method），套一层转发就能量到
 	# 【模型路径真正看见的】|C| 分布。不能用 decision_sink —— 它挂在 _logic_decide 里，
 	# random(full) 档根本不走那条路（_instant_random 直接返回），会量出一堆 0。
 	var probe := DecideProbe.new()
 	probe.cap = CAP
+	var rows := {}
 	for sd in seeds:
 		AIBackend.backend = "random"
 		AIBackend.backend_requested = "random"
@@ -276,14 +301,92 @@ func _part_c(seeds: Array, days: int, agents: int) -> void:
 		AIBackend.reset_stats()
 		for t in range(days * int(Sim.TICKS_PER_DAY)):
 			Sim.tick()
+		# 摘要一律以【字符串】存：Godot 的 JSON 把所有数字解成 float，event_digest 到 2^63 会丢精度
+		# （Harness.gd:356 的同一条纪律）。
+		rows[str(sd)] = {"digest": str(Inv.digest(Sim)), "event_digest": str(Sim.event_digest),
+			"landed": int(AIBackend.stats["landed"])}
 		print("    seed=%d  inv_digest=%d  event_digest=%d  landed=%d" % [
 			sd, Inv.digest(Sim), Sim.event_digest, int(AIBackend.stats["landed"])])
-	# 这两个数解释 digest 为什么动/不动：|C| 从没超过 cap ⇒ 裁剪从未生效 ⇒ 轨迹必然逐字节相同。
+	# 这四个数是这条锚的【前提】，不是花絮：|C|>cap 的决策点数一旦归零，裁剪就再也不生效，
+	# 逐 seed digest 会变得对 cap 完全不敏感 —— 门还在，判别力没了。故它们也进锚（_scale 行）。
+	rows["_scale"] = {"max_n": probe.max_n, "over_cap": probe.over_cap,
+		"over_old": probe.over_old, "n_dec": probe.n_dec}
 	print("    候选规模：max|C|=%d，|C|>%d 的决策点 %d/%d（旧上限 |C|>36：%d/%d）" % [
 		probe.max_n, CAP, probe.over_cap, probe.n_dec, probe.over_old, probe.n_dec])
 	AIBackend.backend = "logic"
 	AIBackend.backend_requested = "logic"
 	Sim.backend = null
+
+	var gkey := "days%d_n%d" % [days, agents]
+	if bake_path != "":
+		var out := H.load_golden(bake_path)
+		var sect: Dictionary = out.get("random_full", {})
+		sect[gkey] = rows
+		out["random_full"] = sect
+		var m: Dictionary = out.get("_meta", {})
+		m["baked_by"] = "godot --headless --path game res://bench/ModelPathGate.tscn -- --seeds %s --days %d --agents %d --bake-anchor game/bench/modelpath_anchor.json" % [
+			_seeds_spec_of(seeds), days, agents]
+		m["godot"] = Engine.get_version_info().get("string", "?")
+		# rebake_history 是【累积】键（docs/41 §3-3）：每次重烘补一条"日期 + 为什么"，标准 note 会被覆盖，它不会。
+		if not m.has("rebake_history"):
+			m["rebake_history"] = []
+		out["_meta"] = m
+		if H.save_golden(bake_path, out):
+			print("\n🔨 已烘 %d seed × 网格 %s 到 %s" % [seeds.size(), gkey, bake_path])
+		else:
+			_ck(false, "锚写入失败：%s" % bake_path)
+		return                                      # 烘的那一跑不参与判定（否则等于拿被测对象当期望值）
+
+	# ── 比对 ──────────────────────────────────────────────────────────────
+	# 缺锚 / 缺网格 / 缺行 一律【红】。DetGate 的 "有就比、没有就跳过（不误红）" 在这里是错的招：
+	# 这条锚是**提交进库**的，它不在位本身就是一次真故障（或一次没跟着重烘的改动）。
+	var doc := H.load_golden(anchor_path)
+	var asect: Dictionary = doc.get("random_full", {})
+	var grid: Dictionary = asect.get(gkey, {})
+	_ck(not grid.is_empty(), "锚在位且含本网格 %s（锚=%s；重烘：--bake-anchor game/bench/modelpath_anchor.json）" % [gkey, anchor_path])
+	if grid.is_empty():
+		return
+	for sd in seeds:
+		var want: Dictionary = grid.get(str(sd), {})
+		if want.is_empty():
+			_ck(false, "seed=%d 在锚的网格 %s 里没有对应行" % [sd, gkey])
+			continue
+		var got: Dictionary = rows[str(sd)]
+		var diff := ""
+		# 摘要按【字符串】对（存的时候就是字符串，避开 2^53 的精度悬崖）；
+		# landed 是小整数，但 Godot 的 JSON 把它读回成 647.0 ⇒ 必须显式收 int 再比，
+		# 否则这条断言会**恒红**（本棒第一次跑就撞上了，正是 Harness.gd:356 记的同一个坑）。
+		for f in ["digest", "event_digest"]:
+			if str(want.get(f, "")) != str(got.get(f, "")):
+				diff += "%s %s→%s  " % [f, str(want.get(f, "")), str(got.get(f, ""))]
+		if int(want.get("landed", -1)) != int(got.get("landed", -2)):
+			diff += "landed %d→%d  " % [int(want.get("landed", -1)), int(got.get("landed", -2))]
+		_ck(diff == "", "seed=%d 逐字节对上锚（差：%s）" % [sd, diff])
+	var wsc: Dictionary = grid.get("_scale", {})
+	if wsc.is_empty():
+		_ck(false, "锚的网格 %s 缺 _scale 行（这条锚的前提没有被守住 → 重烘）" % gkey)
+	else:
+		var sdiff := ""
+		for f in ["max_n", "over_cap", "over_old", "n_dec"]:
+			if int(wsc.get(f, -1)) != int(rows["_scale"].get(f, -2)):
+				sdiff += "%s %d→%d  " % [f, int(wsc.get(f, -1)), int(rows["_scale"].get(f, -2))]
+		_ck(sdiff == "", "候选规模对上锚——裁剪仍然真的在生效（差：%s）" % sdiff)
+
+## seeds 数组 → 最紧凑的 spec（只为把可复现的重烘命令写进 _meta，不参与判定）。
+func _seeds_spec_of(seeds: Array) -> String:
+	if seeds.is_empty():
+		return ""
+	var contiguous := true
+	for i in seeds.size():
+		if int(seeds[i]) != int(seeds[0]) + i:
+			contiguous = false
+			break
+	if contiguous and seeds.size() > 1:
+		return "%d-%d" % [int(seeds[0]), int(seeds[seeds.size() - 1])]
+	var parts := PackedStringArray()
+	for s in seeds:
+		parts.append(str(int(s)))
+	return ",".join(parts)
 
 ## 纯转发探针：只数 candidates.size()，不抽 RNG、不改任何参数 ⇒ 对被测轨迹零扰动。
 class DecideProbe extends RefCounted:

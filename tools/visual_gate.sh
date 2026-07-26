@@ -9,13 +9,32 @@
 # ── 退出码（ci.sh 依赖这三个值）──────────────────────────────────────────────
 #   0  PASS      1  FAIL（真的坏了）      77 SKIP（本机没有渲染环境，**不是**失败）
 #
-# ── 可移植性：为什么它敢跳过，以及跳过为什么不是偷懒 ─────────────────────────
-# `tools/ci.sh` 同时跑在本机（Windows/Git-Bash + Docker）和 GitHub Actions（ubuntu-latest）。
-# GHA 那条路上**既没有 `gamecraft-runner:4.6.2` 镜像**（它是 22nd 项目本地构建的，不在任何 registry），
-# **也没有装 Xvfb**（runner 镜像不带），而 `setup-python` 给的是裸解释器（**没有 Pillow**）。
-# ⇒ 一道"必须有 Docker+Xvfb"的硬门放进 CI，在 GHA 上会**每次都环境性变红**。
-# 而**在别人机器上因环境变红的门比没有门更坏**：它训练所有人忽略红色。所以本门的判据是：
+# ── 可移植性：为什么它在 GitHub Actions 上跳过（2026-07-26 D1 更正）─────────
+# ⚠ 这一段原来写的是「GHA 的 ubuntu-latest **没有装 Xvfb**（runner 镜像不带）⇒ auto 会 SKIP」。
+#   **那是假的**，而整段跳过逻辑的正当性就架在它上面。实测核对（D1）：
+#     · `actions/runner-images` 的 Ubuntu2404-Readme.md 里 `xvfb | 2:21.1.12-1ubuntu1.6`；
+#       Ubuntu2204 是 `2:21.1.4-2ubuntu1.7~22.04.16`。**两个镜像都自带 Xvfb。**
+#     · `.github/workflows/ci.yml` 把 godot 装到 `/usr/local/bin/godot` 并设 `GODOT: godot`。
+#   ⇒ `have_native()` 的两个条件在 GHA 上**都为真** ⇒ `RUNNER=auto` 选的是 **native，不是 SKIP**。
+#   这道门在 GHA 上其实一直是**开着**的，只是没人去看它到底跑没跑。
+#   （docker 在 GHA 上装了，但 `gamecraft-runner:4.6.2` 是 22nd 项目本地构建、不在任何 registry
+#     ⇒ `docker image inspect` 失败 ⇒ `have_docker()` 为假。这一半原文没说错。）
 #
+# 那么该让它在 GHA 上跑吗？**不该，显式跳过。** 真实理由不是"跑不起来"，而是**跑起来的那部分没有 pin**：
+#   ① 断言本身是 mesa 无关的（A1 比的是 `night == quant(noon × _daylight)` 这个**比值**，基色现量），
+#      所以危险不在判据，**在拍图那一步**：两个 runner README 的 apt 清单里**都没有 mesa/libgl1**，
+#      于是 `--rendering-driver opengl3` 能不能拿到 GL context 是**未定义**的，且随 GitHub 每月滚镜像而变。
+#   ② 一道**没有任何 commit 却会自己变色**的门，正是「在别人机器上因环境变红的门比没有门更坏」
+#      要防的那一种——它训练所有人忽略红色。
+#   ③ `auto` 档"拍不出帧就算 SKIP"**并不能**兜住这个：SKIP 与 PASS 在 CI 汇总里都读作"没红"，
+#      于是这道门会退化成一枚**看不见结果的硬币**，同时还要在 15 分钟的 job 预算里烧掉两次 1280×768 软渲染。
+#   ④ 跳过**没有损失任何已有的判别力**：docs/41 §2 的验证契约是"在开发机上跑 `bash tools/ci.sh`"，
+#      那条路上 docker 镜像把 mesa 钉死、`tol=0` 逐字节——判别力最强的一档本来就在那里跑。
+#      GHA 从来就没有过一个 **pin 死**的版本可以失去。
+#   ⇒ 想在 GHA 上开它的人：显式给 `LT_VISUAL_RUNNER=native`（或 `LT_VISUAL=require`）即可越过这条自动跳过，
+#     但**请先把 GL 栈 pin 住**（apt 装 `libgl1 libglx-mesa0` 并记下版本），否则你只是把硬币换了个地方扔。
+#
+# 其余判据不变：
 #   * **能力探测在拍图之前**（有没有 pin 死的镜像 / 有没有 Xvfb），探不到 ⇒ 立刻 77 SKIP，一帧都不拍；
 #   * 探到了就**必须给出判决**：拍不出图或断言不过 ⇒ 1 FAIL（这时候红色是真信号）；
 #   * 唯一的例外是 native（未 pin）路径：见下面 `LT_VISUAL` 的 auto 档。
@@ -24,15 +43,15 @@
 # 所以 docker（镜像 pin 死 mesa）走 tol=0；native（未 pin）走 tol=4——而本门要挡的回归会让夜帧
 # 从 (57,82,63) 跳回 (134,173,79)，**每通道差 77/91/16**，tol=4 一分判别力都不损失。
 #
-# ── 想在 GitHub Actions 上把它打开（**C4 没做，因为 .github/ 不在本棒的所有权表里**）──────
-# 在 `.github/workflows/ci.yml` 的 "CI gate" 之前加一步，然后给 CI gate 那步加两个环境变量：
-#     - run: sudo apt-get update && sudo apt-get install -y xvfb libgl1 libglx-mesa0
-#     env:  LT_VISUAL_RUNNER: native
+# ── 想在 GitHub Actions 上把它打开（**C4/D1 都没做，.github/ 不在这两棒的所有权表里**）──────
+# 在 `.github/workflows/ci.yml` 的 "CI gate" 之前加一步，然后给 CI gate 那步加环境变量：
+#     - run: sudo apt-get update && sudo apt-get install -y libgl1 libglx-mesa0   # xvfb 镜像自带，不必装
+#     env:  LT_VISUAL_RUNNER: native    # ← 必须显式给，否则被下面的 GITHUB_ACTIONS 自动跳过挡掉
 #           LT_VISUAL: require          # 想让它咬人才加；不加就是 auto（拍不出帧算 SKIP）
 # **可信度**：native 分支已在 Ubuntu 22.04 + Xvfb + mesa 软件渲染下**实测跑通并 PASS**
 # （在 gamecraft-runner 容器里以 native 模式跑，那条路上**没有 Pillow**，走的正是 stdlib PNG 读取器）。
-# 但 **GitHub Actions 本身没跑过**——上面这段是推断，第一次开它的人请先用 `LT_VISUAL`(auto) 观察一轮
-# 再升成 require。这正是本门默认不自己打开的原因。
+# 但 **GitHub Actions 本身仍然没跑过**——第一次开它的人请先用 `LT_VISUAL`(auto) 观察一轮再升成 require，
+# 并且**把 mesa 版本记进 workflow**：不 pin 光栅器，这道门的红色就不构成信号（见抬头②）。
 #
 # ── 开关 ────────────────────────────────────────────────────────────────────
 #   LT_VISUAL=auto|require|off   默认 auto。
@@ -110,6 +129,14 @@ skip(){ # skip <理由>
 }
 
 [ "$MODE" = "off" ] && skip "LT_VISUAL=off"
+
+# ── GitHub Actions：显式跳过（理由见抬头「可移植性」，D1 更正）────────────────
+# 必须放在能力探测【之前】：GHA 的 ubuntu-latest **自带 Xvfb**、workflow 又把 godot 放上了 PATH，
+# 所以 have_native() 在那里为真、`auto` 会选 native —— 靠"探不到就跳过"是拦不住的（原设计的盲点）。
+# 两条越权出口都保留：显式 LT_VISUAL_RUNNER=… 或 LT_VISUAL=require 都能越过这一条。
+if [ "${GITHUB_ACTIONS:-}" = "true" ] && [ "$MODE" != "require" ] && [ -z "${LT_VISUAL_RUNNER:-}" ]; then
+  skip "GitHub Actions —— 那里的 GL 栈（mesa/libgl）没有 pin，红/绿会随 GitHub 滚镜像自己变；判别力最强的一档在开发机的 docker 路径上（tol=0）。要在 GHA 上开：显式 LT_VISUAL_RUNNER=native 或 LT_VISUAL=require，并先 pin 住 mesa"
+fi
 
 have_docker(){ command -v docker >/dev/null 2>&1 && docker image inspect "$IMG" >/dev/null 2>&1; }
 have_native(){ command -v Xvfb >/dev/null 2>&1 && command -v "$GODOT" >/dev/null 2>&1; }
