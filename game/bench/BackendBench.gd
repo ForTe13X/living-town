@@ -110,6 +110,11 @@ func _run(backend: String, seed_list: Array, days: int, is_async: bool) -> void:
 	var sim_ticks := 0
 	var agent_ticks_tot := 0 # Σ(agent × tick)：迟疑账的分母（waits 占它多少）
 	var nowait := 0          # docs/38：不阻塞档下"本可空等、改为照常行动"的次数
+	# ★ 诚实分母第三笔（B14）：AIBackend 在【交给引擎之前】就把 landed 记了，而 Sim 的生存否决
+	#   (Sim._survival_ok/_horizon_ok) 会在 agent_apply 之前把其中一部分【原样换掉】。
+	#   所以 landed 现在只是"模型的答案被接受并送进引擎"的口径，不再等于"模型驱动了这次决策"。
+	#   不减掉这一笔，L/C 与 Δ/C 都会虚高——正是本项目一路在防的那种分母。
+	var veto := 0            # Σ Sim.ext_veto：落地后被生存否决【真的改掉】的次数（改成同一个 intent 的不计）
 	# ── docs/38 产品侧（逐 seed 存，报 per-seed 散布而不只是均值）────────────────
 	var evmix: Array = []    # 每 seed 的 {事件类型: 次数}
 	var evtot: Array = []    # 每 seed 的事件总数
@@ -186,6 +191,7 @@ func _run(backend: String, seed_list: Array, days: int, is_async: bool) -> void:
 		calls += int(ds["calls"])
 		waits += int(ds["waits"])
 		nowait += int(ds.get("nowait", 0))
+		veto += Sim.ext_veto                             # 每 seed 由 Sim.start_new 清零，故直接累加
 		delta += int(ds["delta"])
 		delta_full += int(ds["delta_full"])
 		delta_action += int(ds["delta_action"])
@@ -207,6 +213,7 @@ func _run(backend: String, seed_list: Array, days: int, is_async: bool) -> void:
 		print("[BB] " + JSON.stringify({"backend": backend, "seed": sd, "digest": Sim.event_digest, "fired": int(AIBackend.stats["fired"]),
 			"landed": int(AIBackend.stats["landed"]), "bad": int(AIBackend.stats["bad_parse"]), "timeout": int(AIBackend.stats["timeout"]),
 			"decisions": int(ds["decisions"]), "calls": int(ds["calls"]), "waits": int(ds["waits"]), "nowait": int(ds.get("nowait", 0)),
+			"veto": Sim.ext_veto,
 			"delta": int(ds["delta"]), "delta_full": int(ds["delta_full"]), "delta_action": int(ds["delta_action"]),
 			"PI": snappedf(M.polarization(Sim), 0.001), "cascade": M.cascade_max(Sim), "Gini": snappedf(M.gini_acceptance(Sim), 0.001),
 			# ── docs/38 产品侧 per-seed 原始数据（下游脚本按此行做三方对拍与散布统计）──
@@ -255,6 +262,11 @@ func _run(backend: String, seed_list: Array, days: int, is_async: bool) -> void:
 		print("  ★ 决策占比 = %.2f%% (landed/落地决策)   ← 诚实口径；对照 landed/fired = %.1f%%（只说发出去的按时回来几成）" % [
 			100.0 * float(landed) / float(maxi(1, decisions)), 100.0 * float(landed) / float(fired)])
 		print("    模型决策 %.2f 次/sim-日（全镇；串行 worker → 与 N 无关的墙钟天花板）" % [float(landed) / maxf(0.001, sim_days)])
+		# B14 生存否决：landed 记于 AIBackend，而 Sim 在 agent_apply 之前还会换掉一部分。见上方 var veto 的长注释。
+		if veto > 0:
+			print("    ★ 其中被【生存否决】换掉 %d 次 (%.1f%% of landed) → 有效决策占比 = %.2f%%（这一份才是模型真正驱动的）" % [
+				veto, 100.0 * float(veto) / float(maxi(1, landed)),
+				100.0 * float(landed - veto) / float(maxi(1, decisions))])
 		# ── docs/36 真影响力：landed ≠ drove ─────────────────────────────────
 		# 上面那个 landed/C 只是【上界】：模型挑中的很可能正是引擎自己也会挑的那个。
 		# 下面的 Δ 是落地时【真的和引擎选得不一样】的次数 —— 这才是"模型改变了什么"的直接度量。
