@@ -33,6 +33,20 @@ const REL_FADE_PX := 520.0     # 屏幕长度超过它开始变淡：横穿全�
 var rel_mode: int = RelMode.ALL   # Main 可直接改这个属性（本 baton 不动 Main，故不加键位）
 
 var _prev_pos := {}      # id -> Vector2i（推断朝向/行走）
+
+# ── 居民插值（渲染时钟，不是 tick 时钟）────────────────────────────────────────
+# Sim 的位置是【格】，而 tick_interval=0.08 ⇒ 居民每秒瞬移 12.5 次、每次整整 T=48 像素。
+# 这里在 View 内维护一份【渲染坐标】，在 _process(delta) 里向格心 lerp；Sim 一个字节都不碰。
+# ★红线（本文件 :22）：_render_pos 只喂【绘制】。所有裁剪/LOD 判定一律仍按 Sim 的精确格心 _center()
+#   算——否则"画什么"就会依赖上一帧的渲染残余，观察无关性从纯函数退化成有状态的。
+# ★冻结 tick 的 --shot 必须与未插值版逐字节相同（docs/43 C1 验收）：靠 SNAP_PX 硬吸附保证，
+#   不靠"指数收敛到浮点精度以下"这种概率性论证。
+const LERP_FRACTION := 0.60    # 在一格【实际耗时】的 60% 内走完 → 跟得上 x8 加速，也不拖影
+const SNAP_PX := 0.05          # 收敛阈值：小于它直接吸附到精确格心
+const TELEPORT_TILES := 3.0    # 超过它视为瞬移（换 Space / 时间轴跳转 / 读档 / 换 N）→ 直接吸附，不横穿全镇滑行
+var _render_pos := {}          # id -> Vector2（纯渲染坐标）
+var _moving := {}              # id -> bool（是否仍在追格心；行走帧靠它）
+var _walk_row := {}            # id -> int（行走帧行号，进入移动时锁定）
 var _emote := {}         # id -> {tex, until}
 var _say := {}           # id -> {text, until}（对话罐头台词；M2 换 LLM 生成）
 const SAY_TICKS := 40
@@ -132,6 +146,63 @@ const FLOOR_PAL := {
 	"workshop":    {"base": Color("#9b968d"), "line": Color("#6d6a61"), "mode": "slab"},    # 暖灰石板（工坊）
 	"plaza":       {"base": Color("#c3a97a"), "line": Color("#9a8253"), "mode": "paving"},  # 中央广场铺装
 }
+
+# ── 四季与天气（Wave C）──────────────────────────────────────────────────────
+# Sim.season_today / Sim.weather_today 每天边界都在算并进效用乘子（Sim.gd:1076-1078、:2305、:2322），
+# 而本文件里这两个词此前【零命中】—— 也就是说仿真里换了季，屏幕上逐像素相同。
+# 这里只【读】它们，纯 View：veg = 植被（草地/花草/树）的乘算色偏；wash = 压在地形与建筑之上、
+# 居民之下的大气罩（乘算做不出"冬天发白"，必须靠叠加）。缺数据文件时两者都是恒等，画面回到今天。
+const SEASON_VEG := {
+	"春": Color(1.00, 1.06, 0.90),   # 新绿，略偏黄
+	"夏": Color(0.88, 1.00, 0.72),   # 深浓
+	"秋": Color(1.22, 0.98, 0.60),   # 金黄（第一版 1.32/0.52 眼验偏芥末，压了一档）
+	"冬": Color(0.84, 0.92, 1.00),   # 冷、褪色
+}
+const SEASON_WASH := {
+	"春": Color(0.62, 0.90, 0.48, 0.05),
+	"夏": Color(1.00, 0.90, 0.42, 0.06),
+	"秋": Color(0.95, 0.58, 0.22, 0.10),
+	"冬": Color(0.80, 0.89, 1.00, 0.24),   # 霜白：多亏了它，冬天才不是"绿得冷一点"
+}
+const WEATHER_WASH := {
+	"阴": Color(0.52, 0.57, 0.64, 0.16),
+	"雨": Color(0.34, 0.45, 0.62, 0.24),
+}
+
+func _season_veg() -> Color:
+	return SEASON_VEG.get(Sim.season_today, Color.WHITE)
+
+## 季节 + 天气的大气罩，画在地形/建筑之上、居民之下。只覆盖【地图矩形 ∩ 视口】——
+## 界外暗林不跟着变季，否则夜林会被冬天的霜白刷成灰板。
+func _draw_climate_wash(w: int, h: int) -> void:
+	var area := Rect2(0.0, 0.0, float(w) * T, float(h) * T).intersection(_vis)
+	if area.size.x <= 0.0 or area.size.y <= 0.0:
+		return
+	var sw: Color = SEASON_WASH.get(Sim.season_today, Color(0, 0, 0, 0))
+	if sw.a > 0.0:
+		draw_rect(area, sw, true)
+	var ww: Color = WEATHER_WASH.get(Sim.weather_today, Color(0, 0, 0, 0))
+	if ww.a > 0.0:
+		draw_rect(area, ww, true)
+
+## 雨丝。确定性：位置来自 _hash(gx,gy)，下落相位来自 Sim.tick_no —— 不抽 RNG、不读墙钟，
+## 于是【同一 tick 重拍逐像素相同】（--shot 冻结 tick，将来做视觉 CI 断言时才有可比性）。
+func _draw_rain() -> void:
+	var cell := T * 1.5
+	var gx0 := int(floor(_vis.position.x / cell)); var gx1 := int(ceil(_vis.end.x / cell))
+	var gy0 := int(floor(_vis.position.y / cell)); var gy1 := int(ceil(_vis.end.y / cell))
+	if (gx1 - gx0) * (gy1 - gy0) > VOID_DECOR_MAX_CELLS:
+		return                                    # 极端缩放：雨丝细到看不见，白烧填充率（红线#3 手机）
+	var phase := float(Sim.tick_no % 6) / 6.0
+	var col := Color(0.80, 0.89, 1.00, 0.30)
+	for gy in range(gy0, gy1):
+		for gx in range(gx0, gx1):
+			var hsh := _hash(gx, gy, 57)
+			if hsh % 100 >= 36:
+				continue
+			var p := Vector2((float(gx) + float(hsh % 61) / 61.0) * cell,
+				(float(gy) + float(hsh / 61 % 61) / 61.0 + phase) * cell)
+			draw_line(p, p + Vector2(-T * 0.15, T * 0.40), col, 1.5)
 
 func _ready() -> void:
 	texture_filter = TEXTURE_FILTER_NEAREST  # 像素清晰，不糊
@@ -494,23 +565,16 @@ func _emote_key(e: Dictionary) -> String:
 
 ## 由移动推断行走帧 {col,row,flip}：横向走用 down 行 + 水平翻转(左)，上走=row3，静止=正面 idle 缓慢呼吸。
 var _facing_left := {}
+## 行走帧/朝向。★这里【不再有副作用】——朝向与 _prev_pos 的推进整体搬到了 _process()。
+## 原因：加插值后 _draw 从"每 tick 一次"变成"每帧一次"，而旧实现是在 _draw 里做 pos 差分并
+## 就地更新 _prev_pos，于是移动后的第 2 帧起差分恒为零 → 居民一边滑行一边播 idle（动画反而更糟）。
+## 现在"是否在走"= 渲染坐标是否还在追格心（_moving），动画与插值同寿。
 func _agent_frame(ag: Dictionary) -> Dictionary:
-	var id: String = ag["id"]
-	var cur: Vector2i = ag["pos"]
-	var prev: Vector2i = _prev_pos.get(id, cur)
-	var d := cur - prev
-	_prev_pos[id] = cur
-	if d == Vector2i.ZERO:
-		return {"col": int(Sim.tick_no / 16.0) % 4, "row": 0, "flip": bool(_facing_left.get(id, false))}  # idle 微动，保留上次朝向
-	var row := 1
-	var flip := false
-	if absi(d.x) >= absi(d.y) and d.x != 0:
-		row = 1
-		flip = d.x < 0   # 朝左 = 水平翻转 down 帧
-	elif d.y < 0:
-		row = 3
-	_facing_left[id] = flip
-	return {"col": Sim.tick_no % 4, "row": row, "flip": flip}
+	var id := String(ag["id"])
+	var flip := bool(_facing_left.get(id, false))
+	if not bool(_moving.get(id, false)):
+		return {"col": int(Sim.tick_no / 16.0) % 4, "row": 0, "flip": flip}  # idle 微动，保留上次朝向
+	return {"col": Sim.tick_no % 4, "row": int(_walk_row.get(id, 1)), "flip": flip}
 
 ## P1：Probe 切到非 town 的 Space 时，画该 Space/Floor 的占位（bounds + 楼层 + Portal 锚点）。
 ## 诚实边界：test_loft 没有内容——这里只证明"active Space/Floor 渲染与 hit-test 走得通"，
@@ -748,6 +812,101 @@ func _draw_interior_furniture(slot: String, base: Vector2) -> void:
 var _rc_conflict_ids := {}   # 每帧预建：卷入活跃冲突的 agent 端点集（渲染缓存，_draw_agent 用 O(1) 查）
 var _rc_meet_ids := {}       # 每帧预建：有活跃约会的 agent 端点集
 
+## ── 界外虚空 ───────────────────────────────────────────────────────────────
+## 全镇视角下地图矩形只占画面的一小半，其余是 Godot 未改的默认 clear color(#4d4d4d)：
+## 小镇读作"灰色虚空里的一座孤岛"。室内早有解（_draw_interior_backdrop），小镇分支一直没有对应物——
+## 草地被钳在 [0,w)x[0,h)（下面的 tx0..tx1/ty0..ty1），界外一个像素都没人画。
+##
+## ★这一层只画【地图矩形之外】：把 _vis 减去 map 得到上/下/左/右四条带，只在带里绘制。
+##   R5 双向断言就靠这条 —— 界内必须逐像素不变（ImageChops bbox 完全落在地图矩形外）。
+const VOID_BASE := Color("#0b1209")     # 深林底（与 project.godot 的 default_clear_color 同色）
+const VOID_SPILL := Color("#8fb36a")    # 镇子漏进林子的那点光（贴着地图外缘最亮，向外熄灭）
+const VOID_CANOPY_A := Color("#16301a")
+const VOID_CANOPY_B := Color("#1e3d22")
+const VOID_CANOPY_C := Color("#0f2413")
+const VOID_SPILL_TILES := 6.0           # 光晕带宽（格）
+const VOID_FADE_TILES := 22.0           # 从地图外缘到"全黑深林"的距离（格）
+const VOID_DECOR_MAX_CELLS := 4096      # 装饰上限：极端缩放下只铺底色，不烧填充率（红线#3 手机）
+
+## 点到矩形的最短距离（点在矩形内=0）。界外暗林用它做"离镇越远越黑越稀"的衰减。
+func _rect_dist(r: Rect2, p: Vector2) -> float:
+	var dx := maxf(maxf(r.position.x - p.x, 0.0), p.x - r.end.x)
+	var dy := maxf(maxf(r.position.y - p.y, 0.0), p.y - r.end.y)
+	return sqrt(dx * dx + dy * dy)
+
+func _draw_town_backdrop(w: int, h: int) -> void:
+	var map := Rect2(0.0, 0.0, float(w) * T, float(h) * T)
+	var v := _vis
+	var bands: Array = []
+	if v.position.y < map.position.y:
+		bands.append(Rect2(v.position.x, v.position.y, v.size.x, map.position.y - v.position.y))
+	if v.end.y > map.end.y:
+		bands.append(Rect2(v.position.x, map.end.y, v.size.x, v.end.y - map.end.y))
+	var my0 := maxf(v.position.y, map.position.y)
+	var my1 := minf(v.end.y, map.end.y)
+	if my1 > my0:
+		if v.position.x < map.position.x:
+			bands.append(Rect2(v.position.x, my0, map.position.x - v.position.x, my1 - my0))
+		if v.end.x > map.end.x:
+			bands.append(Rect2(map.end.x, my0, v.end.x - map.end.x, my1 - my0))
+	if bands.is_empty():
+		return                                  # 镜头完全在界内（跟随相机的常态）：一笔都不画
+	for b in bands:
+		draw_rect(b, VOID_BASE, true)
+	# 镇子漏进林子的光：贴着地图外缘最亮、向外 8 圈熄灭。旧稿在这里放过一条【矩形青色岸带】，
+	# 眼验读作"给地图加了个装饰边框"——硬边框是原型感的来源，换成柔性光晕就消失了。
+	for k in range(8, 0, -1):
+		var ring := map.grow(VOID_SPILL_TILES * T * (float(k) / 8.0))
+		var a := 0.030 * (1.0 - float(k - 1) / 8.0)
+		for b in bands:
+			var seg := ring.intersection(b)
+			if seg.size.x > 0.0 and seg.size.y > 0.0:
+				draw_rect(seg, Color(VOID_SPILL.r, VOID_SPILL.g, VOID_SPILL.b, a), true)
+	# 界外暗林：2 格粗粒度的确定性树冠（_hash，不抽 RNG、与相机无关）。太远的镜头只留底色。
+	# 每格画【两丛】并给足抖动，否则规则网格会读成波点墙纸（第一版实测就是这个毛病）。
+	var cell := T * 2.0
+	var gx0 := int(floor(v.position.x / cell))
+	var gy0 := int(floor(v.position.y / cell))
+	var gx1 := int(ceil(v.end.x / cell))
+	var gy1 := int(ceil(v.end.y / cell))
+	var fade_px := VOID_FADE_TILES * T
+	if _zoom >= 0.18 and (gx1 - gx0) * (gy1 - gy0) <= VOID_DECOR_MAX_CELLS:
+		for gy in range(gy0, gy1):
+			for gx in range(gx0, gx1):
+				for sub in 2:
+					var hsh := _hash(gx, gy, 91 + sub * 37)
+					var c := Vector2(gx * cell, gy * cell) \
+						+ Vector2(float(hsh % 97), float(hsh / 97 % 97)) * (cell / 97.0)
+					if map.has_point(c):
+						continue                # 界内不长树（R5：界内必须逐像素不变）
+					# 离镇越远越黑越稀：林子要"退进夜里"，不是铺一层等密度的点
+					var dist := _rect_dist(map, c)
+					var lit := clampf(1.0 - dist / fade_px, 0.0, 1.0)
+					if hsh / 9409 % 100 >= int(26.0 + 52.0 * lit):
+						continue
+					var r := cell * (0.30 + float(hsh / 11 % 9) * 0.030)
+					var cc := VOID_CANOPY_A if hsh % 3 == 0 else (VOID_CANOPY_B if hsh % 3 == 1 else VOID_CANOPY_C)
+					cc = cc.lerp(VOID_BASE, 1.0 - lit)      # 远处的树冠融进底色
+					draw_circle(c, r, cc)
+					if lit > 0.25:
+						draw_circle(c + Vector2(-r * 0.28, -r * 0.32), r * 0.44,
+							Color(cc.r, cc.g, cc.b, 0.50 * lit))   # 受光叶簇
+	# 暗角：由地图外缘向外 6 圈加深 → 视线自然被收回镇子里
+	for k in 6:
+		var vg := Rect2(map).grow(VOID_SPILL_TILES * T + float(k + 1) * T * 2.6)
+		var a := 0.050 + float(k) * 0.034
+		# 逐圈压暗：只压 band 里落在这一圈【之外】的部分（四条外带），避免整片重复叠加
+		for b in bands:
+			var out_top := Rect2(b.position.x, b.position.y, b.size.x, maxf(0.0, vg.position.y - b.position.y))
+			var out_bot := Rect2(b.position.x, maxf(b.position.y, vg.end.y), b.size.x, maxf(0.0, b.end.y - maxf(b.position.y, vg.end.y)))
+			var iy0 := maxf(b.position.y, vg.position.y)
+			var iy1 := minf(b.end.y, vg.end.y)
+			var out_lft := Rect2(b.position.x, iy0, maxf(0.0, vg.position.x - b.position.x), maxf(0.0, iy1 - iy0))
+			var out_rgt := Rect2(maxf(b.position.x, vg.end.x), iy0, maxf(0.0, b.end.x - maxf(b.position.x, vg.end.x)), maxf(0.0, iy1 - iy0))
+			for o in [out_top, out_bot, out_lft, out_rgt]:
+				if o.size.x > 0.0 and o.size.y > 0.0:
+					draw_rect(o, Color(0, 0, 0, a), true)
+
 func _draw() -> void:
 	_refresh_view_metrics()
 	var _main := get_parent()
@@ -760,6 +919,8 @@ func _draw() -> void:
 		return
 	var w: int = int(Sim.world.get("width", 24))
 	var h: int = int(Sim.world.get("height", 16))
+	_draw_town_backdrop(w, h)   # 界外虚空：暗林/水环/暗角。必须在草地循环【之前】，且只碰地图矩形之外
+	var veg := _season_veg()    # 四季：植被的乘算色偏（春新绿 / 夏深浓 / 秋金黄 / 冬冷褪）
 	# 地面：逐格选草地变体（有切片时）→ 否则平铺单图 → 否则色块
 	if not _grass.is_empty():
 		var tw := 0
@@ -781,13 +942,13 @@ func _draw() -> void:
 					if r < 0:
 						chosen = g["t"]
 						break
-				draw_texture_rect(chosen, Rect2(tx * T, ty * T, T, T), false)
+				draw_texture_rect(chosen, Rect2(tx * T, ty * T, T, T), false, veg)
 	else:
 		var grass := Art.ground_tex()
 		if grass != null:
-			draw_texture_rect(grass, Rect2(0, 0, w * T, h * T), true)
+			draw_texture_rect(grass, Rect2(0, 0, w * T, h * T), true, veg)
 		else:
-			draw_rect(Rect2(0, 0, w * T, h * T), Art.ground, true)
+			draw_rect(Rect2(0, 0, w * T, h * T), Art.ground * veg, true)
 	var dirt := Art.terrain_tex("dirt")
 	# 水面（map.json water 层）：铺在草地之上、区域/建筑之下，作为地形读。深蓝底 + 浅蓝格纹岸边微光，
 	# 用确定性 _hash 做静态涟漪（不抽 RNG、不进 digest）。
@@ -857,8 +1018,8 @@ func _draw() -> void:
 		var th: int = int(it["h"])
 		var dw := float(dtex.get_width()) * (float(T) / 16.0)
 		var dh := float(dtex.get_height()) * (float(T) / 16.0)
-		# 底对齐格子（高物件如树向上伸出）
-		draw_texture_rect_region(dtex, Rect2(c.x * T + (T - dw) * 0.5, (c.y + 1) * T - dh, dw, dh), Rect2(0, 0, dtex.get_width(), dtex.get_height()))
+		# 底对齐格子（高物件如树向上伸出）；四季色偏与草地同源
+		draw_texture_rect_region(dtex, Rect2(c.x * T + (T - dw) * 0.5, (c.y + 1) * T - dh, dw, dh), Rect2(0, 0, dtex.get_width(), dtex.get_height()), veg)
 
 	# authored 阻挡树（map.json trees 层）：这些是【会挡路】的真树（与上面可踩的程序化花草区分开）。
 	# 用 tree_big 切图底对齐画；缺切图则程序化画树冠+树干。占满格 → 玩家一眼读出"这里过不去"。
@@ -867,12 +1028,12 @@ func _draw() -> void:
 		if ttex != null:
 			var tdw := float(ttex.get_width()) * (float(T) / 16.0)
 			var tdh := float(ttex.get_height()) * (float(T) / 16.0)
-			draw_texture_rect_region(ttex, Rect2(tc.x * T + (T - tdw) * 0.5, (tc.y + 1) * T - tdh, tdw, tdh), Rect2(0, 0, ttex.get_width(), ttex.get_height()))
+			draw_texture_rect_region(ttex, Rect2(tc.x * T + (T - tdw) * 0.5, (tc.y + 1) * T - tdh, tdw, tdh), Rect2(0, 0, ttex.get_width(), ttex.get_height()), veg)
 		else:
 			var cx: float = tc.x * T + T * 0.5
 			draw_rect(Rect2(tc.x * T + T * 0.30, tc.y * T + T * 0.55, T * 0.40, T * 0.45), Color("#6b4a2b"), true)  # 树干
-			draw_circle(Vector2(cx, tc.y * T + T * 0.42), T * 0.42, Color("#2f6d3a"))                                # 树冠
-			draw_circle(Vector2(cx - T * 0.18, tc.y * T + T * 0.30), T * 0.24, Color("#3c8a4a"))                      # 高光叶
+			draw_circle(Vector2(cx, tc.y * T + T * 0.42), T * 0.42, Color("#2f6d3a") * veg)                          # 树冠
+			draw_circle(Vector2(cx - T * 0.18, tc.y * T + T * 0.30), T * 0.24, Color("#3c8a4a") * veg)                # 高光叶
 
 	_draw_town_doors()         # P3 UX：给能进的建筑画醒目木门 + 招牌（点门进店）
 	_draw_landmarks()          # P2-4 公共地标（水井 / 告示板）：程序化画在地形层、居民之下
@@ -897,6 +1058,9 @@ func _draw() -> void:
 					draw_rect(Rect2(base.x + 9, base.y + 12, T - 18, T - 18), Color(0, 0, 0, 0.35), false, 2.0)
 					draw_string(Art.font(), Vector2(base.x + 4, base.y + T - 3), str(o.get("type", "")), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 1, 1, 0.7))
 
+	# 四季 / 天气的大气罩：压在地形与建筑之上、居民之下（居民不该被刷成一片霜白）
+	_draw_climate_wash(w, h)
+
 	# ── 社交层（在 Agent 之下先画连线，再画 Agent 与标记）──────────────────
 	# 每帧预建冲突/约会端点集 → _draw_agent 用 O(1) 查代替 per-agent 线性扫 Sim.conflicts/commitments（N 大时省 O(N×|conflicts|)）。
 	_rc_conflict_ids = {}
@@ -916,6 +1080,9 @@ func _draw() -> void:
 		if String(ag.get("space", "town")) != "town":
 			continue            # P3 Tier-B：非-town 平面的居民(在咖啡馆室内的阿丽)不画在镇上——否则会用室内格坐标在镇上"鬼影"
 		_draw_agent(ag)
+
+	if Sim.weather_today == "雨":
+		_draw_rain()            # 雨丝画在【居民之上】：雨在人前面落，才读作下雨而不是地面贴图
 
 	if dbg_nav:                 # P2-4 开发叠层（N 键）：可视化导航权威数据——阻挡格 + 交互格
 		_draw_nav_overlay(w)
@@ -984,9 +1151,65 @@ func _draw_landmarks() -> void:
 				draw_rect(Rect2(bx + T * 0.2, by + T * 0.28, T * 0.22, T * 0.26), Color("#efe4cc"), true)          # 纸
 				draw_rect(Rect2(bx + T * 0.5, by + T * 0.3, T * 0.24, T * 0.2), Color("#dfe8f0"), true)
 
+## Sim 的【精确格心】。裁剪/LOD 判定只许用它（见 _render_pos 一节的红线）。
 func _center(ag: Dictionary) -> Vector2:
 	var p: Vector2i = ag["pos"]
 	return Vector2(p.x * T + T * 0.5, p.y * T + T * 0.5)
+
+## 【绘制】坐标 = 插值后的渲染坐标；没有记录（首帧 / 非 town / 刚进场）时回落到精确格心。
+func _rpos(ag: Dictionary) -> Vector2:
+	return _render_pos.get(String(ag["id"]), _center(ag))
+
+## 渲染时钟：把渲染坐标向格心推进。只读 Sim.agents，绝不写 Sim。
+func _process(delta: float) -> void:
+	if Sim.world.is_empty():
+		return
+	# 一格实际占多少实时秒：tick_interval / speed（x8 加速时只有 0.01s）。
+	# 下限 0.008 防除零/抖动，上限 0.16 防 --speed 0 时把收敛拖成"永远在爬"。
+	var step := clampf(Sim.tick_interval / maxf(Sim.speed, 0.25), 0.008, 0.16)
+	var k := clampf(delta / maxf(step * LERP_FRACTION, 0.001), 0.0, 1.0)
+	var tele := TELEPORT_TILES * T
+	var dirty := false
+	var alive := {}
+	for ag in Sim.agents:
+		var id := String(ag["id"])
+		alive[id] = true
+		var target := _center(ag)
+		# 朝向/行走帧按【格】的变化判定（Sim 的离散移动），与插值进度解耦。
+		# 旧版把这段差分做在 _draw 里，而 _draw 从"每 tick 一次"变成"每帧一次"之后，
+		# 差分会在移动后的第一帧就归零 → 人一边滑行一边播 idle。
+		var gp: Vector2i = ag["pos"]
+		var prev: Vector2i = _prev_pos.get(id, gp)
+		if gp != prev:
+			var d := gp - prev
+			if absi(d.x) >= absi(d.y) and d.x != 0:
+				_walk_row[id] = 1
+				_facing_left[id] = d.x < 0
+			elif d.y < 0:
+				_walk_row[id] = 3
+			else:
+				_walk_row[id] = 1
+			_prev_pos[id] = gp
+		var cur: Vector2 = _render_pos.get(id, target)
+		if cur.distance_to(target) > tele:
+			cur = target
+		else:
+			cur = cur.lerp(target, k)
+		var moving := cur.distance_to(target) > SNAP_PX
+		if not moving:
+			cur = target        # ★硬吸附：冻结 tick 下渲染坐标 ≡ 格心，--shot 前后 bbox 必须是 None
+		if not _render_pos.has(id) or _render_pos[id] != cur or bool(_moving.get(id, false)) != moving:
+			dirty = true
+		_render_pos[id] = cur
+		_moving[id] = moving
+	if _render_pos.size() != alive.size():      # 换 N / 读档：清掉已不存在的 id，别留幽灵
+		for id in _render_pos.keys():
+			if not alive.has(id):
+				_render_pos.erase(id); _moving.erase(id); _walk_row.erase(id)
+				_prev_pos.erase(id); _facing_left.erase(id)
+				dirty = true
+	if dirty:
+		queue_redraw()
 
 ## 关系连线：|affinity|>20 才画；绿=亲密、红=敌意，粗细/透明度随强度。
 ## 是否在镇上平面（非咖啡馆等室内）——室内居民用室内局部坐标，画在镇上会"鬼影"，与 agent 主循环(:752)同款过滤。
@@ -1046,13 +1269,16 @@ func _draw_relationship_lines() -> void:
 		var b: Dictionary = Sim.get_agent(ids[1])
 		if a.is_empty() or b.is_empty() or not _in_town(a) or not _in_town(b):
 			continue
-		var p1 := _center(a)
-		var p2 := _center(b)
-		if not _vis.intersects(Rect2(p1, Vector2.ZERO).expand(p2)):
+		# 裁剪按【格心】（_center），绘制按【渲染坐标】（_rpos）：剔除不许依赖插值残余。
+		var c1 := _center(a)
+		var c2 := _center(b)
+		if not _vis.intersects(Rect2(c1, Vector2.ZERO).expand(c2)):
 			continue                                   # 整段在视口外 → 一笔不画
+		var p1 := _rpos(a)
+		var p2 := _rpos(b)
 		var aff2 := float(keep[k])
 		var t := clampf(absf(aff2) / 100.0, 0.0, 1.0)
-		var screen_len := p1.distance_to(p2) * _zoom
+		var screen_len := c1.distance_to(c2) * _zoom   # 长度衰减也走格心：否则每帧微抖，长线会轻微闪
 		var fade := clampf(1.0 - (screen_len - REL_FADE_PX) / REL_FADE_PX, 0.25, 1.0)
 		var focus := 1.0
 		var width := 1.2 + t * 2.4
@@ -1074,9 +1300,9 @@ func _draw_faction_rings() -> void:
 			continue
 		var col := _faction_color(fac)
 		col.a = 0.85
-		var c := _center(ag) + Vector2(0, T * 0.30)   # 落脚线（与影子/精灵底边同一条）
-		if not _vis.has_point(c):
-			continue
+		if not _vis.has_point(_center(ag) + Vector2(0, T * 0.30)):
+			continue                                  # 裁剪走格心
+		var c := _rpos(ag) + Vector2(0, T * 0.30)     # 落脚线（与影子/精灵底边同一条）
 		draw_arc(c, T * 0.20, 0.0, TAU, 16, col, 2.5)  # 收小到 0.20 格：不再穿过头顶名牌与脚下气泡
 
 func _faction_color(fac: String) -> Color:
@@ -1100,10 +1326,10 @@ func _draw_pact_links() -> void:
 			var other: Dictionary = Sim.get_agent(oid)
 			if other.is_empty() or not _in_town(other):
 				continue
-			var a := _center(ag)
-			var b := _center(other)
-			if not _vis.intersects(Rect2(a, Vector2.ZERO).expand(b)):
-				continue
+			if not _vis.intersects(Rect2(_center(ag), Vector2.ZERO).expand(_center(other))):
+				continue                              # 裁剪走格心
+			var a := _rpos(ag)
+			var b := _rpos(other)
 			var perp := (b - a).orthogonal().normalized() * 2.0
 			var cyan := Color("#39d4c8", 0.7)
 			draw_line(a + perp, b + perp, cyan, 1.6)
@@ -1122,10 +1348,8 @@ func _draw_talking_links() -> void:
 		if opt != null and String(opt.get("kind", "")) == "social":
 			var other: Dictionary = Sim.get_agent(String(opt.get("partner", "")))
 			if not other.is_empty() and _in_town(other):
-				var p1 := _center(ag)
-				var p2 := _center(other)
-				if _vis.intersects(Rect2(p1, Vector2.ZERO).expand(p2)):
-					draw_line(p1, p2, Color("#ffd166", 0.85), 2.5)
+				if _vis.intersects(Rect2(_center(ag), Vector2.ZERO).expand(_center(other))):
+					draw_line(_rpos(ag), _rpos(other), Color("#ffd166", 0.85), 2.5)   # 裁剪走格心、绘制走渲染坐标
 
 ## 居中的「深色底板 + 文字」。anchor = 文字基线中点；返回底板矩形，供旁边的标记贴边摆放。
 ## 旧版的名字是【无描边无底板的纯白 draw_string】——在草地上勉强能读，一压到这次新铺的木/石地板就糊没了。
@@ -1146,7 +1370,7 @@ func _action_label(opt: Dictionary) -> String:
 	return Sim._verb(act) if String(opt.get("kind", "")) == "social" else act
 
 func _draw_agent(ag: Dictionary) -> void:
-	var center := _center(ag)
+	var center := _rpos(ag)                   # 绘制坐标（插值后）；本函数不做裁剪判定
 	var feet := center.y + T * 0.30          # 落脚线：影子 / 派系环 / 精灵底边都对齐它
 	var col := Color(str(ag.get("persona", {}).get("color", "#ffffff")))
 	var spr := _hued_tex(str(ag.get("persona", {}).get("sprite", "")), String(ag["id"]))  # L6：克隆取确定性色相变体，命名 6 人=正典
@@ -1154,7 +1378,13 @@ func _draw_agent(ag: Dictionary) -> void:
 	if spr != null:
 		# 软阴影 + 按移动选行走帧（cols0-3 循环，左向水平翻转）。整数 2x 缩放，且把源帧里人物的【脚】压在落脚线上
 		var fr := _agent_frame(ag)
-		draw_circle(Vector2(center.x, feet), T * 0.22, Color(0, 0, 0, 0.25))
+		# 脚下阴影：旧版是 draw_circle(feet, T*0.22, α=.25) —— 直径 0.44 格几乎和精灵一样宽、边缘还是硬的，
+		# 读起来像"人浮在一个圆盘上"。改成压扁的椭圆（y 轴 0.40）+ 3 圈由外向内变实的 alpha 衰减，
+		# 核心宽度收到 0.15 格；叠加后中心不透明度 ≈0.27，与旧值同档，但边缘化开、不再抢精灵的轮廓。
+		draw_set_transform(Vector2(center.x, feet), 0.0, Vector2(1.0, 0.40))
+		for si in 3:
+			draw_circle(Vector2.ZERO, T * 0.15 * (1.0 + float(2 - si) * 0.34), Color(0, 0, 0, 0.07 + float(si) * 0.030))
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		var sz := AGENT_PX
 		var top := feet - sz * (CHAR_FEET_ROW / 32.0)
 		head = top + sz * (CHAR_HEAD_ROW / 32.0)
