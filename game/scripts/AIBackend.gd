@@ -231,9 +231,17 @@ func available_backends() -> Array:
 
 ## 运行期切换后端（手机 UI 调用）：记录意图 + 持久化到 user://settings.cfg；真正生效在 decide() 安全点（无在飞请求时）。
 ## slm/llm 无需在此重探测：慢请求各自到截止线(默认 12s)超时 → 逐个 agent 回落 logic，仍确定兜底、不卡死。
-## ★ 这里【故意不】调 _reset_slm_circuit()：切后端不改变任何失败假设（同权重、同 GPU 档、同池化 worker），
-##   而它是设置面板里被反复点的那一行 —— 一旦它复位，"切走再切回"就成了绕过 docs/34 泄漏封顶的通用手法。
-##   要解熔断请走 set_model_path() / set_slm_use_gpu()（真的换了假设的那两条）。由 bench/ModelPathGate 机检。
+## ★ 这里【故意不】调 _reset_slm_circuit()。判据不是"用户点了 UI 上哪一行"，而是：
+##   **这个操作有没有造出一个新的 fault domain（新的原生运行时世代）？**
+##   —— 这条更准的措辞来自 2026-07-26 的外部对抗评审，它正确地指出原来那句"切后端不改变任何失败假设"
+##      并不牢靠：如果切后端会卸载模型、销毁原生上下文、重建 worker，那"切走再切回"反而可能是唯一有效的恢复动作，
+##      不复位就等于把一个【已经被重置过】的运行时永久锁死。
+##   实测本仓库的答案：`_teardown_slm_worker()` 只被 set_model_path(:510) / set_slm_use_gpu(:529) / 内部两处调用，
+##   **request_backend() 不拆不建**（它只 cancel_all() 作废在飞请求）⇒ 同一个原生世代 ⇒ 不复位是对的。
+##   **若将来有人让 request_backend() 重建 worker，这条策略就必须跟着改。**
+##   反向也要诚实：换权重/换推理档【也不保证】换掉了失败原因（连超可能来自请求队列死锁、wrapper 状态损坏、
+##   原生线程泄漏——这些不随权重文件改变）。所以复位是一条**基于 fault domain 的启发式**，不是"病因已变"的证明。
+##   由 bench/ModelPathGate 机检。
 func request_backend(mode: String) -> void:
 	if not mode in available_backends():
 		return

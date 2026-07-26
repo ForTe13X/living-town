@@ -146,6 +146,23 @@ discipline to what is *on screen*. A wave of parallel visual work on 2026-07-26 
   (including the clip then linked from this README); and a finished gate had **never been wired into CI**, while **the relay
   compressed away the author's own sentence saying so**.
 
+- **★ Discount the number "six", though.** An external adversarial review turned this project's own rule —
+  *correlated symptoms are not independent evidence* — back on us, correctly: those six are more likely **one upstream
+  error replicated six times** (never defining the intervention → observation → attribution chain before hunting for a
+  number in the final screenshot) than six distinct criterion-design failures. The first is a fixable rule; the second is
+  borrowed statistical weight.
+- **★ And none of this section measures whether anyone wants to play.** Three reviews (an external adversarial model plus
+  two independent read-only agents, all instructed to refute) returned the same verdict: **"it looks meaningfully better,
+  and nobody would still play it."** Every number above measures *readability*, and readability is not *appeal* —
+  **playability was never measured in this wave**, and this project has no instrument that could measure it. Read this
+  section as "we fixed the instrument and used it to fix the picture", **not** as "the product got fun". What actually
+  blocks that is still the first line of *What is not there yet*: **no goal, no onboarding, no session shape.**
+- **The same review exposed the hole in the method itself**: every visual check this wave was a **point sample or a
+  diff-bbox**, and **not one was "a person looked at the whole frame."** So three things shipped into *every* published
+  asset: a recording cursor, a field of missing-texture placeholders printing raw data keys onto the grass, and a signboard
+  reading "Test Attic". The plan demanded a human listen to the audio; **it never demanded a human look at a frame.**
+  All three are now fixed and the assets re-recorded.
+
 Full account in [docs/43](docs/43-wave-c-plan.md) (per-baton receipts and the falsified criteria) and
 [docs/13](docs/13-实验札记-experiment-journey.md) (the journal).
 
