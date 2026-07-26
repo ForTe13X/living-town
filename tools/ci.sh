@@ -2,6 +2,7 @@
 # Living Town CI — runs locally and in GitHub Actions. Fails (exit 1) on any red step.
 #   GODOT     path to the Godot 4.6.2 headless binary (default: godot on PATH)
 #   CI_SEEDS  S0 seed range (default 1-12)      CI_DAYS  S0 days (default 60)   CI_DET  det seeds (default 3)
+#   CI_BG_SEEDS/CI_BG_DAYS/CI_BG_N  4d 外部后端门 (default 1-4 / 8 / 12)
 # Fast local plumbing check: CI_SEEDS=1-3 CI_DAYS=30 bash tools/ci.sh
 #   （原注释写的是 CI_DAYS=20 —— 实测在【改动之前的树上就已经是红的】：软不变量 #08「承诺生命周期」
 #     在 20 天里 0/3（invite→meet 的赴约要更长的 horizon），所以那条"快跑"从来跑不绿。30 天是实测最近的绿点。
@@ -80,6 +81,18 @@ echo "### 4c. DetGate 场景确定性门 (default / faction / betray / freerider
   --seeds "${CI_DG_SEEDS:-1-4}" --days "${CI_DG_DAYS:-20}" 2>&1 | tee "$LT_LOG/detgate.log"
 [ "${PIPESTATUS[0]}" -eq 0 ] && ok "DetGate scenario determinism" || bad "DetGate scenario determinism"
 scan "DetGate" "$LT_LOG/detgate.log"
+
+echo "### 4d. BackendGate 外部后端硬不变量门 (#01「无饿穿」在【模型/随机后端挑】的那条路上)"
+# 为什么必须单独有这一步：上面每一道门（金标 / LOD / DetGate）都恒 Sim.backend=null（红线#2 的零模型地板）
+# ⇒ AIBackend.decide() 从不被调用 ⇒ 硬不变量 #01 只在【引擎自己挑】的路径上验过。
+# docs/38 §五 实测：同一份配置下 logic 0/8 seed 饿穿，random/slm 都是 8/8 —— CI 全绿与产品已破可以同时成立。
+# 用 random 而不是 slm：random 的选号来自 Sim._rng_at(RANDOM_SALT) 确定性流、时延按 tick 计，逐字节可重跑
+#   （本门自己把这条性质机检了：每个 seed 跑两遍比 digest/链）；slm 有 run-to-run 噪声，永远不进 CI。
+#   两条臂走的是【同一条落地路】(decide→闭集选号→重验→agent_apply)，故这条路上的护栏一旦立住，两者同时受保护。
+"$GODOT" --headless --path game res://bench/BackendGate.tscn -- \
+  --seeds "${CI_BG_SEEDS:-1-4}" --days "${CI_BG_DAYS:-8}" --agents "${CI_BG_N:-12}" 2>&1 | tee "$LT_LOG/backendgate.log"
+[ "${PIPESTATUS[0]}" -eq 0 ] && ok "BackendGate 外部后端 #01 门" || bad "BackendGate 外部后端 #01 门"
+scan "BackendGate" "$LT_LOG/backendgate.log"
 
 echo "### 5. unit / integration scenes"
 for scene in m2_test reqlife_test player_agency_test s4_replay_test space_test save_load_test; do

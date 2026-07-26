@@ -53,6 +53,7 @@
 | [31 #15 结案](31-15-resolution.md) | 126/126 seed 全 INCONCLUSIVE：残余是**度量的时间泄漏**，不是机制缺陷 → **不加任何机制** |
 | [`bench/bakeoff/README.md`](../bench/bakeoff/README.md) | 3 命令可复现的蒸馏 bake-off；含两个诚实负结果（ranker 赢是"机制赢不是质量赢"；LLM 自评法官不可靠） |
 | [39 Node 端口处置](39-node-port-disposition.md) | `tools/sim_social_port.mjs` **退役**为历史文物：根因二分到单个 commit，且它自己 33% 的 seed 就是红的 |
+| [40 外部后端不变量门](40-external-backend-invariant-gate.md) | 每一道既有的门都跑在 `backend=null` 上 ⇒ #01 从没在模型路径上被验过。补一道**确定性**的 `random` 后端门 + 两条引擎边界；含两条走不通的路（提抢占线炸成 livelock、一个把作者骗了一轮的计数器 bug） |
 
 > **`tools/sim_social_port.mjs` 的状态：已退役（2026-07-26），历史文物，不入 CI，不验证引擎。**
 > 它的逻辑冻结在 2026-07-03，读的却是仍在演进的 `game/data/*.json`——自"阵容 6→12 人"

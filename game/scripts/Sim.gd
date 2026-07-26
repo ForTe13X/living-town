@@ -32,6 +32,9 @@ const NAV_DIRS := [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, 
 const HOME_NEEDS := ["energy", "fun"]
 const JOURNEY_URGENT := 30.0    # 偏紧(need<70)才发起跨平面行程（本地已无满足者时）
 const PREEMPT_CRISIS := 12.0    # 承诺行程执行中，若【另一】需求跌破此危机线且当前行程目标本身不急 → 中止改救急（守 #01）
+const STARVE_NEED := 0.5        # 硬不变量 #01「无饿穿」的判据线：need ≤ 此值的 agent-tick 必须为 0。
+                                # 与 Harness._run_once:599 / DetGate._run:176 / Invariants.check_all 的那个 0.5 是同一条线，
+                                # 此前只以字面量散在三处。引擎自己从不拿它做决策 ⇒ 提取为常量对 logic 路零影响。
 # 顾客进店（多人室内）：镇上的【常客】(cafe_regular)在营业时段、fun 偏低且无紧急事时 → 承诺行程进咖啡馆喝咖啡，
 # 进去后与阿丽/其他客人同平面自然社交(闲坐/串门/八卦)，某需求偏紧再承诺行程出店办事。让咖啡馆成活的社交枢纽。
 const CAFE_VISIT_FUN := 68.0    # fun<此(营业时段) → 常客动了"去喝杯咖啡"的心思（抢在就近游戏机之前）
@@ -226,6 +229,11 @@ var lod_focus := Vector2i(12, 8)
 const AGG_RELIEF := 6.0        # 激进 far：每次被动维持给最低需求补的量
 const SURVIVAL_NET_FLOOR := 8.0  # LOD 兜底：need 跌破此值就地小补（仅 LOD 开启时，补 LOD 节流/远端化造成的进食延迟；off 永不触发）
 var cand_calls := 0            # 成本探针：本 run 累计候选枚举次数（LOD 收益的客观度量）
+var ext_veto := 0              # P2-3 探针：外部后端的选择被【生存否决】真的改掉的次数（backend==null 时恒 0）
+## P2-3 生存否决线（见 _survival_ok）。min_need 跌破它 ⇒ 外部后端只能挑"在救某条告急 need"的候选。
+## 只对【外部后端】生效，backend==null 时 _survival_ok 根本不被调用 ⇒ 金标路与本值无关。
+## 定这个值是一次【守 #01 vs 留给决策路多少自由度】的取舍，实测扫线见 docs/40。
+var survival_veto_line := SURVIVAL_GATE
 ## ★仅 bench/测试用的置换开关（默认 0=off → 一条分支都不进 → 逐字节不变）。
 ## 用途：机检「tie-break 与候选【枚举顺序】无关」这条不变量。旧实现按数组下标加盐，任何重排都改写历史；
 ## 现在盐取自候选身份(_cand_salt)，于是打乱数组应当【选出同一个动作、跑出同一份 digest】。
@@ -574,6 +582,7 @@ func start_new(p_seed: int = 12345) -> void:
 	_next_event_id = 1
 	event_digest = 0
 	cand_calls = 0
+	ext_veto = 0
 	commitments.clear()
 	_active_commitments.clear()
 	_next_commit_id = 1
@@ -1175,6 +1184,16 @@ func _advance_agent(ag: Dictionary) -> void:
 				return                              # M2：思考中，本 tick 不落地（保持 option==null 下 tick 再问）
 			if intent.is_empty():
 				intent = _logic_decide(ag, cands)   # 放弃/超时/脏输出 → 引擎兜底
+			elif not (_survival_ok(ag, intent) and _horizon_ok(ag, intent)):
+				# P2-3 生存否决：危机中挑了不救急的 → 引擎收回决定权（见 _survival_ok）。
+				# ⚠ 计数只记【真的换了】的那些：backend.decide() 在很多档位下返回的本来就是
+				#   Sim._logic_decide 的结果（worker 忙 / 节流 / 预算门 / 过载），那些也会走到这里，
+				#   而重算一次是【同一个纯函数同一份输入】→ 逐字节同一个 intent，什么也没改变。
+				#   把那些也计进来会让"引擎驳回了后端多少次"虚高一个量级（实测 K=2 档 1499 vs 真实 205）。
+				var floored := _logic_decide(ag, cands)
+				if _cand_key(floored) != _cand_key(intent):   # 复用既有的候选身份串（P1-1 重验用的同一把尺）
+					ext_veto += 1
+				intent = floored
 			elif record_decisions:
 				_record_decision(ag, cands, intent) # S4：模型落地决策记入 trace
 		else:
@@ -1670,6 +1689,95 @@ func agent_apply(ag: Dictionary, intent: Dictionary) -> void:
 			"amount": int(intent.get("amount", 0)), "dur_total": int(intent.get("dur_total", 1)),
 			"remaining": int(intent.get("dur_total", 1)), "phase": "travel"}
 		_: _apply_object(ag, intent)
+
+## P2-3 生存边界：外部 backend 挑的这个 intent，在【需求危机中】可不可以被采纳。
+## 与下面的 _object_intent_ok 是一对：那条守【合法】（字段齐全、不除零、need 存在），这条守【活得下去】。
+##
+## 为什么必须有这一条（docs/38 §五 实测发现，B14 补门）：
+##   引擎自己的生存保护有两层，而【两层都不约束外部选择】——
+##     ① _social_candidates 在 min_need < SURVIVAL_GATE 时返回 []（把社交候选【摘出候选集】）；
+##     ② _logic_decide 靠 urgency 主导的 score 让"吃/睡"胜出（只是【打分】，不是【禁令】）。
+##   ② 对 `_logic_decide` 有效，对"在同一候选集里按下标挑一个"的外部后端【完全无效】：晒太阳/做活/洗澡
+##   照样在候选集里，模型/随机挑中它就照样落地 → 一路饿穿。docs/38 §五 实测：同配置 `logic` 0/8 seed 饿穿，
+##   `random`/`slm` 都是 8/8 —— #01 是【硬】不变量（结构性、任何降频/规模下都必须真），
+##   它不该建立在"外部后端会自觉挑对"之上。engine makes opportunity, backend proposes ordering ——
+##   那么"能不能把人饿死"这件事就必须由 engine 判，不能由 ordering 决定。
+##
+## 口径：min_need 已跌破 SURVIVAL_GATE ⇒ 只接受【正在救某条已告急 need】的 intent，其余一律驳回改走引擎地板。
+##   · 不要求救的是【最】紧的那条：同时有两条告急时，先救哪条仍留给后端（保住"排序权"这一层的自由度）。
+##   · 无 need 字段的 intent（social/attend）在危机中一律驳回——social 候选此时本就已被 ① 摘掉，
+##     attend 则由 _advance_attend 的 NEED_CRISIS 分支另行放弃，这里只是把口子彻底封上。
+## ★ 零扰动：backend==null（金标/Harness/DetGate 的红线#2 地板）时本函数【永不被调用】——
+##   调用点在 `if backend != null and backend.has_method("decide")` 分支内 ⇒ 金标逐字节不变，无需重烘。
+## ⚠ 试过但【实测更坏】、留作路标（别再走一遍）：把承诺 pre-empt 的抢占线从 PREEMPT_CRISIS(12)
+##   提到 SURVIVAL_GATE(32)（只在外部后端驱动时），本以为能补掉下面那条"长承诺付不起车费"的残留。
+##   实测（random 全剂量, seeds 1-4 × 8 天）饿穿 11 → 3344，反而炸了两个量级：抢占线一提，
+##   min_need<32 期间【任何】不救急的 option 每 tick 都被打断 → 决策黏性没了 → livelock：
+##   人一直在"重决策—走两步—又被抢回"里空转，什么也办不成，于是饿穿。
+##   PREEMPT_CRISIS 那行注释里"既有决策黏性(消 livelock)又不会饿穿"是【两个都承重】的约束，不是修辞。
+func _survival_ok(ag: Dictionary, intent: Dictionary) -> bool:
+	var line := survival_veto_line
+	if _min_need(ag) >= line:
+		return true                                      # 不在危机中 → 后端想挑什么挑什么（决策路径的自由度不缩）
+	var nid := String(intent.get("need", ""))
+	if nid == "" or not (ag.get("needs", {}) as Dictionary).has(nid):
+		return false                                     # 危机中却挑了不带 need 的（social/attend）→ 驳回
+	return float(ag["needs"][nid]) < line                # 只放行"在救一条告急 need"的选择
+
+## P2-3 的第二半：承诺【期限】边界 —— 这趟差事的车费，需求预算付得起吗。
+##
+## 为什么光有 _survival_ok 不够（docs/38 残留漏网例，实测逐 tick 追出来的）：
+##   _survival_ok 只管【决策那一刻】。外部后端还能在 agent 还健康时（min_need=36.3 > 线 32）
+##   把它按进一次【很长】的承诺：seed 2 的 evy 在 tick 1506 提交"去 34 格外的 counter_1 看摊 24 tick"，
+##   全程 ~58 tick，而 hunger 以 0.28/tick 掉，(36.3−32)/0.28 ≈ 15 tick 就会跌破生存线 —— 这趟车费根本付不起。
+##   等承诺 pre-empt 在 need<12 抢回来时，已经走不到灶台了 → 饿穿。
+##   （试过直接把抢占线提到 32，实测炸成 livelock，见 _survival_ok 上方的路标注释。抢占是【止损】，
+##     真正该做的是【一开始就别签这张支票】。）
+##
+## 口径：成本 = 曼哈顿距离(到目标对象) + dur_total —— 与 _object_candidates 给 score 算距离惩罚用的
+##   【同一个 dist】（那里 :1489 一模一样的式子），不新引入一套代价模型；移动实测 1 格/tick。
+##   预算 = (当前最低 need − 否决线) / 该 need 的 decay —— decay 是 needs.json 里的常量，故预算是精确的 tick 数。
+##   付不起 → 驳回改走引擎地板；地板的 score 本来就带距离惩罚，会挑近的那个。
+## 注意几件【故意】的事：
+##   · 连"正在救最低 need 的那趟远差"也一并按预算判。它不豁免：真要去很远的地方吃饭，
+##     引擎地板会挑更近的那个；若地板挑的就是同一个（无更近的），_cand_key 相同 → 什么也没改，且不计数。
+##   · 跨平面 journey 没有同平面曼哈顿距离可言 → 不判（返回 true），交给 _survival_ok 与 pre-empt。
+##   · dur_total<=0（social/attend）不锁人 → 不判。
+## ★ 零扰动同 _survival_ok：只在 backend != null 的分支里被调用 ⇒ 金标路逐字节不变。
+func _horizon_ok(ag: Dictionary, intent: Dictionary) -> bool:
+	var dur := int(intent.get("dur_total", 0))
+	if dur <= 0 or String(intent.get("kind", "object")) != "object":
+		return true
+	var tgt := String(intent.get("target", ""))
+	if not world["objects"].has(tgt):
+		return true                                      # 目标不明 → 交给 _object_intent_ok 那条合法边界处理
+	var mn := 100.0
+	var mn_id := ""
+	for k in ag["needs"]:
+		var v := float(ag["needs"][k])
+		if v < mn:
+			mn = v; mn_id = k
+	var decay := _need_decay(mn_id)
+	if decay <= 0.0:
+		return true                                      # 不衰减的 need 没有"预算"可言
+	# 死线【恒】取生存线，包括已经跌破它的时候——那时 budget 为负 ⇒ 危机中任何 object intent 都被否 ⇒
+	# 引擎地板全面接管。这不是疏漏，是实测选出来的：
+	#   试过分两档（危机中把死线放宽到真饿穿线 STARVE_NEED，好让 _survival_ok 那层"同时两条告急时
+	#   先救哪条仍归后端"的自由度真的活着）——4 seed × 8 天看着还是全绿，但 **12 seed × 20 天 漏了**
+	#   （seed 3 @K=2：饿穿 15）。宽出来的那点预算刚好够 agent 挑一条更远的救急路然后没走到。
+	#   ⇒ 危机中不留自由度。_survival_ok 的分档在【非 object】intent（social/attend，下面 kind 判据放行）
+	#     上仍然承重，在 object 上则被本判据吸收。宁可把这件事写清楚，也不留一个注释声称还活着的死档。
+	var budget := (mn - survival_veto_line) / decay      # 还有多少 tick 跌破生存线（危机中为负 = 一律驳回）
+	var o: Dictionary = world["objects"][tgt]
+	var cost := float(absi(ag["pos"].x - o["pos"].x) + absi(ag["pos"].y - o["pos"].y) + dur)
+	return cost <= budget
+
+## needs.json 里该 need 的每 tick 衰减量（_decay_needs:1124 用的同一份 needs_def）。5 条以内，直扫。
+func _need_decay(need_id: String) -> float:
+	for n in needs_def:
+		if String((n as Dictionary).get("id", "")) == need_id:
+			return float((n as Dictionary).get("decay", 0.0))
+	return 0.0
 
 ## P2-2 合法边界：object intent 是否可信。只检 target 存在不够——可插拔 backend / 扩展 / 迟到回包
 ## 可能塞来残缺或非法字段：dur_total<=0 会在推进时【除零】、未知 need 会【索引失败】。
