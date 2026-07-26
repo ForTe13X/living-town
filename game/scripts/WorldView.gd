@@ -1215,6 +1215,15 @@ func _draw_agent(ag: Dictionary) -> void:
 ## ── 建筑（切顶俯视）────────────────────────────────────────────────────────
 const WALL := 13.0     # 外墙厚(px)≈0.27 格：够读出体积，又不吃室内——室内可走面积仍是房间 rect 本身（墙向外长）
 
+## 房型显示名：buildings.json 的 room.type 是【英文键】（_mat_wall/_mat_floor 靠子串匹配它选材质），
+## 但屏幕上其余全是中文——直接把键画上去会突兀。这里只做「键→显示名」，缺表则原样回落（旧的
+## parlor/workshop/quietroom 三个模板名也在表里）。纯渲染：不进 digest、不回喂 Sim。
+const ROOM_NAME := {
+	"bedroom": "卧房", "parlor": "茶座", "quietroom": "静室", "workshop": "工坊",
+	"workroom": "工位", "storeroom": "库房", "cafe_bar": "后厨", "bathroom": "浴池",
+	"washroom": "盥洗", "shopfloor": "货架",
+}
+
 ## 墙比地板【暗】一档：屋顶被切掉后墙体仍处在背光面，明度差才让"墙/地"分得开（旧版两者同明度 → 一块板）。
 func _mat_wall(rtype: String) -> Color:
 	if "work" in rtype or "shop" in rtype: return Color("#4c463d")     # 石/土墙
@@ -1325,8 +1334,10 @@ func _draw_building(rid: String, inner: Rect2, rtype: String, enclosed: bool) ->
 			var wcol := Color("#ffd98f").lerp(Color("#2b3a46"), 1.0 - night) if glow > 0.01 else Color("#2b3a46")
 			draw_rect(Rect2(wx, wy, ww, WALL * 0.52), wcol, true)
 			draw_rect(Rect2(wx, wy, ww, WALL * 0.52), Color("#9fd4e8", 0.45), false, 1.0)
-	# 房型标签：压低存在感（不再是主视觉）
-	draw_string(Art.font(), inner.position + Vector2(6, 15), rtype, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("#ffe6c2", 0.45))
+	# 房型标签：压低存在感（不再是主视觉）。房间小于 ~2 格宽时不画——11px 字会横穿整间，读作乱码而非标签。
+	if inner.size.x >= T * 1.9:
+		draw_string(Art.font(), inner.position + Vector2(6, 15), String(ROOM_NAME.get(rtype, rtype)),
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("#ffe6c2", 0.45))
 
 ## 室内陈设（Stardew 的"住着人"密度）：地毯 + 靠墙杂物。全确定性（_hash01(room_id:key)），纯渲染不进 digest。
 func _draw_room_decor(rid: String, inner: Rect2, rtype: String) -> void:
