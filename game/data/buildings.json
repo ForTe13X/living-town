@@ -1,4 +1,33 @@
 {
- "_note": "编译期室内展开：每个 building 的 rooms 在 _load_data 直接写入 world.rooms/world.objects(不经 spawn_object=不写 event=off 逐字节不变)。furnish 指向 room_templates 模板名(缺省=type)。owner=产权铺垫(housing 前哨，暂只存不计租)。缺此文件=不编译=阶段1原样(off 门)。rect 须落在对应 area 内且不与已有家具/手写房间重叠。",
- "buildings": []
+ "_note": "编译期室内展开：每个 building 的 rooms 在 _load_data 直接写入 world.rooms/world.objects(不经 spawn_object=不写 event=off 逐字节不变)。furnish 指向 room_templates 模板名(缺省=type；显式空串=只渲染不产家具)。owner=产权铺垫(housing 前哨，暂只存不计租)。缺此文件=不编译=阶段1原样(off 门)。rect 须落在对应 area 内且不与已有家具/手写房间重叠。",
+ "_layout_note": "坐标对齐 64x48 大镇(gen_town.py 生成的 map.json areas)：每个 district 的【可走内部】= area rect 内缩一格(墙环占 rect 边框，门是环上被 gen_town 抠掉的那一格)。中央四区(home/cafe/wash/work)切成【两三间房 + 一条对齐本区门的走廊】，每间房尽量含一件 map.json 原有家具(床/灶台/吧台/浴池/雕刻台)，让房间读起来有用途而不是空盒子；外围三栋(home2/shop/library)按 gen_town 里 EXTRA_BUILDINGS 的原意只切一间房 + 一条进门带。home_hall 特意盖住 y=14/15 两行——12 名居民的 home/spawn 全在那两行，罩进同一间 enclosed 房才能让『在家的人彼此私密』和 rooms 为空时一致。",
+ "_furnish_note": "全部 furnish=\"\"：本轮【只切房不放家具】，新增 world 对象数 = 0。不是偷懒，是量出来的剂量决定——room_templates 的家具都带 advertises(品茶/打磨/打坐，全是 fun)，往这张图上加 fun 广告位会挤掉社交发起。实测(seeds 1-12 与留出 13-30，各 60 天)：只切房 → 除 aid(−13%/−5%)与 confide(−8%/−1%)外全部活性变动 ≤5%；再加【一件】蒲团 → aid −34%/−14%、endorse −30%/+6%；把家具改放到澡堂/工坊(居民日常动线上) → invite/meet −16%、aid −19%、pay −7%。为三个精灵付这个价不划算，所以家具留给『室内活动』独立一棒(那一棒该连着社交口径一起调)。要开：把某间房的 furnish 改成 parlor/workshop/quietroom 即可，但必须重跑金标 + 留出种子。已逐格核过：任何家具格都不会压居民 home/spawn、不压门内格、每件家具有可达交互格、不留孤岛可走格。",
+ "buildings": [
+  {"id": "home", "rooms": [
+   {"id": "home_hall",   "rect": [19, 14, 7, 2], "type": "bedroom",   "furnish": "", "enclosed": true, "owner": ""},
+   {"id": "home_quiet",  "rect": [19, 16, 3, 3], "type": "quietroom", "furnish": "", "enclosed": true, "owner": ""},
+   {"id": "home_bunk",   "rect": [23, 16, 3, 3], "type": "bedroom",   "furnish": "", "enclosed": true, "owner": ""}
+  ]},
+  {"id": "cafe", "rooms": [
+   {"id": "cafe_kitchen","rect": [38, 14, 3, 3], "type": "cafe_bar",  "furnish": "", "enclosed": true, "owner": "aria"},
+   {"id": "cafe_hall",   "rect": [42, 14, 3, 3], "type": "parlor",    "furnish": "", "enclosed": true, "owner": "aria"}
+  ]},
+  {"id": "wash", "rooms": [
+   {"id": "wash_pool",   "rect": [19, 30, 3, 3], "type": "bathroom",  "furnish": "", "enclosed": true, "owner": ""},
+   {"id": "wash_tea",    "rect": [23, 30, 3, 3], "type": "parlor",    "furnish": "", "enclosed": true, "owner": ""}
+  ]},
+  {"id": "work", "rooms": [
+   {"id": "work_floor",  "rect": [38, 30, 3, 3], "type": "workroom",  "furnish": "", "enclosed": true, "owner": "ben"},
+   {"id": "work_store",  "rect": [42, 30, 3, 3], "type": "storeroom", "furnish": "", "enclosed": true, "owner": "ben"}
+  ]},
+  {"id": "home2", "rooms": [
+   {"id": "home2_room",  "rect": [10, 5, 4, 2],  "type": "bedroom",   "furnish": "", "enclosed": true, "owner": ""}
+  ]},
+  {"id": "shop", "rooms": [
+   {"id": "shop_front",  "rect": [50, 6, 5, 3],  "type": "shopfloor", "furnish": "", "enclosed": true, "owner": ""}
+  ]},
+  {"id": "library", "rooms": [
+   {"id": "lib_read",    "rect": [10, 40, 5, 3], "type": "quietroom", "furnish": "", "enclosed": true, "owner": ""}
+  ]}
+ ]
 }
