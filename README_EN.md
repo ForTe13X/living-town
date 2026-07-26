@@ -31,7 +31,14 @@ The **world and social systems** below all ship, and each has a CI gate behind i
 - **Three AI backends**: `logic` for pure rules, `llm` for local OpenAI-compatible services, and `slm` for embedded GGUF inference through NobodyWho. All backends run the same engine and can fall back safely.
 - **Measured local inference**: Qwen2.5-1.5B-Q4 through embedded SLM runs in roughly 1-2.5 seconds on tested consumer GPU/APU machines; 3B is around 2.9 seconds. Startup probes set deadlines from the current machine.
 
-**What is not there yet** (see [docs/05](docs/05-路线图与里程碑.md), [docs/43](docs/43-wave-c-plan.md)): the game is **completely silent** (no audio of any kind); on a phone it can be watched but not played — the 7 player verbs are not only keyboard-only, they sit behind a `--player` launch flag, while the shipping target is an Android APK; the opening camera shows ~14% of the map, and in the whole-town view ~58% of the frame is the engine's default clear colour; residents have no movement interpolation (they teleport 12.5×/second); seasons and weather take effect in the simulation every day but render pixel-identically; and there is no goal, no onboarding, no session shape.
+**What is not there yet** (see [docs/05](docs/05-路线图与里程碑.md), [docs/43](docs/43-wave-c-plan.md)):
+**no goal, no onboarding, no session shape** — nothing calls the player back at minute three, and that is the biggest one;
+the character sprites are still a CC0 **fantasy-RPG pack** (pointed hats, staves) fighting a contemporary-town setting — the direction has been decided but **not a pixel has changed** ([docs/44](docs/44-art-direction.md));
+the phone still loses **24.6% of the screen to letterboxing** (`aspect=keep`; switching to `expand` black-screened the real device and was rolled back);
+colour lives as **134 hardcoded hex values** scattered through the code, with a target palette but no consolidation;
+and the touch action bar and the audio have **never been verified on a real device** — nor has anyone actually put on headphones and listened to the synthesized cues.
+
+> Wave C (2026-07-26) closed six items previously listed here: the silence, the player verbs stuck behind a `--player` flag, the opening camera showing 14% of the map, the 58% of the whole-town view that was the engine's default clear colour, residents teleporting 12.5×/second, and seasons and weather rendering pixel-identically.
 
 Demo videos, newest build first:
 
@@ -43,9 +50,21 @@ Demo videos, newest build first:
 - [A 70B model as the director layer](docs/media/director_70b_demo.mp4) (1:06)
 - [Player agency](docs/media/player_agency_demo.mp4) (0:30)
 
-![Current build: the Town Chronicle](docs/media/town_chronicle.gif)
+![Current build: one full day-night cycle](docs/media/town_chronicle.gif)
 
-> Desktop capture (`logic` backend, [full 0:60 clip](docs/media/town_chronicle_demo.mp4)). Bottom-left is the **Town Chronicle**: what the engine does is split into "big news" and "recent", written as prose (`苏琴 rallied 1 person to pressure 可可`) instead of printing raw event enum ids. That panel previously could only narrate greetings; betrayals, pacts, elections, grudges and reconciliations now surface on their own.
+> Desktop capture, `logic` backend, **one complete day-night cycle** (native 1280×768, [full 1:10 clip with sound](docs/media/town_wavec_demo.mp4)).
+> Bottom-left is the **Town Chronicle**: what the engine does is split into "big news" and "recent", written as prose
+> (`苏琴 rallied 1 person to pressure 可可`) instead of printing raw event enum ids — betrayals, pacts, elections,
+> grudges and reconciliations all surface on their own.
+> The day-night lighting is itself new: until 2026-07-26 **the screenshot tool could never render night at all**, so every
+> "this looks too bright / too dark" judgement in this project's history rested on a broken instrument (see the honesty note below).
+
+![The town at noon](docs/media/wavec_town_noon.png)
+
+> A still from the same build. The map is no longer a rectangle sitting in a grey void — its edge passes through a 3-tile
+> luminance ramp, a low stone wall and a drainage ditch before sinking into forest, dropping the maximum adjacent-pixel
+> luminance step across the boundary from **131.54 to 2.92**. The observatory on the right collapses to a single hint by
+> default; the full dossier (relations, conflicts, memory, faction, pacts, secrets, attitudes, beliefs) is one tap away.
 
 Older clips, kept for history (they look noticeably different from the current build):
 [main demo, 3:52, Chinese narration with bilingual subtitles](docs/media/living_town_demo.mp4) ·
@@ -98,6 +117,37 @@ On a physical Redmagic 8 Elite (Android 15), `backend=slm` used to mean **40 fir
 
 Full write-up and all measurement tables in [docs/34](docs/34-slm-device-hang-leak.md); APK build in [docs/18](docs/18-android-apk-build.md).
 > These device numbers come from a single handset (Redmagic 8 Elite / Snapdragon 8 Elite / Android 15). This is not a cross-device benchmark.
+
+**7. Applying "a number needs a null hypothesis" to the picture — and what that cost.**
+This project has always governed the *simulation* with invariant gates and null hypotheses, and had never once applied the same
+discipline to what is *on screen*. A wave of parallel visual work on 2026-07-26 settled the bill:
+
+- **The instrument itself was broken, and nobody knew for how long.** `--shot` **could never render day or night** — the
+  `CanvasModulate` is created white, the daylight curve is applied only in three callbacks, and the screenshot path turns
+  `auto_run` off, so none of the three ever fire. The proof is two historical screenshots whose HUDs read `00:38 night` and
+  `12:00 day`: the dominant grass colour is **byte-identical (133,166,67)** in both. Every "too bright / too dark" judgement
+  before that point was untrustworthy. The one-line fix is now guarded by **this repo's first visual gate** — a gate that
+  **skips when it cannot find a rendering environment**, because *a gate that goes red on someone else's machine for
+  environmental reasons is worse than no gate: it trains everyone to ignore red.*
+- **★ Six acceptance criteria were falsified by the very sub-tasks executing them — all six written by the dispatcher.**
+  "All four seasons must differ pixel-wise" **passes on the unmodified tree** (residents move between days). "Max adjacent
+  step along a 16px profile across the panel edge" puts **8px inside the map**, where in-bounds pixel art has its own ~130-step
+  edges ⇒ **the metric has a floor and moved only 131.54 → 129.93 after the fix**; split into crossing / outside / fidelity,
+  the same change immediately reads **131.54 → 2.92 (−97.8%)**.
+  **A metric that cannot report success and a metric that cannot catch anything are two faces of one failure.**
+  Distilled into a rule: **after writing any visual criterion, ask whether a change that does nothing could pass it.**
+- **Even the mandated framing can hide the defect**: in the specified whole-town view, the info panel sits mostly over the
+  backdrop *outside* the map (text-band background 29.4/255), while under the follow camera a player actually uses it is
+  **102.3/255** — judged on that one frame, "unreadable and covering the world" barely registers.
+- **Four real defects surfaced that appeared in no brief**: the SLM circuit breaker, once tripped, **cannot be cleared by
+  switching models** — although "switch to CPU" is the remedy our own documentation prescribes; the "just change two prompt
+  strings" plan would have pushed the candidate-capping rate from 0.4% to 5.84% and **promoted the engine's own argmax to the
+  first slot**, destroying the very property it was fixing; **every recording's first 5-7 seconds is the engine splash screen**
+  (including the clip then linked from this README); and a finished gate had **never been wired into CI**, while **the relay
+  compressed away the author's own sentence saying so**.
+
+Full account in [docs/43](docs/43-wave-c-plan.md) (per-baton receipts and the falsified criteria) and
+[docs/13](docs/13-实验札记-experiment-journey.md) (the journal).
 
 ## Engineering Design
 
