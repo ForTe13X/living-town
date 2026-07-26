@@ -13,8 +13,23 @@ var _logbox: RichTextLabel
 var _log_hot: Array = []               # 置顶大事（按发生序，保留最后 LOG_HOT_CAP 条）
 var _log_recent: Array = []            # 近况尾巴（含系统提示：存读档/后端切换…）
 const LOG_HOT_CAP := 4
-const LOG_RECENT_CAP := 6
+## 6 → 5：给「小镇纪事」那一行腾出位置，**不动播报框的几何**。
+## 播报框是 548×236 @ 字号 15（行高约 20px ⇒ 约 11.8 行可见），而改动前的上限已经是
+## 4 条大事 + 2 条分隔 + 6 条近况 = 12 行，本来就压着边。加一行标题而不减一行近况会把最老的一条静默裁掉
+## （RichTextLabel 的 scroll_active=false 不报错、只是看不见）⇒ 这是刻意的等行数交换。
+const LOG_RECENT_CAP := 5
 const FEED_RESCAN := 200               # 回放/读档后从 event_log 尾部回扫多少条来重建播报
+
+# ── 小镇纪事（单局形状 / 社会成就；docs/46 §二-D2）─────────────────────────
+## ★红线：`Goals` 是**对 Sim.event_log 的只读派生**，与 ProbeController 同一纪律 —— 绝不写世界状态。
+##   Main 这一侧的义务只有两条：①每 tick 把 event_log 喂给它（`_sync_goals`）；
+##   ②时间线一换就整份重算（`_rebuild_feed`，与播报共用同一个入口）。
+##   机器证明在 scenes/goals_test.tscn。
+var _goals: RefCounted                 # Goals.gd 实例
+var _goals_pan: ColorRect              # 展开档面板（默认【隐藏】：docs/46 §一 #5 已经在说 chrome 太多）
+var _goals_box: RichTextLabel
+var _goals_open := false
+var _goals_line := ""                  # 缓存的一行摘要：只有它变了才重画播报（免每 tick join 一次）
 # 相机/观察状态已全部搬进 ProbeController（P0-b）：Main 只做装配 + HUD/时间轴输入仲裁。
 
 # ── 观察台 / 回放 ──────────────────────────────────────────────────────────
@@ -173,6 +188,13 @@ const OBS_MAX_LINES := 34             # 观察台可见行数预算（294x676 �
                                       # C8 保持 34：展开档可用高 662px vs 改前 664px，实质未变（见 OBS_PAD 的注释：
                                       # 「详情」钮放进顶栏而不是面板里，正是为了不动这个预算）。
 
+## 小镇纪事展开档面板：左上角，顶栏之下、播报 scrim 之上（LOG_SCRIM_TOP=414 ⇒ 底边 322 留 92px 余量）。
+## 行数预算：11 条目标各 1 行 + 标题 + "下一步"的提示行 + 页脚 = 14 行 × 约 18px(字号 14) ≈ 252px。
+## 它不进 _relayout_hud：锚在左上角 ⇒ dx/dy（更宽/更方的屏幕多出来的那部分）按定义影响不到它。
+const GOALS_X := 10.0
+const GOALS_Y := 42.0
+const GOALS_SZ := Vector2(344.0, 280.0)
+
 func _ready() -> void:
 	var seed := 20260626
 	var backend := "logic"
@@ -230,6 +252,8 @@ func _ready() -> void:
 			_probe_floor_arg = args[i + 1]     # 配 --probe-space：指定楼层（1f/2f）
 		elif args[i] == "--obs-full":
 			_obs_arg = true                    # 出图/眼验：直接以【完整卷宗】档启动（否则出图只拍得到名片档，没法对照）
+		elif args[i] == "--goals":
+			_goals_open = true                 # 出图/眼验：启动即展开小镇纪事清单（默认是【收起】的，出图拍不到）
 		elif args[i] == "--lod-agg":
 			_lod_agg_arg = true                # 测量/眼验：启用观察无关 aggregate LOD（docs/32）。只在此 CLI 口，不接出货窗口（休眠靠"窗口从不设 LOD 标志"不变量）
 	AIBackend.backend = backend
@@ -323,6 +347,16 @@ func _ready() -> void:
 	# 后果不是"截图不好看"，而是【这个项目所有视觉判断用的尺子是坏的】：任何"偏亮/偏暗"的结论都不可信。
 	# 这里在 warmup(goto_tick) 之后、首帧之前施加一次 —— 出图、录屏首帧、真机开局三条路一起修好。
 	_modulate.color = _daylight(Sim.time_of_day())
+
+	# 小镇纪事：**先于** _build_hud 建好 —— 播报框的第一行就是它的一行摘要，HUD 建的时候得能问到它。
+	# 缺 data/goals.json → load_defs 返回 false、state 为空 → summary_line()=="" ⇒ 整条进度线静默消失，
+	# 其余 HUD 逐像素不变（同 economy/festivals 那套"缺文件即整个子系统关掉"的纪律）。
+	# 这里就 sync 一次的理由：--warmup/--warmup-tick 靠 goto_tick 静默跳到第 N 天，
+	# 那段历史发生在任何信号接线【之前】——纯靠信号累积的 UI 在跳转开局一律是空的（契约 §6 盲区②）。
+	# 本类根本不接信号、只按 event_log 折，所以这条盲区在这里是【按构造】不成立的，这一行只是把游标推到位。
+	_goals = preload("res://scripts/Goals.gd").new()
+	_goals.load_defs()
+	_goals.sync(Sim.event_log)
 
 	_build_hud()
 	Sim.ticked.connect(_on_tick)
@@ -445,7 +479,7 @@ func _build_hud() -> void:
 	# 键位提示。改动前只列了 6 个绑定（_unhandled_input 里实有 30 个动作 / 37 个 keycode），
 	# 而漏掉的恰好是 Home —— 就是那个能把"开局只看得见 13.9% 的镇子"一键修好的键（docs/43 §1.1）。
 	# 实测原文只用掉 700px 里的约 376px，所以补进 Home/L/O/F5-F8 之后仍是单行（出图复核过不换行）。
-	_scrub_hint.text = "[color=#9aa0b5]时间轴：拖动回放（确定性重演）· 空格暂停 · , . 单步 · [ ] 跳天 · Tab 切角色 · [color=#ffd166]Home 回全镇[/color] · L 跟随 · [color=#ffd166]V 详情[/color] · O 设置 · F5/F8 存读档 · 点居民查看[/color]"
+	_scrub_hint.text = "[color=#9aa0b5]时间轴：拖动回放（确定性重演）· 空格暂停 · , . 单步 · [ ] 跳天 · Tab 切角色 · [color=#ffd166]Home 回全镇[/color] · L 跟随 · [color=#ffd166]V 详情[/color] · [color=#ffd166]J 纪事[/color] · O 设置 · F5/F8 存读档 · 点居民查看[/color]"
 
 	# 玩家 → NPC 对话输入框（**玩家模式下**选中居民后出现；Enter 发送）。M2：经 AIBackend.chat → LLM/mock/罐头。
 	# ★改前它只 gate 在"选中了人"上，没有 gate 在玩家模式上 —— 于是纯观察模式下点任何一个居民，
@@ -488,10 +522,34 @@ func _build_hud() -> void:
 
 	_build_settings(layer, fnt)
 
+	# 小镇纪事的【展开档】面板（默认隐藏；J 键 或 点播报栏顶那一行）。
+	# 为什么默认隐藏、且收起档只在播报框里占**一行**：docs/46 §一 #5 记着"25.5% 的屏幕已经是 chrome"，
+	# 再挂一块常驻面板就是往那个数字上加。收起档的成本是 1 行文字，且它长在**已经存在**的播报底板里，
+	# 不新增任何底板/接缝（C7 的教训：沿边界多描一个矩形比原来那条硬边更糟）。
+	_goals_pan = ColorRect.new()
+	_goals_pan.color = Color(0.02, 0.03, 0.05, 0.74)
+	_goals_pan.position = Vector2(GOALS_X, GOALS_Y)
+	_goals_pan.size = GOALS_SZ
+	_goals_pan.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_goals_pan.visible = _goals_open
+	layer.add_child(_goals_pan)
+	_goals_box = RichTextLabel.new()
+	_goals_box.bbcode_enabled = true
+	_goals_box.scroll_active = false
+	_goals_box.add_theme_font_override("normal_font", fnt)
+	_goals_box.add_theme_font_size_override("normal_font_size", 14)
+	_goals_box.position = Vector2(10, 6)
+	_goals_box.size = GOALS_SZ - Vector2(20, 12)
+	_goals_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_goals_pan.add_child(_goals_box)
+	_sync_goals_panel()
+
 	# dev 性能 overlay（默认隐藏；F3 或设置面板里开）。label 挂在 panel 下 → 一起显隐。
+	# ★位置从 (10,42) 挪到 (GOALS_X+GOALS_SZ.x+10, 42)：纪事面板占了左上角那一块，两个都开会叠在一起。
+	# 两块都默认隐藏 ⇒ 出货帧/出图帧逐像素不受影响（只有同时按 F3+J 的 dev 看得见差别）。
 	var pperf := ColorRect.new()
 	pperf.color = Color(0.02, 0.03, 0.05, 0.74)
-	pperf.position = Vector2(10, 42)
+	pperf.position = Vector2(GOALS_X + GOALS_SZ.x + 10.0, 42)
 	pperf.size = Vector2(384, 152)
 	pperf.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pperf.visible = false
@@ -642,6 +700,34 @@ func _sync_obs_panel(dx: float = 0.0, dy: float = 0.0) -> void:
 		_obs.position = Vector2(x0 + 8.0, OBS_TOP + OBS_PAD)
 		_obs.size = Vector2(sz.x - 16.0, sz.y - OBS_PAD * 2.0)
 
+# ── 小镇纪事（单局形状）────────────────────────────────────────────────────
+## 每 tick 一次：把新事件折进目标，并把**新达成**的那几条播出去。
+## ★这是 Main 唯一一处主动喂 Goals 的地方，且方向是【单向的】：Main → Goals。
+##   Goals 从不回写 Sim，也从不回写 Main 的任何仿真相关字段。
+func _sync_goals() -> void:
+	if _goals == null:
+		return
+	for i in _goals.sync(Sim.event_log):
+		_push(_goals.toast(i))                 # 达成的那一刻推进播报栏 —— 进度线上唯一的"事件"
+	var line: String = _goals.summary_line()
+	if line != _goals_line:                    # 只有摘要真的变了才重画（否则每 tick 都在 join 一遍）
+		_goals_line = line
+		_render_log()
+	if _goals_open:
+		_sync_goals_panel()
+
+func _sync_goals_panel() -> void:
+	if _goals_box != null and _goals != null:
+		_goals_box.text = _goals.panel_text()
+
+## 展开档开关（J 键 与 点播报栏顶那一行共用；纯视图，不碰 Sim）。
+func _toggle_goals() -> void:
+	_goals_open = not _goals_open
+	if _goals_pan != null:
+		_goals_pan.visible = _goals_open
+	if _goals_open:
+		_sync_goals_panel()
+
 ## 观察台档位开关（「详情/收起」钮 与 V 键共用；纯视图，不碰 Sim）。
 func _toggle_obs() -> void:
 	_obs_expanded = not _obs_expanded
@@ -710,6 +796,7 @@ func _on_tick(_t: int) -> void:
 		_demo_tick()               # --player-demo：剧本驱动玩家（确定性）
 	_modulate.color = _daylight(Sim.time_of_day())
 	_max_tick = maxi(_max_tick, Sim.tick_no)
+	_sync_goals()
 	_update_status()
 	_update_scrubber()
 	_update_obs()
@@ -1543,6 +1630,10 @@ func _render_log() -> void:
 	if _logbox == null:
 		return
 	var out: Array = []
+	# 小镇纪事的一行摘要钉在最上面：它是这块面板里唯一"跨时间"的东西，其余都是刚刚发生的事。
+	# 包在 [url] 里 ⇒ 点它就展开清单（手机没有键盘，这是唯一够得着的入口；与点居民名走同一个 meta_clicked）。
+	if _goals_line != "":
+		out.append(_goals_line)
 	if not _log_hot.is_empty():
 		out.append("[color=#ff8c42]— 镇上的大事 —[/color]")
 		out.append_array(_log_hot)
@@ -1552,6 +1643,15 @@ func _render_log() -> void:
 
 ## 回放/读档后重建播报：旧时间线的字必须清干净，否则 scrub 完屏幕上还在讲一段已被抹掉的历史。
 func _rebuild_feed() -> void:
+	# ★时间线换了 ⇒ 小镇纪事必须【整份重算】，不能顺着旧游标往下折。
+	#   这里是唯一入口：_after_jump（拖时间轴/跳天/单步回退）、_after_load（读档）、
+	#   _toggle_player_mode / _apply_npc（同种子重开）四条路都已经汇到这一个函数上。
+	#   recompute 是 O(事件数) 的一次性开销，只在这四种"世界换了"的时刻发生，不在 tick 热路径上。
+	if _goals != null:
+		_goals.recompute(Sim.event_log)
+		_goals_line = _goals.summary_line()
+		if _goals_open:
+			_sync_goals_panel()
 	_log_hot.clear()
 	_log_recent.clear()
 	var evs: Array = Sim.event_log
@@ -1568,7 +1668,11 @@ func _rebuild_feed() -> void:
 	_render_log()
 
 ## 点日志里的居民名 → 选中 + 镜头飞过去（ProbeController 只被调用，不被改）。
+## 顶上那一行「小镇纪事」的 meta 是固定串 Goals.PANEL_META，不会与任何居民 id 撞。
 func _on_log_meta(meta: Variant) -> void:
+	if String(meta) == "__goals__":
+		_toggle_goals()
+		return
 	_focus_agent(String(meta))
 
 func _focus_agent(id: String) -> void:
@@ -1599,6 +1703,7 @@ func _unhandled_input(e: InputEvent) -> void:
 			KEY_TAB: _cycle_selection(-1 if e.shift_pressed else 1)
 			KEY_O: _toggle_settings()                            # ⚙ 设置面板开关（NPC 数量/速度/后端）
 			KEY_V: _toggle_obs()                                 # 观察台名片档 ⇄ 完整卷宗（手机走右上「详情」钮，同一函数）
+			KEY_J: _toggle_goals()                               # 小镇纪事清单开关（手机走"点播报栏顶那一行"，同一函数）
 			KEY_F5: _quick_save()                                # R0-2：快速存档
 			KEY_F8: _quick_load()                                # R0-2：快速读档
 			KEY_F9: _write_digest()                             # dev：把当前 digest 写盘（--digest-out）

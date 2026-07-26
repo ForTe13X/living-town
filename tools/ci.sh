@@ -111,7 +111,13 @@ echo "### 5. unit / integration scenes"
 # player_touch_test：C3 的 31 条 + C8 的 13 条断言（触屏按钮路径 ≡ 按键路径、7 个动词可分辨、
 #   观察台两档"卡片是详情的逐行前缀"）。它在 2026-07-26 Wave C 里写好后【一直没进 CI】——
 #   docs/43 §1.2d 曾把它写成"已落地"，而 C8 查出这里的场景列表根本没有它。补上。
-for scene in m2_test reqlife_test player_agency_test player_touch_test s4_replay_test space_test save_load_test; do
+# goals_test：D2 的「小镇纪事」回放等价门 —— goto_tick 后从 event_log 重算的目标状态必须等于实时状态，
+#   且挂上目标追踪前后 Inv.digest/event_digest 逐字节不动（= 它留在 View 侧的机器证明，docs/46 §二-D2）。
+#   ★ tools/ci.sh 归 D1 独占，本行是【D2 声明过的越界】：只在下面这个场景名单里加一个词。
+#     加它的理由就写在 docs/43 §1.2d 里 —— player_touch_test 写好后"一直没进 CI"，
+#     一道没进 CI 的门不是门。冲突时直接取并集即可，回滚 = 删掉这一个词。
+#   默认 12 seed × 14 天；本机约 2 分钟。CI_GOALS_SEEDS / CI_GOALS_DAYS 可调。
+for scene in m2_test reqlife_test player_agency_test player_touch_test s4_replay_test space_test save_load_test goals_test; do
   "$GODOT" --headless --path game "res://scenes/$scene.tscn" >"$LT_LOG/$scene.log" 2>&1
   code=$?
   if [ $code -eq 0 ]; then ok "$scene"; else tail -8 "$LT_LOG/$scene.log"; bad "$scene (exit $code)"; fi
