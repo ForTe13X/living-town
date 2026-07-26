@@ -43,12 +43,25 @@ LOD 观察无关门、DetGate 场景确定性门、6 个集成场景。
    *2026-07-26 更新*：硬不变量在模型路径上**现在有门了**——`tools/ci.sh` 第 4d 关的 `BackendGate`
    （确定性 `random` 后端 + 两条引擎边界，见 docs/45）。它守的是**硬不变量 / 两跑一致 / 无饿穿**三条臂，
    **不守**别的；此前 docs/38 与本文写的"模型路径无门"到此为止。
-2. **`--script` 模式不加载 autoload**（`Harness.gd` 的 docstring 明写，2026-07-26 由 C2 实测复核）。
-   而 **S0 门（step 4）、LOD 门（4b）、DetGate（4c）全部走 `--script`** ⇒
-   **任何写在 autoload 里的代码，在那张 12 seed × 60 天的网格上是零覆盖的。**
-   真正会加载它的只有 step 3（`--import` 解析）与 step 5（6 个集成场景）。
-   ⇒ 动 autoload 的棒**不能**把"CI PASS"读成"我的代码在 S0 网格上跑过了"，必须另造场景模式的对照
-   （例如同一条 `--digest-at` 路径上，只切换那一行 autoload 注册做逐字节 A/B）。
+2. **~~`--script` 模式不加载 autoload~~ —— 这句话是错的，2026-07-26 由外部审计证伪、我随后独立复跑证实。**
+   下面是**实测**（Godot 4.6.2，最小探针工程，一个只会打印的 autoload + 一个 `--script` 的 `SceneTree`）：
+   ```
+   SCRIPT_INIT        autoload_present=false  node=<Object#null>   ← 脚本的 _init()：还没有
+   AUTOLOAD_INIT                                                    ← 引擎此刻才建 autoload
+   SCRIPT_INITIALIZE  node=Probe:<Node#26189235630>                 ← _initialize()：已经在了
+   AUTOLOAD_READY     tree=true                                     ← _ready() 照常跑
+   ```
+   **正确的机制窄得多**：autoload 是在**主循环对象构造之后**才挂上去的，所以只有 `_init()` 里的代码看不见它们
+   ——而 `Harness.gd` / `DetGate.gd` / `lod_verify.gd` 恰好**整个身体都写在 `_init()` 里**。
+   换到 `_initialize()`，`Sim` / `AIBackend` / `Audio` 全都是活的。
+   ⇒ **`--script` 步骤里 autoload 的 `_ready()` 与至少一帧 `_process` 确实会跑**，
+   它们的 `push_error` / `SCRIPT ERROR` **会**被 `ci.sh` 的 `scan` 抓到。
+   > **这条错误是怎么进契约的**：C2 报了一个真实观察（`--script` 下 Harness 加 `--audiocap` 不出 WAV），
+   > 我把它**升格成了一条机制断言并写进契约**，还给它加了"实测复核"四个字——**而我从没跑过探针**。
+   > 契约 §4 存在的理由，一级一级往上都成立：**转述会把观察伪造成机制。**
+   **同一格子里真正的盲区是另一条，此前没人记过**：benches 用 `SimScript.new()` 造 `Sim` 实例，
+   `.new()` **不入场景树** ⇒ **`Sim._ready()`（`Sim.gd:303-304`，它调 `_load_data()`）在 S0 网格上从不执行**。
+   动 `Sim._ready()` 里那段代码的棒，仍然需要自造对照。
 
 > 顺带纠正一个反复被抄错的说法：**`tools/ci.sh` 里没有任何一处 `--audio-driver Dummy`**，它传的是 `--headless`
 > （由后者隐含哑音频驱动）。硬编码 `--audio-driver Dummy` 的是 `shot1.sh` / `shot_tick.sh` / `shot_scale.sh` /
