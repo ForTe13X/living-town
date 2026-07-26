@@ -1233,6 +1233,14 @@ func _draw() -> void:
 	# 对象：CC0 物件精灵（slot=id 前缀，如 bench/bath/counter/desk/arcade）；缺则程序化色块兜底
 	for id in Sim.world.get("objects", {}):
 		var o: Dictionary = Sim.world["objects"][id]
+		# ★ 平面守卫。`_compile_interiors()`(Sim.gd:532) 把室内家具也塞进 world["objects"]，坐标是
+		# 【室内局部格】(0..7, 0..6) 且带 space/floor 标记。这个循环此前无条件画【全部】对象，于是那些
+		# 家具被当成 town 坐标画在了地图西北角——`slot` 取到 "cafe1f"/"home1f" 没有贴图 ⇒ 掉进下面的
+		# 占位分支，把原始数据键（table / 床 / 桌子 / 咖啡吧台）用 draw_string 直接印在草地上。
+		# 它进了本波【每一张】已发布的截图与 GIF，八根棒和一次合并验证都没看见——因为所有视觉验收
+		# 用的都是点采样与 diff-bbox，没有一条是"有人把整帧看一遍"（外部评审 2026-07-26 抓到）。
+		if String(o.get("space", "town")) != "town":
+			continue
 		var p: Vector2i = o["pos"]
 		var slot := String(id).split("_")[0]
 		var base := Vector2(p.x * T, p.y * T)
@@ -1313,7 +1321,10 @@ func _draw_town_doors() -> void:
 		draw_rect(Rect2(x + T * 0.48, y + T * 0.12, T * 0.03, T * 0.82), Color("#3a291a"), true)   # 门缝
 		draw_circle(Vector2(x + T * 0.72, y + T * 0.55), T * 0.055, Color("#f0d060"))              # 门把
 		var to: Dictionary = p.get("to", {})
-		var label := String(sg.label_of(String(to.get("space", ""))))
+		var to_space := String(to.get("space", ""))
+		if to_space.begins_with("test_"):
+			continue                                                                              # 别把 P1 门用的测试平面（spaces.json 的 test_loft「测试阁楼」）挂到镇上的门上
+		var label := String(sg.label_of(to_space))
 		var sw: float = 8.0 + Art.font().get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13).x
 		var sx := x + T * 0.5 - sw * 0.5
 		draw_rect(Rect2(sx, y - T * 0.52, sw, T * 0.36), Color("#5a3f28"), true)                   # 招牌木板

@@ -69,7 +69,7 @@ GODOT_PID=$!
 # 判据是"这一帧有多平"：闪屏是一块平色，游戏画面不是。缩到 40×24 是为了让这个探针足够便宜
 # （每次 ~0.6s），同时保留足够的空间频率来区分两者。
 flat_pct() {
-  ffmpeg -v error -f x11grab -video_size ${W}x${H} -i $DISP -frames:v 1 \
+  ffmpeg -v error -draw_mouse 0 -f x11grab -video_size ${W}x${H} -i $DISP -frames:v 1 \
     -vf scale=40:24 -pix_fmt gray -f rawvideo - 2>/dev/null \
   | od -An -tu1 -v | tr -s ' ' '\n' | grep -v '^$' \
   | sort -n | uniq -c | sort -rn | awk 'NR==1{m=$1} {n+=$1} END{if(n>0) printf "%.1f", 100.0*m/n; else print "100.0"}'
@@ -95,7 +95,11 @@ fi
 T_REC=$(date +%s.%N)
 echo "  ready: $READY_NOTE"
 
-ffmpeg -y -f x11grab -framerate $FPS -video_size ${W}x${H} -i $DISP -t "$SECS" \
+# -draw_mouse 0：x11grab 默认【会把 X11 根光标画进每一帧】。Xvfb 的根光标停在屏幕正中 (640,384)，
+# 于是本波发布的 town_chronicle.gif / wavec_town_noon.png / wavec_town_night.png / town_wavec_demo.mp4
+# 全部在广场正中带着一个黑色光标（实测：发布 PNG 在该 30×30 框内有 32 个纯黑像素，--shot 渲染是 0）。
+# 外部评审 2026-07-26 抓到。C4 审过这一行并修好了开头闪屏，但没看见光标——因为它只量"众数灰阶占比"。
+ffmpeg -y -draw_mouse 0 -f x11grab -framerate $FPS -video_size ${W}x${H} -i $DISP -t "$SECS" \
   -c:v libx264 -preset veryfast -pix_fmt yuv420p "$VID" >/tmp/ffmpeg.log 2>&1
 RC=$?
 
