@@ -71,6 +71,11 @@ func _hued_tex(spr_name: String, id: String) -> Texture2D:
 	var bucket := absi(id.hash()) % HUE_BUCKETS
 	if bucket == 0:
 		return base
+	return _hue_variant(spr_name, base, bucket)
+
+## 色相变体的实现体（原本内联在 `_hued_tex` 里）。抽出来是为了让「空 sprite 回退」也能复用同一份
+## 缓存与同一套像素处理——两份实现必然漂移。NPC 那条路的行为逐字节不变（同样的 key、同样的 shift）。
+func _hue_variant(spr_name: String, base: Texture2D, bucket: int) -> Texture2D:
 	var key := spr_name + "#" + str(bucket)
 	if _hued.has(key):
 		return _hued[key]
@@ -94,6 +99,31 @@ func _hued_tex(spr_name: String, id: String) -> Texture2D:
 	var t := ImageTexture.create_from_image(img)
 	_hued[key] = t
 	return t
+
+## ── 「空 sprite」的体面回退（docs/46 §二-D3-3）───────────────────────────────
+## `Sim.add_player()` 给玩家 `persona.sprite = ""`（Sim.gd:752），`Art.agent_tex("")` 返回 null，
+## 于是 `_draw_agent` 掉进 `draw_circle` 分支——**玩家是全镇唯一一个圆盘**，
+## 而周围 12 个居民都是像素小人。本棒不许改 `Sim.gd`，所以回退做在 View 层。
+##
+## 选 `Character-Base` 不是随手挑的：它是素材包里**唯一没有职业道具**的一张
+## （其余是法师/弓箭手/战士/士兵），正对 docs/44 §一 裁决的"现代日常小镇居民"方向；
+## 它已经在 personas.json 里被阿梅用着 ⇒ 零新增资源、零版权面（红线#4）。
+const FALLBACK_SPRITE := "Character-Base"
+## `Character-Base` 帧 (0,0) 的主色 (246,169,84) 的 HSV 色相 = 31.5°/360。
+## 回退用的色相桶不是 hash 出来的，而是**把这张基础皮转到 persona.color 的色相上**——
+## 玩家的 persona.color 是 `#ffd700`(h=0.1405) ⇒ 桶 1（+15°）⇒ 小人本身就是金色的，
+## 与保留下来的金环同调；而阿梅（原图，桶 0）与玩家不会撞脸。
+const FALLBACK_BASE_HUE := 0.0875
+
+func _fallback_tex(ag: Dictionary) -> Texture2D:
+	var base := Art.agent_tex(FALLBACK_SPRITE)
+	if base == null:
+		return null                                    # 连回退皮都缺 → 让调用方继续走圆盘兜底
+	var col := Color(str(ag.get("persona", {}).get("color", "#ffffff")))
+	var bucket := int(round(fposmod(col.h - FALLBACK_BASE_HUE, 1.0) * float(HUE_BUCKETS))) % HUE_BUCKETS
+	if bucket == 0:
+		return base
+	return _hue_variant(FALLBACK_SPRITE, base, bucket)
 
 # 罐头对话库（发起方 init / 接受方 yes / 拒绝方 no）；M2 由 LLM 按人设生成替换
 const DIALOG := {
@@ -212,9 +242,17 @@ func _ready() -> void:
 		{"t": Art.terrain_tex("grass_b"), "w": 24},
 		{"t": Art.terrain_tex("grass_flowers"), "w": 6},
 	].filter(func(g): return g["t"] != null)
-	Sim.ticked.connect(func(_t): queue_redraw())
-	Sim.agent_changed.connect(func(_id): queue_redraw())
+	_build_night_lights()
+	Sim.ticked.connect(func(_t): _redraw_all())
+	Sim.agent_changed.connect(func(_id): _redraw_all())
 	Sim.social_event.connect(_on_social)
+
+## 本节点 + 加色光层一起重画。光层的内容只依赖 time_of_day 与静态地形，所以跟 tick 走就够了；
+## 相机移动不需要重画（光层是本节点的子 Node2D，共用同一条画布变换）。
+func _redraw_all() -> void:
+	queue_redraw()
+	if _lights != null:
+		_lights.queue_redraw()
 
 func _hash(x: int, y: int, salt: int) -> int:
 	var h := (x * 73856093) ^ (y * 19349663) ^ (salt * 83492791)
@@ -382,14 +420,14 @@ func _draw_facades() -> void:
 			for wy in [y0, y0 + bh - 1]:                 # 上墙 + 下墙
 				if doorset.has(Vector2i(x0 + i, wy)):
 					continue                             # 门口不开窗
-				_draw_window((x0 + i) * T, wy * T, pal, night)
+				_draw_window((x0 + i) * T, wy * T, pal, night and _window_lit(x0 + i, wy), night)
 		for j in range(1, bh - 1):                       # 左墙 + 右墙（四面都开，别只有正背面有细节）
 			if j % 2 == 0:
 				continue
 			for wx in [x0, x0 + bw - 1]:
 				if doorset.has(Vector2i(wx, y0 + j)):
 					continue
-				_draw_window(wx * T, (y0 + j) * T, pal, night)
+				_draw_window(wx * T, (y0 + j) * T, pal, night and _window_lit(wx, y0 + j), night)
 		if typ == "residential" or typ == "workshop":    # 烟囱：坐在顶墙右段，飘两团烟
 			var chx := float(x0 + bw - 2) * T
 			var chy := float(y0) * T
@@ -398,11 +436,18 @@ func _draw_facades() -> void:
 			draw_circle(Vector2(chx + T * 0.5, chy - T * 0.8), T * 0.11, Color(0.86, 0.86, 0.86, 0.40))
 			draw_circle(Vector2(chx + T * 0.63, chy - T * 1.02), T * 0.085, Color(0.86, 0.86, 0.86, 0.26))
 
-func _draw_window(x: float, y: float, pal: Dictionary, night: bool) -> void:
-	var glass: Color = Color("#f2d489") if night else Color("#5d7f96")   # 夜=透暖光 / 昼=映天色
+## `lit` = 这扇窗**点着灯**（夜里约 55%，由 `_window_lit` 确定性选）；`night` = 现在是夜。
+## 改动前所有夜窗一律画成 `#f2d489`，而它被夜乘子乘过之后是 **(103,100,109)——蓝主导，读作冷灰**。
+## 那正是"夜里零个光源"的成因之一：暖色玻璃在纸面上是暖的，在屏幕上不是。
+## 现在分成两档：亮着的窗给更饱和的暖玻璃（配合加色光层的光池），黑着的窗给冷暗玻璃 ⇒
+## 一排窗有明有暗，才读得出"有几户还醒着"。白天两档都不走，正午帧逐像素不动。
+func _draw_window(x: float, y: float, pal: Dictionary, lit: bool, night: bool) -> void:
+	var glass: Color = Color("#5d7f96")                                  # 昼=映天色
+	if night:
+		glass = Color("#ffcf7d") if lit else Color("#2b3a46")            # 夜：点灯=暖玻璃 / 熄灯=冷暗玻璃
 	draw_rect(Rect2(x + T * 0.22, y + T * 0.24, T * 0.56, T * 0.44), pal["foot"], true)            # 窗洞（深）
 	draw_rect(Rect2(x + T * 0.26, y + T * 0.28, T * 0.48, T * 0.36), glass, true)                  # 玻璃
-	if night:
+	if lit:
 		draw_rect(Rect2(x + T * 0.16, y + T * 0.18, T * 0.68, T * 0.56), Color(0.98, 0.85, 0.55, 0.15), true)  # 外溢暖光
 	draw_line(Vector2(x + T * 0.5, y + T * 0.28), Vector2(x + T * 0.5, y + T * 0.64), pal["foot"], 1.5)        # 竖棂
 	draw_line(Vector2(x + T * 0.26, y + T * 0.46), Vector2(x + T * 0.74, y + T * 0.46), pal["foot"], 1.5)      # 横棂
@@ -1099,6 +1144,216 @@ func _draw_town_backdrop(w: int, h: int) -> void:
 				if o.size.x > 0.0 and o.size.y > 0.0:
 					draw_rect(o, Color(0, 0, 0, a), true)
 
+# ══ 夜灯（加色光层）══════════════════════════════════════════════════════════
+# ★ 为什么这一层【必须】是独立的加色子节点，而不是在 _draw() 里多画几个亮块：
+#   `CanvasModulate` 在 tick 488（00:48）的乘子实测是 (0.4242, 0.4714, 0.7972)。它乘的是
+#   每一个 CanvasItem 的最终颜色 ⇒ 普通绘制路径上每个通道的**上限**是 R=108 / G=120 / B=203，
+#   白色的 luma 上限只有 **123.6**。改动前夜帧世界区最亮像素实测 max-channel=187、luma=113.7，
+#   两者都已经贴着这个天花板。
+#   ⇒ 在这条路上，「夜里出现一个亮的暖色像素」不是"没人做"，而是**算术上不可能**：
+#     想让 max-channel 破 190，源色的 B 通道得 ≥238（那是一个冷白像素，不是灯）；
+#     想让 luma 破 190，任何源色都做不到。
+#   加色混合是唯一的出口：光的（已被乘暗的）颜色**加**在底色之上，叠够层数就能顶到 255，
+#   而且叠加的是**暖色增量**，所以结果同时满足 R>G>B。这就是"点灯"与"把夜调亮"的区别。
+#
+# ★ 光色的选取有一半是算出来的、一半是眼验逼出来的。
+#   算的那半：要让结果读作暖光，源色必须活过那个蓝偏乘子，即
+#     R > (0.4714/0.4242)·G = 1.111·G   且   G > (0.7972/0.4714)·B = 1.691·B。
+#   眼验的那半：第一版取 `#ffb45a`（乘暗后 (108,85,72)）——判据过了，**画面却是错的**。
+#   三个通道差得太近 ⇒ 只要叠够层把 R 顶到 255，G/B 也一起顶上去，核心一律烧成**白团**，
+#   出图上整排房子糊成一片、暖调全丢。压到下面这两个色（乘暗后 (108,73,38) / (108,62,19)）之后，
+#   R 先到顶而 G/B 还留在一半，核心才读作**琥珀色的火**而不是白炽灯。
+#   ⇒ 「满足暖光判据」与「看起来像灯」是两件事，前者是后者的必要不充分条件。
+const LIGHT_WIN := Color("#ff9a30")    # 窗/告示板：暖黄
+const LIGHT_LAMP := Color("#ff8418")   # 门楣/井灯/节日灯：更橙的火光
+# ★ 光晕用一张**程序生成的径向衰减贴图**叠 LIGHT_STACK 次，不用同心圆堆。
+#   第一版是 6 个同心 `draw_circle`：在 `--shot-fit`（zoom 0.23）下完全看不出问题，
+#   但 R10 要求的**特写全帧眼验**（`--select player`，zoom 1.8）里，那 6 圈是 **6 道硬边同心环**，
+#   像水波纹贴在地上。⇒ 「只做点采样」的孪生病是「**只在一个缩放档看**」。
+#   贴图路同时更省：每盏灯 3 次 draw 而不是 6 次，且衰减形状与缩放无关。
+const LIGHT_STACK := 3                 # 同一张衰减贴图叠几次（加色 ⇒ 中心累计 = stack × amp，可破 255 天花板）
+const LIGHT_TEX_PX := 96               # 衰减贴图分辨率（线性过滤放大，96 足够）
+const LIGHT_ZOOM_MIN := 0.10           # 低于此缩放不画（红线#3 手机：整镇俯瞰时几十盏灯只剩糊点）
+var _light_tex: Texture2D = null       # 径向衰减贴图（懒建缓存）
+var _lights: Node2D = null             # 加色光层（子节点；材质 BLEND_MODE_ADD）
+
+## 径向衰减贴图：alpha = (1 − d)^1.35，d=归一化半径。指数在 1 附近导数趋 0 ⇒ 边缘没有可见的圈。
+## 生成一次、缓存；纯 CPU、确定性，不进 digest。
+func _light_texture() -> Texture2D:
+	if _light_tex != null:
+		return _light_tex
+	var n := LIGHT_TEX_PX
+	var img := Image.create(n, n, false, Image.FORMAT_RGBA8)
+	var c := float(n - 1) * 0.5
+	for y in n:
+		for x in n:
+			var d := Vector2(float(x) - c, float(y) - c).length() / (float(n) * 0.5)
+			var a := pow(clampf(1.0 - d, 0.0, 1.0), 1.35)
+			img.set_pixel(x, y, Color(1.0, 1.0, 1.0, a))
+	_light_tex = ImageTexture.create_from_image(img)
+	return _light_tex
+
+## 水的夜罩（乘性，full-night 时的系数）。系数是**解出来的**，中间踩了一个坑值得记：
+##   水瓦片的原始色是 (4,160,180)，但屏幕上的池塘是 (31,161,175) —— 差的那一截是
+##   `_draw_climate_wash()` 压在**水之上**的两层大气罩（春 5% + 阴 16%）。第一版按屏幕色反推系数，
+##   算出的夜色比实测亮 15%-21%，**因为那两层罩会把任何乘性调整稀释掉、还各自加回一份底色**。
+##   把整条链写全再解（raw → ×tint → 春罩 → 阴罩 → `_daylight` 夜乘子 (0.4242,0.4714,0.7972)）：
+##       (4,160,180) × (1.0,0.42,0.30) → 春/阴罩 → ×夜乘子 = **(13,41,59)**
+##   绝对彩度 (max−min) **127 → 46（−64%）**，luma **67.2 → 36.6**（草地是 75.3）。
+## R 系数取 1.0 不是偷懒：瓦片的红通道本来就只有 4/255，没有可减的东西。
+## 蓝通道仍是三者里最高的——夜里的水本该是蓝黑的；要治的从来不是"它是蓝的"，
+## 而是"**改动前它是全帧彩度最高、最响的那块**"。
+const WATER_NIGHT := Color(1.0, 0.42, 0.30)
+
+## 加色光层。它只有 _draw()，内容全部由宿主的 _draw_night_lights() 提供——
+## 不新增脚本文件（本棒独占 WorldView.gd），用内部类即可。
+class NightLights extends Node2D:
+	var host: Node = null
+	func _draw() -> void:
+		if host != null:
+			host._draw_night_lights(self)
+
+func _build_night_lights() -> void:
+	_lights = NightLights.new()
+	_lights.host = self
+	_lights.name = "NightLights"
+	var m := CanvasItemMaterial.new()
+	m.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	_lights.material = m
+	_lights.z_index = 1        # 画在本节点自身之上（居民/雨也在本节点的同一个 canvas item 里）
+	_lights.texture_filter = TEXTURE_FILTER_LINEAR   # 光晕要线性过滤：NEAREST 会把 96px 衰减贴图放大成马赛克
+	add_child(_lights)
+
+## 一盏灯：把衰减贴图在同一个矩形上叠 LIGHT_STACK 次。
+## 加色下中心累计 = stack × amp × 光色 ⇒ amp≈0.5 时中心加约 1.5 份光，足以把地面顶到 255（破天花板）；
+## 而衰减形状完全由贴图给出，与缩放无关 —— 这是"不出同心环"的那一半。
+func _glow(c: Node2D, p: Vector2, rad: float, col: Color, amp: float) -> void:
+	if amp <= 0.004 or rad <= 0.5:
+		return
+	var tex := _light_texture()
+	if tex == null:
+		return
+	var r := Rect2(p - Vector2(rad, rad), Vector2(rad * 2.0, rad * 2.0))
+	var m := Color(col.r, col.g, col.b, amp)
+	for _k in LIGHT_STACK:
+		c.draw_texture_rect(tex, r, false, m)
+
+## 窗户是否点着灯（确定性、纯渲染）。`_draw_window` 与 `_collect_lights` 共用同一个判据——
+## 分成两份必然漂移，于是会出现"亮着的窗没有光晕/黑窗底下有一摊光"。
+## 只点约 55%：00:48 的小镇不该家家灯火通明，"有几户还醒着"比"全亮"更像有人住。
+func _window_lit(x: int, y: int) -> bool:
+	return Sim._hash01("win:%d,%d" % [x, y]) < 0.55
+
+## 一扇亮窗的光池。半径带确定性抖动（0.72-1.18 格）——**这是 docs/41 §6-★「等距连续 = 相框」的预防**：
+## 窗户本来就是沿墙等距开的，如果每盏光晕又一模一样大，一栋房子就被一串等距等大的光珠**描了个边**，
+## 比原来那条硬墙线更抢眼。抖动 + 只点 55% 就把它打散成"有几户还醒着"。
+func _win_light(x: int, y: int) -> Dictionary:
+	var jitter := 0.72 + 0.46 * Sim._hash01("winr:%d,%d" % [x, y])
+	return {"p": Vector2(x * T + T * 0.5, y * T + T * 0.46),
+		"r": T * jitter, "c": LIGHT_WIN, "a": 0.26}
+
+## 收集本帧的所有光源（世界像素坐标）。纯几何 + 确定性哈希，不抽 RNG、不读 Sim 的可变状态之外的东西。
+## ⚠️ 本波【故意不新增实体灯柱】：灯柱在正午也得在，而"正午帧逐像素不动"是这一棒的天然负对照
+##    （docs/46 §二-D3 验收）。所以光源一律挂在**已经存在的几何**上：窗、门、井、告示板、节日灯笼、
+##    以及 enclosed 房间自己的屋内灯。实体灯柱留给 D6（美术落地）。
+func _collect_lights() -> Array:
+	var out: Array = []
+	var doorset := {}
+	for d in Sim.world.get("doors", []):
+		var dp: Array = (d as Dictionary).get("pos", [0, 0])
+		doorset[Vector2i(int(dp[0]), int(dp[1]))] = true
+	# ① 外墙窗户（与 _draw_facades 同一套位置与同一个 _window_lit 判据）
+	for aid in Sim.world.get("areas", {}):
+		var a: Dictionary = Sim.world["areas"][aid]
+		var typ := String(a.get("type", ""))
+		if typ == "" or typ == "plaza":
+			continue
+		var r: Array = a.get("rect", [0, 0, 0, 0])
+		var x0 := int(r[0]); var y0 := int(r[1]); var bw := int(r[2]); var bh := int(r[3])
+		for i in range(1, bw - 1):
+			if i % 2 == 0:
+				continue
+			for wy in [y0, y0 + bh - 1]:
+				if doorset.has(Vector2i(x0 + i, wy)) or not _window_lit(x0 + i, wy):
+					continue
+				out.append(_win_light(x0 + i, wy))
+		for j in range(1, bh - 1):
+			if j % 2 == 0:
+				continue
+			for wx in [x0, x0 + bw - 1]:
+				if doorset.has(Vector2i(wx, y0 + j)) or not _window_lit(wx, y0 + j):
+					continue
+				out.append(_win_light(wx, y0 + j))
+	# ② 门楣灯（_draw_town_doors 已经画了一条 #f0d68a 暖光带 —— 这里给它真正的光池）
+	var main := get_parent()
+	var sg = main.get("_sg") if main != null else null
+	if sg != null:
+		for p in sg.portals:
+			var fr: Dictionary = p.get("from", {})
+			if String(fr.get("space", "")) != "town" or String(fr.get("floor", "")) != "outdoor" or String(p.get("kind", "")) != "door":
+				continue
+			if String((p.get("to", {}) as Dictionary).get("space", "")).begins_with("test_"):
+				continue                                   # 测试平面的门本体已不画（见 _draw_town_doors），别给它点灯
+			var dpos: Array = fr.get("pos", [0, 0])
+			out.append({"p": Vector2(int(dpos[0]) * T + T * 0.5, int(dpos[1]) * T + T * 0.30),
+				"r": T * 1.35, "c": LIGHT_LAMP, "a": 0.44})
+	# ③ 广场地标：水井挂灯 + 告示板灯（广场是全镇唯一的公共夜间光源，不点它夜里镇中心是个黑洞）
+	for lm in Sim.world.get("landmarks", []):
+		var lp: Array = lm.get("pos", [0, 0])
+		var lx := int(lp[0]) * T; var ly := int(lp[1]) * T
+		match String(lm.get("type", "")):
+			"well":
+				out.append({"p": Vector2(lx + T * 0.5, ly + T * 0.06), "r": T * 2.2, "c": LIGHT_LAMP, "a": 0.52})
+			"board":
+				out.append({"p": Vector2(lx + T * 0.5, ly + T * 0.24), "r": T * 1.4, "c": LIGHT_WIN, "a": 0.27})
+	# ④ 节日灯笼（fest_ 物件本来就画成暖光灯笼，只有节日日存在）
+	for id in Sim.world.get("objects", {}):
+		var o: Dictionary = Sim.world["objects"][id]
+		if String(o.get("space", "town")) != "town":
+			continue                                   # 平面守卫：室内家具不在镇上（同 _draw 的物件循环）
+		if not String(id).begins_with("fest"):
+			continue
+		var fp: Vector2i = o["pos"]
+		out.append({"p": Vector2(fp.x * T + T * 0.5, fp.y * T + T * 0.4), "r": T * 1.9, "c": LIGHT_LAMP, "a": 0.46})
+	# ⑤ 屋内灯（_draw_building 已经画了暖池，但它是【普通混合】⇒ 顶到天花板也只有 max<110）。
+	#    这里给 enclosed 房间补一份加色的光，让屋子在夜里真的"亮着"，并从北窗往外洒一小片。
+	for rid in Sim.world.get("rooms", {}):
+		var rm: Dictionary = Sim.world["rooms"][rid]
+		if not bool(rm.get("enclosed", false)):
+			continue
+		var rr: Array = rm.get("rect", [0, 0, 0, 0])
+		var inner := Rect2(rr[0] * T, rr[1] * T, rr[2] * T, rr[3] * T)
+		if inner.size.x <= 0.0 or inner.size.y <= 0.0:
+			continue
+		out.append({"p": inner.get_center(), "r": maxf(inner.size.x, inner.size.y) * 0.52,
+			"c": LIGHT_WIN, "a": 0.16})
+		out.append({"p": Vector2(inner.get_center().x, inner.position.y - WALL * 0.6),
+			"r": minf(inner.size.x, T * 3.0) * 0.62, "c": LIGHT_WIN, "a": 0.14})
+	return out
+
+## 加色光层的绘制入口（由内部类 NightLights._draw 调用）。
+## ★ `_night_amt()` 在正午（tod=0.5）恒为 0 ⇒ 本函数直接返回、一个像素都不画。
+##   这就是本棒的天然负对照："正午帧改前改后 diff bbox 必须是 None"。
+func _draw_night_lights(c: Node2D) -> void:
+	if Sim.world.is_empty():
+		return
+	var main := get_parent()
+	var pb = main.get("_probe") if main != null else null
+	if pb != null and String(pb.active_space) != "town":
+		return                                   # 只点镇上的灯；室内平面有自己的一套照明
+	var night := _night_amt()
+	if night <= 0.001:
+		return
+	_refresh_view_metrics()                      # 光层与本节点共用变换，读同一个 _vis 做裁剪
+	if _zoom < LIGHT_ZOOM_MIN:
+		return
+	for L in _collect_lights():
+		var p: Vector2 = L["p"]
+		var rad: float = L["r"]
+		if not _vis.intersects(Rect2(p - Vector2(rad, rad), Vector2(rad * 2.0, rad * 2.0))):
+			continue                             # 视口外的灯不画（布局与相机无关）
+		_glow(c, p, rad, L["c"], float(L["a"]) * night)
+
 func _draw() -> void:
 	_refresh_view_metrics()
 	var _main := get_parent()
@@ -1147,16 +1402,25 @@ func _draw() -> void:
 	if not _terrain_built:
 		_build_terrain()
 	var wtile := Art.terrain_tex("water")
+	# ★ 夜里把水压下去（docs/46 §二-D3-2）。改动前实测：夜帧世界区**彩度最高的东西就是这两个池塘**——
+	#   水色 (31,161,175) 是蓝主导，而 `_daylight` 夜里的乘子 (0.4242, 0.4714, 0.7972) 恰恰**最不压蓝**
+	#   ⇒ 水的绝对彩度 (max−min) 从白天的 144 只掉到 **127**，而草地从 94 掉到 **25**。
+	#   于是全局乘暗把整座镇子压进夜色，唯独两个青色矩形几乎原样留在那里，成了画面上最响的东西。
+	#   修法是给水一层随夜量渐入的**乘性夜罩**：白天恒为白（正午 `_night_amt()==0` ⇒ 逐像素不动）。
+	var wtint := Color(1, 1, 1)
+	var _wn := _night_amt()
+	if _wn > 0.001:
+		wtint = Color(1, 1, 1).lerp(WATER_NIGHT, _wn)
 	for idx in _water_set:
 		var wx: int = idx % w
 		var wy: int = idx / w
 		var wr := Rect2(wx * T, wy * T, T, T)
 		if wtile != null:
-			draw_texture_rect(wtile, wr, false)
+			draw_texture_rect(wtile, wr, false, wtint)
 		else:
-			draw_rect(wr, Color("#2f6d86"), true)
+			draw_rect(wr, Color("#2f6d86") * wtint, true)
 			if _hash(wx, wy, 21) % 100 < 30:   # 静态涟漪高光
-				draw_rect(Rect2(wx * T + T * 0.18, wy * T + T * 0.30, T * 0.42, T * 0.12), Color(0.72, 0.86, 0.94, 0.35), true)
+				draw_rect(Rect2(wx * T + T * 0.18, wy * T + T * 0.30, T * 0.42, T * 0.12), Color(0.72, 0.86, 0.94, 0.35) * wtint, true)
 
 	# 土路网（广场↔各家门口）：铺在草地之上、区域/建筑之下 → 一眼读出"路"。装饰会避开它，路面才干净。
 	if not _paths_built:
@@ -1312,6 +1576,15 @@ func _draw_town_doors() -> void:
 		var fr: Dictionary = p.get("from", {})
 		if String(fr.get("space", "")) != "town" or String(fr.get("floor", "")) != "outdoor" or String(p.get("kind", "")) != "door":
 			continue
+		# ★ R10 全帧眼验抓到的：`1b20071` 只拿掉了测试平面那块**招牌**（「测试阁楼」，见下面第二处 test_ 判断），
+		#   而**门本体**（门框/门板/门楣暖光/门把/落地影）还立在镇子西北角 `[3,3]` 的空草地上——
+		#   spaces.json 的 `p_loft_door` → `test_loft`，一个纯测试用的 Space 端口。
+		#   它在本波之前的**每一张已发布素材**里都在，谁也没看见：它孤零零一格、在没有房子的角落。
+		#   这次是加色光层把它点成了一盏灯才够刺眼 —— 两个各自不显眼的东西叠起来才被抓到，
+		#   正是"点采样 + diff-bbox"验收永远抓不到的那一类（docs/46 §〇-R10 的原话）。
+		var to0: Dictionary = p.get("to", {})
+		if String(to0.get("space", "")).begins_with("test_"):
+			continue
 		var pos: Array = fr.get("pos", [0, 0])
 		var x := int(pos[0]) * T; var y := int(pos[1]) * T
 		draw_rect(Rect2(x + 2, y + T * 0.5, T - 4, T * 0.5), Color(0, 0, 0, 0.25), true)          # 落地阴影
@@ -1320,10 +1593,7 @@ func _draw_town_doors() -> void:
 		draw_rect(Rect2(x + T * 0.16, y + T * 0.12, T * 0.68, T * 0.1), Color("#f0d68a", 0.5), true)  # 门楣暖光
 		draw_rect(Rect2(x + T * 0.48, y + T * 0.12, T * 0.03, T * 0.82), Color("#3a291a"), true)   # 门缝
 		draw_circle(Vector2(x + T * 0.72, y + T * 0.55), T * 0.055, Color("#f0d060"))              # 门把
-		var to: Dictionary = p.get("to", {})
-		var to_space := String(to.get("space", ""))
-		if to_space.begins_with("test_"):
-			continue                                                                              # 别把 P1 门用的测试平面（spaces.json 的 test_loft「测试阁楼」）挂到镇上的门上
+		var to_space := String(to0.get("space", ""))
 		var label := String(sg.label_of(to_space))
 		var sw: float = 8.0 + Art.font().get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13).x
 		var sx := x + T * 0.5 - sw * 0.5
@@ -1494,6 +1764,16 @@ func _draw_relationship_lines() -> void:
 		draw_line(p1, p2, col, width)
 
 ## S3a 派系：同派系成员脚下画同色环（颜色由派系 medoid id 确定性派生）。
+##
+## ★ 这里改了两件事，第二件才是真正的病（docs/46 §二-D3-4 把它写成"派系环盖住了 C1 的柔和椭圆影"，
+##   **但绘制序是反的**：`_draw_faction_rings()` 在 agent 循环【之前】调用，所以环在影子【下面】）。
+##   实际的缺陷是几何：环是一个**正圆**，半径 0.20 格 ⇒ 上下各伸出 9.6px；
+##   而 C1 那圈影子是 y 轴压扁 0.40 的**地面椭圆**，上下只有 ±4.8px。
+##   一个立在屏幕平面上的正圆套着一个躺在地面上的椭圆——两者根本不在同一个平面里，
+##   于是环既不像"脚下的地面标记"，又长到会横穿**邻居**的名牌（实测 zoom_before_agents.png：
+##   上面那位的脚环正好圈住下面那位的「小薇」名牌）。
+##   ⇒ 改成同样 0.40 压扁的地面椭圆（用 draw_polyline 而不是 draw_set_transform 缩放，
+##      否则线宽会被一起压扁成 0.8px）。半径放到 0.30 格去外切影子，**竖直占位反而从 ±9.6px 降到 ±5.8px**。
 func _draw_faction_rings() -> void:
 	for ag in Sim.agents:
 		if not _in_town(ag):
@@ -1502,15 +1782,37 @@ func _draw_faction_rings() -> void:
 		if fac == "":
 			continue
 		var col := _faction_color(fac)
-		col.a = 0.85
+		col.a = 0.80
 		if not _vis.has_point(_center(ag) + Vector2(0, T * 0.30)):
 			continue                                  # 裁剪走格心
 		var c := _rpos(ag) + Vector2(0, T * 0.30)     # 落脚线（与影子/精灵底边同一条）
-		draw_arc(c, T * 0.20, 0.0, TAU, 16, col, 2.5)  # 收小到 0.20 格：不再穿过头顶名牌与脚下气泡
+		_draw_ground_ring(c, T * 0.30, col, 2.0)
+
+## 躺在地面上的椭圆环（y 轴压扁 0.40，与 C1 的脚影同一个平面）。线宽保持均匀。
+func _draw_ground_ring(c: Vector2, rx: float, col: Color, width: float) -> void:
+	var pts := PackedVector2Array()
+	for i in range(21):
+		var a := TAU * float(i) / 20.0
+		pts.append(c + Vector2(cos(a) * rx, sin(a) * rx * 0.40))
+	draw_polyline(pts, col, width, true)
+
+## 派系强调色：从 docs/44 的 40 色目标表（game/assets/art/palette.gpl）里取 5 个强调色轮换。
+## 旧实现是 `Color.from_hsv(hash%360/360, 0.65, 0.95)` —— **整个色相环上的任意霓虹**，
+## 在一套低饱和的日常小镇调色板上读作调试标记而不是归属标记。
+## 刻意**没有**取的两个：`com-roof #B5484A`（与关系连线的负向红 `#e85a5a`、冲突「!」`#ff6b6b` 同族）
+## 与 `water-lit #86B7C8`（与盟约双线的青 `#39d4c8` 同族）——语义撞色比颜色难看更糟。
+## 哈希换成项目自有的 `Sim.fnv1a32`（红线#1）：`String.hash()` 是引擎内建实现，换个 Godot 版本
+## 就可能把全镇的派系色静默洗一遍。
+const FACTION_ACCENTS := [
+	Color("#5a86b0"),   # pub-roof     蓝
+	Color("#b59a4a"),   # grass-autumn 赭黄
+	Color("#78933f"),   # foliage-mid  橄榄绿
+	Color("#a7b3ba"),   # grass-winter 灰蓝
+	Color("#a8443a"),   # res-roof     砖红（比 UI 的告警红暗得多，不混）
+]
 
 func _faction_color(fac: String) -> Color:
-	var h := absi(fac.hash())
-	return Color.from_hsv(float(h % 360) / 360.0, 0.65, 0.95)
+	return FACTION_ACCENTS[Sim.fnv1a32(fac) % FACTION_ACCENTS.size()]
 
 ## S3b 互助盟约：active pact 双方画青色双线 + 中点握手标记。
 func _draw_pact_links() -> void:
@@ -1577,6 +1879,8 @@ func _draw_agent(ag: Dictionary) -> void:
 	var feet := center.y + T * 0.30          # 落脚线：影子 / 派系环 / 精灵底边都对齐它
 	var col := Color(str(ag.get("persona", {}).get("color", "#ffffff")))
 	var spr := _hued_tex(str(ag.get("persona", {}).get("sprite", "")), String(ag["id"]))  # L6：克隆取确定性色相变体，命名 6 人=正典
+	if spr == null:
+		spr = _fallback_tex(ag)              # 空/缺 sprite（玩家）→ 体面回退，别再画圆盘
 	var head := center.y - T * 0.32          # 头顶（fallback 圆的情形）
 	if spr != null:
 		# 软阴影 + 按移动选行走帧（cols0-3 循环，左向水平翻转）。整数 2x 缩放，且把源帧里人物的【脚】压在落脚线上
@@ -1601,9 +1905,11 @@ func _draw_agent(ag: Dictionary) -> void:
 	else:
 		draw_circle(center, T * 0.32, col)
 		draw_circle(center, T * 0.32, Color(0, 0, 0, 0.4), false, 2.0)
-	# 玩家标识：金色外环（--player 模式一眼可辨"这是我"）
+	# 玩家标识：金环保留（--player 模式一眼可辨"这是我"），但**挪到地面平面**——
+	# 旧的是屏幕平面上以【身体中心】为圆心的正圆（r=0.42 格），套在一个立着的小人身上时
+	# 既不像地面标记、又会和头顶名牌/脚下气泡打架。现在与影子/派系环同一个 0.40 压扁的地面椭圆。
 	if ag.get("is_player", false):
-		draw_circle(center, T * 0.42, Color("#ffd700"), false, 2.5)
+		_draw_ground_ring(Vector2(center.x, feet), T * 0.38, Color("#ffd700"), 2.5)
 	if _zoom < LABEL_MIN_ZOOM:
 		return          # 全镇俯瞰档：名字/emote/气泡/需求条缩到几像素只剩糊斑 —— 不画，画面更干净、填充率也省下来
 	# 最紧迫需求条（落脚线正下方）
