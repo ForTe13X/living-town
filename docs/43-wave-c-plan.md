@@ -88,6 +88,44 @@ HEAD 走的是 `scale-diagnostic` 并集带来的另一套实现）。②**文�
 （晚 47 分钟，8 个同名文件逐字节相同），但两边互不为超集——**唯一没有副本的是 `gen_judge_wf.py` / `gen_combined_payload.py`**。
 `.gitignore` 只挡了 `analysis/**/packet_*.jsonl`，**故意不挡整个 `analysis/`**（它在 `codex/repository-review-2026-07-12` 上是被跟踪路径）。
 
+### 1.2c ★ C2 回执——小镇有声音了，**但"CI PASS"在这一棒上比别处弱**
+
+`game/scripts/Audio.gd`（约 380 行）+ `project.godot` 的 `[autoload]` 一行，**没有任何音频文件入库**
+（全部运行时数学合成为内存 `AudioStreamWAV` ⇒ 红线 #4 没有受力面）。内容：昼/夜环境床（交叉淡入）、脚步、UI 点击、
+5 个挂在 `Sim.social_event` 上的事件音 + 1 个节日音。接线全在 `Audio.gd` 自己的 `_ready()` 里，**只读 `Sim`**。
+
+**证据不是"RMS 非零"**（一条环境床就能过这个门）。它给了两把更硬的尺子：环境床的峰值有**解析上界**，
+超过 2× 上界的 20ms 帧才算一次 onset；外加逐 cue 计数。5 段采集 5/5、9/9、22/22 窗口非零，
+夜间那段 `{step:21, warm:5}` = 26，与检出的 26 次 onset **对得上**。负对照 `--no-audio`：**每一个采样点精确为 0**。
+昼夜交叉淡入也不是自称——过零率 414.3/s(正午) vs 338.3/s(夜)，与两张床的基频（A2 110Hz / E2 82.4Hz）吻合。
+仿真零影响是**直接量的**：同一路径 `--digest-at 520` 只切换那一行 autoload，两侧逐字节相同。
+
+> **★ 这一棒最重要的产出是一条契约级发现，已写进 docs/41 §2：`--script` 模式不加载 autoload。**
+> 而 S0 门(4)、LOD 门(4b)、DetGate(4c) **全部走 `--script`** ⇒ **autoload 里的代码在那张 12 seed × 60 天的网格上零覆盖**。
+> 真正加载它的只有 step 3(`--import`) 与 step 5(6 个场景)。**这一棒的"CI PASS"证明的东西比字面上少**，
+> 它自己另造了 `--digest-at` 的 autoload 逐字节 A/B 来补——这才是有效证据。
+
+**这份 brief（§三-C2）有两处是错的，已确认：**
+1. **「`tools/ci.sh` 在 `--audio-driver Dummy` 下」——`ci.sh` 里根本没有这个旗标**，它传 `--headless`（隐含哑驱动）。
+   硬编码该旗标的是 `shot1.sh`/`shot_tick.sh`/`shot_scale.sh`/`chat-shoot.sh`/`observe-shoot.sh`/`probe_digest_test.sh`/
+   `pan_test.sh`/`record-godot.sh` 这八个。**结论对、机制错**，同样的措辞错误已在 docs/41 §2 一并更正。
+2. **「节日音挂 `Sim.social_event`」——挂不上。** 根本没有 festival 事件类型：`_update_festival()` 只发无节日语义的
+   `world` spawn/despawn，`festival_active` 是日边界设的普通变量。只能挂 `day_changed` + 读 `Sim.festival_active`。
+
+**一个由测量而非设计逼出来的修正**（值得记）：第一次调音后，40 秒/2000 tick 的采集里 `warm` 响了 51 次、
+`resolve` **响了 0 次**。不是"没有和解发生"，是**和解被日常打招呼挤出了全局限流配额**——
+**最稀有、最有戏的事件恰恰是被静音的那些**。现在 `resolve`/`bell`/`festive` 走单独的宽松配额。
+
+**代价与未测**：启动一次性 +140ms（`_ready()` 里烘 9 个 PCM 缓冲；n=2、±90ms 噪声 ⇒ 读作"0.1-0.2s"）。
+**没有真机数据**，外推 3-5× 是 0.4-0.7s；若真机启动画像里看得见，最小修法是把三个 `_build_*` 推离首帧
+（照抄 `Main.gd` 已有的 SLM 探针延后）。`click` 与整条 `_input` 路径 headless 生不出输入事件 ⇒ **零覆盖**。
+**执行者听不到声音**——上面每一条都是测量，不是审美判断。**Stride 4 必须有人真的戴上耳机听一遍。**
+
+**Stride 4 要用的**：`tools/record-godot.sh` 现在录不到声音。改法（C2 按契约没动它）：保留 `--audio-driver Dummy`
+（它仍在推进混音，headless 采集正是靠这个），在 `--` 后追加 `--audiocap /out/town_audio.wav <SECS+2>`，
+去掉 `kill $GODOT_PID`（hook 自己退出），最后补偿脚本里那 3 秒 `sleep` 再混流：
+`ffmpeg -i town_raw.mp4 -ss 3 -i town_audio.wav -c:v copy -c:a aac -shortest town.mp4`。**别装 PulseAudio**，容器里没有声卡也不需要。
+
 ### 1.3 新的 NOW（Wave C）
 
 按 (玩家可感知增量) / (工作量 × 风险) 排序。**前四条全是 View 层，碰不到红线 #1。**
@@ -147,6 +185,13 @@ docs/41 全文仍然逐条生效。本节只加这一波特有的六条。
   「看起来一样」不是证据。
 - **R6 · 并发纪律。** 本波多棒同时在独立 worktree 里跑。**完整 `tools/ci.sh` 全程只跑一次**（收尾时），
   迭代期用定向检查。跑之前先清场游离的 `godot.exe`（docs/41 §1），并断言每个输出文件只有一段汇总。
+- **R7 · worktree 不会自动同步到派棒基线。**（2026-07-26 实测，C0 与 C2 各独立踩到一次）
+  新建的 worktree checkout 可能停在**派棒基线之前**——C2 拿到的是 `38ba4a7`，那棵树上**本文根本不存在**。
+  ⇒ **每根棒起手第一件事**：`git log --oneline -3` 对照 brief 里写的基线 SHA，落后就先确认是祖先再 ff。
+  这正是 docs/41 §1 记的那个坑，只是这一波它来自派棒机制本身而不是人。
+- **R8 · 合并要验在合并后的树上。**（journal 第二波方法论第 4 条）各棒的 CI 是在**各自的基线**上跑的；
+  Wave C 的棒基线不同（C0/C6 在 `ef92d53`，C1/C2/C3 在 `fdb212f`）。
+  ⇒ **合并后必须再跑一次全量 CI**，不能拿"每根棒自己都绿过"当合并树的证据。
 
 ---
 

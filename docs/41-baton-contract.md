@@ -36,9 +36,23 @@ GODOT=C:/Users/yp/.local/bin/godot bash tools/ci.sh    # 必须 CI PASS
 它包含：版权红线、data/link lint、地图审计、**S0 门（12 seed × 60 天硬不变量 + 金标 + 逐 tick 前缀链 + det）**、
 LOD 观察无关门、DetGate 场景确定性门、6 个集成场景。
 
-**⚠️ 金标全绿 ≠ 你的改动被验证了。** CI 钉 `Sim.backend=null`，`AIBackend.decide()` **根本不进**。
-所以**任何 slm/llm/模型路径上的改动，金标是必要不充分条件**——你必须自己造一个能证伪的对照
-（例如 mock 后端的逐字节 A/B）。同理，**模型路径上的硬不变量目前没有任何门覆盖**（见 docs/38）。
+**⚠️ 金标全绿 ≠ 你的改动被验证了。** 这道门有**两个结构性盲区**，成因不同，都不是"跑得不够久"能补上的：
+
+1. **`Sim.backend=null`** ⇒ `AIBackend.decide()` **根本不进**。所以**任何 slm/llm/模型路径上的改动，
+   金标是必要不充分条件**——你必须自己造一个能证伪的对照（例如 mock 后端的逐字节 A/B）。
+   *2026-07-26 更新*：硬不变量在模型路径上**现在有门了**——`tools/ci.sh` 第 4d 关的 `BackendGate`
+   （确定性 `random` 后端 + 两条引擎边界，见 docs/45）。它守的是**硬不变量 / 两跑一致 / 无饿穿**三条臂，
+   **不守**别的；此前 docs/38 与本文写的"模型路径无门"到此为止。
+2. **`--script` 模式不加载 autoload**（`Harness.gd` 的 docstring 明写，2026-07-26 由 C2 实测复核）。
+   而 **S0 门（step 4）、LOD 门（4b）、DetGate（4c）全部走 `--script`** ⇒
+   **任何写在 autoload 里的代码，在那张 12 seed × 60 天的网格上是零覆盖的。**
+   真正会加载它的只有 step 3（`--import` 解析）与 step 5（6 个集成场景）。
+   ⇒ 动 autoload 的棒**不能**把"CI PASS"读成"我的代码在 S0 网格上跑过了"，必须另造场景模式的对照
+   （例如同一条 `--digest-at` 路径上，只切换那一行 autoload 注册做逐字节 A/B）。
+
+> 顺带纠正一个反复被抄错的说法：**`tools/ci.sh` 里没有任何一处 `--audio-driver Dummy`**，它传的是 `--headless`
+> （由后者隐含哑音频驱动）。硬编码 `--audio-driver Dummy` 的是 `shot1.sh` / `shot_tick.sh` / `shot_scale.sh` /
+> `chat-shoot.sh` / `observe-shoot.sh` / `probe_digest_test.sh` / `pan_test.sh` / `record-godot.sh` 这八个脚本。
 
 ## 3. 会移动 digest 的改动
 
