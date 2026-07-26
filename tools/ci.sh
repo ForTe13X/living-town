@@ -120,6 +120,23 @@ for scene in m2_test reqlife_test player_agency_test s4_replay_test space_test s
   esac
 done
 
+echo "### 6. 昼夜量具视觉门（本仓库第一条【视觉】断言 —— 无渲染环境时自动 SKIP，不假红）"
+# 为什么是这一条先进 CI：docs/41 §6 盲区④——`--shot` 曾经【永远渲不出昼夜】，
+# 于是【这个项目所有视觉判断用的尺子】是坏的（"偏亮/偏暗"的结论全部不可信）。C3 用 Main.gd:271 一行修好了它，
+# 而在此之前没有任何门守着那一行：把它删掉，上面 0-5 每一步都照样全绿。
+#
+# ⚠️ 它跟前面五步不一样：**需要一个能真的出图的渲染环境**（pin 死的 gamecraft-runner 镜像，或 Xvfb+godot）。
+# GitHub Actions 的 ubuntu-latest 两样都没有 ⇒ 那条路上本步 **SKIP**，不计入 FAIL。
+# 这是蓄意的：**一道在别人机器上因环境变红的门比没有门更坏**——它训练所有人忽略红色。
+# 判据都在 tools/visual_gate.sh 抬头；想让它必须跑（例如宿主 CI）：`LT_VISUAL=require bash tools/ci.sh`。
+bash tools/visual_gate.sh 2>&1 | tee "$LT_LOG/visual.log"
+VRC="${PIPESTATUS[0]}"
+case "$VRC" in
+  0)  ok "DayNight 视觉门" ;;
+  77) echo "  ⏭  SKIP: DayNight 视觉门（本机没有渲染环境；LT_VISUAL=require 可让它变红）" ;;
+  *)  bad "DayNight 视觉门 (exit $VRC)" ;;
+esac
+
 echo
 [ $FAIL -eq 0 ] && echo "=== CI PASS ✅ ===" || echo "=== CI FAIL ❌ ==="
 exit $FAIL
