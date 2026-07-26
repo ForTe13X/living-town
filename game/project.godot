@@ -27,5 +27,11 @@ window/handheld/orientation="landscape"
 
 textures/vram_compression/import_etc2_astc=true
 
+; 界外虚空底色。Godot 的出厂默认是 Color(0.3,0.3,0.3) = #4d4d4d，而全镇视角下【过半】画面
+; 都不在地图矩形里 —— 小镇因此读作"灰色虚空里的一座孤岛"。这里换成深林底色，与
+; WorldView._draw_town_backdrop() 画的界外暗林同族；那一层只在 _vis 内绘制，
+; clear color 负责它够不到的地方（首帧、Sim.world 为空的早退分支、极端缩放）。
+environment/defaults/default_clear_color=Color(0.043137, 0.070588, 0.054902, 1)
+
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
