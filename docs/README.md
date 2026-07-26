@@ -77,7 +77,7 @@
 |---|---|
 | [18 Android APK 构建](18-android-apk-build.md) | 骁龙 8 Elite / arm64 出带端上 SLM 的 APK |
 | [34 真机 SLM 挂死与泄漏](34-slm-device-hang-leak.md) | 16GB 原生泄漏 → 根因是 worker 生命周期 use-after-free（**第一版根因"Adreno GPU"被自己证伪**）→ 池化治本 → 真机 GPU/CPU A/B → 端上默认 CPU |
-| `35-slm-decision-share-and-lod-soft-gate.md` | *（并行撰写中，尚未落盘）* 端上 SLM 决策占比的**诚实分母**，以及 N=60 下 LOD 对软不变量的影响 |
+| [35 SLM 决策占比与 LOD 软门](35-slm-decision-share-and-lod-soft-gate.md) | 端上 SLM 决策占比的**诚实分母**（`landed/fired` 是方便分母，真值是 `landed/decisions`），以及 N=60 下 LOD 对软不变量的影响 |
 | [11 LLM 部署实测对比与选型](11-LLM部署实测对比与选型.md) | 多机器 × 多模型尺寸的延迟实测与选型 |
 | [15 手机可行性 · 算力上界](15-手机可行性-算力上界-世界扩展.md) | 手机端算力上界估算与世界扩展的三线深研 |
 
