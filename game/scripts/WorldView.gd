@@ -124,6 +124,7 @@ var _paths_built := false
 var _wall_set := {}      # idx(y*W+x) -> true（墙格，用于画石墙 + 装饰避让）
 var _water_set := {}     # idx -> true（水格）
 var _tree_cells: Array = []  # [Vector2i]（authored 阻挡树，替代程序化装饰树）
+var _tree_set := {}      # idx(y*W+x) -> true（同上，供 O(1) 查：_is_blocked 与界外 motif 每帧都要问它）
 var _wall_type := {}     # P2-4 idx -> 建筑类型（住宅/商业/公共/工坊）→ 墙面按类型上色
 var _terrain_built := false
 var dbg_nav := false     # P2-4 导航开发叠层开关（Main 的 N 键切换）：阻挡格 + 交互格可视化
@@ -256,7 +257,7 @@ func _build_decor() -> void:
 ## 从 map.json 的 walls/water/trees 建渲染集合（纯渲染；导航仍走 Sim 的 blockers 并集）。世界重载即失效。
 func _build_terrain() -> void:
 	_terrain_built = true
-	_wall_set.clear(); _water_set.clear(); _tree_cells.clear(); _wall_type.clear()
+	_wall_set.clear(); _water_set.clear(); _tree_cells.clear(); _tree_set.clear(); _wall_type.clear()
 	var wd: int = int(Sim.world.get("width", 24))
 	for c in Sim.world.get("walls", []):
 		_wall_set[int(c[1]) * wd + int(c[0])] = true
@@ -264,6 +265,7 @@ func _build_terrain() -> void:
 		_water_set[int(c[1]) * wd + int(c[0])] = true
 	for c in Sim.world.get("trees", []):
 		_tree_cells.append(Vector2i(int(c[0]), int(c[1])))
+		_tree_set[int(c[1]) * wd + int(c[0])] = true
 	# 给每个墙格标上所属建筑【类型】（住宅/商业/公共/工坊）→ 墙面按类型上色。用 area.rect 的边框判定归属。
 	for aid in Sim.world.get("areas", {}):
 		var a: Dictionary = Sim.world["areas"][aid]
@@ -828,11 +830,191 @@ const VOID_SPILL_TILES := 6.0           # 光晕带宽（格）
 const VOID_FADE_TILES := 22.0           # 从地图外缘到"全黑深林"的距离（格）
 const VOID_DECOR_MAX_CELLS := 4096      # 装饰上限：极端缩放下只铺底色，不烧填充率（红线#3 手机）
 
+## ── 界外第一层：边界延续（docs/44 §四 第一层 / docs/43 §三-C7）───────────────────
+## C1 把灰虚空 28.30% → 0.00%，但【接缝】接替它成了画面上最刺眼的东西：小镇是一块亮绿色矩形、
+## 硬边直接贴在暗色森林上，读作"深色地板上铺了一张绿地毯"。这不是审美判断——实测那条边的
+## **最大相邻像素亮度跃变 = 131.5/255（正午）/ 62.1（夜）**：一个像素跨掉半个动态范围。
+##
+## 修法不是再调背板色（那只是把地毯换个颜色），而是【把地面继续画出去】：
+##   0.0-1.0 格：纯地面延续（草坡的受光顶）——第一眼看过去，边缘外还是同一块地
+##   1.1-1.5 格：矮石墙 / 路缘（分段、带缺口，**不能是一圈完整边框**）
+##   1.6-2.0 格：排水沟
+##   2.0-3.0 格：草坡沉进林子
+## ★ 硬质用 #9B968D / #6D6A61，草坡用 #5F7B34（docs/44 §四给定值）。
+## ★ 不放门、路标或完整建筑——那会暗示界外可以进入。**这也是这一棒不画"道路收口"的原因**：
+##   本地图没有任何土路走到边界（_build_paths 只连门↔广场），凭空画一条通向界外的路
+##   恰恰是在暗示"可以走出去"，与规格自相矛盾。
+## ★ 一切界外绘制统一走 _verge_seg / _verge_ring 的 bands 求交 ⇒ **界内逐像素不动是构造保证**。
+const VERGE_TILES := 3.0                    # 第一层深度（docs/44 §四："2-3 格"）
+const VERGE_KNEE := 0.30                    # 斜坡拐点：t<KNEE 从地面色过渡到草坡色
+const VERGE_SLOPE := Color("#5f7b34")       # 草坡（docs/44 §四）
+const VERGE_STONE := Color("#9b968d")       # 硬质·受光顶面（docs/44 §四）
+const VERGE_STONE_FOOT := Color("#6d6a61")  # 硬质·背光面（docs/44 §四）
+const VERGE_MOTIF_ZOOM := 0.18              # 低于此缩放只铺斜坡，不画硬质细节（红线#3 手机）
+const GRASS_FALLBACK := Color("#85a643")    # 缺草地切片时的地面色（= grass_a 的实测均值 133,166,67）
+
+var _verge_ground := Color(0, 0, 0, 0)      # 草地纹理加权均值缓存（a<=0 = 未算）
+
 ## 点到矩形的最短距离（点在矩形内=0）。界外暗林用它做"离镇越远越黑越稀"的衰减。
 func _rect_dist(r: Rect2, p: Vector2) -> float:
 	var dx := maxf(maxf(r.position.x - p.x, 0.0), p.x - r.end.x)
 	var dy := maxf(maxf(r.position.y - p.y, 0.0), p.y - r.end.y)
 	return sqrt(dx * dx + dy * dy)
+
+## 草坡贴边那一档的颜色 = 【当前草地纹理的加权平均】× 季节色偏 × 季节/天气大气罩。
+## ★不硬编码一个绿：换一套草地切片、或换季、或下雨，斜坡自动跟着走。
+##   否则冬天界内被霜白罩刷淡、界外仍是夏绿 —— 接缝会以另一种形式复活（这是本棒踩到的真陷阱）。
+##   大气罩只染贴边这一档（权重随 t 衰减到 KNEE 处归零），深处的林子不进冬天，与 C1 的取舍一致。
+func _verge_ground_col() -> Color:
+	if _verge_ground.a <= 0.0:
+		var acc := Vector3.ZERO
+		var tot := 0.0
+		for g in _grass:
+			var t: Texture2D = g["t"]
+			var img: Image = t.get_image() if t != null else null
+			if img == null:
+				continue
+			if img.is_compressed():
+				img = img.duplicate()
+				img.decompress()
+			var s := Vector3.ZERO
+			var n := 0
+			for y in range(0, img.get_height(), 2):     # 隔点采样：16x16 的切片没必要逐像素扫
+				for x in range(0, img.get_width(), 2):
+					var c := img.get_pixel(x, y)
+					if c.a < 0.5:
+						continue
+					s += Vector3(c.r, c.g, c.b)
+					n += 1
+			if n > 0:
+				acc += (s / float(n)) * float(g["w"])
+				tot += float(g["w"])
+		_verge_ground = GRASS_FALLBACK if tot <= 0.0 else Color(acc.x / tot, acc.y / tot, acc.z / tot, 1.0)
+	var v := _season_veg()
+	return Color(clampf(_verge_ground.r * v.r, 0.0, 1.0),
+		clampf(_verge_ground.g * v.g, 0.0, 1.0),
+		clampf(_verge_ground.b * v.b, 0.0, 1.0), 1.0)
+
+## 距离 t∈(0,1]（0=贴边、1=第一层外沿）处的斜坡色。t<KNEE 段还要吃一份衰减的大气罩，
+## 这样界内 _draw_climate_wash 刷出来的冬白/雨蓝在边缘是连续的。
+func _verge_ramp(g: Color, t: float) -> Color:
+	var col := g.lerp(VERGE_SLOPE, t / VERGE_KNEE) if t <= VERGE_KNEE \
+		else VERGE_SLOPE.lerp(VOID_BASE, (t - VERGE_KNEE) / (1.0 - VERGE_KNEE))
+	var fade := clampf(1.0 - t / VERGE_KNEE, 0.0, 1.0)
+	if fade > 0.0:
+		for wsh in [SEASON_WASH.get(Sim.season_today, Color(0, 0, 0, 0)),
+				WEATHER_WASH.get(Sim.weather_today, Color(0, 0, 0, 0))]:
+			var wc: Color = wsh
+			if wc.a > 0.0:
+				col = col.lerp(Color(wc.r, wc.g, wc.b, 1.0), wc.a * fade)
+	return col
+
+## 一圈（map 外扩 d 世界像素）填色，**只落在界外带里**。
+func _verge_ring(map: Rect2, bands: Array, d: float, col: Color) -> void:
+	var ring := map.grow(d)
+	for b in bands:
+		var s := ring.intersection(b)
+		if s.size.x > 0.0 and s.size.y > 0.0:
+			draw_rect(s, col, true)
+
+## 把「沿边 a0..a1 格 × 向外 d0..d1 格」换算成世界矩形并**只画在界外带里**。
+func _verge_seg(e: Dictionary, bands: Array, a0: float, a1: float, d0: float, d1: float, col: Color) -> void:
+	var base: Vector2 = e["base"]
+	var al: Vector2 = e["al"]
+	var ov: Vector2 = e["out"]
+	var p0: Vector2 = base + al * (a0 * T) + ov * (d0 * T)
+	var p1: Vector2 = base + al * (a1 * T) + ov * (d1 * T)
+	var r := Rect2(Vector2(minf(p0.x, p1.x), minf(p0.y, p1.y)),
+		Vector2(absf(p1.x - p0.x), absf(p1.y - p0.y)))
+	for b in bands:
+		var s := r.intersection(b)
+		if s.size.x > 0.0 and s.size.y > 0.0:
+			draw_rect(s, col, true)
+
+## 这一格边界外该延续什么：贴边 3 格内有 authored 树带 → 林缘（林子继续，不砌墙）；否则 → 人住过的边。
+##
+## ★ docs/44 §四 还列了「河岸」与「道路收口」，本棒【两个都没做】，理由同一条：
+##   **这张地图上没有任何水体或土路走到边界**——实测水体离边界最近 2 格（y=2 / y=45,46），
+##   土路是 _build_paths 从门连到广场、全在内部。"延续"必须有东西可延续。
+##   实际试过一版河岸（水体 3 格内 → 界外铺湿地+芦苇）：眼验读作**一块悬在池塘上方的半透明灰绿板**，
+##   像 UI 面板不像湿地 —— 因为池塘与边界之间还隔着两格草地，那片"湿地"跟池塘根本不连。
+##   ⇒ 已删除。真要做河岸，前提是地图生成器把水放到边界上，那是 Wave D 连同 gen_town 一起的事。
+func _verge_motif(en: int, i: int, w: int, h: int) -> String:
+	for k in 3:
+		var x := i
+		var y := k
+		match en:
+			1: y = h - 1 - k
+			2: x = k; y = i
+			3: x = w - 1 - k; y = i
+		if _tree_set.has(y * w + x):
+			return "grove"
+	return "kerb"
+
+## 第一层主体：亮度斜坡 + 逐格 motif。斜坡环数随缩放自适应（贴边 1px 一档），
+## 既不在拉近时露出色带，也不在拉远时空烧填充率。
+func _draw_town_verge(map: Rect2, bands: Array, w: int, h: int) -> void:
+	if not _terrain_built:
+		_build_terrain()        # ★背板画在草地循环【之前】，而地形集合本来在草地之后才建 ⇒
+		#   不先建的话首帧 _water_set/_tree_set 全空、河岸与林缘退化成石墙（实测踩到）
+	var g := _verge_ground_col()
+	var steps := clampi(int(VERGE_TILES * float(T) * _zoom), 24, 96)
+	for k in range(steps, 0, -1):               # 由外向内：内环覆盖外环 ⇒ 得到连续斜坡
+		var t := float(k) / float(steps)
+		_verge_ring(map, bands, t * VERGE_TILES * float(T), _verge_ramp(g, t))
+	if _zoom < VERGE_MOTIF_ZOOM:
+		return
+	var edges := [
+		{"n": 0, "base": Vector2(0, 0), "al": Vector2(1, 0), "out": Vector2(0, -1), "cells": w, "on": _vis.position.y < 0.0},
+		{"n": 1, "base": Vector2(0, float(h) * T), "al": Vector2(1, 0), "out": Vector2(0, 1), "cells": w, "on": _vis.end.y > float(h) * T},
+		{"n": 2, "base": Vector2(0, 0), "al": Vector2(0, 1), "out": Vector2(-1, 0), "cells": h, "on": _vis.position.x < 0.0},
+		{"n": 3, "base": Vector2(float(w) * T, 0), "al": Vector2(0, 1), "out": Vector2(1, 0), "cells": h, "on": _vis.end.x > float(w) * T},
+	]
+	for e in edges:
+		if not bool(e["on"]):
+			continue
+		var en: int = int(e["n"])
+		var horiz := en <= 1
+		var lo := (_vis.position.x if horiz else _vis.position.y) / float(T)
+		var hi := (_vis.end.x if horiz else _vis.end.y) / float(T)
+		var i0 := maxi(0, int(floor(lo)))
+		var i1 := mini(int(e["cells"]), int(ceil(hi)))
+		var i := i0 - (i0 % 2)                  # 双格步长：石墙以 2 格为一段，边缘不会碎成栅栏
+		while i < i1:
+			var a0 := float(i)
+			var a1 := float(mini(i + 2, int(e["cells"])))
+			match _verge_motif(en, i, w, h):
+				"grove":
+					# 林缘：authored 树带走到边界 → 界外直接是林下灌木，不设石墙（林子里砌墙很怪）
+					for s in 3:
+						var hs2 := _hash(i, en, 71 + s)
+						var ba := a0 + 0.15 + float(hs2 % 9) * 0.19
+						var bd := 1.25 + float(hs2 / 9 % 11) * 0.14
+						var bc: Color = VOID_CANOPY_B if hs2 % 2 == 0 else VOID_CANOPY_A
+						_verge_seg(e, bands, ba, ba + 0.34, bd, bd + 0.30, Color(bc.r, bc.g, bc.b, 0.45))
+				_:
+					# 人住过的边：**散落的**矮石墙残段 + 排水沟。
+					# ★这里踩过一次坑，值得写下来：第一版按 72% 覆盖、固定 1.10 格外扩铺连续石墙，
+					#   数值上 cross 已经修好（131.5→2.9），**眼验却读作"给地图加了一圈装饰边框"**
+					#   —— 与 C1 记下的"矩形青色岸带"是同一个病：
+					#   **任何与边界等距且连续的元素，都会从"边界延续"退化成"画框"，**
+					#   而画框比原来的硬边更糟：它把那条我们正想让人忘掉的矩形又描了一遍。
+					#   数值上同时被 outband 抓到（26.5 → 68.8），两把尺子一致。
+					#   修法不是删掉硬质（docs/44 §四点名要 #9B968D/#6D6A61），而是让它
+					#   【不等距 + 不连续 + 低对比】：外扩距离抖 1.3 格、段长抖、覆盖率降到约 1/3。
+					var hw := _hash(i, en, 41)
+					if hw % 100 < 34:
+						var d0 := 0.85 + float(hw / 100 % 13) * 0.11      # 外扩 0.85..2.17 格
+						var la := a0 + float(hw / 7 % 5) * 0.16
+						var lb := la + 0.55 + float(hw / 13 % 7) * 0.16   # 段长 0.55..1.51 格
+						_verge_seg(e, bands, la, lb, d0, d0 + 0.20, Color(VERGE_STONE.r, VERGE_STONE.g, VERGE_STONE.b, 0.52))
+						_verge_seg(e, bands, la, lb, d0 + 0.20, d0 + 0.34, Color(VERGE_STONE_FOOT.r, VERGE_STONE_FOOT.g, VERGE_STONE_FOOT.b, 0.50))
+					var hd := _hash(i, en, 43)
+					if hd % 100 < 30:                                     # 排水沟独立抽，刻意不与石墙对齐
+						var dd := 1.15 + float(hd / 100 % 11) * 0.13      # 1.15..2.45 格
+						var da := a0 + float(hd / 5 % 6) * 0.20
+						_verge_seg(e, bands, da, da + 0.75 + float(hd / 11 % 5) * 0.18, dd, dd + 0.22, Color(0, 0, 0, 0.20))
+			i += 2
 
 func _draw_town_backdrop(w: int, h: int) -> void:
 	var map := Rect2(0.0, 0.0, float(w) * T, float(h) * T)
@@ -853,6 +1035,9 @@ func _draw_town_backdrop(w: int, h: int) -> void:
 		return                                  # 镜头完全在界内（跟随相机的常态）：一笔都不画
 	for b in bands:
 		draw_rect(b, VOID_BASE, true)
+	# ★第一层：边界延续（docs/44 §四 / docs/43 §三-C7）。必须在暗林/暗角【之前】——
+	#   它是"地面继续往外走"的那一层，林子应当长在它外面，而不是压在它上面。
+	_draw_town_verge(map, bands, w, h)
 	# 镇子漏进林子的光：贴着地图外缘最亮、向外 8 圈熄灭。旧稿在这里放过一条【矩形青色岸带】，
 	# 眼验读作"给地图加了个装饰边框"——硬边框是原型感的来源，换成柔性光晕就消失了。
 	for k in range(8, 0, -1):
@@ -881,10 +1066,17 @@ func _draw_town_backdrop(w: int, h: int) -> void:
 						continue                # 界内不长树（R5：界内必须逐像素不变）
 					# 离镇越远越黑越稀：林子要"退进夜里"，不是铺一层等密度的点
 					var dist := _rect_dist(map, c)
+					var r := cell * (0.30 + float(hsh / 11 % 9) * 0.030)
+					# ★第一层是"地面延续"，不长成片的树：暗树冠（亮度 ~30）压在贴边草坡（亮度 ~150）上，
+					#   会把刚抹平的接缝换成一排更碎的高对比斑点。
+					#   ⚠️ 判据必须是【整个圆】在第一层之外，不是圆心：树冠半径最大 1.08 格，
+					#   只查圆心时实测仍有树冠伸到 1.47 格处，在 outband 上打出 81.1 的单点尖峰
+					#   （比没做这一棒之前还差）——这是本棒第二个被数值抓到、肉眼看不出的回归。
+					if dist - r < VERGE_TILES * float(T) * 0.80:
+						continue
 					var lit := clampf(1.0 - dist / fade_px, 0.0, 1.0)
 					if hsh / 9409 % 100 >= int(26.0 + 52.0 * lit):
 						continue
-					var r := cell * (0.30 + float(hsh / 11 % 9) * 0.030)
 					var cc := VOID_CANOPY_A if hsh % 3 == 0 else (VOID_CANOPY_B if hsh % 3 == 1 else VOID_CANOPY_C)
 					cc = cc.lerp(VOID_BASE, 1.0 - lit)      # 远处的树冠融进底色
 					draw_circle(c, r, cc)
