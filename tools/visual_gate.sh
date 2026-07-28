@@ -104,6 +104,20 @@ if [ "${1:-}" = "--shoot" ]; then
     if [ -s "$OUT/vg_${nm}.png" ]; then echo "  shot ok   vg_${nm}.png (tick=$tk)"
     else echo "  shot FAIL vg_${nm}.png (tick=$tk)"; rc=1; fi
   done
+  # ── D7 的界外层重画门（同一个 Xvfb，省一次容器启动）──────────────────────
+  # 为什么它在这里而不是自己一步：它和昼夜断言一样，**需要一个真 framebuffer**，
+  # 于是也需要同一套「探不到就 SKIP、GHA 上显式跳过」的可移植性逻辑。
+  # 它守的性质是 D7 那 9 倍帧时的【结构性根因】：**相机不动时，界外层不得随 tick 重画**。
+  # ⚠️ 这道门存在，是因为 draw-call 数【判别不出】那个修复：2903 draws→83.3ms 与 2911 draws→11.1ms
+  #    同样的 draw 数、7.5 倍的帧时差。真正的变量是「命令表是不是每帧重建」，不是它有多长。
+  #    （所以 docs/46 的 R11 已按 D7 的实测改写：视觉棒要报的是**帧时**，draw 数只是线索。）
+  if "$GBIN" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
+       --resolution ${W}x${H} --single-window -- --backend logic --seed "$SEED" --void-gate \
+       >>/tmp/vg-godot.log 2>&1; then
+    echo "  void-gate ok   (相机不动时界外层不随 tick 重画)"
+  else
+    echo "  void-gate FAIL (界外层在相机不动时仍随 tick 重画 —— D7 的 9× 帧时回归会复发)"; rc=1
+  fi
   kill $XV 2>/dev/null
   [ $rc -ne 0 ] && tail -25 /tmp/vg-godot.log
   exit $rc
