@@ -50,7 +50,7 @@ Demo videos, newest build first:
 - [A 70B model as the director layer](docs/media/director_70b_demo.mp4) (1:06)
 - [Player agency](docs/media/player_agency_demo.mp4) (0:30)
 
-![Current build: one full day-night cycle](docs/media/town_chronicle.gif)
+![Current build: the town under the demo camera](docs/media/town_chronicle.gif)
 
 > Desktop capture, `logic` backend, **with the demo camera** (`--demo-cam`) (native 1280×768, [full 1:10 clip with sound](docs/media/town_wavec_demo.mp4)).
 > Bottom-left is the **Town Chronicle**: what the engine does is split into "big news" and "recent", written as prose

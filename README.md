@@ -51,7 +51,7 @@
 - [70B 当编剧（导演层）](docs/media/director_70b_demo.mp4)（1:06）
 - [玩家能动性](docs/media/player_agency_demo.mp4)（0:30）
 
-![当前构建：一个完整的昼夜](docs/media/town_chronicle.gif)
+![当前构建：演示镜头下的小镇](docs/media/town_chronicle.gif)
 
 > 桌面实录，`logic` 后端，**演示镜头编排**（`--demo-cam`）（1280×768 原尺寸，[完整片段 1:10 带声音](docs/media/town_wavec_demo.mp4)）。
 > 左下角是**小镇编年史**——引擎里发生的事被分成「镇上的大事」与「近况」两栏，用中文讲出来
