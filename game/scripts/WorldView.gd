@@ -18,6 +18,103 @@ const OBJ_PX := 48.0     # 16px 源帧 × 3（= T，与地面/装饰同一个像
 const CHAR_FEET_ROW := 24.0
 const CHAR_HEAD_ROW := 5.0
 
+# ══ D6 · 收敛调色板 ═════════════════════════════════════════════════════════
+# 改动前实测：`game/scripts/*.gd` 里 **156** 个不同的硬编码色值（不是 docs/44 §三 写的 134——
+# 那条 grep 的口径是 `Color\("#hex"\)`，**要求 hex 后面紧跟 `")`**，于是漏掉了
+# `Color("#hex", alpha)` 这个两参形式；实测有 15 个色值【只】以两参形式出现，其中 6 个正是 D3 的夜灯层）。
+#
+# 靶子是 game/assets/art/palette.gpl（40 色）+ docs/44。**但 40 不是要凑的数**：
+# 那 40 色是外部评审在只看到约 30 个色值、且没看过室内地板/家具/表情 UI 的情况下提的，
+# 硬把室内七种木色压成一个只会让室内变成一坨。下面是【授权色】+ 逐组合并理由；
+# 位移量（dE00）逐条记在 docs/46 的 D6 回执里。
+#
+# P_* = palette.gpl 原样采用；X_* = 扩表（gpl 证明覆盖不到，每个带理由）；
+# D_* = 从锚点算出的明暗档，**不是新的授权色**（换掉锚点，它们跟着走）。
+# ★ 纪律：本文件里不许再出现新的 `Color("#...")` 字面量——要新色先往这张表里加并写理由。
+
+# ── palette.gpl 原样（39 个）──
+const P_RES_FACE     := Color("#c2a071")   # gpl res-wall-face
+const P_RES_TOP      := Color("#d8bd93")   # gpl res-wall-top
+const P_RES_FOOT     := Color("#836a48")   # gpl res-wall-foot
+const P_RES_ROOF     := Color("#a8443a")   # gpl res-roof
+const P_COM_FACE     := Color("#9a6c40")   # gpl com-wall-face（docs/44 §二 由 #8a6238 提亮）
+const P_COM_TOP      := Color("#b98956")   # gpl com-wall-top（docs/44 §二 由 #a67f4e 提亮）
+const P_COM_FOOT     := Color("#5a4028")   # gpl com-wall-foot（docs/44 §二 吸收 #5e4326）
+const P_COM_ROOF     := Color("#b5484a")   # gpl com-roof
+const P_PUB_FACE     := Color("#7c8a92")   # gpl pub-wall-face
+const P_PUB_TOP      := Color("#a7b3ba")   # gpl grass-winter / pub 墙 top（docs/44 §二 吸收 #9fabb2）
+const P_PUB_FOOT     := Color("#556169")   # gpl pub-wall-foot
+const P_PUB_ROOF     := Color("#5a86b0")   # gpl pub-roof
+const P_WRK_FACE     := Color("#82868f")   # gpl wrk-wall-face
+const P_WRK_TOP      := Color("#a0a4ac")   # gpl wrk-wall-top
+const P_WRK_FOOT     := Color("#585c64")   # gpl wrk-wall-foot
+const P_WRK_ROOF     := Color("#3f4b50")   # gpl wrk-roof（docs/44 §二 吸收 #3e4a5a）
+const P_RES_FLOOR    := Color("#c8a273")   # gpl res-floor-base
+const P_RES_LINE     := Color("#9c7748")   # gpl res-floor-line
+const P_COM_FLOOR    := Color("#bf9257")   # gpl com-floor-base
+const P_COM_LINE     := Color("#8c6533")   # gpl com-floor-line
+const P_PUB_FLOOR    := Color("#96a5ab")   # gpl pub-floor-base
+const P_PUB_LINE     := Color("#6c7b83")   # gpl pub-floor-line
+const P_STONE        := Color("#9b968d")   # gpl stone-base
+const P_STONE_LINE   := Color("#6d6a61")   # gpl stone-line
+const P_KERB         := Color("#b8b2a6")   # gpl road-kerb（此前代码零使用，本棒启用）
+const P_PLAZA        := Color("#c3a97a")   # gpl plaza-base
+const P_PLAZA_LINE   := Color("#9a8253")   # gpl plaza-line
+const P_GRASS        := Color("#85a643")   # gpl grass-summer
+const P_GRASS_AUT    := Color("#b59a4a")   # gpl grass-autumn
+const P_FOLIAGE_D    := Color("#5f7b34")   # gpl foliage-deep
+const P_FOLIAGE_M    := Color("#78933f")   # gpl foliage-mid
+const P_WATER_LIT    := Color("#86b7c8")   # gpl water-lit
+const P_WATER        := Color("#5a8ea6")   # gpl water-base
+const P_WATER_DEEP   := Color("#365f73")   # gpl water-deep
+const P_INT_COM      := Color("#4c463d")   # gpl int-wall-com
+const P_INT_WRK      := Color("#484054")   # gpl int-wall-wrk
+const P_TEXT         := Color("#e8e1d2")   # gpl ui-text（暖白：纸/布/奶油）
+const P_PANEL        := Color("#22252a")   # gpl ui-panel（最深轮廓）
+const P_NIGHT        := Color("#59627f")   # gpl night-multiply（此前代码零使用，本棒启用为冷紫暗面）
+
+# ── 扩表（17 个，gpl 覆盖不到）──
+const X_WOOD_MID     := Color("#6e4d31")   # 木器中段。gpl 的棕阶从 com-wall-foot(L30) 直跳 res-wall-foot(L47)，而全镇的门/家具体/柱/树干都落在这个空档里
+const X_VOID_BASE    := Color("#0b1209")   # 界外深林底 —— 必须逐字节等于 project.godot 的 default_clear_color（该文件不在本棒独占集内，改不了）
+const X_VOID_SPILL   := Color("#8fb36a")   # 镇子漏进林子的光。gpl 没有「溢光」这一档
+const X_CANOPY_A     := Color("#16301a")   # 界外林冠三档之一（C1/C7 出货的是森林，docs/44 §四写的是灰色布景，实物为准）
+const X_CANOPY_B     := Color("#1e3d22")   # 同上
+const X_CANOPY_C     := Color("#0f2413")   # 同上
+const X_LIGHT_WIN    := Color("#ff9a30")   # D3 加色光层·窗。色值由算术推出（R>1.111G 且 G>1.691B 才能活过夜蓝乘子）
+const X_LIGHT_LAMP   := Color("#ff8418")   # D3 加色光层·火。同上，更橙
+const X_GLOW_DEEP    := Color("#ffbe63")   # 室内/建筑底光。全家族里唯一 G/B 余量≥1.9 的，乘暗后才咬得住暖调（D3 实测）
+const X_GLOW         := Color("#ffd27a")   # 光池/点亮的玻璃/灯笼描边
+const X_GOLD         := Color("#ffd166")   # 金色强调（门把/传送锚/约见标记/灶台火苗心/灯笼流苏）。**定点**：Main.gd:518 在用，而 Main.gd 不在本棒独占集内
+## ★ 玩家金环【不能】并进 X_GOLD —— 这条是 R10 全帧眼验在 1.8× 夜景特写里抓到的，纸面上看不出来：
+##   夜乘子 (0.4242,0.4714,0.7972) **最不压蓝**。`#ffd700` 的 B=0，乘完还是 0 ⇒ 夜里 (108,101,0)，彩度 108；
+##   `#ffd166` 的 B=102 被乘成 81 ⇒ 夜里 (108,99,81)，彩度 **27**。**同一个"金"，夜里差 4 倍彩度。**
+##   合并的纸面代价只有 dE00 8.0（白天量的），而实际代价是"缺口#4 的玩家标记在夜里退成一圈米色"。
+##   ⇒ 全表里唯一一个 B=0 的色值，留着，理由就是这条通道。
+const X_PLAYER_GOLD  := Color("#ffd700")   # 玩家地面金环（见上）
+const X_PARCHMENT    := Color("#f2dca8")   # 淡暖字/淡暖边（招牌字、房型标签、室内暖边）
+const X_COLD_WHITE   := Color("#eaf3f8")   # 蒸汽/瓷/枕头。gpl 最亮的一档只有暖白 ui-text，冷白是真缺口
+const X_SIGNAL_POS   := Color("#7ed957")   # 好感正。**不采纳 gpl 的 grass-spring**：它与线所压着的 grass-summer 只差 dE00 6.3 —— 那条线会消失在草地里（见报告）
+const X_SIGNAL_NEG   := Color("#e85a5a")   # 好感负/冲突/灯笼/红指示灯/被子。**不采纳 gpl 的 com-roof**：那会让关系负线与每一片商业屋顶同色（D3 已记过这条撞色）
+const X_PACT         := Color("#39d4c8")   # 互助盟约双线。青色信号，gpl 无对应（water-lit 会与水撞）
+
+# ── 派生明暗档（12 个；const 不能带方法调用，故用 var —— 只在实例化时算一次）──
+var D_WOOD_LINE      := X_WOOD_MID.darkened(0.45)    # 木器描边/门框/门缝/搁板线 —— 木家族自己的最暗档；映到 ui-panel 会让它变冷（dE00 14.8），那正是「室内变一坨」
+var D_INT_WALL_TOP   := P_RES_FOOT.lightened(0.20)   # 室内墙顶棱高光
+var D_INT_WALL_FOOT  := P_RES_FOOT.darkened(0.28)    # 室内墙脚暗边
+var D_FURN_HI        := P_COM_LINE.lightened(0.18)   # 木家具二级高光（桌/凳/条凳的上沿）
+var D_POT            := P_COM_FACE.darkened(0.16)    # 陶罐底/花盆（0.10 时罐身↔罐底只剩 dE00 4.8，压到 0.16 拉回 7.5）
+var D_STAIR          := P_PLAZA_LINE.darkened(0.22)  # 楼梯踏板
+var D_STAIR_TOP      := P_PLAZA_LINE.lightened(0.10) # 楼梯踏面高光
+var D_RUG_RED        := P_COM_ROOF.darkened(0.24)    # 地毯·暖红（卧房/默认）
+var D_RUG_OLIVE      := P_PLAZA_LINE.darkened(0.30)  # 地毯·橄榄（茶座/咖啡）
+var D_RUG_TEAL       := P_WATER_DEEP.darkened(0.20)  # 地毯·青（浴/盥洗）：0.12 时地毯↔地板只剩 dE00 3.9（全表最窄），压到 0.20 拉回 6.5
+var D_BOOK_BLUE      := P_PUB_ROOF.darkened(0.28)    # 书脊·蓝（书架与书堆共用同一套三色）
+## 室内取景的界外底。原值 #0e1017 直接并进 P_PANEL 会把它抬亮 dE00 6.3，而它铺满约 59% 的画面
+## ——`_draw_interior_backdrop` 的整个设计（"镜头在屋外的暗处往里看"）就靠这块底比室内暗。
+## 用 P_PANEL 派生一档（dE00 3.2）：既不新增授权色，又保住那层暗。
+var D_BACKDROP       := P_PANEL.darkened(0.55)       # 室内取景的界外底
+# ══════════════════════════════════════════════════════════════════════════
+
 # ── 画面 LOD / 裁剪（纯 DRAW 侧）────────────────────────────────────────────────
 # ★红线：本节的一切【只决定画什么】，绝不回喂 Sim——不写 Sim.lod_focus、不改 Sim 任何字段。
 #   机器门：game/bench/lod_verify.gd（tools/ci.sh 步骤 4b）拿 5 个不同 lod_focus 跑，digest 必须逐字节相同。
@@ -298,21 +395,27 @@ var dbg_nav := false     # P2-4 导航开发叠层开关（Main 的 N 键切换�
 var _interiors := {}     # P3 室内内容 interiors.json：space -> floor -> {label,floor,furniture[]}
 var _interiors_loaded := false
 # P2-4 分类型建筑外观：墙面(face/top/foot 三段做体积)+屋檐(roof)+招牌图标，让"住宅/商业/公共/工坊"一眼可辨。
+## ★ D6：`icon` 只有 commercial（遮阳篷条纹）与 public（♨蒸汽）两处被读；
+##   residential 的 `#c85a4e` 与 workshop 的 `#cfcfcf` **全仓零读取**（`_draw_sign` 的这两个分支
+##   分别走 `pal["roof"]` 与字面量），已删。
+## ★ commercial 的 face/top 换成 palette.gpl 的**提亮值**（docs/44 §二「提亮两个」：
+##   #8A6238→#9A6C40、#A67F4E→#B98956，理由是原色夜里与室内木墙糊成一块）。
+##   同样的 #8a6238/#a67f4e 在家具上是另一个角色（木器高光），走 P_COM_LINE / D_FURN_HI，不跟着提亮。
 const BLD_PAL := {
-	"residential": {"face": Color("#c2a071"), "top": Color("#d8bd93"), "foot": Color("#836a48"), "roof": Color("#a8443a"), "icon": Color("#c85a4e")},  # 暖木墙+红瓦顶
-	"commercial":  {"face": Color("#8a6238"), "top": Color("#a67f4e"), "foot": Color("#5e4326"), "roof": Color("#b5484a"), "icon": Color("#efe4cc")},  # 棕木店面+红白条纹遮阳+咖啡招牌
-	"public":      {"face": Color("#7c8a92"), "top": Color("#9fabb2"), "foot": Color("#556169"), "roof": Color("#5a86b0"), "icon": Color("#eaf3f8")},  # 灰蓝石+蓝瓦+♨蒸汽
-	"workshop":    {"face": Color("#82868f"), "top": Color("#a0a4ac"), "foot": Color("#585c64"), "roof": Color("#3e4a5a"), "icon": Color("#cfcfcf")},  # 灰石+深蓝灰顶+烟囱黑烟
+	"residential": {"face": P_RES_FACE, "top": P_RES_TOP, "foot": P_RES_FOOT, "roof": P_RES_ROOF},                    # 暖木墙+红瓦顶
+	"commercial":  {"face": P_COM_FACE, "top": P_COM_TOP, "foot": P_COM_FOOT, "roof": P_COM_ROOF, "icon": P_TEXT},    # 棕木店面+红白条纹遮阳+咖啡招牌
+	"public":      {"face": P_PUB_FACE, "top": P_PUB_TOP, "foot": P_PUB_FOOT, "roof": P_PUB_ROOF, "icon": X_COLD_WHITE},  # 灰蓝石+蓝瓦+♨蒸汽
+	"workshop":    {"face": P_WRK_FACE, "top": P_WRK_TOP, "foot": P_WRK_FOOT, "roof": P_WRK_ROOF},                    # 灰石+深蓝灰顶+烟囱黑烟
 }
 ## 分类型【地板】：与 BLD_PAL 的墙色同族但更亮（屋顶被切掉，地面才是受光面）。
 ## 旧版只有广场有真地板，其余七个区只压一层 0.10 alpha 的淡色罩 —— 于是每栋建筑读作"围了圈墙的草坪院子"，
 ## 床和灶台直接摆在草上。这是整镇"灰盒原型感"的头号来源，而它整个在 View 层。
 const FLOOR_PAL := {
-	"residential": {"base": Color("#c8a273"), "line": Color("#9c7748"), "mode": "plank"},   # 暖木地板
-	"commercial":  {"base": Color("#bf9257"), "line": Color("#8c6533"), "mode": "plank"},   # 深一档的店面木地板
-	"public":      {"base": Color("#96a5ab"), "line": Color("#6c7b83"), "mode": "slab"},    # 冷灰石板（澡堂/图书馆）
-	"workshop":    {"base": Color("#9b968d"), "line": Color("#6d6a61"), "mode": "slab"},    # 暖灰石板（工坊）
-	"plaza":       {"base": Color("#c3a97a"), "line": Color("#9a8253"), "mode": "paving"},  # 中央广场铺装
+	"residential": {"base": P_RES_FLOOR, "line": P_RES_LINE, "mode": "plank"},   # 暖木地板
+	"commercial":  {"base": P_COM_FLOOR, "line": P_COM_LINE, "mode": "plank"},   # 深一档的店面木地板
+	"public":      {"base": P_PUB_FLOOR, "line": P_PUB_LINE, "mode": "slab"},    # 冷灰石板（澡堂/图书馆）
+	"workshop":    {"base": P_STONE, "line": P_STONE_LINE, "mode": "slab"},    # 暖灰石板（工坊）
+	"plaza":       {"base": P_PLAZA, "line": P_PLAZA_LINE, "mode": "paving"},  # 中央广场铺装
 }
 
 # ── 四季与天气（Wave C）──────────────────────────────────────────────────────
@@ -570,8 +673,8 @@ func _draw_building_dressing(w: int) -> void:
 func _draw_sign(typ: String, pal: Dictionary, cx: float, cy: float) -> void:
 	match typ:
 		"commercial":                                   # 咖啡杯 + 蒸汽
-			draw_rect(Rect2(cx - T * 0.2, cy - T * 0.14, T * 0.34, T * 0.28), Color("#f4ecd6"), true)
-			draw_rect(Rect2(cx - T * 0.2, cy - T * 0.14, T * 0.34, T * 0.07), Color("#7a4a2c"), true)
+			draw_rect(Rect2(cx - T * 0.2, cy - T * 0.14, T * 0.34, T * 0.28), P_TEXT, true)
+			draw_rect(Rect2(cx - T * 0.2, cy - T * 0.14, T * 0.34, T * 0.07), X_WOOD_MID, true)
 			draw_circle(Vector2(cx - T * 0.02, cy - T * 0.26), T * 0.045, Color(1, 1, 1, 0.55))
 		"public":                                       # ♨ 蓝底温泉标（澡堂）：蓝圆盘 + 三缕上升蒸汽
 			draw_circle(Vector2(cx, cy), T * 0.24, pal["roof"])
@@ -579,12 +682,12 @@ func _draw_sign(typ: String, pal: Dictionary, cx: float, cy: float) -> void:
 			for k in range(3):
 				draw_rect(Rect2(cx - T * 0.14 + k * T * 0.13, cy - T * 0.02, T * 0.05, T * 0.14), pal["icon"], true)
 		"workshop":                                     # 烟囱 + 烟
-			draw_rect(Rect2(cx - T * 0.1, cy - T * 0.12, T * 0.2, T * 0.34), Color("#4c3a28"), true)
+			draw_rect(Rect2(cx - T * 0.1, cy - T * 0.12, T * 0.2, T * 0.34), P_COM_FOOT, true)
 			draw_circle(Vector2(cx, cy - T * 0.24), T * 0.09, Color(0.82, 0.82, 0.82, 0.6))
 			draw_circle(Vector2(cx + T * 0.09, cy - T * 0.4), T * 0.07, Color(0.82, 0.82, 0.82, 0.4))
 		"residential":                                  # 山墙小屋剪影 + 烟囱
 			draw_colored_polygon(PackedVector2Array([Vector2(cx, cy - T * 0.32), Vector2(cx - T * 0.26, cy), Vector2(cx + T * 0.26, cy)]), pal["roof"])
-			draw_rect(Rect2(cx - T * 0.06, cy - T * 0.4, T * 0.1, T * 0.18), Color("#6b4a2b"), true)
+			draw_rect(Rect2(cx - T * 0.06, cy - T * 0.4, T * 0.1, T * 0.18), X_WOOD_MID, true)
 
 ## P3 打磨：外墙细节——沿上/下墙等距开窗（跳过转角与门口），住宅/工坊再加一根冒烟的烟囱。
 ## 夜里窗透暖光（tod 判昼夜）→ 一眼看出"屋里有人住"。纯渲染、无 RNG（位置由 rect 等距推出）。
@@ -620,8 +723,8 @@ func _draw_facades() -> void:
 		if typ == "residential" or typ == "workshop":    # 烟囱：坐在顶墙右段，飘两团烟
 			var chx := float(x0 + bw - 2) * T
 			var chy := float(y0) * T
-			draw_rect(Rect2(chx + T * 0.28, chy - T * 0.52, T * 0.4, T * 0.5), Color("#6b4a2b"), true)
-			draw_rect(Rect2(chx + T * 0.24, chy - T * 0.58, T * 0.48, T * 0.13), Color("#4c3a28"), true)
+			draw_rect(Rect2(chx + T * 0.28, chy - T * 0.52, T * 0.4, T * 0.5), X_WOOD_MID, true)
+			draw_rect(Rect2(chx + T * 0.24, chy - T * 0.58, T * 0.48, T * 0.13), P_COM_FOOT, true)
 			draw_circle(Vector2(chx + T * 0.5, chy - T * 0.8), T * 0.11, Color(0.86, 0.86, 0.86, 0.40))
 			draw_circle(Vector2(chx + T * 0.63, chy - T * 1.02), T * 0.085, Color(0.86, 0.86, 0.86, 0.26))
 
@@ -631,13 +734,13 @@ func _draw_facades() -> void:
 ## 现在分成两档：亮着的窗给更饱和的暖玻璃（配合加色光层的光池），黑着的窗给冷暗玻璃 ⇒
 ## 一排窗有明有暗，才读得出"有几户还醒着"。白天两档都不走，正午帧逐像素不动。
 func _draw_window(x: float, y: float, pal: Dictionary, lit: bool, night: bool) -> void:
-	var glass: Color = Color("#5d7f96")                                  # 昼=映天色
+	var glass: Color = P_WATER                                  # 昼=映天色
 	if night:
-		glass = Color("#ffcf7d") if lit else Color("#2b3a46")            # 夜：点灯=暖玻璃 / 熄灯=冷暗玻璃
+		glass = X_GLOW if lit else P_WRK_ROOF            # 夜：点灯=暖玻璃 / 熄灯=冷暗玻璃
 	draw_rect(Rect2(x + T * 0.22, y + T * 0.24, T * 0.56, T * 0.44), pal["foot"], true)            # 窗洞（深）
 	draw_rect(Rect2(x + T * 0.26, y + T * 0.28, T * 0.48, T * 0.36), glass, true)                  # 玻璃
 	if lit:
-		draw_rect(Rect2(x + T * 0.16, y + T * 0.18, T * 0.68, T * 0.56), Color(0.98, 0.85, 0.55, 0.15), true)  # 外溢暖光
+		draw_rect(Rect2(x + T * 0.16, y + T * 0.18, T * 0.68, T * 0.56), Color(X_GLOW, 0.15), true)  # 外溢暖光
 	draw_line(Vector2(x + T * 0.5, y + T * 0.28), Vector2(x + T * 0.5, y + T * 0.64), pal["foot"], 1.5)        # 竖棂
 	draw_line(Vector2(x + T * 0.26, y + T * 0.46), Vector2(x + T * 0.74, y + T * 0.46), pal["foot"], 1.5)      # 横棂
 	draw_rect(Rect2(x + T * 0.22, y + T * 0.24, T * 0.56, T * 0.44), (pal["top"] as Color).lightened(0.18), false, 1.5)  # 窗框
@@ -831,7 +934,7 @@ func _load_interiors() -> void:
 ## （docs/media/shot-p3-patrons-cafe.png 里那条灰带就是它）。铺暗底 + 四周暗角 + 房子外圈落影 + 极淡暖边，
 ## 读法变成"镜头在屋外的暗处往里看"，而不是"一个方块浮在空白画布上"。纯 View。
 func _draw_interior_backdrop(main: Node, probe) -> void:
-	draw_rect(_vis, Color("#0e1017"), true)
+	draw_rect(_vis, D_BACKDROP, true)
 	# 暗角：由外向内 6 圈，越外越沉（随后室内地板会不透明地盖回中间，暗角只作用在虚空上）
 	var bw := minf(_vis.size.x, _vis.size.y) * 0.05
 	for k in 6:
@@ -851,7 +954,7 @@ func _draw_interior_backdrop(main: Node, probe) -> void:
 	var b: Rect2 = sg.bounds_px(String(probe.active_space))
 	for k in range(8, 0, -1):                       # 外圈落影：由外向内叠，越贴墙越暗 → 房子"坐"在暗处
 		draw_rect(b.grow(float(k) * 9.0), Color(0, 0, 0, 0.06), true)
-	draw_rect(b.grow(4.0), Color("#f2dca8", 0.07), true)   # 极淡暖边：屋里透出来的一点光
+	draw_rect(b.grow(4.0), Color(X_PARCHMENT, 0.07), true)   # 极淡暖边：屋里透出来的一点光
 
 ## Probe 进入非-town Space：有 interiors.json 内容 → 画【真室内】（地板/墙/家具/门/楼梯）；否则回落占位网格。
 func _draw_space_placeholder() -> void:
@@ -867,21 +970,21 @@ func _draw_space_placeholder() -> void:
 	if not content.is_empty():
 		_draw_interior(sg, sid, fid, b, content)
 		return
-	draw_rect(b, Color("#1a1d26"), true)
-	draw_rect(b, Color("#5a6478"), false, 2.0)
+	draw_rect(b, P_PANEL, true)
+	draw_rect(b, P_NIGHT, false, 2.0)
 	for gx in range(int(b.size.x / T) + 1):
 		draw_line(Vector2(b.position.x + gx * T, b.position.y), Vector2(b.position.x + gx * T, b.end.y), Color(1, 1, 1, 0.05), 1.0)
 	for gy in range(int(b.size.y / T) + 1):
 		draw_line(Vector2(b.position.x, b.position.y + gy * T), Vector2(b.end.x, b.position.y + gy * T), Color(1, 1, 1, 0.05), 1.0)
 	draw_string(Art.font(), b.position + Vector2(10, 26), "%s / %s（Probe inspect · 无内容占位）" % [sg.label_of(sid), fid],
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color("#cfe8ff"))
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 16, X_COLD_WHITE)
 	for pt in sg.portals_from(sid, fid):          # Portal 锚点：看得见"这层通向哪"
 		var to: Dictionary = pt["to"]
 		var pos: Array = to.get("pos", [0, 0])
 		var c := Vector2(float(pos[0]) * T + T * 0.5, float(pos[1]) * T + T * 0.5)
-		draw_circle(c, 10.0, Color("#ffd166", 0.85))
+		draw_circle(c, 10.0, Color(X_GOLD, 0.85))
 		draw_string(Art.font(), c + Vector2(12, 4), "%s→%s/%s" % [pt["kind"], to.get("space", ""), to.get("floor", "")],
-			HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("#ffd166"))
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 11, X_GOLD)
 
 ## 画一层真室内：木地板 + 外墙(门口留缺) + 家具(程序化) + 门/上下楼提示 + 楼层标签。纯 View、只读数据。
 func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary) -> void:
@@ -897,18 +1000,18 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 				door_gap[int(ep[1]) * wc + int(ep[0])] = true
 	# 地板：按 interiors.json 的 floor 材质画（wood=暖木条纹 / stone=冷灰石板缝）→ 澡堂/工坊/图书馆一进门就和木屋不同
 	if String(content.get("floor", "wood")) == "stone":
-		draw_rect(b, Color("#9a9490"), true)
+		draw_rect(b, P_STONE, true)
 		for gy in range(hc):
 			for gx in range(wc):
 				if (gx + gy) % 2 == 0:
-					draw_rect(Rect2(ox + gx * T, oy + gy * T, T, T), Color("#a8a29c", 0.55), true)   # 交错石板
+					draw_rect(Rect2(ox + gx * T, oy + gy * T, T, T), Color(P_KERB, 0.55), true)   # 交错石板
 		for gy in range(hc):
-			draw_rect(Rect2(ox, oy + gy * T, b.size.x, 2), Color("#6f6a66", 0.45), true)             # 横缝
+			draw_rect(Rect2(ox, oy + gy * T, b.size.x, 2), Color(P_STONE_LINE, 0.45), true)             # 横缝
 	else:
-		draw_rect(b, Color("#caa26e"), true)
+		draw_rect(b, P_RES_FLOOR, true)
 		for gy in range(hc):
 			if gy % 2 == 0:
-				draw_rect(Rect2(ox, oy + gy * T, b.size.x, 3), Color("#a6814e", 0.4), true)
+				draw_rect(Rect2(ox, oy + gy * T, b.size.x, 3), Color(P_RES_LINE, 0.4), true)
 	# 外墙（边框），门口那格留缺、画成门
 	for gx in range(wc):
 		_interior_wall(sg, ox + gx * T, oy, door_gap.has(gx))                          # 上墙
@@ -929,7 +1032,7 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 			_draw_agent(ag)
 	# 楼层标签
 	draw_string(Art.font(), b.position + Vector2(T + 8, 22), "%s · %s" % [sg.label_of(sid), content.get("label", fid)],
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("#3a2a1a"))
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 15, D_WOOD_LINE)
 
 ## P3 打磨：室内夜间氛围。CanvasModulate 把整幅世界画布乘暗（室内也不例外）→ 夜里进屋本是【冷灰洞】：
 ## 暖木地板被夜蓝乘平。这里靠【相对暖光】把屋子从冷夜拉出来：整层压一层暖底光 + 每件光源家具
@@ -946,7 +1049,7 @@ func _draw_interior_night(b: Rect2, content: Dictionary, sid: String, fid: Strin
 	var lit := 0.20 * night + minf(0.12, occ * 0.04) * (0.5 + 0.5 * night)
 	if lit <= 0.001:
 		return                                        # 白昼无人：日间室内保持原样
-	draw_rect(b, Color("#ffbe63", lit), true)         # 暖底光：偏橙、被夜蓝乘过后仍咬得住暖调
+	draw_rect(b, Color(X_GLOW_DEEP, lit), true)         # 暖底光：偏橙、被夜蓝乘过后仍咬得住暖调
 	var ox := b.position.x; var oy := b.position.y
 	var light_slots := {"bed": true, "table": true, "counter": true, "coffee": true, "desk": true, "stove": true}
 	for fr in content.get("furniture", []):
@@ -963,87 +1066,87 @@ func _draw_interior_night(b: Rect2, content: Dictionary, sid: String, fid: Strin
 		var cen := Vector2(ox + float(cell.x) * T + T * 0.5, oy + float(cell.y) * T + T * 0.5)
 		for k in 4:                                   # 四层同心：内亮外淡，叠出"光源在这"的衰减
 			var f := 1.0 - float(k) / 4.0
-			draw_circle(cen, T * (0.55 + 0.5 * float(k)), Color("#ffd27a", pool * 0.14 * f))
+			draw_circle(cen, T * (0.55 + 0.5 * float(k)), Color(X_GLOW, pool * 0.14 * f))
 
 func _interior_wall(sg, x: float, y: float, is_door: bool) -> void:
 	if is_door:                                    # 门：地板延伸 + 门框 + 木门
-		draw_rect(Rect2(x + T * 0.12, y + T * 0.1, T * 0.76, T * 0.8), Color("#6e4d31"), true)
-		draw_rect(Rect2(x + T * 0.12, y + T * 0.1, T * 0.76, T * 0.8), Color("#3a291a"), false, 2.0)
-		draw_circle(Vector2(x + T * 0.72, y + T * 0.5), T * 0.05, Color("#e0c060"))   # 门把
+		draw_rect(Rect2(x + T * 0.12, y + T * 0.1, T * 0.76, T * 0.8), X_WOOD_MID, true)
+		draw_rect(Rect2(x + T * 0.12, y + T * 0.1, T * 0.76, T * 0.8), D_WOOD_LINE, false, 2.0)
+		draw_circle(Vector2(x + T * 0.72, y + T * 0.5), T * 0.05, X_GOLD)   # 门把
 		return
-	draw_rect(Rect2(x, y, T, T), Color("#8a7256"), true)             # 墙主面（暖石灰）
-	draw_rect(Rect2(x, y, T, T * 0.24), Color("#a08a6c"), true)      # 顶棱高光
-	draw_rect(Rect2(x, y + T * 0.86, T, T * 0.14), Color("#5f4c38"), true)  # 墙脚暗边
+	draw_rect(Rect2(x, y, T, T), P_RES_FOOT, true)             # 墙主面（暖石灰）
+	draw_rect(Rect2(x, y, T, T * 0.24), D_INT_WALL_TOP, true)      # 顶棱高光
+	draw_rect(Rect2(x, y + T * 0.86, T, T * 0.14), D_INT_WALL_FOOT, true)  # 墙脚暗边
 
 func _draw_interior_furniture(slot: String, base: Vector2) -> void:
 	match slot:
 		"bed": _draw_bed(base)
 		"coffee":                                   # 咖啡机：深色金属机身 + 红灯 + 杯
-			draw_rect(Rect2(base.x + T * 0.2, base.y + T * 0.15, T * 0.6, T * 0.62), Color("#3a3f47"), true)
-			draw_rect(Rect2(base.x + T * 0.2, base.y + T * 0.15, T * 0.6, T * 0.14), Color("#565c66"), true)
-			draw_circle(Vector2(base.x + T * 0.68, base.y + T * 0.3), T * 0.05, Color("#e05a4e"))
-			draw_rect(Rect2(base.x + T * 0.42, base.y + T * 0.52, T * 0.16, T * 0.14), Color("#efe4cc"), true)
+			draw_rect(Rect2(base.x + T * 0.2, base.y + T * 0.15, T * 0.6, T * 0.62), P_WRK_ROOF, true)
+			draw_rect(Rect2(base.x + T * 0.2, base.y + T * 0.15, T * 0.6, T * 0.14), P_WRK_FOOT, true)
+			draw_circle(Vector2(base.x + T * 0.68, base.y + T * 0.3), T * 0.05, X_SIGNAL_NEG)
+			draw_rect(Rect2(base.x + T * 0.42, base.y + T * 0.52, T * 0.16, T * 0.14), P_TEXT, true)
 		"counter":                                  # 吧台：长木身 + 台面高光
 			draw_rect(Rect2(base.x + 2, base.y + T * 0.6, T - 4, T * 0.35), Color(0, 0, 0, 0.18), true)
-			draw_rect(Rect2(base.x + T * 0.03, base.y + T * 0.32, T * 0.94, T * 0.5), Color("#6e4d31"), true)
-			draw_rect(Rect2(base.x + T * 0.03, base.y + T * 0.32, T * 0.94, T * 0.1), Color("#8a6238"), true)
+			draw_rect(Rect2(base.x + T * 0.03, base.y + T * 0.32, T * 0.94, T * 0.5), X_WOOD_MID, true)
+			draw_rect(Rect2(base.x + T * 0.03, base.y + T * 0.32, T * 0.94, T * 0.1), P_COM_LINE, true)
 		"table":                                    # 餐桌
-			draw_rect(Rect2(base.x + T * 0.24, base.y + T * 0.5, T * 0.1, T * 0.34), Color("#5a3f28"), true)
-			draw_rect(Rect2(base.x + T * 0.66, base.y + T * 0.5, T * 0.1, T * 0.34), Color("#5a3f28"), true)
-			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.3, T * 0.7, T * 0.24), Color("#8a6238"), true)
-			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.3, T * 0.7, T * 0.08), Color("#a67f4e"), true)
+			draw_rect(Rect2(base.x + T * 0.24, base.y + T * 0.5, T * 0.1, T * 0.34), P_COM_FOOT, true)
+			draw_rect(Rect2(base.x + T * 0.66, base.y + T * 0.5, T * 0.1, T * 0.34), P_COM_FOOT, true)
+			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.3, T * 0.7, T * 0.24), P_COM_LINE, true)
+			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.3, T * 0.7, T * 0.08), D_FURN_HI, true)
 		"chair":                                    # 椅子
-			draw_rect(Rect2(base.x + T * 0.34, base.y + T * 0.2, T * 0.32, T * 0.5), Color("#6e4d31"), true)
-			draw_rect(Rect2(base.x + T * 0.34, base.y + T * 0.44, T * 0.32, T * 0.13), Color("#8a6238"), true)
+			draw_rect(Rect2(base.x + T * 0.34, base.y + T * 0.2, T * 0.32, T * 0.5), X_WOOD_MID, true)
+			draw_rect(Rect2(base.x + T * 0.34, base.y + T * 0.44, T * 0.32, T * 0.13), P_COM_LINE, true)
 		"shelf":                                    # 书架/货架
-			draw_rect(Rect2(base.x + T * 0.1, base.y + T * 0.05, T * 0.8, T * 0.85), Color("#5a3f28"), true)
-			var bookcols := [Color("#a3443a"), Color("#4a7a5a"), Color("#47688a")]
+			draw_rect(Rect2(base.x + T * 0.1, base.y + T * 0.05, T * 0.8, T * 0.85), P_COM_FOOT, true)
+			var bookcols := [P_RES_ROOF, P_FOLIAGE_D, D_BOOK_BLUE]
 			for k in range(3):
-				draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.24 + k * T * 0.22, T * 0.7, T * 0.04), Color("#3a291a"), true)
+				draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.24 + k * T * 0.22, T * 0.7, T * 0.04), D_WOOD_LINE, true)
 				draw_rect(Rect2(base.x + T * 0.18, base.y + T * 0.12 + k * T * 0.22, T * 0.5, T * 0.11), bookcols[k], true)
 		"plant":                                    # 盆栽
-			draw_rect(Rect2(base.x + T * 0.34, base.y + T * 0.56, T * 0.32, T * 0.28), Color("#8a5a3a"), true)
-			draw_circle(Vector2(base.x + T * 0.5, base.y + T * 0.42), T * 0.24, Color("#2f6d3a"))
-			draw_circle(Vector2(base.x + T * 0.4, base.y + T * 0.32), T * 0.14, Color("#3c8a4a"))
+			draw_rect(Rect2(base.x + T * 0.34, base.y + T * 0.56, T * 0.32, T * 0.28), D_POT, true)
+			draw_circle(Vector2(base.x + T * 0.5, base.y + T * 0.42), T * 0.24, P_FOLIAGE_D)
+			draw_circle(Vector2(base.x + T * 0.4, base.y + T * 0.32), T * 0.14, P_FOLIAGE_M)
 		"rug":                                       # 地毯
-			draw_rect(Rect2(base.x + T * 0.08, base.y + T * 0.15, T * 0.84, T * 0.7), Color("#8a4a4a", 0.75), true)
-			draw_rect(Rect2(base.x + T * 0.08, base.y + T * 0.15, T * 0.84, T * 0.7), Color("#e0c060", 0.5), false, 2.0)
+			draw_rect(Rect2(base.x + T * 0.08, base.y + T * 0.15, T * 0.84, T * 0.7), Color(D_RUG_RED, 0.75), true)
+			draw_rect(Rect2(base.x + T * 0.08, base.y + T * 0.15, T * 0.84, T * 0.7), Color(X_GOLD, 0.5), false, 2.0)
 		"desk":                                      # 书桌 + 纸
-			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.35, T * 0.7, T * 0.28), Color("#6e4d31"), true)
-			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.35, T * 0.7, T * 0.08), Color("#8a6238"), true)
-			draw_rect(Rect2(base.x + T * 0.2, base.y + T * 0.55, T * 0.09, T * 0.28), Color("#5a3f28"), true)
-			draw_rect(Rect2(base.x + T * 0.71, base.y + T * 0.55, T * 0.09, T * 0.28), Color("#5a3f28"), true)
-			draw_rect(Rect2(base.x + T * 0.26, base.y + T * 0.22, T * 0.2, T * 0.14), Color("#efe4cc"), true)
+			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.35, T * 0.7, T * 0.28), X_WOOD_MID, true)
+			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.35, T * 0.7, T * 0.08), P_COM_LINE, true)
+			draw_rect(Rect2(base.x + T * 0.2, base.y + T * 0.55, T * 0.09, T * 0.28), P_COM_FOOT, true)
+			draw_rect(Rect2(base.x + T * 0.71, base.y + T * 0.55, T * 0.09, T * 0.28), P_COM_FOOT, true)
+			draw_rect(Rect2(base.x + T * 0.26, base.y + T * 0.22, T * 0.2, T * 0.14), P_TEXT, true)
 		"window":                                    # 窗（画在墙上）：天光 + 木框 + 十字
-			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.12, T * 0.7, T * 0.5), Color("#8fc0e0"), true)
-			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.12, T * 0.7, T * 0.5), Color("#5a3f28"), false, 3.0)
-			draw_line(Vector2(base.x + T * 0.5, base.y + T * 0.12), Vector2(base.x + T * 0.5, base.y + T * 0.62), Color("#5a3f28"), 2.0)
+			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.12, T * 0.7, T * 0.5), P_WATER_LIT, true)
+			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.12, T * 0.7, T * 0.5), P_COM_FOOT, false, 3.0)
+			draw_line(Vector2(base.x + T * 0.5, base.y + T * 0.12), Vector2(base.x + T * 0.5, base.y + T * 0.62), P_COM_FOOT, 2.0)
 		"bath":                                      # 浴池：石沿 + 水面 + 蒸汽
-			draw_rect(Rect2(base.x + T * 0.1, base.y + T * 0.2, T * 0.8, T * 0.66), Color("#8b93a0"), true)
-			draw_rect(Rect2(base.x + T * 0.17, base.y + T * 0.27, T * 0.66, T * 0.52), Color("#4f9dc4"), true)
-			draw_rect(Rect2(base.x + T * 0.17, base.y + T * 0.27, T * 0.66, T * 0.12), Color("#8fd0e8", 0.8), true)
+			draw_rect(Rect2(base.x + T * 0.1, base.y + T * 0.2, T * 0.8, T * 0.66), P_WRK_FACE, true)
+			draw_rect(Rect2(base.x + T * 0.17, base.y + T * 0.27, T * 0.66, T * 0.52), P_WATER, true)
+			draw_rect(Rect2(base.x + T * 0.17, base.y + T * 0.27, T * 0.66, T * 0.12), Color(P_WATER_LIT, 0.8), true)
 			draw_circle(Vector2(base.x + T * 0.36, base.y + T * 0.14), T * 0.07, Color(1, 1, 1, 0.35))
 			draw_circle(Vector2(base.x + T * 0.6, base.y + T * 0.07), T * 0.055, Color(1, 1, 1, 0.22))
 		"bench":                                     # 条凳：长座板 + 两腿
-			draw_rect(Rect2(base.x + T * 0.08, base.y + T * 0.42, T * 0.84, T * 0.17), Color("#8a6238"), true)
-			draw_rect(Rect2(base.x + T * 0.08, base.y + T * 0.42, T * 0.84, T * 0.05), Color("#a67f4e"), true)
-			draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.59, T * 0.1, T * 0.24), Color("#5a3f28"), true)
-			draw_rect(Rect2(base.x + T * 0.74, base.y + T * 0.59, T * 0.1, T * 0.24), Color("#5a3f28"), true)
+			draw_rect(Rect2(base.x + T * 0.08, base.y + T * 0.42, T * 0.84, T * 0.17), P_COM_LINE, true)
+			draw_rect(Rect2(base.x + T * 0.08, base.y + T * 0.42, T * 0.84, T * 0.05), D_FURN_HI, true)
+			draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.59, T * 0.1, T * 0.24), P_COM_FOOT, true)
+			draw_rect(Rect2(base.x + T * 0.74, base.y + T * 0.59, T * 0.1, T * 0.24), P_COM_FOOT, true)
 		"crate":                                     # 木箱：板条 + 对角加固
-			draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.3, T * 0.68, T * 0.56), Color("#9a7042"), true)
-			draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.3, T * 0.68, T * 0.56), Color("#5a3f28"), false, 2.0)
-			draw_line(Vector2(base.x + T * 0.16, base.y + T * 0.86), Vector2(base.x + T * 0.84, base.y + T * 0.3), Color("#5a3f28"), 2.0)
-			draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.3, T * 0.68, T * 0.08), Color("#b5854e"), true)
+			draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.3, T * 0.68, T * 0.56), P_RES_LINE, true)
+			draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.3, T * 0.68, T * 0.56), P_COM_FOOT, false, 2.0)
+			draw_line(Vector2(base.x + T * 0.16, base.y + T * 0.86), Vector2(base.x + T * 0.84, base.y + T * 0.3), P_COM_FOOT, 2.0)
+			draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.3, T * 0.68, T * 0.08), P_COM_TOP, true)
 		"stool":                                     # 圆凳
-			draw_circle(Vector2(base.x + T * 0.5, base.y + T * 0.5), T * 0.22, Color("#8a6238"))
-			draw_circle(Vector2(base.x + T * 0.5, base.y + T * 0.47), T * 0.18, Color("#a67f4e"))
-			draw_rect(Rect2(base.x + T * 0.44, base.y + T * 0.62, T * 0.12, T * 0.22), Color("#5a3f28"), true)
+			draw_circle(Vector2(base.x + T * 0.5, base.y + T * 0.5), T * 0.22, P_COM_LINE)
+			draw_circle(Vector2(base.x + T * 0.5, base.y + T * 0.47), T * 0.18, D_FURN_HI)
+			draw_rect(Rect2(base.x + T * 0.44, base.y + T * 0.62, T * 0.12, T * 0.22), P_COM_FOOT, true)
 		"stairs":                                    # 楼梯：斜阶
 			for k in range(4):
-				draw_rect(Rect2(base.x + T * 0.12 + k * T * 0.17, base.y + T * 0.62 - k * T * 0.13, T * 0.2, T * 0.15), Color("#7a6a52"), true)
-				draw_rect(Rect2(base.x + T * 0.12 + k * T * 0.17, base.y + T * 0.62 - k * T * 0.13, T * 0.2, T * 0.04), Color("#9a8a70"), true)
+				draw_rect(Rect2(base.x + T * 0.12 + k * T * 0.17, base.y + T * 0.62 - k * T * 0.13, T * 0.2, T * 0.15), D_STAIR, true)
+				draw_rect(Rect2(base.x + T * 0.12 + k * T * 0.17, base.y + T * 0.62 - k * T * 0.13, T * 0.2, T * 0.04), D_STAIR_TOP, true)
 		_:
-			draw_rect(Rect2(base.x + 9, base.y + 12, T - 18, T - 18), Color("#8a6a45"), true)
+			draw_rect(Rect2(base.x + 9, base.y + 12, T - 18, T - 18), P_RES_FOOT, true)
 
 var _rc_conflict_ids := {}   # 每帧预建：卷入活跃冲突的 agent 端点集（渲染缓存，_draw_agent 用 O(1) 查）
 var _rc_meet_ids := {}       # 每帧预建：有活跃约会的 agent 端点集
@@ -1055,11 +1158,11 @@ var _rc_meet_ids := {}       # 每帧预建：有活跃约会的 agent 端点集
 ##
 ## ★这一层只画【地图矩形之外】：把 _vis 减去 map 得到上/下/左/右四条带，只在带里绘制。
 ##   R5 双向断言就靠这条 —— 界内必须逐像素不变（ImageChops bbox 完全落在地图矩形外）。
-const VOID_BASE := Color("#0b1209")     # 深林底（与 project.godot 的 default_clear_color 同色）
-const VOID_SPILL := Color("#8fb36a")    # 镇子漏进林子的那点光（贴着地图外缘最亮，向外熄灭）
-const VOID_CANOPY_A := Color("#16301a")
-const VOID_CANOPY_B := Color("#1e3d22")
-const VOID_CANOPY_C := Color("#0f2413")
+const VOID_BASE := X_VOID_BASE     # 深林底（与 project.godot 的 default_clear_color 同色）
+const VOID_SPILL := X_VOID_SPILL    # 镇子漏进林子的那点光（贴着地图外缘最亮，向外熄灭）
+const VOID_CANOPY_A := X_CANOPY_A
+const VOID_CANOPY_B := X_CANOPY_B
+const VOID_CANOPY_C := X_CANOPY_C
 const VOID_SPILL_TILES := 6.0           # 光晕带宽（格）
 const VOID_FADE_TILES := 22.0           # 从地图外缘到"全黑深林"的距离（格）
 const VOID_DECOR_MAX_CELLS := 4096      # 装饰上限：极端缩放下只铺底色，不烧填充率（红线#3 手机）
@@ -1081,11 +1184,11 @@ const VOID_DECOR_MAX_CELLS := 4096      # 装饰上限：极端缩放下只铺�
 ## ★ 一切界外绘制统一走 _verge_seg / _verge_ring 的 bands 求交 ⇒ **界内逐像素不动是构造保证**。
 const VERGE_TILES := 3.0                    # 第一层深度（docs/44 §四："2-3 格"）
 const VERGE_KNEE := 0.30                    # 斜坡拐点：t<KNEE 从地面色过渡到草坡色
-const VERGE_SLOPE := Color("#5f7b34")       # 草坡（docs/44 §四）
-const VERGE_STONE := Color("#9b968d")       # 硬质·受光顶面（docs/44 §四）
-const VERGE_STONE_FOOT := Color("#6d6a61")  # 硬质·背光面（docs/44 §四）
+const VERGE_SLOPE := P_FOLIAGE_D       # 草坡（docs/44 §四）
+const VERGE_STONE := P_STONE       # 硬质·受光顶面（docs/44 §四）
+const VERGE_STONE_FOOT := P_STONE_LINE  # 硬质·背光面（docs/44 §四）
 const VERGE_MOTIF_ZOOM := 0.18              # 低于此缩放只铺斜坡，不画硬质细节（红线#3 手机）
-const GRASS_FALLBACK := Color("#85a643")    # 缺草地切片时的地面色（= grass_a 的实测均值 133,166,67）
+const GRASS_FALLBACK := P_GRASS    # 缺草地切片时的地面色（= grass_a 的实测均值 133,166,67）
 
 var _verge_ground := Color(0, 0, 0, 0)      # 草地纹理加权均值缓存（a<=0 = 未算）
 
@@ -1458,8 +1561,8 @@ func _draw_town_backdrop(c: CanvasItem, w: int, h: int) -> void:
 #   出图上整排房子糊成一片、暖调全丢。压到下面这两个色（乘暗后 (108,73,38) / (108,62,19)）之后，
 #   R 先到顶而 G/B 还留在一半，核心才读作**琥珀色的火**而不是白炽灯。
 #   ⇒ 「满足暖光判据」与「看起来像灯」是两件事，前者是后者的必要不充分条件。
-const LIGHT_WIN := Color("#ff9a30")    # 窗/告示板：暖黄
-const LIGHT_LAMP := Color("#ff8418")   # 门楣/井灯/节日灯：更橙的火光
+const LIGHT_WIN := X_LIGHT_WIN    # 窗/告示板：暖黄
+const LIGHT_LAMP := X_LIGHT_LAMP   # 门楣/井灯/节日灯：更橙的火光
 # ★ 光晕用一张**程序生成的径向衰减贴图**叠 LIGHT_STACK 次，不用同心圆堆。
 #   第一版是 6 个同心 `draw_circle`：在 `--shot-fit`（zoom 0.23）下完全看不出问题，
 #   但 R10 要求的**特写全帧眼验**（`--select player`，zoom 1.8）里，那 6 圈是 **6 道硬边同心环**，
@@ -1702,7 +1805,7 @@ func _draw_body() -> void:
 		if grass != null:
 			draw_texture_rect(grass, Rect2(0, 0, w * T, h * T), true, veg)
 		else:
-			draw_rect(Rect2(0, 0, w * T, h * T), Art.ground * veg, true)
+			draw_rect(Rect2(0, 0, w * T, h * T), GRASS_FALLBACK * veg, true)   # D6：原为 Art.ground（深蓝灰），而这是【缺草地切片时的地面】—— 用同文件的草色兜底才对，且让 Art.gd 不再持有任何色值
 	var dirt := Art.terrain_tex("dirt")
 	# 水面（map.json water 层）：铺在草地之上、区域/建筑之下，作为地形读。深蓝底 + 浅蓝格纹岸边微光，
 	# 用确定性 _hash 做静态涟漪（不抽 RNG、不进 digest）。
@@ -1725,9 +1828,9 @@ func _draw_body() -> void:
 		if wtile != null:
 			draw_texture_rect(wtile, wr, false, wtint)
 		else:
-			draw_rect(wr, Color("#2f6d86") * wtint, true)
+			draw_rect(wr, P_WATER_DEEP * wtint, true)
 			if _hash(wx, wy, 21) % 100 < 30:   # 静态涟漪高光
-				draw_rect(Rect2(wx * T + T * 0.18, wy * T + T * 0.30, T * 0.42, T * 0.12), Color(0.72, 0.86, 0.94, 0.35) * wtint, true)
+				draw_rect(Rect2(wx * T + T * 0.18, wy * T + T * 0.30, T * 0.42, T * 0.12), Color(P_WATER_LIT, 0.35) * wtint, true)
 
 	# 土路网（广场↔各家门口）：铺在草地之上、区域/建筑之下 → 一眼读出"路"。装饰会避开它，路面才干净。
 	if not _paths_built:
@@ -1740,7 +1843,7 @@ func _draw_body() -> void:
 		for idx in _ac("paths", _path_set):
 			draw_texture_rect(dirt, Rect2((idx % w) * T, (idx / w) * T, T, T), false)
 		for idx in _ac("paths", _path_set):
-			draw_rect(Rect2((idx % w) * T, (idx / w) * T, T, T), Color("#6b5a3e", 0.16), true)   # 压一层暖褐：比广场更"踩实"，两者可区分
+			draw_rect(Rect2((idx % w) * T, (idx / w) * T, T, T), Color(X_WOOD_MID, 0.16), true)   # 压一层暖褐：比广场更"踩实"，两者可区分
 
 	# 区域【真地板】：每个 district 按 type 铺木/石/铺装地板（旧版只有广场有地板，其余七个区只有一层
 	# 0.10 alpha 的淡色罩 —— 那层淡到什么也读不出来，于是墙里全是草，房子读作"围了圈墙的院子"）。
@@ -1801,9 +1904,9 @@ func _draw_body() -> void:
 			draw_texture_rect_region(ttex, Rect2(tc.x * T + (T - tdw) * 0.5, (tc.y + 1) * T - tdh, tdw, tdh), Rect2(0, 0, ttex.get_width(), ttex.get_height()), veg)
 		else:
 			var cx: float = tc.x * T + T * 0.5
-			draw_rect(Rect2(tc.x * T + T * 0.30, tc.y * T + T * 0.55, T * 0.40, T * 0.45), Color("#6b4a2b"), true)  # 树干
-			draw_circle(Vector2(cx, tc.y * T + T * 0.42), T * 0.42, Color("#2f6d3a") * veg)                          # 树冠
-			draw_circle(Vector2(cx - T * 0.18, tc.y * T + T * 0.30), T * 0.24, Color("#3c8a4a") * veg)                # 高光叶
+			draw_rect(Rect2(tc.x * T + T * 0.30, tc.y * T + T * 0.55, T * 0.40, T * 0.45), X_WOOD_MID, true)  # 树干
+			draw_circle(Vector2(cx, tc.y * T + T * 0.42), T * 0.42, P_FOLIAGE_D * veg)                          # 树冠
+			draw_circle(Vector2(cx - T * 0.18, tc.y * T + T * 0.30), T * 0.24, P_FOLIAGE_M * veg)                # 高光叶
 
 	if _ap("towndoors"):
 		_draw_town_doors()         # P3 UX：给能进的建筑画醒目木门 + 招牌（点门进店）
@@ -1834,7 +1937,7 @@ func _draw_body() -> void:
 					var s := OBJ_PX          # 16px 源 × 3（= 整格）：与地面/装饰同一个像素尺，不再 2.5x 融化
 					draw_texture_rect_region(otex, Rect2(base.x + (T - s) * 0.5, base.y + (T - s) * 0.5, s, s), Rect2(0, 0, otex.get_width(), otex.get_height()))
 				else:
-					draw_rect(Rect2(base.x + 9, base.y + 12, T - 18, T - 18), Color("#8a6a45"), true)
+					draw_rect(Rect2(base.x + 9, base.y + 12, T - 18, T - 18), P_RES_FOOT, true)
 					draw_rect(Rect2(base.x + 9, base.y + 12, T - 18, T - 18), Color(0, 0, 0, 0.35), false, 2.0)
 					draw_string(Art.font(), Vector2(base.x + 4, base.y + T - 3), str(o.get("type", "")), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 1, 1, 0.7))
 
@@ -1920,18 +2023,18 @@ func _draw_town_doors() -> void:
 		var pos: Array = fr.get("pos", [0, 0])
 		var x := int(pos[0]) * T; var y := int(pos[1]) * T
 		draw_rect(Rect2(x + 2, y + T * 0.5, T - 4, T * 0.5), Color(0, 0, 0, 0.25), true)          # 落地阴影
-		draw_rect(Rect2(x + T * 0.1, y + T * 0.06, T * 0.8, T * 0.9), Color("#3a291a"), true)      # 门框
-		draw_rect(Rect2(x + T * 0.16, y + T * 0.12, T * 0.68, T * 0.82), Color("#7a5230"), true)   # 门板
-		draw_rect(Rect2(x + T * 0.16, y + T * 0.12, T * 0.68, T * 0.1), Color("#f0d68a", 0.5), true)  # 门楣暖光
-		draw_rect(Rect2(x + T * 0.48, y + T * 0.12, T * 0.03, T * 0.82), Color("#3a291a"), true)   # 门缝
-		draw_circle(Vector2(x + T * 0.72, y + T * 0.55), T * 0.055, Color("#f0d060"))              # 门把
+		draw_rect(Rect2(x + T * 0.1, y + T * 0.06, T * 0.8, T * 0.9), D_WOOD_LINE, true)      # 门框
+		draw_rect(Rect2(x + T * 0.16, y + T * 0.12, T * 0.68, T * 0.82), X_WOOD_MID, true)   # 门板
+		draw_rect(Rect2(x + T * 0.16, y + T * 0.12, T * 0.68, T * 0.1), Color(X_GLOW, 0.5), true)  # 门楣暖光
+		draw_rect(Rect2(x + T * 0.48, y + T * 0.12, T * 0.03, T * 0.82), D_WOOD_LINE, true)   # 门缝
+		draw_circle(Vector2(x + T * 0.72, y + T * 0.55), T * 0.055, X_GOLD)              # 门把
 		var to_space := String(to0.get("space", ""))
 		var label := String(sg.label_of(to_space))
 		var sw: float = 8.0 + Art.font().get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13).x
 		var sx := x + T * 0.5 - sw * 0.5
-		draw_rect(Rect2(sx, y - T * 0.52, sw, T * 0.36), Color("#5a3f28"), true)                   # 招牌木板
-		draw_rect(Rect2(sx, y - T * 0.52, sw, T * 0.36), Color("#e0c060", 0.8), false, 1.5)        # 金边
-		draw_string(Art.font(), Vector2(sx + 5, y - T * 0.52 + 14), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("#f0e0b0"))
+		draw_rect(Rect2(sx, y - T * 0.52, sw, T * 0.36), P_COM_FOOT, true)                   # 招牌木板
+		draw_rect(Rect2(sx, y - T * 0.52, sw, T * 0.36), Color(X_GOLD, 0.8), false, 1.5)        # 金边
+		draw_string(Art.font(), Vector2(sx + 5, y - T * 0.52 + 14), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, X_PARCHMENT)
 
 func _draw_landmarks() -> void:
 	for lm in Sim.world.get("landmarks", []):
@@ -1940,21 +2043,21 @@ func _draw_landmarks() -> void:
 		match String(lm.get("type", "")):
 			"well":
 				draw_rect(Rect2(bx + 2, by + T * 0.6, T - 4, T * 0.34), Color(0, 0, 0, 0.2), true)                 # 阴影
-				draw_rect(Rect2(bx + T * 0.15, by + T * 0.45, T * 0.7, T * 0.45), Color("#8a8f98"), true)          # 石圈
-				draw_rect(Rect2(bx + T * 0.15, by + T * 0.45, T * 0.7, T * 0.1), Color("#a6abb4"), true)           # 井沿高光
-				draw_rect(Rect2(bx + T * 0.3, by + T * 0.56, T * 0.4, T * 0.28), Color("#20242c"), true)           # 井口暗
-				draw_rect(Rect2(bx + T * 0.2, by + T * 0.1, T * 0.06, T * 0.4), Color("#6b4a2b"), true)            # 立柱
-				draw_rect(Rect2(bx + T * 0.74, by + T * 0.1, T * 0.06, T * 0.4), Color("#6b4a2b"), true)
-				draw_colored_polygon(PackedVector2Array([Vector2(bx + T * 0.5, by - T * 0.02), Vector2(bx + T * 0.08, by + T * 0.16), Vector2(bx + T * 0.92, by + T * 0.16)]), Color("#5a86b0"))  # 蓝顶
+				draw_rect(Rect2(bx + T * 0.15, by + T * 0.45, T * 0.7, T * 0.45), P_PUB_FACE, true)          # 石圈
+				draw_rect(Rect2(bx + T * 0.15, by + T * 0.45, T * 0.7, T * 0.1), P_WRK_TOP, true)           # 井沿高光
+				draw_rect(Rect2(bx + T * 0.3, by + T * 0.56, T * 0.4, T * 0.28), P_PANEL, true)           # 井口暗
+				draw_rect(Rect2(bx + T * 0.2, by + T * 0.1, T * 0.06, T * 0.4), X_WOOD_MID, true)            # 立柱
+				draw_rect(Rect2(bx + T * 0.74, by + T * 0.1, T * 0.06, T * 0.4), X_WOOD_MID, true)
+				draw_colored_polygon(PackedVector2Array([Vector2(bx + T * 0.5, by - T * 0.02), Vector2(bx + T * 0.08, by + T * 0.16), Vector2(bx + T * 0.92, by + T * 0.16)]), P_PUB_ROOF)  # 蓝顶
 			"board":
 				draw_rect(Rect2(bx + 2, by + T * 0.62, T - 4, T * 0.3), Color(0, 0, 0, 0.2), true)                 # 阴影
-				draw_rect(Rect2(bx + T * 0.18, by + T * 0.55, T * 0.06, T * 0.4), Color("#5a3f28"), true)          # 支柱
-				draw_rect(Rect2(bx + T * 0.76, by + T * 0.55, T * 0.06, T * 0.4), Color("#5a3f28"), true)
-				draw_rect(Rect2(bx + T * 0.12, by + T * 0.2, T * 0.76, T * 0.42), Color("#8a6238"), true)          # 木板
+				draw_rect(Rect2(bx + T * 0.18, by + T * 0.55, T * 0.06, T * 0.4), P_COM_FOOT, true)          # 支柱
+				draw_rect(Rect2(bx + T * 0.76, by + T * 0.55, T * 0.06, T * 0.4), P_COM_FOOT, true)
+				draw_rect(Rect2(bx + T * 0.12, by + T * 0.2, T * 0.76, T * 0.42), P_COM_LINE, true)          # 木板
 				draw_rect(Rect2(bx + T * 0.12, by + T * 0.2, T * 0.76, T * 0.42), Color(0, 0, 0, 0.3), false, 2.0)
-				draw_rect(Rect2(bx + T * 0.08, by + T * 0.1, T * 0.84, T * 0.14), Color("#b5484a"), true)          # 红顶
-				draw_rect(Rect2(bx + T * 0.2, by + T * 0.28, T * 0.22, T * 0.26), Color("#efe4cc"), true)          # 纸
-				draw_rect(Rect2(bx + T * 0.5, by + T * 0.3, T * 0.24, T * 0.2), Color("#dfe8f0"), true)
+				draw_rect(Rect2(bx + T * 0.08, by + T * 0.1, T * 0.84, T * 0.14), P_COM_ROOF, true)          # 红顶
+				draw_rect(Rect2(bx + T * 0.2, by + T * 0.28, T * 0.22, T * 0.26), P_TEXT, true)          # 纸
+				draw_rect(Rect2(bx + T * 0.5, by + T * 0.3, T * 0.24, T * 0.2), X_COLD_WHITE, true)
 
 ## Sim 的【精确格心】。裁剪/LOD 判定只许用它（见 _render_pos 一节的红线）。
 func _center(ag: Dictionary) -> Vector2:
@@ -2098,7 +2201,7 @@ func _draw_relationship_lines() -> void:
 			focus = 0.55                               # 选了人 → 别人的线退半档背景，ta 的关系站出来（不是抹掉：全镇结构仍要看得见）
 		elif sel != "":
 			width += 1.2                               # 选中当事人的线加粗一档
-		var col := (Color("#7ed957") if aff2 > 0.0 else Color("#e85a5a"))
+		var col := (X_SIGNAL_POS if aff2 > 0.0 else X_SIGNAL_NEG)
 		col.a = (0.26 + t * 0.52) * fade * focus
 		draw_line(p1, p2, col, width)
 
@@ -2143,11 +2246,11 @@ func _draw_ground_ring(c: Vector2, rx: float, col: Color, width: float) -> void:
 ## 哈希换成项目自有的 `Sim.fnv1a32`（红线#1）：`String.hash()` 是引擎内建实现，换个 Godot 版本
 ## 就可能把全镇的派系色静默洗一遍。
 const FACTION_ACCENTS := [
-	Color("#5a86b0"),   # pub-roof     蓝
-	Color("#b59a4a"),   # grass-autumn 赭黄
-	Color("#78933f"),   # foliage-mid  橄榄绿
-	Color("#a7b3ba"),   # grass-winter 灰蓝
-	Color("#a8443a"),   # res-roof     砖红（比 UI 的告警红暗得多，不混）
+	P_PUB_ROOF,   # pub-roof     蓝
+	P_GRASS_AUT,   # grass-autumn 赭黄
+	P_FOLIAGE_M,   # foliage-mid  橄榄绿
+	P_PUB_TOP,   # grass-winter 灰蓝
+	P_RES_ROOF,   # res-roof     砖红（比 UI 的告警红暗得多，不混）
 ]
 
 func _faction_color(fac: String) -> Color:
@@ -2175,7 +2278,7 @@ func _draw_pact_links() -> void:
 			var a := _rpos(ag)
 			var b := _rpos(other)
 			var perp := (b - a).orthogonal().normalized() * 2.0
-			var cyan := Color("#39d4c8", 0.7)
+			var cyan := Color(X_PACT, 0.7)
 			draw_line(a + perp, b + perp, cyan, 1.6)
 			draw_line(a - perp, b - perp, cyan, 1.6)
 			# 中点标记：原本是 🤝，但它走 ThemeDB.fallback_font 而那张表【没有 emoji】→ 每条盟约中点都是一个豆腐框。
@@ -2193,7 +2296,7 @@ func _draw_talking_links() -> void:
 			var other: Dictionary = Sim.get_agent(String(opt.get("partner", "")))
 			if not other.is_empty() and _in_town(other):
 				if _vis.intersects(Rect2(_center(ag), Vector2.ZERO).expand(_center(other))):
-					draw_line(_rpos(ag), _rpos(other), Color("#ffd166", 0.85), 2.5)   # 裁剪走格心、绘制走渲染坐标
+					draw_line(_rpos(ag), _rpos(other), Color(X_GOLD, 0.85), 2.5)   # 裁剪走格心、绘制走渲染坐标
 
 ## 居中的「深色底板 + 文字」。anchor = 文字基线中点；返回底板矩形，供旁边的标记贴边摆放。
 ## 旧版的名字是【无描边无底板的纯白 draw_string】——在草地上勉强能读，一压到这次新铺的木/石地板就糊没了。
@@ -2248,7 +2351,7 @@ func _draw_agent(ag: Dictionary) -> void:
 	# 旧的是屏幕平面上以【身体中心】为圆心的正圆（r=0.42 格），套在一个立着的小人身上时
 	# 既不像地面标记、又会和头顶名牌/脚下气泡打架。现在与影子/派系环同一个 0.40 压扁的地面椭圆。
 	if ag.get("is_player", false):
-		_draw_ground_ring(Vector2(center.x, feet), T * 0.38, Color("#ffd700"), 2.5)
+		_draw_ground_ring(Vector2(center.x, feet), T * 0.38, X_PLAYER_GOLD, 2.5)
 	if _zoom < LABEL_MIN_ZOOM:
 		return          # 全镇俯瞰档：名字/emote/气泡/需求条缩到几像素只剩糊斑 —— 不画，画面更干净、填充率也省下来
 	var aid := String(ag["id"])
@@ -2291,11 +2394,11 @@ func _draw_agent(ag: Dictionary) -> void:
 		draw_rect(Rect2(center.x - total * 0.5 - 4.0, name_y - nsz.y + 2.0, total + 8.0, nsz.y + 3.0), Color(0, 0, 0, 0.62 * detail), true)
 		var tx := center.x - total * 0.5
 		if has_cf:
-			draw_string(fnt, Vector2(tx, name_y), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color("#ff6b6b") * Color(1, 1, 1, detail))
+			draw_string(fnt, Vector2(tx, name_y), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, X_SIGNAL_NEG * Color(1, 1, 1, detail))
 			tx += lw
 		draw_string(fnt, Vector2(tx, name_y), nm, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1, 1, 1, 0.97 * detail))
 		if has_mt:
-			draw_string(fnt, Vector2(tx + nsz.x + 4.0, name_y), "约", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("#ffd166") * Color(1, 1, 1, detail))
+			draw_string(fnt, Vector2(tx + nsz.x + 4.0, name_y), "约", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, X_GOLD * Color(1, 1, 1, detail))
 	# 气泡：交谈台词（短暂）优先，其次当前动作。放在需求条下方 → 与派系环/需求条不再互相穿插。
 	# 台词恒显（saying ⇒ focus，见 _is_focus）；**动作牌**才是被稀释的那一层——评审那一帧里 5 张牌
 	# 写着同一个「吃饭」，删掉 4 张丢失的信息量是 0，而它们占掉的正是人眼最先扫到的一层。
@@ -2344,10 +2447,10 @@ const ROOM_NAME := {
 
 ## 墙比地板【暗】一档：屋顶被切掉后墙体仍处在背光面，明度差才让"墙/地"分得开（旧版两者同明度 → 一块板）。
 func _mat_wall(rtype: String) -> Color:
-	if "work" in rtype or "shop" in rtype: return Color("#4c463d")     # 石/土墙
-	if "wash" in rtype or "bath" in rtype: return Color("#3f4b50")
-	if "quiet" in rtype: return Color("#484054")
-	return Color("#5a4028")                                             # 木墙（居室/茶座）
+	if "work" in rtype or "shop" in rtype: return P_INT_COM     # 石/土墙
+	if "wash" in rtype or "bath" in rtype: return P_WRK_ROOF
+	if "quiet" in rtype: return P_INT_WRK
+	return P_COM_FOOT                                             # 木墙（居室/茶座）
 
 ## 夜量 0..1（夜=1、昼=0，晨昏平滑）。与 Main._daylight 的色停同频——它把整块世界画布乘暗，
 ## 所以室内要靠【相对】暖度把自己从冷夜里拉出来。
@@ -2360,13 +2463,13 @@ func _night_amt() -> float:
 	return 1.0
 
 func _mat_floor(rtype: String) -> Color:
-	if "bed" in rtype: return Color("#8a6038")
-	if "parlor" in rtype or "cafe" in rtype: return Color("#8a6440")
-	if "work" in rtype: return Color("#6a655a")
-	if "quiet" in rtype: return Color("#5f5478")
-	if "wash" in rtype or "bath" in rtype: return Color("#46686e")
-	if "shop" in rtype: return Color("#7f6030")
-	return Color("#7a5230")
+	if "bed" in rtype: return P_COM_LINE
+	if "parlor" in rtype or "cafe" in rtype: return P_COM_LINE
+	if "work" in rtype: return P_STONE_LINE
+	if "quiet" in rtype: return P_NIGHT
+	if "wash" in rtype or "bath" in rtype: return P_WATER_DEEP
+	if "shop" in rtype: return P_COM_LINE
+	return X_WOOD_MID
 
 ## 一栋建筑：落地影 → 外墙(屋檐/受光高光) → 室内地板+材质纹理 → 内墙投影 → 南门 → 北窗 → 有人透暖光。
 func _draw_building(rid: String, inner: Rect2, rtype: String, enclosed: bool) -> void:
@@ -2408,7 +2511,7 @@ func _draw_building(rid: String, inner: Rect2, rtype: String, enclosed: bool) ->
 	var dspan := maxf(0.0, inner.size.x - dw)
 	var dx := inner.position.x + Sim._hash01(rid + ":door") * dspan
 	draw_rect(Rect2(dx, inner.end.y, dw, WALL), fc.darkened(0.12), true)
-	draw_rect(Rect2(dx, inner.end.y + WALL - 3.0, dw, 3.0), Color("#3a2a1c"), true)
+	draw_rect(Rect2(dx, inner.end.y + WALL - 3.0, dw, 3.0), D_WOOD_LINE, true)
 	# 有人在内？（灯火强度用）
 	var occ := 0
 	for ag in Sim.agents:
@@ -2425,7 +2528,7 @@ func _draw_building(rid: String, inner: Rect2, rtype: String, enclosed: bool) ->
 		lit += 0.26 * night
 	lit += minf(0.14, occ * 0.05) * (0.45 + 0.55 * night)
 	if lit > 0.001:
-		draw_rect(inner, Color("#ffbe63", lit), true)         # 偏橙灯火色：被夜蓝乘过后仍咬得住暖调
+		draw_rect(inner, Color(X_GLOW_DEEP, lit), true)         # 偏橙灯火色：被夜蓝乘过后仍咬得住暖调
 	# 灯芯：房间中心的径向暖池（"光源在屋里"的层次）——夜里最明显，白天几乎不见
 	var pool := (0.30 * night + minf(0.20, occ * 0.07))
 	if pool > 0.01:
@@ -2433,7 +2536,7 @@ func _draw_building(rid: String, inner: Rect2, rtype: String, enclosed: bool) ->
 		var rad := minf(inner.size.x, inner.size.y) * 0.55
 		for k in 4:
 			var f := 1.0 - float(k) / 4.0
-			draw_circle(cen, rad * (0.30 + 0.24 * float(k)), Color("#ffd27a", pool * 0.13 * f))
+			draw_circle(cen, rad * (0.30 + 0.24 * float(k)), Color(X_GLOW, pool * 0.13 * f))
 	# 北墙开窗（enclosed 才有；1-2 扇，确定性）；夜里从窗口向北洒一片暖光到地上
 	if enclosed:
 		var n := 1 + int(Sim._hash01(rid + ":win") * 2.0)
@@ -2447,15 +2550,15 @@ func _draw_building(rid: String, inner: Rect2, rtype: String, enclosed: bool) ->
 				for k in 3:
 					var sp := float(k + 1)
 					draw_rect(Rect2(wx - sp * 3.0, outer.position.y - sp * 7.0, ww + sp * 6.0, sp * 7.0),
-						Color("#ffc978", glow * (0.30 - 0.07 * float(k))), true)
+						Color(X_GLOW, glow * (0.30 - 0.07 * float(k))), true)
 			# 窗本体：夜里点亮（暖黄），白天冷玻璃
-			var wcol := Color("#ffd98f").lerp(Color("#2b3a46"), 1.0 - night) if glow > 0.01 else Color("#2b3a46")
+			var wcol := X_GLOW.lerp(P_WRK_ROOF, 1.0 - night) if glow > 0.01 else P_WRK_ROOF
 			draw_rect(Rect2(wx, wy, ww, WALL * 0.52), wcol, true)
-			draw_rect(Rect2(wx, wy, ww, WALL * 0.52), Color("#9fd4e8", 0.45), false, 1.0)
+			draw_rect(Rect2(wx, wy, ww, WALL * 0.52), Color(P_WATER_LIT, 0.45), false, 1.0)
 	# 房型标签：压低存在感（不再是主视觉）。房间小于 ~2 格宽时不画——11px 字会横穿整间，读作乱码而非标签。
 	if inner.size.x >= T * 1.9:
 		draw_string(Art.font(), inner.position + Vector2(6, 15), String(ROOM_NAME.get(rtype, rtype)),
-			HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("#ffe6c2", 0.45))
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(X_PARCHMENT, 0.45))
 
 ## 室内陈设（Stardew 的"住着人"密度）：地毯 + 靠墙杂物。全确定性（_hash01(room_id:key)），纯渲染不进 digest。
 func _draw_room_decor(rid: String, inner: Rect2, rtype: String) -> void:
@@ -2464,11 +2567,11 @@ func _draw_room_decor(rid: String, inner: Rect2, rtype: String) -> void:
 		var rw := inner.size.x * (0.42 + 0.16 * Sim._hash01(rid + ":rugw"))
 		var rh := inner.size.y * (0.38 + 0.16 * Sim._hash01(rid + ":rugh"))
 		var rug := Rect2(inner.get_center() - Vector2(rw, rh) * 0.5, Vector2(rw, rh))
-		var rc := Color("#7d3f3f")
-		if "quiet" in rtype: rc = Color("#3f4a7d")
-		elif "parlor" in rtype or "cafe" in rtype: rc = Color("#6d5a2a")
-		elif "work" in rtype or "shop" in rtype: rc = Color("#4f4a40")
-		elif "wash" in rtype or "bath" in rtype: rc = Color("#2f5a5f")
+		var rc := D_RUG_RED
+		if "quiet" in rtype: rc = P_INT_WRK
+		elif "parlor" in rtype or "cafe" in rtype: rc = D_RUG_OLIVE
+		elif "work" in rtype or "shop" in rtype: rc = P_INT_COM
+		elif "wash" in rtype or "bath" in rtype: rc = D_RUG_TEAL
 		draw_rect(rug, rc.darkened(0.22), true)
 		draw_rect(rug.grow(-4.0), rc, true)
 		draw_rect(rug.grow(-4.0), rc.lightened(0.28), false, 1.0)
@@ -2489,33 +2592,33 @@ func _draw_prop(p: Vector2, kind: int) -> void:
 	var s := T * 0.30
 	match kind:
 		0:
-			draw_rect(Rect2(p - Vector2(s, s) * 0.5, Vector2(s, s)), Color("#6b4a2a"), true)
-			draw_rect(Rect2(p - Vector2(s, s) * 0.5, Vector2(s, s)), Color("#33220f"), false, 1.0)
-			draw_line(Vector2(p.x - s * 0.5, p.y), Vector2(p.x + s * 0.5, p.y), Color("#8a6338"), 1.0)
+			draw_rect(Rect2(p - Vector2(s, s) * 0.5, Vector2(s, s)), X_WOOD_MID, true)
+			draw_rect(Rect2(p - Vector2(s, s) * 0.5, Vector2(s, s)), D_WOOD_LINE, false, 1.0)
+			draw_line(Vector2(p.x - s * 0.5, p.y), Vector2(p.x + s * 0.5, p.y), P_COM_LINE, 1.0)
 		1:
-			draw_circle(p, s * 0.44, Color("#8a5a3c"))
-			draw_circle(p, s * 0.44, Color("#4a2c1a"))
-			draw_circle(p - Vector2(0, s * 0.06), s * 0.36, Color("#9c6845"))
-			draw_rect(Rect2(p.x - s * 0.15, p.y - s * 0.58, s * 0.30, s * 0.22), Color("#6b4028"), true)
+			draw_circle(p, s * 0.44, D_POT)
+			draw_circle(p, s * 0.44, D_WOOD_LINE)
+			draw_circle(p - Vector2(0, s * 0.06), s * 0.36, P_COM_FACE)
+			draw_rect(Rect2(p.x - s * 0.15, p.y - s * 0.58, s * 0.30, s * 0.22), P_COM_FOOT, true)
 		2:
 			for k in 3:
 				draw_rect(Rect2(p.x - s * 0.40, p.y + s * 0.26 - float(k) * 4.0, s * 0.80, 3.2),
-					[Color("#7d3f3f"), Color("#3f5a7d"), Color("#6d6a2a")][k], true)
+					[D_RUG_RED, D_BOOK_BLUE, P_FOLIAGE_D][k], true)
 		_:
-			draw_rect(Rect2(p.x - s * 0.26, p.y, s * 0.52, s * 0.34), Color("#8a5a3c"), true)
-			draw_circle(p - Vector2(0, s * 0.16), s * 0.32, Color("#3f6b3a"))
-			draw_circle(p - Vector2(s * 0.12, s * 0.26), s * 0.16, Color("#4f8048"))
+			draw_rect(Rect2(p.x - s * 0.26, p.y, s * 0.52, s * 0.34), D_POT, true)
+			draw_circle(p - Vector2(0, s * 0.16), s * 0.32, P_FOLIAGE_D)
+			draw_circle(p - Vector2(s * 0.12, s * 0.26), s * 0.16, P_FOLIAGE_M)
 
 func _draw_bed(base: Vector2) -> void:
 	var x := base.x + 8.0
 	var y := base.y + 5.0
 	var w := float(T) - 16.0
 	var h := float(T) - 8.0
-	draw_rect(Rect2(x - 2, y - 2, w + 4, h + 4), Color("#6b4f33"), true)        # 木框
-	draw_rect(Rect2(x, y, w, h), Color("#efe3c8"), true)                        # 床单
-	draw_rect(Rect2(x + 2, y + 2, w - 4, 9), Color("#ffffff"), true)            # 枕头
-	draw_rect(Rect2(x, y + 13, w, h - 13), Color("#cf6b6b"), true)              # 被子
-	draw_rect(Rect2(x, y + 13, w, 3), Color("#a85050"), true)                   # 被沿
+	draw_rect(Rect2(x - 2, y - 2, w + 4, h + 4), X_WOOD_MID, true)        # 木框
+	draw_rect(Rect2(x, y, w, h), P_TEXT, true)                        # 床单
+	draw_rect(Rect2(x + 2, y + 2, w - 4, 9), X_COLD_WHITE, true)            # 枕头
+	draw_rect(Rect2(x, y + 13, w, h - 13), X_SIGNAL_NEG, true)              # 被子
+	draw_rect(Rect2(x, y + 13, w, 3), P_COM_ROOF, true)                   # 被沿
 	draw_rect(Rect2(x - 2, y - 2, w + 4, h + 4), Color(0, 0, 0, 0.35), false, 1.5)
 
 ## 程序化像素灶台（顶视角）：炉体 + 灶面 + 火眼(一只点火) + 烤箱门。
@@ -2524,12 +2627,12 @@ func _draw_stove(base: Vector2) -> void:
 	var y := base.y + 9.0
 	var w := float(T) - 18.0
 	var h := float(T) - 16.0
-	draw_rect(Rect2(x, y, w, h), Color("#3b3b44"), true)                        # 炉体
-	draw_rect(Rect2(x + 2, y + 2, w - 4, h - 11), Color("#55555f"), true)       # 灶面
-	draw_circle(Vector2(x + 8, y + 8), 3.5, Color("#23232b"))                   # 火眼1
-	draw_circle(Vector2(x + w - 8, y + 8), 3.5, Color("#ff8c3a"))               # 火眼2(点火)
-	draw_circle(Vector2(x + w - 8, y + 8), 1.6, Color("#ffd166"))
-	draw_rect(Rect2(x + 3, y + h - 7, w - 6, 5), Color("#26262d"), true)        # 烤箱门
+	draw_rect(Rect2(x, y, w, h), P_WRK_ROOF, true)                        # 炉体
+	draw_rect(Rect2(x + 2, y + 2, w - 4, h - 11), P_WRK_FOOT, true)       # 灶面
+	draw_circle(Vector2(x + 8, y + 8), 3.5, P_PANEL)                   # 火眼1
+	draw_circle(Vector2(x + w - 8, y + 8), 3.5, X_LIGHT_LAMP)               # 火眼2(点火)
+	draw_circle(Vector2(x + w - 8, y + 8), 1.6, X_GOLD)
+	draw_rect(Rect2(x + 3, y + h - 7, w - 6, 5), P_PANEL, true)        # 烤箱门
 	draw_rect(Rect2(x, y, w, h), Color(0, 0, 0, 0.35), false, 1.5)
 
 ## Wave 2b 节日灯笼（暖光晕 + 灯身 + 挑杆），一眼可辨"这里在办节日"。纯渲染。
@@ -2537,17 +2640,17 @@ func _draw_festival(base: Vector2) -> void:
 	var c := base + Vector2(T * 0.5, T * 0.5)
 	# 呼吸光晕（用 tick 相位做确定性明暗，不引 RNG）
 	var pulse := 0.35 + 0.12 * sin(float(Sim.tick_no) * 0.15)
-	draw_circle(c, T * 0.55, Color(1.0, 0.72, 0.30, pulse * 0.5))
-	draw_circle(c, T * 0.34, Color(1.0, 0.80, 0.40, pulse))
+	draw_circle(c, T * 0.55, Color(X_LIGHT_WIN, pulse * 0.5))
+	draw_circle(c, T * 0.34, Color(X_GLOW, pulse))
 	# 挑杆
-	draw_line(base + Vector2(T * 0.5, 2), c + Vector2(0, -T * 0.18), Color("#6b4a2a"), 2.0)
+	draw_line(base + Vector2(T * 0.5, 2), c + Vector2(0, -T * 0.18), X_WOOD_MID, 2.0)
 	# 灯身（红灯笼）
 	var lw := T * 0.30
 	var lh := T * 0.34
-	draw_rect(Rect2(c.x - lw * 0.5, c.y - lh * 0.35, lw, lh), Color("#d8443a"), true)
-	draw_rect(Rect2(c.x - lw * 0.5, c.y - lh * 0.35, lw, lh), Color("#ffd88a"), false, 1.5)
-	draw_line(Vector2(c.x, c.y + lh * 0.55), Vector2(c.x, c.y + lh * 0.78), Color("#ffd166"), 2.0)  # 流苏
-	draw_string(Art.font(), c + Vector2(-7, -lh * 0.55 - 4), "灯会", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("#ffe08a"))
+	draw_rect(Rect2(c.x - lw * 0.5, c.y - lh * 0.35, lw, lh), X_SIGNAL_NEG, true)
+	draw_rect(Rect2(c.x - lw * 0.5, c.y - lh * 0.35, lw, lh), X_GLOW, false, 1.5)
+	draw_line(Vector2(c.x, c.y + lh * 0.55), Vector2(c.x, c.y + lh * 0.78), X_GOLD, 2.0)  # 流苏
+	draw_string(Art.font(), c + Vector2(-7, -lh * 0.55 - 4), "灯会", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, X_GLOW)
 
 ## at = 需求条的【上边中点】（由 _draw_agent 按落脚线给，不再是"格心 +30px"的硬编码）。
 func _draw_urgent_need(at: Vector2, ag: Dictionary) -> void:
@@ -2563,7 +2666,7 @@ func _draw_urgent_need(at: Vector2, ag: Dictionary) -> void:
 	var bar := Rect2(at.x - 16, at.y, 32, 4)
 	draw_rect(bar, Color(0, 0, 0, 0.5), true)
 	var frac := clampf(worst / 100.0, 0.0, 1.0)
-	var c := Color("#7ed957") if worst > 35.0 else Color("#e85a5a")
+	var c := X_SIGNAL_POS if worst > 35.0 else X_SIGNAL_NEG
 	draw_rect(Rect2(bar.position, Vector2(bar.size.x * frac, bar.size.y)), c, true)
 
 func _in_conflict(id: String) -> bool:

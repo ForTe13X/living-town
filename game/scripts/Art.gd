@@ -4,18 +4,15 @@ extends Node
 
 const TILE := 48
 
-var area_palette := {
-	"home":  Color("#3a4663"),
-	"cafe":  Color("#5a4636"),
-	"plaza": Color("#3a5a44"),
-	"wash":  Color("#36505a"),
-	"work":  Color("#4a4636"),
-}
-var ground := Color("#22232f")
-var grid_line := Color("#2c2e3c")
-
-func area_color(area: String) -> Color:
-	return area_palette.get(area, ground)
+## ── D6：本文件曾持有 7 个硬编码色值，其中 6 个是死代码 ───────────────────────
+## `area_palette`(5) + `grid_line`(1) + `area_color()`：**全仓零调用**
+## （`grep -rn 'area_color\|grid_line\|area_palette'` 除本文件自身外零命中，实测 2026-07-28）。
+## docs/44 §三 的缺口表把「分区叠色 area_palette + ground + grid_line = 7」列成
+## 「40 色覆盖不到的一组」——**实际上它不需要被覆盖，它需要被删掉**。
+## 最后一个活着的 `ground` 只在「缺 grass_a.png 切片时铺满地图」这一条兜底路径上被读
+## （`WorldView.gd:_draw_body`），而它是一个**深蓝灰** `#22232f`——给"地面"兜底却兜出一块夜空色。
+## 已改为由 `WorldView.GRASS_FALLBACK` 兜底（同一文件、同一族），于是 Art.gd 不再持有任何色值：
+## 调色板只有一个家。
 
 var _font: Font = null
 ## 加载自带中文字体（运行时直接喂字节，绕过「项目未导入则无 .ttf 资源」的 headless 坑）。
