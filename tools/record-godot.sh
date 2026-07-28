@@ -34,6 +34,15 @@
 #   REC_READY_MAX=45  就绪等待上限（秒），到点就按超时处理并继续
 #   REC_FLAT=40       "还在闪屏"的判据：40×24 灰度帧里众数灰阶占比 ≥ 这个百分比
 #   REC_APAD=4        音频比视频多录的余量秒数
+#   REC_DEMO_CAM=1|0  默认 **1**（D4 起）。演示镜头编排：全镇定场 → 推近越过 WorldView 的
+#                     LABEL_MIN_ZOOM=0.45 → 选中一位居民（观察台亮起）→ 停在广场/咖啡馆/工坊。
+#
+# ── ③ ★ D4：默认打开 --demo-cam，因为不开的时候这个脚本【结构上拍不到本项目在做的事】────
+# 已发布的 70 秒里相机从不推近、从不选人 ⇒ 全程 go_home 档，实测 zoom≈0.229 < 0.45，
+# 而 WorldView.gd:1913 在该阈值之下**整段 return**：名字、气泡、表情、需求条一个都不画，
+# 居民只剩 11px 的点；右侧观察台整整 70 秒都在写「点一个居民（或 Tab）看他此刻在做什么」而没有人点。
+# 这不是"片子不好看"，是**量具与成片都拍不到那件事**。所以默认值改成开——
+# 要复现旧片（或做 A/B 基线）设 REC_DEMO_CAM=0，画面与 D4 之前逐像素相同。
 set -uo pipefail
 SECS="${1:-135}"; SEED="${2:-20260626}"; SPEED="${3:-3.0}"; OUT="${4:-/out/town_raw.mp4}"; BACKEND="${5:-logic}"; ENDPOINT="${6:-}"; SCENARIO="${7:-}"
 W=1280; H=768; FPS=30; DISP=:77
@@ -42,6 +51,8 @@ READY_MAX="${REC_READY_MAX:-45}"; FLAT="${REC_FLAT:-40}"; APAD="${REC_APAD:-4}"
 export LIBGL_ALWAYS_SOFTWARE=1 LP_NUM_THREADS=1 GODOT_SILENCE_ROOT_WARNING=1
 EP_ARG=""; [ -n "$ENDPOINT" ] && EP_ARG="--endpoint $ENDPOINT"   # backend=llm 时连宿主 LM Studio
 SC_ARG=""; [ -n "$SCENARIO" ] && SC_ARG="--scenario $SCENARIO"   # S3 定向场景
+DC_ARG=""; [ "${REC_DEMO_CAM:-1}" = "1" ] && DC_ARG="--demo-cam" # D4 演示镜头（默认开；见抬头 ③）
+[ -n "${REC_DEMO_TRACE:-}" ] && DC_ARG="--demo-cam-trace ${REC_DEMO_TRACE}"   # dev：轨迹逐 tick 落盘，供两跑逐字节比对
 
 BASE="${OUT%.*}"
 WAV="${BASE}_audio.wav"
@@ -62,7 +73,7 @@ export DISPLAY=$DISP
 
 T0=$(date +%s.%N)
 godot --path /game --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
-  --resolution ${W}x${H} --single-window -- --seed "$SEED" --speed "$SPEED" --backend "$BACKEND" $EP_ARG $SC_ARG $AUD_ARG >/tmp/godot.log 2>&1 &
+  --resolution ${W}x${H} --single-window -- --seed "$SEED" --speed "$SPEED" --backend "$BACKEND" $EP_ARG $SC_ARG $DC_ARG $AUD_ARG >/tmp/godot.log 2>&1 &
 GODOT_PID=$!
 
 # ── 等到画面不再是启动闪屏 ─────────────────────────────────────────────────

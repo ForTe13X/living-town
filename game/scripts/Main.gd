@@ -46,6 +46,36 @@ var _demo_steps: Array = []           # [{type:walk_to|select|act|chat|wait, ...
 var _demo_i := 0
 var _chat_in: LineEdit                # 玩家→NPC 对话输入框
 var _backend_btn: Button              # 后端切换按钮（手机无 CLI：点按在 logic/slm/… 间轮换；桌面也可点）
+# ── 演示镜头编排（--demo-cam；docs/46 §三-D4）──────────────────────────────
+## 轨迹本体在 ProbeController（连同"为什么框地方不框人"的理由）。Main 这一侧只有三件事：
+##   ①每 tick 把 tick 号交给它；②按它给的取景**决定选中谁**（View 状态，不进仿真）；③可选地写一份轨迹 trace。
+## ★红线：这条路对 Sim **只读**。它不喂 lod_focus、不写任何世界状态——
+##   「相机可以决定画什么，绝不能决定仿真什么」（本文件 :159 的那条），演示镜头不是它的例外。
+const WorldViewScript = preload("res://scripts/WorldView.gd")   # 只为取 LABEL_MIN_ZOOM：名牌门的阈值**读原件**，不抄第二份
+var _demo_cam := false                # --demo-cam：确定性演示相机轨迹（录屏用；关闭时逐像素与改动前相同）
+var _demo_trace: FileAccess           # --demo-cam-trace <abs.txt>：每 tick 一行 (tick|shot|u|zoom|x|y|labels|sel)。
+                                      # 用途=确定性硬证据：同参数两跑的 trace 必须**逐字节相同**，
+                                      # 而这一点在"录屏抽同一秒的帧做 diff"上是**拿不到**的——见 docs/46 §三-D4 回执。
+## 取景框判定用【真视口矩形】而不是一个圆：圆的半径要么套不住宽屏的左右，要么越过上下边。
+## 而且是**施密特触发**——进场比留场严：
+##   选人时要求他离画面边缘还有 DEMO_IN_MARGIN 的余量（别一选中就走出去），
+##   留人时只要求还在画面里（DEMO_KEEP_MARGIN）。两个阈值相等的话，站在边界上的人会逐 tick 进出。
+const DEMO_IN_MARGIN := 110.0         # 进场余量(屏幕 px)
+const DEMO_KEEP_MARGIN := 10.0        # 留场余量(屏幕 px)
+const DEMO_SEL_HOLD := 130            # 换人节奏(tick)：约 3.5 秒 @ --speed 3
+var _demo_sel_hold := 0               # 当前选中已保持的 tick 数（迟滞计数）
+## ★"选谁"这条规则被改了三次，每一次都是被【量出来的抖动】推翻的，记在这里免得下一个人再走一遍：
+##   ① 离镜头最近的那个            → 2380 tick 的循环里换人 **196 次**，中位停留 6 tick（观察台像跑马灯）
+##   ② 距离量化到 2 格 + 社交加分  → **171 次**，中位仍是 6。不稳定的根本不是精度：
+##      画面里的 4-6 个人每走一步就互换名次，"正在社交"这个加分项还每隔几 tick 亮灭一次。
+##   ③ 会合哈希(HRW)，键=⌊tick/HOLD⌋ → **119 次**，中位 8。仍然churn，因为候选集合本身在变：
+##      人不断跨过取景半径的边界进出。
+##   ④ **迟滞 + HRW（现行）**：选中的人只要还在画面里就留着，最多 HOLD tick 再换。
+##      这一步引入了【状态】，但状态**每 tick 恰好推进一步、不吃帧 delta** ⇒ 录屏仍然逐字节可复现
+##      （证据：--speed 8 与 --speed 30 两跑 trace 在 2400 行公共前缀上 0 行不同）。
+##      代价写清楚：`--shot --warmup-tick T` 复现的是**取景**，选中的人则是在 T 处重新起算的
+##      （goto_tick 暖机发生在信号接线之前，迟滞状态重放不出来）——所以静帧与录屏可能选中不同的人。
+##   哈希用项目自有的 `Sim.fnv1a32`（红线 #1：不得用引擎内建 String.hash()）。
 var _shot_path := ""                  # --shot <abs.png>：渲一帧存图退出（dev 验证/出图；需真 framebuffer=Xvfb 或带窗口，纯 --headless 得空图）
 var _shot_fit := false                # --shot-fit：出图整镇入画（否则用跟随相机的角色特写，供 find_betray/endorse 眼验）
 var _digest_at := -1                  # --digest-at <tick>：跑到该 tick 时【自动】写 digest 并退出。
@@ -257,6 +287,11 @@ func _ready() -> void:
 			_goals_open = true                 # 出图/眼验：启动即展开小镇纪事清单（默认是【收起】的，出图拍不到）
 		elif args[i] == "--lod-agg":
 			_lod_agg_arg = true                # 测量/眼验：启用观察无关 aggregate LOD（docs/32）。只在此 CLI 口，不接出货窗口（休眠靠"窗口从不设 LOD 标志"不变量）
+		elif args[i] == "--demo-cam":
+			_demo_cam = true                   # 录屏：确定性演示镜头（推近越过名牌门 + 选人 → 观察台亮起）
+		elif args[i] == "--demo-cam-trace" and i + 1 < args.size():
+			_demo_cam = true
+			_demo_trace = FileAccess.open(args[i + 1], FileAccess.WRITE)   # dev：轨迹逐 tick 落盘，供两跑逐字节比对
 	AIBackend.backend = backend
 	# 后端优先级：CLI --backend 显式 > user://settings.cfg（手机 UI 存的默认）> 默认 logic。
 	# headless CI 不经此路（Harness/soak 直接 Sim.backend=null）→ 确定性逐字节不变。
@@ -333,6 +368,9 @@ func _ready() -> void:
 	_probe._history.clear()
 	_probe.tapped.connect(_on_probe_tap)
 	_probe.double_tapped.connect(_on_probe_double_tap)
+	if _demo_cam:
+		_probe.demo_cam = true
+		_demo_cam_apply()                        # 首帧就在轨迹上（否则录屏第一帧仍是 go_home，第二帧才跳过去）
 	if _probe_space_arg != "" and _sg.has_space(_probe_space_arg):   # --probe-space：启动即进某 Space（P3 室内眼验）
 		var _pf: String = _probe_floor_arg if _probe_floor_arg != "" else _sg.default_floor(_probe_space_arg)
 		_probe.set_space(_probe_space_arg, _pf, _sg.bounds_px(_probe_space_arg))
@@ -379,7 +417,9 @@ func _ready() -> void:
 		_probe_and_activate(backend)        # 不 await：后台跑，首帧已可见
 	if _shot_path != "":                    # dev 出图：等 1.5s 让世界渲染+纹理加载，再存一帧退出
 		Sim.auto_run = false                # 定格：冻结在 warmup tick，等待期间不再推进（tick-precise 眼验，防漂）
-		if _shot_fit and _probe != null:    # --shot-fit：整镇（或当前室内 Space）入画，缩放到【bounds - HUD 余量】刚好塞进视口
+		if _demo_cam and _probe != null:    # --demo-cam + --warmup-tick T：把录屏在 tick T 的构图【定格】拍下来。
+			_demo_cam_apply()               # 这是本棒唯一可复现的量具：轨迹是 tick 的闭式函数 ⇒ 这一帧 == 录屏那一帧
+		elif _shot_fit and _probe != null:  # --shot-fit：整镇（或当前室内 Space）入画，缩放到【bounds - HUD 余量】刚好塞进视口
 			if String(_probe.active_space) == "town":
 				_probe.go_home()            # town 才回全镇；非-town(咖啡馆室内)保持已进的 Space，别被 go_home 拽回 town
 			var _mapsz: Vector2 = _space_bounds().size
@@ -795,12 +835,92 @@ func _on_tick(_t: int) -> void:
 		return
 	if _demo_mode:
 		_demo_tick()               # --player-demo：剧本驱动玩家（确定性）
+	if _demo_cam:
+		_demo_cam_apply()          # --demo-cam：演示镜头（纯 View；tick 驱动，不读墙钟）
 	_modulate.color = _daylight(Sim.time_of_day())
 	_max_tick = maxi(_max_tick, Sim.tick_no)
 	_sync_goals()
 	_update_status()
 	_update_scrubber()
 	_update_obs()
+
+# ── 演示镜头（--demo-cam）─────────────────────────────────────────────────
+## 每 tick 一次：把相机放到轨迹上，并**按取景**决定选中谁。
+## ★"选中谁"跟着取景走，不是取景跟着人走——后者会让镜头去追一个每 tick 跳一格的目标（抖、且不可闭式复现），
+##   更要紧的是它会把"镜头需要什么"变成一条对仿真的诉求。**镜头制造机会，不点名要人。**
+func _demo_cam_apply() -> void:
+	if _probe == null or not _demo_cam:
+		return
+	if not bool(_probe.demo_cam):        # 人手动过相机 → Probe 自己把 demo_cam 关了，这里跟着退场
+		_demo_cam = false
+		return
+	var st: Dictionary = _probe.demo_apply(Sim.tick_no, _vp())
+	if st.is_empty():
+		return
+	# 只在越过名牌门之后才选人：全景档（zoom≈0.229）名字/气泡根本不画，选了观察台会与画面对不上。
+	# 阈值**读 WorldView 的原件**而不是抄一个 0.45——抄一份就一定会漂（docs/41 §4 的同一条教训）。
+	var sel := ""
+	if float(st["zoom"]) >= WorldViewScript.LABEL_MIN_ZOOM:
+		sel = _demo_pick(Vector2(st["pos"]), float(st["zoom"]))
+	else:
+		_demo_sel_hold = 0               # 拉回全景 ⇒ 清空选中（那一档名牌根本不画，观察台会与画面对不上）
+	if sel != _selected_id:
+		_selected_id = sel
+		_update_obs()
+	if _demo_trace != null:
+		_demo_trace.store_line("%d|%s|%.4f|%.5f|%.2f|%.2f|%d|%s" % [
+			Sim.tick_no, String(st["shot"]), float(st["u"]), float(st["zoom"]),
+			Vector2(st["pos"]).x, Vector2(st["pos"]).y,
+			1 if float(st["zoom"]) >= WorldViewScript.LABEL_MIN_ZOOM else 0, sel])
+		_demo_trace.flush()
+
+## 取景内选人：**对 Sim 只读**。候选 = 此刻真的在画面里的居民；从中按 HRW 取一个（理由见 DEMO_SEL_HOLD）。
+## 每 tick 重算（而不是"在分镜边界记一次"）是刻意的：只有这样它才是 tick 的纯函数，
+## `--shot --warmup-tick T` 才能复现录屏在 tick T 选中的那个人。
+func _demo_pick(center: Vector2, zoom: float) -> String:
+	# ① 迟滞：现在这位还在画面里、且没到换人节奏 → 就让镜头陪他把这段待完
+	var keep := _demo_half(zoom, DEMO_KEEP_MARGIN)
+	if _selected_id != "" and _demo_sel_hold < DEMO_SEL_HOLD and _demo_in_frame(_selected_id, center, keep):
+		_demo_sel_hold += 1
+		return _selected_id
+	# ② 换人：候选 = 此刻离画面边缘还有余量的居民；按 HRW 取一个（键在一个窗口内恒定 ⇒ 不会逐 tick 跳）
+	var half := _demo_half(zoom, DEMO_IN_MARGIN)
+	var k := "#" + str(Sim.tick_no / DEMO_SEL_HOLD)
+	var best := ""
+	var best_h := -1
+	for ag in Sim.agents:
+		if ag.get("is_player", false):
+			continue
+		if String(ag.get("space", "town")) != "town":
+			continue                     # 人在室内 ⇒ 镜头里看不见他，选了就是观察台与画面对不上
+		var d := (Vector2(float(ag["pos"].x) * 48.0 + 24.0, float(ag["pos"].y) * 48.0 + 24.0) - center).abs()
+		if d.x > half.x or d.y > half.y:
+			continue
+		var h := Sim.fnv1a32(String(ag["id"]) + k)
+		if h > best_h:                   # id 互异 ⇒ 不可能同值；Sim.agents 序稳定 ⇒ 完全确定
+			best_h = h
+			best = String(ag["id"])
+	_demo_sel_hold = 0
+	return best
+
+## 取景半尺寸（世界 px）：视口的一半按缩放折回世界，再各留一圈屏幕空间的余量。
+func _demo_half(zoom: float, margin: float) -> Vector2:
+	return (_vp() * 0.5 - Vector2(margin, margin)) / maxf(zoom, 0.01)
+
+## 某人此刻是否在取景里（只读 Sim）。
+func _demo_in_frame(id: String, center: Vector2, half: Vector2) -> bool:
+	var ag := Sim.get_agent(id)
+	if ag.is_empty() or String(ag.get("space", "town")) != "town":
+		return false
+	var d := (Vector2(float(ag["pos"].x) * 48.0 + 24.0, float(ag["pos"].y) * 48.0 + 24.0) - center).abs()
+	return d.x <= half.x and d.y <= half.y
+
+## 人手一碰相机就退出演示轨迹（键盘侧；鼠标/触屏侧在 ProbeController.handle_input 里）。
+func _demo_off() -> void:
+	if _demo_cam:
+		_demo_cam = false
+		if _probe != null:
+			_probe.demo_cam = false
 
 ## 昼夜色调：按一天进度 0..1 在几个色停之间插值（夜蓝→晨暖→白昼→暮橙→夜蓝）。
 func _daylight(tod: float) -> Color:
@@ -1694,10 +1814,10 @@ func _unhandled_input(e: InputEvent) -> void:
 			KEY_2, KEY_KP_2: Sim.running = true; Sim.speed = 2.0
 			KEY_3, KEY_KP_3: Sim.running = true; Sim.speed = 4.0
 			KEY_4, KEY_KP_4: Sim.running = true; Sim.speed = 8.0
-			KEY_EQUAL, KEY_KP_ADD: _probe.zoom_at(1.15, _vp() * 0.5, _vp())
-			KEY_MINUS, KEY_KP_SUBTRACT: _probe.zoom_at(1.0 / 1.15, _vp() * 0.5, _vp())
-			KEY_L: _toggle_follow()                              # Probe 跟随/取消（F 已被"送礼"占用）
-			KEY_HOME: _probe.go_home()                           # 回到全镇
+			KEY_EQUAL, KEY_KP_ADD: _demo_off(); _probe.zoom_at(1.15, _vp() * 0.5, _vp())
+			KEY_MINUS, KEY_KP_SUBTRACT: _demo_off(); _probe.zoom_at(1.0 / 1.15, _vp() * 0.5, _vp())
+			KEY_L: _demo_off(); _toggle_follow()                 # Probe 跟随/取消（F 已被"送礼"占用）
+			KEY_HOME: _demo_off(); _probe.go_home()              # 回到全镇
 			KEY_I: _probe_toggle_space()                         # Probe 进/出测试 Space（P1 Gate）
 			KEY_PAGEUP: _probe_cycle_floor(1)                    # 换楼层（Probe inspect）
 			KEY_PAGEDOWN: _probe_cycle_floor(-1)
