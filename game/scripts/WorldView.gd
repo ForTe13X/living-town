@@ -25,6 +25,119 @@ const LABEL_MIN_ZOOM := 0.45   # 低于此缩放：名字/气泡/emote/需求条
 var _vis := Rect2()            # 本帧可见世界矩形（每帧 _draw 开头刷新）
 var _zoom := 1.0               # 本帧 世界→屏幕 缩放
 
+# ── D7 · 逐 pass draw-call 归因（默认全关；出货路径上 `_askip` 恒为 "" ⇒ 逐字节不变）────────
+# docs/33 §7 的原话是这一节存在的全部理由：**「别推断瓶颈，埋计时器【测】」**——那一次凭直觉
+# 连着判错三次单一瓶颈（sim-only → render-only → sim-only），直到真机 usec 分拆才看清。
+# 真机 2026-07-28 又量到 FPS 11 / 绘制 4913，而派棒的假设（季节色调是逐格 pass）**是从 draw 数
+# 反推出来的推断**。所以这一棒的第一件事不是改代码，是造一把尺子。
+#
+# 用法（世界必须冻结，否则 agent 相关 pass 的差值会被移动污染）：
+#   godot --path game -- --speed 0 --warmup-tick 600 --draw-audit /out/audit.txt
+# 机制：每一步把**恰好一个** pass 关掉重画一帧，读
+#   `Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME`，与基线的差 = 该 pass 的 draw 数。
+#   另测「全关」一档作**地板**（HUD + 引擎固定开销），基线−地板 = 世界层总量，
+#   用它对逐 pass 差值求和做**闭合校验**（差值和 ≈ 世界层总量 ⇒ 归因没有漏项/重复计）。
+const AUDIT_PASSES: Array[String] = [
+	"backdrop", "grass", "water", "paths", "areafloor", "rooms", "walls",
+	"facades", "dressing", "arealabels", "decor", "trees", "towndoors",
+	"landmarks", "objects", "climate", "factionrings", "pactlinks",
+	"rellines", "talklinks", "agents", "rain", "lights",
+	# backdrop 的子 pass（与 "backdrop" 重叠，故不进闭合校验；单独列出是为了知道该动哪一段）
+	"bd:base", "bd:vergeramp", "bd:vergemotif", "bd:spill", "bd:canopy", "bd:vignette",
+]
+## 上面后 6 项是 "backdrop" 的**子集**，会被重复计入 ⇒ 闭合校验只对前 23 项求和。
+const AUDIT_PRIMARY := 23
+var _askip := ""               # 本帧要跳过的 pass 名（"" = 全开）
+var _audit_path := ""          # --draw-audit <file>：非空即进入审计模式
+var _audit_i := -2             # -2=预热 / -1=基线 / 0..n-1=逐 pass / n=全关地板
+var _audit_phase := 0
+var _audit_rows: Array = []
+var _audit_zoom := 0.0         # >0：审计前把相机钉到这个缩放（扫 zoom 用）
+var _audit_usec := 0           # 上一帧 _draw() 的 GDScript 墙钟（µs）。
+                               # ★ draw-call 数只是【代理指标】。docs/33 §7 的教训正是"别拿代理当结论"：
+                               #   一次 draw_circle 在 GDScript 侧要跑一趟循环 + 引擎侧要现场三角化，
+                               #   两笔成本都不体现在"绘制"那个数字里。所以两个都量。
+
+## 审计闸门（函数调用型 pass）。审计关闭时 `_askip == ""` ⇒ 恒 true ⇒ 调用点行为不变。
+## `"*"` 是「全关」哨兵，用来量出 HUD + 引擎的固定地板。
+func _ap(nm: String) -> bool:
+	return _askip != nm and _askip != "*"
+
+## 审计闸门（循环集合型 pass）：`for x in _ac("walls", _wall_set)`。
+## 用它而不是把整个循环体缩进一层 `if` —— 零重排 ⇒ 这段插桩不可能顺手改到画面。
+func _ac(nm: String, coll):
+	return coll if (_askip != nm and _askip != "*") else []
+
+const AUDIT_SETTLE := 12       # 每一步连画几帧再读表（第一帧的命令表可能还是上一步的）
+const AUDIT_WARM := 4          # 前几帧不计入 µs 均值（缓存/纹理上传的一次性成本）
+var _audit_uacc := 0
+var _audit_un := 0
+
+## 审计状态机。每步：设定 `_askip` → 连画 AUDIT_SETTLE 帧 → 读 draw 表 → 记一行 → 下一步。
+func _audit_step() -> void:
+	if _audit_i > AUDIT_PASSES.size():
+		return
+	if _audit_zoom > 0.0:
+		# 把相机钉在指定缩放（dev 量具专用）。ProbeController.min_zoom() 是给手操作用的地板，
+		# 这里绕开它 —— 扫 zoom 就是要看两端，含手操作到不了的那一端。相机只决定【画什么】，
+		# 不回喂 Sim（lod_verify 的相机无关门不受影响）。
+		var _m := get_parent()
+		var _p = _m.get("_probe") if _m != null else null
+		if _p != null and _p.cam != null:
+			_p.cam.zoom = Vector2(_audit_zoom, _audit_zoom)
+			_p.cam.position = Vector2(float(Sim.world.get("width", 24)) * T, float(Sim.world.get("height", 16)) * T) * 0.5
+	if _audit_phase == 0:
+		_askip = "" if _audit_i < 0 else ("*" if _audit_i == AUDIT_PASSES.size() else AUDIT_PASSES[_audit_i])
+	_redraw_all()
+	_audit_phase += 1
+	if _audit_phase > AUDIT_WARM:
+		_audit_uacc += _audit_usec; _audit_un += 1     # µs 单帧抖动 ±1.4ms，必须取均值才读得出小 pass
+	if _audit_phase < AUDIT_SETTLE:
+		return
+	_audit_phase = 0
+	var draws := int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
+	var objs := int(Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME))
+	var prims := int(Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME))
+	if _audit_i >= -1:
+		var nm := "BASELINE" if _audit_i < 0 else ("FLOOR_ALL_OFF" if _audit_i == AUDIT_PASSES.size() else AUDIT_PASSES[_audit_i])
+		_audit_rows.append({"n": nm, "d": draws, "o": objs, "p": prims,
+			"u": int(_audit_uacc / maxi(1, _audit_un))})
+	_audit_uacc = 0; _audit_un = 0
+	_audit_i += 1
+	if _audit_i > AUDIT_PASSES.size():
+		_audit_write()
+
+func _audit_write() -> void:
+	_askip = ""
+	var base := int(_audit_rows[0]["d"])
+	var floor_d := int(_audit_rows[_audit_rows.size() - 1]["d"])
+	var lines: Array[String] = []
+	lines.append("# D7 draw-call attribution · zoom=%.3f vis=%s season=%s weather=%s tick=%d N=%d" % [
+		_zoom, str(_vis), Sim.season_today, Sim.weather_today, Sim.tick_no, Sim.agents.size()])
+	var base_u := int(_audit_rows[0]["u"])
+	lines.append("# baseline_total=%d  floor(all world passes off)=%d  world_layer=%d" % [base, floor_d, base - floor_d])
+	lines.append("# baseline _draw() gdscript = %d us   floor = %d us" % [base_u, int(_audit_rows[_audit_rows.size() - 1]["u"])])
+	lines.append("pass\tdraws_without\tdelta\tshare_of_world\tus_without\tus_delta")
+	var sum_delta := 0
+	for r in _audit_rows:
+		var nm := String(r["n"])
+		if nm == "BASELINE" or nm == "FLOOR_ALL_OFF":
+			continue
+		var d := base - int(r["d"])
+		if not nm.begins_with("bd:"):
+			sum_delta += d
+		lines.append("%s\t%d\t%d\t%.1f%%\t%d\t%d" % [nm, int(r["d"]), d,
+			100.0 * float(d) / maxf(1.0, float(base - floor_d)), int(r["u"]), base_u - int(r["u"])])
+	lines.append("# sum_of_deltas(primary only)=%d  vs world_layer=%d  (closure check)" % [sum_delta, base - floor_d])
+	var f := FileAccess.open(_audit_path, FileAccess.WRITE)
+	for l in lines:
+		print("[DRAWAUDIT] " + l)
+		if f != null:
+			f.store_line(l)
+	if f != null:
+		f.close()
+	get_tree().quit()
+
 # ── 世界层浮动文字的【按需显示】（docs/46 §三-D5 / 缺口 #5）────────────────────
 # 病症（评审实测，跟随相机 zoom=1.8）：每个可见居民恒带 名牌 + 动作牌 + 需求条 + 派系环，
 # 5 人 ≈ 20 块浮动物（本棒复量 seed3/t600：5 名牌 + 5 动作牌 + 5 需求条 + 4 派系环 = **19**，
@@ -169,6 +282,7 @@ const DIALOG := {
 
 # 视觉大改：地面分层 + 装饰散布（切图前自动回退）
 var _grass: Array = []   # 草地变体纹理（带权）
+var _grass_var := PackedByteArray()   # 每格的草地变体下标（_build_grass_var 一次性烘；合批用）
 var _decor_items: Array = []  # [{tex, cell:Vector2i, h_tiles}]
 var _decor_built := false
 # P2-2 地形层：map.json 的 walls/water/trees（纯渲染；导航走 blockers 并集，与此无关）。start_new 时重建。
@@ -265,7 +379,24 @@ func _ready() -> void:
 		{"t": Art.terrain_tex("grass_b"), "w": 24},
 		{"t": Art.terrain_tex("grass_flowers"), "w": 6},
 	].filter(func(g): return g["t"] != null)
+	_build_void_layer()
 	_build_night_lights()
+	# ★真机上的 pass 开关。Godot 4.6 Android **不读** intent 的 `command_line_args`
+	#   （memory `reference-godot-android-loop` 实测），所以 CLI 旗到不了手机；而"每验一条假设
+	#   就重出一次 APK"是 6 分钟一发。改从 `user://settings.cfg` 读一个键，就能用
+	#   `adb ... run-as` 推一行字换一个实验 —— 出一次 APK，量任意多条 pass。
+	#   缺键 ⇒ `_askip == ""` ⇒ 出货路径逐字节不变。
+	var _dcfg := ConfigFile.new()
+	if _dcfg.load("user://settings.cfg") == OK:
+		_askip = String(_dcfg.get_value("dev", "draw_skip", ""))
+	var _uargs := OS.get_cmdline_user_args()
+	for _i in _uargs.size():
+		if _uargs[_i] == "--draw-audit" and _i + 1 < _uargs.size():
+			_audit_path = _uargs[_i + 1]        # dev 量具：逐 pass draw-call 归因（见 AUDIT_PASSES 一节）
+		elif _uargs[_i] == "--draw-audit-zoom" and _i + 1 < _uargs.size():
+			_audit_zoom = float(_uargs[_i + 1]) # 同上，但先把相机钉到指定缩放（扫 zoom 用；绕开 min_zoom 地板）
+		elif _uargs[_i] == "--void-gate":
+			_void_gate = true                   # 见 _void_gate_step()：把这一棒的 9× 那条性质机器化
 	Sim.ticked.connect(func(_t): _redraw_all())
 	Sim.agent_changed.connect(func(_id): _redraw_all())
 	Sim.social_event.connect(_on_social)
@@ -280,6 +411,27 @@ func _redraw_all() -> void:
 func _hash(x: int, y: int, salt: int) -> int:
 	var h := (x * 73856093) ^ (y * 19349663) ^ (salt * 83492791)
 	return absi(h)
+
+## 每格用哪一张草地切片（`_hash(tx,ty,3)` 的纯函数）。建一次、缓存；建它是为了让 `_draw`
+## 能**按变体分组**画而不必每格重算加权抽样。地图 64×48 ⇒ 3072 字节，可以忽略不计。
+func _build_grass_var(w: int, h: int) -> void:
+	var tw := 0
+	for g in _grass:
+		tw += int(g["w"])
+	if tw <= 0:
+		return
+	_grass_var.resize(w * h)
+	for ty in range(h):
+		var row := ty * w
+		for tx in range(w):
+			var r := _hash(tx, ty, 3) % tw
+			var pick := 0
+			for gi in _grass.size():
+				r -= int(_grass[gi]["w"])
+				if r < 0:
+					pick = gi
+					break
+			_grass_var[row + tx] = pick
 
 ## 在区域外的草地上确定性散布装饰（树/花/草丛…），让小镇不再空旷。切图缺失则跳过。
 func _build_decor() -> void:
@@ -309,11 +461,25 @@ func _build_decor() -> void:
 			if _hash(x, y, 7) % 100 >= 22:   # ~22% 密度
 				continue
 			var r := _hash(x, y, 13) % total_w
-			for p in pool:
-				r -= int(p["w"])
+			for pi in pool.size():
+				r -= int(pool[pi]["w"])
 				if r < 0:
-					_decor_items.append({"tex": p["t"], "cell": Vector2i(x, y), "h": int(p["h"])})
+					_decor_items.append({"tex": pool[pi]["t"], "cell": Vector2i(x, y), "h": int(pool[pi]["h"]), "k": pi})
 					break
+	# ★D7 合批：按【纹理】稳定排序（同纹理内保持原有先后）。散布【布局】一个字节没动，只改了画的次序
+	#   ⇒ 实测 427 次 draw call 塌成每种纹理一段。
+	#   **逐像素不变是可证的**：`pool` 里全是 16×16 源图 ⇒ `dw=dh=T`，底对齐后
+	#   `(c.y+1)*T - T == c.y*T` ⇒ **恰好铺满自己那一格**，且每格最多散一件
+	#   ⇒ 一组互不相交的图元，画的顺序不影响任何一个像素（带 alpha 也一样，因为各自压在
+	#   不同的底上）。真正会跨格的 `tree_big` 走 `_tree_cells`，不在这个数组里。
+	#   比较子是**全序**（k → y → x），不靠 sort_custom 的稳定性：等价键会让排序结果随实现摇摆，
+	#   而 `--shot` 的逐字节可复现是本仓库的既有承诺。
+	_decor_items.sort_custom(func(a, b):
+		if int(a["k"]) != int(b["k"]):
+			return int(a["k"]) < int(b["k"])
+		var ca: Vector2i = a["cell"]
+		var cb: Vector2i = b["cell"]
+		return ca.y < cb.y if ca.y != cb.y else ca.x < cb.x)
 
 ## 从 map.json 的 walls/water/trees 建渲染集合（纯渲染；导航仍走 Sim 的 blockers 并集）。世界重载即失效。
 func _build_terrain() -> void:
@@ -978,15 +1144,15 @@ func _verge_ramp(g: Color, t: float) -> Color:
 	return col
 
 ## 一圈（map 外扩 d 世界像素）填色，**只落在界外带里**。
-func _verge_ring(map: Rect2, bands: Array, d: float, col: Color) -> void:
+func _verge_ring(c: CanvasItem, map: Rect2, bands: Array, d: float, col: Color) -> void:
 	var ring := map.grow(d)
 	for b in bands:
 		var s := ring.intersection(b)
 		if s.size.x > 0.0 and s.size.y > 0.0:
-			draw_rect(s, col, true)
+			c.draw_rect(s, col, true)
 
 ## 把「沿边 a0..a1 格 × 向外 d0..d1 格」换算成世界矩形并**只画在界外带里**。
-func _verge_seg(e: Dictionary, bands: Array, a0: float, a1: float, d0: float, d1: float, col: Color) -> void:
+func _verge_seg(c: CanvasItem, e: Dictionary, bands: Array, a0: float, a1: float, d0: float, d1: float, col: Color) -> void:
 	var base: Vector2 = e["base"]
 	var al: Vector2 = e["al"]
 	var ov: Vector2 = e["out"]
@@ -997,7 +1163,7 @@ func _verge_seg(e: Dictionary, bands: Array, a0: float, a1: float, d0: float, d1
 	for b in bands:
 		var s := r.intersection(b)
 		if s.size.x > 0.0 and s.size.y > 0.0:
-			draw_rect(s, col, true)
+			c.draw_rect(s, col, true)
 
 ## 这一格边界外该延续什么：贴边 3 格内有 authored 树带 → 林缘（林子继续，不砌墙）；否则 → 人住过的边。
 ##
@@ -1021,16 +1187,18 @@ func _verge_motif(en: int, i: int, w: int, h: int) -> String:
 
 ## 第一层主体：亮度斜坡 + 逐格 motif。斜坡环数随缩放自适应（贴边 1px 一档），
 ## 既不在拉近时露出色带，也不在拉远时空烧填充率。
-func _draw_town_verge(map: Rect2, bands: Array, w: int, h: int) -> void:
+func _draw_town_verge(c: CanvasItem, map: Rect2, bands: Array, w: int, h: int) -> void:
 	if not _terrain_built:
 		_build_terrain()        # ★背板画在草地循环【之前】，而地形集合本来在草地之后才建 ⇒
 		#   不先建的话首帧 _water_set/_tree_set 全空、河岸与林缘退化成石墙（实测踩到）
 	var g := _verge_ground_col()
 	var steps := clampi(int(VERGE_TILES * float(T) * _zoom), 24, 96)
+	if not _ap("bd:vergeramp"):
+		steps = 0
 	for k in range(steps, 0, -1):               # 由外向内：内环覆盖外环 ⇒ 得到连续斜坡
 		var t := float(k) / float(steps)
-		_verge_ring(map, bands, t * VERGE_TILES * float(T), _verge_ramp(g, t))
-	if _zoom < VERGE_MOTIF_ZOOM:
+		_verge_ring(c, map, bands, t * VERGE_TILES * float(T), _verge_ramp(g, t))
+	if _zoom < VERGE_MOTIF_ZOOM or not _ap("bd:vergemotif"):
 		return
 	var edges := [
 		{"n": 0, "base": Vector2(0, 0), "al": Vector2(1, 0), "out": Vector2(0, -1), "cells": w, "on": _vis.position.y < 0.0},
@@ -1059,7 +1227,7 @@ func _draw_town_verge(map: Rect2, bands: Array, w: int, h: int) -> void:
 						var ba := a0 + 0.15 + float(hs2 % 9) * 0.19
 						var bd := 1.25 + float(hs2 / 9 % 11) * 0.14
 						var bc: Color = VOID_CANOPY_B if hs2 % 2 == 0 else VOID_CANOPY_A
-						_verge_seg(e, bands, ba, ba + 0.34, bd, bd + 0.30, Color(bc.r, bc.g, bc.b, 0.45))
+						_verge_seg(c, e, bands, ba, ba + 0.34, bd, bd + 0.30, Color(bc.r, bc.g, bc.b, 0.45))
 				_:
 					# 人住过的边：**散落的**矮石墙残段 + 排水沟。
 					# ★这里踩过一次坑，值得写下来：第一版按 72% 覆盖、固定 1.10 格外扩铺连续石墙，
@@ -1075,16 +1243,113 @@ func _draw_town_verge(map: Rect2, bands: Array, w: int, h: int) -> void:
 						var d0 := 0.85 + float(hw / 100 % 13) * 0.11      # 外扩 0.85..2.17 格
 						var la := a0 + float(hw / 7 % 5) * 0.16
 						var lb := la + 0.55 + float(hw / 13 % 7) * 0.16   # 段长 0.55..1.51 格
-						_verge_seg(e, bands, la, lb, d0, d0 + 0.20, Color(VERGE_STONE.r, VERGE_STONE.g, VERGE_STONE.b, 0.52))
-						_verge_seg(e, bands, la, lb, d0 + 0.20, d0 + 0.34, Color(VERGE_STONE_FOOT.r, VERGE_STONE_FOOT.g, VERGE_STONE_FOOT.b, 0.50))
+						_verge_seg(c, e, bands, la, lb, d0, d0 + 0.20, Color(VERGE_STONE.r, VERGE_STONE.g, VERGE_STONE.b, 0.52))
+						_verge_seg(c, e, bands, la, lb, d0 + 0.20, d0 + 0.34, Color(VERGE_STONE_FOOT.r, VERGE_STONE_FOOT.g, VERGE_STONE_FOOT.b, 0.50))
 					var hd := _hash(i, en, 43)
 					if hd % 100 < 30:                                     # 排水沟独立抽，刻意不与石墙对齐
 						var dd := 1.15 + float(hd / 100 % 11) * 0.13      # 1.15..2.45 格
 						var da := a0 + float(hd / 5 % 6) * 0.20
-						_verge_seg(e, bands, da, da + 0.75 + float(hd / 11 % 5) * 0.18, dd, dd + 0.22, Color(0, 0, 0, 0.20))
+						_verge_seg(c, e, bands, da, da + 0.75 + float(hd / 11 % 5) * 0.18, dd, dd + 0.22, Color(0, 0, 0, 0.20))
 			i += 2
 
-func _draw_town_backdrop(w: int, h: int) -> void:
+# ══ 界外虚空：独立的【静态】子层 ═══════════════════════════════════════════════
+# ★ 为什么要把它搬出 `_draw()`（这是 D7 的头条改动，理由全部是量出来的）：
+#   真机 NX789J / N=12 / 白天 / 开局取景（`go_home` fit，zoom 0.229）实测三点：
+#     ① 未改动的树              4989 draw · 100.0ms · FPS 10
+#     ② 只做合批（草地/土路/装饰）2903 draw ·  83.3ms · FPS 12   ← 少了 2086 次 draw，只买回 16.7ms
+#     ③ 再把界外树冠整段关掉      775 draw ·  11.8ms · FPS 85   ← 少了 2128 次 draw，买回 71.5ms
+#   同样数量级的 draw，②每次约 8µs、③每次约 34µs ⇒ **"绘制"那个数字本身是个被混淆的代理**。
+#   差别在**命令种类**：合批掉的是 `draw_rect`/`draw_texture_rect`（走实例化四边形），
+#   而树冠是 `draw_circle` ⇒ 每一个都是独立的 **polygon 命令**（自带顶点缓冲、断批），
+#   而且 `_draw()` 每帧都跑 ⇒ 这 2128 个多边形**每帧现场重新三角化、重新上传**。
+#   ⇒ 治法不是"少画几棵树"（那会改画面），而是**让它别每帧重建**：
+#     界外层的输入只有 `_vis / _zoom / 季节 / 天气`（它**不读 tick、不读 agent、不读昼夜**，
+#     已逐行核对），所以相机不动时它逐帧完全相同 —— 搬进独立 CanvasItem、只在输入变化时
+#     `queue_redraw()`，画面**逐字节不变**而每帧的重建成本归零。
+class VoidLayer extends Node2D:
+	var host = null
+	func _draw() -> void:
+		if host != null:
+			host._draw_void_layer(self)
+
+var _void: Node2D = null
+var _void_key := ""
+var _void_draws := 0           # 界外层实际重画了几次（门用）
+
+func _build_void_layer() -> void:
+	_void = VoidLayer.new()
+	_void.host = self
+	_void.name = "VoidBackdrop"
+	_void.z_index = -1          # 画在本节点自身之下 —— 与它原先"草地循环之前第一笔"的位置等价
+	add_child(_void)
+
+## 界外层的缓存键：**穷举**了 `_draw_town_backdrop` 会读的一切可变量。
+## `_askip` 也进键，否则逐 pass 审计会读到上一档的缓存。
+func _void_cache_key() -> String:
+	var mn := get_parent()
+	var pb = mn.get("_probe") if mn != null else null
+	var sp := String(pb.active_space) if pb != null else "town"
+	return "%.4f|%.2f,%.2f,%.2f,%.2f|%s|%s|%s|%s" % [_zoom,
+		_vis.position.x, _vis.position.y, _vis.size.x, _vis.size.y,
+		Sim.season_today, Sim.weather_today, sp, _askip]
+
+## 相机/季节/天气变了才让界外层重画。`_process` 与 `_draw` 里各查一次：
+## 前者让"相机这一帧动了"在**同一帧**生效，后者兜住相机在本节点 `_process` 之后才更新的次序。
+func _void_sync() -> void:
+	if _void == null:
+		return
+	if _void_cache_key() != _void_key:
+		_void.queue_redraw()
+
+## ── R11 的门，但**不是 R11 写的那道门** ────────────────────────────────────────
+## R11 要求"视觉棒必须报 draw-call 数"，并建议"场景模式下断言总 draw < 阈值"。
+## 本棒的真机三点实测把这条建议**证伪**了：
+##   合批档 2903 draw → 83.3ms ；缓存档 2911 draw → **11.1ms**。
+##   **draw 数几乎相同，帧时差 7.5 倍** ⇒ 一道"总 draw < 阈值"的门对这次修复
+##   **完全没有分辨力**：它在 83ms 和 11ms 两棵树上给出同一个判读，甚至会把更快的那棵判得更差。
+##   （docs/41 §6-★ 的同一条纪律：写下判据后先问"一个什么都不做的改动能不能通过它"，
+##     这次更糟——**一个真正的修复会被它判成退步**。）
+## 真正值 89ms 的那条性质是**结构性**的：
+##   **相机不动时，界外层不得随 tick 重画。**
+## 这道门直接断言它：跑一段真 tick、相机不动，`_void_draws` 必须停在 1。
+## 用法（可一行接进 tools/ci.sh，需要真 framebuffer=Xvfb）：
+##   godot --path game --display-driver x11 --rendering-driver opengl3 -- --backend logic --seed 3 --void-gate
+## 退出码 0=PASS / 1=FAIL。
+var _void_gate := false
+var _gate_frames := 0
+var _gate_base := -1
+var _gate_tick0 := 0
+
+func _void_gate_step() -> void:
+	_gate_frames += 1
+	if _gate_frames == 40:                     # 前 40 帧留给首帧建层 + 纹理加载
+		_gate_base = _void_draws
+		_gate_tick0 = Sim.tick_no
+	elif _gate_frames >= 400 and _gate_base >= 0:
+		var extra := _void_draws - _gate_base
+		var ticks := Sim.tick_no - _gate_tick0
+		var ok := extra == 0 and ticks >= 20    # ticks 也要断言：世界没在跑的话这门是平凡通过的
+		print("[VOIDGATE] frames=%d ticks_advanced=%d void_redraws_after_settle=%d zoom=%.3f => %s"
+			% [_gate_frames, ticks, extra, _zoom, "PASS" if ok else "FAIL"])
+		if not ok:
+			push_error("VOIDGATE FAIL: 界外层在相机不动时重画了 %d 次（tick 推进 %d）" % [extra, ticks])
+		get_tree().quit(0 if ok else 1)
+
+func _draw_void_layer(cv: CanvasItem) -> void:
+	if Sim.world.is_empty():
+		return
+	var mn := get_parent()
+	var pb = mn.get("_probe") if mn != null else null
+	if pb != null and String(pb.active_space) != "town":
+		return                       # 非-town 平面有自己的底（_draw_interior_backdrop）
+	_refresh_view_metrics()          # 与本节点共用画布变换；自己刷一次，保证画的是**本帧**的取景
+	_void_key = _void_cache_key()    # 先记键再画：这一帧画出来的就是这个键对应的内容
+	_void_draws += 1
+	if not _ap("backdrop"):
+		return
+	_draw_town_backdrop(cv, int(Sim.world.get("width", 24)), int(Sim.world.get("height", 16)))
+
+func _draw_town_backdrop(c: CanvasItem, w: int, h: int) -> void:
 	var map := Rect2(0.0, 0.0, float(w) * T, float(h) * T)
 	var v := _vis
 	var bands: Array = []
@@ -1101,20 +1366,20 @@ func _draw_town_backdrop(w: int, h: int) -> void:
 			bands.append(Rect2(map.end.x, my0, v.end.x - map.end.x, my1 - my0))
 	if bands.is_empty():
 		return                                  # 镜头完全在界内（跟随相机的常态）：一笔都不画
-	for b in bands:
-		draw_rect(b, VOID_BASE, true)
+	for b in _ac("bd:base", bands):
+		c.draw_rect(b, VOID_BASE, true)
 	# ★第一层：边界延续（docs/44 §四 / docs/43 §三-C7）。必须在暗林/暗角【之前】——
 	#   它是"地面继续往外走"的那一层，林子应当长在它外面，而不是压在它上面。
-	_draw_town_verge(map, bands, w, h)
+	_draw_town_verge(c, map, bands, w, h)
 	# 镇子漏进林子的光：贴着地图外缘最亮、向外 8 圈熄灭。旧稿在这里放过一条【矩形青色岸带】，
 	# 眼验读作"给地图加了个装饰边框"——硬边框是原型感的来源，换成柔性光晕就消失了。
-	for k in range(8, 0, -1):
+	for k in range(8 if _ap("bd:spill") else 0, 0, -1):
 		var ring := map.grow(VOID_SPILL_TILES * T * (float(k) / 8.0))
 		var a := 0.030 * (1.0 - float(k - 1) / 8.0)
 		for b in bands:
 			var seg := ring.intersection(b)
 			if seg.size.x > 0.0 and seg.size.y > 0.0:
-				draw_rect(seg, Color(VOID_SPILL.r, VOID_SPILL.g, VOID_SPILL.b, a), true)
+				c.draw_rect(seg, Color(VOID_SPILL.r, VOID_SPILL.g, VOID_SPILL.b, a), true)
 	# 界外暗林：2 格粗粒度的确定性树冠（_hash，不抽 RNG、与相机无关）。太远的镜头只留底色。
 	# 每格画【两丛】并给足抖动，否则规则网格会读成波点墙纸（第一版实测就是这个毛病）。
 	var cell := T * 2.0
@@ -1123,17 +1388,17 @@ func _draw_town_backdrop(w: int, h: int) -> void:
 	var gx1 := int(ceil(v.end.x / cell))
 	var gy1 := int(ceil(v.end.y / cell))
 	var fade_px := VOID_FADE_TILES * T
-	if _zoom >= 0.18 and (gx1 - gx0) * (gy1 - gy0) <= VOID_DECOR_MAX_CELLS:
+	if _zoom >= 0.18 and (gx1 - gx0) * (gy1 - gy0) <= VOID_DECOR_MAX_CELLS and _ap("bd:canopy"):
 		for gy in range(gy0, gy1):
 			for gx in range(gx0, gx1):
 				for sub in 2:
 					var hsh := _hash(gx, gy, 91 + sub * 37)
-					var c := Vector2(gx * cell, gy * cell) \
+					var cp := Vector2(gx * cell, gy * cell) \
 						+ Vector2(float(hsh % 97), float(hsh / 97 % 97)) * (cell / 97.0)
-					if map.has_point(c):
+					if map.has_point(cp):
 						continue                # 界内不长树（R5：界内必须逐像素不变）
 					# 离镇越远越黑越稀：林子要"退进夜里"，不是铺一层等密度的点
-					var dist := _rect_dist(map, c)
+					var dist := _rect_dist(map, cp)
 					var r := cell * (0.30 + float(hsh / 11 % 9) * 0.030)
 					# ★第一层是"地面延续"，不长成片的树：暗树冠（亮度 ~30）压在贴边草坡（亮度 ~150）上，
 					#   会把刚抹平的接缝换成一排更碎的高对比斑点。
@@ -1147,12 +1412,12 @@ func _draw_town_backdrop(w: int, h: int) -> void:
 						continue
 					var cc := VOID_CANOPY_A if hsh % 3 == 0 else (VOID_CANOPY_B if hsh % 3 == 1 else VOID_CANOPY_C)
 					cc = cc.lerp(VOID_BASE, 1.0 - lit)      # 远处的树冠融进底色
-					draw_circle(c, r, cc)
+					c.draw_circle(cp, r, cc)
 					if lit > 0.25:
-						draw_circle(c + Vector2(-r * 0.28, -r * 0.32), r * 0.44,
+						c.draw_circle(cp + Vector2(-r * 0.28, -r * 0.32), r * 0.44,
 							Color(cc.r, cc.g, cc.b, 0.50 * lit))   # 受光叶簇
 	# 暗角：由地图外缘向外 6 圈加深 → 视线自然被收回镇子里
-	for k in 6:
+	for k in (6 if _ap("bd:vignette") else 0):
 		var vg := Rect2(map).grow(VOID_SPILL_TILES * T + float(k + 1) * T * 2.6)
 		var a := 0.050 + float(k) * 0.034
 		# 逐圈压暗：只压 band 里落在这一圈【之外】的部分（四条外带），避免整片重复叠加
@@ -1165,7 +1430,7 @@ func _draw_town_backdrop(w: int, h: int) -> void:
 			var out_rgt := Rect2(maxf(b.position.x, vg.end.x), iy0, maxf(0.0, b.end.x - maxf(b.position.x, vg.end.x)), maxf(0.0, iy1 - iy0))
 			for o in [out_top, out_bot, out_lft, out_rgt]:
 				if o.size.x > 0.0 and o.size.y > 0.0:
-					draw_rect(o, Color(0, 0, 0, a), true)
+					c.draw_rect(o, Color(0, 0, 0, a), true)
 
 # ══ 夜灯（加色光层）══════════════════════════════════════════════════════════
 # ★ 为什么这一层【必须】是独立的加色子节点，而不是在 _draw() 里多画几个亮块：
@@ -1358,7 +1623,7 @@ func _collect_lights() -> Array:
 ## ★ `_night_amt()` 在正午（tod=0.5）恒为 0 ⇒ 本函数直接返回、一个像素都不画。
 ##   这就是本棒的天然负对照："正午帧改前改后 diff bbox 必须是 None"。
 func _draw_night_lights(c: Node2D) -> void:
-	if Sim.world.is_empty():
+	if Sim.world.is_empty() or not _ap("lights"):
 		return
 	var main := get_parent()
 	var pb = main.get("_probe") if main != null else null
@@ -1378,7 +1643,15 @@ func _draw_night_lights(c: Node2D) -> void:
 		_glow(c, p, rad, L["c"], float(L["a"]) * night)
 
 func _draw() -> void:
+	var _at0 := Time.get_ticks_usec()   # D7 量具：_draw() 的 GDScript 墙钟（docs/33 §7「埋计时器测」）
+	_draw_body()
+	_audit_usec = Time.get_ticks_usec() - _at0
+
+func _draw_body() -> void:
 	_refresh_view_metrics()
+	_void_sync()                # 界外虚空已搬到独立子层（见 _draw_void_layer），这里只判断要不要让它重画。
+	                            # ★必须在下面的室内 early-return **之前**：进店时界外层要被通知擦掉自己，
+	                            #   否则它会带着上一次的镇外林子留在室内画面的最底层。
 	var _main := get_parent()
 	var _pb = _main.get("_probe") if _main != null else null
 	if _pb != null and String(_pb.active_space) != "town":
@@ -1389,13 +1662,11 @@ func _draw() -> void:
 		return
 	var w: int = int(Sim.world.get("width", 24))
 	var h: int = int(Sim.world.get("height", 16))
-	_draw_town_backdrop(w, h)   # 界外虚空：暗林/水环/暗角。必须在草地循环【之前】，且只碰地图矩形之外
 	var veg := _season_veg()    # 四季：植被的乘算色偏（春新绿 / 夏深浓 / 秋金黄 / 冬冷褪）
 	# 地面：逐格选草地变体（有切片时）→ 否则平铺单图 → 否则色块
 	if not _grass.is_empty():
-		var tw := 0
-		for g in _grass:
-			tw += int(g["w"])
+		if _grass_var.is_empty():
+			_build_grass_var(w, h)
 		# 只画【看得见的】格子。旧版每帧无条件铺满 64x48 = 3072 个 draw_texture_rect，
 		# 而 1280x768 视口在 zoom=1 时只装得下约 27x16 ≈ 430 格 —— 其余 85% 是纯浪费的填充率，
 		# 这是手机上最便宜的一笔回收。变体仍由 _hash(tx,ty) 决定，与看哪儿无关 → 画面逐像素不变。
@@ -1403,16 +1674,23 @@ func _draw() -> void:
 		var ty0 := maxi(0, int(floor(_vis.position.y / float(T))))
 		var tx1 := mini(w, int(ceil(_vis.end.x / float(T))))
 		var ty1 := mini(h, int(ceil(_vis.end.y / float(T))))
-		for ty in range(ty0, ty1):
-			for tx in range(tx0, tx1):
-				var r := _hash(tx, ty, 3) % tw
-				var chosen: Texture2D = _grass[0]["t"]
-				for g in _grass:
-					r -= int(g["w"])
-					if r < 0:
-						chosen = g["t"]
-						break
-				draw_texture_rect(chosen, Rect2(tx * T, ty * T, T, T), false, veg)
+		if not _ap("grass"):
+			ty1 = ty0                # D7 审计：关掉草地 pass（出货路径不走这一行）
+		# ★D7 合批：**按变体分组**画，而不是逐格切纹理。
+		#   旧写法沿着行走，三种草地纹理随机交替 ⇒ 每换一次纹理就断一次批
+		#   ⇒ 实测 3072 格烧掉 **1425 次 draw call**（全镇取景，占世界层 29.4%）。
+		#   分组之后同一张纹理连着画，3072 格塌成 3 段。
+		#   **逐像素不变是可证的，不是"看起来一样"**：三张草地切片实测**全不透明**
+		#   （alpha 恒 255）、且每格恰好占 `Rect2(tx*T, ty*T, T, T)` 一个互不相交的格子
+		#   ⇒ 一组互不相交的不透明矩形，**画的顺序不影响任何一个像素**。
+		#   变体归属仍是 `_hash(tx,ty,3)` 的纯函数（缓存在 `_grass_var` 里），与相机无关。
+		for gi in _grass.size():
+			var gt: Texture2D = _grass[gi]["t"]
+			for ty in range(ty0, ty1):
+				var grow := ty * w
+				for tx in range(tx0, tx1):
+					if int(_grass_var[grow + tx]) == gi:
+						draw_texture_rect(gt, Rect2(tx * T, ty * T, T, T), false, veg)
 	else:
 		var grass := Art.ground_tex()
 		if grass != null:
@@ -1434,7 +1712,7 @@ func _draw() -> void:
 	var _wn := _night_amt()
 	if _wn > 0.001:
 		wtint = Color(1, 1, 1).lerp(WATER_NIGHT, _wn)
-	for idx in _water_set:
+	for idx in _ac("water", _water_set):
 		var wx: int = idx % w
 		var wy: int = idx / w
 		var wr := Rect2(wx * T, wy * T, T, T)
@@ -1449,20 +1727,24 @@ func _draw() -> void:
 	if not _paths_built:
 		_build_paths()
 	if dirt != null:
-		for idx in _path_set:
-			var rx: int = idx % w
-			var ry: int = idx / w
-			draw_texture_rect(dirt, Rect2(rx * T, ry * T, T, T), false)
-			draw_rect(Rect2(rx * T, ry * T, T, T), Color("#6b5a3e", 0.16), true)   # 压一层暖褐：比广场更"踩实"，两者可区分
+		# ★D7 合批：土路旧写法是「铺一格土 → 压一层褐 → 下一格」，纹理与纯色**逐格交替** ⇒ 每格断两次批。
+		#   拆成两趟（先全部土瓦片、再全部褐罩）就各自连成一段。
+		#   **逐像素不变可证**：dirt.png 实测全不透明，且每格恰好占一个互不相交的 `Rect2(rx*T,ry*T,T,T)`
+		#   ⇒ 任一格的褐罩只会落在**它自己那块已经铺好的土**上，与别的格子的绘制顺序无关。
+		for idx in _ac("paths", _path_set):
+			draw_texture_rect(dirt, Rect2((idx % w) * T, (idx / w) * T, T, T), false)
+		for idx in _ac("paths", _path_set):
+			draw_rect(Rect2((idx % w) * T, (idx / w) * T, T, T), Color("#6b5a3e", 0.16), true)   # 压一层暖褐：比广场更"踩实"，两者可区分
 
 	# 区域【真地板】：每个 district 按 type 铺木/石/铺装地板（旧版只有广场有地板，其余七个区只有一层
 	# 0.10 alpha 的淡色罩 —— 那层淡到什么也读不出来，于是墙里全是草，房子读作"围了圈墙的院子"）。
-	_draw_area_floors(dirt)
+	if _ap("areafloor"):
+		_draw_area_floors(dirt)
 	# 室内房间 → 画成【真·建筑】（docs/16 / docs/19 §9）：外墙有厚度 + 落地阴影 + 屋檐、南墙开门、北墙开窗、
 	# 室内按房型铺材质地板，有人时透暖光。参照 Stardew / Stoneshard / ZeroSievert 的"切顶俯视"读法：
 	# 建筑必须有体积，人才有比例——旧版把 6x4 的房间画成一块半透明色块 + 文字标签，读作"色区"而非"房子"。
 	# 纯渲染：不进 digest、不抽 RNG（门窗变体用 Sim._hash01(room_id) 确定性选）。红线不动。
-	for rid in Sim.world.get("rooms", {}):
+	for rid in _ac("rooms", Sim.world.get("rooms", {})):
 		var rm: Dictionary = Sim.world["rooms"][rid]
 		var rr: Array = rm.get("rect", [0, 0, 0, 0])
 		_draw_building(str(rid), Rect2(rr[0] * T, rr[1] * T, rr[2] * T, rr[3] * T),
@@ -1473,7 +1755,7 @@ func _draw() -> void:
 
 	# 分类型建筑外墙（map.json walls 层，按所属建筑 type 上色）：buildings.json 清空后，districts 的体积就靠这层墙读出。
 	# 切顶俯视：落地阴影 + 三段墙面(顶棱高光/主面/墙脚暗边)让 1 格墙读作有厚度；颜色由类型区分（住宅暖木/商业米黄/公共蓝灰/工坊灰石）。门缺口天然留白。
-	for idx in _wall_set:
+	for idx in _ac("walls", _wall_set):
 		var sx: int = idx % w
 		var sy: int = idx / w
 		var pal: Dictionary = BLD_PAL.get(String(_wall_type.get(idx, "workshop")), BLD_PAL["workshop"])
@@ -1482,14 +1764,17 @@ func _draw() -> void:
 		draw_rect(Rect2(sx * T, sy * T, T, T * 0.22), pal["top"], true)                               # 顶棱高光
 		draw_rect(Rect2(sx * T, sy * T + T * 0.86, T, T * 0.14), pal["foot"], true)                   # 墙脚暗边
 	# 屋檐 + 招牌：每栋（非广场）沿顶墙内侧铺一条屋檐色带 + 门上方挂类型招牌图标 → 类型一眼可辨。
-	_draw_facades()            # P3 打磨：开窗（夜透暖光）+ 住宅/工坊烟囱——先画在墙面上
-	_draw_building_dressing(w) # 再压屋檐/招牌（自然遮住顶墙窗上沿，像真的屋檐）
-	_draw_area_labels()        # 区名画在墙【之后】（旧版画在顶墙格上，被墙盖掉，等于没画）
+	if _ap("facades"):
+		_draw_facades()            # P3 打磨：开窗（夜透暖光）+ 住宅/工坊烟囱——先画在墙面上
+	if _ap("dressing"):
+		_draw_building_dressing(w) # 再压屋檐/招牌（自然遮住顶墙窗上沿，像真的屋檐）
+	if _ap("arealabels"):
+		_draw_area_labels()        # 区名画在墙【之后】（旧版画在顶墙格上，被墙盖掉，等于没画）
 
 	# 装饰散布（区域外草地上的树/花/草丛，确定性布局；在物件与居民之下）
 	if not _decor_built:
 		_build_decor()
-	for it in _decor_items:
+	for it in _ac("decor", _decor_items):
 		var dtex: Texture2D = it["tex"]
 		var c: Vector2i = it["cell"]
 		if not _vis.has_point(Vector2(c.x * T, c.y * T)):
@@ -1503,7 +1788,7 @@ func _draw() -> void:
 	# authored 阻挡树（map.json trees 层）：这些是【会挡路】的真树（与上面可踩的程序化花草区分开）。
 	# 用 tree_big 切图底对齐画；缺切图则程序化画树冠+树干。占满格 → 玩家一眼读出"这里过不去"。
 	var ttex := Art.decor_tex("tree_big")
-	for tc in _tree_cells:
+	for tc in _ac("trees", _tree_cells):
 		if ttex != null:
 			var tdw := float(ttex.get_width()) * (float(T) / 16.0)
 			var tdh := float(ttex.get_height()) * (float(T) / 16.0)
@@ -1514,11 +1799,13 @@ func _draw() -> void:
 			draw_circle(Vector2(cx, tc.y * T + T * 0.42), T * 0.42, Color("#2f6d3a") * veg)                          # 树冠
 			draw_circle(Vector2(cx - T * 0.18, tc.y * T + T * 0.30), T * 0.24, Color("#3c8a4a") * veg)                # 高光叶
 
-	_draw_town_doors()         # P3 UX：给能进的建筑画醒目木门 + 招牌（点门进店）
-	_draw_landmarks()          # P2-4 公共地标（水井 / 告示板）：程序化画在地形层、居民之下
+	if _ap("towndoors"):
+		_draw_town_doors()         # P3 UX：给能进的建筑画醒目木门 + 招牌（点门进店）
+	if _ap("landmarks"):
+		_draw_landmarks()          # P2-4 公共地标（水井 / 告示板）：程序化画在地形层、居民之下
 
 	# 对象：CC0 物件精灵（slot=id 前缀，如 bench/bath/counter/desk/arcade）；缺则程序化色块兜底
-	for id in Sim.world.get("objects", {}):
+	for id in _ac("objects", Sim.world.get("objects", {})):
 		var o: Dictionary = Sim.world["objects"][id]
 		# ★ 平面守卫。`_compile_interiors()`(Sim.gd:532) 把室内家具也塞进 world["objects"]，坐标是
 		# 【室内局部格】(0..7, 0..6) 且带 space/floor 标记。这个循环此前无条件画【全部】对象，于是那些
@@ -1546,7 +1833,8 @@ func _draw() -> void:
 					draw_string(Art.font(), Vector2(base.x + 4, base.y + T - 3), str(o.get("type", "")), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 1, 1, 0.7))
 
 	# 四季 / 天气的大气罩：压在地形与建筑之上、居民之下（居民不该被刷成一片霜白）
-	_draw_climate_wash(w, h)
+	if _ap("climate"):
+		_draw_climate_wash(w, h)
 
 	# ── 社交层（在 Agent 之下先画连线，再画 Agent 与标记）──────────────────
 	# 每帧预建冲突/约会端点集 → _draw_agent 用 O(1) 查代替 per-agent 线性扫 Sim.conflicts/commitments（N 大时省 O(N×|conflicts|)）。
@@ -1570,16 +1858,20 @@ func _draw() -> void:
 			if _pid != "":
 				_rc_social_ids[_pid] = true
 	_rc_sel_id = _selected_id()
-	_draw_faction_rings()      # S3a：派系归属（同色脚环）
-	_draw_pact_links()         # S3b：互助盟约（青色双线 + 🤝）
-	_draw_relationship_lines()
-	_draw_talking_links()
-	for ag in Sim.agents:
+	if _ap("factionrings"):
+		_draw_faction_rings()      # S3a：派系归属（同色脚环）
+	if _ap("pactlinks"):
+		_draw_pact_links()         # S3b：互助盟约（青色双线 + 🤝）
+	if _ap("rellines"):
+		_draw_relationship_lines()
+	if _ap("talklinks"):
+		_draw_talking_links()
+	for ag in _ac("agents", Sim.agents):
 		if String(ag.get("space", "town")) != "town":
 			continue            # P3 Tier-B：非-town 平面的居民(在咖啡馆室内的阿丽)不画在镇上——否则会用室内格坐标在镇上"鬼影"
 		_draw_agent(ag)
 
-	if Sim.weather_today == "雨":
+	if Sim.weather_today == "雨" and _ap("rain"):
 		_draw_rain()            # 雨丝画在【居民之上】：雨在人前面落，才读作下雨而不是地面贴图
 
 	if dbg_nav:                 # P2-4 开发叠层（N 键）：可视化导航权威数据——阻挡格 + 交互格
@@ -1671,6 +1963,13 @@ func _rpos(ag: Dictionary) -> Vector2:
 func _process(delta: float) -> void:
 	if Sim.world.is_empty():
 		return
+	if _audit_path != "":
+		_audit_step()
+		return                  # 审计模式独占：插值也会让画面动，会污染逐 pass 差值
+	if _void_gate:
+		_void_gate_step()
+	_refresh_view_metrics()     # 界外层的脏判定要用【本帧】的取景，不能等到 _draw 才刷
+	_void_sync()
 	# 一格实际占多少实时秒：tick_interval / speed（x8 加速时只有 0.01s）。
 	# 下限 0.008 防除零/抖动，上限 0.16 防 --speed 0 时把收敛拖成"永远在爬"。
 	var step := clampf(Sim.tick_interval / maxf(Sim.speed, 0.25), 0.008, 0.16)
