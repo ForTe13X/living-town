@@ -25,6 +25,29 @@ const LABEL_MIN_ZOOM := 0.45   # 低于此缩放：名字/气泡/emote/需求条
 var _vis := Rect2()            # 本帧可见世界矩形（每帧 _draw 开头刷新）
 var _zoom := 1.0               # 本帧 世界→屏幕 缩放
 
+# ── 世界层浮动文字的【按需显示】（docs/46 §三-D5 / 缺口 #5）────────────────────
+# 病症（评审实测，跟随相机 zoom=1.8）：每个可见居民恒带 名牌 + 动作牌 + 需求条 + 派系环，
+# 5 人 ≈ 20 块浮动物（本棒复量 seed3/t600：5 名牌 + 5 动作牌 + 5 需求条 + 4 派系环 = **19**，
+# 可可 faction 为空所以少一个环），世界区里 1418 个近白字形像素。
+# **而那 5 张动作牌当时写的是同一个词「吃饭」**——重复的同义标签信息量≈0，却占着最抢眼的一层。
+#
+# 这里**不删功能**，只把它分成两条可达路径（"该看见时看得见"才是判据，不是像素数变小）：
+#   ① 焦点集（_is_focus）：选中者 / 玩家 / 冲突或约会当事人 / 正在社交事务里的双方 / 正在说话的人
+#      —— 任何缩放档下【恒显】名牌与动作牌，与改动前完全一致。
+#   ② 其余人：随缩放淡入。zoom≤LABEL_FADE_LO 全隐，≥LABEL_FADE_HI 与改动前完全一致，中间线性。
+#      两个阈值都在 ProbeController.ZOOM_MAX(3.0) 之内，且 focus 档 1.8 按 `+` 两下即 2.38 ⇒ 可达。
+# 需求条同理改成【危机才出现】：阈值 35 直接取自它原本的红/绿分界 —— 即"它本来要变红的那一刻才出现"，
+# 没有引入任何新语义。实测（seed 3）：绿条 427/595 px → 0，而 t=660 那条**红**条 211 px → 211 px 逐字节不动。
+#
+# ★ 本改动是**纯闸门**，有机器证据：把这两个常量压成 0.40/0.45（即 detail 恒为 1）之后，
+#   4 个场景（含 --player 与一个社交/危机帧）渲出的 PNG 与**未改动的树 SHA256 完全相同**。
+#   ⇒ "把浮动文字压下去"这件事没有删掉任何一个字，只是给它们加了条件。
+const LABEL_FADE_LO := 2.00    # ≤ 此缩放：非焦点者不画名牌/动作牌（跟随相机 1.8 落在这一侧 ⇒ 干净）
+const LABEL_FADE_HI := 2.60    # ≥ 此缩放：非焦点者全量恢复（贴脸细查档 ⇒ 一个字都没丢）
+const NEED_CRISIS := 35.0      # 与 _draw_urgent_need 里原有的红/绿分界同一个数，不是新阈值
+var _rc_social_ids := {}       # 每帧预建：正在一次社交事务里的双方（actor + partner）
+var _rc_sel_id := ""           # 每帧预建：当前选中者（_selected_id() 要走 get_parent().get()，别在 per-agent 循环里调 N 次）
+
 # ── 关系连线（S1 起最贵也最乱的一层）──────────────────────────────────────────
 enum RelMode { ALL, SELECTED, OFF }
 const REL_TOP_K := 3           # 每人只保留最强的 K 条（一条边在任一端的 top-K 里就留 → 强关系不会被单侧挤掉）
@@ -1536,6 +1559,17 @@ func _draw() -> void:
 	for _c in Sim.commitments:
 		if String(_c["status"]) == "active":
 			_rc_meet_ids[_c["a"]] = true; _rc_meet_ids[_c["b"]] = true
+	# D5：正在社交事务里的双方 —— 与 _draw_talking_links() 判定同源（option.kind=="social"），
+	# 但那里只画线，这里要的是"这两个人的名牌该恒显"。partner 可能在室内/不存在，照记不影响。
+	_rc_social_ids = {}
+	for _a in Sim.agents:
+		var _o = _a.get("option")
+		if _o != null and String(_o.get("kind", "")) == "social":
+			_rc_social_ids[String(_a["id"])] = true
+			var _pid := String(_o.get("partner", ""))
+			if _pid != "":
+				_rc_social_ids[_pid] = true
+	_rc_sel_id = _selected_id()
 	_draw_faction_rings()      # S3a：派系归属（同色脚环）
 	_draw_pact_links()         # S3b：互助盟约（青色双线 + 🤝）
 	_draw_relationship_lines()
@@ -1912,43 +1946,83 @@ func _draw_agent(ag: Dictionary) -> void:
 		_draw_ground_ring(Vector2(center.x, feet), T * 0.38, Color("#ffd700"), 2.5)
 	if _zoom < LABEL_MIN_ZOOM:
 		return          # 全镇俯瞰档：名字/emote/气泡/需求条缩到几像素只剩糊斑 —— 不画，画面更干净、填充率也省下来
-	# 最紧迫需求条（落脚线正下方）
-	_draw_urgent_need(Vector2(center.x, feet + T * 0.20), ag)
-	# 头顶 emote（社交事件触发，短暂显示）：20px 源 × 2 整数倍
+	var aid := String(ag["id"])
+	var sy = _say.get(aid)
+	var saying: bool = sy != null and Sim.tick_no < int(sy["until"])
+	var focus := _is_focus(ag, aid, saying)          # 恒显档（见 LABEL_FADE_LO 抬头）
+	# 缩放淡入系数（**不含**焦点豁免）与最终系数。分成两个的理由见下面需求条那一段。
+	var zoom_detail := clampf((_zoom - LABEL_FADE_LO) / (LABEL_FADE_HI - LABEL_FADE_LO), 0.0, 1.0)
+	# 非焦点者的淡入系数：0 ⇒ 一个字不画；1 ⇒ 与改动前逐字节相同。
+	var detail := 1.0 if focus else zoom_detail
+	# 最紧迫需求条（落脚线正下方）：只在【危机】时出现（原本恒显）。
+	# **故意不给焦点豁免**：选中者的五项需求本来就在观察台上带数字写着，那条 32×4px 的条是纯冗余；
+	# 让它只在危机时出现，这一层才从"装饰"变回"信号"。细查档（zoom_detail>0）照旧全量给出
+	# —— 所以"看不见需求"永远只是一次缩放的距离。
+	# ⚠️ **这里本来还写了一条 `or is_player`（"自己的状态恒显"），实测证明那是【死代码】，已删**：
+	#   `Sim.add_player()` 把玩家五项需求全部冻结在**恰好 100.0**（Sim.gd:753-754，M1 有意为之），
+	#   而 `_draw_urgent_need` 的 `worst` 初值就是 100.0 且比较是严格 `<` ⇒ 全 100 时 `worst_id` 永远为空 ⇒ 直接 return。
+	#   实测 before/after 两棵树的 `--player --select player` 帧在玩家脚下的绿色像素**都是 0**。
+	#   留着那一条只会让人以为玩家有条需求条。真要开玩家生存玩法时，危机分支自然会接管。
+	if zoom_detail > 0.0 or _worst_need(ag) < NEED_CRISIS:
+		_draw_urgent_need(Vector2(center.x, feet + T * 0.20), ag)
+	# 头顶 emote（社交事件触发，短暂显示）：20px 源 × 2 整数倍。
+	# **恒显、不参与稀释**：它本身就是"此刻有事发生"的信号，且是 D4 录屏抽帧要抓的东西之一。
 	var name_y := head - T * 0.12            # 名字基线：紧贴头顶上方
-	var em = _emote.get(ag["id"])
+	var em = _emote.get(aid)
 	if em != null and Sim.tick_no < int(em["until"]):
 		var et: Texture2D = em["tex"]
 		draw_texture_rect_region(et, Rect2(center.x - EMOTE_PX * 0.5, name_y - T * 0.50 - EMOTE_PX, EMOTE_PX, EMOTE_PX), Rect2(0, 0, et.get_width(), et.get_height()))
 	# 名牌：名字 + 冲突「!」+ 约见「约」画进【同一块底板】。
 	# 旧版把两个标记按固定像素偏移丢在名字外面，人挨着站时标记落在【邻居的名字】旁边，读不出是谁在闹。
-	var nm := str(ag.get("persona", {}).get("name", ag["id"]))
-	var fnt := Art.font()
-	var nsz := fnt.get_string_size(nm, HORIZONTAL_ALIGNMENT_LEFT, -1, 14)
-	var has_cf := _in_conflict(ag["id"])
-	var has_mt := _has_meet(ag["id"])
-	var lw := 11.0 if has_cf else 0.0
-	var rw := 18.0 if has_mt else 0.0
-	var total := nsz.x + lw + rw
-	draw_rect(Rect2(center.x - total * 0.5 - 4.0, name_y - nsz.y + 2.0, total + 8.0, nsz.y + 3.0), Color(0, 0, 0, 0.62), true)
-	var tx := center.x - total * 0.5
-	if has_cf:
-		draw_string(fnt, Vector2(tx, name_y), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color("#ff6b6b"))
-		tx += lw
-	draw_string(fnt, Vector2(tx, name_y), nm, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1, 1, 1, 0.97))
-	if has_mt:
-		draw_string(fnt, Vector2(tx + nsz.x + 4.0, name_y), "约", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("#ffd166"))
-	# 气泡：交谈台词（短暂）优先，其次当前动作。放在需求条下方 → 与派系环/需求条不再互相穿插
+	var has_cf := _in_conflict(aid)
+	var has_mt := _has_meet(aid)
+	if detail > 0.0:
+		var nm := str(ag.get("persona", {}).get("name", aid))
+		var fnt := Art.font()
+		var nsz := fnt.get_string_size(nm, HORIZONTAL_ALIGNMENT_LEFT, -1, 14)
+		var lw := 11.0 if has_cf else 0.0
+		var rw := 18.0 if has_mt else 0.0
+		var total := nsz.x + lw + rw
+		draw_rect(Rect2(center.x - total * 0.5 - 4.0, name_y - nsz.y + 2.0, total + 8.0, nsz.y + 3.0), Color(0, 0, 0, 0.62 * detail), true)
+		var tx := center.x - total * 0.5
+		if has_cf:
+			draw_string(fnt, Vector2(tx, name_y), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color("#ff6b6b") * Color(1, 1, 1, detail))
+			tx += lw
+		draw_string(fnt, Vector2(tx, name_y), nm, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1, 1, 1, 0.97 * detail))
+		if has_mt:
+			draw_string(fnt, Vector2(tx + nsz.x + 4.0, name_y), "约", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("#ffd166") * Color(1, 1, 1, detail))
+	# 气泡：交谈台词（短暂）优先，其次当前动作。放在需求条下方 → 与派系环/需求条不再互相穿插。
+	# 台词恒显（saying ⇒ focus，见 _is_focus）；**动作牌**才是被稀释的那一层——评审那一帧里 5 张牌
+	# 写着同一个「吃饭」，删掉 4 张丢失的信息量是 0，而它们占掉的正是人眼最先扫到的一层。
 	var bubble := ""
-	var sy = _say.get(ag["id"])
-	if sy != null and Sim.tick_no < int(sy["until"]):
+	if saying:
 		bubble = String(sy["text"])
-	else:
+	elif detail > 0.0:
 		var opt = ag.get("option")
 		if opt != null:
 			bubble = _action_label(opt)
 	if bubble != "":
-		_draw_plate_text(Vector2(center.x, feet + T * 0.64), bubble, 12, Color(1, 1, 1, 0.95), Color(0, 0, 0, 0.72))
+		var ba := 1.0 if saying else detail
+		_draw_plate_text(Vector2(center.x, feet + T * 0.64), bubble, 12, Color(1, 1, 1, 0.95 * ba), Color(0, 0, 0, 0.72 * ba))
+
+## 恒显档的判据。**它就是这一棒的"信息还够不够得着"的定义**：凡是玩家此刻需要认出来的人，
+## 一律不参与稀释——选中者（观察台正在讲他）、玩家自己、冲突/约会当事人（剧情的两端）、
+## 正在一次社交事务里的双方、以及正在说话的人（一句没有名字的台词等于没有）。
+func _is_focus(ag: Dictionary, aid: String, saying: bool) -> bool:
+	if saying or ag.get("is_player", false):
+		return true
+	if aid != "" and aid == _rc_sel_id:
+		return true
+	return _rc_conflict_ids.has(aid) or _rc_meet_ids.has(aid) or _rc_social_ids.has(aid)
+
+## 最低的一项需求（0..100）。_draw_urgent_need 内部本来就要算一次；这里单拎出来给"是否危机"用。
+func _worst_need(ag: Dictionary) -> float:
+	var worst := 100.0
+	for nid in ag.get("needs", {}):
+		var v := float(ag["needs"][nid])
+		if v < worst:
+			worst = v
+	return worst
 
 ## 程序化像素床（顶视角）：木框 + 床单 + 枕头 + 被子。base=格左上像素。
 ## ── 建筑（切顶俯视）────────────────────────────────────────────────────────
