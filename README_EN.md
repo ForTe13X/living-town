@@ -52,7 +52,7 @@ Demo videos, newest build first:
 
 ![Current build: one full day-night cycle](docs/media/town_chronicle.gif)
 
-> Desktop capture, `logic` backend, **one complete day-night cycle** (native 1280×768, [full 1:10 clip with sound](docs/media/town_wavec_demo.mp4)).
+> Desktop capture, `logic` backend, **with the demo camera** (`--demo-cam`) (native 1280×768, [full 1:10 clip with sound](docs/media/town_wavec_demo.mp4)).
 > Bottom-left is the **Town Chronicle**: what the engine does is split into "big news" and "recent", written as prose
 > (`苏琴 rallied 1 person to pressure 可可`) instead of printing raw event enum ids — betrayals, pacts, elections,
 > grudges and reconciliations all surface on their own.
