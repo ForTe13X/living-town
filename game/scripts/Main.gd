@@ -60,7 +60,11 @@ var _demo_trace: FileAccess           # --demo-cam-trace <abs.txt>：每 tick �
 ## 而且是**施密特触发**——进场比留场严：
 ##   选人时要求他离画面边缘还有 DEMO_IN_MARGIN 的余量（别一选中就走出去），
 ##   留人时只要求还在画面里（DEMO_KEEP_MARGIN）。两个阈值相等的话，站在边界上的人会逐 tick 进出。
-const DEMO_IN_MARGIN := 110.0         # 进场余量(屏幕 px)
+## 进场余量从 110 提到 150 是**换来的**，不是拍的：安全框（见 _demo_box）比整个视口小，
+## 人更快走出去 ⇒ 换人从 47 次涨到 62 次、中位停留掉到 20 tick（≈0.6s @speed3，卷宗还没读完就换人）。
+## 进场压到 150（选人时要求他离框边更远 ⇒ 他能待更久）：换人 51 次、中位 31 tick、p25 19，
+## 代价是观察台有人的时长 68.3%→63.8%（候选更少，偶尔一个都不合格）。12 位居民仍全部出场。
+const DEMO_IN_MARGIN := 150.0         # 进场余量(屏幕 px)
 const DEMO_KEEP_MARGIN := 10.0        # 留场余量(屏幕 px)
 const DEMO_SEL_HOLD := 130            # 换人节奏(tick)：约 3.5 秒 @ --speed 3
 var _demo_sel_hold := 0               # 当前选中已保持的 tick 数（迟滞计数）
@@ -868,23 +872,34 @@ func _demo_cam_apply() -> void:
 		_selected_id = sel
 		_update_obs()
 	if _demo_trace != null:
-		_demo_trace.store_line("%d|%s|%.4f|%.5f|%.2f|%.2f|%d|%s" % [
+		# 末两列 = 被选中者此刻的【屏幕坐标】。存在的理由：判断"他是不是被不透明 HUD 挡住了"
+		# 只能在屏幕空间做，而这一条正是 D5 把世界层名牌收进焦点集合之后最要命的失败模式
+		# （观察台亮着某人、画面里找不到他）。没有这两列就只能靠肉眼翻帧去猜。
+		var sp := Vector2(-1, -1)
+		if sel != "":
+			var sa := Sim.get_agent(sel)
+			if not sa.is_empty():
+				sp = (Vector2(float(sa["pos"].x) * 48.0 + 24.0, float(sa["pos"].y) * 48.0 + 24.0) \
+					- Vector2(st["pos"])) * float(st["zoom"]) + _vp() * 0.5
+		_demo_trace.store_line("%d|%s|%.4f|%.5f|%.2f|%.2f|%d|%s|%.1f|%.1f" % [
 			Sim.tick_no, String(st["shot"]), float(st["u"]), float(st["zoom"]),
 			Vector2(st["pos"]).x, Vector2(st["pos"]).y,
-			1 if float(st["zoom"]) >= WorldViewScript.LABEL_MIN_ZOOM else 0, sel])
+			1 if float(st["zoom"]) >= WorldViewScript.LABEL_MIN_ZOOM else 0, sel, sp.x, sp.y])
 		_demo_trace.flush()
 
 ## 取景内选人：**对 Sim 只读**。候选 = 此刻真的在画面里的居民；从中按 HRW 取一个（理由见 DEMO_SEL_HOLD）。
 ## 每 tick 重算（而不是"在分镜边界记一次"）是刻意的：只有这样它才是 tick 的纯函数，
 ## `--shot --warmup-tick T` 才能复现录屏在 tick T 选中的那个人。
 func _demo_pick(center: Vector2, zoom: float) -> String:
-	# ① 迟滞：现在这位还在画面里、且没到换人节奏 → 就让镜头陪他把这段待完
-	var keep := _demo_half(zoom, DEMO_KEEP_MARGIN)
+	# ① 迟滞：现在这位还在安全框里、且没到换人节奏 → 就让镜头陪他把这段待完
+	var keep := _demo_box(zoom, DEMO_KEEP_MARGIN)
 	if _selected_id != "" and _demo_sel_hold < DEMO_SEL_HOLD and _demo_in_frame(_selected_id, center, keep):
 		_demo_sel_hold += 1
 		return _selected_id
-	# ② 换人：候选 = 此刻离画面边缘还有余量的居民；按 HRW 取一个（键在一个窗口内恒定 ⇒ 不会逐 tick 跳）
-	var half := _demo_half(zoom, DEMO_IN_MARGIN)
+	# ② 换人：候选 = 此刻离安全框边缘还有余量的居民；按 HRW 取一个（键在一个窗口内恒定 ⇒ 不会逐 tick 跳）
+	var box := _demo_box(zoom, DEMO_IN_MARGIN)
+	var c := center + Vector2(box[0])
+	var half: Vector2 = box[1]
 	var k := "#" + str(Sim.tick_no / DEMO_SEL_HOLD)
 	var best := ""
 	var best_h := -1
@@ -893,7 +908,7 @@ func _demo_pick(center: Vector2, zoom: float) -> String:
 			continue
 		if String(ag.get("space", "town")) != "town":
 			continue                     # 人在室内 ⇒ 镜头里看不见他，选了就是观察台与画面对不上
-		var d := (Vector2(float(ag["pos"].x) * 48.0 + 24.0, float(ag["pos"].y) * 48.0 + 24.0) - center).abs()
+		var d := (Vector2(float(ag["pos"].x) * 48.0 + 24.0, float(ag["pos"].y) * 48.0 + 24.0) - c).abs()
 		if d.x > half.x or d.y > half.y:
 			continue
 		var h := Sim.fnv1a32(String(ag["id"]) + k)
@@ -904,15 +919,45 @@ func _demo_pick(center: Vector2, zoom: float) -> String:
 	return best
 
 ## 取景半尺寸（世界 px）：视口的一半按缩放折回世界，再各留一圈屏幕空间的余量。
-func _demo_half(zoom: float, margin: float) -> Vector2:
-	return (_vp() * 0.5 - Vector2(margin, margin)) / maxf(zoom, 0.01)
+## 取景安全框（屏幕 px）：视口**减掉不透明 HUD**。
+## ★这不是保守起见，是量出来的：第一版用整个视口判定"在画面里"，于是被选中的人可以站在
+##   观察台面板背后——正在展示他卷宗的那块板子把他本人挡住了。实测（trace 末两列＝被选中者
+##   的屏幕坐标）：改前 **3645/20414 tick = 选中时长的 17.9%** 的被选中者落在不透明 HUD 之下，
+##   其中 2120 tick 就压在观察台那块板子底下（典型：t=319 mei 在 x=981，板子左缘 978）。改后为 0。
+##   改前没人看得出来：世界层那时给每个人都画名牌，画面里另有三四个名字顶着。
+##   D5 把世界层名牌收进"焦点集合"之后，被选中者是**唯一**保证画名牌的人 ⇒ 这一条从
+##   "不好看"升级成"观察台亮着某人、画面里找不到他"。两棒相交才暴露，单棒都测不到。
+## 左下角的纪事播报是**半透明** scrim（D5 实测：世界层的东西会透上来）⇒ 不从安全框里扣，
+## 扣掉它会把每一次选人都往画面右侧偏。这里只扣真正挡人的：右侧观察台、顶栏、底部时间轴。
+const DEMO_SAFE_L := 24.0
+const DEMO_SAFE_R := 966.0        # 观察台完整卷宗左缘 x=978 再留 12 余量
+const DEMO_SAFE_T := 52.0         # 顶栏
+const DEMO_SAFE_B := 664.0        # 时间轴槽上沿
 
-## 某人此刻是否在取景里（只读 Sim）。
-func _demo_in_frame(id: String, center: Vector2, half: Vector2) -> bool:
+## 安全框 → (相对相机中心的世界偏移, 世界半宽高)。margin 越大框越小（进场比留场严）。
+func _demo_box(zoom: float, margin: float) -> Array:
+	var vp := _vp()
+	var z := maxf(zoom, 0.01)
+	# 安全框按设计基准 1280x768 定义，跟着实际视口一起缩放（否则换分辨率就偏）。
+	var sx := vp.x / 1280.0
+	var sy := vp.y / 768.0
+	var l := DEMO_SAFE_L * sx + margin
+	var r := DEMO_SAFE_R * sx - margin
+	var t := DEMO_SAFE_T * sy + margin
+	var b := DEMO_SAFE_B * sy - margin
+	if r <= l or b <= t:                      # 极端窄视口/极端 margin：退回整个视口，别把候选集合清空
+		return [Vector2.ZERO, vp * 0.5 / z]
+	var off := Vector2((l + r) * 0.5 - vp.x * 0.5, (t + b) * 0.5 - vp.y * 0.5) / z
+	return [off, Vector2(r - l, b - t) * 0.5 / z]
+
+## 某人此刻是否在【安全框】里（只读 Sim）。center=相机世界坐标，box=_demo_box 的返回。
+func _demo_in_frame(id: String, center: Vector2, box: Array) -> bool:
 	var ag := Sim.get_agent(id)
 	if ag.is_empty() or String(ag.get("space", "town")) != "town":
 		return false
-	var d := (Vector2(float(ag["pos"].x) * 48.0 + 24.0, float(ag["pos"].y) * 48.0 + 24.0) - center).abs()
+	var p := Vector2(float(ag["pos"].x) * 48.0 + 24.0, float(ag["pos"].y) * 48.0 + 24.0)
+	var d := (p - (center + Vector2(box[0]))).abs()
+	var half: Vector2 = box[1]
 	return d.x <= half.x and d.y <= half.y
 
 ## 人手一碰相机就退出演示轨迹（键盘侧；鼠标/触屏侧在 ProbeController.handle_input 里）。
