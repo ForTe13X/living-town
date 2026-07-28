@@ -1328,11 +1328,17 @@ func _void_gate_step() -> void:
 	elif _gate_frames >= 400 and _gate_base >= 0:
 		var extra := _void_draws - _gate_base
 		var ticks := Sim.tick_no - _gate_tick0
-		var ok := extra == 0 and ticks >= 20    # ticks 也要断言：世界没在跑的话这门是平凡通过的
-		print("[VOIDGATE] frames=%d ticks_advanced=%d void_redraws_after_settle=%d zoom=%.3f => %s"
-			% [_gate_frames, ticks, extra, _zoom, "PASS" if ok else "FAIL"])
+		# ★ 允许量必须按【日边界】给，不能写死 0（2026-07-28 实测，这道门第一次跑在别人机器上就假红了）。
+		# 界外层的缓存键里有 season 与 weather，而这两样【在日边界会合法地变】⇒ 跨一天就该重画一次。
+		# 而"400 帧里推进多少 tick"取决于机器快慢：同一棵树，独立跑推进 189 tick(0 次重画, PASS)、
+		# 在 visual_gate.sh 里跑推进 445 tick(1 次重画, FAIL)——**同一份代码、同一个性质，两种结论**。
+		# 写死 0 的门不是在守"相机不动就不重画"，是在守"你的机器别太快"。
+		var days := int(float(Sim.tick_no) / float(Sim.TICKS_PER_DAY)) - int(float(_gate_tick0) / float(Sim.TICKS_PER_DAY))
+		var ok := extra <= days and ticks >= 20   # ticks 也要断言：世界没在跑的话这门是平凡通过的
+		print("[VOIDGATE] frames=%d ticks_advanced=%d day_boundaries=%d void_redraws_after_settle=%d (allow<=%d) zoom=%.3f => %s"
+			% [_gate_frames, ticks, days, extra, days, _zoom, "PASS" if ok else "FAIL"])
 		if not ok:
-			push_error("VOIDGATE FAIL: 界外层在相机不动时重画了 %d 次（tick 推进 %d）" % [extra, ticks])
+			push_error("VOIDGATE FAIL: 界外层在相机不动时重画了 %d 次，跨过的日边界只有 %d 个（tick 推进 %d）" % [extra, days, ticks])
 		get_tree().quit(0 if ok else 1)
 
 func _draw_void_layer(cv: CanvasItem) -> void:

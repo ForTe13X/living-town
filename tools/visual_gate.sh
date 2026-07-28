@@ -114,9 +114,9 @@ if [ "${1:-}" = "--shoot" ]; then
   if "$GBIN" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
        --resolution ${W}x${H} --single-window -- --backend logic --seed "$SEED" --void-gate \
        >>/tmp/vg-godot.log 2>&1; then
-    echo "  void-gate ok   (相机不动时界外层不随 tick 重画)"
+    echo "  void-gate ok   (相机不动时界外层只在日边界重画)"
   else
-    echo "  void-gate FAIL (界外层在相机不动时仍随 tick 重画 —— D7 的 9× 帧时回归会复发)"; rc=1
+    echo "  void-gate FAIL (界外层在相机不动时随 tick 重画 —— D7 的 8× 帧时回归会复发)"; rc=2
   fi
   kill $XV 2>/dev/null
   [ $rc -ne 0 ] && tail -25 /tmp/vg-godot.log
@@ -191,6 +191,13 @@ else
   SHOT_RC=$?
 fi
 
+# rc=2 是【void-gate 判定为红】，rc=1 才是【拍不出帧】。必须分开：
+# 2026-07-28 第一版把两者混成一个 rc，于是 void-gate 变红时打印的是"渲染环境在位却拍不出帧"——
+# 一条**指向错误方向**的诊断（帧其实拍出来了）。误导性的失败信息和假红一样坏：它让人去查环境。
+if [ $SHOT_RC -eq 2 ]; then
+  echo "  ❌ VISUAL GATE：界外层重画门变红（帧拍出来了，是这条性质破了）——见上面的 [VOIDGATE] 行"
+  exit 1
+fi
 if [ $SHOT_RC -ne 0 ]; then
   if [ "$PICK" = native ] && [ "$MODE" != "require" ]; then
     skip "native 渲染路径拍不出帧（未 pin 的环境不背这个锅；LT_VISUAL=require 可让它变红）"
