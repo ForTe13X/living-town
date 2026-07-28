@@ -59,9 +59,9 @@ Demo videos, newest build first:
 > The day-night lighting is itself new: until 2026-07-26 **the screenshot tool could never render night at all**, so every
 > "this looks too bright / too dark" judgement in this project's history rested on a broken instrument (see the honesty note below).
 
-![The town at noon](docs/media/wavec_town_noon.png)
+![The town in the morning](docs/media/wavec_town_morning.png)
 
-> A still from the same build. The map is no longer a rectangle sitting in a grey void — its edge passes through a 3-tile
+> A still from the same build (day 6, 09:36 — it is **morning, not noon**; the old filename `wavec_town_noon` was wrong and has been corrected). The map is no longer a rectangle sitting in a grey void — its edge passes through a 3-tile
 > luminance ramp, a low stone wall and a drainage ditch before sinking into forest, dropping the maximum adjacent-pixel
 > luminance step across the boundary from **131.54 to 2.92**. The observatory on the right collapses to a single hint by
 > default; the full dossier (relations, conflicts, memory, faction, pacts, secrets, attitudes, beliefs) is one tap away.
