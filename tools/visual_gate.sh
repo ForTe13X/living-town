@@ -114,9 +114,12 @@ if [ "${1:-}" = "--shoot" ]; then
   if "$GBIN" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
        --resolution ${W}x${H} --single-window -- --backend logic --seed "$SEED" --void-gate \
        >>/tmp/vg-godot.log 2>&1; then
-    echo "  void-gate ok   (相机不动时界外层只在日边界重画)"
+    echo "  void-gate ok   (静态不重画 + settle 期真的画过 + 空间往返必重画)"
   else
-    echo "  void-gate FAIL (界外层在相机不动时随 tick 重画 —— D7 的 8× 帧时回归会复发)"; rc=2
+    # rc=2 只在【帧确实拍出来了】时才设。原来无条件覆盖 ⇒ 拍不出帧 + 门也红时 rc 被改写成 2，
+    # 于是打印「帧拍出来了，是这条性质破了」——而帧根本没拍出来。（2026-07-28 外部评审抓到，
+    # 与 §二·八-③ 想修的是同一个病：**误导性的失败信息会把人送去查错误的方向**。）
+    echo "  void-gate FAIL (见上面的 [VOIDGATE] 行)"; [ "$rc" -eq 0 ] && rc=2
   fi
   kill $XV 2>/dev/null
   [ $rc -ne 0 ] && tail -25 /tmp/vg-godot.log

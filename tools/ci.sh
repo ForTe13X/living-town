@@ -165,7 +165,11 @@ echo "### 6. 昼夜量具视觉门（本仓库第一条【视觉】断言 ——
 # 而在此之前没有任何门守着那一行：把它删掉，上面 0-5 每一步都照样全绿。
 #
 # ⚠️ 它跟前面五步不一样：**需要一个能真的出图的渲染环境**（pin 死的 gamecraft-runner 镜像，或 Xvfb+godot）。
-# GitHub Actions 的 ubuntu-latest 两样都没有 ⇒ 那条路上本步 **SKIP**，不计入 FAIL。
+# ⚠️ 上一版这里写着"GitHub Actions 的 ubuntu-latest 两样都没有 ⇒ 自动 SKIP"——**那句是假的**，
+# 且 `tools/visual_gate.sh` 抬头早已逐字撤回它，而这份文件没跟着改（同一波、同一个所有者、两处相反的说法，
+# 2026-07-28 外部评审抓到）。事实：runner 镜像**自带 Xvfb**，workflow 又把 godot 放上 PATH，
+# 所以 `have_native()` 在那里为真、`auto` 会选 native ——**靠"探不到就跳过"是拦不住的**。
+# 真正让它在 GHA 上跳过的是 visual_gate.sh 里那条**显式** `$GITHUB_ACTIONS` 判断。
 # 这是蓄意的：**一道在别人机器上因环境变红的门比没有门更坏**——它训练所有人忽略红色。
 # 判据都在 tools/visual_gate.sh 抬头；想让它必须跑（例如宿主 CI）：`LT_VISUAL=require bash tools/ci.sh`。
 bash tools/visual_gate.sh 2>&1 | tee "$LT_LOG/visual.log"

@@ -1422,29 +1422,79 @@ var _void_gate := false
 var _gate_frames := 0
 var _gate_base := -1
 var _gate_tick0 := 0
+var _gate_static := 0          # 静态相位（40-200 帧）里随 tick 发生的重画次数
+var _gate_ticks := 0
+var _gate_days := 0
+var _gate_rt_base := -1        # 切回 town 的那一刻的 _void_draws
+var _gate_rt_draws := 0        # 切回之后又画了几次（必须 >= 1）
+var _gate_rt_space := ""
 
 func _void_gate_step() -> void:
 	_gate_frames += 1
+	var pb = get_parent().get("_probe") if get_parent() != null else null
+	# ── 静态相位（40-200 帧）：相机不动，量"随 tick 重画了几次"────────────────
 	if _gate_frames == 40:                     # 前 40 帧留给首帧建层 + 纹理加载
 		_gate_base = _void_draws
 		_gate_tick0 = Sim.tick_no
+	# ── 往返相位（200 帧起）：切到别的平面再切回 town，界外层必须重画一次 ──────
+	elif _gate_frames == 200:
+		_gate_static = _void_draws - maxi(_gate_base, 0)
+		_gate_ticks = Sim.tick_no - _gate_tick0
+		_gate_days = int(float(Sim.tick_no) / float(Sim.TICKS_PER_DAY)) - int(float(_gate_tick0) / float(Sim.TICKS_PER_DAY))
+		if pb != null:
+			# ★ 必须【只翻 active_space、不碰相机】。第一版用 pb.set_space(...) 往返，
+			# 而 set_space 会改相机 ⇒ 回到 town 时键因为【取景变了】而不同 ⇒ 照样会重画
+			# ⇒ 负对照（把修复回滚）依然 PASS。**我自己的负对照当场把这条判据判死了。**
+			# 真 bug 的形状要求：进出期间取景**逐字节不变**，这样回来时键才会"恰好又相等"。
+			# 出货路径正是如此——`_portal_click` 出店调 go_home()，那是个**固定**取景，与开局同一个 P。
+			_gate_rt_space = "cafe"
+			pb.active_space = _gate_rt_space
+	elif _gate_frames == 260 and pb != null:
+		pb.active_space = "town"
+		_gate_rt_base = _void_draws            # 回到 town 的那一刻记账；之后必须涨
+	elif _gate_frames == 320 and _gate_rt_base >= 0:
+		_gate_rt_draws = _void_draws - _gate_rt_base
 	elif _gate_frames >= 400 and _gate_base >= 0:
-		var extra := _void_draws - _gate_base
-		var ticks := Sim.tick_no - _gate_tick0
+		var extra := _gate_static          # 只算【静态相位】的重画；往返相位的重画是被【要求】的
+		var ticks := _gate_ticks
 		# ★ 允许量必须按【日边界】给，不能写死 0（2026-07-28 实测，这道门第一次跑在别人机器上就假红了）。
 		# 界外层的缓存键里有 season 与 weather，而这两样【在日边界会合法地变】⇒ 跨一天就该重画一次。
 		# 而"400 帧里推进多少 tick"取决于机器快慢：同一棵树，独立跑推进 189 tick(0 次重画, PASS)、
 		# 在 visual_gate.sh 里跑推进 445 tick(1 次重画, FAIL)——**同一份代码、同一个性质，两种结论**。
 		# 写死 0 的门不是在守"相机不动就不重画"，是在守"你的机器别太快"。
-		var days := int(float(Sim.tick_no) / float(Sim.TICKS_PER_DAY)) - int(float(_gate_tick0) / float(Sim.TICKS_PER_DAY))
-		var ok := extra <= days and ticks >= 20   # ticks 也要断言：世界没在跑的话这门是平凡通过的
-		print("[VOIDGATE] frames=%d ticks_advanced=%d day_boundaries=%d void_redraws_after_settle=%d (allow<=%d) zoom=%.3f => %s"
-			% [_gate_frames, ticks, days, extra, days, _zoom, "PASS" if ok else "FAIL"])
-		if not ok:
+		var days := _gate_days             # 同 extra/ticks：用【静态相位】结束时的读数，不是全程
+		# ★ 上界之外必须有【下界】。2026-07-28 外部评审："这道门有上界没有下界——
+		#   **一个界外层根本不画的构建同样能通过它**"，而那恰好就是同一份评审抓到的真 bug 造成的树。
+		#   一道连"它正在守的东西已经没了"都发现不了的门，守的是自己的存在感。
+		#   下界一：settle 期间必须真的画过（_gate_base >= 1）。
+		var drew := _gate_base >= 1
+		#   下界二：**空间往返**——切到别的平面再切回来，界外层【必须】重画。
+		#   这正是真 bug 的形状：键停在旧值 ⇒ 回到 town 时键"恰好又相等" ⇒ 不排重画 ⇒ 永久空白。
+		var rt_ok := _gate_rt_draws >= 1
+		var ok := extra <= days and ticks >= 20 and drew and rt_ok
+		print("[VOIDGATE] frames=%d ticks=%d days=%d static_redraws=%d (allow<=%d) settle_draws=%d roundtrip_redraws=%d zoom=%.3f => %s"
+			% [_gate_frames, ticks, days, extra, days, _gate_base, _gate_rt_draws, _zoom, "PASS" if ok else "FAIL"])
+		if not drew:
+			push_error("VOIDGATE FAIL: 界外层在 settle 期间【一次都没画】——门本身失去意义（上界为真是因为它什么都没做）")
+		elif not rt_ok:
+			push_error("VOIDGATE FAIL: 空间往返（town→%s→town）之后界外层【没有重画】——缓存键停在旧值，界外层会永久空白" % _gate_rt_space)
+		elif not ok:
 			push_error("VOIDGATE FAIL: 界外层在相机不动时重画了 %d 次，跨过的日边界只有 %d 个（tick 推进 %d）" % [extra, days, ticks])
 		get_tree().quit(0 if ok else 1)
 
 func _draw_void_layer(cv: CanvasItem) -> void:
+	# ★★ 键必须在【任何 early return 之前】写。2026-07-28 外部对抗评审抓到的真 bug：
+	# 原来 `_void_key` 只在 town 分支的末尾赋值，于是两条 early return 会让它停在旧值上：
+	#   ① 在镇上取景 P 画一次 → 存下 K(P,"town")
+	#   ② 进店（active_space="cafe"）⇒ 每帧键都不匹配 ⇒ _void_sync 每帧 queue_redraw，
+	#      而本函数在 :1453 就 return ⇒ **CanvasItem 的命令表被清空**，_void_key 仍是 K(P,"town")
+	#   ③ 出店 ⇒ _portal_click 调 go_home()（**固定**取景，与开局同一个 P）⇒ 键重算又等于 K(P,"town")
+	#      ⇒ **不排重画** ⇒ 界外层永久空白：verge 斜坡、石墙与排水沟、溢光、~2136 个林冠圆
+	#      全部消失，只剩不是 CanvasItem、因而连昼夜都不跟的清屏色。
+	# 「启动 → 进店 → 出店」就能稳定复现，全在出货路径上。
+	# 把赋值提到最前面，三条路径（空世界 / 非-town / town）都会把**自己那一帧的真实状态**记进键，
+	# 于是出店时 "cafe" → "town" 必然不匹配 ⇒ 必然重画。顺带治好"在室内每帧空排一次重画"。
+	_void_key = _void_cache_key()
 	if Sim.world.is_empty():
 		return
 	var mn := get_parent()
@@ -1452,7 +1502,7 @@ func _draw_void_layer(cv: CanvasItem) -> void:
 	if pb != null and String(pb.active_space) != "town":
 		return                       # 非-town 平面有自己的底（_draw_interior_backdrop）
 	_refresh_view_metrics()          # 与本节点共用画布变换；自己刷一次，保证画的是**本帧**的取景
-	_void_key = _void_cache_key()    # 先记键再画：这一帧画出来的就是这个键对应的内容
+	_void_key = _void_cache_key()    # 取景刷新后键可能变，以刷新后的为准
 	_void_draws += 1
 	if not _ap("backdrop"):
 		return
