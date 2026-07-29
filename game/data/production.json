@@ -1,0 +1,27 @@
+{
+  "_doc": "Wave E 劳动产出与消耗闭环（docs/47 §二-E1）。缺此文件=产出系统整个关闭 → 引擎【逐字节】回到 Wave D 末的轨迹（与 economy.json / jobs.json 同一套 off 门，Invariants #38/#39/#40 在关闭态恒过）。闭环：本职在班完成一次工作 → produce 往【镇级库存 town_stock】记一批；消费动作开用时 consume 扣件。★继承 economy.json 的设计红线：钱与货都只造分化与戏剧、不造饿死——缺货【绝不阻断动作、绝不削减需求补给】（同 meals_free：付不起照吃、没货也照吃），后果只落社会面：shortage 事件入 event_log + 当事人不满记忆 + 在场者形成一手信念(via=seen，走既有 gossip 管线议论) + 对责任岗位的声誉小挫 + 缺货加价(仍经 transfer 唯一通道 → 守 #34)。库存增减的唯一通道是 Sim._stock_move（写 produce/consume/spoil 事件）⇒ 硬不变量 #38 可从 event_log 独立重算。",
+  "_calibration": "amount 不是拍脑袋，是量出来的。实测 backend=null 12 居民 60 天：全镇【本职在班完成】只有 41-47 次（面点师 1-11、渔夫 5-8、杂役 2-4、木匠 8-10、咖啡师 3-4、教书先生 16-17），而消费动作开用 1745 次（吃饭 1007 · 洗澡 545 · 喝咖啡 116 · 歇着 79）—— 劳动比消费稀【约 40 倍】。所以一次上工必须是【一批】而不是一件（一炉面包/一网鱼/一车柴），否则镇子永远断粮、缺货退化成常数、这条机制又变回装饰。批量按『供比需高约 10-20%』定，余量由 cap 与 spoil_per_day 吃掉 → 缺货【周期性】发生而不是恒常发生。⚠ 面点师在班完成次数的逐 seed 展布是 1..11，所以某些 seed 天然就是荒年——这是特性不是 bug，但它意味着任何'平均供需平衡'的调参都无法消灭个别 seed 的长期断粮。",
+  "start_stock": { "口粮": 40, "柴薪": 30, "豆子": 16, "话本": 8 },
+  "goods": {
+    "口粮": { "label": "口粮", "cap": 130, "spoil_per_day": 1, "blame": "面点师" },
+    "柴薪": { "label": "柴薪", "cap": 80, "spoil_per_day": 0, "blame": "杂役" },
+    "豆子": { "label": "豆子", "cap": 45, "spoil_per_day": 0, "blame": "咖啡师" },
+    "话本": { "label": "话本", "cap": 20, "spoil_per_day": 0, "blame": "教书先生" }
+  },
+  "produce": {
+    "面点师": { "good": "口粮", "amount": 90 },
+    "渔夫":   { "good": "口粮", "amount": 85 },
+    "杂役":   { "good": "柴薪", "amount": 65 },
+    "木匠":   { "good": "柴薪", "amount": 50 },
+    "咖啡师": { "good": "豆子", "amount": 36 },
+    "教书先生": { "good": "话本", "amount": 6 }
+  },
+  "consume": {
+    "吃饭":   { "good": "口粮", "amount": 1 },
+    "洗澡":   { "good": "柴薪", "amount": 1 },
+    "喝咖啡": { "good": "豆子", "amount": 1 },
+    "歇着":   { "good": "话本", "amount": 1 }
+  },
+  "scarcity_markup": 1,
+  "shortage_standing": -0.5
+}

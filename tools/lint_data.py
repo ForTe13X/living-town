@@ -24,9 +24,15 @@ def load(name):
 #   festivals.json-> no festivals -> #36 (festival object pairing) auto-passes (Invariants.gd:347)
 #   elections.json-> election_log empty -> #37 (vote tally self-consistency) auto-passes (:353)
 #   skills.json   -> skill/complement signal gone -> pact formation gate (#31) loses its input
+#   production.json -> town stock never moves -> invariants #38 (stock ledger), #39 (output provenance)
+#                    and #40 (closed-loop liveness) all auto-pass and every produce/consume/shortage
+#                    event disappears; labour goes back to being decorative with CI 100% green.
 # i.e. deleting one file silently switches off a whole subsystem with CI 100% green. Not any more.
+# NOTE (Wave E1, declared out-of-scope edit): this file is not in E1's ownership list. The one-word
+# addition of "production" is here because THIS file's own comment block is the rule it implements;
+# leaving it out would ship exactly the hole documented above. Rollback = delete the word.
 REQUIRED = ["personas", "agents", "jobs", "housing", "secrets", "map", "spaces", "interiors",
-            "economy", "festivals", "elections", "skills", "needs", "rhythm", "utility"]
+            "economy", "festivals", "elections", "skills", "needs", "rhythm", "utility", "production"]
 for name in REQUIRED:
     p = os.path.join(ROOT, name + ".json")
     if not os.path.exists(p):
