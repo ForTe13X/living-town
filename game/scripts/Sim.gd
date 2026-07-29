@@ -215,6 +215,18 @@ var elections := {}             # {topic, every_days, offset, abstain_below}
 var election_log: Array = []    # 每次选举结果 {day,topic,yea,nay,abstain,pass,voters}（soak + 硬不变量#37 用）
 var last_election := {}         # 最近一次结果（观察台/HUD）
 var econ_stats := {"meals_paid": 0, "meals_free": 0, "wages_paid": 0, "wages_skipped": 0}  # 诊断计数
+# ── Wave E 劳动产出（docs/47 §二-E1）：data/production.json 驱动；缺文件→_prod_on()=false→全部短路=逐字节不变 ──
+## ★红线继承：economy.json 的 `_doc` 写死了"钱只造分化与戏剧、不造饿死（付不起照吃 meals_free）"。
+##   本系统整个建在这条之下：**缺货绝不阻断动作、绝不削减需求补给**（没货也照吃），后果只落社会面。
+##   任何把库存做成生存门的改动都是在给硬不变量 #01 开新的饿死通道 —— 不允许。
+var production := {}            # {start_stock, goods:{g:{cap,spoil_per_day,blame}}, produce:{职位:{good,amount}}, consume:{动作:{good,amount}}, scarcity_markup, shortage_standing}
+var town_stock := {}            # 镇级库存 good -> 件数（唯一通道 = _stock_move；#38 从 event_log 独立重算）
+var stock_total0 := {}          # 开局库存快照（#38 的基准，同 econ_total0 之于 #34）
+var _stock_day := {}            # good -> 当日已消耗但尚未入账的件数：日界一次性写一条 consume 事件
+                                #   （若逐次记账，60 天要往 event_log 里塞 ~1400 条"有人吃了一口"，
+                                #    Main._rebuild_feed 只回扫尾部 200 条 ⇒ 会把小镇纪事整块冲掉。按天入账既保住账本又不刷屏。）
+var _short_day := {}            # good -> 上一次写过 shortage 事件的 day（同一天同一货只报一次；后果计数仍逐次累加）
+var prod_stats := {"produced": {}, "consumed": {}, "short": {}, "spoiled": {}, "attempts": {}, "work": {}}  # 诊断计数（逐 good / 逐动作 / 逐职位）
 var agents: Array = []          # [agent dict]
 var _agent_by_id := {}
 var spawn_count := 0            # >0：克隆扩容到该 agent 数（扩 N 测试用；0=用数据原样 6 个）
@@ -427,6 +439,12 @@ func _load_data() -> void:
 	housing = _read_json("res://data/housing.json") # Wave 3c 住房租金（缺文件→无租金=零扰动）
 	elections = _read_json("res://data/elections.json") # Wave 3a 选举（缺文件→不选举=零扰动）
 	lifecycle = _read_json("res://data/lifecycle.json") # Wave 3b 生命周期（缺文件→无季节无年龄=零扰动）
+	# Wave E 劳动产出（缺文件→_prod_on()=false 全短路=逐字节不变）。
+	# ⚠ 这一行【不能】直接调 _read_json：那个函数在文件缺失时 push_error("缺数据文件")，而 ci.sh 的 scan 会把
+	#   USER ERROR 判红 —— 于是"删掉 production.json 跑一遍"这个【零扰动对照】自己会把 CI 弄红，
+	#   本棒最重要的那条验收就没法在 CI 里跑。先 file_exists 再读 ⇒ 缺文件是【合法的关闭态】，不是错误。
+	if FileAccess.file_exists("res://data/production.json"):
+		production = _read_json("res://data/production.json")
 	# P3 Tier-B：Space/Floor/Portal 合同 + 室内内容（缺 spaces.json → 空 → 全 town/outdoor → 逐字节不变）。
 	var _sp := _read_json("res://data/spaces.json")
 	_spaces = _sp.get("spaces", {})
@@ -634,6 +652,16 @@ func start_new(p_seed: int = 12345) -> void:
 	town_coin = int(economy.get("town_start", 0)) if not economy.is_empty() else 0
 	econ_stats = {"meals_paid": 0, "meals_free": 0, "wages_paid": 0, "wages_skipped": 0}
 	econ_total0 = money_total()
+	# Wave E 产出：镇级库存 per-run 重置（goto_tick 会反复 start_new，残留库存＝回放不一致）。
+	# production.json 缺失 → 三个字典全空 → 每个挂点都短路 → 逐字节回到 Wave D 末的轨迹。
+	town_stock = {}
+	_stock_day = {}
+	_short_day = {}
+	prod_stats = {"produced": {}, "consumed": {}, "short": {}, "spoiled": {}, "attempts": {}, "work": {}}
+	if _prod_on():
+		for g in production.get("goods", {}):
+			town_stock[String(g)] = int(production.get("start_stock", {}).get(String(g), 0))
+	stock_total0 = town_stock.duplicate(true)
 	election_log.clear(); last_election = {}   # Wave 3a：per-run 重置（goto_tick 反复 start_new）
 	weather_today = _weather_of_day(day)   # Wave 1c：开局天气（日界在 tick() 重算）
 	season_today = _season_of_day(day)     # Wave 3b：开局当季（日界在 tick() 重算；纯 f(day)）
@@ -1259,10 +1287,19 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 		# 且比旧"踩上家具"早一格到达(需求更早满足、更安全)。同区邻格 → area 门控(社交/赴约)不变。
 		if _manh(ag["pos"], target_obj["pos"]) <= 1:
 			opt["phase"] = "use"
+			# Wave E 扣货点：消耗类动作(吃饭/洗澡/喝咖啡/歇着)开用时扣一件镇库存。
+			# ★缺货【不阻断】：这里既不 return 也不清 option，need 照在 use 分支补满 ——
+			#   与 meals_free 同一条设计红线：缺货绝不成为新的饿死通道(硬不变量 #01)。
+			#   返回 false 只用来 ①缺货加价 ②记社会后果。置于收费之前：加价要先知道缺没缺。
+			var short := false
+			if _prod_on():
+				short = not _consume_for(ag, String(opt["action"]))
 			# Wave 1b 收费点：有价动作(吃饭等)开用时向镇库付费。付不起→照用不误(meals_free)——
 			# 生存永不被钱门住(守"无饿穿"硬不变量)，钱只造分化/戏剧，不造饿死。
 			if _econ_on():
 				var price := int(economy.get("prices", {}).get(String(opt["action"]), 0))
+				if price > 0 and short:
+					price += int(production.get("scarcity_markup", 0))   # 缺货溢价：仍走 transfer 唯一通道 → #34 不受影响
 				if price > 0:
 					if transfer(String(ag["id"]), "town", price, "price:" + String(opt["action"])):
 						econ_stats["meals_paid"] += 1
@@ -1278,6 +1315,10 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 		opt["remaining"] = int(opt["remaining"]) - 1
 		if int(opt["remaining"]) <= 0:
 			ag["memory"].add("在%s%s了" % [target_obj.get("area", ""), opt["action"]], 3, tick_no, [opt["need"], opt["target"]])
+			# Wave E 产出点：本职在班干完一活 → 往镇库存交一批货（口径与 _wage_for 的"本职在班"同一条）。
+			# 先交货再领钱。这一行就是"劳动不再只是钱包数字"的落点：它写的是世界状态(town_stock)，不是 agent 的钱。
+			if _prod_on():
+				_produce_for(ag, String(opt["action"]))
 			# Wave 1b 发薪点：有薪动作(做活)完成时镇库付工资。镇库空→跳过(wages_skipped)——闭环:饭钱流入、工资流出。
 			# Wave 2a：工资经 _wage_for（本职在班拿职位工资；差异工资→贫富分化）；本职完成写"上工"记忆(voice grounding)。
 			if _econ_on():
@@ -1314,6 +1355,10 @@ func _advance_social(ag: Dictionary, opt: Dictionary) -> void:
 		ag["talking"] = 0
 
 func _nightly() -> void:
+	# Wave E 库存日结：把当天的消耗一次性记进账本 + 按 spoil_per_day 让存货损耗。
+	# 排在最前：当晚的租金/阶层 gossip 之前先把"今天镇上吃掉多少、坏掉多少"落定，账本按天闭合。
+	if _prod_on():
+		_stock_nightly()
 	# M3 反思（Stanford 生成式 agent）：每夜从社会状态提炼一条洞察写回记忆 → 丰富语音 grounding。
 	# 引擎地板=确定性合成(下)；模型后端可再 LLM 润色(AIBackend.reflect)。far agent(激进 LOD)跳过=背景群演。
 	for ag in agents:
@@ -2658,6 +2703,138 @@ func money_total() -> int:
 		s += int(ag["inventory"].get("coin", 0))
 	return s
 
+# ── Wave E 劳动产出·库存 Ledger 原语（docs/47 §二-E1；结构照抄上面的 transfer/#34）────────
+## 数据门：缺 production.json → 恒 false → 下面每一个挂点都在第一行短路 → 引擎逐字节回到 Wave D 末。
+func _prod_on() -> bool:
+	return not production.is_empty()
+
+func _stock_of(good: String) -> int:
+	return int(town_stock.get(good, 0))
+
+## 库存增减的【唯一通道】：整数、写 event_log 溯源（produce / consume / spoil），note="<原因>*<真正落账的件数>"。
+## 守恒由"只此一门"结构保证 → 硬不变量 #38 可从 event_log 独立重算（同 transfer 之于 #34）。
+## 返回【真正落账】的件数：产出撞 cap 会少于请求量，消耗撞 0 会少于请求量——落账多少就记多少，账本因此恒闭。
+func _stock_move(good: String, delta: int, type: String, actor_id: String, reason: String) -> int:
+	if delta == 0 or not (production.get("goods", {}) as Dictionary).has(good):
+		return 0
+	var cur := _stock_of(good)
+	var applied := delta
+	if delta > 0:
+		var cap := int((production["goods"] as Dictionary)[good].get("cap", 999999))
+		applied = mini(delta, maxi(0, cap - cur))       # 满仓 → 少收/不收（多出来的那部分不入账，也就不进账本）
+	else:
+		applied = -mini(-delta, cur)                    # 见底 → 只扣到 0，绝不为负（#38 的非负臂由此结构保证）
+	if applied == 0:
+		return 0
+	town_stock[good] = cur + applied
+	_log_event(type, actor_id, "town", good, true, [], "%s*%d" % [reason, absi(applied)])
+	return applied
+
+## 职位 title → 现任持有人 id（jobs.json 书写序，首个命中；无则 ""）。纯查表、无 RNG。
+func _holder_of_title(title: String) -> String:
+	for aid in jobs.get("jobs", {}):
+		if String((jobs["jobs"] as Dictionary)[aid].get("title", "")) == title:
+			return String(aid)
+	return ""
+
+## 产出挂点：本职、在班、完成一次工作 → 往镇库存记【一批】（口径与 _wage_for 的"本职在班"完全同一条）。
+## 为什么是一批不是一件：实测全镇本职完成 ~70 次/60 天，而吃饭 1011 次/60 天——1:1 会让镇子永远断粮
+## （见 production.json 的 _calibration）。批量是数据，不是代码常数。
+func _produce_for(ag: Dictionary, action: String) -> void:
+	var job := _job_of(String(ag["id"]))
+	if job.is_empty() or String(job.get("action", "")) != action or not _in_shift(job):
+		return
+	var title := String(job.get("title", ""))
+	var rec: Dictionary = production.get("produce", {}).get(title, {})
+	if rec.is_empty():
+		return                                          # 该职位没有产物（如未接入的工种）→ 与今天一致
+	var good := String(rec.get("good", ""))
+	var got := _stock_move(good, int(rec.get("amount", 0)), "produce", String(ag["id"]), title)
+	prod_stats["work"][title] = int((prod_stats["work"] as Dictionary).get(title, 0)) + 1
+	if got > 0:
+		prod_stats["produced"][good] = int((prod_stats["produced"] as Dictionary).get(good, 0)) + got
+		ag["memory"].add("今天%s出了%d份%s，交进镇上" % [action, got, good], 4, tick_no, ["job", "produce", good])
+
+## 消耗挂点：动作开用时扣一件。**返回 false = 缺货**。
+## ★缺货【不阻断动作】：本函数不改 option、不改 need、不返回"别做了"——调用方拿 false 只用来加价与记后果。
+##   这正是 economy.json `_doc` 里 meals_free 那条设计意图的直接继承：付不起照吃、没货也照吃。
+func _consume_for(ag: Dictionary, action: String) -> bool:
+	var rec: Dictionary = production.get("consume", {}).get(action, {})
+	if rec.is_empty():
+		return true                                     # 非消耗类动作 → 天然不缺货
+	var good := String(rec.get("good", ""))
+	var want := int(rec.get("amount", 1))
+	prod_stats["attempts"][action] = int((prod_stats["attempts"] as Dictionary).get(action, 0)) + 1
+	var took := _stock_take(good, want)
+	if took >= want:
+		prod_stats["consumed"][good] = int((prod_stats["consumed"] as Dictionary).get(good, 0)) + took
+		return true
+	if took > 0:
+		prod_stats["consumed"][good] = int((prod_stats["consumed"] as Dictionary).get(good, 0)) + took
+	prod_stats["short"][good] = int((prod_stats["short"] as Dictionary).get(good, 0)) + 1
+	_shortage_fallout(ag, action, good)
+	return false
+
+## 消耗侧的库存扣减：立刻改 town_stock，但把"今天扣了多少"攒进 _stock_day，日界一次性写一条 consume 事件。
+## 为什么不逐次写：见 _stock_day 的声明注释（会把 Main 的小镇纪事整块冲掉）。
+## #38 的账本恒等式因此带一个 pending 项：stock == 基准 + Σproduce − Σconsume(已入账) − Σspoil − pending。
+func _stock_take(good: String, want: int) -> int:
+	var cur := _stock_of(good)
+	var take := mini(want, cur)
+	if take <= 0:
+		return 0
+	town_stock[good] = cur - take
+	_stock_day[good] = int(_stock_day.get(good, 0)) + take
+	return take
+
+## 缺货的社会后果（红线：只落在社会面，绝不落在生存面）。四条，全部可观测：
+##   ① event_log 写一条 shortage（同一天同一货只写一条——一天四十次断货是同一件事，不是四十条新闻）；
+##   ② 当事人一条不满记忆（voice grounding）；
+##   ③ 在场者 + 当事人形成一手信念(via=seen，主语=责任岗位的人) → 走既有 gossip 管线被议论（结构照抄 _observe_wealth）；
+##   ④ 对责任岗位小挫声誉（经 _adjust_standing，受 STANDING_DELTA_CAP/STANDING_CAP 双重钳制；
+##      而 S1 每 3 天的 standing 漂移会把它慢慢抹平 ⇒ 只有【连着断货】才留得下印象）。
+func _shortage_fallout(ag: Dictionary, action: String, good: String) -> void:
+	# ★同一天同一种货只记一次。理由不是省事，是两条实测约束：
+	#   ① MemoryStream 只有 CAP=200/KEEP=150 且 _forget 按 importance 排序 —— 逐次记账会让几百条
+	#      "面包又没了"把社交记忆整片挤出去，语音 grounding 当场退化成一句抱怨；
+	#   ② Main 的小镇纪事只回扫尾部 200 条事件。
+	#   语义上也对：一天里断第 40 次不是新闻，是同一件事。此后再缺仍然照常【加价 + 计数】，只是不再重复宣告。
+	if int(_short_day.get(good, -1)) == day:
+		return
+	_short_day[good] = day
+	var blame := _holder_of_title(String(production.get("goods", {}).get(good, {}).get("blame", "")))
+	var seen: Array = _nearby_agents(ag)
+	_log_event("shortage", String(ag["id"]), blame, good, false, seen, action)
+	ag["memory"].add("想%s，镇上的%s却空了" % [action, good], 4, tick_no, ["shortage", good])
+	if blame == "" or not _agent_by_id.has(blame):
+		return
+	var bid := "SH:%s" % good
+	var claim := "镇上的%s总是断，%s那边跟不上" % [good, _name(_agent_by_id[blame])]
+	var seers: Array = [ag]
+	seers.append_array(seen)
+	for s in seers:
+		if String(s["id"]) == blame:
+			continue                                    # 不当着（也不由）责任人自己形成这条埋怨
+		if not s["beliefs"].has(bid):
+			s["beliefs"][bid] = {"claim": claim, "subject": blame, "source": "__seen__", "via": "seen", "tick": tick_no}
+		_adjust_standing(s, blame, float(production.get("shortage_standing", 0.0)))
+
+## 日界结算：把当天的消耗一次性写进账本，再按 spoil_per_day 让存货自然损耗。
+## 损耗存在的理由不是"真实"，是【让缺货周期性发生】：没有它，供大于求的种子会把库存顶到 cap 后永不缺货，
+## 缺货信号退化成常数 → 这条机制就又变回装饰。
+func _stock_nightly() -> void:
+	for good in production.get("goods", {}):
+		var g := String(good)
+		var used := int(_stock_day.get(g, 0))
+		if used > 0:
+			_stock_day[g] = 0
+			_log_event("consume", "town", "town", g, true, [], "day*%d" % used)
+		var sp := int((production["goods"] as Dictionary)[g].get("spoil_per_day", 0))
+		if sp > 0:
+			var lost := -_stock_move(g, -sp, "spoil", "town", "spoil")
+			if lost > 0:
+				prod_stats["spoiled"][g] = int((prod_stats["spoiled"] as Dictionary).get(g, 0)) + lost
+
 ## 确定性 [0,1) 哈希（字符串→稳定小数；天生立场用）。
 func _hash01(s: String) -> float:
 	var h := 2166136261
@@ -3224,6 +3401,12 @@ func _verb(action: String) -> String:
 		"endorse": return "统一了口径"
 		"rally_oust": return "施压"
 		"aid": return "雪中送炭"
+		# Wave E 产出闭环的四类账本事件。写在这里是因为 Main._event_prose 的兜底会来问它
+		#   （Main.gd 归 E2 独占，我不改；给它一个中文说法，屏幕上就不会抖英文 id）。
+		"produce": return "交了一批货进镇上"
+		"consume": return "把今天该用的用掉了"
+		"spoil": return "有存货放坏了"
+		"shortage": return "扑了个空——东西断了"
 		_: return action
 
 # ── S3 辅助函数（逻辑镜像 tools/sim_social_port.mjs）────────────────────────

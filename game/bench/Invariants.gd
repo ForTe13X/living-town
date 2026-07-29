@@ -12,8 +12,11 @@ static func check_all(S, starved: int) -> Array:
 	var log: Array = S.event_log
 	var accepted: Array = []
 	for e in log:
-		if bool(e["accepted"]) and not (String(e["type"]) in ["pay", "world", "election"]):
-			accepted.append(e)   # 经济(pay)/世界变更(world)/治理(election)事件不算社交参与——否则 inv2/3 被稀释成空门
+		if bool(e["accepted"]) and not (String(e["type"]) in ["pay", "world", "election", "produce", "consume", "spoil", "shortage"]):
+			accepted.append(e)   # 经济(pay)/世界变更(world)/治理(election)/产出账本(produce/consume/spoil/shortage)
+			                     # 事件不算社交参与——否则 inv2/3 被稀释成空门。
+			                     # ★Wave E 必须补这四个：produce/consume 的 actor 是干活/吃饭的人，
+			                     #   不排除的话「#3 无永久孤立」会被"他吃过饭"喂饱，一个从不社交的居民也能过门。
 
 	var harmony: bool = String(S.scenario) == ""   # 定向场景(faction/betray/freerider)会扭曲关系/致饿穿 → 豁免和睦不变量
 	var small_n: bool = S.agents.size() <= 12       # 涌现/单源传播类只在设计 N(≤12)硬断言；大 N 单源谣言 fizzle 是现实(docs/12 L4)
@@ -374,7 +377,77 @@ static func check_all(S, starved: int) -> Array:
 			elec_ok = false
 		elec_detail = "%d 场 选民=%d 事件=%d" % [S.election_log.size(), eligible, elec_events]
 	R.append(_chk(37, "选举计票自洽", elec_ok, elec_detail))
+
+	# ── Wave E 劳动产出闭环 (38-40，production.json 缺失时恒过=零扰动；docs/47 §二-E1) ──
+	# 结构照抄 #34/#35：库存增减只有 Sim._stock_move / _stock_take 一个通道，于是"账本能独立重算出现存量"
+	# 就是那个通道没被绕过的机检证据。绕过它（直接写 town_stock）→ #38 立刻红。
+	var prod_on: bool = not S.production.is_empty()
+	# 38) 库存账本自洽 + 非负：对每种货，现存 == 开局 + Σproduce − Σconsume(已入账) − Σspoil − 当日待入账
+	#     （待入账项来自"消耗按天入账"的设计：逐次入账会往 event_log 塞上千条流水，把 Main 的小镇纪事冲掉。
+	#      日界结算后该项恒为 0，而 Harness/DetGate 的收尾 tick 恰好落在日界上。）
+	var ledger_bad: Array = []
+	if prod_on:
+		var moved := {}          # good -> Σ(+produce −consume −spoil)，全部从 event_log 解出来
+		for e in log:
+			var ty := String(e["type"])
+			if not (ty in ["produce", "consume", "spoil"]):
+				continue
+			var g := String(e["subject"])
+			var amt := _amt_of(String(e.get("note", "")))
+			moved[g] = int(moved.get(g, 0)) + (amt if ty == "produce" else -amt)
+		for g in S.production.get("goods", {}):
+			var gid := String(g)
+			var expect: int = int(S.stock_total0.get(gid, 0)) + int(moved.get(gid, 0)) - int(S._stock_day.get(gid, 0))
+			var got: int = int(S.town_stock.get(gid, 0))
+			if got != expect:
+				ledger_bad.append("%s 现存=%d 账本算得=%d" % [gid, got, expect])
+			if got < 0:
+				ledger_bad.append("%s 库存为负=%d" % [gid, got])
+		for g2 in S.town_stock:      # 账外货：不在 goods 表里的键说明有人绕过了唯一通道
+			if not (S.production.get("goods", {}) as Dictionary).has(String(g2)):
+				ledger_bad.append("未申报的货 %s" % String(g2))
+	R.append(_chk(38, "库存账本自洽", ledger_bad.is_empty(),
+		("对不上: " + "; ".join(ledger_bad)) if not ledger_bad.is_empty()
+		else ("库存=%s" % str(S.town_stock) if prod_on else "产出系统关闭(缺 production.json)")))
+	# 39) 产出溯源到在班本职：每条 produce 事件的 actor 必须是【持有该职位的人】，货必须是该职位申报的货，
+	#     件数必须落在 (0, 申报批量]（撞 cap 会少收，故是 ≤ 而不是 ==）。
+	#     它跨 jobs.json × production.json × 代码路径三方对账 —— 让"货从天上掉下来"或"张三产出李四的货"变红。
+	var prov_bad2: Array = []
+	if prod_on:
+		for e in log:
+			if String(e["type"]) != "produce":
+				continue
+			var actor := String(e["actor"])
+			var job: Dictionary = S._job_of(actor)
+			var title := String(job.get("title", ""))
+			var rec: Dictionary = S.production.get("produce", {}).get(title, {})
+			var amt2 := _amt_of(String(e.get("note", "")))
+			if job.is_empty() or rec.is_empty():
+				prov_bad2.append("#%d %s 无本职/该职位未申报产出" % [int(e["id"]), actor])
+			elif String(rec.get("good", "")) != String(e["subject"]):
+				prov_bad2.append("#%d %s(%s) 产出了 %s" % [int(e["id"]), actor, title, String(e["subject"])])
+			elif amt2 <= 0 or amt2 > int(rec.get("amount", 0)):
+				prov_bad2.append("#%d %s 件数=%d 超出申报 %d" % [int(e["id"]), actor, amt2, int(rec.get("amount", 0))])
+			elif String(e.get("note", "")).split("*")[0] != title:
+				prov_bad2.append("#%d note 职位=%s 实为 %s" % [int(e["id"]), String(e.get("note", "")).split("*")[0], title])
+	R.append(_chk(39, "产出溯源到在班本职", prov_bad2.is_empty(),
+		("异常=%d: %s" % [prov_bad2.size(), "; ".join(prov_bad2.slice(0, 3))]) if not prov_bad2.is_empty()
+		else ("produce 事件全部可溯源" if prod_on else "产出系统关闭")))
+	# 40) 【软】产出闭环活性：#38/#39 都是"若 X 发生则 X 良构"，X 归零它们全绿——
+	#     production.json 还在、而产出/消耗一次都没发生，正是本波要防的那种"机制被静默关掉"。
+	var n_prod := 0
+	var n_cons := 0
+	for e in log:
+		if String(e["type"]) == "produce": n_prod += 1
+		elif String(e["type"]) == "consume": n_cons += 1
+	R.append(_chk(40, "产出闭环活性", (not prod_on) or (n_prod > 0 and n_cons > 0),
+		"produce=%d consume=%d (产出系统开启时均应>0)" % [n_prod, n_cons]))
 	return R
+
+## 库存事件的 note 编码 "<原因>*<件数>" → 件数（Sim._stock_move 写、本文件读；对不上就是 0 → #38 会红）。
+static func _amt_of(note: String) -> int:
+	var i := note.rfind("*")
+	return int(note.substr(i + 1)) if i >= 0 else 0
 
 static func _chk(id: int, name: String, ok: bool, detail: String) -> Dictionary:
 	return {"id": id, "name": name, "ok": ok, "detail": detail, "hard": id in HARD_IDS}
@@ -385,7 +458,9 @@ static func _chk(id: int, name: String, ok: bool, detail: String) -> Dictionary:
 ##  · 软（涌现统计）= 需要活动才会显现的量（社交发生、分化、放逐锐利度、观点演化…），
 ##    已按 场景/大N 豁免；激进 LOD 下远端=背景群演，软不变量按设计会漂。
 ## 消费方：激进 LOD 门只查硬不变量（split_fails().hard==0）；soak/Harness 仍查全 33 条。
-const HARD_IDS := [1, 6, 7, 9, 10, 12, 13, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37]
+## Wave E 追加：#38/#39 是硬（结构：账本自洽/产出可溯源，任何 LOD/规模下都必须为真）；
+##   #40 是软（活性=涌现统计：短 horizon 的定向场景里产出可能一次都没发生，硬断言会误红）。
+const HARD_IDS := [1, 6, 7, 9, 10, 12, 13, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39]
 
 ## 第三档：诊断（DIAGNOSTIC）——【报告但永不成门】（既不入 hard_red 也不入 soft_red）。
 ## 收录标准只有一条：该指标本身已被证明是度量伪影，把它做成门就是在给噪声上锁。
