@@ -58,6 +58,12 @@ try:
 except ImportError:
     sys.exit("需要 Pillow：pip install pillow")
 
+try:                                    # Windows 控制台默认 GBK ⇒ 第 180 行那句 "✅ 自检A" 会
+    sys.stdout.reconfigure(encoding="utf-8")   # UnicodeEncodeError 退出 1（G1 在本机实测）。
+    sys.stderr.reconfigure(encoding="utf-8")   # 那一句在写文件【之前】，所以本脚本长期是
+except Exception:                              # "跑不起来"而不是"跑了没事"——别把 exit 1 读成幂等。
+    pass
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "game", "assets", "art", "library",
                    "puny-characters", "Puny-Characters")
@@ -211,6 +217,13 @@ def main():
         print("\n(--probe：只跑断言，未写文件)")
     else:
         print("\n写出 %d 张 → %s" % (len(results), os.path.relpath(DST, ROOT)))
+        # ⚠️ 本脚本产出的是**去道具中间态**（E3），没有 F2/G2 的头发/帽子/描边。
+        #    实测（隔离副本）：裸跑一次会覆盖 pro/ 里 10 张中的 **9 张**，
+        #    只有 Character-Base 幸免（它不在 SHEETS 里）。在补上上面那两行编码修复之前，
+        #    本机是靠第 180 行崩掉才没出事——**那不是保护，那是运气**。
+        print("⚠️ 这 %d 张是【去道具中间态】，不含 F2/G2 的发型与描边。"
+              "出货目录请用 `python tools/coif_characters.py` 重建，"
+              "否则 G1 的美术门会红。" % len(results))
 
 
 if __name__ == "__main__":

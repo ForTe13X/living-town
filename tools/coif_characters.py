@@ -23,11 +23,18 @@ E3 的不变量是 `out.alpha == base.alpha`。于是**本脚本新加的每一�
    `x_ref` = base 首行的最小 x ⇒ **走路"上下颠"那一帧（col 1 整体上移 1px）自动对齐**，不需要写死行号。
 3. **描边**：模板自带 `O`（`#040404`，与身体同一根描边色）。**新加的像素必须自带描边**，
    否则它在浅色地面上会糊掉——这是 32px 下新画东西最容易翻车的地方。
+   > ★ **G2（Wave G）**：这条规则从 F2 起就写在这里，**但当时没有任何代码在查它**，
+   > 于是它在 **5/10 张表上不成立**（132 px）。现在它是**断言 C**。
+   > 顺带补上**断言 D**：C 的"新增像素"限定漏掉了另一类——模板把 base **自己的**描边
+   > 涂成发色（阿梅发顶那个缺口，12 px，而她同时是 `WorldView.FALLBACK_SPRITE`）。
+   > 写下一条规则和查它是两件事；**只有后者会在下一次改动时救你**。
 
 ## 只有 12 帧要紧
 
 `WorldView._agent_frame()` 只出 `col 0..3 × row {0,1,3}`（docs/44 §一·五 第 2 条）。
 本脚本对**整张表 192 帧**统一施加同一套规则（保持表自洽），但所有度量只报那 12 帧。
+⚠️ **断言 C/D 也必须只数这 12 帧。** 整张表是 768×256 = **192 帧**（不是 768 帧），
+拿整张表扫会得到 9/10 张、2066 px——**那不是更严格，是量错了对象**。
 
 ## 许可（红线 #4）
 
@@ -38,6 +45,7 @@ E3 的不变量是 `out.alpha == base.alpha`。于是**本脚本新加的每一�
     python tools/coif_characters.py              # 重新生成 game/assets/art/pro/*.png（含 deprop 一步）
     python tools/coif_characters.py --probe      # 只跑断言与度量，不写文件
     python tools/coif_characters.py --metrics    # 断言 + 完整度量表（剪影可分度 / 脸的皮肤边界）
+    python tools/coif_characters.py --negctl     # 负对照：故意破坏描边，断言 C/D 【必须】红
     python tools/coif_characters.py --preview D  # 把改前/改后的 12 帧写成对照图到目录 D
 """
 import os
@@ -51,7 +59,8 @@ except ImportError:
 
 try:                                    # Windows 控制台默认 GBK，直接 print 中文/✅ 会 UnicodeEncodeError
     sys.stdout.reconfigure(encoding="utf-8")
-except Exception:
+    sys.stderr.reconfigure(encoding="utf-8")   # ← stderr 也要：断言失败的中文说明走 stderr，
+except Exception:                              #   只改 stdout 的话门一红就是一屏乱码（实测）
     pass
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -67,6 +76,10 @@ COLS_USED = (0, 1, 2, 3)
 ROWS_USED = (0, 1, 3)              # idle / 横走 / 上走；row2 与 col>=4 渲染器到不了
 
 OUTLINE = (0x04, 0x04, 0x04)       # 身体自己的描边色，新东西必须用同一根
+
+# 断言 B 的地板：修描边只准往剪影上**加**描边，不准把两个人压到一起（docs/49 §二 验收 3）。
+# 120 是 F2 交付时的实测最小值（两对并列，见 docs/44 §一·六 的更正），不是一个拍脑袋的数。
+SILHOUETTE_FLOOR = 120
 
 # ── 发色阶（暗/中/亮）。全部是自然发色；不用纯黑——夜间乘子之后纯黑会和描边并成一坨 ─────
 HAIR = {
@@ -102,7 +115,7 @@ STYLES = {
     .....OOOOOO.....
     ....OKHHHHKO....
     ...OKHLLHHHKO...
-    ...OHHHHHHHHKO..
+    ...OHHHHHHHHKOO.
     ...OKHHHHHHKOKHO
     ....O......O.KHO
     .............KHO
@@ -112,13 +125,18 @@ STYLES = {
 
     # 可可（画家）：贝雷帽——扁圆、整体向左歪出 2px。帽子用她自己的青绿色阶，亚麻发从帽下露出来。
     # 第一版在帽顶多画了一个 2px 的黑尖，实测读成"天线"，已删。
+    # ⚠️ G2 补描边时这一张是**唯一不能往上加一行描边**的：
+    #    ① 她与老邓（Soldier-Yellow，全场最高的毛线帽）就是并列最小对 120px，往上长会把两人压到
+    #       **96px**（实测，SILHOUETTE_FLOOR 当场把它拦下来了）；
+    #    ② 往帽顶加黑正是上面那条"读成天线"的复发。
+    #    ⇒ 改成把露在外沿的那几个布料像素**就地改成描边色**（alpha 一个不动，剪影表逐行不变）。
     "Mage-Cyan": ("flaxen", """
     ................
     ................
     ................
-    ...OMMO.........
-    ..OMNNMMMMO.....
-    ..OCMMMMMMMCO...
+    ...OOOO.........
+    ..OMNNMOOOO.....
+    ..OCMMMMMMMOO...
     ...OCMMMMMMCO...
     ...OKHHHHHHKO...
     ...OKHHHHHHKO...
@@ -131,7 +149,9 @@ STYLES = {
     # 小薇（学生）：双马尾。发团先外扩到 x10/x21，两撮再从那儿【向外撇出去】到 x8/x23 并收口。
     # 改过两次，两次都是被量出来的：
     #  ① 第一版挂在 y12..15、与眼同高 ⇒ 读成"护耳"；下移一格 + 收口之后才是辫子。
-    #  ② 第二版贴着头挂 ⇒ 与阿菲的齐肩短发只差 98px（全场最小对）。往外撇两列之后是 246px。
+    #  ② 第二版贴着头挂 ⇒ 与阿菲的齐肩短发只差 98px（全场最小对）。往外撇两列之后是 208px。
+    #     ⚠️ 这里原本写的是 246，docs/44 §一·六 的更正记过：表里根本没有 246 这个值，
+    #        实测是 `208  Archer-Green  Archer-Purple`。G2 顺手改掉（当时这文件归 F3，不是 F2 能动的）。
     "Archer-Green": ("darkbrown", """
     ................
     ................
@@ -140,7 +160,7 @@ STYLES = {
     .....OOOOOO.....
     ....OKHHHHKO....
     ...OKHHLLHHKO...
-    ..OKHHHHHHHHKO..
+    .OOKHHHHHHHHKOO.
     OKHOKHHHHHHKOHKO
     OKHO........OHKO
     OKHO........OHKO
@@ -175,7 +195,7 @@ STYLES = {
     ................
     ....OOOOOOOO....
     ...OMMMMMMMMO...
-    ...OMMMMMMMMO...
+    ...OMMMMMMMMOO..
     ...OCCCCCCCCCMO.
     ...OCCCCCCCCCMMO
     ............OOOO
@@ -269,7 +289,7 @@ STYLES = {
     ................
     ................
     ....OOO.OOO.....
-    ...OKHHHHHHKO...
+    ...OKHHOHHHOO...
     ..OKHHLLHHHHKO..
     ..OKHHHHHHHHKO..
     ...OKHHHHHHKO...
@@ -429,10 +449,72 @@ def face_skin_edge(im):
     return n
 
 
+# ── 断言 C（G2）：模块 docstring 第 3 条「新加的像素必须自带描边」，F2 写下但没有任何代码在查 ──
+#
+# ⚠️ 口径写死在这里，因为**这道判据最容易量错的不是算法而是对象**：
+#   · 只看 12 个可达帧（ROWS_USED × COLS_USED）。整张表是 768×256 = **192 帧**，出货只用 12 帧。
+#     拿整张表量会得到 9/10 张违规、2066 px（实测复现过），那个数字**不是更严格，是量错了对象**。
+#   · 「外沿」按**本帧**算：四邻中有透明，**或越出 32×32 帧边界**。
+#     绝不能按整张表的坐标算——相邻帧里有别的姿势的像素，会把真正的外沿盖掉。
+#   · C = 外沿 ∩ 新增（`out.alpha AND NOT base.alpha`，E3 不变量的反用）∩ 非 OUTLINE。
+#   · D = 外沿 ∩ 非 OUTLINE ∩「该坐标在 Character-Base 原图里本来就是描边」。
+#     C 的「新增」限定会**漏掉**这一类：模板把 base 自己的描边**涂成了发色**——
+#     alpha 没变所以不算"新增"，但屏幕上同样是一圈没描边的头。
+def _rim_set(im):
+    """12 可达帧上的剪影外沿像素集（帧内四邻有透明，或越出本帧边界）。"""
+    px = im.load()
+    out = set()
+    for (X, Y) in USED:
+        if px[X, Y][3] == 0:
+            continue
+        x, y = X % FRAME, Y % FRAME
+        ox, oy = X - x, Y - y
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nx, ny = x + dx, y + dy
+            if not (0 <= nx < FRAME and 0 <= ny < FRAME) or px[ox + nx, oy + ny][3] == 0:
+                out.add((X, Y))
+                break
+    return out
+
+
+def bare_edges(im, base_alpha, base_rim_outline):
+    """返回 (C 裸边, D 被涂掉的描边)，两者按定义不相交（base_rim_outline ⊆ base_alpha）。"""
+    px = im.load()
+    bare = {p for p in _rim_set(im) if px[p][:3] != OUTLINE}
+    return sorted(bare - base_alpha), sorted(bare & base_rim_outline)
+
+
+def _negctl(after, base_alpha, base_rim_outline):
+    """自带的负对照：每张表各破坏 1 个 C 类、1 个 D 类像素 ⇒ 两条断言都必须变红且点得出是哪一张。
+
+    为什么要把它焊进脚本而不是"改一次手工验一次"：修完之后 C/D 恒为 0，
+    **一个只见过绿的断言证明不了任何东西**（docs/41 §6、docs/49 §五）。
+    这条让"C/D 在什么情况下会红"与 git 状态无关地可复跑。
+    """
+    print("\n⚠️ --negctl：每张表各破坏 1 个 C 类 + 1 个 D 类像素 —— 这次运行【应当】红")
+    for s in sorted(after):
+        px = after[s].load()
+        h = _rgb(HAIR[STYLES[s][0]][1])
+        rim = _rim_set(after[s])
+        # C 类：新增的外沿描边像素 → 涂成发色
+        c_cand = sorted(p for p in rim if p not in base_alpha and px[p][:3] == OUTLINE)
+        # D 类：base 自己的外沿描边像素 → 涂成发色
+        d_cand = sorted(p for p in rim & base_rim_outline)
+        if not c_cand:
+            print("   %-16s 没有【新增的】外沿描边像素可破坏 —— 这本身是一个发现" % s)
+        if not d_cand:
+            print("   %-16s 没有【base 自己的】外沿描边像素可破坏 —— 这本身是一个发现" % s)
+        for tag, cand in (("C", c_cand), ("D", d_cand)):
+            if cand:
+                p = cand[0]
+                px[p] = (h[0], h[1], h[2], 255)
+                print("   %-16s %s 类 (%d,%d) 描边 → 发色中档" % (s, tag, p[0], p[1]))
+
+
 def main():
     global USED
     USED = list(used_pixels())
-    probe = "--probe" in sys.argv or "--metrics" in sys.argv
+    probe = "--probe" in sys.argv or "--metrics" in sys.argv or "--negctl" in sys.argv
     metrics = "--metrics" in sys.argv
     preview = None
     if "--preview" in sys.argv:
@@ -471,9 +553,39 @@ def main():
     for a, b in itertools.combinations(sorted(after), 2):
         pairs.append((silhouette_diff(after[a], after[b]), a, b))
     pairs.sort()
-    print("✅ B：剪影两两可分度 最小 %d px（%s vs %s）  中位 %d  最大 %d"
-          % (pairs[0][0], pairs[0][1], pairs[0][2], pairs[len(pairs) // 2][0], pairs[-1][0]))
+    # ★ 报单个极值时**连并列一起报**（docs/44 §一·六 的更正：原文报了「最小对」单数，实测是两对并列 120）
+    tied = [p for p in pairs if p[0] == pairs[0][0]]
+    print("✅ B：剪影两两可分度 最小 %d px  中位 %d  最大 %d；并列在最小值上的有 %d 对："
+          % (pairs[0][0], pairs[len(pairs) // 2][0], pairs[-1][0], len(tied)))
+    for n, a, b in tied:
+        print("      %5d  %-16s %s" % (n, a, b))
     assert pairs[0][0] > 0, "有两张表剪影完全相同"
+    assert pairs[0][0] >= SILHOUETTE_FLOOR, (
+        "剪影最小可分度 %d < %d：修描边把两个人压到一起了（docs/49 §二 验收 3）"
+        % (pairs[0][0], SILHOUETTE_FLOOR))
+
+    # ── 断言 C / D：新加的像素必须自带描边 ────────────────────────────────────
+    base_rim_outline = {p for p in _rim_set(base_img) if base_img.load()[p][:3] == OUTLINE}
+    if "--negctl" in sys.argv:
+        _negctl(after, base_alpha, base_rim_outline)
+    print("\n── C：描边完整性（扫 %d 张表 × %d 可达帧 = %d 像素/张；描边色 #%02x%02x%02x）──"
+          % (len(after), len(ROWS_USED) * len(COLS_USED), len(USED), *OUTLINE))
+    tot_c = tot_d = 0
+    bad_c = bad_d = 0
+    for s in sorted(after):
+        c, d = bare_edges(after[s], base_alpha, base_rim_outline)
+        tot_c += len(c)
+        tot_d += len(d)
+        bad_c += 1 if c else 0
+        bad_d += 1 if d else 0
+        if c or d:
+            print("   %-16s 裸边 C=%-4d  被涂掉的描边 D=%-4d  %s"
+                  % (s, len(c), len(d), "❌"))
+    print("   合计：C=%d px / %d 张，D=%d px / %d 张" % (tot_c, bad_c, tot_d, bad_d))
+    assert tot_c == 0, ("C：%d 个新增像素落在剪影外沿却不是描边色（%d 张表）" % (tot_c, bad_c))
+    assert tot_d == 0, ("D：%d 个 base 自己的描边被模板涂成了非描边色（%d 张表）" % (tot_d, bad_d))
+    print("✅ C：10 张表在 12 个可达帧上，新增像素的外沿全部是描边色（C=0），"
+          "且没有涂掉 base 自己的描边（D=0）")
 
     if metrics:
         # ★ 判据先在【未改动的树】上跑一遍（docs/41 §6）。这里**不写死**"改前是 0"，而是当场量出来：
