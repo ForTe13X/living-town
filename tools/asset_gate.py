@@ -15,17 +15,35 @@
 3. 爆炸半径：`art_gate.py` 是 G1/G2 的行，本波仍可能有别的棒动它；新文件零冲突。
 4. CI 里是独立一步（2d）⇒ 红的时候它自报家门，而不是让人去 2b 的输出里找是哪一类资产。
 
-## 它守的性质（只有一条，而且【范围是刻意窄的】）
+## 它守的性质（**Wave I·I1 之后是两条**）
 
-**H1 在真机上眼验过、判为 OK 的那 10 张出货 png，必须等于两份切图配方现在能重建出来的东西。**
+1. **出货 == 配方**：眼验过的出货 png 必须等于配方现在能重建出来的东西。
+2. **（I1 新增）表情之间必须分得开**：上门的 10 张 emote 两两差必须过一个**量出余量之后才定**的地板。
+   理由见下面「为什么 emote 从 9 张不上门变成 10 张上门」。
 
-另外 16 张**故意不上门**，这不是偷懒，是本棒的全部要点（docs/50 §〇·2 / docs/51 §三·4）：
+另外 7 张**仍然故意不上门**，这不是偷懒，是 H2 那一棒的全部要点（docs/50 §〇·2 / docs/51 §三·4）：
 
 > **给没有人眼验过（或已知画错、或根本上不了屏）的美术上门 = 把当前状态钉成"正确"。**
 > 池塘那个 bug 正是这样活了一个月。
 
-- **9 张 emote + obj/bath + obj/arcade（11 张）**：H1 判「读不出」——**先修再守**。
-  现在钉住 = 把"九张一模一样的白气泡"钉成正确（最近的一对只差 6/400 像素，docs/51 §二·1）。
+## 为什么 emote 从「9 张不上门」变成「10 张全上门」（Wave I · I1，docs/53 §一）
+
+H2 当时写的理由是对的：**那 9 张当时是坏的，钉住 = 把坏钉成正确**。现在它们被重画了，
+理由的前提没了，所以结论跟着变——**不是把规矩放松了，是被守的对象换了**：
+
+```
+                        旧（白气泡×9）      新（自绘×9）
+两两差 min /400              6                  109
+两两差 median /400          24                  191
+轮廓差(alpha only) min       0（10 对并列）      11
+28 设备px 渲染后 min       9.94                47.23
+最近邻模板分类 top-1       37.4%               99.2%
+```
+
+⇒ 9 张 emote 从 `NOT_GATED` 挪进 `GATED`，并且**同时给它们加了第 2 条性质**（两两可分地板）
+——只补第 1 条的话，一次"把 9 张又改回同一个图"的改动能全绿通过。
+
+- **obj/bath + obj/arcade（2 张）**：H1 判「读不出」——**先修再守**（本棒没动它们）。
 - **decor/tree_big（1 张）**：H1 判「需要重切」（它是树冠图集碎片，不是一棵树）。
 - **building/{house,hut,shop} + decor/tree_small（4 张）**：H1 判「从不出现」。
   `Art.building_tex()` **全仓零调用点**、`tree_small` **不在 `WorldView.DECOR_POOL` 里** ——
@@ -40,7 +58,7 @@
 **逐像素相同 26/26、逐字节相同 0/26**（出货那批当年被重新编码压缩过）。真拿字节判红 ⇒ 干净树 26/26 假红。
 
 - **硬**：解码后的 RGBA 逐像素。这是真正进 Godot 纹理、真正上屏的那份数据。
-- **软**：本机 Pillow 重编码出来的 PNG 容器字节。**只打印，永不判红**（实测本门这 10 张 0/10 相同）。
+- **软**：本机 Pillow 重编码出来的 PNG 容器字节。**只打印，永不判红**（实测 0/19 相同）。
 
 ## 四条自证（每次跑都做，不是注释里的承诺）
 
@@ -61,9 +79,10 @@
 
 ## 明确不做
 
-- **不查这 10 张画得好不好**。门只守"出货 == 配方"，"配方对不对"只有人眼能判（H1 的活）。
+- **不查画得好不好、不查"读出来是不是那个情绪"**。门能判"这两张不一样"，判不了"这张是道歉"
+  ——后者只有人眼能判（I1 的眼验图见回执）。两两地板拦得住"又变回一个样"，拦不住"十张都很丑但互不相同"。
 - **不查别名**（一张 bench.png 服务五种物件）——那是 H3 的 `OBJ_SLOT_ALIAS_BUDGET`。
-- **不对 16 张未上门的图判红**（缺失/多余只 WARN），理由见上。
+- **不对 7 张未上门的图判红**（缺失/多余只 WARN），理由见上。
 
 用法:
     python tools/asset_gate.py            # 门：PASS ⇒ exit 0，FAIL ⇒ exit 1
@@ -93,25 +112,24 @@ GD_DIR = os.path.join(ROOT, "game")
 SLICERS = (os.path.join(TOOLS, "slice_all.py"), os.path.join(TOOLS, "slice_visual.py"))
 SHIPPED_DIRS = ("emote", "decor", "obj", "building")
 
-# ── 上门的 10 张（docs/51 §三·4 的表；判据是 H1 的真机眼验，不是本文件的推断）───────────
+# ── 上门的 19 张（decor6+obj3 来自 docs/51 §三·4 的 H1 真机眼验；emote10 见上，I1 重画+眼验）──
 GATED = {
     "decor/bush", "decor/flower_red", "decor/flower_yellow",
     "decor/rock", "decor/stump", "decor/mushroom",
     "obj/bench", "obj/counter", "obj/desk",
+    # emote 10 张：confront 是 CC0 切片（H1 眼验判 OK，像素未动）；其余 9 张是 I1 自绘，
+    # 配方在 tools/slice_all.py 的 GLYPHS 里（字符画 → render_glyph() 纯函数重建）。
     "emote/confront",
+    "emote/greet", "emote/give", "emote/gossip", "emote/invite",
+    "emote/meet_fulfilled", "emote/meet_broken", "emote/conflict",
+    "emote/apologize_ok", "emote/apologize_no",
 }
 
-# ── 不上门的 16 张，逐条写明理由。**这张表和上面那张必须并起来盖住整份配方**（自证④）────
+# 上门 emote 里哪些必须两两分得开（= 全部 10 张，因为 10 张都会画在同一个位置表达不同的事）
+DISTINCT_SET = sorted(k for k in GATED if k.startswith("emote/"))
+
+# ── 不上门的 7 张，逐条写明理由。**这张表和上面那张必须并起来盖住整份配方**（自证④）────
 NOT_GATED = {
-    "emote/greet": "读不出：与另外 8 张同为白气泡，最近一对差 6/400 px（docs/51 §二·1）—— 先重画再守",
-    "emote/gossip": "读不出：同上",
-    "emote/give": "读不出：同上",
-    "emote/invite": "读不出：同上",
-    "emote/meet_fulfilled": "读不出：同上",
-    "emote/meet_broken": "读不出：同上",
-    "emote/conflict": "读不出：同上",
-    "emote/apologize_ok": "读不出：同上",
-    "emote/apologize_no": "读不出：同上",
     "obj/bath": "读不出：真机读作「木箱压在石槽上」（docs/51 §一 obj 表）—— 先重画再守",
     "obj/arcade": "读不出：真机读作「木牌/告示柱」，而广场 3 格外就是真告示板 —— 先重画再守",
     "decor/tree_big": "需要重切：它是 2x2 树冠【图集碎片】不是一棵树，156 格平铺成壁纸（docs/51 §二·3）",
@@ -173,6 +191,18 @@ def harvest_recipes():
     """
     recs = {}
     bad = []
+
+    # ① 自绘配方：**import** slice_all（不是 exec）拿 GLYPHS —— 它有 main 守卫，import 零副作用。
+    #    这里刻意不抄一份字形表：门里出现第二份坐标/像素，两份就会各自漂（docs/50 §二 原话）。
+    try:
+        import slice_all as _sa
+        if not getattr(_sa, "GLYPHS", None):
+            bad.append("slice_all.GLYPHS 是空的 —— 自绘配方没了，不能静默放行")
+        for _name in getattr(_sa, "GLYPHS", {}):
+            recs["emote/%s" % _name] = {"drawn": _name}
+    except Exception as e:                          # noqa: BLE001 —— 任何 import 失败都必须判红
+        bad.append("import slice_all 失败（%s）—— 拿不到自绘表情的配方" % e)
+
     orig_run, orig_makedirs = subprocess.run, os.makedirs
 
     def spy_run(cmd, *a, **k):
@@ -207,8 +237,12 @@ def harvest_recipes():
             # `__name__ = "__main__"`：两份配方今天都是**裸的模块级代码**（没有 main 守卫），
             # 但哪天有人给它们加上 `if __name__ == "__main__":`，用 "_slicer" 会让采集悄悄变成 0 条。
             # 那时门确实会红（"一条 crop 都没采到"），但那是一次**假红**——配方并没有坏。
+            # `ASSET_GATE_HARVEST`：告诉配方"只走切图这一半，别写盘"。没有它的话，
+            # 采配方这一步会把本门正要判的 9 个出货 png 覆盖掉 —— 判据当场退化成 x→x。
+            # （下面 `main()` 里还有一条 mtime 自证，去实测门确实没碰过出货目录。）
             try:
-                exec(compile(src, path, "exec"), {"__name__": "__main__", "__file__": path})
+                exec(compile(src, path, "exec"),
+                     {"__name__": "__main__", "__file__": path, "ASSET_GATE_HARVEST": True})
             except SystemExit:
                 pass
     finally:
@@ -218,7 +252,16 @@ def harvest_recipes():
 
 
 def rebuild(recs, keys):
-    """按配方当场重建，并记录重建期间打开过哪些文件（自证①）。返回 ({key: RGBA Image}, opened)。"""
+    """按配方当场重建，并记录重建期间打开过哪些文件（自证①）。返回 ({key: RGBA Image}, opened)。
+
+    两种配方走两条路：
+    - `{"sheet","box"}` ⇒ 从 CC0 源表 crop（老路，读文件）。
+    - `{"drawn"}`       ⇒ 调 `slice_all.render_glyph()`（**一个文件都不读**：它是纯函数，
+                          字符画写在配方源码里）。所以自绘那 9 张的"重建独立于出货目录"
+                          比切片那批还强 —— 它压根没有可抄的答案。
+    """
+    import slice_all as sa
+
     opened = []
     orig_open = Image.open
 
@@ -234,6 +277,12 @@ def rebuild(recs, keys):
     try:
         for key in sorted(keys):
             r = recs[key]
+            if "drawn" in r:
+                w, h, px = sa.render_glyph(r["drawn"])
+                im = Image.new("RGBA", (w, h))
+                im.putdata(px)
+                out[key] = im
+                continue
             sp = r["sheet"]
             if sp not in sheets:
                 with Image.open(sp) as im:
@@ -314,16 +363,32 @@ def reachability(srcs):
 
     # 只认 `_emote_key()` 里 **return 行**上的字面量。刻意不认函数里别的字符串
     # （`e["type"]` / `e["accepted"]` 是字段名，不是 emote 键；第一版把它们也算进去了）。
-    # ⚠ 这样解析**漏掉**透传分支 `_: return t` 能到达的 greet/give/gossip/invite ——
-    #    它们的可达性来自 Sim 的事件类型，不是字面量。今天只有 confront 上门，不受影响；
-    #    将来要给那四张上门，得先给这里补一条"从 Sim 的事件类型取"的解析，不能直接塞进 GATED。
     ek = re.search(r"func\s+_emote_key\(.*?\n(.*?)(?=\n(?:func |## ))", wv, re.S)
+    ek_body = ek.group(1) if ek else ""
     emote_live = set()
-    for ln in (ek.group(1) if ek else "").splitlines():
+    for ln in ek_body.splitlines():
         if "return" in ln:
             emote_live |= set(re.findall(r'"([^"]+)"', ln))
     if not emote_live:
         errs.append("从 WorldView.gd 的 _emote_key() 里一个 emote 键都没解析到 —— 不能静默放行")
+
+    # ── I1 补上 H2 点名欠的那条解析 ─────────────────────────────────────────────────
+    # H2 的原注释：「⚠ 这样解析**漏掉**透传分支 `_: return t` 能到达的 greet/give/gossip/invite
+    #  ——将来要给那四张上门，**得先给这里补一条"从 Sim 的事件类型取"的解析，不能直接塞进 GATED**。」
+    # 本波正是要给那四张上门，所以先补解析。**口径是代码给的，不是猜的**：
+    #   `Sim.gd:2066` `if not (action in KNOWN_SOCIAL_ACTIONS): ...` 挡在
+    #   `Sim.gd:2077/2210` 的 `_log_event(action, ...)` 之前
+    #   ⇒ 能透传到 `_emote_key` 的 `t` 恰好就是 `KNOWN_SOCIAL_ACTIONS` 这张表。
+    # （注意：**不是** `_log_event("...")` 的字面量集合 —— 那里面根本没有 greet/give/gossip/invite，
+    #   它们是靠变量 `action` 进去的。照字面量解析会得出"这四张不可达"的假红。）
+    if re.search(r"^\s*_:\s*return\s+t\b", ek_body, re.M):
+        sim = next((s for p, s in joined.items() if os.path.basename(p) == "Sim.gd"), None)
+        km = re.search(r"const\s+KNOWN_SOCIAL_ACTIONS\s*:=\s*\[([^\]]*)\]", sim or "")
+        acts = set(re.findall(r'"([^"]+)"', km.group(1) if km else ""))
+        if not acts:
+            errs.append("_emote_key 有透传分支，但从 Sim.gd 的 KNOWN_SOCIAL_ACTIONS 一个动作都没解析到"
+                        " —— 那四张 emote 的可达性无从核实，不能静默放行")
+        emote_live |= acts
 
     # 「从不出现」的两条判据（H1 §一★ 的原话，这里每次重跑）
     bt_calls = []
@@ -339,6 +404,56 @@ def reachability(srcs):
 
     return {"decor": decor_live, "obj": obj_live, "emote": emote_live,
             "building_tex_calls": bt_calls, "tree_small_code_hits": ts_hits}, errs
+
+
+# ── I1 新增的第 2 条性质：上门的 emote 必须两两分得开 ──────────────────────────────────
+#
+# **地板是量出余量之后定的，不是拍的**（docs/53 §一·2 / docs/44 §一·六）：
+#
+#   指标                     旧出货(白气泡)   新出货(自绘)   本门地板   新出货的余量
+#   M1 源 RGBA 逐像素 /400        6            109          60        1.82x
+#   M4 28设备px 渲染后灰度        5.74         15.73        10        1.57x
+#
+# 两条都要过，因为它们守的是不同的失效：
+#   M1 抓"两张图几乎一样"；M4 抓"两张图在**上屏尺寸 + 颜色被压掉**之后几乎一样"
+#   —— 后者是旧那批真正死掉的地方，而 M1 单独看不见它（M1 把颜色也算进去，
+#      于是"只换个颜色、形状照抄"能靠 M1 拿高分而在 M4 上原形毕露）。
+# 旧那批在两条上分别 6 和 5.74 ⇒ **这道门在未改动的树上会红**，不是装饰。
+DISTINCT_SRC_FLOOR = 60
+DISTINCT_GREY_FLOOR = 10.0
+# 40(EMOTE_PX) × 0.45(LABEL_MIN_ZOOM) × 1.583(真机缩放) ≈ 28：玩家能看到的**最小**尺寸。
+# 比这更小的时候 WorldView 整块不画，所以这就是最坏情况，不是随手挑的一个数。
+DISTINCT_RENDER_PX = 28
+GRASS = (133, 166, 67)
+
+
+def _render_min_zoom(img, size=DISTINCT_RENDER_PX, bg=GRASS):
+    """按 WorldView 的真实路径把 20×20 源图放到最小可见尺寸：NEAREST 放大 + 压在草地上。
+
+    NEAREST 不是选来的，是 `WorldView.gd:525` 写死的（`texture_filter = TEXTURE_FILTER_NEAREST`）。
+    用 PIL 的 BILINEAR 会把结论做漂：那会平滑掉正是 NEAREST 保住的锯齿结构。
+    """
+    up = img.resize((size, size), Image.NEAREST)
+    plate = Image.new("RGBA", (size, size), bg + (255,))
+    return Image.alpha_composite(plate, up).convert("L")
+
+
+def distinctness(shipped):
+    """返回 [(key_a, key_b, src_diff, grey_diff)]，逐对。shipped: {key: RGBA Image}。"""
+    keys = sorted(shipped)
+    grey = {k: list(_render_min_zoom(shipped[k]).getdata()) for k in keys}
+    src = {k: list(shipped[k].getdata()) for k in keys}
+    out = []
+    for i, a in enumerate(keys):
+        for b in keys[i + 1:]:
+            if shipped[a].size != shipped[b].size:
+                out.append((a, b, -1, -1.0))
+                continue
+            sd = sum(1 for x, y in zip(src[a], src[b]) if x != y)
+            ga, gb = grey[a], grey[b]
+            gd = sum(abs(x - y) for x, y in zip(ga, gb)) / float(len(ga))
+            out.append((a, b, sd, gd))
+    return out
 
 
 def check_elsewhere():
@@ -373,12 +488,38 @@ def main():
         print("  ❌ FAIL: %s" % m)
         fail = 1
 
-    print("### asset gate：H1 眼验判为 OK 的 10 张出货 png 必须等于切图配方当场重建的结果（docs/50 §二 / docs/51）")
+    print("### asset gate：①上门的 %d 张出货 png == 切图/自绘配方当场重建；②上门的 %d 张 emote 两两分得开"
+          % (len(GATED), len(DISTINCT_SET)))
     print("  配方 %s + %s" % (_rel(SLICERS[0]), _rel(SLICERS[1])))
     print("  出货 %s/{%s}" % (_rel(ART), ",".join(SHIPPED_DIRS)))
 
     # ── 0. 采集配方 ─────────────────────────────────────────────────────────
+    # 采配方要 exec 配方本体，而配方本体的另一半是"往出货目录写 png"。所以先记下出货文件的
+    # (mtime, size)，采完再核一遍：**门不能修改它正要判的东西**（否则判据退化成 x→x，
+    # 而且会是那种"永远绿"的假绿）。这条是 I1 把自绘配方接进来之后新出现的风险。
+    def _snapshot():
+        snap = {}
+        for d in SHIPPED_DIRS:
+            dd = os.path.join(ART, d)
+            if not os.path.isdir(dd):
+                continue
+            for f in sorted(os.listdir(dd)):
+                if f.lower().endswith(".png"):
+                    p = os.path.join(dd, f)
+                    st = os.stat(p)
+                    snap["%s/%s" % (d, f[:-4])] = (st.st_mtime_ns, st.st_size)
+        return snap
+
+    before = _snapshot()
     recs, harvest_bad = harvest_recipes()
+    touched = sorted(k for k, v in _snapshot().items() if before.get(k) != v)
+    if touched:
+        bad("采集配方的过程**改写了出货文件**：%s\n"
+            "        门不能修改它正要判的东西 —— 那样比对就退化成 x→x，而且会永远绿。\n"
+            "        修法：tools/slice_all.py 的写盘分支必须受 `ASSET_GATE_HARVEST` 守住。"
+            % ", ".join(touched))
+    else:
+        ok("门自身无副作用：采集配方前后 %d 个出货 png 的 (mtime, size) 逐个未变" % len(before))
     for b in harvest_bad:
         bad("切图配方里有一条读不懂的命令：%s" % b)
     if not recs:
@@ -429,7 +570,7 @@ def main():
                 "        给上不了屏的素材上门 = 把死资产钉成「正确」（docs/50 §八）。"
                 "要么接线，要么把它挪进 NOT_GATED。" % (len(unreach), ", ".join(unreach)))
         else:
-            ok("可达性：上门的 10 张逐个在代码里可达"
+            ok("可达性：上门的 %d 张逐个在代码里可达" % len(GATED) +
                "（decor∈DECOR_POOL %d 项 / obj∈OBJ_SLOT_BY_TYPE %d 槽 / emote∈_emote_key %d 键）"
                % (len(facts["decor"]), len(facts["obj"]), len(facts["emote"])))
 
@@ -507,6 +648,7 @@ def main():
     same = 0
     reenc_same = reenc_cmp = 0
     details = []
+    shipped_imgs = {}
     for key in buildable:
         d, n = key.split("/", 1)
         path = os.path.join(ART, d, n + ".png")
@@ -516,6 +658,7 @@ def main():
         with Image.open(path) as raw:      # with：Windows 上不留悬挂句柄
             mode = raw.mode
             shipped = raw.convert("RGBA")
+        shipped_imgs[key] = shipped
         ndiff, notes, npx = compare(key, shipped, rebuilt[key])
         files_cmp += 1
         px_cmp += npx
@@ -555,7 +698,35 @@ def main():
             print("     （预期如此：出货这批当年被重新编码压缩过 —— 逐像素 %d/%d 同、逐字节 %d/%d 同。"
                   "拿字节判红 = 干净树全假红，docs/50 §二 坑①）" % (same, files_cmp, reenc_same, reenc_cmp))
 
-    # ── 6. 未上门的 16 张：只清点、只 WARN，绝不判红 ──────────────────────────
+    # ── 5b. 第 2 条性质：上门的 emote 两两必须分得开（I1 新增）────────────────────
+    dset = {k: shipped_imgs[k] for k in DISTINCT_SET if k in shipped_imgs}
+    if len(dset) < 2:
+        bad("两两可分判据拿到 %d 张 emote（<2）—— 一对都没比就打绿是假门" % len(dset))
+    else:
+        pairs = distinctness(dset)
+        src_min = min(p[2] for p in pairs)
+        grey_min = min(p[3] for p in pairs)
+        under = [p for p in pairs if p[2] < DISTINCT_SRC_FLOOR or p[3] < DISTINCT_GREY_FLOOR]
+        # 报最小值时把**并列在最小值上的所有对**一起报（docs/44 §一·六 的教训）
+        src_tied = ["%s|%s" % (a.split("/")[1], b.split("/")[1])
+                    for a, b, s, g in pairs if s == src_min]
+        grey_tied = ["%s|%s" % (a.split("/")[1], b.split("/")[1])
+                     for a, b, s, g in pairs if abs(g - grey_min) < 1e-9]
+        if under:
+            bad("有 %d 对 emote 分不开（地板 源≥%d / 28px灰度≥%.1f）：\n%s"
+                % (len(under), DISTINCT_SRC_FLOOR, DISTINCT_GREY_FLOOR,
+                   "\n".join("        · %s vs %s  源=%d  28px灰度=%.2f"
+                             % (a, b, s, g) for a, b, s, g in under[:8])))
+        else:
+            ok("两两可分：%d 张 emote 的 %d 对全部过地板"
+               "（源 min=%d ≥ %d，余量 %.2fx；28px 灰度 min=%.2f ≥ %.1f，余量 %.2fx）"
+               % (len(dset), len(pairs), src_min, DISTINCT_SRC_FLOOR,
+                  src_min / float(DISTINCT_SRC_FLOOR), grey_min, DISTINCT_GREY_FLOOR,
+                  grey_min / DISTINCT_GREY_FLOOR))
+            print("     ℹ  并列在最小值上的对 —— 源: %s ／ 28px灰度: %s"
+                  % (", ".join(src_tied), ", ".join(grey_tied)))
+
+    # ── 6. 未上门的 7 张：只清点、只 WARN，绝不判红 ───────────────────────────
     miss_ng = [k for k in sorted(NOT_GATED)
                if not os.path.isfile(os.path.join(ART, k.split("/")[0], k.split("/")[1] + ".png"))]
     if miss_ng:
