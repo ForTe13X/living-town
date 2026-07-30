@@ -27,10 +27,12 @@
 - **9 张 emote + obj/bath + obj/arcade（11 张）**：H1 判「读不出」——**先修再守**。
   现在钉住 = 把"九张一模一样的白气泡"钉成正确（最近的一对只差 6/400 像素，docs/51 §二·1）。
 - **decor/tree_big（1 张）**：H1 判「需要重切」（它是树冠图集碎片，不是一棵树）。
-- **building/{house,hut,shop} + decor/tree_small（4 张）**：H1 判「从不出现」。
-  `Art.building_tex()` **全仓零调用点**、`tree_small` **不在 `WorldView.DECOR_POOL` 里** ——
-  本文件每次运行都**重新核**这两条（见下面自证④），不是抄 docs/51 的结论。
+- **decor/tree_small（1 张）**：H1 判「从不出现」——**不在 `WorldView.DECOR_POOL` 里**。
+  本文件每次运行都**重新核**这一条（见下面自证④），不是抄 docs/51 的结论。
   给不上屏的素材上门 = 把一份死资产钉成"正确"，而它的正确处置是**接线或删掉**，两条路都会动到文件本身。
+- **~~building/{house,hut,shop}（3 张）~~ —— I2 2026-07-30 已按上面那句执行了「删掉」。**
+  它们不再属于"不上门"，改由 `DELETED` + `check_deleted()` 守着**不许回来**（那一节写清了为什么
+  "删完就不用管了"是错的：原来的棘轮查 `building_tex` 调用点，而**输入随函数一起没了**）。
 
 ## 硬判据 vs 软判据（**这一条与 art_gate.py 不一样，别照抄错**）
 
@@ -52,12 +54,16 @@
 4. **本门特有：范围自证（scoping）**。这道门最容易出的错不是判错，是**守错东西**，所以范围本身要机检：
    - 配方产出的每一张都必须落进**三张表之一**（`GATED` / `NOT_GATED` / `ELSEWHERE`），
      少一张就红。新资产必须有人**显式**决定守不守 —— 默认放行正是本波要拦的那个病。
+   - **这条自证是双向的，I2 实测踩了另一个方向**：把 `slice_visual.py` 的三行建筑配方删掉、
+     而 `NOT_GATED` 还写着它们 ⇒ `phantom` 臂当场红（「三张表里有 3 张配方根本产不出的图」，rc=1）。
+     ⇒ **删资产必须连表一起删**，否则表和配方漂开。这不是障碍，是这道门本来就该说的话。
    - `ELSEWHERE`（terrain 那 5 张归 `terrain_gate.py`）不是写死的转告：本门去核
      `slice_shore.LEGACY|SHORE` 里**真的还有它们**，没有就红。
    - **上门的每一张都必须在代码里可达**（decor 在 `DECOR_POOL`／obj 在 `OBJ_SLOT_BY_TYPE`／
      emote 在 `_emote_key` 的 return 行），从 `game/scripts/*.gd` 源码解析，解析到 0 条即判红。
-   - **"从不出现"那 4 张必须仍然不可达**（`building_tex` 零调用 + `tree_small` 代码里零命中）。
-     哪天有人把它们接上线，这条会红——**那正是该重新眼验、重新决定守不守的时刻**（棘轮，同 H3 的别名预算）。
+   - **"从不出现"的 `tree_small` 必须仍然不可达**（代码里零命中，注释不算）。
+     哪天有人把它接上线，这条会红——**那正是该重新眼验、重新决定守不守的时刻**（棘轮，同 H3 的别名预算）。
+   - **已删除的三张必须留在删除态**（`check_deleted()`：出货目录 / 切图配方 / `.gd` 非注释引用，三处都不许有）。
 
 ## 明确不做
 
@@ -91,6 +97,8 @@ ROOT = os.path.dirname(TOOLS)
 ART = os.path.join(ROOT, "game", "assets", "art")
 GD_DIR = os.path.join(ROOT, "game")
 SLICERS = (os.path.join(TOOLS, "slice_all.py"), os.path.join(TOOLS, "slice_visual.py"))
+# "building" 留在表里**是刻意的**，尽管 I2 删空了那个目录（目录已不存在，下面每处都 isdir 守着）：
+# 留着，出货目录里再冒出**任何**一张 building/*.png 都会被 stray 那条报出来（DELETED 只点名那 3 个）。
 SHIPPED_DIRS = ("emote", "decor", "obj", "building")
 
 # ── 上门的 10 张（docs/51 §三·4 的表；判据是 H1 的真机眼验，不是本文件的推断）───────────
@@ -116,9 +124,8 @@ NOT_GATED = {
     "obj/arcade": "读不出：真机读作「木牌/告示柱」，而广场 3 格外就是真告示板 —— 先重画再守",
     "decor/tree_big": "需要重切：它是 2x2 树冠【图集碎片】不是一棵树，156 格平铺成壁纸（docs/51 §二·3）",
     "decor/tree_small": "从不出现：不在 WorldView.DECOR_POOL 里（本门自证④每次重核）—— 该接线或删掉，不是该钉住",
-    "building/house": "从不出现：Art.building_tex() 全仓零调用点（本门自证④每次重核）",
-    "building/hut": "从不出现：同上",
-    "building/shop": "从不出现：同上",
+    # building/{house,hut,shop} 曾经在这里，理由是「从不出现：Art.building_tex() 全仓零调用点」。
+    # I2（2026-07-30）执行了这条注释自己开的第二条药方——**删掉**。它们现在归下面的 DELETED 管。
 }
 
 # ── 配方里还有 5 张 terrain —— 它们**已经有门了**（G5 的 tools/terrain_gate.py）────────────
@@ -133,6 +140,38 @@ ELSEWHERE = {
     "terrain/dirt": "terrain_gate.py（G5）",
     "terrain/water": "terrain_gate.py（G5）",
 }
+
+# ── 第四张表：**已删除**（I2 2026-07-30）───────────────────────────────────────────────────
+#
+# ## 为什么删掉之后还需要一张表——这一条是本次改动的全部要点
+#
+# 原来自证④靠 **`building_tex` 全仓零调用点** 守着 building 那 3 张「从不出现」的图。
+# I2 把 `Art.building_tex()` 连同 3 张 png 一起删了 ⇒ **那条判据的输入没有了**。
+# 它不会变红——它会**永远绿**，而这正是 docs/41 §2.5 第三个盲区的原话：
+#
+#   > 一道门可以【已经在 CI 里、已经是绿的】，却跑在一个它永远不可能变红的配置上。
+#
+# 精确一点（这一栏不许含糊，见下面 does_not_detect）：删掉之后那条 grep **不是全空真**——
+# 谁要是把 `func building_tex` 原样加回来再调用它，字符串还是会命中。
+# 但**最自然的复活写法**（直接 `Art.tex("res://assets/art/building/hut.png")`，因为 helper 已经没了）
+# 它一个字都看不见。⇒ 它守得住"照原样抄回来"，守不住"换个写法接上"。**这不叫棘轮，叫运气。**
+#
+# 所以换一条**还有输入**的判据：输入从"代码里有没有人调它"变成"**这三个名字有没有回来**"。
+# 三处任何一处出现即红：
+#   ① 出货目录里又有这个 png；
+#   ② 切图配方（slice_visual.py）又产得出它；
+#   ③ 任何 `.gd` 的**非注释**行引用 `building_tex` 或 `assets/art/building`。
+# 方向与原来的棘轮一致（悄悄复活会被拦下），守的东西换成了「删干净了」。
+#
+# ⚠️ ③ 为什么必须跳过注释：旧的 `bt_calls` **不跳**，于是 I2 在 `Art.gd` 里写下"为什么删掉它"的
+#    那段说明本身就把门弄红了（实测：`❌ building_tex 调用点 ['game/scripts/Art.gd:97']`，
+#    而 :97 是一行 `##`）。**一道门不该把解释它自己的文字判成违规。**
+DELETED = {
+    "building/house": "I2 2026-07-30 删除（16x64 图集竖条带，四边断口）—— docs/09 §1.1",
+    "building/hut": "I2 2026-07-30 删除（消费者早在 841d4c4 就被当作「比例失调」头号成因拆掉）—— docs/09 §1.1",
+    "building/shop": "I2 2026-07-30 删除（32x64 图集区域，内含六个橙顶石屋残片）—— docs/09 §1.1",
+}
+_DELETED_CODE_TOKENS = ("building_tex", "assets/art/building")
 
 
 def _rel(p):
@@ -325,12 +364,9 @@ def reachability(srcs):
     if not emote_live:
         errs.append("从 WorldView.gd 的 _emote_key() 里一个 emote 键都没解析到 —— 不能静默放行")
 
-    # 「从不出现」的两条判据（H1 §一★ 的原话，这里每次重跑）
-    bt_calls = []
-    for p, s in joined.items():
-        for i, ln in enumerate(s.splitlines(), 1):
-            if "building_tex" in ln and not re.match(r"\s*func\s+building_tex", ln):
-                bt_calls.append("%s:%d" % (_rel(p), i))
+    # 「从不出现」这一栏今天只剩 decor/tree_small 一张（building 那 3 张已由 I2 删除 ⇒ 归 check_deleted）。
+    # **这条臂的输入还在**：tree_small.png 仍然出货、仍然不在 DECOR_POOL 里 ⇒ 谁把它放回池子，这里就红。
+    # 也就是说自证④**没有**因为 building 那半边被删而变成空门——它少了一条臂，剩下的这条仍有活输入。
     ts_hits = []
     for p, s in joined.items():
         for i, ln in enumerate(s.splitlines(), 1):
@@ -338,7 +374,33 @@ def reachability(srcs):
                 ts_hits.append("%s:%d" % (_rel(p), i))
 
     return {"decor": decor_live, "obj": obj_live, "emote": emote_live,
-            "building_tex_calls": bt_calls, "tree_small_code_hits": ts_hits}, errs
+            "tree_small_code_hits": ts_hits}, errs
+
+
+def check_deleted(recs, srcs):
+    """DELETED 里的三个名字必须【三处都不在】。返回人话错误串列表（空 = 过）。
+
+    见上面 DELETED 的抬头：这是 building 那条棘轮**换了输入**之后的形态，不是补丁。
+    ③ 跳过注释行——否则"为什么删掉它"的说明会把门自己弄红（实测踩过一次）。
+    """
+    errs = []
+    for key in sorted(DELETED):
+        d, n = key.split("/", 1)
+        path = os.path.join(ART, d, n + ".png")
+        if os.path.isfile(path):
+            errs.append("出货目录里又出现了已删除的 %s" % _rel(path))
+        if key in recs:
+            errs.append("切图配方又产得出已删除的 %s（tools/slice_visual.py 里那三行被加回来了？）" % key)
+    hits = []
+    for p, s in sorted(srcs.items()):
+        for i, ln in enumerate(s.splitlines(), 1):
+            if ln.lstrip().startswith("#"):
+                continue                      # 注释不算引用（旧的 bt_calls 不跳注释，实测会假红）
+            if any(tok in ln for tok in _DELETED_CODE_TOKENS):
+                hits.append("%s:%d" % (_rel(p), i))
+    if hits:
+        errs.append("`.gd` 里又引用了已删除的 building 素材：%s" % ", ".join(hits))
+    return errs
 
 
 def check_elsewhere():
@@ -414,7 +476,8 @@ def main():
         ok("交接自证：记成「terrain_gate.py 管」的 %d 张，逐个仍在 slice_shore 的 LEGACY+SHORE 里（去问代码，不问注释）"
            % len(ELSEWHERE))
 
-    facts, rerrs = reachability(_gd_sources())
+    gd_srcs = _gd_sources()                  # 走一次树，两条判据共用（reachability + check_deleted）
+    facts, rerrs = reachability(gd_srcs)
     for e in rerrs:
         bad(e)
     if facts:
@@ -433,15 +496,25 @@ def main():
                "（decor∈DECOR_POOL %d 项 / obj∈OBJ_SLOT_BY_TYPE %d 槽 / emote∈_emote_key %d 键）"
                % (len(facts["decor"]), len(facts["obj"]), len(facts["emote"])))
 
-        bt, ts = facts["building_tex_calls"], facts["tree_small_code_hits"]
-        if bt or ts:
-            bad("「从不出现」那 4 张不再是死的了：building_tex 调用点 %s；tree_small 代码命中 %s\n"
+        ts = facts["tree_small_code_hits"]
+        if ts:
+            bad("「从不出现」的 decor/tree_small 不再是死的了：代码命中 %s\n"
                 "        这不是坏事，是**该重新眼验、重新决定守不守**的时刻（docs/50 §八：正确处置是接线或删掉）。\n"
-                "        处置：眼验后把它们从 NOT_GATED 挪进 GATED，或明确删掉这几张 png 与配方行。"
-                % (bt or "0", ts or "0"))
+                "        处置：眼验后把它从 NOT_GATED 挪进 GATED，或像 I2 对 building 那样明确删掉 png 与配方行。" % ts)
         else:
-            ok("死资产仍然是死的：`building_tex` 全仓 .gd **零调用点**、`tree_small` 代码里**零命中**"
-               " ⇒ building/{house,hut,shop} + decor/tree_small 这 4 张继续不上门（本门每次重核，不是抄结论）")
+            ok("死资产仍然是死的：`tree_small` 代码里**零命中**（非注释行）⇒ decor/tree_small 继续不上门"
+               "（本门每次重核，不是抄结论）")
+
+    # ── 1b. 已删除的三张必须留在删除态（I2；见 DELETED 抬头：这条替换了原来那条输入已消失的棘轮）──
+    del_errs = check_deleted(recs, gd_srcs)
+    for e in del_errs:
+        bad("%s\n"
+            "        这三个名字是 2026-07-30 **蓄意删掉**的（docs/09 §1.1：消费者早在 841d4c4 就被当作\n"
+            "        「比例失调」的头号成因拆掉，剩下两张还是图集断口条带）。要复活得先解决尺度问题，\n"
+            "        再走「新素材必须显式进 GATED」那条路 —— 不是把配方行悄悄加回来。" % e)
+    if not del_errs:
+        ok("删除态自证：building/{house,hut,shop} 三处皆无 —— 出货目录 0 张 / 切图配方 0 条 / `.gd` 非注释引用 0 处"
+           "（棘轮换了输入，不是没了：原来那条查 `building_tex` 调用点，而它的输入已随函数一起删除）")
 
     # ── 2. 当场重建 + 来源自证（自证①）──────────────────────────────────────
     buildable = sorted(GATED & set(recs))
