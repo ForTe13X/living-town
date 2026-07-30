@@ -8,21 +8,31 @@
 
 The game keeps running when the model is unavailable. Network failures, timeouts, or invalid outputs fall back to rule decisions, so model integration changes presentation rather than state reliability.
 
-![Living Town · live demo](docs/media/town_demo.gif)
+![Living Town · current build](docs/media/town_waveG.gif)
 
-> Recorded on a physical Android device (`logic` backend): after nightfall, residents keep appointments, chat, spread gossip, and fall out — every step driven by the same deterministic social engine.
+> Desktop capture (`logic` backend, demo camera `--demo-cam`, native 1280×768, 5 fps × 6 s).
+> Night into morning: residents eat, chat, spread gossip and fall out. Bottom-left is the **Town Chronicle**
+> (engine events written as prose, not printed enum ids); the observatory on the right shows the selected
+> resident's **job / shift / wage / five needs**.
+> Recipe: `tools/record-godot.sh` for 45 s → `tools/make_gif.sh <mp4> <gif> 1 5 31 6`.
+> **Integer-only downscaling** is a rule this pipeline measured for itself: the GIF this README used to lead with
+> was 680×408 — a 0.53125× *non-integer* scale — and the measurement also falsified the premise that going integer
+> would make the HUD text readable. The only setting that buys readability is 1× (five-row comparison table in the
+> header of `tools/make_gif.sh`).
 
 ![Living Town cover](docs/media/cover.png)
 
 ## Current State
 
-The **world and social systems** below all ship, and each has a CI gate behind it — the ones citing an invariant number are guarded by [`game/bench/Invariants.gd`](game/bench/Invariants.gd), the rest by the data lint, map audit, and 6 integration scenes in `tools/ci.sh`. The last three entries (shell, backends, inference latency) are measurements, not invariants.
+The **world and social systems** below all ship, and each has a CI gate behind it — the ones citing an invariant number are guarded by [`game/bench/Invariants.gd`](game/bench/Invariants.gd), the rest by the data lint, map audit, art gate, voice-coverage gate and 9 integration scenes in [`tools/ci.sh`](tools/ci.sh). The last three entries (shell, backends, inference latency) are measurements, not invariants.
 
 - **Deterministic social substrate**: greetings, gifts, gossip, invitations, confrontation, apologies, relationship ledgers, belief boundaries, promises, conflicts, and resolution flow. Relationship changes are linked back to events, so the system can explain why a resident is angry or trusting.
 - **A generated town**: a 64×48 grid with 8 districts where **walkability is authoritative data** and pathfinding is a deterministic A\*. `tools/audit_map.py` is a CI gate built for exactly this — it checks typed-layer consistency, full reachability, that every piece of furniture has a reachable interaction tile, that districts have ≥2 distinct routes, and that festival objects spawned for the day land on legal, reachable tiles too.
 - **Multi-floor interiors**: all seven buildings have data-driven interiors (`game/data/interiors.json`); residents actually walk in, go upstairs, and go home to sleep. Not a backdrop.
 - **Jobs, shifts and wages**: `game/data/jobs.json` + `skills.json`, with skill level feeding wages.
-- **A money economy**: prices, wages, a town treasury, a poverty line. Guarded by **hard** invariants #34 (money conservation) and #35 (non-negative balances, no overdraft).
+- **The division of labour has somewhere to happen**: carpenter / handyman / fisherman / teacher each have their own worksite; the vendor converts town-level stock into goods an individual can buy (measured at **141-165 `transfer`s per seed per 60 days**, roughly **15%** of all meals in town); the street cleaner closes his own loop on the cleanliness level (plaza clean → he goes and plays; below roughly **45%** → he sweeps).
+  > This bullet used to be false, and it stayed false **after someone had eyeballed it**: *every single* "do work" action in the whole town happened on **one tile**, `desk_1[40,31]` (152-186 times per 60 days), shared by four jobs — including **a fisherman fishing at a carving bench**; and the new worksites' ids matched no sprite slot, so they **shipped as missing-texture placeholders printing raw data keys onto the grass**. Both were found by measurement in a later baton. See [docs/48 §一·五](docs/48-wave-f-plan.md).
+- **A money economy**: prices, wages, a town treasury, a poverty line. Guarded by **hard** invariants #34 (money conservation) and #35 (non-negative balances, no overdraft). Person-to-person money is not just the vendor: `transfer(tenant, landlord, rent)` runs every night, and `housing.json` holds **8 registered leases** ([docs/48 §一·五](docs/48-wave-f-plan.md)).
 - **Weather and seasons**: types and utility multipliers in `game/data/weather.json`.
 - **Festivals**: world objects spawn and despawn on schedule; hard invariant #36 guards pairing with no residue.
 - **Elections**: periodic votes; hard invariant #37 guards tally consistency.
@@ -31,14 +41,40 @@ The **world and social systems** below all ship, and each has a CI gate behind i
 - **Three AI backends**: `logic` for pure rules, `llm` for local OpenAI-compatible services, and `slm` for embedded GGUF inference through NobodyWho. All backends run the same engine and can fall back safely.
 - **Measured local inference**: Qwen2.5-1.5B-Q4 through embedded SLM runs in roughly 1-2.5 seconds on tested consumer GPU/APU machines; 3B is around 2.9 seconds. Startup probes set deadlines from the current machine.
 
-**What is not there yet** (see [docs/05](docs/05-路线图与里程碑.md), [docs/43](docs/43-wave-c-plan.md)):
-**no goal, no onboarding, no session shape** — nothing calls the player back at minute three, and that is the biggest one;
-the phone still loses **24.6% of the screen to letterboxing** (`aspect=keep`; `expand` black-screened the real device and was rolled back — measured content area x=331..2356);
-the cast has only **ten distinct faces** (two pairs of the twelve residents share a sheet), and **阿梅 still has no clothes** ([docs/44](docs/44-art-direction.md));
-**nobody has put on headphones and listened to the audio** — every claim about it is an RMS figure or a window count;
-and **nobody has pressed the touch action bar on a real device**.
+**What is not there yet** — **this section was rewritten from the latest wave's measurements, not carried over** (see [docs/05](docs/05-路线图与里程碑.md), [docs/49](docs/49-wave-g-plan.md)):
+
+- **No goal, no onboarding, no session shape** — nothing calls the player back at minute three. **This is still the biggest one**,
+  and three reviews (an external adversarial model plus two independent read-only agents, all instructed to refute)
+  returned the same verdict: **"it looks meaningfully better, and nobody would still play it."** ([docs/43](docs/43-wave-c-plan.md))
+- **The town's two ponds are flat single-colour stickers.** A 110×70 px sample on a real-device frame is **7700 px of exactly one colour**;
+  `game/assets/art/terrain/water.png` is **16×16 with 1 colour**, while `grass_b` / `grass_flowers` in the same folder have **4 each**;
+  water has **only that one tile** — no variant, no shoreline transition ⇒ two 8×5 bodies of water render as **hard 90° single-colour rectangles**
+  pasted onto the grass with no shoreline at all. **The irony**: `WorldView`'s water layer has a *better-looking* fallback path
+  (draw deep-water colour and dot in static ripples when the texture is missing) — **it can never run, because the texture exists**.
+  A worse asset turned better code into dead code. This is not a regression from this wave; `water.png` has not changed since 27 June —
+  **nobody had ever looked at a real-device frame with fresh eyes.** ([docs/49 §六](docs/49-wave-g-plan.md))
+- **The new art gate covers one tenth of the art.** It guards the **10** character sheets in `game/assets/art/pro/`;
+  there are **31 more shipped pngs** under `game/assets/art/` (emote 10 / decor 8 / terrain 5 / obj 5 / building 3)
+  with **no gate at all**. ([docs/49 §七](docs/49-wave-g-plan.md))
+- **The art defect fixed last wave is invisible to a human at 2×.** After 144 px of outline was completed,
+  **40 pixels changed out of 983040 in-engine (0.0041%)**; in a true 2× side-by-side, **five pairs were indistinguishable**,
+  and it only becomes visible at **8×**. What it bought was contrast (a cap brim against the noon ground colour goes **2.00:1 → 7.91:1**),
+  but in the same batch Archer-Green's twin tails **already had 6.77:1** ⇒ **the value of those pixels is uneven; roughly half is ceremonial**.
+  The baton that did the work also volunteered that two of its choices were made **to dodge a tie in the metric** —
+  metric-driven, not picture-driven. ([docs/13](docs/13-实验札记-experiment-journey.md), 2026-07-30 afternoon §五)
+- **The ten silhouettes are now pairwise distinguishable, but the floor is stuck.** The minimum is exactly **120 px**, and **two pairs tie at it**;
+  enumerating 16 add-outline / recolour combinations, **not one could raise that floor** (both bottlenecks run through the same sheet,
+  which was not on the repair list) ⇒ that acceptance criterion could only ever mean "don't break it". Twelve residents still share those ten sheets,
+  and **阿梅 still has no clothes**. ([docs/49 §二](docs/49-wave-g-plan.md), [docs/44 §一](docs/44-art-direction.md))
+- The phone still loses **24.6% of the screen to letterboxing** (`aspect=keep`; `expand` black-screened the real device and was rolled back).
+  Re-measured this wave on a Wave G device frame: on a 2688 px-wide screen the **content area is x=331..2356 and the pure-black bars are 662 px = 24.6%**. ([docs/46 §二·九](docs/46-wave-d-plan.md))
+- **Nobody has put on headphones and listened to the audio** — every claim about it is an RMS figure or a window count.
+  The plan states explicitly that this one **can only be done by a human and will not be faked**. ([docs/48 §三](docs/48-wave-f-plan.md))
+- The touch action bar has CI assertions (`player_touch_test`: button path ≡ key path), but **nobody has pressed it on a real device**.
 
 > Wave C (2026-07-26) closed six items previously listed here: the silence, the player verbs stuck behind a `--player` flag, the opening camera showing 14% of the map, the 58% of the whole-town view that was the engine's default clear colour, residents teleporting 12.5×/second, and seasons and weather rendering pixel-identically.
+> Waves F/G closed two more: **four worksites shipping as placeholder boxes**, and **12 personas × 111 (persona, action) pairs sharing one set of 12 generic lines**
+> — which was not *silence* but **loss of persona voice wearing the costume of "dialogue works fine"**: `aid` 29/29, `confide` 22/22 and `rally_oust` 61/61 bubbles all came from those 12 lines.
 
 Demo videos, newest build first:
 
@@ -50,23 +86,31 @@ Demo videos, newest build first:
 - [A 70B model as the director layer](docs/media/director_70b_demo.mp4) (1:06)
 - [Player agency](docs/media/player_agency_demo.mp4) (0:30)
 
-![Current build: the town under the demo camera](docs/media/town_chronicle.gif)
+![Full device frame: the town in Wave G](docs/media/device_waveG_town.png)
 
-> Desktop capture, `logic` backend, **with the demo camera** (`--demo-cam`) (native 1280×768, [full 1:10 clip with sound](docs/media/town_wavec_demo.mp4)).
-> Bottom-left is the **Town Chronicle**: what the engine does is split into "big news" and "recent", written as prose
-> (`苏琴 rallied 1 person to pressure 可可`) instead of printing raw event enum ids — betrayals, pacts, elections,
-> grudges and reconciliations all surface on their own.
-> The day-night lighting is itself new: until 2026-07-26 **the screenshot tool could never render night at all**, so every
-> "this looks too bright / too dark" judgement in this project's history rested on a broken instrument (see the honesty note below).
+> **A whole frame from the phone** (NX789J / Android, `livingtown-waveG.apk`, 2688×1216). Day 2, 18:17 dusk · spring, clear · NPC 12 · 86 events;
+> the chronicle panel is telling 2 of 11 story arcs. The bathhouse tub and woodpile and the workshop's two benches are real sprites —
+> **not one placeholder box, not one raw data key on the grass.**
+> This image is **also the evidence for two of the entries in "What is not there yet" above**: the pure-black bars left and right are that 24.6%,
+> and the two cyan rectangles with perfectly straight edges, top and bottom of the map, are the "ponds".
+> **The whole frame is published deliberately**, because the recurring visual failure in this project has been exactly
+> "only point samples were taken; nobody ever looked at a whole frame" (see Technical Highlight 7).
 
 ![The café at night](docs/media/wavee_town_night.png)
 
 > A still from the same build (day 6, 09:36 — it is **morning, not noon**; the old filename `wavec_town_noon` was wrong and has been corrected). The map is no longer a rectangle sitting in a grey void — its edge passes through a 3-tile
 > luminance ramp, a low stone wall and a drainage ditch before sinking into forest, dropping the maximum adjacent-pixel
-> luminance step across the boundary from **131.54 to 2.92**. The observatory on the right collapses to a single hint by
+> luminance step across the boundary from **131.54 to 2.92** — **that figure is scoped to seed 3 / tick 600 / spring**, not
+> "holds in all four seasons" ([docs/48 §三](docs/48-wave-f-plan.md): the author's own "not measured" note said "never rendered
+> outside spring"). The instrument used for the later cross-season re-check now lives in `tools/seam.py`, whose header records a
+> more expensive lesson: **in the rain, `cross.max` gets punctured by a single raindrop, so any criterion must sit on `p90`.**
+> The observatory on the right collapses to a single hint by
 > default; the full dossier (relations, conflicts, memory, faction, pacts, secrets, attitudes, beliefs) is one tap away.
 
 Older clips, kept for history (they look noticeably different from the current build):
+[the Wave C demo-camera GIF](docs/media/town_chronicle.gif) (680×408 — **non-integer downscale, HUD text unreadable**; the one at the top is the fixed version) ·
+[Wave C full 1:10 clip with sound](docs/media/town_wavec_demo.mp4) ·
+[an earlier Android device capture](docs/media/town_demo.gif) ·
 [main demo, 3:52, Chinese narration with bilingual subtitles](docs/media/living_town_demo.mp4) ·
 [factions and alliances](docs/media/s3_social_demo.mp4) ·
 [embedded SLM on desktop](docs/media/slm_gpu_demo.mp4) ·
@@ -88,6 +132,11 @@ A stronger red line: **rendering may follow the camera, but the simulation LOD t
 **2. An observation-independent aggregate LOD (the focus of this stage).**
 Scaling the town to hundreds of residents means reducing fidelity for distant ones; the hard part is that a conventional LOD keyed on camera distance would make history depend on the observation path, breaking the determinism red line above. So the full-detail cohort is chosen entirely from committed simulation state (who is doing work / a stateless rotation / near the player), never from the camera (the one older conservative branch that dims by camera radius is bench-diagnostic only, not shipped). It passes six checks: byte-identical when off, **camera-path invariance** (5 fixed `lod_focus` values → one digest), deterministic across save/load and fresh-vs-restart, hard invariants at scale, honest cost, and a liveness floor — of which camera-path invariance and determinism are wired into CI as permanent gates.
 > Stated honestly: this is an **observation-independent prototype**, not "hundreds of NPCs delivered." Microsecond profiling on a real phone showed the two dominant costs are **the sim tick (~64ms) and per-agent/social drawing (~60ms)** — together roughly ¾ of the frame — with the rest being per-frame overhead and a small amount of static redraw. The LOD only cuts the sim-tick part, so it is not a sufficient fix; the other half needs render culling. The methodological lesson (in [docs/33](docs/33-viewer-independent-lod-delivery.md)): **don't infer the bottleneck, instrument and measure it** — I misjudged the single bottleneck three times; even then, while writing this up I still mislabeled the un-measured third as "static redraw," and only caught the over-attribution because the whole N=12 frame is just 11ms.
+> The current device reading (the first time Wave C's audio/touch, Wave D's night lighting and frame time, and Wave E's
+> production loop and palette all ran together on one handset): day 48 · **winter, rain** · ×1 · NPC 12 · 2033 events ·
+> 87 conflicts (44 live) · 2903 draws · 97 nodes · 85MB ⇒ **FPS 83 · 12.0ms**. For comparison, before the frame-time
+> baton the same depth read **11 FPS**. **This reading is still pressed against a roughly 90Hz refresh ceiling**, so it is
+> evidence of "good enough", not evidence of headroom. ([docs/48 §二·一](docs/48-wave-f-plan.md))
 
 **3. Decision and expression are decoupled: the model never mutates world state.**
 The engine enumerates legal candidates; the model only reads candidates and context and returns one candidate index plus optional dialogue. The world advances purely through the deterministic engine — the model never writes state directly. Invalid output, timeout, or a missing model all fall back safely to rules. The presentation layer is swappable (canned lines / local SLM / cloud LLM) without changing the reliability of the world.
@@ -96,7 +145,7 @@ The engine enumerates legal candidates; the model only reads candidates and cont
 Gossip spreads third-party reputation → consensus forms → it can escalate into collective avoidance; disagreement crystallizes into factions; mutual-aid pacts carry GTFT-style forgiveness. None of this is scripted — it emerges from rule interactions, and every step traces back to a concrete event, so the system can explain why a resident is angry or trusts someone.
 
 **5. Invariant regression gates plus a shadow counterfactual probe.**
-A 30-day soak checks 37 social invariants (belief provenance, promise settlement, money conservation, private-channel secrecy, and more) — **23 hard and 14 soft**, split in [`game/bench/Invariants.gd`](game/bench/Invariants.gd) under `HARD_IDS`. Going further, a "shadow probe" measures — **without changing the trajectory** — exactly which decisions an intervention flips, turning "does this mechanism actually matter" from anecdote into a number.
+CI defaults to 12 seeds × 60 days and checks **40** social invariants (belief provenance, promise settlement, money conservation, private-channel secrecy, and more) — **25 hard, 14 soft, 1 diagnostic**. **The authoritative list is the code**: `HARD_IDS` and `DIAG_IDS` in [`game/bench/Invariants.gd`](game/bench/Invariants.gd) (those three numbers are simply counts of them). Going further, a "shadow probe" measures — **without changing the trajectory** — exactly which decisions an intervention flips, turning "does this mechanism actually matter" from anecdote into a number.
 > Stated honestly: **#15 "emergent ostracism" is a known-leaky metric and is reported, not gated** — it picks the worst-reputation resident from *final* standing but computes their acceptance rate over the *entire* log, which is temporal leakage. After the leak was fixed, #15v2 came back INCONCLUSIVE on all 126 seeds, so the conclusion was to **add no mechanism** and not to gate on it. Full chain in [docs/31](docs/31-15-resolution.md).
 
 **6. On-device SLM: from a 16GB leak to a phone that actually produces decisions.**
@@ -174,10 +223,65 @@ discipline to what is *on screen*. A wave of parallel visual work on 2026-07-26 
 Full account in [docs/43](docs/43-wave-c-plan.md) (per-baton receipts and the falsified criteria) and
 [docs/13](docs/13-实验札记-experiment-journey.md) (the journal).
 
+**8. A whole wave spent on one question: "under what circumstances does this gate go red?"**
+"The gate is green" was never evidence. On 2026-07-30 three **long-green** gates were taken apart, and each one only counted
+once a negative control had been **watched going red**. The three broke in three different ways — and none of them was
+an implementation bug. **The criterion itself was wrong.**
+
+| Gate | What was wrong | Negative control | Result |
+|---|---|---|---|
+| **#39** "production traced to an **on-shift** job" | **Half the name had no code behind it** — it never read the event's `tick`, never called `_in_shift` | delete the shift check inside `_produce_for` | before the fix `hard_fails: []`, after the fix `hard_fails: [39]`; the two arms have an identical `digest` ⇒ observation-side change only |
+| **#40** "production loop liveness" | **Coarser than the property it guards** — it judged the town-wide total, so four of five goods could die and it stayed green | delete the teacher→storybook production | green before tightening; after tightening to per-good it reports `[broken-chain good] 话本(P=0,C=3)` |
+| `story_test` **ledger consistency** | **The criterion has teeth, but they cannot reach the horizon CI runs** | replace `closed_count()` with the naive form its own comment warns against | **green at 14 days, red only at 150 (32 vs 1085)** |
+
+- **Measure the margin before tightening.** Before #40 was tightened, per-good totals were taken over 12 seeds × 60 days:
+  the number of seeds where **either side was 0 is 0/12**, the thinnest cell being beans at `P=4` ⇒ `">0"` has margin.
+  **If some good were legitimately 0 on some seeds, tightening would just manufacture a randomly-red fake gate.**
+- **The `story_test` one was the hardest to see because it had been confessing all along**: every run printed
+  `ledger consistency: … (0 arcs trimmed, which does not affect this)`. `MAX_CLOSED = 32`, CI's horizon is 14 days,
+  and a run only closes 2-4 arcs ⇒ **the thing being guarded had never once happened in CI**.
+  The fix is not to run CI for 150 days (3 minutes a run) but a millisecond synthetic fixture whose **first assertion proves
+  that trimming actually occurred**. ⇒ **The zero next to the green tick carries more information than the tick**:
+  `0 arcs trimmed`, `N=12`, `backend=null` are all confessions of what a run did *not* cover.
+- **The honest boundary, stated**: #39's negative control only pushed **two** jobs out of shift, not eight — that shift check is
+  **redundant** for most jobs. So it can catch "one job starts producing all night" but **not** "every job does".
+  **The tooth is real, but not as wide as the name sounds.**
+
+The same wave **added** two gates, covering two classes of asset where until then *nothing would have gone red if you changed them*:
+
+- **The art gate** (`tools/art_gate.py`, CI step 2b): the shipped `game/assets/art/pro/` must equal what is **rebuilt on the spot
+  from `library/`**. Deliberately **not** "a checksum manifest matches" — that kind of gate can be passed by updating the manifest,
+  which is exactly what someone sneaking a pixel through would do next. **Six branches were each watched going red** (measured, not argued).
+  It also self-certifies three things on every run: ① the rebuild read 10 files from `library/` and **0 from `pro/`**, so it is independent
+  of what ships; ② injecting a 1 px perturbation into a reachable frame must make the comparator report "1 px differs" **and name the sheet**;
+  ③ it prints how much it actually scanned — this run: **10/10 sheets pixel-identical, 1,966,080 pixels / 7,864,320 bytes compared**.
+  *The third is not decoration: printing ✅ next to a zero is a recurring disease in this repo.*
+  (The hard criterion is the **decoded RGBA** only; PNG container bytes are printed but never reddened — they track the zlib/Pillow version,
+  and *a gate that goes red on someone else's machine for environmental reasons is worse than no gate: it trains everyone to ignore red.*)
+- **The voice-coverage gate** (`game/bench/VoiceGate.gd`, CI step 4f): every candidate action that is **offered** must have a line
+  in that persona's own voice (the denominator is "offered", not "chosen", or the gate's discriminating power fluctuates at random).
+  The grid was measured, not guessed: **seeds 1-3 × 60 days**, reading **293 pairs / 31 distinct actions** when the gate was written,
+  while a 20-day grid **misses 3 actions** — and the missed ones are precisely the high-risk "nobody ever wrote a line for it" region.
+  (On today's tree the same cell reads **297 pairs / 34 actions** — **the action set moves**, which is the point of the next bullet.)
+- **★ This gate sat an unrehearsed exam on the day it landed.** It was written against the action set *as it then was*; after it was
+  committed, another baton merged and added `打渔 / 授课 / 劈柴` — three actions that **did not exist when the gate was written**.
+  The gate reported them pair by pair: `dan|劈柴 offered 832×  ·  hai|打渔 704×  ·  shu|授课 1238×`.
+  **Nobody pointed it at those three.** It is the first time in this project a gate caught something **outside the negative control
+  designed for it** — which is the whole difference between a green tick and a gate.
+- **The coverage floor is deliberately 250, not the measured 293, and certainly not "all 31 actions must be present"**: another baton
+  was at that moment deciding whether to retire a job, and deleting a job **legitimately** removes actions and pairs. Pinning the floor
+  to the measured value would plant a false red under a legitimate deletion. **Better to under-report one shrinkage than to falsely
+  redden one legitimate removal.** — **And that decision paid off immediately**: once the three new actions merged, the same cell grew
+  from 293/31 to **297/34**. The floor of 250 still has margin, whereas a gate pinned at 293, or at "all 31 actions", would have
+  **falsely reddened** right here.
+
+Per-gate receipts in [docs/48 §四/§五/§六/§七](docs/48-wave-f-plan.md); the distilled lessons in [docs/13](docs/13-实验札记-experiment-journey.md) (two entries dated 2026-07-30).
+
 ## Engineering Design
 
 1. **The model does not mutate state directly.** The engine enumerates legal candidates; the model returns a candidate index and optional dialogue. Invalid output, timeout, or missing service falls back to deterministic rules.
-2. **Invariants act as regression gates.** The 30-day soak checks 37 properties of the simulated society, including belief provenance, promise settlement, apology flow, reputation effects, private-channel secrecy, money conservation, and no overdraft. **The authoritative list is the code**: [`game/bench/Invariants.gd`](game/bench/Invariants.gd) (each check carries an id, a name, and a failure detail string). Methodology in [docs/08](docs/08-测试与验证.md).
+2. **Invariants act as regression gates.** The soak checks **40** properties of the simulated society, including belief provenance, promise settlement, apology flow, reputation effects, private-channel secrecy, money conservation, and no overdraft. **The authoritative list is the code**: [`game/bench/Invariants.gd`](game/bench/Invariants.gd) (each check carries an id, a name, and a failure detail string). Methodology in [docs/08](docs/08-测试与验证.md).
+   **But "there is an invariant for it" does not mean "it is guarded"** — three of them were just proven to have had no discriminating power for a long time; see Technical Highlight 8 above.
 3. **Event sourcing enables replay.** Randomness is derived from `seed + tick + salt + agent` (`_rng_at` builds a fresh RNG per call, seeded purely from those inputs — it is stateless), without wall-clock time or global random state. The same seed produces byte-identical summaries, and the replay observatory rebuilds the world from any tick — **scoped to the zero-model logic floor with no player intervention** (with a non-logic backend, or a player in town, it rebuilds a different history; measurements and gate in the callout under Technical Highlight 1 and [docs/47 §三·七](docs/47-wave-e-plan.md)).
 4. **Godot is the authority; the Node port is a historical cross-check.** [`tools/sim_social_port.mjs`](tools/sim_social_port.mjs) once mirrored the M1-S3 social core for second-scale iteration and self-checked **33 assertions** (corresponding to engine invariants #1-#33), and genuinely did establish that the logic is robust to the RNG implementation (the port uses mulberry32, Godot uses `RandomNumberGenerator`; the numbers differ and the properties hold on both sides). **It was formally retired on 2026-07-26** ([docs/39](docs/39-node-port-disposition.md)): its logic froze on 2026-07-03 and broke two days later when the cast went 6→12, and it **never compared state** with the engine (both sides merely run their own trajectory). It is red on 7 of 12 seeds today. **Do not treat it as validation.**
    But **it is not the current gate**, and the specifics matter: it has **no coverage** of #34-#37 (money conservation, non-negative currency, festival pairing, election tally), it is **not byte-comparable** with Godot, it is **not invoked by `tools/ci.sh`**, it has **not been updated** since the 2026-07-03 initial public snapshot, and **it is currently red on some seeds** (`--seed 20260626 --days 30` exits 1; seeds 1 and 42 still pass 33/33). Line-by-line comparison in [docs/08 §1](docs/08-测试与验证.md). **There is exactly one regression gate, and it is on the Godot side.**
@@ -192,9 +296,18 @@ Requires [Godot 4.6+](https://godotengine.org/) (the project declares `config/fe
 GODOT=/path/to/godot bash tools/ci.sh
 ```
 
-Nine steps: the copyright red line (no weights or binaries anywhere in the tracked tree), data lint, map audit, markdown link lint, Godot parse smoke, the **S0 invariant gate** (37 invariants × 12 seeds × 60 days, a determinism triple-run, a **committed golden** cross-process anchor, a **per-tick prefix hash chain**, and suite-level liveness), the LOD observation-independence gate, the **DetGate scenario-determinism gate** (default/faction/betray/freerider), and 6 integration scenes. Any red step exits 1.
+**Fourteen steps** (numbers are the step ids inside `tools/ci.sh`): `0` the copyright red line (no weights or binaries anywhere in the tracked tree), `1` data lint, `1b` map audit, `2` markdown link lint, `2b` the **art gate** (shipped `pro/` == rebuilt on the spot), `3` Godot parse smoke, `4` the **S0 invariant gate** (40 invariants × 12 seeds × 60 days, a determinism triple-run, a **committed golden** cross-process anchor, a **per-tick prefix hash chain**, and suite-level liveness), `4b` the LOD observation-independence gate, `4c` the **DetGate scenario-determinism gate** (default/faction/betray/freerider), `4d` BackendGate, `4e` ModelPathGate, `4f` the **voice-coverage gate**, `5` 9 integration scenes, `6` the visual gate (day/night instrument, out-of-bounds repaint, space round-trip; **it SKIPs rather than falsely reddens when no rendering environment is available**). Any red step exits 1.
 
-> ⚠️ One honest boundary: CI pins `Sim.backend=null`, so **those hard invariants have never been checked on the model path** — and under `backend=slm`, #01 (no starvation) is violated in 8 of 8 seeds ([docs/38](docs/38-does-the-decision-path-earn-it.md)). Red line #2 (playable with no model) is safe, but "red line #1 still holds with the model on" is an **untested inherited assumption**.
+> ⚠️ One honest boundary, **now narrower but not gone**: the golden, LOD and DetGate steps all pin `Sim.backend=null`,
+> so `AIBackend.decide()` is never entered and their green **asserts nothing about the model path**.
+> Step `4d` BackendGate exists for exactly this: it guards the hard invariants (including #01) on the external-backend
+> commit path using a **deterministic `random` backend** (indices from the project's own seeded stream, latency counted in
+> ticks ⇒ byte-for-byte re-runnable, which the gate machine-checks on every run).
+> **What is still not covered is `slm` itself** — it has run-to-run noise and by design never enters CI.
+> `tools/ci.sh` also records the reverse honesty in its own comment at 4d: that gate's "closed-set" arm is **structurally
+> incapable of escaping** on the `random`/`slm` arms, so the green it prints is **tautological, not evidence** — it is a
+> **regression gate** for future backends, not a certificate that the existing ones were verified.
+> Full chain: [docs/45](docs/45-external-backend-invariant-gate.md), [docs/38](docs/38-does-the-decision-path-earn-it.md).
 
 Windowed mode:
 
@@ -246,17 +359,22 @@ docs/                  Design, architecture, review notes, measurements, and exp
 | [07 社交底座](docs/07-技术文档-社交底座.md) | Social transactions, relationships, beliefs, promises, and conflicts |
 | [08 测试与验证](docs/08-测试与验证.md) | The invariant gate, hard/soft split, a runtime-coverage comparison, and reproduction steps |
 | [11 部署实测](docs/11-LLM部署实测对比与选型.md) | Measured latency across machines and model sizes |
-| [13 实验札记](docs/13-实验札记-experiment-journey.md) | A 995-line process journal: findings, tricks, traps — **and retracted conclusions** |
+| [13 实验札记](docs/13-实验札记-experiment-journey.md) | A process journal: findings, tricks, traps — **and retracted conclusions** |
 | [18 Android APK build](docs/18-android-apk-build.md) | Building an arm64 APK with an on-device SLM for Snapdragon 8 Elite |
 | [31 #15 resolution](docs/31-15-resolution.md) | A residual that looked like a mechanism defect, proven to be a measurement artifact → add nothing |
 | [33 Viewer-independent LOD](docs/33-viewer-independent-lod-delivery.md) | An LOD where the camera never feeds the sim, plus the "don't infer the bottleneck, instrument it" lesson |
 | [34 On-device SLM hang and leak](docs/34-slm-device-hang-leak.md) | 16GB native leak → use-after-free → pooled worker → device GPU/CPU A/B → CPU by default on Android |
+| [41 Baton contract](docs/41-baton-contract.md) | The shared constraints for every parallel sub-task: four red lines, statistical discipline, extra clauses for visual work — **and the requirement that every report contain a section on where its own brief was wrong** |
+| [48 Wave F](docs/48-wave-f-plan.md) | Giving the division of labour somewhere to happen; taking three long-green gates apart with negative controls; the voice-coverage grid |
+| [49 Wave G](docs/49-wave-g-plan.md) | Art was the one asset class in this repo with no gate at all; the device eyeball that found "the two ponds are flat single-colour stickers" |
 | [`bench/bakeoff/README.md`](bench/bakeoff/README.md) | A 3-command reproducible distillation bake-off plus two honest negative results |
 
-**A themed index of all 33 numbered documents is in [docs/README.md](docs/README.md).** Documentation is primarily in Chinese.
+**A themed index of all 48 numbered documents is in [docs/README.md](docs/README.md).** Documentation is primarily in Chinese.
 
 ## Assets And License
 
 Code is MIT licensed. Pixel assets come from CC0 packs such as Puny World and Characters; sources are listed in [docs/09-美术资产与版权.md](docs/09-美术资产与版权.md). The cover image is AI-generated. Model weights and NobodyWho binaries are not distributed in this repository; fetch them from upstream sources.
+
+The 10 character sheets in `game/assets/art/pro/` are **redrawn derivatives** of a CC0 pack (alpha masking, lookup-table recolouring, copying pixels from the base sheet, and hand-written templates at fixed coordinates; **no scaling, no interpolation**). **Generated imagery contributes zero** — AI images may serve as a mood board and never enter a sprite frame. CI step 2b now machine-checks this: what ships must equal what is **rebuilt on the spot**.
 
 Some documents refer to an upstream game-evaluation pipeline for headless rendering, automated recording, and LLM-as-judge experiments. This repository does not depend on that pipeline at runtime.
