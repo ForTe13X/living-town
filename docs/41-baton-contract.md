@@ -62,7 +62,26 @@ LOD 观察无关门、DetGate 场景确定性门、6 个集成场景。
    ```
    **正确的机制窄得多**：autoload 是在**主循环对象构造之后**才挂上去的，所以只有 `_init()` 里的代码看不见它们
    ——而 `Harness.gd` / `DetGate.gd` / `lod_verify.gd` 恰好**整个身体都写在 `_init()` 里**。
-   换到 `_initialize()`，`Sim` / `AIBackend` / `Audio` 全都是活的。
+   换到 `_initialize()`，`Sim` / `AIBackend` / `Audio` 这几个**节点都在**了。
+
+   > **⚠️ 2026-07-30 第三道更正（F4 提出，我随后独立复跑证实）：「节点在」≠「数据在」。**
+   > 上面那句原文写的是"**全都是活的**"——**太强了**。autoload 的 `_ready()` 在
+   > `_initialize()` 返回**之后**才跑，而 `Sim._ready()` 里那句 `_load_data()` 正是装数据的地方。
+   > **实测**（隔离副本，`--script` 探针）：
+   > ```
+   > IN_INITIALIZE   voicebank键=0     ← 节点已经在了，但它是空的
+   > AFTER_1_FRAME   voicebank键=13    ← 交回主循环一帧之后才有数据
+   > ```
+   > ⇒ **整个身体写在 `_initialize()` 里的探针，读到的是一个空 `Sim`**：
+   > F4 实测它会看到 `world.objects=0`、`voicebank=0`，然后吐出约 70 万行 `SCRIPT ERROR`
+   > ——**而不是干脆地变红**。这比"读到 0"更坏：噪声会淹掉真正的失败信号。
+   > 要数据就得 `await process_frame`（或显式调 `_load_data()`，`Harness` 走的正是后者）。
+   >
+   > **最刺眼的一点**：这件事**本来就写在契约自己贴的那段探针输出里**——
+   > `AUTOLOAD_READY` 明明白白排在 `SCRIPT_INITIALIZE` **下面**。
+   > 证据在纸上躺了四天，而结论没有把它读进去。
+   > ⇒ **同一条目、三次更正**（autoload 加载与否 → 场景树 → 节点在≠数据在）。
+   > 前两次是替观察编机制，这一次是**证据就在眼前而结论没跟上**。
    ⇒ **`--script` 步骤里 autoload 的 `_ready()` 与至少一帧 `_process` 确实会跑**，
    它们的 `push_error` / `SCRIPT ERROR` **会**被 `ci.sh` 的 `scan` 抓到。
    > **这条错误是怎么进契约的**：C2 报了一个真实观察（`--script` 下 Harness 加 `--audiocap` 不出 WAV），
