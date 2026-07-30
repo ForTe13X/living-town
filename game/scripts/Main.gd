@@ -30,6 +30,18 @@ var _goals_pan: TextureRect            # 展开档面板（默认【隐藏】：
 var _goals_box: RichTextLabel
 var _goals_open := false
 var _goals_line := ""                  # 缓存的一行摘要：只有它变了才重画播报（免每 tick join 一次）
+
+# ── 小镇故事（因果弧；docs/47 §二-E2）────────────────────────────────────────
+## ★红线同上：`Story` 也是**对 Sim.event_log 的只读派生**。Main 这一侧的义务与 Goals 逐字相同：
+##   ①每 tick 喂一次 event_log（`_sync_story`）；②时间线一换就整份重算（`_rebuild_feed`）。
+##   机器证明在 scenes/story_test.tscn（含 4 组合成对照 —— 光有 live==replay 没有判别力，D2 已实测）。
+## 它与「小镇纪事」的分工：纪事回答**还差几件**（有进度、无主角、永不结束），
+##   故事回答**发生了什么**（有开头、有几幕、有一个结局，且系在两个具体的人身上）。
+var _story: RefCounted                 # Story.gd 实例
+var _story_pan: TextureRect            # 展开档面板（默认隐藏；K 键 / 点播报里 ◇ 那一行）
+var _story_box: RichTextLabel
+var _story_open := false
+var _story_rev := -1                   # 已排进面板的 Story.rev（脏标记缓存；见 _sync_story_panel）
 # 相机/观察状态已全部搬进 ProbeController（P0-b）：Main 只做装配 + HUD/时间轴输入仲裁。
 
 # ── 观察台 / 回放 ──────────────────────────────────────────────────────────
@@ -214,9 +226,34 @@ const SALIENCE := {
 	"leak": 74, "confront": 70, "apologize": 66, "mediate": 64, "aid": 62,
 	"meet": 58, "confide": 56,
 	"endorse": 44, "gossip_rep": 40, "discuss": 34, "gossip": 30, "invite": 28, "give": 20, "greet": 10,
+	# E1 的四类产出事件。**今天这四行是不生效的**（FEED_SKIP 在算分之前就把它们挡了），
+	# 写在这里是为了让"以后谁把 shortage 从 FEED_SKIP 移出去"这一步是安全的：
+	# 不写的话它们会落到 `SALIENCE.get(t, 60)` 的兜底 60 上 —— 而 SALIENT_MIN=55，
+	# 于是 produce/consume/spoil 会**和背叛、盟约、选举挤在同一块「镇上的大事」里**。
+	# 60 天单 seed 实测（本棒自己数的，seeds 1/2/3）：produce 44/33/45 · consume 180/133/161 ·
+	# spoil 42/24/45 · shortage 35/90/56 —— 不是转述里的 470/1915/463（差一个数量级，见报告）。
+	"shortage": 72, "produce": 12, "consume": 4, "spoil": 4,
 }
 const SALIENT_MIN := 55
-const FEED_SKIP := ["pay", "world"]   # 账本/世界事务不进社交播报（Sim 侧同样不 emit social_event）
+## 不进社交播报的类型。**判据不是"重不重要"，是"Sim 侧 emit 不 emit social_event"。**
+## 这条规矩是构造性的：播报有两条入口 —— 实时靠 `social_event` 信号（`_on_social`→`_push_event`），
+## 换时间线后靠 `_rebuild_feed` 回扫 event_log 尾部 200 条。两条都只按 FEED_SKIP 过滤。
+## 于是【不 emit 但也不 skip】的类型 = 实时看不见、一 scrub/读档/`--warmup` 就冒出来一片
+##   ⇒ **同一个 tick 的编年史内容变成"你怎么走到这里"的函数**。那是本项目最不能有的形状。
+##
+## ★E1（Wave E 产出闭环）新加的四类全部落在这里，逐条核过 `game/scripts/Sim.gd`（不是照抄转述）：
+##   `_stock_move`(produce/consume/spoil) 与 `_shortage_fallout`(shortage) **四条路一条都不 emit social_event**。
+##   另外两条各自独立的理由：
+##   · produce 的 target 是 "town"、consume/spoil 的 actor **和** target 都是 "town"，
+##     而 `_nm()` 查不到 agent 时**原样返回 id** ⇒ 走通用兜底成文会在屏幕上打出英文 "town"
+##     （"阿林 对 town 交了一批货进镇上"）——正是 `_nm_opt` 注释里点名要消灭的那件事。
+##   · shortage 确实是四条里唯一有戏的一条（actor=扑空的人、target=被怪的岗位、accepted=false、带旁观者），
+##     但它同样不 emit ⇒ 放进播报只会造出上面那个"看路径的编年史"。**它改从故事层出面**：
+##     Story.gd 的 grudge 弧收了一幕 `empty`（shortage 的 actor→target 与怨气弧的有向键同序），
+##     那条路是对 event_log 的折叠，live 与 replay 按构造同值。
+##   ⇒ 想让 shortage 直接进播报，正确的改法是在 `Sim._shortage_fallout` 末尾加一行
+##     `emit_signal("social_event", ...)`（Sim.gd 归 E1，不在本棒的文件里），然后把它从本表移出去。
+const FEED_SKIP := ["pay", "world", "produce", "consume", "spoil", "shortage"]
 const TOPIC_LABEL := {"cafe_expand": "扩建咖啡馆", "night_market": "办夜市", "old_tales": "老故事"}
 const OBS_MAX_LINES := 34             # 观察台可见行数预算（294x676 面板 · 字号 14）——超出的只能砍长尾。
                                       # C8 保持 34：展开档可用高 662px vs 改前 664px，实质未变（见 OBS_PAD 的注释：
@@ -229,6 +266,22 @@ const GOALS_X := 10.0
 const GOALS_Y := 42.0
 const GOALS_SZ := Vector2(344.0, 280.0)
 const GOALS_FEATH := 40.0                 # 展开档 scrim 的羽化带宽（绝对 px，同 OBS_FEATH 的理由）；只用于右/下两边
+
+## 小镇故事展开档面板：与「小镇纪事」**共用左上角这一个槽位，且互斥**（开一个自动关另一个）。
+## 为什么不是各占一块：docs/46 §一 #5 记着"25.5% 的屏幕已经是 chrome"，两块常驻元层面板会把这个数字再抬一截；
+## 而这两块本来就是同一类东西（都是对 event_log 的只读派生、都默认收起、都只在玩家主动问的时候出现）。
+## 互斥换来的是**零新增屏幕占用**，代价是不能并排对读 —— 这个代价是明知的，写在这里免得后人当 bug 修。
+## 几何：底边 42+332=374，加 40px 羽化正好落在 LOG_SCRIM_TOP=414 上 ⇒ 与播报底板**不叠**（两层 scrim 叠加会双倍压暗）。
+## 宽 470 而不是纪事的 344：故事是**成句的中文**，344px @ 字号14 只有约 24 个字，一句结局就要折行 ——
+## 而折行会吃掉行数预算，正是 D2 那条"scroll_active=false 只会静默裁掉尾巴"的教训的触发条件。
+const STORY_X := 10.0
+const STORY_Y := 42.0
+const STORY_SZ := Vector2(470.0, 332.0)
+const STORY_FEATH := 40.0
+## 行数预算：实测出图（after_story_t6300.png）标题基线 y≈57、末行 y≈291 ⇒ 13 个行距 234px ⇒ **行高 18px**。
+## 正文可用高 332−12=320px ⇒ 17.7 行。取 16：留出约 1.7 行给中文折行（一句结局折一次就是多一行）。
+## 第一版取 14，出图上面板底下空了 80px —— 不是 bug，但那是白付的屏幕成本。
+const STORY_LINES := 16
 
 func _ready() -> void:
 	var seed := 20260626
@@ -289,6 +342,8 @@ func _ready() -> void:
 			_obs_arg = true                    # 出图/眼验：直接以【完整卷宗】档启动（否则出图只拍得到名片档，没法对照）
 		elif args[i] == "--goals":
 			_goals_open = true                 # 出图/眼验：启动即展开小镇纪事清单（默认是【收起】的，出图拍不到）
+		elif args[i] == "--story":
+			_story_open = true                 # 出图/眼验：启动即展开小镇故事（同上；两个都给了以 --story 为准，见下）
 		elif args[i] == "--lod-agg":
 			_lod_agg_arg = true                # 测量/眼验：启用观察无关 aggregate LOD（docs/32）。只在此 CLI 口，不接出货窗口（休眠靠"窗口从不设 LOD 标志"不变量）
 		elif args[i] == "--demo-cam":
@@ -400,6 +455,14 @@ func _ready() -> void:
 	_goals = preload("res://scripts/Goals.gd").new()
 	_goals.load_defs()
 	_goals.sync(Sim.event_log)
+
+	# 小镇故事：同一条纪律、同一个理由（--warmup/--warmup-tick 的那段历史发生在接线之前，
+	# 靠信号累积的 UI 在跳转开局一律是空的 —— 契约 §6 盲区②；本类按 event_log 折，故这条盲区按构造不成立）。
+	# 文法写死在 Story.gd 里（brief 只给了两个文件），故没有"缺文件即关掉"的第二条分支要守。
+	_story = preload("res://scripts/Story.gd").new()
+	_story.sync(Sim.event_log)
+	if _story_open:
+		_goals_open = false                # 两块共用左上角槽位 ⇒ --story 与 --goals 同时给时以 --story 为准
 
 	_build_hud()
 	Sim.ticked.connect(_on_tick)
@@ -589,12 +652,30 @@ func _build_hud() -> void:
 	_goals_pan.add_child(_goals_box)
 	_sync_goals_panel()
 
+	# 小镇故事的展开档面板（默认隐藏；K 键 或 点播报里 ◇ 那一行）。与纪事面板同槽互斥，见 STORY_X 处的注释。
+	# 同样走 _mk_scrim 而不是 ColorRect：D2 那条"展开档带回一条硬边"的教训只被修在纪事上，
+	# 新开一块面板如果偷懒用 ColorRect，就是把同一个 bug 重新生一遍（右缘 x=480 会是一条 111 的台阶）。
+	_story_pan = _mk_scrim(layer, Vector2(STORY_X, STORY_Y), STORY_SZ + Vector2(STORY_FEATH, STORY_FEATH),
+		0.0, STORY_FEATH / (STORY_SZ.x + STORY_FEATH), 0.0, STORY_FEATH / (STORY_SZ.y + STORY_FEATH))
+	_story_pan.visible = _story_open
+	_story_box = RichTextLabel.new()
+	_story_box.bbcode_enabled = true
+	_story_box.scroll_active = false
+	_story_box.add_theme_font_override("normal_font", fnt)
+	_story_box.add_theme_font_size_override("normal_font_size", 14)
+	_story_box.position = Vector2(10, 6)
+	_story_box.size = STORY_SZ - Vector2(20, 12)
+	_story_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_story_pan.add_child(_story_box)
+	_sync_story_panel()
+
 	# dev 性能 overlay（默认隐藏；F3 或设置面板里开）。label 挂在 panel 下 → 一起显隐。
-	# ★位置从 (10,42) 挪到 (GOALS_X+GOALS_SZ.x+10, 42)：纪事面板占了左上角那一块，两个都开会叠在一起。
-	# 两块都默认隐藏 ⇒ 出货帧/出图帧逐像素不受影响（只有同时按 F3+J 的 dev 看得见差别）。
+	# ★位置从 (10,42) 挪到 纪事/故事面板的右边：那一块被元层面板占了，两个都开会叠在一起。
+	#   基准从 GOALS 换成 STORY（470 > 344，取宽的那块才对两种面板都不叠）。
+	#   三块都默认隐藏 ⇒ 出货帧/出图帧逐像素不受影响（只有同时按 F3+J/K 的 dev 看得见差别）。
 	var pperf := ColorRect.new()
 	pperf.color = Color(0.02, 0.03, 0.05, 0.74)
-	pperf.position = Vector2(GOALS_X + GOALS_SZ.x + 10.0, 42)
+	pperf.position = Vector2(STORY_X + STORY_SZ.x + 10.0, 42)
 	pperf.size = Vector2(384, 152)
 	pperf.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pperf.visible = false
@@ -771,7 +852,57 @@ func _toggle_goals() -> void:
 	if _goals_pan != null:
 		_goals_pan.visible = _goals_open
 	if _goals_open:
+		_close_story()                         # 同槽互斥（见 STORY_X 处的注释）
 		_sync_goals_panel()
+
+# ── 小镇故事（因果弧）──────────────────────────────────────────────────────
+## 每 tick 一次：把新事件折进故事，并把**刚刚收场**的那几段播出去。
+## ★方向同样是单向的：Main → Story。Story 从不回写 Sim，也不回写 Main 的任何仿真相关字段。
+## ★只在**收场**时播报，不在开头/中间播 —— 这正是它与编年史的分界：
+##   编年史已经把每一件事各播过一遍了；故事再播一遍开头只是重复，播结局才是新信息
+##   （"刚才那五件散事其实是一段，而它这样收场了"）。
+func _sync_story() -> void:
+	if _story == null:
+		return
+	for arc in _story.sync(Sim.event_log):
+		_push(_story.toast(arc, _story_name))
+	if _story_open:
+		_sync_story_panel()
+
+## 只有故事**真的动了**才重排面板。`Story.rev` 是折叠的脏标记（开/推进/收场/裁剪时才 +1）。
+## 理由是 docs/46 §二·六 那笔账（真机 FPS 88 → 11）：面板一开就每 tick 对 128 条弧排两次序是白烧的，
+## 而实测事件疏密下绝大多数 tick 根本没有任何弧发生变化。
+func _sync_story_panel() -> void:
+	if _story_box == null or _story == null or int(_story.rev) == _story_rev:
+		return
+	_story_rev = int(_story.rev)
+	_story_box.text = _story.panel_text(_story_name, STORY_LINES)
+
+## 展开档开关（K 键 与 点播报里 ◇ 那一行共用；纯视图，不碰 Sim）。
+func _toggle_story() -> void:
+	_story_open = not _story_open
+	if _story_pan != null:
+		_story_pan.visible = _story_open
+	if _story_open:
+		_close_goals()                         # 同槽互斥
+		_story_rev = -1                        # 关着的时候不重排 ⇒ 再打开时缓存必然是旧的，强制重排一次
+		_sync_story_panel()
+
+func _close_story() -> void:
+	_story_open = false
+	if _story_pan != null:
+		_story_pan.visible = false
+
+func _close_goals() -> void:
+	_goals_open = false
+	if _goals_pan != null:
+		_goals_pan.visible = false
+
+## Story.gd 不认识 Sim（它连 autoload 都不依赖），名字由这里供给。
+## 查不到就退回 id —— 但 Sim._name 对空 dict 已经返回 "?"，所以实际上永远走不到 id 那条路。
+func _story_name(id: String) -> String:
+	var ag := Sim.get_agent(id)
+	return "" if ag.is_empty() else str(ag.get("persona", {}).get("name", id))
 
 ## 观察台档位开关（「详情/收起」钮 与 V 键共用；纯视图，不碰 Sim）。
 func _toggle_obs() -> void:
@@ -844,6 +975,7 @@ func _on_tick(_t: int) -> void:
 	_modulate.color = _daylight(Sim.time_of_day())
 	_max_tick = maxi(_max_tick, Sim.tick_no)
 	_sync_goals()
+	_sync_story()
 	_update_status()
 	_update_scrubber()
 	_update_obs()
@@ -1471,6 +1603,19 @@ func _panel_text(brief: bool = false) -> String:
 			L.append(cf[i])
 		if cf.size() > 4:
 			L.append("[color=#9aa0b5]…还有 %d 段[/color]" % (cf.size() - 4))
+	# 他身上的故事（docs/47 §二-E2）。**紧跟在「冲突」后面**是有理由的：
+	# 上面那一块答的是"他现在跟谁不对付"（Sim.conflicts 的当下快照），这一块答的是"这事怎么走到这一步、后来怎么收的"。
+	# 只在【完整卷宗】档出现 ⇒ 名片档仍是卷宗的逐行前缀（player_touch_test 断言的那条性质不动）。
+	# 封 2 行（含标题 + 空行共 4 行）：它排在信念长尾之前，多占的每一行都是从"知道的事"里扣的。
+	# ★为什么是 2 不是 3：这块面板正文只有 286px 宽，**实测（before 图）它在本棒之前就已经装不下了**——
+	#   未改动的树上"观点"那一节的最后一行就已经被面板下沿切掉。所以这里多占的每一行都是从别人身上拿的，
+	#   拿 2 行、且每行保证不折行（Story.person_lines 用的是短结局标签，见那里的注释）。
+	if _story != null:
+		var sl: Array = _story.person_lines(_selected_id, _story_name, 2)
+		if not sl.is_empty():
+			L.append("")
+			L.append("[color=#cfd3e0]故事[/color]")   # 与「关系/冲突/近期记忆/观点」同一种朴素名词，别在这块面板上换语气
+			L.append_array(sl)
 	# 近期记忆
 	var mem = ag.get("memory")
 	if mem != null and not mem.items.is_empty():
@@ -1818,6 +1963,13 @@ func _rebuild_feed() -> void:
 		_goals_line = _goals.summary_line()
 		if _goals_open:
 			_sync_goals_panel()
+	# ★小镇故事同理，而且它比纪事更需要这一条：目标只会前进，故事会**收场**——
+	#   顺着旧游标往下折的话，往回 scrub 之后那些"还没发生的结局"会一直挂在面板上。
+	if _story != null:
+		_story.recompute(Sim.event_log)
+		_story_rev = -1                        # recompute 会把 rev 清零重数 ⇒ 缓存令牌必须一起作废
+		if _story_open:
+			_sync_story_panel()
 	_log_hot.clear()
 	_log_recent.clear()
 	var evs: Array = Sim.event_log
@@ -1834,10 +1986,14 @@ func _rebuild_feed() -> void:
 	_render_log()
 
 ## 点日志里的居民名 → 选中 + 镜头飞过去（ProbeController 只被调用，不被改）。
-## 顶上那一行「小镇纪事」的 meta 是固定串 Goals.PANEL_META，不会与任何居民 id 撞。
+## 顶上那一行「小镇纪事」的 meta 是固定串 Goals.PANEL_META，播报里 ◇ 那一行是 Story.PANEL_META；
+## 两个都长成 "__xxx__"，不会与任何居民 id 撞。
 func _on_log_meta(meta: Variant) -> void:
 	if String(meta) == "__goals__":
 		_toggle_goals()
+		return
+	if String(meta) == "__story__":
+		_toggle_story()
 		return
 	_focus_agent(String(meta))
 
@@ -1870,6 +2026,7 @@ func _unhandled_input(e: InputEvent) -> void:
 			KEY_O: _toggle_settings()                            # ⚙ 设置面板开关（NPC 数量/速度/后端）
 			KEY_V: _toggle_obs()                                 # 观察台名片档 ⇄ 完整卷宗（手机走右上「详情」钮，同一函数）
 			KEY_J: _toggle_goals()                               # 小镇纪事清单开关（手机走"点播报栏顶那一行"，同一函数）
+			KEY_K: _toggle_story()                               # 小镇故事开关（手机走"点播报里 ◇ 那一行"，同一函数）
 			KEY_F5: _quick_save()                                # R0-2：快速存档
 			KEY_F8: _quick_load()                                # R0-2：快速读档
 			KEY_F9: _write_digest()                             # dev：把当前 digest 写盘（--digest-out）
