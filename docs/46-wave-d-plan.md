@@ -1,5 +1,7 @@
 # 46 · Wave D 计划——从「看得清」到「有人想玩」
 
+⚠️ **`getbbox()` 在 RGBA 上默认只看 alpha（Pillow 11.3+），本条断言若不先 `convert("RGB")` 或传 `alpha_only=False` 就是空真的——见 docs/41 §6 的复核。**
+
 **2026-07-26 立，接 [docs/43](43-wave-c-plan.md)（Wave C）。** 共同契约仍然是 [docs/41](41-baton-contract.md)，
 Wave C 的 R1-R8 继续生效（见 docs/43 §二），本文只加 Wave D 特有的。
 

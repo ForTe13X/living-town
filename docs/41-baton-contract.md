@@ -304,6 +304,29 @@ brief 里的行号、数字、机制描述大多是**二手的**（上一棒的�
 - **★ 视觉验收判据必须先在【未改动的树】上跑一遍。若它在那里也通过，它就没有判别力——那不是判据，是装饰。**
   这是 docs/41 §5「数字要有零假设才可解读」在视觉上的同一条纪律，而 2026-07-26 的 Wave C **一波里踩了四次**，
   四条全是派棒者写的：
+
+> ### ⚠️ `getbbox()` 陷阱（2026-07-30 G5 报，我独立复核）——**本文与 docs/43 / docs/46 里多处都在用它**
+>
+> **Pillow 11.3.0 起 `Image.getbbox()` 默认 `alpha_only=True`** ⇒ 对 RGBA 图**只看 alpha 通道**。
+> 本项目的美术**全不透明** ⇒ `ImageChops.difference(a, b).getbbox() is None` 这条断言
+> **在 RGBA 上是空真的**：颜色随便怎么变，它都说"完全相同"。
+>
+> 我自己跑的复核（`grass_a.png` vs `grass_b.png`，两张肉眼可见不同的瓦片）：
+> ```
+> RGB 上真正不同的像素        = 36
+> getbbox()                  → None          ← 判成「完全相同」
+> getbbox(alpha_only=False)  → (2, 3, 14, 15)
+> ```
+> **正确写法**（二选一，别只写第一种）：
+> ```python
+> ImageChops.difference(a.convert("RGB"), b.convert("RGB")).getbbox() is None
+> ImageChops.difference(a, b).getbbox(alpha_only=False) is None
+> ```
+> **现状**：没有**活门**踩到它（`assert_daynight.py` 先 `convert("RGB")`）⇒ 这是文档隐患，不是现行假绿。
+> **但凡是历史回执里写着"`getbbox()` is None ⇒ 逐像素未变"而当时喂的是 RGBA 的，那条证据是空的**，
+> 需要重跑才能算数。这正是本文 §2.5 要求写 `does_not_detect` 的理由：
+> **一条断言可以因为库的默认参数而恒真，而它读起来和真断言一模一样。**
+
   ①「四季两两 `getbbox() is not None`」——未改动的树上 6 对全过（agent 每天都在移动）；有判别力的是**主色**。
   ②「`y=10` 整行每点亮度 < 40%」——**字面不可能**，状态栏文字本身就是 91.4% 亮度且就在那一行。
   ③「插值走录屏验」——**不可达成**，容器 5-10fps < 12.5 ticks/s，两 tick 之间没有帧（盲区⑧）。
