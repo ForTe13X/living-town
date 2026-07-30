@@ -3,9 +3,36 @@ class_name BenchInvariants
 ## preload 而非全局类名/autoload：--script 的 _init() 阶段 autoload 尚未挂上（docs/41 §2 更正：autoload 其实是加载的）（同 Sim.gd 顶部的纪律）。
 ## 只用它的【静态】哈希（fnv1a32/mix32）——不实例化、不持有状态。
 const SimScript = preload("res://scripts/Sim.gd")
-## bench/Invariants.gd — 把「确定性社交底座」的 20 条机检不变量抽成单一真相源（语义照搬 sim_soak.gd / sim_social_port.mjs）。
+## bench/Invariants.gd — 把「确定性社交底座」的机检不变量抽成单一真相源（语义照搬 sim_soak.gd / sim_social_port.mjs）。
+## 条数：**40**（= 本文件里 `R.append(_chk(` 的条数，`grep -c` 即得）。
+##   ⚠ 这里原先写死的是"20 条"，下面 split_fails 的注释写死的是"33 条"——**两个都过期了**，
+##   而它们过期的方式一模一样：条数是长出来的，而写死的数字不会跟着长（H5 修，2026-07-30）。
+##   ⇒ 以后要加条数就别再写死；本行给的是【怎么数】而不是数出来的那个值。
 ## check_all(S, starved) → [{id:int, name:String, ok:bool, detail:String}]，供 bench Harness 跨 seed 网格与 soak 共用。
 ## 注：现为「终态断言」（跑完整局后评估），非逐 tick；首违 tick 粒度留作后续细化。
+
+## #40 的供给充足度阈值。**三个数都是量出来的，不是拍的**（12 seed × 60 天 × 6 货 = 72 格，
+## 隔离副本探针；留出种子 13-30 复核）。改它之前先把 docs/41 §2.5 的包络重跑一遍。
+##  · SUPPLY_FLOOR：满足率 = 到手件数 / 想要件数。**选阈值只用 seeds 1-12，13-30 留出复核**：
+##      基线 seeds 1-12  逐 seed 最差货：最低 0.615；72 个（货×seed）格里最低也是 0.615。
+##      基线 seeds 13-30（留出）        ：最低 0.569 / 次低 0.579 —— **比选阈值那组更低，所以以它为准**。
+##      六个「掐产量但不归零」的变异体：被掐那种货 0.069-0.415（1-12）、最高 0.488（thr_book seeds 13-30）。
+##    ⇒ 分界带 [0.488, 0.569]，取 **0.50**（上 1.14× / 下 1.02× —— 下方这一格窄，如实写在这里）。
+##    ⚠ 真正的余量比上面这两个数大，因为门是【逐 seed 通过率】制：要假红得【两个】seed 同时跌破，
+##      而 30 个基线 seed 里跌破的个数是 **0**；反过来 thr_book/thr_bean 是 30/30 个 seed 全跌破。
+##    ⚠ 它是【软】判据：Harness 的软门允许 12 个 seed 里反转 1 个，这一格容差是刻意留着的。
+##  · SUPPLY_MIN_DEMAND：需求件数低于此值就不谈满足率——短 horizon / 定向场景里一件货可能只被想要过
+##    两三次，那时候的比率是噪声不是性质（同 #29 的 `aid_accepted < 8` 守护）。
+##  · SUPPLY_MIN_DAYS：**这条臂需要时间才成立，短跑上它是一条假红**（口径同 Harness.LIVENESS_GATED 的
+##    "值 = 该类被门控所需的最短天数"，那里也是实测出来的）。满足率是【全程累计比】，而开局库存被产能顶起来
+##    之前的那段亏空会一直摊在分母里。**实测同一棵未改动的树**（seeds 1-12，逐 seed 最差货满足率的最小值）：
+##      days=30 → 0.321   days=40 → 0.490   days=50 → 0.577   days=60 → 0.615
+##    days=30 时 12 个 seed 里有 3 个跌破 0.50 ⇒ **软门当场破**（ci.sh 文件头写着 `CI_DAYS=30` 是支持的快跑）。
+##    days=50 在留出种子 13-30 上只剩 17/18（seed 22 = 0.495），**恰好压在软门线上、余量为零**。
+##    ⇒ 定 60。低于它这条臂整个不生效（DetGate 的 20 天、快跑的 30 天都在此列，且它们本就不门控软不变量）。
+const SUPPLY_FLOOR := 0.5
+const SUPPLY_MIN_DEMAND := 20
+const SUPPLY_MIN_DAYS := 60
 
 static func check_all(S, starved: int) -> Array:
 	var R: Array = []
@@ -432,7 +459,8 @@ static func check_all(S, starved: int) -> Array:
 				prov_bad2.append("#%d note 职位=%s 实为 %s" % [int(e["id"]), String(e.get("note", "")).split("*")[0], title])
 			# ★「在班」这一半此前【根本没有检查】（2026-07-30 外部审计抓到）：
 			#   这条不变量叫"产出溯源到【在班】本职"，而它从不读 e["tick"]、从不调 _in_shift。
-			#   失败场景是具体的：把 _produce_for(Sim.gd:2889) 里的 `and not _in_shift(job)` 删掉，
+			#   失败场景是具体的：把 _produce_for 开头那道班次守卫（现 Sim.gd:2925，`or not _in_shift(job)`；
+			#   原注写的 `:2889` 与 `and not _in_shift(job)` 两处都已过期）删掉，
 			#   面点师就会在 03:00 烤点、渔夫半夜打渔，而 #39 依然全绿。
 			#   八个岗位全都有真实班次（jobs.json / production.json.jobs）⇒ 这是一条【活的】约束，不是真空条款。
 			#   班次谓词是 f(tick)，而 tick 就在事件里 ⇒ 它一直是可查的，只是没查。
@@ -443,36 +471,118 @@ static func check_all(S, starved: int) -> Array:
 	R.append(_chk(39, "产出溯源到在班本职", prov_bad2.is_empty(),
 		("异常=%d: %s" % [prov_bad2.size(), "; ".join(prov_bad2.slice(0, 3))]) if not prov_bad2.is_empty()
 		else ("produce 事件全部可溯源" if prod_on else "产出系统关闭")))
-	# 40) 【软】产出闭环活性：#38/#39 都是"若 X 发生则 X 良构"，X 归零它们全绿——
-	#     production.json 还在、而产出/消耗一次都没发生，正是本波要防的那种"机制被静默关掉"。
-	#     ★ 2026-07-30 收紧为【逐货物】：原来是全镇合计 n_prod>0 and n_cons>0 ——
-	#     五种货物里死掉四种，只要口粮还在动，这条就照样绿。合计量掩盖单品死亡。
-	#     判据敢收紧是因为先量过（12 seed × 60 天，probe 见 docs/48 §五）：
-	#       口粮 P=208 柴薪 P=206 豆子 P=89 话本 P=148 整洁 P=282，
-	#       【任一为 0 的 seed 数 = 0/12】，最瘦的一格是 seed 7 的豆子 P=4 ⇒ ">0" 有余量、不是卡边。
+	# 40) 【软】产出闭环活性【与供给充足】：#38/#39 都是"若 X 发生则 X 良构"，X 归零它们全绿——
+	#     production.json 还在、而产出/消耗一次都没发生，正是要防的那种"机制被静默关掉"。
+	#     ★ 2026-07-30 第一次收紧（Wave F）：全镇合计 → 逐货物。合计量掩盖单品死亡。
+	#     ★ 2026-07-30 第二次收紧（Wave H5，外部对抗评审给的干预）：**存在性 → 连续性**。
+	#       外审原话：`粮食 produce 3 / consume 200` ⇒ **过门**，然后库存耗尽、居民饿死在 60 天以后。
+	#       `∃producer ∧ ∃consumer` 只能证明系统没有【完全】断裂，证明不了它够用。
+	#
+	#     ── 三个候选判据先量了再选（12 seed × 60 天 × 6 货 = 72 格 + 留出 13-30，隔离副本探针，量完即撤）──
+	#     ① `coverage = Σproduce/Σconsume ∈ [0.8,1.5]`（外审的第一个建议）—— **实测否掉，但理由不是"它恒等于1"**。
+	#        我第一版在这里写的是"结构性地钉在 1 附近、掐掉 95% 产量它照样 1.0x"——**那句是我编的，实测是假的**：
+	#        把口粮两个生产者从 90/85 掐到 4/4 之后，口粮 coverage = **0.500-0.755**，它是会动的。
+	#        真正的机制窄得多，从 #38 守的那条恒等式直接推得：
+	#            `coverage = 1 + (期末库存 − 开局库存 + Σspoil) / Σconsume`
+	#        ⇒ 它由【开局库存与每日损耗】决定，**不由健康度决定**，而且随天数收敛到 `1 + 损耗×天数/Σ消耗`。
+	#        实测这条收敛（同一棵未改动的树，整洁 spoil_per_day=2）：
+	#            days=30 → 0.964-1.467   days=40 → 1.151-1.544   days=50 → 1.256-1.608   days=60 → 1.338-1.661
+	#        ⇒ **`[0.8,1.5]` 这个区间在出货树上就是红的**：整洁在 30 个基线 seed 里有 **13 个超过 1.5**
+	#          （seeds 1-12 里 4 个、13-30 里 9 个）⇒ 软门要 ≥11/12，当场破。
+	#        ⇒ 而且它的灵敏度更差：屋瓦产量砍 60%（30→12）时 coverage = 0.846-0.923，**整整落在区间里**，
+	#          同一批 seed 上满足率判据抓到了 7/12。**⇒ 一个货一个基线，不存在全局区间。**
+	#     ② `days_of_supply = 期末库存 / 日均消耗`（外审的第二个建议）—— **实测否掉**：
+	#        它是【终态快照】，基线实测 话本 seed 11 = 0.000、口粮 seed 8 = 0.615，**余量为零**。
+	#     ③ `供给满足率 = 已服务件数 / 需求件数` —— **选它**。它对"需求密度"免疫（这正是 ①② 的死因）。
+	#        实测（逐 seed 取【最差的那种货】，这正是门真正判的量）：
+	#          基线 seeds 1-12  ：0.615 0.634 0.683 0.720 0.762 0.788 0.812 0.814 0.875 0.880 0.884 0.889
+	#          基线 seeds 13-30 ：最低两个是 0.569 / 0.579（留出种子，不参与选阈值，只用来复核）
+	#          掐产量不归零的六个变异体：被掐那种货 0.069-0.415（1-12）、最高 0.488（thr_book 的 13-30）
+	#        ⇒ 分界带是 [0.488, 0.569]，取 **0.50**。
+	#        而且门是【逐 seed 通过率】制（软门容 1/12）⇒ 要假红得有【两个】seed 同时跌破，
+	#        30 个基线 seed 里跌破的个数是 **0**；而 thr_book / thr_bean 是 **30/30 个 seed 全跌破**。
+	#     ⚠ 为什么不用【缺货天数占比】（第一版就是它，被自己的数据否掉）：它随需求密度漂——
+	#        基线最大 0.467（屋瓦 seed 7），而把话本产量掐掉 83% 之后只有 0.300-0.600
+	#        ⇒ **不存在能同时分开这两组的阈值**。留作 detail 里的诊断数字，不作判据。
+	#
+	#     ── 分档（外审的第二条警告：将来引入【本就不该被生产】的货，"每种货 produce>0" 会假红）──
+	#     不写死货物名单，而是**从数据自己的结构里推**：
+	#       · 有人在 `produce` 里申报要产它 ⇒ 才要求 Σproduce>0；
+	#       · 有动作在 `consume` 里申报要用它、或有工种把它申报为 `inputs` 原料 ⇒ 才要求 Σconsume>0 与满足率。
+	#     ⇒ 加一件谁都不产、谁也不用的传说物品，本条**自动豁免它**（实测：旧判据当场红，本判据绿）。
 	var n_prod := 0
 	var n_cons := 0
-	var per_p: Dictionary = {}
-	var per_c: Dictionary = {}
+	var per_p: Dictionary = {}        # 货 -> Σ产出【件数】（旧版数的是事件条数；改数件数，>0 的判定等价而 detail 更有信息）
+	var per_c: Dictionary = {}        # 货 -> Σ【真正拿到手】的件数（consume 事件 + 当日待入账，口径同 #38 的 pending 项）
+	var sh_day: Dictionary = {}       # 货 -> 出现过 shortage 的【天】集合（只进 detail，不作判据，见上）
+	var producible: Dictionary = {}   # 货 -> 有申报的生产者
+	var demanded: Dictionary = {}     # 货 -> 有申报的用途（消费动作 或 别的工种的原料）
+	var demand: Dictionary = {}       # 货 -> 需求【件数】：消费动作 attempts×件 + 原料 在班完成×件
+	var tpd: int = maxi(1, int(S.TICKS_PER_DAY))
+	var days_run: int = maxi(1, int(S.tick_no) / tpd)
 	if prod_on:
 		for g in S.production.get("goods", {}):
-			per_p[String(g)] = 0
-			per_c[String(g)] = 0
+			var gid0 := String(g)
+			per_p[gid0] = 0; per_c[gid0] = 0; sh_day[gid0] = {}
+			producible[gid0] = false; demanded[gid0] = false; demand[gid0] = 0
+		for title in S.production.get("produce", {}):
+			var prec: Dictionary = (S.production["produce"] as Dictionary)[String(title)]
+			if producible.has(String(prec.get("good", ""))):
+				producible[String(prec.get("good", ""))] = true
+			var pins = prec.get("inputs", {})
+			if pins is Dictionary:
+				# G3 的原料需求走 _stock_take，不进 prod_stats.attempts ⇒ 必须从【在班完成次数】补上，
+				# 否则柴薪的分母少掉窑口那一份，满足率会算出 >1（实测 1.254）。
+				var nw := int((S.prod_stats.get("work", {}) as Dictionary).get(String(title), 0))
+				for ing in (pins as Dictionary):
+					var ig := String(ing)
+					if demanded.has(ig):
+						demanded[ig] = true
+						demand[ig] = int(demand[ig]) + nw * int((pins as Dictionary)[ing])
+		for act in S.production.get("consume", {}):
+			var crec: Dictionary = (S.production["consume"] as Dictionary)[String(act)]
+			var cg := String(crec.get("good", ""))
+			if demanded.has(cg):
+				demanded[cg] = true
+				demand[cg] = int(demand[cg]) \
+					+ int((S.prod_stats.get("attempts", {}) as Dictionary).get(String(act), 0)) * int(crec.get("amount", 1))
 	for e in log:
 		var _ty := String(e["type"])
+		var _g := String(e["subject"])
 		if _ty == "produce":
 			n_prod += 1
-			if per_p.has(String(e["subject"])): per_p[String(e["subject"])] = int(per_p[String(e["subject"])]) + 1
+			if per_p.has(_g): per_p[_g] = int(per_p[_g]) + _amt_of(String(e.get("note", "")))
 		elif _ty == "consume":
 			n_cons += 1
-			if per_c.has(String(e["subject"])): per_c[String(e["subject"])] = int(per_c[String(e["subject"])]) + 1
+			if per_c.has(_g): per_c[_g] = int(per_c[_g]) + _amt_of(String(e.get("note", "")))
+		elif _ty == "shortage":
+			if sh_day.has(_g): (sh_day[_g] as Dictionary)[int(int(e.get("tick", 0)) / tpd)] = true
+	for g0 in per_c.keys():
+		per_c[g0] = int(per_c[g0]) + int(S._stock_day.get(String(g0), 0))   # 当日尚未入账的那一截也已经到手了
 	var dead_goods: Array = []
+	var starved_goods: Array = []
 	for g in per_p:
-		if int(per_p[g]) <= 0 or int(per_c[g]) <= 0:
-			dead_goods.append("%s(P=%d,C=%d)" % [g, int(per_p[g]), int(per_c[g])])
-	R.append(_chk(40, "产出闭环活性", (not prod_on) or (n_prod > 0 and n_cons > 0 and dead_goods.is_empty()),
-		"produce=%d consume=%d (产出系统开启时均应>0)%s" % [n_prod, n_cons,
-			"" if dead_goods.is_empty() else "；【断链货物】" + ", ".join(dead_goods)]))
+		var gid := String(g)
+		if bool(producible[gid]) and int(per_p[gid]) <= 0:
+			dead_goods.append("%s(申报有产者·实产=0)" % gid)
+		if not bool(demanded[gid]):
+			continue                                     # 谁也不用的货：不要求它被消耗，也不谈满足率
+		if int(per_c[gid]) <= 0:
+			dead_goods.append("%s(申报有用途·实耗=0)" % gid)
+			continue
+		var dm := int(demand[gid])
+		if dm < SUPPLY_MIN_DEMAND or days_run < SUPPLY_MIN_DAYS:
+			continue                                     # 样本太小/horizon 太短：那时候的比率是噪声不是性质
+		var rate := float(per_c[gid]) / float(dm)
+		if rate < SUPPLY_FLOOR:
+			starved_goods.append("%s 满足率=%.2f(到手%d/想要%d，断供%d/%d天)" % [
+				gid, rate, int(per_c[gid]), dm, (sh_day[gid] as Dictionary).size(), days_run])
+	R.append(_chk(40, "产出闭环活性与供给充足",
+		(not prod_on) or (n_prod > 0 and n_cons > 0 and dead_goods.is_empty() and starved_goods.is_empty()),
+		"produce=%d consume=%d 满足率门%s%s%s" % [n_prod, n_cons,
+			("下限=%.2f" % SUPPLY_FLOOR) if days_run >= SUPPLY_MIN_DAYS else ("未启用(%d<%d天)" % [days_run, SUPPLY_MIN_DAYS]),
+			"" if dead_goods.is_empty() else "；【断链货物】" + ", ".join(dead_goods),
+			"" if starved_goods.is_empty() else "；【长期供不应求】" + ", ".join(starved_goods)]))
 	return R
 
 ## 事件发生【当时】的相位（不是检查时的相位）。#39 的「在班」那一半靠它。
@@ -506,9 +616,13 @@ static func _chk(id: int, name: String, ok: bool, detail: String) -> Dictionary:
 ##    冻结一个远端 agent 不会让它的状态变非法，只是不再产生涌现行为。
 ##  · 软（涌现统计）= 需要活动才会显现的量（社交发生、分化、放逐锐利度、观点演化…），
 ##    已按 场景/大N 豁免；激进 LOD 下远端=背景群演，软不变量按设计会漂。
-## 消费方：激进 LOD 门只查硬不变量（split_fails().hard==0）；soak/Harness 仍查全 33 条。
+## 消费方：激进 LOD 门只查硬不变量（split_fails().hard==0）；soak/Harness 仍查【全部】条目（不写死条数，见文件头）。
 ## Wave E 追加：#38/#39 是硬（结构：账本自洽/产出可溯源，任何 LOD/规模下都必须为真）；
 ##   #40 是软（活性=涌现统计：短 horizon 的定向场景里产出可能一次都没发生，硬断言会误红）。
+##   H5 把 #40 从存在性升级为供给充足度之后，它**仍然是软**，而且理由更强了一条：
+##   满足率的基线最小值（30 个 seed）是 **0.569**、阈值 0.50，单格余量只有 **1.14×**
+##   —— 这个宽度撑不起"每 seed 必绿"的硬断言。软门的"12 个 seed 容 1 个"正是留给这道余量的
+##   （要改硬，先把单格余量量到 2× 以上；今天没有）。
 const HARD_IDS := [1, 6, 7, 9, 10, 12, 13, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39]
 
 ## 第三档：诊断（DIAGNOSTIC）——【报告但永不成门】（既不入 hard_red 也不入 soft_red）。
@@ -538,8 +652,11 @@ static func split_fails(S, starved: int) -> Dictionary:
 ##   "id:type:actor:target:accepted:subject:tick" —— 与本函数原先【逐字符相同】的串。也就是说
 ##   Harness 号称的「双独立见证」其实是同一个见证人被哈希了两遍，等价于只有一路证据。
 ##   witnesses（旁观者集合，决定 _judge_actor 的声誉扩散）与 note 都是语义承重的：
-##     · #36 靠 note 分 spawn/despawn（本文件 :345-346）
-##     · #30 靠 note=="dissolved:freerider" 溯源（:300）
+##     · #36 靠 note 分 spawn/despawn（本文件 `== "spawn"` / `== "despawn"` 那两行，现 :383-384）
+##     · #30 靠 note=="dissolved:freerider" 溯源（现 :338）
+##   ⚠ 上面这两个行号在 2026-07-30 被查出【都是过期的】（原写 :345-346 / :300，实际差三四十行），
+##     同一天还查出 Harness.gd:41 引本文件 #29/#34/#35 的三个行号也全过期。
+##     行号是本文件里最容易腐烂的一类事实：任何人在上面插一行，下面每一条引用都错。**引符号，别引行号。**
 ##   把它们并入本摘要后，两路摘要覆盖的字段集才真正不同 → 双见证名副其实。
 static func digest(S) -> int:
 	var parts := PackedStringArray()
