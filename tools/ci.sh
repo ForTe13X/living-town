@@ -97,6 +97,23 @@ echo "### 2b. art gate (出货 game/assets/art/pro 必须等于 coif_characters.
 #    SKIP 与 PASS 在汇总里都读作"没红"，那会把这道门退化成一枚看不见结果的硬币（visual_gate.sh 抬头③）。
 "$PY" tools/art_gate.py && ok "art gate（出货 pro/ == 当场重建）" || bad "art gate（出货 pro/ != coif_characters.py 当场重建的结果）"
 
+echo "### 2c. terrain gate (出货 game/assets/art/terrain 必须等于 slice_shore.py 当场重建的结果)"
+# G5（docs/49 §七）。与 2b 同一套形状，守的是另一类资产：13 张地形瓦（5 张原有 + 8 张本棒新加的岸线瓦）。
+# 由来：G1 建 2b 时点名"另有 31 张出货 png 一道门都没有"（emote 10 / decor 8 / terrain 5 / obj 5 / building 3）。
+# 本棒把 terrain 那 5 张（现 13 张）补上；**其余 26 张仍然无门**，理由写在 terrain_gate.py 抬头
+# （没在真机上眼验过的东西不该被钉成"正确"——本棒的整个由来就是一张没人看过的贴图躺了一个月）。
+#
+# 负对照（G5 实测，逐条亲眼看着变红 + 核过退出码）：
+#   ① 某张岸线瓦翻 1 个像素 ⇒ 红，指名 water_n (7,9)，exit 1；
+#   ② 删一张 ⇒ "缺 1 张 water_se"，exit 1；改回来 ⇒ exit 0。
+#   ③ 门内每次都跑的 1px 判别力自检守着"比对器退化成恒真"。
+#   ④ 本门特有的第 4 条：slice_shore.LEGACY 与 slice_visual.py 里那两份切图坐标必须逐个相同
+#      （两份漂开的话，"重建"重建的就不是出货文件真正的来源）。
+# ⚠️ 同 2b：硬判据只认解码后的 RGBA 像素；PNG 容器字节只打印不判红。
+#    实测 5 张 legacy 瓦的容器字节与本机 Pillow 重编码**不同**（它们当年是 ffmpeg 切的）而像素全同
+#    —— 这正是"容器字节必须是软判据"的现成例子。
+"$PY" tools/terrain_gate.py && ok "terrain gate（出货 terrain/ == 当场重建）" || bad "terrain gate（出货 terrain/ != slice_shore.py 当场重建的结果）"
+
 echo "### 3. godot import + parse smoke"
 "$GODOT" --headless --path game --import >"$LT_LOG/import.log" 2>&1 || true
 if grep -qiE 'SCRIPT ERROR|Parse Error|Failed to load script' "$LT_LOG/import.log"; then
