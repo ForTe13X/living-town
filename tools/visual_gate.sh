@@ -121,6 +121,20 @@ if [ "${1:-}" = "--shoot" ]; then
     # 与 §二·八-③ 想修的是同一个病：**误导性的失败信息会把人送去查错误的方向**。）
     echo "  void-gate FAIL (见上面的 [VOIDGATE] 行)"; [ "$rc" -eq 0 ] && rc=2
   fi
+  # ── E6/W7 的空间往返采集（同一个 Xvfb，省一次容器启动）────────────────────
+  # 为什么它在这里而不是自己一步：与上面两条同理——它也需要一个真 framebuffer，
+  # 于是也需要同一套「探不到就 SKIP、GHA 上显式跳过」的可移植性逻辑。
+  # ⚠️ 它与 void-gate **不是**同一件事重做两遍：void-gate 量的是**计数器**（`_void_draws` 涨没涨），
+  #    本步拍的是**像素**。评审那句「没有人看过空间切换之后的任何一帧」说的正是后者——
+  #    重画被排上了、却画成一块纯色，计数器照样绿。判据在 tools/assert_space_roundtrip.py（宿主侧跑）。
+  # 本步只负责**采集**：拍不出三帧 / 前提断言（出店取景复位）破了 ⇒ rc=3。
+  # RT_OWN_XVFB=0：**复用上面这个 Xvfb**（再起一个会白烧一份 1280x768 软渲染，还多一个要收的进程）。
+  if RT_OWN_XVFB=0 RT_GAME="$GAME" GODOT="$GBIN" \
+       bash "$(dirname "$0")/space_roundtrip.sh" --shoot "$OUT" >>/tmp/vg-godot.log 2>&1; then
+    echo "  space-roundtrip 采集 ok  (town_before → interior → town_after)"
+  else
+    echo "  space-roundtrip 采集 FAIL (见上面的 [SPACESHOT] 行)"; [ "$rc" -eq 0 ] && rc=3
+  fi
   kill $XV 2>/dev/null
   [ $rc -ne 0 ] && tail -25 /tmp/vg-godot.log
   exit $rc
@@ -194,11 +208,16 @@ else
   SHOT_RC=$?
 fi
 
-# rc=2 是【void-gate 判定为红】，rc=1 才是【拍不出帧】。必须分开：
-# 2026-07-28 第一版把两者混成一个 rc，于是 void-gate 变红时打印的是"渲染环境在位却拍不出帧"——
+# rc=2 是【void-gate 判定为红】，rc=3 是【空间往返采集失败】，rc=1 才是【拍不出帧】。必须分开：
+# 2026-07-28 第一版把 1 和 2 混成一个 rc，于是 void-gate 变红时打印的是"渲染环境在位却拍不出帧"——
 # 一条**指向错误方向**的诊断（帧其实拍出来了）。误导性的失败信息和假红一样坏：它让人去查环境。
+# rc=3 是 2026-07-30 加的第三种，理由同上：它们的**修法完全不同**，混在一起就是把人送错方向。
 if [ $SHOT_RC -eq 2 ]; then
   echo "  ❌ VISUAL GATE：界外层重画门变红（帧拍出来了，是这条性质破了）——见上面的 [VOIDGATE] 行"
+  exit 1
+fi
+if [ $SHOT_RC -eq 3 ]; then
+  echo "  ❌ VISUAL GATE：空间往返采集失败（昼夜两帧与 void-gate 都过了）——见上面的 [SPACESHOT] 行"
   exit 1
 fi
 if [ $SHOT_RC -ne 0 ]; then
@@ -211,5 +230,10 @@ fi
 
 "$PY" tools/assert_daynight.py "$OUT/vg_night.png" "$OUT/vg_noon.png" "$NIGHT_TICK" "$NOON_TICK" --tol "$TOL"
 ARC=$?
+# 空间往返判据（E6/W7）。**故意跑在昼夜断言之后而不是短路**：两条门守的是不同的性质，
+# 一条红了另一条的读数仍然有诊断价值（"界外带塌了" vs "整个昼夜尺子坏了"是两种完全不同的排查）。
+"$PY" tools/assert_space_roundtrip.py "$OUT"
+RRC=$?
 [ $EPHEMERAL -eq 1 ] && rm -rf "$OUT"
-exit $ARC
+[ $ARC -ne 0 ] && exit $ARC
+exit $RRC

@@ -14,12 +14,49 @@ extends Node
 ##   逐字节可重跑（docs/38 §1.1 三跑同 digest，含 `--realtime` 开/关）。本门自己把这条性质【机检】了（下面 B）。
 ##   真模型 `slm` 做不到这点，永远【不】进 CI —— 但它与 `random` 走的是【同一条落地路】
 ##   （decide→闭集选号→重验→agent_apply），所以这条路上的结构性护栏一旦立住，两条臂同时受保护。
+##   ⚠ **上面这句"两条臂同时受保护"对 A/B 成立，对 C 不成立**——见下面 W5 那一节。
 ##
 ## 每条 arm × 每个 seed 断言三件事：
 ##   A. 所有【硬】不变量绿（含 #01「无饿穿」；软/诊断只报告——8 天小网格本就不该硬断言涌现统计）
 ##   B. 同 seed 两跑：Inv.digest / Sim.event_digest / 逐 tick 前缀链 三路一致（真确定性，不是「跑了没崩」）
 ##   C. 【闭集封闭性】：后端交回的每一个 intent 都必须是**引擎本次枚举出来的那一批候选之一**（同 `_cand_key`）
-## exit 0/1。
+## 外加一条**自检臂**（下面 W5）。exit 0/1。
+##
+## ── ★ W5（2026-07-30，docs/47 §五-E6）：C 臂此前【在它跑的两条臂上都不可能变红】────────────
+## 外部对抗评审 2026-07-28 的原话，实测复核**成立**：
+##   `random` 全剂量档走 `_instant_random` → `_rand_index` 只产一个下标，落地的是 `capped[i]`；
+##   `random@K=2` 走异步路，回包由 `parse_decision` 解成 `candidates[pk].duplicate()`，
+##   再被 `decide()` 用 `_cand_key` 对**当前** `capped` 重验一次，对不上就返回 `{}`。
+##   而 `capped = _cap_for_llm(candidates) ⊆ candidates`（AIBackend.gd:926，只做子集挑选，不改字段）。
+##   ⇒ **两条臂的 escape 数按构造恒为 0。** 8 个 seed 印出来的 `闭集=1332/1332 ✅` 是**恒真**，不是证据。
+##   一道恒绿的门读起来像保护，实际上连"探针自己坏没坏"都发现不了。
+##
+## 于是本门加了**第三条臂，只在门内部存在，绝不进出货路径**：`inject:fabricate`。
+## 它把 `AIBackend` 交回来的 object 类 intent 的 `amount` 字段 **+1** 再交给 `Sim` ——
+## 一个引擎**从没枚举过**的 `_cand_key`。判据是**反的**：这条臂的 C **必须变红**；
+## 它要是绿了，说明探针（而不是被测后端）坏了 ⇒ 整个 C 臂失去意义 ⇒ 本门 FAIL。
+##
+## **为什么挑 `amount` 而不是凭空造一个 dict**：`_cand_key` 的谓词是"这个键在不在本次候选里"，
+##   改一个键内字段与整只捏造一个 dict 对**探针**是同一件事，多出来的判别力是零；而 `amount`
+##   是唯一一个既进 `_cand_key`、又**不**被引擎的两条否决用到的字段
+##   （`_survival_ok` 只看 `need`，`_horizon_ok` 只看 dist+`dur_total`，`_object_intent_ok` 只查存在性与除零）
+##   ⇒ 伪造出来的 intent **必然原样落地**，于是本门可以顺带量到第二件事（见下条）。
+##   换成 `dur_total` 会偶发触发 `_horizon_ok` 否决，换成整只新 dict 有触发 `_object_intent_ok` 兜底
+##   甚至 push_error 的风险 —— 那会让 `ci.sh` 的 `scan` 变红，而红的原因是注入本身，不是被测性质。
+##
+## **这条臂证明什么、不证明什么（必须一起写，否则它会被当成别的东西引用）**：
+##   ✅ 证明 C 臂的探针**有判别力**：一个越界的 `_cand_key` 会被抓到并点名（注入时红、不注入时绿）。
+##   ✅ 证明 D1 那句"引擎自己并不强制闭包"是**真的**，而且是**量出来的**：
+##      本臂另记 `landed`——伪造的 intent 被 `agent_apply` **原样写进** `ag["option"]["amount"]` 的次数。
+##      实测 8 天 × 12 人 ≈ 每 seed 三百余次，一次都没有被引擎挡下。
+##   ❌ **不**证明任何出货后端会捏造 intent —— 上面刚说了，`random`/`slm` 结构上做不到。
+##      C 臂守的是**未来**：任何新后端（或 `parse_decision` 的一次改写）一旦能返回候选集外的东西，
+##      这道门会红。它是**回归门**，不是"当前后端已被验过"的证书。
+##   ❌ **不**是一条被保护的臂：本臂**不**断言 A（硬不变量）与 B（两跑一致）——它是一个**蓄意坏掉**的后端，
+##      拿它的饿穿数/digest 去下结论没有意义。
+##
+## 出货路径隔离：`inject_every` 只出现在本文件的 `ClosureProbe` 里，默认 0（= 逐字节等于改动前的纯转发），
+##   且只在 `SELFTEST` 这一条 arm 字典里被置成非 0。`game/scripts/*` 一个字节没动。
 ##
 ## ⚠ 2026-07-26（D1）修正：C 臂原本是「饿穿 agent-tick ≤ --max-starve（默认 0）」，那**不是第三条臂**——
 ##   `scenario==""` 时 `Invariants` 的 #1 化简为 `starved == 0`（Invariants.gd:18,21），而本门从不设 scenario
@@ -52,6 +89,15 @@ const ARMS := [
 	{"label": "random@K=2", "backend": "random", "decode_ticks": 2},
 ]
 
+## 自检臂（W5）。**它不是第三条被保护的臂，是 C 臂自己的负对照。** 判据是反的：C 必须变红。
+## 配置刻意与 `random(full)` 完全相同（同 backend、同剂量、同 seed、同天数），唯一的差别就是 `inject_every`
+## ⇒ 与 ARMS[0] 构成一对**只差一个变量**的对照，digest 的差可以全部归因给注入。
+## `inject_every=3`：每第 3 个落地的 object 类 intent 伪造一次。取 3 而不是 1，是为了让同一跑里
+## **合法与非法两种 intent 都出现**——若探针把"每一个"intent 都判成越界（例如键算错了），
+## 那样的坏探针在 inject_every=1 下同样"红"，这条负对照就分辨不出来；而 ARMS 那两条恒绿的臂
+## 正好是它的另一半（同一份探针、零注入、必须 0/N 越界）。两边合起来才是一个完整的判别对。
+const SELFTEST := {"label": "inject:fabricate", "backend": "random", "decode_ticks": 0, "inject_every": 3}
+
 func _ready() -> void:
 	var seeds_spec := "1-4"
 	var days := 8
@@ -79,6 +125,7 @@ func _ready() -> void:
 	var n_det_ok := 0
 	var n_closed_ok := 0
 	var total := 0
+	var clean_digest := {}                                 # seed -> random(full) 干净臂的 Inv.digest（自检臂的对照基准）
 	for arm in ARMS:
 		for sd in seeds:
 			total += 1
@@ -93,6 +140,8 @@ func _ready() -> void:
 					hard_fails.append("#%d %s — %s" % [int(c["id"]), String(c["name"]), String(c["detail"])])
 			var d1: int = Inv.digest(Sim)
 			var e1: int = Sim.event_digest
+			if String(arm["label"]) == "random(full)":
+				clean_digest[sd] = d1                      # 自检臂唯一变量是注入 ⇒ 拿它做同 seed 的对照
 			var c1: int = int(r1["chain"])
 			var t1: PackedInt64Array = r1["chain_ticks"]
 			var landed: int = int(AIBackend.stats["landed"])
@@ -126,8 +175,39 @@ func _ready() -> void:
 				("%d/%d ✅" % [n_int - esc, n_int]) if closed_ok else
 					("❌ %d/%d 个 intent 不在本次候选里 —— 首例：%s" % [esc, n_int, String(r1["escape_eg"]) if String(r1["escape_eg"]) != "" else String(r2["escape_eg"])])])
 
-	print("\n=== BackendGate: %s  (硬不变量 %d/%d, 同seed两跑一致 %d/%d, 闭集封闭 %d/%d) ===" % [
-		"PASS ✅" if not red else "FAIL ❌", n_hard_ok, total, n_det_ok, total, n_closed_ok, total])
+	# ── 自检臂（W5）：判据是【反】的——C 必须变红，否则探针本身没有判别力 ────────────────
+	# 只跑一遍（不做两跑一致：本臂是蓄意坏掉的后端，它的确定性没有意义，也不构成任何承诺）。
+	var st_ok := 0
+	var st_land_ok := 0
+	print("  ── 自检臂（gate-internal，绝不在出货路径上）：C 臂的负对照，判据是【必须红】──")
+	for sd in seeds:
+		var ri := _run(SELFTEST, sd, days)
+		var esc_i: int = int(ri["escapes"])
+		var n_i: int = int(ri["intents"])
+		var inj: int = int(ri["injected"])
+		var lnd: int = int(ri["landed_fab"])
+		var di: int = Inv.digest(Sim)
+		# 不多不少：每一次伪造都被抓到（≥），且没有误报任何合法 intent（≤）。
+		# 实测 seeds 1-4 × 8 天恒 145/145、145/145、141/141、147/147 —— 严格相等是**量出来的**，不是假设。
+		# 若日后它变成 esc<inj：说明某次 amount+1 撞上了另一个枚举候选的 _cand_key（两个候选只差 amount），
+		#   那就换一个进 _cand_key 但不进引擎否决的字段来注入，别把判据放松成 ">=1"（那会把探针的误报放跑）。
+		var detected := esc_i >= 1 and esc_i == inj
+		var moved := (not clean_digest.has(sd)) or di != int(clean_digest[sd])
+		if detected: st_ok += 1
+		else: red = true
+		if lnd >= 1: st_land_ok += 1
+		else: red = true                                  # 一次都没落地 ⇒ 下面那句"引擎不强制闭包"就不该再说
+		print("    [%s] seed=%d 伪造=%d 抓到=%d/%d %s | 引擎原样落地=%d %s | 世界轨迹 vs 干净臂: %s" % [
+			String(SELFTEST["label"]), sd, inj, esc_i, n_i,
+			("✅ 探针有判别力" if detected else
+				("❌ 本臂一次都没伪造成功（inject_every 被关掉？object 类 intent 为 0？）⇒ 这条负对照没跑到" if inj == 0
+				else "❌ 伪造 %d 次、探针只报 %d 次越界 ⇒ C 臂抓不到它该抓的东西，是装饰" % [inj, esc_i])),
+			lnd, "✅ 引擎不强制闭包（红线#2 靠的就是这道门）" if lnd >= 1 else "❌ 一次都没落地 —— 注入被别的护栏吃掉了，这条证据不成立",
+			("d=%d ≠ %d 已移动" % [di, int(clean_digest.get(sd, 0))]) if moved else "d=%d 未移动（可疑）" % di])
+
+	print("\n=== BackendGate: %s  (硬不变量 %d/%d, 同seed两跑一致 %d/%d, 闭集封闭 %d/%d, 自检臂必红 %d/%d, 伪造落地 %d/%d) ===" % [
+		"PASS ✅" if not red else "FAIL ❌", n_hard_ok, total, n_det_ok, total, n_closed_ok, total,
+		st_ok, seeds.size(), st_land_ok, seeds.size()])
 	get_tree().quit(0 if not red else 1)
 
 ## 跑一局。饿穿口径与 Harness._run_once（Harness.gd:597-601）/ DetGate._run 逐字一致：
@@ -148,17 +228,35 @@ func _run(arm: Dictionary, seed: int, days: int) -> Dictionary:
 	# 【这条零扰动是量出来的，不是声称的】：夹探针前后 8 行 d=/e= 逐字节相同，且与 ModelPathGate C 段
 	# （另一条独立实现的探针）的 random(full) digest 也逐字节相同。
 	var probe := ClosureProbe.new()
+	probe.inject_every = int(arm.get("inject_every", 0))   # 缺省 0 = 纯转发（ARMS 两条臂逐字节等于改动前）
 	Sim.backend = probe
 	Sim.auto_run = false
 	AIBackend.reset_stats()                                # 跨 seed/跨跑清零（否则 _last_llm/_synth_busy_until 串味）
 	var total: int = days * int(Sim.TICKS_PER_DAY)
 	var starved := 0
+	var landed_fab := 0
 	var chain: int = Inv.CHAIN_INIT
 	var chain_ticks := PackedInt64Array()
 	chain_ticks.resize(total)
 	var ev_seen: int = Sim.event_log.size()
 	for t in range(total):
 		Sim.tick()
+		# 自检臂专用（inject_every==0 时 fab_watch 恒空 ⇒ 本段是 no-op，零扰动）：
+		# 伪造发生在本 tick 的 decide 里，而 Sim.tick 在 agent_apply 之后立刻 return
+		# ⇒ 此刻 option 若真是那一份伪造的，必然还停在刚建好的形状（phase=travel、remaining==dur_total）。
+		# 比对 action/target/amount 三者同时相等：amount 是我们 +1 出来的、引擎从没枚举过的那个值。
+		for f in probe.fab_watch:
+			var ag2: Dictionary = Sim.get_agent(String(f["id"]))
+			if ag2.is_empty():
+				continue
+			var opt = ag2.get("option")
+			if opt is Dictionary and String(opt.get("kind", "")) == "object" \
+					and String(opt.get("action", "")) == String(f["action"]) \
+					and String(opt.get("target", "")) == String(f["target"]) \
+					and int(opt.get("amount", -1)) == int(f["amount"]) \
+					and int(opt.get("remaining", -1)) == int(opt.get("dur_total", -2)):
+				landed_fab += 1
+		probe.fab_watch.clear()
 		chain = Inv.chain_step(chain, Sim, ev_seen)
 		ev_seen = Sim.event_log.size()
 		chain_ticks[t] = chain
@@ -168,7 +266,8 @@ func _run(arm: Dictionary, seed: int, days: int) -> Dictionary:
 					starved += 1
 	Sim.backend = null                                     # 探针不跨 seed 续命（下一跑自己新建一个）
 	return {"starved": starved, "chain": chain, "chain_ticks": chain_ticks,
-		"intents": probe.n_intent, "escapes": probe.n_escape, "escape_eg": probe.first_escape}
+		"intents": probe.n_intent, "escapes": probe.n_escape, "escape_eg": probe.first_escape,
+		"injected": probe.n_inject, "landed_fab": landed_fab}
 
 
 ## 闭集封闭性探针（C 臂）。纯转发：把 Sim 的每一次 decide/reflect 原样交给 AIBackend，
@@ -181,14 +280,32 @@ func _run(arm: Dictionary, seed: int, days: int) -> Dictionary:
 ##   · 比的是 `_cand_key`（kind/action/partner/target/subject/need/area/commit/amount/dur_total），
 ##     **不是** dict 相等：后端合法地会加 `say`（冻结语音库）、`duplicate()` 出新引用，那些都不算越界；
 ##   · 候选为空时引擎压根不问后端，故不存在"空候选里挑一个"的边界。
+##
+## ★ W5 起它多了一顶【只在门内部戴的】帽子：`inject_every > 0` 时它会**自己捏造**越界 intent，
+##   用来给上面那条封闭性断言做负对照。默认 0 ⇒ 纯转发，与改动前逐字节相同。
+##   捏造发生在**探针交给 Sim 之前**，所以引擎的 `_survival_ok`/`_horizon_ok` 会照常审它——
+##   这正是我们想要的形状：伪造的是"后端交回来的东西"，不是"绕过引擎直接写世界"。
 class ClosureProbe extends RefCounted:
 	var n_intent := 0        # 真正落地的 intent 数（分母，排除 {} 与 _wait）
 	var n_escape := 0        # 其中【不在本次候选里】的
 	var first_escape := ""   # 首例的可读描述（给失败消息用）
+	# ── 自检臂专用（gate-internal；出货路径上恒为 0/空）────────────────────────
+	var inject_every := 0    # 0=不注入。>0：每第 N 个 object 类 intent 伪造一次
+	var n_inject := 0        # 已伪造次数
+	var n_obj_seen := 0      # 见过的 object 类 intent 数（注入相位的计数器，与 n_intent 分开）
+	var fab_watch: Array = []  # 本 tick 刚伪造出去的 {id,action,target,amount}，交给 _run 在 tick 后核对是否原样落地
 	func decide(ag: Dictionary, cands: Array, ctx: Dictionary) -> Dictionary:
 		var intent: Dictionary = AIBackend.decide(ag, cands, ctx)
 		if intent.is_empty() or intent.get("_wait", false):
 			return intent
+		if inject_every > 0 and String(intent.get("kind", "object")) == "object" and intent.has("amount"):
+			n_obj_seen += 1
+			if n_obj_seen % inject_every == 0:
+				intent = intent.duplicate()                 # 绝不就地改 cands 里那份（那会污染引擎自己的候选）
+				intent["amount"] = int(intent["amount"]) + 1  # ← 引擎从没枚举过的 _cand_key
+				n_inject += 1
+				fab_watch.append({"id": String(ag.get("id", "")), "action": String(intent.get("action", "")),
+					"target": String(intent.get("target", "")), "amount": int(intent["amount"])})
 		n_intent += 1
 		var key: String = Sim._cand_key(intent)
 		for c in cands:

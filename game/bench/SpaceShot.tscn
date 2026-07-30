@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bbnchspshot01"]
+
+[ext_resource type="Script" path="res://bench/SpaceShot.gd" id="1_ss"]
+
+[node name="SpaceShot" type="Node"]
+script = ExtResource("1_ss")

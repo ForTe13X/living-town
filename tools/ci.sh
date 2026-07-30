@@ -111,10 +111,18 @@ echo "### 4d. BackendGate 外部后端门 (硬不变量含#01 / 同seed两跑一
 # 用 random 而不是 slm：random 的选号来自 Sim._rng_at(RANDOM_SALT) 确定性流、时延按 tick 计，逐字节可重跑
 #   （本门自己把这条性质机检了：每个 seed 跑两遍比 digest/链）；slm 有 run-to-run 噪声，永远不进 CI。
 #   两条臂走的是【同一条落地路】(decide→闭集选号→重验→agent_apply)，故这条路上的护栏一旦立住，两者同时受保护。
-# 三条臂（2026-07-26 D1 起，此前第三条是假的——它与第一条的 #01 逐位同一个谓词）：
+#   ⚠ 2026-07-30（E6/W5）收窄：上面这句**对 A/B 成立，对 C 不成立**。`random`/`slm` 结构上
+#     都只能交回 `candidates` 的子集（`_instant_random` 挑下标 / `parse_decision` 取 `candidates[pk]`），
+#     ⇒ C 的 escape 数在这两条臂上**恒为 0**，"闭集 1332/1332 ✅"是恒真、不是证据。
+# 三条臂 + 一条自检臂（2026-07-26 D1 起，此前第三条是假的——它与第一条的 #01 逐位同一个谓词）：
 #   A 硬不变量全绿  B 同 seed 两跑 digest/事件/逐tick前缀链一致  C 闭集封闭（后端交回的 intent 必在本次候选里）
+#   S 自检臂 `inject:fabricate`（**只在门内部**，绝不进出货路径）：一个会篡改 `amount` 的假后端，
+#     判据是**反的**——C 必须变红。它给 C 补上此前缺的那半：**注入时红、不注入时绿**。
+#     实测（seeds 1-4 × 8 天）：伪造 141-147 次、探针恰好抓到 141-147 次、其中 109-116 次被
+#     `agent_apply` **原样落地** ⇒ 下面那句"引擎自己不强制它"从此是量出来的，不是推的。
 # C 守的是红线#2 的后半句，而【引擎自己不强制它】：Sim.gd:1185-1201 只做生存/视野否决，
 #   一个凭空捏造的 intent 只要不违反生存否决就会被 agent_apply 原样落地。
+#   ⇒ C 是一道**回归门**（守未来任何新后端 / `parse_decision` 的改写），**不是**"现有后端已被验过"的证书。
 "$GODOT" --headless --path game res://bench/BackendGate.tscn -- \
   --seeds "${CI_BG_SEEDS:-1-4}" --days "${CI_BG_DAYS:-8}" --agents "${CI_BG_N:-12}" 2>&1 | tee "$LT_LOG/backendgate.log"
 [ "${PIPESTATUS[0]}" -eq 0 ] && ok "BackendGate 外部后端门（硬不变量/两跑一致/闭集封闭）" || bad "BackendGate 外部后端门（硬不变量/两跑一致/闭集封闭）"
@@ -168,7 +176,7 @@ for scene in m2_test reqlife_test player_agency_test player_touch_test s4_replay
   esac
 done
 
-echo "### 6. 昼夜量具视觉门（本仓库第一条【视觉】断言 —— 无渲染环境时自动 SKIP，不假红）"
+echo "### 6. 视觉门：昼夜量具 + 界外层重画 + 空间往返（无渲染环境时自动 SKIP，不假红）"
 # 为什么是这一条先进 CI：docs/41 §6 盲区④——`--shot` 曾经【永远渲不出昼夜】，
 # 于是【这个项目所有视觉判断用的尺子】是坏的（"偏亮/偏暗"的结论全部不可信）。C3 用 Main.gd:271 一行修好了它，
 # 而在此之前没有任何门守着那一行：把它删掉，上面 0-5 每一步都照样全绿。
@@ -181,12 +189,21 @@ echo "### 6. 昼夜量具视觉门（本仓库第一条【视觉】断言 ——
 # 真正让它在 GHA 上跳过的是 visual_gate.sh 里那条**显式** `$GITHUB_ACTIONS` 判断。
 # 这是蓄意的：**一道在别人机器上因环境变红的门比没有门更坏**——它训练所有人忽略红色。
 # 判据都在 tools/visual_gate.sh 抬头；想让它必须跑（例如宿主 CI）：`LT_VISUAL=require bash tools/ci.sh`。
+#
+# ── 2026-07-30（E6/W7）：这一步现在有【三】道门，一次 Xvfb 全跑完 ────────────────
+#   ① 昼夜量具（C3 那一行修复的守门人，assert_daynight.py）
+#   ② 界外层重画门（D7 的 9× 帧时那条结构性性质，`--void-gate`）
+#   ③ **空间往返像素门**（assert_space_roundtrip.py）——评审那句「没有人看过空间切换之后的任何一帧」。
+#      ②③ 不是同一件事做两遍：② 数的是**重画次数**，③ 看的是**画出来的像素**。
+#      实测负对照（把界外层改成"照常重画但什么都不画"）：**② PASS、③ FAIL** —— ② 结构上看不见它。
+#      而同一棵坏树上 ① 也会红，但它的失败信息说的是"夜帧主色不对"，把人指向昼夜乘子——
+#      ③ 的失败信息才指着真正坏掉的那条性质。**误导性的失败信息和假红一样坏。**
 bash tools/visual_gate.sh 2>&1 | tee "$LT_LOG/visual.log"
 VRC="${PIPESTATUS[0]}"
 case "$VRC" in
-  0)  ok "DayNight 视觉门" ;;
-  77) echo "  ⏭  SKIP: DayNight 视觉门（本机没有渲染环境；LT_VISUAL=require 可让它变红）" ;;
-  *)  bad "DayNight 视觉门 (exit $VRC)" ;;
+  0)  ok "视觉门（昼夜 / 界外层重画 / 空间往返）" ;;
+  77) echo "  ⏭  SKIP: 视觉门（本机没有渲染环境；LT_VISUAL=require 可让它变红）" ;;
+  *)  bad "视觉门 (exit $VRC)" ;;
 esac
 
 echo
