@@ -34,7 +34,97 @@ const SUPPLY_FLOOR := 0.5
 const SUPPLY_MIN_DEMAND := 20
 const SUPPLY_MIN_DAYS := 60
 
-static func check_all(S, starved: int) -> Array:
+## #1 的名字。**2026-07-30（J1）由「无饿穿」改成本行**，理由是量出来的，记在这里而不是提交信息里，
+## 因为下一个读这一条的人手边只有这个文件。
+##
+## 判据一个字节没改（`starved == 0 or not harmony`），改的只有名字。
+## 喂给本函数的 `starved` 是 **Σ over (agent, tick, need) of [need ≤ 0.5]**（Harness.gd `_run_once`，
+## 另有 7 份逐字复制，见下），数的是**任何一条需求触底**，而名字只写了五条需求里的一条。
+##
+## ⚠ **不是"漂移"，是【生来就不符】**（docs/41 §1.5①：grep 给现状，`git log -S` 给意图）：
+##   `git log -S "无饿穿"`、`git log -S 'starved == 0 or not harmony'`、
+##   `git log -S 'for nid in ag["needs"]'` **三条都只回一个 commit** —— `ebac5a3`（2026-07-03，
+##   首个公开快照）。名字与宽判据是**同一次提交里一起进来的**，此后 27 天谁都没动过。
+##   ⇒ 派棒的 brief 写的"只是叫错了 15 天"**偏短了**：正确的说法是"**从来没对过**"。
+##   这一条比天数重要：没有"哪一次改动把它改窄/改宽了"可查，所以**不存在一个曾经正确的版本可以回退**。
+##
+## ⚠ 为什么不是反过来改代码（"只数 hunger"）——**这是量过的，不是选的**。
+## docs/54 §五 报的是"72 格里 3 格红、3/3 都是 social、没有一格是 hunger"，读起来像"hunger 那半是死码"。
+## 把网格铺开之后不成立（J1，**114 次运行** / 5 种 need / 6 个配置域，逐次实测；hygiene 一次都没触底）：
+##
+##   配置域                                       运行数  红   hunger  social  energy  fun
+##   backend=null，N∈{12,16,20,24,30,60}，60 天      72    3       0     177       0    0
+##   backend=null，N=30，120 天                      12    1       0      81       0    0
+##   backend=null，N=60，60 天，激进 LOD               6    0       0       0       0    0
+##   backend=random(full)，N=12，60 天（出货配置）      8    1      11       0       0    0
+##   backend=random(full)，N=30，60 天                 8    3      50     296       0    4
+##   backend=random(full)，N=12，8 天，survival_veto=0  8    8     506     133      32    0
+##   合计                                          114   16     567     687      32    4
+##
+## ⇒ **hunger 与 social 的触底实例数是同一量级**（567 : 687），只是各自住在不同的配置域里：
+##   零模型地板（`backend=null`）上 100% 是 social；**模型路上 hunger 反而是主项**。
+##   docs/41 §2 的第一个盲区（`backend=null` ⇒ `decide()` 根本不进）正好把 hunger 那一半藏在了统计外面
+##   ——I3 的网格整个跑在零模型地板上，于是"全是 social"是**采样的性质，不是系统的性质**。
+##   `backend=random` + `survival_veto_line=0`（= B14 的 `_survival_ok` 落地之前那棵树）逐字复现了
+##   docs/38 §五 记的 `random` 8/8 饿穿，而**那 8 个 seed 的 75.4% 是 hunger** —— 名字所指的那件事，
+##   真的会发生，只是不在零模型地板上。
+##
+## 四格负对照（**判决由本函数自己给出**，不是纸上推演）：
+##   世界 H（只有 hunger 触底：random+veto=0，N=12，seed 4 / seed 6，8 天）
+##   世界 S（只有 social 触底：null，N=24，seed 3，60 天）
+##     | 世界 | 现判据（任一 need） | 「只数 hunger」的判据 |
+##     | H(s4)| ❌ 红 starved=39   | ❌ 红 39            |
+##     | H(s6)| ❌ 红 starved=59   | ❌ 红 59            |
+##     | S    | ❌ 红 starved=35   | ✅ **绿 0** ← 收窄的代价就是这一格 |
+##   ⇒ 收窄成"只数 hunger"会让 **S0 网格上今天仅有的 3 格红全部转绿**，且不给 social 留任何门。
+##      收窄不是"把名字兑现"，是**净减一半判别力**。名字改起来是零成本的，判别力不是。
+##
+## ⚠ 改名之后**不要**再把它读窄：本条守的是**五条需求里任何一条**触底
+##   （hunger / energy / social / fun / hygiene，`needs.json`）。docs/54 §五 已经点过这个坑的名字：
+##   "报告里读到'饿穿'的人会去查粮食，而粮食是无辜的"——所以名字里必须带上"任一需求"。
+##
+## ── docs/41 §2.5 探测包络（`does_not_detect` 逐条都是**跑出来的**，不是想出来的）──────────
+## detects：
+##   · `survival_veto_line` 归零（= B14 的 `_survival_ok` 落地之前那棵树）+ `random` 后端
+##     ⇒ 8/8 seed 红，hunger 触底 506 need·tick，hunger 地板 0.00 逐 seed 8/8。
+##   · 大 N 下的社会性孤立 ⇒ N=24 s3 / N=30 s1 / N=60 s12 红（social，各 35 / 81 / 61 need·tick）。
+##   · 出货配置的模型路（`random` full，N=12，60 天）⇒ seed 1 红（hunger×11）。
+## does_not_detect：
+##   · **任何非空 `scenario` 一律豁免**（`starved == 0 or not harmony`）。实测：`random`+veto=0+`faction`，
+##     seeds 1-4 × 8 天 ⇒ `starved` = 145/86/84/34、hunger 地板 0.00 逐 seed 4/4，而 **#1 绿 4/4**。
+##     ⇒ `ci.sh` 4c 的 DetGate 跑 4 条臂，其中 3 条（faction/betray/freerider）本条**结构上不可能变红**。
+##   · **停在 0.5 以上的一切退化**。实测：未改动的出货树，N=60（红线 #3 的出货目标）seed 10，
+##     hunger 地板 **1.76**（= 98.2% 饿着）而 **#1 绿**；同一格 12 个 seed 里 11 个绿。
+##     它是一条**零线**判据，不是余量判据——"快饿死"与"很舒服"在它眼里一模一样。
+##   · **激进 LOD 会把它整个盖住**。实测 N=60 + `lod_aggregate`：0/6 红，五条 need 的地板全部 ≥ 8.64
+##     （`_far_maintain` 被动喂需求）。⇒ 想用本条守大 N，必须关 LOD，否则量到的是兜底网不是行为。
+##   · **不区分"一个人 61 tick"与"61 个人 1 tick"**（不按 agent 去重）。实测：零模型地板上 4 例红
+##     4/4 都是**单独一个人**，而计数读起来像一场群体灾难。
+##   · 触底**之后**的事一概不管：没有死亡、没有产能损失、没有"饿了多久"。`Sim._consume_for` 的红线是
+##     缺货绝不阻断动作（docs/54），所以触底在本仓库里不致死——本条量的是**擦零**，不是后果。
+## confidence：N=114 次运行 × 6 个配置域（上表），其中变异体 1 种（`survival_veto_line=0`）；
+##   四格负对照 3 格（世界 H 两例 + 世界 S 一例）。**没有**在真机 / 有玩家 / SLM 后端 / N>60 上量过。
+const INV1_NAME := "无 need 触底（任一需求，不只饥饿）"
+
+## #1 的触底逐 need 明细（可选）。传了就在 detail 里点名是哪条需求触的底，不传则与改名前逐字相同。
+## 为什么要它：I3 在 docs/54 §五 是**手工挖**出"三例都是 social"的——判据自己一个字都没说。
+## 一条红了却说不出红在哪的判据，会被下一个人按名字去猜，而这一条的名字恰好猜错了 15 天。
+static func _need_breakdown(by_need: Dictionary) -> String:
+	if by_need.is_empty():
+		return ""
+	var ks: Array = by_need.keys()
+	ks.sort_custom(func(a, b):
+		var ca := int(by_need[a])
+		var cb := int(by_need[b])
+		return ca > cb or (ca == cb and String(a) < String(b)))   # 计数降序，同数按名——确定
+	var parts := PackedStringArray()
+	for k in ks:
+		parts.append("%s×%d" % [String(k), int(by_need[k])])
+	return "  逐 need=[" + ", ".join(parts) + "]"
+
+## starve_by_need：可选的逐 need 明细，**只进 detail 字符串，不进任何判据**（默认 {} ⇒ 8 个既有调用点
+## 一个字节不用改，输出也与改名前逐字相同）。今天只有 Harness 传它。
+static func check_all(S, starved: int, starve_by_need: Dictionary = {}) -> Array:
 	var R: Array = []
 	var log: Array = S.event_log
 	var accepted: Array = []
@@ -47,8 +137,9 @@ static func check_all(S, starved: int) -> Array:
 
 	var harmony: bool = String(S.scenario) == ""   # 定向场景(faction/betray/freerider)会扭曲关系/致饿穿 → 豁免和睦不变量
 	var small_n: bool = S.agents.size() <= 12       # 涌现/单源传播类只在设计 N(≤12)硬断言；大 N 单源谣言 fizzle 是现实(docs/12 L4)
-	# 1) 无饿穿
-	R.append(_chk(1, "无饿穿", starved == 0 or not harmony, "触底 need·tick=%d (应=0;场景豁免)" % starved))
+	# 1) 无 need 触底（旧名「无饿穿」——判据从来就是【任一】need≤0.5，见 INV1_NAME 处的实测与四格对照）
+	R.append(_chk(1, INV1_NAME, starved == 0 or not harmony,
+		"触底 need·tick=%d%s (应=0;场景豁免)" % [starved, _need_breakdown(starve_by_need)]))
 	# 2) 社交发生
 	R.append(_chk(2, "社交发生", not accepted.is_empty(), "已接受社交事务=%d (应>0)" % accepted.size()))
 	# 3) 无永久孤立
@@ -635,11 +726,11 @@ const DIAG_IDS := [15]
 ## ⚠ 诊断档(DIAG_IDS，现为 #15)【不计入 soft】：Harness/DetGate/LodAblation 各自都已跳过它，唯独本函数
 ## 还把它算作软失败——任何新消费方照此把门就会被一个【已知有时间泄漏、docs/31 判定无效】的指标拖红。
 ## 单列 diag 桶：既堵住这个陷阱，又不丢信息。（LodAblation 自算 fh/fs 不走本函数 → 既有门判定不受影响。）
-static func split_fails(S, starved: int) -> Dictionary:
+static func split_fails(S, starved: int, starve_by_need: Dictionary = {}) -> Dictionary:
 	var hard := 0
 	var soft := 0
 	var diag := 0
-	for c in check_all(S, starved):
+	for c in check_all(S, starved, starve_by_need):
 		if bool(c["ok"]):
 			continue
 		if int(c["id"]) in DIAG_IDS: diag += 1
