@@ -445,12 +445,14 @@ func _load_data() -> void:
 	#   本棒最重要的那条验收就没法在 CI 里跑。先 file_exists 再读 ⇒ 缺文件是【合法的关闭态】，不是错误。
 	if FileAccess.file_exists("res://data/production.json"):
 		production = _read_json("res://data/production.json")
+	_merge_prod_jobs()                              # F1：production.jobs 里的新岗位(商贩/环卫工)并进岗位表；缺该键=今天的六个岗位
 	# P3 Tier-B：Space/Floor/Portal 合同 + 室内内容（缺 spaces.json → 空 → 全 town/outdoor → 逐字节不变）。
 	var _sp := _read_json("res://data/spaces.json")
 	_spaces = _sp.get("spaces", {})
 	_portals = _sp.get("portals", [])
 	_interiors_data = _read_json("res://data/interiors.json")
 	_compile_interiors()                            # 把带 advertises 的室内家具编译成 world 对象(标平面)，须在数组→字典之前
+	_compile_worksites()                            # F1：production.worksites → town 平面的工位对象，同样须在数组→字典之前
 	var objs := {}
 	for o in world.get("objects", []):
 		o["pos"] = Vector2i(int(o["pos"][0]), int(o["pos"][1]))
@@ -582,6 +584,59 @@ func _compile_interiors() -> void:
 					"space": String(space), "floor": String(floor), "area": String(space) + ":" + String(floor),
 					"staff": bool((fu as Dictionary).get("staff", false)),   # P3：员工专属对象(吧台)——只有该店主人用；顾客用公共桌
 					"advertises": adv.duplicate(true)})
+	world["objects"] = objs
+
+## ── F1 分工的空间落点（docs/48 §一-F1）───────────────────────────────────────────
+## ★为什么新岗位与新工位都写在 production.json，而不是写进 jobs.json / map.json：
+##   本棒的零扰动对照是「把新数据摘掉 ⇒ 金标逐字节回到今天」。写进 map.json 的对象无论 production 在不在
+##   都会存在、写进 jobs.json 的岗位无论 production 在不在都会上班 ⇒ 那条对照【结构上不可能成立】。
+##   一个门、一份数据、一次 ablate —— 与 economy.json / jobs.json / production.json 已验证好用的那套同形。
+
+## production.json 的 jobs 段 = 本波新增的岗位（商贩 / 环卫工）。只补不覆盖：jobs.json 已给该居民派了活就不动，
+## 手写数据永远压过本段。缺 jobs.json（jobs 为空）时【整段不生效】——新岗位不能凭空造出一个没有岗位表的世界。
+func _merge_prod_jobs() -> void:
+	if not _prod_on() or jobs.is_empty() or not (jobs.get("jobs", {}) is Dictionary):
+		return
+	var add: Dictionary = production.get("jobs", {}) if production.get("jobs", {}) is Dictionary else {}
+	var tbl: Dictionary = jobs["jobs"]
+	for aid in add:                                     # JSON 字典保序 → 遍历序确定 → _holder_of_title 稳定
+		if not tbl.has(String(aid)) and add[aid] is Dictionary:
+			tbl[String(aid)] = (add[aid] as Dictionary).duplicate(true)
+
+## production.json 的 worksites 段 → town 平面上的工位对象（工作台/面案/清扫车/摊位）。
+## 确定性：authored 顺序、id 来自数据、无 RNG/Time/计数器。缺该键 → 一个对象都不加 → 地图逐格原样。
+## 护栏与 _compile_buildings 同形：畸形项【确定性跳过 + push_error】，绝不半改 world。
+## ★区域归属是硬校验而不是注释：申报的 area 必须与 _area_at(pos) 相符，否则跳过。
+##   docs/43 §1.2b 记过「地图门抓不到合法但语义不对」——把工位放进正确的区是这一棒要守的那条语义，
+##   所以它有两道独立的门：这里（运行期，落 push_error → ci.sh 的 scan 判红）与 tools/audit_map.py（CI 静态）。
+func _compile_worksites() -> void:
+	if not _prod_on():
+		return
+	var objs: Array = world.get("objects", [])
+	var used := {}
+	for o in objs:
+		used[String((o as Dictionary).get("id", ""))] = true
+	for w in _as_arr(production.get("worksites", [])):
+		if not (w is Dictionary):
+			continue
+		var wd: Dictionary = w
+		var wid := String(wd.get("id", ""))
+		var pos: Array = _as_arr(wd.get("pos", []))
+		if wid == "" or used.has(wid) or pos.size() < 2:
+			push_error("worksite id 缺失/撞车/pos 非法，跳过(否则静默覆盖或凭空候选→漂 digest): " + wid)
+			continue
+		var adv: Array = _as_arr(wd.get("advertises", []))
+		if adv.is_empty():
+			continue                                    # 无广告位 = 不产候选 → 不必进 world（纯装饰留给视图层）
+		var apos := Vector2i(int(pos[0]), int(pos[1]))
+		var ar := _area_at(apos)
+		if ar == "" or String(wd.get("area", ar)) != ar:
+			push_error("worksite %s 的格 %s 申报 area='%s' 实为 '%s'（空=不在任何区），跳过" % [
+				wid, str(apos), String(wd.get("area", "")), ar])
+			continue
+		used[wid] = true
+		objs.append({"id": wid, "type": String(wd.get("type", "")), "area": ar,
+			"pos": [apos.x, apos.y], "advertises": adv.duplicate(true)})
 	world["objects"] = objs
 
 ## Variant→Array 强转（缺失/错类型的 JSON 数组字段一律退化为空，守"错类型=零扰动"契约，替代会崩的 `as Array`）。
@@ -1298,13 +1353,26 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 			# 生存永不被钱门住(守"无饿穿"硬不变量)，钱只造分化/戏剧，不造饿死。
 			if _econ_on():
 				var price := int(economy.get("prices", {}).get(String(opt["action"]), 0))
+				# ★F1 商贩：全镇唯一一笔【人→人】的货款。收款方从镇库换成【现任商贩本人】，
+				#   价钱从 production.vendor.price 来（economy.json 不属于本棒，也不该由它定一个岗位的加价）。
+				#   守恒仍然只靠 transfer 这一道门 → 硬 #34 一个字节都不用改。
+				#   注意本项目里"人→人"并不是本棒首创：Wave 3c 的房租(_nightly 的 transfer(房客,房东))已经是了；
+				#   本棒新的是【货与钱同时易手】——镇库的货经 _stock_take 出账、钱进的是个人口袋。
+				#   买家恰好就是商贩本人时跳过收款（自己卖给自己不是交易，只会在账本上留一条净零的 pay）。
+				var payee := "town"
+				var vend: Dictionary = production.get("vendor", {}) if _prod_on() and production.get("vendor", {}) is Dictionary else {}
+				if not vend.is_empty() and String(vend.get("action", "")) == String(opt["action"]):
+					var vid := _holder_of_title(String(vend.get("title", "")))
+					if vid != "" and vid != String(ag["id"]) and _agent_by_id.has(vid):
+						price = int(vend.get("price", 0))
+						payee = vid
 				if price > 0 and short:
 					price += int(production.get("scarcity_markup", 0))   # 缺货溢价：仍走 transfer 唯一通道 → #34 不受影响
 				if price > 0:
-					if transfer(String(ag["id"]), "town", price, "price:" + String(opt["action"])):
+					if transfer(String(ag["id"]), payee, price, ("buy:" if payee != "town" else "price:") + String(opt["action"])):
 						econ_stats["meals_paid"] += 1
 					else:
-						econ_stats["meals_free"] += 1
+						econ_stats["meals_free"] += 1      # 付不起照吃（meals_free）——商贩路同样继承这条红线
 		else:
 			_move_agent(ag, _nav_step(ag, target_obj["pos"]))
 		emit_signal("agent_changed", ag["id"])
@@ -1325,7 +1393,7 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 				# Wave 2c 技能：本职动作完成 → 熟练度+1，升级写里程碑记忆(voice grounding)。先涨技能再算工资 → 升级当次即涨薪。数据门控。
 				if not skills.is_empty():
 					var jb1 := _job_of(String(ag["id"]))
-					if not jb1.is_empty() and String(jb1.get("action", "")) == String(opt["action"]):
+					if not jb1.is_empty() and _job_action(jb1) == String(opt["action"]):
 						var lv0 := _skill_level(ag, String(opt["action"]))
 						ag["skills"][String(opt["action"])] = int((ag["skills"] as Dictionary).get(String(opt["action"]), 0)) + 1
 						if _skill_level(ag, String(opt["action"])) > lv0:
@@ -1335,7 +1403,7 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 					if transfer("town", String(ag["id"]), wage, "wage:" + String(opt["action"])):
 						econ_stats["wages_paid"] += 1
 						var jb := _job_of(String(ag["id"]))
-						if not jb.is_empty() and String(jb.get("action", "")) == String(opt["action"]):
+						if not jb.is_empty() and _job_action(jb) == String(opt["action"]):
 							ag["memory"].add("上工%s，挣了%d个钱" % [String(jb.get("title", "")), wage], 4, tick_no, ["job", "coin"])
 					else:
 						econ_stats["wages_skipped"] += 1
@@ -1468,7 +1536,11 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 			continue
 		var amt := 0; var dur := 0; var act := ""
 		for adv in _as_arr(o.get("advertises", [])):
-			if adv is Dictionary and String(adv.get("need", "")) == nid and int(adv.get("amount", 0)) > amt:
+			if not (adv is Dictionary):
+				continue
+			if not _adv_open(ag, adv):
+				continue                                        # F1：跨平面行程也要过工位专属/市集时段两道门（否则会承诺跑一趟去一个关着的摊）
+			if String(adv.get("need", "")) == nid and int(adv.get("amount", 0)) > amt:
 				amt = int(adv.get("amount", 0)); dur = int(adv.get("duration", 0)); act = String(adv.get("action", ""))
 		if amt <= 0:
 			continue
@@ -1497,6 +1569,49 @@ func _home_needs(ag: Dictionary) -> Array:
 func _staff_ok(ag: Dictionary, o: Dictionary) -> bool:
 	return not bool(o.get("staff", false)) or String(ag.get("home_space", "town")) == String(o.get("space", "town"))
 
+## F1：一条【广告位】此刻对这个人开不开。两道门，都写在 advertise 一级（不是对象一级）——
+## 摊位同一件家具上既有对内的"摆摊"(只有商贩)又有对外的"赶集"(全镇)，对象一级的门表达不了这件事。
+##   ① 工位专属：带 job 的广告位只有该职位的【现任持有人】枚举得到（结构照抄 _staff_ok）。
+##   ② 市集时段：见 _market_open。
+## 两者都缺 → 恒真 → 所有旧广告位逐字节不变。
+func _adv_open(ag: Dictionary, adv: Dictionary) -> bool:
+	var t := String(adv.get("job", ""))
+	if t != "" and String(_job_of(String(ag["id"])).get("title", "")) != t:
+		return false
+	return _market_open(String(adv.get("action", "")))
+
+## F1 市集时段门：摊位对外的那条广告位只在【商贩在班】时存在。
+## ★这是本波唯一一个「有没有人上班」直接决定「镇上有没有这件事可做」的机制——分工第一次改变了
+##   别人的【机会集】而不只是自己的钱包。纯 f(tick, jobs)：无墙钟、无 RNG。
+## 非 vendor 动作 / 缺 vendor 键 / 缺 production.json → 恒真 → 其余广告位逐字节不变。
+func _market_open(action: String) -> bool:
+	if not _prod_on():
+		return true
+	var vend: Dictionary = production.get("vendor", {}) if production.get("vendor", {}) is Dictionary else {}
+	if vend.is_empty() or String(vend.get("action", "")) != action:
+		return true
+	var vid := _holder_of_title(String(vend.get("title", "")))
+	if vid == "" or not _agent_by_id.has(vid):
+		return false                                    # 镇上没有商贩 → 没有市集（不是"永远开着"）
+	return _in_shift(_job_of(vid))
+
+## F1 整洁度 → 效用乘子 ∈ [floor, 1.0]，线性于「现存 / cap」。缺 cleanliness 键或该货未申报 cap → 恒 1.0。
+## 只压不抬是刻意的：它跟 _weather_mult / _season_mult 是同一族，抬升会让物件吸引力膨胀、挤掉社交发起
+## （buildings.json 的 _furnish_note 已经量过这条代价）。
+func _clean_mult() -> float:
+	if not _prod_on():
+		return 1.0
+	var cl: Dictionary = production.get("cleanliness", {}) if production.get("cleanliness", {}) is Dictionary else {}
+	if cl.is_empty():
+		return 1.0
+	var g := String(cl.get("good", ""))
+	var gd: Dictionary = (production.get("goods", {}) as Dictionary).get(g, {}) if (production.get("goods", {}) as Dictionary).get(g, {}) is Dictionary else {}
+	var cap := int(gd.get("cap", 0))
+	if cap <= 0:
+		return 1.0
+	var fl := clampf(float(cl.get("floor", 1.0)), 0.0, 1.0)
+	return fl + (1.0 - fl) * clampf(float(_stock_of(g)) / float(cap), 0.0, 1.0)
+
 func _object_candidates(ag: Dictionary) -> Array:
 	var out: Array = []
 	# 昼夜节律（docs/14）：仅当 agent 无紧急需求(min≥SURVIVAL_GATE)时，用时段偏好乘子塑造"何时"满足需求(睡偏夜/吃偏三餐)。
@@ -1505,6 +1620,18 @@ func _object_candidates(ag: Dictionary) -> Array:
 	var rhythm_on := not rhythm.is_empty() and mods_ok
 	var wx_on := weather_today != "" and mods_ok             # Wave 1c：天气与节律独立门控（各自缺数据文件即各自关闭）
 	var sn_on := season_today != "" and mods_ok              # Wave 3b：季节乘子同样只在非紧急时塑形（生存优先不受季节影响）
+	# F1 整洁度乘子（docs/48 §一-F1）：镇上越脏，被点名的那些区（数据里只有广场）里的活动越不吸引人。
+	# 与天气/季节同一条纪律：**只压不抬**（≤1.0）且共用 mods_ok 生存门 —— 任一需求告急时整个关掉，
+	# 结构上不可能变成新的饿穿通道。缺 cleanliness 键/缺 production.json → cl_on=false → 逐字节不变。
+	var cl_cfg: Dictionary = production.get("cleanliness", {}) if production.get("cleanliness", {}) is Dictionary else {}
+	var cl_areas: Array = _as_arr(cl_cfg.get("areas", []))
+	# needs 白名单：只压【闲事】(fun/social)，绝不压 hunger/energy。这不只是口味——
+	# 实测把它压到 hunger 上时，广场脏 → 摊位的赶集从 95 次/seed 掉到 27 次/seed：
+	# 一个"脏"的乘子把一条【食物供给】掐掉了 2/3。mods_ok 生存门保证了它不会造成饿穿，
+	# 但把乘子从生存需求上【结构性地】摘掉，比"有一道门拦着"强一档：门可能被改，白名单在数据里。
+	var cl_needs: Array = _as_arr(cl_cfg.get("needs", []))
+	var cl_on := mods_ok and not cl_areas.is_empty()
+	var cl_mult := _clean_mult() if cl_on else 1.0
 	var tod := time_of_day()
 	for id in world["objects"]:
 		var o: Dictionary = world["objects"][id]
@@ -1518,6 +1645,8 @@ func _object_candidates(ag: Dictionary) -> Array:
 			# 避免"缺键裸括号"每 tick 崩。合规条目(四键齐全)取值与旧逐字节一致 → 不新增/移动候选 → digest 不漂。
 			if not (adv is Dictionary):
 				continue
+			if not _adv_open(ag, adv):
+				continue                # F1：工位专属（只有该职位现任持有人）+ 市集时段（商贩不在班则摊位没这一条）
 			var amount := int(adv.get("amount", 0))
 			if amount <= 0:
 				continue
@@ -1542,6 +1671,10 @@ func _object_candidates(ag: Dictionary) -> Array:
 				benefit *= _weather_mult(action)          # Wave 1c：坏天压户外偏好(≤1 dampen-only)
 			if sn_on:
 				benefit *= _season_mult(action)           # Wave 3b：当季压某些活动偏好(≤1 dampen-only)
+			if cl_on and String(adv.get("job", "")) == "" and String(o.get("area", "")) in cl_areas \
+					and (cl_needs.is_empty() or need_id in cl_needs):
+				benefit *= cl_mult                       # F1：镇上脏 → 该区活动打折。工位广告位【不打折】——
+				                                         # 越脏越该有人来扫，不是越脏越没人来扫（否则环卫是个负反馈自锁）
 			var score := benefit - float(dist) * _w("obj_dist_penalty", 0.4)
 			# Wave 1b 经济动机环：穷(coin<poor_line)时有薪动作加分 → 缺钱→去做活→挣了付饭钱(闭环)。
 			# 确定性、数据门控；只加分不减分 → 生存(urgency 主导)不受威胁；economy.json 缺失恒不触发。
@@ -2528,10 +2661,22 @@ func _skill_level(ag: Dictionary, action: String) -> int:
 	var c := int((ag.get("skills", {}) as Dictionary).get(action, 0))
 	return mini(int(skills.get("max_level", 5)), c / maxi(1, int(skills.get("per_level", 15))))
 
+## F1：岗位的【有效动作】。production.json 的 job_action 按职位名覆盖 jobs.json 的 action
+## （木匠→刨木、面点师→烤点）。缺该键 / 缺 production.json → 原样返回 jobs.json 的 action = 今天。
+## 为什么不直接改 jobs.json：同 _compile_worksites 抬头那条——新数据必须能整体摘掉，否则零扰动对照不成立。
+## ★口径唯一：本函数是"这个人的本职动作"的【单一真相源】，_wage_for / _produce_for / 技能三处共用它，
+##   三处一旦分家就会出现"发了职位工资却不产货"这类只在某个 seed 上现形的偏差。
+func _job_action(job: Dictionary) -> String:
+	var a := String(job.get("action", ""))
+	if job.is_empty() or not _prod_on():
+		return a
+	var ov: Dictionary = production.get("job_action", {}) if production.get("job_action", {}) is Dictionary else {}
+	return String(ov.get(String(job.get("title", "")), a))
+
 ## 某 agent 做某动作此刻的工资：本职工作且在班 → 职位工资 + 技能加成（熟练工挣更多→深化分化）；否则 → 基础零工价。
 func _wage_for(ag: Dictionary, action: String) -> int:
 	var job := _job_of(String(ag["id"]))
-	if not job.is_empty() and String(job.get("action", "")) == action and _in_shift(job):
+	if not job.is_empty() and _job_action(job) == action and _in_shift(job):
 		return int(job.get("wage", 0)) + _skill_level(ag, action) * int(skills.get("wage_bonus", 0) if not skills.is_empty() else 0)
 	return int(economy.get("wages", {}).get(action, 0))
 
@@ -2742,7 +2887,7 @@ func _holder_of_title(title: String) -> String:
 ## （见 production.json 的 _calibration）。批量是数据，不是代码常数。
 func _produce_for(ag: Dictionary, action: String) -> void:
 	var job := _job_of(String(ag["id"]))
-	if job.is_empty() or String(job.get("action", "")) != action or not _in_shift(job):
+	if job.is_empty() or _job_action(job) != action or not _in_shift(job):
 		return
 	var title := String(job.get("title", ""))
 	var rec: Dictionary = production.get("produce", {}).get(title, {})
@@ -2802,14 +2947,18 @@ func _shortage_fallout(ag: Dictionary, action: String, good: String) -> void:
 	if int(_short_day.get(good, -1)) == day:
 		return
 	_short_day[good] = day
-	var blame := _holder_of_title(String(production.get("goods", {}).get(good, {}).get("blame", "")))
+	var gd: Dictionary = production.get("goods", {}).get(good, {})
+	var blame := _holder_of_title(String(gd.get("blame", "")))
 	var seen: Array = _nearby_agents(ag)
 	_log_event("shortage", String(ag["id"]), blame, good, false, seen, action)
-	ag["memory"].add("想%s，镇上的%s却空了" % [action, good], 4, tick_no, ["shortage", good])
+	# F1：措辞可按货覆盖。理由不是修辞洁癖——"整洁"这种【状态型】的货套上"镇上的整洁却空了"会读成机翻，
+	# 而这两条串直接进 MemoryStream 与 belief.claim，是模型语音 grounding 的原料。缺键 → 原样 = 逐字节不变。
+	# 只有措辞变；belief 的【键】仍是 SH:<good>，所以传播/gossip 行为不受措辞影响。
+	ag["memory"].add(String(gd.get("shortage_memo", "想%s，镇上的%s却空了")) % [action, good], 4, tick_no, ["shortage", good])
 	if blame == "" or not _agent_by_id.has(blame):
 		return
 	var bid := "SH:%s" % good
-	var claim := "镇上的%s总是断，%s那边跟不上" % [good, _name(_agent_by_id[blame])]
+	var claim := String(gd.get("shortage_claim", "镇上的%s总是断，%s那边跟不上")) % [good, _name(_agent_by_id[blame])]
 	var seers: Array = [ag]
 	seers.append_array(seen)
 	for s in seers:
@@ -2817,7 +2966,7 @@ func _shortage_fallout(ag: Dictionary, action: String, good: String) -> void:
 			continue                                    # 不当着（也不由）责任人自己形成这条埋怨
 		if not s["beliefs"].has(bid):
 			s["beliefs"][bid] = {"claim": claim, "subject": blame, "source": "__seen__", "via": "seen", "tick": tick_no}
-		_adjust_standing(s, blame, float(production.get("shortage_standing", 0.0)))
+		_adjust_standing(s, blame, float(gd.get("shortage_standing", production.get("shortage_standing", 0.0))))
 
 ## 日界结算：把当天的消耗一次性写进账本，再按 spoil_per_day 让存货自然损耗。
 ## 损耗存在的理由不是"真实"，是【让缺货周期性发生】：没有它，供大于求的种子会把库存顶到 cap 后永不缺货，
