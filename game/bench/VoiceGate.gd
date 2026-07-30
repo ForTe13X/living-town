@@ -39,9 +39,12 @@ var _S = null
 var _empty := {}      # "persona|action" -> 次数
 var _pairs := {}      # "persona|action" -> true（覆盖面）
 var _actions := {}    # action -> true
+var _seen_personas := {}   # 真的被枚举到的人格
+var _cast_personas := {}   # 阵容里【应该】被枚举到的人格
 
 func _on_decide(ag: Dictionary, cands: Array, _best_i: int) -> void:
 	var pk := String(ag.get("persona_key", ""))
+	_seen_personas[pk] = true
 	for c in cands:
 		var act := String(c.get("action", ""))
 		if act == "":
@@ -56,7 +59,7 @@ func _initialize() -> void:
 	var s0 := 1
 	var s1 := 3
 	var days := 60
-	var min_pairs := 250
+	var min_pairs := 0            # 默认关：结构性判据已经在守，不再用魔数
 	var args := OS.get_cmdline_user_args()
 	for i in args.size():
 		var nx: String = args[i + 1] if i + 1 < args.size() else ""
@@ -75,6 +78,8 @@ func _initialize() -> void:
 		_S = S
 		S.decision_sink = Callable(self, "_on_decide")
 		S.start_new(seed)
+		for ag in S.agents:
+			_cast_personas[String(ag.get("persona_key", ""))] = true
 		for t in days * int(S.TICKS_PER_DAY):
 			S.tick()
 		S.decision_sink = Callable()
@@ -84,8 +89,30 @@ func _initialize() -> void:
 	print("VoiceGate  seeds=%d-%d days=%d" % [s0, s1, days])
 	print("  覆盖：%d 个 (人格,动作) 对 · %d 个不同动作" % [_pairs.size(), _actions.size()])
 	var rc := 0
-	if min_pairs > 0 and _pairs.size() < min_pairs:
-		print("  ❌ 覆盖不足：只枚举到 %d 对，低于地板 %d ⇒ 本次运行【没有资格】说全绿" % [_pairs.size(), min_pairs])
+	# ★ 结构性地板（2026-07-30 外审后改；原来是 --min-pairs 250 这个拍出来的数）。
+	#   外审的原话：250 与实测 293 之间【没有理论依据】，只是 85%；而且
+	#   "数量不是语义"——删掉一个【人格】可能让对数从 293 掉到 280 仍然过门，
+	#   而那个人格的声音已经全没了。⇒ 不数数，改判集合相等：
+	#   阵容里出现过的每一个人格，都必须真的被枚举到过。
+	#   这样一来：decision_sink 塌掉 ⇒ 枚举集合空 ⇒ 红；
+	#   合法删掉一个岗位 ⇒ 阵容与枚举同时少掉 ⇒ 仍然绿（不假红）；
+	#   而"某个人格一次都没被问过决策" ⇒ 红。没有魔数。
+	var missing: Array = []
+	for pk2 in _cast_personas:
+		if not _seen_personas.has(pk2):
+			missing.append(String(pk2))
+	missing.sort()
+	if _cast_personas.is_empty():
+		print("  ❌ 阵容为空：一个 agent 都没有 ⇒ 本次运行【没有资格】说全绿")
+		rc = 1
+	elif not missing.is_empty():
+		print("  ❌ 覆盖塌陷：阵容里有 %d 个人格从未被枚举到 [%s] ⇒ 本次运行【没有资格】说全绿"
+			% [missing.size(), ", ".join(missing)])
+		rc = 1
+	else:
+		print("  ✅ 结构覆盖：阵容 %d 个人格全部被枚举到（不靠数量地板）" % _cast_personas.size())
+	if min_pairs > 0 and _pairs.size() < min_pairs:   # 可选的额外数量地板，默认关
+		print("  ❌ 对数 %d 低于显式地板 %d" % [_pairs.size(), min_pairs])
 		rc = 1
 	if _empty.is_empty():
 		print("  ✅ 每个被 offer 的候选都有本人格的话可说（0 对为空）")
