@@ -34,7 +34,7 @@ The **world and social systems** below all ship, and each has a CI gate behind i
 **What is not there yet** (see [docs/05](docs/05-路线图与里程碑.md), [docs/43](docs/43-wave-c-plan.md)):
 **no goal, no onboarding, no session shape** — nothing calls the player back at minute three, and that is the biggest one;
 the phone still loses **24.6% of the screen to letterboxing** (`aspect=keep`; `expand` black-screened the real device and was rolled back — measured content area x=331..2356);
-after the de-prop pass **all ten looks share one silhouette** (there were roughly four), the unavoidable cost of an alpha mask — replacement silhouettes are not drawn yet ([docs/44](docs/44-art-direction.md));
+the cast has only **ten distinct faces** (two pairs of the twelve residents share a sheet), and **阿梅 still has no clothes** ([docs/44](docs/44-art-direction.md));
 **nobody has put on headphones and listened to the audio** — every claim about it is an RMS figure or a window count;
 and **nobody has pressed the touch action bar on a real device**.
 
