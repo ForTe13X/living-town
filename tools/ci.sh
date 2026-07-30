@@ -75,6 +75,28 @@ echo "### 1b. map audit (town-world 导航自洽：typed-layers 一致 + 全可�
 echo "### 2. link lint (markdown relative links)"
 "$PY" tools/lint_links.py && ok "lint_links" || bad "lint_links"
 
+echo "### 2b. art gate (出货 game/assets/art/pro 必须等于 coif_characters.py 当场重建的结果)"
+# 为什么现在才有这一步（docs/49 §〇）：在它之前，本文件里【没有任何一处】提到 assets / art / palette /
+# coif / deprop —— 唯一的字面命中是上面 4b 那行 `fresh-rest**art**` 里的三个字母。
+# ⇒ 十张出货角色表是这个仓库唯一一类"改了没有任何门会响"的资产，而它同时是玩家唯一直接看得见的东西。
+# 删一张、被 deprop 覆盖一张、手改一个像素——步骤 0-6 每一步都照样全绿。
+#
+# 判据不是"校验和清单对得上"（那种门可以靠更新清单通过，而更新清单正是偷改像素的人下一步会做的事），
+# 是**当场从 library/ 重新生成、再逐字节比对**。
+# ⚠️ 硬判据只认**解码后的 RGBA 像素**；PNG 容器字节只打印不判红（它随 zlib/Pillow 版本走，
+#    而"一道在别人机器上因环境变红的门比没有门更坏"——理由与下面第 6 步同源）。
+#
+# 负对照（G1 实测，全部亲眼看着变红，见 docs/49 §一 验收 1/2）：
+#   ① 单独跑 deprop_characters.py（已知的静默回退路径）⇒ 9/10 张红（Character-Base 它不写，故绿）；
+#      逐张 13542-17508 px 不同，其中 832-1094 px 落在 12 个可达帧上。
+#   ② 某张表某个像素蓝通道 +1（能做的最小改动）⇒ 红，指名 Soldier-Yellow 表内(46,14)。
+#   ③ 删一张 ⇒ "缺 1 张"；④ 塞一张管线生成不出来的 ⇒ "多出 1 张"；
+#   ⑤ 把重建源头指向 pro/（coif :444 记过的 x→x 退化）⇒ "抄答案不是重建"；
+#   ⑥ 把比对器改成恒返回"一样" ⇒ 门内每次都跑的 1px 判别力自检把它抓住。
+# ⚠️ 它需要 Pillow。装不上就没有这道门 ⇒ 直接红，不做 SKIP：
+#    SKIP 与 PASS 在汇总里都读作"没红"，那会把这道门退化成一枚看不见结果的硬币（visual_gate.sh 抬头③）。
+"$PY" tools/art_gate.py && ok "art gate（出货 pro/ == 当场重建）" || bad "art gate（出货 pro/ != coif_characters.py 当场重建的结果）"
+
 echo "### 3. godot import + parse smoke"
 "$GODOT" --headless --path game --import >"$LT_LOG/import.log" 2>&1 || true
 if grep -qiE 'SCRIPT ERROR|Parse Error|Failed to load script' "$LT_LOG/import.log"; then
