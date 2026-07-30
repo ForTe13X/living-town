@@ -33,10 +33,10 @@ The **world and social systems** below all ship, and each has a CI gate behind i
 
 **What is not there yet** (see [docs/05](docs/05-路线图与里程碑.md), [docs/43](docs/43-wave-c-plan.md)):
 **no goal, no onboarding, no session shape** — nothing calls the player back at minute three, and that is the biggest one;
-the character sprites are still a CC0 **fantasy-RPG pack** (pointed hats, staves) fighting a contemporary-town setting — the direction has been decided but **not a pixel has changed** ([docs/44](docs/44-art-direction.md));
-the phone still loses **24.6% of the screen to letterboxing** (`aspect=keep`; switching to `expand` black-screened the real device and was rolled back);
-colour lives as **134 hardcoded hex values** scattered through the code, with a target palette but no consolidation;
-and the touch action bar and the audio have **never been verified on a real device** — nor has anyone actually put on headphones and listened to the synthesized cues.
+the phone still loses **24.6% of the screen to letterboxing** (`aspect=keep`; `expand` black-screened the real device and was rolled back — measured content area x=331..2356);
+after the de-prop pass **all ten looks share one silhouette** (there were roughly four), the unavoidable cost of an alpha mask — replacement silhouettes are not drawn yet ([docs/44](docs/44-art-direction.md));
+**nobody has put on headphones and listened to the audio** — every claim about it is an RMS figure or a window count;
+and **nobody has pressed the touch action bar on a real device**.
 
 > Wave C (2026-07-26) closed six items previously listed here: the silence, the player verbs stuck behind a `--player` flag, the opening camera showing 14% of the map, the 58% of the whole-town view that was the engine's default clear colour, residents teleporting 12.5×/second, and seasons and weather rendering pixel-identically.
 
@@ -59,7 +59,7 @@ Demo videos, newest build first:
 > The day-night lighting is itself new: until 2026-07-26 **the screenshot tool could never render night at all**, so every
 > "this looks too bright / too dark" judgement in this project's history rested on a broken instrument (see the honesty note below).
 
-![The town in the morning](docs/media/wavec_town_morning.png)
+![The café at night](docs/media/wavee_town_night.png)
 
 > A still from the same build (day 6, 09:36 — it is **morning, not noon**; the old filename `wavec_town_noon` was wrong and has been corrected). The map is no longer a rectangle sitting in a grey void — its edge passes through a 3-tile
 > luminance ramp, a low stone wall and a drainage ditch before sinking into forest, dropping the maximum adjacent-pixel
