@@ -45,23 +45,38 @@
     "tie": { "title": "环卫工", "action": "清扫", "wage": 3, "shift": ["dawn", "day"] }
   },
   "job_action": {
-    "_why": "把既有岗位的动作从共用的『做活/看摊』改成各自的动词。desk_1 的『做活』与 counter_1 的『看摊』原样留着——它们现在是【零工】：谁都能去、拿 economy.wages 的零工价、一件货也不产。见 _f1_negative_results ①：教书先生【没有】被搬走。",
+    "_why": "把既有岗位的动作从共用的『做活/看摊』改成各自的动词。desk_1 的『做活』与 counter_1 的『看摊』原样留着——它们现在是【零工】：谁都能去、拿 economy.wages 的零工价、一件货也不产。",
+    "_f5_why": "F5 补齐剩下三个。★F5 改前实测（seeds 1-5 × 60 天 × 12 居民，backend=null）：本职工作落在【6】个不同格子上，而杂役/渔夫/教书先生三个人共用 desk_1[40,31]。注意 F1 写在 _f1_calibration 里的『做活的四个岗位是木匠/杂役/渔夫/教书先生』是【它自己改之前】的基线，F1 收工时木匠已经搬到刨木了——所以这一棒实际要搬的是三个人，不是四个；『aria 与 lin 共用 counter_1』同理已经不成立（lin 在 F1 里搬去了烤点，counter_1 上只剩 aria）。★改后：8 个不同格子，逐 seed 恒 8（5/5）。",
+    "_f5_calibration": "★amount 是量出来的，而且我的第一个假设【被自己的测量否掉了】。假设：『这一棒只改一个变量——地点，所以 amount 照抄 desk_1 的 26』。实测（seeds 1-3）：打渔 26 ⇒ 渔夫在班完成 6-8 → 【0/0/0】，授课 26 ⇒ 教书先生 10-16 → 3-6，劈柴 26 ⇒ 杂役 3-8 → 1-3；而 hai 的『做活』次数【一格没少】（16/18/14 → 14/15/20）。原因：desk_1 的『做活』没有 job 门，三个人照样看得见它，于是新工位不是替代品而是竞品，同 amount 时旧的靠位置赢。★这正是 F1 写下、而我没当真的那句：『抬 amount 的目的是让本行压过 desk_1 的零工』——它不是调味，是这套机制能不能落地的必要条件。逐档实测（在班完成/seed，seeds 1-3）：渔夫 26→0,0,0 · 46→12,7,7；教书先生 26→3,5,6 · 32→16,15,14 · 46→38,29,35（46 时 话本 缺货塌成 0/0/0，一条戏剧线被产能淹死）；杂役 26→3,2,1 · 34→4,5,4 · 38→5,4,7 · 46→11,12,8。定稿 打渔46 / 授课32 / 劈柴38。★验收判据沿用 F1 的『没有一个岗位掉出改前的展布』（seeds 1-5）：渔夫 5-11→3-10 · 杂役 2-8→2-7 · 教书先生 10-19→11-17 · 面点师 2-17→6-12 · 木匠 10-15→5-14 · 咖啡师 6-12→4-11 · 环卫工 18-31→19-26。五种货的缺货【全部仍在发生】：口粮 65-420→170-479 · 柴薪 29-126→29-78 · 话本 0-9→0-14 · 豆子 0-24→0-17 · 整洁 0-40→0-35。desk_1 的零工残余 202-286→194-271（它【没有】被清空，四个无岗位居民仍在用）。",
     "木匠": "刨木",
-    "面点师": "烤点"
+    "面点师": "烤点",
+    "杂役": "劈柴",
+    "渔夫": "打渔",
+    "教书先生": "授课"
   },
+  "_f5_id_why": "★worksite 的 id 前缀【就是精灵槽位】：WorldView.gd:2156 取 `id.split(\"_\")[0]` 去查 res://assets/art/obj/<slot>.png，查不到就掉进兜底分支——画一个 P_RES_FOOT 色块，再把 `type` 字段用 draw_string 直接印在草地上（那段兜底自己的注释就是在讲这个事故）。F1 的四个工位 id 全是 `ws_*` ⇒ slot=\"ws\" ⇒ obj/ws.png 不存在 ⇒ 全镇四个工位【一直】是四个印着『工作台/面案/清扫车/摊位』的占位方块。F5 出图实测确认（scratchpad/wave_f/F5/pre_ws_placeholder.png，2560×1536 下能逐像素读出白字）。现有槽位只有 arcade/bath/bench/counter/desk 五个（外加 bed/stove/fest 三个程序化画法），所以这里把七个工位的 id 全部改成命中现有槽位的前缀。这是【数据层的合规用法】而不是 hack：WorldView 那段注释原话就是『slot=id 前缀』。真正的修法（type→slot 表，或补 obj_*.png）在 WorldView.gd / assets 里，两者本轮都不归本棒。",
   "worksites": [
-    { "id": "ws_workbench", "type": "工作台", "area": "work", "pos": [38, 31],
+    { "id": "desk_workbench", "type": "工作台", "area": "work", "pos": [38, 31],
       "advertises": [ { "action": "刨木", "job": "木匠", "need": "fun", "amount": 34, "duration": 28 } ] },
-    { "id": "ws_bakeboard", "type": "面案", "area": "cafe", "pos": [39, 17],
+    { "id": "counter_bakeboard", "type": "面案", "area": "cafe", "pos": [39, 17],
       "advertises": [ { "action": "烤点", "job": "面点师", "need": "fun", "amount": 20, "duration": 24 } ] },
-    { "id": "ws_sweepcart", "type": "清扫车", "area": "plaza", "pos": [29, 25],
+    { "id": "bench_sweepcart", "type": "清扫车", "area": "plaza", "pos": [29, 25],
       "advertises": [ { "action": "清扫", "job": "环卫工", "need": "fun", "amount": 46, "duration": 26 } ] },
-    { "id": "ws_stall", "type": "摊位", "area": "plaza", "pos": [32, 22],
+    { "id": "counter_stall", "type": "摊位", "area": "plaza", "pos": [32, 22],
       "_why": "同一件家具上两条广告位：对内的『摆摊』只有商贩看得见（job 门），对外的『赶集』全镇都看得见但只在商贩在班时存在（Sim._market_open）。所以 job 门必须写在 advertise 一级、不能写在对象一级。赶集的 hunger52/dur14 比灶台的 55/18 略差一点但快得多，价钱还贵一个钱——街边一口热食，不是一顿正餐；实测它拿走全镇约 14% 的饭口（153/1045）。",
       "advertises": [
         { "action": "摆摊", "job": "商贩", "need": "fun", "amount": 46, "duration": 24 },
         { "action": "赶集", "need": "hunger", "amount": 52, "duration": 14 }
-      ] }
+      ] },
+    { "id": "bench_pier", "type": "渔台", "area": "dock", "pos": [31, 7],
+      "_why": "F5：渔夫终于在水边打渔——渔夫【没有】被改成别的职业。★本条是本棒唯一一个需要【新区】的工位：map.json 的 water 层有 80 格（x28-35 的南北两塘），而八个既有 area 没有一个挨着它，_compile_worksites 与 audit_map 又都要求工位落在某个 area 内 ⇒ 不建区就没有合法的水边工位。选北塘不选南塘是量出来的：北塘岸 (31,7) 离住宅区约 17 格，比 desk_1[40,31] 的 34 格【还近一半】，所以 _f1_negative_results ① 那条『通勤走一半被饥饿 pre-empt』在这里结构上不成立；南塘岸 (31,41) 是 35 格，跟图书馆同量级。",
+      "advertises": [ { "action": "打渔", "job": "渔夫", "need": "fun", "amount": 46, "duration": 28 } ] },
+    { "id": "desk_lectern", "type": "讲台", "area": "plaza", "pos": [34, 26],
+      "_why": "F5：教书先生在广场告示牌旁边开讲。★这【不是】重走 _f1_negative_results ① 那条路：F1 撤回的是图书馆(12,41)——离住宅区 37 格；广场(34,26) 是 23 格，且是全镇通勤的十字路口（吃饭/玩耍/赶集都路过）。同一条『把讲案搬出 desk_1』的意图，换了一个【近的】落点，这正是 F1 那条负结果自己写的补法：『需要的是一个【近的】讲堂』。整洁乘子不打折它（cl_mult 只作用于无 job 的广告位）。",
+      "advertises": [ { "action": "授课", "job": "教书先生", "need": "fun", "amount": 32, "duration": 28 } ] },
+    { "id": "bench_woodpile", "type": "柴垛", "area": "wash", "pos": [24, 31],
+      "_why": "F5：杂役在澡堂里劈柴。放澡堂而不是工坊是刻意的——杂役产的是柴薪，而全镇唯一消耗柴薪的动作就是澡堂的『洗澡』（consume.洗澡→柴薪，546 次/seed）。产地紧挨着用地，这条供需线第一次在地图上看得见；顺带也把三个工位从『全挤在工坊』分开。",
+      "advertises": [ { "action": "劈柴", "job": "杂役", "need": "fun", "amount": 38, "duration": 28 } ] }
   ],
   "vendor": {
     "_why": "全镇唯一一条【货与钱同时在人之间易手】的通道：镇库的口粮经 _stock_take 出账，钱经 transfer 进【现任商贩本人】的口袋而不是镇库。守恒仍然只靠 transfer 这一道门 ⇒ 硬 #34 一个字节都不用改。price 3 高于灶台的 2 —— 摊子要赚这一个钱，那就是分化的来源。",

@@ -90,6 +90,21 @@ const MOB_ERUPT_STANDING := -2.5  # 对象在 ag 眼里名声极差(≤此，比
 # （故有 1 个人设例外、不同于 rally_oust 的零例外）。ON：仅 _is_gossipy(爱八卦=阿丽) 拉人统一口径、余弃权。
 # #01-safe：全面弃权曾蝴蝶到 seed-4 的 #01 无饿穿——根因是抑制 endorse 减了全镇社交吞吐、阿本社交需求赶不上；
 #   解法不是缩抑制、而是把 SURVIVAL_GATE 20→24 给 need-floor 更足赶路缓冲（真·鲁棒性升级，见其定义处）→ 12/12 绿。
+# ★2026-07-30 F5 复核（F4 报「endorse 只对 aria 一个人设出现在候选集里」，此处备案，免得再被当成 bug 查一遍）：
+#   **观察属实，而且它【就是】上面这三行写的那个设计，不是缺陷。** 用既有的 Sim.decision_sink 钩子
+#   （只读、不抽 RNG、不进 digest）量引擎真的枚举出来的候选集：
+#   · N=12 × seeds 1-12 × 60 天，决策 61258 次：endorse 被供 **448 次全部是 aria**，其余 11 人 **0**。
+#   · **限制器不是派系门**——同一张表里 ben 5367 / shu 5696 / qin 5454 次决策时都【在派系中】，
+#     它们缺的只是 `_is_gossipy`。而 GOSSIP_TRAITS 只有「爱八卦」，12 个人设里只有 aria 带它。
+#   · **F4 那句「只对 aria」在 N=60 下要收窄**：扩容克隆按 `adata[i % 12]` 轮转人设，
+#     于是 npc_12/24/36/48 也拿到阿丽的人设 ⇒ 实测 seeds 1-2 × 20 天 × N=60，
+#     endorse 被供的是 **5/60 个 agent**（aria + 那四个克隆），不是 1 个。
+#     正确的说法是「**按 trait 限定**」而不是「按 aria 这个人限定」。
+#   ⇒ 其余 11 个人设的 endorse 台词是【明知的死数据】：只要没人被赋予「爱八卦」，它们就永远取不到。
+#     这是可接受的，因为把门放开【会移动金标】（R12 三锚 + 留出种子），而放开的理由只有"台词没被用上"——
+#     那是让证据去迁就数据，不是让数据去迁就证据。要改就单独派一棒，并且先重跑盲评。
+#   ⚠️ 上面那句「余 9 人设皆 0」的分母已经过期：盲评时全镇 10 个人设，今天 12 个
+#     （Wave 3 加人时没有回来补跑盲评）⇒ 后加的那两个人设【没有被盲评覆盖过】。这是记录，不是结论。
 const FACTION_ENDORSE_DEFER := true
 # S1（声誉×八卦×宽恕，docs/10 §A/§B）
 const STANDING_CAP := 3.0       # standing 范围 [-CAP,+CAP]；sign=good/bad
@@ -1629,6 +1644,14 @@ func _object_candidates(ag: Dictionary) -> Array:
 	# 实测把它压到 hunger 上时，广场脏 → 摊位的赶集从 95 次/seed 掉到 27 次/seed：
 	# 一个"脏"的乘子把一条【食物供给】掐掉了 2/3。mods_ok 生存门保证了它不会造成饿穿，
 	# 但把乘子从生存需求上【结构性地】摘掉，比"有一道门拦着"强一档：门可能被改，白名单在数据里。
+	# ★F5 修：这条白名单此前【fail-open】——判据写的是 `cl_needs.is_empty() or need_id in cl_needs`，
+	#   于是把 `needs` 键删掉/写成空数组，白名单的意思就从"只有这两样"翻成了"所有需求"，
+	#   hunger 立刻重新被脏度打折。一个"空=全部"的白名单是白名单的反面。
+	#   实测负对照（seeds 1-3 × 60 天，删掉 needs 键、其余不动）：摊位的赶集 153/159/147 → 43/79/54，
+	#   与上面那条 F1 记下的症状逐字重现 ⇒ 上面那句"白名单在数据里"在修之前是【不成立】的。
+	#   改成 `need_id in cl_needs`：缺键/空数组 ⇒ 恒 false ⇒ 整洁乘子整个不施加（缺数据即零扰动，
+	#   与 rhythm/weather/season 的 off 门同一条约定）。**对出货数据是逐字节 no-op**——
+	#   `needs` 现在是 ["fun","social"]、非空，两种写法在它上面完全等价（已用 12/12 金标验过）。
 	var cl_needs: Array = _as_arr(cl_cfg.get("needs", []))
 	var cl_on := mods_ok and not cl_areas.is_empty()
 	var cl_mult := _clean_mult() if cl_on else 1.0
@@ -1672,7 +1695,7 @@ func _object_candidates(ag: Dictionary) -> Array:
 			if sn_on:
 				benefit *= _season_mult(action)           # Wave 3b：当季压某些活动偏好(≤1 dampen-only)
 			if cl_on and String(adv.get("job", "")) == "" and String(o.get("area", "")) in cl_areas \
-					and (cl_needs.is_empty() or need_id in cl_needs):
+					and need_id in cl_needs:
 				benefit *= cl_mult                       # F1：镇上脏 → 该区活动打折。工位广告位【不打折】——
 				                                         # 越脏越该有人来扫，不是越脏越没人来扫（否则环卫是个负反馈自锁）
 			var score := benefit - float(dist) * _w("obj_dist_penalty", 0.4)
