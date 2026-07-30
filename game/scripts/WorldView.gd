@@ -113,6 +113,14 @@ const X_COLD_WHITE   := Color("#eaf3f8")   # 蒸汽/瓷/枕头。gpl 最亮的�
 const X_SIGNAL_POS   := Color("#7ed957")   # 好感正。**不采纳 gpl 的 grass-spring**：它与线所压着的 grass-summer 只差 dE00 6.3 —— 那条线会消失在草地里（见报告）
 const X_SIGNAL_NEG   := Color("#e85a5a")   # 好感负/冲突/灯笼/红指示灯/被子。**不采纳 gpl 的 com-roof**：那会让关系负线与每一片商业屋顶同色（D3 已记过这条撞色）
 const X_PACT         := Color("#39d4c8")   # 互助盟约双线。青色信号，gpl 无对应（water-lit 会与水撞）
+## ★ H3 · 「没有槽位认领这一格」的警示品红。**它是全表里唯一一个【蓄意不属于本作调色板】的色值**——
+##   理由正好与上面每一条相反：其余色值都要求"融进画面"，这一个要求"永远不可能被误读成美术"。
+##   由来：F1 的四个工位以占位框出货了一整波，而那个占位框用的是 P_RES_FOOT（暖石灰，和墙同色）
+##   ⇒ 它在 2560×1536 的整帧里读起来像一件家具，八根棒和一次合并验证都没看见（F5 cd55df6）。
+##   实测（本文件全部 60 个 P_/X_ 常量逐个算 dE00）：品红的最近邻是 **P_PUB_FLOOR #96a5ab，dE00 = 16.8**，
+##   其后 P_PUB_FACE 19.2 / P_PUB_LINE 20.6 —— 全表没有一个色值落进"可能被看成同一个东西"的区间。
+##   ⚠️ 我第一次写的是"最近邻 X_SIGNAL_NEG ≈ 47"，那是**猜的**；算完才发现连最近的是哪一族都猜错了。
+const X_MISSING      := Color("#ff00ff")
 
 # ── 派生明暗档（12 个；const 不能带方法调用，故用 var —— 只在实例化时算一次）──
 var D_WOOD_LINE      := X_WOOD_MID.darkened(0.45)    # 木器描边/门框/门缝/搁板线 —— 木家族自己的最暗档；映到 ui-panel 会让它变冷（dE00 14.8），那正是「室内变一坨」
@@ -548,6 +556,11 @@ func _ready() -> void:
 	# 而 `load_game` 是 `for k in state: set(k, state[k])` —— `world` 是 Sim 的脚本变量、不在 DERIVED 排除表里，
 	# **所以读档会整个换掉 `Sim.world`**。此前没有任何一条路径清过下面这四样。
 	Sim.world_reset.connect(_invalidate_world_caches)
+	# ★ H3 · 开局就把「每个 advertises 的对象都解析得出精灵槽」查一遍（见文件末尾 H3 一节）。
+	#   实测（本棒探针，--headless 下的 player_touch_test 路径）：WorldView._ready() 里
+	#   `Sim.world["objects"] is Dictionary == true, n=24` ⇒ 这里读到的是**已经装好的**世界，
+	#   不是 docs/41 §2 那个"节点在但数据是空的"陷阱（那条讲的是 `--script` 的 `_initialize()`）。
+	_slot_probe_tick()
 
 ## ★ W6 · 把从 `Sim.world` 烘出来的渲染缓存全部作废（下一帧 `_draw` 会按需重建）。
 ##
@@ -565,6 +578,7 @@ func _invalidate_world_caches() -> void:
 	_decor_built = false
 	_grass_var = PackedByteArray()
 	_verge_ground = Color(0, 0, 0, 0)
+	_slot_probe_n = -1                    # H3：换世界 ⇒ 下一次 _redraw_all 重新体检精灵槽
 	if _void != null:
 		_void_key = ""                    # 界外层的缓存键也得作废：新世界的地图矩形可能不一样
 		_void.queue_redraw()
@@ -608,6 +622,7 @@ var _view_key := ""
 ## 本节点 + 加色光层一起重画。光层的内容只依赖 time_of_day 与静态地形，所以跟 tick 走就够了；
 ## 相机移动不需要重画（光层是本节点的子 Node2D，共用同一条画布变换）。
 func _redraw_all() -> void:
+	_slot_probe_tick()      # H3：只在 world["objects"] 规模变了时做 O(n) 全扫（civic_/fest_ 是运行期 spawn 的）
 	queue_redraw()
 	if _lights != null:
 		_lights.queue_redraw()
@@ -637,6 +652,39 @@ func _build_grass_var(w: int, h: int) -> void:
 					break
 			_grass_var[row + tx] = pick
 
+## ── H3-c · 装饰池：**同一条病的第三个实例**，H1 2026-07-30 真机眼验时报出来的 ────────────
+## 原文是一句写死的字面量 `["bush","flower_red","flower_yellow","flower_white","rock","stump","mushroom"]`，
+## 而 **`assets/art/decor/flower_white.png` 根本不存在**（实测：该目录只有 bush / flower_red /
+## flower_yellow / mushroom / rock / stump / tree_big / tree_small 八个）。
+## 下面那句 `if t != null` 把它**静默滤掉**了 ⇒ 这行字面量**不是"画了什么"的证据**，
+## 而任何人读代码都会以为镇上有白花。这和 `id.split("_")[0]` 是同一条病：
+## **一个名字 → 一份资产的隐式契约 + 一条静默的兜底路径。**
+##
+## 处理分两步（都在本文件里）：
+##   ① 把死名字从表里删掉 —— **这一步逐像素零改动**：它本来就在 `if t != null` 处被丢弃，
+##      `pool` / `total_w` / 顺序 / 权重全都不变。实测：本文件全部改动 vs 未改动的树，
+##      2560×1536 整帧、夜(warmup 3)与正午(tick 600)两帧都是 `bbox=None`、不同像素 0
+##      （先 `convert("RGB")`，避开 docs/41 §6 那条 `getbbox()` 只看 alpha 的空真陷阱）。
+##   ② 加一条 `verify_decor_pool()`：声明了却没有贴图 ⇒ push_error，不再静默。
+##      **在未改动的树上这条判据是红的**（flower_white）——它有一个真实的活实例，不是装饰性判据。
+const DECOR_POOL := ["bush", "flower_red", "flower_yellow", "rock", "stump", "mushroom"]
+
+## 声明了装饰名却没有对应切图 ⇒ 吼。（`tree_big` 不在此列：它在 _draw 里有程序化回退，缺图是合法的。）
+func verify_decor_pool() -> int:
+	var bad := 0
+	for nm in DECOR_POOL:
+		if Art.decor_tex(String(nm)) != null:
+			continue
+		bad += 1
+		var key := "DECOR|" + String(nm)
+		if _slot_shouted.has(key):
+			continue
+		_slot_shouted[key] = true
+		push_error(("[WorldView] 装饰池里的 '%s' 没有切图（assets/art/decor/%s.png 不存在）。" +
+			"它会被 _build_decor 静默滤掉 ⇒ 代码上看着有、屏幕上一个都不会出现。" +
+			"要么补图，要么把这个名字从 WorldView.DECOR_POOL 里删掉。") % [nm, nm])
+	return bad
+
 ## 在区域外的草地上确定性散布装饰（树/花/草丛…），让小镇不再空旷。切图缺失则跳过。
 func _build_decor() -> void:
 	_decor_built = true
@@ -645,7 +693,7 @@ func _build_decor() -> void:
 		_build_paths()                    # 先有路，散装饰时才能避开它
 	var pool := []
 	# 树不再散布：P2-2 的可见树 = authored 阻挡树（_tree_cells）。程序化装饰只留贴地花草石（可踩，纯装饰）。
-	for nm in ["bush", "flower_red", "flower_yellow", "flower_white", "rock", "stump", "mushroom"]:
+	for nm in DECOR_POOL:
 		var t := Art.decor_tex(nm)
 		if t != null:
 			var tall := 2 if nm == "tree_big" else 1
@@ -2210,7 +2258,8 @@ func _draw_body() -> void:
 	if _ap("landmarks"):
 		_draw_landmarks()          # P2-4 公共地标（水井 / 告示板）：程序化画在地形层、居民之下
 
-	# 对象：CC0 物件精灵（slot=id 前缀，如 bench/bath/counter/desk/arcade）；缺则程序化色块兜底
+	# 对象：CC0 物件精灵。★槽位取自**显式** OBJ_SLOT_BY_TYPE 表（不再是 id 前缀，见文件末尾 H3 一节）；
+	# 表里没有 ⇒ 走 _draw_unmapped_object（品红 + push_error），**不再**静默画一个和墙同色的暖石灰框。
 	for id in _ac("objects", Sim.world.get("objects", {})):
 		var o: Dictionary = Sim.world["objects"][id]
 		# ★ 平面守卫。`_compile_interiors()`(Sim.gd:532) 把室内家具也塞进 world["objects"]，坐标是
@@ -2222,21 +2271,19 @@ func _draw_body() -> void:
 		if String(o.get("space", "town")) != "town":
 			continue
 		var p: Vector2i = o["pos"]
-		var slot := String(id).split("_")[0]
+		var slot := _obj_slot(String(id), o)
 		var base := Vector2(p.x * T, p.y * T)
 		match slot:
 			"bed": _draw_bed(base)
 			"stove": _draw_stove(base)
 			"fest": _draw_festival(base)   # Wave 2b：节日机会地形（灯笼，暖光）
 			_:
-				var otex := Art.object_tex(slot)
+				var otex: Texture2D = Art.object_tex(slot) if slot != "" else null
 				if otex != null:
 					var s := OBJ_PX          # 16px 源 × 3（= 整格）：与地面/装饰同一个像素尺，不再 2.5x 融化
 					draw_texture_rect_region(otex, Rect2(base.x + (T - s) * 0.5, base.y + (T - s) * 0.5, s, s), Rect2(0, 0, otex.get_width(), otex.get_height()))
 				else:
-					draw_rect(Rect2(base.x + 9, base.y + 12, T - 18, T - 18), P_RES_FOOT, true)
-					draw_rect(Rect2(base.x + 9, base.y + 12, T - 18, T - 18), Color(0, 0, 0, 0.35), false, 2.0)
-					draw_string(Art.font(), Vector2(base.x + 4, base.y + T - 3), str(o.get("type", "")), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 1, 1, 0.7))
+					_draw_unmapped_object(base, String(id), o)
 
 	# 四季 / 天气的大气罩：压在地形与建筑之上、居民之下（居民不该被刷成一片霜白）
 	if _ap("climate"):
@@ -2940,6 +2987,247 @@ func _draw_prop(p: Vector2, kind: int) -> void:
 			draw_rect(Rect2(p.x - s * 0.26, p.y, s * 0.52, s * 0.34), D_POT, true)
 			draw_circle(p - Vector2(0, s * 0.16), s * 0.32, P_FOLIAGE_D)
 			draw_circle(p - Vector2(s * 0.12, s * 0.26), s * 0.16, P_FOLIAGE_M)
+
+# ══ H3 · 物件槽位：显式 type→slot 表 + 「广告位对象必须解析出渲染器」断言 ═══════════════
+#
+# 病史（同一条隐式契约，三次发作，前两次都是靠人眼在整帧上抓到的）：
+#   本文件此前用 `String(id).split("_")[0]` 当精灵槽 —— 即**数据里的对象 ID 前缀必须恰好等于
+#   某张贴图名**，而没有任何东西在检查它。
+#   ① F1 的四个工位（`ws_*`）以占位框出货了**一整波**，草地上直接印着数据键；
+#      F5(cd55df6) 在 2560×1536 的一帧里看见了，修法是**把七个工位 ID 改名去命中已有贴图**
+#      ——那是绕开，不是根治，耦合原样留着，G3 的砖垛紧接着就骑了上去。
+#   ② 同一波里 F5 自己的 dock 也中招（`type:"waterfront"` 落不进 BLD_PAL，滩头画了一栋灰房子）。
+#   ③ **今天仍然活着的第三个，本棒实测抓到**：选举通过时 spawn 的 WorldPatch（Sim.gd:2802，
+#      `id = "civic_%s_%d" % [topic, day]`）前缀是 `civic`，没有任何贴图 ⇒ 它在镇北 [22,2]
+#      画一个占位框、上面印着数据键「扩建咖啡馆」。探针实测（seed 1，20 天）：
+#      `civic_cafe_expand_14  town  扩建咖啡馆  slot=civic  adv=1  ❌ 占位框+印数据键  first_day=14`
+#      —— 选举每 14 天一次，所以**任何一局玩到第 14 天的正常游戏都会看到它**。
+#      节日的 `fest_*` 只是侥幸：那个前缀恰好等于下面 match 里的程序化分支名。
+#
+# 现在：槽位由**显式表**决定，key 是数据的语义字段 `type`，不是 ID 的偶然前缀。
+# 表里没有的 type ⇒ **解析不出槽位** ⇒ 醒目品红占位 + `push_error`（不是那个和墙同色的暖石灰框）。
+#
+# ⚠️ **这张表管不了、也永远管不了的那一半**：它只保证"这个 type 有一张真实存在的贴图"，
+#    **不保证那张贴图画的是对的东西**。G3 的砖垛（type「砖垛」）解析到 `bench`，
+#    渲染出来就是一条木凳 —— 上面那条「解析得出渲染器」的判据对它**全绿**，实测见回执 §does_not_detect。
+#    下表里带 `# 借用` 的每一行都属于这一类，它们的**可读性**归 H1 的人眼判定，不归任何一道门。
+#    别名的**增长**由下面 OBJ_SLOT_ALIAS_BUDGET 那道棘轮管住；**存量**（bench 5 / counter 4）管不住。
+const OBJ_SLOT_BY_TYPE := {
+	# ── 程序化画（无贴图；见 _draw_bed / _draw_stove）──
+	"床": "bed",
+	"灶台": "stove",
+	# ── 有专属贴图（assets/art/obj/*.png；pro/obj_*.png 优先覆盖）──
+	"吧台": "counter",
+	"浴池": "bath",
+	"工作台": "desk",
+	"长椅": "bench",
+	"游戏机": "arcade",
+	# ── 借用：F1/F5/G3 的工位。这七行不是新决定，是把 F5「改 ID 去命中贴图」那次绕行
+	#    从 ID 字符串里**搬到明面上**——同一份错配，区别只在于现在它是一行可以被 review 的表项。
+	"面案": "counter",     # 借用（面案 ≠ 吧台）
+	"摊位": "counter",     # 借用
+	"清扫车": "bench",     # 借用（推车 ≠ 长椅）
+	"渔台": "bench",       # 借用
+	"讲台": "desk",        # 借用
+	"柴垛": "bench",       # 借用 —— F5 自己记过"柴垛像条木凳"
+	"砖垛": "bench",       # 借用 —— G3 的砖垛，docs/50 §〇 点名的那一个
+	# ── 借用：选举 WorldPatch（上面病史③）。**这一行是本棒真正改掉的那个 bug**：
+	#    改前它没有任何槽位 ⇒ 占位框 + 草地上印「扩建咖啡馆」；现在借咖啡馆吧台的贴图。
+	#    仍然是借用，不是对的素材 —— 一并交给 H1 判读得出读不出。
+	"扩建咖啡馆": "counter",
+}
+
+## 没有 `type` 字段的 spawn 家族只能按 ID 前缀认。今天只有一个：节日机会地形
+## （festivals.json 的 objects[] 里**没有** type，Sim.gd:2753 给它派的 id 是 `fest_<名>_<日>_<序>`）。
+## 这张表存在的意义是把"按前缀认"从**默认行为**降级成**列举出来的例外**。
+const OBJ_SLOT_BY_ID_PREFIX := {"fest": "fest"}
+
+## 程序化画出来的槽（没有对应 png，但**有**渲染器）。改这里要同步改 _draw() 里的 match。
+const OBJ_SLOT_PROCEDURAL := {"bed": true, "stove": true, "fest": true}
+
+# ══ H3-b · 别名预算（aliasing budget）——H1 真机眼验之后补的第二条判据 ═══════════════
+#
+# **上面那条判据不够，而它不够的方式正是本棒最容易自欺的那一种。**
+# 我先写的是「advertises 的对象必须解析到一张真实存在的贴图」。H1 在真机上量完之后指出：
+# `bench_brickpile` **解析成功**，`obj/bench.png` **真的存在** ⇒ 那条判据对着"砖垛像木凳"这个
+# 派本棒的原始症状**恒绿**。病不是【退化】(degradation)，是【别名】(aliasing)：贴图不缺，是被反复借用。
+#
+# 两个口径都记下来，因为它们不一样，混用会得到不同的数字：
+#   贴图        按【对象】数  按【不同 type】数
+#   bench.png       5              5    长椅 · 清扫车 · 渔台 · 柴垛 · 砖垛
+#   desk.png        3              2    工作台(desk_1) + 工作台(desk_workbench) + 讲台
+#                                        —— **同一个 type 出现两次不是别名**，是两件同型号的家具
+#   counter.png     3              3    吧台 · 面案 · 摊位   （本棒给「扩建咖啡馆」补表后 → 4）
+# ⇒ H1 报的 "desk 服务 3 个" 按对象数为真、按 type 数是 2。本门取 **type** 口径：
+#    两件同型号家具共用一张图是**对的**，把它算成病会得到一个没有判别力的数。
+#
+# 这道门**不是**"禁止别名"——那会在今天当场把 CI 焊红，而真正的修法是补美术，不在本棒的行里
+# （docs/50 §一：**先眼验、再上门**；给没人看过的美术上门等于把现状钉成正确）。
+# 它是**棘轮**：把今天量到的数钉进代码，**再多一个就红**。
+#   · G3 当初给 bench 添第 5 个 type（砖垛）会当场变红 —— 实测把预算改回 4 即复现（回执 M7）。
+#   · 下一根想借 bench 的棒必须**手动把 5 改成 6**，那一行会出现在 diff 里、必须有人签字。
+#     「借用」从此是一次显式决定，而不是一次没人注意的字符串巧合。
+# ⚠️ 它**不会**告诉你现存的 5 个借用哪一个读得出、哪一个读不出——那件事只有人眼能做（H1）。
+const OBJ_SLOT_ALIAS_BUDGET := {"bench": 5, "counter": 4, "desk": 2}
+
+var _slot_shouted := {}       # 已经吼过的坏 key（type|前缀）→ 每个只吼一次，不随 tick 刷屏
+var _slot_probe_n := -1       # 上次体检时 world["objects"] 的规模（civic_/fest_ 是运行期 spawn 的，所以要跟着变）
+var _slot_declared_done := false
+
+## 对象 → 精灵槽。返回 "" = **无人认领**（调用方必须走醒目占位，不许静默兜底）。
+func _obj_slot(id: String, o: Dictionary) -> String:
+	var t := String(o.get("type", ""))
+	if OBJ_SLOT_BY_TYPE.has(t):
+		return String(OBJ_SLOT_BY_TYPE[t])
+	var pre := id.split("_")[0]
+	if OBJ_SLOT_BY_ID_PREFIX.has(pre):
+		return String(OBJ_SLOT_BY_ID_PREFIX[pre])
+	return ""
+
+## 这个槽真的画得出东西吗？程序化分支算数；否则必须有一张**真实存在的**贴图。
+## 判据用 `Art.object_tex()` 本身而不是 `FileAccess.file_exists`——门要和渲染器问同一个问题，
+## 否则会出现"文件在、但导入失败/解不出 Texture2D，门绿而屏幕上是空的"。
+## 实测：`--headless` 下 `Art.object_tex("bench")=true / ("nosuchslot")=false`，这道门在无渲染环境里照样有判别力。
+func _slot_has_renderer(slot: String) -> bool:
+	if slot == "":
+		return false
+	if OBJ_SLOT_PROCEDURAL.has(slot):
+		return true
+	return Art.object_tex(slot) != null
+
+## ── 断言：**任何 town 平面上 advertises 的对象，都必须解析出一个画得出东西的槽** ──────────
+## 范围（写清楚，因为门的价值一半在它守不住的那一栏）：
+##   · 只查 `space=="town"` —— 室内家具走 `_draw_interior_furniture`，那条路的 slot 是数据**显式**给的，
+##     不经过本文件的 id 前缀，不是同一个缺陷（它自己的坑另记，见回执 does_not_detect）。
+##   · 只查 `advertises` 非空 —— 纯装饰对象根本进不了 `world["objects"]`（Sim.gd:584 / :644 各一处 continue）。
+## 返回坏对象个数。**push_error 而不是 assert**：assert 在 release 构建里是空的，而这条性质
+## 恰恰要在出货构建里也成立；push_error 会被 `tools/ci.sh` 的 `scan` 抓成红（实测 `ERROR: <msg>` 两行）。
+func verify_object_slots() -> int:
+	var objs = Sim.world.get("objects", {})
+	if not (objs is Dictionary):
+		return 0                       # `_load_data()` 走完之前它是 authored 数组，此时还没有权威的 id→def
+	var bad := 0
+	for id in objs:
+		var o = objs[id]
+		if not (o is Dictionary):
+			continue
+		var od: Dictionary = o
+		if String(od.get("space", "town")) != "town":
+			continue
+		if (od.get("advertises", []) as Array).is_empty():
+			continue
+		if _slot_has_renderer(_obj_slot(String(id), od)):
+			continue
+		bad += 1
+		_shout_unmapped(String(id), String(od.get("type", "")), "world.objects")
+	return bad
+
+## 运行期才 spawn、但**在数据里已经声明**的那些（选举 WorldPatch / 节日机会地形）。
+## 为什么单独查：docs/41 §2 第三个盲区——「一道门可以已经在 CI 里、已经是绿的，却跑在一个它
+## 永远不可能变红的配置上」。本门在 CI 里唯一的 fixture 是 `player_touch_test` 里那个 **tick 0 的世界**，
+## 而 `civic_*` 要到第 14 天、`fest_*` 要到第 3 天才存在 ⇒ 光查 `world["objects"]` 的话，
+## 病史③那个真 bug **在 CI 里一次都不会被看见**。这一段把它们提前到开局就查掉。
+## ⚠️ 它耦合了 Sim 的两处命名（`civic_` @Sim.gd:2802、`fest_` @Sim.gd:2753）。改名 ⇒ 这里失效，
+##    但不会假绿到底：对象真的 spawn 出来时 `verify_object_slots()` / 绘制路径仍会吼。
+func verify_declared_slots() -> int:
+	var bad := 0
+	var op = Sim.elections.get("on_pass", {})
+	if op is Dictionary and (op as Dictionary).get("object", null) is Dictionary:
+		bad += _check_declared((op as Dictionary)["object"], "civic", "elections.json on_pass.object")
+	var fs = Sim.festivals.get("festivals", {})
+	if fs is Dictionary:
+		for nm in (fs as Dictionary):
+			var f = (fs as Dictionary)[nm]
+			if not (f is Dictionary):
+				continue
+			for od in ((f as Dictionary).get("objects", []) as Array):
+				if od is Dictionary:
+					bad += _check_declared(od, "fest", "festivals.json 节日「%s」" % str(nm))
+	return bad
+
+## ── 断言二：**一张贴图被几个不同 type 借用，不许超过预算**（见上面 OBJ_SLOT_ALIAS_BUDGET）──
+## 判据只读 OBJ_SLOT_BY_TYPE 这张表 ⇒ 它是一条**静态**性质，与世界里当下有没有那个对象无关：
+## 有人往表里加一行借用，第一次跑起来就红，不必等到那个对象真的被 spawn 出来。
+func verify_slot_aliasing() -> int:
+	var by_slot := {}
+	for t in OBJ_SLOT_BY_TYPE:
+		var s := String(OBJ_SLOT_BY_TYPE[t])
+		if not by_slot.has(s):
+			by_slot[s] = []
+		(by_slot[s] as Array).append(String(t))
+	var bad := 0
+	var slots: Array = by_slot.keys()
+	slots.sort()                       # 定序：报错文本不随字典遍历序抖动
+	for s in slots:
+		var types: Array = by_slot[s]
+		var budget := int(OBJ_SLOT_ALIAS_BUDGET.get(s, 1))
+		if types.size() <= budget:
+			continue
+		bad += 1
+		var key := "ALIAS|" + String(s)
+		if _slot_shouted.has(key):
+			continue
+		_slot_shouted[key] = true
+		push_error(("[WorldView] 贴图别名超预算：'%s' 现在被 **%d** 个不同的 type 共用（预算 %d）：%s。" +
+			"这不是「贴图缺失」，是「贴图被借用」——屏幕上这几样东西会长得一模一样。" +
+			"要么给新的 type 画一张自己的图（assets/art/obj/<slot>.png），" +
+			"要么**手动把 OBJ_SLOT_ALIAS_BUDGET['%s'] 改成 %d 并在 commit 里说明为什么这次借用可以接受**。") % [
+			s, types.size(), budget, str(types), s, types.size()])
+	return bad
+
+func _check_declared(def: Dictionary, spawn_prefix: String, where: String) -> int:
+	if (def.get("advertises", []) as Array).is_empty():
+		return 0
+	var slot := ""
+	var t := String(def.get("type", ""))
+	if OBJ_SLOT_BY_TYPE.has(t):
+		slot = String(OBJ_SLOT_BY_TYPE[t])
+	elif OBJ_SLOT_BY_ID_PREFIX.has(spawn_prefix):
+		slot = String(OBJ_SLOT_BY_ID_PREFIX[spawn_prefix])
+	if _slot_has_renderer(slot):
+		return 0
+	_shout_unmapped(spawn_prefix + "_*", t, where)
+	return 1
+
+## 同一个坏 key 只吼一次（key = type|前缀）：本函数会被逐 tick 的体检与逐帧的绘制两条路调用。
+func _shout_unmapped(id_hint: String, type_name: String, where: String) -> void:
+	var key := "%s|%s" % [type_name, id_hint.split("_")[0]]
+	if _slot_shouted.has(key):
+		return
+	_slot_shouted[key] = true
+	push_error(("[WorldView] 精灵槽无人认领：对象 '%s' 的 type='%s'（来自 %s）在 OBJ_SLOT_BY_TYPE / " +
+		"OBJ_SLOT_BY_ID_PREFIX 里都没有条目，或者它指向的贴图不存在。" +
+		"它会在地图上画成一个品红占位框、并把数据键印在草地上。" +
+		"修法：往 WorldView.OBJ_SLOT_BY_TYPE 里加一行（借用已有贴图也算一个显式决定），或补一张 assets/art/obj/<slot>.png。") % [
+		id_hint, type_name, where])
+
+## 世界规模变了才重新体检（civic_/fest_ 是运行期 spawn 的；`_redraw_all` 逐 tick 调，不能在这里做 O(n) 全扫）。
+func _slot_probe_tick() -> void:
+	var objs = Sim.world.get("objects", {})
+	var n: int = objs.size() if (objs is Dictionary or objs is Array) else -1
+	if n == _slot_probe_n:
+		return
+	_slot_probe_n = n
+	verify_object_slots()
+	if not _slot_declared_done and (objs is Dictionary):
+		_slot_declared_done = true          # 下面三条都是【静态】性质（只读表与资产），查一次就够
+		verify_declared_slots()
+		verify_slot_aliasing()
+		verify_decor_pool()
+
+## 无人认领的对象：**醒目**画法。旧版用 P_RES_FOOT（暖石灰，和墙同色）+ 11px 白字，
+## 于是它在整帧里读起来像一件家具 —— F1 的四个工位就是这样活过一整波的。
+## 现在：品红实心 + 黑叉 + 黑描边，几乎占满整格，字前面加 `?`。**它不是兜底，它是一块喊叫的补丁。**
+func _draw_unmapped_object(base: Vector2, id: String, o: Dictionary) -> void:
+	var r := Rect2(base.x + 4, base.y + 4, T - 8, T - 8)
+	draw_rect(r, X_MISSING, true)
+	# 黑叉：纯色块在缩略图/远景里仍可能被读成"一件红东西"，一个叉不会。两条对角线严格落在框内。
+	draw_line(r.position, r.position + r.size, P_PANEL, 3.0)
+	draw_line(Vector2(r.position.x, r.end.y), Vector2(r.end.x, r.position.y), P_PANEL, 3.0)
+	draw_rect(r, P_PANEL, false, 2.0)
+	draw_string(Art.font(), Vector2(base.x + 4, base.y + T - 3),
+		"?" + String(o.get("type", id)), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, X_MISSING)
+	_shout_unmapped(id, String(o.get("type", "")), "world.objects(绘制)")
 
 func _draw_bed(base: Vector2) -> void:
 	var x := base.x + 8.0
