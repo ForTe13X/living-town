@@ -32,10 +32,35 @@
 ## 二、H2 · 给"看过且判为 OK"的那些上门（**依赖 H1**）
 
 **owns**：`tools/art_gate.py` 的扩展或新的 `tools/asset_gate.py`、`tools/ci.sh`
-**状态**：**BLOCKED**，等 H1 的分类表。
+**状态**：**已解封**（H1 于 2026-07-30 交表，见 `docs/51-art-eyeball.md`）。
 
-只给 H1 判为 OK 的那些上"当场重建 + 逐字节比对"的门，形状照抄 `art_gate.py` / `terrain_gate.py`
+只给 H1 判为 OK 的那些上"当场重建 + **逐像素**比对"的门，形状照抄 `art_gate.py` / `terrain_gate.py`
 （**已经有两份同形的了，别发明第三种**）。H1 判为"需要重画"的**不上门**——先修再守。
+
+### H1 的分类表（26 张），照它办
+
+| 判 | n | 文件 | H2 怎么做 |
+|---|---|---|---|
+| **OK** | 13 | decor `bush` `flower_red` `flower_yellow` `rock` `stump` `mushroom`；obj `bench` `counter` `desk`；emote `confront` 等 | **上门** |
+| **读不出** | 11 | 9 个气泡表情、obj `bath` `arcade` | **不上门**（先修再守） |
+| **从不出现** | 4 | `building/house` `building/hut` `building/shop`、`decor/tree_small` | **绝不上门**——给不上屏的素材上门 = 把死资产钉成"正确" |
+| **需要重画** | 1 | `decor/tree_big` | **不上门** |
+
+### ⚠️ 两条 H1 实测出来的坑，不看会白跑一轮
+
+1. **不能照抄 `art_gate.py` 的「逐字节」判据。** H1 在隔离目录重切了全部 26 张：
+   **逐像素相同 26/26，逐字节相同 0/26**（这 26 张是当年 ffmpeg 编的，容器字节与本机 Pillow 不同）。
+   ⇒ 照抄字节比对 = **干净树上 26/26 全假红**。硬判据必须是**解码后 RGBA 逐像素**；
+   容器字节只打印、不判红（`art_gate.py` 自己就是这么分的，抄对那一半）。
+2. **`getbbox()` 的 alpha 陷阱在这里正好咬人**（docs/41 §6）：翻一个不透明像素的 RGB，
+   `getbbox()` → `None`、`getbbox(alpha_only=False)` → `(3,5,4,6)`。
+   H1 已经把它做成现成的负对照，直接用。
+
+### 切图坐标在哪（H1 已核）
+
+`tools/slice_all.py`（emote 10，**20px 格** + obj 5，16px）与
+`tools/slice_visual.py`（decor 8 + building 3）。`tree_big` 2×2、`house` 1×4、`shop` 2×4 是**多格瓦**。
+**别在门里抄第二份坐标表**——从源码解析，解析到 0 行就判红（`terrain_gate.py` 有先例）。
 
 ## 三、H3 · 精灵槽耦合的根治
 
