@@ -219,13 +219,14 @@ func _ready() -> void:
 
 	print("")
 	if _fail == 0:
-		print("✅ 小镇故事验收全绿（fixture 5 组 + %d seed × %d 天）" % [seeds.size(), days])
+		print("✅ 小镇故事验收全绿（fixture 6 组 + %d seed × %d 天）" % [seeds.size(), days])
 	else:
 		print("❌ 小镇故事验收 %d 条断言失败" % _fail)
 	get_tree().quit(1 if _fail > 0 else 0)
 
 # ── F 段：合成 fixture（本门的判别力都在这里）──────────────────────────────
 func _fixtures() -> void:
+	_fixture_trim()
 	print("\n[F] 合成对照 —— 每条都有唯一正确答案")
 	# F1 只喂 greet：一个"什么都开一条弧"的追踪器会在这里爆掉，而 live==replay 是照过的。
 	var f1: Array = []
@@ -454,6 +455,43 @@ func _beat_ids(arc: Dictionary) -> Array:
 	return out
 
 ## 合成事件：字段与 Sim._log_event 完全同名（本门因此不依赖 Sim 就能造流）。
+# ── F-trim：把 MAX_CLOSED 裁剪【真的触发一次】───────────────────────────────
+## 为什么必须有这一条（2026-07-30）：A 段那两条「账本自洽」的注释写着"裁剪一开始咬人，
+## 这两条就是唯一能发现的地方"，而它们跑的 14 天里 **裁掉 0 段**——被守的那件事根本没发生。
+## 实测四格（负对照 = 把 closed_count() 改成从 `arcs` 数，即注释里警告的那个朴素写法）：
+##     干净 @14 天(CI)   裁掉    0  ✅        干净 @150 天  裁掉 1018  ✅
+##     朴素 @14 天(CI)   裁掉    0  ✅ ←缺陷隐形   朴素 @150 天  裁掉 1018  ❌ 32 vs 1085
+## ⇒ 判据有牙，但牙咬不到 CI 跑的那个 horizon。真世界要 150 天才裁得动（一局 3 分钟），
+##    合成 fixture 毫秒级就能把 MAX_CLOSED 顶穿 ⇒ 用 fixture，不给 CI 加三分钟。
+func _fixture_trim() -> void:
+	var n_arc := StoryScript.MAX_CLOSED + 8      # 阈值从 Story 读，不抄第二份
+	var f: Array = []
+	var eid := 0
+	for k in n_arc:
+		var a := "p%d" % k
+		var b := "q%d" % k
+		var t0 := 100 + k * 400                   # 每条弧独占一段时间，互不干扰
+		f.append(_ev(eid, t0, "conflict", a, b, false)); eid += 1
+		f.append(_ev(eid, t0 + 40, "confront", a, b, true)); eid += 1
+		f.append(_ev(eid, t0 + 80, "apologize", b, a, true)); eid += 1
+	var st := StoryScript.new()
+	st.recompute(f)
+	# ① fixture 有效性先自证：**裁剪必须真的发生过**，否则下面两条又是空门。
+	_expect(st._dropped > 0,
+		"F-trim fixture 有效性：%d 条弧全部收场 ⇒ 裁掉 %d 段（必须 >0，否则本 fixture 自己是空门）" % [n_arc, st._dropped])
+	# ② 终身账在裁剪下不缩水 —— 负对照：把 closed_count() 改成从 `arcs` 数，这条必红。
+	_expect(st.closed_count() == n_arc,
+		"F-trim 终身收场 %d == 开过 %d（负对照：closed_count() 改从 `arcs` 数则为 %d ⇒ 必红）" % [
+			st.closed_count(), n_arc, st.closed_kept()])
+	# ③ 留存账确实比终身账少，且差额正好是裁掉的数目。
+	_expect(st.closed_kept() == n_arc - st._dropped and st.closed_kept() < st.closed_count(),
+		"F-trim 留存 %d = 终身 %d − 裁掉 %d，且严格小于终身（面板翻得到的比讲过的少）" % [
+			st.closed_kept(), st.closed_count(), st._dropped])
+	# ④ A 段那条账本恒等式，这次是在【裁剪真的发生过】的前提下过的。
+	_expect(st.open_count() + st.closed_count() == st._serial,
+		"F-trim 账本自洽：进行中 %d + 终身收场 %d == 开过 %d（这次裁掉的是 %d 段，不是 0）" % [
+			st.open_count(), st.closed_count(), st._serial, st._dropped])
+
 func _ev(id: int, tick: int, type: String, actor: String, target: String, accepted: bool,
 		subject: String = "", note: String = "") -> Dictionary:
 	return {"id": id, "tick": tick, "type": type, "actor": actor, "target": target,
