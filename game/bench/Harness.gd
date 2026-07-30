@@ -152,7 +152,7 @@ func _init() -> void:
 		first_run_chain[sd] = int(res["chain"])
 		first_run_ticks[sd] = res["chain_ticks"]
 		_tally_liveness(S, live_total, live_seeds)
-		var checks: Array = Inv.check_all(S, int(res["starved"]))
+		var checks: Array = Inv.check_all(S, int(res["starved"]), res["starve_by_need"])
 		var hard_fails: Array = []
 		var soft_fails: Array = []
 		var diag_fails: Array = []
@@ -175,10 +175,14 @@ func _init() -> void:
 		if hard_fails.is_empty():
 			seed_pass += 1
 		# JSONL 机读行（digest/event_digest 以字符串输出：event_digest 可达 2^63，JSON number 会丢精度）
-		print("[S0] " + JSON.stringify({"seed": sd, "days": days, "pass": hard_fails.is_empty(),
+		var s0 := {"seed": sd, "days": days, "pass": hard_fails.is_empty(),
 			"hard_fails": hard_fails, "soft_fails": soft_fails, "diag_fails": diag_fails,
 			"events": S.event_log.size(), "digest": str(first_run_digest[sd]),
-			"event_digest": str(first_run_edig[sd]), "chain": str(first_run_chain[sd])}))
+			"event_digest": str(first_run_edig[sd]), "chain": str(first_run_chain[sd])}
+		# 只在真触底时多带一个键 ⇒ 全绿网格的这一行与改动前逐字节相同（下游解析器不受影响）
+		if not (res["starve_by_need"] as Dictionary).is_empty():
+			s0["starve_by_need"] = res["starve_by_need"]
+		print("[S0] " + JSON.stringify(s0))
 		if _shadow_dump != "":
 			_dump_shadow(sd, S.shadow_trace)   # 只在主循环 dump 一次（det 复跑不再重复）
 		if _chain_dump != "":
@@ -571,8 +575,19 @@ func _check_chain_ref(path: String, days: int, seeds: Array, ticks: Dictionary) 
 		return {"red": false, "note": "⚠ 参照 0 条可比（seed/days 不重叠）"}
 	return {"red": false, "note": "✅ 逐 tick 前缀链与参照逐 tick 一致 %d/%d seed" % [cmp_n, seeds.size()]}
 
-## 跑一局确定性仿真，返回 {S, starved, chain, chain_ticks}。S 由调用方 _dispose。
+## 跑一局确定性仿真，返回 {S, starved, starve_by_need, chain, chain_ticks}。S 由调用方 _dispose。
+## `starved` 是喂给 `Inv.check_all` 的那个数，也就是 **#1 的口径由这里定义**：
+##   Σ over (agent, tick, need) of [need ≤ 0.5] —— **任何一条 need**，不按 agent 去重（一个人同时饿又困计 2）。
 ## chain_ticks[i] = 第 i+1 个 tick 结束后的前缀链值（全量留在内存里：60 天 = 14400 个 int64 ≈ 115KB，可忽略）。
+##
+## ⚠ 这个循环在仓库里有 **8 份逐字复制**（引符号不引行号，见 Invariants.digest 抬头那条教训）：
+##   本文件 · `BackendGate._run` · `DetGate._run` · `LodAblation` · `lod_observation_probe` ·
+##   `ScaleSupply` · `scale_agg` · `BackendBench._starve_ticks`（那一份多一个 `break`，是 per-agent-tick 口径，
+##   数会偏小）；另 `find_starve.gd` 是诊断探针，且它**跳过 player**，与上面 8 份都不同口径。
+##   阈值 `0.5` 也被写死了 8 遍，而 `Sim.gd` 有一个**从未被调用**的 `const STARVE_NEED := 0.5` 就是它
+##   （`git log -S STARVE_NEED` ⇒ `6e2ba78` 加进来的时候就没接上，**不是**后来被摘掉的；docs/41 §1.5①）。
+##   本棒**没有**把这 8 处收敛：只改其中 1 处去引那个常量，会做出一个"改了它却只有 1/8 跟着变"的活陷阱，
+##   比现在这种一致的重复更危险。要收就得 8 处一起收，那超出本棒的行（只有本文件与 Invariants.gd）。
 func _run_once(seed: int, days: int) -> Dictionary:
 	var S = SimScript.new()
 	get_root().add_child(S)
@@ -586,6 +601,7 @@ func _run_once(seed: int, days: int) -> Dictionary:
 	S.start_new(seed)
 	var total: int = days * int(S.TICKS_PER_DAY)
 	var starved := 0
+	var starve_by_need := {}    # need -> 触底 (agent,tick) 实例数。**纯观测**：只进 detail 字符串，不进判据
 	var chain: int = Inv.CHAIN_INIT
 	var chain_ticks := PackedInt64Array()
 	chain_ticks.resize(total)
@@ -599,8 +615,10 @@ func _run_once(seed: int, days: int) -> Dictionary:
 			for nid in ag["needs"]:
 				if float(ag["needs"][nid]) <= 0.5:
 					starved += 1
+					starve_by_need[nid] = int(starve_by_need.get(nid, 0)) + 1   # 分支几乎从不进 ⇒ 热路径零开销
 	# 注：dump 不在此做——否则 det 复跑(也调 _run_once)会把同 seed 追加两次（评审 P1）
-	return {"S": S, "starved": starved, "chain": chain, "chain_ticks": chain_ticks}
+	return {"S": S, "starved": starved, "starve_by_need": starve_by_need,
+		"chain": chain, "chain_ticks": chain_ticks}
 
 ## 把一 seed 的 shadow_trace 追加进 JSONL（每行一条决策，带 seed 前缀）。
 func _dump_shadow(seed: int, trace: Array) -> void:
