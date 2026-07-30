@@ -49,7 +49,7 @@
 
 ## 四、H4 · 给方法论装分母（**brief mutation test**）
 
-**owns**：`docs/52-brief-mutation.md`（新文件）、`tools/brief_mutate.py`（新文件）
+**owns**：`docs/52@worktree-agent-a0c76a3f96ae5dbcf`（新文件，H4 未合入前只存在于它的分支上）、`tools/brief_mutate.py`（新文件）
 **不得触碰**：任何 `game/**`
 
 外审的原话：**"24 不是质量指标……你不知道分母。"**
