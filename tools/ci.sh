@@ -114,6 +114,41 @@ echo "### 2c. terrain gate (出货 game/assets/art/terrain 必须等于 slice_sh
 #    —— 这正是"容器字节必须是软判据"的现成例子。
 "$PY" tools/terrain_gate.py && ok "terrain gate（出货 terrain/ == 当场重建）" || bad "terrain gate（出货 terrain/ != slice_shore.py 当场重建的结果）"
 
+echo "### 2d. asset gate (H1 眼验判为 OK 的 10 张 emote/decor/obj png == 切图配方当场重建的结果)"
+# H2（docs/50 §二）。与 2b / 2c 同一套形状的**第三个实例**（不是第三种形状）：当场从 CC0 库重建 → 解码后逐像素比对。
+# 由来：2c 抬头点名"其余 26 张仍然无门"，而 G5 刻意没上门的理由必须继承——
+#   **给没人眼验过的美术上门 = 把当前状态钉成"正确"**（池塘那个 bug 正是这样活了一个月）。
+#   H1 于 2026-07-30 把 26 张在真机上逐张看完（docs/51），这一步只给它判为 OK 的 **10 张**上门。
+#
+# ⚠️ 范围是刻意窄的，另 16 张【故意不守】，这不是欠债，是本棒的要点：
+#   · 9 张 emote + obj/bath + obj/arcade —— H1 判「读不出」（九张白气泡最近的一对只差 6/400 px）⇒ 先重画再守；
+#   · decor/tree_big —— 判「需要重切」（它是树冠图集碎片，不是一棵树）；
+#   · building/{house,hut,shop} + decor/tree_small —— 判「从不出现」：`Art.building_tex()` 全仓**零调用点**、
+#     `tree_small` 不在 `WorldView.DECOR_POOL` 里。**给上不了屏的素材上门 = 把死资产钉成"正确"**（docs/50 §八）。
+#     门每次运行都**重新核**这两条；哪天有人接上线，它会红——那正是该重新眼验、重新决定的时刻（棘轮）。
+#
+# ⚠️ 硬判据必须是**解码后 RGBA 逐像素**，不能是逐字节（docs/50 §二 坑①）：
+#    H1 实测重切 26 张 ⇒ **逐像素同 26/26、逐字节同 0/26**（出货那批当年被重新编码压缩过）。
+#    本门实测 10 张里逐字节 **0/10** 相同 —— 拿字节判红等于干净树全假红。容器字节只打印。
+# ⚠️ 判据比的是 `Image.load()` 出来的 RGBA 元组，**不是 `getbbox()`**（docs/41 §6：它在 RGBA 上默认只看 alpha，
+#    翻一个不透明像素的 RGB 会被判成"完全相同"）。门里带一个只打印的量具把这件事每次量给你看。
+#
+# 负对照（H2 实测，逐条亲眼看着变红 + 核过退出码与判决行，不是推断）：
+#   ① **逐张**牙齿：10 张各翻 1 px，各跑一次完整的门 ⇒ **10/10 全红**，每次只点名那一张（detected 10/10）；
+#   ② 红→绿：obj/bench 翻 1 px ⇒ FAIL rc=1；改回 ⇒ PASS rc=0；
+#   ③ 删一张上门的（decor/stump）⇒ 红；删一张未上门的（emote/greet）⇒ **绿 + WARN**（刻意的，不在范围里）；
+#   ④ 把比对器改成恒返回"一样" ⇒ 门内每次都跑的逐张自检报 detected 0/10 ⇒ 红；
+#   ⑤ 重建源头指向出货目录 ⇒ 红（"这不是重建" / 只偷读一张也报"抄答案不是重建"）；
+#   ⑥ 把死资产接上线（building_tex 加 1 个调用点 / tree_small 进 DECOR_POOL）⇒ 红（棘轮生效）；
+#   ⑦ **把 building/hut 偷偷加进上门表** ⇒ 红「代码里到不了屏幕」——本棒最想拦的那个错是机检的，不是靠自觉。
+# does_not_detect（同样是实测的，docs/41 §2.5 要求这一栏必须跑出来）：
+#   切图坐标与出货 png **一起**改 ⇒ 绿（bush 换成另一格瓦、124/256 px 不同，门一声不吭）；
+#   未上门那 16 张整张像素取反 ⇒ 绿；容器重编码（160→1108 B、像素不变）⇒ 绿；
+#   再加一种物件借 bench.png（第 6 个别名）⇒ 绿（那是 H3 的 OBJ_SLOT_ALIAS_BUDGET 的活）；
+#   渲染侧砍掉 emote 绘制 ⇒ 绿（门只看文件，看不见屏幕）。
+# ⚠️ 同 2b/2c：需要 Pillow，装不上直接红，不做 SKIP（SKIP 与 PASS 在汇总里都读作"没红"）。
+"$PY" tools/asset_gate.py && ok "asset gate（上门的 10 张 emote/decor/obj == 当场重建）" || bad "asset gate（上门的 10 张 != 切图配方当场重建的结果）"
+
 echo "### 3. godot import + parse smoke"
 "$GODOT" --headless --path game --import >"$LT_LOG/import.log" 2>&1 || true
 if grep -qiE 'SCRIPT ERROR|Parse Error|Failed to load script' "$LT_LOG/import.log"; then
