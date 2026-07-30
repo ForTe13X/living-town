@@ -21,6 +21,13 @@ jobs:
         with:
           python-version: "3.11"
 
+      # tools/ci.sh 第 2b 步（art gate）当场重建十张出货角色表再逐字节比对，重建管线依赖 Pillow。
+      # 不装它 ⇒ art_gate.py 直接退出、这道门在 GHA 上【每一个 PR 都红】而与改动无关 —— 正是
+      # tools/visual_gate.sh 抬头②说的"没有任何 commit 却会自己变色的门"。
+      # （G1 声明的越界：.github/ 不在本棒的所有权表里。回滚 = 删掉本步。）
+      - name: Install Pillow (art gate 的重建管线依赖)
+        run: python -m pip install --disable-pip-version-check "pillow>=10,<12"
+
       - name: Install Godot 4.6.2 (headless)
         run: |
           set -e
