@@ -270,6 +270,49 @@ func _ready() -> void:
 		not _main._player_mode and Sim.get_agent("player").is_empty() and not _main._act_pan.visible,
 		"agents=%d" % Sim.agents.size())
 
+	# ── 4) W8：观察台在【一个长到装得满的世界】上真的装得下（docs/47 §五-E4；E4 声明的越界）─────
+	# ★本文件 2.6 节里**已经有**一条「完整卷宗装得下」——它今天是绿的，而面板**当时就在溢出**。
+	#   原因是那条断言跑在一个**刚开局**的世界上（aria、tick≈0：没有冲突、没有记忆、信念寥寥），
+	#   那一格无论如何都装得下 ⇒ **把整个版式预算删掉它照样绿**。
+	#   这正是 docs/41 §6-★ 那句话的又一例：「一个什么都不做的改动能不能通过它？」——能，所以它不是判据。
+	# 本节把它换成有牙的：**跑到世界长满**，再**逐个居民 × 两档**量真实控件的 get_content_height()。
+	# 判别力有负对照（E4 实测，同一棵树把 Main._obs_fit_lines 摘掉再跑）：
+	#   12 居民 · 第 5 天 → 5/12 溢出、最坏 −135px；N=60 · 玩家 · 第 30 天 → 60/61 溢出、最坏 −189px。
+	#   修好之后同一网格：0/122 格溢出、最坏余量 +27px。
+	# 与 `godot --headless --path game -- --obs-fit` 是同一套口径（那条命令跑 N=60 的完整版）。
+	Sim.spawn_count = 60                     # 红线#3 的出货上限：弧/关系/信念都在这一档才长得满
+	Sim.start_new(7)
+	Sim.add_player()
+	_main._player_mode = true
+	for _t in 8 * int(Sim.TICKS_PER_DAY):
+		Sim.tick()
+	var w8_ids: Array = []
+	for ag in Sim.agents:
+		w8_ids.append(String(ag["id"]))
+	w8_ids.sort()
+	var w8_keep: bool = _main._obs_expanded
+	var w8_over := 0
+	var w8_slack := INF
+	var w8_worst := ""
+	for w8_exp in [false, true]:
+		_main._obs_expanded = w8_exp
+		_main._sync_obs_panel()
+		var w8_cap: float = _main._obs.size.y
+		for wid in w8_ids:
+			_main._selected_id = String(wid)
+			_main._update_obs()
+			var w8_h: float = _main._obs.get_content_height()
+			if w8_h > w8_cap:
+				w8_over += 1
+			if w8_cap - w8_h < w8_slack:
+				w8_slack = w8_cap - w8_h
+				w8_worst = "%s/%s 内容%.0fpx 可用%.0fpx" % [String(wid), "卷宗" if w8_exp else "名片", w8_h, w8_cap]
+	_main._obs_expanded = w8_keep
+	_main._sync_obs_panel()
+	_ck("W8 观察台装得下（%d 居民 × 两档 · 第 %d 天 · 玩家在镇）" % [w8_ids.size(), Sim.day],
+		w8_over == 0 and w8_slack < 1e9,
+		"溢出 %d/%d 格 · 最坏余量 %+.0fpx（%s）" % [w8_over, w8_ids.size() * 2, w8_slack, w8_worst])
+
 	_restore_settings()
 	print("=== 触屏动作条: %s (%d fail) ===" % [("PASS ✅" if _fails == 0 else "FAIL ❌"), _fails])
 	get_tree().quit(0 if _fails == 0 else 1)

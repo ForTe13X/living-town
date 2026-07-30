@@ -48,7 +48,18 @@ func _ready() -> void:
 			# CI 默认不带（12 居民），本旗标只给手跑的规模验证用。
 			Sim.spawn_count = int(args[i + 1])
 
+	var w1_only := false
+	for i in args.size():
+		if args[i] == "--w1-only":
+			w1_only = true
+
 	print("小镇故事验收：%d 种弧 · seeds=%s · %d 天" % [StoryScript.ARCS.size(), str(seeds), days])
+	if w1_only:
+		_w1()
+		print("")
+		print("✅ W1 段全绿" if _fail == 0 else "❌ W1 段 %d 条断言失败" % _fail)
+		get_tree().quit(1 if _fail > 0 else 0)
+		return
 	_fixtures()
 
 	var total := int(days) * int(Sim.TICKS_PER_DAY)
@@ -203,6 +214,9 @@ func _ready() -> void:
 		int(cov.get("confide", 0)), int(cov.get("betray", 0)), int(cov.get("leak", 0)), leaked])
 	print("  梁子  conflict %d 次（= grudge 弧的开头数，必然 1:1）" % int(cov.get("conflict", 0)))
 
+	# W1 段放最后：它会开玩家、换后端、动世界，跑完不该有别的臂再读那份世界。
+	_w1()
+
 	print("")
 	if _fail == 0:
 		print("✅ 小镇故事验收全绿（fixture 5 组 + %d seed × %d 天）" % [seeds.size(), days])
@@ -312,6 +326,123 @@ func _fixtures() -> void:
 	_expect(got5 == ["secret/leaked/1幕", "pact/dissolved/1幕"],
 		"F5 泄密支与散伙支都认得（含反序的 dissolved）：实得 %s" % str(got5))
 	print("")
+
+# ── W1 段：回放安全到底覆盖到哪（docs/47 §五-E4 / docs/46 §二·九-⑧）────────
+## 与 `goals_test._w1()` **同构**（同一套 Q1/Q2/R/F 口径、同一套断言）——两个折叠器的红线是同一条，
+## 判据分叉了才是问题。完整论证写在 goals_test.gd 的同名段落里，这里只记 Story 特有的那一句：
+##
+## ★ **故事比目标更怕这件事。** 目标只会前进（`done` 一旦点亮就不再被后来的事件挪动），
+##   而弧会**收场**：顺着旧游标把新时间线的尾巴折进来，面板上就会挂着一段"在这条时间线里从没发生过的结局"。
+##   这正是评审说的「`chain` 见证一个从未存在过的序列」在屏幕上的样子。
+const W1_GREET_EVERY := 60
+
+func _w1() -> void:
+	var days := int(_env("CI_W1_DAYS", "8"))
+	var total := days * int(Sim.TICKS_PER_DAY)
+	var half := total / 2
+	print("\n[W1] 回放安全的真实适用范围（%d 天 · 非 logic 后端 / 玩家在场 / 前向拖动）" % days)
+	var q2_red := 0
+	var q2_arms := 0
+	for sd in _parse_seeds(_env("CI_W1_SEEDS", "1-2")):
+		q2_arms += 3
+		if not _w1_arm("W1-a 非logic后端(random)", sd, total, half, "random", false):
+			q2_red += 1
+		if not _w1_arm("W1-b 玩家在场(logic)", sd, total, half, "logic", true):
+			q2_red += 1
+		var ctrl := _w1_arm("W1-0 对照:纯logic无玩家", sd, total, half, "logic", false)
+		_expect(ctrl, "W1-0 seed %d · 对照臂必须 Q2 ✅（logic 地板 + 无玩家 ⇒ 重演逐字节复现 event_log）" % sd)
+	_expect(q2_red > 0,
+		"W1 判别力：%d/%d 条臂的重演给出了**另一份** event_log —— 若这条红了，说明重演已经能忠实重放模型决策/玩家历史（好消息），"
+		% [q2_red, q2_arms] + "请回来删掉本断言并把 README/docs/46 的适用范围放宽")
+	_w1_restore()
+
+func _w1_restore() -> void:
+	Sim.backend = null
+	AIBackend.backend = "logic"
+	AIBackend.backend_requested = "logic"
+	AIBackend.sim_decode_ticks = 0
+	AIBackend.reset_stats()
+
+func _w1_arm(label: String, sd: int, total: int, half: int, backend: String, with_player: bool) -> bool:
+	_w1_restore()
+	Sim.record_decisions = false
+	Sim.auto_run = false
+	if backend != "logic":
+		AIBackend.backend = backend
+		AIBackend.backend_requested = backend
+		AIBackend.sim_decode_ticks = 0
+		AIBackend.shadow_baseline = false
+		Sim.backend = AIBackend
+	Sim.start_new(sd)
+	if with_player:
+		Sim.add_player()
+	var live := StoryScript.new()
+	var fwd := StoryScript.new()                       # 只折到 half 就停手 = 玩家在 half 处拖了时间轴
+	var acts := 0
+	for t in range(total):
+		Sim.tick()
+		if with_player and Sim.tick_no % W1_GREET_EVERY == 0 and _w1_player_beat(Sim.tick_no):
+			acts += 1
+		live.sync(Sim.event_log)
+		if Sim.tick_no <= half:
+			fwd.sync(Sim.event_log)
+	var log_live: Array = Sim.event_log.duplicate()    # start_new 是 clear() 就地清 ⇒ 必须先 duplicate
+	var ed_live: int = Sim.event_digest
+	var n_live: int = log_live.size()
+
+	var pure := StoryScript.new()
+	pure.recompute(log_live)
+	var q1: bool = pure.digest() == live.digest() and pure.chain == live.chain and _eq(_snap(live), _snap(pure))
+
+	Sim.goto_tick(total)
+	var q2: bool = (Sim.event_digest == ed_live) and (Sim.event_log.size() == n_live)
+
+	var rep := StoryScript.new()
+	rep.recompute(Sim.event_log)
+	var r_ok: bool = rep.digest() == live.digest() and rep.chain == live.chain and _eq(_snap(live), _snap(rep))
+
+	fwd.sync(Sim.event_log)
+	var f_ok: bool = fwd.digest() == rep.digest() and fwd.chain == rep.chain and _eq(_snap(fwd), _snap(rep))
+
+	print("  [%s] seed=%d%s" % [label, sd, ("  玩家动作 %d 次" % acts) if with_player else ""])
+	print("     Q1 折叠纯函数（同一份日志）      %s" % ("✅" if q1 else "❌"))
+	print("     Q2 重演出同一份日志              %s   事件 %d→%d · event_digest %d→%d" % [
+		"✅" if q2 else "❌", n_live, Sim.event_log.size(), ed_live, Sim.event_digest])
+	print("     R  重演后整份重算 ≡ live         %s   开过 %d/%d 段 · 收场 %d/%d 段 · digest %d/%d" % [
+		"✅" if r_ok else "❌", live._serial, rep._serial, live.closed_count(), rep.closed_count(),
+		live.digest(), rep.digest()])
+	print("     F  重演后顺游标续折 ≡ 整份重算   %s   digest %d/%d · 锚触发重折 %d 次（live 侧 %d 次，必须 0）" % [
+		"✅" if f_ok else "❌", fwd.digest(), rep.digest(), fwd.resyncs, live.resyncs])
+	_expect(q1, "%s seed %d · Q1 折叠是纯函数（**这条与后端/玩家无关**，它是 Story.gd 的红线本身）" % [label, sd])
+	_expect(f_ok, "%s seed %d · F 前向拖动后顺游标续折 ≡ 整份重算（`_anchor` 守着；负对照：删掉 `_anchor` 这条必红）" % [label, sd])
+	_expect(live.resyncs == 0, "%s seed %d · 锚在 live 逐 tick 路上**一次都不触发**（实得 %d 次）" % [label, sd, live.resyncs])
+	if q2:
+		_expect(r_ok, "%s seed %d · Q2 ✅ ⇒ R 必须 ✅（同一份日志 + 纯折叠 ⇒ 同一批故事）" % [label, sd])
+	return q2
+
+## 确定性玩家剧本（与 goals_test 逐字同款）：把一位居民召到身边，打个招呼。
+func _w1_player_beat(t: int) -> bool:
+	var pl: Dictionary = Sim.get_agent("player")
+	if pl.is_empty():
+		return false
+	var ids: Array = []
+	for ag in Sim.agents:
+		if String(ag["id"]) != "player":
+			ids.append(String(ag["id"]))
+	if ids.is_empty():
+		return false
+	ids.sort()
+	var tgt: Dictionary = Sim.get_agent(String(ids[(t / W1_GREET_EVERY) % ids.size()]))
+	if tgt.is_empty():
+		return false
+	pl["option"] = null
+	pl["talking"] = 0
+	tgt["option"] = null
+	tgt["talking"] = 0
+	tgt["space"] = pl.get("space", "town")
+	tgt["floor"] = pl.get("floor", "outdoor")
+	Sim._move_agent(tgt, pl["pos"] + Vector2i(1, 0))
+	return Sim.player_act("greet", String(tgt["id"])) == ""
 
 func _pct(a: int, b: int) -> String:
 	return "n/a" if b <= 0 else "%.1f%%" % (100.0 * float(a) / float(b))

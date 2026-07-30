@@ -164,6 +164,13 @@ var _last_tick := 0           # 折进来的最后一个事件的 tick（冷场�
 var _dropped := 0             # 被 MAX_CLOSED 裁掉的弧数（进 digest：裁剪也必须是可对拍的）
 var chain := 0                # 折叠见证链
 var _serial := 0              # 弧序号（稳定身份，进 digest；不受裁剪影响）
+## 已折进来的**最后一个**事件的稳定标识 = "喂进来的还是不是同一条时间线"的 O(1) 见证。
+## 论证与实测数字见 `Goals.gd` 同名字段（两处刻意同构；W1 收口见 docs/47 §三·七）。
+## 一句话：`]` 前向拖动让日志**变长**，而重演在非 logic 后端 / 有玩家时会给出**前缀已经不同**的一份，
+## 只看长度会把新尾巴接到旧前缀上。故事比目标更怕这个 —— 目标只会前进，**弧会收场**。
+## 诚实标注：必要非充分（见 Goals.gd）；充分那一道是 `recompute`，Main._rebuild_feed 走的正是它。
+var _anchor := ""
+var resyncs := 0              # 因锚不对而强制整份重折的次数（纯观测；**不进 digest**）
 ## 终身账（**不受 MAX_CLOSED 裁剪影响**）："<arcid>:@open" → 开过几段；"<arcid>:<endid>" → 各结局各几段。
 ## ★它是被实测逼出来的，不是设计出来的：第一版只从 `arcs` 里数结局，60 天单 seed 裁掉 36-125 条已收场的弧，
 ##   于是"和解覆盖率"量出 11.2%（14 天无裁剪时是 90.3%）——**分子被裁剪偷走了，分母没有**。
@@ -183,6 +190,7 @@ func reset() -> void:
 	_last_tick = 0
 	_dropped = 0
 	chain = 0
+	_anchor = ""
 	_serial = 0
 	tally = {}
 	rev = 0
@@ -191,12 +199,16 @@ func reset() -> void:
 ## 只读 `events`：不排序、不改元素、不持有引用。
 func sync(events: Array) -> Array:
 	var fresh: Array = []
-	if events.size() < _cursor:
-		reset()                                   # 时间线变短（往回 scrub / 读档 / 换种子）→ 从头折
+	# 时间线换了 → 从头折。两种换法都要认（`or` 短路 ⇒ 变短那一支不会去索引越界的下标）：
+	#   ①日志**变短**（往回 scrub / 读档 / 换种子）；②日志没变短但**前缀已经不是那一条**（见 `_anchor`）。
+	if _cursor > 0 and (events.size() < _cursor or _ev_key(events[_cursor - 1]) != _anchor):
+		reset()
+		resyncs += 1
 	while _cursor < events.size():
 		var ev: Dictionary = events[_cursor]
 		_cursor += 1
-		chain = SimScript.fnv1a32_into(chain, _ev_key(ev))
+		_anchor = _ev_key(ev)                     # 与 chain 共用同一次 _ev_key ⇒ 热循环里零额外开销
+		chain = SimScript.fnv1a32_into(chain, _anchor)
 		var t := int(ev.get("tick", 0))
 		var n0 := fresh.size()
 		if t > _last_tick:

@@ -47,6 +47,7 @@ var _story_rev := -1                   # 已排进面板的 Story.rev（脏标�
 # ── 观察台 / 回放 ──────────────────────────────────────────────────────────
 var _obs: RichTextLabel               # 右侧角色明细面板
 var _obs_expanded := false            # 观察台档位：false=名片档（人设+当下+需求），true=完整卷宗
+var _obs_fit_frames := 0              # --obs-fit：还差几帧开跑 W8 装得下断言（0 = 不跑）
 var _obs_btn: Button                  # 「详情 / 收起」——手机上唯一够得着的入口（V 键是桌面同款）
 var _scrub_track: ColorRect           # 时间轴底槽
 var _scrub_fill: ColorRect            # 已播放进度
@@ -255,9 +256,13 @@ const SALIENT_MIN := 55
 ##     `emit_signal("social_event", ...)`（Sim.gd 归 E1，不在本棒的文件里），然后把它从本表移出去。
 const FEED_SKIP := ["pay", "world", "produce", "consume", "spoil", "shortage"]
 const TOPIC_LABEL := {"cafe_expand": "扩建咖啡馆", "night_market": "办夜市", "old_tales": "老故事"}
-const OBS_MAX_LINES := 34             # 观察台可见行数预算（294x676 面板 · 字号 14）——超出的只能砍长尾。
-                                      # C8 保持 34：展开档可用高 662px vs 改前 664px，实质未变（见 OBS_PAD 的注释：
-                                      # 「详情」钮放进顶栏而不是面板里，正是为了不动这个预算）。
+## ⚠️ **这个常数在 W8 里被判定为坏量具，现已降级为"长尾额度的下限兜底"，不再是版式预算。**
+## 它数的是**逻辑行**，而 RichTextLabel(`scroll_active=false`) 截的是**视觉行**，中文还会折行 ——
+## 实测（未修的树 · `--obs-fit --agents 60 --player --warmup 30`）：可用 **664px**、最坏内容 **853px**，
+## **60/61 个居民**的卷宗被面板下沿静默切掉（12 居民 · 第 5 天就已经是 5/12 · 最坏 799px）。
+## ⇒ 版式预算改由 `_obs_fit_lines()` 按**量出来的**像素高度算，见那里。
+const OBS_MAX_LINES := 34
+const OBS_LINE_H := 18.0              # 字号 14 的行距。来源：出图 after_story_t6300.png 上 13 个行距 = 234px（STORY_LINES 处同款实测）。
 
 ## 小镇纪事展开档面板：左上角，顶栏之下、播报 scrim 之上（LOG_SCRIM_TOP=414 ⇒ 底边 322 留 92px 余量）。
 ## 行数预算：11 条目标各 1 行 + 标题 + "下一步"的提示行 + 页脚 = 14 行 × 约 18px(字号 14) ≈ 252px。
@@ -351,6 +356,11 @@ func _ready() -> void:
 		elif args[i] == "--demo-cam-trace" and i + 1 < args.size():
 			_demo_cam = true
 			_demo_trace = FileAccess.open(args[i + 1], FileAccess.WRITE)   # dev：轨迹逐 tick 落盘，供两跑逐字节比对
+		elif args[i] == "--obs-fit":
+			# W8 断言（docs/47 §五-E4）：逐个居民量**真实控件**的 `get_content_height()`，
+			# 与可用高度对比，超一格就 exit 1。**不是截图印象，是两个数**。
+			_obs_fit_frames = 3                # 等 3 帧让 HUD 布局落定，再开量
+			_obs_arg = true                    # 最坏一档 = 完整卷宗（名片档装得下不代表卷宗装得下）
 	AIBackend.backend = backend
 	# 后端优先级：CLI --backend 显式 > user://settings.cfg（手机 UI 存的默认）> 默认 logic。
 	# headless CI 不经此路（Harness/soak 直接 Sim.backend=null）→ 确定性逐字节不变。
@@ -1391,6 +1401,11 @@ func _toggle_perf() -> void:
 ## dev 性能 overlay 每帧刷（FPS 要每帧才平滑；关时早退，零开销）。
 func _process(dt: float) -> void:
 	_flush_scrub()                                 # 时间轴拖动合并点：每【渲染帧】至多一次 goto_tick
+	if _obs_fit_frames > 0:
+		_obs_fit_frames -= 1
+		if _obs_fit_frames == 0:
+			_obs_fit_report()
+			return
 	if not _perf_on or _perf == null:
 		return
 	_perf_dt_acc += dt
@@ -1470,6 +1485,65 @@ func _update_scrubber() -> void:
 	_scrub_fill.size = Vector2(w * f, SCRUB_H)
 	_scrub_handle.position = Vector2(_sx0 + w * f - 2.0, _sy - 4.0)
 
+## W8 断言（`--obs-fit`）：**逐个居民**把卷宗排进真实控件，量 `get_content_height()` vs 可用高度。
+## 为什么必须用真实控件而不是自己数行：这正是 W8 本身的病 —— `OBS_MAX_LINES` 数的是**逻辑行**，
+## 而面板截的是**视觉行**，中文还会折行。任何"自己数一遍"的量具都会复刻同一个错误。
+## 用法（最坏一档：N=60 + 玩家在镇 + 完整卷宗 + 跑够天数让记忆/信念/冲突都长满）：
+##   godot --headless --path game -- --obs-fit --agents 60 --player --warmup 30
+func _obs_fit_report() -> void:
+	if _obs == null:
+		print("[obs-fit] 观察台未建成 —— 无法测量")
+		get_tree().quit(1)
+		return
+	var keep := _selected_id
+	var keep_exp := _obs_expanded
+	var ids: Array = []
+	for ag in Sim.agents:
+		ids.append(String(ag["id"]))
+	ids.sort()
+	# 两档都要扫：名片档窄（240px）⇒ 同一句话在那里折得更凶，"卷宗装得下"推不出"名片档装得下"。
+	var worst := 0.0          # 最小余量那一格的内容高度
+	var avail := 0.0          # 同一格的可用高度
+	var slack := INF          # 全网格最小余量（可用 − 内容）；两档的可用高度不同，故必须比余量而不是比高度
+	var worst_id := ""
+	var over := 0
+	for expanded in [false, true]:
+		_obs_expanded = expanded
+		_sync_obs_panel()
+		var cap: float = _obs.size.y
+		for id in ids:
+			_selected_id = String(id)
+			_update_obs()
+			var h := _obs.get_content_height()
+			if h > cap:
+				over += 1
+			if cap - h < slack:
+				slack = cap - h
+				worst = h
+				avail = cap
+				worst_id = "%s/%s" % [String(id), "卷宗" if expanded else "名片"]
+	_obs_expanded = keep_exp
+	_sync_obs_panel()
+	# R11：这一修给 HUD 加了逐行量宽（`_obs_rows`），得报它的代价，不能只报"装下了"。
+	# 口径：连排 200 次完整卷宗的平均耗时（`_update_obs` 每 tick 一次，出货 tick 率 12.5/s）。
+	_selected_id = String(ids[ids.size() - 1])
+	var t0 := Time.get_ticks_usec()
+	for _i in 200:
+		var _t: String = _panel_text(false)
+	var us := float(Time.get_ticks_usec() - t0) / 200.0
+	_selected_id = keep
+	_update_obs()
+	print("[obs-fit] 排一次完整卷宗 %.0fµs（出货 12.5 tick/s ⇒ 占 CPU %.3f%%）" % [us, 100.0 * us * 12.5 / 1000000.0])
+	print("[obs-fit] 居民 %d · 玩家=%s · 第 %d 天(tick %d) · 两档各扫一遍" % [
+		ids.size(), str(_player_mode), Sim.day, Sim.tick_no])
+	print("[obs-fit] 最坏一格：%s —— 内容 %.1fpx / 可用 %.1fpx · 余量 %+.1fpx · 溢出 %d/%d 格" % [
+		worst_id, worst, avail, avail - worst, over, ids.size() * 2])
+	if over > 0:
+		print("[obs-fit] ❌ 观察台装不下：%d 格被面板下沿静默切掉（RichTextLabel.scroll_active=false 不报错、不出滚动条）" % over)
+	else:
+		print("[obs-fit] ✅ 观察台装得下（最坏余量 %+.1fpx）" % (avail - worst))
+	get_tree().quit(1 if over > 0 else 0)
+
 func _update_obs() -> void:
 	if _obs != null:
 		_obs.text = _panel_text(not _obs_expanded)
@@ -1522,6 +1596,59 @@ func _bar(v: float) -> String:
 	var n := int(round(clampf(v, 0.0, 100.0) / 10.0))
 	return "█".repeat(n) + "·".repeat(10 - n)
 
+# ── 观察台的【视觉行】预算（W8，docs/47 §五-E4 / docs/46 §二·九-⑧）──────────
+## 病根一句话：**预算数的是逻辑行，面板截的是视觉行，而中文会折行。**
+## 于是"我只加了 3 行"在屏幕上可能是 6 行，多出来的那几行从面板下沿静默掉出去
+## （`scroll_active=false` 不报错、不出滚动条、什么都不说）。E2 已经在 `Story.person_lines` 处踩过同一个坑。
+## ⇒ 这里改成按**量出来的像素**排：排不下的直接不排，并在末行明写还剩多少 —— 与 `Story.panel_text` 同一条纪律。
+## 判别力有机器证明：`--obs-fit` 逐个居民量真实控件的 `get_content_height()`（**不是自己数行**，
+## 自己数行会复刻同一个错误）。未修的树上它必红，见 `_obs_fit_report`。
+
+## 去 BBCode。**只用于量宽度，不上屏**。口径与 story_test._plain 一致：只吃形如 `[…]` 且不太长的片段。
+## ⚠️ 用 RegEx 而不是逐字符拼串：第一版就是 GDScript 的 `out += s[i]` 循环。
+##    实测（`--obs-fit --agents 60 --player --warmup 30`，排一次完整卷宗的平均耗时）：
+##      未加本预算（基线）**406µs** → 逐字符版 **604µs**(+49%) → 编译一次的 RegEx 版 **498µs**(+23%)。
+##    +92µs × 12.5 tick/s = **+0.115% CPU**。GDScript 里逐字符拼字符串在热路径上永远是错的选择。
+static var _bb_re: RegEx = null
+func _bb_strip(s: String) -> String:
+	if _bb_re == null:
+		_bb_re = RegEx.new()
+		_bb_re.compile("\\[[^\\]]{0,38}\\]")
+	return _bb_re.sub(s, "", true)
+
+## 一条**逻辑行**在给定宽度下占几个**视觉行**。内嵌 `\n` 要拆开单独算（面板里确实有这种行）。
+func _obs_rows(line: String, fnt: Font, width: float) -> int:
+	var n := 0
+	for seg in _bb_strip(line).split("\n"):
+		var w: float = fnt.get_string_size(String(seg), HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x
+		n += maxi(1, ceili(w / maxf(1.0, width)))
+	return maxi(1, n)
+
+## 已经排掉多少像素（长尾额度据此算，而不是据 `L.size()`）。
+func _obs_used_px(L: Array, width: float) -> float:
+	var fnt := Art.font()
+	var used := 0.0
+	for ln in L:
+		used += float(_obs_rows(String(ln), fnt, width)) * OBS_LINE_H
+	return used
+
+## 按视觉高度把逻辑行数组截到 `budget_px` 以内；被截掉几行**写在末行**，绝不静默消失。
+func _obs_fit_lines(L: Array, width: float, budget_px: float) -> Array:
+	var fnt := Art.font()
+	var used := 0.0
+	for i in L.size():
+		var h := float(_obs_rows(String(L[i]), fnt, width)) * OBS_LINE_H
+		# 留 **2** 行而不是 1 行。一行给"还剩多少"那句本身；另一行是**估计误差的余量**：
+		# `_obs_rows` 算的是 `ceil(裸宽/可用宽)`，而 RichTextLabel 默认 `AUTOWRAP_WORD_SMART`
+		# 在中英混排行上**可能提前折**（它不肯把一个拉丁词劈开）⇒ 我这个估计是**下界**，不是上界。
+		# 实测：只留 1 行时最坏余量 +9.0px（半行），留 2 行后 +27.0px。半行的余量守不住一次估偏。
+		if used + h > budget_px - OBS_LINE_H * 2.0:
+			var kept: Array = L.slice(0, i)
+			kept.append("[color=#9aa0b5]…还有 %d 行没排下[/color]" % (L.size() - i))
+			return kept
+		used += h
+	return L
+
 ## 观察台正文。brief=true 是【名片档】：只到需求为止（谁 / 在哪 / 在干嘛 / 钱与职业 / 5 条需求）。
 ## 名片档【不是另一份实现】——它就是本函数在需求那一行提前 return，所以两档永远不可能讲出两套事实。
 func _panel_text(brief: bool = false) -> String:
@@ -1566,7 +1693,7 @@ func _panel_text(brief: bool = false) -> String:
 	if brief:
 		L.append("")
 		L.append("[color=#9aa0b5]关系 · 冲突 · 记忆 · 观点 · 信念\n→ 点右上「详情」（或 V）[/color]")
-		return "\n".join(L)
+		return "\n".join(_obs_fit_lines(L, OBS_CARD.x - 16.0, OBS_CARD.y - OBS_PAD * 2.0))
 	# 关系 top3
 	L.append("")
 	L.append("[color=#cfd3e0]关系[/color]")
@@ -1663,7 +1790,10 @@ func _panel_text(brief: bool = false) -> String:
 	if not bel.is_empty():
 		L.append("")
 		var cids: Array = bel.keys()
-		var room := maxi(2, OBS_MAX_LINES - L.size() - 2)   # 留 1 行标题 + 1 行"…还有 N 条"
+		# 长尾额度按**剩余像素**算，不按剩余逻辑行 —— 后者正是 W8 的病根（中文折行让两者对不上）。
+		# 下界仍保留 2 条：一块只剩标题的"知道的事"比没有更难读。`OBS_MAX_LINES` 到此只剩这个兜底作用。
+		var room := maxi(2, int((OBS_FULL.y - OBS_PAD * 2.0 - OBS_LINE_H
+			- _obs_used_px(L, OBS_FULL.x - 16.0)) / OBS_LINE_H) - 2)   # 留 1 行标题 + 1 行"…还有 N 条"
 		var shown := mini(room, cids.size())
 		L.append("[color=#cfd3e0]知道的事[/color] [color=#9aa0b5]%d 条[/color]" % cids.size() if shown < cids.size() else "[color=#cfd3e0]知道的事[/color]")
 		for i in shown:
@@ -1672,7 +1802,9 @@ func _panel_text(brief: bool = false) -> String:
 			L.append("[color=#d9c2ff]%s[/color] [color=#9aa0b5](%s)[/color]" % [str(b.get("claim", cid)), _belief_src(b)])
 		if cids.size() > shown:
 			L.append("[color=#9aa0b5]…还有 %d 条[/color]" % (cids.size() - shown))
-	return "\n".join(L)
+	# ★最后一道：按量出来的像素高度硬截。上面的长尾额度是"该给谁让位"，这一道是"绝不溢出"的兜底 ——
+	#   一个新加的板块（像 E2 的「故事」那样）不会再把别人静默挤下去。
+	return "\n".join(_obs_fit_lines(L, OBS_FULL.x - 16.0, OBS_FULL.y - OBS_PAD * 2.0))
 
 const CONFLICT_STATUS := {"simmering": "憋着", "escalated": "闹大了", "confronted": "已挑明", "lingering": "余温未消"}
 

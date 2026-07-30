@@ -35,6 +35,19 @@ var state: Array = []         # 与 defs 同序：{id,title,hint,target,progress
 var _acc: Array = []          # 与 defs 同序的内部累加器
 var _cursor := 0              # 已折到 event_log 的哪个下标（增量折的游标）
 var chain := 0                # 折叠见证链：把每个被折进来的事件的稳定标识折成 32 位滚动哈希
+## 已折进来的**最后一个**事件的稳定标识。它是"喂进来的还是不是同一条时间线"的 O(1) 见证。
+## ★ 为什么不能只看"日志有没有变短"（W1 实测，docs/47 §三·七）：
+##   `]` = `goto_tick(tick+240)` 让日志**变长**，而 `goto_tick` 是 `start_new` + 从 0 重演 ——
+##   在非 logic 后端下（`AIBackend.gd:788` 强制重演走 logic 地板）或有玩家在场时（玩家的历史干预不在重演里，
+##   `Sim.gd:939-940` 自己写着），重演出来的是一段**前缀已经不同**的日志。只看长度就会把新日志的尾巴
+##   接在旧日志的前缀上，`chain` 于是见证一段从未存在过的序列。
+##   实测：8 天 × seed 1，random 后端 live 346 事件 / 重演 363 事件；有玩家 live 376 / 重演 363（= 无玩家那一份）。
+##   本锚在那两条臂上都会命中并强制整份重折。
+## 诚实标注：它是 **O(1) 的必要条件，不是充分条件** —— 若两条时间线恰好在 `_cursor-1` 这一个位置上
+##   逐字段相同而更早处不同，它就漏了。要做到充分只能整份重算（`recompute`，Main._rebuild_feed 走的正是那条）。
+##   本锚是**第二道**，不是唯一一道。
+var _anchor := ""
+var resyncs := 0              # 因锚不对而强制整份重折的次数（纯观测；**不进 digest**，它不是状态）
 
 # ── 生命周期 ────────────────────────────────────────────────────────────────
 func load_defs(path: String = DEF_PATH) -> bool:
@@ -56,6 +69,7 @@ func load_defs(path: String = DEF_PATH) -> bool:
 func reset() -> void:
 	_cursor = 0
 	chain = 0
+	_anchor = ""
 	state = []
 	_acc = []
 	for d in defs:
@@ -69,12 +83,16 @@ func reset() -> void:
 ## 只读 `events`：不排序、不改元素、不持有引用。
 func sync(events: Array) -> Array:
 	var fresh: Array = []
-	if events.size() < _cursor:
-		reset()                       # 时间线变短（往回 scrub / 读档 / 换种子）→ 从头折
+	# 时间线换了 → 从头折。两种换法都要认（`or` 短路 ⇒ 变短那一支不会去索引越界的下标）：
+	#   ①日志**变短**（往回 scrub / 读档 / 换种子）；②日志没变短但**前缀已经不是那一条**（见 `_anchor`）。
+	if _cursor > 0 and (events.size() < _cursor or _ev_key(events[_cursor - 1]) != _anchor):
+		reset()
+		resyncs += 1
 	while _cursor < events.size():
 		var ev: Dictionary = events[_cursor]
 		_cursor += 1
-		chain = SimScript.fnv1a32_into(chain, _ev_key(ev))
+		_anchor = _ev_key(ev)         # 与 chain 共用同一次 _ev_key ⇒ 热循环里零额外开销
+		chain = SimScript.fnv1a32_into(chain, _anchor)
 		for i in defs.size():
 			if bool(state[i]["done"]):
 				continue              # 已达成的不再累加：省成本，且 done_tick 不会被后来的事件挪动
