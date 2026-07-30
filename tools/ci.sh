@@ -147,7 +147,16 @@ echo "### 5. unit / integration scenes"
 #     加它的理由就写在 docs/43 §1.2d 里 —— player_touch_test 写好后"一直没进 CI"，
 #     一道没进 CI 的门不是门。冲突时直接取并集即可，回滚 = 删掉这一个词。
 #   默认 12 seed × 14 天；本机约 2 分钟。CI_GOALS_SEEDS / CI_GOALS_DAYS 可调。
-for scene in m2_test reqlife_test player_agency_test player_touch_test s4_replay_test space_test save_load_test goals_test; do
+# story_test：E2 的「小镇故事」门（docs/47 §二-E2）。同样是 View 侧只读派生的回放等价断言，
+#   但它的**牙齿不在 seed 循环里，在五组合成 fixture 上**——D2 已经实测「live==replay」和「至少 N 条」
+#   两条判据都没有判别力（一个什么都不记 / 一个第一天全点亮的 tracker 都能满分）。
+#   F1 只喂 greet → 故事必须 0 条；F2 手写因果链 → 必须给出指定的结局/幕次/旁支计数；
+#   F3 冷场收场时刻必须等于"最后一幕+cold"（且 F3′ 反过来断言阈值之内不许判死）；F4 爽约/如约两支都要认。
+#   另有两条账本自洽断言（进行中+终身收场==开过；grudge 开场数==conflict 事件数）守 MAX_CLOSED 裁剪。
+#   ★ tools/ci.sh 归 D1 独占，本行是【E2 声明过的越界】：只在下面这个场景名单里再加一个词。
+#     理由同 D2 那一行——一道没进 CI 的门不是门。冲突时取并集即可，回滚 = 删掉这一个词。
+#   默认 12 seed × 14 天。CI_STORY_SEEDS / CI_STORY_DAYS 可调。
+for scene in m2_test reqlife_test player_agency_test player_touch_test s4_replay_test space_test save_load_test goals_test story_test; do
   "$GODOT" --headless --path game "res://scenes/$scene.tscn" >"$LT_LOG/$scene.log" 2>&1
   code=$?
   if [ $code -eq 0 ]; then ok "$scene"; else tail -8 "$LT_LOG/$scene.log"; bad "$scene (exit $code)"; fi
