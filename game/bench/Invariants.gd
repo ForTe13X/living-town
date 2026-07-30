@@ -430,19 +430,68 @@ static func check_all(S, starved: int) -> Array:
 				prov_bad2.append("#%d %s 件数=%d 超出申报 %d" % [int(e["id"]), actor, amt2, int(rec.get("amount", 0))])
 			elif String(e.get("note", "")).split("*")[0] != title:
 				prov_bad2.append("#%d note 职位=%s 实为 %s" % [int(e["id"]), String(e.get("note", "")).split("*")[0], title])
+			# ★「在班」这一半此前【根本没有检查】（2026-07-30 外部审计抓到）：
+			#   这条不变量叫"产出溯源到【在班】本职"，而它从不读 e["tick"]、从不调 _in_shift。
+			#   失败场景是具体的：把 _produce_for(Sim.gd:2889) 里的 `and not _in_shift(job)` 删掉，
+			#   面点师就会在 03:00 烤点、渔夫半夜打渔，而 #39 依然全绿。
+			#   八个岗位全都有真实班次（jobs.json / production.json.jobs）⇒ 这是一条【活的】约束，不是真空条款。
+			#   班次谓词是 f(tick)，而 tick 就在事件里 ⇒ 它一直是可查的，只是没查。
+			elif not _shift_ok_at(S, job, int(e.get("tick", -1))):
+				prov_bad2.append("#%d %s(%s) 在【非班次】时段产出（tick=%d 相位=%s 班次=%s）" % [
+					int(e["id"]), actor, title, int(e.get("tick", -1)),
+					_phase_at(S, int(e.get("tick", -1))), str(job.get("shift", []))])
 	R.append(_chk(39, "产出溯源到在班本职", prov_bad2.is_empty(),
 		("异常=%d: %s" % [prov_bad2.size(), "; ".join(prov_bad2.slice(0, 3))]) if not prov_bad2.is_empty()
 		else ("produce 事件全部可溯源" if prod_on else "产出系统关闭")))
 	# 40) 【软】产出闭环活性：#38/#39 都是"若 X 发生则 X 良构"，X 归零它们全绿——
 	#     production.json 还在、而产出/消耗一次都没发生，正是本波要防的那种"机制被静默关掉"。
+	#     ★ 2026-07-30 收紧为【逐货物】：原来是全镇合计 n_prod>0 and n_cons>0 ——
+	#     五种货物里死掉四种，只要口粮还在动，这条就照样绿。合计量掩盖单品死亡。
+	#     判据敢收紧是因为先量过（12 seed × 60 天，probe 见 docs/48 §五）：
+	#       口粮 P=208 柴薪 P=206 豆子 P=89 话本 P=148 整洁 P=282，
+	#       【任一为 0 的 seed 数 = 0/12】，最瘦的一格是 seed 7 的豆子 P=4 ⇒ ">0" 有余量、不是卡边。
 	var n_prod := 0
 	var n_cons := 0
+	var per_p: Dictionary = {}
+	var per_c: Dictionary = {}
+	if prod_on:
+		for g in S.production.get("goods", {}):
+			per_p[String(g)] = 0
+			per_c[String(g)] = 0
 	for e in log:
-		if String(e["type"]) == "produce": n_prod += 1
-		elif String(e["type"]) == "consume": n_cons += 1
-	R.append(_chk(40, "产出闭环活性", (not prod_on) or (n_prod > 0 and n_cons > 0),
-		"produce=%d consume=%d (产出系统开启时均应>0)" % [n_prod, n_cons]))
+		var _ty := String(e["type"])
+		if _ty == "produce":
+			n_prod += 1
+			if per_p.has(String(e["subject"])): per_p[String(e["subject"])] = int(per_p[String(e["subject"])]) + 1
+		elif _ty == "consume":
+			n_cons += 1
+			if per_c.has(String(e["subject"])): per_c[String(e["subject"])] = int(per_c[String(e["subject"])]) + 1
+	var dead_goods: Array = []
+	for g in per_p:
+		if int(per_p[g]) <= 0 or int(per_c[g]) <= 0:
+			dead_goods.append("%s(P=%d,C=%d)" % [g, int(per_p[g]), int(per_c[g])])
+	R.append(_chk(40, "产出闭环活性", (not prod_on) or (n_prod > 0 and n_cons > 0 and dead_goods.is_empty()),
+		"produce=%d consume=%d (产出系统开启时均应>0)%s" % [n_prod, n_cons,
+			"" if dead_goods.is_empty() else "；【断链货物】" + ", ".join(dead_goods)]))
 	return R
+
+## 事件发生【当时】的相位（不是检查时的相位）。#39 的「在班」那一半靠它。
+## 为什么不能直接调 Sim._in_shift：它读的是 time_of_day() = f(当前 tick_no)，
+## 而我们要判的是【历史事件那一刻】的班次 —— 用事件自带的 tick 重算。
+static func _phase_at(S, tick: int) -> String:
+	if tick < 0:
+		return ""
+	var tpd := int(S.TICKS_PER_DAY)
+	if tpd <= 0:
+		return ""
+	return String(S._phase_of(float(tick % tpd) / float(tpd)))
+
+static func _shift_ok_at(S, job: Dictionary, tick: int) -> bool:
+	var sh: Array = job.get("shift", [])
+	if sh.is_empty():
+		return true                      # 无班次 = 全天，与 Sim._in_shift 同口径
+	var ph := _phase_at(S, tick)
+	return ph == "" or ph in sh       # 相位表查不到时不冤枉它，同 Sim._in_shift
 
 ## 库存事件的 note 编码 "<原因>*<件数>" → 件数（Sim._stock_move 写、本文件读；对不上就是 0 → #38 会红）。
 static func _amt_of(note: String) -> int:
