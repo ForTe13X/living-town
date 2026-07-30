@@ -17,7 +17,14 @@ tile(f"{B}/terrain/dirt.png", 11, 1)
 tile(f"{B}/terrain/water.png", 18, 11)
 # 装饰
 tile(f"{B}/decor/tree_small.png", 8, 7)
-tile(f"{B}/decor/tree_big.png", 0, 7, 2, 2)
+# ── decor/tree_big —— J2 2026-07-30 从这里搬走（改为自绘，配方在 tools/slice_all.py 的 SPRITES）──
+# 原来这里是：  tile(f"{B}/decor/tree_big.png", 0, 7, 2, 2)
+# 那条 crop 是**真的切错了**（不是"选错格子"，两者要分开）：右边界 27/32、下边界 29/32 个不透明像素
+# ——它从别的树冠中间横切过去；而把它包住的 3×3 区块 (0,7)-(2,9) 才是自足的（左/右/上 = 0）。
+# 也就是说它是一块 3×3【区域填充】瓦的碎片，跟 house/shop 那两条竖条带是同一种病。
+# **但重切救不了它**：那块 3×3 画的是"一片林子"不是"一棵树"，而整张表里没有任何一处 2 格高的独立树
+# （1px 步长扫过全部 32×32 窗口，自足的 24 个去重候选全是"两个 1×1 道具上下叠"）。表里的树全是 1×1。
+# ⇒ 改自绘。别把这一行加回来：`asset_gate` 的范围自证会报「两张表里有一张配方产不出的图」。
 tile(f"{B}/decor/bush.png", 0, 26)
 tile(f"{B}/decor/flower_red.png", 2, 27)
 tile(f"{B}/decor/flower_yellow.png", 2, 26)
