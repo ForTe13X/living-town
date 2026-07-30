@@ -3,21 +3,25 @@
 # 独立于 gen_town.py（后者是生成器）：这里读【落盘数据】→ 抓任何漂移/手改/未重生成导致的地图回归。
 # 校验：① typed layers 与 blockers 并集一致；② 全图可达性(BFS)；③ 每个居民 home/spawn 在可达可走格；
 #       ④ 每个家具有≥1 可达可走正交邻格(P2-3 交互格必存在，否则饿穿)；⑤ 每个 area 内部可达；
-#       ⑥ ≥2 条不相交路线(район对之间，路网冗余)；⑦ 节日对象(festivals.json，可选)坐标合法。
+#       ⑥ ≥2 条不相交路线(район对之间，路网冗余)；⑦ 节日对象(festivals.json，可选)坐标合法；
+#       ⑧ F1 工位(production.json 的 worksites，可选)：区域归属正确 + 坐标合法 + 有可达交互格 +
+#          放上去之后【全图仍连通】；⑨ 工位/产出/岗位三方外键闭合。
 #       任一失败 → 退出 1（CI 红）。
 import json, sys, os
 from collections import deque
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 def p(*a): return os.path.join(ROOT, "game", "data", *a)
 
+def _opt(name):
+    """按契约【可选】的数据文件：缺失即空 dict，绝不报错（缺文件=该子系统关闭=引擎逐字节不变）。
+    解析错误不在这里兜：步骤 1 的 lint_data.py 先跑，JSON 语法问题在那儿就红了。"""
+    fp = p(name)
+    return json.load(open(fp, encoding="utf-8")) if os.path.exists(fp) else {}
+
 def load():
     m = json.load(open(p("map.json"), encoding="utf-8"))
     ag = json.load(open(p("agents.json"), encoding="utf-8"))
-    # festivals.json 按契约是【可选】的（缺文件=无节日=引擎逐字节不变，Sim.gd:2416）→ 缺失即空 dict，绝不报错。
-    # 解析错误不在这里兜：步骤 1 的 lint_data.py 先跑，JSON 语法问题在那儿就红了。
-    fp = p("festivals.json")
-    fe = json.load(open(fp, encoding="utf-8")) if os.path.exists(fp) else {}
-    return m, ag, fe
+    return m, ag, _opt("festivals.json"), _opt("production.json"), _opt("jobs.json")
 
 def neigh(c):
     x, y = c
@@ -45,10 +49,43 @@ def shortest(a, b, walk):
     return None
 
 def main():
-    m, ag, fe = load()
+    m, ag, fe, pr, jb = load()
     W, H = int(m["width"]), int(m["height"])
     blk = set((int(x), int(y)) for x, y in m["blockers"])
     fails = []
+    # ⑧ F1 工位（docs/48 §一-F1）：production.json 的 worksites 在【运行期】由 Sim._compile_worksites
+    #    编译成 town 平面上的真家具 —— 也就是说它们和 map.json 里手写的家具受【完全相同】的导航约束
+    #    （Sim.gd:1288 曼哈顿≤1 才 use、_build_nav 把它们那格标成 blocked）。
+    #    此前这道门只看 map.json，于是"工位写在别的文件里"= 零 CI 覆盖，正是 B17 灯会那一课的重演。
+    #    ★这里有一条 map.json 的家具【没有】的规则：**区域归属**。docs/43 §1.2b 记过本门抓不到
+    #      「合法但语义不对」；对工位来说"语义不对"是可判定的——木匠的工作台落在澡堂区里，坐标合法、
+    #      可达性合法、渲染也没问题，但分工的空间落点整个是假的。故 area 必须与坐标实际所在的区相符。
+    #      Sim._compile_worksites 里有同一条运行期校验（落 push_error → ci.sh 的 scan 判红），
+    #      两道门口径必须一致：改这里就要同步改那里。
+    ws = pr.get("worksites", []) if isinstance(pr, dict) else []
+    if not isinstance(ws, list):
+        fails.append("production.worksites 非法（应为数组）: %r" % (ws,)); ws = []
+    wscells = {}          # (x,y) -> worksite id（放上去之后要一起进 blockers 与交互格校验）
+    for i, w in enumerate(ws):
+        if not isinstance(w, dict):
+            fails.append("worksite #%d 非法（应为对象）: %r" % (i, w)); continue
+        wid = str(w.get("id", ""))
+        pos = w.get("pos")
+        if not wid:
+            fails.append("worksite #%d 缺 id" % i); continue
+        # 先验形状再 int()：手改的 "12,7" / null / 三元组会让 int() 抛栈，那样 CI 虽也红但读不出错在哪。
+        if not (isinstance(pos, (list, tuple)) and len(pos) == 2
+                and all(isinstance(v, (int, float)) for v in pos)):
+            fails.append("worksite %s pos 缺失/非法（应为 [x,y]）: %r" % (wid, pos)); continue
+        c = (int(pos[0]), int(pos[1]))
+        if not (0 <= c[0] < W and 0 <= c[1] < H):
+            fails.append("worksite %s %s 出界 (%dx%d)" % (wid, c, W, H)); continue
+        if c in wscells:
+            fails.append("worksite %s 与 %s 同格 %s" % (wid, wscells[c], c)); continue
+        wscells[c] = wid
+        adv = w.get("advertises", [])
+        if not isinstance(adv, list) or not adv:
+            fails.append("worksite %s 无 advertises → 它不会产生任何候选，等于没造" % wid)
     # ① typed layers ⊆/= blockers 并集（walls/water/trees 的并集必须恰等于 blockers；否则渲染与导航脱节）
     typed = set()
     for key in ("walls", "water", "trees"):
@@ -59,8 +96,21 @@ def main():
     # blockers = 墙/水/树（家具运行期另加，不在 map.json blockers 里）→ typed 并集应 == blockers
     if typed != blk:
         fails.append("typed layers(walls|water|trees, %d) != blockers(%d): 渲染/导航数据脱节" % (len(typed), len(blk)))
-    # 可走集 = 非 blockers 且非家具格（家具运行期阻挡）
-    walk = set((x, y) for x in range(W) for y in range(H) if (x, y) not in blk and (x, y) not in objcells)
+    # ⑧ 工位与既有家具/地标/墙水树不得同格 —— 同格 = 一个对象被静默盖住或一格被两次占用。
+    lm0 = dict(((int(l["pos"][0]), int(l["pos"][1])), l.get("type", "landmark")) for l in m.get("landmarks", []))
+    objby0 = dict(((int(o["pos"][0]), int(o["pos"][1])), o["id"]) for o in m["objects"])
+    for c, wid in wscells.items():
+        if c in blk:
+            fails.append("worksite %s %s 落在 blockers 上（墙/水/树）" % (wid, c))
+        if c in objby0:
+            fails.append("worksite %s %s 与家具 %s 同格" % (wid, c, objby0[c]))
+        if c in lm0:
+            fails.append("worksite %s %s 与地标 %s 同格" % (wid, c, lm0[c]))
+    # 可走集 = 非 blockers 且非家具格（家具运行期阻挡）。★工位【必须】算进来：
+    # Sim._build_nav 对 world.objects 一视同仁地标 blocked，工位来自哪个 json 文件它并不知道。
+    # 只查 map.json 的家具 = 在一张比运行期【更宽松】的图上做可达性证明，那种绿是假的。
+    walk = set((x, y) for x in range(W) for y in range(H)
+               if (x, y) not in blk and (x, y) not in objcells and (x, y) not in wscells)
     # ③ 可达性种子 = 第一个居民 home
     seed = tuple(ag["agents"][0]["home"])
     if seed not in walk:
@@ -76,12 +126,114 @@ def main():
         c = (int(o["pos"][0]), int(o["pos"][1]))
         if not any(n in reach for n in neigh(c)):
             fails.append("object %s %s 无可达交互格 → 会饿穿" % (o["id"], c))
+    # ④' 工位同规：没有可达交互格 = 那个岗位的人【永远到不了自己的工位】，
+    #     而它的动作又是他唯一的本职动作 ⇒ 产出恒零、#40 活性门会红，但要到跑完 60 天才知道。这里立刻红。
+    for c, wid in wscells.items():
+        if not any(n in reach for n in neigh(c)):
+            fails.append("worksite %s %s 无可达交互格 → 该岗位永远上不了工" % (wid, c))
+    # ④'' 放上工位之后全图仍连通：每个工位都是一个新的阻挡格，一格放错就能把某个区切成孤岛。
+    if len(reach) != len(walk):
+        fails.append("放上 %d 个工位后有 %d 个可走格与主连通块失联（工位挡死了某条唯一通路）"
+                     % (len(wscells), len(walk) - len(reach)))
     # ⑤ 每个 area 内部有可达格
     for aid, a in m.get("areas", {}).items():
         r = a.get("rect", [0, 0, 0, 0])
         interior = [(x, y) for x in range(int(r[0]), int(r[0]) + int(r[2]))
                     for y in range(int(r[1]), int(r[1]) + int(r[3])) if (x, y) in reach]
         if not interior: fails.append("area %s 无可达内部格" % aid)
+
+    # ⑧ 区域归属（本门此前【没有】的那条规则，docs/43 §1.2b 点名的"合法但语义不对"）：
+    #    工位申报的 area 必须就是它坐标实际落进的那个区。木匠的工作台放在澡堂区里坐标合法、可达合法、
+    #    渲染也没问题 —— 但"分工要有地方发生"这句话整个是假的，而上面 ①-⑥ 一条都不会红。
+    #    area_at 与 Sim._area_at(Sim.gd) 同源：areas 按【文件书写序】首个命中。
+    def area_at(c):
+        for aid, a in m.get("areas", {}).items():
+            r = a.get("rect", [0, 0, 0, 0])
+            if int(r[0]) <= c[0] < int(r[0]) + int(r[2]) and int(r[1]) <= c[1] < int(r[1]) + int(r[3]):
+                return aid
+        return ""
+    for i, w in enumerate(ws):
+        if not isinstance(w, dict): continue
+        pos = w.get("pos")
+        if not (isinstance(pos, (list, tuple)) and len(pos) == 2
+                and all(isinstance(v, (int, float)) for v in pos)): continue
+        wid, c = str(w.get("id", "")), (int(pos[0]), int(pos[1]))
+        real, decl = area_at(c), str(w.get("area", ""))
+        if real == "":
+            fails.append("worksite %s %s 不在任何 area 内（Sim._compile_worksites 会跳过它 → 该岗位没有工位）" % (wid, c))
+        elif decl and decl != real:
+            fails.append("worksite %s %s 申报 area='%s' 实际落在 '%s' —— 合法但语义不对" % (wid, c, decl, real))
+
+    # ⑨ 工位 / 岗位 / 产出 三方外键闭合。跨 production.json × jobs.json × map.json 对账，
+    #    抓的是"每一件都合法、合起来不成立"那一类：工位挂着一个没人担任的职位、
+    #    或持有人的【有效动作】跟工位广告位的动作对不上（⇒ 他站在自己的工位前，_wage_for/_produce_for
+    #    双双不认，工资按零工价发、货一件不产，而 60 天跑完只表现为"这个岗位好像不太干活"）。
+    if isinstance(pr, dict) and pr:
+        titles = {}                                   # title -> holder agent id（jobs.json 优先，与 Sim._merge_prod_jobs 同序同规）
+        eff_action = {}                               # title -> 有效动作（job_action 覆盖后）
+        merged = dict(jb.get("jobs", {}) if isinstance(jb, dict) else {})
+        for aid2, j in (pr.get("jobs", {}) if isinstance(pr.get("jobs"), dict) else {}).items():
+            if isinstance(j, dict) and aid2 not in merged:
+                merged[aid2] = j
+        agent_ids = set(a.get("id") for a in ag["agents"])
+        ov = pr.get("job_action", {}) if isinstance(pr.get("job_action"), dict) else {}
+        for aid2, j in merged.items():
+            if not isinstance(j, dict): continue
+            if aid2 not in agent_ids:
+                fails.append("岗位挂在不存在的居民 '%s' 上" % aid2); continue
+            t = str(j.get("title", ""))
+            titles.setdefault(t, aid2)                # 首个命中 = Sim._holder_of_title 的口径
+            eff_action.setdefault(t, str(ov.get(t, j.get("action", ""))))
+        for t in ov:
+            if t.startswith("_"): continue
+            if t not in titles: fails.append("job_action 覆盖了一个不存在的职位 '%s'" % t)
+        for t, rec in (pr.get("produce", {}) if isinstance(pr.get("produce"), dict) else {}).items():
+            if t.startswith("_"): continue
+            if t not in titles: fails.append("produce 申报了一个没人担任的职位 '%s' → 该货永远没人产" % t)
+            if isinstance(rec, dict) and str(rec.get("good", "")) not in pr.get("goods", {}):
+                fails.append("produce['%s'] 的货 '%s' 未在 goods 里申报" % (t, rec.get("good")))
+        for a2, rec in (pr.get("consume", {}) if isinstance(pr.get("consume"), dict) else {}).items():
+            if a2.startswith("_"): continue
+            if isinstance(rec, dict) and str(rec.get("good", "")) not in pr.get("goods", {}):
+                fails.append("consume['%s'] 的货 '%s' 未在 goods 里申报" % (a2, rec.get("good")))
+        for g, gd in (pr.get("goods", {}) if isinstance(pr.get("goods"), dict) else {}).items():
+            b = str(gd.get("blame", "")) if isinstance(gd, dict) else ""
+            if b and b not in titles:
+                fails.append("goods['%s'].blame 指向没人担任的职位 '%s' → 缺货时怪不到任何人" % (g, b))
+        wsact = set()
+        for w in ws:
+            if not isinstance(w, dict): continue
+            for a3 in (w.get("advertises", []) if isinstance(w.get("advertises"), list) else []):
+                if not isinstance(a3, dict): continue
+                act, t = str(a3.get("action", "")), str(a3.get("job", ""))
+                wsact.add(act)
+                if not t: continue
+                if t not in titles:
+                    fails.append("worksite %s 的广告位 '%s' 挂在没人担任的职位 '%s' 上 → 这个工位没有人看得见"
+                                 % (w.get("id"), act, t))
+                elif eff_action.get(t) != act:
+                    fails.append("worksite %s：职位 '%s' 的有效动作是 '%s'，工位广告的却是 '%s' —— "
+                                 "他站在自己的工位前也不算上工（工资走零工价、一件货都不产）"
+                                 % (w.get("id"), t, eff_action.get(t), act))
+        for t, act in eff_action.items():
+            if t in ov and act not in wsact:
+                fails.append("职位 '%s' 的动作被改成 '%s'，却没有任何工位广告它 → 这个岗位再也无处上工" % (t, act))
+        vd = pr.get("vendor", {}) if isinstance(pr.get("vendor"), dict) else {}
+        if vd:
+            if str(vd.get("title", "")) not in titles:
+                fails.append("vendor.title '%s' 没人担任 → 摊位对外那条广告位恒关" % vd.get("title"))
+            if str(vd.get("action", "")) not in wsact:
+                fails.append("vendor.action '%s' 没有任何工位广告它 → 全镇买不到东西" % vd.get("action"))
+        cl = pr.get("cleanliness", {}) if isinstance(pr.get("cleanliness"), dict) else {}
+        if cl:
+            g = str(cl.get("good", ""))
+            gd = pr.get("goods", {}).get(g, {})
+            if not isinstance(gd, dict) or int(gd.get("cap", 0)) <= 0:
+                fails.append("cleanliness.good '%s' 未申报或 cap<=0 → 效用乘子恒 1.0（机制静默关闭）" % g)
+            for aid3 in (cl.get("areas", []) if isinstance(cl.get("areas"), list) else []):
+                if str(aid3) not in m.get("areas", {}):
+                    fails.append("cleanliness.areas 里的 '%s' 不是一个 area" % aid3)
+
     # ⑥ ≥2 不相交户外路线：在【门外草地】的出口格之间测冗余（区内单门是刻意的瓶颈，不该算进去）。
     # 门 = 区边框上那个可走缺口；出口 = 门朝区外的可走邻格。删一条路线内部后仍应有第二条不相交路线。
     def door_exit(r):
@@ -115,6 +267,7 @@ def main():
     # 它那格本身可走，而 BFS 只能经邻格进来 → ①③过关时"格自身可达"与"≥1 可达邻格"等价，④的写法直接成立。
     # id 是运行期才生成的（fest_名_day_序），落盘数据里没有 → 用 "节日名 obj#序" 定位。
     objby = dict(((int(o["pos"][0]), int(o["pos"][1])), o["id"]) for o in m["objects"])
+    objby.update(wscells)                    # 工位与家具在运行期是同一类对象 → 节日撞它同样是撞家具
     lmby = dict(((int(l["pos"][0]), int(l["pos"][1])), l.get("type", "landmark"))
                 for l in m.get("landmarks", []))
     nfest = 0
@@ -145,11 +298,12 @@ def main():
                 fails.append("festival %s obj#%d %s 与地标 %s 同格" % (fname, i, c, lmby[c]))
             if not any(n in reach for n in neigh(c)):
                 fails.append("festival %s obj#%d %s 无可达交互格 → 节日当天没人够得着" % (fname, i, c))
-    print("audit_map: %dx%d walkable=%d blockers=%d objects=%d agents=%d festival-objects=%d"
-          % (W, H, len(walk), len(blk), len(m["objects"]), len(ag["agents"]), nfest))
+    print("audit_map: %dx%d walkable=%d blockers=%d objects=%d worksites=%d agents=%d festival-objects=%d"
+          % (W, H, len(walk), len(blk), len(m["objects"]), len(wscells), len(ag["agents"]), nfest))
     if fails:
         print("AUDIT FAIL:"); [print("  -", f) for f in fails[:20]]; sys.exit(1)
-    print("AUDIT PASS: typed-layers 一致 + 全可达 + 每家具有交互格 + ≥2 路线 + 节日对象合法")
+    print("AUDIT PASS: typed-layers 一致 + 全可达 + 每家具/工位有交互格 + 工位区域归属正确 + "
+          "工位/岗位/产出外键闭合 + ≥2 路线 + 节日对象合法")
 
 if __name__ == "__main__":
     main()
