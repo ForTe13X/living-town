@@ -167,6 +167,24 @@ echo "### 4e. ModelPathGate 出货 prompt 编码门 (闭集编号字母表 / 示
 [ "${PIPESTATUS[0]}" -eq 0 ] && ok "ModelPathGate 模型路径编码门" || bad "ModelPathGate 模型路径编码门"
 scan "ModelPathGate" "$LT_LOG/modelpath.log" 'Parse JSON failed' 1
 
+echo "### 4f. VoiceGate 台词覆盖门 (每个被 offer 的候选动作都要有本人格的话可说)"
+# 为什么需要它：F4 普查出 14 个动作在【任何】人格下都没有台词 = 111 对 (人格,动作) 让
+#   _canned_say 返回空串，而当时没有任何一道门会响。更阴的是它不表现为沉默——
+#   WorldView._set_dialogue 在 last_say 为空时回落到 DIALOG[type]，屏幕上照样有气泡，
+#   只是 12 个人共用一套 12 行通用词。缺陷是【人格声音丢失】，不是哑巴。
+# 口径取【被 offer 的候选】而不是【被选中的那一个】：台词只在动作被选中时上屏，
+#   但候选一旦能被选中就可能上屏；只查被选中的那个，门的判别力会随机波动。
+# 网格 1-3 x 60 天是量出来的：60 天才见得全 31 个可选动作，20 天的网格漏 3 个
+#   （详见 game/bench/VoiceGate.gd 抬头的覆盖表与 docs/48 第七节）。
+# --min-pairs 250 防的是【枚举塌掉】(decision_sink 不再触发 ⇒ 零对为空会以全绿通过)，
+#   刻意【不】用来冻结动作集合：删掉一个岗位会合法地少掉若干动作，把地板设成实测值
+#   等于给一次正当的删除预埋假红（R11 记的病）。
+# 它上线当天就考了一次真的：F5 新增 打渔/授课/劈柴 三个动作，门当场报出
+#   dan|劈柴 hai|打渔 shu|授课 三对为空——写在这三个动作存在之前，仍然抓到了它们。
+"$GODOT" --headless --path game --script res://bench/VoiceGate.gd -- \
+  --seeds "${CI_VOICE_SEEDS:-1-3}" --days "${CI_VOICE_DAYS:-60}" --min-pairs "${CI_VOICE_MIN:-250}" 2>&1 | tee "$LT_LOG/voicegate.log"
+[ "${PIPESTATUS[0]}" -eq 0 ] && ok "VoiceGate 台词覆盖门" || bad "VoiceGate 台词覆盖门"
+
 echo "### 5. unit / integration scenes"
 # player_touch_test：C3 的 31 条 + C8 的 13 条断言（触屏按钮路径 ≡ 按键路径、7 个动词可分辨、
 #   观察台两档"卡片是详情的逐行前缀"）。它在 2026-07-26 Wave C 里写好后【一直没进 CI】——
