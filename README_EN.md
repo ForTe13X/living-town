@@ -8,6 +8,18 @@
 
 The game keeps running when the model is unavailable. Network failures, timeouts, or invalid outputs fall back to rule decisions, so model integration changes presentation rather than state reliability.
 
+> ### 📄 If you don't read code, start here
+>
+> **[docs/56 · Progress report for non-technical readers](docs/56-阶段报告-给非技术读者.md)** (in Chinese) — the same facts
+> with no code in them: what actually **happens** in the town now, what this round **added**, **what still doesn't work**,
+> and where the week's effort actually went. This README does not restate it. Its section 4, *"What isn't there yet"*,
+> is **deliberately blunt**, and we are not going to soften it here either.
+>
+> The one place reality has since moved past it is the last paragraph of its §四: when it was written, the scale question
+> was "sent for external review, awaiting an answer". **The review came back and the user has since chosen a direction**
+> (see [docs/41 §0.5](docs/41-baton-contract.md)) — the implementation is still in flight. See the entry under
+> *What is not there yet* below.
+
 ![Living Town · current build](docs/media/town_waveG.gif)
 
 > Desktop capture (`logic` backend, demo camera `--demo-cam`, native 1280×768, 5 fps × 6 s).
@@ -24,13 +36,16 @@ The game keeps running when the model is unavailable. Network failures, timeouts
 
 ## Current State
 
-The **world and social systems** below all ship, and each has a CI gate behind it — the ones citing an invariant number are guarded by [`game/bench/Invariants.gd`](game/bench/Invariants.gd), the rest by the data lint, map audit, art gate, voice-coverage gate and 9 integration scenes in [`tools/ci.sh`](tools/ci.sh). The last three entries (shell, backends, inference latency) are measurements, not invariants.
+The **world and social systems** below all ship, and each has a CI gate behind it — the ones citing an invariant number are guarded by [`game/bench/Invariants.gd`](game/bench/Invariants.gd), the rest by the data lint, map audit, **three art gates** (steps 2b·2c·2d), voice-coverage gate and 9 integration scenes in [`tools/ci.sh`](tools/ci.sh). The last three entries (shell, backends, inference latency) are measurements, not invariants.
 
 - **Deterministic social substrate**: greetings, gifts, gossip, invitations, confrontation, apologies, relationship ledgers, belief boundaries, promises, conflicts, and resolution flow. Relationship changes are linked back to events, so the system can explain why a resident is angry or trusting.
 - **A generated town**: a 64×48 grid with 8 districts where **walkability is authoritative data** and pathfinding is a deterministic A\*. `tools/audit_map.py` is a CI gate built for exactly this — it checks typed-layer consistency, full reachability, that every piece of furniture has a reachable interaction tile, that districts have ≥2 distinct routes, and that festival objects spawned for the day land on legal, reachable tiles too.
 - **Multi-floor interiors**: all seven buildings have data-driven interiors (`game/data/interiors.json`); residents actually walk in, go upstairs, and go home to sleep. Not a backdrop.
 - **Jobs, shifts and wages**: `game/data/jobs.json` + `skills.json`, with skill level feeding wages.
-- **The division of labour has somewhere to happen**: carpenter / handyman / fisherman / teacher each have their own worksite; the vendor converts town-level stock into goods an individual can buy (measured at **141-165 `transfer`s per seed per 60 days**, roughly **15%** of all meals in town); the street cleaner closes his own loop on the cleanliness level (plaza clean → he goes and plays; below roughly **45%** → he sweeps).
+- **The division of labour has somewhere to happen**: carpenter / handyman / fisherman / teacher / mason and others each have their own worksite (`production.json`'s `worksites`, each carrying its own `advertises`); the vendor converts town-level stock into goods an individual can buy (measured at **141-165 `transfer`s per seed per 60 days**, roughly **15%** of all meals in town); the street cleaner closes his own loop on the cleanliness level (plaza clean → he goes and plays; below roughly **45%** → he sweeps).
+  Since G3 there is also the **first "a good made out of another good" chain**: roof tiles must be fired, firing needs firewood, and firewood is now contested between the bathhouse and the kiln — **the town's first contested resource** (`production.json`, `produce.泥瓦匠.inputs`).
+  A shortage is **a social event, not an inventory warning**: when a roof leaks and there are no tiles, residents resent **a specific person**, whose standing drops (`shortage_standing`).
+  ⚠️ **No recipe or output figures are quoted here** — they are being changed right now by the dual-scale work; see the entry under *What is not there yet*. Plain-language version: [docs/56 §二/§三](docs/56-阶段报告-给非技术读者.md).
   > This bullet used to be false, and it stayed false **after someone had eyeballed it**: *every single* "do work" action in the whole town happened on **one tile**, `desk_1[40,31]` (152-186 times per 60 days), shared by four jobs — including **a fisherman fishing at a carving bench**; and the new worksites' ids matched no sprite slot, so they **shipped as missing-texture placeholders printing raw data keys onto the grass**. Both were found by measurement in a later baton. See [docs/48 §一·五](docs/48-wave-f-plan.md).
 - **A money economy**: prices, wages, a town treasury, a poverty line. Guarded by **hard** invariants #34 (money conservation) and #35 (non-negative balances, no overdraft). Person-to-person money is not just the vendor: `transfer(tenant, landlord, rent)` runs every night, and `housing.json` holds **8 registered leases** ([docs/48 §一·五](docs/48-wave-f-plan.md)).
 - **Weather and seasons**: types and utility multipliers in `game/data/weather.json`.
@@ -41,22 +56,28 @@ The **world and social systems** below all ship, and each has a CI gate behind i
 - **Three AI backends**: `logic` for pure rules, `llm` for local OpenAI-compatible services, and `slm` for embedded GGUF inference through NobodyWho. All backends run the same engine and can fall back safely.
 - **Measured local inference**: Qwen2.5-1.5B-Q4 through embedded SLM runs in roughly 1-2.5 seconds on tested consumer GPU/APU machines; 3B is around 2.9 seconds. Startup probes set deadlines from the current machine.
 
-**What is not there yet** — **this section was rewritten from the latest wave's measurements, not carried over** (see [docs/05](docs/05-路线图与里程碑.md), [docs/49](docs/49-wave-g-plan.md)):
+**What is not there yet** — **this section was rewritten from the last few waves' measurements, not carried over** (see [docs/05](docs/05-路线图与里程碑.md), [docs/49](docs/49-wave-g-plan.md), [docs/50](docs/50-wave-h-plan.md)/[53](docs/53-wave-i-plan.md)/[55](docs/55-wave-j-plan.md)):
 
-- **No goal, no onboarding, no session shape** — nothing calls the player back at minute three. **This is still the biggest one**,
-  and three reviews (an external adversarial model plus two independent read-only agents, all instructed to refute)
-  returned the same verdict: **"it looks meaningfully better, and nobody would still play it."** ([docs/43](docs/43-wave-c-plan.md))
-- **The town's two ponds are flat single-colour stickers.** A 110×70 px sample on a real-device frame is **7700 px of exactly one colour**;
-  `game/assets/art/terrain/water.png` is **16×16 with 1 colour**, while `grass_b` / `grass_flowers` in the same folder have **4 each**;
-  water has **only that one tile** — no variant, no shoreline transition ⇒ two 8×5 bodies of water render as **hard 90° single-colour rectangles**
-  pasted onto the grass with no shoreline at all. **The irony**: `WorldView`'s water layer has a *better-looking* fallback path
-  (draw deep-water colour and dot in static ripples when the texture is missing) — **it can never run, because the texture exists**.
-  A worse asset turned better code into dead code. This is not a regression from this wave; `water.png` has not changed since 27 June —
-  **nobody had ever looked at a real-device frame with fresh eyes.** ([docs/49 §六](docs/49-wave-g-plan.md))
-- **The new art gate covers one tenth of the art.** It guards the **10** character sheets in `game/assets/art/pro/`;
-  there are **31 more shipped pngs** under `game/assets/art/` (emote 10 / decor 8 / terrain 5 / obj 5 / building 3)
-  with **no gate at all**. ([docs/49 §七](docs/49-wave-g-plan.md))
-- **The art defect fixed last wave is invisible to a human at 2×.** After 144 px of outline was completed,
+- **No onboarding, and nothing that calls the player back at minute three.** Three reviews (an external adversarial model
+  plus two independent read-only agents, all instructed to refute) returned the same verdict:
+  **"it looks meaningfully better, and nobody would still play it."** ([docs/43](docs/43-wave-c-plan.md), [docs/46 §〇](docs/46-wave-d-plan.md))
+  > **Read that verdict with its date attached: it was given on 2026-07-26**, and **it has never been re-run since**
+  > (no plan or receipt after docs/43 / docs/46 records the review ever being re-run). One thing did land afterwards:
+  > D2 shipped a **read-only derived** session-progress line ([`game/scripts/Goals.gd`](game/scripts/Goals.gd) plus
+  > **11** goals in `game/data/goals.json`, with replay-equivalence machine-proved by `goals_test` in CI step 5).
+  > So the accurate statement is "**there is now one session shape; onboarding and appeal have still been measured by nobody**"
+  > rather than "there is nothing". **This project still has no instrument that could measure playability** — that part has not changed.
+- **The economy's output side does not keep up as the town grows; the direction is decided, the code is still in flight.**
+  I3's N-scale measurement ([docs/54](docs/54-scale-n60.md)) established that the production system was **designed and calibrated
+  entirely at N=12**, while red line #3 states a shipping target of 60 residents. My first instinct — "admit the economy is a
+  small-town feature and amend the red line" — **was rejected by external adversarial review**, and the reason was right:
+  *"You didn't discover that 60 isn't a functional target. You discovered that nobody ever wrote down **which kind of capacity** 60 meant."*
+  So an **Entity capacity vs Simulation capacity** matrix was written first, and the user then chose **dual-scale** out of three options
+  (micro: all 60 agents keep being simulated individually for needs, consumption, relationships and the social consequences of shortage;
+  **the output side** moves to a macro pool).
+  ⇒ **The state today is "decision made, code being changed"**, and **no figures are quoted here**: they are actively moving and
+  anything written down would be stale the same day. Matrix and decision verbatim: [docs/41 §0.5](docs/41-baton-contract.md).
+- **The art defect G2 fixed is invisible to a human at 2×.** After 144 px of outline was completed,
   **40 pixels changed out of 983040 in-engine (0.0041%)**; in a true 2× side-by-side, **five pairs were indistinguishable**,
   and it only becomes visible at **8×**. What it bought was contrast (a cap brim against the noon ground colour goes **2.00:1 → 7.91:1**),
   but in the same batch Archer-Green's twin tails **already had 6.77:1** ⇒ **the value of those pixels is uneven; roughly half is ceremonial**.
@@ -67,14 +88,28 @@ The **world and social systems** below all ship, and each has a CI gate behind i
   which was not on the repair list) ⇒ that acceptance criterion could only ever mean "don't break it". Twelve residents still share those ten sheets,
   and **阿梅 still has no clothes**. ([docs/49 §二](docs/49-wave-g-plan.md), [docs/44 §一](docs/44-art-direction.md))
 - The phone still loses **24.6% of the screen to letterboxing** (`aspect=keep`; `expand` black-screened the real device and was rolled back).
-  Re-measured this wave on a Wave G device frame: on a 2688 px-wide screen the **content area is x=331..2356 and the pure-black bars are 662 px = 24.6%**. ([docs/46 §二·九](docs/46-wave-d-plan.md))
+  G4 re-measured it on a Wave G device frame: on a 2688 px-wide screen the **content area is x=331..2356 and the pure-black bars are 662 px = 24.6%**. ([docs/46 §二·九](docs/46-wave-d-plan.md))
 - **Nobody has put on headphones and listened to the audio** — every claim about it is an RMS figure or a window count.
   The plan states explicitly that this one **can only be done by a human and will not be faked**. ([docs/48 §三](docs/48-wave-f-plan.md))
 - The touch action bar has CI assertions (`player_touch_test`: button path ≡ key path), but **nobody has pressed it on a real device**.
+- **At the default whole-town view, no names, expressions, bubbles or need bars are drawn at all.** The zoom after `go_home()`
+  measures **0.229** (H3 measured it two independent ways; the 0.333 in the `ProbeController.gd:15` comment is an older number
+  that **ignored the margins**), while `WorldView.LABEL_MIN_ZOOM = 0.45` ⇒ the player must press `+` three times to see that layer.
+  This is a **reasoned trade-off, not a new bug**, but it means part of the art work listed below **is not visible in the default framing**.
+- **That trade-off charged its first bill immediately**: after `decor/tree_big` was redrawn, at the whole-town framing (zoom 0.229)
+  **before and after both read as one patch of green texture and nobody can tell them apart** — the improvement **only shows up close**
+  (a limitation J2 wrote into its own receipt).
+- **Two furniture icons still look far too alike.** Across the pairwise source-pixel differences of the 9 obj/decor sprites,
+  `obj/counter` vs `obj/desk` is only **17/256**, while the next-nearest pair is **86/256** ⇒ **any floor strong enough to stop
+  "two pieces of furniture drawn as the same picture" would go red on the clean tree**, so that criterion **cannot be set today**;
+  the fix is to redraw those two. The reasoning is written out under "明确不做" in [`tools/asset_gate.py`](tools/asset_gate.py).
 
 > Wave C (2026-07-26) closed six items previously listed here: the silence, the player verbs stuck behind a `--player` flag, the opening camera showing 14% of the map, the 58% of the whole-town view that was the engine's default clear colour, residents teleporting 12.5×/second, and seasons and weather rendering pixel-identically.
 > Waves F/G closed two more: **four worksites shipping as placeholder boxes**, and **12 personas × 111 (persona, action) pairs sharing one set of 12 generic lines**
 > — which was not *silence* but **loss of persona voice wearing the costume of "dialogue works fine"**: `aid` 29/29, `confide` 22/22 and `rally_oust` 61/61 bubbles all came from those 12 lines.
+> **Waves G/H/I/J closed five more** (before/after images under *Art: three before/after pairs* below; the gates and criteria under *Technical Highlight 9*): **the two ponds being flat single-colour stickers**,
+> **26 shipped art files with no gate at all**, **nine of the ten emote icons being the same white bubble**,
+> **two sprites that were pictures of the wrong objects**, and **a grey placeholder box that appeared in every playthrough past day 14**.
 
 Demo videos, newest build first:
 
@@ -89,12 +124,15 @@ Demo videos, newest build first:
 ![Full device frame: the town in Wave G](docs/media/device_waveG_town.png)
 
 > **A whole frame from the phone** (NX789J / Android, `livingtown-waveG.apk`, 2688×1216). Day 2, 18:17 dusk · spring, clear · NPC 12 · 86 events;
-> the chronicle panel is telling 2 of 11 story arcs. The bathhouse tub and woodpile and the workshop's two benches are real sprites —
-> **not one placeholder box, not one raw data key on the grass.**
-> This image is **also the evidence for two of the entries in "What is not there yet" above**: the pure-black bars left and right are that 24.6%,
-> and the two cyan rectangles with perfectly straight edges, top and bottom of the map, are the "ponds".
+> the chronicle panel is telling 2 of 11 story arcs. **Not one placeholder box, not one raw data key on the grass.**
+> The pure-black bars left and right are that 24.6% from *What is not there yet*.
 > **The whole frame is published deliberately**, because the recurring visual failure in this project has been exactly
 > "only point samples were taken; nobody ever looked at a whole frame" (see Technical Highlight 7).
+> It also puts the trade-off above in plain sight: at this zoom there is **not one name, not one expression, not one need bar**.
+>
+> ⚠️ **This frame PREDATES the art fixes of the following waves — read it with its date.** The two cyan rectangles with
+> perfectly straight edges, top and bottom of the map, are the ponds as they then were; after G5 they have a shoreline
+> (before/after below). **This image was not re-shot.**
 
 ![The café at night](docs/media/wavee_town_night.png)
 
@@ -106,6 +144,36 @@ Demo videos, newest build first:
 > more expensive lesson: **in the rain, `cross.max` gets punctured by a single raindrop, so any criterion must sit on `p90`.**
 > The observatory on the right collapses to a single hint by
 > default; the full dossier (relations, conflicts, memory, faction, pacts, secrets, attitudes, beliefs) is one tap away.
+
+### Art: three before/after pairs from Waves G / I / J
+
+![Ponds: flat sticker → water with a shoreline](docs/media/device_g5_pond_before_after.png)
+
+> **Same seed, same tick, same resolution (2688×1216) on the phone.** That right-angled rectangle on the left was the pond.
+> The fix was not to draw a shoreline — **the shoreline had been sitting in the same CC0 tileset since June, ten columns away**;
+> the original cut had taken only the **centre fill tile** of a 3×3 water autotile.
+> The criterion took four attempts before it held (max-step read decorations 3 px outside the pond; `p90` read a sand landmark
+> hugging the south bank; an absolute threshold was green by day and red at night; luminance alone reads a visible night-time
+> transition as a cliff). It ended up as **transition path length ÷ straight-line grass→water distance**: 1.0 is the floor the
+> triangle inequality gives you, a flat sticker sits at exactly **1.000**, and after the fix it is **1.679**.
+> Whole-frame change: **9141 px (0.839%), and zero pixels changed outside the two pond rectangles.** ([docs/49 §六/§七](docs/49-wave-g-plan.md))
+
+![Ten emotes: nine white bubbles → ten distinct glyphs](docs/media/k2_emote_before_after.png)
+
+> **Top two rows are before, bottom two are after**; the small rows are at **28 device px** —
+> `40 (EMOTE_PX) × 0.45 (LABEL_MIN_ZOOM) × 1.583 (device scale)`, i.e. **the smallest size a player can ever see**
+> (below that `WorldView` skips the whole layer). The tenth, `confront`, is pixel-identical before and after: it was the one
+> CC0 slice that was already distinguishable, so **it was left alone**.
+> The figure is rebuildable: [`docs/media/k2_emote_before_after.py`](docs/media/k2_emote_before_after.py), with both sides
+> taken from committed trees.
+
+![A sprite that was a picture of the wrong object: signpost → arcade cabinet](docs/media/j2_arcade_before_after.png)
+
+> That "signpost" on the left was the shipped texture for the **arcade cabinet**. **It was not cropped wrong — it was cropped
+> perfectly** (0/0/0/0 opaque pixels on the four crop edges). But `arcade_1` sits at **[33,24]** in `map.json` and the procedurally
+> drawn `board` landmark sits at **[33,26]**: **same column, two tiles apart.**
+> The bathhouse tub had the same disease — it was a picture of **a well** (the real well is at [30,26]). Both pairs:
+> [`j2_bath_before_after.png`](docs/media/j2_bath_before_after.png) and [`j2_trees_before_after.png`](docs/media/j2_trees_before_after.png).
 
 Older clips, kept for history (they look noticeably different from the current build):
 [the Wave C demo-camera GIF](docs/media/town_chronicle.gif) (680×408 — **non-integer downscale, HUD text unreadable**; the one at the top is the fixed version) ·
@@ -168,7 +236,9 @@ On a physical Redmagic 8 Elite (Android 15), `backend=slm` used to mean **40 fir
   - The honest other half: **fixing the format does not buy the 1.5B judgement** (rank stays 0.46-0.50 across eight variants) — so "the 1.5B is at a capability ceiling" is *also* true. **Both things hold at once.**
   - ⇒ The next step is not distillation but **shipping the 3B the code already defaults to, plus fixing those two prompt strings** — and then re-running every measurement in docs/36/38/40.
 
-- **⚠️ A ship-blocker that CI structurally cannot see**: under `backend=slm`, hard invariant **#01 (no starvation) is violated in 8 of 8 seeds** (0 of 8 under logic in the same config). Because CI pins `Sim.backend=null`, **hard invariants have never been checked on the model path at all**. Hesitancy and serialisation are ruled out (`mock` starves nobody at identical latency and idle rate) — it is the **choices themselves** that stop agents eating. Red line #2 (playable with no model) is safe, but "red line #1 still holds while the model is on" was **inherited by assumption, and is not true**. Fix + gate is the next baton.
+- **⚠️→✅ A ship-blocker that CI was structurally unable to see (now fixed and gated)**: under `backend=slm`, hard invariant **#01 was violated in 8 of 8 seeds** (0 of 8 under logic in the same config). Because CI pinned `Sim.backend=null`, **hard invariants had never been checked on the model path at all** (step `4d` below closes this; the boundary is stated in Quick Start). Hesitancy and serialisation were ruled out (`mock` starves nobody at identical latency and idle rate) — it was the **choices themselves** that stopped agents eating.
+  **The root cause was not "the model chooses badly" — the engine was missing a boundary**: of the engine's two survival protections, only "drop social candidates in a crisis" is a **prohibition**; the other (urgency-dominated scoring that makes eat/sleep win) is **only a score**, which does nothing to an external backend that just picks an index out of the same candidate list. #01 is a **hard** invariant and must not rest on "the backend will choose sensibly".
+  The fix is two engine boundaries that **exist only on the external-backend branch** (in a crisis only crisis-relieving picks are admitted, plus a need-budget check on whether this errand's fare is affordable), plus a new CI step **4d `BackendGate`**: it guards #01 at two dose levels using the **deterministic** `random` backend (indices from the project's own seeded stream, latency counted in ticks ⇒ byte-for-byte re-runnable, which the gate machine-checks every run). Measured 8/8 red → **8/8 green**, 24/24 green over 12 seeds × 20 days, and 0 starvation at N=48; **the golden digests did not move by a byte** (with `backend==null` those two boundaries are never called). The cost: at shipping dose the guardrails moved **7.3%** of committed decisions (effective L/C 63.8% → 59.1%), with no effect on variety. Full write-up: [docs/45](docs/45-external-backend-invariant-gate.md).
 - **The cost, stated**: with CPU inference active, FPS drops from 88 to 34-46. A second cost we had not been counting: agents idle while waiting — of 5453 queries at N=12, 2835 committed nothing, so **the model makes the town more hesitant**.
 - **A metric defect of our own, corrected**: the "bad_parse 29–36% = model format non-adherence" figure quoted in four places **conflated two things** — the model returning prose, and a valid answer whose candidate went stale during the wait. Split apart: true format non-adherence is **7.5%–19.4%**, and it *falls* as the town grows (faster world churn → more valid answers go stale); at N=60, **two-thirds of apparent model failure is staleness**. The repo had actually measured this back in June ([docs/11](docs/11-LLM部署实测对比与选型.md) §S5: "the main cause of validity loss is async staleness, not model error") and then lost it — restored here.
 
@@ -246,6 +316,18 @@ an implementation bug. **The criterion itself was wrong.**
 - **The honest boundary, stated**: #39's negative control only pushed **two** jobs out of shift, not eight — that shift check is
   **redundant** for most jobs. So it can catch "one job starts producing all night" but **not** "every job does".
   **The tooth is real, but not as wide as the name sounds.**
+- **The fourth of the same family — and this one ended in renaming the check, not changing the code.** Hard invariant #1
+  was called "no starvation", while the criterion (in `Harness.gd`) counts **any need bottoming out**, not just hunger.
+  ⚠️ **This was not drift; it never matched**: `git log -S` on the name, on the criterion expression, and on that loop
+  **all return exactly one commit** — the first public snapshot, 2026-07-03. **The name and the wide criterion arrived in
+  the same commit** and nobody touched either for 27 days ⇒ **there is no previously-correct version to revert to.**
+  Why not go the other way and "count only hunger"? **That was measured, not chosen**: in a four-cell negative control, the
+  world where only *social* bottoms out **turns from red to green** under the narrowed criterion — and hunger and social
+  bottom-outs occur at **the same order of magnitude**, they just live in different configuration domains (on the zero-model
+  floor it is almost all social; on the model path hunger dominates — the `backend=null` blind spot was hiding that second
+  half from the statistics). ⇒ The check is now **"no need bottoms out (any need, not only hunger)"**.
+  **Renaming is free; discriminating power is not.** The per-cell measurements, the distribution over 114 runs, and the
+  detection envelope are written at `INV1_NAME` in [`game/bench/Invariants.gd`](game/bench/Invariants.gd).
 
 The same wave **added** two gates, covering two classes of asset where until then *nothing would have gone red if you changed them*:
 
@@ -277,6 +359,86 @@ The same wave **added** two gates, covering two classes of asset where until the
 
 Per-gate receipts in [docs/48 §四/§五/§六/§七](docs/48-wave-f-plan.md); the distilled lessons in [docs/13](docs/13-实验札记-experiment-journey.md) (two entries dated 2026-07-30).
 
+**9. Art: from "change it and nothing goes red" to three gates — in the order *look first, then gate*, and the order has a reason.**
+When the art gate above (step 2b) landed, it covered 10 character sheets and **31 shipped pngs had no gate at all**
+(emote 10 / decor 8 / terrain 5 / obj 5 / building 3); after G5 added the terrain gate, **26 were still unguarded**.
+The way to close that gap was **not** "pin down the rest as well", because that repeats the original mistake:
+
+> **Gating art that nobody has eyeballed pins the current state as "correct" — and that is exactly how the pond bug survived for a month.**
+
+So Waves H/I/J went **eyeball first, gate second, and fix-before-guarding whatever failed**:
+
+- **Look** (H1): pull all 26 up on a real device one at a time, judge but do not change, and produce a
+  `OK / unreadable / never appears / needs redrawing` table ([docs/51](docs/51-art-eyeball.md)).
+  **"I can't see anything wrong with it" is explicitly accepted as a conclusion** — that is the precondition for daring to gate at all.
+- **Gate only the ones judged OK** (H2, CI step 2d), **and refuse the rest by machine check, not by comment**:
+  sneak a file that **cannot reach the screen from code** into the gated table ⇒ the gate goes red and names it. **The ratchet works
+  both ways** — the day someone wires a dead asset back up, it also goes red, and that is precisely the moment to go and eyeball it again.
+- **Fix the "unreadable / drawn wrong" ones first** (I1, J2), then admit them to the gated table.
+
+**Today's coverage is countable**: **46** shipped pngs under `game/assets/art/` (pro 10 / terrain 13 / emote 10 / decor 8 / obj 5),
+**45 of them gated** (2b character sheets 10 · 2c terrain 13 · 2d emote/decor/obj 22), with **exactly 1 deliberately unguarded**
+(`decor/tree_small`, judged "never appears" — it is also the **only live input** to 2d's "the dead asset must still be dead" self-check).
+The three gates are **three instances of one shape, not three shapes**: rebuild on the spot from the CC0 library → compare
+**decoded RGBA pixel by pixel** → self-certify the comparator's teeth on every run.
+
+Four things were caught along the way, none of them named in any brief:
+
+- **Nine of the ten emote icons were the same white bubble.** Median pairwise difference 24 px, and the closest pair differed by
+  just **6 px** out of 400. **And "just pick better cells from the tileset" was killed by measurement**: across all 38 non-empty
+  cells (703 pairs), a greedy plus local search for the most separable 10-subset **tops out at 14/400, with 4 pairs tied there** —
+  **the whole sheet is one white bubble with 2-4 pixels of face swapped.** ⇒ nine were **hand-drawn as pixels**, with a recipe
+  (glyph table plus a pure redraw function) so they could enter the gate.
+  The criterion sits **at on-screen size, not source pixels**: source pairwise minimum 6 → **109** (floor 60, 1.82x margin);
+  greyscale at 28 device px 5.74 → **15.73** (floor 10.0, 1.57x margin). **The old batch scored 6 and 5.74 on those two ⇒ this gate
+  goes red on the unmodified tree.** (Floors and both measured columns are written at `DISTINCT_SRC_FLOOR` in [`tools/asset_gate.py`](tools/asset_gate.py).)
+  > **Eyeball and metric each caught what the other could not**, which is the part worth keeping: only eyes see "the heart has a flat
+  > top and reads as a shield" or "the broken heart reads as two wings". Only the metric sees that `meet_fulfilled`'s rose and
+  > `meet_broken`'s slate blue have **luminance 141.7 vs 143.8** — same outline family *and* same luminance, scoring 5.87 once colour
+  > is compressed away, **worse than the worst pair of the old white bubbles (5.74)**. **Eyes would never have found that.**
+- **Two shipped sprites were pictures of the wrong objects.** `obj/bath` was **a well**; `obj/arcade` was **a signpost** — while
+  `WorldView._draw_landmarks()` already draws a well and a signpost procedurally, and `arcade_1[33,24]` sits **two tiles up the same
+  column from** `board[33,26]`. **Telling "cropped wrong" from "drawn wrong" was made measurable**: opaque-pixel counts on the crop
+  boundary plus `bleed` (how much of the artwork keeps going outside the box). `tree_big`: edges 0/27/0/29, `bleed` 0.438 ⇒ **cropped
+  wrong**; `bath`/`arcade`: all edges 0, `bleed` 0.000 ⇒ **cropped perfectly, wrong subject**.
+  Hence a third property: **no crop may cut through continuous artwork**, floor 0.10 calibrated on 4 positives and 12 negatives
+  (3.2x / 1.9x margin on either side). **It judges recipe geometry, so it covers even the ungated file** — `house`/`shop`/`tree_big`
+  were each missing exactly this check, and all three times a human found it afterwards.
+  > **That arm's `does_not_detect` is the line in this section most worth reading**: swap `arcade` back to a *different* cell that is
+  > **cleanly cropped but still the wrong subject** ⇒ `bleed` 0.000 ⇒ **passes**. **That is the bath/arcade disease itself, and the new
+  > arm is blind to it.** The baton wrote that down rather than around it.
+- **A grey placeholder box that appeared in every playthrough past day 14.** The `WorldPatch` spawned when an election passes has the
+  id `civic_<topic>_<day>`, and the prefix `civic` **matches no texture**; `elections.every_days` defaults to **14** ⇒ **any normal
+  run that reaches day 14 gets a placeholder box at [22,2] with the raw data key 「扩建咖啡馆」 printed under it.**
+  The real fix was not a rename in the data but replacing the **implicit contract** `id.split("_")[0]` as the sprite slot with an
+  explicit `type→slot` table plus three `push_error` assertions.
+  > **My own judgement was falsified by pixels here**: I told the executing baton that "the missing-texture failure mode has no live
+  > instances left on the tree", and it produced this `civic` one. I had also inverted the severities — **missing texture had exactly
+  > one live instance, while the `bench` slot alone had five live aliases** (one `bench.png` serving five kinds of object).
+- **Three textures, a loader for them, and a documented promise all existed — and no code path could draw them.**
+  Three independent static scans all called it "a feature that was never wired up". **`git log -S` says the opposite**:
+  `Art.building_tex("hut")` **had been wired, had shipped**, and was deliberately removed on 2026-07-15, in a commit that names it as
+  the top cause of a user-reported scale problem (a 16×16 hut scaled to 48px is exactly one tile ⇒ *"a whole house the size of a person"*).
+  ⇒ **Wiring it back would be reinstalling a fixed bug**, so the disposition was deletion. The promise in `docs/09` had **outlived the code by 15 days**.
+  > Distilled into a rule in the contract: **"zero call sites today" is semantically ambiguous — "never wired up" and "deliberately
+  > removed" look identical, and only history can tell them apart. `grep` gives you the present; `git log -S` gives you the intent.**
+  > ([docs/41 §1.5](docs/41-baton-contract.md))
+
+**The honest other half of this section** (here, not in a footnote):
+
+- Everything above measures **the asset itself**. `asset_gate` says so about itself: it **does not judge whether the art is good, or
+  whether you can read the intended emotion**. A pairwise floor stops "they all became the same picture again"; it **cannot stop
+  "all ten are ugly but mutually distinct"**.
+- The emote batch has **not one frame of real gameplay with an emote over a resident's head** (`--shot` structurally cannot capture it).
+  An engine texture-render probe was used instead: it validated filtering and scaling but **not compositing with the character,
+  name plate and need bars**, and never ran on a device.
+- The tree improvement **is invisible at the default whole-town framing**, and two furniture icons are still too alike — both are
+  left verbatim in *What is not there yet*.
+
+Per-baton receipts: [docs/50](docs/50-wave-h-plan.md) (Wave H), [docs/51](docs/51-art-eyeball.md) (the 26-file device eyeball table),
+[docs/53](docs/53-wave-i-plan.md) (Wave I), [docs/55](docs/55-wave-j-plan.md) (Wave J). For the criteria and every negative control,
+read the header comments of steps 2b/2c/2d in [`tools/ci.sh`](tools/ci.sh).
+
 ## Engineering Design
 
 1. **The model does not mutate state directly.** The engine enumerates legal candidates; the model returns a candidate index and optional dialogue. Invalid output, timeout, or missing service falls back to deterministic rules.
@@ -296,7 +458,13 @@ Requires [Godot 4.6+](https://godotengine.org/) (the project declares `config/fe
 GODOT=/path/to/godot bash tools/ci.sh
 ```
 
-**Fourteen steps** (numbers are the step ids inside `tools/ci.sh`): `0` the copyright red line (no weights or binaries anywhere in the tracked tree), `1` data lint, `1b` map audit, `2` markdown link lint, `2b` the **art gate** (shipped `pro/` == rebuilt on the spot), `3` Godot parse smoke, `4` the **S0 invariant gate** (40 invariants × 12 seeds × 60 days, a determinism triple-run, a **committed golden** cross-process anchor, a **per-tick prefix hash chain**, and suite-level liveness), `4b` the LOD observation-independence gate, `4c` the **DetGate scenario-determinism gate** (default/faction/betray/freerider), `4d` BackendGate, `4e` ModelPathGate, `4f` the **voice-coverage gate**, `5` 9 integration scenes, `6` the visual gate (day/night instrument, out-of-bounds repaint, space round-trip; **it SKIPs rather than falsely reddens when no rendering environment is available**). Any red step exits 1.
+**Sixteen steps** (numbers are the step ids inside `tools/ci.sh`, **which is the authority**): `0` the copyright red line (no weights or binaries anywhere in the tracked tree), `1` data lint, `1b` map audit, `2` markdown link lint, `2b` the **character-sheet art gate** (the 10 shipped `pro/` sheets == rebuilt on the spot by `coif_characters.py`), `2c` the **terrain gate** (the 13 shipped `terrain/` tiles == rebuilt by `slice_shore.py`), `2d` the **asset gate** (the **22** gated emote/decor/obj pngs == rebuilt from the slicing/hand-drawing recipe, plus emote pairwise distinctness, plus no crop cutting through continuous artwork), `3` Godot parse smoke, `4` the **S0 invariant gate** (40 invariants × 12 seeds × 60 days, a determinism triple-run, a **committed golden** cross-process anchor, a **per-tick prefix hash chain**, and suite-level liveness), `4b` the LOD observation-independence gate, `4c` the **DetGate scenario-determinism gate** (default/faction/betray/freerider), `4d` BackendGate, `4e` ModelPathGate, `4f` the **voice-coverage gate**, `5` 9 integration scenes, `6` the visual gate (day/night instrument, out-of-bounds repaint, space round-trip, pond shoreline; **it SKIPs rather than falsely reddens when no rendering environment is available**). Any red step exits 1.
+
+> The three art gates (2b/2c/2d) **need Pillow, and go red rather than SKIP if it is missing** — the reason is written in the script:
+> **in a summary, SKIP and PASS both read as "not red"**, which degrades a gate into a coin whose result nobody sees.
+> Step 6 does the **opposite**: it SKIPs when it cannot find a rendering environment, because *a gate that goes red on someone
+> else's machine for environmental reasons is worse than no gate: it trains everyone to ignore red.*
+> The two rules only look contradictory; the dividing line is **whether the missing dependency can be installed**.
 
 > ⚠️ One honest boundary, **now narrower but not gone**: the golden, LOD and DetGate steps all pin `Sim.backend=null`,
 > so `AIBackend.decide()` is never entered and their green **asserts nothing about the model path**.
@@ -367,14 +535,29 @@ docs/                  Design, architecture, review notes, measurements, and exp
 | [41 Baton contract](docs/41-baton-contract.md) | The shared constraints for every parallel sub-task: four red lines, statistical discipline, extra clauses for visual work — **and the requirement that every report contain a section on where its own brief was wrong** |
 | [48 Wave F](docs/48-wave-f-plan.md) | Giving the division of labour somewhere to happen; taking three long-green gates apart with negative controls; the voice-coverage grid |
 | [49 Wave G](docs/49-wave-g-plan.md) | Art was the one asset class in this repo with no gate at all; the device eyeball that found "the two ponds are flat single-colour stickers" |
+| [50 Wave H](docs/50-wave-h-plan.md) | **Look first, gate second** (gating art nobody has eyeballed pins the current state as "correct"); giving the methodology a denominator via brief-mutation testing |
+| [51 Art eyeball table](docs/51-art-eyeball.md) | All 26 shipped art files judged one at a time on a real device: `OK / unreadable / never appears / needs redrawing` — **"nothing looks wrong" is an accepted verdict** |
+| [53 Wave I](docs/53-wave-i-plan.md) | Nine identical white bubbles; three textures, a loader and a documented promise that could not reach the screen |
+| [54 N=60 scale measurement](docs/54-scale-n60.md) | The cell G3 predicted would break: the production system was designed and calibrated at N=12 while the red line says 60 |
+| [55 Wave J](docs/55-wave-j-plan.md) | #1 "no starvation" is the fourth check whose name is narrower than its code; of the three "unreadable" sprites only one was actually cropped wrong |
+| [**56 Progress report for non-technical readers**](docs/56-阶段报告-给非技术读者.md) | **A progress report with no code in it**: what happens now / what this round added / **what still doesn't work** / where the effort actually went |
 | [`bench/bakeoff/README.md`](bench/bakeoff/README.md) | A 3-command reproducible distillation bake-off plus two honest negative results |
 
-**A themed index of all 48 numbered documents is in [docs/README.md](docs/README.md).** Documentation is primarily in Chinese.
+There are **55** numbered documents (that number is not hand-copied: `tools/lint_links.py` counts and prints it on every run,
+and it is CI step 2). The themed index lives in [docs/README.md](docs/README.md), ⚠️ **but the index itself has fallen behind** —
+it stops at 48, and `36 / 37 / 49 / 50 / 51 / 53 / 54 / 55 / 56 / 57` are missing from it (the most important of those are in the
+table above). Documentation is primarily in Chinese.
 
 ## Assets And License
 
 Code is MIT licensed. Pixel assets come from CC0 packs such as Puny World and Characters; sources are listed in [docs/09-美术资产与版权.md](docs/09-美术资产与版权.md). The cover image is AI-generated. Model weights and NobodyWho binaries are not distributed in this repository; fetch them from upstream sources.
 
 The 10 character sheets in `game/assets/art/pro/` are **redrawn derivatives** of a CC0 pack (alpha masking, lookup-table recolouring, copying pixels from the base sheet, and hand-written templates at fixed coordinates; **no scaling, no interpolation**). **Generated imagery contributes zero** — AI images may serve as a mood board and never enter a sprite frame. CI step 2b now machine-checks this: what ships must equal what is **rebuilt on the spot**.
+
+**The same discipline now covers 45 of the 46 shipped pngs** (2b character sheets 10 · 2c terrain 13 · 2d emote/decor/obj 22).
+**12 of them are hand-drawn pixels** (9 emotes plus `obj/bath`, `obj/arcade`, `decor/tree_big`, with the glyph tables living in the
+slicing scripts; the rest are CC0 slices) — and **hand-drawn work still needs a recipe**: glyph table → pure redraw function → the gate
+imports the recipe and rebuilds on the spot, so **a picture with no recipe cannot enter the gated table at all**. Generated imagery is
+**structurally** excluded from this path, not merely forbidden by a rule.
 
 Some documents refer to an upstream game-evaluation pipeline for headless rendering, automated recording, and LLM-as-judge experiments. This repository does not depend on that pipeline at runtime.
