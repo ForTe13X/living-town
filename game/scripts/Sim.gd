@@ -2908,6 +2908,18 @@ func _holder_of_title(title: String) -> String:
 ## 产出挂点：本职、在班、完成一次工作 → 往镇库存记【一批】（口径与 _wage_for 的"本职在班"完全同一条）。
 ## 为什么是一批不是一件：实测全镇本职完成 ~70 次/60 天，而吃饭 1011 次/60 天——1:1 会让镇子永远断粮
 ## （见 production.json 的 _calibration）。批量是数据，不是代码常数。
+##
+## ★G3 追加 `produce[职位].inputs`（docs/49 §三）：**这一批货是用另一种货做出来的**。
+##   此前七个岗位的产物全部【凭空生成】——上工一次，货就出现。泥瓦匠是第一个有【原料】的工种：
+##   烧一窑瓦要烧柴，而柴薪同时是澡堂唯一的燃料 ⇒ 全镇第一件【被两条需求争抢】的货。
+##   四条纪律：
+##   ① 原料走的还是 _stock_take（消耗侧唯一通道）⇒ #38 的账本恒等式一个字节都不用改；
+##   ② 缺料【不阻断动作】：他照样上工、照样领工资、照样涨技能——只是这一窑出不了那么多瓦。
+##      这与 meals_free / 缺货不阻断消费是同一条设计红线，不新开饿死通道；
+##   ③ 产量按【最紧的那一样】原料的到手比例整数缩放 ⇒ 恒 ≤ 申报批量 ⇒ 硬 #39 的「件数不超申报」自然成立；
+##   ④ 缺料的后果落在【干活的人】身上（他记一条不满、在场者形成一手信念埋怨柴薪的责任岗位）——
+##      这是本仓库第一条【从一个工种传到另一个工种】的缺货后果，而它复用的是 _shortage_fallout 原样。
+##   缺 inputs 键 / 缺 production.json ⇒ 整段短路 ⇒ 逐字节回到 G3 之前。
 func _produce_for(ag: Dictionary, action: String) -> void:
 	var job := _job_of(String(ag["id"]))
 	if job.is_empty() or _job_action(job) != action or not _in_shift(job):
@@ -2917,8 +2929,33 @@ func _produce_for(ag: Dictionary, action: String) -> void:
 	if rec.is_empty():
 		return                                          # 该职位没有产物（如未接入的工种）→ 与今天一致
 	var good := String(rec.get("good", ""))
-	var got := _stock_move(good, int(rec.get("amount", 0)), "produce", String(ag["id"]), title)
+	var amount := int(rec.get("amount", 0))
+	# G3 原料：按 JSON 书写序遍历（Godot 字典保序）⇒ 扣料顺序确定、无 RNG、可逐字节回放。
+	var ins: Dictionary = rec.get("inputs", {}) if rec.get("inputs", {}) is Dictionary else {}
+	var lacked := ""                                    # 第一样没凑齐的原料（后果只报一次，同 _shortage_fallout 的口径）
+	var r_num := 1                                      # 缩水比 = min over 原料 (到手/需要)，整数分数、不引入浮点
+	var r_den := 1
+	for ing in ins:
+		var need_in := int(ins[ing])
+		if need_in <= 0:
+			continue
+		var got_in := _stock_take(String(ing), need_in)  # 料照扣（扣多少算多少）——半窑瓦也把那半窑柴烧掉了
+		if got_in < need_in:
+			if lacked == "":
+				lacked = String(ing)
+			if got_in * r_den < r_num * need_in:         # 取【最紧】的那一样，不是逐样连乘
+				r_num = got_in
+				r_den = need_in
+	if r_den != 1 or r_num != 1:
+		amount = amount * r_num / r_den                  # 整数缩放 ⇒ 恒 ≤ 申报批量 ⇒ #39 的「不超申报」结构上成立
+	if lacked != "":
+		prod_stats["short"][lacked] = int((prod_stats["short"] as Dictionary).get(lacked, 0)) + 1
+		# 缺料的是【干活的人】——全镇第一条跨工种的缺货后果。日名额用 "料:<货>"，与消费侧的 "<货>" 分开（见 _shortage_fallout）。
+		_shortage_fallout(ag, action, lacked, "料:" + lacked)
 	prod_stats["work"][title] = int((prod_stats["work"] as Dictionary).get(title, 0)) + 1
+	if amount <= 0:
+		return                                          # 一点料都没有 ⇒ 这一趟空手（不写 produce 事件，#39 的「件数>0」因此恒成立）
+	var got := _stock_move(good, amount, "produce", String(ag["id"]), title)
 	if got > 0:
 		prod_stats["produced"][good] = int((prod_stats["produced"] as Dictionary).get(good, 0)) + got
 		ag["memory"].add("今天%s出了%d份%s，交进镇上" % [action, got, good], 4, tick_no, ["job", "produce", good])
@@ -2961,15 +2998,21 @@ func _stock_take(good: String, want: int) -> int:
 ##   ③ 在场者 + 当事人形成一手信念(via=seen，主语=责任岗位的人) → 走既有 gossip 管线被议论（结构照抄 _observe_wealth）；
 ##   ④ 对责任岗位小挫声誉（经 _adjust_standing，受 STANDING_DELTA_CAP/STANDING_CAP 双重钳制；
 ##      而 S1 每 3 天的 standing 漂移会把它慢慢抹平 ⇒ 只有【连着断货】才留得下印象）。
-func _shortage_fallout(ag: Dictionary, action: String, good: String) -> void:
+func _shortage_fallout(ag: Dictionary, action: String, good: String, dedup: String = "") -> void:
 	# ★同一天同一种货只记一次。理由不是省事，是两条实测约束：
 	#   ① MemoryStream 只有 CAP=200/KEEP=150 且 _forget 按 importance 排序 —— 逐次记账会让几百条
 	#      "面包又没了"把社交记忆整片挤出去，语音 grounding 当场退化成一句抱怨；
 	#   ② Main 的小镇纪事只回扫尾部 200 条事件。
 	#   语义上也对：一天里断第 40 次不是新闻，是同一件事。此后再缺仍然照常【加价 + 计数】，只是不再重复宣告。
-	if int(_short_day.get(good, -1)) == day:
+	# ★G3：`dedup` 让【停工】与【买不到】各自独占一条日名额。为什么必须分开——这是量出来的，不是设计洁癖：
+	#   共用 good 作日名额时，柴薪断了那天几乎总是澡堂(546 次洗澡/seed)先撞上，泥瓦匠的停工被它吃掉 ⇒
+	#   实测 seeds 1-5 只写出 1 条『柴薪@修屋』（0.2 条/seed），机制在账本上存在、在社会面【看不见】。
+	#   分开之后同一批 seed 变成 3/7/2/4/5 条（数与出处见 production.json 的 _g3_negative_results）。
+	#   仍然是【每天每条一次】，MemoryStream 的两条约束不受影响。
+	var dk := dedup if dedup != "" else good
+	if int(_short_day.get(dk, -1)) == day:
 		return
-	_short_day[good] = day
+	_short_day[dk] = day
 	var gd: Dictionary = production.get("goods", {}).get(good, {})
 	var blame := _holder_of_title(String(gd.get("blame", "")))
 	var seen: Array = _nearby_agents(ag)

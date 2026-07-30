@@ -6,36 +6,37 @@
       "2026-07-26 D1 · 首烘。C 段此前零条断言（只 print digest），本文件把它变成真门。锚的对象是 random(full) 臂——模型路径上唯一的跨进程/跨提交锚（golden_digests.json 恒 Sim.backend=null，看不见这条路）。",
       "2026-07-30 Wave E1 · 劳动产出闭环上线 ⇒ 世界轨迹蓄意移动（docs/47 §二-E1 / R12），random(full) 臂的 digest/event_digest/landed 与候选规模一并移动。本锚锚的是【模型路径上的世界轨迹】，不是 prompt 编码本身（A/B 两段未动、仍绿）⇒ 它跟着 golden_digests.json 一起重烘是正确反应。★ docs/47 §二-E1 的 brief 只写了「Harness 与 DetGate 两个 --bake-golden 都要跑」——漏了这第三份提交锚，照 brief 做会让 ci.sh 第 4e 关变红。",
       "2026-07-30 Wave F1 · 同上：production.json 里新增的工位/岗位/整洁三段蓄意移动世界轨迹，random(full) 臂随之移动。A/B 两段（prompt 编码）未动。本次仍然是三份锚一起烘 —— R12 里那条『只烘前两份 ci.sh 必红』的教训对 F1 同样成立。",
-      "2026-07-30 Wave F5 · 同上：production.json 新增三个工位 + job_action 三条、map.json 新增 dock 区，蓄意移动世界轨迹，random(full) 臂随之移动。A/B 两段（prompt 编码）未动。三份锚一起烘。"
+      "2026-07-30 Wave F5 · 同上：production.json 新增三个工位 + job_action 三条、map.json 新增 dock 区，蓄意移动世界轨迹，random(full) 臂随之移动。A/B 两段（prompt 编码）未动。三份锚一起烘。",
+      "2026-07-30 Wave G3 · 同上（建筑分工落地，golden_digests 的同一条原因）。本锚锚的是 random(full) 后端臂的世界轨迹，世界一动它必动。顺带的口径数字：max|C| 44 → 39，|C|>26 的决策点 92/2644 → 104/2624 —— 新工位是【职位专属】广告位（只有现任泥瓦匠枚举得到），所以它不给全镇加候选；候选规模的变化来自轨迹重排（谁跟谁在同一格），不是来自这条广告位本身。"
     ]
   },
   "random_full": {
     "days8_n12": {
       "1": {
-        "digest": "3086726875",
-        "event_digest": "3082664444611247612",
-        "landed": 678
+        "digest": "680793075",
+        "event_digest": "961150922092987832",
+        "landed": 658
       },
       "2": {
-        "digest": "2828541715",
-        "event_digest": "4143447864079549066",
-        "landed": 654
+        "digest": "175174383",
+        "event_digest": "2025118964916392256",
+        "landed": 640
       },
       "3": {
-        "digest": "1223981251",
-        "event_digest": "6116584263650647186",
-        "landed": 675
+        "digest": "2493575022",
+        "event_digest": "4127444735060480887",
+        "landed": 668
       },
       "4": {
-        "digest": "2439548151",
-        "event_digest": "5678578021297645335",
-        "landed": 679
+        "digest": "3404146977",
+        "event_digest": "7655822294514693510",
+        "landed": 658
       },
       "_scale": {
-        "max_n": 45,
-        "n_dec": 2686,
-        "over_cap": 107,
-        "over_old": 6
+        "max_n": 39,
+        "n_dec": 2624,
+        "over_cap": 104,
+        "over_old": 4
       }
     }
   }
