@@ -172,9 +172,11 @@ def main():
         titles = {}                                   # title -> holder agent id（jobs.json 优先，与 Sim._merge_prod_jobs 同序同规）
         eff_action = {}                               # title -> 有效动作（job_action 覆盖后）
         merged = dict(jb.get("jobs", {}) if isinstance(jb, dict) else {})
+        prod_titles = set()                           # production.json 【自己引入/改写】的职位（见下面 ⑨-末 的门）
         for aid2, j in (pr.get("jobs", {}) if isinstance(pr.get("jobs"), dict) else {}).items():
             if isinstance(j, dict) and aid2 not in merged:
                 merged[aid2] = j
+                prod_titles.add(str(j.get("title", "")))
         agent_ids = set(a.get("id") for a in ag["agents"])
         ov = pr.get("job_action", {}) if isinstance(pr.get("job_action"), dict) else {}
         for aid2, j in merged.items():
@@ -215,9 +217,22 @@ def main():
                     fails.append("worksite %s：职位 '%s' 的有效动作是 '%s'，工位广告的却是 '%s' —— "
                                  "他站在自己的工位前也不算上工（工资走零工价、一件货都不产）"
                                  % (w.get("id"), t, eff_action.get(t), act))
+        # ★ 门的口径：production.json 【自己引入或改写】动作的那些职位（job_action 覆盖的 + production.jobs 新建的）。
+        #   F3 实测的洞：原口径只有 `t in ov`（= 只有 job_action 覆盖过的）⇒ **production.jobs 新建的岗位豁免**。
+        #   负对照（scratch 副本上逐条跑，见 F3 回执）：删 ws_workbench(木匠∈job_action) 红、删 ws_bakeboard(面点师∈job_action) 红，
+        #   而删 ws_sweepcart(环卫工∈production.jobs) **绿**、只删 ws_stall 上『摆摊/商贩』那一条广告位也 **绿**
+        #   —— 后两个正是 F1 新建的岗位，恰恰是这条规则最该守住的那两个。
+        #   （整个删掉 ws_stall 会红，但红的是 vendor.action '赶集' 那条别的规则 ⇒ 属于**被别的规则偶然遮住**，不是本条起了作用。）
+        # ★ 为什么【不是】"对所有职位都查"（派棒者给的方向，F3 实测证伪）：
+        #   杂役/渔夫/教书先生的动作是『做活』、咖啡师是『看摊』，它们的满足者是**普通地图家具**
+        #   （`desk_1` 在 map.json、`看摊` 在 interiors.json），根本不是 worksite ⇒ 对所有职位都查会让**干净的树立刻变红**。
+        #   真正"该管的"是这一条不变量：**production.json 自己造出来的动作，它的满足者也只能是 production.json 自己的工位。**
+        #   ⇒ 后来的棒若在 `production.jobs` 里加一个由普通家具满足的岗位，这条会误报——那时该做的是把满足者的全集
+        #   （map.json + interiors.json + worksites）都收进来，而**不是**把这道门再关小。
+        gated = set(t for t in ov if not str(t).startswith("_")) | prod_titles
         for t, act in eff_action.items():
-            if t in ov and act not in wsact:
-                fails.append("职位 '%s' 的动作被改成 '%s'，却没有任何工位广告它 → 这个岗位再也无处上工" % (t, act))
+            if t in gated and act not in wsact:
+                fails.append("职位 '%s' 的动作是 '%s'，却没有任何工位广告它 → 这个岗位再也无处上工" % (t, act))
         vd = pr.get("vendor", {}) if isinstance(pr.get("vendor"), dict) else {}
         if vd:
             if str(vd.get("title", "")) not in titles:
