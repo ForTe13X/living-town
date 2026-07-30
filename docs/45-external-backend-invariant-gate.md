@@ -43,7 +43,14 @@ godot --headless --path game res://bench/BackendGate.tscn -- --seeds 1-4 --days 
 
 * **A** 所有【硬】不变量绿（含 #01；软/诊断只报告——8 天小网格本就不该硬断言涌现统计）
 * **B** 同 seed **两跑**：`Inv.digest` / `Sim.event_digest` / 逐 tick 前缀链 **三路一致**
-* **C** 饿穿 agent-tick ≤ `--max-starve`（默认 0 = #01 原口径）
+* ~~**C** 饿穿 agent-tick ≤ `--max-starve`（默认 0 = #01 原口径）~~
+  **⚠ 这一行 2026-07-26 就已经被 D1 换掉了，而本文没跟着改（E6 复核时发现，2026-07-30）。**
+  旧 C **不是第三条臂**：`scenario==""` 时 `Invariants` 的 #1 化简为 `starved == 0`，与 A 的 #01
+  **逐位同一个谓词**；`--max-starve` 也已随之删除（它是个死旋钮：#1 在 `HARD_IDS` 里，调高它 `check_all` 照样红）。
+* **C（现行）** **闭集封闭性**：后端交回的每一个非空、非 `_wait` 的 intent，其 `_cand_key` 必须等于
+  本次 `candidates` 里某一项的 `_cand_key`。它守的是红线#2 的后半句，而**引擎自己并不强制它**。
+* **S（自检臂，2026-07-30 / E6·W5 新增）** `inject:fabricate` —— **只存在于门内部、绝不进出货路径**的
+  一个会篡改 `amount` 的假后端。判据是**反的**：C 必须变红。理由见下面 §1.1 的收窄。
 
 ### 1.1 为什么这条门可以进 CI，而 `slm` 永远不能
 
@@ -54,6 +61,27 @@ godot --headless --path game res://bench/BackendGate.tscn -- --seeds 1-4 --days 
 
 `slm` 有 run-to-run 噪声（docs/38 §七-3），永远不进 CI。但两条臂走的是**同一条落地路**
 （`decide` → 闭集选号 → `_cand_key` 重验 → `agent_apply`），所以这条路上的结构性护栏一旦立住，**两条臂同时受保护**。
+
+> **★ 2026-07-30（E6·W5）收窄：上面这句对 A/B 成立，对 C 不成立。**
+> 外部对抗评审 2026-07-28 指出、E6 复核**成立**：`random` 全剂量走 `_instant_random` → `_rand_index`
+> 只产一个下标、落地 `capped[i]`；`random@K=2` 的回包由 `parse_decision` 解成 `candidates[pk].duplicate()`
+> 再被 `_cand_key` 对当前 `capped` 重验一次；而 `capped = _cap_for_llm(candidates) ⊆ candidates`
+> （`AIBackend.gd:926` 只做子集挑选，不改字段）。**⇒ 两条臂的 escape 数按构造恒为 0。**
+> 印出来的 `闭集 1332/1332 ✅` 是**恒真**，不是证据——它连"探针自己坏没坏"都发现不了。
+>
+> 补法是**自检臂 S**（`BackendGate.SELFTEST`，只在门内部）：把 object 类 intent 的 `amount` **+1**
+> 再交给 `Sim`。挑 `amount` 是因为它是唯一一个**既进 `_cand_key`、又不被引擎两条否决用到**的字段
+> （`_survival_ok` 只看 `need`，`_horizon_ok` 只看 dist+`dur_total`）⇒ 伪造的 intent 必然原样落地。
+>
+> | seeds 1-4 × 8 天 × N=12 | 伪造 | 探针抓到 | 被 `agent_apply` 原样落地 |
+> |---|---|---|---|
+> | seed 1 / 2 / 3 / 4 | 145 / 145 / 141 / 147 | **145 / 145 / 141 / 147**（不多不少） | **113 / 109 / 110 / 116** |
+>
+> 负对照（把 `inject_every` 改成 0 再跑）：本门 **exit 1**，消息是"本臂一次都没伪造成功…这条负对照没跑到"。
+>
+> **⇒ 这条臂证明的是：①探针有判别力；②"引擎不强制闭包"是量出来的（下面 §二 那句从此有数字）。
+> 它【不】证明任何出货后端会捏造 intent —— 上面刚说了，`random`/`slm` 结构上做不到。
+> C 是一道【回归门】，守的是未来任何新后端或 `parse_decision` 的一次改写，不是现有后端的合格证。**
 
 > ⚠ 口径细节：本门的饿穿计数跟 `Harness._run_once`（不按 agent 去重，一个人同时饿又困计 2），
 > 与 `BackendBench` 的 `starve_ticks`（per-agent-tick，带 `break`）**差一个 `break`**。
