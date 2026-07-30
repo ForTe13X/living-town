@@ -114,7 +114,7 @@ echo "### 2c. terrain gate (出货 game/assets/art/terrain 必须等于 slice_sh
 #    —— 这正是"容器字节必须是软判据"的现成例子。
 "$PY" tools/terrain_gate.py && ok "terrain gate（出货 terrain/ == 当场重建）" || bad "terrain gate（出货 terrain/ != slice_shore.py 当场重建的结果）"
 
-echo "### 2d. asset gate (H1 眼验判为 OK 的 10 张 emote/decor/obj png == 切图配方当场重建的结果)"
+echo "### 2d. asset gate (上门的 19 张 emote/decor/obj png == 切图配方当场重建 + 表情两两可分)"
 # H2（docs/50 §二）。与 2b / 2c 同一套形状的**第三个实例**（不是第三种形状）：当场从 CC0 库重建 → 解码后逐像素比对。
 # 由来：2c 抬头点名"其余 26 张仍然无门"，而 G5 刻意没上门的理由必须继承——
 #   **给没人眼验过的美术上门 = 把当前状态钉成"正确"**（池塘那个 bug 正是这样活了一个月）。
@@ -165,7 +165,7 @@ echo "### 2d. asset gate (H1 眼验判为 OK 的 10 张 emote/decor/obj png == �
 #   再加一种物件借 bench.png（第 6 个别名）⇒ 绿（那是 H3 的 OBJ_SLOT_ALIAS_BUDGET 的活）；
 #   渲染侧砍掉 emote 绘制 ⇒ 绿（门只看文件，看不见屏幕）。
 # ⚠️ 同 2b/2c：需要 Pillow，装不上直接红，不做 SKIP（SKIP 与 PASS 在汇总里都读作"没红"）。
-"$PY" tools/asset_gate.py && ok "asset gate（上门的 10 张 emote/decor/obj == 当场重建）" || bad "asset gate（上门的 10 张 != 切图配方当场重建的结果）"
+"$PY" tools/asset_gate.py && ok "asset gate（上门的 19 张 emote/decor/obj == 当场重建 + 表情可分）" || bad "asset gate（上门的 19 张 != 切图配方当场重建，或表情两两可分度跌破地板）"
 
 echo "### 3. godot import + parse smoke"
 "$GODOT" --headless --path game --import >"$LT_LOG/import.log" 2>&1 || true
