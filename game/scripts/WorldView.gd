@@ -422,7 +422,7 @@ const DIALOG := {
 # 视觉大改：地面分层 + 装饰散布（切图前自动回退）
 var _grass: Array = []   # 草地变体纹理（带权）
 var _grass_var := PackedByteArray()   # 每格的草地变体下标（_build_grass_var 一次性烘；合批用）
-var _decor_items: Array = []  # [{tex, cell:Vector2i, h_tiles}]
+var _decor_items: Array = []  # [{tex, cell:Vector2i, k:池内下标}]（I2：原注释里的 h_tiles 是死字段，已随 tree* 分支一起删）
 var _decor_built := false
 # P2-2 地形层：map.json 的 walls/water/trees（纯渲染；导航走 blockers 并集，与此无关）。start_new 时重建。
 var _path_set := {}      # idx(y*W+x) -> true（土路格：广场↔各家门口；渲染 + 装饰避让）
@@ -693,12 +693,20 @@ func _build_decor() -> void:
 		_build_paths()                    # 先有路，散装饰时才能避开它
 	var pool := []
 	# 树不再散布：P2-2 的可见树 = authored 阻挡树（_tree_cells）。程序化装饰只留贴地花草石（可踩，纯装饰）。
+	# ── I2 2026-07-30：这里原本还有两个 `tree*` 分支（H2 报的"699-700 两行死代码"）────────────────
+	# 	var tall := 2 if nm == "tree_big" else 1
+	# 	var weight := 3 if nm.begins_with("tree") else (10 if ...)
+	# `DECOR_POOL` 里**一个 `tree*` 都没有**（G3/H3 之后只剩 6 项花草石）⇒ 两个条件恒假。
+	# 顺着 `tall` 往下还有**一整条死链**，H2 只报到了头两行：
+	#   `tall`(恒 1) → `pool["h"]` → `_decor_items["h"]` → `_draw_body` 里的 `var th := int(it["h"])`
+	#   → **`th` 没有任何读者**（不写行号：行号会漂，这仓库已经为此纠正过三次）。
+	# 画的尺寸一直是从纹理量的（`dw/dh = tex.get_width()/16*T`），从来不看 `h`。四段一起删。
+	# **逐像素零改动是可证的，不是"看起来一样"**：`weight` 对现存 6 个名字取值不变（flower*=10，其余=6）
+	# ⇒ `total_w`、抽样、`k`、排序全序、布局逐格相同；`h` 从来不进任何 `draw_*` 调用。
 	for nm in DECOR_POOL:
 		var t := Art.decor_tex(nm)
 		if t != null:
-			var tall := 2 if nm == "tree_big" else 1
-			var weight := 3 if nm.begins_with("tree") else (10 if nm.begins_with("flower") else 6)
-			pool.append({"t": t, "h": tall, "w": weight})
+			pool.append({"t": t, "w": 10 if nm.begins_with("flower") else 6})
 	if pool.is_empty():
 		return
 	var total_w := 0
@@ -716,7 +724,7 @@ func _build_decor() -> void:
 			for pi in pool.size():
 				r -= int(pool[pi]["w"])
 				if r < 0:
-					_decor_items.append({"tex": pool[pi]["t"], "cell": Vector2i(x, y), "h": int(pool[pi]["h"]), "k": pi})
+					_decor_items.append({"tex": pool[pi]["t"], "cell": Vector2i(x, y), "k": pi})
 					break
 	# ★D7 合批：按【纹理】稳定排序（同纹理内保持原有先后）。散布【布局】一个字节没动，只改了画的次序
 	#   ⇒ 实测 427 次 draw call 塌成每种纹理一段。
@@ -2225,7 +2233,7 @@ func _draw_body() -> void:
 	if _ap("arealabels"):
 		_draw_area_labels()        # 区名画在墙【之后】（旧版画在顶墙格上，被墙盖掉，等于没画）
 
-	# 装饰散布（区域外草地上的树/花/草丛，确定性布局；在物件与居民之下）
+	# 装饰散布（区域外草地上的花/草丛/石，确定性布局；在物件与居民之下。**这里没有树**，见 _build_decor 抬头）
 	if not _decor_built:
 		_build_decor()
 	for it in _ac("decor", _decor_items):
@@ -2233,7 +2241,6 @@ func _draw_body() -> void:
 		var c: Vector2i = it["cell"]
 		if not _vis.has_point(Vector2(c.x * T, c.y * T)):
 			continue                       # 视口外的花草石不画（布局仍由 _build_decor 一次性确定，与相机无关）
-		var th: int = int(it["h"])
 		var dw := float(dtex.get_width()) * (float(T) / 16.0)
 		var dh := float(dtex.get_height()) * (float(T) / 16.0)
 		# 底对齐格子（高物件如树向上伸出）；四季色偏与草地同源

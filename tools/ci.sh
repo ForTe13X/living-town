@@ -123,9 +123,16 @@ echo "### 2d. asset gate (H1 眼验判为 OK 的 10 张 emote/decor/obj png == �
 # ⚠️ 范围是刻意窄的，另 16 张【故意不守】，这不是欠债，是本棒的要点：
 #   · 9 张 emote + obj/bath + obj/arcade —— H1 判「读不出」（九张白气泡最近的一对只差 6/400 px）⇒ 先重画再守；
 #   · decor/tree_big —— 判「需要重切」（它是树冠图集碎片，不是一棵树）；
-#   · building/{house,hut,shop} + decor/tree_small —— 判「从不出现」：`Art.building_tex()` 全仓**零调用点**、
-#     `tree_small` 不在 `WorldView.DECOR_POOL` 里。**给上不了屏的素材上门 = 把死资产钉成"正确"**（docs/50 §八）。
-#     门每次运行都**重新核**这两条；哪天有人接上线，它会红——那正是该重新眼验、重新决定的时刻（棘轮）。
+#   · decor/tree_small —— 判「从不出现」：它不在 `WorldView.DECOR_POOL` 里。
+#     **给上不了屏的素材上门 = 把死资产钉成"正确"**（docs/50 §八）。
+#     门每次运行都**重新核**这一条；哪天有人接上线，它会红——那正是该重新眼验、重新决定的时刻（棘轮）。
+#
+# ⚠️ **2026-07-30 I2 变更：building/{house,hut,shop} 那 3 张已经不在"不上门"里了——它们被【删掉】了。**
+#   H2 当初给的处置是"接线或删掉"，I2 眼验后选了删（docs/09 §1.1：消费者早在 `841d4c4` 就被当作
+#   用户报的「比例失调」头号成因拆掉；另两张还是图集竖条断口）。png / `Art.building_tex()` /
+#   `slice_visual.py` 的 3 行配方 / `asset_gate.NOT_GATED` 的 3 条**同批删除**。
+#   **棘轮没消失，是换了输入**：原来那条查 `building_tex` 调用点，而它的输入随函数一起没了 ⇒
+#   `check_deleted()` 改查"这三个名字有没有回来"（出货目录 / 切图配方 / `.gd` 非注释引用，三处任一即红）。
 #
 # ⚠️ 硬判据必须是**解码后 RGBA 逐像素**，不能是逐字节（docs/50 §二 坑①）：
 #    H1 实测重切 26 张 ⇒ **逐像素同 26/26、逐字节同 0/26**（出货那批当年被重新编码压缩过）。
@@ -139,8 +146,19 @@ echo "### 2d. asset gate (H1 眼验判为 OK 的 10 张 emote/decor/obj png == �
 #   ③ 删一张上门的（decor/stump）⇒ 红；删一张未上门的（emote/greet）⇒ **绿 + WARN**（刻意的，不在范围里）；
 #   ④ 把比对器改成恒返回"一样" ⇒ 门内每次都跑的逐张自检报 detected 0/10 ⇒ 红；
 #   ⑤ 重建源头指向出货目录 ⇒ 红（"这不是重建" / 只偷读一张也报"抄答案不是重建"）；
-#   ⑥ 把死资产接上线（building_tex 加 1 个调用点 / tree_small 进 DECOR_POOL）⇒ 红（棘轮生效）；
-#   ⑦ **把 building/hut 偷偷加进上门表** ⇒ 红「代码里到不了屏幕」——本棒最想拦的那个错是机检的，不是靠自觉。
+#   ⑥ 把死资产接上线（tree_small 进 DECOR_POOL）⇒ 红（棘轮生效）；
+#   ⑦ **把一张到不了屏幕的图偷偷加进上门表** ⇒ 红「代码里到不了屏幕」——最想拦的那个错是机检的，不是靠自觉。
+#   ⑧ **I2 加的 check_deleted，隔离副本 6 个变异逐条读判决行 + rc（不是推断）**：
+#        M0 未改动                                        rc=0 PASS ← 无假红
+#        M-a building/hut.png 回到出货目录                 rc=1 FAIL 点名该文件
+#        M-b slice_visual.py 三行配方加回来                rc=1 FAIL（check_deleted + 范围自证各自报）
+#        M-c .gd 里 `Art.tex("res://assets/art/building/hut.png")`  rc=1 FAIL 点名 WorldView.gd:690
+#        M-d `func building_tex` 原样加回并调用            rc=1 FAIL 点名 3 行
+#        M-e **只在注释里**提这两个词                       rc=0 PASS ← 负对照（旧判据在这里会假红）
+#      does_not_detect：**把 `check_deleted` 那一行删掉 ⇒ 全绿**（M-g 实测 rc=0）。
+#      这道判据没有"门自己会不会是假的"那层自检（`compare()` 有，靠每次跑的 1px 逐张牙齿），拆了没人拦。
+#   ⑨ **删资产必须连表一起删**（I2 实测）：只删 png + 配方行、`NOT_GATED` 还写着它们 ⇒ 范围自证的
+#      `phantom` 臂当场红「三张表里有 3 张配方根本产不出的图」rc=1。范围自证是**双向**的。
 # does_not_detect（同样是实测的，docs/41 §2.5 要求这一栏必须跑出来）：
 #   切图坐标与出货 png **一起**改 ⇒ 绿（bush 换成另一格瓦、124/256 px 不同，门一声不吭）；
 #   未上门那 16 张整张像素取反 ⇒ 绿；容器重编码（160→1108 B、像素不变）⇒ 绿；
