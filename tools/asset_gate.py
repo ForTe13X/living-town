@@ -15,13 +15,17 @@
 3. 爆炸半径：`art_gate.py` 是 G1/G2 的行，本波仍可能有别的棒动它；新文件零冲突。
 4. CI 里是独立一步（2d）⇒ 红的时候它自报家门，而不是让人去 2b 的输出里找是哪一类资产。
 
-## 它守的性质（**Wave I·I1 之后是两条**）
+## 它守的性质（**Wave J·J2 之后是三条**）
 
 1. **出货 == 配方**：眼验过的出货 png 必须等于配方现在能重建出来的东西。
 2. **（I1 新增）表情之间必须分得开**：上门的 10 张 emote 两两差必须过一个**量出余量之后才定**的地板。
    理由见下面「为什么 emote 从 9 张不上门变成 10 张上门」。
+3. **（J2 新增）切图配方不许从连着的美术中间切过去**：一条 crop 如果把图集里**连通的**一块
+   美术拦腰截断，切出来的就是**碎片**不是精灵。判据 = `bleed()`，见下面 `CUT_FRAC_FLOOR` 一节。
+   这一条**只判配方的几何**，不判画得好不好 —— 所以它可以（也必须）覆盖**没人眼验过**的图。
 
-另外 7 张**仍然故意不上门**，这不是偷懒，是 H2 那一棒的全部要点（docs/50 §〇·2 / docs/51 §三·4）：
+另外 1 张**仍然故意不上门**（性质 1 与 2 的意义上），这不是偷懒，是 H2 那一棒的全部要点
+（docs/50 §〇·2 / docs/51 §三·4）：
 
 > **给没有人眼验过（或已知画错、或根本上不了屏）的美术上门 = 把当前状态钉成"正确"。**
 > 池塘那个 bug 正是这样活了一个月。
@@ -43,8 +47,14 @@ H2 当时写的理由是对的：**那 9 张当时是坏的，钉住 = 把坏钉
 ⇒ 9 张 emote 从 `NOT_GATED` 挪进 `GATED`，并且**同时给它们加了第 2 条性质**（两两可分地板）
 ——只补第 1 条的话，一次"把 9 张又改回同一个图"的改动能全绿通过。
 
-- **obj/bath + obj/arcade（2 张）**：H1 判「读不出」——**先修再守**（本棒没动它们）。
-- **decor/tree_big（1 张）**：H1 判「需要重切」（它是树冠图集碎片，不是一棵树）。
+- **~~obj/bath + obj/arcade + decor/tree_big（3 张）~~ —— J2 2026-07-30 已重画，三张都进了 GATED。**
+  它们的配方从 ffmpeg crop 换成了 `slice_all.SPRITES` 的字符画（同 I1 给 9 张 emote 做的那条路）。
+  **三张的病不是同一种，这一点值得写下来**：`tree_big` 真的是**切错了**（右边界 27/32、下边界 29/32
+  个不透明像素，从别的树冠中间横切过去）；`bath`/`arcade` **一个像素都没切错**（四边各 0，正落在格线上）
+  ——它们错在**题材**：那两格画的是一口井和一根告示柱，而 `WorldView._draw_landmarks()` 里
+  **已经有**程序化的 `well` 与 `board`，`board` 就在 `arcade_1` 正下方 2 格。
+  "重切"这条路三张都走不通，理由见 `tools/slice_all.py` 抬头（整张表 45 个自足单格道具里 0 浴池 0 街机；
+  32×32 窗口全扫一遍也没有 2 格高的独立树）。
 - **decor/tree_small（1 张）**：H1 判「从不出现」——**不在 `WorldView.DECOR_POOL` 里**。
   本文件每次运行都**重新核**这一条（见下面自证④），不是抄 docs/51 的结论。
   给不上屏的素材上门 = 把一份死资产钉成"正确"，而它的正确处置是**接线或删掉**，两条路都会动到文件本身。
@@ -57,7 +67,16 @@ H2 当时写的理由是对的：**那 9 张当时是坏的，钉住 = 把坏钉
 `art_gate.py` 第 3 节的**小标题**写着"逐字节比对"，但它的代码从来就是**解码后 RGBA 逐像素**
 （`compare()` 比的是 `Image.load()` 出来的元组），容器字节只 print。**照抄它的代码是对的，
 照抄它的标题会害死人**——docs/50 §二 坑①：H1 在隔离目录重切全部 26 张，实测
-**逐像素相同 26/26、逐字节相同 0/26**（出货那批当年被重新编码压缩过）。真拿字节判红 ⇒ 干净树 26/26 假红。
+**逐像素相同 26/26、逐字节相同 0/26**。真拿字节判红 ⇒ 换一台机器就全假红。
+
+> ⚠️ **J2 更正了那个 0/26 的【机制】（结论不变，理由是错的）**。docs/51 §三·2 把它解释成
+> "出货那批当年被**重新编码/压缩过**，不是 ffmpeg 的原始输出"。**不成立**：
+> 我把两份配方原样放进 `gamecraft-runner:4.6.2` 容器里跑了一遍（ffmpeg 在容器里才有），
+> 与出货逐个比对 ⇒ **28/28 逐像素相同，而且 28/28 逐【字节】也相同**。
+> 差别只是 **ffmpeg 版本**：容器里是 **4.4.2**（Ubuntu 22.04），H1 当时用的是**宿主机的 8.1.2**。
+> ⇒ 出货文件没有被谁重新压缩过，它们就是容器 ffmpeg 的原始输出。
+> **判据必须是逐像素这一条照旧成立**，理由换成更结实的那个：**字节取决于编码器版本，
+> 而这道门要在任何人的机器上跑。**（本门的软判据比的又是第三个编码器：Pillow。）
 
 - **硬**：解码后的 RGBA 逐像素。这是真正进 Godot 纹理、真正上屏的那份数据。
 - **软**：本机 Pillow 重编码出来的 PNG 容器字节。**只打印，永不判红**（实测 0/19 相同）。
@@ -82,13 +101,53 @@ H2 当时写的理由是对的：**那 9 张当时是坏的，钉住 = 把坏钉
    - **"从不出现"的 `tree_small` 必须仍然不可达**（代码里零命中，注释不算）。
      哪天有人把它接上线，这条会红——**那正是该重新眼验、重新决定守不守的时刻**（棘轮，同 H3 的别名预算）。
    - **已删除的三张必须留在删除态**（`check_deleted()`：出货目录 / 切图配方 / `.gd` 非注释引用，三处都不许有）。
+5. **（J2 新增）切图配方不许拦腰截断连通的美术**（`bleed()` + `CUT_FRAC_FLOOR`）。
+   它与上面四条的关键差别：**它判的是配方，不是出货像素**，所以它对
+   **还没有人眼验过的图**照样有话说 —— 而那正是 `house` / `shop` / `tree_big` 三次都缺的那道门。
 
 ## 明确不做
 
 - **不查画得好不好、不查"读出来是不是那个情绪"**。门能判"这两张不一样"，判不了"这张是道歉"
   ——后者只有人眼能判（I1 的眼验图见回执）。两两地板拦得住"又变回一个样"，拦不住"十张都很丑但互不相同"。
+- **不给 obj 立两两可分地板**（J2 量过之后放弃的，理由要写下来，别让下一棒再想一遍）：
+  9 张 obj/decor 的两两源像素差里，`obj/counter` vs `obj/desk` 只有 **17/256**（H1 早就报过），
+  而其余最近的一对是 **86/256**。任何能拦住"两件家具画成同一张"的地板都会**在干净树上判红**，
+  而修法是重画 counter/desk —— 那是另一棒的活。**先量再定地板**的结论有时候是"今天定不了"。
 - **不查别名**（一张 bench.png 服务五种物件）——那是 H3 的 `OBJ_SLOT_ALIAS_BUDGET`。
 - **不对 7 张未上门的图判红**（缺失/多余只 WARN），理由见上。
+
+## 探测包络（docs/41 §2.5；J2 2026-07-30 复跑，隔离副本，逐条读 rc 与判决行）
+
+```
+detects（11 个变异体里 8 个变红，rc 均为 1）：
+  A2 把 decor/tree_big 单独退回 HEAD 的切图路线 ⇒ 断口臂红并点名「56/128 = 0.438」
+     ★ 这一条是在【未改动的树】上跑的（docs/41 §6 ★），不是只在我造的变异体上
+  A  整棵树退回 HEAD（三张图 + 两份配方）⇒ 红两处（断口 + SPRITES 空）
+  E  把旧 crop 加回 slice_visual（配方与自绘表同产一张）⇒ 断口红 + 逐像素 768 px 不同
+  B/C/D  obj/bath · obj/arcade · decor/tree_big 各翻 1 px ⇒ 各自红并点名那一张
+  G  清空 slice_all.SPRITES ⇒ 红两处（配方没了 + 三张表里 3 张幽灵）
+  H  把 render_drawn() 改成读出货 png ⇒ 红「抄答案不是重建」，点名 3 个文件
+  F  把 tree_small 塞进 WorldView.DECOR_POOL ⇒ 红（I2 那条自检④的臂**仍然有牙**）
+
+does_not_detect（3 个变异体实测**全绿 rc=0**，不是推断）：
+  I  把 tree_big 改成一块 32×32 纯色方块，**配方与出货一起改** ⇒ PASS。
+     ⇒ 性质①只说「出货 == 配方」，它对「美术变差了」结构上失明。
+  J  把 arcade 换回切图，落在另一个**自足但题材错**的格子 (8,30) ⇒ 断口 0.000 ⇒ PASS。
+     ⇒ 断口臂只看「crop 有没有切断连着的美术」，看不见「切得很干净但画的是别的东西」
+        —— 而 bath/arcade 得的正是后面这个病（旧 crop 四边断口各 0）。**这一栏是本棒最该被读到的一行。**
+  K  把 obj/counter 与 obj/desk 做成同一张 ⇒ PASS（obj 没有两两可分地板，理由见上「明确不做」）。
+  另外三处结构性盲区（不需要变异体就能说清）：
+   · **自绘的 12 张对断口臂天然免疫**——它们没有「框外」。今天 23 张里 12 张不在这条臂的射程内。
+   · **terrain 那 5 张被排除在断口臂之外**（满铺瓦按设计就是无缝的：grass_a 0.500 / dirt 1.000 / water 1.000）。
+   · **断口臂对 `building/hut` 会判阳（0.297 ≥ 0.10），而 H1 说它是「唯一一张完整可用的 1×1 小屋」。**
+     两边都对：它确实是一整块房屋图集左上角的那一格，只是那一格看起来像小屋。
+     ⇒ 这条臂说的是「这条 crop 切断了连通的美术」，不是「切出来的东西不好看」。（hut 已被 I2 删除，今天不误伤在架资产。）
+
+confidence：N=11（8 红 / 3 绿）。断口臂的地板 0.10 标定在 4 个阳性 + 12 个阴性上：
+  阳性 building/shop 0.474 · decor/tree_big(旧) 0.438 · building/hut 0.297 · building/house 0.188
+  阴性 11 条并列 **0.000**，最高的是 decor/tree_small **0.031**
+  ⇒ 阴性最高值到地板 3.2x，地板到最低阳性 1.9x。**两侧都有余量**，不是贴着边定的。
+```
 
 用法:
     python tools/asset_gate.py            # 门：PASS ⇒ exit 0，FAIL ⇒ exit 1
@@ -120,11 +179,14 @@ SLICERS = (os.path.join(TOOLS, "slice_all.py"), os.path.join(TOOLS, "slice_visua
 # 留着，出货目录里再冒出**任何**一张 building/*.png 都会被 stray 那条报出来（DELETED 只点名那 3 个）。
 SHIPPED_DIRS = ("emote", "decor", "obj", "building")
 
-# ── 上门的 19 张（decor6+obj3 来自 docs/51 §三·4 的 H1 真机眼验；emote10 见上，I1 重画+眼验）──
+# ── 上门的 22 张（decor6+obj3 来自 docs/51 §三·4 的 H1 真机眼验；emote10 见上，I1 重画+眼验；
+#    obj/bath + obj/arcade + decor/tree_big 是 J2 重画+眼验）────────────────────────────────
 GATED = {
     "decor/bush", "decor/flower_red", "decor/flower_yellow",
     "decor/rock", "decor/stump", "decor/mushroom",
     "obj/bench", "obj/counter", "obj/desk",
+    # J2 自绘的 3 张：配方在 tools/slice_all.py 的 SPRITES 里（字符画 → render_drawn() 纯函数重建）。
+    "obj/bath", "obj/arcade", "decor/tree_big",
     # emote 10 张：confront 是 CC0 切片（H1 眼验判 OK，像素未动）；其余 9 张是 I1 自绘，
     # 配方在 tools/slice_all.py 的 GLYPHS 里（字符画 → render_glyph() 纯函数重建）。
     "emote/confront",
@@ -136,14 +198,20 @@ GATED = {
 # 上门 emote 里哪些必须两两分得开（= 全部 10 张，因为 10 张都会画在同一个位置表达不同的事）
 DISTINCT_SET = sorted(k for k in GATED if k.startswith("emote/"))
 
-# ── 不上门的 7 张，逐条写明理由。**这张表和上面那张必须并起来盖住整份配方**（自证④）────
+# ── 不上门的 1 张，写明理由。**这张表和上面那张必须并起来盖住整份配方**（自证④）──────────
 NOT_GATED = {
-    "obj/bath": "读不出：真机读作「木箱压在石槽上」（docs/51 §一 obj 表）—— 先重画再守",
-    "obj/arcade": "读不出：真机读作「木牌/告示柱」，而广场 3 格外就是真告示板 —— 先重画再守",
-    "decor/tree_big": "需要重切：它是 2x2 树冠【图集碎片】不是一棵树，156 格平铺成壁纸（docs/51 §二·3）",
     "decor/tree_small": "从不出现：不在 WorldView.DECOR_POOL 里（本门自证④每次重核）—— 该接线或删掉，不是该钉住",
     # building/{house,hut,shop} 曾经在这里，理由是「从不出现：Art.building_tex() 全仓零调用点」。
     # I2（2026-07-30）执行了这条注释自己开的第二条药方——**删掉**。它们现在归下面的 DELETED 管。
+    #
+    # obj/bath、obj/arcade、decor/tree_big 也曾经在这里（H1 判「读不出」/「需要重切」）。
+    # J2（2026-07-30）执行了「先重画再守」——三张已重画并进 GATED。
+    # ⚠️ **这张表现在只剩一条，而它正是自证④「死资产必须仍然是死的」那条臂唯一的活输入**
+    #    （I2 特意留下 tree_small 的第二个理由）。J2 没有消费它：`tree_big` 是**自绘**的，
+    #    不是从 tree_small 重切的 ⇒ 这条臂的输入原封不动，仍然会红（J2 复跑了 I2 的负对照：
+    #    把 "tree_small" 塞进 WorldView.DECOR_POOL ⇒ rc=1）。
+    #    **它同时也是本门"不上门也要盖住"这条范围纪律的最后一个实例**：这张表空了的那天，
+    #    `unclassified` 那条臂就再没有"故意不守"的对照面了。
 }
 
 # ── 配方里还有 5 张 terrain —— 它们**已经有门了**（G5 的 tools/terrain_gate.py）────────────
@@ -231,16 +299,20 @@ def harvest_recipes():
     recs = {}
     bad = []
 
-    # ① 自绘配方：**import** slice_all（不是 exec）拿 GLYPHS —— 它有 main 守卫，import 零副作用。
+    # ① 自绘配方：**import** slice_all（不是 exec）拿 GLYPHS / SPRITES —— 它有 main 守卫，import 零副作用。
     #    这里刻意不抄一份字形表：门里出现第二份坐标/像素，两份就会各自漂（docs/50 §二 原话）。
     try:
         import slice_all as _sa
         if not getattr(_sa, "GLYPHS", None):
-            bad.append("slice_all.GLYPHS 是空的 —— 自绘配方没了，不能静默放行")
+            bad.append("slice_all.GLYPHS 是空的 —— 自绘表情的配方没了，不能静默放行")
+        if not getattr(_sa, "SPRITES", None):
+            bad.append("slice_all.SPRITES 是空的 —— 自绘世界精灵的配方没了，不能静默放行")
         for _name in getattr(_sa, "GLYPHS", {}):
-            recs["emote/%s" % _name] = {"drawn": _name}
+            recs["emote/%s" % _name] = {"drawn": "emote/%s" % _name}
+        for _key in getattr(_sa, "SPRITES", {}):
+            recs[_key] = {"drawn": _key}
     except Exception as e:                          # noqa: BLE001 —— 任何 import 失败都必须判红
-        bad.append("import slice_all 失败（%s）—— 拿不到自绘表情的配方" % e)
+        bad.append("import slice_all 失败（%s）—— 拿不到自绘资产的配方" % e)
 
     orig_run, orig_makedirs = subprocess.run, os.makedirs
 
@@ -295,8 +367,8 @@ def rebuild(recs, keys):
 
     两种配方走两条路：
     - `{"sheet","box"}` ⇒ 从 CC0 源表 crop（老路，读文件）。
-    - `{"drawn"}`       ⇒ 调 `slice_all.render_glyph()`（**一个文件都不读**：它是纯函数，
-                          字符画写在配方源码里）。所以自绘那 9 张的"重建独立于出货目录"
+    - `{"drawn"}`       ⇒ 调 `slice_all.render_drawn()`（**一个文件都不读**：它是纯函数，
+                          字符画写在配方源码里）。所以自绘那 12 张的"重建独立于出货目录"
                           比切片那批还强 —— 它压根没有可抄的答案。
     """
     import slice_all as sa
@@ -317,7 +389,7 @@ def rebuild(recs, keys):
         for key in sorted(keys):
             r = recs[key]
             if "drawn" in r:
-                w, h, px = sa.render_glyph(r["drawn"])
+                w, h, px = sa.render_drawn(r["drawn"])
                 im = Image.new("RGBA", (w, h))
                 im.putdata(px)
                 out[key] = im
@@ -520,6 +592,84 @@ def distinctness(shipped):
     return out
 
 
+# ── J2 新增的第 3 条性质：切图配方不许从连着的美术中间切过去 ────────────────────────────
+#
+# ## 病历：同一种病，三张图，三次都是人眼在事后发现的
+#
+#   `building/house`(16×64)、`building/shop`(32×64)、`decor/tree_big`(32×32) —— H1 与 I2 都
+#   逐字写过"这是从图集里竖着/横着切下来的多格条带，四边都是断口"。三次都没有门。
+#
+# ## 判据：**bleed** —— 框外紧贴着框边的那一圈里，有多少个不透明像素**连着框内的不透明像素**
+#
+#   连着 ⇒ 那块美术在框外还在继续 ⇒ 这条 crop 从它中间切过去了。
+#   `bleed/perimeter` 就是"周长里有多大比例是断口"。**注意它判的是【配方】不是【出货 png】**：
+#   自绘的图没有"框外"，所以结构上不适用（见 does_not_detect）。
+#
+# ## 地板是量出来的，而且第一版判据被自己的量具否掉了（这一段值得留着）
+#
+#   我先写的是"出货 png 的左/右/上边界不许有不透明像素"（更简单，也更直觉）。
+#   拿历史上四个已知实例一量，它**判反了**：
+#     building/house 0.156、building/shop 0.203 —— 两张公认的碎片，**分数比** building/hut 0.688 低，
+#     而 hut 是 H1 亲口说的"唯一一张完整可用的 1×1 小屋"。
+#   ⇒ 那个判据只在我造它时用的那一个例子上成立。换成 bleed 之后（同样四个实例 + 12 张阴性）：
+#
+#     阳性（已知碎片）：shop 0.474 · tree_big(旧) 0.438 · hut 0.297 · house 0.188
+#     阴性（decor/obj/emote 的其余 crop）：11 张**并列 0.000**，最高的是 decor/tree_small 0.031
+#
+#   floor = 0.10：阴性最高值到地板 3.2x，地板到最低阳性 1.9x。**两侧都有余量。**
+#
+# ## 两个必须写明的边界
+#
+#   ① **terrain 那 5 张按设计就是满铺的**（grass_a 0.500 / dirt 1.000 / water 1.000）——
+#      它们本来就该无缝平铺。所以本臂**只覆盖 emote/decor/obj**（= GATED ∪ NOT_GATED），
+#      terrain 归 terrain_gate。这不是给判据开后门，是"满铺瓦"和"精灵"本来就是两类东西。
+#   ② **`hut` 会被判成碎片，而 H1 说它完整**。两边都对：它确实是一整块房屋图集的左上角那一格，
+#      只是那一格**看起来**像一间小屋。⇒ 本臂说的是"这条 crop 切断了连通的美术"，
+#      **不是**"切出来的东西不好看"。它今天不误伤任何在架资产（hut 已被 I2 删除）。
+CUT_FRAC_FLOOR = 0.10
+
+
+def bleed(sheet_img, box):
+    """(断口像素数, 周长)。断口 = 框外紧贴框边、且与框内不透明像素 4-邻接的不透明像素。"""
+    l, t, r, b = box
+    W, H = sheet_img.size
+    px = sheet_img.load()
+
+    def op(x, y):
+        return 0 <= x < W and 0 <= y < H and px[x, y][3] > 0
+
+    n = 0
+    for x in range(l, r):
+        if op(x, t - 1) and op(x, t):
+            n += 1
+        if op(x, b) and op(x, b - 1):
+            n += 1
+    for y in range(t, b):
+        if op(l - 1, y) and op(l, y):
+            n += 1
+        if op(r, y) and op(r - 1, y):
+            n += 1
+    return n, 2 * ((r - l) + (b - t))
+
+
+def check_cut_edges(recs, keys):
+    """返回 [(key, frac, n, perim)]，按 frac 降序。调用方拿 CUT_FRAC_FLOOR 判红。"""
+    out = []
+    sheets = {}
+    for key in sorted(keys):
+        r = recs.get(key) or {}
+        if "sheet" not in r:                 # 自绘：没有"框外"，结构上不适用
+            continue
+        sp = r["sheet"]
+        if sp not in sheets:
+            with Image.open(sp) as im:
+                sheets[sp] = im.convert("RGBA")
+        n, perim = bleed(sheets[sp], r["box"])
+        out.append((key, n / float(perim) if perim else 0.0, n, perim))
+    out.sort(key=lambda t: -t[1])
+    return out
+
+
 def check_elsewhere():
     """ELSEWHERE 里的每一张，另一道门是否**真的**还在守？返回 (漏网的 key 列表, 错误串或 None)。
 
@@ -552,7 +702,8 @@ def main():
         print("  ❌ FAIL: %s" % m)
         fail = 1
 
-    print("### asset gate：①上门的 %d 张出货 png == 切图/自绘配方当场重建；②上门的 %d 张 emote 两两分得开"
+    print("### asset gate：①上门的 %d 张出货 png == 切图/自绘配方当场重建；②上门的 %d 张 emote 两两分得开；"
+          "③配方里没有一条 crop 从连着的美术中间切过去"
           % (len(GATED), len(DISTINCT_SET)))
     print("  配方 %s + %s" % (_rel(SLICERS[0]), _rel(SLICERS[1])))
     print("  出货 %s/{%s}" % (_rel(ART), ",".join(SHIPPED_DIRS)))
@@ -607,6 +758,32 @@ def main():
     if not unclassified and not phantom:
         ok("范围自证：配方 %d 张 = 上门 %d + 不上门 %d + 别的门管 %d，逐名对齐（0 未分类 / 0 幽灵）"
            % (len(recs), len(GATED), len(NOT_GATED), len(ELSEWHERE)))
+
+    # ── 1a. 第 3 条性质：配方里没有一条 crop 从连着的美术中间切过去（J2）─────────────
+    #     范围是 GATED ∪ NOT_GATED（= emote/decor/obj），**刻意包含没上门的那一张**：
+    #     这一条判的是配方几何，不是"art 好不好"，所以它对没人眼验过的图恰恰最该开口
+    #     —— house / shop / tree_big 三次都是缺这道门。terrain 不在范围里（满铺瓦按设计就该无缝）。
+    cut_scope = (GATED | set(NOT_GATED)) & set(recs)
+    cuts = check_cut_edges(recs, cut_scope)
+    if not cuts:
+        warn("没有一条 crop 落在本臂范围内（%d 张全是自绘）—— 断口判据这次没有可判的对象" % len(cut_scope))
+    else:
+        over = [c for c in cuts if c[1] >= CUT_FRAC_FLOOR]
+        if over:
+            bad("有 %d 条 crop 从图集里**连通的**美术中间切过去（断口占周长 ≥ %.0f%%）：\n%s\n"
+                "        切出来的是【碎片】不是【精灵】—— building/house·shop 与 decor/tree_big 都是这么来的。\n"
+                "        修法：把 crop 挪到自足的格子上；如果表里根本没有这个东西，就改自绘"
+                "（tools/slice_all.py 的 SPRITES）。"
+                % (len(over), CUT_FRAC_FLOOR * 100,
+                   "\n".join("        · %s  断口 %d/%d = %.3f" % (k, n, p, f) for k, f, n, p in over)))
+        else:
+            worst = cuts[0]
+            tied = [k for k, f, n, p in cuts if abs(f - worst[1]) < 1e-9]
+            ok("断口自证：%d 条 crop 逐条自足（最大断口 %s = %.3f < %.2f，余量 %s；自绘 %d 张不适用）"
+               % (len(cuts), worst[0], worst[1], CUT_FRAC_FLOOR,
+                  ("%.1fx" % (CUT_FRAC_FLOOR / worst[1])) if worst[1] > 0 else "∞（断口为 0）",
+                  len(cut_scope) - len(cuts)))
+            print("     ℹ  并列在最大值 %.3f 上的 crop：%s" % (worst[1], ", ".join(tied)))
 
     orphan, ew_err = check_elsewhere()
     if ew_err:
@@ -770,8 +947,11 @@ def main():
         print("  ℹ  PNG 容器字节（软判据，**不判红**）：%d/%d 张与本机 Pillow %s 重编码逐字节相同"
               % (reenc_same, reenc_cmp, PIL.__version__))
         if reenc_same != reenc_cmp:
-            print("     （预期如此：出货这批当年被重新编码压缩过 —— 逐像素 %d/%d 同、逐字节 %d/%d 同。"
-                  "拿字节判红 = 干净树全假红，docs/50 §二 坑①）" % (same, files_cmp, reenc_same, reenc_cmp))
+            print("     （预期如此，**理由不是「出货被重新压缩过」**：这一行比的是 Pillow 编出来的字节，"
+                  "而出货是容器 ffmpeg 4.4.2 / 本仓自绘编码器写的 —— 三个编码器，字节当然不同。\n"
+                  "      J2 实测：把两份配方原样放回容器跑一遍，28/28 逐【字节】相同。"
+                  "字节随编码器版本走 ⇒ 拿它判红 = 换台机器就全假红。逐像素 %d/%d 同、逐字节 %d/%d 同。）"
+                  % (same, files_cmp, reenc_same, reenc_cmp))
 
     # ── 5b. 第 2 条性质：上门的 emote 两两必须分得开（I1 新增）────────────────────
     dset = {k: shipped_imgs[k] for k in DISTINCT_SET if k in shipped_imgs}
