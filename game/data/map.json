@@ -81,6 +81,18 @@
     6
    ],
    "type": "plaza"
+  },
+  "dock": {
+   "_why": "F5 新增的滩头。为什么它必须写在 map.json 而不是 production.json（F1 把所有新数据都塞进后者，为的是『摘掉那个文件=逐字节回到今天』）：工位的区域归属有【两道】门，运行期 Sim._compile_worksites 与静态 tools/audit_map.py，而后者只读 map.json 的 areas。把区放进 production.json 只能骗过前一道。★这条零扰动因此变成【两段】而不是一段：本区【空着】的时候必须逐字节不动（已实测：12/12 金标 + pre-E1 消融两侧都成立），机制的开关仍然只是 production.json。★代价明写：本区是全镇第 9 个 area，而 area 是 _nearby_agents 的桶——它按构造【就是】一个新的社交场所（F1 说的那句话是对的）。矩形【不含水格】是刻意的：_area_centroid 会被 attend 承诺与 N>12 扩容当作寻路目标，含水格会把质心算到 blockers 上。",
+   "label": "滩头",
+   "rect": [
+    30,
+    7,
+    4,
+    2
+   ],
+   "_type_why": "★type 不是自由文本，它【只】被视图层读，而且是按白名单读的：WorldView.gd:753-756 对任何 type != \"\" 且 != \"plaza\" 的区一律【当建筑画】，调色板走 BLD_PAL.get(typ, BLD_PAL[\"workshop\"]) —— 认不出的 type 会静默退化成工坊灰石墙。第一版我写的是 \"waterfront\"，出图实测（post_dock_2x 的前一版）：滩头被画成一块【带屋顶的灰色小房子】压在水边。改成 \"plaza\"：这个值在三个绘制循环里都被特判（铺装地面、不画墙、不画招牌），也就是唯一一个『开阔公共场地』的表达。语义上它就是一条石铺的水岸。Sim 侧【从不读】areas[*].type（只读 rect 与 label），所以这一改是纯视图的，金标必须一字不动——已实测 12/12 逐字节。",
+   "type": "plaza"
   }
  },
  "blockers": [

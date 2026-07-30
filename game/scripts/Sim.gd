@@ -1629,6 +1629,14 @@ func _object_candidates(ag: Dictionary) -> Array:
 	# 实测把它压到 hunger 上时，广场脏 → 摊位的赶集从 95 次/seed 掉到 27 次/seed：
 	# 一个"脏"的乘子把一条【食物供给】掐掉了 2/3。mods_ok 生存门保证了它不会造成饿穿，
 	# 但把乘子从生存需求上【结构性地】摘掉，比"有一道门拦着"强一档：门可能被改，白名单在数据里。
+	# ★F5 修：这条白名单此前【fail-open】——判据写的是 `cl_needs.is_empty() or need_id in cl_needs`，
+	#   于是把 `needs` 键删掉/写成空数组，白名单的意思就从"只有这两样"翻成了"所有需求"，
+	#   hunger 立刻重新被脏度打折。一个"空=全部"的白名单是白名单的反面。
+	#   实测负对照（seeds 1-3 × 60 天，删掉 needs 键、其余不动）：摊位的赶集 153/159/147 → 43/79/54，
+	#   与上面那条 F1 记下的症状逐字重现 ⇒ 上面那句"白名单在数据里"在修之前是【不成立】的。
+	#   改成 `need_id in cl_needs`：缺键/空数组 ⇒ 恒 false ⇒ 整洁乘子整个不施加（缺数据即零扰动，
+	#   与 rhythm/weather/season 的 off 门同一条约定）。**对出货数据是逐字节 no-op**——
+	#   `needs` 现在是 ["fun","social"]、非空，两种写法在它上面完全等价（已用 12/12 金标验过）。
 	var cl_needs: Array = _as_arr(cl_cfg.get("needs", []))
 	var cl_on := mods_ok and not cl_areas.is_empty()
 	var cl_mult := _clean_mult() if cl_on else 1.0
@@ -1672,7 +1680,7 @@ func _object_candidates(ag: Dictionary) -> Array:
 			if sn_on:
 				benefit *= _season_mult(action)           # Wave 3b：当季压某些活动偏好(≤1 dampen-only)
 			if cl_on and String(adv.get("job", "")) == "" and String(o.get("area", "")) in cl_areas \
-					and (cl_needs.is_empty() or need_id in cl_needs):
+					and need_id in cl_needs:
 				benefit *= cl_mult                       # F1：镇上脏 → 该区活动打折。工位广告位【不打折】——
 				                                         # 越脏越该有人来扫，不是越脏越没人来扫（否则环卫是个负反馈自锁）
 			var score := benefit - float(dist) * _w("obj_dist_penalty", 0.4)
