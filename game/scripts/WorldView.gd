@@ -45,9 +45,9 @@ const P_PUB_FACE     := Color("#7c8a92")   # gpl pub-wall-face
 const P_PUB_TOP      := Color("#a7b3ba")   # gpl grass-winter / pub 墙 top（docs/44 §二 吸收 #9fabb2）
 const P_PUB_FOOT     := Color("#556169")   # gpl pub-wall-foot
 const P_PUB_ROOF     := Color("#5a86b0")   # gpl pub-roof
-const P_WRK_FACE     := Color("#82868f")   # gpl wrk-wall-face
-const P_WRK_TOP      := Color("#a0a4ac")   # gpl wrk-wall-top
-const P_WRK_FOOT     := Color("#585c64")   # gpl wrk-wall-foot
+const P_WRK_FACE     := Color("#82868f")   # gpl wrk-wall-face（**只剩室内用途**：浴池石沿。建筑外墙见 X_WRKW_*）
+const P_WRK_TOP      := Color("#a0a4ac")   # gpl wrk-wall-top（同上，只剩井沿高光）
+const P_WRK_FOOT     := Color("#585c64")   # gpl wrk-wall-foot（同上，只剩咖啡机顶盖/灶面）
 const P_WRK_ROOF     := Color("#3f4b50")   # gpl wrk-roof（docs/44 §二 吸收 #3e4a5a）
 const P_RES_FLOOR    := Color("#c8a273")   # gpl res-floor-base
 const P_RES_LINE     := Color("#9c7748")   # gpl res-floor-line
@@ -73,7 +73,24 @@ const P_TEXT         := Color("#e8e1d2")   # gpl ui-text（暖白：纸/布/奶�
 const P_PANEL        := Color("#22252a")   # gpl ui-panel（最深轮廓）
 const P_NIGHT        := Color("#59627f")   # gpl night-multiply（此前代码零使用，本棒启用为冷紫暗面）
 
-# ── 扩表（17 个，gpl 覆盖不到）──
+# ── 扩表（20 个，gpl 覆盖不到）──
+## ★ E5 新增三个（X_WRKW_*）：**工坊建筑外墙**从 gpl 的 wrk-wall-* 里分出来。
+##   起因是 docs/44 §二 自己点名的「夜间最容易糊」那一对，而 §四·五 的 D6 回执报的是另外两对（W2）。
+##   E5 把量具补齐后实测（四昼夜档 × 四季 × 三天气，合成后再算）：
+##     public↔workshop 墙 face **夜 0.99 / 全局最差 0.62**、foot **1.06 / 0.66**、top **2.20 / 1.56**
+##     —— 三段【全部】在 JND(2.3) 以下，不是只有 §四·五 报的那两对。
+##   机制是可以写清楚的：夜乘子 (0.4242,0.4714,0.7972) **最不压蓝**，所以差异**落在蓝通道上才活得过夜**。
+##   而 gpl 里这两族的蓝通道只差 3/255（146 vs 143）——它们的区别全押在 R/G 上，正好是被压掉的那两个。
+##   ⇒ 治法不是"再挑一个灰"，是**把工坊搬到暖灰石一族**（代码自己的注释就写着 public=灰蓝石 / workshop=灰石，
+##     只是色值没兑现），这样差异天然落在 b* 上。三个值由 P_STONE 派生（不是新色相）：
+##       face = P_STONE.darkened(0.26) / top = P_STONE.lightened(0.04) / foot = P_STONE.darkened(0.56)
+##     （BLD_PAL 是 const 字典，不能引用 var 派生档 ⇒ 只能写成字面量；派生式写在这里，改 P_STONE 时照它重算。）
+##   代价与收益逐项量过（见报告）：face↔pub 0.62→3.75、top↔pub 1.56→3.54、foot↔pub 0.66→3.98，
+##   face↔工坊区地板 2.93→3.89，三段自身 face↔top 3.06→4.38、face↔foot 4.31→4.44。**没有一项退步。**
+##   `P_WRK_ROOF`（深蓝黑顶）**原样不动**——它正是 docs/44 §二 自己开的那副药，动了就把药也拆了。
+const X_WRKW_FACE    := Color("#736f68")   # 工坊外墙·主面 = P_STONE.darkened(0.26)
+const X_WRKW_TOP     := Color("#9f9a92")   # 工坊外墙·顶棱 = P_STONE.lightened(0.04)
+const X_WRKW_FOOT    := Color("#44423e")   # 工坊外墙·墙脚 = P_STONE.darkened(0.56)
 const X_WOOD_MID     := Color("#6e4d31")   # 木器中段。gpl 的棕阶从 com-wall-foot(L30) 直跳 res-wall-foot(L47)，而全镇的门/家具体/柱/树干都落在这个空档里
 const X_VOID_BASE    := Color("#0b1209")   # 界外深林底 —— 必须逐字节等于 project.godot 的 default_clear_color（该文件不在本棒独占集内，改不了）
 const X_VOID_SPILL   := Color("#8fb36a")   # 镇子漏进林子的光。gpl 没有「溢光」这一档
@@ -107,7 +124,11 @@ var D_STAIR          := P_PLAZA_LINE.darkened(0.22)  # 楼梯踏板
 var D_STAIR_TOP      := P_PLAZA_LINE.lightened(0.10) # 楼梯踏面高光
 var D_RUG_RED        := P_COM_ROOF.darkened(0.24)    # 地毯·暖红（卧房/默认）
 var D_RUG_OLIVE      := P_PLAZA_LINE.darkened(0.30)  # 地毯·橄榄（茶座/咖啡）
-var D_RUG_TEAL       := P_WATER_DEEP.darkened(0.20)  # 地毯·青（浴/盥洗）：0.12 时地毯↔地板只剩 dE00 3.9（全表最窄），压到 0.20 拉回 6.5
+## 地毯·青（浴/盥洗）。D6 原写 0.20，理由是「0.12 时地毯↔地板只剩 dE00 3.9（全表最窄），压到 0.20 拉回 6.5」。
+## **那个 6.5 是白天、锚点对锚点量的。** E5 把它放进四昼夜档 × 四季 × 三天气再量：最差只剩 **2.10**
+## （冬雨夜；出货气候的夜里也只有 2.96）——D6 那次调参解决的是白天，夜里它又滑回 JND 附近。
+## 压到 0.38：最差 **4.01**，出货气候夜里 5.0+。这是 D6 那条「白天量的色差不能外推到夜里」在同一张表上的第二例。
+var D_RUG_TEAL       := P_WATER_DEEP.darkened(0.38)
 var D_BOOK_BLUE      := P_PUB_ROOF.darkened(0.28)    # 书脊·蓝（书架与书堆共用同一套三色）
 ## 室内取景的界外底。原值 #0e1017 直接并进 P_PANEL 会把它抬亮 dE00 6.3，而它铺满约 59% 的画面
 ## ——`_draw_interior_backdrop` 的整个设计（"镜头在屋外的暗处往里看"）就靠这块底比室内暗。
@@ -263,6 +284,19 @@ enum RelMode { ALL, SELECTED, OFF }
 const REL_TOP_K := 3           # 每人只保留最强的 K 条（一条边在任一端的 top-K 里就留 → 强关系不会被单侧挤掉）
 const REL_MIN_AFF := 20.0
 const REL_FADE_PX := 520.0     # 屏幕长度超过它开始变淡：横穿全镇的长线信息密度最低，却最挡视线
+## ★ E5/W4 · 关系线的 alpha **下限**。
+## 原式 `(0.26 + t*0.52) * fade * focus` 有三个可以同时取到下界的因子：
+##   t=0（affinity 刚过 REL_MIN_AFF）× fade=0.25（横穿全镇的长线）× focus=0.55（不是选中者的线）
+##   ⇒ **a = 0.26 × 0.25 × 0.55 = 0.0358**。
+## 把这一档按【真实合成】量出来（sRGB 混色 → 大气罩 → 昼夜乘子；合成律见报告的标定一节）：
+##   压在草地上 ΔE00 **0.27-0.54**、土路 1.02-1.27、广场 0.78-1.97 —— **全部远低于 JND 2.3**。
+## 也就是说这条线**被画了出来、占了 draw call、却一个人也看不见**。评审报的 "0.52-1.29" 正是这一档
+## （不是"关系线普遍看不见"：同一条线在典型档 a=0.468 上是 4.48-6.50）。
+## 解法不是取消衰减（衰减本身有理由：长线信息密度最低），而是给它一个**能被看见的地板**：
+##   实测 a=0.36 时最弱一档回到 **2.68**（正向绿压在春草上、夜、这是全表最难的一格），
+##   a=0.30 只有 2.24 —— 还差一点。取 0.36。
+## 负向红在 a=0.12 就过 JND；地板由**正向绿压在草上**这一格决定，因为它天生是"绿画在绿上"。
+const REL_A_FLOOR := 0.36
 var rel_mode: int = RelMode.ALL   # Main 可直接改这个属性（本 baton 不动 Main，故不加键位）
 
 var _prev_pos := {}      # id -> Vector2i（推断朝向/行走）
@@ -405,7 +439,7 @@ const BLD_PAL := {
 	"residential": {"face": P_RES_FACE, "top": P_RES_TOP, "foot": P_RES_FOOT, "roof": P_RES_ROOF},                    # 暖木墙+红瓦顶
 	"commercial":  {"face": P_COM_FACE, "top": P_COM_TOP, "foot": P_COM_FOOT, "roof": P_COM_ROOF, "icon": P_TEXT},    # 棕木店面+红白条纹遮阳+咖啡招牌
 	"public":      {"face": P_PUB_FACE, "top": P_PUB_TOP, "foot": P_PUB_FOOT, "roof": P_PUB_ROOF, "icon": X_COLD_WHITE},  # 灰蓝石+蓝瓦+♨蒸汽
-	"workshop":    {"face": P_WRK_FACE, "top": P_WRK_TOP, "foot": P_WRK_FOOT, "roof": P_WRK_ROOF},                    # 灰石+深蓝灰顶+烟囱黑烟
+	"workshop":    {"face": X_WRKW_FACE, "top": X_WRKW_TOP, "foot": X_WRKW_FOOT, "roof": P_WRK_ROOF},                # 暖灰石+深蓝灰顶+烟囱黑烟（E5/W2：见 X_WRKW_* 的推导）
 }
 ## 分类型【地板】：与 BLD_PAL 的墙色同族但更亮（屋顶被切掉，地面才是受光面）。
 ## 旧版只有广场有真地板，其余七个区只压一层 0.10 alpha 的淡色罩 —— 于是每栋建筑读作"围了圈墙的草坪院子"，
@@ -500,9 +534,72 @@ func _ready() -> void:
 			_audit_zoom = float(_uargs[_i + 1]) # 同上，但先把相机钉到指定缩放（扫 zoom 用；绕开 min_zoom 地板）
 		elif _uargs[_i] == "--void-gate":
 			_void_gate = true                   # 见 _void_gate_step()：把这一棒的 9× 那条性质机器化
+		elif _uargs[_i] == "--cache-gate":
+			_cache_gate = true                  # 见 _cache_gate_step()：W6 的机器断言
 	Sim.ticked.connect(func(_t): _redraw_all())
 	Sim.agent_changed.connect(func(_id): _redraw_all())
 	Sim.social_event.connect(_on_social)
+	# ★ E5/W6：换世界 ⇒ 作废所有从 Sim.world 烘出来的渲染缓存。
+	# `world_reset` 由 `Sim.start_new`（新局 / 玩家模式开关）与 `Sim.load_game`（F8 读档）**两条**路径发，
+	# 而 `load_game` 是 `for k in state: set(k, state[k])` —— `world` 是 Sim 的脚本变量、不在 DERIVED 排除表里，
+	# **所以读档会整个换掉 `Sim.world`**。此前没有任何一条路径清过下面这四样。
+	Sim.world_reset.connect(_invalidate_world_caches)
+
+## ★ W6 · 把从 `Sim.world` 烘出来的渲染缓存全部作废（下一帧 `_draw` 会按需重建）。
+##
+## 病症（外部评审 2026-07-28，E5 复核为真）：`_terrain_built` / `_paths_built` / `_decor_built`
+## 三个标志位**从建起来就没有任何一条路径清过**，而 `_grass_var` 按**第一个**世界的 `w*h` 分配、
+## 却在 `_draw` 里用**当前** `w` 索引（`_grass_var[ty*w + tx]`）。今天地图尺寸恒定 ⇒ 潜伏；
+## 一旦读进一张不同尺寸的地图，轻则画错格子、重则 `_grass_var` 越界。
+##
+## ⚠️ 这里**只清标志、不重建**：重建必须发生在 `_draw` 里，因为 `_build_decor` 要读 `Sim.world["objects"]`，
+## 而 `load_game` 的 `_rebuild_after_load` 与本回调的先后次序不该被这一层依赖。
+## `_verge_ground`（草地纹理均值）也一并清：它是 `_grass` 的函数，换切片包时同样会过期。
+func _invalidate_world_caches() -> void:
+	_terrain_built = false
+	_paths_built = false
+	_decor_built = false
+	_grass_var = PackedByteArray()
+	_verge_ground = Color(0, 0, 0, 0)
+	if _void != null:
+		_void_key = ""                    # 界外层的缓存键也得作废：新世界的地图矩形可能不一样
+		_void.queue_redraw()
+	queue_redraw()
+
+## ── ★ 暂停时换空间 / 换选中，世界层不更新（E6 发现，E5 复核并在出货路径上复现）────────────
+## 病症：本节点只在 `Sim.ticked` / `Sim.agent_changed` / 渲染坐标脏 三种情况下 `queue_redraw()`。
+## 而 **空格暂停 = `Sim.running = false`**（`Main.gd:2012`），`Sim._process` 首行是
+## `if not (auto_run and running): return` ⇒ tick 停了；此时点门走 `Main._portal_click`，
+## 它只改 `_probe.active_space` 与相机、**这三样一个都不碰** ⇒ `_draw()` 再也不跑
+## ⇒ 世界层继续画着**镇子**，而 HUD 已经写着「阿丽的咖啡馆 / 1f 层（点进门）」。
+##
+## **实测**（本文件的临时探针，真调 `Main._portal_click(咖啡馆街门 41,19)`，非模拟）：
+##   `[PAUSEPORTAL] f20 暂停：running=false auto_run=true space=town`
+##   `[PAUSEPORTAL] f30 点门：hit=true space=cafe`
+##   `[PAUSEPORTAL] f60 点门后 30 帧：WorldView._draw() 被调用了 **0** 次`
+## 不暂停时看不见，只因为 80ms 后下一个 tick 就来了 —— 它是一个**只在暂停下暴露的真 bug**。
+##
+## 同一形状还有第二个：`Main._select_at_world` 改 `_selected_id` 也不重画 ⇒ 暂停时点居民，
+## 选中高亮 / 关系线的 focus 压暗 / D5 的焦点集恒显 全都不更新。
+## （`dbg_nav` 那条**不在此列**——`Main.gd:2047` 自己补了 `_view.queue_redraw()`，我去查过了。）
+##
+## 为什么是窄键而不是别的两种做法：
+##   · **不接 probe 的信号**：那要改 `ProbeController.gd` / `Main.gd`，两个都不在本棒的独占集里。
+##   · **不并进 `_void_cache_key()`**：那把 zoom/vis 也带进了键 ⇒ 相机一动就整层重画，
+##     正是 D7 花了 9 倍帧时才去掉的东西。这里只取「不随 tick 变、而 `_draw()` 会读」的那几样。
+func _view_state_key() -> String:
+	var mn := get_parent()
+	if mn == null:
+		return ""
+	var pb = mn.get("_probe")
+	var sp := "town"
+	var fl := "outdoor"
+	if pb != null:
+		sp = String(pb.active_space)
+		fl = String(pb.active_floor)
+	return "%s|%s|%s|%d|%d" % [sp, fl, _selected_id(), int(dbg_nav), rel_mode]
+
+var _view_key := ""
 
 ## 本节点 + 加色光层一起重画。光层的内容只依赖 time_of_day 与静态地形，所以跟 tick 走就够了；
 ## 相机移动不需要重画（光层是本节点的子 Node2D，共用同一条画布变换）。
@@ -1482,6 +1579,87 @@ func _void_gate_step() -> void:
 			push_error("VOIDGATE FAIL: 界外层在相机不动时重画了 %d 次，跨过的日边界只有 %d 个（tick 推进 %d）" % [extra, days, ticks])
 		get_tree().quit(0 if ok else 1)
 
+## ── W6 的机器断言：换世界之后，从 `Sim.world` 烘出来的缓存必须真的被作废并按新世界重建 ──────
+## 用法：`godot --path game --display-driver x11 --rendering-driver opengl3 -- --backend logic --seed 3 --cache-gate`
+## 退出码 0=PASS / 1=FAIL。
+##
+## ★ 它走的是**真的 F8 往返**（`Sim.save_game` → `Sim.load_game`），不是自己发一个信号糊弄自己：
+##   `load_game` 是 `for k in state: set(k, state[k])`，而 `world` 是 Sim 的脚本变量、不在 DERIVED 排除表里
+##   ⇒ 读档**整个换掉** `Sim.world`。这正是 W6 说的那条"F8 读档没有任何路径清它们"。
+##
+## ★ 判别力（docs/41 §6-★：先问"一个什么都不做的改动能不能通过它"）：
+##   臂 A「读档之后四样缓存必须处于已作废状态」在**未改动的树上必然红**——那里没有任何东西会去清它们。
+##   已实跑负对照：把 `_ready` 里那行 `Sim.world_reset.connect(...)` 注释掉，本门 FAIL。
+##   臂 B「重建之后尺寸与当前世界一致」**在今天这张固定尺寸的地图上没有判别力**（w/h 恒定 ⇒ 恒真），
+##   这一点必须明写：它守的是将来换图/换尺寸时的那一次，今天只是个恒真的看门人。
+var _cache_gate := false
+var _cg_frames := 0
+var _cg_phase := 0
+var _cg_before := ""
+var _cg_after_reset := ""
+var _cg_inv := false            # 读档【当场】四样是否都已作废（快照，见臂 A）
+const CG_SAVE := "user://e5_cache_gate.sav"
+
+func _cache_state() -> String:
+	return "terrain=%s paths=%s decor=%s grass_var=%d walls=%d path_cells=%d decor_items=%d" % [
+		_terrain_built, _paths_built, _decor_built, _grass_var.size(),
+		_wall_set.size(), _path_set.size(), _decor_items.size()]
+
+func _cache_gate_step() -> void:
+	_cg_frames += 1
+	var w: int = int(Sim.world.get("width", 0))
+	var h: int = int(Sim.world.get("height", 0))
+	if _cg_phase == 0 and _cg_frames >= 30:
+		# ── 相位 0：等首帧把四样都烘出来（不烘出来说明门测的东西根本没发生）──
+		if not (_terrain_built and _paths_built and _decor_built) or _grass_var.is_empty():
+			print("[CACHEGATE] settle FAIL —— 缓存在 %d 帧后仍未建起：%s" % [_cg_frames, _cache_state()])
+			push_error("CACHEGATE FAIL: 缓存从未建起，门失去意义（下界）")
+			get_tree().quit(1)
+			return
+		_cg_before = _cache_state()
+		# ── 相位 1：真的存一次、读一次（= 玩家按 F5 再按 F8）──
+		if not Sim.save_game(CG_SAVE, {"why": "e5 cache gate"}):
+			print("[CACHEGATE] save FAIL")
+			push_error("CACHEGATE FAIL: save_game 失败，无法构造读档往返")
+			get_tree().quit(1)
+			return
+		if not Sim.load_game(CG_SAVE):
+			print("[CACHEGATE] load FAIL")
+			push_error("CACHEGATE FAIL: load_game 失败，无法构造读档往返")
+			get_tree().quit(1)
+			return
+		_cg_after_reset = _cache_state()
+		_cg_inv = (not _terrain_built) and (not _paths_built) and (not _decor_built) and _grass_var.is_empty()
+		_cg_phase = 1
+		return
+	if _cg_phase == 1:
+		# ── 臂 A：读档【当场】四样必须已作废（这一条在未改动的树上必红）──
+		# ⚠️ 读的是 `_cg_inv` 这个**在 load_game 返回的那一行就记下来的**快照，不是当前值：
+		#   本相位跑在第 40 帧，中间的 `_draw` 早就把它们按需重建回来了 —— 第一版就是读当前值，
+		#   于是它在【已经修好的树上】也报红。判据自己踩了一次"量错了时刻"。
+		var invalidated := _cg_inv
+		# ── 臂 B：本帧起会按需重建；等一帧让 _draw 跑完再验尺寸 ──
+		if _cg_frames < 40:
+			return
+		var rebuilt := _terrain_built and _paths_built and _decor_built
+		var sized := _grass_var.size() == w * h
+		var consistent := _wall_set.size() == (Sim.world.get("walls", []) as Array).size()
+		var ok := invalidated and rebuilt and sized and consistent
+		print("[CACHEGATE] 读档前 %s" % _cg_before)
+		print("[CACHEGATE] 读档后（当场）%s" % _cg_after_reset)
+		print("[CACHEGATE] 重建后 %s   world=%dx%d" % [_cache_state(), w, h])
+		print("[CACHEGATE] 臂A作废=%s 臂B重建=%s 尺寸=%s(%d vs %d) 一致=%s => %s"
+			% [invalidated, rebuilt, sized, _grass_var.size(), w * h, consistent, "PASS" if ok else "FAIL"])
+		if not invalidated:
+			push_error("CACHEGATE FAIL（臂A）: 读档换掉了 Sim.world，但 _terrain_built/_paths_built/_decor_built/_grass_var 仍是旧世界的 —— 换一张不同尺寸的地图就会用旧尺寸的下标去索引新世界")
+		elif not rebuilt:
+			push_error("CACHEGATE FAIL（臂B）: 作废之后没有任何一帧把它们重建回来")
+		elif not sized:
+			push_error("CACHEGATE FAIL（臂B）: _grass_var 尺寸 %d != 当前世界 %d" % [_grass_var.size(), w * h])
+		elif not consistent:
+			push_error("CACHEGATE FAIL（臂B）: _wall_set 与当前 Sim.world.walls 不一致")
+		get_tree().quit(0 if ok else 1)
+
 func _draw_void_layer(cv: CanvasItem) -> void:
 	# ★★ 键必须在【任何 early return 之前】写。2026-07-28 外部对抗评审抓到的真 bug：
 	# 原来 `_void_key` 只在 town 分支的末尾赋值，于是两条 early return 会让它停在旧值上：
@@ -2127,8 +2305,14 @@ func _process(delta: float) -> void:
 		return                  # 审计模式独占：插值也会让画面动，会污染逐 pass 差值
 	if _void_gate:
 		_void_gate_step()
+	if _cache_gate:
+		_cache_gate_step()
 	_refresh_view_metrics()     # 界外层的脏判定要用【本帧】的取景，不能等到 _draw 才刷
 	_void_sync()
+	var _vk := _view_state_key()   # ★ 见 _view_state_key()：暂停时 tick 停了，这几样变了也得重画
+	if _vk != _view_key:
+		_view_key = _vk
+		queue_redraw()
 	# 一格实际占多少实时秒：tick_interval / speed（x8 加速时只有 0.01s）。
 	# 下限 0.008 防除零/抖动，上限 0.16 防 --speed 0 时把收敛拖成"永远在爬"。
 	var step := clampf(Sim.tick_interval / maxf(Sim.speed, 0.25), 0.008, 0.16)
@@ -2252,7 +2436,7 @@ func _draw_relationship_lines() -> void:
 		elif sel != "":
 			width += 1.2                               # 选中当事人的线加粗一档
 		var col := (X_SIGNAL_POS if aff2 > 0.0 else X_SIGNAL_NEG)
-		col.a = (0.26 + t * 0.52) * fade * focus
+		col.a = maxf(REL_A_FLOOR, (0.26 + t * 0.52) * fade * focus)   # E5/W4：见 REL_A_FLOOR
 		draw_line(p1, p2, col, width)
 
 ## S3a 派系：同派系成员脚下画同色环（颜色由派系 medoid id 确定性派生）。
@@ -2295,11 +2479,18 @@ func _draw_ground_ring(c: Vector2, rx: float, col: Color, width: float) -> void:
 ## 与 `water-lit #86B7C8`（与盟约双线的青 `#39d4c8` 同族）——语义撞色比颜色难看更糟。
 ## 哈希换成项目自有的 `Sim.fnv1a32`（红线#1）：`String.hash()` 是引擎内建实现，换个 Godot 版本
 ## 就可能把全镇的派系色静默洗一遍。
+## ★ E5/W4：五个强调色里有**两个在它们实际会落到的地面上过不了 JND**——而这条只有"合成之后再算"才看得见
+##（环是 `col.a = 0.80` 画在地面上的，锚点对锚点的样本结构上够不到它）。实测（四昼夜档 × 四季 × 三天气的最小值）：
+##   `grass-autumn` 压在**土路**上 **0.91**（土路本身就是一片赭黄）、`grass-winter` 压在**公共区地板**上 **1.53**。
+##   ⇒ 这两个派系的居民站在那两种地面上时，脚环等于没画。
+## 换成对全部 7 种地面都 ≥5 且与保留三色都 ≥6 的两个：`X_COLD_WHITE`(冷白) 与 `P_WRK_ROOF`(深蓝黑)。
+## 换完全组对地面的最小值 0.91 → **2.71**（新的最弱一环是**保留下来的** foliage-mid 压在草上——
+## 橄榄绿画在草上，它天生就是这一组里最难的一格；2.71 已在 JND 之上，本棒不再动它）。
 const FACTION_ACCENTS := [
 	P_PUB_ROOF,   # pub-roof     蓝
-	P_GRASS_AUT,   # grass-autumn 赭黄
+	X_COLD_WHITE,   # 冷白（替 grass-autumn：它在土路上 0.91）
 	P_FOLIAGE_M,   # foliage-mid  橄榄绿
-	P_PUB_TOP,   # grass-winter 灰蓝
+	P_WRK_ROOF,   # 深蓝黑（替 grass-winter：它在公共区地板上 1.53）
 	P_RES_ROOF,   # res-roof     砖红（比 UI 的告警红暗得多，不混）
 ]
 
@@ -2512,13 +2703,27 @@ func _night_amt() -> float:
 	if tod < 0.88: return (tod - 0.72) / 0.16
 	return 1.0
 
+## 房型 → 地板色。**E5/W3：这里原本有四个房型全部返回 P_COM_LINE**（bed / parlor / cafe / shop），
+## 于是 8 个房型只画得出 5 种地板，六对房型之间 ΔE00 **恰好 0.00**。
+## D6 的 33 对相邻表面样本抓不到它，因为那份样本里根本没有"房间地板 vs 另一个房间地板"这一类。
+## ⚠️ 其中**只有一对真的会同框**：`cafe`(cafe_kitchen) 与 `parlor`(cafe_hall) 同属 buildings.json 的 cafe 楼；
+##   评审点名的 bed↔shop / parlor↔shop 分处地图两端（home@19,14 与 shop@50,6），**永远不同框**。
+##   但"今天的地图上它们不同框"是关于**这一张地图**的事实，不是代码的性质（docs/47 §三 还要加新建筑），
+##   所以四个都给了各自的值，而不是只拆开会同框的那一对。
+## 取值全部来自既有授权色（不新增），并且逐对量过：对**其余 7 种地板 + 自己的地毯 + 自己的内墙**
+## 的最差 ΔE00（四昼夜档 × 四季 × 三天气）= **2.50**，改前 = **0.00**。
 func _mat_floor(rtype: String) -> Color:
-	if "bed" in rtype: return P_COM_LINE
-	if "parlor" in rtype or "cafe" in rtype: return P_COM_LINE
+	if "bed" in rtype: return P_COM_LINE      # 卧房：暖木（不动，D6 量过的「地毯·卧房↔卧房地板」靠它）
+	if "cafe" in rtype: return P_STONE        # 咖啡吧台后厨：灰石防滑地（与同楼的茶座拉开：0.00 → 12.10）
+	if "parlor" in rtype: return P_PLAZA      # 茶座：暖砂铺装
 	if "work" in rtype: return P_STONE_LINE
 	if "quiet" in rtype: return P_NIGHT
 	if "wash" in rtype or "bath" in rtype: return P_WATER_DEEP
-	if "shop" in rtype: return P_COM_LINE
+	if "shop" in rtype: return P_RES_TOP      # 店堂：浅木板
+	# 库房原先落在下面那个默认档 X_WOOD_MID 上，而它自己的内墙是 P_COM_FOOT ——
+	# 两个深棕，**同一间房里贴着**，实测最差 ΔE00 **1.29**（改动后它一度是全表最小的一对）。
+	# 这条不是 W3 点名的，是量具补齐之后自己冒出来的：房间地板此前从没和【自己的内墙】比过。
+	if "store" in rtype: return P_COM_TOP     # 库房：浅一档的木板（↔内墙 1.29 → 6.79）
 	return X_WOOD_MID
 
 ## 一栋建筑：落地影 → 外墙(屋檐/受光高光) → 室内地板+材质纹理 → 内墙投影 → 南门 → 北窗 → 有人透暖光。
@@ -2536,8 +2741,10 @@ func _draw_building(rid: String, inner: Rect2, rtype: String, enclosed: bool) ->
 	draw_rect(outer, Color(0, 0, 0, 0.38), false, 1.5)
 	# 室内地板
 	draw_rect(inner, fc, true)
-	# 地板材质：湿区/铺面走方砖，其余走木纹横板
-	if "wash" in rtype or "bath" in rtype or "shop" in rtype:
+	# 地板材质：石地/铺装走方砖，木地板走木纹横板。
+	# （E5：随 _mat_floor 一起改——`cafe` 现在是灰石、`parlor` 是暖砂铺装 ⇒ 进方砖；
+	#   `shop` 现在是浅木板 ⇒ 出方砖进木纹。不改材质的话会画出"石头色的木地板"。）
+	if "wash" in rtype or "bath" in rtype or "cafe" in rtype or "parlor" in rtype:
 		var gx := inner.position.x + T * 0.5
 		while gx < inner.end.x - 1.0:
 			draw_line(Vector2(gx, inner.position.y + 1), Vector2(gx, inner.end.y - 1), Color(0, 0, 0, 0.10), 1.0)
@@ -2606,9 +2813,15 @@ func _draw_building(rid: String, inner: Rect2, rtype: String, enclosed: bool) ->
 			draw_rect(Rect2(wx, wy, ww, WALL * 0.52), wcol, true)
 			draw_rect(Rect2(wx, wy, ww, WALL * 0.52), Color(P_WATER_LIT, 0.45), false, 1.0)
 	# 房型标签：压低存在感（不再是主视觉）。房间小于 ~2 格宽时不画——11px 字会横穿整间，读作乱码而非标签。
+	# ★ E5：标签色必须跟着地板走。原来恒为淡暖 `X_PARCHMENT@0.45`，那在**当时全是深色**的地板上没问题；
+	#   本棒把 cafe/parlor/shop/store 换成浅色地板之后，同一个淡标签压在浅地板上实测掉到
+	#   **茶座 2.38 / 店堂 1.34**（低于 JND）——「店堂」两个字在改动后的图上肉眼就找不到了。
+	#   这条是 R10 全帧眼验抓到的，**任何一张色差表都不会报它**（表里没有"标签 vs 它压着的地板"这一对；
+	#   现在加进去了）。修法：按地板亮度二选一，两侧实测最差 4.03（原来最好的一档是 5.82）。
 	if inner.size.x >= T * 1.9:
+		var lab := D_WOOD_LINE if fc.get_luminance() >= 0.5 else X_PARCHMENT
 		draw_string(Art.font(), inner.position + Vector2(6, 15), String(ROOM_NAME.get(rtype, rtype)),
-			HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(X_PARCHMENT, 0.45))
+			HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(lab, 0.45))
 
 ## 室内陈设（Stardew 的"住着人"密度）：地毯 + 靠墙杂物。全确定性（_hash01(room_id:key)），纯渲染不进 digest。
 func _draw_room_decor(rid: String, inner: Rect2, rtype: String) -> void:
