@@ -421,6 +421,10 @@ var _path_set := {}      # idx(y*W+x) -> true（土路格：广场↔各家门�
 var _paths_built := false
 var _wall_set := {}      # idx(y*W+x) -> true（墙格，用于画石墙 + 装饰避让）
 var _water_set := {}     # idx -> true（水格）
+## 水格按【岸线瓦片】分组：[[瓦片名, PackedInt32Array(格子下标)], ...]，9 个 slot。
+## 在 `_build_terrain` 里一次算好 —— 四邻查询是**只跟地图有关**的纯函数，不该每帧重算，
+## 更不该进 `_draw`（那是 D7 反复清理过的地方）。跟着 `_terrain_built` 一起失效。
+var _water_by_slot: Array = []
 var _tree_cells: Array = []  # [Vector2i]（authored 阻挡树，替代程序化装饰树）
 var _tree_set := {}      # idx(y*W+x) -> true（同上，供 O(1) 查：_is_blocked 与界外 motif 每帧都要问它）
 var _wall_type := {}     # P2-4 idx -> 建筑类型（住宅/商业/公共/工坊）→ 墙面按类型上色
@@ -681,15 +685,58 @@ func _build_decor() -> void:
 		var cb: Vector2i = b["cell"]
 		return ca.y < cb.y if ca.y != cb.y else ca.x < cb.x)
 
+## 水格 → 岸线瓦片分组（G5 / docs/49 §七）。按**四邻是不是水**选瓦，瓦片名里的方位
+## 指的是**陆地在哪一侧**（`water_n` = 北面是岸），因为这里手上有的正是"四邻水不水"。
+##
+## **界外一律按陆地算**：贴着地图边的水域会长出岸线，而不是被悄悄当成"外面还有水"而留一条硬边。
+##
+## ⚠ 三面/四面临陆的格子（1 格宽的水沟、孤立的一格水塘）**当前地图里一个都没有**
+## （两个池塘都是实心矩形：north x28-35 y2-6、south x28-35 y42-46，实测 perfect_rect=True）。
+## 这类 mask 这里按"先判角、再判边"退化成某一个角瓦 —— 它会漏掉第三面的岸。
+## 写清楚是因为**将来谁挖一条 1 格宽的河，这里就是要改的地方**；不写死断言是因为
+## 视图层不该因为地图长得不合意就崩，退化画法比开天窗好。
+func _build_water_slots(wd: int, ht: int) -> void:
+	var by := {}
+	for idx in _water_set:
+		var wx: int = idx % wd
+		var wy: int = idx / wd
+		# 界外 = 陆地（`has()` 对越界下标自然为 false，但 x 方向要显式挡住绕行到上/下一行）
+		var ln := wy <= 0 or not _water_set.has(idx - wd)
+		var ls := wy >= ht - 1 or not _water_set.has(idx + wd)
+		var lw := wx <= 0 or not _water_set.has(idx - 1)
+		var le := wx >= wd - 1 or not _water_set.has(idx + 1)
+		var nm := "water"
+		if ln and lw:      nm = "water_nw"
+		elif ln and le:    nm = "water_ne"
+		elif ls and lw:    nm = "water_sw"
+		elif ls and le:    nm = "water_se"
+		elif ln:           nm = "water_n"
+		elif ls:           nm = "water_s"
+		elif lw:           nm = "water_w"
+		elif le:           nm = "water_e"
+		if not by.has(nm):
+			by[nm] = PackedInt32Array()
+		by[nm].append(idx)
+	# 名字排序后再落数组：分组顺序**与字典遍历顺序无关** ⇒ 同一张地图每次得到同一张表。
+	# （画面本来就与顺序无关，见 `_draw` 里那段证明；这里求的是"表本身可复现"，便于逐字节对拍。）
+	_water_by_slot.clear()
+	var names := by.keys()
+	names.sort()
+	for nm in names:
+		_water_by_slot.append([nm, by[nm]])
+
+
 ## 从 map.json 的 walls/water/trees 建渲染集合（纯渲染；导航仍走 Sim 的 blockers 并集）。世界重载即失效。
 func _build_terrain() -> void:
 	_terrain_built = true
 	_wall_set.clear(); _water_set.clear(); _tree_cells.clear(); _tree_set.clear(); _wall_type.clear()
+	_water_by_slot.clear()
 	var wd: int = int(Sim.world.get("width", 24))
 	for c in Sim.world.get("walls", []):
 		_wall_set[int(c[1]) * wd + int(c[0])] = true
 	for c in Sim.world.get("water", []):
 		_water_set[int(c[1]) * wd + int(c[0])] = true
+	_build_water_slots(wd, int(Sim.world.get("height", 16)))
 	for c in Sim.world.get("trees", []):
 		_tree_cells.append(Vector2i(int(c[0]), int(c[1])))
 		_tree_set[int(c[1]) * wd + int(c[0])] = true
@@ -2040,25 +2087,47 @@ func _draw_body() -> void:
 	if not _terrain_built:
 		_build_terrain()
 	var wtile := Art.terrain_tex("water")
+	# ★★ 岸线（G5 / docs/49 §七）。改前：两个 8x5 水域各铺一张**纯色填充瓦**，
+	#   渲染成硬 90° 直角的青色矩形直接压在草地上 —— 真机帧上北池取样 9856 px **只有 1 种颜色**。
+	#   根因不是"没人画岸线"，而是**当初切图切错了一格**：出货 water.png 切自 CC0 总表的 (18,11)，
+	#   那是一个自动贴图块的**正中心**；它外面那一圈（岸泥 + 浅水亮边）一直躺在同一个文件里没人取。
+	#   现在按四邻的水/陆关系选 9 张瓦之一（`_water_by_slot`，在 `_build_terrain` 里一次算好）。
+	#   **中心那张仍是原来的 water.png，逐像素未动** ⇒ 池心颜色不变，改动只发生在边界一圈。
 	# ★ 夜里把水压下去（docs/46 §二-D3-2）。改动前实测：夜帧世界区**彩度最高的东西就是这两个池塘**——
 	#   水色 (31,161,175) 是蓝主导，而 `_daylight` 夜里的乘子 (0.4242, 0.4714, 0.7972) 恰恰**最不压蓝**
 	#   ⇒ 水的绝对彩度 (max−min) 从白天的 144 只掉到 **127**，而草地从 94 掉到 **25**。
 	#   于是全局乘暗把整座镇子压进夜色，唯独两个青色矩形几乎原样留在那里，成了画面上最响的东西。
 	#   修法是给水一层随夜量渐入的**乘性夜罩**：白天恒为白（正午 `_night_amt()==0` ⇒ 逐像素不动）。
+	# ⚠ G5 实测记一笔：`WATER_NIGHT` 是给**整格都是水**的贴图标定的，而岸线瓦里有一圈**岸泥**。
+	#   夜里这个重红偏的乘子把岸泥染成锈褐（真机夜帧实测 (106,112,66) → (50,33,37)）。
+	#   **没有改它**，理由是量过：夜帧里岸泥的绝对彩度(max−min)=26，**低于**草地 33、也低于水 41
+	#   ⇒ docs/46 §二-D3-2 守的那条「入夜后水不许是画面上最响的东西」没有被破坏，
+	#   锈褐岸读作"湿泥滩"也说得通。若将来要分开染，得先给岸泥单独标一个夜罩并重跑 D3-2 的彩度对照，
+	#   而不是随手把这里的 lerp 调淡（调淡会让岸线里那圈**浅水亮边**在夜里重新跳出来）。
 	var wtint := Color(1, 1, 1)
 	var _wn := _night_amt()
 	if _wn > 0.001:
 		wtint = Color(1, 1, 1).lerp(WATER_NIGHT, _wn)
-	for idx in _ac("water", _water_set):
-		var wx: int = idx % w
-		var wy: int = idx / w
-		var wr := Rect2(wx * T, wy * T, T, T)
-		if wtile != null:
-			draw_texture_rect(wtile, wr, false, wtint)
-		else:
-			draw_rect(wr, P_WATER_DEEP * wtint, true)
-			if _hash(wx, wy, 21) % 100 < 30:   # 静态涟漪高光
-				draw_rect(Rect2(wx * T + T * 0.18, wy * T + T * 0.30, T * 0.42, T * 0.12), Color(P_WATER_LIT, 0.35) * wtint, true)
+	# ★合批：**按瓦片分组**画（沿用 D7 在草地/土路上立的那条规矩），而不是逐格切纹理。
+	#   `_water_by_slot` 的每一项是 [瓦片名, 该瓦片的格子下标数组]，分组在 `_build_terrain` 里做好。
+	#   **逐像素不变可证**：9 个 slot 是水格集合的一个**划分**（每格恰好属于一个 slot），
+	#   每格恰好画进 `Rect2(wx*T, wy*T, T, T)` 这一个**互不相交**的格子里
+	#   ⇒ 任何一格的像素只由它自己那张瓦片决定，与别的格子画在它前面还是后面无关。
+	#   （边缘瓦有透明区，但混合的对象是**它底下那格草地**，不是邻格的水 ⇒ 顺序依旧无关。）
+	for pair in _ac("water", _water_by_slot):
+		var stile: Texture2D = Art.terrain_tex(String(pair[0]))
+		if stile == null:
+			stile = wtile                      # 缺岸线瓦 → 退回填充瓦（画面回到改前的纯色矩形，不至于开天窗）
+		for idx in pair[1]:
+			var wx: int = idx % w
+			var wy: int = idx / w
+			var wr := Rect2(wx * T, wy * T, T, T)
+			if stile != null:
+				draw_texture_rect(stile, wr, false, wtint)
+			else:
+				draw_rect(wr, P_WATER_DEEP * wtint, true)
+				if _hash(wx, wy, 21) % 100 < 30:   # 静态涟漪高光
+					draw_rect(Rect2(wx * T + T * 0.18, wy * T + T * 0.30, T * 0.42, T * 0.12), Color(P_WATER_LIT, 0.35) * wtint, true)
 
 	# 土路网（广场↔各家门口）：铺在草地之上、区域/建筑之下 → 一眼读出"路"。装饰会避开它，路面才干净。
 	if not _paths_built:

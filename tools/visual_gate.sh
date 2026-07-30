@@ -234,6 +234,13 @@ ARC=$?
 # 一条红了另一条的读数仍然有诊断价值（"界外带塌了" vs "整个昼夜尺子坏了"是两种完全不同的排查）。
 "$PY" tools/assert_space_roundtrip.py "$OUT"
 RRC=$?
+# 岸线判据（G5 / docs/49 §七）。**不额外渲一帧**：吃的正是上面已经拍好的 vg_noon / vg_night
+# ——它们已经是 `--shot-fit` 的整镇入画帧，正是 pond.py 需要的取景。
+# 昼夜两帧都判：本棒实测过一版**只在白天绿、入夜就红**的判据（绝对亮度阈值），
+# 一帧是不够的。同理跑在前两条之后而不短路（三条守的是不同性质）。
+"$PY" tools/pond.py "$OUT/vg_noon.png" "$OUT/vg_night.png" --assert
+PRC=$?
 [ $EPHEMERAL -eq 1 ] && rm -rf "$OUT"
 [ $ARC -ne 0 ] && exit $ARC
-exit $RRC
+[ $RRC -ne 0 ] && exit $RRC
+exit $PRC
