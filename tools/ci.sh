@@ -2,7 +2,7 @@
 # Living Town CI — runs locally and in GitHub Actions. Fails (exit 1) on any red step.
 #   GODOT     path to the Godot 4.6.2 headless binary (default: godot on PATH)
 #   CI_SEEDS  S0 seed range (default 1-12)      CI_DAYS  S0 days (default 60)   CI_DET  det seeds (default 3)
-#   CI_POOL_N/CI_POOL_SEEDS/CI_POOL_DAYS/CI_POOL_DET  4a 宏观池尺度门 (default 24 / 1-12 / 60 / 1)
+#   CI_POOL_N/CI_POOL_SEEDS/CI_POOL_DAYS/CI_POOL_DET  4a 宏观池尺度门 (default 16 / 1-12 / 60 / 1)
 #   CI_BG_SEEDS/CI_BG_DAYS/CI_BG_N  4d 外部后端门 (default 1-4 / 8 / 12)
 # Fast local plumbing check: CI_SEEDS=1-3 CI_DAYS=30 bash tools/ci.sh
 #   （原注释写的是 CI_DAYS=20 —— 实测在【改动之前的树上就已经是红的】：软不变量 #08「承诺生命周期」
@@ -294,9 +294,17 @@ scan "S0 gate" "$LT_LOG/s0.log"
 # confidence：**N=4 个变异体**（数据侧 2 个：删块 → 预检红且判据也红 / 清空 pool → 只有判据红；
 #      配置侧 2 个 → 预检红），另在 5 个网格（N=16/20/24/24-删块/16-删块，各 12 seed × 60 天）
 #      上量过判据的红绿分布，N=60 只有 3 个 seed。
-POOL_N="${CI_POOL_N:-24}"; POOL_SEEDS="${CI_POOL_SEEDS:-1-12}"
+POOL_N="${CI_POOL_N:-16}"; POOL_SEEDS="${CI_POOL_SEEDS:-1-12}"
 POOL_DAYS="${CI_POOL_DAYS:-60}"; POOL_DET="${CI_POOL_DET:-1}"
-echo "### 4a. 宏观池尺度门 (N=$POOL_N seeds=$POOL_SEEDS days=$POOL_DAYS det=$POOL_DET；S0 判据首次跑在池倍率≠1 的配置上)"
+echo "# ★ 默认从 N=24 翻成 N=16（2026-07-31，L1 给的建议 + 主 session 实测复核）：
+#   ① 更便宜：合并树上 146s vs 239s（−39%）。
+#   ② 覆盖更宽：16/12 = ×4/3 会走【整数截断】那条路，而 24 是 12 的整数倍 ⇒ 因子恰好 ×2、
+#      `maxi(1,·)` 永不触发，K1 那句"inputs 不会舍入到 0"的守卫在 N=24 上【结构上测不到】。
+#   ③ 它同时是 I3 实测的【边缘】（软门最早在 N=16 破）⇒ fixture 朝被守的性质最容易破的方向选，
+#      而不是朝最容易绿的方向（契约 §2 第三个盲区）。
+#   余量：合并树上最差货 0.688-0.911，地板 0.50 ⇒ 最紧一格仍有 0.188 的余量，不是卡边。
+#   L1 当时改不了这个默认，因为在它自己的分支上（L2 未合入）N=16 是红的。
+### 4a. 宏观池尺度门 (N=$POOL_N seeds=$POOL_SEEDS days=$POOL_DAYS det=$POOL_DET；S0 判据首次跑在池倍率≠1 的配置上)"
 # 预检①②：**照 `_pool_rescale` 自己的算法**（含 quantum 向上取整）从 production.json 现算倍率，
 #   而不是写死 `POOL_N != 12` 那种比较——删 scale 块 / 改 base_population / 改 quantum 都会当场把它打红。
 # 预检③：`SUPPLY_MIN_DAYS` 从源码 grep，不写魔数（判据改名/搬家 ⇒ 读不到 ⇒ 红，而不是静默放行）。
