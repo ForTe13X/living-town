@@ -696,10 +696,16 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}) -> Array
 	# ── K1：把【产出契约】写进 detail（**不是**分档，见上面的 K1 注释）──────────────────────
 	# 判据在两种契约下**一个字节都不变**，所以这里只报不判。报它的理由是可读性：
 	# 大 N 上看到一条红的 #40，第一句要问的就是"当时池开着没有、倍率是多少"，而那件事此前无处可读。
+	# ── L2 同理追加【工作吸引力的人口项】（docs/58 §二）：同样**只报不判**。
+	#    理由与 K1 那条逐字相同——大 N 上看到一条红的 #40，第二句要问的是"当时工作吸引力被抬了多少"。
+	#    倍率恰为 1.0（出货阵容 N=12、或缺 work_pull 键）⇒ 这一截**不出现**，
+	#    所以 N=12 的 detail 字符串与本次改动之前**逐字节相同**（金标/CI 的 detail 对照不受影响）。
 	var contract := ""
 	if prod_on:
 		contract = "；产出契约=" + (("宏观池 ×%d/%d" % [int(S.prod_pool_num), int(S.prod_pool_den)])
 			if bool(S.prod_pooled) else "逐笔")
+		if float(S.work_pull_mult) != 1.0:
+			contract += "｜工作吸引力 ×%.3f" % float(S.work_pull_mult)
 	R.append(_chk(40, "产出闭环活性与供给充足",
 		(not prod_on) or (n_prod > 0 and n_cons > 0 and dead_goods.is_empty() and starved_goods.is_empty()),
 		"produce=%d consume=%d 满足率门%s%s%s%s" % [n_prod, n_cons,

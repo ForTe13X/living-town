@@ -247,6 +247,9 @@ var _production_raw := {}       # data/production.json 的原样（未换尺度�
 var prod_pooled := false        # 产出契约：true=宏观池（production.scale 生效），false=逐笔（缺 scale 块 ⇒ 逐字节回到今天）
 var prod_pool_num := 1          # 池倍率 = num/den（**整数有理数，不引浮点** ⇒ 逐字节可回放）
 var prod_pool_den := 1          # num==den（出货阵容 N=12）⇒ 倍率恰为 1 ⇒ 直接返回原 dict ⇒ 逐字节等同逐笔
+## L2（docs/58 §二）：工位广告的【人口感知】吸引力乘子。缺 `production.work_pull` 键、
+## 或本局人口 ≤ base_population ⇒ 恒 1.0 ⇒ **出货阵容 N=12 逐字节不变**（结构性，不是走运）。见 _work_pull_mult。
+var work_pull_mult := 1.0
 var town_stock := {}            # 镇级库存 good -> 件数（唯一通道 = _stock_move；#38 从 event_log 独立重算）
 var stock_total0 := {}          # 开局库存快照（#38 的基准，同 econ_total0 之于 #34）
 var _stock_day := {}            # good -> 当日已消耗但尚未入账的件数：日界一次性写一条 consume 事件
@@ -746,6 +749,9 @@ func start_new(p_seed: int = 12345) -> void:
 	#   而 town_stock 的开局注资就在下面几行，读的正是换过尺度的 start_stock。
 	#   agents.size() 此刻是 **NPC 数**：add_player() 是 start_new 之后才 append 的，玩家不参与定池。
 	production = _pool_rescale(_production_raw, agents.size())
+	# ★L2：工作吸引力的人口项。跟池同一处、同一个"本局人口"口径（都在克隆扩容做完之后、
+	#   town_stock 注资之前），本局内冻结 ⇒ 与池一样不受生老病死影响、可逐字节回放。
+	work_pull_mult = _work_pull_mult(production, agents.size())
 	# Wave E 产出：镇级库存 per-run 重置（goto_tick 会反复 start_new，残留库存＝回放不一致）。
 	# production.json 缺失 → 三个字典全空 → 每个挂点都短路 → 逐字节回到 Wave D 末的轨迹。
 	town_stock = {}
@@ -1634,6 +1640,49 @@ func _market_open(action: String) -> bool:
 		return false                                    # 镇上没有商贩 → 没有市集（不是"永远开着"）
 	return _in_shift(_job_of(vid))
 
+## ── L2：工位广告的【人口感知】吸引力（docs/58 §二）────────────────────────────
+##
+## **它修的是什么**：K1 的宏观池把"一次本职在班完成"代表的产量按人口换了尺度，
+## 但它乘的那个【次数】本身在大 N 下是往下掉的 ⇒ 池乘的是一个已经塌了的基数（K1 自己在回执里点名）。
+##
+## **为什么会塌——这是量出来的结构性比较，不是一个数没调好**（隔离副本探针，走既有的只读钩子
+## `Sim.decision_sink`，N=12 上 digest 与金标逐字节相同 ⇒ 探针不扰动；逐 N 12 个 seed）：
+##   · 每次决策看到的**社交候选数**：N=12 是 3.6-4.2 → N=16 5.3-6.2 → N=24 9.0-9.9 → N=60 **24.9-26.3**
+##     （人口 ×5，社交供给 ×6.5）；选中 social 的比例 35.2-39.8% → **51.6-52.8%**。
+##   · 而一个工位只有【一条】广告、收益是常数 ⇒ argmax 里"社交那一侧的最大值"随人口涨、工作那一侧不涨。
+##   · 八个岗位广告的在班被选中率（中位，N=12→N=60）：烤点 10.2→5.1 · 劈柴 5.6→3.7 · 打渔 10.8→7.1 ·
+##     摆摊 17.0→11.9 · 清扫 27.9→21.7 · 修屋 32.5→24.2 —— **六个单调下滑**；授课 7.3→6.8、刨木 9.7→9.4 持平。
+##   ⇒ **不是"把烤点的 20 调到 40"**：那只会换一种货先破。八个一起滑，所以补的是一条**随人口的项**，
+##     而 F1/F5/G3 三波手工标定出来的相对比例（34/20/46/46/46/32/46/38）**原样保留**。
+##
+## **它【不】做什么**：只乘进打分用的 `benefit`，**不动 `amount`**——
+## `amount / dur_total` 是每 tick 回补的 need 量（_advance_object 的 use 分支），改它就是改**微观需求侧**，
+## 而 §0.5 的能力矩阵写死了微观不降级。所以工作【更被想去做】，但做一次工恢复的趣味**一分没变**。
+##
+## **曲线的形状是扫出来的**（production.json 的 work_pull._calibration 记了逐档实测）：
+##   饱和型 `f = 1 + k·(1 − base/pop)`。选它的两条理由都不是审美：
+##   ① 实测的损伤本身是饱和的（工作被选中率相对 N=12 的比值 1.00 / 0.65 / 0.57 / 0.50），线性型会在 N=60 过冲；
+##   ② **不引 libm**：整数算完只做一次 IEEE 除法（除法是正确舍入的）⇒ 逐位可复现。
+##      log/sqrt 型曲线因此被否掉——它们的实现随平台/libm 版本变，而红线 #1 要的是逐字节重放。
+##      （这条纪律直接继承 K1 的池"用整数有理数、不引浮点"。）
+##
+## **零扰动 / 逐字节**：缺 `work_pull` 键 ⇒ 1.0；`k_num`/`k_den` 任一 ≤0 ⇒ 1.0；
+## `pop <= base_population` ⇒ 1.0 ⇒ **出货阵容 N=12 一个浮点都不算**。
+func _work_pull_mult(prod: Dictionary, pop: int) -> float:
+	if prod.is_empty():
+		return 1.0
+	var wp: Dictionary = prod.get("work_pull", {}) if prod.get("work_pull", {}) is Dictionary else {}
+	if wp.is_empty():
+		return 1.0
+	var base := int(wp.get("base_population", 0))
+	var kn := int(wp.get("k_num", 0))
+	var kd := int(wp.get("k_den", 0))
+	if base <= 0 or kn <= 0 or kd <= 0 or pop <= base:
+		return 1.0
+	# f = 1 + (kn/kd)·(1 − base/pop) = (kd·pop + kn·(pop − base)) / (kd·pop)
+	# 分子分母都是整数，只做一次 IEEE 除法 ⇒ 逐位可复现（不调 log/sqrt）。
+	return float(kd * pop + kn * (pop - base)) / float(kd * pop)
+
 ## F1 整洁度 → 效用乘子 ∈ [floor, 1.0]，线性于「现存 / cap」。缺 cleanliness 键或该货未申报 cap → 恒 1.0。
 ## 只压不抬是刻意的：它跟 _weather_mult / _season_mult 是同一族，抬升会让物件吸引力膨胀、挤掉社交发起
 ## （buildings.json 的 _furnish_note 已经量过这条代价）。
@@ -1722,6 +1771,18 @@ func _object_candidates(ag: Dictionary) -> Array:
 					and need_id in cl_needs:
 				benefit *= cl_mult                       # F1：镇上脏 → 该区活动打折。工位广告位【不打折】——
 				                                         # 越脏越该有人来扫，不是越脏越没人来扫（否则环卫是个负反馈自锁）
+			# ★L2：镇子越大，本行【这一班】越重（docs/58 §二）。三道门，缺一不可：
+			#   ① work_pull_mult != 1.0 —— 出货阵容 N=12 上恒真地短路，一条指令都不多跑；
+			#   ② mods_ok —— 与 rhythm/weather/season/cleanliness 共用生存门。它是本仓库第一个
+			#      **抬**而不是**压**的乘子（_clean_mult 那条"只压不抬"的注释解释了为什么危险），
+			#      所以生存门在这里比在那几个上更承重：任一需求告急 ⇒ 整个关掉；
+			#   ③ 带 job 的广告位【且在班】—— 不在班时干活一件货都不产（_produce_for 开头的班次守卫），
+			#      抬它只会让人半夜白干。**这一条是量出来的**，不是设计洁癖：见 production.json
+			#      的 work_pull._shift_why（不加班次门时 N=16 仍剩 1/12 红、社交发起数被压低；加了之后 0/12 红、
+			#      社交发起数回到基线带内）。
+			if work_pull_mult != 1.0 and mods_ok and String(adv.get("job", "")) != "" \
+					and _in_shift(_job_of(String(ag["id"]))):
+				benefit *= work_pull_mult
 			var score := benefit - float(dist) * _w("obj_dist_penalty", 0.4)
 			# Wave 1b 经济动机环：穷(coin<poor_line)时有薪动作加分 → 缺钱→去做活→挣了付饭钱(闭环)。
 			# 确定性、数据门控；只加分不减分 → 生存(urgency 主导)不受威胁；economy.json 缺失恒不触发。
