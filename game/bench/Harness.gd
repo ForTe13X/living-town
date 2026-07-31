@@ -152,7 +152,7 @@ func _init() -> void:
 		first_run_chain[sd] = int(res["chain"])
 		first_run_ticks[sd] = res["chain_ticks"]
 		_tally_liveness(S, live_total, live_seeds)
-		var checks: Array = Inv.check_all(S, int(res["starved"]), res["starve_by_need"])
+		var checks: Array = Inv.check_all(S, int(res["starved"]), res["starve_by_need"], res["starve_shape"])
 		var hard_fails: Array = []
 		var soft_fails: Array = []
 		var diag_fails: Array = []
@@ -182,6 +182,8 @@ func _init() -> void:
 		# 只在真触底时多带一个键 ⇒ 全绿网格的这一行与改动前逐字节相同（下游解析器不受影响）
 		if not (res["starve_by_need"] as Dictionary).is_empty():
 			s0["starve_by_need"] = res["starve_by_need"]
+		if not (res["starve_shape"] as Dictionary).is_empty():
+			s0["starve_shape"] = res["starve_shape"]
 		print("[S0] " + JSON.stringify(s0))
 		if _shadow_dump != "":
 			_dump_shadow(sd, S.shadow_trace)   # 只在主循环 dump 一次（det 复跑不再重复）
@@ -602,6 +604,14 @@ func _run_once(seed: int, days: int) -> Dictionary:
 	var total: int = days * int(S.TICKS_PER_DAY)
 	var starved := 0
 	var starve_by_need := {}    # need -> 触底 (agent,tick) 实例数。**纯观测**：只进 detail 字符串，不进判据
+	# M1：`starved` 是 (人数 × need 种类 × 持续 tick) 的乘积，光看这个标量分不清
+	# 「很多人各触底一下」与「一个人躺了六天」——而这两件事的处置完全不同（见 Invariants._starve_shape）。
+	# 三个都是**纯观测**，只进 detail 字符串；判据吃的仍然只有 `starved` 这一个 int。
+	var starve_agents := {}     # agent id -> true
+	var starve_run_last := {}   # "agentneed" -> 上一次触底的 tick（判连续用）
+	var starve_run_start := {}  # "agentneed" -> 当前连续段的起始 tick
+	var starve_run_max := 0     # 全局最长连续触底段（tick）
+	var starve_run_key := ""    # 该最长段属于谁的哪条 need
 	var chain: int = Inv.CHAIN_INIT
 	var chain_ticks := PackedInt64Array()
 	chain_ticks.resize(total)
@@ -616,9 +626,25 @@ func _run_once(seed: int, days: int) -> Dictionary:
 				if float(ag["needs"][nid]) <= 0.5:
 					starved += 1
 					starve_by_need[nid] = int(starve_by_need.get(nid, 0)) + 1   # 分支几乎从不进 ⇒ 热路径零开销
+					# ↓ 同一条冷分支里做，热路径仍然零开销（全绿的网格上这几行一次都不执行）
+					var _sid := String(ag["id"])
+					starve_agents[_sid] = true
+					var _k := _sid + "/" + String(nid)
+					if int(starve_run_last.get(_k, -2)) != t - 1:
+						starve_run_start[_k] = t          # 断了 ⇒ 开新段
+					starve_run_last[_k] = t
+					var _len: int = t - int(starve_run_start[_k]) + 1
+					if _len > starve_run_max:
+						starve_run_max = _len; starve_run_key = _k
+	var starve_shape := {}
+	if not starve_agents.is_empty():
+		var _who: Array = starve_agents.keys()
+		_who.sort()   # 定序：报告可复现
+		starve_shape = {"agents": _who, "max_run_ticks": starve_run_max,
+			"max_run_days": float(starve_run_max) / float(S.TICKS_PER_DAY), "max_run_key": starve_run_key}
 	# 注：dump 不在此做——否则 det 复跑(也调 _run_once)会把同 seed 追加两次（评审 P1）
 	return {"S": S, "starved": starved, "starve_by_need": starve_by_need,
-		"chain": chain, "chain_ticks": chain_ticks}
+		"starve_shape": starve_shape, "chain": chain, "chain_ticks": chain_ticks}
 
 ## 把一 seed 的 shadow_trace 追加进 JSONL（每行一条决策，带 seed 前缀）。
 func _dump_shadow(seed: int, trace: Array) -> void:
