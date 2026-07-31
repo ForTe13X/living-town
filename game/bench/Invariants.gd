@@ -83,6 +83,47 @@ const SUPPLY_MIN_DAYS := 60
 ##   （hunger / energy / social / fun / hygiene，`needs.json`）。docs/54 §五 已经点过这个坑的名字：
 ##   "报告里读到'饿穿'的人会去查粮食，而粮食是无辜的"——所以名字里必须带上"任一需求"。
 ##
+## ── M1（2026-07-31）：**这条判据在 N≥18 上是一次抽签，而它跟 K1 的池 / L2 的 work_pull 都无关** ──
+## 派棒的前提是"L2 的 work_pull 在 N=20 引入了硬 #01，而且是第一次带真饥饿"。**两半都不成立。**
+## 2×2 消融（池 × work_pull，都由 production.json 的键门控，删键即回退；
+## 「删 work_pull 键」这一格与 `git archive ed599e8` 出来的真 K1 树在 N=20 seeds 13-24 上
+## **12/12 digest+chain 逐字节相同** ⇒ 消融工具本身先被证明是准的）。
+## 四个配置**同一份 N/seed 覆盖**，各 168 次运行（N∈{16,18,20,22,24} × 14 个 12-seed 块，60 天，backend=null）：
+##
+##   配置                        运行  #01 红   #40 红   长触底段(≥1000tick)  带 hunger 的
+##   A 池+work_pull（今天出货）   168     3        2            1                1
+##   B 只有池（= K1 ed599e8）     168     6       11            2                2
+##   C 只有 work_pull             168     3        6            0                0
+##   D 两者都无（= Wave J 末）    168     4       95            0                0
+##
+## ⇒ ① **#01 的红率四个配置分不开（3/6/3/4 of 168）**，出货树不比它的两个前身差；
+##    ② 出货树买到的是 **#40 从 95/168 掉到 2/168**——这才是那两笔改动真正动的那个量；
+##    ③ **"第一次带真饥饿"是假的**：K1 自己的树在 N=20 seed 19 就是 `hunger×165`、
+##       N=18 seed 8 是 `hunger×104`，两条都在**没人扫过的 seed 段**里（此前的网格只跑 seeds 1-12）。
+##
+## **hunger 与 social 不是两个现象，是同一段的两个投影。** 全部 36 次 #01 红逐条看
+## （出货网格 16 次 + 下面那个被证伪的干预 20 次）：
+##   social 段 ≤230 tick 的 29 次 ⇒ hunger **29/29 全为 0**；
+##   social 段 ≥2735 tick 的 7 次 ⇒ hunger **7/7 都 >0**（占 social 的 1.3-7.7%）。
+##   两组之间没有任何观测（230 与 2735 之间是空的）。逐 tick 追（`find_starve.gd` + M1 探针，N=20 seed 8）：
+##   2867 个 need·tick **全部属于 npc_13 一个人**（克隆、无岗位），social 从第 48 天塌下去，
+##   随后五条需求一起垮（energy≈15 / fun≈5 / hygiene≈13），hunger 才在第 52 天第一次触底
+##   ——而且 **62 个 hunger tick 里每一个 `option` 都是「吃饭」**：他不是没被喂，是整个 need 向量都追不上了。
+## ⇒ 报告里把 `hunger×62` 单拎出来当"新的饥饿"读是**读错了**；detail 现在补印形状（几人 / 最长连续段）就是为了堵这个。
+##
+## **work_pull 结构上够不着这个人**：`_adv_open`（Sim.gd:1622-1626）对**非在任者**直接拒掉带 `job` 的广告，
+## 克隆 `_job_of("npc_13") == {}` ⇒ 它一条工位广告都枚举不到 ⇒ `benefit *= work_pull_mult` 那一行永不执行；
+## 何况塌方期间 `_min_need < SURVIVAL_GATE` 恒真 ⇒ `mods_ok=false` 把整族乘子都关了。
+##
+## ⚠ **我自己的机制假设被自己的干预证伪了，写在这里免得下一个人再买一遍。**
+## 假设："`_social_candidates`（Sim.gd:1805）的 `if _min_need(ag) < SURVIVAL_GATE: return []`
+##       在 argmin 恰是 social 时，把唯一能修好 social 的动作类关掉了 ⇒ 自锁。"
+## 干预（隔离副本，把 social 从那道门的 min 里摘掉），同一批 N/seed 各 48 次运行：
+##       A 1 红 → **12 红**；B 4 红 → **8 红**；最狠的一格 `hunger×351`（比任何未干预的都大）。
+##       并且它移动 **9/12 个 N=12 金标** ⇒ 还要付整套 R12。
+## ⇒ 那道门是**承重的**（它上面那句"防大 N 沉迷戏剧而饿穿"的注释是对的），
+##    松它买到的是更多饿穿，不是更少。**测过、决定不做。**
+##
 ## ── docs/41 §2.5 探测包络（`does_not_detect` 逐条都是**跑出来的**，不是想出来的）──────────
 ## detects：
 ##   · `survival_veto_line` 归零（= B14 的 `_survival_ok` 落地之前那棵树）+ `random` 后端
@@ -122,9 +163,34 @@ static func _need_breakdown(by_need: Dictionary) -> String:
 		parts.append("%s×%d" % [String(k), int(by_need[k])])
 	return "  逐 need=[" + ", ".join(parts) + "]"
 
+## M1：把 `starved` 这个**标量**拆回它的三个自变量。**纯观测，不进判据。**
+## 为什么值得多打这一行——它是本棒被派出来的直接原因：
+##   L1 报的 `[social×2805, hunger×62]` 被读成"2805 次社交失败 + 62 次**真饥饿**"，
+##   于是"第一次出现真饥饿"成了一条独立发现。实测（M1，672 次 backend=null 运行）：
+##   那 2867 个 need·tick **全部属于同一个人**（`npc_13`，克隆、无岗位），
+##   而 62 个 hunger·tick 是那条 6.3 天长的 social 触底段里的**下游派生**，不是第二个现象。
+##   `need·tick` 是【人数 × need 种类 × 持续 tick】三者的乘积，
+##   ⇒ **同一个数既可能是"很多人短暂触底"，也可能是"一个人躺了六天"，而处置完全不同。**
+## ⇒ detail 里补三样：涉及几个人（点名，最多 4 个）· 最长连续触底段（tick 与天）· 该段属于谁的哪条 need。
+## shape 缺省 {} ⇒ 追加空串 ⇒ **7 个既有调用点的输出逐字节不变**（同 starve_by_need 的约定）。
+static func _starve_shape(shape: Dictionary) -> String:
+	if shape.is_empty():
+		return ""
+	var who: Array = shape.get("agents", [])
+	var names := PackedStringArray()
+	for i in mini(4, who.size()):
+		names.append(String(who[i]))
+	var tail := "…" if who.size() > 4 else ""
+	return "  涉及 %d 人[%s%s] · 最长连续触底 %d tick=%.1f 天 (%s)" % [
+		who.size(), ", ".join(names), tail,
+		int(shape.get("max_run_ticks", 0)), float(shape.get("max_run_days", 0.0)),
+		String(shape.get("max_run_key", "?"))]
+
 ## starve_by_need：可选的逐 need 明细，**只进 detail 字符串，不进任何判据**（默认 {} ⇒ 8 个既有调用点
 ## 一个字节不用改，输出也与改名前逐字相同）。今天只有 Harness 传它。
-static func check_all(S, starved: int, starve_by_need: Dictionary = {}) -> Array:
+## starve_shape：可选的**形状**明细（涉及几人 / 最长连续段），同样只进 detail 字符串、不进判据。
+## 默认 {} ⇒ 8 个既有调用点里的 7 个一个字节不用改，输出也与本次改动前逐字相同。
+static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_shape: Dictionary = {}) -> Array:
 	var R: Array = []
 	var log: Array = S.event_log
 	var accepted: Array = []
@@ -139,7 +205,7 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}) -> Array
 	var small_n: bool = S.agents.size() <= 12       # 涌现/单源传播类只在设计 N(≤12)硬断言；大 N 单源谣言 fizzle 是现实(docs/12 L4)
 	# 1) 无 need 触底（旧名「无饿穿」——判据从来就是【任一】need≤0.5，见 INV1_NAME 处的实测与四格对照）
 	R.append(_chk(1, INV1_NAME, starved == 0 or not harmony,
-		"触底 need·tick=%d%s (应=0;场景豁免)" % [starved, _need_breakdown(starve_by_need)]))
+		"触底 need·tick=%d%s%s (应=0;场景豁免)" % [starved, _need_breakdown(starve_by_need), _starve_shape(starve_shape)]))
 	# 2) 社交发生
 	R.append(_chk(2, "社交发生", not accepted.is_empty(), "已接受社交事务=%d (应>0)" % accepted.size()))
 	# 3) 无永久孤立
