@@ -2,6 +2,7 @@
 # Living Town CI — runs locally and in GitHub Actions. Fails (exit 1) on any red step.
 #   GODOT     path to the Godot 4.6.2 headless binary (default: godot on PATH)
 #   CI_SEEDS  S0 seed range (default 1-12)      CI_DAYS  S0 days (default 60)   CI_DET  det seeds (default 3)
+#   CI_POOL_N/CI_POOL_SEEDS/CI_POOL_DAYS/CI_POOL_DET  4a 宏观池尺度门 (default 24 / 1-12 / 60 / 1)
 #   CI_BG_SEEDS/CI_BG_DAYS/CI_BG_N  4d 外部后端门 (default 1-4 / 8 / 12)
 # Fast local plumbing check: CI_SEEDS=1-3 CI_DAYS=30 bash tools/ci.sh
 #   （原注释写的是 CI_DAYS=20 —— 实测在【改动之前的树上就已经是红的】：软不变量 #08「承诺生命周期」
@@ -199,6 +200,133 @@ echo "### 4. S0 gate (invariants + determinism + 金标; seeds=$CI_SEEDS days=$C
   --golden game/bench/golden_digests.json 2>&1 | tee "$LT_LOG/s0.log"
 [ "${PIPESTATUS[0]}" -eq 0 ] && ok "S0 gate" || bad "S0 gate"
 scan "S0 gate" "$LT_LOG/s0.log"
+
+# ── 4a. 宏观池尺度门 ──────────────────────────────────────────────────────────
+# 由来：K1（merge `ed599e8`）把产出侧改成宏观池 `production = _pool_rescale(_production_raw, agents.size())`，
+# 并在自己的回执里点名留下这一条。出货阵容 **N=12 == scale.base_population=12 ⇒ 倍率恰为 1 ⇒
+# `_pool_rescale` 直接 return raw、一个整数都不算**（Sim.gd:2952-2953 是显式的短路），
+# 而上面第 4 步恒 N=12（不传 `--agents`）⇒ **换尺度之后的产出表，从来没有被任何一条判据评估过。**
+#
+# ⚠️ **说准一点：不是「算术一次都没执行过」。** docs/58 §一 与 K1 回执都是这么写的，两处都不严谨；
+#    docs/54 §八「更正二」早就把话说对了，而它没有被抄进后来的 brief。事实：
+#      · 第 4b 步 `lod_verify` 传 `CI_LOD_N:-48` ⇒ **乘除每一次 CI 都在跑**；
+#      · 但 4b **只比对 [Inv.digest, event_digest] 双摘要，从不调 `Inv.check_all`**；
+#      · 而且它跑 **3 天 < Invariants.SUPPLY_MIN_DAYS=60** ⇒ 就算给它接上判据，
+#        #40 的满足率臂也按构造禁用（会打印「未启用(3<60天)」）。
+#    **本棒把这件事量成了两个数**（seed 17 × 3 天 × N=48，也就是 4b 自己的配置）：
+#        产出走宏观池     digest 632226373  event_digest 7136159286272743904  events 650
+#        产出走逐笔契约   digest 990424415  event_digest  526545081279226260  events 688
+#      ⇒ **换尺度的算术确实在跑，而且确实改了轨迹**（两份摘要没有一位相同）；
+#      **然而同一棵 pooled 树与同一棵逐笔树上，4b 都是 `LOD-VERIFY GATE: ✅ PASS`**
+#      ——它比的是"自己跟自己一致"，不是"值对不对"，所以**它对这件事的分辨率恰好是零**。
+#    ⇒ 真正的缺口窄一格、也更难看见：**「大 N」与「供给判据」在这道 CI 里此前是互斥的。**
+#    这是 docs/41 §2 第三个盲区（一道门跑在一个它守的那件事不可能发生的配置上）的又一实例，
+#    **而这一个是 Wave K 我们自己刚造出来的**。本步就是把它消掉，所以它自己绝不能又造一个（见下面的预检）。
+#
+# ── 为什么是 N=24，而不是 docs/58 §一 写的 N=16 —— **实测否掉的，不是偏好** ──────────────
+#   未改动的出货树上跑 S0 全套判据（12 seed × 60 天，backend=null，无 LOD），逐 N 的判决：
+#     N=16  ❌ FAIL   #40 软门 **10/12**（红 seed 8,9；软门要 ≥11）           141 s
+#     N=20  ❌ FAIL   **硬 #01 红 seed 6**（social 触底 106 tick·need，det 1/1 两跑一致） 196 s
+#     N=24  ✅ PASS   硬 12/12 · #40 11/12 · 活性过 · det 过                 291 s
+#     N=60  —         K1 实测 #40 红 2/12 ⇒ 软门破；本棒只复跑到 seeds 1-3（3/3 绿），
+#                     12 seed ≈990 s 超单次工具上限，没有复跑到红的那两个 seed。
+#   ⇒ **N=24 是唯一一个今天能绿的大 N 格。** 照 docs/58 §一 写的 N=16 接进来 = CI 当场变红。
+#   ⚠️ 而且 **N=16 上那条 brief 指定的负对照是【空的】**：实测删 scale 块之后 N=16 也是 **10/12**
+#     （红 seed 4,5 而不是 8,9）——**红/绿两侧同为 2/12**，改与不改分不开。
+#     在 N=16 建这一格，会同时得到"未改动的树上就是红的"和"负对照也红"两件坏事。
+#   ⚠️ N=20 的那条硬 #01 值得单独记一笔：**逐笔契约下 N=20 的硬 #01 是 12/12 绿**（本棒实测，
+#     与 docs/54 §五 的表一致），**上池之后才在 seed 6 红**；而同一张表在 N=24 上方向相反
+#     （逐笔红 seed 3 → 上池后 12/12 绿，本棒两边都实测到）。⇒ **池【移动】了 #01 的落点，
+#     不是单调变好或变坏**；格数是 72 分之 3，按 docs/41 §5 只能读作"这个网格分辨不出"。
+#
+# ⚠️ **余量是 0，写在这里让下一个人一眼看见**（docs/41 §5「收紧判据前先量余量」）：
+#   #40 在 N=24 上是 **11/12，恰好等于软门阈值**，唯一的红是 seed 8（口粮 满足率 0.48 < 下限 0.50）。
+#   **再红一个 seed 这一步就变红。** 这不是「别的机器上会假红」那种病（同 seed 同二进制逐字节可复现，
+#   与机器快慢无关），是真实的灵敏度。嫌太紧的话 `CI_POOL_SEEDS=1-6` ⇒ 6/6 全绿、容 1 个红、成本减半
+#   （seed 8 落在 7-12 那半）——**但那等于把 fixture 朝最容易过的方向选，正是第三个盲区的病**，故默认取全网格。
+#
+# **不传 `--golden`**：`golden_digests.json` 是在 N=12 出货阵容上烘的，N=24 的 digest 与它天生不同
+#   ⇒ 传了只会因为「对不上一份本来就不该对上的表」变红。跨进程锚仍由第 4 步独占，本步守的是**判据**。
+#
+# ── 成本（实测墙钟。⚠️ 本机全程有并行棒的 godot 在跑，run-to-run 噪声很大，所以给区间不给单点）──
+#     本步单跑（12 seed × 60 天 + det 1）：**239 s / 291 s**（两次，同一命令）。
+#     docs/54 §七 的干净串行参照：N=24 × 12 seed = 179 s，加 det 1 约 **195 s**。
+#     整份 `tools/ci.sh`：接入前 **683 s**；接入后两次分别 **775 s / 909 s**，三次都读到 `=== CI PASS ✅ ===`。
+#     ⇒ 诚实的说法是「**+200 s 上下，约 +30%**」，而**不是** 909−683=226 这个看起来很精确的差
+#       （同一棵接入后的树两次相差 134 s，噪声比信号的一半还大）。
+#     嫌贵：`CI_POOL_SEEDS=1-6` 成本减半（但见上面「余量是 0」那段——它同时把 seed 8 拿掉了）。
+#
+# ── 负对照（**实测**，隔离副本，只删 `production.json` 的 `scale` 块 = K1 的 ablation 开关）──
+#     未改动的树     rc=0  S0 GATE PASS ✅   #40 **11/12**  硬 12/12
+#     删掉 scale 块  rc=1  S0 GATE FAIL ❌   #40 **1/12**   硬 **11/12**（#01 红 seed 3）
+#   逐 seed：删块后 seed 1,2,4-12 的 #40 全红，seed 3 直接硬红。
+#   ★ 这一列与 docs/54 §二/§五 在**同一个 N=24 上独立测过的那两行逐位吻合**（11 个红 + 硬 #1 落在 seed 3）
+#     ⇒ 负对照复现了一份更早的独立测量，不是我自己造出来的孤证。
+#   ⚠️ 把 `base_population` 改成 24 与「删 scale 块」在**返回值上是同一件事**（`num == base` 直接 return raw）
+#     ⇒ 上面那条红对那种改法逐字节同样成立，不必再跑一遍。
+#
+# ── 探测包络（docs/41 §2.5）────────────────────────────────────────────────────
+# detects（四个变异体逐条跑过，**读的是判决行不是退出码**）：
+#   ① 删 `scale` 块（brief 指定的那条）⇒ **预检**红（0.2 s，不进 godot）；同一份数据在 Harness 上
+#      单跑也红：rc=1、#40 1/12、硬 #01 seed 3。**两条臂各自都抓得住它。**
+#   ② `CI_POOL_N=12`（倍率退化为 1）⇒ 预检红：「池倍率 12/12 恰为 1 ⇒ 会退化成第 4 步的复读」。
+#   ③ `CI_POOL_DAYS=30`（< SUPPLY_MIN_DAYS）⇒ 预检红：「#40 满足率臂按构造禁用」。
+#   ④ **`scale` 块在、倍率对、`pool` 列表清空**（一个字段都不换尺度 ⇒ production 与逐笔逐值相同）
+#      ⇒ **预检看不见它**（预检只查倍率与天数），只有判据抓得住：整份 CI 跑完 **`=== CI FAIL ❌ ===` rc=1，
+#      全文件恰好一条 `❌ FAIL: 宏观池尺度门`，其余每一步照旧全绿（含第 4 步 N=12 金标 PASS）**。
+#      ★ 这一条是四个里最重要的：**它证明红不是预检独占的**，昂贵的那条判据臂自己就有牙。
+#      ★ 它的逐 seed 数与 ① 逐位相同（#40 1/12、硬 #01 seed 3、seed 1 口粮 0.48/屋瓦 0.45）
+#        ——因为两者产出表逐值相同，这是构造上的必然，不是巧合。
+#      ⚠️ 并且它暴露了一件事：`detail` 里那句「产出契约=宏观池 ×24/12」在这个变异体上**照样打印**
+#        （`prod_pooled` 只记倍率、不记有没有真的换过字段）⇒ **那行字不是证据，判据才是。**
+# does_not_detect（**跑出来的，不是想出来的**）：
+#   ① **整除截断那一路**：24 是 base 的整数倍 ⇒ `v*24/12` 精确、`maxi(1,·)` 两处钳位**一次都不触发**。
+#      真正会截断的是 N∉12ℤ（16 的 ×4/3、20 的 ×5/3），而那两个 N 今天是红的
+#      ⇒ **K1 那两处「原料/损耗永不取整到 0」的保护，本门守不住。**
+#   ② **N=60 那一端没有门**：本门跑 N=24；K1 实测 N=60 上 #40 仍红 2/12
+#      （本棒复跑 seeds 1-3 = 3/3 绿，没复跑到红的那两个）。
+#   ③ 继承 #40 自己的盲区：**没有上限臂**（K1 实测批量 ×8 ⇒ #40 绿 2/2 @N=60）；
+#      原料需求靠「在班完成次数 × 用量」重建，第二条不经 `_produce_for` 的原料通道会让分母静默偏低（docs/54 §十）。
+#   ④ **`pool` 列表只被削掉一部分**（例如只留 `amount`）：没测。K1 测过 amount+inputs 那一档在 N=60 上仍红，
+#      但**在 N=24 上会不会红没人跑过** ⇒ 这一门对"池被削薄"的分辨率不明。
+#   ⑤ 帧时 / 内存 / 真机 / 有玩家 / 有 SLM 后端 / 有 LOD：本步是 backend=null 的 headless 地板，
+#      docs/41 §2 点名的五个温和配置里它只换掉了 N=12 这一个。
+# confidence：**N=4 个变异体**（数据侧 2 个：删块 → 预检红且判据也红 / 清空 pool → 只有判据红；
+#      配置侧 2 个 → 预检红），另在 5 个网格（N=16/20/24/24-删块/16-删块，各 12 seed × 60 天）
+#      上量过判据的红绿分布，N=60 只有 3 个 seed。
+POOL_N="${CI_POOL_N:-24}"; POOL_SEEDS="${CI_POOL_SEEDS:-1-12}"
+POOL_DAYS="${CI_POOL_DAYS:-60}"; POOL_DET="${CI_POOL_DET:-1}"
+echo "### 4a. 宏观池尺度门 (N=$POOL_N seeds=$POOL_SEEDS days=$POOL_DAYS det=$POOL_DET；S0 判据首次跑在池倍率≠1 的配置上)"
+# 预检①②：**照 `_pool_rescale` 自己的算法**（含 quantum 向上取整）从 production.json 现算倍率，
+#   而不是写死 `POOL_N != 12` 那种比较——删 scale 块 / 改 base_population / 改 quantum 都会当场把它打红。
+# 预检③：`SUPPLY_MIN_DAYS` 从源码 grep，不写魔数（判据改名/搬家 ⇒ 读不到 ⇒ 红，而不是静默放行）。
+POOL_PRE=$("$PY" -c '
+import json, sys
+sc = (json.load(open("game/data/production.json", encoding="utf-8")).get("scale") or {})
+base = int(sc.get("base_population", 0)); q = int(sc.get("quantum", 0)); num = max(1, int(sys.argv[1]))
+if q > 0: num = ((num + q - 1) // q) * q
+print(base, num)
+' "$POOL_N" 2>/dev/null)
+POOL_BASE="${POOL_PRE%% *}"; POOL_NUM="${POOL_PRE##* }"
+SUP_MIN=$(grep -oE 'const[[:space:]]+SUPPLY_MIN_DAYS[[:space:]]*:=[[:space:]]*[0-9]+' game/bench/Invariants.gd | grep -oE '[0-9]+$')
+POOL_PRE_OK=1
+if ! [ "${POOL_BASE:-x}" -gt 0 ] 2>/dev/null; then
+  bad "4a 预检：production.json 读不到 scale.base_population>0 ⇒ 产出侧退回逐笔契约，这一格守不住任何东西"; POOL_PRE_OK=0
+elif [ "$POOL_NUM" -eq "$POOL_BASE" ]; then
+  bad "4a 预检：N=$POOL_N 在 base_population=$POOL_BASE 下池倍率 $POOL_NUM/$POOL_BASE 恰为 1 ⇒ _pool_rescale 直接 return raw、一个整数都不算 —— 这一格会退化成第 4 步的复读（正是本步存在的理由）"; POOL_PRE_OK=0
+elif ! [ "${SUP_MIN:-x}" -gt 0 ] 2>/dev/null; then
+  bad "4a 预检：从 Invariants.gd 读不到 SUPPLY_MIN_DAYS（判据可能改名或搬家）"; POOL_PRE_OK=0
+elif [ "$POOL_DAYS" -lt "$SUP_MIN" ]; then
+  bad "4a 预检：days=$POOL_DAYS < SUPPLY_MIN_DAYS=$SUP_MIN ⇒ #40 的满足率臂按构造禁用（会打印「未启用」）—— 这一格会退化成 4b"; POOL_PRE_OK=0
+fi
+if [ "$POOL_PRE_OK" -eq 1 ]; then
+  ok "4a 预检：池倍率 ×$POOL_NUM/$POOL_BASE ≠ 1（换尺度的算术真的会跑） · days=$POOL_DAYS ≥ SUPPLY_MIN_DAYS=$SUP_MIN（#40 满足率臂真的会评估）"
+  "$GODOT" --headless --path game --script res://bench/Harness.gd -- \
+    --seeds "$POOL_SEEDS" --days "$POOL_DAYS" --det "$POOL_DET" --agents "$POOL_N" 2>&1 | tee "$LT_LOG/s0_pool.log"
+  [ "${PIPESTATUS[0]}" -eq 0 ] && ok "宏观池尺度门 (N=$POOL_N，产出契约=宏观池 ×$POOL_NUM/$POOL_BASE)" \
+    || bad "宏观池尺度门 (N=$POOL_N，产出契约=宏观池 ×$POOL_NUM/$POOL_BASE)"
+  scan "宏观池尺度门" "$LT_LOG/s0_pool.log"
+fi
 
 echo "### 4b. LOD 观察无关红线 (V2 相机路径无关 + V3 确定性/存读/fresh-restart)"
 # 永久门：aggregate LOD 的 cohort 必须【只由 committed sim 态】选、绝不读相机 lod_focus。
