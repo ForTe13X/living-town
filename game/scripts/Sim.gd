@@ -1871,8 +1871,18 @@ func _social_candidates(ag: Dictionary) -> Array:
 		var cid := _unspread_belief(ag, o)
 		if cid != "":
 			var gossipy := 8.0 if "爱八卦" in ag.get("persona", {}).get("traits", []) else 0.0
+			# ★O1(2026-07-31) 消息加分：只加给【转述来的传闻】(via != "seen")，亲眼所见的贫富/断供闲话一分不加。
+			# 为什么必须有这一项（实测，不是推断）：greet 对同一个 o 是**无条件**发的，而
+			#   greet - gossip = urgency*0.1 + fam*0.05 + 1.0 - gossipy。非爱八卦者 gossipy=0，
+			#   且社交候选只在 social>=SURVIVAL_GATE 时才存在 ⇒ urgency<=64 ⇒ 该差恒 >= 1.2，
+			#   而平局抖动只有 randf()*0.5 ⇒ **greet 严格支配 gossip**。
+			#   实测：非爱八卦者在 25567 次"有 gossip 候选"的决策里赢了 **0** 次（N=12/20/60 × seed 1/5 全格）。
+			#   ⇒ 全镇 12 个人设里只有阿丽(爱八卦)能转述传闻，谣言在第 1 跳之后必然停 —— 与常数 5.0 无关。
+			# 只加给"消息"这一档，是为了不误伤 gossip_rep：闲话档的分一字未动 ⇒ 名声通道的竞争面不变。
+			# 缺键/为 0 → `+ 0.0` → IEEE 恒等 → 逐字节不变（off 门）。
+			var news := _w("gossip_news_bonus", 0.0) if String((ag["beliefs"][cid] as Dictionary).get("via", "")) != "seen" else 0.0
 			out.append({"kind": "social", "action": "gossip", "partner": o["id"], "subject": cid,
-				"need": "social", "score": urgency * 0.6 + aff * 0.1 + gossipy + 5.0, "say": ""})
+				"need": "social", "score": urgency * 0.6 + aff * 0.1 + gossipy + 5.0 + news, "say": ""})
 		# docs/16 隐私门（广义版，见 _secret_private）：封闭房间 或 独处无旁人 才吐露/说漏；缺 rooms→恒 true=逐字节不变。
 		var priv_ok := _secret_private(ag, o)
 		# S3c confide —— 仅 owner 向高 trust+aff 者吐露心事（最脆弱条件投资，门高于 give/invite）
@@ -3381,7 +3391,18 @@ func _judge_actor(observer: Dictionary, actor_id: String, is_help: bool, recipie
 	_adjust_standing(observer, actor_id, d)   # 经跨机制 per-tick 守卫
 
 ## actor 已知、但 target 还不知道的 belief（用于 gossip；体现知识边界）。
+##
+## ★O1(2026-07-31)：旧版返回【插入序最早】的那条未传 belief，而这一条选择规则本身就是谣言通道的主要死因。
+##   实测（探针 o1_probe，30 天）：`_observe_wealth` 每夜给每人生成一批 `W:<id>:rich/broke`（via=seen），
+##   数量随 N 平方涨；它们从第一夜起就排在任何【转述来的】传闻前面 ⇒ 每对 (actor,target) 只有一个 gossip 槽，
+##   而那个槽被贫富闲话永久占住。N=60 seed1：gossip 候选的 subject 里 R1 只占 1519/72617 = **2.1%**，
+##   W:* 占 93.2%。⇒ 就算把 gossip 的分抬到必胜，传出去的 98% 也是"npc_31 手头紧"。
+##   ⇒ `gossip_news_first != 0` 时：**转述来的传闻(via != "seen") 优先于亲眼所见的闲话**，同类内仍按插入序。
+##   返回值为 "" 的条件与旧版**完全相同**（只改选哪一条，不改有没有）⇒ 候选【存在性】逐字节不变。
+##   缺键/为 0 → 走 return-first 老路 → 逐字节不变（off 门）。
 func _unspread_belief(actor: Dictionary, target: Dictionary) -> String:
+	var news_first := _w("gossip_news_first", 0.0) != 0.0
+	var fallback := ""
 	for cid in actor["beliefs"]:
 		var b: Dictionary = actor["beliefs"][cid]
 		if bool(b.get("secret", false)):
@@ -3391,8 +3412,13 @@ func _unspread_belief(actor: Dictionary, target: Dictionary) -> String:
 		if String(b["subject"]) == String(target["id"]):
 			continue                                         # 不当面议论本人
 		if not target["beliefs"].has(cid):
-			return cid
-	return ""
+			if not news_first:
+				return cid
+			if String(b.get("via", "")) != "seen":
+				return cid                                   # 别人【转述给我】的才是消息；亲眼所见的是闲话
+			if fallback == "":
+				fallback = cid                               # 没有消息可讲时，闲话照旧（与旧版同一条）
+	return fallback
 
 func _log_event(type: String, actor_id: String, target_id: String, subject: String, accepted: bool, witnesses: Array, note: String = "") -> Dictionary:
 	var wids: Array = []
