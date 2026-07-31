@@ -1,0 +1,96 @@
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+[P1] seed=13 days=30 N=20 t0=1200 delay=480
+[P1] === CTRL ===
+[P1]   chain=1236703049 digest=3032839509 event_digest=825403530724936175 events=2928  同基线=true
+[P1]   首个分叉 tick=无  逐agent分叉(act)=0/20  (rel)=0/20
+[P1]   知道 P1FACT 的人=0  传播事件=0 []
+[P1]   最早分叉@无 的人=[]
+[P1]   知情者当时的接触:
+[P1]   先动后知(act 分叉早于习得)=0 []
+[P1]   硬=[] 软=[] 触底=0  gossip=130 gossip_rep=926  st(carrier)=2.0 st(subject)=-6.0
+[P1]   全局读观测: clean_mult∈[0.7000,0.8820]  市集关闭 90/120 采样  work_pull=1.200000
+[P1] === EXT_NULL ===
+[P1]   chain=1236703049 digest=3032839509 event_digest=825403530724936175 events=2928  同基线=true
+[P1]   首个分叉 tick=无  逐agent分叉(act)=0/20  (rel)=0/20
+[P1]   知道 P1FACT 的人=0  传播事件=0 []
+[P1]   最早分叉@无 的人=[]
+[P1]   知情者当时的接触:
+[P1]   先动后知(act 分叉早于习得)=0 []
+[P1]   硬=[] 软=[] 触底=0  gossip=130 gossip_rep=926  st(carrier)=2.0 st(subject)=-6.0
+[P1]   全局读观测: clean_mult∈[0.7000,0.8820]  市集关闭 90/120 采样  work_pull=1.200000
+[P1] === STIFLED_1KNOWER ===
+[P1]   chain=1236703049 digest=3032839509 event_digest=825403530724936175 events=2928  同基线=true
+[P1]   首个分叉 tick=无  逐agent分叉(act)=0/20  (rel)=0/20
+[P1]   知道 P1FACT 的人=1  传播事件=0 []
+[P1]   最早分叉@无 的人=[]
+[P1]   知情者当时的接触:
+[P1]   先动后知(act 分叉早于习得)=0 []
+[P1]   硬=[] 软=[] 触底=0  gossip=130 gossip_rep=926  st(carrier)=2.0 st(subject)=-6.0
+[P1]   全局读观测: clean_mult∈[0.7000,0.8820]  市集关闭 90/120 采样  work_pull=1.200000
+[P1] === STIFLED_1KNOWER+GLOBALREAD ===
+[P1]   chain=3183071879 digest=2087971542 event_digest=5168135224570859393 events=2387  同基线=false
+[P1]   首个分叉 tick=1203  逐agent分叉(act)=20/20  (rel)=20/20
+[P1]   知道 P1FACT 的人=1  传播事件=0 []
+[P1]   最早分叉@1203 的人=["dan[不知情/**与知情者无接触**]", "tie[不知情/**与知情者无接触**]"]
+[P1]   知情者当时的接触: aria:本臂||npc_13| 对照||npc_13|
+[P1]   先动后知(act 分叉早于习得)=19 ["ben(div@1268, learn@never)", "coco(div@1293, learn@never)", "dan(div@1203, learn@never)", "evy(div@1421, learn@never)", "fei(div@1228, learn@never)", "hai(div@1380, learn@never)", "lin(div@1213, learn@never)", "mei(div@1204, learn@never)", "npc_12(div@1252, learn@never)", "npc_13(div@1237, learn@never)", "npc_14(div@1262, learn@never)", "npc_15(div@1204, learn@never)", "npc_16(div@1252, learn@ne
+[P1]   硬=[] 软=[8] 触底=0  gossip=161 gossip_rep=109  st(carrier)=0.0 st(subject)=0.0
+[P1]   全局读观测: clean_mult∈[0.7000,0.8820]  市集关闭 90/120 采样  work_pull=1.200000
+[P1] === KNOWN_1KNOWER ===
+[P1]   chain=1237180736 digest=3112041980 event_digest=851049828996515549 events=2977  同基线=false
+[P1]   首个分叉 tick=1344  逐agent分叉(act)=20/20  (rel)=20/20
+[P1]   知道 P1FACT 的人=13  传播事件=12 [{ "tick": 1354, "type": "gossip", "actor": "aria", "target": "npc_16" }, { "tick": 1492, "type": "gossip", "actor": "npc_16", "target": "npc_15" }, { "tick": 1559, "type": "gossip", "actor": "npc_16", "target": "ben" }, { "tick": 1804, "type": "gossip", "actor": "ben", "target": "npc_12" }, { "tick
+[P1]   最早分叉@1301 的人=["aria[知情]"]
+[P1]   知情者当时的接触: aria:本臂|dan|lin| 对照|dan|lin|
+[P1]   先动后知(act 分叉早于习得)=19 ["ben(div@1540, learn@1559)", "coco(div@1520, learn@never)", "dan(div@1518, learn@3314)", "evy(div@1520, learn@2076)", "fei(div@1551, learn@never)", "hai(div@1625, learn@never)", "lin(div@1518, learn@never)", "mei(div@1571, learn@2173)", "npc_12(div@1495, learn@1804)", "npc_13(div@1704, learn@never)", "npc_14(div@1592, learn@2415)", "npc_15(div@1438, learn@1492)", "npc_16(div@1344, learn@1354)", "
+[P1]   硬=[] 软=[] 触底=0  gossip=148 gossip_rep=945  st(carrier)=0.0 st(subject)=-14.0
+[P1]   全局读观测: clean_mult∈[0.7260,0.8820]  市集关闭 90/120 采样  work_pull=1.200000
+[P1] === ARM1_INSTANT_GLOBAL ===
+[P1]   chain=1236703049 digest=3032839509 event_digest=825403530724936175 events=2928  同基线=true
+[P1]   首个分叉 tick=无  逐agent分叉(act)=0/20  (rel)=0/20
+[P1]   知道 P1FACT 的人=20  传播事件=0 []
+[P1]   最早分叉@无 的人=[]
+[P1]   知情者当时的接触:
+[P1]   先动后知(act 分叉早于习得)=0 []
+[P1]   硬=[] 软=[] 触底=0  gossip=130 gossip_rep=926  st(carrier)=2.0 st(subject)=-6.0
+[P1]   全局读观测: clean_mult∈[0.7000,0.8820]  市集关闭 90/120 采样  work_pull=1.200000
+[P1] === ARM2_DELAYED_ANON ===
+[P1]   chain=3316653408 digest=2895529216 event_digest=3722981587502822844 events=2887  同基线=false
+[P1]   首个分叉 tick=1201  逐agent分叉(act)=20/20  (rel)=20/20
+[P1]   知道 P1FACT 的人=20  传播事件=4 [{ "tick": 1376, "type": "gossip", "actor": "aria", "target": "npc_16" }, { "tick": 1394, "type": "gossip", "actor": "fei", "target": "npc_12" }, { "tick": 1564, "type": "gossip", "actor": "dan", "target": "npc_19" }, { "tick": 1655, "type": "gossip", "actor": "npc_19", "target": "npc_14" }]
+[P1]   最早分叉@1201 的人=["evy[知情]", "npc_17[不知情/被知情者搭话(含反事实)]"]
+[P1]   知情者当时的接触: aria:本臂||npc_13| 对照||npc_13| ben:本臂||dan| 对照||dan| coco:本臂||hai| 对照||hai| dan:本臂|tie|tie| 对照|tie|tie| evy:本臂|npc_17|npc_13| 对照||npc_13| fei:本臂||shu| 对照||shu| lin:本臂||ben| 对照||ben| hai:本臂|coco|npc_16| 对照|coco|npc_16| shu:本臂||npc_17| 对照||npc_17| mei:本臂|npc_15|npc_19| 对照|npc_15|npc_19|
+[P1]   先动后知(act 分叉早于习得)=10 ["npc_12(div@1252, learn@1394)", "npc_13(div@1250, learn@1680)", "npc_14(div@1257, learn@1655)", "npc_15(div@1310, learn@1680)", "npc_16(div@1251, learn@1376)", "npc_17(div@1201, learn@1680)", "npc_18(div@1251, learn@1680)", "npc_19(div@1302, learn@1564)", "qin(div@1302, learn@1680)", "tie(div@1345, learn@1680)"]
+[P1]   硬=[] 软=[] 触底=0  gossip=100 gossip_rep=1006  st(carrier)=0.0 st(subject)=-22.0
+[P1]   全局读观测: clean_mult∈[0.7080,0.9400]  市集关闭 90/120 采样  work_pull=1.200000
+[P1] === ARM3_DELAYED_NAMED ===
+[P1]   chain=3316653408 digest=2895529216 event_digest=3722981587502822844 events=2887  同基线=false
+[P1]   首个分叉 tick=1201  逐agent分叉(act)=20/20  (rel)=20/20
+[P1]   知道 P1FACT 的人=20  传播事件=4 [{ "tick": 1376, "type": "gossip", "actor": "aria", "target": "npc_16" }, { "tick": 1394, "type": "gossip", "actor": "fei", "target": "npc_12" }, { "tick": 1564, "type": "gossip", "actor": "dan", "target": "npc_19" }, { "tick": 1655, "type": "gossip", "actor": "npc_19", "target": "npc_14" }]
+[P1]   最早分叉@1201 的人=["evy[知情]", "npc_17[不知情/被知情者搭话(含反事实)]"]
+[P1]   知情者当时的接触: aria:本臂||npc_13| 对照||npc_13| ben:本臂||dan| 对照||dan| coco:本臂||hai| 对照||hai| dan:本臂|tie|tie| 对照|tie|tie| evy:本臂|npc_17|npc_13| 对照||npc_13| fei:本臂||shu| 对照||shu| lin:本臂||ben| 对照||ben| hai:本臂|coco|npc_16| 对照|coco|npc_16| shu:本臂||npc_17| 对照||npc_17| mei:本臂|npc_15|npc_19| 对照|npc_15|npc_19|
+[P1]   先动后知(act 分叉早于习得)=10 ["npc_12(div@1252, learn@1394)", "npc_13(div@1250, learn@1680)", "npc_14(div@1257, learn@1655)", "npc_15(div@1310, learn@1680)", "npc_16(div@1251, learn@1376)", "npc_17(div@1201, learn@1680)", "npc_18(div@1251, learn@1680)", "npc_19(div@1302, learn@1564)", "qin(div@1302, learn@1680)", "tie(div@1345, learn@1680)"]
+[P1]   硬=[] 软=[] 触底=0  gossip=100 gossip_rep=1006  st(carrier)=0.0 st(subject)=-22.0
+[P1]   全局读观测: clean_mult∈[0.7080,0.9400]  市集关闭 90/120 采样  work_pull=1.200000
+[P1] === ARM4_CARRIER_TX ===
+[P1]   chain=1237180736 digest=3112041980 event_digest=851049828996515549 events=2977  同基线=false
+[P1]   首个分叉 tick=1344  逐agent分叉(act)=20/20  (rel)=20/20
+[P1]   知道 P1FACT 的人=13  传播事件=12 [{ "tick": 1354, "type": "gossip", "actor": "aria", "target": "npc_16" }, { "tick": 1492, "type": "gossip", "actor": "npc_16", "target": "npc_15" }, { "tick": 1559, "type": "gossip", "actor": "npc_16", "target": "ben" }, { "tick": 1804, "type": "gossip", "actor": "ben", "target": "npc_12" }, { "tick
+[P1]   最早分叉@1301 的人=["aria[知情]"]
+[P1]   知情者当时的接触: aria:本臂|dan|lin| 对照|dan|lin|
+[P1]   先动后知(act 分叉早于习得)=19 ["ben(div@1540, learn@1559)", "coco(div@1520, learn@never)", "dan(div@1518, learn@3314)", "evy(div@1520, learn@2076)", "fei(div@1551, learn@never)", "hai(div@1625, learn@never)", "lin(div@1518, learn@never)", "mei(div@1571, learn@2173)", "npc_12(div@1495, learn@1804)", "npc_13(div@1704, learn@never)", "npc_14(div@1592, learn@2415)", "npc_15(div@1438, learn@1492)", "npc_16(div@1344, learn@1354)", "
+[P1]   硬=[] 软=[] 触底=0  gossip=148 gossip_rep=945  st(carrier)=0.0 st(subject)=-14.0
+[P1]   全局读观测: clean_mult∈[0.7260,0.8820]  市集关闭 90/120 采样  work_pull=1.200000
+[P1] === MINDREAD_STANDING ===
+[P1]   chain=1131516432 digest=3417990191 event_digest=2927294972949561743 events=2847  同基线=false
+[P1]   首个分叉 tick=1542  逐agent分叉(act)=20/20  (rel)=20/20
+[P1]   知道 P1FACT 的人=0  传播事件=0 []
+[P1]   最早分叉@1542 的人=["coco[不知情/与qin同区]", "npc_19[不知情/与qin同区]", "qin[不知情/与qin同区]"]
+[P1]   知情者当时的接触:
+[P1]   先动后知(act 分叉早于习得)=20 ["aria(div@1586, learn@never)", "ben(div@1555, learn@never)", "coco(div@1542, learn@never)", "dan(div@1647, learn@never)", "evy(div@1544, learn@never)", "fei(div@1561, learn@never)", "hai(div@1698, learn@never)", "lin(div@1574, learn@never)", "mei(div@1567, learn@never)", "npc_12(div@1556, learn@never)", "npc_13(div@1725, learn@never)", "npc_14(div@1572, learn@never)", "npc_15(div@1720, learn@neve
+[P1]   硬=[] 软=[] 触底=0  gossip=76 gossip_rep=899  st(carrier)=1.0 st(subject)=-14.0
+[P1]   全局读观测: clean_mult∈[0.7260,0.8820]  市集关闭 90/120 采样  work_pull=1.200000
+[P1] DONE
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)
