@@ -596,6 +596,31 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}) -> Array
 	#        基线最大 0.467（屋瓦 seed 7），而把话本产量掐掉 83% 之后只有 0.300-0.600
 	#        ⇒ **不存在能同时分开这两组的阈值**。留作 detail 里的诊断数字，不作判据。
 	#
+	#
+	#     ── ★K1（2026-07-31，docs/41 §0.5 双尺度）：**本条判据在两种产出契约下一个字节都没改**，理由在这里 ──
+	#     §0.5 与 docs/57 §一 都预期"宏观池要配一套自己的判据"。**实测不需要，而且不加是更强的选择**：
+	#       · 满足率是**比值**（到手件数/想要件数），对"记账单位"天然免疫。宏观池换的正是记账单位
+	#         （一次在班完成从"一个人的产量"变成"这一行的产量"）⇒ 分子分母同尺度 ⇒ 判据不变。
+	#       · 分母那一半会**自动跟着换尺度**，因为它读的是 `S.production`，而 K1 的池是在
+	#         `Sim.start_new` 里把 production 整体换尺度后交给下游的（`Sim._pool_rescale`）——
+	#         包括 `produce[职位].inputs`，所以窑口那份柴薪需求在池口径下仍然对得上（实测 0 次 MISMATCH）。
+	#     ⇒ **#38/#39/#40 这三条的判据里没有任何一处读人口**。
+	#     ⚠ 但"本文件里没有一处读人口"是**假的**，我自己写下这句之后跑 grep 才发现——
+	#        `:139` 的 `small_n = S.agents.size() <= 12` 是**本棒之前就有**的人口分档，
+	#        被 #5(谣言传播) / #15(涌现放逐) / #20(谣言变冷) 三条用来在大 N 上**豁免自己**。
+	#        它与 §0.5 点名的那个坑是同一族（按人口放过），只是方向相反：它让那三条在 N>12 上不断言，
+	#        而 **CI 恒跑 N=12 ⇒ `small_n` 恒为 true ⇒ 这三条豁免在 CI 里一次都没生效过**（休眠，不是假绿）。
+	#        本棒没有动它（不在 K1 要解决的问题里），记在这里免得下一棒以为这条纪律已经全仓落实。
+	#        §0.5 点名要防的是"按人口分档 ⇒ 给出货配置预埋一条永不变红的门"；#40 这里连分档都没有，
+	#        两种契约走**同一条**判据，而它在池化契约下仍然会红——三个负对照（K1 回执）：
+	#          nc1 池倍率取整到 0（供给恒 0）      → N=60 **红 2/2**、N=12 **红 2/2**（满足率 0.000，断供 60/60）
+	#          nc2 池只给一半（base_population=24）→ N=60 **红 3/3**（最差货 0.319-0.396，屋瓦断供 39-49/60）
+	#          nc3 批量再 ×8（灌满）              → N=60 **绿 2/2** ← 这一条是 does_not_detect：本判据**没有上限臂**
+	#     ⚠ 但契约本身要能读出来 ⇒ detail 末尾追加"产出契约=宏观池 ×num/den | 逐笔"（只报不判，见下）。
+	#     ⚠ **本判据在 CI 里仍然只跑 N=12**（docs/54 §八：ci.sh 里没有任何一处在 N>12 上评估不变量），
+	#        而 N=12 上池倍率恰为 1 ⇒ **池这条路 CI 一步都没走过**。这是 docs/41 §2 第三个盲区的新实例，
+	#        修它要动 `tools/ci.sh`（不在 K1 的行）。复跑命令与实测成本见 K1 回执。
+	#
 	#     ── 分档（外审的第二条警告：将来引入【本就不该被生产】的货，"每种货 produce>0" 会假红）──
 	#     不写死货物名单，而是**从数据自己的结构里推**：
 	#       · 有人在 `produce` 里申报要产它 ⇒ 才要求 Σproduce>0；
@@ -668,12 +693,20 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}) -> Array
 		if rate < SUPPLY_FLOOR:
 			starved_goods.append("%s 满足率=%.2f(到手%d/想要%d，断供%d/%d天)" % [
 				gid, rate, int(per_c[gid]), dm, (sh_day[gid] as Dictionary).size(), days_run])
+	# ── K1：把【产出契约】写进 detail（**不是**分档，见上面的 K1 注释）──────────────────────
+	# 判据在两种契约下**一个字节都不变**，所以这里只报不判。报它的理由是可读性：
+	# 大 N 上看到一条红的 #40，第一句要问的就是"当时池开着没有、倍率是多少"，而那件事此前无处可读。
+	var contract := ""
+	if prod_on:
+		contract = "；产出契约=" + (("宏观池 ×%d/%d" % [int(S.prod_pool_num), int(S.prod_pool_den)])
+			if bool(S.prod_pooled) else "逐笔")
 	R.append(_chk(40, "产出闭环活性与供给充足",
 		(not prod_on) or (n_prod > 0 and n_cons > 0 and dead_goods.is_empty() and starved_goods.is_empty()),
-		"produce=%d consume=%d 满足率门%s%s%s" % [n_prod, n_cons,
+		"produce=%d consume=%d 满足率门%s%s%s%s" % [n_prod, n_cons,
 			("下限=%.2f" % SUPPLY_FLOOR) if days_run >= SUPPLY_MIN_DAYS else ("未启用(%d<%d天)" % [days_run, SUPPLY_MIN_DAYS]),
 			"" if dead_goods.is_empty() else "；【断链货物】" + ", ".join(dead_goods),
-			"" if starved_goods.is_empty() else "；【长期供不应求】" + ", ".join(starved_goods)]))
+			"" if starved_goods.is_empty() else "；【长期供不应求】" + ", ".join(starved_goods),
+			contract]))
 	return R
 
 ## 事件发生【当时】的相位（不是检查时的相位）。#39 的「在班」那一半靠它。
