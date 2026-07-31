@@ -256,7 +256,13 @@ var _short_day := {}            # good -> 上一次写过 shortage 事件的 day
 var prod_stats := {"produced": {}, "consumed": {}, "short": {}, "spoiled": {}, "attempts": {}, "work": {}}  # 诊断计数（逐 good / 逐动作 / 逐职位）
 var agents: Array = []          # [agent dict]
 var _agent_by_id := {}
-var spawn_count := 0            # >0：克隆扩容到该 agent 数（扩 N 测试用；0=用数据原样 6 个）
+var spawn_count := 0            # >0：克隆扩容到该 agent 数（扩 N 测试用；0=用数据原样 **12** 条 agents.json）
+                                #   ⚠ 这里原先写死"6 个"，docs/54 §八 2026-07-30 报过它过期、当时没人改；
+                                #     数是 `agents.json.agents.length` 长出来的，别再写死（K1 修，同 Invariants.gd 文件头那条）。
+                                #   ★K1 起它还决定产出侧的宏观池倍率（见 _pool_rescale）：克隆出来的 npc_<i>
+                                #     **不入岗位表**（:702 只给 id/persona/spawn/home），所以任何 N 下每个职位仍只有一个持有人
+                                #     ⇒ 评审建议的 `worker_count × work_capacity_factor(population)` 里，
+                                #       `worker_count` 这一半在现有结构下【不可动】，只有 capacity_factor 那一半够得着。
 var decide_period := 1          # L2 决策切片：每 agent 仅在 tick%P==hash(id)%P 做重决策(摊平大N尖峰)；1=不切片(零行为变化)
 var lod := false               # L3 保守 LOD：true=远端 agent 降频决策（扩 N 用）；false=全保真
 var lod_aggregate := false     # L3 激进 LOD：true=远端 agent 完全不跑 option/候选，只被动维持需求(冲上百 NPC)
