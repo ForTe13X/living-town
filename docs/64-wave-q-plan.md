@@ -57,7 +57,7 @@ P1 只在 N=12 上拿到干净的时序（N=20 上 `discuss` 先到）。**先�
 
 ## 二、Q2 · 模型路上的知识泄漏（**P1 明写它零数据点**）
 
-**owns**：`game/scripts/AIBackend.gd`、`game/bench/**`（新探针）、`docs/65-model-epistemic-leak.md`
+**owns**：`game/scripts/AIBackend.gd`、`game/bench/**`（新探针）、一份新的编号文档（**取当时可用的下一个编号**，别写死——本 session 编号涨得很快）
 **不得触碰**：`game/scripts/Sim.gd`（Q1 的行）、`game/data/*.json`、`tools/**`
 
 P1 的原话：
