@@ -235,6 +235,18 @@ var econ_stats := {"meals_paid": 0, "meals_free": 0, "wages_paid": 0, "wages_ski
 ##   本系统整个建在这条之下：**缺货绝不阻断动作、绝不削减需求补给**（没货也照吃），后果只落社会面。
 ##   任何把库存做成生存门的改动都是在给硬不变量 #01 开新的饿死通道 —— 不允许。
 var production := {}            # {start_stock, goods:{g:{cap,spoil_per_day,blame}}, produce:{职位:{good,amount}}, consume:{动作:{good,amount}}, scarcity_markup, shortage_standing}
+                                #   ★Wave K1 起它是**派生值**：= _pool_rescale(_production_raw, 人口)。见 _pool_rescale。
+var _production_raw := {}       # data/production.json 的原样（未换尺度）。start_new 每次都从它重算 production
+                                #   ——不能就地改 production，否则 goto_tick 反复 start_new 会把倍率乘上去。
+## ── Wave K1 双尺度（docs/41 §0.5 规模能力矩阵，用户 2026-07-31 定）────────────────────────
+## **消耗侧一个字不动**（60 个 agent 逐个真算：谁吃了什么、谁缺了什么、缺了记恨谁）。
+## **产出侧换尺度**：一次"本职在班完成"不再代表【一个人】的产量，而代表【这一行在这么大的镇子上】的产量。
+## 为什么必须换：岗位表恒为 9 人（jobs.json 6 + production.jobs 3），克隆出来的 npc_<i> 不入表 ⇒
+##   **任何 N 下都只有一个泥瓦匠**，而睡觉次数随人口精确线性涨（docs/54 §三）。
+## 契约（prod_pooled）：**按【产出是逐笔还是宏观池】分档，不按人口分档**——后者等于给出货配置预埋一条永不变红的门。
+var prod_pooled := false        # 产出契约：true=宏观池（production.scale 生效），false=逐笔（缺 scale 块 ⇒ 逐字节回到今天）
+var prod_pool_num := 1          # 池倍率 = num/den（**整数有理数，不引浮点** ⇒ 逐字节可回放）
+var prod_pool_den := 1          # num==den（出货阵容 N=12）⇒ 倍率恰为 1 ⇒ 直接返回原 dict ⇒ 逐字节等同逐笔
 var town_stock := {}            # 镇级库存 good -> 件数（唯一通道 = _stock_move；#38 从 event_log 独立重算）
 var stock_total0 := {}          # 开局库存快照（#38 的基准，同 econ_total0 之于 #34）
 var _stock_day := {}            # good -> 当日已消耗但尚未入账的件数：日界一次性写一条 consume 事件
@@ -460,6 +472,8 @@ func _load_data() -> void:
 	#   本棒最重要的那条验收就没法在 CI 里跑。先 file_exists 再读 ⇒ 缺文件是【合法的关闭态】，不是错误。
 	if FileAccess.file_exists("res://data/production.json"):
 		production = _read_json("res://data/production.json")
+	# K1：留一份未换尺度的原样。start_new 每次从它重算 production（人口在那时才知道，且 goto_tick 会反复重开）。
+	_production_raw = production
 	_merge_prod_jobs()                              # F1：production.jobs 里的新岗位(商贩/环卫工)并进岗位表；缺该键=今天的六个岗位
 	# P3 Tier-B：Space/Floor/Portal 合同 + 室内内容（缺 spaces.json → 空 → 全 town/outdoor → 逐字节不变）。
 	var _sp := _read_json("res://data/spaces.json")
@@ -722,6 +736,10 @@ func start_new(p_seed: int = 12345) -> void:
 	town_coin = int(economy.get("town_start", 0)) if not economy.is_empty() else 0
 	econ_stats = {"meals_paid": 0, "meals_free": 0, "wages_paid": 0, "wages_skipped": 0}
 	econ_total0 = money_total()
+	# ★K1 双尺度：产出侧按【本局人口】换尺度。必须落在这里——克隆扩容已经做完（agents 已填），
+	#   而 town_stock 的开局注资就在下面几行，读的正是换过尺度的 start_stock。
+	#   agents.size() 此刻是 **NPC 数**：add_player() 是 start_new 之后才 append 的，玩家不参与定池。
+	production = _pool_rescale(_production_raw, agents.size())
 	# Wave E 产出：镇级库存 per-run 重置（goto_tick 会反复 start_new，残留库存＝回放不一致）。
 	# production.json 缺失 → 三个字典全空 → 每个挂点都短路 → 逐字节回到 Wave D 末的轨迹。
 	town_stock = {}
@@ -2876,6 +2894,80 @@ func money_total() -> int:
 func _prod_on() -> bool:
 	return not production.is_empty()
 
+## ── K1 双尺度：产出侧的宏观池（docs/41 §0.5 的"货物【产出】的算法：N=12 逐个岗位真算 / N=60 宏观池估算"）──
+##
+## **它做什么**：把 production.json 里【产出侧】的每一个数按 `人口 / base_population` 换尺度。
+## 一次"本职在班完成"于是不再是"张三一个人烧了 30 片瓦"，而是"泥瓦这一行今天交了 N 片瓦"——
+## 居民不需要知道三个伐木工各砍了多少，只需要知道柴薪紧不紧张（§0.5 原话）。
+##
+## **它【不】做什么**：`consume` 一个字节都不动。60 个 agent 仍然逐个真算——谁吃了什么、谁没拿到、
+## 缺了记恨谁（_consume_for / _shortage_fallout 全程未改）。微观侧不降级是 §0.5 写死的。
+##
+## **为什么按人口，而不是按岗位数或在班完成次数**——三条都量过（本棒实测，seeds 1-3 × 60 天，见回执）：
+##   · 岗位数：**任何 N 下恒为 9**（克隆的 npc_<i> 不入岗位表）⇒ 倍率恒 1 ⇒ 什么都没做。
+##   · 在班完成次数：实测**基本不随 N 涨**（八个岗位合计/seed：N=12 是 98-130，N=60 是 107-145，
+##     约 ×1.1）⇒ 倍率 ~1.1 ⇒ 同上。
+##   · 人口：三种真正短缺的货，需求随人口**线性**（口粮 1048→5080 ×4.85 / 屋瓦 700→3544 ×5.06 /
+##     整洁 262→1290 ×4.92，而人口是 ×5.00）⇒ **只有人口这一条的曲线跟得上**。
+## **绝不按【该货的需求】定池**：那样 供给≡需求，#40 的满足率判据会变成恒真——一道永不变红的门，
+##   正是本波最容易造出来的那个空门（§0.5 点名）。人口是需求的**上游代理**而不是需求本身：
+##   实测豆子需求只涨 ×1.40、话本反而**跌到 ×0.55**，所以按人口定的池**并不保证**满足率达标 ⇒ 门仍有判别力。
+##
+## **哪些字段跟着换尺度**是数据说了算（`scale.pool` 列表），本棒扫过三档（回执 §"扫出来的曲线"）：
+##   amount / inputs / cap / spoil_per_day / start_stock。
+##   · `inputs` 必须跟着 amount 一起换，否则"货由货做成"这条链在宏观口径上断掉（§0.5 要求它在池层面成立）；
+##     且换尺度后**永不取整到 0**（原本 >0 的原料至少留 1），否则一窑瓦会变成不要柴。
+##   · `cap` 必须换：不换的话一批货撞满仓被丢掉，而且 _clean_mult 是 `现存/cap`，
+##     cap 不动会让整洁恒顶到 1.0、环卫的负反馈环整条失效。
+##   · `spoil_per_day` 必须换：不换的话损耗相对库存趋近于零，"缺货【周期性】发生"退化成"从不"
+##     （_calibration 明写设计意图是周期性）。
+##
+## **零扰动 / 逐字节纪律**（本棒最重要的一条不变量：N=12 必须逐字节不变）：
+##   · 缺 `scale` 块（或 base_population ≤ 0）⇒ 返回原 dict、prod_pooled=false ⇒ **任何 N 下都逐字节回到今天**。
+##   · num == den（出货阵容 N=12，base_population=12）⇒ **直接返回原 dict，一个整数都不算** ⇒ 逐字节等同逐笔。
+##   · 换尺度用整数有理数 `v * num / den`（GDScript 整除），**不引浮点** ⇒ 逐字节可回放。
+func _pool_rescale(raw: Dictionary, pop: int) -> Dictionary:
+	prod_pooled = false
+	prod_pool_num = 1
+	prod_pool_den = 1
+	if raw.is_empty():
+		return raw
+	var sc: Dictionary = raw.get("scale", {}) if raw.get("scale", {}) is Dictionary else {}
+	var base := int(sc.get("base_population", 0))
+	if base <= 0:
+		return raw                                       # 缺 scale 块 ⇒ 逐笔契约 ⇒ 逐字节回到 Wave J 末
+	var num := maxi(1, pop)
+	var quantum := int(sc.get("quantum", 0))
+	if quantum > 0:                                      # >0：按【整班】取整（一个班顶 quantum 个居民）；0=连续
+		num = ((num + quantum - 1) / quantum) * quantum
+	prod_pooled = true
+	prod_pool_num = num
+	prod_pool_den = base
+	if num == base:
+		return raw                                       # 倍率恰为 1：不复制、不计算 ⇒ 逐字节等同逐笔
+	var fields: Array = sc.get("pool", []) if sc.get("pool", []) is Array else []
+	var out := raw.duplicate(true)
+	if "start_stock" in fields and out.get("start_stock", {}) is Dictionary:
+		for g in (out["start_stock"] as Dictionary):
+			out["start_stock"][g] = int(out["start_stock"][g]) * num / base
+	for g in out.get("goods", {}):
+		var gd: Dictionary = (out["goods"] as Dictionary)[g]
+		if "cap" in fields and gd.has("cap"):
+			gd["cap"] = maxi(1, int(gd["cap"]) * num / base)
+		if "spoil_per_day" in fields and gd.has("spoil_per_day"):
+			var sp0 := int(gd["spoil_per_day"])
+			gd["spoil_per_day"] = maxi(1, sp0 * num / base) if sp0 > 0 else sp0   # 原本不损耗的货不因换尺度开始损耗
+	for t in out.get("produce", {}):
+		var pr: Dictionary = (out["produce"] as Dictionary)[t]
+		if "amount" in fields and pr.has("amount"):
+			pr["amount"] = int(pr["amount"]) * num / base
+		if "inputs" in fields and pr.has("inputs") and pr["inputs"] is Dictionary:
+			for ing in (pr["inputs"] as Dictionary):
+				var v0 := int((pr["inputs"] as Dictionary)[ing])
+				# 原本要料的，换尺度后至少还要 1 ⇒ "货由货做成"这条链在宏观口径上不会被整除抹掉。
+				pr["inputs"][ing] = maxi(1, v0 * num / base) if v0 > 0 else v0
+	return out
+
 func _stock_of(good: String) -> int:
 	return int(town_stock.get(good, 0))
 
@@ -2958,7 +3050,13 @@ func _produce_for(ag: Dictionary, action: String) -> void:
 	var got := _stock_move(good, amount, "produce", String(ag["id"]), title)
 	if got > 0:
 		prod_stats["produced"][good] = int((prod_stats["produced"] as Dictionary).get(good, 0)) + got
-		ag["memory"].add("今天%s出了%d份%s，交进镇上" % [action, got, good], 4, tick_no, ["job", "produce", good])
+		# K1：池倍率 >1 时这一批**不是他一个人干出来的**，措辞必须跟着换尺度——
+		# 否则记忆里会出现"一个泥瓦匠一天烧了 150 片瓦"，而那正是外审点名的"一个铁匠在 60 人里产 60 把剑"。
+		# 这条串直接进 MemoryStream / 语音 grounding。倍率==1（出货阵容 N=12）⇒ 走原分支 ⇒ 逐字节不变。
+		if prod_pool_num != prod_pool_den:
+			ag["memory"].add("今天带着帮工%s，一行人出了%d份%s，交进镇上" % [action, got, good], 4, tick_no, ["job", "produce", good])
+		else:
+			ag["memory"].add("今天%s出了%d份%s，交进镇上" % [action, got, good], 4, tick_no, ["job", "produce", good])
 
 ## 消耗挂点：动作开用时扣一件。**返回 false = 缺货**。
 ## ★缺货【不阻断动作】：本函数不改 option、不改 need、不返回"别做了"——调用方拿 false 只用来加价与记后果。
