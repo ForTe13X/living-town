@@ -124,6 +124,39 @@
   不是 `if N>16: 放过`，而是 `if mode == economy_full: 要求供给 / if mode == social_only: 只要求活性`。
   **前者是给出货配置预埋一条永不变红的门——正是本项目反复中招的那个病。**
 
+## 0.8 大设计 / 架构改动之前，必过【外部对抗评审 + 多棒】（用户 2026-07-31 定为常规）
+
+**规则**：凡是"大阶段设计"或"架构改动"，动手之前先过两道独立评审：
+① **Codex desktop 的已有 repo session**（它已经 familiar 本仓库、能真读代码、能自己跑 bench）；
+② **多棒并行**（各自独立执行 + 各自的 `does_not_detect`）。
+**两路独立收敛 = 强信号；两路打架 = 先别动手。**
+
+### 这条规则不是新的——它已经在本仓库还过一次本，而且证据就在源码里
+
+Codex 对 aggregate LOD / remote-actor liveness 那一轮评审提的 P1，**已经被吸收，且注释直接引用了评审**：
+
+- `Sim.gd:745`：`_near_set = {}` — 注释原文 **「评审 P1：LOD 近端集 per-run 清
+  （否则复用实例 restart/goto 会带旧 near id → 回放不一致）」**。
+  ⇒ 对应 P1「Aggregate replay keeps stale near IDs」。**已修。**
+- `Sim.gd:207`：`far_drift_enabled := false` — 注释原文 **「远端 liveness 漂移：独立【实验】开关
+  （评审建议：别只挂 lod_aggregate 门）。原型/有已知 bug(卡墙/多平面)，未出货」**。
+  ⇒ 对应 P1「Greedy drift cannot route around buildings」。**承认、单独下闸、明写未出货，
+  且采纳了评审"别只挂一个门"的具体建议。**
+
+⇒ **值得记住的是它当时的处理方式**：不是"修好了"也不是"忽略"，而是
+**"承认 + 独立开关 + 明写已知 bug + 不出货"**——一个原型可以留在树上，只要它的状态被写清楚。
+
+### 用哪一路、什么时候
+
+| 场景 | 走哪路 |
+|---|---|
+| **大设计 / 架构改动**（多镇、换页、跨镇贸易、红线口径变更…） | **两路都走**，动手前 |
+| 单点结论、判据设计、负结果 | Chrome → chatgpt.com（见 [[feedback-adversarial-external-review]]） |
+| 需要真读代码 / 自己跑 bench 的评审 | **Codex desktop 的 repo session**（它有完全访问） |
+
+⚠️ **送评审的【摘要】本身就是一次转述**：凡引用自己已有的结论，**逐字引原句，别压缩重写**
+（2026-07-26 实证：压缩过的摘要被正确地判为过度外推，而打中的是摘要、不是文档）。
+
 ## 1. 工作方式
 
 - **先自查基线**：`git log --oneline -3` + `git fetch origin` 对比 `origin/master`；落后就先 ff（确认是祖先再 ff）。
