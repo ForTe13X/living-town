@@ -13,30 +13,30 @@
   "random_full": {
     "days8_n12": {
       "1": {
-        "digest": "680793075",
-        "event_digest": "961150922092987832",
-        "landed": 658
+        "digest": "187475698",
+        "event_digest": "791875069460916563",
+        "landed": 662
       },
       "2": {
-        "digest": "175174383",
-        "event_digest": "2025118964916392256",
-        "landed": 640
-      },
-      "3": {
-        "digest": "2493575022",
-        "event_digest": "4127444735060480887",
+        "digest": "4251081412",
+        "event_digest": "1286616505300129955",
         "landed": 668
       },
+      "3": {
+        "digest": "243279033",
+        "event_digest": "3106447551444170661",
+        "landed": 655
+      },
       "4": {
-        "digest": "3404146977",
-        "event_digest": "7655822294514693510",
-        "landed": 658
+        "digest": "3018593879",
+        "event_digest": "8560304887087745117",
+        "landed": 678
       },
       "_scale": {
-        "max_n": 39,
-        "n_dec": 2624,
-        "over_cap": 104,
-        "over_old": 4
+        "max_n": 49,
+        "n_dec": 2663,
+        "over_cap": 101,
+        "over_old": 11
       }
     }
   }
