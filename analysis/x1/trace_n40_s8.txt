@@ -1,0 +1,332 @@
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+=== X1 starve trace  seed=8 N=40(agents=40) days=60 ===
+  starved(need·tick 合计)=27  by_need={"social":27}
+  hard_fails=[1]  soft_fails=[]
+  #40 detail: produce=95 consume=285 满足率门下限=0.50·上限=多数不缺；【需求侧落点】豆子(仅 cafe), 话本(仅 home、home2) —— 这些货在 town 平面无满足者 ⇒ 只有进得了该平面的居民才产生需求，分母不随人口涨；产出契约=宏观池 ×40/12｜工作吸引力 ×1.350
+  --- 每个触底者（id / need·tick / 最长连续段 tick / 首日 / 末日 / 有无岗位）---
+    npc_21                 social   need·tick=27     最长连续=15    (0.06 天)  首日=38 末日=39  岗位=—(无)
+  ⇒ 焦点 = npc_21
+  --- 焦点 npc_21 全程（14400 tick）候选结构 ---
+    候选数必为 0： GATED(min_need<36)=1129  FULL(social>=88)=2455  ALONE(同区可搭话=0)=2906
+    候选数 >0（至少一条 greet）= 7910 tick   其中本人正在对话 talking>0 = 5470 tick
+  --- 焦点在【触底的那些 tick】上的候选结构（判吸收态的那一条）---
+    GATED=27  FULL=0  ALONE=0  候选>0=0
+  --- 焦点在【social < 36】期间还有没有【物件】这条出路（社交并非无满足物）---
+    social<GATE 的 tick=490：枚举里有 social 物件候选=490 · 一条都没有=0 · 最高分=67.08 · 真的在做=54
+  --- 焦点的社交收支 ---
+    作为发起方: {"apologize|acc":5,"conflict|ref":25,"confront|acc":4,"discuss|acc":1,"give|acc":3,"gossip_rep|acc":14,"gossip_rep|ref":158,"gossip|acc":2,"gossip|ref":6,"greet|acc":28,"greet|ref":24,"invite|acc":13,"meet|acc":13,"pay|acc":16,"rally_oust|acc":3,"shortage|ref":1}
+    作为被动方: {"aid|acc":5,"apologize|acc":4,"conflict|ref":21,"confront|acc":5,"discuss|acc":2,"discuss|ref":1,"give|acc":3,"gossip_rep|acc":11,"gossip_rep|ref":149,"gossip|acc":2,"gossip|ref":2,"greet|acc":18,"greet|ref":2,"invite|acc":18,"meet|acc":18,"pact|acc":2,"pact|ref":1,"pay|acc":11,"rally_oust|acc":1}
+  --- 焦点逐 tick（窗口 t∈[8393,9536]，每 5 tick 一行 + 全部触底 tick）---
+    t=8395   d=35  hun= 19.6 ene= 80.5 soc= 66.1 fun= 62.5 hyg= 40.5 | min= 19.6 GATED near=5 free=5 talk=0        do=object/吃饭
+    t=8400   d=36  hun= 30.5 ene= 79.6 soc= 65.3 fun= 61.7 hyg= 39.9 | min= 30.5 GATED near=5 free=4 talk=6        do=object/吃饭
+    t=8405   d=36  hun= 44.3 ene= 78.7 soc= 64.6 fun= 60.9 hyg= 39.4 | min= 39.4 cand>0 near=4 free=3 talk=1        do=object/吃饭
+    t=8410   d=36  hun= 58.2 ene= 77.8 soc= 63.8 fun= 60.1 hyg= 38.8 | min= 38.8 cand>0 near=4 free=2 talk=0        do=object/吃饭
+    t=8415   d=36  hun= 69.0 ene= 76.9 soc= 63.1 fun= 59.3 hyg= 38.3 | min= 38.3 cand>0 near=3 free=1 talk=0        do=object/洗澡
+    t=8420   d=36  hun= 67.6 ene= 76.0 soc= 62.3 fun= 58.5 hyg= 37.7 | min= 37.7 cand>0 near=4 free=3 talk=8        do=object/洗澡
+    t=8425   d=36  hun= 66.2 ene= 75.1 soc= 61.6 fun= 57.7 hyg= 37.2 | min= 37.2 ALONE near=0 free=0 talk=3        do=object/洗澡
+    t=8430   d=36  hun= 64.8 ene= 74.2 soc= 60.8 fun= 56.9 hyg= 36.6 | min= 36.6 ALONE near=0 free=0 talk=0        do=object/洗澡
+    t=8435   d=36  hun= 63.4 ene= 73.3 soc= 60.1 fun= 56.1 hyg= 36.1 | min= 36.1 ALONE near=0 free=0 talk=0        do=object/洗澡
+    t=8440   d=36  hun= 62.0 ene= 72.4 soc= 59.3 fun= 55.3 hyg= 35.5 | min= 35.5 GATED near=0 free=0 talk=0        do=object/洗澡
+    t=8445   d=36  hun= 60.6 ene= 71.5 soc= 58.6 fun= 54.5 hyg= 35.0 | min= 35.0 GATED near=0 free=0 talk=0        do=object/洗澡
+    t=8450   d=36  hun= 59.2 ene= 70.6 soc= 57.8 fun= 53.7 hyg= 34.4 | min= 34.4 GATED near=1 free=1 talk=0        do=object/洗澡
+    t=8455   d=36  hun= 57.8 ene= 69.7 soc= 57.1 fun= 52.9 hyg= 45.1 | min= 45.1 cand>0 near=2 free=2 talk=0        do=object/洗澡
+    t=8460   d=36  hun= 56.4 ene= 68.8 soc= 56.3 fun= 52.1 hyg= 63.3 | min= 52.1 cand>0 near=2 free=2 talk=0        do=object/洗澡
+    t=8465   d=36  hun= 55.0 ene= 67.9 soc= 55.6 fun= 51.3 hyg= 81.5 | min= 51.3 cand>0 near=3 free=3 talk=0        do=object/洗澡
+    t=8470   d=36  hun= 53.6 ene= 67.0 soc= 54.8 fun= 50.5 hyg= 92.2 | min= 50.5 cand>0 near=3 free=1 talk=9        do=social/greet
+    t=8475   d=36  hun= 52.2 ene= 66.1 soc= 54.1 fun= 49.7 hyg= 91.7 | min= 49.7 cand>0 near=6 free=4 talk=4        do=social/greet
+    t=8480   d=36  hun= 50.8 ene= 65.2 soc= 53.3 fun= 48.9 hyg= 91.1 | min= 48.9 cand>0 near=5 free=2 talk=7        do=social/gossip_rep
+    t=8485   d=36  hun= 49.4 ene= 64.3 soc= 52.6 fun= 48.1 hyg= 90.6 | min= 48.1 cand>0 near=6 free=3 talk=2        do=social/gossip_rep
+    t=8490   d=36  hun= 48.0 ene= 63.4 soc= 51.8 fun= 47.3 hyg= 90.0 | min= 47.3 cand>0 near=6 free=5 talk=8        do=social/gossip_rep
+    t=8495   d=36  hun= 46.6 ene= 62.5 soc= 51.1 fun= 46.5 hyg= 89.5 | min= 46.5 cand>0 near=7 free=4 talk=3        do=social/gossip_rep
+    t=8500   d=36  hun= 45.2 ene= 61.6 soc= 50.3 fun= 45.7 hyg= 88.9 | min= 45.2 cand>0 near=7 free=4 talk=9        do=social/gossip_rep
+    t=8505   d=36  hun= 43.8 ene= 60.7 soc= 49.6 fun= 44.9 hyg= 88.4 | min= 43.8 cand>0 near=8 free=7 talk=4        do=social/gossip_rep
+    t=8510   d=36  hun= 42.4 ene= 59.8 soc= 48.8 fun= 44.1 hyg= 87.8 | min= 42.4 cand>0 near=7 free=3 talk=10        do=social/gossip_rep
+    t=8515   d=36  hun= 41.0 ene= 58.9 soc= 48.1 fun= 43.3 hyg= 87.3 | min= 41.0 ALONE near=7 free=0 talk=5        do=social/gossip_rep
+    t=8520   d=36  hun= 39.6 ene= 58.0 soc= 47.3 fun= 42.5 hyg= 86.7 | min= 39.6 cand>0 near=8 free=1 talk=0        do=idle
+    t=8525   d=36  hun= 38.2 ene= 57.1 soc= 46.6 fun= 41.7 hyg= 86.2 | min= 38.2 ALONE near=8 free=0 talk=6        do=social/greet
+    t=8530   d=36  hun= 36.8 ene= 56.2 soc= 45.8 fun= 40.9 hyg= 85.6 | min= 36.8 cand>0 near=8 free=2 talk=1        do=social/greet
+    t=8535   d=36  hun= 35.4 ene= 55.3 soc= 45.1 fun= 40.1 hyg= 85.1 | min= 35.4 GATED near=8 free=0 talk=7        do=social/greet
+    t=8540   d=36  hun= 34.0 ene= 54.4 soc= 44.3 fun= 39.3 hyg= 84.5 | min= 34.0 GATED near=8 free=0 talk=2        do=social/greet
+    t=8545   d=36  hun= 32.6 ene= 53.5 soc= 43.6 fun= 38.5 hyg= 84.0 | min= 32.6 GATED near=8 free=0 talk=10        do=object/赶集
+    t=8550   d=36  hun= 31.2 ene= 52.6 soc= 42.8 fun= 37.7 hyg= 83.4 | min= 31.2 GATED near=0 free=0 talk=5        do=object/赶集
+    t=8555   d=36  hun= 29.8 ene= 51.7 soc= 42.1 fun= 36.9 hyg= 82.9 | min= 29.8 GATED near=0 free=0 talk=0        do=object/赶集
+    t=8560   d=36  hun= 28.4 ene= 50.8 soc= 41.3 fun= 36.1 hyg= 82.3 | min= 28.4 GATED near=6 free=2 talk=8        do=object/赶集
+    t=8565   d=36  hun= 38.2 ene= 49.9 soc= 40.6 fun= 35.3 hyg= 81.8 | min= 35.3 GATED near=9 free=2 talk=3        do=object/赶集
+    t=8570   d=36  hun= 55.4 ene= 49.0 soc= 39.8 fun= 34.5 hyg= 81.2 | min= 34.5 GATED near=10 free=2 talk=0        do=object/赶集
+    t=8575   d=36  hun= 72.5 ene= 48.1 soc= 39.1 fun= 33.7 hyg= 80.7 | min= 33.7 GATED near=11 free=3 talk=0        do=object/赶集
+    t=8580   d=36  hun= 74.8 ene= 47.2 soc= 38.3 fun= 32.9 hyg= 80.1 | min= 32.9 GATED near=11 free=6 talk=0        do=object/玩耍
+    t=8585   d=36  hun= 73.4 ene= 46.3 soc= 37.6 fun= 42.1 hyg= 79.6 | min= 37.6 cand>0 near=9 free=4 talk=0        do=object/玩耍
+    t=8590   d=36  hun= 72.0 ene= 45.4 soc= 36.8 fun= 53.8 hyg= 79.0 | min= 36.8 ALONE near=6 free=0 talk=6        do=object/玩耍
+    t=8595   d=36  hun= 70.6 ene= 44.5 soc= 36.1 fun= 65.5 hyg= 78.5 | min= 36.1 cand>0 near=3 free=1 talk=1        do=object/玩耍
+    t=8600   d=36  hun= 69.2 ene= 43.6 soc= 35.3 fun= 77.2 hyg= 77.9 | min= 35.3 GATED near=2 free=1 talk=6        do=object/玩耍
+    t=8605   d=36  hun= 67.8 ene= 42.7 soc= 34.6 fun= 83.9 hyg= 77.4 | min= 34.6 GATED near=1 free=0 talk=1        do=object/睡觉
+    t=8610   d=36  hun= 66.4 ene= 41.8 soc= 33.8 fun= 83.1 hyg= 76.8 | min= 33.8 GATED near=0 free=0 talk=0        do=object/睡觉
+    t=8615   d=36  hun= 65.0 ene= 40.9 soc= 33.1 fun= 82.3 hyg= 76.3 | min= 33.1 GATED near=0 free=0 talk=0        do=object/睡觉
+    t=8620   d=36  hun= 63.6 ene= 40.0 soc= 32.3 fun= 81.5 hyg= 75.7 | min= 32.3 GATED near=11 free=11 talk=0        do=object/睡觉
+    t=8625   d=36  hun= 62.2 ene= 42.2 soc= 31.6 fun= 80.7 hyg= 75.2 | min= 31.6 GATED near=14 free=14 talk=0        do=object/睡觉
+    t=8630   d=36  hun= 60.8 ene= 49.0 soc= 30.8 fun= 79.9 hyg= 74.6 | min= 30.8 GATED near=14 free=14 talk=0        do=object/睡觉
+    t=8635   d=36  hun= 59.4 ene= 55.9 soc= 30.1 fun= 79.1 hyg= 74.1 | min= 30.1 GATED near=17 free=17 talk=0        do=object/睡觉
+    t=8640   d=37  hun= 58.0 ene= 62.7 soc= 29.3 fun= 78.3 hyg= 73.5 | min= 29.3 GATED near=19 free=15 talk=0        do=object/睡觉
+    t=8645   d=37  hun= 56.6 ene= 69.6 soc= 28.6 fun= 77.5 hyg= 73.0 | min= 28.6 GATED near=18 free=14 talk=0        do=object/睡觉
+    t=8650   d=37  hun= 55.2 ene= 76.4 soc= 27.8 fun= 76.7 hyg= 72.4 | min= 27.8 GATED near=19 free=15 talk=0        do=object/睡觉
+    t=8655   d=37  hun= 53.8 ene= 83.3 soc= 27.1 fun= 75.9 hyg= 71.9 | min= 27.1 GATED near=20 free=12 talk=0        do=object/睡觉
+    t=8660   d=37  hun= 52.4 ene= 90.1 soc= 26.3 fun= 75.1 hyg= 71.3 | min= 26.3 GATED near=20 free=14 talk=0        do=object/睡觉
+    t=8665   d=37  hun= 51.0 ene= 93.9 soc= 25.6 fun= 74.3 hyg= 70.8 | min= 25.6 GATED near=22 free=15 talk=0        do=object/闲聊
+    t=8670   d=37  hun= 49.6 ene= 93.0 soc= 24.8 fun= 73.5 hyg= 70.2 | min= 24.8 GATED near=0 free=0 talk=0        do=object/闲聊
+    t=8675   d=37  hun= 48.2 ene= 92.1 soc= 24.1 fun= 72.7 hyg= 69.7 | min= 24.1 GATED near=0 free=0 talk=0        do=object/闲聊
+    t=8680   d=37  hun= 46.8 ene= 91.2 soc= 23.3 fun= 71.9 hyg= 69.1 | min= 23.3 GATED near=0 free=0 talk=0        do=object/闲聊
+    t=8685   d=37  hun= 45.4 ene= 90.3 soc= 22.6 fun= 71.1 hyg= 68.6 | min= 22.6 GATED near=0 free=0 talk=0        do=object/闲聊
+    t=8690   d=37  hun= 44.0 ene= 89.4 soc= 21.8 fun= 70.3 hyg= 68.0 | min= 21.8 GATED near=5 free=4 talk=8        do=object/闲聊
+    t=8695   d=37  hun= 42.6 ene= 88.5 soc= 27.4 fun= 69.5 hyg= 67.5 | min= 27.4 GATED near=5 free=2 talk=3        do=object/闲聊
+    t=8700   d=37  hun= 41.2 ene= 87.6 soc= 37.1 fun= 68.7 hyg= 66.9 | min= 37.1 cand>0 near=5 free=2 talk=9        do=object/闲聊
+    t=8705   d=37  hun= 39.8 ene= 86.7 soc= 46.9 fun= 67.9 hyg= 66.4 | min= 39.8 cand>0 near=6 free=5 talk=4        do=object/闲聊
+    t=8710   d=37  hun= 38.4 ene= 85.8 soc= 56.6 fun= 67.1 hyg= 65.8 | min= 38.4 cand>0 near=7 free=7 talk=0        do=object/闲聊
+    t=8715   d=37  hun= 37.0 ene= 84.9 soc= 60.1 fun= 66.3 hyg= 65.3 | min= 37.0 cand>0 near=9 free=5 talk=0        do=object/吃饭
+    t=8720   d=37  hun= 47.9 ene= 84.0 soc= 59.3 fun= 65.5 hyg= 64.7 | min= 47.9 cand>0 near=11 free=9 talk=0        do=object/吃饭
+    t=8725   d=37  hun= 61.7 ene= 83.1 soc= 58.6 fun= 64.7 hyg= 64.2 | min= 58.6 cand>0 near=13 free=9 talk=0        do=object/吃饭
+    t=8730   d=37  hun= 75.6 ene= 82.2 soc= 57.8 fun= 63.9 hyg= 63.6 | min= 57.8 cand>0 near=15 free=11 talk=0        do=object/吃饭
+    t=8735   d=37  hun= 86.4 ene= 81.3 soc= 57.1 fun= 63.1 hyg= 63.1 | min= 57.1 cand>0 near=18 free=17 talk=10        do=social/gossip_rep
+    t=8740   d=37  hun= 85.0 ene= 80.4 soc= 56.3 fun= 62.3 hyg= 62.5 | min= 56.3 cand>0 near=14 free=13 talk=5        do=social/gossip_rep
+    t=8745   d=37  hun= 83.6 ene= 79.5 soc= 55.6 fun= 61.5 hyg= 62.0 | min= 55.6 cand>0 near=14 free=12 talk=0        do=idle
+    t=8750   d=37  hun= 82.2 ene= 78.6 soc= 54.8 fun= 60.7 hyg= 61.4 | min= 54.8 cand>0 near=14 free=5 talk=6        do=social/greet
+    t=8755   d=37  hun= 80.8 ene= 77.7 soc= 54.1 fun= 59.9 hyg= 60.9 | min= 54.1 cand>0 near=15 free=7 talk=1        do=social/greet
+    t=8760   d=37  hun= 79.4 ene= 76.8 soc= 53.3 fun= 59.1 hyg= 60.3 | min= 53.3 cand>0 near=12 free=5 talk=7        do=social/greet
+    t=8765   d=37  hun= 78.0 ene= 75.9 soc= 52.6 fun= 58.3 hyg= 59.8 | min= 52.6 cand>0 near=8 free=1 talk=2        do=social/greet
+    t=8770   d=37  hun= 76.6 ene= 75.0 soc= 51.8 fun= 57.5 hyg= 59.2 | min= 51.8 cand>0 near=8 free=2 talk=8        do=social/greet
+    t=8775   d=37  hun= 75.2 ene= 74.1 soc= 51.1 fun= 56.7 hyg= 58.7 | min= 51.1 ALONE near=8 free=0 talk=3        do=social/greet
+    t=8780   d=37  hun= 73.8 ene= 73.2 soc= 50.3 fun= 55.9 hyg= 58.1 | min= 50.3 ALONE near=7 free=0 talk=9        do=social/greet
+    t=8785   d=37  hun= 72.4 ene= 72.3 soc= 49.6 fun= 55.1 hyg= 57.6 | min= 49.6 cand>0 near=4 free=1 talk=4        do=social/greet
+    t=8790   d=37  hun= 71.0 ene= 71.4 soc= 48.8 fun= 54.3 hyg= 57.0 | min= 48.8 ALONE near=4 free=0 talk=10        do=social/greet
+    t=8795   d=37  hun= 69.6 ene= 70.5 soc= 48.1 fun= 53.5 hyg= 56.5 | min= 48.1 ALONE near=5 free=0 talk=5        do=social/greet
+    t=8800   d=37  hun= 68.2 ene= 69.6 soc= 47.3 fun= 52.7 hyg= 55.9 | min= 47.3 cand>0 near=5 free=1 talk=0        do=idle
+    t=8805   d=37  hun= 66.8 ene= 68.7 soc= 46.6 fun= 51.9 hyg= 55.4 | min= 46.6 ALONE near=5 free=0 talk=6        do=social/gossip_rep
+    t=8810   d=37  hun= 65.4 ene= 67.8 soc= 45.8 fun= 51.1 hyg= 54.8 | min= 45.8 ALONE near=5 free=0 talk=1        do=social/gossip_rep
+    t=8815   d=37  hun= 64.0 ene= 66.9 soc= 45.1 fun= 50.3 hyg= 54.3 | min= 45.1 cand>0 near=5 free=2 talk=7        do=social/gossip_rep
+    t=8820   d=37  hun= 62.6 ene= 66.0 soc= 44.3 fun= 49.5 hyg= 53.7 | min= 44.3 cand>0 near=5 free=2 talk=2        do=social/gossip_rep
+    t=8825   d=37  hun= 61.2 ene= 65.1 soc= 43.6 fun= 48.7 hyg= 53.2 | min= 43.6 ALONE near=3 free=0 talk=8        do=social/greet
+    t=8830   d=37  hun= 59.8 ene= 64.2 soc= 42.8 fun= 47.9 hyg= 52.6 | min= 42.8 ALONE near=3 free=0 talk=3        do=social/greet
+    t=8835   d=37  hun= 58.4 ene= 63.3 soc= 42.1 fun= 47.1 hyg= 52.1 | min= 42.1 cand>0 near=4 free=3 talk=9        do=social/greet
+    t=8840   d=37  hun= 57.0 ene= 62.4 soc= 41.3 fun= 46.3 hyg= 51.5 | min= 41.3 cand>0 near=5 free=2 talk=4        do=social/greet
+    t=8845   d=37  hun= 55.6 ene= 61.5 soc= 40.6 fun= 45.5 hyg= 51.0 | min= 40.6 cand>0 near=6 free=4 talk=10        do=social/greet
+    t=8850   d=37  hun= 54.2 ene= 60.6 soc= 39.8 fun= 44.7 hyg= 50.4 | min= 39.8 cand>0 near=5 free=2 talk=9        do=social/greet
+    t=8855   d=37  hun= 52.8 ene= 59.7 soc= 39.1 fun= 43.9 hyg= 49.9 | min= 39.1 cand>0 near=6 free=3 talk=4        do=social/greet
+    t=8860   d=37  hun= 51.4 ene= 58.8 soc= 38.3 fun= 43.1 hyg= 49.3 | min= 38.3 cand>0 near=6 free=3 talk=10        do=social/greet
+    t=8865   d=37  hun= 50.0 ene= 57.9 soc= 37.6 fun= 42.3 hyg= 48.8 | min= 37.6 cand>0 near=6 free=2 talk=5        do=social/greet
+    t=8870   d=37  hun= 48.6 ene= 57.0 soc= 36.8 fun= 41.5 hyg= 48.2 | min= 36.8 cand>0 near=5 free=1 talk=0        do=idle
+    t=8875   d=37  hun= 47.2 ene= 56.1 soc= 36.1 fun= 40.7 hyg= 47.7 | min= 36.1 ALONE near=5 free=0 talk=6        do=social/gossip_rep
+    t=8880   d=38  hun= 45.8 ene= 55.2 soc= 35.3 fun= 39.9 hyg= 47.1 | min= 35.3 GATED near=5 free=1 talk=1        do=social/gossip_rep
+    t=8885   d=38  hun= 44.4 ene= 54.3 soc= 34.6 fun= 39.1 hyg= 46.6 | min= 34.6 GATED near=5 free=1 talk=0        do=object/逛灯会
+    t=8890   d=38  hun= 43.0 ene= 53.4 soc= 33.8 fun= 38.3 hyg= 46.0 | min= 33.8 GATED near=0 free=0 talk=0        do=object/逛灯会
+    t=8895   d=38  hun= 41.6 ene= 52.5 soc= 33.1 fun= 37.5 hyg= 45.5 | min= 33.1 GATED near=0 free=0 talk=0        do=object/逛灯会
+    t=8900   d=38  hun= 40.2 ene= 51.6 soc= 32.3 fun= 36.7 hyg= 44.9 | min= 32.3 GATED near=1 free=1 talk=0        do=object/逛灯会
+    t=8905   d=38  hun= 38.8 ene= 50.7 soc= 31.6 fun= 49.2 hyg= 44.4 | min= 31.6 GATED near=1 free=1 talk=0        do=object/逛灯会
+    t=8910   d=38  hun= 37.4 ene= 49.8 soc= 30.8 fun= 70.5 hyg= 43.8 | min= 30.8 GATED near=1 free=1 talk=0        do=object/逛灯会
+    t=8915   d=38  hun= 36.0 ene= 48.9 soc= 30.1 fun= 91.9 hyg= 43.3 | min= 30.1 GATED near=1 free=1 talk=0        do=object/逛灯会
+    t=8920   d=38  hun= 34.6 ene= 48.0 soc= 29.3 fun= 95.5 hyg= 42.7 | min= 29.3 GATED near=0 free=0 talk=0        do=object/吃饭
+    t=8925   d=38  hun= 33.2 ene= 47.1 soc= 28.6 fun= 94.7 hyg= 42.2 | min= 28.6 GATED near=0 free=0 talk=0        do=object/吃饭
+    t=8930   d=38  hun= 31.8 ene= 46.2 soc= 27.8 fun= 93.9 hyg= 41.6 | min= 27.8 GATED near=0 free=0 talk=0        do=object/吃饭
+    t=8935   d=38  hun= 30.4 ene= 45.3 soc= 27.1 fun= 93.1 hyg= 41.1 | min= 27.1 GATED near=7 free=5 talk=0        do=object/吃饭
+    t=8940   d=38  hun= 38.2 ene= 44.4 soc= 26.3 fun= 92.3 hyg= 40.5 | min= 26.3 GATED near=6 free=6 talk=0        do=object/吃饭
+    t=8945   d=38  hun= 52.1 ene= 43.5 soc= 25.6 fun= 91.5 hyg= 40.0 | min= 25.6 GATED near=6 free=4 talk=0        do=object/吃饭
+    t=8950   d=38  hun= 66.0 ene= 42.6 soc= 24.8 fun= 90.7 hyg= 39.4 | min= 24.8 GATED near=6 free=2 talk=0        do=object/吃饭
+    t=8955   d=38  hun= 79.8 ene= 41.7 soc= 24.1 fun= 89.9 hyg= 38.9 | min= 24.1 GATED near=7 free=3 talk=0        do=idle
+    t=8960   d=38  hun= 78.4 ene= 40.8 soc= 23.3 fun= 89.1 hyg= 38.3 | min= 23.3 GATED near=9 free=6 talk=9        do=object/睡觉
+    t=8965   d=38  hun= 77.0 ene= 39.9 soc= 22.6 fun= 88.3 hyg= 37.8 | min= 22.6 GATED near=0 free=0 talk=4        do=object/睡觉
+    t=8970   d=38  hun= 75.6 ene= 39.0 soc= 21.8 fun= 87.5 hyg= 37.2 | min= 21.8 GATED near=0 free=0 talk=0        do=object/睡觉
+    t=8975   d=38  hun= 74.2 ene= 38.1 soc= 21.1 fun= 86.7 hyg= 36.7 | min= 21.1 GATED near=0 free=0 talk=0        do=object/睡觉
+    t=8980   d=38  hun= 72.8 ene= 37.2 soc= 20.3 fun= 85.9 hyg= 36.1 | min= 20.3 GATED near=0 free=0 talk=0        do=object/睡觉
+    t=8985   d=38  hun= 71.4 ene= 36.3 soc= 19.6 fun= 85.1 hyg= 35.6 | min= 19.6 GATED near=1 free=1 talk=0        do=object/睡觉
+    t=8990   d=38  hun= 70.0 ene= 41.6 soc= 18.8 fun= 84.3 hyg= 35.0 | min= 18.8 GATED near=1 free=1 talk=0        do=object/睡觉
+    t=8995   d=38  hun= 68.6 ene= 48.4 soc= 18.1 fun= 83.5 hyg= 34.5 | min= 18.1 GATED near=0 free=0 talk=0        do=object/睡觉
+    t=9000   d=38  hun= 67.2 ene= 55.3 soc= 17.3 fun= 82.7 hyg= 33.9 | min= 17.3 GATED near=0 free=0 talk=0        do=object/睡觉
+    t=9005   d=38  hun= 65.8 ene= 62.1 soc= 16.6 fun= 81.9 hyg= 33.4 | min= 16.6 GATED near=0 free=0 talk=0        do=object/睡觉
+    t=9010   d=38  hun= 64.4 ene= 69.0 soc= 15.8 fun= 81.1 hyg= 32.8 | min= 15.8 GATED near=0 free=0 talk=0        do=object/睡觉
+    t=9015   d=38  hun= 63.0 ene= 75.8 soc= 15.1 fun= 80.3 hyg= 32.3 | min= 15.1 GATED near=0 free=0 talk=0        do=object/睡觉
+    t=9020   d=38  hun= 61.6 ene= 82.7 soc= 14.3 fun= 79.5 hyg= 31.7 | min= 14.3 GATED near=0 free=0 talk=0        do=object/睡觉
+    t=9025   d=38  hun= 60.2 ene= 89.5 soc= 13.6 fun= 78.7 hyg= 31.2 | min= 13.6 GATED near=0 free=0 talk=0        do=object/睡觉
+    t=9030   d=38  hun= 58.8 ene= 90.2 soc= 12.8 fun= 77.9 hyg= 30.6 | min= 12.8 GATED near=0 free=0 talk=0        do=object/洗澡
+    t=9035   d=38  hun= 57.4 ene= 89.3 soc= 12.1 fun= 77.1 hyg= 30.1 | min= 12.1 GATED near=0 free=0 talk=0        do=object/洗澡
+    t=9040   d=38  hun= 56.0 ene= 88.4 soc= 11.3 fun= 76.3 hyg= 29.5 | min= 11.3 GATED near=4 free=2 talk=0        do=object/洗澡
+    t=9045   d=38  hun= 54.6 ene= 87.5 soc= 10.6 fun= 75.5 hyg= 36.5 | min= 10.6 GATED near=5 free=3 talk=0        do=object/洗澡
+    t=9050   d=38  hun= 53.2 ene= 86.6 soc=  9.8 fun= 74.7 hyg= 35.9 | min=  9.8 GATED near=8 free=8 talk=0        do=object/洗澡
+    t=9055   d=38  hun= 51.8 ene= 85.7 soc=  9.1 fun= 73.9 hyg= 39.1 | min=  9.1 GATED near=8 free=6 talk=0        do=object/洗澡
+    t=9060   d=38  hun= 50.4 ene= 84.8 soc=  8.3 fun= 73.1 hyg= 38.6 | min=  8.3 GATED near=6 free=6 talk=0        do=idle
+    t=9065   d=38  hun= 49.0 ene= 83.9 soc=  7.6 fun= 72.3 hyg= 38.0 | min=  7.6 GATED near=5 free=5 talk=0        do=object/洗澡
+    t=9070   d=38  hun= 47.6 ene= 83.0 soc=  6.8 fun= 71.5 hyg= 37.5 | min=  6.8 GATED near=4 free=4 talk=0        do=idle
+    t=9075   d=38  hun= 46.2 ene= 82.1 soc=  6.1 fun= 70.7 hyg= 36.9 | min=  6.1 GATED near=1 free=1 talk=0        do=object/洗澡
+    t=9080   d=38  hun= 44.8 ene= 81.2 soc=  5.3 fun= 69.9 hyg= 36.4 | min=  5.3 GATED near=0 free=0 talk=0        do=idle
+    t=9085   d=38  hun= 43.4 ene= 80.3 soc=  4.6 fun= 69.1 hyg= 39.6 | min=  4.6 GATED near=0 free=0 talk=0        do=object/洗澡
+    t=9090   d=38  hun= 42.0 ene= 79.4 soc=  3.8 fun= 68.3 hyg= 39.0 | min=  3.8 GATED near=0 free=0 talk=0        do=idle
+    t=9095   d=38  hun= 40.6 ene= 78.5 soc=  3.1 fun= 67.5 hyg= 38.5 | min=  3.1 GATED near=0 free=0 talk=0        do=object/洗澡
+    t=9100   d=38  hun= 39.2 ene= 77.6 soc=  2.3 fun= 66.7 hyg= 37.9 | min=  2.3 GATED near=1 free=1 talk=0        do=idle
+    t=9105   d=38  hun= 37.8 ene= 76.7 soc=  1.6 fun= 65.9 hyg= 37.4 | min=  1.6 GATED near=2 free=2 talk=0        do=object/洗澡
+    t=9110   d=38  hun= 36.4 ene= 75.8 soc=  0.8 fun= 65.1 hyg= 36.8 | min=  0.8 GATED near=3 free=3 talk=0        do=idle
+    t=9113   d=38  hun= 35.6 ene= 75.2 soc=  0.4 fun= 64.6 hyg= 36.5 | min=  0.4 GATED near=4 free=4 talk=0 BOTTOM do=object/洗澡
+    t=9114   d=38  hun= 35.3 ene= 75.0 soc=  0.2 fun= 64.5 hyg= 36.4 | min=  0.2 GATED near=5 free=5 talk=0 BOTTOM do=idle
+    t=9115   d=38  hun= 35.0 ene= 74.9 soc=  0.1 fun= 64.3 hyg= 36.3 | min=  0.1 GATED near=6 free=6 talk=0 BOTTOM do=object/洗澡
+    t=9116   d=38  hun= 34.8 ene= 74.7 soc=  0.0 fun= 64.2 hyg= 36.2 | min=  0.0 GATED near=6 free=6 talk=0 BOTTOM do=idle
+    t=9117   d=38  hun= 34.5 ene= 74.5 soc=  0.0 fun= 64.0 hyg= 36.1 | min=  0.0 GATED near=7 free=7 talk=0 BOTTOM do=object/洗澡
+    t=9118   d=38  hun= 34.2 ene= 74.3 soc=  0.0 fun= 63.8 hyg= 36.0 | min=  0.0 GATED near=7 free=6 talk=10 BOTTOM do=object/洗澡
+    t=9119   d=38  hun= 33.9 ene= 74.1 soc=  0.0 fun= 63.7 hyg= 39.6 | min=  0.0 GATED near=7 free=6 talk=9 BOTTOM do=object/洗澡
+    t=9120   d=39  hun= 33.6 ene= 74.0 soc=  0.0 fun= 63.5 hyg= 39.5 | min=  0.0 GATED near=7 free=6 talk=8 BOTTOM do=idle
+    t=9121   d=39  hun= 33.4 ene= 73.8 soc=  0.0 fun= 63.4 hyg= 39.4 | min=  0.0 GATED near=7 free=6 talk=7 BOTTOM do=object/洗澡
+    t=9122   d=39  hun= 33.1 ene= 73.6 soc=  0.0 fun= 63.2 hyg= 39.3 | min=  0.0 GATED near=7 free=6 talk=6 BOTTOM do=idle
+    t=9123   d=39  hun= 32.8 ene= 73.4 soc=  0.0 fun= 63.0 hyg= 39.2 | min=  0.0 GATED near=7 free=4 talk=5 BOTTOM do=object/洗澡
+    t=9124   d=39  hun= 32.5 ene= 73.2 soc=  0.0 fun= 62.9 hyg= 39.1 | min=  0.0 GATED near=7 free=4 talk=4 BOTTOM do=idle
+    t=9125   d=39  hun= 32.2 ene= 73.1 soc=  0.0 fun= 62.7 hyg= 38.9 | min=  0.0 GATED near=7 free=4 talk=3 BOTTOM do=object/洗澡
+    t=9126   d=39  hun= 32.0 ene= 72.9 soc=  0.0 fun= 62.6 hyg= 38.8 | min=  0.0 GATED near=8 free=5 talk=2 BOTTOM do=idle
+    t=9127   d=39  hun= 31.7 ene= 72.7 soc=  0.0 fun= 62.4 hyg= 38.7 | min=  0.0 GATED near=9 free=6 talk=1 BOTTOM do=object/洗澡
+    t=9130   d=39  hun= 30.8 ene= 72.2 soc=  5.7 fun= 61.9 hyg= 38.4 | min=  5.7 GATED near=9 free=4 talk=9        do=idle
+    t=9135   d=39  hun= 29.4 ene= 71.3 soc=  4.9 fun= 61.1 hyg= 37.8 | min=  4.9 GATED near=12 free=5 talk=4        do=object/洗澡
+    t=9140   d=39  hun= 28.0 ene= 70.4 soc=  4.2 fun= 60.3 hyg= 37.3 | min=  4.2 GATED near=10 free=2 talk=0        do=idle
+    t=9145   d=39  hun= 26.6 ene= 69.5 soc=  3.4 fun= 59.5 hyg= 36.7 | min=  3.4 GATED near=10 free=2 talk=0        do=object/洗澡
+    t=9150   d=39  hun= 25.2 ene= 68.6 soc=  2.7 fun= 58.7 hyg= 36.2 | min=  2.7 GATED near=10 free=4 talk=5        do=idle
+    t=9155   d=39  hun= 23.8 ene= 67.7 soc=  1.9 fun= 57.9 hyg= 39.4 | min=  1.9 GATED near=7 free=0 talk=0        do=object/洗澡
+    t=9160   d=39  hun= 22.4 ene= 66.8 soc=  1.2 fun= 57.1 hyg= 38.8 | min=  1.2 GATED near=4 free=1 talk=6        do=idle
+    t=9165   d=39  hun= 21.0 ene= 65.9 soc=  0.4 fun= 56.3 hyg= 38.3 | min=  0.4 GATED near=2 free=0 talk=1 BOTTOM do=object/洗澡
+    t=9166   d=39  hun= 20.8 ene= 65.7 soc=  0.3 fun= 56.2 hyg= 38.2 | min=  0.3 GATED near=2 free=1 talk=0 BOTTOM do=idle
+    t=9167   d=39  hun= 20.5 ene= 65.5 soc=  0.1 fun= 56.0 hyg= 38.1 | min=  0.1 GATED near=2 free=1 talk=9 BOTTOM do=object/洗澡
+    t=9168   d=39  hun= 20.2 ene= 65.3 soc=  0.0 fun= 55.8 hyg= 38.0 | min=  0.0 GATED near=2 free=1 talk=8 BOTTOM do=idle
+    t=9169   d=39  hun= 19.9 ene= 65.1 soc=  0.0 fun= 55.7 hyg= 37.9 | min=  0.0 GATED near=2 free=1 talk=7 BOTTOM do=object/洗澡
+    t=9170   d=39  hun= 19.6 ene= 65.0 soc=  0.0 fun= 55.5 hyg= 37.7 | min=  0.0 GATED near=2 free=1 talk=6 BOTTOM do=idle
+    t=9171   d=39  hun= 19.4 ene= 64.8 soc=  0.0 fun= 55.4 hyg= 37.6 | min=  0.0 GATED near=2 free=1 talk=5 BOTTOM do=object/洗澡
+    t=9172   d=39  hun= 19.1 ene= 64.6 soc=  0.0 fun= 55.2 hyg= 37.5 | min=  0.0 GATED near=1 free=0 talk=4 BOTTOM do=idle
+    t=9173   d=39  hun= 18.8 ene= 64.4 soc=  0.0 fun= 55.0 hyg= 37.4 | min=  0.0 GATED near=1 free=0 talk=3 BOTTOM do=object/洗澡
+    t=9174   d=39  hun= 18.5 ene= 64.2 soc=  0.0 fun= 54.9 hyg= 37.3 | min=  0.0 GATED near=1 free=0 talk=2 BOTTOM do=idle
+    t=9175   d=39  hun= 18.2 ene= 64.1 soc=  0.0 fun= 54.7 hyg= 37.2 | min=  0.0 GATED near=1 free=0 talk=1 BOTTOM do=object/洗澡
+    t=9176   d=39  hun= 18.0 ene= 63.9 soc=  0.0 fun= 54.6 hyg= 37.1 | min=  0.0 GATED near=1 free=0 talk=0 BOTTOM do=idle
+    t=9180   d=39  hun= 16.8 ene= 63.2 soc= 11.4 fun= 53.9 hyg= 36.6 | min= 11.4 GATED near=1 free=1 talk=0        do=object/吃饭
+    t=9185   d=39  hun= 15.4 ene= 62.3 soc= 10.6 fun= 53.1 hyg= 36.1 | min= 10.6 GATED near=0 free=0 talk=0        do=object/吃饭
+    t=9190   d=39  hun= 14.0 ene= 61.4 soc=  9.9 fun= 52.3 hyg= 35.5 | min=  9.9 GATED near=0 free=0 talk=0        do=object/吃饭
+    t=9195   d=39  hun= 12.6 ene= 60.5 soc=  9.1 fun= 51.5 hyg= 35.0 | min=  9.1 GATED near=0 free=0 talk=0        do=object/吃饭
+    t=9200   d=39  hun= 11.2 ene= 59.6 soc=  8.4 fun= 50.7 hyg= 34.4 | min=  8.4 GATED near=0 free=0 talk=0        do=object/吃饭
+    t=9205   d=39  hun=  9.8 ene= 58.7 soc=  7.6 fun= 49.9 hyg= 33.9 | min=  7.6 GATED near=0 free=0 talk=0        do=object/吃饭
+    t=9210   d=39  hun=  8.4 ene= 57.8 soc=  6.9 fun= 49.1 hyg= 33.3 | min=  6.9 GATED near=14 free=7 talk=0        do=object/吃饭
+    t=9215   d=39  hun=  7.0 ene= 56.9 soc=  6.1 fun= 48.3 hyg= 32.8 | min=  6.1 GATED near=15 free=6 talk=0        do=object/吃饭
+    t=9220   d=39  hun= 17.9 ene= 56.0 soc=  5.4 fun= 47.5 hyg= 32.2 | min=  5.4 GATED near=16 free=9 talk=0        do=object/吃饭
+    t=9225   d=39  hun= 31.7 ene= 55.1 soc=  4.6 fun= 46.7 hyg= 31.7 | min=  4.6 GATED near=18 free=9 talk=0        do=object/吃饭
+    t=9230   d=39  hun= 36.5 ene= 54.2 soc=  3.9 fun= 45.9 hyg= 31.1 | min=  3.9 GATED near=19 free=7 talk=0        do=object/闲聊
+    t=9235   d=39  hun= 35.1 ene= 53.3 soc=  9.4 fun= 45.1 hyg= 30.6 | min=  9.4 GATED near=18 free=9 talk=7        do=object/闲聊
+    t=9240   d=39  hun= 33.7 ene= 52.4 soc= 19.2 fun= 44.3 hyg= 30.0 | min= 19.2 GATED near=16 free=9 talk=2        do=object/闲聊
+    t=9245   d=39  hun= 32.3 ene= 51.5 soc= 40.9 fun= 43.5 hyg= 29.5 | min= 29.5 GATED near=11 free=5 talk=0        do=object/闲聊
+    t=9250   d=39  hun= 30.9 ene= 50.6 soc= 50.7 fun= 42.7 hyg= 28.9 | min= 28.9 GATED near=13 free=5 talk=5        do=object/闲聊
+    t=9255   d=39  hun= 29.5 ene= 49.7 soc= 54.2 fun= 41.9 hyg= 28.4 | min= 28.4 GATED near=12 free=5 talk=0        do=object/吃饭
+    t=9260   d=39  hun= 40.3 ene= 48.8 soc= 65.4 fun= 41.1 hyg= 45.8 | min= 40.3 cand>0 near=12 free=6 talk=0        do=object/吃饭
+    t=9265   d=39  hun= 54.2 ene= 47.9 soc= 64.6 fun= 40.3 hyg= 45.3 | min= 40.3 cand>0 near=11 free=1 talk=0        do=object/吃饭
+    t=9270   d=39  hun= 68.0 ene= 47.0 soc= 63.9 fun= 39.5 hyg= 44.7 | min= 39.5 cand>0 near=11 free=2 talk=0        do=object/吃饭
+    t=9275   d=39  hun= 78.9 ene= 46.1 soc= 63.1 fun= 38.7 hyg= 44.2 | min= 38.7 cand>0 near=11 free=1 talk=7        do=object/玩耍
+    t=9280   d=39  hun= 77.5 ene= 45.2 soc= 62.4 fun= 37.9 hyg= 43.6 | min= 37.9 cand>0 near=10 free=1 talk=2        do=object/玩耍
+    t=9285   d=39  hun= 76.1 ene= 44.3 soc= 61.6 fun= 37.1 hyg= 43.1 | min= 37.1 ALONE near=0 free=0 talk=0        do=object/玩耍
+    t=9290   d=39  hun= 74.7 ene= 43.4 soc= 60.9 fun= 36.3 hyg= 42.5 | min= 36.3 cand>0 near=11 free=7 talk=0        do=object/玩耍
+    t=9295   d=39  hun= 73.3 ene= 42.5 soc= 60.1 fun= 40.5 hyg= 42.0 | min= 40.5 cand>0 near=8 free=6 talk=0        do=object/玩耍
+    t=9300   d=39  hun= 71.9 ene= 41.6 soc= 59.4 fun= 52.2 hyg= 41.4 | min= 41.4 cand>0 near=7 free=3 talk=0        do=object/玩耍
+    t=9305   d=39  hun= 70.5 ene= 40.7 soc= 58.6 fun= 63.9 hyg= 40.9 | min= 40.7 cand>0 near=7 free=4 talk=0        do=object/玩耍
+    t=9310   d=39  hun= 69.1 ene= 39.8 soc= 57.9 fun= 75.6 hyg= 40.3 | min= 39.8 cand>0 near=8 free=2 talk=9        do=object/玩耍
+    t=9315   d=39  hun= 67.7 ene= 38.9 soc= 57.2 fun= 87.3 hyg= 39.8 | min= 38.9 cand>0 near=8 free=1 talk=4        do=idle
+    t=9320   d=39  hun= 66.3 ene= 38.0 soc= 56.4 fun= 86.5 hyg= 39.2 | min= 38.0 ALONE near=9 free=0 talk=9        do=object/洗澡
+    t=9325   d=39  hun= 64.9 ene= 37.1 soc= 55.7 fun= 85.7 hyg= 38.7 | min= 37.1 ALONE near=0 free=0 talk=4        do=object/洗澡
+    t=9330   d=39  hun= 63.5 ene= 36.2 soc= 54.9 fun= 84.9 hyg= 38.1 | min= 36.2 ALONE near=0 free=0 talk=0        do=object/洗澡
+    t=9335   d=39  hun= 62.1 ene= 35.3 soc= 54.2 fun= 84.1 hyg= 37.6 | min= 35.3 GATED near=1 free=0 talk=10        do=object/洗澡
+    t=9340   d=39  hun= 60.7 ene= 34.4 soc= 53.4 fun= 83.3 hyg= 52.0 | min= 34.4 GATED near=2 free=1 talk=5        do=object/洗澡
+    t=9345   d=39  hun= 59.3 ene= 33.5 soc= 64.7 fun= 82.5 hyg= 70.2 | min= 33.5 GATED near=2 free=2 talk=0        do=object/洗澡
+    t=9350   d=39  hun= 57.9 ene= 32.6 soc= 63.9 fun= 81.7 hyg= 88.4 | min= 32.6 GATED near=1 free=1 talk=0        do=object/洗澡
+    t=9355   d=39  hun= 56.5 ene= 31.7 soc= 63.2 fun= 80.9 hyg= 95.4 | min= 31.7 GATED near=1 free=1 talk=0        do=object/睡觉
+    t=9360   d=40  hun= 55.1 ene= 30.8 soc= 62.4 fun= 80.1 hyg= 94.8 | min= 30.8 GATED near=0 free=0 talk=0        do=object/睡觉
+    t=9365   d=40  hun= 53.7 ene= 29.9 soc= 61.7 fun= 79.3 hyg= 94.3 | min= 29.9 GATED near=20 free=14 talk=0        do=object/睡觉
+    t=9370   d=40  hun= 52.3 ene= 29.0 soc= 60.9 fun= 78.5 hyg= 93.7 | min= 29.0 GATED near=16 free=14 talk=0        do=object/睡觉
+    t=9375   d=40  hun= 50.9 ene= 34.3 soc= 60.2 fun= 77.7 hyg= 93.2 | min= 34.3 GATED near=14 free=12 talk=0        do=object/睡觉
+    t=9380   d=40  hun= 49.5 ene= 41.1 soc= 59.4 fun= 76.9 hyg= 92.6 | min= 41.1 cand>0 near=14 free=11 talk=0        do=object/睡觉
+    t=9385   d=40  hun= 48.1 ene= 48.0 soc= 58.7 fun= 76.1 hyg= 92.1 | min= 48.0 cand>0 near=15 free=9 talk=0        do=object/睡觉
+    t=9390   d=40  hun= 46.7 ene= 54.8 soc= 57.9 fun= 75.3 hyg= 91.5 | min= 46.7 cand>0 near=14 free=8 talk=0        do=object/睡觉
+    t=9395   d=40  hun= 45.3 ene= 61.7 soc= 57.2 fun= 74.5 hyg= 91.0 | min= 45.3 cand>0 near=14 free=8 talk=10        do=object/睡觉
+    t=9400   d=40  hun= 43.9 ene= 68.5 soc= 56.4 fun= 73.7 hyg= 90.4 | min= 43.9 cand>0 near=13 free=9 talk=5        do=object/睡觉
+    t=9405   d=40  hun= 42.5 ene= 75.4 soc= 55.7 fun= 72.9 hyg= 89.9 | min= 42.5 cand>0 near=13 free=6 talk=10        do=object/睡觉
+    t=9410   d=40  hun= 41.1 ene= 82.2 soc= 54.9 fun= 72.1 hyg= 89.3 | min= 41.1 cand>0 near=13 free=4 talk=5        do=object/睡觉
+    t=9415   d=40  hun= 39.7 ene= 82.9 soc= 66.2 fun= 71.3 hyg= 88.8 | min= 39.7 cand>0 near=13 free=10 talk=0        do=object/吃饭
+    t=9420   d=40  hun= 38.3 ene= 82.0 soc= 65.4 fun= 70.5 hyg= 88.2 | min= 38.3 ALONE near=0 free=0 talk=0        do=object/吃饭
+    t=9425   d=40  hun= 36.9 ene= 81.1 soc= 64.7 fun= 69.7 hyg= 87.7 | min= 36.9 ALONE near=0 free=0 talk=0        do=object/吃饭
+    t=9430   d=40  hun= 35.5 ene= 80.2 soc= 63.9 fun= 68.9 hyg= 87.1 | min= 35.5 GATED near=0 free=0 talk=0        do=object/吃饭
+    t=9435   d=40  hun= 34.1 ene= 79.3 soc= 63.2 fun= 68.1 hyg= 86.6 | min= 34.1 GATED near=0 free=0 talk=0        do=object/吃饭
+    t=9440   d=40  hun= 32.7 ene= 78.4 soc= 62.4 fun= 67.3 hyg= 86.0 | min= 32.7 GATED near=12 free=6 talk=0        do=object/吃饭
+    t=9445   d=40  hun= 34.3 ene= 77.5 soc= 61.7 fun= 66.5 hyg= 85.5 | min= 34.3 GATED near=15 free=9 talk=0        do=object/吃饭
+    t=9450   d=40  hun= 48.2 ene= 76.6 soc= 60.9 fun= 65.7 hyg= 84.9 | min= 48.2 cand>0 near=17 free=17 talk=0        do=object/吃饭
+    t=9455   d=40  hun= 62.1 ene= 75.7 soc= 60.2 fun= 64.9 hyg= 84.4 | min= 60.2 cand>0 near=17 free=15 talk=0        do=object/吃饭
+    t=9460   d=40  hun= 75.9 ene= 74.8 soc= 59.4 fun= 64.1 hyg= 83.8 | min= 59.4 cand>0 near=16 free=14 talk=0        do=object/吃饭
+    t=9465   d=40  hun= 80.7 ene= 73.9 soc= 58.7 fun= 63.3 hyg= 83.3 | min= 58.7 cand>0 near=20 free=9 talk=8        do=social/invite
+    t=9470   d=40  hun= 79.3 ene= 73.0 soc= 57.9 fun= 62.5 hyg= 82.7 | min= 57.9 cand>0 near=20 free=4 talk=3        do=social/invite
+    t=9475   d=40  hun= 77.9 ene= 72.1 soc= 73.2 fun= 61.7 hyg= 82.2 | min= 61.7 cand>0 near=20 free=5 talk=9        do=social/invite
+    t=9480   d=40  hun= 76.5 ene= 71.2 soc= 72.4 fun= 60.9 hyg= 81.6 | min= 60.9 cand>0 near=20 free=7 talk=4        do=social/invite
+    t=9485   d=40  hun= 75.1 ene= 70.3 soc= 71.7 fun= 60.1 hyg= 81.1 | min= 60.1 cand>0 near=16 free=6 talk=7        do=social/apologize
+    t=9490   d=40  hun= 73.7 ene= 69.4 soc= 70.9 fun= 59.3 hyg= 80.5 | min= 59.3 cand>0 near=14 free=1 talk=2        do=social/apologize
+    t=9495   d=40  hun= 72.3 ene= 68.5 soc= 78.1 fun= 58.5 hyg= 80.0 | min= 58.5 cand>0 near=12 free=5 talk=8        do=object/玩耍
+    t=9500   d=40  hun= 70.9 ene= 67.6 soc= 77.4 fun= 57.7 hyg= 79.4 | min= 57.7 ALONE near=0 free=0 talk=3        do=object/玩耍
+    t=9505   d=40  hun= 69.5 ene= 66.7 soc= 76.6 fun= 56.9 hyg= 78.9 | min= 56.9 ALONE near=0 free=0 talk=0        do=object/玩耍
+    t=9510   d=40  hun= 68.1 ene= 65.8 soc= 75.9 fun= 56.1 hyg= 78.3 | min= 56.1 cand>0 near=16 free=13 talk=9        do=object/玩耍
+    t=9515   d=40  hun= 66.7 ene= 64.9 soc= 75.1 fun= 65.3 hyg= 77.8 | min= 64.9 cand>0 near=14 free=11 talk=4        do=object/玩耍
+    t=9520   d=40  hun= 65.3 ene= 64.0 soc= 74.4 fun= 77.0 hyg= 77.2 | min= 64.0 cand>0 near=13 free=9 talk=0        do=object/玩耍
+    t=9525   d=40  hun= 63.9 ene= 63.1 soc= 73.6 fun= 88.7 hyg= 76.7 | min= 63.1 cand>0 near=12 free=10 talk=0        do=object/玩耍
+    t=9530   d=40  hun= 62.5 ene= 62.2 soc= 72.9 fun=100.0 hyg= 76.1 | min= 62.2 cand>0 near=8 free=5 talk=0        do=object/玩耍
+    t=9535   d=40  hun= 61.1 ene= 61.3 soc= 72.1 fun= 99.7 hyg= 75.6 | min= 61.1 cand>0 near=7 free=5 talk=0        do=object/吃饭
+  --- 焦点逐日最低 need ---
+      d1   最低 need=33.9 (hunger)  soc日末=64.0
+      d2   最低 need=30.4 (hunger)  soc日末=84.0
+      d3   最低 need=48.8 (hunger)  soc日末=76.0
+      d4   最低 need=43.6 (hunger)  soc日末=88.0
+      d5   最低 need=29.1 (hunger)  soc日末=93.4
+      d6   最低 need=42.9 (hunger)  soc日末=97.4
+      d7   最低 need=41.9 (hunger)  soc日末=89.4
+      d8   最低 need=33.6 (hunger)  soc日末=69.4
+      d9   最低 need=44.0 (hunger)  soc日末=85.4
+      d10  最低 need=50.2 (hunger)  soc日末=61.4
+      d11  最低 need=39.8 (fun)  soc日末=69.4
+      d12  最低 need=38.4 (hunger)  soc日末=61.4
+      d13  最低 need=25.4 (hunger)  soc日末=57.4
+      d14  最低 need=26.6 (fun)  soc日末=75.4
+      d15  最低 need=44.7 (fun)  soc日末=73.4
+      d16  最低 need=35.9 (hunger)  soc日末=65.4
+      d17  最低 need=58.2 (social)  soc日末=100.0
+      d18  最低 need=50.4 (hunger)  soc日末=64.0
+      d19  最低 need=44.3 (hunger)  soc日末=60.0
+      d20  最低 need=30.1 (hunger)  soc日末=80.0
+      d21  最低 need=46.0 (hunger)  soc日末=86.0
+      d22  最低 need=35.5 (fun)  soc日末=66.0
+      d23  最低 need=21.4 (hunger)  soc日末=70.0
+      d24  最低 need=39.9 (energy)  soc日末=66.0
+      d25  最低 need=35.2 (fun)  soc日末=84.0
+      d26  最低 need=43.7 (hunger)  soc日末=68.0
+      d27  最低 need=43.3 (hunger)  soc日末=82.0
+      d28  最低 need=52.2 (fun)  soc日末=82.0
+      d29  最低 need=34.2 (fun)  soc日末=58.0
+      d30  最低 need=38.9 (social)  soc日末=76.0
+      d31  最低 need=39.4 (hunger)  soc日末=89.5
+      d32  最低 need=52.7 (hunger)  soc日末=85.5
+      d33  最低 need=44.0 (hunger)  soc日末=73.5
+      d34  最低 need=30.1 (hunger)  soc日末=53.5
+      d35  最低 need=19.4 (hunger)  soc日末=65.5
+      d36  最低 need=27.9 (hunger)  soc日末=29.5
+      d37  最低 need=21.5 (social)  soc日末=35.5
+      d38  最低 need=0.0 (social)  soc日末=0.0
+      d39  最低 need=0.0 (social)  soc日末=62.6
+      d40  最低 need=28.8 (energy)  soc日末=62.5
+      d41  最低 need=49.4 (energy)  soc日末=54.5
+      d42  最低 need=46.3 (social)  soc日末=60.5
+      d43  最低 need=48.5 (hunger)  soc日末=78.5
+      d44  最低 need=51.0 (hunger)  soc日末=95.6
+      d45  最低 need=57.1 (fun)  soc日末=75.6
+      d46  最低 need=39.4 (fun)  soc日末=61.6
+      d47  最低 need=35.2 (social)  soc日末=67.6
+      d48  最低 need=22.5 (hunger)  soc日末=83.6
+      d49  最低 need=30.5 (hunger)  soc日末=89.6
+      d50  最低 need=42.4 (hunger)  soc日末=91.7
+      d51  最低 need=55.5 (hunger)  soc日末=91.7
+      d52  最低 need=54.4 (hunger)  soc日末=99.5
+      d53  最低 need=40.9 (hunger)  soc日末=91.5
+      d54  最低 need=44.7 (hunger)  soc日末=89.8
+      d55  最低 need=59.0 (energy)  soc日末=87.5
+      d56  最低 need=45.7 (hunger)  soc日末=75.5
+      d57  最低 need=44.3 (hunger)  soc日末=98.5
+      d58  最低 need=50.2 (fun)  soc日末=78.5
+      d59  最低 need=38.4 (hunger)  soc日末=81.8
+      d60  最低 need=59.4 (fun)  soc日末=85.7
+  ORACLE 两遍 digest: pass1=1966159113 pass2=1966159113  ✅ 一致 ⇒ 探针未扰动仿真
