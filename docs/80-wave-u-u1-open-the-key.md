@@ -19,7 +19,7 @@
 | T1 留的那条 `DetGate` 未解 | **追到了，而且原地复现了**：不是随机性，是 `game/data/**` 在两跑之间被改（§四） |
 | 顺手做成的门 | `DetGate` 数据指纹门——把那条红从「不可解释」变成「指名道姓」（§五，带 §2.5 三行包络） |
 | R12 | 走完（三份锚全烘，§六） |
-| `bash tools/ci.sh` | §七（**读输出**） |
+| `bash tools/ci.sh` | **`=== CI PASS ✅ ===`**——全文 590 行、`❌`/`FAIL` 命中 **0**、78 条不变量行全绿（§七，**读输出不读退出码**） |
 
 ⚠ **两句必须先说的话，别只读上面那张表**：
 1. **没做到 T1 那条自定判据**：seeds 13-60 上仍有 1 个红（seed 44 豆子 **0.495**，低于下限 0.005）。
@@ -495,7 +495,55 @@ ModelPathGate --seeds 1-4 --days 8 --agents 12 --bake-anchor
 
 ## 七、`bash tools/ci.sh` 的实际输出（**读输出，不是读退出码**）
 
-见 §七 正文（本节由最后一次全量 CI 填入；日志落在 `analysis/u1/ci_final.txt`）。
+> **没有用 `tee | tail`**（[docs/79 §四](79-wave-u-plan.md)：它会把退出码吃掉，T3 的第一次 CI 是 FAIL 而管道返回 0）。
+> 命令是 `GODOT=… bash tools/ci.sh > analysis/u1/ci_final.txt 2>&1`，然后**把整份文件读一遍**：
+> **全文 590 行，`❌` / `FAIL` / `✗` 的命中数是 0**；`✅ #NN` 的不变量行共 **78 条**（第 4 步 40 条 + 第 4a 步 38 条）。
+
+```
+### 0. 版权红线      ✅ no tracked weights/binaries · ✅ 红线#4 负对照（该抓的三例都抓住了）
+### 1. data lint     ✅ lint_data          ### 1b. map audit  ✅ audit_map
+### 2. link lint     ✅ lint_links
+### 2b/2c/2d 三道美术门  ✅ 10/10 · 13/13 · 22/22 张与当场重建逐像素相同（判别力自检各自命中）
+### 3. godot import + parse smoke   ✅ import/parse clean
+### 4. S0 gate (seeds=1-12 days=60 det=3)
+  ✅ #01 [硬]无 need 触底  12/12   …（40 条不变量逐条 12/12，含 ✅ #38 ✅ #39 ✅ #40 12/12）
+  ✅ 金标一致 12/12 seed（含逐 tick 前缀链 12 条；烘于 4.6.2-stable，本机 4.6.2-stable）   ← 本棒重烘的那一份
+  ✅ 同 seed 两跑摘要一致(批量+增量滚动+逐tick前缀链)  3/3
+  === S0 GATE: PASS ✅  (硬不变量 seed 12/12 全绿, 软通过率门 ≥11/12(90%) 过, 活性 过, 金标 过, det 3/3) ===
+### 4a. 宏观池尺度门 (N=16 seeds=1-12 days=60 det=1)      ← T1 撞的就是这一格
+  ✅ 4a 预检：池倍率 ×16/12 ≠ 1 · days=60 ≥ SUPPLY_MIN_DAYS=60
+  ✅ #40 [软]产出闭环活性与供给充足  12/12
+  === S0 GATE: PASS ✅  (硬不变量 seed 12/12 全绿, 软通过率门 ≥11/12(90%) 过, 活性 过, 金标 过, det 1/1) ===
+  ✅ 宏观池尺度门 (N=16，产出契约=宏观池 ×16/12)
+### 4b. === LOD-VERIFY GATE: ✅ PASS  (V2+V3abc 全绿) ===
+### 4c. === DetGate: PASS ✅  (硬不变量 16/16, 同seed两跑一致 16/16, 数据指纹一致 16/16[1313116865], 金标 16/16 可比) ===
+                                                          ↑ 本棒新增的那一臂，在 CI 里是绿的
+### 4d. === BackendGate: PASS ✅  (硬 8/8, 两跑一致 8/8, 闭集封闭 8/8, 自检臂必红 4/4, 伪造落地 4/4) ===
+### 4e. === ModelPathGate: PASS ✅  (失败 0)              ← 锚是本棒重烘的
+### 4f. === VoiceGate: PASS ✅ ===
+### 5. unit / integration scenes
+  ✅ m2_test ✅ reqlife_test ✅ player_agency_test ✅ player_touch_test
+  ✅ s4_replay_test ✅ space_test ✅ save_load_test ✅ goals_test ✅ story_test
+### 6. 视觉门  === DAYNIGHT GATE: PASS === · === ROUNDTRIP GATE: PASS === · === POND GATE PASS ✅ ===
+             [FURNROLE] ✅ 家具语义分化门 PASS（7 栋 / 5 类）
+             ✅ 视觉门（昼夜 / 界外层重画 / 空间往返 / 岸线 / 室内外壳 / 家具语义）
+
+=== CI PASS ✅ ===
+```
+
+### 7.1 ⚠ 两条诚实边界，关于这次 CI 本身
+
+1. **这一份 CI 跑了两次，第一次的日志我留着没删**：`analysis/u1/ci_run1_INTERRUPTED_at_commit.txt`
+   是**同一次运行**在我被外部看门狗判为"卡死"、被迫先提交时的快照（478 行，停在第 5 步）。
+   **那次运行其实没死**——进程还活着、后来自己跑完了，`ci_final.txt`（590 行）就是它的完整输出。
+   留着那份截断日志是为了不把记录改成"看起来一路顺利"。
+2. **我在这次 CI 跑到第 5/6 步时，把 `analysis/u1/*.log` 批量改名成了 `*.txt`**
+   （仓库 `.gitignore` 第 8 行 `*.log` 会把原始数据整批吞掉）。
+   按 [docs/41 §1.5②](41-baton-contract.md) 的纪律这该等 CI 跑完再动，**据实写在这里**；
+   影响面可以精确圈出来：改的是 `analysis/` 下的非 `.md` 文件，
+   而唯一会读全仓的第 2 步 `lint_links` **只扫 `*.md` 且早在第 2 步就跑完了**，
+   本棒新加的 `DetGate` 数据指纹只覆盖 `res://data/**`。
+   ⇒ **能声称的是"这次改名碰不到任何一道门的输入"，不是"我遵守了那条纪律"。**
 
 ---
 

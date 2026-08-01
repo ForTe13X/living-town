@@ -476,3 +476,115 @@ WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
   ✅ s4_replay_test
   ✅ space_test
   ✅ save_load_test
+  ✅ goals_test
+  ✅ story_test
+### 6. 视觉门：昼夜 + 界外层重画 + 空间往返 + 岸线 + 室内外壳 + 家具语义（无渲染环境时自动 SKIP，不假红）
+  runner=docker  mode=auto  game=E:/Documents/Dev/June/26th/.claude/worktrees/agent-aeae4fcdf18f01aee/game  out=/tmp/tmp.3Waek9FwOp
+  shot ok   vg_night.png (tick=488)
+  shot ok   vg_noon.png (tick=600)
+  void-gate ok   (静态不重画 + settle 期真的画过 + 空间往返必重画)
+  space-roundtrip 采集 ok  (town_before → interior → town_after)
+  shot ok   vg_int_home.png
+  shot ok   vg_int_home2.png
+  shot ok   vg_int_cafe.png
+  shot ok   vg_int_shop.png
+  shot ok   vg_int_wash.png
+  shot ok   vg_int_work.png
+  shot ok   vg_int_library.png
+  base  正午帧世界主色 = (134, 173, 79)  im.size=(1280, 768)  (tod=0.5000 => _daylight 恰为纯白 => 它【就是】未调制基色)
+  PASS A1 夜帧  tick=488 tod=0.0333  im.size=(1280, 768)  world_mode=(57, 82, 63)  expect=(57, 82, 63)  dmax=0 (tol=0)
+  PASS A2 夜 (57, 82, 63) != 昼 (134, 173, 79)
+=== DAYNIGHT GATE: PASS ===
+  帧 1280x768  mode=portal space=cafe tick=600  cam_same=True  void_draws: before=1 interior=1 after=2
+  PASS A[map      ] rect=(290, 122, 990, 646) 变化像素=0/366800 (0.000%) 首例=None 最大通道差=0
+  PASS A[band_top ] rect=(288, 44, 992, 116) 变化像素=0/50688 (0.000%) 首例=None 最大通道差=0
+  PASS A[band_bot ] rect=(288, 652, 992, 690) 变化像素=0/26752 (0.000%) 首例=None 最大通道差=0
+  PASS B[before/band_top ] n=50688 颜色数=99(≥32) 标准差=29.39(≥10.0)
+  PASS B[before/band_bot ] n=26752 颜色数=1126(≥32) 标准差=31.35(≥10.0)
+  PASS B[after/band_top ] n=50688 颜色数=99(≥32) 标准差=29.39(≥10.0)
+  PASS B[after/band_bot ] n=26752 颜色数=1126(≥32) 标准差=31.35(≥10.0)
+  PASS C[interior] 与 town_before 不同的像素=98.32% (≥20%) —— 证明这一趟真的进过 cafe
+=== ROUNDTRIP GATE: PASS ===
+vg_noon.png  1280x768
+   池心取样 (599, 145, 681, 194)  4018 px  ⇒ distinct=12   [((31, 161, 175), 3785), ((56, 186, 184), 67), ((51, 196, 193), 56)]
+   参考差 REF=141.31  (草众数 (134, 173, 79) → 水众数 (31, 161, 175))   台阶阈值 noise=21.20
+   ★过渡折线/直线 path median=1.735  p10=1.214  一步直达占比=3.2%  (n=63 条剖线有完整 草→水 过渡段)
+   跨岸剖线 n=66  诊断 cross/REF median=0.157   (绝对 cross median=22.16 p90=66.07 · 诊断 win_max=170.19 被岸边装饰钉死，不判定)
+   台阶数   p90=6 median=4 min=2
+vg_night.png  1280x768
+   池心取样 (599, 145, 681, 194)  4018 px  ⇒ distinct=12   [((13, 41, 59), 3785), ((23, 46, 61), 67), ((21, 48, 64), 56)]
+   参考差 REF=60.27  (草众数 (57, 82, 63) → 水众数 (13, 41, 59))   台阶阈值 noise=9.04
+   ★过渡折线/直线 path median=1.813  p10=1.438  一步直达占比=6.3%  (n=63 条剖线有完整 草→水 过渡段)
+   跨岸剖线 n=66  诊断 cross/REF median=0.664   (绝对 cross median=40.01 p90=47.84 · 诊断 win_max=72.95 被岸边装饰钉死，不判定)
+   台阶数   p90=5 median=4 min=1
+
+  ✅ vg_noon.png：distinct=12 ≥ 2 · path median=1.735 ≥ 1.25 · 一步直达占比 3.2% ≤ 25% · 台阶 median=4 ≥ 2
+
+  ✅ vg_night.png：distinct=12 ≥ 2 · path median=1.813 ≥ 1.25 · 一步直达占比 6.3% ≤ 25% · 台阶 median=4 ≥ 2
+
+=== POND GATE PASS ✅ ===
+[INTSHELL] cafe       type=commercial   墙主面众数=#5a4028  (12272/16224 采样点)
+[INTSHELL] home       type=residential  墙主面众数=#886d49  (11616/14520 采样点)
+[INTSHELL] home2      type=residential  墙主面众数=#836a48  (14384/17360 采样点)
+[INTSHELL] library    type=public       墙主面众数=#556169  (12168/16224 采样点)
+[INTSHELL] shop       type=commercial   墙主面众数=#5a4028  (12272/16224 采样点)
+[INTSHELL] wash       type=public       墙主面众数=#556169  (11616/14520 采样点)
+[INTSHELL] work       type=workshop     墙主面众数=#44423e  (11616/14520 采样点)
+[INTSHELL] 7 栋 / 4 类：commercial, public, residential, workshop
+    cafe       home       异类     ΔE= 19.26  ok
+    cafe       home2      异类     ΔE= 17.72  ok
+    cafe       library    异类     ΔE= 29.50  ok
+    cafe       shop       同类     ΔE=  0.00  ok
+    cafe       wash       异类     ΔE= 29.50  ok
+    cafe       work       异类     ΔE= 18.28  ok
+    home       home2      同类     ΔE=  1.98  ok
+    home       library    异类     ΔE= 32.21  ok
+    home       shop       异类     ΔE= 19.26  ok
+    home       wash       异类     ΔE= 32.21  ok
+    home       work       异类     ΔE= 29.68  ok
+    home2      library    异类     ΔE= 30.54  ok
+    home2      shop       异类     ΔE= 17.72  ok
+    home2      wash       异类     ΔE= 30.54  ok
+    home2      work       异类     ΔE= 27.71  ok
+    library    shop       异类     ΔE= 29.50  ok
+    library    wash       同类     ΔE=  0.00  ok
+    library    work       异类     ΔE= 15.43  ok
+    shop       wash       异类     ΔE= 29.50  ok
+    shop       work       异类     ΔE= 18.28  ok
+    wash       work       异类     ΔE= 15.43  ok
+[INTSHELL] ✅ 室内外壳类型门 PASS（7 栋 / 4 类，异类最小 ΔE ≥ 8.0、同类最大 ΔE ≤ 4.0）
+[FURNROLE] cafe       期望=杯碟架    1 格 /  3600 px  签名6 色: #6e4d31 #3c2a1b #585c64 #eaf3f8 #c3a97a #9a8253
+[FURNROLE] home       期望=书架     1 格 /  2704 px  签名5 色: #60452a #44301e #657e36 #48647e #ab493b
+[FURNROLE] home2      期望=书架     1 格 /  5329 px  签名5 色: #5a4028 #3c2a1b #5f7b34 #41607f #a8443a
+[FURNROLE] library    期望=书架     3 格 / 10800 px  签名5 色: #5a4028 #3c2a1b #5f7b34 #41607f #a8443a
+           └ C 臂：同屋 3 格 shelf 逐像素一致 ✅
+[FURNROLE] shop       期望=货架     2 格 /  7200 px  签名7 色: #5a4028 #3c2a1b #c3a97a #9c7748 #b98956 #e85a5a #815b36
+           └ C 臂：同屋 2 格 shelf 逐像素一致 ✅
+[FURNROLE] wash       期望=毛巾架    1 格 /  2652 px  签名6 色: #82868f #213b47 #eaf3f8 #f2dca8 #c3a97a #585c64
+[FURNROLE] work       期望=工具架    1 格 /  2652 px  签名6 色: #44423e #5a4028 #6e4d31 #a0a4ac #585c64 #ffd166
+[FURNROLE] 7 栋 / 5 类物件：书架、工具架、杯碟架、毛巾架、货架
+    cafe       home       异类     ΔE= 55.98  ok
+    cafe       home2      异类     ΔE= 58.36  ok
+    cafe       library    异类     ΔE= 58.36  ok
+    cafe       shop       异类     ΔE= 50.07  ok
+    cafe       wash       异类     ΔE= 29.19  ok
+    cafe       work       异类     ΔE= 34.08  ok
+    home       home2      同类     ΔE=  3.58  ok
+    home       library    同类     ΔE=  3.58  ok
+    home       shop       异类     ΔE= 39.20  ok
+    home       wash       异类     ΔE= 55.98  ok
+    home       work       异类     ΔE= 49.91  ok
+    home2      library    同类     ΔE=  0.00  ok
+    home2      shop       异类     ΔE= 40.68  ok
+    home2      wash       异类     ΔE= 58.36  ok
+    home2      work       异类     ΔE= 51.83  ok
+    library    shop       异类     ΔE= 40.68  ok
+    library    wash       异类     ΔE= 58.36  ok
+    library    work       异类     ΔE= 51.83  ok
+    shop       wash       异类     ΔE= 53.92  ok
+    shop       work       异类     ΔE= 50.07  ok
+    wash       work       异类     ΔE= 32.64  ok
+[FURNROLE] ✅ 家具语义分化门 PASS（7 栋 / 5 类，异类最小 ΔE ≥ 12.0、同类最大 ΔE ≤ 8.0）
+  ✅ 视觉门（昼夜 / 界外层重画 / 空间往返 / 岸线 / 室内外壳 / 家具语义）
+
+=== CI PASS ✅ ===
