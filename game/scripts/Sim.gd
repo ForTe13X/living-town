@@ -1747,6 +1747,21 @@ func _work_pull_mult(prod: Dictionary, pop: int) -> float:
 	var kd := int(wp.get("k_den", 0))
 	if base <= 0 or kn <= 0 or kd <= 0 or pop <= base:
 		return 1.0
+	# ── R1（docs/68）：**可选的第二种形状**，由数据里多一个键 `k_c` 打开 ────────────────
+	#   由来：L2 自己在 `work_pull._cost` 里写了「数据要的是【低渐近线 + 早期更陡】的形状，
+	#   而它交付的是被 N=16 的余量钉死的那一条」。上面那条 `1 + (kn/kd)(1 − base/pop)` 的渐近线
+	#   是 `1 + kn/kd`，**抬 N=16 就必然同时抬 N=60**——两端是同一个 k，改不动形状只改得动高度。
+	#   饱和型（Michaelis-Menten 族）多一个半饱和常数 `k_c`，两端就解耦了：
+	#       f = 1 + kn·(pop−base) / (kd·(pop−base) + kc)
+	#   渐近线仍是 `1 + kn/kd`，而 `kc` 单独控制"多快到顶"。
+	#   ★仍然只做一次 IEEE 除法、分子分母全整数 ⇒ 红线 #1 的逐位可复现不变（同 L2 的 `_form_why`）。
+	#   ★**缺 `k_c` 键 / `k_c <= 0` ⇒ 走原式，逐字节回到 L2**（零扰动对照，与本仓库其它 off 门同一套纪律）。
+	#   ⚠ 出货树今天**没有**这个键 —— 本分支在出货配置上一条指令都不跑。扫描数据见 docs/68 §五。
+	var kc := int(wp.get("k_c", 0))
+	if kc > 0:
+		var d := pop - base
+		var den := kd * d + kc
+		return float(den + kn * d) / float(den)
 	# f = 1 + (kn/kd)·(1 − base/pop) = (kd·pop + kn·(pop − base)) / (kd·pop)
 	# 分子分母都是整数，只做一次 IEEE 除法 ⇒ 逐位可复现（不调 log/sqrt）。
 	return float(kd * pop + kn * (pop - base)) / float(kd * pop)
