@@ -297,6 +297,11 @@ var prod_pool_den := 1          # num==den（出货阵容 N=12）⇒ 倍率恰�
 ## L2（docs/58 §二）：工位广告的【人口感知】吸引力乘子。缺 `production.work_pull` 键、
 ## 或本局人口 ≤ base_population ⇒ 恒 1.0 ⇒ **出货阵容 N=12 逐字节不变**（结构性，不是走运）。见 _work_pull_mult。
 var work_pull_mult := 1.0
+## T1（docs/76）：工位广告的【镇库回拉】。缓存的是数据里那三个整数，不是一个乘子——
+## 乘子随 town_stock 每 tick 变，只有 `den<=0`（缺键/关掉）这一档能预先短路。见 _stock_pull_mult。
+var stock_pull_hi := 0          # 空仓时的分子（/den）；den<=0 ⇒ 整条关掉 ⇒ 逐字节回到 T1 之前
+var stock_pull_lo := 0          # 满仓时的分子（/den）
+var stock_pull_den := 0
 var town_stock := {}            # 镇级库存 good -> 件数（唯一通道 = _stock_move；#38 从 event_log 独立重算）
 var stock_total0 := {}          # 开局库存快照（#38 的基准，同 econ_total0 之于 #34）
 var _stock_day := {}            # good -> 当日已消耗但尚未入账的件数：日界一次性写一条 consume 事件
@@ -808,6 +813,13 @@ func start_new(p_seed: int = 12345) -> void:
 	# ★L2：工作吸引力的人口项。跟池同一处、同一个"本局人口"口径（都在克隆扩容做完之后、
 	#   town_stock 注资之前），本局内冻结 ⇒ 与池一样不受生老病死影响、可逐字节回放。
 	work_pull_mult = _work_pull_mult(production, agents.size())
+	# ★T1：镇库回拉的三个整数。与池/work_pull 同一处读，本局内冻结（数据不会中途换）。
+	var _sp: Dictionary = production.get("stock_pull", {}) if production.get("stock_pull", {}) is Dictionary else {}
+	stock_pull_den = int(_sp.get("den", 0))
+	stock_pull_hi = int(_sp.get("hi", 0))
+	stock_pull_lo = int(_sp.get("lo", 0))
+	if stock_pull_den <= 0 or stock_pull_hi < 0 or stock_pull_lo < 0:
+		stock_pull_den = 0                      # 任一项非法 ⇒ 整条关掉（缺数据即零扰动，同 work_pull / scale）
 	# Wave E 产出：镇级库存 per-run 重置（goto_tick 会反复 start_new，残留库存＝回放不一致）。
 	# production.json 缺失 → 三个字典全空 → 每个挂点都短路 → 逐字节回到 Wave D 末的轨迹。
 	town_stock = {}
@@ -1766,6 +1778,66 @@ func _work_pull_mult(prod: Dictionary, pop: int) -> float:
 	# 分子分母都是整数，只做一次 IEEE 除法 ⇒ 逐位可复现（不调 log/sqrt）。
 	return float(kd * pop + kn * (pop - base)) / float(kd * pop)
 
+## ── T1：工位广告的【镇库回拉】(stock pull)（docs/76）─────────────────────────────
+##
+## **它修的是什么——根因是结构性的，不是某个数没调好**：
+##   `_object_candidates` 给一条**工位广告**打分时读的东西是
+##   `urgency(fun) · amount/60 · _phase_pref · _weather_mult · _season_mult · work_pull_mult − dist·0.4`
+##   （`cl_mult` 那一条明确把带 job 的广告位排除在外）。
+##   **这里面没有一项读 `town_stock`。** ⇒ 镇上这种货**空仓**与**满仓**时，
+##   "去上工"这条候选的分数**逐位相同**。产出侧对短缺是**开环**的。
+##
+## **后果**：一个岗位 60 天的在班完成次数 ≈ Binomial(在班上台数, p)，而 p 是一个**常数**。
+##   实测（t1_workfloor_probe，N=12 × 9 seed × 60 天，走既有只读钩子 decision_sink）
+##   在班上台数 76..257、p 的中位数逐岗位是 2.0%..40.0%（**20 倍的跨度**）。
+##   低 p 的那几个岗位 np≈4..20 ⇒ 相对标准差 22%..50% ⇒ **左尾就是这么来的**，
+##   而没有任何东西把它拉回来。
+##
+## **同一条开环还有【另一头】，而它此前没人量过**：`_stock_move` 撞 cap 时
+##   `applied = min(delta, cap − cur)`——**满仓上工，多出来的那部分当场丢掉**。
+##   实测（S1 的 60 个 seed 原始数据，申报批量×在班完成 vs event_log 真入账）：
+##     口粮 丢弃 5.1%(seed 50) .. **61.3%**(seed 60) · 屋瓦 9.9%(seed 19) .. **55.6%**(seed 30)
+##     柴薪 7.0% .. 51.3% · 豆子 0.0% .. 80.7% · 话本 0.0% .. 54.3% · 整洁 0.0% .. 9.3%
+##   ⇒ **有的 seed 一半以上的工时是白干的**，而引擎自己知道（它就是在 `_stock_move` 里丢的），
+##     **只有做决定的那一端不知道**。
+##
+## **形状**：在 `stock/cap` 上线性插值，`hi` 是空仓那一端、`lo` 是满仓那一端（均 /den）：
+##     f = (hi·(cap − stock) + lo·stock) / (den · cap)
+##   · `hi == lo == den` ⇒ **f ≡ 1.0 逐位**（自带零假设对照：代码路照跑、乘法照做，而世界不动）。
+##   · 分子分母全整数、只做**一次** IEEE 除法（除法是正确舍入的）⇒ 红线 #1 的逐位可复现。
+##     log/sqrt/pow 一概不用——理由与 K1 的池、L2 的 `_form_why` 逐字相同。
+##   · `lo < den < hi` ⇒ 它**两头都管**：空仓加把劲（补下限臂），满仓歇一歇（补上限臂）。
+##     只写一头是不够的——`#40` 的两条臂在 seeds 1-60 上**各红过一次**（下限臂 18/40/50/58，
+##     上限臂 36），而只抬不压会把上限臂推得更红。
+##
+## **三道门，与 work_pull 逐条同构（不是设计洁癖，是抄已经被实测过的那一套）**：
+##   ① `stock_pull_den <= 0`（缺 `production.stock_pull` 键 / 任一项非法）⇒ 恒 1.0，一条指令都不多跑；
+##   ② `mods_ok` —— 与 rhythm/weather/season/cleanliness/work_pull 共用生存门：
+##      任一需求告急 ⇒ 整个关掉。它是**抬**乘子，所以这道门在这里承重（同 work_pull 的注释）；
+##   ③ **这条候选的动作 == 这个人的本职动作，且他在班** —— 逐字就是 `_produce_for` 开头那道守卫。
+##      不在班时 `_produce_for` 一件货都不产，抬它只会让人半夜白干（L2 的 `_shift_why` 量过一遍）。
+##      ⚠ 这一条**不是**照抄 L2 的 `adv["job"] != ""`：全镇九个岗位里恰好**咖啡师**那条广告没有 `job` 键
+##      （`看摊` 来自 `jobs.json.extra_advertises` 与 `interiors.json` 的吧台，两处都没有 job 门），
+##      按 `adv["job"]` 判会**正好漏掉豆子那一族**。用 `_job_action`（本仓库自己指定的
+##      「本职动作」单一真相源）则与 `_produce_for` 的范围在构造上重合。
+##
+## **它【不】做什么**：只乘进打分用的 `benefit`，**不动 `amount`**——
+##   `amount / dur_total` 是每 tick 回补的 need 量，改它就是改微观需求侧（§0.5 写死微观不降级）。
+##   也不动 F1/F5/G3 三波手工标定出来的相对比例（34/20/46/46/46/32/46/38），一个字节没碰。
+func _stock_pull_mult(title: String) -> float:
+	if stock_pull_den <= 0:
+		return 1.0
+	var rec: Dictionary = production.get("produce", {}).get(title, {}) if production.get("produce", {}) is Dictionary else {}
+	if rec.is_empty():
+		return 1.0                                  # 该职位没有产物（零工/未接入的工种）⇒ 无库存可读 ⇒ 不施加
+	var good := String(rec.get("good", ""))
+	var gd: Dictionary = (production.get("goods", {}) as Dictionary).get(good, {}) if (production.get("goods", {}) as Dictionary).get(good, {}) is Dictionary else {}
+	var cap := int(gd.get("cap", 0))
+	if cap <= 0:
+		return 1.0                                  # 未申报 cap ⇒ "满不满"无定义 ⇒ 不施加（同 _clean_mult）
+	var st := clampi(_stock_of(good), 0, cap)       # start_stock 若被改到 > cap，钳住，别让 f 跑到负数
+	return float(stock_pull_hi * (cap - st) + stock_pull_lo * st) / float(stock_pull_den * cap)
+
 ## F1 整洁度 → 效用乘子 ∈ [floor, 1.0]，线性于「现存 / cap」。缺 cleanliness 键或该货未申报 cap → 恒 1.0。
 ## 只压不抬是刻意的：它跟 _weather_mult / _season_mult 是同一族，抬升会让物件吸引力膨胀、挤掉社交发起
 ## （buildings.json 的 _furnish_note 已经量过这条代价）。
@@ -1866,6 +1938,23 @@ func _object_candidates(ag: Dictionary) -> Array:
 			if work_pull_mult != 1.0 and mods_ok and String(adv.get("job", "")) != "" \
 					and _in_shift(_job_of(String(ag["id"]))):
 				benefit *= work_pull_mult
+			# ★T1：镇库回拉（docs/76）——空仓加把劲、满仓歇一歇。三道门见 _stock_pull_mult 抬头。
+			#   放在 work_pull 之后是刻意的：两条乘子彼此独立（一条随人口、一条随库存），
+			#   而乘法可交换 ⇒ 顺序不影响数值；写在后面只是为了让"人口项 → 库存项"的阅读顺序与 docs 一致。
+			#
+			# ★★ 门用的是 `_job_action(job) == action`，**不是** L2 用的 `adv["job"] != ""`。
+			#   这一条被数据逼着改过一次，值得写清楚：全镇九个岗位里，**恰好咖啡师那一条广告没有 `job` 键**
+			#   （`看摊` 来自 jobs.json 的 `extra_advertises` 与 interiors 的吧台，两处都没有 job 门）
+			#   ⇒ 按 `adv["job"]` 判，**修法会正好漏掉 §〇 里的 B 族（豆子 / 咖啡师）**，
+			#   而那恰恰是五个红里的一个。
+			#   改用 `_job_action` 还有第二个、更硬的理由：`_job_action` 是本仓库自己写下的
+			#   **「这个人的本职动作」的单一真相源**（见它的抬头注释：`_wage_for` / `_produce_for` / 技能三处共用），
+			#   而这里的三个条件（本职动作 + 在班 + 有产出登记）**逐字就是 `_produce_for` 开头那道守卫**
+			#   ⇒ 乘子施加的范围与"这次决定做完了真的会往镇库交货"**在构造上重合**，不会分家。
+			if stock_pull_den > 0 and mods_ok:
+				var _jb: Dictionary = _job_of(String(ag["id"]))
+				if not _jb.is_empty() and _job_action(_jb) == action and _in_shift(_jb):
+					benefit *= _stock_pull_mult(String(_jb.get("title", "")))
 			var score := benefit - float(dist) * _w("obj_dist_penalty", 0.4)
 			# Wave 1b 经济动机环：穷(coin<poor_line)时有薪动作加分 → 缺钱→去做活→挣了付饭钱(闭环)。
 			# 确定性、数据门控；只加分不减分 → 生存(urgency 主导)不受威胁；economy.json 缺失恒不触发。
