@@ -69,7 +69,16 @@ docs/74 §四 的教训原话：`visual_gate.sh` 写死 SEED=3，只在 seed 3 �
 所以就算将来把 fixture 换成夜里也不会假红；反过来，若有人把 `--min-p` 提到 13 以上，
 它会在夜里变红 —— 那个数是**改后**的下界，不是余量。
 """
-import argparse
+import argparse, sys as _sys
+# Windows 控制台默认 GBK，编不出 ✅ 会直接抛 UnicodeEncodeError——**判据全部算完之后**才炸，
+# 于是门"通过了"却以 rc=1 收场。实测过：本门第一次接进 visual_gate.sh 就是这么红的
+# （P 27.59/26.03 正午、13.90/13.12 夜间，全部远超 8.0，地色 8.4%/9.4% 远低于 22%，然后炸在打印那一行）。
+# 与 tools/assert_no_weights.py 抬头同源。V3 明写过"本门从没在 visual_gate.sh 里跑过"——
+# 这就是那句话的代价。
+try:
+    _sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except (AttributeError, OSError):
+    pass
 import json
 import sys
 from collections import Counter
