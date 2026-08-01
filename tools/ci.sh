@@ -62,10 +62,19 @@ scan(){  # scan <label> <logfile> [额外白名单正则] [该正则的预期条
 echo "### 0. 版权红线：git 里不得有模型权重 / 预编译二进制"
 # 红线#4。.gitignore 今天只挡 game/models/*.gguf —— 换个目录放权重就会被静默入库。
 # 这里对【整棵已跟踪树】把关，而不是对某个目录。
-BIN_TRACKED=$(git ls-files | grep -iE '\.(gguf|so|dll|bin|safetensors|pt)$')
-if [ -n "$BIN_TRACKED" ]; then
-  echo "$BIN_TRACKED" | head -20; bad "tracked weights/binaries (红线#4：权重与二进制一律不入库)"
-else ok "no tracked weights/binaries"; fi
+#
+# 2026-08-01：从一行手写扩展名清单换成 tools/assert_no_weights.py（两条臂）。
+# 起因是 S2 的对抗评审（编号 73）把这道门点名为【纸】。我复核了它：
+#   旧清单 `\.(gguf|so|dll|bin|safetensors|pt)$` 对 14 个样本文件名只抓住 7 个，
+#   放过 .onnx / .tflite / .pth / .dlc / .so.1 / .dylib —— 而 .tflite 与 .dlc
+#   恰好是本项目端上 SLM 真会产出的两种格式。
+# 更要紧的是**改名就能绕过去**，所以新门加了一条读幻数的内容臂。
+# 负对照：`python tools/assert_no_weights.py --self-test`（三例，含"GGUF 改名成 .dat"）。
+"$PY" tools/assert_no_weights.py && ok "no tracked weights/binaries" \
+                                 || bad "tracked weights/binaries (红线#4：权重与二进制一律不入库)"
+"$PY" tools/assert_no_weights.py --self-test >/dev/null 2>&1 \
+  && ok "红线#4 负对照（该抓的三例都抓住了）" \
+  || bad "红线#4 负对照失败 —— 这道门没牙"
 
 echo "### 1. data lint (json parse + foreign keys + 必需数据文件在位)"
 "$PY" tools/lint_data.py && ok "lint_data" || bad "lint_data"
