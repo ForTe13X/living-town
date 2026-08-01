@@ -44,7 +44,15 @@
 
 ⚠️ **合并 lumiere 会撞文号**：它带一份 `docs/40-external-backend-invariant-gate.md`，而 HEAD 已有
 `docs/40-device-n60-slm-the-shipping-intersection.md`。不是 git 冲突（文件名不同），但编号体系会静默破掉，
-`lint_links.py` 抓不到。**必须改号为 `docs/45@claude/objective-lumiere-e6f125`**。
+`lint_links.py` 抓不到。**必须改号为 [docs/45](45-external-backend-invariant-gate.md)**。
+
+> **⚠️ 2026-08-02 · Z3 就地更正（只改引用形式，不改本节任何结论）**
+> 本节原先三处把它写成 `docs/45@claude/…`（后缀是下面 §1.2 分支表里那条 lumiere 分支的全名）。
+> **那个 `@分支` 后缀今天是错的，而且错两层**：
+> ① 这份文档**已经并进 HEAD**（`45-external-backend-invariant-gate.md`，见下面 §1.2b「文号已改 45」）；
+> ② 就算去那条分支上找也找不到——**它在那条分支上仍然叫 `docs/40-external-backend-invariant-gate.md`**
+> （`git ls-tree claude/objective-lumiere-e6f125 -- docs` 实测，本节自己也是这么写的）。
+> ⇒ 三处后缀去掉，改成指向 HEAD 的真链接；**分支名保留在本注记与 §1.2 的分支表里**，可追溯性不变。
 
 ### 1.2b ★ C0 回执（2026-07-26 当日）——两道门都已落地，且**上面 §1.2 有一句是错的**
 
@@ -330,7 +338,7 @@ docs/41 全文仍然逐条生效。本节只加这一波特有的六条。
 
 | 棒 | 独占文件 | 共享（按 R1 分权） |
 |---|---|---|
-| **C0** | `tools/audit_map.py`、`game/bench/BackendGate.*`、`.gitignore`、`docs/45@claude/objective-lumiere-e6f125` | `Sim.gd`（仅接受 lumiere 的既有 diff）、`tools/ci.sh` |
+| **C0** | `tools/audit_map.py`、`game/bench/BackendGate.*`、`.gitignore`、[docs/45](45-external-backend-invariant-gate.md)（当时在 `claude/objective-lumiere-e6f125` 上、且还叫 40 号） | `Sim.gd`（仅接受 lumiere 的既有 diff）、`tools/ci.sh` |
 | **C1** | `game/scripts/WorldView.gd` | `project.godot` **仅 `[rendering]`** |
 | **C2** | `game/scripts/Audio.gd`（新建） | `project.godot` **仅 `[autoload]`** |
 | **C3** | `game/scripts/Main.gd` | — |
@@ -349,7 +357,7 @@ docs/41 全文仍然逐条生效。本节只加这一波特有的六条。
 
 **做什么**
 1. `claude/objective-lumiere-e6f125`（1 commit `6e2ba78`）合进来。**把它带的 `docs/40-external-backend-invariant-gate.md`
-   改号为 `docs/45@claude/objective-lumiere-e6f125`（合入时改名为 45 号）**，并修好所有指向它的链接。
+   改号为 [docs/45](45-external-backend-invariant-gate.md)（合入时改名为 45 号）**，并修好所有指向它的链接。
 2. `claude/stoic-shamir-e08cef`（1 commit `b93d15f`）合进来（`tools/audit_map.py` 的节日门，纯工具、不碰仿真）。
 3. `.gitignore` 补 `__pycache__/`、`*.pyc`。
 4. **不要**提交 `analysis/`——它 723 MB，其中 `phase_d/packet_c30.jsonl` 638 MB + `packet_smoke.jsonl` 84 MB

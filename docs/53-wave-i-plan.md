@@ -86,7 +86,9 @@ docs/09:24 "每个区角放一座小屋 hut（Art.building_tex）"   至今还�
 
 ## 三、I3 · G3 自己预言会崩的那一格：N=60
 
-**owns**：`game/bench/**`（新探针）、`docs/54@worktree-agent-a31b222a4dfd444a7`（新文件，I3 未合入前只在它的分支上）
+**owns**：`game/bench/**`（新探针）、[docs/54](54-scale-n60.md)（新文件，I3 未合入前只在分支
+`worktree-agent-a31b222a4dfd444a7` 上 —— **2026-08-02 Z3 复核：已并进 HEAD，故 `@分支` 后缀去掉；
+分支名保留在这里，可追溯性不变**）
 **不得触碰**：`game/scripts/**`、`game/data/*.json`、`tools/**`
 
 G3 交付泥瓦匠时明写：**"睡觉随人口涨、产瓦不涨，一个泥瓦匠对 60 个睡觉的人，我预计会崩"**，
