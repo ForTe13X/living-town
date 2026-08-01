@@ -79,6 +79,8 @@ NIGHT_TICK=488        # 第 3 天 00:48（夜）  ┐ C3 记录在案的那条�
 NOON_TICK=600         # 第 3 天 12:00（正午）┘ （改这两个数就要同步改 assert_daynight.py 的期望值来源）
 SEED=3
 W=1280; H=768
+# R2 室内外壳门要拍的 Space（四类各一 + library 撑 B 臂，理由见下面采集处）
+INT_SPACES="${LT_VISUAL_INT_SPACES:-home cafe wash work library}"
 
 # ══ 模式 B：在渲染环境【内部】拍两帧 ════════════════════════════════════════
 # 容器里用 `bash /tools/visual_gate.sh --shoot /out`；native 路径下同一份脚本原地跑。
@@ -135,6 +137,22 @@ if [ "${1:-}" = "--shoot" ]; then
   else
     echo "  space-roundtrip 采集 FAIL (见上面的 [SPACESHOT] 行)"; [ "$rc" -eq 0 ] && rc=3
   fi
+  # ── R2 的室内外壳采集（同一个 Xvfb）────────────────────────────────────────
+  # 判据在 tools/assert_interior_shell.py（宿主侧跑），本步只负责拍。
+  # 为什么是这五栋：四种 areas[].type 各一栋（home=residential / cafe=commercial /
+  # wash=public / work=workshop）**再加一栋 library**——library 与 wash 同为 public，
+  # 它撑的是判据的 B 臂（同类必须相同）。只拍四栋的话，"给每栋楼各挑一个色"这种
+  # 假修法会全绿通过。**第五张是判别力，不是冗余。**
+  for sid in $INT_SPACES; do
+    rm -f "$OUT/vg_int_${sid}.png"
+    "$GBIN" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
+      --resolution ${W}x${H} --single-window -- \
+      --backend logic --seed "$SEED" --warmup-tick "$NOON_TICK" \
+      --probe-space "$sid" --probe-floor 1f --shot-fit --shot "$OUT/vg_int_${sid}.png" \
+      >>/tmp/vg-godot.log 2>&1
+    if [ -s "$OUT/vg_int_${sid}.png" ]; then echo "  shot ok   vg_int_${sid}.png"
+    else echo "  shot FAIL vg_int_${sid}.png"; [ "$rc" -eq 0 ] && rc=4; fi
+  done
   kill $XV 2>/dev/null
   [ $rc -ne 0 ] && tail -25 /tmp/vg-godot.log
   exit $rc
@@ -220,6 +238,10 @@ if [ $SHOT_RC -eq 3 ]; then
   echo "  ❌ VISUAL GATE：空间往返采集失败（昼夜两帧与 void-gate 都过了）——见上面的 [SPACESHOT] 行"
   exit 1
 fi
+if [ $SHOT_RC -eq 4 ]; then
+  echo "  ❌ VISUAL GATE：室内帧采集失败（前面几步都过了）—— 见上面的 shot FAIL vg_int_* 行"
+  exit 1
+fi
 if [ $SHOT_RC -ne 0 ]; then
   if [ "$PICK" = native ] && [ "$MODE" != "require" ]; then
     skip "native 渲染路径拍不出帧（未 pin 的环境不背这个锅；LT_VISUAL=require 可让它变红）"
@@ -240,7 +262,12 @@ RRC=$?
 # 一帧是不够的。同理跑在前两条之后而不短路（三条守的是不同性质）。
 "$PY" tools/pond.py "$OUT/vg_noon.png" "$OUT/vg_night.png" --assert
 PRC=$?
+# 室内外壳类型门（R2 / docs/69）。同样**不短路**：它守的是第五条性质
+# （"进屋之后这栋楼还得是这栋楼"），与上面四条各自独立，一条红了另几条的读数仍有诊断价值。
+"$PY" tools/assert_interior_shell.py "$OUT" --game "$GAME"
+IRC=$?
 [ $EPHEMERAL -eq 1 ] && rm -rf "$OUT"
 [ $ARC -ne 0 ] && exit $ARC
 [ $RRC -ne 0 ] && exit $RRC
-exit $PRC
+[ $PRC -ne 0 ] && exit $PRC
+exit $IRC

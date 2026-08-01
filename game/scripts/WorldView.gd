@@ -57,7 +57,9 @@ const P_PUB_FLOOR    := Color("#96a5ab")   # gpl pub-floor-base
 const P_PUB_LINE     := Color("#6c7b83")   # gpl pub-floor-line
 const P_STONE        := Color("#9b968d")   # gpl stone-base
 const P_STONE_LINE   := Color("#6d6a61")   # gpl stone-line
-const P_KERB         := Color("#b8b2a6")   # gpl road-kerb（此前代码零使用，本棒启用）
+## ★ R2 删掉了 P_KERB（gpl road-kerb）：它唯一的使用点是室内石板地的亮格，而那格现在由
+##   `FLOOR_PAL[typ].base.lightened(0.18)` 派生（澡堂/图书馆是冷灰、工坊是暖灰，改前两者共用这一个写死值）。
+##   D6 的注释写着"此前代码零使用，本棒启用"——本棒把它用掉的那一处又拿走了，故一并删，不留零引用常量。
 const P_PLAZA        := Color("#c3a97a")   # gpl plaza-base
 const P_PLAZA_LINE   := Color("#9a8253")   # gpl plaza-line
 const P_GRASS        := Color("#85a643")   # gpl grass-summer
@@ -124,8 +126,8 @@ const X_MISSING      := Color("#ff00ff")
 
 # ── 派生明暗档（12 个；const 不能带方法调用，故用 var —— 只在实例化时算一次）──
 var D_WOOD_LINE      := X_WOOD_MID.darkened(0.45)    # 木器描边/门框/门缝/搁板线 —— 木家族自己的最暗档；映到 ui-panel 会让它变冷（dE00 14.8），那正是「室内变一坨」
-var D_INT_WALL_TOP   := P_RES_FOOT.lightened(0.20)   # 室内墙顶棱高光
-var D_INT_WALL_FOOT  := P_RES_FOOT.darkened(0.28)    # 室内墙脚暗边
+## ★ R2 删掉了 D_INT_WALL_TOP / D_INT_WALL_FOOT：室内墙不再写死住宅色，两条派生式搬进 `_interior_shell()`
+##   （对住宅逐字节相同，其余三类各按自己的 BLD_PAL 派生）。留着会是两个零引用常量。
 var D_FURN_HI        := P_COM_LINE.lightened(0.18)   # 木家具二级高光（桌/凳/条凳的上沿）
 var D_POT            := P_COM_FACE.darkened(0.16)    # 陶罐底/花盆（0.10 时罐身↔罐底只剩 dE00 4.8，压到 0.16 拉回 7.5）
 var D_STAIR          := P_PLAZA_LINE.darkened(0.22)  # 楼梯踏板
@@ -1198,27 +1200,29 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 			if String(e.get("space", "")) == sid and String(e.get("floor", "")) == fid and String(p.get("kind", "")) == "door":
 				var ep: Array = e.get("pos", [0, 0])
 				door_gap[int(ep[1]) * wc + int(ep[0])] = true
-	# 地板：按 interiors.json 的 floor 材质画（wood=暖木条纹 / stone=冷灰石板缝）→ 澡堂/工坊/图书馆一进门就和木屋不同
-	if String(content.get("floor", "wood")) == "stone":
-		draw_rect(b, P_STONE, true)
+	# ★ R2：外壳（地板+墙）改由【这栋楼自己的类型】决定，而不是一份写死的住宅配方。见 _interior_shell()。
+	var shell := _interior_shell(sid, String(content.get("floor", "wood")))
+	# 地板：mode 仍来自 interiors.json 的 floor 字段（authored 几何），颜色来自本楼类型的 FLOOR_PAL
+	if shell["slab"]:
+		draw_rect(b, shell["floor"], true)
 		for gy in range(hc):
 			for gx in range(wc):
 				if (gx + gy) % 2 == 0:
-					draw_rect(Rect2(ox + gx * T, oy + gy * T, T, T), Color(P_KERB, 0.55), true)   # 交错石板
+					draw_rect(Rect2(ox + gx * T, oy + gy * T, T, T), Color(shell["checker"], 0.55), true)   # 交错石板
 		for gy in range(hc):
-			draw_rect(Rect2(ox, oy + gy * T, b.size.x, 2), Color(P_STONE_LINE, 0.45), true)             # 横缝
+			draw_rect(Rect2(ox, oy + gy * T, b.size.x, 2), Color(shell["floor_line"], 0.45), true)          # 横缝
 	else:
-		draw_rect(b, P_RES_FLOOR, true)
+		draw_rect(b, shell["floor"], true)
 		for gy in range(hc):
 			if gy % 2 == 0:
-				draw_rect(Rect2(ox, oy + gy * T, b.size.x, 3), Color(P_RES_LINE, 0.4), true)
+				draw_rect(Rect2(ox, oy + gy * T, b.size.x, 3), Color(shell["floor_line"], 0.4), true)
 	# 外墙（边框），门口那格留缺、画成门
 	for gx in range(wc):
-		_interior_wall(sg, ox + gx * T, oy, door_gap.has(gx))                          # 上墙
-		_interior_wall(sg, ox + gx * T, oy + (hc - 1) * T, door_gap.has((hc - 1) * wc + gx))  # 下墙
+		_interior_wall(shell, ox + gx * T, oy, door_gap.has(gx))                          # 上墙
+		_interior_wall(shell, ox + gx * T, oy + (hc - 1) * T, door_gap.has((hc - 1) * wc + gx))  # 下墙
 	for gy in range(hc):
-		_interior_wall(sg, ox, oy + gy * T, door_gap.has(gy * wc))                      # 左墙
-		_interior_wall(sg, ox + (wc - 1) * T, oy + gy * T, door_gap.has(gy * wc + wc - 1))  # 右墙
+		_interior_wall(shell, ox, oy + gy * T, door_gap.has(gy * wc))                      # 左墙
+		_interior_wall(shell, ox + (wc - 1) * T, oy + gy * T, door_gap.has(gy * wc + wc - 1))  # 右墙
 	# 家具（按 slot 程序化）
 	for fr in content.get("furniture", []):
 		var fp: Array = (fr as Dictionary).get("pos", [0, 0])
@@ -1268,15 +1272,53 @@ func _draw_interior_night(b: Rect2, content: Dictionary, sid: String, fid: Strin
 			var f := 1.0 - float(k) / 4.0
 			draw_circle(cen, T * (0.55 + 0.5 * float(k)), Color(X_GLOW, pool * 0.14 * f))
 
-func _interior_wall(sg, x: float, y: float, is_door: bool) -> void:
+## ★ R2 · 室内外壳配方：由【这栋楼在 map.json areas 里的 type】决定，与外墙 / 区地板同源。
+##
+## 由来（实测，不是设计推演）：改前 7 栋楼 8 个楼层的**墙是同一条配方**——`_interior_wall()` 的第一个参数
+## 是 `sg`，而函数体**一次都没用过它**；墙主面写死 `P_RES_FOOT`（住宅暖石灰）。于是澡堂/工坊/图书馆
+## 在**外面**是灰蓝石墙 / 暖灰石墙（`BLD_PAL`，`_wall_type` 早就按 `areas[].type` 分好了），
+## **一进门就变成住宅的暖木墙**——同一栋楼的里外自相矛盾。地板同理：只有 wood/stone 两档服务 8 个楼层。
+##
+## ⇒ 修法不是新造一套室内色，是**把外面已经有的那套接进来**（红线#5 复用优先）：
+##   墙主面 = `BLD_PAL[typ]["foot"]`，顶棱/墙脚沿用原来的 lightened(0.20)/darkened(0.28) 派生式；
+##   地板 = `FLOOR_PAL[typ]` 的 base/line。
+##   **选 `foot` 而不是 `face` 有实测理由**：`P_RES_FACE #c2a071` 与住宅木地板 `#c8a273` 只差 6/6/2，
+##   拿它当墙会让住宅的墙和地板糊成一块；`foot` 档恰好等于今天写死的那个值 ⇒ **住宅两栋逐像素不变**，
+##   其余三类各自跟着自己的族走。
+## ⚠ `mode`(plank/slab) 仍取 interiors.json 的 `floor` 字段，**不从 FLOOR_PAL 取**：两处都有 mode 就会漂。
+##   实测这 8 个楼层里 authored `floor` 与 `FLOOR_PAL[typ].mode` **逐条一致**（wood↔plank 5 条、stone↔slab 3 条），
+##   所以今天两种取法等价；写成 authored 优先是为了将来有人蓄意写一间"石头地的住宅"时不被静默覆盖。
+## 纯 View：只读 `Sim.world.areas[*].type`（Sim 侧从不读这个字段，D6/F5 已记过），不写任何状态、不抽 RNG。
+func _interior_shell(sid: String, floor_mode: String) -> Dictionary:
+	var areas: Dictionary = Sim.world.get("areas", {}) if Sim.world.get("areas", {}) is Dictionary else {}
+	var a: Dictionary = areas.get(sid, {}) if areas.get(sid, {}) is Dictionary else {}
+	var typ := String(a.get("type", "residential"))
+	# 认不出的 type 退回住宅（= 改前行为），与 BLD_PAL 认不出退回 workshop 的口径不同：
+	# 这里退回"改前长什么样"，让未知建筑至少不比今天差。
+	if not BLD_PAL.has(typ) or not FLOOR_PAL.has(typ):
+		typ = "residential"
+	var wall: Color = BLD_PAL[typ]["foot"]
+	var fp: Dictionary = FLOOR_PAL[typ]
+	return {
+		"type": typ,
+		"wall": wall,
+		"wall_top": wall.lightened(0.20),      # 与 D_INT_WALL_TOP 同一派生式（住宅档逐字节相同）
+		"wall_foot": wall.darkened(0.28),      # 与 D_INT_WALL_FOOT 同一派生式
+		"floor": fp["base"],
+		"floor_line": fp["line"],
+		"checker": (fp["base"] as Color).lightened(0.18),   # 交错石板的亮格；改前是写死的 P_KERB
+		"slab": floor_mode == "stone",
+	}
+
+func _interior_wall(shell: Dictionary, x: float, y: float, is_door: bool) -> void:
 	if is_door:                                    # 门：地板延伸 + 门框 + 木门
 		draw_rect(Rect2(x + T * 0.12, y + T * 0.1, T * 0.76, T * 0.8), X_WOOD_MID, true)
 		draw_rect(Rect2(x + T * 0.12, y + T * 0.1, T * 0.76, T * 0.8), D_WOOD_LINE, false, 2.0)
 		draw_circle(Vector2(x + T * 0.72, y + T * 0.5), T * 0.05, X_GOLD)   # 门把
 		return
-	draw_rect(Rect2(x, y, T, T), P_RES_FOOT, true)             # 墙主面（暖石灰）
-	draw_rect(Rect2(x, y, T, T * 0.24), D_INT_WALL_TOP, true)      # 顶棱高光
-	draw_rect(Rect2(x, y + T * 0.86, T, T * 0.14), D_INT_WALL_FOOT, true)  # 墙脚暗边
+	draw_rect(Rect2(x, y, T, T), shell["wall"], true)                        # 墙主面（按建筑类型）
+	draw_rect(Rect2(x, y, T, T * 0.24), shell["wall_top"], true)             # 顶棱高光
+	draw_rect(Rect2(x, y + T * 0.86, T, T * 0.14), shell["wall_foot"], true) # 墙脚暗边
 
 func _draw_interior_furniture(slot: String, base: Vector2) -> void:
 	match slot:
