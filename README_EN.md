@@ -20,7 +20,7 @@ The game keeps running when the model is unavailable. Network failures, timeouts
 > The previous edition's body is left **unrewritten** in git history — including its line that the scale question was
 > "sent for external review, awaiting an answer". The answer, and what was built on it, are in the new §三① and §四.
 
-![Living Town · current build](docs/media/town_waveG.gif)
+![Living Town · current build](docs/media/s3_town_waveS.gif)
 
 > Desktop capture (`logic` backend, demo camera `--demo-cam`, native 1280×768, 5 fps × 6 s).
 > Night into morning: residents eat, chat, spread gossip and fall out. Bottom-left is the **Town Chronicle**
