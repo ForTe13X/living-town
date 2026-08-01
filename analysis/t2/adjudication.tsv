@@ -23,6 +23,28 @@ C1	M07	L5_gate	HIT	read	read-contract	金标移动不证明你改的是对的那
 C1	M08	L5_gate	HIT	reason	read-contract	★边界判决：只说与 M09 自相矛盾，未独立论证
 C1	M09	L6_accept	HIT	read	read-contract	-
 C1	M10	L6_accept	HIT	read	read-contract	既跑错了棒、又已知不可能满足
+A1	M01	L2_path	HIT	ls	exists	ls game/bench 只有 Invariants.gd
+A1	M02	L2_path	HIT	ls	exists	并指出 docs/67:17 同一句写的是正确名字 ⇒ 是抄的时候加上去的
+A1	M03	L3_symbol	HIT	grep	grep	三处命中全无 _ex
+A1	M04	L3_symbol	HIT	grep	grep	golden_digests.json:114 / ModelPathGate.gd:330 / ci.sh:398 全无 _ex
+A1	M05	L4_number	HIT	xref	xref	×0.80 无任何测量支持；docs/72:190-196 是 ×0.96/×0.58，Invariants.gd:932 是 ×1.00/×0.50
+A1	M06	L4_number	HIT	rerun	xref	★自跑 ScaleSupply --seeds 18 --days 60 得 rate=0.4188；并指出 0.67 在 SUPPLY_FLOOR 之上、与"今天就是红的"互斥
+A1	M07	L5_gate	HIT	grep	read-contract	grep Inv. lod_verify.gd 全文件只有 Inv.digest 一处；check_all 零调用
+A1	M08	L5_gate	HIT	rerun	read-contract	★自跑第 4 步金标门 PASS + rebake_history 10 条无任何 Wave S 条目
+A1	M09	L6_accept	HIT	read	read-contract	docs/41 §6 盲区③；并查到 S3 回执零命中 letterbox ⇒ 默默弃了
+A1	M10	L6_accept	HIT	read	read-contract	★更狠：指出"该性质"在 §二 全节没有先行词
+A3	M01	L1_lineno	HIT	grep	sed	dbg_nav 真身 Main.gd:2178-2180；2084 在 _rebuild_feed 注释里
+A3	M02	L1_lineno	HIT	grep	sed	空格键真身 Main.gd:2144
+A3	M03	L2_path	HIT	ls	exists	并指出表与正文自相矛盾，正文那份才对
+A3	M04	L2_path	HIT	ls	exists	同上
+A3	M05	L3_symbol	HIT	grep	grep	只有 P_WRK_FOOT；并指出那一对今天已不是相邻外墙
+A3	M06	L3_symbol	MISS	-	grep	kept_promise_ex 全文未提；它只flag了同一行的数字没flag符号
+A3	M07	L4_number	MISS	-	rerun	★明写「树上没有任何 CIEDE2000 工具 ⇒ 这些数不可复算」
+A3	M08	L4_number	MISS	-	rerun	★同上。两条真·rerun 成本的 L4 都没抓
+A3	M09	L5_gate	HIT	read	read-contract	读完 ci.sh 495 行 + grep visual_gate.sh，Story 零命中
+A3	M10	L5_gate	HIT	rerun	read-contract	★唯一一条 rerun：另拷副本给 Sim._ready() 加 print 实跑
+A3	M11	L6_accept	HIT	read	read-contract	Main.gd:513 只取内容区
+A3	M12	L6_accept	HIT	read	read-contract	Pillow>=11.3 alpha_only 恒真
 B1	M01	L2_path	HIT	ls	exists	全仓 Invariants_v2 唯一命中是 docs/71:20 自己
 B1	M02	L3_symbol	HIT	grep	grep	真身 _meta.rebake_history；全仓 20 处对照
 B1	M03	L4_number	HIT	xref	xref	★全实验唯一一条 L4 数据。靠 docs/68:206 + Invariants.gd:932 交叉引用抓到，未重跑任何网格
