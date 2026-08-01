@@ -18,8 +18,25 @@ const SimScript = preload("res://scripts/Sim.gd")
 ##      基线 seeds 13-30（留出）        ：最低 0.569 / 次低 0.579 —— **比选阈值那组更低，所以以它为准**。
 ##      六个「掐产量但不归零」的变异体：被掐那种货 0.069-0.415（1-12）、最高 0.488（thr_book seeds 13-30）。
 ##    ⇒ 分界带 [0.488, 0.569]，取 **0.50**（上 1.14× / 下 1.02× —— 下方这一格窄，如实写在这里）。
-##    ⚠ 真正的余量比上面这两个数大，因为门是【逐 seed 通过率】制：要假红得【两个】seed 同时跌破，
-##      而 30 个基线 seed 里跌破的个数是 **0**；反过来 thr_book/thr_bean 是 30/30 个 seed 全跌破。
+##    ⚠ ~~真正的余量比上面这两个数大，因为门是【逐 seed 通过率】制：要假红得【两个】seed 同时跌破，
+##      而 30 个基线 seed 里跌破的个数是 **0**；反过来 thr_book/thr_bean 是 30/30 个 seed 全跌破。~~
+##    ⚠ **2026-08-01 S1 实测：上面这段删除线里的每一个数今天都不成立了**（60 个 seed × 60 天，
+##      未改动的合并树，`analysis/s1/*.jsonl`）。逐 seed 最差货满足率的实测展布：
+##        seeds 1-12 （**CI 第 4 步跑的、也是当初选阈值用的那一组**）0.592 .. 0.797，跌破 0.50 的个数 **0**
+##        seeds 13-30（留出）                                        0.419 .. 0.887，跌破 **1**（seed 18 = 0.419 口粮）
+##        seeds 31-60（S1 新抽的 30 个，从没有人跑过）                  0.369 .. 0.855，跌破 **4**（36/40/50/58）
+##      ⇒ **跌破率不是 0，是 5/60；只算没被用来选阈值的那 48 个是 5/48 = 10.4%（Wilson95% [4.5%, 22.2%]）。**
+##      ⇒ 门是逐 seed 通过率制（软门容 1/12）⇒ 按 p=0.104 算，**一个随机 12-seed 网格破软门的概率约 36%**。
+##      **这不是推算：实测 `--seeds 49-60`（同一棵未改动的树、同一条命令）读到的判决行逐字是**
+##        `=== S0 GATE: FAIL ❌  (硬不变量 seed 12/12 全绿, 软通过率门 ≥11/12(90%) 破, 活性 过, 金标 过, det 1/1) ===`
+##        `❌ #40 [软]产出闭环活性与供给充足 10/12  首违 seed 50: …口粮 满足率=0.41(到手429/想要1034，断供40/60天)`
+##      ⇒ **seed 18 不是特例，是分布的左尾**；CI 的 seeds 1-12 恰好一个都没抽到。
+##      ⚠ 第二格（`tools/ci.sh` 4a，N=16）同样只跑调参段 seeds 1-12。S1 在 N=16 上补跑了留出 13-30：
+##        最差货 **0.425 .. 0.894**、跌破 **1/18**（seed 26 = 0.425 **豆子**，不是口粮）
+##        ⇒ **留出段余量 −0.075**（R1 记的 N=16 seeds 1-12 余量是 +0.056）。
+##        不过 4a 那一格**没有**出现"连续 12 个里红两个"（13-24 红 0、19-30 红 1）⇒ 今天没被这条打到。
+##      ⇒ **下一个动标定的棒：12 个 seed 的网格没有分辨这条判据的统计功效。** 判"改好了没有"至少要 48 个 seed，
+##        否则你量到的一半是抽样噪声（S1 自己就靠 12→60 才看见这件事）。根因见下面 ③ 那一段的 S1 补注。
 ##    ⚠ 它是【软】判据：Harness 的软门允许 12 个 seed 里反转 1 个，这一格容差是刻意留着的。
 ##  · SUPPLY_MIN_DEMAND：需求件数低于此值就不谈满足率——短 horizon / 定向场景里一件货可能只被想要过
 ##    两三次，那时候的比率是噪声不是性质（同 #29 的 `aid_accepted < 8` 守护）。
@@ -717,7 +734,22 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 	#          掐产量不归零的六个变异体：被掐那种货 0.069-0.415（1-12）、最高 0.488（thr_book 的 13-30）
 	#        ⇒ 分界带是 [0.488, 0.569]，取 **0.50**。
 	#        而且门是【逐 seed 通过率】制（软门容 1/12）⇒ 要假红得有【两个】seed 同时跌破，
-	#        30 个基线 seed 里跌破的个数是 **0**；而 thr_book / thr_bean 是 **30/30 个 seed 全跌破**。
+	#        ~~30 个基线 seed 里跌破的个数是 **0**~~；而 thr_book / thr_bean 是 **30/30 个 seed 全跌破**。
+	#     ⚠ **2026-08-01 S1：删除线那句今天是假的，而且 O1 上面那份"改前 13-30"的逐 seed 数也已经再次过期。**
+	#        S1 在【合并树】上重跑同一条命令（ScaleSupply，13-30 × 60 天），逐 seed（13→30）：
+	#          0.726 0.765 0.878 0.842 0.810 **0.419** 0.753 0.849 0.769
+	#          0.887 0.789 0.744 0.839 0.701 0.761 0.832 0.792 0.507
+	#        ⇒ 最低的那一格从 O1 记的 seed 20 换成了 **seed 18 = 0.419（口粮）**，次低是 **seed 30 = 0.507（屋瓦）**
+	#          ——**连"最紧的是哪一种货"都换了**（O1 归因给柴薪的单产者，今天最紧的两格一个是口粮一个是屋瓦）。
+	#        S1 又新抽了 seeds 31-60（30 个，从没有人跑过）：跌破 4 个。**合计 5/60。**
+	#        **根因是量出来的**（n=60，Spearman ρ(口粮满足率, 面点师+渔夫在班完成) = **0.618**）：
+	#          五个红 seed 里有四个是口粮，而它们正是"口粮的两个生产者【同时】掉到地板"的那几个——
+	#          面点师+渔夫 60 天在班完成之和在 60 个 seed 上的展布是 **5 .. 30**，
+	#          而五个红 seed 的这个和是 5(seed50) / 6(seed18) / 7(seed58) / 8(seed36)（第五个 seed40 是另一条：
+	#          咖啡师 60 天只上工 **1** 次 ⇒ 豆子 0.369）。
+	#        ⇒ 这条判据的左尾由**单个岗位的在班完成次数**驱动，而那是一个高方差、下沿贴地的量
+	#          （咖啡师 1..17 · 杂役 1..10 · 渔夫 2..14 · 面点师 2..19，60 个 seed）。
+	#          **谁要收紧它、或者要证明自己"修好了"，先跑 ≥48 个 seed。**
 	#     ⚠ 为什么不用【缺货天数占比】（第一版就是它，被自己的数据否掉）：它随需求密度漂——
 	#        基线最大 0.467（屋瓦 seed 7），而把话本产量掐掉 83% 之后只有 0.300-0.600
 	#        ⇒ **不存在能同时分开这两组的阈值**。留作 detail 里的诊断数字，不作判据。
@@ -886,6 +918,47 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 	if gated_n >= 3 and never_short.size() * 2 > gated_n:
 		glut = "；【缺货绝迹】%d/%d 种货全年零缺货(%s) —— production.json._calibration 要的是【周期性】缺货，不是从不" % [
 			never_short.size(), gated_n, ", ".join(never_short)]
+	# ── S1 2026-08-01：【需求侧落点】——上限臂红了之后第二句要问的那件事（**只报不判**）────────
+	# 由来：R1 把 N=60 的红分成两半，而"豆子/话本 12/12 全年零缺货"那一半的成因**不在产出侧**。
+	# S1 把它量成了一条**结构**事实（S1Reach 探针，隔离副本，digest 与金标逐字节相同 3/3）：
+	#   六种货里，**恰好那两种**在 `production.consume` 一侧【没有任何 town 平面的满足者】——
+	#     喝咖啡 → 只有 `cafe1f_table@cafe/1f`；歇着 → 只有 `home1f_table@home/1f` + `home21f_table@home2/1f`
+	#     其余四种（吃饭/赶集→口粮、洗澡→柴薪、睡觉→屋瓦、玩耍/社交→整洁）都有 town 平面的满足者。
+	#   而克隆出来的 `npc_<i>` 没有 `spatial_address` ⇒ `home_space=="town"`、非 `cafe_regular`
+	#   ⇒ `_journey_candidates` 的两个分支都取不到（(A) 要 `cafe_regular`；(B) 要 `aspace!="town" or home_space!="town"`）
+	#   ⇒ **他们一辈子出不了 town 平面**。实测 60 天里"到过非-town 平面"的 agent 数（S1Reach 探针，逐 tick 逐 agent）：
+	#     **N=12 → 9（0 克隆）· N=24 → 9（12 个克隆里 0 个）· N=60 → 9（48 个克隆里 0 个）**
+	#     逐个点名恒是 aria/ben/coco/dan/evy/hai/lin/mei/tie ——**人口 ×5，这个数一个都没动。**
+	#   ⇒ 这两种货的需求分母**按构造不随人口涨**（实测 N=12→N=60 需求比：豆子 ×1.00、话本 ×0.50，人口 ×5.00），
+	#     而宏观池把它们的**产量**按人口 ×5 ⇒ 大 N 上"缺货绝迹"是**必然**，不是标定失手。
+	# ⚠ **为什么只报不判**（docs/41 §5「收紧判据前先量余量」，量完之后决定不做）：
+	#   任何形如「可达人数/人口 ≥ x」的判据在**今天这棵未修的树**上 N≥16 就是红的
+	#   （豆子可达 4 人：4/12=0.333、4/16=0.250、4/60=0.067）⇒ 加它等于给出货树加一道当场红的门。
+	#   把世界改到能过那道门的代价也量过了，**同样是否定的**：见 docs/72 §三（在 town 平面补落点的两个变体，
+	#   实测 varA 把社交发起数压掉 35%、逐岗位在班完成动 ±50% ⇒ 它**不是**一条干净的需求侧改动）。
+	var offtown: Array = []
+	var objs = S.world.get("objects", {})
+	if prod_on and not never_short.is_empty() and objs is Dictionary:
+		for gid2 in never_short:
+			var planes: Dictionary = {}
+			for act2 in S.production.get("consume", {}):
+				var crec2 = (S.production["consume"] as Dictionary)[String(act2)]
+				if not (crec2 is Dictionary) or String((crec2 as Dictionary).get("good", "")) != String(gid2):
+					continue
+				for oid2 in objs:
+					var o2 = objs[oid2]
+					if not (o2 is Dictionary):
+						continue
+					for adv2 in (o2 as Dictionary).get("advertises", []):
+						if adv2 is Dictionary and String((adv2 as Dictionary).get("action", "")) == String(act2):
+							planes[String((o2 as Dictionary).get("space", "town"))] = true
+			if not planes.is_empty() and not planes.has("town"):
+				var pl: Array = planes.keys()
+				pl.sort()
+				offtown.append("%s(仅 %s)" % [String(gid2), "、".join(pl)])
+	var reach := ""
+	if not offtown.is_empty():
+		reach = "；【需求侧落点】%s —— 这些货在 town 平面无满足者 ⇒ 只有进得了该平面的居民才产生需求，分母不随人口涨" % ", ".join(offtown)
 	# ── K1：把【产出契约】写进 detail（**不是**分档，见上面的 K1 注释）──────────────────────
 	# 判据在两种契约下**一个字节都不变**，所以这里只报不判。报它的理由是可读性：
 	# 大 N 上看到一条红的 #40，第一句要问的就是"当时池开着没有、倍率是多少"，而那件事此前无处可读。
@@ -906,7 +979,7 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 			("下限=%.2f·上限=多数不缺" % SUPPLY_FLOOR) if days_run >= SUPPLY_MIN_DAYS else ("未启用(%d<%d天)" % [days_run, SUPPLY_MIN_DAYS]),
 			"" if dead_goods.is_empty() else "；【断链货物】" + ", ".join(dead_goods),
 			"" if starved_goods.is_empty() else "；【长期供不应求】" + ", ".join(starved_goods),
-			glut,
+			glut + reach,
 			contract]))
 	return R
 
