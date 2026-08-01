@@ -150,14 +150,46 @@ func _run_once(seed: int, days: int, agents: int, checkpoints: Array) -> Diction
 	# 谁在干活：逐职位在班完成次数（G3 说"一个泥瓦匠对 60 个睡觉的人" —— 这一行是那句话的分子）
 	rec["work_by_title"] = (S.prod_stats.get("work", {}) as Dictionary).duplicate(true)
 	rec["attempts_by_action"] = (S.prod_stats.get("attempts", {}) as Dictionary).duplicate(true)
+	# ★T1 追加（**纯只读、纯追加**：不改任何既有字段，S1 的 jsonl 仍逐字可读）：社交事件数。
+	#   由来：任何抬高工位吸引力的改动都在跟社交抢同一个打分池（L2 的 _causal 量过），
+	#   而 `attempts_by_action["社交"]` 只数长椅上那条 object 动作，**数不到 agent↔agent 的社交**。
+	#   类型集逐字沿用 bench/Metrics.gd:46 的那一条，不自己另立一套。
+	var soc_n := 0
+	var soc_by: Dictionary = {}
+	for e in S.event_log:
+		var ty := String(e["type"])
+		if ty in ["greet", "give", "gossip", "invite", "gossip_rep", "discuss"]:
+			soc_n += 1
+			soc_by[ty] = int(soc_by.get(ty, 0)) + 1
+	rec["social_events"] = soc_n
+	rec["social_by_type"] = soc_by
 
-	# 探针自算 vs 门的判决：算出"按 SUPPLY_FLOOR 该不该红"，与 inv40_ok 对照
-	var should_red := false
+	# 探针自算 vs 门的判决：算出"该不该红"，与 inv40_ok 对照
+	# ★T1 修：这段此前**只实现了下限臂**（I3 写它的时候 #40 只有下限臂；R1 2026-07-31 补的
+	#   【缺货绝迹】上限臂没人回来更新这里）⇒ 凡是上限臂红的 seed 都会打一条**假的** MISMATCH。
+	#   实测本棒撞到 11 次（130/70 档 seed 28 一次；hi=300 那个负对照 10/10 全中），
+	#   而每一条都是"探针说不该红、门说红"，害人去查一个不存在的抄错。
+	#   判据逐字照抄 Invariants.gd 的 `gated_n >= 3 and never_short.size() * 2 > gated_n`。
+	#   **这里仍然只是【诊断】，不是门**：它不改 inv40_ok，只决定要不要打那行警告。
+	var arm_low := false                                 # 下限臂：有货跌破 SUPPLY_FLOOR
+	var _gated_n := 0
+	var _never_short := 0
 	for g in (rec["final"]["goods"] as Dictionary):
 		var gg: Dictionary = (rec["final"]["goods"] as Dictionary)[g]
-		if bool(gg.get("gated", false)) and float(gg["rate"]) < Inv.SUPPLY_FLOOR:
-			should_red = true
+		if not bool(gg.get("gated", false)):
+			continue
+		_gated_n += 1
+		if int(gg.get("shortage_days", -1)) == 0:
+			_never_short += 1
+		if float(gg["rate"]) < Inv.SUPPLY_FLOOR:
+			arm_low = true
+	var arm_high := _gated_n >= 3 and _never_short * 2 > _gated_n   # 上限臂：缺货绝迹
+	var should_red := arm_low or arm_high
 	rec["probe_says_red"] = should_red
+	rec["probe_arm_low"] = arm_low                       # 两条臂**各自**报，别用"红且非上限"去反推下限
+	rec["probe_arm_high"] = arm_high
+	rec["probe_never_short_n"] = _never_short
+	rec["probe_gated_n"] = _gated_n
 	if should_red == rec["inv40_ok"]:
 		# 只有在 #40 因【断链】而红、而满足率全部达标时才允许不一致 —— 打出来让人判
 		print("  ⚠ MISMATCH seed=%d：探针算得 red=%s，而 #40 ok=%s（detail=%s）" % [
