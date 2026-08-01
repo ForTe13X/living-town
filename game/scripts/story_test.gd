@@ -118,6 +118,24 @@ func _ready() -> void:
 			elif ty == "betray" or ty == "leak":
 				cov[ty] = int(cov.get(ty, 0)) + 1
 
+		# ── 可追溯性审计（W3，docs/90 §三）：屏幕上的每一行都要指得回一条真事件 ──
+		# ★位置是被踩出来的，不是随手放的：**必须在 A3 之前**。A3 会 `goto_tick(half)` 把 event_log
+		#   截短一半，之后再审计，一半的引用会因为"事件不存在"而报假红 —— 与上面 §覆盖率 那条
+		#   "必须在 A3 之前数"是同一个坑的第二次发作（我第一版就放到了 A3 后面，被这条注释救回来）。
+		# 判据本身：`narrate_cited()` 是**唯一**的成文入口（`narrate()` 只是它的壳），
+		#   于是"屏幕上的每一行"与"被审计的每一行"在构造上是同一批，没有旁路。
+		var by_id: Dictionary = {}
+		for e in Sim.event_log:
+			by_id[int(e.get("id", -1))] = e
+		var bad: Array = []
+		var lines := 0
+		for arc in live.arcs:
+			lines += live.narrate_cited(arc, _nm).size()
+			bad.append_array(live.audit(arc, by_id))
+		_expect(bad.is_empty() and lines > 0,
+			"seed %d · 可追溯：%d 条弧共 %d 行叙述逐行回 event_log 核出处 —— 违规 %d 条%s" % [
+				sd, live.arcs.size(), lines, bad.size(), ("" if bad.is_empty() else "：" + str(bad.slice(0, 3)))])
+
 		# ── A2 重算臂 ───────────────────────────────────────────────────
 		var recomp := StoryScript.new()
 		recomp.recompute(Sim.event_log)
@@ -326,6 +344,88 @@ func _fixtures() -> void:
 		got5.append("%s/%s/%d幕" % [String(s5.def_of(arc)["id"]), String(arc["end"]), (arc["beats"] as Array).size()])
 	_expect(got5 == ["secret/leaked/1幕", "pact/dissolved/1幕"],
 		"F5 泄密支与散伙支都认得（含反序的 dissolved）：实得 %s" % str(got5))
+
+	# ── W3 新增（docs/90）────────────────────────────────────────────────────
+	# F6「手艺」弧：一条 produce 被两个人看见 ⇒ **两条**独立的弧（本文件里唯一的一对多），
+	#    且两条各自走到不同的结局（扑空 / 结盟）。它同时钉死 PAIR_WIT 的方向：
+	#    A=看见的人、B=干活的人 —— 反过来的话 shortage 与 gossip_rep 两条都会落空。
+	var f6: Array = [
+		_ev(0, 100, "produce", "aria", "town", true, "柴薪", "樵夫*3", ["ben", "coco"]),
+		_ev(1, 200, "produce", "aria", "town", true, "柴薪", "樵夫*3", ["ben"]),
+		_ev(2, 240, "gossip_rep", "ben", "dan", false, "aria"),      # 旁支：ben 在 dan 面前提起 aria
+		_ev(3, 300, "shortage", "ben", "aria", false, "柴薪", "吃饭"),
+		_ev(4, 320, "pact", "aria", "coco", true, "", "formed"),     # 故意反序：dir=any 才认得
+	]
+	var s6 := StoryScript.new()
+	s6.recompute(f6)
+	var got6: Array = []
+	for arc in s6.arcs:
+		got6.append("%s/%s>%s/%s/%d幕/旁%d" % [String(s6.def_of(arc)["id"]), String(arc["a"]), String(arc["b"]),
+			String(arc["end"]), (arc["beats"] as Array).size(), int(arc["aside"])])
+	_expect(got6 == ["craft/ben>aria/failed/1幕/旁1", "craft/coco>aria/allied/0幕/旁0", "pact/aria>coco//0幕/旁0"],
+		"F6 一条 produce 两个目击者 → 两条手艺弧，分别以扑空/结盟收场：实得 %s" % str(got6))
+	# F6′ 没有目击者的 produce（= `craft_credit` 未开或无人在场）**一条弧都不许开**。
+	#    这是 V1 回滚路径的机器证明：删掉那个 JSON 键 ⇒ witnesses 恒空 ⇒ 本弧自动消失。
+	var s6b := StoryScript.new()
+	s6b.recompute([_ev(0, 100, "produce", "aria", "town", true, "柴薪", "樵夫*3"),
+		_ev(1, 200, "produce", "aria", "town", true, "柴薪", "樵夫*3")])
+	_expect(s6b.arcs.size() == 0,
+		"F6′ produce 无目击者 → 手艺弧 %d 条（必须 0；这就是 craft_credit 关掉后的样子）" % s6b.arcs.size())
+
+	# F7「说和」：玩家的两种介入都必须在故事里看得见。
+	#    调解失败只写一条 mediate（actor="player" 是非居民，当事两人在 target/subject ⇒ PAIR_TS）；
+	#    调解成功补记的 confront/apologize 带 note="mediated" ⇒ 必须走 mediated 那两条，**不是** heard/mended。
+	var f7: Array = [
+		_ev(0, 100, "conflict", "aria", "ben", false),
+		_ev(1, 150, "mediate", "player", "aria", false, "ben"),
+		_ev(2, 200, "confront", "aria", "ben", true, "", "mediated"),
+		_ev(3, 210, "endorse", "coco", "dan", true, "ben"),          # 负对照：(coco,ben) 上没有弧 ⇒ 不许算进来
+		_ev(4, 220, "endorse", "aria", "coco", true, "ben"),         # 幕 sided：pair=subject ⇒ (aria,ben)
+		_ev(5, 300, "apologize", "ben", "aria", true, "", "mediated"),
+	]
+	var s7 := StoryScript.new()
+	s7.recompute(f7)
+	var ok7 := s7.arcs.size() == 1
+	var a7: Dictionary = s7.arcs[0] if ok7 else {}
+	ok7 = ok7 and String(a7["end"]) == "mediated" and _beat_ids(a7) == ["tried", "mediated", "sided"]
+	_expect(ok7, "F7 玩家说和：1 条 grudge/mediated/幕=[tried,mediated,sided]（实得 %d 条 · %s · %s）" % [
+		s7.arcs.size(), String(a7.get("end", "-")), str(_beat_ids(a7))])
+	var pr7 := " ".join(PackedStringArray(s7.narrate(a7, _nm_fake)))
+	_expect(pr7.contains("在你的说和下") and not pr7.contains("%A") and not pr7.contains("%B"),
+		"F7 成文里玩家出场了：%s" % _plain(pr7).replace("\n", " / "))
+
+	# F8「说漏嘴」这一支**今天是够不着的**——把它钉下来，别让"0 段"继续读作"世界没给机会"。
+	#    `leak` 事件是 (说漏的人 → 听的人)，而秘密的主人只在 `beliefs[...]["owner"]` 里、**不在事件上**
+	#    （Sim.gd:2435）。于是 `slipped` 的 dir=rev 查的是 (听的人 → 说漏的人)，
+	#    只有"说漏给主人本人听"这一种退化情形才对得上。修它要 Sim 侧把 owner 写进事件 ⇒ 不在本棒的行里。
+	#    ⇒ 本 fixture 断言的是**现状**：泄密给第三方，心事弧仍然开着。它红了 = 有人修好了，请回来改这条。
+	var s8 := StoryScript.new()
+	s8.recompute([_ev(0, 10, "confide", "aria", "ben", false, "S_aria"),
+		_ev(1, 40, "leak", "ben", "coco", true, "S_aria")])
+	_expect(s8.arcs.size() == 1 and not bool(s8.arcs[0]["closed"]),
+		"F8 泄密给第三方 → `slipped` 结局**够不着**（心事弧仍开着 = %s）；见 docs/90 的已知边界" % str(
+			s8.arcs.size() == 1 and not bool(s8.arcs[0]["closed"])))
+
+	# F9 审计自身有没有牙 —— 先自证，再拿去守真世界（同 F-trim「fixture 有效性先自证」那条纪律）。
+	#    真世界那道断言（A 段）只会说"0 违规"，而**一个什么都不查的 audit 也会说 0 违规**。
+	var by9: Dictionary = {}
+	for e in f2:
+		by9[int((e as Dictionary)["id"])] = e
+	var s9 := StoryScript.new()
+	s9.recompute(f2)
+	_expect(s9.audit(s9.arcs[0], by9).is_empty(), "F9a 未动手脚的弧 → 审计 0 违规（不许假红）")
+	var m1: Dictionary = (s9.arcs[0] as Dictionary).duplicate(true)
+	(m1["beats"] as Array)[0][2] = 99999
+	_expect(not s9.audit(m1, by9).is_empty(), "F9b 幕指向一条不存在的 event → 审计必红")
+	var m2: Dictionary = (s9.arcs[0] as Dictionary).duplicate(true)
+	m2["a"] = "coco"
+	_expect(not s9.audit(m2, by9).is_empty(), "F9c 把弧系到第三个人身上（引用还都在）→ 审计必红")
+	var m3: Dictionary = (s9.arcs[0] as Dictionary).duplicate(true)
+	m3["aside"] = 99
+	_expect(not s9.audit(m3, by9).is_empty(), "F9d 旁支虚报次数（引用只有 3 条）→ 审计必红")
+	var m4: Dictionary = (s9.arcs[0] as Dictionary).duplicate(true)
+	(m4["beats"] as Array)[0][1] = 12345
+	_expect(not s9.audit(m4, by9).is_empty(), "F9e 幕上印的天数与它引用的 event 的 tick 对不上 → 审计必红")
 	print("")
 
 # ── W1 段：回放安全到底覆盖到哪（docs/47 §五-E4 / docs/46 §二·九-⑧）────────
@@ -492,10 +592,12 @@ func _fixture_trim() -> void:
 		"F-trim 账本自洽：进行中 %d + 终身收场 %d == 开过 %d（这次裁掉的是 %d 段，不是 0）" % [
 			st.open_count(), st.closed_count(), st._serial, st._dropped])
 
+## ★`witnesses` 是**第九个可选参数**（W3 加的）：`Sim._log_event` 存的是**id 字符串数组**
+##   （`wids.append(w["id"])`，Sim.gd:3646-3647），不是 agent 字典 —— 手艺弧就是从这一列取人的。
 func _ev(id: int, tick: int, type: String, actor: String, target: String, accepted: bool,
-		subject: String = "", note: String = "") -> Dictionary:
+		subject: String = "", note: String = "", witnesses: Array = []) -> Dictionary:
 	return {"id": id, "tick": tick, "type": type, "actor": actor, "target": target,
-		"subject": subject, "accepted": accepted, "witnesses": [], "note": note}
+		"subject": subject, "accepted": accepted, "witnesses": witnesses, "note": note}
 
 # ── 工具 ────────────────────────────────────────────────────────────────────
 func _expect(cond: bool, msg: String) -> void:
