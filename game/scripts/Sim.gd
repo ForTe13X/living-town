@@ -166,6 +166,17 @@ const FACTION_ENDORSE_BONUS := 12.0
 const FACTION_ENDORSE_AFF := 3.0
 const OUST_BASE := 20.0
 const FACTION_AFF_MARGIN := 2.0
+## ★Q1 派系接触门（docs/65）：只有【真的打过交道】的人才可能被聚进同一派系。
+## 为什么需要它：`_recompute_factions` 原本对全镇每个人的私有 `attitudes` 逐对比较，**零空间/知识门**
+## ⇒ 只改一个人的私有立场（零事件、零信念、零接触），别人的 `faction` 在下一个日界就跟着变，
+## 而 `faction` 直接进候选生成（endorse / rally_oust / 同派系亲和）与接受判定（`_faction_term`）。
+## 实测（docs/65 §一，5 个 N × 5 个 seed 的隔离臂，逐格自证 co_ticks=0 且 familiarity=0）：
+##   **10/25 格有别人当夜换派系（4-16 人）、5/25 格世界前缀链真的分叉**；加门后 25/25 格逐字节相同。
+## 判据取 `familiarity`：它只在**两处**自增，都是真的共处并完成了一次事务
+## （`_commit_social` 里被接受的社交、`_resolve_commitments` 里守约赴会的 meet），且**从不衰减** ⇒
+## `familiarity >= 1` 恰好等于"至少完整打过一次交道"。`_impt` 早就用 `<=1.0` 表示"首次接触更显著"，同一习语。
+## （引符号不引行号——见 Invariants.digest 抬头那条教训：行号是本仓库最容易腐烂的一类事实。）
+var faction_fam_th := 1.0         # <=0 ⇒ 门关闭，逐字节回到 Q1 之前的轨迹（ablation 开关，见 docs/65 §二·3）
 const PACT_TRUST_TH := 12.0
 const PACT_FAM_TH := 6.0
 const PACT_COMPLEMENT_TH := 3
@@ -370,6 +381,14 @@ var confide_events := 0
 var betray_events := 0
 var freerider_dissolves := 0
 var aid_accepted := 0
+## ★Q1 接触门的**累计**违例计数（只观测、决策路零引用，与 endorse_events 等同一档）。
+## 为什么必须有它：`#25` 只在跑完时查**终态**，而 12 人的镇跑 60 天之后【人人都认识人人】
+##   ⇒ 把接触门整条删掉，终态判据照样全绿（实测：N=12×20 天 3/3 绿；同一变异体在 N=60×20 天
+##      与 N=12×1 天上才红。见 docs/65 §二·5 与 §五）。
+##   那正是 docs/41 §2 第三个盲区——**判据没问题，出问题的是喂给它的那个世界**。
+## 这个计数器把判据从"终态有没有未谋面同派系"改成"**这一局有没有【发生过】一次未谋面的归堆**"，
+## 于是它在任何 N、任何天数上都有牙（day 1 就会红）。门关时 `_acquainted` 恒真 ⇒ 恒 0 ⇒ ablation 不假红。
+var fac_unmet_placements := 0
 var factions := {}              # medoid_id -> [member_id...]（每夜全量重建的只读视图）
 var pacts_index: Array = []     # [{id,key,a,b,formed,status,defect_streak,...}]（单一真相源）
 var _next_pact_id := 1
@@ -739,6 +758,7 @@ func start_new(p_seed: int = 12345) -> void:
 	refused_by_bound = 0
 	endorse_events = 0; oust_events = 0; oust_neg_events = 0
 	confide_events = 0; betray_events = 0; freerider_dissolves = 0; aid_accepted = 0
+	fac_unmet_placements = 0
 	factions.clear(); pacts_index.clear(); _next_pact_id = 1; last_broken_with.clear(); _st_delta.clear()
 	decision_trace.clear(); replay_drift = 0   # S4 per-run 重置（replay_trace 由调用方控制，不在此清）
 	shadow_trace.clear()   # shadow 探针数据 per-run 清（shadow_on 是 bench 配的开关，不在此动）
@@ -834,6 +854,18 @@ func _seed_scenario() -> void:
 		for i in range(3, agents.size()):
 			for t in TOPICS: agents[i]["attitudes"][t] = -0.8; agents[i]["attitude0"][t] = -0.8
 		_rel(agents[0], String(agents[3]["id"]))["standing"] = -3.0
+		# ★Q1：接触门开着时，光有立场还结不成派系——**得先认识**。照 freerider 那一支的做法
+		# （它同样显式种上 trust / complementSeen 这些前置），把两个阵营【组内】的 familiarity 种到门线上，
+		# 否则这条定向场景第 1 天一个派系都没有，等于把它自己要测的机制关掉了。
+		# 组间不种：反正立场相反、`_aligned` 本来就不成立，种了也不改变任何聚类结果。
+		# 门关时（faction_fam_th<=0）**整段跳过** —— 否则 `_rel` 会建出关系条目，ablation 就不再逐字节。
+		if faction_fam_th > 0.0:
+			for blocs in [range(0, 3), range(3, agents.size())]:
+				for i in blocs:
+					for j in blocs:
+						if i == j: continue
+						var r := _rel(agents[i], String(agents[j]["id"]))
+						r["familiarity"] = maxf(float(r["familiarity"]), faction_fam_th)
 	elif scenario == "freerider" and agents.size() >= 2:
 		var a: Dictionary = agents[0]
 		var b: Dictionary = agents[1]
@@ -3880,8 +3912,26 @@ func _aligned(a: Dictionary, b: Dictionary) -> bool:
 			agree += 1
 	return agree >= FACTION_MIN_AGREE
 
+## ★Q1 接触门（docs/65）：a 与 b 是否**真的打过交道**。只读，不经 `_rel`——`_rel` 缺键时会**建**一条
+## 零关系写进账本，而本函数每夜对 O(N·medoids) 对调用，那会把"评估"变成"写全镇的账本"。
+## 双向都查：今天 familiarity 在 `_commit_social` 与 `_resolve_commitments` 两处都是**对称**自增的，
+## 双向查是免费的保险——万一将来有单侧自增的路径，门不会被半边悄悄打开。
+func _acquainted(a_id: String, b_id: String) -> bool:
+	if faction_fam_th <= 0.0:
+		return true                                    # 门关：逐字节回到 Q1 之前
+	return _fam_of(a_id, b_id) >= faction_fam_th and _fam_of(b_id, a_id) >= faction_fam_th
+
+func _fam_of(a_id: String, b_id: String) -> float:
+	var rs: Dictionary = _agent_by_id[a_id]["relationships"]
+	if not rs.has(b_id):
+		return 0.0
+	return float((rs[b_id] as Dictionary)["familiarity"])
+
 ## 每夜从 attitudes 单遍贪心派生派系（sorted id 固定序，确定性、非显式 join）。
 ## R1(docs/14 §3)：激进 LOD 下只聚类 near 集(O(cap²))；far→factionless(attitudes 冻结、行为上不用派系、near 不引用其派系)。全量配置逐字节不变。
+## ★Q1：对齐**且**打过交道才归堆（见 `faction_fam_th` 抬头）。两个判据的分工是刻意的——
+## `_aligned` 说"我们想的一样"，`_acquainted` 说"而且我们真的照过面"。缺后者时，
+## 一个陌生人的私有心思会隔着整个镇改写你的派系归属（docs/65 §二 实测）。
 func _recompute_factions() -> void:
 	factions.clear()
 	var ids: Array = _nightly_active_ids()   # 全量(全/保守) 或 near 集(激进)，均已定序
@@ -3890,9 +3940,13 @@ func _recompute_factions() -> void:
 	for id in ids:
 		var placed := ""
 		for m in medoids:
-			if _aligned(_agent_by_id[id], _agent_by_id[m]):
+			if _aligned(_agent_by_id[id], _agent_by_id[m]) and _acquainted(id, m):
 				placed = m; break
 		if placed != "":
+			# ★Q1 见证：**独立于上面那个合取式再查一次**。故意不写成 `else` ——
+			# 一个把 `and _acquainted(id, m)` 删掉的回归，正是靠这一行在 day 1 就被抓住。
+			if not _acquainted(id, placed):
+				fac_unmet_placements += 1
 			assign[id] = placed; (factions[placed] as Array).append(id)
 		else:
 			medoids.append(id); assign[id] = id; factions[id] = [id]
