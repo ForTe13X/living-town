@@ -1855,11 +1855,50 @@ func _clean_mult() -> float:
 	var fl := clampf(float(cl.get("floor", 1.0)), 0.0, 1.0)
 	return fl + (1.0 - fl) * clampf(float(_stock_of(g)) / float(cap), 0.0, 1.0)
 
+## ★Y1（docs/96）：生存线以下时，把人【推向物件那条出路】。
+## 由来（X1 逐 tick 追出来的，docs/92 §1.2）：`_social_candidates` 在 `_min_need < SURVIVAL_GATE`
+##   时返回 `[]`（注释写的是"先去吃/睡"）—— 而**当那个 argmin 恰恰是 `social` 自己时，
+##   这道门关掉的正是唯一能补它的通道**：social 从 36 以 0.15/tick 确定性地自由落体到 0，
+##   中途没有任何自救分支。两颗硬红的触底 tick 成因 27/27 与 125/125 全是 GATED，
+##   而"周围没人"(ALONE) 恰为 0 —— 身边站着 17 个人、11 个空闲，他一条社交候选都枚举不出来。
+## 出路一直是开着的、只是赢不下 argmax：长椅「社交」+40 与吧台「闲聊」+42 都广告 need=social，
+##   而本函数**不过生存门**（那道门只写在 `_social_candidates` 里）。这一项就是那个缺掉的推力。
+##
+## 三道门，缺一不可（每一道都是量出来的，不是洁癖）：
+##   ① **缺键 / 为 0 ⇒ 返回 0.0 ⇒ `score + 0.0` ⇒ 逐字节回到改动之前。**
+##      实测：本文件这一段在、`utility.obj_survival_pull` 不在 ⇒ N=40 seeds 1-12 的 12 个
+##      `Inv.digest` 与未改动的树逐位相同。
+##   ② **只对 `social` 生效。** 负对照臂（同一个 k=1.0，施加到【除 social 外的每一条 need】上）
+##      在 N=40 × 24 局上对未改动的树是 **8 好 / 9 坏 / 7 不变，p=0.50 —— 与什么都不做分不开**；
+##      而"全部 need"臂减掉它（= 只剩 social 那一项）是 **16 好 / 3 坏，p=0.0022**。
+##      ⇒ 效果整个住在 social 这一项里，另外四条 need 一份都不出。
+##   ③ **只在 social 【就是】argmin 时生效** ⇒ 它在构造上不可能压过一条比它更急的需求
+##      （硬不变量 #01 的方向）。这一道在本剂量上是**免费**的：k=1.0、24 局，带门与不带门的
+##      digest 逐位相同；而 k=3.0 上只剩 5/11 相同 —— **大剂量的"额外收益"有一部分正是靠
+##      让 social 压过更急的需求换来的**，这一道门把那条路堵死。
+##
+## ⚠ 剂量为什么取 1.0（**量过 0.5/0.75/1.0/1.25/1.5/2.0/3.0/10.0 八档之后选的，不是第一个能用的值**）：
+##   收益侧在 0.5..10 上**单调、没有内点顶点**（N=40 24 局，最长锁段对零假设臂：
+##   0.5→17/7、0.75→17/5、1.0→18/6、1.25→16/5、1.5→19/5、2.0→20/4、3.0→18/6、10→20/2），
+##   ⇒ 顶点只能由**代价侧**定。代价侧在 0.5..10 上恰好有一处不连续：
+##   **k ≤ 1.5 时出货阵容 N=12 seeds 1-12 × 60 天逐字节不动（含逐 tick 前缀链）、活性 25 类一类不动；
+##   k = 2.0 起 seed 12 开始移动、`aid` +16.2%。** 而 N=12 上这一族问题**本来就不存在**
+##   （X1 实测 0/12 红、social 地板最小 22.35）⇒ 在那里改行为是纯付标定风险、零收益。
+##   1.0 取的是 [0.5, 1.5] 这段平台的**中间**而不是边缘：边缘上的值经不起一次数据改动
+##   （多一张长椅、换一套阵容就可能翻过去）。**这不是"为了让门保持绿"**——
+##   4a 的 N=16 那一格照样移动 6/12 个 seed，并且是按它自己的判据判的。
+func _survival_pull(need_id: String, cur: float, min_need: float) -> float:
+	var k := _w("obj_survival_pull", 0.0)
+	if k == 0.0 or need_id != "social" or cur > min_need:
+		return 0.0
+	return maxf(0.0, SURVIVAL_GATE - cur) * k
+
 func _object_candidates(ag: Dictionary) -> Array:
 	var out: Array = []
 	# 昼夜节律（docs/14）：仅当 agent 无紧急需求(min≥SURVIVAL_GATE)时，用时段偏好乘子塑造"何时"满足需求(睡偏夜/吃偏三餐)。
 	# 有任一紧急需求 → 节律关闭 → 纯 urgency 主导 → 绝不因时段延误进食 → 守 HARD#1 无饿穿。缺 rhythm.json → 恒关=零扰动。
-	var mods_ok := _min_need(ag) >= SURVIVAL_GATE            # 共用生存门：紧急需求时一切偏好乘子关闭，纯 urgency 主导
+	var min_need := _min_need(ag)                           # ★Y1：提出来复用（下面 _survival_pull 要读它）；数值与原式逐位相同
+	var mods_ok := min_need >= SURVIVAL_GATE                # 共用生存门：紧急需求时一切偏好乘子关闭，纯 urgency 主导
 	var rhythm_on := not rhythm.is_empty() and mods_ok
 	var wx_on := weather_today != "" and mods_ok             # Wave 1c：天气与节律独立门控（各自缺数据文件即各自关闭）
 	var sn_on := season_today != "" and mods_ok              # Wave 3b：季节乘子同样只在非紧急时塑形（生存优先不受季节影响）
@@ -1977,7 +2016,7 @@ func _object_candidates(ag: Dictionary) -> Array:
 					if wp_applied:
 						spf /= work_pull_mult      # 除法是正确舍入的 ⇒ 逐位可复现（同 _stock_pull_mult 抬头）
 					benefit *= spf
-			var score := benefit - float(dist) * _w("obj_dist_penalty", 0.4)
+			var score := benefit - float(dist) * _w("obj_dist_penalty", 0.4) + _survival_pull(need_id, cur, min_need)
 			# Wave 1b 经济动机环：穷(coin<poor_line)时有薪动作加分 → 缺钱→去做活→挣了付饭钱(闭环)。
 			# 确定性、数据门控；只加分不减分 → 生存(urgency 主导)不受威胁；economy.json 缺失恒不触发。
 			# Wave 2a：工资经 _wage_for（本职在班=职位工资>零工价 → 班次时间自然被工作吸引；jobs 缺失≡旧查表）。
