@@ -1,0 +1,97 @@
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: GDExtension dynamic library not found: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: open_library (core/extension/gdextension.cpp:740)
+ERROR: Error loading extension: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: load_extensions (core/extension/gdextension_manager.cpp:329)
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+  ✅ 哈希自检：6 条 fnv1a32 + 4 条 mix32 测试向量全对（项目自有哈希，不依赖引擎 String.hash()）
+=== Causal Bench S0 · 不变量回归门  seeds=[1, 2, 3] days=60 ===
+[S0] {"chain":"1244273781","days":60,"diag_fails":[],"digest":"3906210527","event_digest":"3687811914728684086","events":3395,"hard_fails":[],"pass":true,"seed":1,"soft_fails":[]}
+[S0] {"chain":"3458407810","days":60,"diag_fails":[],"digest":"3974897474","event_digest":"1308028711521232617","events":3317,"hard_fails":[],"pass":true,"seed":2,"soft_fails":[]}
+[S0] {"chain":"2407793881","days":60,"diag_fails":[],"digest":"1273095155","event_digest":"7065707800145555472","events":3231,"hard_fails":[],"pass":true,"seed":3,"soft_fails":[]}
+
+— 不变量跨 seed 通过率（硬=全绿必需 / 软=通过率≥2/3 / 诊断=只报不门）—
+  ✅ #01 [硬]无 need 触底（任一需求，不只饥饿）  3/3
+  ✅ #02 [软]社交发生  3/3
+  ✅ #03 [软]无永久孤立  3/3
+  ✅ #04 [软]关系分化  3/3
+  ✅ #05 [软]谣言传播  3/3
+  ✅ #06 [硬]知识边界  3/3
+  ✅ #07 [硬]账本可溯源  3/3
+  ✅ #08 [软]承诺生命周期  3/3
+  ✅ #09 [硬]无悬挂承诺  3/3
+  ✅ #10 [硬]违约可溯源有后果  3/3
+  ✅ #11 [软]冲突生命周期  3/3
+  ✅ #12 [硬]先对质后和解  3/3
+  ✅ #13 [硬]修复可溯源  3/3
+  ✅ #14 [软]standing分化  3/3
+  🔎 #15 [诊断]涌现放逐  3/3  (不入门·度量已知泄漏,见 docs/31)
+  ✅ #16 [软]声誉传播  3/3
+  ✅ #17 [软]坏名声形成可恢复  3/3
+  ✅ #18 [软]观点演化不坍缩  3/3
+  ✅ #19 [软]有界信任Deffuant  3/3
+  ✅ #20 [软]谣言变冷MakiThompson  3/3
+  ✅ #21 [硬]秘密专道  3/3
+  ✅ #22 [硬]背叛有后果可溯源  3/3
+  ✅ #23 [硬]背叛重挫名声  3/3
+  ✅ #24 [硬]背叛无误判  3/3
+  ✅ #25 [硬]S3派系派生一致(对齐且相识)  3/3
+  ✅ #26 [软]S3同派系亲和>跨派系  3/3
+  ✅ #27 [硬]S3协同守边界  3/3
+  ✅ #28 [硬]S3派系视图自洽  3/3
+  ✅ #29 [硬]I-PACT互助偏内  3/3
+  ✅ #30 [硬]I-PACT-free-rider可溯源  3/3
+  ✅ #31 [硬]I-PACT结盟门达标  3/3
+  ✅ #32 [硬]I-PACT无悬挂无重复对称  3/3
+  ✅ #33 [硬]I-PACT解体可恢复  3/3
+  ✅ #34 [硬]金钱守恒  3/3
+  ✅ #35 [硬]货币非负  3/3
+  ✅ #36 [硬]节日对象配对无残留  3/3
+  ✅ #37 [硬]选举计票自洽  3/3
+  ✅ #38 [硬]库存账本自洽  3/3
+  ✅ #39 [硬]产出溯源到在班本职  3/3
+  ✅ #40 [软]产出闭环活性与供给充足  3/3
+  ✅ #41 [硬]手艺的社会痕迹(被看见·被知道·不外溢)  3/3
+  ✅ #42 [硬]生存推力的收窄(只 social·只 argmin·不反客为主)  3/3
+
+— 套件级活性（跨全网格计数；门控类归零即红）—
+  ⏳Q aid                次数=19     覆盖 seed=2/3
+  🔒 apologize          次数=113    覆盖 seed=3/3
+  🔒 confide            次数=25     覆盖 seed=3/3
+  🔒 conflict           次数=270    覆盖 seed=3/3
+  🔒 confront           次数=114    覆盖 seed=3/3
+     consume            次数=884    覆盖 seed=3/3
+  🔒 discuss            次数=324    覆盖 seed=3/3
+  🔒 election           次数=12     覆盖 seed=3/3
+  🔒 endorse            次数=75     覆盖 seed=3/3
+     festival_despawn   次数=19     覆盖 seed=3/3
+  🔒 festival_spawn     次数=19     覆盖 seed=3/3
+  🔒 give               次数=108    覆盖 seed=3/3
+  🔒 gossip             次数=145    覆盖 seed=3/3
+  🔒 gossip_rep         次数=1545   覆盖 seed=3/3
+  🔒 greet              次数=1457   覆盖 seed=3/3
+  🔒 invite             次数=255    覆盖 seed=3/3
+  🔒 meet               次数=255    覆盖 seed=3/3
+     pact_formed        次数=10     覆盖 seed=3/3
+  🔒 pay                次数=3444   覆盖 seed=3/3
+     produce            次数=300    覆盖 seed=3/3
+  🔒 rally_oust         次数=60     覆盖 seed=3/3
+     shortage           次数=153    覆盖 seed=3/3
+     spoil              次数=328    覆盖 seed=3/3
+     world_other        次数=9      覆盖 seed=3/3
+  ⏳ 本跑 days=60，以下类未达最短 horizon 故不入门：["aid(quorum)"]
+  ✅ 门控事件类 16 种全部仍在发生（含法定覆盖 1 种）
+
+— 金标（跨进程锚）—
+  ✅ 金标一致 3/3 seed（含逐 tick 前缀链 3 条；烘于 godot 4.6.2-stable (official).71f334935，本机 4.6.2-stable (official).71f334935）
+
+— 确定性 —
+  ✅ 同 seed 两跑摘要一致(批量+增量滚动+逐tick前缀链)  1/1
+
+=== S0 GATE: PASS ✅  (硬不变量 seed 3/3 全绿, 软通过率门 ≥2/3(90%) 过, 活性 过, 金标 过, det 1/1) ===
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)

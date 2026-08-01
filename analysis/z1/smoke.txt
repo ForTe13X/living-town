@@ -1,0 +1,83 @@
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+  ✅ 哈希自检：6 条 fnv1a32 + 4 条 mix32 测试向量全对（项目自有哈希，不依赖引擎 String.hash()）
+=== Causal Bench S0 · 不变量回归门  seeds=[1, 2] days=20 ===
+[S0] {"chain":"2704760339","days":20,"diag_fails":[],"digest":"3283812256","event_digest":"314405747198250905","events":1123,"hard_fails":[],"pass":true,"seed":1,"soft_fails":[8]}
+[S0] {"chain":"1673113956","days":20,"diag_fails":[15],"digest":"1233837764","event_digest":"857476246011467997","events":1069,"hard_fails":[],"pass":true,"seed":2,"soft_fails":[8]}
+
+— 不变量跨 seed 通过率（硬=全绿必需 / 软=通过率≥1/2 / 诊断=只报不门）—
+  ✅ #01 [硬]无 need 触底（任一需求，不只饥饿）  2/2
+  ✅ #02 [软]社交发生  2/2
+  ✅ #03 [软]无永久孤立  2/2
+  ✅ #04 [软]关系分化  2/2
+  ✅ #05 [软]谣言传播  2/2
+  ✅ #06 [硬]知识边界  2/2
+  ✅ #07 [硬]账本可溯源  2/2
+  ❌ #08 [软]承诺生命周期  0/2   首违 seed 1: 创建=0 兑现=0 (均应>0)
+  ✅ #09 [硬]无悬挂承诺  2/2
+  ✅ #10 [硬]违约可溯源有后果  2/2
+  ✅ #11 [软]冲突生命周期  2/2
+  ✅ #12 [硬]先对质后和解  2/2
+  ✅ #13 [硬]修复可溯源  2/2
+  ✅ #14 [软]standing分化  2/2
+  🔎 #15 [诊断]涌现放逐  1/2  (不入门·度量已知泄漏,见 docs/31)   首违 seed 2: 最坏 fei(-0.9) 接受率 0.65 / 镇均 0.54
+  ✅ #16 [软]声誉传播  2/2
+  ✅ #17 [软]坏名声形成可恢复  2/2
+  ✅ #18 [软]观点演化不坍缩  2/2
+  ✅ #19 [软]有界信任Deffuant  2/2
+  ✅ #20 [软]谣言变冷MakiThompson  2/2
+  ✅ #21 [硬]秘密专道  2/2
+  ✅ #22 [硬]背叛有后果可溯源  2/2
+  ✅ #23 [硬]背叛重挫名声  2/2
+  ✅ #24 [硬]背叛无误判  2/2
+  ✅ #25 [硬]S3派系派生一致(对齐且相识)  2/2
+  ✅ #26 [软]S3同派系亲和>跨派系  2/2
+  ✅ #27 [硬]S3协同守边界  2/2
+  ✅ #28 [硬]S3派系视图自洽  2/2
+  ✅ #29 [硬]I-PACT互助偏内  2/2
+  ✅ #30 [硬]I-PACT-free-rider可溯源  2/2
+  ✅ #31 [硬]I-PACT结盟门达标  2/2
+  ✅ #32 [硬]I-PACT无悬挂无重复对称  2/2
+  ✅ #33 [硬]I-PACT解体可恢复  2/2
+  ✅ #34 [硬]金钱守恒  2/2
+  ✅ #35 [硬]货币非负  2/2
+  ✅ #36 [硬]节日对象配对无残留  2/2
+  ✅ #37 [硬]选举计票自洽  2/2
+  ✅ #38 [硬]库存账本自洽  2/2
+  ✅ #39 [硬]产出溯源到在班本职  2/2
+  ✅ #40 [软]产出闭环活性与供给充足  2/2
+  ✅ #41 [硬]手艺的社会痕迹(被看见·被知道·不外溢)  2/2
+  ✅ #42 [硬]生存推力的收窄(只 social·只 argmin·不反客为主)  2/2
+
+— 套件级活性（跨全网格计数；门控类归零即红）—
+  🔒 apologize          次数=15     覆盖 seed=2/2
+  🔒 conflict           次数=80     覆盖 seed=2/2
+  🔒 confront           次数=21     覆盖 seed=2/2
+     consume            次数=199    覆盖 seed=2/2
+  🔒 discuss            次数=86     覆盖 seed=2/2
+  🔒 election           次数=2      覆盖 seed=2/2
+  🔒 endorse            次数=6      覆盖 seed=2/2
+     festival_despawn   次数=3      覆盖 seed=2/2
+  🔒 festival_spawn     次数=3      覆盖 seed=2/2
+  🔒 give               次数=72     覆盖 seed=2/2
+  🔒 gossip             次数=97     覆盖 seed=2/2
+  🔒 gossip_rep         次数=358    覆盖 seed=2/2
+  🔒 greet              次数=264    覆盖 seed=2/2
+  🔒 pay                次数=788    覆盖 seed=2/2
+     produce            次数=66     覆盖 seed=2/2
+  🔒 rally_oust         次数=18     覆盖 seed=2/2
+     shortage           次数=36     覆盖 seed=2/2
+     spoil              次数=76     覆盖 seed=2/2
+     world_other        次数=2      覆盖 seed=2/2
+  ⏳ 本跑 days=20，以下类未达最短 horizon 故不入门：["aid(quorum)", "confide", "invite", "meet"]
+  ✅ 门控事件类 13 种全部仍在发生（含法定覆盖 1 种）
+
+— 金标（跨进程锚）—
+  (未启用 --golden)
+
+— 确定性 —
+  (跳过)
+
+=== S0 GATE: FAIL ❌  (硬不变量 seed 2/2 全绿, 软通过率门 ≥1/2(90%) 破, 活性 过, 金标 N/A·未传--golden, det 0/0) ===
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)

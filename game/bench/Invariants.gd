@@ -1066,7 +1066,129 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 		craft_note = "开[%s]" % "；".join(parts)
 	R.append(_chk(41, "手艺的社会痕迹(被看见·被知道·不外溢)", craft_bad.is_empty(),
 		"craft_credit=%s%s" % [craft_note, "" if craft_bad.is_empty() else "；【异常】" + "；".join(craft_bad)]))
+	# 42) ★Z1：生存推力（Sim._survival_pull）的三道收窄仍然成立。判据是【结构】，与 seed / 世界演化无关。
+	R.append(_survival_pull_narrowing(S))
 	return R
+
+## #42 的 `cur` 网格。全部严格小于 `SURVIVAL_GATE`——本项在 `cur >= GATE` 处按构造（`maxf(0, GATE-cur)`）
+## 恒为 0，拿那一段当探针等于在探一个恒真的性质。0.1 与 35.9 是两端的贴边点。
+const SP_CUR_GRID := [0.0, 0.1, 9.0, 18.0, 27.0, 35.9]
+## #42 的 argmin 臂网格：`[cur, min_need]` 且 **cur > min_need ≥ 0**（= social 不是 argmin），此时本项必须恒 0。
+const SP_ARGMIN_GRID := [[9.0, 0.0], [18.0, 9.0], [27.0, 18.0], [35.9, 27.0], [35.9, 0.0], [0.1, 0.0]]
+
+## ★Z1（编号 100）：给 `Sim._survival_pull` 的三道收窄补一道门。
+##
+## 【为什么需要】Y1（docs/96 §七 `does_not_detect` ⑦）拿四个变异体逐个跑过：
+##   删掉整项 ⇒ `DetGate` 红 · 把 social 守卫**取反** ⇒ `DetGate` 红 ·
+##   **放宽到全部 need ⇒ 全 CI 绿** · **剂量翻倍到 k=2.0 ⇒ `DetGate` 绿**。
+##   ⇒ 后两道收窄今天只由 `Sim._survival_pull` 抬头的注释维护，**没有任何机器在查**。本条把它们变成机检。
+##
+## 【判据为什么可以是【结构】的，不是统计的】本项只在 `social == argmin < SURVIVAL_GATE` 时非零，
+##   而那一刻 `mods_ok = (min_need >= SURVIVAL_GATE)` **恒为 false** ⇒ `Sim._object_candidates` 里
+##   rhythm / weather / season / cleanliness / work_pull / stock_pull **六个乘子全部关闭**
+##   ⇒ 它所修饰的那条广告的收益恰好是未打折的 `urgency * amount / 60`。
+##   ⇒ 「推力上限 vs 它所修饰的那个分数」这个比值可以**精确算出来**，不含 seed / 天数 / 世界演化。
+##   这也是本条为什么归**硬**档：它是代码+数据的结构性质，任何 LOD / 规模 / 场景下都必须为真。
+##
+## 【三条臂】
+##   A **只对 social**：对 `needs_def` 里**每一条**非 social 的 need，在 `cur == min` 的整条网格上必须恒 0。
+##   B **只在 argmin**：social 但 `cur > min_need` 时必须恒 0。
+##   C **不反客为主**：`推力上限 = _survival_pull("social", 0, 0)` 必须 **<** 全镇【最弱】那条 social 广告
+##     在 `cur=0` 处的基准收益。这一条逐字就是 Y1 选出货剂量时那条**承重**论证
+##     （docs/96 §二.4 第 2 条：「这一项的上限 36k 不该超过它所修饰的那个分数本身」），而它此前没有任何机器在查。
+##
+## 【余量是量出来的，不是拍的】HEAD 这棵树（`_z1_probe` 实测）：`k=1.000`、`SURVIVAL_GATE=36` ⇒ 上限 **36.00**；
+##   世界里恰好 3 条 social 广告——`counter_1(吧台·闲聊·42)` → 70.00、`bench_1(长椅·社交·40)` → 66.67、
+##   `cafe1f_counter(咖啡吧台·闲聊·40)` → 66.67 ⇒ 最弱 **66.67** ⇒ **比值 0.5400，门在 1.0，余量 1.852×**。
+##   ⇒ Y1 的「剂量翻倍」变异体 k=2.0 ⇒ 上限 72.00 ⇒ 比值 **1.0800 ≥ 1.0 ⇒ 红**。
+##   ⚠ **门咬的位置是 k ≥ 1.852，不是 k > 1.0**：`k ∈ (1.5, 1.852)` 这一段本条**抓不到**（写进包络）。
+##
+## 【本项未启用时本条无判别力，且必须照实说】`k == 0`（缺键/为 0 —— 那条"缺键即零扰动"的 ablation 路）
+##   ⇒ 三条臂全部**平凡**成立。detail 里明写「本条此跑无判别力」，**不打绿勾骗人**
+##   ——与本波 ① 那条（`Harness` 没传 `--golden` 却印「金标 过」）是同一条纪律。
+static func _survival_pull_narrowing(S) -> Dictionary:
+	var bad: Array = []
+	var k: float = float(S._w("obj_survival_pull", 0.0))
+	# ── A：只对 social ──
+	var probed_needs := 0
+	for nd in S.needs_def:
+		var nid := String((nd as Dictionary).get("id", ""))
+		if nid == "" or nid == "social":
+			continue
+		probed_needs += 1
+		for cur in SP_CUR_GRID:
+			var v: float = float(S._survival_pull(nid, float(cur), float(cur)))
+			if v != 0.0:
+				bad.append("A 越界到非 social：need=%s cur=min=%.2f 得 %.4f（应 0）" % [nid, float(cur), v])
+				break
+	# ── B：只在 social 就是 argmin 时 ──
+	for pr in SP_ARGMIN_GRID:
+		var c2: float = float((pr as Array)[0])
+		var m2: float = float((pr as Array)[1])
+		var v2: float = float(S._survival_pull("social", c2, m2))
+		if v2 != 0.0:
+			bad.append("B 越过 argmin 门：social cur=%.2f > min=%.2f 却得 %.4f（应 0）" % [c2, m2, v2])
+			break
+	# ── C：剂量不得反客为主（上限与基准收益都是【现读现算】，不写死数字）──
+	var ceil_pull: float = float(S._survival_pull("social", 0.0, 0.0))   # = maxf(0, GATE-0) * k
+	var weakest := -1.0
+	var weakest_id := ""
+	var n_ads := 0
+	var objs: Dictionary = S.world.get("objects", {})
+	for oid in objs:
+		var o: Dictionary = objs[oid]
+		for adv in o.get("advertises", []):
+			if not (adv is Dictionary):
+				continue
+			if String(adv.get("need", "")) != "social":
+				continue
+			var amt := int(adv.get("amount", 0))
+			if amt <= 0:
+				continue                     # amount<=0 的广告 _object_candidates 自己就 continue 掉了
+			n_ads += 1
+			var b0: float = 100.0 * float(amt) / 60.0   # cur=0 ⇒ urgency=100；六个乘子按构造全关（见抬头）
+			if weakest < 0.0 or b0 < weakest:
+				weakest = b0
+				weakest_id = "%s(%s·%s·%d)" % [String(oid), String(o.get("type", "")),
+					String(adv.get("action", "")), amt]
+	var ratio := -1.0
+	if n_ads > 0 and weakest > 0.0:
+		ratio = ceil_pull / weakest
+		if ratio >= 1.0:
+			bad.append("C 剂量反客为主：推力上限 %.4f ≥ 最弱 social 广告基准收益 %.4f[%s]，比值 %.4f（门 <1.0）"
+				% [ceil_pull, weakest, weakest_id, ratio])
+	# ── detail：四种"本跑没有判别力"的情形都必须自己说出来（k=0 / 上限=0 / 无 social 广告 / 无非-social need）──
+	# ⚠ 而且要说在【名字】里，不能只说在 detail 里：Harness 的不变量表只在**失败**时才印 detail
+	#   ⇒ 一条"本跑什么都没判"的条目会以一个**光秃秃的绿勾**出现在表上，正是本波要修的那个形状
+	#   （`Harness` 没传 --golden 却印「金标 过」/ 单 seed 软门恒过却打 ✅，84bd95d）。
+	#   名字里带标记 ⇒ 表上直接读得到。
+	var detail := ""
+	var vac: Array = []
+	if k == 0.0:
+		vac.append("k=0·未启用")
+		detail = "k=0 ⇒ 本项未启用(缺键即零扰动那条 ablation 路)·三臂平凡成立·【本条此跑无判别力】"
+	elif ceil_pull == 0.0:
+		# k 不为 0，上限却是 0 ⇒ 函数体被短路成恒 0（或 SURVIVAL_GATE 被改成 0）。
+		# 三条臂此时**全部平凡成立**，而 k!=0 又骗过了上面那一格 ⇒ 不标出来就是一个静默的洞。
+		vac.append("上限=0·本项已被短路")
+		detail = "k=%.3f 但推力上限=0 ⇒ 本项已被短路成恒 0(或 SURVIVAL_GATE=0)·三臂平凡成立·【本条此跑无判别力】" % k
+	elif n_ads <= 0:
+		vac.append("C臂无social广告")
+		detail = "k=%.3f 上限=%.2f · A 探 %d 条非 social need × %d 格 · 【C 臂无判别力：世界里 0 条 social 广告】" % [
+			k, ceil_pull, probed_needs, SP_CUR_GRID.size()]
+	else:
+		detail = "k=%.3f 上限=%.2f · 最弱 social 广告 %s 基准收益 %.2f · 比值 %.4f(门<1.0，余量 %.3f×) · A 探 %d 条非 social need × %d 格 · B %d 对" % [
+			k, ceil_pull, weakest_id, weakest, ratio, (1.0 / ratio) if ratio > 0.0 else 0.0,
+			probed_needs, SP_CUR_GRID.size(), SP_ARGMIN_GRID.size()]
+	if probed_needs <= 0:
+		vac.append("A臂无非social需求")
+		detail += " ·【A 臂无判别力：needs_def 里没有非 social 的 need】"
+	if not bad.is_empty():
+		detail += "；【异常】" + "；".join(bad)
+	var nm := "生存推力的收窄(只 social·只 argmin·不反客为主)"
+	if not vac.is_empty():
+		nm += "【本跑无判别力：%s】" % ",".join(vac)
+	return _chk(42, nm, bad.is_empty(), detail)
 
 ## 事件发生【当时】的相位（不是检查时的相位）。#39 的「在班」那一半靠它。
 ## 为什么不能直接调 Sim._in_shift：它读的是 time_of_day() = f(当前 tick_no)，
@@ -1108,7 +1230,13 @@ static func _chk(id: int, name: String, ok: bool, detail: String) -> Dictionary:
 ##   （要改硬，先把单格余量量到 2× 以上；今天没有）。
 ## V1：#41 入硬档。理由与 #38/#39 同一条——它查的是**结构**（通道接没接上、有没有外溢），
 ## 不是涌现统计；而"产出次数 < CRAFT_MIN_WORKS 就跳过"这条豁免已经把短 horizon / 定向场景兜住了。
-const HARD_IDS := [1, 6, 7, 9, 10, 12, 13, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41]
+## Z1：#42 入硬档。理由与 #38/#39/#41 同一条——它查的是**结构**（一个加分项的作用面与量级），
+##   而且比它们更硬一格：它**完全不读 event_log、不读世界演化**，只读代码+数据，
+##   在任何 seed / 天数 / LOD / 场景下逐字节同一个判决 ⇒ 结构上不存在"涌现统计漂了"这种假红。
+##   ⚠ 它有**四条**真实的失去判别力的路（`k==0` 的 ablation、上限被短路成 0、世界里没有 social 广告、
+##     `needs_def` 里没有非-social need），而它们**由条目自己的【名字】报出来**（不是只写在 detail 里
+##     ——不变量表只在失败时印 detail），不靠人记得。前两条各有一个跑过的变异体（编号 100 §二.3 的 M4 / M8）。
+const HARD_IDS := [1, 6, 7, 9, 10, 12, 13, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42]
 
 ## #41 的豁免线：一局里该职位的 produce 事件少于这么多次就跳过它。
 ## 5 是量出来的下界，不是拍的：N=12 × 60 天 × 12 seed，环卫工的 produce 事件是 19..31 条

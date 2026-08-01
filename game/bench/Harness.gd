@@ -317,7 +317,14 @@ func _init() -> void:
 		print("  ❌ 门控事件类归零/跌破法定覆盖：%s —— 某个子系统被关掉了，而硬不变量对空输入恒过" % str(live_red))
 
 	# ── 金标：跨进程/跨提交/跨引擎版本的锚（红线#1 真正的机检点）──
+	# ⚠ ★Z1：`golden_red` 在【一次比较都没发生】时同样是 false —— 有两条路会落到这里：
+	#     ① 根本没传 `--golden`（`ci.sh` 第 4a 步 N=16 就是这一条；Y1/Y3 各自独立撞到，docs/96 §〇④）；
+	#     ② 传了 `--golden` 但 `cmp_n == 0`（seed/days 与金标表不重叠，如 CI_DAYS≠60 的快跑）。
+	#   此前这两条都会在判决行上印出绿色的「金标 过」——**一行读起来是判决的输出，其实什么都没判**。
+	#   这里只改**报告**不改**判据**：`golden_cmp_n` 只喂那一个字符串，`gate_ok` 与退出码一个字节不变。
+	#   （同 84bd95d「单 seed 下软门恒过却照样打绿勾」的先例，改法逐条照抄。）
 	var golden_red := false
+	var golden_cmp_n := -1              # -1=未传 --golden；0=传了但 0 条可比；>0=真比过这么多条
 	var golden_note := "(未启用 --golden)"
 	if bake_path != "":
 		golden_note = _bake_golden(bake_path, seeds_spec, days, seeds, first_run_digest, first_run_edig,
@@ -327,6 +334,7 @@ func _init() -> void:
 			first_run_chain, first_run_ticks)
 		golden_red = bool(gres["red"])
 		golden_note = String(gres["note"])
+		golden_cmp_n = int(gres.get("cmp_n", 0))
 	print("\n— 金标（跨进程锚）—\n  " + golden_note)
 
 	# ── 逐 tick 前缀链：与一份 --chain-dump 参照物比对 → 精确到 tick 的首个分叉 ──
@@ -351,12 +359,17 @@ func _init() -> void:
 
 	var gate_ok := (seed_pass == seeds.size()) and not hard_red and not soft_red \
 		and live_red.is_empty() and not golden_red and not chain_ref_red and (det_n <= 0 or det_fail.is_empty())
+	# ★Z1：判决行上"金标"那一格。红永远先说话；只有**真比过 >0 条**才有资格说「过」。
+	#   这个串**只喂 print**，`gate_ok` 与 `quit()` 一个字节都不读它（见 golden_cmp_n 的抬头）。
+	var golden_verdict := "破" if golden_red else ("过" if golden_cmp_n > 0 else
+		("N/A·0条可比" if golden_cmp_n == 0 else
+			("N/A·本跑是--bake-golden不是比对" if bake_path != "" else "N/A·未传--golden")))
 	print("\n=== S0 GATE: %s  (硬不变量 seed %d/%d 全绿, 软通过率门 ≥%d/%d(%d%%) %s, 活性 %s, 金标 %s, det %d/%d) ===" % [
 		"PASS ✅" if gate_ok else "FAIL ❌", seed_pass, seeds.size(),
 		soft_min, seeds.size(), int(round(SOFT_RATE * 100.0)),
 		("过" if not soft_red else "破") if soft_min > 0 else "N/A·单seed无判别力",
 		"过" if live_red.is_empty() else "破",
-		"过" if not golden_red else "破", det_ok, det_seeds.size()])
+		golden_verdict, det_ok, det_seeds.size()])
 	quit(0 if gate_ok else 1)
 
 ## 软门阈值：比率制（≥90%），但用 seeds-1 封顶 → 【永不严于】历史的绝对容差 1，小网格(1-3 seed)行为不变。
@@ -494,10 +507,10 @@ func _check_golden(path: String, days: int, seeds: Array, dig: Dictionary, edig:
 		chain: Dictionary, chain_ticks: Dictionary) -> Dictionary:
 	var doc := load_golden(path)
 	if doc.is_empty():
-		return {"red": true, "note": "❌ 金标文件缺失/不可解析：%s" % path}
+		return {"red": true, "cmp_n": 0, "note": "❌ 金标文件缺失/不可解析：%s" % path}
 	var tbl: Dictionary = doc.get("seeds", {})
 	if tbl.is_empty():
-		return {"red": true, "note": "❌ 金标文件无 seeds 段：%s" % path}
+		return {"red": true, "cmp_n": 0, "note": "❌ 金标文件无 seeds 段：%s" % path}
 	var gmeta: Dictionary = doc.get("_meta", {})
 	var cmp_n := 0
 	var chain_cmp_n := 0
@@ -534,10 +547,10 @@ func _check_golden(path: String, days: int, seeds: Array, dig: Dictionary, edig:
 		msg += "      若是【有意】的基线移动，才重烘：--bake-golden game/bench/golden_digests.json（与该变更同一 commit）。\n"
 		msg += "    → 要把首个分叉【精确到 tick】：先在已知良好的提交上 --chain-dump /tmp/ref.chain，\n"
 		msg += "      再在本提交上 --chain-ref /tmp/ref.chain（逐 tick 比对，直接报 tick 号）。"
-		return {"red": true, "note": msg}
+		return {"red": true, "cmp_n": cmp_n, "note": msg}
 	if cmp_n == 0:
-		return {"red": false, "note": "⚠ 金标 0 条可比（seed/days 与金标表不重叠）——本跑未构成跨进程校验"}
-	return {"red": false, "note": "✅ 金标一致 %d/%d seed（含逐 tick 前缀链 %d 条；烘于 godot %s，本机 %s）" % [
+		return {"red": false, "cmp_n": 0, "note": "⚠ 金标 0 条可比（seed/days 与金标表不重叠）——本跑未构成跨进程校验"}
+	return {"red": false, "cmp_n": cmp_n, "note": "✅ 金标一致 %d/%d seed（含逐 tick 前缀链 %d 条；烘于 godot %s，本机 %s）" % [
 		cmp_n, seeds.size(), chain_cmp_n, String(gmeta.get("godot", "?")), godot_version()]}
 
 # ── 逐 tick 前缀链的编码 / 定位 ──────────────────────────────────────────────
