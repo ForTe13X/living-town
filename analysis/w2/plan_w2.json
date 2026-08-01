@@ -1,0 +1,21 @@
+{
+ "godot": "C:/Users/yp/AppData/Local/Programs/Godot/4.6.2-stable/Godot_v4.6.2-stable_win64_console.exe",
+ "_why": "W2 · 把 N=40 补齐到 V2 给 N=16/N=24 做过的同一组数：(a) ship@N=40 seeds 25-60 ⇒ 60 seed 的基准率 + 49 个滑窗；(b) noscale@N=40 seeds 1-12 ⇒ ci.sh 4a 负对照①（删 production.json 的 scale 块）在 N=40 上的牙。ship 的 seeds 1-24 与 noscale 的 N=16/24 已在 analysis/v2/raw 里，本计划不重跑。",
+ "_noscale_recipe": "cp -r game <scratch>/g_noscale && 从 data/production.json 删掉整个 scale 块 && find -name '*.md' -delete；隔离副本在仓库【外】（scratchpad），除 production.json 外与 game/ 逐字节相同（diff -rq 已验）。",
+ "cells": [
+  {
+   "arm": "ship",
+   "gamedir": "game",
+   "n": 40,
+   "seeds": [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60],
+   "days": 60
+  },
+  {
+   "arm": "noscale",
+   "gamedir": "C:/Users/yp/AppData/Local/Temp/claude/E--Documents-Dev-June-26th/4ab4ceee-f2b5-4791-b52a-1f1d70c374f4/scratchpad/w2/g_noscale",
+   "n": 40,
+   "seeds": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+   "days": 60
+  }
+ ]
+}

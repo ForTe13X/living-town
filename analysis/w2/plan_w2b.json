@@ -1,0 +1,16 @@
+{
+ "godot": "C:/Users/yp/AppData/Local/Programs/Godot/4.6.2-stable/Godot_v4.6.2-stable_win64_console.exe",
+ "_why": "W2 · 【全部重跑到今天这棵树上】。开工时我打算直接复用 V2 落盘的 ship@N=16/24 的 60 seed 与 ship@N=40 的 seeds 1-24，只补 N=40 的 seeds 25-60。查过 `git diff 5d2214f a7d9823 -- game/` 之后发现不行：V1 之后 Sim.gd(+70) / production.json(+8，新增 craft_credit) / Invariants.gd(+97) 都变了，golden_digests.json 整份重烘（291 行）⇒ 【判据没变，世界变了】。把两棵树的 seed 拼成一格 60 seed，量到的会是『树的差别 + seed 的差别』的混合。⇒ 本计划把三个 N 的全部 seed 与两个 noscale 对照格，全部重跑在 a7d9823 上。ship@N=40 的 seeds 25-60 与 noscale@N=40 的 seeds 1-12 本来就跑在这棵树上（见 plan_w2.json），n_sweep 会跳过它们。",
+ "cells": [
+  {"arm": "ship", "gamedir": "game", "n": 40,
+   "seeds": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24], "days": 60},
+  {"arm": "ship", "gamedir": "game", "n": 16,
+   "seeds": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60], "days": 60},
+  {"arm": "ship", "gamedir": "game", "n": 24,
+   "seeds": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60], "days": 60},
+  {"arm": "noscale", "gamedir": "C:/Users/yp/AppData/Local/Temp/claude/E--Documents-Dev-June-26th/4ab4ceee-f2b5-4791-b52a-1f1d70c374f4/scratchpad/w2/g_noscale", "n": 16,
+   "seeds": [1,2,3,4,5,6,7,8,9,10,11,12], "days": 60},
+  {"arm": "noscale", "gamedir": "C:/Users/yp/AppData/Local/Temp/claude/E--Documents-Dev-June-26th/4ab4ceee-f2b5-4791-b52a-1f1d70c374f4/scratchpad/w2/g_noscale", "n": 24,
+   "seeds": [1,2,3,4,5,6,7,8,9,10,11,12], "days": 60}
+ ]
+}
