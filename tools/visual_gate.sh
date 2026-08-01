@@ -281,9 +281,20 @@ IRC=$?
 # 连地板都不看，家具更不在它眼里。吃的是上面已经拍好的 vg_int_*.png，**不额外渲一帧**。
 "$PY" tools/assert_furniture_role.py "$OUT" --game "$GAME"
 FRC=$?
+# 树丛点阵门（V3 / 编号 86）。守第七条性质：**外景里唯一 100% 别名的那一层不许退回格子**
+# （改前 156 棵树 = 1 种画法，逐格周期性残差 P = 0.180/0.133；改后 25.8/28.2）。
+# ⚠️ V3 的接线说明写的是"再拍一帧整镇图"，**但那一帧已经拍过了**：
+#   `vg_noon.png` / `vg_night.png` 本来就是 `--shot-fit` 的整镇入画帧（上面 pond.py 吃的就是它们）
+#   ⇒ 复用，不额外渲——理由与 S3 让家具门吃 `vg_int_*.png` 是同一条。
+# **昼夜两帧都判**：V3 在 72 次读数上标定过，**夜间是约束档**（改前上界 4.470 出现在夜里），
+#   而 `visual_gate.sh` 的 fixture 写死正午 ⇒ 只判正午会把它标定得最紧的那一档漏掉。
+"$PY" tools/assert_tree_stand.py --frame "$OUT/vg_noon.png"  --map "$GAME/data/map.json"; TRC=$?
+"$PY" tools/assert_tree_stand.py --frame "$OUT/vg_night.png" --map "$GAME/data/map.json"; TRC2=$?
+[ $TRC -eq 0 ] && TRC=$TRC2
 [ $EPHEMERAL -eq 1 ] && rm -rf "$OUT"
 [ $ARC -ne 0 ] && exit $ARC
 [ $RRC -ne 0 ] && exit $RRC
 [ $PRC -ne 0 ] && exit $PRC
 [ $IRC -ne 0 ] && exit $IRC
-exit $FRC
+[ $FRC -ne 0 ] && exit $FRC
+exit $TRC
