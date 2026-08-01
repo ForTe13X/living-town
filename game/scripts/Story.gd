@@ -57,6 +57,134 @@ const PAIR_WIT := "wit"
 ## 面板/点播报栏那一行用的 meta（Main._on_log_meta 据此分流；居民 id 不会长这样）。
 const PANEL_META := "__story__"
 
+# ── 措辞锁（Y3 新增，docs/98）────────────────────────────────────────────────
+## **这一节存在的全部理由是 W3 留下的那个负对照**（docs/90 §七 的 `M2`）：
+## 把 grudge 与 pact 的开头文案**对调**，于是屏幕上逐字打出
+##   「第1天 阿丽 与 本 结成了互助盟约 … 第2天 · 本 低了头，阿丽 原谅了 —— 这段梁子解开了」
+## 而 `audit()` **0 违规**、整门 `rc=0` 全绿。
+## ⇒ **那道审计守的是「这句话有依据」，不是「这句话说得对」。**
+##
+## 措辞锁往"说得对"那一侧挪了一步，机制只有一句话：
+##   **一句叙述里若出现了某个【标志性短语】，就等于它在宣称"发生了某一类事"；
+##     于是这一行所引用的那条 event，【它自己的 `type`】必须落在该短语允许的类型集合里。**
+##
+## ★为什么这不是又一份自证（这是本机制唯一值钱的地方）：
+##   判据的真值来自 `Sim.event_log` 里那条事件的 `type` 字段 —— **仿真侧写的**，
+##   本文件既不产生它、也改不动它。ARCS 表怎么改，都改不了那条事件是不是 `conflict`。
+##   对调文案之后，「结成了互助盟约」这句话引用的仍然是一条 `conflict` ⇒ **当场红**。
+##
+## ★词表本身也不是我一个人说了算：`story_test.gd` 的 `PL` 段拿
+##   `Main._event_prose`（编年史，**另一个文件、另一位作者的同一批事件的另一份渲染**）
+##   与 `Sim._verb()`（仿真自己的中文动词表）来交叉验：
+##     ①**安全向**（断言）：任何一条短语都不许出现在它**不允许**的类型的那份独立渲染里；
+##     ②**佐证向**（只报数）：有多少条短语在独立渲染里逐字对得上。
+##   W3 说这件事"没有廉价的补法：判对错要有第二份文案的真值" ——
+##   **那第二份真值一直在树上，就是编年史**；它只是从没有被当成真值用过。
+##
+## ⚠️ 它守不住什么，写在 docs/98 的 `does_not_detect` 里，且**是跑出来的不是想出来的**：
+##   最刺眼的一条是**同类型内部的语义反转**（把"没人应和"写成"应者云集"——两句都只引 rally_oust）。
+##
+## ⚠️ 选短语的两条硬约束（踩过才写下来的）：
+##   ①**不许互相是子串**，否则会假红。实例：`slipped` 的「%B 在旁人面前说漏了嘴」
+##     若把 gossip_rep 的短语定成「在旁人面前」，这一行就会被判成"只有 gossip_rep 能说" ⇒ 假红。
+##     故 gossip_rep 取的是「在旁人面前说了」/「在旁人面前提起过」，与「说漏了嘴」不相交。
+##   ②**空表 = 没约束**：一条没有任何标志性短语的文案照样过 —— 这不是漏洞，是本机制的定义域。
+##     `lint_grammar()` 会把这类"没上锁的文案"逐条报出来（`story_test` 打印，不判红）。
+const PHRASE_LOCK := {
+	"积起了怨气": ["conflict"],
+	"当面把话挑明": ["confront"],
+	"当面把话说开": ["confront"],
+	"理论": ["confront"],
+	"来道了歉": ["apologize"],
+	"低了头": ["apologize"],
+	"统一了口径": ["endorse"],
+	"施压": ["rally_oust"],
+	"排挤": ["rally_oust"],
+	"扑了个空": ["shortage"],
+	"断了货": ["shortage"],
+	# 「说和」三类都合法：调解失败只写 mediate，调解成功是补记的 confront/apologize（note=mediated）。
+	# 它因此是本表里**唯一**一条多类型的短语，也因此是判别力最弱的一条 —— 照实记着。
+	"说和": ["mediate", "confront", "apologize"],
+	"话没能递进去": ["mediate"],
+	"在旁人面前说了": ["gossip_rep"],
+	"在旁人面前提起过": ["gossip_rep"],
+	"稍后见面": ["invite"],
+	"如约": ["meet"],
+	"泡了汤": ["meet"],
+	"托付给了": ["confide"],
+	"说了一桩": ["confide"],
+	"雪中送炭": ["aid"],
+	"搭了把手": ["aid"],
+	"搭手": ["aid"],
+	"说了出去": ["betray"],
+	"说漏了嘴": ["leak"],
+	"结成了互助盟约": ["pact"],
+	"盟约散了": ["pact"],
+	"把一批活做成了": ["produce"],
+	"出活": ["produce"],
+	# Y3 新增的两幕。措辞**刻意抄仿真自己的动词表**（`Sim._verb`："聊起了看法" / "说了会儿悄悄话"），
+	# 于是它们在 story_test 的 `PL` 段里是**被独立渲染逐字佐证**的那一档，不是我一个人说了算。
+	"聊起了": ["discuss"],
+	"悄悄话": ["gossip"],
+}
+
+## 一句**模板**文案与"它所依据的事件类型集合"是否相容。返回违规说明，空数组 = 相容。
+##
+## ★查的是**模板**（`ARCS` 里的字面量）而不是渲染后的那一行，理由是**居民名会撞词**：
+##   `_fill` 只替换 %A/%B/%d，短语判定在替换前后等价，而替换前不可能被人名污染。
+static func phrase_conflicts(tpl: String, types: Array) -> Array:
+	var out: Array = []
+	for p in PHRASE_LOCK:
+		if not tpl.contains(String(p)):
+			continue
+		var allow: Array = PHRASE_LOCK[p]
+		for t in types:
+			if not (String(t) in allow):
+				out.append("措辞「%s」只有 %s 类事件能说，而这里依据的是 `%s`" % [String(p), str(allow), String(t)])
+	return out
+
+## 静态查一遍**整张文法表**：每个匹配器的文案，与它自己声明的 `type` 是否相容。
+## 返回 `{"bad": [...违规...], "unlocked": [...没有任何标志性短语的匹配器...]}`。
+##
+## ★为什么除了 `audit()` 的运行期检查之外还要有它：运行期只覆盖**真的被渲染出来的那些行**，
+##   而 docs/90 §十二 实测过 promise/secret/pact 三条弧在 CI 那一格里一条都开不出来
+##   ⇒ 光靠运行期，改坏一条没跑到的文案不会有任何东西响。静态这一遍与夹具是否跑到无关。
+static func lint_grammar() -> Dictionary:
+	var bad: Array = []
+	var unlocked: Array = []
+	for d in ARCS:
+		var did := String(d["id"])
+		for row in _grammar_slots(d):
+			var tpl := String(row[1])
+			var types: Array = row[2]
+			if tpl == "":
+				continue
+			var c := phrase_conflicts(tpl, types)
+			for x in c:
+				bad.append("%s/%s：%s" % [did, String(row[0]), String(x)])
+			if _locked_phrases(tpl).is_empty():
+				unlocked.append("%s/%s：%s" % [did, String(row[0]), tpl])
+	return {"bad": bad, "unlocked": unlocked}
+
+## 一条弧定义里所有**带文案且有事件依据**的槽位：`[槽位名, 模板, 该槽位声明的事件类型]`。
+## 冷场文案**不在内**——它依据的正是"此后没有任何事件"，没有类型可比（见 `does_not_detect`）。
+static func _grammar_slots(d: Dictionary) -> Array:
+	var out: Array = [["open", String(d["open_text"]), ((d["open"] as Dictionary).get("type", []) as Array)]]
+	for bt in (d["beats"] as Array):
+		out.append(["beat:" + String(bt["id"]), String(bt["text"]), ((bt["m"] as Dictionary).get("type", []) as Array)])
+	for e in (d["ends"] as Array):
+		out.append(["end:" + String(e["id"]), String(e["text"]), ((e["m"] as Dictionary).get("type", []) as Array)])
+	if String(d["aside_text"]) != "":
+		out.append(["aside", String(d["aside_text"]), ((d["aside"] as Dictionary).get("type", []) as Array)])
+	return out
+
+static func _locked_phrases(tpl: String) -> Array:
+	var out: Array = []
+	for p in PHRASE_LOCK:
+		if tpl.contains(String(p)):
+			out.append(String(p))
+	return out
+
 ## 保留上限。**只封【已收场】的那一半**，进行中的一条都不丢。
 ##
 ## ★第一版封的是「弧总数 ≤ 128」，被 N=48 的规模实测直接打死：
@@ -126,6 +254,24 @@ const ARCS := [
 			# social_event ⇒ 塞进播报会造出"看观看路径的编年史"（见 Main.FEED_SKIP 那段）。
 			# 折叠这条路没有这个问题：live 与 replay 按构造同值。
 			{"id": "empty", "m": {"type": ["shortage"]}, "text": "%A 又扑了个空 —— 镇上断了货，这笔账记在 %B 头上"},
+			# ── Y3 新增两幕：**梁子还在，可两个人还在说话** ──────────────────────
+			# ★选它们的依据是一张"可落地上界"表，不是一个点子（docs/98 §一）。
+			#   量的**不是**这类事件有几条（那是虚高得离谱的分母），而是**有几条落在一段已经开着的弧上**：
+			#     discuss 1151 条 → grudge 有向对上 319 条（target fwd 173 + rev 146）
+			#     gossip   568 条 → grudge 有向对上 110 条（target fwd  75 + rev  35）
+			#   作为参照，W3 那一波新加的 `sided`(endorse) 实际落了 147 条 ⇒ 这两幕合起来约是它的 2.9 倍。
+			#   **同一张表把 `give` 判了死刑**：432 条只落得上 **4** 条（0.9%）——
+			#   `give` 有 trust 门（只送给已经信得过的人），而开着的弧绝大多数是 grudge（敌对有向对），
+			#   两者在结构上几乎不相交。"送礼是最有关系含量的动作"这个先验是错的，而**只有量才看得出来**。
+			#
+			# ★dir 用 `any`：`discuss` 的 `_fj_update` 在 Sim 侧是**双向**跑的（Sim.gd:2407-2408），
+			#   `gossip` 虽是单向传播，但"这两个人还在私下说话"这件事本身不分谁先开口。
+			# ★措辞刻意**不带褒贬**（同 craft 的旁支那一条）：事件里没有任何字段说这次交谈是修好还是更僵，
+			#   写成"两人把话说开了"就是叙述层在发明事实。这里只说他们**说了**。
+			{"id": "talked", "m": {"type": ["discuss"]}, "dir": "any",
+			 "text": "%A 与 %B 就镇上的事聊起了各自的看法"},
+			{"id": "whisper", "m": {"type": ["gossip"]}, "dir": "any",
+			 "text": "%A 与 %B 说了会儿悄悄话"},
 		],
 		"ends": [
 			# 同样必须排在 `mended` 前面（ends 也是"首个匹配的胜出"）。
@@ -224,6 +370,13 @@ const ARCS := [
 			{"id": "again", "m": {"type": ["produce"]}, "pair": PAIR_WIT, "text": "%A 又一次看着 %B 出活"},
 			{"id": "handed", "m": {"type": ["aid"], "accepted": true}, "dir": "any",
 			 "text": "两人之间还多了一次搭手"},
+			# Y3：同上两幕，落在手艺弧上的量小一档（discuss 106 条 · gossip 28 条，见 docs/98 §一）。
+			# 加它们的理由不是那个数，是**同一条事件不该在一条弧上算数、在另一条弧上不算数**：
+			# 手艺弧的 (A,B) 是"看着他干活的人 → 干活的人"，这两个人私下聊没聊过，与梁子弧同样是实情。
+			{"id": "talked", "m": {"type": ["discuss"]}, "dir": "any",
+			 "text": "%A 与 %B 就镇上的事聊起了各自的看法"},
+			{"id": "whisper", "m": {"type": ["gossip"]}, "dir": "any",
+			 "text": "%A 与 %B 说了会儿悄悄话"},
 		],
 		"ends": [
 			# `shortage`：actor=扑了空的人、target=被怪的那个岗位的人（Sim.gd:3397）。
@@ -746,6 +899,9 @@ func narrate_cited(arc: Dictionary, nm: Callable) -> Array:
 ##   ② 它**满足**产生这一行的那个匹配器（拿文法表里同一个 `_match` 重跑）；
 ##   ③ 它推出来的**有向对**就是这条弧的 (A,B)，方向也对（拿同一个 `_pairs` 重跑）；
 ##   ④ 它的 `tick` 就是这一行行首印的那个第几天所依据的 tick。
+##   ⑤ **（Y3 新增）它的 `type` 与这一行的【措辞】不打架** —— 见 `PHRASE_LOCK`。
+##      前四条守的是"这句话有依据"，第五条是往"这句话说得对"挪的那一步：
+##      真值取自被引用事件自己的 `type`（**仿真侧写的**），不取自本文法表。
 ## 只有 kind=cold / extra / pending 三种行允许 ev=-1，且 cold 只在 end=="cold" 时允许。
 func audit(arc: Dictionary, by_id: Dictionary) -> Array:
 	var bad: Array = []
@@ -764,7 +920,8 @@ func audit(arc: Dictionary, by_id: Dictionary) -> Array:
 			if ne != mini(na, MAX_BEATS):
 				bad.append("弧#%d 旁支写着 %d 次，却只留下 %d 条引用（上限 %d）" % [int(arc["n"]), na, ne, MAX_BEATS])
 			for ae in (r["evs"] as Array):
-				bad.append_array(_audit_one(arc, d["aside"], PAIR_TARGET_FOR_ASIDE, "fwd", int(ae), by_id, -1, "aside"))
+				bad.append_array(_audit_one(arc, d["aside"], PAIR_TARGET_FOR_ASIDE, "fwd", int(ae), by_id, -1, "aside",
+					String(d["aside_text"])))
 			continue
 		if kind == "extra":
 			# 同理：只有把 MAX_BEATS 个坑位占满了，才可能有"中间还有 N 幕"。
@@ -783,15 +940,18 @@ func audit(arc: Dictionary, by_id: Dictionary) -> Array:
 		var mode := PAIR_TARGET
 		var dir := "fwd"
 		var want_tick := -1
+		var tpl := ""                                  # 这一行的**模板**（措辞锁查的是它，不是渲染后的字；见 phrase_conflicts）
 		if kind == "open":
 			m = d["open"]
 			mode = String(d.get("open_pair", PAIR_TARGET))
+			tpl = String(d["open_text"])
 			want_tick = int(arc["t0"])
 		elif kind == "beat":
 			var found := false
 			for cand in (d["beats"] as Array):
 				if String(cand["id"]) == String(r["mid"]):
 					m = cand["m"]; mode = String(cand.get("pair", PAIR_TARGET)); dir = String(cand.get("dir", "fwd"))
+					tpl = String(cand["text"])
 					found = true
 					break
 			if not found:
@@ -806,13 +966,14 @@ func audit(arc: Dictionary, by_id: Dictionary) -> Array:
 			for cand2 in (d["ends"] as Array):
 				if String(cand2["id"]) == String(r["mid"]):
 					m = cand2["m"]; mode = String(cand2.get("pair", PAIR_TARGET)); dir = String(cand2.get("dir", "fwd"))
+					tpl = String(cand2["text"])
 					found2 = true
 					break
 			if not found2:
 				bad.append("弧#%d 的结局 `%s` 在文法表里查无此条" % [int(arc["n"]), String(r["mid"])])
 				continue
 			want_tick = int(arc["t1"])
-		bad.append_array(_audit_one(arc, m, mode, dir, ev_id, by_id, want_tick, kind))
+		bad.append_array(_audit_one(arc, m, mode, dir, ev_id, by_id, want_tick, kind, tpl))
 	return bad
 
 ## aside 的取对法固定是 (actor, subject)，与 PAIR_SUBJECT 同一个计算 —— 这里给它一个名字，
@@ -820,7 +981,7 @@ func audit(arc: Dictionary, by_id: Dictionary) -> Array:
 const PAIR_TARGET_FOR_ASIDE := PAIR_SUBJECT
 
 func _audit_one(arc: Dictionary, m: Dictionary, mode: String, dir: String, ev_id: int,
-		by_id: Dictionary, want_tick: int, kind: String) -> Array:
+		by_id: Dictionary, want_tick: int, kind: String, tpl: String = "") -> Array:
 	var out: Array = []
 	var n := int(arc["n"])
 	if not by_id.has(ev_id):
@@ -846,6 +1007,11 @@ func _audit_one(arc: Dictionary, m: Dictionary, mode: String, dir: String, ev_id
 	if want_tick >= 0 and int(ev.get("tick", -1)) != want_tick:
 		out.append("弧#%d 的 %s 行印的是 tick %d，而 event #%d 的 tick 是 %d" % [
 			n, kind, want_tick, ev_id, int(ev.get("tick", -1))])
+	# ⑤ 措辞锁：这一行的**说法**与被引用事件**自己的 type** 不许打架（Y3，见 PHRASE_LOCK）。
+	#    真值是 `ev["type"]` —— 仿真侧写的，本文法表改不动它。W3 的 M2（对调两条弧的开头文案）
+	#    在这一条上当场红：那句「结成了互助盟约」引用的仍然是一条 conflict。
+	for x in phrase_conflicts(tpl, [String(ev.get("type", ""))]):
+		out.append("弧#%d 的 %s 行引用 event #%d：%s" % [n, kind, ev_id, String(x)])
 	return out
 
 func _end_text(d: Dictionary, end_id: String) -> String:
