@@ -222,7 +222,14 @@ func _init() -> void:
 		var is_diag: bool = id in Inv.DIAG_IDS
 		var is_hard: bool = (id in Inv.HARD_IDS) and not is_diag
 		var need := (0 if is_diag else (seeds.size() if is_hard else soft_min))
+		# ⚠️ n<=1 时 soft_min==0 ⇒ 软门的判据退化成「≥0」，恒真。此前这里照样打 ✅，
+		#    于是 `--seeds 18` 会打印「✅ #40 … 0/1  首违 seed 18: … 满足率=0.42 … 断供38/60天」
+		#    ——一个绿勾，紧挨着它自己的失败明细。T2 实测有【三根独立的棒】被这一行骗过。
+		#    这里只改**报告**不改**判据**：退化时打 ⚠️ 而不是 ✅，退出码与 gate_ok 一个字节不变。
+		var soft_vacuous: bool = (not is_diag) and (not is_hard) and need == 0
 		var mark := "🔎" if is_diag else ("✅" if p >= need else "❌")   # 诊断永远不是红/绿，只是观测
+		if soft_vacuous and p < seeds.size():
+			mark = "⚠️"
 		if (not is_diag) and p < need:
 			if is_hard: hard_red = true
 			else: soft_red = true
@@ -301,7 +308,8 @@ func _init() -> void:
 	print("\n=== S0 GATE: %s  (硬不变量 seed %d/%d 全绿, 软通过率门 ≥%d/%d(%d%%) %s, 活性 %s, 金标 %s, det %d/%d) ===" % [
 		"PASS ✅" if gate_ok else "FAIL ❌", seed_pass, seeds.size(),
 		soft_min, seeds.size(), int(round(SOFT_RATE * 100.0)),
-		"过" if not soft_red else "破", "过" if live_red.is_empty() else "破",
+		("过" if not soft_red else "破") if soft_min > 0 else "N/A·单seed无判别力",
+		"过" if live_red.is_empty() else "破",
 		"过" if not golden_red else "破", det_ok, det_seeds.size()])
 	quit(0 if gate_ok else 1)
 
