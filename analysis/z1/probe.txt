@@ -1,0 +1,19 @@
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+GATE=36.000000  k=1.000000  36k=36.000000
+needs=["hunger", "energy", "social", "fun", "hygiene"]
+广告按 need 计数={ "energy": 6, "hunger": 2, "social": 3, "fun": 16, "hygiene": 1 }
+  social广告 counter_1(吧台)          闲聊       amount=42    cur=0时base benefit=70.0000  36k/benefit=0.5143
+  social广告 bench_1(长椅)            社交       amount=40    cur=0时base benefit=66.6667  36k/benefit=0.5400
+  social广告 cafe1f_counter(咖啡吧台)   闲聊       amount=40    cur=0时base benefit=66.6667  36k/benefit=0.5400
+— 响应面（#42 的 A/B 两臂探的就是它）—
+  hunger    cur==min: 0.00 0.00 0.00 0.00 0.00 0.00 0.00 
+  energy    cur==min: 0.00 0.00 0.00 0.00 0.00 0.00 0.00 
+  social    cur==min: 36.00 27.00 18.00 9.00 0.10 0.00 0.00 
+  fun       cur==min: 0.00 0.00 0.00 0.00 0.00 0.00 0.00 
+  hygiene   cur==min: 0.00 0.00 0.00 0.00 0.00 0.00 0.00 
+  social cur>min (cur=10,min=5): 0.0000
+  social cur==min=0            : 36.0000
+obj_dist_penalty=0.4000
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)
