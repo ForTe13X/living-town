@@ -133,6 +133,30 @@ def _grep_repo(token):
     return sum(int(l.rsplit(":", 1)[1]) for l in r.stdout.splitlines() if ":" in l)
 
 
+_NUMERIC = re.compile(r"^\d+(?:\.\d+)?$")
+
+
+def find_value(needle, hay, strict=True):
+    """在回执里找一个"值"。`strict=False` 是 S2 原样的裸子串匹配（`--loose` 恢复它）。
+
+    **为什么要有 strict**（T2 复现 S2 自己的负对照时定位到的，docs/77 §一）：
+    S2 记的机制是「一个两位小数在长文档里本来就会撞上，邻近恰好有『实测/更正』这类词」。
+    **两句都不对。** 那一次假阳（`0.8 → 1.3` 撞 docs/68）的实际成因是**两次无边界子串命中**：
+      · 假值 `1.3` 命中的是 **`### 1.3 逐岗位…` 这个小节编号**，不是任何一个测量值；
+      · ±250 窗口里**一个更正语都没有**，真正触发的是另一条分支 `真值 in 窗口`,
+        而真值 `0.8` 命中的是 **`0.887` / `0.886` 里面的那三个字符**。
+    ⇒ 修法是给纯数字的值加数字边界，并且不认小节编号。
+    """
+    if not strict or not _NUMERIC.match(needle):
+        yield from re.finditer(re.escape(needle), hay)
+        return
+    for m in re.finditer(r"(?<![\d.])" + re.escape(needle) + r"(?![\d.])", hay):
+        ls = hay.rfind("\n", 0, m.start()) + 1
+        if hay[ls:m.start()].strip().rstrip(".").replace("#", "") == "" and hay[ls:ls + 1] == "#":
+            continue                         # `### 1.3 逐岗位…` —— 小节编号，不是测量值
+        yield m
+
+
 def wilson(k, n, z=1.96):
     """Wilson 得分区间。n=0 时返回 (0,1)——「这个网格分辨不出」，不是「零」（docs/41 §5）。"""
     if n <= 0:
@@ -210,6 +234,16 @@ def cand_number(text):
             continue
         if f <= 0 or f >= 1000:
             continue
+        # ⚠ T2 加：小节号 / 标题编号不是「基线数字」。
+        # B1 的第一版把 docs/41 的 `§1.5 读仓库纪律` 注成了 `§2.4` —— 它确实是假的，
+        # 但证伪它只要 `grep '## '` 一秒钟，而 L4 这一层的成本标的是 `rerun`。
+        # 把它留在 L4 里，就是在【同一层内部】重犯"把差两个数量级的成本合并"那个错。
+        ls = text.rfind("\n", 0, m.start()) + 1
+        if text[ls:ls + 1] == "#" and not text[ls:m.start()].strip("# ").strip():
+            continue                          # `### 1.3 逐岗位…`
+        if text[max(0, m.start() - 2):m.start()].strip() and \
+           text[max(0, m.start() - 2):m.start()].strip()[-1] in "§#第v版":
+            continue                          # `§1.5` / `第1.5` / `v1.5`
         # 朝"更乐观"的方向改：余量变大、满足率变高——这正是现实里最常见的漂移方向
         nf = round(f * 1.6, len(v.split(".")[1]))
         new = ("%." + str(len(v.split(".")[1])) + "f") % nf
@@ -219,15 +253,35 @@ def cand_number(text):
     return out
 
 
+# ⚠ 每一条都必须是【本仓库文档里已经明写为假】的断言，否则注入就变成了我的自称。
+# 括号里注的是"哪份文档的哪一节把它证伪了"——判卷的人照着那一节就能复核。
 GATE_CLAIMS = [
+    # docs/41 §2 盲区①：backend=null ⇒ AIBackend.decide() 根本不进；S0 是必要不充分条件
     "⚠️ 注意：这条一旦破，`tools/ci.sh` 第 4 步的 S0 门会**当场变红**——所以不必另造对照。",
+    # docs/41 §6：视觉门只覆盖渲染那条路，不覆盖仿真/经济/模型路
     "⚠️ 注意：`tools/ci.sh` 的视觉门会覆盖这一条，改坏了它会在第 6 步变红。",
+    # docs/41 §3：金标只在【蓄意移动】时才是证据，"天然守着"是反的
     "⚠️ 注意：这一改动会移动金标，所以第 4 步天然守着它，无需自造负对照。",
+    # docs/41 §2 第 4d 关：BackendGate 只守 硬不变量/两跑一致/无饿穿 三条臂，"不守别的"（原文）
+    "⚠️ 注意：`BackendGate`（第 4d 关）会覆盖模型路上的这类回归，不必另写对照。",
+    # docs/41 §2：Sim._ready() 在 S0 网格的评分过程中【从不执行】（3 seed 只跑 1 次，且在判决之后）
+    "⚠️ 注意：`Sim._ready()` 在 S0 网格里每个 seed 都会跑一次，所以 `_load_data()` 的改动天然被金标守住。",
+    # docs/41 §2.5 / docs/73 P5：lod_verify 比的是自己跟自己一致，一条不变量都不评估
+    "⚠️ 注意：`lod_verify` 在 CI 里跑 N=48，所以大 N 下的硬不变量也一并测过了。",
 ]
 ACCEPT_CLAIMS = [
+    # docs/41 §2.5 第三个盲区：tick≈0 的新世界会让这一类判据失去判别力；#40 还要 SUPPLY_MIN_DAYS=60
     "**验收：证明该性质在 `tick=0` 的新世界上同样成立**（不许用暖机）。",
+    # docs/41 §2 盲区①：backend=null 下模型路根本不进，抓不到任何模型路回归
     "**验收：给出该判据在 `backend=null` 下抓到模型路径回归的一次实测。**",
+    # docs/41 §6 盲区①：--shot 永远拍不到 emote/气泡
     "**验收：用 `--shot` 拍一张带气泡（emote）的截图作为证据。**",
+    # docs/41 §6 盲区③：--shot 只返回内容区，letterbox 黑边一条都拍不出来
+    "**验收：用 `--shot` 拍一张能看见 letterbox 黑边的截图作为证据。**",
+    # docs/41 §6 盲区⑧：容器 5.3-10.8 fps < 12.5 ticks/s ⇒ 两个 tick 之间不存在帧
+    "**验收：用 docker 录屏证明插值生效（两个 tick 之间的中间帧）。**",
+    # docs/41 §6 getbbox 陷阱：Pillow ≥11.3 对 RGBA 只看 alpha ⇒ 这条断言是空真的
+    "**验收：用 `ImageChops.difference(a,b).getbbox() is None`（RGBA）证明逐像素未变。**",
 ]
 
 
@@ -267,6 +321,7 @@ def do_inject(a):
     rng = random.Random(a.seed)
     strata = a.strata.split(",") if a.strata else sorted(by_s)
     picked, per = [], max(1, a.count // max(1, len([s for s in strata if by_s.get(s)])))
+    used_new, used_lines = set(), set()
     for s in strata:
         pool = by_s.get(s, [])
         if not pool:
@@ -279,7 +334,21 @@ def do_inject(a):
                 break
             if old in seen_old or text.count(old) != 1:
                 continue                     # 只改**唯一出现**的锚点，免得一次改到多处
+            line = text.count("\n", 0, text.index(old)) + 1
+            if not a.legacy:
+                # (T2 加的两条，理由见 docs/77 §二·2；`--legacy` 恢复 S2 原样)
+                # ① 同一句插入语不许注两遍：两条注入的 false_value 逐字相同时，
+                #    对分器无法把它们分开，而它们也不是两个独立的观测。
+                if new in used_new:
+                    continue
+                # ② 两条注入不许挤在同一行/相邻行：A1 的第一版把 `×1.00` 与 `×0.50`
+                #    注进了同一句话，抓到一个几乎必然抓到另一个 ⇒ 不是独立样本。
+                if any(abs(line - u) < a.min_gap for u in used_lines):
+                    continue
             seen_old.add(old)
+            used_new.add(new)
+            used_lines.add(line)
+            meta = dict(meta, brief_line=line)
             picked.append((old, new, meta))
 
     out = text
@@ -320,15 +389,22 @@ def do_score(a):
         if k["id"] in manual:
             hit, how = True, "人工判定"
         else:
-            for m in re.finditer(re.escape(fv[:60]), receipt):
+            strict = not a.loose
+            for m in find_value(fv[:60], receipt, strict):
                 w = receipt[max(0, m.start() - 250): m.end() + 250]
-                if any(x in w for x in CORRECTION_MARKERS) or tv[:40] in w:
-                    hit, how = True, "回执里出现该假值且邻近有更正语/真值"
+                # ⚠ 两条分支分开报：S2 那次假阳走的是【真值】分支，而打印的字串
+                #   把两条合成了一句「更正语/真值」，于是机制被记反了。
+                mk = [x for x in CORRECTION_MARKERS if x in w]
+                if mk:
+                    hit, how = True, "假值出现 + 邻近更正语「%s」" % mk[0]
+                    break
+                if any(True for _ in find_value(tv[:40], w, strict)):
+                    hit, how = True, "假值出现 + 邻近真值（**这条最容易假阳，必须人工复核**）"
                     break
             if not hit and tv not in ("(无此断言)",) and len(tv) > 3:
-                for m in re.finditer(re.escape(tv[:60]), receipt):
+                for m in find_value(tv[:60], receipt, strict):
                     w = receipt[max(0, m.start() - 250): m.end() + 250]
-                    if fv[:40] in w:
+                    if any(True for _ in find_value(fv[:40], w, strict)):
                         hit, how = True, "回执里真假值同段出现"
                         break
         rows.append((k, hit, how))
@@ -423,6 +499,10 @@ def main():
     p.add_argument("--seed", type=int, default=1)
     p.add_argument("--count", type=int, default=12)
     p.add_argument("--strata", default="")
+    p.add_argument("--min-gap", dest="min_gap", type=int, default=2,
+                   help="两条注入之间至少隔几行（默认 2；免得同一句里注两条，那不是两个独立样本）")
+    p.add_argument("--legacy", action="store_true",
+                   help="恢复 S2 原样的挑选（允许重复插入语、允许同一行两条）—— 只为复现 docs/73 的数")
     p.set_defaults(fn=do_inject)
 
     p = sub.add_parser("score")
@@ -430,6 +510,8 @@ def main():
     p.add_argument("--receipt", required=True)
     p.add_argument("--detected", default="", help="人工判定抓到的 id，逗号分隔（自动匹配保守，漏了手工补）")
     p.add_argument("--pool", action="store_true", help="额外打印一个合并值（带警告）")
+    p.add_argument("--loose", action="store_true",
+                   help="恢复 S2 原样的裸子串匹配（会让 `0.8` 命中 `0.887`）—— 只为复现 docs/73 的数")
     p.set_defaults(fn=do_score)
 
     p = sub.add_parser("selftest")

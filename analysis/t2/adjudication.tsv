@@ -1,0 +1,32 @@
+# T2 判卷表 —— 判据见 analysis/t2/PREREG.md 第一、二节（预注册，不得事后修改）
+# verdict ∈ HIT / PARTIAL / MISS ；evidence ∈ ls grep read xref rerun reason -
+# cost_actual 来自实测：analysis/t2/cost_probe.out.txt
+# ⚠ v1 那一轮（A1/A2/A3/B1/C1）全部作废——隔离泄漏，见 receipts/v1-leaked/README.md。本表只收 v2。
+# arm	id	stratum	verdict	evidence	cost_actual	note
+A2	M01	L1_lineno	HIT	grep	sed	找回真值 3885（引 docs/63:103）
+A2	M02	L1_lineno	HIT	read	sed	sed -n '47p' 直接读出 MEET_HORIZON
+A2	M03	L2_path	HIT	ls	exists	全仓 ci_v2 唯一命中是 docs/64 自己
+A2	M04	L2_path	HIT	ls	exists	同上形状
+A2	M05	L3_symbol	HIT	grep	grep	1 处命中，就是 docs/64:13
+A2	M06	L3_symbol	HIT	grep	grep	全仓 15 处全是 _faction_term
+A2	M07	L5_gate	HIT	read	read-contract	被重烘过的金标按构造抓不住导致它被重烘的改动
+A2	M08	L5_gate	HIT	read	read-contract	引 docs/41 §2「不守别的」+ BackendGate.gd:134
+A2	M09	L6_accept	HIT	read	read-contract	Sim.gd:1377 是模型路唯一入口
+A2	M10	L6_accept	HIT	read	read-contract	引 docs/43:165 + docs/41 §6 盲区⑧
+C1	M01	L1_lineno	HIT	grep	sed	_recompute_factions 在 3950
+C1	M02	L1_lineno	HIT	read	sed	并指出该论证任务本身是假前提
+C1	M03	L2_path	HIT	ls	exists	-
+C1	M04	L2_path	HIT	ls	exists	-
+C1	M05	L3_symbol	PARTIAL	-	grep	方案里用了正确的 attitudes，但没说 brief 错
+C1	M06	L3_symbol	PARTIAL	-	grep	方案里用了正确的 _faction_term，同样没说
+C1	M07	L5_gate	HIT	read	read-contract	金标移动不证明你改的是对的那件事
+C1	M08	L5_gate	HIT	reason	read-contract	★边界判决：只说与 M09 自相矛盾，未独立论证
+C1	M09	L6_accept	HIT	read	read-contract	-
+C1	M10	L6_accept	HIT	read	read-contract	既跑错了棒、又已知不可能满足
+B1	M01	L2_path	HIT	ls	exists	全仓 Invariants_v2 唯一命中是 docs/71:20 自己
+B1	M02	L3_symbol	HIT	grep	grep	真身 _meta.rebake_history；全仓 20 处对照
+B1	M03	L4_number	HIT	xref	xref	★全实验唯一一条 L4 数据。靠 docs/68:206 + Invariants.gd:932 交叉引用抓到，未重跑任何网格
+B1	M04	L5_gate	HIT	read	read-contract	grep Inv. lod_verify.gd 只有 Inv.digest；引 ci.sh:219-224
+B1	M05	L6_accept	HIT	read	read-contract	自己读完 Main.gd:400/479/496 → WorldView.gd:1044/2931 整条信号链
+# D0（未注入的空白对照）不进分层表，只记 FA 与野生发现 W —— 见 receipts/D0-v1-clean.md
+# 无数据：A1(v2) / A3(v2) / D0(v2) —— 派出去了，本波收工前未返回。不填。

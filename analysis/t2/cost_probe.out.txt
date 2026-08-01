@@ -1,0 +1,55 @@
+臂    id   层          标签成本           实测路径      秒 / 证据
+A1   M01  L2_path    ls             exists     0.000  | os.path.exists(game/bench/Invariants_v2.gd) = False
+A1   M02  L2_path    ls             exists     0.000  | os.path.exists(tools/lint_links_v2.py) = False
+A1   M03  L3_symbol  grep           grep       0.086  | git grep -F WALKABLE_SLOTS_ex → 0 行
+A1   M04  L3_symbol  grep           grep       0.091  | git grep -F rebake_history_ex → 0 行
+A1   M05  L4_number  rerun          xref       0.068  | 真值 0.50 命中 78 行文本，例：README.md:89:  O1 涔嬪悗 held-out 13-30 涓婄‖涓嶅彉閲� 18/18 鈫� 18/18锛�**杞�澶辫
+A1   M06  L4_number  rerun          xref       0.060  | 真值 0.42 命中 45 行文本，例：analysis/q1/add_rebake.py:51:    "杞�澶辫触 鏀瑰墠 1锛�#40 @ seed 22锛屾煷钖� 0.
+A1   M07  L5_gate    rerun          read-contract  0.045  | docs/41 里 `lod_verify` 出现 2 次
+A1   M08  L5_gate    rerun          read-contract  0.052  | docs/41 里 `金标` 出现 4 次
+A1   M09  L6_accept  judge          read-contract  0.045  | docs/41 里 `letterbox` 出现 1 次
+A1   M10  L6_accept  judge          read-contract  0.064  | docs/41 里 `tick=0` 出现 0 次
+A2   M01  L1_lineno  grep           sed        0.034  | game/scripts/Sim.gd:3922 = var xa := float(a["attitudes"][t])
+A2   M02  L1_lineno  grep           sed        0.034  | game/scripts/Sim.gd:47 = const MEET_HORIZON := 40        # invite 鍒涘缓鐨� meet 鎵胯�猴細dea
+A2   M03  L2_path    ls             exists     0.000  | os.path.exists(tools/ci_v2.sh) = False
+A2   M04  L2_path    ls             exists     0.000  | os.path.exists(game/bench/Invariants_v2.gd) = False
+A2   M05  L3_symbol  grep           grep       0.084  | git grep -F attitudes_ex → 0 行
+A2   M06  L3_symbol  grep           grep       0.074  | git grep -F _faction_term_ex → 0 行
+A2   M07  L5_gate    rerun          read-contract  0.040  | docs/41 里 `金标` 出现 4 次
+A2   M08  L5_gate    rerun          read-contract  0.036  | docs/41 里 `BackendGate` 出现 3 次
+A2   M09  L6_accept  judge          read-contract  0.040  | docs/41 里 `backend=null` 出现 3 次
+A2   M10  L6_accept  judge          read-contract  0.041  | docs/41 里 `docker` 出现 2 次
+A3   M01  L1_lineno  grep           sed        0.026  | game/scripts/Main.gd:2084 = out.append_array(_log_recent)
+A3   M02  L1_lineno  grep           sed        0.029  | game/scripts/Main.gd:2049 = return "[url=%s]%s[/url]" % [focus, body]
+A3   M03  L2_path    ls             exists     0.000  | os.path.exists(game/scripts/Goals_v2.gd) = False
+A3   M04  L2_path    ls             exists     0.000  | os.path.exists(game/bench/golden_digests_v2.json) = False
+A3   M05  L3_symbol  grep           grep       0.089  | git grep -F P_WRK_FOOT_ex → 0 行
+A3   M06  L3_symbol  grep           grep       0.084  | git grep -F kept_promise_ex → 0 行
+A3   M07  L4_number  rerun          rerun       n/a  | 真值 2.18 在树上只出现在 brief 自己里 ⇒ 只能重跑
+A3   M08  L4_number  rerun          rerun       n/a  | 真值 45.77 在树上只出现在 brief 自己里 ⇒ 只能重跑
+A3   M09  L5_gate    rerun          read-contract  0.051  | docs/41 里 `视觉门` 出现 0 次
+A3   M10  L5_gate    rerun          read-contract  0.045  | docs/41 里 `金标` 出现 4 次
+A3   M11  L6_accept  judge          read-contract  0.040  | docs/41 里 `letterbox` 出现 1 次
+A3   M12  L6_accept  judge          read-contract  0.052  | docs/41 里 `getbbox` 出现 9 次
+B1   M01  L2_path    ls             exists     0.000  | os.path.exists(game/bench/Invariants_v2.gd) = False
+B1   M02  L3_symbol  grep           grep       0.076  | git grep -F rebake_history_ex → 0 行
+B1   M03  L4_number  rerun          xref       0.060  | 真值 5.00 命中 8 行文本，例：docs/54-scale-n60.md:10:   瀹炴祴锛氱潯瑙夋�℃暟闅忎汉鍙�**绮剧‘绾挎��**娑�锛圢=12 鐨� 698-
+B1   M04  L5_gate    rerun          read-contract  0.041  | docs/41 里 `lod_verify` 出现 2 次
+B1   M05  L6_accept  judge          read-contract  0.042  | docs/41 里 `emote` 出现 2 次
+repro67 M01  L2_path    ls             exists     0.000  | os.path.exists(tools/audit_map_v2.py) = False
+repro67 M02  L2_path    ls             exists     0.000  | os.path.exists(docs/56-阶段报告-给非技术读者_v2.md) = False
+repro67 M03  L3_symbol  grep           grep       0.105  | git grep -F c551bdc_ex → 0 行
+repro67 M04  L3_symbol  grep           grep       0.088  | git grep -F staff_ex → 0 行
+repro67 M05  L4_number  rerun          xref       0.059  | 真值 15.8 命中 4 行文本，例："docs/13-\345\256\236\351\252\214\346\234\255\350\256\260-experiment-
+repro67 M06  L5_gate    rerun          read-contract  0.036  | docs/41 里 `金标` 出现 4 次
+repro67 M07  L5_gate    rerun          judge       n/a  | 契约里没有现成反例，只能靠判断
+repro67 M08  L6_accept  judge          read-contract  0.039  | docs/41 里 `letterbox` 出现 1 次
+repro67 M09  L6_accept  judge          read-contract  0.042  | docs/41 里 `tick=0` 出现 0 次
+
+── 按层汇总：标签成本 vs 实测最便宜路径 ──
+  L1_lineno  sed×4
+  L2_path    exists×9
+  L3_symbol  grep×9
+  L4_number  rerun×2  xref×4
+  L5_gate    judge×1  read-contract×8
+  L6_accept  read-contract×9
