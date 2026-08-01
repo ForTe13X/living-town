@@ -138,7 +138,7 @@ K1 测的是 **N=60**（绿 2/2）。本棒在 **N=12** 上跑同一个变异体
 他 60 天的在班次数在 18 个 seed 上摆动 1-12」一致 —— 本棒复核到的是 1..9（13-30）与 1..11（N=16）。
 **它是下限臂余量的主要噪声源，也是上限臂选不了"最差货"作统计量的原因（§2.3 ①）。**
 
-（逐 seed 原始数据：`analysis/r1/base_n*.log`；汇总脚本 `analysis/r1/sum.py` / `disc.py`。）
+（逐 seed 原始数据：`analysis/r1/base_n*.txt`；汇总脚本 `analysis/r1/sum.py` / `disc.py`。）
 
 ---
 
@@ -450,7 +450,7 @@ confidence: N=2（删一处 ⇒ 绿且应该绿；删两处 ⇒ 红）。
 
 跑了**两遍完整的**。第一遍跑到一半我改了 `Invariants.gd` 里一句**注释**（更正它自己那句
 「本判据没有上限臂」），按 [docs/41 §1.5②](41-baton-contract.md) 的同一条纪律**整份重跑了第二遍**。
-下面贴的是**第二遍**（收工的树，`analysis/r1/ci_final.log`；第一遍在 `analysis/r1/ci_full.log`）。
+下面贴的是**第二遍**（收工的树，`analysis/r1/ci_final.txt`；第一遍在 `analysis/r1/ci_full.txt`）。
 
 ```
 ✅ no tracked weights/binaries          ✅ lint_data          ✅ audit_map        ✅ lint_links
