@@ -4,7 +4,10 @@ class_name BenchInvariants
 ## 只用它的【静态】哈希（fnv1a32/mix32）——不实例化、不持有状态。
 const SimScript = preload("res://scripts/Sim.gd")
 ## bench/Invariants.gd — 把「确定性社交底座」的机检不变量抽成单一真相源（语义照搬 sim_soak.gd / sim_social_port.mjs）。
-## 条数：**40**（= 本文件里 `R.append(_chk(` 的条数，`grep -c` 即得）。
+## 条数：**41**（V1 加了 #41）。数法：`grep -o "R\.append(_chk([0-9]*" | sort -u | wc -l`。
+##   ⚠ 原文写的是「`grep -c` 即得」——**那个配方自己是错的，off-by-one**：本行注释里就含有
+##   `R.append(_chk(` 这个字面串，`grep -c` 会把**这一行文档**也数进去（HEAD 上 `grep -c`=41 而 id 只有 40）。
+##   一条"怎么数"的说明把自己数了进去，这正是它想防的那种过期方式的另一个版本。
 ##   ⚠ 这里原先写死的是"20 条"，下面 split_fails 的注释写死的是"33 条"——**两个都过期了**，
 ##   而它们过期的方式一模一样：条数是长出来的，而写死的数字不会跟着长（H5 修，2026-07-30）。
 ##   ⇒ 以后要加条数就别再写死；本行给的是【怎么数】而不是数出来的那个值。
@@ -981,6 +984,88 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 			"" if starved_goods.is_empty() else "；【长期供不应求】" + ", ".join(starved_goods),
 			glut + reach,
 			contract]))
+
+	# ── 41) V1 手艺的社会痕迹（docs/84）───────────────────────────────────────────
+	# 守的是什么：**一门开了 `craft_credit` 的手艺，必须在【别人身上】留下痕迹；而没开的手艺不许留。**
+	# 这条判据的名字里每一个词都有代码在查（docs/41 §2 第四个盲区，「合取式最容易只落一半」）：
+	#   「开了的」→ ①produce 事件真的带上了目击者；②别人真的形成了 CR:<职位> 信念（via=seen、subject=本人）；
+	#   「没开的」→ ④其余职位的 produce 事件 witnesses 必须**恒空**——这一臂才是牙：
+	#             它抓的是"有人把目击者接成了全局副作用"，那会让"这是【一门】手艺的产出"这句话变成假的。
+	# 豁免：`craft_credit` 缺键/空 ⇒ 恒过（off 门，与 `_prod_on` 同一套设计）；
+	#       某职位在这一局产出次数 < CRAFT_MIN_WORKS ⇒ 该职位跳过（短 horizon 的定向场景里一次工都没上）。
+	# ⚠ 明写它**不**查什么（跑出来的，见 docs/84 §五）：不查 `standing` 有没有真的动
+	#   （把 `standing` 设成 0 ⇒ 本条全绿）；不查 claim 文案；不查 witnesses 里的人当时真的在场。
+	var craft_tbl: Dictionary = S.production.get("craft_credit", {}) if prod_on and S.production.get("craft_credit", {}) is Dictionary else {}
+	var craft_bad: Array = []
+	var craft_note := "关"
+	if not craft_tbl.is_empty():
+		# 每个职位持有人 -> 他的 produce 事件数 / 带目击者的条数
+		var pr_n: Dictionary = {}
+		var pr_w: Dictionary = {}
+		for e in log:
+			if String(e.get("type", "")) != "produce":
+				continue
+			var aid := String(e.get("actor", ""))
+			pr_n[aid] = int(pr_n.get(aid, 0)) + 1
+			if (e.get("witnesses", []) as Array).size() > 0:
+				pr_w[aid] = int(pr_w.get(aid, 0)) + 1
+		var on_holders: Dictionary = {}          # holder id -> title（开了本机制的）
+		for t in craft_tbl:
+			var ti := String(t)
+			if ti.begins_with("_"):
+				continue                          # `_why` 之类的注释键
+			var hid := String(S._holder_of_title(ti))
+			if hid == "":
+				continue
+			on_holders[hid] = ti
+		var parts: Array = []
+		for hid2 in on_holders:
+			var ti2: String = on_holders[hid2]
+			var p := int(pr_n.get(hid2, 0))
+			if p < CRAFT_MIN_WORKS:
+				parts.append("%s:产出%d<%d(豁免)" % [ti2, p, CRAFT_MIN_WORKS])
+				continue
+			var w := int(pr_w.get(hid2, 0))
+			if w <= 0:
+				craft_bad.append("%s 产出%d次但【一次都没被看见】(witnesses 通道断了)" % [ti2, p])
+			var bid := "CR:%s" % ti2
+			var believers := 0                    # 一手（via=seen，亲眼看见他干活的人）
+			var relayed := 0                      # 二手（via=gossip，听人说的）
+			var wrong := 0
+			for ag in S.agents:
+				if not ag["beliefs"].has(bid):
+					continue
+				var b: Dictionary = ag["beliefs"][bid]
+				var vv := String(b.get("via", ""))
+				# ⚠ **本行是本棒自己的门抓出来的一次假红**（docs/84 §六②）：第一版写的是 `via != "seen" ⇒ 错`，
+				#   而 `_commit_social` 的 gossip 分支会把这条信念转述出去、转述件的 via 恒为 "gossip"
+				#   ——那是**本机制想要的行为**（手艺的名声传出去了），却被判成"来路不对"。
+				#   seed 11 恰好发生了 3 次转述 ⇒ 门红。**判据本身错，不是机制错。**
+				#   留住的那一半仍然有牙：`subject` 必须是本人（张冠李戴），`via` 必须是这两条合法路之一。
+				if String(b.get("subject", "")) != hid2 or not (vv in ["seen", "gossip"]):
+					wrong += 1
+					continue
+				if String(ag["id"]) == hid2:
+					continue                      # 本人不该持有关于自己的这条（_craft_fallout 已排除）
+				if vv == "seen":
+					believers += 1
+				else:
+					relayed += 1
+			if believers <= 0:
+				craft_bad.append("%s 产出%d次·被看见%d次，却没有任何人【亲眼】形成 %s" % [ti2, p, w, bid])
+			if wrong > 0:
+				craft_bad.append("%s 有%d条 %s 的 subject/via 不对" % [ti2, wrong, bid])
+			parts.append("%s:产出%d 被看见%d 知情%d人(其中转述%d)" % [ti2, p, w, believers + relayed, relayed])
+		# ④ 反向臂：没开本机制的职位，produce 事件 witnesses 必须恒空
+		var leaked: Array = []
+		for aid2 in pr_w:
+			if not on_holders.has(String(aid2)):
+				leaked.append("%s(%d条)" % [String(aid2), int(pr_w[aid2])])
+		if not leaked.is_empty():
+			craft_bad.append("未开本机制的产者也带上了目击者：" + ", ".join(leaked))
+		craft_note = "开[%s]" % "；".join(parts)
+	R.append(_chk(41, "手艺的社会痕迹(被看见·被知道·不外溢)", craft_bad.is_empty(),
+		"craft_credit=%s%s" % [craft_note, "" if craft_bad.is_empty() else "；【异常】" + "；".join(craft_bad)]))
 	return R
 
 ## 事件发生【当时】的相位（不是检查时的相位）。#39 的「在班」那一半靠它。
@@ -1021,7 +1106,15 @@ static func _chk(id: int, name: String, ok: bool, detail: String) -> Dictionary:
 ##   满足率的基线最小值（30 个 seed）是 **0.569**、阈值 0.50，单格余量只有 **1.14×**
 ##   —— 这个宽度撑不起"每 seed 必绿"的硬断言。软门的"12 个 seed 容 1 个"正是留给这道余量的
 ##   （要改硬，先把单格余量量到 2× 以上；今天没有）。
-const HARD_IDS := [1, 6, 7, 9, 10, 12, 13, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39]
+## V1：#41 入硬档。理由与 #38/#39 同一条——它查的是**结构**（通道接没接上、有没有外溢），
+## 不是涌现统计；而"产出次数 < CRAFT_MIN_WORKS 就跳过"这条豁免已经把短 horizon / 定向场景兜住了。
+const HARD_IDS := [1, 6, 7, 9, 10, 12, 13, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41]
+
+## #41 的豁免线：一局里该职位的 produce 事件少于这么多次就跳过它。
+## 5 是量出来的下界，不是拍的：N=12 × 60 天 × 12 seed，环卫工的 produce 事件是 19..31 条
+## （最小 19，余量 19/5 = 3.8×）；而 DetGate 的 20 天 / ModelPathGate 的 8 天 / scenarios 的短局
+## 本来就上不满 5 次工 ⇒ 结构上不会误红。
+const CRAFT_MIN_WORKS := 5
 
 ## 第三档：诊断（DIAGNOSTIC）——【报告但永不成门】（既不入 hard_red 也不入 soft_red）。
 ## 收录标准只有一条：该指标本身已被证明是度量伪影，把它做成门就是在给噪声上锁。
