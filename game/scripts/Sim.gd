@@ -1935,9 +1935,11 @@ func _object_candidates(ag: Dictionary) -> Array:
 			#      抬它只会让人半夜白干。**这一条是量出来的**，不是设计洁癖：见 production.json
 			#      的 work_pull._shift_why（不加班次门时 N=16 仍剩 1/12 红、社交发起数被压低；加了之后 0/12 红、
 			#      社交发起数回到基线带内）。
+			var wp_applied := false            # ★U1：这条广告有没有真的被人口项抬过（下面 stock_pull 要用，见 §U1）
 			if work_pull_mult != 1.0 and mods_ok and String(adv.get("job", "")) != "" \
 					and _in_shift(_job_of(String(ag["id"]))):
 				benefit *= work_pull_mult
+				wp_applied = true
 			# ★T1：镇库回拉（docs/76）——空仓加把劲、满仓歇一歇。三道门见 _stock_pull_mult 抬头。
 			#   放在 work_pull 之后是刻意的：两条乘子彼此独立（一条随人口、一条随库存），
 			#   而乘法可交换 ⇒ 顺序不影响数值；写在后面只是为了让"人口项 → 库存项"的阅读顺序与 docs 一致。
@@ -1951,10 +1953,30 @@ func _object_candidates(ag: Dictionary) -> Array:
 			#   **「这个人的本职动作」的单一真相源**（见它的抬头注释：`_wage_for` / `_produce_for` / 技能三处共用），
 			#   而这里的三个条件（本职动作 + 在班 + 有产出登记）**逐字就是 `_produce_for` 开头那道守卫**
 			#   ⇒ 乘子施加的范围与"这次决定做完了真的会往镇库交货"**在构造上重合**，不会分家。
+			#
+			# ★★★ U1（docs/80）：**人口项与库存项不叠加** —— `wp_applied` 时把库存乘子除回去。
+			#   T1 §9.2 自己推出来的约束是「`work_pull_mult(N) × lo/den < 1` 对 CI 跑的每个 N 成立」，
+			#   否则"满仓歇一歇"在 N>12 上根本不是在歇（N=16：合成区间 [1.0125, 1.2375]，下界跨过了 1）。
+			#   **一个固定的 `lo` 结构上满足不了这条约束**：`work_pull_mult` 随人口上升趋于 1.5
+			#   ⇒ 要对所有 N 成立就得 `lo ≤ 66`，而那在 N=12 上是一次远超本机制意图的扰动。
+			#   T1 按 N=16 解出 `lo ≤ 88` 并试了 85，4a 仍然红——**换了个红法**（上限臂 → 下限臂），
+			#   它证明的正是"这不是那两个数调得准不准的问题"。
+			#   ⇒ 这里改成让约束**按构造成立**：合成的工作吸引力乘子恒为 `[lo/den, hi/den]`，**与 N 无关**。
+			#   语义写清楚：**本职在班的那条广告，工作吸引力由【镇库】直接决定，人口代理不再另外叠加。**
+			#   人口只是需求压力的**代理**（production.json `scale._pool_why` 自己写的），
+			#   而 `town_stock` 是同一件事的**直接测量**；两者叠乘 = 把同一份压力算两遍。
+			#   ⚠ 代价要写在这里，不要藏：**商贩不产货**（`produce` 里没有他），
+			#     所以他那条广告的 `_stock_pull_mult` 恒为 1.0，除回去之后他就**净损失**了人口项。
+			#     这是上面那条语义的直接推论，不是意外；实测见 docs/80（N=16 两条臂都比未改动的树更松）。
+			#   ⚠ **N=12 上 `work_pull_mult ≡ 1.0` ⇒ `wp_applied` 恒 false ⇒ 本段一条指令都不多跑**
+			#     ⇒ 对 N=12 的全部网格（1-12 / 13-60）**与不加这一段逐字节相同**（实测 12/12 + 48/48 digest 相同）。
 			if stock_pull_den > 0 and mods_ok:
 				var _jb: Dictionary = _job_of(String(ag["id"]))
 				if not _jb.is_empty() and _job_action(_jb) == action and _in_shift(_jb):
-					benefit *= _stock_pull_mult(String(_jb.get("title", "")))
+					var spf := _stock_pull_mult(String(_jb.get("title", "")))
+					if wp_applied:
+						spf /= work_pull_mult      # 除法是正确舍入的 ⇒ 逐位可复现（同 _stock_pull_mult 抬头）
+					benefit *= spf
 			var score := benefit - float(dist) * _w("obj_dist_penalty", 0.4)
 			# Wave 1b 经济动机环：穷(coin<poor_line)时有薪动作加分 → 缺钱→去做活→挣了付饭钱(闭环)。
 			# 确定性、数据门控；只加分不减分 → 生存(urgency 主导)不受威胁；economy.json 缺失恒不触发。
