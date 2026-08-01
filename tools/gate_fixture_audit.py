@@ -58,7 +58,9 @@ FIXTURES = [
     ("DET_faction",   "4c DetGate/faction",   "1-4",   20,   0,   "faction",  "hard"),
     ("DET_betray",    "4c DetGate/betray",    "1-4",   20,   0,   "betray",   "hard"),
     ("DET_freerider", "4c DetGate/freerider", "1-4",   20,   0,   "freerider","hard"),
-    ("BG8",       "4d/4e 后端门（backend=null 代理）", "1-4", 8, 0, "",        "hard"),
+    # ★ 2026-08-02 Y2：`CI_BG_DAYS` 8 → 30（编号 94 §四·3① 那条菜单被买下）⇒ 这一格跟着改名换值。
+    #   留着旧名 BG8 会让下面这张表在量 30 天的世界、而表头写着 8 —— 正是本工具自己在防的那件事。
+    ("BG30",      "4d/4e 后端门（backend=null 代理）", "1-4", 30, 0, "",       "hard"),
     ("VOICE60",   "4f VoiceGate",          "1-3",   60,   0,      "",         "none"),
     ("STORY14",   "5 story_test / goals_test（默认档）", "1-12", 14, 0, "",    "none"),
 ]
@@ -77,13 +79,55 @@ CI_DEFAULT_EXPECT = {
     "S0":      [("CI_SEEDS", "1-12"), ("CI_DAYS", "60")],
     "POOL16":  [("CI_POOL_N", "16"), ("CI_POOL_SEEDS", "1-12"), ("CI_POOL_DAYS", "60")],
     "DET_default": [("CI_DG_SEEDS", "1-4"), ("CI_DG_DAYS", "20")],
-    "BG8":     [("CI_BG_SEEDS", "1-4"), ("CI_BG_DAYS", "8"), ("CI_BG_N", "12")],
+    "BG30":    [("CI_BG_SEEDS", "1-4"), ("CI_BG_DAYS", "30"), ("CI_BG_N", "12")],
     "VOICE60": [("CI_VOICE_SEEDS", "1-3"), ("CI_VOICE_DAYS", "60")],
     # ⚠ 这一格量的是 **X3 改动之前**那个 14 天档（"问题长什么样"的底片）。
     #   ci.sh 今天的默认是 40 天 —— 所以这里对的是 `CI_GOALS_DAYS`（没动的那个），
     #   `CI_STORY_DAYS` 单独列在下面，期望值写 40：它一旦又变了，表头会当场印 ❌。
     "STORY14": [("CI_STORY_SEEDS", "1-12"), ("CI_GOALS_DAYS", "14"), ("CI_STORY_DAYS", "40")],
 }
+
+
+# ── 每个夹具【是怎么挂在 ci.sh 上】的 ──────────────────────────────────────────
+# 本表不是测量结果，是**接线图**：它说的是"想让这一格真的跑起来，树上必须还有什么"。
+# `--bake-ledger` 把它连同**测出来的活输入来源**一起烘进 tools/gate_complement_ledger.json，
+# 而那份锚由 tools/gate_complement_guard.py 每次 CI 现读一遍（约 0.02 s，不进 godot）。
+#
+# ⚠ `consumes == "none"` 的那两格（VoiceGate / story_test）**不进接线图**：
+#   它们一条不变量都不调 ⇒ 结构上给不出任何"活输入来源"，列进去只会把守卫的量程讲得比实际宽。
+WIRING = {
+    "S0": {
+        "requires": [{"file": "tools/ci.sh", "pattern": r"bench/Harness\.gd(?:[\s\S]{0,400}?)--golden",
+                      "why": "第 4 步 S0 门（带跨进程金标锚的那一次 Harness 调用）"}],
+        "floors": {"CI_SEEDS": ("seeds", None), "CI_DAYS": ("int", None)},
+    },
+    "POOL16": {
+        "requires": [{"file": "tools/ci.sh", "pattern": r'bench/Harness\.gd(?:[\s\S]{0,400}?)--agents "\$POOL_N"',
+                      "why": "第 4a 步宏观池尺度门（传 --agents 的那一次 Harness 调用）"}],
+        "floors": {"CI_POOL_SEEDS": ("seeds", None), "CI_POOL_DAYS": ("int", None),
+                   "CI_POOL_N": ("int", None)},
+    },
+    "BG30": {
+        "requires": [{"file": "tools/ci.sh", "pattern": r"bench/BackendGate\.tscn",
+                      "why": "第 4d 步外部后端门（模型路唯一的硬不变量门）"}],
+        "floors": {"CI_BG_SEEDS": ("seeds", None), "CI_BG_DAYS": ("int", None),
+                   "CI_BG_N": ("int", None)},
+    },
+}
+# 四条 DetGate track 共用第 4c 步那**一次**调用，但**各自**还依赖 DetGate.TRACKS 里的那个字符串
+# ——「4c 还在、betray 轨被从 TRACKS 里拿掉」是一种删得掉却看不见的删法，必须单独查。
+for _tag, _scen in (("DET_default", ""), ("DET_faction", "faction"),
+                    ("DET_betray", "betray"), ("DET_freerider", "freerider")):
+    WIRING[_tag] = {
+        "requires": [
+            {"file": "tools/ci.sh", "pattern": r"bench/DetGate\.gd", "why": "第 4c 步场景确定性门"},
+            {"file": "game/bench/DetGate.gd",
+             "pattern": r'TRACKS\s*:=\s*\[[^\]]*"%s"' % _scen if _scen
+                        else r'TRACKS\s*:=\s*\[\s*""',
+             "why": "DetGate.TRACKS 里的 `%s` 轨" % (_scen or "(default)")},
+        ],
+        "floors": {"CI_DG_SEEDS": ("seeds", None), "CI_DG_DAYS": ("int", None)},
+    }
 
 
 def _check_ci_defaults():
@@ -323,6 +367,138 @@ def report(data, only=None):
                  len(partial), "[" + ",".join("#%02d" % i for i in partial) + "]" if partial else ""))
 
 
+def _live_ci_default(src, var):
+    m = re.findall(r"\$\{%s:-([^}]*)\}" % var, src)
+    return m[-1] if m else None
+
+
+def _seeds_count(spec):
+    n = 0
+    for part in str(spec).split(","):
+        part = part.strip()
+        if not part:
+            continue
+        m = re.fullmatch(r"(\d+)-(\d+)", part)
+        if m:
+            n += int(m.group(2)) - int(m.group(1)) + 1
+        elif part.isdigit():
+            n += 1
+        else:
+            return -1
+    return n if n else -1
+
+
+def providers_of(data, tags):
+    """**测出来的**那一半：每条 C/G 不变量，在哪些夹具里拿到过非零前件。
+
+    这正是编号 94 §二·2 结尾那句"4c 的 betray 轨与 4a 的 N=16 恰好补上了第 4 步的洞"
+    ——只不过写成机器读得懂的形状，而不是一张躺在文档里的表。
+    """
+    out = {}
+    for iid in sorted(SPEC):
+        if SPEC[iid][0] not in ("C", "G"):
+            continue           # A 归零即红、D 本来就不成门 —— 两者都问不到"空洞"这件事
+        provs, judged = [], False
+        for tag, step, _s, _d, _a, _sc, consumes in tags:
+            if consumes == "none" or (consumes == "hard" and iid not in HARD_IDS):
+                continue
+            judged = True
+            fn = SPEC[iid][2]
+            vals = [fn(data[tag][sd]["live"], data[tag][sd]["detail"])
+                    for sd in sorted(data[tag]) if "live" in data[tag][sd]]
+            if vals and max(vals) > 0:
+                provs.append(tag)
+        if judged:
+            out[str(iid)] = provs
+    return out
+
+
+def bake_ledger(data, path):
+    """把「接线图（WIRING，读的是树）」+「活输入来源（providers，量出来的）」烘成一份锚。
+
+    ⚠ **不完整的数据不许烘**：少跑一格，那一格独有的活输入就会凭空消失，
+    烘出来的锚会把一堆本来有牙的不变量记成"处处空转"——本工具 §5.3 的 does_not_detect
+    第二条点的正是这个坑，这里把它变成一次**拒绝**而不是一行警告。
+    """
+    need = [f[0] for f in FIXTURES if f[6] != "none"]
+    missing = [t for t in need if t not in data or not data[t]]
+    if missing:
+        print("❌ 拒绝烘锚：缺 %s ⇒ 少跑一格会把一堆有牙的不变量误烘成「处处空转」。"
+              "请跑完整的 `--run`（不要带 --only）。" % ",".join(missing))
+        return 1
+    tags = [f for f in FIXTURES if f[0] in data]
+    provs = providers_of(data, tags)
+    ci_src = open(os.path.join(ROOT, "tools", "ci.sh"), encoding="utf-8", errors="replace").read()
+    fixtures = {}
+    for tag, spec in WIRING.items():
+        floors = {}
+        for var, (kind, _) in (spec.get("floors") or {}).items():
+            raw = _live_ci_default(ci_src, var)
+            if raw is None:
+                print("❌ 拒绝烘锚：ci.sh 里读不到 ${%s:-…}（%s 的接线图与树对不上）" % (var, tag))
+                return 1
+            val = _seeds_count(raw) if kind == "seeds" else int(raw)
+            if val <= 0:
+                print("❌ 拒绝烘锚：${%s:-%s} 解不出正数" % (var, raw))
+                return 1
+            floors[var] = {"kind": kind, "value": val}
+        fixtures[tag] = {
+            "step": next((f[1] for f in FIXTURES if f[0] == tag), tag),
+            "requires": spec["requires"],
+            "floors": floors,
+        }
+    sha = ""
+    try:
+        sha = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT,
+                             capture_output=True, text=True).stdout.strip()
+    except OSError:
+        pass
+    dead = sorted(int(i) for i, p in provs.items() if not p)
+    old = {}
+    if os.path.isfile(path):
+        try:
+            old = json.load(open(path, encoding="utf-8"))
+        except ValueError:
+            old = {}
+    hist = list(((old.get("_meta") or {}).get("rebake_history") or []))
+    hist.append("%s · 烘于 commit %s · %d 个夹具 × %d 条 C/G 不变量 · 烘锚时处处空转的：%s"
+                % (_today(), (sha or "?")[:7], len(fixtures), len(provs),
+                   ", ".join("#%02d" % i for i in dead) if dead else "（无）"))
+    doc = {
+        "_meta": {
+            "note": "互补性锚：哪些夹具是哪条不变量【唯一】的活输入来源。"
+                    "由 tools/gate_fixture_audit.py --run --bake-ledger 烘，"
+                    "由 tools/gate_complement_guard.py 每次 CI 现读一遍。"
+                    "期望值不写在守卫里，只写在这里——守卫那一侧没有任何冻结字面量。",
+            "baked_by": "GODOT=… python tools/gate_fixture_audit.py --run --bake-ledger",
+            "baked_at": _today(),
+            "baked_commit": sha,
+            "dead_at_bake": dead,
+            "rebake_history": hist,
+        },
+        "fixtures": fixtures,
+        "providers": provs,
+        "invariant_kinds": {str(i): SPEC[i][0] for i in sorted(SPEC)},
+    }
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump(doc, fh, ensure_ascii=False, indent=2, sort_keys=False)
+        fh.write("\n")
+    sole = {}
+    for iid, p in provs.items():
+        if len(p) == 1:
+            sole.setdefault(p[0], []).append(int(iid))
+    print("🔨 已烘 %s（%d 夹具 × %d 条 C/G 不变量）" % (os.path.relpath(path, ROOT), len(fixtures), len(provs)))
+    print("   烘锚时处处空转：%s" % (", ".join("#%02d" % i for i in dead) if dead else "（无）"))
+    for tag in sorted(sole):
+        print("   单点依赖 %-14s ← %s" % (tag, ", ".join("#%02d" % i for i in sorted(sole[tag]))))
+    return 0
+
+
+def _today():
+    import datetime
+    return datetime.date.today().isoformat()
+
+
 def _resolve_godot(g):
     """Windows 上 `GODOT=.../bin/godot` 常常是一个 **sh 包装脚本**（本机就是），
     `subprocess` 直接 exec 它会得到 `WinError 193 不是有效的 Win32 应用程序`。
@@ -416,6 +592,9 @@ def main():
     ap.add_argument("--from", dest="src")
     ap.add_argument("--only", default="")
     ap.add_argument("--self-test", action="store_true")
+    ap.add_argument("--bake-ledger", action="store_true",
+                    help="把互补性锚烘到 tools/gate_complement_ledger.json（需要完整的 --run 数据）")
+    ap.add_argument("--ledger", default=os.path.join(ROOT, "tools", "gate_complement_ledger.json"))
     a = ap.parse_args()
     if a.self_test:
         print("[夹具普查] 解析器负对照：")
@@ -429,7 +608,14 @@ def main():
     if not a.src:
         print("要么 --run，要么 --from <目录>")
         return 2
-    report(parse_dir(a.src), only)
+    data = parse_dir(a.src)
+    report(data, only)
+    if a.bake_ledger:
+        if only:
+            print("\n❌ 拒绝烘锚：--only 与 --bake-ledger 不能同用（理由见 bake_ledger 抬头）。")
+            return 1
+        print("")
+        return bake_ledger(data, a.ledger)
     return 0
 
 
