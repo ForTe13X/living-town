@@ -1,0 +1,45 @@
+{
+ "godot": "C:/Users/yp/AppData/Local/Programs/Godot/4.6.2-stable/Godot_v4.6.2-stable_win64_console.exe",
+ "cells": [
+  {
+   "arm": "noscale",
+   "gamedir": "_v2scratch/g_noscale",
+   "n": 16,
+   "seeds": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "days": 60
+  },
+  {
+   "arm": "noscale",
+   "gamedir": "_v2scratch/g_noscale",
+   "n": 24,
+   "seeds": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "days": 60
+  }
+ ]
+}

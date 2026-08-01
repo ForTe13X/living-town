@@ -1,0 +1,154 @@
+[skip] ship_n12_s1-4 已完整
+[skip] ship_n12_s5-8 已完整
+[skip] ship_n12_s9-12 已完整
+[skip] ship_n12_s13-16 已完整
+[skip] ship_n12_s17-20 已完整
+[skip] ship_n12_s21-24 已完整
+[skip] ship_n16_s1-4 已完整
+[skip] ship_n16_s5-8 已完整
+[skip] ship_n16_s9-12 已完整
+[skip] ship_n16_s13-16 已完整
+[skip] ship_n16_s17-20 已完整
+[skip] ship_n16_s21-24 已完整
+[skip] ship_n20_s1-4 已完整
+[skip] ship_n20_s5-8 已完整
+[skip] ship_n20_s9-12 已完整
+[skip] ship_n20_s13-16 已完整
+[skip] ship_n20_s17-20 已完整
+[skip] ship_n20_s21-24 已完整
+[skip] ship_n24_s1-4 已完整
+[skip] ship_n24_s5-8 已完整
+[skip] ship_n24_s9-12 已完整
+[skip] ship_n24_s13-16 已完整
+[skip] ship_n24_s17-20 已完整
+[skip] ship_n24_s21-24 已完整
+[skip] ship_n32_s1-4 已完整
+[skip] ship_n32_s5-8 已完整
+[skip] ship_n32_s9-12 已完整
+[skip] ship_n32_s13-16 已完整
+[skip] ship_n32_s17-20 已完整
+[skip] ship_n32_s21-24 已完整
+[skip] ship_n40_s1-4 已完整
+[skip] ship_n40_s5-8 已完整
+[skip] ship_n40_s9-12 已完整
+[skip] ship_n40_s13-16 已完整
+[skip] ship_n40_s17-20 已完整
+[skip] ship_n40_s21-24 已完整
+[skip] ship_n48_s1-4 已完整
+[skip] ship_n48_s5-8 已完整
+[skip] ship_n48_s9-12 已完整
+[skip] ship_n48_s13-16 已完整
+[skip] ship_n48_s17-20 已完整
+[skip] ship_n48_s21-24 已完整
+[skip] ship_n60_s1-4 已完整
+[skip] ship_n60_s5-8 已完整
+[skip] ship_n60_s9-12 已完整
+[skip] ship_n60_s13-16 已完整
+[skip] ship_n60_s17-20 已完整
+[skip] ship_n60_s21-24 已完整
+[skip] neu_n12_s1-4 已完整
+[skip] neu_n12_s5-8 已完整
+[skip] neu_n12_s9-12 已完整
+[skip] neu_n12_s13-16 已完整
+[skip] neu_n12_s17-20 已完整
+[skip] neu_n12_s21-24 已完整
+[skip] neu_n16_s1-4 已完整
+[skip] neu_n16_s5-8 已完整
+[skip] neu_n16_s9-12 已完整
+[skip] neu_n16_s13-16 已完整
+[skip] neu_n16_s17-20 已完整
+[skip] neu_n16_s21-24 已完整
+[skip] neu_n20_s1-4 已完整
+[skip] neu_n20_s5-8 已完整
+[skip] neu_n20_s9-12 已完整
+[skip] neu_n20_s13-16 已完整
+[skip] neu_n20_s17-20 已完整
+[skip] neu_n20_s21-24 已完整
+[skip] neu_n24_s1-4 已完整
+[skip] neu_n24_s5-8 已完整
+[skip] neu_n24_s9-12 已完整
+[skip] neu_n24_s13-16 已完整
+[skip] neu_n24_s17-20 已完整
+[skip] neu_n24_s21-24 已完整
+[skip] neu_n32_s1-4 已完整
+[skip] neu_n32_s5-8 已完整
+[skip] neu_n32_s9-12 已完整
+[skip] neu_n32_s13-16 已完整
+[skip] neu_n32_s17-20 已完整
+[skip] neu_n32_s21-24 已完整
+[skip] neu_n40_s1-4 已完整
+[skip] neu_n40_s5-8 已完整
+[skip] neu_n40_s9-12 已完整
+[skip] neu_n40_s13-16 已完整
+[skip] neu_n40_s17-20 已完整
+[skip] neu_n40_s21-24 已完整
+[skip] neu_n48_s1-4 已完整
+[skip] neu_n48_s5-8 已完整
+[skip] neu_n48_s9-12 已完整
+[skip] neu_n48_s13-16 已完整
+[skip] neu_n48_s17-20 已完整
+[skip] neu_n48_s21-24 已完整
+[skip] neu_n60_s1-4 已完整
+[skip] neu_n60_s5-8 已完整
+[skip] neu_n60_s9-12 已完整
+[skip] neu_n60_s13-16 已完整
+[skip] off_n12_s1-4 已完整
+[skip] off_n12_s5-8 已完整
+[skip] off_n12_s9-12 已完整
+[skip] off_n12_s13-16 已完整
+[skip] off_n12_s17-20 已完整
+[skip] off_n12_s21-24 已完整
+[skip] off_n16_s1-4 已完整
+[skip] off_n16_s5-8 已完整
+[skip] off_n16_s9-12 已完整
+[skip] off_n16_s13-16 已完整
+[skip] off_n16_s17-20 已完整
+[skip] off_n16_s21-24 已完整
+[skip] off_n20_s1-4 已完整
+[skip] off_n20_s5-8 已完整
+[skip] off_n20_s9-12 已完整
+[skip] off_n20_s13-16 已完整
+[skip] off_n20_s17-20 已完整
+[skip] off_n20_s21-24 已完整
+[skip] off_n24_s1-4 已完整
+[skip] off_n24_s5-8 已完整
+[skip] off_n24_s9-12 已完整
+[skip] off_n24_s13-16 已完整
+[redo] off_n32_s1-4（旧文件不完整：E:\Documents\Dev\June\26th\.claude\worktrees\agent-a3f723dbfdbd9a53e\analysis/v2/raw\off_n32_s1-4.jsonl: seed 集合对不上 want=[1, 2, 3, 4] got=[]）
+[redo] off_n32_s5-8（旧文件不完整：E:\Documents\Dev\June\26th\.claude\worktrees\agent-a3f723dbfdbd9a53e\analysis/v2/raw\off_n32_s5-8.jsonl: seed 集合对不上 want=[5, 6, 7, 8] got=[]）
+[redo] off_n32_s9-12（旧文件不完整：E:\Documents\Dev\June\26th\.claude\worktrees\agent-a3f723dbfdbd9a53e\analysis/v2/raw\off_n32_s9-12.jsonl: seed 集合对不上 want=[9, 10, 11, 12] got=[]）
+[redo] off_n32_s13-16（旧文件不完整：E:\Documents\Dev\June\26th\.claude\worktrees\agent-a3f723dbfdbd9a53e\analysis/v2/raw\off_n32_s13-16.jsonl: seed 集合对不上 want=[13, 14, 15, 16] got=[]）
+[redo] off_n32_s17-20（旧文件不完整：E:\Documents\Dev\June\26th\.claude\worktrees\agent-a3f723dbfdbd9a53e\analysis/v2/raw\off_n32_s17-20.jsonl: seed 集合对不上 want=[17, 18, 19, 20] got=[]）
+[redo] off_n32_s21-24（旧文件不完整：E:\Documents\Dev\June\26th\.claude\worktrees\agent-a3f723dbfdbd9a53e\analysis/v2/raw\off_n32_s21-24.jsonl: seed 集合对不上 want=[21, 22, 23, 24] got=[]）
+=== n_sweep: 28 片待跑（112 局，4992 agent-局）· jobs=10 ===
+[  1/ 28] rc=0   837s N=60 seeds=17-20 -> neu_n60_s17-20.jsonl
+[  2/ 28] rc=0   847s N=60 seeds=21-24 -> neu_n60_s21-24.jsonl
+[  3/ 28] rc=0   164s N=24 seeds=17-20 -> off_n24_s17-20.jsonl
+[  4/ 28] rc=0   163s N=24 seeds=21-24 -> off_n24_s21-24.jsonl
+[  5/ 28] rc=0   261s N=32 seeds=1-4 -> off_n32_s1-4.jsonl
+[  6/ 28] rc=0   261s N=32 seeds=5-8 -> off_n32_s5-8.jsonl
+[  7/ 28] rc=0   261s N=32 seeds=9-12 -> off_n32_s9-12.jsonl
+[  8/ 28] rc=0   263s N=32 seeds=13-16 -> off_n32_s13-16.jsonl
+[  9/ 28] rc=0   262s N=32 seeds=17-20 -> off_n32_s17-20.jsonl
+[ 10/ 28] rc=0   263s N=32 seeds=21-24 -> off_n32_s21-24.jsonl
+[ 11/ 28] rc=0   390s N=40 seeds=1-4 -> off_n40_s1-4.jsonl
+[ 12/ 28] rc=0   386s N=40 seeds=5-8 -> off_n40_s5-8.jsonl
+[ 13/ 28] rc=0   387s N=40 seeds=9-12 -> off_n40_s9-12.jsonl
+[ 14/ 28] rc=0   385s N=40 seeds=13-16 -> off_n40_s13-16.jsonl
+[ 15/ 28] rc=0   386s N=40 seeds=17-20 -> off_n40_s17-20.jsonl
+[ 16/ 28] rc=0   391s N=40 seeds=21-24 -> off_n40_s21-24.jsonl
+[ 17/ 28] rc=0   543s N=48 seeds=1-4 -> off_n48_s1-4.jsonl
+[ 18/ 28] rc=0   547s N=48 seeds=5-8 -> off_n48_s5-8.jsonl
+[ 19/ 28] rc=0   525s N=48 seeds=9-12 -> off_n48_s9-12.jsonl
+[ 20/ 28] rc=0   523s N=48 seeds=13-16 -> off_n48_s13-16.jsonl
+[ 21/ 28] rc=0   516s N=48 seeds=17-20 -> off_n48_s17-20.jsonl
+[ 22/ 28] rc=0   521s N=48 seeds=21-24 -> off_n48_s21-24.jsonl
+[ 23/ 28] rc=0   763s N=60 seeds=1-4 -> off_n60_s1-4.jsonl
+[ 24/ 28] rc=0   768s N=60 seeds=5-8 -> off_n60_s5-8.jsonl
+[ 25/ 28] rc=0   764s N=60 seeds=9-12 -> off_n60_s9-12.jsonl
+[ 26/ 28] rc=0   760s N=60 seeds=13-16 -> off_n60_s13-16.jsonl
+[ 27/ 28] rc=0   738s N=60 seeds=17-20 -> off_n60_s17-20.jsonl
+[ 28/ 28] rc=0   731s N=60 seeds=21-24 -> off_n60_s21-24.jsonl
+=== n_sweep done 墙钟=1579s ===
+✅ 逐文件断言全过（seed 集合 / 无重复 / n_agents / days / 单段抬头 / 无 MISMATCH）
+RC=0

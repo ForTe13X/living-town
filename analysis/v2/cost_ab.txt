@@ -1,0 +1,5 @@
+round=1 N=16 wall=424s rc=0 S0 GATE: PASS
+round=1 N=24 wall=688s rc=1 S0 GATE: FAIL
+round=2 N=16 wall=429s rc=0 S0 GATE: PASS
+round=2 N=24 wall=610s rc=1 S0 GATE: FAIL
+DONE

@@ -1,0 +1,22 @@
+=== n_sweep: 12 片待跑（72 局，1440 agent-局）· jobs=3 ===
+[  1/ 12] rc=0   170s N=16 seeds=25-30 -> ship_n16_s25-30.jsonl
+[  2/ 12] rc=0   171s N=16 seeds=31-36 -> ship_n16_s31-36.jsonl
+[  3/ 12] rc=0   171s N=16 seeds=37-42 -> ship_n16_s37-42.jsonl
+[  4/ 12] rc=0   172s N=16 seeds=43-48 -> ship_n16_s43-48.jsonl
+[  5/ 12] rc=0   169s N=16 seeds=49-54 -> ship_n16_s49-54.jsonl
+[  6/ 12] rc=0   171s N=16 seeds=55-60 -> ship_n16_s55-60.jsonl
+[  7/ 12] rc=0   289s N=24 seeds=25-30 -> ship_n24_s25-30.jsonl
+[  8/ 12] rc=0   289s N=24 seeds=31-36 -> ship_n24_s31-36.jsonl
+[  9/ 12] rc=0   291s N=24 seeds=37-42 -> ship_n24_s37-42.jsonl
+[ 10/ 12] rc=0   283s N=24 seeds=43-48 -> ship_n24_s43-48.jsonl
+[ 11/ 12] rc=0   283s N=24 seeds=49-54 -> ship_n24_s49-54.jsonl
+[ 12/ 12] rc=0   283s N=24 seeds=55-60 -> ship_n24_s55-60.jsonl
+=== n_sweep done 墙钟=916s ===
+Traceback (most recent call last):
+  File "E:\Documents\Dev\June\26th\.claude\worktrees\agent-a3f723dbfdbd9a53e\tools\n_sweep.py", line 167, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "E:\Documents\Dev\June\26th\.claude\worktrees\agent-a3f723dbfdbd9a53e\tools\n_sweep.py", line 162, in main
+    print("\u2705 逐文件断言全过（seed 集合 / 无重复 / n_agents / days / 单段抬头 / 无 MISMATCH）")
+UnicodeEncodeError: 'gbk' codec can't encode character '\u2705' in position 0: illegal multibyte sequence
+RC=1
