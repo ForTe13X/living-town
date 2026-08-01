@@ -31,7 +31,7 @@ MD = [p for p in glob.glob(os.path.join(ROOT, "**", "*.md"), recursive=True)
 LINK = re.compile(r'!?\[[^\]]*\]\(([^)]+)\)')          # [text](target) and ![alt](target)
 IMG = re.compile(r'<img[^>]+src=["\']([^"\']+)["\']')   # <img src="...">
 # docs/27  ·  docs/27-exile-hardening-negative-result.md  ·  docs/27@exile-hardening
-NUMDOC = re.compile(r'docs/(\d{2})(?:-[^\s)\],;。，、）】]*)?(@[A-Za-z0-9._/-]+)?')
+NUMDOC = re.compile(r'docs/(\d{2,3})(?:-[^\s)\],;。，、）】]*)?(@[A-Za-z0-9._/-]+)?')
 GITREV = re.compile(r'[A-Za-z0-9._/-]+:$')              # trailing "branch:" right before docs/NN
 
 # Numbered docs that actually exist on this tree, keyed by their NN prefix.
@@ -39,7 +39,7 @@ HAVE = set()
 _docs_dir = os.path.join(ROOT, "docs")
 if os.path.isdir(_docs_dir):
     for name in os.listdir(_docs_dir):
-        m = re.match(r'^(\d{2})', name)
+        m = re.match(r'^(\d{2,3})', name)
         if m:
             HAVE.add(m.group(1))
 
