@@ -15,10 +15,15 @@ The game keeps running when the model is unavailable. Network failures, timeouts
 > and where the week's effort actually went. This README does not restate it. Its section 4, *"What isn't there yet"*,
 > is **deliberately blunt**, and we are not going to soften it here either.
 >
-> **A new edition was published on 2026-08-01**, covering Waves R→T (nine parallel batons). **It differs in kind from earlier editions**:
-> of the nine items, **at least five are not new features but corrections to how this repository described itself** — the most important
-> being that **what "CI is all green" means here has been measured and narrowed** (the new §三① explains, in one plain paragraph,
-> what it now actually guarantees). Every edition's body is left **unrewritten** in git history, including the previous one covering Wave K→Q.
+> **A new edition was published on 2026-08-02**, covering Waves U→W (nine parallel batons). **Its headline is a retraction**:
+> a number both this README and the previous report cited — *"a mechanism we shipped cost 42% of mutual aid"* — **does not exist**
+> ([docs/88](docs/88-wave-w-w1-the-42-percent.md)).
+> What deserves more attention is how it was handled at the time: **the person who merged it did so knowing the mechanism had not been found**,
+> and wrote that sentence verbatim into the commit message (`2d314c7`) — **what saved this was that written-down sentence, not any automated gate**
+> (all of them were green).
+> The second headline is no nicer: **the red line promises up to 60 residents per town, and on a 40-resident town a HARD invariant is red**
+> ([docs/89](docs/89-wave-w-w2-n40-red.md)).
+> Every edition's body is left **unrewritten** in git history, including the previous one covering Waves R→T.
 
 ![Living Town · current build (contains one outdoor→indoor cut)](docs/media/t3_demo_interior.gif)
 
@@ -71,6 +76,31 @@ The **world and social systems** below all ship, and each has a CI gate behind i
 - **Weather and seasons**: types and utility multipliers in `game/data/weather.json`.
 - **Festivals**: world objects spawn and despawn on schedule; hard invariant #36 guards pairing with no residue.
 - **Elections**: periodic votes; hard invariant #37 guards tally consistency.
+- **Doing good work now gets noticed too — and the boundary is narrower than it sounds.** Until this round, social judgement about
+  *who did what* ran in **one direction only: blame**. Measured: **497 production events / 0 witnessed, 5540 wage payments / 0 witnessed**,
+  while the reverse channel (a shortage gets blamed on a specific person) has been complete all along (65% witnessed).
+  ⇒ **The channel was empty not for lack of bystanders** (3.00 people present on average while the baker works) — **it was simply never written.**
+  The fix copies the reverse channel and flips the sign (`production.craft_credit`, one JSON key, **no new event type**),
+  guarded by the new hard invariant **#41** ([docs/84](docs/84-wave-v-v1-craft-social-trace.md), `2d314c7`).
+  > ⚠️ **The baton shrank its own claim; copied here**: taking the three channels apart one at a time, **only "standing" actually changes the world**.
+  > The bystanders' **beliefs and memories are behaviourally inert today** (with standing off, "write every consequence" and "write none"
+  > give **byte-identical digests 4/4**).
+  > ⇒ **The accurate statement is "the trace exists, is gateable and revertible, and nothing reads it yet" — not "the division of labour has social output now."**
+  > ⚠️ **It is installed on 1 of 8 producing jobs** (the street cleaner) ⇒ the town's "craft" arcs can **structurally only be about the same resident**.
+  > ⚠️ **It also reported a regression it had caused (`aid` −42%) — and that regression has since been shown NOT to exist**; see *What is not there yet*.
+- **The town tells its own story, and every narrated line carries a citation.** `Story.gd` folds scattered events into arcs
+  (an opening, a few beats, an ending). This round coverage went from **12/25 → 14/25 event types (48.0% → 56.0%)**; the newly told
+  ones are **craft**, **aligning views** (`endorse`, previously 0/267) and **the player's mediation** (previously invisible).
+  Traceability became a gate: `narrate_cited()` emits, for every line, the id of the `event` it rests on, and `audit()` takes those ids
+  back to `event_log` and checks four things per line — **392 arcs / 1234 narrated lines, 0 violations**; inject "invent a plot line
+  out of thin air" and it goes red on 62 of them ([docs/90](docs/90-wave-w-w3-story-layer.md), `5de9549`).
+  > ⚠️ **The gate's boundary was pinned down by its own author with a negative control, and it matters more than the 0 violations**:
+  > **swap the opening prose of two arc types** (so every grudge now opens with "they formed a mutual-aid pact")
+  > ⇒ **0 violations, whole gate green.**
+  > ⇒ **It guards "this sentence has a citation", not "this sentence is true"** — and that gap has **no cheap fix**
+  > (judging correctness needs a second source of truth for the prose).
+  > ⚠️ **Both denominators are reported**: by event *count* coverage only moved 19.9% → 21.3%, because more than half of the ~32k
+  > untold events are ledger entries (`pay`/`consume`/`spoil`) that do not even reach the news feed. **Do not read count-coverage as the story layer's scorecard.**
 - **An emergent social layer**: reputation and gossip cascades, opinion factions, mutual-aid pacts (with GTFT forgiveness and free-rider dissolution), and secrets that get confided, leaked, and betrayed.
 - **Playable shell**: day/night lighting, clock and speed controls, NPC dialogue bubbles and expressions, free player-to-NPC conversation, and a replay observatory for inspecting residents, needs, beliefs, relationships, and conflicts at any tick.
 - **Three AI backends**: `logic` for pure rules, `llm` for local OpenAI-compatible services, and `slm` for embedded GGUF inference through NobodyWho. All backends run the same engine and can fall back safely.
@@ -78,6 +108,59 @@ The **world and social systems** below all ship, and each has a CI gate behind i
 
 **What is not there yet** — **this section was rewritten from the last few waves' measurements, not carried over** (see [docs/05](docs/05-路线图与里程碑.md), [docs/49](docs/49-wave-g-plan.md), [docs/50](docs/50-wave-h-plan.md)/[53](docs/53-wave-i-plan.md)/[55](docs/55-wave-j-plan.md)):
 
+- **⭐ A retraction: the "−42%" this README cited in its previous edition does not exist.**
+  V1 shipped with a self-reported regression — mutual aid `aid` **118 → 68 (−42%)**, same direction on 11 of 12 seeds — and honestly wrote
+  «**the attribution was measured, the mechanism was not found, and nothing was ruled out**».
+  **I merged it anyway, knowing the mechanism was unknown**, and wrote that verbatim into `2d314c7`
+  («this merge ships with the unexplained regression … but *whether −42% is intended by design* has no supporting evidence»),
+  then made "the next wave's first job is to find its mechanism" the top item ([docs/87 §〇](docs/87-wave-w-plan.md)).
+  **The next wave went looking, and produced three independent falsifications** ([docs/88](docs/88-wave-w-w1-the-42-percent.md), `1046fe0`):
+  - **On the held-out seeds the sign is reversed**: 13-30 is `105 → 110`, 31-60 is `170 → 180` ⇒ **+5.5% across 48 held-out seeds**.
+  - **Dose-response is non-monotonic**: `standing` = −0.25 / 0 / +0.125 / **+0.25 (shipped)** / +0.5 ⇒ `aid` = 79 / 113 / 101 / **68** / 93.
+    **Flip "praise" into "disparagement" and it still drops 33%** ⇒ "craft reputation crowds out mutual aid" cannot be true by construction.
+  - **A sham perturbation with zero social content pushes it harder**: changing a *pathfinding* constant `obj_dist_penalty`
+    from 0.400 to **0.401** (+0.25%) ⇒ 118→94; to 0.38 ⇒ **65, lower than the shipped arm**.
+  ⇒ **Under same-magnitude perturbations, −20% ‥ −45% is this quantity's normal range, and −42% sits *inside* it**
+  — **it does not measure "what you changed", it measures "whether the trajectory moved".**
+  > **⭐ The part worth reading is not the conclusion but *where the evidence was*.** R12 clause ④ requires running held-out seeds.
+  > **V1 ran them, and committed the logs** — **the four lines that falsify the whole conclusion sit one or two lines away from the lines it quoted.
+  > Running is not reading.**
+  > **The disposition was to change nothing numeric**: not one parameter, not one key. What changed were two comments that stated
+  > falsehoods as measurements (one of them with a rationale **five waves out of date**). A new gate `LIVENESS_QUORUM` guards
+  > **coverage, not count** — because the count drops 20-45% under *any* perturbation, so **guarding it would plant a false red for every
+  > later baton that moves the digest**. Its negative control is **real history**: roll two constants back to 2026-07-25 ⇒ `aid` coverage **0/12**,
+  > gate red — **while five pact-related hard invariants stay green in a world where no pact ever formed.**
+- **⭐ The red line promises up to 60 residents per town, and on a 40-resident town a HARD invariant is red.**
+  CI runs N=12 and N=16; **N=40 had never been run by anyone**. It was, this round ([docs/89](docs/89-wave-w-w2-n40-red.md), `b8116db`):
+  - Soft arm: `#40` red on **11/60** seeds (N=16: 2/60, N=24: 4/60); **41 of 49 sliding 12-seed windows (84%) break the gate.**
+    All 12 lower-arm reds are **grain below the floor**; the driving quantity is the on-shift completion count of **baker + fisherman**
+    (ρ 0.66-0.87, **strengthening with N**), and **only those two of eight jobs decline with N**.
+    ⚠️ The baton explicitly wrote that this is **a dominant variable, not a criterion**: of the 12 lowest-ranked seeds, **7 are not red**,
+    and their grain lands in **0.510-0.541** — the sliver directly above the floor.
+  - **Hard arm**: `#01` "no need bottoms out" is red on **seed 8** and **seed 56**. And in the `seeds 49-60` window
+    **the soft supply gate is 12/12 green while the gate still says `FAIL ❌`** ⇒ **a whole cell of green supply, red on a hard invariant nobody was looking for.**
+    **All three hard reds on record land at N=40.**
+  ⚠️ **Four boundaries, copied from the baton**: both are **a single person grazing zero** (0.1 day / 0.5 day), **not a famine**;
+  **the cause was not investigated** (the assignment was the soft red; the hard one was swept up incidentally);
+  **N=48/60 were not run on today's tree** ⇒ "only at N=40" really means "of the {16,24,40} I ran, only 40";
+  and this is the `backend=null`, no-LOD floor ⇒ it says **"this criterion fires at N=40"**, not **"this happens on a phone"**.
+  ⇒ [docs/41 §3](docs/41-baton-contract.md) says «**never relax a hard invariant to make a gate green**»
+  ⇒ **this can only be fixed, or the promise honestly rewritten — and rewriting the promise is the user's decision.**
+- **⭐ The new "every narrated line must have a citation" audit cannot guard "the sentence is true".**
+  Swap the opening prose of two arc types (every grudge now opens with "they formed a mutual-aid pact") ⇒ **0 violations, gate rc=0, fully green**,
+  and even the pre-existing prose assertions pass. **This was found, run, and written into `does_not_detect` by the gate's own author**,
+  who also stated there is **no cheap fix** ([docs/90 §七](docs/90-wave-w-w3-story-layer.md)).
+- **⭐ The story acceptance gate runs in a configuration where it cannot go red.** `story_test`'s CI default is **12 seeds × 14 days**,
+  and the `promise` / `secret` / `pact` arcs are **0/0 on 12 of 12 seeds** — none of those three event types has happened yet by day 14
+  ⇒ **the teeth are in fact entirely in the synthetic fixtures; the "real world" cell is far emptier than it reads.**
+  The baton **did not touch the CI default** (not in its lane) and left the cheap fix to the next one ([docs/90 §十二](docs/90-wave-w-w3-story-layer.md)).
+- **⭐ Citing this repository's per-seed numbers across versions goes wrong, and it nearly did once.**
+  One baton almost shipped a table stitched from two different trees (table built, numbers computed, conclusions drafted — *then* it ran the `git diff`
+  it should have run at the start). **Not one byte of the criteria had changed, but the world had**: comparing digests for the same N and seed
+  across both trees — **144 comparable seeds, zero identical** ([docs/89 §〇之前](docs/89-wave-w-w2-n40-red.md)).
+  ⇒ **"check your baseline" answers "is my code current", not "which tree was the data I want to cite measured on".**
+  Consequence: **every per-seed number in [docs/85](docs/85-wave-v-v2-n24-nonmonotonic.md) is stale**; an expiry notice now sits at its head
+  — **notice only; not one word of the body was changed.**
 - **No onboarding, and nothing that calls the player back at minute three.** Three reviews (an external adversarial model
   plus two independent read-only agents, all instructed to refute) returned the same verdict:
   **"it looks meaningfully better, and nobody would still play it."** ([docs/43](docs/43-wave-c-plan.md), [docs/46 §〇](docs/46-wave-d-plan.md))
@@ -117,10 +200,27 @@ The **world and social systems** below all ship, and each has a CI gate behind i
   > **⚠️ And it ships switched off**: enabling it turns `ci.sh` step 4a (N=16) red — `work_pull_mult(16)=1.125` cancels the damping
   > half outright, degrading the mechanism into accelerate-only. The baton **did not loosen the criterion and did not keep sweeping
   > the acceptance grid**; it left the mechanism in the tree with the key off and wrote down exactly where it is blocked.
-  > ⇒ **The accurate status today is "we know why, we have a key that measurably works, and the key is still locked."**
+  > ⇒ **The status at the time was "we know why, we have a key that measurably works, and the key is still locked."**
   > Two riders: **nothing in CI guards that key once it is on** (the seeds 1-12 cell is completely insensitive to it), and one
   > key-on CI run produced a single `DetGate` "same seed, two runs diverge" that **could not be reproduced 16/16 in isolation and
   > has not been explained.**
+  >
+  > ### ✅ 2026-08-02 update: **the key is open, and that unreproducible red was reproduced in place and diagnosed**
+  > ([docs/80](docs/80-wave-u-u1-open-the-key.md), `188f4c8`)
+  > - **`stock_pull` is now in the shipping data**: `#40` red at step 4a (N=16) went **3/12 → 0/12**, with
+  >   **N=12 byte-identical** (12/12 and 48/48 digests unchanged).
+  > - **What blocked it was not the thing I told it to measure first.** The assignment made "at N≥16 two of the six goods slots are
+  >   **permanently** taken by beans/chapbooks" the first item to confirm or refute — and **refuting it needed no new run**:
+  >   beans occupy only **7/12** at N=16. That sentence had been measured at **N=60**, while step 4a runs **N=16**
+  >   ⇒ **a conclusion was carried from one N to another and nobody measured the step in between.** The real blocker was
+  >   the population term and the stock term **stacking**.
+  > - **⭐ That `DetGate` divergence was not randomness, and red line #1 was not broken**: **`game/data/**` was modified between the two runs**
+  >   (same seed, two different data sets). The disposition turned it into a gate — **fingerprint the data before the run** —
+  >   so that red went from "unexplainable" to "named and dated".
+  >   ⇒ **The previous edition's warning that "a red you failed to reproduce is not a red that wasn't there" was cashed in**:
+  >   there *was* a problem, **and it was not in the red line under suspicion — it was in experimental hygiene.**
+  > - ⚠️ **T1's own acceptance criterion is still unmet**: seeds 13-60 still carry one red (seed 44, beans **0.495**, floor 0.500,
+  >   a margin of 0.005), where it had asked for **0/48**.
   >
   > **`#40` now has two arms** (R1, `fc519d6`, [docs/68](docs/68-wave-r-r1-economy-ceiling.md)): the sentence above about it having
   > **only a lower arm** no longer holds. The new "shortages have vanished" upper arm turned N=60 red (8/12) the day it landed,
@@ -318,7 +418,7 @@ The engine enumerates legal candidates; the model only reads candidates and cont
 Gossip spreads third-party reputation → consensus forms → it can escalate into collective avoidance; disagreement crystallizes into factions; mutual-aid pacts carry GTFT-style forgiveness. None of this is scripted — it emerges from rule interactions, and every step traces back to a concrete event, so the system can explain why a resident is angry or trusts someone.
 
 **5. Invariant regression gates plus a shadow counterfactual probe.**
-CI defaults to 12 seeds × 60 days and checks **40** social invariants (belief provenance, promise settlement, money conservation, private-channel secrecy, and more) — **25 hard, 14 soft, 1 diagnostic**. **The authoritative list is the code**: `HARD_IDS` and `DIAG_IDS` in [`game/bench/Invariants.gd`](game/bench/Invariants.gd) (those three numbers are simply counts of them). Going further, a "shadow probe" measures — **without changing the trajectory** — exactly which decisions an intervention flips, turning "does this mechanism actually matter" from anecdote into a number.
+CI defaults to 12 seeds × 60 days and checks **41** social invariants (belief provenance, promise settlement, money conservation, private-channel secrecy, and more) — **26 hard, 14 soft, 1 diagnostic** (V1 added #41, "the social trace of craft", into the hard tier). **The authoritative list is the code**: `HARD_IDS` and `DIAG_IDS` in [`game/bench/Invariants.gd`](game/bench/Invariants.gd) (those three numbers are simply counts of them). ⚠️ A correction about *how to count* that is itself a specimen of this repo's characteristic bug: that file's header used to say "the count is what `grep -c` gives" — **and that recipe was itself wrong**, off by one, because the comment line contains the very literal it counts. **A note on how to count counted itself.** It now states *how* to count rather than the counted value. Going further, a "shadow probe" measures — **without changing the trajectory** — exactly which decisions an intervention flips, turning "does this mechanism actually matter" from anecdote into a number.
 > Stated honestly: **#15 "emergent ostracism" is a known-leaky metric and is reported, not gated** — it picks the worst-reputation resident from *final* standing but computes their acceptance rate over the *entire* log, which is temporal leakage. After the leak was fixed, #15v2 came back INCONCLUSIVE on all 126 seeds, so the conclusion was to **add no mechanism** and not to gate on it. Full chain in [docs/31](docs/31-15-resolution.md).
 
 **6. On-device SLM: from a 16GB leak to a phone that actually produces decisions.**
@@ -563,7 +663,18 @@ Requires [Godot 4.6+](https://godotengine.org/) (the project declares `config/fe
 GODOT=/path/to/godot bash tools/ci.sh
 ```
 
-**Seventeen steps** (numbers are the step ids inside `tools/ci.sh`, **which is the authority**): `0` the copyright red line (no weights or binaries anywhere in the tracked tree), `1` data lint, `1b` map audit, `2` markdown link lint, `2b` the **character-sheet art gate** (the 10 shipped `pro/` sheets == rebuilt on the spot by `coif_characters.py`), `2c` the **terrain gate** (the 13 shipped `terrain/` tiles == rebuilt by `slice_shore.py`), `2d` the **asset gate** (the **22** gated emote/decor/obj pngs == rebuilt from the slicing/hand-drawing recipe, plus emote pairwise distinctness, plus no crop cutting through continuous artwork), `3` Godot parse smoke, `4` the **S0 invariant gate** (40 invariants × 12 seeds × 60 days, a determinism triple-run, a **committed golden** cross-process anchor, a **per-tick prefix hash chain**, and suite-level liveness), `4a` the **macro-pool scale gate**, `4b` the LOD observation-independence gate, `4c` the **DetGate scenario-determinism gate** (default/faction/betray/freerider), `4d` BackendGate, `4e` ModelPathGate, `4f` the **voice-coverage gate**, `5` 9 integration scenes, `6` the visual gate (day/night instrument, out-of-bounds repaint, space round-trip, pond shoreline; **it SKIPs rather than falsely reddens when no rendering environment is available**). Any red step exits 1.
+**Eighteen steps** (numbers are the step ids inside `tools/ci.sh`, **which is the authority**): `0` the copyright red line (no weights or binaries anywhere in the tracked tree), `1` data lint, `1b` map audit, `2` markdown link lint, `2b` the **character-sheet art gate** (the 10 shipped `pro/` sheets == rebuilt on the spot by `coif_characters.py`), `2c` the **terrain gate** (the 13 shipped `terrain/` tiles == rebuilt by `slice_shore.py`), `2d` the **asset gate** (the **22** gated emote/decor/obj pngs == rebuilt from the slicing/hand-drawing recipe, plus emote pairwise distinctness, plus no crop cutting through continuous artwork), `2e` the **recomputability gate** (a number written in the docs == the number the registered command produces right now), `3` Godot parse smoke, `4` the **S0 invariant gate** (41 invariants × 12 seeds × 60 days, a determinism triple-run, a **committed golden** cross-process anchor, a **per-tick prefix hash chain**, and suite-level liveness), `4a` the **macro-pool scale gate**, `4b` the LOD observation-independence gate, `4c` the **DetGate scenario-determinism gate** (default/faction/betray/freerider, plus a **data fingerprint**), `4d` BackendGate, `4e` ModelPathGate, `4f` the **voice-coverage gate**, `5` 9 integration scenes, `6` the visual gate (day/night instrument, out-of-bounds repaint, space round-trip, pond shoreline, interior shell, furniture semantics, tree-stand lattice; **it SKIPs rather than falsely reddens when no rendering environment is available**). Any red step exits 1.
+
+> **Step `2e` (added by U3) plugs a different class of hole**: it compares "the number written in the docs" against "the number the
+> registered command computes right now". ⚠️ **And in designing it, it overturned a criterion that had already been cited**:
+> the earlier split was «ground truth **has a second copy in the tree** *or* can still be recomputed ⇒ catchable» —
+> and the counterexample is that the two numbers flagged "not recomputable" **both have a second copy today, and that second copy
+> is the very receipt declaring them not recomputable**.
+> ⇒ **Every time a number is discussed it gains another copy, while the path to recompute it gains nothing; the `xref` column
+> loosens monotonically over time.** **So the registry must point at a runnable command, never at another occurrence.**
+> ([docs/82](docs/82-wave-u-u3-recomputable.md)) The same baton also found that **the gates measure colour difference with CIE76
+> while every `ΔE00` figure in the docs is CIEDE2000** — 38% apart on the same colour pair. **"There is no implementation" sends
+> someone to build a ruler; "there are two rulers" sends them to ask which one bears load.**
 
 > **`4a` deserves its own sentence, because it closes exactly the kind of hole this repo keeps falling into**: step 4's S0 always
 > runs at N=12, and at N=12 the macro pool's scale multiplier is **exactly 1** (`_pool_rescale` returns `raw` immediately)
@@ -667,11 +778,23 @@ docs/                  Design, architecture, review notes, measurements, and exp
 | [76 T1 · stock pull](docs/76-wave-t-t1-stock-pull.md) | Root cause = **worksite scoring never reads stock** (empty and full warehouses score byte-identically); the fix flips 49-60 from FAIL to PASS — **and it ships switched off**, blocked at the N=16 cell |
 | [77 T2 · prospective injection](docs/77-wave-t-t2-prospective-injection.md) | **Detection rate is a function of task framing**; the number layer splits cleanly on "can this still be recomputed today" (3/3 vs 0/2); **it voided its own first experiment** |
 | [78 T3 · interior camera and HUD](docs/78-wave-t-t3-interior-cam-and-hud.md) | Getting the camera indoors took **two halves** (0/100 → 12/100 frames); the worst HUD row is the smallest one — **and "just raise the font size" wrapped the line on the spot** |
+| [80 U1 · opening the key](docs/80-wave-u-u1-open-the-key.md) | The key is open (4a red 3/12 → 0/12); **what blocked it was not the thing the brief said to measure first** (that sentence was measured at N=60 while 4a runs N=16); **T1's unreproducible red was reproduced in place: a data file changed between the two runs** |
+| [82 U3 · recomputability](docs/82-wave-u-u3-recomputable.md) | **"There is a second copy in the tree" cannot serve as a recompute path** — the counterexample is the very receipt that declared it not recomputable; **the gates' ruler and the docs' ruler were never the same one** |
+| [84 V1 · the social trace of craft](docs/84-wave-v-v1-craft-social-trace.md) | Social judgement had exactly one direction: **blame** (497 production events / 0 witnessed, while the reverse channel was already complete); new hard invariant #41. **And the −42% regression it reported has since been shown not to exist** |
+| [85 V2 · N=24 non-monotonicity](docs/85-wave-v-v2-n24-nonmonotonic.md) | The subject of "N=24 is red" is **(N=24, seeds 1-12)**; across 672 runs N=40 and N=48 are just as red. ⛔ **An expiry notice sits at its head: every per-seed number is stale; the body is unchanged** |
+| [88 W1 · that 42%](docs/88-wave-w-w1-the-42-percent.md) | ⭐ **There is no mechanism to find, because the regression does not exist**; the two lines that falsify it sat in the very log that proposed it, **one or two lines away** ⇒ **running is not reading** |
+| [89 W2 · the red at N=40](docs/89-wave-w-w2-n40-red.md) | ⭐ **Hard invariant `#01` is red at N=40** (one whole cell has green supply and a red gate); **144 comparable seeds, zero identical digests ⇒ stitching tables across trees goes wrong** |
+| [90 W3 · the story layer](docs/90-wave-w-w3-story-layer.md) | Coverage 48.0% → 56.0%, 1234 narrated lines, 0 violations. ⭐ **And the audit guards "has a citation", not "is true"** — swap the prose and the screen talks nonsense while the gate stays green |
 | [`bench/bakeoff/README.md`](bench/bakeoff/README.md) | A 3-command reproducible distillation bake-off plus two honest negative results |
 
-There are **78** numbered documents (that number is not hand-copied: `tools/lint_links.py` counts and prints it on every run,
-and it is CI step 2; this round's actual output: `lint_links: OK — 97 markdown files, all relative links resolve and all docs/NN citations exist (78 numbered docs)`).
-The themed index lives in [docs/README.md](docs/README.md). Documentation is primarily in Chinese.
+There are **90** numbered documents (that number is not hand-copied: `tools/lint_links.py` counts and prints it on every run,
+and it is CI step 2; this round's actual output: `lint_links: OK — 109 markdown files, all relative links resolve and all docs/NN citations exist (90 numbered docs)`, `rc=0`).
+The themed index lives in [docs/README.md](docs/README.md), **brought up to 91 on 2026-08-02** (it had stopped at 81). Documentation is primarily in Chinese.
+
+> ⚠️ **That line is the only check in this README that its current author ran personally.** Every other gate cited here is attributed
+> to the baton that ran it, on that baton's own tree. **This section makes no claim about `tools/ci.sh` as a whole** — the reasoning
+> and the trade-off are written up in [docs/93 §六](docs/93-wave-x-x2-docs-receipt.md).
+> (This repository has produced one fake "CI PASS" before, see `ef332fe`, so that disclosure is a rule rather than a courtesy.)
 
 ## Assets And License
 
