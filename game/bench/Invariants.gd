@@ -750,7 +750,13 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 	#        两种契约走**同一条**判据，而它在池化契约下仍然会红——三个负对照（K1 回执）：
 	#          nc1 池倍率取整到 0（供给恒 0）      → N=60 **红 2/2**、N=12 **红 2/2**（满足率 0.000，断供 60/60）
 	#          nc2 池只给一半（base_population=24）→ N=60 **红 3/3**（最差货 0.319-0.396，屋瓦断供 39-49/60）
-	#          nc3 批量再 ×8（灌满）              → N=60 **绿 2/2** ← 这一条是 does_not_detect：本判据**没有上限臂**
+	#          nc3 批量再 ×8（灌满）              → N=60 **绿 2/2** ← 这一条【当时】是 does_not_detect：本判据没有上限臂
+	#        ⚠ **2026-08-01 R1 已补上上限臂**（见下面「缺货绝迹」那一段）⇒ 上面这句「没有上限臂」不再成立。
+	#          但 nc3 这个变异体**换了个理由继续抓不到**：R1 在 N=12 上复跑同一个变异体，
+	#          上限臂**仍然绿**（零缺货货数 max 2），而**下限臂红 2/12**（口粮 0.426 / 柴薪 0.487）。
+	#          机制量出来了：`cap` 不动 ⇒ 一炉 720 份撞 130 的满仓当场丢掉；整洁被灌满 ⇒ `_clean_mult`
+	#          恒 1.0 ⇒ 广场活动不再打折 ⇒ 全镇反而少干活。**「把产量放大」不是单调干预**，
+	#          要造真正的灌满得 amount 与 cap 一起放大（R1 的 nc2，实测上限臂红 8/12 @N=12）。
 	#     ⚠ 但契约本身要能读出来 ⇒ detail 末尾追加"产出契约=宏观池 ×num/den | 逐笔"（只报不判，见下）。
 	#     ⚠ **本判据在 CI 里仍然只跑 N=12**（docs/54 §八：ci.sh 里没有任何一处在 N>12 上评估不变量），
 	#        而 N=12 上池倍率恰为 1 ⇒ **池这条路 CI 一步都没走过**。这是 docs/41 §2 第三个盲区的新实例，
@@ -812,6 +818,8 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 		per_c[g0] = int(per_c[g0]) + int(S._stock_day.get(String(g0), 0))   # 当日尚未入账的那一截也已经到手了
 	var dead_goods: Array = []
 	var starved_goods: Array = []
+	var gated_n := 0                                     # 真正进判决的货数（下限臂与上限臂共用同一批）
+	var never_short: Array = []                          # 其中【全年一天都没断过】的那些
 	for g in per_p:
 		var gid := String(g)
 		if bool(producible[gid]) and int(per_p[gid]) <= 0:
@@ -825,9 +833,59 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 		if dm < SUPPLY_MIN_DEMAND or days_run < SUPPLY_MIN_DAYS:
 			continue                                     # 样本太小/horizon 太短：那时候的比率是噪声不是性质
 		var rate := float(per_c[gid]) / float(dm)
+		gated_n += 1
+		if (sh_day[gid] as Dictionary).is_empty():
+			never_short.append(gid)
 		if rate < SUPPLY_FLOOR:
 			starved_goods.append("%s 满足率=%.2f(到手%d/想要%d，断供%d/%d天)" % [
 				gid, rate, int(per_c[gid]), dm, (sh_day[gid] as Dictionary).size(), days_run])
+	# ── R1 上限臂：**缺货绝迹**（docs/68）──────────────────────────────────────────────
+	# 由来：L2 在自己的回执里（docs/58 §四①）点名『缺货变得太少』是一个**没有任何门会报警**的回归——
+	#   `work_pull` 把 N=60 上整洁的全年零缺货 seed 数从 0/12 推到 8/12、屋瓦 1/12 → 4/12，
+	#   而 `production.json._calibration` 自己写的设计意图是「缺货【周期性】发生，不是恒常，**也不是从不**」。
+	#   K1 的 nc3（批量 ×8）实测**照样绿** ⇒ 在此之前 #40 只有下限臂。本段是那条上限臂。
+	#
+	# ── 判据的形状：为什么是【全镇的多数】而不是逐货 ──────────────────────────────────
+	# **逐货的上限臂在结构上不可能成立**，这是量出来的不是推的：未改动的出货阵容 N=12 上，
+	#   豆子 7/12 · 整洁 5/12 · 话本 3/12 个 seed 全年零缺货（本棒 12 seed × 60 天实测）
+	#   ⇒ 任何「每一种货都必须缺过」的判据在**未改动的出货树上当场红**。
+	# ⇒ 只能判「这个镇整体还有没有稀缺」：`全年零缺货的货数 × 2 > 进判决的货数`（严格多数）。
+	#   分母不写死 6、分子不写死 4 —— 它取的是当天**真正进了判决**的那些货，
+	#   加一种货 / 摘一种货都自动跟着走（沿用下限臂那条「从数据自己的结构里推」的分档纪律）。
+	#
+	# ── 阈值的余量（docs/41 §5「收紧判据前先量余量」；全部 60 天 · backend=null · 无 LOD · ScaleSupply）──
+	#   全年零缺货货数的逐 seed 极值（**并列一起报**），六种货、阈值=4：
+	#     N=12 seeds 1-12   0..3   max 3 = seed 4                       余量 1 种货
+	#     N=12 seeds 13-30  0..3   max 3 = seeds 14,30（**留出种子**）   余量 1 种货
+	#     N=16 seeds 1-12   1..3   max 3 = seeds 3,6,7,11               余量 1 种货
+	#     N=24 seeds 1-12   2..3   max 3 = seeds 2,3,4,8,10,11          余量 1 种货
+	#     N=60 seeds 1-12   3..4   max 4 = seeds 2,3,4,5,7,8            **余量 −1：当场红**
+	#   ⇒ CI 真正跑这条臂的两格（第 4 步 N=12、第 4a 步 N=16）各有【一种货】的余量，
+	#     而且门是逐 seed 通过率制（软门容 1/12）⇒ 要假红得【两个】seed 同时越线；
+	#     30 个 N=12 基线 seed（1-12 ∪ 13-30）里越线的个数是 **0**。
+	#
+	# ⚠ **它上线之后第一件事就是把 N=60 判红，而那【不是】假红。** 实测 N=60 seeds 1-12：
+	#   豆子 12/12 与 话本 12/12 个 seed 全年零缺货（**这两条在 L2 改之前就已经是 12/12，不是 work_pull 造成的**），
+	#   整洁与屋瓦才是 work_pull 推上来的那两条；四种同时不缺 ⇒ 六分之四 ⇒ 红。
+	#   这正是 `_calibration` 那句话在 N=60 上不成立——**门只是第一次把它说出来了**。处置见 docs/68。
+	#
+	# ── 另外三个候选统计量都跑过、都被数据否掉（逐条记着，免得下一个人重跑）──────────────
+	#   ① `最差货满足率 ≥ 上限`（下限臂的镜像）—— **否掉**：最差货那一格永远被「生产者最稀的那种货」钉住
+	#      （柴薪只有杂役一个产者，60 天在班完成 1-11 次）。实测 amt8cap8 变异体下最差货最大只到 0.953，
+	#      而**未改动的** N=60 seed 1 已经是 0.958 ⇒ 红绿两侧倒过来了，分不开。
+	#   ② `全镇断供天数合计`—— **否掉**：它随人口单调下滑（未改动树：N=12 42..78 · N=16 28..53 ·
+	#      N=24 18..36 · N=60 7..25），而变异体 amt8cap8@N=12 是 5..29 ⇒ **与未改动的 N=24 重叠**。
+	#      用它等于按人口分档，正是 §0.5 点名要防的那个病。
+	#   ③ `中位货满足率`—— **否掉**：未改动的树上 N=16/24/60 多数 seed 的中位数早就是 1.000，余量为零。
+	#
+	# ── 样本守卫 `gated_n >= 3` ──
+	#   一两种货分不开「这个镇不再稀缺」与「我们只量了一两种货」（docs/41 §5：n 很小时读作"这个网格分辨不出"）。
+	#   实测它在 DetGate(20 天) / BackendGate(8 天) 上恒生效：那里 `days_run < SUPPLY_MIN_DAYS`
+	#   ⇒ 一种货都进不了判决 ⇒ `gated_n == 0` ⇒ 本臂整段不评估（与下限臂共用同一道 horizon 门）。
+	var glut := ""
+	if gated_n >= 3 and never_short.size() * 2 > gated_n:
+		glut = "；【缺货绝迹】%d/%d 种货全年零缺货(%s) —— production.json._calibration 要的是【周期性】缺货，不是从不" % [
+			never_short.size(), gated_n, ", ".join(never_short)]
 	# ── K1：把【产出契约】写进 detail（**不是**分档，见上面的 K1 注释）──────────────────────
 	# 判据在两种契约下**一个字节都不变**，所以这里只报不判。报它的理由是可读性：
 	# 大 N 上看到一条红的 #40，第一句要问的就是"当时池开着没有、倍率是多少"，而那件事此前无处可读。
@@ -842,11 +900,13 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 		if float(S.work_pull_mult) != 1.0:
 			contract += "｜工作吸引力 ×%.3f" % float(S.work_pull_mult)
 	R.append(_chk(40, "产出闭环活性与供给充足",
-		(not prod_on) or (n_prod > 0 and n_cons > 0 and dead_goods.is_empty() and starved_goods.is_empty()),
-		"produce=%d consume=%d 满足率门%s%s%s%s" % [n_prod, n_cons,
-			("下限=%.2f" % SUPPLY_FLOOR) if days_run >= SUPPLY_MIN_DAYS else ("未启用(%d<%d天)" % [days_run, SUPPLY_MIN_DAYS]),
+		(not prod_on) or (n_prod > 0 and n_cons > 0 and dead_goods.is_empty()
+			and starved_goods.is_empty() and glut == ""),
+		"produce=%d consume=%d 满足率门%s%s%s%s%s" % [n_prod, n_cons,
+			("下限=%.2f·上限=多数不缺" % SUPPLY_FLOOR) if days_run >= SUPPLY_MIN_DAYS else ("未启用(%d<%d天)" % [days_run, SUPPLY_MIN_DAYS]),
 			"" if dead_goods.is_empty() else "；【断链货物】" + ", ".join(dead_goods),
 			"" if starved_goods.is_empty() else "；【长期供不应求】" + ", ".join(starved_goods),
+			glut,
 			contract]))
 	return R
 

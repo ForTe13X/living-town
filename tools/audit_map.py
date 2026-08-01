@@ -21,7 +21,8 @@ def _opt(name):
 def load():
     m = json.load(open(p("map.json"), encoding="utf-8"))
     ag = json.load(open(p("agents.json"), encoding="utf-8"))
-    return m, ag, _opt("festivals.json"), _opt("production.json"), _opt("jobs.json")
+    return (m, ag, _opt("festivals.json"), _opt("production.json"), _opt("jobs.json"),
+            _opt("interiors.json"))
 
 def neigh(c):
     x, y = c
@@ -49,7 +50,7 @@ def shortest(a, b, walk):
     return None
 
 def main():
-    m, ag, fe, pr, jb = load()
+    m, ag, fe, pr, jb, it = load()
     W, H = int(m["width"]), int(m["height"])
     blk = set((int(x), int(y)) for x, y in m["blockers"])
     fails = []
@@ -229,10 +230,41 @@ def main():
         #   真正"该管的"是这一条不变量：**production.json 自己造出来的动作，它的满足者也只能是 production.json 自己的工位。**
         #   ⇒ 后来的棒若在 `production.jobs` 里加一个由普通家具满足的岗位，这条会误报——那时该做的是把满足者的全集
         #   （map.json + interiors.json + worksites）都收进来，而**不是**把这道门再关小。
+        # ── R1（docs/68 §六）：把上面那句"那时该做的"**现在**做掉，而不是等到它误报 ──────────────
+        #   上一段末尾自己写着：正确的修法是把满足者的全集（map.json + interiors.json + worksites）都收进来。
+        #   本棒把它收齐了，于是这条规则可以对【所有】职位查，而不只是 production.json 自己造的那些。
+        #   为什么现在做：docs/58 §四② 点名的『看摊』正是那个漏网的——**咖啡师是九个岗位里唯一一个
+        #   本职动作不由 worksite 满足的**（它由 map.json 的 counter_1 + jobs.json.extra_advertises 注入，
+        #   另有 interiors.json 咖啡吧台一份），所以 `gated` 收不到它 ⇒ 今天把那条广告位删掉，**审计全绿**。
+        #   ⚠ 两条规则**都要留着，而且强弱不同**（这不是把旧的换掉）：
+        #     · `t in gated` ⇒ 满足者必须是 **production.json 自己的 worksite**（强，F3 定的）；
+        #     · 其余职位  ⇒ 满足者可以是**全镇任何一个会广告这个动作的对象/家具**（弱，本条新加）。
+        #   负对照（隔离副本，逐条实测，见 docs/68 §六）：删掉 jobs.json.extra_advertises 里那条『看摊』
+        #   ⇒ 本条红并指名咖啡师；未改动的树上本条绿（无假红）。
+        adv_actions = set()
+        for o5 in (m.get("objects", []) if isinstance(m.get("objects"), list) else []):
+            if not isinstance(o5, dict): continue
+            for a5 in (o5.get("advertises", []) if isinstance(o5.get("advertises"), list) else []):
+                if isinstance(a5, dict): adv_actions.add(str(a5.get("action", "")))
+        for ea in ((jb.get("extra_advertises", []) if isinstance(jb, dict) else []) or []):
+            if isinstance(ea, dict): adv_actions.add(str(ea.get("action", "")))
+        # interiors.json：带 advertises 的室内家具（Sim._compile_interiors 会把它们编译成 world 对象）
+        for _sp, _floors in (it.items() if isinstance(it, dict) else []):
+            if not isinstance(_floors, dict): continue
+            for _fl, _fd in _floors.items():
+                if not isinstance(_fd, dict): continue
+                for fu in (_fd.get("furniture", []) if isinstance(_fd.get("furniture"), list) else []):
+                    if not isinstance(fu, dict): continue
+                    for a6 in (fu.get("advertises", []) if isinstance(fu.get("advertises"), list) else []):
+                        if isinstance(a6, dict): adv_actions.add(str(a6.get("action", "")))
+        satisfied = adv_actions | wsact
         gated = set(t for t in ov if not str(t).startswith("_")) | prod_titles
         for t, act in eff_action.items():
             if t in gated and act not in wsact:
                 fails.append("职位 '%s' 的动作是 '%s'，却没有任何工位广告它 → 这个岗位再也无处上工" % (t, act))
+            elif t not in gated and act not in satisfied:
+                fails.append("职位 '%s' 的动作是 '%s'，全镇没有任何对象/家具广告它 → 这个岗位无处上工"
+                             " (查过 map.objects + interiors 家具 + jobs.extra_advertises + production.worksites)" % (t, act))
         vd = pr.get("vendor", {}) if isinstance(pr.get("vendor"), dict) else {}
         if vd:
             if str(vd.get("title", "")) not in titles:
