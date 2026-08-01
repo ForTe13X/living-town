@@ -305,15 +305,26 @@ scan "S0 gate" "$LT_LOG/s0.log"
 #      上量过判据的红绿分布，N=60 只有 3 个 seed。
 POOL_N="${CI_POOL_N:-16}"; POOL_SEEDS="${CI_POOL_SEEDS:-1-12}"
 POOL_DAYS="${CI_POOL_DAYS:-60}"; POOL_DET="${CI_POOL_DET:-1}"
-echo "# ★ 默认从 N=24 翻成 N=16（2026-07-31，L1 给的建议 + 主 session 实测复核）：
+# ⚠️ 这一段必须用【带引号的 heredoc】，不能用 echo "…"：
+#   T3 查出（我已复现）原来那个多行 echo 的双引号里含反引号 `maxi(1,·)` ⇒ bash 每次运行都做一次
+#   命令替换，报 `syntax error near unexpected token` ——**而且它把那段文字吃掉了**：
+#   `maxi(1,·)` 整个消失，连同它后面那对双引号。CI 从不因此变红，所以没人发现。
+cat <<'POOL_NOTE'
+# ★ 默认从 N=24 翻成 N=16（2026-07-31，L1 给的建议 + 主 session 实测复核）：
 #   ① 更便宜：合并树上 146s vs 239s（−39%）。
 #   ② 覆盖更宽：16/12 = ×4/3 会走【整数截断】那条路，而 24 是 12 的整数倍 ⇒ 因子恰好 ×2、
 #      `maxi(1,·)` 永不触发，K1 那句"inputs 不会舍入到 0"的守卫在 N=24 上【结构上测不到】。
 #   ③ 它同时是 I3 实测的【边缘】（软门最早在 N=16 破）⇒ fixture 朝被守的性质最容易破的方向选，
 #      而不是朝最容易绿的方向（契约 §2 第三个盲区）。
-#   余量：合并树上最差货 0.688-0.911，地板 0.50 ⇒ 最紧一格仍有 0.188 的余量，不是卡边。
+#   余量：⚠️ 这里原本写着"最紧一格仍有 0.188 的余量，不是卡边"。**那个数已经过期。**
+#      S2（编号 73）把 6c7c8bc 拉进隔离副本复核：那棵树确实是 +0.189；
+#      而在今天的树上做消融（从 utility.json 删 gossip_news_first/bonus）恢复到 +0.183
+#      ⇒ **O1 的调参吃掉了约 3.4 倍余量，今天最紧一格是 0.056。**
+#      这个数写在这里【本身就是 S2 那条统一结论的样本】：打印冻结字面量的都会过期。
+#      ⇒ 别再手抄它了；要当真就去读 4a 每次运行自己打印的判决行。
 #   L1 当时改不了这个默认，因为在它自己的分支上（L2 未合入）N=16 是红的。
-### 4a. 宏观池尺度门 (N=$POOL_N seeds=$POOL_SEEDS days=$POOL_DAYS det=$POOL_DET；S0 判据首次跑在池倍率≠1 的配置上)"
+POOL_NOTE
+echo "### 4a. 宏观池尺度门 (N=$POOL_N seeds=$POOL_SEEDS days=$POOL_DAYS det=$POOL_DET；S0 判据首次跑在池倍率≠1 的配置上)"
 # 预检①②：**照 `_pool_rescale` 自己的算法**（含 quantum 向上取整）从 production.json 现算倍率，
 #   而不是写死 `POOL_N != 12` 那种比较——删 scale 块 / 改 base_population / 改 quantum 都会当场把它打红。
 # 预检③：`SUPPLY_MIN_DAYS` 从源码 grep，不写魔数（判据改名/搬家 ⇒ 读不到 ⇒ 红，而不是静默放行）。
