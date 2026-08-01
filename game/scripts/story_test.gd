@@ -426,7 +426,158 @@ func _fixtures() -> void:
 	var m4: Dictionary = (s9.arcs[0] as Dictionary).duplicate(true)
 	(m4["beats"] as Array)[0][1] = 12345
 	_expect(not s9.audit(m4, by9).is_empty(), "F9e 幕上印的天数与它引用的 event 的 tick 对不上 → 审计必红")
+	_phrase_lock()
 	print("")
+
+# ── PL 段：措辞锁（Y3，docs/98 §三）─────────────────────────────────────────
+## **这一段存在的全部理由是 W3 自己写下的那条边界**（docs/90 §七 的 `M2`）：
+## 把 grudge 与 pact 的开头文案对调 ⇒ 屏幕上逐字打出「阿丽 与 本 结成了互助盟约 …
+## 这段梁子解开了」，而审计 **0 违规、整门 rc=0 全绿**。
+## ⇒ 那道审计守的是"有依据"，不是"说得对"。措辞锁把这条边界往前挪了**有限的一段**，
+##   而这一段自己的边界（`does_not_detect`）就是下面 PL3 量出来的那个比率。
+func _phrase_lock() -> void:
+	print("\n[PL] 措辞锁 —— 往「说得对」那一侧挪的一步（判据的真值取自事件自己的 type）")
+
+	# ── PL1 干净树自证：**不许假红** ────────────────────────────────────────
+	# 同 F9a 那条纪律：一道只会说"0 违规"的门，与一个什么都不查的门在真世界上无法分辨。
+	# 先证明它在**未动手脚的树上是绿的**，再拿 PL2/PL3 证明它动了手脚会红。
+	var lg: Dictionary = StoryScript.lint_grammar()
+	_expect((lg["bad"] as Array).is_empty(),
+		"PL1 未动手脚的文法表 → 措辞锁 0 违规（不许假红）；实得 %d 条%s" % [
+			(lg["bad"] as Array).size(),
+			("" if (lg["bad"] as Array).is_empty() else "：" + str((lg["bad"] as Array).slice(0, 3)))])
+	# 没上锁的文案**只报数不判红**：空短语表 = 没约束，那是本机制的定义域而不是缺陷。
+	# 报它是为了让"锁的覆盖面"这个数字看得见，而不是靠读者去数。
+	var slots := _all_slots()
+	print("     文案槽位 %d 个 · 已上锁 %d 个 · 没有任何标志性短语的 %d 个：%s" % [
+		slots.size(), slots.size() - (lg["unlocked"] as Array).size(), (lg["unlocked"] as Array).size(),
+		str((lg["unlocked"] as Array).slice(0, 4))])
+
+	# ── PL2 逐字复现 W3 的 M2 ──────────────────────────────────────────────
+	# W3 那个变异体是"把 grudge 与 pact 的 open_text 对调"。对调之后：
+	#   grudge 的开头会打出 pact 的话，而它引用的仍然是一条 **conflict**；
+	#   pact 的开头会打出 grudge 的话，而它引用的仍然是一条 **pact**。
+	# `_audit_one` 的第⑤条查的正是 `phrase_conflicts(模板, [事件真实type])` —— 这里逐字调它。
+	var g_open := ""
+	var p_open := ""
+	for d in StoryScript.ARCS:
+		if String(d["id"]) == "grudge":
+			g_open = String(d["open_text"])
+		elif String(d["id"]) == "pact":
+			p_open = String(d["open_text"])
+	var m2a: Array = StoryScript.phrase_conflicts(p_open, ["conflict"])
+	var m2b: Array = StoryScript.phrase_conflicts(g_open, ["pact"])
+	_expect(not m2a.is_empty(),
+		"PL2 W3 的 M2（梁子的开头改说盟约的话，出处仍是 conflict）→ 必红：%s" % str(m2a))
+	_expect(not m2b.is_empty(),
+		"PL2′ 反向对调（盟约的开头改说梁子的话，出处仍是 pact）→ 必红：%s" % str(m2b))
+	# 阴性对照：同一条文案配**它自己**的类型，一条都不许响（否则 PL2 的红只是"什么都红"）。
+	_expect(StoryScript.phrase_conflicts(g_open, ["conflict"]).is_empty()
+			and StoryScript.phrase_conflicts(p_open, ["pact"]).is_empty(),
+		"PL2″ 阴性对照：文案配回自己的类型 → 0 违规（证明 PL2 的红不是「逢查必红」）")
+
+	# ── PL3 检出【比率】，不是一发子弹（docs/41 §2.5 外审那条度量学批评）──────
+	# 外审原话：「负对照测的是 recall（这一发打中了），不是 coverage（弹药库里有多少种打不中）」。
+	# 所以这里把**整个"两条文案对调"的变异空间**跑一遍：C(n,2) 个变异体，逐个问措辞锁认不认。
+	# 这个比率就是本机制的 `confidence`，`does_not_detect` 也是从这里的漏网名单里抄出来的。
+	var tot := 0
+	var caught := 0
+	var missed: Array = []
+	for i in slots.size():
+		for j in range(i + 1, slots.size()):
+			var a: Array = slots[i]
+			var b: Array = slots[j]
+			if String(a[1]) == String(b[1]):
+				continue                      # 两条文案本来就一样 ⇒ 对调是恒等变换，不是变异体
+			tot += 1
+			var hit := not StoryScript.phrase_conflicts(String(b[1]), a[2] as Array).is_empty() \
+				or not StoryScript.phrase_conflicts(String(a[1]), b[2] as Array).is_empty()
+			if hit:
+				caught += 1
+			else:
+				missed.append("%s ↔ %s" % [String(a[0]), String(b[0])])
+	print("     两条文案对调的**全变异空间**：%d 个变异体，措辞锁认出 %d 个（%.1f%%）" % [
+		tot, caught, 100.0 * float(caught) / float(maxi(1, tot))])
+	# 漏网的**逐条全列**，不给样例 —— 这一栏就是 does_not_detect，抽样等于把边界说小了。
+	print("     漏网 %d 条（= does_not_detect 那一栏，跑出来的不是想出来的）：" % missed.size())
+	for x in missed:
+		print("       · " + String(x))
+	# 只钉一条底线：**必须显著优于 0**。具体比率写进回执，不写成阈值门 ——
+	# 写成阈值门就等着有人加一条没上锁的文案时收一次假红（docs/41 §6「写死的绝对数」那条）。
+	_expect(caught > 0 and tot > 0, "PL3 变异空间非空且检出 > 0（比率 %d/%d，逐次重算，不冻结字面量）" % [caught, tot])
+
+	# ── PL4 词表不是我一个人说了算：拿**另一份独立渲染**交叉验 ────────────────
+	# W3 的原话是"判对错要有第二份文案的真值"，并判定它没有廉价的补法。
+	# **那第二份真值一直在树上**：`Main._event_prose`（编年史，另一个文件、另一位作者，
+	# 对同一批事件的另一份渲染）+ `Sim._verb()`（仿真自己的中文动词表）。
+	# 这里用它做两件事，强弱分开记：
+	#   ①**安全向（断言）**：任何一条短语都不许出现在它**不允许**的类型的独立渲染里
+	#     —— 那意味着这条短语根本不是那个意思的标志，词表写错了。
+	#   ②**佐证向（只报数）**：有多少条短语在独立渲染里逐字对得上。对不上不算错（用词本来就可以不同），
+	#     但这个数说明了词表里有多大一块**不是本文件自说自话**。
+	var prose := _prose_by_type()
+	var contam: Array = []
+	var corrob := 0
+	for p in StoryScript.PHRASE_LOCK:
+		var allow: Array = StoryScript.PHRASE_LOCK[p]
+		var ok_here := false
+		for t in prose:
+			if not String(prose[t]).contains(String(p)):
+				continue
+			if String(t) in allow:
+				ok_here = true
+			else:
+				contam.append("「%s」只允许 %s，却出现在独立渲染的 `%s` 里" % [String(p), str(allow), String(t)])
+		if ok_here:
+			corrob += 1
+	_expect(contam.is_empty(),
+		"PL4 安全向：%d 条短语无一出现在【不允许】的类型的独立渲染里（编年史 %d 类 + Sim._verb）%s" % [
+			(StoryScript.PHRASE_LOCK as Dictionary).size(), prose.size(),
+			("" if contam.is_empty() else "；实得 " + str(contam.slice(0, 3)))])
+	print("     佐证向：%d/%d 条短语被独立渲染逐字佐证（对不上不算错——用词本来可以不同，见 docs/98）" % [
+		corrob, (StoryScript.PHRASE_LOCK as Dictionary).size()])
+
+## 文法表里所有**带文案且有事件依据**的槽位，展平成 `[名字, 模板, 类型集合]`。
+func _all_slots() -> Array:
+	var out: Array = []
+	for d in StoryScript.ARCS:
+		for row in StoryScript._grammar_slots(d):
+			if String(row[1]) != "":
+				out.append(["%s/%s" % [String(d["id"]), String(row[0])], String(row[1]), row[2]])
+	return out
+
+## 每个事件类型的**独立渲染**：`Main._event_prose` 的 match 臂（源码扫描——它是实例方法，
+## 无 Main 节点调不了）+ `Sim._verb()`（可执行，直接调）。
+##
+## ★为什么是源码扫描而不是实例化 Main：Main 是整个 HUD 的根，实例化它要拉起视图层，
+##   而本门是 headless 的 View 侧只读门。口径差异照 W3 清点表那条注释办：**分别标注，不混成一个数**。
+func _prose_by_type() -> Dictionary:
+	var out: Dictionary = {}
+	var f := FileAccess.open("res://scripts/Main.gd", FileAccess.READ)
+	if f != null:
+		var src := f.get_as_text()
+		var i := src.find("func _event_prose")
+		var j := src.find("func _salience", i)
+		if i >= 0 and j > i:
+			var body := src.substr(i, j - i)
+			var cut := body.find("# 兜底")          # 兜底段不属于任何一个 match 臂，切掉免得算到最后一臂头上
+			if cut > 0:
+				body = body.substr(0, cut)
+			var cur := ""
+			for line in body.split("\n"):
+				var s := String(line).strip_edges()
+				var q := s.find("\"", 1)
+				if s.begins_with("\"") and q > 1 and s.substr(q + 1, 1) == ":":
+					cur = s.substr(1, q - 1)
+					out[cur] = String(out.get(cur, "")) + s
+				elif cur != "":
+					out[cur] = String(out.get(cur, "")) + s
+	# Sim._verb：仿真自己的中文动词表。它是编年史兜底真正会打出来的字，故与 match 臂同权。
+	for t in out.keys():
+		out[t] = String(out[t]) + String(Sim._verb(String(t)))
+	for t2 in ["produce", "shortage", "consume", "spoil", "gossip_rep", "discuss", "gossip"]:
+		out[t2] = String(out.get(t2, "")) + String(Sim._verb(t2))
+	return out
 
 # ── W1 段：回放安全到底覆盖到哪（docs/47 §五-E4 / docs/46 §二·九-⑧）────────
 ## 与 `goals_test._w1()` **同构**（同一套 Q1/Q2/R/F 口径、同一套断言）——两个折叠器的红线是同一条，
