@@ -3245,7 +3245,10 @@ func _stock_of(good: String) -> int:
 ## 库存增减的【唯一通道】：整数、写 event_log 溯源（produce / consume / spoil），note="<原因>*<真正落账的件数>"。
 ## 守恒由"只此一门"结构保证 → 硬不变量 #38 可从 event_log 独立重算（同 transfer 之于 #34）。
 ## 返回【真正落账】的件数：产出撞 cap 会少于请求量，消耗撞 0 会少于请求量——落账多少就记多少，账本因此恒闭。
-func _stock_move(good: String, delta: int, type: String, actor_id: String, reason: String) -> int:
+## ★V1：`witnesses` 是**可选**的第六个参数，缺省 `[]` = 今天的行为逐字节不变。
+##   加它的理由见 `_craft_fallout`：`produce` 事件此前**恒无目击者**（V1 清点：5 seed × 60 天共 497 条
+##   produce 事件，`witnesses` 非空的 **0** 条），而同一时刻工位旁平均站着 0.44-3.32 个人。
+func _stock_move(good: String, delta: int, type: String, actor_id: String, reason: String, witnesses: Array = []) -> int:
 	if delta == 0 or not (production.get("goods", {}) as Dictionary).has(good):
 		return 0
 	var cur := _stock_of(good)
@@ -3258,7 +3261,7 @@ func _stock_move(good: String, delta: int, type: String, actor_id: String, reaso
 	if applied == 0:
 		return 0
 	town_stock[good] = cur + applied
-	_log_event(type, actor_id, "town", good, true, [], "%s*%d" % [reason, absi(applied)])
+	_log_event(type, actor_id, "town", good, true, witnesses, "%s*%d" % [reason, absi(applied)])
 	return applied
 
 ## 职位 title → 现任持有人 id（jobs.json 书写序，首个命中；无则 ""）。纯查表、无 RNG。
@@ -3318,8 +3321,14 @@ func _produce_for(ag: Dictionary, action: String) -> void:
 	prod_stats["work"][title] = int((prod_stats["work"] as Dictionary).get(title, 0)) + 1
 	if amount <= 0:
 		return                                          # 一点料都没有 ⇒ 这一趟空手（不写 produce 事件，#39 的「件数>0」因此恒成立）
-	var got := _stock_move(good, amount, "produce", String(ag["id"]), title)
+	# ★V1 手艺口碑（docs/84）：这门手艺开了 `craft_credit` 才去数在场者，否则连 `_nearby_agents` 都不调
+	# ⇒ 缺键/该职位不在表里 ⇒ 一条指令都不多跑、`witnesses` 仍是 `[]` ⇒ 逐字节回到今天。
+	var cc: Dictionary = _craft_credit(title)
+	var wits: Array = _nearby_agents(ag) if not cc.is_empty() else []
+	var got := _stock_move(good, amount, "produce", String(ag["id"]), title, wits)
 	if got > 0:
+		if not cc.is_empty() and not wits.is_empty():
+			_craft_fallout(ag, wits, title, good, cc)
 		prod_stats["produced"][good] = int((prod_stats["produced"] as Dictionary).get(good, 0)) + got
 		# K1：池倍率 >1 时这一批**不是他一个人干出来的**，措辞必须跟着换尺度——
 		# 否则记忆里会出现"一个泥瓦匠一天烧了 150 片瓦"，而那正是外审点名的"一个铁匠在 60 人里产 60 把剑"。
@@ -3402,6 +3411,61 @@ func _shortage_fallout(ag: Dictionary, action: String, good: String, dedup: Stri
 		if not s["beliefs"].has(bid):
 			s["beliefs"][bid] = {"claim": claim, "subject": blame, "source": "__seen__", "via": "seen", "tick": tick_no}
 		_adjust_standing(s, blame, float(gd.get("shortage_standing", production.get("shortage_standing", 0.0))))
+
+## ★V1 手艺口碑的数据门（docs/84）。缺 `production.craft_credit` / 该职位不在表里 → 返回 `{}` →
+## `_produce_for` 里那两行整段短路 → 引擎逐字节回到 V1 之前。回滚成本 = 删一个 JSON 键（照抄 `stock_pull` 的形状）。
+func _craft_credit(title: String) -> Dictionary:
+	var tbl: Dictionary = production.get("craft_credit", {}) if production.get("craft_credit", {}) is Dictionary else {}
+	if tbl.is_empty():
+		return {}
+	var rec = tbl.get(title, {})
+	return rec if rec is Dictionary else {}
+
+## ★V1 手艺口碑：**一门手艺被人看见，镇上才会因为它而改变对这个人的看法。**
+##
+## 为什么需要它（清点表在 docs/84 §一，跑出来的不是想出来的）：今天九个岗位的产出是**一件货 + 一笔工资**，
+## 而这两样在社会面上**一条通道都没有**——`_stock_move` 写的 `produce` 事件 `witnesses` 恒 `[]`
+## （5 seed × 60 天 497 条，非空 0 条），`transfer` 写的 `pay` 事件同样恒 `[]`（5540 条，非空 0 条）。
+## 一个岗位今天唯一能改到别人社会状态的通道是 **`_shortage_fallout`**——也就是**他没干好的时候**。
+## ⇒ 全镇的"社会产出"只有一种口径：**怪谁**。本函数是它的**正向镜像**，结构逐条照抄：
+##   ① `produce` 事件带上真实目击者（`_stock_move` 的可选第六参）——账本里第一次看得见"谁看见他干活"；
+##   ② 在场者形成一手信念 `CR:<职位>`（`via=seen`、`subject=干活的人`）→ 走**既有** gossip 管线被转述，
+##      不新开任何管线、不新增事件类型（新类型会绕过 `Main.FEED_SKIP`/`Story` 的既有处理，而那两个文件不属于本棒）；
+##   ③ 在场者对他 `_adjust_standing(+standing)`，受 `STANDING_DELTA_CAP`/`STANDING_CAP` 双重钳制
+##      ——与 `shortage_standing` 完全同一道守卫，只是符号相反；
+##   ④ 在场者一条低权重记忆（importance 2，与 `_commit_social` 的旁观者记忆同档）→ 语音 grounding 的原料。
+##
+## ★为什么这不是"多打一行日志"，以及**它到底改了多少**——这一段是实测，不是设计意图（docs/84 §四.4）：
+##   把三样东西逐条关掉跑同一格（隔离副本，seeds 1-4 × 60 天）比 `event_log` 摘要：
+##     · **只有 ③ `standing` 会改变世界。** 它是 `_acceptance_rule` 的一项（`st = standing * STANDING_K`）。
+##     · **② 的信念与 ④ 的记忆今天【一个字节都不改变行为】**：关掉 ③ 之后，"②④ 全写"与"②④ 全不写"的
+##       `Inv.digest` **4/4 逐位相同**。原因是 `CR:*` 唯一的下游是 `_unspread_belief` 的 gossip 候选，
+##       而大家都是**亲眼**形成的 ⇒ 它在传出去之前就饱和了（实测 12 seed 里只有 1 个发生过转述）。
+##     · ① 的 `witnesses` 只改**观测**（`Inv.digest` 把目击者折进了哈希），不改行为。
+##   ⇒ **能声称的是"这条社会痕迹存在、可门控、可回滚"，不是"被看见干活的人更受欢迎"。**
+##     后者我量过、量不出来：8 个**没被触碰**的岗位在同一网格上的社交接受率移动幅度比被触碰的那个还大。
+## ★★代价（同样是实测）：`standing` 那一路会把**盟约互助 `aid` 压掉约 42%**（118 → 68，12 seed 里 11 个方向一致），
+##   而同一张表上其余每一类事件都落在 4-9/12 的噪声带里。**机制没找到**，只知道是 ③ 这一路（关掉它 `aid` 回到 37/37）。
+##   把 `craft_credit.<职位>.standing` 设成 0 即可换回那 42%，代价是本机制退化成纯账本。见 docs/84 §四.5 与 §十。
+##
+## ★知识边界（docs/41 §0.7 仍在用户手里未定）：本函数**不动那一层**。信念只形成于
+##   `_nearby_agents` 给出的**同平面同区在场者**，这比 §0.7 提案里那句"能进候选表的对象必须是他本来就能感知的对象"
+##   **更窄**——⇒ 用户无论采纳与否，本机制都不需要改。
+func _craft_fallout(worker: Dictionary, seen: Array, title: String, good: String, cc: Dictionary) -> void:
+	var st := float(cc.get("standing", 0.0))
+	var bid := "CR:%s" % title
+	# 参数序**逐字照抄 `shortage_claim`**（`% [good, _name(blame)]`）：同一个文件里两条镜像的串
+	# 用两套参数序是下一次 "not all arguments converted" 的种子——本棒已经踩过一次（docs/84 §六）。
+	var claim := String(cc.get("claim", "镇上的%s，是%s做出来的")) % [good, _name(worker)]
+	var memo := String(cc.get("witness_memo", "看见%s在%s干活"))
+	for s in seen:
+		if String(s["id"]) == String(worker["id"]):
+			continue                                    # _nearby_agents 本就排除自己；留着这行是给将来的调用方
+		if not s["beliefs"].has(bid):
+			s["beliefs"][bid] = {"claim": claim, "subject": String(worker["id"]), "source": "__seen__", "via": "seen", "tick": tick_no}
+		if st != 0.0:
+			_adjust_standing(s, String(worker["id"]), st)
+		s["memory"].add(memo % [_name(worker), _area_label(worker["pos"])], 2, tick_no, [String(worker["id"]), "observe", "craft"])
 
 ## 日界结算：把当天的消耗一次性写进账本，再按 spoil_per_day 让存货自然损耗。
 ## 损耗存在的理由不是"真实"，是【让缺货周期性发生】：没有它，供大于求的种子会把库存顶到 cap 后永不缺货，
