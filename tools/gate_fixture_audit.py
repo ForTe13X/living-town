@@ -68,7 +68,7 @@ FIXTURES = [
 # Invariants.HARD_IDS 的副本。**每次运行都对着源码核一遍**（见 _check_hard_ids）——
 # 冻结字面量会过期，这是 S2 编号 73 §二·3 量出来的统一结论。
 HARD_IDS = [1, 6, 7, 9, 10, 12, 13, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33,
-            34, 35, 36, 37, 38, 39, 41]
+            34, 35, 36, 37, 38, 39, 41, 42]
 DIAG_IDS = [15]
 
 
@@ -227,6 +227,10 @@ SPEC = {
          lambda L, D: 0 if "未启用" in D.get(40, "") else 1),
     41: ("G", "开了 craft_credit 的职位真的上了工（produce ≥ CRAFT_MIN_WORKS）",
          lambda L, D: 0 if ("豁免" in D.get(41, "") or "关" == D.get(41, "").strip()) else 1),
+    # Z1 的 #42：它判的是 `_survival_pull` 这个**纯函数**的响应面 + 一条代数界，
+    # **根本不看轨迹** ⇒ 没有"前件归零"这回事，结构上不可能空洞 ⇒ 归 A 档。
+    # （Z1 实测：九个变异体共享同一个 digest，摘要门在这里全瞎，而 #42 照样红。）
+    42: ("A", "纯函数响应面 + 代数界（不看轨迹，结构上不可能空洞）", lambda L, D: -1),
 }
 
 
@@ -602,6 +606,15 @@ def main():
         print("[夹具普查] 负对照 %s" % ("PASS ✅" if not bad else "FAIL ❌ (%d)" % bad))
         return 1 if bad else 0
     only = [x for x in a.only.split(",") if x] or None
+    # ⚠️ 这道拦截必须在 --run 【之前】：一次完整普查要十几分钟，
+    #   而"副本与源码对不上"这件事在第一行就能查出来。失败要快。
+    if a.bake_ledger:
+        _chk = _check_hard_ids()
+        if "对不上" in _chk:
+            print("\n❌ 拒绝烘锚：%s" % _chk)
+            print("   本工具的 HARD_IDS 副本与 game/bench/Invariants.gd 不一致 ⇒ 枚举必然漏条，")
+            print("   而烘出来的锚会把这个漏洞【固化成基线】。先把副本与谓词表补齐再烘。")
+            return 1
     if a.run:
         run_fixtures(a.godot, a.iso, a.out, only)
         a.src = a.out
@@ -611,6 +624,7 @@ def main():
     data = parse_dir(a.src)
     report(data, only)
     if a.bake_ledger:
+        # （HARD_IDS 副本与源码的对账拦截在 --run 之前就做过了，见上面 main() 里那一段。）
         if only:
             print("\n❌ 拒绝烘锚：--only 与 --bake-ledger 不能同用（理由见 bake_ledger 抬头）。")
             return 1
