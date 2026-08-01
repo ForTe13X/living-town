@@ -436,6 +436,7 @@ var _water_set := {}     # idx -> true（水格）
 ## 更不该进 `_draw`（那是 D7 反复清理过的地方）。跟着 `_terrain_built` 一起失效。
 var _water_by_slot: Array = []
 var _tree_cells: Array = []  # [Vector2i]（authored 阻挡树，替代程序化装饰树）
+var _tree_draw: Array = []   # V3 林相：[{cell,off,tone}]，行优先排好序（_build_tree_styles 一次性烘）
 var _tree_set := {}      # idx(y*W+x) -> true（同上，供 O(1) 查：_is_blocked 与界外 motif 每帧都要问它）
 var _wall_type := {}     # P2-4 idx -> 建筑类型（住宅/商业/公共/工坊）→ 墙面按类型上色
 var _terrain_built := false
@@ -784,6 +785,118 @@ func _build_water_slots(wd: int, ht: int) -> void:
 		_water_by_slot.append([nm, by[nm]])
 
 
+# ══ V3 · 林相分化（authored 阻挡树）═════════════════════════════════════════════════════
+#
+# **改前实测**：`map.json trees` 的 156 格是**两块 6×13 的实心矩形**（x 2-7 / x 56-61，y 18-30），
+# 而画法是【同一张 tree_big × 同一个 veg 乘子 × 同一个亚格偏移 × 同一个尺寸】。
+# 于是它不是一片林子，是一张**盖章点阵**——而且矩形的四条边是直的。
+# 量出来的读数（`--shot-fit`、seed 3、tick 600、2560×1536；判据见回执）：
+#   林块内部【平移恰好一格】之后的平均逐像素差 P：横 **0.180 / 0.133**（两块）。
+#   同一帧的对照：空草地 4.05 / 10.12、广场 18.4、**池塘 0.000**。
+#   ⇒ 这片"林子"的周期性读数和一潭死水同一个数量级。这就是壁纸的定义。
+#
+# 分化只用两样东西，**两样都不是新素材、也不是新数据**（红线#4 素材、#5 复用优先）：
+#   ① **authored 结构**：这一格的四邻里有几个也是树。与上面 `_build_water_slots` 按四邻选岸线瓦
+#      是同一条路子 —— 判据的真源仍然是 `map.json`，本函数只读不写。
+#   ② **确定性位置哈希** `_hash(x,y,salt)`：与 `_build_decor` / `_draw_rain` 同源。
+#      不抽 RNG、不读墙钟 ⇒ **同一 tick 重拍逐像素相同**（`--shot` 的既有承诺）。
+#
+# ⚠️ 三条自己给自己划的线，每条都有出处：
+#   · **偏移以【源像素】为步长**（`T/16` = 3 世界像素）。本文件抬头那条"整数像素尺"讲的就是这件事：
+#     非整数倍会让一部分源像素占 1 个屏幕像素、另一部分占 2 个 ⇒ 精灵读作"融化的"。
+#   · **不许拿颜色去标林块边界。** docs/41 §6★ 记着 C7 的教训：沿边界**等距且连续**的任何东西
+#     都会从"延续"退化成【相框】——比原来那条硬边更糟。所以外沿那一档拿到的是**更大的偏移幅度**
+#     （林线因此是锯齿），**不是**更亮的颜色（那等于把这个矩形又描一遍）。
+#   · **不引入新的 `Color("#...")` 字面量**（本文件抬头的纪律）：明暗档是**乘算档**，
+#     与 `SEASON_VEG` 同形 —— 换掉锚点色它们跟着走，不是第二份真相。
+const TREE_SALT_JIT  := 41    # 两个盐，分别喂偏移与明暗；同源于 _hash(x,y,salt)
+const TREE_SALT_TONE := 47
+## 林冠明暗档（**乘算**，不是授权色）。
+## **四档的理由不是"两档会条纹"** —— 用下面 `_hash_mix` 之后两档同样混得开（实测同值率 50.0/52.5/54.4%）。
+## 是因为要让三种读法各有一档：**林子深处**（背阴）/ **树冠顶面**（受光）/ **另一株树**（另一种绿），
+## 加上"原样"共四档。实测分布 27/42/42/45，相邻同档率 24.1%（理想 25%）。
+const TREE_TONE: Array[Color] = [
+	Color(1.00, 1.00, 1.00),   # 原样（改前全体都是这一档）
+	Color(0.86, 0.90, 0.84),   # 背阴：压绿压亮，读作林子深处
+	Color(1.10, 1.06, 0.92),   # 受光：偏暖，读作树冠顶面
+	Color(0.93, 1.01, 0.88),   # 另一种绿：只动 G/B 的比，读作另一株而不是另一个光照
+]
+
+## ⚠️ **不许直接对 `_hash()` 取 `% 2` / `% 4`。这条是实测出来的，而且是我这一棒自己先踩的。**
+##
+## `_hash = |(x*73856093) ^ (y*19349663) ^ (salt*83492791)|`，而 `73856093 % 4 == 1`、
+## `19349663 % 4 == 3` —— XOR 是**逐位**的 ⇒ **低两位只由 `(x%4, y%4)` 决定**。
+## 于是 `% 2` 是一张**完美棋盘**、`% 4` 是一张 **4×4 的壁纸**。实测（156 棵树，同值率 = 相邻 d 格取值相同的比例）：
+## ```
+##              d=1      d=2      d=4     理想
+##   h % 2      0.0%   100.0%   100.0%     50%    ← 严格周期
+##   h % 4      0.0%     0.0%   100.0%     25%    ← 严格周期
+##   (h/7) % 2 50.0%    52.5%    54.4%     50%    ← 混开了
+##   (h/7) % 4 24.1%    22.9%    21.9%     25%
+## ```
+## **这正是本棒要治的那个病的复发**：为了打散点阵而引入的"随机档"，它的低位本身就是一张点阵
+## ——按周期 2/4 把刚拆掉的格子又摆回去。**"先量再动"对【自己的改动】同样成立。**
+## 除以 7（与低位互质、把高位拉下来）之后三个 d 都回到理想值附近。
+## 偏移用的 `% 5` / `% 9` **不受影响**（模数是奇数、本来就依赖全值：实测 d1 15.3% / d2 22.5% / d4 13.1%）。
+func _hash_mix(x: int, y: int, salt: int) -> int:
+	return int(_hash(x, y, salt) / 7)
+
+## 一棵 authored 树画成什么样（**纯函数**：只读格坐标与 `_tree_set`，不读 tick、不读相机、不抽 RNG）。
+func _tree_style(tc: Vector2i, wd: int) -> Dictionary:
+	var px := float(T) / 16.0                 # 一个源像素 = 3 个世界像素
+	var open := 0                             # 四邻里【不是树】的方向数：>0 即在林块外沿
+	for d in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+		if not _tree_set.has((tc.y + d.y) * wd + (tc.x + d.x)):
+			open += 1
+	var amp := 2 if open == 0 else 4          # 外沿幅度加倍 ⇒ 林线锯齿化（见抬头第二条线）
+	var jx := _hash(tc.x, tc.y, TREE_SALT_JIT) % (amp * 2 + 1) - amp   # 左右对称；模数是奇数 ⇒ 不用过 _hash_mix
+	var jy := _hash_mix(tc.x, tc.y, TREE_SALT_JIT) % (amp + 2) - amp   # 偏上：树冠可以往上长，脚不该离地
+	return {
+		"cell": tc,
+		"off": Vector2(float(jx) * px, float(jy) * px),
+		"tone": TREE_TONE[_hash_mix(tc.x, tc.y, TREE_SALT_TONE) % TREE_TONE.size()],
+	}
+
+## ── ⚠️ 这里**没有**"水平镜像"这一档，而它是**做出来、量完之后拿掉的**（不是没想到）──────────
+##
+## 做法本身是对的：预先烘一张 `tree_big` 的 `Image.flip_x()` 纹理。
+## **不能**用 `draw_texture_rect_region` 的负宽矩形——`tree_big` 的 alpha **左右完全对称**
+## （实测：镜像后 alpha 逐像素差 **0/1024**，只有 RGB 内部明暗差 150 px）
+## ⇒ **一次正确的镜像必然不改变覆盖面积**。拿这条去量（西林块+边距 8×16 格、全体强制翻转、数草地色像素）：
+## ```
+##   不翻转（基准）                     15 277 / 61 952   24.66%
+##   draw_texture_rect_region 负【源】宽 39 170 / 61 952   63.23%   ← 树基本没画出来
+##   同一调用          负【目标】宽      19 700 / 61 952   31.80%   ← 也不是纯镜像
+##   预烘的 flip_x 纹理                 15 277 / 61 952   24.66%   ← 与基准逐字节相同
+## ```
+## 两种负宽写法在屏幕上都"看起来翻转了"（确实有像素在动），而它们**同时把树吃掉了一块**。
+##
+## **拿掉它的理由是合批**（D7 那一棒的行）：第二张纹理 + 行优先次序 ⇒ 两张图逐棵交替，
+## `--draw-audit` 实测 `trees` pass **1 → 80 次 draw call**（世界层 2817 → 2896，+2.8%）。
+## 而它买到的东西很小：一格周期性残差 P 只涨 8-9%（最紧的夜档 11.89 → 13.00），
+## **没有它 P 仍然是门线 8.0 的 1.49 倍**。
+## ⇒ **80× 的合批代价换 8% 的指标，不划算。**（换 pass 内按 flip 分趟也不行：同一行相邻两棵有 18 世界像素的
+##   不透明重叠 ⇒ 换序会改像素，而那正是上面那条"行优先"要修的东西。）
+
+## 一次性烘出 156 条画法，并把绘制次序改成**行优先**。
+##
+## ⚠️ **次序这一条是独立的一个 bug，不是顺手做的**：`map.json trees` 是**列优先**存的
+## （x=2 的 13 格、x=3 的 13 格…），而绘制次序就是遍历次序 ⇒ `(3,18)`（上排那棵）
+## 画在 `(2,30)`（下排那棵）**之后**，于是**上排的树压住了下排的树**。
+## 32×32 的树精灵占 2×2 格、必然互相重叠，所以这不是理论问题。
+## 行优先（y 升序、同行 x 升序）之后，**近处（下方）的树压住远处（上方）的树**，重叠才读作纵深。
+## 排序键是**全序**（y → x），不靠 `sort_custom` 的稳定性 —— 等价键会让结果随实现摇摆，
+## 而 `--shot` 的逐字节可复现是本仓库的既有承诺（同 `_build_decor` 那条注释）。
+func _build_tree_styles(wd: int) -> void:
+	_tree_draw.clear()
+	for tc in _tree_cells:
+		_tree_draw.append(_tree_style(tc, wd))
+	_tree_draw.sort_custom(func(a, b):
+		var ca: Vector2i = a["cell"]
+		var cb: Vector2i = b["cell"]
+		return ca.y < cb.y if ca.y != cb.y else ca.x < cb.x)
+
+
 ## 从 map.json 的 walls/water/trees 建渲染集合（纯渲染；导航仍走 Sim 的 blockers 并集）。世界重载即失效。
 func _build_terrain() -> void:
 	_terrain_built = true
@@ -798,6 +911,7 @@ func _build_terrain() -> void:
 	for c in Sim.world.get("trees", []):
 		_tree_cells.append(Vector2i(int(c[0]), int(c[1])))
 		_tree_set[int(c[1]) * wd + int(c[0])] = true
+	_build_tree_styles(wd)                    # V3 林相：每棵树的偏移/镜像/明暗档，一次算好（见 _tree_style）
 	# 给每个墙格标上所属建筑【类型】（住宅/商业/公共/工坊）→ 墙面按类型上色。用 area.rect 的边框判定归属。
 	for aid in Sim.world.get("areas", {}):
 		var a: Dictionary = Sim.world["areas"][aid]
@@ -2437,12 +2551,21 @@ func _draw_body() -> void:
 	# authored 阻挡树（map.json trees 层）：这些是【会挡路】的真树（与上面可踩的程序化花草区分开）。
 	# 用 tree_big 切图底对齐画；缺切图则程序化画树冠+树干。占满格 → 玩家一眼读出"这里过不去"。
 	var ttex := Art.decor_tex("tree_big")
-	for tc in _ac("trees", _tree_cells):
+	# ★ V3 林相：画法从 `_tree_draw` 取（偏移/镜像/明暗档 + 行优先次序，见 _build_tree_styles）。
+	#   `_ac("trees", …)` 的 pass 名不变 ⇒ D7 的逐 pass draw-call 审计仍然对得上同一行。
+	for st in _ac("trees", _tree_draw):
+		var tc: Vector2i = st["cell"]
 		if ttex != null:
 			var tdw := float(ttex.get_width()) * (float(T) / 16.0)
 			var tdh := float(ttex.get_height()) * (float(T) / 16.0)
-			draw_texture_rect_region(ttex, Rect2(tc.x * T + (T - tdw) * 0.5, (tc.y + 1) * T - tdh, tdw, tdh), Rect2(0, 0, ttex.get_width(), ttex.get_height()), veg)
+			var toff: Vector2 = st["off"]
+			var dst := Rect2(tc.x * T + (T - tdw) * 0.5 + toff.x, (tc.y + 1) * T - tdh + toff.y, tdw, tdh)
+			# 明暗档走 modulate（进顶点色，**不**换纹理 ⇒ 156 棵仍然合成一批；见 _tree_style 下面那段"为什么没有镜像"）
+			draw_texture_rect_region(ttex, dst, Rect2(0, 0, ttex.get_width(), ttex.get_height()), veg * (st["tone"] as Color))
 		else:
+			# ★ 缺切图的程序化回退**蓄意不吃 V3 的分化**：它只在 `tree_big.png` 不存在时可达，
+			#   而那张图今天由 asset_gate 的 GATED 表守着 ⇒ 这条分支在出货树上跑不到。
+			#   给一条跑不到的路加分化，等于给它加一份没人验过的行为（docs/41 §2.5 第三个盲区的形状）。
 			var cx: float = tc.x * T + T * 0.5
 			draw_rect(Rect2(tc.x * T + T * 0.30, tc.y * T + T * 0.55, T * 0.40, T * 0.45), X_WOOD_MID, true)  # 树干
 			draw_circle(Vector2(cx, tc.y * T + T * 0.42), T * 0.42, P_FOLIAGE_D * veg)                          # 树冠
