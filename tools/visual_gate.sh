@@ -80,7 +80,8 @@ NOON_TICK=600         # 第 3 天 12:00（正午）┘ （改这两个数就要�
 SEED=3
 W=1280; H=768
 # R2 室内外壳门要拍的 Space（四类各一 + library 撑 B 臂，理由见下面采集处）
-INT_SPACES="${LT_VISUAL_INT_SPACES:-home cafe wash work library}"
+# ★ S3 增拍 home2 与 shop（**两张都是判别力，不是冗余**，理由见下面采集处）。
+INT_SPACES="${LT_VISUAL_INT_SPACES:-home home2 cafe shop wash work library}"
 
 # ══ 模式 B：在渲染环境【内部】拍两帧 ════════════════════════════════════════
 # 容器里用 `bash /tools/visual_gate.sh --shoot /out`；native 路径下同一份脚本原地跑。
@@ -143,6 +144,15 @@ if [ "${1:-}" = "--shoot" ]; then
   # wash=public / work=workshop）**再加一栋 library**——library 与 wash 同为 public，
   # 它撑的是判据的 B 臂（同类必须相同）。只拍四栋的话，"给每栋楼各挑一个色"这种
   # 假修法会全绿通过。**第五张是判别力，不是冗余。**
+  #
+  # ★ S3 又加了两栋，同样是判别力（判据在 tools/assert_furniture_role.py）：
+  #   · `home2` —— 与 `home` 同为住宅、架子该是同一个书架 ⇒ 它撑家具门的 **B 臂**
+  #     （"同类必须相同"）。没有它，"按 space id 各挑一个画法"这种假修法全绿通过。
+  #   · `shop`  —— **全镇唯一一间同层放了两个 `shelf` 的屋子** ⇒ 它撑家具门的 **C 臂**
+  #     （同屋同 slot 逐像素一致），挡的是比 B 臂更细一档的"按家具实例哈希"。
+  #     它同时也是 `store` 这一档物件（货架）在门里的唯一样本。
+  #   顺带：这两张给 R2 的外壳门各多了一对**同类**对子（home2↔home 住宅、shop↔cafe 商业），
+  #   即两道门都因此变严了一点，没有任何一道被放松。
   for sid in $INT_SPACES; do
     rm -f "$OUT/vg_int_${sid}.png"
     "$GBIN" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
@@ -266,8 +276,14 @@ PRC=$?
 # （"进屋之后这栋楼还得是这栋楼"），与上面四条各自独立，一条红了另几条的读数仍有诊断价值。
 "$PY" tools/assert_interior_shell.py "$OUT" --game "$GAME"
 IRC=$?
+# 家具语义分化门（S3）。同样**不短路**：它守的是第六条性质（"架子上摆的东西得是这间屋子会有的"），
+# 与上面五条各自独立——外壳门看【墙】、本门看【家具】，R2 的 does_not_detect 第二条明写外壳门
+# 连地板都不看，家具更不在它眼里。吃的是上面已经拍好的 vg_int_*.png，**不额外渲一帧**。
+"$PY" tools/assert_furniture_role.py "$OUT" --game "$GAME"
+FRC=$?
 [ $EPHEMERAL -eq 1 ] && rm -rf "$OUT"
 [ $ARC -ne 0 ] && exit $ARC
 [ $RRC -ne 0 ] && exit $RRC
 [ $PRC -ne 0 ] && exit $PRC
-exit $IRC
+[ $IRC -ne 0 ] && exit $IRC
+exit $FRC

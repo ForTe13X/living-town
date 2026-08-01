@@ -53,6 +53,14 @@ EP_ARG=""; [ -n "$ENDPOINT" ] && EP_ARG="--endpoint $ENDPOINT"   # backend=llm �
 SC_ARG=""; [ -n "$SCENARIO" ] && SC_ARG="--scenario $SCENARIO"   # S3 定向场景
 DC_ARG=""; [ "${REC_DEMO_CAM:-1}" = "1" ] && DC_ARG="--demo-cam" # D4 演示镜头（默认开；见抬头 ③）
 [ -n "${REC_DEMO_TRACE:-}" ] && DC_ARG="--demo-cam-trace ${REC_DEMO_TRACE}"   # dev：轨迹逐 tick 落盘，供两跑逐字节比对
+# ★ S3：透传任意 Main 参数。存在的理由是**实测出来的一个盲区**：`--demo-cam` 的镜头编排
+#   （全镇定场 → 推近 → 选人 → 广场/咖啡馆/工坊）**全程停在小镇平面，一次都不进室内**。
+#   实测本棒录的 45 秒 × 每秒 1 帧共 45 帧：**0 帧是室内取景**（22 帧"没有草地"的其实是
+#   夜乘子压暗的草地，modal≈(56,81,61)，不是室内地板也不是室内背板）。
+#   ⇒ **R2 的室内外壳分化与 S3 的家具分化，在这条录制路径上结构上拍不到。**
+#   要拍室内就得给 Main 传 `--probe-space <sid> --probe-floor <fid>`，而本脚本此前没有出口。
+#   用法：REC_EXTRA_ARGS="--probe-space cafe --probe-floor 1f" bash tools/record-godot.sh …
+EX_ARG="${REC_EXTRA_ARGS:-}"
 
 BASE="${OUT%.*}"
 WAV="${BASE}_audio.wav"
@@ -73,7 +81,7 @@ export DISPLAY=$DISP
 
 T0=$(date +%s.%N)
 godot --path /game --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
-  --resolution ${W}x${H} --single-window -- --seed "$SEED" --speed "$SPEED" --backend "$BACKEND" $EP_ARG $SC_ARG $DC_ARG $AUD_ARG >/tmp/godot.log 2>&1 &
+  --resolution ${W}x${H} --single-window -- --seed "$SEED" --speed "$SPEED" --backend "$BACKEND" $EP_ARG $SC_ARG $DC_ARG $EX_ARG $AUD_ARG >/tmp/godot.log 2>&1 &
 GODOT_PID=$!
 
 # ── 等到画面不再是启动闪屏 ─────────────────────────────────────────────────
