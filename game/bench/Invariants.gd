@@ -472,11 +472,27 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 	R.append(_chk(24, "背叛无误判", false_betray == 0, "无直接上游吐露证据的背叛=%d (应=0)" % false_betray))
 
 	# ── S3a 观点派系 (25-28，含小N守护) ──
+	# ★Q1：#25 的名字承诺的是「派系归属与它的派生规则一致」，而派生规则在 Q1 之后是**两个**合取项：
+	#   ①与医心 `_aligned`（想的一样）②与医心 `_acquainted`（真的照过面）。
+	#   docs/41 §2 第四个盲区点名的正是"名字是合取式而实现只查了一半"——#39 就这么漏了「在班」两个字。
+	#   所以这里把第二项也查上，两个计数**分开报**，红的时候能一眼看出破的是哪一半。
+	#   ⚠ 余量：门开时 `_recompute_factions` 按构造保证这两项，故 `unmet` 恒 0；
+	#     门关时（`faction_fam_th<=0`）`_acquainted` 恒真 ⇒ 这一项自动退化为无牙，**与被守的性质同步消失**，
+	#     不会在 ablation 配置上假红。这一条写进 docs/65 的 does_not_detect。
 	var fac_inc := 0
+	var fac_unmet := 0
 	for ag in S.agents:
 		if (String(ag["faction"]) == "") != (int(ag["faction_size"]) == 1): fac_inc += 1
-		if String(ag["faction"]) != "" and String(ag["faction"]) != String(ag["id"]) and not S._aligned(ag, S._agent_by_id[ag["faction"]]): fac_inc += 1
-	R.append(_chk(25, "S3派系派生一致", fac_inc == 0, "不一致=%d (应=0)" % fac_inc))
+		if String(ag["faction"]) != "" and String(ag["faction"]) != String(ag["id"]):
+			if not S._aligned(ag, S._agent_by_id[ag["faction"]]): fac_inc += 1
+			if not S._acquainted(String(ag["id"]), String(ag["faction"])): fac_unmet += 1
+	#   ⚠ 第三项 `fac_unmet_placements` 是**累计**量而不是终态量，理由见 Sim.gd 那个字段的抬头：
+	#     12 人的镇跑 60 天之后人人都认识人人 ⇒ 只查终态的话，**把接触门整条删掉也全绿**（实测 3/3）。
+	#     写成直接取属性、**不写 `S.get("...")`**：后者对不存在的属性返回 null ⇒ `int(null)` = 0 ⇒
+	#     哪天字段被改名，这一臂会**静默变成恒真**——那正是本棒在防的那种失效。本文件其余各条同样是直接取。
+	var fac_unmet_ever := int(S.fac_unmet_placements)
+	R.append(_chk(25, "S3派系派生一致(对齐且相识)", fac_inc == 0 and fac_unmet == 0 and fac_unmet_ever == 0,
+		"对齐不一致=%d 终态未谋面同派系=%d 全程未谋面归堆=%d (均应=0)" % [fac_inc, fac_unmet, fac_unmet_ever]))
 	var fac_count: int = S.factions.size()
 	var in_sum := 0.0
 	var in_n := 0
