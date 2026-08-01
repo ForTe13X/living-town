@@ -122,6 +122,23 @@ const SCRUB_X0 := 584.0
 const SCRUB_X1 := 1268.0
 const SCRUB_Y := 724.0
 const SCRUB_H := 16.0
+## 键位提示行的字号与它那块底板的几何（T3：**HUD 可读性的地板就在这一行**）。
+## 改前 = 字号 **12**、底板 `_mk_panel` 的黑 0.42、正文框高 18。三样一起构成全 HUD 最差的一格：
+##   实测（`--warmup-tick 600`，提示行右半正压在亮草地上）：**WCAG 对比度 4.24**，低于 AA 的 4.5；
+##   同一行在暗背景上是 8.7–9.1 ⇒ **它的可读性完全取决于底下恰好是什么**，而那是相机决定的。
+## 底板不透明度照抄顶栏那一档（0.02/0.03/0.05 @0.74）——顶栏当初就是被同一个病（浅墙透上来）逼出来的，
+## 那里已经算过账：0.42 之下浅墙 (216,189,147) 仍有 43.7% 亮度，0.74 之下只剩 22.6%。
+## 字号 12→14 ⇒ 引擎实测行高 17→20（Smiley Sans Oblique，`get_height`），正文框跟着 18→22、
+## 顶沿上抬 2px 塞进多出来的那 4px 行高。**底板的几何一个像素都没动**——
+## 它的上沿 698 与观察台【完整卷宗档】的正文下沿 706 本来就叠 8px（收起档不叠，故出货帧看不见），
+## 把底板抬高会把这个既有的叠加变成 12px，而卷宗此刻的最坏余量只有 +11px。**别为了 4px 去动它。**
+const SCRUB_HINT_FS := 14             # **上限**，不是定值：真正用哪一档由 _fit_hint_fs 量出来
+const SCRUB_HINT_FS_MIN := 12         # 退到这一档还装不下就认了（宁可小，也不要静默折行被裁）
+const SCRUB_HINT_DY := 24.0           # 提示行顶 = SCRUB_Y - 这个（改前 22）
+const SCRUB_HINT_H := 22.0            # 提示行框高（改前 18；字号 14 的引擎行高是 20）
+const SCRUB_HINT_W := 700.0           # 提示行框宽（= 底板 576..1276 的 700px；改前是写在两处的裸字面量）
+const SCRUB_PAN_DY := 26.0            # 底板顶 = SCRUB_Y - 这个（**与改前逐字相同**）
+const SCRUB_PAN_H := SCRUB_H + 34.0   # 底板高（**与改前逐字相同**）
 var _scrub_pending := -1              # 待应用的 scrub 目标 tick；每帧至多 flush 一次（见 _flush_scrub）
 
 # ── B15 视口自适应 ────────────────────────────────────────────────────────
@@ -200,7 +217,17 @@ const OBS_PAD := 6.0                  # 正文相对面板的上内边距 ——
 # 两档的尺寸都是【量出来的】不是估的：player_touch_test.gd 用 RichTextLabel.get_content_height()
 # 对同一 fixture 比正文高度与可用高度。第一版 (232,300) 实测正文 293px / 可用 262px —— 溢出，
 # 而且 240 宽正好让人物简介那一行不再折行（少一行 19.5px）：**宽一点反而矮得多**。
-const OBS_CARD := Vector2(240.0, 340.0)   # 名片档：屏宽 18.75% / 屏面积 8.30%（改前 22.97% / 20.22%）
+## 名片档：屏宽 18.75% / 屏面积 **8.89%**（本棒之前 8.30%，更早的调试密度档是 20.22%）。
+## ⚠️ **高度 340 → 364 是被 CI 逼出来的，不是我顺手放大的**，而这一条正是"冻结字面量成对失效"的现场：
+##   字号 14→15 时我同步把 `OBS_LINE_H` 18→19，**却没有意识到 340 这个数也是按 18 标定的**。
+##   后果不是溢出——`get_content_height()` 实测 290px / 可用 328px，**真内容其实装得下**——
+##   而是 `_obs_fit_lines()` 自己的**估算**撞上了它保留的 2 行余量（328 − 2×19 = 290），
+##   于是它把最后一行"关系·冲突·记忆·观点·信念 / → 点右上「详情」（或 V）"**换成了"…还有 N 行没排下"**。
+##   ⇒ 名片档从此不再告诉玩家详情在哪里，而手机上那句话是「完整卷宗」**唯一的**入口提示。
+##   抓住它的是 `player_touch_test` 的「名片档指出详情在哪」这一条断言（`tools/ci.sh` 第 5 步）。
+##   **`--obs-fit` 抓不到它**：那条只量【完整卷宗档】，名片档不在它的采集里。
+## 两档的尺寸都是【量出来的】不是估的（见上一段注释里 player_touch_test 的做法）。
+const OBS_CARD := Vector2(240.0, 364.0)
 const OBS_FULL := Vector2(302.0, 676.0)   # 完整卷宗：左缘 x=978，与改动前同位（宽多出的 8 是贴边补的）
 const OBS_FEATH := 40.0                   # 观察台 scrim 的羽化带宽（设计 px，**绝对值**）。
                                           # ★两条实测教训都在这一个常量上：
@@ -262,7 +289,19 @@ const TOPIC_LABEL := {"cafe_expand": "扩建咖啡馆", "night_market": "办夜�
 ## **60/61 个居民**的卷宗被面板下沿静默切掉（12 居民 · 第 5 天就已经是 5/12 · 最坏 799px）。
 ## ⇒ 版式预算改由 `_obs_fit_lines()` 按**量出来的**像素高度算，见那里。
 const OBS_MAX_LINES := 34
-const OBS_LINE_H := 18.0              # 字号 14 的行距。来源：出图 after_story_t6300.png 上 13 个行距 = 234px（STORY_LINES 处同款实测）。
+## 观察台正文字号（T3：14 → 15）。它是 HUD 上**最密的一块**，改前实测：墨迹高 13-14px、
+## **笔画游程众数 1px**、行距 18px。1px 的笔画意味着任何一次降采样都会整根丢掉笔画
+## （`tools/make_gif.sh` 抬头那张五行表量到的正是这件事），而这块又恰好是"这是工具不是游戏"的最大来源。
+## ⚠️ **这个数不能单独改**：`OBS_LINE_H` 是按它标定的版式预算，两者必须一起动（见下一条）。
+const OBS_FS := 15
+## 观察台的行距预算。**14→15 的同时 18→19，两个数是一对。**
+## 来源不再是"出图上 13 个行距 = 234px"那次（那是 STORY 面板、字号 14 的读数），
+## 而是本棒在真引擎帧上逐块量出来的**渲染行距**：字号 14 → 18px、字号 15 → 19px
+## （feed 字号 15 实测同为 19px，两处互证）。经验式是 **pitch ≈ font_size + 4**，
+## 与 `Font.get_height()` 给的 20/22 **不同** —— RichTextLabel 按每行实际字形的升降部排版，
+## 比字体的全局行高紧。**照 `get_height()` 去做版式预算会高估约 15%。**
+## ⚠️ 这是一个**冻结字面量**（docs/75 §四点名的那一族）：它只在 1280×768 + Smiley Sans 上量过。
+const OBS_LINE_H := 19.0
 
 ## 小镇纪事展开档面板：左上角，顶栏之下、播报 scrim 之上（LOG_SCRIM_TOP=414 ⇒ 底边 322 留 92px 余量）。
 ## 行数预算：11 条目标各 1 行 + 标题 + "下一步"的提示行 + 页脚 = 14 行 × 约 18px(字号 14) ≈ 252px。
@@ -497,14 +536,7 @@ func _ready() -> void:
 		if _demo_cam and _probe != null:    # --demo-cam + --warmup-tick T：把录屏在 tick T 的构图【定格】拍下来。
 			_demo_cam_apply()               # 这是本棒唯一可复现的量具：轨迹是 tick 的闭式函数 ⇒ 这一帧 == 录屏那一帧
 		elif _shot_fit and _probe != null:  # --shot-fit：整镇（或当前室内 Space）入画，缩放到【bounds - HUD 余量】刚好塞进视口
-			if String(_probe.active_space) == "town":
-				_probe.go_home()            # town 才回全镇；非-town(咖啡馆室内)保持已进的 Space，别被 go_home 拽回 town
-			var _mapsz: Vector2 = _space_bounds().size
-			var _vpsz := Vector2(get_viewport().get_visible_rect().size)
-			var _pad := Vector2(120, 240)   # 顶部状态栏 + 底部聊天/时间轴 HUD 余量（避免边缘水塘被面板遮住）
-			var _fit: Vector2 = (_vpsz - _pad) / _mapsz
-			_probe.cam.zoom = Vector2.ONE * minf(_fit.x, _fit.y)   # 出图专用：绕过 ZOOM_MIN 夹取，整图入画
-			_probe.cam.position = _space_bounds().get_center()
+			_fit_active_space()
 		elif _selected_id != "" and _probe != null:   # --select（无 --shot-fit）：特写居中到当事人（角色眼验）
 			var _sag := Sim.get_agent(_selected_id)
 			if not _sag.is_empty():
@@ -569,12 +601,13 @@ func _build_hud() -> void:
 	#   完整卷宗（点「详情」或 V）：关系 / 冲突 / 记忆 / 派系 / 盟约 / 秘密 / 观点 / 信念，版式与改前逐行相同。
 	# 两档共用同一个 RichTextLabel 与同一份 _panel_text()，**没有第二套渲染**（同 C3 的动作条纪律）。
 	_obs_pan = _mk_scrim(layer, Vector2(DESIGN.x - OBS_FULL.x, OBS_TOP), OBS_FULL, 0.26, 0.0, 0.0, 0.18)
-	_obs = _mk_label(layer, fnt, 14, Vector2(986, OBS_TOP + OBS_PAD), Vector2(286, OBS_FULL.y - OBS_PAD * 2.0))
+	_obs = _mk_label(layer, fnt, OBS_FS, Vector2(986, OBS_TOP + OBS_PAD), Vector2(286, OBS_FULL.y - OBS_PAD * 2.0))
 
 	# 底部时间轴 scrubber
 	# 先铺底板再铺控件（CanvasLayer 按添加序叠放）：提示行原本是 #9aa0b5 直接画在草地上，眼验实测几乎读不出
 	# （B3 视觉复核指出，但它属 Main.gd 不在其归属内）。与日志/观察台同款半透明底板，成本一行、不碰仿真。
-	_scrub_pan = _mk_panel(layer, Vector2(SCRUB_X0 - 8, SCRUB_Y - 26), Vector2(SCRUB_X1 - SCRUB_X0 + 16, SCRUB_H + 34))
+	_scrub_pan = _mk_panel(layer, Vector2(SCRUB_X0 - 8, SCRUB_Y - SCRUB_PAN_DY), Vector2(SCRUB_X1 - SCRUB_X0 + 16, SCRUB_PAN_H))
+	_scrub_pan.color = Color(0.02, 0.03, 0.05, 0.74)   # T3：与顶栏同一档（0.42 压不住浅墙/亮草地，见 SCRUB_HINT_FS 处的实测）
 	_scrub_track = ColorRect.new()
 	_scrub_track.color = Color(1, 1, 1, 0.14)
 	_scrub_track.position = Vector2(SCRUB_X0, SCRUB_Y)
@@ -593,11 +626,22 @@ func _build_hud() -> void:
 	_scrub_handle.position = Vector2(SCRUB_X0, SCRUB_Y - 4)
 	_scrub_handle.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(_scrub_handle)
-	_scrub_hint = _mk_label(layer, fnt, 12, Vector2(SCRUB_X0, SCRUB_Y - 22), Vector2(700, 18))
+	_scrub_hint = _mk_label(layer, fnt, SCRUB_HINT_FS, Vector2(SCRUB_X0, SCRUB_Y - SCRUB_HINT_DY), Vector2(SCRUB_HINT_W, SCRUB_HINT_H))
 	# 键位提示。改动前只列了 6 个绑定（_unhandled_input 里实有 30 个动作 / 37 个 keycode），
 	# 而漏掉的恰好是 Home —— 就是那个能把"开局只看得见 13.9% 的镇子"一键修好的键（docs/43 §1.1）。
-	# 实测原文只用掉 700px 里的约 376px，所以补进 Home/L/O/F5-F8 之后仍是单行（出图复核过不换行）。
-	_scrub_hint.text = "[color=#9aa0b5]时间轴：拖动回放（确定性重演）· 空格暂停 · , . 单步 · [ ] 跳天 · Tab 切角色 · [color=#ffd166]Home 回全镇[/color] · L 跟随 · [color=#ffd166]V 详情[/color] · [color=#ffd166]J 纪事[/color] · O 设置 · F5/F8 存读档 · 点居民查看[/color]"
+	#
+	# ⚠️ **上一版这里写的"原文只用掉 700px 里的约 376px"是错的，错了 1.7 倍。**
+	#   引擎实测（`Font.get_string_size`，Smiley Sans Oblique，BBCode 已剥）：**字号 12 → 640px / 700px（91.4%）**。
+	#   ⇒ 它从来就没有"仍是单行"的余量，只是恰好没越线；而字号一抬到 14 就是 **746px**、直接折行，
+	#     再被 22px 的框高**静默裁掉**第二行（`scroll_active=false` 的老毛病）。
+	#     这个回归是本棒**先做出来、再被 3× 放大对照图抓住的**——数字对照没抓到它，因为我量的是对比度不是宽度。
+	# ⇒ 两条修法一起用，而不是二选一：
+	#   ① 去掉"（确定性重演）"这个**编辑性注解**（不是键位）⇒ 字号 14 实测 **671px / 700px**，余 29px。
+	#      这句话在 README 与 docs 里都在，HUD 这一行的职责是列键位。
+	#   ② 字号**不写死**：`_fit_hint_fs` 从 SCRUB_HINT_FS 往下退到装得进 700px 的第一档。
+	#      于是下一个往这行加字的人会自动掉到 13 或 12，而不是静默丢掉半行——**把冻结字面量换成量具**。
+	_scrub_hint.text = "[color=#9aa0b5]时间轴：拖动回放 · 空格暂停 · , . 单步 · [ ] 跳天 · Tab 切角色 · [color=#ffd166]Home 回全镇[/color] · L 跟随 · [color=#ffd166]V 详情[/color] · [color=#ffd166]J 纪事[/color] · O 设置 · F5/F8 存读档 · 点居民查看[/color]"
+	_scrub_hint.add_theme_font_size_override("normal_font_size", _fit_hint_fs(fnt, _scrub_hint.text))
 
 	# 玩家 → NPC 对话输入框（**玩家模式下**选中居民后出现；Enter 发送）。M2：经 AIBackend.chat → LLM/mock/罐头。
 	# ★改前它只 gate 在"选中了人"上，没有 gate 在玩家模式上 —— 于是纯观察模式下点任何一个居民，
@@ -619,7 +663,7 @@ func _build_hud() -> void:
 	# 手机上没有键盘 ⇒ 这一个按钮就是「完整卷宗」的唯一入口（V 键只是桌面同款，走同一个 _toggle_obs）。
 	_obs_btn = Button.new()
 	_obs_btn.add_theme_font_override("font", fnt)
-	_obs_btn.add_theme_font_size_override("font_size", 14)
+	_obs_btn.add_theme_font_size_override("font_size", 15)   # T3：与观察台正文同档（钮框 62×30，字号 15 的引擎行高 22 ⇒ 仍有余量）
 	_obs_btn.position = Vector2(OBS_BTN_X, 4)
 	_obs_btn.size = Vector2(OBS_BTN_W, 30)
 	_obs_btn.focus_mode = Control.FOCUS_NONE   # 不抢键盘焦点（同 ⚙/后端/动作条钮）
@@ -630,7 +674,7 @@ func _build_hud() -> void:
 	# Button 独占自身矩形，不干扰世界点选；FOCUS_NONE 免抢键盘焦点（否则空格/快捷键失灵）。
 	_backend_btn = Button.new()
 	_backend_btn.add_theme_font_override("font", fnt)
-	_backend_btn.add_theme_font_size_override("font_size", 14)
+	_backend_btn.add_theme_font_size_override("font_size", 15)   # T3：同上（钮框 132×30）
 	_backend_btn.position = Vector2(1140, 4)
 	_backend_btn.size = Vector2(132, 30)
 	_backend_btn.focus_mode = Control.FOCUS_NONE
@@ -655,6 +699,11 @@ func _build_hud() -> void:
 	_goals_box.bbcode_enabled = true
 	_goals_box.scroll_active = false
 	_goals_box.add_theme_font_override("normal_font", fnt)
+	# T3 **量了之后决定不改**（docs/75 §四要求把这种决定写进回执）：
+	# 本块可用高 GOALS_SZ.y-12 = 268px，内容 14 行（标题+11 目标+下一步+页脚）。
+	# 按本棒实测的行距（字号 14→18px、15→19px）：14 → 14×18=252/268（余 16px）；**15 → 14×19=266/268（余 2px）**。
+	# 而 RichTextLabel `scroll_active=false` 溢出**不报错、不出滚动条，只静默裁掉尾巴**（D2 的教训），
+	# 中文只要折一次行就会多出 19px ⇒ 直接吞掉最后一条目标。**代价大于收益，故留在 14。**
 	_goals_box.add_theme_font_size_override("normal_font_size", 14)
 	_goals_box.position = Vector2(10, 6)
 	_goals_box.size = GOALS_SZ - Vector2(20, 12)
@@ -672,6 +721,10 @@ func _build_hud() -> void:
 	_story_box.bbcode_enabled = true
 	_story_box.scroll_active = false
 	_story_box.add_theme_font_override("normal_font", fnt)
+	# T3 同样**量了之后决定不改**：可用高 320px，STORY_LINES=16。
+	# 14 → 16×18=288/320（余 32px ≈ 1.8 行折行余量，正是 STORY_LINES 注释里那 1.7 行的来源）；
+	# 15 → 16×19=304/320（余 16px ≈ 0.84 行）。而字号一大每行少约 2 个汉字（450px / 15px ⇒ 30 字 vs 32 字）
+	# ⇒ **折行概率同时上升、余量同时下降**，两头都朝坏的方向走。留在 14。
 	_story_box.add_theme_font_size_override("normal_font_size", 14)
 	_story_box.position = Vector2(10, 6)
 	_story_box.size = STORY_SZ - Vector2(20, 12)
@@ -798,14 +851,14 @@ func _relayout_hud() -> void:
 	_sx1 = SCRUB_X1 + dx
 	_sy = SCRUB_Y + dy
 	if _scrub_pan != null:
-		_scrub_pan.position = Vector2(_sx0 - 8.0, _sy - 26.0)
-		_scrub_pan.size = Vector2(_sx1 - _sx0 + 16.0, SCRUB_H + 34.0)
+		_scrub_pan.position = Vector2(_sx0 - 8.0, _sy - SCRUB_PAN_DY)
+		_scrub_pan.size = Vector2(_sx1 - _sx0 + 16.0, SCRUB_PAN_H)
 	if _scrub_track != null:
 		_scrub_track.position = Vector2(_sx0, _sy)
 		_scrub_track.size = Vector2(_sx1 - _sx0, SCRUB_H)
 	if _scrub_hint != null:
-		_scrub_hint.position = Vector2(_sx0, _sy - 22.0)
-		_scrub_hint.size = Vector2(700.0 + dx, 18.0)
+		_scrub_hint.position = Vector2(_sx0, _sy - SCRUB_HINT_DY)
+		_scrub_hint.size = Vector2(SCRUB_HINT_W + dx, SCRUB_HINT_H)
 	if _chat_in != null:                       # 聊天框：跟底边；宽度吃掉观察台让出的那段，保持 14px 间隙
 		# ★高度只读不写：构造期（入树前）写的 30 会在入树后被主题最小高抬到 31；此处若照抄常量 30
 		# 又会把它压回去，文字基线上移 1px —— 桌面基准的「逐像素不变」就毁在这一个像素上（已被 PIL 差分抓到）。
@@ -960,6 +1013,20 @@ func _ramp(t: float, w: float) -> float:
 	var s := clampf(t / w, 0.0, 1.0)
 	return s * s * (3.0 - 2.0 * s)
 
+## 键位提示行的字号 = **能把整行装进 SCRUB_HINT_W 的最大那一档**（从 SCRUB_HINT_FS 往下退）。
+## 为什么要有它：这一行是一条**会被人继续往上加东西**的清单（历史上已经加过一轮 Home/L/O/F5-F8），
+## 而它一旦超宽就折行、再被框高静默裁掉——`RichTextLabel.scroll_active=false` 不报错、不出滚动条。
+## 于是"字号"和"这行有多长"是一对**必须一起成立**的约束，写死其中任何一个都会在下一次编辑时静默破掉。
+## 测的是**剥掉 BBCode 之后**的纯文本：只剥已知标签，`[ ] 跳天` 里那对方括号必须留着（它是画出来的字）。
+func _fit_hint_fs(fnt: Font, bb: String) -> int:
+	var re := RegEx.new()
+	re.compile("\\[/?(?:color|b|i|u|s|url|font|img)[^\\]]*\\]")
+	var plain := re.sub(bb, "", true)
+	var s := SCRUB_HINT_FS
+	while s > SCRUB_HINT_FS_MIN and fnt.get_string_size(plain, HORIZONTAL_ALIGNMENT_LEFT, -1, s).x > SCRUB_HINT_W:
+		s -= 1
+	return s
+
 func _mk_label(layer: CanvasLayer, fnt: Font, fsize: int, pos: Vector2, sz: Vector2) -> RichTextLabel:
 	var l := RichTextLabel.new()
 	l.bbcode_enabled = true
@@ -1003,11 +1070,33 @@ func _demo_cam_apply() -> void:
 	var st: Dictionary = _probe.demo_apply(Sim.tick_no, _vp())
 	if st.is_empty():
 		return
+	# ── 室内插曲（本棒新增）───────────────────────────────────────────────
+	# `demo_apply` 只描述"相机在小镇平面的哪、多大"，它没有"在哪个 Space"这一维
+	# ⇒ 光有它，镜头**结构上进不了屋**（docs/74 §五·2 实测：45 帧里 0 帧室内取景）。
+	# 这几行在它**之后**覆盖：切 active Space + 用与 --shot-fit 同一份 `_fit_active_space` 摆机位。
+	# 仍是 tick 的**闭式函数**：窗口来自常量表 DEMO_INTERIOR，进/出只发生在窗口边界那一 tick。
+	var inter: Dictionary = _demo_interior_at(int(st["t"]))
+	var sp_id := String(inter.get("space", "town"))
+	var fl_id := String(inter.get("floor", "outdoor"))
+	if String(_probe.active_space) != sp_id or String(_probe.active_floor) != fl_id:
+		_demo_enter(sp_id, fl_id)
+		if sp_id == "town":
+			# 出屋那一 tick：`set_space` 把相机拽到了 town bounds 的正中，而这一拍的机位在别处
+			# ⇒ 不放回去就会有恰好一帧的跳切（下一 tick 才被 demo_apply 纠正）。
+			_probe.cam.position = Vector2(st["pos"])
+			_probe.cam.zoom = Vector2.ONE * float(st["zoom"])
+	# 有效机位：室内那几拍相机由 fit 决定，`st` 里那一份是小镇平面的、已被覆盖 ⇒ 选人/trace 都要读有效值。
+	var cz := float(st["zoom"])
+	var cpos := Vector2(st["pos"])
+	if sp_id != "town":
+		_fit_active_space(false)
+		cz = _probe.cam.zoom.x
+		cpos = _probe.cam.position
 	# 只在越过名牌门之后才选人：全景档（zoom≈0.229）名字/气泡根本不画，选了观察台会与画面对不上。
 	# 阈值**读 WorldView 的原件**而不是抄一个 0.45——抄一份就一定会漂（docs/41 §4 的同一条教训）。
 	var sel := ""
-	if float(st["zoom"]) >= WorldViewScript.LABEL_MIN_ZOOM:
-		sel = _demo_pick(Vector2(st["pos"]), float(st["zoom"]))
+	if cz >= WorldViewScript.LABEL_MIN_ZOOM:
+		sel = _demo_pick(cpos, cz, sp_id, fl_id)
 	else:
 		_demo_sel_hold = 0               # 拉回全景 ⇒ 清空选中（那一档名牌根本不画，观察台会与画面对不上）
 	if sel != _selected_id:
@@ -1017,25 +1106,71 @@ func _demo_cam_apply() -> void:
 		# 末两列 = 被选中者此刻的【屏幕坐标】。存在的理由：判断"他是不是被不透明 HUD 挡住了"
 		# 只能在屏幕空间做，而这一条正是 D5 把世界层名牌收进焦点集合之后最要命的失败模式
 		# （观察台亮着某人、画面里找不到他）。没有这两列就只能靠肉眼翻帧去猜。
+		# 第 11 列（本棒加）= 此刻的 space/floor：没有它，"这一拍在不在屋里"只能靠翻帧去猜。
 		var sp := Vector2(-1, -1)
 		if sel != "":
 			var sa := Sim.get_agent(sel)
 			if not sa.is_empty():
 				sp = (Vector2(float(sa["pos"].x) * 48.0 + 24.0, float(sa["pos"].y) * 48.0 + 24.0) \
-					- Vector2(st["pos"])) * float(st["zoom"]) + _vp() * 0.5
-		_demo_trace.store_line("%d|%s|%.4f|%.5f|%.2f|%.2f|%d|%s|%.1f|%.1f" % [
-			Sim.tick_no, String(st["shot"]), float(st["u"]), float(st["zoom"]),
-			Vector2(st["pos"]).x, Vector2(st["pos"]).y,
-			1 if float(st["zoom"]) >= WorldViewScript.LABEL_MIN_ZOOM else 0, sel, sp.x, sp.y])
+					- cpos) * cz + _vp() * 0.5
+		_demo_trace.store_line("%d|%s|%.4f|%.5f|%.2f|%.2f|%d|%s|%.1f|%.1f|%s/%s" % [
+			Sim.tick_no, String(st["shot"]), float(st["u"]), cz,
+			cpos.x, cpos.y,
+			1 if cz >= WorldViewScript.LABEL_MIN_ZOOM else 0, sel, sp.x, sp.y, sp_id, fl_id])
 		_demo_trace.flush()
+
+## 演示镜头的【室内插曲】表：`t` 是 ProbeController 那条 2510-tick 循环里的位置（`demo_apply` 返回的 `t`）。
+## ★两段都**落在对应定场镜头的中段**（`cafe` 是 t∈[1200,1620)、`work` 是 t∈[1800,2180)）：
+##   先在门外看见这栋楼，再进屋，再退回小镇——而不是凭空跳进一个不知道在哪的房间。
+## ★为什么不写进 ProbeController 的 `DEMO_SHOTS`：那张表只有"相机在哪/多大"，没有"在哪个 Space"；
+##   而进屋还要动 `SpaceGraph` 查 bounds、动 `WorldView` 换渲染路径——这两样本来就由 Main 装配。
+##   （ProbeController 也不在本棒的 owns 里，一个字节都没动。）
+## ★这两间屋是 R2 的外壳分色 + S3 的家具分化**都拍得到**的两档：
+##   `cafe` = commercial（杯碟架）、`work` = workshop（工具架），墙色与货架画法都不同。
+##
+## ⚠️ **屋里有没有人是量出来的，不是想出来的**（seed 20260626，tick 20..2540 每 20 一采、共 127 个采样点）：
+##   `home/1f` 101/127 有人（79.5%）· `cafe/1f` 30/127（23.6%）· **`work/1f` / `shop/1f` / `library/1f` 恒为 0**。
+##   ⇒ **工坊那一拍必然是一间空屋**——它照样值得拍（工具架/工作台/木箱都是 R2+S3 的产出），
+##     但"演示里的室内会有人在活动"这句话对它是**假的**，写在这里免得后人当 bug 查。
+##   ⇒ 想要"有人的室内"，唯一够密的是 `home/1f`；本棒没有选它，因为镜头此刻看的是咖啡馆/工坊，
+##     从工坊外景切进一间民居会让"进的是你正在看的那栋楼"这条读法断掉。这是**取舍**，不是遗漏。
+##   咖啡馆那一段刻意压到定场镜头的后半（1420–1610）：seed 20260626 的第一圈里 1520–1600 正好有人。
+##   **这不是可依赖的性质**——占用是绝对 tick 的函数，而窗口是 `tick % 2510` 的函数，换 seed / 第二圈就未必。
+const DEMO_INTERIOR := [
+	{"t0": 1420, "t1": 1610, "space": "cafe", "floor": "1f"},   # 在 `cafe` 定场镜头 [1200,1620) 的后半
+	{"t0": 1900, "t1": 2120, "space": "work", "floor": "1f"},   # 在 `work` 定场镜头 [1800,2180) 的中段
+]
+
+## t → 该进哪间屋（{} = 留在小镇）。纯查表，无状态。
+func _demo_interior_at(t: int) -> Dictionary:
+	for e in DEMO_INTERIOR:
+		if t >= int(e["t0"]) and t < int(e["t1"]):
+			return e
+	return {}
+
+## 演示镜头切 Space：**纯 View**（`set_space` 只动 Probe 自己的 bounds/相机，不移动任何 Agent、不写 Sim）。
+## `queue_redraw` 是必须的：docs/41 §6 盲区⑨——世界层只从 `Sim.ticked`/`Sim.agent_changed`/渲染位脏三处排重画，
+## 而 `--shot` 把 `auto_run=false` ⇒ 定格路径上 `Sim.ticked` 不会来，画面会停在旧空间而 HUD 说你已经进屋了。
+func _demo_enter(sid: String, fid: String) -> void:
+	if _probe == null or _sg == null:
+		return
+	if sid != "town" and not _sg.has_space(sid):
+		return                                  # 数据里没这间屋 ⇒ 静默留在小镇（同"缺文件即关掉整个子系统"的纪律）
+	_probe.set_space(sid, fid, _sg.bounds_px(sid))
+	if _view != null:
+		_view.queue_redraw()
 
 ## 取景内选人：**对 Sim 只读**。候选 = 此刻真的在画面里的居民；从中按 HRW 取一个（理由见 DEMO_SEL_HOLD）。
 ## 每 tick 重算（而不是"在分镜边界记一次"）是刻意的：只有这样它才是 tick 的纯函数，
 ## `--shot --warmup-tick T` 才能复现录屏在 tick T 选中的那个人。
-func _demo_pick(center: Vector2, zoom: float) -> String:
+## `space`/`floor`：镜头此刻在哪一层。**候选必须与镜头同层**——原先写死 `!= "town"` 就 continue，
+## 于是室内那几拍会去选一个站在镇上、画面里根本没有的人（"观察台亮着某人、画面里找不到他"的同一种病）。
+## 室内 Agent 的 `pos` 是**该层的局部格**，而室内 Space 的 bounds 从原点起（见 WorldView `_draw_space_placeholder`）
+## ⇒ `pos*48+24` 这条映射在两种层上逐字通用，不需要第二套坐标。
+func _demo_pick(center: Vector2, zoom: float, space := "town", floor_id := "outdoor") -> String:
 	# ① 迟滞：现在这位还在安全框里、且没到换人节奏 → 就让镜头陪他把这段待完
 	var keep := _demo_box(zoom, DEMO_KEEP_MARGIN)
-	if _selected_id != "" and _demo_sel_hold < DEMO_SEL_HOLD and _demo_in_frame(_selected_id, center, keep):
+	if _selected_id != "" and _demo_sel_hold < DEMO_SEL_HOLD and _demo_in_frame(_selected_id, center, keep, space, floor_id):
 		_demo_sel_hold += 1
 		return _selected_id
 	# ② 换人：候选 = 此刻离安全框边缘还有余量的居民；按 HRW 取一个（键在一个窗口内恒定 ⇒ 不会逐 tick 跳）
@@ -1048,8 +1183,8 @@ func _demo_pick(center: Vector2, zoom: float) -> String:
 	for ag in Sim.agents:
 		if ag.get("is_player", false):
 			continue
-		if String(ag.get("space", "town")) != "town":
-			continue                     # 人在室内 ⇒ 镜头里看不见他，选了就是观察台与画面对不上
+		if String(ag.get("space", "town")) != space or String(ag.get("floor", "outdoor")) != floor_id:
+			continue                     # 人不在镜头这一层 ⇒ 画面里看不见他，选了就是观察台与画面对不上
 		var d := (Vector2(float(ag["pos"].x) * 48.0 + 24.0, float(ag["pos"].y) * 48.0 + 24.0) - c).abs()
 		if d.x > half.x or d.y > half.y:
 			continue
@@ -1093,9 +1228,9 @@ func _demo_box(zoom: float, margin: float) -> Array:
 	return [off, Vector2(r - l, b - t) * 0.5 / z]
 
 ## 某人此刻是否在【安全框】里（只读 Sim）。center=相机世界坐标，box=_demo_box 的返回。
-func _demo_in_frame(id: String, center: Vector2, box: Array) -> bool:
+func _demo_in_frame(id: String, center: Vector2, box: Array, space := "town", floor_id := "outdoor") -> bool:
 	var ag := Sim.get_agent(id)
-	if ag.is_empty() or String(ag.get("space", "town")) != "town":
+	if ag.is_empty() or String(ag.get("space", "town")) != space or String(ag.get("floor", "outdoor")) != floor_id:
 		return false
 	var p := Vector2(float(ag["pos"].x) * 48.0 + 24.0, float(ag["pos"].y) * 48.0 + 24.0)
 	var d := (p - (center + Vector2(box[0]))).abs()
@@ -2245,6 +2380,32 @@ func _space_bounds() -> Rect2:
 	if _probe != null:
 		sid = String(_probe.active_space)
 	return _sg.bounds_px(sid)
+
+## 把 **active Space**（小镇或某间室内）整个装进视口：缩放到【bounds − HUD 余量】刚好塞得下。
+##
+## ★这段代码此前**嵌在 `if _shot_path != ""` 分支里**（旧 :499）⇒ **只有 `--shot` 出图模式走得到**。
+##   后果不是"少一个开关"，而是**录屏路径上没有任何出口**：`--probe-space` 能把 Probe 送进屋，
+##   但相机留在小镇那一档的缩放上 ⇒ 实测房间只占画面约 1%（1280×768 里约 96×80 px），成片不可用。
+##   docs/74 §五·2 把根因定位到了这一行、并明写"修法是把 fit 提到 `--shot` 分支之外"——这就是那一步。
+##   提出来之后**出图与演示镜头共用同一份几何**（不是抄第二份：抄一份就一定会漂，docs/41 §4）。
+##
+## `reset_town`：town 才需要先 `go_home()` 复位边界；非-town 保持已进的 Space，别被 go_home 拽回 town。
+##   演示镜头传 false —— 它每 tick 都调一次，而 `go_home()` 会每次 `push_history()`（返回栈被churn 掉）。
+## 余量取 `ProbeController.HOME_PAD` 的**原件**而不是另抄一份 `Vector2(120,240)`：
+##   ProbeController 那行注释原本写着"与 Main 的 --shot-fit 同款常量"——两处同款常量正是漂移的温床。
+func _fit_active_space(reset_town := true) -> void:
+	if _probe == null:
+		return
+	if reset_town and String(_probe.active_space) == "town":
+		_probe.go_home()
+	var b := _space_bounds()
+	var mapsz: Vector2 = b.size
+	if mapsz.x <= 1.0 or mapsz.y <= 1.0:
+		return
+	var pad: Vector2 = _probe.HOME_PAD          # 顶部状态栏 + 底部聊天/时间轴 HUD 余量
+	var fit: Vector2 = (_vp() - pad) / mapsz
+	_probe.cam.zoom = Vector2.ONE * minf(fit.x, fit.y)   # 刻意绕过 ZOOM_MIN 夹取：整图入画优先
+	_probe.cam.position = b.get_center()
 
 ## P1 Gate + P3：Probe 切 Space/Floor（inspect-only，绝不移动任何 Agent）。I=循环空间（town→咖啡馆→测试阁楼→…），PgUp/PgDn=换层。
 func _probe_toggle_space() -> void:
