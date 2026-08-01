@@ -1,0 +1,443 @@
+{
+  "_meta": {
+    "note": "互补性锚：哪些夹具是哪条不变量【唯一】的活输入来源。由 tools/gate_fixture_audit.py --run --bake-ledger 烘，由 tools/gate_complement_guard.py 每次 CI 现读一遍。期望值不写在守卫里，只写在这里——守卫那一侧没有任何冻结字面量。",
+    "baked_by": "GODOT=… python tools/gate_fixture_audit.py --run --bake-ledger",
+    "baked_at": "2026-08-02",
+    "baked_commit": "c9e6ee6ed9cfee4786e99acba477f833495484b2",
+    "dead_at_bake": [],
+    "rebake_history": [
+      "2026-08-02 · 烘于 commit c9e6ee6 · 7 个夹具 × 34 条 C/G 不变量 · 烘锚时处处空转的：（无）"
+    ]
+  },
+  "fixtures": {
+    "S0": {
+      "step": "4 S0 门",
+      "requires": [
+        {
+          "file": "tools/ci.sh",
+          "pattern": "bench/Harness\\.gd(?:[\\s\\S]{0,400}?)--golden",
+          "why": "第 4 步 S0 门（带跨进程金标锚的那一次 Harness 调用）"
+        }
+      ],
+      "floors": {
+        "CI_SEEDS": {
+          "kind": "seeds",
+          "value": 12
+        },
+        "CI_DAYS": {
+          "kind": "int",
+          "value": 60
+        }
+      }
+    },
+    "POOL16": {
+      "step": "4a 宏观池尺度门",
+      "requires": [
+        {
+          "file": "tools/ci.sh",
+          "pattern": "bench/Harness\\.gd(?:[\\s\\S]{0,400}?)--agents \"\\$POOL_N\"",
+          "why": "第 4a 步宏观池尺度门（传 --agents 的那一次 Harness 调用）"
+        }
+      ],
+      "floors": {
+        "CI_POOL_SEEDS": {
+          "kind": "seeds",
+          "value": 12
+        },
+        "CI_POOL_DAYS": {
+          "kind": "int",
+          "value": 60
+        },
+        "CI_POOL_N": {
+          "kind": "int",
+          "value": 16
+        }
+      }
+    },
+    "BG30": {
+      "step": "4d/4e 后端门（backend=null 代理）",
+      "requires": [
+        {
+          "file": "tools/ci.sh",
+          "pattern": "bench/BackendGate\\.tscn",
+          "why": "第 4d 步外部后端门（模型路唯一的硬不变量门）"
+        }
+      ],
+      "floors": {
+        "CI_BG_SEEDS": {
+          "kind": "seeds",
+          "value": 4
+        },
+        "CI_BG_DAYS": {
+          "kind": "int",
+          "value": 30
+        },
+        "CI_BG_N": {
+          "kind": "int",
+          "value": 12
+        }
+      }
+    },
+    "DET_default": {
+      "step": "4c DetGate/default",
+      "requires": [
+        {
+          "file": "tools/ci.sh",
+          "pattern": "bench/DetGate\\.gd",
+          "why": "第 4c 步场景确定性门"
+        },
+        {
+          "file": "game/bench/DetGate.gd",
+          "pattern": "TRACKS\\s*:=\\s*\\[\\s*\"\"",
+          "why": "DetGate.TRACKS 里的 `(default)` 轨"
+        }
+      ],
+      "floors": {
+        "CI_DG_SEEDS": {
+          "kind": "seeds",
+          "value": 4
+        },
+        "CI_DG_DAYS": {
+          "kind": "int",
+          "value": 20
+        }
+      }
+    },
+    "DET_faction": {
+      "step": "4c DetGate/faction",
+      "requires": [
+        {
+          "file": "tools/ci.sh",
+          "pattern": "bench/DetGate\\.gd",
+          "why": "第 4c 步场景确定性门"
+        },
+        {
+          "file": "game/bench/DetGate.gd",
+          "pattern": "TRACKS\\s*:=\\s*\\[[^\\]]*\"faction\"",
+          "why": "DetGate.TRACKS 里的 `faction` 轨"
+        }
+      ],
+      "floors": {
+        "CI_DG_SEEDS": {
+          "kind": "seeds",
+          "value": 4
+        },
+        "CI_DG_DAYS": {
+          "kind": "int",
+          "value": 20
+        }
+      }
+    },
+    "DET_betray": {
+      "step": "4c DetGate/betray",
+      "requires": [
+        {
+          "file": "tools/ci.sh",
+          "pattern": "bench/DetGate\\.gd",
+          "why": "第 4c 步场景确定性门"
+        },
+        {
+          "file": "game/bench/DetGate.gd",
+          "pattern": "TRACKS\\s*:=\\s*\\[[^\\]]*\"betray\"",
+          "why": "DetGate.TRACKS 里的 `betray` 轨"
+        }
+      ],
+      "floors": {
+        "CI_DG_SEEDS": {
+          "kind": "seeds",
+          "value": 4
+        },
+        "CI_DG_DAYS": {
+          "kind": "int",
+          "value": 20
+        }
+      }
+    },
+    "DET_freerider": {
+      "step": "4c DetGate/freerider",
+      "requires": [
+        {
+          "file": "tools/ci.sh",
+          "pattern": "bench/DetGate\\.gd",
+          "why": "第 4c 步场景确定性门"
+        },
+        {
+          "file": "game/bench/DetGate.gd",
+          "pattern": "TRACKS\\s*:=\\s*\\[[^\\]]*\"freerider\"",
+          "why": "DetGate.TRACKS 里的 `freerider` 轨"
+        }
+      ],
+      "floors": {
+        "CI_DG_SEEDS": {
+          "kind": "seeds",
+          "value": 4
+        },
+        "CI_DG_DAYS": {
+          "kind": "int",
+          "value": 20
+        }
+      }
+    }
+  },
+  "providers": {
+    "1": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "BG30"
+    ],
+    "3": [
+      "S0",
+      "POOL16"
+    ],
+    "5": [
+      "S0",
+      "POOL16"
+    ],
+    "6": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "7": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "9": [
+      "S0",
+      "POOL16",
+      "DET_faction",
+      "DET_freerider",
+      "BG30"
+    ],
+    "10": [
+      "S0",
+      "POOL16"
+    ],
+    "12": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "13": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "16": [
+      "S0",
+      "POOL16"
+    ],
+    "18": [
+      "S0",
+      "POOL16"
+    ],
+    "19": [
+      "S0",
+      "POOL16"
+    ],
+    "20": [
+      "S0"
+    ],
+    "21": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_betray",
+      "BG30"
+    ],
+    "22": [
+      "DET_betray"
+    ],
+    "23": [
+      "DET_betray"
+    ],
+    "24": [
+      "DET_betray"
+    ],
+    "25": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "26": [
+      "S0",
+      "POOL16"
+    ],
+    "27": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "28": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "29": [
+      "S0",
+      "POOL16"
+    ],
+    "30": [
+      "S0",
+      "POOL16",
+      "DET_freerider"
+    ],
+    "31": [
+      "S0",
+      "POOL16",
+      "DET_freerider",
+      "BG30"
+    ],
+    "32": [
+      "S0",
+      "POOL16",
+      "DET_freerider",
+      "BG30"
+    ],
+    "33": [
+      "S0",
+      "POOL16",
+      "DET_freerider"
+    ],
+    "34": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "35": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "36": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "37": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "38": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "39": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "40": [
+      "S0",
+      "POOL16"
+    ],
+    "41": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ]
+  },
+  "invariant_kinds": {
+    "1": "G",
+    "2": "A",
+    "3": "C",
+    "4": "A",
+    "5": "G",
+    "6": "C",
+    "7": "C",
+    "8": "A",
+    "9": "C",
+    "10": "C",
+    "11": "A",
+    "12": "C",
+    "13": "C",
+    "14": "A",
+    "15": "D",
+    "16": "G",
+    "17": "A",
+    "18": "G",
+    "19": "G",
+    "20": "G",
+    "21": "C",
+    "22": "C",
+    "23": "C",
+    "24": "C",
+    "25": "C",
+    "26": "G",
+    "27": "C",
+    "28": "C",
+    "29": "G",
+    "30": "C",
+    "31": "C",
+    "32": "C",
+    "33": "C",
+    "34": "G",
+    "35": "C",
+    "36": "C",
+    "37": "C",
+    "38": "G",
+    "39": "C",
+    "40": "G",
+    "41": "G"
+  }
+}

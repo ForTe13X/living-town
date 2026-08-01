@@ -3,7 +3,7 @@
 #   GODOT     path to the Godot 4.6.2 headless binary (default: godot on PATH)
 #   CI_SEEDS  S0 seed range (default 1-12)      CI_DAYS  S0 days (default 60)   CI_DET  det seeds (default 3)
 #   CI_POOL_N/CI_POOL_SEEDS/CI_POOL_DAYS/CI_POOL_DET  4a 宏观池尺度门 (default 16 / 1-12 / 60 / 1)
-#   CI_BG_SEEDS/CI_BG_DAYS/CI_BG_N  4d 外部后端门 (default 1-4 / 8 / 12)
+#   CI_BG_SEEDS/CI_BG_DAYS/CI_BG_N  4d 外部后端门 (default 1-4 / 30 / 12；★ 2026-08-02 Y2 把 8 抬到 30，理由见第 4d 步)
 #   CI_STORY_SEEDS/CI_STORY_DAYS · CI_GOALS_SEEDS/CI_GOALS_DAYS  第 5 步两个 View 侧门的网格
 #     （★ 2026-08-02 X3 起本文件显式给它们赋默认值，**不再用场景里的 14 天**——理由见第 5 步的注释）
 # Fast local plumbing check: CI_SEEDS=1-3 CI_DAYS=30 bash tools/ci.sh
@@ -268,6 +268,49 @@ step "2e. 可重算门 (文档里的数 == 现跑那条命令算出来的数)"
   && ok "可重算普查器 负对照（三条分类翻面）" \
   || { tail -12 "$LT_LOG/recalc_scan.log"; bad "可重算普查器 负对照失败"; }
 
+# ── 2f. 互补性守卫 ──────────────────────────────────────────────────────────
+# Y2（编号 97）。守的是编号 94 §二·2 结尾自己点名、而当时没有任何机器在维护的那条性质：
+#
+#   全 CI 口径下"整条 CI 都抓不到"的不变量条数是 **0**，**而那个 0 之所以成立，
+#   只因为 4c 的 betray 轨与 4a 的 N=16 恰好补上了第 4 步的洞**——这四条 track 是
+#   D 波、K/L 波各自为了别的理由加的，**没有任何机制在维护这份互补关系**。
+#   谁哪天为了省钱把 4c 拿掉，`#22/#23/#24` 当场退化成纸，而每一步都还是绿的。
+#
+# ⚠️ 它**不是**把 `gate_fixture_audit.py` 搬进 CI。那件事 X3 明确否掉过，理由是
+#   「能上门 = HEAD 这棵树的性质；不能上门 = 随语料移动的快照」——前件计数正是后者
+#   （谁调一次平衡它就动），而且它贵（全量普查一次约 12 min）。
+#   本步只把那次昂贵普查的**结构性结论**烘成一份锚（tools/gate_complement_ledger.json，
+#   与 golden_digests.json / modelpath_anchor.json 同一个形状），每次 CI 只做纯文本比对：
+#   **锚里记着的"某条不变量【唯一】的活输入来源"，在今天的 ci.sh / DetGate.gd 里还在不在、有没有变弱。**
+#   ⇒ 判决与 seed / 平衡 / 语料无关，在任何人的机器上逐字节同一个结果，**约 0.02 s、不进 godot**。
+#
+# 探测包络（docs/41 §2.5；完整版见编号 97）：
+#   detects（--self-test 十条，**每次 CI 跑一遍**，不是一次性的）：
+#     M1 锚里某条不变量的活输入来源是空集 ⇒ 红并点名（这就是派单要的那条"处处空转"负对照）；
+#     M2 第 4c 步从 ci.sh 里消失 ⇒ 红，且点名 #22/#23/#24 会因此退化成纸；
+#     M2b 4c 还在、但 betray 轨被从 DetGate.TRACKS 里拿掉 ⇒ 同样红（删得掉却看不见的那种删法）；
+#     M3 夹具变弱（CI_BG_DAYS 30→8）⇒ 报出来；M7 把整段【注释掉】⇒ 照样红（剔注释再匹配）。
+#   正样本面：M0 未改动不假红 · M4 夹具**变强**（30→60）一个字都不红 · M5 冗余被削掉只警告。
+#   does_not_detect（跑出来的）：
+#     · **锚过期它一概不知道**。锚是那一刻的测量；谁改了平衡让 `#29` 的 aid 掉到 8 以下，
+#       本门照样绿——那正是它刻意不重量的东西（重量 = 把随语料移动的快照做成门）。
+#     · **只守"来源还在不在"，不守"来源里那件事还发不发生"**。
+#     · **它守的是【喂给判据的世界】，不是【判据本身还在不在】**：把 `#22` 从 Invariants.gd 里
+#       整个删掉，夹具与接线一个字没动 ⇒ **本门不红**，只警告一声（M8 实测）。
+#     · 逐 seed 的**部分**空洞它一概不报（同一棵树上普查工具报 `#29` 8/12 个 seed 空洞，本门只字不提）。
+#     · `consumes=none` 的两格（VoiceGate / story_test）不在量程里：它们一条不变量都不调。
+#     · 新不变量默认只警告不判红（game/bench/Invariants.gd 不在本棒的行里，
+#       让别人写一条新不变量就把 CI 弄红 = 用红色惩罚一个正当改动）。`LT_COMPLEMENT_STRICT=1` 可让它红。
+#   confidence：**N=10 个变异体**（5 条判红 + 5 条判"不许红"，后者含一条明知的盲区 M8），
+#     全部在 --self-test 里**每跑一次 CI 就复现一次**，不是一次性的。
+step "2f. 互补性守卫 (某条不变量【唯一】的活输入来源还在不在)"
+"$PY" tools/gate_complement_guard.py --self-test >"$LT_LOG/complement_selftest.log" 2>&1 \
+  && ok "互补性守卫 负对照（处处空转/删掉 4c/删掉 betray 轨/夹具变弱/注释掉 五条都会红；变强与冗余不红）" \
+  || { tail -14 "$LT_LOG/complement_selftest.log"; bad "互补性守卫 负对照失败 —— 这道门没牙"; }
+"$PY" tools/gate_complement_guard.py 2>&1 | tee "$LT_LOG/complement.log"
+[ "${PIPESTATUS[0]}" -eq 0 ] && ok "互补性守卫（单点依赖的夹具逐条现读现比）" \
+  || bad "互补性守卫（有不变量失去了它【唯一】的活输入来源，见上）"
+
 step "3. godot import + parse smoke"
 "$GODOT" --headless --path game --import >"$LT_LOG/import.log" 2>&1 || true
 if grep -qiE 'SCRIPT ERROR|Parse Error|Failed to load script' "$LT_LOG/import.log"; then
@@ -468,6 +511,25 @@ step "4d. BackendGate 外部后端门 (硬不变量含#01 / 同seed两跑一致 
 #     ⇒ C 的 escape 数在这两条臂上**恒为 0**，"闭集 1332/1332 ✅"是恒真、不是证据。
 # 三条臂 + 一条自检臂（2026-07-26 D1 起，此前第三条是假的——它与第一条的 #01 逐位同一个谓词）：
 #   A 硬不变量全绿  B 同 seed 两跑 digest/事件/逐tick前缀链一致  C 闭集封闭（后端交回的 intent 必在本次候选里）
+#
+# ── ★ 2026-08-02（Y2）：`CI_BG_DAYS` 8 → 30 ────────────────────────────────────
+# 由来：编号 94 §四·3① 把这一格量成了**全 CI 里空洞率最高的一格**——26 条硬不变量里
+#   **12 条（46%）**在 8 天档上前件为 0，而它同时是**模型路唯一**的硬不变量门。
+#   X3 已经把"抬到有效夹具会不会红"测掉了（`--days 30` 仍 PASS），本棒复跑复现，并把代价量成区间。
+# 买到了什么（空洞 **12/26 = 46% → 7/26 = 27%**，X3 实测，本棒未重跑普查那一列）：
+#   `#37`(选举) `#41`(craft_credit 在班) 从整格空 → 整格有输入；
+#   `#09`(承诺) `#31`(active 盟约) `#32`(盟约总数) 从整格空 → 部分 seed 有输入。
+#   仍然整格空的 7 条：`#10 #22 #23 #24 #29 #30 #33`——其中 `#22-24` 要的 betray
+#   在 default 场景下多久都不会发生（它们的活输入在第 4c 步的 betray 轨上，见互补性守卫）。
+# 代价（**本机背靠背交错跑 3 轮**，机器上全程有别的棒的 godot ⇒ 给区间不给单点）：
+#   见本步每次运行自己打印的「⏱ 上一步 4d. 用时」——**别在这里写死墙钟**（S2 的统一结论）。
+#   本棒交错跑 3 轮量到：8 天 **39 / 84 / 112 s**、30 天 **230 / 308 / 321 s** ⇒ 逐轮差 **+191/+224/+209 s**。
+#   ⚠️ 同一条命令的 8 天档在三轮里差了 **2.9 倍**（39→112 s）——那一刻本机有 **66 个** godot 进程
+#      （并行棒的）。**机器忙闲的影响比这次改动本身还大**，所以只能给区间，不能给单点。
+# ⚠ 为什么不再往上抬：`#22-24` 需要的是 **betray 场景**而不是更多天数，
+#   `#29` 需要的是 `aid_accepted ≥ 8` 的样本量 —— 两者都不是天数买得到的。
+#   30 天已经把"天数买得到的那部分"买完了。
+#
 #   S 自检臂 `inject:fabricate`（**只在门内部**，绝不进出货路径）：一个会篡改 `amount` 的假后端，
 #     判据是**反的**——C 必须变红。它给 C 补上此前缺的那半：**注入时红、不注入时绿**。
 #     实测（seeds 1-4 × 8 天）：伪造 141-147 次、探针恰好抓到 141-147 次、其中 109-116 次被
@@ -476,7 +538,7 @@ step "4d. BackendGate 外部后端门 (硬不变量含#01 / 同seed两跑一致 
 #   一个凭空捏造的 intent 只要不违反生存否决就会被 agent_apply 原样落地。
 #   ⇒ C 是一道**回归门**（守未来任何新后端 / `parse_decision` 的改写），**不是**"现有后端已被验过"的证书。
 "$GODOT" --headless --path game res://bench/BackendGate.tscn -- \
-  --seeds "${CI_BG_SEEDS:-1-4}" --days "${CI_BG_DAYS:-8}" --agents "${CI_BG_N:-12}" 2>&1 | tee "$LT_LOG/backendgate.log"
+  --seeds "${CI_BG_SEEDS:-1-4}" --days "${CI_BG_DAYS:-30}" --agents "${CI_BG_N:-12}" 2>&1 | tee "$LT_LOG/backendgate.log"
 [ "${PIPESTATUS[0]}" -eq 0 ] && ok "BackendGate 外部后端门（硬不变量/两跑一致/闭集封闭）" || bad "BackendGate 外部后端门（硬不变量/两跑一致/闭集封闭）"
 scan "BackendGate" "$LT_LOG/backendgate.log"
 

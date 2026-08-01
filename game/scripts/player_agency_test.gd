@@ -9,7 +9,10 @@ extends Node
 # 阈值全部由实测定，不猜。测量方法与数据见 14 节注释。
 const AGENCY_SEEDS: Array = [1, 2, 3, 4, 5, 6, 7, 8]
 const AGENCY_DAYS := 4            # 每个 seed 的挂机时长
-const AGENCY_MIN_TOTAL := 50      # 8 seed 合计接触次数下限（实测地板 101 → 2.0× 余量）
+const AGENCY_MIN_TOTAL := 50      # 8 seed 合计接触次数下限。★ 余量【现算现打印】，见第 14 节
+                                  #   （这里原本写着"实测地板 101 → 2.0× 余量"。那个数已经过期两代：
+                                  #    S2 在 bbe1dc6 上量到 81、X3 在 0667018 上量到 85，
+                                  #    而 101 一直照常印在屏幕上。别再往这行里写死任何实测数。）
 const AGENCY_MIN_SEEDS := 6       # 至少几个 seed 要"有人来搭话"（实测 8/8 → 可先坏掉 2 个 seed 才红）
 const AGENCY_MIN_ACTORS := 4      # 合计有多少个【不同】NPC 来找过（实测 11-12/12 → 挡"一个人刷满"的空过）
 
@@ -259,8 +262,25 @@ func _ready() -> void:
 		agency_per_seed.append(n)
 		if n > 0:
 			agency_seeds_hit += 1
+	# ★ 余量现算现打印（2026-08-02 Y2）。原来这里是 "实测地板 101" —— 一个写死在格式串里的字面量，
+	#   S2（编号 73 §一·4-N1）把它更正成 81，X3（编号 94 §四·3④）量到 85：**同一个字面量的第三代**。
+	#   S2 在 11 条臂上量出的统一结论是：**每次重算并打印的臂至今全准，打印冻结字面量的两族全部过期。**
+	#   ⇒ 这一行从此不写任何历史数，只印**这一跑**的余量与逐 seed 极值（极值带并列个数：
+	#   `0..16` 与 `0×8..16` 在"这道门离红有多远"上完全是两回事，docs/41 §4）。
+	var _amin: int = agency_per_seed.min() if not agency_per_seed.is_empty() else 0
+	var _amax: int = agency_per_seed.max() if not agency_per_seed.is_empty() else 0
+	var _nmin := 0
+	var _nmax := 0
+	for _v in agency_per_seed:
+		if int(_v) == _amin:
+			_nmin += 1
+		if int(_v) == _amax:
+			_nmax += 1
+	var _margin := (float(agency_total) / float(AGENCY_MIN_TOTAL)) if AGENCY_MIN_TOTAL > 0 else 0.0
 	_ck("挂机社交·合计接触量", agency_total >= AGENCY_MIN_TOTAL,
-		"%d 次 / %d seed × %d 天 (门 %d；实测地板 101)" % [agency_total, AGENCY_SEEDS.size(), AGENCY_DAYS, AGENCY_MIN_TOTAL])
+		"%d 次 / %d seed × %d 天 (门 %d；本跑余量 %.2f× · 逐 seed %d×%d..%d×%d)" % [
+			agency_total, AGENCY_SEEDS.size(), AGENCY_DAYS, AGENCY_MIN_TOTAL,
+			_margin, _amin, _nmin, _amax, _nmax])
 	_ck("挂机社交·没有被无视的 seed", agency_seeds_hit >= AGENCY_MIN_SEEDS,
 		"%d/%d seed 有人主动搭话 (门 %d) 各 seed=%s" % [agency_seeds_hit, AGENCY_SEEDS.size(), AGENCY_MIN_SEEDS, str(agency_per_seed)])
 	_ck("挂机社交·搭话者不止一人", agency_actors.size() >= AGENCY_MIN_ACTORS,
