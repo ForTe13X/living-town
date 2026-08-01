@@ -8,8 +8,12 @@
 > ② `game/bench/golden_digests.json` + ③ `game/bench/modelpath_anchor.json`
 >    ——R12 明写这三份锚要同 commit 重烘，不动它们就交付不了本棒的验收第 4 条；
 > ④ `analysis/q1/*`（原始输出 + 制表脚本；本文每个数字都出自它们）+ 本文。
-> **本文编号有撞号风险**：docs/64 §二 让 Q2「取当时可用的下一个编号」，而 Q1/Q2 并行 ⇒ 两棒都可能取 65。
-> 文件名刻意取得可区分（`65-faction-contact-gate.md`），撞了就是两份 65，重编号即可，不会静默覆盖。
+> **⚠ 本文编号确实撞了，已核实**：docs/64 §二 让 Q2「取当时可用的下一个编号」，而 Q1/Q2 并行 ⇒ 两棒都取了 65。
+> Q2 已先落到 `integration/batons`（`074ccbd`），它的文件是 **`docs/65-model-path-epistemic-read.md`**。
+> **两份文件名不同 ⇒ 合并不会冲突、不会静默覆盖**；我复核过两棒的改动文件清单
+> （我：`Sim.gd` / `Invariants.gd` / `golden_digests.json` / `modelpath_anchor.json` / `q1_faction_probe.gd` / 本文 / `analysis/q1/`；
+> Q2：`docs/41` / `docs/65-model-path-epistemic-read.md` / `EpistemicPromptProbe.gd` / `.tscn`）——**零重叠**。
+> ⇒ **合并方只需把本文重编号（建议 66），正文里的自引都是 §号不是编号，改文件名与抬头即可。**
 > 环境：Godot 4.6.2，`backend=null`，无 LOD，`--script` 模式照 `Harness` 显式 `_load_data()`。
 
 ---
