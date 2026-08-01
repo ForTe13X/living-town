@@ -4,6 +4,8 @@
 #   CI_SEEDS  S0 seed range (default 1-12)      CI_DAYS  S0 days (default 60)   CI_DET  det seeds (default 3)
 #   CI_POOL_N/CI_POOL_SEEDS/CI_POOL_DAYS/CI_POOL_DET  4a 宏观池尺度门 (default 16 / 1-12 / 60 / 1)
 #   CI_BG_SEEDS/CI_BG_DAYS/CI_BG_N  4d 外部后端门 (default 1-4 / 8 / 12)
+#   CI_STORY_SEEDS/CI_STORY_DAYS · CI_GOALS_SEEDS/CI_GOALS_DAYS  第 5 步两个 View 侧门的网格
+#     （★ 2026-08-02 X3 起本文件显式给它们赋默认值，**不再用场景里的 14 天**——理由见第 5 步的注释）
 # Fast local plumbing check: CI_SEEDS=1-3 CI_DAYS=30 bash tools/ci.sh
 #   （原注释写的是 CI_DAYS=20 —— 实测在【改动之前的树上就已经是红的】：软不变量 #08「承诺生命周期」
 #     在 20 天里 0/3（invite→meet 的赴约要更长的 horizon），所以那条"快跑"从来跑不绿。30 天是实测最近的绿点。
@@ -20,6 +22,20 @@ PY="${PYTHON:-python}"
 FAIL=0
 ok(){ echo "  ✅ $1"; }
 bad(){ echo "  ❌ FAIL: $1"; FAIL=1; }
+
+# ── 逐步墙钟（X3，2026-08-02）────────────────────────────────────────────────
+# 为什么加它：本文件里已经有**四段**手抄的墙钟（4a 抬头的 239/291/683/775/909、goals_test 的"约 2 分钟"…），
+# 而 S2（编号 73 §二·3）在 11 条臂上量出的统一结论是：**每次运行都重算并打印的准，冻结字面量的全过期。**
+# 每一根想回答"这道门贵不贵 / 抬这一格要多少钱"的棒，今天都得自己手工掐一次表——而掐完的数又写成新的冻结字面量。
+# 这几行让它变成**每跑一次就现算一次**的东西。它不判红、不改任何判据，只多印一行。
+STEP_T0=$SECONDS; STEP_NAME=""
+step(){ step_done; STEP_NAME="$1"; STEP_T0=$SECONDS; echo "### $1"; }
+# ⚠ 只印**步号**，用 `%%[ (]*` 砍在第一个空格或左括号上（纯 ASCII 定界）。
+#   第一版写的是 `${STEP_NAME:0:22}` —— 实测在本机（Git Bash，非 UTF-8 locale）bash 的子串展开
+#   **按字节切**，于是第 2c 步那一行切在 `出货` 的『货』字中间，输出里留了半个字符；
+#   而在 UTF-8 locale 的机器上它会**按字符切**⇒ 同一行在两台机器上长得不一样。
+#   步名后面本来就被 `step` 完整打印过一遍，这里不需要重复它。
+step_done(){ [ -n "$STEP_NAME" ] && printf '  ⏱  上一步 %s 用时 %ds\n' "${STEP_NAME%%[ (]*}" "$((SECONDS-STEP_T0))"; STEP_NAME=""; }
 
 # ── 运行期错误哨兵 ──────────────────────────────────────────────────────────
 # 为什么需要：GDScript 的 push_error() / SCRIPT ERROR 【不改变进程退出码】。
@@ -59,7 +75,7 @@ scan(){  # scan <label> <logfile> [额外白名单正则] [该正则的预期条
   if [ -n "$hits" ]; then echo "$hits" | head -12; bad "$1 (运行期错误行，见上)"; fi
 }
 
-echo "### 0. 版权红线：git 里不得有模型权重 / 预编译二进制"
+step "0. 版权红线：git 里不得有模型权重 / 预编译二进制"
 # 红线#4。.gitignore 今天只挡 game/models/*.gguf —— 换个目录放权重就会被静默入库。
 # 这里对【整棵已跟踪树】把关，而不是对某个目录。
 #
@@ -76,16 +92,16 @@ echo "### 0. 版权红线：git 里不得有模型权重 / 预编译二进制"
   && ok "红线#4 负对照（该抓的三例都抓住了）" \
   || bad "红线#4 负对照失败 —— 这道门没牙"
 
-echo "### 1. data lint (json parse + foreign keys + 必需数据文件在位)"
+step "1. data lint (json parse + foreign keys + 必需数据文件在位)"
 "$PY" tools/lint_data.py && ok "lint_data" || bad "lint_data"
 
-echo "### 1b. map audit (town-world 导航自洽：typed-layers 一致 + 全可达 + 每家具有交互格 + ≥2 路线)"
+step "1b. map audit (town-world 导航自洽：typed-layers 一致 + 全可达 + 每家具有交互格 + ≥2 路线)"
 "$PY" tools/audit_map.py && ok "audit_map" || bad "audit_map"
 
-echo "### 2. link lint (markdown relative links)"
+step "2. link lint (markdown relative links)"
 "$PY" tools/lint_links.py && ok "lint_links" || bad "lint_links"
 
-echo "### 2b. art gate (出货 game/assets/art/pro 必须等于 coif_characters.py 当场重建的结果)"
+step "2b. art gate (出货 game/assets/art/pro 必须等于 coif_characters.py 当场重建的结果)"
 # 为什么现在才有这一步（docs/49 §〇）：在它之前，本文件里【没有任何一处】提到 assets / art / palette /
 # coif / deprop —— 唯一的字面命中是上面 4b 那行 `fresh-rest**art**` 里的三个字母。
 # ⇒ 十张出货角色表是这个仓库唯一一类"改了没有任何门会响"的资产，而它同时是玩家唯一直接看得见的东西。
@@ -107,7 +123,7 @@ echo "### 2b. art gate (出货 game/assets/art/pro 必须等于 coif_characters.
 #    SKIP 与 PASS 在汇总里都读作"没红"，那会把这道门退化成一枚看不见结果的硬币（visual_gate.sh 抬头③）。
 "$PY" tools/art_gate.py && ok "art gate（出货 pro/ == 当场重建）" || bad "art gate（出货 pro/ != coif_characters.py 当场重建的结果）"
 
-echo "### 2c. terrain gate (出货 game/assets/art/terrain 必须等于 slice_shore.py 当场重建的结果)"
+step "2c. terrain gate (出货 game/assets/art/terrain 必须等于 slice_shore.py 当场重建的结果)"
 # G5（docs/49 §七）。与 2b 同一套形状，守的是另一类资产：13 张地形瓦（5 张原有 + 8 张本棒新加的岸线瓦）。
 # 由来：G1 建 2b 时点名"另有 31 张出货 png 一道门都没有"（emote 10 / decor 8 / terrain 5 / obj 5 / building 3）。
 # 本棒把 terrain 那 5 张（现 13 张）补上；**其余 26 张仍然无门**，理由写在 terrain_gate.py 抬头
@@ -124,7 +140,7 @@ echo "### 2c. terrain gate (出货 game/assets/art/terrain 必须等于 slice_sh
 #    —— 这正是"容器字节必须是软判据"的现成例子。
 "$PY" tools/terrain_gate.py && ok "terrain gate（出货 terrain/ == 当场重建）" || bad "terrain gate（出货 terrain/ != slice_shore.py 当场重建的结果）"
 
-echo "### 2d. asset gate (上门的 22 张 emote/decor/obj png == 切图/自绘配方当场重建 + 表情两两可分 + 配方无断口)"
+step "2d. asset gate (上门的 22 张 emote/decor/obj png == 切图/自绘配方当场重建 + 表情两两可分 + 配方无断口)"
 # H2（docs/50 §二）。与 2b / 2c 同一套形状的**第三个实例**（不是第三种形状）：当场从 CC0 库重建 → 解码后逐像素比对。
 # 由来：2c 抬头点名"其余 26 张仍然无门"，而 G5 刻意没上门的理由必须继承——
 #   **给没人眼验过的美术上门 = 把当前状态钉成"正确"**（池塘那个 bug 正是这样活了一个月）。
@@ -235,7 +251,7 @@ echo "### 2d. asset gate (上门的 22 张 emote/decor/obj png == 切图/自绘�
 #   ④ 守不住"随时间移动的快照"——那是 §4.2 故意排除的。
 # confidence：N=5 个变异体（自检五臂），另加 ciede2000 自己的 34 对外部真值。
 # 成本：约 2 s（asset_gate 0.5s × 1 + ciede2000 × 2 + lint_links × 1，同一条命令只跑一次）。
-echo "### 2e. 可重算门 (文档里的数 == 现跑那条命令算出来的数)"
+step "2e. 可重算门 (文档里的数 == 现跑那条命令算出来的数)"
 "$PY" tools/recalc.py --self-test >"$LT_LOG/recalc_selftest.log" 2>&1 \
   && ok "可重算门 负对照（改文档值/改实测值/丢锚点/缺理由 四条都会红）" \
   || { tail -12 "$LT_LOG/recalc_selftest.log"; bad "可重算门 负对照失败 —— 这道门没牙"; }
@@ -252,13 +268,13 @@ echo "### 2e. 可重算门 (文档里的数 == 现跑那条命令算出来的数
   && ok "可重算普查器 负对照（三条分类翻面）" \
   || { tail -12 "$LT_LOG/recalc_scan.log"; bad "可重算普查器 负对照失败"; }
 
-echo "### 3. godot import + parse smoke"
+step "3. godot import + parse smoke"
 "$GODOT" --headless --path game --import >"$LT_LOG/import.log" 2>&1 || true
 if grep -qiE 'SCRIPT ERROR|Parse Error|Failed to load script' "$LT_LOG/import.log"; then
   grep -iE 'SCRIPT ERROR|Parse Error|Failed to load script' "$LT_LOG/import.log" | head; bad "godot parse"
 else ok "import/parse clean"; fi
 
-echo "### 4. S0 gate (invariants + determinism + 金标; seeds=$CI_SEEDS days=$CI_DAYS det=$CI_DET)"
+step "4. S0 gate (invariants + determinism + 金标; seeds=$CI_SEEDS days=$CI_DAYS det=$CI_DET)"
 # --golden：跨进程/跨提交/跨引擎版本锚（红线#1）。没有它，CI 只证明「同一二进制同一进程内跑两次一样」。
 "$GODOT" --headless --path game --script res://bench/Harness.gd -- \
   --seeds "$CI_SEEDS" --days "$CI_DAYS" --det "$CI_DET" \
@@ -393,7 +409,7 @@ cat <<'POOL_NOTE'
 #      ⇒ 别再手抄它了；要当真就去读 4a 每次运行自己打印的判决行。
 #   L1 当时改不了这个默认，因为在它自己的分支上（L2 未合入）N=16 是红的。
 POOL_NOTE
-echo "### 4a. 宏观池尺度门 (N=$POOL_N seeds=$POOL_SEEDS days=$POOL_DAYS det=$POOL_DET；S0 判据首次跑在池倍率≠1 的配置上)"
+step "4a. 宏观池尺度门 (N=$POOL_N seeds=$POOL_SEEDS days=$POOL_DAYS det=$POOL_DET；S0 判据首次跑在池倍率≠1 的配置上)"
 # 预检①②：**照 `_pool_rescale` 自己的算法**（含 quantum 向上取整）从 production.json 现算倍率，
 #   而不是写死 `POOL_N != 12` 那种比较——删 scale 块 / 改 base_population / 改 quantum 都会当场把它打红。
 # 预检③：`SUPPLY_MIN_DAYS` 从源码 grep，不写魔数（判据改名/搬家 ⇒ 读不到 ⇒ 红，而不是静默放行）。
@@ -425,14 +441,14 @@ if [ "$POOL_PRE_OK" -eq 1 ]; then
   scan "宏观池尺度门" "$LT_LOG/s0_pool.log"
 fi
 
-echo "### 4b. LOD 观察无关红线 (V2 相机路径无关 + V3 确定性/存读/fresh-restart)"
+step "4b. LOD 观察无关红线 (V2 相机路径无关 + V3 确定性/存读/fresh-restart)"
 # 永久门：aggregate LOD 的 cohort 必须【只由 committed sim 态】选、绝不读相机 lod_focus。
 # 若日后有人把 cohort 从相机取回，V2(5 个 lod_focus→同 digest) 立即变红（Main.gd:159 红线机器化）。
 "$GODOT" --headless --path game --script res://bench/lod_verify.gd -- "${CI_LOD_N:-48}" "${CI_LOD_DAYS:-3}" 2>&1 | tee "$LT_LOG/lod.log"
 [ "${PIPESTATUS[0]}" -eq 0 ] && ok "LOD viewer-independence gate" || bad "LOD viewer-independence gate"
 scan "LOD gate" "$LT_LOG/lod.log"
 
-echo "### 4c. DetGate 场景确定性门 (default / faction / betray / freerider)"
+step "4c. DetGate 场景确定性门 (default / faction / betray / freerider)"
 # Invariants.gd:15 对任何非空 scenario 豁免硬不变量 #1，且 Harness 没有 --scenario ——
 # 在此门落地之前，三条内置定向场景在 CI 里跑过 0 次（docs/17 早就开了这个方子）。
 "$GODOT" --headless --path game --script res://bench/DetGate.gd -- \
@@ -440,7 +456,7 @@ echo "### 4c. DetGate 场景确定性门 (default / faction / betray / freerider
 [ "${PIPESTATUS[0]}" -eq 0 ] && ok "DetGate scenario determinism" || bad "DetGate scenario determinism"
 scan "DetGate" "$LT_LOG/detgate.log"
 
-echo "### 4d. BackendGate 外部后端门 (硬不变量含#01 / 同seed两跑一致 / 闭集封闭)"
+step "4d. BackendGate 外部后端门 (硬不变量含#01 / 同seed两跑一致 / 闭集封闭)"
 # 为什么必须单独有这一步：上面每一道门（金标 / LOD / DetGate）都恒 Sim.backend=null（红线#2 的零模型地板）
 # ⇒ AIBackend.decide() 从不被调用 ⇒ 硬不变量 #01 只在【引擎自己挑】的路径上验过。
 # docs/38 §五 实测：同一份配置下 logic 0/8 seed 饿穿，random/slm 都是 8/8 —— CI 全绿与产品已破可以同时成立。
@@ -464,7 +480,7 @@ echo "### 4d. BackendGate 外部后端门 (硬不变量含#01 / 同seed两跑一
 [ "${PIPESTATUS[0]}" -eq 0 ] && ok "BackendGate 外部后端门（硬不变量/两跑一致/闭集封闭）" || bad "BackendGate 外部后端门（硬不变量/两跑一致/闭集封闭）"
 scan "BackendGate" "$LT_LOG/backendgate.log"
 
-echo "### 4e. ModelPathGate 出货 prompt 编码门 (闭集编号字母表 / 示例编号 / 裁剪保序)"
+step "4e. ModelPathGate 出货 prompt 编码门 (闭集编号字母表 / 示例编号 / 裁剪保序)"
 # 为什么和 4d 分开：4d 守的是【落地之后】的世界（硬不变量 #01、两跑一致），
 # 4e 守的是【问出去之前】那一份 prompt 的编码性质——docs/42 量到的三条病都活在这里：
 #   ① 系统 prompt 里的字面示例编号把三成决策焊在一个候选位上；
@@ -481,7 +497,7 @@ echo "### 4e. ModelPathGate 出货 prompt 编码门 (闭集编号字母表 / 示
 [ "${PIPESTATUS[0]}" -eq 0 ] && ok "ModelPathGate 模型路径编码门" || bad "ModelPathGate 模型路径编码门"
 scan "ModelPathGate" "$LT_LOG/modelpath.log" 'Parse JSON failed' 1
 
-echo "### 4f. VoiceGate 台词覆盖门 (每个被 offer 的候选动作都要有本人格的话可说)"
+step "4f. VoiceGate 台词覆盖门 (每个被 offer 的候选动作都要有本人格的话可说)"
 # 为什么需要它：F4 普查出 14 个动作在【任何】人格下都没有台词 = 111 对 (人格,动作) 让
 #   _canned_say 返回空串，而当时没有任何一道门会响。更阴的是它不表现为沉默——
 #   WorldView._set_dialogue 在 last_say 为空时回落到 DIALOG[type]，屏幕上照样有气泡，
@@ -501,7 +517,7 @@ echo "### 4f. VoiceGate 台词覆盖门 (每个被 offer 的候选动作都要�
   --seeds "${CI_VOICE_SEEDS:-1-3}" --days "${CI_VOICE_DAYS:-60}" 2>&1 | tee "$LT_LOG/voicegate.log"
 [ "${PIPESTATUS[0]}" -eq 0 ] && ok "VoiceGate 台词覆盖门" || bad "VoiceGate 台词覆盖门"
 
-echo "### 5. unit / integration scenes"
+step "5. unit / integration scenes"
 # player_touch_test：C3 的 31 条 + C8 的 13 条断言（触屏按钮路径 ≡ 按键路径、7 个动词可分辨、
 #   观察台两档"卡片是详情的逐行前缀"）。它在 2026-07-26 Wave C 里写好后【一直没进 CI】——
 #   docs/43 §1.2d 曾把它写成"已落地"，而 C8 查出这里的场景列表根本没有它。补上。
@@ -510,7 +526,7 @@ echo "### 5. unit / integration scenes"
 #   ★ tools/ci.sh 归 D1 独占，本行是【D2 声明过的越界】：只在下面这个场景名单里加一个词。
 #     加它的理由就写在 docs/43 §1.2d 里 —— player_touch_test 写好后"一直没进 CI"，
 #     一道没进 CI 的门不是门。冲突时直接取并集即可，回滚 = 删掉这一个词。
-#   默认 12 seed × 14 天；本机约 2 分钟。CI_GOALS_SEEDS / CI_GOALS_DAYS 可调。
+#   网格与代价见下面那段 ★（**别在这里写死墙钟**——第 5 步现在逐场景打印用时，读它自己那行）。
 # story_test：E2 的「小镇故事」门（docs/47 §二-E2）。同样是 View 侧只读派生的回放等价断言，
 #   但它的**牙齿不在 seed 循环里，在五组合成 fixture 上**——D2 已经实测「live==replay」和「至少 N 条」
 #   两条判据都没有判别力（一个什么都不记 / 一个第一天全点亮的 tracker 都能满分）。
@@ -519,11 +535,48 @@ echo "### 5. unit / integration scenes"
 #   另有两条账本自洽断言（进行中+终身收场==开过；grudge 开场数==conflict 事件数）守 MAX_CLOSED 裁剪。
 #   ★ tools/ci.sh 归 D1 独占，本行是【E2 声明过的越界】：只在下面这个场景名单里再加一个词。
 #     理由同 D2 那一行——一道没进 CI 的门不是门。冲突时取并集即可，回滚 = 删掉这一个词。
-#   默认 12 seed × 14 天。CI_STORY_SEEDS / CI_STORY_DAYS 可调。
+#   ⚠ 这一行原本写着「默认 12 seed × 14 天」——**2026-08-02 起不再是 14 天**，见下面那段 ★。
+#     （留这句而不是删掉，是因为同一份文件里两处相反的说法本仓库已经栽过两次。）
+#
+# ── ★ 2026-08-02（X3）：这两道门的天数从此**写在这里**，而不是留给场景里的 14 天 ──────────────
+# 由来：W3（编号 90 §十二）撞见 `story_test` 的 promise/secret/pact 三条弧在 12/12 个 seed 上全 0/0。
+# 我把那一格量完了（隔离副本，12 seed × 14 天 × N=12，量具 `tools/gate_fixture_audit.py`），
+# **同一个默认天数下面挂着三样东西**：
+#   ① `story_test` 的 5 条弧里 3 条一条都开不出来 —— `invite`/`meet`/`confide`/`pact`
+#      这四类事件在 14 天里**合计 0 次、覆盖 0/12 个 seed**（同格里 conflict 345、apologize 53，世界是活的）；
+#      第 4 条 `craft` 只开不收（`allied`/`failed` 各 0 次）。
+#   ② `goals_test` 的 11 条目标里 `kept_promise` / `confided` / `pact_formed` **结构上不可达**
+#      ⇒ 它每次打印的「至少达成 1 条（实际 8/11）」里的 8 **不是成绩，是上限**。
+#   ③ `story_test` 逐 seed 的两条账本自洽断言跑在「裁剪 0 次」的世界上（12/12 个 seed 的裁剪列全是 0）。
+#      ⚠ **但"裁剪"这条性质本身没有失守**——合成 fixture `F-trim` 守着它，而且自带夹具有效性自证。
+#        实测负对照：删掉 `Story._trim()` 的 `_dropped += 1`，14 天与 60 天**两格都红**（F-trim 抓的）。
+#
+# 天数-代价曲线（**本机背靠背同一轮跑出来的**，12 seed，story_test 单跑墙钟）：
+#     14 天 171s ← 旧默认   30 天 371s   40 天 491s   60 天 692s      （≈ 1.0 s / (seed·天)）
+# 弧的活性（12 seed 合计 / 覆盖 seed 数）：
+#     14 天  promise 0 · secret 0 · pact 0 · craft 收场 0 · 裁剪 0/12
+#     30 天  promise 78 · secret 开 3/12 · pact 开 3/12 · craft 收场 1 · 裁剪 9/12
+#     40 天  promise 258 · secret 开 9/12 · pact 开 7/12 · craft 收场 7 · 裁剪 **12/12**   ← 取这一档
+#     60 天  promise 1090 · secret 开 12/12 · pact 开 12/12（**收场 2**） · craft 收场 18 · 裁剪 12/12
+# ⇒ **取 40**：它是曲线的膝盖——五条弧全部拿到真输入、裁剪 12/12、craft 两个结局都出现，
+#   而 40→60 多买到的只有「pact 收场」这一件（60 天上 12 个 seed 里也只有 2 次）与更满的覆盖，
+#   代价却再加 201s。**60 天那一档的代价已经量好写在上面了，要不要买是用户的决定，不是我的。**
+# ⚠ **没有减 seed 去换天数**（1-6 × 60 天成本相近）：60 天上仅有的两次 `pact` 收场落在 seed 8 与 seed 9，
+#   砍到 1-6 恰好把它们砍掉 —— 那就是"把 fixture 朝最容易过的方向选"，正是本棒在查的那个病。
+# ⚠ `goals_test` **保持 14 天不动**（这里显式写出来，好让它是一个被看得见的决定而不是一个默认值）：
+#   抬它同样要 +约 300s，而它的判据只查「至少达成 1 条」⇒ 修好夹具也换不来判别力，
+#   真正该改的是 `game/scripts/goals_test.gd` 里那条判据，**不在本棒的行里**。理由与代价见编号 94。
+# 负对照（**实测，隔离副本，读的是 rc**）：变异体 M2「promise 弧的结局行谎报出处（ev=999999）」
+#   ⇒ seeds 1-2 × 14 天 **rc=0 全绿**；seeds 1-2 × 40 天 **rc=1 红**。未改动的树两格均 rc=0。
+CI_STORY_SEEDS="${CI_STORY_SEEDS:-1-12}"; CI_STORY_DAYS="${CI_STORY_DAYS:-40}"
+CI_GOALS_SEEDS="${CI_GOALS_SEEDS:-1-12}"; CI_GOALS_DAYS="${CI_GOALS_DAYS:-14}"
+export CI_STORY_SEEDS CI_STORY_DAYS CI_GOALS_SEEDS CI_GOALS_DAYS
+echo "  ℹ  story_test 夹具 = seeds $CI_STORY_SEEDS × $CI_STORY_DAYS 天 · goals_test 夹具 = seeds $CI_GOALS_SEEDS × $CI_GOALS_DAYS 天"
 for scene in m2_test reqlife_test player_agency_test player_touch_test s4_replay_test space_test save_load_test goals_test story_test; do
+  SCENE_T0=$SECONDS
   "$GODOT" --headless --path game "res://scenes/$scene.tscn" >"$LT_LOG/$scene.log" 2>&1
   code=$?
-  if [ $code -eq 0 ]; then ok "$scene"; else tail -8 "$LT_LOG/$scene.log"; bad "$scene (exit $code)"; fi
+  if [ $code -eq 0 ]; then ok "$scene ($((SECONDS-SCENE_T0))s)"; else tail -8 "$LT_LOG/$scene.log"; bad "$scene (exit $code, $((SECONDS-SCENE_T0))s)"; fi
   case "$scene" in
     # m2_test 是【负例测试】：故意把畸形 JSON 喂给 AIBackend.parse_decision 验证它拒收，
     # 引擎因此必打【恰好两行】"Parse JSON failed"（实测）。这是被断言的行为，不是回归 → 只对本场景、只放行这两条。
@@ -532,7 +585,7 @@ for scene in m2_test reqlife_test player_agency_test player_touch_test s4_replay
   esac
 done
 
-echo "### 6. 视觉门：昼夜 + 界外层重画 + 空间往返 + 岸线 + 室内外壳 + 家具语义（无渲染环境时自动 SKIP，不假红）"
+step "6. 视觉门：昼夜 + 界外层重画 + 空间往返 + 岸线 + 室内外壳 + 家具语义（无渲染环境时自动 SKIP，不假红）"
 # 为什么是这一条先进 CI：docs/41 §6 盲区④——`--shot` 曾经【永远渲不出昼夜】，
 # 于是【这个项目所有视觉判断用的尺子】是坏的（"偏亮/偏暗"的结论全部不可信）。C3 用 Main.gd:271 一行修好了它，
 # 而在此之前没有任何门守着那一行：把它删掉，上面 0-5 每一步都照样全绿。
@@ -570,6 +623,8 @@ case "$VRC" in
   *)  bad "视觉门 (exit $VRC)" ;;
 esac
 
+step_done
 echo
+echo "  ⏱  全程 ${SECONDS}s（**现算的**，不是抄的；机器忙闲会让它上下浮动，别把单次读成基准）"
 [ $FAIL -eq 0 ] && echo "=== CI PASS ✅ ===" || echo "=== CI FAIL ❌ ==="
 exit $FAIL
