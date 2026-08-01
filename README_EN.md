@@ -15,10 +15,10 @@ The game keeps running when the model is unavailable. Network failures, timeouts
 > and where the week's effort actually went. This README does not restate it. Its section 4, *"What isn't there yet"*,
 > is **deliberately blunt**, and we are not going to soften it here either.
 >
-> The one place reality has since moved past it is the last paragraph of its §四: when it was written, the scale question
-> was "sent for external review, awaiting an answer". **The review came back and the user has since chosen a direction**
-> (see [docs/41 §0.5](docs/41-baton-contract.md)) — the implementation is still in flight. See the entry under
-> *What is not there yet* below.
+> **A new edition was published on 2026-08-01** (covering Wave K→Q: dual-scale landing, gossip finally propagating,
+> external review declining the multi-town project as a whole, the faction contact gate, and the epistemic leak on the model path).
+> The previous edition's body is left **unrewritten** in git history — including its line that the scale question was
+> "sent for external review, awaiting an answer". The answer, and what was built on it, are in the new §三① and §四.
 
 ![Living Town · current build](docs/media/town_waveG.gif)
 
@@ -67,16 +67,49 @@ The **world and social systems** below all ship, and each has a CI gate behind i
   > **11** goals in `game/data/goals.json`, with replay-equivalence machine-proved by `goals_test` in CI step 5).
   > So the accurate statement is "**there is now one session shape; onboarding and appeal have still been measured by nobody**"
   > rather than "there is nothing". **This project still has no instrument that could measure playability** — that part has not changed.
-- **The economy's output side does not keep up as the town grows; the direction is decided, the code is still in flight.**
+- **The economy's output side does not keep up as the town grows; dual-scale has landed, but two cells are still red.**
   I3's N-scale measurement ([docs/54](docs/54-scale-n60.md)) established that the production system was **designed and calibrated
   entirely at N=12**, while red line #3 states a shipping target of 60 residents. My first instinct — "admit the economy is a
   small-town feature and amend the red line" — **was rejected by external adversarial review**, and the reason was right:
   *"You didn't discover that 60 isn't a functional target. You discovered that nobody ever wrote down **which kind of capacity** 60 meant."*
-  So an **Entity capacity vs Simulation capacity** matrix was written first, and the user then chose **dual-scale** out of three options
-  (micro: all 60 agents keep being simulated individually for needs, consumption, relationships and the social consequences of shortage;
-  **the output side** moves to a macro pool).
-  ⇒ **The state today is "decision made, code being changed"**, and **no figures are quoted here**: they are actively moving and
-  anything written down would be stale the same day. Matrix and decision verbatim: [docs/41 §0.5](docs/41-baton-contract.md).
+  So an **Entity capacity vs Simulation capacity** matrix was written first ([docs/41 §0.5](docs/41-baton-contract.md)), and the user
+  then chose **dual-scale** out of three options (micro: all 60 agents keep being simulated individually for needs, consumption,
+  relationships and the social consequences of shortage; **the output side** moves to a macro pool).
+  **K1 landed it** (`02ad571`, [docs/57](docs/57-wave-k-plan.md)): at N=60 roof tiles went from **out of stock 60/60 days** to **0-34 days**,
+  `#40` red 12/12 → **2/12**; **N=12 is byte-identical** (no golden re-bake needed); deleting the whole `scale` block returns the N=60
+  digest to end-of-Wave-J ⇒ **the mechanism is fully ablatable**.
+  ⚠️ **The cell it did not reach, stated plainly**: **both N=60 and N=16 still miss the soft gate by one seed** — that is K1's own wording
+  in its own receipt. L2 then showed that "work loses to socialising at large N" is a **structural comparison**, not one number set too low
+  (**six of the eight job adverts slide together, and the slide is independent of `amount`**, `e31d4a5`); M2 moved `SURVIVAL_GATE` 32→36
+  off a dose-response curve (`d7f4ac4`). **Output and recipe figures are still not quoted here** — they remain inside Wave R's scope
+  (`#40` still has **only a lower arm**: nothing warns when shortages become *too rare*; K1 measured that an ×8 batch inflation stays green).
+- **Fixing gossip propagation cost something immediately, and that budget was already zero.**
+  After O1, held-out seeds 13-30 keep hard invariants 18/18 → 18/18, but **soft failures go 0 → 1** (`#40` at seed 22, firewood 0.48 < threshold 0.50).
+  **It is not "gossip ate the production"**: across the 18 held-out seeds the median worst-good satisfaction actually **rose** (0.691 → 0.733);
+  what changed is a **longer tail** (min 0.500 → 0.454). **And the pre-change minimum was exactly the threshold, 0.500 — the margin was already zero**,
+  only nobody had rechecked it: the 0.569/0.579 recorded back at H5 had long gone stale after L2/M2/K1 each moved the trajectory. (`def63e7`)
+- **The faction contact gate fixes only the cross-boundary half, and the baton that built it said so.**
+  For pairs who have never met: byte-identical **25/25**. **For pairs who have met, the property is unchanged** — `_aligned` compares
+  *current true* attitudes, so any global partition built on it is still non-local. Real locality needs a per-agent "what I think he thinks"
+  model = an architectural change, which [docs/41 §0.8](docs/41-baton-contract.md) requires be reviewed first, **so it was deliberately not built**.
+  Cost stated plainly: faction participation **−26%** (`endorse` 257→198, `rally_oust` 325→244, **both still covered on 12/12 seeds**).
+  One adjacent, **unfixed** finding: `_form_pacts_greedy` calls `_rel()` *before* the familiarity gate, and `_rel` **creates** entries
+  ⇒ ghost zero-relationships for nearly every pair, every night. Inert today, but **"A has a ledger entry for B" ≠ "A has met B"**.
+  ([docs/66](docs/66-faction-contact-gate.md))
+- **What the model is *shown* has zero gate coverage — a contract gap, not a violation.**
+  8 of the 13 social actions have existence conditions that read the *partner's* private state ⇒ seeing `gossip→Aben` is itself being told
+  "Aben lacks some belief I hold". Measured: **52.4% of decision points** (62.7% at N=20) carry at least one such option.
+  The write side is clean (`emotion`/`affinity_delta` are parsed but `Sim.gd` references neither — 0 sites, and `git log -S` is empty
+  ⇒ never wired). ⇒ Filed as contract **§0.7 [pending approval]**, with **the red line deliberately left unchanged** (widening it is an
+  architectural change; §0.8 requires review first, and it is the user's call). This also corrects an impression this README could otherwise give:
+  **`BackendGate` does mount a real backend** (`decide()` called 4879 times) — **but `build_prompt()` is called 0 times** ⇒ the accurate
+  statement is "**CI guards what the model hands back; what the model was shown has zero coverage**". ([docs/65](docs/65-model-path-epistemic-read.md))
+- **We wrote rules for our own method and never measured that method's hit rate.**
+  [docs/50](docs/50-wave-h-plan.md) §四 dispatched H4, "give the methodology a denominator" (a brief-mutation test: inject N known false
+  facts into already-merged briefs, send read-only batons to find them, report the detection rate), and reserved number 52 for it.
+  **H4 never delivered** — there is no doc 52 on any branch in this repository, and `tools/brief_mutate.py` does not exist.
+  ⇒ The reviewer's line **"24 is not a quality metric… you don't know the denominator"** has still never been answered.
+  This README reports, throughout, the Nth time a claim was falsified by our own measurement — **and N's denominator is unknown.**
 - **The art defect G2 fixed is invisible to a human at 2×.** After 144 px of outline was completed,
   **40 pixels changed out of 983040 in-engine (0.0041%)**; in a true 2× side-by-side, **five pairs were indistinguishable**,
   and it only becomes visible at **8×**. What it bought was contrast (a cap brim against the noon ground colour goes **2.00:1 → 7.91:1**),
@@ -458,7 +491,15 @@ Requires [Godot 4.6+](https://godotengine.org/) (the project declares `config/fe
 GODOT=/path/to/godot bash tools/ci.sh
 ```
 
-**Sixteen steps** (numbers are the step ids inside `tools/ci.sh`, **which is the authority**): `0` the copyright red line (no weights or binaries anywhere in the tracked tree), `1` data lint, `1b` map audit, `2` markdown link lint, `2b` the **character-sheet art gate** (the 10 shipped `pro/` sheets == rebuilt on the spot by `coif_characters.py`), `2c` the **terrain gate** (the 13 shipped `terrain/` tiles == rebuilt by `slice_shore.py`), `2d` the **asset gate** (the **22** gated emote/decor/obj pngs == rebuilt from the slicing/hand-drawing recipe, plus emote pairwise distinctness, plus no crop cutting through continuous artwork), `3` Godot parse smoke, `4` the **S0 invariant gate** (40 invariants × 12 seeds × 60 days, a determinism triple-run, a **committed golden** cross-process anchor, a **per-tick prefix hash chain**, and suite-level liveness), `4b` the LOD observation-independence gate, `4c` the **DetGate scenario-determinism gate** (default/faction/betray/freerider), `4d` BackendGate, `4e` ModelPathGate, `4f` the **voice-coverage gate**, `5` 9 integration scenes, `6` the visual gate (day/night instrument, out-of-bounds repaint, space round-trip, pond shoreline; **it SKIPs rather than falsely reddens when no rendering environment is available**). Any red step exits 1.
+**Seventeen steps** (numbers are the step ids inside `tools/ci.sh`, **which is the authority**): `0` the copyright red line (no weights or binaries anywhere in the tracked tree), `1` data lint, `1b` map audit, `2` markdown link lint, `2b` the **character-sheet art gate** (the 10 shipped `pro/` sheets == rebuilt on the spot by `coif_characters.py`), `2c` the **terrain gate** (the 13 shipped `terrain/` tiles == rebuilt by `slice_shore.py`), `2d` the **asset gate** (the **22** gated emote/decor/obj pngs == rebuilt from the slicing/hand-drawing recipe, plus emote pairwise distinctness, plus no crop cutting through continuous artwork), `3` Godot parse smoke, `4` the **S0 invariant gate** (40 invariants × 12 seeds × 60 days, a determinism triple-run, a **committed golden** cross-process anchor, a **per-tick prefix hash chain**, and suite-level liveness), `4a` the **macro-pool scale gate**, `4b` the LOD observation-independence gate, `4c` the **DetGate scenario-determinism gate** (default/faction/betray/freerider), `4d` BackendGate, `4e` ModelPathGate, `4f` the **voice-coverage gate**, `5` 9 integration scenes, `6` the visual gate (day/night instrument, out-of-bounds repaint, space round-trip, pond shoreline; **it SKIPs rather than falsely reddens when no rendering environment is available**). Any red step exits 1.
+
+> **`4a` deserves its own sentence, because it closes exactly the kind of hole this repo keeps falling into**: step 4's S0 always
+> runs at N=12, and at N=12 the macro pool's scale multiplier is **exactly 1** (`_pool_rescale` returns `raw` immediately)
+> ⇒ **the rescaling arithmetic had never executed in CI at all**. 4a runs the same criteria at **N=16** by default
+> (`2b4565e`; the default was later flipped from 24 to 16 by `6c7c8bc`). It carries **four pre-checks** that machine-verify
+> "this cell has not degenerated into a rerun of the previous one" instead of asserting it in a comment — e.g. with `CI_POOL_N=12`
+> it **deliberately goes red** and prints "pool multiplier is exactly 1 ⇒ this would degenerate into a rerun of step 4".
+> **A gate proving it actually guarded something this run carries more information than the green tick itself.**
 
 > The three art gates (2b/2c/2d) **need Pillow, and go red rather than SKIP if it is missing** — the reason is written in the script:
 > **in a summary, SKIP and PASS both read as "not red"**, which degrades a gate into a coin whose result nobody sees.
@@ -535,18 +576,24 @@ docs/                  Design, architecture, review notes, measurements, and exp
 | [41 Baton contract](docs/41-baton-contract.md) | The shared constraints for every parallel sub-task: four red lines, statistical discipline, extra clauses for visual work — **and the requirement that every report contain a section on where its own brief was wrong** |
 | [48 Wave F](docs/48-wave-f-plan.md) | Giving the division of labour somewhere to happen; taking three long-green gates apart with negative controls; the voice-coverage grid |
 | [49 Wave G](docs/49-wave-g-plan.md) | Art was the one asset class in this repo with no gate at all; the device eyeball that found "the two ponds are flat single-colour stickers" |
-| [50 Wave H](docs/50-wave-h-plan.md) | **Look first, gate second** (gating art nobody has eyeballed pins the current state as "correct"); giving the methodology a denominator via brief-mutation testing |
+| [50 Wave H](docs/50-wave-h-plan.md) | **Look first, gate second** (gating art nobody has eyeballed pins the current state as "correct"). ⚠️ Its §四 item, "give the methodology a denominator" (brief-mutation testing), **was never delivered** — see the last entry of *What is not there yet* |
 | [51 Art eyeball table](docs/51-art-eyeball.md) | All 26 shipped art files judged one at a time on a real device: `OK / unreadable / never appears / needs redrawing` — **"nothing looks wrong" is an accepted verdict** |
 | [53 Wave I](docs/53-wave-i-plan.md) | Nine identical white bubbles; three textures, a loader and a documented promise that could not reach the screen |
 | [54 N=60 scale measurement](docs/54-scale-n60.md) | The cell G3 predicted would break: the production system was designed and calibrated at N=12 while the red line says 60 |
 | [55 Wave J](docs/55-wave-j-plan.md) | #1 "no starvation" is the fourth check whose name is narrower than its code; of the three "unreadable" sprites only one was actually cropped wrong |
 | [**56 Progress report for non-technical readers**](docs/56-阶段报告-给非技术读者.md) | **A progress report with no code in it**: what happens now / what this round added / **what still doesn't work** / where the effort actually went |
+| [57 Wave K](docs/57-wave-k-plan.md) | **Dual scale**: 60 agents still simulated individually on the consumption side, output side moves to a macro pool; N=12 byte-identical |
+| [58 Wave L](docs/58-wave-l-plan.md) | Making CI actually run one configuration where the pool multiplier ≠ 1; **§四 records the two debts L2 left behind** |
+| [60 Multi-town feasibility](docs/60-multi-town-feasibility.md) | A **read-only** receipt: the multi-town premise was falsified before a second town was built, and falsifying it took one afternoon |
+| [62 Multi-town external review verdict](docs/62-multi-town-review-verdict.md) | GPT-5 Pro (10m02s of thinking): **the project as a whole is not approved**; "the first cut should be the knowledge boundary, not the map boundary" |
+| [63 Epistemic locality](docs/63-epistemic-locality.md) | The property the reviewer asked for **already holds byte-for-byte at the belief layer** — and it missed the layer that was actually broken (factions) |
+| [65 Epistemic leak on the model path](docs/65-model-path-epistemic-read.md) | The leak is not in field values, it is in **membership of the candidate list**; the verdict is a contract gap, not a violation |
+| [66 Faction contact gate](docs/66-faction-contact-gate.md) | Opinions no longer teleport — **and it falsified the previous baton's (and my) inference** |
 | [`bench/bakeoff/README.md`](bench/bakeoff/README.md) | A 3-command reproducible distillation bake-off plus two honest negative results |
 
-There are **55** numbered documents (that number is not hand-copied: `tools/lint_links.py` counts and prints it on every run,
-and it is CI step 2). The themed index lives in [docs/README.md](docs/README.md), ⚠️ **but the index itself has fallen behind** —
-it stops at 48, and `36 / 37 / 49 / 50 / 51 / 53 / 54 / 55 / 56 / 57` are missing from it (the most important of those are in the
-table above). Documentation is primarily in Chinese.
+There are **66** numbered documents (that number is not hand-copied: `tools/lint_links.py` counts and prints it on every run,
+and it is CI step 2). The themed index lives in [docs/README.md](docs/README.md), and **as of 2026-08-01 it has been brought up to 67** —
+it previously stopped at 48, with 20 documents (including 36/37 from further back) missing entirely. Documentation is primarily in Chinese.
 
 ## Assets And License
 
