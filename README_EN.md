@@ -15,22 +15,42 @@ The game keeps running when the model is unavailable. Network failures, timeouts
 > and where the week's effort actually went. This README does not restate it. Its section 4, *"What isn't there yet"*,
 > is **deliberately blunt**, and we are not going to soften it here either.
 >
-> **A new edition was published on 2026-08-01** (covering Wave K→Q: dual-scale landing, gossip finally propagating,
-> external review declining the multi-town project as a whole, the faction contact gate, and the epistemic leak on the model path).
-> The previous edition's body is left **unrewritten** in git history — including its line that the scale question was
-> "sent for external review, awaiting an answer". The answer, and what was built on it, are in the new §三① and §四.
+> **A new edition was published on 2026-08-01**, covering Waves R→T (nine parallel batons). **It differs in kind from earlier editions**:
+> of the nine items, **at least five are not new features but corrections to how this repository described itself** — the most important
+> being that **what "CI is all green" means here has been measured and narrowed** (the new §三① explains, in one plain paragraph,
+> what it now actually guarantees). Every edition's body is left **unrewritten** in git history, including the previous one covering Wave K→Q.
 
-![Living Town · current build](docs/media/s3_town_waveS.gif)
+![Living Town · current build (contains one outdoor→indoor cut)](docs/media/t3_demo_interior.gif)
 
-> Desktop capture (`logic` backend, demo camera `--demo-cam`, native 1280×768, 5 fps × 6 s).
-> Night into morning: residents eat, chat, spread gossip and fall out. Bottom-left is the **Town Chronicle**
+> Desktop capture (`logic` backend, demo camera `--demo-cam`, native 1280×768, **1× integer scale**, 5 fps × 6.5 s / 33 frames).
+> The first two seconds are the **cafe exterior** in daylight (the observatory has a resident selected, need bars ticking)
+> → **the camera cuts inside** → indoors from night to dawn, and in the last frames two residents are in the room,
+> with the observatory showing one of them. Bottom-left is the **Town Chronicle**
 > (engine events written as prose, not printed enum ids); the observatory on the right shows the selected
 > resident's **job / shift / wage / five needs**.
-> Recipe: `tools/record-godot.sh` for 45 s → `tools/make_gif.sh <mp4> <gif> 1 5 31 6`.
+> Recipe: `tools/record-godot.sh` for 100 s → `tools/make_gif.sh`; **it differs from the previous town-only GIF's recipe
+> only in start/duration** ([docs/78 §二·5](docs/78-wave-t-t3-interior-cam-and-hud.md)).
+>
+> ✅ **This caption was rewritten on 2026-08-01. It previously read "this capture only shows the town plane, you cannot see
+> interiors" — that sentence is now out of date.** The old diagnosis was right as far as it went: the `--shot-fit` camera code
+> was nested inside `Main.gd`'s still-image branch, so `--demo-cam` never left the town plane (S3 measured 0 of 45 frames indoors;
+> T3 re-measured **0/100** on the *unmodified* tree with a stricter criterion).
+> **But "just lift it out and it records" was wrong — a second half was missing**: `demo_apply()`'s return value has
+> **no "which Space am I in" dimension**. Fixing only the first half leaves the room at **15.2%** of the frame with the floor
+> label unreadable (negative control: [`t3_halfexit_vs_fit.png`](docs/media/t3_halfexit_vs_fit.png)).
+> With an indoor-interlude table added: **same recording recipe, indoor frames 0/100 → 12/100, room at 61.8% of the frame.**
+> ⚠️ **Two boundaries, stated**: (1) the interlude windows are anchored to **ticks, not seconds** — to reproduce a given indoor
+> stretch you must search by tick; (2) of the two rooms the demo camera enters, **the workshop is measurably empty** — 0 of 127
+> occupancy samples had anyone in it (dwellings 79.5%, cafe 23.6%). "There will be people living in the interiors you see" is
+> **false for the workshop**.
+>
 > **Integer-only downscaling** is a rule this pipeline measured for itself: the GIF this README used to lead with
 > was 680×408 — a 0.53125× *non-integer* scale — and the measurement also falsified the premise that going integer
 > would make the HUD text readable. The only setting that buys readability is 1× (five-row comparison table in the
-> header of `tools/make_gif.sh`).
+> header of `tools/make_gif.sh`). **T3 raised the worst HUD row (the key-hint line) from contrast 4.24 to 8.32, and explicitly
+> did not overturn that table**: at 0.5× the CJK stroke run is still a single pixel, so the lead image stays at `divisor=1`.
+>
+> The **town-only** capture from the same build is still here: [`s3_town_waveS.gif`](docs/media/s3_town_waveS.gif) (5 fps × 6 s / 30 frames).
 
 ![Living Town cover](docs/media/cover.png)
 
@@ -78,11 +98,35 @@ The **world and social systems** below all ship, and each has a CI gate behind i
   **K1 landed it** (`02ad571`, [docs/57](docs/57-wave-k-plan.md)): at N=60 roof tiles went from **out of stock 60/60 days** to **0-34 days**,
   `#40` red 12/12 → **2/12**; **N=12 is byte-identical** (no golden re-bake needed); deleting the whole `scale` block returns the N=60
   digest to end-of-Wave-J ⇒ **the mechanism is fully ablatable**.
-  ⚠️ **The cell it did not reach, stated plainly**: **both N=60 and N=16 still miss the soft gate by one seed** — that is K1's own wording
-  in its own receipt. L2 then showed that "work loses to socialising at large N" is a **structural comparison**, not one number set too low
+  L2 then showed that "work loses to socialising at large N" is a **structural comparison**, not one number set too low
   (**six of the eight job adverts slide together, and the slide is independent of `amount`**, `e31d4a5`); M2 moved `SURVIVAL_GATE` 32→36
-  off a dose-response curve (`d7f4ac4`). **Output and recipe figures are still not quoted here** — they remain inside Wave R's scope
-  (`#40` still has **only a lower arm**: nothing warns when shortages become *too rare*; K1 measured that an ×8 batch inflation stays green).
+  off a dose-response curve (`d7f4ac4`). **Output and recipe figures are still not quoted here** — they are still being changed.
+  > ### ⚠️ 2026-08-01 correction: **the line above ("both N=60 and N=16 still miss the soft gate by one seed") was too optimistic**
+  > S1 ran all 60 seeds on the **unmodified merged tree** ([docs/72](docs/72-wave-s-s1-demand-reach-and-base-rate.md), `744884f`):
+  > **on the 48 seeds that were never used to pick the thresholds, 5 fall below `SUPPLY_FLOOR` = 10.4%** (Wilson [4.5%, 22.2%]),
+  > and cutting the 60 seeds into five consecutive blocks of 12, **`--seeds 49-60` prints `S0 GATE: FAIL ❌` on the unmodified tree.**
+  > ⇒ **CI green means "nothing broke on these 12 seeds", not "this calibration holds"** — and those 12 happen to be both
+  > the set the thresholds were picked on *and* the lowest-variance stretch of all 60 (spread 0.205 vs 0.468 / 0.486).
+  > ⚠️ **Boundary, stated**: only `#40`'s lower arm — a **soft** rule — breaks. **Hard invariants are 12/12 and 48/48 green across all 60 seeds.**
+  >
+  > **The root cause was found this round** ([docs/76](docs/76-wave-t-t1-stock-pull.md), `139fc16`): **worksite-advert scoring never
+  > reads `town_stock`** ⇒ **an empty warehouse and a full one produce byte-identical scores.** The output side is open-loop at
+  > *both* ends (the baker was offered the counter 449 times while the town held zero grain and took it 17 times; in the other
+  > direction, in the worst seed **61.3% of the grain produced hit the storage cap and was thrown away** (beans peak at 80.7%) — anything hitting `cap` is neither stored nor booked).
+  > The fix (`_stock_pull_mult`) measurably flips `--seeds 49-60` from FAIL to **PASS 12/12** and `13-60` from 43/48 to **47/48**.
+  > **⚠️ And it ships switched off**: enabling it turns `ci.sh` step 4a (N=16) red — `work_pull_mult(16)=1.125` cancels the damping
+  > half outright, degrading the mechanism into accelerate-only. The baton **did not loosen the criterion and did not keep sweeping
+  > the acceptance grid**; it left the mechanism in the tree with the key off and wrote down exactly where it is blocked.
+  > ⇒ **The accurate status today is "we know why, we have a key that measurably works, and the key is still locked."**
+  > Two riders: **nothing in CI guards that key once it is on** (the seeds 1-12 cell is completely insensitive to it), and one
+  > key-on CI run produced a single `DetGate` "same seed, two runs diverge" that **could not be reproduced 16/16 in isolation and
+  > has not been explained.**
+  >
+  > **`#40` now has two arms** (R1, `fc519d6`, [docs/68](docs/68-wave-r-r1-economy-ceiling.md)): the sentence above about it having
+  > **only a lower arm** no longer holds. The new "shortages have vanished" upper arm turned N=60 red (8/12) the day it landed,
+  > **and that is not a false red**. ⚠️ **Its author's own boundary, copied verbatim**: the threshold was chosen under the constraint
+  > that the two CI cells must stay green ⇒ **it is structurally incapable of declaring today's N=12/N=16 wrong. It is a ratchet,
+  > not a verdict that the calibration is right.**
 - **Fixing gossip propagation cost something immediately, and that budget was already zero.**
   After O1, held-out seeds 13-30 keep hard invariants 18/18 → 18/18, but **soft failures go 0 → 1** (`#40` at seed 22, firewood 0.48 < threshold 0.50).
   **It is not "gossip ate the production"**: across the 18 held-out seeds the median worst-good satisfaction actually **rose** (0.691 → 0.733);
@@ -104,12 +148,40 @@ The **world and social systems** below all ship, and each has a CI gate behind i
   architectural change; §0.8 requires review first, and it is the user's call). This also corrects an impression this README could otherwise give:
   **`BackendGate` does mount a real backend** (`decide()` called 4879 times) — **but `build_prompt()` is called 0 times** ⇒ the accurate
   statement is "**CI guards what the model hands back; what the model was shown has zero coverage**". ([docs/65](docs/65-model-path-epistemic-read.md))
-- **We wrote rules for our own method and never measured that method's hit rate.**
+- **We wrote rules for our own method. This round measured that method's hit rate for the first time — and the number is an *upper bound*.**
   [docs/50](docs/50-wave-h-plan.md) §四 dispatched H4, "give the methodology a denominator" (a brief-mutation test: inject N known false
-  facts into already-merged briefs, send read-only batons to find them, report the detection rate), and reserved number 52 for it.
-  **H4 never delivered** — there is no doc 52 on any branch in this repository, and `tools/brief_mutate.py` does not exist.
-  ⇒ The reviewer's line **"24 is not a quality metric… you don't know the denominator"** has still never been answered.
-  This README reports, throughout, the Nth time a claim was falsified by our own measurement — **and N's denominator is unknown.**
+  facts into already-merged briefs, send read-only batons to find them, report the detection rate), and reserved a number for it.
+  **H4 never delivered at the time** — the doc existed on no branch and the tool did not exist. (The reserved number was cited through
+  `lint_links`' `@branch` escape hatch, and **that hatch is unverified** ⇒ **the missing artefact was referenced through the very channel
+  that kept it from being noticed.**) **Both halves landed on 2026-08-01:**
+  - **Retrospective** ([docs/73](docs/73-wave-s-s2-denominator-and-gate-teeth.md), `dc8a977`): **62** caught on the spot,
+    **at least 20** caught only afterwards ⇒ **62/82 = 0.756, Wilson [0.653, 0.836] — and the whole interval is an upper bound**,
+    because the ones nobody ever found cannot be enumerated. Corroboration: one read-only baton, in one day, on a tree everyone had
+    already read, **added 5 more** (3 stale numbers + 2 coverage holes in criteria).
+  - **Prospective** (injections actually dispatched, [docs/77](docs/77-wave-t-t2-prospective-injection.md), `975460f`): six arms,
+    47 injections. The cleanest result splits the "false number" layer in two: where the true value **has a second copy in the tree
+    or can still be recomputed today**, **3/3**; where it **exists only in that one document and would require re-doing a measurement**,
+    **0/2** — the baton wrote plainly that it went looking for the tool that produced those numbers and **the tool was never committed**.
+    ⇒ **"Expensive" here does not mean "takes 200 seconds"; it means "the probe that measured it never entered the repo."**
+  - The same experiment produced a less comfortable finding: **detection rate is a function of how the task is framed.** Given a
+    byte-identical brief, the arm told "check it line by line" scored 10/10; the arm merely asked for an implementation plan scored
+    **0/2 on the symbol-name layer** — **it knew the right answer (its plan spelled the correct names) but never said "the brief is wrong."**
+  ⚠️ **Having a number does not make the number quotable**: the baton listed three upward biases and one downward one (the injections
+  were authored by the same person who graded them; the briefs were from completed waves so cross-references were reachable; L5/L6
+  injections carried a typographic fingerprint; downward: `git log -S` was unusable inside the isolated copies), and **the v1 round's
+  four arms were voided entirely by an isolation leak — not one number from them entered the table.**
+  ⇒ This README reports, throughout, the Nth time a claim was falsified by our own measurement — **N now has a denominator, but it is
+  an upper bound, not a point estimate.** ⚠️ It also retracts the old **30/30 = 100%** figure from [docs/50](docs/50-wave-h-plan.md):
+  no interval (Wilson lower bound 0.886), five classes of very different falsification cost pooled into one ratio, raw data never kept
+  (not re-checkable), and **its own control group produced a mechanism claim that pointed the wrong way and survived into the next wave.**
+  ⇒ **It was not "no denominator"; it was a bad denominator that would get quoted.**
+- **The red-line gate for "no model weights / precompiled binaries in git" used to be a hand-written list of file extensions.**
+  Measured: of the sample names, it **caught 3 and let 8 through**, including `.onnx / .tflite / .dlc` — **exactly the three formats
+  this project's own on-device NPU roadmap will produce** (named by [docs/73](docs/73-wave-s-s2-denominator-and-gate-teeth.md)).
+  Fixed (`e85dde8`): list completed **plus a second arm that reads the first 16 bytes for magic numbers** (renaming no longer evades it),
+  with its negative control wired into CI as its own step. ⚠️ **The person who fixed it made the same family of mistake first**:
+  `git ls-files` by default emits non-ASCII paths as an escaped string that cannot be opened on disk ⇒ **20 of 740 tracked files were
+  never read, all of them Chinese-named docs — the new arm was blind to every non-ASCII filename.** Switching to `-z` gave 740/740.
 - **The art defect G2 fixed is invisible to a human at 2×.** After 144 px of outline was completed,
   **40 pixels changed out of 983040 in-engine (0.0041%)**; in a true 2× side-by-side, **five pairs were indistinguishable**,
   and it only becomes visible at **8×**. What it bought was contrast (a cap brim against the noon ground colour goes **2.00:1 → 7.91:1**),
@@ -576,7 +648,7 @@ docs/                  Design, architecture, review notes, measurements, and exp
 | [41 Baton contract](docs/41-baton-contract.md) | The shared constraints for every parallel sub-task: four red lines, statistical discipline, extra clauses for visual work — **and the requirement that every report contain a section on where its own brief was wrong** |
 | [48 Wave F](docs/48-wave-f-plan.md) | Giving the division of labour somewhere to happen; taking three long-green gates apart with negative controls; the voice-coverage grid |
 | [49 Wave G](docs/49-wave-g-plan.md) | Art was the one asset class in this repo with no gate at all; the device eyeball that found "the two ponds are flat single-colour stickers" |
-| [50 Wave H](docs/50-wave-h-plan.md) | **Look first, gate second** (gating art nobody has eyeballed pins the current state as "correct"). ⚠️ Its §四 item, "give the methodology a denominator" (brief-mutation testing), **was never delivered** — see the last entry of *What is not there yet* |
+| [50 Wave H](docs/50-wave-h-plan.md) | **Look first, gate second** (gating art nobody has eyeballed pins the current state as "correct"). ⚠️ Its §四 item, "give the methodology a denominator" (brief-mutation testing), **was never delivered at the time**; **both halves landed on 2026-08-01** — see 73 and 77 below |
 | [51 Art eyeball table](docs/51-art-eyeball.md) | All 26 shipped art files judged one at a time on a real device: `OK / unreadable / never appears / needs redrawing` — **"nothing looks wrong" is an accepted verdict** |
 | [53 Wave I](docs/53-wave-i-plan.md) | Nine identical white bubbles; three textures, a loader and a documented promise that could not reach the screen |
 | [54 N=60 scale measurement](docs/54-scale-n60.md) | The cell G3 predicted would break: the production system was designed and calibrated at N=12 while the red line says 60 |
@@ -589,11 +661,17 @@ docs/                  Design, architecture, review notes, measurements, and exp
 | [63 Epistemic locality](docs/63-epistemic-locality.md) | The property the reviewer asked for **already holds byte-for-byte at the belief layer** — and it missed the layer that was actually broken (factions) |
 | [65 Epistemic leak on the model path](docs/65-model-path-epistemic-read.md) | The leak is not in field values, it is in **membership of the candidate list**; the verdict is a contract gap, not a violation |
 | [66 Faction contact gate](docs/66-faction-contact-gate.md) | Opinions no longer teleport — **and it falsified the previous baton's (and my) inference** |
+| [68 R1 · `#40` upper arm](docs/68-wave-r-r1-economy-ceiling.md) | "Shortages have vanished" turned N=60 red the day it landed — **and it declares itself a ratchet, not a verdict**; "mind the stall" is **two** adverts, not one |
+| [72 S1 · base rate and demand reach](docs/72-wave-s-s1-demand-reach-and-base-rate.md) | **`--seeds 49-60` is FAIL on the unmodified tree**; 10.4% break rate across the 48 held-out seeds; **the number of residents who can leave the town plane is a constant 9, independent of N** |
+| [73 S2 · the denominator and the gates' teeth](docs/73-wave-s-s2-denominator-and-gate-teeth.md) | Catch rate **[0.65, 0.84], and the whole interval is an upper bound**; **every arm that recomputes and prints its margin is still accurate, every frozen literal is stale**; two paper gates named |
+| [76 T1 · stock pull](docs/76-wave-t-t1-stock-pull.md) | Root cause = **worksite scoring never reads stock** (empty and full warehouses score byte-identically); the fix flips 49-60 from FAIL to PASS — **and it ships switched off**, blocked at the N=16 cell |
+| [77 T2 · prospective injection](docs/77-wave-t-t2-prospective-injection.md) | **Detection rate is a function of task framing**; the number layer splits cleanly on "can this still be recomputed today" (3/3 vs 0/2); **it voided its own first experiment** |
+| [78 T3 · interior camera and HUD](docs/78-wave-t-t3-interior-cam-and-hud.md) | Getting the camera indoors took **two halves** (0/100 → 12/100 frames); the worst HUD row is the smallest one — **and "just raise the font size" wrapped the line on the spot** |
 | [`bench/bakeoff/README.md`](bench/bakeoff/README.md) | A 3-command reproducible distillation bake-off plus two honest negative results |
 
-There are **66** numbered documents (that number is not hand-copied: `tools/lint_links.py` counts and prints it on every run,
-and it is CI step 2). The themed index lives in [docs/README.md](docs/README.md), and **as of 2026-08-01 it has been brought up to 67** —
-it previously stopped at 48, with 20 documents (including 36/37 from further back) missing entirely. Documentation is primarily in Chinese.
+There are **78** numbered documents (that number is not hand-copied: `tools/lint_links.py` counts and prints it on every run,
+and it is CI step 2; this round's actual output: `lint_links: OK — 97 markdown files, all relative links resolve and all docs/NN citations exist (78 numbered docs)`).
+The themed index lives in [docs/README.md](docs/README.md). Documentation is primarily in Chinese.
 
 ## Assets And License
 
