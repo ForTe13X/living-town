@@ -55,6 +55,15 @@ const SOFT_RATE := 0.90
 ##   ↑ 这正是本门要暴露的东西：#22/#23/#24（背叛三条硬不变量）与 #29（互助偏内）今天全绿，
 ##     纯粹是因为 betray/aid 一次都没发生——「若 X 发生则 X 良构」对空输入恒真。
 ##     它们归零是【已知的产品缺口】（暖向社交太稀），不是回归；等基线调平后再把它们加进本表。
+##
+## > **⚠ 2026-08-01 W1 更正：上面这一段里 `aid=0` 与 `pact_formed=1` 【已经过期】，而它们是这张表
+## > 不收 `aid` 的【理由】——理由没了，表却没跟着改。** 那句话写于 2026-07-25，而**当天晚些时候的 B7**
+## > 就把 `AID_NEED_TH` 30→60、`COMPLEMENT_LOW` 35→50 重标了一遍（见 Sim.gd 那段 B7 注释），
+## > 互助窗口从此打开。出货树实测（backend=null，60 天）：
+## >   N=12 seeds 1-12 **aid 68 次 · 覆盖 11/12**；N=16 seeds 1-12 **156 次 · 11/12**；
+## >   seeds 13-30 **110 次 · 17/18**；seeds 31-60 **180 次 · 29/30**。
+## > ⇒ 「B7 之后回来把 aid 加进本表」这件事**没有人做**，于是 `aid`（连同 #29）在 5 个 wave 里
+## > 一直是这张表的盲区。下面的 `LIVENESS_QUORUM` 就是补这一格的，**但补的是"还活着"，不是"没变少"**。
 const LIVENESS_GATED := {
 	"greet": 20, "give": 20, "gossip": 20, "gossip_rep": 20, "discuss": 20,
 	"conflict": 20, "confront": 20, "apologize": 20, "endorse": 20, "rally_oust": 20,
@@ -62,6 +71,30 @@ const LIVENESS_GATED := {
 	"invite": 30, "meet": 30,
 	"confide": 60,
 }
+
+## 套件级活性的**第二种形状：法定覆盖（quorum）**。
+##
+## `LIVENESS_GATED` 判的是「全网格合计 > 0」——对 `aid` 这类**逐 seed 极稀疏**的类没有判别力：
+## 60 个 seed 里只要有一个发生过一次就恒绿，而"这个机制在绝大多数镇子里已经不发生了"照样过。
+## 本表改判**覆盖率**：该类必须在 ≥ `frac` 比例的 seed 上出现过。
+##
+## 为什么只收 `aid` 一个（W1 2026-08-01，量过才收）：
+##   · **它是 `#29` 的前件**。`#29「I-PACT互助偏内」` 的判据是 `aid_accepted < 8 or aid_nonpact == 0`
+##     ——`aid` 越少，这条硬不变量越是**靠样本不够**通过。实测出货树上真正让 `#29` 有牙的 seed：
+##     seeds 1-12 **4/12**、seeds 13-30 **5/18**（未开 craft_credit 的基线是 7/12 与 6/18）
+##     ⇒ **#29 在六到七成的 seed 上是空过的，而这在 V1 之前就已经如此**（不是谁造成的回归）。
+##   · **余量是量出来的，不是拍的**。`frac=0.5` 在下面这 10 条臂上的最低覆盖是 **10/12**
+##     （`standing=0.5` 那条），要求 6/12 ⇒ 最小余量 **4 个 seed**；
+##     CI 真正跑的两格（N=12 与 N=16，均 seeds 1-12）都是 11/12 ⇒ 余量 5。
+##   · **历史负对照是真的**：B7 之前 `aid` 就是 **0/12**（上面那段注释自己记着），本门在那棵树上是红的。
+## ⚠ 明写它**抓不到**什么：`aid` 从 118 掉到 68 这类**数量**变化它一概不管（覆盖仍 11/12）。
+##   而 W1 实测那个 118→68 本身就不是回归（seeds 13-30 是 105→110、31-60 是 170→180，见 docs/88），
+##   ⇒ **这道门刻意不去守一个连"是不是真的"都没立住的数**。它守的是"整条通道死掉"，那一格有过真实先例。
+const LIVENESS_QUORUM := {
+	"aid": {"days": 60, "frac": 0.5},
+}
+## quorum 判据的最小网格：单 seed / 极小网格上「覆盖率」没有意义（docs/41 §5：n 很小时读作"分辨不出"）。
+const QUORUM_MIN_SEEDS := 4
 
 ## 前缀链在金标里的落盘粒度：每 CHAIN_STRIDE tick 存一个检查点（=1 天，Sim.TICKS_PER_DAY）。
 ## 为什么不逐 tick 落盘：60 天 = 14400 个值 × 12 seed ≈ 1.5MB，把一份人要 review 的金标撑爆。
@@ -252,9 +285,22 @@ func _init() -> void:
 		var need_d := int(LIVENESS_GATED.get(k, -1))
 		var gated: bool = need_d >= 0 and days >= need_d
 		var tag := "🔒" if gated else ("⏳" if need_d >= 0 else "  ")
+		if LIVENESS_QUORUM.has(k):
+			tag = "🔒Q" if _quorum_applies(String(k), days, seeds.size()) else "⏳Q"
 		print("  %s %-18s 次数=%-6d 覆盖 seed=%d/%d%s" % [tag, k, int(live_total[k]),
 			int(live_seeds.get(k, 0)), seeds.size(),
 			("   (需 days≥%d 才入门，本跑 days=%d)" % [need_d, days]) if (need_d >= 0 and not gated) else ""])
+	# 法定覆盖（quorum）：稀疏类判"还在多少个 seed 上发生"，不判"合计>0"（后者对稀疏类没有判别力）
+	for k in LIVENESS_QUORUM:
+		if not _quorum_applies(String(k), days, seeds.size()):
+			live_skipped.append("%s(quorum)" % k)
+			continue
+		live_gated_n += 1
+		var need_n := int(ceil(float(seeds.size()) * float((LIVENESS_QUORUM[k] as Dictionary)["frac"])))
+		var got_n := int(live_seeds.get(k, 0))
+		print("  🔒Q %-17s 法定覆盖 %d/%d（需 ≥%d，余量 %d）" % [k, got_n, seeds.size(), need_n, got_n - need_n])
+		if got_n < need_n:
+			live_red.append("%s(覆盖 %d/%d < 法定 %d)" % [k, got_n, seeds.size(), need_n])
 	for k in LIVENESS_GATED:
 		if days < int(LIVENESS_GATED[k]):
 			live_skipped.append(k)          # horizon 不够，该机制本就没到发生的时候 → 不门（并明示跳过）
@@ -266,9 +312,9 @@ func _init() -> void:
 		live_skipped.sort()
 		print("  ⏳ 本跑 days=%d，以下类未达最短 horizon 故不入门：%s" % [days, str(live_skipped)])
 	if live_red.is_empty():
-		print("  ✅ 门控事件类 %d 种全部仍在发生" % live_gated_n)
+		print("  ✅ 门控事件类 %d 种全部仍在发生（含法定覆盖 %d 种）" % [live_gated_n, LIVENESS_QUORUM.size()])
 	else:
-		print("  ❌ 门控事件类归零：%s —— 某个子系统被关掉了，而硬不变量对空输入恒过" % str(live_red))
+		print("  ❌ 门控事件类归零/跌破法定覆盖：%s —— 某个子系统被关掉了，而硬不变量对空输入恒过" % str(live_red))
 
 	# ── 金标：跨进程/跨提交/跨引擎版本的锚（红线#1 真正的机检点）──
 	var golden_red := false
@@ -319,6 +365,12 @@ static func soft_threshold(n: int) -> int:
 	if n <= 1:
 		return 0
 	return mini(int(ceil(float(n) * SOFT_RATE)), n - 1)
+
+## 法定覆盖判据在本次网格上生不生效：horizon 够 + 网格不小于 QUORUM_MIN_SEEDS。
+static func _quorum_applies(k: String, days: int, n_seeds: int) -> bool:
+	if not LIVENESS_QUORUM.has(k):
+		return false
+	return days >= int((LIVENESS_QUORUM[k] as Dictionary)["days"]) and n_seeds >= QUORUM_MIN_SEEDS
 
 ## 把一局的 event_log 折成活性计数（类 -> 次数 / 覆盖 seed 数）。
 func _tally_liveness(S, total: Dictionary, per_seed: Dictionary) -> void:
