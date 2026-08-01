@@ -1223,10 +1223,12 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 	for gy in range(hc):
 		_interior_wall(shell, ox, oy + gy * T, door_gap.has(gy * wc))                      # 左墙
 		_interior_wall(shell, ox + (wc - 1) * T, oy + gy * T, door_gap.has(gy * wc + wc - 1))  # 右墙
-	# 家具（按 slot 程序化）
+	# 家具（按 slot 程序化）。★ S3：同一个 slot 在不同用途的房间里画成不同的东西 —— 见 _furniture_role()。
+	# role 每层只算一次（它只依赖本层的 authored 家具清单 + areas[].type，与逐件家具无关）。
+	var role := _furniture_role(sid, content)
 	for fr in content.get("furniture", []):
 		var fp: Array = (fr as Dictionary).get("pos", [0, 0])
-		_draw_interior_furniture(String((fr as Dictionary).get("slot", "")), Vector2(ox + int(fp[0]) * T, oy + int(fp[1]) * T))
+		_draw_interior_furniture(String((fr as Dictionary).get("slot", "")), Vector2(ox + int(fp[0]) * T, oy + int(fp[1]) * T), role)
 	# P3 打磨：夜间氛围（暖底光 + 每盏灯源暖池，占用的床更旺）——画在家具之上、居民之下，居民自身仍清晰
 	_draw_interior_night(b, content, sid, fid)
 	# P3 Tier-B：画【此刻真在这层】的居民（阿丽在自家咖啡馆睡觉/看摊）。Space bounds 从原点起 → _draw_agent 用
@@ -1320,7 +1322,53 @@ func _interior_wall(shell: Dictionary, x: float, y: float, is_door: bool) -> voi
 	draw_rect(Rect2(x, y, T, T * 0.24), shell["wall_top"], true)             # 顶棱高光
 	draw_rect(Rect2(x, y + T * 0.86, T, T * 0.14), shell["wall_foot"], true) # 墙脚暗边
 
-func _draw_interior_furniture(slot: String, base: Vector2) -> void:
+## ── S3：家具语义按【房间用途】分化 ──────────────────────────────────────────
+## 病（R2 交接 docs/69 §五，本棒在像素侧复核过）：`shelf` **一份画法（三色书脊的书架）
+## × 11 个实例 × 8/8 个楼层**。它在图书馆和阿丽卧室是**对的**，
+## 在**杂货铺（该是货架）、工坊（该是工具架）、澡堂（该是毛巾架）、咖啡区（该是杯碟架）是错的**。
+##
+## ⚠ 修法**不能**只看 `areas[].type`——它按构造做不到：type 是**四分**的，而语义要**六档**，
+##   且冲突就在 type 内部：`commercial` 一类里同时装着 咖啡区(cafe/1f)、阿丽的卧室(cafe/2f)、
+##   杂货铺(shop/1f) **三种互不相同的用途**；`public` 一类里装着 澡堂 与 图书馆。
+##   **只按 type 分，最优分配下仍有 3/11 件必错**（commercial 错 2：cafe 的两层；public 错 1：澡堂）。
+##   ⇒ 更根本的一句：**`type` 是【每栋楼】一个属性，而 cafe 一栋楼的 1f 与 2f 用途不同**
+##     ——只要判据的粒度停在"楼"，咖啡馆的两层就永远分不开。逐实例算例见本棒回执 §二。
+## ⚠ 也**不能**改 `slot`：slot 进 `Sim._build_interior_grids()` 的 `WALKABLE_SLOTS`、
+##   也进 `_compile_interiors()` 造的对象 id ⇒ 那是**会移动 digest** 的动作（R2 已记，docs/69 §四·2）。
+##
+## ⇒ 走第三条路：**房间自己的家具清单，就是它用途的 authored 证据。**
+##   浴池只出现在盥洗空间、柜台+货箱只出现在零售、床只出现在起居。这些都是 `interiors.json`
+##   **已经写下**的事实，本函数**只读**——不改数据、不写状态、不抽 RNG。
+##   好处是它**跟着数据长**：将来有人加第二间澡堂，只要那间有 `bath`，毛巾架自动就对；
+##   而"按 space id 查一张表"那种写法要手工补一行，漏了就静默退回书架。
+##
+## 判据的顺序是有意的（**先特征、后兜底**），每一档都指名它靠哪条 authored 事实分出来：
+##   1. 有 `bath`                     ⇒ 盥洗（wash/1f）——浴池是全镇独一份的强特征
+##   2. `type == workshop`            ⇒ 作坊（work/1f）——这一类 type 内部没有二义，可以直接用
+##   3. 有 `counter` **且**有 `crate` ⇒ 零售（shop/1f）——柜台配货箱＝前店后仓
+##   4. 有 `counter` 或 `coffee`      ⇒ 堂食（cafe/1f）——有柜台但没货箱
+##   5. `shelf`≥2 且有 `desk` 且无 `bed` ⇒ 藏书（library/1f）——成排书架配书桌、且不是卧室
+##   6. 其余                          ⇒ 起居（home/1f、home2/1f、cafe/2f）
+func _furniture_role(sid: String, content: Dictionary) -> String:
+	var slots := {}
+	for fr in content.get("furniture", []):
+		var s := String((fr as Dictionary).get("slot", ""))
+		slots[s] = int(slots.get(s, 0)) + 1
+	var areas: Dictionary = Sim.world.get("areas", {}) if Sim.world.get("areas", {}) is Dictionary else {}
+	var a: Dictionary = areas.get(sid, {}) if areas.get(sid, {}) is Dictionary else {}
+	if slots.has("bath"):
+		return "bath"
+	if String(a.get("type", "")) == "workshop":
+		return "workshop"
+	if slots.has("counter") and slots.has("crate"):
+		return "store"
+	if slots.has("counter") or slots.has("coffee"):
+		return "cafe"
+	if int(slots.get("shelf", 0)) >= 2 and slots.has("desk") and not slots.has("bed"):
+		return "study"
+	return "living"
+
+func _draw_interior_furniture(slot: String, base: Vector2, role: String = "living") -> void:
 	match slot:
 		"bed": _draw_bed(base)
 		"coffee":                                   # 咖啡机：深色金属机身 + 红灯 + 杯
@@ -1340,12 +1388,7 @@ func _draw_interior_furniture(slot: String, base: Vector2) -> void:
 		"chair":                                    # 椅子
 			draw_rect(Rect2(base.x + T * 0.34, base.y + T * 0.2, T * 0.32, T * 0.5), X_WOOD_MID, true)
 			draw_rect(Rect2(base.x + T * 0.34, base.y + T * 0.44, T * 0.32, T * 0.13), P_COM_LINE, true)
-		"shelf":                                    # 书架/货架
-			draw_rect(Rect2(base.x + T * 0.1, base.y + T * 0.05, T * 0.8, T * 0.85), P_COM_FOOT, true)
-			var bookcols := [P_RES_ROOF, P_FOLIAGE_D, D_BOOK_BLUE]
-			for k in range(3):
-				draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.24 + k * T * 0.22, T * 0.7, T * 0.04), D_WOOD_LINE, true)
-				draw_rect(Rect2(base.x + T * 0.18, base.y + T * 0.12 + k * T * 0.22, T * 0.5, T * 0.11), bookcols[k], true)
+		"shelf": _draw_shelf(role, base)             # 书架/货架/工具架/毛巾架/杯碟架 —— 按房间用途分化
 		"plant":                                    # 盆栽
 			draw_rect(Rect2(base.x + T * 0.34, base.y + T * 0.56, T * 0.32, T * 0.28), D_POT, true)
 			draw_circle(Vector2(base.x + T * 0.5, base.y + T * 0.42), T * 0.24, P_FOLIAGE_D)
@@ -1389,6 +1432,109 @@ func _draw_interior_furniture(slot: String, base: Vector2) -> void:
 				draw_rect(Rect2(base.x + T * 0.12 + k * T * 0.17, base.y + T * 0.62 - k * T * 0.13, T * 0.2, T * 0.04), D_STAIR_TOP, true)
 		_:
 			draw_rect(Rect2(base.x + 9, base.y + 12, T - 18, T - 18), P_RES_FOOT, true)
+
+## `shelf` 的分化派发（S3）。**living / study 两档逐字节沿用改前那段代码**——
+## 它们本来就是对的（R2：图书馆与阿丽卧室），不动同时也是本棒最强的负对照：
+## home / home2 / cafe·2f / library 四个楼层的整帧 diff 必须 `bbox=None`。
+##
+## ⚠ 五档**全部**铺满同一块背板 `[0.10,0.90]×[0.05,0.90]`。这不是审美要求，是**量具的前提**：
+##   `tools/assert_furniture_role.py` 从 `[0.15,0.85]²` 取字形样本，若某一档画得比背板小，
+##   地板就会漏进采样窗——而地板早已被 R2 按建筑类型分过档 ⇒ 门会把**地板的差异**
+##   读成"货架分开了"，得出一个假绿。（本棒第一版的清点脚本正是这么量错的，见回执 §一。）
+func _draw_shelf(role: String, base: Vector2) -> void:
+	match role:
+		"bath":     _shelf_towel(base)
+		"workshop": _shelf_tools(base)
+		"store":    _shelf_goods(base)
+		"cafe":     _shelf_crockery(base)
+		_:          _shelf_books(base)      # living / study —— 改前的画法，逐字节不变
+
+## 书架（改前唯一那份画法，原样搬过来，一个数都没动）
+func _shelf_books(base: Vector2) -> void:
+	draw_rect(Rect2(base.x + T * 0.1, base.y + T * 0.05, T * 0.8, T * 0.85), P_COM_FOOT, true)
+	var bookcols := [P_RES_ROOF, P_FOLIAGE_D, D_BOOK_BLUE]
+	for k in range(3):
+		draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.24 + k * T * 0.22, T * 0.7, T * 0.04), D_WOOD_LINE, true)
+		draw_rect(Rect2(base.x + T * 0.18, base.y + T * 0.12 + k * T * 0.22, T * 0.5, T * 0.11), bookcols[k], true)
+
+## 毛巾架（澡堂）：石灰背板 + 横杆 + 三条对折毛巾 + 底部藤篮。
+## 背板取 `P_WRK_FACE`——它在本文件里的注释已经写着"**只剩室内用途**：浴池石沿"，
+## 于是毛巾架与同一间屋里的浴池自然同族，不引入新色。
+func _shelf_towel(base: Vector2) -> void:
+	draw_rect(Rect2(base.x + T * 0.1, base.y + T * 0.05, T * 0.8, T * 0.85), P_WRK_FACE, true)
+	draw_rect(Rect2(base.x + T * 0.1, base.y + T * 0.05, T * 0.8, T * 0.1), P_WRK_TOP, true)     # 顶棱
+	draw_rect(Rect2(base.x + T * 0.14, base.y + T * 0.2, T * 0.72, T * 0.045), P_WRK_FOOT, true) # 横杆
+	var towels := [X_COLD_WHITE, D_RUG_TEAL, X_PARCHMENT]
+	for k in range(3):
+		var tx := base.x + T * (0.17 + k * 0.235)
+		var c: Color = towels[k]
+		draw_rect(Rect2(tx, base.y + T * 0.24, T * 0.19, T * 0.48), c, true)
+		draw_rect(Rect2(tx, base.y + T * 0.24, T * 0.19, T * 0.055), c.darkened(0.24), true)   # 搭在杆上的一折
+		draw_rect(Rect2(tx, base.y + T * 0.48, T * 0.19, T * 0.03), c.darkened(0.14), true)    # 对折线
+	draw_rect(Rect2(base.x + T * 0.2, base.y + T * 0.76, T * 0.6, T * 0.12), P_PLAZA, true)    # 藤篮
+	draw_rect(Rect2(base.x + T * 0.2, base.y + T * 0.76, T * 0.6, T * 0.035), P_PLAZA_LINE, true)
+
+## 工具架（工坊）：洞洞板 + 挂钉 + 锤/锯/凿 + 底层零件盒。
+## 背板取 `X_WRKW_FOOT`（= 工坊外墙墙脚），于是"进了工坊，架子也是工坊的"。
+func _shelf_tools(base: Vector2) -> void:
+	draw_rect(Rect2(base.x + T * 0.1, base.y + T * 0.05, T * 0.8, T * 0.85), X_WRKW_FOOT, true)
+	draw_rect(Rect2(base.x + T * 0.1, base.y + T * 0.05, T * 0.8, T * 0.09), P_WRK_TOP, true)      # 顶棱
+	for k in range(4):                                                                            # 挂钉排
+		draw_circle(Vector2(base.x + T * (0.21 + k * 0.19), base.y + T * 0.21), T * 0.028, P_WRK_ROOF)
+	draw_rect(Rect2(base.x + T * 0.19, base.y + T * 0.26, T * 0.05, T * 0.3), X_WOOD_MID, true)    # 锤柄
+	draw_rect(Rect2(base.x + T * 0.14, base.y + T * 0.24, T * 0.17, T * 0.09), P_WRK_TOP, true)    # 锤头
+	draw_rect(Rect2(base.x + T * 0.4, base.y + T * 0.26, T * 0.04, T * 0.2), X_WOOD_MID, true)     # 锯柄
+	draw_rect(Rect2(base.x + T * 0.36, base.y + T * 0.42, T * 0.26, T * 0.1), P_WRK_TOP, true)     # 锯身
+	draw_rect(Rect2(base.x + T * 0.36, base.y + T * 0.5, T * 0.26, T * 0.025), P_WRK_ROOF, true)   # 锯齿
+	draw_rect(Rect2(base.x + T * 0.68, base.y + T * 0.25, T * 0.05, T * 0.32), P_WRK_FOOT, true)   # 凿
+	draw_rect(Rect2(base.x + T * 0.78, base.y + T * 0.25, T * 0.05, T * 0.26), P_WRK_FOOT, true)   # 錾
+	draw_rect(Rect2(base.x + T * 0.14, base.y + T * 0.64, T * 0.72, T * 0.22), P_COM_FOOT, true)   # 零件盒
+	draw_rect(Rect2(base.x + T * 0.14, base.y + T * 0.64, T * 0.72, T * 0.05), X_WOOD_MID, true)
+	for k in range(3):                                                                            # 盒里的铜件
+		draw_circle(Vector2(base.x + T * (0.27 + k * 0.23), base.y + T * 0.76), T * 0.05, X_GOLD)
+
+## 货架（杂货铺）：柜体沿用商用棕（镇上的木工是同一批人），**差别全在货上**——
+## 麻袋 / 陶罐 / 布卷，没有一根书脊。这一档与书架**共用柜体色**是蓄意的：
+## 它逼着量具去看**货**，而不是靠"柜子换个颜色"蒙混过关。
+func _shelf_goods(base: Vector2) -> void:
+	draw_rect(Rect2(base.x + T * 0.1, base.y + T * 0.05, T * 0.8, T * 0.85), P_COM_FOOT, true)
+	for k in range(3):
+		draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.24 + k * T * 0.22, T * 0.7, T * 0.04), D_WOOD_LINE, true)
+	for k in range(2):                                                                            # 上层：陶罐 ×2
+		var jx := base.x + T * (0.3 + k * 0.24)
+		draw_circle(Vector2(jx, base.y + T * 0.17), T * 0.08, D_POT)
+		draw_rect(Rect2(jx - T * 0.04, base.y + T * 0.08, T * 0.08, T * 0.04), D_POT.darkened(0.22), true)
+	for k in range(3):                                                                            # 中层：麻袋 ×3
+		var sx := base.x + T * (0.19 + k * 0.21)
+		draw_rect(Rect2(sx, base.y + T * 0.34, T * 0.16, T * 0.12), P_PLAZA, true)
+		draw_rect(Rect2(sx + T * 0.045, base.y + T * 0.3, T * 0.07, T * 0.045), P_PLAZA_LINE, true)   # 扎口
+	draw_rect(Rect2(base.x + T * 0.18, base.y + T * 0.55, T * 0.28, T * 0.13), X_SIGNAL_NEG, true)    # 下层：布卷
+	draw_rect(Rect2(base.x + T * 0.18, base.y + T * 0.55, T * 0.28, T * 0.04), X_SIGNAL_NEG.lightened(0.22), true)
+	draw_rect(Rect2(base.x + T * 0.52, base.y + T * 0.55, T * 0.26, T * 0.13), P_PLAZA, true)
+	draw_rect(Rect2(base.x + T * 0.52, base.y + T * 0.55, T * 0.26, T * 0.04), P_PLAZA_LINE, true)
+	draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.74, T * 0.68, T * 0.13), P_RES_LINE, true)      # 底层：散货箱
+	draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.74, T * 0.68, T * 0.04), P_COM_TOP, true)
+
+## 杯碟架（咖啡区）：浅木柜体 + 白瓷杯碟 + 深色咖啡罐。
+## 冷白瓷（`X_COLD_WHITE`，注释原文"蒸汽/瓷/枕头"）是这一档的识别特征。
+func _shelf_crockery(base: Vector2) -> void:
+	draw_rect(Rect2(base.x + T * 0.1, base.y + T * 0.05, T * 0.8, T * 0.85), X_WOOD_MID, true)
+	for k in range(3):
+		draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.24 + k * T * 0.22, T * 0.7, T * 0.04), D_WOOD_LINE, true)
+	for k in range(3):                                                                            # 上层：白瓷杯 ×3
+		var cx := base.x + T * (0.26 + k * 0.2)
+		draw_circle(Vector2(cx, base.y + T * 0.17), T * 0.068, X_COLD_WHITE)
+		draw_rect(Rect2(cx + T * 0.06, base.y + T * 0.15, T * 0.032, T * 0.05), X_COLD_WHITE, true)   # 把手
+	draw_rect(Rect2(base.x + T * 0.19, base.y + T * 0.37, T * 0.22, T * 0.075), X_COLD_WHITE, true)   # 中层：碟摞
+	draw_rect(Rect2(base.x + T * 0.19, base.y + T * 0.33, T * 0.22, T * 0.045), X_COLD_WHITE.darkened(0.1), true)
+	draw_rect(Rect2(base.x + T * 0.47, base.y + T * 0.33, T * 0.18, T * 0.12), P_TEXT, true)          # 奶罐
+	draw_rect(Rect2(base.x + T * 0.7, base.y + T * 0.35, T * 0.14, T * 0.1), X_PARCHMENT, true)       # 糖罐
+	for k in range(2):                                                                            # 下层：咖啡罐 ×2
+		var tx := base.x + T * (0.2 + k * 0.3)
+		draw_rect(Rect2(tx, base.y + T * 0.53, T * 0.22, T * 0.15), P_WRK_FOOT, true)
+		draw_rect(Rect2(tx, base.y + T * 0.53, T * 0.22, T * 0.04), P_WRK_TOP, true)
+	draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.74, T * 0.68, T * 0.13), P_PLAZA, true)         # 底层：豆袋
+	draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.74, T * 0.68, T * 0.04), P_PLAZA_LINE, true)
 
 var _rc_conflict_ids := {}   # 每帧预建：卷入活跃冲突的 agent 端点集（渲染缓存，_draw_agent 用 O(1) 查）
 var _rc_meet_ids := {}       # 每帧预建：有活跃约会的 agent 端点集
