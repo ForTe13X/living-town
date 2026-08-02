@@ -1,0 +1,40 @@
+=== n_sweep: 36 片待跑（180 局，3120 agent-局）· jobs=10 ===
+[  1/ 36] rc=0    65s N=12 seeds=1-5 -> ship_n12_s1-5.jsonl
+[  2/ 36] rc=0    66s N=12 seeds=6-10 -> ship_n12_s6-10.jsonl
+[  3/ 36] rc=0    65s N=12 seeds=11-15 -> ship_n12_s11-15.jsonl
+[  4/ 36] rc=0    66s N=12 seeds=16-20 -> ship_n12_s16-20.jsonl
+[  5/ 36] rc=0    67s N=12 seeds=21-25 -> ship_n12_s21-25.jsonl
+[  6/ 36] rc=0    67s N=12 seeds=26-30 -> ship_n12_s26-30.jsonl
+[  7/ 36] rc=0    67s N=12 seeds=31-35 -> ship_n12_s31-35.jsonl
+[  8/ 36] rc=0    67s N=12 seeds=36-40 -> ship_n12_s36-40.jsonl
+[  9/ 36] rc=0    66s N=12 seeds=41-45 -> ship_n12_s41-45.jsonl
+[ 10/ 36] rc=0    67s N=12 seeds=46-50 -> ship_n12_s46-50.jsonl
+[ 11/ 36] rc=0    70s N=12 seeds=51-55 -> ship_n12_s51-55.jsonl
+[ 12/ 36] rc=0    70s N=12 seeds=56-60 -> ship_n12_s56-60.jsonl
+[ 13/ 36] rc=0    97s N=16 seeds=1-5 -> ship_n16_s1-5.jsonl
+[ 14/ 36] rc=0    98s N=16 seeds=6-10 -> ship_n16_s6-10.jsonl
+[ 15/ 36] rc=0    98s N=16 seeds=11-15 -> ship_n16_s11-15.jsonl
+[ 16/ 36] rc=0    99s N=16 seeds=16-20 -> ship_n16_s16-20.jsonl
+[ 17/ 36] rc=0    98s N=16 seeds=21-25 -> ship_n16_s21-25.jsonl
+[ 18/ 36] rc=0    98s N=16 seeds=26-30 -> ship_n16_s26-30.jsonl
+[ 19/ 36] rc=0    99s N=16 seeds=31-35 -> ship_n16_s31-35.jsonl
+[ 20/ 36] rc=0    98s N=16 seeds=36-40 -> ship_n16_s36-40.jsonl
+[ 21/ 36] rc=0   108s N=16 seeds=41-45 -> ship_n16_s41-45.jsonl
+[ 22/ 36] rc=0   106s N=16 seeds=46-50 -> ship_n16_s46-50.jsonl
+[ 23/ 36] rc=0   113s N=16 seeds=51-55 -> ship_n16_s51-55.jsonl
+[ 24/ 36] rc=0   116s N=16 seeds=56-60 -> ship_n16_s56-60.jsonl
+[ 25/ 36] rc=0   211s N=24 seeds=1-5 -> ship_n24_s1-5.jsonl
+[ 26/ 36] rc=0   211s N=24 seeds=6-10 -> ship_n24_s6-10.jsonl
+[ 27/ 36] rc=0   211s N=24 seeds=11-15 -> ship_n24_s11-15.jsonl
+[ 28/ 36] rc=0   208s N=24 seeds=16-20 -> ship_n24_s16-20.jsonl
+[ 29/ 36] rc=0   206s N=24 seeds=21-25 -> ship_n24_s21-25.jsonl
+[ 30/ 36] rc=0   212s N=24 seeds=26-30 -> ship_n24_s26-30.jsonl
+[ 31/ 36] rc=0   219s N=24 seeds=31-35 -> ship_n24_s31-35.jsonl
+[ 32/ 36] rc=0   218s N=24 seeds=36-40 -> ship_n24_s36-40.jsonl
+[ 33/ 36] rc=0   216s N=24 seeds=41-45 -> ship_n24_s41-45.jsonl
+[ 34/ 36] rc=0   214s N=24 seeds=46-50 -> ship_n24_s46-50.jsonl
+[ 35/ 36] rc=0   197s N=24 seeds=51-55 -> ship_n24_s51-55.jsonl
+[ 36/ 36] rc=0   199s N=24 seeds=56-60 -> ship_n24_s56-60.jsonl
+=== n_sweep done 墙钟=572s ===
+✅ 逐文件断言全过（seed 集合 / 无重复 / n_agents / days / 单段抬头 / 无 MISMATCH）
+SWEEP_RC=0

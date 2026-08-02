@@ -22,6 +22,13 @@
 plan.json 形如：
   {"godot": "...", "cells": [{"arm": "ship", "gamedir": "game", "n": 24,
                               "seeds": [1,2,...], "days": 60}, ...]}
+
+**AA1(2026-08-02) 的一处扩展**：cell 可选 `"bench"`，默认仍是 `ScaleSupply`。
+加它的理由不是审美：AA1 要的四样东西（need 地板 / 最长 social 锁段 / hard_fails / digest）
+只有 `bench/x1_margin.gd` 记，而 `ScaleSupply` 记的是 `#40` 的逐货满足率——**两份都要**。
+把 bench 写死在调度器里 ⇒ 要么重写一个调度器（丢掉这里的逐文件断言），要么手敲命令（那条断言总会被跳过）。
+⚠ **抬头标记随 bench 走**（`BENCHES` 表），否则"每个输出文件只有一段汇总"这条断言会对着一个
+永远数不到的字符串恒真 —— 那正是 docs/41 反复点名的"打印了却不阻止"。
 """
 import argparse
 import json
@@ -33,6 +40,13 @@ from concurrent.futures import ThreadPoolExecutor
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 CHUNK_DEFAULT = 6
+
+# bench 名 → (res:// 脚本, 它每跑一次打的抬头前缀)。抬头是"这个文件只被一段运行写过"那条断言的锚，
+# 所以**必须逐 bench 现填**，不能共用一个字符串（共用 = 那条断言在别的 bench 上恒真）。
+BENCHES = {
+    "scalesupply": ("res://bench/ScaleSupply.gd", "=== ScaleSupply · "),
+    "x1_margin": ("res://bench/x1_margin.gd", "=== X1 margin · "),
+}
 
 # Windows 控制台默认 GBK ⇒ 打 ✅ 会抛 UnicodeEncodeError，把一次【成功】的运行变成 rc=1。
 # 实测踩到过一次（analysis/v2/sweep_deep.txt 末尾）：断言全过、数据齐全，而退出码是 1。
@@ -53,10 +67,10 @@ def _seeds_arg(seeds):
 
 
 def _run_one(job):
-    godot, gamedir, n, seeds, days, out_path, log_path = job
+    godot, gamedir, n, seeds, days, out_path, log_path, bench = job
     t0 = time.time()
     cmd = [godot, "--headless", "--path", gamedir,
-           "--script", "res://bench/ScaleSupply.gd", "--",
+           "--script", BENCHES[bench][0], "--",
            "--agents", str(n), "--seeds", _seeds_arg(seeds),
            "--days", str(days), "--out", out_path]
     with open(log_path, "w", encoding="utf-8", errors="replace") as lf:
@@ -64,7 +78,7 @@ def _run_one(job):
     return (out_path, log_path, rc, seeds, n, time.time() - t0)
 
 
-def _verify(out_path, log_path, want_seeds, want_n, want_days):
+def _verify(out_path, log_path, want_seeds, want_n, want_days, bench="scalesupply"):
     """逐文件断言（docs/41 §1：别静默分析到三次并发运行交织出来的数据）。"""
     problems = []
     if not os.path.exists(out_path):
@@ -91,14 +105,16 @@ def _verify(out_path, log_path, want_seeds, want_n, want_days):
             problems.append("%s: seed=%s 的 n_agents=%s ≠ 请求的 %d" % (out_path, r["seed"], r["n_agents"], want_n))
         if int(r["days"]) != want_days:
             problems.append("%s: seed=%s 的 days=%s ≠ 请求的 %d" % (out_path, r["seed"], r["days"], want_days))
-    # ScaleSupply 每跑一次打一行 "=== ScaleSupply · ..." 抬头；多于一段 = 两次运行写进了同一个日志
+    # 每个 bench 每跑一次打一行自己的抬头；多于一段 = 两次运行写进了同一个日志
     try:
         head = open(log_path, encoding="utf-8", errors="replace").read()
     except OSError:
         head = ""
-    n_head = head.count("=== ScaleSupply · ")
+    marker = BENCHES[bench][1]
+    n_head = head.count(marker)
     if n_head != 1:
-        problems.append("%s: 抬头出现 %d 次（应为 1）⇒ 这个输出被不止一段运行写过" % (log_path, n_head))
+        problems.append("%s: 抬头 %r 出现 %d 次（应为 1）⇒ 这个输出被不止一段运行写过"
+                        % (log_path, marker, n_head))
     if "MISMATCH" in head:
         problems.append("%s: ScaleSupply 自己打了 MISMATCH（探针自算与 #40 判决不一致）" % log_path)
     return problems
@@ -124,11 +140,14 @@ def main():
     for cell in plan["cells"]:
         arm, gamedir = cell["arm"], cell["gamedir"]
         n, days = int(cell["n"]), int(cell.get("days", 60))
+        bench = str(cell.get("bench", "scalesupply"))
+        if bench not in BENCHES:
+            sys.exit("未知 bench=%r（认识的：%s）" % (bench, ",".join(sorted(BENCHES))))
         seeds = [int(s) for s in cell["seeds"]]
         for s in seeds:
-            key = (arm, n, s)
+            key = (bench, arm, n, s)
             if key in seen:
-                sys.exit("计划里 (arm=%s,N=%d,seed=%d) 出现两次 —— 拒绝跑" % key)
+                sys.exit("计划里 (bench=%s,arm=%s,N=%d,seed=%d) 出现两次 —— 拒绝跑" % key)
             seen.add(key)
         for i in range(0, len(seeds), args.chunk):
             blk = seeds[i:i + args.chunk]
@@ -136,21 +155,22 @@ def main():
             out_path = os.path.join(outdir, tag + ".jsonl")
             log_path = os.path.join(outdir, tag + ".txt")
             if os.path.exists(out_path) and not args.dry_run:
-                bad = _verify(out_path, log_path, blk, n, days)
+                bad = _verify(out_path, log_path, blk, n, days, bench)
                 if not bad:
                     print("[skip] %s 已完整" % tag)
-                    checks.append((out_path, log_path, blk, n, days))
+                    checks.append((out_path, log_path, blk, n, days, bench))
                     continue
                 print("[redo] %s（旧文件不完整：%s）" % (tag, bad[0]))
-            jobs.append((godot, gamedir, n, blk, days, out_path, log_path))
-            checks.append((out_path, log_path, blk, n, days))
+            jobs.append((godot, gamedir, n, blk, days, out_path, log_path, bench))
+            checks.append((out_path, log_path, blk, n, days, bench))
 
     total_units = sum(j[2] * len(j[3]) for j in jobs)
     print("=== n_sweep: %d 片待跑（%d 局，%d agent-局）· jobs=%d ===" % (
         len(jobs), sum(len(j[3]) for j in jobs), total_units, args.jobs))
     if args.dry_run:
         for j in jobs:
-            print("  would run: arm-dir=%s N=%d seeds=%s -> %s" % (j[1], j[2], _seeds_arg(j[3]), os.path.basename(j[5])))
+            print("  would run: bench=%s arm-dir=%s N=%d seeds=%s -> %s"
+                  % (j[7], j[1], j[2], _seeds_arg(j[3]), os.path.basename(j[5])))
         return 0
 
     t0 = time.time()
@@ -162,8 +182,8 @@ def main():
                 done, len(jobs), rc, dt, n, _seeds_arg(seeds), os.path.basename(out_path)), flush=True)
 
     problems = []
-    for out_path, log_path, blk, n, days in checks:
-        problems += _verify(out_path, log_path, blk, n, days)
+    for out_path, log_path, blk, n, days, bench in checks:
+        problems += _verify(out_path, log_path, blk, n, days, bench)
     print("=== n_sweep done 墙钟=%.0fs ===" % (time.time() - t0))
     if problems:
         print("!!! %d 条断言不成立：" % len(problems))
