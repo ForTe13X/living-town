@@ -1,0 +1,49 @@
+S06 NarrativeViewContract acceptance receipt
+date: 2026-08-02 Asia/Shanghai
+planned_base: 9bad1f411982a4c3c52268ca08b80412b7265699
+actual_head_at_final_run: e7a64e650e3275f6e6e948289854c041fb1e9f6a
+head_note: the shared worktree advanced during this baton; S06 only adds its four exclusive files and does not consume those concurrent changes
+godot: 4.6.2.stable.official.71f334935
+
+parse command:
+  C:/Users/yp/AppData/Local/Programs/Godot/4.6.2-stable/Godot_v4.6.2-stable_win64_console.exe --headless --path game --check-only --script res://scripts/narrative/NarrativeViewContract.gd
+parse exit: 0
+
+acceptance command:
+  C:/Users/yp/AppData/Local/Programs/Godot/4.6.2-stable/Godot_v4.6.2-stable_win64_console.exe --headless --path game res://scenes/narrative/narrative_view_contract_test.tscn
+acceptance exit: 0
+repeat-run: 2/2 exit 0; 27/27 normalized console lines; 0 differing lines
+
+S06 NarrativeViewContract · synthetic two-role fixture
+  PASS P01 mapmaker projection is valid
+  PASS P02 editor projection is valid
+  PASS P03 same pre-state yields different role-filtered subgraphs/receipts
+  PASS P04 snapshot has exactly the ten v0 fields
+  PASS P05 hidden claim prose is absent from snapshot and diagnostics
+  PASS P06 identical input is byte-stable after JSON serialization
+  PASS P07 claim is reachable through this role's receipt
+  PASS P08 contract has no dependency on existing simulation/controller/view singletons
+  PASS M01 unknown visible node is rejected fail-closed
+  PASS M02 foreign receipt is rejected
+  PASS M03 claim without a role receipt is rejected
+  PASS M04 cross-role custody leak is rejected
+  PASS M05 claim IDs cannot appear independently of receipts
+  PASS M06 raw claim text injected into a snapshot is rejected
+  PASS D01 claim prose changes are intentionally outside this ID-only gate
+  PASS D02 receipt provenance semantics are intentionally outside this v0 view gate
+
+detects: M01 unknown node; M02 foreign receipt; M03 unauthorized claim; M04 foreign custody; M05 independent claim IDs; M06 raw claim-text field
+does_not_detect: D01 author claim prose truth/quality; D02 receipt source-chain semantics (both counterexamples executed)
+confidence: 6/6 declared mutations detected; 2/2 declared outside-envelope counterexamples stayed unchanged
+S06 CONTRACT: PASS (16 checks, 0 fail)
+
+scope audit:
+  added game/scripts/narrative/NarrativeViewContract.gd
+  added game/scripts/narrative/tests/narrative_view_contract_test.gd
+  added game/scenes/narrative/narrative_view_contract_test.tscn
+  added analysis/narrative_visual/v0_contract.txt
+  no changes to Sim.gd, Main.gd, WorldView.gd, existing data, CI, or README
+  pre-existing analysis/phase_d and analysis/town-world-probe were not touched
+
+runner note:
+  Godot prints an ObjectDB leak warning after the scene calls quit; the scene exits 0 and all 16 explicit assertions complete before that warning. This baton did not attribute or suppress it.
