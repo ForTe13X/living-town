@@ -1,0 +1,103 @@
+{
+  "banner": "NARRATIVE LAB · NOT SIM · READ-ONLY COMMITTED TRACE · NOT GAMEPLAY",
+  "captures": [
+    {
+      "action_id": "focus_role",
+      "banner_accent_pixels": 1280,
+      "committed_trace_offset": 0,
+      "dispatch_total": 1,
+      "file": "state_01_focus_role.png",
+      "frame_fingerprint": "00|role.beta|role.beta|node.cafe,node.street,node.table|edge.cafe.street,edge.street.table|node.street,node.cafe,node.street,node.table|role.beta|node.street||||02160c428ee52a89fbb8e9d6f3e7137bd4c9edaa882e6bece3ff5eec4c5a60d6",
+      "ordinal": 1,
+      "payload": {
+
+      },
+      "sha256": "5453f6b9993d01bee95f249d9487307141a4c4aa46d8b63ba958395af3d4faf6",
+      "size": [
+        1280,
+        768
+      ]
+    },
+    {
+      "action_id": "select_node",
+      "banner_accent_pixels": 1280,
+      "committed_trace_offset": 0,
+      "dispatch_total": 2,
+      "file": "state_02_select_node.png",
+      "frame_fingerprint": "00|role.beta|role.beta|node.cafe,node.street,node.table|edge.cafe.street,edge.street.table|node.street,node.cafe,node.street,node.table|role.beta|node.street||||02160c428ee52a89fbb8e9d6f3e7137bd4c9edaa882e6bece3ff5eec4c5a60d6",
+      "ordinal": 2,
+      "payload": {
+
+      },
+      "sha256": "197b022d6536f5e08f98bedfeb177a28685bd0de32ceb0d60c9f27e4e953b643",
+      "size": [
+        1280,
+        768
+      ]
+    },
+    {
+      "action_id": "view_traverse",
+      "banner_accent_pixels": 1280,
+      "committed_trace_offset": 1,
+      "dispatch_total": 3,
+      "file": "state_03_view_traverse.png",
+      "frame_fingerprint": "01|role.beta|role.beta|node.cafe,node.street,node.table|edge.cafe.street,edge.street.table|node.cafe,node.street,node.table|role.beta|node.cafe||||7700ba9ac2a01c5d4dd84a836a130f8b0dc695d962ee5ff3f725008dec4e2eb3",
+      "ordinal": 3,
+      "payload": {
+
+      },
+      "sha256": "6a0a5907a3ff0e3dc2bdb259d0c384d4aa4970b7cc7bc4f618c88741a19670d9",
+      "size": [
+        1280,
+        768
+      ]
+    },
+    {
+      "action_id": "compare_handoff",
+      "banner_accent_pixels": 1280,
+      "committed_trace_offset": 2,
+      "dispatch_total": 4,
+      "file": "state_04_compare_handoff.png",
+      "frame_fingerprint": "02|role.beta|role.beta|node.cafe,node.street,node.table|edge.cafe.street,edge.street.table|node.cafe,node.street,node.table|role.beta|node.cafe|receipt.runtime.89b70afef52cb80df6a9|fragment.sample||1276d184ad4208f847ecfc8e9b6369e2f0cbdca497f5387a984579ea472f1df2",
+      "ordinal": 4,
+      "payload": {
+
+      },
+      "sha256": "d36cd035db2e34112117ef618e9d04628220bc2aebb7c10b33cd4e8f0d0bef97",
+      "size": [
+        1280,
+        768
+      ]
+    },
+    {
+      "action_id": "scrub_replay",
+      "banner_accent_pixels": 1280,
+      "committed_trace_offset": 12,
+      "dispatch_total": 5,
+      "file": "state_05_scrub_replay.png",
+      "frame_fingerprint": "12|role.beta|role.beta|node.cafe,node.street,node.table|edge.cafe.street,edge.street.table|node.table|role.beta|node.table|receipt.runtime.89b70afef52cb80df6a9|fragment.sample||315e6f172a0fbb1f5645d115961b77e6f3997360be649101a64abea4557d9b12",
+      "ordinal": 5,
+      "payload": {
+        "offset": 12
+      },
+      "sha256": "3ace8725cc1c50a9e96d151dda875c7717bfe481043ab0142222d24c1d95c61a",
+      "size": [
+        1280,
+        768
+      ]
+    }
+  ],
+  "checks": 33,
+  "failures": [],
+  "fixture_sha256": "90ddd379d67b3e251ac0113a548706c95f840ae6c5aea0ee50a587a2ab3e8198",
+  "media_kind": "component_review_not_sim_not_gameplay",
+  "mode": "READ_ONLY_COMMITTED_TRACE",
+  "production_gate": false,
+  "result": "PASS",
+  "schema": "living-town-s17-dispatcher-capture/v1",
+  "simulation": "NOT_SIM",
+  "source_s16_commit": "af72cfb55b191f28f97cd59ea8fcd2376f5e1f46",
+  "source_trace_fingerprint_after": "4a7655d9480608c5f9342fd226585c1784d360db0fe0110e4b98445355247935",
+  "source_trace_fingerprint_before": "4a7655d9480608c5f9342fd226585c1784d360db0fe0110e4b98445355247935",
+  "source_trace_unchanged": true
+}

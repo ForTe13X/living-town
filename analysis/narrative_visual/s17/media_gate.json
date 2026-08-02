@@ -1,0 +1,144 @@
+{
+  "banner": "NARRATIVE LAB · NOT SIM · READ-ONLY COMMITTED TRACE · NOT GAMEPLAY",
+  "blockers": [
+    {
+      "id": "STATIC_COMPONENT_HOLDS",
+      "reason": "the reel is assembled from deterministic dispatcher captures, not continuous gameplay"
+    },
+    {
+      "id": "NO_SIMULATION_OWNERSHIP",
+      "reason": "all five actions inspect committed trace frames and cannot write to Sim"
+    },
+    {
+      "id": "ENCODER_BUILD_BOUND_BYTES",
+      "reason": "exact MP4 bytes are reproducible only with the declared ffmpeg 8.1.2 build and fixed command"
+    }
+  ],
+  "capture_states": {
+    "state_01_focus_role.png": {
+      "action_id": "focus_role",
+      "banner_present": true,
+      "committed_trace_offset": 0,
+      "sha256": "5453f6b9993d01bee95f249d9487307141a4c4aa46d8b63ba958395af3d4faf6"
+    },
+    "state_02_select_node.png": {
+      "action_id": "select_node",
+      "banner_present": true,
+      "committed_trace_offset": 0,
+      "sha256": "197b022d6536f5e08f98bedfeb177a28685bd0de32ceb0d60c9f27e4e953b643"
+    },
+    "state_03_view_traverse.png": {
+      "action_id": "view_traverse",
+      "banner_present": true,
+      "committed_trace_offset": 1,
+      "sha256": "6a0a5907a3ff0e3dc2bdb259d0c384d4aa4970b7cc7bc4f618c88741a19670d9"
+    },
+    "state_04_compare_handoff.png": {
+      "action_id": "compare_handoff",
+      "banner_present": true,
+      "committed_trace_offset": 2,
+      "sha256": "d36cd035db2e34112117ef618e9d04628220bc2aebb7c10b33cd4e8f0d0bef97"
+    },
+    "state_05_scrub_replay.png": {
+      "action_id": "scrub_replay",
+      "banner_present": true,
+      "committed_trace_offset": 12,
+      "sha256": "3ace8725cc1c50a9e96d151dda875c7717bfe481043ab0142222d24c1d95c61a"
+    }
+  },
+  "contact_sheet": {
+    "banner_present": true,
+    "sha256": "54300079a75111cf68c84b117750d0d9500e6d9121b422b35202261130e62956",
+    "size": [
+      1920,
+      1080
+    ]
+  },
+  "issues": [],
+  "manifest": {
+    "entry_count": 20,
+    "path": "analysis/narrative_visual/s17/media_manifest.sha256",
+    "verified": true
+  },
+  "mutation_cases": [
+    {
+      "detected": true,
+      "id": "metadata_erasure"
+    },
+    {
+      "detected": true,
+      "id": "banner_erasure"
+    },
+    {
+      "detected": true,
+      "id": "manifest_hash_drift"
+    }
+  ],
+  "production_gate": false,
+  "responsive_s16_screenshots": {
+    "analysis/narrative_visual/s16/compositor_1024x768.png": {
+      "sha256": "8045026ad1434b91a41a025c42ecb8f1559702cb17217a9a653de77e3ec0e5fc",
+      "size": [
+        1024,
+        768
+      ]
+    },
+    "analysis/narrative_visual/s16/compositor_1280x768.png": {
+      "sha256": "2931c18fb4d5c6063bd2007e684ba2f0c10798b91ac95873887ddec0d3160bac",
+      "size": [
+        1280,
+        768
+      ]
+    },
+    "analysis/narrative_visual/s16/compositor_2688x1216.png": {
+      "sha256": "2b08423b7aa9c49835c556c4cc451502ee4d0e766e95a0177f785a7eab0d0fea",
+      "size": [
+        2688,
+        1216
+      ]
+    }
+  },
+  "schema": "living-town-s17-review-media-gate/v1",
+  "source_receipt": {
+    "fixture_sha256": "90ddd379d67b3e251ac0113a548706c95f840ae6c5aea0ee50a587a2ab3e8198",
+    "head_relation": "descendant_or_equal",
+    "lineage_verified": true,
+    "source_s16_commit": "af72cfb55b191f28f97cd59ea8fcd2376f5e1f46"
+  },
+  "source_sha256": {
+    "analysis/narrative_visual/s17/.gitattributes": "41c2ed94d661bfb4aec8edfb884b08298c800aad8b60a7fdc5efa01668548e03",
+    "analysis/narrative_visual/s17/build_contact_sheet.py": "6397e0348a6c21c4426bbd8601c434c412377e5374f0a8ab967dfa3a45f30c68",
+    "analysis/narrative_visual/s17/render_s17_review.ps1": "05ffca51bcce6fa1e47bbf21524f5b90b2e14e9c0d7b614dcb9fc1e425156537",
+    "analysis/narrative_visual/s17/test_s17_media.py": "94b79efcb62e240524e3db8ec4edbadba0e2596121c3b587fad56496c7dfeedc",
+    "analysis/narrative_visual/s17/verify_s17_media.py": "b6c6167b397e33fb4477b41d3cb8920038c06544131c3e1206d1e5ed3d1ad05d",
+    "game/narrative_lab/s16/fixtures/s16_compositor_projection.json": "90ddd379d67b3e251ac0113a548706c95f840ae6c5aea0ee50a587a2ab3e8198",
+    "game/narrative_lab/s16/scenes/s17_capture_test.tscn": "fd18b32de3b1f201ab463a4b059884f2ff182309f1a3064abf7a765b588daa9d",
+    "game/narrative_lab/s16/scripts/S16Compositor.gd": "ae883e4fe80083fd5709c268d5529176ef60b1d9d7c3dfc03767343e87b74d7b",
+    "game/narrative_lab/s16/tests/s17_capture_test.gd": "4162a261727058978e6269d0ca5cd1d2b88aad376b52ff6e8bddc3e317031cbd"
+  },
+  "toolchain": {
+    "ffmpeg": "ffmpeg version 8.1.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+    "pillow": "12.1.1"
+  },
+  "verdict": "PASS",
+  "video": {
+    "byte_reproducibility": "fixed_inputs_and_command; exact MP4 bytes are ffmpeg 8.1.2 build-bound",
+    "comment": "NOT SIM; READ-ONLY COMMITTED TRACE; NOT GAMEPLAY; deterministic S17 component review holds",
+    "duration_seconds": 18.0,
+    "fps": 30,
+    "hold_seconds": [
+      3,
+      3,
+      4,
+      4,
+      4
+    ],
+    "path": "analysis/narrative_visual/s17/compositor_read_only_review.mp4",
+    "sha256": "d2112d864ee5e72747f22a42f26461dc1672785cd22c7e783f766d44587641a2",
+    "size": [
+      1280,
+      768
+    ],
+    "title": "NARRATIVE LAB · NOT SIM · READ-ONLY COMMITTED TRACE · NOT GAMEPLAY"
+  }
+}
