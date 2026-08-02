@@ -1,0 +1,10 @@
+{
+  "schema": "living-town-s16-main-fixture-receipt/v1",
+  "lab_commit": "1a195e06f1dd6b6aef2668906d6a816b8799e67b",
+  "lab_path": "artifacts/integration/s16_compositor_projection.json",
+  "sha256": "90ddd379d67b3e251ac0113a548706c95f840ae6c5aea0ee50a587a2ab3e8198",
+  "authority": "projection_only",
+  "mode": "READ_ONLY_COMMITTED_TRACE",
+  "simulation": "NOT_SIM",
+  "production_gate": false
+}

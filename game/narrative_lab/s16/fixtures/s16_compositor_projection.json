@@ -1,0 +1,1059 @@
+{
+  "authority": "projection_only",
+  "frames": [
+    {
+      "chain_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "ledger_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "offset": 0,
+      "roles": [
+        {
+          "carried_fragment_ids": [
+            "fragment.sample"
+          ],
+          "clock": {
+            "watch": 0
+          },
+          "now_node": "node.cafe",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.seed.alpha"
+          ],
+          "role_id": "role.alpha",
+          "route_hint": [
+            "node.cafe"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        },
+        {
+          "carried_fragment_ids": [],
+          "clock": {
+            "watch": 0
+          },
+          "now_node": "node.street",
+          "open_request_ids": [],
+          "receipt_ids": [],
+          "role_id": "role.beta",
+          "route_hint": [
+            "node.street",
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        }
+      ],
+      "state_sha256": "a5481f20fc4afe4b1837942cc6296fac01728b8c6f18bf8b0fbd158f049f0f46",
+      "transition": null
+    },
+    {
+      "chain_hash": "64f9d1bfea0577b15f71a7a4efe6013593b37dd335d5c1ad0613db27f75871d0",
+      "ledger_sha256": "826bd4f563e9d00ddde2ee7aee978157d6bb15a3de79385081bfdf8cd01dc609",
+      "offset": 1,
+      "roles": [
+        {
+          "carried_fragment_ids": [
+            "fragment.sample"
+          ],
+          "clock": {
+            "watch": 1
+          },
+          "now_node": "node.cafe",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.seed.alpha"
+          ],
+          "role_id": "role.alpha",
+          "route_hint": [
+            "node.cafe"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        },
+        {
+          "carried_fragment_ids": [],
+          "clock": {
+            "watch": 1
+          },
+          "now_node": "node.cafe",
+          "open_request_ids": [],
+          "receipt_ids": [],
+          "role_id": "role.beta",
+          "route_hint": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        }
+      ],
+      "state_sha256": "2c5a2cfff09f8efca817ecf9d040e633899d4571d873ac5fa1f270731aa5382c",
+      "transition": {
+        "actor_role_id": "role.beta",
+        "fragment_id": null,
+        "nonce": 0,
+        "outcome": "committed",
+        "recipient_role_id": null,
+        "requested_action_id": "action.traverse",
+        "resolved_action_id": "action.traverse",
+        "target_id": "edge.cafe.street"
+      }
+    },
+    {
+      "chain_hash": "45f9dcf8f091766463835abef30e96bd2d27e130fd9f6df0572944ae0cd1d1cd",
+      "ledger_sha256": "482ab3ac75f156331597892318f6cf04040830ce4f0394f49be475b2859efeb5",
+      "offset": 2,
+      "roles": [
+        {
+          "carried_fragment_ids": [],
+          "clock": {
+            "watch": 2
+          },
+          "now_node": "node.cafe",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.seed.alpha"
+          ],
+          "role_id": "role.alpha",
+          "route_hint": [
+            "node.cafe"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        },
+        {
+          "carried_fragment_ids": [
+            "fragment.sample"
+          ],
+          "clock": {
+            "watch": 2
+          },
+          "now_node": "node.cafe",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.runtime.89b70afef52cb80df6a9"
+          ],
+          "role_id": "role.beta",
+          "route_hint": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        }
+      ],
+      "state_sha256": "325dbb83c1fe3274a4cf451720092ea3af19b99e644f0ea9592abb9e13242ba5",
+      "transition": {
+        "actor_role_id": "role.alpha",
+        "fragment_id": "fragment.sample",
+        "nonce": 1,
+        "outcome": "committed",
+        "recipient_role_id": "role.beta",
+        "requested_action_id": "action.handoff",
+        "resolved_action_id": "action.handoff",
+        "target_id": "fragment.sample"
+      }
+    },
+    {
+      "chain_hash": "f8ac336f067bb8f93d7262c200f59d1fe4afe558ac4c0a77ce42adc8df28bf21",
+      "ledger_sha256": "7754cf3c1c7b0903a85721325d796260a47748b85c764438550d336d9ef71efe",
+      "offset": 3,
+      "roles": [
+        {
+          "carried_fragment_ids": [],
+          "clock": {
+            "watch": 3
+          },
+          "now_node": "node.cafe",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.seed.alpha"
+          ],
+          "role_id": "role.alpha",
+          "route_hint": [
+            "node.cafe"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        },
+        {
+          "carried_fragment_ids": [
+            "fragment.sample"
+          ],
+          "clock": {
+            "watch": 3
+          },
+          "now_node": "node.street",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.runtime.89b70afef52cb80df6a9"
+          ],
+          "role_id": "role.beta",
+          "route_hint": [
+            "node.street",
+            "node.table"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        }
+      ],
+      "state_sha256": "b4928ae37ce1d48999f2268aee6352d1b57e761b08bd8e737313268f4733e34a",
+      "transition": {
+        "actor_role_id": "role.beta",
+        "fragment_id": null,
+        "nonce": 2,
+        "outcome": "committed",
+        "recipient_role_id": null,
+        "requested_action_id": "action.traverse",
+        "resolved_action_id": "action.traverse",
+        "target_id": "edge.cafe.street"
+      }
+    },
+    {
+      "chain_hash": "5f5912c6f74de534a2d8ec4d26a3056513e67294d62331904ca9cbdd6bb76e80",
+      "ledger_sha256": "2a68160af8719363ce63df2b69cc6cfea3970901c6251ace5bb3bbb69bd1fdee",
+      "offset": 4,
+      "roles": [
+        {
+          "carried_fragment_ids": [],
+          "clock": {
+            "watch": 4
+          },
+          "now_node": "node.cafe",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.seed.alpha"
+          ],
+          "role_id": "role.alpha",
+          "route_hint": [
+            "node.cafe"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        },
+        {
+          "carried_fragment_ids": [
+            "fragment.sample"
+          ],
+          "clock": {
+            "watch": 4
+          },
+          "now_node": "node.table",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.runtime.89b70afef52cb80df6a9"
+          ],
+          "role_id": "role.beta",
+          "route_hint": [
+            "node.table"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        }
+      ],
+      "state_sha256": "05a353e6cb47c85088613de82c16ecf55b5244dd9b569f5bce423b0d703d50cc",
+      "transition": {
+        "actor_role_id": "role.beta",
+        "fragment_id": null,
+        "nonce": 3,
+        "outcome": "committed",
+        "recipient_role_id": null,
+        "requested_action_id": "action.traverse",
+        "resolved_action_id": "action.traverse",
+        "target_id": "edge.street.table"
+      }
+    },
+    {
+      "chain_hash": "8c99ce06cdc184b97ca9a8e23f2192da4df947fe061cc1d612fd41525cb39c1f",
+      "ledger_sha256": "34a886d5fd26167c5cb7eef09d6f987395735681aa0c99316a04bf470bf1154d",
+      "offset": 5,
+      "roles": [
+        {
+          "carried_fragment_ids": [],
+          "clock": {
+            "watch": 5
+          },
+          "now_node": "node.cafe",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.seed.alpha"
+          ],
+          "role_id": "role.alpha",
+          "route_hint": [
+            "node.cafe"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        },
+        {
+          "carried_fragment_ids": [
+            "fragment.sample"
+          ],
+          "clock": {
+            "watch": 5
+          },
+          "now_node": "node.table",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.runtime.89b70afef52cb80df6a9"
+          ],
+          "role_id": "role.beta",
+          "route_hint": [
+            "node.table"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        }
+      ],
+      "state_sha256": "d9081408cac9041efb14dc0360f4ae99c4d74515123b59ac6d892f3444ed38bf",
+      "transition": {
+        "actor_role_id": "role.beta",
+        "fragment_id": null,
+        "nonce": 4,
+        "outcome": "committed",
+        "recipient_role_id": null,
+        "requested_action_id": "action.wait",
+        "resolved_action_id": "action.wait",
+        "target_id": null
+      }
+    },
+    {
+      "chain_hash": "2885b8528d910c494b12f374eb7b4af71317ad640d809033872f0fd97fcfb66c",
+      "ledger_sha256": "c19f19bc39d5fc0d5af95f8657a64c6803f105275a8b895df5481ed6a597b6ce",
+      "offset": 6,
+      "roles": [
+        {
+          "carried_fragment_ids": [],
+          "clock": {
+            "watch": 6
+          },
+          "now_node": "node.cafe",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.seed.alpha"
+          ],
+          "role_id": "role.alpha",
+          "route_hint": [
+            "node.cafe"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        },
+        {
+          "carried_fragment_ids": [
+            "fragment.sample"
+          ],
+          "clock": {
+            "watch": 6
+          },
+          "now_node": "node.table",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.runtime.89b70afef52cb80df6a9"
+          ],
+          "role_id": "role.beta",
+          "route_hint": [
+            "node.table"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        }
+      ],
+      "state_sha256": "f86fa6bba74d62ed5ed2ae8298504878694465eaba3e26d528d123de24395577",
+      "transition": {
+        "actor_role_id": "role.beta",
+        "fragment_id": null,
+        "nonce": 5,
+        "outcome": "committed",
+        "recipient_role_id": null,
+        "requested_action_id": "action.wait",
+        "resolved_action_id": "action.wait",
+        "target_id": null
+      }
+    },
+    {
+      "chain_hash": "a9bd3719492c8eb187a9cf96479aa6a1b75239b28e1ae7aa73aade9e2e2809f2",
+      "ledger_sha256": "f78d41d568525f6b775e96fa71fc5a86c82a14adb545f1a213d3aed949e8a49d",
+      "offset": 7,
+      "roles": [
+        {
+          "carried_fragment_ids": [],
+          "clock": {
+            "watch": 7
+          },
+          "now_node": "node.cafe",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.seed.alpha"
+          ],
+          "role_id": "role.alpha",
+          "route_hint": [
+            "node.cafe"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        },
+        {
+          "carried_fragment_ids": [
+            "fragment.sample"
+          ],
+          "clock": {
+            "watch": 7
+          },
+          "now_node": "node.table",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.runtime.89b70afef52cb80df6a9"
+          ],
+          "role_id": "role.beta",
+          "route_hint": [
+            "node.table"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        }
+      ],
+      "state_sha256": "4ba65102e7dd2f341d7d51e156b18fd56bd22e542eadba3af658bc0d19a09330",
+      "transition": {
+        "actor_role_id": "role.beta",
+        "fragment_id": null,
+        "nonce": 6,
+        "outcome": "committed",
+        "recipient_role_id": null,
+        "requested_action_id": "action.wait",
+        "resolved_action_id": "action.wait",
+        "target_id": null
+      }
+    },
+    {
+      "chain_hash": "b73adb191a20caba34eaf6a03e940bcdbb21da5a0cb37a029abe03e3ad8f944a",
+      "ledger_sha256": "e610eb8ca20070db55c48aec9560539d0f19f5cfb75a2b1b679f09941d90a213",
+      "offset": 8,
+      "roles": [
+        {
+          "carried_fragment_ids": [],
+          "clock": {
+            "watch": 8
+          },
+          "now_node": "node.cafe",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.seed.alpha"
+          ],
+          "role_id": "role.alpha",
+          "route_hint": [
+            "node.cafe"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        },
+        {
+          "carried_fragment_ids": [
+            "fragment.sample"
+          ],
+          "clock": {
+            "watch": 8
+          },
+          "now_node": "node.table",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.runtime.89b70afef52cb80df6a9"
+          ],
+          "role_id": "role.beta",
+          "route_hint": [
+            "node.table"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        }
+      ],
+      "state_sha256": "49c09fb260417115aaa1b0d44483bd6d94781176df3839a0f18d98d79ec2dee1",
+      "transition": {
+        "actor_role_id": "role.beta",
+        "fragment_id": null,
+        "nonce": 7,
+        "outcome": "committed",
+        "recipient_role_id": null,
+        "requested_action_id": "action.wait",
+        "resolved_action_id": "action.wait",
+        "target_id": null
+      }
+    },
+    {
+      "chain_hash": "831ee93c8259bd848c081057aef1ac8db075560ecc6adc6b23b8b017921662fe",
+      "ledger_sha256": "769d0b2700ece4ce045c98d0a117b7283a460a028cba8262b59c741605e58b1e",
+      "offset": 9,
+      "roles": [
+        {
+          "carried_fragment_ids": [],
+          "clock": {
+            "watch": 9
+          },
+          "now_node": "node.cafe",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.seed.alpha"
+          ],
+          "role_id": "role.alpha",
+          "route_hint": [
+            "node.cafe"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        },
+        {
+          "carried_fragment_ids": [
+            "fragment.sample"
+          ],
+          "clock": {
+            "watch": 9
+          },
+          "now_node": "node.table",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.runtime.89b70afef52cb80df6a9"
+          ],
+          "role_id": "role.beta",
+          "route_hint": [
+            "node.table"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        }
+      ],
+      "state_sha256": "49d94cd7f81d1cee9118120d8aac4823aa4ca87fa3f5cbdd7f12ac2e127ac3e6",
+      "transition": {
+        "actor_role_id": "role.beta",
+        "fragment_id": null,
+        "nonce": 8,
+        "outcome": "committed",
+        "recipient_role_id": null,
+        "requested_action_id": "action.wait",
+        "resolved_action_id": "action.wait",
+        "target_id": null
+      }
+    },
+    {
+      "chain_hash": "242516bae7121c894fe79c06dd4b1a26c524514adcaa0fa988083c5743fc31d8",
+      "ledger_sha256": "dd9417f98c048f73f10460024454a0922212dafeeb71a34e81753757b0048c0f",
+      "offset": 10,
+      "roles": [
+        {
+          "carried_fragment_ids": [],
+          "clock": {
+            "watch": 10
+          },
+          "now_node": "node.cafe",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.seed.alpha"
+          ],
+          "role_id": "role.alpha",
+          "route_hint": [
+            "node.cafe"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        },
+        {
+          "carried_fragment_ids": [
+            "fragment.sample"
+          ],
+          "clock": {
+            "watch": 10
+          },
+          "now_node": "node.table",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.runtime.89b70afef52cb80df6a9"
+          ],
+          "role_id": "role.beta",
+          "route_hint": [
+            "node.table"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        }
+      ],
+      "state_sha256": "85356aa9ad41178152001b06af2e37ce89280b2862497932e5c213680bfcc337",
+      "transition": {
+        "actor_role_id": "role.beta",
+        "fragment_id": null,
+        "nonce": 9,
+        "outcome": "committed",
+        "recipient_role_id": null,
+        "requested_action_id": "action.wait",
+        "resolved_action_id": "action.wait",
+        "target_id": null
+      }
+    },
+    {
+      "chain_hash": "e21007f10aa3cc7ff191748a9200ee6bae70d5533cb5a2ad58e942416e189291",
+      "ledger_sha256": "5397fa175576b000117ef48c196b7ffaf5944e034b6c199f906a368ff53b5801",
+      "offset": 11,
+      "roles": [
+        {
+          "carried_fragment_ids": [],
+          "clock": {
+            "watch": 11
+          },
+          "now_node": "node.cafe",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.seed.alpha"
+          ],
+          "role_id": "role.alpha",
+          "route_hint": [
+            "node.cafe"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        },
+        {
+          "carried_fragment_ids": [
+            "fragment.sample"
+          ],
+          "clock": {
+            "watch": 11
+          },
+          "now_node": "node.table",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.runtime.89b70afef52cb80df6a9"
+          ],
+          "role_id": "role.beta",
+          "route_hint": [
+            "node.table"
+          ],
+          "status": "active",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        }
+      ],
+      "state_sha256": "1926e2de17d5cfffde87434c18cdcbb2df3d1c1419dd0ddd1c05c8783bff4112",
+      "transition": {
+        "actor_role_id": "role.beta",
+        "fragment_id": null,
+        "nonce": 10,
+        "outcome": "committed",
+        "recipient_role_id": null,
+        "requested_action_id": "action.wait",
+        "resolved_action_id": "action.wait",
+        "target_id": null
+      }
+    },
+    {
+      "chain_hash": "043017c1540d30bf18d5d7b79cc32aa8f2467e41681ce51822c1f5f1ce834636",
+      "ledger_sha256": "cb834af3e577843d396fed97b44c0ade631311d9f63a2422a96147f44257c876",
+      "offset": 12,
+      "roles": [
+        {
+          "carried_fragment_ids": [],
+          "clock": {
+            "watch": 12
+          },
+          "now_node": "node.cafe",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.seed.alpha"
+          ],
+          "role_id": "role.alpha",
+          "route_hint": [
+            "node.cafe"
+          ],
+          "status": "complete",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        },
+        {
+          "carried_fragment_ids": [
+            "fragment.sample"
+          ],
+          "clock": {
+            "watch": 12
+          },
+          "now_node": "node.table",
+          "open_request_ids": [],
+          "receipt_ids": [
+            "receipt.runtime.89b70afef52cb80df6a9"
+          ],
+          "role_id": "role.beta",
+          "route_hint": [
+            "node.table"
+          ],
+          "status": "complete",
+          "visible_edges": [
+            "edge.cafe.street",
+            "edge.street.table"
+          ],
+          "visible_nodes": [
+            "node.cafe",
+            "node.street",
+            "node.table"
+          ]
+        }
+      ],
+      "state_sha256": "2db9e6e7362f1914fdd1efb22988266cf91aaf6dea53be939516615f4c43a185",
+      "transition": {
+        "actor_role_id": "role.beta",
+        "fragment_id": null,
+        "nonce": 11,
+        "outcome": "committed",
+        "recipient_role_id": null,
+        "requested_action_id": "action.ending.perform",
+        "resolved_action_id": "action.ending.perform",
+        "target_id": "ending.perform"
+      }
+    }
+  ],
+  "handoff_gate": {
+    "atomic_same_frame": true,
+    "fragment_id": "fragment.sample",
+    "from_offset": 1,
+    "new_recipient_receipt_ids": [
+      "receipt.runtime.89b70afef52cb80df6a9"
+    ],
+    "outcome": "committed",
+    "recipient_custody_after": [
+      "fragment.sample"
+    ],
+    "recipient_custody_before": [],
+    "recipient_receipt_ids_after": [
+      "receipt.runtime.89b70afef52cb80df6a9"
+    ],
+    "recipient_receipt_ids_before": [],
+    "recipient_role_id": "role.beta",
+    "source_custody_after": [],
+    "source_custody_before": [
+      "fragment.sample"
+    ],
+    "source_role_id": "role.alpha",
+    "to_offset": 2
+  },
+  "metrics": {
+    "committed_transitions": 12,
+    "frames": 13,
+    "offsets": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "roles_per_frame": 2,
+    "snapshot_fields": 10
+  },
+  "mode": "READ_ONLY_COMMITTED_TRACE",
+  "production_gate": false,
+  "result": "PASS",
+  "route_id": "route.C.handoff_table",
+  "schema": "living-town-s16-compositor-projection/v1",
+  "simulation": "NOT_SIM",
+  "source_receipt": {
+    "artifacts": {
+      "artifacts/replay/s08_save_replay_report.json": {
+        "path": "artifacts/replay/s08_save_replay_report.json",
+        "sha256": "437bba1430e00d34a12719574ac9098b0e1fba28d027ca81a394f2b623e1f186"
+      },
+      "artifacts/routes/fixed_routes_report.json": {
+        "path": "artifacts/routes/fixed_routes_report.json",
+        "sha256": "b2635d3cbf79275e78d2052eec39f61aa9cf0818e6657683f568ae5dd2c4b60c"
+      }
+    },
+    "files": {
+      "exporter": {
+        "path": "integration/export_s16_projection.py",
+        "sha256": "a354df1104c1e43a3bada71b569471f1a05c6f9b6af65fb76c69590cd6db3cdd"
+      },
+      "fixture": {
+        "path": "tests/fixtures/web_maze_v2_valid.json",
+        "sha256": "13af03d07743091b0181630dcb454c93629131cb06eba537771f035dd13e8650"
+      },
+      "registry.actions": {
+        "path": "registries/actions.json",
+        "sha256": "067e08fef516bdb982310938e3bb9cd247b76d35614fbe76230e45e7f5803b42"
+      },
+      "registry.deltas": {
+        "path": "registries/deltas.json",
+        "sha256": "ee0629b5ff7c52c1ecab48ff85ce79b5d141528db85481354559d25de3155913"
+      },
+      "registry.endings": {
+        "path": "registries/endings.json",
+        "sha256": "961f218eedaf4cd6def213966b9842d12a6d3a15545c93ce865932c2915090dd"
+      },
+      "registry.predicates": {
+        "path": "registries/predicates.json",
+        "sha256": "8dbc8f03978c98bec589383a6a5c424af3568b996c344084678d51cf96c0f257"
+      },
+      "registry.receipt_templates": {
+        "path": "registries/receipt_templates.json",
+        "sha256": "9bd13c5aad7e85283528e5728f2e7b471240e277fed9f4e4557826b61268b8a1"
+      },
+      "replay.codec": {
+        "path": "verification/replay.py",
+        "sha256": "2d587601a92b5cd5a283ac1263448e0e3df2332bb9630eeea86d81813937c165"
+      },
+      "route.runner": {
+        "path": "scripts/routes/run_fixed_routes.py",
+        "sha256": "7e26bf26ae3f21bbe2888a59d4180732fbdd3ca18e840f9710f2779d024f9720"
+      },
+      "route.spec": {
+        "path": "scripts/routes/fixed_routes_v1.json",
+        "sha256": "a97eac9e57fea33288aa29aa52d8b09f0b2cb3d17e4ed7f03bfa6245e5619fbf"
+      },
+      "runtime.epistemics": {
+        "path": "runtime/epistemics.py",
+        "sha256": "9a20a4455840a5435f8694e0e8a0063724dad9f632729325e33e07fd7f158607"
+      },
+      "runtime.handoff": {
+        "path": "runtime/handoff.py",
+        "sha256": "77ffd7978eb73e99420e2a2963caa5f1030f87b9c08d07b392c3110f86d8a7eb"
+      },
+      "runtime.ledger": {
+        "path": "runtime/ledger.py",
+        "sha256": "a8e484b2d36bfbbddd176ba44220bec1d542248aa7d675b5afbd3d4edb49ddf5"
+      },
+      "runtime.maze": {
+        "path": "runtime/maze.py",
+        "sha256": "e55421d9e8885c50565653bcd9629d75d61453189a68cc1d4cd501cb44463e0f"
+      },
+      "runtime.offscreen": {
+        "path": "runtime/offscreen.py",
+        "sha256": "01ad0b72c75198bb5895daaf739e26248c7264d88df53257c766b8db566b2afd"
+      },
+      "runtime.session": {
+        "path": "runtime/session.py",
+        "sha256": "24747a5ae2ffebdc3ef71664a53b2470125a5dbc368ccc3e5cb6bcad34fc2d3d"
+      },
+      "runtime.state": {
+        "path": "runtime/state.py",
+        "sha256": "7cb16ac361b8f63f238e5d09770a604c9e2f6f91b499eeabfb05f97878454481"
+      },
+      "runtime.transaction": {
+        "path": "runtime/transaction.py",
+        "sha256": "87fe63d5dd564a8d9b4153fc162bc824fd36e60258bf439bb3ba3fc5b3574df6"
+      },
+      "schema": {
+        "path": "contracts/web_maze_v2.schema.json",
+        "sha256": "d245f86f64e50fabadd6aa79c5e75d9d53c5096cd402dfbb8b7ff79c66f4f304"
+      },
+      "tests.projection": {
+        "path": "tests/test_s16_projection_export.py",
+        "sha256": "c0c0eae57baf473569c35df461399df1e78246ddcc078e6ee29453d98d506fde"
+      }
+    },
+    "lab_base_commit": "65d91b5ad5a26a9acd04178a54076b81184eaf05",
+    "route_actions_sha256": "fcc8ca54088c196ae007f686d75b7e2da405149b79af6782c16a25717e9bc52b",
+    "s07_s08_commit": "87ed85675a8d6528536869da2e06da30a1c15582"
+  },
+  "stride": "S16P"
+}

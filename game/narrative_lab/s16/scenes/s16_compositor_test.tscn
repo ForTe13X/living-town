@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://narrative_lab/s16/tests/s16_compositor_test.gd" id="1_s16"]
+
+[node name="S16CompositorTest" type="Node"]
+script = ExtResource("1_s16")

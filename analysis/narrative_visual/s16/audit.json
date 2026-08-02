@@ -1,0 +1,151 @@
+{
+  "banner": "NARRATIVE LAB · NOT SIM · READ-ONLY COMMITTED TRACE",
+  "blockers": [
+    {
+      "id": "STATIC_COMMITTED_FIXTURE_ONLY",
+      "reason": "the compositor reads a source-bound committed trace fixture; it is not connected to the live runtime"
+    },
+    {
+      "id": "NO_SIMULATION_OWNERSHIP",
+      "reason": "focus, compare, and replay actions are view-only and intentionally cannot mutate Sim"
+    },
+    {
+      "id": "NO_GAMEPLAY_OR_WALKABILITY_CLAIM",
+      "reason": "framebuffer captures demonstrate component layout only, not gameplay or traversability"
+    }
+  ],
+  "checks": {
+    "button_uses_dispatcher": true,
+    "component_boundary_exact_ten_fields": true,
+    "fixture_bytes_unchanged": true,
+    "fixture_hash_bound": true,
+    "handoff_half_mutation_rejected": true,
+    "keyboard_uses_dispatcher": true,
+    "replay_fingerprints_stable": true,
+    "responsive_targets_at_least_44px": true,
+    "screen_touch_single_dispatch": true,
+    "source_trace_unchanged": true,
+    "transition_sidecar_whitelisted": true
+  },
+  "failures": [],
+  "layouts": {
+    "1024x768": {
+      "content_width": 992,
+      "content_x": 16,
+      "max_content_width": 1560,
+      "mode": "single_pane_tabs",
+      "targets_at_least_44px": true,
+      "viewport": [
+        1024,
+        768
+      ]
+    },
+    "1280x768": {
+      "content_width": 1248,
+      "content_x": 16,
+      "max_content_width": 1560,
+      "mode": "dual_pane",
+      "targets_at_least_44px": true,
+      "viewport": [
+        1280,
+        768
+      ]
+    },
+    "2688x1216": {
+      "content_width": 1560,
+      "content_x": 564,
+      "max_content_width": 1560,
+      "mode": "dual_pane",
+      "targets_at_least_44px": true,
+      "viewport": [
+        2688,
+        1216
+      ]
+    }
+  },
+  "metrics": {
+    "checks": 58,
+    "dispatcher_actions": 5,
+    "frames": 13,
+    "responsive_layouts": 3,
+    "snapshot_fields": 10
+  },
+  "mode": "READ_ONLY_COMMITTED_TRACE",
+  "production_gate": false,
+  "result": "PASS_WITH_BLOCKERS",
+  "schema": "living-town-s16-main-compositor-audit/v1",
+  "screenshots": {
+    "compositor_1024x768.png": {
+      "banner_accent_pixels": 1024,
+      "banner_present": true,
+      "layout": {
+        "content_width": 992,
+        "content_x": 16,
+        "max_content_width": 1560,
+        "mode": "single_pane_tabs",
+        "targets_at_least_44px": true,
+        "viewport": [
+          1024,
+          768
+        ]
+      },
+      "media_kind": "component_layout_review_not_sim_not_gameplay",
+      "saved": true,
+      "sha256": "8045026ad1434b91a41a025c42ecb8f1559702cb17217a9a653de77e3ec0e5fc",
+      "size": [
+        1024,
+        768
+      ]
+    },
+    "compositor_1280x768.png": {
+      "banner_accent_pixels": 1280,
+      "banner_present": true,
+      "layout": {
+        "content_width": 1248,
+        "content_x": 16,
+        "max_content_width": 1560,
+        "mode": "dual_pane",
+        "targets_at_least_44px": true,
+        "viewport": [
+          1280,
+          768
+        ]
+      },
+      "media_kind": "component_layout_review_not_sim_not_gameplay",
+      "saved": true,
+      "sha256": "2931c18fb4d5c6063bd2007e684ba2f0c10798b91ac95873887ddec0d3160bac",
+      "size": [
+        1280,
+        768
+      ]
+    },
+    "compositor_2688x1216.png": {
+      "banner_accent_pixels": 2688,
+      "banner_present": true,
+      "layout": {
+        "content_width": 1560,
+        "content_x": 564,
+        "max_content_width": 1560,
+        "mode": "dual_pane",
+        "targets_at_least_44px": true,
+        "viewport": [
+          2688,
+          1216
+        ]
+      },
+      "media_kind": "component_layout_review_not_sim_not_gameplay",
+      "saved": true,
+      "sha256": "2b08423b7aa9c49835c556c4cc451502ee4d0e766e95a0177f785a7eab0d0fea",
+      "size": [
+        2688,
+        1216
+      ]
+    }
+  },
+  "simulation": "NOT_SIM",
+  "source_receipt": {
+    "lab_commit": "1a195e06f1dd6b6aef2668906d6a816b8799e67b",
+    "lab_path": "artifacts/integration/s16_compositor_projection.json",
+    "sha256": "90ddd379d67b3e251ac0113a548706c95f840ae6c5aea0ee50a587a2ab3e8198"
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "banner": "NARRATIVE LAB · NOT SIM · READ-ONLY COMMITTED TRACE",
+  "fixture_source_receipt": {
+    "exact_bytes_verified": true,
+    "lab_commit": "1a195e06f1dd6b6aef2668906d6a816b8799e67b",
+    "lab_path": "artifacts/integration/s16_compositor_projection.json",
+    "sha256": "90ddd379d67b3e251ac0113a548706c95f840ae6c5aea0ee50a587a2ab3e8198"
+  },
+  "issues": [],
+  "media": {
+    "compositor_1024x768.png": {
+      "banner_accent_pixels": 1024,
+      "media_kind": "component_layout_review_not_sim_not_gameplay",
+      "sha256": "8045026ad1434b91a41a025c42ecb8f1559702cb17217a9a653de77e3ec0e5fc",
+      "size": [
+        1024,
+        768
+      ]
+    },
+    "compositor_1280x768.png": {
+      "banner_accent_pixels": 1280,
+      "media_kind": "component_layout_review_not_sim_not_gameplay",
+      "sha256": "2931c18fb4d5c6063bd2007e684ba2f0c10798b91ac95873887ddec0d3160bac",
+      "size": [
+        1280,
+        768
+      ]
+    },
+    "compositor_2688x1216.png": {
+      "banner_accent_pixels": 2688,
+      "media_kind": "component_layout_review_not_sim_not_gameplay",
+      "sha256": "2b08423b7aa9c49835c556c4cc451502ee4d0e766e95a0177f785a7eab0d0fea",
+      "size": [
+        2688,
+        1216
+      ]
+    }
+  },
+  "mutation_cases": [
+    {
+      "detected": true,
+      "id": "fixture_byte_tamper"
+    },
+    {
+      "detected": true,
+      "id": "handoff_half_commit"
+    },
+    {
+      "detected": true,
+      "id": "banner_erasure"
+    }
+  ],
+  "production_gate": false,
+  "schema": "living-town-s16-main-media-gate/v1",
+  "source_sha256": {
+    "analysis/narrative_visual/s16/.gitattributes": "9f99cdeaba64b7be4f03c6380629c622077171f472985c022c54feb98d207e00",
+    "analysis/narrative_visual/s16/render_s16_review.ps1": "260dd60f9b815c1b015f35052b7bae698c0372dc322c50940e61f21854797bdf",
+    "analysis/narrative_visual/s16/test_s16_compositor.py": "2f12aa18c4ac198583523b91c44fd326a01c08c50e15dfe2d0a8e3ee8804351c",
+    "analysis/narrative_visual/s16/verify_s16_artifacts.py": "9b650d5474b197a382d0779bd9842b16b5866ab24f93eee33ae317ecb858371d",
+    "game/narrative_lab/s16/.gitattributes": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+    "game/narrative_lab/s16/fixtures/s16_compositor_projection.json": "90ddd379d67b3e251ac0113a548706c95f840ae6c5aea0ee50a587a2ab3e8198",
+    "game/narrative_lab/s16/fixtures/source_receipt.json": "0bd0be17222bd16961e6a48ec10e9c0a3a3a013991c2cb1f9cf882669576df44",
+    "game/narrative_lab/s16/scenes/s16_compositor_test.tscn": "15fc522962f97061e9410c7da909921705c37afecd39853ab1e2c7a93657122b",
+    "game/narrative_lab/s16/scripts/S16Compositor.gd": "ae883e4fe80083fd5709c268d5529176ef60b1d9d7c3dfc03767343e87b74d7b",
+    "game/narrative_lab/s16/tests/s16_compositor_test.gd": "d0cbd0745e4aa3ee5e39872bfca89fecb9d392873ee0d4dce06e7d18c8915d8e"
+  },
+  "verdict": "PASS"
+}
