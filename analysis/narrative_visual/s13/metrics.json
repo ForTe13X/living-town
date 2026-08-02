@@ -1,0 +1,56 @@
+{
+  "checks": 59,
+  "failures": [],
+  "glyph_32px_min_pair_diff": 161,
+  "glyph_64px_min_pair_diff": 638,
+  "glyph_pair_rgb_diff_pixels": {
+    "32px": {
+      "blocked__traversed": 314,
+      "blocked__unknown": 292,
+      "fragment__blocked": 292,
+      "fragment__receipt": 237,
+      "fragment__request": 183,
+      "fragment__traversed": 231,
+      "fragment__unknown": 212,
+      "receipt__blocked": 288,
+      "receipt__request": 161,
+      "receipt__traversed": 260,
+      "receipt__unknown": 234,
+      "request__blocked": 257,
+      "request__traversed": 183,
+      "request__unknown": 191,
+      "traversed__unknown": 177
+    },
+    "64px": {
+      "blocked__traversed": 1262,
+      "blocked__unknown": 1186,
+      "fragment__blocked": 1168,
+      "fragment__receipt": 917,
+      "fragment__request": 745,
+      "fragment__traversed": 944,
+      "fragment__unknown": 821,
+      "receipt__blocked": 1135,
+      "receipt__request": 638,
+      "receipt__traversed": 1017,
+      "receipt__unknown": 875,
+      "request__blocked": 1066,
+      "request__traversed": 754,
+      "request__unknown": 761,
+      "traversed__unknown": 725
+    }
+  },
+  "glyph_sheet_png_size": [
+    1000,
+    360
+  ],
+  "maze_pair_rgb_diff_pixels": 11465,
+  "maze_png_size": [
+    1200,
+    620
+  ],
+  "role_card_pair_rgb_diff_pixels": 3998,
+  "role_pair_png_size": [
+    1200,
+    650
+  ]
+}
