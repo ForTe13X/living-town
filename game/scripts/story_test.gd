@@ -449,9 +449,13 @@ func _phrase_lock() -> void:
 	# 没上锁的文案**只报数不判红**：空短语表 = 没约束，那是本机制的定义域而不是缺陷。
 	# 报它是为了让"锁的覆盖面"这个数字看得见，而不是靠读者去数。
 	var slots := _all_slots()
-	print("     文案槽位 %d 个 · 已上锁 %d 个 · 没有任何标志性短语的 %d 个：%s" % [
+	print("     文案槽位 %d 个 · 已上【措辞】锁 %d 个 · 没有任何标志性短语的 %d 个：%s" % [
 		slots.size(), slots.size() - (lg["unlocked"] as Array).size(), (lg["unlocked"] as Array).size(),
 		str((lg["unlocked"] as Array).slice(0, 4))])
+	# AA2：极性锁的覆盖面单独报 —— 它按定义只盖得住"仿真侧有字段能把两条文案分开"的那些槽位，
+	# 报出来是为了让"盖了多少"这个数看得见，而不是靠读者去数（同上面那条的理由）。
+	print("     其中带【极性】锁的 %d 个（accepted / note 两维；仿真侧没有字段可分的槽位盖不住，见 docs/105）" % [
+		int(lg.get("pol_locked", 0))])
 
 	# ── PL2 逐字复现 W3 的 M2 ──────────────────────────────────────────────
 	# W3 那个变异体是"把 grudge 与 pact 的 open_text 对调"。对调之后：
@@ -476,13 +480,50 @@ func _phrase_lock() -> void:
 			and StoryScript.phrase_conflicts(p_open, ["pact"]).is_empty(),
 		"PL2″ 阴性对照：文案配回自己的类型 → 0 违规（证明 PL2 的红不是「逢查必红」）")
 
+	# ── PL2‴ 极性锁的手写正/反对照（AA2）──────────────────────────────────
+	# Y3 点名的那一条：`promise/end:kept ↔ promise/end:broken`（赴约 ↔ 爽约）。
+	# 它在 Y3 的措辞锁上 **0 违规**（两者都引 meet），在极性锁上必须当场红。
+	var kept_t := ""
+	var broken_t := ""
+	var kept_m: Dictionary = {}
+	var broken_m: Dictionary = {}
+	for d2 in StoryScript.ARCS:
+		if String(d2["id"]) != "promise":
+			continue
+		for e2 in (d2["ends"] as Array):
+			if String(e2["id"]) == "kept":
+				kept_t = String(e2["text"]); kept_m = e2["m"]
+			elif String(e2["id"]) == "broken":
+				broken_t = String(e2["text"]); broken_m = e2["m"]
+	_expect(StoryScript.phrase_conflicts(broken_t, kept_m.get("type", []) as Array).is_empty()
+			and StoryScript.phrase_conflicts(kept_t, broken_m.get("type", []) as Array).is_empty(),
+		"PL2‴-0 前提复核：赴约↔爽约对调在【措辞锁】上仍然 0 违规（Y3 的 19 条漏网之一，本条一红就说明前提变了）")
+	var pol_a: Array = StoryScript.polarity_conflicts_matcher(broken_t, kept_m)
+	var pol_b: Array = StoryScript.polarity_conflicts_matcher(kept_t, broken_m)
+	_expect(not pol_a.is_empty() and not pol_b.is_empty(),
+		"PL2‴ 赴约↔爽约对调 → 极性锁必红（双向）：%s ／ %s" % [str(pol_a), str(pol_b)])
+	# 阴性对照：配回自己的匹配器，一条都不许响。
+	_expect(StoryScript.polarity_conflicts_matcher(kept_t, kept_m).is_empty()
+			and StoryScript.polarity_conflicts_matcher(broken_t, broken_m).is_empty(),
+		"PL2⁗ 阴性对照：文案配回自己的匹配器 → 极性锁 0 违规（证明 PL2‴ 的红不是「逢查必红」）")
+
 	# ── PL3 检出【比率】，不是一发子弹（docs/41 §2.5 外审那条度量学批评）──────
 	# 外审原话：「负对照测的是 recall（这一发打中了），不是 coverage（弹药库里有多少种打不中）」。
-	# 所以这里把**整个"两条文案对调"的变异空间**跑一遍：C(n,2) 个变异体，逐个问措辞锁认不认。
+	# 所以这里把**整个"两条文案对调"的变异空间**跑一遍：C(n,2) 个变异体，逐个问三道锁认不认。
 	# 这个比率就是本机制的 `confidence`，`does_not_detect` 也是从这里的漏网名单里抄出来的。
+	#
+	# ★AA2 把它拆成【跨类型 / 同类型】两栏（Y3 给的规格照抄）：
+	#   Y3 漏网的 19 条**无一例外全是"两条文案引用同一种事件"**，而"同类型"这件事有一个
+	#   精确的机器判据 —— **两个槽位声明的 type 集合相同**。分开报，才看得出这一波买到的是哪一栏。
 	var tot := 0
 	var caught := 0
+	var cross_tot := 0
+	var cross_caught := 0
+	var same_tot := 0
+	var same_caught := 0
+	var by_lock := {"type": 0, "pol": 0, "rep": 0}     # 每道锁**单独**能抓到几个（可重叠）
 	var missed: Array = []
+	var same_newly: Array = []
 	for i in slots.size():
 		for j in range(i + 1, slots.size()):
 			var a: Array = slots[i]
@@ -490,14 +531,43 @@ func _phrase_lock() -> void:
 			if String(a[1]) == String(b[1]):
 				continue                      # 两条文案本来就一样 ⇒ 对调是恒等变换，不是变异体
 			tot += 1
-			var hit := not StoryScript.phrase_conflicts(String(b[1]), a[2] as Array).is_empty() \
+			var same := _same_types(a[2] as Array, b[2] as Array)
+			var hit_type := not StoryScript.phrase_conflicts(String(b[1]), a[2] as Array).is_empty() \
 				or not StoryScript.phrase_conflicts(String(a[1]), b[2] as Array).is_empty()
+			var hit_pol := not StoryScript.polarity_conflicts_matcher(String(b[1]), a[3] as Dictionary).is_empty() \
+				or not StoryScript.polarity_conflicts_matcher(String(a[1]), b[3] as Dictionary).is_empty()
+			var hit_rep := not StoryScript.repeat_conflicts(String(b[1]), String(a[4])).is_empty() \
+				or not StoryScript.repeat_conflicts(String(a[1]), String(b[4])).is_empty()
+			if hit_type:
+				by_lock["type"] = int(by_lock["type"]) + 1
+			if hit_pol:
+				by_lock["pol"] = int(by_lock["pol"]) + 1
+			if hit_rep:
+				by_lock["rep"] = int(by_lock["rep"]) + 1
+			var hit := hit_type or hit_pol or hit_rep
+			if same:
+				same_tot += 1
+				if hit:
+					same_caught += 1
+					same_newly.append("%s ↔ %s  ←%s%s" % [String(a[0]), String(b[0]),
+						("极性" if hit_pol else ""), ("复述" if hit_rep else "")])
+			else:
+				cross_tot += 1
+				if hit:
+					cross_caught += 1
 			if hit:
 				caught += 1
 			else:
 				missed.append("%s ↔ %s" % [String(a[0]), String(b[0])])
-	print("     两条文案对调的**全变异空间**：%d 个变异体，措辞锁认出 %d 个（%.1f%%）" % [
+	print("     两条文案对调的**全变异空间**：%d 个变异体，三道锁合计认出 %d 个（%.1f%%）" % [
 		tot, caught, 100.0 * float(caught) / float(maxi(1, tot))])
+	print("       · 跨类型（两槽位 type 集合不同）：%d/%d" % [cross_caught, cross_tot])
+	print("       · 同类型（两槽位 type 集合相同）：%d/%d   ← Y3 这一栏是 0/%d" % [same_caught, same_tot, same_tot])
+	print("       · 各锁单独的检出（可重叠）：措辞 %d · 极性 %d · 复述 %d" % [
+		int(by_lock["type"]), int(by_lock["pol"]), int(by_lock["rep"])])
+	print("     同类型里被抓住的 %d 条，逐条列：" % same_caught)
+	for x2 in same_newly:
+		print("       ✔ " + String(x2))
 	# 漏网的**逐条全列**，不给样例 —— 这一栏就是 does_not_detect，抽样等于把边界说小了。
 	print("     漏网 %d 条（= does_not_detect 那一栏，跑出来的不是想出来的）：" % missed.size())
 	for x in missed:
@@ -505,6 +575,11 @@ func _phrase_lock() -> void:
 	# 只钉一条底线：**必须显著优于 0**。具体比率写进回执，不写成阈值门 ——
 	# 写成阈值门就等着有人加一条没上锁的文案时收一次假红（docs/41 §6「写死的绝对数」那条）。
 	_expect(caught > 0 and tot > 0, "PL3 变异空间非空且检出 > 0（比率 %d/%d，逐次重算，不冻结字面量）" % [caught, tot])
+	# AA2 加的**判别力底线**：同类型那一栏必须 > 0。Y3 那一栏是 0 —— 这条断言一红，
+	# 就说明本波加的两道锁被谁削没了（而不是"没有回归"）。同样不写成具体比率。
+	_expect(same_caught > 0 and same_tot > 0,
+		"PL3′ 同类型那一栏的检出 > 0（%d/%d；Y3 这一栏是 0/%d，本条守的正是那一段）" % [
+			same_caught, same_tot, same_tot])
 
 	# ── PL4 词表不是我一个人说了算：拿**另一份独立渲染**交叉验 ────────────────
 	# W3 的原话是"判对错要有第二份文案的真值"，并判定它没有廉价的补法。
@@ -536,15 +611,149 @@ func _phrase_lock() -> void:
 			("" if contam.is_empty() else "；实得 " + str(contam.slice(0, 3)))])
 	print("     佐证向：%d/%d 条短语被独立渲染逐字佐证（对不上不算错——用词本来可以不同，见 docs/98）" % [
 		corrob, (StoryScript.PHRASE_LOCK as Dictionary).size()])
+	_polarity_cross_check()
 
-## 文法表里所有**带文案且有事件依据**的槽位，展平成 `[名字, 模板, 类型集合]`。
+## ── PL5 极性词表的第二来源交叉验（AA2，docs/105 §二）──────────────────────
+## Y3 的原话：让锁去看 `accepted` **需要 `accepted` 的第二个独立来源**，否则退回自证。
+## 本段把那两个来源**按极性切开**，再拿本表逐条比：
+##   ① `Main._event_prose` 的极性分支 —— `meet`/`confront`/`apologize`/`mediate`/`election`
+##      的 `X if ok else Y` 三元式，与 `pact` 的 `note.begins_with("dissolved")` 分支。
+##      **另一个文件、另一位作者**，而 `meet` 那条分支从 `ebac5a3`（2026-07-03）起就在，
+##      比 `Story.gd`（2026-07-30）早 27 天。
+##   ② `data/goals.json` 的 `title`+`hint` 与它自己的 `match/first/then` 里的极性**配成对**
+##      —— 另一位作者（D2，2026-07-26）、而且是**数据不是代码**。
+## 两件事，强弱分开记（与 PL4 同一套口径）：
+##   **安全向（断言）**：任何一条极性短语都不许出现在**相反极性**的独立渲染里。
+##   **佐证向（只报数）**：有多少条在同极性的独立渲染里逐字对得上。
+func _polarity_cross_check() -> void:
+	var bucket := _prose_by_polarity()
+	# ── PL5-0 夹具有效性自证（同 F9a / PL1 那条纪律）───────────────────────────
+	# ★本段的语料是**源码扫描**来的，而源码扫描最坏的失效方式**不是报错，是悄悄扫出一个空语料**：
+	#   那样下面那句"0 条污染"就变成一句**永远为真**的话，而它读起来和真断言一模一样
+	#   （docs/41 §2 第三个盲区 + §6 那条 `getbbox()` 陷阱，是同一个形状）。
+	#   所以先断言四条解析路各自**真的解析到了内容**。它红了 = 上游把 `_event_prose` 的形状改了，
+	#   请回来重读那段解析，别让本门静默失明。
+	_expect(String(bucket["+"]) != "" and String(bucket["-"]) != ""
+			and String(bucket["note:formed"]) != "" and String(bucket["note:dissolved"]) != "",
+		"PL5-0 语料非空自证：编年史的 ±两支 与 pact 的 formed/dissolved 两支都解析到了内容（%d/%d/%d/%d 字符）" % [
+			String(bucket["+"]).length(), String(bucket["-"]).length(),
+			String(bucket["note:formed"]).length(), String(bucket["note:dissolved"]).length()])
+	var contam: Array = []
+	var corrob: Array = []
+	var vacuous: Array = []          # 【相反极性】那一桶是空的 ⇒ 这一条的安全向检查是**空真**的
+	for p in StoryScript.POLARITY_LOCK:
+		var need: Dictionary = StoryScript.POLARITY_LOCK[p]
+		var mine := ""
+		var anti := ""
+		if need.has("accepted"):
+			mine = "+" if bool(need["accepted"]) else "-"
+			anti = "-" if bool(need["accepted"]) else "+"
+		else:
+			mine = "note:" + String(need["note_prefix"])
+			anti = "note:!" + String(need["note_prefix"])
+		if String(bucket.get(anti, "")) == "":
+			vacuous.append(String(p))
+		elif String(bucket.get(anti, "")).contains(String(p)):
+			contam.append("「%s」宣称 %s，却出现在独立渲染的 %s 那一支里" % [String(p), mine, anti])
+		if String(bucket.get(mine, "")).contains(String(p)):
+			corrob.append(String(p))
+	_expect(contam.is_empty(),
+		"PL5 安全向：%d 条极性短语无一出现在【相反极性】的独立渲染里（编年史分支 + goals.json 的 hint）%s" % [
+			(StoryScript.POLARITY_LOCK as Dictionary).size(),
+			("" if contam.is_empty() else "；实得 " + str(contam))])
+	print("     PL5 佐证向：%d/%d 条极性短语被独立渲染**逐字**佐证：%s" % [
+		corrob.size(), (StoryScript.POLARITY_LOCK as Dictionary).size(), str(corrob)])
+	print("        （对不上不算错——两位作者用词本来可以不同；安全向那条断言才是牙齿）")
+	# 空真的那几条**必须报出来**，理由与 `lint_grammar` 的 `unlocked` 一栏相同：
+	# 一条空真的断言与一条通过了的断言在输出里长得一模一样，不点名就没人知道边界在哪。
+	print("        ⚠ 其中 %d 条的【相反极性】那一桶是空的 ⇒ 它们的安全向是**空真**的：%s" % [
+		vacuous.size(), str(vacuous)])
+	# 判别力底线：佐证向归零 = 解析还活着但配不上任何一条，同样说明形状变了。不写成具体比率。
+	_expect(corrob.size() > 0,
+		"PL5′ 佐证向 > 0（%d/%d 条逐字对得上）—— 它归零 = 独立渲染的措辞整体换过一轮，请回来重看词表" % [
+			corrob.size(), (StoryScript.POLARITY_LOCK as Dictionary).size()])
+
+## 两份独立渲染**按极性切开**后的语料桶。
+##   "+" / "-"                = accepted 真 / 假
+##   "note:X" / "note:!X"     = note 以 X 开头 / 不以 X 开头
+##
+## ★为什么是源码扫描而不是实例化 Main：同 `_prose_by_type()` 那条注释（Main 是整个 HUD 的根）。
+## ★`rally_oust` 这一支的桥接是**读过 Sim 才敢写的**：`Sim.gd:4235` 那条 `_log_event` 的
+##   `accepted` 参数**逐字就是** `backers > 0` ⇒ 编年史按 `backers` 分的岔，与本表按 `accepted`
+##   分的岔是同一条界线。不是我把两个字段"当成"一回事，是仿真侧同一个表达式写的。
+func _prose_by_polarity() -> Dictionary:
+	var out := {"+": "", "-": "", "note:mediated": "", "note:!mediated": "",
+		"note:formed": "", "note:!formed": "", "note:dissolved": "", "note:!dissolved": ""}
+	var f := FileAccess.open("res://scripts/Main.gd", FileAccess.READ)
+	if f != null:
+		var src := f.get_as_text()
+		var i := src.find("func _event_prose")
+		var j := src.find("func _salience", i)
+		if i >= 0 and j > i:
+			for line in src.substr(i, j - i).split("\n"):
+				var s := String(line).strip_edges()
+				# ① 三元式的分支：`… X if ok else Y`（meet / confront / apologize / mediate / election）
+				var k := s.find(" if ok else ")
+				if k > 0:
+					out["+"] = String(out["+"]) + s.substr(0, k)
+					out["-"] = String(out["-"]) + s.substr(k + 12)
+					continue
+				# ② note 分支：pact 的 `dissolved` 那一支只有一行 return，其余归"非 dissolved"
+				if s.contains("互助盟约散了"):
+					out["note:dissolved"] = String(out["note:dissolved"]) + s
+					out["note:!formed"] = String(out["note:!formed"]) + s
+				elif s.contains("结成了互助盟约"):
+					out["note:formed"] = String(out["note:formed"]) + s
+					out["note:!dissolved"] = String(out["note:!dissolved"]) + s
+				# ③ rally_oust：`backers > 0` 那一支 == accepted=true（Sim.gd:4235 逐字如此）
+				elif s.contains("串联了"):
+					out["+"] = String(out["+"]) + s
+				elif s.contains("没人应和"):
+					out["-"] = String(out["-"]) + s
+	# ④ goals.json：每条目标的 title+hint 归到它自己 match/first/then 声明的那个极性桶里。
+	var gf := FileAccess.open("res://data/goals.json", FileAccess.READ)
+	if gf != null:
+		var parsed = JSON.parse_string(gf.get_as_text())
+		if parsed is Dictionary and (parsed as Dictionary).has("goals"):
+			for g in ((parsed as Dictionary)["goals"] as Array):
+				var gd: Dictionary = g
+				var words := String(gd.get("title", "")) + String(gd.get("hint", ""))
+				for key in ["match", "first", "then"]:
+					if not gd.has(key):
+						continue
+					var m: Dictionary = gd[key]
+					if m.has("accepted"):
+						var b := "+" if bool(m["accepted"]) else "-"
+						out[b] = String(out[b]) + words
+					if m.has("note_prefix"):
+						var nk := "note:" + String(m["note_prefix"])
+						out[nk] = String(out.get(nk, "")) + words
+	return out
+
+## 文法表里所有**带文案且有事件依据**的槽位，展平成
+## `[名字, 模板, 类型集合, 完整匹配器, kind]`（AA2 把后两项加进来了，极性/复述两道锁要用）。
 func _all_slots() -> Array:
 	var out: Array = []
 	for d in StoryScript.ARCS:
 		for row in StoryScript._grammar_slots(d):
 			if String(row[1]) != "":
-				out.append(["%s/%s" % [String(d["id"]), String(row[0])], String(row[1]), row[2]])
+				out.append(["%s/%s" % [String(d["id"]), String(row[0])], String(row[1]), row[2], row[3], row[4]])
 	return out
+
+## 两个槽位声明的事件类型集合是否**相同**（顺序无关）。
+## 这就是"同类型对调"的机器判据 —— Y3 漏网的 19 条无一例外全落在这一栏里。
+func _same_types(a: Array, b: Array) -> bool:
+	if a.size() != b.size():
+		return false
+	for x in a:
+		var found := false
+		for y in b:
+			if String(x) == String(y):
+				found = true
+				break
+		if not found:
+			return false
+	return true
 
 ## 每个事件类型的**独立渲染**：`Main._event_prose` 的 match 臂（源码扫描——它是实例方法，
 ## 无 Main 节点调不了）+ `Sim._verb()`（可执行，直接调）。

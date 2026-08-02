@@ -128,6 +128,65 @@ const PHRASE_LOCK := {
 	"悄悄话": ["gossip"],
 }
 
+# ── 极性锁（AA2 新增，docs/105）──────────────────────────────────────────────
+## **这一节存在的全部理由是 Y3 自己写下的那条边界**（docs/98 §三·3）：
+## 措辞锁跨类型抓 573/573，**同一事件类型内部的语义反转 0/19 一个不抓**。
+## 最刺眼的一条是 `promise/end:kept ↔ promise/end:broken`——把"赴约了"换成"放了鸽子"，
+## 屏幕上每一句都反了，而锁一声不响：两者都引 `meet`，真假住在 `accepted` 里，而措辞锁不读那个字段。
+##
+## Y3 **刻意没有顺手加这个检查**，理由逐字抄在这里，因为它仍然成立、并且决定了本节必须长什么样：
+##   > 那要在文法表里再声明一份 `accepted` 期望，而**那份声明与匹配器自己的 `accepted`
+##   > 是同一个作者写的**，就退回成自证了。要真的守住它，得找到 `accepted` 的**第二个独立来源**。
+##
+## ★**第二个独立来源找到了，而且有两处**（清单与逐个判定见 docs/105 §二；两处都比 `Story.gd` 老）：
+##   ① `Main._event_prose` 的**极性分支**——`meet`/`confront`/`apologize`/`mediate`/`election`
+##      按 `accepted` 分岔、`rally_oust`/`pact`/`world` 按 `note` 分岔。
+##      **另一个文件、另一位作者、对同一批事件的另一份渲染**，而且那句「约会泡汤了（有人爽约）」
+##      从 `ebac5a3`（2026-07-03 首个公开快照）起就在，比 `Story.gd`（2026-07-30）早 27 天。
+##      Y3 已经拿它验过**类型**那一维（0 污染 / 31 条短语里 17 条逐字印证），本节用的是它的**分支条件**这一维。
+##   ② `data/goals.json` 的 `title`/`hint` 与它自己的极性 `match` **配成对**——
+##      `kept_promise` = `{meet, accepted:true}` ↔「对方**真的赴了约**」；
+##      `rally` = `{rally_oust, accepted:true}` ↔「而且**真有人应和**」；
+##      `quarrel_healed` 的 `then` = `{apologize, accepted:true}` ↔「有人**先低了头**」；
+##      `pact_formed` = `{pact, note_prefix:"formed"}` ↔「**结下**一纸盟约」。
+##      **另一个文件、另一位作者（D2）、而且是数据不是代码**，2026-07-26，同样早于本文件。
+##   两处都**不是**"从同一张语法表里再读一次"——那正是 Y3 说的自证。
+##   `story_test` 的 `PL5` 段把这两份独立渲染按极性切开，逐条比对本表（安全向断言 + 佐证向报数）。
+##
+## ★运行期的**真值**是 `ev["accepted"]` 与 `ev["note"]`——和 `ev["type"]` 一样是**仿真侧写的**，
+##   本文件既不产生也改不动。措辞锁值钱的那一句在这里逐字成立。
+##
+## ⚠️ 它守不住什么，跑出来的名单在 docs/105 §四。**下面这两个数是跑出来的，不是估的**
+##   （我第一版按预测写成了「8 个 / 3 个真反转」，全空间重跑之后是这样）：
+##   同类型那 19 条漏网现在剩 **6** 条，其中 **5 条是近义对调**（两条文案本来就说得差不多），
+##   **只有 1 条是真的反转**（`grudge/aside ↔ craft/aside`，一褒贬一中性）
+##   —— 而它缺的是**事件上的一个字段**（`gossip_rep` 不说这次议论是好话还是坏话），不是一道锁。
+const POLARITY_LOCK := {
+	# accepted 那一维（Sim 侧：2576/2587 meet±、2682/2697 confront±、2723/2729 apologize±、
+	#                  4235 rally_oust 的 accepted 就是 `backers > 0`）
+	"听了进去": {"accepted": true},
+	"不认": {"accepted": false},
+	"施压": {"accepted": true},
+	"没人应和": {"accepted": false},
+	"一时还没法原谅": {"accepted": false},
+	"低了头": {"accepted": true},
+	"这段梁子解开了": {"accepted": true},
+	"如约": {"accepted": true},
+	"泡了汤": {"accepted": false},
+	# note 那一维（Sim 侧：1077/1079 补记的 confront/apologize note="mediated"；
+	#             4376 pact note="formed"、4312 note="dissolved:freerider"）
+	"在你的说和下": {"note_prefix": "mediated"},
+	"结成了互助盟约": {"note_prefix": "formed"},
+	"盟约散了": {"note_prefix": "dissolved"},
+}
+
+## 复述标记：这些词宣称"这件事之前发生过"。
+## ⚠️ **它不是第二来源，是折叠自身的结构性事实**——所以本文把它单列一行、包络里也单独记数，
+##    不许把它的战果算进"第二来源买到了多少"。
+##    机制：`narrate_cited` 的 `open` 行按构造是这条弧的**第一行**（`_fold` 的 ③ 只在同键无弧在跑时才 `_start`），
+##    于是一句"又……"落在 `open` 行上，讲的是一件这条弧里还没发生过的事。
+const REPEAT_MARK := ["又", "还多了一次", "这回", "再一次"]
+
 ## 一句**模板**文案与"它所依据的事件类型集合"是否相容。返回违规说明，空数组 = 相容。
 ##
 ## ★查的是**模板**（`ARCS` 里的字面量）而不是渲染后的那一行，理由是**居民名会撞词**：
@@ -143,6 +202,67 @@ static func phrase_conflicts(tpl: String, types: Array) -> Array:
 				out.append("措辞「%s」只有 %s 类事件能说，而这里依据的是 `%s`" % [String(p), str(allow), String(t)])
 	return out
 
+## 一句模板与**被引用的那条事件自己的极性**（`accepted` / `note`）是否相容。
+## ★真值是 `ev["accepted"]` / `ev["note"]` —— **仿真侧写的两个字段**，本文件既不产生也改不动，
+##   与措辞锁拿 `ev["type"]` 当真值是同一条纪律。运行期（`_audit_one` 第⑥条）走这一支。
+static func polarity_conflicts_ev(tpl: String, ev: Dictionary) -> Array:
+	var out: Array = []
+	for p in POLARITY_LOCK:
+		if not tpl.contains(String(p)):
+			continue
+		var need: Dictionary = POLARITY_LOCK[p]
+		if need.has("accepted") and bool(ev.get("accepted", false)) != bool(need["accepted"]):
+			out.append("措辞「%s」只有 accepted=%s 的事件能说，而这里依据的那条是 accepted=%s" % [
+				String(p), str(bool(need["accepted"])), str(bool(ev.get("accepted", false)))])
+		if need.has("note_prefix") and not String(ev.get("note", "")).begins_with(String(need["note_prefix"])):
+			out.append("措辞「%s」只有 note 以 `%s` 开头的事件能说，而这里依据的那条 note=`%s`" % [
+				String(p), String(need["note_prefix"]), String(ev.get("note", ""))])
+	return out
+
+## 同一条极性约束的**静态**一面：拿这个槽位自己的**匹配器**比。
+##
+## ★判据是「匹配器必须**保证**该极性」，**沉默也算不保证**。这一条是刻意的，而且它正是同类型对调
+##   能被抓住的原因：`{"type":["confront"], "accepted": true}` 与 `{"type":["confront"]}` 在类型上
+##   一模一样，但前者**筛**了极性、后者没有 —— 把一句带极性的话搬到不筛极性的槽位上，
+##   就等于宣称一件"引用到的事件两种都可能"的事。
+##
+## ⚠️ 这里要说清一件容易被读成自证的事：匹配器里的 `accepted` **不是作者对世界的断言**，
+##   它是一道**筛子**——`_match` 拿它去比 `ev["accepted"]`（仿真侧的字段）。写错了不会"骗过检查"，
+##   只会让这条幕在真世界里**根本不触发**。所以"匹配器保证了 accepted=true"是一句关于
+##   被引用事件的真陈述，不是一句自我声明。剩下那半句作者主张——"短语 P 的意思是极性 X"——
+##   才是需要第二来源的，而它由 `story_test` 的 `PL5` 拿两份独立渲染交叉验。
+static func polarity_conflicts_matcher(tpl: String, m: Dictionary) -> Array:
+	var out: Array = []
+	for p in POLARITY_LOCK:
+		if not tpl.contains(String(p)):
+			continue
+		var need: Dictionary = POLARITY_LOCK[p]
+		if need.has("accepted"):
+			if not m.has("accepted"):
+				out.append("措辞「%s」宣称 accepted=%s，而这条槽位的匹配器**不筛** accepted —— 引用到的事件两种都可能" % [
+					String(p), str(bool(need["accepted"]))])
+			elif bool(m["accepted"]) != bool(need["accepted"]):
+				out.append("措辞「%s」宣称 accepted=%s，而这条槽位的匹配器筛的是 accepted=%s" % [
+					String(p), str(bool(need["accepted"])), str(bool(m["accepted"]))])
+		if need.has("note_prefix"):
+			var want := String(need["note_prefix"])
+			if not m.has("note_prefix"):
+				out.append("措辞「%s」宣称 note 以 `%s` 开头，而这条槽位的匹配器**不筛** note" % [String(p), want])
+			elif not String(m["note_prefix"]).begins_with(want):
+				out.append("措辞「%s」宣称 note 以 `%s` 开头，而这条槽位的匹配器筛的是 `%s`" % [
+					String(p), want, String(m["note_prefix"])])
+	return out
+
+## 复述标记不许落在【开头】那一行上（见 `REPEAT_MARK` 抬头：这是结构性事实，不是第二来源）。
+static func repeat_conflicts(tpl: String, kind: String) -> Array:
+	var out: Array = []
+	if kind != "open":
+		return out
+	for w in REPEAT_MARK:
+		if tpl.contains(String(w)):
+			out.append("复述标记「%s」落在【开头】那一行上 —— 开头按构造是这条弧的第一件事" % String(w))
+	return out
+
 ## 静态查一遍**整张文法表**：每个匹配器的文案，与它自己声明的 `type` 是否相容。
 ## 返回 `{"bad": [...违规...], "unlocked": [...没有任何标志性短语的匹配器...]}`。
 ##
@@ -152,6 +272,7 @@ static func phrase_conflicts(tpl: String, types: Array) -> Array:
 static func lint_grammar() -> Dictionary:
 	var bad: Array = []
 	var unlocked: Array = []
+	var pol_locked := 0
 	for d in ARCS:
 		var did := String(d["id"])
 		for row in _grammar_slots(d):
@@ -160,27 +281,47 @@ static func lint_grammar() -> Dictionary:
 			if tpl == "":
 				continue
 			var c := phrase_conflicts(tpl, types)
+			# AA2：同一遍扫描里再查两件事——极性（拿槽位自己的匹配器）与复述标记（拿槽位的 kind）。
+			c.append_array(polarity_conflicts_matcher(tpl, row[3] as Dictionary))
+			c.append_array(repeat_conflicts(tpl, String(row[4])))
 			for x in c:
 				bad.append("%s/%s：%s" % [did, String(row[0]), String(x)])
 			if _locked_phrases(tpl).is_empty():
 				unlocked.append("%s/%s：%s" % [did, String(row[0]), tpl])
-	return {"bad": bad, "unlocked": unlocked}
+			if not _polarity_phrases(tpl).is_empty():
+				pol_locked += 1
+	return {"bad": bad, "unlocked": unlocked, "pol_locked": pol_locked}
 
-## 一条弧定义里所有**带文案且有事件依据**的槽位：`[槽位名, 模板, 该槽位声明的事件类型]`。
+## 一条弧定义里所有**带文案且有事件依据**的槽位：
+## `[槽位名, 模板, 该槽位声明的事件类型, 该槽位的完整匹配器, 行的 kind]`。
 ## 冷场文案**不在内**——它依据的正是"此后没有任何事件"，没有类型可比（见 `does_not_detect`）。
+##
+## ⚠️ AA2 把后两项加进来了（原先只有前三项）。**匹配器整份**都要，因为极性锁查的是
+## `accepted`/`note_prefix` 这两个字段，而它们不在 `type` 里；`kind` 则是复述标记那一条要用的。
 static func _grammar_slots(d: Dictionary) -> Array:
-	var out: Array = [["open", String(d["open_text"]), ((d["open"] as Dictionary).get("type", []) as Array)]]
+	var out: Array = [["open", String(d["open_text"]), ((d["open"] as Dictionary).get("type", []) as Array),
+		(d["open"] as Dictionary), "open"]]
 	for bt in (d["beats"] as Array):
-		out.append(["beat:" + String(bt["id"]), String(bt["text"]), ((bt["m"] as Dictionary).get("type", []) as Array)])
+		out.append(["beat:" + String(bt["id"]), String(bt["text"]),
+			((bt["m"] as Dictionary).get("type", []) as Array), (bt["m"] as Dictionary), "beat"])
 	for e in (d["ends"] as Array):
-		out.append(["end:" + String(e["id"]), String(e["text"]), ((e["m"] as Dictionary).get("type", []) as Array)])
+		out.append(["end:" + String(e["id"]), String(e["text"]),
+			((e["m"] as Dictionary).get("type", []) as Array), (e["m"] as Dictionary), "end"])
 	if String(d["aside_text"]) != "":
-		out.append(["aside", String(d["aside_text"]), ((d["aside"] as Dictionary).get("type", []) as Array)])
+		out.append(["aside", String(d["aside_text"]), ((d["aside"] as Dictionary).get("type", []) as Array),
+			(d["aside"] as Dictionary), "aside"])
 	return out
 
 static func _locked_phrases(tpl: String) -> Array:
 	var out: Array = []
 	for p in PHRASE_LOCK:
+		if tpl.contains(String(p)):
+			out.append(String(p))
+	return out
+
+static func _polarity_phrases(tpl: String) -> Array:
+	var out: Array = []
+	for p in POLARITY_LOCK:
 		if tpl.contains(String(p)):
 			out.append(String(p))
 	return out
@@ -902,6 +1043,9 @@ func narrate_cited(arc: Dictionary, nm: Callable) -> Array:
 ##   ⑤ **（Y3 新增）它的 `type` 与这一行的【措辞】不打架** —— 见 `PHRASE_LOCK`。
 ##      前四条守的是"这句话有依据"，第五条是往"这句话说得对"挪的那一步：
 ##      真值取自被引用事件自己的 `type`（**仿真侧写的**），不取自本文法表。
+##   ⑥ **（AA2 新增）它的 `accepted` / `note` 与这一行的【措辞】不打架** —— 见 `POLARITY_LOCK`。
+##      第⑤条抓的是"这句话在讲另一种事"，第⑥条抓的是"这句话在讲这种事，但讲反了"。
+##   ⑦ **（AA2 新增）复述标记不落在开头行上** —— 见 `REPEAT_MARK`（结构性，不是第二来源）。
 ## 只有 kind=cold / extra / pending 三种行允许 ev=-1，且 cold 只在 end=="cold" 时允许。
 func audit(arc: Dictionary, by_id: Dictionary) -> Array:
 	var bad: Array = []
@@ -1012,6 +1156,14 @@ func _audit_one(arc: Dictionary, m: Dictionary, mode: String, dir: String, ev_id
 	#    在这一条上当场红：那句「结成了互助盟约」引用的仍然是一条 conflict。
 	for x in phrase_conflicts(tpl, [String(ev.get("type", ""))]):
 		out.append("弧#%d 的 %s 行引用 event #%d：%s" % [n, kind, ev_id, String(x)])
+	# ⑥ 极性锁（AA2，见 POLARITY_LOCK）：第⑤条守的是"这句话在讲另一种事"，
+	#    这一条守的是"这句话在讲这种事，但讲反了"。真值是 `ev["accepted"]` / `ev["note"]`。
+	#    Y3 点名的那条 `promise/end:kept ↔ broken`（赴约/爽约对调）在这一条上当场红。
+	for y in polarity_conflicts_ev(tpl, ev):
+		out.append("弧#%d 的 %s 行引用 event #%d：%s" % [n, kind, ev_id, String(y)])
+	# ⑦ 复述标记（AA2，结构性，不是第二来源）。
+	for z in repeat_conflicts(tpl, kind):
+		out.append("弧#%d 的 %s 行：%s" % [n, kind, String(z)])
 	return out
 
 func _end_text(d: Dictionary, end_id: String) -> String:

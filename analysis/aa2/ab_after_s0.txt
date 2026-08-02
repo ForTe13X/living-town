@@ -1,0 +1,6 @@
+[S0] {"chain":"3846961632","days":20,"diag_fails":[],"digest":"1046710805","event_digest":"8465300880995250274","events":1108,"hard_fails":[],"pass":true,"seed":1,"soft_fails":[8]}
+[S0] {"chain":"1056606847","days":20,"diag_fails":[],"digest":"920154962","event_digest":"123550572178054099","events":1070,"hard_fails":[],"pass":true,"seed":2,"soft_fails":[8]}
+[S0] {"chain":"3153785304","days":20,"diag_fails":[],"digest":"1984910493","event_digest":"3463579583192117208","events":1036,"hard_fails":[],"pass":true,"seed":3,"soft_fails":[8]}
+[S0] {"chain":"2377347937","days":20,"diag_fails":[],"digest":"3803060226","event_digest":"1520173524586536774","events":1133,"hard_fails":[],"pass":true,"seed":4,"soft_fails":[8]}
+[S0] {"chain":"3803128233","days":20,"diag_fails":[],"digest":"2555544379","event_digest":"6572575271467441207","events":1072,"hard_fails":[],"pass":true,"seed":5,"soft_fails":[8]}
+[S0] {"chain":"1478461275","days":20,"diag_fails":[],"digest":"273287889","event_digest":"5555452006563020240","events":1070,"hard_fails":[],"pass":true,"seed":6,"soft_fails":[8]}
