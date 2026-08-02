@@ -44,6 +44,9 @@ Result: `S13 NEGATIVE CONTROL: RED as expected (30 gate failures)`, expected exi
 | `role_pair.png` | 1200 x 650 | Same `square` node is explicit on both cards; role, receipt, fragment, request, status, and web counts visibly differ. |
 | `maze.png` | 1200 x 620 | Left role sees 3 nodes / 2 links; right role sees 4 nodes / 3 links, a different route and blocked current-node glyph. |
 | `glyph_sheet.png` | 1000 x 360 | Fragment, receipt, request, blocked, traversed, and unknown remain recognizable in both rows. |
+| `component_reel.mp4` | 1280 x 768, 15 s | Five-second holds on the role pair, maze pair, and glyph sheet; a checkpoint component reel, explicitly not gameplay capture. |
+
+`media_manifest.sha256` binds all four media artifacts. The video was assembled from the already verified PNGs with no generated intermediate frames treated as new evidence.
 
 Pixel criteria (RGB/RGBA value comparison, not alpha-only `getbbox()`):
 
@@ -71,6 +74,7 @@ does_not_detect:
 - prose disguised inside a syntactically valid ID; that requires stronger S06 ID grammar or provenance validation;
 - accessibility, color-vision variants, localization overflow, touch targets, or real-phone raster behavior;
 - S16 compositor interaction, production state integration, replay, or authoring quality.
+- animation or input responsiveness: the checkpoint reel is a static component review, not a gameplay recording.
 
 confidence:
 
