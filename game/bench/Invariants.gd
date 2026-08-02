@@ -4,10 +4,17 @@ class_name BenchInvariants
 ## 只用它的【静态】哈希（fnv1a32/mix32）——不实例化、不持有状态。
 const SimScript = preload("res://scripts/Sim.gd")
 ## bench/Invariants.gd — 把「确定性社交底座」的机检不变量抽成单一真相源（语义照搬 sim_soak.gd / sim_social_port.mjs）。
-## 条数：**41**（V1 加了 #41）。数法：`grep -o "R\.append(_chk([0-9]*" | sort -u | wc -l`。
+## 条数：**43**（V1 加了 #41、Z1 加了 #42、AA3 加了 #43）。
+##   数法：`grep -o "_chk([0-9][0-9]*" game/bench/Invariants.gd | sort -u | wc -l` → **43**（已现跑核过）。
 ##   ⚠ 原文写的是「`grep -c` 即得」——**那个配方自己是错的，off-by-one**：本行注释里就含有
 ##   `R.append(_chk(` 这个字面串，`grep -c` 会把**这一行文档**也数进去（HEAD 上 `grep -c`=41 而 id 只有 40）。
 ##   一条"怎么数"的说明把自己数了进去，这正是它想防的那种过期方式的另一个版本。
+##   ⚠ **AA3 又发现修出来的那个配方也不对**：`R\.append(_chk(` 抓不到 **#42**
+##   （它由 `_survival_pull_narrowing()` 返回、`_chk(42,…)` 写在那个函数里面），
+##   而它同时**照旧**把上面这一行文档数进去 —— 两个 off-by-one 恰好抵消，于是"43"这个数是**碰巧对的**。
+##   去掉 `R\.append` 前缀、并要求**至少一位数字**（`[0-9][0-9]*`）之后两边都不再靠巧合：
+##   命中 1..43 全部 43 条；本段文档里那几处 `_chk(` 要么不带数字被过滤掉、要么写的是已存在的 `_chk(42`，
+##   `sort -u` 自动合并。**这是本棒现跑核过的，不是推断。**
 ##   ⚠ 这里原先写死的是"20 条"，下面 split_fails 的注释写死的是"33 条"——**两个都过期了**，
 ##   而它们过期的方式一模一样：条数是长出来的，而写死的数字不会跟着长（H5 修，2026-07-30）。
 ##   ⇒ 以后要加条数就别再写死；本行给的是【怎么数】而不是数出来的那个值。
@@ -1068,6 +1075,85 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 		"craft_credit=%s%s" % [craft_note, "" if craft_bad.is_empty() else "；【异常】" + "；".join(craft_bad)]))
 	# 42) ★Z1：生存推力（Sim._survival_pull）的三道收窄仍然成立。判据是【结构】，与 seed / 世界演化无关。
 	R.append(_survival_pull_narrowing(S))
+
+	# ── 43) AA3 买卖的社会痕迹（docs/106）────────────────────────────────────────
+	# 守的是什么：**开了 `vendor.trade_credit` 的那条人→人货款，必须在【别人身上】留下痕迹；
+	#             而其余的钱不许留。**
+	# 名字里每一个词都有代码在查（docs/41 §2 第四个盲区，「合取式最容易只落一半」）：
+	#   「被看见」→ ①商贩那条 `pay`(note=`buy:<赶集>`) 事件真的带上了目击者；
+	#   「被知道」→ ②真的有人**亲眼**形成 `TR:<职位>`（subject=商贩、via∈{seen,gossip}，且至少一条 seen）；
+	#   「不外溢」→ ③**其余每一条 `pay` 事件的 `witnesses` 必须恒空**——这一臂才是牙：
+	#             `transfer` 是全镇钱的唯一通道（工资/房租/镇库收费全走它），
+	#             谁把目击者接成 `transfer` 的全局副作用，"这是【买卖】留下的痕迹"这句话当场变成假的。
+	# 豁免：`trade_credit` 缺键/空 ⇒ 恒过（off 门，同 `_prod_on` / `craft_credit` 那一套）；
+	#       镇上没有现任商贩 ⇒ 恒过（`_holder_of_title` 返回 ""，与 `Sim._market_open` 同一条口径）；
+	#       本局的人→人成交 < `TRADE_MIN_SALES` ⇒ 跳过①②（短 horizon / 随机后端里可能一笔都没成交）。
+	# ⚠ 明写它**不**查什么（跑出来的，见 docs/106 §五）：不查 `standing` 有没有真的动；
+	#   不查那句中文；不查目击者当时真的在场；**也不查商贩本人在不在场**——
+	#   而最后这一条是**故意的**：实测他只在 19-24% 的成交里与买家同区（docs/106 §一），
+	#   把"他在场"写进判据等于给这道门装一条余量 3、被零假设臂就能压穿的臂。
+	var vend_tbl: Dictionary = S.production.get("vendor", {}) if prod_on and S.production.get("vendor", {}) is Dictionary else {}
+	var tc_tbl: Dictionary = vend_tbl.get("trade_credit", {}) if vend_tbl.get("trade_credit", {}) is Dictionary else {}
+	var trade_bad: Array = []
+	var trade_note := "关"
+	if not tc_tbl.is_empty():
+		var v_title := String(vend_tbl.get("title", ""))
+		var v_id := String(S._holder_of_title(v_title))
+		var buy_note := "buy:" + String(vend_tbl.get("action", ""))
+		var sales := 0                        # 人→人的成交（钱真的进了商贩口袋）
+		var sales_w := 0                      # 其中带目击者的
+		var spill: Dictionary = {}            # note -> 条数：**不是**买卖、却带了目击者的 pay 事件
+		for e in log:
+			if String(e.get("type", "")) != "pay":
+				continue
+			var wn := (e.get("witnesses", []) as Array).size()
+			if v_id != "" and String(e.get("note", "")) == buy_note and String(e.get("target", "")) == v_id:
+				sales += 1
+				if wn > 0:
+					sales_w += 1
+			elif wn > 0:
+				var nk := String(e.get("note", ""))
+				spill[nk] = int(spill.get(nk, 0)) + 1
+		# ③ 反向臂：先查，且**不受豁免线保护**——它守的是整本账，与商贩今天卖没卖出去无关。
+		if not spill.is_empty():
+			var sp: Array = []
+			for nk2 in spill:
+				sp.append("%s(%d条)" % [String(nk2), int(spill[nk2])])
+			trade_bad.append("不是买卖的钱也带上了目击者：" + ", ".join(sp))
+		if v_id == "":
+			trade_note = "开[镇上没有现任%s ⇒ 豁免]" % v_title
+		elif sales < TRADE_MIN_SALES:
+			trade_note = "开[%s:人→人成交%d<%d(豁免)]" % [v_title, sales, TRADE_MIN_SALES]
+		else:
+			if sales_w <= 0:
+				trade_bad.append("%s 成交%d笔但【一笔都没被看见】(pay 的 witnesses 通道断了)" % [v_title, sales])
+			var bid2 := "TR:%s" % v_title
+			var believers2 := 0               # 一手（亲眼在摊前）
+			var relayed2 := 0                 # 二手（听人说的）
+			var wrong2 := 0
+			for ag2 in S.agents:
+				if not ag2["beliefs"].has(bid2):
+					continue
+				var b2: Dictionary = ag2["beliefs"][bid2]
+				var vv2 := String(b2.get("via", ""))
+				# via 的两条合法路与 #41 同一条（`_commit_social` 的 gossip 分支会把它转述出去，
+				# 那是**想要的行为**——docs/84 §六② 那次假红的教训直接照抄，不重踩）。
+				if String(b2.get("subject", "")) != v_id or not (vv2 in ["seen", "gossip"]):
+					wrong2 += 1
+					continue
+				if String(ag2["id"]) == v_id:
+					continue                  # 商贩自己不该持有关于自己的这条（_trade_fallout 已排除）
+				if vv2 == "seen":
+					believers2 += 1
+				else:
+					relayed2 += 1
+			if believers2 <= 0:
+				trade_bad.append("%s 成交%d笔·被看见%d笔，却没有任何人【亲眼】形成 %s" % [v_title, sales, sales_w, bid2])
+			if wrong2 > 0:
+				trade_bad.append("%s 有%d条 %s 的 subject/via 不对" % [v_title, wrong2, bid2])
+			trade_note = "开[%s:成交%d 被看见%d 知情%d人(其中转述%d)]" % [v_title, sales, sales_w, believers2 + relayed2, relayed2]
+	R.append(_chk(43, "买卖的社会痕迹(被看见·被知道·不外溢)", trade_bad.is_empty(),
+		"trade_credit=%s%s" % [trade_note, "" if trade_bad.is_empty() else "；【异常】" + "；".join(trade_bad)]))
 	return R
 
 ## #42 的 `cur` 网格。全部严格小于 `SURVIVAL_GATE`——本项在 `cur >= GATE` 处按构造（`maxf(0, GATE-cur)`）
@@ -1236,13 +1322,26 @@ static func _chk(id: int, name: String, ok: bool, detail: String) -> Dictionary:
 ##   ⚠ 它有**四条**真实的失去判别力的路（`k==0` 的 ablation、上限被短路成 0、世界里没有 social 广告、
 ##     `needs_def` 里没有非-social need），而它们**由条目自己的【名字】报出来**（不是只写在 detail 里
 ##     ——不变量表只在失败时印 detail），不靠人记得。前两条各有一个跑过的变异体（编号 100 §二.3 的 M4 / M8）。
-const HARD_IDS := [1, 6, 7, 9, 10, 12, 13, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42]
+## AA3：#43 入硬档。理由与 #38/#39/#41 同一条——它查的是**结构**（消费侧那条通道接没接上、
+##   有没有把目击者接成 `transfer` 的全局副作用），不是涌现统计；而"人→人成交 < TRADE_MIN_SALES
+##   就跳过"这条豁免已经把短 horizon / 随机后端 / 定向场景兜住了。
+const HARD_IDS := [1, 6, 7, 9, 10, 12, 13, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43]
 
 ## #41 的豁免线：一局里该职位的 produce 事件少于这么多次就跳过它。
 ## 5 是量出来的下界，不是拍的：N=12 × 60 天 × 12 seed，环卫工的 produce 事件是 19..31 条
 ## （最小 19，余量 19/5 = 3.8×）；而 DetGate 的 20 天 / ModelPathGate 的 8 天 / scenarios 的短局
 ## 本来就上不满 5 次工 ⇒ 结构上不会误红。
 const CRAFT_MIN_WORKS := 5
+
+## #43 的豁免线：一局里【人→人】的成交（钱真的进了商贩口袋）少于这么多笔就跳过①②。
+## 5 与 `CRAFT_MIN_WORKS` 同值，而它同样是量出来的下界（`game/bench/aa3_vendor_census.gd`，9 格 108 局）：
+## **本门真正吃的那个量**是「钱真到手 且 当场有旁人」的条数，它的九格最小值是 **13**
+## （N=12 seeds 1-12 20 天 seed 2；零假设臂 obj_dist_penalty 0.400→0.401 在同一格给出**同样的 13**
+##  ⇒ 这个余量是性质，不是巧合）。成交数本身的九格最小值是 15 ⇒ 余量 15/5 = 3×。
+## ⚠ 与 #41 那条豁免线的**区别要写清**：#41 那条兜的是"短局里一次工都没上"，
+##   本条兜的是"短局 / 随机后端里一笔都没成交"——BackendGate 的 30 天与 ModelPathGate 的 8 天
+##   走的是 `random` 后端，赶集的频次与 logic 地板不可比，**那两格的成交数我没有单独量过**（docs/106 §十）。
+const TRADE_MIN_SALES := 5
 
 ## 第三档：诊断（DIAGNOSTIC）——【报告但永不成门】（既不入 hard_red 也不入 soft_red）。
 ## 收录标准只有一条：该指标本身已被证明是度量伪影，把它做成门就是在给噪声上锁。

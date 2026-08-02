@@ -1,0 +1,60 @@
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+=== ModelPathGate · 模型路径对照 seeds=1-4 days=8 N=12 ===
+  [A] 闭集选号编码契约
+    ✅ 系统 prompt 无字面示例编号（残留数字 ''）
+    ✅ [0,cap) 的 label 全是单个 A-Z（越界：）
+    ✅ label↔index 往返恒等（破：）
+    ✅ 数字不再是合法编号（fail-closed 到引擎兜底）
+    ✅ 40 候选 → 裁到 26（实测 26）
+    ✅ 裁剪后保持枚举序（不是按 score 降序喂模型）—— 实测首项 'a14'（应为 'a14'）
+    ✅ ≤cap 时原样返回、保持枚举序
+    ✅ parse_decision(label(i)) ≡ candidates[i]（破：）
+ERROR: Parse JSON failed. Error at line 0: Expected 'true', 'false', or 'null', got 'A'
+   at: parse_string (core/io/json.cpp:624)
+   GDScript backtrace (most recent call first):
+       [0] parse_decision (res://scripts/AIBackend.gd:894)
+       [1] _part_a (res://bench/ModelPathGate.gd:153)
+       [2] _ready (res://bench/ModelPathGate.gd:70)
+    ✅ prose fail-closed 仍然有效
+  [B] SLM 熔断器复位
+    ✅ 起点：熔断器是关的
+WARNING: [SLM] 熔断触发：连续 6 次超时且无成功 → 停发 SLM、回退 logic 地板（防原生内存泄漏 OOM，见 docs/34；换模型/换推理档可解除）
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] decide (res://scripts/AIBackend.gd:858)
+       [1] _trip (res://bench/ModelPathGate.gd:246)
+       [2] _part_b (res://bench/ModelPathGate.gd:185)
+       [3] _ready (res://bench/ModelPathGate.gd:71)
+    ✅ 连续 6 次超时 → 熔断器开（实测触发于第 6 次）
+    ✅ 熔断后 decide() 走引擎地板（不再 fire）
+[SLM] 熔断解除：换权重文件 → __modelpathgate_probe.gguf（新的失败假设，不继承旧熔断）
+    ✅ set_model_path() 后熔断器关
+    ✅ set_model_path() 后连败计数清零（否则新模型只剩 1 次机会，不是 6 次）
+WARNING: [SLM] 熔断触发：连续 6 次超时且无成功 → 停发 SLM、回退 logic 地板（防原生内存泄漏 OOM，见 docs/34；换模型/换推理档可解除）
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] decide (res://scripts/AIBackend.gd:858)
+       [1] _trip (res://bench/ModelPathGate.gd:246)
+       [2] _part_b (res://bench/ModelPathGate.gd:204)
+       [3] _ready (res://bench/ModelPathGate.gd:71)
+    ✅ ③ 前置：熔断器再次打开
+    ✅ request_backend() 后熔断器**仍然开着**（这条路刻意没改）
+[SLM] 熔断解除：切换推理档 → CPU（新的失败假设，不继承旧熔断）
+    ✅ set_slm_use_gpu() 后熔断器关
+  [C] random(full) 臂逐 seed 摘要 ×【提交锚】比对
+    seed=1  inv_digest=966994892  event_digest=351755360139655785  landed=681
+    seed=2  inv_digest=1547504031  event_digest=7275795326261309778  landed=664
+    seed=3  inv_digest=3819746162  event_digest=2025998328644289860  landed=664
+    seed=4  inv_digest=399946413  event_digest=8321786697441672602  landed=646
+    候选规模：max|C|=40，|C|>26 的决策点 88/2655（旧上限 |C|>36：4/2655）
+    ✅ 锚在位且含本网格 days8_n12（锚=res://bench/modelpath_anchor.json；重烘：--bake-anchor game/bench/modelpath_anchor.json）
+    ✅ seed=1 逐字节对上锚（差：）
+    ✅ seed=2 逐字节对上锚（差：）
+    ✅ seed=3 逐字节对上锚（差：）
+    ✅ seed=4 逐字节对上锚（差：）
+    ✅ 候选规模对上锚——裁剪仍然真的在生效（差：）
+
+=== ModelPathGate: PASS ✅  (失败 0)
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)

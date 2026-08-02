@@ -308,6 +308,7 @@ var _stock_day := {}            # good -> 当日已消耗但尚未入账的件�
                                 #   （若逐次记账，60 天要往 event_log 里塞 ~1400 条"有人吃了一口"，
                                 #    Main._rebuild_feed 只回扫尾部 200 条 ⇒ 会把小镇纪事整块冲掉。按天入账既保住账本又不刷屏。）
 var _short_day := {}            # good -> 上一次写过 shortage 事件的 day（同一天同一货只报一次；后果计数仍逐次累加）
+var _trade_day := {}            # ★AA3：商贩 id -> 上一次写过买卖口碑后果的 day（日名额，理由与 _short_day 同一条，见 _trade_fallout）
 var prod_stats := {"produced": {}, "consumed": {}, "short": {}, "spoiled": {}, "attempts": {}, "work": {}}  # 诊断计数（逐 good / 逐动作 / 逐职位）
 var agents: Array = []          # [agent dict]
 var _agent_by_id := {}
@@ -825,6 +826,7 @@ func start_new(p_seed: int = 12345) -> void:
 	town_stock = {}
 	_stock_day = {}
 	_short_day = {}
+	_trade_day = {}
 	prod_stats = {"produced": {}, "consumed": {}, "short": {}, "spoiled": {}, "attempts": {}, "work": {}}
 	if _prod_on():
 		for g in production.get("goods", {}):
@@ -1494,8 +1496,15 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 				if price > 0 and short:
 					price += int(production.get("scarcity_markup", 0))   # 缺货溢价：仍走 transfer 唯一通道 → #34 不受影响
 				if price > 0:
-					if transfer(String(ag["id"]), payee, price, ("buy:" if payee != "town" else "price:") + String(opt["action"])):
+					# ★AA3 消费侧的口碑挂点（docs/106）：**只在 payee 是【商贩本人】的那一笔上**去数在场者，
+					#   否则连 `_nearby_agents` 都不调 ⇒ 缺 `vendor.trade_credit` 键 / 非 vendor 动作 /
+					#   收款方是镇库 ⇒ 一条指令都不多跑、`witnesses` 仍是 `[]` ⇒ 逐字节回到 AA3 之前。
+					var tc: Dictionary = _trade_credit() if payee != "town" else {}
+					var twits: Array = _nearby_agents(ag) if not tc.is_empty() else []
+					if transfer(String(ag["id"]), payee, price, ("buy:" if payee != "town" else "price:") + String(opt["action"]), twits):
 						econ_stats["meals_paid"] += 1
+						if not tc.is_empty():
+							_trade_fallout(ag, payee, twits, String(opt["action"]), tc)
 					else:
 						econ_stats["meals_free"] += 1      # 付不起照吃（meals_free）——商贩路同样继承这条红线
 		else:
@@ -3166,7 +3175,14 @@ func _econ_on() -> bool:
 
 ## 金钱增减的【唯一通道】：整数、不足即拒、写 event_log 溯源（type=pay，note=reason）。
 ## from/to = agent id 或 "town"（镇库）。守恒由"只此一门"结构保证 → 硬不变量 #34 可机检。
-func transfer(from_id: String, to_id: String, amt: int, reason: String) -> bool:
+##
+## ★AA3：`witnesses` 是**可选**的第五个参数，缺省 `[]` = 今天的行为逐字节不变
+##   （形状逐条照抄 V1 给 `_stock_move` 加的那个可选第六参，见那一段的 ★V1 注释）。
+##   加它的理由是量出来的：`pay` 事件此前**恒无目击者**——AA3 清点 9 格 108 局、共 15,860 笔赶集，
+##   `pay_events_witnessed` 逐格逐 seed **恒 0**；V1 §十③ 与 Z2 §十一③ 两次点名"工资/买卖那条通道
+##   一个字节都没动过"。⚠ 它只在**商贩那条人→人的货款**上被真正传进来（`_advance_object` 的 vendor 分支），
+##   工资 / 房租 / 镇库收费三条**照旧传空**——`#43` 的第③臂（不外溢）就是守这句话的。
+func transfer(from_id: String, to_id: String, amt: int, reason: String, witnesses: Array = []) -> bool:
 	if amt <= 0:
 		return false
 	var from_coin := _coin_of(from_id)
@@ -3174,7 +3190,7 @@ func transfer(from_id: String, to_id: String, amt: int, reason: String) -> bool:
 		return false
 	_set_coin(from_id, from_coin - amt)
 	_set_coin(to_id, _coin_of(to_id) + amt)
-	var ev := _log_event("pay", from_id, to_id, "", true, [], reason)
+	var ev := _log_event("pay", from_id, to_id, "", true, witnesses, reason)
 	var _e = ev   # 事件仅作账本溯源（不 emit social_event——经济事务非社交）
 	return true
 
@@ -3518,6 +3534,78 @@ func _craft_fallout(worker: Dictionary, seen: Array, title: String, good: String
 		if st != 0.0:
 			_adjust_standing(s, String(worker["id"]), st)
 		s["memory"].add(memo % [_name(worker), _area_label(worker["pos"])], 2, tick_no, [String(worker["id"]), "observe", "craft"])
+
+## ★AA3 买卖口碑的数据门（docs/106）。缺 `production.vendor.trade_credit` → 返回 `{}` →
+## `_advance_object` 的 vendor 分支里那两行整段短路 → 引擎逐字节回到 AA3 之前。
+## 回滚成本 = 删一个 JSON 键（照抄 `craft_credit` / `stock_pull` 的形状）。
+func _trade_credit() -> Dictionary:
+	var vend: Dictionary = production.get("vendor", {}) if production.get("vendor", {}) is Dictionary else {}
+	if vend.is_empty():
+		return {}
+	var rec = vend.get("trade_credit", {})
+	return rec if rec is Dictionary else {}
+
+## ★AA3 买卖口碑：**手艺的社会痕迹挂在【产出】那一侧，而商贩的产出在【消费】那一侧。**
+##
+## 为什么需要它，以及为什么它【不是】给商贩补一条 `craft_credit`（清点在 docs/106 §一，跑出来的）：
+##   商贩 mei 有岗位、有班次、有两条广告位，实测拿走全镇 14.0-15.8% 的饭口（9 格 108 局，
+##   `赶集/(赶集+吃饭)`）；他缺的不是活儿，是**挂点**——`craft_credit` 由 `_produce_for` 调用，
+##   而 `_produce_for` 在 `rec.is_empty()` 时就 return（他没有产物）⇒ 把"商贩"写进 `craft_credit`
+##   会被 `#41` 的 `produce < CRAFT_MIN_WORKS` 豁免**静默跳过**：一道结构上不可能变红的门。
+##
+## ★"消费侧的被看见是什么"——四种口径都量过，**判定用的是余量**（不豁免的 seed 里的最小值，
+##   门槛 3 = 环卫工在最紧那一格的余量，抄自 Z2）。九格取最小：
+##     D1 买家自己（钱真到手）        余量 15
+##     D2 商贩**当场在摊子上**        余量 **3**   ← 零假设臂（obj_dist_penalty 0.400→0.401）就压到 3
+##     D3 旁边有第三个人              余量 27
+##     D4 D2 且 D3                    余量 **3**
+##     D5 **钱真到手 且 有旁人**      余量 **13**  ← 本实现用的就是这一个
+##   ⇒ **"商贩当场在摊子上"这条读法被证伪**：`_market_open` 只要求他**在班**，不要求他**在摊上**，
+##     实测他只在 19-24% 的成交里与买家同区 —— 摊子在无人售货。把口碑挂在"他被看见站在那儿"上，
+##     等于给 `#43` 装一道跟着无关扰动闪的门（这正是 Z2 否掉木匠的那条理由）。
+##   ⇒ **正确的见证者是【买家自己 + 当场的旁人】，而商贩在不在场无关。**
+##     这在本仓库有现成先例、不是新发明：`_shortage_fallout` 让在场者对一个**缺席的**责任岗位形成信念、
+##     挫他的声誉——本函数是它的正向镜像，连见证者集合 `[当事人] + _nearby_agents(当事人)` 都逐条照抄。
+##
+## ★为什么有【日名额】而 `_craft_fallout` 没有：这是量出来的比例，不是设计洁癖。
+##   `production.json._calibration` 记的是"劳动比消费稀【约 40 倍】"；实测 60 天 N=12 一个 seed 里
+##   产出侧带目击者的 `produce` 是 545 条（Z2 §四.2，四门合计），而商贩一个人的成交就有 135-180 笔、
+##   其中钱真到手的 58-84 笔。不设名额 ⇒ 单这一条通道投放的 `standing` 就超过现有四门手艺的总和。
+##   日名额的两条理由与 `_shortage_fallout` 逐字相同（MemoryStream CAP=200/KEEP=150；
+##   Main 的小镇纪事只回扫尾部 200 条），语义上也一样：一天里第三次赶集不是新闻。
+##   ⚠ **名额只管【后果】，不管【账本】**：`pay` 事件的 `witnesses` 逐笔照写
+##   （那一路只进 `Inv.digest`、不改行为，V1 §四.4 已经拆开量过），所以"消费侧被看见"在账本上是逐笔的。
+##
+## ★这不是"多打一行日志"，但**能声称的只有"痕迹存在、可门控、可回滚"**——
+##   V1 §四.4 拆开量过：`CR:*` 这一族信念今天几乎没有下游，真正改变世界的只有 `standing` 那一路。
+##   本函数的 `standing` 效应量见 docs/106 §四，**没有**声称"卖东西的人更受欢迎"。
+func _trade_fallout(buyer: Dictionary, vendor_id: String, seen: Array, action: String, tc: Dictionary) -> void:
+	if int(_trade_day.get(vendor_id, -1)) == day:
+		return                                          # 日名额（见抬头）：一天一条，与 _short_day 同一条纪律
+	_trade_day[vendor_id] = day
+	var vag: Dictionary = _agent_by_id.get(vendor_id, {})
+	if vag.is_empty():
+		return
+	var title := String(_job_of(vendor_id).get("title", ""))
+	if title == "":
+		return
+	var st := float(tc.get("standing", 0.0))
+	var good := String((production.get("consume", {}) as Dictionary).get(action, {}).get("good", ""))
+	var bid := "TR:%s" % title
+	# 参数序**逐字照抄** `shortage_claim` / `craft_credit.claim`（`% [good, name]`）：
+	# 同一个文件里三条镜像的串用三套参数序是下一次 "not all arguments converted" 的种子（docs/84 §六①）。
+	var claim := String(tc.get("claim", "街面上还买得着%s，是%s的摊子撑着")) % [good, _name(vag)]
+	var memo := String(tc.get("witness_memo", "%s的摊子还开着，%s上买得着东西"))
+	var seers: Array = [buyer]
+	seers.append_array(seen)
+	for s in seers:
+		if String(s["id"]) == vendor_id:
+			continue                                    # 不由商贩自己形成关于自己的这条（他也可能恰好站在旁边）
+		if not s["beliefs"].has(bid):
+			s["beliefs"][bid] = {"claim": claim, "subject": vendor_id, "source": "__seen__", "via": "seen", "tick": tick_no}
+		if st != 0.0:
+			_adjust_standing(s, vendor_id, st)          # 同一道 STANDING_DELTA_CAP / STANDING_CAP 守卫
+		s["memory"].add(memo % [_name(vag), _area_label(buyer["pos"])], 2, tick_no, [vendor_id, "observe", "trade"])
 
 ## 日界结算：把当天的消耗一次性写进账本，再按 spoil_per_day 让存货自然损耗。
 ## 损耗存在的理由不是"真实"，是【让缺货周期性发生】：没有它，供大于求的种子会把库存顶到 cap 后永不缺货，

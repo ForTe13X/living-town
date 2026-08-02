@@ -1,0 +1,40 @@
+ablate(改前) <缺 C:/Users/yp/AppData/Local/Temp/claude/E--Documents-Dev-June-26th/4ab4ceee-f2b5-4791-b52a-1f1d70c374f4/scratchpad\ab_3160.jsonl>
+null(零假设) <缺 C:/Users/yp/AppData/Local/Temp/claude/E--Documents-Dev-June-26th/4ab4ceee-f2b5-4791-b52a-1f1d70c374f4/scratchpad\null_3160.jsonl>
+st0(standing=0) <缺 C:/Users/yp/AppData/Local/Temp/claude/E--Documents-Dev-June-26th/4ab4ceee-f2b5-4791-b52a-1f1d70c374f4/scratchpad\st0_3160.jsonl>
+货物集合：口粮, 屋瓦, 整洁, 柴薪, 话本, 豆子
+
+seed | ship(standing=0.5)
+     | 零缺货货数/最差满足率  
+  31 | 2 / 0.923         
+  32 | 4 / 1.016         
+  33 | 0 / 0.840         
+  34 | 2 / 1.010         
+  35 | 0 / 1.085         
+  36 | 4 / 1.044         
+  37 | 2 / 1.027         
+  38 | 2 / 0.837         
+  39 | 3 / 1.024         
+  40 | 1 / 1.018         
+  41 | 2 / 1.062         
+  42 | 1 / 0.857         
+  43 | 2 / 1.031         
+  44 | 1 / 1.042         
+  45 | 2 / 1.073         
+  46 | 3 / 0.913         
+  47 | 1 / 1.016         
+  48 | 2 / 1.008         
+  49 | 1 / 1.088         
+  50 | 2 / 0.970         
+  51 | 1 / 0.840         
+  52 | 1 / 1.015         
+  53 | 0 / 1.093         
+  54 | 1 / 1.032         
+  55 | 0 / 0.931         
+  56 | 0 / 1.073         
+  57 | 1 / 1.109         
+  58 | 2 / 1.103         
+  59 | 2 / 1.000         
+  60 | 2 / 0.980         
+
+=== 展布（不给均值，给区间与逐 seed 的极值；并列一起报）===
+ship(standing=0.5)   零缺货货数 min=0 max=4（max 出现在 seed 32,36）；最差满足率 min=0.837（seed 38） max=1.109  ；零缺货≥4 的 seed 数=2

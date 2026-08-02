@@ -1,0 +1,6 @@
+game/bench/golden_digests.json entries=14
+"2026-08-02 Wave Z · Z2 把 V1 的手艺口碑从【一门】铺到【四门】（production.craft_credit 增 面点师 / 咖啡师 / 教书先生 三行）⇒ 世界轨迹【蓄意】移动（docs/101 / docs/99 §二 / docs/47 R12）。★改的是什么：出货树上只有 game/data/production.json 一个文件、三行数据；Sim.gd 与 game/bench/ 的判据一个字节没动——#41 本来就是读 craft_credit 的。★为什么不是【全铺开】：8 个产出岗位里 4 个铺不得，而这是量出来的不是挑出来的。#41 真正判的是『不豁免的 seed 里至少被看见一次』，所以要量的不是 V1 报的『平均在场人数』，而是【余量】=『produce ≥ CRAFT_MIN_WORKS(5) 的 seed 里 bys>0 的最小值』。跑了 108 局（N=12 seeds 1-60 × 60 天、N=16 seeds 1-12 × 60 天、零假设臂 utility.obj_dist_penalty 0.400→0.401 共 12 局、以及 CI 短局所在的 30 天 / 20 天各 12 局）：面点师 5 · 咖啡师 4 · 教书先生 3 · 环卫工 3（已在树上）｜泥瓦匠 1 · 杂役 1 · 木匠 0 · 渔夫 0。门槛取 3 = 环卫工自己在最紧那一格（20 天）的余量，抄的是【已经被接受的风险水平】，不是我挑的数。渔夫是【结构性】的零（321 条产出 0 条身边有人：工位 bench_pier 在 map.areas.dock，而那个区是 F5 专为这一个工位新建的、全区没有第二条广告位 ⇒ _nearby_agents 恒空，开了它 #41 在 60 天格上 43/48 个 seed 直接红）；木匠的余量 2 在零假设臂上就掉到 0（seed 2 产出 8 次、一次没被看见）⇒ 那个 2 是巧合不是性质。★验收：①零扰动对照 12/12 逐字节（把三行摘掉、只留注释键 ⇒ digest 与改前逐位相
+
+game/bench/modelpath_anchor.json entries=8
+"2026-08-02 Wave Z · Z2 手艺口碑铺到四门（production.craft_credit 增三行）⇒ 世界轨迹蓄意移动（docs/101 / docs/47 R12）。本锚锚的是 random(full) 臂的【世界轨迹】，随 golden_digests.json 一起重烘是正确反应；prompt 编码本身（A/B 两段）未动、仍绿。重烘后 ModelPathGate 失败 0。"
+
