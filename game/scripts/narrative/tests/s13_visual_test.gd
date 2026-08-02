@@ -6,6 +6,10 @@ const HIDDEN_NODE := "sealed_cellar_DO_NOT_RENDER"
 const HIDDEN_CLAIM_PROSE := "AUTHOR_ONLY_CLAIM_PROSE_7F3E_DO_NOT_RENDER"
 const HIDDEN_FRAGMENT_PROSE := "AUTHOR_ONLY_FRAGMENT_BODY_91A2_DO_NOT_RENDER"
 const DEFAULT_OUT := "res://../analysis/narrative_visual/s13"
+const REVIEW_WATERMARK_TEXT := "SYNTHETIC COMPONENT REVIEW · NOT GAMEPLAY"
+const REVIEW_WATERMARK_HEIGHT := 38
+const REVIEW_WATERMARK_ACCENT := Color("d88b57")
+const REVIEW_WATERMARK_INK := Color("f5e7c5")
 
 var _failures: Array[String] = []
 var _checks := 0
@@ -75,6 +79,7 @@ func _start() -> void:
 
 
 func _run(out_dir: String) -> void:
+	_check(REVIEW_WATERMARK_TEXT == "SYNTHETIC COMPONENT REVIEW · NOT GAMEPLAY", "review watermark text drifted")
 	var projected_a := NarrativeViewContract.project(_authority_fixture(), "role_lan")
 	var projected_b := NarrativeViewContract.project(_authority_fixture(), "role_qiao")
 	_check(bool(projected_a["ok"]), "S06 projection failed for role_lan: %s" % [projected_a["errors"]])
@@ -112,19 +117,25 @@ func _run(out_dir: String) -> void:
 		_run_completed = true
 		return
 
-	var role_pair_image: Image = await _render_control(role_pair, Vector2i(1200, 650))
+	var role_pair_image: Image = await _render_control(role_pair, Vector2i(1200, 650), true)
 	_check(role_pair_image != null and not role_pair_image.is_empty(), "role-pair render is empty")
+	var role_watermark := _watermark_stats(role_pair_image)
+	_check(bool(role_watermark["present"]), "role-pair review watermark is missing from rendered pixels")
 	if _write_outputs and role_pair_image != null:
 		_check(role_pair_image.save_png(out_dir.path_join("role_pair.png")) == OK, "could not save role_pair.png")
 
-	var maze_image: Image = await _render_control(maze_pair, Vector2i(1200, 620))
+	var maze_image: Image = await _render_control(maze_pair, Vector2i(1200, 620), true)
 	_check(maze_image != null and not maze_image.is_empty(), "maze render is empty")
+	var maze_watermark := _watermark_stats(maze_image)
+	_check(bool(maze_watermark["present"]), "maze review watermark is missing from rendered pixels")
 	if _write_outputs and maze_image != null:
 		_check(maze_image.save_png(out_dir.path_join("maze.png")) == OK, "could not save maze.png")
 
 	var glyph_sheet := _make_glyph_sheet(_negative_control)
-	var glyph_sheet_image: Image = await _render_control(glyph_sheet, Vector2i(1000, 360))
+	var glyph_sheet_image: Image = await _render_control(glyph_sheet, Vector2i(1000, 360), true)
 	_check(not glyph_sheet_image.is_empty(), "glyph-sheet render is empty")
+	var glyph_watermark := _watermark_stats(glyph_sheet_image)
+	_check(bool(glyph_watermark["present"]), "glyph-sheet review watermark is missing from rendered pixels")
 	if _write_outputs:
 		_check(glyph_sheet_image.save_png(out_dir.path_join("glyph_sheet.png")) == OK, "could not save glyph_sheet.png")
 
@@ -162,6 +173,14 @@ func _run(out_dir: String) -> void:
 	_metrics["role_pair_png_size"] = [role_pair_image.get_width(), role_pair_image.get_height()]
 	_metrics["maze_png_size"] = [maze_image.get_width(), maze_image.get_height()]
 	_metrics["glyph_sheet_png_size"] = [glyph_sheet_image.get_width(), glyph_sheet_image.get_height()]
+	_metrics["review_watermark_text"] = REVIEW_WATERMARK_TEXT
+	_metrics["review_watermark_height"] = REVIEW_WATERMARK_HEIGHT
+	_metrics["review_watermark_applied_to"] = ["role_pair.png", "maze.png", "glyph_sheet.png"]
+	_metrics["review_watermark_pixel_stats"] = {
+		"role_pair.png": role_watermark,
+		"maze.png": maze_watermark,
+		"glyph_sheet.png": glyph_watermark,
+	}
 	if _write_outputs and not _negative_control:
 		var metrics_file := FileAccess.open(out_dir.path_join("metrics.json"), FileAccess.WRITE)
 		_check(metrics_file != null, "could not create metrics.json")
@@ -277,7 +296,7 @@ func _add_label(parent: Node, value: String, pos: Vector2, label_size: Vector2, 
 	parent.add_child(label)
 
 
-func _render_control(control: Control, dimensions: Vector2i) -> Image:
+func _render_control(control: Control, dimensions: Vector2i, add_review_watermark := false) -> Image:
 	var viewport := SubViewport.new()
 	viewport.name = "s13_capture_%dx%d" % [dimensions.x, dimensions.y]
 	viewport.size = dimensions
@@ -288,17 +307,77 @@ func _render_control(control: Control, dimensions: Vector2i) -> Image:
 	control.position = Vector2.ZERO
 	control.size = Vector2(dimensions)
 	viewport.add_child(control)
+	var watermark: Control = null
+	if add_review_watermark:
+		watermark = _make_review_watermark(dimensions)
+		viewport.add_child(watermark)
 	await get_tree().process_frame
 	# RenderingServer.frame_post_draw is never emitted by this project's
 	# --headless path (docs/41); settling regular frames keeps the gate finite.
 	await get_tree().process_frame
 	await get_tree().process_frame
 	var image := viewport.get_texture().get_image()
+	if watermark != null:
+		viewport.remove_child(watermark)
+		watermark.free()
 	viewport.remove_child(control)
 	control.free()
 	remove_child(viewport)
 	viewport.free()
 	return image
+
+
+func _make_review_watermark(dimensions: Vector2i) -> Control:
+	var root := Control.new()
+	root.name = "s13_review_watermark"
+	root.position = Vector2(0, dimensions.y - REVIEW_WATERMARK_HEIGHT)
+	root.size = Vector2(dimensions.x, REVIEW_WATERMARK_HEIGHT)
+	root.z_index = 1000
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var background := ColorRect.new()
+	background.color = Color("0b0d12")
+	background.size = root.size
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(background)
+	var accent := ColorRect.new()
+	accent.color = REVIEW_WATERMARK_ACCENT
+	accent.size = Vector2(dimensions.x, 2)
+	accent.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(accent)
+	var label := Label.new()
+	label.name = "not_gameplay_label"
+	label.text = REVIEW_WATERMARK_TEXT
+	label.position = Vector2(12, 3)
+	label.size = Vector2(dimensions.x - 24, REVIEW_WATERMARK_HEIGHT - 5)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 17)
+	label.add_theme_color_override("font_color", REVIEW_WATERMARK_INK)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(label)
+	return root
+
+
+func _watermark_stats(image: Image) -> Dictionary:
+	if image == null or image.is_empty():
+		return {"present": false, "max_accent_row_pixels": 0, "text_ink_pixels": 0}
+	var start_y := maxi(0, image.get_height() - REVIEW_WATERMARK_HEIGHT)
+	var max_accent_row_pixels := 0
+	var text_ink_pixels := 0
+	for y in range(start_y, image.get_height()):
+		var accent_pixels := 0
+		for x in range(image.get_width()):
+			var pixel := image.get_pixel(x, y)
+			if absf(pixel.r - REVIEW_WATERMARK_ACCENT.r) <= 0.08 and absf(pixel.g - REVIEW_WATERMARK_ACCENT.g) <= 0.08 and absf(pixel.b - REVIEW_WATERMARK_ACCENT.b) <= 0.08:
+				accent_pixels += 1
+			if pixel.r >= 0.80 and pixel.g >= 0.72 and pixel.b >= 0.56:
+				text_ink_pixels += 1
+		max_accent_row_pixels = maxi(max_accent_row_pixels, accent_pixels)
+	return {
+		"max_accent_row_pixels": max_accent_row_pixels,
+		"text_ink_pixels": text_ink_pixels,
+		"present": max_accent_row_pixels >= int(image.get_width() * 0.90) and text_ink_pixels >= 220,
+	}
 
 
 func _render_glyph(kind: String, side: int, collapse: bool) -> Image:

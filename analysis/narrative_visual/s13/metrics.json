@@ -1,5 +1,5 @@
 {
-  "checks": 59,
+  "checks": 63,
   "failures": [],
   "glyph_32px_min_pair_diff": 161,
   "glyph_64px_min_pair_diff": 638,
@@ -48,6 +48,30 @@
     1200,
     620
   ],
+  "review_watermark_applied_to": [
+    "role_pair.png",
+    "maze.png",
+    "glyph_sheet.png"
+  ],
+  "review_watermark_height": 38,
+  "review_watermark_pixel_stats": {
+    "glyph_sheet.png": {
+      "max_accent_row_pixels": 1000,
+      "present": true,
+      "text_ink_pixels": 1244
+    },
+    "maze.png": {
+      "max_accent_row_pixels": 1200,
+      "present": true,
+      "text_ink_pixels": 1244
+    },
+    "role_pair.png": {
+      "max_accent_row_pixels": 1200,
+      "present": true,
+      "text_ink_pixels": 1244
+    }
+  },
+  "review_watermark_text": "SYNTHETIC COMPONENT REVIEW · NOT GAMEPLAY",
   "role_card_pair_rgb_diff_pixels": 3998,
   "role_pair_png_size": [
     1200,

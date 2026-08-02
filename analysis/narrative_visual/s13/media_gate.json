@@ -1,0 +1,155 @@
+{
+  "confidence": "high_for_bound_static_review_media_and_executed_local_media_probes_only",
+  "detects": [
+    "three_exact_png_dimensions_and_persistent_watermark_pixel_bands",
+    "fifteen_second_1280x768_component_review_reel",
+    "not_gameplay_title_and_comment_metadata",
+    "watermark_presence_in_each_five_second_video_hold",
+    "source_commit_receipt_and_media_source_manifest_drift"
+  ],
+  "does_not_detect": [
+    "semantic_gameplay_or_production_integration",
+    "watermark_legibility_under_unknown_future_transcodes",
+    "accessibility_localization_or_real_device_raster_quality"
+  ],
+  "images": {
+    "glyph_sheet.png": {
+      "accent_line_y": 322,
+      "line_present": true,
+      "max_accent_row_pixels": 1000,
+      "present": true,
+      "sha256": "05681a5024e934ac43b0e2c2d412f09a02351c90ddc238b7102d24f90726392f",
+      "size": [
+        1000,
+        360
+      ],
+      "text_ink_pixels": 1231,
+      "text_present": true
+    },
+    "maze.png": {
+      "accent_line_y": 582,
+      "line_present": true,
+      "max_accent_row_pixels": 1200,
+      "present": true,
+      "sha256": "8e1a2f4db2cc9d93404cec34c12764c9499038600e6234b9f3a007e2fe620dfa",
+      "size": [
+        1200,
+        620
+      ],
+      "text_ink_pixels": 1231,
+      "text_present": true
+    },
+    "role_pair.png": {
+      "accent_line_y": 612,
+      "line_present": true,
+      "max_accent_row_pixels": 1200,
+      "present": true,
+      "sha256": "15fc06bb15bdb6b12ed7837785dc32f4c2b4a0372e90bcdc4b223e5a6db9284d",
+      "size": [
+        1200,
+        650
+      ],
+      "text_ink_pixels": 1231,
+      "text_present": true
+    }
+  },
+  "issues": [],
+  "manifest": {
+    "entry_count": 14,
+    "metadata": {
+      "main_source_commit": "c1791b044696dcc8276d688bc644b1e6b6226fdb",
+      "media_kind": "static_component_review_not_gameplay",
+      "schema": "s13r-review-media-manifest/v1",
+      "source_receipt_id": "source.receipt.s13r.review_media.c1791b044696",
+      "watermark_text": "SYNTHETIC COMPONENT REVIEW · NOT GAMEPLAY"
+    },
+    "verified": true
+  },
+  "mutation_cases": [
+    {
+      "detected": true,
+      "expected_code": "IMAGE_WATERMARK_MISSING",
+      "id": "mutation.png_watermark_band_erased"
+    },
+    {
+      "detected": true,
+      "expected_code": "VIDEO_TITLE_NOT_GAMEPLAY_MISSING",
+      "id": "mutation.video_not_gameplay_metadata_removed"
+    },
+    {
+      "detected": true,
+      "expected_code": "MANIFEST_HASH_MISMATCH",
+      "id": "mutation.manifest_source_hash_drift"
+    }
+  ],
+  "production_gate": false,
+  "schema_version": "s13r-review-media-gate/v1",
+  "source_receipt": {
+    "main_source_commit": "c1791b044696dcc8276d688bc644b1e6b6226fdb",
+    "source_receipt_id": "source.receipt.s13r.review_media.c1791b044696",
+    "source_sha256": {
+      "analysis/narrative_visual/s13/render_review_media.ps1": "44925fc75062f08c1d79438ded6b38fce4a7f4762709bfe72f40044e3d248f93",
+      "analysis/narrative_visual/s13/report.md": "30b7ec48f8de9279fd8c3bef84293a5d92c18294b3b1db29a4897d55a596eeb5",
+      "analysis/narrative_visual/s13/test_review_media.py": "c58ceba1f0a2d723121d3c209fdeafae48c71277afc33997521f01d1c2e05040",
+      "analysis/narrative_visual/s13/verify_review_media.py": "453cb90d2b6f688f498d078a6810fe8d7a1ee87478b9f9ea91cd84ca58131265",
+      "game/scenes/narrative/s13_visual_test.tscn": "70120a0f1682f77c49c8dfcdcecfa55fd3c460146dc50f24a56b6383ad1554fb",
+      "game/scripts/narrative/NarrativeGlyphs.gd": "452746d85dfae7cbd2ee67a8fbda786d3705bfacf9f946eb5c1ff85f6cb6519a",
+      "game/scripts/narrative/RolePOVCard.gd": "75c7afd21507634cba7c8410720b41b39060ca98cc62896c8e3cebdb0b1ec726",
+      "game/scripts/narrative/WebMazeGraph.gd": "da32711ae626233cce53e2f5afcf03e8dc47080b0b8fe036e00f97a23583ff88",
+      "game/scripts/narrative/tests/s13_visual_test.gd": "43747bd0239b926306e8faa7e7c0b6b30cb5ddcc2e77a909a302b22dd1ca1eff"
+    }
+  },
+  "verdict": "PASS",
+  "video": {
+    "comment": "STATIC REVIEW REEL · NOT GAMEPLAY · three five-second holds from watermarked S13 component PNGs",
+    "duration_seconds": 15.0,
+    "sha256": "54c4060359861a49f3ea2fd20955f20f7e89e6b14dbfb85943d178d504ac9afd",
+    "size": [
+      1280,
+      768
+    ],
+    "title": "SYNTHETIC COMPONENT REVIEW · NOT GAMEPLAY",
+    "watermark_frames": {
+      "glyph_sheet.png": {
+        "accent_line_y": 566,
+        "line_present": true,
+        "max_accent_row_pixels": 1280,
+        "present": true,
+        "size": [
+          1280,
+          768
+        ],
+        "text_ink_pixels": 1605,
+        "text_present": true,
+        "timestamp_seconds": 12.5
+      },
+      "maze.png": {
+        "accent_line_y": 674,
+        "line_present": true,
+        "max_accent_row_pixels": 1280,
+        "present": true,
+        "size": [
+          1280,
+          768
+        ],
+        "text_ink_pixels": 1106,
+        "text_present": true,
+        "timestamp_seconds": 7.5
+      },
+      "role_pair.png": {
+        "accent_line_y": 690,
+        "line_present": true,
+        "max_accent_row_pixels": 1280,
+        "present": true,
+        "size": [
+          1280,
+          768
+        ],
+        "text_ink_pixels": 1102,
+        "text_present": true,
+        "timestamp_seconds": 2.5
+      }
+    }
+  },
+  "watermark_text": "SYNTHETIC COMPONENT REVIEW · NOT GAMEPLAY"
+}
