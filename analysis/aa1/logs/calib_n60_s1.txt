@@ -1,0 +1,7 @@
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+=== X1 margin · agents=60 seeds=1 days=60 ===
+[X1M] {"by_need":{},"days":60,"digest":"3688057865","event_digest":"5481450808827431148","events":18787,"floors":{"energy":26.7399999999987,"fun":15.6400000000078,"hunger":9.07999999999909,"hygiene":26.9600000000004,"social":17.4999999999867},"hard_fails":[],"inv40_detail":"produce=94 consume=282 满足率门下限=0.50·上限=多数不缺；【需求侧落点】豆子(仅 cafe), 话本(仅 home、home2) —— 这些货在 town 平面无满足者 ⇒ 只有进得了该平面的居民才产生需求，分母不随人口涨；产出契约=宏观池 ×60/12｜工作吸引力 ×1.400","max_soclock_key":"npc_37","max_soclock_run":132,"max_starve_run":0,"max_starve_run_key":"","n_agents":60,"seed":1,"social_acc":{"aid":75,"discuss":103,"endorse":188,"give":177,"gossip":81,"gossip_rep":1563,"greet":1807,"invite":339},"social_ref":{"discuss":302,"gossip":357,"gossip_rep":6761,"greet":743},"soclock_ticks":1916,"soft_fails":[],"starve_agents":[],"starved":0,"wall_ms":119933}
+=== X1 margin done  总墙钟=119.9s ===
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)
