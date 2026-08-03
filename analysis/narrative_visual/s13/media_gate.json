@@ -5,12 +5,51 @@
     "fifteen_second_1280x768_component_review_reel",
     "not_gameplay_title_and_comment_metadata",
     "watermark_presence_in_each_five_second_video_hold",
-    "source_commit_receipt_and_media_source_manifest_drift"
+    "anchor_commit_existence_and_descendant_or_equal_lineage",
+    "anchored_commit_blob_head_blob_and_worktree_byte_identity",
+    "manifest_hash_and_live_verifier_source_drift_without_self_reference"
   ],
   "does_not_detect": [
     "semantic_gameplay_or_production_integration",
     "watermark_legibility_under_unknown_future_transcodes",
     "accessibility_localization_or_real_device_raster_quality"
+  ],
+  "git_provenance_mutation_cases": [
+    {
+      "detected": true,
+      "expected_code": "ANCHOR_COMMIT_INVALID",
+      "id": "mutation.anchor_invalid_commit_syntax"
+    },
+    {
+      "detected": true,
+      "expected_code": "ANCHOR_COMMIT_UNREADABLE",
+      "id": "mutation.anchor_unknown_40hex_commit"
+    },
+    {
+      "detected": true,
+      "expected_code": "ANCHOR_OBJECT_NOT_COMMIT",
+      "id": "mutation.anchor_40hex_blob_forgery"
+    },
+    {
+      "detected": true,
+      "expected_code": "HEAD_NOT_DESCENDANT_OF_ANCHOR",
+      "id": "mutation.head_non_ancestor"
+    },
+    {
+      "detected": true,
+      "expected_code": "ANCHORED_HEAD_BLOB_DRIFT",
+      "id": "mutation.anchored_head_blob_drift"
+    },
+    {
+      "detected": true,
+      "expected_code": "ANCHOR_PATH_MISSING",
+      "id": "mutation.anchor_path_missing"
+    },
+    {
+      "detected": true,
+      "expected_code": "ANCHORED_WORKTREE_DRIFT",
+      "id": "mutation.anchored_worktree_drift"
+    }
   ],
   "images": {
     "glyph_sheet.png": {
@@ -54,18 +93,49 @@
     }
   },
   "issues": [],
+  "live_verifier_sources": {
+    "path_count": 4,
+    "sha256": {
+      "analysis/narrative_visual/s13/render_review_media.ps1": "0bf24bb7af529d34f83c627379c04acbc744ce0c4dc1ea4eb1016c0e38078f88",
+      "analysis/narrative_visual/s13/report.md": "ba3d7ae7b7dde6b8cf56f39f6fcb3a7fe703b6f184026df471d12c3af65e69d2",
+      "analysis/narrative_visual/s13/test_review_media.py": "ee99f7c3cd9e8bf0893202d35d04b8f5f189d061457232e470ebe85bb57d8572",
+      "analysis/narrative_visual/s13/verify_review_media.py": "f91fde26e238769dc0a34e4325cf868d5cdc140b90c888b7257e824a232de774"
+    }
+  },
   "manifest": {
+    "anchored_paths": [
+      "analysis/narrative_visual/s13/role_pair.png",
+      "analysis/narrative_visual/s13/maze.png",
+      "analysis/narrative_visual/s13/glyph_sheet.png",
+      "analysis/narrative_visual/s13/component_reel.mp4",
+      "analysis/narrative_visual/s13/metrics.json",
+      "game/scripts/narrative/WebMazeGraph.gd",
+      "game/scripts/narrative/RolePOVCard.gd",
+      "game/scripts/narrative/NarrativeGlyphs.gd",
+      "game/scripts/narrative/tests/s13_visual_test.gd",
+      "game/scenes/narrative/s13_visual_test.tscn"
+    ],
     "entry_count": 14,
+    "live_source_paths": [
+      "analysis/narrative_visual/s13/render_review_media.ps1",
+      "analysis/narrative_visual/s13/verify_review_media.py",
+      "analysis/narrative_visual/s13/test_review_media.py",
+      "analysis/narrative_visual/s13/report.md"
+    ],
     "metadata": {
-      "main_source_commit": "c1791b044696dcc8276d688bc644b1e6b6226fdb",
+      "anchor_commit": "2299db91f8baa082c15aadac4ea9122c2d0a0834",
+      "anchored_paths_json": "[\"analysis/narrative_visual/s13/role_pair.png\",\"analysis/narrative_visual/s13/maze.png\",\"analysis/narrative_visual/s13/glyph_sheet.png\",\"analysis/narrative_visual/s13/component_reel.mp4\",\"analysis/narrative_visual/s13/metrics.json\",\"game/scripts/narrative/WebMazeGraph.gd\",\"game/scripts/narrative/RolePOVCard.gd\",\"game/scripts/narrative/NarrativeGlyphs.gd\",\"game/scripts/narrative/tests/s13_visual_test.gd\",\"game/scenes/narrative/s13_visual_test.tscn\"]",
+      "head_relation": "descendant_or_equal",
+      "live_source_paths_json": "[\"analysis/narrative_visual/s13/render_review_media.ps1\",\"analysis/narrative_visual/s13/verify_review_media.py\",\"analysis/narrative_visual/s13/test_review_media.py\",\"analysis/narrative_visual/s13/report.md\"]",
       "media_kind": "static_component_review_not_gameplay",
-      "schema": "s13r-review-media-manifest/v1",
-      "source_receipt_id": "source.receipt.s13r.review_media.c1791b044696",
+      "schema": "s13r-review-media-manifest/v2",
+      "source_receipt_id": "source.receipt.s13r.review_media.2299db91f8ba",
       "watermark_text": "SYNTHETIC COMPONENT REVIEW · NOT GAMEPLAY"
     },
+    "self_referential": false,
     "verified": true
   },
-  "mutation_cases": [
+  "media_mutation_cases": [
     {
       "detected": true,
       "expected_code": "IMAGE_WATERMARK_MISSING",
@@ -83,21 +153,25 @@
     }
   ],
   "production_gate": false,
-  "schema_version": "s13r-review-media-gate/v1",
+  "schema_version": "s13r-review-media-gate/v2",
   "source_receipt": {
-    "main_source_commit": "c1791b044696dcc8276d688bc644b1e6b6226fdb",
-    "source_receipt_id": "source.receipt.s13r.review_media.c1791b044696",
-    "source_sha256": {
-      "analysis/narrative_visual/s13/render_review_media.ps1": "44925fc75062f08c1d79438ded6b38fce4a7f4762709bfe72f40044e3d248f93",
-      "analysis/narrative_visual/s13/report.md": "30b7ec48f8de9279fd8c3bef84293a5d92c18294b3b1db29a4897d55a596eeb5",
-      "analysis/narrative_visual/s13/test_review_media.py": "c58ceba1f0a2d723121d3c209fdeafae48c71277afc33997521f01d1c2e05040",
-      "analysis/narrative_visual/s13/verify_review_media.py": "453cb90d2b6f688f498d078a6810fe8d7a1ee87478b9f9ea91cd84ca58131265",
+    "anchor_commit": "2299db91f8baa082c15aadac4ea9122c2d0a0834",
+    "anchored_path_count": 10,
+    "anchored_sha256": {
+      "analysis/narrative_visual/s13/component_reel.mp4": "54c4060359861a49f3ea2fd20955f20f7e89e6b14dbfb85943d178d504ac9afd",
+      "analysis/narrative_visual/s13/glyph_sheet.png": "05681a5024e934ac43b0e2c2d412f09a02351c90ddc238b7102d24f90726392f",
+      "analysis/narrative_visual/s13/maze.png": "8e1a2f4db2cc9d93404cec34c12764c9499038600e6234b9f3a007e2fe620dfa",
+      "analysis/narrative_visual/s13/metrics.json": "8f3201d7da7d7627dc13531c475d07defa3c05cd37284c4a7ac949fb68486534",
+      "analysis/narrative_visual/s13/role_pair.png": "15fc06bb15bdb6b12ed7837785dc32f4c2b4a0372e90bcdc4b223e5a6db9284d",
       "game/scenes/narrative/s13_visual_test.tscn": "70120a0f1682f77c49c8dfcdcecfa55fd3c460146dc50f24a56b6383ad1554fb",
       "game/scripts/narrative/NarrativeGlyphs.gd": "452746d85dfae7cbd2ee67a8fbda786d3705bfacf9f946eb5c1ff85f6cb6519a",
       "game/scripts/narrative/RolePOVCard.gd": "75c7afd21507634cba7c8410720b41b39060ca98cc62896c8e3cebdb0b1ec726",
       "game/scripts/narrative/WebMazeGraph.gd": "da32711ae626233cce53e2f5afcf03e8dc47080b0b8fe036e00f97a23583ff88",
       "game/scripts/narrative/tests/s13_visual_test.gd": "43747bd0239b926306e8faa7e7c0b6b30cb5ddcc2e77a909a302b22dd1ca1eff"
-    }
+    },
+    "head_relation": "descendant_or_equal",
+    "lineage_verified": true,
+    "source_receipt_id": "source.receipt.s13r.review_media.2299db91f8ba"
   },
   "verdict": "PASS",
   "video": {

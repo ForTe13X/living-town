@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import importlib.util
+import json
 import shutil
 import tempfile
 import unittest
@@ -36,6 +37,14 @@ class S13RReviewMediaTests(unittest.TestCase):
         self.assertTrue(
             all(item["present"] for item in report["video"]["watermark_frames"].values())
         )
+        self.assertEqual(VERIFY.ANCHOR_COMMIT, report["source_receipt"]["anchor_commit"])
+        self.assertEqual("descendant_or_equal", report["source_receipt"]["head_relation"])
+        self.assertTrue(report["source_receipt"]["lineage_verified"])
+        self.assertEqual(
+            len(VERIFY.ANCHORED_PATHS),
+            report["source_receipt"]["anchored_path_count"],
+        )
+        self.assertFalse(report["manifest"]["self_referential"])
 
     def test_02_erased_png_watermark_band_fails(self) -> None:
         with tempfile.TemporaryDirectory() as raw_temp:
@@ -58,6 +67,49 @@ class S13RReviewMediaTests(unittest.TestCase):
         mutated["analysis/narrative_visual/s13/role_pair.png"] = "0" * 64
         issues = VERIFY.verify_manifest(ROOT, metadata, mutated)
         self.assertTrue(any(issue.startswith("MANIFEST_HASH_MISMATCH") for issue in issues))
+
+    def test_05_anchor_is_real_ancestor_and_all_declared_blobs_are_exact(self) -> None:
+        metadata, entries = VERIFY.parse_manifest(MEDIA_DIR / "media_manifest.sha256")
+        receipt = VERIFY.verify_anchor_receipt(
+            ROOT,
+            metadata["anchor_commit"],
+            VERIFY.ANCHORED_PATHS,
+            entries,
+        )
+        self.assertEqual([], receipt["issues"])
+        self.assertTrue(receipt["lineage_verified"])
+        self.assertEqual("descendant_or_equal", receipt["head_relation"])
+        self.assertEqual(set(VERIFY.ANCHORED_PATHS), set(receipt["anchored_sha256"]))
+
+    def test_06_invalid_and_unknown_40hex_commits_fail_closed(self) -> None:
+        invalid = VERIFY.verify_anchor_receipt(ROOT, "not-a-commit", (), {})
+        unknown = VERIFY.verify_anchor_receipt(ROOT, "f" * 40, (), {})
+        self.assertIn("ANCHOR_COMMIT_INVALID", invalid["issues"])
+        self.assertIn("ANCHOR_COMMIT_UNREADABLE", unknown["issues"])
+
+    def test_07_forged_40hex_blob_is_not_accepted_as_a_commit(self) -> None:
+        blob = VERIFY._git(
+            ROOT,
+            "rev-parse",
+            f"HEAD:{VERIFY.ANCHORED_PATHS[0]}",
+        ).stdout.decode().strip()
+        self.assertEqual(40, len(blob))
+        report = VERIFY.verify_anchor_receipt(ROOT, blob, (), {})
+        self.assertIn("ANCHOR_OBJECT_NOT_COMMIT", report["issues"])
+
+    def test_08_real_git_provenance_mutations_are_all_detected(self) -> None:
+        cases = VERIFY.run_git_mutation_probes(ROOT)
+        expected = {
+            "mutation.anchor_invalid_commit_syntax",
+            "mutation.anchor_unknown_40hex_commit",
+            "mutation.anchor_40hex_blob_forgery",
+            "mutation.head_non_ancestor",
+            "mutation.anchored_head_blob_drift",
+            "mutation.anchor_path_missing",
+            "mutation.anchored_worktree_drift",
+        }
+        self.assertEqual(expected, {case["id"] for case in cases})
+        self.assertTrue(all(case["detected"] for case in cases), json.dumps(cases, indent=2))
 
 
 if __name__ == "__main__":

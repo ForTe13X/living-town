@@ -3,7 +3,8 @@ param(
     [string]$Godot = "godot",
     [string]$Ffmpeg = "ffmpeg",
     [string]$Ffprobe = "ffprobe",
-    [string]$Uv = "uv"
+    [string]$Uv = "uv",
+    [switch]$Check
 )
 
 $ErrorActionPreference = "Stop"
@@ -28,13 +29,20 @@ Write-Host "[S13R] headless structure/privacy gate"
 & $Godot --headless --path $gameRoot $scene -- --logic-only --no-output
 Assert-ExitCode -Expected 0 -Label "Godot headless gate"
 
-Write-Host "[S13R] real framebuffer render"
-& $Godot --path $gameRoot $scene -- --out $mediaDir
-Assert-ExitCode -Expected 0 -Label "Godot framebuffer gate"
+if ($Check) {
+    Write-Host "[S13R] read-only real-framebuffer negative control"
+    & $Godot --path $gameRoot $scene -- --negative-control --no-output
+    Assert-ExitCode -Expected 7 -Label "Godot framebuffer negative control"
+}
+else {
+    Write-Host "[S13R] real framebuffer render"
+    & $Godot --path $gameRoot $scene -- --out $mediaDir
+    Assert-ExitCode -Expected 0 -Label "Godot framebuffer gate"
 
-Write-Host "[S13R] real framebuffer negative control"
-& $Godot --path $gameRoot $scene -- --negative-control --no-output
-Assert-ExitCode -Expected 7 -Label "Godot negative control"
+    Write-Host "[S13R] real framebuffer negative control"
+    & $Godot --path $gameRoot $scene -- --negative-control --no-output
+    Assert-ExitCode -Expected 7 -Label "Godot negative control"
+}
 
 $rolePair = Join-Path $mediaDir "role_pair.png"
 $maze = Join-Path $mediaDir "maze.png"
@@ -49,22 +57,21 @@ $filter = @(
 $title = $watermark
 $comment = "STATIC REVIEW REEL $separator NOT GAMEPLAY $separator three five-second holds from watermarked S13 component PNGs"
 
-Write-Host "[S13R] assemble 15-second static component review reel"
-& $Ffmpeg -v error `
-    -loop 1 -t 5 -i $rolePair `
-    -loop 1 -t 5 -i $maze `
-    -loop 1 -t 5 -i $glyphSheet `
-    -filter_complex $filter `
-    -map "[v]" -an -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p -r 30 `
-    -metadata "title=$title" -metadata "comment=$comment" -movflags +faststart -y $reel
-Assert-ExitCode -Expected 0 -Label "ffmpeg review reel"
-
-$sourceCommit = (& git -C $resolvedRoot rev-parse HEAD).Trim().ToLowerInvariant()
-if ($LASTEXITCODE -ne 0 -or $sourceCommit.Length -ne 40) {
-    throw "Could not resolve the main source commit"
+if (-not $Check) {
+    Write-Host "[S13R] assemble 15-second static component review reel"
+    & $Ffmpeg -v error `
+        -loop 1 -t 5 -i $rolePair `
+        -loop 1 -t 5 -i $maze `
+        -loop 1 -t 5 -i $glyphSheet `
+        -filter_complex $filter `
+        -map "[v]" -an -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p -r 30 `
+        -metadata "title=$title" -metadata "comment=$comment" -movflags +faststart -y $reel
+    Assert-ExitCode -Expected 0 -Label "ffmpeg review reel"
 }
-$sourceReceipt = "source.receipt.s13r.review_media.$($sourceCommit.Substring(0, 12))"
-$manifestRelatives = @(
+
+$anchorCommit = "2299db91f8baa082c15aadac4ea9122c2d0a0834"
+$sourceReceipt = "source.receipt.s13r.review_media.2299db91f8ba"
+$anchoredRelatives = @(
     "analysis/narrative_visual/s13/role_pair.png",
     "analysis/narrative_visual/s13/maze.png",
     "analysis/narrative_visual/s13/glyph_sheet.png",
@@ -74,42 +81,57 @@ $manifestRelatives = @(
     "game/scripts/narrative/RolePOVCard.gd",
     "game/scripts/narrative/NarrativeGlyphs.gd",
     "game/scripts/narrative/tests/s13_visual_test.gd",
-    "game/scenes/narrative/s13_visual_test.tscn",
+    "game/scenes/narrative/s13_visual_test.tscn"
+)
+$liveSourceRelatives = @(
     "analysis/narrative_visual/s13/render_review_media.ps1",
     "analysis/narrative_visual/s13/verify_review_media.py",
     "analysis/narrative_visual/s13/test_review_media.py",
     "analysis/narrative_visual/s13/report.md"
 )
-$manifestLines = @(
-    "# schema=s13r-review-media-manifest/v1",
-    "# main_source_commit=$sourceCommit",
-    "# source_receipt_id=$sourceReceipt",
-    "# watermark_text=$watermark",
-    "# media_kind=static_component_review_not_gameplay"
-)
-foreach ($relative in $manifestRelatives) {
-    $absolute = Join-Path $resolvedRoot ($relative -replace "/", "\")
-    if (-not (Test-Path -LiteralPath $absolute -PathType Leaf)) {
-        throw "Manifest source missing: $relative"
+$manifestRelatives = @($anchoredRelatives) + @($liveSourceRelatives)
+if (-not $Check) {
+    $anchoredJson = ConvertTo-Json -Compress -InputObject @($anchoredRelatives)
+    $liveSourceJson = ConvertTo-Json -Compress -InputObject @($liveSourceRelatives)
+    $manifestLines = @(
+        "# schema=s13r-review-media-manifest/v2",
+        "# anchor_commit=$anchorCommit",
+        "# source_receipt_id=$sourceReceipt",
+        "# head_relation=descendant_or_equal",
+        "# anchored_paths_json=$anchoredJson",
+        "# live_source_paths_json=$liveSourceJson",
+        "# watermark_text=$watermark",
+        "# media_kind=static_component_review_not_gameplay"
+    )
+    foreach ($relative in $manifestRelatives) {
+        $absolute = Join-Path $resolvedRoot ($relative -replace "/", "\")
+        if (-not (Test-Path -LiteralPath $absolute -PathType Leaf)) {
+            throw "Manifest source missing: $relative"
+        }
+        $digest = (Get-FileHash -LiteralPath $absolute -Algorithm SHA256).Hash.ToLowerInvariant()
+        $manifestLines += "$digest  $relative"
     }
-    $digest = (Get-FileHash -LiteralPath $absolute -Algorithm SHA256).Hash.ToLowerInvariant()
-    $manifestLines += "$digest  $relative"
+    $manifestPath = Join-Path $mediaDir "media_manifest.sha256"
+    [System.IO.File]::WriteAllLines(
+        $manifestPath,
+        $manifestLines,
+        [System.Text.UTF8Encoding]::new($false)
+    )
 }
-$manifestPath = Join-Path $mediaDir "media_manifest.sha256"
-[System.IO.File]::WriteAllLines(
-    $manifestPath,
-    $manifestLines,
-    [System.Text.UTF8Encoding]::new($false)
-)
 
 $verifier = Join-Path $mediaDir "verify_review_media.py"
 $gate = Join-Path $mediaDir "media_gate.json"
 Write-Host "[S13R] live media/source gate"
-& $Uv run python $verifier --root $resolvedRoot --ffmpeg $Ffmpeg --ffprobe $Ffprobe --out $gate
+if ($Check) {
+    & $Uv run python $verifier --root $resolvedRoot --ffmpeg $Ffmpeg --ffprobe $Ffprobe --check
+}
+else {
+    & $Uv run python $verifier --root $resolvedRoot --ffmpeg $Ffmpeg --ffprobe $Ffprobe --out $gate
+}
 Assert-ExitCode -Expected 0 -Label "S13R media gate"
 
 Write-Host "[S13R] mutation and exact-artifact tests"
 & $Uv run python -m unittest -q analysis.narrative_visual.s13.test_review_media
 Assert-ExitCode -Expected 0 -Label "S13R media tests"
 
-Write-Host "[S13R] PASS $sourceReceipt"
+Write-Host "[S13R] PASS $sourceReceipt (anchor $anchorCommit; check=$Check)"

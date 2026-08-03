@@ -4,6 +4,7 @@ import argparse
 import copy
 import hashlib
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -14,6 +15,8 @@ from PIL import Image, ImageDraw
 
 
 WATERMARK_TEXT = "SYNTHETIC COMPONENT REVIEW · NOT GAMEPLAY"
+ANCHOR_COMMIT = "2299db91f8baa082c15aadac4ea9122c2d0a0834"
+SOURCE_RECEIPT_ID = "source.receipt.s13r.review_media.2299db91f8ba"
 EXPECTED_IMAGES = {
     "role_pair.png": (1200, 650),
     "maze.png": (1200, 620),
@@ -26,22 +29,137 @@ VIDEO_FRAME_TIMES = {
     "maze.png": 7.5,
     "glyph_sheet.png": 12.5,
 }
-SOURCE_PATHS = (
+ANCHORED_SOURCE_PATHS = (
     "game/scripts/narrative/WebMazeGraph.gd",
     "game/scripts/narrative/RolePOVCard.gd",
     "game/scripts/narrative/NarrativeGlyphs.gd",
     "game/scripts/narrative/tests/s13_visual_test.gd",
     "game/scenes/narrative/s13_visual_test.tscn",
+)
+LIVE_VERIFIER_SOURCE_PATHS = (
     "analysis/narrative_visual/s13/render_review_media.ps1",
     "analysis/narrative_visual/s13/verify_review_media.py",
     "analysis/narrative_visual/s13/test_review_media.py",
     "analysis/narrative_visual/s13/report.md",
 )
 MEDIA_PATHS = tuple(EXPECTED_IMAGES) + ("component_reel.mp4", "metrics.json")
+ANCHORED_MEDIA_PATHS = tuple(
+    f"analysis/narrative_visual/s13/{name}" for name in MEDIA_PATHS
+)
+ANCHORED_PATHS = ANCHORED_MEDIA_PATHS + ANCHORED_SOURCE_PATHS
+MANIFEST_PATHS = ANCHORED_PATHS + LIVE_VERIFIER_SOURCE_PATHS
+MANIFEST_RELATIVE = "analysis/narrative_visual/s13/media_manifest.sha256"
+GATE_RELATIVE = "analysis/narrative_visual/s13/media_gate.json"
+_COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 
 
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def sha256_bytes(value: bytes) -> str:
+    return hashlib.sha256(value).hexdigest()
+
+
+def _git(root: Path, *args: str) -> subprocess.CompletedProcess[bytes]:
+    return subprocess.run(
+        ["git", *args],
+        cwd=root,
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+
+def verify_anchor_receipt(
+    root: Path,
+    anchor_commit: str,
+    anchored_paths: tuple[str, ...],
+    expected_hashes: dict[str, str],
+) -> dict[str, Any]:
+    """Bind declared paths to one commit, current HEAD, and the live worktree."""
+    root = root.resolve()
+    issues: list[str] = []
+    anchored_sha256: dict[str, str] = {}
+    if not _COMMIT_RE.fullmatch(anchor_commit):
+        return {
+            "anchor_commit": anchor_commit,
+            "head_relation": "unverified",
+            "lineage_verified": False,
+            "anchored_path_count": len(anchored_paths),
+            "anchored_sha256": {},
+            "issues": ["ANCHOR_COMMIT_INVALID"],
+        }
+
+    object_type = _git(root, "cat-file", "-t", anchor_commit)
+    if object_type.returncode != 0:
+        return {
+            "anchor_commit": anchor_commit,
+            "head_relation": "unverified",
+            "lineage_verified": False,
+            "anchored_path_count": len(anchored_paths),
+            "anchored_sha256": {},
+            "issues": ["ANCHOR_COMMIT_UNREADABLE"],
+        }
+    if object_type.stdout.strip() != b"commit":
+        return {
+            "anchor_commit": anchor_commit,
+            "head_relation": "unverified",
+            "lineage_verified": False,
+            "anchored_path_count": len(anchored_paths),
+            "anchored_sha256": {},
+            "issues": ["ANCHOR_OBJECT_NOT_COMMIT"],
+        }
+
+    lineage = _git(root, "merge-base", "--is-ancestor", anchor_commit, "HEAD")
+    if lineage.returncode == 1:
+        issues.append("HEAD_NOT_DESCENDANT_OF_ANCHOR")
+    elif lineage.returncode != 0:
+        issues.append(f"GIT_LINEAGE_ERROR:{lineage.returncode}")
+    lineage_verified = lineage.returncode == 0
+    if not lineage_verified:
+        return {
+            "anchor_commit": anchor_commit,
+            "head_relation": "not_descendant",
+            "lineage_verified": False,
+            "anchored_path_count": len(anchored_paths),
+            "anchored_sha256": {},
+            "issues": sorted(issues),
+        }
+
+    for relative in anchored_paths:
+        anchor_blob = _git(root, "show", f"{anchor_commit}:{relative}")
+        if anchor_blob.returncode != 0:
+            issues.append(f"ANCHOR_PATH_MISSING:{relative}")
+            continue
+        anchor_hash = sha256_bytes(anchor_blob.stdout)
+        anchored_sha256[relative] = anchor_hash
+        expected_hash = expected_hashes.get(relative)
+        if expected_hash != anchor_hash:
+            issues.append(
+                f"ANCHOR_MANIFEST_HASH_MISMATCH:{relative}:{expected_hash}:{anchor_hash}"
+            )
+
+        head_blob = _git(root, "show", f"HEAD:{relative}")
+        if head_blob.returncode != 0:
+            issues.append(f"HEAD_PATH_MISSING:{relative}")
+        elif head_blob.stdout != anchor_blob.stdout:
+            issues.append(f"ANCHORED_HEAD_BLOB_DRIFT:{relative}")
+
+        worktree_path = root / relative
+        if not worktree_path.is_file():
+            issues.append(f"ANCHORED_WORKTREE_PATH_MISSING:{relative}")
+        elif worktree_path.read_bytes() != anchor_blob.stdout:
+            issues.append(f"ANCHORED_WORKTREE_DRIFT:{relative}")
+
+    return {
+        "anchor_commit": anchor_commit,
+        "head_relation": "descendant_or_equal",
+        "lineage_verified": lineage_verified,
+        "anchored_path_count": len(anchored_paths),
+        "anchored_sha256": anchored_sha256,
+        "issues": sorted(issues),
+    }
 
 
 def _run_json(command: list[str]) -> dict[str, Any]:
@@ -209,22 +327,26 @@ def parse_manifest(path: Path) -> tuple[dict[str, str], dict[str, str]]:
 
 def verify_manifest(root: Path, metadata: dict[str, str], entries: dict[str, str]) -> list[str]:
     issues: list[str] = []
-    commit = metadata.get("main_source_commit", "")
-    if len(commit) != 40 or any(character not in "0123456789abcdef" for character in commit.lower()):
-        issues.append("MANIFEST_MAIN_COMMIT_INVALID")
-    receipt = metadata.get("source_receipt_id", "")
-    if not receipt.startswith("source.receipt.s13r.review_media."):
-        issues.append("MANIFEST_SOURCE_RECEIPT_INVALID")
-    if metadata.get("schema") != "s13r-review-media-manifest/v1":
+    anchor_commit = metadata.get("anchor_commit", "")
+    if anchor_commit != ANCHOR_COMMIT:
+        issues.append("MANIFEST_ANCHOR_COMMIT_MISMATCH")
+    if metadata.get("source_receipt_id") != SOURCE_RECEIPT_ID:
+        issues.append("MANIFEST_SOURCE_RECEIPT_MISMATCH")
+    if metadata.get("head_relation") != "descendant_or_equal":
+        issues.append("MANIFEST_HEAD_RELATION_INVALID")
+    if metadata.get("schema") != "s13r-review-media-manifest/v2":
         issues.append("MANIFEST_SCHEMA_INVALID")
     if metadata.get("watermark_text") != WATERMARK_TEXT:
         issues.append("MANIFEST_WATERMARK_TEXT_MISMATCH")
     if metadata.get("media_kind") != "static_component_review_not_gameplay":
         issues.append("MANIFEST_MEDIA_KIND_INVALID")
-    required = {
-        *(f"analysis/narrative_visual/s13/{name}" for name in MEDIA_PATHS),
-        *SOURCE_PATHS,
-    }
+    expected_anchored_json = json.dumps(list(ANCHORED_PATHS), separators=(",", ":"))
+    expected_live_json = json.dumps(list(LIVE_VERIFIER_SOURCE_PATHS), separators=(",", ":"))
+    if metadata.get("anchored_paths_json") != expected_anchored_json:
+        issues.append("MANIFEST_ANCHORED_PATHS_INVALID")
+    if metadata.get("live_source_paths_json") != expected_live_json:
+        issues.append("MANIFEST_LIVE_SOURCE_PATHS_INVALID")
+    required = set(MANIFEST_PATHS)
     if set(entries) != required:
         issues.append(
             "MANIFEST_ENTRY_SET_MISMATCH:"
@@ -232,7 +354,12 @@ def verify_manifest(root: Path, metadata: dict[str, str], entries: dict[str, str
             + ":"
             + repr(sorted(set(entries) - required))
         )
+    if MANIFEST_RELATIVE in entries or GATE_RELATIVE in entries:
+        issues.append("MANIFEST_SELF_REFERENCE_FORBIDDEN")
     for relative, expected in sorted(entries.items()):
+        if not re.fullmatch(r"[0-9a-f]{64}", expected):
+            issues.append(f"MANIFEST_HASH_INVALID:{relative}")
+            continue
         path = root / relative
         if not path.is_file():
             issues.append(f"MANIFEST_SOURCE_MISSING:{relative}")
@@ -243,8 +370,143 @@ def verify_manifest(root: Path, metadata: dict[str, str], entries: dict[str, str
     return issues
 
 
-def _source_hashes(root: Path) -> dict[str, str]:
-    return {relative: sha256(root / relative) for relative in SOURCE_PATHS}
+def _live_source_hashes(root: Path) -> dict[str, str]:
+    return {relative: sha256(root / relative) for relative in LIVE_VERIFIER_SOURCE_PATHS}
+
+
+def _init_probe_repo(path: Path) -> tuple[str, str]:
+    path.mkdir(parents=True)
+    for args in (
+        ("init", "-q"),
+        ("config", "user.email", "s13-probe@example.invalid"),
+        ("config", "user.name", "S13 Probe"),
+    ):
+        completed = _git(path, *args)
+        if completed.returncode != 0:
+            raise RuntimeError(f"probe git command failed: {args!r}")
+    marker = path / "anchored.txt"
+    marker.write_bytes(b"anchor\n")
+    for args in (("add", "anchored.txt"), ("commit", "-q", "-m", "anchor")):
+        completed = _git(path, *args)
+        if completed.returncode != 0:
+            raise RuntimeError(f"probe git command failed: {args!r}")
+    anchor = _git(path, "rev-parse", "HEAD").stdout.decode().strip()
+    blob = _git(path, "rev-parse", "HEAD:anchored.txt").stdout.decode().strip()
+    return anchor, blob
+
+
+def _probe_detected(report: dict[str, Any], expected_code: str) -> bool:
+    return any(
+        issue == expected_code or issue.startswith(expected_code + ":")
+        for issue in report["issues"]
+    )
+
+
+def run_git_mutation_probes(root: Path) -> list[dict[str, Any]]:
+    """Execute cheap real-Git negative controls; no result is self-attested."""
+    cases: list[dict[str, Any]] = []
+
+    def record(case_id: str, expected_code: str, report: dict[str, Any]) -> None:
+        cases.append(
+            {
+                "id": case_id,
+                "expected_code": expected_code,
+                "detected": _probe_detected(report, expected_code),
+            }
+        )
+
+    record(
+        "mutation.anchor_invalid_commit_syntax",
+        "ANCHOR_COMMIT_INVALID",
+        verify_anchor_receipt(root, "not-a-commit", (), {}),
+    )
+    record(
+        "mutation.anchor_unknown_40hex_commit",
+        "ANCHOR_COMMIT_UNREADABLE",
+        verify_anchor_receipt(root, "f" * 40, (), {}),
+    )
+    canonical_blob = _git(root, "rev-parse", f"HEAD:{ANCHORED_PATHS[0]}").stdout.decode().strip()
+    record(
+        "mutation.anchor_40hex_blob_forgery",
+        "ANCHOR_OBJECT_NOT_COMMIT",
+        verify_anchor_receipt(root, canonical_blob, (), {}),
+    )
+
+    with tempfile.TemporaryDirectory() as raw_temp:
+        temp = Path(raw_temp)
+
+        nonancestor = temp / "nonancestor"
+        anchor, _ = _init_probe_repo(nonancestor)
+        branch = _git(nonancestor, "symbolic-ref", "--short", "HEAD").stdout.decode().strip()
+        _git(nonancestor, "switch", "-q", "--orphan", "isolated")
+        if (nonancestor / "anchored.txt").exists():
+            (nonancestor / "anchored.txt").unlink()
+        (nonancestor / "isolated.txt").write_bytes(b"isolated\n")
+        _git(nonancestor, "add", "-A")
+        _git(nonancestor, "commit", "-q", "-m", "isolated")
+        nonancestor_report = verify_anchor_receipt(
+            nonancestor,
+            anchor,
+            ("anchored.txt",),
+            {"anchored.txt": sha256_bytes(b"anchor\n")},
+        )
+        record(
+            "mutation.head_non_ancestor",
+            "HEAD_NOT_DESCENDANT_OF_ANCHOR",
+            nonancestor_report,
+        )
+        # Keep the local branch name exercised so a malformed symbolic ref cannot
+        # silently turn this into an unborn-HEAD test.
+        if not branch:
+            cases[-1]["detected"] = False
+
+        drift = temp / "drift"
+        anchor, _ = _init_probe_repo(drift)
+        (drift / "anchored.txt").write_bytes(b"descendant drift\n")
+        _git(drift, "add", "anchored.txt")
+        _git(drift, "commit", "-q", "-m", "drift")
+        drift_report = verify_anchor_receipt(
+            drift,
+            anchor,
+            ("anchored.txt",),
+            {"anchored.txt": sha256_bytes(b"anchor\n")},
+        )
+        record(
+            "mutation.anchored_head_blob_drift",
+            "ANCHORED_HEAD_BLOB_DRIFT",
+            drift_report,
+        )
+
+        missing = temp / "missing"
+        anchor, _ = _init_probe_repo(missing)
+        missing_report = verify_anchor_receipt(
+            missing,
+            anchor,
+            ("missing.txt",),
+            {"missing.txt": "0" * 64},
+        )
+        record(
+            "mutation.anchor_path_missing",
+            "ANCHOR_PATH_MISSING",
+            missing_report,
+        )
+
+        worktree = temp / "worktree"
+        anchor, _ = _init_probe_repo(worktree)
+        (worktree / "anchored.txt").write_bytes(b"worktree drift\n")
+        worktree_report = verify_anchor_receipt(
+            worktree,
+            anchor,
+            ("anchored.txt",),
+            {"anchored.txt": sha256_bytes(b"anchor\n")},
+        )
+        record(
+            "mutation.anchored_worktree_drift",
+            "ANCHORED_WORKTREE_DRIFT",
+            worktree_report,
+        )
+
+    return cases
 
 
 def audit_canonical(root: Path, *, ffmpeg: str, ffprobe: str) -> dict[str, Any]:
@@ -284,26 +546,47 @@ def audit_canonical(root: Path, *, ffmpeg: str, ffprobe: str) -> dict[str, Any]:
     manifest_metadata, manifest_entries = parse_manifest(manifest_path)
     issues.extend(verify_manifest(root, manifest_metadata, manifest_entries))
 
-    source_commit = manifest_metadata.get("main_source_commit", "")
+    anchor_commit = manifest_metadata.get("anchor_commit", "")
     source_receipt_id = manifest_metadata.get("source_receipt_id", "")
+    anchor_receipt = verify_anchor_receipt(
+        root,
+        anchor_commit,
+        ANCHORED_PATHS,
+        manifest_entries,
+    )
+    issues.extend(anchor_receipt["issues"])
+    mutation_cases = run_git_mutation_probes(root)
+    for mutation in mutation_cases:
+        if not mutation["detected"]:
+            issues.append(f"MUTATION_FALSE_GREEN:{mutation['id']}")
     return {
-        "schema_version": "s13r-review-media-gate/v1",
+        "schema_version": "s13r-review-media-gate/v2",
         "verdict": "PASS" if not issues else "FAIL",
         "production_gate": False,
         "watermark_text": WATERMARK_TEXT,
         "source_receipt": {
-            "main_source_commit": source_commit,
+            "anchor_commit": anchor_commit,
             "source_receipt_id": source_receipt_id,
-            "source_sha256": _source_hashes(root),
+            "head_relation": anchor_receipt["head_relation"],
+            "lineage_verified": anchor_receipt["lineage_verified"],
+            "anchored_path_count": anchor_receipt["anchored_path_count"],
+            "anchored_sha256": anchor_receipt["anchored_sha256"],
+        },
+        "live_verifier_sources": {
+            "path_count": len(LIVE_VERIFIER_SOURCE_PATHS),
+            "sha256": _live_source_hashes(root),
         },
         "images": image_reports,
         "video": video_summary,
         "manifest": {
             "metadata": manifest_metadata,
             "entry_count": len(manifest_entries),
+            "anchored_paths": list(ANCHORED_PATHS),
+            "live_source_paths": list(LIVE_VERIFIER_SOURCE_PATHS),
+            "self_referential": MANIFEST_RELATIVE in manifest_entries or GATE_RELATIVE in manifest_entries,
             "verified": not any(issue.startswith("MANIFEST_") for issue in issues),
         },
-        "mutation_cases": [
+        "media_mutation_cases": [
             {
                 "id": "mutation.png_watermark_band_erased",
                 "expected_code": "IMAGE_WATERMARK_MISSING",
@@ -320,13 +603,16 @@ def audit_canonical(root: Path, *, ffmpeg: str, ffprobe: str) -> dict[str, Any]:
                 "detected": True,
             },
         ],
+        "git_provenance_mutation_cases": mutation_cases,
         "issues": sorted(issues),
         "detects": [
             "three_exact_png_dimensions_and_persistent_watermark_pixel_bands",
             "fifteen_second_1280x768_component_review_reel",
             "not_gameplay_title_and_comment_metadata",
             "watermark_presence_in_each_five_second_video_hold",
-            "source_commit_receipt_and_media_source_manifest_drift",
+            "anchor_commit_existence_and_descendant_or_equal_lineage",
+            "anchored_commit_blob_head_blob_and_worktree_byte_identity",
+            "manifest_hash_and_live_verifier_source_drift_without_self_reference",
         ],
         "does_not_detect": [
             "semantic_gameplay_or_production_integration",
@@ -354,7 +640,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--ffmpeg", required=True)
     parser.add_argument("--ffprobe", required=True)
-    parser.add_argument("--out", type=Path)
+    output = parser.add_mutually_exclusive_group()
+    output.add_argument("--out", type=Path)
+    output.add_argument(
+        "--check",
+        action="store_true",
+        help="verify and emit JSON to stdout without writing any artifact",
+    )
     return parser.parse_args()
 
 
@@ -364,7 +656,7 @@ def main() -> int:
         report = audit_canonical(args.root, ffmpeg=args.ffmpeg, ffprobe=args.ffprobe)
     except Exception as exc:
         report = {
-            "schema_version": "s13r-review-media-gate/v1",
+            "schema_version": "s13r-review-media-gate/v2",
             "verdict": "FAIL",
             "production_gate": False,
             "issues": [f"MEDIA_GATE_ERROR:{type(exc).__name__}:{exc}"],

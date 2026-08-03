@@ -4,9 +4,9 @@ Date: 2026-08-02
 
 Component source baseline: `ef50720` (`feat: add role-filtered narrative view contract`)
 
-S13R media-hardening baseline: `c1791b044696dcc8276d688bc644b1e6b6226fdb`
+S13R media/provenance anchor: `2299db91f8baa082c15aadac4ea9122c2d0a0834`
 
-Source receipt: `source.receipt.s13r.review_media.c1791b044696`
+Source receipt: `source.receipt.s13r.review_media.2299db91f8ba`
 
 ## Outcome
 
@@ -15,6 +15,8 @@ Source receipt: `source.receipt.s13r.review_media.c1791b044696`
 - The hidden node ID, hidden claim prose, and hidden fragment body are absent from both snapshots and the rendered node trees.
 - All 15 glyph pairs differ at both 64 px (1x) and 32 px (0.5x).
 - Every exported review PNG permanently carries `SYNTHETIC COMPONENT REVIEW · NOT GAMEPLAY`; the static reel preserves that mark in all three holds and repeats `NOT GAMEPLAY` in MP4 title/comment metadata.
+- The ten declared media/component paths are byte-compared across the fixed `2299db9` commit, current committed `HEAD`, and the live worktree; current `HEAD` must be that anchor or its descendant.
+- The four mutable verifier/build/report paths are separately listed and live-hashed. Neither the manifest nor its generated gate is allowed to hash itself.
 - This evidence is a synthetic static component review. It is not gameplay capture and is not production integration evidence.
 
 ## Commands and results
@@ -26,13 +28,21 @@ The reproducible entry point accepts explicit Godot, ffmpeg, and ffprobe command
   -RepoRoot . -Godot godot -Ffmpeg ffmpeg -Ffprobe ffprobe -Uv uv
 ```
 
+A read-only recheck performs the real-framebuffer negative control but writes no framebuffer capture, media, manifest, or gate artifact:
+
+```powershell
+& analysis/narrative_visual/s13/render_review_media.ps1 `
+  -RepoRoot . -Godot godot -Ffmpeg ffmpeg -Ffprobe ffprobe -Uv uv -Check
+```
+
 Executed sub-gates:
 
 - headless structure/privacy: `S13 VISUAL: PASS (21 checks, 0 fail)`;
 - real OpenGL framebuffer render: `S13 VISUAL: PASS (63 checks, 0 fail)`;
 - all-glyph-collapse negative control: `S13 NEGATIVE CONTROL: RED as expected (30 gate failures)`, expected exit code 7;
 - live media/source gate: `PASS`, zero issues;
-- exact-artifact plus three mutation tests: 4/4 PASS.
+- eight unittest methods PASS; together they exercise three media mutations and seven real-Git provenance mutations.
+- the `-Check` entry point exited 0 with zero S13 file-hash changes and an identical porcelain status before/after.
 
 The live gate is written to `media_gate.json` and byte-compared against a fresh probe by `test_review_media.py`; the artifact is not accepted on shape or self-attestation alone.
 
@@ -50,7 +60,7 @@ MP4 metadata is explicit:
 - title: `SYNTHETIC COMPONENT REVIEW · NOT GAMEPLAY`;
 - comment: `STATIC REVIEW REEL · NOT GAMEPLAY · three five-second holds from watermarked S13 component PNGs`.
 
-`media_manifest.sha256` has a schema header, the full baseline main commit, the source receipt ID, the exact watermark text, and hashes for all four media files, `metrics.json`, the five component/test sources, the three S13R builder/verifier/test sources, and this report (14 entries total). The video was assembled only from the already verified PNGs; no intermediate frame is treated as independent evidence.
+`media_manifest.sha256` v2 names the fixed anchor commit, descendant-or-equal rule, source receipt ID, exact watermark text, ten anchored paths, and four live verifier paths (14 entries total). At verification time, every anchored path must exist at `2299db9`, have the manifest hash there, remain byte-identical in current `HEAD`, and remain byte-identical in the worktree. The video was assembled only from the already verified PNGs; no intermediate frame is treated as independent evidence.
 
 Pixel criteria (RGB/RGBA value comparison, not alpha-only `getbbox()`):
 
@@ -74,7 +84,8 @@ detects:
 - any of the 15 glyph pairs becoming pixel-identical at either scale;
 - the measured all-glyph collapse mutation (30/30 pair-scale gates red);
 - an erased PNG watermark band, missing MP4 `NOT GAMEPLAY` metadata, or any manifest/source hash drift;
-- media detached from the declared baseline main commit and source receipt.
+- an invalid or unknown commit, a 40-hex blob masquerading as a commit, a non-descendant HEAD, an anchor path missing, an anchored blob changed in HEAD, or anchored worktree drift;
+- media detached from the exact `2299db9` commit and source receipt.
 
 does_not_detect:
 
