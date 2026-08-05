@@ -43,7 +43,7 @@
 
 | 欠账 | 现状 | 处置 |
 |---|---|---|
-| **#43 商贩自证** | `_nearby_agents` 不排除商贩 ⇒ 一笔只被卖家看见的成交也算"被看见"。**修复 workflow 在跑**（measure→fix→双反驳，走 R12） | docs/112（在飞行中）。零售豁免线只量不收紧（改判据要用户拍板） |
+| **#43 商贩自证** | `_nearby_agents` 不排除商贩 ⇒ 一笔只被卖家看见的成交也算"被看见"。**修复 workflow 在跑**（measure→fix→双反驳，走 R12） | 编号 112（在飞行中，尚未落盘）。零售豁免线只量不收紧（改判据要用户拍板） |
 | **被拒行为叙述成成功** | AA2 实测 3565 条引用里 **976 条（27.4%）**把 rejected event 写成已发生；真机 docs/111 又肉眼看到一次。**两路打架**（Sim 记忆说"被婉拒"、故事层说"聊起了看法"），AA2 按 §0.8 没动 | **统一事件结果模型**：`attempted / accepted / effect_applied / rejection_reason`，Sim 为唯一权威。这是**架构级**，优先级高于新叙事内容 |
 | **fixture/scale 门可能 fail-open** | 旧产物复用、子进程返回码、ledger HEAD 未成可信闭环 | 验证工具默认 **fail-closed**：子进程非零立即失败、产物 fresh 或 content-addressed |
 | **AC2 `vanished` 只 warning** | 删一个具名病例 + 别处强化 ⇒ aggregate 不降而过门 | 具名槽消失应**直接红**；合法删除走**显式 rebaseline**（照抄 R12 的 rebake_history 文化） |
