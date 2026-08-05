@@ -515,56 +515,21 @@ func _phrase_lock() -> void:
 	# ★AA2 把它拆成【跨类型 / 同类型】两栏（Y3 给的规格照抄）：
 	#   Y3 漏网的 19 条**无一例外全是"两条文案引用同一种事件"**，而"同类型"这件事有一个
 	#   精确的机器判据 —— **两个槽位声明的 type 集合相同**。分开报，才看得出这一波买到的是哪一栏。
-	var tot := 0
-	var caught := 0
-	var cross_tot := 0
-	var cross_caught := 0
-	var same_tot := 0
-	var same_caught := 0
-	var by_lock := {"type": 0, "pol": 0, "rep": 0}     # 每道锁**单独**能抓到几个（可重叠）
-	var missed: Array = []
-	var same_newly: Array = []
-	for i in slots.size():
-		for j in range(i + 1, slots.size()):
-			var a: Array = slots[i]
-			var b: Array = slots[j]
-			if String(a[1]) == String(b[1]):
-				continue                      # 两条文案本来就一样 ⇒ 对调是恒等变换，不是变异体
-			tot += 1
-			var same := _same_types(a[2] as Array, b[2] as Array)
-			var hit_type := not StoryScript.phrase_conflicts(String(b[1]), a[2] as Array).is_empty() \
-				or not StoryScript.phrase_conflicts(String(a[1]), b[2] as Array).is_empty()
-			var hit_pol := not StoryScript.polarity_conflicts_matcher(String(b[1]), a[3] as Dictionary).is_empty() \
-				or not StoryScript.polarity_conflicts_matcher(String(a[1]), b[3] as Dictionary).is_empty()
-			var hit_rep := not StoryScript.repeat_conflicts(String(b[1]), String(a[4])).is_empty() \
-				or not StoryScript.repeat_conflicts(String(a[1]), String(b[4])).is_empty()
-			if hit_type:
-				by_lock["type"] = int(by_lock["type"]) + 1
-			if hit_pol:
-				by_lock["pol"] = int(by_lock["pol"]) + 1
-			if hit_rep:
-				by_lock["rep"] = int(by_lock["rep"]) + 1
-			var hit := hit_type or hit_pol or hit_rep
-			if same:
-				same_tot += 1
-				if hit:
-					same_caught += 1
-					same_newly.append("%s ↔ %s  ←%s%s" % [String(a[0]), String(b[0]),
-						("极性" if hit_pol else ""), ("复述" if hit_rep else "")])
-			else:
-				cross_tot += 1
-				if hit:
-					cross_caught += 1
-			if hit:
-				caught += 1
-			else:
-				missed.append("%s ↔ %s" % [String(a[0]), String(b[0])])
+	var st := _mutation_stats(slots)
+	var tot := int(st["tot"])
+	var caught := int(st["caught"])
+	var cross_tot := int(st["cross_tot"])
+	var cross_caught := int(st["cross_caught"])
+	var same_tot := int(st["same_tot"])
+	var same_caught := int(st["same_caught"])
+	var missed: Array = st["missed"]
+	var same_newly: Array = st["same_newly"]
 	print("     两条文案对调的**全变异空间**：%d 个变异体，三道锁合计认出 %d 个（%.1f%%）" % [
 		tot, caught, 100.0 * float(caught) / float(maxi(1, tot))])
 	print("       · 跨类型（两槽位 type 集合不同）：%d/%d" % [cross_caught, cross_tot])
 	print("       · 同类型（两槽位 type 集合相同）：%d/%d   ← Y3 这一栏是 0/%d" % [same_caught, same_tot, same_tot])
 	print("       · 各锁单独的检出（可重叠）：措辞 %d · 极性 %d · 复述 %d" % [
-		int(by_lock["type"]), int(by_lock["pol"]), int(by_lock["rep"])])
+		int(st["lock_type"]), int(st["lock_pol"]), int(st["lock_rep"])])
 	print("     同类型里被抓住的 %d 条，逐条列：" % same_caught)
 	for x2 in same_newly:
 		print("       ✔ " + String(x2))
@@ -572,14 +537,12 @@ func _phrase_lock() -> void:
 	print("     漏网 %d 条（= does_not_detect 那一栏，跑出来的不是想出来的）：" % missed.size())
 	for x in missed:
 		print("       · " + String(x))
-	# 只钉一条底线：**必须显著优于 0**。具体比率写进回执，不写成阈值门 ——
-	# 写成阈值门就等着有人加一条没上锁的文案时收一次假红（docs/41 §6「写死的绝对数」那条）。
-	_expect(caught > 0 and tot > 0, "PL3 变异空间非空且检出 > 0（比率 %d/%d，逐次重算，不冻结字面量）" % [caught, tot])
-	# AA2 加的**判别力底线**：同类型那一栏必须 > 0。Y3 那一栏是 0 —— 这条断言一红，
-	# 就说明本波加的两道锁被谁削没了（而不是"没有回归"）。同样不写成具体比率。
-	_expect(same_caught > 0 and same_tot > 0,
-		"PL3′ 同类型那一栏的检出 > 0（%d/%d；Y3 这一栏是 0/%d，本条守的正是那一段）" % [
-			same_caught, same_tot, same_tot])
+	# 非空自证：变异空间塌成 0 的话，下面每一条棘轮都会变成一句永远为真的话。
+	_expect(tot > 0 and same_tot > 0,
+		"PL3 变异空间非空（%d 个变异体，其中同类型 %d 个；逐次重算，不冻结字面量）" % [tot, same_tot])
+	_pl3_ratchet(st)
+	_pl3_named_ratchet(slots)
+	_false_red_sweep(slots, st)
 
 	# ── PL4 词表不是我一个人说了算：拿**另一份独立渲染**交叉验 ────────────────
 	# W3 的原话是"判对错要有第二份文案的真值"，并判定它没有廉价的补法。
@@ -612,6 +575,320 @@ func _phrase_lock() -> void:
 	print("     佐证向：%d/%d 条短语被独立渲染逐字佐证（对不上不算错——用词本来可以不同，见 docs/98）" % [
 		corrob, (StoryScript.PHRASE_LOCK as Dictionary).size()])
 	_polarity_cross_check()
+
+## 把「两条文案对调」的**全变异空间**跑一遍，返回逐项统计。
+##
+## ★AC2 把它从 PL3 的函数体里抽出来，理由是**代价对照（PL3″）必须拿同一份算法**去跑
+##   "多了一条文案"的假想树 —— 两处各写一份的话，比出来的差可能是两份实现的差，不是那条文案的差。
+##   （docs/41 §5「对照要等量而非等时」的同一条纪律：先把量具配平。）
+func _mutation_stats(sl: Array) -> Dictionary:
+	var tot := 0
+	var caught := 0
+	var cross_tot := 0
+	var cross_caught := 0
+	var same_tot := 0
+	var same_caught := 0
+	var lock_type := 0                      # 每道锁**单独**能抓到几个（可重叠）
+	var lock_pol := 0
+	var lock_rep := 0
+	var missed: Array = []
+	var same_newly: Array = []
+	for i in sl.size():
+		for j in range(i + 1, sl.size()):
+			var a: Array = sl[i]
+			var b: Array = sl[j]
+			if String(a[1]) == String(b[1]):
+				continue                      # 两条文案本来就一样 ⇒ 对调是恒等变换，不是变异体
+			tot += 1
+			var same := _same_types(a[2] as Array, b[2] as Array)
+			var hit_type := not StoryScript.phrase_conflicts(String(b[1]), a[2] as Array).is_empty() \
+				or not StoryScript.phrase_conflicts(String(a[1]), b[2] as Array).is_empty()
+			var hit_pol := not StoryScript.polarity_conflicts_matcher(String(b[1]), a[3] as Dictionary).is_empty() \
+				or not StoryScript.polarity_conflicts_matcher(String(a[1]), b[3] as Dictionary).is_empty()
+			var hit_rep := not StoryScript.repeat_conflicts(String(b[1]), String(a[4])).is_empty() \
+				or not StoryScript.repeat_conflicts(String(a[1]), String(b[4])).is_empty()
+			if hit_type:
+				lock_type += 1
+			if hit_pol:
+				lock_pol += 1
+			if hit_rep:
+				lock_rep += 1
+			var hit := hit_type or hit_pol or hit_rep
+			if same:
+				same_tot += 1
+				if hit:
+					same_caught += 1
+					same_newly.append("%s ↔ %s  ←%s%s" % [String(a[0]), String(b[0]),
+						("极性" if hit_pol else ""), ("复述" if hit_rep else "")])
+			else:
+				cross_tot += 1
+				if hit:
+					cross_caught += 1
+			if hit:
+				caught += 1
+			else:
+				missed.append("%s ↔ %s" % [String(a[0]), String(b[0])])
+	return {"tot": tot, "caught": caught, "cross_tot": cross_tot, "cross_caught": cross_caught,
+		"same_tot": same_tot, "same_caught": same_caught,
+		"lock_type": lock_type, "lock_pol": lock_pol, "lock_rep": lock_rep,
+		"missed": missed, "same_newly": same_newly}
+
+# ── PL3′ 棘轮（AC2）：把"量得很准然后只断言 > 0"那一步补上 ────────────────────
+## **本段存在的全部理由是外部评审（Codex，2026-08-02）抓到的那一条**：
+## AA2 把同类型反转的检出量到 **13/19**、跨类型量到 **573/573**，**然后只断言 `caught > 0`
+## 与 `same_caught > 0`** ⇒ **同类型从 13/19 退到 1/19，这道门照样绿。**
+##
+## ★而 AA2 那么写是**有理由的、写下来的、并且不是糊涂**（`story_test.gd:575-582` 原注释）：
+##   > 具体比率写进回执，不写成阈值门 —— **写成阈值门就等着有人加一条没上锁的文案时收一次假红**
+##   > （docs/41 §6「写死的绝对数」那条）。
+##   **这个担心是真的**，所以本段不是"宣布 AA2 错了"，是把那个担心**量出来**再选形状。
+##
+## ★量的结果（PL3″ 每跑一次都重量一遍，不是我在这里写一句话）：**那条担心打中的是【比例】那一形状。**
+##   「新增一条没上锁的文案」只会**往变异空间里加新的配对**，既有配对的判定一个都不动
+##   ⇒ 绝对计数**单调不减**，比例**会被稀释**。⇒ 比例地板假红，绝对棘轮不假红。
+##   这不是推的：PL3″ 把"这条新文案落在哪个槽位形状上"的**全部落点**扫一遍，逐个报两种形状的红/绿。
+##
+## ★为什么这组写死的绝对数**不是** docs/41 §6 警告的那一类，而这句话也是量出来的：
+##   §6 那条警告的原话是「凡是判据里出现**写死的绝对次数/时长/帧数**，都要先想清楚
+##   **它在别的机器上是什么**」，它的实例是界外层重画门 —— 按帧数计、按写死的 0 判，
+##   **同一棵树在更快的机器上多跑几个 tick 就变红**。那条数是**环境的函数**。
+##   本组数是 `Story.gd` 里 `ARCS` + 三张 const 表的**纯函数**：不读时钟、不读文件、不掷随机、
+##   不数帧、不看 seed / 天数 / 居民数 —— `_mutation_stats` 的函数体里一个 I/O 都没有，
+##   同一份字节在任何机器上给出同一组数。**"写死的绝对数"这个类别里有两种东西，§6 骂的是另一种。**
+##
+## ★动这组数的协议（照抄本仓库已有的文化：R12 的 `_meta.rebake_history`、art gate 的棘轮）：
+##   **只有"检出真的退步了、而那是一个被接受的决定"才可以往下调**，且必须在
+##   `PL3_RATCHET_HISTORY` 里补一条（日期 + 一句原因）。往下调而不留条 = 把这道门废掉。
+## ⚠️ 实测值**高于**基线时本门**不红**，只打印一行"基线该往上收了" —— 棘轮只往一个方向走，
+##   而一个从不上收的棘轮会烂掉，所以那一行必须刺眼。
+const PL3_RATCHET := {
+	"caught": 586,          # 592 个变异体里三道锁合计认出的
+	"cross_caught": 573,    # 跨类型那一栏（Y3 建的措辞锁买的）
+	"same_caught": 13,      # 同类型那一栏（AA2 建的极性锁 + 复述标记买的）← 评审点名的那一栏
+	"lock_type": 573,       # 逐锁归因：措辞锁**单独**能抓到几个
+	"lock_pol": 338,        # 极性锁单独
+	"lock_rep": 35,         # 复述标记单独
+}
+## ⚠️ 逐锁归因（`lock_*`）不是冗余：只钉合计的话，**一道锁被削掉而另一道恰好补上**
+## 会让合计不动 ⇒ 削掉的那道锁静默消失。这与 docs/41 §2.5「名字里每个词都有代码在查吗」是同一条。
+const PL3_RATCHET_HISTORY := [
+	"2026-08-02 AC2 立基线：592 个变异体 / 认出 586（跨类型 573/573 · 同类型 13/19；逐锁 措辞 573 · 极性 338 · 复述 35）。",
+]
+
+## ── ②b 具名棘轮：**评审点名的那 13 条，逐条按名字钉住，并钉住是哪道锁抓的** ────────
+## 计数棘轮（②a）说得出"退了几个"，说不出"退的是哪一个" —— 而**这两句话的差别就是诊断**。
+## 它同时补上 ②a 的一个盲区：13 = 11 极性 + 2 复述，**一道锁被削、另一道恰好补上**时合计不动。
+## ⚠️ 槽位被删掉时本条**只打印不判红**（那一对已经不存在了，再断言它就是断言一件不存在的事）——
+##    而"靠删槽位来消音"这条路由 ②a 的计数堵着：删一条文案 35/35 会让计数退步 ⇒ 必须走重烘。
+##    **两层各自的盲区正好被对方盖住**，这是刻意的，不是冗余。
+const PL3_SAME_TYPE_CAUGHT := [
+	["grudge/beat:mediated", "grudge/beat:heard", "pol"],
+	["grudge/beat:mediated", "grudge/beat:denied", "pol"],
+	["grudge/beat:heard", "grudge/beat:denied", "pol"],
+	["grudge/beat:rally", "grudge/beat:alone", "pol"],
+	["grudge/beat:rebuff", "grudge/end:mediated", "pol"],
+	["grudge/beat:rebuff", "grudge/end:mended", "pol"],
+	["grudge/end:mediated", "grudge/end:mended", "pol"],
+	["promise/end:kept", "promise/end:broken", "pol"],      # ← 评审与 Y3 都点名的那一条（赴约↔爽约）
+	["promise/end:broken", "pact/beat:met", "pol"],
+	["secret/open", "secret/beat:more", "rep"],
+	["pact/open", "pact/end:dissolved", "pol"],
+	["pact/end:dissolved", "craft/end:allied", "pol"],
+	["craft/open", "craft/beat:again", "rep"],
+]
+
+func _pl3_ratchet(st: Dictionary) -> void:
+	var short: Array = []
+	var over: Array = []
+	for k in PL3_RATCHET:
+		var got := int(st[String(k)])
+		var want := int(PL3_RATCHET[k])
+		if got < want:
+			short.append("%s %d < 基线 %d（退了 %d）" % [String(k), got, want, want - got])
+		elif got > want:
+			over.append("%s %d > 基线 %d" % [String(k), got, want])
+	_expect(short.is_empty(),
+		"PL3′ 棘轮：检出不许退步（同类型 %d/%d · 跨类型 %d/%d · 合计 %d/%d；逐锁 措辞 %d · 极性 %d · 复述 %d）%s" % [
+			int(st["same_caught"]), int(st["same_tot"]), int(st["cross_caught"]), int(st["cross_tot"]),
+			int(st["caught"]), int(st["tot"]),
+			int(st["lock_type"]), int(st["lock_pol"]), int(st["lock_rep"]),
+			("" if short.is_empty() else "\n        ❗退步：" + "\n        ❗".join(PackedStringArray(short))
+				+ "\n        ⇒ 这不是「没有回归」，是有人把锁削了。若这是一个被接受的决定，"
+				+ "改 PL3_RATCHET 并在 PL3_RATCHET_HISTORY 里补一条（日期 + 原因），别只改数字。")])
+	if not over.is_empty():
+		print("     ⚠ 棘轮基线该往上收了（实测高于基线，本门**不红**）：%s" % str(over))
+		print("       ⇒ 照 PL3_RATCHET_HISTORY 的协议补一条再上收。一个从不上收的棘轮会烂掉。")
+
+## ②b 具名棘轮：13 条逐条按名字复查，并复查是**哪道锁**抓的。
+func _pl3_named_ratchet(sl: Array) -> void:
+	var by_name := {}
+	for s in sl:
+		by_name[String((s as Array)[0])] = s
+	var lost: Array = []
+	var vanished: Array = []
+	var wrong_lock: Array = []
+	for row in PL3_SAME_TYPE_CAUGHT:
+		var na := String((row as Array)[0])
+		var nb := String((row as Array)[1])
+		var want := String((row as Array)[2])
+		if not by_name.has(na) or not by_name.has(nb):
+			vanished.append("%s ↔ %s（槽位已不在表里）" % [na, nb])
+			continue
+		var a: Array = by_name[na]
+		var b: Array = by_name[nb]
+		var hit_pol := not StoryScript.polarity_conflicts_matcher(String(b[1]), a[3] as Dictionary).is_empty() \
+			or not StoryScript.polarity_conflicts_matcher(String(a[1]), b[3] as Dictionary).is_empty()
+		var hit_rep := not StoryScript.repeat_conflicts(String(b[1]), String(a[4])).is_empty() \
+			or not StoryScript.repeat_conflicts(String(a[1]), String(b[4])).is_empty()
+		var hit_type := not StoryScript.phrase_conflicts(String(b[1]), a[2] as Array).is_empty() \
+			or not StoryScript.phrase_conflicts(String(a[1]), b[2] as Array).is_empty()
+		var got := hit_pol or hit_rep or hit_type
+		var by_want := hit_pol if want == "pol" else (hit_rep if want == "rep" else hit_type)
+		if not got:
+			lost.append("%s ↔ %s（对调之后三道锁一个都不响了）" % [na, nb])
+		elif not by_want:
+			wrong_lock.append("%s ↔ %s（原本由【%s】抓，现在改由别的锁兜住 —— 那道锁被削了）" % [na, nb, want])
+	_expect(lost.is_empty() and wrong_lock.is_empty(),
+		"PL3‴ 具名棘轮：评审点名的那 %d 条同类型反转逐条仍被抓、且仍由原来那道锁抓（%d 条已随槽位消失）%s" % [
+			PL3_SAME_TYPE_CAUGHT.size(), vanished.size(),
+			("" if lost.is_empty() and wrong_lock.is_empty()
+				else "\n        ❗丢了：" + str(lost) + "\n        ❗换了锁：" + str(wrong_lock))])
+	if not vanished.is_empty():
+		print("     ⚠ 具名棘轮有 %d 条**只打印不判红**（槽位已不在表里）：%s" % [vanished.size(), str(vanished)])
+		print("       ⇒ 靠删槽位消音这条路由 ②a 的计数棘轮堵着（删一条文案实测 35/35 会让计数退步）。")
+
+## ── PL3″ 代价对照：把 AA2 担心的那个情形【跑出来】，而不是各执一词 ──────────────
+## 情形逐字是「**有人加了一条没上锁的文案**」。它有一个精确的机器版本：
+## 往 `_all_slots()` 里塞进一个**新槽位**，其文案不含任何标志性短语 / 极性短语 / 复述标记。
+## **落点不止一种**（新文案声明的 type 集合、匹配器、行的 kind 都会改变结果），
+## 所以这里**不挑一个样例**，而是把新槽位挂到**每一个既有槽位的形状**上各扫一遍
+## —— 这就是 docs/41 §2.5 那条批评（recall 不是 coverage）在**假红**这一侧的同一个做法。
+##
+## 四种形状同台，逐个报"会不会因为这条新文案变红"：
+##   ⓪ 现状（`> 0`）        —— AA2 那一版，什么都不会红（这正是评审抓到的）
+##   ① 比例地板             —— 判占比：`caught/tot`、`same_caught/same_tot` 不许低于基线比例
+##   ② 绝对棘轮（本波选的） —— 判绝对数，退步即红 + 显式重烘协议
+##   ③ 两段式               —— 绝对棘轮判红 + 比例退步只警告
+## ⚠️ 本段自己也必须有夹具有效性自证：若合成文案不小心撞上了某条短语，整段就退化成
+##    "加了一条**上锁**的文案"，而那是另一个情形。所以先断言它真的没上锁。
+const SYNTH_TEXT := "%A 和 %B 的这桩事，镇上记了一笔"
+
+func _false_red_sweep(base: Array, st0: Dictionary) -> void:
+	_expect(StoryScript._locked_phrases(SYNTH_TEXT).is_empty()
+			and StoryScript._polarity_phrases(SYNTH_TEXT).is_empty()
+			and StoryScript.repeat_conflicts(SYNTH_TEXT, "open").is_empty(),
+		"PL3″-0 夹具自证：合成的那条新文案**真的没上锁**（措辞 %s · 极性 %s · 复述 %s 三张表都不命中）" % [
+			str(StoryScript._locked_phrases(SYNTH_TEXT)), str(StoryScript._polarity_phrases(SYNTH_TEXT)),
+			str(StoryScript.repeat_conflicts(SYNTH_TEXT, "open"))])
+	# ── 情形 A：加一条没上锁的文案。**落点不止一种**，这里穷举三族 ──────────────
+	#   A1 新文案抄某个既有槽位的（type 集合 / 匹配器 / kind）—— 35 个，覆盖表里出现过的每一种形状；
+	#   A2 新文案引一种**全新的事件类型** —— 措辞锁对它一律不设防（allow 表里没有），是比例最有利的一端；
+	#   A3 新文案**不声明任何事件类型** —— `phrase_conflicts` 对空 types 恒空，是比例最不利的一端。
+	#   ⚠ A2/A3 是刻意加的**两端**：只扫 A1 会得出"比例地板 35/35 必假红"，而那是抄了既有匹配器
+	#     这个巧合造出来的（新槽位与被抄的那个必然互不冲突 ⇒ 至少一对漏网）。**报极值要连另一端一起报。**
+	var cases: Array = []
+	for k in base.size():
+		var src: Array = base[k]
+		cases.append(["A1 抄「%s」的形状" % String(src[0]), src[2], src[3], src[4]])
+	cases.append(["A2 引一种全新事件类型", ["__新事件类型__"], {"type": ["__新事件类型__"]}, "beat"])
+	cases.append(["A3 不声明任何事件类型", [], {}, "beat"])
+	var rows: Array = []
+	for c2 in cases:
+		var sl: Array = base.duplicate()
+		sl.append(["＋新增", SYNTH_TEXT, c2[1], c2[2], c2[3]])
+		rows.append([String(c2[0]), _mutation_stats(sl)])
+	_shape_table("A · 加一条没上锁的文案（%s）" % SYNTH_TEXT, st0, rows, true)
+
+	# ── 情形 B：删掉一条既有文案（弧改版、幕合并——同样是"正当改动"）───────────────
+	# 它是情形 A 的镜像，而**镜像那一侧才是绝对棘轮真正要付的价**。不报它 = 只报对自己有利的一半。
+	var rows_b: Array = []
+	for k in base.size():
+		var sl2: Array = base.duplicate()
+		sl2.remove_at(k)
+		rows_b.append(["B 删掉「%s」" % String((base[k] as Array)[0]), _mutation_stats(sl2)])
+	_shape_table("B · 删掉一条既有文案", st0, rows_b, false)
+
+	# ── 情形 C：把一条既有文案**改写**成没上锁的（换措辞、去掉标志性短语）─────────────
+	var rows_c: Array = []
+	for k in base.size():
+		var sl3: Array = base.duplicate()
+		var old: Array = sl3[k]
+		sl3[k] = [String(old[0]), SYNTH_TEXT, old[2], old[3], old[4]]
+		rows_c.append(["C 改写「%s」" % String(old[0]), _mutation_stats(sl3)])
+	_shape_table("C · 把一条既有文案改写成没上锁的", st0, rows_c, false)
+
+## 四种门形状在一批假想树上的红/绿对照。`must_all_green_abs` = 这一族是否**要求**绝对棘轮全绿。
+func _shape_table(title: String, st0: Dictionary, rows: Array, must_all_green_abs: bool) -> void:
+	var n0 := int(st0["tot"])
+	var c0 := int(st0["caught"])
+	var sn0 := int(st0["same_tot"])
+	var sc0 := int(st0["same_caught"])
+	var red_now := 0
+	var red_ratio := 0
+	var red_abs := 0
+	var warn_two := 0
+	var lo_pct := 1e9
+	var hi_pct := -1.0
+	var lo := ""
+	var hi := ""
+	var lo_ties := 0
+	var hi_ties := 0
+	var abs_red_names: Array = []
+	for r in rows:
+		var nm := String((r as Array)[0])
+		var st: Dictionary = (r as Array)[1]
+		var n := int(st["tot"])
+		var c := int(st["caught"])
+		var sn := int(st["same_tot"])
+		var sc := int(st["same_caught"])
+		if not (c > 0 and sc > 0):                          # ⓪ 现状 `>0`
+			red_now += 1
+		var rr := (c * n0 < c0 * n) or (sc * sn0 < sc0 * sn)  # ① 比例地板（交叉相乘，不走浮点）
+		if rr:
+			red_ratio += 1
+		# ② 绝对棘轮。★这一列拿【本树自己的基线 st0】比，**不是**拿 `PL3_RATCHET` 比 ——
+		#   否则一棵已经退步的树会让这一整段跟着红一遍，而那只是 PL3′ 的红被复读了一次、不是新证据。
+		#   （docs/105 §五 就地记过这个记账坑：`PL2‴` 在 M4 上"也红了"，但抓住 M4 的不是它。
+		#     实测：`norep` 变异体上本段原先跟着红，去掉这一处误比之后只有 PL3′/PL3‴ 红。）
+		#   在**未退步**的树上 `st0 == PL3_RATCHET`，两种比法逐位同值 ⇒ 这不是放松，是去掉一次重复计数。
+		var ra := false
+		for kk in PL3_RATCHET:
+			if int(st[String(kk)]) < int(st0[String(kk)]):
+				ra = true
+		if ra:
+			red_abs += 1
+			if abs_red_names.size() < 3:
+				abs_red_names.append(nm)
+		elif rr:                                             # ③ 两段式：② 判红 + ① 只警告
+			warn_two += 1
+		var pct := 100.0 * float(c) / float(maxi(1, n))
+		if pct < lo_pct - 0.0001:
+			lo_pct = pct; lo = "%s → %d/%d = %.2f%%" % [nm, c, n, pct]; lo_ties = 1
+		elif absf(pct - lo_pct) <= 0.0001:
+			lo_ties += 1
+		if pct > hi_pct + 0.0001:
+			hi_pct = pct; hi = "%s → %d/%d = %.2f%%" % [nm, c, n, pct]; hi_ties = 1
+		elif absf(pct - hi_pct) <= 0.0001:
+			hi_ties += 1
+	print("     ── PL3″ 代价对照 · 情形 %s ── 共 %d 种落点，基线 合计 %d/%d = %.2f%% · 同类型 %d/%d = %.2f%%" % [
+		title, rows.size(), c0, n0, 100.0 * float(c0) / float(maxi(1, n0)),
+		sc0, sn0, 100.0 * float(sc0) / float(maxi(1, sn0))])
+	print("       ⓪ 现状 `>0`      红 %d/%d" % [red_now, rows.size()])
+	print("       ① 比例地板        红 %d/%d" % [red_ratio, rows.size()])
+	print("       ② 绝对棘轮(本波)  红 %d/%d%s" % [red_abs, rows.size(),
+		("" if abs_red_names.is_empty() else "   例：" + str(abs_red_names))])
+	print("       ③ 两段式          红 %d/%d（另有 %d 次只警告）" % [red_abs, rows.size(), warn_two])
+	print("       比例最低的落点：%s（并列 %d 个）｜最高：%s（并列 %d 个）" % [lo, lo_ties, hi, hi_ties])
+	if must_all_green_abs:
+		# 这就是本波给「别把它做成一个会因为无关改动变红的门」的机器证明（docs/41 §6）。
+		# ★它同时是一条**单调性**断言：新增槽位只往变异空间里**加**配对，既有配对的判定一个都不动
+		#   ⇒ 六个绝对计数只可能不减。它一旦红，说明这条结构性事实被上游改动破坏了，回来重读。
+		_expect(red_abs == 0,
+			"PL3″ 绝对棘轮在【新增一条没上锁的文案】的全部 %d 种落点上 0 次假红（同一批落点上比例地板 %d 次）" % [
+				rows.size(), red_ratio])
+		# 判别力自证：这一段若连"比例地板会假红"都量不出来，说明扫描本身空转了（同 PL5-0 那条纪律）。
+		_expect(red_ratio > 0,
+			"PL3″-1 扫描非空转：比例地板在这批落点上**确实**会假红 %d 次 —— 它归零 = 这段对照什么都没比" % red_ratio)
 
 ## ── PL5 极性词表的第二来源交叉验（AA2，docs/105 §二）──────────────────────
 ## Y3 的原话：让锁去看 `accepted` **需要 `accepted` 的第二个独立来源**，否则退回自证。
