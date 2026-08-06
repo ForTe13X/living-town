@@ -140,4 +140,4 @@ Phase 5  才恢复多镇：生产 capacity 与具名 NPC 解耦 → N=24/40/60 h
 1. **P0 收敛**：给 `integration/batons` 配 required PR/check + 冻结候选 SHA；把 CI 拆成并行 required jobs（§四·2 的"正式"方案）。
 2. **Phase 1 续**：AC2 `vanished` 红门 + `1/19` 负控 + docs/110@wip/ac2-story-ratchet + 全量 CI（未验证 wip → 收口）；事件结果 schema 档1/档2（用户拍 schema）。
 3. **Phase 2 双先决**：state_projection（从 save codec 抽 canonical oracle，§一）**并行** KnowledgeState 三臂证伪（单镇/抽象域，§一更正）——两者都待用户 §0.8 拍板。
-4. **功能并行**：AG3 纵切转实现波（若用户认同设计）；`codex/narrative` 只读 reconcile 棒（语义面，不合）。
+4. **功能并行**：AG3 纵切转实现波（若用户认同设计）；`codex/narrative` 只读 reconcile 棒（语义面，不合）——**AH1 在跑（编号 127）**：60-path 分类 + 先并层/后置层（S18 未裁前别整支吞入）+ docs 语义 reconcile + schema 冻结面。
