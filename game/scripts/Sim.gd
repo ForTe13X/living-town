@@ -1499,8 +1499,20 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 					# ★AA3 消费侧的口碑挂点（docs/106）：**只在 payee 是【商贩本人】的那一笔上**去数在场者，
 					#   否则连 `_nearby_agents` 都不调 ⇒ 缺 `vendor.trade_credit` 键 / 非 vendor 动作 /
 					#   收款方是镇库 ⇒ 一条指令都不多跑、`witnesses` 仍是 `[]` ⇒ 逐字节回到 AA3 之前。
+					# ★AA3-FIX（docs/112）：witnesses 里再滤掉【商贩本人】（payee）。
+					#   语义："被看见" = 交易双方之外的人看见——买家已被 _nearby_agents 排除，
+					#   而商贩恰好与买家同区时（实测 19-24% 的成交，docs/106 §一）会混进来，
+					#   于是一笔只被商贩自己"看见"的成交也算"被看见"（40/715，逐 seed 1-6 笔），
+					#   把 #43 正向臂的 sales_w 喂绿（自证）。信念/standing 层 _trade_fallout
+					#   本就跳过商贩（那边 seers 循环里的 continue；引符号不引行号）⇒ 本过滤是
+					#   纯观测变更：只动 pay 事件的 witnesses 成员
+					#   ⇒ 只动 Inv.digest，event_digest/chain 不动（M1 实测 12/12 vs 0/12）。
 					var tc: Dictionary = _trade_credit() if payee != "town" else {}
-					var twits: Array = _nearby_agents(ag) if not tc.is_empty() else []
+					var twits: Array = []
+					if not tc.is_empty():
+						for tw in _nearby_agents(ag):
+							if String(tw["id"]) != payee:
+								twits.append(tw)
 					if transfer(String(ag["id"]), payee, price, ("buy:" if payee != "town" else "price:") + String(opt["action"]), twits):
 						econ_stats["meals_paid"] += 1
 						if not tc.is_empty():
