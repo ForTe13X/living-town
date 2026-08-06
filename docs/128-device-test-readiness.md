@@ -44,7 +44,7 @@ docs/111 把没测的项直接判成"键盘专属"。**源码明确给了触摸�
 | 能力 | 桌面键 | 触摸等价入口（源码坐标） | exact-build 实测 |
 |---|---|---|---|
 | 设置面板（NPC数/速度/后端） | `O` | ⚙/「设」按钮（`Main.gd:106` `_settings_panel`，截图左上「设」） | ⬜ 待测 |
-| 详情/完整卷宗 | `V` | 「详情」钮（`Main.gd:51` 注释：**手机上唯一够得着的入口**，截图右上） | ⬜ 待测 |
+| 详情/完整卷宗 | `V` | 「详情」钮（`Main.gd:51` 注释：**手机上唯一够得着的入口**，截图右上） | ✅**当前 HEAD 实测**：点它→切「收起」+开观察台 |
 | 暂停 | `Space` | 设置面板速度栏「暂停」钮 | ⬜ 待测 |
 | 后端切换 | （无 CLI） | 后端钮（`Main.gd:61` `_backend_btn`，截图右上「推理 logic」） | ⬜ 待测 |
 | SLM 模型选择 | — | 设置面板 `_model_btn`（`Main.gd:116`） | ⬜ 待测 |
@@ -55,10 +55,33 @@ docs/111 把没测的项直接判成"键盘专属"。**源码明确给了触摸�
 
 ⚠️ 旧 APK 是 **07-30** 的，**早于 Wave I 之后一大串改动（含 T3 的 HUD 修复）** ⇒ docs/111 的每条都要在**当前 HEAD 构建**上重测，别拿旧包截图代表当前 HEAD。
 
-## 四、当前 HEAD APK provenance（构建成后填）
+## 四、当前 HEAD APK provenance（✅ 已构建并上真机，2026-08-06）
 
-<!-- 装好 gradle 模板、导出成功后填：apk_sha256 / versionCode / 内嵌 git SHA（应=8325e0e 或更新）/ 导出命令 / 工具链版本 -->
-（本轮未构建成——见 §一卡点。）
+**用户重开无线调试给了新凭据后，走 SDK-free 路构建成功、装机实测通过。**
+
+| 项 | 值 |
+|---|---|
+| built from HEAD | `957929457bc99bdf8b6d3613687bc66f4153c31c`（=当时 trunk tip） |
+| apk sha256 | `f9748e5cd2880cbc5ed6ea7e54188b15a2c820b95dc92818867f14edda67de37` |
+| apk 大小 | ~31 MB；versionCode=1 versionName=1.0 minSdk=24 targetSdk=35 arm64-v8a |
+| 设备 | NX789J（RedMagic，2688×1216=2.21:1），装机时间 2026-08-06 17:51 |
+| 构建路（**绕开 gradle/SDK 缺失**） | 临时把预设 `use_gradle_build=true→false`（**未提交**）走**预建模板**；`keytool` 自建 debug keystore 放 `build/debug.keystore`（gitignore）；`godot --headless --path game --export-debug Android` exit 0、`Signed` |
+| 非致命缺项 | nobodywho GDExtension 原生库缺（`libnobodywho-*-android-release.so` 不在仓）⇒ 未接模型后端；**默认 logic/CPU 后端照跑**（出货默认也是 CPU），故 sim/触摸/HUD/音频验证不受影响；无 app 图标（用默认） |
+| 工具链 | Godot 4.6.2.stable；apksigner 来自 `build/android-sdk/build-tools/35.0.0`（仓内已有,非 ANDROID_HOME）；JDK 17 |
+
+⚠️ 这是**测试构建**（预建模板 + 自建 debug key），**不等于出货 gradle 构建**（后者含 nobodywho 原生库、正式签名）。但对 sim/触摸/HUD/音频这些不依赖模型的验证，**足够代表当前 HEAD**。
+
+## 六、当前 HEAD 真机实测结果（2026-08-06，SHA256 见 §四）
+
+**首个 current-HEAD 真机验证**（此前 docs/111 全在 07-30 旧包上）：
+
+1. ✅ **构建+装机+运行**：NX789J 上跑起来，town sim 实时推进（1→4 游戏天、事件 28→185、社会动态涌现：`铁牛 对 阿菲 渐渐积起了怨气`、`冲突 1(活1)`）。
+2. ✅ **触摸可用**：点「详情」钮→切「收起」+开观察台（Codex 说 docs/111 误判 keyboard-only 的那个入口，实测是触摸入口）。
+3. ✅ **音频实播**（比 docs/111 强）：`dumpsys audio` 显示 `com.forte13x.livingtown` 的 PlaybackClient `mIsActive=true`、streamType=3(MUSIC)——不是仅 `started`，是**在放**。⚠️仍未验的（Codex P4 要的）：音质/路由/音量、并发 focus 让不让路——需真人听感+并发实验，截图/dumpsys 证不了。
+4. ✅ **AE1 被拒叙述修复在真机活着**：纪事实见 `阿丽 想找 阿菲 咬耳朵，对方没搭理`、`阿菲 想和 铁牛 聊聊看法，对方没接茬`——旧包 docs/111 那屏"被婉拒却讲成聊成了"的 bug 没了（档0/AE1 编号 118 落地在 HEAD）。
+5. ⬜ **未测**（连接不稳、没过度点）：设置面板/暂停/存读档/选居民/多楼层室内的触摸；HUD 在 2.21:1 的完整排版逐项；音频主观质量。留给下次（连接凭据时效，需重开）。
+
+⚠️ 诚实边界：这是**预建模板测试构建**（无 nobodywho、非出货 gradle 签名），代表 sim/触摸/HUD/音频不依赖模型的那部分；**出货门仍需正式 gradle 构建**（装 `res://android/build/` 模板 + SDK，见 §一解锁步骤）。
 
 ## 五、音频/HUD 复测要点（Codex P4，别过度外推）
 
