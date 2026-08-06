@@ -1092,6 +1092,9 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 	#   不查那句中文；不查目击者当时真的在场；**也不查商贩本人在不在场**——
 	#   而最后这一条是**故意的**：实测他只在 19-24% 的成交里与买家同区（docs/106 §一），
 	#   把"他在场"写进判据等于给这道门装一条余量 3、被零假设臂就能压穿的臂。
+	#   ★AA3-FIX（docs/112）："不查他在场"≠"他自己算目击者"。①的 sales_w 现在只数
+	#   【商贩以外】的目击者（见下面 wn_other）——修的是"一笔只被商贩自己看见的成交
+	#   也算被看见"这个自证软点（改前实测 40/715 笔、逐 seed 1-6）。
 	var vend_tbl: Dictionary = S.production.get("vendor", {}) if prod_on and S.production.get("vendor", {}) is Dictionary else {}
 	var tc_tbl: Dictionary = vend_tbl.get("trade_credit", {}) if vend_tbl.get("trade_credit", {}) is Dictionary else {}
 	var trade_bad: Array = []
@@ -1106,10 +1109,20 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 		for e in log:
 			if String(e.get("type", "")) != "pay":
 				continue
-			var wn := (e.get("witnesses", []) as Array).size()
+			var wits43: Array = e.get("witnesses", []) as Array
+			var wn := wits43.size()
 			if v_id != "" and String(e.get("note", "")) == buy_note and String(e.get("target", "")) == v_id:
 				sales += 1
-				if wn > 0:
+				# ★AA3-FIX（docs/112）防御纵深："被看见"只数【商贩以外】的目击者。
+				#   采集侧（Sim.gd 的 twits 过滤）已经不把商贩写进 witnesses 了；这里再挡一道：
+				#   即使将来采集侧被改回，一笔只被商贩自己"看见"的成交也不再计入 sales_w
+				#   ⇒ 这条臂不会被自证喂绿。负对照（docs/112 §四.2）：把过滤撤掉 + 全部
+				#   witnesses 换成 [商贩] ⇒ 旧判据(wn>0)恒绿、本判据 sales_w=0 ⇒ 红。
+				var wn_other := 0
+				for w43 in wits43:
+					if String(w43) != v_id:
+						wn_other += 1
+				if wn_other > 0:
 					sales_w += 1
 			elif wn > 0:
 				var nk := String(e.get("note", ""))
