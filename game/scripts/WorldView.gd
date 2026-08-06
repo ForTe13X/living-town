@@ -169,12 +169,13 @@ const AUDIT_PASSES: Array[String] = [
 	"backdrop", "grass", "water", "paths", "areafloor", "rooms", "walls",
 	"facades", "dressing", "arealabels", "decor", "trees", "towndoors",
 	"landmarks", "objects", "climate", "factionrings", "pactlinks",
-	"rellines", "talklinks", "agents", "rain", "lights",
+	"rellines", "talklinks", "agents", "rain", "snow", "lights",
 	# backdrop 的子 pass（与 "backdrop" 重叠，故不进闭合校验；单独列出是为了知道该动哪一段）
 	"bd:base", "bd:vergeramp", "bd:vergemotif", "bd:spill", "bd:canopy", "bd:vignette",
 ]
-## 上面后 6 项是 "backdrop" 的**子集**，会被重复计入 ⇒ 闭合校验只对前 23 项求和。
-const AUDIT_PRIMARY := 23
+## 上面后 6 项是 "backdrop" 的**子集**，会被重复计入 ⇒ 闭合校验只对前 24 项求和。
+## （AI1 编号129 加了 "snow" pass，23→24；闭合校验实际用 `not begins_with("bd:")` 自动纳入，此常量仅存文档。）
+const AUDIT_PRIMARY := 24
 var _askip := ""               # 本帧要跳过的 pass 名（"" = 全开）
 var _audit_path := ""          # --draw-audit <file>：非空即进入审计模式
 var _audit_i := -2             # -2=预热 / -1=基线 / 0..n-1=逐 pass / n=全关地板
@@ -509,24 +510,105 @@ func _draw_climate_wash(w: int, h: int) -> void:
 	if ww.a > 0.0:
 		draw_rect(area, ww, true)
 
-## 雨丝。确定性：位置来自 _hash(gx,gy)，下落相位来自 Sim.tick_no —— 不抽 RNG、不读墙钟，
-## 于是【同一 tick 重拍逐像素相同】（--shot 冻结 tick，将来做视觉 CI 断言时才有可比性）。
+## 降水层铺设范围：【地图矩形 ∩ 视口】——与 _draw_climate_wash 同一条界（界外暗林不下雨/雪）。
+## ★ 为什么要 clip：全镇取景（--shot-fit 或 go_home zoom≈0.229）下 _vis 远大于地图（含界外背板），
+##   直接按 _vis 铺格会冲上 5000+ 格 → VOID_DECOR_MAX_CELLS 守卫触发、整层不画（编号129 实测：
+##   冬雪在展开后的镇上 shot-fit 得 97×60=5820 格 > 4096 ⇒ 被吞）。夹到地图后 64×48 图恒 ≤ ~2000 格，
+##   既保住红线#3 手机填充率上限，又让降水在全镇视角也画得出来。返回的 gx/gy 是【夹后】格坐标。
+func _precip_area() -> Rect2:
+	var w := float(Sim.world.get("width", 0)); var h := float(Sim.world.get("height", 0))
+	return Rect2(0.0, 0.0, w * T, h * T).intersection(_vis)
+
+## 雨丝 + 地面涟漪。确定性：位置来自 _hash(gx,gy,salt)，下落/眨相位来自 Sim.tick_no —— 不抽 RNG、不读墙钟，
+## 于是【同一 tick 重拍逐像素相同】（--shot 冻结 tick，precip 门靠这条可比性做 on/off 负对照）。
+## ★ AI1 强化（编号129）：旧版只有 36% 密度、单档 1.5px 短丝，量出来偏弱（before 帧眼验偏淡）。
+##   现在 = 两档景深雨丝（近：亮/长/粗；远：淡/短/细，52% 密度）+ 独立散布的地面涟漪（扩大环，按 tick 眨）。
+##   只在 `weather=="雨" 且非冬` 时调用（冬季降水走 _draw_snow，见调度处）——不新增仿真态、不改 weather.json。
 func _draw_rain() -> void:
+	var area := _precip_area()
+	if area.size.x <= 0.0 or area.size.y <= 0.0:
+		return
 	var cell := T * 1.5
-	var gx0 := int(floor(_vis.position.x / cell)); var gx1 := int(ceil(_vis.end.x / cell))
-	var gy0 := int(floor(_vis.position.y / cell)); var gy1 := int(ceil(_vis.end.y / cell))
+	var gx0 := int(floor(area.position.x / cell)); var gx1 := int(ceil(area.end.x / cell))
+	var gy0 := int(floor(area.position.y / cell)); var gy1 := int(ceil(area.end.y / cell))
 	if (gx1 - gx0) * (gy1 - gy0) > VOID_DECOR_MAX_CELLS:
-		return                                    # 极端缩放：雨丝细到看不见，白烧填充率（红线#3 手机）
+		return                                    # 极端缩放/超大图兜底：白烧填充率（红线#3 手机）
 	var phase := float(Sim.tick_no % 6) / 6.0
-	var col := Color(0.80, 0.89, 1.00, 0.30)
+	var col_near := Color(0.84, 0.91, 1.00, 0.44)
+	var col_far := Color(0.78, 0.87, 1.00, 0.26)
 	for gy in range(gy0, gy1):
 		for gx in range(gx0, gx1):
 			var hsh := _hash(gx, gy, 57)
-			if hsh % 100 >= 36:
+			var m := hsh % 100
+			if m >= 52:                           # 密度 36→52：更明显（before 帧偏淡）
 				continue
+			var near := m < 26                    # 一半近景一半远景 ⇒ 景深，读作真在下雨
 			var p := Vector2((float(gx) + float(hsh % 61) / 61.0) * cell,
 				(float(gy) + float(hsh / 61 % 61) / 61.0 + phase) * cell)
-			draw_line(p, p + Vector2(-T * 0.15, T * 0.40), col, 1.5)
+			if near:
+				draw_line(p, p + Vector2(-T * 0.16, T * 0.56), col_near, 1.9)
+			else:
+				draw_line(p, p + Vector2(-T * 0.12, T * 0.34), col_far, 1.1)
+	# 地面涟漪：独立散布（salt 43），扩大环按 tick 眨（每 8 tick 亮 3 tick，半径随亮度扩大、透明度衰减）
+	# —— 读作雨点打在地上。分开一套散布 ⇒ 与雨丝落点解耦，不会连成"相框"（docs/41 §6 等距连续陷阱）。
+	var rcell := T * 2.0
+	var rx0 := int(floor(area.position.x / rcell)); var rx1 := int(ceil(area.end.x / rcell))
+	var ry0 := int(floor(area.position.y / rcell)); var ry1 := int(ceil(area.end.y / rcell))
+	for ry in range(ry0, ry1):
+		for rx in range(rx0, rx1):
+			var rh := _hash(rx, ry, 43)
+			if rh % 100 >= 22:
+				continue
+			var blink := (Sim.tick_no + rh) % 8   # 相位含 rh ⇒ 每个涟漪各眨各的，不同步闪烁
+			if blink >= 3:
+				continue                          # 每 8 tick 只亮 3 tick
+			var rp := Vector2((float(rx) + float(rh % 50) / 50.0) * rcell,
+				(float(ry) + float(rh / 50 % 50) / 50.0) * rcell)
+			var rr := T * (0.10 + 0.06 * float(blink))
+			draw_arc(rp, rr, 0.0, TAU, 9, Color(0.88, 0.93, 1.00, 0.36 - 0.10 * float(blink)), 1.3)
+
+## 冬雪。确定性：位置来自 _hash(gx,gy,salt)，飘落/漂移相位来自 Sim.tick_no —— 不抽 RNG、不读墙钟，
+## 同一 tick 重拍逐像素相同（--shot 冻结 tick；precip 门靠这条可比性）。
+## ★ AI1（编号129）：冬季地面霜白由 SEASON_WASH["冬"](α0.24) 负责，本层补的是【飘落的雪花】——
+##   before 帧实测：冬天只有冷色调 + 弱霜白、无落雪，眼验读不出"冬天"。雪只读 Sim.season_today=="冬"，
+##   不新增仿真态、不改 lifecycle.json。两层视差（近大慢飘 / 远小快落）+ 侧向漂移，读作有体积的雪。
+##   风暴档：冬遇阴/雨 ⇒ 更密（暴风雪）；晴 ⇒ 疏落飘雪。纯读 weather，无新态。
+func _draw_snow() -> void:
+	var area := _precip_area()
+	if area.size.x <= 0.0 or area.size.y <= 0.0:
+		return
+	var cell := T * 1.25
+	var gx0 := int(floor(area.position.x / cell)); var gx1 := int(ceil(area.end.x / cell))
+	var gy0 := int(floor(area.position.y / cell)); var gy1 := int(ceil(area.end.y / cell))
+	if (gx1 - gx0) * (gy1 - gy0) > VOID_DECOR_MAX_CELLS:
+		return                                    # 极端缩放/超大图兜底：白烧填充率（红线#3 手机）
+	var dense := 40                               # 晴：疏落飘雪
+	if Sim.weather_today == "阴":
+		dense = 54
+	elif Sim.weather_today == "雨":
+		dense = 70                                # 暴风雪（冬季降水统一走这里，_draw_rain 在冬季不调）
+	var slow := float(Sim.tick_no % 10) / 10.0    # 大片：慢飘
+	var fast := float(Sim.tick_no % 5) / 5.0      # 小点：快落
+	var sway_slow := sin(slow * TAU)              # 侧向漂移相位（每帧常量，循环外算一次）
+	var sway_fast := sin(fast * TAU)
+	var big := Color(0.97, 0.98, 1.00, 0.94)
+	var small := Color(0.90, 0.94, 1.00, 0.68)
+	for gy in range(gy0, gy1):
+		for gx in range(gx0, gx1):
+			var hsh := _hash(gx, gy, 91)
+			if hsh % 100 >= dense:
+				continue
+			var jx := float(hsh % 53) / 53.0
+			var jy := float(hsh / 53 % 53) / 53.0
+			var amp := (float((hsh / 7) % 5) - 2.0) * 0.07 * T   # 每片各自的漂移幅度 [-2..2]
+			if hsh % 3 == 0:                       # ~1/3 大片，近景，慢飘
+				var p := Vector2((float(gx) + jx) * cell + amp * sway_slow,
+					(float(gy) + jy + slow) * cell)
+				draw_rect(Rect2(p.x, p.y, T * 0.14, T * 0.14), big, true)
+			else:                                  # 其余小点，远景，快落
+				var p2 := Vector2((float(gx) + jx) * cell + amp * sway_fast,
+					(float(gy) + jy + fast) * cell)
+				draw_rect(Rect2(p2.x, p2.y, T * 0.09, T * 0.09), small, true)
 
 func _ready() -> void:
 	texture_filter = TEXTURE_FILTER_NEAREST  # 像素清晰，不糊
@@ -551,6 +633,10 @@ func _ready() -> void:
 			_audit_path = _uargs[_i + 1]        # dev 量具：逐 pass draw-call 归因（见 AUDIT_PASSES 一节）
 		elif _uargs[_i] == "--draw-audit-zoom" and _i + 1 < _uargs.size():
 			_audit_zoom = float(_uargs[_i + 1]) # 同上，但先把相机钉到指定缩放（扫 zoom 用；绕开 min_zoom 地板）
+		elif _uargs[_i] == "--draw-skip" and _i + 1 < _uargs.size():
+			_askip = String(_uargs[_i + 1])     # AI1（编号129）：视觉门/dev —— 跳过一个绘制 pass。
+			                                    # precip 门用它拍 on/off 负对照（--draw-skip snow / rain）。
+			                                    # 缺旗 ⇒ _askip 保持 settings.cfg 的值（出货为 ""）⇒ 逐字节不变。
 		elif _uargs[_i] == "--void-gate":
 			_void_gate = true                   # 见 _void_gate_step()：把这一棒的 9× 那条性质机器化
 		elif _uargs[_i] == "--cache-gate":
@@ -2646,8 +2732,12 @@ func _draw_body() -> void:
 			continue            # P3 Tier-B：非-town 平面的居民(在咖啡馆室内的阿丽)不画在镇上——否则会用室内格坐标在镇上"鬼影"
 		_draw_agent(ag)
 
-	if Sim.weather_today == "雨" and _ap("rain"):
-		_draw_rain()            # 雨丝画在【居民之上】：雨在人前面落，才读作下雨而不是地面贴图
+	# 降水画在【居民之上】：雨/雪在人前面落，才读作下雨/下雪而不是地面贴图。
+	# 冬季降水统一走雪（_draw_snow 自己按 weather 调密度）；其余季节的「雨」才走雨丝 ⇒ 二者不叠加。
+	if Sim.season_today == "冬" and _ap("snow"):
+		_draw_snow()            # AI1（编号129）：冬雪。只读 season，纯表现层。
+	elif Sim.weather_today == "雨" and _ap("rain"):
+		_draw_rain()            # AI1（编号129）：强化雨（两档景深雨丝 + 地面涟漪）
 
 	if dbg_nav:                 # P2-4 开发叠层（N 键）：可视化导航权威数据——阻挡格 + 交互格
 		_draw_nav_overlay(w)
