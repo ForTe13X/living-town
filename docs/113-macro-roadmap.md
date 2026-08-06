@@ -44,8 +44,8 @@
 | 欠账 | 现状 | 处置 |
 |---|---|---|
 | **#43 商贩自证** | `_nearby_agents` 不排除商贩 ⇒ 一笔只被卖家看见的成交也算"被看见"。**修复 workflow 在跑**（measure→fix→双反驳，走 R12） | 编号 112（在飞行中，尚未落盘）。零售豁免线只量不收紧（改判据要用户拍板） |
-| **被拒行为叙述成成功** | AA2 实测 3565 条引用里 **976 条（27.4%）**把 rejected event 写成已发生；真机 docs/111 又肉眼看到一次。⚠️ **AD2 设计（编号 116）把它重新框定了**：`accepted` 字段【已在】，社交路已正确区分被拒，屏幕真出错的是表现层 `Main._event_prose` 对社交类型【不读 accepted】——**是"读侧漏字段"，不是"缺 schema"** | **分三档（AD2 编号 116）**：**档0 表现层修复=零 schema、零金标、消掉 976 主体 ⇒ 低垂果实，Phase 1 优先**；档1 加 `effect_applied`/`rejection_reason`【不折金标】=零金标（用户拍 schema）；档2 经济族失败可观测=移金标走 R12（用户拍板）。原提的"四字段统一模型"被 AD2 证明捆错了——修 27.4% 不需要它 |
-| **fixture/scale 门可能 fail-open** | 旧产物复用、子进程返回码、ledger HEAD 未成可信闭环 | 验证工具默认 **fail-closed**：子进程非零立即失败、产物 fresh 或 content-addressed |
+| **被拒行为叙述成成功** | AA2 实测 3565 条引用里 **976 条（27.4%）**把 rejected event 写成已发生；真机 docs/111 又肉眼看到一次。⚠️ **AD2 设计（编号 116）把它重新框定了**：`accepted` 字段【已在】，社交路已正确区分被拒，屏幕真出错的是表现层 `Main._event_prose` 对社交类型【不读 accepted】——**是"读侧漏字段"，不是"缺 schema"** | **分三档（AD2 编号 116）**：✅**档0 已落地（AE1 编号 118）**：_event_prose 十类社交加 if ok else，实测被拒讲成成功 496→0、零金标、带回归门（已接进 ci.sh 第5步）；档1 加 `effect_applied`/`rejection_reason`【不折金标】=零金标（用户拍 schema）；档2 经济族失败可观测=移金标走 R12（用户拍板）。原提的"四字段统一模型"被 AD2 证明捆错了——修 27.4% 不需要它 |
+| ~~**fixture/scale 门可能 fail-open**~~ ✅**已收（AE2 编号 119）** | 普查约18个量具：真 fail-open【集中在1个】(烘锚流水线)，其余早已 fail-closed、ci.sh 自身干净 | 已堵+负对照：子进程非零立即失败、iso 内容寻址到 HEAD:game、bake 绑 tree_sha 拒空 commit；顺带重烘过期 ledger |
 | **AC2 `vanished` 只 warning** | 删一个具名病例 + 别处强化 ⇒ aggregate 不降而过门 | 具名槽消失应**直接红**；合法删除走**显式 rebaseline**（照抄 R12 的 rebake_history 文化） |
 | **半宏观生产** | 池按人口扩容，但产出触发仍绑少数具名工人 ⇒ N=60 口粮左尾的结构性来源 | 引入镇级 `IndustryState`（labor capacity / backlog）解耦到达过程；具名 NPC 仍供归因。**用干预证，别推断**（U1 已证零假设扰动能消红） |
 
