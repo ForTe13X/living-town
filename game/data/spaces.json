@@ -32,7 +32,7 @@
    "default_floor": "1f"
   },
   "cafe": {
-   "_why": "P3 竖切片：阿丽的咖啡馆真室内。1F 公共咖啡区(吧台/桌椅/咖啡机)、2F 阿丽私人居所(床/书桌)。街门 portal 接 town/outdoor 的咖啡馆门(41,19)，楼梯 portal 接 1F→2F(owner 权限=私人上层)。内容在 interiors.json、渲染走非-town active-space 路径。Tier-A：只 Probe inspect，居民不进(town 仿真一行不动、digest 逐字节不变)。",
+   "_why": "P3 竖切片：阿丽的咖啡馆真室内。1F 公共咖啡区(吧台/咖啡机/甜点柜/吧凳/卡座/菜单牌)、2F 阿丽私人居所(床/衣柜/床头柜/书桌/梳妆镜/相片墙)。街门 portal 接 town/outdoor 的咖啡馆门(41,19)，楼梯 portal 接 1F→2F(owner 权限=私人上层)。内容在 interiors.json、渲染走非-town active-space 路径。Tier-B(★AM1 订正——旧注误写『Tier-A：居民不进、digest 逐字节不变』，与实况矛盾)：带 spatial_address 的居民【真住】非-town 平面并按 portal 跨平面走动——阿丽(aria) spatial_address={cafe,2f,[2,2]} 就住 2F，journey 在镇↔店之间跨平面(_journey_candidates→_route_next_hop→_move_agent)。金标口径：带 advertises 的室内家具经 _compile_interiors 进 world 候选、家具格经 _build_interior_grids 进各平面导航网 ⇒ 动它们/其位置=移金标；纯装饰家具(无 advertises)重排=AM1 实测 golden 12/12 逐字节不变。",
    "kind": "interior",
    "label": "阿丽的咖啡馆",
    "bounds": [

@@ -179,6 +179,22 @@ if [ "${1:-}" = "--shoot" ]; then
       --probe-space "$sid" --probe-floor 1f --shot-fit --shot "$OUT/vg_int_${sid}.png" \
       || { [ "$rc" -eq 0 ] && rc=4; }
   done
+  # ── AM1（编号133）：cafe 2F 像素门采集（同一个 Xvfb）──────────────────────────
+  # 现役室内壳采集只拍 1f（上面 --probe-floor 1f 写死）⇒ cafe 2F 从没被任何门看过（docs/126 §一.2）。
+  # 补拍 cafe 2F 两帧：正常 + `--draw-skip interior_furniture`（家具跳掉的【空 2F】= 真渲染负对照）。
+  # 判据在宿主侧 tools/assert_cafe_2f.py（非空 + 与 1F 可分 + 空2F 会判红=有牙）。rc=7 专给它。
+  # ⚠️ 命名【不用 vg_int_ 前缀】：那前缀会被 assert_interior_shell/assert_furniture_role 当成 space id
+  #    globby 进去（cafe_2f 不是 space ⇒ 壳门会红）。1F 参照直接复用上面的 vg_int_cafe.png。
+  vg_shoot "$OUT/vg_cafe2f.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
+    --resolution ${W}x${H} --single-window -- \
+    --backend logic --seed "$SEED" --warmup-tick "$NOON_TICK" \
+    --probe-space cafe --probe-floor 2f --shot-fit --shot "$OUT/vg_cafe2f.png" \
+    || { [ "$rc" -eq 0 ] && rc=7; }
+  vg_shoot "$OUT/vg_cafe2f_bare.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
+    --resolution ${W}x${H} --single-window -- \
+    --backend logic --seed "$SEED" --warmup-tick "$NOON_TICK" \
+    --probe-space cafe --probe-floor 2f --shot-fit --draw-skip interior_furniture --shot "$OUT/vg_cafe2f_bare.png" \
+    || { [ "$rc" -eq 0 ] && rc=7; }
   # ── AK1：AF2 四季可分门的采集（同一个 Xvfb）——晴天四季 × 昼夜 8 帧 ─────────────
   # 判据在宿主侧 analysis/af2/assert_season.py（原地引用）。晴天 tick 是 f(seed3,day)，见抬头 SEASON_PAIRS。
   # 这批帧【不能复用】上面的 vg_noon/vg_night：那两帧只是 seed3 游戏日3=春，季节门要吃全四季。
@@ -288,7 +304,7 @@ fi
 # rc 分档（必须分开，否则失败信息指向错误方向 —— 误导性诊断和假红一样坏）：
 #   1 昼夜两帧拍不出（含 vg_shoot 三信号任一不过：rc≠0 / 致命日志标记 / 空图）
 #   2 void-gate 判红   3 空间往返采集失败   4 室内帧采集失败
-#   5 季节四季帧采集失败（AK1）   6 降水帧采集失败（AK1）
+#   5 季节四季帧采集失败（AK1）   6 降水帧采集失败（AK1）   7 cafe 2F 帧采集失败（AM1）
 # 2026-07-28 第一版把 1 和 2 混成一个 rc，于是 void-gate 变红时打印的是"渲染环境在位却拍不出帧"——
 # 一条**指向错误方向**的诊断（帧其实拍出来了）。rc=3 是 2026-07-30 加的第三种，理由同上。
 # rc=5/6 是 AK1（2026-08-06）加的第五、六种：季节/降水的采集失败与上面各步修法不同，分开报。
@@ -310,6 +326,10 @@ if [ $SHOT_RC -eq 5 ]; then
 fi
 if [ $SHOT_RC -eq 6 ]; then
   echo "  ❌ VISUAL GATE：降水帧采集失败（前面几步都过了）—— 见上面的 shot FAIL precip/* 行"
+  exit 1
+fi
+if [ $SHOT_RC -eq 7 ]; then
+  echo "  ❌ VISUAL GATE：cafe 2F 帧采集失败（前面几步都过了）—— 见上面的 shot FAIL vg_cafe2f* 行"
   exit 1
 fi
 if [ $SHOT_RC -ne 0 ]; then
@@ -362,6 +382,11 @@ SEARC=$?
 # 同样**不短路**：吃上面 precip/ 里 12 帧（冬雪 on/off + 非冬雨 on/off × 3 seed）。判据在 analysis/ai1/assert_precip.py。
 "$PY" analysis/ai1/assert_precip.py "$OUT/precip"
 PPRC=$?
+# cafe 2F 像素门（AM1 / 编号133）。同样**不短路**：守第十条性质（"多楼层里 2F 真被渲出家具、且与 1F 可分"）。
+# 吃上面拍的 vg_cafe2f.png / vg_cafe2f_bare.png / vg_int_cafe.png（1F 参照复用壳门那张，不额外渲）。
+# 负对照【就在判据内】：vg_cafe2f_bare 是 --draw-skip interior_furniture 的空 2F，A/C 两臂拿它自证有牙。
+"$PY" tools/assert_cafe_2f.py "$OUT"
+C2RC=$?
 [ $EPHEMERAL -eq 1 ] && rm -rf "$OUT"
 [ $ARC -ne 0 ] && exit $ARC
 [ $RRC -ne 0 ] && exit $RRC
@@ -370,4 +395,5 @@ PPRC=$?
 [ $FRC -ne 0 ] && exit $FRC
 [ $SEARC -ne 0 ] && exit $SEARC
 [ $PPRC -ne 0 ] && exit $PPRC
+[ $C2RC -ne 0 ] && exit $C2RC
 exit $TRC

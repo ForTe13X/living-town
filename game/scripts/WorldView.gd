@@ -1430,7 +1430,10 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 	# 家具（按 slot 程序化）。★ S3：同一个 slot 在不同用途的房间里画成不同的东西 —— 见 _furniture_role()。
 	# role 每层只算一次（它只依赖本层的 authored 家具清单 + areas[].type，与逐件家具无关）。
 	var role := _furniture_role(sid, content)
-	for fr in content.get("furniture", []):
+	# `_ac("interior_furniture", …)` = 零重排的绘制闸门（出货 `_askip==""` ⇒ 原样返回集合 ⇒ 逐字节不变）。
+	# AM1 的 2F 像素门用 `--draw-skip interior_furniture` 拍一张【无家具】的 2F 作【真渲染负对照】：
+	# 家具被跳掉 ⇒ 只剩地板/墙 ⇒ assert_cafe_2f 的"非空/可分"必红（= 这道门有牙，见 tools/assert_cafe_2f.py）。
+	for fr in _ac("interior_furniture", content.get("furniture", [])):
 		var fp: Array = (fr as Dictionary).get("pos", [0, 0])
 		_draw_interior_furniture(String((fr as Dictionary).get("slot", "")), Vector2(ox + int(fp[0]) * T, oy + int(fp[1]) * T), role)
 	# P3 打磨：夜间氛围（暖底光 + 每盏灯源暖池，占用的床更旺）——画在家具之上、居民之下，居民自身仍清晰
@@ -1634,6 +1637,48 @@ func _draw_interior_furniture(slot: String, base: Vector2, role: String = "livin
 			for k in range(4):
 				draw_rect(Rect2(base.x + T * 0.12 + k * T * 0.17, base.y + T * 0.62 - k * T * 0.13, T * 0.2, T * 0.15), D_STAIR, true)
 				draw_rect(Rect2(base.x + T * 0.12 + k * T * 0.17, base.y + T * 0.62 - k * T * 0.13, T * 0.2, T * 0.04), D_STAIR_TOP, true)
+		# ── AM1（编号133）：cafe 身份分区新增的纯装饰 slot ─────────────────────────
+		# 咖啡区：甜点柜 / 吧凳 / 吊灯 / A 字菜单牌（+复用 counter/coffee/杯碟架）；
+		# 私宅：衣柜 / 床头柜台灯 / 梳妆镜 / 相框（公共 vs 私人两套家具语汇）。
+		# 全部无 advertises ⇒ 不进 world 候选（只挡格 + 渲染），golden 已实测 12/12 逐字节不变。
+		# 每件都严格画在本格 [base, base+T] 内（不越格污染墙面采样带 col0/7）。
+		"pastry":                                    # 玻璃甜点柜（咖啡区）：浅木柜体 + 玻璃罩 + 糕点
+			draw_rect(Rect2(base.x + T * 0.12, base.y + T * 0.5, T * 0.76, T * 0.36), X_WOOD_MID, true)
+			draw_rect(Rect2(base.x + T * 0.12, base.y + T * 0.5, T * 0.76, T * 0.06), D_FURN_HI, true)          # 台面高光
+			draw_rect(Rect2(base.x + T * 0.14, base.y + T * 0.2, T * 0.72, T * 0.32), Color(P_WATER_LIT, 0.32), true)  # 玻璃罩
+			draw_rect(Rect2(base.x + T * 0.14, base.y + T * 0.2, T * 0.72, T * 0.32), Color(X_COLD_WHITE, 0.5), false, 2.0)  # 玻璃框
+			draw_circle(Vector2(base.x + T * 0.32, base.y + T * 0.42), T * 0.08, X_SIGNAL_NEG)                  # 红蛋糕
+			draw_circle(Vector2(base.x + T * 0.56, base.y + T * 0.44), T * 0.07, X_PARCHMENT)                  # 奶油点心
+			draw_rect(Rect2(base.x + T * 0.68, base.y + T * 0.34, T * 0.14, T * 0.16), P_RES_ROOF, true)       # 一块糕
+		"barstool":                                  # 吧凳（咖啡区）：高柱 + 圆座 + 脚踏环
+			draw_rect(Rect2(base.x + T * 0.45, base.y + T * 0.4, T * 0.1, T * 0.44), P_COM_FOOT, true)         # 高柱
+			draw_rect(Rect2(base.x + T * 0.4, base.y + T * 0.64, T * 0.2, T * 0.04), P_COM_LINE, true)         # 脚踏环
+			draw_circle(Vector2(base.x + T * 0.5, base.y + T * 0.36), T * 0.19, X_WOOD_MID)                    # 圆座
+			draw_circle(Vector2(base.x + T * 0.5, base.y + T * 0.33), T * 0.15, D_FURN_HI)                     # 座面高光
+		"menu":                                      # A 字黑板菜单牌（咖啡区）：木框 + 深绿板 + 粉笔行 + 支腿
+			draw_rect(Rect2(base.x + T * 0.24, base.y + T * 0.18, T * 0.52, T * 0.56), X_WOOD_MID, true)       # 板框
+			draw_rect(Rect2(base.x + T * 0.29, base.y + T * 0.23, T * 0.42, T * 0.46), P_FOLIAGE_D, true)      # 黑板面（深绿）
+			for k in range(3):                                                                               # 粉笔行
+				draw_rect(Rect2(base.x + T * 0.33, base.y + T * (0.3 + k * 0.12), T * (0.34 if k == 0 else 0.28), T * 0.035), Color(X_COLD_WHITE, 0.85), true)
+			draw_line(Vector2(base.x + T * 0.32, base.y + T * 0.74), Vector2(base.x + T * 0.24, base.y + T * 0.88), X_WOOD_MID, 3.0)  # 支腿
+			draw_line(Vector2(base.x + T * 0.68, base.y + T * 0.74), Vector2(base.x + T * 0.76, base.y + T * 0.88), X_WOOD_MID, 3.0)
+		"wardrobe":                                  # 高衣柜（卧室）：柜体 + 双门缝 + 铜把手
+			draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.08, T * 0.68, T * 0.8), X_WOOD_MID, true)        # 柜体
+			draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.08, T * 0.68, T * 0.8), D_WOOD_LINE, false, 2.0) # 边框
+			draw_line(Vector2(base.x + T * 0.5, base.y + T * 0.1), Vector2(base.x + T * 0.5, base.y + T * 0.86), D_WOOD_LINE, 2.0)  # 门缝
+			draw_rect(Rect2(base.x + T * 0.2, base.y + T * 0.12, T * 0.28, T * 0.74), Color(D_FURN_HI, 0.22), true)  # 左门高光
+			draw_circle(Vector2(base.x + T * 0.44, base.y + T * 0.5), T * 0.035, X_GOLD)                       # 左把手
+			draw_circle(Vector2(base.x + T * 0.56, base.y + T * 0.5), T * 0.035, X_GOLD)                       # 右把手
+		"vanity":                                    # 梳妆镜（卧室）：妆台 + 镜框 + 镜面 + 反光条
+			draw_rect(Rect2(base.x + T * 0.28, base.y + T * 0.56, T * 0.44, T * 0.14), X_WOOD_MID, true)       # 妆台
+			draw_rect(Rect2(base.x + T * 0.3, base.y + T * 0.14, T * 0.4, T * 0.44), P_COM_FOOT, true)         # 镜框
+			draw_rect(Rect2(base.x + T * 0.34, base.y + T * 0.18, T * 0.32, T * 0.36), Color(P_WATER_LIT, 0.7), true)  # 镜面
+			draw_line(Vector2(base.x + T * 0.4, base.y + T * 0.2), Vector2(base.x + T * 0.6, base.y + T * 0.5), Color(X_COLD_WHITE, 0.55), 3.0)  # 反光条
+		"picture":                                   # 相框（挂墙，卧室私人相片墙）：木框 + 画面 + 地平线 + 暖点
+			draw_rect(Rect2(base.x + T * 0.24, base.y + T * 0.2, T * 0.52, T * 0.5), X_WOOD_MID, true)         # 木框
+			draw_rect(Rect2(base.x + T * 0.3, base.y + T * 0.26, T * 0.4, T * 0.38), P_WATER_LIT, true)        # 画面（天）
+			draw_rect(Rect2(base.x + T * 0.3, base.y + T * 0.48, T * 0.4, T * 0.16), P_FOLIAGE_M, true)        # 地平线（草）
+			draw_circle(Vector2(base.x + T * 0.6, base.y + T * 0.35), T * 0.05, X_GOLD)                        # 暖点（日/月）
 		_:
 			draw_rect(Rect2(base.x + 9, base.y + 12, T - 18, T - 18), P_RES_FOOT, true)
 

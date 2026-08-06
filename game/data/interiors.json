@@ -1,5 +1,5 @@
 {
- "_note": "P3 竖切片室内内容：space -> floor -> {label, floor(地板材质), furniture[]}。纯渲染 / Probe inspect-only（Tier-A）：不进 Sim 仿真、不生成候选、不抽 RNG → digest 逐字节不变。furniture={slot(渲染前缀,决定程序化画法), pos:[x,y]（该 Space 内的格,从 0,0）, label?}。外墙由 Space bounds 边框自动画（门口那格留缺）、门/楼梯锚点用 spaces.json 的 portal。缺此文件=非-town Space 回落占位网格。",
+ "_note": "P3 竖切片室内内容：space -> floor -> {label, floor(地板材质), furniture[]}。furniture={slot(渲染前缀,决定程序化画法), pos:[x,y]（该 Space 内的格,从 0,0）, label?, advertises?}。★两条 Sim 读取路径（非纯渲染，务必分清）：① 带 advertises 的家具经 Sim._compile_interiors 编译成 world 候选对象（改它/改其 advertises/挪位 = 移金标）；② 家具格经 _build_interior_grids 进各平面导航网（WALKABLE_SLOTS=stairs/rug/window 放行，其余【挡格】）⇒ 在原先空的格上新增挡格会重排居民寻路、漂移逐tick链（AM1 实测：digest/event_digest 不动但 chain 漂 ⇒ golden 红）。∴纯装饰家具【零金标的充要条件是不改导航挡格集】：换 slot 而位置+walkable 不变、或只在空格加 walkable(rug)、或挂墙装饰落边界格——AM1 按此实测 golden 12/12 逐字节不变（含 chain）。外墙由 Space bounds 边框自动画（门口那格留缺）、门/楼梯锚点用 spaces.json 的 portal。缺此文件=非-town Space 回落占位网格。",
  "cafe": {
   "1f": {
    "label": "一层 · 咖啡区",
@@ -52,14 +52,14 @@
      "label": "咖啡机"
     },
     {
-     "slot": "table",
+     "slot": "pastry",
      "pos": [
       2,
       3
      ]
     },
     {
-     "slot": "chair",
+     "slot": "barstool",
      "pos": [
       2,
       4
@@ -81,14 +81,14 @@
      ]
     },
     {
-     "slot": "chair",
+     "slot": "barstool",
      "pos": [
       5,
       4
      ]
     },
     {
-     "slot": "plant",
+     "slot": "menu",
      "pos": [
       1,
       4
@@ -99,6 +99,13 @@
      "pos": [
       3,
       2
+     ]
+    },
+    {
+     "slot": "rug",
+     "pos": [
+      4,
+      4
      ]
     }
    ]
@@ -114,6 +121,13 @@
       1
      ],
      "label": "下楼"
+    },
+    {
+     "slot": "wardrobe",
+     "pos": [
+      6,
+      1
+     ]
     },
     {
      "slot": "bed",
@@ -140,10 +154,10 @@
      "label": "书桌"
     },
     {
-     "slot": "shelf",
+     "slot": "vanity",
      "pos": [
       6,
-      1
+      4
      ]
     },
     {
@@ -154,16 +168,30 @@
      ]
     },
     {
-     "slot": "plant",
-     "pos": [
-      6,
-      4
-     ]
-    },
-    {
      "slot": "window",
      "pos": [
       7,
+      3
+     ]
+    },
+    {
+     "slot": "rug",
+     "pos": [
+      2,
+      3
+     ]
+    },
+    {
+     "slot": "picture",
+     "pos": [
+      0,
+      2
+     ]
+    },
+    {
+     "slot": "picture",
+     "pos": [
+      0,
       3
      ]
     }
