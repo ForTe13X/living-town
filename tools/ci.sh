@@ -579,6 +579,23 @@ step "4f. VoiceGate 台词覆盖门 (每个被 offer 的候选动作都要有本
   --seeds "${CI_VOICE_SEEDS:-1-3}" --days "${CI_VOICE_DAYS:-60}" 2>&1 | tee "$LT_LOG/voicegate.log"
 [ "${PIPESTATUS[0]}" -eq 0 ] && ok "VoiceGate 台词覆盖门" || bad "VoiceGate 台词覆盖门"
 
+step "4g. #43 观察侧抗回归门 (natural 必绿 / vendoronly·buyeronly·partiesonly 必红；外审 2026-08-06 P0.③)"
+# 为什么必须有它：#43 的负控（真第三方目击者必绿 / witnesses 合成为只剩交易一方·双方自证必红）
+#   此前只在 docs/112 §四、docs/125 §五 的【手动 census】里各跑过一次——**没有任何机器在守**。
+#   外审证伪那是纸门：将来若有人把观察侧判据（Invariants.gd #43 ①臂 wn_other）退回「只排商贩」
+#   （docs/112 基线，AG2/docs/125 收紧之前），buyeronly 会从红变绿，而普通 S0 全绿 ⇒ 谁都不会发现。
+#   本门把那 4 例接进 CI：任一例判决与预期不符即判红（**读的是 census 打的 hard_fails JSON，不是退出码**——
+#   census 恒 quit(0)、本机 godot push_error 不改退出码，故 gate 内部对每臂做四信号硬化，判据/§2.5 见
+#   tools/aa3_regression_gate.sh 抬头 + docs/132）。
+# 成本：seed 1 × 30 天 × 4 臂各一次 sim（census 的 --mutate 每次只收一个臂、每 seed 各跑一次 sim，
+#   想一次 sim 复用 4 臂须改 game/**——本棒禁区），约 16-20s；buy_total=43 = 8.6× 豁免线 TRADE_MIN_SALES=5。
+# 判绿靠【打印的判决行】而不是退出码：gate 已在内部把 4 臂的 hard_fails 逐一比对预期，
+#   并做同 vg_shoot 的致命标记扫描；这里只认它那行 `AA3 #43 REGRESSION GATE: PASS ✅`。
+GODOT="$GODOT" PYTHON="$PY" LT_LOG="$LT_LOG" bash tools/aa3_regression_gate.sh 2>&1 | tee "$LT_LOG/aa3.log"
+grep -q 'AA3 #43 REGRESSION GATE: PASS' "$LT_LOG/aa3.log" \
+  && ok "#43 观察侧抗回归门（4 例判决 == 预期：natural 绿 / 三负例红 hard=[43]）" \
+  || bad "#43 观察侧抗回归门（有例判决与抗回归预期不符，见上——观察侧可能退回只排 vendor）"
+
 step "5. unit / integration scenes"
 # player_touch_test：C3 的 31 条 + C8 的 13 条断言（触屏按钮路径 ≡ 按键路径、7 个动词可分辨、
 #   观察台两档"卡片是详情的逐行前缀"）。它在 2026-07-26 Wave C 里写好后【一直没进 CI】——
