@@ -74,7 +74,7 @@
 - **叙事 / storylets**（`game/scripts/narrative/**` + `game/narrative_lab/**`）：已有一条真实子系统在 `codex/narrative`。下一步是**并入 trunk**（先 reconcile docs 冲突），然后在其上做 storylets（预置的多幕小剧本）。
 - **美术 / visual**（`WorldView.gd` + `game/assets/**`）：室内分色（R2）、家具语义（S3）、树丛（V3）、HUD（T3）已落 trunk；✅**AF2（编号 122）落了季节视觉**——实测夏↔春本来只 ΔE00 2.71（卡 JND、眼验糊成一块），已拉到 ΔE00≈7，零金标（只动夏季帧、CI 春帧逐字节不变）；并更正了一处过期注释（P_NIGHT 从来不是夜间暗面罩，夜色是 Main._daylight 乘子+加色光）。⚠️**遗留**：四季可分门 `assert_season.py` 写好了（改前红/改后绿）但**未接线**（需 visual_gate.sh 多拍 8 张四季昼夜帧，非平凡）⇒ 跟进项。**但全部只在桌面验过**——真机待当前 HEAD 构建（§四）。下一块空地：**室外建筑立面、天气视觉、其余三季夜间光照**。
 - **NPC / 社会产出**：手艺痕迹（V1/Z2 四门）、商贩消费侧痕迹（AA3）已落。下一步是**把社会产出接到叙事**（手艺弧、买卖弧进 storylet），以及 §二那个事件结果模型让"尝试/被拒/成功"在 NPC 记忆与故事里区分。
-- **map / interior（⬆ 现在的最高产品价值轨——Codex §三.7/§四.P2B 把它抬到 wiki 之上）**：`map.json` 权威可走性 + 室内模板已成熟。Codex 明确用户当前优先的是 **map/building/interior + 可拖拽探索 + 多楼层**，而不是"容易绿"的 wiki。**AG3 设计棒在跑（编号 126）**：一个 **town-completeness 纵切**——选一栋建筑 + 周边街区，做完整外立面→不同室内布局→多楼层 portal→拖拽/探查→返回世界坐标→视觉回归。**该轨不碰社会决策 schema** ⇒ 能与 §一/§二 波并行。
+- **map / interior（⬆ 现在的最高产品价值轨——Codex §三.7/§四.P2B 把它抬到 wiki 之上）**：⚠️**AG3 设计（编号 126）把这一轨的框架整个证伪了**：纵切六段（外立面 `WorldView:1014-1050` / 室内布局 `:1310-1359` / 多楼层 portal `spaces.json`+`SpaceGraph:71-83` / 拖拽探查 `ProbeController:245-292` / 返回世界坐标 `go_home:2456` / 视觉回归 `SpaceShot`+`space_roundtrip.sh`）**在 trunk 全部已跑**，**cafe（阿丽的咖啡馆，commercial [37,13,9,7]，1F 公共区+2F 阿丽居所）就是已精修的两层样板**（同 AF2 季节：H1/S3"有 X≠X 做好了"的反向发作，已复核属实）。⇒ 这一轨的真活是**收口+立证+补门+纠腐烂**，不是绿地重建。**三处已量到的缺口（收口目标）**：① `_portal_click`（`Main:2439-2467`）**缺 `queue_redraw`** ⇒ 暂停点门世界层不刷新（疑似真 bug，须 chain-dump 复现，非当场断言）；② **cafe 2F 从没被任何门看过**（`visual_gate.sh:161` 写死 `--probe-floor 1f`）；③ `spaces.json:35` cafe `_note` 还写"Tier-A：居民不进、digest 逐字节不变"——**与实况自相矛盾**（已复核 aria `spatial_address={cafe,2f}` 真住那，Sim `:896`/`:1618` journey 跨平面）⇒ **这是又一处数据注释腐烂**。⚠️改 `_note`/`spaces.json` 会动 `game/data` tree sha、可能牵动 provenance 锚 ⇒ 走小心的收口棒、别当零成本。**该轨不碰社会决策 schema** ⇒ 能与 §一/§二 波并行。
 - **wiki（⬇ 延后）**：**镇民百科**（NPC 职业/关系/信念/大事记，从 `event_log`+`beliefs` 生成的只读投影，不进金标）。AD1 已落地过基座（town_wiki/v1）。⚠️ Codex §三.7：wiki 冲突少但**不是当前最高产品价值**——选它是在优化"容易绿"而非产品目标。**延到事件结果 schema 与 state projection 稳定之后**再做增强。
 
 ⚠️ **并行纪律**：每根棒的 `owns` 必须是**文件级不相交**的（本 session 反复验证有效）；docs 编号提前占；`README.md`/`docs/05`/`docs/README.md` 是**高冲突面**，同一时刻最多一根棒碰。
@@ -130,11 +130,11 @@ Phase 5  才恢复多镇：生产 capacity 与具名 NPC 解耦 → N=24/40/60 h
 
 **已落地（本波 AG）**：
 - ✅**AG1（编号 124）**：半宏观生产设计已合入 trunk。四处载重坐标经协调者复核逐条属实（`_produce_for` 守卫、克隆不入岗位、ρ=0.618、N=60 无门），与 Codex §三.12 独立收敛。**推荐路 (c) 但以证伪闸为前置；实现待用户 §0.8。**
+- ✅**AG3（编号 126）**：town-completeness 纵切设计已合入 trunk。四处载重坐标经复核逐条属实（cafe 两层样板已跑、aria 真住 cafe/2f、`_portal_click` 缺 `queue_redraw`、cafe 2F 无门）。**框架被证伪**：纵切已存在，真活是收口三缺口（见 §三 map/interior 行）。R1 边界立准：agent space/floor=金标 Tier-B、Probe active_space/floor=view-only。
 - ✅**协调者本人**：`.github/workflows/ci.yml` timeout 15→35（解锁候选 PR 的 exact-head 收据）；本文吸收 Codex 2026-08-06 两轮更正。
 
-**正在跑（本波 AG，owns 文件级不相交）**：
+**正在跑（本波 AG）**：
 - **AG2（编号 125 + 改 `game/bench` + 订正 112）**：#43 观察侧买家防线——排除 actor+target 双端点、补 `buyeronly`/`partiesonly` 负控。Phase-1 抗回归。
-- **AG3（编号 126）**：town-completeness 纵切设计（map/interior/多楼层/拖拽）——Codex 抬到最高产品价值的功能轨。
 
 **AG 落地后的候选队列（按 Codex 更新后的顺序）**：
 1. **P0 收敛**：给 `integration/batons` 配 required PR/check + 冻结候选 SHA；把 CI 拆成并行 required jobs（§四·2 的"正式"方案）。
