@@ -429,3 +429,243 @@ Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
   [random(full)] seed=2 L/C=100% d=499154154 e=8027659595871644463 饿穿=0 硬=✅ 确定=✅ 闭集=4770/4770 ✅
   [random(full)] seed=3 L/C=100% d=231365252 e=3987575361119739832 饿穿=0 硬=✅ 确定=✅ 闭集=4722/4722 ✅
   [random(full)] seed=4 L/C=100% d=3682116542 e=1398845606605348359 饿穿=0 硬=✅ 确定=✅ 闭集=4726/4726 ✅
+  [random@K=2] seed=1 L/C=67% d=1361910331 e=6005092663868711504 饿穿=0 硬=✅ 确定=✅ 闭集=4570/4570 ✅
+  [random@K=2] seed=2 L/C=67% d=3707470819 e=2168596808618325216 饿穿=0 硬=✅ 确定=✅ 闭集=4448/4448 ✅
+  [random@K=2] seed=3 L/C=67% d=205147078 e=2523119922672908526 饿穿=0 硬=✅ 确定=✅ 闭集=4468/4468 ✅
+  [random@K=2] seed=4 L/C=65% d=2642312504 e=7017393011191926476 饿穿=0 硬=✅ 确定=✅ 闭集=4518/4518 ✅
+  ── 自检臂（gate-internal，绝不在出货路径上）：C 臂的负对照，判据是【必须红】──
+    [inject:fabricate] seed=1 伪造=555 抓到=555/2342 ✅ 探针有判别力 | 引擎原样落地=406 ✅ 引擎不强制闭包（红线#2 靠的就是这道门） | 世界轨迹 vs 干净臂: d=61683394 ≠ 672036939 已移动
+    [inject:fabricate] seed=2 伪造=556 抓到=556/2378 ✅ 探针有判别力 | 引擎原样落地=395 ✅ 引擎不强制闭包（红线#2 靠的就是这道门） | 世界轨迹 vs 干净臂: d=2884899332 ≠ 499154154 已移动
+    [inject:fabricate] seed=3 伪造=563 抓到=563/2359 ✅ 探针有判别力 | 引擎原样落地=417 ✅ 引擎不强制闭包（红线#2 靠的就是这道门） | 世界轨迹 vs 干净臂: d=1658572504 ≠ 231365252 已移动
+    [inject:fabricate] seed=4 伪造=557 抓到=557/2392 ✅ 探针有判别力 | 引擎原样落地=409 ✅ 引擎不强制闭包（红线#2 靠的就是这道门） | 世界轨迹 vs 干净臂: d=674072690 ≠ 3682116542 已移动
+
+=== BackendGate: PASS ✅  (硬不变量 8/8, 同seed两跑一致 8/8, 闭集封闭 8/8, 自检臂必红 4/4, 伪造落地 4/4) ===
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)
+  ✅ BackendGate 外部后端门（硬不变量/两跑一致/闭集封闭）
+  ⏱  上一步 4d. 用时 82s
+### 4e. ModelPathGate 出货 prompt 编码门 (闭集编号字母表 / 示例编号 / 裁剪保序)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: GDExtension dynamic library not found: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: open_library (core/extension/gdextension.cpp:740)
+ERROR: Error loading extension: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: load_extensions (core/extension/gdextension_manager.cpp:329)
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+=== ModelPathGate · 模型路径对照 seeds=1-4 days=8 N=12 ===
+  [A] 闭集选号编码契约
+    ✅ 系统 prompt 无字面示例编号（残留数字 ''）
+    ✅ [0,cap) 的 label 全是单个 A-Z（越界：）
+    ✅ label↔index 往返恒等（破：）
+    ✅ 数字不再是合法编号（fail-closed 到引擎兜底）
+    ✅ 40 候选 → 裁到 26（实测 26）
+    ✅ 裁剪后保持枚举序（不是按 score 降序喂模型）—— 实测首项 'a14'（应为 'a14'）
+    ✅ ≤cap 时原样返回、保持枚举序
+    ✅ parse_decision(label(i)) ≡ candidates[i]（破：）
+ERROR: Parse JSON failed. Error at line 0: Expected 'true', 'false', or 'null', got 'A'
+   at: parse_string (core/io/json.cpp:624)
+   GDScript backtrace (most recent call first):
+       [0] parse_decision (res://scripts/AIBackend.gd:894)
+       [1] _part_a (res://bench/ModelPathGate.gd:153)
+       [2] _ready (res://bench/ModelPathGate.gd:70)
+    ✅ prose fail-closed 仍然有效
+  [B] SLM 熔断器复位
+    ✅ 起点：熔断器是关的
+WARNING: [SLM] 熔断触发：连续 6 次超时且无成功 → 停发 SLM、回退 logic 地板（防原生内存泄漏 OOM，见 docs/34；换模型/换推理档可解除）
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] decide (res://scripts/AIBackend.gd:858)
+       [1] _trip (res://bench/ModelPathGate.gd:246)
+       [2] _part_b (res://bench/ModelPathGate.gd:185)
+       [3] _ready (res://bench/ModelPathGate.gd:71)
+    ✅ 连续 6 次超时 → 熔断器开（实测触发于第 6 次）
+    ✅ 熔断后 decide() 走引擎地板（不再 fire）
+[SLM] 熔断解除：换权重文件 → __modelpathgate_probe.gguf（新的失败假设，不继承旧熔断）
+    ✅ set_model_path() 后熔断器关
+    ✅ set_model_path() 后连败计数清零（否则新模型只剩 1 次机会，不是 6 次）
+WARNING: [SLM] 熔断触发：连续 6 次超时且无成功 → 停发 SLM、回退 logic 地板（防原生内存泄漏 OOM，见 docs/34；换模型/换推理档可解除）
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] decide (res://scripts/AIBackend.gd:858)
+       [1] _trip (res://bench/ModelPathGate.gd:246)
+       [2] _part_b (res://bench/ModelPathGate.gd:204)
+       [3] _ready (res://bench/ModelPathGate.gd:71)
+    ✅ ③ 前置：熔断器再次打开
+    ✅ request_backend() 后熔断器**仍然开着**（这条路刻意没改）
+[SLM] 熔断解除：切换推理档 → CPU（新的失败假设，不继承旧熔断）
+    ✅ set_slm_use_gpu() 后熔断器关
+  [C] random(full) 臂逐 seed 摘要 ×【提交锚】比对
+    seed=1  inv_digest=129274828  event_digest=351755360139655785  landed=681
+    seed=2  inv_digest=1879144336  event_digest=7275795326261309778  landed=664
+    seed=3  inv_digest=833288000  event_digest=2025998328644289860  landed=664
+    seed=4  inv_digest=3038319620  event_digest=8321786697441672602  landed=646
+    候选规模：max|C|=40，|C|>26 的决策点 88/2655（旧上限 |C|>36：4/2655）
+    ✅ 锚在位且含本网格 days8_n12（锚=res://bench/modelpath_anchor.json；重烘：--bake-anchor game/bench/modelpath_anchor.json）
+    ✅ seed=1 逐字节对上锚（差：）
+    ✅ seed=2 逐字节对上锚（差：）
+    ✅ seed=3 逐字节对上锚（差：）
+    ✅ seed=4 逐字节对上锚（差：）
+    ✅ 候选规模对上锚——裁剪仍然真的在生效（差：）
+
+=== ModelPathGate: PASS ✅  (失败 0)
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)
+  ✅ ModelPathGate 模型路径编码门
+  ⏱  上一步 4e. 用时 5s
+### 4f. VoiceGate 台词覆盖门 (每个被 offer 的候选动作都要有本人格的话可说)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: GDExtension dynamic library not found: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: open_library (core/extension/gdextension.cpp:740)
+ERROR: Error loading extension: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: load_extensions (core/extension/gdextension_manager.cpp:329)
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+VoiceGate  seeds=1-3 days=60
+  覆盖：300 个 (人格,动作) 对 · 35 个不同动作
+  ✅ 结构覆盖：阵容 12 个人格全部被枚举到（不靠数量地板）
+  ✅ 每个被 offer 的候选都有本人格的话可说（0 对为空）
+=== VoiceGate: PASS ✅ ===
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)
+  ✅ VoiceGate 台词覆盖门
+  ⏱  上一步 4f. 用时 20s
+### 5. unit / integration scenes
+  ℹ  story_test 夹具 = seeds 1-12 × 40 天 · goals_test 夹具 = seeds 1-12 × 14 天
+  ✅ m2_test (2s)
+  ✅ reqlife_test (1s)
+  ✅ player_agency_test (4s)
+  ✅ player_touch_test (8s)
+  ✅ s4_replay_test (1s)
+  ✅ space_test (1s)
+  ✅ save_load_test (1s)
+  ✅ goals_test (68s)
+  ✅ story_test (185s)
+  ✅ event_prose_test (1s)
+  ⏱  上一步 5. 用时 278s
+### 6. 视觉门：昼夜 + 界外层重画 + 空间往返 + 岸线 + 室内外壳 + 家具语义（无渲染环境时自动 SKIP，不假红）
+  runner=docker  mode=require  game=E:/Documents/Dev/June/26th/.claude/worktrees/agent-aef98a97e7157ecec/game  out=/tmp/tmp.V5Z6iWDDvX
+  shot ok   vg_night.png (tick=488)
+  shot ok   vg_noon.png (tick=600)
+  void-gate ok   (静态不重画 + settle 期真的画过 + 空间往返必重画)
+  space-roundtrip 采集 ok  (town_before → interior → town_after)
+  shot ok   vg_int_home.png
+  shot ok   vg_int_home2.png
+  shot ok   vg_int_cafe.png
+  shot ok   vg_int_shop.png
+  shot ok   vg_int_wash.png
+  shot ok   vg_int_work.png
+  shot ok   vg_int_library.png
+  base  正午帧世界主色 = (134, 173, 79)  im.size=(1280, 768)  (tod=0.5000 => _daylight 恰为纯白 => 它【就是】未调制基色)
+  PASS A1 夜帧  tick=488 tod=0.0333  im.size=(1280, 768)  world_mode=(57, 82, 63)  expect=(57, 82, 63)  dmax=0 (tol=0)
+  PASS A2 夜 (57, 82, 63) != 昼 (134, 173, 79)
+=== DAYNIGHT GATE: PASS ===
+  帧 1280x768  mode=portal space=cafe tick=600  cam_same=True  void_draws: before=1 interior=1 after=2
+  PASS A[map      ] rect=(290, 122, 990, 646) 变化像素=0/366800 (0.000%) 首例=None 最大通道差=0
+  PASS A[band_top ] rect=(288, 44, 992, 116) 变化像素=0/50688 (0.000%) 首例=None 最大通道差=0
+  PASS A[band_bot ] rect=(288, 652, 992, 690) 变化像素=0/26752 (0.000%) 首例=None 最大通道差=0
+  PASS B[before/band_top ] n=50688 颜色数=99(≥32) 标准差=29.39(≥10.0)
+  PASS B[before/band_bot ] n=26752 颜色数=1126(≥32) 标准差=31.35(≥10.0)
+  PASS B[after/band_top ] n=50688 颜色数=99(≥32) 标准差=29.39(≥10.0)
+  PASS B[after/band_bot ] n=26752 颜色数=1126(≥32) 标准差=31.35(≥10.0)
+  PASS C[interior] 与 town_before 不同的像素=98.32% (≥20%) —— 证明这一趟真的进过 cafe
+=== ROUNDTRIP GATE: PASS ===
+vg_noon.png  1280x768
+   池心取样 (599, 145, 681, 194)  4018 px  ⇒ distinct=12   [((31, 161, 175), 3785), ((56, 186, 184), 67), ((51, 196, 193), 56)]
+   参考差 REF=141.31  (草众数 (134, 173, 79) → 水众数 (31, 161, 175))   台阶阈值 noise=21.20
+   ★过渡折线/直线 path median=1.735  p10=1.214  一步直达占比=3.2%  (n=63 条剖线有完整 草→水 过渡段)
+   跨岸剖线 n=66  诊断 cross/REF median=0.157   (绝对 cross median=22.16 p90=66.07 · 诊断 win_max=170.19 被岸边装饰钉死，不判定)
+   台阶数   p90=6 median=4 min=2
+vg_night.png  1280x768
+   池心取样 (599, 145, 681, 194)  4018 px  ⇒ distinct=12   [((13, 41, 59), 3785), ((23, 46, 61), 67), ((21, 48, 64), 56)]
+   参考差 REF=60.27  (草众数 (57, 82, 63) → 水众数 (13, 41, 59))   台阶阈值 noise=9.04
+   ★过渡折线/直线 path median=1.813  p10=1.438  一步直达占比=6.3%  (n=63 条剖线有完整 草→水 过渡段)
+   跨岸剖线 n=66  诊断 cross/REF median=0.664   (绝对 cross median=40.01 p90=47.84 · 诊断 win_max=72.95 被岸边装饰钉死，不判定)
+   台阶数   p90=5 median=4 min=1
+
+  ✅ vg_noon.png：distinct=12 ≥ 2 · path median=1.735 ≥ 1.25 · 一步直达占比 3.2% ≤ 25% · 台阶 median=4 ≥ 2
+
+  ✅ vg_night.png：distinct=12 ≥ 2 · path median=1.813 ≥ 1.25 · 一步直达占比 6.3% ≤ 25% · 台阶 median=4 ≥ 2
+
+=== POND GATE PASS ✅ ===
+[INTSHELL] cafe       type=commercial   墙主面众数=#5a4028  (12272/16224 采样点)
+[INTSHELL] home       type=residential  墙主面众数=#886d49  (11616/14520 采样点)
+[INTSHELL] home2      type=residential  墙主面众数=#836a48  (14384/17360 采样点)
+[INTSHELL] library    type=public       墙主面众数=#556169  (12168/16224 采样点)
+[INTSHELL] shop       type=commercial   墙主面众数=#5a4028  (12272/16224 采样点)
+[INTSHELL] wash       type=public       墙主面众数=#556169  (11616/14520 采样点)
+[INTSHELL] work       type=workshop     墙主面众数=#44423e  (11616/14520 采样点)
+[INTSHELL] 7 栋 / 4 类：commercial, public, residential, workshop
+    cafe       home       异类     ΔE= 19.26  ok
+    cafe       home2      异类     ΔE= 17.72  ok
+    cafe       library    异类     ΔE= 29.50  ok
+    cafe       shop       同类     ΔE=  0.00  ok
+    cafe       wash       异类     ΔE= 29.50  ok
+    cafe       work       异类     ΔE= 18.28  ok
+    home       home2      同类     ΔE=  1.98  ok
+    home       library    异类     ΔE= 32.21  ok
+    home       shop       异类     ΔE= 19.26  ok
+    home       wash       异类     ΔE= 32.21  ok
+    home       work       异类     ΔE= 29.68  ok
+    home2      library    异类     ΔE= 30.54  ok
+    home2      shop       异类     ΔE= 17.72  ok
+    home2      wash       异类     ΔE= 30.54  ok
+    home2      work       异类     ΔE= 27.71  ok
+    library    shop       异类     ΔE= 29.50  ok
+    library    wash       同类     ΔE=  0.00  ok
+    library    work       异类     ΔE= 15.43  ok
+    shop       wash       异类     ΔE= 29.50  ok
+    shop       work       异类     ΔE= 18.28  ok
+    wash       work       异类     ΔE= 15.43  ok
+[INTSHELL] ✅ 室内外壳类型门 PASS（7 栋 / 4 类，异类最小 ΔE ≥ 8.0、同类最大 ΔE ≤ 4.0）
+[FURNROLE] cafe       期望=杯碟架    1 格 /  3600 px  签名6 色: #6e4d31 #3c2a1b #585c64 #eaf3f8 #c3a97a #9a8253
+[FURNROLE] home       期望=书架     1 格 /  2704 px  签名5 色: #60452a #44301e #657e36 #48647e #ab493b
+[FURNROLE] home2      期望=书架     1 格 /  5329 px  签名5 色: #5a4028 #3c2a1b #5f7b34 #41607f #a8443a
+[FURNROLE] library    期望=书架     3 格 / 10800 px  签名5 色: #5a4028 #3c2a1b #5f7b34 #41607f #a8443a
+           └ C 臂：同屋 3 格 shelf 逐像素一致 ✅
+[FURNROLE] shop       期望=货架     2 格 /  7200 px  签名7 色: #5a4028 #3c2a1b #c3a97a #9c7748 #b98956 #e85a5a #815b36
+           └ C 臂：同屋 2 格 shelf 逐像素一致 ✅
+[FURNROLE] wash       期望=毛巾架    1 格 /  2652 px  签名6 色: #82868f #213b47 #eaf3f8 #f2dca8 #c3a97a #585c64
+[FURNROLE] work       期望=工具架    1 格 /  2652 px  签名6 色: #44423e #5a4028 #6e4d31 #a0a4ac #585c64 #ffd166
+[FURNROLE] 7 栋 / 5 类物件：书架、工具架、杯碟架、毛巾架、货架
+    cafe       home       异类     ΔE= 55.98  ok
+    cafe       home2      异类     ΔE= 58.36  ok
+    cafe       library    异类     ΔE= 58.36  ok
+    cafe       shop       异类     ΔE= 50.07  ok
+    cafe       wash       异类     ΔE= 29.19  ok
+    cafe       work       异类     ΔE= 34.08  ok
+    home       home2      同类     ΔE=  3.58  ok
+    home       library    同类     ΔE=  3.58  ok
+    home       shop       异类     ΔE= 39.20  ok
+    home       wash       异类     ΔE= 55.98  ok
+    home       work       异类     ΔE= 49.91  ok
+    home2      library    同类     ΔE=  0.00  ok
+    home2      shop       异类     ΔE= 40.68  ok
+    home2      wash       异类     ΔE= 58.36  ok
+    home2      work       异类     ΔE= 51.83  ok
+    library    shop       异类     ΔE= 40.68  ok
+    library    wash       异类     ΔE= 58.36  ok
+    library    work       异类     ΔE= 51.83  ok
+    shop       wash       异类     ΔE= 53.92  ok
+    shop       work       异类     ΔE= 50.07  ok
+    wash       work       异类     ΔE= 32.64  ok
+[FURNROLE] ✅ 家具语义分化门 PASS（7 栋 / 5 类，异类最小 ΔE ≥ 12.0、同类最大 ΔE ≤ 8.0）
+[TREESTAND] 地面参考色 = #86ad4f（取自空地格 (40, 0)，块内占比 100.0%）
+[TREESTAND] 林块1 格(2,18 6x13) 内部(4x11, 5324 px)  P竖=27.592 P横=26.030  地面色占比=8.4%
+[TREESTAND] 林块2 格(56,18 6x13) 内部(4x11, 5324 px)  P竖=27.351 P横=27.870  地面色占比=9.4%
+[TREESTAND] ✅ 林相点阵门 PASS（P >= 8.00 且 地面色 <= 22%）
+[TREESTAND] 地面参考色 = #39523f（取自空地格 (40, 0)，块内占比 100.0%）
+[TREESTAND] 林块1 格(2,18 6x13) 内部(4x11, 5324 px)  P竖=13.902 P横=13.120  地面色占比=8.0%
+[TREESTAND] 林块2 格(56,18 6x13) 内部(4x11, 5324 px)  P竖=13.779 P横=14.038  地面色占比=9.4%
+[TREESTAND] ✅ 林相点阵门 PASS（P >= 8.00 且 地面色 <= 22%）
+  ✅ 视觉门（昼夜 / 界外层重画 / 空间往返 / 岸线 / 室内外壳 / 家具语义 / 树丛点阵）
+  ⏱  上一步 6. 用时 153s
+
+  ⏱  全程 900s（**现算的**，不是抄的；机器忙闲会让它上下浮动，别把单次读成基准）
+=== CI PASS ✅ ===
+CI_EXIT=0
