@@ -83,6 +83,24 @@ W=1280; H=768
 # ★ S3 增拍 home2 与 shop（**两张都是判别力，不是冗余**，理由见下面采集处）。
 INT_SPACES="${LT_VISUAL_INT_SPACES:-home home2 cafe shop wash work library}"
 
+# ══ AK1：季节可分门（AF2）+ 降水可见门（AI1）要拍的帧 ════════════════════════════
+# 都在下面 --shoot 的【同一个 Xvfb】里拍（省容器启动），判据在宿主侧【原地引用】
+# analysis/af2/assert_season.py 与 analysis/ai1/assert_precip.py（不搬进 tools/：assert_season 按
+# analysis/af2/ 逐级上溯 import tools/{assert_daynight,ciede2000}，搬走 import 路径就断）。
+# ── 季节：seed3 的四个【晴天】× 昼夜 = 8 帧。纯 f(seed,day)，与 analysis/af2/run_season_gate.sh 的
+#   PAIRS 逐值相同：春 gd2 / 夏 gd20 / 秋 gd35 / 冬 gd51；noon=(gd-1)*240+120，night=(gd-1)*240+8。
+#   ⚠️ 必须晴天：天气罩（阴/雨）会把两季推蓝、拉近（assert_season 抬头证）。四季色是 f(季)、与 seed
+#   无关（AF2 实测 seed 1/3/5 零方差）⇒ 单 seed(3) 标定在这道门上安全，且这句话是 AF2 证出来的。
+SEASON_PAIRS="spring_noon:360 spring_night:248 summer_noon:4680 summer_night:4568 autumn_noon:8280 autumn_night:8168 winter_noon:12120 winter_night:12008"
+# ── 降水：冬雪 + 非冬雨，各 on/off（off 用 --draw-skip 关该层 = 内建负对照）× 3 seed = 12 帧。
+#   冬 tick 11160（游戏日47=冬，season 与 seed 无关 ⇒ 全 seed 下雪，密度随该 seed 当日 weather 变）；
+#   雨为各 seed 最早的【非冬】雨日正午（都是春·雨，纯 f(seed,day)，见 analysis/ai1/run_precip_gate.sh）。
+#   ★ 多 seed 展布（S3 教训）：雪密度随 weather 变（晴40/阴54/雨70）⇒ 三 seed 都拍、floor 恒在晴档；
+#     雨零方差（coverage=f(map)、与 seed 无关，AI1 证）。阈值取自 AF2/AI1 已标定的地板，本棒不再收紧。
+PRECIP_SEEDS="${LT_VISUAL_PRECIP_SEEDS:-1 3 5}"
+WINTER_TICK=11160
+rain_tick(){ case "$1" in 1) echo 600 ;; 3) echo 840 ;; 5) echo 1560 ;; *) echo 600 ;; esac; }
+
 # ══ 模式 B：在渲染环境【内部】拍两帧 ════════════════════════════════════════
 # 容器里用 `bash /tools/visual_gate.sh --shoot /out`；native 路径下同一份脚本原地跑。
 # 写成"自我再入"而不是再开一个脚本，是为了让容器内外只有一份拍图参数——两份必然漂移。
@@ -92,6 +110,10 @@ if [ "${1:-}" = "--shoot" ]; then
   GBIN="${GODOT:-godot}"
   DISP="${VG_DISPLAY:-:94}"
   export LIBGL_ALWAYS_SOFTWARE=1 LP_NUM_THREADS=1 GODOT_SILENCE_ROOT_WARNING=1
+  # AK1：硬化的拍帧封装（rc + 无致命日志标记 + 图非空，三者结合；理由见 tools/vg_shoot.sh 抬头）。
+  # 下面每一处 godot 拍帧都改走 vg_shoot，不再是只看 `[ -s x.png ]` 的 fail-open。
+  export VG_GODOT_LOG=/tmp/vg-godot.log
+  . "$(dirname "$0")/vg_shoot.sh"
   Xvfb "$DISP" -screen 0 ${W}x${H}x24 -nolisten tcp >/tmp/vg-xvfb.log 2>&1 & XV=$!
   sleep 1.5
   export DISPLAY="$DISP"
@@ -99,13 +121,10 @@ if [ "${1:-}" = "--shoot" ]; then
   : >/tmp/vg-godot.log
   for pair in "night $NIGHT_TICK" "noon $NOON_TICK"; do
     nm="${pair%% *}"; tk="${pair##* }"
-    rm -f "$OUT/vg_${nm}.png"
-    "$GBIN" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
+    vg_shoot "$OUT/vg_${nm}.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
       --resolution ${W}x${H} --single-window -- \
       --backend logic --shot "$OUT/vg_${nm}.png" --seed "$SEED" --warmup-tick "$tk" --shot-fit \
-      >>/tmp/vg-godot.log 2>&1
-    if [ -s "$OUT/vg_${nm}.png" ]; then echo "  shot ok   vg_${nm}.png (tick=$tk)"
-    else echo "  shot FAIL vg_${nm}.png (tick=$tk)"; rc=1; fi
+      || rc=1
   done
   # ── D7 的界外层重画门（同一个 Xvfb，省一次容器启动）──────────────────────
   # 为什么它在这里而不是自己一步：它和昼夜断言一样，**需要一个真 framebuffer**，
@@ -154,14 +173,44 @@ if [ "${1:-}" = "--shoot" ]; then
   #   顺带：这两张给 R2 的外壳门各多了一对**同类**对子（home2↔home 住宅、shop↔cafe 商业），
   #   即两道门都因此变严了一点，没有任何一道被放松。
   for sid in $INT_SPACES; do
-    rm -f "$OUT/vg_int_${sid}.png"
-    "$GBIN" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
+    vg_shoot "$OUT/vg_int_${sid}.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
       --resolution ${W}x${H} --single-window -- \
       --backend logic --seed "$SEED" --warmup-tick "$NOON_TICK" \
       --probe-space "$sid" --probe-floor 1f --shot-fit --shot "$OUT/vg_int_${sid}.png" \
-      >>/tmp/vg-godot.log 2>&1
-    if [ -s "$OUT/vg_int_${sid}.png" ]; then echo "  shot ok   vg_int_${sid}.png"
-    else echo "  shot FAIL vg_int_${sid}.png"; [ "$rc" -eq 0 ] && rc=4; fi
+      || { [ "$rc" -eq 0 ] && rc=4; }
+  done
+  # ── AK1：AF2 四季可分门的采集（同一个 Xvfb）——晴天四季 × 昼夜 8 帧 ─────────────
+  # 判据在宿主侧 analysis/af2/assert_season.py（原地引用）。晴天 tick 是 f(seed3,day)，见抬头 SEASON_PAIRS。
+  # 这批帧【不能复用】上面的 vg_noon/vg_night：那两帧只是 seed3 游戏日3=春，季节门要吃全四季。
+  mkdir -p "$OUT/season"
+  for item in $SEASON_PAIRS; do
+    snm="${item%%:*}"; stk="${item##*:}"
+    vg_shoot "$OUT/season/${snm}.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
+      --resolution ${W}x${H} --single-window -- \
+      --backend logic --shot "$OUT/season/${snm}.png" --seed "$SEED" --warmup-tick "$stk" --shot-fit \
+      || { [ "$rc" -eq 0 ] && rc=5; }
+  done
+  # ── AK1：AI1 降水可见门的采集（同一个 Xvfb）——冬雪 on/off + 非冬雨 on/off × 3 seed = 12 帧 ──
+  # 判据在宿主侧 analysis/ai1/assert_precip.py（原地引用）。off 帧用 --draw-skip 关该层 = 内建负对照。
+  mkdir -p "$OUT/precip"
+  for s in $PRECIP_SEEDS; do
+    rtk="$(rain_tick "$s")"
+    vg_shoot "$OUT/precip/s${s}_winter_on.png"  --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
+      --resolution ${W}x${H} --single-window -- \
+      --backend logic --shot "$OUT/precip/s${s}_winter_on.png"  --seed "$s" --warmup-tick "$WINTER_TICK" --shot-fit \
+      || { [ "$rc" -eq 0 ] && rc=6; }
+    vg_shoot "$OUT/precip/s${s}_winter_off.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
+      --resolution ${W}x${H} --single-window -- \
+      --backend logic --shot "$OUT/precip/s${s}_winter_off.png" --seed "$s" --warmup-tick "$WINTER_TICK" --shot-fit --draw-skip snow \
+      || { [ "$rc" -eq 0 ] && rc=6; }
+    vg_shoot "$OUT/precip/s${s}_rain_on.png"    --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
+      --resolution ${W}x${H} --single-window -- \
+      --backend logic --shot "$OUT/precip/s${s}_rain_on.png"    --seed "$s" --warmup-tick "$rtk"         --shot-fit \
+      || { [ "$rc" -eq 0 ] && rc=6; }
+    vg_shoot "$OUT/precip/s${s}_rain_off.png"   --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
+      --resolution ${W}x${H} --single-window -- \
+      --backend logic --shot "$OUT/precip/s${s}_rain_off.png"   --seed "$s" --warmup-tick "$rtk"         --shot-fit --draw-skip rain \
+      || { [ "$rc" -eq 0 ] && rc=6; }
   done
   kill $XV 2>/dev/null
   [ $rc -ne 0 ] && tail -25 /tmp/vg-godot.log
@@ -236,10 +285,13 @@ else
   SHOT_RC=$?
 fi
 
-# rc=2 是【void-gate 判定为红】，rc=3 是【空间往返采集失败】，rc=1 才是【拍不出帧】。必须分开：
+# rc 分档（必须分开，否则失败信息指向错误方向 —— 误导性诊断和假红一样坏）：
+#   1 昼夜两帧拍不出（含 vg_shoot 三信号任一不过：rc≠0 / 致命日志标记 / 空图）
+#   2 void-gate 判红   3 空间往返采集失败   4 室内帧采集失败
+#   5 季节四季帧采集失败（AK1）   6 降水帧采集失败（AK1）
 # 2026-07-28 第一版把 1 和 2 混成一个 rc，于是 void-gate 变红时打印的是"渲染环境在位却拍不出帧"——
-# 一条**指向错误方向**的诊断（帧其实拍出来了）。误导性的失败信息和假红一样坏：它让人去查环境。
-# rc=3 是 2026-07-30 加的第三种，理由同上：它们的**修法完全不同**，混在一起就是把人送错方向。
+# 一条**指向错误方向**的诊断（帧其实拍出来了）。rc=3 是 2026-07-30 加的第三种，理由同上。
+# rc=5/6 是 AK1（2026-08-06）加的第五、六种：季节/降水的采集失败与上面各步修法不同，分开报。
 if [ $SHOT_RC -eq 2 ]; then
   echo "  ❌ VISUAL GATE：界外层重画门变红（帧拍出来了，是这条性质破了）——见上面的 [VOIDGATE] 行"
   exit 1
@@ -250,6 +302,14 @@ if [ $SHOT_RC -eq 3 ]; then
 fi
 if [ $SHOT_RC -eq 4 ]; then
   echo "  ❌ VISUAL GATE：室内帧采集失败（前面几步都过了）—— 见上面的 shot FAIL vg_int_* 行"
+  exit 1
+fi
+if [ $SHOT_RC -eq 5 ]; then
+  echo "  ❌ VISUAL GATE：季节四季帧采集失败（前面几步都过了）—— 见上面的 shot FAIL season/* 行"
+  exit 1
+fi
+if [ $SHOT_RC -eq 6 ]; then
+  echo "  ❌ VISUAL GATE：降水帧采集失败（前面几步都过了）—— 见上面的 shot FAIL precip/* 行"
   exit 1
 fi
 if [ $SHOT_RC -ne 0 ]; then
@@ -291,10 +351,23 @@ FRC=$?
 "$PY" tools/assert_tree_stand.py --frame "$OUT/vg_noon.png"  --map "$GAME/data/map.json"; TRC=$?
 "$PY" tools/assert_tree_stand.py --frame "$OUT/vg_night.png" --map "$GAME/data/map.json"; TRC2=$?
 [ $TRC -eq 0 ] && TRC=$TRC2
+# 季节可分门（AF2 / 编号122，AK1 接线）。守第八条性质：**四季地面主色两两分得开**。
+# 同样**不短路**：吃上面 season/ 里 8 帧晴天四季（noon+night 都判——夜是约束档，春↔夏夜里最紧 4.30；
+# 只判正午会漏掉那一档）。判据在 analysis/af2/assert_season.py【原地引用】（它按 analysis/af2/ 上溯 import tools/）。
+"$PY" analysis/af2/assert_season.py \
+  --noon  "$OUT/season/spring_noon.png"  "$OUT/season/summer_noon.png"  "$OUT/season/autumn_noon.png"  "$OUT/season/winter_noon.png" \
+  --night "$OUT/season/spring_night.png" "$OUT/season/summer_night.png" "$OUT/season/autumn_night.png" "$OUT/season/winter_night.png"
+SEARC=$?
+# 降水可见门（AI1 / 编号129，AK1 接线）。守第九条性质：**冬天真有落雪、雨真有雨丝**（on vs off coverage）。
+# 同样**不短路**：吃上面 precip/ 里 12 帧（冬雪 on/off + 非冬雨 on/off × 3 seed）。判据在 analysis/ai1/assert_precip.py。
+"$PY" analysis/ai1/assert_precip.py "$OUT/precip"
+PPRC=$?
 [ $EPHEMERAL -eq 1 ] && rm -rf "$OUT"
 [ $ARC -ne 0 ] && exit $ARC
 [ $RRC -ne 0 ] && exit $RRC
 [ $PRC -ne 0 ] && exit $PRC
 [ $IRC -ne 0 ] && exit $IRC
 [ $FRC -ne 0 ] && exit $FRC
+[ $SEARC -ne 0 ] && exit $SEARC
+[ $PPRC -ne 0 ] && exit $PPRC
 exit $TRC

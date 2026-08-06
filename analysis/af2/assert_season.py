@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""assert_season.py —— 四季可分门（Wave AF · AF2）。**未接线**（本棒不许碰 tools/**，接线留给合流的人）。
+"""assert_season.py —— 四季可分门（Wave AF · AF2）。
+★ 2026-08-06 AK1 已接线：`tools/visual_gate.sh` 第 6 步在同一个 Xvfb 里多拍 8 帧晴天四季（昼+夜）后
+  【原地引用】本文件判决（不搬进 tools/：见下 §怎么接进 CI 的 (a)——搬走会断 import 路径）。判据/阈值/§2.5 由 AF2 原样保留。
 
 守的性质一句话：**四季不许糊成一块——春/夏/秋/冬的地面主色必须两两分得开。**
 

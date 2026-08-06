@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # assert_precip.py — AI1（编号129）降水可见门：**冬天必须真有落雪、雨必须真有雨丝**，不许悄无声息退回"只有色调"。
+# ★ 2026-08-06 AK1 已接线：tools/visual_gate.sh 第 6 步在同一个 Xvfb 里多拍 12 帧（冬雪 on/off + 非冬雨 on/off × 3 seed）
+#   后【原地引用】本文件判决（out_dir = $OUT/precip）。判据/阈值/§2.5 由 AI1 原样保留。
 #
 # 判据形状照抄 R2/S3/V3/AF2 四道既有视觉门：
 #   · 关系判据（on vs off，不锚死绝对色）：coverage = 同 tick「降水 pass 开 / 关」两帧的差异像素数。

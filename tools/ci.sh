@@ -684,7 +684,7 @@ step "6. 视觉门：昼夜 + 界外层重画 + 空间往返 + 岸线 + 室内�
 bash tools/visual_gate.sh 2>&1 | tee "$LT_LOG/visual.log"
 VRC="${PIPESTATUS[0]}"
 case "$VRC" in
-  0)  ok "视觉门（昼夜 / 界外层重画 / 空间往返 / 岸线 / 室内外壳 / 家具语义 / 树丛点阵）" ;;
+  0)  ok "视觉门（昼夜 / 界外层重画 / 空间往返 / 岸线 / 室内外壳 / 家具语义 / 树丛点阵 / 季节 / 降水）" ;;
   77) echo "  ⏭  SKIP: 视觉门（本机没有渲染环境；LT_VISUAL=require 可让它变红）" ;;
   *)  bad "视觉门 (exit $VRC)" ;;
 esac
