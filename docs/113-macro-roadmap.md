@@ -17,7 +17,7 @@
 | `master` | `38ba4a7` (07-26) | 319 behind，**全程未动** | 红线守住：master 不动 |
 
 **⇒ 分支层的两条大局判断**：
-1. **trunk 是候选、但"清晰"只是约定不是保护**（Codex §三.1 更正）：`integration/batons` 没有 branch protection，PR 运行期间 base 还会前进 ⇒ 真正的"单一候选"要**冻结候选 SHA + required checks + 合并策略**，不是靠命名。**叙事是一条真实的平行子系统**，尚未并入——⚠️**更正（Codex §三.8，本会话已实测）**：以共同基点 `dae2fbe` 算，trunk 改 79 path、narrative 改 60 path，**交集为 0**；当前树**没有已证实的文本 merge conflict**。仍需一次**语义** reconcile（两边都动 `docs/README.md`/`docs/05` 的语义），但不能把预期冲突写成既成事实。
+1. **trunk 是候选、但"清晰"只是约定不是保护**（Codex §三.1 更正）：`integration/batons` 没有 branch protection，PR 运行期间 base 还会前进 ⇒ 真正的"单一候选"要**冻结候选 SHA + required checks + 合并策略**，不是靠命名。**叙事是一条真实的平行子系统**，尚未并入——⚠️**更正（Codex §三.8 + AH1 编号 127，均已实测）**：以共同基点 `dae2fbe` 算，两侧文件**交集为 0**、**没有文本 merge conflict**。且 AH1 blob 哈希实测再纠一层：`docs/README.md`/`docs/05` **trunk 逐字节没碰**（两文件 trunk==merge-base），**只有 narrative 改了** ⇒ 是**单向漂移不是双向冲突**（trunk 已把路线图挪到 docs/113、冻结 docs/05）。⚠️ 还纠了两处规模高估：narrative 8193 行里**真生产代码只 5 个 .gd/1460 行**（其余是测试/fixture/评审媒体），**可执行叙事引擎(reducer/ledger/replay S01–S12)根本不在 codex/narrative，在外部 lab 仓 `living-town-narrative-lab`**；且**叙事今天不消费任何 Sim schema**（5 组件只吃自有合成态，全标 `NOT_SIM`/`production_gate:false`）。
 2. **"分散证据"是真的**（Codex Phase 0 的核心）：全绿散落在多个分支/worktree，**没有一个 exact-head 的 CI 收据**。⚠️**更正（Codex §三.2）**：这不止是运营债——fail-open runner、过窄 digest、缺 state projection 是**测试/代码架构债**，只整理分支修不好它们。
 
 ## 一、架构脊柱——**多镇有两条先决条件**（不是一条）
@@ -71,7 +71,11 @@
 
 这些是"好玩"的一半，**多数与架构脊柱正交**，可以在 §一/§二推进的同时并行，但**owns 必须错开**避免 branch conflict：
 
-- **叙事 / storylets**（`game/scripts/narrative/**` + `game/narrative_lab/**`）：已有一条真实子系统在 `codex/narrative`。下一步是**并入 trunk**（先 reconcile docs 冲突），然后在其上做 storylets（预置的多幕小剧本）。
+- **叙事 / storylets**（`game/scripts/narrative/**` + `game/narrative_lab/**`）：真实子系统在 `codex/narrative`。**AH1（编号 127）已给出分层 reconcile 方案**（实测 R1 佐证）：
+  - **先并层（可开只读 PR、零金标）**：5 个只读视图 .gd（`NarrativeGlyphs`/`NarrativeViewContract`/`RolePOVCard`/`WebMazeGraph`/`S16Compositor`，全 fail-closed、grep 零 `randi/randf/Sim./save_game`、只吃自有合成态）+ 测试场景 + fixtures + docs 语义 reconcile。**触碰的既有 sim/金标文件=0**。⚠️ 但**当前零 CI 接线**（60-path 不含 `tools/`）⇒ 先并**必须先给 ci.sh 加一道 headless 叙事门**，否则并进去无人守。
+  - **后置层（gated）**：S14 真 actor 只读投影、**S18 integration RFC（触发 §0.8 外审+用户拍板）**、唯一 Sim 写侧棒（走完整 R12）、storylets 内容。注意 AH1 校正：**S18 gate 的是写侧；只读组件的停止线其实是 S12，不 gated 在 S18**。
+  - **schema 冻结面**：Tier-1（自有合成态，先并层消费）vs Tier-2（Sim 真面：事件结果 accepted/effect_applied、beliefs/attitudes、journey/portal、save codec/digest——**trunk 正在改这些**，是后置层真正等的）。
+  - ⚠️**两个决策点留用户**：① 是否把先并层并入 trunk（AH1 判零风险但需先加 CI 门）；② 14 个评审媒体二进制(~1.45MB,无 LFS)进不进 trunk（AH1 建议默认不进、只留 manifest+contact sheet）。
 - **美术 / visual**（`WorldView.gd` + `game/assets/**`）：室内分色（R2）、家具语义（S3）、树丛（V3）、HUD（T3）已落 trunk；✅**AF2（编号 122）落了季节视觉**——实测夏↔春本来只 ΔE00 2.71（卡 JND、眼验糊成一块），已拉到 ΔE00≈7，零金标（只动夏季帧、CI 春帧逐字节不变）；并更正了一处过期注释（P_NIGHT 从来不是夜间暗面罩，夜色是 Main._daylight 乘子+加色光）。⚠️**遗留**：四季可分门 `assert_season.py` 写好了（改前红/改后绿）但**未接线**（需 visual_gate.sh 多拍 8 张四季昼夜帧，非平凡）⇒ 跟进项。**但全部只在桌面验过**——真机待当前 HEAD 构建（§四）。下一块空地：**室外建筑立面、天气视觉、其余三季夜间光照**。
 - **NPC / 社会产出**：手艺痕迹（V1/Z2 四门）、商贩消费侧痕迹（AA3）已落。下一步是**把社会产出接到叙事**（手艺弧、买卖弧进 storylet），以及 §二那个事件结果模型让"尝试/被拒/成功"在 NPC 记忆与故事里区分。
 - **map / interior（⬆ 现在的最高产品价值轨——Codex §三.7/§四.P2B 把它抬到 wiki 之上）**：⚠️**AG3 设计（编号 126）把这一轨的框架整个证伪了**：纵切六段（外立面 `WorldView:1014-1050` / 室内布局 `:1310-1359` / 多楼层 portal `spaces.json`+`SpaceGraph:71-83` / 拖拽探查 `ProbeController:245-292` / 返回世界坐标 `go_home:2456` / 视觉回归 `SpaceShot`+`space_roundtrip.sh`）**在 trunk 全部已跑**，**cafe（阿丽的咖啡馆，commercial [37,13,9,7]，1F 公共区+2F 阿丽居所）就是已精修的两层样板**（同 AF2 季节：H1/S3"有 X≠X 做好了"的反向发作，已复核属实）。⇒ 这一轨的真活是**收口+立证+补门+纠腐烂**，不是绿地重建。**三处已量到的缺口（收口目标）**：① `_portal_click`（`Main:2439-2467`）**缺 `queue_redraw`** ⇒ 暂停点门世界层不刷新（疑似真 bug，须 chain-dump 复现，非当场断言）；② **cafe 2F 从没被任何门看过**（`visual_gate.sh:161` 写死 `--probe-floor 1f`）；③ `spaces.json:35` cafe `_note` 还写"Tier-A：居民不进、digest 逐字节不变"——**与实况自相矛盾**（已复核 aria `spatial_address={cafe,2f}` 真住那，Sim `:896`/`:1618` journey 跨平面）⇒ **这是又一处数据注释腐烂**。⚠️改 `_note`/`spaces.json` 会动 `game/data` tree sha、可能牵动 provenance 锚 ⇒ 走小心的收口棒、别当零成本。**该轨不碰社会决策 schema** ⇒ 能与 §一/§二 波并行。
@@ -140,4 +144,4 @@ Phase 5  才恢复多镇：生产 capacity 与具名 NPC 解耦 → N=24/40/60 h
 1. **P0 收敛**：给 `integration/batons` 配 required PR/check + 冻结候选 SHA；把 CI 拆成并行 required jobs（§四·2 的"正式"方案）。
 2. **Phase 1 续**：AC2 `vanished` 红门 + `1/19` 负控 + docs/110@wip/ac2-story-ratchet + 全量 CI（未验证 wip → 收口）；事件结果 schema 档1/档2（用户拍 schema）。
 3. **Phase 2 双先决**：state_projection（从 save codec 抽 canonical oracle，§一）**并行** KnowledgeState 三臂证伪（单镇/抽象域，§一更正）——两者都待用户 §0.8 拍板。
-4. **功能并行**：AG3 纵切转实现波（若用户认同设计）；`codex/narrative` 只读 reconcile 棒（语义面，不合）——**AH1 在跑（编号 127）**：60-path 分类 + 先并层/后置层（S18 未裁前别整支吞入）+ docs 语义 reconcile + schema 冻结面。
+4. **功能并行**：AG3 纵切转实现波（若用户认同设计）；✅**AH1 叙事 reconcile 方案已落地（编号 127）**——分层清楚（先并层 5 只读 .gd 零金标、后置层 S14/S18 gated）、docs 单向漂移（trunk 没碰 README/05）、schema 冻结面 Tier-1/2、两决策点留用户（见 §三 叙事行）。**下一步是用户就"先并层是否并入 + 先加 headless 叙事 CI 门"拍板**，不由我自动并另一 session 的子系统。
