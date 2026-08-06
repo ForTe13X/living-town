@@ -61,7 +61,7 @@
 
 | 欠账 | 现状 | 处置 |
 |---|---|---|
-| **#43 商贩自证** | ✅**运行时修复已合入 trunk**（`a3b2e0f`→`53213f9`→收据 `3b639d9`，编号 112）：采集侧滤掉收款商贩、观察侧 `wn_other` 只数商贩以外目击者。⚠️**遗留抗回归缺口（Codex §六.1，已实测属实）**：观察侧只排 vendor（`witness!=v_id`）**没排 buyer**；census 只有 `vendoronly`/`keepone`、缺 `buyeronly`/`partiesonly` 负控；docs/112 §九.1"交易双方之外"这句**过强**（代码只排一端） | **AG2 棒在跑**：观察侧改成排除 `actor`+`target` 双端点、补两条 `hard=[43]` 负控、订正 docs/112。自然轨迹本就不含双方 ⇒ 预期零金标（须三锚证）。零售豁免线只量不收紧（改判据要用户拍板） |
+| **#43 商贩自证** | ✅**运行时修复 + 抗回归缺口都已收（编号 112 + 125）**：采集侧滤掉收款商贩（`a3b2e0f`→`53213f9`）；观察侧 `wn_other` 从"只排 vendor"收紧成**排交易双方**（`743ebfa`，Codex §六.1） | ✅**AG2 已落地（编号 125）**：`ws43 != v_id AND != actor`（买家=transfer from_id）、补 `buyeronly`/`partiesonly` 两负控、订正 docs/112 §九.1。协调者独立复跑 census（seeds1-6）：natural 6/6 绿、两负控 6/6 红[43]、三臂 digest 逐位相同=零金标；全量 CI 895s PASS。未重烘锚（结构不动金标）。零售豁免线只量不收紧（改判据要用户拍板） |
 | **被拒行为叙述成成功** | AA2 实测 3565 条引用里 **976 条（27.4%）**把 rejected event 写成已发生；真机 docs/111 又肉眼看到一次。⚠️ **AD2 设计（编号 116）把它重新框定了**：`accepted` 字段【已在】，社交路已正确区分被拒，屏幕真出错的是表现层 `Main._event_prose` 对社交类型【不读 accepted】——**是"读侧漏字段"，不是"缺 schema"** | **分三档（AD2 编号 116）**：✅**档0 已落地（AE1 编号 118）**：_event_prose 十类社交加 if ok else，实测被拒讲成成功 496→0、零金标、带回归门（已接进 ci.sh 第5步）；档1 加 `effect_applied`/`rejection_reason`【不折金标】=零金标（用户拍 schema）；档2 经济族失败可观测=移金标走 R12（用户拍板）。原提的"四字段统一模型"被 AD2 证明捆错了——修 27.4% 不需要它 |
 | ~~**fixture/scale 门可能 fail-open**~~ ✅**已收（AE2 编号 119）** | 普查约18个量具：真 fail-open【集中在1个】(烘锚流水线)，其余早已 fail-closed、ci.sh 自身干净 | 已堵+负对照：子进程非零立即失败、iso 内容寻址到 HEAD:game、bake 绑 tree_sha 拒空 commit；顺带重烘过期 ledger |
 | **AC2 `vanished` 只 warning** | 删一个具名病例 + 别处强化 ⇒ aggregate 不降而过门 | 具名槽消失应**直接红**；合法删除走**显式 rebaseline**（照抄 R12 的 rebake_history 文化） |
@@ -131,10 +131,10 @@ Phase 5  才恢复多镇：生产 capacity 与具名 NPC 解耦 → N=24/40/60 h
 **已落地（本波 AG）**：
 - ✅**AG1（编号 124）**：半宏观生产设计已合入 trunk。四处载重坐标经协调者复核逐条属实（`_produce_for` 守卫、克隆不入岗位、ρ=0.618、N=60 无门），与 Codex §三.12 独立收敛。**推荐路 (c) 但以证伪闸为前置；实现待用户 §0.8。**
 - ✅**AG3（编号 126）**：town-completeness 纵切设计已合入 trunk。四处载重坐标经复核逐条属实（cafe 两层样板已跑、aria 真住 cafe/2f、`_portal_click` 缺 `queue_redraw`、cafe 2F 无门）。**框架被证伪**：纵切已存在，真活是收口三缺口（见 §三 map/interior 行）。R1 边界立准：agent space/floor=金标 Tier-B、Probe active_space/floor=view-only。
+- ✅**AG2（编号 125）**：#43 观察侧买家防线已合入 trunk（`743ebfa`）——`wn_other` 排交易双方、补两负控。协调者独立复跑 census（natural 6/6 绿、buyeronly+partiesonly 6/6 红[43]、三臂 digest 逐位相同=零金标）+ 全量 CI 895s PASS。Phase-1 抗回归收口。
 - ✅**协调者本人**：`.github/workflows/ci.yml` timeout 15→35（解锁候选 PR 的 exact-head 收据）；本文吸收 Codex 2026-08-06 两轮更正。
 
-**正在跑（本波 AG）**：
-- **AG2（编号 125 + 改 `game/bench` + 订正 112）**：#43 观察侧买家防线——排除 actor+target 双端点、补 `buyeronly`/`partiesonly` 负控。Phase-1 抗回归。
+**⇒ Wave AG 全部落地**（AG1 半宏观设计 · AG2 #43 买家防线 · AG3 纵切设计 · CI 解锁 · 路线图吸收外审）。
 
 **AG 落地后的候选队列（按 Codex 更新后的顺序）**：
 1. **P0 收敛**：给 `integration/batons` 配 required PR/check + 冻结候选 SHA；把 CI 拆成并行 required jobs（§四·2 的"正式"方案）。
