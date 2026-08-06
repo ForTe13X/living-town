@@ -195,6 +195,18 @@ if [ "${1:-}" = "--shoot" ]; then
     --backend logic --seed "$SEED" --warmup-tick "$NOON_TICK" \
     --probe-space cafe --probe-floor 2f --shot-fit --draw-skip interior_furniture --shot "$OUT/vg_cafe2f_bare.png" \
     || { [ "$rc" -eq 0 ] && rc=7; }
+  # ── AM3（编号135）：全楼层往返门采集（同一个 Xvfb，省一次容器启动）──────────────
+  # 现役空间往返门只走 town↔cafe/1f（上面那步）⇒ 楼梯往返（1f↔2f）没门（docs/126 §一.3）。
+  # 本步走完整旅程 town→cafe/1f→上楼2f→下楼1f→出门（SpaceShot --rt-journey full，出货路径 tapped→_portal_click），
+  # 拍 5 帧 + 逐段断言落在对的 Floor。判据在宿主侧 tools/assert_floor_roundtrip.py。rc=8 专给它。
+  # RT_OWN_XVFB=0：复用上面这个 Xvfb（同 space-roundtrip 那步的理由）。写进 $OUT/floor 子目录，避免 rt_*.png 撞名。
+  mkdir -p "$OUT/floor"
+  if RT_OWN_XVFB=0 RT_JOURNEY=full RT_GAME="$GAME" GODOT="$GBIN" \
+       bash "$(dirname "$0")/space_roundtrip.sh" --shoot "$OUT/floor" >>/tmp/vg-godot.log 2>&1; then
+    echo "  floor-roundtrip 采集 ok  (town→1f→上楼2f→下楼1f→town，逐段楼层对)"
+  else
+    echo "  floor-roundtrip 采集 FAIL (见上面的 [SPACESHOT] 行)"; [ "$rc" -eq 0 ] && rc=8
+  fi
   # ── AK1：AF2 四季可分门的采集（同一个 Xvfb）——晴天四季 × 昼夜 8 帧 ─────────────
   # 判据在宿主侧 analysis/af2/assert_season.py（原地引用）。晴天 tick 是 f(seed3,day)，见抬头 SEASON_PAIRS。
   # 这批帧【不能复用】上面的 vg_noon/vg_night：那两帧只是 seed3 游戏日3=春，季节门要吃全四季。
@@ -305,6 +317,7 @@ fi
 #   1 昼夜两帧拍不出（含 vg_shoot 三信号任一不过：rc≠0 / 致命日志标记 / 空图）
 #   2 void-gate 判红   3 空间往返采集失败   4 室内帧采集失败
 #   5 季节四季帧采集失败（AK1）   6 降水帧采集失败（AK1）   7 cafe 2F 帧采集失败（AM1）
+#   8 全楼层往返采集失败（AM3：某一跳没落在对的 Floor / 前提断言破了）
 # 2026-07-28 第一版把 1 和 2 混成一个 rc，于是 void-gate 变红时打印的是"渲染环境在位却拍不出帧"——
 # 一条**指向错误方向**的诊断（帧其实拍出来了）。rc=3 是 2026-07-30 加的第三种，理由同上。
 # rc=5/6 是 AK1（2026-08-06）加的第五、六种：季节/降水的采集失败与上面各步修法不同，分开报。
@@ -330,6 +343,10 @@ if [ $SHOT_RC -eq 6 ]; then
 fi
 if [ $SHOT_RC -eq 7 ]; then
   echo "  ❌ VISUAL GATE：cafe 2F 帧采集失败（前面几步都过了）—— 见上面的 shot FAIL vg_cafe2f* 行"
+  exit 1
+fi
+if [ $SHOT_RC -eq 8 ]; then
+  echo "  ❌ VISUAL GATE：全楼层往返采集失败（前面几步都过了）—— 见上面的 [SPACESHOT] 行（某一跳没落在对的 Floor / 前提断言破了）"
   exit 1
 fi
 if [ $SHOT_RC -ne 0 ]; then
@@ -387,6 +404,11 @@ PPRC=$?
 # 负对照【就在判据内】：vg_cafe2f_bare 是 --draw-skip interior_furniture 的空 2F，A/C 两臂拿它自证有牙。
 "$PY" tools/assert_cafe_2f.py "$OUT"
 C2RC=$?
+# 全楼层往返门（AM3 / 编号135）。同样**不短路**：守第十一条性质（"观察者能走完整旅程，逐段落在对的 Floor、
+# 2F 那一跳真换平面、回程取景逐像素复位"）。吃上面 $OUT/floor 里的 5 帧；负对照见 tools/assert_floor_roundtrip.py 抬头。
+# ⚠️ 它与 assert_space_roundtrip（town↔1f）**不重叠**：那条只走 1f，本条补的是楼梯往返（1f↔2f）+ 2F 判别力。
+"$PY" tools/assert_floor_roundtrip.py "$OUT/floor"
+FLRC=$?
 [ $EPHEMERAL -eq 1 ] && rm -rf "$OUT"
 [ $ARC -ne 0 ] && exit $ARC
 [ $RRC -ne 0 ] && exit $RRC
@@ -396,4 +418,5 @@ C2RC=$?
 [ $SEARC -ne 0 ] && exit $SEARC
 [ $PPRC -ne 0 ] && exit $PPRC
 [ $C2RC -ne 0 ] && exit $C2RC
+[ $FLRC -ne 0 ] && exit $FLRC
 exit $TRC

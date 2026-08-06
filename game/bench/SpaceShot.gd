@@ -33,9 +33,11 @@ extends Node
 ##   godot --path game --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
 ##     --resolution 1280x768 --single-window res://bench/SpaceShot.tscn -- \
 ##     --backend logic --seed 3 --warmup-tick 600 --rt-out /out \
-##     [--rt-space cafe] [--rt-mode portal|flip] [--rt-redraw auto|none]
+##     [--rt-space cafe] [--rt-mode portal|flip] [--rt-journey simple|full] [--rt-redraw auto|none]
 ##   `--rt-redraw none` = 【暂停复现】档，见下面 `_refresh()` 上方那段（它是本脚本第一次跑就量到的一个真问题）。
-## 产物：<out>/rt_town_before.png / rt_interior.png / rt_town_after.png + rt_meta.json（判据要用的几何）
+##   `--rt-journey full`（AM3/编号135）= 全楼层旅程 town→cafe/1f→上楼2f→下楼1f→出门，逐段断言落在对的 Floor。
+## 产物：simple → <out>/rt_town_before.png / rt_interior.png / rt_town_after.png + rt_meta.json；
+##       full   → <out>/rt_town_before.png / rt_cafe_1f.png / rt_cafe_2f.png / rt_cafe_1f_back.png / rt_town_after.png + rt_meta.json
 ## 退出码：0=三帧都拍出来了且前提断言成立；1=拍不出来或前提断言破了（**像素判据在 python 那边**）。
 ##
 ## ⚠ 本脚本**只属于 game/bench/**：它一个字节都不改 `game/scripts/*`，
@@ -46,6 +48,7 @@ const MAIN_SCENE := "res://scenes/Main.tscn"
 var _out := ""
 var _space := "cafe"
 var _mode := "portal"
+var _journey := "simple"    # simple=进店→出店三帧（现役 1F 往返门）；full=全楼层旅程 town→1f→上楼2f→下楼1f→出门（AM3/编号135）
 var _redraw := "auto"       # auto=切完空间补一次 _redraw_all()（= 下一个 tick 到来时的稳定态）；none=不补（暂停复现，见下）
 var _settle0 := 40          # 首帧之后的暖机帧数（纹理加载 + 插值吸附）
 var _settle := 24           # 每次空间切换之后的暖机帧数
@@ -62,6 +65,7 @@ func _ready() -> void:
 		if args[i] == "--rt-out" and i + 1 < args.size(): _out = args[i + 1]
 		elif args[i] == "--rt-space" and i + 1 < args.size(): _space = args[i + 1]
 		elif args[i] == "--rt-mode" and i + 1 < args.size(): _mode = args[i + 1]
+		elif args[i] == "--rt-journey" and i + 1 < args.size(): _journey = args[i + 1]
 		elif args[i] == "--rt-redraw" and i + 1 < args.size(): _redraw = args[i + 1]
 		elif args[i] == "--rt-settle" and i + 1 < args.size(): _settle = int(args[i + 1])
 	if _out == "":
@@ -108,7 +112,34 @@ func _ready() -> void:
 	if String(pb.active_space) != _space:
 		print("[SPACESHOT] ❌ 点了门却没进去：active_space=%s" % String(pb.active_space))
 		_rc = 1
-	_snap("interior", pb)
+	_snap("interior" if _journey != "full" else "cafe_1f", pb)
+
+	# ── 全楼层旅程（AM3/编号135）：cafe/1f →（楼梯 portal）2f →（楼梯）1f ──────────────
+	# 只在 --rt-journey full 时跑；simple 模式一个字节都不变（现役 1F 往返门原样）。
+	# 逐段断言【落在对的 Floor】——这是"目标层改错 ⇒ 门必红"的机器化（与宿主 python 侧的 meta 楼层核对互为双证）。
+	# 楼梯 cell 由 _stairs_world_pos 从 SpaceGraph 真源取（不抄第二份坐标），点它 → Main._portal_click 按
+	# 当前 active_floor 判方向（1f→2f 上、2f→1f 下），access=owner 不拦 Probe（观察者不是 agent，见 Main.gd:2439）。
+	if _journey == "full":
+		if String(pb.active_floor) != "1f":
+			print("[SPACESHOT] ❌ 进店后应在 1f，实为 %s" % String(pb.active_floor)); _rc = 1
+		# 上楼 (cafe/1f → cafe/2f)
+		if not _climb(pb):
+			print("[SPACESHOT] ❌ 上楼：找不到 cafe/%s 的楼梯 portal" % String(pb.active_floor))
+			get_tree().quit(1); return
+		_refresh()
+		await _wait(_settle, _min_ms)
+		if String(pb.active_floor) != "2f":
+			print("[SPACESHOT] ❌ 上楼后应在 2f，实为 %s（楼梯目标层不对/portal 断）" % String(pb.active_floor)); _rc = 1
+		_snap("cafe_2f", pb)
+		# 下楼 (cafe/2f → cafe/1f)
+		if not _climb(pb):
+			print("[SPACESHOT] ❌ 下楼：找不到 cafe/%s 的楼梯 portal" % String(pb.active_floor))
+			get_tree().quit(1); return
+		_refresh()
+		await _wait(_settle, _min_ms)
+		if String(pb.active_floor) != "1f":
+			print("[SPACESHOT] ❌ 下楼后应回 1f，实为 %s" % String(pb.active_floor)); _rc = 1
+		_snap("cafe_1f_back", pb)
 
 	# ── 出店 ────────────────────────────────────────────────────────────────
 	if not _leave(pb):
@@ -137,6 +168,7 @@ func _ready() -> void:
 		print("[SPACESHOT] 前提 ✅ 出店后取景与进店前逐字节相同 pos=%s zoom=%s" % [cam1_pos, cam1_zoom])
 
 	_meta["mode"] = _mode
+	_meta["journey"] = _journey
 	_meta["space"] = _space
 	_meta["cam_same"] = cam_same
 	_meta["tick"] = Sim.tick_no
@@ -186,6 +218,43 @@ func _enter(pb) -> bool:
 		return false
 	pb.emit_signal("tapped", wp)      # ← 与真的点一下门【同一个】入口：Main._on_probe_tap 接的就是它
 	return true
+
+## 上/下楼（AM3）：点当前楼层的楼梯 portal 格 —— 与真的点一下楼梯【同一个】入口（tapped→_portal_click）。
+## 方向由 Main._portal_click 按当前 active_floor 自己判：在 1f 点它上楼、在 2f 点它下楼（p_cafe_stairs 双向）。
+func _climb(pb) -> bool:
+	if _mode == "flip":
+		# flip 档没有"点楼梯"这条出货路径可复现，直接翻当前 Space 的另一层（仅供并排对照，非默认）。
+		var sg0 = _main.get("_sg")
+		if sg0 == null: return false
+		var fls: Array = sg0.floors_of(String(pb.active_space))
+		if fls.size() <= 1: return false
+		var j := fls.find(String(pb.active_floor))
+		pb.active_floor = String(fls[(maxi(j, 0) + 1) % fls.size()])
+		return true
+	var wp = _stairs_world_pos(pb)
+	if wp == null:
+		return false
+	pb.emit_signal("tapped", wp)      # ← 与真的点楼梯【同一个】入口
+	return true
+
+## 取当前 (active_space, active_floor) 上那个 kind=="stairs" 的 portal 端点格心世界坐标。
+## 走 _main._sg.portals（门的真源只有一份），与 _portal_world_pos 同一条纪律；按【当前楼层】匹配，
+## 这样 1f 上取到的是"上楼口"、2f 上取到的是"下楼口"（本例两端同格 [1,1]，但匹配逻辑不依赖这一点）。
+func _stairs_world_pos(pb):
+	var sg = _main.get("_sg")
+	if sg == null:
+		return null
+	var asp := String(pb.active_space); var afl := String(pb.active_floor)
+	for p in sg.portals:
+		if String(p.get("kind", "")) != "stairs":
+			continue
+		for side in ["from", "to"]:
+			var e: Dictionary = p.get(side, {})
+			if String(e.get("space", "")) != asp or String(e.get("floor", "")) != afl:
+				continue
+			var pos: Array = e.get("pos", [0, 0])
+			return Vector2((float(pos[0]) + 0.5) * 48.0, (float(pos[1]) + 0.5) * 48.0)
+	return null
 
 ## 出店。portal 模式下点的是室内那一侧的同一个 portal 格。
 func _leave(pb) -> bool:

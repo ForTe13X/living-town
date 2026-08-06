@@ -29,6 +29,12 @@
 #   LT_RT_GAME=<dir>              拿【别的一棵 game/】来渲 —— **负对照专用**：
 #                                 把 game/ 拷进 scratchpad、在拷贝上回滚 WorldView 的 `_void_key` 修复，
 #                                 再用这个变量指过去，本门必须变红。判据没有过这一关就不是判据。
+#   LT_RT_JOURNEY=simple|full     默认 simple（现役 town↔cafe/1f 往返门）。
+#                                 full = 全楼层往返门（AM3/编号135）：town→cafe/1f→上楼2f→下楼1f→出门，
+#                                 逐段断言落在对的 Floor + 回程取景一致 + 2F 与 1F 可分；判据走 assert_floor_roundtrip.py。
+#   LT_RT_DRAW_SKIP=<pass>        透传 --draw-skip <pass> 给引擎（负对照用）。
+#   LT_RT_SKIP_FURN=1             LT_RT_DRAW_SKIP=interior_furniture 的便捷别名 ——
+#                                 让 2F/1F 家具都不画 ⇒ 两层帧变得一样 ⇒ full 门的"2F 与 1F 可分"臂必红（那条牙）。
 #   LT_RT_MODE=portal|flip        默认 portal（走出货路径 `_portal_click`）
 #   LT_RT_REDRAW=auto|none        默认 auto。none = 【暂停复现】：不补 `_redraw_all()`，
 #                                 拍出来的 rt_interior.png 就是“暂停时点门进店，画面停在小镇上”那一帧
@@ -55,6 +61,8 @@ if [ "${1:-}" = "--shoot" ]; then
   MODE="${RT_MODE:-portal}"
   SPACE="${RT_SPACE:-cafe}"
   REDRAW="${RT_REDRAW:-auto}"
+  JOURNEY="${RT_JOURNEY:-simple}"   # simple=进出三帧（1F 往返门）；full=全楼层旅程 town→1f→2f→1f→town（AM3/编号135）
+  DRAWSKIP="${RT_DRAW_SKIP:-}"      # 非空 ⇒ 透传 --draw-skip <pass>（AM3 负对照：interior_furniture ⇒ 2F 与 1F 都空 ⇒ 不可分 ⇒ 门红）
   export LIBGL_ALWAYS_SOFTWARE=1 LP_NUM_THREADS=1 GODOT_SILENCE_ROOT_WARNING=1
   OWN_XV=0
   if [ -z "${DISPLAY:-}" ] || [ "${RT_OWN_XVFB:-1}" = "1" ]; then
@@ -64,10 +72,13 @@ if [ "${1:-}" = "--shoot" ]; then
     export DISPLAY="$DISP"
   fi
   rm -f "$OUT"/rt_*.png "$OUT/rt_meta.json"
+  DS_ARGS=()
+  [ -n "$DRAWSKIP" ] && DS_ARGS=(--draw-skip "$DRAWSKIP")
   "$GBIN" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
     --resolution ${W}x${H} --single-window res://bench/SpaceShot.tscn -- \
     --backend logic --seed "$SEED" --warmup-tick "$TICK" \
-    --rt-out "$OUT" --rt-space "$SPACE" --rt-mode "$MODE" --rt-redraw "$REDRAW"
+    --rt-out "$OUT" --rt-space "$SPACE" --rt-mode "$MODE" --rt-journey "$JOURNEY" --rt-redraw "$REDRAW" \
+    "${DS_ARGS[@]}"
   rc=$?
   [ "$OWN_XV" = "1" ] && kill $XV 2>/dev/null
   exit $rc
@@ -82,6 +93,9 @@ PY="${PYTHON:-python}"
 MODE="${LT_RT:-auto}"
 RUNNER="${LT_RT_RUNNER:-auto}"
 IMG="${LT_RT_IMAGE:-gamecraft-runner:4.6.2}"
+JOURNEY="${LT_RT_JOURNEY:-simple}"    # simple=现役 1F 往返门（assert_space_roundtrip）；full=全楼层往返门（assert_floor_roundtrip，AM3/编号135）
+DRAWSKIP="${LT_RT_DRAW_SKIP:-}"        # AM3 负对照：LT_RT_DRAW_SKIP=interior_furniture ⇒ 2F/1F 都空 ⇒ B 臂（可分）红
+[ "${LT_RT_SKIP_FURN:-0}" = "1" ] && DRAWSKIP="interior_furniture"   # 便捷别名：让 2F 帧==1F 帧 的那条牙
 
 skip(){
   if [ "$MODE" = "require" ]; then
@@ -122,19 +136,21 @@ mkdir -p "$OUT"
 OUT_HOST="$OUT"
 case "$(uname -s)" in MINGW*|MSYS*) OUT_HOST="$(cd "$OUT" && pwd -W)" ;; esac
 
-echo "  runner=$PICK  mode=$MODE  rt-mode=${LT_RT_MODE:-portal}  game=$GAME  out=$OUT"
+echo "  runner=$PICK  mode=$MODE  rt-mode=${LT_RT_MODE:-portal}  journey=$JOURNEY  draw-skip=${DRAWSKIP:-none}  game=$GAME  out=$OUT"
 SHOT_RC=0
 if [ "$PICK" = docker ]; then
   # ⚠️ 并行期纪律（docs/43 R6）：只按自己的名字杀自己的容器，禁止 `docker ps -q | xargs docker kill`。
   CNAME="lt-space-roundtrip-$$"
   MSYS_NO_PATHCONV=1 docker run --rm --name "$CNAME" \
     -e RT_MODE="${LT_RT_MODE:-portal}" -e RT_SPACE="${LT_RT_SPACE:-cafe}" -e RT_REDRAW="${LT_RT_REDRAW:-auto}" \
+    -e RT_JOURNEY="$JOURNEY" -e RT_DRAW_SKIP="$DRAWSKIP" \
     -e LT_RT_SEED="$SEED" -e LT_RT_TICK="$TICK" \
     -v "$GAME:/game" -v "$REPO/tools:/tools" -v "$OUT_HOST:/out" \
     "$IMG" bash /tools/space_roundtrip.sh --shoot /out
   SHOT_RC=$?
 else
   RT_GAME="$GAME" RT_MODE="${LT_RT_MODE:-portal}" RT_SPACE="${LT_RT_SPACE:-cafe}" RT_REDRAW="${LT_RT_REDRAW:-auto}" \
+    RT_JOURNEY="$JOURNEY" RT_DRAW_SKIP="$DRAWSKIP" \
     GODOT="$GODOT" bash "$0" --shoot "$OUT"
   SHOT_RC=$?
 fi
@@ -147,7 +163,12 @@ if [ $SHOT_RC -ne 0 ]; then
   exit 1
 fi
 
-"$PY" tools/assert_space_roundtrip.py "$OUT"
+# 判据分派：simple → 现役 1F 往返门；full → 全楼层往返门（AM3/编号135，逐段楼层对 + 回程取景一致 + 2F 与 1F 可分）
+if [ "$JOURNEY" = "full" ]; then
+  "$PY" tools/assert_floor_roundtrip.py "$OUT"
+else
+  "$PY" tools/assert_space_roundtrip.py "$OUT"
+fi
 ARC=$?
 [ $EPHEMERAL -eq 1 ] && rm -rf "$OUT"
 exit $ARC
