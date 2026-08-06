@@ -152,7 +152,7 @@ Phase 5  才恢复多镇：生产 capacity 与具名 NPC 解耦 → N=24/40/60 h
 
 外审读了 AE1/AG2/AF2/AI1/AJ1 + 真机验证，裁决：**无仿真/RNG/金标回归**（那几笔代码干净、可留），但**产品偏航**（47 commit 里 34 是 docs/ci/chore、map/building/interior 零内容实现）。⇒ 明确顺序：
 
-- **P0（证据闭环短闸，非门控，现在做）**：① **AE2 fail-open 重开**（confirmed bypass，见 §二，⚠️避开用户 re-bake 的数据面）；② **接 season+precip Xvfb 视觉门进 required CI**（runner 查子进程 rc）；③ **#43 四例（buyer/vendor/parties-only 必红、真第三方必绿）接 CI**；④ 冻结候选 SHA + branch protection + 让 35min synthetic-merge workflow 真跑一次；⑤ 125 worktree 清单（先隔离 8 dirty）。
+- **P0（证据闭环短闸，非门控，现在做）**：① **AE2 fail-open 重开**（confirmed bypass，见 §二，⚠️避开用户 re-bake 的数据面）；✅**② 已收（AK1 编号 131，`62f21d0`）**：season+precip 视觉门接进 required CI（步6 加 8 季节+12 降水帧）+ 新 `vg_shoot.sh` 三判据硬化子进程 rc（关"图在盘但 rc≠0"fail-open）——本机全量 CI 真跑 SEASON PASS(昼8.06/夜4.30)、PRECIP PASS，双负对照证牙；③ **#43 四例（buyer/vendor/parties-only 必红、真第三方必绿）接 CI**；④ 冻结候选 SHA + branch protection + 让 35min synthetic-merge workflow 真跑一次；⑤ 125 worktree 清单（先隔离 8 dirty）。
 - **Phase 1（下一根【主功能棒】= AG3 可交付纵切【实现】，不是第三份设计）**：cafe–plaza–shop–work 连续街区——`town→cafe1F→2F→1F→town` 的 **Probe 往返**（本 Phase 默认 omniscient research Probe，玩家穿门旅行另立知识/访问策略）、1F/2F 清晰用途/非模板 zoning、修腐烂 `_note`、加 2F 像素门 + portal round-trip 门 + Probe observer-independence 门、**Android 当前候选包实测拖/捏/点门/楼梯/返回**。退出条件=观察者桌面+手机走完整旅程，非"代码里有 portal"。
 - **并行限额一根架构 lane**：从 save codec 抽 canonical state_projection（§一，待用户 §0.8）。
 - **明确暂停**（外审点名）：**wiki 增强、IndustryState、Narrative 合入、event schema 档1/2、更多天气扩张、多镇**。AC2 以后 fresh 小 PR 收口不抢 AG3。
