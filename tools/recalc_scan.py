@@ -92,8 +92,18 @@ EXCLUDE_PREFIX = ("analysis/",)
 
 
 def tracked_files():
-    out = subprocess.run(["git", "ls-files"], cwd=ROOT, capture_output=True, text=True)
-    return [p for p in out.stdout.splitlines() if p]
+    # AE2：旧版直接 `return out.stdout.splitlines()`，git 非零退出（非仓库/损坏）时 stdout 为空
+    # ⇒ 语料悄悄变空 ⇒ 报「分母 = 0」，读起来像"没有可重算的数字"而不是"扫描根本没跑成"。
+    # 子进程非零 ⇒ 立即失败，别把失败伪装成一个干净的空结果。
+    out = subprocess.run(["git", "ls-files"], cwd=ROOT, capture_output=True, text=True,
+                         encoding="utf-8", errors="replace")
+    if out.returncode != 0:
+        raise SystemExit("git ls-files 退出码 %d（cwd=%s）—— 扫描无法建立语料，拒绝返回空集冒充'没有数字'。%s"
+                         % (out.returncode, ROOT, (out.stderr or "").strip()[:200]))
+    files = [p for p in out.stdout.splitlines() if p]
+    if not files:
+        raise SystemExit("git ls-files 返回空（cwd=%s 不是 git 仓库？）—— 拒绝把空语料读成'0 个候选数字'。" % ROOT)
+    return files
 
 
 def load_corpus(root=ROOT, files=None, with_analysis=False):

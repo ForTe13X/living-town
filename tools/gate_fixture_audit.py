@@ -39,6 +39,7 @@ import tempfile
 
 try:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")   # AE2：否则 traceback 在 GBK 控制台成乱码
 except (AttributeError, OSError):
     pass
 
@@ -130,12 +131,15 @@ for _tag, _scen in (("DET_default", ""), ("DET_faction", "faction"),
     }
 
 
-def _check_ci_defaults():
-    p = os.path.join(ROOT, "tools", "ci.sh")
-    try:
-        src = open(p, encoding="utf-8", errors="replace").read()
-    except OSError:
-        return "（读不到 ci.sh，跳过对账）"
+def _check_ci_defaults(src=None):
+    """FIXTURES 表里写的 seeds/days（= 本工具测量用的那个格子）与 ci.sh 现值对账。
+    `src` 可注入 ci.sh 文本（自检用）；不给就读真文件。对不上返回以 ❌ 开头的串。"""
+    if src is None:
+        p = os.path.join(ROOT, "tools", "ci.sh")
+        try:
+            src = open(p, encoding="utf-8", errors="replace").read()
+        except OSError:
+            return "（读不到 ci.sh，跳过对账）"
     live = dict(re.findall(r"\$\{(CI_[A-Z_0-9]+):-([^}]*)\}", src))
     bad = []
     for tag, pairs in CI_DEFAULT_EXPECT.items():
@@ -421,18 +425,33 @@ def providers_of(data, tags):
     return out
 
 
-def bake_ledger(data, path):
+def bake_ledger(data, path, tree_sha=None):
     """把「接线图（WIRING，读的是树）」+「活输入来源（providers，量出来的）」烘成一份锚。
 
     ⚠ **不完整的数据不许烘**：少跑一格，那一格独有的活输入就会凭空消失，
     烘出来的锚会把一堆本来有牙的不变量记成"处处空转"——本工具 §5.3 的 does_not_detect
     第二条点的正是这个坑，这里把它变成一次**拒绝**而不是一行警告。
+
+    ⚠ AE2：**来源闭环**也在这里合拢——baked_commit 必须真的读到（不给空 sha），
+    且测量用的那棵 game 树（tree_sha）必须就是要盖章的那个 commit 的 game 树，否则拒绝。
     """
     need = [f[0] for f in FIXTURES if f[6] != "none"]
     missing = [t for t in need if t not in data or not data[t]]
     if missing:
         print("❌ 拒绝烘锚：缺 %s ⇒ 少跑一格会把一堆有牙的不变量误烘成「处处空转」。"
               "请跑完整的 `--run`（不要带 --only）。" % ",".join(missing))
+        return 1
+    # ── 来源闭环 ①：commit 章必须真的读到，绝不盖空 ──────────────────────────────
+    sha = _rev_parse("HEAD")
+    if not sha:
+        print("❌ 拒绝烘锚：`git rev-parse HEAD` 读不到 commit ⇒ 不给锚盖一个空的来源章。"
+              "（空 baked_commit 会让 gate_complement_guard 侧的来源闭环静默失效。）")
+        return 1
+    # ── 来源闭环 ②：量的树 == 要盖的章的那棵树 ────────────────────────────────────
+    cur_tree = _rev_parse("HEAD:game")
+    if tree_sha is not None and cur_tree is not None and tree_sha != cur_tree:
+        print("❌ 拒绝烘锚：测量用的 game 树 %s ≠ 当前 HEAD:game %s ⇒ 量的树与要盖的章不是同一棵。"
+              % (tree_sha[:12], cur_tree[:12]))
         return 1
     tags = [f for f in FIXTURES if f[0] in data]
     provs = providers_of(data, tags)
@@ -455,12 +474,7 @@ def bake_ledger(data, path):
             "requires": spec["requires"],
             "floors": floors,
         }
-    sha = ""
-    try:
-        sha = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT,
-                             capture_output=True, text=True).stdout.strip()
-    except OSError:
-        pass
+    # sha / cur_tree 已在函数开头读到并校验过（非空、量的树==要盖的章的树）。
     dead = sorted(int(i) for i, p in provs.items() if not p)
     old = {}
     if os.path.isfile(path):
@@ -481,6 +495,7 @@ def bake_ledger(data, path):
             "baked_by": "GODOT=… python tools/gate_fixture_audit.py --run --bake-ledger",
             "baked_at": _today(),
             "baked_commit": sha,
+            "baked_game_tree": tree_sha or cur_tree,
             "dead_at_bake": dead,
             "rebake_history": hist,
         },
@@ -495,11 +510,21 @@ def bake_ledger(data, path):
     for iid, p in provs.items():
         if len(p) == 1:
             sole.setdefault(p[0], []).append(int(iid))
-    print("🔨 已烘 %s（%d 夹具 × %d 条 C/G 不变量）" % (os.path.relpath(path, ROOT), len(fixtures), len(provs)))
+    print("🔨 已烘 %s（%d 夹具 × %d 条 C/G 不变量）" % (_rel(path), len(fixtures), len(provs)))
     print("   烘锚时处处空转：%s" % (", ".join("#%02d" % i for i in dead) if dead else "（无）"))
     for tag in sorted(sole):
         print("   单点依赖 %-14s ← %s" % (tag, ", ".join("#%02d" % i for i in sorted(sole[tag]))))
     return 0
+
+
+def _rel(path):
+    """相对 ROOT 的展示路径。AE2：`--ledger` 指到别的盘（C: vs E:）时 `os.path.relpath`
+    会抛 ValueError ⇒ 一次【已经烘好】的锚在最后一行 print 上崩掉、退出码变 1（假红）。
+    回退到绝对路径，别让展示串把成功报成失败。"""
+    try:
+        return os.path.relpath(path, ROOT)
+    except ValueError:
+        return os.path.abspath(path)
 
 
 def _today():
@@ -518,10 +543,43 @@ def _resolve_godot(g):
     return g
 
 
+def _rev_parse(ref, cwd=ROOT):
+    """`git rev-parse <ref>` 现读。读不到 / 非零退出 ⇒ 返回 None（**绝不返回空串冒充成功**）。
+    AE2：旧 bake_ledger 直接 `sha = ...stdout.strip()` 且只 except OSError ⇒ git 非零但不抛异常时
+    baked_commit 会被静默盖成 ""，来源闭环当场失效。"""
+    try:
+        r = subprocess.run(["git", "rev-parse", ref], cwd=cwd, capture_output=True, text=True)
+    except OSError:
+        return None
+    sha = (r.stdout or "").strip()
+    return sha if (r.returncode == 0 and sha) else None
+
+
 def run_fixtures(godot, iso, outdir, only=None):
+    """跑全部（或 --only 指定的）夹具探针。返回 (fails, tree_sha)：
+      · fails —— 子进程非零退出码 / 导入失败 的清单。**非空即 fail-closed**（旧版只打印 rc 就往下走）。
+      · tree_sha —— 这次真正测量的那棵【committed game/】树的 sha；隔离副本按它内容寻址。"""
     godot = _resolve_godot(godot)
     os.makedirs(outdir, exist_ok=True)
-    if not os.path.isdir(os.path.join(iso, "game")):
+    fails = []
+    # committed game/ 的 tree 对象 —— 隔离副本正是 `git archive HEAD -- game` 出来的这棵树。
+    tree_sha = _rev_parse("HEAD:game")
+    # ── 隔离副本【内容寻址】：绑到 committed game/ 的 tree sha ────────────────────
+    # 旧版：`if not isdir(iso/game): extract`。⇒ 换一个 commit 再跑，旧树被**原样复用**，
+    #   而 baked_commit 却盖今天的 HEAD —— 量的是 A 树、盖的是 B 章，来源闭环是断的（AE2 抓到的主症）。
+    # 现在把上次抽取的 tree sha 记在 iso/.lt_game_tree；对不上 / 读不到 ⇒ **擦掉重抽**，绝不复用旧树。
+    game_dir = os.path.join(iso, "game")
+    marker = os.path.join(iso, ".lt_game_tree")
+    have = None
+    if os.path.isfile(marker):
+        try:
+            have = open(marker, encoding="utf-8").read().strip()
+        except OSError:
+            have = None
+    fresh = (not os.path.isdir(game_dir)) or (tree_sha is None) or (have != tree_sha)
+    if fresh:
+        if os.path.isdir(iso):
+            shutil.rmtree(iso, ignore_errors=True)
         os.makedirs(iso, exist_ok=True)
         # 只取 game/：探针跑的是引擎，docs/ 用不上。
         # ⚠ **不要**管道给外部 `tar`：Windows 上 PATH 里的 bsdtar 会把 `docs/02-技术架构…md`
@@ -533,14 +591,23 @@ def run_fixtures(godot, iso, outdir, only=None):
                               cwd=ROOT, capture_output=True, check=True).stdout
         with tarfile.open(fileobj=_io.BytesIO(blob)) as tf:
             tf.extractall(iso)
+        if tree_sha:
+            with open(marker, "w", encoding="utf-8") as fh:
+                fh.write(tree_sha + "\n")
+        if have is not None and have != tree_sha:
+            print("  ♻ 隔离副本原是 game@%s ≠ 当前 HEAD:game@%s ⇒ 已擦掉重抽（不复用旧树）"
+                  % ((have or "?")[:12], (tree_sha or "?")[:12]), flush=True)
+    else:
+        print("  ↺ 复用隔离副本 game@%s（与当前 HEAD:game 逐位相同）" % (tree_sha or "?")[:12], flush=True)
     shutil.copyfile(os.path.join(ROOT, "tools", "gate_fixture_probe.gd"),
-                    os.path.join(iso, "game", "bench", "gate_fixture_probe.gd"))
-    subprocess.run([godot, "--headless", "--path", os.path.join(iso, "game"), "--import"],
-                   capture_output=True)
+                    os.path.join(game_dir, "bench", "gate_fixture_probe.gd"))
+    imp = subprocess.run([godot, "--headless", "--path", game_dir, "--import"], capture_output=True)
+    if imp.returncode != 0:
+        fails.append("godot --import 退出码 %d ⇒ 隔离副本导入失败，后面每一格的测量都不可信" % imp.returncode)
     for tag, step, seeds, days, agents, scen, _consumes in FIXTURES:
         if only and tag not in only:
             continue
-        cmd = [godot, "--headless", "--path", os.path.join(iso, "game"), "--script",
+        cmd = [godot, "--headless", "--path", game_dir, "--script",
                "res://bench/gate_fixture_probe.gd", "--", "--seeds", seeds, "--days", str(days), "--tag", tag]
         if agents:
             cmd += ["--agents", str(agents)]
@@ -549,7 +616,12 @@ def run_fixtures(godot, iso, outdir, only=None):
         r = subprocess.run(cmd, capture_output=True)
         with open(os.path.join(outdir, tag + ".txt"), "wb") as fh:
             fh.write(r.stdout)
-        print("  跑完 %-14s (%s)  rc=%d" % (tag, step, r.returncode), flush=True)
+        rc = r.returncode
+        print("  跑完 %-14s (%s)  rc=%d%s" % (tag, step, rc, "" if rc == 0 else "  ❌ 非零退出 ⇒ 该格测量不可信"),
+              flush=True)
+        if rc != 0:
+            fails.append("%s：探针子进程退出码 %d（打印 rc 却不阻止 = fail-open，AE2 改为阻止）" % (tag, rc))
+    return fails, tree_sha
 
 
 def self_test():
@@ -574,6 +646,21 @@ def self_test():
         data = parse_dir(tmp)
         bad = 0
         s = data["T"]
+        # ci.sh 对账的合成源：从 CI_DEFAULT_EXPECT 现造，改一个默认值就该被判 ❌。
+        def _syn_ci(overrides=None):
+            overrides = overrides or {}
+            parts = []
+            for _tag, pairs in CI_DEFAULT_EXPECT.items():
+                for var, want in pairs:
+                    parts.append('%s="${%s:-%s}"' % (var, var, overrides.get(var, want)))
+            return "\n".join(parts) + "\n"
+
+        ci_match = _check_ci_defaults(_syn_ci())
+        ci_drift = _check_ci_defaults(_syn_ci({"CI_DAYS": "20"}))       # 把 S0 的 60 天漂成 20
+        # 空 sha 的可检出性：非 git 目录里 rev-parse 必须返回 None（旧版会盖成 ""）。
+        nogit = tempfile.mkdtemp(prefix="gfa_nogit_")
+        sha_none = _rev_parse("HEAD", cwd=nogit)
+        shutil.rmtree(nogit, ignore_errors=True)
         checks = [
             ("betray=0 ⇒ #22 前件必须是 0", SPEC[22][2](s[1]["live"], s[1]["detail"]) == 0),
             ("aid_accepted=0 ⇒ #29 样本守卫必须判空", SPEC[29][2](s[1]["live"], s[1]["detail"]) == 0),
@@ -581,6 +668,9 @@ def self_test():
             ("n_agents=12 ⇒ #20 小 N 守护必须判活", SPEC[20][2](s[1]["live"], s[1]["detail"]) == 1),
             ("production_on ⇒ #38 必须判活", SPEC[38][2](s[1]["live"], s[1]["detail"]) == 1),
             ("解析器读到了两个 seed", sorted(s) == [1, 2]),
+            ("AE2 ci 对账：默认值全对 ⇒ 不判 ❌（不假红）", not ci_match.startswith("❌")),
+            ("AE2 ci 对账：CI_DAYS 60→20 漂了 ⇒ 判 ❌（拦住烘锚）", ci_drift.startswith("❌")),
+            ("AE2 来源闭环：非 git 目录 rev-parse HEAD ⇒ None（不冒充成空 sha）", sha_none is None),
         ]
         for why, okv in checks:
             print("  [%s] %s" % ("✅" if okv else "❌", why))
@@ -619,22 +709,38 @@ def main():
             print("   本工具的 HARD_IDS 副本与 game/bench/Invariants.gd 不一致 ⇒ 枚举必然漏条，")
             print("   而烘出来的锚会把这个漏洞【固化成基线】。先把副本与谓词表补齐再烘。")
             return 1
+    run_fails, tree_sha = [], None
     if a.run:
-        run_fixtures(a.godot, a.iso, a.out, only)
+        run_fails, tree_sha = run_fixtures(a.godot, a.iso, a.out, only)
         a.src = a.out
     if not a.src:
         print("要么 --run，要么 --from <目录>")
         return 2
     data = parse_dir(a.src)
     report(data, only)
+    if run_fails:
+        # ⚠ AE2：子进程非零 ⇒ **立即失败**，不再只把 rc 打印出来就当没事。
+        print("\n❌ 子进程非零退出 / 导入失败（fail-closed，不再打印 rc 就往下走）：")
+        for f in run_fails:
+            print("   · " + f)
     if a.bake_ledger:
         # （HARD_IDS 副本与源码的对账拦截在 --run 之前就做过了，见上面 main() 里那一段。）
         if only:
             print("\n❌ 拒绝烘锚：--only 与 --bake-ledger 不能同用（理由见 bake_ledger 抬头）。")
             return 1
+        # ⚠ AE2：ci.sh 默认值漂了 ⇒ 本工具在量【另一个格子】。旧版把这行对账**打印了却不阻止**，
+        #   照样烘 —— 正是 docs/41 反复点名的那个病。这里把它变成一次拒绝。
+        ci_msg = _check_ci_defaults()
+        if ci_msg.startswith("❌"):
+            print("\n❌ 拒绝烘锚：%s" % ci_msg)
+            print("   FIXTURES 表（本次测量用的 seeds/days）与 ci.sh 现值对不上 ⇒ 量的是另一个格子，烘出来的锚会错位。")
+            return 1
+        if run_fails:
+            print("\n❌ 拒绝烘锚：本次 --run 有子进程非零退出（见上）⇒ 测量不可信，不给它盖章。")
+            return 1
         print("")
-        return bake_ledger(data, a.ledger)
-    return 0
+        return bake_ledger(data, a.ledger, tree_sha)
+    return 1 if run_fails else 0
 
 
 if __name__ == "__main__":
