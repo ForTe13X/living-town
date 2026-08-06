@@ -1583,10 +1583,22 @@ func _draw_interior_furniture(slot: String, base: Vector2, role: String = "livin
 			draw_rect(Rect2(base.x + T * 0.2, base.y + T * 0.15, T * 0.6, T * 0.14), P_WRK_FOOT, true)
 			draw_circle(Vector2(base.x + T * 0.68, base.y + T * 0.3), T * 0.05, X_SIGNAL_NEG)
 			draw_rect(Rect2(base.x + T * 0.42, base.y + T * 0.52, T * 0.16, T * 0.14), P_TEXT, true)
-		"counter":                                  # 吧台：长木身 + 台面高光
-			draw_rect(Rect2(base.x + 2, base.y + T * 0.6, T - 4, T * 0.35), Color(0, 0, 0, 0.18), true)
-			draw_rect(Rect2(base.x + T * 0.03, base.y + T * 0.32, T * 0.94, T * 0.5), X_WOOD_MID, true)
-			draw_rect(Rect2(base.x + T * 0.03, base.y + T * 0.32, T * 0.94, T * 0.1), P_COM_LINE, true)
+		"counter":                                  # 吧台 / 杂货铺柜台 —— 按房间用途分化（S3 同型，与 _draw_shelf 一样按 role 派发）
+			if role == "store":                     # AM2（编号134）：杂货铺前柜 —— 木柜台 + 收银机 + 挂秤 + 台面果篮，与咖啡吧台分得开
+				draw_rect(Rect2(base.x + 2, base.y + T * 0.6, T - 4, T * 0.35), Color(0, 0, 0, 0.18), true)      # 投影
+				draw_rect(Rect2(base.x + T * 0.03, base.y + T * 0.42, T * 0.94, T * 0.44), X_WOOD_MID, true)     # 柜身
+				draw_rect(Rect2(base.x + T * 0.03, base.y + T * 0.42, T * 0.94, T * 0.09), P_COM_TOP, true)      # 台面高光
+				draw_rect(Rect2(base.x + T * 0.1, base.y + T * 0.22, T * 0.28, T * 0.22), P_WRK_FOOT, true)      # 收银机机身（深金属）
+				draw_rect(Rect2(base.x + T * 0.13, base.y + T * 0.25, T * 0.22, T * 0.09), X_COLD_WHITE, true)   # 收银机显示窗
+				draw_circle(Vector2(base.x + T * 0.18, base.y + T * 0.4), T * 0.03, X_GOLD)                      # 按键/铜钮
+				draw_line(Vector2(base.x + T * 0.72, base.y + T * 0.18), Vector2(base.x + T * 0.72, base.y + T * 0.32), D_WOOD_LINE, 2.0)  # 挂秤立柱
+				draw_rect(Rect2(base.x + T * 0.6, base.y + T * 0.32, T * 0.24, T * 0.05), P_WRK_FOOT, true)      # 秤盘横梁
+				draw_circle(Vector2(base.x + T * 0.66, base.y + T * 0.39), T * 0.05, X_SIGNAL_NEG)               # 篮里红果
+				draw_circle(Vector2(base.x + T * 0.78, base.y + T * 0.39), T * 0.045, X_GOLD)                    # 篮里黄果
+			else:                                   # 咖啡区吧台（改前那段，逐字节不动 ⇒ cafe 渲染不受扰）
+				draw_rect(Rect2(base.x + 2, base.y + T * 0.6, T - 4, T * 0.35), Color(0, 0, 0, 0.18), true)
+				draw_rect(Rect2(base.x + T * 0.03, base.y + T * 0.32, T * 0.94, T * 0.5), X_WOOD_MID, true)
+				draw_rect(Rect2(base.x + T * 0.03, base.y + T * 0.32, T * 0.94, T * 0.1), P_COM_LINE, true)
 		"table":                                    # 餐桌
 			draw_rect(Rect2(base.x + T * 0.24, base.y + T * 0.5, T * 0.1, T * 0.34), P_COM_FOOT, true)
 			draw_rect(Rect2(base.x + T * 0.66, base.y + T * 0.5, T * 0.1, T * 0.34), P_COM_FOOT, true)
@@ -1624,11 +1636,20 @@ func _draw_interior_furniture(slot: String, base: Vector2, role: String = "livin
 			draw_rect(Rect2(base.x + T * 0.08, base.y + T * 0.42, T * 0.84, T * 0.05), D_FURN_HI, true)
 			draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.59, T * 0.1, T * 0.24), P_COM_FOOT, true)
 			draw_rect(Rect2(base.x + T * 0.74, base.y + T * 0.59, T * 0.1, T * 0.24), P_COM_FOOT, true)
-		"crate":                                     # 木箱：板条 + 对角加固
-			draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.3, T * 0.68, T * 0.56), P_RES_LINE, true)
-			draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.3, T * 0.68, T * 0.56), P_COM_FOOT, false, 2.0)
-			draw_line(Vector2(base.x + T * 0.16, base.y + T * 0.86), Vector2(base.x + T * 0.84, base.y + T * 0.3), P_COM_FOOT, 2.0)
-			draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.3, T * 0.68, T * 0.08), P_COM_TOP, true)
+		"crate":                                     # 木箱 / 杂货铺果箱 —— 按房间用途分化
+			if role == "store":                     # AM2（编号134）：杂货铺敞口果蔬箱 —— 板条箱 + 堆尖的果蔬
+				draw_rect(Rect2(base.x + T * 0.14, base.y + T * 0.4, T * 0.72, T * 0.46), X_WOOD_MID, true)      # 箱体
+				draw_rect(Rect2(base.x + T * 0.14, base.y + T * 0.4, T * 0.72, T * 0.46), D_WOOD_LINE, false, 2.0)  # 边框
+				for k in range(3):                                                                              # 板条竖缝
+					draw_line(Vector2(base.x + T * (0.14 + k * 0.24), base.y + T * 0.4), Vector2(base.x + T * (0.14 + k * 0.24), base.y + T * 0.86), D_WOOD_LINE, 1.5)
+				draw_circle(Vector2(base.x + T * 0.3, base.y + T * 0.37), T * 0.1, X_SIGNAL_NEG)                 # 红果（苹果）
+				draw_circle(Vector2(base.x + T * 0.5, base.y + T * 0.34), T * 0.09, P_GRASS)                     # 绿果
+				draw_circle(Vector2(base.x + T * 0.68, base.y + T * 0.37), T * 0.09, X_GOLD)                     # 黄果（柑橘）
+			else:                                   # 通用木箱（改前那段，逐字节不动 ⇒ 未来别处用 crate 不受扰）
+				draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.3, T * 0.68, T * 0.56), P_RES_LINE, true)
+				draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.3, T * 0.68, T * 0.56), P_COM_FOOT, false, 2.0)
+				draw_line(Vector2(base.x + T * 0.16, base.y + T * 0.86), Vector2(base.x + T * 0.84, base.y + T * 0.3), P_COM_FOOT, 2.0)
+				draw_rect(Rect2(base.x + T * 0.16, base.y + T * 0.3, T * 0.68, T * 0.08), P_COM_TOP, true)
 		"stool":                                     # 圆凳
 			draw_circle(Vector2(base.x + T * 0.5, base.y + T * 0.5), T * 0.22, P_COM_LINE)
 			draw_circle(Vector2(base.x + T * 0.5, base.y + T * 0.47), T * 0.18, D_FURN_HI)
@@ -1679,6 +1700,56 @@ func _draw_interior_furniture(slot: String, base: Vector2, role: String = "livin
 			draw_rect(Rect2(base.x + T * 0.3, base.y + T * 0.26, T * 0.4, T * 0.38), P_WATER_LIT, true)        # 画面（天）
 			draw_rect(Rect2(base.x + T * 0.3, base.y + T * 0.48, T * 0.4, T * 0.16), P_FOLIAGE_M, true)        # 地平线（草）
 			draw_circle(Vector2(base.x + T * 0.6, base.y + T * 0.35), T * 0.05, X_GOLD)                        # 暖点（日/月）
+		# ── AM2（编号134）：shop 杂货铺 + work 工坊身份分区新增的纯装饰 slot ─────────────
+		# 杂货铺：谷袋（sacks）；工坊：工作台(workbench)/木料堆(lumber)/铁砧(anvil)/材料箱(materials)。
+		# 全部无 advertises ⇒ 不进 world 候选（只挡格 + 渲染）；每件都【原地换 slot】、位置+walkable 不变
+		# ⇒ 导航挡格集逐字节不变（自证见 analysis/am2/edit_interiors.py），golden 实测 12/12 逐字节不变（含 chain）。
+		# 每件严格画在本格 [base, base+T] 内、x∈[0.05,0.92]、不越格污染 INTSHELL 的墙面采样列（col0/col w-1）。
+		"sacks":                                     # 谷袋堆（杂货铺）：三只麻袋 + 扎口 + 溢出的谷粒
+			draw_rect(Rect2(base.x + T * 0.12, base.y + T * 0.5, T * 0.34, T * 0.36), P_PLAZA, true)          # 底左袋
+			draw_rect(Rect2(base.x + T * 0.12, base.y + T * 0.5, T * 0.34, T * 0.36), P_PLAZA_LINE, false, 1.5)
+			draw_rect(Rect2(base.x + T * 0.5, base.y + T * 0.54, T * 0.34, T * 0.32), P_PLAZA, true)          # 底右袋
+			draw_rect(Rect2(base.x + T * 0.5, base.y + T * 0.54, T * 0.34, T * 0.32), P_PLAZA_LINE, false, 1.5)
+			draw_rect(Rect2(base.x + T * 0.31, base.y + T * 0.26, T * 0.36, T * 0.32), P_PLAZA, true)         # 顶袋
+			draw_rect(Rect2(base.x + T * 0.31, base.y + T * 0.26, T * 0.36, T * 0.32), P_PLAZA_LINE, false, 1.5)
+			draw_rect(Rect2(base.x + T * 0.43, base.y + T * 0.22, T * 0.12, T * 0.06), P_PLAZA_LINE, true)    # 扎口
+			draw_circle(Vector2(base.x + T * 0.49, base.y + T * 0.34), T * 0.05, X_PARCHMENT)                # 溢出谷粒
+		"workbench":                                 # 工作台（工坊）：厚台面 + 台钳 + 木工刨 + 台腿
+			draw_rect(Rect2(base.x + T * 0.08, base.y + T * 0.36, T * 0.84, T * 0.16), X_WOOD_MID, true)      # 厚台面
+			draw_rect(Rect2(base.x + T * 0.08, base.y + T * 0.36, T * 0.84, T * 0.05), D_FURN_HI, true)       # 台面高光
+			draw_rect(Rect2(base.x + T * 0.14, base.y + T * 0.52, T * 0.1, T * 0.34), P_COM_FOOT, true)       # 左腿
+			draw_rect(Rect2(base.x + T * 0.76, base.y + T * 0.52, T * 0.1, T * 0.34), P_COM_FOOT, true)       # 右腿
+			draw_rect(Rect2(base.x + T * 0.3, base.y + T * 0.6, T * 0.4, T * 0.07), P_COM_FOOT, true)         # 横撑
+			draw_rect(Rect2(base.x + T * 0.06, base.y + T * 0.42, T * 0.12, T * 0.16), P_WRK_FOOT, true)      # 台钳身
+			draw_rect(Rect2(base.x + T * 0.05, base.y + T * 0.47, T * 0.16, T * 0.05), P_WRK_TOP, true)       # 台钳口
+			draw_rect(Rect2(base.x + T * 0.4, base.y + T * 0.28, T * 0.34, T * 0.08), P_WRK_FOOT, true)       # 刨身
+			draw_rect(Rect2(base.x + T * 0.46, base.y + T * 0.24, T * 0.08, T * 0.06), X_WOOD_MID, true)      # 刨手柄
+		"lumber":                                    # 木料堆（工坊）：三层锯好的板材 + 两截露端木的原木
+			for k in range(3):
+				var ly := base.y + T * (0.42 + k * 0.15)
+				draw_rect(Rect2(base.x + T * 0.12, ly, T * 0.76, T * 0.12), X_WOOD_MID, true)                 # 板材
+				draw_rect(Rect2(base.x + T * 0.12, ly, T * 0.76, T * 0.035), D_FURN_HI, true)                 # 板面高光
+				draw_rect(Rect2(base.x + T * 0.12, ly, T * 0.76, T * 0.12), D_WOOD_LINE, false, 1.5)          # 板缘
+			draw_circle(Vector2(base.x + T * 0.28, base.y + T * 0.3), T * 0.09, X_WOOD_MID)                   # 原木端面
+			draw_circle(Vector2(base.x + T * 0.28, base.y + T * 0.3), T * 0.045, D_WOOD_LINE)                 # 年轮
+			draw_circle(Vector2(base.x + T * 0.52, base.y + T * 0.28), T * 0.08, X_WOOD_MID)                  # 原木端面
+			draw_circle(Vector2(base.x + T * 0.52, base.y + T * 0.28), T * 0.04, D_WOOD_LINE)                 # 年轮
+		"anvil":                                     # 铁砧（工坊）：木墩 + 深金属砧身 + 砧角 + 搁着的锤
+			draw_rect(Rect2(base.x + T * 0.3, base.y + T * 0.62, T * 0.4, T * 0.24), X_WOOD_MID, true)        # 木墩
+			draw_rect(Rect2(base.x + T * 0.3, base.y + T * 0.62, T * 0.4, T * 0.05), D_FURN_HI, true)         # 墩顶高光
+			draw_rect(Rect2(base.x + T * 0.28, base.y + T * 0.5, T * 0.44, T * 0.12), P_WRK_ROOF, true)       # 砧台面
+			draw_rect(Rect2(base.x + T * 0.34, base.y + T * 0.5, T * 0.34, T * 0.035), P_WRK_TOP, true)       # 砧面高光棱
+			draw_rect(Rect2(base.x + T * 0.38, base.y + T * 0.44, T * 0.24, T * 0.08), P_WRK_FOOT, true)      # 砧腰
+			draw_rect(Rect2(base.x + T * 0.68, base.y + T * 0.51, T * 0.14, T * 0.07), P_WRK_ROOF, true)      # 砧角
+			draw_rect(Rect2(base.x + T * 0.44, base.y + T * 0.3, T * 0.04, T * 0.2), X_WOOD_MID, true)        # 锤柄
+			draw_rect(Rect2(base.x + T * 0.38, base.y + T * 0.28, T * 0.16, T * 0.07), P_WRK_FOOT, true)      # 锤头
+		"materials":                                 # 材料箱（工坊）：料箱 + 竖插的棒料 + 一卷铜线
+			draw_rect(Rect2(base.x + T * 0.14, base.y + T * 0.46, T * 0.72, T * 0.4), P_COM_FOOT, true)       # 料箱
+			draw_rect(Rect2(base.x + T * 0.14, base.y + T * 0.46, T * 0.72, T * 0.06), X_WOOD_MID, true)      # 箱沿
+			for k in range(4):                                                                              # 竖插棒料
+				draw_rect(Rect2(base.x + T * (0.2 + k * 0.16), base.y + T * 0.2, T * 0.04, T * 0.3), P_WRK_TOP, true)
+			draw_circle(Vector2(base.x + T * 0.52, base.y + T * 0.66), T * 0.1, X_GOLD)                       # 铜线卷
+			draw_circle(Vector2(base.x + T * 0.52, base.y + T * 0.66), T * 0.05, P_COM_FOOT)                  # 线卷孔
 		_:
 			draw_rect(Rect2(base.x + 9, base.y + 12, T - 18, T - 18), P_RES_FOOT, true)
 
