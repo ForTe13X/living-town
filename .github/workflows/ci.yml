@@ -13,7 +13,11 @@ concurrency:
 jobs:
   ci:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # 短期把 15→35：本地全量 CI ~17-26 分钟，15 分钟每次都在 story_test 处被平台取消
+    # （Codex 2026-08-06 §二实测两次 PR run 都 cancelled@15m，唯一红因是预算不是断言）。
+    # 提高只放宽上限、不弱化任何门，反而让更多门跑到完成 ⇒ 解锁候选 PR 的 exact-head 收据。
+    # 正式方案是拆成并行 required jobs（见 docs/113 §四·2），这只是过渡。
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
 

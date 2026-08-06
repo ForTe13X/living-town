@@ -9,20 +9,25 @@
 
 | 分支 | HEAD | 状态 | 定位 |
 |---|---|---|---|
-| **`integration/batons`** | `ce75142` | 远端=本地，289 ahead of master | **唯一集成候选（trunk）**。Wave A→AA 全部 + 真机回执 |
-| **`codex/narrative`** | `c107296` | **今天刚补推到远端**（此前只在本地，9 commits / 8193 行有丢失风险） | **叙事子系统**：NarrativeGlyphs / ViewContract / WebMazeGraph / S16 合成器。真进度，但**与 trunk 从共同基点分叉，未合、无 PR** |
+| **`integration/batons`** | `091411c` | 远端=本地，**319 ahead of master** | **唯一集成候选（trunk）**。Wave A→AG 全部 + #43 已合 + 真机回执 |
+| **`codex/narrative`** | `c107296` | 已备份到远端（主 checkout 停在它上面） | **叙事子系统**：NarrativeGlyphs / ViewContract / WebMazeGraph / S16 合成器。真进度，但**与 trunk 从共同基点分叉，未合、无 PR** |
+| `codex/main-repo-review` | `6102134` | 外审文档分支（今天新增，纯 docs） | Codex 周期复核（2026-08-06 两轮）。**本文 §〇–§八 已吸收其更正** |
 | `wip/ac1-state-projection` | `d14de07` | 断电存档，**未验证、未过 CI** | AC1 的只读覆盖探针 + 草稿。**结论按未验证读** |
 | `wip/ac2-story-ratchet` | `5407941` | 断电存档，**未验证、无回执** | AC2 的 story_test 棘轮改动。docs/108 §二验收一条未兑现 |
-| `claude/competent-noether-…` | `42bdfa1` | 有 worktree | **APK 导出跑通了**（`build/out/*.apk` 实测存在）⇒ Codex "无候选构建"在**管线层**已破，缺的是**当前 HEAD 的构建** |
-| `master` | `38ba4a7` (07-26) | 289 behind，**全程未动** | 红线守住：master 不动 |
+| `master` | `38ba4a7` (07-26) | 319 behind，**全程未动** | 红线守住：master 不动 |
 
 **⇒ 分支层的两条大局判断**：
-1. **trunk 是清晰的**（`integration/batons`），而**叙事是一条真实的平行子系统**，尚未并入。合并面：两者都改 `docs/README.md` 与 `docs/05` ⇒ **有冲突，需要一次显式的 reconcile，不是自动 ff**。
-2. **"分散证据"是真的**（Codex Phase 0 的核心）：全绿散落在多个分支/worktree，**没有一个 exact-head 的 CI 收据**。这是运营债，不是代码债。
+1. **trunk 是候选、但"清晰"只是约定不是保护**（Codex §三.1 更正）：`integration/batons` 没有 branch protection，PR 运行期间 base 还会前进 ⇒ 真正的"单一候选"要**冻结候选 SHA + required checks + 合并策略**，不是靠命名。**叙事是一条真实的平行子系统**，尚未并入——⚠️**更正（Codex §三.8，本会话已实测）**：以共同基点 `dae2fbe` 算，trunk 改 79 path、narrative 改 60 path，**交集为 0**；当前树**没有已证实的文本 merge conflict**。仍需一次**语义** reconcile（两边都动 `docs/README.md`/`docs/05` 的语义），但不能把预期冲突写成既成事实。
+2. **"分散证据"是真的**（Codex Phase 0 的核心）：全绿散落在多个分支/worktree，**没有一个 exact-head 的 CI 收据**。⚠️**更正（Codex §三.2）**：这不止是运营债——fail-open runner、过窄 digest、缺 state projection 是**测试/代码架构债**，只整理分支修不好它们。
 
-## 一、架构脊柱——**一切多镇的先决条件只有一条**
+## 一、架构脊柱——**多镇有两条先决条件**（不是一条）
 
-外部评审两轮都指向同一处，而 AC1 已经**量到了它的形状**（虽然回执未验证）：
+⚠️**更正（Codex §三.10）**：本文原写"先决条件只有一条（state_projection）"是漏了 docs/62 的既有裁决——
+**知识权限（epistemic locality + domain-scoped `KnowledgeState` 三臂）是并列的第一刀**：
+哈希能证明冷/热态等价，却**挡不住 B 镇直接读到 A 镇尚未传播的事实**。两条都要做、作用不同：
+投影管"状态一致性"，KnowledgeState 管"信息可见性"。KnowledgeState 可在**单镇/抽象域**上先跑三臂证伪（即时全局知识 / 匿名延迟传播 / 具名 carrier 传播），**不依赖完整多镇地图**。
+
+下面是第一条（状态投影）。外部评审两轮都指向它，而 AC1 已经**量到了它的形状**（虽然回执未验证）：
 
 > **权威状态投影（authoritative state projection）不存在。**
 > `Inv.digest` 只折 `event_log`；`chain_step` 折 tick + 逐 agent 的 id/pos/needs/talking/option。
@@ -46,16 +51,21 @@
 > **最要紧：现行存档硬门 `save_load_test.gd` 放过了一次"悄悄丢一条 belief"的 load**（两侧 digest 相等、零漂移、
 > 2460 tick 从不浮现）⇒ **state_projection 不只是多镇的门票，它的第一个消费者是【今天的存档正确性】。**
 > AF1 推荐**路 (b) 并行新增 `state_projection`**（零金标，新函数不是 S0 对比量）。⚠️ 这仍是 §0.8 设计，实现待用户拍板。
+>
+> ⚠️**再更正（Codex §三.11，实现波要吸收）**：仓库**并非完全没有权威快照**——`Sim.save_game` 已有**反射式全量 snapshot/schema + load 恢复**。
+> 真正缺的是从**该 codec 抽取**出的 canonical / versioned / hashable 等价性 oracle + 能咬住遗漏字段的 mutation/round-trip 门。
+> ⇒ 实现时**优先"从现有 save codec 抽取单一 oracle"，而不是另造第二套 projection**（否则制造第二个 source of truth）；
+> "增量子摘要"在未审计所有 mutation path 前是**过早承诺**。这把 AF1 的路 (b) 从"新写一套"收紧成"给 save codec 加 canonical 投影 + round-trip 门"。
 
 ## 二、正确性欠账——**在做新内容之前先清零**
 
 | 欠账 | 现状 | 处置 |
 |---|---|---|
-| **#43 商贩自证** | `_nearby_agents` 不排除商贩 ⇒ 一笔只被卖家看见的成交也算"被看见"。**修复 workflow 在跑**（measure→fix→双反驳，走 R12） | 编号 112（在飞行中，尚未落盘）。零售豁免线只量不收紧（改判据要用户拍板） |
+| **#43 商贩自证** | ✅**运行时修复已合入 trunk**（`a3b2e0f`→`53213f9`→收据 `3b639d9`，编号 112）：采集侧滤掉收款商贩、观察侧 `wn_other` 只数商贩以外目击者。⚠️**遗留抗回归缺口（Codex §六.1，已实测属实）**：观察侧只排 vendor（`witness!=v_id`）**没排 buyer**；census 只有 `vendoronly`/`keepone`、缺 `buyeronly`/`partiesonly` 负控；docs/112 §九.1"交易双方之外"这句**过强**（代码只排一端） | **AG2 棒在跑**：观察侧改成排除 `actor`+`target` 双端点、补两条 `hard=[43]` 负控、订正 docs/112。自然轨迹本就不含双方 ⇒ 预期零金标（须三锚证）。零售豁免线只量不收紧（改判据要用户拍板） |
 | **被拒行为叙述成成功** | AA2 实测 3565 条引用里 **976 条（27.4%）**把 rejected event 写成已发生；真机 docs/111 又肉眼看到一次。⚠️ **AD2 设计（编号 116）把它重新框定了**：`accepted` 字段【已在】，社交路已正确区分被拒，屏幕真出错的是表现层 `Main._event_prose` 对社交类型【不读 accepted】——**是"读侧漏字段"，不是"缺 schema"** | **分三档（AD2 编号 116）**：✅**档0 已落地（AE1 编号 118）**：_event_prose 十类社交加 if ok else，实测被拒讲成成功 496→0、零金标、带回归门（已接进 ci.sh 第5步）；档1 加 `effect_applied`/`rejection_reason`【不折金标】=零金标（用户拍 schema）；档2 经济族失败可观测=移金标走 R12（用户拍板）。原提的"四字段统一模型"被 AD2 证明捆错了——修 27.4% 不需要它 |
 | ~~**fixture/scale 门可能 fail-open**~~ ✅**已收（AE2 编号 119）** | 普查约18个量具：真 fail-open【集中在1个】(烘锚流水线)，其余早已 fail-closed、ci.sh 自身干净 | 已堵+负对照：子进程非零立即失败、iso 内容寻址到 HEAD:game、bake 绑 tree_sha 拒空 commit；顺带重烘过期 ledger |
 | **AC2 `vanished` 只 warning** | 删一个具名病例 + 别处强化 ⇒ aggregate 不降而过门 | 具名槽消失应**直接红**；合法删除走**显式 rebaseline**（照抄 R12 的 rebake_history 文化） |
-| **半宏观生产** | 池按人口扩容，但产出触发仍绑少数具名工人 ⇒ N=60 口粮左尾的结构性来源 | 引入镇级 `IndustryState`（labor capacity / backlog）解耦到达过程；具名 NPC 仍供归因。**用干预证，别推断**（U1 已证零假设扰动能消红） |
+| **半宏观生产** | 池按人口扩容，但产出触发仍绑少数具名工人 ⇒ **疑似** N=60 口粮左尾的结构性来源。⚠️**更正（Codex §三.12）**："具名工人→左尾"目前**只是相关性候选，不是已证因果**；`IndustryState` 与 Narrative readiness 都被写成了结论，须先证伪 | **AG1 设计棒在跑（编号 124）**：现状盘点 + 三路代价对照 + **干预实证的设计**——反事实必须**保持总产能不变、只解耦到达时刻/具名到达**，证实因果后才建模。具名 NPC 仍供归因/社会痕迹（#41/#43 不能丢）。**用干预证，别推断**（U1 已证零假设扰动能消红） |
 
 ## 三、功能轨道——**可并行，彼此不冲突**（用户点名的那些）
 
@@ -64,8 +74,8 @@
 - **叙事 / storylets**（`game/scripts/narrative/**` + `game/narrative_lab/**`）：已有一条真实子系统在 `codex/narrative`。下一步是**并入 trunk**（先 reconcile docs 冲突），然后在其上做 storylets（预置的多幕小剧本）。
 - **美术 / visual**（`WorldView.gd` + `game/assets/**`）：室内分色（R2）、家具语义（S3）、树丛（V3）、HUD（T3）已落 trunk；✅**AF2（编号 122）落了季节视觉**——实测夏↔春本来只 ΔE00 2.71（卡 JND、眼验糊成一块），已拉到 ΔE00≈7，零金标（只动夏季帧、CI 春帧逐字节不变）；并更正了一处过期注释（P_NIGHT 从来不是夜间暗面罩，夜色是 Main._daylight 乘子+加色光）。⚠️**遗留**：四季可分门 `assert_season.py` 写好了（改前红/改后绿）但**未接线**（需 visual_gate.sh 多拍 8 张四季昼夜帧，非平凡）⇒ 跟进项。**但全部只在桌面验过**——真机待当前 HEAD 构建（§四）。下一块空地：**室外建筑立面、天气视觉、其余三季夜间光照**。
 - **NPC / 社会产出**：手艺痕迹（V1/Z2 四门）、商贩消费侧痕迹（AA3）已落。下一步是**把社会产出接到叙事**（手艺弧、买卖弧进 storylet），以及 §二那个事件结果模型让"尝试/被拒/成功"在 NPC 记忆与故事里区分。
-- **wiki**：全新绿地。**镇民百科**——每个 NPC 的职业/关系/信念/大事记，从 `event_log` 与 `beliefs` 生成（只读投影，不进金标）。低风险、高展示价值。
-- **map / interior**：`map.json` 权威可走性 + 室内模板已成熟。下一块：**第二类室内布局**、可交互家具的语义扩展。
+- **map / interior（⬆ 现在的最高产品价值轨——Codex §三.7/§四.P2B 把它抬到 wiki 之上）**：`map.json` 权威可走性 + 室内模板已成熟。Codex 明确用户当前优先的是 **map/building/interior + 可拖拽探索 + 多楼层**，而不是"容易绿"的 wiki。**AG3 设计棒在跑（编号 126）**：一个 **town-completeness 纵切**——选一栋建筑 + 周边街区，做完整外立面→不同室内布局→多楼层 portal→拖拽/探查→返回世界坐标→视觉回归。**该轨不碰社会决策 schema** ⇒ 能与 §一/§二 波并行。
+- **wiki（⬇ 延后）**：**镇民百科**（NPC 职业/关系/信念/大事记，从 `event_log`+`beliefs` 生成的只读投影，不进金标）。AD1 已落地过基座（town_wiki/v1）。⚠️ Codex §三.7：wiki 冲突少但**不是当前最高产品价值**——选它是在优化"容易绿"而非产品目标。**延到事件结果 schema 与 state projection 稳定之后**再做增强。
 
 ⚠️ **并行纪律**：每根棒的 `owns` 必须是**文件级不相交**的（本 session 反复验证有效）；docs 编号提前占；`README.md`/`docs/05`/`docs/README.md` 是**高冲突面**，同一时刻最多一根棒碰。
 
@@ -74,11 +84,13 @@
 Codex Phase 0，我复核认同并补一条实测：
 
 1. **单一集成候选**：`integration/batons` 就是它。叙事、AC1/AC2 wip 各自走**可审查的分支/PR**并入，不停在工作树。
-2. **exact-head CI**：⚠️ **GHA 超时 15 分钟，而本地全量 CI 已 ~20-26 分钟**（实测跟机器负载浮动）⇒ **CI 必须拆**：
-   - PR 快速硬门（10-12 分钟内：红线#4、lint、数据、S0 硬不变量、金标）；
-   - nightly/release 全量门（软门网格、视觉门、场景、跨进程锚）。
-3. **每份收据绑定**：repo + commit/tree + 数据版本 + Godot/Python/FFmpeg 版本 + 完整命令。（本 session 的收据大多绑了 commit，但没绑工具版本——这是真实缺口。）
-4. **真机门（当前 HEAD）**：APK 管线已通（competent-noether）⇒ **重建当前 HEAD 的 APK**，把 docs/111 的触摸/暂停/HUD/音频逐条**在新构建上复验**（旧 APK 是 07-30 的，早于 T3 的 HUD 修复）。
+2. **exact-head CI**：⚠️ **GHA 超时 15 分钟，而本地全量 CI ~17-26 分钟**⇒ PR #5 每次都在 `story_test` 处被平台取消（Codex 实测两次 run 都 `cancelled@15m`，唯一红因是预算不是断言）。
+   ⚠️**更正拆分策略（Codex §三.4）**：**别把视觉/场景/跨进程锚降级到 non-required nightly**——耗时构成显示问题是**串行化**不是覆盖过多（最慢 `story_test`≈491s，其余大门各 2-4 分钟）。正确做法：
+   - **短期**：把总 `timeout-minutes` 从 15 提到 **30-35**，先取得 current-merge-tree 的一次全跑基线（✅ 本会话已把 `.github/workflows/ci.yml` 的 timeout 提到 35，作为解锁"候选 PR 拿到 exact-head 收据"的最小改动）；
+   - **正式**：拆成**全部 required 的并行 jobs**（static/provenance · core-sim · deterministic-backends · scenes · rendered/device），每 job **独立 clean checkout 不共享可变工作目录**，由**同一 phase manifest** 驱动本地全量与 GHA matrix（避免维护两份门列表）。扩展 seed 网格才留给 nightly。
+   ⚠️**收据口径（Codex §二/§五）**：`pull_request` 事件下 checkout 默认是 **synthetic merge**（head 合入 base），不是 head 自身；且 base 在 checkout 后还会前进。收据必须**同时记 `head_sha`/`base_sha`/`checkout_sha`**，并保留 `head-static`（显式检出 PR head）与 `merge-gates`（synthetic merge）两个口径，二者都不得冒称对方。
+3. **每份收据绑定**：repo + commit/tree + 数据版本 + **Godot 下载校验和 / Pillow / Python / FFmpeg / runner 固定版本** + 完整命令 + 进程 exit code。（本 session 的收据大多绑了 commit，但**没绑工具链版本**——这是真实缺口；且 `3b639d9` 那份因加了 `.txt` 使 tree=2102 而运行对象是父树 2101，准确名是"`53213f9` post-merge code-tree 本地全量输出"，不是字面 exact-head。）
+4. **真机门（当前 HEAD）**：⚠️**更正（Codex §三.9，已实测）**：`competent-noether` worktree **没有** `build/out/*.apk`；历史 APK 只在主 checkout 的 ignored `build/out`（07-30），**只证明导出管线曾跑通、不是任何 branch 或当前 HEAD 的 commit-bound 构建**。⇒ 要从**唯一候选 HEAD** 实际 export/install APK，记 **APK SHA256 + versionCode + 内嵌 git SHA**，再逐条复验 docs/111 的触摸/暂停/HUD/音频；旧包截图不进当前 release 门。
 5. **阶段产出**：录屏（`tools/record-godot.sh`，只走整数倍缩放）、真机截图、给非技术读者的 `docs/56`、README。**GIF 与 README 的 Codex 打磨那一环**：Codex desktop 的 computer-use 授权被拒过，README 由本会话自己打磨并在回执里注明这一环没走。
 
 ## 五、相位（Codex 的，经分支实测更正）
@@ -100,7 +112,7 @@ Phase 5  才恢复多镇：生产 capacity 与具名 NPC 解耦 → N=24/40/60 h
 - docs/41 红线四条 + §0.5；**改契约 / 改金标口径 / 改判据是用户的决定**。
 - **红数不是判据**（X1/Y1/Z2/AA3 四证：语义为零的 0.400→0.401 扰动能消硬红/压穿余量）⇒ 对零假设臂用**连续余量**判。
 - **"金标 N/N 不变" ≠ "该 N 不变"**（Y1）；**"某臂让金标动了"同样是抽样**（AA1：九臂只动 seed 8）。
-- **可比性 ⟺ 两棵树在 `game/scripts/` 与 `game/data/` 上逐字节相同**（Y1 更正），一条 `git diff` 可查。
+- **可比性：`game/scripts/`+`game/data/` 逐字节相同是【必要】不是【充分】**（Y1 给了必要条件；⚠️ Codex §三.5 更正它过强）——Godot 版本 / addons / scenes / `game/bench`·gate 代码 / 命令行 / 环境都能改变结果或改变量具。判可比要把这些一并写进 provenance，不能只看那两个目录的 `git diff`。
 - **一个检查若"打印了却不阻止"就不是检查**；**一次 push 可以退出码 0、报"已同步"、而什么都没推**（分支没动）——**"成功了"≠"做了事"**。
 - **先确认你量的是哪个对象**（H1/S3/V3/W3 四次量错；Z2："平均在场"≠"每 seed 至少一次"；AA3："在班"≠"在摊位"）。
 - **写下一个数会改变这个数**（U3 的 xref、Z3 的悬空引用计数、索引的"某号不存在"预告）——报计数时当心量具污染。
@@ -114,9 +126,16 @@ Phase 5  才恢复多镇：生产 capacity 与具名 NPC 解耦 → N=24/40/60 h
 - **不在 #43 修复落地前**开新的经济/社会波次（它动 `Sim.gd` 与金标，会与新棒撞车）。
 - **不一次派满**：同仓库有 ≥4 个别的 session 在写 + 刚从每周 API 限额恢复 ⇒ 少派、错开 owns、每波先 review 分支再动手。
 
-## 八、下一步（本文提议，随 #43 workflow 落地推进）
+## 八、下一步（Wave AG 在飞行；本文随其落地推进）
 
-1. #43 修复 workflow 收尾 → 合入 trunk → 全量 CI 收据（Phase 1 首块）。
-2. **一根只读棒**：把 §四·2 的 CI 拆分方案写成可执行的 `ci-pr.sh` / `ci-full.sh` 提案（不改 `ci.sh`，先出提案）。
-3. **一根 reconcile 棒**：把 `codex/narrative` 与 trunk 的 docs 冲突面摸清，给出合并方案（只读，不合）。
-4. 功能轨道择一并行（wiki 最绿、最低冲突）。
+**正在跑（本波 AG，owns 文件级不相交）**：
+- **AG1（编号 124）**：半宏观生产设计——现状盘点 + 三路代价 + 干预实证设计（总产能不变、只解耦到达）。§二最后一笔架构欠账。
+- **AG2（编号 125 + 改 `game/bench` + 订正 112）**：#43 观察侧买家防线——排除 actor+target 双端点、补 `buyeronly`/`partiesonly` 负控。Phase-1 抗回归。
+- **AG3（编号 126）**：town-completeness 纵切设计（map/interior/多楼层/拖拽）——Codex 抬到最高产品价值的功能轨。
+- **已做（协调者本人）**：`.github/workflows/ci.yml` timeout 15→35（解锁候选 PR 的 exact-head 收据）；本文吸收 Codex 2026-08-06 两轮更正。
+
+**AG 落地后的候选队列（按 Codex 更新后的顺序）**：
+1. **P0 收敛**：给 `integration/batons` 配 required PR/check + 冻结候选 SHA；把 CI 拆成并行 required jobs（§四·2 的"正式"方案）。
+2. **Phase 1 续**：AC2 `vanished` 红门 + `1/19` 负控 + docs/110@wip/ac2-story-ratchet + 全量 CI（未验证 wip → 收口）；事件结果 schema 档1/档2（用户拍 schema）。
+3. **Phase 2 双先决**：state_projection（从 save codec 抽 canonical oracle，§一）**并行** KnowledgeState 三臂证伪（单镇/抽象域，§一更正）——两者都待用户 §0.8 拍板。
+4. **功能并行**：AG3 纵切转实现波（若用户认同设计）；`codex/narrative` 只读 reconcile 棒（语义面，不合）。

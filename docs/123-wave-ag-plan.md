@@ -57,3 +57,12 @@ N=60 口粮左尾是"面点师+渔夫两个生产者一起低抽样"的联合分
 - **worktree checkout 可能落后很多 commit**：先确认基线 `integration/batons`（`a48fdd3`）是祖先才 ff。
 - 编号三位数；正文别写 `docs/`+数字纯文本指向不存在的号（lint_links 检查(2) 本 session 抓过我多次）。
 - 越界要声明；只读设计不许写任何一行实现代码。
+
+## 三、本波扩编（收到外审 Codex 2026-08-06 两轮后追加，owns 仍文件级不相交）
+
+Codex 复核落地后追加两根，与 AG1 不相交：
+
+- **AG2 · #43 观察侧买家防线**（Codex §六.1，已实测属实）。owns：`game/bench/Invariants.gd`（#43 `wn_other` 段）+ `game/bench/aa3fix_census.gd`（加 `buyeronly`/`partiesonly` 负控）+ 订正 `docs/112` §九.1 + 回执 **125**。观察侧从"只排 vendor"改成"排除 `actor`+`target` 双端点"；自然轨迹本就不含双方 ⇒ 预期零金标（须三锚证，动了就停下报）。
+- **AG3 · town-completeness 纵切设计**（Codex §三.7/§四.P2B，抬到 wiki 之上的最高产品价值轨）。owns：**只写** `编号 126`（设计文档）。选一栋建筑+周边街区，外立面→室内布局→多楼层 portal→拖拽→坐标往返→视觉回归；**不碰社会决策 schema**（故能并行）。只读+设计。
+
+**协调者本人同步做**（不占棒）：`.github/workflows/ci.yml` timeout 15→35（解锁候选 PR exact-head 收据）；docs/113 吸收 Codex 两轮更正（分支冲突面实测为 0、APK 归属、可比性口径、KnowledgeState 第二先决、save codec 抽 oracle、#43 相关≠因果）。
