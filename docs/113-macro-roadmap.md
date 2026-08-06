@@ -65,14 +65,14 @@
 | **被拒行为叙述成成功** | AA2 实测 3565 条引用里 **976 条（27.4%）**把 rejected event 写成已发生；真机 docs/111 又肉眼看到一次。⚠️ **AD2 设计（编号 116）把它重新框定了**：`accepted` 字段【已在】，社交路已正确区分被拒，屏幕真出错的是表现层 `Main._event_prose` 对社交类型【不读 accepted】——**是"读侧漏字段"，不是"缺 schema"** | **分三档（AD2 编号 116）**：✅**档0 已落地（AE1 编号 118）**：_event_prose 十类社交加 if ok else，实测被拒讲成成功 496→0、零金标、带回归门（已接进 ci.sh 第5步）；档1 加 `effect_applied`/`rejection_reason`【不折金标】=零金标（用户拍 schema）；档2 经济族失败可观测=移金标走 R12（用户拍板）。原提的"四字段统一模型"被 AD2 证明捆错了——修 27.4% 不需要它 |
 | ~~**fixture/scale 门可能 fail-open**~~ ✅**已收（AE2 编号 119）** | 普查约18个量具：真 fail-open【集中在1个】(烘锚流水线)，其余早已 fail-closed、ci.sh 自身干净 | 已堵+负对照：子进程非零立即失败、iso 内容寻址到 HEAD:game、bake 绑 tree_sha 拒空 commit；顺带重烘过期 ledger |
 | **AC2 `vanished` 只 warning** | 删一个具名病例 + 别处强化 ⇒ aggregate 不降而过门 | 具名槽消失应**直接红**；合法删除走**显式 rebaseline**（照抄 R12 的 rebake_history 文化） |
-| **半宏观生产** | 池按人口扩容，但产出触发仍绑少数具名工人（`_produce_for` 守卫三段合取 `job空∨动作不符∨不在班` ⇒ 产出是**一次具名 NPC 的离散事件**；克隆 spawn 只发 `{id,persona,spawn,home}` 不入岗位表 ⇒ `_job_of` 返 `{}` ⇒ 恒被守卫挡下，岗位恒 9）。⚠️**更正（AG1 编号 124 + Codex §三.12，已实测）**："具名工人→左尾"**只是相关**——源码 `Invariants.gd:755` 自己写的是 **Spearman ρ=0.618**（非因果）；不能当结论 | ✅**AG1 设计已落地（编号 124）**：现状盘点(给行号) + 三路代价 + **证伪优先的干预设计**。**推荐路 (c) 镇级 `IndustryState`（唯一真正解耦到达的连续率、subsume 池不撞双重计数），但以证伪闸为立项前置**：NULL/T1(产能匹配去方差)/T2(产能匹配留方差安慰剂) 三臂 ×≥48 seed，连续余量判左尾（T1 右移须 > T2 且 > 零假设臂 `obj_dist_penalty 0.400→0.401`），阳才建模、阴则"到达非根因"照实写。社会痕迹靠"只改 RATE、ATTRIBUTION 留在班具名持有人"保住（produce/pay 的 actor+witnesses+信念 subject 逐字段照旧）。⚠️路 (a)(b) 会撞池双重计数 + 逼 `_holder_of_title` 复数化(打中 #41 反向臂)，非干净三选一。**实现待用户 §0.8 拍板** |
+| **半宏观生产** | 池按人口扩容，但产出触发仍绑少数具名工人（`_produce_for` 守卫三段合取 `job空∨动作不符∨不在班` ⇒ 产出是**一次具名 NPC 的离散事件**；克隆 spawn 只发 `{id,persona,spawn,home}` 不入岗位表 ⇒ `_job_of` 返 `{}` ⇒ 恒被守卫挡下，岗位恒 9）。⚠️**更正（AG1 编号 124 + Codex §三.12，已实测）**："具名工人→左尾"**只是相关**——源码 `Invariants.gd:755` 自己写的是 **Spearman ρ=0.618**（非因果）；不能当结论 | ✅**AG1 设计已落地（编号 124）**：现状盘点(给行号) + 三路代价 + **证伪优先的干预设计**。**推荐路 (c) 镇级 `IndustryState`（唯一真正解耦到达的连续率、subsume 池不撞双重计数），但以证伪闸为立项前置**：NULL/T1(产能匹配去方差)/T2(产能匹配留方差安慰剂) 三臂 ×≥48 seed，连续余量判左尾（T1 右移须 > T2 且 > 零假设臂 `obj_dist_penalty 0.400→0.401`），阳才建模、阴则"到达非根因"照实写。社会痕迹靠"只改 RATE、ATTRIBUTION 留在班具名持有人"保住（produce/pay 的 actor+witnesses+信念 subject 逐字段照旧）。⚠️路 (a)(b) 会撞池双重计数 + 逼 `_holder_of_title` 复数化(打中 #41 反向臂)，非干净三选一。<br>🔴**对抗评审证伪了这条推荐里最承重的一句（已复核源码，用户决策前必看）**：**"只改 RATE 就能保住社会痕迹" 是【假】的**。produce 的 witnesses = `_nearby_agents(worker)` 的**同区物理共在**（`Sim.gd:3891` 只收 `o.area==ag.area`），而这份共在**正是路(c)要解耦的到达过程产生的**（工人走到工位→完成才发 produce，`:1535`）。⇒ 两难：**要保 witnesses 就得把发货门在物理在场上 ⇒ 到达没解耦 ⇒ 左尾没修 ⇒ 路(c)白做**；**要解耦就在累加器时钟上发货 ⇒ `_nearby_agents(holder)` 抓到没人/错人 ⇒ #41(产出必须被看见,`Invariants.gd` 反红"产出N次但一次都没被看见")红、或"看见他在[他家]干活"语义为假**。AA3-FIX 已证在班≠在场(商贩 19-24%)、只能把 #43 锚移【off 持有人】到买家——而"谁做的"produce **没有这种可移的锚**。⇒ **路(c) 多一道硬子问题：解耦到达后 produce-witnesses/CR-信念怎么保**；证伪闸也得覆盖它。**实现待用户 §0.8 拍板** |
 
 ## 三、功能轨道——**可并行，彼此不冲突**（用户点名的那些）
 
 这些是"好玩"的一半，**多数与架构脊柱正交**，可以在 §一/§二推进的同时并行，但**owns 必须错开**避免 branch conflict：
 
 - **叙事 / storylets**（`game/scripts/narrative/**` + `game/narrative_lab/**`）：真实子系统在 `codex/narrative`。**AH1（编号 127）已给出分层 reconcile 方案**（实测 R1 佐证）：
-  - **先并层（可开只读 PR、零金标）**：5 个只读视图 .gd（`NarrativeGlyphs`/`NarrativeViewContract`/`RolePOVCard`/`WebMazeGraph`/`S16Compositor`，全 fail-closed、grep 零 `randi/randf/Sim./save_game`、只吃自有合成态）+ 测试场景 + fixtures + docs 语义 reconcile。**触碰的既有 sim/金标文件=0**。⚠️ 但**当前零 CI 接线**（60-path 不含 `tools/`）⇒ 先并**必须先给 ci.sh 加一道 headless 叙事门**，否则并进去无人守。
+  - **先并层（可开只读 PR、零金标）**：5 个只读视图 .gd（`NarrativeGlyphs`/`NarrativeViewContract`/`RolePOVCard`/`WebMazeGraph`/`S16Compositor`，全 fail-closed、grep 零 `randi/randf/Sim./save_game`、只吃自有合成态）+ 测试场景 + fixtures + docs 语义 reconcile。**触碰的既有 sim/金标文件=0**。⚠️ 但**当前零 CI 接线**（60-path 不含 `tools/`）⇒ 先并**必须先给 ci.sh 加一道 headless 叙事门**，否则并进去无人守。🔴**对抗评审修正（已复核）**：这道 headless 门**只能是 logic-only**（结构/隐私）——AH1 倚重的**像素牙**（glyph 塌缩负控、hidden-prose 不进像素）**在 `--headless` 下 dummy display 让 `get_texture().get_image()` 空 ⇒ 环境性变红**，跟 `visual_gate.sh` 在 GHA 上 SKIP(exit 77) 同因。⇒ 先并层的像素级验证得靠**非-headless 的 Xvfb runner**，headless CI 守不住它，**AH1 低估了这一步**。
   - **后置层（gated）**：S14 真 actor 只读投影、**S18 integration RFC（触发 §0.8 外审+用户拍板）**、唯一 Sim 写侧棒（走完整 R12）、storylets 内容。注意 AH1 校正：**S18 gate 的是写侧；只读组件的停止线其实是 S12，不 gated 在 S18**。
   - **schema 冻结面**：Tier-1（自有合成态，先并层消费）vs Tier-2（Sim 真面：事件结果 accepted/effect_applied、beliefs/attitudes、journey/portal、save codec/digest——**trunk 正在改这些**，是后置层真正等的）。
   - ⚠️**两个决策点留用户**：① 是否把先并层并入 trunk（AH1 判零风险但需先加 CI 门）；② 14 个评审媒体二进制(~1.45MB,无 LFS)进不进 trunk（AH1 建议默认不进、只留 manifest+contact sheet）。
@@ -140,6 +140,12 @@ Phase 5  才恢复多镇：生产 capacity 与具名 NPC 解耦 → N=24/40/60 h
 - ✅**协调者本人**：`.github/workflows/ci.yml` timeout 15→35（解锁候选 PR 的 exact-head 收据）；本文吸收 Codex 2026-08-06 两轮更正。
 
 **⇒ Wave AG 全部落地**（AG1 半宏观设计 · AG2 #43 买家防线 · AG3 纵切设计 · CI 解锁 · 路线图吸收外审）。
+
+**对抗评审轮（6 refuter × 3 设计结论，用户 §0.8 决策前的证伪，已把每条复核回源码）**：
+- 🔴**AG1 推荐被证伪一处承重句**（已复核）："只改 RATE 保住社会痕迹"假——produce witnesses=物理共在、正是路(c)要解耦的到达产生的 ⇒ 解耦与保 witnesses 两难，路(c) 多一道硬子问题（详见 §二 半宏观行）。**推荐仍成立但风险画像变了，用户决策前必看。**
+- 🟡**AG3 承重结论存活**（R1 边界 / 纵切已存在 / cafe·aria·_note 全被复核为真）；被证伪的 gap①(portal-redraw) **正是 AH2 已判的假警报**（本文已改）。附带发现：改 `spaces.json` **不动金标**（Inv.digest/chain/DetGate 都是行为态非静态配置哈希）——但仍会让 `gate_complement_ledger` 的 `baked_game_tree` 绑定变旧需重烘，故 §三 gap③"走小心收口棒"的口径不变（金标不动≠零成本）。
+- 🟡**AH1 先并层零金标存活**（subtree-hash 顾虑文档已预答）；被证伪的是**"加 headless 叙事门"这一步被低估**——像素牙在 headless 下环境性变红，headless CI 只能 logic-only（详见 §三 叙事行）。
+- **净判**：3 条推荐的**方向都存活**，但 AG1 和 AH1 各多一道之前没写清的硬约束，已折进 §二/§三。**这正是对抗评审的用处：在用户拍板前把承重句挑穿。**
 
 **AG 落地后的候选队列（按 Codex 更新后的顺序）**：
 1. **P0 收敛**：给 `integration/batons` 配 required PR/check + 冻结候选 SHA；把 CI 拆成并行 required jobs（§四·2 的"正式"方案）。
