@@ -6,8 +6,13 @@ extends SceneTree
 ##   digest / event_digest / events_total（自证不扰动 or 观测变更定位）
 ##   inv43: {ok, detail} 与 hard_fails（check_all 全量）
 ## --mutate vendoronly：跑完后把每条 buy pay 事件的 witnesses 改成 [商贩]（合成"全部自证"），
-##   再跑一遍 check_all —— 新判据(#43 sales_w 数商贩以外)必须红，旧判据(wn>0)会绿。牙齿测试用。
-## --mutate keepone：只保留【第一条带非商贩目击者的 buy 事件】的 witnesses，其余全部清空——
+##   再跑一遍 check_all —— 新判据(#43 sales_w 数交易双方以外)必须红，旧判据(wn>0)会绿。牙齿测试用。
+## --mutate buyeronly：把每条 buy pay 事件的 witnesses 改成 [买家=actor]（AG2/docs/125，Codex §六.1）。
+##   合成"只被买家自证"。收紧后的 #43(排交易双方) 必须红 hard=[43]；旧判据(只排 v_id) 会绿——
+##   这条臂正是买家端软点的牙（改前实测：买家混进 witnesses 仍被当"被看见"）。
+## --mutate partiesonly：把 witnesses 改成 [买家, 商贩]（actor, target）。合成"只被交易双方自证"。
+##   收紧后的 #43 必须红 hard=[43]；旧判据(只排 v_id，买家仍计入) 会绿。
+## --mutate keepone：只保留【第一条带非交易方目击者的 buy 事件】的 witnesses，其余全部清空——
 ##   合成"99% 通道损失"。#43 正向臂只要 sales_w>=1 就绿 ⇒ 预期【绿】（does_not_detect，跑出来的）。
 const SimScript = preload("res://scripts/Sim.gd")
 const Inv = preload("res://bench/Invariants.gd")
@@ -73,6 +78,22 @@ func _run_once(seed: int, days: int, agents: int, mutate: String) -> Dictionary:
 					kept = true          # 第一条带非商贩目击者的留着
 				else:
 					e1["witnesses"] = []
+	elif mutate == "buyeronly":
+		# AG2（docs/125）：把每条 buy pay 事件的 witnesses 换成 [买家]（actor）。合成"只被买家自证"。
+		#   买家=事件的 actor（transfer 的 from_id）。旧判据(只排 v_id) ⇒ 绿（买家≠商贩 ⇒ wn_other>0）；
+		#   收紧后的 #43(排交易双方) ⇒ sales_w=0 ⇒ 红。这条臂正是买家端软点的牙。
+		for eb in S.event_log:
+			if String(eb.get("type", "")) == "pay" and String(eb.get("note", "")) == buy_note \
+					and String(eb.get("target", "")) == v_id:
+				eb["witnesses"] = [String(eb.get("actor", ""))]
+	elif mutate == "partiesonly":
+		# AG2（docs/125）：把每条 buy pay 事件的 witnesses 换成 [买家, 商贩]（actor, target=v_id）。
+		#   合成"只被交易双方自证"。旧判据(只排 v_id) ⇒ 绿（买家仍计入 ⇒ wn_other>0）；
+		#   收紧后的 #43(排交易双方) ⇒ sales_w=0 ⇒ 红。
+		for ep in S.event_log:
+			if String(ep.get("type", "")) == "pay" and String(ep.get("note", "")) == buy_note \
+					and String(ep.get("target", "")) == v_id:
+				ep["witnesses"] = [String(ep.get("actor", "")), v_id]
 	var buy_total := 0
 	var buy_witnessed := 0
 	var buy_vendor_in := 0

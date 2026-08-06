@@ -1093,7 +1093,7 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 	#   而最后这一条是**故意的**：实测他只在 19-24% 的成交里与买家同区（docs/106 §一），
 	#   把"他在场"写进判据等于给这道门装一条余量 3、被零假设臂就能压穿的臂。
 	#   ★AA3-FIX（docs/112）："不查他在场"≠"他自己算目击者"。①的 sales_w 现在只数
-	#   【商贩以外】的目击者（见下面 wn_other）——修的是"一笔只被商贩自己看见的成交
+	#   【交易双方以外】的目击者（见下面 wn_other，既排商贩=target 也排买家=actor；买家端由 AG2/docs/125 补）——修的是"一笔只被商贩自己看见的成交
 	#   也算被看见"这个自证软点（改前实测 40/715 笔、逐 seed 1-6）。
 	var vend_tbl: Dictionary = S.production.get("vendor", {}) if prod_on and S.production.get("vendor", {}) is Dictionary else {}
 	var tc_tbl: Dictionary = vend_tbl.get("trade_credit", {}) if vend_tbl.get("trade_credit", {}) is Dictionary else {}
@@ -1113,14 +1113,19 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 			var wn := wits43.size()
 			if v_id != "" and String(e.get("note", "")) == buy_note and String(e.get("target", "")) == v_id:
 				sales += 1
-				# ★AA3-FIX（docs/112）防御纵深："被看见"只数【商贩以外】的目击者。
-				#   采集侧（Sim.gd 的 twits 过滤）已经不把商贩写进 witnesses 了；这里再挡一道：
-				#   即使将来采集侧被改回，一笔只被商贩自己"看见"的成交也不再计入 sales_w
-				#   ⇒ 这条臂不会被自证喂绿。负对照（docs/112 §四.2）：把过滤撤掉 + 全部
-				#   witnesses 换成 [商贩] ⇒ 旧判据(wn>0)恒绿、本判据 sales_w=0 ⇒ 红。
+				# ★AA3-FIX（docs/112）+ AG2（docs/125，Codex §六.1）防御纵深：
+				#   "被看见"只数【交易双方以外】的目击者——既排商贩(收款方=target=v_id)，也排买家(actor)。
+				#   买家=这条 pay 事件的 `actor`（transfer 的 from_id；Sim.gd:1516→3197→3205→_log_event:3801 存 "actor":from_id）。
+				#   采集侧（Sim.gd 的 twits 过滤）已经不把商贩写进 witnesses、且 `_nearby_agents(买家)` 本就跳过买家自己；
+				#   这里两端都再挡一道：即使将来采集侧被改回，一笔只被【交易当事人】"看见"的成交也不再计入 sales_w
+				#   ⇒ 这条臂不会被自证喂绿。负对照（docs/112 §四.2 + docs/125）：把过滤撤掉、witnesses 换成
+				#   [商贩] / [买家] / [买家,商贩] ⇒ 旧判据(wn>0)恒绿、本判据 sales_w=0 ⇒ 红。
+				#   ⚠ AG2 修补的正是"只排 v_id 一端"的软点：改前买家(actor)混进 witnesses 仍被当"被看见"。
+				var buyer43 := String(e.get("actor", ""))
 				var wn_other := 0
 				for w43 in wits43:
-					if String(w43) != v_id:
+					var ws43 := String(w43)
+					if ws43 != v_id and ws43 != buyer43:
 						wn_other += 1
 				if wn_other > 0:
 					sales_w += 1
