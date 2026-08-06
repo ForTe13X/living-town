@@ -1,0 +1,23 @@
+{
+  "detects": [
+    "大事记引用了投影里不存在的 event id（发明情节/串号）⇒ 门红。本次 1961 行全部命中真实 id。",
+    "社交类 accepted=false 的事件被渲染成 happened（漏标被拒，AA2 的 27.4% 病）⇒ 门红。本次 932/932 条社交被拒事件被如实标注。"
+  ],
+  "does_not_detect": [
+    "大事记措辞的语义保真度（subject 指错人、器物/年代错等）——只校 event.accepted 这一位，不校文案质量。",
+    "Sim 自身把事件标错 accepted 的情形（wiki 层如实转写 Sim 的字段，不复核 Sim 的判定）。",
+    "非社交类 accepted=false（shortage/conflict 结构性 false）——那不是被拒，按类型另行叙述，故意不套被拒框。",
+    "witness-only 参与的事件不逐条上大事记（避免刷屏），故不在追溯范围内（可追溯性只覆盖当事人行）。"
+  ],
+  "confidence": "在 seed 7 / 60 天 / 12 个 NPC 的投影上校验：N=1961 条大事记行、932 条社交被拒事件；跨页对账全镇社交被拒 event 共 498 条。",
+  "checks": {
+    "chronicle_lines": 1961,
+    "all_lines_traceable": true,
+    "social_rejected_in_pages": 932,
+    "social_rejected_marked": 932,
+    "global_social_rejected_events": 498,
+    "violations": [],
+    "n_violations": 0
+  },
+  "verdict": "PASS"
+}
