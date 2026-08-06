@@ -2125,10 +2125,13 @@ func _event_prose(e: Dictionary) -> String:
 	var ok := bool(e.get("accepted", false))
 	var note := String(e.get("note", ""))
 	match t:
-		"greet": return "[color=#cfe8ff]%s 找 %s 唠了两句[/color]" % [A, B]
-		"give": return "[color=#cfe8ff]%s 送了 %s 一份小礼物[/color]" % [A, B]
-		"gossip": return "[color=#d9c2ff]%s 悄悄向 %s 传了个八卦[/color]" % [A, B]
-		"invite": return "[color=#bfe6c8]%s 约了 %s 稍后见面[/color]" % [A, B]
+		# AE1（docs/118）：以下十类走 KNOWN_SOCIAL_ACTIONS 通用「接受/婉拒」路（Sim.gd:2419-2568），
+		# 真能 accepted=false（拒绝落 Sim.gd:2426 的 _log_event(...,false,...)）。此前它们不看 ok、
+		# 恒讲成「做成了」⇒ 被拒被写成成功（AA2 实测出货树 976/27.4% 的主体）。照 meet/apologize 加 if ok else。
+		"greet": return ("[color=#cfe8ff]%s 找 %s 唠了两句[/color]" % [A, B]) if ok else ("[color=#9aa0b5]%s 想找 %s 搭话，对方没接茬[/color]" % [A, B])
+		"give": return ("[color=#cfe8ff]%s 送了 %s 一份小礼物[/color]" % [A, B]) if ok else ("[color=#9aa0b5]%s 想送 %s 一份小礼物，被婉言谢绝了[/color]" % [A, B])
+		"gossip": return ("[color=#d9c2ff]%s 悄悄向 %s 传了个八卦[/color]" % [A, B]) if ok else ("[color=#9aa0b5]%s 想找 %s 咬耳朵，对方没搭理[/color]" % [A, B])
+		"invite": return ("[color=#bfe6c8]%s 约了 %s 稍后见面[/color]" % [A, B]) if ok else ("[color=#9aa0b5]%s 想约 %s 见面，被婉拒了[/color]" % [A, B])
 		"meet": return ("[color=#7ed957]%s 与 %s 如约见面，更亲近了[/color]" % [A, B]) if ok else ("[color=#e85a5a]%s 与 %s 的约会泡汤了（有人爽约）[/color]" % [A, B])
 		"conflict": return "[color=#ffb3b3]%s 对 %s 渐渐积起了怨气[/color]" % [A, B]
 		"confront": return ("[color=#ffd166]%s 当面找 %s 把话说开[/color]" % [A, B]) if ok else ("[color=#ff8c42]%s 质问 %s，对方不认（冲突升级）[/color]" % [A, B])
@@ -2137,12 +2140,15 @@ func _event_prose(e: Dictionary) -> String:
 		"betray":
 			# 五个"此前静默"的事件类型之一（Sim.gd 里刚接上 social_event）。
 			return ("[color=#ff5c5c]%s 把 %s 托付的秘密说了出去[/color]" % [A, B]) if C == "" else ("[color=#ff5c5c]%s 把 %s 托付的秘密说了出去，%s 全听见了[/color]" % [A, B, C])
-		"confide": return "[color=#c792ea]%s 对 %s 吐露了心事[/color]" % [A, B]
-		"leak": return "[color=#ff8c42]%s 在 %s 面前说漏了嘴[/color]" % [A, B]
-		"gossip_rep": return ("[color=#d9c2ff]%s 向 %s 议论起 %s 的为人[/color]" % [A, B, C]) if C != "" else ("[color=#d9c2ff]%s 向 %s 说起了别人的长短[/color]" % [A, B])
-		"endorse": return ("[color=#d9c2ff]%s 和 %s 对 %s 统一了口径[/color]" % [A, B, C]) if C != "" else ("[color=#d9c2ff]%s 和 %s 把话说到了一处[/color]" % [A, B])
-		"discuss": return "[color=#bfe6c8]%s 和 %s 聊起了各自的看法[/color]" % [A, B]
-		"aid": return "[color=#39d4c8]%s 在 %s 难处时搭了把手[/color]" % [A, B]
+		"confide": return ("[color=#c792ea]%s 对 %s 吐露了心事[/color]" % [A, B]) if ok else ("[color=#9aa0b5]%s 想对 %s 说几句心里话，对方没接住[/color]" % [A, B])
+		# leak 被拒 = target 婉拒了这次搭讪，秘密根本没说出口（accepted 走通用路，Sim.gd:2426 会给 false）。
+		# 注意：betray（Sim.gd:2507，恒 accepted=true）是 leak 成功时对第三方 teller 的副作用事件，
+		# 它自己永不 false，故下面 betray 分支【不加 ok 分岔】——那是刻意的，不是漏。
+		"leak": return ("[color=#ff8c42]%s 在 %s 面前说漏了嘴[/color]" % [A, B]) if ok else ("[color=#9aa0b5]%s 想找 %s 攀谈，话没递进去[/color]" % [A, B])
+		"gossip_rep": return (("[color=#d9c2ff]%s 向 %s 议论起 %s 的为人[/color]" % [A, B, C]) if C != "" else ("[color=#d9c2ff]%s 向 %s 说起了别人的长短[/color]" % [A, B])) if ok else (("[color=#9aa0b5]%s 想向 %s 编排 %s 的不是，对方没接茬[/color]" % [A, B, C]) if C != "" else ("[color=#9aa0b5]%s 想向 %s 说人是非，没人搭腔[/color]" % [A, B]))
+		"endorse": return (("[color=#d9c2ff]%s 和 %s 对 %s 统一了口径[/color]" % [A, B, C]) if C != "" else ("[color=#d9c2ff]%s 和 %s 把话说到了一处[/color]" % [A, B])) if ok else (("[color=#9aa0b5]%s 想拉 %s 一起数落 %s，没能说到一块[/color]" % [A, B, C]) if C != "" else ("[color=#9aa0b5]%s 想拉 %s 把话说拢，对方没应声[/color]" % [A, B]))
+		"discuss": return ("[color=#bfe6c8]%s 和 %s 聊起了各自的看法[/color]" % [A, B]) if ok else ("[color=#9aa0b5]%s 想和 %s 聊聊看法，对方没接茬[/color]" % [A, B])
+		"aid": return ("[color=#39d4c8]%s 在 %s 难处时搭了把手[/color]" % [A, B]) if ok else ("[color=#9aa0b5]%s 想在 %s 难处时搭把手，被回绝了[/color]" % [A, B])
 		"rally_oust":
 			var backers := 0
 			if note.begins_with("backers:"):
