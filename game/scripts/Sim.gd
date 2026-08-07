@@ -285,6 +285,11 @@ var production := {}            # {start_stock, goods:{g:{cap,spoil_per_day,blam
                                 #   ★Wave K1 起它是**派生值**：= _pool_rescale(_production_raw, 人口)。见 _pool_rescale。
 var _production_raw := {}       # data/production.json 的原样（未换尺度）。start_new 每次都从它重算 production
                                 #   ——不能就地改 production，否则 goto_tick 反复 start_new 会把倍率乘上去。
+# Wave E · 车道 E1：物流/进口（docs/144 §六）。{nodes:[{id,type,area,pos}], import_lanes:[{good,batch,every_days,node}]}。
+#   缺文件 → _logi_on()==false → 整段短路 → 逐字节回到今天（off 门，与 production.json / economy.json 同一套纪律）。
+#   进口是【外部无限供给】的确定性注入：日界 day%every_days==0（纯 f(day)，无 RNG/Time/浮点）经 _stock_move 唯一通道写
+#   town_stock，type="import"、actor=node ⇒ 硬 #38 认它为 +delta、硬 #44 溯源它到已声明的 node/lane 货（对称 #39）。
+var logistics := {}
 ## ── Wave K1 双尺度（docs/41 §0.5 规模能力矩阵，用户 2026-07-31 定）────────────────────────
 ## **消耗侧一个字不动**（60 个 agent 逐个真算：谁吃了什么、谁缺了什么、缺了记恨谁）。
 ## **产出侧换尺度**：一次"本职在班完成"不再代表【一个人】的产量，而代表【这一行在这么大的镇子上】的产量。
@@ -542,6 +547,10 @@ func _load_data() -> void:
 	#   本棒最重要的那条验收就没法在 CI 里跑。先 file_exists 再读 ⇒ 缺文件是【合法的关闭态】，不是错误。
 	if FileAccess.file_exists("res://data/production.json"):
 		production = _read_json("res://data/production.json")
+	# Wave E1 物流/进口（缺文件→_logi_on()=false 全短路=逐字节不变）。同 production.json：先 file_exists 再读，
+	#   免得 _read_json 的 push_error("缺数据文件") 把「删掉 logistics.json 跑一遍」这条零扰动对照自己弄红。
+	if FileAccess.file_exists("res://data/logistics.json"):
+		logistics = _read_json("res://data/logistics.json")
 	# K1：留一份未换尺度的原样。start_new 每次从它重算 production（人口在那时才知道，且 goto_tick 会反复重开）。
 	_production_raw = production
 	_merge_prod_jobs()                              # F1：production.jobs 里的新岗位(商贩/环卫工)并进岗位表；缺该键=今天的六个岗位
@@ -737,6 +746,19 @@ func _compile_worksites() -> void:
 		objs.append({"id": wid, "type": String(wd.get("type", "")), "area": ar,
 			"pos": [apos.x, apos.y], "advertises": adv.duplicate(true)})
 	world["objects"] = objs
+
+## E1 数据门：缺 logistics.json → 恒 false → 进口/#44 每一处都在第一行短路 → 逐字节回到今天。
+func _logi_on() -> bool:
+	return not logistics.is_empty()
+
+## ★E1 刻意【不】把 logistics.nodes 编译进 world.objects（纠 docs/144 §六）：WorldView 有一条成文契约——
+##   world.objects 里只放【advertises 非空】的对象（纯装饰对象不进，见 WorldView.gd:3939 与 buildings/worksites
+##   的 `adv 空则 continue`），它的绘制循环会给任何解析不出精灵槽的对象 push_error（品红占位框）。
+##   码头节点无 advertises、type='码头' 在 OBJ_SLOT_BY_TYPE 里没有条目，而【WorldView 与它的别名预算是本片的
+##   绝不碰区】、且现有可借的槽(bench/counter/desk)都已到 alias budget ⇒ 现在编译它 = 出一个品红占位 bug + CI 红。
+##   ⇒ 节点在 E1 只【声明在 logistics.json】（供硬 #44 溯源 + P1 读），它的【落图渲染】(world.objects 项 +
+##   WorldView 的 '码头' 精灵槽 + alias 预算) 交给 P1 到货动画那一片一起做（那才是加精灵的自然落点）。
+##   ⇒ 节点对 E1 的 Sim 零影响（非阻挡、无候选、不入 digest）；#44 读的是 logistics.json 不是 world.objects。
 
 ## Variant→Array 强转（缺失/错类型的 JSON 数组字段一律退化为空，守"错类型=零扰动"契约，替代会崩的 `as Array`）。
 func _as_arr(v: Variant) -> Array:
@@ -1580,6 +1602,10 @@ func _nightly() -> void:
 	# 排在最前：当晚的租金/阶层 gossip 之前先把"今天镇上吃掉多少、坏掉多少"落定，账本按天闭合。
 	if _prod_on():
 		_stock_nightly()
+	# E1 进口日结：当天消耗/spoil 已入账（账本按天闭合）后，外部供给到港。放在 _stock_nightly 之后 ⇒ 到港的这批
+	#   算【今晚】的库存、供明天用（当天的缺货/满足率已由今天的实际存量定死，进口不追溯改写今天）。缺文件→零扰动。
+	if _logi_on():
+		_logi_import()
 	# M3 反思（Stanford 生成式 agent）：每夜从社会状态提炼一条洞察写回记忆 → 丰富语音 grounding。
 	# 引擎地板=确定性合成(下)；模型后端可再 LLM 润色(AIBackend.reflect)。far agent(激进 LOD)跳过=背景群演。
 	for ag in agents:
@@ -3641,6 +3667,28 @@ func _stock_nightly() -> void:
 			var lost := -_stock_move(g, -sp, "spoil", "town", "spoil")
 			if lost > 0:
 				prod_stats["spoiled"][g] = int((prod_stats["spoiled"] as Dictionary).get(g, 0)) + lost
+
+## E1 进口日结：外部无限供给的【确定性】注入（docs/144 §六）。每条 import lane 每到期日 day%every_days==0
+##   （纯 f(day)，无 randi/randf/Time/浮点 ⇒ 逐字节可回放）经 _stock_move 唯一通道往镇库记一批 type="import"。
+## 撞 cap 少收（_stock_move 自带），柴薪 spoil_per_day=0 故到港后不损耗。lane 书写序遍历（Godot 字典/数组保序）⇒ 定序。
+## 免费到货：本片一字不碰钱（transfer/economy.json/#34 全程不动；钱跨边界是 E2 的事，须 §0.8 外审）。
+## 缺 logistics.json / import_lanes 段空 / batch<=0 / every_days<=0 ⇒ 各自短路 ⇒ 该 lane 不注入。
+## good 不在 production.goods 表里 ⇒ _stock_move 首行返 0（不入账、不写事件）⇒ #38 账外货臂不会被触发。
+func _logi_import() -> void:
+	for lane in _as_arr(logistics.get("import_lanes", [])):
+		if not (lane is Dictionary):
+			continue
+		var ld: Dictionary = lane
+		var every := int(ld.get("every_days", 0))
+		if every <= 0 or day % every != 0:
+			continue
+		var batch := int(ld.get("batch", 0))
+		if batch <= 0:
+			continue
+		var good := String(ld.get("good", ""))
+		var node := String(ld.get("node", ""))
+		# 不进 prod_stats["produced"]：进口不是本镇产出（诊断口径要分开；prod_stats 不入 digest，此选择对回放零影响）。
+		_stock_move(good, batch, "import", node, "import")
 
 ## 确定性 [0,1) 哈希（字符串→稳定小数；天生立场用）。
 func _hash01(s: String) -> float:

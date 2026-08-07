@@ -261,6 +261,9 @@ const SALIENCE := {
 	# 60 天单 seed 实测（本棒自己数的，seeds 1/2/3）：produce 44/33/45 · consume 180/133/161 ·
 	# spoil 42/24/45 · shortage 35/90/56 —— 不是转述里的 470/1915/463（差一个数量级，见报告）。
 	"shortage": 72, "produce": 12, "consume": 4, "spoil": 4,
+	# E1 车道 E1：进口到港。同 produce/consume/spoil ——ledger 事件、不 emit social_event ⇒ 也在 FEED_SKIP 里
+	# （不写这行的话，一 scrub/读档就会冒出 "port_dock 交了一批货进镇上"，正是 _nm 兜底要消灭的英文 id）。
+	"import": 8,
 }
 const SALIENT_MIN := 55
 ## 不进社交播报的类型。**判据不是"重不重要"，是"Sim 侧 emit 不 emit social_event"。**
@@ -281,7 +284,7 @@ const SALIENT_MIN := 55
 ##     那条路是对 event_log 的折叠，live 与 replay 按构造同值。
 ##   ⇒ 想让 shortage 直接进播报，正确的改法是在 `Sim._shortage_fallout` 末尾加一行
 ##     `emit_signal("social_event", ...)`（Sim.gd 归 E1，不在本棒的文件里），然后把它从本表移出去。
-const FEED_SKIP := ["pay", "world", "produce", "consume", "spoil", "shortage"]
+const FEED_SKIP := ["pay", "world", "produce", "consume", "spoil", "shortage", "import"]
 const TOPIC_LABEL := {"cafe_expand": "扩建咖啡馆", "night_market": "办夜市", "old_tales": "老故事"}
 ## ⚠️ **这个常数在 W8 里被判定为坏量具，现已降级为"长尾额度的下限兜底"，不再是版式预算。**
 ## 它数的是**逻辑行**，而 RichTextLabel(`scroll_active=false`) 截的是**视觉行**，中文还会折行 ——

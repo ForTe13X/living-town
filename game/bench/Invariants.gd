@@ -4,8 +4,8 @@ class_name BenchInvariants
 ## 只用它的【静态】哈希（fnv1a32/mix32）——不实例化、不持有状态。
 const SimScript = preload("res://scripts/Sim.gd")
 ## bench/Invariants.gd — 把「确定性社交底座」的机检不变量抽成单一真相源（语义照搬 sim_soak.gd / sim_social_port.mjs）。
-## 条数：**43**（V1 加了 #41、Z1 加了 #42、AA3 加了 #43）。
-##   数法：`grep -o "_chk([0-9][0-9]*" game/bench/Invariants.gd | sort -u | wc -l` → **43**（已现跑核过）。
+## 条数：**44**（V1 加了 #41、Z1 加了 #42、AA3 加了 #43、E1 加了 #44 进口溯源）。
+##   数法：`grep -o "_chk([0-9][0-9]*" game/bench/Invariants.gd | sort -u | wc -l` → **44**（已现跑核过）。
 ##   ⚠ 原文写的是「`grep -c` 即得」——**那个配方自己是错的，off-by-one**：本行注释里就含有
 ##   `R.append(_chk(` 这个字面串，`grep -c` 会把**这一行文档**也数进去（HEAD 上 `grep -c`=41 而 id 只有 40）。
 ##   一条"怎么数"的说明把自己数了进去，这正是它想防的那种过期方式的另一个版本。
@@ -222,11 +222,13 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 	var log: Array = S.event_log
 	var accepted: Array = []
 	for e in log:
-		if bool(e["accepted"]) and not (String(e["type"]) in ["pay", "world", "election", "produce", "consume", "spoil", "shortage"]):
-			accepted.append(e)   # 经济(pay)/世界变更(world)/治理(election)/产出账本(produce/consume/spoil/shortage)
+		if bool(e["accepted"]) and not (String(e["type"]) in ["pay", "world", "election", "produce", "consume", "spoil", "shortage", "import"]):
+			accepted.append(e)   # 经济(pay)/世界变更(world)/治理(election)/产出账本(produce/consume/spoil/shortage)/进口(import)
 			                     # 事件不算社交参与——否则 inv2/3 被稀释成空门。
 			                     # ★Wave E 必须补这四个：produce/consume 的 actor 是干活/吃饭的人，
 			                     #   不排除的话「#3 无永久孤立」会被"他吃过饭"喂饱，一个从不社交的居民也能过门。
+			                     # ★E1 追加 "import"：import 事件的 actor 是【物流节点 port_dock】(非居民)、target 是 town，
+			                     #   若不排除，#2「社交发生」会被一条到港记录喂饱（哪怕定向场景里一次真社交都没发生）。
 
 	var harmony: bool = String(S.scenario) == ""   # 定向场景(faction/betray/freerider)会扭曲关系/致饿穿 → 豁免和睦不变量
 	var small_n: bool = S.agents.size() <= 12       # 涌现/单源传播类只在设计 N(≤12)硬断言；大 N 单源谣言 fizzle 是现实(docs/12 L4)
@@ -644,19 +646,21 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 	# 结构照抄 #34/#35：库存增减只有 Sim._stock_move / _stock_take 一个通道，于是"账本能独立重算出现存量"
 	# 就是那个通道没被绕过的机检证据。绕过它（直接写 town_stock）→ #38 立刻红。
 	var prod_on: bool = not S.production.is_empty()
-	# 38) 库存账本自洽 + 非负：对每种货，现存 == 开局 + Σproduce − Σconsume(已入账) − Σspoil − 当日待入账
+	# 38) 库存账本自洽 + 非负：对每种货，现存 == 开局 + Σproduce + Σimport − Σconsume(已入账) − Σspoil − 当日待入账
 	#     （待入账项来自"消耗按天入账"的设计：逐次入账会往 event_log 塞上千条流水，把 Main 的小镇纪事冲掉。
 	#      日界结算后该项恒为 0，而 Harness/DetGate 的收尾 tick 恰好落在日界上。）
+	#     ★E1：import 走的是同一个 _stock_move 唯一通道、写 type="import" 事件，与 produce 一样【进货】⇒ 必须记正号，
+	#       否则镇库比账本多出进口的那一截、#38 当场红（负对照：绕过 import 事件直写 town_stock ⇒ 账本少这一截 ⇒ 红）。
 	var ledger_bad: Array = []
 	if prod_on:
-		var moved := {}          # good -> Σ(+produce −consume −spoil)，全部从 event_log 解出来
+		var moved := {}          # good -> Σ(+produce +import −consume −spoil)，全部从 event_log 解出来
 		for e in log:
 			var ty := String(e["type"])
-			if not (ty in ["produce", "consume", "spoil"]):
+			if not (ty in ["produce", "import", "consume", "spoil"]):
 				continue
 			var g := String(e["subject"])
 			var amt := _amt_of(String(e.get("note", "")))
-			moved[g] = int(moved.get(g, 0)) + (amt if ty == "produce" else -amt)
+			moved[g] = int(moved.get(g, 0)) + (amt if (ty == "produce" or ty == "import") else -amt)
 		for g in S.production.get("goods", {}):
 			var gid := String(g)
 			var expect: int = int(S.stock_total0.get(gid, 0)) + int(moved.get(gid, 0)) - int(S._stock_day.get(gid, 0))
@@ -991,6 +995,43 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 			"" if starved_goods.is_empty() else "；【长期供不应求】" + ", ".join(starved_goods),
 			glut + reach,
 			contract]))
+	# 44) 进口溯源到声明的节点与货（E1，docs/144 §六；**结构照抄 #39 产出溯源**，符号是「进货」这一侧）：
+	#     每条 import 事件的 actor 必须是 logistics.nodes 里声明过的节点、subject(货) 必须是某条 import_lane 声明过的货、
+	#     target 必须是 town、件数必须 >0、note 原因必须是 "import"。它跨 logistics.json × event_log × 代码路径对账 ——
+	#     让"货从没声明的港口冒出来"或"进口了没有 lane 的货"变红（对称 #39 的『张三产出李四的货 / 货从天上掉』）。
+	#     ★off 门：缺 logistics.json ⇒ logi_on2==false ⇒ 无 import 事件 ⇒ imp_bad 空 ⇒ 恒过（真空为真，同 #39 之于 _prod_on）。
+	#     ★#44 与 #38 互补：#38 守【账对不对得上】(绕过 _stock_move 直写 town_stock → 红)，#44 守【进的货/港合不合法】
+	#       (经 _stock_move 但 actor/good 没声明 → 红)。两条都经同一唯一通道，但查的是不同的性质。
+	var logi_on2: bool = not S.logistics.is_empty()
+	var imp_bad: Array = []
+	if logi_on2:
+		var node_ids := {}
+		for n in S.logistics.get("nodes", []):
+			if n is Dictionary:
+				node_ids[String((n as Dictionary).get("id", ""))] = true
+		var lane_goods := {}
+		for ln in S.logistics.get("import_lanes", []):
+			if ln is Dictionary:
+				lane_goods[String((ln as Dictionary).get("good", ""))] = true
+		for e in log:
+			if String(e["type"]) != "import":
+				continue
+			var iactor := String(e["actor"])
+			var igood := String(e["subject"])
+			var iamt := _amt_of(String(e.get("note", "")))
+			if not node_ids.has(iactor):
+				imp_bad.append("#%d actor=%s 非声明节点" % [int(e["id"]), iactor])
+			elif not lane_goods.has(igood):
+				imp_bad.append("#%d 进口了未声明 lane 货 %s" % [int(e["id"]), igood])
+			elif String(e.get("target", "")) != "town":
+				imp_bad.append("#%d target=%s 非 town" % [int(e["id"]), String(e.get("target", ""))])
+			elif iamt <= 0:
+				imp_bad.append("#%d 件数=%d 非正" % [int(e["id"]), iamt])
+			elif String(e.get("note", "")).split("*")[0] != "import":
+				imp_bad.append("#%d note 原因=%s 非 import" % [int(e["id"]), String(e.get("note", "")).split("*")[0]])
+	R.append(_chk(44, "进口溯源到声明的节点与货", imp_bad.is_empty(),
+		("异常=%d: %s" % [imp_bad.size(), "; ".join(imp_bad.slice(0, 3))]) if not imp_bad.is_empty()
+		else ("import 事件全部可溯源" if logi_on2 else "物流系统关闭(缺 logistics.json)")))
 
 	# ── 41) V1 手艺的社会痕迹（docs/84）───────────────────────────────────────────
 	# 守的是什么：**一门开了 `craft_credit` 的手艺，必须在【别人身上】留下痕迹；而没开的手艺不许留。**
@@ -1343,7 +1384,10 @@ static func _chk(id: int, name: String, ok: bool, detail: String) -> Dictionary:
 ## AA3：#43 入硬档。理由与 #38/#39/#41 同一条——它查的是**结构**（消费侧那条通道接没接上、
 ##   有没有把目击者接成 `transfer` 的全局副作用），不是涌现统计；而"人→人成交 < TRADE_MIN_SALES
 ##   就跳过"这条豁免已经把短 horizon / 随机后端 / 定向场景兜住了。
-const HARD_IDS := [1, 6, 7, 9, 10, 12, 13, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43]
+## E1：#44 入硬档。理由与 #38/#39 同一条——它查的是**结构**（进口的货/港合不合法：actor 是不是声明过的节点、
+##   货是不是某条 lane 声明过的货），任何 LOD/规模/场景下都必须为真；缺 logistics.json ⇒ 无 import 事件 ⇒ 恒过
+##   （off 门兜住短 horizon / 随机后端 / 定向场景，同 #39 之于 _prod_on）。
+const HARD_IDS := [1, 6, 7, 9, 10, 12, 13, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 44]
 
 ## #41 的豁免线：一局里该职位的 produce 事件少于这么多次就跳过它。
 ## 5 是量出来的下界，不是拍的：N=12 × 60 天 × 12 seed，环卫工的 produce 事件是 19..31 条

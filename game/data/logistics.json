@@ -1,0 +1,25 @@
+{
+  "_doc": "车道 E · E1 物流/进口（docs/144 §六 / docs/147）。一条 import lane：把一种【已有货】从『外部无限供给』确定性地到货进镇库 town_stock。off 门：删掉本文件 ⇒ Sim._logi_on()==false ⇒ 进口/#44 每一处第一行短路 ⇒ 逐字节回到今天（与 production.json / economy.json 同一套纪律，已实测 12/12 金标一致）。★不碰钱：进口在 E1 是免费到货，transfer / economy.json / 硬 #34 全程一字不动（钱跨边界=E2，须 docs/144 §四.1 拍板 + §0.8 外审）。",
+  "_determinism": "到货是纯 f(day)：日界 Sim._logi_import() 里 day%every_days==0 才注入，无 randi/randf/Time/浮点，件数是整数 ⇒ 红线#1『逐字节可回放』结构上成立（已实测同 seed 两跑逐字节相同 12/12）。经 _stock_move 唯一通道写 type=\"import\" 事件 ⇒ 硬 #38 从 event_log 独立重算（import 记正号，同 produce），硬 #44 溯源到已声明的 node/lane 货（对称 #39）。",
+  "_why_firewood": "选柴薪：它是澡堂唯一燃料（consume.洗澡→柴薪，~546 次/seed）+ 屋瓦的原料（produce.泥瓦匠.inputs.柴薪:3），是全镇第一件【被两条需求争抢】的货、供给最紧。进口柴薪【蓄意松动】柴薪/屋瓦满足率与洗澡缺货——这是 self-contain 弧 P1『外部管够、本地稀薄』的可见目标，不是 bug（逐 seed 展布见 analysis/as1/n12_supply_before_after.txt 与 docs/147 §四）。",
+  "_batch_why": "batch=4 / every_days=3 ⇒ 60 天注入 ~80 件/seed（约柴薪需求 ~630/seed 的 ~13%）。★两条约束把它夹在中间，都实测了（analysis/as1/）：①松动要【看得见】——柴薪 rate min 0.61→0.77、缺货天数中位 9→7、洗澡侧缺货事件约腰斩、屋瓦满足率普遍升；②不能把柴薪推成【全年零缺货】——那会让柴薪进 Invariants #40 的 never_short 集、撞【上限臂『缺货绝迹』】判红。实测 batch=4 在 N=12 seeds 1-30 上柴薪 0/30 seed 全年零缺货、arm_high 0/30 触发。柴薪 cap=80 自带上限：撞满少收，进口不会无限堆。（batch=8 实测过头：seed 13 柴薪→1.0 全年零缺货，逼近上限臂；见 docs/147 §四。）",
+  "_scale_why": "batch【不随人口缩放】（不进 production.scale.pool）：柴薪作为一种货，它的 cap/start_stock/产者产量已经随人口 ×(人口/12)、需求也随人口线性涨；而『外部一船货』是一个固定的外部量，人口大它就相对变小。这是【安全方向】：大 N 上进口相对需求趋小 ⇒ 不会把 #40 灌绿（docs/144 §四.2 / docs/147 §五：N=16/24/60 各 imports-ON 0/12 红、最差货 rate 贴着 SUPPLY_FLOOR，N=60 上进口甚至让最差货略降 ⇒ 本地产能仍是满足率主因）。",
+  "nodes": [
+    {
+      "id": "port_dock",
+      "type": "码头",
+      "area": "dock",
+      "pos": [33, 8],
+      "_why": "码头节点。E1【只声明、不落图】：pos/area/type 是给 P1 到货动画那一片用的坐标，本片不把它编译进 world.objects——WorldView 有成文契约『world.objects 只放 advertises 非空的对象』，且 type='码头' 在 WorldView.OBJ_SLOT_BY_TYPE 里没槽、可借的槽都已到 alias 预算，而 WorldView 是本片绝不碰区 ⇒ 现在落图 = 品红占位 bug + CI 红（实测 player_touch_test 撞到）。落图(world.objects + 精灵槽)交给 P1。本片它的唯一作用：硬 #44 拿它校验进口 actor（import lane 的 node 必须是这里声明过的 id）。坐标 [33,8] 落在 F5 建的滩头(map.areas.dock [30,7,4,2])东南角、与渔台 bench_pier[31,7] 不撞，是给 P1 留的位。"
+    }
+  ],
+  "import_lanes": [
+    {
+      "good": "柴薪",
+      "batch": 4,
+      "every_days": 3,
+      "node": "port_dock",
+      "_why": "每 3 天到港 4 件柴薪。good 必须是 production.goods 已声明的货（否则 _stock_move 首行返 0、不入账），node 必须是上面 nodes 声明过的 id（否则硬 #44 溯源判红）。"
+    }
+  ]
+}
