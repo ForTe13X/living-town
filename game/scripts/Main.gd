@@ -2119,7 +2119,21 @@ func _nm_opt(id: Variant) -> String:
 		return ""
 	return str(a.get("persona", {}).get("name", ""))
 
+## 从事件身份稳定折出一个措辞变体（同一事件实时播报与回放重建必得同一句 —— 见 _rebuild_feed）。
+## 纯读 e 的身份字段（actor/target/subject/tick）+ 项目无关的 String.hash()，【绝不】碰 Sim/RNG，
+## 故对金标零扰动（同 _event_prose 本身）。tick 进 key ⇒ 同一对人在不同 tick 的重复动作会轮换措辞，
+## 这正是这批改动要治的"同一句模板刷屏"。合成测试事件无 tick ⇒ 折到固定下标，故每条变体都须自洽 AE1。
+func _pick(variants: Array, e: Dictionary) -> String:
+	var n := variants.size()
+	if n <= 1:
+		return String(variants[0]) if n == 1 else ""
+	var key := "%s|%s|%s|%s|%s" % [
+		str(e.get("id", 0)), String(e.get("actor", "")), String(e.get("target", "")),
+		String(e.get("subject", "")), str(e.get("tick", 0))]
+	return String(variants[(key.hash() % n + n) % n])
+
 ## 事件 → 中文散文（唯一的成文口径：实时播报与回放重建共用）。
+## 每类给 2-3 条同义变体，_pick 按事件身份稳定选一条 —— 治"同一句刷屏"，不改任何 AE1/极性语义。
 func _event_prose(e: Dictionary) -> String:
 	var t := String(e.get("type", ""))
 	var A := _nm(e.get("actor", ""))
@@ -2131,42 +2145,188 @@ func _event_prose(e: Dictionary) -> String:
 		# AE1（docs/118）：以下十类走 KNOWN_SOCIAL_ACTIONS 通用「接受/婉拒」路（Sim.gd:2419-2568），
 		# 真能 accepted=false（拒绝落 Sim.gd:2426 的 _log_event(...,false,...)）。此前它们不看 ok、
 		# 恒讲成「做成了」⇒ 被拒被写成成功（AA2 实测出货树 976/27.4% 的主体）。照 meet/apologize 加 if ok else。
-		"greet": return ("[color=#cfe8ff]%s 找 %s 唠了两句[/color]" % [A, B]) if ok else ("[color=#9aa0b5]%s 想找 %s 搭话，对方没接茬[/color]" % [A, B])
-		"give": return ("[color=#cfe8ff]%s 送了 %s 一份小礼物[/color]" % [A, B]) if ok else ("[color=#9aa0b5]%s 想送 %s 一份小礼物，被婉言谢绝了[/color]" % [A, B])
-		"gossip": return ("[color=#d9c2ff]%s 悄悄向 %s 传了个八卦[/color]" % [A, B]) if ok else ("[color=#9aa0b5]%s 想找 %s 咬耳朵，对方没搭理[/color]" % [A, B])
-		"invite": return ("[color=#bfe6c8]%s 约了 %s 稍后见面[/color]" % [A, B]) if ok else ("[color=#9aa0b5]%s 想约 %s 见面，被婉拒了[/color]" % [A, B])
-		"meet": return ("[color=#7ed957]%s 与 %s 如约见面，更亲近了[/color]" % [A, B]) if ok else ("[color=#e85a5a]%s 与 %s 的约会泡汤了（有人爽约）[/color]" % [A, B])
-		"conflict": return "[color=#ffb3b3]%s 对 %s 渐渐积起了怨气[/color]" % [A, B]
-		"confront": return ("[color=#ffd166]%s 当面找 %s 把话说开[/color]" % [A, B]) if ok else ("[color=#ff8c42]%s 质问 %s，对方不认（冲突升级）[/color]" % [A, B])
-		"apologize": return ("[color=#7ed957]%s 向 %s 道了歉，两人和解[/color]" % [A, B]) if ok else ("[color=#e85a5a]%s 道歉，%s 一时还无法原谅[/color]" % [A, B])
-		"mediate": return ("[color=#7ed957]%s 从中说和，%s 那边的火气消了些[/color]" % [A, B]) if ok else ("[color=#9aa0b5]%s 想替 %s 说和，话没递进去[/color]" % [A, B])
+		"greet": return _pick([
+				"[color=#cfe8ff]%s 找 %s 唠了两句[/color]" % [A, B],
+				"[color=#cfe8ff]%s 在路上碰见 %s，站住唠了两句[/color]" % [A, B],
+				"[color=#cfe8ff]%s 拉着 %s 唠了两句家常[/color]" % [A, B],
+			], e) if ok else _pick([
+				"[color=#9aa0b5]%s 想找 %s 搭话，对方没接茬[/color]" % [A, B],
+				"[color=#9aa0b5]%s 迎上去跟 %s 打招呼，人家没搭理[/color]" % [A, B],
+				"[color=#9aa0b5]%s 想跟 %s 攀谈两句，话没递进去[/color]" % [A, B],
+			], e)
+		"give": return _pick([
+				"[color=#cfe8ff]%s 送了 %s 一份小礼物[/color]" % [A, B],
+				"[color=#cfe8ff]%s 顺手送了 %s 一样小东西[/color]" % [A, B],
+				"[color=#cfe8ff]%s 挑了份小礼，送了 %s[/color]" % [A, B],
+			], e) if ok else _pick([
+				"[color=#9aa0b5]%s 想送 %s 一份小礼物，被婉言谢绝了[/color]" % [A, B],
+				"[color=#9aa0b5]%s 要塞给 %s 一份心意，被婉拒了[/color]" % [A, B],
+				"[color=#9aa0b5]%s 备了份小礼想给 %s，对方谢绝了[/color]" % [A, B],
+			], e)
+		"gossip": return _pick([
+				"[color=#d9c2ff]%s 悄悄向 %s 传了个八卦[/color]" % [A, B],
+				"[color=#d9c2ff]%s 凑到 %s 耳边，传了个八卦[/color]" % [A, B],
+				"[color=#d9c2ff]%s 压低声音给 %s 传了个八卦[/color]" % [A, B],
+			], e) if ok else _pick([
+				"[color=#9aa0b5]%s 想找 %s 咬耳朵，对方没搭理[/color]" % [A, B],
+				"[color=#9aa0b5]%s 凑过去想跟 %s 嚼舌根，没接茬[/color]" % [A, B],
+				"[color=#9aa0b5]%s 想跟 %s 说点闲话，话没递进去[/color]" % [A, B],
+			], e)
+		"invite": return _pick([
+				"[color=#bfe6c8]%s 约了 %s 稍后见面[/color]" % [A, B],
+				"[color=#bfe6c8]%s 约了 %s 得空一起坐坐[/color]" % [A, B],
+				"[color=#bfe6c8]%s 张罗着约了 %s 改日碰面[/color]" % [A, B],
+			], e) if ok else _pick([
+				"[color=#9aa0b5]%s 想约 %s 见面，被婉拒了[/color]" % [A, B],
+				"[color=#9aa0b5]%s 想邀 %s 得空聚聚，对方没应声[/color]" % [A, B],
+				"[color=#9aa0b5]%s 提议跟 %s 找时间碰面，话没递进去[/color]" % [A, B],
+			], e)
+		"meet": return _pick([
+				"[color=#7ed957]%s 与 %s 如约见面，更亲近了[/color]" % [A, B],
+				"[color=#7ed957]%s 与 %s 碰上了头，聊得投机[/color]" % [A, B],
+				"[color=#7ed957]%s 依约见到了 %s，两人更近了一步[/color]" % [A, B],
+			], e) if ok else _pick([
+				"[color=#e85a5a]%s 与 %s 的约会泡汤了（有人爽约）[/color]" % [A, B],
+				"[color=#e85a5a]%s 空等了一场，%s 没赴约[/color]" % [A, B],
+				"[color=#e85a5a]%s 与 %s 约好的碰面黄了（有人放了鸽子）[/color]" % [A, B],
+			], e)
+		"conflict": return _pick([
+				"[color=#ffb3b3]%s 对 %s 渐渐积起了怨气[/color]" % [A, B],
+				"[color=#ffb3b3]%s 和 %s 之间的疙瘩越结越深[/color]" % [A, B],
+				"[color=#ffb3b3]%s 心里对 %s 慢慢结下了心结[/color]" % [A, B],
+			], e)
+		"confront": return _pick([
+				"[color=#ffd166]%s 当面找 %s 把话说开[/color]" % [A, B],
+				"[color=#ffd166]%s 拦住 %s，当面把话挑明[/color]" % [A, B],
+				"[color=#ffd166]%s 找上 %s，把积着的话都说了[/color]" % [A, B],
+			], e) if ok else _pick([
+				"[color=#ff8c42]%s 质问 %s，对方不认（冲突升级）[/color]" % [A, B],
+				"[color=#ff8c42]%s 当面发作，%s 却矢口否认（越闹越僵）[/color]" % [A, B],
+				"[color=#ff8c42]%s 找 %s 对质，话不投机，反倒闹得更凶[/color]" % [A, B],
+			], e)
+		"apologize": return _pick([
+				"[color=#7ed957]%s 向 %s 道了歉，两人和解[/color]" % [A, B],
+				"[color=#7ed957]%s 低头向 %s 赔了不是，前嫌尽释[/color]" % [A, B],
+				"[color=#7ed957]%s 主动找 %s 认了错，两人重归于好[/color]" % [A, B],
+			], e) if ok else _pick([
+				"[color=#e85a5a]%s 道歉，%s 一时还无法原谅[/color]" % [A, B],
+				"[color=#e85a5a]%s 赔了礼，%s 心里的结一时还解不开[/color]" % [A, B],
+				"[color=#e85a5a]%s 服了软，%s 却还没能放下这桩事[/color]" % [A, B],
+			], e)
+		"mediate": return _pick([
+				"[color=#7ed957]%s 从中说和，%s 那边的火气消了些[/color]" % [A, B],
+				"[color=#7ed957]%s 居中调停，%s 的气也顺了些[/color]" % [A, B],
+			], e) if ok else _pick([
+				"[color=#9aa0b5]%s 想替 %s 说和，话没递进去[/color]" % [A, B],
+				"[color=#9aa0b5]%s 想从中打圆场，%s 没接这个话头[/color]" % [A, B],
+			], e)
 		"betray":
 			# 五个"此前静默"的事件类型之一（Sim.gd 里刚接上 social_event）。
-			return ("[color=#ff5c5c]%s 把 %s 托付的秘密说了出去[/color]" % [A, B]) if C == "" else ("[color=#ff5c5c]%s 把 %s 托付的秘密说了出去，%s 全听见了[/color]" % [A, B, C])
-		"confide": return ("[color=#c792ea]%s 对 %s 吐露了心事[/color]" % [A, B]) if ok else ("[color=#9aa0b5]%s 想对 %s 说几句心里话，对方没接住[/color]" % [A, B])
+			return _pick([
+					"[color=#ff5c5c]%s 把 %s 托付的秘密说了出去[/color]" % [A, B],
+					"[color=#ff5c5c]%s 转头就把 %s 交底的话抖了出去[/color]" % [A, B],
+				], e) if C == "" else _pick([
+					"[color=#ff5c5c]%s 把 %s 托付的秘密说了出去，%s 全听见了[/color]" % [A, B, C],
+					"[color=#ff5c5c]%s 走漏了 %s 的私密话，%s 正好在旁听了个全[/color]" % [A, B, C],
+				], e)
+		"confide": return _pick([
+				"[color=#c792ea]%s 对 %s 吐露了心事[/color]" % [A, B],
+				"[color=#c792ea]%s 挑了个僻静处，对 %s 吐露了心事[/color]" % [A, B],
+				"[color=#c792ea]%s 红着眼跟 %s 吐露了心事[/color]" % [A, B],
+			], e) if ok else _pick([
+				"[color=#9aa0b5]%s 想对 %s 说几句心里话，对方没接住[/color]" % [A, B],
+				"[color=#9aa0b5]%s 几次想跟 %s 交底，话没递进去[/color]" % [A, B],
+				"[color=#9aa0b5]%s 想向 %s 掏心窝子，对方没接住[/color]" % [A, B],
+			], e)
 		# leak 被拒 = target 婉拒了这次搭讪，秘密根本没说出口（accepted 走通用路，Sim.gd:2426 会给 false）。
 		# 注意：betray（Sim.gd:2507，恒 accepted=true）是 leak 成功时对第三方 teller 的副作用事件，
 		# 它自己永不 false，故下面 betray 分支【不加 ok 分岔】——那是刻意的，不是漏。
-		"leak": return ("[color=#ff8c42]%s 在 %s 面前说漏了嘴[/color]" % [A, B]) if ok else ("[color=#9aa0b5]%s 想找 %s 攀谈，话没递进去[/color]" % [A, B])
-		"gossip_rep": return (("[color=#d9c2ff]%s 向 %s 议论起 %s 的为人[/color]" % [A, B, C]) if C != "" else ("[color=#d9c2ff]%s 向 %s 说起了别人的长短[/color]" % [A, B])) if ok else (("[color=#9aa0b5]%s 想向 %s 编排 %s 的不是，对方没接茬[/color]" % [A, B, C]) if C != "" else ("[color=#9aa0b5]%s 想向 %s 说人是非，没人搭腔[/color]" % [A, B]))
-		"endorse": return (("[color=#d9c2ff]%s 和 %s 对 %s 统一了口径[/color]" % [A, B, C]) if C != "" else ("[color=#d9c2ff]%s 和 %s 把话说到了一处[/color]" % [A, B])) if ok else (("[color=#9aa0b5]%s 想拉 %s 一起数落 %s，没能说到一块[/color]" % [A, B, C]) if C != "" else ("[color=#9aa0b5]%s 想拉 %s 把话说拢，对方没应声[/color]" % [A, B]))
-		"discuss": return ("[color=#bfe6c8]%s 和 %s 聊起了各自的看法[/color]" % [A, B]) if ok else ("[color=#9aa0b5]%s 想和 %s 聊聊看法，对方没接茬[/color]" % [A, B])
-		"aid": return ("[color=#39d4c8]%s 在 %s 难处时搭了把手[/color]" % [A, B]) if ok else ("[color=#9aa0b5]%s 想在 %s 难处时搭把手，被回绝了[/color]" % [A, B])
+		"leak": return _pick([
+				"[color=#ff8c42]%s 在 %s 面前说漏了嘴[/color]" % [A, B],
+				"[color=#ff8c42]%s 一时嘴快，当着 %s 说漏了嘴[/color]" % [A, B],
+				"[color=#ff8c42]%s 没把住门，在 %s 跟前说漏了嘴[/color]" % [A, B],
+			], e) if ok else _pick([
+				"[color=#9aa0b5]%s 想找 %s 攀谈，话没递进去[/color]" % [A, B],
+				"[color=#9aa0b5]%s 凑上去想跟 %s 搭话，没接茬[/color]" % [A, B],
+				"[color=#9aa0b5]%s 想跟 %s 套两句，对方没搭理[/color]" % [A, B],
+			], e)
+		"gossip_rep": return (_pick([
+					"[color=#d9c2ff]%s 向 %s 议论起 %s 的为人[/color]" % [A, B, C],
+					"[color=#d9c2ff]%s 跟 %s 议论起 %s 的种种[/color]" % [A, B, C],
+				], e) if C != "" else _pick([
+					"[color=#d9c2ff]%s 向 %s 说起了别人的长短[/color]" % [A, B],
+					"[color=#d9c2ff]%s 跟 %s 低声说起了别人的长短[/color]" % [A, B],
+				], e)) if ok else (_pick([
+					"[color=#9aa0b5]%s 想向 %s 编排 %s 的不是，对方没接茬[/color]" % [A, B, C],
+					"[color=#9aa0b5]%s 想拉 %s 议论 %s 的短处，没搭理[/color]" % [A, B, C],
+				], e) if C != "" else _pick([
+					"[color=#9aa0b5]%s 想向 %s 说人是非，没人搭腔[/color]" % [A, B],
+					"[color=#9aa0b5]%s 想跟 %s 嚼别人的舌根，没接茬[/color]" % [A, B],
+				], e))
+		"endorse": return (_pick([
+					"[color=#d9c2ff]%s 和 %s 对 %s 统一了口径[/color]" % [A, B, C],
+					"[color=#d9c2ff]%s 跟 %s 就 %s 的事统一了口径[/color]" % [A, B, C],
+				], e) if C != "" else _pick([
+					"[color=#d9c2ff]%s 和 %s 把话说到了一处[/color]" % [A, B],
+					"[color=#d9c2ff]%s 跟 %s 私下把话说到了一处[/color]" % [A, B],
+				], e)) if ok else (_pick([
+					"[color=#9aa0b5]%s 想拉 %s 一起数落 %s，没能说到一块[/color]" % [A, B, C],
+					"[color=#9aa0b5]%s 想跟 %s 一道数落 %s，对方没应声[/color]" % [A, B, C],
+				], e) if C != "" else _pick([
+					"[color=#9aa0b5]%s 想拉 %s 把话说拢，对方没应声[/color]" % [A, B],
+					"[color=#9aa0b5]%s 想拉 %s 把话对拢，没能说到一块[/color]" % [A, B],
+				], e))
+		"discuss": return _pick([
+				"[color=#bfe6c8]%s 和 %s 聊起了各自的看法[/color]" % [A, B],
+				"[color=#bfe6c8]%s 跟 %s 你一言我一语，聊起了各自的看法[/color]" % [A, B],
+				"[color=#bfe6c8]%s 和 %s 凑在一处，聊起了各自的看法[/color]" % [A, B],
+			], e) if ok else _pick([
+				"[color=#9aa0b5]%s 想和 %s 聊聊看法，对方没接茬[/color]" % [A, B],
+				"[color=#9aa0b5]%s 想跟 %s 掰扯掰扯想法，没搭理[/color]" % [A, B],
+				"[color=#9aa0b5]%s 起了话头想和 %s 论一论，话没递进去[/color]" % [A, B],
+			], e)
+		"aid": return _pick([
+				"[color=#39d4c8]%s 在 %s 难处时搭了把手[/color]" % [A, B],
+				"[color=#39d4c8]%s 见 %s 犯难，上前搭了把手[/color]" % [A, B],
+				"[color=#39d4c8]%s 二话没说，给 %s 搭了把手[/color]" % [A, B],
+			], e) if ok else _pick([
+				"[color=#9aa0b5]%s 想在 %s 难处时搭把手，被回绝了[/color]" % [A, B],
+				"[color=#9aa0b5]%s 想帮 %s 一把，对方谢绝了[/color]" % [A, B],
+				"[color=#9aa0b5]%s 要给 %s 搭把手，被婉拒了[/color]" % [A, B],
+			], e)
 		"rally_oust":
 			var backers := 0
 			if note.begins_with("backers:"):
 				backers = int(note.substr(8))
 			if backers > 0:
-				return "[color=#ff8c42]%s 串联了 %d 个人，一起给 %s 施压[/color]" % [A, backers, B]
-			return "[color=#9aa0b5]%s 想拉人一起排挤 %s，没人应和[/color]" % [A, B]
+				return _pick([
+					"[color=#ff8c42]%s 串联了 %d 个人，一起给 %s 施压[/color]" % [A, backers, B],
+					"[color=#ff8c42]%s 拉拢了 %d 个人，合力向 %s 发难[/color]" % [A, backers, B],
+				], e)
+			return _pick([
+				"[color=#9aa0b5]%s 想拉人一起排挤 %s，没人应和[/color]" % [A, B],
+				"[color=#9aa0b5]%s 想鼓动众人孤立 %s，应者寥寥[/color]" % [A, B],
+			], e)
 		"pact":
 			if note.begins_with("dissolved"):
-				return "[color=#ff8c42]%s 和 %s 的互助盟约散了 —— 一直只拿不给[/color]" % [A, B]
-			return "[color=#39d4c8]%s 与 %s 结成了互助盟约[/color]" % [A, B]
+				return _pick([
+						"[color=#ff8c42]%s 和 %s 的互助盟约散了 —— 一直只拿不给[/color]" % [A, B],
+						"[color=#ff8c42]%s 与 %s 的盟约到头了 —— 总是一头热[/color]" % [A, B],
+					], e)
+			return _pick([
+					"[color=#39d4c8]%s 与 %s 结成了互助盟约[/color]" % [A, B],
+					"[color=#39d4c8]%s 和 %s 拉手结成了互助的盟约[/color]" % [A, B],
+				], e)
 		"election":
 			# actor="town"、target=议题 id（TOPICS）、accepted=是否通过。
 			var topic := String(TOPIC_LABEL.get(String(e.get("target", "")), "镇上的议题"))
-			return ("[color=#ffe08a]全镇表决：%s —— 通过[/color]" % topic) if ok else ("[color=#9aa0b5]全镇表决：%s —— 否决[/color]" % topic)
+			return _pick([
+					"[color=#ffe08a]全镇表决：%s —— 通过[/color]" % topic,
+					"[color=#ffe08a]全镇表决：%s —— 众议通过[/color]" % topic,
+				], e) if ok else _pick([
+					"[color=#9aa0b5]全镇表决：%s —— 否决[/color]" % topic,
+					"[color=#9aa0b5]全镇表决：%s —— 未获通过[/color]" % topic,
+				], e)
 		"world":
 			return ("[color=#ffe08a]镇上多了点新东西[/color]") if note == "spawn" else ("[color=#9aa0b5]镇上的临时布置撤了[/color]")
 	# 兜底：先问 Sim._verb（引擎里早就写好的中文动词表），再退到不提类型的说法。绝不打印英文 id。
