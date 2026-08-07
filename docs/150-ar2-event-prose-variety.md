@@ -60,4 +60,5 @@
 - 与本片相关的门**全绿**：S0 金标 12/12 含链、`import/parse clean`、`event_prose_test PASS`、goals_test/story_test（未碰，绿）、asset/recalc 等。
 - **唯一红**：`互补性守卫` 报 `锚 STALE：baked_game_tree=f17ac3f9… ≠ HEAD:game=24b441f7…`。**实证此红与本片无关**：`git show HEAD:tools/gate_complement_ledger.json` 的 `baked_game_tree=f17ac3f9…` 与 `git rev-parse HEAD:game=24b441f7…` **两个 committed 值本就不等**，且**我没碰 ledger**（`git status tools/gate_complement_ledger.json` 空）⇒ 这是 integration/batons **committed 树自带的锚陈旧**（AT1 等改了 game/ 子树后 ledger 未随committed HEAD 重烘），正是 docs/140 说的"协调者 committed 树重烘"那一类。**留给协调者 finalize 重烘。**
 
-<!-- CI_VERDICT_PLACEHOLDER: 待 ci_full.txt 收尾回填末行 -->
+✅**权威 landing CI（协调者 finalize，committed 树 `049e5ee` + 重烘 fresh ledger `584e4bb`）**：`analysis/ar2/ci_landed_verdict.txt` = **`=== CI PASS ✅ ===`**——S0 12/12 含链、**event_prose_test PASS**、互补性守卫 fresh、全门绿。
+> 注：AR2 §上面看到的"锚 STALE"是**它 worktree 的分支点**（branched from AT1 内容 commit、在 AT1 ledger 重烘之前）自带的旧 ledger，**非 trunk**（trunk `b505771` 的 ledger 已 fresh）。协调者 finalize 时把本片 patch 到 trunk + 重烘 ⇒ baked==HEAD:game，红消。诊断为 docs/140 类是对的、只是"陈旧"在 AR2 worktree 不在 trunk。
