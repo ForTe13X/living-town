@@ -124,7 +124,9 @@ seeds 1-12，各 N，imports ON（`analysis/as1/`）：
   - ⇒ 每一处 digest 移动都能归到【柴薪进口 + 其下游】，无一处解释不了（docs/41 §3：解释不了就停、不重烘——本片不触发这条）。
 
 ## 七、CI 判决行
-[PENDING-CI]
+✅**权威 landing CI（协调者 finalize，committed 树 `9d7b9dd`/game `f17ac3f` + 重烘三锚 + fresh ledger）**：`analysis/as1/ci_landed_verdict.txt` = **`=== CI PASS ✅ ===`**——**S0 GATE PASS 12/12（硬不变量含 #38/#44、新 golden 过、det 3/3）**、**ModelPathGate PASS**、互补性守卫 fresh（锚烘于 `8b85a7c`，35 不变量含 #44）、全门绿。
+协调者独立移金标复核（committed 树）：① off-gate 缺 logistics.json → S0 金标 12/12 逐字节 = pre-E1 golden（纯加法）；② new golden 一致 + 两跑可回放；③ #38/#44 双负对照；④ 留出 13-30 柴薪↑/缺货腰斩/屋瓦↑=self-contain P1、#40 未灌绿。
+⚠️协调者补一处 E1 未覆盖：E1 加了硬 #44 但漏更新 `tools/gate_fixture_audit.py` 的 `HARD_IDS` 副本（28→29）⇒ 重烘安全闸拒烘（正确：不给漏条锚固化基线）；协调者补 `+44` 后重烘成功。
 
 ## 附：未做 / 边界（诚实）
 - 进口**免费到货**：本片一字不碰钱。钱跨边界（进口付费给「外部」）=E2，会触发硬 #34 架构决策（docs/144 §四.1），须 §0.8 外审后做。
