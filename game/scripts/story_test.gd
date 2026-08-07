@@ -426,6 +426,63 @@ func _fixtures() -> void:
 	var m4: Dictionary = (s9.arcs[0] as Dictionary).duplicate(true)
 	(m4["beats"] as Array)[0][1] = 12345
 	_expect(not s9.audit(m4, by9).is_empty(), "F9e 幕上印的天数与它引用的 event 的 tick 对不上 → 审计必红")
+
+	# ── F10（AR1，docs/145）：三条「银钱往来」pay 幕的正对照 ──────────────────────
+	# 每条弧手写一条最短因果链：先开弧、再落一笔 pay ⇒ `traded` 幕必须被讲出、系对人、方向对。
+	# 它同时钉死三件事：① pay 幕在 grudge/pact/craft 三条弧上都活着；
+	#   ② dir="any" 认得**反向付款**（pact 那条 dan→coco，弧却是 coco>dan）；
+	#   ③ matcher 不筛 note ⇒ buy: 与 rent 两类都收（bread 是 buy:、房租是 rent）。
+	# ★为什么非要有它：默认沙盘里 pay 落地虽多（普查 947/181/1440），但"讲成一句"要弧正开着，
+	#   合成流把它钉成**唯一答案**，比"真世界里数出 N 条"有判别力（同 F 段其余各条的纪律）。
+	var f10: Array = [
+		# grudge#aria>ben：conflict 开弧 → aria 买了 ben 一回（buy:）
+		_ev(0, 100, "conflict", "aria", "ben", false),
+		_ev(1, 140, "pay", "aria", "ben", true, "", "buy:bread"),
+		# pact#coco>dan：pact formed 开弧 → dan 付 coco 房租（rent，**反向**：付款 dan→coco，弧是 coco>dan）
+		_ev(2, 150, "pact", "coco", "dan", true, "", "formed"),
+		_ev(3, 190, "pay", "dan", "coco", true, "", "rent"),
+		# craft#fred>ed：ed 产出、fred 目击开弧 → fred 付 ed（PAIR_TARGET 正向）
+		_ev(4, 200, "produce", "ed", "town", true, "柴薪", "樵夫*3", ["fred"]),
+		_ev(5, 260, "pay", "fred", "ed", true, "", "rent"),
+	]
+	var s10 := StoryScript.new()
+	s10.recompute(f10)
+	var got10: Array = []
+	for arc in s10.arcs:
+		got10.append("%s/%s>%s/幕%s" % [String(s10.def_of(arc)["id"]), String(arc["a"]), String(arc["b"]), str(_beat_ids(arc))])
+	var ok10 := s10.arcs.size() == 3
+	if ok10:
+		var g10: Dictionary = s10.arcs[0]
+		var p10: Dictionary = s10.arcs[1]
+		var c10: Dictionary = s10.arcs[2]
+		ok10 = String(s10.def_of(g10)["id"]) == "grudge" and String(g10["a"]) == "aria" and String(g10["b"]) == "ben" \
+				and _beat_ids(g10) == ["traded"] \
+			and String(s10.def_of(p10)["id"]) == "pact" and String(p10["a"]) == "coco" and String(p10["b"]) == "dan" \
+				and _beat_ids(p10) == ["traded"] \
+			and String(s10.def_of(c10)["id"]) == "craft" and String(c10["a"]) == "fred" and String(c10["b"]) == "ed" \
+				and _beat_ids(c10) == ["traded"]
+	_expect(ok10, "F10 三条弧各落一笔 pay → `traded` 幕逐条被讲出、系对人：实得 %s" % str(got10))
+	# 成文核对：三行都渲染成『银钱往来』，且无占位符残留（同 F2 的 R10 纪律）
+	var pr10 := ""
+	for arc in s10.arcs:
+		pr10 += " ".join(PackedStringArray(s10.narrate(arc, _nm_fake))) + " "
+	_expect(pr10.count("银钱往来") == 3 and not pr10.contains("%A") and not pr10.contains("%B"),
+		"F10 三行都成文为『银钱往来』且无占位符残留（%d 处）" % pr10.count("银钱往来"))
+	# 审计：pay 幕也要逐行指得回一条真 pay 事件（type/有向对/tick/措辞锁 全核）
+	var by10: Dictionary = {}
+	for e in f10:
+		by10[int((e as Dictionary)["id"])] = e
+	var bad10: Array = []
+	for arc in s10.arcs:
+		bad10.append_array(s10.audit(arc, by10))
+	_expect(bad10.is_empty(), "F10 三条 pay 幕逐行可追溯（audit 0 违规）%s" % ("" if bad10.is_empty() else "：" + str(bad10.slice(0, 3))))
+	# F10′ 负对照：只喂 pay（无弧在跑）→ pay 不是任何弧的开头 → 0 条故事（同 F1 的 greet）
+	var s10b := StoryScript.new()
+	s10b.recompute([_ev(0, 10, "pay", "aria", "ben", true, "", "buy:bread"),
+		_ev(1, 20, "pay", "ben", "aria", true, "", "rent")])
+	_expect(s10b.arcs.size() == 0,
+		"F10′ 只喂 pay（无弧在跑）→ 故事 %d 条（必须 0；pay 不是任何弧的开头）" % s10b.arcs.size())
+
 	_phrase_lock()
 	print("")
 
