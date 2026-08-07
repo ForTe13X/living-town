@@ -778,13 +778,20 @@ func start_new(p_seed: int = 12345) -> void:
 	var adata: Array = _read_json("res://data/agents.json").get("agents", [])
 	var defs := adata.duplicate(true)
 	# 扩 N：克隆扩容到 spawn_count（确定性：persona 轮转、按区心生成、id 唯一→天生立场各异）
+	# AQ1(doc 142)：克隆 persona 改从【扩后全池】personas.keys() 轮转（原 12 + 追加 12），
+	#   替代旧的 adata 轮转（只 12 个基座人设）——拨大人口时露出更多张不同的脸/名字，不再是 12 复读机。
+	#   ⚠ 只在此 spawn_count>defs.size() 分支生效：出货 N=12（spawn_count=0）从不进来，S0 金标路一字节不碰。
+	#   ⚠ 追加人设的 traits 一律【镜像】其轮转位对应的原人设（keys[i%24].traits == 旧 adata[i%12].traits），
+	#     而 digest/chain 只经 traits 入 Sim（name/color/sprite/persona_key 只进显示层与 voicebank 气泡）
+	#     ⇒ 各 N 逐字节不变、4a/4b/不变量门零回归（见 analysis/aq1 的逐 tick 前缀链对比）。
 	if spawn_count > defs.size():
 		var area_ids: Array = world.get("areas", {}).keys()
+		var pool_ids: Array = personas.keys()          # 扩后全池，保序[原12,新12]；仅本分支消费，N=12 从不读
 		for i in range(defs.size(), spawn_count):
-			var base: Dictionary = adata[i % adata.size()]
+			var pk: String = String(pool_ids[i % pool_ids.size()]) if not pool_ids.is_empty() else String((adata[i % adata.size()] as Dictionary)["persona"])
 			var c := _area_centroid(String(area_ids[i % maxi(1, area_ids.size())])) if not area_ids.is_empty() else Vector2i(2 + i % 20, 2 + i % 12)
 			var sp := Vector2i(c.x + (i % 3) - 1, c.y + ((i / 3) % 3) - 1)
-			defs.append({"id": "npc_%d" % i, "persona": base["persona"], "spawn": [sp.x, sp.y], "home": [sp.x, sp.y]})
+			defs.append({"id": "npc_%d" % i, "persona": pk, "spawn": [sp.x, sp.y], "home": [sp.x, sp.y]})
 	for adef in defs:
 		var ag := _make_agent(adef, personas)
 		agents.append(ag)

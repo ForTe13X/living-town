@@ -10,5 +10,18 @@
   "shu":  {"name": "沈书", "color": "#b06a6a", "traits": ["严谨", "固执"],     "bio": "教书先生，字斟句酌，最重规矩体面。",       "style": "文绉绉、爱引古话、说教口吻", "sprite": "Soldier-Red"},
   "mei":  {"name": "阿梅", "color": "#9aa0b0", "traits": ["细致", "多疑"],     "bio": "裁缝，一针一线不含糊，看人很准。",         "style": "话少、观察入微、点到为止", "sprite": "Character-Base"},
   "qin":  {"name": "苏琴", "color": "#6ac0b0", "traits": ["浪漫", "散漫"],     "bio": "街头琴师，日子随性，一曲换一餐。",         "style": "慢悠悠、爱比方、常走神", "sprite": "Archer-Purple"},
-  "tie":  {"name": "铁牛", "color": "#d08040", "traits": ["豪爽", "急躁"],     "bio": "铁匠，膀大腰圆，嗓门大心却软。",           "style": "大嗓门、直来直去、刀子嘴豆腐心", "sprite": "Soldier-Yellow"}
+  "tie":  {"name": "铁牛", "color": "#d08040", "traits": ["豪爽", "急躁"],     "bio": "铁匠，膀大腰圆，嗓门大心却软。",           "style": "大嗓门、直来直去、刀子嘴豆腐心", "sprite": "Soldier-Yellow"},
+
+  "hua":  {"name": "花婶",   "color": "#d97fa8", "traits": ["热情", "爱八卦"], "bio": "集市卖花的婶子，逢人先递一枝，嘴比谁都快。",   "style": "自来熟、爱夸人、一句接一句", "sprite": "Mage-Cyan"},
+  "shi":  {"name": "石头",   "color": "#9a8f6a", "traits": ["务实", "寡言"],   "bio": "石匠，整日凿石垒墙，一句顶别人十句。",         "style": "惜字如金、说一是一", "sprite": "Soldier-Red"},
+  "mian": {"name": "阿绵",   "color": "#7fd0c0", "traits": ["内向", "敏感"],   "bio": "绣娘，绣品极细，见生人就怯，心思重。",         "style": "细声细气、爱脸红、话到嘴边又咽回", "sprite": "Archer-Green"},
+  "huai": {"name": "老槐",   "color": "#6a9f7f", "traits": ["豁达", "爱讲古"], "bio": "看庙的老园丁，树下一坐就开讲，什么都不搁心上。", "style": "慢条斯理、爱掉书袋、张口就是当年", "sprite": "Warrior-Red"},
+  "dou":  {"name": "阿豆",   "color": "#e0b840", "traits": ["好奇", "莽撞"],   "bio": "跑腿的半大孩子，哪儿热闹往哪儿钻，横冲直撞。",  "style": "咋咋呼呼、打破砂锅问到底", "sprite": "Mage-Red"},
+  "gui":  {"name": "桂姨",   "color": "#c0a0d8", "traits": ["温柔", "细心"],   "bio": "采药的桂姨，谁家头疼脑热都找她，手脚极稳。",   "style": "轻声安慰、叮嘱周到、爱用敬语", "sprite": "Soldier-Blue"},
+  "liu":  {"name": "六婶",   "color": "#d89050", "traits": ["勤快", "唠叨"],   "bio": "磨豆腐的六婶，五更就起，嘴上从不停。",         "style": "热络、絮絮叨叨、招呼人添饭", "sprite": "Archer-Purple"},
+  "tao":  {"name": "阿涛",   "color": "#4f7fb0", "traits": ["耿直", "好酒"],   "bio": "码头扛包的，力气大脾气直，收工就要二两。",     "style": "大着嗓门、有一说一、认死理", "sprite": "Warrior-Blue"},
+  "mo":   {"name": "墨先生", "color": "#8a6a9a", "traits": ["严谨", "固执"],   "bio": "账房先生，一笔一画不含糊，认准的账改不动。",   "style": "一板一眼、爱较真、说教口吻", "sprite": "Character-Base"},
+  "yin":  {"name": "银针",   "color": "#a0a8b8", "traits": ["细致", "多疑"],   "bio": "当铺掌眼的，成色好赖一眼看穿，谁都先防三分。", "style": "话少、盯着人看、点到为止", "sprite": "Soldier-Yellow"},
+  "yun":  {"name": "云生",   "color": "#70b0c0", "traits": ["浪漫", "散漫"],   "bio": "扎风筝的闲人，日子随风走，常常出神。",         "style": "慢悠悠、爱比方、说着说着就走神", "sprite": "Mage-Cyan"},
+  "yong": {"name": "大勇",   "color": "#c86038", "traits": ["豪爽", "急躁"],   "bio": "撑船的后生，膀大力沉，风风火火，一点就着。",   "style": "大嗓门、雷厉风行、刀子嘴豆腐心", "sprite": "Warrior-Red"}
 }
