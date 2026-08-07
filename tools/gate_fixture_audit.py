@@ -447,9 +447,21 @@ def bake_ledger(data, path, tree_sha=None):
         print("❌ 拒绝烘锚：`git rev-parse HEAD` 读不到 commit ⇒ 不给锚盖一个空的来源章。"
               "（空 baked_commit 会让 gate_complement_guard 侧的来源闭环静默失效。）")
         return 1
-    # ── 来源闭环 ②：量的树 == 要盖的章的那棵树 ────────────────────────────────────
+    # ── 来源闭环 ②：量的树必须【真的测到了】，且 == 要盖的章的那棵树 ────────────────────
+    #   AE2 P0.①（外审 2026-08-06 21:00 §三 P1）：tree_sha 只有走 `--run` 才非 None
+    #   （run_fixtures 现读 HEAD:game 并按它内容寻址隔离副本）。不带 --run（例如 `--from OLD`）
+    #   ⇒ tree_sha=None。旧版这道比较被 `tree_sha is not None` 挡在门外【被跳过】，盖章路
+    #   `tree_sha or cur_tree` 又拿当前 HEAD:game 顶包 ⇒ 旧/伪输出被盖成当前树（confirmed bypass）。
+    #   堵法：没有可信的【测量用 game 树】就拒绝盖章，绝不拿 HEAD:game 顶包。
     cur_tree = _rev_parse("HEAD:game")
-    if tree_sha is not None and cur_tree is not None and tree_sha != cur_tree:
+    if tree_sha is None:
+        print("❌ 拒绝烘锚：没有可信的【测量用 game 树】（tree_sha=None）——只有 `--run` 会真的测量并"
+              "按 HEAD:game 内容寻址隔离副本。不带 --run（如 `--from`）时绝不拿当前 HEAD:game 顶包盖章。")
+        return 1
+    if cur_tree is None:
+        print("❌ 拒绝烘锚：`git rev-parse HEAD:game` 读不到当前 game 树 ⇒ 无法确认量的树==要盖的章的树。")
+        return 1
+    if tree_sha != cur_tree:
         print("❌ 拒绝烘锚：测量用的 game 树 %s ≠ 当前 HEAD:game %s ⇒ 量的树与要盖的章不是同一棵。"
               % (tree_sha[:12], cur_tree[:12]))
         return 1
@@ -474,7 +486,7 @@ def bake_ledger(data, path, tree_sha=None):
             "requires": spec["requires"],
             "floors": floors,
         }
-    # sha / cur_tree 已在函数开头读到并校验过（非空、量的树==要盖的章的树）。
+    # sha / cur_tree / tree_sha 已在函数开头读到并校验过（sha 非空、tree_sha 非空且 == cur_tree）。
     dead = sorted(int(i) for i, p in provs.items() if not p)
     old = {}
     if os.path.isfile(path):
@@ -495,7 +507,7 @@ def bake_ledger(data, path, tree_sha=None):
             "baked_by": "GODOT=… python tools/gate_fixture_audit.py --run --bake-ledger",
             "baked_at": _today(),
             "baked_commit": sha,
-            "baked_game_tree": tree_sha or cur_tree,
+            "baked_game_tree": tree_sha,   # 已校验非空且 == cur_tree；不再用 `tree_sha or cur_tree` 顶包
             "dead_at_bake": dead,
             "rebake_history": hist,
         },
@@ -553,6 +565,22 @@ def _rev_parse(ref, cwd=ROOT):
         return None
     sha = (r.stdout or "").strip()
     return sha if (r.returncode == 0 and sha) else None
+
+
+def _probe_dirty():
+    """AE2 P0.①（外审 2026-08-06 21:00 §三 P1 第 2 点）：`--run` archive 的是 committed HEAD:game，
+    但探针 `tools/gate_fixture_probe.gd` 是从**工作树**复制进隔离副本的。若它相对 HEAD 有未提交改动，
+    测量用的就是一份【没进要盖的章】的探针代码 ⇒ 盖出来的锚 provenance 是断的。
+    返回 True=脏（烘锚前应拒）/ False=干净或无法判定（无法判定不拦，避免在非 git 环境假红）。"""
+    rel = "tools/gate_fixture_probe.gd"
+    try:
+        r = subprocess.run(["git", "status", "--porcelain", "--", rel],
+                           cwd=ROOT, capture_output=True, text=True)
+    except OSError:
+        return False
+    if r.returncode != 0:
+        return False
+    return bool((r.stdout or "").strip())
 
 
 def run_fixtures(godot, iso, outdir, only=None):
@@ -661,6 +689,31 @@ def self_test():
         nogit = tempfile.mkdtemp(prefix="gfa_nogit_")
         sha_none = _rev_parse("HEAD", cwd=nogit)
         shutil.rmtree(nogit, ignore_errors=True)
+        # ── AE2 P0.①：bake_ledger 的【树来源闭环】（不需要 godot）───────────────────
+        #   造一份【完整】的合成普查数据（所有非 none 夹具都非空，过得了旧的"缺格"拦截），
+        #   专门去测烘锚的盖章判据——这正是 confirmed bypass 走的那条路：
+        #     · tree_sha=None（= `--from` 无 `--run`）⇒ 必须拒绝，绝不拿当前 HEAD:game 顶包；
+        #     · tree_sha ≠ 当前 HEAD:game        ⇒ 必须拒绝；
+        #     · tree_sha == 当前 HEAD:game       ⇒ 正常烘（证明上面两条不是"一律拒绝"）。
+        import contextlib as _cl
+        import io as _io2
+        cbase = dict(base)
+        cbase["aid_accepted"] = 9
+        cbase["types"] = {"betray": 2, "endorse": 2}
+        _full = {}
+        for _tag in [f[0] for f in FIXTURES if f[6] != "none"]:
+            _full[_tag] = {sd: {"live": dict(cbase), "detail": {}, "ok": {}, "hard": {}}
+                           for sd in (1, 2)}
+        _cur_game = _rev_parse("HEAD:game")
+        _lp = os.path.join(tmp, "syn_ledger.json")
+
+        def _bake_rc(ts):
+            with _cl.redirect_stdout(_io2.StringIO()):
+                return bake_ledger(_full, _lp, tree_sha=ts)
+
+        bake_none_refused = _bake_rc(None) == 1
+        bake_mism_refused = _bake_rc("0" * 40) == 1
+        bake_fresh_ok = (_cur_game is not None) and (_bake_rc(_cur_game) == 0)
         checks = [
             ("betray=0 ⇒ #22 前件必须是 0", SPEC[22][2](s[1]["live"], s[1]["detail"]) == 0),
             ("aid_accepted=0 ⇒ #29 样本守卫必须判空", SPEC[29][2](s[1]["live"], s[1]["detail"]) == 0),
@@ -671,6 +724,10 @@ def self_test():
             ("AE2 ci 对账：默认值全对 ⇒ 不判 ❌（不假红）", not ci_match.startswith("❌")),
             ("AE2 ci 对账：CI_DAYS 60→20 漂了 ⇒ 判 ❌（拦住烘锚）", ci_drift.startswith("❌")),
             ("AE2 来源闭环：非 git 目录 rev-parse HEAD ⇒ None（不冒充成空 sha）", sha_none is None),
+            ("AE2 P0.①：tree_sha=None（--from 无 --run 后门）⇒ bake 拒绝盖章（不拿 HEAD:game 顶包）",
+             bake_none_refused),
+            ("AE2 P0.①：量的树 ≠ 当前 HEAD:game ⇒ bake 拒绝", bake_mism_refused),
+            ("AE2 P0.①：量的树 == 当前 HEAD:game ⇒ bake 正常烘（不假拒）", bake_fresh_ok),
         ]
         for why, okv in checks:
             print("  [%s] %s" % ("✅" if okv else "❌", why))
@@ -703,6 +760,22 @@ def main():
     # ⚠️ 这道拦截必须在 --run 【之前】：一次完整普查要十几分钟，
     #   而"副本与源码对不上"这件事在第一行就能查出来。失败要快。
     if a.bake_ledger:
+        # ⚠ AE2 P0.①（外审 2026-08-06 21:00 §三 P1 的 confirmed bypass）：`--from OLD --bake-ledger`
+        #   不带 `--run` ⇒ run_fixtures 从不执行 ⇒ tree_sha=None ⇒ 旧/伪输出被盖成当前 HEAD:game。
+        #   堵在最前面（失败要快）：--bake-ledger 必须与 --run 同用（--from 只解析、测不到当前 game 树）。
+        #   bake_ledger 里的 tree_sha=None 拒绝是同一后门的第二道闸（防有人绕过 CLI 直接调）。
+        if not a.run:
+            print("\n❌ 拒绝烘锚：--bake-ledger 必须与 --run 同用。")
+            print("   `--from <目录>` 只解析已有输出、【测不到当前 game 树】⇒ 会把旧/伪输出盖成当前 HEAD:game")
+            print("   （外审 2026-08-06 21:00 §三 P1 confirmed bypass）。要烘就跑 `--run --bake-ledger`。")
+            return 1
+        # ⚠ 外审 §三 P1 第 2 点：探针从工作树复制。脏探针 ⇒ 测量用了没进章的代码 ⇒ 拒烘（先提交探针）。
+        #   放在 run_fixtures 之前（省掉一次 ~12 min 的 godot），无法判定（非 git）不拦。
+        if _probe_dirty():
+            print("\n❌ 拒绝烘锚：tools/gate_fixture_probe.gd 相对 HEAD 有未提交改动（dirty probe）。")
+            print("   `--run` 从工作树复制探针进隔离副本 ⇒ 脏探针会让测量用一份【没进要盖的章】的代码。")
+            print("   先提交探针再烘（外审 2026-08-06 21:00 §三 P1 第 2 点）。")
+            return 1
         _chk = _check_hard_ids()
         if "对不上" in _chk:
             print("\n❌ 拒绝烘锚：%s" % _chk)

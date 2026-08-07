@@ -49,6 +49,7 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
 
 try:
@@ -58,6 +59,41 @@ except (AttributeError, OSError):
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 LEDGER = os.path.join(ROOT, "tools", "gate_complement_ledger.json")
+_UNSET = object()   # gate() 的 cur_game_tree 默认哨兵：未传 ⇒ 现读 git；显式传 None ⇒ "git 读不到"（fail-closed）
+
+
+def _head_game_tree():
+    """现读 `git rev-parse HEAD:game`（committed game/ 的 tree sha）。读不到 / 非零退出 ⇒ None
+    （**绝不返回空串冒充成功**）。判决与 seed / 平衡无关，逐字节确定，约 0.01 s、不进 godot。"""
+    try:
+        r = subprocess.run(["git", "rev-parse", "HEAD:game"], cwd=ROOT,
+                           capture_output=True, text=True)
+    except OSError:
+        return None
+    sha = (r.stdout or "").strip()
+    return sha if (r.returncode == 0 and sha) else None
+
+
+def check_ledger_freshness(ledger, cur_game_tree):
+    """AE2 P0.①（外审 2026-08-06 21:00 §三 P1 第 4 点）：consumer 侧的【依赖树闭环】。
+
+    比锚里的 `_meta.baked_game_tree` 与当前 `HEAD:game`。不符 / 缺失 / 读不到 ⇒ 返回红原因，否则 None。
+
+    ⚠ 旧版守卫**只打印 metadata、不比当前依赖树** ⇒ 锚的 `baked_game_tree` 与当前 `HEAD:game`
+      不符时**照样返 0**（fail-open：它照着一份烘自另一棵 game 树的测量在守，而没人被告知）。
+      这里把它变成 fail-closed，并在信息里**点名 stale + 叫重烘**（别打谜语）。
+    """
+    baked = (ledger.get("_meta") or {}).get("baked_game_tree")
+    rebake = "请重烘：GODOT=… python tools/gate_fixture_audit.py --run --bake-ledger"
+    if not baked:
+        return ("锚缺 _meta.baked_game_tree ⇒ 无法证明它烘自当前 game 树（fail-closed）。%s" % rebake)
+    if not cur_game_tree:
+        return ("读不到当前 HEAD:game（git rev-parse 失败）⇒ 无法确认锚是否新鲜（fail-closed）。%s" % rebake)
+    if baked != cur_game_tree:
+        return ("锚 STALE：baked_game_tree=%s ≠ 当前 HEAD:game=%s ⇒ 锚烘自另一棵 game 树，"
+                "它记录的活输入来源可能与当前依赖树不符。%s"
+                % (baked[:12], cur_game_tree[:12], rebake))
+    return None
 
 
 def _read(path):
@@ -241,14 +277,21 @@ def _sole_table(ledger):
     return {k: sorted(v) for k, v in sorted(sole.items())}
 
 
-def gate(ledger_path=LEDGER, tree=None, strict=False, quiet=False):
+def gate(ledger_path=LEDGER, tree=None, strict=False, quiet=False, cur_game_tree=_UNSET):
     if not os.path.isfile(ledger_path):
         print("❌ 找不到互补性锚 %s ⇒ 先跑 `python tools/gate_fixture_audit.py --run --bake-ledger`"
               % os.path.relpath(ledger_path, ROOT))
         return 1
     ledger = json.loads(_read(ledger_path))
     tree = tree or Tree()
+    # AE2 P0.①：依赖树闭环——锚的 baked_game_tree 必须 == 当前 HEAD:game，否则红（stale）。
+    # 未显式传 ⇒ 现读 git；显式传 None ⇒ 视为"git 读不到"（fail-closed，不假装新鲜）。
+    if cur_game_tree is _UNSET:
+        cur_game_tree = _head_game_tree()
     fails, warns, notes, status = run_gate(tree, ledger, strict)
+    stale = check_ledger_freshness(ledger, cur_game_tree)
+    if stale:
+        fails = [stale] + fails
     meta = ledger.get("_meta", {})
     if not quiet:
         print("互补性守卫：锚烘于 %s（commit %s，%d 个夹具 × %d 条不变量）"
@@ -373,6 +416,21 @@ def self_test():
     t, lg = mk(ci="\n".join("# " + l for l in _SYN_CI.splitlines()))
     f, _, _, _ = run_gate(t, lg)
     cases.append(("M7 把 ci.sh 整段注释掉 ⇒ 照样红（剔注释再匹配）", bool(f), f))
+
+    # ── AE2 P0.①：consumer 侧的【依赖树闭环】（check_ledger_freshness，纯函数、不碰 git）──
+    #   这四条正是外审说旧版守卫"只打印 metadata、不比当前依赖树"漏掉的那道闸。
+    _fresh_lg = {"_meta": {"baked_game_tree": "a" * 40}}
+    cases.append(("M9 baked_game_tree == 当前 HEAD:game ⇒ 不红（fresh 不假红）",
+                  check_ledger_freshness(_fresh_lg, "a" * 40) is None, None))
+    _stale = check_ledger_freshness(_fresh_lg, "b" * 40)
+    cases.append(("M10 baked_game_tree ≠ 当前 HEAD:game ⇒ 红并点名 STALE + 叫重烘",
+                  bool(_stale) and "STALE" in _stale and "重烘" in _stale, _stale))
+    _miss = check_ledger_freshness({"_meta": {}}, "a" * 40)
+    cases.append(("M11 锚缺 baked_game_tree ⇒ 红（fail-closed，不放过无证据的锚）",
+                  bool(_miss) and "baked_game_tree" in _miss, _miss))
+    _nogit = check_ledger_freshness(_fresh_lg, None)
+    cases.append(("M12 读不到当前 HEAD:game（git 失败）⇒ 红（fail-closed，不假装新鲜）",
+                  bool(_nogit), _nogit))
 
     bad = 0
     for why, ok, ev in cases:
