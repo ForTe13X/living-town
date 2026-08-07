@@ -62,6 +62,10 @@ const P_STONE_LINE   := Color("#6d6a61")   # gpl stone-line
 ##   D6 的注释写着"此前代码零使用，本棒启用"——本棒把它用掉的那一处又拿走了，故一并删，不留零引用常量。
 const P_PLAZA        := Color("#c3a97a")   # gpl plaza-base
 const P_PLAZA_LINE   := Color("#9a8253")   # gpl plaza-line
+# ── AP1 内容棒（编号140）：门→广场走廊【石铺连街】+ 广场 flagstone。纯 View（Sim 读 blockers，读不到绘制）＝零金标。
+#   P_STREET 是一档【暖石板】：取在 P_STONE(#9b968d 冷暖灰) 与 P_PLAZA(#c3a97a 暖砂) 之间、略偏暖，
+#   让门口的石街与中央广场读作【同一套铺装】而不是两种材质——这正是"连街"要的连续感。派生阶见下面 D_ 段。
+const P_STREET       := Color("#a89e8b")   # 暖石板路面（cobble base）
 const P_GRASS        := Color("#85a643")   # gpl grass-summer
 const P_GRASS_AUT    := Color("#b59a4a")   # gpl grass-autumn
 const P_FOLIAGE_D    := Color("#5f7b34")   # gpl foliage-deep
@@ -144,6 +148,16 @@ var D_BOOK_BLUE      := P_PUB_ROOF.darkened(0.28)    # 书脊·蓝（书架与�
 ## ——`_draw_interior_backdrop` 的整个设计（"镜头在屋外的暗处往里看"）就靠这块底比室内暗。
 ## 用 P_PANEL 派生一档（dE00 3.2）：既不新增授权色，又保住那层暗。
 var D_BACKDROP       := P_PANEL.darkened(0.55)       # 室内取景的界外底
+# ── AP1（编号140）石街派生阶（都从 P_STREET / P_PLAZA 派生，不新增授权色，红线#5 复用优先）───────
+var S_STREET_HI      := P_STREET.lightened(0.12)     # 亮鹅卵石高光（受光的石面）
+var S_STREET_LO      := P_STREET.darkened(0.14)      # 暗鹅卵石（阴影里的石块，做出铺面颗粒）
+var S_STREET_SEAM    := P_STREET.darkened(0.34)      # 石缝（灌浆线）
+var S_CURB           := P_STREET.darkened(0.46)      # 路缘石：街与草的交界，读作"这条街是砌出来的"
+var S_PLAZA_HI       := P_PLAZA.lightened(0.10)      # 广场 flagstone 受光面
+var S_PLAZA_LO       := P_PLAZA.darkened(0.09)       # 广场 flagstone 背光面（大方砖交错明暗）
+var S_LAMP_POST      := X_WOOD_MID.darkened(0.30)    # 街灯灯柱（暗木/铸铁）
+var S_BENCH_WOOD     := X_WOOD_MID                    # 长椅木条（复用镇上木家族中段）
+var S_PLANTER        := P_STONE.darkened(0.10)       # 花坛石框
 # ══════════════════════════════════════════════════════════════════════════
 
 # ── 画面 LOD / 裁剪（纯 DRAW 侧）────────────────────────────────────────────────
@@ -429,7 +443,12 @@ var _decor_items: Array = []  # [{tex, cell:Vector2i, k:池内下标}]（I2：�
 var _decor_built := false
 # P2-2 地形层：map.json 的 walls/water/trees（纯渲染；导航走 blockers 并集，与此无关）。start_new 时重建。
 var _path_set := {}      # idx(y*W+x) -> true（土路格：广场↔各家门口；渲染 + 装饰避让）
+var _plaza_cells := {}   # AP1(140) idx -> true（所有 type=="plaza" 区的格：石街铺面与 verge 街具用它判"已铺装"）
 var _paths_built := false
+# AP1(140) 纯 View 街具（路灯/花坛/长椅/矮柱），落在 verge（路/广场旁的 free cell）。程序化画、Sim 永不感知。
+# 由 `_build_decor` 一并烘（共用 `_decor_built`，不新增缓存标志 ⇒ cache-gate/W6 作废逻辑一字不动）。
+var _street_prop_items: Array = []   # [{cell:Vector2i, kind:int}]，行优先排序（逐字节可复现）
+var _street_prop_cells := {}         # idx -> true（散花草时避开这些格，别把花画在灯柱脚下）
 var _wall_set := {}      # idx(y*W+x) -> true（墙格，用于画石墙 + 装饰避让）
 var _water_set := {}     # idx -> true（水格）
 ## 水格按【岸线瓦片】分组：[[瓦片名, PackedInt32Array(格子下标)], ...]，9 个 slot。
@@ -784,6 +803,7 @@ func _build_decor() -> void:
 	_decor_items.clear()
 	if not _paths_built:
 		_build_paths()                    # 先有路，散装饰时才能避开它
+	_build_street_props()                 # AP1(140)：先落 verge 街具，花草再避开它（别把花画在灯柱脚下）
 	var pool := []
 	# 树不再散布：P2-2 的可见树 = authored 阻挡树（_tree_cells）。程序化装饰只留贴地花草石（可踩，纯装饰）。
 	# ── I2 2026-07-30：这里原本还有两个 `tree*` 分支（H2 报的"699-700 两行死代码"）────────────────
@@ -809,8 +829,8 @@ func _build_decor() -> void:
 	var h: int = int(Sim.world.get("height", 16))
 	for y in range(h):
 		for x in range(w):
-			if _in_area(x, y) or _is_object(x, y) or _is_blocked(x, y) or _path_set.has(y * w + x):
-				continue                      # 区域/家具/阻挡/土路 上都不散装饰（路面保持干净）
+			if _in_area(x, y) or _is_object(x, y) or _is_blocked(x, y) or _path_set.has(y * w + x) or _street_prop_cells.has(y * w + x):
+				continue                      # 区域/家具/阻挡/土路/街具格 上都不散装饰（路面保持干净）
 			if _hash(x, y, 7) % 100 >= 22:   # ~22% 密度
 				continue
 			var r := _hash(x, y, 13) % total_w
@@ -833,6 +853,91 @@ func _build_decor() -> void:
 		var ca: Vector2i = a["cell"]
 		var cb: Vector2i = b["cell"]
 		return ca.y < cb.y if ca.y != cb.y else ca.x < cb.x)
+
+## ── AP1(140) verge 街具：在【路/广场旁】的 free cell 上确定性落纯 View 街景（路灯/花坛/长椅/系缆柱）──
+## ⚠ 安全谓词【复用】`_build_decor` 现成那一套（非区 ∧ 非家具 ∧ 非blocked ∧ 非路）——**不自造 free-cell 判定**；
+##   在它之上再加一层【贴着铺装】(`_is_paved` 的 8 邻) 把散布收敛到 verge。这是**布局选择**，不动安全性那一层。
+## 确定性：落点/类型全走 `_hash(x,y,salt)`（无 randi/Time）⇒ `--shot` 逐像素可复现（红旗#4）。
+## Sim 永不感知：这些格仍是 walkable 草地（**不进 blockers**）；街具是纯美术，不改任何格 walkable、零金标。
+func _build_street_props() -> void:
+	_street_prop_items.clear()
+	_street_prop_cells.clear()
+	if _plaza_cells.is_empty() and _path_set.is_empty():
+		return                              # 没有铺装 ⇒ 没有 verge，什么都不落
+	var w: int = int(Sim.world.get("width", 24))
+	var h: int = int(Sim.world.get("height", 16))
+	for y in range(h):
+		for x in range(w):
+			var idx := y * w + x
+			# ★复用 _build_decor 的安全谓词（`_in_area` 已含广场；`_path_set` 是街）——一字不改。
+			if _in_area(x, y) or _is_object(x, y) or _is_blocked(x, y) or _path_set.has(idx):
+				continue
+			# verge：8 邻里至少一格是铺装（街 或 广场/码头）⇒ 把街具收敛到路两侧/广场周边（越界格自然为假）
+			var near_paved := false
+			for dy in [-1, 0, 1]:
+				for dx in [-1, 0, 1]:
+					if dx == 0 and dy == 0:
+						continue
+					var nx: int = x + dx; var ny: int = y + dy
+					if nx >= 0 and nx < w and ny >= 0 and ny < h and _is_paved(nx, ny):
+						near_paved = true
+						break
+				if near_paved:
+					break
+			if not near_paved:
+				continue
+			if _hash(x, y, 41) % 100 >= 44:       # ~44% 的 verge 格落一件（街被点亮但不拥挤）
+				continue
+			var b := _hash(x, y, 43) % 100         # 类型加权：路灯偏多 → 花坛 → 长椅 → 系缆柱
+			var kind := 0
+			if b < 38:      kind = 0               # lamp   路灯
+			elif b < 64:    kind = 1               # planter 花坛
+			elif b < 84:    kind = 2               # bench  长椅
+			else:           kind = 3               # bollard 系缆矮柱
+			# 逐 y、逐 x 顺序 append ⇒ 数组本身即 (y,x) 全序，`--shot` 可复现，无需再排序。
+			_street_prop_items.append({"cell": Vector2i(x, y), "kind": kind})
+			_street_prop_cells[idx] = true
+
+## AP1(140) 画一件 verge 街具。纯 draw_* 图元（同 `_draw_landmarks` 的路子），底对齐格子。
+## 四季植栽走 `_season_veg()`（与草地/装饰同源），其余是静态石/木/暖光（不做逐 tick 动画 ⇒ 无 Time 依赖）。
+func _draw_street_prop(kind: int, cell: Vector2i) -> void:
+	var base := Vector2(cell.x * T, cell.y * T)
+	var cx := base.x + T * 0.5
+	match kind:
+		0:                                          # 路灯：暗柱 + 暖光灯笼
+			draw_rect(Rect2(cx - T * 0.11, base.y + T * 0.80, T * 0.22, T * 0.10), Color(0, 0, 0, 0.20), true)  # 灯脚落影
+			draw_rect(Rect2(cx - T * 0.045, base.y + T * 0.22, T * 0.09, T * 0.62), S_LAMP_POST, true)          # 灯柱
+			draw_rect(Rect2(cx - T * 0.14, base.y + T * 0.05, T * 0.28, T * 0.20), S_LAMP_POST.darkened(0.12), true)  # 灯罩壳
+			draw_rect(Rect2(cx - T * 0.105, base.y + T * 0.08, T * 0.21, T * 0.14), X_GLOW, true)               # 暖玻璃
+			draw_rect(Rect2(cx - T * 0.105, base.y + T * 0.08, T * 0.21, T * 0.14), Color(X_GOLD, 0.9), false, 1.0)  # 金框
+			draw_rect(Rect2(cx - T * 0.16, base.y + T * 0.01, T * 0.32, T * 0.05), S_LAMP_POST, true)           # 顶帽
+		1:                                          # 花坛：石框 + 四季植栽 + 花点
+			var by1 := base.y + T * 0.5
+			draw_rect(Rect2(base.x + T * 0.16, by1 + T * 0.10, T * 0.68, T * 0.34), S_PLANTER, true)            # 石框
+			draw_rect(Rect2(base.x + T * 0.16, by1 + T * 0.10, T * 0.68, T * 0.06), S_PLANTER.lightened(0.18), true)  # 上沿高光
+			draw_rect(Rect2(base.x + T * 0.16, by1 + T * 0.10, T * 0.68, T * 0.34), S_PLANTER.darkened(0.26), false, 1.0)  # 描边
+			var veg := _season_veg()
+			draw_circle(Vector2(base.x + T * 0.36, by1 + T * 0.06), T * 0.13, P_FOLIAGE_M * veg)                # 灌丛
+			draw_circle(Vector2(base.x + T * 0.60, by1 + T * 0.03), T * 0.13, P_FOLIAGE_D * veg)
+			draw_circle(Vector2(base.x + T * 0.42, by1 + T * 0.01), T * 0.032, X_SIGNAL_NEG)                    # 红花点
+			draw_circle(Vector2(base.x + T * 0.66, by1 - T * 0.01), T * 0.032, X_GOLD)                          # 黄花点
+		2:                                          # 长椅：木条座 + 靠背 + 椅腿
+			var by2 := base.y + T * 0.5
+			draw_rect(Rect2(base.x + T * 0.14, by2 + T * 0.36, T * 0.72, T * 0.08), Color(0, 0, 0, 0.18), true)  # 落影
+			draw_rect(Rect2(base.x + T * 0.21, by2 + T * 0.24, T * 0.06, T * 0.16), S_BENCH_WOOD.darkened(0.30), true)  # 左腿
+			draw_rect(Rect2(base.x + T * 0.73, by2 + T * 0.24, T * 0.06, T * 0.16), S_BENCH_WOOD.darkened(0.30), true)  # 右腿
+			draw_rect(Rect2(base.x + T * 0.14, by2 + T * 0.19, T * 0.72, T * 0.10), S_BENCH_WOOD, true)          # 座板
+			draw_rect(Rect2(base.x + T * 0.14, by2 + T * 0.19, T * 0.72, T * 0.03), D_FURN_HI, true)             # 座板高光
+			draw_rect(Rect2(base.x + T * 0.14, by2 + T * 0.04, T * 0.72, T * 0.05), S_BENCH_WOOD, true)          # 靠背横档
+			draw_rect(Rect2(base.x + T * 0.16, by2 + T * 0.08, T * 0.05, T * 0.12), S_BENCH_WOOD.darkened(0.20), true)  # 靠背左柱
+			draw_rect(Rect2(base.x + T * 0.79, by2 + T * 0.08, T * 0.05, T * 0.12), S_BENCH_WOOD.darkened(0.20), true)  # 靠背右柱
+		_:                                          # 系缆矮柱（bollard）：石柱 + 铜顶
+			var by3 := base.y + T * 0.5
+			draw_rect(Rect2(cx - T * 0.11, by3 + T * 0.34, T * 0.22, T * 0.08), Color(0, 0, 0, 0.18), true)     # 落影
+			draw_rect(Rect2(cx - T * 0.10, by3 + T * 0.06, T * 0.20, T * 0.34), S_PLANTER, true)                # 石柱
+			draw_rect(Rect2(cx - T * 0.10, by3 + T * 0.06, T * 0.20, T * 0.06), S_PLANTER.lightened(0.20), true)  # 柱顶受光
+			draw_rect(Rect2(cx - T * 0.10, by3 + T * 0.06, T * 0.20, T * 0.34), S_PLANTER.darkened(0.28), false, 1.0)  # 描边
+			draw_circle(Vector2(cx, by3 + T * 0.05), T * 0.055, X_GOLD)                                         # 铜帽
 
 ## 水格 → 岸线瓦片分组（G5 / docs/49 §七）。按**四邻是不是水**选瓦，瓦片名里的方位
 ## 指的是**陆地在哪一侧**（`water_n` = 北面是岸），因为这里手上有的正是"四邻水不水"。
@@ -1022,7 +1127,20 @@ func _build_terrain() -> void:
 func _build_paths() -> void:
 	_paths_built = true
 	_path_set.clear()
+	_plaza_cells.clear()
 	var areas: Dictionary = Sim.world.get("areas", {})
+	# AP1(140)：所有 type=="plaza" 的区（广场 + 码头）都记成"已铺装"格 —— 石街的路缘石判邻、
+	# verge 街具判"贴着铺装"都读它。**只读 areas[*].rect/type（Sim 也读的面），不写、不改** ⇒ 零金标。
+	var wd0: int = int(Sim.world.get("width", 24))
+	for aid0 in areas:
+		var a0: Dictionary = areas[aid0]
+		if String(a0.get("type", "")) != "plaza":
+			continue
+		var r0: Array = a0.get("rect", [0, 0, 0, 0])
+		var ax0 := int(r0[0]); var ay0 := int(r0[1]); var aw0 := int(r0[2]); var ah0 := int(r0[3])
+		for yy0 in range(ay0, ay0 + ah0):
+			for xx0 in range(ax0, ax0 + aw0):
+				_plaza_cells[yy0 * wd0 + xx0] = true
 	if not areas.has("plaza"):
 		return
 	var pr: Array = (areas["plaza"] as Dictionary).get("rect", [0, 0, 0, 0])
@@ -1054,6 +1172,12 @@ func _is_blocked(x: int, y: int) -> bool:
 		if c.x == x and c.y == y:
 			return true
 	return false
+
+## AP1(140)：这一格是不是【已铺装】（石街 或 广场/码头）。石街画路缘石、verge 街具判邻都用它。
+## 纯 View 派生（读 `_path_set`/`_plaza_cells`，二者皆由 `_build_paths` 从 map.json 只读烘出）。
+func _is_paved(x: int, y: int) -> bool:
+	var idx := y * int(Sim.world.get("width", 24)) + x
+	return _path_set.has(idx) or _plaza_cells.has(idx)
 
 ## P2-4：每栋（非广场）沿顶墙悬挑一条 roof 色屋檐 + 门顶挂类型招牌图标。不铺满屋顶（否则遮住室内家具/居民）。
 func _draw_building_dressing(w: int) -> void:
@@ -1207,10 +1331,18 @@ func _draw_area_floors(dirt: Texture2D) -> void:
 				for xx in range(bw):
 					draw_rect(Rect2(rect.position.x + xx * T, rect.position.y, 1.0, rect.size.y), Color(line.r, line.g, line.b, 0.32), true)
 			_:                                         # 广场：大方砖十字缝（比土路"踩实"，两者可区分）
+				# AP1(140) flagstone：2×2 大方砖交错明暗 + 十字灌浆缝 + 亮内沿（纯 View 上色，Sim 零读 type ⇒ 零金标）。
+				# 石街鹅卵石(2×2 细分)汇入广场 flagstone(2×2 大块) ⇒ 同一套铺装语言、读作“街—广场”一体。
 				for yy in range(bh):
-					draw_rect(Rect2(rect.position.x, rect.position.y + yy * T, rect.size.x, 1.0), Color(line.r, line.g, line.b, 0.28), true)
+					for xx in range(bw):
+						var blk := ((xx / 2) + (yy / 2)) % 2          # 2×2 一块大石板，整块一个明/暗档
+						var fc: Color = S_PLAZA_HI if blk == 0 else S_PLAZA_LO
+						draw_rect(Rect2(rect.position.x + xx * T + 1.0, rect.position.y + yy * T + 1.0, T - 2.0, T - 2.0), Color(fc.r, fc.g, fc.b, 0.30), true)
+				for yy in range(bh):
+					draw_rect(Rect2(rect.position.x, rect.position.y + yy * T, rect.size.x, 1.0), Color(line.r, line.g, line.b, 0.30), true)
 				for xx in range(bw):
-					draw_rect(Rect2(rect.position.x + xx * T, rect.position.y, 1.0, rect.size.y), Color(line.r, line.g, line.b, 0.28), true)
+					draw_rect(Rect2(rect.position.x + xx * T, rect.position.y, 1.0, rect.size.y), Color(line.r, line.g, line.b, 0.30), true)
+				draw_rect(rect, Color(S_PLAZA_HI.r, S_PLAZA_HI.g, S_PLAZA_HI.b, 0.35), false, 2.0)   # 亮内沿：框住广场、接住汇入的石街
 		draw_rect(rect, Color(0, 0, 0, 0.20), false, 3.0)
 
 ## 区名：旧版画在 rect 左上角、字号 12、alpha 0.28 —— 那格正好是顶墙，墙随后盖上去，于是【一个字也看不见】。
@@ -2756,18 +2888,37 @@ func _draw_body() -> void:
 				if _hash(wx, wy, 21) % 100 < 30:   # 静态涟漪高光
 					draw_rect(Rect2(wx * T + T * 0.18, wy * T + T * 0.30, T * 0.42, T * 0.12), Color(P_WATER_LIT, 0.35) * wtint, true)
 
-	# 土路网（广场↔各家门口）：铺在草地之上、区域/建筑之下 → 一眼读出"路"。装饰会避开它，路面才干净。
+	# ── AP1(140) 门→广场【石铺连街】：把原来的土径重铺成暖石板 cobble ────────────────────────────
+	# **只改绘制/调色板**：`_path_set` 仍由 `_build_paths` 从 doors/plaza（map.json 只读）烘出，一格 walkable 都没动
+	# ⇒ Sim 读 blockers、读不到这一层，**零金标**。石街(P_STREET) 与广场(P_PLAZA) 同暖族 ⇒ 读作一体的连街，不再是孤岛间的土径。
 	if not _paths_built:
 		_build_paths()
 	if dirt != null:
-		# ★D7 合批：土路旧写法是「铺一格土 → 压一层褐 → 下一格」，纹理与纯色**逐格交替** ⇒ 每格断两次批。
-		#   拆成两趟（先全部土瓦片、再全部褐罩）就各自连成一段。
-		#   **逐像素不变可证**：dirt.png 实测全不透明，且每格恰好占一个互不相交的 `Rect2(rx*T,ry*T,T,T)`
-		#   ⇒ 任一格的褐罩只会落在**它自己那块已经铺好的土**上，与别的格子的绘制顺序无关。
+		# ① dirt 打底：保住 3x 像素颗粒（纯色路面在像素游戏里读作"没画完"，同草地那条注释）。合批一趟。
 		for idx in _ac("paths", _path_set):
 			draw_texture_rect(dirt, Rect2((idx % w) * T, (idx / w) * T, T, T), false)
+		# ② 石板铺面：每格盖一层暖石底 + 4 块 hash 明暗鹅卵石（颗粒）+ 石缝十字。逐格确定性、每格互不相交。
+		#   **确定性**：明暗档只读本格 `_hash(rx,ry,45)`（无 RNG/Time）⇒ `--shot` 逐像素可复现（红旗#4）。
 		for idx in _ac("paths", _path_set):
-			draw_rect(Rect2((idx % w) * T, (idx / w) * T, T, T), Color(X_WOOD_MID, 0.16), true)   # 压一层暖褐：比广场更"踩实"，两者可区分
+			var rx: int = idx % w; var ry: int = idx / w
+			var rr := Rect2(rx * T, ry * T, T, T)
+			draw_rect(rr, Color(P_STREET.r, P_STREET.g, P_STREET.b, 0.90), true)                  # 暖石底（透一点土颗粒）
+			for sj in range(2):
+				for si in range(2):
+					var hv := _hash(rx * 2 + si, ry * 2 + sj, 45) % 3
+					var sc: Color = P_STREET if hv == 0 else (S_STREET_HI if hv == 1 else S_STREET_LO)
+					draw_rect(Rect2(rx * T + si * T * 0.5 + 1.0, ry * T + sj * T * 0.5 + 1.0, T * 0.5 - 2.0, T * 0.5 - 2.0), Color(sc.r, sc.g, sc.b, 0.55), true)
+			draw_rect(Rect2(rx * T, ry * T + T * 0.5 - 0.5, T, 1.0), Color(S_STREET_SEAM.r, S_STREET_SEAM.g, S_STREET_SEAM.b, 0.5), true)   # 横缝
+			draw_rect(Rect2(rx * T + T * 0.5 - 0.5, ry * T, 1.0, T), Color(S_STREET_SEAM.r, S_STREET_SEAM.g, S_STREET_SEAM.b, 0.5), true)   # 竖缝
+		# ③ 路缘石：每条街格【朝非铺装的那一侧】压一条暗石边 → 读作"砌出来的街"，不是踩出来的土径。
+		#   路网全在地图内部（x12-52 / y9-37，实测），邻格 ±1 不越界 ⇒ `_is_paved` 无绕行下标之虞。
+		for idx in _ac("paths", _path_set):
+			var cxx: int = idx % w; var cyy: int = idx / w
+			var bx := cxx * T; var by := cyy * T
+			if not _is_paved(cxx, cyy - 1): draw_rect(Rect2(bx, by, T, T * 0.10), S_CURB, true)                  # 上缘
+			if not _is_paved(cxx, cyy + 1): draw_rect(Rect2(bx, by + T * 0.90, T, T * 0.10), S_CURB, true)       # 下缘
+			if not _is_paved(cxx - 1, cyy): draw_rect(Rect2(bx, by, T * 0.10, T), S_CURB, true)                  # 左缘
+			if not _is_paved(cxx + 1, cyy): draw_rect(Rect2(bx + T * 0.90, by, T * 0.10, T), S_CURB, true)       # 右缘
 
 	# 区域【真地板】：每个 district 按 type 铺木/石/铺装地板（旧版只有广场有地板，其余七个区只有一层
 	# 0.10 alpha 的淡色罩 —— 那层淡到什么也读不出来，于是墙里全是草，房子读作"围了圈墙的院子"）。
@@ -2816,6 +2967,14 @@ func _draw_body() -> void:
 		var dh := float(dtex.get_height()) * (float(T) / 16.0)
 		# 底对齐格子（高物件如树向上伸出）；四季色偏与草地同源
 		draw_texture_rect_region(dtex, Rect2(c.x * T + (T - dw) * 0.5, (c.y + 1) * T - dh, dw, dh), Rect2(0, 0, dtex.get_width(), dtex.get_height()), veg)
+
+	# AP1(140) verge 街具（路灯/花坛/长椅/系缆柱）：在花草之上、物件/居民之下。纯 draw_* 图元，落点由 _build_street_props 一次性确定。
+	# 复用 "decor" 审计 pass（不新增 pass ⇒ AUDIT_PASSES 闭合校验一字不动）。视口裁剪同花草。
+	for sp in _ac("decor", _street_prop_items):
+		var spc: Vector2i = sp["cell"]
+		if not _vis.has_point(Vector2(spc.x * T, spc.y * T)):
+			continue
+		_draw_street_prop(int(sp["kind"]), spc)
 
 	# authored 阻挡树（map.json trees 层）：这些是【会挡路】的真树（与上面可踩的程序化花草区分开）。
 	# 用 tree_big 切图底对齐画；缺切图则程序化画树冠+树干。占满格 → 玩家一眼读出"这里过不去"。
