@@ -1201,6 +1201,58 @@ func _is_paved(x: int, y: int) -> bool:
 	return _path_set.has(idx) or _plaza_cells.has(idx)
 
 ## P2-4：每栋（非广场）沿顶墙悬挑一条 roof 色屋檐 + 门顶挂类型招牌图标。不铺满屋顶（否则遮住室内家具/居民）。
+## AT1（编号148）：每栋建筑的确定性外观变体（0/1/2）。纯 f(建筑左上角格)，不抽 RNG/不读墙钟
+## ⇒ --shot 逐像素可复现。用途：同类两栋楼的屋顶色各挑一档，读作"两栋不同的房子"而非"一个模子印两次"。
+## ⚠️ 只动**屋顶/装饰**这一档；墙主面色 BLD_PAL[typ]["face/top/foot"] 一个字不碰——那是"四类一眼可分"的锚
+##    （室内壳门 assert_interior_shell 采样的是室内墙、走 _draw_interior，与本层无关；本层是外景屋顶）。
+func _bld_variant(x0: int, y0: int) -> int:
+	return _hash(x0, y0, 91) % 3
+
+## 屋顶色按建筑变体做小幅色相+明度偏移：留在类型的屋顶色系里（红瓦仍读红瓦），只让同类两栋分得开。
+func _roof_variant(base: Color, v: int) -> Color:
+	var c := base
+	match v:
+		1: c = Color.from_hsv(fmod(c.h - 0.028 + 1.0, 1.0), minf(1.0, c.s * 1.10), c.v * 0.84, c.a)   # 更沉·略偏暖（旧瓦）
+		2: c = Color.from_hsv(fmod(c.h + 0.030, 1.0), c.s * 0.90, minf(1.0, c.v * 1.16), c.a)          # 晒亮·略偏冷（新瓦）
+	return c
+
+## 切顶俯视的屋檐带 → 画成有【瓦纹/受光屋脊/檐口投影/山墙收头】的坡屋顶。
+## rect = 悬挑屋檐带。瓦纹逐片由 _hash(列,行) 定明暗（确定性），fit 缩放下瓦纹并作一片、屋脊/檐影/山墙读作体积。
+func _draw_pitched_roof(rect: Rect2, roof: Color) -> void:
+	draw_rect(rect, roof, true)                                                       # 底瓦色
+	var rows := 2                                                                     # 两行错缝瓦
+	var rh := rect.size.y / float(rows)
+	var tw := T * 0.42
+	for rr in range(rows):
+		var ry := rect.position.y + float(rr) * rh
+		var off := (tw * 0.5) if rr % 2 == 1 else 0.0
+		var cx := rect.position.x - off
+		while cx < rect.end.x:
+			var hh := _hash(int(floor(cx / tw)), rr, 61) % 3
+			var tc := roof.lightened(0.12) if hh == 0 else (roof.darkened(0.16) if hh == 1 else roof)
+			var w0 := maxf(0.0, minf(cx + tw - 1.0, rect.end.x) - maxf(cx, rect.position.x))
+			if w0 > 0.0:
+				draw_rect(Rect2(maxf(cx, rect.position.x), ry, w0, rh - 1.0), tc, true)
+			cx += tw
+	draw_rect(Rect2(rect.position.x, rect.position.y, rect.size.x, T * 0.10), roof.lightened(0.34), true)          # 屋脊高光
+	draw_rect(Rect2(rect.position.x, rect.end.y - T * 0.10, rect.size.x, T * 0.10), roof.darkened(0.32), true)     # 檐口投影
+	var gab := roof.darkened(0.24)                                                    # 山墙收头（两端暗角 → 读作坡顶）
+	draw_colored_polygon(PackedVector2Array([rect.position, Vector2(rect.position.x + T * 0.26, rect.position.y), Vector2(rect.position.x, rect.end.y)]), gab)
+	draw_colored_polygon(PackedVector2Array([Vector2(rect.end.x, rect.position.y), Vector2(rect.end.x - T * 0.26, rect.position.y), Vector2(rect.end.x, rect.end.y)]), gab)
+
+## 商业遮阳篷：红白条纹（类型信号）+ 顶棱高光 + 扇贝檐边（valance）→ 读作店铺雨棚。
+func _draw_awning(eave: Rect2, pal: Dictionary, bw: int) -> void:
+	var n := bw * 2
+	var stripe := eave.size.x / float(n)
+	for s in range(n):
+		var col: Color = pal["roof"] if s % 2 == 0 else pal["icon"]
+		var sx := eave.position.x + float(s) * stripe
+		draw_rect(Rect2(sx, eave.position.y, stripe + 1.0, eave.size.y), col, true)
+		# 扇贝檐边：每条布幅底沿挂一枚半圆凸缘，读作垂布
+		draw_circle(Vector2(sx + stripe * 0.5, eave.end.y), stripe * 0.5, col)
+	draw_rect(Rect2(eave.position.x, eave.position.y, eave.size.x, T * 0.08), P_TEXT.lightened(0.10), true)        # 顶棱高光（布面受光）
+	draw_rect(Rect2(eave.position.x, eave.position.y, eave.size.x, eave.size.y), Color(0, 0, 0, 0.14), false, 1.0) # 外框描边
+
 func _draw_building_dressing(w: int) -> void:
 	for aid in Sim.world.get("areas", {}):
 		var a: Dictionary = Sim.world["areas"][aid]
@@ -1210,35 +1262,45 @@ func _draw_building_dressing(w: int) -> void:
 		var pal: Dictionary = BLD_PAL.get(typ, BLD_PAL["workshop"])
 		var r: Array = a.get("rect", [0, 0, 0, 0])
 		var x0 := int(r[0]); var y0 := int(r[1]); var bw := int(r[2])
+		var v := _bld_variant(x0, y0)
+		var roof: Color = _roof_variant(pal["roof"], v)
 		var eave := Rect2(x0 * T - T * 0.12, y0 * T - T * 0.16, bw * T + T * 0.24, T * 0.46)  # 悬挑屋檐
-		if typ == "commercial":                         # 商业：红白条纹遮阳篷（最醒目的类型信号）
-			var stripe := eave.size.x / float(bw * 2)
-			for s in range(bw * 2):
-				var col: Color = pal["roof"] if s % 2 == 0 else pal["icon"]
-				draw_rect(Rect2(eave.position.x + s * stripe, eave.position.y, stripe + 1.0, eave.size.y), col, true)
+		if typ == "commercial":                         # 商业：坡屋脊 + 红白条纹遮阳篷（最醒目的类型信号）
+			_draw_pitched_roof(Rect2(eave.position.x, eave.position.y - T * 0.14, eave.size.x, T * 0.24), roof)
+			_draw_awning(eave, pal, bw)
 		else:
-			draw_rect(eave, pal["roof"], true)
-			draw_rect(Rect2(eave.position.x, eave.position.y, eave.size.x, T * 0.12), (pal["roof"] as Color).lightened(0.28), true)  # 脊线高光
+			_draw_pitched_roof(eave, roof)
 		_draw_sign(typ, pal, (x0 + bw * 0.5) * T, y0 * T - T * 0.5)
 
 func _draw_sign(typ: String, pal: Dictionary, cx: float, cy: float) -> void:
 	match typ:
-		"commercial":                                   # 咖啡杯 + 蒸汽
-			draw_rect(Rect2(cx - T * 0.2, cy - T * 0.14, T * 0.34, T * 0.28), P_TEXT, true)
-			draw_rect(Rect2(cx - T * 0.2, cy - T * 0.14, T * 0.34, T * 0.07), X_WOOD_MID, true)
-			draw_circle(Vector2(cx - T * 0.02, cy - T * 0.26), T * 0.045, Color(1, 1, 1, 0.55))
+		"commercial":                                   # 挂牌 + 咖啡杯 + 蒸汽（悬挑吊牌）
+			draw_rect(Rect2(cx - T * 0.03, cy - T * 0.40, T * 0.06, T * 0.16), X_WOOD_MID, true)   # 吊杆
+			draw_rect(Rect2(cx - T * 0.26, cy - T * 0.20, T * 0.52, T * 0.30), X_WOOD_MID, true)   # 牌底框
+			draw_rect(Rect2(cx - T * 0.22, cy - T * 0.16, T * 0.44, T * 0.22), P_TEXT, true)       # 牌面
+			draw_rect(Rect2(cx - T * 0.11, cy - T * 0.12, T * 0.22, T * 0.16), X_WOOD_MID, true)   # 咖啡杯身
+			draw_rect(Rect2(cx - T * 0.11, cy - T * 0.12, T * 0.22, T * 0.04), pal["roof"], true)  # 杯口
+			draw_circle(Vector2(cx + T * 0.15, cy - T * 0.04), T * 0.05, X_WOOD_MID)               # 杯把
+			draw_circle(Vector2(cx, cy - T * 0.20), T * 0.04, Color(1, 1, 1, 0.55))               # 蒸汽
 		"public":                                       # ♨ 蓝底温泉标（澡堂）：蓝圆盘 + 三缕上升蒸汽
-			draw_circle(Vector2(cx, cy), T * 0.24, pal["roof"])
-			draw_circle(Vector2(cx, cy), T * 0.24, (pal["roof"] as Color).lightened(0.3), false, 2.0)
+			draw_rect(Rect2(cx - T * 0.03, cy - T * 0.42, T * 0.06, T * 0.14), X_WOOD_MID, true)   # 吊杆
+			draw_circle(Vector2(cx, cy), T * 0.25, X_WOOD_MID)                                     # 牌框
+			draw_circle(Vector2(cx, cy), T * 0.22, pal["roof"])
+			draw_circle(Vector2(cx, cy), T * 0.22, (pal["roof"] as Color).lightened(0.3), false, 2.0)
 			for k in range(3):
-				draw_rect(Rect2(cx - T * 0.14 + k * T * 0.13, cy - T * 0.02, T * 0.05, T * 0.14), pal["icon"], true)
-		"workshop":                                     # 烟囱 + 烟
-			draw_rect(Rect2(cx - T * 0.1, cy - T * 0.12, T * 0.2, T * 0.34), P_COM_FOOT, true)
-			draw_circle(Vector2(cx, cy - T * 0.24), T * 0.09, Color(0.82, 0.82, 0.82, 0.6))
-			draw_circle(Vector2(cx + T * 0.09, cy - T * 0.4), T * 0.07, Color(0.82, 0.82, 0.82, 0.4))
-		"residential":                                  # 山墙小屋剪影 + 烟囱
-			draw_colored_polygon(PackedVector2Array([Vector2(cx, cy - T * 0.32), Vector2(cx - T * 0.26, cy), Vector2(cx + T * 0.26, cy)]), pal["roof"])
-			draw_rect(Rect2(cx - T * 0.06, cy - T * 0.4, T * 0.1, T * 0.18), X_WOOD_MID, true)
+				draw_rect(Rect2(cx - T * 0.14 + float(k) * T * 0.13, cy - T * 0.02, T * 0.05, T * 0.14), pal["icon"], true)
+		"workshop":                                     # 铁砧 + 锤（工坊的身份，比"烟囱图标"更认得出——真烟囱在 _draw_facades 上）
+			draw_rect(Rect2(cx - T * 0.20, cy - T * 0.02, T * 0.40, T * 0.14), P_WRK_ROOF, true)   # 砧身
+			draw_rect(Rect2(cx - T * 0.11, cy + T * 0.12, T * 0.22, T * 0.06), P_WRK_ROOF.darkened(0.3), true)  # 砧座
+			draw_rect(Rect2(cx + T * 0.06, cy - T * 0.06, T * 0.16, T * 0.05), (pal["top"] as Color).lightened(0.2), true)  # 砧尖
+			draw_rect(Rect2(cx - T * 0.20, cy - T * 0.24, T * 0.06, T * 0.22), X_WOOD_MID, true)   # 锤柄
+			draw_rect(Rect2(cx - T * 0.26, cy - T * 0.28, T * 0.18, T * 0.09), P_WRK_ROOF.lightened(0.25), true)  # 锤头
+		"residential":                                  # 山墙小屋剪影 + 烟囱（暖木门牌）
+			draw_colored_polygon(PackedVector2Array([Vector2(cx, cy - T * 0.34), Vector2(cx - T * 0.28, cy - T * 0.04), Vector2(cx + T * 0.28, cy - T * 0.04)]), pal["roof"])
+			draw_colored_polygon(PackedVector2Array([Vector2(cx, cy - T * 0.34), Vector2(cx - T * 0.28, cy - T * 0.04), Vector2(cx - T * 0.06, cy - T * 0.04)]), (pal["roof"] as Color).lightened(0.22))  # 受光坡
+			draw_rect(Rect2(cx - T * 0.14, cy - T * 0.04, T * 0.28, T * 0.14), X_WOOD_MID, true)   # 墙身
+			draw_rect(Rect2(cx - T * 0.04, cy + T * 0.00, T * 0.08, T * 0.10), X_GLOW_DEEP, true)  # 暖门
+			draw_rect(Rect2(cx + T * 0.06, cy - T * 0.44, T * 0.09, T * 0.16), X_WOOD_MID, true)   # 烟囱
 
 ## P3 打磨：外墙细节——沿上/下墙等距开窗（跳过转角与门口），住宅/工坊再加一根冒烟的烟囱。
 ## 夜里窗透暖光（tod 判昼夜）→ 一眼看出"屋里有人住"。纯渲染、无 RNG（位置由 rect 等距推出）。
@@ -1263,7 +1325,8 @@ func _draw_facades() -> void:
 			for wy in [y0, y0 + bh - 1]:                 # 上墙 + 下墙
 				if doorset.has(Vector2i(x0 + i, wy)):
 					continue                             # 门口不开窗
-				_draw_window((x0 + i) * T, wy * T, pal, night and _window_lit(x0 + i, wy), night)
+				var fl := typ == "residential" and _hash(x0 + i, wy, 88) % 2 == 0   # 住宅约半数窗挂花箱（确定性）
+				_draw_window((x0 + i) * T, wy * T, pal, night and _window_lit(x0 + i, wy), night, fl)
 		for j in range(1, bh - 1):                       # 左墙 + 右墙（四面都开，别只有正背面有细节）
 			if j % 2 == 0:
 				continue
@@ -1271,23 +1334,49 @@ func _draw_facades() -> void:
 				if doorset.has(Vector2i(wx, y0 + j)):
 					continue
 				_draw_window(wx * T, (y0 + j) * T, pal, night and _window_lit(wx, y0 + j), night)
-		if typ == "residential" or typ == "workshop":    # 烟囱：坐在顶墙右段，飘两团烟
-			var chx := float(x0 + bw - 2) * T
-			var chy := float(y0) * T
-			draw_rect(Rect2(chx + T * 0.28, chy - T * 0.52, T * 0.4, T * 0.5), X_WOOD_MID, true)
-			draw_rect(Rect2(chx + T * 0.24, chy - T * 0.58, T * 0.48, T * 0.13), P_COM_FOOT, true)
-			draw_circle(Vector2(chx + T * 0.5, chy - T * 0.8), T * 0.11, Color(0.86, 0.86, 0.86, 0.40))
-			draw_circle(Vector2(chx + T * 0.63, chy - T * 1.02), T * 0.085, Color(0.86, 0.86, 0.86, 0.26))
+		if typ == "residential" or typ == "workshop":    # 烟囱：坐在顶墙右段，飘炊烟
+			_draw_chimney(float(x0 + bw - 2) * T + T * 0.28, float(y0) * T - T * 0.52, x0, y0)
+
+## AT1（编号148）：砖砌烟囱 + 【确定性炊烟】。
+## 炊烟位置/半径/透明度只由 _hash(建筑左上角,71) 定相位 + Sim.tick_no 推进（禁 randi / 禁 Time.*）——
+##   同一 tick 重拍逐像素相同，--shot 冻结 tick 时炊烟不抖（precip 层同款纪律）。
+##   三团烟沿一个上升周期错相循环：起步淡→中段浓→升高侧漂并淡出，读作"屋里生着火"。
+func _draw_chimney(bx: float, by: float, x0: int, y0: int) -> void:
+	# 砖砌烟囱：主体 + 帽檐 + 两道砖缝
+	draw_rect(Rect2(bx, by, T * 0.40, T * 0.52), X_WOOD_MID, true)                                  # 砖身
+	draw_rect(Rect2(bx - T * 0.04, by - T * 0.06, T * 0.48, T * 0.12), P_COM_FOOT, true)            # 帽檐
+	draw_line(Vector2(bx, by + T * 0.20), Vector2(bx + T * 0.40, by + T * 0.20), P_COM_FOOT, 1.0)   # 砖缝
+	draw_line(Vector2(bx, by + T * 0.38), Vector2(bx + T * 0.40, by + T * 0.38), P_COM_FOOT, 1.0)
+	# 炊烟：三团，沿一个上升周期错相循环
+	var tx := bx + T * 0.20
+	var ty := by - T * 0.08
+	var ph0 := _hash(x0, y0, 71) % 100
+	var cyc := 48
+	for k in range(3):
+		var ph := (Sim.tick_no + ph0 + k * 16) % cyc
+		var t := float(ph) / float(cyc)                                    # 0..1 上升进度
+		var drift := sin(t * TAU + float(ph0)) * T * 0.22                  # 侧向漂移
+		var px := tx + drift + (float(k) - 1.0) * T * 0.05
+		var py := ty - t * T * 1.15                                         # 越升越高
+		var rad := T * (0.09 + 0.11 * t)                                    # 越升越大
+		var al := 0.44 * (1.0 - t) * (0.45 + 0.55 * t)                      # 起淡·中浓·顶淡
+		draw_circle(Vector2(px, py), rad, Color(0.86, 0.86, 0.85, al))
 
 ## `lit` = 这扇窗**点着灯**（夜里约 55%，由 `_window_lit` 确定性选）；`night` = 现在是夜。
 ## 改动前所有夜窗一律画成 `#f2d489`，而它被夜乘子乘过之后是 **(103,100,109)——蓝主导，读作冷灰**。
 ## 那正是"夜里零个光源"的成因之一：暖色玻璃在纸面上是暖的，在屏幕上不是。
 ## 现在分成两档：亮着的窗给更饱和的暖玻璃（配合加色光层的光池），黑着的窗给冷暗玻璃 ⇒
 ## 一排窗有明有暗，才读得出"有几户还醒着"。白天两档都不走，正午帧逐像素不动。
-func _draw_window(x: float, y: float, pal: Dictionary, lit: bool, night: bool) -> void:
+func _draw_window(x: float, y: float, pal: Dictionary, lit: bool, night: bool, flower: bool = false) -> void:
 	var glass: Color = P_WATER                                  # 昼=映天色
 	if night:
 		glass = X_GLOW if lit else P_WRK_ROOF            # 夜：点灯=暖玻璃 / 熄灯=冷暗玻璃
+	# 百叶木窗扇：窗洞两侧各挂一板（比墙脚略深 + 一道亮竖缝当百叶），读作可开合的窗——纯装饰
+	var sh: Color = (pal["foot"] as Color).darkened(0.06)
+	var shl: Color = (pal["top"] as Color).lightened(0.10)
+	for sxo in [T * 0.10, T * 0.78]:
+		draw_rect(Rect2(x + sxo, y + T * 0.22, T * 0.12, T * 0.48), sh, true)
+		draw_line(Vector2(x + sxo + T * 0.06, y + T * 0.26), Vector2(x + sxo + T * 0.06, y + T * 0.66), shl, 1.0)
 	draw_rect(Rect2(x + T * 0.22, y + T * 0.24, T * 0.56, T * 0.44), pal["foot"], true)            # 窗洞（深）
 	draw_rect(Rect2(x + T * 0.26, y + T * 0.28, T * 0.48, T * 0.36), glass, true)                  # 玻璃
 	if lit:
@@ -1295,6 +1384,11 @@ func _draw_window(x: float, y: float, pal: Dictionary, lit: bool, night: bool) -
 	draw_line(Vector2(x + T * 0.5, y + T * 0.28), Vector2(x + T * 0.5, y + T * 0.64), pal["foot"], 1.5)        # 竖棂
 	draw_line(Vector2(x + T * 0.26, y + T * 0.46), Vector2(x + T * 0.74, y + T * 0.46), pal["foot"], 1.5)      # 横棂
 	draw_rect(Rect2(x + T * 0.22, y + T * 0.24, T * 0.56, T * 0.44), (pal["top"] as Color).lightened(0.18), false, 1.5)  # 窗框
+	if flower:                                                                                     # 窗台花箱（住宅魅力）：木槽 + 三簇花
+		draw_rect(Rect2(x + T * 0.20, y + T * 0.66, T * 0.60, T * 0.14), X_WOOD_MID, true)
+		draw_rect(Rect2(x + T * 0.20, y + T * 0.66, T * 0.60, T * 0.05), P_FOLIAGE_D, true)          # 叶
+		for fk in range(3):
+			draw_circle(Vector2(x + T * (0.30 + 0.20 * float(fk)), y + T * 0.66), T * 0.055, [P_RES_ROOF, X_GLOW, P_PUB_ROOF][fk])
 
 ## 本帧的可见世界矩形 + 世界→屏幕缩放（纯读画布变换）。裁剪与标签 LOD 都吃它。
 ## ★这是【画】的裁剪，不是【算】的裁剪：Sim 看不到它，lod_verify 的相机无关门因此不受影响。
@@ -3691,6 +3785,11 @@ func _draw_building(rid: String, inner: Rect2, rtype: String, enclosed: bool) ->
 	draw_rect(Rect2(outer.position, Vector2(outer.size.x, WALL * 0.55)), Color(0, 0, 0, 0.30), true)
 	draw_line(outer.position, Vector2(outer.end.x, outer.position.y), wc.lightened(0.30), 2.0)
 	draw_line(outer.position, Vector2(outer.position.x, outer.end.y), wc.lightened(0.16), 2.0)
+	# AT1（编号148）：屋脊暖盖——顶墙压一条按房号确定性选档的木瓦脊，同类两间读作两间不同的屋子（纯装饰）。
+	# 取暖木三档（非饱和红）：冷色的工坊/公共室内盒压上也不跳色，读作一道木脊瓦而非红条。
+	var ridge: Color = [X_WOOD_MID, P_COM_FOOT, D_WOOD_LINE][int(Sim._hash01(rid + ":ridge") * 3.0) % 3]
+	draw_rect(Rect2(outer.position, Vector2(outer.size.x, 3.0)), Color(ridge.r, ridge.g, ridge.b, 0.85), true)
+	draw_rect(Rect2(outer.position + Vector2(0.0, 3.0), Vector2(outer.size.x, 2.0)), Color(0, 0, 0, 0.22), true)  # 脊下投影
 	draw_rect(outer, Color(0, 0, 0, 0.38), false, 1.5)
 	# 室内地板
 	draw_rect(inner, fc, true)
@@ -3722,6 +3821,7 @@ func _draw_building(rid: String, inner: Rect2, rtype: String, enclosed: bool) ->
 	var dx := inner.position.x + Sim._hash01(rid + ":door") * dspan
 	draw_rect(Rect2(dx, inner.end.y, dw, WALL), fc.darkened(0.12), true)
 	draw_rect(Rect2(dx, inner.end.y + WALL - 3.0, dw, 3.0), D_WOOD_LINE, true)
+	draw_rect(Rect2(dx - 1.0, inner.end.y, dw + 2.0, 2.5), X_WOOD_MID, true)                        # 门楣（过梁）：门顶一道木过梁，读作门框
 	# 有人在内？（灯火强度用）
 	var occ := 0
 	for ag in Sim.agents:
