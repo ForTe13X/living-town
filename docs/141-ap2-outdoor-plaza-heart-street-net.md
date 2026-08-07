@@ -68,6 +68,8 @@
 
 > ⚠️**互补性守卫**（`check_ledger_freshness` 比 committed `HEAD:game`）：本棒改 `WorldView.gd`（进 `game/`）在自 worktree 是**提交前**跑 CI ⇒ 当时 `HEAD:game` 尚=旧树=baked ⇒ 该守卫**假新鲜**通过，**不算数**（同 docs/140 §⑤纪律）。协调者 finalize **在 committed 树重烘 + 重跑 CI** 才是权威门。本棒只保证 golden/其他门绿 + 改动 pure View。
 
+> ✅**权威 landing CI（协调者 finalize，committed 树 `48bb381`/game `685a511` + 重烘 fresh ledger）**：`analysis/ap2/ci_landed_verdict.txt` = **`=== CI PASS ✅ ===`**——S0 12/12 含链、**互补性守卫 fresh（锚烘于 `f11d689`，baked==HEAD:game）**、state_projection 4h、INTSHELL/FURNROLE、LOD-VERIFY、SEASON/PRECIP/FLOOR-ROUNDTRIP 全 PASS、AUDIT PASS（walkable=2653/blockers=403 与改前同）。docs/140 记的两条 `否(gate:false)` 信息行仍非致命、非本棒引入。
+
 **为什么这些门对本片免疫**（先量清）：昼夜/季节门判 HUD-free 横带 x∈[60,960) y∈[60,420) 的**众数色=草地**（我不动草地/veg；徽章/连街只重上广场内暖砂 + 加 dock 那条 ~12 格石街，远不足以翻转草地众数）；岸线门判两水池剖线（我不动 water；连街走 dock 南侧、不碰池塘）；空间往返门判 `town_after==town_before` 的**确定性**（我的改动确定性 ⇒ 恒等）；降水门判 on/off 差（我的重铺在 on/off 两帧都在 ⇒ 差不变）。**均无冻结的 outdoor 地面像素锚**。
 
 ## ⑥ 交付
