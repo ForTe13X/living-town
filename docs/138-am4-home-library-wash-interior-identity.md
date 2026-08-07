@@ -117,8 +117,8 @@
 
 | 证据 | 文件 | 结论 |
 |---|---|---|
-| ② 开工前 golden baseline | `analysis/am4/golden_baseline.log`（HEAD 1f1d24b） | 金标 **12/12 PASS（含 12 条逐 tick 链）**，det 3/3；本机 4.6.2 |
-| ① 自造 A/B（改后 vs 基线，**逐字节含 chain**） | `digests_final.txt` vs `digests_baseline.txt` | `diff` **exit 0 = 12/12 seed 逐字节相同（含 chain 字段）**；`golden_final.log`：S0 GATE **PASS** |
+| ② 开工前 golden baseline | `analysis/am4/digests_baseline.txt`（HEAD 1f1d24b；⚠️审查 F4 纠：判决 `.log` 未单独归档，摘要为 digests） | 金标 **12/12 PASS（含 12 条逐 tick 链）**，det 3/3；本机 4.6.2 |
+| ① 自造 A/B（改后 vs 基线，**逐字节含 chain**） | `analysis/am4/digests_final.txt` vs `digests_baseline.txt` | `diff` **exit 0 = 12/12 seed 逐字节相同（含 chain 字段）**；S0 GATE PASS 见落地整轮 CI（`analysis/review-2026-08-07-ci/verdict.txt`，AM4 树 `c244322`） |
 | ③ 留出的 seed | 同上 | seeds `1-12` × 60 天 × det 3，全程可复现 |
 
 **挡格集 + advertises 自证**（`analysis/am4/edit_interiors.py` 末尾，按每栋各自 bounds）：
@@ -138,7 +138,7 @@ ALL advertises byte-identical: True （home 3 / home2 2 / library 0 / wash 0 件
 
 ## 五、视觉门实际输出（`LT_VISUAL=require`，docker tol=0）
 
-`analysis/am4/visual_gate.log`（判决行原文）：
+⚠️审查 F4 纠：AM4 自跑的 `analysis/am4/visual_gate.log` **未单独归档**；下面这些 INTSHELL/FURNROLE 判决行取自**落地整轮 CI 归档** `analysis/review-2026-08-07-ci/ci_full.log`（AM4 四栋在 game `c244322` 上真跑）：
 
 ```
 [INTSHELL] home       type=residential  墙主面众数=#886d49   [INTSHELL] home2   type=residential  墙主面众数=#836a48
@@ -170,5 +170,5 @@ home2/library 书架(books) 逐像素同、wash 毛巾架(towel) 未动 ⇒ B/C 
   - library：plant→落地阅读灯、desk→摊开书的阅读桌、3 书架墙、+阅读地毯；书香。
   - wash：bench→洗漱台(圆镜)、plant→第二浴池、留毛巾架/更衣凳、+浴垫；沐浴堂（去掉重复盆栽）。
   - 四栋各有辨识度，且与 cafe/shop/work 明显不同。
-- **CI**：`bash tools/ci.sh` 判决行 = **`=== CI PASS ✅ ===`**（rc=0，全程 1297s；`analysis/am4/ci.log`）。
+- **CI**：AM4 落地整轮 CI（F1+AM4 合并，`analysis/review-2026-08-07-ci/verdict.txt`，HEAD `1fcbfc8`/game `c244322`）判决行 = **`=== CI PASS ✅ ===`**（rc=0）。⚠️审查 F4 纠：原写"全程 1297s / `analysis/am4/ci.log`"——该 log 不存在、1297s 无归档存证，已删（勿引精确秒数当存证）。
   step4 S0 金标 12/12（含 chain）· step4a 宏观池 N=16 · step6 视觉门（INTSHELL/FURNROLE 含四栋全绿）· 全部 asset/recalc/complement/det/backend 门皆过。
