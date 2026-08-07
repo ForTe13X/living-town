@@ -5,6 +5,18 @@
 > 前置：外部评审（Codex，2026-08-02 与 2026-08-06 两轮）、docs/62（GPT-5 Pro 多镇裁决）、docs/41 合同。
 > **数字与分支状态实测于 2026-08-06；它们会随代码前进而旧——权威永远是 `git` 与 CI，不是本文。**
 
+## ★★ 2026-08-07 用户扩展愿景——从"社交 sim 打磨"扩到"星露谷式活镇：视觉大改 + 物流/产业经济"
+
+用户给了 5 件事（在 3→2→1[storylet/选角深度/默认镇规模] 之外的**扩展愿景**）。整成三条并行车道 + 现有社交/叙事车道：
+
+- **车道 V（视觉大改 · item①）**：town map polish / total overhaul——terrain、building skin/appearances，**类星露谷**；工作流=实机图片 reference + **chrome session GPT img-gen 出草图/原型** → 一份 **reference 素材集** + 丰富 building 种类。✅**红线 R4 已由用户 2026-08-07 明示 waive**（"ignore red line R4"）：生成图**可**当出货资产、不再强制自绘/CC0、图二进制可入 git。实务注记（非阻塞）：生成图仍须适配像素分辨率/风格（通常作 game sprite 的底稿而非原样塞入）、二进制入 git 会涨库。
+- **车道 E（经济/物流 · item②③④）**：运输(railway/port/bus)→外部供给(**设无限**)→**多元产业**(goods flow)→居民 consume/produce/create→**自给自足→进出口→最终 self-contain**。**最大新子系统、移金标**（新 sim 机制改 digest/chain，用户已放行 docs/41 §3 重烘金标锚）。**须先设计再实现**——经济设计 scoping 在跑（→docs/144，读现有 production/worksite/money/needs + 提确定性经济架构 + 增量落地顺序，reuse-first 别重造 worksite/money）。
+- **车道 N/S（叙事+社交 · 3→2→1 + item⑤）**：storylet/叙事内容（`goals.json` 零金标先做）→选角行为深度（移金标）→默认镇规模（与车道 E 的"活镇"呼应：大镇需经济支撑）。item⑤ narrative 分支=stale 只读 compositor，已折进叙事 scoping 当参考。
+
+**并行/排序**：V 与 E 与 N/S 三车道**文件面基本不相交**（V=WorldView/assets、E=新经济 data+Sim 机制、N/S=goals/Story/personas）⇒ 可并行推。**E 是重头且移金标**⇒ 设计提案先出、我(+用户)审过再增量实现，别盲上。**当前在跑**：叙事面 scoping、经济设计 scoping（两个只读）。**互联**：运输/产业/消费(E) + 大镇(3-2-1的1) + 更多 building 种类(V) + 经济事件成 storylet(N) 互相加强，是一个"活的星露谷式小镇"整体。
+
+---
+
 ## 〇、分支现实（今天实测，这是"检查各 branch"的答案）
 
 | 分支 | HEAD | 状态 | 定位 |
