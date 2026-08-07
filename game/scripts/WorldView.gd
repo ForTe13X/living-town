@@ -1161,6 +1161,27 @@ func _build_paths() -> void:
 			if not _is_blocked(cur.x, cur.y): _path_set[cur.x + cur.y * wd] = true
 			cur.x += signi(gx - cur.x)
 		if not _is_blocked(cur.x, cur.y): _path_set[cur.y * wd + cur.x] = true
+	# AP2(141) 码头连街：dock 这类【无门】的 plaza-type 区，本身已铺装(_plaza_cells)、却没有任何 door 路连过去，
+	#   在整镇俯瞰里读作【孤岛】。给每个非主广场的 plaza-type 区补一条 View-only 连缀石街到主广场：
+	#   与 door 路【同构】——只写 `_path_set`（Sim 不读它 ⇒ 零金标）、逐格 `_is_blocked` 跳过挡格，
+	#   连缀格全落在已 walkable 的空地上（实测 dock→plaza 的 x32 / y9-20 走廊 0 挡格，见 docs/141 §连街网）。
+	for aid2 in areas:
+		if String(aid2) == "plaza":
+			continue                                               # 主广场是连接【目标】，不给自己连
+		var a2: Dictionary = areas[aid2]
+		if String(a2.get("type", "")) != "plaza":
+			continue
+		var r2: Array = a2.get("rect", [0, 0, 0, 0])
+		var cc := Vector2i(int(r2[0]) + int(r2[2]) / 2, int(r2[1]) + int(r2[3]) / 2)  # 区中心格（在 _plaza_cells 内）
+		var tgx: int = clampi(cc.x, px0, px1)                      # 广场最近的 x/y 带（同 door 路的 clamp）
+		var tgy: int = clampi(cc.y, py0, py1)
+		while cc.y != tgy:                                         # 竖腿：从区中心朝广场推进（穿 y9-20 空地）
+			if not _is_blocked(cc.x, cc.y): _path_set[cc.y * wd + cc.x] = true
+			cc.y += signi(tgy - cc.y)
+		while cc.x != tgx:                                         # 横腿：再对齐到广场带
+			if not _is_blocked(cc.x, cc.y): _path_set[cc.x + cc.y * wd] = true
+			cc.x += signi(tgx - cc.x)
+		if not _is_blocked(cc.x, cc.y): _path_set[cc.y * wd + cc.x] = true
 
 func _is_blocked(x: int, y: int) -> bool:
 	if not _terrain_built:
@@ -1343,6 +1364,8 @@ func _draw_area_floors(dirt: Texture2D) -> void:
 				for xx in range(bw):
 					draw_rect(Rect2(rect.position.x + xx * T, rect.position.y, 1.0, rect.size.y), Color(line.r, line.g, line.b, 0.30), true)
 				draw_rect(rect, Color(S_PLAZA_HI.r, S_PLAZA_HI.g, S_PLAZA_HI.b, 0.35), false, 2.0)   # 亮内沿：框住广场、接住汇入的石街
+				if String(aid) == "plaza":
+					_draw_plaza_medallion(rect)   # AP2(141) 只给【主广场】加中心徽章（dock 也是 plaza 型，但它是码头不是镇心）
 		draw_rect(rect, Color(0, 0, 0, 0.20), false, 3.0)
 
 ## 区名：旧版画在 rect 左上角、字号 12、alpha 0.28 —— 那格正好是顶墙，墙随后盖上去，于是【一个字也看不见】。
@@ -3130,28 +3153,92 @@ func _draw_town_doors() -> void:
 		draw_rect(Rect2(sx, y - T * 0.52, sw, T * 0.36), Color(X_GOLD, 0.8), false, 1.5)        # 金边
 		draw_string(Art.font(), Vector2(sx + 5, y - T * 0.52 + 14), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, X_PARCHMENT)
 
+## AP2(141) 广场【中心徽章】：中央一圈同心石环 + 8 向放射缝 + 冷石心盘。纯 View 铺面细节（画在 flagstone 上、
+## Sim 零读 type ⇒ 零金标）。★刻意做成【多格尺度】：默认全镇 zoom 下一格才 ~11px、单格细节读不出，唯有跨数格的
+## 色块/环才咬得住镜头——这一圈让"镇中心"在整镇俯瞰里也一眼成立（docs/141 §街具可读性）。几何全由广场 rect + T 派生
+## （无 RNG/Time ⇒ `--shot` 逐像素可复现，红旗#4）。
+func _draw_plaza_medallion(rect: Rect2) -> void:
+	var c := rect.get_center()
+	var R := minf(rect.size.x, rect.size.y) * 0.42                # 收在广场内、留边不溢到草地
+	var pl := P_PLAZA_LINE
+	draw_circle(c, R, Color(S_PLAZA_HI.r, S_PLAZA_HI.g, S_PLAZA_HI.b, 0.22))                       # 受光石 apron
+	draw_arc(c, R, 0.0, TAU, 44, Color(pl.r, pl.g, pl.b, 0.55), 2.0, false)                        # 外环缝
+	draw_arc(c, R * 0.66, 0.0, TAU, 32, Color(pl.r, pl.g, pl.b, 0.40), 1.5, false)                 # 中环缝
+	for k in range(8):                                            # 8 向放射灌浆缝（罗盘感、把眼睛引向心）
+		var ang := TAU * float(k) / 8.0
+		var d := Vector2(cos(ang), sin(ang))
+		draw_line(c + d * (R * 0.30), c + d * R, Color(pl.r, pl.g, pl.b, 0.30), 1.0, false)
+	draw_circle(c, R * 0.30, Color(P_STONE.r, P_STONE.g, P_STONE.b, 0.42))                          # 冷石心盘（与暖砂拉材质对比 ⇒ 心"沉"下去成焦点）
+	draw_arc(c, R * 0.30, 0.0, TAU, 24, Color(P_STONE_LINE.r, P_STONE_LINE.g, P_STONE_LINE.b, 0.55), 1.5, false)
+	draw_circle(c, R * 0.11, Color(S_PLAZA_HI.r, S_PLAZA_HI.g, S_PLAZA_HI.b, 0.55))                 # 心点高光
+
+## AP2(141) 广场【座圈】：徽章外沿一圈小石凳。南半留口（朝水井/告示板那侧不叠座）⇒ 读作"围着中心坐的一圈"。
+## 画在 _draw_landmarks 里（在花草/街具之上、居民之下）：人站上去自然遮住 = "有人坐在这儿"。纯 View、非 blocker。
+func _draw_plaza_seatring(rect: Rect2) -> void:
+	var c := rect.get_center()
+	var R := minf(rect.size.x, rect.size.y) * 0.42
+	for k in range(8):
+		var ang := TAU * (float(k) / 8.0) + TAU / 16.0            # 错开 22.5°：座位落在放射缝【之间】，不压线
+		var dir := Vector2(cos(ang), sin(ang))
+		if dir.y > 0.35:                                          # 南半（朝水井/告示板）留口，不叠座
+			continue
+		var p := c + dir * (R * 1.02)
+		draw_circle(p + Vector2(0, T * 0.10), T * 0.21, Color(0, 0, 0, 0.18))                       # 落地影
+		draw_circle(p, T * 0.19, S_PLANTER)                                                          # 石凳身
+		draw_circle(p - Vector2(0, T * 0.05), T * 0.15, S_PLANTER.lightened(0.18))                   # 座面受光
+		draw_arc(p, T * 0.19, 0.0, TAU, 16, S_PLANTER.darkened(0.30), 1.0, false)                    # 描边
+
 func _draw_landmarks() -> void:
 	for lm in Sim.world.get("landmarks", []):
 		var lp: Array = lm.get("pos", [0, 0])
 		var bx := int(lp[0]) * T; var by := int(lp[1]) * T
 		match String(lm.get("type", "")):
 			"well":
-				draw_rect(Rect2(bx + 2, by + T * 0.6, T - 4, T * 0.34), Color(0, 0, 0, 0.2), true)                 # 阴影
-				draw_rect(Rect2(bx + T * 0.15, by + T * 0.45, T * 0.7, T * 0.45), P_PUB_FACE, true)          # 石圈
-				draw_rect(Rect2(bx + T * 0.15, by + T * 0.45, T * 0.7, T * 0.1), P_WRK_TOP, true)           # 井沿高光
-				draw_rect(Rect2(bx + T * 0.3, by + T * 0.56, T * 0.4, T * 0.28), P_PANEL, true)           # 井口暗
-				draw_rect(Rect2(bx + T * 0.2, by + T * 0.1, T * 0.06, T * 0.4), X_WOOD_MID, true)            # 立柱
-				draw_rect(Rect2(bx + T * 0.74, by + T * 0.1, T * 0.06, T * 0.4), X_WOOD_MID, true)
-				draw_colored_polygon(PackedVector2Array([Vector2(bx + T * 0.5, by - T * 0.02), Vector2(bx + T * 0.08, by + T * 0.16), Vector2(bx + T * 0.92, by + T * 0.16)]), P_PUB_ROOF)  # 蓝顶
+				# AP2(141) 有分量的圆石水井（双坡木顶 + 摇柄横梁 + 吊桶 + 井水反光）。向上伸出本格（顶棚 overhang，
+				#   同建筑画法）；纯 draw，**永不进 blockers**（进了=挡广场中央生存路 ⇒ #01 破，docs/139 ②）。
+				var wc := bx + T * 0.5                                                                # 井中轴
+				draw_circle(Vector2(wc, by + T * 0.86), T * 0.40, Color(0, 0, 0, 0.22))               # 落地影
+				draw_circle(Vector2(wc, by + T * 0.66), T * 0.40, P_STONE.darkened(0.18))             # 井座暗（做圆台厚度）
+				draw_circle(Vector2(wc, by + T * 0.60), T * 0.40, P_PUB_FACE)                         # 石圈主体
+				draw_circle(Vector2(wc, by + T * 0.56), T * 0.34, P_PUB_TOP)                          # 井沿受光
+				draw_circle(Vector2(wc, by + T * 0.56), T * 0.26, P_STONE_LINE)                       # 井内壁
+				draw_circle(Vector2(wc, by + T * 0.58), T * 0.20, P_WATER_DEEP)                       # 井水
+				draw_arc(Vector2(wc, by + T * 0.55), T * 0.11, PI, TAU, 10, Color(X_COLD_WHITE.r, X_COLD_WHITE.g, X_COLD_WHITE.b, 0.5), 1.5, false)  # 水面反光
+				draw_rect(Rect2(bx + T * 0.14, by - T * 0.28, T * 0.08, T * 0.80), X_WOOD_MID, true)   # 左立柱
+				draw_rect(Rect2(bx + T * 0.78, by - T * 0.28, T * 0.08, T * 0.80), X_WOOD_MID, true)   # 右立柱
+				draw_rect(Rect2(bx + T * 0.14, by - T * 0.28, T * 0.08, T * 0.80), D_WOOD_LINE, false, 1.0)
+				draw_rect(Rect2(bx + T * 0.78, by - T * 0.28, T * 0.08, T * 0.80), D_WOOD_LINE, false, 1.0)
+				draw_rect(Rect2(bx + T * 0.10, by - T * 0.08, T * 0.80, T * 0.08), X_WOOD_MID, true)   # 卷绳横梁
+				draw_line(Vector2(wc, by - T * 0.02), Vector2(wc, by + T * 0.30), D_WOOD_LINE, 1.5)    # 井绳
+				draw_rect(Rect2(bx + T * 0.42, by + T * 0.26, T * 0.16, T * 0.16), X_WOOD_MID, true)   # 吊桶
+				draw_rect(Rect2(bx + T * 0.42, by + T * 0.26, T * 0.16, T * 0.05), D_WOOD_LINE, true)  # 桶箍
+				var rt := by - T * 0.26                                                               # 檐线高度
+				draw_colored_polygon(PackedVector2Array([Vector2(wc, by - T * 0.62), Vector2(bx - T * 0.02, rt), Vector2(bx + T * 1.02, rt)]), P_PUB_ROOF)  # 双坡顶
+				draw_colored_polygon(PackedVector2Array([Vector2(wc, by - T * 0.62), Vector2(bx - T * 0.02, rt), Vector2(wc, rt)]), P_PUB_ROOF.darkened(0.12))  # 顶阴面
+				draw_line(Vector2(bx - T * 0.02, rt), Vector2(bx + T * 1.02, rt), P_PUB_FOOT, 1.5)     # 檐口线
 			"board":
-				draw_rect(Rect2(bx + 2, by + T * 0.62, T - 4, T * 0.3), Color(0, 0, 0, 0.2), true)                 # 阴影
-				draw_rect(Rect2(bx + T * 0.18, by + T * 0.55, T * 0.06, T * 0.4), P_COM_FOOT, true)          # 支柱
-				draw_rect(Rect2(bx + T * 0.76, by + T * 0.55, T * 0.06, T * 0.4), P_COM_FOOT, true)
-				draw_rect(Rect2(bx + T * 0.12, by + T * 0.2, T * 0.76, T * 0.42), P_COM_LINE, true)          # 木板
-				draw_rect(Rect2(bx + T * 0.12, by + T * 0.2, T * 0.76, T * 0.42), Color(0, 0, 0, 0.3), false, 2.0)
-				draw_rect(Rect2(bx + T * 0.08, by + T * 0.1, T * 0.84, T * 0.14), P_COM_ROOF, true)          # 红顶
-				draw_rect(Rect2(bx + T * 0.2, by + T * 0.28, T * 0.22, T * 0.26), P_TEXT, true)          # 纸
-				draw_rect(Rect2(bx + T * 0.5, by + T * 0.3, T * 0.24, T * 0.2), X_COLD_WHITE, true)
+				# AP2(141) 有分量的镇【告示栏】：木框软木板 + 一排不同色告示 + 红披檐 + 图钉。纯 draw、永不进 blockers。
+				var ax := bx
+				draw_rect(Rect2(ax + T * 0.06, by + T * 0.80, T * 0.88, T * 0.16), Color(0, 0, 0, 0.20), true)  # 落地影
+				draw_rect(Rect2(ax + T * 0.15, by + T * 0.30, T * 0.09, T * 0.64), P_COM_FOOT, true)   # 左立柱
+				draw_rect(Rect2(ax + T * 0.76, by + T * 0.30, T * 0.09, T * 0.64), P_COM_FOOT, true)   # 右立柱
+				draw_rect(Rect2(ax + T * 0.08, by - T * 0.02, T * 0.84, T * 0.56), X_WOOD_MID, true)   # 木外框
+				draw_rect(Rect2(ax + T * 0.13, by + T * 0.04, T * 0.74, T * 0.44), P_RES_FLOOR, true)  # 软木板面（暖木）
+				draw_rect(Rect2(ax + T * 0.08, by - T * 0.02, T * 0.84, T * 0.56), D_WOOD_LINE, false, 1.5)
+				draw_rect(Rect2(ax + T * 0.18, by + T * 0.09, T * 0.20, T * 0.17), P_TEXT, true)       # 告示·奶油纸
+				draw_rect(Rect2(ax + T * 0.44, by + T * 0.10, T * 0.16, T * 0.14), X_SIGNAL_POS, true) # 告示·绿
+				draw_rect(Rect2(ax + T * 0.65, by + T * 0.09, T * 0.18, T * 0.16), X_PARCHMENT, true)  # 告示·羊皮
+				draw_rect(Rect2(ax + T * 0.20, by + T * 0.29, T * 0.17, T * 0.15), D_BOOK_BLUE, true)  # 告示·蓝
+				draw_rect(Rect2(ax + T * 0.47, by + T * 0.28, T * 0.18, T * 0.16), X_SIGNAL_NEG, true) # 告示·红
+				draw_rect(Rect2(ax + T * 0.70, by + T * 0.30, T * 0.13, T * 0.13), P_TEXT, true)       # 告示·小纸
+				draw_rect(Rect2(ax + T * 0.04, by - T * 0.12, T * 0.92, T * 0.13), P_COM_ROOF, true)   # 红披檐
+				draw_rect(Rect2(ax + T * 0.04, by - T * 0.12, T * 0.92, T * 0.04), P_COM_ROOF.lightened(0.15), true)  # 檐受光
+	# AP2(141) 座圈画在地标循环【之后】：读广场 rect（Sim 也读的面、只读不写 ⇒ 零金标），与徽章同一几何中心。
+	var _areas: Dictionary = Sim.world.get("areas", {})
+	if _areas.has("plaza"):
+		var _pr: Array = (_areas["plaza"] as Dictionary).get("rect", [0, 0, 0, 0])
+		if int(_pr[2]) > 0 and int(_pr[3]) > 0:
+			_draw_plaza_seatring(Rect2(int(_pr[0]) * T, int(_pr[1]) * T, int(_pr[2]) * T, int(_pr[3]) * T))
 
 ## Sim 的【精确格心】。裁剪/LOD 判定只许用它（见 _render_pos 一节的红线）。
 func _center(ag: Dictionary) -> Vector2:
