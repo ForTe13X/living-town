@@ -596,6 +596,19 @@ grep -q 'AA3 #43 REGRESSION GATE: PASS' "$LT_LOG/aa3.log" \
   && ok "#43 观察侧抗回归门（4 例判决 == 预期：natural 绿 / 三负例红 hard=[43]）" \
   || bad "#43 观察侧抗回归门（有例判决与抗回归预期不符，见上——观察侧可能退回只排 vendor）"
 
+step "4h. state_projection 门 (存读档 round-trip + 逐字段 mutation 覆盖；AO1 编号137, 路线图 §一架构第一刀)"
+# 为什么必须有它：现在的"逐字节一致"只折 event_log(Inv.digest) + tick/逐 agent id/pos/needs/talking/option(chain)，
+#   ~29 个演化字段(beliefs/attitudes/factions/affinity/pacts/standing/stock/space·floor/money/memory)没覆盖。
+#   AF1 干预证明：一次悄悄丢一条 belief 的 load 能过 save_load_test（零漂移）——存档正确性【门】有盲区。
+#   本门用【从 save codec 抽的 canonical 投影】守：① round-trip(save→load→re-save 投影哈希相同)；
+#   ② 逐字段 mutation(扰动任一权威字段→投影必变=覆盖证明,agent 35/35、world 99/99+backend/ext dnd)；
+#   ④ AF1 回归(漏 belief 的 load：Inv.digest 盲/投影抓住)。投影与 Inv.digest/chain 并行解耦、不折金标(零金标)。
+# 判绿靠【打印的判决行】不是退出码(本机 godot .cmd 退出码不可信)：门内部已逐检、末行打 `state_projection_gate: PASS`。
+"$GODOT" --headless --path game res://scenes/state_projection_gate.tscn 2>&1 | tee "$LT_LOG/state_projection.log"
+grep -q 'state_projection_gate: PASS' "$LT_LOG/state_projection.log" \
+  && ok "state_projection 门（round-trip 一致 + 全权威面 mutation 覆盖 + AF1 漏 belief 被抓）" \
+  || bad "state_projection 门（round-trip/覆盖/AF1 回归有一项没过，见上）"
+
 step "5. unit / integration scenes"
 # player_touch_test：C3 的 31 条 + C8 的 13 条断言（触屏按钮路径 ≡ 按键路径、7 个动词可分辨、
 #   观察台两档"卡片是详情的逐行前缀"）。它在 2026-07-26 Wave C 里写好后【一直没进 CI】——
