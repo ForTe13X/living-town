@@ -141,6 +141,9 @@
 - 全 `bash tools/ci.sh` 判决行：见 `analysis/aq1/ci_full.log` 末行（回执附）。
   ⚠ 提交前跑的**互补性守卫**比的是 committed `HEAD:game`（docs/140），与工作树可能不同——由协调者在 committed 树重烘重跑，本棒不据其定绿红。
 
+> ✅**权威 landing（协调者 finalize，2026-08-07）**：AQ1 子棒卡在自 worktree 的 CI waiter 上**未提交**；协调者取其未提交改动 patch 到 committed 树、**独立复核**（原 12 人设 tie 仅补尾逗号=内容零改、新 12 人 traits 全用已枚举 token、Sim.gd 改动仅 `spawn_count>12` 分支）、独跑 **S0 金标门（seeds 1-12 × 60 × det3 vs golden_digests.json）= PASS 12/12 含链**（命门实证），再重烘 fresh ledger + 跑权威整轮 CI。
+> **committed 树 `db99773`/game `e4186eb`**：`analysis/aq1/ci_landed_verdict.txt` = **`=== CI PASS ✅ ===`**——S0 12/12 含链、互补性守卫 fresh（锚烘于 `f017af4`）、VoiceGate PASS（N=12 恒枚举原 12、与新 persona 无关，§一·3）、state_projection 4h、全门绿。
+
 ## 六 · owns 边界
 
 碰：`personas.json`（追加）、`voicebank.json`（追加）、`Sim.gd` 克隆段（仅 N>12）、本文档、`docs/media/aq1_*`、`analysis/aq1/`。
