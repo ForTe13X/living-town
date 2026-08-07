@@ -190,7 +190,8 @@ confidence: N=4（M9/M10/M11/M12，纯函数每跑一次 CI self-test 复现一�
 
 ### `bash tools/ci.sh` 的实际输出（读输出，不是读退出码）
 
-<!-- CI_RESULT -->
+落地时全量 CI 跑绿（判决行 = CI PASS，rc0；S0 12/12 含链、新硬化 guard 三负控过——正/负对照见 §二本棒实证）。
+⚠️**审查 F4 纠**：该 run 的 stdout **未归档**（`analysis/an1` 未建），roadmap 曾引"1286s PASS"属**无存证的精确秒数**——已不作存证。硬化 guard 的独立复核由外审 AE2 审计员 2026-08-07 完成（**确认真 fail-closed、未找到第二条绕过路径**）；整轮 CI 判决行由 2026-08-07 F1+AM4 归档统一回填。下面的复跑命令每条都能本地重算（不需 godot 的两个 self-test 尤其快）。
 
 ### 复跑命令（每条都能重算，均不碰入库锚 / game）
 

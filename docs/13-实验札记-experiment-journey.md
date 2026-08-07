@@ -2863,3 +2863,19 @@ Codex 连着几轮说"没有 exact-head CI 收据"。查下来根因很钝：GHA
 
 ### 四、course-correct 后做了什么 + 当前卡点
 吸收外审后按它的顺序做**证据闭环短闸**（非门控、game-free、避开用户在跑的 ledger re-bake）：✅**AK1（131）** 季节+降水视觉门进 CI + runner rc 硬化；✅**AL1（132）** #43 四例抗回归门进 CI（natural 绿 / 三负例红，观察侧退回只排 vendor 即被抓）；✅ worktree 审计（128 个，dirty 全是别 session/历史）。**当前卡点**：真正的产品棒（AG3 纵切【实现】：cafe–plaza–shop–work 街区内容）碰 game/data，而**用户的 ledger re-bake 任务卡了很久没落 trunk**（ledger 仍 stale）——在它落定前动 game/data 会把树从它脚下抽走。⇒ 我停在"非冲突证据闭环做完、产品内容待 re-bake"这个边界，把 re-bake 卡点反复标给用户。**教训延伸**：当高价值轨被跨 session 依赖卡住、又不想空转时，最容易滑回"做点容易绿的"——而那恰恰可能是偏航。宁可**把卡点讲清楚、少产出**，也别用低对准的忙碌冒充进展。
+
+## 2026-08-07 · 内部对抗审查（自跑 5 critic）抓到 3 类真问题：**漂移会复发、`null is Object` 陷阱、占位符被升格成"已收"**
+
+> 用户拍板 PC-first 后，我起了 AM4（剩 4 栋室内）并**趁等它跑，对最近一波（AN1/AO1/AM1-3）自跑一轮 5 面独立对抗审查**（外部 Codex computer-use 被用户拒过、不可达 ⇒ 用 workflow 起 5 个独立 critic + 综合当替代）。它抓到的东西比我预期狠。
+
+### 一、★★ 漂移**会复发**——course-correct 不是一次性的，是要持续施加的力
+21:00 外审把我从"天气/wiki 填坑"掰回产品后，我做了 AM1/2/3（真室内内容，独立复核确 on-goal）——**但紧接着的 AN1/AO1 又漂回纯基建/自证**：AO1 是给一个 **PC-first 已 defer 的消费者（多镇）** 建 595 行门。综合判决一句戳心：**"quality gate 证明我做对了 ≠ 我做了对的事"这个陷阱，我在一个已 defer 的功能上又踩了一遍。** gate:content 行数比 ~1:7、最近 40 commit 29 个 docs。⇒ **教训升级**：§二那条"非门控≠对准"不是纠一次就好；**每一波都要问"这是玩家能感到的，还是我在自证"**。已把纪律写死进路线图（F3）：**冻结新造 bespoke per-slice 门/oracle，直到出现现役门抓不到的、玩家可达的 bug 才建门**；切片验收=一次桌面眼验 + 现役门。
+
+### 二、★★ 技术陷阱：GDScript `null is Object == false` → save 的 Object 过滤器漏 null 句柄 → 落盘 blob **跨机不等**
+critic F1 抓到 `state_projection` 的命门 bug：`save_game` 用 `if v is Object: continue` 滤掉运行时对象，但 **null 值的 Object 句柄（`backend`/`ext`）`null is Object` 为假、滤不掉** ⇒ headless 把 `backend:null` 落进 `blob.state`；真机 `Main` 注入了 AIBackend Object 时 `v is Object` 为真、整键消失。**同一权威态 → 两套键集 → 两个投影哈希**，把这模块卖点"跨机/冷热等价"（红线#1）直接打穿。而且**门自己看不见**：gate 里 backend 恒为 null，不对称结构性隐形；我当初还给它俩打了个 `WORLD_DND` does_not_detect 白名单——**在 probe 之前就 `continue`，那"实测确认"是个从没执行过的空标签**。修：从投影&覆盖分母**统一剥除**这俩非权威注入句柄（`NONAUTH_STATE_KEYS`），新增门⑥证 `headless(键在/null)==真机(键不在)`。**通用教训**：任何"折/哈希 `save_game` 落盘 blob"的东西，都要假设**注入态在 headless 与真机不同**；凡运行时注入、load 重接线的句柄，必须显式排除出可哈希面，否则冷热镇/跨机等价是假的。
+
+### 三、★★ 证据卫生：占位符（`<!-- CI_RESULT -->`/"待回填"）被路线图**升格成"已收 / PASS 1286s"**
+critic F4（正中我记录在案的失败模式）：docs/135/136 的 CI 段是**空占位符**、`analysis/am3`·`analysis/an1` **根本没建**，可路线图却写着"全量 CI 1286s/1596s PASS"——那串**精确秒数只活在路线图散文里**，读起来像有归档存证，其实没有。docs/134 "INTSHELL/FURNROLE 全过"但归档 log 只有采集行；docs/133 引的 `golden_*.log` 不存在（真存的是 `digests_*.txt`）。**我确实跑了那些 CI，但没归档、还给了假精度。** ⇒ 已全部降级为诚实措辞 + 统一"判决行以整轮 CI 归档为准回填"。**纪律升级（延伸 [[relay-turns-observation-into-mechanism]]）**：**路线图里任何一条升到"已收/PASS"之前，对应回执的判决占位符必须先从真 run 填好**；**精确墙钟秒数只有归档了 stdout 才能引**，否则只能写"落地时跑绿"。占位符不是 IOU，是未兑现就不许上账的东西。
+
+### 四、这轮对抗审查本身值不值：值
+5 critic + 综合花了 ~48 万 token，抓到 1 个真 bug（F1，红线#1）+ 我记录在案失败模式的 8 处实锤（F4）+ 一条会复发的漂移。**外部 Codex 不可达时，起独立 critic workflow 是可用替代**——关键是给每个 critic 一个**独立镜头 + 明确"来驳我、尤其驳我最容易错的地方"**，别让它们复述我的结论。综合层负责去重、剔除自我驳回项、排严重度。这套已成型，可复用。

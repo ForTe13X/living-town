@@ -1,7 +1,7 @@
 # 137 · AO1 · state_projection_v1——从 save codec 抽 canonical 投影 + 真咬门
 
 > 路线图 §一架构第一刀，用户 2026-08-07 §0.8 拍板做。AF1 设计（docs/121）+ Codex §三.11 更正（从 save codec 抽单一 oracle、别另造第二套）落地。
-> ⚠️ AO1 子棒在写完 oracle+门、跑出 A/B 证据后**卡死**（watchdog 600s）；协调者接手：复核 + 补一处 does_not_detect 分类 + 接线 CI + 写本回执 + 重烘 ledger。
+> ⚠️ AO1 子棒在写完 oracle+门、跑出 A/B 证据后**卡死**（watchdog 600s）；协调者接手：复核 + 接线 CI + 写本回执 + 重烘 ledger。协调者当时给 backend/ext 补的 does_not_detect 白名单**后被外审 F1 证明不对、已改为从分母剥除**（见 §三，2026-08-07 收口）。
 
 ## 〇、它解决的问题（精确说法）
 
@@ -21,14 +21,19 @@
 协调者自跑（`godot --headless res://scenes/state_projection_gate.tscn` → `state_projection_gate: PASS ✅ (0 fail)`）：
 - **① round-trip**：save→load→re-save 投影哈希相同（load 漏还原任一权威字段 ⇒ 红）。
 - **② 具名 A/B（money shot）**：20 个 headline 家族三列并排——**每一条 `Inv.digest` SAME · `chain` SAME · `Projection` DIFF**：清空 beliefs / town_stock / 换平面(space·floor) / attitude / standing / affinity(关系·agent) / pact / faction / skills / money(coin) / gift / memory / complementSeen / faction_size / day / weather / factions / pacts_index。坐实"旧折叠盲、投影不盲"。
-- **② 全量扫**：**agent 字段 35/35 覆盖 0 洞 · world 字段 99/99 覆盖 0 洞**（+ `backend`/`ext` 2 个 does_not_detect，见下）。
-- **④ AF1 回归**：同一"漏 belief 的读档"——`Inv.digest` A==B(漏档) SAME(盲)、`Projection` DIFF(抓住)；续跑 Inv.digest 漂移点=第 17 tick（复刻 docs/121 §四）。**这就是新门的牙。**
+- **② 全量扫**：**agent 字段 35（=`agents[0].keys()`）· world 字段 99**，各自分母内 0 洞。⚠️**诚实边界（审查 F6/F7）**：agent 分母取 `agents[0]` 单个代表，非全 agent 键并集（只有部分 agent 运行时长出的键不在这 35 里）；world_count 是 save 落盘持久集（耦合 `save_game`，见 §四）非独立权威枚举——两条是 v1 已知边界，**不谎称"全权威面 0 洞"**。（`backend`/`ext` 已按 F1 从分母剥除，见 §三。）
+- **④ AF1 灵敏度自证**（⚠️审查 F8 纠措辞：是**自证**、非抓到真 load bug）：手工 `beliefs.erase(k)` **合成**一个"漏 belief 的读档"——`Inv.digest` A==B(漏档) SAME(盲)、`Projection` DIFF(抓住)；续跑 Inv.digest 漂移点=第 17 tick（复刻 docs/121 §四）。这证的是**投影对"丢一个权威字段"敏感**（旧折叠盲、投影不盲）；真正对"load_game 漏还原字段"的门牙是 **① round-trip**（save→load→resave，hash 不同即红）。
 - **③ 规范序负对照**：键序不同、逻辑相同 → 投影相等（红线#1 命门）。
-- **⑤ does_not_detect（实测）**：非持久面扰动 → 投影 SAME（按设计正确）：DERIVED 缓存（`_near_set`/`_path_cache`）+ **`backend`/`ext`**。
+- **⑤ does_not_detect（实测）**：非持久面扰动 → 投影 SAME（按设计正确）：DERIVED 缓存（`_near_set`/`_path_cache`）、VIEW（`lod_focus`）、BENCH（`shadow_on`）、存档 `meta.name`。（`backend`/`ext` **不在此列**——F1 后它俩从分母剥除，改由 ⑥ 证注入无关性。）
+- **⑥ 注入无关性（F1 新增）**：`backend`/`ext` 键在（headless：值 null）与不在（真机：注入 Object 被 save 跳键）两种 blob → 投影**必须相同**（实跑 `269495820==269495820`）。删掉 `NONAUTH_STATE_KEYS` 剥除逻辑即转红——守红线#1 跨机/冷热等价。
 
-## 三、协调者补的一处分类（AO1 卡死处）
+## 三、backend/ext：从"记 does_not_detect"到 F1 收口（外审纠错）
 
-AO1 的全量扫把 `backend`/`ext` 报成 world 覆盖洞 ⇒ 门 FAIL。**复核：它们是运行时 Object 服务引用**（`Sim.gd:407/410` `Object = null`，AI 后端）——save_game 落盘时为 null（Object 不进持久态、load 时**重新接线**非从存档还原）。⇒ 扰动它们投影不变是**正确**：不属"必须 round-trip 的权威持久态"，与 DERIVED 缓存同类。故白名单剔除、记为 **does_not_detect 按设计**（`WORLD_DND=["backend","ext"]`）。改后门 PASS。
+AO1 卡死处：全量扫把 `backend`/`ext` 报成 world 覆盖洞 ⇒ 门 FAIL。协调者当时的处置是**白名单剔除、记 `WORLD_DND` does_not_detect**，理由"运行时 Object 服务引用、save 落 null"。
+
+⚠️**2026-08-07 外审 F1 证明这处置不对**：GDScript `null is Object == false`，故 `save_game` 的 `if v is Object: continue`（`Sim.gd:1172`）**跳不掉 null 的 backend/ext** ⇒ headless 存盘时 `backend:null/ext:null` **真进了 `blob.state`**（被折进投影）；而真机 `Main` 注入了 AIBackend Object 时 `v is Object==true` ⇒ 整个键**消失**。**同一权威态 → 两套键集 → 两个投影哈希**，直接违反本模块卖点"跨机/冷热等价"（红线#1）。而且门里 `WORLD_DND` 在 probe 之前就 `continue`，这俩**从没被真扰动过**——原文"实测确认"是未执行的空标签（审查 F5）。
+
+**F1 收口**：backend/ext 是运行时注入句柄、**非权威持久态**（load 时重接线、不从存档还原），应从投影**和**覆盖分母**统一剥除**，而非折进去再打星号。落地：`StateProjection.NONAUTH_STATE_KEYS = ["backend","ext"]`，`project_blob` 折 `_auth_state(blob)`（剥顶层这两键）、`manifest` 同步剥（world 分母 101→99）。新增门 **⑥ 注入无关性** 证 `headless(键在/null)==真机(键不在)` 投影同（实跑 `269495820==269495820`）。改后 gate PASS、backend/ext 不再进 world_fields、无 dnd 星号。零金标（bench-only、不进 S0）。
 
 ## 四、零金标 + 边界
 

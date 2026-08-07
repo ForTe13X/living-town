@@ -68,6 +68,41 @@ func _mutate_value(v) -> Array:
 		_:
 			return [false, null]
 
+func _read_blob(path: String) -> Dictionary:
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null or f.get_length() < 8: return {}
+	f.get_32()                       # 4 字节 schema 头（与 load_game / project_file 同源）
+	var blob = f.get_var()
+	f.close()
+	return blob if blob is Dictionary else {}
+
+# ⑥ 注入无关性（红线#1 跨机/冷热等价，审查 F1 收口）：
+#   backend/ext 键【在】（headless：值 null）与【不在】（真机：注入的 Object 被 save 的 `v is Object` 跳键）
+#   两种存档 → 投影必须相同。直接证 StateProjection.NONAUTH_STATE_KEYS 真把这两键从折叠里剥了：
+#   若日后有人删掉剥除逻辑，headless(键在/null) 与 真机(键不在) 会折出两个哈希，本条即转红。
+func _test_injection_invariance() -> void:
+	print("— ⑥ 注入无关性：backend/ext 键在/不在 → 投影同（跨机/冷热等价，F1）—")
+	var S = _boot()
+	var tmp := "user://__ao1_inj_tmp.dat"
+	if not S.save_game(tmp):
+		ck(false, "save_game 落盘（注入无关性用例）"); return
+	var blob := _read_blob(tmp)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(tmp))
+	ck(not blob.is_empty(), "读回存档 blob")
+	if blob.is_empty(): return
+	# 模 headless：键在、值 null（AO1 原实现会把它折进去 → 漂移）
+	var hl := blob.duplicate(true)
+	(hl["state"] as Dictionary)["backend"] = null
+	(hl["state"] as Dictionary)["ext"] = null
+	# 模真机：键不在（注入的 AIBackend Object 被 save 的 `v is Object` 跳掉）
+	var pc := blob.duplicate(true)
+	(pc["state"] as Dictionary).erase("backend")
+	(pc["state"] as Dictionary).erase("ext")
+	var h_hl := int(Proj.project_blob(hl)["hash"])
+	var h_pc := int(Proj.project_blob(pc)["hash"])
+	print("    headless(键在/null) proj=%d · 真机(键不在) proj=%d" % [h_hl, h_pc])
+	ck(h_hl == h_pc, "headless(键在/null) 与 真机(键不在) 投影相同（backend/ext 已剥，注入态无关）")
+
 func _ready() -> void:
 	print("=== state_projection_gate (v%d) ===" % Proj.PROJECTION_VERSION)
 	_test_roundtrip()
@@ -76,6 +111,7 @@ func _ready() -> void:
 	_test_canonical_order()
 	_test_af1_regression()
 	_test_does_not_detect()
+	_test_injection_invariance()
 	_test_perf()
 	print("state_projection_gate: %s (%d fail)" % [("PASS ✅" if _fails == 0 else "FAIL ❌"), _fails])
 	get_tree().quit(1 if _fails > 0 else 0)
@@ -193,34 +229,30 @@ func _test_full_sweep() -> void:
 		elif r == "hole": agent_hole.append(String(field))
 		else: agent_skip.append(String(field))
 		ck(_ph(S) == base, "扫后状态复原 [agent.%s]" % field)
-	# world 权威面（取自 baseline 存档 manifest）
-	# ⑤-does_not_detect（按设计，实测确认）：backend/ext 是【运行时 Object 服务引用】（AI 后端，`Sim.gd:407/410`
-	#   `Object = null`）——save_game 落盘时它们是 null（Object 不进持久态、load 时重新接线，非从存档还原）。
-	#   ⇒ 扰动它们【投影不变】是【正确】：它们不属"必须 round-trip 的权威持久态"，与 DERIVED 缓存同类。
-	#   （full-sweep 泛扫所有 world script-var，会顺带碰到这两个非持久 Object 引用；这里白名单剔除、记为 dnd。）
-	const WORLD_DND := ["backend", "ext"]
+	# world 权威面（取自 baseline 存档 manifest）。
+	# backend/ext 已在 StateProjection.NONAUTH_STATE_KEYS 处**从投影与 manifest 分母统一剥除**（单一真相源，
+	#   审查 F1）——它们是运行时注入的 Object 服务句柄，非权威持久态、键集随 headless/真机注入态漂移。
+	#   故门里不再白名单特案，man.world_fields 里根本不含它俩：无覆盖洞、无 dnd 星号（第⑥条另证注入无关性）。
 	var man := _manifest(S)
 	var world_hole := []
 	var world_ok := 0
 	var world_skip := []
-	var world_dnd := []
 	for field in man.world_fields:
 		if field == "agents": continue
-		if String(field) in WORLD_DND:
-			world_dnd.append(String(field))   # 运行时 Object 服务引用，非持久权威态，does_not_detect 按设计
-			continue
 		var r := _probe(S, S, String(field))
 		if r == "ok": world_ok += 1
 		elif r == "hole": world_hole.append(String(field))
 		else: world_skip.append(String(field))
 	print("    agent 字段: 覆盖 %d / 洞 %d / 跳过 %d %s" % [agent_ok, agent_hole.size(), agent_skip.size(), str(agent_skip)])
-	print("    world 字段: 覆盖 %d / 洞 %d / 跳过 %d %s / dnd %d %s" % [world_ok, world_hole.size(), world_skip.size(), str(world_skip), world_dnd.size(), str(world_dnd)])
+	print("    world 字段: 覆盖 %d / 洞 %d / 跳过 %d %s" % [world_ok, world_hole.size(), world_skip.size(), str(world_skip)])
 	if not agent_hole.is_empty(): print("    ⚠ agent 覆盖洞: %s" % str(agent_hole))
 	if not world_hole.is_empty(): print("    ⚠ world 覆盖洞: %s" % str(world_hole))
-	print("    ⑤ world does_not_detect（按设计，运行时 Object 服务引用）: %s" % str(world_dnd))
-	ck(agent_hole.is_empty(), "agent 权威面无覆盖洞")
-	ck(world_hole.is_empty(), "world 权威面无覆盖洞（backend/ext 除外：运行时 Object 服务引用，非持久态，does_not_detect 按设计）")
-	print("    覆盖清单: world=%d agent=%d agents=%d" % [man.world_count, man.agent_field_count, man.agent_count])
+	# ⚠ 诚实边界（审查 F7）：agent 分母 = agents[0].keys()，非全 agent 键并集；只有部分 agent
+	#   运行时才长出的键（如场景特有 itinerary 键）不在这 35 里、不被扫。world_count 亦为"save 落盘持久集"
+	#   （分母耦合 save_game，见 docs/137 §四），非独立权威枚举——两条均记为 v1 已知边界，不谎称"全覆盖 0 洞"。
+	ck(agent_hole.is_empty(), "agent 分母(agents[0] 键集)内无覆盖洞（并集覆盖是 v1 边界，见 docs/137）")
+	ck(world_hole.is_empty(), "world 分母内无覆盖洞（backend/ext 已从分母剥除，非白名单跳过）")
+	print("    覆盖清单: world=%d agent=%d agents=%d（分母口径见 docs/137 §四）" % [man.world_count, man.agent_field_count, man.agent_count])
 
 # 返回 "ok"(在覆盖内) / "hole"(扰动了但投影没变) / "skip"(无法泛型扰动，如 memory Object)
 func _probe(S, container, field) -> String:

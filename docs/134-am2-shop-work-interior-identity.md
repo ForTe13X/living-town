@@ -111,22 +111,29 @@ ALL 挡格集 byte-identical: True
 
 ## 五、视觉门实际输出（`LT_VISUAL=require`，docker tol=0）
 
-`analysis/am2/visual_gate.log`（判决行原文）：
+`analysis/am2/visual_gate.log`（本次实际归档内容）：
 
-<!-- GATE_OUTPUTS -->
+```
+runner=docker  mode=require
+shot ok  vg_night.png / vg_noon.png / vg_int_*.png …（采集齐）
+void-gate ok       (静态不重画 + settle 期真的画过 + 空间往返必重画)
+space-roundtrip 采集 ok  (town_before → interior → town_after)
+```
 
-**读法**：INTSHELL 只采**墙**（左右列 col0/col w-1 的 [0.35T,0.80T] 带）——我的家具都在内格、
-不越格 ⇒ 墙众数不受扰、shop(commercial)↔cafe 同类仍 ≤4.0、work(workshop) 异类仍 ≥8.0。
+⚠️**审查 F4 纠**：上面这份归档的 `visual_gate.log` **只截到 shot/void-gate/space-roundtrip 的采集行，没有 INTSHELL/FURNROLE 的逐门判决行**（那两道 assert 的 stdout 在 CI run 里、未单独落进本 log）。故本 doc 原来"判决行原文"是空占位、"全过"无本地存证支撑——INTSHELL/FURNROLE 对 shop/work 的判决改由 **2026-08-07 F1+AM4 合并的整轮 CI 归档**回填（那轮会在现役 interiors.json（含 shop/work）上跑这两道门）。
+
+**读法（结构论证，非门判决）**：INTSHELL 只采**墙**（左右列 col0/col w-1 的 [0.35T,0.80T] 带）——我的家具都在内格、
+不越格 ⇒ 墙众数不受扰、shop(commercial)↔cafe 同类应 ≤4.0、work(workshop) 异类应 ≥8.0。
 FURNROLE 只采 **shelf 格**——shop 货架(store)/work 工具架(workshop) 画法没动、role 也没掉档
-⇒ 异类仍 ≥12.0、同类 ≤8.0、shop 两货架 C 臂逐像素一致。
+⇒ 异类应 ≥12.0、同类 ≤8.0。**这是"为什么不该红"的结构理由，判决行以上述整轮 CI 归档为准。**
 
 ---
 
 ## 六、验收结果（本机 docker gamecraft-runner:4.6.2 软渲 pin，tol=0）
 
 - **零金标**：golden **12/12 seed 逐字节相同（含 chain）**，det 3/3 —— §四。挡格集 shop/work 两栋 byte-identical。
-- **`visual_gate.sh` 全绿**（`LT_VISUAL=require`，rc=0）：见 §五判决行（INTSHELL/FURNROLE 含 shop/work 全过）。
+- **`visual_gate.sh` 采集段绿**（`LT_VISUAL=require`，rc=0）：归档 log 见 §五（shot/void-gate/roundtrip ok）。⚠️INTSHELL/FURNROLE 逐门判决行**未落进归档 log**，判决以 2026-08-07 整轮 CI 归档为准（审查 F4）；§五给的是"为什么不该红"的结构论证。
 - **对照图眼验**（红线 R）：
   - shop：柜台→收银机+挂秤+果篮、`crate[1,3]`→谷袋、`crate[2,3]`→敞口果箱、加迎宾垫；与 cafe/home 明显不同。
   - work：desk→工作台(台钳+刨)、`crate`→木料堆/材料箱、stool→铁砧、留工具架、加门垫；工坊身份清晰。
-- **CI**：`bash tools/ci.sh` 判决行 = <!-- CI_VERDICT -->（读输出、非退出码）。
+- **CI**：`bash tools/ci.sh` 落地时跑绿（读判决行非退出码）；⚠️该 run 的判决行未单独归档 `analysis/am2`（审查 F4）——由 2026-08-07 F1+AM4 整轮 CI 归档统一回填。

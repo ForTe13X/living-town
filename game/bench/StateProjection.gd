@@ -123,17 +123,36 @@ static func fold(h: int, v) -> int:
 			# 兜底：其它标量/Packed 类型（Color/PackedInt.../Vector3…）走 var_to_bytes，确定但粗。
 			return _fb(_fs(h, "tz%d" % t), var_to_bytes(v))
 
+# ── 非权威注入句柄：从投影 & 覆盖分母里一律剔除（红线#1 跨机/冷热等价）───────────
+## backend/ext 是运行时注入的服务 Object 句柄（AI 后端，`Sim.gd:407/410`）。它们**不是权威持久态**：
+##   load 时重新接线、不从存档还原。可 GDScript `null is Object == false`：headless 存盘时它们是 null，
+##   `save_game` 的 `if v is Object` 跳不掉 → 键 `backend:null/ext:null` 落进 blob.state；真机注入了
+##   AIBackend Object 时 `v is Object == true` → 整个键消失。同一权威态却两套键集 → 两个投影哈希，
+##   直接违反本模块卖点"冷热镇/跨机等价"。⇒ 在此**统一剔除顶层这两个键**，投影与注入态无关。
+##   （AO1 原实现漏了这条：把 headless 的 backend:null 也折了进去。审查 F1 收口。）
+const NONAUTH_STATE_KEYS := ["backend", "ext"]
+
+## 权威 state：剥掉顶层非权威注入句柄。只动顶层键（浅拷 + erase），不递归污染同名嵌套键。
+static func _auth_state(blob: Dictionary) -> Dictionary:
+	var raw = blob.get("state", {})
+	if not (raw is Dictionary):
+		return {}
+	var st: Dictionary = (raw as Dictionary).duplicate()   # 浅拷：只为剥顶层键，值只读
+	for k in NONAUTH_STATE_KEYS:
+		st.erase(k)
+	return st
+
 # ── 顶层入口 ─────────────────────────────────────────────────────────────────
 ## 折一个已解码的存档 blob（无文件 I/O；测【纯折叠成本】用）。
-## 折的范围 = 存档权威面里【决定 sim 状态等价】的部分：state（全反射面）+ 影响恢复的 header
-##   （schema/seed/active_commit_ids）。**不折 meta**（玩家给的存档名，非 sim 状态——改档名不该改投影）。
+## 折的范围 = 存档权威面里【决定 sim 状态等价】的部分：state（全反射面，剥非权威注入句柄）+ 影响恢复的
+##   header（schema/seed/active_commit_ids）。**不折 meta**（玩家给的存档名，非 sim 状态——改档名不该改投影）。
 static func project_blob(blob: Dictionary) -> Dictionary:
 	var h := OFF
 	h = _fi(_fs(h, "ver"), PROJECTION_VERSION)   # 版本入指纹 → 换折叠算法即换指纹族
 	h = _fi(_fs(h, "schema"), int(blob.get("schema", -1)))
 	h = _fi(_fs(h, "seed"), int(blob.get("seed", -1)))
 	h = fold(_fs(h, "acids"), blob.get("active_commit_ids", []))
-	h = fold(_fs(h, "state"), blob.get("state", {}))
+	h = fold(_fs(h, "state"), _auth_state(blob))   # F1：剥 backend/ext，键集与注入态无关
 	return {"hash": h & MASK, "version": PROJECTION_VERSION}
 
 ## 折一个已存在的存档文件（读法与 load_game 同源：先跳 4 字节 schema 头，再 get_var）。
@@ -167,6 +186,8 @@ static func manifest(blob: Dictionary) -> Dictionary:
 	for k in state.keys():
 		if str(k) == "agents":
 			continue
+		if str(k) in NONAUTH_STATE_KEYS:
+			continue   # F1：非权威注入句柄，不进覆盖分母（否则 world_count 随 headless/真机注入态漂移）
 		world_fields.append(str(k))
 	world_fields.sort()
 	var agent_fields: Array = []

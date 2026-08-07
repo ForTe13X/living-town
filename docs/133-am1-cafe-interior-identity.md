@@ -47,7 +47,7 @@ brief 与协调者的口径：*"不带 advertises 的纯装饰家具 = 只渲染
 - **第①条**（`Sim._compile_interiors`, :652）：只有**带 advertises** 的家具编译成 world 候选对象。纯装饰→跳过→不进候选。协调者说的是这条，**对**。
 - **第②条**（`Sim._build_interior_grids`, :3995）：**每一件家具**（不分 advertises）只要 slot ∉ `WALKABLE_SLOTS={stairs,rug,window}` 就把它那格**挡进该平面导航网**。而阿丽(aria) `spatial_address={cafe,2f,[2,2]}` **真住 2F**、按 portal 跨平面走动（docs/126 §三，`_journey_candidates→_route_next_hop→_move_agent`）⇒ **在原先空的格上新增一件纯装饰家具会挡路、重排她的室内寻路。**
 
-**实测判决**（`analysis/am1/golden_after.log`，第一版布局把甜点柜/吧凳/衣柜等**加在原先空的内格**上）：
+**实测判决**（摘要归档 `analysis/am1/digests_after.txt`——第一版布局把甜点柜/吧凳/衣柜等**加在原先空的内格**上；⚠️审查 F4 纠：本片只归档了 `digests_*.txt` 摘要，未单独存 `golden_*.log` 判决全文）：
 
 ```
 digest / event_digest / events：12/12 seed 逐字节【相同】
@@ -91,11 +91,11 @@ chain（逐 tick 前缀链）：      12/12 seed 【全变】  ⇒ 金标门破 
 
 | 证据 | 文件 | 结论 |
 |---|---|---|
-| ② 开工前 golden baseline | `analysis/am1/digests_baseline.txt`（`golden_baseline.log`：金标 12/12 PASS，det 3/3） | 基线在本机 4.6.2 复现 |
-| ① 自造 A/B 摘要（改后 vs 基线，**逐字节**） | `analysis/am1/digests_final.txt` vs `digests_baseline.txt` | **12/12 seed 逐字节相同（含 chain）**，`golden_final.log`：S0 GATE **PASS** |
+| ② 开工前 golden baseline | `analysis/am1/digests_baseline.txt`（金标 12/12 baseline，det 3/3；⚠️判决 `.log` 未单独归档） | 基线在本机 4.6.2 复现 |
+| ① 自造 A/B 摘要（改后 vs 基线，**逐字节**） | `analysis/am1/digests_final.txt` vs `digests_baseline.txt` | **12/12 seed 逐字节相同（含 chain）**，S0 GATE PASS（判决行在落地 CI run；摘要=digests_final.txt） |
 | ③ 留出的 seed | 同上，seeds `1-12` × 60 天 × det 3 | 全程可复现 |
 
-**负结果留档（诚实）**：第一版布局（加密度、挡格集变了）→ `golden_after.log`：digest/event_digest 相同、**chain 全变、S0 FAIL**。据此改为"就地换身份"（挡格集不变）→ chain 也逐字节回来。`golden_chainsafe.log` 与 `golden_final.log` 两次独立复现 12/12。
+**负结果留档（诚实）**：第一版布局（加密度、挡格集变了）→ 摘要 `digests_after.txt`：digest/event_digest 相同、**chain 全变、S0 FAIL**。据此改为"就地换身份"（挡格集不变）→ chain 也逐字节回来（`digests_final.txt` 复现 12/12）。⚠️审查 F4：两次复现的判决 `.log`（原文写作 `golden_chainsafe.log`/`golden_final.log`）**未落进 `analysis/am1`**，只归档了 `digests_*.txt` 摘要——勿把这两个 `.log` 名当存证。
 
 > 一句话：**digest 不动不等于零金标**——golden 门还含逐 tick 链，室内挡格改了它就漂。本片停在真·零金标的一侧（挡格集不变），未越 R12 线。
 
