@@ -53,7 +53,10 @@ plaza[28,21,8,6]=48 格、dock[30,7,4,2]=8 格 **全 walkable（0 格 blocked）
 | audit_map (ci 1b) | `python tools/audit_map.py` | `AUDIT PASS`（typed-layers 一致 + 全可达 + 每家具有交互格 + ≥2 路线），exit 0 |
 | lod_verify (ci 4b) | `lod_verify.gd -- 48 3` | `LOD-VERIFY GATE: ✅ PASS (V2+V3abc 全绿)`，exit 0 |
 | 视觉门 (ci 6：昼夜/void/空间往返/岸线/室内壳/家具/树丛/**季节**/**降水**/cafe2f/楼层往返) | `LT_VISUAL=require LT_VISUAL_RUNNER=docker bash tools/visual_gate.sh` | 全绿 **exit 0**：DAYNIGHT/ROUNDTRIP/POND/INTSHELL/FURNROLE/TREESTAND(昼+夜)/SEASON/PRECIP/CAFE2F/FLOOR-ROUNDTRIP **全 PASS**、0 条 FAIL；`空间往返 A1[map] 变化像素=0/366800 (0.000%)`（我的重铺确定性 ⇒ town_after==town_before 逐字节相同）|
-| 全 CI | `bash tools/ci.sh` | **`=== CI PASS ✅ ===`**（全程 1277s，exit 0；0–6 每一步全绿，含 4a 宏观池/4d 外部后端/4h state_projection/5 story_test 193s/6 视觉门九道全 PASS）|
+| 全 CI（棒内，**提交前**） | `bash tools/ci.sh` | **`=== CI PASS ✅ ===`**（1277s，exit 0；0–6 每步全绿）|
+
+> ⚠️**权威 landing CI（协调者 finalize，committed 树 + 重烘 fresh ledger）**：`analysis/ap1/ci_landed_verdict.txt`（HEAD `de66198`/game `ab82afd`）= **`=== CI PASS ✅ ===`**——S0 12/12 含链、**互补性守卫 fresh（锚烘于 `d37c5a0`，baked==HEAD:game）**、state_projection 4h、INTSHELL/FURNROLE、LOD-VERIFY、SEASON/PRECIP/FLOOR-ROUNDTRIP 全 PASS。
+> **为何要再跑一次**（finalize 纪律）：`check_ledger_freshness` 比的是 **committed** `HEAD:game`（guard.py:289-292）。本棒改了 `WorldView.gd`（进 `game/`）但在自 worktree 是**提交前**跑 CI ⇒ 当时 `HEAD:game` 尚=旧树 `c244322`=baked ⇒ 互补性守卫**假新鲜**通过。提交后 `HEAD:game` 变=`ab82afd`≠baked ⇒ 锚 stale。故协调者**在 committed 树上重烘 + 重跑 CI** 才是权威门。⇒ 一条通用纪律：**棒的"CI PASS"若在提交前跑，互补性守卫那条不算数；finalize 必在 committed 树重烘重跑。**
 
 **为什么这些门对本片免疫（先量清、docs/139 纪律）**：昼夜门/季节门判的是 HUD-free 横带 x∈[60,960) 的**众数色 = 草地**（我不动草地/veg）；岸线门判两水池剖线（我不动 water、街具收敛在中央 verge、离池塘远）；空间往返门判 `town_after==town_before` 的**确定性**（我的改动确定性 ⇒ 恒等）+ 界外带活着（我不动界外层）；降水门判 on/off 差（我的重铺在 on/off 两帧都在 ⇒ 差不变）。**均无冻结的 outdoor 地面像素锚**。
 
