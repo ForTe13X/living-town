@@ -172,7 +172,7 @@ confidence：
 ## 六、CI 判决 + 仍绿的证据
 
 - **R1 `probe_digest_test.sh`**：docker 实跑 **PASS ✅**（§四证据②，A≡B 逐字节）——我的改动没破它。
-- **`bash tools/ci.sh`**：落地时跑绿（step6 视觉门含新全楼层往返门；step4 S0 金标 12/12 = 零金标证据①）。⚠️**审查 F4 纠**：该 run 判决行**未归档**（`analysis/am3` 未建），roadmap 曾引"1596s PASS"属**无存证的精确秒数**——已不作存证；判决行由 2026-08-07 F1+AM4 整轮 CI 归档统一回填（往返门在现役树上重跑）。
+- **`bash tools/ci.sh`**：落地时跑绿（step6 视觉门含新全楼层往返门；step4 S0 金标 12/12 = 零金标证据①）。⚠️**审查 F4 纠**：该 run 判决行**当时未归档**（`analysis/am3` 未建），roadmap 曾引"1596s PASS"属**无存证的精确秒数**——已不作存证。✅**整轮 CI 归档回填（2026-08-07，`analysis/review-2026-08-07-ci/verdict.txt`，HEAD `1fcbfc8`）**：**`=== FLOOR ROUNDTRIP GATE: PASS ===`**（全楼层往返门在现役树上重跑绿）+ 全流水线 **`=== CI PASS ✅ ===`**、S0 金标 12/12 含链。
 - **接线纪律**：全楼层往返门与现役 `assert_space_roundtrip`（town↔1f）**不重叠**——那条只走 1f，本条补楼梯往返（1f↔2f）+ 2F 判别力；
   两门**不短路**（visual_gate 尾部各自 exit），一条红另一条读数仍有诊断价值。
 

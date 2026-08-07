@@ -120,7 +120,10 @@ void-gate ok       (静态不重画 + settle 期真的画过 + 空间往返必�
 space-roundtrip 采集 ok  (town_before → interior → town_after)
 ```
 
-⚠️**审查 F4 纠**：上面这份归档的 `visual_gate.log` **只截到 shot/void-gate/space-roundtrip 的采集行，没有 INTSHELL/FURNROLE 的逐门判决行**（那两道 assert 的 stdout 在 CI run 里、未单独落进本 log）。故本 doc 原来"判决行原文"是空占位、"全过"无本地存证支撑——INTSHELL/FURNROLE 对 shop/work 的判决改由 **2026-08-07 F1+AM4 合并的整轮 CI 归档**回填（那轮会在现役 interiors.json（含 shop/work）上跑这两道门）。
+⚠️**审查 F4 纠**：上面这份归档的 `visual_gate.log` **只截到 shot/void-gate/space-roundtrip 的采集行，没有 INTSHELL/FURNROLE 的逐门判决行**（那两道 assert 的 stdout 在 CI run 里、未单独落进本 log）。故本 doc 原来"判决行原文"是空占位、"全过"无本地存证支撑。✅**整轮 CI 归档回填（2026-08-07，`analysis/review-2026-08-07-ci/verdict.txt`，HEAD `1fcbfc8`）**——在现役 interiors.json（含 shop/work）上真跑这两道门：
+- **`[INTSHELL] ✅ 室内外壳类型门 PASS（7 栋 / 4 类：commercial/public/residential/workshop，异类 ΔE ≥ 8.0、同类 ΔE ≤ 4.0）`**（work=workshop 墙主面 `#44423e`，与 commercial 类可分）。
+- **`[FURNROLE] ✅ 家具语义分化门 PASS（6 栋 / 5 类，异类 ΔE ≥ 12.0、同类 ≤ 8.0）`**——含 **shop 期望=货架（2 格 7200px）、work 期望=工具架（1 格 2652px）**，两者签名色可分。
+⇒ shop(commercial)/work(workshop) 的可分性判决**坐实**。
 
 **读法（结构论证，非门判决）**：INTSHELL 只采**墙**（左右列 col0/col w-1 的 [0.35T,0.80T] 带）——我的家具都在内格、
 不越格 ⇒ 墙众数不受扰、shop(commercial)↔cafe 同类应 ≤4.0、work(workshop) 异类应 ≥8.0。
@@ -136,4 +139,4 @@ FURNROLE 只采 **shelf 格**——shop 货架(store)/work 工具架(workshop) �
 - **对照图眼验**（红线 R）：
   - shop：柜台→收银机+挂秤+果篮、`crate[1,3]`→谷袋、`crate[2,3]`→敞口果箱、加迎宾垫；与 cafe/home 明显不同。
   - work：desk→工作台(台钳+刨)、`crate`→木料堆/材料箱、stool→铁砧、留工具架、加门垫；工坊身份清晰。
-- **CI**：`bash tools/ci.sh` 落地时跑绿（读判决行非退出码）；⚠️该 run 的判决行未单独归档 `analysis/am2`（审查 F4）——由 2026-08-07 F1+AM4 整轮 CI 归档统一回填。
+- **CI**：`bash tools/ci.sh` 落地时跑绿（读判决行非退出码）；该 run 的判决行当时未单独归档 `analysis/am2`（审查 F4）。✅**整轮 CI 归档回填（2026-08-07，`analysis/review-2026-08-07-ci/verdict.txt`，HEAD `1fcbfc8`）= `=== CI PASS ✅ ===`**（S0 12/12 含链 + INTSHELL/FURNROLE 见 §五 + 全门绿）。
