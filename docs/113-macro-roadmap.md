@@ -9,9 +9,9 @@
 
 用户给了 5 件事（在 3→2→1[storylet/选角深度/默认镇规模] 之外的**扩展愿景**）。整成三条并行车道 + 现有社交/叙事车道：
 
-- **车道 V（视觉大改 · item①）**：town map polish / total overhaul——terrain、building skin/appearances，**类星露谷**；工作流=实机图片 reference + **chrome session GPT img-gen 出草图/原型** → 一份 **reference 素材集** + 丰富 building 种类。✅**红线 R4 已由用户 2026-08-07 明示 waive**（"ignore red line R4"）：生成图**可**当出货资产、不再强制自绘/CC0、图二进制可入 git。实务注记（非阻塞）：生成图仍须适配像素分辨率/风格（通常作 game sprite 的底稿而非原样塞入）、二进制入 git 会涨库。
+- **车道 V（视觉大改 · item①）**：town map polish / total overhaul——terrain、building skin/appearances，**类星露谷**；工作流=实机图片 reference + **chrome session GPT img-gen 出草图/原型** → 一份 **reference 素材集** + 丰富 building 种类。✅**红线 R4 已由用户 2026-08-07 明示 waive**（"ignore red line R4"）：生成图**可**当出货资产、不再强制自绘/CC0、图二进制可入 git。实务注记（非阻塞）：生成图仍须适配像素分辨率/风格（通常作 game sprite 的底稿而非原样塞入）、二进制入 git 会涨库。**✅ 进度（docs/146）**：reference 素材集已起 2 张——① 11 栋建筑参考表（含新经济建筑车站/码头/仓库/磨坊/集市）② 7 类地砖参考表（草地/土路/石铺/农田/水岸/沙/木栈道，衔接 AP1/AP2 石街）。待续：building 变体/季节皮、经济建筑内部、props。**下一步**：据参考把某栋 building 皮或某片 terrain 重铺进 `WorldView.gd`（纯 View 零金标）。
 - **车道 E（经济/物流 · item②③④）**：运输(railway/port/bus)→外部供给(**设无限**)→**多元产业**(goods flow)→居民 consume/produce/create→**自给自足→进出口→最终 self-contain**。**最大新子系统、移金标**（新 sim 机制改 digest/chain，用户已放行 docs/41 §3 重烘金标锚）。**须先设计再实现**——经济设计 scoping 在跑（→docs/144，读现有 production/worksite/money/needs + 提确定性经济架构 + 增量落地顺序，reuse-first 别重造 worksite/money）。
-- **车道 N/S（叙事+社交 · 3→2→1 + item⑤）**：storylet/叙事内容（`goals.json` 零金标先做）→选角行为深度（移金标）→默认镇规模（与车道 E 的"活镇"呼应：大镇需经济支撑）。item⑤ narrative 分支=stale 只读 compositor，已折进叙事 scoping 当参考。
+- **车道 N/S（叙事+社交 · 3→2→1 + item⑤）**：storylet/叙事内容（`goals.json` 零金标先做）→选角行为深度（移金标）→默认镇规模（与车道 E 的"活镇"呼应：大镇需经济支撑）。item⑤ narrative 分支=stale 只读 compositor，已折进叙事 scoping 当参考。**✅ 进度**：叙事 scoping docs/143；**AR1（编号 145）已落地**——给 grudge/pact/craft 弧加「银钱往来」traded 幕（零金标，story_test+S0 金标 12/12 双证，committed CI PASS）。**下一片**：L3-b（goals 小扩/编年史文案）或 L3-d（移金标：解锁到场/mediate/gossip 褒贬，耦合选角行为深度）。
 
 **并行/排序**：V 与 E 与 N/S 三车道**文件面基本不相交**（V=WorldView/assets、E=新经济 data+Sim 机制、N/S=goals/Story/personas）⇒ 可并行推。**E 是重头且移金标**⇒ 设计提案先出、我(+用户)审过再增量实现，别盲上。**当前在跑**：叙事面 scoping、经济设计 scoping（两个只读）。**互联**：运输/产业/消费(E) + 大镇(3-2-1的1) + 更多 building 种类(V) + 经济事件成 storylet(N) 互相加强，是一个"活的星露谷式小镇"整体。
 

@@ -94,6 +94,6 @@
 ```
 
 ## 九、CI 判决行
-（见 §末尾，`analysis/ar1/ci.txt`；提交前互补性守卫不算数，协调者 committed 树重烘重跑，docs/140。）
+提交前互补性守卫不算数（比 committed HEAD:game，docs/140）。✅**权威 landing CI（协调者 finalize，committed 树 `522ee69`/game `6c37484` + 重烘 fresh ledger）**：`analysis/ar1/ci_landed_verdict.txt` = **`=== CI PASS ✅ ===`**——S0 12/12 含链、互补性守卫 fresh（锚烘于 `dbf2b6d`）、**story_test PASS（189s：A0≡A1 + 新 traded 幕 F 夹具 + lint_grammar + audit）**、全门绿。协调者另独跑 story_test + 纯 S0 金标门双 PASS（命门实证）。
 
 <!-- CI_VERDICT_PLACEHOLDER -->
