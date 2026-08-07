@@ -2,9 +2,9 @@
   "_meta": {
     "note": "互补性锚：哪些夹具是哪条不变量【唯一】的活输入来源。由 tools/gate_fixture_audit.py --run --bake-ledger 烘，由 tools/gate_complement_guard.py 每次 CI 现读一遍。期望值不写在守卫里，只写在这里——守卫那一侧没有任何冻结字面量。",
     "baked_by": "GODOT=… python tools/gate_fixture_audit.py --run --bake-ledger",
-    "baked_at": "2026-08-07",
-    "baked_commit": "dbf2b6dce89352abcba776bdb2a62bc43411d6b6",
-    "baked_game_tree": "6c374840001cf06c2895ab6d2f3b6e09cb4bfb44",
+    "baked_at": "2026-08-08",
+    "baked_commit": "8b85a7cb0ba239b0490a20cde89280e74c2e72b4",
+    "baked_game_tree": "f17ac3f9f472c1b10cc37f1d84f7cb227701cdeb",
     "dead_at_bake": [],
     "rebake_history": [
       "2026-08-02 · 烘于 commit c9e6ee6 · 7 个夹具 × 34 条 C/G 不变量 · 烘锚时处处空转的：（无）",
@@ -18,7 +18,8 @@
       "2026-08-07 · 烘于 commit d37c5a0 · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
       "2026-08-07 · 烘于 commit f11d689 · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
       "2026-08-07 · 烘于 commit f017af4 · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
-      "2026-08-07 · 烘于 commit dbf2b6d · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）"
+      "2026-08-07 · 烘于 commit dbf2b6d · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-08 · 烘于 commit 8b85a7c · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）"
     ]
   },
   "fixtures": {
@@ -277,17 +278,14 @@
     ],
     "22": [
       "S0",
-      "POOL16",
       "DET_betray"
     ],
     "23": [
       "S0",
-      "POOL16",
       "DET_betray"
     ],
     "24": [
       "S0",
-      "POOL16",
       "DET_betray"
     ],
     "25": [
@@ -326,22 +324,22 @@
       "POOL16"
     ],
     "30": [
-      "S0",
       "POOL16",
       "DET_freerider"
     ],
     "31": [
       "S0",
       "POOL16",
-      "DET_freerider"
+      "DET_freerider",
+      "BG30"
     ],
     "32": [
       "S0",
       "POOL16",
-      "DET_freerider"
+      "DET_freerider",
+      "BG30"
     ],
     "33": [
-      "S0",
       "POOL16",
       "DET_freerider"
     ],
@@ -405,8 +403,7 @@
     ],
     "41": [
       "S0",
-      "POOL16",
-      "BG30"
+      "POOL16"
     ],
     "43": [
       "S0",
