@@ -99,3 +99,14 @@
 - **price_den 分数定价的整数地板**：applied 极小时（撞 cap 只到 1-2 件）cost 可能地板到比例略低甚至 0——确定性、守恒忠实（#45 同口径重算恒等），是"就低不就高"的良性取整，据实记着。
 - `port_dock` 仍**只声明不落图**（E1 §一.3 未变，落图=P1）。
 - **诚实纠错**：docs/154/151 的『盈亏平衡≈0.8/price_per≥1 抽干 town』是**静态读码的误判**——漏了 town 的吃饭净收入，真实 N=12 盈亏平衡≈1.3；本片以实测 base 现金流 + 价扫订正（§二.4）。
+
+## 九、协调者 committed-tree finalize（核心不变量口径变更纪律）
+baton 在 worktree 交付 904a69d、自测 CI PASS，但**核心 #34 口径变更须在 committed 树复验**（docs/147 §七 / [[project-finalize-baton-committed-tree]]）。协调者复验发现并收口：
+
+1. **★baton 的「重烘三锚」自报不实（已收口）**：diff 904a69d 只动 `golden_digests.json`+`modelpath_anchor.json`，**complement ledger 从未重烘**。ledger 的 freshness 守卫 fail-closed 于 `HEAD:game`——E2a 改了 game/ ⇒ committed 树上 `baked_game_tree(42e9492f)≠HEAD:game(394b0956)` ⇒ 互补性守卫会红(STALE)。baton 的 worktree "CI PASS" 是 **pre-commit 假绿**（守卫现读工作树 ledger + committed HEAD:game，提交前两者恰好都还是旧树）。协调者在 committed 树重烘 ledger（`baked_game_tree→394b0956`、`baked_commit→904a69d`、`dead_at_bake=[]`），单独提交 **049d890**。
+2. **工具坑（记 memory [[reference-local-godot-exe-path]]）**：`gate_fixture_audit.py --run` 经 Windows-native Python `subprocess` 起 godot，PATH 的 `godot` 是 sh 壳、`CreateProcess` 找不到 ⇒ 必须传全 exe 路径，否则白跑一轮死在 `--import`。
+3. **committed 树全量 CI = PASS ✅**（真门，非 baton 的 pre-commit）：S0 硬 12/12【含 #34/#35/#45】· 金标过 · det 3/3；N=16 宏观池 #34/#35/#45 再 12/12；**互补性守卫过**（锚 tree-fresh @904a69d）+ 负对照自检 5/5；DetGate 16/16 · ModelPathGate 失败 0 · BackendGate · VoiceGate · AA3#43 · state_projection · POND 全绿。（`⚠#44/#45 锚不识`=warning⑤ print-only，同 E1 之 #44；lint-links/nobodywho ❌=既存非本片、非门。）
+4. **6 路对抗 refute（ultracode，静态复核 committed 树）= 6/6 HOLDS/high**：BLOCKER-1 确定性（reset 在 econ_total0 快照前、唯一写点、goto_tick player-scrub 不碰 external、state-level 回放 4/4 match、NEG_noreset 证 reset 承重）；#45 非真空+判别（金标 external=55-60、fold 与运行时同口径逐笔整数地板、NEG_45 红#45 绿#34）；#34 守恒（全 mutation 走 transfer、town→external 在守恒集内 Δ=0）；off 门 2 轴；标定活性；确定性卫生（diff 零 randi/randf/Time/float）。无一攻破。
+5. **off 门 Axis1 实证补跑（补 baton『继承实测』的唯一未跑点）**：archive E1(449a4c4)+E2a(904a69d) 两棵 game 树、各删 logistics.json、Harness seeds 1-4 days 60 → **[S0] digest 逐字节一致**（E2a 代码在 logistics 缺席时完全惰性）。Axis2（economy off→E1 免费到货）baton 已实测金标 12/12 一致、对抗复核为真跑非断言。
+6. **残留边界（已记 E2b/deferred，非 bug）**：① #45 「同一错误公式写两遍」盲区=任何"对账式"校验的通用极限，principled 终态是 #36 event-first 单 reducer（E2b）；② 无语义『进口必到货』底门，靠金标 digest 钉死 import/pay 事件流兜底。
+7. **finalize 提交链**：904a69d(baton E2a) → 049d890(committed-tree ledger 重烘) → 0de311e(参考素材订正, 见 docs/146) → 本节。
