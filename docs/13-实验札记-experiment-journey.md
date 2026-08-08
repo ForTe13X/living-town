@@ -2892,3 +2892,16 @@ AP 系是 pure-View 零金标（Sim 读不到绘制）。AQ1 是**内容/数据�
 
 ### 四、这轮对抗审查本身值不值：值
 5 critic + 综合花了 ~48 万 token，抓到 1 个真 bug（F1，红线#1）+ 我记录在案失败模式的 8 处实锤（F4）+ 一条会复发的漂移。**外部 Codex 不可达时，起独立 critic workflow 是可用替代**——关键是给每个 critic 一个**独立镜头 + 明确"来驳我、尤其驳我最容易错的地方"**，别让它们复述我的结论。综合层负责去重、剔除自我驳回项、排严重度。这套已成型，可复用。
+
+## 2026-08-08 · E2a 钱跨镇边界落地（core #34 口径变更）：finalize 复核抓到棒的自报不实 + 一个工具坑
+
+> E2 §0.8 双路评审收敛(docs/154)后落地 E2a：import 从【免费到货】升级成【先付后到】，货款经 transfer 搬进常驻 `external_coin` 账户，该账户收进硬 #34 守恒集 + 新硬 #45(付费溯源)。这是**核心不变量口径变更**，走了最重的 finalize 纪律。三条可复用。
+
+### 一、★★ 棒的自报要**对着 diff 核**，不是对着散文核——AS4 自称"重烘三锚"实际只烘了两锚
+AS4 报告白纸黑字写"重烘三锚(golden+modelpath+**ledger**)"，但 `git diff 449a4c4..904a69d` 只动了 `golden_digests.json`+`modelpath_anchor.json`——**complement ledger 从没被烘**（连 rebake_history 都只提 golden/modelpath 两条）。它的 worktree "CI PASS 含互补性守卫"是 **pre-commit 假绿**：守卫现读【工作树 ledger】+【committed HEAD:game】，提交前两者恰好都还是旧树 42e9492f ⇒ 绿；一旦 committed，`HEAD:game→394b0956`≠`baked_game_tree(42e9492f)` ⇒ 守卫 fail-closed 判 STALE 红。⇒ **纪律升级（延伸 [[relay-turns-observation-into-mechanism]] + 上一段 §一 finalize 铁律）**：验收棒的"重烘 N 锚"这类声明，**必须数 diff 里真正变了几个锚文件**，别信报告里的数字；核心口径变更**必在 committed 树亲手重烘 ledger + 跑权威 CI**。（这次 committed 树 CI = PASS：#34/#35/#45 硬各 12/12、互补性守卫 tree-fresh、DetGate 16/16、det 3/3。）
+
+### 二、★ 工具坑：`gate_fixture_audit.py --run` 经 Windows-native Python 起 godot ⇒ 必须传【全 exe 路径】
+PATH 的 `godot`(`~/.local/bin/godot`) 是个 `/bin/sh` 壳；bash 跑得动(`ci.sh` 经 `"$GODOT"` 也行)，但 `gate_fixture_audit.py` 用 Windows Python `subprocess.run([godot,…])` 起它 ⇒ `CreateProcess` 只补 `.exe`、bare `godot` 找不到 ⇒ `FileNotFoundError`、白跑一轮死在 `--import`。工具的 `_resolve_godot` 只救【全路径无扩展名】、不救裸名。⇒ 重烘 ledger 必 `GODOT="C:/…/Godot_v4.6.2-stable_win64_console.exe"`。已记 memory [[reference-local-godot-exe-path]]（含 Windows Python 读 CJK JSON 要 `encoding='utf-8'` 否则 gbk 崩）。
+
+### 三、★ core 不变量变更的 ultracode 验证模板：6 路对抗 refute + committed CI + off 门双树实证
+除 committed CI(真门)外，起 6 个独立 refuter 各驳一条安全声明（BLOCKER-1 确定性 / #45 非真空+判别 / #34 守恒 / off 门 2 轴 / 标定活性 / 确定性卫生），每个**默认往破处想、驳不倒才 HOLDS**、只静态读 committed 树+棒的已提交证据(analysis/as4/*)、不碰 godot(不与 CI 抢)。6/6 HOLDS/high。它们额外逼出棒**唯一没跑的实证点**（off 门 Axis1「删 logistics 逐字节回退」只写了"继承实测"没真跑）⇒ 我补了个**双树实证**：archive E1(449a4c4)+E2a(904a69d) 各删 logistics.json、Harness 跑 → [S0] digest 逐字节一致，证 E2a 代码在 logistics 缺席时完全惰性。⇒ **模板**：core 变更 = committed CI + N 路静态对抗 refute + 把 refuter 揪出的"asserted-not-run"点逐个补成真跑。
