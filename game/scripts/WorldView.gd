@@ -1216,44 +1216,122 @@ func _roof_variant(base: Color, v: int) -> Color:
 		2: c = Color.from_hsv(fmod(c.h + 0.030, 1.0), c.s * 0.90, minf(1.0, c.v * 1.16), c.a)          # 晒亮·略偏冷（新瓦）
 	return c
 
+## AV1（编号156）：每栋的木构件（角柱/雨棚支柱）挑一档做旧木色，纯 f(建筑角格) ⇒ 同类两栋的木框也分得开。
+## 全部由 X_WOOD_MID / P_COM_FOOT 派生（不新增字面量），留在暖木一族里——做旧/新木只差明暗，不换色相。
+func _trim_wood(v: int) -> Color:
+	match v:
+		1: return X_WOOD_MID.darkened(0.20)     # 做旧深木
+		2: return X_WOOD_MID.lightened(0.14)    # 晒白略亮
+		3: return P_COM_FOOT                     # 深棕硬木
+	return X_WOOD_MID                            # 常规木（v==0）
+
 ## 切顶俯视的屋檐带 → 画成有【瓦纹/受光屋脊/檐口投影/山墙收头】的坡屋顶。
 ## rect = 悬挑屋檐带。瓦纹逐片由 _hash(列,行) 定明暗（确定性），fit 缩放下瓦纹并作一片、屋脊/檐影/山墙读作体积。
+## AV1（编号156）：在 AT1 的瓦纹上再加料 —— 三行错缝瓦（逐片带底影，读作一层压一层的叠瓦）+
+##   一条【木脊梁盖】（比旧版单条高光更像真屋脊）+ 【受光/背光两端山墙】（不再是两端同暗，读出坡向）。
 func _draw_pitched_roof(rect: Rect2, roof: Color) -> void:
 	draw_rect(rect, roof, true)                                                       # 底瓦色
-	var rows := 2                                                                     # 两行错缝瓦
+	var rows := 3                                                                     # 三行错缝瓦（旧两行）——瓦纹更密，读作叠瓦
 	var rh := rect.size.y / float(rows)
-	var tw := T * 0.42
+	var tw := T * 0.40
 	for rr in range(rows):
 		var ry := rect.position.y + float(rr) * rh
 		var off := (tw * 0.5) if rr % 2 == 1 else 0.0
 		var cx := rect.position.x - off
 		while cx < rect.end.x:
 			var hh := _hash(int(floor(cx / tw)), rr, 61) % 3
-			var tc := roof.lightened(0.12) if hh == 0 else (roof.darkened(0.16) if hh == 1 else roof)
+			var tc := roof.lightened(0.13) if hh == 0 else (roof.darkened(0.17) if hh == 1 else roof)
 			var w0 := maxf(0.0, minf(cx + tw - 1.0, rect.end.x) - maxf(cx, rect.position.x))
 			if w0 > 0.0:
 				draw_rect(Rect2(maxf(cx, rect.position.x), ry, w0, rh - 1.0), tc, true)
+				draw_rect(Rect2(maxf(cx, rect.position.x), ry + rh - 2.0, w0, 1.5), roof.darkened(0.30), true)  # 每片瓦底影 → 一层压一层
 			cx += tw
-	draw_rect(Rect2(rect.position.x, rect.position.y, rect.size.x, T * 0.10), roof.lightened(0.34), true)          # 屋脊高光
-	draw_rect(Rect2(rect.position.x, rect.end.y - T * 0.10, rect.size.x, T * 0.10), roof.darkened(0.32), true)     # 檐口投影
-	var gab := roof.darkened(0.24)                                                    # 山墙收头（两端暗角 → 读作坡顶）
-	draw_colored_polygon(PackedVector2Array([rect.position, Vector2(rect.position.x + T * 0.26, rect.position.y), Vector2(rect.position.x, rect.end.y)]), gab)
-	draw_colored_polygon(PackedVector2Array([Vector2(rect.end.x, rect.position.y), Vector2(rect.end.x - T * 0.26, rect.position.y), Vector2(rect.end.x, rect.end.y)]), gab)
+	# 屋脊：受光高光带 + 一条木脊梁盖（深木）+ 梁下沿高光——三层叠出"顶上有根脊梁"
+	draw_rect(Rect2(rect.position.x, rect.position.y, rect.size.x, T * 0.09), roof.lightened(0.36), true)          # 脊侧受光
+	draw_rect(Rect2(rect.position.x, rect.position.y, rect.size.x, T * 0.05), P_COM_FOOT, true)                    # 脊梁（深木盖）
+	draw_rect(Rect2(rect.position.x, rect.position.y + T * 0.05, rect.size.x, 1.5), X_WOOD_MID.lightened(0.10), true)  # 脊梁下沿高光
+	draw_rect(Rect2(rect.position.x, rect.end.y - T * 0.10, rect.size.x, T * 0.10), roof.darkened(0.34), true)     # 檐口投影
+	# 山墙收头：左端受光、右端背光（光从左上来，与墙面顶棱/左棱高光同一套光向）⇒ 读出坡屋顶的两个斜面
+	draw_colored_polygon(PackedVector2Array([rect.position, Vector2(rect.position.x + T * 0.28, rect.position.y), Vector2(rect.position.x, rect.end.y)]), roof.lightened(0.20))
+	draw_colored_polygon(PackedVector2Array([Vector2(rect.end.x, rect.position.y), Vector2(rect.end.x - T * 0.28, rect.position.y), Vector2(rect.end.x, rect.end.y)]), roof.darkened(0.26))
 
-## 商业遮阳篷：红白条纹（类型信号）+ 顶棱高光 + 扇贝檐边（valance）→ 读作店铺雨棚。
-func _draw_awning(eave: Rect2, pal: Dictionary, bw: int) -> void:
+## 商业遮阳篷：条纹布棚（类型信号）+ 顶棱高光 + 扇贝檐边（valance）+ 两端木支柱 → 读作真的支起来的店铺雨棚。
+## AV1（编号156）：条纹深色按建筑变体挑（红/蓝/暖金），亮条恒为奶白——对齐参考里集市三顶不同色的布棚，
+##   让两家商业（咖啡馆/杂货铺）的雨棚一眼分得开；深色三档都由已授权常量派生，不新增字面量。
+func _draw_awning(eave: Rect2, pal: Dictionary, bw: int, v: int) -> void:
+	var accent: Color = pal["roof"]                     # v==0：红（默认商业）
+	match v:
+		1: accent = P_PUB_ROOF                          # 蓝白（另一家店：读作不同铺面）
+		2: accent = X_GLOW_DEEP.darkened(0.10)          # 暖金白
+	var light: Color = P_TEXT                           # 亮条（奶白）
 	var n := bw * 2
 	var stripe := eave.size.x / float(n)
 	for s in range(n):
-		var col: Color = pal["roof"] if s % 2 == 0 else pal["icon"]
+		var col: Color = accent if s % 2 == 0 else light
 		var sx := eave.position.x + float(s) * stripe
 		draw_rect(Rect2(sx, eave.position.y, stripe + 1.0, eave.size.y), col, true)
 		# 扇贝檐边：每条布幅底沿挂一枚半圆凸缘，读作垂布
 		draw_circle(Vector2(sx + stripe * 0.5, eave.end.y), stripe * 0.5, col)
-	draw_rect(Rect2(eave.position.x, eave.position.y, eave.size.x, T * 0.08), P_TEXT.lightened(0.10), true)        # 顶棱高光（布面受光）
+	draw_rect(Rect2(eave.position.x, eave.position.y, eave.size.x, T * 0.08), light.lightened(0.06), true)        # 顶棱高光（布面受光）
 	draw_rect(Rect2(eave.position.x, eave.position.y, eave.size.x, eave.size.y), Color(0, 0, 0, 0.14), false, 1.0) # 外框描边
+	# 两端支柱：木杆从檐角垂到墙面 → 读作把布棚支起来的柱子（参考里每顶集市棚都有）
+	for pxx in [eave.position.x + stripe * 0.5, eave.end.x - stripe * 0.5]:
+		draw_rect(Rect2(pxx - T * 0.03, eave.end.y - T * 0.02, T * 0.06, T * 0.30), X_WOOD_MID, true)
+		draw_rect(Rect2(pxx - T * 0.03, eave.end.y - T * 0.02, T * 0.02, T * 0.30), X_WOOD_MID.lightened(0.20), true)  # 受光棱
 
+## AV1（编号156）：木构角框 —— 左右两条【竖角板】（贴最外缘薄板，避开内缩≥0.10T 的窗扇）把整栋"框起来"，
+##   四角再压【加宽木块】（角格永不开窗，可宽）+ 底排【石柱脚】。这是把大片平板墙面读成"木构建筑"的关键笔画：
+##   参考里每栋都靠这对深木角柱 + 石脚把屋顶撑在石基上。柱头塞在屋檐下（dressing 里屋顶画在其后 ⇒ 屋顶坐在柱上）。
+func _draw_corner_posts(x0: int, y0: int, bw: int, bh: int, wood: Color) -> void:
+	var lit := wood.lightened(0.22)
+	var shd := wood.darkened(0.34)
+	var top := float(y0) * T + T * 0.24                 # 顶端塞屋檐下
+	var bot := float(y0 + bh) * T                        # 到石基
+	# 左右两条竖角板（薄，贴最外缘 ⇒ 让木框从檐下一路连到石脚）
+	var bwid := T * 0.12
+	for cxg in [x0, x0 + bw - 1]:
+		var ex := float(cxg) * T if cxg == x0 else float(cxg + 1) * T - bwid
+		draw_rect(Rect2(ex, top, bwid, bot - top), wood, true)
+		draw_rect(Rect2(ex, top, bwid * 0.5, bot - top), lit, true)                     # 受光竖棱
+	# 四角加宽木块 + 底排石柱脚
+	var pw := T * 0.30
+	for cyg in [y0, y0 + bh - 1]:
+		var cy0 := float(cyg) * T + (T * 0.24 if cyg == y0 else 0.0)
+		var cy1 := float(cyg + 1) * T
+		for cxg in [x0, x0 + bw - 1]:
+			var px := float(cxg) * T if cxg == x0 else float(cxg + 1) * T - pw
+			draw_rect(Rect2(px, cy0, pw, cy1 - cy0), wood, true)                        # 角柱身
+			draw_rect(Rect2(px, cy0, pw * 0.34, cy1 - cy0), lit, true)                  # 受光竖棱
+			draw_rect(Rect2(px + pw * 0.78, cy0, pw * 0.22, cy1 - cy0), shd, true)      # 背光竖棱
+			if cyg == y0 + bh - 1:                       # 底排：石柱脚
+				draw_rect(Rect2(px - 1.0, cy1 - T * 0.14, pw + 2.0, T * 0.14), P_STONE, true)
+				draw_rect(Rect2(px - 1.0, cy1 - T * 0.14, pw + 2.0, 1.5), P_STONE_LINE, true)
+
+## AV1（编号156）：底墙下段一条【错缝石基】（皮数线 + 砌块缝）→ 让建筑"坐"在石头地基上，不像浮在草上。
+## 只压底墙那一行的最下 ~T*0.26（在窗洞之下、门槛之上，留在建筑轮廓内 ⇒ 不碰地面/岸线/林块采样格）。
+func _draw_foundation(x0: int, y0: int, bw: int, bh: int) -> void:
+	var fx := float(x0) * T
+	var fwd := float(bw) * T
+	var fy := float(y0 + bh) * T - T * 0.26
+	draw_rect(Rect2(fx, fy, fwd, T * 0.26), P_STONE, true)                              # 石基主面
+	draw_rect(Rect2(fx, fy, fwd, T * 0.07), P_STONE.lightened(0.12), true)             # 顶棱受光
+	draw_rect(Rect2(fx, fy + T * 0.20, fwd, T * 0.06), P_STONE.darkened(0.18), true)   # 底影
+	draw_line(Vector2(fx, fy + T * 0.13), Vector2(fx + fwd, fy + T * 0.13), P_STONE_LINE, 1.0)  # 皮数线
+	var bwd := T * 0.72                                                                 # 砌块宽
+	var sx := fx
+	var k := 0
+	while sx < fx + fwd:
+		var seam := sx + (bwd * 0.5 if k % 2 == 1 else 0.0)                             # 错缝
+		if seam > fx and seam < fx + fwd:
+			draw_line(Vector2(seam, fy), Vector2(seam, fy + T * 0.26), P_STONE_LINE, 1.0)
+		sx += bwd
+		k += 1
+
+## AV1（编号156）：先压【石基 + 四角木柱】（读作木构建筑坐在石头地基上），再压屋顶（盖住柱头 = 屋顶坐在柱上），
+##   最后挂招牌 + 入口提灯（夜里点亮）。木柱/雨棚色按建筑变体挑一档 ⇒ 同类两栋的木框与布棚都分得开。
 func _draw_building_dressing(w: int) -> void:
+	var tod := Sim.time_of_day()
+	var night := tod < 0.24 or tod > 0.78
 	for aid in Sim.world.get("areas", {}):
 		var a: Dictionary = Sim.world["areas"][aid]
 		var typ := String(a.get("type", ""))
@@ -1261,18 +1339,31 @@ func _draw_building_dressing(w: int) -> void:
 			continue
 		var pal: Dictionary = BLD_PAL.get(typ, BLD_PAL["workshop"])
 		var r: Array = a.get("rect", [0, 0, 0, 0])
-		var x0 := int(r[0]); var y0 := int(r[1]); var bw := int(r[2])
+		var x0 := int(r[0]); var y0 := int(r[1]); var bw := int(r[2]); var bh := int(r[3])
 		var v := _bld_variant(x0, y0)
 		var roof: Color = _roof_variant(pal["roof"], v)
+		var wood: Color = _trim_wood(_hash(x0, y0, 93) % 4)
+		_draw_foundation(x0, y0, bw, bh)                # 石基（底墙下段）
+		_draw_corner_posts(x0, y0, bw, bh, wood)        # 四角木柱（顶端塞屋檐下）
 		var eave := Rect2(x0 * T - T * 0.12, y0 * T - T * 0.16, bw * T + T * 0.24, T * 0.46)  # 悬挑屋檐
-		if typ == "commercial":                         # 商业：坡屋脊 + 红白条纹遮阳篷（最醒目的类型信号）
+		if typ == "commercial":                         # 商业：坡屋脊 + 条纹遮阳篷（最醒目的类型信号，色按变体挑）
 			_draw_pitched_roof(Rect2(eave.position.x, eave.position.y - T * 0.14, eave.size.x, T * 0.24), roof)
-			_draw_awning(eave, pal, bw)
+			_draw_awning(eave, pal, bw, v)
 		else:
 			_draw_pitched_roof(eave, roof)
-		_draw_sign(typ, pal, (x0 + bw * 0.5) * T, y0 * T - T * 0.5)
+		_draw_sign(typ, pal, (x0 + bw * 0.5) * T, y0 * T - T * 0.5, night)
 
-func _draw_sign(typ: String, pal: Dictionary, cx: float, cy: float) -> void:
+## AV1（编号156）：招牌两侧加一对檐下提灯（夜里点亮、白天是熄灯的铜灯）—— 参考里几乎每栋入口都挂灯。
+##   night 由 dressing 现算传入（Sim.time_of_day 确定性，与 facades 同一判据）；灯芯色由 X_GLOW* 派生。
+func _draw_sign(typ: String, pal: Dictionary, cx: float, cy: float, night: bool = false) -> void:
+	for lxo in [-T * 0.44, T * 0.44]:                                                     # 招牌两侧各挂一盏
+		var lx: float = cx + lxo
+		var lyc: float = cy + T * 0.04
+		draw_rect(Rect2(lx - T * 0.015, cy - T * 0.16, T * 0.03, T * 0.16), X_WOOD_MID, true)   # 挂杆
+		if night:
+			draw_circle(Vector2(lx, lyc), T * 0.16, Color(X_GLOW, 0.28))                        # 夜里暖光晕
+		draw_rect(Rect2(lx - T * 0.05, lyc - T * 0.05, T * 0.10, T * 0.13), D_WOOD_LINE, true)  # 灯框
+		draw_rect(Rect2(lx - T * 0.034, lyc - T * 0.03, T * 0.068, T * 0.09), X_GLOW if night else X_GLOW_DEEP.darkened(0.30), true)  # 灯芯
 	match typ:
 		"commercial":                                   # 挂牌 + 咖啡杯 + 蒸汽（悬挑吊牌）
 			draw_rect(Rect2(cx - T * 0.03, cy - T * 0.40, T * 0.06, T * 0.16), X_WOOD_MID, true)   # 吊杆

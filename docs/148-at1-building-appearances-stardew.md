@@ -12,6 +12,8 @@
 
 **① 参考图与它的文档描述不符。** docs/146 §素材集把 `docs/media/references/ref_buildings_v1_stardew.png` 记作「11 栋建筑外观参考表（BAKERY/BLACKSMITH/…/MARKET STALLS）」。**实读那张 PNG：是 6 格中世纪风做旧道具**（板车 / 兵器架 / 酒桶堆 / 破木牌 / 干草垛 / 木框），暗底、厚涂、暖色高光的木质质感——**不是建筑外观表**，只有左下那格破木牌沾点"招牌"的边。故我取的是它**能给的**神韵（暖色做旧木质 + 手绘高光 + 磨损细节），适配到俯视网格；**没有**照它去抄"11 栋具名建筑"（那些在这张图里根本不存在）。→ docs/146 的这条描述应更正（另一张 `ref_terrain_v1_stardew.png` 未核）。
 
+> ⚠️ **2026-08-08 订正（AV1 / 编号156 实读）：本条已过期，不得再据它下判断。** 上面这段说的"6 格做旧道具"描述的是**当时存错的那张文件**——docs/146 的 2026-08-08 订正记着：首次提交时 `download` 抓成了 Downloads 里另一项目（Jianghu）的图，`ref_buildings_v1_stardew.png` 一度不是本镇素材，已用页内 JS `fetch(img.src)` 取回真图替换。**今天树上的这张 PNG 是 docs/146 记的那张真·11 栋建筑外观表**（BAKERY CAFÉ / BLACKSMITH / GENERAL STORE / LIBRARY / BATHHOUSE / COTTAGE / TRAIN STATION / HARBOR DOCK / WAREHOUSE / WATERMILL / MARKET STALLS，暖色统一像素、3/4 微俯角），AV1 已按它的真神韵（瓦屋顶 + 木构角柱 + 石基 + 条纹雨棚 + 门头提灯 + 每栋辨识度）加料，见 docs/156。**docs/146 §素材集那行原本就是对的，是本文这条 §一① 错了**（读到的是过期文件）。保留原文不删（过程记录不事后抹），但结论以本订正为准。
+
 **② 「建筑外观」在这张地图上分两套画，不是一套。** 协调者点了 `_draw_building`（约 3683）+ `_draw_building_dressing`（约 1204）。实读复核：
 - `map.json` 的 **`areas`（9 个区）**——`_wall_set` 逐格墙按 `_wall_type`→BLD_PAL 上色，再压 `_draw_facades`（窗+烟囱）与 `_draw_building_dressing`（屋檐+招牌）。**这是"建筑外壳"的主体**（区级围墙 + 屋顶 + 招牌）。
 - `map.json` 的 **`rooms` = 空（0 条）**；`_draw_building`（3777）迭代的 `Sim.world["rooms"]` 是**运行期从 `buildings.json` 灌进来的 12 间房**（Sim.gd:597-654），画成嵌在区里的小房盒（各自墙/地/家具/门/窗/灯）。
