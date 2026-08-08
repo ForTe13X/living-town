@@ -141,3 +141,16 @@ memory [[reference-local-godot-exe-path]]：Windows Python subprocess 必传全 
 - #45/#46 是 #36（event-first 单 reducer 逐账户完备性）与完整 #38-trade escrow 的 export 切片最小版，非终态（P4）。
 - port_dock 仍只声明不落图（P1）。
 - 互补性 ledger 待协调者 committed-tree 重烘（§八）。
+
+## 九、协调者 committed-tree finalize（move-golden core-invariant 最高纪律）
+export 改 #45 口径 + 加硬 #46 = 核心货币不变量变更，走 E2a 同档纪律（docs/155 §九 / [[project-finalize-baton-committed-tree]]）。cherry-pick c25537c → onto integration/batons。三门齐绿：
+
+1. **读码验 F1–F7 忠实**（协调者亲读 Sim.gd `_logi_export/_export_fit/_export_commit` + Invariants #45二向/#46/#38白名单/社交排除 + logistics + 两份 HARD_IDS）：F1 显式正 `sold_qty`+exact wrapper(先 transfer 收钱成功再 `_stock_move` 出货、`revenue<=0`/付不起皆不出货)；F7 #46 从 event_log 独立校验严格 pay,stock 交替+逐对 qty 相等+货/港合法；pay note `export*<qty>` 使 pay.qty↔stock.qty 可逐对核；HARD_IDS 两份同步 +46。
+2. **7 路对抗 refute（ultracode，静态读 committed 树）= 7/7 HOLDS/high**：F1 免费流失类**已被 #46 抓**（NEG_F1_free ⇒ #46 红而 #34/#38 绿，正是"全绿假象"命门）且 #46 **非真空**（金标 liveness 记 63 条 export 事件×12/12 seed）；#46 原子绑定稳（单一 emitter+单 lane ⇒ 孤儿单缺陷必塌成 pay,pay/stock,stock 被抓）；#45 二向 sound+不弱化 import 判别+#46 兜住 F2 跨边；#34 守恒+goto_tick 回放；off 门 2 轴+F5 N=12 限域+确定性；标定活性（floor36 的 ≤3 件超抽是**库存深度事件非满足率失败**、动不了 #40 的 0.50 底、held-out 30/30 绿）；完备性。**无一攻破。**
+3. **committed 树全量 CI = PASS ✅**：#34/#35/#38/#45/#46 硬各 **12/12**（S0 默认 + N=16 宏观池两处；#46 在 N=16 因 export 惰性=真空绿，正确）；金标 12/12 逐字节；互补性守卫 tree-fresh @3dea841（#44/#45/#46 warning⑤ print-only，同 E1#44/E2a#45）；ModelPathGate 失败 0（export pay 事件移 modelpath 锚、已重烘验过）；det 3/3；DetGate/BackendGate/VoiceGate/AA3/state_projection/视觉门全绿。
+4. **finalize 提交链**：c25537c(baton export)→ cherry-pick → c7c67a0(committed-tree ledger 重烘)→ 本节。golden+modelpath 由 baton 烘、committed CI 验；ledger 协调者在 committed 树重烘。
+
+### 后续硬化项（对抗 refute 逼出，非本片缺陷，记入 roadmap P4-adjacent）
+- **#46 按 transaction-id 绑定**（而非 log 相邻位）：仅当 export 未来有**并发 emitter / 多 lane / async** 时才可达"两个同量孤儿交叉配对"假绿；当前单 emitter 单 lane 结构上不可达。
+- **#46 补 per-event `amount==qty×price` 保真** + 对称的 import pay↔stock 配对：当前净守恒已足（#45 聚合等式 + 闭环），个别 pay 金额篡改不产生有害态；要逐笔金额保真再加。
+- **大 N export**（floor 进 K1 缩放或按定点需求标定）、town_coin 硬上限、完整 #36/#38-trade escrow、口岸落图 = P4/E4。
