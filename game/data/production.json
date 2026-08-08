@@ -37,7 +37,7 @@
     "k_num": 1,
     "k_den": 2
   },
-  "start_stock": { "口粮": 40, "柴薪": 30, "豆子": 16, "话本": 8, "整洁": 45, "屋瓦": 40 },
+  "start_stock": { "口粮": 40, "柴薪": 30, "豆子": 16, "话本": 8, "整洁": 45, "屋瓦": 40, "糕点": 12 },
   "goods": {
     "口粮": { "label": "口粮", "cap": 130, "spoil_per_day": 1, "blame": "面点师" },
     "柴薪": { "label": "柴薪", "cap": 80, "spoil_per_day": 0, "blame": "杂役" },
@@ -56,6 +56,13 @@
       "shortage_memo": "想%s，广场上却脏得没处下脚（%s没人管）",
       "shortage_claim": "广场脏成那样也没人扫，%s归%s管吧",
       "shortage_standing": -0.25
+    },
+    "糕点": {
+      "label": "糕点", "cap": 20, "spoil_per_day": 1, "blame": "糕点师",
+      "_why": "E3b（docs/164）：闲聊-attach treat 链。糕点【不接】任何生存 need——它挂在【既有】的 `闲聊`(social) 动作上（consume.闲聊），当 treat 顺带被吃掉。★为什么挂既有动作而不是新加一条『吃点心』：E3a（docs/153）实测新加 town 平面动作会新增 60-80 决策槽/seed、系统性稀释核心产出约 0.03；而『缺货绝不阻断动作』红线保证 `闲聊` 的选中频率【不随糕点库存变】（有糕点照吃、没糕点照闲聊+写 shortage）⇒ 不新增决策槽 ⇒ 结构上不稀释核心。需求=既有闲聊频率（自然 ≥20、随人口涨）。",
+      "shortage_memo": "想%s配块%s，柜上却空了（没人做）",
+      "shortage_claim": "镇上的%s老是断，%s该多做些吧",
+      "shortage_standing": -0.2
     }
   },
   "produce": {
@@ -66,7 +73,8 @@
     "咖啡师": { "good": "豆子", "amount": 36 },
     "教书先生": { "good": "话本", "amount": 6 },
     "环卫工": { "good": "整洁", "amount": 16 },
-    "泥瓦匠": { "good": "屋瓦", "amount": 30, "inputs": { "柴薪": 3 } }
+    "泥瓦匠": { "good": "屋瓦", "amount": 30, "inputs": { "柴薪": 3 } },
+    "糕点师": { "good": "糕点", "amount": 6 }
   },
   "consume": {
     "吃饭":   { "good": "口粮", "amount": 1 },
@@ -76,7 +84,8 @@
     "歇着":   { "good": "话本", "amount": 1 },
     "赶集":   { "good": "口粮", "amount": 1 },
     "玩耍":   { "good": "整洁", "amount": 1 },
-    "社交":   { "good": "整洁", "amount": 1 }
+    "社交":   { "good": "整洁", "amount": 1 },
+    "闲聊":   { "good": "糕点", "amount": 1 }
   },
   "scarcity_markup": 1,
   "shortage_standing": -0.5,
@@ -109,7 +118,8 @@
     "_why": "F1 新增的两个岗位。写在这里而不是 jobs.json，是为了让『摘掉本文件 ⇒ 逐字节回到今天』这条对照成立。Sim._merge_prod_jobs 只补不覆盖：jobs.json 已给该居民派了活就不动它。商贩的 wage 只有 2 是刻意的——他的钱主要来自卖货（人→人的 transfer），镇库工资只留一点点，好让 economy.poor_line 的『穷了就去上工』那条动机环对他仍然有效。",
     "mei": { "title": "商贩",   "action": "摆摊", "wage": 2, "shift": ["day"] },
     "tie": { "title": "环卫工", "action": "清扫", "wage": 3, "shift": ["dawn", "day"] },
-    "evy": { "title": "泥瓦匠", "action": "修屋", "wage": 3, "shift": ["day", "dusk"] }
+    "evy": { "title": "泥瓦匠", "action": "修屋", "wage": 3, "shift": ["day", "dusk"] },
+    "coco": { "title": "糕点师", "action": "做点心", "wage": 3, "shift": ["dawn", "day"] }
   },
   "job_action": {
     "_why": "把既有岗位的动作从共用的『做活/看摊』改成各自的动词。desk_1 的『做活』与 counter_1 的『看摊』原样留着——它们现在是【零工】：谁都能去、拿 economy.wages 的零工价、一件货也不产。",
@@ -146,7 +156,10 @@
       "advertises": [ { "action": "修屋", "job": "泥瓦匠", "need": "fun", "amount": 46, "duration": 28 } ] },
     { "id": "bench_woodpile", "type": "柴垛", "area": "wash", "pos": [24, 31],
       "_why": "F5：杂役在澡堂里劈柴。放澡堂而不是工坊是刻意的——杂役产的是柴薪，而全镇唯一消耗柴薪的动作就是澡堂的『洗澡』（consume.洗澡→柴薪，546 次/seed）。产地紧挨着用地，这条供需线第一次在地图上看得见；顺带也把三个工位从『全挤在工坊』分开。",
-      "advertises": [ { "action": "劈柴", "job": "杂役", "need": "fun", "amount": 38, "duration": 28 } ] }
+      "advertises": [ { "action": "劈柴", "job": "杂役", "need": "fun", "amount": 38, "duration": 28 } ] },
+    { "id": "counter_pastry", "type": "摊位", "area": "plaza", "pos": [31, 23],
+      "_why": "E3b（docs/164）：糕点师（coco，原 spare 零工）在广场支个点心摊。★与 E3a（docs/153）的唯一差别、也是整个 pivot 的心脏：本工位【只】广告 `做点心`(job=糕点师)——一条【职位专属】、只有 coco 枚举得到的产出动作；它【不】广告任何 town 平面消费动作（E3a 的 `吃点心` 就是那条被全镇选中 60-80 次/seed、系统性稀释核心产出的新决策槽）。消费改挂在【既有】的 `闲聊` 上（consume.闲聊），不新增任何决策选项 ⇒ 结构上不稀释核心。type『摊位』复用 OBJ_SLOT_BY_TYPE 现有项（counter_stall 同 type）⇒ 零 WorldView 改动、别名预算不变。pos[31,23]：广场 rect[28,21,8,6] 内、避开 bench_1[30,23]/arcade_1[33,24]/counter_stall[32,22]/节日灯笼锚[31,24]。免费消费（不进 vendor 键）⇒ 硬 #34 全程不动。",
+      "advertises": [ { "action": "做点心", "job": "糕点师", "need": "fun", "amount": 48, "duration": 24 } ] }
   ],
   "vendor": {
     "_why": "全镇唯一一条【货与钱同时在人之间易手】的通道：镇库的口粮经 _stock_take 出账，钱经 transfer 进【现任商贩本人】的口袋而不是镇库。守恒仍然只靠 transfer 这一道门 ⇒ 硬 #34 一个字节都不用改。price 3 高于灶台的 2 —— 摊子要赚这一个钱，那就是分化的来源。",
