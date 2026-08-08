@@ -7,7 +7,8 @@
 | # | 文件 | 内容 | 来源 | 用途 |
 |---|---|---|---|---|
 | 1 | `ref_buildings_v1_stardew.png` | 11 栋建筑外观参考表（星露谷风、暖色、统一像素）：BAKERY CAFÉ / BLACKSMITH / GENERAL STORE / LIBRARY / BATHHOUSE / COTTAGE / **TRAIN STATION / HARBOR DOCK / WAREHOUSE / WATERMILL / MARKET STALLS** | GPT img-gen（chrome session, 2026-08-07） | building 外观风格锚 + 新经济建筑(车站/码头/仓库/磨坊/集市)的造型底稿 |
-| 2 | `ref_terrain_v1_stardew.png` | 7 类地砖参考表，每类含 center/alt/edge/corner/transition/mixed/worn 变体：GRASS / DIRT PATH / **STONE PAVEMENT·PLAZA** / FARMLAND SOIL / RIVER·WATER EDGE / SAND / BOARDWALK | GPT img-gen（chrome session, 2026-08-07） | terrain 重铺风格锚（草地/土路/石铺直接衔接 AP1/AP2 已做的石街·广场；农田/水岸/木栈道给未来农业·港口） |
+
+> ⚠️**2026-08-08 订正**：首次提交时**存错了文件**——`download` 点击开的是全屏预览而非下载，我按时间戳抓了 Downloads 里另一项目(Jianghu)的角色图，导致 ref_buildings/ref_terrain 一度是**武侠角色图不是本镇素材**（AT1 实读抓到）。已用**页内 JS `fetch(img.src)→blob→a.download`** 取回真图替换 buildings（真 11 栋表已核）。**terrain 暂缺**：Chrome 拦第二个自动下载 + reload 后图未渲染，terrain 真图（7 类地砖，2.7MB，已在 ChatGPT 会话里）**待重取**（下一轮单独一次下载即可）。⇒ 表里 terrain 行**先撤**，待重取后补。
 
 **建筑种类对齐**：现有 8 栋（cafe/home/home2/shop/work/wash/library + test）→ 参考表覆盖其身份 + **补齐车道 E 需要的 5 类新经济建筑**（车站/码头/仓库/水磨坊/集市），一举衔接视觉与经济车道。
 
