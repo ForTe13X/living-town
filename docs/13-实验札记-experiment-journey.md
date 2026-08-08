@@ -2905,3 +2905,14 @@ PATH 的 `godot`(`~/.local/bin/godot`) 是个 `/bin/sh` 壳；bash 跑得动(`ci
 
 ### 三、★ core 不变量变更的 ultracode 验证模板：6 路对抗 refute + committed CI + off 门双树实证
 除 committed CI(真门)外，起 6 个独立 refuter 各驳一条安全声明（BLOCKER-1 确定性 / #45 非真空+判别 / #34 守恒 / off 门 2 轴 / 标定活性 / 确定性卫生），每个**默认往破处想、驳不倒才 HOLDS**、只静态读 committed 树+棒的已提交证据(analysis/as4/*)、不碰 godot(不与 CI 抢)。6/6 HOLDS/high。它们额外逼出棒**唯一没跑的实证点**（off 门 Axis1「删 logistics 逐字节回退」只写了"继承实测"没真跑）⇒ 我补了个**双树实证**：archive E1(449a4c4)+E2a(904a69d) 各删 logistics.json、Harness 跑 → [S0] digest 逐字节一致，证 E2a 代码在 logistics 缺席时完全惰性。⇒ **模板**：core 变更 = committed CI + N 路静态对抗 refute + 把 refuter 揪出的"asserted-not-run"点逐个补成真跑。
+
+## 2026-08-08(续) · 视觉大改(AV1/AV2)+export §0.8：三条可复用
+
+### 一、★★ §0.8 外审逮到「现役门全绿的静默价值流失」——dual-path §0.8 的价值实锤 + "all gates green ≠ correct"
+export 设计镜像 import 写 `revenue = applied×price/den`，但 export 走 `_stock_move(good,−N)` 返回的 applied 是**负数** ⇒ revenue 负 ⇒ `transfer(amt<=0)` 假 ⇒ **货已出、钱没收（免费流失）**。GPT-5 Pro 冷独立外审（未喂内审结论）不但收敛于内审 F1（符号），还给出**更狠框架**：此 bug 下 **#34/#35/#38/#45/社交排除 全绿**——钱没变(#34 绿)、库存正常记减(#38 绿)、本次没 export pay 可统计(#45 绿)——**无一门抓得住"钱货脱钩"**。⇒ 逼出 **F7 贸易原子性绑定**（一次 export=恰一 pay+恰一同量 stock），docs/157/154 defer 到 P4 的 #38-trade 最小版**不可 defer**。**教训**：(a) 两路独立 §0.8 对核心口径变更是真有产出的，不是仪式——外审比内审更早看穿"全绿假象"；(b) **"整条 CI 全绿"永远不等于"对"**，尤其钱货两账各自自洽 ≠ 二者对应，缺绑定钉时价值流失对所有分项守恒门隐形。[[relay-turns-observation-into-mechanism]] 的延伸：连"门全绿"这种最硬的回执也能是假的。
+
+### 二、★ 出货【生成图】在自证门下的可复用形态：terrain_gate hybrid（CC0 重建 + 生成瓦 hash-pin with teeth）
+R4 waived 后要上生成瓦，但老 terrain_gate 是**从 CC0 总表当场重建逐像素比**（非清单校验和，防"改图的人下一步就是改清单"）——生成图没有重建配方、过不了。AV2 改 **hybrid**：8 张 CC0 岸线瓦**保留重建+比对**；5 张生成瓦**hash-pin 到解码 RGBA sha256**（非容器字节，避编码器漂移），**保留 teeth（翻 1px→sha256 变、原图 hash==钉子，杀 return-True/常量）+ over-scan + 文件集**，只**丢掉 coord-consistency 自证**（生成瓦无切图坐标，明写代价）。清单只能人过 `--rebless`（眼验+录真机帧后），CI 永不自动重生成。**教训**：生成资产入自证门 = 把重建臂换成 hash-pin 但**逐条保留其余自证的 hash 版**；诚实认领丢掉的那条 + 人眼 ratchet 是 waived-R4 的最强诚实声明。可复用于 emote/decor/building 等其余生成图。
+
+### 三、★ 视觉大改的现实边界：dollhouse 俯视切顶 + 16px drop-in 天花板；terrain 是 paradigm-safe 的最大屏占赢面
+「类星露谷」与本作**灵魂设定**冲突：星露谷是 3/4 有顶封闭外观+进屋另开室内；本作是**俯视切顶 living dollhouse**（屏上直接看见室内 + NPC 在里面活）——建筑无法变成不透明有顶块否则丢"看得见里面"。⇒ 建筑只能在 dollhouse 范式内加料（AV1 程序化 / 未来生成瓦），**天花板有限**。真正 paradigm-safe 的大屏占赢面是 **terrain**（地面无切顶张力、占屏最多），AV2 走它（暖橄榄草+teal 水，与 AV1 暖建筑呼应）。16px drop-in 瓦（`draw_texture_rect` 填 T×T 不管源尺寸）零 WorldView 改、稳 mode-color 门（48px 会砸 SEASON/DAYNIGHT 众数色稳定性）。**顶风险 SEASON 兑现**：新暖草把夜 春↔夏 ΔE00 从 4.30 压到 2.73(红)，深化 `SEASON_VEG["夏"]` 复原到 4.28(过)——预测的风险真来了、按预案修掉。**教训**：视觉车道要先认范式边界（哪些改动 paradigm-safe），再挑最大屏占赢面；生成瓦走 16px 保 mode-color 门。
