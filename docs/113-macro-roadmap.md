@@ -202,3 +202,21 @@ Phase 5  才恢复多镇：生产 capacity 与具名 NPC 解耦 → N=24/40/60 h
 
 1. P0 收敛：required PR/check + 冻结 SHA + 并行 CI。2. AC2 vanished 红门。3. state_projection+KnowledgeState（§0.8）。4. AH1 先并层（§0.8）。
 </details>
+
+---
+
+## 2026-08-08 · 「等用户拍板」已解除 → 双车道大交付 → 交通/建筑种类
+
+> 上面 §「当前动作」的"放慢等拍板"**已过期**：用户给了 5-item 愿景（视觉大改/交通/多样工业/consume-produce/看叙事分支）+ 两个 AskUserQuestion 决定（地形=**生成瓦全流水线**、经济=**export §0.8→实现**）。据此本 session 双车道全交付。详见 [[project-economy-trade-loop]] + docs/154-160 + 札记 docs/13。
+
+### 已交付（本 session，全 push 到 integration/batons、committed 树全绿）
+- **车道 E 经济——贸易环闭合**：E1(免费 import)→**E2a**(import 付费,external 进#34,硬#45)→**E-export**(货出→钱进,#45 二向,新硬**#46** 出口原子性)。external 闭环有界非负(export≤import,不泵富)。两片皆 core 口径变更、走 §0.8 双路评审(export 外审=GPT-5 Pro 逮到"全绿静默流失"、逼出 #46)+ move-golden committed-tree finalize + N 路对抗 refute。硬不变量现 #34/35/38/44/45/46。
+- **车道 V 视觉——暖色星露谷大改**：**AV1**(建筑外皮 v2:木构/石基/分色雨棚/夜灯)+**AV2**(生成瓦地形:暖草/teal 水,terrain_gate 改 hybrid=CC0 重建+生成瓦 hash-pin)+参考素材集齐(建筑+地形,已眼验)。皆 pure-View 零金标。
+
+### 共同约束（contract，未变）
+红线#1 确定性逐字节可回放 / #2 零模型可玩 / #3 ≤60 人 / #4 **已 waive**(生成图可出货)。move-golden 片纪律=off 门自证+重烘三锚(golden/modelpath/**ledger 在 committed 树重烘**)+HARD_IDS 两份同步+held-out 13-30+对抗 refute。视觉片=pure-View 零金标+视觉门 tol=0(SEASON/POND 是常踩风险)。godot 重烘必传全 exe 路径([[reference-local-godot-exe-path]])。
+
+### 进行中 / 下一批（disjoint 并行）
+- **交通/建筑种类 scoping**（item#2+「丰富building种类」）：参考的 5 类经济建筑(站/码头/仓库/磨坊/集市)未入游戏、port_dock 无可见建筑 ⇒ scoping 出实现棒计划(map.json area+WorldView+interior 的 move-golden 纪律 vs 纯 View decor)。
+- **AV3**（车道 V 续,pure-View 零金标）：暖化广场/石街/路面 + 水色调和，收尾地面 overhaul。
+- **仍阻塞/deferred**：E3 工业(撞决策稀释墙,需闲聊-attach pivot 拍板)；export P4 硬化(txid 绑定/大 N/town_coin 上限)；叙事分支(codex/narrative 落后 117,viz 参考);口岸落图(P1,接交通片)。
