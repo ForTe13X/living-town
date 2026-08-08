@@ -65,7 +65,12 @@ const P_PLAZA_LINE   := Color("#9a8253")   # gpl plaza-line
 # ── AP1 内容棒（编号140）：门→广场走廊【石铺连街】+ 广场 flagstone。纯 View（Sim 读 blockers，读不到绘制）＝零金标。
 #   P_STREET 是一档【暖石板】：取在 P_STONE(#9b968d 冷暖灰) 与 P_PLAZA(#c3a97a 暖砂) 之间、略偏暖，
 #   让门口的石街与中央广场读作【同一套铺装】而不是两种材质——这正是"连街"要的连续感。派生阶见下面 D_ 段。
-const P_STREET       := Color("#a89e8b")   # 暖石板路面（cobble base）
+## ★ AV3(161) 把它再往【暖灰鹅卵石】压一档：旧 #a89e8b 是【略偏暖的中性灰】（R−B=29），与 AV2 暖草/暖土同框时
+##   仍读作"冷石"。新值 #a8916c（R−B=60，量自参考 STONE PAVEMENT 行的 hue G≈R·0.86 / B≈R·0.64）落进暖石族，
+##   与广场/工坊石收敛成一整块暖铺装。P_STREET + 其全部派生（S_STREET_* / S_CURB）**只在户外石街绘制里用**
+##   （grep 实证：66/68 定义、152-155 派生、3106/3118/3122 石街 draw、3131-3134 路缘——0 处室内/道具/门采样面）
+##   ⇒ 改这一个常量【零室内爆炸半径】，也是本片唯一直接改的授权色常量。
+const P_STREET       := Color("#a8916c")   # 暖灰鹅卵石路面（cobble base；AV3 由 #a89e8b 压暖）
 const P_GRASS        := Color("#85a643")   # gpl grass-summer
 const P_GRASS_AUT    := Color("#b59a4a")   # gpl grass-autumn
 const P_FOLIAGE_D    := Color("#5f7b34")   # gpl foliage-deep
@@ -153,11 +158,26 @@ var S_STREET_HI      := P_STREET.lightened(0.12)     # 亮鹅卵石高光（受�
 var S_STREET_LO      := P_STREET.darkened(0.14)      # 暗鹅卵石（阴影里的石块，做出铺面颗粒）
 var S_STREET_SEAM    := P_STREET.darkened(0.34)      # 石缝（灌浆线）
 var S_CURB           := P_STREET.darkened(0.46)      # 路缘石：街与草的交界，读作"这条街是砌出来的"
-var S_PLAZA_HI       := P_PLAZA.lightened(0.10)      # 广场 flagstone 受光面
-var S_PLAZA_LO       := P_PLAZA.darkened(0.09)       # 广场 flagstone 背光面（大方砖交错明暗）
+# ★ AV3(161) 删掉 S_PLAZA_HI / S_PLAZA_LO：AP1 那两档广场 flagstone 明暗面**唯一的消费者**（_draw_area_floors 铺装
+#   分支 + 徽章 apron）本片已全部换到暖石族 G_PLAZA_HI / G_PLAZA_LO ⇒ 这两个变量成零引用，按仓库纪律不留（同 R2 删 P_KERB）。
 var S_LAMP_POST      := X_WOOD_MID.darkened(0.30)    # 街灯灯柱（暗木/铸铁）
 var S_BENCH_WOOD     := X_WOOD_MID                    # 长椅木条（复用镇上木家族中段）
 var S_PLANTER        := P_STONE.darkened(0.10)       # 花坛石框
+# ── AV3(161) 户外【暖灰鹅卵石】铺装族：把 AV2 之后仍冷的三块地面（广场 / 工坊石板 / 石街）收敛到同一族暖石，
+#   照 ref_terrain 的 STONE PAVEMENT·PLAZA 行——那一整行【同一料】既做石铺又做广场。
+#   ★关键克制：【不改】P_PLAZA / P_STONE 两个常量。它们除了户外地面还喂**室内**茶座地板(_mat_floor parlor)、
+#     咖啡后厨地板(cafe)、市集货袋/藤篮(P_PLAZA 系)、建筑石基/井/广场徽章心(P_STONE 系)——动常量会把
+#     FURNROLE / floor-roundtrip / cafe2f 的采样面一起挪走。故广场/工坊石的暖化在 `_draw_area_floors` 里【就地覆盖 base】，
+#     只碰户外那一层像素，室内逐字节不动。石街走 P_STREET（已证路专用，见上）。
+#   暖石 hue：G≈R·0.86 / B≈R·0.64（量自参考 (155,131,96)）。三档亮度：广场亮=社交焦点 / 石街中 / 工坊石略沉。
+const G_PLAZA_WARM   := Color("#c0a682")   # 广场暖石铺装 base（比 P_PLAZA #c3a97a 略灰暖：G−B 47→36，退黄进灰，仍是全镇最亮地面）
+const G_STONE_WARM   := Color("#a18a65")   # 工坊户外石板 base（原 P_STONE #9b968d 近中性灰 R−B=14 → 暖灰石 R−B=60）
+var G_PLAZA_HI       := G_PLAZA_WARM.lightened(0.10)  # 广场大方砖·受光档
+var G_PLAZA_LO       := G_PLAZA_WARM.darkened(0.10)   # 广场大方砖·背光档
+var G_PLAZA_LINE     := G_PLAZA_WARM.darkened(0.30)   # 广场灌浆缝
+var G_STONE_HI       := G_STONE_WARM.lightened(0.12)  # 工坊石·亮石
+var G_STONE_LO       := G_STONE_WARM.darkened(0.14)   # 工坊石·暗石
+var G_STONE_LINE     := G_STONE_WARM.darkened(0.34)   # 工坊石缝
 # ══════════════════════════════════════════════════════════════════════════
 
 # ── 画面 LOD / 裁剪（纯 DRAW 侧）────────────────────────────────────────────────
@@ -1511,9 +1531,18 @@ func _draw_area_floors(dirt: Texture2D) -> void:
 		var rect := Rect2(x0 * T, y0 * T, bw * T, bh * T)
 		if not _vis.intersects(rect):
 			continue
-		var pal: Dictionary = FLOOR_PAL.get(String(a.get("type", "")), FLOOR_PAL["workshop"])
+		var atype := String(a.get("type", ""))
+		var pal: Dictionary = FLOOR_PAL.get(atype, FLOOR_PAL["workshop"])
 		var base: Color = pal["base"]
 		var line: Color = pal["line"]
+		# ── AV3(161) 户外暖石【就地覆盖】：广场(paving)/工坊石(slab) 换到暖灰石族，室内地板/货袋/石基逐字节不动
+		#   （不碰 P_PLAZA/P_STONE 常量——见调色板 G_*_WARM 段的克制说明）。public(冷澡堂/图书馆) 与
+		#   res/com(暖木) 保持原样：它们不是"该暖的石地面"，且动它们会挤 INTSHELL/floor 门的关系余量。
+		var warm_stone := false
+		if atype == "plaza":
+			base = G_PLAZA_WARM; line = G_PLAZA_LINE; warm_stone = true
+		elif atype == "workshop":
+			base = G_STONE_WARM; line = G_STONE_LINE; warm_stone = true
 		if dirt != null:
 			for yy in range(y0, y0 + bh):
 				for xx in range(x0, x0 + bw):
@@ -1534,26 +1563,45 @@ func _draw_area_floors(dirt: Texture2D) -> void:
 					py += T * 0.5
 					row += 1
 			"slab":                                    # 石板：交错明暗方砖 + 横竖石缝
-				for yy in range(bh):
+				if warm_stone:
+					# AV3(161) 工坊户外石：逐格【确定性】暖石明暗（_hash(x,y,47)，无 RNG/Time ⇒ ROUNDTRIP 冻结帧可复现）。
+					#   多数格保持 base、少数抬亮/压暗成"亮石/暗石"，读作铺过的暖石而非一块死灰。石缝沿用暖 line。
+					for yy in range(bh):
+						for xx in range(bw):
+							var wc := _hash(x0 + xx, y0 + yy, 47) % 6   # 0-5：0 亮石 / 1 暗石 / 2 微亮，其余保持 base（变化才 subtle）
+							if wc <= 2:
+								var sc: Color = G_STONE_HI if wc == 0 else (G_STONE_LO if wc == 1 else G_STONE_WARM.lightened(0.05))
+								draw_rect(Rect2(rect.position.x + xx * T + 1.0, rect.position.y + yy * T + 1.0, T - 2.0, T - 2.0), Color(sc.r, sc.g, sc.b, 0.34), true)
+						draw_rect(Rect2(rect.position.x, rect.position.y + yy * T, rect.size.x, 1.0), Color(line.r, line.g, line.b, 0.42), true)
 					for xx in range(bw):
-						if (xx + yy) % 2 == 0:
-							draw_rect(Rect2(rect.position.x + xx * T, rect.position.y + yy * T, T, T), Color(1, 1, 1, 0.08), true)
-					draw_rect(Rect2(rect.position.x, rect.position.y + yy * T, rect.size.x, 1.0), Color(line.r, line.g, line.b, 0.42), true)
-				for xx in range(bw):
-					draw_rect(Rect2(rect.position.x + xx * T, rect.position.y, 1.0, rect.size.y), Color(line.r, line.g, line.b, 0.32), true)
+						draw_rect(Rect2(rect.position.x + xx * T, rect.position.y, 1.0, rect.size.y), Color(line.r, line.g, line.b, 0.32), true)
+				else:                                  # public(冷石板)：原样保留，逐字节不动
+					for yy in range(bh):
+						for xx in range(bw):
+							if (xx + yy) % 2 == 0:
+								draw_rect(Rect2(rect.position.x + xx * T, rect.position.y + yy * T, T, T), Color(1, 1, 1, 0.08), true)
+						draw_rect(Rect2(rect.position.x, rect.position.y + yy * T, rect.size.x, 1.0), Color(line.r, line.g, line.b, 0.42), true)
+					for xx in range(bw):
+						draw_rect(Rect2(rect.position.x + xx * T, rect.position.y, 1.0, rect.size.y), Color(line.r, line.g, line.b, 0.32), true)
 			_:                                         # 广场：大方砖十字缝（比土路"踩实"，两者可区分）
 				# AP1(140) flagstone：2×2 大方砖交错明暗 + 十字灌浆缝 + 亮内沿（纯 View 上色，Sim 零读 type ⇒ 零金标）。
 				# 石街鹅卵石(2×2 细分)汇入广场 flagstone(2×2 大块) ⇒ 同一套铺装语言、读作“街—广场”一体。
+				# ★ AV3(161)：flagstone 换到暖石族 G_PLAZA_*（base 已就地覆盖为 G_PLAZA_WARM），并给【每块大方砖】
+				#   叠一档【确定性】暖/沉 jitter（_hash(块坐标,48)），让广场从"一片均匀砂"变成"铺过的暖石广场"——
+				#   仍留最亮档在 base 上 ⇒ 广场依旧是全镇最亮地面=社交焦点（保 docs 要的可读焦点）。
 				for yy in range(bh):
 					for xx in range(bw):
 						var blk := ((xx / 2) + (yy / 2)) % 2          # 2×2 一块大石板，整块一个明/暗档
-						var fc: Color = S_PLAZA_HI if blk == 0 else S_PLAZA_LO
+						var fc: Color = G_PLAZA_HI if blk == 0 else G_PLAZA_LO
+						var jt := _hash(x0 + xx / 2, y0 + yy / 2, 48) % 4   # 每块大方砖再抖一档：0 更亮 / 1 更沉 / 其余不动
+						if jt == 0: fc = fc.lightened(0.07)
+						elif jt == 1: fc = fc.darkened(0.08)
 						draw_rect(Rect2(rect.position.x + xx * T + 1.0, rect.position.y + yy * T + 1.0, T - 2.0, T - 2.0), Color(fc.r, fc.g, fc.b, 0.30), true)
 				for yy in range(bh):
 					draw_rect(Rect2(rect.position.x, rect.position.y + yy * T, rect.size.x, 1.0), Color(line.r, line.g, line.b, 0.30), true)
 				for xx in range(bw):
 					draw_rect(Rect2(rect.position.x + xx * T, rect.position.y, 1.0, rect.size.y), Color(line.r, line.g, line.b, 0.30), true)
-				draw_rect(rect, Color(S_PLAZA_HI.r, S_PLAZA_HI.g, S_PLAZA_HI.b, 0.35), false, 2.0)   # 亮内沿：框住广场、接住汇入的石街
+				draw_rect(rect, Color(G_PLAZA_HI.r, G_PLAZA_HI.g, G_PLAZA_HI.b, 0.35), false, 2.0)   # 亮内沿：框住广场、接住汇入的石街
 				if String(aid) == "plaza":
 					_draw_plaza_medallion(rect)   # AP2(141) 只给【主广场】加中心徽章（dock 也是 plaza 型，但它是码头不是镇心）
 		draw_rect(rect, Color(0, 0, 0, 0.20), false, 3.0)
@@ -2848,6 +2896,13 @@ func _light_texture() -> Texture2D:
 ## 蓝通道仍是三者里最高的——夜里的水本该是蓝黑的；要治的从来不是"它是蓝的"，
 ## 而是"**改动前它是全帧彩度最高、最响的那块**"。
 const WATER_NIGHT := Color(1.0, 0.42, 0.30)
+## ★ AV3(161) 水色【日间调和】：AV2 把池心换成暖生成瓦、把地面全烘暖后，两个池塘仍是全帧最冷的一块——
+##   实测 noon 池水众数 (31,161,175) 的 **B>G**（蓝主导 = cyan-blue），与暖石村格格不入。WATER_DAY 只压【蓝通道】
+##   一档（×0.90）：池水由 cyan-blue(B>G) 收进 **teal(G≥B)**（(31,161,175)→(31,161,158)、中心 (60,129,134)→(60,129,121)），
+##   与参考 RIVER 行的 teal (50,125,133)（G≈B）同族。R/G 不动 ⇒ 不掉亮度、不改岸线台阶的【存在】，只挪蓝。
+##   ⚠ 这一层【乘在所有水瓦上】（池心 + 8 向 CC0 岸线一视同仁）⇒ 直接压在 POND 门量的那道岸上 —— 已实测 POND 仍绿（见 docs/161）。
+##   夜里从 WATER_DAY 插值到 WATER_NIGHT：夜 tick 深、_wn 高 ⇒ 夜罩≈原 WATER_NIGHT（蓝仅差 ~1/255），守住 D3-2 的夜彩度对照。
+const WATER_DAY := Color(1.0, 1.0, 0.90)
 
 ## 加色光层。它只有 _draw()，内容全部由宿主的 _draw_night_lights() 提供——
 ## 不新增脚本文件（本棒独占 WorldView.gd），用内部类即可。
@@ -3076,10 +3131,10 @@ func _draw_body() -> void:
 	#   ⇒ docs/46 §二-D3-2 守的那条「入夜后水不许是画面上最响的东西」没有被破坏，
 	#   锈褐岸读作"湿泥滩"也说得通。若将来要分开染，得先给岸泥单独标一个夜罩并重跑 D3-2 的彩度对照，
 	#   而不是随手把这里的 lerp 调淡（调淡会让岸线里那圈**浅水亮边**在夜里重新跳出来）。
-	var wtint := Color(1, 1, 1)
+	var wtint := WATER_DAY                    # AV3(161)：日间基调不再是纯白，而是压过蓝的 teal 调和罩（见 WATER_DAY 抬头）
 	var _wn := _night_amt()
 	if _wn > 0.001:
-		wtint = Color(1, 1, 1).lerp(WATER_NIGHT, _wn)
+		wtint = WATER_DAY.lerp(WATER_NIGHT, _wn)   # 从 teal 日基插值到重红夜罩（夜深处≈原 WATER_NIGHT）
 	# ★合批：**按瓦片分组**画（沿用 D7 在草地/土路上立的那条规矩），而不是逐格切纹理。
 	#   `_water_by_slot` 的每一项是 [瓦片名, 该瓦片的格子下标数组]，分组在 `_build_terrain` 里做好。
 	#   **逐像素不变可证**：9 个 slot 是水格集合的一个**划分**（每格恰好属于一个 slot），
@@ -3115,7 +3170,14 @@ func _draw_body() -> void:
 		for idx in _ac("paths", _path_set):
 			var rx: int = idx % w; var ry: int = idx / w
 			var rr := Rect2(rx * T, ry * T, T, T)
-			draw_rect(rr, Color(P_STREET.r, P_STREET.g, P_STREET.b, 0.90), true)                  # 暖石底（透一点土颗粒）
+			# AV3(161)：整格暖石底再抖一档（_hash(rx,ry,46)，确定性、无 RNG/Time）——多数格保持 P_STREET、
+			#   少数微亮/微沉，让石街从"一条匀色带"变成"铺过的鹅卵石路"（与广场/工坊石同一套暖石 jitter 语言）。
+			var pv := _hash(rx, ry, 46) % 5
+			var pbase: Color = P_STREET
+			if pv == 0: pbase = P_STREET.lightened(0.06)
+			elif pv == 1: pbase = P_STREET.darkened(0.07)
+			elif pv == 2: pbase = S_STREET_LO
+			draw_rect(rr, Color(pbase.r, pbase.g, pbase.b, 0.90), true)                           # 暖石底（透一点土颗粒；整格 jitter）
 			for sj in range(2):
 				for si in range(2):
 					var hv := _hash(rx * 2 + si, ry * 2 + sj, 45) % 3
@@ -3350,17 +3412,17 @@ func _draw_town_doors() -> void:
 func _draw_plaza_medallion(rect: Rect2) -> void:
 	var c := rect.get_center()
 	var R := minf(rect.size.x, rect.size.y) * 0.42                # 收在广场内、留边不溢到草地
-	var pl := P_PLAZA_LINE
-	draw_circle(c, R, Color(S_PLAZA_HI.r, S_PLAZA_HI.g, S_PLAZA_HI.b, 0.22))                       # 受光石 apron
+	var pl := G_PLAZA_LINE   # AV3(161)：环缝随广场进暖石族（原 P_PLAZA_LINE）
+	draw_circle(c, R, Color(G_PLAZA_HI.r, G_PLAZA_HI.g, G_PLAZA_HI.b, 0.22))                       # 受光石 apron（暖石）
 	draw_arc(c, R, 0.0, TAU, 44, Color(pl.r, pl.g, pl.b, 0.55), 2.0, false)                        # 外环缝
 	draw_arc(c, R * 0.66, 0.0, TAU, 32, Color(pl.r, pl.g, pl.b, 0.40), 1.5, false)                 # 中环缝
 	for k in range(8):                                            # 8 向放射灌浆缝（罗盘感、把眼睛引向心）
 		var ang := TAU * float(k) / 8.0
 		var d := Vector2(cos(ang), sin(ang))
 		draw_line(c + d * (R * 0.30), c + d * R, Color(pl.r, pl.g, pl.b, 0.30), 1.0, false)
-	draw_circle(c, R * 0.30, Color(P_STONE.r, P_STONE.g, P_STONE.b, 0.42))                          # 冷石心盘（与暖砂拉材质对比 ⇒ 心"沉"下去成焦点）
+	draw_circle(c, R * 0.30, Color(P_STONE.r, P_STONE.g, P_STONE.b, 0.42))                          # 冷石心盘【故意留冷】：与暖石广场拉材质对比 ⇒ 心"沉"下去成焦点（AV3 保留这条焦点对比）
 	draw_arc(c, R * 0.30, 0.0, TAU, 24, Color(P_STONE_LINE.r, P_STONE_LINE.g, P_STONE_LINE.b, 0.55), 1.5, false)
-	draw_circle(c, R * 0.11, Color(S_PLAZA_HI.r, S_PLAZA_HI.g, S_PLAZA_HI.b, 0.55))                 # 心点高光
+	draw_circle(c, R * 0.11, Color(G_PLAZA_HI.r, G_PLAZA_HI.g, G_PLAZA_HI.b, 0.55))                 # 心点高光（暖石）
 
 ## AP2(141) 广场【座圈】：徽章外沿一圈小石凳。南半留口（朝水井/告示板那侧不叠座）⇒ 读作"围着中心坐的一圈"。
 ## 画在 _draw_landmarks 里（在花草/街具之上、居民之下）：人站上去自然遮住 = "有人坐在这儿"。纯 View、非 blocker。
