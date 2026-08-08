@@ -89,7 +89,7 @@ GODOT --headless --path game --script res://bench/Harness.gd -- --seeds 1-12 --d
 ## 六、CI verdict
 `LT_VISUAL=require GODOT=<4.6.2 win64> bash tools/ci.sh`（docker 视觉门 tol=0，强制真跑，不 SKIP）：
 ```
-（跑完后填：全步 PASS / 退出码 0；POND PASS，判决量 before=after 逐位不变）
+★协调者 committed 树判决（a180951，LT_VISUAL=require）= **CI PASS ✅ 退出码 0**：金标 **12/12 逐字节**（零金标证）· S0 硬 12/12 det 3/3 · **ROUNDTRIP A[map] 变化像素=0/366800=0.000%**（_draw_port 全确定性、冻结帧逐像素同）· **POND PASS**（陆侧结构不扰池岸采样、水/岸线逐位不变）· SEASON/FLOOR-ROUNDTRIP/INTSHELL/DAYNIGHT/TREESTAND 全绿 · 互补性守卫 tree-fresh（ledger 已在 committed 树重烘）· DetGate/BackendGate/ModelPathGate/#43/state_projection 全绿。港口纯 View 零金标经 committed 树 CI 确认。
 ```
 
 ## 七、媒体（`docs/media/apport/`，docker 真渲染 seed3 · 昼 tick600 / 夜 tick488 · `--shot-fit`）
