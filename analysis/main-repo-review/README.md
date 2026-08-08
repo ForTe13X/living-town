@@ -13,6 +13,7 @@
 
 ## 最新报告
 
+- [2026-08-08 21:00 CST：#44–#46 complement 假绿、贸易逐笔反例与停止叠片路线](reviews/2026-08-08-2100-cst.md)
 - [2026-08-08 09:00 CST：#44 complement 假绿、E1 shipment 合同缺口与 exterior→interior 第一刀](reviews/2026-08-08-0900-cst.md)
 - [2026-08-07 21:00 CST：AO1 状态契约反例、town 视觉真进展与“世界承认”路线](reviews/2026-08-07-2100-cst.md)
 - [2026-08-07 09:00 CST：室内纵切落地，但新增门仍有假绿与 Probe 返回栈缺口](reviews/2026-08-07-0900-cst.md)
