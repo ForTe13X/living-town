@@ -19,8 +19,19 @@
 ## 二、内审侧结论
 核心设计（external 闭环 / #34 守恒 / #38 减号臂 / #45 双向原则）**成立**。F1（符号命门）与 F4（反馈耦合选货）是最实质的两条——F1 不修则 export 全程静默失效、F4 不修则 export 整洁反噬清洁系统。实现棒必带 F1-F6。
 
-## 三、外审收敛（GPT-5 Pro，冷独立）
-**〔待补〕** 外审冷读 docs/157 + 码、被要求 REFUTE，独立成结论后回填；两路收敛判决（是否发现内审漏项 / 是否同意 SOUND_WITH_FIXES）落此。**export 实现门控在本节收敛之后。**
+## 三、外审收敛（GPT-5 Pro，冷独立，思考完成）＝**两路收敛 SOUND_WITH_FIXES**
+外审冷读设计 + 关键码事实（未喂内审结论）、被要求 REFUTE。**独立命中内审 F1（符号），并把它升格 + 逼出一条内审只软提的硬钉（F7 贸易原子性）**：
 
-## 四、实现计划（外审收敛后）
-export 首片：export_lane（surplus 货、A′ 先收后出）+ external 闭环 + #38 白名单 +"export" + #45 双向泛化（F1 幅值 + F2 跨边负对照 + F6 空守卫）+ 社交排除集 +"export"（F3 理由 #2-only）+ floor 标定（F4 逐货 held-out + 排反馈耦合货）+ 人口缩放（F5）+ 货侧合法（F6 #44-analog 或认领缺口）→ 重烘三锚（committed 树，docs/155 §九纪律）。P4 deferred：多镇域 / #38-trade 原子性 / 完整 #36 / 分布通胀阈值 / 口岸落图。
+- **★收敛于 F1（符号）——外审给出更狠的框架**：忠实镜像 import 会写 `applied := _stock_move(good,-N,"export"); revenue := applied*price/den; transfer("external","town",revenue,"export")`。`applied` 是**负数** ⇒ revenue 负 ⇒ `transfer(amt<=0:false)` ⇒ **货已出、钱没收（免费流失）**。外审的关键洞察：**此 bug 下【现役门全绿】**——#34 绿（钱没变）、#35 绿、#38 绿（export 正常记库存−N）、#45 绿（若 Σexport 从 pay 事件统计、本次根本没 export pay）、社交排除看不到。⇒ **无一门抓得住"钱货脱钩"**。这比内审 F1"静默 no-op"更严重：是**静默价值流失且全绿**。
+- **★F7（新 · 外审逼出，升格内审 F6）＝贸易原子性绑定（首片必带，非 P4）**：即便符号修对，若 `pay(export)` 与 `stock(export)` 不**一一对应、数量相等**，#34/#38/#45 只各自证"钱账自洽""货账自洽"，**证不出"这笔钱买的就是这批货"**。失败场景：先按计划 N 收钱、`_stock_move` 因同货多 lane/陈旧 surplus/未来改动只出了 k 件 ⇒ 收 N 钱发 k 货、全绿。⇒ **首片须加硬钉**：一次成功 export = **恰好一条 external→town 的 pay(export) + 恰好一条同 `sold_qty` 的 stock(export)**。这是 docs/157/154 defer 到 P4 的 #38-trade 原子性——外审判定其**最小版不可 defer**（否则整个符号类 bug 隐形）。
+- **外审最小修法**：别再让 `applied` 同时表示"有符号库存 delta"和"正成交量"；显式用**正数 `sold_qty`**，把钱货提交收进一个**无 await/回调的 exact wrapper**，合同：`sold_qty>0`、`stock_delta == -sold_qty`、且原子性钉（一 pay + 一 stock 同量）。
+
+**两路收敛判决 = SOUND_WITH_FIXES**：核心设计成立；实现棒必带 **F1–F6（§一）+ F7（贸易原子性绑定，外审升格）**。F1（符号→免费流失且全绿）+ F7（钱货绑定）是**门控命门**——不修则 export 的价值流失对整条 CI 隐形。**export 实现放行**（两路已收敛）。
+
+## 四、实现计划（两路已收敛，放行）
+export 首片必带 F1–F7：
+- **F1 符号命门**：显式正数 `sold_qty`（非有符号 applied），revenue=`sold_qty×price/den`；export 提交走 **exact wrapper**（无 await/回调，钱货原子）。
+- **F7 贸易原子性绑定（命门）**：硬钉「一次成功 export = 恰一条 external→town pay(export) + 恰一条同 `sold_qty` 的 stock(export)」——最小 #38-trade，不 defer。合同 `sold_qty>0` & `stock_delta==-sold_qty`。
+- F2 #45 跨边负对照；F3 社交排除集 +"export"（理由 #2-only）；F4 floor 逐货 held-out 标定 + **排反馈耦合货（整洁 _clean_mult 不出口）**；F5 export floor/batch 进 K1 人口缩放（或显式限 N=12）；F6 货侧 #44-analog（actor∈export_nodes/good∈export_lane/reason=export）+ #45 空 import lane_price 守卫。
+- 结构：export_lane（surplus 货、A′ 先收后出）+ external 闭环 + #38 白名单 +"export" + #45 双向泛化 → 重烘三锚（committed 树，docs/155 §九纪律）+ 视觉无关但 golden/modelpath/ledger 三锚 + held-out 13-30 展布 + 负对照矩阵（#34/#35/#38/#45/**钱货绑定** 各证判别力）。
+- **P4 仍 deferred**：多镇守恒域 / 完整 #38-trade escrow 在途态 / 完整 #36 逐账户 reducer / 分布通胀阈值·town_coin 上限 / 口岸落图。（F7 只是 #38-trade 的**首片最小绑定钉**，非完整 escrow。）
