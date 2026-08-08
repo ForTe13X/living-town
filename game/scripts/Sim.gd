@@ -269,7 +269,13 @@ var _buildings_compiled := false # 阶段2 室内编译只跑一次（防重入�
 # ── Wave 1b 经济（docs/15 §3）：data/economy.json 驱动；缺文件→_econ_on()=false→全部短路=逐字节不变 ──
 var economy := {}               # {start_coin, town_start, prices:{action:int}, wages:{action:int}}
 var town_coin := 0              # 镇库（吃饭收费流入、做活工资流出 → 闭环）
-var econ_total0 := 0            # 开局货币总量（金钱守恒硬不变量的基准：Σagent coin + town_coin 恒等于它）
+# ── 车道 E2a 钱跨镇边界（docs/151/154）：external_coin = 「外部世界」这一档账户，进 #34 守恒集 ──
+#   import 付费 = transfer("town","external",cost)：钱不再凭空消失/出现，而是搬进这个常驻账户
+#   （对称 Sim.gd:996 玩家带钱入镇 econ_total0+=玩家coin 的"钱不凭空出现"哲学）。
+#   ⚠ 它必须与 town_coin 一样【per-run 重置】（下方 start_new）——否则 goto_tick 反复 start_new 时
+#     上一局的 external 残值污染 econ_total0 快照、整局 money_total 位移、#34 反把 bug 盖绿（docs/154 blocker-1）。
+var external_coin := 0          # 「外部世界」账户（import 付费的收款方；export 收钱的付款方，留 E2b）
+var econ_total0 := 0            # 开局货币总量（金钱守恒硬不变量的基准：Σagent coin + town_coin + external_coin 恒等于它）
 # ── Wave 3c 住房产权（docs/15 标注低优先；接 buildings.json rooms.owner）：每夜房客→房东经 Ledger 转租金 ──
 var housing := {}               # {rent:int, tenancies:[{tenant:id, landlord:id}]}；缺文件→无租金=逐字节不变
 # ── Wave 3a 治理/选举（docs/15 §3.3「收获期」）：S2 attitude 即选票，快照纯函数计票；缺文件→零扰动 ──
@@ -834,6 +840,11 @@ func start_new(p_seed: int = 12345) -> void:
 				"source": oid, "via": "seed", "tick": 0, "secret": true, "owner": oid, "confidedBy": {}}
 	# Wave 1b 经济：镇库注资 + 记录开局货币总量（守恒硬不变量基准）。缺 economy.json → 全为 0 零扰动。
 	town_coin = int(economy.get("town_start", 0)) if not economy.is_empty() else 0
+	# ★E2a BLOCKER-1（docs/154 §二.1）：external_coin 必须【per-run 重置】——镜像上一行 town_coin。
+	#   goto_tick(:1146) 反复调 start_new 重演；import 付费让 external_coin 局末非零，若不清零，
+	#   第二遍的残值会在下一行 econ_total0 = money_total() 里被计入基准 ⇒ 整局 money_total 位移、
+	#   非逐字节可回放，且 #34 因基准与总量同带残值可能【反把 bug 盖绿】。故必须在快照【之前】清零。
+	external_coin = 0
 	econ_stats = {"meals_paid": 0, "meals_free": 0, "wages_paid": 0, "wages_skipped": 0}
 	econ_total0 = money_total()
 	# ★K1 双尺度：产出侧按【本局人口】换尺度。必须落在这里——克隆扩容已经做完（agents 已填），
@@ -3242,6 +3253,8 @@ func transfer(from_id: String, to_id: String, amt: int, reason: String, witnesse
 func _coin_of(id: String) -> int:
 	if id == "town":
 		return town_coin
+	if id == "external":                    # E2a：外部世界账户（照抄 "town" 分支）
+		return external_coin
 	var ag: Dictionary = _agent_by_id.get(id, {})
 	return int(ag.get("inventory", {}).get("coin", 0)) if not ag.is_empty() else 0
 
@@ -3249,13 +3262,16 @@ func _set_coin(id: String, v: int) -> void:
 	if id == "town":
 		town_coin = v
 		return
+	if id == "external":                    # E2a：外部世界账户（照抄 "town" 分支）
+		external_coin = v
+		return
 	var ag: Dictionary = _agent_by_id.get(id, {})
 	if not ag.is_empty():
 		ag["inventory"]["coin"] = v
 
-## 全镇货币总量（守恒不变量用）。
+## 全镇货币总量（守恒不变量用）。★E2a：external_coin 收进守恒集（+一项，判据形状不变，docs/151 §一.3）。
 func money_total() -> int:
-	var s := town_coin
+	var s := town_coin + external_coin
 	for ag in agents:
 		s += int(ag["inventory"].get("coin", 0))
 	return s
@@ -3674,6 +3690,13 @@ func _stock_nightly() -> void:
 ## 免费到货：本片一字不碰钱（transfer/economy.json/#34 全程不动；钱跨边界是 E2 的事，须 §0.8 外审）。
 ## 缺 logistics.json / import_lanes 段空 / batch<=0 / every_days<=0 ⇒ 各自短路 ⇒ 该 lane 不注入。
 ## good 不在 production.goods 表里 ⇒ _stock_move 首行返 0（不入账、不写事件）⇒ #38 账外货臂不会被触发。
+##
+## ★E2a import 付费（docs/151/154）：到货后经唯一钱通道 transfer("town","external",cost) 把货款搬进外部账户。
+##   · cost = applied × price_per / price_den（整数地板，确定性、无浮点）；price_den 缺省=1 ⇒ price_per 即每件钱数。
+##     分数定价（price_den>1）是为让盈亏平衡<1 的柴薪不把 town_coin 单调抽干（docs/154 §三 price_per 标定）。
+##   · 撞 cap 少收 ⇒ applied 少 ⇒ 同步少付（不买空气）：先 _import_fit 干算这批实际能到多少再定价。
+##   · 【选项 A 先付后到】：付不起当天【不到货】(continue)，无免费货偷渡 ⇒ 守恒忠实、town_coin/external_coin 可回放。
+##   · 付费门 2 轴：_econ_on()==false（缺 economy.json）或 lane 无 price_per ⇒ 回到 E1【免费到货】逐字节。
 func _logi_import() -> void:
 	for lane in _as_arr(logistics.get("import_lanes", [])):
 		if not (lane is Dictionary):
@@ -3687,8 +3710,30 @@ func _logi_import() -> void:
 			continue
 		var good := String(ld.get("good", ""))
 		var node := String(ld.get("node", ""))
+		# 付费门：economy 在 + lane 声明了合法 price_per ⇒ 走【先付后到】；否则回 E1 免费到货。
+		var pnum := int(ld.get("price_per", 0))          # 分子：每 price_den 件收 pnum 钱
+		var pden := int(ld.get("price_den", 1))          # 分母：缺省 1 ⇒ pnum 即每件钱数
+		if _econ_on() and pnum > 0 and pden > 0:
+			var fit := _import_fit(good, batch)           # 这批实际能到多少（撞 cap 少收），纯读不落账
+			var cost := fit * pnum / pden                 # 整数地板：少件同步少付；确定性无浮点
+			# 选项 A：付不起（或没货位）当天不到货，无免费货偷渡。
+			if fit <= 0 or town_coin < cost:
+				continue
+			var applied := _stock_move(good, batch, "import", node, "import")
+			# applied==fit（同 tick 无中途改动）⇒ 付 applied×price 忠实守恒；town_coin>=cost 已核，transfer 必成。
+			if applied > 0:
+				transfer("town", "external", applied * pnum / pden, "import")
+			continue
 		# 不进 prod_stats["produced"]：进口不是本镇产出（诊断口径要分开；prod_stats 不入 digest，此选择对回放零影响）。
 		_stock_move(good, batch, "import", node, "import")
+
+## E2a：这批 import【实际能到多少】(撞 cap 少收) —— 纯读、不落账、不写事件，供选项 A「先付后到」先定价。
+## 与 _stock_move 的 +delta 分支同一条 cap 逻辑（min(batch, cap−cur)、非负）⇒ 保证 fit == _stock_move 随后返回的 applied。
+func _import_fit(good: String, batch: int) -> int:
+	if batch <= 0 or not (production.get("goods", {}) as Dictionary).has(good):
+		return 0
+	var cap := int((production["goods"] as Dictionary)[good].get("cap", 999999))
+	return mini(batch, maxi(0, cap - _stock_of(good)))
 
 ## 确定性 [0,1) 哈希（字符串→稳定小数；天生立场用）。
 func _hash01(s: String) -> float:

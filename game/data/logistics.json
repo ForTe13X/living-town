@@ -19,7 +19,10 @@
       "batch": 4,
       "every_days": 3,
       "node": "port_dock",
-      "_why": "每 3 天到港 4 件柴薪。good 必须是 production.goods 已声明的货（否则 _stock_move 首行返 0、不入账），node 必须是上面 nodes 声明过的 id（否则硬 #44 溯源判红）。"
+      "price_per": 3,
+      "price_den": 4,
+      "_why": "每 3 天到港 4 件柴薪。good 必须是 production.goods 已声明的货（否则 _stock_move 首行返 0、不入账），node 必须是上面 nodes 声明过的 id（否则硬 #44 溯源判红）。",
+      "_price_why": "★车道 E2a import 付费（docs/151/154/155）：cost = applied × price_per / price_den（整数地板，确定性无浮点；price_den 缺省 1 ⇒ price_per 即每件钱数）。选项 A【先付后到】：town 付不起当天不到货、无免费货偷渡。★标定 = 3/4 = 0.75 钱/件（AS4 实测，纠 docs/154『盈亏平衡≈0.8』的【理由】而非数值）：docs 假设 town 只有 town_start=60 无余量，但实测吃饭收入>做活工资 ⇒ 绝大多数 town 60 天净盈余、town_coin 从 60 长到 104..161（N=12 逐 tick 不跌破 60）⇒ 真实『抽干到 0』盈亏平衡对 N=12 最紧 seed≈104/80≈1.3 钱/件。取 0.75（≈docs 的 0.8 直觉、稳在 1.3 之下留余量）：N=12 金标 seeds 1-12 上 town_coin_min=38、wages_skipped=0、柴薪 import 60 天持续到货至第 59 天。留出 13-30：唯一被压到 town_coin_min=0 的是 seed 18——它是【结构性赤字镇】（工资天然>饭钱，免费进口下 town_coin 也只有 min=29/末 42<60），import 付费把它推到 0 并跳 ~10 次工资，这【正是选项 A 蓄意的 self-contain 压力『穷镇进不起口』】(docs/151 §四.4)、非标定失败，据实记 docs/155。price_den 是给盈亏平衡<1 的货留的分数定价旋钮（避浮点、保确定性）。★off 门：删 economy.json 或删本 price_per ⇒ 回 E1 免费到货逐字节（已实测金标 12/12 一致）。"
     }
   ]
 }

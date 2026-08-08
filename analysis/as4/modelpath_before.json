@@ -13,30 +13,29 @@
       "2026-08-02 Wave Z · Z2 手艺口碑铺到四门（production.craft_credit 增三行）⇒ 世界轨迹蓄意移动（docs/101 / docs/47 R12）。本锚锚的是 random(full) 臂的【世界轨迹】，随 golden_digests.json 一起重烘是正确反应；prompt 编码本身（A/B 两段）未动、仍绿。重烘后 ModelPathGate 失败 0。",
       "2026-08-02 Wave AA · AA3 消费侧（商贩赶集）的买卖口碑⇒ 世界轨迹蓄意移动（docs/106 / docs/47 R12）。本锚锚的是 random(full) 臂的【世界轨迹】，随 golden_digests.json 一起重烘是正确反应；prompt 编码本身（A/B 两段）未动、仍绿。重烘后 ModelPathGate 失败 0。",
       "2026-08-06 AA3-FIX（docs/112）· 商贩自证过滤（witnesses 滤掉收款商贩）⇒ random(full) 臂 4/4 seed 只有 digest 动，event_digest/landed/候选规模行逐位不动——纯观测变更，随 golden_digests.json 一起重烘（R12 的第三份锚；docs/47 §二-E1 那条『brief 只写两份锚』的教训继续有效）。",
-      "2026-08-07 · AS1/E1 车道 E 第一片：柴薪进口 lane 上线 ⇒ 模型路径上的世界轨迹【蓄意】移动（docs/147 / docs/144 §六）。random(full) 臂 4/4 seed 的 digest/event_digest/landed 与候选规模一并移动（days=8 内 day%3==0 到港 ⇒ 柴薪供给改缺货/消费/加价 ⇒ 决策序移动）。本锚锚的是【模型路径上的世界轨迹】、不是 prompt 编码本身（A/B 两段未动、仍绿——只 C 段 5 条移动）⇒ 它跟着 golden_digests.json 一起重烘是正确反应（同 Wave E1、docs/47 §二-E1）——★又一次印证 brief 只写两份锚(Harness/DetGate)、第三份 ModelPathGate 必须自己补上，否则 ci.sh 第 4e 步变红（本片实测撞到）。off 门：删 logistics.json ⇒ 逐字节回到重烘前。",
-      "2026-08-08 E2a（AS4）import 付费：import 到货后新增 transfer('town','external',cost) 的 pay 事件 ⇒ C 段 random_full 世界轨迹的 event_digest/inv_digest 移动（A/B prompt 编码段未动，本片不碰 AIBackend）。随 seeds/scenarios 金标 + 硬 #45 三锚同批重烘。price_per=3/price_den=4。"
+      "2026-08-07 · AS1/E1 车道 E 第一片：柴薪进口 lane 上线 ⇒ 模型路径上的世界轨迹【蓄意】移动（docs/147 / docs/144 §六）。random(full) 臂 4/4 seed 的 digest/event_digest/landed 与候选规模一并移动（days=8 内 day%3==0 到港 ⇒ 柴薪供给改缺货/消费/加价 ⇒ 决策序移动）。本锚锚的是【模型路径上的世界轨迹】、不是 prompt 编码本身（A/B 两段未动、仍绿——只 C 段 5 条移动）⇒ 它跟着 golden_digests.json 一起重烘是正确反应（同 Wave E1、docs/47 §二-E1）——★又一次印证 brief 只写两份锚(Harness/DetGate)、第三份 ModelPathGate 必须自己补上，否则 ci.sh 第 4e 步变红（本片实测撞到）。off 门：删 logistics.json ⇒ 逐字节回到重烘前。"
     ]
   },
   "random_full": {
     "days8_n12": {
       "1": {
-        "digest": "1654751733",
-        "event_digest": "8382128946765130643",
+        "digest": "268909191",
+        "event_digest": "6705715968537149097",
         "landed": 673
       },
       "2": {
-        "digest": "282058593",
-        "event_digest": "6480855285519524449",
+        "digest": "2691989134",
+        "event_digest": "6377898593926940502",
         "landed": 664
       },
       "3": {
-        "digest": "3233199569",
-        "event_digest": "2237800522290004061",
+        "digest": "400177401",
+        "event_digest": "5485307678906783803",
         "landed": 664
       },
       "4": {
-        "digest": "3185718676",
-        "event_digest": "223408840730958820",
+        "digest": "2003595320",
+        "event_digest": "2494613980898029800",
         "landed": 646
       },
       "_scale": {
