@@ -1,57 +1,69 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""terrain_gate.py —— 地形资产门（Wave G · G5；docs/49 §七 硬要求 4）。
+"""terrain_gate.py —— 地形资产门（Wave G · G5；AV2/Lane V 改为 **hybrid**）。
 
-## 为什么
+## 这道门原来守什么（G5，2026-07）
 
-G1 建 `tools/art_gate.py` 时点了名：它只守 `pro/` 那 10 张角色表，
-而仓库里另有 **31 张出货 png**（emote 10 / decor 8 / terrain 5 / obj 5 / building 3）
-**一道门都没有** —— 改一个像素、删一张图，CI 从头到尾全绿。
+出货 `terrain/` 的 **13 张**瓦必须等于 `slice_shore.py` 当场从 CC0 总表重建的结果，
+逐像素比对。刻意**不是**"校验和清单对得上"——那种门可以靠更新清单通过，而更新清单正是任何
+偷改像素的人下一步会做的事。**当场重建 + 逐字节比**是这道门当时的骨架。
 
-本棒往 `terrain/` 里加了 8 张岸线瓦片（5 → 13 张），正好把这一类补上门。
-**形状照抄 `art_gate.py`，不发明第二套**：当场从 `library/` 的 CC0 总表重建 → 逐像素比对。
-刻意**不是**"校验和清单对得上"——那种门可以靠更新清单通过，而更新清单正是任何
-偷改像素的人下一步会做的事。
+## 为什么 AV2 必须把它改成 hybrid（诚实地记下这次退让）
 
-## 覆盖到哪 / 没覆盖到哪（明写，别让读者自己猜）
+AV2（Lane V）把 5 张**原样裁切的** CC0 瓦（`slice_shore.LEGACY`：grass_a / grass_b /
+grass_flowers / dirt / water）换成了从 `docs/media/references/ref_terrain_v1_stardew.png`
+**降采样生成**的暖色瓦（`tools/slice_terrain_ref.py`）。R4（不许生成图出货）对本切片 **WAIVED**。
+⇒ 这 5 张**再也无法从任何 CC0 总表重建** ⇒ 原来的"当场重建 + 逐像素比"对它们**结构上失效**。
 
-- **守住**：`game/assets/art/terrain/` 全部 13 张。
-- **没守**：emote 10 / decor 8 / obj 5 / building 3 —— **共 26 张仍然无门**。
-  它们切自 `slice_all.py` / `slice_visual.py` 的另外两组坐标，形状与本文件完全一样，
-  照着扩是机械劳动；本棒没做，因为没在真机帧上验过那 26 张，
-  **给没眼验过的东西上门 = 把当前状态钉成"正确"**，而本棒的整个由来就是
-  "一张从没被人看过一眼的贴图安安静静躺了一个月"。
+**hybrid 的两半**：
+  · **8 张 CC0 岸线自动贴图**（`slice_shore.SHORE`：water_{n,s,e,w,ne,nw,se,sw}）—— **一个字没改**，
+    仍然当场从 CC0 总表重建 + 逐像素比（连同它的来源自证与 teeth），和 G5 完全一样。
+  · **5 张生成瓦**（`slice_shore.LEGACY`）—— 改为 **hash-pin**：比对**解码后 RGBA 的 sha256**
+    与一份眼验过的清单 `tools/terrain_hashes.json`。**用解码 RGBA 而不是容器字节**：容器字节随
+    zlib/Pillow 版本漂，解码像素不漂（与 2b/2c/2d 的硬判据同源）。
 
-  > **⚠️ 2026-07-30 更新（H2；`tools/terrain_gate.py` 不归 H2，本次改动只动这段注释，声明式越界）**：
-  > 上面那句"共 26 张仍然无门"**已经过期**。H1 把 26 张在真机上逐张眼验（docs/51），
-  > H2 据此给其中判为 OK 的 **10 张**上了 `tools/asset_gate.py`（CI 第 2d 步）。
-  > 剩下 **16 张仍然无门，而且是刻意的**：11 张判「读不出」、1 张判「需要重切」——先修再守；
-  > 另 4 张（`building/{house,hut,shop}` + `decor/tree_small`）判「从不出现」，
-  > 给上不了屏的素材上门 = 把死资产钉成"正确"。上面那条理由**没有被推翻，只是终于有了眼验做前提**。
+## ⚠️ 诚实边界：hash-pin 就是 G5 当初点名要避开的那种"校验和清单"
 
-## 三条"这道门自己会不会是假的"的自证（照抄 art_gate.py 的三条，每次跑都做）
+G5 抬头原话：**校验和清单"可以靠更新清单通过，而更新清单正是偷改像素的人下一步会做的事"。**
+把 5 张生成瓦换成 hash-pin，等于对这 5 张**主动接受了这条弱点**——没有 CC0 源可重建，
+就没有第二份独立真相能当场比。**唯一诚实的缓解是【眼验棘轮】**（R4 waived 下的守法）：
+  · 清单**只能由人**跑 `python tools/terrain_gate.py --rebless` 重烘，**CI 永不自动重烘**；
+  · 且**必须**在（a）Read 眼验每张 16×16 瓦、(b) 录一帧真机整镇图之后才重烘
+    （AV2 的证据：docs/media/av2/after_town_day.png + docker 视觉门 POND/SEASON/DAYNIGHT 全 PASS）；
+  · 每次重烘往 `_meta.rebless_history` 追一条【为什么】。
+这**不能**挡"重烘时把一张偷改的瓦一起钉进去"——那一层只有人眼在守。写在这里，不藏着。
 
-1. **重建来源自证**：重建期间把 `PIL.Image.open` 换成探针，记录实际打开了哪些文件。
-   要求：命中 `library/` ≥ 1 个，命中出货 `terrain/` **恰好 0 个**。
-2. **判别力自检（teeth）**：拿重建结果复制一份、翻 **1** 个像素，喂给**同一个**比对函数，
-   要求它报出"恰好 1 px 不同"且指名是哪一张瓦。比对器退化成 `return True` 立刻红。
-3. **扫过量自证**：打印实际比对了几张瓦 / 几个像素 / 几个字节，三个数为 0 一律判红。
+## 自证（G5 三条照旧；本门把它们按两半各自保留，缺哪条都判红）
 
-## 第四条（本门特有）：**两份坐标表必须一致**
+1. **重建来源自证（SHORE 半）**：重建期间探针记录打开过哪些文件。命中 CC0 总表 ≥1、命中出货 `terrain/` **恰好 0**。
+2. **判别力自检 teeth（两半各一条）**：
+   · SHORE：拿重建结果复制一份、翻 1 px，喂给**同一个 compare()**，要求报"恰好 1 px 不同"且指名。
+   · LEGACY：拿一张出货生成瓦复制一份、翻 1 px，重算 sha256，要求它**不等于**该瓦钉子。
+     （比对退化成 `return True` / 常量 hash 立刻红。）
+3. **扫过量自证**：SHORE 半打印比对了几瓦/几像素/几字节；LEGACY 半打印 hash 了几瓦/几像素/几字节；
+   任一半的三个数为 0 一律判红。
++ **文件集合**：出货目录恰好 = LEGACY ∪ SHORE（0 缺失 / 0 多余）。
 
-`tools/slice_visual.py` 第 12-16 行（ffmpeg 版，容器内跑）与 `tools/slice_shore.py`
-的 `LEGACY` 表（Pillow 版）**各写了一份 terrain 切图坐标**。两份漂开的话，
-"重建"重建的就不是出货文件真正的来源。所以本门**解析 slice_visual.py 的源码**
-把那 5 行的 (col,row) 抠出来和 `LEGACY` 对，不靠注释里的君子协定。
+## ★ 丢掉的那条自证（大声说明，别让它悄悄消失）
+
+G5 有**第 4 条**：核 `slice_visual.py` 与 `slice_shore.LEGACY` 两份**切图坐标**逐个一致。
+生成瓦**没有切图坐标**（它们来自 `slice_terrain_ref.py` 的 band + 降采样，不是 tileset 的 (col,row)）
+⇒ 这条自证对 5 张生成瓦**结构上不再适用，本棒删掉了它**。代价：`slice_visual.py` 里那 5 行
+terrain 切图坐标（现在只被 `slice_shore.build()` 用来取【岸线键控的草地调色板】）与 `LEGACY`
+之间**不再有门核对一致性**。岸线半的重建-比对会间接兜住"草地调色板漂了"（岸瓦会比出不同），
+但两份坐标表本身的漂移**不再有专门判据**。这是本棒真实的判别力损失。
 
 用法:
     python tools/terrain_gate.py            # 门：PASS ⇒ exit 0，FAIL ⇒ exit 1
     python tools/terrain_gate.py -v         # 附每张瓦的逐张明细
+    python tools/terrain_gate.py --rebless ["原因"]   # ⚠️人工：眼验+录真机帧后重烘 5 张生成瓦的清单
 """
+import hashlib
 import io
+import json
 import os
-import re
 import sys
+import time
 
 try:
     import PIL
@@ -65,12 +77,15 @@ except Exception:
     pass
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import slice_shore as ss                # 重建管线本体
+import slice_shore as ss                # 岸线重建管线本体（build() 只读 CC0 总表）
 
 ROOT = ss.ROOT
 SHEET = ss.SHEET
 DST = ss.DST
-SLICE_VISUAL = os.path.join(ROOT, "tools", "slice_visual.py")
+GEN = set(ss.LEGACY)                    # 5 张生成瓦（hash-pin）
+CC0 = set(ss.SHORE)                     # 8 张 CC0 岸线瓦（重建-比对）
+MANIFEST = os.path.join(ROOT, "tools", "terrain_hashes.json")
+REF = os.path.join(ROOT, "docs", "media", "references", "ref_terrain_v1_stardew.png")
 
 
 def _rel(p):
@@ -89,7 +104,7 @@ def _under(parent, p):
 def compare(name, shipped, rebuilt, limit=3):
     """出货图 vs 重建图 → (差异像素数, [人话描述...], 比对的像素数)。
 
-    ⚠ 本函数是这道门唯一的"是不是一样"判据 ⇒ 每次运行都被 teeth 自检拿已知不同的一对喂一遍。
+    ⚠ 本函数是 SHORE 半唯一的"是不是一样"判据 ⇒ 每次运行都被 teeth 自检拿已知不同的一对喂一遍。
     """
     if shipped.size != rebuilt.size:
         return -1, ["%s：尺寸 %s ≠ 重建 %s" % (name, shipped.size, rebuilt.size)], 0
@@ -108,8 +123,24 @@ def compare(name, shipped, rebuilt, limit=3):
     return ndiff, notes, W * H
 
 
+def decoded_rgba(path):
+    """出货 png → (RGBA bytes, (w,h))。**解码后**的像素，不是容器字节。"""
+    with Image.open(path) as raw:
+        img = raw.convert("RGBA")
+    return img.tobytes(), img.size
+
+
+def sha_rgba(path):
+    b, size = decoded_rgba(path)
+    return hashlib.sha256(b).hexdigest(), size, len(b)
+
+
 def rebuild_all():
-    """当场从 CC0 总表重建 13 张瓦，并**同时**记录重建期间打开过哪些文件（自证①）。"""
+    """当场从 CC0 总表重建 13 张瓦，并**同时**记录重建期间打开过哪些文件（自证①）。
+
+    只有 8 张 SHORE 会被拿去逐像素比；5 张 LEGACY 的重建结果本门不再使用（它们已不是出货来源）。
+    仍整套重建，是因为 SHORE 的键控调色板取自本函数刚重建出的草地瓦（build() 内部逻辑，只读 CC0）。
+    """
     opened = []
     orig_open = Image.open
 
@@ -128,17 +159,53 @@ def rebuild_all():
     return out, opened
 
 
-def slice_visual_coords():
-    """从 slice_visual.py 源码里抠出 terrain 那几行的 (name -> (col,row))。
-
-    只认形如  tile(f"{B}/terrain/<name>.png", <col>, <row>)  的行；多格瓦（带 wt/ht）
-    不属于 terrain，出现即忽略。抠不到任何一行 ⇒ 调用方判红（说明格式变了，别静默放行）。
-    """
-    if not os.path.isfile(SLICE_VISUAL):
+def load_manifest():
+    if not os.path.isfile(MANIFEST):
         return None
-    src = open(SLICE_VISUAL, encoding="utf-8").read()
-    pat = re.compile(r'tile\(f"\{B\}/terrain/(\w+)\.png",\s*(\d+),\s*(\d+)\s*\)')
-    return {m.group(1): (int(m.group(2)), int(m.group(3))) for m in pat.finditer(src)}
+    with open(MANIFEST, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def rebless(reason):
+    """⚠️人工专用：重算 5 张生成瓦的解码 RGBA sha256，写清单。CI 永不调用它。"""
+    missing = sorted(n for n in GEN if not os.path.isfile(os.path.join(DST, n + ".png")))
+    if missing:
+        sys.exit("❌ rebless 中止：出货目录缺生成瓦 %s" % ", ".join(missing))
+    tiles = {}
+    for n in sorted(GEN):
+        h, size, _ = sha_rgba(os.path.join(DST, n + ".png"))
+        tiles[n] = {"sha256": h, "size": list(size)}
+    ref_sha = ""
+    if os.path.isfile(REF):
+        ref_sha = hashlib.sha256(open(REF, "rb").read()).hexdigest()
+    prev = load_manifest() or {}
+    history = list(((prev.get("_meta") or {}).get("rebless_history")) or [])
+    stamp = time.strftime("%Y-%m-%d")
+    history.append("%s · %s · ref_sha=%s" % (stamp, reason or "(未给原因)", ref_sha[:12]))
+    doc = {
+        "_meta": {
+            "note": "AV2 生成地形瓦（5 张）解码 RGBA 的 sha256 钉子。这 5 张来自 tools/slice_terrain_ref.py "
+                    "对参考图降采样，无 CC0 源可重建 ⇒ 只能钉 hash。8 张 CC0 岸线瓦不在这里（它们仍走 "
+                    "terrain_gate.py 的当场重建-比对）。",
+            "ratchet": "只能由人跑 `python tools/terrain_gate.py --rebless \"原因\"` 重烘，且必须在【Read 眼验每张瓦 + "
+                       "录一帧真机整镇图】之后。CI 永不自动重烘（这是 R4 waived 下唯一诚实的缓解，见 terrain_gate.py 抬头）。",
+            "hash": "sha256(Image.open(png).convert('RGBA').tobytes())  —— 解码像素，非容器字节",
+            "source": "tools/slice_terrain_ref.py ← docs/media/references/ref_terrain_v1_stardew.png",
+            "ref_sha256": ref_sha,
+            "reblessed_by": "python tools/terrain_gate.py --rebless",
+            "reblessed_at": stamp,
+            "rebless_history": history,
+        },
+        "tiles": tiles,
+    }
+    with open(MANIFEST, "w", encoding="utf-8") as f:
+        json.dump(doc, f, ensure_ascii=False, indent=2, sort_keys=True)
+        f.write("\n")
+    print("⚠️  已重烘 %s（%d 张生成瓦）。" % (_rel(MANIFEST), len(tiles)))
+    print("    确认你已经：① Read 眼验每张 16×16 瓦；② 录了一帧真机整镇图。否则你刚把一张没人看过的瓦钉成了'正确'。")
+    for n in sorted(tiles):
+        print("      %-14s %s  size=%s" % (n, tiles[n]["sha256"][:16] + "…", tiles[n]["size"]))
+    return 0
 
 
 def main():
@@ -153,12 +220,13 @@ def main():
         print("  ❌ FAIL: %s" % m)
         fail = 1
 
-    print("### terrain gate：出货 terrain/ 必须等于 slice_shore.py 当场从 CC0 总表重建的结果（docs/49 §七）")
-    print("  源   %s" % _rel(SHEET))
-    print("  出货 %s" % _rel(DST))
+    print("### terrain gate (hybrid)：8 张 CC0 岸线瓦=当场重建，5 张生成瓦=hash-pin（docs/49 §七 + AV2/docs/159）")
+    print("  CC0 源 %s" % _rel(SHEET))
+    print("  清单   %s" % _rel(MANIFEST))
+    print("  出货   %s" % _rel(DST))
 
     # ── 0. 文件集合 ─────────────────────────────────────────────────────────
-    want = set(ss.LEGACY) | set(ss.SHORE)
+    want = GEN | CC0
     if not os.path.isdir(DST):
         bad("出货目录不存在：%s" % _rel(DST))
         print("\n=== TERRAIN GATE FAIL ❌ ===")
@@ -168,11 +236,13 @@ def main():
     if missing:
         bad("出货目录缺 %d 张：%s" % (len(missing), ", ".join(missing)))
     if extra:
-        bad("出货目录多出 %d 张【重建管线生成不出来】的瓦：%s" % (len(extra), ", ".join(extra)))
+        bad("出货目录多出 %d 张【本门不认识】的瓦：%s" % (len(extra), ", ".join(extra)))
     if not missing and not extra:
-        ok("文件集合：%d 张 png，与 slice_shore 的 LEGACY+SHORE 逐名相同（0 缺失 / 0 多余）" % len(have))
+        ok("文件集合：%d 张 png = LEGACY(生成 %d) ∪ SHORE(CC0 %d)（0 缺失 / 0 多余）"
+           % (len(have), len(GEN), len(CC0)))
 
-    # ── 1. 当场重建 + 来源自证 ──────────────────────────────────────────────
+    # ══ A 半：8 张 CC0 岸线瓦 —— 当场重建 + 逐像素比（G5 原样）══════════════════
+    # ── A1. 当场重建 + 来源自证 ─────────────────────────────────────────────
     rebuilt, opened = rebuild_all()
     from_sheet = [p for p in opened if os.path.normcase(p) == os.path.normcase(os.path.abspath(SHEET))]
     from_dst = [p for p in opened if _under(DST, p)]
@@ -185,8 +255,8 @@ def main():
         ok("重建来源自证：读了 %d 次 CC0 总表、%d 个出货文件 ⇒ 重建独立于出货目录"
            % (len(from_sheet), len(from_dst)))
 
-    # ── 2. 判别力自检（teeth）──────────────────────────────────────────────
-    probe = sorted(ss.SHORE)[0]                 # 挑一张岸线瓦（本棒新加的那一类）
+    # ── A2. 判别力自检 teeth（SHORE）────────────────────────────────────────
+    probe = sorted(CC0)[0]                      # 挑一张岸线瓦
     tampered = rebuilt[probe].copy()
     tp = tampered.load()
     tx, ty = 8, 8                               # 瓦心：不论该点实心还是透明，RGB 取反必然改变元组
@@ -194,35 +264,18 @@ def main():
     tp[tx, ty] = (old[0] ^ 0xFF, old[1] ^ 0xFF, old[2] ^ 0xFF, old[3])
     tn, tnotes, _ = compare(probe, tampered, rebuilt[probe])
     if tn == 1 and tnotes and probe in tnotes[0]:
-        ok("判别力自检：向 %s 注入 1 px 扰动 ⇒ 比对器报「1 px 不同」且指名该瓦（比对器有牙）" % probe)
+        ok("判别力自检(SHORE)：向 %s 注入 1 px ⇒ compare() 报「1 px 不同」且指名该瓦（比对器有牙）" % probe)
     else:
-        bad("判别力自检失败：注入 1 px 扰动，比对器报 %d px / notes=%s ⇒ 这道门本身是坏的" % (tn, tnotes))
+        bad("判别力自检(SHORE)失败：注入 1 px，compare() 报 %d px / notes=%s ⇒ 这道门本身是坏的" % (tn, tnotes))
 
-    # ── 3. 两份坐标表一致（本门特有）────────────────────────────────────────
-    sv = slice_visual_coords()
-    if sv is None:
-        bad("找不到 %s —— 无法核对两份切图坐标" % _rel(SLICE_VISUAL))
-    elif not sv:
-        bad("从 %s 里一行 terrain 切图都没解析到 —— 格式变了，不能静默放行" % _rel(SLICE_VISUAL))
-    else:
-        drift = {k: (ss.LEGACY.get(k), v) for k, v in sv.items() if ss.LEGACY.get(k) != v}
-        miss = sorted(set(ss.LEGACY) - set(sv))
-        if drift:
-            bad("两份切图坐标漂开了：%s（slice_shore.LEGACY vs slice_visual.py）"
-                % ", ".join("%s %s≠%s" % (k, a, b) for k, (a, b) in sorted(drift.items())))
-        elif miss:
-            bad("slice_visual.py 里没有这几张的切图行：%s" % ", ".join(miss))
-        else:
-            ok("坐标表一致：%d 张 legacy 瓦在 slice_shore.LEGACY 与 slice_visual.py 里逐个相同" % len(sv))
-
-    # ── 4. 逐像素比对 ───────────────────────────────────────────────────────
+    # ── A3. 逐像素比对（只比 8 张 CC0 SHORE）────────────────────────────────
     tiles_cmp = px_cmp = bytes_cmp = 0
     same = 0
     reenc_same = reenc_cmp = 0
     details = []
-    for s in sorted(want & have):
+    for s in sorted(CC0 & have):
         path = os.path.join(DST, s + ".png")
-        with Image.open(path) as raw:           # with：Windows 上不留悬挂句柄
+        with Image.open(path) as raw:
             mode = raw.mode
             shipped = raw.convert("RGBA")
         n, notes, npx = compare(s, shipped, rebuilt[s])
@@ -237,7 +290,7 @@ def main():
                 print("        · %s" % ln)
         if mode != "RGBA":
             print("     ⚠  %s：PNG 模式是 %s（已按 RGBA 解码后比对）" % (s, mode))
-        buf = io.BytesIO()                      # 软判据：容器字节（理由同 art_gate 模块 docstring）
+        buf = io.BytesIO()                      # 软判据：容器字节（随 zlib/Pillow 版本走，只打印不判红）
         rebuilt[s].save(buf, format="PNG")
         with open(path, "rb") as f:
             disk = f.read()
@@ -246,37 +299,105 @@ def main():
             reenc_same += 1
         details.append((s, n, npx, len(disk), buf.getvalue() == disk))
 
-    # ── 5. 扫过量自证 ───────────────────────────────────────────────────────
     if tiles_cmp == 0 or px_cmp == 0 or bytes_cmp == 0:
-        bad("扫过量为 0（瓦 %d / 像素 %d / 字节 %d）—— 一张都没比就打绿是假门"
+        bad("SHORE 扫过量为 0（瓦 %d / 像素 %d / 字节 %d）—— 一张都没比就打绿是假门"
             % (tiles_cmp, px_cmp, bytes_cmp))
     elif same == tiles_cmp:
-        ok("逐字节比对：%d/%d 张与当场重建**逐像素相同**；共比对 %s 像素 / %s 字节"
+        ok("CC0 岸线逐像素比对：%d/%d 张与当场重建**逐像素相同**；共比 %s 像素 / %s 字节"
            % (same, tiles_cmp, format(px_cmp, ","), format(bytes_cmp, ",")))
     else:
-        print("     （已比对 %s 像素 / %s 字节，%d/%d 张一致）"
+        print("     （CC0 已比对 %s 像素 / %s 字节，%d/%d 张一致）"
               % (format(px_cmp, ","), format(bytes_cmp, ","), same, tiles_cmp))
 
+    # ══ B 半：5 张生成瓦 —— hash-pin（AV2）════════════════════════════════════
+    man = load_manifest()
+    gen_tiles = 0
+    gen_px = gen_bytes = 0
+    gen_same = 0
+    gen_details = []
+    if man is None:
+        bad("找不到清单 %s —— 生成瓦没有钉子可比（跑 `--rebless` 重烘，但只能在眼验+录真机帧之后）"
+            % _rel(MANIFEST))
+    else:
+        pins = man.get("tiles") or {}
+        for g in sorted(GEN):
+            if g not in have:
+                continue                        # 缺失已在文件集合处判红
+            path = os.path.join(DST, g + ".png")
+            h, size, nb = sha_rgba(path)
+            gen_tiles += 1
+            gen_px += size[0] * size[1]
+            gen_bytes += nb
+            pin = pins.get(g)
+            if pin is None:
+                bad("%s 不在清单里 —— 有一张出货生成瓦没被钉（补钉只能 --rebless）" % g)
+                gen_details.append((g, h, "无钉子"))
+            elif pin.get("sha256") != h:
+                bad("%s 解码 RGBA sha256 与清单不符：出货 %s… ≠ 钉子 %s…（有人改了这张瓦而没走 --rebless）"
+                    % (g, h[:16], str(pin.get("sha256"))[:16]))
+                gen_details.append((g, h, "≠钉子"))
+            else:
+                gen_same += 1
+                gen_details.append((g, h, "==钉子"))
+
+        # ── B-teeth：hash 判别力（翻 1 px ⇒ hash 必变，杀 return-True/常量 hash）────
+        tprobe = sorted(GEN & have)[0] if (GEN & have) else None
+        if tprobe is None:
+            bad("判别力自检(生成瓦)：一张生成瓦都不在出货目录 —— 无法自检")
+        else:
+            with Image.open(os.path.join(DST, tprobe + ".png")) as raw:
+                timg = raw.convert("RGBA")
+            base_hash = hashlib.sha256(timg.tobytes()).hexdigest()
+            tpx = timg.load()
+            o = tpx[8, 8]
+            tpx[8, 8] = (o[0] ^ 0xFF, o[1] ^ 0xFF, o[2] ^ 0xFF, o[3])
+            flip_hash = hashlib.sha256(timg.tobytes()).hexdigest()
+            pin_hash = (pins.get(tprobe) or {}).get("sha256")
+            if flip_hash != base_hash and base_hash == pin_hash:
+                ok("判别力自检(生成瓦)：向 %s 翻 1 px ⇒ sha256 改变且原图 hash==钉子（hash 有牙，非常量/非 return-True）" % tprobe)
+            elif base_hash != pin_hash:
+                bad("判别力自检(生成瓦)：%s 出货 hash 与钉子已不符，teeth 前提不成立（先修 B 半的 hash 比对）" % tprobe)
+            else:
+                bad("判别力自检(生成瓦)失败：翻 1 px 后 sha256 没变 ⇒ hash 判据是坏的")
+
+        # ── B-扫过量自证 ────────────────────────────────────────────────────
+        if gen_tiles == 0 or gen_px == 0 or gen_bytes == 0:
+            bad("生成瓦扫过量为 0（瓦 %d / 像素 %d / 字节 %d）—— 一张都没 hash 就打绿是假门"
+                % (gen_tiles, gen_px, gen_bytes))
+        elif gen_same == gen_tiles:
+            ok("生成瓦 hash-pin：%d/%d 张解码 RGBA sha256 与清单相同；共 hash %s 像素 / %s 字节"
+               % (gen_same, gen_tiles, format(gen_px, ","), format(gen_bytes, ",")))
+
+    # ── 软判据打印 + 丢掉的第 4 条自证的大声声明 ─────────────────────────────
     if reenc_cmp:
         tag = "✅" if reenc_same == reenc_cmp else "⚠ "
-        print("  %s PNG 容器字节（软判据，不判红）：%d/%d 张与本机 Pillow %s 重编码逐字节相同"
+        print("  %s CC0 容器字节（软判据，不判红）：%d/%d 张与本机 Pillow %s 重编码逐字节相同"
               % (tag, reenc_same, reenc_cmp, PIL.__version__))
+    print("  ℹ  已删自证④（slice_visual.py↔LEGACY 切图坐标一致）：生成瓦无切图坐标，此臂结构上不适用；"
+          "代价见本文件抬头「丢掉的那条自证」。")
 
     if verbose:
-        print("\n  ── 逐张明细 ──")
+        print("\n  ── CC0 岸线逐张明细 ──")
         print("  %-16s %8s %10s %10s  %s" % ("瓦", "差异px", "比对px", "磁盘字节", "容器字节相同"))
         for s, n, npx, nb, rs in details:
             print("  %-16s %8d %10s %10s  %s" % (s, max(n, 0), format(npx, ","), format(nb, ","), rs))
+        print("\n  ── 生成瓦 hash 明细 ──")
+        for g, h, st in gen_details:
+            print("  %-16s %s…  %s" % (g, h[:24], st))
 
     print()
     if fail == 0:
         print("=== TERRAIN GATE PASS ✅ ===")
     else:
         print("=== TERRAIN GATE FAIL ❌ ===")
-        print("修法：`python tools/slice_shore.py` 重新生成岸线瓦；"
-              "若你**蓄意**改了地形美术，请把改动做进切图坐标/键控规则里，而不是直接改 png。")
+        print("修法：CC0 岸线不符 ⇒ `python tools/slice_shore.py` 重切；"
+              "生成瓦不符 ⇒ 若是**蓄意**改美术，先 Read 眼验+录真机帧，再 `python tools/terrain_gate.py --rebless \"原因\"`。")
     return fail
 
 
 if __name__ == "__main__":
+    if "--rebless" in sys.argv:
+        i = sys.argv.index("--rebless")
+        reason = sys.argv[i + 1] if len(sys.argv) > i + 1 and not sys.argv[i + 1].startswith("-") else ""
+        sys.exit(rebless(reason))
     sys.exit(main())

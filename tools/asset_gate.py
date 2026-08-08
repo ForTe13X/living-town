@@ -214,17 +214,21 @@ NOT_GATED = {
     #    `unclassified` 那条臂就再没有"故意不守"的对照面了。
 }
 
-# ── 配方里还有 5 张 terrain —— 它们**已经有门了**（G5 的 tools/terrain_gate.py）────────────
+# ── 配方里还有 5 张 terrain —— 它们**已经有门了**（terrain_gate.py）────────────────────────
 # `slice_visual.py` 同时产 terrain + decor + building，所以采配方一定会采到这 5 条。
 # 它们既不属于本门的 GATED，也不是"没人管"，第三个桶必须存在，否则范围自证会假红（实测：第一次跑就红了）。
 # **并且本门会去核 terrain_gate 真的还在守它们**（下面 `check_elsewhere`）——
 # 「存在」与「被使用」是两件必须分开问的事（docs/50 §八），对门本身同样成立。
+# ⚠️ AV2/Lane V（docs/159）把 terrain_gate 改成了 **hybrid**：8 张 CC0 岸线瓦仍当场重建-比对，
+#    但这 5 张被暖色**生成瓦**替换（R4 waived），改为对 tools/terrain_hashes.json 做 **hash-pin**。
+#    对本门无影响：terrain_gate 的"生成瓦集合"仍取自 `slice_shore.LEGACY`（GEN=set(ss.LEGACY)），
+#    所以下面 check_elsewhere 照旧靠 `LEGACY∪SHORE` 核"这 5 张是否真有门"——去问代码，不问注释。
 ELSEWHERE = {
-    "terrain/grass_a": "terrain_gate.py（G5）",
-    "terrain/grass_b": "terrain_gate.py（G5）",
-    "terrain/grass_flowers": "terrain_gate.py（G5）",
-    "terrain/dirt": "terrain_gate.py（G5）",
-    "terrain/water": "terrain_gate.py（G5）",
+    "terrain/grass_a": "terrain_gate.py（hash-pin，AV2）",
+    "terrain/grass_b": "terrain_gate.py（hash-pin，AV2）",
+    "terrain/grass_flowers": "terrain_gate.py（hash-pin，AV2）",
+    "terrain/dirt": "terrain_gate.py（hash-pin，AV2）",
+    "terrain/water": "terrain_gate.py（hash-pin，AV2）",
 }
 
 # ── 第四张表：**已删除**（I2 2026-07-30）───────────────────────────────────────────────────
@@ -675,7 +679,9 @@ def check_elsewhere():
 
     理由：`slice_visual.py` 一份配方同时产 terrain + decor + building。把 terrain 那 5 张
     记成"归 terrain_gate 管"是**转告**，而转告会漂——只要有人把它们从 `slice_shore.LEGACY`
-    里删掉，terrain_gate 就不再守，而本门这张表还写着"有人管"。所以去问代码，不问注释。
+    里删掉，terrain_gate 的生成瓦集合（GEN=set(ss.LEGACY)）就跟着少一张、那张不再被 hash-pin，
+    而本门这张表还写着"有人管"。所以去问代码，不问注释。
+    （AV2 后 terrain_gate 对这 5 张走 hash-pin 而非重建，但 GEN 仍取自 LEGACY ⇒ 本核对不变。）
     """
     try:
         import slice_shore as ss

@@ -123,22 +123,24 @@ step "2b. art gate (出货 game/assets/art/pro 必须等于 coif_characters.py �
 #    SKIP 与 PASS 在汇总里都读作"没红"，那会把这道门退化成一枚看不见结果的硬币（visual_gate.sh 抬头③）。
 "$PY" tools/art_gate.py && ok "art gate（出货 pro/ == 当场重建）" || bad "art gate（出货 pro/ != coif_characters.py 当场重建的结果）"
 
-step "2c. terrain gate (出货 game/assets/art/terrain 必须等于 slice_shore.py 当场重建的结果)"
-# G5（docs/49 §七）。与 2b 同一套形状，守的是另一类资产：13 张地形瓦（5 张原有 + 8 张本棒新加的岸线瓦）。
-# 由来：G1 建 2b 时点名"另有 31 张出货 png 一道门都没有"（emote 10 / decor 8 / terrain 5 / obj 5 / building 3）。
-# 本棒把 terrain 那 5 张（现 13 张）补上；**其余 26 张仍然无门**，理由写在 terrain_gate.py 抬头
-# （没在真机上眼验过的东西不该被钉成"正确"——本棒的整个由来就是一张没人看过的贴图躺了一个月）。
+step "2c. terrain gate (hybrid：8 张 CC0 岸线瓦=当场重建，5 张生成瓦=hash-pin)"
+# G5（docs/49 §七）→ AV2/Lane V（docs/159）改为 **hybrid**。守 13 张地形瓦，分两半：
+#   · **8 张 CC0 岸线瓦**（water_{n,s,e,w,ne,nw,se,sw}）—— 一个字没改，仍当场从 CC0 总表重建 + 逐像素比（G5 原样）。
+#   · **5 张生成瓦**（grass_a/b/flowers/dirt/water）—— AV2 用 tools/slice_terrain_ref.py 从暖色参考图降采样重画，
+#     R4（不许生成图出货）对本切片 WAIVED ⇒ 再也无法从 CC0 重建 ⇒ 改为 **hash-pin**：比对解码后 RGBA 的 sha256
+#     与眼验过的清单 tools/terrain_hashes.json。
+# ⚠️ **诚实边界**：hash-pin 正是 G5 当初点名要避开的"校验和清单"（可靠更新清单蒙混）。R4 waived 下唯一诚实的缓解是
+#    **眼验棘轮**：清单只能由人跑 `python tools/terrain_gate.py --rebless "原因"` 重烘，且必须在【Read 眼验每张瓦 +
+#    录一帧真机整镇图】之后；**CI 永不自动重烘**。它挡不住"重烘时把偷改的瓦一起钉进去"——那层只有人眼守（写在 terrain_gate.py 抬头）。
 #
-# 负对照（G5 实测，逐条亲眼看着变红 + 核过退出码）：
-#   ① 某张岸线瓦翻 1 个像素 ⇒ 红，指名 water_n (7,9)，exit 1；
-#   ② 删一张 ⇒ "缺 1 张 water_se"，exit 1；改回来 ⇒ exit 0。
-#   ③ 门内每次都跑的 1px 判别力自检守着"比对器退化成恒真"。
-#   ④ 本门特有的第 4 条：slice_shore.LEGACY 与 slice_visual.py 里那两份切图坐标必须逐个相同
-#      （两份漂开的话，"重建"重建的就不是出货文件真正的来源）。
-# ⚠️ 同 2b：硬判据只认解码后的 RGBA 像素；PNG 容器字节只打印不判红。
-#    实测 5 张 legacy 瓦的容器字节与本机 Pillow 重编码**不同**（它们当年是 ffmpeg 切的）而像素全同
-#    —— 这正是"容器字节必须是软判据"的现成例子。
-"$PY" tools/terrain_gate.py && ok "terrain gate（出货 terrain/ == 当场重建）" || bad "terrain gate（出货 terrain/ != slice_shore.py 当场重建的结果）"
+# 负对照（AV2 实测，逐条核过退出码；见 docs/159 §gate 表）：
+#   ① 生成瓦翻 1 px ⇒ 红，指名 grass_a 解码 sha256 与钉子不符，exit 1；② 删一张 ⇒ "缺 1 张 water"，exit 1；
+#   ③ CC0 岸线瓦翻 1 px ⇒ 红（SHORE 半的 compare() teeth 照旧）；
+#   ④ **常量 hash + 连清单一起投毒**（模拟 return-True/常量退化）⇒ 生成瓦 teeth 报"翻 1 px 后 sha256 没变"红。
+# ★ **丢掉的自证**：G5 第 4 条（slice_visual.py↔slice_shore.LEGACY 切图坐标一致）对生成瓦结构上不再适用，本棒删掉了它
+#   —— 两份坐标表的漂移不再有专门判据（岸线半的重建-比对间接兜住"草地调色板漂了"）。这是真实的判别力损失，写在这里不藏。
+# ⚠️ 同 2b：硬判据只认解码后 RGBA；PNG 容器字节只打印不判红（生成瓦是 Pillow LANCZOS 切的、CC0 瓦当年是 ffmpeg 切的）。
+"$PY" tools/terrain_gate.py && ok "terrain gate（8 CC0 岸线=重建 + 5 生成瓦=hash-pin）" || bad "terrain gate（岸线!=当场重建，或生成瓦解码 sha256 != tools/terrain_hashes.json 钉子）"
 
 step "2d. asset gate (上门的 22 张 emote/decor/obj png == 切图/自绘配方当场重建 + 表情两两可分 + 配方无断口)"
 # H2（docs/50 §二）。与 2b / 2c 同一套形状的**第三个实例**（不是第三种形状）：当场从 CC0 库重建 → 解码后逐像素比对。
