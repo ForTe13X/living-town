@@ -201,15 +201,16 @@ var _zoom := 1.0               # 本帧 世界→屏幕 缩放
 #   用它对逐 pass 差值求和做**闭合校验**（差值和 ≈ 世界层总量 ⇒ 归因没有漏项/重复计）。
 const AUDIT_PASSES: Array[String] = [
 	"backdrop", "grass", "water", "paths", "areafloor", "rooms", "walls",
-	"facades", "dressing", "arealabels", "decor", "trees", "towndoors",
+	"facades", "dressing", "port", "arealabels", "decor", "trees", "towndoors",
 	"landmarks", "objects", "climate", "factionrings", "pactlinks",
 	"rellines", "talklinks", "agents", "rain", "snow", "lights",
 	# backdrop 的子 pass（与 "backdrop" 重叠，故不进闭合校验；单独列出是为了知道该动哪一段）
 	"bd:base", "bd:vergeramp", "bd:vergemotif", "bd:spill", "bd:canopy", "bd:vignette",
 ]
-## 上面后 6 项是 "backdrop" 的**子集**，会被重复计入 ⇒ 闭合校验只对前 24 项求和。
-## （AI1 编号129 加了 "snow" pass，23→24；闭合校验实际用 `not begins_with("bd:")` 自动纳入，此常量仅存文档。）
-const AUDIT_PRIMARY := 24
+## 上面后 6 项是 "backdrop" 的**子集**，会被重复计入 ⇒ 闭合校验只对前 25 项求和。
+## （AI1 编号129 加了 "snow" pass，23→24；AP-port 编号163 加了 "port" pass，24→25；
+##   闭合校验实际用 `not begins_with("bd:")` 自动纳入，此常量仅存文档。）
+const AUDIT_PRIMARY := 25
 var _askip := ""               # 本帧要跳过的 pass 名（"" = 全开）
 var _audit_path := ""          # --draw-audit <file>：非空即进入审计模式
 var _audit_i := -2             # -2=预热 / -1=基线 / 0..n-1=逐 pass / n=全关地板
@@ -3229,6 +3230,12 @@ func _draw_body() -> void:
 		_draw_building_dressing(w) # 再压屋檐/招牌（自然遮住顶墙窗上沿，像真的屋檐）
 	if _ap("arealabels"):
 		_draw_area_labels()        # 区名画在墙【之后】（旧版画在顶墙格上，被墙盖掉，等于没画）
+	# AP-port(163)：给滩头 dock 画真·港口身份（栈桥/系缆桩/货箱/渔船/船屋 + 交通路牌）。
+	#   ★画在 arealabels 之【后】：整-镇取景(--shot-fit)下「滩头」区名字号被拉到 ~52px、正压在栈桥中央，
+	#     会糊住渔船/货堆；港口结构本身已让 dock 一眼是码头 ⇒ 让结构盖过那个巨字（诚实边界见 docs/163 §五）。
+	#   零金标（只读 areas.dock.rect，Sim 一格读不到本层）；POND 安全（一像素都不画到水线 py 之上，见 _draw_port）。
+	if _ap("port"):
+		_draw_port()
 
 	# 装饰散布（区域外草地上的花/草丛/石，确定性布局；在物件与居民之下。**这里没有树**，见 _build_decor 抬头）
 	if not _decor_built:
@@ -3491,6 +3498,211 @@ func _draw_landmarks() -> void:
 		var _pr: Array = (_areas["plaza"] as Dictionary).get("rect", [0, 0, 0, 0])
 		if int(_pr[2]) > 0 and int(_pr[3]) > 0:
 			_draw_plaza_seatring(Rect2(int(_pr[0]) * T, int(_pr[1]) * T, int(_pr[2]) * T, int(_pr[3]) * T))
+
+## ══════════════════════════════════════════════════════════════════════════════
+## AP-port（docs/163）· 滩头 dock 的【港口身份】—— 纯 View、零金标、POND 安全
+## ──────────────────────────────────────────────────────────────────────────────
+## F5 建的 `dock` 区（type:plaza、rect [30,7,4,2]、北池南岸、蓄意不含水格）此前只铺了广场石板 +
+## 一个借 bench 精灵的 `bench_pier 渔台` worksite，读作"一块带凳子的铺装"，没有任何码头/船/仓库。
+## 本函数把这块铺装【就地】画成真港口：木栈桥板 + 临水边梁 + 系缆桩 + 系着的渔船 + 货箱/桶/麻袋 +
+## 小船屋 silhouette + 一个方向路牌（呼应 item#2「交通:港口」）。
+##
+## ★零金标：只读 `Sim.world.areas.dock.rect`（Sim 也读的面，只读不写；Sim 从不读 type/terrain/本层 draw）
+##   ⇒ 一格 digest 都动不了（金标 12/12 逐字节，同 AV1/AV2/AV3 的 View-only 纪律）。
+## ★POND 安全（docs/162 §三 点名的唯一真风险）：dock 在北池南岸，POND 门采样北池那圈 grass↔water 岸线。
+##   **本函数一像素都不画到水线 `py`(=dock 顶边=池南岸) 之上** —— 所有结构 clamp 在 y≥py 的已铺 dock 格里，
+##   池水/岸线像素一个不碰。南岸(`bot@`)剖线陆侧本就是铺装非草(被 POND 的 path/grass 判据天然排除)，
+##   而木结构只会给 `levels` 台阶判据**加**台阶(利好)、不会抹掉草→水梯度。实测 POND before/after 见 docs/163。
+## ★确定性：几何全由 rect+T 派生，木纹/明暗档只读 `_hash(x,y,salt)`、夜灯只读 `_night_amt()`(f(time_of_day))
+##   —— 无 randi/randf/Time/OS ⇒ `--shot` 逐像素可复现(ROUNDTRIP 冻结帧)。
+## ★复用现有色常量(木 X_WOOD_MID/D_WOOD_LINE、水 P_WATER_DEEP/LIT、暖光 X_GLOW*、麻布 P_PLAZA)，不加新 BLD_PAL。
+## `port_dock` 只是 logistics 声明节点(保留位 [33,8]、不落 world.objects)，本函数不读它、不碰 logistics.json。
+func _draw_port() -> void:
+	var areas: Dictionary = Sim.world.get("areas", {})
+	if not areas.has("dock"):
+		return
+	var dr: Array = (areas["dock"] as Dictionary).get("rect", [0, 0, 0, 0])
+	var dwc := int(dr[2]); var dhc := int(dr[3])
+	if dwc <= 0 or dhc <= 0:
+		return
+	var dx0 := int(dr[0]); var dy0 := int(dr[1])
+	var px := float(dx0 * T); var py := float(dy0 * T)      # py = dock 顶边 = 北池南岸【水线】：下面所有 draw 都 ≥ py
+	var pw := float(dwc * T); var ph := float(dhc * T)
+	if not _vis.intersects(Rect2(px, py, pw, ph)):
+		return                                              # 视口裁剪（同花草/街具）：dock 不在画面就整段跳过
+
+	# ── ① 木栈桥板（把广场石板就地盖成一层晒白的木甲板；竖板 + 板缝 + 木纹 + 钉头，全确定性）──────────
+	var seam := D_WOOD_LINE                                 # 板缝/描边：木家族最暗档
+	var deck0 := X_WOOD_MID.lightened(0.16)                 # 甲板底：晒白的栈桥木
+	var board_w := T * 0.5
+	var nb := int(round(pw / board_w))
+	for row in range(dhc):
+		var ry := py + float(row) * T
+		for bi in range(nb):
+			var bx := px + float(bi) * board_w
+			var tone := _hash(bi, dy0 + row, 63) % 5
+			var col := deck0
+			if tone == 0: col = deck0.lightened(0.10)
+			elif tone == 1: col = deck0.darkened(0.09)
+			elif tone == 2: col = X_WOOD_MID
+			draw_rect(Rect2(bx, ry, board_w, T), col, true)
+			for g in range(2):                              # 板面横木纹（两道，确定性抖动）
+				var gy := ry + T * (0.32 + 0.36 * float(g)) + float(_hash(bi, dy0 + row, 71 + g) % 3)
+				draw_rect(Rect2(bx + 1.0, gy, board_w - 2.0, 1.0), Color(seam.r, seam.g, seam.b, 0.28), true)
+	for bi2 in range(nb + 1):                               # 竖板缝
+		var sx := px + float(bi2) * board_w
+		draw_rect(Rect2(sx - 0.5, py, 1.0, ph), Color(seam.r, seam.g, seam.b, 0.5), true)
+	for row2 in range(dhc + 1):                             # 横向龙骨线 + 钉头（每板一颗）
+		var jy := py + float(row2) * T
+		draw_rect(Rect2(px, jy - 0.5, pw, 1.4), Color(seam.r, seam.g, seam.b, 0.45), true)
+		for bi3 in range(nb):
+			draw_circle(Vector2(px + (float(bi3) + 0.5) * board_w, jy + 2.0), 1.0, Color(seam.r, seam.g, seam.b, 0.55))
+
+	# ── ② 临水边梁（bull rail）：栈桥朝水那条边压一根深木梁 + 受光高光。就在水线 py 上，不越线。──────────
+	draw_rect(Rect2(px, py, pw, T * 0.13), seam, true)
+	draw_rect(Rect2(px, py, pw, T * 0.035), X_WOOD_MID.lightened(0.06), true)
+
+	# ── ③ 结构（自西向东：船屋 / 系缆桩 / 渔船 / 货堆 / 路牌）。位置按 rect 分数派生，都 clamp 在 y≥py。──────
+	_port_boathouse(px + T * 0.05, py + T * 0.05, T * 0.92)           # 西端(cell30) 船屋
+	var boll_w := px + pw * 0.34                                      # 西系缆桩(cell31.4，系船)
+	var boll_e := px + pw * 0.90                                      # 东系缆桩(cell33.6，近货堆)
+	_port_bollard(boll_w, py + T * 0.07)
+	_port_bollard(boll_e, py + T * 0.07)
+	var boat_cx := px + pw * 0.64                                     # 渔船(cell32.6 水线，避开 cell31 的渔台 worksite)
+	var boat_top := py + T * 0.06
+	var rope := Color(P_COM_FOOT.r, P_COM_FOOT.g, P_COM_FOOT.b, 0.85) # 系缆绳：西桩顶→船首（两段松弛折线，端点都≥py）
+	draw_line(Vector2(boll_w, py + T * 0.10), Vector2((boll_w + boat_cx) * 0.5, py + T * 0.26), rope, 1.4)
+	draw_line(Vector2((boll_w + boat_cx) * 0.5, py + T * 0.26), Vector2(boat_cx - T * 0.5, boat_top + T * 0.24), rope, 1.4)
+	_port_boat(boat_cx, boat_top, T * 0.56, T * 0.30)
+	_port_crate(px + pw * 0.78, py + T * 0.54, T * 0.36)             # 货堆(cell33)：木箱堆 + 桶 + 出口豆子麻袋
+	_port_crate(px + pw * 0.80, py + T * 0.22, T * 0.28)
+	_port_barrel(px + pw * 0.945, py + T * 0.58, T * 0.22, T * 0.36)
+	_port_sacks(px + pw * 0.79, py + T * 1.44, T * 0.30)
+	# 交通路牌（item#2）：立在 dock 西南侧【陆地】上(cell~30.5,y9)——独立可读、指向港口，
+	#   不挤东端货堆。落点仍在 y≥py 的陆格，纯 View decor(非 blocker)，对 POND grass 环带众数无影响。
+	_port_signpost(px + pw * 0.14, py + ph + T * 0.60)
+
+## AP-port 结构件（都是纯 draw_* 图元；调用方 _draw_port 保证 top_y/ground_y ≥ 水线 py）。────────────
+## 系缆桩：临水一根矮木桩 + 深帽 + 缆环。
+func _port_bollard(cx: float, top_y: float) -> void:
+	var w := T * 0.15
+	var hgt := T * 0.32
+	draw_circle(Vector2(cx, top_y + hgt), w * 0.85, Color(0, 0, 0, 0.20))                     # 落地影
+	draw_rect(Rect2(cx - w * 0.5, top_y, w, hgt), X_WOOD_MID, true)                            # 桩身
+	draw_rect(Rect2(cx - w * 0.5, top_y, w * 0.34, hgt), X_WOOD_MID.lightened(0.14), true)     # 受光
+	draw_rect(Rect2(cx - w * 0.5, top_y, w, hgt), D_WOOD_LINE, false, 1.0)                     # 描边
+	draw_circle(Vector2(cx, top_y), w * 0.62, D_WOOD_LINE)                                     # 桩帽
+	draw_circle(Vector2(cx, top_y - 1.0), w * 0.42, X_WOOD_MID.lightened(0.10))
+	draw_arc(Vector2(cx, top_y + hgt * 0.5), w * 0.5, 0.12 * PI, 0.88 * PI, 8,
+		Color(P_COM_FOOT.r, P_COM_FOOT.g, P_COM_FOOT.b, 0.9), 1.5, false)                      # 缆环
+
+## 渔船（系在栈桥边的平底小船，蓄意画成【平的】以整船落在水线 py 之下）：深木壳 + 浅木舷内 + 坐板 + 盘网 + 渔获。
+func _port_boat(cx: float, top_y: float, hw: float, hh: float) -> void:
+	var cy := top_y + hh
+	draw_circle(Vector2(cx, cy + hh * 0.55), hw * 0.92, Color(P_WATER_DEEP.r, P_WATER_DEEP.g, P_WATER_DEEP.b, 0.20))  # 水影
+	var hull := PackedVector2Array([
+		Vector2(cx - hw, cy), Vector2(cx - hw * 0.55, cy - hh), Vector2(cx + hw * 0.55, cy - hh),
+		Vector2(cx + hw, cy), Vector2(cx + hw * 0.55, cy + hh), Vector2(cx - hw * 0.55, cy + hh)])
+	draw_colored_polygon(hull, D_WOOD_LINE)                                                    # 船壳（深木尖头椭圆）
+	var f := 0.66
+	var inner := PackedVector2Array([
+		Vector2(cx - hw * f, cy), Vector2(cx - hw * 0.4 * f, cy - hh * f), Vector2(cx + hw * 0.4 * f, cy - hh * f),
+		Vector2(cx + hw * f, cy), Vector2(cx + hw * 0.4 * f, cy + hh * f), Vector2(cx - hw * 0.4 * f, cy + hh * f)])
+	draw_colored_polygon(inner, X_WOOD_MID.lightened(0.08))                                    # 舷内（浅木）
+	draw_rect(Rect2(cx - hw * 0.5, cy - hh * 0.42, hw * 0.32, hh * 0.20), X_WOOD_MID, true)    # 坐板×2
+	draw_rect(Rect2(cx + hw * 0.18, cy - hh * 0.42, hw * 0.32, hh * 0.20), X_WOOD_MID, true)
+	draw_arc(Vector2(cx + hw * 0.32, cy + hh * 0.10), hh * 0.34, 0.0, TAU, 12,
+		Color(X_PARCHMENT.r, X_PARCHMENT.g, X_PARCHMENT.b, 0.8), 1.4, false)                   # 盘起的渔网
+	draw_arc(Vector2(cx + hw * 0.32, cy + hh * 0.10), hh * 0.20, 0.0, TAU, 10,
+		Color(X_PARCHMENT.r, X_PARCHMENT.g, X_PARCHMENT.b, 0.6), 1.2, false)
+	draw_circle(Vector2(cx - hw * 0.42, cy + hh * 0.06), hh * 0.17, X_COLD_WHITE)              # 渔获（银鱼）
+	draw_circle(Vector2(cx - hw * 0.28, cy - hh * 0.04), hh * 0.13, Color(P_WATER_LIT.r, P_WATER_LIT.g, P_WATER_LIT.b, 0.9))
+	draw_circle(Vector2(cx - hw * 0.92, cy), hh * 0.15, X_WOOD_MID)                            # 船首柱
+
+## 船屋 / 小仓库 silhouette：人字木屋，屋脊在临水侧(顶边=py)，门朝栈桥(南)，夜里小窗透暖光。
+func _port_boathouse(bx0: float, top_y: float, bw: float) -> void:
+	var cx := bx0 + bw * 0.5
+	var eaves := top_y + bw * 0.46
+	var body_bot := top_y + T * 1.56
+	draw_rect(Rect2(bx0 + 3.0, body_bot - T * 0.36, bw, T * 0.44), Color(0, 0, 0, 0.20), true)  # 落地影
+	draw_rect(Rect2(bx0, eaves - 2.0, bw, body_bot - eaves + 2.0), X_WOOD_MID, true)             # 屋身
+	draw_rect(Rect2(bx0, eaves - 2.0, bw * 0.30, body_bot - eaves + 2.0), X_WOOD_MID.darkened(0.12), true)  # 阴面
+	for k in range(3):                                                                           # 木板条
+		var ly := eaves + T * (0.28 + 0.34 * float(k))
+		draw_rect(Rect2(bx0, ly, bw, 1.0), Color(D_WOOD_LINE.r, D_WOOD_LINE.g, D_WOOD_LINE.b, 0.35), true)
+	draw_rect(Rect2(bx0, eaves - 2.0, bw, body_bot - eaves + 2.0), D_WOOD_LINE, false, 1.5)      # 描边
+	draw_colored_polygon(PackedVector2Array([                                                    # 人字顶（apex 在 top_y = 水线，不越线）
+		Vector2(cx, top_y), Vector2(bx0 - 3.0, eaves), Vector2(bx0 + bw + 3.0, eaves)]), P_RES_ROOF)
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(cx, top_y), Vector2(bx0 - 3.0, eaves), Vector2(cx, eaves)]), P_RES_ROOF.darkened(0.12))  # 顶阴面
+	draw_line(Vector2(bx0 - 3.0, eaves), Vector2(bx0 + bw + 3.0, eaves), P_RES_FOOT, 1.5)        # 檐口线
+	var door := Rect2(cx - bw * 0.26, body_bot - T * 0.86, bw * 0.52, T * 0.86)                  # 大门（朝栈桥）
+	draw_rect(door, D_WOOD_LINE, true)
+	draw_rect(door, X_WOOD_MID, false, 1.5)
+	draw_rect(Rect2(cx - 1.0, body_bot - T * 0.86, 2.0, T * 0.86), X_WOOD_MID, true)             # 门缝
+	var na := _night_amt()                                                                       # 门上小窗：夜里透暖光
+	var win := Rect2(cx - bw * 0.15, eaves + T * 0.14, bw * 0.30, T * 0.22)
+	draw_rect(win, Color(X_GLOW_DEEP.r, X_GLOW_DEEP.g, X_GLOW_DEEP.b, 0.30 + 0.55 * na), true)
+	draw_rect(win, D_WOOD_LINE, false, 1.0)
+	if na > 0.01:
+		draw_circle(win.get_center(), bw * 0.55, Color(X_GLOW.r, X_GLOW.g, X_GLOW.b, 0.16 * na))  # 灯晕
+
+## 货箱：木箱 + 顶受光 + X 撑 + 中缝。
+func _port_crate(x: float, y: float, s: float) -> void:
+	draw_rect(Rect2(x + 2.0, y + s * 0.85, s, s * 0.26), Color(0, 0, 0, 0.18), true)             # 影
+	draw_rect(Rect2(x, y, s, s), X_WOOD_MID, true)
+	draw_rect(Rect2(x, y, s, s * 0.18), X_WOOD_MID.lightened(0.12), true)                        # 顶受光
+	draw_rect(Rect2(x, y, s, s), D_WOOD_LINE, false, 1.5)                                        # 边框
+	var xb := Color(D_WOOD_LINE.r, D_WOOD_LINE.g, D_WOOD_LINE.b, 0.7)
+	draw_line(Vector2(x, y), Vector2(x + s, y + s), xb, 1.2)                                     # X 撑
+	draw_line(Vector2(x + s, y), Vector2(x, y + s), xb, 1.2)
+	draw_rect(Rect2(x, y + s * 0.5 - 0.5, s, 1.0), Color(D_WOOD_LINE.r, D_WOOD_LINE.g, D_WOOD_LINE.b, 0.55), true)  # 中缝
+
+## 木桶：深棕桶身 + 三道铁箍 + 木盖。
+func _port_barrel(cx: float, top_y: float, w: float, h: float) -> void:
+	draw_circle(Vector2(cx, top_y + h + 2.0), w * 0.55, Color(0, 0, 0, 0.16))                    # 影
+	var body := Rect2(cx - w * 0.5, top_y, w, h)
+	draw_rect(body, P_COM_FOOT, true)                                                            # 桶身
+	draw_rect(Rect2(cx - w * 0.5, top_y, w * 0.28, h), P_COM_FOOT.lightened(0.16), true)         # 受光
+	for k in range(3):                                                                           # 铁箍
+		draw_rect(Rect2(cx - w * 0.5, top_y + h * (0.12 + 0.37 * float(k)), w, 1.6),
+			Color(D_WOOD_LINE.r, D_WOOD_LINE.g, D_WOOD_LINE.b, 0.85), true)
+	draw_rect(Rect2(cx - w * 0.5, top_y, w, h * 0.13), X_WOOD_MID.darkened(0.08), true)          # 桶沿
+	draw_rect(Rect2(cx - w * 0.36, top_y + 1.0, w * 0.72, h * 0.10), X_WOOD_MID.lightened(0.12), true)  # 桶盖（内缩、读作圆口）
+	draw_rect(body, D_WOOD_LINE, false, 1.2)
+
+## 麻袋堆（出口·豆子）：暖麻布圆包 + 扎口。
+func _port_sacks(x: float, y: float, s: float) -> void:
+	draw_rect(Rect2(x - s * 0.6, y + s * 0.28, s * 1.8, s * 0.5), Color(0, 0, 0, 0.16), true)    # 影
+	var burlap := P_PLAZA.darkened(0.06)
+	for pos in [Vector2(x, y), Vector2(x + s * 0.78, y + s * 0.06), Vector2(x + s * 0.40, y - s * 0.52)]:
+		draw_circle(pos, s * 0.5, burlap)
+		draw_circle(pos - Vector2(s * 0.12, s * 0.12), s * 0.28, burlap.lightened(0.13))
+		draw_arc(pos, s * 0.5, 0.0, TAU, 12, burlap.darkened(0.26), 1.0, false)
+		draw_line(pos + Vector2(0, -s * 0.5), pos + Vector2(0, -s * 0.66), P_COM_FOOT, 1.4)      # 扎口
+
+## 交通路牌（呼应 item#2「交通:港口」）：木柱 + 两块方向牌 + 箭头。立在 deck 上。
+func _port_signpost(cx: float, ground_y: float) -> void:
+	var top := ground_y - T * 0.86
+	draw_circle(Vector2(cx, ground_y), T * 0.10, Color(0, 0, 0, 0.18))                           # 影
+	draw_rect(Rect2(cx - T * 0.045, top, T * 0.09, ground_y - top), X_WOOD_MID, true)            # 柱
+	draw_rect(Rect2(cx - T * 0.045, top, T * 0.09, ground_y - top), D_WOOD_LINE, false, 1.0)
+	var board := P_RES_FLOOR                                                                     # 暖木牌面（读得出的浅木）
+	var arrow := P_COM_FOOT                                                                       # 深色箭头/字
+	var b1 := Rect2(cx - T * 0.04, top + T * 0.04, T * 0.42, T * 0.20)                           # 上牌·指右
+	draw_rect(b1, board, true)
+	draw_rect(b1, D_WOOD_LINE, false, 1.2)
+	draw_colored_polygon(PackedVector2Array([                                                    # 右箭头
+		Vector2(b1.end.x - T * 0.02, b1.position.y + b1.size.y * 0.5),
+		Vector2(b1.end.x - T * 0.13, b1.position.y + T * 0.03),
+		Vector2(b1.end.x - T * 0.13, b1.end.y - T * 0.03)]), arrow)
+	var b2 := Rect2(cx - T * 0.38, top + T * 0.30, T * 0.42, T * 0.20)                           # 下牌·指左
+	draw_rect(b2, board.darkened(0.06), true)
+	draw_rect(b2, D_WOOD_LINE, false, 1.2)
+	draw_colored_polygon(PackedVector2Array([                                                    # 左箭头
+		Vector2(b2.position.x + T * 0.02, b2.position.y + b2.size.y * 0.5),
+		Vector2(b2.position.x + T * 0.13, b2.position.y + T * 0.03),
+		Vector2(b2.position.x + T * 0.13, b2.end.y - T * 0.03)]), arrow)
 
 ## Sim 的【精确格心】。裁剪/LOD 判定只许用它（见 _render_pos 一节的红线）。
 func _center(ag: Dictionary) -> Vector2:
