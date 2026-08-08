@@ -4,8 +4,9 @@ class_name BenchInvariants
 ## 只用它的【静态】哈希（fnv1a32/mix32）——不实例化、不持有状态。
 const SimScript = preload("res://scripts/Sim.gd")
 ## bench/Invariants.gd — 把「确定性社交底座」的机检不变量抽成单一真相源（语义照搬 sim_soak.gd / sim_social_port.mjs）。
-## 条数：**44**（V1 加了 #41、Z1 加了 #42、AA3 加了 #43、E1 加了 #44 进口溯源）。
-##   数法：`grep -o "_chk([0-9][0-9]*" game/bench/Invariants.gd | sort -u | wc -l` → **44**（已现跑核过）。
+## 条数：**46**（V1 加了 #41、Z1 加了 #42、AA3 加了 #43、E1 加了 #44 进口溯源、E2a 加了 #45 import 付费溯源、
+##   E-export 加了 #46 出口贸易原子性绑定）。
+##   数法：`grep -o "_chk([0-9][0-9]*" game/bench/Invariants.gd | sort -u | wc -l` → **46**（已现跑核过）。
 ##   ⚠ 原文写的是「`grep -c` 即得」——**那个配方自己是错的，off-by-one**：本行注释里就含有
 ##   `R.append(_chk(` 这个字面串，`grep -c` 会把**这一行文档**也数进去（HEAD 上 `grep -c`=41 而 id 只有 40）。
 ##   一条"怎么数"的说明把自己数了进去，这正是它想防的那种过期方式的另一个版本。
@@ -222,13 +223,18 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 	var log: Array = S.event_log
 	var accepted: Array = []
 	for e in log:
-		if bool(e["accepted"]) and not (String(e["type"]) in ["pay", "world", "election", "produce", "consume", "spoil", "shortage", "import"]):
-			accepted.append(e)   # 经济(pay)/世界变更(world)/治理(election)/产出账本(produce/consume/spoil/shortage)/进口(import)
+		if bool(e["accepted"]) and not (String(e["type"]) in ["pay", "world", "election", "produce", "consume", "spoil", "shortage", "import", "export"]):
+			accepted.append(e)   # 经济(pay)/世界变更(world)/治理(election)/产出账本(produce/consume/spoil/shortage)/进口(import)/出口(export)
 			                     # 事件不算社交参与——否则 inv2/3 被稀释成空门。
 			                     # ★Wave E 必须补这四个：produce/consume 的 actor 是干活/吃饭的人，
 			                     #   不排除的话「#3 无永久孤立」会被"他吃过饭"喂饱，一个从不社交的居民也能过门。
 			                     # ★E1 追加 "import"：import 事件的 actor 是【物流节点 port_dock】(非居民)、target 是 town，
 			                     #   若不排除，#2「社交发生」会被一条到港记录喂饱（哪怕定向场景里一次真社交都没发生）。
+			                     # ★E-export 追加 "export"（F3，理由订正为 #2-only）：export 货侧事件 actor=port_dock(非居民)、
+			                     #   target=town ⇒ 只可能虚增 #2「社交发生」accepted 计数，【动不了 #3「无永久孤立」】
+			                     #   （#3 遍历 S.agents 居民、export actor 非居民）——与 E1 import 的 #2-only 理由一致
+			                     #   （docs/158 F3 订正 docs/157 §五 line63 那句"#2/#3 会被喂饱"）。export 的 pay 事件
+			                     #   type 已是 "pay"、本就在排除集，无需再动。
 
 	var harmony: bool = String(S.scenario) == ""   # 定向场景(faction/betray/freerider)会扭曲关系/致饿穿 → 豁免和睦不变量
 	var small_n: bool = S.agents.size() <= 12       # 涌现/单源传播类只在设计 N(≤12)硬断言；大 N 单源谣言 fizzle 是现实(docs/12 L4)
@@ -654,12 +660,15 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 	#      日界结算后该项恒为 0，而 Harness/DetGate 的收尾 tick 恰好落在日界上。）
 	#     ★E1：import 走的是同一个 _stock_move 唯一通道、写 type="import" 事件，与 produce 一样【进货】⇒ 必须记正号，
 	#       否则镇库比账本多出进口的那一截、#38 当场红（负对照：绕过 import 事件直写 town_stock ⇒ 账本少这一截 ⇒ 红）。
+	#     ★E-export：export 走同一个 _stock_move 唯一通道、写 type="export" 事件、−臂【出货】⇒ 必须记负号。
+	#       白名单加 "export" 即可——它天然落下面三元式的 else 分支(非 produce/import)记减号，符号自动正确
+	#       （负对照：绕过 export 事件直写 town_stock−N ⇒ 账本多这一截 ⇒ got<expect ⇒ #38 红；as5_negctl_probe NEG_38）。
 	var ledger_bad: Array = []
 	if prod_on:
-		var moved := {}          # good -> Σ(+produce +import −consume −spoil)，全部从 event_log 解出来
+		var moved := {}          # good -> Σ(+produce +import −consume −spoil −export)，全部从 event_log 解出来
 		for e in log:
 			var ty := String(e["type"])
-			if not (ty in ["produce", "import", "consume", "spoil"]):
+			if not (ty in ["produce", "import", "consume", "spoil", "export"]):
 				continue
 			var g := String(e["subject"])
 			var amt := _amt_of(String(e.get("note", "")))
@@ -1035,49 +1044,156 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 	R.append(_chk(44, "进口溯源到声明的节点与货", imp_bad.is_empty(),
 		("异常=%d: %s" % [imp_bad.size(), "; ".join(imp_bad.slice(0, 3))]) if not imp_bad.is_empty()
 		else ("import 事件全部可溯源" if logi_on2 else "物流系统关闭(缺 logistics.json)")))
-	# 45) import 付费溯源（E2a 钱跨镇边界首片，docs/151/154；#36 全 money 逐账户完备性=E2b 具名后续）：
-	#     external_coin 在 import 首片是【唯一收款方、单调只增】(export 收钱=E2b) ⇒ 它的现值必须恰好等于
-	#     所有 import 事件按其 lane 声明的 price_per/price_den 折算出来的应付款之和：
-	#       external_coin == Σ_over_import_events  _amt_of(note) × price_per / price_den （逐笔整数地板，与运行时同口径）。
+	# 45) 钱跨镇边界溯源（E2a import 付费 + E-export 收钱两侧对账，docs/151/154/157/158；#36 全 money 逐账户完备性=E2b）：
+	#     ★E-export 泛化（docs/157 §四，绕不开的口径变更）：E2a 原式假设「external 只被 import 贷入」，export 借出 ⇒
+	#       首次 export 即把旧式打红。改为【双向对账】：
+	#         external_coin == Σ_import(_amt_of × p_imp/d_imp) − Σ_export(_amt_of × p_exp/d_exp) （逐笔整数地板，与运行时同口径）。
+	#       external 从 0 起、只被 import 贷入(+)/export 借出(−) ⇒ 此等式恒真（held-out 背书）。
 	#     跨 economy.json × logistics.json × event_log × 运行时 external_coin 四方对账 —— 让
-	#       ① 凭空 transfer("town","external",X)（付了没有 import 撑的款）⇒ external > 应付 ⇒ 红；
-	#       ② cost≠price_per×applied（多付/少付/买空气）⇒ external ≠ 应付 ⇒ 红；
-	#       ③ 每笔 town→external 付费必 actor=="town"、reason=="import"（收付款方写反/错 reason）⇒ 红。
-	#     ★#45 与 #34/#38/#44 互补：#34 守【总量守恒】(直写漏贷→红)、#44 守【进的货/港合法】、
-	#       #45 守【付的款有 import 撑且额对】。三条经不同性质各查一件事。
-	#     ★off 门：economy 关(缺 economy.json) 或无付费 lane(无 price_per) ⇒ 无 import 付费 ⇒ external 恒 0 == 应付 0 ⇒
-	#       恒过（真空为真，同 #34 之于 economy、#44 之于 logistics）。
-	#     ★口径假设（E2a 成立）：external 只被 import 贷入（export=E2b 才有借出）；每种货至多一个付费价（本片一条 lane）。
+	#       ① 凭空 transfer 到/自 external（付了没有 import/export 货撑的款）⇒ external ≠ 应值 ⇒ 红；
+	#       ② revenue/cost ≠ price×件数（多付/少收/买卖空气）⇒ external ≠ 应值 ⇒ 红；
+	#       ③ 每笔 target=external 付费必 actor==town/reason==import；每笔 actor=external 付费必 target==town/reason==export（写反⇒红）。
+	#     ★#45 与 #34/#38/#44/#46 互补：#34 守【总量守恒】、#44 守【进的货/港合法】、#46 守【出的货/港合法 + 钱货原子】、
+	#       #45 守【external 净头寸 = 进账 − 出账 且额对】。各经不同性质查一件事。
+	#     ★F6 guard 重构：import 项与 export 项【各自独立守卫】——export 项在 import lane_price 为空时【也计算】
+	#       （旧式把整段 guard 在 `import lane_price 空` 时短路 ⇒ export 项会被吞。现分两段独立算）。
+	#     ★off 门：economy 关 或两侧都无付费 lane ⇒ 无进出付费 ⇒ external 恒 0 == 应值 0 ⇒ 恒过（真空为真）。
 	var pay45_bad: Array = []
 	var ext_expected := 0
+	var imp_expected := 0
+	var exp_expected := 0
 	if econ_on and logi_on2:
-		var lane_price := {}                                  # good -> [price_per, price_den]（只收声明了合法 price_per 的付费 lane）
+		# 分别建 import / export 的按货价表（只收声明了合法 price_per 的付费 lane）。
+		var imp_price := {}
 		for ln in S.logistics.get("import_lanes", []):
 			if not (ln is Dictionary):
 				continue
 			var pn := int((ln as Dictionary).get("price_per", 0))
 			var pd := int((ln as Dictionary).get("price_den", 1))
 			if pn > 0 and pd > 0:
-				lane_price[String((ln as Dictionary).get("good", ""))] = [pn, pd]
-		if not lane_price.is_empty():
-			for e in log:                                     # 应付款：逐 import 事件按其货的价折算（整数地板逐笔）
+				imp_price[String((ln as Dictionary).get("good", ""))] = [pn, pd]
+		var exp_price := {}
+		for ln in S.logistics.get("export_lanes", []):
+			if not (ln is Dictionary):
+				continue
+			var pn := int((ln as Dictionary).get("price_per", 0))
+			var pd := int((ln as Dictionary).get("price_den", 1))
+			if pn > 0 and pd > 0:
+				exp_price[String((ln as Dictionary).get("good", ""))] = [pn, pd]
+		# import 应付款（F6：独立 guard；import lane_price 空 ⇒ 本段 0，不影响 export 段）。
+		if not imp_price.is_empty():
+			for e in log:
 				if String(e["type"]) != "import":
 					continue
 				var ig := String(e["subject"])
-				if not lane_price.has(ig):
+				if not imp_price.has(ig):
 					continue
-				var pr: Array = lane_price[ig]
-				ext_expected += _amt_of(String(e.get("note", ""))) * int(pr[0]) / int(pr[1])
-			for e in log:                                     # 实付款良构性：到 external 的付费必来自 town、reason=="import"
-				if String(e["type"]) != "pay" or String(e.get("target", "")) != "external":
+				var pr: Array = imp_price[ig]
+				imp_expected += _amt_of(String(e.get("note", ""))) * int(pr[0]) / int(pr[1])
+		# export 应收款（F6：独立 guard，import 空也算 ⇒ export 项不被吞）。
+		if not exp_price.is_empty():
+			for e in log:
+				if String(e["type"]) != "export":
 					continue
-				if String(e["actor"]) != "town":
-					pay45_bad.append("#%d from=%s 非 town" % [int(e["id"]), String(e["actor"])])
-				elif String(e.get("note", "")) != "import":
-					pay45_bad.append("#%d reason=%s 非 import" % [int(e["id"]), String(e.get("note", ""))])
-	R.append(_chk(45, "import 付费溯源", pay45_bad.is_empty() and int(S.external_coin) == ext_expected,
+				var eg := String(e["subject"])
+				if not exp_price.has(eg):
+					continue
+				var pr2: Array = exp_price[eg]
+				exp_expected += _amt_of(String(e.get("note", ""))) * int(pr2[0]) / int(pr2[1])
+		ext_expected = imp_expected - exp_expected
+		# 付费良构性：两向各一条（收付款方写反 / 错 reason ⇒ 红）。
+		if not imp_price.is_empty() or not exp_price.is_empty():
+			for e in log:
+				if String(e["type"]) != "pay":
+					continue
+				var pa := String(e["actor"])
+				var pt := String(e.get("target", ""))
+				var pn2 := String(e.get("note", "")).split("*")[0]   # reason 前缀（export pay note="export*<qty>"）
+				if pt == "external":                          # 到 external 的付费（import）：必来自 town、reason=="import"
+					if pa != "town":
+						pay45_bad.append("#%d →external from=%s 非 town" % [int(e["id"]), pa])
+					elif pn2 != "import":
+						pay45_bad.append("#%d →external reason=%s 非 import" % [int(e["id"]), pn2])
+				elif pa == "external":                        # 自 external 的付费（export）：必到 town、reason=="export"
+					if pt != "town":
+						pay45_bad.append("#%d external→ target=%s 非 town" % [int(e["id"]), pt])
+					elif pn2 != "export":
+						pay45_bad.append("#%d external→ reason=%s 非 export" % [int(e["id"]), pn2])
+	R.append(_chk(45, "钱跨镇边界溯源", pay45_bad.is_empty() and int(S.external_coin) == ext_expected,
 		("异常付费=%d: %s" % [pay45_bad.size(), "; ".join(pay45_bad.slice(0, 3))]) if not pay45_bad.is_empty()
-		else ("external=%d 应付=%d (应相等)" % [int(S.external_coin), ext_expected])))
+		else ("external=%d 应值=%d (=进%d−出%d，应相等)" % [int(S.external_coin), ext_expected, imp_expected, exp_expected])))
+	# 46) E-export 贸易原子性绑定 + 出港溯源（F7 命门 + F6 货侧合法，docs/158 §三/§四；#38-trade 首片最小绑定钉，非完整 escrow=P4）：
+	#     外审逼出的命门——即便 F1 符号修对，若 pay(export) 与 stock(export) 不【一一对应、数量相等】，#34/#38/#45
+	#     只各自证"钱账自洽""货账自洽"，证不出"这笔钱买的就是这批货"（收 N 发 k / 收钱不发货 / 发货不收钱 = 假成功）。
+	#     ⇒ 硬断言：一次成功 export == 恰一条 external→town 的 pay(export) + 恰一条同 sold_qty 的 export stock 事件。
+	#     形状（都从 event_log 独立解，与运行时无共享状态）：
+	#       ① F6 货侧合法：逐 export stock 事件 actor∈声明节点、good∈export_lane 货、target==town、件数>0、reason==export
+	#          （镜像 #44 之于 import；不加则"货从未声明口岸流走"只由金标 digest 兜底）。
+	#       ② F7 原子绑定：把 export 相关事件（type==export 的货事件 + note 前缀==export 的 pay 事件）按 log 序抽出，
+	#          必须【严格 pay,stock 交替】——export 走 exact wrapper【先收钱后出货】⇒ 每对必 pay 紧邻其后一条 stock。
+	#            · stock 无前导 pay ⇒ 【发货没收钱/F1 免费流失】红；
+	#            · pay 无紧随 stock ⇒ 【收钱没发货】红；
+	#            · 配对成功但 pay.qty(note "export*<qty>") ≠ stock.qty ⇒ 【收 N 发 k 数量不符】红。
+	#     ★#46 与 #45 互补：#45 守【external 净头寸=进−出 且额对】(逐笔 revenue==qty×price 由 external 总额兜)、
+	#       #46 守【每笔钱与每批货一一绑定同量】。收 N 发 k：#45 红(external 反映实收 N×price≠账面 k×price)+#46 红(qty 不符)——双抓。
+	#     ★off 门：缺 logistics.json / 无 export lane / 无 export 事件 ⇒ seq 空 + exp_bad 空 ⇒ 恒过（真空为真，同 #44/#45）。
+	#     ★口径：export pay 与 export stock 的 note 都是 "export*<sold_qty>"（Sim._export_commit / _stock_move 写），_amt_of 取同量。
+	var exp_bad: Array = []
+	if logi_on2:
+		var node_ids2 := {}
+		for n in S.logistics.get("nodes", []):
+			if n is Dictionary:
+				node_ids2[String((n as Dictionary).get("id", ""))] = true
+		var exp_lane_goods := {}
+		for ln in S.logistics.get("export_lanes", []):
+			if ln is Dictionary:
+				exp_lane_goods[String((ln as Dictionary).get("good", ""))] = true
+		# ① F6 货侧合法（逐 export stock 事件）。
+		for e in log:
+			if String(e["type"]) != "export":
+				continue
+			var xa := String(e["actor"])
+			var xg := String(e["subject"])
+			var xamt := _amt_of(String(e.get("note", "")))
+			if not node_ids2.has(xa):
+				exp_bad.append("#%d actor=%s 非声明节点" % [int(e["id"]), xa])
+			elif not exp_lane_goods.has(xg):
+				exp_bad.append("#%d 出口了未声明 lane 货 %s" % [int(e["id"]), xg])
+			elif String(e.get("target", "")) != "town":
+				exp_bad.append("#%d target=%s 非 town" % [int(e["id"]), String(e.get("target", ""))])
+			elif xamt <= 0:
+				exp_bad.append("#%d 件数=%d 非正" % [int(e["id"]), xamt])
+			elif String(e.get("note", "")).split("*")[0] != "export":
+				exp_bad.append("#%d note 原因=%s 非 export" % [int(e["id"]), String(e.get("note", "")).split("*")[0]])
+		# ② F7 原子绑定（严格 pay,stock 交替 + 逐对 qty 相等）。
+		var seq: Array = []
+		for e in log:
+			var ty := String(e["type"])
+			if ty == "export":
+				seq.append({"kind": "stock", "e": e})
+			elif ty == "pay" and String(e.get("note", "")).split("*")[0] == "export":
+				seq.append({"kind": "pay", "e": e})
+		var i := 0
+		while i < seq.size():
+			var a: Dictionary = seq[i]
+			var ae: Dictionary = a["e"]
+			if String(a["kind"]) != "pay":
+				exp_bad.append("#%d export 货事件无前导 pay(发货没收钱/F1 免费流失)" % [int(ae["id"])])
+				i += 1
+				continue
+			if i + 1 >= seq.size() or String(seq[i + 1]["kind"]) != "stock":
+				exp_bad.append("#%d export pay 无紧随货事件(收钱没发货)" % [int(ae["id"])])
+				i += 1
+				continue
+			var se: Dictionary = seq[i + 1]["e"]
+			var pq := _amt_of(String(ae.get("note", "")))
+			var sq := _amt_of(String(se.get("note", "")))
+			if pq != sq:
+				exp_bad.append("#%d/#%d 钱货数量不符 pay.qty=%d stock.qty=%d(收 N 发 k)" % [int(ae["id"]), int(se["id"]), pq, sq])
+			i += 2
+	R.append(_chk(46, "出口贸易原子性绑定", exp_bad.is_empty(),
+		("异常=%d: %s" % [exp_bad.size(), "; ".join(exp_bad.slice(0, 3))]) if not exp_bad.is_empty()
+		else ("export 钱货一一绑定同量" if logi_on2 else "物流系统关闭(缺 logistics.json)")))
 
 	# ── 41) V1 手艺的社会痕迹（docs/84）───────────────────────────────────────────
 	# 守的是什么：**一门开了 `craft_credit` 的手艺，必须在【别人身上】留下痕迹；而没开的手艺不许留。**
@@ -1436,7 +1552,10 @@ static func _chk(id: int, name: String, ok: bool, detail: String) -> Dictionary:
 ## E2a：#45 入硬档。理由与 #34/#38/#44 同一条——它查的是**结构**（付的进口款有没有对应的 import 撑、额对不对：
 ##   external_coin == Σ import 事件的 price_per×applied），任何 LOD/规模/场景下都必须为真；缺 economy/price_per ⇒
 ##   无 import 付费 ⇒ external==应付==0 ⇒ 恒过（off 门兜住短 horizon / 随机后端 / 定向场景，同 #34 之于 economy）。
-const HARD_IDS := [1, 6, 7, 9, 10, 12, 13, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45]
+## E-export：#46 入硬档（F7 命门，docs/158 §三外审升格）。理由与 #38/#44/#45 同一条——它查的是**结构**
+##   （出港的每一批货有没有对应的一条 external→town pay 同量绑定、货/港合不合法），任何 LOD/规模/场景下都必须为真；
+##   缺 logistics.json / 无 export 事件 ⇒ 恒过（off 门兜住短 horizon / 随机后端 / 定向场景，同 #44/#45 之于 logistics）。
+const HARD_IDS := [1, 6, 7, 9, 10, 12, 13, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45, 46]
 
 ## #41 的豁免线：一局里该职位的 produce 事件少于这么多次就跳过它。
 ## 5 是量出来的下界，不是拍的：N=12 × 60 天 × 12 seed，环卫工的 produce 事件是 19..31 条

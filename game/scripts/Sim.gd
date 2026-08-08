@@ -1617,6 +1617,9 @@ func _nightly() -> void:
 	#   算【今晚】的库存、供明天用（当天的缺货/满足率已由今天的实际存量定死，进口不追溯改写今天）。缺文件→零扰动。
 	if _logi_on():
 		_logi_import()
+		# E-export 首片（docs/157/158）：出港排在 import 之后 ⇒ 当天 import 已把 external 贷足、export 可从中抽
+		#   （闭环：先『进』贷入 external、再『出』借出 external ⇒ external=Σimport−Σexport≥0）。缺文件→本行不达。
+		_logi_export()
 	# M3 反思（Stanford 生成式 agent）：每夜从社会状态提炼一条洞察写回记忆 → 丰富语音 grounding。
 	# 引擎地板=确定性合成(下)；模型后端可再 LLM 润色(AIBackend.reflect)。far agent(激进 LOD)跳过=背景群演。
 	for ag in agents:
@@ -3734,6 +3737,88 @@ func _import_fit(good: String, batch: int) -> int:
 		return 0
 	var cap := int((production["goods"] as Dictionary)[good].get("cap", 999999))
 	return mini(batch, maxi(0, cap - _stock_of(good)))
+
+## ── 车道 E-export 首片（docs/157/158，§0.8=SOUND_WITH_FIXES）：货出→钱进 ─────────────────────
+## export 日结：把镇里【过剩】的一种货出港换钱。import 的镜像、方向相反，挂【同一日界】(_nightly，排在
+##   _logi_import 之后 ⇒ 当天 import 已把 external 贷足、export 可从中抽)。day%every_days==0 纯 f(day)、
+##   一天一次非 per-tick、无 randi/randf/Time/浮点 ⇒ 逐字节可回放。
+##
+## ★F1（命门·符号）：sold_qty 是【显式正数】(_export_fit 干算)，NOT _stock_move 返回的有符号 applied——
+##   −delta 臂返回负 applied，若照 docs/157 §二字面 revenue=applied×price/den 会得【负值】⇒ transfer(amt<=0:false)
+##   静默拒收 ⇒ 货已出、钱没收(免费流失)且【全绿】(#34 钱没变/#38 库存−N 正常/#45 export 项从事件统计=0)。
+##   ⇒ 用正 sold_qty，revenue=sold_qty×price/den，钱货在下面的 _export_commit exact wrapper 里同步提交。
+## ★F7（硬 #46 贸易原子性）：_export_commit 保证一次成功 export == 恰一条 external→town pay(export) +
+##   恰一条同 sold_qty 的 export stock 事件；Invariants #46 从 event_log 独立校验这个绑定(严格 pay,stock
+##   交替 + 逐对 revenue==sold_qty×price/den + 货/港合法)——收 N 不发 / 发不收 / 收 N 发 k 当场红。
+## ★选项 A′【先收钱后出货】：external 付不起(external_coin<revenue)当天【不出货】(镜像 import 的 town 付不起不到货)。
+## ★F5【显式限 N=12】：只在 prod_pool_num==prod_pool_den(人口==base=12、K1 倍率恰为 1)运行；N≠12 惰性(第一行短路)。
+## ★off 门 2 轴：轴①缺 logistics.json ⇒ _logi_on()==false ⇒ 本函数根本不被 _nightly 调用；
+##   轴② economy off(缺 economy.json→_econ_on false) 或 export lane 无 price_per ⇒ export 【惰性】(NOT 免费出港——
+##   与 import 的 economy-off 免费到货【蓄意不对称】，docs/157 §六：无补偿的 stock 损耗无 E1 先例)。
+func _logi_export() -> void:
+	# F5：export 首片显式限 N=12（K1 池倍率非 1 ⇒ 人口≠base ⇒ 整条惰性，见 logistics.json _scale_why）。
+	if prod_pool_num != prod_pool_den:
+		return
+	for lane in _as_arr(logistics.get("export_lanes", [])):
+		if not (lane is Dictionary):
+			continue
+		var ld: Dictionary = lane
+		var every := int(ld.get("every_days", 0))
+		if every <= 0 or day % every != 0:
+			continue
+		var batch := int(ld.get("batch", 0))
+		if batch <= 0:
+			continue
+		var good := String(ld.get("good", ""))
+		var node := String(ld.get("node", ""))
+		var floor := int(ld.get("floor", 0))
+		var pnum := int(ld.get("price_per", 0))          # 分子：每 price_den 件收 pnum 钱
+		var pden := int(ld.get("price_den", 1))          # 分母：缺省 1 ⇒ pnum 即每件钱数
+		# off 门轴②：economy off 或 lane 无合法 price_per ⇒ export 惰性（不免费出港）。
+		if not _econ_on() or pnum <= 0 or pden <= 0:
+			continue
+		# F1：显式正数 sold_qty = min(batch, 地板以上余量, external 付得起件数)。全整数、纯读、不落账。
+		var sold_qty := _export_fit(good, batch, floor, pnum, pden)
+		if sold_qty <= 0:
+			continue                                     # 无余量 / external 付不起 ⇒ 当天不出货（选项 A′）
+		_export_commit(good, sold_qty, node, pnum, pden)
+
+## E-export：这批【实际能出多少】(显式正数) —— 纯读、不落账、不写事件，供选项 A′「先收钱后出货」先定价。
+## 三上界（全整数 mini/maxi）：
+##   ① lane_batch；② surplus_above_floor = max(0, stock − floor)（floor 保本地消费，只出地板以上余量）；
+##   ③ affordable_by_external = external_coin × price_den / price_per（external 付得起的件数，闭环上界）。
+## ⇒ 保证随后 _stock_move(good,−sold_qty) 返回的 |applied| == sold_qty（stock≥sold_qty，−臂只扣到 0 不触发）。
+func _export_fit(good: String, batch: int, floor: int, price_per: int, price_den: int) -> int:
+	if batch <= 0 or price_per <= 0 or price_den <= 0:
+		return 0
+	if not (production.get("goods", {}) as Dictionary).has(good):
+		return 0
+	var surplus := maxi(0, _stock_of(good) - maxi(0, floor))
+	var affordable := external_coin * price_den / price_per   # 整数地板：external 付得起几件
+	return mini(mini(batch, surplus), affordable)
+
+## E-export exact wrapper（F1/F7 命门）：把【收钱 + 出货】收进一个【无 await/无回调】的同步提交。
+##   合同：sold_qty>0（调用方已保证）、revenue=sold_qty×price_per/price_den、stock_delta==−sold_qty、
+##   一次成功 == 恰一条 external→town pay(export) + 恰一条同 sold_qty 的 export stock 事件（硬 #46 校验）。
+## 顺序 = 选项 A′【先收钱后出货】：transfer 成功(external 付得起)⇒ 再 _stock_move 出货；transfer 失败⇒ 不出货。
+##   （sold_qty 已被 _export_fit 的 affordable 上界夹住 ⇒ external_coin≥revenue ⇒ transfer 必成；这里再核一次守内聚。）
+func _export_commit(good: String, sold_qty: int, node: String, price_per: int, price_den: int) -> void:
+	if sold_qty <= 0:
+		return
+	var revenue := sold_qty * price_per / price_den          # 整数地板，与 #45/#46 校验同口径
+	if revenue <= 0:
+		return                                               # 定价过低地板到 0 ⇒ 不出货（不做无偿出港）
+	# 先收钱：external→town，reason 编码本笔 sold_qty("export*<qty>") ⇒ 硬 #46 可逐对核 pay.qty==stock.qty
+	#   （transfer 把 reason 原样写进 pay 事件 note；note 不进 event_digest，故不额外移金标）。
+	#   付不起(external_coin<revenue)⇒ transfer 返 false ⇒ 不出货（选项 A′，无货白流失）。
+	if not transfer("external", "town", revenue, "export*%d" % sold_qty):
+		return
+	# 收到钱 ⇒ 出恰好 sold_qty 件货（−臂，撞 0 少扣；sold_qty≤stock 已由 _export_fit 保证 ⇒ |applied|==sold_qty）。
+	var applied := _stock_move(good, -sold_qty, "export", node, "export")
+	# 内聚守卫（F7 运行时侧）：|applied| 必 == sold_qty，否则钱货脱钩。结构上不可达（sold_qty≤surplus≤stock），
+	#   万一被未来改动破坏，push_error 留痕（不改判据——判据是 event_log 侧的硬 #46）。
+	if absi(applied) != sold_qty:
+		push_error("E-export 钱货脱钩：sold_qty=%d applied=%d good=%s" % [sold_qty, applied, good])
 
 ## 确定性 [0,1) 哈希（字符串→稳定小数；天生立场用）。
 func _hash01(s: String) -> float:

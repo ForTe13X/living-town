@@ -284,7 +284,7 @@ const SALIENT_MIN := 55
 ##     那条路是对 event_log 的折叠，live 与 replay 按构造同值。
 ##   ⇒ 想让 shortage 直接进播报，正确的改法是在 `Sim._shortage_fallout` 末尾加一行
 ##     `emit_signal("social_event", ...)`（Sim.gd 归 E1，不在本棒的文件里），然后把它从本表移出去。
-const FEED_SKIP := ["pay", "world", "produce", "consume", "spoil", "shortage", "import"]
+const FEED_SKIP := ["pay", "world", "produce", "consume", "spoil", "shortage", "import", "export"]
 const TOPIC_LABEL := {"cafe_expand": "扩建咖啡馆", "night_market": "办夜市", "old_tales": "老故事"}
 ## ⚠️ **这个常数在 W8 里被判定为坏量具，现已降级为"长尾额度的下限兜底"，不再是版式预算。**
 ## 它数的是**逻辑行**，而 RichTextLabel(`scroll_active=false`) 截的是**视觉行**，中文还会折行 ——
