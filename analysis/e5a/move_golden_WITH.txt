@@ -1,0 +1,164 @@
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: GDExtension dynamic library not found: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: open_library (core/extension/gdextension.cpp:740)
+ERROR: Error loading extension: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: load_extensions (core/extension/gdextension_manager.cpp:329)
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+  ✅ 哈希自检：6 条 fnv1a32 + 4 条 mix32 测试向量全对（项目自有哈希，不依赖引擎 String.hash()）
+=== Causal Bench S0 · 不变量回归门  seeds=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] days=60 ===
+[S0] {"chain":"3907638170","days":60,"diag_fails":[],"digest":"2997753687","event_digest":"5011882446600174553","events":3707,"hard_fails":[],"pass":true,"seed":1,"soft_fails":[]}
+[S0] {"chain":"3944998691","days":60,"diag_fails":[],"digest":"3965192828","event_digest":"727060138928364516","events":3599,"hard_fails":[],"pass":true,"seed":2,"soft_fails":[40]}
+[S0] {"chain":"2805317870","days":60,"diag_fails":[],"digest":"928741669","event_digest":"297919871185030505","events":3622,"hard_fails":[],"pass":true,"seed":3,"soft_fails":[]}
+[S0] {"chain":"3287456670","days":60,"diag_fails":[],"digest":"3818269546","event_digest":"2813963281472993072","events":3412,"hard_fails":[],"pass":true,"seed":4,"soft_fails":[]}
+[S0] {"chain":"1438600857","days":60,"diag_fails":[],"digest":"3967366183","event_digest":"8708124107721179635","events":3506,"hard_fails":[],"pass":true,"seed":5,"soft_fails":[]}
+[S0] {"chain":"927185701","days":60,"diag_fails":[],"digest":"3424565928","event_digest":"3056435513257410114","events":3621,"hard_fails":[],"pass":true,"seed":6,"soft_fails":[]}
+[S0] {"chain":"511672941","days":60,"diag_fails":[],"digest":"706557752","event_digest":"556242177911611306","events":3602,"hard_fails":[],"pass":true,"seed":7,"soft_fails":[]}
+[S0] {"chain":"1089391782","days":60,"diag_fails":[],"digest":"2942840497","event_digest":"2627487276276144722","events":3679,"hard_fails":[],"pass":true,"seed":8,"soft_fails":[]}
+[S0] {"chain":"1215585357","days":60,"diag_fails":[],"digest":"2680326182","event_digest":"8985466620326755285","events":3279,"hard_fails":[],"pass":true,"seed":9,"soft_fails":[]}
+[S0] {"chain":"693869017","days":60,"diag_fails":[],"digest":"2492434372","event_digest":"7376969215382350598","events":3666,"hard_fails":[],"pass":true,"seed":10,"soft_fails":[40]}
+[S0] {"chain":"207249220","days":60,"diag_fails":[],"digest":"2294874180","event_digest":"2723728472284669643","events":3482,"hard_fails":[],"pass":true,"seed":11,"soft_fails":[]}
+[S0] {"chain":"1434106646","days":60,"diag_fails":[],"digest":"807949639","event_digest":"6074786045382565976","events":3479,"hard_fails":[],"pass":true,"seed":12,"soft_fails":[]}
+
+— 不变量跨 seed 通过率（硬=全绿必需 / 软=通过率≥11/12 / 诊断=只报不门）—
+  ✅ #01 [硬]无 need 触底（任一需求，不只饥饿）  12/12
+  ✅ #02 [软]社交发生  12/12
+  ✅ #03 [软]无永久孤立  12/12
+  ✅ #04 [软]关系分化  12/12
+  ✅ #05 [软]谣言传播  12/12
+  ✅ #06 [硬]知识边界  12/12
+  ✅ #07 [硬]账本可溯源  12/12
+  ✅ #08 [软]承诺生命周期  12/12
+  ✅ #09 [硬]无悬挂承诺  12/12
+  ✅ #10 [硬]违约可溯源有后果  12/12
+  ✅ #11 [软]冲突生命周期  12/12
+  ✅ #12 [硬]先对质后和解  12/12
+  ✅ #13 [硬]修复可溯源  12/12
+  ✅ #14 [软]standing分化  12/12
+  🔎 #15 [诊断]涌现放逐  12/12  (不入门·度量已知泄漏,见 docs/31)
+  ✅ #16 [软]声誉传播  12/12
+  ✅ #17 [软]坏名声形成可恢复  12/12
+  ✅ #18 [软]观点演化不坍缩  12/12
+  ✅ #19 [软]有界信任Deffuant  12/12
+  ✅ #20 [软]谣言变冷MakiThompson  12/12
+  ✅ #21 [硬]秘密专道  12/12
+  ✅ #22 [硬]背叛有后果可溯源  12/12
+  ✅ #23 [硬]背叛重挫名声  12/12
+  ✅ #24 [硬]背叛无误判  12/12
+  ✅ #25 [硬]S3派系派生一致(对齐且相识)  12/12
+  ✅ #26 [软]S3同派系亲和>跨派系  12/12
+  ✅ #27 [硬]S3协同守边界  12/12
+  ✅ #28 [硬]S3派系视图自洽  12/12
+  ✅ #29 [硬]I-PACT互助偏内  12/12
+  ✅ #30 [硬]I-PACT-free-rider可溯源  12/12
+  ✅ #31 [硬]I-PACT结盟门达标  12/12
+  ✅ #32 [硬]I-PACT无悬挂无重复对称  12/12
+  ✅ #33 [硬]I-PACT解体可恢复  12/12
+  ✅ #34 [硬]金钱守恒  12/12
+  ✅ #35 [硬]货币非负  12/12
+  ✅ #36 [硬]节日对象配对无残留  12/12
+  ✅ #37 [硬]选举计票自洽  12/12
+  ✅ #38 [硬]库存账本自洽  12/12
+  ✅ #39 [硬]产出溯源到在班本职  12/12
+  ❌ #40 [软]产出闭环活性与供给充足  10/12   首违 seed 2: produce=128 consume=351 满足率门下限=0.50·上限=多数不缺；【缺货绝迹】4/7 种货全年零缺货(屋瓦, 豆子, 话本, 整洁) —— production.json._calibration 要的是【周期性】缺货，不是从不；【需求侧落点】豆子(仅 cafe), 话本(仅 home、home2) —— 这些货在 town 平面无满足者 ⇒ 只有进得了该平面的居民才产生需求，分母不随人口涨；产出契约=宏观池 ×12/12
+  ✅ #41 [硬]手艺的社会痕迹(被看见·被知道·不外溢)  12/12
+  ✅ #42 [硬]生存推力的收窄(只 social·只 argmin·不反客为主)  12/12
+  ✅ #43 [硬]买卖的社会痕迹(被看见·被知道·不外溢)  12/12
+  ✅ #44 [硬]进口溯源到声明的节点与货  12/12
+  ✅ #45 [硬]钱跨镇边界溯源  12/12
+  ✅ #46 [硬]出口贸易原子性绑定  12/12
+
+— 套件级活性（跨全网格计数；门控类归零即红）—
+  🔒Q aid                次数=81     覆盖 seed=12/12
+  🔒 apologize          次数=474    覆盖 seed=12/12
+  🔒 confide            次数=65     覆盖 seed=12/12
+  🔒 conflict           次数=1140   覆盖 seed=12/12
+  🔒 confront           次数=510    覆盖 seed=12/12
+     consume            次数=4236   覆盖 seed=12/12
+  🔒 discuss            次数=1160   覆盖 seed=12/12
+  🔒 election           次数=48     覆盖 seed=12/12
+  🔒 endorse            次数=226    覆盖 seed=12/12
+     export             次数=60     覆盖 seed=12/12
+     festival_despawn   次数=80     覆盖 seed=12/12
+  🔒 festival_spawn     次数=80     覆盖 seed=12/12
+  🔒 give               次数=432    覆盖 seed=12/12
+  🔒 gossip             次数=587    覆盖 seed=12/12
+  🔒 gossip_rep         次数=6779   覆盖 seed=12/12
+  🔒 greet              次数=5915   覆盖 seed=12/12
+     import             次数=238    覆盖 seed=12/12
+  🔒 invite             次数=925    覆盖 seed=12/12
+  🔒 meet               次数=925    覆盖 seed=12/12
+     pact_formed        次数=45     覆盖 seed=12/12
+  🔒 pay                次数=14348  覆盖 seed=12/12
+     produce            次数=1562   覆盖 seed=12/12
+  🔒 rally_oust         次数=217    覆盖 seed=12/12
+     shortage           次数=608    覆盖 seed=12/12
+     spoil              次数=1868   覆盖 seed=12/12
+     world_other        次数=45     覆盖 seed=12/12
+  🔒Q aid               法定覆盖 12/12（需 ≥6，余量 6）
+  ✅ 门控事件类 17 种全部仍在发生（含法定覆盖 1 种）
+
+— 金标（跨进程锚）—
+  ❌ 金标不符（36 处；金标烘于 godot 4.6.2-stable (official).71f334935）：
+      seed 1 digest       期望 3894698000  实得 2997753687
+      seed 1 event_digest 期望 1945279565897149957  实得 5011882446600174553
+      seed 1 chain        期望 78488955  实得 3907638170
+        ↳ 首个分叉落在 tick_no [2401..2640]（第 11 天）——该天之前的逐日检查点全部吻合
+      seed 2 digest       期望 892587041  实得 3965192828
+      seed 2 event_digest 期望 4550192148962757269  实得 727060138928364516
+      seed 2 chain        期望 2013063766  实得 3944998691
+        ↳ 首个分叉落在 tick_no [3121..3360]（第 14 天）——该天之前的逐日检查点全部吻合
+      seed 3 digest       期望 3786618396  实得 928741669
+      seed 3 event_digest 期望 5425511032077021148  实得 297919871185030505
+      seed 3 chain        期望 4048517219  实得 2805317870
+        ↳ 首个分叉落在 tick_no [3841..4080]（第 17 天）——该天之前的逐日检查点全部吻合
+      seed 4 digest       期望 53941228  实得 3818269546
+      seed 4 event_digest 期望 7424469994044466425  实得 2813963281472993072
+      seed 4 chain        期望 3772224128  实得 3287456670
+        ↳ 首个分叉落在 tick_no [2401..2640]（第 11 天）——该天之前的逐日检查点全部吻合
+      seed 5 digest       期望 228997710  实得 3967366183
+      seed 5 event_digest 期望 2084295095648895255  实得 8708124107721179635
+      seed 5 chain        期望 1712572645  实得 1438600857
+        ↳ 首个分叉落在 tick_no [4321..4560]（第 19 天）——该天之前的逐日检查点全部吻合
+      seed 6 digest       期望 1144761788  实得 3424565928
+      seed 6 event_digest 期望 7055821379346847932  实得 3056435513257410114
+      seed 6 chain        期望 1302132303  实得 927185701
+        ↳ 首个分叉落在 tick_no [1681..1920]（第 8 天）——该天之前的逐日检查点全部吻合
+      seed 7 digest       期望 4058017230  实得 706557752
+      seed 7 event_digest 期望 5788624979819066601  实得 556242177911611306
+      seed 7 chain        期望 638562832  实得 511672941
+        ↳ 首个分叉落在 tick_no [2641..2880]（第 12 天）——该天之前的逐日检查点全部吻合
+      seed 8 digest       期望 673788147  实得 2942840497
+      seed 8 event_digest 期望 8608510620339194635  实得 2627487276276144722
+      seed 8 chain        期望 4001342915  实得 1089391782
+        ↳ 首个分叉落在 tick_no [1441..1680]（第 7 天）——该天之前的逐日检查点全部吻合
+      seed 9 digest       期望 3216102910  实得 2680326182
+      seed 9 event_digest 期望 8014240321977834010  实得 8985466620326755285
+      seed 9 chain        期望 1709795989  实得 1215585357
+        ↳ 首个分叉落在 tick_no [10081..10320]（第 43 天）——该天之前的逐日检查点全部吻合
+      seed 10 digest       期望 3076296394  实得 2492434372
+      seed 10 event_digest 期望 2981887663297916520  实得 7376969215382350598
+      seed 10 chain        期望 2654996893  实得 693869017
+        ↳ 首个分叉落在 tick_no [1681..1920]（第 8 天）——该天之前的逐日检查点全部吻合
+      seed 11 digest       期望 1300428854  实得 2294874180
+      seed 11 event_digest 期望 1472258735792129860  实得 2723728472284669643
+      seed 11 chain        期望 664920074  实得 207249220
+        ↳ 首个分叉落在 tick_no [3361..3600]（第 15 天）——该天之前的逐日检查点全部吻合
+      seed 12 digest       期望 3016862290  实得 807949639
+      seed 12 event_digest 期望 6841852709900862734  实得 6074786045382565976
+      seed 12 chain        期望 1119578655  实得 1434106646
+        ↳ 首个分叉落在 tick_no [3601..3840]（第 16 天）——该天之前的逐日检查点全部吻合
+    → 行为变了。若是【无意】的（引擎升级 / 候选枚举重构 / _aid() 播种变化），这是红线#1 被破，查代码；
+      若是【有意】的基线移动，才重烘：--bake-golden game/bench/golden_digests.json（与该变更同一 commit）。
+    → 要把首个分叉【精确到 tick】：先在已知良好的提交上 --chain-dump /tmp/ref.chain，
+      再在本提交上 --chain-ref /tmp/ref.chain（逐 tick 比对，直接报 tick 号）。
+
+— 确定性 —
+  ✅ 同 seed 两跑摘要一致(批量+增量滚动+逐tick前缀链)  3/3
+
+=== S0 GATE: FAIL ❌  (硬不变量 seed 12/12 全绿, 软通过率门 ≥11/12(90%) 破, 活性 过, 金标 破, det 3/3) ===
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)
