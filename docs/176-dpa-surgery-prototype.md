@@ -1,9 +1,9 @@
-# 176 · DP-A 解耦手术原型 + 离门 probe · 判决：**PROMISING（全 A–E 过，建议进 §0.8）**
+# 176 · DP-A 解耦手术原型 + 离门 probe · 判决：**PROMISING → §0.8 内审 SOUND_WITH_FIXES（3 land 前置，见 §八）**
 
 > 本片是 docs/174（E7 判决性测量）§五授权的 **Phase 1 · DP-A 原型**。E7 已判死："第二件被消费工业货缺货稀释核心口粮的 leak【全在 ④声誉挫伤】(`_adjust_standing`@Sim.gd → `_acceptance_margin`@3913 的涌现放逐)、③信念/gossip 零贡献、DP-B(换 blame 目标) 是搬家非解耦"。本片按那张精确切点图做 **DP-A 手术**：把【工业/comfort 货】缺货的 ④standing 挫伤【改道】进一个【自含 grievance 字段】(而非删)，让第二工业货饼干【缺货且被议论、后果被看见】而【不稀释核心生存货】。**原型 + 离门 probe，不 land、不移金标、不 push、不重烘。** 代码留本 worktree 供协调者 §0.8 复核。
 
 ## 〇、一句话
-**DP-A 成立、全 A–E 过——这是整条 E3b→E7 弧上【第一次】做到【带戏剧的第二被消费工业货 + 核心中性】。** 把工业货缺货的 ④声誉挫伤【改道】进自含 grievance 字段（不被任何决策读）后：核心口粮 held-out **Δ=−0.0001（16/18 平、paired +0.0479 SIG UP 完全恢复）**；饼干【真缺货】（rate 0.71、缺货 52.6 事件/seed）、【被议论】（SH:饼干 ~11 持有者、gossip 51/seed）、【后果被写】（grievance 11.07）——18/18 三戏剧门全过（对比 E6a 装饰货零戏剧）；off-gate 金标逐字节（门关 S0 GATE PASS、golden 12/12）；#40 软 12/12@N12 + 12/12@N16-4a；硬不变量 30 seed 零红。⇒ **建议进 §0.8 双路评审 → move-golden land。**
+**DP-A 成立、全 A–E 过——这是整条 E3b→E7 弧上【第一次】做到【带戏剧的第二被消费工业货 + 核心中性】。** 把工业货缺货的 ④声誉挫伤【改道】进自含 grievance 字段（不被任何决策读）后：核心口粮 held-out **Δ=−0.0001（16/18 平、paired +0.0479 SIG UP 完全恢复）**；饼干【真缺货】（rate 0.71、缺货 52.6 事件/seed）、【被议论】（SH:饼干 ~11 具名信念持有者、gossip 51/seed，玩家经 inspect 面板可见）；off-gate 金标逐字节（门关 S0 GATE PASS、golden 12/12）；#40 软 12/12@N12 + 12/12@N16-4a；硬不变量 30 seed 零红。**⚠️§0.8 内审更正（见 §八）**：玩家可感戏剧只由 ①②③（饼干具名信念+shortage 记忆+gossip）背书；**B3『grievance 被写 11.07』下调为『改道管线已触发』的自检、【非】戏剧门/交付价值**（grievance 是纯只写字段、出货路零读者）。且诚实记：DP-A 把饼干的 standing 驱动【被动】戏剧（名牌 %±、conflict 反馈行、gossip_rep 点名、grudge 弧）与 leak【一同】交易掉了（同一 standing→_acceptance_margin 机制）——饼干残留可感戏剧＝inspect 面板那薄条。⇒ **§0.8 内审 SOUND_WITH_FIXES：修 3 前置（守卫/头衔/高 N）→ 外审 → move-golden land。**
 
 ## 一、设计（E7 §四授权的确切 scope，已内化 docs/174/173/170，未重探已定的东西）
 
@@ -75,3 +75,16 @@
 - `runs/{clean,with,dpa}.jsonl`：N=12 seeds 1-30 主证据。`runs/dpa_n16.jsonl`：N=16 4a。`runs/offgate_golden.txt`：probe C 金标门。
 - `anchor.py`/`attribute.py`/`inv40.py`/`offgate.py`（复用 e7）+ `probe_b.py`/`hardinv.py`（新）：只读分析脚本（UTF-8）。
 - `run_all.sh`：一次跑完全部 arm + 门 + 分析（不 background-then-exit）。`RESULTS.txt`：全部 probe 输出。
+
+## 八、§0.8 内审裁决（14-agent，5 视角对抗 + 逐发现验证）· **SOUND_WITH_FIXES**
+
+**科学轴＝真突破，不虚报**：核心安全声称「grievance 决策/RNG/digest【真】不可达」经 5 独立对抗审 + 独立验证 + 综合者亲自 grep/追源后仍站住——唯一写者 `_add_grievance`(Sim.gd:4509，仅 reroute 分支调)、唯一 game/ 读者是只读 bench probe(ScaleSupply.gd:178)、每个决策读点(_acceptance_margin 3925/bad_targets 2131/gossip_rep 2209/夜衰 1650)按名读固定键从不触 grievance、digest/chain_step 不序列化 relationships、HARD_IDS 干净。**这【不是】E6a**（E6a 永不缺=byte-identical=零戏剧被 REJECT；DP-A 是相反极：饼干凶缺+满城 gossip+具名信念+记忆在 inspect 面板呈现）。「带戏剧第二被消费工业货 + 核心中性」是 E3b→E7 弧真·第一次。**别为怀疑否定这个干净正结果。**
+
+**但现在【不能 land】——3 条 land 前置（都非致命、原型与 A–E 探针本身干净）**：
+1. **【BLOCKER·守卫】** `grievance_reroute` 是裸 `gd.get` per-good 布尔、**无 survival-good 守卫**（全树无白/黑名单）。标到生存货（口粮/柴薪/…）即【静默】删该产者的 ④→涌现放逐社会戏剧而【无任何门变红】（shortage 事件在分叉上游照记⇒#40 恒绿且不在 HARD_IDS；#15 放逐是 DIAG 永不成门；grievance 被 digest 排除）——正是 docs/173 §四.3 判过的「硬前置、不可软化」§0.5 反模式。**修＝fail-closed 白名单**：Sim.gd 加 `REROUTE_ELIGIBLE` 常量（comfort/attach 货，如糕点/饼干），`reroute := bool(gd.get(...)) and (good in REROUTE_ELIGIBLE)`——误标生存货静默回 standing 原路、新增货默认受保护。**必须先于/同于 config 进 committed 树+重烘 land**。（不违反 [[feedback-freeze-gates-drift-recurs]]：是把【已存在的数据门】收窄成 fail-closed、非新造投机门。）重形式（Invariants HARD 判红 + gate_fixture_audit 双枚举）＝可选纵深。
+2. **【头衔·诚实】** B3『grievance 被写』从「戏剧门」降为「改道管线已触发」自检——grievance 纯只写、出货路零读者、**不计入交付价值**（否则＝verified→gated 升格，撞 [[feedback-relay-turns-observation-into-mechanism]]）。玩家可感只由 ①②③ 背书。且须记：DP-A 把饼干的 standing 驱动【被动】戏剧（名牌/conflict 行/gossip_rep 点名/grudge 弧）与 leak【一同】交易掉（同机制）——已在 §〇/§六 更正。（grievance→Story 合理留 Phase 2，不需先接 UI。）
+3. **【高 N·标度】** 「破封顶」是 scale-general 断言却只 N=12 证据；唯一活残余通道 ③gossip 社交候选密度 N=12→60 涨 ~6.5×、落 docs/173:29 高 N 回归警告区。**跑 N≥24 核心中性（clean/with/dpa）gate 此断言，或把 land scope 到 N=12**。（协调者已在跑 N=24。）
+
+**minor**：Sim.gd:4505 确定性注释理由写错（浮点加法非结合、`min(Σ|δ|,CAP)` 序无关只因单货 δ=0.2 恒定才成立；真保证＝确定性重放同写序 + grievance 被 digest 排除）——改注释即可、非阻塞。
+
+**路径**：修守卫 + 改头衔（本片已改）+ 补高 N（或 scope）→ **外审 GPT-5 Pro told to REFUTE**（重点盯高 N 回归 + 守卫设计 + grievance 不可达是否结构性）→ **move-golden**（守卫+饼干 config 同 land、三锚重烘、全 CI、若加 HARD 守卫则 HARD_IDS 双处同步、VoiceGate）。**别为凑 land 软化守卫，也别为怀疑否定正结果。**
