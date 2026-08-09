@@ -193,8 +193,11 @@ def main():
         for t, rec in (pr.get("produce", {}) if isinstance(pr.get("produce"), dict) else {}).items():
             if t.startswith("_"): continue
             if t not in titles: fails.append("produce 申报了一个没人担任的职位 '%s' → 该货永远没人产" % t)
-            if isinstance(rec, dict) and str(rec.get("good", "")) not in pr.get("goods", {}):
-                fails.append("produce['%s'] 的货 '%s' 未在 goods 里申报" % (t, rec.get("good")))
+            # ★E4d-A 双形状：produce[t] 可为多货 list of {good,amount,inputs?} 或单货 dict。逐条校验每件货 ∈ goods。
+            #   单货 dict → [dict] → 单次循环 → 逐字节回改前（同一条 fail 文案/顺序）。按列表著者序遍历。
+            for pcr in (rec if isinstance(rec, list) else [rec]):
+                if isinstance(pcr, dict) and str(pcr.get("good", "")) not in pr.get("goods", {}):
+                    fails.append("produce['%s'] 的货 '%s' 未在 goods 里申报" % (t, pcr.get("good")))
         for a2, rec in (pr.get("consume", {}) if isinstance(pr.get("consume"), dict) else {}).items():
             if a2.startswith("_"): continue
             # ★E4a 双形状：consume[a2] 可为多货 list of {good,amount} 或单货 dict。逐条校验每件货 ∈ goods。

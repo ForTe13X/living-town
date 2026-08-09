@@ -121,7 +121,7 @@ func _run_once(seed: int, days: int, agents: int) -> Dictionary:
 		per[t] = {
 			"holder": String(holder_of[t]),
 			"action": String(act_of.get(t, "")),
-			"produces": String((S.production.get("produce", {}) as Dictionary).get(t, {}).get("good", "")),
+			"produces": _first_prod_good(S.production, t),  # ★E4d-A 双形状：多货取首件（见 _first_prod_good）
 			"blame_for": blamed_goods.get(t, []),
 			"work_done": int((S.prod_stats.get("work", {}) as Dictionary).get(t, 0)),
 			# ① produce 通道
@@ -315,3 +315,14 @@ func _parse_seeds(spec: String) -> Array:
 	else:
 		out.append(int(spec))
 	return out
+
+## ★E4d-A 双形状：produce[title] 可为多货 Array of {good,amount,inputs?} 或单货 dict。
+##   本普查的 "produces" 展示字段只取【首件货】（列表著者序第一件非空记录）。
+##   单货 dict → 直接读 good；缺产者/空 → ""。仅供探针显示，不进金标路/CI 自动执行。
+func _first_prod_good(prod, title: String) -> String:
+	var praw = (prod.get("produce", {}) as Dictionary).get(title, {})
+	var recs: Array = praw if praw is Array else [praw]
+	for pr in recs:
+		if pr is Dictionary and not (pr as Dictionary).is_empty():
+			return String((pr as Dictionary).get("good", ""))
+	return ""

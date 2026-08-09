@@ -698,14 +698,28 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 			var actor := String(e["actor"])
 			var job: Dictionary = S._job_of(actor)
 			var title := String(job.get("title", ""))
-			var rec: Dictionary = S.production.get("produce", {}).get(title, {})
+			# ★E4d-A 双形状：produce[title] 可为多货 Array 或单货 dict。溯源【按 subject-good 匹配】——
+			#   在该职位申报的货里找出产的这件（.good == e.subject）；找不到 ⇒ 产了未申报的货（= 改前 good!=subject 的红）。
+			#   件数上限 = 【那条】申报的 amount（撞 cap 会少收，故 ≤）。单货 dict → [dict] → 匹配唯一那条 → 逐字节回改前。
+			#   按列表著者序遍历、不排序。note-split-title 与在班两条检查（下）对多货【逐字不变】：note 的职位段与 tick 都与货数无关。
+			var praw = S.production.get("produce", {}).get(title, {})
+			var precs: Array = praw if praw is Array else [praw]
+			var recs2: Array = []
+			for pr in precs:
+				if pr is Dictionary and not (pr as Dictionary).is_empty():
+					recs2.append(pr)
+			var matched: Dictionary = {}
+			for pr in recs2:
+				if String((pr as Dictionary).get("good", "")) == String(e["subject"]):
+					matched = pr as Dictionary
+					break
 			var amt2 := _amt_of(String(e.get("note", "")))
-			if job.is_empty() or rec.is_empty():
+			if job.is_empty() or recs2.is_empty():
 				prov_bad2.append("#%d %s 无本职/该职位未申报产出" % [int(e["id"]), actor])
-			elif String(rec.get("good", "")) != String(e["subject"]):
+			elif matched.is_empty():
 				prov_bad2.append("#%d %s(%s) 产出了 %s" % [int(e["id"]), actor, title, String(e["subject"])])
-			elif amt2 <= 0 or amt2 > int(rec.get("amount", 0)):
-				prov_bad2.append("#%d %s 件数=%d 超出申报 %d" % [int(e["id"]), actor, amt2, int(rec.get("amount", 0))])
+			elif amt2 <= 0 or amt2 > int(matched.get("amount", 0)):
+				prov_bad2.append("#%d %s 件数=%d 超出申报 %d" % [int(e["id"]), actor, amt2, int(matched.get("amount", 0))])
 			elif String(e.get("note", "")).split("*")[0] != title:
 				prov_bad2.append("#%d note 职位=%s 实为 %s" % [int(e["id"]), String(e.get("note", "")).split("*")[0], title])
 			# ★「在班」这一半此前【根本没有检查】（2026-07-30 外部审计抓到）：
@@ -841,19 +855,27 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 			per_p[gid0] = 0; per_c[gid0] = 0; sh_day[gid0] = {}
 			producible[gid0] = false; demanded[gid0] = false; demand[gid0] = 0
 		for title in S.production.get("produce", {}):
-			var prec: Dictionary = (S.production["produce"] as Dictionary)[String(title)]
-			if producible.has(String(prec.get("good", ""))):
-				producible[String(prec.get("good", ""))] = true
-			var pins = prec.get("inputs", {})
-			if pins is Dictionary:
-				# G3 的原料需求走 _stock_take，不进 prod_stats.attempts ⇒ 必须从【在班完成次数】补上，
-				# 否则柴薪的分母少掉窑口那一份，满足率会算出 >1（实测 1.254）。
-				var nw := int((S.prod_stats.get("work", {}) as Dictionary).get(String(title), 0))
-				for ing in (pins as Dictionary):
-					var ig := String(ing)
-					if demanded.has(ig):
-						demanded[ig] = true
-						demand[ig] = int(demand[ig]) + nw * int((pins as Dictionary)[ing])
+			# ★E4d-A 双形状：produce[title] 可为多货 Array 或单货 dict。逐 rec：producible[good]=true + 原料需求。
+			#   nw = 该职位【在班完成场次】(prod_stats.work[title])，逐 title 一次、与产几件货无关
+			#   （同 _produce_for 的 work++ 每场只 +1）；一场里每件货的原料都被扣，故该料需求 = nw × Σ各 rec 用量。
+			#   单货 dict → [dict] → 单次循环 → 逐字节回改前。按列表著者序遍历、不排序。
+			var praw = (S.production["produce"] as Dictionary)[String(title)]
+			var precs: Array = praw if praw is Array else [praw]
+			var nw := int((S.prod_stats.get("work", {}) as Dictionary).get(String(title), 0))
+			for prec in precs:
+				if not (prec is Dictionary) or (prec as Dictionary).is_empty():
+					continue
+				if producible.has(String((prec as Dictionary).get("good", ""))):
+					producible[String((prec as Dictionary).get("good", ""))] = true
+				var pins = (prec as Dictionary).get("inputs", {})
+				if pins is Dictionary:
+					# G3 的原料需求走 _stock_take，不进 prod_stats.attempts ⇒ 必须从【在班完成次数】补上，
+					# 否则柴薪的分母少掉窑口那一份，满足率会算出 >1（实测 1.254）。
+					for ing in (pins as Dictionary):
+						var ig := String(ing)
+						if demanded.has(ig):
+							demanded[ig] = true
+							demand[ig] = int(demand[ig]) + nw * int((pins as Dictionary)[ing])
 		for act in S.production.get("consume", {}):
 			# ★E4a 双形状：consume[act] 可为多货 Array 或单货 dict。需求 = attempts[act] × amount，
 			#   多货时【每件货各自累加】需求；attempts 是逐动作计数（在 Sim._consume_for 一次动作只加一次）。

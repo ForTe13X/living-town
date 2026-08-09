@@ -134,7 +134,7 @@ func _run_once(seed: int, days: int, agents: int, hook: bool) -> Dictionary:
 				b["tick_inshift_idle"] = int(b["tick_inshift_idle"]) + 1
 			var pl := "%s/%s" % [String(ag.get("space", "town")), String(ag.get("floor", "outdoor"))]
 			(b["floor_inshift"] as Dictionary)[pl] = int((b["floor_inshift"] as Dictionary).get(pl, 0)) + 1
-			var good := String((S.production.get("produce", {}) as Dictionary).get(t2, {}).get("good", ""))
+			var good := _first_prod_good(S.production, t2)  # ★E4d-A 双形状：多货取首件（见 _first_prod_good）
 			if good != "":
 				var st := int(S._stock_of(good))
 				b["stock_when_inshift_sum"] = int(b["stock_when_inshift_sum"]) + st
@@ -199,7 +199,7 @@ func _on_decision(ag: Dictionary, cands: Array, best_i: int) -> void:
 	if ins:
 		b["offer_inshift"] = int(b["offer_inshift"]) + 1
 		# 库存分档（只在在班的 offer 上数——不在班干活一件货都不产，那些不该进这张表）
-		var good2 := String((_S.production.get("produce", {}) as Dictionary).get(t, {}).get("good", ""))
+		var good2 := _first_prod_good(_S.production, t)  # ★E4d-A 双形状：多货取首件（见 _first_prod_good）
 		if good2 != "":
 			var cap2 := int((_S.production.get("goods", {}) as Dictionary).get(good2, {}).get("cap", 0))
 			var st2 := int(_S._stock_of(good2))
@@ -251,3 +251,14 @@ func _parse_seeds(spec: String) -> Array:
 	else:
 		out.append(int(spec))
 	return out
+
+## ★E4d-A 双形状：produce[title] 可为多货 Array of {good,amount,inputs?} 或单货 dict。
+##   本探针的库存分档只看【首件货】（列表著者序第一件非空记录，与 Sim._stock_pull_mult 的首件锁一致）。
+##   单货 dict → 直接读 good；缺产者/空 → ""。仅供探针显示/分档，不进金标路/CI 自动执行。
+func _first_prod_good(prod, title: String) -> String:
+	var praw = (prod.get("produce", {}) as Dictionary).get(title, {})
+	var recs: Array = praw if praw is Array else [praw]
+	for pr in recs:
+		if pr is Dictionary and not (pr as Dictionary).is_empty():
+			return String((pr as Dictionary).get("good", ""))
+	return ""

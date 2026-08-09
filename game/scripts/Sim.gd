@@ -1895,7 +1895,17 @@ func _work_pull_mult(prod: Dictionary, pop: int) -> float:
 func _stock_pull_mult(title: String) -> float:
 	if stock_pull_den <= 0:
 		return 1.0
-	var rec: Dictionary = production.get("produce", {}).get(title, {}) if production.get("produce", {}) is Dictionary else {}
+	# ★E4d-A 双形状：produce[title] 可为多货 Array 或单货 dict。此工位回拉乘子【锁定首件货】
+	#   （列表著者序第一件非空记录）——刻意【不】取 min-across-goods：那会让第二件货的低库存把工位吸引力
+	#   再抬一次 ⇒ 首个产者上工更勤 ⇒ 反而稀释核心。E4c（docs/168）「加第二件货不改首个产者上工节律」这条
+	#   核心中性论点，正依赖此处锁首件。镜像 E4a 的 _trade_fallout「取首件非空货」。单货 dict → [dict] → 首件 = 改前逐字节。
+	var praw = production.get("produce", {}).get(title, {}) if production.get("produce", {}) is Dictionary else {}
+	var precs: Array = praw if praw is Array else [praw]
+	var rec: Dictionary = {}
+	for pr in precs:
+		if pr is Dictionary and not (pr as Dictionary).is_empty():
+			rec = pr as Dictionary
+			break
 	if rec.is_empty():
 		return 1.0                                  # 该职位没有产物（零工/未接入的工种）⇒ 无库存可读 ⇒ 不施加
 	var good := String(rec.get("good", ""))
@@ -3348,14 +3358,21 @@ func _pool_rescale(raw: Dictionary, pop: int) -> Dictionary:
 			var sp0 := int(gd["spoil_per_day"])
 			gd["spoil_per_day"] = maxi(1, sp0 * num / base) if sp0 > 0 else sp0   # 原本不损耗的货不因换尺度开始损耗
 	for t in out.get("produce", {}):
-		var pr: Dictionary = (out["produce"] as Dictionary)[t]
-		if "amount" in fields and pr.has("amount"):
-			pr["amount"] = int(pr["amount"]) * num / base
-		if "inputs" in fields and pr.has("inputs") and pr["inputs"] is Dictionary:
-			for ing in (pr["inputs"] as Dictionary):
-				var v0 := int((pr["inputs"] as Dictionary)[ing])
-				# 原本要料的，换尺度后至少还要 1 ⇒ "货由货做成"这条链在宏观口径上不会被整除抹掉。
-				pr["inputs"][ing] = maxi(1, v0 * num / base) if v0 > 0 else v0
+		# ★E4d-A 双形状：produce[t] 可为多货 Array 或单货 dict。逐 rec 缩放 .amount / .inputs——
+		#   否则第二件货的批量在 N≠12 时不被缩放 ⇒ 破 ci.sh 4a 宏观池尺度门。out = raw.duplicate(true) 深拷贝，
+		#   dict 是引用类型，原地改即改 out。单货 dict → [dict] → 单次循环 → 逐字节回改前。按列表著者序遍历、不排序。
+		var praw = (out["produce"] as Dictionary)[t]
+		var precs: Array = praw if praw is Array else [praw]
+		for pr in precs:
+			if not (pr is Dictionary):
+				continue
+			if "amount" in fields and (pr as Dictionary).has("amount"):
+				pr["amount"] = int(pr["amount"]) * num / base
+			if "inputs" in fields and (pr as Dictionary).has("inputs") and pr["inputs"] is Dictionary:
+				for ing in (pr["inputs"] as Dictionary):
+					var v0 := int((pr["inputs"] as Dictionary)[ing])
+					# 原本要料的，换尺度后至少还要 1 ⇒ "货由货做成"这条链在宏观口径上不会被整除抹掉。
+					pr["inputs"][ing] = maxi(1, v0 * num / base) if v0 > 0 else v0
 	return out
 
 func _stock_of(good: String) -> int:
@@ -3410,52 +3427,70 @@ func _produce_for(ag: Dictionary, action: String) -> void:
 	if job.is_empty() or _job_action(job) != action or not _in_shift(job):
 		return
 	var title := String(job.get("title", ""))
-	var rec: Dictionary = production.get("produce", {}).get(title, {})
-	if rec.is_empty():
+	# ★E4d-A 双形状读者（consume 侧 E4a 的镜像）：`produce[title]` 可以是 Array of {good,amount,inputs?}
+	#   （一个产者一【场】做多件货），也【继续接受】既有的裸 {good,amount,inputs?} dict（单货）——归一化为列表 recs。
+	#   现有 production.json 每个产者都是裸 dict ⇒ 单元素列表 ⇒ 逐字节回到改前控制流（零金标）。
+	# ★确定性红线：严格按【列表著者序】迭代——永不排序、永不依赖 dict 键序。
+	#   顺序即语义：每件货一条 produce 事件（经 _stock_move 顺序写 event_log，进 event_digest）+ 顺序扣料/记忆，
+	#   多货由数据的书写序唯一定序；单元素列表天然序无关，故保住零金标。
+	var raw = production.get("produce", {}).get(title, {})
+	var raw_recs: Array = raw if raw is Array else [raw]
+	var recs: Array = []                                # 过滤空/非 dict：缺产者 raw={} → [{}] → recs=[]（= 改前 rec.is_empty()）
+	for r in raw_recs:
+		if r is Dictionary and not (r as Dictionary).is_empty():
+			recs.append(r)
+	if recs.is_empty():
 		return                                          # 该职位没有产物（如未接入的工种）→ 与今天一致
-	var good := String(rec.get("good", ""))
-	var amount := int(rec.get("amount", 0))
-	# G3 原料：按 JSON 书写序遍历（Godot 字典保序）⇒ 扣料顺序确定、无 RNG、可逐字节回放。
-	var ins: Dictionary = rec.get("inputs", {}) if rec.get("inputs", {}) is Dictionary else {}
-	var lacked := ""                                    # 第一样没凑齐的原料（后果只报一次，同 _shortage_fallout 的口径）
-	var r_num := 1                                      # 缩水比 = min over 原料 (到手/需要)，整数分数、不引入浮点
-	var r_den := 1
-	for ing in ins:
-		var need_in := int(ins[ing])
-		if need_in <= 0:
-			continue
-		var got_in := _stock_take(String(ing), need_in)  # 料照扣（扣多少算多少）——半窑瓦也把那半窑柴烧掉了
-		if got_in < need_in:
-			if lacked == "":
-				lacked = String(ing)
-			if got_in * r_den < r_num * need_in:         # 取【最紧】的那一样，不是逐样连乘
-				r_num = got_in
-				r_den = need_in
-	if r_den != 1 or r_num != 1:
-		amount = amount * r_num / r_den                  # 整数缩放 ⇒ 恒 ≤ 申报批量 ⇒ #39 的「不超申报」结构上成立
-	if lacked != "":
-		prod_stats["short"][lacked] = int((prod_stats["short"] as Dictionary).get(lacked, 0)) + 1
-		# 缺料的是【干活的人】——全镇第一条跨工种的缺货后果。日名额用 "料:<货>"，与消费侧的 "<货>" 分开（见 _shortage_fallout）。
-		_shortage_fallout(ag, action, lacked, "料:" + lacked)
-	prod_stats["work"][title] = int((prod_stats["work"] as Dictionary).get(title, 0)) + 1
-	if amount <= 0:
-		return                                          # 一点料都没有 ⇒ 这一趟空手（不写 produce 事件，#39 的「件数>0」因此恒成立）
-	# ★V1 手艺口碑（docs/84）：这门手艺开了 `craft_credit` 才去数在场者，否则连 `_nearby_agents` 都不调
-	# ⇒ 缺键/该职位不在表里 ⇒ 一条指令都不多跑、`witnesses` 仍是 `[]` ⇒ 逐字节回到今天。
-	var cc: Dictionary = _craft_credit(title)
-	var wits: Array = _nearby_agents(ag) if not cc.is_empty() else []
-	var got := _stock_move(good, amount, "produce", String(ag["id"]), title, wits)
-	if got > 0:
-		if not cc.is_empty() and not wits.is_empty():
-			_craft_fallout(ag, wits, title, good, cc)
-		prod_stats["produced"][good] = int((prod_stats["produced"] as Dictionary).get(good, 0)) + got
-		# K1：池倍率 >1 时这一批**不是他一个人干出来的**，措辞必须跟着换尺度——
-		# 否则记忆里会出现"一个泥瓦匠一天烧了 150 片瓦"，而那正是外审点名的"一个铁匠在 60 人里产 60 把剑"。
-		# 这条串直接进 MemoryStream / 语音 grounding。倍率==1（出货阵容 N=12）⇒ 走原分支 ⇒ 逐字节不变。
-		if prod_pool_num != prod_pool_den:
-			ag["memory"].add("今天带着帮工%s，一行人出了%d份%s，交进镇上" % [action, got, good], 4, tick_no, ["job", "produce", good])
-		else:
-			ag["memory"].add("今天%s出了%d份%s，交进镇上" % [action, got, good], 4, tick_no, ["job", "produce", good])
+	# ★work++ 每【场】只加一次（首次迭代守卫 first），与做几件货无关——保在改前的确切位置：
+	#   在【首件货】的扣料/停工后果之后、首件货的 amount<=0 短路之前。
+	#   work 是【场次】计数（prod_stats.work[title]），#40 的原料需求分母与满足率都读它；prod_stats 不进任何 digest。
+	var first := true
+	for rec in recs:
+		var good := String((rec as Dictionary).get("good", ""))
+		var amount := int((rec as Dictionary).get("amount", 0))
+		# G3 原料：按 JSON 书写序遍历（Godot 字典保序）⇒ 扣料顺序确定、无 RNG、可逐字节回放。
+		var ins: Dictionary = (rec as Dictionary).get("inputs", {}) if (rec as Dictionary).get("inputs", {}) is Dictionary else {}
+		var lacked := ""                                # 第一样没凑齐的原料（后果只报一次，同 _shortage_fallout 的口径）
+		var r_num := 1                                  # 缩水比 = min over 原料 (到手/需要)，整数分数、不引入浮点
+		var r_den := 1
+		for ing in ins:
+			var need_in := int(ins[ing])
+			if need_in <= 0:
+				continue
+			var got_in := _stock_take(String(ing), need_in)  # 料照扣（扣多少算多少）——半窑瓦也把那半窑柴烧掉了
+			if got_in < need_in:
+				if lacked == "":
+					lacked = String(ing)
+				if got_in * r_den < r_num * need_in:     # 取【最紧】的那一样，不是逐样连乘
+					r_num = got_in
+					r_den = need_in
+		if r_den != 1 or r_num != 1:
+			amount = amount * r_num / r_den              # 整数缩放 ⇒ 恒 ≤ 申报批量 ⇒ #39 的「不超申报」结构上成立
+		if lacked != "":
+			prod_stats["short"][lacked] = int((prod_stats["short"] as Dictionary).get(lacked, 0)) + 1
+			# 缺料的是【干活的人】——全镇第一条跨工种的缺货后果。日名额用 "料:<货>"，与消费侧的 "<货>" 分开（见 _shortage_fallout）。
+			_shortage_fallout(ag, action, lacked, "料:" + lacked)
+		if first:
+			prod_stats["work"][title] = int((prod_stats["work"] as Dictionary).get(title, 0)) + 1
+			first = false
+		if amount <= 0:
+			continue                                    # 这一件没料/空手 ⇒ 跳过（不写 produce 事件，#39 的「件数>0」因此恒成立）。单货时=改前 return。
+		# ★V1 手艺口碑（docs/84）：这门手艺开了 `craft_credit` 才去数在场者，否则连 `_nearby_agents` 都不调
+		# ⇒ 缺键/该职位不在表里 ⇒ 一条指令都不多跑、`witnesses` 仍是 `[]` ⇒ 逐字节回到今天。
+		var cc: Dictionary = _craft_credit(title)
+		var wits: Array = _nearby_agents(ag) if not cc.is_empty() else []
+		var got := _stock_move(good, amount, "produce", String(ag["id"]), title, wits)
+		if got > 0:
+			if not cc.is_empty() and not wits.is_empty():
+				_craft_fallout(ag, wits, title, good, cc)
+			prod_stats["produced"][good] = int((prod_stats["produced"] as Dictionary).get(good, 0)) + got
+			# K1：池倍率 >1 时这一批**不是他一个人干出来的**，措辞必须跟着换尺度——
+			# 否则记忆里会出现"一个泥瓦匠一天烧了 150 片瓦"，而那正是外审点名的"一个铁匠在 60 人里产 60 把剑"。
+			# 这条串直接进 MemoryStream / 语音 grounding。倍率==1（出货阵容 N=12）⇒ 走原分支 ⇒ 逐字节不变。
+			if prod_pool_num != prod_pool_den:
+				ag["memory"].add("今天带着帮工%s，一行人出了%d份%s，交进镇上" % [action, got, good], 4, tick_no, ["job", "produce", good])
+			else:
+				ag["memory"].add("今天%s出了%d份%s，交进镇上" % [action, got, good], 4, tick_no, ["job", "produce", good])
 
 ## 消耗挂点：动作开用时扣一件。**返回 false = 缺货**。
 ## ★缺货【不阻断动作】：本函数不改 option、不改 need、不返回"别做了"——调用方拿 false 只用来加价与记后果。

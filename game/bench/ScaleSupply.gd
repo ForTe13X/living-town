@@ -216,17 +216,24 @@ func _measure(S, ev_n: int, days_run: int, stock_day, attempts, work, short_c, s
 		per_p[gid0] = 0; per_c[gid0] = 0; sh_day[gid0] = {}
 		producible[gid0] = false; demanded[gid0] = false; demand[gid0] = 0
 	for title in S.production.get("produce", {}):
-		var prec: Dictionary = (S.production["produce"] as Dictionary)[String(title)]
-		if producible.has(String(prec.get("good", ""))):
-			producible[String(prec.get("good", ""))] = true
-		var pins = prec.get("inputs", {})
-		if pins is Dictionary:
-			var nw := int((work as Dictionary).get(String(title), 0))
-			for ing in (pins as Dictionary):
-				var ig := String(ing)
-				if demanded.has(ig):
-					demanded[ig] = true
-					demand[ig] = int(demand[ig]) + nw * int((pins as Dictionary)[ing])
+		# ★E4d-A 双形状：produce[title] 可为多货 Array 或单货 dict（镜像 Invariants #40 @N-scale）。逐 rec：
+		#   producible[good]=true + 原料需求。nw=该职位在班完成场次(work[title])、逐 title 一次、与产几件货无关。
+		#   单货 dict → [dict] → 单次循环 → 逐字节回改前。按列表著者序遍历、不排序。
+		var praw = (S.production["produce"] as Dictionary)[String(title)]
+		var precs: Array = praw if praw is Array else [praw]
+		var nw := int((work as Dictionary).get(String(title), 0))
+		for prec in precs:
+			if not (prec is Dictionary) or (prec as Dictionary).is_empty():
+				continue
+			if producible.has(String((prec as Dictionary).get("good", ""))):
+				producible[String((prec as Dictionary).get("good", ""))] = true
+			var pins = (prec as Dictionary).get("inputs", {})
+			if pins is Dictionary:
+				for ing in (pins as Dictionary):
+					var ig := String(ing)
+					if demanded.has(ig):
+						demanded[ig] = true
+						demand[ig] = int(demand[ig]) + nw * int((pins as Dictionary)[ing])
 	for act in S.production.get("consume", {}):
 		# ★E4a 双形状：consume[act] 可为多货 Array 或单货 dict。N-尺度需求 = attempts[act] × amount，
 		#   多货时每件货各自累加。单货 dict → [dict] → 单次循环 → 逐字节回改前。按列表著者序遍历、不排序。
