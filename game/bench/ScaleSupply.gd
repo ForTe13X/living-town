@@ -228,12 +228,18 @@ func _measure(S, ev_n: int, days_run: int, stock_day, attempts, work, short_c, s
 					demanded[ig] = true
 					demand[ig] = int(demand[ig]) + nw * int((pins as Dictionary)[ing])
 	for act in S.production.get("consume", {}):
-		var crec: Dictionary = (S.production["consume"] as Dictionary)[String(act)]
-		var cg := String(crec.get("good", ""))
-		if demanded.has(cg):
-			demanded[cg] = true
-			demand[cg] = int(demand[cg]) \
-				+ int((attempts as Dictionary).get(String(act), 0)) * int(crec.get("amount", 1))
+		# ★E4a 双形状：consume[act] 可为多货 Array 或单货 dict。N-尺度需求 = attempts[act] × amount，
+		#   多货时每件货各自累加。单货 dict → [dict] → 单次循环 → 逐字节回改前。按列表著者序遍历、不排序。
+		var craw = (S.production["consume"] as Dictionary)[String(act)]
+		var crecs: Array = craw if craw is Array else [craw]
+		for crec in crecs:
+			if not (crec is Dictionary) or (crec as Dictionary).is_empty():
+				continue
+			var cg := String((crec as Dictionary).get("good", ""))
+			if demanded.has(cg):
+				demanded[cg] = true
+				demand[cg] = int(demand[cg]) \
+					+ int((attempts as Dictionary).get(String(act), 0)) * int((crec as Dictionary).get("amount", 1))
 	var log: Array = S.event_log
 	var n_prod := 0
 	var n_cons := 0

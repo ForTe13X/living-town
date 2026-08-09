@@ -3461,21 +3461,36 @@ func _produce_for(ag: Dictionary, action: String) -> void:
 ## ★缺货【不阻断动作】：本函数不改 option、不改 need、不返回"别做了"——调用方拿 false 只用来加价与记后果。
 ##   这正是 economy.json `_doc` 里 meals_free 那条设计意图的直接继承：付不起照吃、没货也照吃。
 func _consume_for(ag: Dictionary, action: String) -> bool:
-	var rec: Dictionary = production.get("consume", {}).get(action, {})
-	if rec.is_empty():
-		return true                                     # 非消耗类动作 → 天然不缺货
-	var good := String(rec.get("good", ""))
-	var want := int(rec.get("amount", 1))
+	# ★E4a 双形状读者：`consume[action]` 可以是 Array of {good,amount}（一个动作消费多件货），
+	#   也【继续接受】既有的裸 {good,amount} dict（单货）——归一化为列表 `recs`。
+	#   现有 production.json 每个动作都是裸 dict ⇒ 单元素列表 ⇒ 逐字节回到改前控制流（零金标）。
+	# ★确定性红线：严格按【列表著者序】迭代——永不排序、永不依赖 dict 键序。
+	#   顺序即语义：`_shortage_fallout` 顺序写 event_log（进 event_digest）+ 顺序插 belief（gossip 序）。
+	#   单元素列表天然序无关，故保住零金标；多货由数据的书写序定序。
+	var raw = production.get("consume", {}).get(action, {})
+	var raw_recs: Array = raw if raw is Array else [raw]
+	var recs: Array = []                                 # 过滤空/非 dict 记录：缺键 raw={} → [{}] → recs=[]（= 改前 rec.is_empty()）
+	for r in raw_recs:
+		if r is Dictionary and not (r as Dictionary).is_empty():
+			recs.append(r)
+	if recs.is_empty():
+		return true                                     # 非消耗类动作 → 天然不缺货（且【不】计 attempts，同改前）
+	# attempts 每次动作只加一次（在非空判定之后，同改前），与消费几件货无关。
 	prod_stats["attempts"][action] = int((prod_stats["attempts"] as Dictionary).get(action, 0)) + 1
-	var took := _stock_take(good, want)
-	if took >= want:
-		prod_stats["consumed"][good] = int((prod_stats["consumed"] as Dictionary).get(good, 0)) + took
-		return true
-	if took > 0:
-		prod_stats["consumed"][good] = int((prod_stats["consumed"] as Dictionary).get(good, 0)) + took
-	prod_stats["short"][good] = int((prod_stats["short"] as Dictionary).get(good, 0)) + 1
-	_shortage_fallout(ag, action, good)
-	return false
+	var all_ok := true                                  # ★AND-fold：任一件货缺 ⇒ 返回 false（缺货仍不阻断动作，只喂加价+社会后果）
+	for rec in recs:
+		var good := String((rec as Dictionary).get("good", ""))
+		var want := int((rec as Dictionary).get("amount", 1))
+		var took := _stock_take(good, want)
+		if took >= want:
+			prod_stats["consumed"][good] = int((prod_stats["consumed"] as Dictionary).get(good, 0)) + took
+			continue
+		if took > 0:
+			prod_stats["consumed"][good] = int((prod_stats["consumed"] as Dictionary).get(good, 0)) + took
+		prod_stats["short"][good] = int((prod_stats["short"] as Dictionary).get(good, 0)) + 1
+		_shortage_fallout(ag, action, good)
+		all_ok = false
+	return all_ok
 
 ## 消耗侧的库存扣减：立刻改 town_stock，但把"今天扣了多少"攒进 _stock_day，日界一次性写一条 consume 事件。
 ## 为什么不逐次写：见 _stock_day 的声明注释（会把 Main 的小镇纪事整块冲掉）。
@@ -3654,7 +3669,15 @@ func _trade_fallout(buyer: Dictionary, vendor_id: String, seen: Array, action: S
 	if title == "":
 		return
 	var st := float(tc.get("standing", 0.0))
-	var good := String((production.get("consume", {}) as Dictionary).get(action, {}).get("good", ""))
+	# ★E4a 双形状读者：consume[action] 可为多货 Array 或单货 dict。商贩口碑串只提【首件】货
+	#   （摊子撑着"某货"），按列表著者序取第一件非空记录。单货 dict → [dict] → 首件 = 改前逐字节。
+	var craw = (production.get("consume", {}) as Dictionary).get(action, {})
+	var crecs: Array = craw if craw is Array else [craw]
+	var good := ""
+	for cr in crecs:
+		if cr is Dictionary and not (cr as Dictionary).is_empty():
+			good = String((cr as Dictionary).get("good", ""))
+			break
 	var bid := "TR:%s" % title
 	# 参数序**逐字照抄** `shortage_claim` / `craft_credit.claim`（`% [good, name]`）：
 	# 同一个文件里三条镜像的串用三套参数序是下一次 "not all arguments converted" 的种子（docs/84 §六①）。

@@ -855,12 +855,19 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 						demanded[ig] = true
 						demand[ig] = int(demand[ig]) + nw * int((pins as Dictionary)[ing])
 		for act in S.production.get("consume", {}):
-			var crec: Dictionary = (S.production["consume"] as Dictionary)[String(act)]
-			var cg := String(crec.get("good", ""))
-			if demanded.has(cg):
-				demanded[cg] = true
-				demand[cg] = int(demand[cg]) \
-					+ int((S.prod_stats.get("attempts", {}) as Dictionary).get(String(act), 0)) * int(crec.get("amount", 1))
+			# ★E4a 双形状：consume[act] 可为多货 Array 或单货 dict。需求 = attempts[act] × amount，
+			#   多货时【每件货各自累加】需求；attempts 是逐动作计数（在 Sim._consume_for 一次动作只加一次）。
+			#   单货 dict → [dict] → 单次循环 → 逐字节回改前。按列表著者序遍历、不排序。
+			var craw = (S.production["consume"] as Dictionary)[String(act)]
+			var crecs: Array = craw if craw is Array else [craw]
+			for crec in crecs:
+				if not (crec is Dictionary) or (crec as Dictionary).is_empty():
+					continue
+				var cg := String((crec as Dictionary).get("good", ""))
+				if demanded.has(cg):
+					demanded[cg] = true
+					demand[cg] = int(demand[cg]) \
+						+ int((S.prod_stats.get("attempts", {}) as Dictionary).get(String(act), 0)) * int((crec as Dictionary).get("amount", 1))
 	for e in log:
 		var _ty := String(e["type"])
 		var _g := String(e["subject"])
@@ -968,8 +975,16 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 		for gid2 in never_short:
 			var planes: Dictionary = {}
 			for act2 in S.production.get("consume", {}):
-				var crec2 = (S.production["consume"] as Dictionary)[String(act2)]
-				if not (crec2 is Dictionary) or String((crec2 as Dictionary).get("good", "")) != String(gid2):
+				# ★E4a 双形状：consume[act2] 可为多货 Array 或单货 dict。这条只关心"act2 是否消费 gid2"，
+				#   多货时任一件 == gid2 即算命中。单货 dict → [dict] → 逐字节回改前（match iff good==gid2）。
+				var craw2 = (S.production["consume"] as Dictionary)[String(act2)]
+				var crecs2: Array = craw2 if craw2 is Array else [craw2]
+				var matches2 := false
+				for cr2 in crecs2:
+					if cr2 is Dictionary and String((cr2 as Dictionary).get("good", "")) == String(gid2):
+						matches2 = true
+						break
+				if not matches2:
 					continue
 				for oid2 in objs:
 					var o2 = objs[oid2]
