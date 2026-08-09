@@ -219,4 +219,9 @@ Phase 5  才恢复多镇：生产 capacity 与具名 NPC 解耦 → N=24/40/60 h
 ### 进行中 / 下一批（disjoint 并行）
 - **交通/建筑种类 scoping**（item#2+「丰富building种类」）：参考的 5 类经济建筑(站/码头/仓库/磨坊/集市)未入游戏、port_dock 无可见建筑 ⇒ scoping 出实现棒计划(map.json area+WorldView+interior 的 move-golden 纪律 vs 纯 View decor)。
 - **AV3**（车道 V 续,pure-View 零金标）：暖化广场/石街/路面 + 水色调和，收尾地面 overhaul。
-- **仍阻塞/deferred**：E3 工业(撞决策稀释墙,需闲聊-attach pivot 拍板)；export P4 硬化(txid 绑定/大 N/town_coin 上限)；叙事分支(codex/narrative 落后 117,viz 参考);口岸落图(P1,接交通片)。
+- **仍阻塞/deferred**：export P4 硬化(txid 绑定/大 N/town_coin 上限)；叙事分支(codex/narrative 落后 117,viz 参考);口岸落图(P1,接交通片)。
+
+### 2026-08-09 · ★用户 5-item 愿景【全交付】+ E3 工业解锁
+- **E3 工业【已通】(docs/164)**：用户拍板 **闲聊-attach pivot**——treat(糕点)挂既有 `闲聊` 消费 + 工位只广告 job-gated `做点心`(不加 town-plane 决策槽) ⇒ 留出核心三货 median Δ **+0.041/−0.001/+0.006**(反 E3a 全下移)、NULL 对照证零稀释、committed CI 全绿(含协调者补 coco.做点心 台词修 VoiceGate)。⇒ **可复用范式「新工业货挂既有动作 + 工位只广告 job-gated 产出 + 补 voicebank 台词」扩更多货**([[project-economy-trade-loop]])。
+- **★用户 5-item 愿景全交付**：①视觉大改(AV1 建筑/AV2 地形瓦/AV3 地面/AP-port 港口+参考集)②交通(港口可见+import/export 贸易环)③多样工业(E3b 糕点链,pattern 可扩)④居民 produce/consume(贸易环+E3b)⑤叙事分支(已 review,stale viz 参考)。全 push、committed 树全绿、move-golden/pure-View 纪律逐片守。
+- **下一批候选**（增量/需用户定优先级）：用 E3 范式**扩更多工业货**(diversify,item③深化)、更多贸易 lane(railway/bus 节点)、更视觉(石铺瓦/建筑精灵/Option B 新经济建筑落 map)、export P4 硬化。**已达高价值边界，增量项建议由用户点方向**（同 §「诚实到达需输入边界」纪律）。
