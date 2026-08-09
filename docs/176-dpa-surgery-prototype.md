@@ -83,7 +83,7 @@
 **但现在【不能 land】——3 条 land 前置（都非致命、原型与 A–E 探针本身干净）**：
 1. **【BLOCKER·守卫】** `grievance_reroute` 是裸 `gd.get` per-good 布尔、**无 survival-good 守卫**（全树无白/黑名单）。标到生存货（口粮/柴薪/…）即【静默】删该产者的 ④→涌现放逐社会戏剧而【无任何门变红】（shortage 事件在分叉上游照记⇒#40 恒绿且不在 HARD_IDS；#15 放逐是 DIAG 永不成门；grievance 被 digest 排除）——正是 docs/173 §四.3 判过的「硬前置、不可软化」§0.5 反模式。**修＝fail-closed 白名单**：Sim.gd 加 `REROUTE_ELIGIBLE` 常量（comfort/attach 货，如糕点/饼干），`reroute := bool(gd.get(...)) and (good in REROUTE_ELIGIBLE)`——误标生存货静默回 standing 原路、新增货默认受保护。**必须先于/同于 config 进 committed 树+重烘 land**。（不违反 [[feedback-freeze-gates-drift-recurs]]：是把【已存在的数据门】收窄成 fail-closed、非新造投机门。）重形式（Invariants HARD 判红 + gate_fixture_audit 双枚举）＝可选纵深。
 2. **【头衔·诚实】** B3『grievance 被写』从「戏剧门」降为「改道管线已触发」自检——grievance 纯只写、出货路零读者、**不计入交付价值**（否则＝verified→gated 升格，撞 [[feedback-relay-turns-observation-into-mechanism]]）。玩家可感只由 ①②③ 背书。且须记：DP-A 把饼干的 standing 驱动【被动】戏剧（名牌/conflict 行/gossip_rep 点名/grudge 弧）与 leak【一同】交易掉（同机制）——已在 §〇/§六 更正。（grievance→Story 合理留 Phase 2，不需先接 UI。）
-3. **【高 N·标度】** 「破封顶」是 scale-general 断言却只 N=12 证据；唯一活残余通道 ③gossip 社交候选密度 N=12→60 涨 ~6.5×、落 docs/173:29 高 N 回归警告区。**跑 N≥24 核心中性（clean/with/dpa）gate 此断言，或把 land scope 到 N=12**。（协调者已在跑 N=24。）
+3. **【高 N·标度】✅ 已 gate（definitive）**：协调者跑了 **N=24/48/60 核心中性 sweep（clean/with/dpa、held-out 13-30）**——DP-A 核心口粮 Δ＝**+0.0000 逐 seed 字节平（0/0/18）@ N=24、N=48、N=60**（全 5 核心货全平），且饼干在各 N【真凶缺】（如 N=24 seed13 缺货 38 事件）——即饼干在场且凶缺、核心却逐字节等同 CLEAN。对照 WITH 在高 N 仍稀释（N=48 口粮 mean −0.024、|dn| 0.198 混沌）。⇒ ③gossip 6.5× 高 N 回归担忧【实测证伪】，「破封顶」是 **scale-general（N=12→60 全范围）** 非 N=12 标定假象。（证据 analysis/dpa/runs_hiN + RESULTS_hiN*.txt。）
 
 **minor**：Sim.gd:4505 确定性注释理由写错（浮点加法非结合、`min(Σ|δ|,CAP)` 序无关只因单货 δ=0.2 恒定才成立；真保证＝确定性重放同写序 + grievance 被 digest 排除）——改注释即可、非阻塞。
 

@@ -1,0 +1,59 @@
+diff --git a/game/scripts/Sim.gd b/game/scripts/Sim.gd
+index 460a4e2..3155feb 100644
+--- a/game/scripts/Sim.gd
++++ b/game/scripts/Sim.gd
+@@ -146,6 +146,11 @@ const FACTION_ENDORSE_DEFER := true
+ const STANDING_CAP := 3.0       # standing 范围 [-CAP,+CAP]；sign=good/bad
+ const STANDING_K := 6.0         # 接受规则里 standing 权重 → 涌现放逐
+ const REP_GOSSIP_TH := -2.0     # standing ≤ 此 → 可对外传其坏名声(gossip_rep)
++const GRIEVANCE_CAP := 3.0      # ★DP-A(docs/176) grievance 自含层封顶（镜像 STANDING_CAP 量级）；此字段【绝不被任何决策读】
++# ★DP-A 守卫（§0.8 内审 BLOCKER，docs/176 §八 / docs/173 §四.3）：只有 comfort/attach 货（挂既有【非生存 need】动作，如 闲聊）可 grievance_reroute。
++#   fail-closed 白名单——不在此列的货（【含所有生存货 + 任何未来新货】）即便 production.json 标 grievance_reroute=true，也【静默回 standing 原路】（豁免失效）。
++#   防 §0.5「给出货配置预埋永不变红门」漏洞：把生存货标 reroute 会静默删该产者的涌现放逐后果而无门变红——本白名单令其无效。新货默认受保护、要放行须显式改这行代码（经审）。
++const REROUTE_ELIGIBLE := ["糕点", "饼干"]
+ const INVEST_TRUST := -8.0      # 脆弱动作(give/invite)条件投资门：trust ≥ 此才发起
+ const RESENT_DECAY := 0.4       # 每日 resentment 衰减（宽恕：不永久世仇）
+ # S2（意见动力学，docs/10 §A2/§A3）
+@@ -3574,12 +3579,23 @@ func _shortage_fallout(ag: Dictionary, action: String, good: String, dedup: Stri
+ 	var claim := String(gd.get("shortage_claim", "镇上的%s总是断，%s那边跟不上")) % [good, _name(_agent_by_id[blame])]
+ 	var seers: Array = [ag]
+ 	seers.append_array(seen)
++	# ★DP-A（docs/176）per-good 数据门 `grievance_reroute`（照抄 craft_credit / shortage_standing 的缺键=逐字节形状）：
++	#   缺键 / false → 原路 `_adjust_standing`（④声誉挫伤照旧写 standing、进 _acceptance_margin(3913) 的涌现放逐）＝逐字节 no-op；
++	#   true → 只对【本货】把 ④ 这一面【改道】进自含 `grievance` 字段（见 _add_grievance）：该字段【绝不】`*STANDING_K`、
++	#          不进 _acceptance_margin(3913)/bad_targets(2130)/gossip_rep(2205) 的任何决策读，只留给 Story/编年史/语音作 drama grounding。
++	#   ①②③【全保】：shortage 事件照 _log_event(3566，喂 #40)、当事人不满记忆照记(3570)、SH:<货> 信念照写照传 gossip(3580-3581)——
++	#   丢的只有"产者因该货缺被涌现放逐"这一面，而 E7(docs/174) 证它是第二工业货稀释核心口粮的【唯一】leak（③零贡献）。
++	var reroute := bool(gd.get("grievance_reroute", false)) and REROUTE_ELIGIBLE.has(good)   # ★守卫：非白名单货（生存货/新货）静默回 standing 原路（fail-closed，§0.8 BLOCKER）
++	var sstd := float(gd.get("shortage_standing", production.get("shortage_standing", 0.0)))
+ 	for s in seers:
+ 		if String(s["id"]) == blame:
+ 			continue                                    # 不当着（也不由）责任人自己形成这条埋怨
+ 		if not s["beliefs"].has(bid):
+ 			s["beliefs"][bid] = {"claim": claim, "subject": blame, "source": "__seen__", "via": "seen", "tick": tick_no}
+-		_adjust_standing(s, blame, float(gd.get("shortage_standing", production.get("shortage_standing", 0.0))))
++		if reroute:
++			_add_grievance(s, blame, sstd)              # ④→自含 grievance（决策不读）
++		else:
++			_adjust_standing(s, blame, sstd)            # 原路 ④声誉挫伤（进涌现放逐）
+ 
+ ## ★V1 手艺口碑的数据门（docs/84）。缺 `production.craft_credit` / 该职位不在表里 → 返回 `{}` →
+ ## `_produce_for` 里那两行整段短路 → 引擎逐字节回到 V1 之前。回滚成本 = 删一个 JSON 键（照抄 `stock_pull` 的形状）。
+@@ -4485,6 +4501,17 @@ func _adjust_standing(observer: Dictionary, target_id: String, delta: float) ->
+ 	e["acc"] = float(e["acc"]) + d
+ 	r["standing"] = clampf(float(r["standing"]) + d, -STANDING_CAP, STANDING_CAP)
+ 
++## ★DP-A（docs/176）缺货后果的【自含】记账层。只被 `_shortage_fallout` 的 grievance_reroute 分支写、
++## 只留给 Story/编年史/语音读作 drama grounding——【绝不】被 _acceptance_margin(3913)/bad_targets(2130)/
++## gossip_rep(2205)/夜间衰减(1648) 或任何决策/digest 读（digest 只哈希 event_log，见 Invariants.digest）。
++## ★语义【刻意不复用】_adjust_standing 的每-tick 翻号累加器 _st_delta：那条 ± 混写 + 共享 cap 的翻号漂移
++## 会引新混沌（docs/173 open_q）。改用【简单单调累积】——grievance 只增不减、累计「这个产者让我为这件货缺过多少」，
++## 单调故与 tick 内写入序无关（min(Σ|delta|, CAP)），封顶 GRIEVANCE_CAP 防无界。缺 `grievance` 键 → 由 .get 兜 0，
++## 且门关时本函数从不被调 ⇒ `grievance` 键从不出现 ⇒ off-gate 逐字节。（温和衰减是 Phase-2 备选，见 docs/176。）
++func _add_grievance(observer: Dictionary, target_id: String, delta: float) -> void:
++	var r := _rel(observer, target_id)
++	r["grievance"] = minf(float(r.get("grievance", 0.0)) + absf(delta), GRIEVANCE_CAP)
++
+ ## S3a 派系：对齐判据 = ≥FACTION_MIN_AGREE 个话题"同号(非骑墙)且 |Δ|<FACTION_BAND"
+ func _aligned(a: Dictionary, b: Dictionary) -> bool:
+ 	var agree := 0
