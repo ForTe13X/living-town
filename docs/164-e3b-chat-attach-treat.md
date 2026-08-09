@@ -119,3 +119,11 @@ match opt.kind: "social"→_advance_social  "attend"→_advance_attend  _→_adv
 - `anchor.py / parse.py`：只读分析脚本（UTF-8）。
 - `ci_full.log`：全 `tools/ci.sh` 输出。
 - ① **污染记录**：首个 baseline 后台跑与本片改 production.json 撞车（ScaleSupply 每 seed 重载数据文件）⇒ 部分 baseline seed 含糕点。已弃用、在干净树重跑（`baseline_clean_*`）。
+
+## 七、协调者 committed-tree finalize（含一处 baton 漏的门）
+> ⚠ §〇/§五 的「CI 三门全绿」只覆盖 S0/DetGate/ModelPath——baton **stalled on 自己的 full CI、没看到 verdict**，而 `ci_full.log` 里实际有一处红。协调者在 committed 树复验时抓到并修：
+
+1. **★VoiceGate 红（baton 漏、committed CI 抓到）**：E3b 加了 job-gated `做点心` 动作但**漏配 coco 的台词** ⇒ VoiceGate『台词覆盖门』红（`coco|做点心` 被 offer 698 次却无台词；E3a 因止损在核心锚前、从未跑到 VoiceGate 故未暴露此类）。修：`voicebank.json` 补 `coco.做点心` 两句（合其安静/画者人格）。**实证零金标**：补台词后 `Harness --seeds 1-12 --golden` = **金标一致 12/12**（台词是显示层、不进 Sim digest）⇒ golden/modelpath 不动，只重烘 ledger。
+2. **独立复核核心锚（land 声明须自证）**：协调者独立 re-parse baton 原始 held-out jsonl，复算核心三货 median Δ = **+0.041/−0.001/+0.006**（与 baton 报告逐位相符）；且 `baseline_clean` 的 seed-1 digest=1467991201 **对得上 pre-E3b committed golden** ⇒ baseline 是真码真跑、非伪造。committed 树 `production.json` 标定 = b6_w48（produce.糕点师 amount6 / 做点心 amount48）= 被测锚树，一致。
+3. **committed 树全量 CI = PASS ✅**：金标 12/12 逐字节 · #38/#39/#40 硬各 12/12（S0+N16）· **VoiceGate PASS**（补台词后）· 互补性守卫 tree-fresh · DetGate/BackendGate/ModelPathGate/#34-46 全绿 · det 3/3。
+4. **finalize 链**：51867bb(baton E3b)→cherry-pick→185bb30(ledger)→bf79241(补 coco 台词)→dff8bb5(补台词后 ledger)。**pivot 兑现且 CI 干净。可复用范式：新工业货挂既有动作消费 + 工位只广告 job-gated 产出（别新加 town-plane 消费动作）；新动作须同步补 voicebank 台词（VoiceGate）。**
