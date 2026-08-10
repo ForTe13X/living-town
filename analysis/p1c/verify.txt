@@ -1,0 +1,14 @@
+# P1-c 验收回执 (docs/178 相位1·纯 View 仓库库存显形) — 2026-08-10
+改动: game/scripts/WorldView.gd _port_sacks 出口豆子袋数随 Sim._stock_of("豆子")/cap 显形(满仓=原样,POND 安全)
+
+== 视觉门 6/6 (docker,mesa-pin,tol=0) ==
+=== DAYNIGHT GATE: PASS ===
+=== ROUNDTRIP GATE: PASS ===
+=== POND GATE PASS ✅ ===
+=== SEASON GATE: PASS ===
+=== PRECIP GATE: PASS ===
+=== FLOOR ROUNDTRIP GATE: PASS ===
+
+== S0 金标 (证 WorldView-only 零 sim 金标) ==
+  ✅ 金标一致 12/12 seed（含逐 tick 前缀链 12 条；烘于 godot 4.6.2-stable (official).71f334935，本机 4.6.2-stable (official).71f334935）
+=== S0 GATE: PASS ✅  (硬不变量 seed 12/12 全绿, 软通过率门 ≥11/12(90%) 过, 活性 过, 金标 过, det 3/3) ===

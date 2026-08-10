@@ -3577,7 +3577,12 @@ func _draw_port() -> void:
 	_port_crate(px + pw * 0.78, py + T * 0.54, T * 0.36)             # 货堆(cell33)：木箱堆 + 桶 + 出口豆子麻袋
 	_port_crate(px + pw * 0.80, py + T * 0.22, T * 0.28)
 	_port_barrel(px + pw * 0.945, py + T * 0.58, T * 0.22, T * 0.36)
-	_port_sacks(px + pw * 0.79, py + T * 1.44, T * 0.30)
+	# P1-c(178)：出口豆子麻袋堆【读 town_stock 显形】——袋数随豆子库存/cap(0..1)涨落，把镇里【可出口的余量】
+	#   显形在码头。纯 View 只读 `Sim._stock_of`（红线 WorldView:184 绝不回喂 Sim）⇒ 零 sim 金标；几何 clamp 在
+	#   deck 内不越水线 py（满袋=原样，POND 前后一致）。豆子恒是 production 货（不依赖 logistics 开），空仓不画。
+	var _bean_cap := maxi(1, int(((Sim.production.get("goods", {}) as Dictionary).get("豆子", {}) as Dictionary).get("cap", 45)))
+	var _bean_fill := clampf(float(Sim._stock_of("豆子")) / float(_bean_cap), 0.0, 1.0)
+	_port_sacks(px + pw * 0.79, py + T * 1.44, T * 0.30, _bean_fill)
 	# 交通路牌（item#2）：立在 dock 西南侧【陆地】上(cell~30.5,y9)——独立可读、指向港口，
 	#   不挤东端货堆。落点仍在 y≥py 的陆格，纯 View decor(非 blocker)，对 POND grass 环带众数无影响。
 	_port_signpost(px + pw * 0.14, py + ph + T * 0.60)
@@ -3671,11 +3676,17 @@ func _port_barrel(cx: float, top_y: float, w: float, h: float) -> void:
 	draw_rect(Rect2(cx - w * 0.36, top_y + 1.0, w * 0.72, h * 0.10), X_WOOD_MID.lightened(0.12), true)  # 桶盖（内缩、读作圆口）
 	draw_rect(body, D_WOOD_LINE, false, 1.2)
 
-## 麻袋堆（出口·豆子）：暖麻布圆包 + 扎口。
-func _port_sacks(x: float, y: float, s: float) -> void:
+## 麻袋堆（出口·豆子）：暖麻布圆包 + 扎口。★P1-c(178)：袋数随 fill(豆子库存/cap,0..1)——
+## 空仓不画、满仓 3 袋（＝原样，几何/顺序不变 ⇒ 满库存帧逐像素同旧，POND 前后一致，仅低库存帧减袋）。
+func _port_sacks(x: float, y: float, s: float, fill: float = 1.0) -> void:
+	var n := int(round(clampf(fill, 0.0, 1.0) * 3.0))   # 0..3 袋（顶袋在 y−0.52s，仍 clamp 在 deck 内、不越水线）
+	if n <= 0:
+		return
 	draw_rect(Rect2(x - s * 0.6, y + s * 0.28, s * 1.8, s * 0.5), Color(0, 0, 0, 0.16), true)    # 影
 	var burlap := P_PLAZA.darkened(0.06)
-	for pos in [Vector2(x, y), Vector2(x + s * 0.78, y + s * 0.06), Vector2(x + s * 0.40, y - s * 0.52)]:
+	var _pp := [Vector2(x, y), Vector2(x + s * 0.78, y + s * 0.06), Vector2(x + s * 0.40, y - s * 0.52)]
+	for i in range(n):
+		var pos: Vector2 = _pp[i]
 		draw_circle(pos, s * 0.5, burlap)
 		draw_circle(pos - Vector2(s * 0.12, s * 0.12), s * 0.28, burlap.lightened(0.13))
 		draw_arc(pos, s * 0.5, 0.0, TAU, 12, burlap.darkened(0.26), 1.0, false)
