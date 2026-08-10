@@ -154,6 +154,13 @@ def live_invariant_ids(src):
     return ids or None
 
 
+def hard_ids_of(src):
+    """从 `Invariants.gd` 现抓 `const HARD_IDS := [...]` 的 id 集合——判一条锚不认识的不变量是否【硬门】。
+    抓不到（如合成测试源没写这行）⇒ 返回空集 ⇒ 该源里没有『硬门未知』这回事（保守：不假红、走软门警告路）。"""
+    m = re.search(r"HARD_IDS\s*:?=\s*\[([^\]]*)\]", src)
+    return {int(x) for x in re.findall(r"\d+", m.group(1))} if m else set()
+
+
 class Tree(object):
     """被检查的那棵树。测试里可以喂合成内容，正式跑时读真文件。"""
 
@@ -251,12 +258,20 @@ def run_gate(tree, ledger, strict=False):
             known = {int(i) for i in ledger.get("invariant_kinds", {})} | {int(i) for i in providers}
             unknown = sorted(set(live_ids) - known)
             if unknown:
-                # ★Codex 外审 P0-1（2026-08-10）：改【fail-closed】——锚不认识的不变量＝没人普查其夹具/无 provider＝
-                #   互补性【假绿】（旧版只 warn 后 rc0 放行，#44/#45/#46 就这么假绿了整轮）。默认即红，逼加 SPEC + 重烘。
-                fails.append("Invariants.gd 有 %d 条锚不认识的不变量：%s"
-                             " ⇒ 【假绿·fail-closed】无人普查其夹具/无 provider。给 tools/gate_fixture_audit.py 的 SPEC 加这些 id 的"
-                             " (kind, 说明, provider lambda) 后重烘：`GODOT=… python tools/gate_fixture_audit.py --run --bake-ledger`"
-                             % (len(unknown), ", ".join("#%02d" % i for i in unknown)))
+                # ★Codex 外审 P0-1（2026-08-10）：锚不认识的不变量＝没人普查其夹具/无 provider＝互补性【假绿】。
+                #   分【硬门/软门】：硬门未知 ⇒ 【fail-closed】默认判红（旧版全 warn 后 rc0 放行，#44/#45/#46 就这么假绿整轮）；
+                #   软门未知 ⇒ 仍只警告（docs/41 §6：别拿红惩罚一个正当的新软门；只有硬门的假绿风险才盖过那条顾虑）。
+                hard = hard_ids_of(inv_raw)
+                unk_hard = [i for i in unknown if i in hard]
+                unk_soft = [i for i in unknown if i not in hard]
+                if unk_hard:
+                    fails.append("Invariants.gd 有 %d 条锚不认识的【硬】不变量：%s"
+                                 " ⇒ 【假绿·fail-closed】无人普查其夹具/无 provider。给 tools/gate_fixture_audit.py 的 SPEC 加这些 id 的"
+                                 " (kind, 说明, provider lambda) 后重烘：`GODOT=… python tools/gate_fixture_audit.py --run --bake-ledger`"
+                                 % (len(unk_hard), ", ".join("#%02d" % i for i in unk_hard)))
+                if unk_soft:
+                    warns.append("Invariants.gd 有 %d 条锚不认识的【软】不变量：%s ⇒ 没人普查其夹具（软门只警告、不判红，见 §6）。重烘同上。"
+                                 % (len(unk_soft), ", ".join("#%02d" % i for i in unk_soft)))
             # 反向：锚里有、树上没了。**这不是本门守的那件事**（它守的是"喂给判据的世界"，
             # 不是"判据本身还在不在"），但一条被删掉的不变量会让锚里那一行从此无意义 ⇒ 至少说一声。
             gone = sorted({int(i) for i in providers} - set(live_ids))
@@ -400,12 +415,18 @@ def self_test():
     cases.append(("M5 非单点来源没了 ⇒ 只警告不红",
                   not f and any("冗余" in x for x in w), f + w))
 
-    # M6 锚不认识的新不变量 ⇒ 警告（默认）/ 红（strict）
+    # M6a 锚不认识的【硬】不变量 ⇒ 【fail-closed】默认即红（Codex 外审 P0-1；改前是"默认警告"＝假绿，#44/45/46 就栽这）
+    t, lg = mk(inv=_SYN_INV + "const HARD_IDS := [42]\n" + "_chk(42, 'new', true, '')\n")
+    f, _, _, _ = run_gate(t, lg)
+    fs, _, _, _ = run_gate(t, lg, strict=True)
+    cases.append(("M6a 未知【硬】门 #42 ⇒ 默认即红(fail-closed)、strict 也红",
+                  any("#42" in x for x in f) and any("#42" in x for x in fs), f))
+
+    # M6b 锚不认识的【软】不变量（源无 HARD_IDS ⇒ #42 判软）⇒ 仍只警告不红（§6：别拿红惩罚正当的新软门）
     t, lg = mk(inv=_SYN_INV + "_chk(42, 'new', true, '')\n")
     f, w, _, _ = run_gate(t, lg)
-    fs, _, _, _ = run_gate(t, lg, strict=True)
-    cases.append(("M6 新不变量 #42 ⇒ 默认警告、strict 下红",
-                  not f and any("#42" in x for x in w) and any("#42" in x for x in fs), w))
+    cases.append(("M6b 未知【软】门 #42 ⇒ 只警告不红（§6 保留）",
+                  not f and any("#42" in x for x in w), f + w))
 
     # M8 **明知抓不到的那一类**（docs/41 §2.5 要求 does_not_detect 是跑出来的，这一条就是它的证据）：
     #    把 `#22` 这条判据**从 Invariants.gd 里整个删掉** ⇒ 夹具、接线、ci.sh 全没变
