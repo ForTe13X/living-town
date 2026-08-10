@@ -91,3 +91,29 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 2. **P1-a（港口成真对象 + 码头工 affiliate 岗）**——移金标；焦点＝external 付薪对 #34/#35 守恒的影响，必过 §0.8。
 3. **P1-b（到货来船 carrier，复用 festival）**——移金标；依赖 P1-a 港口位。
 每移金标棒＝committed-树三锚重烘 + off 门自证 + held-out 13-30 + N 路 refute；协调者在 committed 树 finalize。子 agent 必 base=integration/batons。
+
+## 八、P1-a 实现就绪 spec（workflow wlb5b5uyd 6-agent 设计+对抗 verify；关键锚协调者已复核）
+
+**核心机制（对抗 verify CONFIRMED-SAFE；我复核 Sim.gd :872/:875/:990/:1023/:2049/:3094）**：
+- **池排除＝append-after-pool**（全部金标安全的地基）：affiliate 在 Sim.gd:875（定池 `_pool_rescale`/`_work_pull_mult`）**之后**才 append 进 `agents` ⇒ 定池时 `agents.size()==12` ⇒ `prod_pool_num==den==12`（:3365 短路）⇒ **export 不惰性**（豆子照出）、work_pull_mult==1.0。verify 枚举全 7 处 `agents.size()` 确认无隐藏 size 敏感池读，命门成立非侥幸。
+- **工资走 town_coin**（非 external——#34 recon :1090-1092 锁死）；spawn 时 `econ_total0+=coin`（守 #34/#35，照 add_player:1026）。
+- **卸货＝Option 1**：stock 注入仍留 `_logi_import` 日界账本、卸货动作 stock_delta=0（只发工资+社会痕迹，照 #41 形状；`_draw_dock` 读 `_stock_of("柴薪")` 显形）⇒ #38/#44/#45/#46 算术一字不动、**HARD_IDS 不动**。
+- **port_dock 渲染**＝过程化 `dock` 槽（`OBJ_SLOT_PROCEDURAL`，不占别名棘轮，H3 绿，纯 View 零金标）。
+
+**⚠️ 2 处 MUST-FIX（对抗 verify 逮出、协调者已核验锚，落地前必补）**：
+1. **needs 冻结在【满】非 72**：`_make_agent` 置 needs=**72**（:990），只 `_decay_needs` 跳过＝冻在 72 ⇒ urgency=100−72=28 > 阈值 5（:2049）⇒ affiliate **照吃口粮**（#40 三紧货）⇒ 破「#40 分母不变/floor=36 原样」两句、尾风险边际逼红 **#01(HARD)**。**修＝spawn 后覆写所有 needs=100（照 add_player:1023）** ⇒ urgency≡0 永不成消费候选。
+2. **affiliate agent id == jobs.json 键**：`_job_of(id)` 按 **agent id** 取 job（:3094）。jobs 键必须 == affiliate 的 id（且 == 广告位 `job` title 持有人），否则工资退化零工价、job 门永不开 ⇒ 卸货/工资链**静默失效**。
+
+**5 disjoint 棒**（派发拓扑 **{B1∥B2}→{B3,B4}→B5**）：
+- **B1** `Sim.gd`（移金标核心）：`_is_core` 谓词 + affiliate spawn（append-after-pool,:875 后 :910 前,`scenario==""` 守卫,persona=`tao`,needs=100）+ `_decay_needs` 跳 `_is_core` + `_tally_election` 排除 + `_town_image_stats` 口径收口(:3996/:4005) + `_compile_ports()`（镜像 worksite）。
+- **B2** `agents.json`+`jobs.json`+`logistics.json`：`affiliates` 独立 key（id==jobs 键） + port_dock advertises 卸货 + jobs `<id>`:{码头工,wage} 走 town_coin。
+- **B3** `Invariants.gd`（口径，**不新增硬门**）：:240 small_n 数核心 + :252 #03 跳 `_is_core` + :640 #37 eligible 对称排除。
+- **B4** `WorldView.gd`（纯 View 零金标）：过程化 dock 槽 + `_draw_dock`。
+- **B5** finalize 三锚重烘（committed 树）。
+- **★#37 硬耦合陷阱**：B1 的「on-gate」验收**不得含 #37**（须待 B3 对称排除，否则 voters≠eligible 自红）。
+
+**诚实标注（非阻塞，须如实记）**：① #03 排除 affiliate＝**真语义削弱**（真孤立的外籍工不再被抓），非纯口径；② 冻结-needs + town_coin 工资 affiliate＝**单向 town_coin 汇**（挣不花，60 天抽干，加重结构性赤字 seed18 的跳薪）——是【产品决策】非纯数值；③ N≥20 克隆扩容会与 `tao` 人设撞（未来棒）。
+
+**finalize（committed 树，Option 1 下 HARD_IDS 不动）**：off-gate 三键删=pre-P1-a 逐字节 → commit game/ → 重烘 golden（seeds+scenarios **两段**）/modelpath/ledger（全 exe 路径，~12min，`dead_at_bake=[]`）→ 四锚各补 rebake_history → committed 树全 CI（尤 2f 互补性）→ held-out 13-30（硬 18/18、#40 逐 seed 前后不变、饿穿 0）→ 独立 AI refute。
+
+**§⑤ 开放决策（呈用户）**：见下方对话 — Option 1 降级确认 / affiliate 经济模型（单向汇 vs 吃喝-参与 vs 无薪）/ 占位数值（wage/amount/duration）标定归属 / #40 放行阈。
