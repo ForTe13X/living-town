@@ -371,17 +371,27 @@ func _test_perf() -> void:
 	var p := "user://__ao1_perf.dat"; S.save_game(p, {})
 	var f := FileAccess.open(p, FileAccess.READ); f.get_32(); var blob = f.get_var(); f.close()
 	var man := Proj.manifest(blob)
-	var reps := 200
-	var t0 := Time.get_ticks_usec()
-	for i in range(reps): Proj.project_blob(blob)
-	var fold_us := float(Time.get_ticks_usec() - t0) / float(reps)
+	# 折叠是【边界调用】(save/load 时触发，非每 tick)。绝对墙对 runner 速度高度敏感——
+	# 本机 best ~40ms、GitHub runner ~52ms，旧 <50ms 硬墙于是在慢 runner 上假红
+	# (外审 2026-08-10：state-projection pure fold 51.95ms>50ms，多次越界)。
+	# 改法(外审荐)：多批取 min(最优样本，滤掉瞬时 GC/调度扰动)＋宽松绝对熔断线；
+	# 紧目标 50ms 降为打印诊断、不再判红。
+	var reps := 40
+	var batches := 3
+	var fold_us := INF
+	for b in range(batches):
+		var tb := Time.get_ticks_usec()
+		for i in range(reps): Proj.project_blob(blob)
+		fold_us = min(fold_us, float(Time.get_ticks_usec() - tb) / float(reps))
 	# 端到端 save+read+fold（含文件 I/O，reps 小些）
 	var reps2 := 40
-	t0 = Time.get_ticks_usec()
+	var t0 := Time.get_ticks_usec()
 	for i in range(reps2): Proj.project_sim(S)
 	var e2e_us := float(Time.get_ticks_usec() - t0) / float(reps2)
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(p))
 	print("    N=%d agents · world 字段 %d · agent 字段 %d" % [man.agent_count, man.world_count, man.agent_field_count])
-	print("    纯折叠  = %.1f µs/次 (%d 次均)" % [fold_us, reps])
-	print("    save+读+折 端到端 = %.1f µs/次 (%d 次均)" % [e2e_us, reps])
-	ck(fold_us < 50000.0, "纯折叠 < 50ms（边界预算充裕）")
+	print("    纯折叠  = %.1f µs/次 (%d 批 × %d best-of)" % [fold_us, batches, reps])
+	print("    save+读+折 端到端 = %.1f µs/次 (%d 次均)" % [e2e_us, reps2])
+	var _tgt_ok := fold_us < 50000.0
+	print("    [诊断] 目标 <50ms：%s（软目标，不判红）" % ("达成 ✅" if _tgt_ok else "%.1fms 慢于紧目标（多半 runner 慢，非回归）" % (fold_us / 1000.0)))
+	ck(fold_us < 150000.0, "纯折叠 < 150ms（宽松熔断线：边界调用，容 runner 变异 + 回归余量）")
