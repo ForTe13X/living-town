@@ -503,6 +503,25 @@ static func hash_self_test() -> String:
 		return "fnv1a32_into 与 fnv1a32 不一致"
 	return ""
 
+## ★Codex 外审 P0-2（2026-08-10）：名声每 3 天向 0 漂移【1】。旧实现 `x - signf(x)` 对 |x|<1 会【翻号】
+## （−0.2→+0.8；接受规则 STANDING_K=6 放大成约 6 分 acceptance 摆动，非可忽略数值噪声），把"慢淡化"写成了
+## "永久跨零振荡"。改用 move_toward：向 0 移动至多 1（|x|≤1 直接归 0、|x|>1 减 1）。纯 abs/sign/min/加、无 libm ⇒ 逐字节可复现。
+static func _standing_drift(x: float) -> float:
+	return move_toward(x, 0.0, 1.0)
+
+## 性质自检（Harness/S0 启动即跑、红先于绿）：漂移一次后必满足【不翻号·绝对值不增·零保持零】。旧 `x-signf(x)` 在此必红。
+const STANDING_DRIFT_VEC := [-2.0, -1.0, -0.6, -0.2, 0.0, 0.25, 0.5, 1.0, 2.0]
+static func standing_drift_self_test() -> String:
+	for x in STANDING_DRIFT_VEC:
+		var y := _standing_drift(float(x))
+		if signf(y) != signf(float(x)) and y != 0.0:
+			return "standing_drift(%s)=%s 翻号（应向 0 淡化、绝不跨零）" % [str(x), str(y)]
+		if absf(y) > absf(float(x)):
+			return "standing_drift(%s)=%s 绝对值增大（应单调向 0）" % [str(x), str(y)]
+		if float(x) == 0.0 and y != 0.0:
+			return "standing_drift(0)=%s 非零" % str(y)
+	return ""
+
 # ── 确定性 RNG（per-agent 计数器子流，docs/12 §L0）：种子混入 agent 维 who → 同 tick 同 salt 的
 # 不同 agent 不再撞同一随机流(WSC15 相关坑)，且扩 N 时各 agent 的流不随 N 漂。who=0 兼容旧的非 per-agent 调用。
 func _rng_at(salt: int, who: int = 0) -> RandomNumberGenerator:
@@ -1651,7 +1670,7 @@ func _nightly() -> void:
 			if float(r["resentment"]) > 0.0:
 				r["resentment"] = maxf(0.0, float(r["resentment"]) - RESENT_DECAY)
 			if drift and float(r["standing"]) != 0.0:
-				r["standing"] = float(r["standing"]) - signf(float(r["standing"]))
+				r["standing"] = _standing_drift(float(r["standing"]))   # ★P0-2 修：move_toward 向 0，不再翻号（旧 x-signf(x) 对 |x|<1 跨零）
 	if ext != null:
 		ext.nightly(self)          # 注册的 NightlyHook（按 (order,id) 定序，排在内建夜间机制之后）
 

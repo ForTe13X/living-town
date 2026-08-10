@@ -16,7 +16,8 @@
       "2026-08-07 · AS1/E1 车道 E 第一片：柴薪进口 lane 上线 ⇒ 模型路径上的世界轨迹【蓄意】移动（docs/147 / docs/144 §六）。random(full) 臂 4/4 seed 的 digest/event_digest/landed 与候选规模一并移动（days=8 内 day%3==0 到港 ⇒ 柴薪供给改缺货/消费/加价 ⇒ 决策序移动）。本锚锚的是【模型路径上的世界轨迹】、不是 prompt 编码本身（A/B 两段未动、仍绿——只 C 段 5 条移动）⇒ 它跟着 golden_digests.json 一起重烘是正确反应（同 Wave E1、docs/47 §二-E1）——★又一次印证 brief 只写两份锚(Harness/DetGate)、第三份 ModelPathGate 必须自己补上，否则 ci.sh 第 4e 步变红（本片实测撞到）。off 门：删 logistics.json ⇒ 逐字节回到重烘前。",
       "2026-08-08 E2a（AS4）import 付费：import 到货后新增 transfer('town','external',cost) 的 pay 事件 ⇒ C 段 random_full 世界轨迹的 event_digest/inv_digest 移动（A/B prompt 编码段未动，本片不碰 AIBackend）。随 seeds/scenarios 金标 + 硬 #45 三锚同批重烘。price_per=3/price_den=4。",
       "2026-08-08 E-export（AS5）：export 收钱进 town_coin ⇒ 每出港日 event_log 新增 external→town pay(export)+export 货事件 ⇒ 进 event_digest ⇒ C 段 random_full 网格 4 seed × days8_n12 的 event_digest/inv_digest 移动（A/B prompt 编码段未动——本片不碰 AIBackend）。原因=E-export 货出钱进（新硬 #46 出口贸易原子性+#45 双向泛化，见 golden_digests.json rebake_history 同日条）。",
-      "2026-08-09 E3b（闲聊-attach treat 链，移金标，docs/164）：coco 由 spare 零工转【糕点师】，在广场 counter_pastry[31,23]（type 摊位复用 counter 槽 ⇒ 零 WorldView 改动、别名预算不变）产【糕点】（produce.糕点师 无 inputs、照抄咖啡师形状），消费【挂在既有 闲聊(social) 动作】上（consume.闲聊={糕点,1}）而非新加 town 平面动作——这正是 E3a（docs/153）实测证伪的稀释源：新 town 动作加 60-80 决策槽/seed、系统性压核心产出约 0.03。本片零新决策槽：闲聊本就 ~150-200 次/seed 被选中，而『缺货绝不阻断动作』红线保证其选中频率不随糕点库存变（有糕点照吃、没糕点照闲聊+写 shortage）。三锚全动且可归因：①做点心 job-gated 广告给 coco 加一个候选 ⇒ modelpath 候选规模 max_n 42→46、C 段 random_full 4/4 seed 全移；②糕点 produce/consume/spoil 事件进 event_digest ⇒ scenarios 16/16、seeds 12/12 全移；③town_stock[糕点] 轨迹进批量 digest/chain。★核心验收锚（留出 seeds 13-30、N=12、backend=null）：口粮/柴薪/屋瓦 满足率 median Δrate=+0.041/−0.001/+0.006（口粮 12/18 上、柴薪 9/9 平、屋瓦 10/18 上）——与 E3a 全三货系统性 −0.028~−0.036（66-78% 下）方向相反；NULL 对照（coco=糕点师但删 consume.闲聊、糕点成死货）证 consume.闲聊 本身零稀释（柴薪 −0.028/屋瓦 −0.018 的残余来自 coco 转产者这一不可避免项，非 treat）。off-gate：删本片键 ⇒ S0 金标 12/12 逐字节回 pre-E3b。#40 12/12、硬 12/12、det 3/3。标定 batch6/W48/cap20/spoil1/start12/闲聊 amount1。HARD_IDS 未动（additive 无新不变量）。"
+      "2026-08-09 E3b（闲聊-attach treat 链，移金标，docs/164）：coco 由 spare 零工转【糕点师】，在广场 counter_pastry[31,23]（type 摊位复用 counter 槽 ⇒ 零 WorldView 改动、别名预算不变）产【糕点】（produce.糕点师 无 inputs、照抄咖啡师形状），消费【挂在既有 闲聊(social) 动作】上（consume.闲聊={糕点,1}）而非新加 town 平面动作——这正是 E3a（docs/153）实测证伪的稀释源：新 town 动作加 60-80 决策槽/seed、系统性压核心产出约 0.03。本片零新决策槽：闲聊本就 ~150-200 次/seed 被选中，而『缺货绝不阻断动作』红线保证其选中频率不随糕点库存变（有糕点照吃、没糕点照闲聊+写 shortage）。三锚全动且可归因：①做点心 job-gated 广告给 coco 加一个候选 ⇒ modelpath 候选规模 max_n 42→46、C 段 random_full 4/4 seed 全移；②糕点 produce/consume/spoil 事件进 event_digest ⇒ scenarios 16/16、seeds 12/12 全移；③town_stock[糕点] 轨迹进批量 digest/chain。★核心验收锚（留出 seeds 13-30、N=12、backend=null）：口粮/柴薪/屋瓦 满足率 median Δrate=+0.041/−0.001/+0.006（口粮 12/18 上、柴薪 9/9 平、屋瓦 10/18 上）——与 E3a 全三货系统性 −0.028~−0.036（66-78% 下）方向相反；NULL 对照（coco=糕点师但删 consume.闲聊、糕点成死货）证 consume.闲聊 本身零稀释（柴薪 −0.028/屋瓦 −0.018 的残余来自 coco 转产者这一不可避免项，非 treat）。off-gate：删本片键 ⇒ S0 金标 12/12 逐字节回 pre-E3b。#40 12/12、硬 12/12、det 3/3。标定 batch6/W48/cap20/spoil1/start12/闲聊 amount1。HARD_IDS 未动（additive 无新不变量）。",
+      "2026-08-10 修 standing 漂移翻号 bug（Codex 外审 P0-2）：S1 名声每 3 天向 0 漂移的旧实现 `x - signf(x)` 对 |x|<1 会【翻号】（−0.2→+0.8，接受规则 STANDING_K=6 放大成约 6 分 acceptance 摆动，非可忽略噪声），把慢淡化写成永久跨零振荡。改用 `_standing_drift = move_toward(x,0,1)`（向 0 至多 1、不跨零，纯 abs/sign/min、无 libm ⇒ 逐字节可复现）。加 Harness/S0 性质自检（9 向量：不翻号/绝对值不增/零保持零；旧实现在此【必红】，已实测）。这是行为 bug 修复、长期轨迹改变是【预期】（非任意重烘——性质测试是正当性凭据）。三锚（golden seeds+scenarios / modelpath / ledger）全重烘。"
     ]
   },
   "random_full": {
@@ -27,9 +28,9 @@
         "landed": 640
       },
       "2": {
-        "digest": "113724505",
-        "event_digest": "2176056763788644869",
-        "landed": 637
+        "digest": "2918718939",
+        "event_digest": "6234306284765545485",
+        "landed": 636
       },
       "3": {
         "digest": "999485656",
@@ -37,15 +38,15 @@
         "landed": 659
       },
       "4": {
-        "digest": "2912043676",
-        "event_digest": "5839772658842242749",
-        "landed": 654
+        "digest": "2472030477",
+        "event_digest": "2161282424794454389",
+        "landed": 651
       },
       "_scale": {
         "max_n": 46,
-        "n_dec": 2590,
-        "over_cap": 80,
-        "over_old": 9
+        "n_dec": 2586,
+        "over_cap": 89,
+        "over_old": 11
       }
     }
   }

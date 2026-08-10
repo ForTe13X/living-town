@@ -161,6 +161,15 @@ func _init() -> void:
 	print("  ✅ 哈希自检：%d 条 fnv1a32 + %d 条 mix32 测试向量全对（项目自有哈希，不依赖引擎 String.hash()）"
 		% [SimScript.HASH_VECTORS.size(), SimScript.MIX_VECTORS.size()])
 
+	# ── standing 漂移性质自检（Codex 外审 P0-2）：名声向 0 淡化必须【不翻号】。旧 `x-signf(x)` 对 |x|<1 跨零 → 此门必红。
+	var drift_bad := SimScript.standing_drift_self_test()
+	if drift_bad != "":
+		print("❌ standing 漂移性质自检不符：%s" % drift_bad)
+		print("   → S1 名声每 3 天向 0 漂移应【向 0 单调淡化、绝不跨零翻号】（Codex 外审 P0-2）。修好前金标比对无意义。")
+		quit(1)
+		return
+	print("  ✅ standing 漂移性质自检：%d 向量向 0 不翻号、绝对值不增（move_toward）" % SimScript.STANDING_DRIFT_VEC.size())
+
 	print("=== Causal Bench S0 · 不变量回归门  seeds=%s days=%d%s ===" % [str(seeds), days,
 		("  【--permute %d：候选数组被打乱，digest 应一字不变】" % _permute) if _permute != 0 else ""])
 	var inv_pass := {}      # id -> 通过的 seed 数
