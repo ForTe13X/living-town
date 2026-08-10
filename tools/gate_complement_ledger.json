@@ -3,8 +3,8 @@
     "note": "互补性锚：哪些夹具是哪条不变量【唯一】的活输入来源。由 tools/gate_fixture_audit.py --run --bake-ledger 烘，由 tools/gate_complement_guard.py 每次 CI 现读一遍。期望值不写在守卫里，只写在这里——守卫那一侧没有任何冻结字面量。",
     "baked_by": "GODOT=… python tools/gate_fixture_audit.py --run --bake-ledger",
     "baked_at": "2026-08-10",
-    "baked_commit": "58964ca2880b8db01e5a8fc6ac54cbc123345b93",
-    "baked_game_tree": "935b2361b78724a3ac6b93ecc6bdc91c7a6d5d94",
+    "baked_commit": "0fe08141512e83a962c330f7d326b950285a73db",
+    "baked_game_tree": "eabcb07d8ffe6712abab4d46a0c7070aa96498dd",
     "dead_at_bake": [],
     "rebake_history": [
       "2026-08-02 · 烘于 commit c9e6ee6 · 7 个夹具 × 34 条 C/G 不变量 · 烘锚时处处空转的：（无）",
@@ -33,7 +33,8 @@
       "2026-08-09 · 烘于 commit d3b6b66 · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
       "2026-08-09 · 烘于 commit 42d27a0 · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
       "2026-08-10 · 烘于 commit 86e1d4e · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
-      "2026-08-10 · 烘于 commit 58964ca · 7 个夹具 × 38 条 C/G 不变量 · 烘锚时处处空转的：（无）"
+      "2026-08-10 · 烘于 commit 58964ca · 7 个夹具 × 38 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-10 · 烘于 commit 0fe0814 · 7 个夹具 × 38 条 C/G 不变量 · 烘锚时处处空转的：（无）"
     ]
   },
   "fixtures": {
