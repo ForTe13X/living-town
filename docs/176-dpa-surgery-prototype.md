@@ -1,4 +1,10 @@
-# 176 · DP-A 解耦手术原型 + 离门 probe · 判决：**PROMISING → §0.8 内审 SOUND_WITH_FIXES（3 land 前置，见 §八）**
+# 176 · DP-A 解耦手术原型 + 离门 probe · 判决：~~PROMISING~~ → **UN-LANDED（Codex 外审 4 P0 全证实 + committed-tree CI 红，2026-08-10）**
+
+> **⚠️⚠️ 最终更正（2026-08-10，权威）**：DP-A move-golden 一度 land 进 integration/batons，但 push 前 committed-tree CI 红(DetGate 金标 scenarios 段陈旧) + Codex 外审判 REQUEST CHANGES、4 P0【逐条 file:line 复核全部证实】，故 **UN-LANDED**（reset 回 92accbe、代码/config 全撤）。**本文正文多处措辞 over-claim、以此更正为准**：
+> - **① drama 声明【撤回】**：正文"饼干被议论 gossip ~51/seed / 满城议论 / 玩家可感"是【错指标】——probe_b.py:31 读的是 `social_by_type.gossip`＝【全主题】gossip，非饼干专属。**饼干专属转述 `bing_belief_relayed`＝0.11/seed（18 held-out 只 1 seed>0）**。饼干真实 drama 仅＝缺货 + ~11 一手 SH:饼干 信念(几乎不传开) + write-only grievance ghost(无 reader)。「带戏剧第二货/玩家可感」不成立。
+> - **② E7 基线 buggy**：E7 消融的 ④ standing 通道建在 `standing - signf(standing)` 【翻号 bug】上（已在 c868aa2 独立修复：move_toward + 性质自检）。E7 只能说"关掉该 buggy 路径消除了某 supply-rate 差异"，非"语义正确声誉模型"。
+> - **③ 核心中性【解耦】仍是真结果**（移走 ④ 写 ⇒ churn 停 ⇒ 核心 rate 恢复、逐 seed rate 平），但它是"良好隔离但戏剧薄"的 decouple，不是"首个带戏剧第二货"。与 GPT-5 Pro 外审 finding#4(grievance ghost-ish)收敛。
+> - 以下正文（含 §八 GPT-5 Pro 外审、§九 M1+M3 硬化）保留作过程记录，但**一切结论以本横幅 + 记忆 project-economy-trade-loop 的 Codex-P0 更正为准**。评审要求：先修证据/门系统(#44-46 fail-closed、standing[已修]、E7 提交化)，再谈任何 DP-A land。
 
 > 本片是 docs/174（E7 判决性测量）§五授权的 **Phase 1 · DP-A 原型**。E7 已判死："第二件被消费工业货缺货稀释核心口粮的 leak【全在 ④声誉挫伤】(`_adjust_standing`@Sim.gd → `_acceptance_margin`@3913 的涌现放逐)、③信念/gossip 零贡献、DP-B(换 blame 目标) 是搬家非解耦"。本片按那张精确切点图做 **DP-A 手术**：把【工业/comfort 货】缺货的 ④standing 挫伤【改道】进一个【自含 grievance 字段】(而非删)，让第二工业货饼干【缺货且被议论、后果被看见】而【不稀释核心生存货】。**原型 + 离门 probe，不 land、不移金标、不 push、不重烘。** 代码留本 worktree 供协调者 §0.8 复核。
 
