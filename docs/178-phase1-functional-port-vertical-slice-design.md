@@ -128,4 +128,14 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 
 **⇒ P1-a 需一次【重设计 pass】**（fully-integrated + 自带外部口粮机制 + #40 held-out 重标），再派实现棒。§八 的池/工资/卸货/渲染骨架复用，needs/消费/食物供给重做。
 
+### 九-bis、用户再扩（2026-08-10）：outsider＝经济+信息+心理三维图（非机械工）
+
+用户："they also consume, which also generates revenue and tax, could also exchange ideas/info flow, provide lacanian jouissance and a desire/aspiration for local residents, a dream"。⇒ 重设计的关键 **reframe**：
+- **消费是【想要的】非要避的**（纠正先前"自带外部口粮以避消费"的误读）：affiliate **消费驱动经济**——买服务/货 ⇒ 生 revenue(商户) + tax(big Other)。∴食物张力正解不是"别消费"，而是【**生存口粮外部供给经港口(不抢12居民紧货⇒保#40/#01)，但自由消费镇里 discretionary 服务/货(cafe/娱乐/商品)⇒驱动本地经济+纳税**】。既解 #40/#01、又兑现"consume→revenue+tax"。
+- **相位映射**：P1-a(现)＝消费行为+revenue 种子路(付 town_coin/给商户)；**Phase 3 财政**＝完整 revenue+tax+账单闭环；信息流+Lacanian＝更深社会-叙事机制。
+- **信息流/exchange ideas**（社会-叙事，非 P1-a 首落）：outsider＝外部世界 conduit，带新话题/观点/消息 ⇒ 影响居民 beliefs/attitudes/topics（接社交 sim + codex/narrative）。
+- **★Lacanian jouissance / desire / aspiration / dream**（心理-社会，愿景层）：outsider＝objet petit a（欲望-成因）——居民对其代表的"外面世界/另一种活法"生**渴望/aspiration**成一个 dream。可落：居民新增"向往"维度 / 围绕 outsider 的 storylet（憧憬外面） / outsider 作 status-欲望焦点。是 town 的社会心理深度，攒进后续叙事/社会相位。
+
+**⇒ P1-a 重设计 workflow 须纳入**：消费→revenue 种子路（不只自带口粮）、#01/#40 scoping 在"外部生存口粮 + 镇内 discretionary 消费"框架下重算。info-flow/Lacanian 维度记愿景、Phase 2-3 展开。
+
 **terrain 决策：用户选 LA 东海（East Ocean）**（见 docs/179 §五）。
