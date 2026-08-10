@@ -1,5 +1,11 @@
 # 174 · E7 判决性测量：缺货稀释 leak ＝ ④声誉挫伤（非 ③信念）· DP-A 授权
 
+> ---
+> ## ⚠️ 2026-08-10 SUPERSEDED —— 本片"判决性 / 授权 DP-A"已撤回
+> **E7 建在【旧 standing 小数跨零翻号 bug】之上**（`x - signf(x)`：\|x\|<1 时 −0.2→+0.8，符号翻转）——④声誉挫伤的漂移语义在旧代码里是错的，故"leak 全在 ④、③零贡献"这一因果分离**不可信**。standing bug 已于 2026-08-10 修（`move_toward(x,0,1)`，三锚随行为重烘），世界已移动（golden 聚合 rally_oust **+26.4%**/gossip_rep **+14.3%**/discuss **−12.8%**/gossip **−12.1%**）⇒ **E7 须在新基线、提交态、预注册新 seeds(61-126) 上重做**，旧结论不 carry-over。
+> **且 DP-A 本身已 un-land**（docs/176）：drama 指标误读全 topic `social_by_type.gossip`（非饼干专属）、grievance 是 write-only ghost。**本片不再授权任何 Phase 1 手术。** 权威＝docs/113 顶部 2026-08-10 节 + docs/176 横幅 + git/CI。
+> ---
+
 > 本片是 E7 机制图（docs/113 宏图 Phase 0）的【判决性离门测量】。用 per-good 数据门在【第二件工业货饼干】上【分开】ablate ③(SH 信念)与 ④(声誉挫伤)，量各自对核心口粮 held-out(13-30) 的贡献——docs/170 §六明写"③④ 未分离 ablate"，本片补上。**只测量、不 land 代码、不移金标。** 结论直接授权 Phase 1 的 DP-A 手术精确切点。
 
 ## 〇、一句话

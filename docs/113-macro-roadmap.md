@@ -5,6 +5,31 @@
 > 前置：外部评审（Codex，2026-08-02 与 2026-08-06 两轮）、docs/62（GPT-5 Pro 多镇裁决）、docs/41 合同。
 > **数字与分支状态实测于 2026-08-06；它们会随代码前进而旧——权威永远是 `git` 与 CI，不是本文。**
 
+---
+
+## ★★★ 2026-08-10 更正 + 前向路线（本节【最新】·supersede 下方 08-09「全交付」）
+
+> **诚实纠偏**：下方 08-09「★用户 5-item 愿景【全交付】」是 over-claim。触发＝DP-A（第二消费货"饼干"→满城 gossip）被 §0.8 双路评审 + 外审(GPT-5 Pro/Codex) + committed-树 CI 联合证伪 → **已 un-land + 撤回**（drama 指标误读全 topic gossip 非饼干专属；grievance write-only ghost；E7 建在旧 standing bug）。详见 docs/176 横幅 + docs/174 SUPERSEDED 节。**权威＝本 repo 文档 + git/CI，不是 agent memory。**
+
+**真实当前态（实测于 HEAD `b303ec8`，committed 树全绿）**：
+- **门本窗口三修**：① standing 小数跨零翻号 bug（`x-signf(x)` → `move_toward(x,0,1)`，三锚随行为重烘）；② complement #44-46 加 SPEC provider + guard 硬门未知 fail-closed（软门仍警告，§6 保留；audit 实测 7 夹具**真贸易**＝#45 边界流 13-78/#44/#46 logistics 开，非 vacuous）；③ state-projection 纯折叠 perf 门改宽松熔断线（消慢-runner 假红）。
+- **DP-A/E7 因果结论撤回**：standing 修后世界已移动（rally_oust +26%/gossip_rep +14%/discuss −13%/gossip −12%），旧 E7/DP-A 结论**不可 carry-over**，须新基线重做。
+- **经济＝仅日界账本**：import/export 是 day-boundary 账，**无** carrier/manifest/warehouse/traveler；port_dock 仍**不入** world objects/nav/blockers；**town/world 玩家可见增量本窗口 = 0**（外审主诉）。
+- **5-item 真实进度**：①视觉(AV1/AV2/AV3 pure-View,真)②交通(港口仅 pure-View draw,**无功能**)③多样工业(**DP-A 撤回**,仅 E3 糕点挂既有动作)④produce/consume(账本级)⑤叙事(codex/narrative 并行只读)。**非"全交付"。**
+
+**前向路线（架构相位·对齐外审「功能港口纵切」× 用户「big Other 经济」愿景）**：
+
+| 相位 | 内容 | 纪律 |
+|---|---|---|
+| **0 门收口**（近完） | #44-46 真实 complement【✅ 已闭·audit 证真贸易】+ standing 行为迁移审计（把 golden 位移当**产品选择**审，非纯数值修——外审 P1，未做） | 无金标改 |
+| **1 功能港口纵切**（下一大刀） | pure-View 港口 + 隐形贸易账本 → **一条功能纵切**：port_dock 入 world objects/nav/blockers + carrier/manifest（可见货往返）+ warehouse stock ⇒ 玩家可见增量>0 | 移金标·先设计再实现 |
+| **2 Anno 式 goods-demand** | class/分工居民对不同 goods 有需求条，低阈值→不满，supply/优质 supply→好感度 + entertainment 需求 | 移金标 |
+| **3 big Other 财政** | export/import＝中央权威无条件供养(ledger/budget,力争 nx balance)+收税+居民付账单+commercial/service 建筑由 outsider affiliate 运营+居民个人贸易 | 移金标 |
+
+**排序纪律**：外审判「功能开发仍不放行」直到相位 0 收口——**相位 0 已近完**（complement 闭、只剩 standing 行为迁移审计）。相位 1+ 是移金标产品刀，disjoint-by-file、可验收、committed-树 finalize（三锚重烘）。相位 1 与叙事(`codex/narrative`)、视觉(AV) 文件面不相交⇒可并行。
+
+---
+
 ## ★★ 2026-08-07 用户扩展愿景——从"社交 sim 打磨"扩到"星露谷式活镇：视觉大改 + 物流/产业经济"
 
 用户给了 5 件事（在 3→2→1[storylet/选角深度/默认镇规模] 之外的**扩展愿景**）。整成三条并行车道 + 现有社交/叙事车道：
@@ -222,6 +247,7 @@ Phase 5  才恢复多镇：生产 capacity 与具名 NPC 解耦 → N=24/40/60 h
 - **仍阻塞/deferred**：export P4 硬化(txid 绑定/大 N/town_coin 上限)；叙事分支(codex/narrative 落后 117,viz 参考);口岸落图(P1,接交通片)。
 
 ### 2026-08-09 · ★用户 5-item 愿景【全交付】+ E3 工业解锁
+> ⚠️ **本节「全交付」已 SUPERSEDED**（见本文顶部 2026-08-10 节）：DP-A 已 un-land、多样工业③未真交付、经济仍仅日界账本、town/world 玩家可见增量=0。下方保留为历史。
 - **E3 工业【已通】(docs/164)**：用户拍板 **闲聊-attach pivot**——treat(糕点)挂既有 `闲聊` 消费 + 工位只广告 job-gated `做点心`(不加 town-plane 决策槽) ⇒ 留出核心三货 median Δ **+0.041/−0.001/+0.006**(反 E3a 全下移)、NULL 对照证零稀释、committed CI 全绿(含协调者补 coco.做点心 台词修 VoiceGate)。⇒ **可复用范式「新工业货挂既有动作 + 工位只广告 job-gated 产出 + 补 voicebank 台词」扩更多货**([[project-economy-trade-loop]])。
 - **★用户 5-item 愿景全交付**：①视觉大改(AV1 建筑/AV2 地形瓦/AV3 地面/AP-port 港口+参考集)②交通(港口可见+import/export 贸易环)③多样工业(E3b 糕点链,pattern 可扩)④居民 produce/consume(贸易环+E3b)⑤叙事分支(已 review,stale viz 参考)。全 push、committed 树全绿、move-golden/pure-View 纪律逐片守。
 - **下一批候选**（增量/需用户定优先级）：用 E3 范式**扩更多工业货**(diversify,item③深化)、更多贸易 lane(railway/bus 节点)、更视觉(石铺瓦/建筑精灵/Option B 新经济建筑落 map)、export P4 硬化。**已达高价值边界，增量项建议由用户点方向**（同 §「诚实到达需输入边界」纪律）。
