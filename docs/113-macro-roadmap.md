@@ -21,12 +21,12 @@
 
 | 相位 | 内容 | 纪律 |
 |---|---|---|
-| **0 门收口**（近完） | #44-46 真实 complement【✅ 已闭·audit 证真贸易】+ standing 行为迁移审计（把 golden 位移当**产品选择**审，非纯数值修——外审 P1，未做） | 无金标改 |
+| **0 门收口**【✅ 收口】 | #44-46 真实 complement【✅ 已闭·audit 证真贸易】+ standing 行为迁移审计【✅ docs/177 判**接受**：位移只落社会轴、食物/经济稳、无永久孤立(#03 12/12)、无饿穿(#01 12/12)、对齐用户「dramatic good」】 | 无金标改 |
 | **1 功能港口纵切**（下一大刀） | pure-View 港口 + 隐形贸易账本 → **一条功能纵切**：port_dock 入 world objects/nav/blockers + carrier/manifest（可见货往返）+ warehouse stock ⇒ 玩家可见增量>0 | 移金标·先设计再实现 |
 | **2 Anno 式 goods-demand** | class/分工居民对不同 goods 有需求条，低阈值→不满，supply/优质 supply→好感度 + entertainment 需求 | 移金标 |
 | **3 big Other 财政** | export/import＝中央权威无条件供养(ledger/budget,力争 nx balance)+收税+居民付账单+commercial/service 建筑由 outsider affiliate 运营+居民个人贸易 | 移金标 |
 
-**排序纪律**：外审判「功能开发仍不放行」直到相位 0 收口——**相位 0 已近完**（complement 闭、只剩 standing 行为迁移审计）。相位 1+ 是移金标产品刀，disjoint-by-file、可验收、committed-树 finalize（三锚重烘）。相位 1 与叙事(`codex/narrative`)、视觉(AV) 文件面不相交⇒可并行。
+**排序纪律**：外审判「功能开发仍不放行」直到相位 0 收口——**相位 0 已收口**（complement 闭 + 行为迁移审计 docs/177 判接受）⇒ **相位 1 功能港口纵切现已放行**（待用户确认设计方向）。相位 1+ 是移金标产品刀，disjoint-by-file、可验收、committed-树 finalize（三锚重烘）。相位 1 与叙事(`codex/narrative`)、视觉(AV) 文件面不相交⇒可并行。
 
 ---
 
