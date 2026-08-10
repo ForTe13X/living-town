@@ -54,8 +54,10 @@
 
 ## 五、开放决策（呈用户）
 
-1. **ocean vs river**：荐 **ocean**（river 平格无 z 收益兑现不了、连通/门三重风险最高）。
-2. **若 ocean，东(LA)还是南(LB)**：LA 日出面海最像理想海岸 / LB 白拿 POND 免疫+南湾。
+**★用户拍板 2026-08-10：ocean + 【LA 东海 East Ocean】**（日出面海+松岬，最像理想海岸；北池留内陆池⇒海+池双水）。3-7 项按推荐默认：起伏＝(i) 纯程序化假崖面(零sim金标)、plain＝低频色偏(零金标)、creek＝缓做、新岸线不上 POND 门(如南池裸露)、L0 若做须留≥1丛。**dock 落点交回 P1-a（HOLE C：terrain 棒只供水体地理，不自开 dock rect）。**
+
+1. ~~ocean vs river~~ → **ocean**（已定）。
+2. ~~东(LA)还是南(LB)~~ → **LA 东海**（已定）。move-golden +166 blocker，攒进 P2；离北池远⇒POND 零影响，但 P2 须验"dock rehome 后北池 POND 仍过"（HOLE C）。
 3. **起伏做多少**：荐 **(i) 纯程序化假崖面**（零 sim 金标，无真 z）；(ii) 不可走岩体 / (iii) 手绘崖瓦+rebless 缓。
 4. **新岸线上不上 POND 门**：默认**不上**（如南池现状裸露，可接受）；上=扩 `pond.py NORTH`→region 列表（代码改）。
 5. **creek 现在做吗**：若做选独立细水瓦（POND 零扰动）；或缓做。

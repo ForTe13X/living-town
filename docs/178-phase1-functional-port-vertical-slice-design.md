@@ -116,4 +116,16 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 
 **finalize（committed 树，Option 1 下 HARD_IDS 不动）**：off-gate 三键删=pre-P1-a 逐字节 → commit game/ → 重烘 golden（seeds+scenarios **两段**）/modelpath/ledger（全 exe 路径，~12min，`dead_at_bake=[]`）→ 四锚各补 rebake_history → committed 树全 CI（尤 2f 互补性）→ held-out 13-30（硬 18/18、#40 逐 seed 前后不变、饿穿 0）→ 独立 AI refute。
 
-**§⑤ 开放决策（呈用户）**：见下方对话 — Option 1 降级确认 / affiliate 经济模型（单向汇 vs 吃喝-参与 vs 无薪）/ 占位数值（wage/amount/duration）标定归属 / #40 放行阈。
+## 九、用户拍板（2026-08-10）：**fully-integrated affiliate**（吃喝-参与，最faithful最重）——spec §八 frozen-needs 默认【被推翻】，须重设计
+
+用户选【吃喝-参与】而非 spec 默认的冻结-needs。⇒ **§八 的"needs 冻结在满"MUST-FIX 与"不进 #40 分母"论证全部作废**，改按下述重设计（append-after-pool 池排除 / town_coin 工资 / Option 1 卸货 / 过程化 dock 槽【仍成立】，只 needs+消费一支翻盘）：
+
+- **affiliate 有真 needs（decay+eat+spend），不冻结**：`_decay_needs` **不**跳过 affiliate（它会衰减、会去吃、会付钱）⇒ 工资在镇里循环（挣→买饭→钱回镇库）⇒ **无单向汇**（解 §八对抗 verify 的经济畸变）。
+- **⚠️ 新张力（重设计核心）**：affiliate 吃 **口粮**（核心生存货）⇒ 与 12 居民**抢食**，但 append-after-pool 使**产能仍按 12 定池**（保 export 不惰性）⇒ 13 张嘴抢 12 份产能 ⇒ 撞 **#40 食物满足率 + #01 饿穿**。必须解。
+- **★优雅解（接 big-Other 愿景）＝affiliate 自带外部口粮，经港口进**：outsider 的补给随船来（import lane 加一条"码头工口粮"external 供给，或 affiliate 有独立 supply 不吃镇产口粮）⇒ **既消除抢食、又直接兑现"big Other 外部供养"**。这是 fully-integrated 的推荐落法（待重设计 workflow 定确切机制）。
+- **#01/#40 scoping 决策**：若走"自带外部口粮"则 affiliate 不抢镇产、#40 分母仍可按核心算；若走"吃镇产口粮"则须 export floor 36→? held-out 重标 + 决定 affiliate 是否进 #01 scope（进则须保证可喂饱，否则饿穿红）。
+- **wage/amount/duration/floor** 皆决策稀释+食物敏感 ⇒ held-out 经济探针标定。
+
+**⇒ P1-a 需一次【重设计 pass】**（fully-integrated + 自带外部口粮机制 + #40 held-out 重标），再派实现棒。§八 的池/工资/卸货/渲染骨架复用，needs/消费/食物供给重做。
+
+**terrain 决策：用户选 LA 东海（East Ocean）**（见 docs/179 §五）。
