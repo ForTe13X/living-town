@@ -239,6 +239,18 @@ SPEC = {
     # 归 G 档而不是 C 档：`production.vendor.trade_credit` 缺键 ⇒ 整段短路 ⇒ 显式豁免。
     43: ("G", "开了 vendor.trade_credit 且商贩真的成交过",
          lambda L, D: 0 if ("豁免" in D.get(43, "") or "关" == D.get(43, "").strip()) else 1),
+    # ── E1/E2a/E-export 的贸易溯源三条 #44/#45/#46（Codex 外审 P0-1 2026-08-10）：此前【不在 SPEC】⇒
+    #    互补性守卫把它们当"未知硬门"warn 后 rc0 放行＝假绿。实测夹具已跑 import/export（S0 60 天：
+    #    import≈20/export≈6·seed，#44/#45/#46 逐 seed fire green），provider 非空、可解释。
+    # #44 进口溯源：与 #43/#38 同形 G 档——缺 logistics.json 整段短路显式豁免（detail "物流系统关闭"），否则每笔 import 都要可溯源到声明的节点与货。
+    44: ("G", "logistics 开·import 事件全部可溯源（缺 logistics.json 则显式豁免）",
+         lambda L, D: 0 if "物流系统关闭" in D.get(44, "") else 1),
+    # #45 钱跨镇边界溯源：C 档——provider=跨镇边界流量（进+出 money）。无任何进出 ⇒ external≡0≡应值、判据空洞（无边界流可查）。
+    45: ("C", "跨镇边界流量 进+出（=0 则无边界流可查=空洞）",
+         lambda L, D: _detail_int(D.get(45, ""), r"进(\d+)") + _detail_int(D.get(45, ""), r"出(\d+)")),
+    # #46 出口原子性：同 #44 形——缺 logistics.json 显式豁免，否则每笔 export 的钱货须一一绑定同量。
+    46: ("G", "logistics 开·export 钱货一一绑定同量（缺 logistics.json 则显式豁免）",
+         lambda L, D: 0 if "物流系统关闭" in D.get(46, "") else 1),
 }
 
 

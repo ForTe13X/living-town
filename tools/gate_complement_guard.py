@@ -251,8 +251,11 @@ def run_gate(tree, ledger, strict=False):
             known = {int(i) for i in ledger.get("invariant_kinds", {})} | {int(i) for i in providers}
             unknown = sorted(set(live_ids) - known)
             if unknown:
-                warns.append("Invariants.gd 有 %d 条锚不认识的不变量：%s"
-                             " ⇒ 没人普查过它们的夹具。重烘：`GODOT=… python tools/gate_fixture_audit.py --run --bake-ledger`"
+                # ★Codex 外审 P0-1（2026-08-10）：改【fail-closed】——锚不认识的不变量＝没人普查其夹具/无 provider＝
+                #   互补性【假绿】（旧版只 warn 后 rc0 放行，#44/#45/#46 就这么假绿了整轮）。默认即红，逼加 SPEC + 重烘。
+                fails.append("Invariants.gd 有 %d 条锚不认识的不变量：%s"
+                             " ⇒ 【假绿·fail-closed】无人普查其夹具/无 provider。给 tools/gate_fixture_audit.py 的 SPEC 加这些 id 的"
+                             " (kind, 说明, provider lambda) 后重烘：`GODOT=… python tools/gate_fixture_audit.py --run --bake-ledger`"
                              % (len(unknown), ", ".join("#%02d" % i for i in unknown)))
             # 反向：锚里有、树上没了。**这不是本门守的那件事**（它守的是"喂给判据的世界"，
             # 不是"判据本身还在不在"），但一条被删掉的不变量会让锚里那一行从此无意义 ⇒ 至少说一声。
