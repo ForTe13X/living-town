@@ -70,6 +70,22 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 
 **排序**：P1-c 可【即刻并行】（纯 View、不依赖 a/b、文件面只 WorldView draw 区，与 a 的 OBJ_SLOT 表不同段）；P1-a→P1-b 串（b 用 a 的港口位）。三棒与叙事(codex/narrative)、既有视觉(AV) 文件面不相交。
 
-## 七、本片状态
+## 四-bis、用户已定（2026-08-10）+ affiliate 岗设计细化
 
-**设计 only、未 build、未移金标。** 待用户答 §四（尤①岗位性质 + ②首刀范围 + ④相位序确认）→ 据 §六棒表分派实现。
+**用户拍板**：①岗位＝**stevedore affiliate 卸货 JOB**（选 A，接「affiliate 运营」愿景）；②首刀＝**全纵切 a+b+c**；③carrier 可见度、④相位序＝按设计默认（简单船精灵起步、物理先行）。
+
+**stevedore「码头工」affiliate 岗设计（P1-a 核心新机制，复用 jobs.json holder 机制）**：
+- **岗位**：`jobs.json` 加 holder「码头工」title、action=`卸货`、shift 相位、worksite=port_dock。复用既有职业/工位机器（extra_advertises 注入、job-gated 决策槽），不新造决策原语。
+- **做什么**：carrier 在港日（P1-b，`day%every==0`），码头工上班把 manifest 货**从港/仓搬进 town_stock**——把现在「日界账本瞬间到货」显形成「工人在码头卸货」。到货量仍＝import_lane.batch（不改经济量、只改**显形路径**：账本注入 → 工人动作驱动的同量注入，off 门须逐字节等价或走移金标重烘）。
+- **affiliate 种子（接 big-Other 愿景）**：码头工工资由 **external（big-Other）账户**付（复用 E2a 已进 #34 守恒集的 `transfer('external','town',wage,...)` 机器）＝「outsider affiliate 运营+供养」的第一个具体实例。⚠️**命门**：这动 external 闭环账（现 export≤import 有界非负 #35）——加 external 出工资须重核 external 恒 ≥0 的守卫、或给 wage 单独有界预算；**此条是 P1-a 移金标片必过 §0.8 双路评审的焦点**，不可静默改守恒集。
+- **诚实边界**：完整 affiliate 经济（税/账单/独立 affiliate 账）＝相位3；P1 只establish「外部实体运营+付薪一个 dock 岗」的种子，不做全套财政。
+
+**warehouse 位（P1-c）**：滩头 dock 区 [30,7,4,2] 内、AP-port 已画的「船屋」旁设一个仓库位；WorldView 读 town_stock 画货堆高度指示（纯 View）。具体格位在 P1-c 实现时据 AP-port 结构定（不撞栈桥/渔船/port_dock[33,8]）。
+
+## 七、本片状态 → 实现就绪
+
+**设计 only、未 build、未移金标。** 用户已定全纵切+affiliate 岗 ⇒ 据 §六棒表分派实现：
+1. **P1-c（纯 View 仓库库存）先/并行**——零金标、最安全、即时可见增量、文件面只 WorldView draw 区。
+2. **P1-a（港口成真对象 + 码头工 affiliate 岗）**——移金标；焦点＝external 付薪对 #34/#35 守恒的影响，必过 §0.8。
+3. **P1-b（到货来船 carrier，复用 festival）**——移金标；依赖 P1-a 港口位。
+每移金标棒＝committed-树三锚重烘 + off 门自证 + held-out 13-30 + N 路 refute；协调者在 committed 树 finalize。子 agent 必 base=integration/batons。
