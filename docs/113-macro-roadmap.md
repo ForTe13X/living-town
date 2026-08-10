@@ -28,6 +28,15 @@
 
 **排序纪律**：外审判「功能开发仍不放行」直到相位 0 收口——**相位 0 已收口**（complement 闭 + 行为迁移审计 docs/177 判接受）⇒ **相位 1 功能港口纵切现已放行**（待用户确认设计方向）。相位 1+ 是移金标产品刀，disjoint-by-file、可验收、committed-树 finalize（三锚重烘）。相位 1 与叙事(`codex/narrative`)、视觉(AV) 文件面不相交⇒可并行。
 
+### 2026-08-10 · 用户 world/terrain 愿景扩展 + 参考项目（并行【车道 V/map】lane）
+
+**terrain 愿景（用户）**：MVP＝pond 可行（现有北池）；**理想＝river 或 ocean + coast（海岸线）**；terrain 还含**地理起伏** mountain/plain/creek 等 geo。
+- **可行性（grounded：map.json:98 `blockers[]` / :2382 `water[]`；WorldView `_water_set`/`_build_water_slots`/`_draw_port`）**：① **水体(coast/ocean/river/creek)＝数据驱动可行**——扩 `water[]`+`blockers[]` 成海岸线/河道/溪流形状；改 nav/walkable ⇒ **移金标**（纯边缘水体不动核心走廊则轻）。② **起伏(mountain/plain)＝引擎平格无 z**：真高度=大改；**可行做法＝视觉起伏**（星露谷式 cliff/坡 tile + mountain 作 blocker 不可走区）＝读得出"山/高地"无真 z；plain=现有开阔草。
+- **港口协同**：coast/ocean 是港口理想家；**P1-a 港口机制(affiliate/dock 槽/卸货)pond→coast 可原样搬**（水体是 map 层、与港口机制解耦）⇒ 互补不冲突。
+- **纪律**：水体改 nav=移金标（三锚重烘）；纯视觉起伏 tile=零金标（视觉门 tol=0，terrain_gate 眼验棘轮）。terrain 与经济/叙事文件面不相交⇒并行。
+
+**参考项目 `mewamew/my_ai_town`（用户荐）**：近亲（Godot 4.7/GDScript/LLM 像素镇）。⚠️**无明确 license（"licensing pending"+第三方资产各自 license）⇒ 只可 cherry-pick【想法/机制】（概念不受版权）、【绝不搬代码/资产】**（版权默认保留，违 license-clean 纪律）。可借想法：①同一事件的逐居民【主观解读/记忆分歧】②player agency（广播公告/分享照片/改天气的级联社会效应）。其余（天气/职业/记忆/关系）Living Town 已有 + 在确定性/经济/门-rigor 更成熟。
+
 ---
 
 ## ★★ 2026-08-07 用户扩展愿景——从"社交 sim 打磨"扩到"星露谷式活镇：视觉大改 + 物流/产业经济"
