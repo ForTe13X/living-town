@@ -22,7 +22,7 @@
 | 相位 | 内容 | 纪律 |
 |---|---|---|
 | **0 门收口**【✅ 收口】 | #44-46 真实 complement【✅ 已闭·audit 证真贸易】+ standing 行为迁移审计【✅ docs/177 判**接受**：位移只落社会轴、食物/经济稳、无永久孤立(#03 12/12)、无饿穿(#01 12/12)、对齐用户「dramatic good」】 | 无金标改 |
-| **1 功能港口纵切**（下一大刀） | pure-View 港口 + 隐形贸易账本 → **一条功能纵切**：port_dock 入 world objects/nav/blockers + carrier/manifest（可见货往返）+ warehouse stock ⇒ 玩家可见增量>0 | 移金标·先设计再实现 |
+| **1 功能港口纵切**（下一大刀·**设计已出 docs/178**，待用户定范围） | pure-View 港口 + 隐形贸易账本 → **一条功能纵切**：port_dock 入 world objects/nav/blockers + carrier(复用 festival spawn/despawn) + warehouse stock ⇒ 玩家可见增量>0。分 3 disjoint 子棒 P1-a(港口成真对象,移金标)/P1-b(来船,移金标)/P1-c(仓库库存,纯 View 可并行) | 移金标·先设计再实现 |
 | **2 Anno 式 goods-demand** | class/分工居民对不同 goods 有需求条，低阈值→不满，supply/优质 supply→好感度 + entertainment 需求 | 移金标 |
 | **3 big Other 财政** | export/import＝中央权威无条件供养(ledger/budget,力争 nx balance)+收税+居民付账单+commercial/service 建筑由 outsider affiliate 运营+居民个人贸易 | 移金标 |
 
