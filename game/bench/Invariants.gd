@@ -237,7 +237,7 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 			                     #   type 已是 "pay"、本就在排除集，无需再动。
 
 	var harmony: bool = String(S.scenario) == ""   # 定向场景(faction/betray/freerider)会扭曲关系/致饿穿 → 豁免和睦不变量
-	var small_n: bool = S.agents.size() <= 12       # 涌现/单源传播类只在设计 N(≤12)硬断言；大 N 单源谣言 fizzle 是现实(docs/12 L4)
+	var small_n: bool = int(S.core_population) <= 12 # P1-a：affiliate 是一等参与者，但不把 12 核心居民的小镇口径偷翻成大 N 豁免
 	# 1) 无 need 触底（旧名「无饿穿」——判据从来就是【任一】need≤0.5，见 INV1_NAME 处的实测与四格对照）
 	R.append(_chk(1, INV1_NAME, starved == 0 or not harmony,
 		"触底 need·tick=%d%s%s (应=0;场景豁免)" % [starved, _need_breakdown(starve_by_need), _starve_shape(starve_shape)]))

@@ -323,6 +323,7 @@ var _trade_day := {}            # ★AA3：商贩 id -> 上一次写过买卖口
 var prod_stats := {"produced": {}, "consumed": {}, "short": {}, "spoiled": {}, "attempts": {}, "work": {}}  # 诊断计数（逐 good / 逐动作 / 逐职位）
 var agents: Array = []          # [agent dict]
 var _agent_by_id := {}
+var core_population := 0        # 本局核心居民数；港口 affiliate append-after-pool，不得把 #15/#20 的小镇口径悄悄翻成大 N
 var spawn_count := 0            # >0：克隆扩容到该 agent 数（扩 N 测试用；0=用数据原样 **12** 条 agents.json）
                                 #   ⚠ 这里原先写死"6 个"，docs/54 §八 2026-07-30 报过它过期、当时没人改；
                                 #     数是 `agents.json.agents.length` 长出来的，别再写死（K1 修，同 Invariants.gd 文件头那条）。
@@ -586,6 +587,7 @@ func _load_data() -> void:
 	_interiors_data = _read_json("res://data/interiors.json")
 	_compile_interiors()                            # 把带 advertises 的室内家具编译成 world 对象(标平面)，须在数组→字典之前
 	_compile_worksites()                            # F1：production.worksites → town 平面的工位对象，同样须在数组→字典之前
+	_compile_ports()                                # P1-a：logistics.nodes 中有广告位的功能港口 → town world 对象
 	var objs := {}
 	for o in world.get("objects", []):
 		o["pos"] = Vector2i(int(o["pos"][0]), int(o["pos"][1]))
@@ -776,18 +778,88 @@ func _compile_worksites() -> void:
 func _logi_on() -> bool:
 	return not logistics.is_empty()
 
-## ★E1 刻意【不】把 logistics.nodes 编译进 world.objects（纠 docs/144 §六）：WorldView 有一条成文契约——
-##   world.objects 里只放【advertises 非空】的对象（纯装饰对象不进，见 WorldView.gd:3939 与 buildings/worksites
-##   的 `adv 空则 continue`），它的绘制循环会给任何解析不出精灵槽的对象 push_error（品红占位框）。
-##   码头节点无 advertises、type='码头' 在 OBJ_SLOT_BY_TYPE 里没有条目，而【WorldView 与它的别名预算是本片的
-##   绝不碰区】、且现有可借的槽(bench/counter/desk)都已到 alias budget ⇒ 现在编译它 = 出一个品红占位 bug + CI 红。
-##   ⇒ 节点在 E1 只【声明在 logistics.json】（供硬 #44 溯源 + P1 读），它的【落图渲染】(world.objects 项 +
-##   WorldView 的 '码头' 精灵槽 + alias 预算) 交给 P1 到货动画那一片一起做（那才是加精灵的自然落点）。
-##   ⇒ 节点对 E1 的 Sim 零影响（非阻挡、无候选、不入 digest）；#44 读的是 logistics.json 不是 world.objects。
+## P1-a：把 logistics.nodes 里【有 advertises】的节点编译成真实 town world 对象。
+## 与 worksites 同一纪律：静态、著者序、无 RNG/Time；删 logistics.json 即整段关闭。
+func _compile_ports() -> void:
+	if not _logi_on():
+		return
+	var objs: Array = world.get("objects", [])
+	var used := {}
+	for o in objs:
+		used[String((o as Dictionary).get("id", ""))] = true
+	for node in _as_arr(logistics.get("nodes", [])):
+		if not (node is Dictionary):
+			continue
+		var nd: Dictionary = node
+		var nid := String(nd.get("id", ""))
+		var pos: Array = _as_arr(nd.get("pos", []))
+		var adv: Array = _as_arr(nd.get("advertises", []))
+		if adv.is_empty():
+			continue
+		if nid == "" or used.has(nid) or pos.size() < 2:
+			push_error("port node id 缺失/撞车/pos 非法，跳过: " + nid)
+			continue
+		var apos := Vector2i(int(pos[0]), int(pos[1]))
+		var ar := _area_at(apos)
+		if ar == "" or String(nd.get("area", ar)) != ar:
+			push_error("port node %s 的格 %s 申报 area='%s' 实为 '%s'，跳过" % [
+				nid, str(apos), String(nd.get("area", "")), ar])
+			continue
+		used[nid] = true
+		objs.append({"id": nid, "type": String(nd.get("type", "")), "area": ar,
+			"pos": [apos.x, apos.y], "advertises": adv.duplicate(true)})
+	world["objects"] = objs
 
 ## Variant→Array 强转（缺失/错类型的 JSON 数组字段一律退化为空，守"错类型=零扰动"契约，替代会崩的 `as Array`）。
 func _as_arr(v: Variant) -> Array:
 	return v if v is Array else []
+
+## plan 与真正 append 共用同一 selector，避免两份 affiliate eligibility 规则日后漂开。
+## used_ids 只读；本函数复制后才登记本批已选 id，因此重复/空 id、撞 core/clone 都一致跳过。
+func _eligible_affiliate_defs(agent_data: Dictionary, used_ids: Dictionary) -> Array:
+	if scenario != "" or not _logi_on():
+		return []
+	var seen := used_ids.duplicate()
+	var eligible: Array = []
+	for adef in _as_arr(agent_data.get("affiliates", [])):
+		if not (adef is Dictionary):
+			continue
+		var aid := String(adef.get("id", ""))
+		if aid == "" or seen.has(aid):
+			continue
+		seen[aid] = true
+		eligible.append(adef)
+	return eligible
+
+## 把「最终总人口」换算成当前数据/场景下的 core spawn_count，供规模 bench 共用。
+##
+## 为什么不让每个 bench 自己做 `total - affiliates.size()`：affiliate 只在默认 logistics 场景追加，
+## 且 id 撞 core/克隆 id 时会被 start_new 跳过；手算会再次把 N=60 静默跑成 N=61/N=59。
+## 返回 {ok, core, affiliates, base_core, total, reason}；不改状态、不消费 RNG。
+## 当前扩容器只会 clone、不会缩小 authored core，因此无法精确构造的目标 fail-closed。
+func scale_population_plan(target_total: int) -> Dictionary:
+	var agent_data := _read_json("res://data/agents.json")
+	var core_defs := _as_arr(agent_data.get("agents", []))
+	var base_core := core_defs.size()
+	if target_total <= 0:
+		return {"ok": false, "core": 0, "affiliates": 0, "base_core": base_core,
+			"total": target_total, "reason": "total population must be > 0"}
+	var affiliate_defs := _as_arr(agent_data.get("affiliates", [])) if scenario == "" and _logi_on() else []
+	# 最多每条 affiliate 加 1 人，所以 core 不可能小于 target-affiliate_defs.size()；逐个候选求精确固定点。
+	var first_core := maxi(base_core, target_total - affiliate_defs.size())
+	for core_n in range(first_core, target_total + 1):
+		var used := {}
+		for cdef in core_defs:
+			if cdef is Dictionary:
+				used[String(cdef.get("id", ""))] = true
+		for i in range(base_core, core_n):
+			used["npc_%d" % i] = true
+		var append_n := _eligible_affiliate_defs(agent_data, used).size()
+		if core_n + append_n == target_total:
+			return {"ok": true, "core": core_n, "affiliates": append_n, "base_core": base_core,
+				"total": target_total, "reason": ""}
+	return {"ok": false, "core": 0, "affiliates": 0, "base_core": base_core,
+		"total": target_total, "reason": "target cannot be represented without shrinking authored core"}
 
 func start_new(p_seed: int = 12345) -> void:
 	emit_signal("world_reset")             # 新世界 → 通知 AIBackend 取消所有在飞请求 + 进新 epoch（旧回包作废）。CI 无监听=no-op。
@@ -873,6 +945,17 @@ func start_new(p_seed: int = 12345) -> void:
 	# ★L2：工作吸引力的人口项。跟池同一处、同一个"本局人口"口径（都在克隆扩容做完之后、
 	#   town_stock 注资之前），本局内冻结 ⇒ 与池一样不受生老病死影响、可逐字节回放。
 	work_pull_mult = _work_pull_mult(production, agents.size())
+	core_population = agents.size()
+	# P1-a：affiliate 在池与 work-pull 冻结后追加，因此 12 位核心居民的产能/出口口径不被第 13 张嘴偷改。
+	# 它仍是完整 agent：needs、消费、社交、选举、金钱守恒全部走原管线；只在默认港口沙盘出现。
+	if scenario == "" and _logi_on():
+		var agent_data := _read_json("res://data/agents.json")
+		for adef in _eligible_affiliate_defs(agent_data, _agent_by_id):
+			var aff := _make_agent(adef, personas)
+			aff["affiliate"] = true
+			agents.append(aff)
+			_agent_by_id[aff["id"]] = aff
+			econ_total0 += int(aff["inventory"].get("coin", 0))
 	# ★T1：镇库回拉的三个整数。与池/work_pull 同一处读，本局内冻结（数据不会中途换）。
 	var _sp: Dictionary = production.get("stock_pull", {}) if production.get("stock_pull", {}) is Dictionary else {}
 	stock_pull_den = int(_sp.get("den", 0))

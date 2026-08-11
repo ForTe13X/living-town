@@ -3304,6 +3304,7 @@ func _draw_body() -> void:
 		match slot:
 			"bed": _draw_bed(base)
 			"stove": _draw_stove(base)
+			"dock": _draw_dock(base)
 			"fest": _draw_festival(base)   # Wave 2b：节日机会地形（灯笼，暖光）
 			_:
 				var otex: Texture2D = Art.object_tex(slot) if slot != "" else null
@@ -4334,6 +4335,7 @@ const OBJ_SLOT_BY_TYPE := {
 	# ── 程序化画（无贴图；见 _draw_bed / _draw_stove）──
 	"床": "bed",
 	"灶台": "stove",
+	"码头": "dock",
 	# ── 有专属贴图（assets/art/obj/*.png；pro/obj_*.png 优先覆盖）──
 	"吧台": "counter",
 	"浴池": "bath",
@@ -4361,7 +4363,7 @@ const OBJ_SLOT_BY_TYPE := {
 const OBJ_SLOT_BY_ID_PREFIX := {"fest": "fest"}
 
 ## 程序化画出来的槽（没有对应 png，但**有**渲染器）。改这里要同步改 _draw() 里的 match。
-const OBJ_SLOT_PROCEDURAL := {"bed": true, "stove": true, "fest": true}
+const OBJ_SLOT_PROCEDURAL := {"bed": true, "stove": true, "dock": true, "fest": true}
 
 # ══ H3-b · 别名预算（aliasing budget）——H1 真机眼验之后补的第二条判据 ═══════════════
 #
@@ -4572,6 +4574,22 @@ func _draw_stove(base: Vector2) -> void:
 	draw_circle(Vector2(x + w - 8, y + 8), 1.6, X_GOLD)
 	draw_rect(Rect2(x + 3, y + h - 7, w - 6, 5), P_PANEL, true)        # 烤箱门
 	draw_rect(Rect2(x, y, w, h), Color(0, 0, 0, 0.35), false, 1.5)
+
+## P1-a 功能码头：木栈板、系缆桩、缆绳与卸货箭头。程序化槽不占贴图别名预算。
+func _draw_dock(base: Vector2) -> void:
+	var deck := Rect2(base.x + 4, base.y + 6, T - 8, T - 12)
+	draw_rect(deck, X_WOOD_MID, true)
+	for i in range(1, 5):
+		var py := deck.position.y + float(i) * deck.size.y / 5.0
+		draw_line(Vector2(deck.position.x, py), Vector2(deck.end.x, py), P_PANEL, 1.0)
+	for bx in [deck.position.x + 4.0, deck.end.x - 4.0]:
+		draw_circle(Vector2(bx, deck.position.y + 3.0), 2.5, P_PANEL)
+		draw_line(Vector2(bx, deck.position.y + 3.0), Vector2(base.x + T * 0.5, base.y + T * 0.5), X_SIGNAL_POS, 1.5)
+	var c := base + Vector2(T * 0.5, T * 0.5)
+	draw_line(c + Vector2(-7, 0), c + Vector2(7, 0), X_COLD_WHITE, 2.0)
+	draw_line(c + Vector2(3, -4), c + Vector2(7, 0), X_COLD_WHITE, 2.0)
+	draw_line(c + Vector2(3, 4), c + Vector2(7, 0), X_COLD_WHITE, 2.0)
+	draw_rect(deck, Color(0, 0, 0, 0.35), false, 1.5)
 
 ## Wave 2b 节日灯笼（暖光晕 + 灯身 + 挑杆），一眼可辨"这里在办节日"。纯渲染。
 func _draw_festival(base: Vector2) -> void:

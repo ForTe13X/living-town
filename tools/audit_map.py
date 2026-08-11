@@ -22,7 +22,7 @@ def load():
     m = json.load(open(p("map.json"), encoding="utf-8"))
     ag = json.load(open(p("agents.json"), encoding="utf-8"))
     return (m, ag, _opt("festivals.json"), _opt("production.json"), _opt("jobs.json"),
-            _opt("interiors.json"))
+            _opt("interiors.json"), _opt("logistics.json"))
 
 def neigh(c):
     x, y = c
@@ -50,7 +50,7 @@ def shortest(a, b, walk):
     return None
 
 def main():
-    m, ag, fe, pr, jb, it = load()
+    m, ag, fe, pr, jb, it, lo = load()
     W, H = int(m["width"]), int(m["height"])
     blk = set((int(x), int(y)) for x, y in m["blockers"])
     fails = []
@@ -63,9 +63,13 @@ def main():
     #      可达性合法、渲染也没问题，但分工的空间落点整个是假的。故 area 必须与坐标实际所在的区相符。
     #      Sim._compile_worksites 里有同一条运行期校验（落 push_error → ci.sh 的 scan 判红），
     #      两道门口径必须一致：改这里就要同步改那里。
-    ws = pr.get("worksites", []) if isinstance(pr, dict) else []
-    if not isinstance(ws, list):
-        fails.append("production.worksites 非法（应为数组）: %r" % (ws,)); ws = []
+    ws_raw = pr.get("worksites", []) if isinstance(pr, dict) else []
+    if not isinstance(ws_raw, list):
+        fails.append("production.worksites 非法（应为数组）: %r" % (ws_raw,)); ws_raw = []
+    ws = list(ws_raw)
+    # P1-a：有广告位的 logistics node 与 production worksite 在运行时都是阻挡、可交互 world object。
+    ws += [n for n in (lo.get("nodes", []) if isinstance(lo, dict) else [])
+           if isinstance(n, dict) and isinstance(n.get("advertises"), list) and n.get("advertises")]
     wscells = {}          # (x,y) -> worksite id（放上去之后要一起进 blockers 与交互格校验）
     for i, w in enumerate(ws):
         if not isinstance(w, dict):
@@ -118,7 +122,8 @@ def main():
         print("AUDIT FAIL: seed home %s not walkable" % (seed,)); sys.exit(1)
     reach = bfs(seed, walk)
     # ③ 居民 home/spawn 可达
-    for a in ag["agents"]:
+    all_agents = list(ag.get("agents", [])) + list(ag.get("affiliates", []))
+    for a in all_agents:
         for k in ("home", "spawn"):
             c = tuple(a[k])
             if c not in reach: fails.append("agent %s %s %s 不可达" % (a["id"], k, c))
@@ -178,7 +183,7 @@ def main():
             if isinstance(j, dict) and aid2 not in merged:
                 merged[aid2] = j
                 prod_titles.add(str(j.get("title", "")))
-        agent_ids = set(a.get("id") for a in ag["agents"])
+        agent_ids = set(a.get("id") for a in all_agents)
         ov = pr.get("job_action", {}) if isinstance(pr.get("job_action"), dict) else {}
         for aid2, j in merged.items():
             if not isinstance(j, dict): continue
@@ -352,7 +357,7 @@ def main():
             if not any(n in reach for n in neigh(c)):
                 fails.append("festival %s obj#%d %s 无可达交互格 → 节日当天没人够得着" % (fname, i, c))
     print("audit_map: %dx%d walkable=%d blockers=%d objects=%d worksites=%d agents=%d festival-objects=%d"
-          % (W, H, len(walk), len(blk), len(m["objects"]), len(wscells), len(ag["agents"]), nfest))
+          % (W, H, len(walk), len(blk), len(m["objects"]), len(wscells), len(all_agents), nfest))
     if fails:
         print("AUDIT FAIL:"); [print("  -", f) for f in fails[:20]]; sys.exit(1)
     print("AUDIT PASS: typed-layers 一致 + 全可达 + 每家具/工位有交互格 + 工位区域归属正确 + "

@@ -236,5 +236,22 @@
     "energy"
    ]
   }
+ ],
+ "affiliates": [
+  {
+   "id": "tao",
+   "persona": "tao",
+   "home": [
+    32,
+    8
+   ],
+   "spawn": [
+    32,
+    8
+   ],
+   "affiliate": true,
+   "cafe_regular": true,
+   "_why": "P1-a 港口附属成员：独立于 12 位核心居民声明，使产出池仍按核心人口定标；但 spawn 后是一等 agent，完整参与需求衰减、消费、社交与选举。默认港口沙盘且 logistics 开启时才编入世界。"
+  }
  ]
 }

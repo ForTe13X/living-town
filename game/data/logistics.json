@@ -10,7 +10,10 @@
       "type": "码头",
       "area": "dock",
       "pos": [33, 8],
-      "_why": "码头节点。E1【只声明、不落图】：pos/area/type 是给 P1 到货动画那一片用的坐标，本片不把它编译进 world.objects——WorldView 有成文契约『world.objects 只放 advertises 非空的对象』，且 type='码头' 在 WorldView.OBJ_SLOT_BY_TYPE 里没槽、可借的槽都已到 alias 预算，而 WorldView 是本片绝不碰区 ⇒ 现在落图 = 品红占位 bug + CI 红（实测 player_touch_test 撞到）。落图(world.objects + 精灵槽)交给 P1。本片它的唯一作用：硬 #44 拿它校验进口 actor（import lane 的 node 必须是这里声明过的 id）。坐标 [33,8] 落在 F5 建的滩头(map.areas.dock [30,7,4,2])东南角、与渔台 bench_pier[31,7] 不撞，是给 P1 留的位。"
+      "advertises": [
+        { "action": "卸货", "need": "fun", "amount": 46, "duration": 28, "job": "码头工" }
+      ],
+      "_why": "P1-a 功能码头：有 advertises 的 node 由 Sim._compile_ports 编译进 world.objects；type=码头由 WorldView 的 dock 程序化槽渲染，不借贴图别名。坐标 [33,8] 位于 dock 区东南角且与 bench_pier[31,7] 不撞。它同时继续作为硬 #44/#46 的贸易来源节点。"
     }
   ],
   "import_lanes": [

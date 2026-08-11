@@ -57,9 +57,12 @@ jobs = load("jobs") or {}
 housing = load("housing") or {}
 secrets = load("secrets") or {}
 mapd = load("map") or {}
+logistics = load("logistics") or {}
 
 persona_ids = set(personas.keys()) if isinstance(personas, dict) else set()
-agent_defs = agents_d.get("agents", []) if isinstance(agents_d, dict) else []
+agent_defs = []
+if isinstance(agents_d, dict):
+    agent_defs = list(agents_d.get("agents", [])) + list(agents_d.get("affiliates", []))
 agent_ids = set(a.get("id") for a in agent_defs if isinstance(a, dict))
 object_ids = set(o.get("id") for o in mapd.get("objects", []) if isinstance(o, dict))
 
@@ -76,6 +79,22 @@ for a in agent_defs:
 # 3) jobs.jobs keys -> agents
 for aid in (jobs.get("jobs", {}) if isinstance(jobs.get("jobs"), dict) else {}):
     fk(f"jobs.jobs key", aid, agent_ids, "agent id")
+
+# 3b) logistics functional nodes: ids unique; advertised job titles resolve.
+node_ids = set()
+job_titles = set(j.get("title") for j in jobs.get("jobs", {}).values() if isinstance(j, dict))
+for node in logistics.get("nodes", []) if isinstance(logistics.get("nodes"), list) else []:
+    if not isinstance(node, dict):
+        continue
+    nid = node.get("id")
+    if not nid:
+        errs.append("logistics.nodes: missing id")
+    elif nid in node_ids:
+        errs.append(f"logistics.nodes: duplicate id '{nid}'")
+    node_ids.add(nid)
+    for adv in node.get("advertises", []) if isinstance(node.get("advertises"), list) else []:
+        if isinstance(adv, dict):
+            fk(f"logistics.nodes[{nid}].advertises.job", adv.get("job"), job_titles, "job title")
 # 4) jobs.extra_advertises[].object -> map objects  (the P1-5 dangling-ref guard)
 for ea in jobs.get("extra_advertises", []) if isinstance(jobs.get("extra_advertises"), list) else []:
     if isinstance(ea, dict):
