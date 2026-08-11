@@ -18,18 +18,26 @@ func _unload_adv(S) -> Dictionary:
 			return adv
 	return {}
 
-func _install_use_option(worker: Dictionary, manifest_id: String = "") -> void:
+func _unload_candidate(S, worker: Dictionary) -> Dictionary:
+	for cand in S._object_candidates(worker):
+		if cand is Dictionary and String(cand.get("action", "")) == "卸货":
+			return cand
+	return {}
+
+func _install_use_option(worker: Dictionary, manifest_id: String = "", authorized: bool = false, remaining: int = 1) -> void:
 	worker["option"] = {
 		"kind": "object", "action": "卸货", "target": "port_dock", "need": "fun",
-		"amount": 46, "dur_total": 28, "remaining": 1, "phase": "use",
+		"amount": 46, "dur_total": 28, "remaining": remaining, "phase": "use",
 	}
 	if manifest_id != "":
 		worker["option"]["manifest_node"] = "port_dock"
 		worker["option"]["manifest_id"] = manifest_id
+	if authorized:
+		worker["option"]["manifest_authorized"] = true
 
-## manifest_id 为空时故意模拟旧存档/强制 option；完成门必须从 advert 恢复合同且仍 fail-closed。
-func _force_complete(S, worker: Dictionary, manifest_id: String = "") -> void:
-	_install_use_option(worker, manifest_id)
+## manifest_id/authorization 为空时故意模拟旧存档或强制 option；引擎不得替它恢复/签发合同。
+func _force_complete(S, worker: Dictionary, manifest_id: String = "", authorized: bool = false) -> void:
+	_install_use_option(worker, manifest_id, authorized)
 	S._advance_object(worker, worker["option"])
 
 func _probe_blocked_use(S, worker: Dictionary, manifest_id: String, label: String) -> void:
@@ -102,7 +110,7 @@ func _canonical_case() -> String:
 	S.tick_no = int(S.TICKS_PER_DAY * 0.25)  # dawn：码头工在班，合同测试不被班次短路
 	S.day = 3
 	S._logi_import()
-	_force_complete(S, S.get_agent("tao"))
+	_force_complete(S, S.get_agent("tao"), "manifest_east_ocean_3_0", true)
 	var out := JSON.stringify({
 		"order": S.cargo_manifest_order,
 		"manifests": S.cargo_manifests,
@@ -184,7 +192,34 @@ func _ready() -> void:
 	var before_town: int = int(S.town_coin)
 	var before_ext: int = int(S.external_coin)
 	var commit_ev: int = S.event_log.size()
-	_force_complete(S, tao)
+	var unload_intent := _unload_candidate(S, tao)
+	var forged_intent: Dictionary = unload_intent.duplicate(true)
+	for forged_target in S.world.get("objects", {}).keys():
+		if String(forged_target) != "port_dock":
+			forged_intent["target"] = String(forged_target)
+			break
+	S._apply_object(tao, forged_intent)
+	ck(tao.get("option") == null, "外部 intent 不能把 manifest 授权嫁接到非 cargo advert")
+	for forged_field in ["amount", "dur_total", "need"]:
+		forged_intent = unload_intent.duplicate(true)
+		if forged_field == "need":
+			forged_intent[forged_field] = "energy"
+		else:
+			forged_intent[forged_field] = 1
+		S._apply_object(tao, forged_intent)
+		ck(tao.get("option") == null, "外部 intent 篡改 authored %s 时拒绝签发" % forged_field)
+	var saved_fun := float(tao["needs"]["fun"])
+	tao["needs"]["fun"] = 100.0
+	S._apply_object(tao, unload_intent)
+	ck(tao.get("option") == null, "旧 cargo intent 在当前候选已消失后不能重放获签")
+	tao["needs"]["fun"] = saved_fun
+	S._apply_object(tao, unload_intent)
+	ck(tao.get("option") is Dictionary and bool(tao["option"].get("manifest_authorized", false))
+		and String(tao["option"].get("manifest_id", "")) == manifest_id,
+		"引擎只在在班落 option 时签发 exact manifest 授权")
+	tao["option"]["phase"] = "use"
+	tao["option"]["remaining"] = 1
+	S._advance_object(tao, tao["option"])
 	var suffix := _events_since(S, commit_ev)
 	ck(int(S.town_stock.get(good, 0)) - before_stock == 4
 		and int(S.cargo_manifests[manifest_id].get("remaining_qty", -1)) == 0
@@ -222,7 +257,7 @@ func _ready() -> void:
 
 	# 到港后若 use 期间货位、余额或 cargo 被别的提交抢走，捕获的 exact manifest 不得偷换或留下半提交。
 	ck(S._adv_open(tao, adv), "pending cargo 初始可被候选选中")
-	_install_use_option(tao, pending_id)
+	_install_use_option(tao, pending_id, true)
 	var pending_good := String(S.cargo_manifests[pending_id].get("good", ""))
 	var pending_cap := int((S.production.get("goods", {}) as Dictionary).get(pending_good, {}).get("cap", 0))
 	var filled := S._stock_move(pending_good, pending_cap - int(S.town_stock.get(pending_good, 0)),
@@ -232,39 +267,77 @@ func _ready() -> void:
 	freed = -S._stock_move(pending_good, -4, "consume", "town", "manifest_recovery")
 	ck(freed == 4 and S._adv_open(tao, adv), "腾出整单货位后同一 pending manifest 可恢复")
 
-	_install_use_option(tao, pending_id)
+	_install_use_option(tao, pending_id, true)
 	var saved_town := int(S.town_coin)
 	S.town_coin = 0
 	_probe_blocked_use(S, tao, pending_id, "use 期间余额耗尽")
 	S.town_coin = saved_town
 
-	_install_use_option(tao, pending_id)
+	_install_use_option(tao, pending_id, true)
 	S.cargo_manifests[pending_id]["remaining_qty"] = 0
 	S.cargo_manifests[pending_id]["state"] = "complete"
 	_probe_blocked_use(S, tao, pending_id, "use 期间 manifest 被抢先提交")
 	S.cargo_manifests[pending_id]["remaining_qty"] = 4
 	S.cargo_manifests[pending_id]["state"] = "ready"
 	ck(S._adv_open(tao, adv), "货位/余额/cargo 恢复后原 manifest 再次可卸")
-	_force_complete(S, tao, pending_id)
+	_force_complete(S, tao, pending_id, true)
 	ck(int(S.cargo_manifests[pending_id].get("remaining_qty", -1)) == 0
 		and String(S.cargo_manifests[pending_id].get("state", "")) == "complete",
 		"阻塞解除后提交的是原 pending manifest")
 
-	# mutation 牙：option 的 exact cargo 绑定与 manifest 价格都会驱动未来，chain 必须逐字段可分辨。
+	# 在班开始的一单允许跨班次做完；授权只能由引擎落 option 时签发，不能让强塞 option 冒充。
 	freed = -S._stock_move(pending_good, -4, "consume", "town", "manifest_shift_fixture")
 	ck(freed == 4, "班次竞态 fixture 腾出新 manifest 的整单货位")
 	S.day = 9
 	S._logi_import()
-	var chain_id := "manifest_east_ocean_9_0"
+	var overtime_id := "manifest_east_ocean_9_0"
 	ck(S._adv_open(tao, adv), "在班时新到 manifest 可被选中")
-	_install_use_option(tao, chain_id)
+	_install_use_option(tao, overtime_id, true, 2)
+	var overtime_chain := int(Inv.chain_step(0, S, S.event_log.size()))
+	var overtime_save := "user://p1b_manifest_overtime_test.save"
+	ck(S.save_game(overtime_save), "已签发且 use 中途的 cargo option 可存档")
+	tao["option"].erase("manifest_authorized")
+	tao["option"]["remaining"] = 99
+	ck(S.load_game(overtime_save), "已签发 cargo option 可读档")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(overtime_save))
+	tao = S.get_agent("tao")
+	ck(tao.get("option") is Dictionary and bool(tao["option"].get("manifest_authorized", false))
+		and String(tao["option"].get("manifest_id", "")) == overtime_id
+		and int(tao["option"].get("remaining", 0)) == 2
+		and int(Inv.chain_step(0, S, S.event_log.size())) == overtime_chain,
+		"读档恢复同一 manifest 的授权/remaining/chain")
 	var in_shift_tick := int(S.tick_no)
 	S.tick_no = int(S.TICKS_PER_DAY * 0.75)
-	_probe_blocked_use(S, tao, chain_id, "use 期间跨出班次")
+	var overtime_need := float(tao["needs"]["fun"])
+	S._advance_object(tao, tao["option"])
+	ck(tao.get("option") is Dictionary and int(tao["option"].get("remaining", 0)) == 1
+		and float(tao["needs"]["fun"]) > overtime_need
+		and String(S.cargo_manifests[overtime_id].get("state", "")) == "ready",
+		"在班签发的同一单跨到 dusk 后继续做，不在边界丢弃")
+	var overtime_ev := int(S.event_log.size())
+	S._advance_object(tao, tao["option"])
+	var overtime_suffix := _events_since(S, overtime_ev)
+	ck(tao.get("option") == null and String(S.cargo_manifests[overtime_id].get("state", "")) == "complete"
+		and overtime_suffix.size() == 4 and String(overtime_suffix[0].get("note", "")) == "import*4"
+		and String(overtime_suffix[3].get("note", "")) == "wage:卸货",
+		"跨班次完成仍按 pay→stock→receipt→wage 原子提交")
+
+	# 未经 _apply_object 在班签发的 option 即使 cargo 存在，也不能借 overtime 规则绕过。
 	S.tick_no = in_shift_tick
-	ck(S._adv_open(tao, adv), "恢复班次后同一 manifest 仍可重选")
-	_install_use_option(tao, chain_id)
+	freed = -S._stock_move(pending_good, -4, "consume", "town", "manifest_auth_fixture")
+	ck(freed == 4, "授权负例 fixture 腾出整单货位")
+	S.day = 12
+	S._logi_import()
+	var chain_id := "manifest_east_ocean_12_0"
+	_install_use_option(tao, chain_id, false)
+	_probe_blocked_use(S, tao, chain_id, "存在 cargo 但 option 未获引擎授权")
+
+	# mutation 牙：授权、exact cargo 绑定与 manifest 价格都会驱动未来，chain 必须逐字段可分辨。
+	_install_use_option(tao, chain_id, true)
 	var chain_base := int(Inv.chain_step(0, S, S.event_log.size()))
+	tao["option"]["manifest_authorized"] = false
+	var chain_authorized := int(Inv.chain_step(0, S, S.event_log.size()))
+	tao["option"]["manifest_authorized"] = true
 	tao["option"]["manifest_id"] = chain_id + "_other"
 	var chain_option_id := int(Inv.chain_step(0, S, S.event_log.size()))
 	tao["option"]["manifest_id"] = chain_id
@@ -278,9 +351,9 @@ func _ready() -> void:
 	var chain_price_den := int(Inv.chain_step(0, S, S.event_log.size()))
 	S.cargo_manifests[chain_id]["price_den"] = int(S.cargo_manifests[chain_id]["price_den"]) - 1
 	tao["option"] = null
-	ck(chain_base != chain_option_id and chain_base != chain_option_node
+	ck(chain_base != chain_authorized and chain_base != chain_option_id and chain_base != chain_option_node
 		and chain_base != chain_price_per and chain_base != chain_price_den,
-		"chain 对 manifest_id/manifest_node/price_per/price_den 单字段 mutation 全有牙")
+		"chain 对 authorization/manifest_id/manifest_node/price_per/price_den 单字段 mutation 全有牙")
 	ck(_off_gate_chain_matches_legacy(), "logistics-off 普通 option 保持旧 6 字段 chain 逐字节不变")
 
 	ck(_canonical_case() == _canonical_case(), "同 seed 同 manifest 的状态/事件/event_digest 逐字一致")

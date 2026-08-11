@@ -142,10 +142,15 @@ func _free_transport(http, slm_chat) -> void:
 
 ## 候选稳定 key（完整身份，含 P2-1 遗漏的 kind/target/need/amount/duration）：等待期间候选重排/替换后仍能重认同一动作。
 func _cand_key(c: Dictionary) -> String:
-	return "%s|%s|%s|%s|%s|%s|%s|%s|%s" % [
+	var base := "%s|%s|%s|%s|%s|%s|%s|%s|%s" % [
 		str(c.get("kind", "")), str(c.get("action", "")), str(c.get("partner", "")),
 		str(c.get("target", "")), str(c.get("subject", "")), str(c.get("need", "")),
 		str(c.get("object", "")), str(c.get("amount", "")), str(c.get("duration", ""))]
+	if c.has("manifest_node") or c.has("manifest_id"):
+		# 普通候选保留旧 key；cargo 额外钉 authored duration + exact manifest，避免异步回包把 A 单重绑成 B 单。
+		return base + "|cargo|%s|%s|%s" % [str(c.get("dur_total", "")),
+			str(c.get("manifest_node", "")), str(c.get("manifest_id", ""))]
+	return base
 # ── 嵌入式 SLM（NobodyWho GDExtension + 本地 GGUF）──实测：Godot 4.6.2 加载需 glibc≥2.38 + libvulkan1 loader。
 var slm_model_path := "res://models/qwen2.5-3b-instruct-q4_k_m.gguf"   # 默认 3B-Q4：中端 780M 实测 ~2.9s、质量明显优于 1.5B(docs/11 §12.2b)
 var slm_model_override := ""                      # 设置面板里手选的 gguf 绝对路径（存 settings.cfg）；非空且存在则优先（换模型 A/B 用）

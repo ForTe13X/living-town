@@ -1689,9 +1689,10 @@ static func chain_step(prev: int, S, ev_from: int) -> int:
 				str(opt.get("kind", "")), str(opt.get("target", "")), str(opt.get("partner", "")),
 				str(opt.get("area", "")), str(opt.get("phase", "")), str(opt.get("remaining", ""))])
 			# Off-gate 保持旧 6 字段逐字节不变；只有真实 cargo option 才追加 exact manifest 绑定。
-			if opt.has("manifest_node") or opt.has("manifest_id"):
-				h = SimScript.fnv1a32_into(h, "%s|%s" % [
-					str(opt.get("manifest_node", "")), str(opt.get("manifest_id", ""))])
+			if opt.has("manifest_node") or opt.has("manifest_id") or opt.has("manifest_authorized"):
+				h = SimScript.fnv1a32_into(h, "%s|%s|%s" % [
+					str(opt.get("manifest_node", "")), str(opt.get("manifest_id", "")),
+					str(opt.get("manifest_authorized", false))])
 		else:
 			h = SimScript.mix32(h, -1)
 	# P1-b：pending cargo 会决定卸货候选是否存在，属于会驱动未来决策的权威活状态。

@@ -1617,9 +1617,7 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 		if _manh(ag["pos"], target_obj["pos"]) <= 1:
 			var manifest_node := String(opt.get("manifest_node", _manifest_node_for_action(target_obj, String(opt.get("action", "")))))
 			if manifest_node != "":
-				var selected_manifest := String(opt.get("manifest_id", ""))
-				var first_manifest := _first_unloadable_manifest(manifest_node)
-				if not _unload_worker_eligible(String(ag["id"])) or selected_manifest == "" or first_manifest != selected_manifest:
+				if not _cargo_option_eligible(ag, opt, manifest_node):
 					ag["option"] = null            # 途中 cargo/货位/余额变化：不偷换另一单，下 tick 重选
 					return
 			opt["phase"] = "use"
@@ -1681,13 +1679,7 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 		# 仍能在空港逐 tick 凭空获得“卸货”的 fun，形成另一种 ghost-unloading。
 		var use_manifest_node := String(opt.get("manifest_node", _manifest_node_for_action(target_obj, String(opt.get("action", "")))))
 		if use_manifest_node != "":
-			var use_manifest_id := String(opt.get("manifest_id", ""))
-			var first_manifest := _first_unloadable_manifest(use_manifest_node)
-			if use_manifest_id == "":
-				use_manifest_id = first_manifest               # 旧存档/强制 option：从当前声明恢复 exact manifest
-				opt["manifest_id"] = use_manifest_id
-				opt["manifest_node"] = use_manifest_node
-			if not _unload_worker_eligible(String(ag["id"])) or use_manifest_id == "" or first_manifest != use_manifest_id:
+			if not _cargo_option_eligible(ag, opt, use_manifest_node):
 				ag["option"] = null
 				emit_signal("agent_changed", ag["id"])
 				return
@@ -1700,8 +1692,9 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 			# 失败必须发生在完成记忆/技能/工资之前，保证【无 cargo ⇒ 零 unloading】不只是“少发一笔钱”。
 			var manifest_node := String(opt.get("manifest_node", _manifest_node_for_action(target_obj, String(opt.get("action", "")))))
 			if manifest_node != "":
-				var manifest_id := String(opt.get("manifest_id", _first_unloadable_manifest(manifest_node)))
-				var unloaded := _commit_manifest_unload(manifest_id, String(ag["id"]), manifest_node)
+				var manifest_id := String(opt.get("manifest_id", ""))
+				var unloaded := _commit_manifest_unload(manifest_id, String(ag["id"]), manifest_node,
+					bool(opt.get("manifest_authorized", false)))
 				if unloaded <= 0:
 					ag["option"] = null
 					emit_signal("agent_changed", ag["id"])
@@ -1722,7 +1715,9 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 						ag["skills"][String(opt["action"])] = int((ag["skills"] as Dictionary).get(String(opt["action"]), 0)) + 1
 						if _skill_level(ag, String(opt["action"])) > lv0:
 							ag["memory"].add("手艺又精进了，%s越发得心应手" % String(jb1.get("title", "")), 5, tick_no, ["skill", "job"])
-				var wage := _wage_for(ag, String(opt["action"]))
+				var cargo_overtime := String(opt.get("manifest_node", "")) != "" \
+					and bool(opt.get("manifest_authorized", false))
+				var wage := _wage_for(ag, String(opt["action"]), cargo_overtime)
 				if wage > 0:
 					if transfer("town", String(ag["id"]), wage, "wage:" + String(opt["action"])):
 						econ_stats["wages_paid"] += 1
@@ -1915,12 +1910,27 @@ func _adv_open(ag: Dictionary, adv: Dictionary) -> bool:
 			return false                       # 非班次/无可提交 cargo ⇒ 卸货机会不存在（不是做完再假发工资）
 	return _market_open(String(adv.get("action", "")))
 
-## cargo 候选、use tick 与 exact commit 共用同一工人资格，避免班次边界出现 ghost-unloading。
+## 只有【开始一单】必须在班；已经由 _apply_object 在班验证过的同一单可跨班次做完。
+## 这不是放松 cargo 门：旧存档/强制 option 没有引擎签发的 manifest_authorized，仍在第一次 use 前 fail-closed。
 func _unload_worker_eligible(worker_id: String) -> bool:
+	return _unload_worker_assigned(worker_id) and _in_shift(_job_of(worker_id))
+
+func _unload_worker_assigned(worker_id: String) -> bool:
 	if not _agent_by_id.has(worker_id):
 		return false
 	var job := _job_of(worker_id)
-	return not job.is_empty() and _job_action(job) == "卸货" and _in_shift(job)
+	return not job.is_empty() and _job_action(job) == "卸货"
+
+## 在班签发后，途中/使用/提交共用同一条 exact option 合同。每 tick 仍重验货位、余额与最早 manifest；
+## 唯一不再重验的是墙钟班次，避免 28-tick 工序在 dusk 边界被清空后无限重试。
+func _cargo_option_eligible(ag: Dictionary, opt: Dictionary, node: String) -> bool:
+	if not bool(opt.get("manifest_authorized", false)) or not _unload_worker_assigned(String(ag.get("id", ""))):
+		return false
+	var target_obj: Dictionary = world.get("objects", {}).get(String(opt.get("target", "")), {})
+	if target_obj.is_empty() or _manifest_node_for_action(target_obj, String(opt.get("action", ""))) != node:
+		return false
+	var manifest_id := String(opt.get("manifest_id", ""))
+	return manifest_id != "" and _first_unloadable_manifest(node) == manifest_id
 
 ## 从对象声明恢复 cargo contract。不能只信 option 的可选字段：外部 backend、强制测试与旧存档都可能缺它。
 func _manifest_node_for_action(target_obj: Dictionary, action: String) -> String:
@@ -2574,6 +2584,31 @@ func _apply_object(ag: Dictionary, intent: Dictionary) -> void:
 		intent = _best(c)
 		if not _object_intent_ok(ag, intent):   # 引擎候选本应恒合法；仍不合法（数据脏）→ 放弃本 tick，永不崩
 			return
+	var manifest_node := String(intent.get("manifest_node", ""))
+	var manifest_id := String(intent.get("manifest_id", ""))
+	if manifest_node != "":
+		# 外部 backend 只能回放【此刻仍存在的完整 authored candidate】，不能自签 cargo 授权，
+		# 也不能拿正确 manifest id 却篡改 need/amount/duration 把 28-tick 工序缩成 1 tick。
+		var manifest_target: Dictionary = world.get("objects", {}).get(String(intent.get("target", "")), {})
+		if manifest_target.is_empty() \
+				or _manifest_node_for_action(manifest_target, String(intent.get("action", ""))) != manifest_node \
+				or not _unload_worker_eligible(String(ag.get("id", ""))) or manifest_id == "" \
+				or _first_unloadable_manifest(manifest_node) != manifest_id:
+			return
+		var canonical_cargo: Dictionary = {}
+		for current in _object_candidates(ag):
+			if current is Dictionary and String(current.get("manifest_node", "")) == manifest_node \
+					and String(current.get("manifest_id", "")) == manifest_id:
+				canonical_cargo = current
+				break
+		if canonical_cargo.is_empty():
+			return
+		for key in ["action", "target", "need", "manifest_node", "manifest_id"]:
+			if String(intent.get(key, "")) != String(canonical_cargo.get(key, "")):
+				return
+		for key in ["amount", "dur_total"]:
+			if int(intent.get(key, 0)) != int(canonical_cargo.get(key, 0)):
+				return
 	ag["option"] = {
 		"kind": "object",
 		"action": intent["action"], "target": intent["target"], "need": intent["need"],
@@ -2583,6 +2618,8 @@ func _apply_object(ag: Dictionary, intent: Dictionary) -> void:
 	for k in ["manifest_node", "manifest_id"]:
 		if intent.has(k):
 			ag["option"][k] = intent[k]
+	if manifest_node != "":
+		ag["option"]["manifest_authorized"] = true
 	ag["last_say"] = str(intent.get("say", ""))
 	emit_signal("log_line", "%s → %s @%s" % [_name(ag), intent["action"], intent["target"]])
 	emit_signal("agent_changed", ag["id"])
@@ -3269,9 +3306,10 @@ func _job_action(job: Dictionary) -> String:
 	return String(ov.get(String(job.get("title", "")), a))
 
 ## 某 agent 做某动作此刻的工资：本职工作且在班 → 职位工资 + 技能加成（熟练工挣更多→深化分化）；否则 → 基础零工价。
-func _wage_for(ag: Dictionary, action: String) -> int:
+## cargo_overtime 只来自引擎已签发 option：在班开工、跨班次完工仍应领同一单工资，不能把真实提交降成无薪劳动。
+func _wage_for(ag: Dictionary, action: String, cargo_overtime: bool = false) -> int:
 	var job := _job_of(String(ag["id"]))
-	if not job.is_empty() and _job_action(job) == action and _in_shift(job):
+	if not job.is_empty() and _job_action(job) == action and (_in_shift(job) or cargo_overtime):
 		return int(job.get("wage", 0)) + _skill_level(ag, action) * int(skills.get("wage_bonus", 0) if not skills.is_empty() else 0)
 	return int(economy.get("wages", {}).get(action, 0))
 
@@ -3981,8 +4019,11 @@ func _first_unloadable_manifest(node: String) -> String:
 
 ## 同步 exact wrapper：钱、镇库与 cargo 在一个无 await/回调的提交块里同量落账。
 ## 返回真正提交的件数；任何 preflight 失败均返回 0，不写 import/unload/wage 事件。
-func _commit_manifest_unload(manifest_id: String, worker_id: String, node: String) -> int:
-	if manifest_id == "" or not cargo_manifests.has(manifest_id) or not _unload_worker_eligible(worker_id):
+func _commit_manifest_unload(manifest_id: String, worker_id: String, node: String, authorized: bool = false) -> int:
+	if manifest_id == "" or not cargo_manifests.has(manifest_id) or not _unload_worker_assigned(worker_id):
+		return 0
+	# 直接调用仍要求在班；只有经 _apply_object 签发并随 option 延续的授权可跨班次完成。
+	if not authorized and not _unload_worker_eligible(worker_id):
 		return 0
 	var rec: Dictionary = cargo_manifests[manifest_id]
 	var qty := int(rec.get("remaining_qty", 0))
@@ -4950,11 +4991,14 @@ func _form_pact(ag: Dictionary, o: Dictionary) -> void:
 ##   —— 手头两个临期约会时，回放按 key 找会取错那一个。补上后四类内建候选各自唯一。
 ## 顺序无关：本函数只读【候选是什么】，不含任何位置/下标信息 → 同时是 tie-break 盐的来源(_cand_salt)。
 func _cand_key(c: Dictionary) -> String:
-	return "%s|%s|%s|%s|%s|%s|%s|%s|%s|%s" % [
+	var base := "%s|%s|%s|%s|%s|%s|%s|%s|%s|%s" % [
 		str(c.get("kind", "object")), str(c.get("action", "")), str(c.get("partner", "")),
 		str(c.get("target", "")), str(c.get("subject", "")), str(c.get("need", "")),
 		str(c.get("area", "")), str(c.get("commit", "")),
 		str(c.get("amount", "")), str(c.get("dur_total", ""))]
+	if c.has("manifest_node") or c.has("manifest_id"):
+		return base + "|cargo|%s|%s" % [str(c.get("manifest_node", "")), str(c.get("manifest_id", ""))]
+	return base
 
 ## 候选身份 → tie-break 抖动的盐。取 31 位非负（_rng_at 里还要 *7919，留足 int64 余量）。
 ## 实测（seeds 1-3 × 60d）：本式 38.3s；改成"逐字段折叠 + 记忆化"反而 40.3s，"字符串记忆化"38.25s(噪声内)。
