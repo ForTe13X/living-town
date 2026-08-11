@@ -237,3 +237,11 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 - **mini-session**：`p1a_base_compare` 与 `exact_tip_review` 全程只读、无仓库所有权；共同否决“只停工资、让 Tao 静默失活”，建议同棒提供正向 commit seam。吸收了候选+完成双检、整单防价格地板、world receipt 不污染 #38/#44、manifest 进入 save/chain；物理东海锚和 carrier 留作独立后续棒。
 - **Review / PR sync**：最新 completed review brief 仍为 09:00 CST / `REQUEST CHANGES`，没有新 turn。PR #6 旧 head `5fb2686` 的 synthetic-merge run `31461417688` 已终态 **FAIL**：SHA verification 成功；首个真实失败是预期中的 complement ledger `baked_game_tree` stale + 缺 `hard_ids_at_bake`，随后还有 golden/modelpath/VoiceGate/player_agency 红。该 run 不含本棒，不能归因于 CargoManifest，也不是 exact integration-tip receipt。draft 必须保持不可合并。
 - **剩余 blocker / 下一恢复触发器**：① 提交/push 本棒后核对新 PR head CI，分开记录行为锚预期漂移与非锚真实失败；② 完整 seeds 1-12 + held-out + total-N scale 重新量 manifest 吞吐，未过不得重烘；③ 以 East Ocean terrain 的结构锚迁移物理港口并接可见 carrier；④ exact-tip 仍须 workflow 真进入并 push `integration/batons` 后取得 `event=push/head_sha==tip` receipt；⑤ completed manifest 暂保留在 arrival order，查询成本随历史线性增长，当前 60 天规模可接受，后续应以保持回放顺序的 compact/index 独立棒处理。
+
+### 10.10 P1-b 标准网格证据棒（2026-08-11 14:40 CST）
+
+- **阻塞换道**：本轮首先尝试把已验证 commit `fbbf6f0` normal-push 到 `codex/p1a-takeover`，但 `github.com:443` 再次 `Recv failure: Connection was reset`，远端没有变化。没有用 REST 改 ref 绕过 normal-push 边界；按防锁协议把本轮唯一实现 baton 切为 committed-tree 标准网格。
+- **验收**：在 `fbbf6f0` 上跑 seeds 1–12 × 60 天、det 3，exit 0 / S0 PASS；hard 全 `12/12`，#44/#46 各 `12/12`；#40=`11/12`，唯一 seed 6 糕点满足率 0.46、断供 42/60 天；17 个门控事件类全活，aid 覆盖 12/12，det `3/3`。canonical 资源卡见 `analysis/p1b/n12-standard-grid.md`。
+- **mini-session / ownership**：`p1a_total60_compare` 只读运行精确 Harness 命令，只写 `%TEMP%/p1b_n12_seeds1_12_60d.log`；主 agent 核对 HEAD、状态、结果与 crash pattern 后只写本 ledger 和资源卡。没有并行写同一文件。
+- **Review / PR sync**：review task 最新 completed brief 仍是 09:00 CST / REQUEST CHANGES；PR #6 仍为 draft、head `5fb2686`，旧 synthetic-merge CI 仍 FAIL。本网格来自本地 committed `fbbf6f0`，不是 PR check 或 exact-tip receipt；CargoManifest 已关闭静态 ghost-unloading 的逻辑内核，但物理 East Ocean/carrier 与 delivery receipt 继续阻断合入。
+- **Hygiene**：工作树在测试前后 clean；原始日志为 `generated/rebuildable`，未复制进 repo；未 archive/clean worktree、branch、unknown-owner 文件，未重烘或改动 golden/modelpath/complement ledger。下一棒优先重试这两个本地 commit 的 fast-forward push；若网络仍阻塞，再跑 held-out 13–30，不能重复本标准格。
