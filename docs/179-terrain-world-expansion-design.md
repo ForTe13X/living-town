@@ -1,6 +1,6 @@
 # 179 · terrain/geography 扩展【设计】——coast/ocean + 视觉起伏 + creek（并行车道 V/map）
 
-> 触发：用户 2026-08-10 terrain 愿景（docs/113 节）。workflow whbsatm1o（5-agent：布局×起伏×确定性/POND→synth→对抗 verify）。**只设计不 build。** 关键锚协调者已复核（`audit_map.py:98` typed==blockers、`gate_complement_guard` freshness）。
+> 触发：用户 2026-08-10 terrain 愿景（docs/113 节）。workflow whbsatm1o（5-agent：布局×起伏×确定性/POND→synth→对抗 verify）。原稿是设计冻结；**LA East Ocean 已由 P1-c 在 2026-08-11 落图，当前实现状态见 §六**。关键锚协调者已复核（`audit_map.py` typed==blockers、`gate_complement_guard` freshness）。
 
 ## 〇、核心物理（整套设计由一条决定）
 
@@ -65,3 +65,14 @@
 7. **L0 双潟湖先落吗**：须留 ≥1 丛（否则林相门红）；是 re-skin 非新地理，美感由你定。
 
 > 全文（含 file:line 与对抗 verdict）见 workflow whbsatm1o 输出；关键锚协调者已复核（audit_map:98 union==blockers、ledger freshness fail-closed）。
+
+## 六、P1-c 实现回执（2026-08-11；未重烘）
+
+- **物理 canon 已落地**：East Ocean=`x60..63 × y0..47`；货港 dock=`rect[56,7,4,2] / facing=east / population_anchor=false`；Tao home+spawn `[58,8]`、`port_dock=[59,8]`、货船 berth `[60,8]`，依次为陆/陆/水。渔业独立为 `north_pier=rect[30,7,4,2] / population_anchor=true` 与 `bench_pier=[31,7]`，不声明 route/node/berth。东丛截到 `x59`，不与海重叠。隔离 J/H/K 矩阵表明回归来自“渔台与 Tao 同迁货港”的轨迹耦合，而不是 home 字段；分离渔业后保留 Tao 的东海首局语义，七个目标 seed 的 #40 为 7/7。
+- typed 数量现为 `water=272 / trees=130 / blockers=569`，相对旧 403 blockers 净增 166，符合 LA 成本表；`audit_map.py` 已把这组跨 map/logistics/agents/production 的精确锚、地类、route/node、north_pier 不重叠/北邻水岸、渔业物流隔离、旧 9-area 扩容锚与全图连通/双路门共同判红。
+- **carrier 采用纯 View 投影**：`CargoManifest` 仍是唯一权威；一个 authored route/node 只投影最早 ready 单，多单用 bounded count 徽记，队列空立即零船。没有第二份 spawn/despawn 状态，不进 world/nav/save/chain，不扰乱既有 `pay → import → cargo_unload → wage` 事件顺序。
+- `WorldView` 的 east-facing dock 不再画旧北池常驻渔船；只有 ready manifest 才画程序化货船。旧 north-facing renderer 保留为 `legacy-supported` fallback，没有删除历史兼容面。
+- 真实 1280×768 framebuffer 的同 seed/tick ON/OFF 对拍得到 `443` 个变化像素、bbox `(948,199)-(979,221)`，全部落在 East Ocean berth crop；`tools/assert_east_ocean_carrier.py` 已接入 `visual_gate.sh`，同图负对照会红。截图只留 `%TEMP%`，不新增 pixel golden。
+- pinned `gamecraft-runner:4.6.2` 已在最终 K 地图上重拍日夜、carrier、空间往返、POND、七类室内、家具、树丛、四季、降水、cafe 2F 与全楼层往返；12 组属性断言全部 PASS。Windows Git Bash 的宿主 `python` PATH 缺失令外层初次 exit127，但全部 PNG 已成功产出，同一批帧随后由 PowerShell 调相同断言逐项 exit0；未把 runner plumbing 误写成视觉回归。
+- exact code commit `c56f31e` 的 standard/held-out/N16/N24/N60 均 S0 PASS；default+held-out 的 import/export provider 非空，N>12 export 为成文惰性、#46 明确 vacuous。所有网格均未传 golden。
+- **未解除 finalize 门**：本次水域/nav 与 manifest 可见化必然移动 golden/modelpath，任何 `game/` 变动也令 complement ledger freshness stale；本棒遵守冻结，不重烘三锚。待 committed exact tree、完整网格、review 收敛后统一 finalize，不能把 focused/无 golden 的 green 冒充可合入。
