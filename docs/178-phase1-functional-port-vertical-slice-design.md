@@ -139,3 +139,89 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 **⇒ P1-a 重设计 workflow 须纳入**：消费→revenue 种子路（不只自带口粮）、#01/#40 scoping 在"外部生存口粮 + 镇内 discretionary 消费"框架下重算。info-flow/Lacanian 维度记愿景、Phase 2-3 展开。
 
 **terrain 决策：用户选 LA 东海（East Ocean）**（见 docs/179 §五）。
+
+## 十、Codex takeover 重设计 + P1-a 首片（2026-08-10，`codex/p1a-takeover`，已 checkpoint/未重烘）
+
+本节**取代 §七「design only」与 §八 frozen-needs 实现 spec**；§九/九-bis 的 fully-integrated 用户决定是现行产品语义。当前首片已在隔离分支实现，但在 golden/held-out/全 CI 完成前仍不算 landed。
+
+### 10.1 重设计结论
+
+- `agents.json.affiliates[]` 独立声明阿涛；默认场景且 logistics 开启时，在 `_pool_rescale` / `_work_pull_mult` **之后**追加。因此生产/出口继续用 12 位核心居民定标，affiliate 本人仍是完整 agent。
+- **不设 `_is_core` 行为豁免**：阿涛的 needs 正常衰减，正常吃饭/赶集/喝咖啡、付钱、社交并参加选举；#01/#03/#37 都真实覆盖他。唯一口径变量 `core_population` 只用于 #15/#20 的小镇/大 N 分档，修掉“第 13 人令既有门静默豁免”的风险。
+- `port_dock` 的 `advertises=卸货` 由新 `_compile_ports()` 编译成真实、阻挡、可导航 world 对象；type=`码头` 走 `dock` 程序化槽，不占别名预算。岗位复用 jobs holder / shift / wage / skill 原语，工资从 town_coin 支出。
+- **暂不加外部口粮 lane**。先验“13 张嘴必撞 #01/#40”被实测否掉：在 12 人产能不放大的条件下，shipping/default 的 hard 门与跨 seed 软门仍过。held-out 唯一 #40 反转缺的是 **糕点**（discretionary demand），不是生存口粮；给免费口粮是错因调参。N=24 的口粮边界另记 scale/composition 诊断，不能借 P1-a 预防性补丁偷偷重标。
+- P1-a 的“卸货”目前是 Option 1：岗位/可见动作/工资/社会存在落地，贸易货量仍由日界 import ledger 注入。carrier/manifest 驱动真实搬运属于 P1-b，不能把本片描述成已经完成物理搬货。
+
+### 10.2 当前证据
+
+- 静态：`lint_data` PASS（13 agents / 24 personas）；`audit_map` PASS（10 个 activity sites，含功能港口；13 agents 全可达）；`lint_links` PASS；`git diff --check` PASS。
+- 先验探针：固定 12 人生产与 work-pull、跑 13 个普通 agent，seeds 1-3 × 60 天均 hard/soft 空、#40 绿、饿穿 0；所以没有先塞免费口粮。
+- 真实实现：seeds 1-12 × 60 天，逐 seed `n_agents=13`，**hard_fails=[] / soft_fails=[] / #40=12/12 / starved=0**。口粮满足率范围约 0.655-0.990，周期性短缺没有被灌没。
+- 活性：seed 1 × 60 天，码头工工资 `wage:卸货` 19 笔、被接受社交 52 次；新 `p1a_affiliate_test` 的 20 天硬门还断言了 4 次卸货工资、12 笔镇内消费、53 次社交、needs 真变化、选民=13。
+- 确定性：Harness seed 1 × 60 天、det=1，46 条不变量全绿，批量 digest + event digest + 逐 tick chain 两跑一致。`player_touch_test` PASS，H3 未报未映射槽。
+- P1-a off-gate：临时摘掉 `agents.affiliates` 与 `port_dock.advertises`（既有 import/export 保留），seed 1 × 60 天重新与 committed golden 的 digest/event_digest/chain **三项逐字节一致**。
+- **held-out（2026-08-11）**：默认 12 core + 1 affiliate，seeds 13-30 × 60 天，**hard 18/18、软门过（阈值 17/18）、det 3/3、活性过**。#40=17/18；仅 seed 27 的糕点满足率 0.48（95/197、断供 36/60 天）触发下限臂。committed `d46cbb1` 的 seed 27 为 #40 绿，故这是 fully-integrated affiliate 带来的真实 discretionary demand，不是旧债；但它仍在成文跨 seed 容差内。
+- **规模参数口径抓虫（2026-08-11）**：P1-a 在 `spawn_count` 冻结 pool/work-pull **之后**追加 affiliate，所以 Harness `--agents N` 现在实际是 **N core + 1 affiliate**。旧写法 `--agents 16/24/60` 实得总人口 17/25/61；前两格全门过，最后一格虽 hard 12/12、det 1/1，却 #40=9/12（seeds 2/6/9 上限臂）且已越过“≤60”红线，**不得冒充 N=60 证据**。
+- **精确总人口矩阵（2026-08-11）**：改用 `--agents 15/23/59` 得到 15/23/59 core + 1 affiliate：N=16 **PASS（#40 12/12）**；N=24 **soft FAIL（hard 12/12、det 1/1、#40 10/12，seeds 1/7 下限臂；seed 1 口粮 0.47、断供 33/60 天）**；N=60 **PASS（hard 12/12、det 1/1、#40 11/12；仅 seed 9 上限臂）**。三格活性均过。这个非单调形状要求下一棒先把 core/total 契约显式化，再对 N=24 做因果诊断，不能凭 N=60 或单一 seed 外推。
+- **base 反证**：隔离 `git archive d46cbb1` 上，默认 seed 27、N=24 seeds 1/7、N=60 seeds 2/6/9 的 hard/soft 均空、#40 均绿；临时 archive/展开目录验证位于 `%TEMP%` 后已精确删除，日志保留在 `%TEMP%/p1a_base_*_godot.log`。因此上列边界来自 P1-a 的人口组成/需求变化，而非这些 seed 的 committed 基线失败。
+- **scale-count contract（2026-08-11；checkpoint `ad1cc08`）**：Harness 保留 `--agents N` 为 **legacy core**（大量历史 fixture 不静默换义），新增互斥的 `--core-agents N` 与 `--total-agents N`；后者调用 `Sim.scale_population_plan()` 按当前场景、logistics、affiliate id 冲突规则反算 core，并在每次主跑/det 复跑启动后同时断言 `core_population` 与 `agents.size()`。带人口参数的 `[S0]` JSONL 新增 `{mode,requested,core,total}` 证据；冲突参数、非正整数、无法缩小的 total 均 exit 2。1 天真 tick 对拍中，`--total-agents 16/24/60` 分别得到 core 15/23/59、total 16/24/60，与 legacy `--agents 15/23/59` 的 digest/event_digest/chain/events 四项逐字相同；三条 total 路均 det 1/1。以后报告 N=60 不再依赖人工减一。
+
+### 10.3 尚未完成（不可省略）
+
+1. **N=24 #40 下限臂因果诊断**：先把 seeds 1/7 缩成 affiliate ON/OFF、同 total/同 core 的可比臂，判定是规模供给还是 affiliate composition；再决定成文处理，禁止直接拍数值。
+2. logistics off-gate 的逐字节对拍；golden seeds/scenarios、modelpath、ledger 三锚只能在行为与 review 收敛后重烘。
+3. 全 CI（含 complement fixtures、save/load、视觉/Xvfb）与人眼港口可读性验收。
+4. P1-b carrier/manifest；Phase 3 tax；outsider 信息流与 Lacanian aspiration 均未实现，继续按 §九-bis 排期。
+
+### 10.4 Baton / hygiene ledger（2026-08-11）
+
+- 本棒范围：只补 held-out + scale + committed-base 反证；主 agent 唯一写入本文件，三个 mini-session 只写互不重叠的 `%TEMP%/p1a_*_godot.log`，仓库未产生测试生成物。
+- 验证环境：Godot 4.6.2 stable；各完整格均检查 hard/soft/liveness/det；日志仅有退出期 `ObjectDB instances leaked` warning，无 signal 11 / fatal / out-of-bounds/native crash 命中。warning 记 `stale-candidate`，不在本棒顺手修。
+- Git hygiene preflight：共享仓库当前 164 个 worktree（161 个绑定分支、3 detached、0 标记 prunable），184 个本地分支，其中 150 个 `worktree-agent-*`。因全都缺 owner/完成态证据且多数仍被 worktree 占用，统一记 `unknown-owner / stale-candidate`，**本棒零 archive、零 clean、零 branch mutation**。
+- scale-count contract 棒：独占写入 `game/bench/Harness.gd`、`game/scripts/Sim.gd` 与本 ledger；测试日志只写 `%TEMP%/p1a_contract_*.log`。未改金标/modelpath/ledger 锚；实现已随 P1-a WIP checkpoint `ad1cc08` 入 Git、尚未 push，参数错配现在可在仿真 tick 前恢复性失败，不再产出误标 N 证据。
+- 本棒验证：Godot 4.6.2 解析/运行通过；default / legacy core 12 / explicit core 12 / total 13 四路都得 core 12、total 13 且四项摘要全等。total 16/24/60 均跑 1 天真 tick、各 det 1/1；三组 total↔legacy-core 对拍的 digest/event_digest/chain/events 也全等。非法 flag 冲突、core 11 与 total 12 均 exit 2、零 `[S0]`。`lint_data`、`audit_map`、`lint_links`、`git diff --check` 全过；仓库根与 `game/` 均未生成 `.godot`。
+- mini-session：`p1a_base_compare` 全程只读，贡献 strict parse/互斥、det 双断言与“plan/append 共用 selector”审阅；后者已吸收为 `Sim._eligible_affiliate_defs()`。它另 flag `tools/lint_data.py` 尚未拒绝空/重复 affiliate id 与 `npc_N` 保留命名，记 `stale-candidate`，不在本棒跨文件扩张。
+- link hygiene flags（只 flag、不整理）：`lint_links` 仍报 `docs/52@worktree-agent-a0c76a3f96ae5dbcf` 12 处为“分支在、文档不在”，`docs/45@claude/objective-lumiere-e6f125` 3 处已可由 HEAD canonical 文档替代，`docs/54@worktree-agent-a31b222a4dfd444a7` 2 处对应内容已并入 HEAD。owner/source task 未确认，统一 `stale-candidate`；后续 hygiene 棒先定位消费者再修引用，未 archive/clean。
+- 下一可调度 baton：P1-a N=24 seeds 1/7 因果最小复现；用新 `--total-agents 24` 固定总人口，再做 affiliate composition 对照。它与 logistics off-gate、golden 重烘、全 CI 分离。
+
+### 10.5 Review delivery gate + 贸易活性补集棒（2026-08-11；checkpoint `221456e`）
+
+- **Review sync**：Living Town `review` task 的 09:00 CST scheduled brief 仍是 `REQUEST CHANGES`。draft PR #5 的 synthetic-merge CI 后来于 09:50 CST 变绿，但 PR base 固定在 `d18cc43`，比当时 live `integration/batons@d46cbb1` 落后 **178 commits**；live exact product tip 查询为 0 check-runs / 0 Actions runs。因此这次 green 只说明其冻结 review merge 可跑，**不是 exact-tip delivery proof**，不解除合入门。
+- **采纳的反例**：旧 `SPEC[44]/SPEC[46]` 在 logistics 开启时恒给 provider=1；所以 zero-trade、import-only 等没有对应事件的格子也会被补集表记成“有牙”。本棒把 `[X3LIVE]` 扩为小型可复用贸易活性接口：`import_events`（真实 import 条数）、`export_related`（#46 扫描的 pay/export-stock 相关事件数）、`export_pairs`（相邻 pay,stock 候选对，仅诊断）。#44/#46 provider 分别消费前两项，字段缺失故意 fail-closed，旧探针输出不能冒充新证据。
+- **边界收口**：#46 不直接用 `export_pairs` 当 provider——孤儿 pay/stock 可令 #46 变红，但完整 pair 仍为 0；只有 `export_related==0` 才能诚实称“判据没有事件可判”。probe 不复判 qty、actor、target 或货物合法性，判决仍由 `Invariants.gd` 独立负责，避免量具和门互相喂答案。
+- **负控制**：`tools/gate_fixture_audit.py --self-test` 现经完整 `[X3LIVE] → parse_dir → SPEC` 链覆盖 logistics-on 的 zero / import-only / export-only / both，以及 orphan-only；前四格分别只激活真实存在的方向，orphan 格证明 `pairs=0` 时 #46 provider 仍可非零。旧 constant-one、constant-zero、只数 import 三类错误实现均会被矩阵击穿。
+- **实跑证据**：Godot 4.6.2 在 `git archive HEAD:game` 隔离树上跑 S0 seeds 1-12 × 60 天，探针子进程 `rc=0`、12/12 条 `[X3LIVE]` 可解析；#44 `import_events=19..20`，#46 `export_related=8..16`、诊断 `export_pairs=4..8`，且 12/12 均满足 `related == 2*pairs`。随后 `python tools/gate_fixture_audit.py --from %TEMP%/lt_trade_provider_out_v2 --only S0` exit 0，HARD_IDS/DIAG_IDS/ci.sh defaults 对账均通过。这里只跑单格，工具明确警告**不能**据此下全 CI provider 结论。
+- **review 点名控制**：同一 committed-tree 隔离副本的 probe 新增量具专用 `--trade-control`（不进入游戏运行时）。seed 1 × 60 天：`zero-import` 得 `import=0 / export_related=0`；`zero-export` 得 `import=20 / export_related=0`，两格 #44/#46 本体仍因空集真而绿，但 provider 均按真实事件归零，证明不再读取“logistics 存在”。由于 external 初始无钱、出口收入依赖进口付款，zero-import 实跑会连带令出口也为 0；export-only 的方向解耦由上面的合成解析格覆盖，不把经济依赖伪装成独立运行时流。未知 control exit 2 且零 `[X3LIVE]`。
+- **POOL16 反例已复现并收口于量具**：POOL16 seeds 1-12 × 60 天子进程 `rc=0`，`import_events=20`（12/12），而 `export_related=export_pairs=0`（12/12）；新表把 #46 明确列为整格空洞，不再叫 live provider。当前 baked ledger 仍是旧锚（`Kind46=G`，providers 仍含 `POOL16`），所以 delivery blocker **尚未关闭**；本棒遵守禁令不重烘，等 committed tree + 完整 fixture 网格时才允许刷新。
+- **诚实 delivery 状态**：`tools/gate_complement_ledger.json` **未重烘**；必须等代码提交、完整 fixture 网格和 exact game-tree 来源闭环同时成立才可更新。review 对现 P1-a “ghost-unloading”的判断也采纳：静态卸货广告/工资没有 carrier、manifest、cargo decrement 或 atomic stock commit，且旧 north-pond 锚与用户已选 East Ocean 冲突，故本片仍不可合入。后续顺序保持：补集门证据进入 committed tree → exact-tip CI → East Ocean 的最小 `CargoManifest` 纵切（manifest arrival → gated unload → cargo/stock 原子提交；无 cargo 必须零 unloading）。
+- **Hygiene**：本棒只写 `tools/gate_fixture_probe.gd`、`tools/gate_fixture_audit.py` 与本 ledger；测试派生物仅在 `%TEMP%/lt_trade_provider_*`，标 `generated/rebuildable`。实现已 checkpoint 为 `221456e`、尚未 push；未改 branch/worktree/ref、未 archive/clean，README 受保护首屏未触碰。
+
+### 10.6 Exact-tip CI 触发合同棒（2026-08-11；checkpoint `e7cf14c`）
+
+- **Review/live cutoff**：Living Town `review` task 最新 completed scheduled brief 仍是 09:00 CST / `REQUEST CHANGES`，没有更新轮次。11:21 CST heartbeat 再查 GitHub：live `integration/batons=d46cbb1` 仍为 **0 check-runs / 0 Actions runs**；draft PR #5 的 `ci=SUCCESS` 仍只对应 review head `4bcdc81` + 旧 base `d18cc43`，不是 live product tip。故本棒只建立“下一次 integration push 能产生 exact-tip run”的前置合同，不宣称已有交付回执。
+- **目标/独占范围**：只改 `.github/workflows/ci.yml` 与本 ledger。保留 `pull_request` synthetic-merge CI，同时把 `integration/batons` 加入既有 `push.branches`（`master` 不移除）；在 `actions/checkout@v4` 后逐位核对 `git rev-parse HEAD == GITHUB_SHA`，不等则 exit 1，成功打印 `CI_SOURCE event/ref/sha` 单行回执。它不碰游戏、金标、modelpath、complement ledger 或 branch protection。
+- **官方语义研究卡**（访问 2026-08-11；只适配原理，未复制第三方代码）：
+  - GitHub Docs `Workflow syntax`：`on.push.branches` 按被推 ref 的 branch name 过滤；多事件带配置时各自保留冒号。来源：https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax
+  - GitHub Docs `Events that trigger workflows`：push 的 `GITHUB_SHA` 是推到 ref 的 tip；`pull_request` 的 `GITHUB_SHA/GITHUB_REF` 是 merge ref 的 merge commit，默认 checkout 因而验证 merged result。来源：https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows
+  - upstream `actions/checkout`（MIT；当前 workflow 仍固定 major `v4`）：默认只取触发该 workflow 的单个 ref/SHA，足够做 HEAD 对账，不需要为本合同放大到 `fetch-depth:0`。来源：https://github.com/actions/checkout
+- **本地验收与限制**：PyYAML `BaseLoader` 解析通过，并断言 push branch 恰含 `master`、`integration/batons`，`pull_request` 仍在，SHA verification step 同时含 `git rev-parse HEAD` 与 `GITHUB_SHA`；`git diff --check` 通过。当前 Windows 的裸 `bash` 实际指向无 `/bin/bash` 的 WSL relay，无法诚实复现 ubuntu runner；shell 片段仅用 runner 保证存在的 bash 基元，最终证据必须等该 workflow 进入 committed integration tip 后由 GitHub run 给出。
+- **剩余 blocker / 恢复触发器**：本棒不配置 branch protection/ruleset，也不 push，所以 exact-tip delivery blocker 仍是 open。恢复触发器是：workflow 与 P1-a 候选经正常 review 落入 `integration/batons` 并 push；随后必须核对 run 的 `head_sha == live integration tip`、`event=push`、`CI_SOURCE` 相同 SHA、完整 `ci` terminal success。任何 PR merge-ref green 仍只算 synthetic compatibility，不能替代这张 receipt。
+- **mini-session**：`exact_tip_review` 全程只读，确认 slash branch pattern、push/PR 两类 `GITHUB_SHA`、默认 checkout、depth=1 与现有 concurrency 均符合合同；特别否决把 checkout 改成 PR head SHA（会破坏 synthetic-merge gate）。它建议的 `permissions: contents: read` 属安全强化、branch protection/merge queue 属另一交付棒，本轮均不顺手扩入。
+- **Hygiene**：workflow 已独立 checkpoint 为 `e7cf14c`、尚未 push；未改 refs/worktrees、未 archive/clean，其余文件原样保护。README 受保护首屏未触碰。
+
+### 10.7 Complement ledger hard-ID 身份合同棒（2026-08-11；checkpoint `221456e`）
+
+- **Review/live cutoff**：12:22 CST 恢复时，Living Town `review` task 最新 completed scheduled brief 仍是 09:00 CST / `REQUEST CHANGES`；live `integration/batons=d46cbb1` 仍无 exact-tip check/run，PR #5 的绿灯仍是旧 base 的 synthetic merge，故 CargoManifest 继续暂停。本棒只关闭 review 点名的 complement ledger 盲区：旧 M8 把 baked hard 判据删掉只会 warning，不能借此声称 P1-a 可交付。
+- **目标/独占范围**：只改 `tools/gate_fixture_audit.py`、`tools/gate_complement_guard.py` 与本 ledger。未来完整 bake 会在 `_meta.hard_ids_at_bake` 写入升序精确 hard-ID 集合；guard 要求该字段是无重复正整数数组，严格解析 live 唯一 `const HARD_IDS := [...]`，比较集合全等，并确认每个 baked hard ID 仍有真实 `_chk(id)` 调用。新增 hard、删除/降级 hard、删除判据、缺字段、非法表达式、只在注释保留 `_chk` 均 fail-closed；未知新软门仍只 warning。
+- **mini-session / 吸收项**：`exact_tip_review` 全程只读，指出两条原计划绕过：旧 `_check_hard_ids()` 在声明缺失时只输出“无法核对”，CLI 可能继续 bake；raw `_chk(` 搜索会命中文档/注释。已吸收为结构化 strict parser、明确 boolean 拒烘，以及只接受 bare / `R.append` / `return` 实际调用行。它建议的 metadata 类型门也已落地（`type(i) is int`，拒绝 bool、非正数与重复）。未复制外部代码，无许可证输入。
+- **验证证据**：`python tools/gate_fixture_audit.py --self-test` PASS（21 项，含新锚精确写入 `hard_ids_at_bake`、live 副本对账、非法表达式与重复 id 拒绝）；`python tools/gate_complement_guard.py --self-test` PASS（19 项，M8/M8b/M8c/M8d/M8e 分别击穿判据删除、hard 降级、旧 schema、非法 live 表达式与注释伪装）；`python -m py_compile tools/gate_fixture_audit.py tools/gate_complement_guard.py` 与 `git diff --check` 通过。
+- **诚实迁移状态 / 停止条件**：`tools/gate_complement_ledger.json` 按协议**未重烘、未手填**，现有锚为 2026-08-10 / commit `0fe0814`，缺 `hard_ids_at_bake`；正式 `python tools/gate_complement_guard.py` 因而按设计 rc=1，并明确要求完整重烘。这是 fail-closed migration blocker，不是回归假红。本棒到“producer/consumer 合同和负对照均通过、旧锚必红”即停止。
+- **恢复触发器**：先让 probe/audit/guard 与 exact-tip workflow 经 review 进入同一 committed product tree；再从该 exact game tree 跑完整 fixture 网格并获准执行一次 full `--run --bake-ledger`，随后要求 guard rc=0、ledger 的 `baked_commit/baked_game_tree/hard_ids_at_bake` 与 live tip 全部对账，最后才可取 exact-tip CI receipt。不得单独手改 metadata 或用局部网格重烘。
+- **Hygiene**：没有改现有 ledger、golden/modelpath、README、branch/ref/worktree；实现已 checkpoint 为 `221456e`、尚未 push，未 archive/clean。只 flag `tools/gate_complement_ledger.json` 为 `active + stale-schema/blocking`，恢复点仍是 Git 中既有 `0fe0814` 锚及未来一次可复现 full bake。
+
+### 10.8 Git takeover checkpoint（2026-08-11 13:20 CST）
+
+- 用户明确授权主 agent 接管 Git 管理。当前 dirty tree 经只读分组审阅后，17 个路径全部可追溯至 §10.1–10.7，无明显无关用户文件；没有使用 `git add -A`，每次均以显式路径 stage、核对 cached 清单并先跑 `git diff --cached --check`。
+- 已建立三个可恢复主题提交：`e7cf14c`（exact-tip workflow）、`ad1cc08`（P1-a affiliate dock + scale-count WIP checkpoint）、`221456e`（#44/#46 event-backed provider + hard-ID fail-closed）。本文件作为第四个独立 ledger commit；提交不等于评审通过。
+- checkpoint 前复验：`p1a_affiliate_test` PASS（20 天：wage=4、spending=12、social=13、voters=13）；`lint_data.py` 与 `audit_map.py` PASS；fixture audit 21/21、complement guard 19/19；workflow YAML 合同与 `git diff --check` PASS。正式 complement guard 仍因旧 ledger 缺 `hard_ids_at_bake` 按设计 rc=1。
+- **Delivery gate 不变**：P1-a 仍是 review 所称 ghost-unloading，且港口锚未迁至 East Ocean；旧 ledger 未重烘，exact-tip 远端 receipt 尚不存在。Git checkpoint 只保存、分层和公开证据，不授权向 `integration/batons`/`master` 合并。远端发布必须保持 draft/WIP，并在正文列出这三个 blocker。
