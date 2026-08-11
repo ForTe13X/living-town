@@ -291,10 +291,9 @@ var production := {}            # {start_stock, goods:{g:{cap,spoil_per_day,blam
                                 #   ★Wave K1 起它是**派生值**：= _pool_rescale(_production_raw, 人口)。见 _pool_rescale。
 var _production_raw := {}       # data/production.json 的原样（未换尺度）。start_new 每次都从它重算 production
                                 #   ——不能就地改 production，否则 goto_tick 反复 start_new 会把倍率乘上去。
-# Wave E · 车道 E1：物流/进口（docs/144 §六）。{nodes:[{id,type,area,pos}], import_lanes:[{good,batch,every_days,node}]}。
+# Wave E / P1-b：物流进口。lane 到期先生成 CargoManifest，码头工完成卸货才经唯一钱/库存通道提交。
 #   缺文件 → _logi_on()==false → 整段短路 → 逐字节回到今天（off 门，与 production.json / economy.json 同一套纪律）。
-#   进口是【外部无限供给】的确定性注入：日界 day%every_days==0（纯 f(day)，无 RNG/Time/浮点）经 _stock_move 唯一通道写
-#   town_stock，type="import"、actor=node ⇒ 硬 #38 认它为 +delta、硬 #44 溯源它到已声明的 node/lane 货（对称 #39）。
+#   arrival 是纯 f(route,day,lane-index)；commit 的 type="import"、actor=node 仍由 #38/#44/#45 守账与溯源。
 var logistics := {}
 ## ── Wave K1 双尺度（docs/41 §0.5 规模能力矩阵，用户 2026-07-31 定）────────────────────────
 ## **消耗侧一个字不动**（60 个 agent 逐个真算：谁吃了什么、谁缺了什么、缺了记恨谁）。
@@ -320,6 +319,10 @@ var _stock_day := {}            # good -> 当日已消耗但尚未入账的件�
                                 #    Main._rebuild_feed 只回扫尾部 200 条 ⇒ 会把小镇纪事整块冲掉。按天入账既保住账本又不刷屏。）
 var _short_day := {}            # good -> 上一次写过 shortage 事件的 day（同一天同一货只报一次；后果计数仍逐次累加）
 var _trade_day := {}            # ★AA3：商贩 id -> 上一次写过买卖口碑后果的 day（日名额，理由与 _short_day 同一条，见 _trade_fallout）
+## P1-b CargoManifest 权威态。Dictionary 供 id 精确寻址，order 保存 authored arrival 顺序；二者只含可存档纯数据。
+## 物理 East Ocean 港与 carrier 视觉尚未落地；route_id 只声明货源，不把当前 port_dock 坐标冒充东海岸。
+var cargo_manifests: Dictionary = {}   # id -> {route_id,lane_index,node,good,arrived_day,initial_qty,remaining_qty,price_*,state}
+var cargo_manifest_order: Array = []   # manifest id，严格按 lane 著者序 × day 到港顺序追加
 var prod_stats := {"produced": {}, "consumed": {}, "short": {}, "spoiled": {}, "attempts": {}, "work": {}}  # 诊断计数（逐 good / 逐动作 / 逐职位）
 var agents: Array = []          # [agent dict]
 var _agent_by_id := {}
@@ -969,6 +972,8 @@ func start_new(p_seed: int = 12345) -> void:
 	_stock_day = {}
 	_short_day = {}
 	_trade_day = {}
+	cargo_manifests.clear()
+	cargo_manifest_order.clear()
 	prod_stats = {"produced": {}, "consumed": {}, "short": {}, "spoiled": {}, "attempts": {}, "work": {}}
 	if _prod_on():
 		for g in production.get("goods", {}):
@@ -1610,6 +1615,13 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 		# use、绝不迈上家具格。那个邻格由 A* 走到=保证可达(gen_town 审计每个家具≥1 可达邻格)→ 无饿穿零风险，
 		# 且比旧"踩上家具"早一格到达(需求更早满足、更安全)。同区邻格 → area 门控(社交/赴约)不变。
 		if _manh(ag["pos"], target_obj["pos"]) <= 1:
+			var manifest_node := String(opt.get("manifest_node", _manifest_node_for_action(target_obj, String(opt.get("action", "")))))
+			if manifest_node != "":
+				var selected_manifest := String(opt.get("manifest_id", ""))
+				var first_manifest := _first_unloadable_manifest(manifest_node)
+				if not _unload_worker_eligible(String(ag["id"])) or selected_manifest == "" or first_manifest != selected_manifest:
+					ag["option"] = null            # 途中 cargo/货位/余额变化：不偷换另一单，下 tick 重选
+					return
 			opt["phase"] = "use"
 			# Wave E 扣货点：消耗类动作(吃饭/洗澡/喝咖啡/歇着)开用时扣一件镇库存。
 			# ★缺货【不阻断】：这里既不 return 也不清 option，need 照在 use 分支补满 ——
@@ -1665,11 +1677,35 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 			_move_agent(ag, _nav_step(ag, target_obj["pos"]))
 		emit_signal("agent_changed", ag["id"])
 	else:  # use
+		# cargo 合同必须在【任何 need mutation 之前】重检。否则强制/旧 option 即使最终领不到工资，
+		# 仍能在空港逐 tick 凭空获得“卸货”的 fun，形成另一种 ghost-unloading。
+		var use_manifest_node := String(opt.get("manifest_node", _manifest_node_for_action(target_obj, String(opt.get("action", "")))))
+		if use_manifest_node != "":
+			var use_manifest_id := String(opt.get("manifest_id", ""))
+			var first_manifest := _first_unloadable_manifest(use_manifest_node)
+			if use_manifest_id == "":
+				use_manifest_id = first_manifest               # 旧存档/强制 option：从当前声明恢复 exact manifest
+				opt["manifest_id"] = use_manifest_id
+				opt["manifest_node"] = use_manifest_node
+			if not _unload_worker_eligible(String(ag["id"])) or use_manifest_id == "" or first_manifest != use_manifest_id:
+				ag["option"] = null
+				emit_signal("agent_changed", ag["id"])
+				return
 		var per := float(opt["amount"]) / float(opt["dur_total"])
 		var nid: String = opt["need"]
 		ag["needs"][nid] = clamp(float(ag["needs"][nid]) + per, 0.0, 100.0)
 		opt["remaining"] = int(opt["remaining"]) - 1
 		if int(opt["remaining"]) <= 0:
+			# P1-b：完成卸货前再次走 exact commit。强制 option、旧存档或未来多工人竞争都不能绕过这道门。
+			# 失败必须发生在完成记忆/技能/工资之前，保证【无 cargo ⇒ 零 unloading】不只是“少发一笔钱”。
+			var manifest_node := String(opt.get("manifest_node", _manifest_node_for_action(target_obj, String(opt.get("action", "")))))
+			if manifest_node != "":
+				var manifest_id := String(opt.get("manifest_id", _first_unloadable_manifest(manifest_node)))
+				var unloaded := _commit_manifest_unload(manifest_id, String(ag["id"]), manifest_node)
+				if unloaded <= 0:
+					ag["option"] = null
+					emit_signal("agent_changed", ag["id"])
+					return
 			ag["memory"].add("在%s%s了" % [target_obj.get("area", ""), opt["action"]], 3, tick_no, [opt["need"], opt["target"]])
 			# Wave E 产出点：本职在班干完一活 → 往镇库存交一批货（口径与 _wage_for 的"本职在班"同一条）。
 			# 先交货再领钱。这一行就是"劳动不再只是钱包数字"的落点：它写的是世界状态(town_stock)，不是 agent 的钱。
@@ -1715,12 +1751,12 @@ func _nightly() -> void:
 	# 排在最前：当晚的租金/阶层 gossip 之前先把"今天镇上吃掉多少、坏掉多少"落定，账本按天闭合。
 	if _prod_on():
 		_stock_nightly()
-	# E1 进口日结：当天消耗/spoil 已入账（账本按天闭合）后，外部供给到港。放在 _stock_nightly 之后 ⇒ 到港的这批
-	#   算【今晚】的库存、供明天用（当天的缺货/满足率已由今天的实际存量定死，进口不追溯改写今天）。缺文件→零扰动。
+	# P1-b 进口日结：当天消耗/spoil 入账后，外部货以 CargoManifest 到港；此刻不改镇库/钱。
+	#   后续只在码头工在班完成卸货时 exact commit。缺 logistics/route_id → 零 cargo、零卸货。
 	if _logi_on():
 		_logi_import()
-		# E-export 首片（docs/157/158）：出港排在 import 之后 ⇒ 当天 import 已把 external 贷足、export 可从中抽
-		#   （闭环：先『进』贷入 external、再『出』借出 external ⇒ external=Σimport−Σexport≥0）。缺文件→本行不达。
+		# export 仍在日界尝试；它只能花【此前已真实卸货】贷入的 external，今晚仅 arrival 的 cargo 不算信用。
+		# 因而闭环仍是 external=Σcommitted import−Σexport≥0。缺文件→本行不达。
 		_logi_export()
 	# M3 反思（Stanford 生成式 agent）：每夜从社会状态提炼一条洞察写回记忆 → 丰富语音 grounding。
 	# 引擎地板=确定性合成(下)；模型后端可再 LLM 润色(AIBackend.reflect)。far agent(激进 LOD)跳过=背景群演。
@@ -1873,7 +1909,27 @@ func _adv_open(ag: Dictionary, adv: Dictionary) -> bool:
 	var t := String(adv.get("job", ""))
 	if t != "" and String(_job_of(String(ag["id"])).get("title", "")) != t:
 		return false
+	var manifest_node := String(adv.get("manifest_node", ""))
+	if manifest_node != "":
+		if not _unload_worker_eligible(String(ag["id"])) or _first_unloadable_manifest(manifest_node) == "":
+			return false                       # 非班次/无可提交 cargo ⇒ 卸货机会不存在（不是做完再假发工资）
 	return _market_open(String(adv.get("action", "")))
+
+## cargo 候选、use tick 与 exact commit 共用同一工人资格，避免班次边界出现 ghost-unloading。
+func _unload_worker_eligible(worker_id: String) -> bool:
+	if not _agent_by_id.has(worker_id):
+		return false
+	var job := _job_of(worker_id)
+	return not job.is_empty() and _job_action(job) == "卸货" and _in_shift(job)
+
+## 从对象声明恢复 cargo contract。不能只信 option 的可选字段：外部 backend、强制测试与旧存档都可能缺它。
+func _manifest_node_for_action(target_obj: Dictionary, action: String) -> String:
+	for adv in target_obj.get("advertises", []):
+		if adv is Dictionary and String((adv as Dictionary).get("action", "")) == action:
+			var node := String((adv as Dictionary).get("manifest_node", ""))
+			if node != "":
+				return node
+	return ""
 
 ## F1 市集时段门：摊位对外的那条广告位只在【商贩在班】时存在。
 ## ★这是本波唯一一个「有没有人上班」直接决定「镇上有没有这件事可做」的机制——分工第一次改变了
@@ -2203,11 +2259,16 @@ func _object_candidates(ag: Dictionary) -> Array:
 			if _econ_on() and _wage_for(ag, action) > 0 \
 					and _coin_of(String(ag["id"])) < int(economy.get("poor_line", 6)):
 				score += float(economy.get("work_urgency", 8.0))
-			out.append({
+			var cand := {
 				"kind": "object", "action": action, "target": id, "need": need_id,
 				"amount": amount, "dur_total": duration,
 				"score": score, "say": "",
-			})
+			}
+			var manifest_node := String(adv.get("manifest_node", ""))
+			if manifest_node != "":
+				cand["manifest_node"] = manifest_node
+				cand["manifest_id"] = _first_unloadable_manifest(manifest_node)
+			out.append(cand)
 	return out
 
 ## 社交候选：对每个【同区可感知】的其他 agent 枚举 greet/give/gossip。
@@ -2519,6 +2580,9 @@ func _apply_object(ag: Dictionary, intent: Dictionary) -> void:
 		"amount": int(intent["amount"]), "dur_total": int(intent["dur_total"]),
 		"remaining": int(intent["dur_total"]), "phase": "travel",
 	}
+	for k in ["manifest_node", "manifest_id"]:
+		if intent.has(k):
+			ag["option"][k] = intent[k]
 	ag["last_say"] = str(intent.get("say", ""))
 	emit_signal("log_line", "%s → %s @%s" % [_name(ag), intent["action"], intent["target"]])
 	emit_signal("agent_changed", ag["id"])
@@ -3847,48 +3911,104 @@ func _stock_nightly() -> void:
 			if lost > 0:
 				prod_stats["spoiled"][g] = int((prod_stats["spoiled"] as Dictionary).get(g, 0)) + lost
 
-## E1 进口日结：外部无限供给的【确定性】注入（docs/144 §六）。每条 import lane 每到期日 day%every_days==0
-##   （纯 f(day)，无 randi/randf/Time/浮点 ⇒ 逐字节可回放）经 _stock_move 唯一通道往镇库记一批 type="import"。
-## 撞 cap 少收（_stock_move 自带），柴薪 spoil_per_day=0 故到港后不损耗。lane 书写序遍历（Godot 字典/数组保序）⇒ 定序。
-## 免费到货：本片一字不碰钱（transfer/economy.json/#34 全程不动；钱跨边界是 E2 的事，须 §0.8 外审）。
-## 缺 logistics.json / import_lanes 段空 / batch<=0 / every_days<=0 ⇒ 各自短路 ⇒ 该 lane 不注入。
-## good 不在 production.goods 表里 ⇒ _stock_move 首行返 0（不入账、不写事件）⇒ #38 账外货臂不会被触发。
-##
-## ★E2a import 付费（docs/151/154）：到货后经唯一钱通道 transfer("town","external",cost) 把货款搬进外部账户。
-##   · cost = applied × price_per / price_den（整数地板，确定性、无浮点）；price_den 缺省=1 ⇒ price_per 即每件钱数。
-##     分数定价（price_den>1）是为让盈亏平衡<1 的柴薪不把 town_coin 单调抽干（docs/154 §三 price_per 标定）。
-##   · 撞 cap 少收 ⇒ applied 少 ⇒ 同步少付（不买空气）：先 _import_fit 干算这批实际能到多少再定价。
-##   · 【选项 A 先付后到】：付不起当天【不到货】(continue)，无免费货偷渡 ⇒ 守恒忠实、town_coin/external_coin 可回放。
-##   · 付费门 2 轴：_econ_on()==false（缺 economy.json）或 lane 无 price_per ⇒ 回到 E1【免费到货】逐字节。
+## P1-b import arrival：到期日按 lane 著者序生成整单 CargoManifest；arrival 不再冒充库存 import。
+## 货位不足或镇库付不起时 cargo 留港，卸货广告关闭；条件恢复后由码头工动作同步提交付款、入库与 cargo 清零。
+## 缺 logistics / route_id / 合法 good / 正 batch ⇒ 不生成 manifest。economy off 或无正价 ⇒ commit 时免费入库（保留 E1 off 门）。
 func _logi_import() -> void:
-	for lane in _as_arr(logistics.get("import_lanes", [])):
+	var lanes := _as_arr(logistics.get("import_lanes", []))
+	for lane_index in range(lanes.size()):
+		var lane = lanes[lane_index]
 		if not (lane is Dictionary):
 			continue
 		var ld: Dictionary = lane
 		var every := int(ld.get("every_days", 0))
 		if every <= 0 or day % every != 0:
 			continue
-		var batch := int(ld.get("batch", 0))
-		if batch <= 0:
+		_arrive_import_manifest(ld, lane_index)
+
+## P1-b CargoManifest 到港 seam：只增 cargo 权威态 + world receipt，不碰镇库与钱。
+## id = route × day × lane 著者序，纯 f(data,day)，不读 RNG/Time/事件计数器；重复调用同日幂等。
+func _arrive_import_manifest(lane: Dictionary, lane_index: int) -> String:
+	var batch := int(lane.get("batch", 0))
+	var good := String(lane.get("good", ""))
+	var node := String(lane.get("node", ""))
+	var route := String(lane.get("route_id", ""))
+	if batch <= 0 or good == "" or node == "" or route == "":
+		return ""
+	if not (production.get("goods", {}) as Dictionary).has(good):
+		return ""
+	var pnum := int(lane.get("price_per", 0))
+	var pden := int(lane.get("price_den", 1))
+	# 付费 lane 必须能让【整单】算出正价；否则 cargo 会永久 ready 却永远不可卸，且拆单会放大整数地板漏洞。
+	if _econ_on() and pnum > 0 and (pden <= 0 or batch * pnum / pden <= 0):
+		return ""
+	var manifest_id := "manifest_%s_%d_%d" % [route, day, lane_index]
+	if cargo_manifests.has(manifest_id):
+		return manifest_id
+	var rec := {
+		"id": manifest_id, "route_id": route, "lane_index": lane_index,
+		"node": node, "good": good, "arrived_day": day,
+		"initial_qty": batch, "remaining_qty": batch,
+		"price_per": pnum, "price_den": pden,
+		"state": "ready",
+	}
+	cargo_manifests[manifest_id] = rec
+	cargo_manifest_order.append(manifest_id)
+	_log_event("world", route, manifest_id, good, true, [], "cargo_arrive:%s*%d" % [manifest_id, batch])
+	return manifest_id
+
+## 只返回【此刻可整单提交】的最早 manifest。首片刻意不拆单：3/4 的价格若拆成四笔 1 件，
+## 每笔整数地板都会变 0，形成免费货；整单也让 cargo_delta == stock_delta 可直接审计。
+func _first_unloadable_manifest(node: String) -> String:
+	for raw_id in cargo_manifest_order:
+		var manifest_id := String(raw_id)
+		if not cargo_manifests.has(manifest_id):
 			continue
-		var good := String(ld.get("good", ""))
-		var node := String(ld.get("node", ""))
-		# 付费门：economy 在 + lane 声明了合法 price_per ⇒ 走【先付后到】；否则回 E1 免费到货。
-		var pnum := int(ld.get("price_per", 0))          # 分子：每 price_den 件收 pnum 钱
-		var pden := int(ld.get("price_den", 1))          # 分母：缺省 1 ⇒ pnum 即每件钱数
-		if _econ_on() and pnum > 0 and pden > 0:
-			var fit := _import_fit(good, batch)           # 这批实际能到多少（撞 cap 少收），纯读不落账
-			var cost := fit * pnum / pden                 # 整数地板：少件同步少付；确定性无浮点
-			# 选项 A：付不起（或没货位）当天不到货，无免费货偷渡。
-			if fit <= 0 or town_coin < cost:
+		var rec: Dictionary = cargo_manifests[manifest_id]
+		var qty := int(rec.get("remaining_qty", 0))
+		if String(rec.get("state", "")) != "ready" or String(rec.get("node", "")) != node or qty <= 0:
+			continue
+		if _import_fit(String(rec.get("good", "")), qty) != qty:
+			continue
+		var pnum := int(rec.get("price_per", 0))
+		var pden := int(rec.get("price_den", 1))
+		if _econ_on() and pnum > 0:
+			var cost := qty * pnum / pden if pden > 0 else 0
+			if pden <= 0 or cost <= 0 or town_coin < cost:
 				continue
-			var applied := _stock_move(good, batch, "import", node, "import")
-			# applied==fit（同 tick 无中途改动）⇒ 付 applied×price 忠实守恒；town_coin>=cost 已核，transfer 必成。
-			if applied > 0:
-				transfer("town", "external", applied * pnum / pden, "import")
-			continue
-		# 不进 prod_stats["produced"]：进口不是本镇产出（诊断口径要分开；prod_stats 不入 digest，此选择对回放零影响）。
-		_stock_move(good, batch, "import", node, "import")
+		return manifest_id
+	return ""
+
+## 同步 exact wrapper：钱、镇库与 cargo 在一个无 await/回调的提交块里同量落账。
+## 返回真正提交的件数；任何 preflight 失败均返回 0，不写 import/unload/wage 事件。
+func _commit_manifest_unload(manifest_id: String, worker_id: String, node: String) -> int:
+	if manifest_id == "" or not cargo_manifests.has(manifest_id) or not _unload_worker_eligible(worker_id):
+		return 0
+	var rec: Dictionary = cargo_manifests[manifest_id]
+	var qty := int(rec.get("remaining_qty", 0))
+	var good := String(rec.get("good", ""))
+	if String(rec.get("state", "")) != "ready" or String(rec.get("node", "")) != node or qty <= 0:
+		return 0
+	if _import_fit(good, qty) != qty:
+		return 0
+	var pnum := int(rec.get("price_per", 0))
+	var pden := int(rec.get("price_den", 1))
+	if _econ_on() and pnum > 0:
+		if pden <= 0:
+			return 0
+		var cost := qty * pnum / pden
+		if cost <= 0 or town_coin < cost:
+			return 0
+		if not transfer("town", "external", cost, "import*%d" % qty):
+			return 0
+	var applied := _stock_move(good, qty, "import", node, "import")
+	if applied != qty:
+		push_error("CargoManifest 钱货脱钩：id=%s qty=%d applied=%d" % [manifest_id, qty, applied])
+		return 0
+	rec["remaining_qty"] = 0
+	rec["state"] = "complete"
+	_log_event("world", worker_id, node, good, true, [], "cargo_unload:%s*%d" % [manifest_id, qty])
+	return qty
 
 ## E2a：这批 import【实际能到多少】(撞 cap 少收) —— 纯读、不落账、不写事件，供选项 A「先付后到」先定价。
 ## 与 _stock_move 的 +delta 分支同一条 cap 逻辑（min(batch, cap−cur)、非负）⇒ 保证 fit == _stock_move 随后返回的 applied。
@@ -3899,8 +4019,8 @@ func _import_fit(good: String, batch: int) -> int:
 	return mini(batch, maxi(0, cap - _stock_of(good)))
 
 ## ── 车道 E-export 首片（docs/157/158，§0.8=SOUND_WITH_FIXES）：货出→钱进 ─────────────────────
-## export 日结：把镇里【过剩】的一种货出港换钱。import 的镜像、方向相反，挂【同一日界】(_nightly，排在
-##   _logi_import 之后 ⇒ 当天 import 已把 external 贷足、export 可从中抽)。day%every_days==0 纯 f(day)、
+## export 日结：把镇里【过剩】的一种货出港换钱。import 的镜像、方向相反，挂【同一日界】。
+##   P1-b 后 `_logi_import` 当晚只 arrival cargo；export 只能抽此前真实 unload commit 已贷入的 external。day%every_days==0 纯 f(day)、
 ##   一天一次非 per-tick、无 randi/randf/Time/浮点 ⇒ 逐字节可回放。
 ##
 ## ★F1（命门·符号）：sold_qty 是【显式正数】(_export_fit 干算)，NOT _stock_move 返回的有符号 applied——

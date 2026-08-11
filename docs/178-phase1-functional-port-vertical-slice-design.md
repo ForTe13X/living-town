@@ -150,7 +150,7 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 - **不设 `_is_core` 行为豁免**：阿涛的 needs 正常衰减，正常吃饭/赶集/喝咖啡、付钱、社交并参加选举；#01/#03/#37 都真实覆盖他。唯一口径变量 `core_population` 只用于 #15/#20 的小镇/大 N 分档，修掉“第 13 人令既有门静默豁免”的风险。
 - `port_dock` 的 `advertises=卸货` 由新 `_compile_ports()` 编译成真实、阻挡、可导航 world 对象；type=`码头` 走 `dock` 程序化槽，不占别名预算。岗位复用 jobs holder / shift / wage / skill 原语，工资从 town_coin 支出。
 - **暂不加外部口粮 lane**。先验“13 张嘴必撞 #01/#40”被实测否掉：在 12 人产能不放大的条件下，shipping/default 的 hard 门与跨 seed 软门仍过。held-out 唯一 #40 反转缺的是 **糕点**（discretionary demand），不是生存口粮；给免费口粮是错因调参。N=24 的口粮边界另记 scale/composition 诊断，不能借 P1-a 预防性补丁偷偷重标。
-- P1-a 的“卸货”目前是 Option 1：岗位/可见动作/工资/社会存在落地，贸易货量仍由日界 import ledger 注入。carrier/manifest 驱动真实搬运属于 P1-b，不能把本片描述成已经完成物理搬货。
+- P1-a checkpoint 的“卸货”是 Option 1：岗位/可见动作/工资/社会存在落地，贸易货量仍由日界 import ledger 注入。该状态已被 §10.9 的 manifest-gated kernel 取代；可见 carrier 与物理 East Ocean 港仍未完成。
 
 ### 10.2 当前证据
 
@@ -171,7 +171,7 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 1. **N=24 #40 下限臂因果诊断**：先把 seeds 1/7 缩成 affiliate ON/OFF、同 total/同 core 的可比臂，判定是规模供给还是 affiliate composition；再决定成文处理，禁止直接拍数值。
 2. logistics off-gate 的逐字节对拍；golden seeds/scenarios、modelpath、ledger 三锚只能在行为与 review 收敛后重烘。
 3. 全 CI（含 complement fixtures、save/load、视觉/Xvfb）与人眼港口可读性验收。
-4. P1-b carrier/manifest；Phase 3 tax；outsider 信息流与 Lacanian aspiration 均未实现，继续按 §九-bis 排期。
+4. P1-b 的 CargoManifest kernel 见 §10.9；尚缺可见 carrier 与物理 East Ocean 港。Phase 3 tax、outsider 信息流与 Lacanian aspiration 均未实现，继续按 §九-bis 排期。
 
 ### 10.4 Baton / hygiene ledger（2026-08-11）
 
@@ -225,3 +225,15 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 - 已建立三个可恢复主题提交：`e7cf14c`（exact-tip workflow）、`ad1cc08`（P1-a affiliate dock + scale-count WIP checkpoint）、`221456e`（#44/#46 event-backed provider + hard-ID fail-closed）。本文件作为第四个独立 ledger commit；提交不等于评审通过。
 - checkpoint 前复验：`p1a_affiliate_test` PASS（20 天：wage=4、spending=12、social=13、voters=13）；`lint_data.py` 与 `audit_map.py` PASS；fixture audit 21/21、complement guard 19/19；workflow YAML 合同与 `git diff --check` PASS。正式 complement guard 仍因旧 ledger 缺 `hard_ids_at_bake` 按设计 rc=1。
 - **Delivery gate 不变**：P1-a 仍是 review 所称 ghost-unloading，且港口锚未迁至 East Ocean；旧 ledger 未重烘，exact-tip 远端 receipt 尚不存在。Git checkpoint 只保存、分层和公开证据，不授权向 `integration/batons`/`master` 合并。远端发布必须保持 draft/WIP，并在正文列出这三个 blocker。
+
+### 10.9 P1-b CargoManifest kernel 棒（2026-08-11 14:00 CST）
+
+- **目标 / 边界**：关闭 review 的 ghost-unloading 反例，并落一条最小正向链；只改 manifest 权威态、物流数据、候选/完成双门、chain 投影、focused scene 与 CI 接线。不改地图、WorldView、carrier 动画、golden/modelpath/complement ledger。`route_id=east_ocean` 只声明逻辑货源；现有 `port_dock@[33,8]` 仍是旧地图 dock，绝不冒充 East Ocean 地形已落地。
+- **实现合同**：到期日 `_logi_import` 只按 `route × day × lane-index` 生成整单 `{node,good,initial_qty,remaining_qty,price,state}` CargoManifest 和一条 `world:cargo_arrive` receipt，不碰库存或钱；manifest order 是显式 Array，存档只含 String/int/Dictionary/Array。卸货广告仅在最早整单同时有货位、余额时出现，travel→use 与完成点再次核验；外部强制 option / 旧存档缺 manifest 字段时从 world advert 恢复合同，不能绕过。
+- **同步提交**：`_commit_manifest_unload` 要求在班码头工，固定执行 `town→external pay(import*4)` → `_stock_move(import*4)` → `cargo remaining 4→0/status complete` → `world:cargo_unload`；之后旧完成管线才允许记忆、技能和 `wage:卸货`。本片只整单卸：现价 `3/4` 若拆成四笔 1 件会被整数地板成四次 0 钱，整单 4 件恰付 3 钱，避免免费货。
+- **focused negative/positive/save/det**：新 `p1b_cargo_manifest_test` 先证明空港广告关闭；即使强塞一个 `phase=use/remaining=1` 的旧 option，needs/stock/coins/event/option/完成记忆/技能/wage 全零。正例证明 arrival 只增 cargo；真实完成后 `cargo_delta == stock_delta == import.qty == 4`，事件严格为 import pay → import stock → unload receipt → wage，既有 #34/#38/#44/#45/#46 全绿。另命中 pending manifest save→load、use 期间货位/余额/cargo 被抢/跨出班次四种竞态及原单恢复，并拒绝整单价格地板为零的 paid lane；chain 对 option 的 `manifest_id/node` 和 cargo 的 `price_per/den` 均有单字段 mutation 牙，同时用 logistics-off 普通 option 证明旧 6 字段 chain 逐字节不漂；同 seed 完整状态/事件/event_digest 两跑逐字对拍。
+- **验证**：Godot 4.6.2 focused scene PASS（0 fail）；既有 `p1a_affiliate_test` PASS（20 天真实 manifest-gated wage=5、消费=15、社交=56、选民=13）；Harness seed1×6d hard 全绿、det 1/1；最终 seed1×60d hard/soft 全绿、#40 绿、det 1/1，真实 import commit=19、export=5。`lint_data`、`audit_map`、`git diff --check` PASS。只跑单 seed，不能替代完整 12+held-out/scale 网格，也没有授权重烘。
+- **旧证据 hygiene**：`logistics.json` 中“每 3 天直接注入 / 60 天约 80 件 / 当晚 import 自动贷足 export”的表述已标为 legacy 或改写；旧 AS1/AS4/N16/24/60 结论测的是日界直接注入路径，不能套到 manifest 吞吐。README 未触碰；没有 archive/clean；测试存档位于 `user://`，scene 结束时按精确路径删除；日志只在 `%TEMP%`，标 generated/rebuildable。
+- **mini-session**：`p1a_base_compare` 与 `exact_tip_review` 全程只读、无仓库所有权；共同否决“只停工资、让 Tao 静默失活”，建议同棒提供正向 commit seam。吸收了候选+完成双检、整单防价格地板、world receipt 不污染 #38/#44、manifest 进入 save/chain；物理东海锚和 carrier 留作独立后续棒。
+- **Review / PR sync**：最新 completed review brief 仍为 09:00 CST / `REQUEST CHANGES`，没有新 turn。PR #6 旧 head `5fb2686` 的 synthetic-merge run `31461417688` 已终态 **FAIL**：SHA verification 成功；首个真实失败是预期中的 complement ledger `baked_game_tree` stale + 缺 `hard_ids_at_bake`，随后还有 golden/modelpath/VoiceGate/player_agency 红。该 run 不含本棒，不能归因于 CargoManifest，也不是 exact integration-tip receipt。draft 必须保持不可合并。
+- **剩余 blocker / 下一恢复触发器**：① 提交/push 本棒后核对新 PR head CI，分开记录行为锚预期漂移与非锚真实失败；② 完整 seeds 1-12 + held-out + total-N scale 重新量 manifest 吞吐，未过不得重烘；③ 以 East Ocean terrain 的结构锚迁移物理港口并接可见 carrier；④ exact-tip 仍须 workflow 真进入并 push `integration/batons` 后取得 `event=push/head_sha==tip` receipt；⑤ completed manifest 暂保留在 arrival order，查询成本随历史线性增长，当前 60 天规模可接受，后续应以保持回放顺序的 compact/index 独立棒处理。
