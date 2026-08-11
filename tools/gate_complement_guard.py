@@ -149,16 +149,60 @@ def ci_defaults(src):
 
 
 def live_invariant_ids(src):
-    """从 `Invariants.gd` 现抓 `_chk(<id>, …)` 的 id 集合。抓不到返回 None（= 无法判定，不假红）。"""
-    ids = sorted({int(x) for x in re.findall(r"_chk\(\s*(\d+)", src)})
+    """只抓实际调用行（bare / R.append / return），排除注释、字符串与函数声明。"""
+    ids = sorted({int(x) for x in re.findall(
+        r"(?m)^\s*(?:(?:R\.append\()|(?:return\s+))?_chk\(\s*(\d+)\s*,", src)})
     return ids or None
 
 
 def hard_ids_of(src):
-    """从 `Invariants.gd` 现抓 `const HARD_IDS := [...]` 的 id 集合——判一条锚不认识的不变量是否【硬门】。
-    抓不到（如合成测试源没写这行）⇒ 返回空集 ⇒ 该源里没有『硬门未知』这回事（保守：不假红、走软门警告路）。"""
-    m = re.search(r"HARD_IDS\s*:?=\s*\[([^\]]*)\]", src)
-    return {int(x) for x in re.findall(r"\d+", m.group(1))} if m else set()
+    """严格解析唯一的 `const HARD_IDS := [1, 2]`；缺失、重复或表达式均返回 None。"""
+    matches = re.findall(r"(?m)^\s*const\s+HARD_IDS\s*:=\s*\[([^\]]*)\]\s*(?:#.*)?$", src)
+    if len(matches) != 1:
+        return None
+    body = matches[0]
+    if not re.fullmatch(r"\s*(?:\d+\s*(?:,\s*\d+\s*)*)?", body):
+        return None
+    ids = [int(x) for x in re.findall(r"\d+", body)]
+    if any(i <= 0 for i in ids) or len(ids) != len(set(ids)):
+        return None
+    return set(ids)
+
+
+def check_hard_id_contract(ledger, inv_raw):
+    """冻结 hard-ID 身份：集合变化、判据删除或旧锚缺字段都 fail-closed。"""
+    rebake = "请重烘：GODOT=… python tools/gate_fixture_audit.py --run --bake-ledger"
+    raw = (ledger.get("_meta") or {}).get("hard_ids_at_bake")
+    if (not isinstance(raw, list) or
+            any(type(i) is not int or i <= 0 for i in raw) or
+            len(raw) != len(set(raw))):
+        return ("锚缺有效的 _meta.hard_ids_at_bake（须为无重复的正整数数组）"
+                " ⇒ 无法证明硬门身份未漂移（fail-closed）。%s" % rebake)
+    if inv_raw is None:
+        return "读不到 Invariants.gd ⇒ 无法核对硬门身份（fail-closed）。%s" % rebake
+    live_hard = hard_ids_of(inv_raw)
+    if live_hard is None:
+        return "Invariants.gd 里抓不到 HARD_IDS ⇒ 无法核对硬门身份（fail-closed）。%s" % rebake
+    live_ids = live_invariant_ids(inv_raw)
+    if live_ids is None:
+        return "Invariants.gd 里抓不到 `_chk(<id>` ⇒ 无法核对硬门判据（fail-closed）。%s" % rebake
+
+    baked_hard = set(raw)
+    if baked_hard != live_hard:
+        removed = sorted(baked_hard - live_hard)
+        added = sorted(live_hard - baked_hard)
+        parts = []
+        if removed:
+            parts.append("从 HARD_IDS 移除/降级：%s" % ", ".join("#%02d" % i for i in removed))
+        if added:
+            parts.append("新增/升级为硬门：%s" % ", ".join("#%02d" % i for i in added))
+        return "硬门身份相对 baked hard-ID 集合漂移（%s）⇒ fail-closed。%s" % ("；".join(parts), rebake)
+
+    gone = sorted(baked_hard - set(live_ids))
+    if gone:
+        return ("baked hard-ID 仍列为硬门、但 `_chk(id)` 判据已消失：%s ⇒ fail-closed。%s"
+                % (", ".join("#%02d" % i for i in gone), rebake))
+    return None
 
 
 class Tree(object):
@@ -246,14 +290,19 @@ def run_gate(tree, ledger, strict=False):
             warns.append("%s 已经不成立，但它守的每条不变量在别处仍有活输入 ⇒ 只是冗余被削掉，不判红"
                          % tag)
 
-    # ── 警告 ⑤：锚不认识的新不变量 ─────────────────────────────────────────
+    # ── 红 ⑤：hard-ID 身份必须与烘锚时精确一致 ─────────────────────────────
     inv_raw = tree.text("game/bench/Invariants.gd")
+    hard_contract = check_hard_id_contract(ledger, inv_raw)
+    if hard_contract:
+        fails.append(hard_contract)
+
+    # ── 警告 ⑥：锚不认识的新软门；未知硬门仍 fail-closed ────────────────────
     if inv_raw is None:
-        warns.append("读不到 Invariants.gd ⇒ 跳过「新不变量」核对")
+        pass  # hard-ID 合同已 fail-closed，不重复报一条 fail-open 警告
     else:
         live_ids = live_invariant_ids(inv_raw)
         if live_ids is None:
-            warns.append("Invariants.gd 里抓不到 `_chk(<id>` ⇒ 跳过「新不变量」核对（判据可能改了写法）")
+            pass  # hard-ID 合同已 fail-closed
         else:
             known = {int(i) for i in ledger.get("invariant_kinds", {})} | {int(i) for i in providers}
             unknown = sorted(set(live_ids) - known)
@@ -261,7 +310,7 @@ def run_gate(tree, ledger, strict=False):
                 # ★Codex 外审 P0-1（2026-08-10）：锚不认识的不变量＝没人普查其夹具/无 provider＝互补性【假绿】。
                 #   分【硬门/软门】：硬门未知 ⇒ 【fail-closed】默认判红（旧版全 warn 后 rc0 放行，#44/#45/#46 就这么假绿整轮）；
                 #   软门未知 ⇒ 仍只警告（docs/41 §6：别拿红惩罚一个正当的新软门；只有硬门的假绿风险才盖过那条顾虑）。
-                hard = hard_ids_of(inv_raw)
+                hard = hard_ids_of(inv_raw) or set()
                 unk_hard = [i for i in unknown if i in hard]
                 unk_soft = [i for i in unknown if i not in hard]
                 if unk_hard:
@@ -272,12 +321,14 @@ def run_gate(tree, ledger, strict=False):
                 if unk_soft:
                     warns.append("Invariants.gd 有 %d 条锚不认识的【软】不变量：%s ⇒ 没人普查其夹具（软门只警告、不判红，见 §6）。重烘同上。"
                                  % (len(unk_soft), ", ".join("#%02d" % i for i in unk_soft)))
-            # 反向：锚里有、树上没了。**这不是本门守的那件事**（它守的是"喂给判据的世界"，
-            # 不是"判据本身还在不在"），但一条被删掉的不变量会让锚里那一行从此无意义 ⇒ 至少说一声。
+            # 反向：锚里有、树上没了。baked hard-ID 已由上面的合同判红；软门仍只警告。
             gone = sorted({int(i) for i in providers} - set(live_ids))
             if gone:
-                warns.append("锚里有 %d 条不变量在 Invariants.gd 上已经没有了：%s ⇒ 锚该重烘了"
-                             % (len(gone), ", ".join("#%02d" % i for i in gone)))
+                baked_hard = set((ledger.get("_meta") or {}).get("hard_ids_at_bake") or [])
+                gone_soft = [i for i in gone if i not in baked_hard]
+                if gone_soft:
+                    warns.append("锚里有 %d 条软门在 Invariants.gd 上已经没有了：%s ⇒ 锚该重烘了"
+                                 % (len(gone_soft), ", ".join("#%02d" % i for i in gone_soft)))
 
     if strict:
         fails.extend(warns)
@@ -342,10 +393,12 @@ step "4d. BackendGate"
   --seeds "${CI_BG_SEEDS:-1-4}" --days "${CI_BG_DAYS:-30}" --agents "${CI_BG_N:-12}"
 """
 _SYN_DET = 'const TRACKS := ["", "faction", "betray", "freerider"]\n'
-_SYN_INV = "".join("_chk(%d, 'x', true, '')\n" % i for i in (22, 23, 24, 29))
+_SYN_INV = "const HARD_IDS := [22, 23, 24, 29]\n" + "".join(
+    "_chk(%d, 'x', true, '')\n" % i for i in (22, 23, 24, 29))
 
 _SYN_LEDGER = {
-    "_meta": {"baked_at": "synthetic", "baked_commit": "0" * 40},
+    "_meta": {"baked_at": "synthetic", "baked_commit": "0" * 40,
+              "hard_ids_at_bake": [22, 23, 24, 29]},
     "fixtures": {
         "DET_betray": {
             "requires": [
@@ -416,25 +469,48 @@ def self_test():
                   not f and any("冗余" in x for x in w), f + w))
 
     # M6a 锚不认识的【硬】不变量 ⇒ 【fail-closed】默认即红（Codex 外审 P0-1；改前是"默认警告"＝假绿，#44/45/46 就栽这）
-    t, lg = mk(inv=_SYN_INV + "const HARD_IDS := [42]\n" + "_chk(42, 'new', true, '')\n")
+    t, lg = mk(inv=_SYN_INV.replace("24, 29]", "24, 29, 42]") + "_chk(42, 'new', true, '')\n")
     f, _, _, _ = run_gate(t, lg)
     fs, _, _, _ = run_gate(t, lg, strict=True)
     cases.append(("M6a 未知【硬】门 #42 ⇒ 默认即红(fail-closed)、strict 也红",
                   any("#42" in x for x in f) and any("#42" in x for x in fs), f))
 
-    # M6b 锚不认识的【软】不变量（源无 HARD_IDS ⇒ #42 判软）⇒ 仍只警告不红（§6：别拿红惩罚正当的新软门）
+    # M6b 锚不认识的【软】不变量（不在 HARD_IDS）⇒ 仍只警告不红（§6：别拿红惩罚正当的新软门）
     t, lg = mk(inv=_SYN_INV + "_chk(42, 'new', true, '')\n")
     f, w, _, _ = run_gate(t, lg)
     cases.append(("M6b 未知【软】门 #42 ⇒ 只警告不红（§6 保留）",
                   not f and any("#42" in x for x in w), f + w))
 
-    # M8 **明知抓不到的那一类**（docs/41 §2.5 要求 does_not_detect 是跑出来的，这一条就是它的证据）：
-    #    把 `#22` 这条判据**从 Invariants.gd 里整个删掉** ⇒ 夹具、接线、ci.sh 全没变
-    #    ⇒ 守卫**不判红**（它守的是"喂给判据的世界"，不是"判据本身还在不在"），只警告一声。
+    # M8 删除 baked hard 判据：即使 HARD_IDS 还留着，也必须 fail-closed。
     t, lg = mk(inv=_SYN_INV.replace("_chk(22, 'x', true, '')\n", ""))
-    f, w, _, _ = run_gate(t, lg)
-    cases.append(("M8 把 #22 这条判据整个删掉 ⇒ **不红**（明知的盲区），只警告",
-                  not f and any("#22" in x and "已经没有了" in x for x in w), f + w))
+    f, _, _, _ = run_gate(t, lg)
+    cases.append(("M8 删除 baked hard 判据 #22 ⇒ 红并点名 #22",
+                  any("#22" in x and "判据已消失" in x for x in f), f))
+
+    # M8b 只从 HARD_IDS 移除 #22、判据仍在：防止硬门被静默降级成软门。
+    t, lg = mk(inv=_SYN_INV.replace("22, 23", "23"))
+    f, _, _, _ = run_gate(t, lg)
+    cases.append(("M8b 把 baked hard #22 静默降级 ⇒ 红并点名 #22",
+                  any("#22" in x and "移除/降级" in x for x in f), f))
+
+    # M8c 旧 schema 不能继续假绿；只有 committed tree 的完整重烘能补这份来源证据。
+    t, lg = mk()
+    del lg["_meta"]["hard_ids_at_bake"]
+    f, _, _, _ = run_gate(t, lg)
+    cases.append(("M8c 锚缺 hard_ids_at_bake ⇒ fail-closed 并要求重烘",
+                  any("hard_ids_at_bake" in x and "fail-closed" in x for x in f), f))
+
+    # M8d live 声明不能把表达式中的数字捡出来冒充合法 hard-ID 集合。
+    t, lg = mk(inv=_SYN_INV.replace("22, 23", "22 + 23"))
+    f, _, _, _ = run_gate(t, lg)
+    cases.append(("M8d HARD_IDS 含表达式 ⇒ 严格解析失败并判红",
+                  any("抓不到 HARD_IDS" in x and "fail-closed" in x for x in f), f))
+
+    # M8e 把调用只留在注释里不能冒充判据仍存在。
+    t, lg = mk(inv=_SYN_INV.replace("_chk(22, 'x', true, '')", "# _chk(22, 'x', true, '')"))
+    f, _, _, _ = run_gate(t, lg)
+    cases.append(("M8e #22 只留在注释 ⇒ 仍按判据消失判红",
+                  any("#22" in x and "判据已消失" in x for x in f), f))
 
     # M7 「注释掉」不等于「还在」——整段注释掉第 4c 步必须照样红
     t, lg = mk(ci="\n".join("# " + l for l in _SYN_CI.splitlines()))

@@ -154,23 +154,40 @@ def _check_ci_defaults(src=None):
     return "与 ci.sh 的 %d 个默认值逐个对得上" % sum(len(v) for v in CI_DEFAULT_EXPECT.values())
 
 
+def _parse_id_const(src, name):
+    """严格解析一条 `const NAME := [1, 2]`；返回 (ids, error)。"""
+    matches = re.findall(r"(?m)^\s*const\s+%s\s*:=\s*\[([^\]]*)\]\s*(?:#.*)?$" % name, src)
+    if len(matches) != 1:
+        return None, "%s 声明须恰好一条，实得 %d 条" % (name, len(matches))
+    body = matches[0]
+    if not re.fullmatch(r"\s*(?:\d+\s*(?:,\s*\d+\s*)*)?", body):
+        return None, "%s 含非十进制 id/逗号/空白的表达式" % name
+    ids = [int(x) for x in re.findall(r"\d+", body)]
+    if any(i <= 0 for i in ids) or len(ids) != len(set(ids)):
+        return None, "%s 只允许无重复的正整数 id" % name
+    return ids, None
+
+
 def _check_hard_ids():
-    """把上面那两张表跟 game/bench/Invariants.gd 现读现比。对不上就报出来，别静默用过期的。"""
+    """把本工具副本与 live id 声明严格对账；返回 (ok, message)。"""
     p = os.path.join(ROOT, "game", "bench", "Invariants.gd")
     try:
         src = open(p, encoding="utf-8", errors="replace").read()
     except OSError:
-        return "（读不到 Invariants.gd，跳过核对）"
+        return False, "❌ 读不到 Invariants.gd，不能核对 hard/diag id"
     out = []
+    ok = True
     for name, mine in (("HARD_IDS", HARD_IDS), ("DIAG_IDS", DIAG_IDS)):
-        m = re.search(r"const\s+%s\s*:=\s*\[([^\]]*)\]" % name, src)
-        if not m:
-            out.append("%s：源码里找不到，无法核对" % name)
+        live, err = _parse_id_const(src, name)
+        if err:
+            ok = False
+            out.append("%s：❌ %s" % (name, err))
             continue
-        live = [int(x) for x in re.findall(r"\d+", m.group(1))]
+        same = live == mine
+        ok = ok and same
         out.append("%s %s（源码 %d 条 vs 本工具 %d 条）"
-                   % (name, "对得上" if live == mine else "❌ 对不上", len(live), len(mine)))
-    return "；".join(out)
+                   % (name, "对得上" if same else "❌ 对不上", len(live), len(mine)))
+    return ok, "；".join(out)
 
 # ── 每条不变量的【前件】：它要判的那件事，以及怎么从探针数据里数出来 ──────────────────
 #   kind:  C=条件式（前件归零即空洞）· A=活性断言（归零即红，结构上不可能空洞）
@@ -239,18 +256,20 @@ SPEC = {
     # 归 G 档而不是 C 档：`production.vendor.trade_credit` 缺键 ⇒ 整段短路 ⇒ 显式豁免。
     43: ("G", "开了 vendor.trade_credit 且商贩真的成交过",
          lambda L, D: 0 if ("豁免" in D.get(43, "") or "关" == D.get(43, "").strip()) else 1),
-    # ── E1/E2a/E-export 的贸易溯源三条 #44/#45/#46（Codex 外审 P0-1 2026-08-10）：此前【不在 SPEC】⇒
-    #    互补性守卫把它们当"未知硬门"warn 后 rc0 放行＝假绿。实测夹具已跑 import/export（S0 60 天：
-    #    import≈20/export≈6·seed，#44/#45/#46 逐 seed fire green），provider 非空、可解释。
-    # #44 进口溯源：与 #43/#38 同形 G 档——缺 logistics.json 整段短路显式豁免（detail "物流系统关闭"），否则每笔 import 都要可溯源到声明的节点与货。
-    44: ("G", "logistics 开·import 事件全部可溯源（缺 logistics.json 则显式豁免）",
-         lambda L, D: 0 if "物流系统关闭" in D.get(44, "") else 1),
+    # ── E1/E2a/E-export 的贸易溯源三条 #44/#45/#46（review 2026-08-11 09:00）：
+    #    “logistics 开着”不是事件断言的 provider。开关开、事件为零时，#44/#46 仍是真空为真；
+    #    只有真实 import 事件 / export pay-stock 相关事件出现，才证明对应 invariant 在这格有东西可判。
+    # #44 进口溯源：C 档，provider=逐局真实 import 事件数。字段缺失也故意 KeyError fail-closed，
+    # 避免拿未含新探针字段的旧输出重烘成当前证据。
+    44: ("C", "真实 import 事件数（=0 则进口溯源判据空洞）",
+         lambda L, D: L["import_events"]),
     # #45 钱跨镇边界溯源：C 档——provider=跨镇边界流量（进+出 money）。无任何进出 ⇒ external≡0≡应值、判据空洞（无边界流可查）。
     45: ("C", "跨镇边界流量 进+出（=0 则无边界流可查=空洞）",
          lambda L, D: _detail_int(D.get(45, ""), r"进(\d+)") + _detail_int(D.get(45, ""), r"出(\d+)")),
-    # #46 出口原子性：同 #44 形——缺 logistics.json 显式豁免，否则每笔 export 的钱货须一一绑定同量。
-    46: ("G", "logistics 开·export 钱货一一绑定同量（缺 logistics.json 则显式豁免）",
-         lambda L, D: 0 if "物流系统关闭" in D.get(46, "") else 1),
+    # #46 出口原子性：C 档，provider=判据扫描的 export pay/stock 相关事件数。
+    # `export_pairs` 另行落盘作诊断，但不能单独当 provider：孤儿 pay/stock 会让 #46 红、pairs 却仍为 0。
+    46: ("C", "真实 export 相关 pay/stock 事件数（=0 才是绑定判据空洞）",
+         lambda L, D: L["export_related"]),
 }
 
 
@@ -295,7 +314,7 @@ def report(data, only=None):
     tags = [f for f in FIXTURES if f[0] in data and (only is None or f[0] in only)]
     print("═══ 夹具有效性普查（每格 = 该不变量的【前件】在这个夹具里发生了几次，展布 min..max）═══")
     print("kind: C=条件式(归零即空洞) · A=活性断言(归零即红) · G=带豁免 · D=诊断")
-    print("核对：" + _check_hard_ids())
+    print("核对：" + _check_hard_ids()[1])
     print("核对：" + _check_ci_defaults() + "\n")
     hdr = "  # k  %-46s" % "前件（它要判的那件事）"
     for t in tags:
@@ -520,6 +539,9 @@ def bake_ledger(data, path, tree_sha=None):
             "baked_at": _today(),
             "baked_commit": sha,
             "baked_game_tree": tree_sha,   # 已校验非空且 == cur_tree；不再用 `tree_sha or cur_tree` 顶包
+            # 冻结烘锚时的硬门身份。consumer 要求它与 live HARD_IDS 精确相等，
+            # 并逐条确认 `_chk(id)` 仍存在；新增、删除或把硬门静默降成软门都必须重烘。
+            "hard_ids_at_bake": sorted(HARD_IDS),
             "dead_at_bake": dead,
             "rebake_history": hist,
         },
@@ -665,7 +687,7 @@ def run_fixtures(godot, iso, outdir, only=None):
 
 
 def self_test():
-    """解析器的负对照：喂两条合成记录，一条前件为 0、一条不为 0，表里必须分得开。"""
+    """解析器的负对照：含贸易零/单向/双向与孤儿五格，必须击穿“系统开启即 provider=1”。"""
     tmp = tempfile.mkdtemp(prefix="gfa_selftest_")
     try:
         base = {"scenario": "", "n_agents": 12, "types": {}, "beliefs_need_trace": 3, "rel_ptrs": 5,
@@ -674,13 +696,23 @@ def self_test():
                 "pacts_broken_freerider": 0, "economy_on": True, "production_on": True, "elections": 1,
                 "produce_events": 2, "st_min": -1.0, "rep_gossip_th": -2.0}
         lines = []
-        for sd, betrays in ((1, 0), (2, 0)):
+        trade_cases = (
+            (1, 0, 0, 0),  # logistics on，零贸易
+            (2, 3, 0, 0),  # import-only
+            (3, 0, 4, 2),  # export-only：两个完整 pair
+            (4, 3, 4, 2),  # 双向都有
+            (5, 0, 1, 0),  # orphan-only：#46 有输入但没有完整 pair
+        )
+        for sd, import_events, export_related, export_pairs in trade_cases:
             for iid in SPEC:
                 lines.append("[X3CHK] " + json.dumps(
                     {"tag": "T", "seed": sd, "id": iid, "ok": True, "hard": False, "name": "n",
                      "detail": "未启用(14<60天)" if iid == 40 else ""}))
             L = dict(base)
-            L["types"] = {"betray": betrays}
+            L["types"] = {"betray": 0}
+            L["import_events"] = import_events
+            L["export_related"] = export_related
+            L["export_pairs"] = export_pairs
             lines.append("[X3LIVE] " + json.dumps(L))
         open(os.path.join(tmp, "t.txt"), "w", encoding="utf-8").write("\n".join(lines) + "\n")
         data = parse_dir(tmp)
@@ -712,6 +744,9 @@ def self_test():
         cbase = dict(base)
         cbase["aid_accepted"] = 9
         cbase["types"] = {"betray": 2, "endorse": 2}
+        cbase["import_events"] = 3
+        cbase["export_related"] = 4
+        cbase["export_pairs"] = 2
         _full = {}
         for _tag in [f[0] for f in FIXTURES if f[6] != "none"]:
             _full[_tag] = {sd: {"live": dict(cbase), "detail": {}, "ok": {}, "hard": {}}
@@ -726,13 +761,41 @@ def self_test():
         bake_none_refused = _bake_rc(None) == 1
         bake_mism_refused = _bake_rc("0" * 40) == 1
         bake_fresh_ok = (_cur_game is not None) and (_bake_rc(_cur_game) == 0)
+        baked_hard_ids_ok = False
+        if bake_fresh_ok:
+            try:
+                _baked = json.load(open(_lp, encoding="utf-8"))
+                baked_hard_ids_ok = ((_baked.get("_meta") or {}).get("hard_ids_at_bake")
+                                     == sorted(HARD_IDS))
+            except (OSError, ValueError):
+                baked_hard_ids_ok = False
+        hard_copy_ok, _ = _check_hard_ids()
+        _, hard_expr_err = _parse_id_const("const HARD_IDS := [1 + 2]\n", "HARD_IDS")
+        _, hard_dup_err = _parse_id_const("const HARD_IDS := [1, 1]\n", "HARD_IDS")
         checks = [
             ("betray=0 ⇒ #22 前件必须是 0", SPEC[22][2](s[1]["live"], s[1]["detail"]) == 0),
             ("aid_accepted=0 ⇒ #29 样本守卫必须判空", SPEC[29][2](s[1]["live"], s[1]["detail"]) == 0),
             ("detail 写「未启用」⇒ #40 满足率臂必须判空", SPEC[40][2](s[1]["live"], s[1]["detail"]) == 0),
             ("n_agents=12 ⇒ #20 小 N 守护必须判活", SPEC[20][2](s[1]["live"], s[1]["detail"]) == 1),
             ("production_on ⇒ #38 必须判活", SPEC[38][2](s[1]["live"], s[1]["detail"]) == 1),
-            ("解析器读到了两个 seed", sorted(s) == [1, 2]),
+            ("logistics on + 零贸易 ⇒ #44/#46 provider 都为 0",
+             SPEC[44][2](s[1]["live"], s[1]["detail"]) == 0 and
+             SPEC[46][2](s[1]["live"], s[1]["detail"]) == 0),
+            ("import-only ⇒ #44=3 且 #46=0",
+             SPEC[44][2](s[2]["live"], s[2]["detail"]) == 3 and
+             SPEC[46][2](s[2]["live"], s[2]["detail"]) == 0),
+            ("export-only ⇒ #44=0 且 #46 读到 4 个相关事件/2 个 pair",
+             SPEC[44][2](s[3]["live"], s[3]["detail"]) == 0 and
+             SPEC[46][2](s[3]["live"], s[3]["detail"]) == 4 and
+             s[3]["live"]["export_pairs"] == 2),
+            ("双向都有 ⇒ #44=3 且 #46 读到 4 个相关事件/2 个 pair",
+             SPEC[44][2](s[4]["live"], s[4]["detail"]) == 3 and
+             SPEC[46][2](s[4]["live"], s[4]["detail"]) == 4 and
+             s[4]["live"]["export_pairs"] == 2),
+            ("orphan-only ⇒ pairs=0 但 #46 provider 仍非零（判据可变红）",
+             SPEC[46][2](s[5]["live"], s[5]["detail"]) == 1 and
+             s[5]["live"]["export_pairs"] == 0),
+            ("解析器读到了五个贸易控制 seed", sorted(s) == [1, 2, 3, 4, 5]),
             ("AE2 ci 对账：默认值全对 ⇒ 不判 ❌（不假红）", not ci_match.startswith("❌")),
             ("AE2 ci 对账：CI_DAYS 60→20 漂了 ⇒ 判 ❌（拦住烘锚）", ci_drift.startswith("❌")),
             ("AE2 来源闭环：非 git 目录 rev-parse HEAD ⇒ None（不冒充成空 sha）", sha_none is None),
@@ -740,6 +803,10 @@ def self_test():
              bake_none_refused),
             ("AE2 P0.①：量的树 ≠ 当前 HEAD:game ⇒ bake 拒绝", bake_mism_refused),
             ("AE2 P0.①：量的树 == 当前 HEAD:game ⇒ bake 正常烘（不假拒）", bake_fresh_ok),
+            ("hard-ID 合同：新锚冻结精确 hard_ids_at_bake 集合", baked_hard_ids_ok),
+            ("hard-ID producer：live HARD_IDS/DIAG_IDS 与本工具副本严格对账", hard_copy_ok),
+            ("hard-ID producer：非法表达式不能捡数字冒充合法声明", hard_expr_err is not None),
+            ("hard-ID producer：重复 id 必须拒绝", hard_dup_err is not None),
         ]
         for why, okv in checks:
             print("  [%s] %s" % ("✅" if okv else "❌", why))
@@ -788,8 +855,8 @@ def main():
             print("   `--run` 从工作树复制探针进隔离副本 ⇒ 脏探针会让测量用一份【没进要盖的章】的代码。")
             print("   先提交探针再烘（外审 2026-08-06 21:00 §三 P1 第 2 点）。")
             return 1
-        _chk = _check_hard_ids()
-        if "对不上" in _chk:
+        _hard_ok, _chk = _check_hard_ids()
+        if not _hard_ok:
             print("\n❌ 拒绝烘锚：%s" % _chk)
             print("   本工具的 HARD_IDS 副本与 game/bench/Invariants.gd 不一致 ⇒ 枚举必然漏条，")
             print("   而烘出来的锚会把这个漏洞【固化成基线】。先把副本与谓词表补齐再烘。")
