@@ -218,6 +218,42 @@ static func _starve_shape(shape: Dictionary) -> String:
 ## 一个字节不用改，输出也与改名前逐字相同）。今天只有 Harness 传它。
 ## starve_shape：可选的**形状**明细（涉及几人 / 最长连续段），同样只进 detail 字符串、不进判据。
 ## 默认 {} ⇒ 8 个既有调用点里的 7 个一个字节不用改，输出也与本次改动前逐字相同。
+## P1-d：#46 与 complement probe 共用同一条 filtered pay→stock 扫描，防 provider 口径漂移。
+## pairs 在 qty 比较前计数：mismatch 仍是 #46 真正检查的一对，不能让 provider 掉回 0。
+static func export_pair_scan(log: Array) -> Dictionary:
+	var seq: Array = []
+	for raw in log:
+		if not (raw is Dictionary):
+			continue
+		var e: Dictionary = raw
+		var ty := String(e.get("type", ""))
+		if ty == "export":
+			seq.append({"kind": "stock", "e": e})
+		elif ty == "pay" and String(e.get("note", "")).split("*")[0] == "export":
+			seq.append({"kind": "pay", "e": e})
+	var bad: Array = []
+	var pairs := 0
+	var i := 0
+	while i < seq.size():
+		var a: Dictionary = seq[i]
+		var ae: Dictionary = a["e"]
+		if String(a["kind"]) != "pay":
+			bad.append("#%d export 货事件无前导 pay(发货没收钱/F1 免费流失)" % int(ae.get("id", -1)))
+			i += 1
+			continue
+		if i + 1 >= seq.size() or String(seq[i + 1]["kind"]) != "stock":
+			bad.append("#%d export pay 无紧随货事件(收钱没发货)" % int(ae.get("id", -1)))
+			i += 1
+			continue
+		var se: Dictionary = seq[i + 1]["e"]
+		pairs += 1
+		var pq := _amt_of(String(ae.get("note", "")))
+		var sq := _amt_of(String(se.get("note", "")))
+		if pq != sq:
+			bad.append("#%d/#%d 钱货数量不符 pay.qty=%d stock.qty=%d(收 N 发 k)" % [int(ae.get("id", -1)), int(se.get("id", -1)), pq, sq])
+		i += 2
+	return {"related": seq.size(), "pairs": pairs, "bad": bad}
+
 static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_shape: Dictionary = {}) -> Array:
 	var R: Array = []
 	var log: Array = S.event_log
@@ -1202,32 +1238,9 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 				exp_bad.append("#%d 件数=%d 非正" % [int(e["id"]), xamt])
 			elif String(e.get("note", "")).split("*")[0] != "export":
 				exp_bad.append("#%d note 原因=%s 非 export" % [int(e["id"]), String(e.get("note", "")).split("*")[0]])
-		# ② F7 原子绑定（严格 pay,stock 交替 + 逐对 qty 相等）。
-		var seq: Array = []
-		for e in log:
-			var ty := String(e["type"])
-			if ty == "export":
-				seq.append({"kind": "stock", "e": e})
-			elif ty == "pay" and String(e.get("note", "")).split("*")[0] == "export":
-				seq.append({"kind": "pay", "e": e})
-		var i := 0
-		while i < seq.size():
-			var a: Dictionary = seq[i]
-			var ae: Dictionary = a["e"]
-			if String(a["kind"]) != "pay":
-				exp_bad.append("#%d export 货事件无前导 pay(发货没收钱/F1 免费流失)" % [int(ae["id"])])
-				i += 1
-				continue
-			if i + 1 >= seq.size() or String(seq[i + 1]["kind"]) != "stock":
-				exp_bad.append("#%d export pay 无紧随货事件(收钱没发货)" % [int(ae["id"])])
-				i += 1
-				continue
-			var se: Dictionary = seq[i + 1]["e"]
-			var pq := _amt_of(String(ae.get("note", "")))
-			var sq := _amt_of(String(se.get("note", "")))
-			if pq != sq:
-				exp_bad.append("#%d/#%d 钱货数量不符 pay.qty=%d stock.qty=%d(收 N 发 k)" % [int(ae["id"]), int(se["id"]), pq, sq])
-			i += 2
+		# ② F7 原子绑定：与 complement provider 共用纯 scanner，避免两份口径漂移。
+		var export_scan := export_pair_scan(log)
+		exp_bad.append_array(export_scan["bad"])
 	R.append(_chk(46, "出口贸易原子性绑定", exp_bad.is_empty(),
 		("异常=%d: %s" % [exp_bad.size(), "; ".join(exp_bad.slice(0, 3))]) if not exp_bad.is_empty()
 		else ("export 钱货一一绑定同量" if logi_on2 else "物流系统关闭(缺 logistics.json)")))

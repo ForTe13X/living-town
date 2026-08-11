@@ -4092,13 +4092,15 @@ func _import_fit(good: String, batch: int) -> int:
 ##   恰一条同 sold_qty 的 export stock 事件；Invariants #46 从 event_log 独立校验这个绑定(严格 pay,stock
 ##   交替 + 逐对 revenue==sold_qty×price/den + 货/港合法)——收 N 不发 / 发不收 / 收 N 发 k 当场红。
 ## ★选项 A′【先收钱后出货】：external 付不起(external_coin<revenue)当天【不出货】(镜像 import 的 town 付不起不到货)。
-## ★F5【显式限 N=12】：只在 prod_pool_num==prod_pool_den(人口==base=12、K1 倍率恰为 1)运行；N≠12 惰性(第一行短路)。
+## ★P1-d【规模出口 provider】：N=12 逐字保留旧 lane；N>12 只放开显式 scale_floor=true 的 lane，
+##   并按实际 production pool 比例向上取整保护线。batch/cadence/price 仍是固定物理航线合同，不随人口放大。
+##   N<base 与未 opt-in lane 继续 fail-closed，避免把本地库存保护或船舶吞吐顺手扩语义。
 ## ★off 门 2 轴：轴①缺 logistics.json ⇒ _logi_on()==false ⇒ 本函数根本不被 _nightly 调用；
 ##   轴② economy off(缺 economy.json→_econ_on false) 或 export lane 无 price_per ⇒ export 【惰性】(NOT 免费出港——
 ##   与 import 的 economy-off 免费到货【蓄意不对称】，docs/157 §六：无补偿的 stock 损耗无 E1 先例)。
 func _logi_export() -> void:
-	# F5：export 首片显式限 N=12（K1 池倍率非 1 ⇒ 人口≠base ⇒ 整条惰性，见 logistics.json _scale_why）。
-	if prod_pool_num != prod_pool_den:
+	# 低于 base 的旧语义仍为整条惰性；大于 base 时由 lane 显式 opt-in。
+	if prod_pool_den <= 0 or prod_pool_num < prod_pool_den:
 		return
 	for lane in _as_arr(logistics.get("export_lanes", [])):
 		if not (lane is Dictionary):
@@ -4113,6 +4115,11 @@ func _logi_export() -> void:
 		var good := String(ld.get("good", ""))
 		var node := String(ld.get("node", ""))
 		var floor := int(ld.get("floor", 0))
+		if prod_pool_num > prod_pool_den:
+			var scale_flag = ld.get("scale_floor", false)
+			if typeof(scale_flag) != TYPE_BOOL or not bool(scale_flag):
+				continue
+			floor = _scaled_export_floor(floor)
 		var pnum := int(ld.get("price_per", 0))          # 分子：每 price_den 件收 pnum 钱
 		var pden := int(ld.get("price_den", 1))          # 分母：缺省 1 ⇒ pnum 即每件钱数
 		# off 门轴②：economy off 或 lane 无合法 price_per ⇒ export 惰性（不免费出港）。
@@ -4123,6 +4130,12 @@ func _logi_export() -> void:
 		if sold_qty <= 0:
 			continue                                     # 无余量 / external 付不起 ⇒ 当天不出货（选项 A′）
 		_export_commit(good, sold_qty, node, pnum, pden)
+
+## P1-d：保持 authored floor/cap 比例的纯整数 ceil；N=12 精确返回原值。
+func _scaled_export_floor(floor: int) -> int:
+	if floor <= 0 or prod_pool_den <= 0:
+		return maxi(0, floor)
+	return (floor * prod_pool_num + prod_pool_den - 1) / prod_pool_den
 
 ## E-export：这批【实际能出多少】(显式正数) —— 纯读、不落账、不写事件，供选项 A′「先收钱后出货」先定价。
 ## 三上界（全整数 mini/maxi）：

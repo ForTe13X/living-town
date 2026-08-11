@@ -152,24 +152,10 @@ func _live(S, starved: int) -> Dictionary:
 	# 贸易硬门 #44/#46 的真实前件。不能用“logistics 开着”代替：系统开启但本局
 	# 零进/出口时，逐事件断言仍然是真空为真，不能算作 complement provider。
 	var import_events := int(ty.get("import", 0))
-	var export_seq: Array = []
-	for e in log:
-		var ety := String(e.get("type", ""))
-		if ety == "export":
-			export_seq.append("stock")
-		elif ety == "pay" and String(e.get("note", "")).split("*")[0] == "export":
-			export_seq.append("pay")
-	# 与 #46 的 pay,stock 流同口径，只数相邻的一一交易前件；不比较 qty/合法性，
-	# 因为 probe 只量“判据有没有东西可判”，判对判错仍由 Invariants.gd 独立负责。
-	var export_pairs := 0
-	var xi := 0
-	while xi < export_seq.size():
-		if export_seq[xi] == "pay" and xi + 1 < export_seq.size() and export_seq[xi + 1] == "stock":
-			export_pairs += 1
-			xi += 2
-		else:
-			xi += 1
-	var export_related := export_seq.size()
+	# 与 #46 共用 scanner：孤儿/mismatch 仍是非零 provider，由 #46 决定红绿。
+	var export_scan := Inv.export_pair_scan(log)
+	var export_pairs := int(export_scan["pairs"])
+	var export_related := int(export_scan["related"])
 	return {
 		"tag_seed": [S.agents.size(), S.tick_no],
 		"scenario": String(S.scenario), "n_agents": S.agents.size(),

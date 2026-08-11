@@ -4,7 +4,7 @@
   "_manifest_contract": "P1-b/P1-c：到期日先生成 CargoManifest，不直接改镇库/钱；码头工从当前 authored candidate 认领 exact manifest，已签发的同一单可跨班次完成，再整单同步提交 town→external 付款、import 入库、cargo 清零与工资。无 cargo、无授权、货位/余额变化或 stale intent 均在 need/库存/钱/事件前 fail-closed。East Ocean 已物理落图；货船仍不是第二份权威态，而是 ready manifest 的有界纯 View 投影。",
   "_why_firewood": "选柴薪：它是澡堂唯一燃料（consume.洗澡→柴薪，~546 次/seed）+ 屋瓦的原料（produce.泥瓦匠.inputs.柴薪:3），是全镇第一件【被两条需求争抢】的货、供给最紧。进口柴薪【蓄意松动】柴薪/屋瓦满足率与洗澡缺货——这是 self-contain 弧 P1『外部管够、本地稀薄』的可见目标，不是 bug（逐 seed 展布见 analysis/as1/n12_supply_before_after.txt 与 docs/147 §四）。",
   "_batch_why": "batch=4 保留既有已标定外部批量，但 P1-b 后它是【manifest 整单】而非保证每三天已入库 4 件：cap/余额/码头工班次任一不满足就留港。旧 analysis/as1 的直接注入满足率只作 legacy calibration，不是当前吞吐证据；当前最终 seed1×60d 实得 19 次真实 import commit、#40 绿。完整网格须在本纵切收敛后重测，禁止沿用旧 80 件/seed 声称。",
-  "_scale_why": "batch 不随人口缩放（不进 production.scale.pool），cargo 也是每船固定外部量。旧 N=16/24/60 imports-ON 结论测的是日界直接注入路径，现标 legacy-supported；新 manifest 路的吞吐同时受货位、余额与单一 stevedore 约束，必须另跑完整规模网格后才能更新尺度结论。",
+  "_scale_why": "batch 不随人口缩放（不进 production.scale.pool），cargo 也是每船固定外部量。P1-d 同样保持 export batch/cadence/price 为固定物理航线吞吐；只有显式 scale_floor=true 的 lane 在 N>12 放开，并按实际 production pool 比例向上取整保护线。旧 N=16/24/60 imports-ON 结论测的是日界直接注入路径，现标 legacy-supported；当前尺度结论只认可 committed exact tree 的完整网格。",
   "nodes": [
     {
       "id": "port_dock",
@@ -51,12 +51,13 @@
       "every_days": 3,
       "node": "port_dock",
       "floor": 36,
+      "scale_floor": true,
       "price_per": 1,
       "price_den": 2,
       "_why": "每 3 天出港【最多】6 件豆子。good 必须是 production.goods 已声明的货（否则 _export_fit/_stock_move 返 0、不出货），node 必须是 nodes 声明过的 id（否则硬 #46 出港溯源判红）。★出多少 = 三上界 min(batch, 地板以上余量 max(0,stock−floor), external 付得起件数 external×den/per)。",
-      "_floor_why": "★F4 floor 逐货 held-out 标定（as5_surplus_probe.gd，seeds 13-30，尤 seed 18/22/30）：floor 保住本地消费需求、只出【地板以上】的余量 ⇒ 与消费者不抢货。豆子最坏【多日净消耗】(任意窗口 Σconsume−Σproduce 的 Kadane 上确界) 跨 13-30 = 21..39(seed 22=39 最坏)、med ~28；cap=45。★取 floor=36：贴近绝对最坏净耗 39(留 39−36=3 的极小风险余量)、盖住典型最坏 ~28 有余、留 cap−floor=9 的出港余量(豆子常顶 45 ⇒ 有货可出)。★诚实边界：36 < 绝对最坏 39 ⇒ 极端 seed 的最坏窗口理论上可让 export 把豆子多抽 ≤3，但豆子基线满足率远高于 0.50 底线(改前一格没进 starved)、且 held-out 13-30 改后实测 #40【18/18 全绿】、无新饿穿(见 docs/160)——这不是『结构上不饿镇』(降级 docs/157 §一.3 的『结构』字样，F4)，是【标定 + held-out 实测】的不饿镇。★floor 与 batch 都【限 N=12】(见 _scale_why)——大 N 的 floor 缩放是后续棒。",
+      "_floor_why": "★F4 floor 逐货 held-out 标定（as5_surplus_probe.gd，seeds 13-30，尤 seed 18/22/30）：floor 保住本地消费需求、只出【地板以上】的余量 ⇒ 与消费者不抢货。豆子最坏【多日净消耗】(任意窗口 Σconsume−Σproduce 的 Kadane 上确界) 跨 13-30 = 21..39(seed 22=39 最坏)、med ~28；cap=45。★取 floor=36：贴近绝对最坏净耗 39(留 39−36=3 的极小风险余量)、盖住典型最坏 ~28 有余、留 cap−floor=9 的出港余量(豆子常顶 45 ⇒ 有货可出)。★诚实边界：36 < 绝对最坏 39 ⇒ 极端 seed 的最坏窗口理论上可让 export 把豆子多抽 ≤3，但豆子基线满足率远高于 0.50 底线。P1-d 对 N>12 只按实际 production pool 比例 ceil 缩放 floor，保持同一保护比例；batch/cadence 不缩放。完整 N16/N24/N60 网格必须同时证明真实 export provider、#40 与 #45/#46，不能拿空集绿代替。",
       "_price_why": "★export 收钱 revenue = sold_qty × price_per / price_den（整数地板、确定性无浮点；sold_qty<2 时 revenue 地板到 0 ⇒ 不出货，良性就低不就高）。★取 1/2 = 0.5 钱/件（held-out 标定，F4 §六 goal②『不暴富』）：低于 import 柴薪的 0.75 ⇒ external 闭环有界(Σexport≤Σimport)——import 60 天贷入 external ~56/seed、export 豆子 0.5 钱/件 借出，恒 ≤ 贷入 ⇒ external 恒 ≥0、#35 外部臂不可达负。★为什么不取更高(1.0)：1.0 时 export 收入把【结构性赤字镇 seed 18】(docs/155：import-only 下 town_coin_min=0/跳 10 次工资)喂到 town_min=27/跳 0 次 ⇒ 抹平了蓄意的 self-contain 压力(docs/157 §五分布通胀风险)。0.5 + floor=36 下 seed 18 回到 town_min=0/跳 1 次工资(held-out 实测)——赤字镇仍跳工资(goal② 达成)，同时 export 仍可见(金标 1-12 出港 mean 26/seed、held-out mean 28/seed)。★残余：town_coin 硬上限=P4/E4(docs/157 §五)，本片靠标定+闭环夹。选项 A′【先收钱后出货】：external 付不起当天不出货(镜像 import 的 town 付不起不到货)——从未 import 过的镇(external=0)出不了口，须先『进』才能『出换钱』，闭环的自然节流(docs/157 §二)。★off 门：删 economy.json 或删本 price_per ⇒ export 惰性(NOT 免费出港，与 import 不对称，见 _export_doc 轴②)。",
-      "_scale_why": "★F5 人口缩放【显式限 N=12】(docs/158 §四 F5 的第二支)：export 只在 prod_pool_num==prod_pool_den(人口==base_population=12、K1 池倍率恰为 1)时运行，N≠12 时【惰性】(prod_pooled 且 num≠den ⇒ _logi_export 第一行短路)。理由：这是 export 首片，大 N 上 export×#40 的交互(floor 是否够护本地消费)未标定 ⇒ 显式 defer 到后续棒；限 N=12 使 CI 4a 宏观池尺度门(N=16)完全不碰 export ⇒ 该门零风险。held-out 13-30 在 N=12 跑 ⇒ export 被实测。★大 N export = 后续棒（floor 进 K1 rescale 或按定点需求标定）。"
+      "_scale_why": "★P1-d 人口缩放：N=12 仍用 authored floor=36，行为不变；N>12 仅本 lane 以 scale_floor=true 显式放开，effective_floor=ceil(36×prod_pool_num/prod_pool_den)，使用真实 core production pool 而非含 affiliate 的 agents.size()。对应 total N16/N24/N60 的 core=15/23/59，保护线为45/69/177。batch=6、every_days=3、price=1/2 均不缩放，避免把人口倍率偷换成船舶吞吐倍率。N<base 与未 opt-in lane 继续惰性。验收要求真实 export_related/export_pairs 非零、#40/#45/#46 与确定性完整网格通过。"
     }
   ]
 }
