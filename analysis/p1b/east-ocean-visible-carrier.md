@@ -1,8 +1,11 @@
 # P1-c East Ocean visible carrier — reusable delivery card
 
-Date: 2026-08-11 (CST)  
-Branch: `codex/p1a-takeover`  
-Code commit: `c56f31e`  
+Date: 2026-08-11 (CST)
+
+Branch: `codex/p1a-takeover`
+
+Code commit: `c56f31e`
+
 Purpose: make the existing P1-b CargoManifest causally visible at the user-selected physical East Ocean port without creating a second simulation authority.
 
 ## Contract and reusable seams
