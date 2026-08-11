@@ -3506,6 +3506,130 @@ func _draw_landmarks() -> void:
 ## F5 建的 `dock` 区（type:plaza、rect [30,7,4,2]、北池南岸、蓄意不含水格）此前只铺了广场石板 +
 ## 一个借 bench 精灵的 `bench_pier 渔台` worksite，读作"一块带凳子的铺装"，没有任何码头/船/仓库。
 ## 本函数把这块铺装【就地】画成真港口：木栈桥板 + 临水边梁 + 系缆桩 + 系着的渔船 + 货箱/桶/麻袋 +
+## P1-c：carrier 是 CargoManifest 的【纯 View 投影】，不是第二份 world 状态。
+## 一个 route/node 无论积压多少 ready manifest 都只画一艘泊位船，单数用徽记表示；零 ready 即零货船。
+## 这条路不 spawn/despawn、不写 event、不进导航/存档/chain，权威时序仍是 manifest arrival→exact unload。
+static func carrier_projections_for(logistics_data: Dictionary, manifests: Dictionary, order: Array) -> Array:
+	var out: Array = []
+	var raw_carriers = logistics_data.get("carriers", [])
+	if not (raw_carriers is Array):
+		return out
+	for raw_cfg in raw_carriers:
+		if not (raw_cfg is Dictionary):
+			continue
+		var cfg: Dictionary = raw_cfg
+		var route := String(cfg.get("route_id", ""))
+		var node := String(cfg.get("node", ""))
+		var berth = cfg.get("berth", [])
+		if route == "" or node == "" or not (berth is Array) or (berth as Array).size() < 2:
+			continue
+		var first: Dictionary = {}
+		var ready_count := 0
+		var ready_qty := 0
+		for raw_id in order:
+			var manifest_id := String(raw_id)
+			var rec = manifests.get(manifest_id, {})
+			if not (rec is Dictionary):
+				continue
+			var rd: Dictionary = rec
+			if String(rd.get("route_id", "")) != route or String(rd.get("node", "")) != node:
+				continue
+			var qty := int(rd.get("remaining_qty", 0))
+			if String(rd.get("state", "")) != "ready" or qty <= 0:
+				continue
+			if first.is_empty():
+				first = rd
+			ready_count += 1
+			ready_qty += qty
+		if first.is_empty():
+			continue
+		var p: Dictionary = cfg.duplicate(true)
+		p["manifest_id"] = String(first.get("id", ""))
+		p["good"] = String(first.get("good", ""))
+		p["remaining_qty"] = int(first.get("remaining_qty", 0))
+		p["ready_count"] = ready_count
+		p["ready_qty"] = ready_qty
+		out.append(p)
+	return out
+
+func _cargo_carrier_projections() -> Array:
+	return carrier_projections_for(Sim.logistics, Sim.cargo_manifests, Sim.cargo_manifest_order)
+
+func _draw_port() -> void:
+	var dock = Sim.world.get("areas", {}).get("dock", {})
+	if dock is Dictionary and String((dock as Dictionary).get("facing", "")) == "east":
+		_draw_port_east(dock)
+		return
+	_draw_port_legacy_north()
+
+## East Ocean 港面：陆上 deck 完全落在 dock rect；货船 anchor 完全取 authored berth，不硬编码 route 坐标。
+func _draw_port_east(dock: Dictionary) -> void:
+	var dr = dock.get("rect", [])
+	if not (dr is Array) or (dr as Array).size() < 4:
+		return
+	var dx := int(dr[0]); var dy := int(dr[1]); var dw := int(dr[2]); var dh := int(dr[3])
+	if dw <= 0 or dh <= 0:
+		return
+	var deck := Rect2(dx * T, dy * T, dw * T, dh * T)
+	if not _vis.intersects(deck):
+		return
+	var seam := D_WOOD_LINE
+	var plank := X_WOOD_MID.lightened(0.14)
+	draw_rect(deck, plank, true)
+	for x in range(dw * 2 + 1):
+		var px := deck.position.x + float(x) * T * 0.5
+		draw_line(Vector2(px, deck.position.y), Vector2(px, deck.end.y), Color(seam.r, seam.g, seam.b, 0.45), 1.0)
+	for y in range(dh + 1):
+		var py := deck.position.y + float(y) * T
+		draw_line(Vector2(deck.position.x, py), Vector2(deck.end.x, py), Color(seam.r, seam.g, seam.b, 0.52), 1.2)
+	# 面海护舷、系缆桩与货堆；east 分支蓄意不画旧北池常驻渔船。
+	draw_rect(Rect2(deck.end.x - T * 0.12, deck.position.y, T * 0.12, deck.size.y), seam, true)
+	_port_bollard(deck.end.x - T * 0.15, deck.position.y + T * 0.18)
+	_port_bollard(deck.end.x - T * 0.15, deck.end.y - T * 0.42)
+	_port_boathouse(deck.position.x + T * 0.06, deck.position.y + T * 0.05, T * 0.92)
+	_port_crate(deck.position.x + T * 1.30, deck.position.y + T * 0.22, T * 0.34)
+	_port_barrel(deck.position.x + T * 2.12, deck.position.y + T * 0.28, T * 0.22, T * 0.36)
+	_port_signpost(deck.position.x + T * 0.55, deck.end.y + T * 0.52)
+	if not _ap("carrier"):
+		return
+	for projection in _cargo_carrier_projections():
+		_draw_cargo_carrier(projection)
+
+## 泊位货船：west-facing 横向船体，与 `_port_boat` 的常驻小渔船在生命周期、尺寸和货单徽记上明确区分。
+func _draw_cargo_carrier(projection: Dictionary) -> void:
+	var berth = projection.get("berth", [])
+	if not (berth is Array) or (berth as Array).size() < 2:
+		return
+	var bx := int(berth[0]); var by := int(berth[1])
+	# 2.65×1.16 格：在 --shot-fit 的 0.23x 全镇帧里仍约 30×13px，可读；又完整收在四列海域内。
+	var hull := Rect2((float(bx) + 0.06) * T, (float(by) - 0.08) * T, T * 2.65, T * 1.16)
+	if not _vis.intersects(hull):
+		return
+	var shadow := Rect2(hull.position + Vector2(T * 0.05, T * 0.08), hull.size)
+	draw_rect(shadow, Color(0.04, 0.10, 0.14, 0.55), true)
+	# 西向尖艏、宽货舱、桅杆与显眼帆色；全部确定性整数/常量几何。
+	var bow := Vector2(hull.position.x, hull.get_center().y)
+	var stern_x := hull.end.x
+	var poly := PackedVector2Array([
+		bow, Vector2(hull.position.x + T * 0.34, hull.position.y),
+		Vector2(stern_x, hull.position.y + T * 0.10), Vector2(stern_x, hull.end.y - T * 0.10),
+		Vector2(hull.position.x + T * 0.34, hull.end.y)])
+	draw_colored_polygon(poly, X_WOOD_MID.darkened(0.20))
+	draw_polyline(PackedVector2Array([poly[0], poly[1], poly[2], poly[3], poly[4], poly[0]]), D_WOOD_LINE, 2.0)
+	var mast_x := hull.position.x + T * 1.34
+	draw_line(Vector2(mast_x, hull.position.y - T * 0.72), Vector2(mast_x, hull.end.y), D_WOOD_LINE, 2.4)
+	var sail := PackedVector2Array([
+		Vector2(mast_x + 2, hull.position.y - T * 0.68), Vector2(mast_x + T * 0.86, hull.position.y - T * 0.06),
+		Vector2(mast_x + 2, hull.position.y - T * 0.06)])
+	draw_colored_polygon(sail, X_PARCHMENT)
+	# 三只货箱表示 cargo，不按数量线性增对象；backlog 用 bounded 徽记。
+	for i in 3:
+		_port_crate(hull.position.x + T * (0.78 + float(i) * 0.38), hull.position.y + T * 0.48, T * 0.30)
+	var count := int(projection.get("ready_count", 1))
+	var badge_c := Vector2(hull.end.x - T * 0.16, hull.position.y + T * 0.06)
+	draw_circle(badge_c, T * 0.27, X_SIGNAL_NEG if count > 1 else X_GLOW)
+	draw_string(Art.font(), badge_c + Vector2(-T * 0.15, T * 0.10), str(count), HORIZONTAL_ALIGNMENT_CENTER, T * 0.30, 16, Color.WHITE)
+
 ## 小船屋 silhouette + 一个方向路牌（呼应 item#2「交通:港口」）。
 ##
 ## ★零金标：只读 `Sim.world.areas.dock.rect`（Sim 也读的面，只读不写；Sim 从不读 type/terrain/本层 draw）
@@ -3518,7 +3642,7 @@ func _draw_landmarks() -> void:
 ##   —— 无 randi/randf/Time/OS ⇒ `--shot` 逐像素可复现(ROUNDTRIP 冻结帧)。
 ## ★复用现有色常量(木 X_WOOD_MID/D_WOOD_LINE、水 P_WATER_DEEP/LIT、暖光 X_GLOW*、麻布 P_PLAZA)，不加新 BLD_PAL。
 ## `port_dock` 只是 logistics 声明节点(保留位 [33,8]、不落 world.objects)，本函数不读它、不碰 logistics.json。
-func _draw_port() -> void:
+func _draw_port_legacy_north() -> void:
 	var areas: Dictionary = Sim.world.get("areas", {})
 	if not areas.has("dock"):
 		return

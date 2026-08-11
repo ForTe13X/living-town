@@ -126,6 +126,12 @@ if [ "${1:-}" = "--shoot" ]; then
       --backend logic --shot "$OUT/vg_${nm}.png" --seed "$SEED" --warmup-tick "$tk" --shot-fit \
       || rc=1
   done
+  # P1-c：同 seed / 同 tick 的货船 ON/OFF 负对照。货船是 CargoManifest 的纯 View 投影，
+  # 因此两帧除了 East Ocean 泊位里的 carrier 像素外必须相同；无 cargo 或永久装饰船都会判红。
+  vg_shoot "$OUT/vg_noon_no_carrier.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
+    --resolution ${W}x${H} --single-window -- \
+    --backend logic --shot "$OUT/vg_noon_no_carrier.png" --seed "$SEED" --warmup-tick "$NOON_TICK" --shot-fit --draw-skip carrier \
+    || { [ "$rc" -eq 0 ] && rc=9; }
   # ── D7 的界外层重画门（同一个 Xvfb，省一次容器启动）──────────────────────
   # 为什么它在这里而不是自己一步：它和昼夜断言一样，**需要一个真 framebuffer**，
   # 于是也需要同一套「探不到就 SKIP、GHA 上显式跳过」的可移植性逻辑。
@@ -318,6 +324,7 @@ fi
 #   2 void-gate 判红   3 空间往返采集失败   4 室内帧采集失败
 #   5 季节四季帧采集失败（AK1）   6 降水帧采集失败（AK1）   7 cafe 2F 帧采集失败（AM1）
 #   8 全楼层往返采集失败（AM3：某一跳没落在对的 Floor / 前提断言破了）
+#   9 East Ocean 货船 OFF 负对照帧采集失败（P1-c）
 # 2026-07-28 第一版把 1 和 2 混成一个 rc，于是 void-gate 变红时打印的是"渲染环境在位却拍不出帧"——
 # 一条**指向错误方向**的诊断（帧其实拍出来了）。rc=3 是 2026-07-30 加的第三种，理由同上。
 # rc=5/6 是 AK1（2026-08-06）加的第五、六种：季节/降水的采集失败与上面各步修法不同，分开报。
@@ -349,6 +356,10 @@ if [ $SHOT_RC -eq 8 ]; then
   echo "  ❌ VISUAL GATE：全楼层往返采集失败（前面几步都过了）—— 见上面的 [SPACESHOT] 行（某一跳没落在对的 Floor / 前提断言破了）"
   exit 1
 fi
+if [ $SHOT_RC -eq 9 ]; then
+  echo "  ❌ VISUAL GATE：East Ocean 货船负对照帧采集失败——见上面的 shot FAIL vg_noon_no_carrier.png 行"
+  exit 1
+fi
 if [ $SHOT_RC -ne 0 ]; then
   if [ "$PICK" = native ] && [ "$MODE" != "require" ]; then
     skip "native 渲染路径拍不出帧（未 pin 的环境不背这个锅；LT_VISUAL=require 可让它变红）"
@@ -359,6 +370,10 @@ fi
 
 "$PY" tools/assert_daynight.py "$OUT/vg_night.png" "$OUT/vg_noon.png" "$NIGHT_TICK" "$NOON_TICK" --tol "$TOL"
 ARC=$?
+# East Ocean 可见货船门（P1-c）。复用正午整镇帧，另吃同 tick 的 --draw-skip carrier 负对照；
+# 判据同时守住“ready manifest 真可见”“零 cargo 不画永久船”“差异只落在泊位”三条性质。
+"$PY" tools/assert_east_ocean_carrier.py "$OUT/vg_noon.png" "$OUT/vg_noon_no_carrier.png" --tol "$TOL"
+CARC=$?
 # 空间往返判据（E6/W7）。**故意跑在昼夜断言之后而不是短路**：两条门守的是不同的性质，
 # 一条红了另一条的读数仍然有诊断价值（"界外带塌了" vs "整个昼夜尺子坏了"是两种完全不同的排查）。
 "$PY" tools/assert_space_roundtrip.py "$OUT"
@@ -411,6 +426,7 @@ C2RC=$?
 FLRC=$?
 [ $EPHEMERAL -eq 1 ] && rm -rf "$OUT"
 [ $ARC -ne 0 ] && exit $ARC
+[ $CARC -ne 0 ] && exit $CARC
 [ $RRC -ne 0 ] && exit $RRC
 [ $PRC -ne 0 ] && exit $PRC
 [ $IRC -ne 0 ] && exit $IRC

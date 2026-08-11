@@ -1,7 +1,7 @@
 {
   "_doc": "车道 E 物流/进口 + P1-b CargoManifest。import lane 的到期日只生成港口 cargo；货物不再凭日界直接注入 town_stock，而由在班码头工认领 exact manifest、完成 gated 卸货后，经唯一库存/钱通道整单提交。off 门：删本文件 ⇒ logistics、affiliate 与 manifest 全关；删 route_id ⇒ 该 lane 不生成 cargo。",
   "_determinism": "arrival id=manifest_<route>_<day>_<lane-index>，严格按 lane 著者序、纯 f(data,day)，无 RNG/Time/浮点；cargo order/remaining/state 与已签发 option 的 manifest 授权进入逐 tick chain。commit 无 await/回调，固定为 import pay → import stock → cargo receipt → wage；同 seed focused test 的状态、事件和 event_digest 两跑逐字一致。",
-  "_manifest_contract": "P1-b：到期日先生成 CargoManifest（逻辑来源 route_id=east_ocean），不直接改镇库/钱；码头工必须在班从当前 authored candidate 认领 exact manifest，已签发的同一单可跨班次完成，再整单同步提交 town→external 付款、import 入库、cargo 清零与工资。无 cargo、无授权、货位/余额变化或 stale intent 均在 need/库存/钱/事件前 fail-closed。当前 port_dock 物理坐标仍是旧地图 dock；route 只表示来源，不冒充 East Ocean 地形已落地。",
+  "_manifest_contract": "P1-b/P1-c：到期日先生成 CargoManifest，不直接改镇库/钱；码头工从当前 authored candidate 认领 exact manifest，已签发的同一单可跨班次完成，再整单同步提交 town→external 付款、import 入库、cargo 清零与工资。无 cargo、无授权、货位/余额变化或 stale intent 均在 need/库存/钱/事件前 fail-closed。East Ocean 已物理落图；货船仍不是第二份权威态，而是 ready manifest 的有界纯 View 投影。",
   "_why_firewood": "选柴薪：它是澡堂唯一燃料（consume.洗澡→柴薪，~546 次/seed）+ 屋瓦的原料（produce.泥瓦匠.inputs.柴薪:3），是全镇第一件【被两条需求争抢】的货、供给最紧。进口柴薪【蓄意松动】柴薪/屋瓦满足率与洗澡缺货——这是 self-contain 弧 P1『外部管够、本地稀薄』的可见目标，不是 bug（逐 seed 展布见 analysis/as1/n12_supply_before_after.txt 与 docs/147 §四）。",
   "_batch_why": "batch=4 保留既有已标定外部批量，但 P1-b 后它是【manifest 整单】而非保证每三天已入库 4 件：cap/余额/码头工班次任一不满足就留港。旧 analysis/as1 的直接注入满足率只作 legacy calibration，不是当前吞吐证据；当前最终 seed1×60d 实得 19 次真实 import commit、#40 绿。完整网格须在本纵切收敛后重测，禁止沿用旧 80 件/seed 声称。",
   "_scale_why": "batch 不随人口缩放（不进 production.scale.pool），cargo 也是每船固定外部量。旧 N=16/24/60 imports-ON 结论测的是日界直接注入路径，现标 legacy-supported；新 manifest 路的吞吐同时受货位、余额与单一 stevedore 约束，必须另跑完整规模网格后才能更新尺度结论。",
@@ -10,11 +10,21 @@
       "id": "port_dock",
       "type": "码头",
       "area": "dock",
-      "pos": [33, 8],
+      "pos": [59, 8],
       "advertises": [
         { "action": "卸货", "need": "fun", "amount": 46, "duration": 28, "job": "码头工", "manifest_node": "port_dock" }
       ],
-      "_why": "P1-a 功能码头：有 advertises 的 node 由 Sim._compile_ports 编译进 world.objects；type=码头由 WorldView 的 dock 程序化槽渲染，不借贴图别名。坐标 [33,8] 位于 dock 区东南角且与 bench_pier[31,7] 不撞。它同时继续作为硬 #44/#46 的贸易来源节点。"
+      "_why": "P1-a/P1-c 功能码头：有 advertises 的 node 由 Sim._compile_ports 编译进 world.objects；坐标 [59,8] 是 East Ocean dock 最东陆格，正东邻 berth[60,8] 水格，与 Tao home/spawn[58,8] 分格。bench_pier 已独立到 north_pier，不再与货运节点竞争同一活动区。它继续作为硬 #44/#46 的贸易来源节点。"
+    }
+  ],
+  "carriers": [
+    {
+      "route_id": "east_ocean",
+      "node": "port_dock",
+      "type": "货船",
+      "berth": [60, 8],
+      "facing": "west",
+      "_why": "P1-c 纯 View carrier 声明。WorldView 只在同 route/node 存在 ready manifest 时画一艘有界泊位船；多单 backlog 用计数徽记，不复制 cargo 状态、不写 spawn/despawn 事件、不进 world.objects/nav/save/chain。删 carriers 只关闭可见投影，不改变 CargoManifest 权威逻辑。"
     }
   ],
   "import_lanes": [

@@ -101,6 +101,93 @@ def main():
     # blockers = 墙/水/树（家具运行期另加，不在 map.json blockers 里）→ typed 并集应 == blockers
     if typed != blk:
         fails.append("typed layers(walls|water|trees, %d) != blockers(%d): 渲染/导航数据脱节" % (len(typed), len(blk)))
+
+    # P1-c East Ocean physical contract.  Carrier 是 ready manifest 的纯 View 投影，但它的
+    # authored berth / route / node 仍必须和地图、物流、affiliate 跨文件闭合。渔台则必须
+    # 独立留在 north_pier；两个码头不能靠著者序重叠来“碰巧”通过 area_at。
+    carriers = lo.get("carriers", []) if isinstance(lo, dict) else []
+    if not isinstance(carriers, list):
+        fails.append("logistics.carriers 非法（应为数组）: %r" % (carriers,)); carriers = []
+    ocean = set((x, y) for x in range(60, 64) for y in range(0, 48))
+    water = set((int(x), int(y)) for x, y in m.get("water", []))
+    trees = set((int(x), int(y)) for x, y in m.get("trees", []))
+    if not ocean.issubset(water) or trees & ocean:
+        fails.append("East Ocean 必须精确占 x60..63×y0..47，且树不得与海域重叠")
+    if len(water) != 272 or len(trees) != 130 or len(blk) != 569:
+        fails.append("East Ocean typed 数量漂移：water=%d(需272) trees=%d(需130) blockers=%d(需569)"
+                     % (len(water), len(trees), len(blk)))
+    areas = m.get("areas", {})
+    dock = areas.get("dock", {})
+    north_pier = areas.get("north_pier", {})
+    if (not isinstance(dock, dict) or dock.get("rect") != [56, 7, 4, 2]
+            or dock.get("facing") != "east" or dock.get("berth") != [60, 8]
+            or dock.get("route_id") != "east_ocean" or dock.get("population_anchor") is not False):
+        fails.append("dock 物理锚必须是 rect[56,7,4,2]/east/berth[60,8]/east_ocean/population_anchor=false")
+    if (not isinstance(north_pier, dict) or north_pier.get("rect") != [30, 7, 4, 2]
+            or north_pier.get("type") != "plaza" or north_pier.get("population_anchor") is not True):
+        fails.append("north_pier 必须唯一为 rect[30,7,4,2]/plaza/population_anchor=true")
+    def rect_cells(a):
+        r = a.get("rect", []) if isinstance(a, dict) else []
+        if not (isinstance(r, list) and len(r) == 4):
+            return set()
+        return set((x, y) for x in range(int(r[0]), int(r[0]) + int(r[2]))
+                   for y in range(int(r[1]), int(r[1]) + int(r[3])))
+    north_cells = rect_cells(north_pier)
+    for aid, area in areas.items():
+        if aid != "north_pier" and north_cells & rect_cells(area):
+            fails.append("north_pier 与 area '%s' 重叠；area_at 不能依赖著者序消歧" % aid)
+    if north_cells & blk or not set((x, 6) for x in range(30, 34)).issubset(water):
+        fails.append("north_pier 四格必须全为陆地非 blocker，且北邻 [30..33,6] 必须全为水")
+    population_projection = []
+    for aid, area in areas.items():
+        if not isinstance(area, dict):
+            fails.append("area '%s' 非对象，人口 anchor fail-closed" % aid); continue
+        if "population_anchor" in area and type(area.get("population_anchor")) is not bool:
+            fails.append("area '%s'.population_anchor 必须为 bool，不能靠 truthiness" % aid); continue
+        if area.get("population_anchor", True) is False:
+            continue
+        r = area.get("rect", [])
+        if not (isinstance(r, list) and len(r) == 4):
+            fails.append("area '%s' rect 非法，人口 anchor fail-closed" % aid); continue
+        population_projection.append((str(aid), [int(r[0]) + int(r[2]) // 2, int(r[1]) + int(r[3]) // 2]))
+    frozen_population_projection = [
+        ("home", [22, 16]), ("cafe", [41, 16]), ("wash", [22, 31]),
+        ("work", [41, 31]), ("home2", [12, 6]), ("shop", [52, 8]),
+        ("library", [12, 41]), ("plaza", [32, 24]), ("north_pier", [32, 8]),
+    ]
+    if population_projection != frozen_population_projection:
+        fails.append("扩容 anchor ID/顺序/质心必须逐项冻结；got=%r" % population_projection)
+    nodes = [n for n in lo.get("nodes", []) if isinstance(n, dict) and n.get("id") == "port_dock"]
+    if len(nodes) != 1 or nodes[0].get("pos") != [59, 8] or nodes[0].get("area") != "dock":
+        fails.append("port_dock 必须唯一落在 East Ocean 西邻陆格 [59,8] / area=dock")
+    lanes = [q for q in lo.get("import_lanes", []) if isinstance(q, dict)]
+    if not lanes or any(q.get("route_id") != "east_ocean" or q.get("node") != "port_dock" for q in lanes):
+        fails.append("所有 import lane 必须闭合到 east_ocean/port_dock")
+    # carriers=[] 是合法 View off-gate；只有声明存在时才校验 projection 记录本身。
+    if carriers:
+        if len(carriers) != 1 or not isinstance(carriers[0], dict):
+            fails.append("首片只允许一个 authored carrier projection")
+        else:
+            c = carriers[0]
+            if (c.get("route_id") != "east_ocean" or c.get("node") != "port_dock"
+                    or c.get("berth") != [60, 8] or c.get("facing") != "west"):
+                fails.append("carrier 必须闭合到 east_ocean/port_dock/berth[60,8]/west")
+    tao = [a for a in ag.get("affiliates", []) if isinstance(a, dict) and a.get("id") == "tao"]
+    if len(tao) != 1 or tao[0].get("home") != [58, 8] or tao[0].get("spawn") != [58, 8]:
+        fails.append("Tao home/spawn 必须冻结在 East Ocean dock[58,8]")
+    piers = [w for w in (pr.get("worksites", []) if isinstance(pr, dict) else [])
+             if isinstance(w, dict) and w.get("id") == "bench_pier"]
+    if len(piers) != 1 or piers[0].get("pos") != [31, 7] or piers[0].get("area") != "north_pier":
+        fails.append("bench_pier 必须唯一冻结在 north_pier 陆格 [31,7]")
+    logistics_refs = []
+    for section in ("nodes", "import_lanes", "export_lanes", "carriers"):
+        for rec in lo.get(section, []):
+            if isinstance(rec, dict) and any(rec.get(k) == "north_pier" for k in ("area", "node", "route_id")):
+                logistics_refs.append("%s:%s" % (section, rec.get("id", rec.get("good", "?"))))
+    if logistics_refs:
+        fails.append("north_pier 只承载渔业，不得被 logistics route/node/carrier 引用：%r" % logistics_refs)
+    if (59, 8) in blk or (58, 8) in blk or (60, 8) not in water:
+        fails.append("Tao/port 必须是 East dock 陆地可走格，carrier berth 必须是水格")
     # ⑧ 工位与既有家具/地标/墙水树不得同格 —— 同格 = 一个对象被静默盖住或一格被两次占用。
     lm0 = dict(((int(l["pos"][0]), int(l["pos"][1])), l.get("type", "landmark")) for l in m.get("landmarks", []))
     objby0 = dict(((int(o["pos"][0]), int(o["pos"][1])), o["id"]) for o in m["objects"])

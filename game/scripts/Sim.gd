@@ -864,6 +864,26 @@ func scale_population_plan(target_total: int) -> Dictionary:
 	return {"ok": false, "core": 0, "affiliates": 0, "base_core": base_core,
 		"total": target_total, "reason": "target cannot be represented without shrinking authored core"}
 
+## N>12 clone placement reads only authored population anchors.  A new spatial area may opt out
+## without changing the historical anchor count/order/centroids used by scale grids.
+## _area_at() intentionally still sees every area: population_anchor controls bootstrap placement,
+## not social/work membership.
+func _population_area_ids() -> Array:
+	var out: Array = []
+	var areas = world.get("areas", {})
+	if not (areas is Dictionary):
+		return out
+	for raw_id in areas.keys():
+		var area = areas.get(raw_id, {})
+		if not (area is Dictionary):
+			continue # fail closed; tools/audit_map.py rejects malformed authored data
+		if area.has("population_anchor"):
+			var flag = area.get("population_anchor")
+			if typeof(flag) != TYPE_BOOL or flag == false:
+				continue # only exact bool true includes; malformed flags cannot perturb clone placement
+		out.append(String(raw_id))
+	return out
+
 func start_new(p_seed: int = 12345) -> void:
 	emit_signal("world_reset")             # 新世界 → 通知 AIBackend 取消所有在飞请求 + 进新 epoch（旧回包作废）。CI 无监听=no-op。
 	seed_base = p_seed
@@ -907,7 +927,7 @@ func start_new(p_seed: int = 12345) -> void:
 	#     而 digest/chain 只经 traits 入 Sim（name/color/sprite/persona_key 只进显示层与 voicebank 气泡）
 	#     ⇒ 各 N 逐字节不变、4a/4b/不变量门零回归（见 analysis/aq1 的逐 tick 前缀链对比）。
 	if spawn_count > defs.size():
-		var area_ids: Array = world.get("areas", {}).keys()
+		var area_ids: Array = _population_area_ids()
 		var pool_ids: Array = personas.keys()          # 扩后全池，保序[原12,新12]；仅本分支消费，N=12 从不读
 		for i in range(defs.size(), spawn_count):
 			var pk: String = String(pool_ids[i % pool_ids.size()]) if not pool_ids.is_empty() else String((adata[i % adata.size()] as Dictionary)["persona"])

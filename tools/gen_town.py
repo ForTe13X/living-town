@@ -39,6 +39,11 @@ BLD_TYPE = {
 LABELS = {"home": "住宅区", "cafe": "咖啡馆", "wash": "澡堂", "work": "工坊",
           "home2": "民居", "shop": "杂货铺", "library": "图书馆"}   # 建筑显示名（区域标签 + 室内 Space label + 门口招牌共用）
 PLAZA = (28, 21, 8, 6)   # open central hub (no walls) — all 4 districts hug it (short survival treks)
+# P1-c East Ocean canon: the last four columns are open sea.  The dock remains
+# land and faces east; its authored berth is the first water cell beside it.
+DOCK = (56, 7, 4, 2)
+DOCK_BERTH = (60, 8)
+NORTH_PIER = (30, 7, 4, 2)
 # object id -> (district, interior-offset from district origin); interior floor = x 1..w-2, y 1..h-2
 OBJ_POS = {
     "bed_1": ("home", (2, 2)), "bed_2": ("home", (5, 3)),
@@ -49,9 +54,10 @@ OBJ_POS = {
 # blocker clusters in the OUTER wilderness — route variety without blocking the central survival paths
 CLUSTERS = [
     ("tree",  (2, 18, 7, 30)),    # far-left grove
-    ("tree",  (56, 18, 61, 30)),  # far-right grove
+    ("tree",  (56, 18, 59, 30)),  # east-coast grove stops before the sea
     ("water", (28, 2, 35, 6)),    # top pond
     ("water", (28, 42, 35, 46)),  # bottom pond
+    ("water", (60, 0, 63, 47)),   # East Ocean, selected in docs/179
 ]
 
 def rect_cells(x, y, w, h):
@@ -77,6 +83,17 @@ def build():
         walls.discard((d[0], d[1] - 1)); walls.discard((d[0], d[1] + 1))
         doors[name] = d
     areas["plaza"] = {"label": "广场", "rect": list(PLAZA), "type": "plaza"}   # open, no walls
+    areas["north_pier"] = {
+        "label": "北塘渔埠", "rect": list(NORTH_PIER), "type": "plaza",
+        "population_anchor": True,
+        "_why": "P1-c 把渔业工位与 East Ocean 货运纵切解耦：该陆上四格保留旧 dock 的著者序、矩形与人口扩容质心，只承载 bench_pier，不含物流 route/node/berth。",
+    }
+    areas["dock"] = {
+        "label": "东海码头", "rect": list(DOCK), "type": "plaza",
+        "facing": "east", "berth": list(DOCK_BERTH), "route_id": "east_ocean",
+        "population_anchor": False,
+        "_why": "P1-c East Ocean 物理锚：陆上四格栈桥面朝东，berth 是紧邻的首个水格；货船只由 ready CargoManifest 纯 View 投影，不进导航或存档。",
+    }
     for kind, (x0, y0, x1, y1) in CLUSTERS:
         s = water if kind == "water" else trees
         for x in range(x0, x1 + 1):
@@ -172,6 +189,11 @@ def main():
     for i, a in enumerate(ag["agents"]):
         c = slots[i % len(slots)]
         a["home"] = [c[0], c[1]]; a["spawn"] = [c[0], c[1]]
+    # 港口 affiliate 不属于核心住宅重排；它的落点与 dock/node/berth 一起冻结。
+    for a in ag.get("affiliates", []):
+        if a.get("id") == "tao":
+            a["home"] = [58, 8]
+            a["spawn"] = [58, 8]
     # audit BEFORE writing
     fails, nwalk = audit(blockers, areas, doors, ag["agents"], objects)
     print("64x48 town: walkable=%d/%d  blockers=%d  objects=%d  agents=%d"
@@ -255,7 +277,7 @@ def main():
     else:
         print("WROTE map.json + agents.json + spaces.json; buildings.json 保留不动（%d 个房间）" % n_rooms)
         if n_rooms:
-            print("  ⚠ 地图刚被重新生成，但 buildings.json 的房间坐标是【上一版地图】的内缩坐标——"
+            print("  WARNING: 地图刚被重新生成，但 buildings.json 的房间坐标是【上一版地图】的内缩坐标——"
                   "请核对每个 rect 仍落在对应 area 内缩区内（要清空用 --clear-buildings）。")
 
 if __name__ == "__main__":
