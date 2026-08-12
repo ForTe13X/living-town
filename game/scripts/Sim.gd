@@ -1318,7 +1318,10 @@ func export_trace(path: String) -> void:
 ## ★关键事实：RNG 无状态（`_rng_at` 纯 f(seed_base,tick_no)）→ 没有 RNG 态要存，seed+tick 已在 var 里。
 ## 红线：save 只读状态+写文件（不动 digest）；load 只在用户显式读档时调（CI/tick 从不经此）→ digest 零影响。
 const SAVE_MAGIC := "LTSAVE"
-const SAVE_SCHEMA := 1
+const SAVE_SCHEMA_LEGACY := 1
+const SAVE_SCHEMA := 2
+const SAVE_RUNTIME_HANDLES := ["backend", "ext", "decision_sink"]
+const SAVE_LOAD_DENY := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink"]
 
 func save_game(path: String, meta := {}) -> bool:
 	# 派生引用结构【不入档】：它们只是 agents[]/commitments[] 的别名视图，存了也只能得到孤儿副本；
@@ -1333,7 +1336,7 @@ func save_game(path: String, meta := {}) -> bool:
 	for p in get_property_list():
 		if not (int(p["usage"]) & PROPERTY_USAGE_SCRIPT_VARIABLE):
 			continue
-		if String(p["name"]) in DERIVED or String(p["name"]) in BENCH_ONLY or String(p["name"]) in VIEW_PARAMS:
+		if String(p["name"]) in DERIVED or String(p["name"]) in BENCH_ONLY or String(p["name"]) in VIEW_PARAMS or String(p["name"]) in SAVE_RUNTIME_HANDLES:
 			continue
 		var v = get(p["name"])
 		if v is Object or v is Callable:            # backend/ext/decision_sink：接线非状态，不入档
@@ -1377,13 +1380,18 @@ func peek_save(path: String) -> Dictionary:
 	if not FileAccess.file_exists(path):
 		return {}
 	var f := FileAccess.open(path, FileAccess.READ)
-	if f == null or f.get_length() < 8 or f.get_32() != SAVE_SCHEMA:
+	if f == null or f.get_length() < 8:
+		return {}
+	var sch := f.get_32()
+	if sch < SAVE_SCHEMA_LEGACY or sch > SAVE_SCHEMA:
+		f.close()
 		return {}
 	var blob = f.get_var()
 	f.close()
-	if not (blob is Dictionary) or blob.get("magic") != SAVE_MAGIC:
+	if not (blob is Dictionary) or blob.get("magic") != SAVE_MAGIC or int(blob.get("schema", -1)) != sch or not (blob.get("state") is Dictionary):
 		return {}
 	blob.erase("state")                             # 只回头信息
+	blob["requires_migration"] = sch < SAVE_SCHEMA
 	return blob
 
 func load_game(path: String) -> bool:
@@ -1393,20 +1401,208 @@ func load_game(path: String) -> bool:
 	if f == null or f.get_length() < 8:
 		return false
 	var sch := f.get_32()
-	if sch != SAVE_SCHEMA:                           # 版本不符 → 拒绝，绝不静默套错格式
+	if sch < SAVE_SCHEMA_LEGACY or sch > SAVE_SCHEMA: # 未知过去/未来版本 → 拒绝，绝不猜格式
 		f.close()
-		push_warning("load_game: schema %d != %d, refusing" % [sch, SAVE_SCHEMA])
+		push_warning("load_game: unsupported schema %d (supported %d..%d), refusing" % [sch, SAVE_SCHEMA_LEGACY, SAVE_SCHEMA])
 		return false
 	var blob = f.get_var()
 	f.close()
-	if not (blob is Dictionary) or blob.get("magic") != SAVE_MAGIC:
+	if not (blob is Dictionary) or blob.get("magic") != SAVE_MAGIC or int(blob.get("schema", -1)) != sch:
 		return false
-	var state: Dictionary = blob.get("state", {})
+	var active_ids = blob.get("active_commit_ids", [])
+	if not (active_ids is Array) or not (active_ids as Array).all(func(v): return typeof(v) == TYPE_INT):
+		return false
+	var prepared := _prepare_loaded_state(blob, sch)
+	if not bool(prepared.get("ok", false)):
+		push_warning("load_game: %s" % String(prepared.get("error", "invalid save state")))
+		return false
+	var state: Dictionary = prepared["state"]
+	var invalid := _validate_loaded_state(state, sch)
+	if invalid != "":
+		push_warning("load_game: %s" % invalid)
+		return false
+	# 到这里才触碰 live Sim。上面的迁移/验证全在 deep copy 上完成，因此任何拒绝都保持接收实例原样。
 	for k in state:
 		set(k, state[k])
-	_rebuild_after_load(blob.get("active_commit_ids", []))
+	_rebuild_after_load(active_ids)
 	emit_signal("world_reset")               # 读档=换世界：AIBackend cancel_all(bump epoch)，在飞旧回包一律作废（P1-3 同款）
 	return true
+
+## schema 1 曾覆盖多个产品 tip。d46cbb1→本 schema 2 的顶层权威字段只新增下面三项；
+## 不改写旧 world/logistics/agents，也不凭历史 import 合成 cargo（否则会把已入库/已付款重复计算）。
+## 迁移必须覆盖接收实例的现值：Main.quickload 会在 live Sim 上读档，靠脚本默认会残留幽灵 manifest/core。
+func _prepare_loaded_state(blob: Dictionary, sch: int) -> Dictionary:
+	var raw_state = blob.get("state")
+	if not (raw_state is Dictionary):
+		return {"ok": false, "error": "state is not a Dictionary"}
+	var state: Dictionary = (raw_state as Dictionary).duplicate(true)
+	# Runtime services are receiver-owned. Historical headless schema 1 files could contain backend/ext=null;
+	# applying that to Main's live Sim would silently disconnect AI/extensions after quickload.
+	for handle in SAVE_RUNTIME_HANDLES:
+		state.erase(handle)
+	if sch == SAVE_SCHEMA:
+		return {"ok": true, "state": state}
+	if sch != SAVE_SCHEMA_LEGACY:
+		return {"ok": false, "error": "no migration path for schema %d" % sch}
+
+	var has_manifests := state.has("cargo_manifests")
+	var has_order := state.has("cargo_manifest_order")
+	var has_core := state.has("core_population")
+	if has_manifests != has_order:
+		return {"ok": false, "error": "schema 1 cargo pair is partial"}
+	if has_manifests and not has_core:
+		return {"ok": false, "error": "schema 1 cargo state is missing core_population"}
+	if not has_manifests:
+		state["cargo_manifests"] = {}
+		state["cargo_manifest_order"] = []
+		_gate_schema1_unload_adverts(state)
+		for raw_ag in state.get("agents", []):
+			if raw_ag is Dictionary:
+				var option = (raw_ag as Dictionary).get("option")
+				if option is Dictionary and _option_mentions_cargo(option):
+					(raw_ag as Dictionary)["option"] = null
+	else:
+		var cargo_error := _validate_cargo_state(state)
+		if cargo_error != "":
+			return {"ok": false, "error": cargo_error}
+
+	if not has_core:
+		var core := 0
+		var raw_agents = state.get("agents")
+		if not (raw_agents is Array):
+			return {"ok": false, "error": "schema 1 agents is not an Array"}
+		for raw_ag in raw_agents:
+			if not (raw_ag is Dictionary):
+				return {"ok": false, "error": "schema 1 agent is not a Dictionary"}
+			var ag: Dictionary = raw_ag
+			if ag.get("is_player", false) == true or ag.get("affiliate", false) == true:
+				continue
+			core += 1
+		state["core_population"] = core
+	return {"ok": true, "state": state}
+
+func _option_mentions_cargo(option: Dictionary) -> bool:
+	return String(option.get("action", "")) == "卸货" or option.has("manifest_id") or option.has("manifest_node") or option.has("manifest_authorized")
+
+## P1-a-only schema 1 有永久“卸货”广告却没有 manifest 权威态。只清 in-flight option 不够，
+## 下一 tick 还会重签 ghost job；给旧快照中的广告补 manifest_node 后，它会在空 cargo 上结构性关闭。
+func _gate_schema1_unload_adverts(state: Dictionary) -> void:
+	var saved_logistics = state.get("logistics")
+	if saved_logistics is Dictionary:
+		for raw_node in (saved_logistics as Dictionary).get("nodes", []):
+			if not (raw_node is Dictionary):
+				continue
+			var node: Dictionary = raw_node
+			var node_id := String(node.get("id", ""))
+			for raw_adv in node.get("advertises", []):
+				if raw_adv is Dictionary and String((raw_adv as Dictionary).get("action", "")) == "卸货":
+					(raw_adv as Dictionary)["manifest_node"] = node_id
+	var saved_world = state.get("world")
+	if not (saved_world is Dictionary):
+		return
+	var objects = (saved_world as Dictionary).get("objects")
+	if not (objects is Dictionary):
+		return
+	for raw_id in (objects as Dictionary):
+		var raw_obj = (objects as Dictionary)[raw_id]
+		if not (raw_obj is Dictionary):
+			continue
+		for raw_adv in (raw_obj as Dictionary).get("advertises", []):
+			if raw_adv is Dictionary and String((raw_adv as Dictionary).get("action", "")) == "卸货":
+				(raw_adv as Dictionary)["manifest_node"] = String(raw_id)
+
+func _validate_cargo_state(state: Dictionary) -> String:
+	var manifests = state.get("cargo_manifests")
+	var order = state.get("cargo_manifest_order")
+	if not (manifests is Dictionary) or not (order is Array):
+		return "schema 1 cargo pair has wrong type"
+	var seen := {}
+	for raw_id in order:
+		if typeof(raw_id) != TYPE_STRING:
+			return "schema 1 cargo order id is not a String"
+		var manifest_id := String(raw_id)
+		if manifest_id == "" or seen.has(manifest_id) or not (manifests as Dictionary).has(manifest_id):
+			return "schema 1 cargo order is invalid"
+		seen[manifest_id] = true
+		var raw_rec = (manifests as Dictionary)[manifest_id]
+		if not (raw_rec is Dictionary):
+			return "schema 1 cargo record is not a Dictionary"
+		var rec: Dictionary = raw_rec
+		for int_key in ["lane_index", "arrived_day", "initial_qty", "remaining_qty", "price_per", "price_den"]:
+			if typeof(rec.get(int_key)) != TYPE_INT:
+				return "schema 1 cargo %s is not an int" % int_key
+		var remaining := int(rec.get("remaining_qty", -1))
+		var initial := int(rec.get("initial_qty", -1))
+		var status := String(rec.get("state", ""))
+		if String(rec.get("id", "")) != manifest_id or String(rec.get("route_id", "")) == "" or String(rec.get("node", "")) == "" or String(rec.get("good", "")) == "":
+			return "schema 1 cargo identity is invalid"
+		if initial <= 0 or remaining < 0 or remaining > initial or (status == "ready" and remaining <= 0) or (status == "complete" and remaining != 0) or not (status in ["ready", "complete"]):
+			return "schema 1 cargo quantity/state is invalid"
+		if int(rec.get("lane_index", -1)) < 0 or int(rec.get("arrived_day", -1)) < 1 or int(rec.get("price_per", -1)) < 0 or int(rec.get("price_den", 0)) <= 0:
+			return "schema 1 cargo lane/day/price is invalid"
+	if seen.size() != (manifests as Dictionary).size():
+		return "schema 1 cargo dictionary/order diverge"
+	for raw_ag in state.get("agents", []):
+		if not (raw_ag is Dictionary):
+			return "schema 1 agent is not a Dictionary"
+		var option = (raw_ag as Dictionary).get("option")
+		if not (option is Dictionary) or not _option_mentions_cargo(option):
+			continue
+		var manifest_id := String((option as Dictionary).get("manifest_id", ""))
+		if (option as Dictionary).get("manifest_authorized", false) != true or not (manifests as Dictionary).has(manifest_id):
+			return "schema 1 cargo option is not engine-authorized"
+		var rec: Dictionary = (manifests as Dictionary)[manifest_id]
+		if String((option as Dictionary).get("manifest_node", "")) != String(rec.get("node", "")) or String(rec.get("state", "")) != "ready":
+			return "schema 1 cargo option does not match a ready manifest"
+	return ""
+
+## Validate the complete copy before set(). This keeps bad header/blob pairs, partial migrations,
+## unknown keys and type-confused payloads from partially overwriting a running quickload target.
+func _validate_loaded_state(state: Dictionary, sch: int) -> String:
+	var allowed := {}
+	for p in get_property_list():
+		if int(p.get("usage", 0)) & PROPERTY_USAGE_SCRIPT_VARIABLE:
+			allowed[String(p.get("name", ""))] = true
+	for raw_key in state:
+		var key := String(raw_key)
+		if not allowed.has(key) or key in SAVE_LOAD_DENY:
+			return "unknown or derived state key: %s" % key
+		var live = get(key)
+		var incoming = state[raw_key]
+		if typeof(live) != TYPE_NIL and typeof(live) != typeof(incoming):
+			return "state key %s has type %d, expected %d" % [key, typeof(incoming), typeof(live)]
+		if typeof(live) == TYPE_NIL and typeof(incoming) != TYPE_NIL:
+			return "runtime handle %s is not null" % key
+	for key in ["agents", "world", "production", "logistics", "tick_no", "day", "seed_base", "event_log", "event_digest", "town_stock", "town_coin", "external_coin", "econ_total0", "commitments", "cargo_manifests", "cargo_manifest_order", "core_population"]:
+		if not state.has(key):
+			return "missing required state key: %s" % key
+	if not (state["agents"] is Array) or (state["agents"] as Array).is_empty():
+		return "agents must be a non-empty Array"
+	if typeof(state["core_population"]) != TYPE_INT:
+		return "core_population is not an int"
+	var core := int(state["core_population"])
+	var eligible_core := 0
+	for raw_ag in state["agents"]:
+		if not (raw_ag is Dictionary):
+			return "agent entry is not a Dictionary"
+		var ag: Dictionary = raw_ag
+		if String(ag.get("id", "")) == "" or not (ag.get("memory") is Dictionary):
+			return "agent identity/memory payload is invalid"
+		for flag_key in ["is_player", "affiliate"]:
+			if ag.has(flag_key) and typeof(ag.get(flag_key)) != TYPE_BOOL:
+				return "agent %s flag is not bool" % flag_key
+		if ag.get("is_player", false) != true and ag.get("affiliate", false) != true:
+			eligible_core += 1
+	if core <= 0 or core != eligible_core:
+		return "core_population %d does not equal eligible core %d" % [core, eligible_core]
+	var leaks: Array = []
+	_scan_objects(state, "state", leaks)
+	if not leaks.is_empty():
+		return "state contains Object/Callable: %s" % ", ".join(leaks)
+	var cargo_error := _validate_cargo_state(state)
+	if cargo_error != "":
+		return cargo_error
+	return ""
 
 ## 深扫状态树找残留 Object/Callable（save_game 的 fail-closed 门用）。
 func _scan_objects(v, path: String, out: Array) -> void:

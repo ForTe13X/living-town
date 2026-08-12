@@ -61,6 +61,26 @@ func _probe_blocked_use(S, worker: Dictionary, manifest_id: String, label: Strin
 func _events_since(S, start: int) -> Array:
 	return S.event_log.slice(start)
 
+## P1-b/P1-c shipped while SAVE_SCHEMA was still 1. Rewriting only the envelope version creates
+## the real transitional shape: cargo/order/core and an engine-authorized mid-use option all exist.
+func _rewrite_as_schema1(path: String) -> bool:
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null or f.get_length() < 8:
+		return false
+	f.get_32()
+	var blob = f.get_var()
+	f.close()
+	if not (blob is Dictionary):
+		return false
+	blob["schema"] = 1
+	f = FileAccess.open(path, FileAccess.WRITE)
+	if f == null:
+		return false
+	f.store_32(1)
+	f.store_var(blob)
+	f.close()
+	return true
+
 ## P1-b 之前的 option chain 口径；无 logistics/cargo 时新代码必须与这 6 字段折叠逐字节相同。
 func _legacy_chain_without_cargo(S) -> int:
 	var h: int = 0
@@ -296,6 +316,8 @@ func _ready() -> void:
 	var overtime_chain := int(Inv.chain_step(0, S, S.event_log.size()))
 	var overtime_save := "user://p1b_manifest_overtime_test.save"
 	ck(S.save_game(overtime_save), "已签发且 use 中途的 cargo option 可存档")
+	ck(_rewrite_as_schema1(overtime_save) and bool(S.peek_save(overtime_save).get("requires_migration", false)),
+		"P1-b transitional schema-1 fixture 可识别")
 	tao["option"].erase("manifest_authorized")
 	tao["option"]["remaining"] = 99
 	ck(S.load_game(overtime_save), "已签发 cargo option 可读档")

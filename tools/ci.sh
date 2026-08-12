@@ -670,7 +670,7 @@ echo "  ℹ  story_test 夹具 = seeds $CI_STORY_SEEDS × $CI_STORY_DAYS 天 · 
 #   不得讲成"做成了"。AE1 owns 只有 Main.gd + 这个新测试，【不许碰 ci.sh】（那是 AE2 的行），
 #   所以它加了门却没接线——协调者在此接线（"一道没接线的门不是门"，V3 的树丛门当年同样是这样补上的）。
 #   接线前已按本 for 循环的口径实跑过一次：res://scenes/event_prose_test.tscn ⇒ EXIT=0、GATE PASS、无 GBK 编码坑。
-for scene in m2_test reqlife_test player_agency_test player_touch_test p1a_affiliate_test p1b_cargo_manifest_test p1c_east_ocean_carrier_test p1d_scale_export_test s4_replay_test space_test save_load_test goals_test story_test event_prose_test; do
+for scene in m2_test reqlife_test player_agency_test player_touch_test p1a_affiliate_test p1b_cargo_manifest_test p1c_east_ocean_carrier_test p1d_scale_export_test s4_replay_test space_test save_load_test save_migration_test goals_test story_test event_prose_test; do
   SCENE_T0=$SECONDS
   "$GODOT" --headless --path game "res://scenes/$scene.tscn" >"$LT_LOG/$scene.log" 2>&1
   code=$?
