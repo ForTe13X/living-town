@@ -1637,7 +1637,10 @@ func _player_cargo_hint(pl: Dictionary) -> String:
 	var state_label: String = String({
 		"ready": "待卸", "working": "卸货中", "blocked_capacity": "仓位不足", "blocked_funds": "镇库不足",
 	}.get(String(st.get("state", "")), "待处理"))
-	return "  [color=#80e1ff]港：%s×%d %s·%s负责[/color]" % [String(st.get("good", "货物")), int(st.get("qty", 0)), state_label, worker]
+	var backlog := ""
+	if int(st.get("ready_count", 0)) > 1:
+		backlog = "·共%d单%d件" % [int(st.get("ready_count", 0)), int(st.get("ready_qty", 0))]
+	return "  [color=#80e1ff]港：%s×%d %s%s·%s负责[/color]" % [String(st.get("good", "货物")), int(st.get("qty", 0)), state_label, backlog, worker]
 
 # ── 观察台 / 时间轴 ────────────────────────────────────────────────────────
 func _update_scrubber() -> void:

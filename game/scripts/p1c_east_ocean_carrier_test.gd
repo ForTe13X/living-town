@@ -154,12 +154,17 @@ func _ready() -> void:
 		and int(p[0].get("ready_qty", 0)) == 12
 		and String(p[0].get("manifest_id", "")) == "manifest_east_ocean_3_0",
 		"三单 backlog 仍是一艘船 + 3 单徽记，FIFO 绑定最早 manifest")
+	var hud_status: Dictionary = S.cargo_status_for_node("port_dock")
+	ck(int(hud_status.get("ready_count", 0)) == 3 and int(hud_status.get("ready_qty", 0)) == 12,
+		"玩家港口状态与船徽记共用同一 backlog 3单/12件投影")
 	S.cargo_manifests["manifest_east_ocean_3_0"]["remaining_qty"] = 0
 	S.cargo_manifests["manifest_east_ocean_3_0"]["state"] = "complete"
 	p = projection(S)
 	ck(p.size() == 1 and int(p[0].get("ready_count", 0)) == 2
 		and String(p[0].get("manifest_id", "")) == "manifest_east_ocean_6_0",
 		"最早单完成后同一艘船确定重绑下一单")
+	ck(S._retire_completed_manifest("manifest_east_ocean_3_0") and projection(S) == p,
+		"receipt 后退休 complete live record 不改变已重绑 carrier projection")
 
 	var chain0 := int(Inv.chain_step(0, S, S.event_log.size()))
 	var save_path := "user://p1c_east_ocean_carrier_test.save"

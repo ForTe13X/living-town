@@ -254,18 +254,30 @@ static func export_pair_scan(log: Array) -> Dictionary:
 		i += 2
 	return {"related": seq.size(), "pairs": pairs, "bad": bad}
 
-## P1-g：进口提交的三条 receipt 必须由同一 CargoManifest txid 严格绑定，不能只靠日终总账互相抵消。
-## paid 单 = pay→stock→receipt；免费/off-economy 单 = stock→receipt。两种都要求连续 event id、同量、同节点/货/manifest。
+## P1-h：进口历史只依赖 append-only receipt + authored lane，不要求 complete manifest 永久滞留在 live queue。
+## paid 单 = pay→stock→receipt；免费/off-economy 单 = stock→receipt。两种都要求连续 event id、同量、同节点/货/manifest，
+## 且必须能反向绑定唯一 cargo_arrive receipt 与 route/lane-index/batch。live manifests 只容纳仍会驱动未来的 ready cargo。
 static func import_manifest_tx_scan(S) -> Dictionary:
 	var groups := {}
+	var arrivals := {}
 	var bad: Array = []
 	var related := 0
+	var import_lanes: Array = S.logistics.get("import_lanes", []) if S.logistics.get("import_lanes", []) is Array else []
 	for raw in S.event_log:
 		if not (raw is Dictionary):
 			continue
 		var e: Dictionary = raw
 		var ty := String(e.get("type", ""))
 		var note := String(e.get("note", ""))
+		if ty == "world" and note.begins_with("cargo_arrive:"):
+			var arrived_id := String(e.get("target", ""))
+			if arrived_id == "":
+				bad.append("#%d cargo_arrive 缺 manifest target" % int(e.get("id", -1)))
+			else:
+				if not arrivals.has(arrived_id):
+					arrivals[arrived_id] = []
+				arrivals[arrived_id].append(e)
+			continue
 		var kind := ""
 		if ty == "pay" and note.split("*")[0] == "import":
 			kind = "pay"
@@ -288,35 +300,85 @@ static func import_manifest_tx_scan(S) -> Dictionary:
 		if not String(txid).begins_with("cargo_unload/") or manifest_id == "":
 			bad.append("txid=%s 非 cargo_unload/<manifest>" % String(txid))
 			continue
-		var rec: Dictionary = S.cargo_manifests.get(manifest_id, {})
-		if rec.is_empty():
-			bad.append("txid=%s 无 manifest" % String(txid))
+		var arrival_rows: Array = arrivals.get(manifest_id, [])
+		if arrival_rows.size() != 1:
+			bad.append("txid=%s cargo_arrive 数=%d，期望1" % [String(txid), arrival_rows.size()])
 			continue
-		var qty := int(rec.get("initial_qty", 0))
-		var paid: bool = not S.economy.is_empty() and int(rec.get("price_per", 0)) > 0
-		var expected: Array = ["pay", "stock", "receipt"] if paid else ["stock", "receipt"]
+		var arrival: Dictionary = arrival_rows[0]
 		var rows: Array = groups[txid]
 		var kinds: Array = rows.map(func(row): return String(row["kind"]))
-		if kinds != expected:
-			bad.append("txid=%s 顺序=%s 期望=%s" % [String(txid), str(kinds), str(expected)])
+		if not (kinds == ["pay", "stock", "receipt"] or kinds == ["stock", "receipt"]):
+			bad.append("txid=%s 顺序=%s 非 paid/free exact 事务" % [String(txid), str(kinds)])
 			continue
+		var paid := kinds.size() == 3
 		for i in range(1, rows.size()):
 			if int(rows[i]["e"].get("id", -1)) != int(rows[i - 1]["e"].get("id", -1)) + 1:
 				bad.append("txid=%s receipt 非连续 event id" % String(txid))
 		var stock_e: Dictionary = rows[1 if paid else 0]["e"]
 		var receipt_e: Dictionary = rows[2 if paid else 1]["e"]
+		var qty := _amt_of(String(stock_e.get("note", "")))
+		var node := String(stock_e.get("actor", ""))
+		var good := String(stock_e.get("subject", ""))
+		var route := String(arrival.get("actor", ""))
+		var lane_index := -1
+		var lane: Dictionary = {}
+		for i in range(import_lanes.size()):
+			if not (import_lanes[i] is Dictionary):
+				continue
+			var candidate: Dictionary = import_lanes[i]
+			var prefix := "manifest_%s_" % String(candidate.get("route_id", ""))
+			var suffix := "_%d" % i
+			if manifest_id.begins_with(prefix) and manifest_id.ends_with(suffix):
+				var day_text := manifest_id.substr(prefix.length(), manifest_id.length() - prefix.length() - suffix.length())
+				if day_text.is_valid_int() and int(day_text) >= 1:
+					lane_index = i
+					lane = candidate
+					break
+		if lane_index < 0 or String(lane.get("route_id", "")) != route or String(lane.get("node", "")) != node \
+			or String(lane.get("good", "")) != good or int(lane.get("batch", 0)) != qty:
+			bad.append("txid=%s manifest/route/lane/node/good/batch 不可溯源" % String(txid))
+			continue
+		var expected_paid: bool = not S.economy.is_empty() and int(lane.get("price_per", 0)) > 0
+		if paid != expected_paid:
+			bad.append("txid=%s paid=%s 与 authored lane/economy=%s 不符" % [String(txid), str(paid), str(expected_paid)])
 		if paid:
 			var pay_e: Dictionary = rows[0]["e"]
 			if String(pay_e.get("actor", "")) != "town" or String(pay_e.get("target", "")) != "external" or _amt_of(String(pay_e.get("note", ""))) != qty:
 				bad.append("txid=%s pay actor/target/qty 不符" % String(txid))
-		if String(stock_e.get("actor", "")) != String(rec.get("node", "")) or String(stock_e.get("target", "")) != "town" \
-			or String(stock_e.get("subject", "")) != String(rec.get("good", "")) or _amt_of(String(stock_e.get("note", ""))) != qty:
+		if String(stock_e.get("target", "")) != "town" or String(stock_e.get("note", "")) != "import*%d" % qty or qty <= 0:
 			bad.append("txid=%s stock node/good/qty 不符" % String(txid))
-		if String(receipt_e.get("target", "")) != String(rec.get("node", "")) or String(receipt_e.get("subject", "")) != String(rec.get("good", "")) \
+		if String(arrival.get("target", "")) != manifest_id or String(arrival.get("subject", "")) != good \
+			or String(arrival.get("note", "")) != "cargo_arrive:%s*%d" % [manifest_id, qty]:
+			bad.append("txid=%s cargo arrival manifest/route/good/qty 不符" % String(txid))
+		if String(receipt_e.get("target", "")) != node or String(receipt_e.get("subject", "")) != good \
 			or String(receipt_e.get("note", "")) != "cargo_unload:%s*%d" % [manifest_id, qty]:
 			bad.append("txid=%s cargo receipt manifest/node/good/qty 不符" % String(txid))
-		if String(rec.get("state", "")) != "complete" or int(rec.get("remaining_qty", -1)) != 0 or qty <= 0:
-			bad.append("txid=%s manifest 未 exact complete" % String(txid))
+	var live_seen := {}
+	for raw_id in S.cargo_manifest_order:
+		var live_id := String(raw_id)
+		var live: Dictionary = S.cargo_manifests.get(live_id, {})
+		if live_seen.has(live_id):
+			bad.append("live cargo order 重复 id=%s" % live_id)
+		live_seen[live_id] = true
+		var live_lane_index := int(live.get("lane_index", -1))
+		var live_lane: Dictionary = import_lanes[live_lane_index] \
+			if live_lane_index >= 0 and live_lane_index < import_lanes.size() and import_lanes[live_lane_index] is Dictionary else {}
+		var live_arrivals: Array = arrivals.get(live_id, [])
+		if live.is_empty() or String(live.get("state", "")) != "ready" or int(live.get("remaining_qty", 0)) <= 0 \
+			or live_arrivals.size() != 1 or live_lane.is_empty() \
+			or String(live.get("id", "")) != live_id or String(live_lane.get("route_id", "")) != String(live.get("route_id", "")) \
+			or String(live_lane.get("node", "")) != String(live.get("node", "")) \
+			or String(live_lane.get("good", "")) != String(live.get("good", "")) \
+			or int(live_lane.get("batch", 0)) != int(live.get("initial_qty", 0)) \
+			or (not live_arrivals.is_empty() and (String(live_arrivals[0].get("actor", "")) != String(live.get("route_id", "")) \
+				or String(live_arrivals[0].get("subject", "")) != String(live.get("good", "")))):
+			bad.append("live cargo=%s 非 pending-ready（完成单未退休或 order 悬空）" % live_id)
+	if live_seen.size() != S.cargo_manifests.size():
+		bad.append("live cargo dictionary/order diverge")
+	for raw_id in arrivals:
+		var arrived_id := String(raw_id)
+		if not live_seen.has(arrived_id) and not groups.has("cargo_unload/" + arrived_id):
+			bad.append("cargo_arrive=%s 既非 live pending 也无完成 tx" % arrived_id)
 	return {"related": related, "transactions": groups.size(), "bad": bad}
 
 static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_shape: Dictionary = {}) -> Array:

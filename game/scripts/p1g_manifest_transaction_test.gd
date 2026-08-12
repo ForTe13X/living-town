@@ -31,7 +31,7 @@ func _snapshot(S, manifest_id: String) -> String:
 	return JSON.stringify({
 		"town": S.town_coin, "external": S.external_coin, "stock": S.town_stock,
 		"events": S.event_log, "next": S._next_event_id, "event_digest": S.event_digest,
-		"manifest": S.cargo_manifests.get(manifest_id, {}),
+		"manifests": S.cargo_manifests, "order": S.cargo_manifest_order,
 	})
 
 func _row44(S) -> Dictionary:
@@ -42,7 +42,7 @@ func _row44(S) -> Dictionary:
 
 func _ready() -> void:
 	var manifest_id := "manifest_east_ocean_3_0"
-	for failpoint in ["after_pay", "after_stock", "after_manifest", "after_receipt"]:
+	for failpoint in ["after_pay", "after_stock", "after_manifest", "after_receipt", "after_retire"]:
 		var F = _fixture()
 		var before := _snapshot(F, manifest_id)
 		ck(F._commit_manifest_unload(manifest_id, "tao", "port_dock", true, failpoint) == 0,
@@ -81,6 +81,8 @@ func _ready() -> void:
 	var txid := "cargo_unload/" + manifest_id
 	ck(suffix.size() == 3 and suffix.all(func(e): return String(e.get("txid", "")) == txid),
 		"pay→stock→cargo receipt 三条共享 manifest-bound txid")
+	ck(not S.cargo_manifests.has(manifest_id) and S.cargo_manifest_order.find(manifest_id) < 0,
+		"成功 receipt 后完成单从 live manifest/order 退休")
 	ck(String(S.cargo_status_for_node("port_dock").get("state", "")) == "empty",
 		"提交后玩家港口投影清空，不显示幽灵卸货")
 	var row44 := _row44(S)
@@ -98,6 +100,28 @@ func _ready() -> void:
 	S.event_log = clean_events.duplicate(true)
 	S.event_log[event0 + 2]["txid"] = "cargo_unload/manifest_other"
 	ck(not bool(_row44(S).get("ok", true)), "#44 mutation：receipt 绑定别的 manifest 必红")
+	S.event_log = clean_events.duplicate(true)
+	for e in S.event_log:
+		if String(e.get("note", "")).begins_with("cargo_arrive:" + manifest_id):
+			e["actor"] = "other_route"
+			break
+	ck(not bool(_row44(S).get("ok", true)), "#44 mutation：arrival route 与 authored lane 不符必红")
+	S.event_log = clean_events.duplicate(true)
+	var pending: Dictionary = {
+		"id": "manifest_east_ocean_6_0", "route_id": "east_ocean", "lane_index": 0,
+		"node": "port_dock", "good": "柴薪", "arrived_day": 6, "initial_qty": 4, "remaining_qty": 4,
+		"price_per": 3, "price_den": 4, "state": "ready",
+	}
+	S.cargo_manifests[pending["id"]] = pending
+	S.cargo_manifest_order.append(pending["id"])
+	S._log_event("world", "other_route", pending["id"], "柴薪", true, [], "cargo_arrive:%s*4" % pending["id"])
+	ck(not bool(_row44(S).get("ok", true)), "#44 mutation：live pending arrival 绑定错误 route 必红")
+	S.event_log[S.event_log.size() - 1]["actor"] = "east_ocean"
+	S.cargo_manifest_order.append(pending["id"])
+	ck(not bool(_row44(S).get("ok", true)), "#44 mutation：live pending order 重复 id 必红")
+	S.cargo_manifest_order.pop_back()
+	S.cargo_manifests.erase(pending["id"])
+	S.cargo_manifest_order.erase(pending["id"])
 	S.event_log = clean_events
 	ck(bool(_row44(S).get("ok", false)), "恢复原日志后 #44 重新通过")
 	_drop(S)
@@ -114,6 +138,77 @@ func _ready() -> void:
 		and bool(_row44(Free).get("ok", false)),
 		"免费单仍以 stock→receipt 同 txid 绑定，#44 非真空通过")
 	_drop(Free)
+
+	var Long = SimScript.new()
+	add_child(Long)
+	Long.auto_run = false
+	Long.backend = null
+	Long.start_new(1)
+	Long.tick_no = int(Long.TICKS_PER_DAY * 0.25)
+	for d in range(3, 34, 3):
+		Long.day = d
+		Long._stock_move("柴薪", -4, "consume", "town", "p1h_long_fixture")
+		Long._logi_import()
+		var mid := "manifest_east_ocean_%d_0" % d
+		ck(Long._commit_manifest_unload(mid, "tao", "port_dock", true) == 4,
+			"长时 fixture 第%d天完成一单" % d)
+		ck(Long.cargo_manifests.is_empty() and Long.cargo_manifest_order.is_empty(),
+			"第%d天完成后 live cargo 保持有界为空" % d)
+	var long_scan: Dictionary = Inv.import_manifest_tx_scan(Long)
+	ck(int(long_scan.get("transactions", 0)) == 11 and (long_scan.get("bad", []) as Array).is_empty(),
+		"11 单历史只由 arrival+tx receipts 审计，live queue 不随历史增长")
+	_drop(Long)
+
+	var Legacy = _fixture()
+	var old_id := "manifest_east_ocean_3_0"
+	var old_rec: Dictionary = Legacy.cargo_manifests[old_id].duplicate(true)
+	ck(Legacy._commit_manifest_unload(old_id, "tao", "port_dock", true) == 4,
+		"旧 P1-g fixture 先生成 exact 完成 tx")
+	old_rec["remaining_qty"] = 0
+	old_rec["state"] = "complete"
+	Legacy.cargo_manifests[old_id] = old_rec
+	Legacy.cargo_manifest_order.append(old_id)
+	var legacy_path := "user://p1h_complete_manifest_migration.save"
+	ck(Legacy.save_game(legacy_path), "含旧 complete record 的 schema-2 fixture 可写盘")
+	var Receiver = _fixture()
+	ck(Receiver.load_game(legacy_path) and not Receiver.cargo_manifests.has(old_id)
+		and Receiver.cargo_manifest_order.find(old_id) < 0 and bool(_row44(Receiver).get("ok", false)),
+		"读旧 P1-g 档时仅凭 exact receipts 退休 complete record，历史 #44 仍绿")
+	var bad_id_path := "user://p1h_noncanonical_complete_manifest.save"
+	Legacy.cargo_manifests[old_id]["id"] = "manifest_east_ocean_99_0"
+	ck(Legacy.save_game(bad_id_path), "非 canonical complete manifest id mutation 可写盘")
+	var IdGuard = _fixture()
+	var id_guard_before := _snapshot(IdGuard, old_id)
+	ck(not IdGuard.load_game(bad_id_path) and _snapshot(IdGuard, old_id) == id_guard_before,
+		"complete record 的 id/route/day/lane 不一致时拒绝且 receiver 原子不变")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(bad_id_path))
+	_drop(IdGuard)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(legacy_path))
+	_drop(Receiver)
+	_drop(Legacy)
+
+	var Bad = _fixture()
+	var bad_rec: Dictionary = Bad.cargo_manifests[old_id]
+	bad_rec["remaining_qty"] = 0
+	bad_rec["state"] = "complete"
+	var bad_path := "user://p1h_unproven_complete_manifest.save"
+	ck(Bad.save_game(bad_path), "无完成 tx 的 complete mutation fixture 可写盘")
+	var Guard = _fixture()
+	var guard_before := _snapshot(Guard, old_id)
+	ck(not Guard.load_game(bad_path) and _snapshot(Guard, old_id) == guard_before,
+		"无 exact arrival/tx 证明的 complete record 拒绝且 live receiver 原子不变")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(bad_path))
+	_drop(Guard)
+	_drop(Bad)
+
+	var Orphan = _fixture()
+	var orphan_rec: Dictionary = Orphan.cargo_manifests[old_id]
+	orphan_rec["remaining_qty"] = 0
+	orphan_rec["state"] = "complete"
+	Orphan.cargo_manifest_order.clear()
+	ck(not Orphan._retire_completed_manifest(old_id) and Orphan.cargo_manifests.has(old_id),
+		"order 悬空时 retirement fail-closed，不先擦 dictionary 制造静默丢货")
+	_drop(Orphan)
 
 	print("p1g_manifest_transaction_test: %s (%d fail)" % [("PASS ✅" if _fails == 0 else "FAIL ❌"), _fails])
 	get_tree().quit(1 if _fails > 0 else 0)

@@ -1421,6 +1421,10 @@ func load_game(path: String) -> bool:
 	if invalid != "":
 		push_warning("load_game: %s" % invalid)
 		return false
+	var compact_error := _compact_prepared_completed_manifests(state)
+	if compact_error != "":
+		push_warning("load_game: %s" % compact_error)
+		return false
 	# 到这里才触碰 live Sim。上面的迁移/验证全在 deep copy 上完成，因此任何拒绝都保持接收实例原样。
 	for k in state:
 		set(k, state[k])
@@ -1602,6 +1606,75 @@ func _validate_loaded_state(state: Dictionary, sch: int) -> String:
 	var cargo_error := _validate_cargo_state(state)
 	if cargo_error != "":
 		return cargo_error
+	return ""
+
+## P1-h load migration：旧 P1-g schema-2 档曾持久化 complete records。只有存档自己的 append-only
+## arrival + exact tx receipts 足以证明该单完成时，才从 prepared copy 退休；缺证据一律拒绝，不能借 compact 抹坏状态。
+func _compact_prepared_completed_manifests(state: Dictionary) -> String:
+	var manifests: Dictionary = state.get("cargo_manifests", {})
+	var order: Array = state.get("cargo_manifest_order", [])
+	var events: Array = state.get("event_log", [])
+	var saved_economy = state.get("economy", {})
+	var economy_on: bool = saved_economy is Dictionary and not (saved_economy as Dictionary).is_empty()
+	var saved_logistics = state.get("logistics", {})
+	var lanes: Array = (saved_logistics as Dictionary).get("import_lanes", []) \
+		if saved_logistics is Dictionary and (saved_logistics as Dictionary).get("import_lanes", []) is Array else []
+	for i in range(order.size() - 1, -1, -1):
+		var manifest_id := String(order[i])
+		var rec: Dictionary = manifests.get(manifest_id, {})
+		if String(rec.get("state", "")) != "complete":
+			continue
+		var qty := int(rec.get("initial_qty", 0))
+		var lane_index := int(rec.get("lane_index", -1))
+		if lane_index < 0 or lane_index >= lanes.size() or not (lanes[lane_index] is Dictionary):
+			return "complete cargo %s lacks authored lane" % manifest_id
+		var lane: Dictionary = lanes[lane_index]
+		var expected_id := "manifest_%s_%d_%d" % [String(rec.get("route_id", "")), int(rec.get("arrived_day", -1)), lane_index]
+		if manifest_id != expected_id or String(rec.get("id", "")) != expected_id:
+			return "complete cargo %s has a non-canonical manifest id" % manifest_id
+		if String(lane.get("route_id", "")) != String(rec.get("route_id", "")) \
+			or String(lane.get("node", "")) != String(rec.get("node", "")) \
+			or String(lane.get("good", "")) != String(rec.get("good", "")) \
+			or int(lane.get("batch", 0)) != qty or int(lane.get("price_per", 0)) != int(rec.get("price_per", 0)) \
+			or int(lane.get("price_den", 1)) != int(rec.get("price_den", 1)):
+			return "complete cargo %s diverges from authored lane" % manifest_id
+		var arrival_count := 0
+		var tx_rows: Array = []
+		var txid := "cargo_unload/" + manifest_id
+		for raw in events:
+			if not (raw is Dictionary):
+				return "event_log contains a non-Dictionary entry"
+			var e: Dictionary = raw
+			if String(e.get("type", "")) == "world" and String(e.get("note", "")) == "cargo_arrive:%s*%d" % [manifest_id, qty] \
+				and String(e.get("actor", "")) == String(rec.get("route_id", "")) and String(e.get("target", "")) == manifest_id \
+				and String(e.get("subject", "")) == String(rec.get("good", "")):
+				arrival_count += 1
+			if String(e.get("txid", "")) == txid:
+				tx_rows.append(e)
+		var paid: bool = economy_on and int(rec.get("price_per", 0)) > 0
+		var expected_size := 3 if paid else 2
+		if arrival_count != 1 or tx_rows.size() != expected_size:
+			return "complete cargo %s lacks exact arrival/tx receipt proof" % manifest_id
+		for j in range(1, tx_rows.size()):
+			if int(tx_rows[j].get("id", -1)) != int(tx_rows[j - 1].get("id", -1)) + 1:
+				return "complete cargo %s tx receipt ids are not adjacent" % manifest_id
+		var stock_e: Dictionary = tx_rows[1 if paid else 0]
+		var receipt_e: Dictionary = tx_rows[2 if paid else 1]
+		if paid:
+			var pay_e: Dictionary = tx_rows[0]
+			if String(pay_e.get("type", "")) != "pay" or String(pay_e.get("actor", "")) != "town" \
+				or String(pay_e.get("target", "")) != "external" or String(pay_e.get("note", "")) != "import*%d" % qty:
+				return "complete cargo %s pay receipt is invalid" % manifest_id
+		if String(stock_e.get("type", "")) != "import" or String(stock_e.get("actor", "")) != String(rec.get("node", "")) \
+			or String(stock_e.get("target", "")) != "town" or String(stock_e.get("subject", "")) != String(rec.get("good", "")) \
+			or String(stock_e.get("note", "")) != "import*%d" % qty:
+			return "complete cargo %s stock receipt is invalid" % manifest_id
+		if String(receipt_e.get("type", "")) != "world" or String(receipt_e.get("target", "")) != String(rec.get("node", "")) \
+			or String(receipt_e.get("subject", "")) != String(rec.get("good", "")) \
+			or String(receipt_e.get("note", "")) != "cargo_unload:%s*%d" % [manifest_id, qty]:
+			return "complete cargo %s unload receipt is invalid" % manifest_id
+		order.remove_at(i)
+		manifests.erase(manifest_id)
 	return ""
 
 ## 深扫状态树找残留 Object/Callable（save_game 的 fail-closed 门用）。
@@ -4236,7 +4309,9 @@ func _first_unloadable_manifest(node: String) -> String:
 ## 给玩家/HUD/测试的只读港口状态；严格按 manifest arrival order 看最早 ready 单，不把 UI 变成第二权威。
 ## state: empty / ready / working / blocked_capacity / blocked_funds。
 func cargo_status_for_node(node: String) -> Dictionary:
-	var out := {"state": "empty", "node": node, "manifest_id": "", "good": "", "qty": 0, "cost": 0, "worker_id": ""}
+	var out := {"state": "empty", "node": node, "manifest_id": "", "good": "", "qty": 0, "cost": 0,
+		"worker_id": "", "ready_count": 0, "ready_qty": 0}
+	var first: Dictionary = {}
 	for raw_id in cargo_manifest_order:
 		var manifest_id := String(raw_id)
 		if not cargo_manifests.has(manifest_id):
@@ -4245,25 +4320,47 @@ func cargo_status_for_node(node: String) -> Dictionary:
 		var qty := int(rec.get("remaining_qty", 0))
 		if String(rec.get("state", "")) != "ready" or String(rec.get("node", "")) != node or qty <= 0:
 			continue
-		var good := String(rec.get("good", ""))
-		var pnum := int(rec.get("price_per", 0))
-		var pden := int(rec.get("price_den", 1))
-		var cost := qty * pnum / pden if _econ_on() and pnum > 0 and pden > 0 else 0
-		out.merge({"state": "ready", "manifest_id": manifest_id, "good": good, "qty": qty,
-			"cost": cost, "worker_id": _holder_of_title("码头工")}, true)
-		if _import_fit(good, qty) != qty:
-			out["state"] = "blocked_capacity"
-		elif _econ_on() and pnum > 0 and (pden <= 0 or cost <= 0 or town_coin < cost):
-			out["state"] = "blocked_funds"
-		else:
-			for ag in agents:
-				var opt = ag.get("option")
-				if opt is Dictionary and String(opt.get("manifest_id", "")) == manifest_id and bool(opt.get("manifest_authorized", false)):
-					out["state"] = "working"
-					out["worker_id"] = String(ag.get("id", ""))
-					break
+		out["ready_count"] = int(out["ready_count"]) + 1
+		out["ready_qty"] = int(out["ready_qty"]) + qty
+		if first.is_empty():
+			first = rec
+	if first.is_empty():
 		return out
+	var manifest_id := String(first.get("id", ""))
+	var qty := int(first.get("remaining_qty", 0))
+	var good := String(first.get("good", ""))
+	var pnum := int(first.get("price_per", 0))
+	var pden := int(first.get("price_den", 1))
+	var cost := qty * pnum / pden if _econ_on() and pnum > 0 and pden > 0 else 0
+	out.merge({"state": "ready", "manifest_id": manifest_id, "good": good, "qty": qty,
+		"cost": cost, "worker_id": _holder_of_title("码头工")}, true)
+	if _import_fit(good, qty) != qty:
+		out["state"] = "blocked_capacity"
+	elif _econ_on() and pnum > 0 and (pden <= 0 or cost <= 0 or town_coin < cost):
+		out["state"] = "blocked_funds"
+	else:
+		for ag in agents:
+			var opt = ag.get("option")
+			if opt is Dictionary and String(opt.get("manifest_id", "")) == manifest_id and bool(opt.get("manifest_authorized", false)):
+				out["state"] = "working"
+				out["worker_id"] = String(ag.get("id", ""))
+				break
 	return out
+
+## P1-h：complete 是已由 append-only tx receipt 证明的历史，不再驱动候选/船/UI/未来决策。
+## 退休只碰 live queue；event_log 保留 arrival+pay+stock+unload 的完整审计链。
+func _retire_completed_manifest(manifest_id: String) -> bool:
+	if not cargo_manifests.has(manifest_id):
+		return false
+	var rec: Dictionary = cargo_manifests[manifest_id]
+	if String(rec.get("state", "")) != "complete" or int(rec.get("remaining_qty", -1)) != 0:
+		return false
+	var at := cargo_manifest_order.find(manifest_id)
+	if at < 0:
+		return false
+	cargo_manifests.erase(manifest_id)
+	cargo_manifest_order.remove_at(at)
+	return true
 
 func _rollback_manifest_unload(snapshot: Dictionary, manifest_id: String, good: String) -> void:
 	town_coin = int(snapshot["town_coin"])
@@ -4276,9 +4373,11 @@ func _rollback_manifest_unload(snapshot: Dictionary, manifest_id: String, good: 
 	_next_event_id = int(snapshot["next_event_id"])
 	event_digest = int(snapshot["event_digest"])
 	cargo_manifests[manifest_id] = (snapshot["manifest"] as Dictionary).duplicate(true)
+	if cargo_manifest_order.find(manifest_id) < 0:
+		cargo_manifest_order.insert(int(snapshot["manifest_index"]), manifest_id)
 
 ## P1-g 钱货事务：完整 preflight 后以同一 txid 顺序落 pay→stock→cargo receipt；任一步异常/注入故障都精确回滚。
-## failpoint 仅是 focused test 的进程内参数（after_pay/after_stock/after_manifest/after_receipt），不入存档/产品状态。
+## failpoint 仅是 focused test 的进程内参数（after_pay/after_stock/after_manifest/after_receipt/after_retire），不入存档/产品状态。
 ## 工资仍是 commit 成功后的 best-effort 独立事务，不冒充进口钱货原子性的一部分。
 func _commit_manifest_unload(manifest_id: String, worker_id: String, node: String, authorized: bool = false, failpoint: String = "") -> int:
 	if manifest_id == "" or not cargo_manifests.has(manifest_id) or not _unload_worker_assigned(worker_id):
@@ -4287,6 +4386,9 @@ func _commit_manifest_unload(manifest_id: String, worker_id: String, node: Strin
 	if not authorized and not _unload_worker_eligible(worker_id):
 		return 0
 	var rec: Dictionary = cargo_manifests[manifest_id]
+	var manifest_index := cargo_manifest_order.find(manifest_id)
+	if manifest_index < 0:
+		return 0
 	var qty := int(rec.get("remaining_qty", 0))
 	var good := String(rec.get("good", ""))
 	if String(rec.get("state", "")) != "ready" or String(rec.get("node", "")) != node or qty <= 0:
@@ -4306,7 +4408,7 @@ func _commit_manifest_unload(manifest_id: String, worker_id: String, node: Strin
 		"town_coin": town_coin, "external_coin": external_coin,
 		"stock_had": town_stock.has(good), "stock_qty": _stock_of(good),
 		"event_size": event_log.size(), "next_event_id": _next_event_id, "event_digest": event_digest,
-		"manifest": rec.duplicate(true),
+		"manifest": rec.duplicate(true), "manifest_index": manifest_index,
 	}
 	var txid := "cargo_unload/" + manifest_id
 	if cost > 0:
@@ -4330,6 +4432,13 @@ func _commit_manifest_unload(manifest_id: String, worker_id: String, node: Strin
 		return 0
 	_log_event("world", worker_id, node, good, true, [], "cargo_unload:%s*%d" % [manifest_id, qty], txid)
 	if failpoint == "after_receipt":
+		_rollback_manifest_unload(snapshot, manifest_id, good)
+		return 0
+	if not _retire_completed_manifest(manifest_id):
+		_rollback_manifest_unload(snapshot, manifest_id, good)
+		push_error("CargoManifest 完成单退休失败：id=%s" % manifest_id)
+		return 0
+	if failpoint == "after_retire":
 		_rollback_manifest_unload(snapshot, manifest_id, good)
 		return 0
 	return qty

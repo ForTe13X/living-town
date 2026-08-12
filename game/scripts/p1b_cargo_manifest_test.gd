@@ -242,10 +242,9 @@ func _ready() -> void:
 	S._advance_object(tao, tao["option"])
 	var suffix := _events_since(S, commit_ev)
 	ck(int(S.town_stock.get(good, 0)) - before_stock == 4
-		and int(S.cargo_manifests[manifest_id].get("remaining_qty", -1)) == 0
-		and String(S.cargo_manifests[manifest_id].get("state", "")) == "complete",
-		"cargo_delta == stock_delta == 4，manifest 完成（stock %d→%d cargo=%s）" % [before_stock,
-			int(S.town_stock.get(good, 0)), str(S.cargo_manifests[manifest_id])])
+		and not S.cargo_manifests.has(manifest_id) and S.cargo_manifest_order.find(manifest_id) < 0,
+		"cargo_delta == stock_delta == 4，完成 manifest 从 live queue 退休（stock %d→%d）" % [before_stock,
+			int(S.town_stock.get(good, 0))])
 	ck(before_town - S.town_coin == 7 and S.external_coin - before_ext == 3,
 		"整单 import 付 3 钱，随后真实卸货工资付 4 钱（town %d→%d ext %d→%d）" % [
 			before_town, int(S.town_coin), before_ext, int(S.external_coin)])
@@ -301,9 +300,8 @@ func _ready() -> void:
 	S.cargo_manifests[pending_id]["state"] = "ready"
 	ck(S._adv_open(tao, adv), "货位/余额/cargo 恢复后原 manifest 再次可卸")
 	_force_complete(S, tao, pending_id, true)
-	ck(int(S.cargo_manifests[pending_id].get("remaining_qty", -1)) == 0
-		and String(S.cargo_manifests[pending_id].get("state", "")) == "complete",
-		"阻塞解除后提交的是原 pending manifest")
+	ck(not S.cargo_manifests.has(pending_id) and S.cargo_manifest_order.find(pending_id) < 0,
+		"阻塞解除后提交并退休的是原 pending manifest")
 
 	# 在班开始的一单允许跨班次做完；授权只能由引擎落 option 时签发，不能让强塞 option 冒充。
 	freed = -S._stock_move(pending_good, -4, "consume", "town", "manifest_shift_fixture")
@@ -339,7 +337,7 @@ func _ready() -> void:
 	var overtime_ev := int(S.event_log.size())
 	S._advance_object(tao, tao["option"])
 	var overtime_suffix := _events_since(S, overtime_ev)
-	ck(tao.get("option") == null and String(S.cargo_manifests[overtime_id].get("state", "")) == "complete"
+	ck(tao.get("option") == null and not S.cargo_manifests.has(overtime_id)
 		and overtime_suffix.size() == 4 and String(overtime_suffix[0].get("note", "")) == "import*4"
 		and String(overtime_suffix[3].get("note", "")) == "wage:卸货",
 		"跨班次完成仍按 pay→stock→receipt→wage 原子提交")
