@@ -254,6 +254,71 @@ static func export_pair_scan(log: Array) -> Dictionary:
 		i += 2
 	return {"related": seq.size(), "pairs": pairs, "bad": bad}
 
+## P1-g：进口提交的三条 receipt 必须由同一 CargoManifest txid 严格绑定，不能只靠日终总账互相抵消。
+## paid 单 = pay→stock→receipt；免费/off-economy 单 = stock→receipt。两种都要求连续 event id、同量、同节点/货/manifest。
+static func import_manifest_tx_scan(S) -> Dictionary:
+	var groups := {}
+	var bad: Array = []
+	var related := 0
+	for raw in S.event_log:
+		if not (raw is Dictionary):
+			continue
+		var e: Dictionary = raw
+		var ty := String(e.get("type", ""))
+		var note := String(e.get("note", ""))
+		var kind := ""
+		if ty == "pay" and note.split("*")[0] == "import":
+			kind = "pay"
+		elif ty == "import":
+			kind = "stock"
+		elif ty == "world" and note.begins_with("cargo_unload:"):
+			kind = "receipt"
+		else:
+			continue
+		related += 1
+		var txid := String(e.get("txid", ""))
+		if txid == "":
+			bad.append("#%d %s 缺 txid" % [int(e.get("id", -1)), kind])
+			continue
+		if not groups.has(txid):
+			groups[txid] = []
+		groups[txid].append({"kind": kind, "e": e})
+	for txid in groups:
+		var manifest_id := String(txid).trim_prefix("cargo_unload/")
+		if not String(txid).begins_with("cargo_unload/") or manifest_id == "":
+			bad.append("txid=%s 非 cargo_unload/<manifest>" % String(txid))
+			continue
+		var rec: Dictionary = S.cargo_manifests.get(manifest_id, {})
+		if rec.is_empty():
+			bad.append("txid=%s 无 manifest" % String(txid))
+			continue
+		var qty := int(rec.get("initial_qty", 0))
+		var paid: bool = not S.economy.is_empty() and int(rec.get("price_per", 0)) > 0
+		var expected: Array = ["pay", "stock", "receipt"] if paid else ["stock", "receipt"]
+		var rows: Array = groups[txid]
+		var kinds: Array = rows.map(func(row): return String(row["kind"]))
+		if kinds != expected:
+			bad.append("txid=%s 顺序=%s 期望=%s" % [String(txid), str(kinds), str(expected)])
+			continue
+		for i in range(1, rows.size()):
+			if int(rows[i]["e"].get("id", -1)) != int(rows[i - 1]["e"].get("id", -1)) + 1:
+				bad.append("txid=%s receipt 非连续 event id" % String(txid))
+		var stock_e: Dictionary = rows[1 if paid else 0]["e"]
+		var receipt_e: Dictionary = rows[2 if paid else 1]["e"]
+		if paid:
+			var pay_e: Dictionary = rows[0]["e"]
+			if String(pay_e.get("actor", "")) != "town" or String(pay_e.get("target", "")) != "external" or _amt_of(String(pay_e.get("note", ""))) != qty:
+				bad.append("txid=%s pay actor/target/qty 不符" % String(txid))
+		if String(stock_e.get("actor", "")) != String(rec.get("node", "")) or String(stock_e.get("target", "")) != "town" \
+			or String(stock_e.get("subject", "")) != String(rec.get("good", "")) or _amt_of(String(stock_e.get("note", ""))) != qty:
+			bad.append("txid=%s stock node/good/qty 不符" % String(txid))
+		if String(receipt_e.get("target", "")) != String(rec.get("node", "")) or String(receipt_e.get("subject", "")) != String(rec.get("good", "")) \
+			or String(receipt_e.get("note", "")) != "cargo_unload:%s*%d" % [manifest_id, qty]:
+			bad.append("txid=%s cargo receipt manifest/node/good/qty 不符" % String(txid))
+		if String(rec.get("state", "")) != "complete" or int(rec.get("remaining_qty", -1)) != 0 or qty <= 0:
+			bad.append("txid=%s manifest 未 exact complete" % String(txid))
+	return {"related": related, "transactions": groups.size(), "bad": bad}
+
 static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_shape: Dictionary = {}) -> Array:
 	var R: Array = []
 	var log: Array = S.event_log
@@ -1080,7 +1145,7 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 			"" if starved_goods.is_empty() else "；【长期供不应求】" + ", ".join(starved_goods),
 			glut + reach,
 			contract]))
-	# 44) 进口溯源到声明的节点与货（E1，docs/144 §六；**结构照抄 #39 产出溯源**，符号是「进货」这一侧）：
+	# 44) 进口 CargoManifest 事务绑定 + 声明溯源（P1-g）：
 	#     每条 import 事件的 actor 必须是 logistics.nodes 里声明过的节点、subject(货) 必须是某条 import_lane 声明过的货、
 	#     target 必须是 town、件数必须 >0、note 原因必须是 "import"。它跨 logistics.json × event_log × 代码路径对账 ——
 	#     让"货从没声明的港口冒出来"或"进口了没有 lane 的货"变红（对称 #39 的『张三产出李四的货 / 货从天上掉』）。
@@ -1089,6 +1154,8 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 	#       (经 _stock_move 但 actor/good 没声明 → 红)。两条都经同一唯一通道，但查的是不同的性质。
 	var logi_on2: bool = not S.logistics.is_empty()
 	var imp_bad: Array = []
+	var imp_tx := import_manifest_tx_scan(S)
+	imp_bad.append_array(imp_tx["bad"])
 	if logi_on2:
 		var node_ids := {}
 		for n in S.logistics.get("nodes", []):
@@ -1114,9 +1181,9 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 				imp_bad.append("#%d 件数=%d 非正" % [int(e["id"]), iamt])
 			elif String(e.get("note", "")).split("*")[0] != "import":
 				imp_bad.append("#%d note 原因=%s 非 import" % [int(e["id"]), String(e.get("note", "")).split("*")[0]])
-	R.append(_chk(44, "进口溯源到声明的节点与货", imp_bad.is_empty(),
+	R.append(_chk(44, "进口 manifest 钱货事务绑定与声明溯源", imp_bad.is_empty(),
 		("异常=%d: %s" % [imp_bad.size(), "; ".join(imp_bad.slice(0, 3))]) if not imp_bad.is_empty()
-		else ("import 事件全部可溯源" if logi_on2 else "物流系统关闭(缺 logistics.json)")))
+		else (("事务=%d/相关事件=%d，txid/钱/货/cargo exact" % [int(imp_tx["transactions"]), int(imp_tx["related"])]) if logi_on2 else "物流系统关闭(缺 logistics.json)")))
 	# 45) 钱跨镇边界溯源（E2a import 付费 + E-export 收钱两侧对账，docs/151/154/157/158；#36 全 money 逐账户完备性=E2b）：
 	#     ★E-export 泛化（docs/157 §四，绕不开的口径变更）：E2a 原式假设「external 只被 import 贷入」，export 借出 ⇒
 	#       首次 export 即把旧式打红。改为【双向对账】：
@@ -1664,11 +1731,14 @@ static func digest(S) -> int:
 		for i in wits.size():
 			if i > 0: wstr += ","
 			wstr += String(wits[i])
-		parts.append("%d:%s:%s:%s:%d:%s:%d:%s:%s" % [
+		var event_part := "%d:%s:%s:%s:%d:%s:%d:%s:%s" % [
 			int(e.get("id", 0)), String(e.get("type", "")), String(e.get("actor", "")),
 			String(e.get("target", "")), int(bool(e.get("accepted", false))),
 			String(e.get("subject", "")), int(e.get("tick", 0)),
-			wstr, String(e.get("note", ""))])
+			wstr, String(e.get("note", ""))]
+		if e.has("txid"):
+			event_part += ":tx:" + String(e.get("txid", ""))
+		parts.append(event_part)
 	# ★用【项目自有】Sim.fnv1a32 而不是引擎的 String.hash()：金标的每一个数字都必须由本仓库的源码定义，
 	#   否则 Godot 升级换一次内部哈希实现，全部金标一起漂，而行为其实一个字节没变（红线#1 假红/假绿两头都占）。
 	return SimScript.fnv1a32("|".join(parts))
@@ -1723,4 +1793,6 @@ static func chain_step(prev: int, S, ev_from: int) -> int:
 			int(e.get("id", 0)), String(e.get("type", "")), String(e.get("actor", "")),
 			String(e.get("target", "")), int(bool(e.get("accepted", false))),
 			String(e.get("subject", "")), String(e.get("note", ""))])
+		if e.has("txid"):
+			h = SimScript.fnv1a32_into(h, "tx:" + String(e.get("txid", "")))
 	return h

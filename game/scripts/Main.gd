@@ -1611,10 +1611,33 @@ func _update_status() -> void:
 			var vkeys := []
 			for v in PLAYER_VERBS:                                             # 单一真源：与动作条按钮同表，不再各写一份
 				vkeys.append("%s%s" % [String(v["key"]), String(v["label"])])
-			ptxt = "\n[color=#ffd700]你：礼物×%d  WASD移动  选中居民后 %s C聊天（或点下方动作条）%s[/color]" % [
-				int(pl["inventory"].get("gift", 0)), " ".join(vkeys), ("  约定：" + "；".join(pmeets)) if not pmeets.is_empty() else ""]
+			var cargo_hint := _player_cargo_hint(pl)
+			ptxt = "\n[color=#ffd700]你：礼物×%d  WASD移动  选中居民后 %s C聊天（或点下方动作条）%s[/color]%s" % [
+				int(pl["inventory"].get("gift", 0)), " ".join(vkeys), ("  约定：" + "；".join(pmeets)) if not pmeets.is_empty() else "", cargo_hint]
 	_status.text = "[color=#e6e9f2]小镇有灵 Living Town  ·  第 %d 天 %s %s%s%s  ·  %s  ·  %s  ·  NPC %d  ｜  事件 %d  约会 %d(活%d)  冲突 %d(活%d)[/color]%s" % [
 		Sim.day, clock, phase, wx, etxt, spd, btxt, Sim.agents.size(), Sim.event_log.size(), Sim.commitments.size(), meets_active, Sim.conflicts.size(), conf_active, ptxt]
+
+## 玩家站在真实 port_dock 三格内才显示；只读 Sim 的 manifest 投影，不制造“玩家能亲手卸货”的假按钮。
+func _player_cargo_hint(pl: Dictionary) -> String:
+	var port: Dictionary = Sim.world.get("objects", {}).get("port_dock", {})
+	var pp: Vector2i = pl.get("pos", Vector2i(-99, -99))
+	var raw_pos = port.get("pos", Vector2i(-99, -99))
+	var port_pos := Vector2i(-99, -99)
+	if raw_pos is Vector2i:
+		port_pos = raw_pos
+	elif raw_pos is Array and raw_pos.size() >= 2:
+		port_pos = Vector2i(int(raw_pos[0]), int(raw_pos[1]))
+	if port_pos.x < 0 or absi(pp.x - port_pos.x) + absi(pp.y - port_pos.y) > 3:
+		return ""
+	var st: Dictionary = Sim.cargo_status_for_node("port_dock")
+	if String(st.get("state", "")) == "empty":
+		return "  [color=#9fb8c8]港：暂无待卸货物[/color]"
+	var worker := Sim._name(Sim.get_agent(String(st.get("worker_id", ""))))
+	if worker == "": worker = "码头工"
+	var state_label: String = String({
+		"ready": "待卸", "working": "卸货中", "blocked_capacity": "仓位不足", "blocked_funds": "镇库不足",
+	}.get(String(st.get("state", "")), "待处理"))
+	return "  [color=#80e1ff]港：%s×%d %s·%s负责[/color]" % [String(st.get("good", "货物")), int(st.get("qty", 0)), state_label, worker]
 
 # ── 观察台 / 时间轴 ────────────────────────────────────────────────────────
 func _update_scrubber() -> void:

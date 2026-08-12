@@ -3671,7 +3671,7 @@ func _econ_on() -> bool:
 ##   `pay_events_witnessed` 逐格逐 seed **恒 0**；V1 §十③ 与 Z2 §十一③ 两次点名"工资/买卖那条通道
 ##   一个字节都没动过"。⚠ 它只在**商贩那条人→人的货款**上被真正传进来（`_advance_object` 的 vendor 分支），
 ##   工资 / 房租 / 镇库收费三条**照旧传空**——`#43` 的第③臂（不外溢）就是守这句话的。
-func transfer(from_id: String, to_id: String, amt: int, reason: String, witnesses: Array = []) -> bool:
+func transfer(from_id: String, to_id: String, amt: int, reason: String, witnesses: Array = [], txid: String = "") -> bool:
 	if amt <= 0:
 		return false
 	var from_coin := _coin_of(from_id)
@@ -3679,7 +3679,7 @@ func transfer(from_id: String, to_id: String, amt: int, reason: String, witnesse
 		return false
 	_set_coin(from_id, from_coin - amt)
 	_set_coin(to_id, _coin_of(to_id) + amt)
-	var ev := _log_event("pay", from_id, to_id, "", true, witnesses, reason)
+	var ev := _log_event("pay", from_id, to_id, "", true, witnesses, reason, txid)
 	var _e = ev   # 事件仅作账本溯源（不 emit social_event——经济事务非社交）
 	return true
 
@@ -3804,7 +3804,7 @@ func _stock_of(good: String) -> int:
 ## ★V1：`witnesses` 是**可选**的第六个参数，缺省 `[]` = 今天的行为逐字节不变。
 ##   加它的理由见 `_craft_fallout`：`produce` 事件此前**恒无目击者**（V1 清点：5 seed × 60 天共 497 条
 ##   produce 事件，`witnesses` 非空的 **0** 条），而同一时刻工位旁平均站着 0.44-3.32 个人。
-func _stock_move(good: String, delta: int, type: String, actor_id: String, reason: String, witnesses: Array = []) -> int:
+func _stock_move(good: String, delta: int, type: String, actor_id: String, reason: String, witnesses: Array = [], txid: String = "") -> int:
 	if delta == 0 or not (production.get("goods", {}) as Dictionary).has(good):
 		return 0
 	var cur := _stock_of(good)
@@ -3817,7 +3817,7 @@ func _stock_move(good: String, delta: int, type: String, actor_id: String, reaso
 	if applied == 0:
 		return 0
 	town_stock[good] = cur + applied
-	_log_event(type, actor_id, "town", good, true, witnesses, "%s*%d" % [reason, absi(applied)])
+	_log_event(type, actor_id, "town", good, true, witnesses, "%s*%d" % [reason, absi(applied)], txid)
 	return applied
 
 ## 职位 title → 现任持有人 id（jobs.json 书写序，首个命中；无则 ""）。纯查表、无 RNG。
@@ -4233,9 +4233,54 @@ func _first_unloadable_manifest(node: String) -> String:
 		return manifest_id
 	return ""
 
-## 同步 exact wrapper：钱、镇库与 cargo 在一个无 await/回调的提交块里同量落账。
-## 返回真正提交的件数；任何 preflight 失败均返回 0，不写 import/unload/wage 事件。
-func _commit_manifest_unload(manifest_id: String, worker_id: String, node: String, authorized: bool = false) -> int:
+## 给玩家/HUD/测试的只读港口状态；严格按 manifest arrival order 看最早 ready 单，不把 UI 变成第二权威。
+## state: empty / ready / working / blocked_capacity / blocked_funds。
+func cargo_status_for_node(node: String) -> Dictionary:
+	var out := {"state": "empty", "node": node, "manifest_id": "", "good": "", "qty": 0, "cost": 0, "worker_id": ""}
+	for raw_id in cargo_manifest_order:
+		var manifest_id := String(raw_id)
+		if not cargo_manifests.has(manifest_id):
+			continue
+		var rec: Dictionary = cargo_manifests[manifest_id]
+		var qty := int(rec.get("remaining_qty", 0))
+		if String(rec.get("state", "")) != "ready" or String(rec.get("node", "")) != node or qty <= 0:
+			continue
+		var good := String(rec.get("good", ""))
+		var pnum := int(rec.get("price_per", 0))
+		var pden := int(rec.get("price_den", 1))
+		var cost := qty * pnum / pden if _econ_on() and pnum > 0 and pden > 0 else 0
+		out.merge({"state": "ready", "manifest_id": manifest_id, "good": good, "qty": qty,
+			"cost": cost, "worker_id": _holder_of_title("码头工")}, true)
+		if _import_fit(good, qty) != qty:
+			out["state"] = "blocked_capacity"
+		elif _econ_on() and pnum > 0 and (pden <= 0 or cost <= 0 or town_coin < cost):
+			out["state"] = "blocked_funds"
+		else:
+			for ag in agents:
+				var opt = ag.get("option")
+				if opt is Dictionary and String(opt.get("manifest_id", "")) == manifest_id and bool(opt.get("manifest_authorized", false)):
+					out["state"] = "working"
+					out["worker_id"] = String(ag.get("id", ""))
+					break
+		return out
+	return out
+
+func _rollback_manifest_unload(snapshot: Dictionary, manifest_id: String, good: String) -> void:
+	town_coin = int(snapshot["town_coin"])
+	external_coin = int(snapshot["external_coin"])
+	if bool(snapshot["stock_had"]):
+		town_stock[good] = int(snapshot["stock_qty"])
+	else:
+		town_stock.erase(good)
+	event_log.resize(int(snapshot["event_size"]))
+	_next_event_id = int(snapshot["next_event_id"])
+	event_digest = int(snapshot["event_digest"])
+	cargo_manifests[manifest_id] = (snapshot["manifest"] as Dictionary).duplicate(true)
+
+## P1-g 钱货事务：完整 preflight 后以同一 txid 顺序落 pay→stock→cargo receipt；任一步异常/注入故障都精确回滚。
+## failpoint 仅是 focused test 的进程内参数（after_pay/after_stock/after_manifest/after_receipt），不入存档/产品状态。
+## 工资仍是 commit 成功后的 best-effort 独立事务，不冒充进口钱货原子性的一部分。
+func _commit_manifest_unload(manifest_id: String, worker_id: String, node: String, authorized: bool = false, failpoint: String = "") -> int:
 	if manifest_id == "" or not cargo_manifests.has(manifest_id) or not _unload_worker_assigned(worker_id):
 		return 0
 	# 直接调用仍要求在班；只有经 _apply_object 签发并随 option 延续的授权可跨班次完成。
@@ -4250,21 +4295,43 @@ func _commit_manifest_unload(manifest_id: String, worker_id: String, node: Strin
 		return 0
 	var pnum := int(rec.get("price_per", 0))
 	var pden := int(rec.get("price_den", 1))
+	var cost := 0
 	if _econ_on() and pnum > 0:
 		if pden <= 0:
 			return 0
-		var cost := qty * pnum / pden
+		cost = qty * pnum / pden
 		if cost <= 0 or town_coin < cost:
 			return 0
-		if not transfer("town", "external", cost, "import*%d" % qty):
+	var snapshot := {
+		"town_coin": town_coin, "external_coin": external_coin,
+		"stock_had": town_stock.has(good), "stock_qty": _stock_of(good),
+		"event_size": event_log.size(), "next_event_id": _next_event_id, "event_digest": event_digest,
+		"manifest": rec.duplicate(true),
+	}
+	var txid := "cargo_unload/" + manifest_id
+	if cost > 0:
+		if not transfer("town", "external", cost, "import*%d" % qty, [], txid):
 			return 0
-	var applied := _stock_move(good, qty, "import", node, "import")
+	if failpoint == "after_pay":
+		_rollback_manifest_unload(snapshot, manifest_id, good)
+		return 0
+	var applied := _stock_move(good, qty, "import", node, "import", [], txid)
 	if applied != qty:
+		_rollback_manifest_unload(snapshot, manifest_id, good)
 		push_error("CargoManifest 钱货脱钩：id=%s qty=%d applied=%d" % [manifest_id, qty, applied])
+		return 0
+	if failpoint == "after_stock":
+		_rollback_manifest_unload(snapshot, manifest_id, good)
 		return 0
 	rec["remaining_qty"] = 0
 	rec["state"] = "complete"
-	_log_event("world", worker_id, node, good, true, [], "cargo_unload:%s*%d" % [manifest_id, qty])
+	if failpoint == "after_manifest":
+		_rollback_manifest_unload(snapshot, manifest_id, good)
+		return 0
+	_log_event("world", worker_id, node, good, true, [], "cargo_unload:%s*%d" % [manifest_id, qty], txid)
+	if failpoint == "after_receipt":
+		_rollback_manifest_unload(snapshot, manifest_id, good)
+		return 0
 	return qty
 
 ## E2a：这批 import【实际能到多少】(撞 cap 少收) —— 纯读、不落账、不写事件，供选项 A「先付后到」先定价。
@@ -4529,16 +4596,20 @@ func _unspread_belief(actor: Dictionary, target: Dictionary) -> String:
 				fallback = cid                               # 没有消息可讲时，闲话照旧（与旧版同一条）
 	return fallback
 
-func _log_event(type: String, actor_id: String, target_id: String, subject: String, accepted: bool, witnesses: Array, note: String = "") -> Dictionary:
+func _log_event(type: String, actor_id: String, target_id: String, subject: String, accepted: bool, witnesses: Array, note: String = "", txid: String = "") -> Dictionary:
 	var wids: Array = []
 	for w in witnesses:
 		wids.append(w["id"])
 	var ev := {"id": _next_event_id, "tick": tick_no, "type": type, "actor": actor_id,
 		"target": target_id, "subject": subject, "accepted": accepted, "witnesses": wids, "note": note}
+	if txid != "":
+		ev["txid"] = txid
 	_next_event_id += 1
 	event_log.append(ev)
 	# L4 增量滚动摘要：每事件 O(1) 折叠 → 不必末尾遍历整条 event_log 即得全程确定性见证（大规模/长跑友好）。
 	var es := "%d:%s:%s:%s:%d:%s:%d" % [int(ev["id"]), type, actor_id, target_id, int(accepted), subject, tick_no]
+	if txid != "":
+		es += ":tx:" + txid
 	# 折进来的每事件哈希用【项目自有】fnv1a32，不用引擎的 String.hash()——否则 Godot 换版本就能改写金标。
 	event_digest = ((event_digest * 1099511628211) ^ fnv1a32(es)) & 0x7FFFFFFFFFFFFFFF
 	return ev
