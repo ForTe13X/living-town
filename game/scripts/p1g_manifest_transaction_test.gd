@@ -57,6 +57,20 @@ func _ready() -> void:
 		_drop(F)
 
 	var S = _fixture()
+	var live_events: Array = S.event_log.duplicate(true)
+	for i in range(S.event_log.size() - 1, -1, -1):
+		if String(S.event_log[i].get("note", "")).begins_with("cargo_arrive:" + manifest_id):
+			S.event_log.remove_at(i)
+			break
+	var missing_live_receipt := _snapshot(S, manifest_id)
+	ck(S._arrive_import_manifest(S.logistics["import_lanes"][0], 0) == ""
+		and _snapshot(S, manifest_id) == missing_live_receipt,
+		"live manifest 缺 arrival receipt 时 fail-closed，不以 live record 掩盖损坏历史")
+	S.event_log = live_events.duplicate(true)
+	var live_snapshot := _snapshot(S, manifest_id)
+	ck(S._arrive_import_manifest(S.logistics["import_lanes"][0], 0) == manifest_id
+		and _snapshot(S, manifest_id) == live_snapshot,
+		"live manifest 的同日 arrival replay 仅验证唯一 receipt，不改 cargo/event/digest")
 	var st: Dictionary = S.cargo_status_for_node("port_dock")
 	ck(String(st.get("state", "")) == "ready" and String(st.get("good", "")) == "柴薪" and int(st.get("qty", 0)) == 4,
 		"玩家港口投影显示真实 ready manifest 的货名与数量")
@@ -87,6 +101,31 @@ func _ready() -> void:
 		"提交后玩家港口投影清空，不显示幽灵卸货")
 	var row44 := _row44(S)
 	ck(not row44.is_empty() and bool(row44.get("ok", false)), "升级后的硬 #44 在真实事务上通过")
+
+	# P1-j: a retired manifest id is still consumed by its append-only arrival receipt.
+	# Replaying the same authored lane/day must not resurrect cargo or append a second arrival.
+	var retired_snapshot := _snapshot(S, manifest_id)
+	var retired_events: Array = S.event_log.duplicate(true)
+	ck(S._arrive_import_manifest(S.logistics["import_lanes"][0], 0) == manifest_id,
+		"retired manifest 的同日 arrival replay 返回既有确定 id")
+	ck(_snapshot(S, manifest_id) == retired_snapshot and not S.cargo_manifests.has(manifest_id),
+		"retired manifest 的历史 receipt 阻止同 id cargo 复活与重复 arrival")
+	for e in S.event_log:
+		if String(e.get("note", "")).begins_with("cargo_arrive:" + manifest_id):
+			e["actor"] = "other_route"
+			break
+	var conflicting_history := _snapshot(S, manifest_id)
+	ck(S._arrive_import_manifest(S.logistics["import_lanes"][0], 0) == ""
+		and _snapshot(S, manifest_id) == conflicting_history,
+		"conflicting arrival tombstone fail-closed 且不改 live cargo/event/digest")
+	S.event_log = retired_events.duplicate(true)
+	S.event_log.append(S.event_log.filter(func(e):
+		return String(e.get("note", "")) == "cargo_arrive:%s*4" % manifest_id)[0].duplicate(true))
+	var duplicate_history := _snapshot(S, manifest_id)
+	ck(S._arrive_import_manifest(S.logistics["import_lanes"][0], 0) == ""
+		and _snapshot(S, manifest_id) == duplicate_history,
+		"duplicate exact arrival tombstone fail-closed 且不追加第三条 receipt")
+	S.event_log = retired_events.duplicate(true)
 
 	var clean_events: Array = S.event_log.duplicate(true)
 	S.event_log[event0 + 1].erase("txid")

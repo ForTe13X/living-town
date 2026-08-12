@@ -4257,6 +4257,7 @@ func _logi_import() -> void:
 
 ## P1-b CargoManifest 到港 seam：只增 cargo 权威态 + world receipt，不碰镇库与钱。
 ## id = route × day × lane 著者序，纯 f(data,day)，不读 RNG/Time/事件计数器；重复调用同日幂等。
+## P1-j：complete 单退休后，append-only arrival receipt 继续充当已消费 id 的墓碑；不得复活同 id cargo。
 func _arrive_import_manifest(lane: Dictionary, lane_index: int) -> String:
 	var batch := int(lane.get("batch", 0))
 	var good := String(lane.get("good", ""))
@@ -4272,8 +4273,31 @@ func _arrive_import_manifest(lane: Dictionary, lane_index: int) -> String:
 	if _econ_on() and pnum > 0 and (pden <= 0 or batch * pnum / pden <= 0):
 		return ""
 	var manifest_id := "manifest_%s_%d_%d" % [route, day, lane_index]
-	if cargo_manifests.has(manifest_id):
+	var expected_note := "cargo_arrive:%s*%d" % [manifest_id, batch]
+	var arrival_receipts := 0
+	for raw in event_log:
+		if not (raw is Dictionary):
+			continue
+		var e: Dictionary = raw
+		var note := String(e.get("note", ""))
+		var targets_id := String(e.get("target", "")) == manifest_id
+		var names_id := note.begins_with("cargo_arrive:" + manifest_id + "*")
+		if not targets_id and not names_id:
+			continue
+		if String(e.get("type", "")) != "world" or not bool(e.get("accepted", false)) \
+			or String(e.get("actor", "")) != route or String(e.get("target", "")) != manifest_id \
+			or String(e.get("subject", "")) != good or note != expected_note:
+			push_error("CargoManifest arrival history conflicts with deterministic id=%s" % manifest_id)
+			return ""
+		arrival_receipts += 1
+	if arrival_receipts == 1:
 		return manifest_id
+	if arrival_receipts > 1:
+		push_error("CargoManifest arrival history duplicates deterministic id=%s" % manifest_id)
+		return ""
+	if cargo_manifests.has(manifest_id):
+		push_error("CargoManifest live record lacks arrival receipt id=%s" % manifest_id)
+		return ""
 	var rec := {
 		"id": manifest_id, "route_id": route, "lane_index": lane_index,
 		"node": node, "good": good, "arrived_day": day,
@@ -4283,7 +4307,7 @@ func _arrive_import_manifest(lane: Dictionary, lane_index: int) -> String:
 	}
 	cargo_manifests[manifest_id] = rec
 	cargo_manifest_order.append(manifest_id)
-	_log_event("world", route, manifest_id, good, true, [], "cargo_arrive:%s*%d" % [manifest_id, batch])
+	_log_event("world", route, manifest_id, good, true, [], expected_note)
 	return manifest_id
 
 ## 只返回【此刻可整单提交】的最早 manifest。首片刻意不拆单：3/4 的价格若拆成四笔 1 件，
