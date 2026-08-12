@@ -22,7 +22,7 @@ def load():
     m = json.load(open(p("map.json"), encoding="utf-8"))
     ag = json.load(open(p("agents.json"), encoding="utf-8"))
     return (m, ag, _opt("festivals.json"), _opt("production.json"), _opt("jobs.json"),
-            _opt("interiors.json"), _opt("logistics.json"))
+            _opt("interiors.json"), _opt("logistics.json"), _opt("spaces.json"))
 
 def neigh(c):
     x, y = c
@@ -50,7 +50,7 @@ def shortest(a, b, walk):
     return None
 
 def main():
-    m, ag, fe, pr, jb, it, lo = load()
+    m, ag, fe, pr, jb, it, lo, sp = load()
     W, H = int(m["width"]), int(m["height"])
     blk = set((int(x), int(y)) for x, y in m["blockers"])
     fails = []
@@ -188,6 +188,30 @@ def main():
         fails.append("north_pier 只承载渔业，不得被 logistics route/node/carrier 引用：%r" % logistics_refs)
     if (59, 8) in blk or (58, 8) in blk or (60, 8) not in water:
         fails.append("Tao/port 必须是 East dock 陆地可走格，carrier berth 必须是水格")
+    # P1-i 玩家空间：东港外门必须落在 dock 可走陆格，内门必须落在 9x6 货仓右墙缺口；
+    # interiors 只允许纯展示家具（首片不能藉室内悄悄新增经济候选）。
+    spaces = sp.get("spaces", {}) if isinstance(sp, dict) else {}
+    warehouse = spaces.get("port_warehouse", {}) if isinstance(spaces, dict) else {}
+    if (not isinstance(warehouse, dict) or warehouse.get("kind") != "interior"
+            or warehouse.get("bounds") != [0, 0, 9, 6] or warehouse.get("floors") != ["1f"]
+            or warehouse.get("default_floor") != "1f"):
+        fails.append("port_warehouse 必须冻结为 interior bounds[0,0,9,6]/1f")
+    portals = sp.get("portals", []) if isinstance(sp, dict) else []
+    whdoors = [x for x in portals if isinstance(x, dict) and x.get("id") == "p_port_warehouse_door"]
+    expected_from = {"space": "town", "floor": "outdoor", "pos": [57, 8]}
+    expected_to = {"space": "port_warehouse", "floor": "1f", "pos": [8, 3]}
+    if (len(whdoors) != 1 or whdoors[0].get("kind") != "door"
+            or whdoors[0].get("from") != expected_from or whdoors[0].get("to") != expected_to
+            or whdoors[0].get("bidirectional") is not True or whdoors[0].get("access") != "public"):
+        fails.append("东港货仓门必须唯一闭合 town[57,8]↔port_warehouse[8,3] 且双向/public")
+    dock_cells = rect_cells(dock)
+    if (57, 8) not in dock_cells or (57, 8) in blk or (57, 8) in wscells or (57, 8) in objcells:
+        fails.append("东港货仓外门 [57,8] 必须是 dock 内无碰撞可走格")
+    whfloor = (it.get("port_warehouse", {}) if isinstance(it, dict) else {}).get("1f", {})
+    furn = whfloor.get("furniture", []) if isinstance(whfloor, dict) else []
+    if (not isinstance(whfloor, dict) or whfloor.get("floor") != "stone" or not isinstance(furn, list)
+            or not furn or any(not isinstance(x, dict) or x.get("advertises") for x in furn)):
+        fails.append("port_warehouse/1f 必须有 stone 纯展示家具且不得 advertises")
     # ⑧ 工位与既有家具/地标/墙水树不得同格 —— 同格 = 一个对象被静默盖住或一格被两次占用。
     lm0 = dict(((int(l["pos"][0]), int(l["pos"][1])), l.get("type", "landmark")) for l in m.get("landmarks", []))
     objby0 = dict(((int(o["pos"][0]), int(o["pos"][1])), o["id"]) for o in m["objects"])

@@ -76,3 +76,10 @@
 - pinned `gamecraft-runner:4.6.2` 已在最终 K 地图上重拍日夜、carrier、空间往返、POND、七类室内、家具、树丛、四季、降水、cafe 2F 与全楼层往返；12 组属性断言全部 PASS。Windows Git Bash 的宿主 `python` PATH 缺失令外层初次 exit127，但全部 PNG 已成功产出，同一批帧随后由 PowerShell 调相同断言逐项 exit0；未把 runner plumbing 误写成视觉回归。
 - exact code commit `c56f31e` 的 standard/held-out/N16/N24/N60 均 S0 PASS；default+held-out 的 import/export provider 非空，N>12 export 为成文惰性、#46 明确 vacuous。所有网格均未传 golden。
 - **未解除 finalize 门**：本次水域/nav 与 manifest 可见化必然移动 golden/modelpath，任何 `game/` 变动也令 complement ledger freshness stale；本棒遵守冻结，不重烘三锚。待 committed exact tree、完整网格、review 收敛后统一 finalize，不能把 focused/无 golden 的 green 冒充可合入。
+
+## 七、P1-i 东海空间与玩家呈现回执（2026-08-12/13；未重烘）
+
+- East Ocean 不再只是货船投影和地图右缘：码头陆格 `[57,8]` 通过公开双向 portal 接入 `port_warehouse/1f`（9×6），而 carrier berth 仍在 `[60,8]` 水格。门、仓、船、货物在同一玩家近景中建立清楚的「到港→进仓查看」空间语义。
+- 货仓内部是 display-only 的石地/木架/柜台/货箱/麻袋/地毯/灯具；没有 AI 工位。玩家移动改用当前 space/floor 的导航网，所以室内墙体与家具碰撞是真 gameplay，不是截图布景；返程恢复东海门口并保留玩家选中/操作栏反馈。
+- 玩家视角验收同时守 UI/UX/美术：外景同框玩家、仓门、ready 货船、货箱、港口状态、事件 feed、需求/钱、七动作与时间轴；内景同框玩家、返程门和实时到货簿。持久参照为 `docs/media/p1i_east_ocean_player.png` 与 `docs/media/p1i_east_ocean_warehouse.png`，来源与重建命令见 `analysis/p1i/east-ocean-warehouse.md`。
+- `warehouse_status` 同 seed/tick ON/OFF 负控只改变状态板 crop，证明信息不是静态烘在美术中；真实 player journey 另要求 enter/return receipts、相机一致与界外带活性。截图用于 presentation review，不作像素 golden，不替代 headless contract、标准网格或最终三锚。

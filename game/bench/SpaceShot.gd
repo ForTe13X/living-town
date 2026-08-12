@@ -98,8 +98,26 @@ func _ready() -> void:
 		print("[SPACESHOT] ❌ 拿不到 Main._probe")
 		get_tree().quit(1)
 		return
+	# 玩家旅程从玩家所在地取景；出门后 Main 也会回到同一跟随镜头。
+	# 因此前后帧仍可逐像素比较，同时产品参照不再是假装玩家在场的全镇鸟瞰。
+	var capture_player := Sim.get_agent("player")
+	if not capture_player.is_empty():
+		var capture_pos: Vector2i = capture_player.get("pos", Vector2i.ZERO)
+		pb.focus_on(Vector2(capture_pos.x * 48 + 24, capture_pos.y * 48 + 24), "player")
+		_refresh()
+		await _wait(_settle, _min_ms)
+		# LOD key follows the camera in _process; redraw once more after it settles
+		# so the first close-up cannot retain a full-town label command list.
+		_refresh()
+		await _wait(4, 200)
+	_meta["player_journey"] = not capture_player.is_empty()
 	var cam0_pos: Vector2 = pb.cam.position
 	var cam0_zoom: Vector2 = pb.cam.zoom
+	# A physical portal click adds a visible system row.  Preserve the real
+	# player traversal receipts, but restore view-only log/selection state before
+	# the after frame so the original exact roundtrip pixel tooth stays sharp.
+	var log0: Array = (_main.get("_log_recent") as Array).duplicate(true)
+	var selected0: String = String(_main.get("_selected_id"))
 	_snap("town_before", pb)
 
 	# ── 进店 ────────────────────────────────────────────────────────────────
@@ -112,6 +130,13 @@ func _ready() -> void:
 	if String(pb.active_space) != _space:
 		print("[SPACESHOT] ❌ 点了门却没进去：active_space=%s" % String(pb.active_space))
 		_rc = 1
+	var player := Sim.get_agent("player")
+	if not player.is_empty():
+		var player_in := String(player.get("space", "town")) == _space and String(player.get("floor", "outdoor")) == String(pb.active_floor)
+		if not player_in:
+			print("[SPACESHOT] ❌ 玩家点门后仍不在目标平面：%s/%s" % [player.get("space", "?"), player.get("floor", "?")])
+			_rc = 1
+		_meta["player_entered"] = player_in
 	_snap("interior" if _journey != "full" else "cafe_1f", pb)
 
 	# ── 全楼层旅程（AM3/编号135）：cafe/1f →（楼梯 portal）2f →（楼梯）1f ──────────────
@@ -151,6 +176,20 @@ func _ready() -> void:
 	if String(pb.active_space) != "town":
 		print("[SPACESHOT] ❌ 点了门却没回到 town：active_space=%s" % String(pb.active_space))
 		_rc = 1
+	player = Sim.get_agent("player")
+	if not player.is_empty():
+		var player_returned := String(player.get("space", "")) == "town" and String(player.get("floor", "")) == "outdoor"
+		if not player_returned:
+			print("[SPACESHOT] ❌ 玩家出门后未回 town/outdoor")
+			_rc = 1
+		_meta["player_returned"] = player_returned
+	if not capture_player.is_empty():
+		_main.set("_log_recent", log0)
+		_main.set("_selected_id", selected0)
+		_main.call("_render_log")
+		_main.call("_update_status")
+		_refresh()
+		await _wait(4, 200)
 	_snap("town_after", pb)
 
 	# ── 前提断言：出店后的取景必须与进店前【逐字节相同】 ────────────────────────

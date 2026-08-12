@@ -307,3 +307,11 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 - **有界证据 / 行为 no-op**：focused 33 天连续完成 11 单，每次 live queue 都回到空，11 单仍全部由 event history 审计。与 P1-g 标准格逐 seed 对拍，12/12 的 `digest/event_digest/events/pass` 精确不变，只有纳入未来驱动态的 `chain` 按预期变化。候选树 standard、held-out、total-N24 均 S0 PASS；三格真实 import/export 分别 `156/57`、`252/59`、`167/82`，#44/#45/#46 全绿且非真空。这里约束的是 manifest 权威面；全局 append-only event log 的历史增长仍是既有独立保留策略，不在本棒伪称解决。
 - **玩家 / UI / UX / 美术参照**：港口状态与货船共用 ordered live queue；多单时顶栏在最早货物后补 `共N单M件`，单单路径逐字保持简洁。carrier focused 证明三单时一艘船 + HUD/船同为 `3单/12件`，首单完成后 FIFO 重绑，退休 tombstone 不改变投影。真实 Windows/OpenGL 玩家帧固定 seed3/tick600/[58,8]，同框保留船、货箱、玩家、责任提示、事件、需求/钱、七动作与时间轴；没有为好看伪造 backlog。PNG 在 `%TEMP%/p1h-player-east-ocean-frames`，`generated/rebuildable`、非 pixel golden。完整合同见 `analysis/p1h/manifest-live-queue-compaction.md`。
 - **停止条件 / delivery gate**：focused 与三组网格通过后才允许主题提交；提交后还须在 committed exact tree 重跑并 normal-push 当前接管分支。golden/modelpath/complement 仍 stale，review 尚未给新 completed 判决，PR #6 继续 draft/不可合并。本棒不改 README、protected branch、anchor 文件，不 archive/clean unknown-owner 内容。
+
+### 13.7 P1-i：可进入的东海货仓 + 玩家连续视觉回执（2026-08-12/13；未重烘）
+
+- **可玩纵切**：东海码头 `[57,8]` 的货仓门现在双向连接 `port_warehouse/1f`（9×6）。玩家站在门边点击即可用真实 player agent 进仓、受室内导航网和家具碰撞约束，再由右侧木门返回东海；远处点击仍保持 Probe 观察语义。室内不新增 advert/job/production/RNG/economy 权威。
+- **状态可读**：墙上「东港到货簿」直接投影 `town_stock` 的柴薪/豆子/口粮与 `cargo_status_for_node("port_dock")`，显示货名、数量和待卸/卸货中/仓位不足/镇库不足；无缓存、无复制货单。东向码头同时修正 deck 与 carrier 独立裁剪，并恢复豆子货袋，让船、仓门、货箱和库存反馈组成同一玩家 affordance。
+- **验收**：`audit_map` 锁定门、地类、室内材料与 display-only 家具；`space_test` 锁定真实进出、墙体碰撞、可走地毯与返回；玩家 UI/save/P1-a/P1-b/P1-c/P1-g focused scenes 均绿。标准 seeds 1–12 ×60d 为 S0 PASS，hard/soft 12/12、#40/#44/#45/#46 12/12、真实 import/export `156/57` 覆盖全 seed、det3/3；未传 golden。
+- **视觉负控 / presentation pool**：固定 Godot 4.6.2、seed3、tick600、player `[57,8]` 的 ON/OFF 对拍为 56,048 变化像素，bbox `(512,156)-(778,367)` 全落在状态板 crop `(505,147)-(784,371)`。两张 1280×768 玩家帧已入 `docs/media/p1i_east_ocean_{player,warehouse}.png`；它们是可重建 presentation receipt，不是 pixel golden。完整命令、SHA-256、来源/许可证与边界见 `analysis/p1i/east-ocean-warehouse.md`。
+- **delivery gate**：P1-i 不改变贸易权威，但 `game/`/空间/View 变化仍令 complement freshness 与旧 visual assumptions 漂移。本棒不重烘 golden/modelpath/complement，不把本地 pinned GL green 冒充 GHA visual receipt；PR #6 继续 draft，等待 committed exact-tip CI、三锚 finalize 与新 review 判决。

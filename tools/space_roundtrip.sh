@@ -74,11 +74,16 @@ if [ "${1:-}" = "--shoot" ]; then
   rm -f "$OUT"/rt_*.png "$OUT/rt_meta.json"
   DS_ARGS=()
   [ -n "$DRAWSKIP" ] && DS_ARGS=(--draw-skip "$DRAWSKIP")
+  PLAYER_ARGS=()
+  if [ -n "${RT_PLAYER_POS:-}" ]; then
+    read -r PX PY <<< "${RT_PLAYER_POS//,/ }"
+    PLAYER_ARGS=(--player-pos "$PX" "$PY" --select player)
+  fi
   "$GBIN" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
     --resolution ${W}x${H} --single-window res://bench/SpaceShot.tscn -- \
     --backend logic --seed "$SEED" --warmup-tick "$TICK" \
     --rt-out "$OUT" --rt-space "$SPACE" --rt-mode "$MODE" --rt-journey "$JOURNEY" --rt-redraw "$REDRAW" \
-    "${DS_ARGS[@]}"
+    "${PLAYER_ARGS[@]}" "${DS_ARGS[@]}"
   rc=$?
   [ "$OWN_XV" = "1" ] && kill $XV 2>/dev/null
   exit $rc
@@ -144,13 +149,14 @@ if [ "$PICK" = docker ]; then
   MSYS_NO_PATHCONV=1 docker run --rm --name "$CNAME" \
     -e RT_MODE="${LT_RT_MODE:-portal}" -e RT_SPACE="${LT_RT_SPACE:-cafe}" -e RT_REDRAW="${LT_RT_REDRAW:-auto}" \
     -e RT_JOURNEY="$JOURNEY" -e RT_DRAW_SKIP="$DRAWSKIP" \
+    -e RT_PLAYER_POS="${LT_RT_PLAYER_POS:-}" \
     -e LT_RT_SEED="$SEED" -e LT_RT_TICK="$TICK" \
     -v "$GAME:/game" -v "$REPO/tools:/tools" -v "$OUT_HOST:/out" \
     "$IMG" bash /tools/space_roundtrip.sh --shoot /out
   SHOT_RC=$?
 else
   RT_GAME="$GAME" RT_MODE="${LT_RT_MODE:-portal}" RT_SPACE="${LT_RT_SPACE:-cafe}" RT_REDRAW="${LT_RT_REDRAW:-auto}" \
-    RT_JOURNEY="$JOURNEY" RT_DRAW_SKIP="$DRAWSKIP" \
+    RT_JOURNEY="$JOURNEY" RT_DRAW_SKIP="$DRAWSKIP" RT_PLAYER_POS="${LT_RT_PLAYER_POS:-}" \
     GODOT="$GODOT" bash "$0" --shoot "$OUT"
   SHOT_RC=$?
 fi

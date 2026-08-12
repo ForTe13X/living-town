@@ -1830,6 +1830,8 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 	for fr in _ac("interior_furniture", content.get("furniture", [])):
 		var fp: Array = (fr as Dictionary).get("pos", [0, 0])
 		_draw_interior_furniture(String((fr as Dictionary).get("slot", "")), Vector2(ox + int(fp[0]) * T, oy + int(fp[1]) * T), role)
+	if sid == "port_warehouse":
+		_draw_port_warehouse_status(b)
 	# P3 打磨：夜间氛围（暖底光 + 每盏灯源暖池，占用的床更旺）——画在家具之上、居民之下，居民自身仍清晰
 	_draw_interior_night(b, content, sid, fid)
 	# P3 Tier-B：画【此刻真在这层】的居民（阿丽在自家咖啡馆睡觉/看摊）。Space bounds 从原点起 → _draw_agent 用
@@ -1840,6 +1842,36 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 	# 楼层标签
 	draw_string(Art.font(), b.position + Vector2(T + 8, 22), "%s · %s" % [sg.label_of(sid), content.get("label", fid)],
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 15, D_WOOD_LINE)
+
+## P1-i 东海货仓账簿：室内不是静态布景，直接读同一份 town_stock + CargoManifest 查询投影。
+## 纯 View、无缓存/无 RNG；`warehouse_status` 负对照可只关这块，证明视觉确实来自权威状态。
+func _draw_port_warehouse_status(b: Rect2) -> void:
+	draw_string(Art.font(), b.end - Vector2(T * 3.55, T * 0.34), "右侧木门 · 返回东海码头", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, D_WOOD_LINE)
+	if not _ap("warehouse_status"):
+		return
+	var panel := Rect2(b.position + Vector2(T * 3.18, T * 0.62), Vector2(T * 2.72, T * 2.12))
+	draw_rect(Rect2(panel.position + Vector2(3, 4), panel.size), Color(0, 0, 0, 0.26), true)
+	draw_rect(panel, P_COM_FOOT, true)
+	draw_rect(panel, X_WOOD_MID, false, 3.0)
+	draw_rect(Rect2(panel.position + Vector2(5, 5), Vector2(panel.size.x - 10, T * 0.44)), P_FOLIAGE_D, true)
+	draw_string(Art.font(), panel.position + Vector2(12, T * 0.35), "东港到货簿", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, X_PARCHMENT)
+	var goods := ["柴薪", "豆子", "口粮"]
+	for i in goods.size():
+		var good: String = goods[i]
+		var cfg: Dictionary = (Sim.production.get("goods", {}) as Dictionary).get(good, {})
+		var cap := maxi(1, int(cfg.get("cap", 1)))
+		var qty := Sim._stock_of(good)
+		var y := panel.position.y + T * (0.67 + float(i) * 0.31)
+		draw_string(Art.font(), Vector2(panel.position.x + 10, y + 11), "%s %d/%d" % [good, qty, cap], HORIZONTAL_ALIGNMENT_LEFT, T * 1.05, 13, X_COLD_WHITE)
+		var bx := panel.position.x + T * 1.48
+		draw_rect(Rect2(bx, y, T * 0.98, 10), Color(0.03, 0.07, 0.08, 0.65), true)
+		draw_rect(Rect2(bx + 1, y + 1, (T * 0.98 - 2) * clampf(float(qty) / float(cap), 0.0, 1.0), 8), X_GLOW if good == "柴薪" else P_WATER_LIT, true)
+	var st := Sim.cargo_status_for_node("port_dock")
+	var status := "泊位：暂无待卸货物"
+	if String(st.get("state", "empty")) != "empty":
+		var state_label := String({"ready": "待卸", "working": "卸货中", "blocked_capacity": "仓位不足", "blocked_funds": "镇库不足"}.get(String(st.get("state", "")), "待处理"))
+		status = "泊位：%s×%d · %s" % [String(st.get("good", "货物")), int(st.get("qty", 0)), state_label]
+	draw_string(Art.font(), panel.position + Vector2(10, T * 1.82), status, HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 20, 13, X_GOLD)
 
 ## P3 打磨：室内夜间氛围。CanvasModulate 把整幅世界画布乘暗（室内也不例外）→ 夜里进屋本是【冷灰洞】：
 ## 暖木地板被夜蓝乘平。这里靠【相对暖光】把屋子从冷夜拉出来：整层压一层暖底光 + 每件光源家具
@@ -1951,6 +1983,8 @@ func _interior_wall(shell: Dictionary, x: float, y: float, is_door: bool) -> voi
 ##   5. `shelf`≥2 且有 `desk` 且无 `bed` ⇒ 藏书（library/1f）——成排书架配书桌、且不是卧室
 ##   6. 其余                          ⇒ 起居（home/1f、home2/1f、cafe/2f）
 func _furniture_role(sid: String, content: Dictionary) -> String:
+	if sid == "port_warehouse":
+		return "store"
 	var slots := {}
 	for fr in content.get("furniture", []):
 		var s := String((fr as Dictionary).get("slot", ""))
@@ -3571,25 +3605,28 @@ func _draw_port_east(dock: Dictionary) -> void:
 	if dw <= 0 or dh <= 0:
 		return
 	var deck := Rect2(dx * T, dy * T, dw * T, dh * T)
-	if not _vis.intersects(deck):
-		return
-	var seam := D_WOOD_LINE
-	var plank := X_WOOD_MID.lightened(0.14)
-	draw_rect(deck, plank, true)
-	for x in range(dw * 2 + 1):
-		var px := deck.position.x + float(x) * T * 0.5
-		draw_line(Vector2(px, deck.position.y), Vector2(px, deck.end.y), Color(seam.r, seam.g, seam.b, 0.45), 1.0)
-	for y in range(dh + 1):
-		var py := deck.position.y + float(y) * T
-		draw_line(Vector2(deck.position.x, py), Vector2(deck.end.x, py), Color(seam.r, seam.g, seam.b, 0.52), 1.2)
-	# 面海护舷、系缆桩与货堆；east 分支蓄意不画旧北池常驻渔船。
-	draw_rect(Rect2(deck.end.x - T * 0.12, deck.position.y, T * 0.12, deck.size.y), seam, true)
-	_port_bollard(deck.end.x - T * 0.15, deck.position.y + T * 0.18)
-	_port_bollard(deck.end.x - T * 0.15, deck.end.y - T * 0.42)
-	_port_boathouse(deck.position.x + T * 0.06, deck.position.y + T * 0.05, T * 0.92)
-	_port_crate(deck.position.x + T * 1.30, deck.position.y + T * 0.22, T * 0.34)
-	_port_barrel(deck.position.x + T * 2.12, deck.position.y + T * 0.28, T * 0.22, T * 0.36)
-	_port_signpost(deck.position.x + T * 0.55, deck.end.y + T * 0.52)
+	if _vis.intersects(deck):
+		var seam := D_WOOD_LINE
+		var plank := X_WOOD_MID.lightened(0.14)
+		draw_rect(deck, plank, true)
+		for x in range(dw * 2 + 1):
+			var px := deck.position.x + float(x) * T * 0.5
+			draw_line(Vector2(px, deck.position.y), Vector2(px, deck.end.y), Color(seam.r, seam.g, seam.b, 0.45), 1.0)
+		for y in range(dh + 1):
+			var py := deck.position.y + float(y) * T
+			draw_line(Vector2(deck.position.x, py), Vector2(deck.end.x, py), Color(seam.r, seam.g, seam.b, 0.52), 1.2)
+		# 面海护舷、系缆桩与货堆；east 分支蓄意不画旧北池常驻渔船。
+		draw_rect(Rect2(deck.end.x - T * 0.12, deck.position.y, T * 0.12, deck.size.y), seam, true)
+		_port_bollard(deck.end.x - T * 0.15, deck.position.y + T * 0.18)
+		_port_bollard(deck.end.x - T * 0.15, deck.end.y - T * 0.42)
+		_port_boathouse(deck.position.x + T * 0.06, deck.position.y + T * 0.05, T * 0.92)
+		_port_crate(deck.position.x + T * 1.30, deck.position.y + T * 0.22, T * 0.34)
+		_port_barrel(deck.position.x + T * 2.12, deck.position.y + T * 0.28, T * 0.22, T * 0.36)
+		var bean_cap := maxi(1, int(((Sim.production.get("goods", {}) as Dictionary).get("豆子", {}) as Dictionary).get("cap", 45)))
+		var bean_fill := clampf(float(Sim._stock_of("豆子")) / float(bean_cap), 0.0, 1.0)
+		_port_sacks(deck.position.x + T * 2.62, deck.position.y + T * 1.34, T * 0.28, bean_fill)
+		_port_signpost(deck.position.x + T * 0.55, deck.end.y + T * 0.52)
+	# 船体可能仍在画面内而 deck 已在左侧画面外；carrier 必须按自己的 hull 做裁剪。
 	if not _ap("carrier"):
 		return
 	for projection in _cargo_carrier_projections():

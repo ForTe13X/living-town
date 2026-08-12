@@ -1135,13 +1135,15 @@ func add_player(pos: Vector2i = Vector2i(-1, -1)) -> Dictionary:
 	emit_signal("agent_changed", "player")
 	return pl
 
-## 玩家格移动（WASD/方向键）。走 _move_agent 以刷新 area 缓存（NPC 的邻近枚举依赖它）。
+## 玩家格移动（WASD/方向键）。按玩家当前 Space/Floor 的同一份导航网判边界/碰撞，
+## 再走 _move_agent 刷新 area 缓存。这样玩家进室内后不会穿墙/家具，也不会继续拿 town 尺寸放行。
 func player_move(dir: Vector2i) -> void:
 	var pl: Dictionary = _agent_by_id.get("player", {})
 	if pl.is_empty() or int(pl["talking"]) > 0:
 		return
 	var np: Vector2i = pl["pos"] + dir
-	if np.x < 0 or np.y < 0 or np.x >= int(world.get("width", 24)) or np.y >= int(world.get("height", 16)):
+	var grid := _grid_for(String(pl.get("space", "town")), String(pl.get("floor", "outdoor")))
+	if not _cell_walkable(grid, np):
 		return
 	_move_agent(pl, np)
 	emit_signal("agent_changed", "player")

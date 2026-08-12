@@ -427,7 +427,7 @@ func _ready() -> void:
 	# 玩家模式：同款优先级 CLI --player > user://settings.cfg > 默认【关】。
 	# 默认必须是关：开着会调 Sim.add_player() 从而合法地移动 digest（docs/41 §3），
 	# 而 tools/probe_digest_test.sh 之类的容器跑用的是全新的 user://，读到的就是这个默认值。
-	if not ("--player" in args) and not ("--player-demo" in args):
+	if not ("--player" in args) and not ("--player-demo" in args) and not ("--player-pos" in args):
 		_player_mode = bool(_scfg.get_value("sim", "player", false))
 	AIBackend.slm_model_override = String(_scfg.get_value("slm", "model_path", ""))   # 上次在设置里手选的 gguf
 	# 观察台档位（纯视图偏好，不进仿真）。默认【名片档】——研究用法（钉住卷宗刷时间轴）按一次就回来，
@@ -2644,15 +2644,42 @@ func _portal_click(world_pos: Vector2) -> bool:
 				continue
 			var other: Dictionary = p.get("to") if side == "from" else p.get("from")
 			var os := String(other.get("space", "town")); var of := String(other.get("floor", "outdoor"))
+			# 玩家模式下，人在当前平面且真的站到门边才随门穿越；远处点门仍保留 Probe inspect。
+			# 这让产品截图/玩法验收里的“进仓”是玩家实体的空间变化，不是相机切到一张室内图。
+			var player_crossed := false
+			if _player_mode:
+				var pl: Dictionary = Sim.get_agent("player")
+				var ppos: Vector2i = pl.get("pos", Vector2i(-99, -99)) if not pl.is_empty() else Vector2i(-99, -99)
+				if not pl.is_empty() and String(pl.get("space", "town")) == asp and String(pl.get("floor", "outdoor")) == afl \
+						and absi(ppos.x - cell.x) + absi(ppos.y - cell.y) <= 1:
+					# Never traverse from the raw display portal.  Re-resolve the same
+					# edge through Sim's agent-aware portal list so owner-only stairs
+					# cannot be bypassed by clicking while in player mode.
+					var permitted: Dictionary = {}
+					for hop in Sim._portals_from(asp, afl, pl):
+						if hop.get("from_pos", Vector2i(-99, -99)) == cell \
+								and String(hop.get("to_space", "")) == os and String(hop.get("to_floor", "")) == of:
+							permitted = hop
+							break
+					if permitted.is_empty():
+						_push("[color=#f2a3a3]（这扇门不对你开放）[/color]")
+						return true
+					Sim._traverse_portal(pl, permitted)
+					Sim.emit_signal("agent_changed", "player")
+					player_crossed = true
 			var b: Rect2 = _sg.bounds_px(os)
 			_probe.set_space(os, of, b)                # 入历史栈 → ESC 可原路退回
 			if os == "town":
 				_probe.go_home()                       # 出门 → 回全镇视角
+				if player_crossed:
+					var pnow: Dictionary = Sim.get_agent("player")
+					var pc: Vector2i = pnow.get("pos", Vector2i.ZERO)
+					_probe.focus_on(Vector2(pc.x * 48 + 24, pc.y * 48 + 24), "player")
 			else:                                      # 进店/换层 → 缩放到室内刚好入画
 				var fit: Vector2 = (_vp() - Vector2(120.0, 200.0)) / b.size
 				_probe.cam.zoom = Vector2.ONE * clampf(minf(fit.x, fit.y), _probe.ZOOM_MIN.x, _probe.ZOOM_MAX.x)
 				_probe.cam.position = b.get_center()
-			_selected_id = ""
+			_selected_id = "player" if player_crossed else ""
 			var verb := "上下楼" if String(p.get("kind", "")) == "stairs" else ("进门" if os != "town" else "出门")
 			_push("[color=#9ad0ff]%s / %s 层（点%s）[/color]" % [_sg.label_of(os), of, verb])
 			_update_status()

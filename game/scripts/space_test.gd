@@ -46,6 +46,8 @@ func _ready() -> void:
 	ck(pt_2f.size() == 1 and String(pt_2f[0]["to"]["floor"]) == "1f", "2f 经双向楼梯反查回 1f")
 	# P3：咖啡馆 Space 合同——1f/2f 存在、街门反查、楼梯反查回 1f
 	ck(sg.has_space("cafe") and sg.has_floor("cafe", "1f") and sg.has_floor("cafe", "2f"), "cafe/1f/2f 存在")
+	ck(sg.has_space("port_warehouse") and sg.has_floor("port_warehouse", "1f")
+		and sg.bounds_px("port_warehouse").size == Vector2(9 * 48, 6 * 48), "东海货仓 9x6/1f 存在")
 	var pt_cafe1: Array = sg.portals_from("cafe", "1f")
 	var cafe1_ids := pt_cafe1.map(func(p): return String(p["id"]))
 	ck("p_cafe_door" in cafe1_ids and "p_cafe_stairs" in cafe1_ids, "cafe/1f 有街门（反查）+ 上楼梯")
@@ -57,6 +59,8 @@ func _ready() -> void:
 	ck(_portal_dest(sg, "cafe", "1f", Vector2i(1, 1)) == ["cafe", "2f"], "点 1F 楼梯 → cafe/2f（上楼）")
 	ck(_portal_dest(sg, "cafe", "2f", Vector2i(1, 1)) == ["cafe", "1f"], "点 2F 楼梯 → cafe/1f（下楼）")
 	ck(_portal_dest(sg, "cafe", "1f", Vector2i(4, 5)) == ["town", "outdoor"], "点 1F 门 → town/outdoor（出门）")
+	ck(_portal_dest(sg, "town", "outdoor", Vector2i(57, 8)) == ["port_warehouse", "1f"], "点东港门 → port_warehouse/1f")
+	ck(_portal_dest(sg, "port_warehouse", "1f", Vector2i(8, 3)) == ["town", "outdoor"], "点货仓门 → East Ocean town/outdoor")
 	ck(_portal_dest(sg, "town", "outdoor", Vector2i(9, 9)) == ["", ""], "点空地 → 无 portal（不误穿）")
 	# P3 数据驱动室内：镇上【每一扇门】都要能点进一个真 Space（且该层有室内内容）——没有空壳建筑。
 	var doors_ok := true; var doors_n := 0; var bad := ""
@@ -92,6 +96,36 @@ func _ready() -> void:
 	probe.set_space("test_loft", "2f", sg.bounds_px("test_loft"))
 	probe.follow(String(ag["id"])); probe.unfollow(); probe.go_home()
 	ck(Sim.tick_no == before, "Probe 一通操作后 Sim.tick_no 未变（不写 Sim）")
+
+	# P1-i 玩家门与室内碰撞：真玩家经同一 portal 原子换平面；WASD 读室内网，不穿货架/外墙。
+	var pl: Dictionary = Sim.add_player(Vector2i(57, 8))
+	var player_public := Sim._portals_from("town", "outdoor", pl)
+	var player_can_warehouse := false
+	for h in player_public:
+		if h.get("from_pos") == Vector2i(57, 8) and String(h.get("to_space", "")) == "port_warehouse":
+			player_can_warehouse = true
+	ck(player_can_warehouse, "玩家权限表允许 public 东海货仓门")
+	var player_private := Sim._portals_from("cafe", "1f", pl)
+	var player_can_private := false
+	for h in player_private:
+		if String(h.get("to_space", "")) == "cafe" and String(h.get("to_floor", "")) == "2f":
+			player_can_private = true
+	ck(not player_can_private, "普通玩家不能用点击旁路 owner-only 咖啡馆楼梯")
+	var aria: Dictionary = Sim.get_agent("aria")
+	var owner_private := Sim._portals_from("cafe", "1f", aria)
+	var owner_can_private := false
+	for h in owner_private:
+		if String(h.get("to_space", "")) == "cafe" and String(h.get("to_floor", "")) == "2f":
+			owner_can_private = true
+	ck(owner_can_private, "空间主人仍可走 owner-only 楼梯")
+	Sim._traverse_portal(pl, {"to_space": "port_warehouse", "to_floor": "1f", "to_pos": Vector2i(8, 3)})
+	ck(String(pl.get("space", "")) == "port_warehouse" and pl.get("pos") == Vector2i(8, 3), "玩家实体经门进入货仓")
+	Sim.player_move(Vector2i(1, 0))
+	ck(pl.get("pos") == Vector2i(8, 3), "货仓外墙阻止玩家向右穿墙")
+	Sim.player_move(Vector2i(-1, 0))
+	ck(pl.get("pos") == Vector2i(7, 3), "货仓入口向左的地毯格允许玩家踏入室内")
+	Sim._traverse_portal(pl, {"to_space": "town", "to_floor": "outdoor", "to_pos": Vector2i(57, 8)})
+	ck(String(pl.get("space", "")) == "town" and pl.get("pos") == Vector2i(57, 8), "玩家实体经同门返回东港")
 
 	print("space_test: %d fail" % _fails)
 	get_tree().quit(1 if _fails > 0 else 0)
