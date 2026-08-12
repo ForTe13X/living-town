@@ -55,6 +55,7 @@ var _scrub_handle: ColorRect          # 拖动手柄
 var _selected_id := ""                # 当前观察的角色
 var _player_mode := false             # --player：玩家入镇（gameplay M1）
 var _demo_mode := false               # --player-demo：脚本化玩家 autopilot（录 demo）
+var _player_spawn_override := Vector2i(-1, -1) # --player-pos x y：产品截图/玩法验收把玩家放到被测纵切；默认仍是广场
 var _demo_steps: Array = []           # [{type:walk_to|select|act|chat|wait, ...}] 顺序执行
 var _demo_i := 0
 var _chat_in: LineEdit                # 玩家→NPC 对话输入框
@@ -362,6 +363,9 @@ func _ready() -> void:
 			Sim.spawn_count = int(args[i + 1]) # 扩 N：克隆到 N（含 L6 调色板变体演示）
 		elif args[i] == "--player":
 			_player_mode = true                # 玩家入镇（gameplay M1：WASD 移动 + G/F/B/Y/P/M 社交动作）
+		elif args[i] == "--player-pos" and i + 2 < args.size():
+			_player_mode = true                # 可见集成钩：玩家站在被测机制旁，截图/录屏呈现真实操作视角
+			_player_spawn_override = Vector2i(int(args[i + 1]), int(args[i + 2]))
 		elif args[i] == "--player-demo":
 			_player_mode = true                # 录 demo 用：脚本化玩家 autopilot（确定性按 tick 触发动作）
 			_demo_mode = true
@@ -452,7 +456,7 @@ func _ready() -> void:
 	Sim.speed = spd
 	_npc_target = maxi(6, Sim.agents.size())   # 设置面板 NPC 数量初值 = 实际居民数（基础 cast=agents.json，或 spawn_count 克隆总数）
 	if _player_mode:
-		Sim.add_player()              # 玩家入社交图：NPC 会主动搭话/接受规则/账本/记忆全生效
+		Sim.add_player(_player_spawn_override) # 玩家入社交图；产品截图可把玩家放到被测纵切，正常启动仍回落广场
 	if _demo_mode:
 		_demo_setup()                 # 舞台布置（首帧前，无可见跳变）+ 动作剧本
 	Sim.auto_run = true               # 镇子立刻跑（logic 地板）——slm/llm 探测改后台异步，不再挡首帧
@@ -1470,7 +1474,7 @@ func _toggle_player_mode() -> void:
 	Sim.start_new(_seed)
 	Sim.auto_run = true
 	if _player_mode:
-		Sim.add_player()
+		Sim.add_player(_player_spawn_override)
 	_selected_id = ""
 	_max_tick = 0
 	_save_sim_setting("player", _player_mode)       # 手机上没有 CLI：下次启动记住（--player 显式给出时不读这里）
@@ -1493,7 +1497,7 @@ func _apply_npc(delta: int) -> void:
 	Sim.start_new(_seed)
 	Sim.auto_run = true
 	if _player_mode:
-		Sim.add_player()
+		Sim.add_player(_player_spawn_override)
 	_npc_target = maxi(6, Sim.agents.size() - (1 if _player_mode else 0))   # 低于基础 cast 时克隆环不减→回读实际数，显示不骗人
 	_selected_id = ""
 	_max_tick = 0

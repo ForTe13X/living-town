@@ -132,6 +132,15 @@ if [ "${1:-}" = "--shoot" ]; then
     --resolution ${W}x${H} --single-window -- \
     --backend logic --shot "$OUT/vg_noon_no_carrier.png" --seed "$SEED" --warmup-tick "$NOON_TICK" --shot-fit --draw-skip carrier \
     || { [ "$rc" -eq 0 ] && rc=9; }
+  # 产品集成参照：同一确定性到港时刻，把【真实 player agent】放在 East Ocean dock 陆格，
+  # 以玩家为中心拍特写。它不是宣传图伪舞台：货船来自 ready manifest，底部 7 个动作按钮走真实
+  # player_do 路径，NPC/观察台/HUD 也都是出货 UI。失败只表示参照帧没产出；玩法语义另由
+  # player_touch_test + P1-b/P1-c focused contracts 守住。
+  vg_shoot "$OUT/vg_player_east_ocean.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
+    --resolution ${W}x${H} --single-window -- \
+    --backend logic --shot "$OUT/vg_player_east_ocean.png" --seed "$SEED" --warmup-tick "$NOON_TICK" \
+    --player --player-pos 58 8 --select player \
+    || { [ "$rc" -eq 0 ] && rc=10; }
   # ── D7 的界外层重画门（同一个 Xvfb，省一次容器启动）──────────────────────
   # 为什么它在这里而不是自己一步：它和昼夜断言一样，**需要一个真 framebuffer**，
   # 于是也需要同一套「探不到就 SKIP、GHA 上显式跳过」的可移植性逻辑。
@@ -325,6 +334,7 @@ fi
 #   5 季节四季帧采集失败（AK1）   6 降水帧采集失败（AK1）   7 cafe 2F 帧采集失败（AM1）
 #   8 全楼层往返采集失败（AM3：某一跳没落在对的 Floor / 前提断言破了）
 #   9 East Ocean 货船 OFF 负对照帧采集失败（P1-c）
+#   10 玩家位于 East Ocean 码头的产品参照帧采集失败
 # 2026-07-28 第一版把 1 和 2 混成一个 rc，于是 void-gate 变红时打印的是"渲染环境在位却拍不出帧"——
 # 一条**指向错误方向**的诊断（帧其实拍出来了）。rc=3 是 2026-07-30 加的第三种，理由同上。
 # rc=5/6 是 AK1（2026-08-06）加的第五、六种：季节/降水的采集失败与上面各步修法不同，分开报。
@@ -358,6 +368,10 @@ if [ $SHOT_RC -eq 8 ]; then
 fi
 if [ $SHOT_RC -eq 9 ]; then
   echo "  ❌ VISUAL GATE：East Ocean 货船负对照帧采集失败——见上面的 shot FAIL vg_noon_no_carrier.png 行"
+  exit 1
+fi
+if [ $SHOT_RC -eq 10 ]; then
+  echo "  ❌ VISUAL GATE：玩家 East Ocean 产品参照帧采集失败——见 shot FAIL vg_player_east_ocean.png 行"
   exit 1
 fi
 if [ $SHOT_RC -ne 0 ]; then
