@@ -12,7 +12,7 @@ $gamePath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\game')).Path
 $receiptRoot = Join-Path $env:TEMP 'living-town-godot-runs'
 
 function Invoke-Control([int]$TimeoutSec, [string[]]$Arguments, [int]$ExpectedExit) {
-  $lines = @(& $runner -TimeoutSec $TimeoutSec -GodotArgs $Arguments)
+  $lines = @(& $runner -AllowDirtyCandidate -TimeoutSec $TimeoutSec -GodotArgs $Arguments)
   $actualExit = $LASTEXITCODE
   $receiptLine = $lines | Where-Object { $_ -like 'SUPERVISED_GODOT_RECEIPT=*' } | Select-Object -Last 1
   if ($actualExit -ne $ExpectedExit) { throw "Expected exit $ExpectedExit, got $actualExit. Output: $($lines -join ' | ')" }
@@ -27,6 +27,9 @@ $positive = Invoke-Control -TimeoutSec $PositiveTimeoutSec `
 if ($positive.outcome -ne 'pass' -or -not $positive.cleanup_verified -or $positive.native_crash_pattern) {
   throw "Positive control receipt failed contract: $($positive | ConvertTo-Json -Compress)"
 }
+if (-not $positive.source_stable -or $positive.source_identity -notin @('exact_commit', 'dirty_candidate')) {
+  throw "Positive control lacks stable source identity: $($positive | ConvertTo-Json -Compress)"
+}
 
 $negative = Invoke-Control -TimeoutSec $NegativeTimeoutSec -Arguments @('--headless') -ExpectedExit 124
 if ($negative.outcome -ne 'timeout' -or -not $negative.timed_out -or -not $negative.cleanup_verified) {
@@ -37,7 +40,7 @@ if ($positive.run_id -eq $negative.run_id -or $positive.injected_log -eq $negati
 }
 
 # A second invocation must report a receipt and exit 78 without removing the first run's lock.
-$owner = Start-Job -ScriptBlock { param($Path) & $Path -TimeoutSec 8 -GodotArgs @('--headless') } -ArgumentList $runner
+$owner = Start-Job -ScriptBlock { param($Path) & $Path -AllowDirtyCandidate -TimeoutSec 8 -GodotArgs @('--headless') } -ArgumentList $runner
 try {
   $deadline = [DateTime]::UtcNow.AddSeconds(15)
   $lock = $null
@@ -74,3 +77,4 @@ Write-Output 'SUPERVISED_GODOT_TEST=PASS'
 Write-Output "POSITIVE_RUN=$($positive.run_id)"
 Write-Output "TIMEOUT_RUN=$($negative.run_id)"
 Write-Output "BLOCKED_RUN=$($blocked.run_id)"
+exit 0

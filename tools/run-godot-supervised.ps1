@@ -1,12 +1,13 @@
 <#
 .SYNOPSIS
-  Run one local Living Town Godot command with an exact receipt and process-tree cleanup.
+  Run one local Living Town Godot command with fail-closed source identity and process-tree cleanup.
 
 .DESCRIPTION
   This is the canonical Windows lane for local Godot evidence. It pins the Git/product
   identity, gives every run unique stdout/stderr/Godot logs, rejects concurrent runs for
   this checkout, enforces a timeout, and removes only processes carrying the unique run
-  log path. Receipts are generated under %TEMP% by default and are rebuildable evidence.
+  log path. Clean trees produce exact-commit evidence. Dirty trees fail closed unless
+  -AllowDirtyCandidate is explicit; candidate receipts bind the full worktree fingerprint.
 
 .EXAMPLE
   & .\tools\run-godot-supervised.ps1 -TimeoutSec 180 -GodotArgs @(
@@ -18,6 +19,7 @@ param(
   [string]$Godot = '',
   [ValidateRange(1, 86400)][int]$TimeoutSec = 300,
   [string]$ReceiptRoot = '',
+  [switch]$AllowDirtyCandidate,
   [Parameter(ValueFromRemainingArguments = $true)][string[]]$GodotArgs = @()
 )
 
@@ -125,6 +127,36 @@ function Get-FileEvidence([string]$Path) {
   }
 }
 
+function Invoke-GitCapture([string]$RepoRoot, [string[]]$GitArgs) {
+  $output = @(& git -C $RepoRoot @GitArgs 2>$null)
+  if ($LASTEXITCODE -ne 0) {
+    throw "git $($GitArgs -join ' ') failed with exit $LASTEXITCODE"
+  }
+  return $output
+}
+
+function Get-WorktreeEvidence([string]$RepoRoot) {
+  $status = @(Invoke-GitCapture $RepoRoot @('-c', 'core.quotePath=false', 'status', '--porcelain=v1', '--untracked-files=all'))
+  $trackedDiff = (@(Invoke-GitCapture $RepoRoot @('-c', 'core.autocrlf=false', 'diff', '--binary', 'HEAD', '--')) -join "`n")
+  $untracked = @(Invoke-GitCapture $RepoRoot @('-c', 'core.quotePath=false', 'ls-files', '--others', '--exclude-standard'))
+  $untrackedHashes = [ordered]@{}
+  foreach ($relativePath in $untracked) {
+    $blob = (Invoke-GitCapture $RepoRoot @('hash-object', '--no-filters', '--', $relativePath) | Select-Object -First 1)
+    $untrackedHashes[[string]$relativePath] = [string]$blob
+  }
+  $payload = [ordered]@{
+    status = @($status)
+    tracked_diff_sha256 = Get-Sha256Text $trackedDiff
+    untracked_blob_sha1 = $untrackedHashes
+  }
+  return [ordered]@{
+    status = @($status)
+    fingerprint_sha256 = Get-Sha256Text ($payload | ConvertTo-Json -Depth 6 -Compress)
+    tracked_diff_sha256 = $payload.tracked_diff_sha256
+    untracked_blob_sha1 = $untrackedHashes
+  }
+}
+
 $repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $gamePath = (Resolve-Path -LiteralPath (Join-Path $repoRoot 'game')).Path
 $godotExe = Resolve-GodotExecutable $Godot
@@ -154,6 +186,7 @@ $lockStream = $null
 $lockOwned = $false
 $process = $null
 $processId = 0
+$processStarted = $false
 $startedUtc = [DateTime]::UtcNow
 $finishedUtc = $null
 $timedOut = $false
@@ -164,10 +197,13 @@ $outcome = 'runner_error'
 $errorText = ''
 $preflight = @()
 
-$gitHead = (& git -C $repoRoot rev-parse HEAD 2>$null | Select-Object -First 1)
-$gameTree = (& git -C $repoRoot rev-parse 'HEAD:game' 2>$null | Select-Object -First 1)
-$branch = (& git -C $repoRoot branch --show-current 2>$null | Select-Object -First 1)
-$statusBefore = @(& git -C $repoRoot status --porcelain=v1 2>$null)
+$gitHead = (Invoke-GitCapture $repoRoot @('rev-parse', 'HEAD') | Select-Object -First 1)
+$gameTree = (Invoke-GitCapture $repoRoot @('rev-parse', 'HEAD:game') | Select-Object -First 1)
+$branch = (Invoke-GitCapture $repoRoot @('branch', '--show-current') | Select-Object -First 1)
+$worktreeBefore = Get-WorktreeEvidence $repoRoot
+$statusBefore = @($worktreeBefore.status)
+$sourceIdentity = if ($statusBefore.Count -eq 0) { 'exact_commit' } elseif ($AllowDirtyCandidate) { 'dirty_candidate' } else { 'rejected_dirty' }
+$sourceStable = $false
 
 try {
   if (Test-Path -LiteralPath $lockPath -PathType Leaf) {
@@ -199,12 +235,18 @@ try {
     $exitCode = 78
     throw "Found an existing Godot process scoped to $gamePath (PIDs $($preflight.ProcessId -join ','))."
   }
+  if ($statusBefore.Count -gt 0 -and -not $AllowDirtyCandidate) {
+    $outcome = 'preflight_blocked'
+    $exitCode = 78
+    throw "Working tree is dirty; exact evidence requires a clean commit. Use -AllowDirtyCandidate only for explicit candidate runs."
+  }
 
   $allArgs = @('--path', $gamePath, '--log-file', $godotLog) + @($GodotArgs)
   $argumentLine = (($allArgs | ForEach-Object { Quote-WindowsArgument ([string]$_) }) -join ' ')
   $process = Start-Process -FilePath $godotExe -ArgumentList $argumentLine -WorkingDirectory $repoRoot `
     -RedirectStandardOutput $stdoutLog -RedirectStandardError $stderrLog -WindowStyle Hidden -PassThru
   $processId = [int]$process.Id
+  $processStarted = $true
   if (-not $process.WaitForExit($TimeoutSec * 1000)) {
     $timedOut = $true
     $outcome = 'timeout'
@@ -229,6 +271,13 @@ finally {
     $errorText = "Scoped processes survived cleanup: $($survivors.ProcessId -join ',')"
   }
   $finishedUtc = [DateTime]::UtcNow
+  $gitHeadAfter = (Invoke-GitCapture $repoRoot @('rev-parse', 'HEAD') | Select-Object -First 1)
+  $gameTreeAfter = (Invoke-GitCapture $repoRoot @('rev-parse', 'HEAD:game') | Select-Object -First 1)
+  $branchAfter = (Invoke-GitCapture $repoRoot @('branch', '--show-current') | Select-Object -First 1)
+  $worktreeAfter = Get-WorktreeEvidence $repoRoot
+  $sourceStable = [string]$gitHead -eq [string]$gitHeadAfter -and [string]$gameTree -eq [string]$gameTreeAfter `
+    -and [string]$branch -eq [string]$branchAfter `
+    -and [string]$worktreeBefore.fingerprint_sha256 -eq [string]$worktreeAfter.fingerprint_sha256
   $combined = ''
   foreach ($path in @($godotLog, $stdoutLog, $stderrLog)) {
     if (Test-Path -LiteralPath $path -PathType Leaf) { $combined += "`n" + (Get-Content -LiteralPath $path -Raw) }
@@ -238,11 +287,16 @@ finally {
     $outcome = 'native_crash_pattern'
     $exitCode = 70
   }
+  if ($processStarted -and -not $sourceStable -and $cleanupVerified -and -not $nativeCrash) {
+    $outcome = 'source_drift'
+    $exitCode = 79
+    $errorText = 'Git HEAD, branch, committed game tree, or worktree fingerprint differs between launch and completion.'
+  }
   if ($lockStream) { $lockStream.Dispose() }
   if ($lockOwned -and (Test-Path -LiteralPath $lockPath -PathType Leaf)) { Remove-Item -LiteralPath $lockPath -Force }
 
   $receipt = [ordered]@{
-    contract = 'living-town-supervised-godot-v1'
+    contract = 'living-town-supervised-godot-v2'
     run_id = $runId
     outcome = $outcome
     exit_code = $exitCode
@@ -257,8 +311,20 @@ finally {
     repo = $repoRoot
     branch = [string]$branch
     source_head = [string]$gitHead
+    source_head_after = [string]$gitHeadAfter
     game_tree = [string]$gameTree
+    game_tree_after = [string]$gameTreeAfter
+    source_identity = $sourceIdentity
+    source_stable = $sourceStable
+    dirty_candidate_opt_in = [bool]$AllowDirtyCandidate
     status_before = @($statusBefore)
+    status_after = @($worktreeAfter.status)
+    worktree_fingerprint_before = [string]$worktreeBefore.fingerprint_sha256
+    worktree_fingerprint_after = [string]$worktreeAfter.fingerprint_sha256
+    tracked_diff_sha256_before = [string]$worktreeBefore.tracked_diff_sha256
+    tracked_diff_sha256_after = [string]$worktreeAfter.tracked_diff_sha256
+    untracked_blob_sha1_before = $worktreeBefore.untracked_blob_sha1
+    untracked_blob_sha1_after = $worktreeAfter.untracked_blob_sha1
     godot_executable = $godotExe
     project_path = $gamePath
     arguments = @($GodotArgs)

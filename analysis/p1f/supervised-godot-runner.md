@@ -1,5 +1,7 @@
 # P1-f supervised local Godot runner + player-frame receipt
 
+> **P1-k provenance correction (2026-08-13):** the v1 receipts below record `HEAD` and `HEAD:game`, but several were produced from a dirty worktree. They prove supervised execution/cleanup of that worktree, not exact-commit source identity. The canonical runner is now v2: dirty trees are rejected by default; explicit `-AllowDirtyCandidate` receipts are labeled `dirty_candidate` and bind a stable worktree fingerprint. See `analysis/p1k/supervised-source-identity.md`.
+
 Date: 2026-08-12 CST
 
 Branch: `codex/p1a-takeover`
@@ -26,7 +28,7 @@ Inputs:
 Outputs:
 
 - one GUID run directory containing `godot.log`, `stdout.log`, `stderr.log` and `receipt.json`;
-- receipt identity: UTC run id, branch, exact source HEAD, exact `HEAD:game`, executable, absolute project path and arguments;
+- receipt identity (v1 historical boundary): UTC run id, branch, recorded source HEAD and `HEAD:game`, executable, absolute project path and arguments; only an empty `status_before` could make those fields commit-exact;
 - verdict: exit code, timeout, native-crash scan, duration and process-tree cleanup assertion;
 - SHA-256/length/path for every emitted log.
 
@@ -35,7 +37,8 @@ Exit contract:
 - `0`: Godot exited cleanly, no fatal pattern, cleanup verified;
 - Godot's non-zero exit: preserved as the run result;
 - `70/71`: supervisor/native-crash or cleanup failure;
-- `78`: another run owns this checkout or a pre-existing Godot process is scoped to the checkout;
+- `78`: another run owns this checkout, a pre-existing project Godot exists, or the default exact-evidence lane finds a dirty tree;
+- `79`: HEAD/branch/committed game tree/worktree fingerprint changed during the run;
 - `124`: timeout; the owned process tree is still required to be absent before the receipt is written.
 
 The checkout lock is exclusive and owner-scoped. Cleanup never sweeps by executable name: it follows the launched parent/descendant chain and the run's unique injected log path, then stops leaves before parents and rechecks zero survivors. A PID is considered the root only while its command line still contains that same token, protecting against PID reuse.
@@ -67,7 +70,7 @@ Final control receipts:
 - timeout `20260812T091603191Z_f51c25614eeb4207b039b980faedb03d`;
 - blocked `20260812T091616726Z_697c13c567e74912bb06f0f4ee8d76a4`.
 
-All three were generated from source `0cfc495de0cbfc9936006325b7085fd7e0a4ca9f`, game tree `1d16ae580e14fbde4f7543d2b8212226fb662e9b`; final scoped Godot count was zero. PowerShell parser and `git diff --check` also pass.
+All three recorded source `0cfc495de0cbfc9936006325b7085fd7e0a4ca9f`, game tree `1d16ae580e14fbde4f7543d2b8212226fb662e9b`; their dirty `status_before` means they are candidate-tree process controls, not exact-commit receipts. Final scoped Godot count was zero. PowerShell parser and `git diff --check` also pass.
 
 ## Player-position visual reference
 
