@@ -98,6 +98,9 @@ func address_of(agent: Dictionary) -> Dictionary:
 func validate() -> Array:
 	var errs := []
 	for sid in spaces:
+		if not (spaces[sid] is Dictionary):
+			errs.append("space '%s': definition 必须是 Dictionary" % sid)
+			continue
 		var sp: Dictionary = spaces[sid]
 		var b: Array = sp.get("bounds", [])
 		if b.size() != 4 or int(b[2]) <= 0 or int(b[3]) <= 0:
@@ -108,7 +111,12 @@ func validate() -> Array:
 		if sp.has("default_floor") and not (String(sp["default_floor"]) in fl):
 			errs.append("space '%s': default_floor '%s' 不在 floors 里" % [sid, sp["default_floor"]])
 	var seen := {}
-	for p in portals:
+	var seen_endpoints := {}
+	for raw_portal in portals:
+		if not (raw_portal is Dictionary):
+			errs.append("portal entry 必须是 Dictionary")
+			continue
+		var p: Dictionary = raw_portal
 		var pid := String(p.get("id", ""))
 		if pid == "":
 			errs.append("portal 缺 id")
@@ -116,7 +124,23 @@ func validate() -> Array:
 		if seen.has(pid):
 			errs.append("portal id 重复: '%s'" % pid)
 		seen[pid] = true
+		if String(p.get("access", "")) not in ["public", "owner"]:
+			errs.append("portal '%s'.access 必须是 public|owner" % pid)
+		if String(p.get("access", "")) == "owner" and String(p.get("owner_space", "")) == "":
+			errs.append("portal '%s'.owner_space 不能为空" % pid)
+		elif String(p.get("access", "")) == "owner" and not has_space(String(p.get("owner_space", ""))):
+			errs.append("portal '%s'.owner_space 不是已知 space" % pid)
+		elif String(p.get("access", "")) == "public" and p.has("owner_space"):
+			errs.append("portal '%s' public 门不得声明 owner_space" % pid)
+		if typeof(p.get("bidirectional")) != TYPE_BOOL:
+			errs.append("portal '%s'.bidirectional 必须是 bool" % pid)
+		var traversal_cost = p.get("traversal_cost")
+		if typeof(traversal_cost) != TYPE_INT or int(traversal_cost) <= 0:
+			errs.append("portal '%s'.traversal_cost 必须是正整数" % pid)
 		for side in ["from", "to"]:
+			if not (p.get(side) is Dictionary):
+				errs.append("portal '%s'.%s: endpoint 必须是 Dictionary" % [pid, side])
+				continue
 			var e: Dictionary = p.get(side, {})
 			var sid := String(e.get("space", ""))
 			var fid := String(e.get("floor", ""))
@@ -127,4 +151,18 @@ func validate() -> Array:
 			var pos: Array = e.get("pos", [])
 			if pos.size() != 2:
 				errs.append("portal '%s'.%s: pos 必须是 [x,y]" % [pid, side])
+				continue
+			if typeof(pos[0]) != TYPE_INT or typeof(pos[1]) != TYPE_INT:
+				errs.append("portal '%s'.%s: pos 必须是整数格" % [pid, side])
+				continue
+			if has_space(sid):
+				var bounds: Array = (spaces[sid] as Dictionary).get("bounds", [])
+				if bounds.size() == 4 and (int(pos[0]) < 0 or int(pos[1]) < 0 \
+						or int(pos[0]) >= int(bounds[2]) or int(pos[1]) >= int(bounds[3])):
+					errs.append("portal '%s'.%s: pos 超出 space bounds" % [pid, side])
+			var endpoint_key := "%s/%s/%d/%d" % [sid, fid, int(pos[0]), int(pos[1])]
+			if seen_endpoints.has(endpoint_key):
+				errs.append("portal '%s'.%s: endpoint 与 %s 重复" % [pid, side, seen_endpoints[endpoint_key]])
+			else:
+				seen_endpoints[endpoint_key] = "%s.%s" % [pid, side]
 	return errs

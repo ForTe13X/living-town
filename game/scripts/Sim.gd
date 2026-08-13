@@ -241,6 +241,10 @@ var _path_cache := {}           # aid -> {goal,path,i}：算一次跟着走(大�
 var _spaces := {}               # spaces.json spaces：id -> {kind,label,bounds,floors,default_floor}
 var _portals := []              # spaces.json portals：[{id,kind,from:{space,floor,pos},to,bidirectional,...}]
 var _interiors_data := {}       # interiors.json：space -> floor -> {label,floor,furniture[]}
+var _authored_spaces := {}      # receiver-owned portal authority; never restored from a save
+var _authored_portals := []     # exact current data/spaces.json graph; traversal reads only this copy
+var _authored_agent_homes := {} # agent id -> {space,floor}, rebuilt from data/agents.json
+var _authored_interiors_data := {} # current interior collision source; never restored from a save
 var _nav_grids := {}            # space -> floor -> {w,h,blocked}：每平面独立导航网（town 复用 _blocked 引用）
 var rhythm := {}                # 昼夜节律偏好表 data/rhythm.json：{phases:{name:[lo,hi)}, prefs:{need:{phase:factor}}, default}
 var utility := {}               # 效用/接受权重表 data/utility.json（docs/14 §1 步骤4）：行为调参数据化，缺键→代码默认(逐字节不变)
@@ -587,7 +591,19 @@ func _load_data() -> void:
 	var _sp := _read_json("res://data/spaces.json")
 	_spaces = _sp.get("spaces", {})
 	_portals = _sp.get("portals", [])
+	_authored_spaces = (_spaces as Dictionary).duplicate(true)
+	_authored_portals = (_portals as Array).duplicate(true)
+	_authored_agent_homes = {}
+	var authored_agents := _read_json("res://data/agents.json")
+	for raw_def in _as_arr(authored_agents.get("agents", [])) + _as_arr(authored_agents.get("affiliates", [])):
+		if not (raw_def is Dictionary):
+			continue
+		var adef: Dictionary = raw_def
+		var sa: Dictionary = adef.get("spatial_address", {}) if adef.get("spatial_address", {}) is Dictionary else {}
+		_authored_agent_homes[String(adef.get("id", ""))] = {
+			"space": String(sa.get("space_id", "town")), "floor": String(sa.get("floor_id", "outdoor"))}
 	_interiors_data = _read_json("res://data/interiors.json")
+	_authored_interiors_data = (_interiors_data as Dictionary).duplicate(true)
 	_compile_interiors()                            # 把带 advertises 的室内家具编译成 world 对象(标平面)，须在数组→字典之前
 	_compile_worksites()                            # F1：production.worksites → town 平面的工位对象，同样须在数组→字典之前
 	_compile_ports()                                # P1-a：logistics.nodes 中有广告位的功能港口 → town world 对象
@@ -1323,7 +1339,7 @@ const SAVE_MAGIC := "LTSAVE"
 const SAVE_SCHEMA_LEGACY := 1
 const SAVE_SCHEMA := 2
 const SAVE_RUNTIME_HANDLES := ["backend", "ext", "decision_sink"]
-const SAVE_LOAD_DENY := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink"]
+const SAVE_LOAD_DENY := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink"]
 const SAVE_CURRENT_BLOB_KEYS := ["magic", "schema", "game_version", "saved_tick", "saved_day", "seed", "meta", "active_commit_ids", "state"]
 
 ## The current-schema contract is the exact field set emitted by save_game, derived from the same
@@ -1350,6 +1366,12 @@ func save_game(path: String, meta := {}) -> bool:
 	var state := {}
 	for key in _current_save_state_keys():
 		state[key] = get(key)
+	# Configuration snapshots are retained for schema compatibility, but the writer always emits
+	# the current authored copies.  A migrated legacy live world may keep its old world/logistics;
+	# it cannot persist a forged portal/access/collision contract into a new schema-2 file.
+	state["_spaces"] = _authored_spaces.duplicate(true)
+	state["_portals"] = _authored_portals.duplicate(true)
+	state["_interiors_data"] = _authored_interiors_data.duplicate(true)
 	# agent["memory"] 是【嵌套 Object】（MemoryStream）——store_var 会把它编码成 EncodedObjectAsID 死壳，
 	# 读回后 mem.add() 直接崩（硬门抓到的头号 bug）。→ 存它的 items 数据，读档时重建对象。
 	var ser_agents := []
@@ -1714,6 +1736,165 @@ func _manifest_targets_node(rec: Dictionary, node: String) -> bool:
 		and (lanes as Array)[lane_index] is Dictionary \
 		and String(((lanes as Array)[lane_index] as Dictionary).get("node", "")) == node
 
+func _authored_home_for_agent(ag: Dictionary) -> Dictionary:
+	if ag.get("is_player", false) == true or String(ag.get("id", "")) == "player" \
+			or String(ag.get("id", "")).begins_with("npc_"):
+		return {"space": "town", "floor": "outdoor"}
+	return (_authored_agent_homes.get(String(ag.get("id", "")), {}) as Dictionary).duplicate(true)
+
+func _area_key_in_world(saved_world: Dictionary, space: String, floor: String, pos: Vector2i) -> String:
+	if space != "town" or floor != "outdoor":
+		return space + ":" + floor
+	for raw_id in saved_world.get("areas", {}):
+		var raw_area = saved_world.get("areas", {}).get(raw_id)
+		if not (raw_area is Dictionary):
+			continue
+		var rect := _as_arr((raw_area as Dictionary).get("rect", []))
+		if rect.size() == 4 and pos.x >= int(rect[0]) and pos.x < int(rect[0]) + int(rect[2]) \
+				and pos.y >= int(rect[1]) and pos.y < int(rect[1]) + int(rect[3]):
+			return String(raw_id)
+	return ""
+
+func _room_in_world(saved_world: Dictionary, pos: Vector2i) -> String:
+	for raw_id in saved_world.get("rooms", {}):
+		var raw_room = saved_world.get("rooms", {}).get(raw_id)
+		if not (raw_room is Dictionary):
+			continue
+		var rect := _as_arr((raw_room as Dictionary).get("rect", []))
+		if rect.size() == 4 and pos.x >= int(rect[0]) and pos.x < int(rect[0]) + int(rect[2]) \
+				and pos.y >= int(rect[1]) and pos.y < int(rect[1]) + int(rect[3]):
+			return String(raw_id)
+	return ""
+
+func _authored_portal_cell(space: String, floor: String, pos: Vector2i) -> bool:
+	for raw_portal in _authored_portals:
+		if not (raw_portal is Dictionary):
+			continue
+		for side in ["from", "to"]:
+			var endpoint = (raw_portal as Dictionary).get(side)
+			if endpoint is Dictionary and String((endpoint as Dictionary).get("space", "")) == space \
+					and String((endpoint as Dictionary).get("floor", "")) == floor \
+					and _v2i((endpoint as Dictionary).get("pos", [])) == pos:
+				return true
+	return false
+
+## Pure walkability check for a prepared save.  Loading must never consult the receiver's live
+## nav grid: doing so would make the same bytes pass or fail according to pre-load runtime state.
+func _position_walkable_in_state(saved_world: Dictionary, space: String, floor: String, pos: Vector2i) -> bool:
+	if space == "town" and floor == "outdoor":
+		var width := int(saved_world.get("width", 0))
+		var height := int(saved_world.get("height", 0))
+		if pos.x < 0 or pos.y < 0 or pos.x >= width or pos.y >= height:
+			return false
+		for raw_blocker in saved_world.get("blockers", []):
+			if _v2i(raw_blocker) == pos:
+				return false
+		# World objects are legal interaction goals: A* deliberately permits the final occupied
+		# cell, so a save may legitimately catch an agent standing at a counter or worksite.
+		return true
+	var authored_space = _authored_spaces.get(space)
+	if not (authored_space is Dictionary) or not (floor in _as_arr((authored_space as Dictionary).get("floors", []))):
+		return false
+	var bounds := _as_arr((authored_space as Dictionary).get("bounds", []))
+	if bounds.size() != 4:
+		return false
+	var width := int(bounds[2])
+	var height := int(bounds[3])
+	if pos.x < 0 or pos.y < 0 or pos.x >= width or pos.y >= height:
+		return false
+	var portal_cell := _authored_portal_cell(space, floor, pos)
+	if not portal_cell and (pos.x == 0 or pos.y == 0 or pos.x == width - 1 or pos.y == height - 1):
+		return false
+	# Interior furniture cells likewise remain valid interaction goals; bounds, exterior walls,
+	# authored plane reachability, and canonical area/room caches are the load authority teeth.
+	return true
+
+func _agent_reachable_plane(agent_id: String, from_space: String, from_floor: String, to_space: String, to_floor: String) -> bool:
+	if from_space == to_space and from_floor == to_floor:
+		return true
+	var probe_ag := {"id": agent_id}
+	var q: Array = [from_space + "/" + from_floor]
+	var seen := {}
+	seen[q[0]] = true
+	var goal := to_space + "/" + to_floor
+	while not q.is_empty():
+		var node: String = q.pop_front()
+		var pair := node.split("/")
+		for hop in _portals_from(pair[0], pair[1], probe_ag):
+			var next := String(hop.get("to_space", "")) + "/" + String(hop.get("to_floor", ""))
+			if next == goal:
+				return true
+			if not seen.has(next):
+				seen[next] = true
+				q.append(next)
+	return false
+
+func _validate_agent_spatial_authority(state: Dictionary) -> String:
+	var saved_world = state.get("world")
+	if not (saved_world is Dictionary):
+		return "world is not a Dictionary"
+	var town_w := int((saved_world as Dictionary).get("width", 0))
+	var town_h := int((saved_world as Dictionary).get("height", 0))
+	var seen_ids := {}
+	var player_count := 0
+	for raw_ag in state.get("agents", []):
+		var ag: Dictionary = raw_ag
+		var aid := String(ag.get("id", ""))
+		if seen_ids.has(aid):
+			return "agent id %s is duplicate" % aid
+		seen_ids[aid] = true
+		var is_player: bool = ag.get("is_player", false) == true
+		if is_player:
+			player_count += 1
+		if (aid == "player") != is_player:
+			return "player id/flag authority mismatch"
+		var home := _authored_home_for_agent(ag)
+		if home.is_empty():
+			return "agent %s has no authored home authority" % aid
+		if typeof(ag.get("home_space")) != TYPE_STRING \
+				or String(ag.get("home_space", "")) != String(home.get("space", "")):
+			return "agent %s home_space authority diverges from authored identity" % aid
+		if typeof(ag.get("home_floor")) != TYPE_STRING \
+				or String(ag.get("home_floor", "")) != String(home.get("floor", "")):
+			return "agent %s home_floor authority diverges from authored identity" % aid
+		for key in ["space", "floor", "area", "room"]:
+			if typeof(ag.get(key)) != TYPE_STRING:
+				return "agent %s spatial field %s is not a String" % [aid, key]
+		if typeof(ag.get("pos")) != TYPE_VECTOR2I:
+			return "agent %s position is not Vector2i" % aid
+		var space := String(ag["space"])
+		var floor := String(ag["floor"])
+		var pos: Vector2i = ag["pos"]
+		var w := 0
+		var h := 0
+		if space == "town" and floor == "outdoor":
+			w = town_w; h = town_h
+		else:
+			var authored_space = _authored_spaces.get(space)
+			if not (authored_space is Dictionary):
+				return "agent %s space is not authored" % aid
+			if not (floor in _as_arr((authored_space as Dictionary).get("floors", []))):
+				return "agent %s floor is not authored" % aid
+			var bounds := _as_arr((authored_space as Dictionary).get("bounds", []))
+			if bounds.size() != 4:
+				return "agent %s plane bounds are invalid" % aid
+			w = int(bounds[2]); h = int(bounds[3])
+		if pos.x < 0 or pos.y < 0 or pos.x >= w or pos.y >= h:
+			return "agent %s position is outside authored plane bounds" % aid
+		if not _position_walkable_in_state(saved_world, space, floor, pos):
+			return "agent %s position is not walkable in the prepared state" % aid
+		if not _agent_reachable_plane(aid, String(home["space"]), String(home["floor"]), space, floor):
+			return "agent %s current plane is not authorized from authored home" % aid
+		var expected_area := _area_key_in_world(saved_world, space, floor, pos)
+		var expected_room := _room_in_world(saved_world, pos)
+		if String(ag.get("area", "")) != expected_area:
+			return "agent %s area cache diverges from address" % aid
+		if String(ag.get("room", "")) != expected_room:
+			return "agent %s room cache diverges from address" % aid
+	if player_count > 1:
+		return "more than one player authority record"
+	return ""
+
 ## Validate the complete copy before set(). This keeps bad header/blob pairs, partial migrations,
 ## unknown keys and type-confused payloads from partially overwriting a running quickload target.
 func _validate_loaded_state(state: Dictionary, sch: int) -> String:
@@ -1738,6 +1919,9 @@ func _validate_loaded_state(state: Dictionary, sch: int) -> String:
 				return "schema %d missing current state key: %s" % [sch, key]
 		if state.size() != expected.size():
 			return "schema %d state key count %d, expected %d" % [sch, state.size(), expected.size()]
+		if state.get("_spaces") != _authored_spaces or state.get("_portals") != _authored_portals \
+				or state.get("_interiors_data") != _authored_interiors_data:
+			return "schema %d spatial authority diverges from current authored data" % sch
 	for key in ["agents", "world", "production", "logistics", "tick_no", "day", "seed_base", "event_log", "event_digest", "town_stock", "town_coin", "external_coin", "econ_total0", "commitments", "cargo_manifests", "cargo_manifest_order", "core_population"]:
 		if not state.has(key):
 			return "missing required state key: %s" % key
@@ -1760,6 +1944,10 @@ func _validate_loaded_state(state: Dictionary, sch: int) -> String:
 			eligible_core += 1
 	if core <= 0 or core != eligible_core:
 		return "core_population %d does not equal eligible core %d" % [core, eligible_core]
+	if sch == SAVE_SCHEMA:
+		var spatial_error := _validate_agent_spatial_authority(state)
+		if spatial_error != "":
+			return spatial_error
 	var leaks: Array = []
 	_scan_objects(state, "state", leaks)
 	if not leaks.is_empty():
@@ -2027,10 +2215,15 @@ func _advance_journey(ag: Dictionary, opt: Dictionary) -> void:
 		ag["option"] = null                # 不可达 → 放弃（下 tick 重新决策）
 		return
 	if ag["pos"] == hop["from_pos"]:
-		_traverse_portal(ag, hop)          # 到本层 portal 口 → 跨过去（【不清 option】，承诺继续）
+		var crossed := _try_traverse_portal(String(ag.get("id", "")), String(ag.get("space", "town")),
+			String(ag.get("floor", "outdoor")), ag["pos"], String(hop.get("to_space", "")), String(hop.get("to_floor", "")))
+		if not bool(crossed.get("ok", false)):
+			ag["option"] = null             # 权限/拓扑在 plan→commit 间漂移：放弃，不执行陈旧 hop
+			emit_signal("agent_changed", ag["id"])
+			return
 	else:
 		_move_agent(ag, _nav_step(ag, hop["from_pos"]))
-	emit_signal("agent_changed", ag["id"])
+		emit_signal("agent_changed", ag["id"])
 
 func _advance_attend(ag: Dictionary, opt: Dictionary) -> void:
 	var c := _find_commitment(int(opt["commit"]))
@@ -5096,17 +5289,17 @@ func _build_nav() -> void:
 ## (楼梯/装饰 slot 可踩、portal 格必放行)。纯 f(数据)，无 RNG/Time。缺 spaces/interiors → 无非-town 网。
 func _build_interior_grids() -> void:
 	const WALKABLE_SLOTS := ["stairs", "rug", "window"]
-	for space in _spaces:
-		if String(space) == "town" or not (_spaces[space] is Dictionary):
+	for space in _authored_spaces:
+		if String(space) == "town" or not (_authored_spaces[space] is Dictionary):
 			continue
-		var b: Array = _as_arr((_spaces[space] as Dictionary).get("bounds", []))
+		var b: Array = _as_arr((_authored_spaces[space] as Dictionary).get("bounds", []))
 		if b.size() < 4:
 			continue
 		var w := int(b[2]); var h := int(b[3])
-		for floor in _as_arr((_spaces[space] as Dictionary).get("floors", [])):
+		for floor in _as_arr((_authored_spaces[space] as Dictionary).get("floors", [])):
 			var fl := String(floor)
 			var portal_cells := {}                 # portal 端点落在本层 → 必可走(门缺口+楼梯)
-			for p in _portals:
+			for p in _authored_portals:
 				for side in ["from", "to"]:
 					var e: Dictionary = p.get(side, {})
 					if String(e.get("space", "")) == String(space) and String(e.get("floor", "")) == fl:
@@ -5120,7 +5313,7 @@ func _build_interior_grids() -> void:
 						var idx := y * w + x
 						if not portal_cells.has(idx):
 							blocked[idx] = true
-			var content: Dictionary = (_interiors_data.get(space, {}) as Dictionary).get(fl, {}) if _interiors_data.get(space, {}) is Dictionary else {}
+			var content: Dictionary = (_authored_interiors_data.get(space, {}) as Dictionary).get(fl, {}) if _authored_interiors_data.get(space, {}) is Dictionary else {}
 			for fu in _as_arr(content.get("furniture", [])):
 				if not (fu is Dictionary) or String((fu as Dictionary).get("slot", "")) in WALKABLE_SLOTS:
 					continue
@@ -5151,17 +5344,26 @@ func _v2i(a) -> Vector2i:
 ## ag 缺省(空)=不设访问门(渲染/校验用)；带 ag 走访问门(导航/决策用)。
 func _portals_from(space: String, floor: String, ag: Dictionary = {}) -> Array:
 	var out: Array = []
-	for p in _portals:
+	# Runtime traversal reads only the receiver-owned authored graph.  The saved `_portals`
+	# snapshot may describe a legacy world, but it can never grant access.
+	for p in _authored_portals:
 		var fr: Dictionary = p.get("from", {})
 		var to: Dictionary = p.get("to", {})
-		if String(p.get("access", "public")) == "owner" and not ag.is_empty():
-			var owned := String(fr.get("space", "")) if String(fr.get("space", "")) != "town" else String(to.get("space", ""))
-			if String(ag.get("home_space", "town")) != owned:
+		var access := String(p.get("access", ""))
+		if access != "public" and access != "owner":
+			continue                              # 未知/缺 access 永不默认 public
+		if access == "owner" and not ag.is_empty():
+			var authored_home: Dictionary = _authored_agent_homes.get(String(ag.get("id", "")), {})
+			if String(p.get("owner_space", "")) == "" or String(authored_home.get("space", "")) != String(p.get("owner_space", "")):
 				continue                    # 非主人 → 私有 portal(楼梯)走不了
 		if String(fr.get("space", "")) == space and String(fr.get("floor", "")) == floor:
-			out.append({"from_pos": _v2i(fr.get("pos")), "to_space": String(to.get("space", "")), "to_floor": String(to.get("floor", "")), "to_pos": _v2i(to.get("pos")), "cost": int(p.get("traversal_cost", 1))})
+			out.append({"portal_id": String(p.get("id", "")), "kind": String(p.get("kind", "")), "access": String(p.get("access", "public")),
+				"from_pos": _v2i(fr.get("pos")), "to_space": String(to.get("space", "")), "to_floor": String(to.get("floor", "")),
+				"to_pos": _v2i(to.get("pos")), "cost": int(p.get("traversal_cost", 1))})
 		elif bool(p.get("bidirectional", false)) and String(to.get("space", "")) == space and String(to.get("floor", "")) == floor:
-			out.append({"from_pos": _v2i(to.get("pos")), "to_space": String(fr.get("space", "")), "to_floor": String(fr.get("floor", "")), "to_pos": _v2i(fr.get("pos")), "cost": int(p.get("traversal_cost", 1))})
+			out.append({"portal_id": String(p.get("id", "")), "kind": String(p.get("kind", "")), "access": String(p.get("access", "public")),
+				"from_pos": _v2i(to.get("pos")), "to_space": String(fr.get("space", "")), "to_floor": String(fr.get("floor", "")),
+				"to_pos": _v2i(fr.get("pos")), "cost": int(p.get("traversal_cost", 1))})
 	return out
 
 ## 从 (fromS,fromF) 到 (toS,toF) 的【下一跳 portal】（BFS，FIFO+portal 文件序 → 确定）。同层→{}。不可达→{}。
@@ -5192,12 +5394,67 @@ func _route_next_hop(fromS: String, fromF: String, toS: String, toF: String, ag:
 		cur = String(parent[cur])
 	return via.get(cur, {})
 
-## 跨 portal：原子改 (space,floor,pos) 到对面，刷新平面感知缓存，清该 agent 路径缓存。整数格、无 RNG。
-func _traverse_portal(ag: Dictionary, hop: Dictionary) -> void:
-	ag["space"] = String(hop["to_space"])
-	ag["floor"] = String(hop["to_floor"])
-	_move_agent(ag, hop["to_pos"])                  # 更新 pos + _area_key 平面感知 area/room
-	_path_cache.erase(String(ag["id"]))
+func _has_exact_nav_plane(space: String, floor: String) -> bool:
+	return _nav_grids.has(space) and _nav_grids[space] is Dictionary \
+		and (_nav_grids[space] as Dictionary).has(floor) and (_nav_grids[space] as Dictionary)[floor] is Dictionary
+
+## Portal 的唯一执行入口：按权威 agent id 重取 live record，在 apply 前一次性重验
+## source plane/endpoint、agent-aware access、期望目标、目标 floor/nav 与落点可走性。
+## 返回 stable verdict 给 Main/测试；失败不改 agent/path cache、不发 signal，成功才原子改
+## (space,floor,pos,area,room) + 清该 agent path cache + 发一次 agent_changed。整数、无 RNG/Time。
+func _try_traverse_portal(agent_id: String, source_space: String, source_floor: String, portal_pos: Vector2i,
+		expected_to_space := "", expected_to_floor := "") -> Dictionary:
+	var denied := {"ok": false, "reason": "", "portal_id": "", "kind": "", "from_space": source_space,
+		"from_floor": source_floor, "from_pos": portal_pos, "to_space": "", "to_floor": "", "to_pos": Vector2i.ZERO}
+	if agent_id == "" or not _agent_by_id.has(agent_id):
+		denied["reason"] = "unknown_agent"
+		return denied
+	var ag: Dictionary = _agent_by_id[agent_id]
+	if String(ag.get("space", "town")) != source_space or String(ag.get("floor", "outdoor")) != source_floor:
+		denied["reason"] = "source_plane_mismatch"
+		return denied
+	var agent_pos: Vector2i = ag.get("pos", Vector2i(-99, -99))
+	var source_distance := absi(agent_pos.x - portal_pos.x) + absi(agent_pos.y - portal_pos.y)
+	if (agent_id == "player" and source_distance > 1) or (agent_id != "player" and source_distance != 0):
+		denied["reason"] = "source_not_adjacent"
+		return denied
+	if not _has_exact_nav_plane(source_space, source_floor) or not _cell_walkable(_nav_grids[source_space][source_floor], portal_pos):
+		denied["reason"] = "source_endpoint_invalid"
+		return denied
+	var matches: Array = []
+	for hop in _portals_from(source_space, source_floor, ag):
+		if hop.get("from_pos", Vector2i(-99, -99)) != portal_pos:
+			continue
+		if expected_to_space != "" and String(hop.get("to_space", "")) != expected_to_space:
+			continue
+		if expected_to_floor != "" and String(hop.get("to_floor", "")) != expected_to_floor:
+			continue
+		matches.append(hop)
+	if matches.is_empty():
+		denied["reason"] = "portal_not_permitted"
+		return denied
+	if matches.size() != 1:
+		denied["reason"] = "portal_ambiguous"
+		return denied
+	var hop: Dictionary = matches[0]
+	var to_space := String(hop.get("to_space", ""))
+	var to_floor := String(hop.get("to_floor", ""))
+	var to_pos: Vector2i = hop.get("to_pos", Vector2i(-99, -99))
+	if to_space == "" or to_floor == "" or not _has_exact_nav_plane(to_space, to_floor):
+		denied["reason"] = "destination_plane_invalid"
+		return denied
+	if not _cell_walkable(_nav_grids[to_space][to_floor], to_pos):
+		denied["reason"] = "destination_blocked"
+		return denied
+	# All fallible checks are complete.  The following writes are the one commit point.
+	ag["space"] = to_space
+	ag["floor"] = to_floor
+	_move_agent(ag, to_pos)
+	_path_cache.erase(agent_id)
+	emit_signal("agent_changed", agent_id)
+	return {"ok": true, "reason": "", "portal_id": String(hop.get("portal_id", "")), "kind": String(hop.get("kind", "")),
+		"from_space": source_space, "from_floor": source_floor, "from_pos": portal_pos,
+		"to_space": to_space, "to_floor": to_floor, "to_pos": to_pos}
 
 func _cell_walkable(grid: Dictionary, c: Vector2i) -> bool:
 	var W := int(grid.get("w", 0)); var H := int(grid.get("h", 0))

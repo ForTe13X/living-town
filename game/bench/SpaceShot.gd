@@ -35,7 +35,7 @@ extends Node
 ##     --backend logic --seed 3 --warmup-tick 600 --rt-out /out \
 ##     [--rt-space cafe] [--rt-mode portal|flip] [--rt-journey simple|full] [--rt-redraw auto|none]
 ##   `--rt-redraw none` = 【暂停复现】档，见下面 `_refresh()` 上方那段（它是本脚本第一次跑就量到的一个真问题）。
-##   `--rt-journey full`（AM3/编号135）= 全楼层旅程 town→cafe/1f→上楼2f→下楼1f→出门，逐段断言落在对的 Floor。
+##   `--rt-journey full`（AM3/编号135）= 玩家进出咖啡馆 + Probe 观察 2F；owner-only 楼梯帧不是玩家上楼证据。
 ## 产物：simple → <out>/rt_town_before.png / rt_interior.png / rt_town_after.png + rt_meta.json；
 ##       full   → <out>/rt_town_before.png / rt_cafe_1f.png / rt_cafe_2f.png / rt_cafe_1f_back.png / rt_town_after.png + rt_meta.json
 ## 退出码：0=三帧都拍出来了且前提断言成立；1=拍不出来或前提断言破了（**像素判据在 python 那边**）。
@@ -48,7 +48,7 @@ const MAIN_SCENE := "res://scenes/Main.tscn"
 var _out := ""
 var _space := "cafe"
 var _mode := "portal"
-var _journey := "simple"    # simple=进店→出店三帧（现役 1F 往返门）；full=全楼层旅程 town→1f→上楼2f→下楼1f→出门（AM3/编号135）
+var _journey := "simple"    # simple=玩家进店→出店；full=玩家进出 + Probe 观察 owner-only 楼层（AM3/编号135）
 var _redraw := "auto"       # auto=切完空间补一次 _redraw_all()（= 下一个 tick 到来时的稳定态）；none=不补（暂停复现，见下）
 var _settle0 := 40          # 首帧之后的暖机帧数（纹理加载 + 插值吸附）
 var _settle := 24           # 每次空间切换之后的暖机帧数
@@ -56,6 +56,7 @@ var _min_ms0 := 2500        # 暖机的墙钟下限（软渲染下帧率极低�
 var _min_ms := 1200
 var _watchdog_ms := 180000  # 看门狗：到点还没跑完就 rc=1 退出（绝不让本场景把 CI 挂住，见下）
 var _corrupt_manifest := "" # P1-o presentation-only adversarial arm; never used by product runtime.
+var _deny_portal := ""      # P1-p presentation-only access arm; drives the real Main tap transaction.
 var _main: Node
 var _meta := {}
 var _rc := 0
@@ -70,6 +71,7 @@ func _ready() -> void:
 		elif args[i] == "--rt-redraw" and i + 1 < args.size(): _redraw = args[i + 1]
 		elif args[i] == "--rt-settle" and i + 1 < args.size(): _settle = int(args[i + 1])
 		elif args[i] == "--rt-corrupt-manifest" and i + 1 < args.size(): _corrupt_manifest = args[i + 1]
+		elif args[i] == "--rt-deny-portal" and i + 1 < args.size(): _deny_portal = args[i + 1]
 	if _out == "":
 		print("[SPACESHOT] ❌ 缺 --rt-out <dir>")
 		get_tree().quit(2)
@@ -113,6 +115,18 @@ func _ready() -> void:
 		# normalize it before the "before" frame; otherwise the roundtrip would compare stale-ready
 		# text against the correctly refreshed invalid text after returning from the warehouse.
 		_main.call("_update_status")
+	if _deny_portal != "":
+		var found_deny := false
+		for raw_portal in Sim._authored_portals:
+			if String((raw_portal as Dictionary).get("id", "")) == _deny_portal:
+				(raw_portal as Dictionary)["access"] = "owner"
+				(raw_portal as Dictionary)["owner_space"] = _space
+				found_deny = true
+		if not found_deny:
+			print("[SPACESHOT] ❌ P1-p deny arm 找不到 portal=%s" % _deny_portal)
+			get_tree().quit(1)
+			return
+		_meta["denied_portal"] = _deny_portal
 	var pb = _main.get("_probe")
 	if pb == null:
 		print("[SPACESHOT] ❌ 拿不到 Main._probe")
@@ -145,6 +159,39 @@ func _ready() -> void:
 	var log0: Array = (_main.get("_log_recent") as Array).duplicate(true)
 	var selected0: String = String(_main.get("_selected_id"))
 	_snap("town_before", pb)
+	if _deny_portal != "":
+		var player_before := _player_address()
+		var probe_before := {"space": String(pb.active_space), "floor": String(pb.active_floor),
+			"cam": [pb.cam.position.x, pb.cam.position.y], "zoom": pb.cam.zoom.x}
+		if not _enter(pb):
+			print("[SPACESHOT] ❌ deny arm 无法驱动 portal tap")
+			get_tree().quit(1)
+			return
+		_refresh()
+		await _wait(_settle, _min_ms)
+		var player_after := _player_address()
+		var recent: Array = _main.get("_log_recent")
+		var last_log := String(recent[-1]) if not recent.is_empty() else ""
+		var cargo_after: Dictionary = Sim.cargo_status_for_node("port_dock")
+		_meta["journey"] = "denied"
+		_meta["space"] = _space
+		_meta["mode"] = _mode
+		_meta["tick"] = Sim.tick_no
+		_meta["player_before"] = player_before
+		_meta["player_after"] = player_after
+		_meta["probe_before"] = probe_before
+		_meta["probe_after"] = {"space": String(pb.active_space), "floor": String(pb.active_floor),
+			"cam": [pb.cam.position.x, pb.cam.position.y], "zoom": pb.cam.zoom.x}
+		_meta["denial_log_bbcode"] = last_log
+		_meta["cargo_after"] = {"state": String(cargo_after.get("state", "")),
+			"good": String(cargo_after.get("good", "")), "qty": int(cargo_after.get("qty", 0))}
+		_snap("denied", pb)
+		var denied_meta := FileAccess.open(_out + "/rt_meta.json", FileAccess.WRITE)
+		if denied_meta != null:
+			denied_meta.store_string(JSON.stringify(_meta, "  "))
+			denied_meta.close()
+		get_tree().quit(_rc)
+		return
 
 	# ── 进店 ────────────────────────────────────────────────────────────────
 	if not _enter(pb):
@@ -165,9 +212,10 @@ func _ready() -> void:
 		_meta["player_entered"] = player_in
 	_snap("interior" if _journey != "full" else "cafe_1f", pb)
 
-	# ── 全楼层旅程（AM3/编号135）：cafe/1f →（楼梯 portal）2f →（楼梯）1f ──────────────
+	# ── 全楼层观察旅程（AM3/编号135）：cafe/1f →（楼梯 portal）2f →（楼梯）1f ────────────
 	# 只在 --rt-journey full 时跑；simple 模式一个字节都不变（现役 1F 往返门原样）。
-	# 逐段断言【落在对的 Floor】——这是"目标层改错 ⇒ 门必红"的机器化（与宿主 python 侧的 meta 楼层核对互为双证）。
+	# 逐段断言 Probe【落在对的 Floor】。带 player 时普通玩家仍留在 1F：owner-only 楼梯的
+	# 上下层帧是远程观察回执，不是玩家穿越证据。玩家进/出店另由 player_entered/player_returned 断言。
 	# 楼梯 cell 由 _stairs_world_pos 从 SpaceGraph 真源取（不抄第二份坐标），点它 → Main._portal_click 按
 	# 当前 active_floor 判方向（1f→2f 上、2f→1f 下），access=owner 不拦 Probe（观察者不是 agent，见 Main.gd:2439）。
 	if _journey == "full":
@@ -181,6 +229,8 @@ func _ready() -> void:
 		await _wait(_settle, _min_ms)
 		if String(pb.active_floor) != "2f":
 			print("[SPACESHOT] ❌ 上楼后应在 2f，实为 %s（楼梯目标层不对/portal 断）" % String(pb.active_floor)); _rc = 1
+		if not capture_player.is_empty() and String(Sim.get_agent("player").get("floor", "")) != "1f":
+			print("[SPACESHOT] ❌ Probe 远程观察时普通玩家不得跟进 owner-only 2f"); _rc = 1
 		_snap("cafe_2f", pb)
 		# 下楼 (cafe/2f → cafe/1f)
 		if not _climb(pb):
@@ -234,6 +284,8 @@ func _ready() -> void:
 
 	_meta["mode"] = _mode
 	_meta["journey"] = _journey
+	_meta["stairs_probe_only"] = _journey == "full" and not capture_player.is_empty()
+	_meta["player_floor_during_probe_stairs"] = "1f" if bool(_meta["stairs_probe_only"]) else ""
 	_meta["space"] = _space
 	_meta["cam_same"] = cam_same
 	_meta["tick"] = Sim.tick_no
@@ -272,6 +324,14 @@ func _refresh() -> void:
 	var view = _main.get("_view") if _main != null else null
 	if view != null:
 		view.call("_redraw_all")
+
+func _player_address() -> Dictionary:
+	var player := Sim.get_agent("player")
+	if player.is_empty():
+		return {}
+	var pos: Vector2i = player.get("pos", Vector2i.ZERO)
+	return {"space": String(player.get("space", "")), "floor": String(player.get("floor", "")),
+		"pos": [pos.x, pos.y], "area": String(player.get("area", "")), "room": String(player.get("room", ""))}
 
 ## 进店。portal=走出货路径（tapped→_portal_click）；flip=只翻 active_space（--void-gate 同款）。
 func _enter(pb) -> bool:

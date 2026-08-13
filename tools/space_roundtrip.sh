@@ -29,9 +29,9 @@
 #   LT_RT_GAME=<dir>              拿【别的一棵 game/】来渲 —— **负对照专用**：
 #                                 把 game/ 拷进 scratchpad、在拷贝上回滚 WorldView 的 `_void_key` 修复，
 #                                 再用这个变量指过去，本门必须变红。判据没有过这一关就不是判据。
-#   LT_RT_JOURNEY=simple|full     默认 simple（现役 town↔cafe/1f 往返门）。
-#                                 full = 全楼层往返门（AM3/编号135）：town→cafe/1f→上楼2f→下楼1f→出门，
-#                                 逐段断言落在对的 Floor + 回程取景一致 + 2F 与 1F 可分；判据走 assert_floor_roundtrip.py。
+#   LT_RT_JOURNEY=simple|full     默认 simple（玩家 town↔cafe/1f 往返门）。
+#                                 full = 玩家进出 + Probe 观察 owner-only 2F（非玩家上楼证据），
+#                                 逐段断言 Probe Floor + 回程取景一致 + 2F 与 1F 可分；判据走 assert_floor_roundtrip.py。
 #   LT_RT_DRAW_SKIP=<pass>        透传 --draw-skip <pass> 给引擎（负对照用）。
 #   LT_RT_SKIP_FURN=1             LT_RT_DRAW_SKIP=interior_furniture 的便捷别名 ——
 #                                 让 2F/1F 家具都不画 ⇒ 两层帧变得一样 ⇒ full 门的"2F 与 1F 可分"臂必红（那条牙）。
@@ -61,9 +61,10 @@ if [ "${1:-}" = "--shoot" ]; then
   MODE="${RT_MODE:-portal}"
   SPACE="${RT_SPACE:-cafe}"
   REDRAW="${RT_REDRAW:-auto}"
-  JOURNEY="${RT_JOURNEY:-simple}"   # simple=进出三帧（1F 往返门）；full=全楼层旅程 town→1f→2f→1f→town（AM3/编号135）
+  JOURNEY="${RT_JOURNEY:-simple}"   # simple=玩家进出三帧；full=玩家进出 + Probe 观察 owner-only 楼层
   DRAWSKIP="${RT_DRAW_SKIP:-}"      # 非空 ⇒ 透传 --draw-skip <pass>（AM3 负对照：interior_furniture ⇒ 2F 与 1F 都空 ⇒ 不可分 ⇒ 门红）
   CORRUPT_MANIFEST="${RT_CORRUPT_MANIFEST:-}"
+  DENY_PORTAL="${RT_DENY_PORTAL:-}"
   export LIBGL_ALWAYS_SOFTWARE=1 LP_NUM_THREADS=1 GODOT_SILENCE_ROOT_WARNING=1
   OWN_XV=0
   if [ -z "${DISPLAY:-}" ] || [ "${RT_OWN_XVFB:-1}" = "1" ]; then
@@ -82,11 +83,13 @@ if [ "${1:-}" = "--shoot" ]; then
   fi
   CORRUPT_ARGS=()
   [ -n "$CORRUPT_MANIFEST" ] && CORRUPT_ARGS=(--rt-corrupt-manifest "$CORRUPT_MANIFEST")
+  DENY_ARGS=()
+  [ -n "$DENY_PORTAL" ] && DENY_ARGS=(--rt-deny-portal "$DENY_PORTAL")
   "$GBIN" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
     --resolution ${W}x${H} --single-window res://bench/SpaceShot.tscn -- \
     --backend logic --seed "$SEED" --warmup-tick "$TICK" \
     --rt-out "$OUT" --rt-space "$SPACE" --rt-mode "$MODE" --rt-journey "$JOURNEY" --rt-redraw "$REDRAW" \
-    "${PLAYER_ARGS[@]}" "${DS_ARGS[@]}" "${CORRUPT_ARGS[@]}"
+    "${PLAYER_ARGS[@]}" "${DS_ARGS[@]}" "${CORRUPT_ARGS[@]}" "${DENY_ARGS[@]}"
   rc=$?
   [ "$OWN_XV" = "1" ] && kill $XV 2>/dev/null
   exit $rc
@@ -101,7 +104,7 @@ PY="${PYTHON:-python}"
 MODE="${LT_RT:-auto}"
 RUNNER="${LT_RT_RUNNER:-auto}"
 IMG="${LT_RT_IMAGE:-gamecraft-runner:4.6.2}"
-JOURNEY="${LT_RT_JOURNEY:-simple}"    # simple=现役 1F 往返门（assert_space_roundtrip）；full=全楼层往返门（assert_floor_roundtrip，AM3/编号135）
+JOURNEY="${LT_RT_JOURNEY:-simple}"    # simple=玩家 1F 往返；full=玩家进出 + Probe 楼层观察
 DRAWSKIP="${LT_RT_DRAW_SKIP:-}"        # AM3 负对照：LT_RT_DRAW_SKIP=interior_furniture ⇒ 2F/1F 都空 ⇒ B 臂（可分）红
 [ "${LT_RT_SKIP_FURN:-0}" = "1" ] && DRAWSKIP="interior_furniture"   # 便捷别名：让 2F 帧==1F 帧 的那条牙
 
@@ -153,6 +156,7 @@ if [ "$PICK" = docker ]; then
     -e RT_MODE="${LT_RT_MODE:-portal}" -e RT_SPACE="${LT_RT_SPACE:-cafe}" -e RT_REDRAW="${LT_RT_REDRAW:-auto}" \
     -e RT_JOURNEY="$JOURNEY" -e RT_DRAW_SKIP="$DRAWSKIP" \
     -e RT_CORRUPT_MANIFEST="${LT_RT_CORRUPT_MANIFEST:-}" \
+    -e RT_DENY_PORTAL="${LT_RT_DENY_PORTAL:-}" \
     -e RT_PLAYER_POS="${LT_RT_PLAYER_POS:-}" \
     -e LT_RT_SEED="$SEED" -e LT_RT_TICK="$TICK" \
     -v "$GAME:/game" -v "$REPO/tools:/tools" -v "$OUT_HOST:/out" \
@@ -161,7 +165,7 @@ if [ "$PICK" = docker ]; then
 else
   RT_GAME="$GAME" RT_MODE="${LT_RT_MODE:-portal}" RT_SPACE="${LT_RT_SPACE:-cafe}" RT_REDRAW="${LT_RT_REDRAW:-auto}" \
     RT_JOURNEY="$JOURNEY" RT_DRAW_SKIP="$DRAWSKIP" RT_PLAYER_POS="${LT_RT_PLAYER_POS:-}" \
-    RT_CORRUPT_MANIFEST="${LT_RT_CORRUPT_MANIFEST:-}" \
+    RT_CORRUPT_MANIFEST="${LT_RT_CORRUPT_MANIFEST:-}" RT_DENY_PORTAL="${LT_RT_DENY_PORTAL:-}" \
     GODOT="$GODOT" bash "$0" --shoot "$OUT"
   SHOT_RC=$?
 fi
@@ -174,8 +178,10 @@ if [ $SHOT_RC -ne 0 ]; then
   exit 1
 fi
 
-# 判据分派：simple → 现役 1F 往返门；full → 全楼层往返门（AM3/编号135，逐段楼层对 + 回程取景一致 + 2F 与 1F 可分）
-if [ "$JOURNEY" = "full" ]; then
+# 判据分派：simple → 玩家 1F 往返；full → 玩家进出 + Probe 楼层观察（非玩家 owner-only 穿越证据）
+if [ -n "${LT_RT_DENY_PORTAL:-}" ]; then
+  "$PY" tools/assert_portal_denied.py "$OUT"
+elif [ "$JOURNEY" = "full" ]; then
   "$PY" tools/assert_floor_roundtrip.py "$OUT"
 else
   "$PY" tools/assert_space_roundtrip.py "$OUT"

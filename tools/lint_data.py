@@ -116,6 +116,9 @@ spaces_d = load("spaces") or {}
 sp = spaces_d.get("spaces", {}) if isinstance(spaces_d, dict) else {}
 portals = spaces_d.get("portals", []) if isinstance(spaces_d, dict) else []
 for sid, s in (sp.items() if isinstance(sp, dict) else []):
+    if not isinstance(s, dict):
+        errs.append(f"space '{sid}': definition must be an object")
+        continue
     b = s.get("bounds", [])
     if len(b) != 4 or b[2] <= 0 or b[3] <= 0:
         errs.append(f"space '{sid}': bounds must be [x,y,w,h] with w/h>0")
@@ -125,15 +128,34 @@ for sid, s in (sp.items() if isinstance(sp, dict) else []):
     if "default_floor" in s and s["default_floor"] not in fl:
         errs.append(f"space '{sid}': default_floor '{s['default_floor']}' not in floors {fl}")
 seen_pid = set()
+seen_portal_endpoints = {}
 for p in (portals if isinstance(portals, list) else []):
+    if not isinstance(p, dict):
+        errs.append("portal entry must be an object")
+        continue
     pid = p.get("id", "")
     if not pid:
         errs.append("portal missing id"); continue
     if pid in seen_pid:
         errs.append(f"duplicate portal id '{pid}'")
     seen_pid.add(pid)
+    if p.get("access") not in ("public", "owner"):
+        errs.append(f"portal '{pid}'.access must be public|owner")
+    if p.get("access") == "owner" and not isinstance(p.get("owner_space"), str):
+        errs.append(f"portal '{pid}'.owner_space must be a string")
+    elif p.get("access") == "owner" and p.get("owner_space") not in sp:
+        errs.append(f"portal '{pid}'.owner_space is not a known space")
+    elif p.get("access") == "public" and "owner_space" in p:
+        errs.append(f"portal '{pid}' public access must not declare owner_space")
+    if type(p.get("bidirectional")) is not bool:
+        errs.append(f"portal '{pid}'.bidirectional must be bool")
+    if type(p.get("traversal_cost")) is not int or p.get("traversal_cost", 0) <= 0:
+        errs.append(f"portal '{pid}'.traversal_cost must be a positive int")
     for side in ("from", "to"):
         e = p.get(side, {})
+        if not isinstance(e, dict):
+            errs.append(f"portal '{pid}'.{side}: endpoint must be an object")
+            continue
         sid, fid = e.get("space", ""), e.get("floor", "")
         if sid not in sp:
             errs.append(f"portal '{pid}'.{side}: unknown space '{sid}'")
@@ -141,6 +163,20 @@ for p in (portals if isinstance(portals, list) else []):
             errs.append(f"portal '{pid}'.{side}: space '{sid}' has no floor '{fid}'")
         if len(e.get("pos", [])) != 2:
             errs.append(f"portal '{pid}'.{side}: pos must be [x,y]")
+            continue
+        pos = e["pos"]
+        if any(type(v) not in (int, float) or int(v) != v for v in pos):
+            errs.append(f"portal '{pid}'.{side}: pos must use integer cells")
+            continue
+        if sid in sp:
+            bounds = sp[sid].get("bounds", [])
+            if len(bounds) == 4 and not (0 <= pos[0] < bounds[2] and 0 <= pos[1] < bounds[3]):
+                errs.append(f"portal '{pid}'.{side}: pos is outside space bounds")
+        endpoint = (sid, fid, int(pos[0]), int(pos[1]))
+        if endpoint in seen_portal_endpoints:
+            errs.append(f"portal '{pid}'.{side}: endpoint duplicates {seen_portal_endpoints[endpoint]}")
+        else:
+            seen_portal_endpoints[endpoint] = f"{pid}.{side}"
 
 # 7b) P3 室内内容 interiors.json：space/floor 键须指向真 Space/Floor；家具坐标须落在该 Space 的 bounds 内。
 interiors_d = load("interiors") or {}

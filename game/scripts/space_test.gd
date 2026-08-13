@@ -2,6 +2,7 @@ extends Node
 ## P1 Gate（analysis §9）：Space/Floor/Portal 合同 + 兼容层 + Probe 切换/返回栈。
 ## 用 autoload（Sim）→ 必须走场景：godot --headless --path game res://scenes/space_test.tscn
 var _fails := 0
+var _portal_signals := 0
 func ck(c: bool, m: String) -> void:
 	if not c: _fails += 1
 	print(("  OK   " if c else "  FAIL ") + m)
@@ -16,8 +17,18 @@ func _portal_dest(sg, sp: String, fl: String, cell: Vector2i) -> Array:
 				return [String(o["space"]), String(o["floor"])]
 	return ["", ""]
 
+func _agent_portal_snapshot(ag: Dictionary) -> Dictionary:
+	return {"home_space": ag.get("home_space"), "home_floor": ag.get("home_floor"),
+		"space": ag.get("space"), "floor": ag.get("floor"), "pos": ag.get("pos"),
+		"area": ag.get("area"), "room": ag.get("room"), "path_cache": Sim._path_cache.duplicate(true),
+		"agent_changed_signals": _portal_signals}
+
+func _count_portal_signal(_agent_id: String) -> void:
+	_portal_signals += 1
+
 func _ready() -> void:
 	Sim.start_new(1)
+	Sim.agent_changed.connect(_count_portal_signal)
 	var sg = preload("res://scripts/SpaceGraph.gd").new()
 	sg.load_from()
 
@@ -118,14 +129,103 @@ func _ready() -> void:
 		if String(h.get("to_space", "")) == "cafe" and String(h.get("to_floor", "")) == "2f":
 			owner_can_private = true
 	ck(owner_can_private, "空间主人仍可走 owner-only 楼梯")
-	Sim._traverse_portal(pl, {"to_space": "port_warehouse", "to_floor": "1f", "to_pos": Vector2i(8, 3)})
-	ck(String(pl.get("space", "")) == "port_warehouse" and pl.get("pos") == Vector2i(8, 3), "玩家实体经门进入货仓")
+	var signal0 := _portal_signals
+	var public_result: Dictionary = Sim._try_traverse_portal("player", "town", "outdoor", Vector2i(57, 8), "port_warehouse", "1f")
+	ck(bool(public_result.get("ok", false)) and String(public_result.get("portal_id", "")) == "p_port_warehouse_door"
+		and String(pl.get("space", "")) == "port_warehouse" and pl.get("pos") == Vector2i(8, 3)
+		and _portal_signals == signal0 + 1,
+		"玩家实体经单一 authority 门进入货仓")
 	Sim.player_move(Vector2i(1, 0))
 	ck(pl.get("pos") == Vector2i(8, 3), "货仓外墙阻止玩家向右穿墙")
 	Sim.player_move(Vector2i(-1, 0))
 	ck(pl.get("pos") == Vector2i(7, 3), "货仓入口向左的地毯格允许玩家踏入室内")
-	Sim._traverse_portal(pl, {"to_space": "town", "to_floor": "outdoor", "to_pos": Vector2i(57, 8)})
-	ck(String(pl.get("space", "")) == "town" and pl.get("pos") == Vector2i(57, 8), "玩家实体经同门返回东港")
+	signal0 = _portal_signals
+	var return_result: Dictionary = Sim._try_traverse_portal("player", "port_warehouse", "1f", Vector2i(8, 3), "town", "outdoor")
+	ck(bool(return_result.get("ok", false)) and String(pl.get("space", "")) == "town" and pl.get("pos") == Vector2i(57, 8),
+		"玩家实体经同一 authority 门返回东港")
+	ck(_portal_signals == signal0 + 1, "成功返回只发一次 agent_changed")
+
+	# P1-p fail-closed transaction teeth: no raw hop can authorize a teleport.  Every arm snapshots
+	# authoritative address/cache state and must reject before the single commit point.
+	Sim._path_cache["player"] = {"goal": Vector2i(1, 1), "path": [Vector2i(57, 8)], "i": 0}
+	var denied0 := _agent_portal_snapshot(pl)
+	var stale_source := Sim._try_traverse_portal("player", "cafe", "1f", Vector2i(1, 1), "cafe", "2f")
+	ck(not bool(stale_source.get("ok", true)) and String(stale_source.get("reason", "")) == "source_plane_mismatch"
+		and _agent_portal_snapshot(pl) == denied0, "伪造 source plane 原子拒绝且 path cache 不动")
+	var far_click := Sim._try_traverse_portal("player", "town", "outdoor", Vector2i(41, 19), "cafe", "1f")
+	ck(not bool(far_click.get("ok", true)) and String(far_click.get("reason", "")) == "source_not_adjacent"
+		and _agent_portal_snapshot(pl) == denied0, "远程点门不能移动玩家，拒绝零副作用")
+	var forged_target := Sim._try_traverse_portal("player", "town", "outdoor", Vector2i(57, 8), "cafe", "2f")
+	ck(not bool(forged_target.get("ok", true)) and String(forged_target.get("reason", "")) == "portal_not_permitted"
+		and _agent_portal_snapshot(pl) == denied0, "伪造 portal target/floor 原子拒绝")
+	var unknown_agent := Sim._try_traverse_portal("ghost", "town", "outdoor", Vector2i(57, 8))
+	ck(not bool(unknown_agent.get("ok", true)) and String(unknown_agent.get("reason", "")) == "unknown_agent"
+		and _agent_portal_snapshot(pl) == denied0, "未知 agent 不能借合法门移动 live player")
+	# Direction and nav checks also happen before commit.  These mutate only the fixture's authored
+	# copy/derived grid, then restore them exactly; no product data or save is rewritten.
+	var warehouse_portal: Dictionary = {}
+	for raw_portal in Sim._authored_portals:
+		if String((raw_portal as Dictionary).get("id", "")) == "p_port_warehouse_door":
+			warehouse_portal = raw_portal
+			break
+	pl["space"] = "port_warehouse"; pl["floor"] = "1f"; Sim._move_agent(pl, Vector2i(8, 3))
+	warehouse_portal["bidirectional"] = false
+	var one_way0 := _agent_portal_snapshot(pl)
+	var one_way_reverse := Sim._try_traverse_portal("player", "port_warehouse", "1f", Vector2i(8, 3), "town", "outdoor")
+	ck(not bool(one_way_reverse.get("ok", true)) and String(one_way_reverse.get("reason", "")) == "portal_not_permitted"
+		and _agent_portal_snapshot(pl) == one_way0, "one-way portal 反向原子拒绝")
+	warehouse_portal["bidirectional"] = true
+	pl["space"] = "town"; pl["floor"] = "outdoor"; Sim._move_agent(pl, Vector2i(57, 8))
+	var town_grid: Dictionary = Sim._nav_grids["town"]["outdoor"]
+	var source_idx := 8 * int(town_grid["w"]) + 57
+	(town_grid["blocked"] as Dictionary)[source_idx] = true
+	var blocked_source0 := _agent_portal_snapshot(pl)
+	var blocked_source := Sim._try_traverse_portal("player", "town", "outdoor", Vector2i(57, 8), "port_warehouse", "1f")
+	ck(not bool(blocked_source.get("ok", true)) and String(blocked_source.get("reason", "")) == "source_endpoint_invalid"
+		and _agent_portal_snapshot(pl) == blocked_source0, "blocked source endpoint 原子拒绝")
+	(town_grid["blocked"] as Dictionary).erase(source_idx)
+	var warehouse_grid: Dictionary = Sim._nav_grids["port_warehouse"]["1f"]
+	var destination_idx := 3 * int(warehouse_grid["w"]) + 8
+	(warehouse_grid["blocked"] as Dictionary)[destination_idx] = true
+	var blocked_destination0 := _agent_portal_snapshot(pl)
+	var blocked_destination := Sim._try_traverse_portal("player", "town", "outdoor", Vector2i(57, 8), "port_warehouse", "1f")
+	ck(not bool(blocked_destination.get("ok", true)) and String(blocked_destination.get("reason", "")) == "destination_blocked"
+		and _agent_portal_snapshot(pl) == blocked_destination0, "blocked destination endpoint 原子拒绝")
+	(warehouse_grid["blocked"] as Dictionary).erase(destination_idx)
+	# Put the player beside the cafe stairs without using a portal, solely to exercise the owner gate.
+	pl["space"] = "cafe"; pl["floor"] = "1f"; Sim._move_agent(pl, Vector2i(1, 2))
+	Sim._path_cache["player"] = denied0["path_cache"]["player"]
+	var private0 := _agent_portal_snapshot(pl)
+	var private_result := Sim._try_traverse_portal("player", "cafe", "1f", Vector2i(1, 1), "cafe", "2f")
+	ck(not bool(private_result.get("ok", true)) and String(private_result.get("reason", "")) == "portal_not_permitted"
+		and _agent_portal_snapshot(pl) == private0, "非 owner 玩家在真实楼梯旁也原子拒绝")
+	# Neither a forged agent cache nor a forged legacy save snapshot is authority.
+	pl["home_space"] = "cafe"; pl["home_floor"] = "1f"
+	var forged_home0 := _agent_portal_snapshot(pl)
+	var forged_home := Sim._try_traverse_portal("player", "cafe", "1f", Vector2i(1, 1), "cafe", "2f")
+	ck(not bool(forged_home.get("ok", true)) and String(forged_home.get("reason", "")) == "portal_not_permitted"
+		and _agent_portal_snapshot(pl) == forged_home0, "伪造玩家 home_space 不能获得 owner 权限")
+	pl["home_space"] = "town"; pl["home_floor"] = "outdoor"
+	var saved_portals0: Array = Sim._portals.duplicate(true)
+	for portal in Sim._portals:
+		if String((portal as Dictionary).get("id", "")) == "p_cafe_stairs":
+			(portal as Dictionary)["access"] = "public"
+	var forged_graph0 := _agent_portal_snapshot(pl)
+	var forged_graph := Sim._try_traverse_portal("player", "cafe", "1f", Vector2i(1, 1), "cafe", "2f")
+	ck(not bool(forged_graph.get("ok", true)) and String(forged_graph.get("reason", "")) == "portal_not_permitted"
+		and _agent_portal_snapshot(pl) == forged_graph0, "伪造存档 portal access 不能用 Main/Sim 分裂授权")
+	Sim._portals = saved_portals0
+	var owner0 := _agent_portal_snapshot(aria)
+	aria["space"] = "cafe"; aria["floor"] = "2f"; Sim._move_agent(aria, Vector2i(1, 1))
+	Sim._path_cache["aria"] = {"goal": Vector2i(4, 5), "path": [Vector2i(1, 1)], "i": 0}
+	signal0 = _portal_signals
+	var owner_result := Sim._try_traverse_portal("aria", "cafe", "2f", Vector2i(1, 1), "cafe", "1f")
+	ck(bool(owner_result.get("ok", false)) and String(aria.get("floor", "")) == "1f"
+		and not Sim._path_cache.has("aria") and _portal_signals == signal0 + 1,
+		"空间主人站在端点经同一 authority 门合法下楼、清 cache、只发一次 signal")
+	# Restore the owner/player addresses so the fixture itself leaves no ambiguous post-state.
+	aria["space"] = owner0["space"]; aria["floor"] = owner0["floor"]; Sim._move_agent(aria, owner0["pos"])
+	pl["space"] = "town"; pl["floor"] = "outdoor"; Sim._move_agent(pl, Vector2i(57, 8)); Sim._path_cache.erase("player")
 
 	print("space_test: %d fail" % _fails)
 	get_tree().quit(1 if _fails > 0 else 0)

@@ -2654,20 +2654,15 @@ func _portal_click(world_pos: Vector2) -> bool:
 				var ppos: Vector2i = pl.get("pos", Vector2i(-99, -99)) if not pl.is_empty() else Vector2i(-99, -99)
 				if not pl.is_empty() and String(pl.get("space", "town")) == asp and String(pl.get("floor", "outdoor")) == afl \
 						and absi(ppos.x - cell.x) + absi(ppos.y - cell.y) <= 1:
-					# Never traverse from the raw display portal.  Re-resolve the same
-					# edge through Sim's agent-aware portal list so owner-only stairs
-					# cannot be bypassed by clicking while in player mode.
-					var permitted: Dictionary = {}
-					for hop in Sim._portals_from(asp, afl, pl):
-						if hop.get("from_pos", Vector2i(-99, -99)) == cell \
-								and String(hop.get("to_space", "")) == os and String(hop.get("to_floor", "")) == of:
-							permitted = hop
-							break
-					if permitted.is_empty():
-						_push("[color=#f2a3a3]（这扇门不对你开放）[/color]")
+					# Display hit-testing identifies the intended edge only.  Sim owns the
+					# entire permission + topology + atomic agent transition transaction.
+					var crossed: Dictionary = Sim._try_traverse_portal("player", asp, afl, cell, os, of)
+					if not bool(crossed.get("ok", false)):
+						var denied_reason := String(crossed.get("reason", ""))
+						var denied_text := "%s：私人区域，未获通行许可" % _sg.label_of(os) if denied_reason == "portal_not_permitted" \
+							else "%s：入口暂时无法通行" % _sg.label_of(os)
+						_push("[color=#ff9b82]（%s）[/color]" % denied_text)
 						return true
-					Sim._traverse_portal(pl, permitted)
-					Sim.emit_signal("agent_changed", "player")
 					player_crossed = true
 			var b: Rect2 = _sg.bounds_px(os)
 			_probe.set_space(os, of, b)                # 入历史栈 → ESC 可原路退回

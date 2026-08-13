@@ -213,6 +213,7 @@ func _ready() -> void:
 	# Runtime handles are receiver-owned: save never writes them, load never nulls an injected service.
 	var handle_path := "user://save_migration_handles.dat"
 	var HandleSrc = SimScript.new(); add_child(HandleSrc); HandleSrc.auto_run = false; HandleSrc.start_new(3)
+	HandleSrc.add_player(Vector2i(57, 8))
 	ck(HandleSrc.save_game(handle_path), "runtime-handle schema-2 fixture 写盘")
 	var handle_env := _read_envelope(handle_path)
 	var handle_state: Dictionary = (handle_env.get("blob", {}) as Dictionary).get("state", {})
@@ -246,6 +247,58 @@ func _ready() -> void:
 	HandleDst.decision_sink = sink
 	ck(HandleDst.load_game(handle_path) and HandleDst.backend == service and HandleDst.ext == service
 		and HandleDst.decision_sink == sink, "load 保留接收实例 runtime handles")
+
+	# P1-p: current-schema portal topology and agent addresses are authority, not mutable caches.
+	# Every forged envelope must disappear from peek and reject before the polluted receiver changes.
+	var portal_attack_paths: Array = []
+	var portal_specs := [
+		{"name": "id", "field": "id", "value": "p_cafe_stairs_forged"},
+		{"name": "access", "field": "access", "value": "public"},
+		{"name": "bidirectional", "field": "bidirectional", "value": false},
+		{"name": "cost", "field": "traversal_cost", "value": 1.0},
+		{"name": "from", "field": "from", "value": {"space": "town", "floor": "outdoor", "pos": [41.0, 19.0]}},
+		{"name": "to", "field": "to", "value": {"space": "cafe", "floor": "1f", "pos": [1.0, 1.0]}},
+	]
+	for spec in portal_specs:
+		var path := "user://save_migration_p1p_portal_%s.dat" % String(spec["name"])
+		portal_attack_paths.append(path)
+		var attack_blob: Dictionary = (handle_env["blob"] as Dictionary).duplicate(true)
+		for raw_portal in (attack_blob["state"] as Dictionary)["_portals"]:
+			if String((raw_portal as Dictionary).get("id", "")) == "p_cafe_stairs":
+				(raw_portal as Dictionary)[String(spec["field"])] = spec["value"]
+		ck(_write_envelope(path, 2, attack_blob), "schema-2 forged portal %s fixture 写盘" % spec["name"])
+		ck(HandleSrc.peek_save(path).is_empty(), "peek_save 隐藏 forged portal %s" % spec["name"])
+		_reject_is_atomic(path, "schema-2 forged portal %s" % spec["name"])
+
+	var player_attack_paths: Array = []
+	var player_specs := [
+		{"name": "home_space", "field": "home_space", "value": "cafe"},
+		{"name": "home_floor", "field": "home_floor", "value": "1f"},
+		{"name": "position", "field": "pos", "value": Vector2i(-1, -1)},
+		{"name": "area", "field": "area", "value": "cafe:2f"},
+		{"name": "room", "field": "room", "value": "hall"},
+	]
+	for spec in player_specs:
+		var path := "user://save_migration_p1p_player_%s.dat" % String(spec["name"])
+		player_attack_paths.append(path)
+		var attack_blob: Dictionary = (handle_env["blob"] as Dictionary).duplicate(true)
+		for raw_agent in (attack_blob["state"] as Dictionary)["agents"]:
+			if String((raw_agent as Dictionary).get("id", "")) == "player":
+				(raw_agent as Dictionary)[String(spec["field"])] = spec["value"]
+		ck(_write_envelope(path, 2, attack_blob), "schema-2 forged player %s fixture 写盘" % spec["name"])
+		ck(HandleSrc.peek_save(path).is_empty(), "peek_save 隐藏 forged player %s" % spec["name"])
+		_reject_is_atomic(path, "schema-2 forged player %s" % spec["name"])
+	var coherent_location := "user://save_migration_p1p_player_authorized_component.dat"
+	player_attack_paths.append(coherent_location)
+	var coherent_blob: Dictionary = (handle_env["blob"] as Dictionary).duplicate(true)
+	for raw_agent in (coherent_blob["state"] as Dictionary)["agents"]:
+		if String((raw_agent as Dictionary).get("id", "")) == "player":
+			var player: Dictionary = raw_agent
+			player["space"] = "cafe"; player["floor"] = "2f"; player["pos"] = Vector2i(1, 1)
+			player["area"] = "cafe:2f"; player["room"] = ""
+	ck(_write_envelope(coherent_location, 2, coherent_blob), "schema-2 coherent unauthorized player address fixture 写盘")
+	ck(HandleSrc.peek_save(coherent_location).is_empty(), "peek_save 隐藏几何合法但权限不可达的 player 地址")
+	_reject_is_atomic(coherent_location, "schema-2 player outside authored authorized component")
 
 	# Four malformed envelopes, all rejected before touching a polluted live receiver.
 	var good_env := _read_envelope(legacy_path)
@@ -321,7 +374,7 @@ func _ready() -> void:
 	ck(A.peek_save(dangling_active).is_empty(), "peek_save 不展示悬空 active commitment 档")
 	_reject_is_atomic(dangling_active, "schema-2 dangling active commitment")
 
-	for path in [legacy_path, v2_path, ghost_path, handle_path, mismatch, partial, unknown, wrong_type, bad_core, bad_cargo, bad_flag, missing_current, missing_active_ids, extra_current, extra_envelope, lying_header, dangling_active]:
+	for path in [legacy_path, v2_path, ghost_path, handle_path, mismatch, partial, unknown, wrong_type, bad_core, bad_cargo, bad_flag, missing_current, missing_active_ids, extra_current, extra_envelope, lying_header, dangling_active] + portal_attack_paths + player_attack_paths:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 	print("save_migration_test: %s (%d fail)" % [("PASS ✅" if _fails == 0 else "FAIL ❌"), _fails])

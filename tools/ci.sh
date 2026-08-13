@@ -106,6 +106,14 @@ scan_p1g_runtime_contract(){
 
 scan_state_projection_runtime_contract(){
   scan_exact_once_set "$1" "$2" \
+    'save_game REFUSED .* agent aria position is outside authored plane bounds' \
+    'save_game REFUSED .* agent aria_ao1probe has no authored home authority' \
+    'save_game REFUSED .* agent aria space is not authored' \
+    'save_game REFUSED .* agent aria floor is not authored' \
+    'save_game REFUSED .* agent aria home_space authority diverges from authored identity' \
+    'save_game REFUSED .* agent aria home_floor authority diverges from authored identity' \
+    'save_game REFUSED .* agent aria area cache diverges from address' \
+    'save_game REFUSED .* agent aria room cache diverges from address' \
     'save_game REFUSED .* schema 1 cargo order is invalid' \
     'save_game REFUSED .* schema 1 cargo dictionary/order diverge' \
     'save_game REFUSED .* commitment id is invalid' \
