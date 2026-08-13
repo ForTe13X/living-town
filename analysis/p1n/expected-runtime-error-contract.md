@@ -62,6 +62,15 @@ Candidate source remained stable under the canonical Windows supervisor:
   four writer refusal families each once, final `0 fail`, cleanup verified;
 - save migration: `20260813T040913600Z_092ed9a223da435982d3099ec612f84c`, PASS.
 
+After committing the batch as `8e4a166`, the clean exact-commit rerun also passed:
+
+- P1-g: `20260813T042734167Z_2cdc10537d76467d924236cd315a9dac`;
+- state projection: `20260813T042736570Z_69e7175bdc3348839f85c9bc07d8cff3`.
+
+Both receipts bind source head `8e4a16650ae1a669422489ce6460254dc7bf1070`, report
+`source_identity=exact_commit`, stable/clean source, verified cleanup and no native or logical
+failure pattern. The standalone scanner self-test also passed from that clean commit.
+
 A shortened CI integration run reached and passed the P1-g and state-projection runtime profiles;
 it later exceeded the outer 10-minute shell budget while running unrelated one-day story fixtures.
 No scoped Godot/bash process survived. That timeout is not presented as a full-CI receipt.
