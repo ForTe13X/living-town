@@ -1868,7 +1868,9 @@ func _draw_port_warehouse_status(b: Rect2) -> void:
 		draw_rect(Rect2(bx + 1, y + 1, (T * 0.98 - 2) * clampf(float(qty) / float(cap), 0.0, 1.0), 8), X_GLOW if good == "柴薪" else P_WATER_LIT, true)
 	var st := Sim.cargo_status_for_node("port_dock")
 	var status := "泊位：暂无待卸货物"
-	if String(st.get("state", "empty")) != "empty":
+	if String(st.get("state", "empty")) == "invalid":
+		status = "泊位：货单异常 · 暂停卸货"
+	elif String(st.get("state", "empty")) != "empty":
 		var state_label := String({"ready": "待卸", "working": "卸货中", "blocked_capacity": "仓位不足", "blocked_funds": "镇库不足"}.get(String(st.get("state", "")), "待处理"))
 		status = "泊位：%s×%d · %s" % [String(st.get("good", "货物")), int(st.get("qty", 0)), state_label]
 	draw_string(Art.font(), panel.position + Vector2(10, T * 1.82), status, HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 20, 13, X_GOLD)
@@ -3543,7 +3545,7 @@ func _draw_landmarks() -> void:
 ## P1-c：carrier 是 CargoManifest 的【纯 View 投影】，不是第二份 world 状态。
 ## 一个 route/node 无论积压多少 ready manifest 都只画一艘泊位船，单数用徽记表示；零 ready 即零货船。
 ## 这条路不 spawn/despawn、不写 event、不进导航/存档/chain，权威时序仍是 manifest arrival→exact unload。
-static func carrier_projections_for(logistics_data: Dictionary, manifests: Dictionary, order: Array) -> Array:
+static func carrier_projections_for(sim, logistics_data: Dictionary, manifests: Dictionary, order: Array) -> Array:
 	var out: Array = []
 	var raw_carriers = logistics_data.get("carriers", [])
 	if not (raw_carriers is Array):
@@ -3566,6 +3568,8 @@ static func carrier_projections_for(logistics_data: Dictionary, manifests: Dicti
 			if not (rec is Dictionary):
 				continue
 			var rd: Dictionary = rec
+			if sim._manifest_authority_error(manifest_id, rd, logistics_data, int(sim.day), sim.event_log) != "":
+				continue
 			if String(rd.get("route_id", "")) != route or String(rd.get("node", "")) != node:
 				continue
 			var qty := int(rd.get("remaining_qty", 0))
@@ -3587,7 +3591,7 @@ static func carrier_projections_for(logistics_data: Dictionary, manifests: Dicti
 	return out
 
 func _cargo_carrier_projections() -> Array:
-	return carrier_projections_for(Sim.logistics, Sim.cargo_manifests, Sim.cargo_manifest_order)
+	return carrier_projections_for(Sim, Sim.logistics, Sim.cargo_manifests, Sim.cargo_manifest_order)
 
 func _draw_port() -> void:
 	var dock = Sim.world.get("areas", {}).get("dock", {})

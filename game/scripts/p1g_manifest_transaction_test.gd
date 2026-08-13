@@ -43,7 +43,7 @@ func _row44(S) -> Dictionary:
 ## Adversarial saves must be produced by an offline transformer, never by asking the
 ## production writer to serialize a state that it correctly rejects.  Keep the valid
 ## envelope/header intact and mutate only the record field under test.
-func _write_manifest_id_mutation(source_path: String, target_path: String, manifest_id: String, mutated_id: String) -> bool:
+func _write_manifest_field_mutation(source_path: String, target_path: String, manifest_id: String, field: String, value) -> bool:
 	var source := FileAccess.open(source_path, FileAccess.READ)
 	if source == null or source.get_length() < 8:
 		return false
@@ -62,13 +62,65 @@ func _write_manifest_id_mutation(source_path: String, target_path: String, manif
 	var record = (manifests as Dictionary)[manifest_id]
 	if not (record is Dictionary):
 		return false
-	(record as Dictionary)["id"] = mutated_id
+	(record as Dictionary)[field] = value
 	var target := FileAccess.open(target_path, FileAccess.WRITE)
 	if target == null:
 		return false
 	target.store_32(header)
 	target.store_var(blob)
 	target.close()
+	return true
+
+func _write_manifest_id_mutation(source_path: String, target_path: String, manifest_id: String, mutated_id: String) -> bool:
+	return _write_manifest_field_mutation(source_path, target_path, manifest_id, "id", mutated_id)
+
+func _write_manifest_rekey_mutation(source_path: String, target_path: String, manifest_id: String, mutated_id: String) -> bool:
+	var source := FileAccess.open(source_path, FileAccess.READ)
+	if source == null or source.get_length() < 8:
+		return false
+	var header := source.get_32()
+	var blob = source.get_var()
+	source.close()
+	if not (blob is Dictionary) or not (blob.get("state") is Dictionary):
+		return false
+	var state: Dictionary = blob["state"]
+	var manifests: Dictionary = state.get("cargo_manifests", {})
+	var order: Array = state.get("cargo_manifest_order", [])
+	if not manifests.has(manifest_id) or order.find(manifest_id) < 0:
+		return false
+	var rec: Dictionary = manifests[manifest_id]
+	rec["id"] = mutated_id
+	manifests[mutated_id] = rec
+	manifests.erase(manifest_id)
+	order[order.find(manifest_id)] = mutated_id
+	var target := FileAccess.open(target_path, FileAccess.WRITE)
+	if target == null:
+		return false
+	target.store_32(header); target.store_var(blob); target.close()
+	return true
+
+func _write_arrival_field_mutation(source_path: String, target_path: String, manifest_id: String, field: String, value) -> bool:
+	var source := FileAccess.open(source_path, FileAccess.READ)
+	if source == null or source.get_length() < 8:
+		return false
+	var header := source.get_32()
+	var blob = source.get_var()
+	source.close()
+	if not (blob is Dictionary) or not (blob.get("state") is Dictionary):
+		return false
+	var events: Array = (blob["state"] as Dictionary).get("event_log", [])
+	var found := false
+	for event in events:
+		if event is Dictionary and String(event.get("target", "")) == manifest_id and String(event.get("note", "")).begins_with("cargo_arrive:"):
+			(event as Dictionary)[field] = value
+			found = true
+			break
+	if not found:
+		return false
+	var target := FileAccess.open(target_path, FileAccess.WRITE)
+	if target == null:
+		return false
+	target.store_32(header); target.store_var(blob); target.close()
 	return true
 
 func _ready() -> void:
@@ -122,6 +174,84 @@ func _ready() -> void:
 	ck(String(S.cargo_status_for_node("port_dock").get("state", "")) == "working",
 		"引擎签发 option 后港口投影显示卸货中")
 	tao["option"] = null
+
+	# P1-o: every authoritative lane field is a commit permission, not descriptive metadata.
+	# A corrupt live record must block the queue, hide all untrusted business fields from player UI,
+	# fail hard #44, and leave money/stock/cargo/events byte-for-byte untouched.
+	var authority_mutations := [
+		["id", "manifest_other_3_0"], ["route_id", "other_route"], ["lane_index", 1],
+		["node", "cafe"], ["good", "豆子"], ["arrived_day", 2], ["initial_qty", 5],
+		["remaining_qty", 3], ["price_per", 4], ["price_den", 5], ["route_id", 7], ["price_per", "3"],
+	]
+	for mutation in authority_mutations:
+		var field := String(mutation[0])
+		var original = S.cargo_manifests[manifest_id][field]
+		S.cargo_manifests[manifest_id][field] = mutation[1]
+		var corrupt_before := _snapshot(S, manifest_id)
+		var corrupt_status: Dictionary = S.cargo_status_for_node("port_dock")
+		ck(String(corrupt_status.get("state", "")) == "invalid"
+			and String(corrupt_status.get("manifest_id", "")) == ""
+			and String(corrupt_status.get("good", "")) == "" and int(corrupt_status.get("qty", -1)) == 0
+			and int(corrupt_status.get("cost", -1)) == 0 and String(corrupt_status.get("worker_id", "")) == "",
+			"authored %s mutation 投影为 invalid 且不泄露坏单货/量/价/负责人" % field)
+		ck(S._first_unloadable_manifest("port_dock") == ""
+			and S._commit_manifest_unload(manifest_id, "tao", "port_dock", true) == 0
+			and _snapshot(S, manifest_id) == corrupt_before,
+			"authored %s mutation 在候选/commit 前 fail-closed 且零副作用" % field)
+		ck(not bool(_row44(S).get("ok", true)), "authored %s mutation 令硬 #44 变红" % field)
+		S.cargo_manifests[manifest_id][field] = original
+		ck(String(S.cargo_status_for_node("port_dock").get("state", "")) == "ready"
+			and bool(_row44(S).get("ok", false)), "恢复 authored %s 后 ready/#44 同时恢复" % field)
+	var future_rec: Dictionary = S.cargo_manifests[manifest_id].duplicate(true)
+	future_rec["id"] = "manifest_east_ocean_6_0"
+	future_rec["arrived_day"] = 6
+	ck(S._manifest_authored_lane_error(String(future_rec["id"]), future_rec, S.logistics, 3).contains("current day"),
+		"canonical future-day 单仍被当前日门拒绝")
+	var off_cadence_rec: Dictionary = future_rec.duplicate(true)
+	off_cadence_rec["id"] = "manifest_east_ocean_5_0"
+	off_cadence_rec["arrived_day"] = 5
+	ck(S._manifest_authored_lane_error(String(off_cadence_rec["id"]), off_cadence_rec, S.logistics, 6).contains("cadence"),
+		"canonical past-day 单若不在 authored cadence 也拒绝")
+
+	# Offline adversarial save matrix: mutate exactly one field under a valid schema-2 envelope.
+	# Every rejection happens before load_game touches the polluted live receiver.
+	var pending_save := "user://p1o_valid_pending.save"
+	var corrupt_save := "user://p1o_corrupt_pending.save"
+	ck(S.save_game(pending_save), "合法 pending authored manifest 可由生产 writer 写盘")
+	for mutation in authority_mutations:
+		var field := String(mutation[0])
+		ck(_write_manifest_field_mutation(pending_save, corrupt_save, manifest_id, field, mutation[1]),
+			"离线 transformer 构造 pending %s 单字段负例" % field)
+		var LoadGuard = _fixture()
+		var guard_before := _snapshot(LoadGuard, manifest_id)
+		ck(LoadGuard.peek_save(corrupt_save).is_empty() and not LoadGuard.load_game(corrupt_save)
+			and _snapshot(LoadGuard, manifest_id) == guard_before,
+			"pending authored %s 坏档原子拒绝，不继承/覆盖 receiver" % field)
+		_drop(LoadGuard)
+	ck(_write_manifest_rekey_mutation(pending_save, corrupt_save, manifest_id, "manifest_forged_3_0"),
+		"离线 transformer 同步伪造 dictionary key/order/record id")
+	var RekeyGuard = _fixture()
+	var rekey_before := _snapshot(RekeyGuard, manifest_id)
+	ck(RekeyGuard.peek_save(corrupt_save).is_empty() and not RekeyGuard.load_game(corrupt_save)
+		and _snapshot(RekeyGuard, manifest_id) == rekey_before,
+		"coherent rekey 坏档仍因 authored canonical id 原子拒绝")
+	_drop(RekeyGuard)
+	var arrival_mutations := [
+		["actor", "other_route"], ["target", "manifest_other"], ["subject", "豆子"],
+		["note", "cargo_arrive:%s*3" % manifest_id], ["accepted", false],
+	]
+	for mutation in arrival_mutations:
+		var field := String(mutation[0])
+		ck(_write_arrival_field_mutation(pending_save, corrupt_save, manifest_id, field, mutation[1]),
+			"离线 transformer 构造 arrival %s 负例" % field)
+		var ArrivalGuard = _fixture()
+		var arrival_before := _snapshot(ArrivalGuard, manifest_id)
+		ck(ArrivalGuard.peek_save(corrupt_save).is_empty() and not ArrivalGuard.load_game(corrupt_save)
+			and _snapshot(ArrivalGuard, manifest_id) == arrival_before,
+			"pending arrival %s 坏档在 apply 前原子拒绝" % field)
+		_drop(ArrivalGuard)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(corrupt_save))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(pending_save))
 
 	var event0 := int(S.event_log.size())
 	ck(S._commit_manifest_unload(manifest_id, "tao", "port_dock", true) == 4, "正向整单提交 4 件")
@@ -185,11 +315,21 @@ func _ready() -> void:
 		"node": "port_dock", "good": "柴薪", "arrived_day": 6, "initial_qty": 4, "remaining_qty": 4,
 		"price_per": 3, "price_den": 4, "state": "ready",
 	}
+	S.day = 6
 	S.cargo_manifests[pending["id"]] = pending
 	S.cargo_manifest_order.append(pending["id"])
 	S._log_event("world", "other_route", pending["id"], "柴薪", true, [], "cargo_arrive:%s*4" % pending["id"])
 	ck(not bool(_row44(S).get("ok", true)), "#44 mutation：live pending arrival 绑定错误 route 必红")
 	S.event_log[S.event_log.size() - 1]["actor"] = "east_ocean"
+	S.event_log[S.event_log.size() - 1]["accepted"] = false
+	ck(not bool(_row44(S).get("ok", true)), "#44 mutation：live pending arrival accepted=false 必红")
+	S.event_log[S.event_log.size() - 1]["accepted"] = true
+	S.event_log[S.event_log.size() - 1]["target"] = "manifest_other"
+	ck(not bool(_row44(S).get("ok", true)), "#44 mutation：live pending arrival target 错绑必红")
+	S.event_log[S.event_log.size() - 1]["target"] = pending["id"]
+	S.event_log[S.event_log.size() - 1]["note"] = "cargo_arrive:%s*3" % pending["id"]
+	ck(not bool(_row44(S).get("ok", true)), "#44 mutation：live pending arrival note/qty 不符必红")
+	S.event_log[S.event_log.size() - 1]["note"] = "cargo_arrive:%s*4" % pending["id"]
 	S.cargo_manifest_order.append(pending["id"])
 	ck(not bool(_row44(S).get("ok", true)), "#44 mutation：live pending order 重复 id 必红")
 	S.cargo_manifest_order.pop_back()

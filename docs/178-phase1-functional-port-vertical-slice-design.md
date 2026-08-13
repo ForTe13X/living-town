@@ -337,3 +337,10 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 - **合同**：`scan_exact_once_set` 要求每个声明的错误 family **各恰好一次**，过滤后任何第五条 `ERROR` / `SCRIPT ERROR` 仍红；缺一、同族重复替代另一族、额外错误三类负控全部自测。P1-g 与 state projection 是两个既有消费者，故抽取边界成立；`Sim.gd`/数据/不变量零改动。
 - **候选证据**：canonical supervisor 下 P1-g、state projection、save migration 均 PASS 且 source stable/cleanup verified；前两者的四族拒绝逐项 exact-once、未声明 runtime error 为零。P1-m 的标准/held-out/total-N24 无 golden 网格继续适用，因为本棒不改仿真权威面。玩家位置再次从 exact HEAD 重建东海外景→货仓→返回三帧及 8 秒 H.264 短片，tracked P1-i 图 hash 不变；同时诚实记录 dossier 压返程门、无 NPC 时仍显示社交动作等后续 UX 债。
 - **边界**：本棒不重烘 golden/modelpath/complement；Draft PR 在 committed exact-tip CI 和独立重烘协议完成前仍不可合入。完整根因、失败路线、命令、receipt、视觉/许可/恢复见 `analysis/p1n/expected-runtime-error-contract.md`。
+
+### 13.11 P1-o：pending manifest authored-lane 权威 + 玩家异常态（2026-08-13；未重烘）
+
+- **单一合同**：pending/complete manifest 不再只证明自身字段自洽；唯一纯 validator 严格绑定存档/运行时自己的 import lane、canonical route×day×lane id、whole batch、价格与 cadence/future-day。arrival、schema-1/2 load、complete compaction、卸货候选、atomic commit、硬 #44、HUD/仓库与 carrier 共用它；任何坏单都在钱/库/事件前 fail-closed。
+- **玩家语义**：坏单不伪装成 empty/ready，也不泄露不可信 good/qty/cost/worker；外景零货船，HUD/仓内统一显示“货单异常·暂停卸货”。valid→corrupt 玩家对拍固定 seed3/tick600/[57,8]：外景变化 26,931 px（船+提示）、仓内只改状态板行 3,046 px；两臂都真实进仓返回且 town 前后逐像素相同。判据已接入 visual gate，不把本地 pinned GL 冒充 GHA receipt。
+- **牙与回归**：P1-g 覆盖 12 个单字段/类型负臂、offline schema-2 原子拒绝、future/cadence、arrival accepted/target/note；每臂要求零候选/commit/副作用、#44 红与恢复。P1-b/P1-c/save migration/state projection 均绿；标准 12×60d det3 hard/#40/#44/#45/#46 全 12/12，import/export `156/57` 覆盖全 seed，det3/3。
+- **边界**：这是存档内部合同而非密码学签名；同时篡 lane 与 manifest 的 provenance 另议。完整接口、receipt、presentation 来源/许可/恢复见 `analysis/p1o/manifest-authored-lane-authority.md`。golden/modelpath/complement 不重烘，PR #6 继续 draft。

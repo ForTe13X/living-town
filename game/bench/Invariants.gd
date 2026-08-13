@@ -360,19 +360,24 @@ static func import_manifest_tx_scan(S) -> Dictionary:
 		if live_seen.has(live_id):
 			bad.append("live cargo order 重复 id=%s" % live_id)
 		live_seen[live_id] = true
-		var live_lane_index := int(live.get("lane_index", -1))
-		var live_lane: Dictionary = import_lanes[live_lane_index] \
-			if live_lane_index >= 0 and live_lane_index < import_lanes.size() and import_lanes[live_lane_index] is Dictionary else {}
+		var authored_error = S._manifest_authority_error(live_id, live, S.logistics, int(S.day), S.event_log) \
+			if not live.is_empty() else "missing live record"
 		var live_arrivals: Array = arrivals.get(live_id, [])
+		if authored_error != "":
+			bad.append("live cargo=%s 非 authored pending-ready（%s）" % [live_id, authored_error])
+			continue
+		var arrival_bad := false
+		if not live_arrivals.is_empty():
+			var live_arrival: Dictionary = live_arrivals[0]
+			arrival_bad = String(live_arrival.get("type", "")) != "world" or live_arrival.get("accepted", false) != true \
+				or String(live_arrival.get("actor", "")) != String(live.get("route_id", "")) \
+				or String(live_arrival.get("target", "")) != live_id \
+				or String(live_arrival.get("subject", "")) != String(live.get("good", "")) \
+				or String(live_arrival.get("note", "")) != "cargo_arrive:%s*%d" % [live_id, int(live.get("initial_qty", 0))]
 		if live.is_empty() or String(live.get("state", "")) != "ready" or int(live.get("remaining_qty", 0)) <= 0 \
-			or live_arrivals.size() != 1 or live_lane.is_empty() \
-			or String(live.get("id", "")) != live_id or String(live_lane.get("route_id", "")) != String(live.get("route_id", "")) \
-			or String(live_lane.get("node", "")) != String(live.get("node", "")) \
-			or String(live_lane.get("good", "")) != String(live.get("good", "")) \
-			or int(live_lane.get("batch", 0)) != int(live.get("initial_qty", 0)) \
-			or (not live_arrivals.is_empty() and (String(live_arrivals[0].get("actor", "")) != String(live.get("route_id", "")) \
-				or String(live_arrivals[0].get("subject", "")) != String(live.get("good", "")))):
-			bad.append("live cargo=%s 非 pending-ready（完成单未退休或 order 悬空）" % live_id)
+			or live_arrivals.size() != 1 \
+			or arrival_bad:
+			bad.append("live cargo=%s 非 authored pending-ready（%s）" % [live_id, authored_error])
 	if live_seen.size() != S.cargo_manifests.size():
 		bad.append("live cargo dictionary/order diverge")
 	for raw_id in arrivals:

@@ -55,6 +55,7 @@ var _settle := 24           # 每次空间切换之后的暖机帧数
 var _min_ms0 := 2500        # 暖机的墙钟下限（软渲染下帧率极低，光数帧会太短）
 var _min_ms := 1200
 var _watchdog_ms := 180000  # 看门狗：到点还没跑完就 rc=1 退出（绝不让本场景把 CI 挂住，见下）
+var _corrupt_manifest := "" # P1-o presentation-only adversarial arm; never used by product runtime.
 var _main: Node
 var _meta := {}
 var _rc := 0
@@ -68,6 +69,7 @@ func _ready() -> void:
 		elif args[i] == "--rt-journey" and i + 1 < args.size(): _journey = args[i + 1]
 		elif args[i] == "--rt-redraw" and i + 1 < args.size(): _redraw = args[i + 1]
 		elif args[i] == "--rt-settle" and i + 1 < args.size(): _settle = int(args[i + 1])
+		elif args[i] == "--rt-corrupt-manifest" and i + 1 < args.size(): _corrupt_manifest = args[i + 1]
 	if _out == "":
 		print("[SPACESHOT] ❌ 缺 --rt-out <dir>")
 		get_tree().quit(2)
@@ -93,6 +95,24 @@ func _ready() -> void:
 	Sim.auto_run = false
 
 	await _wait(_settle0, _min_ms0)
+	if _corrupt_manifest != "":
+		if Sim.cargo_manifest_order.is_empty():
+			print("[SPACESHOT] ❌ P1-o corrupt arm 没有 pending manifest")
+			get_tree().quit(1)
+			return
+		var corrupt_id := String(Sim.cargo_manifest_order[0])
+		var corrupt_rec: Dictionary = Sim.cargo_manifests.get(corrupt_id, {})
+		if _corrupt_manifest != "price_per" or corrupt_rec.is_empty():
+			print("[SPACESHOT] ❌ 未支持的 corrupt manifest field=%s" % _corrupt_manifest)
+			get_tree().quit(1)
+			return
+		corrupt_rec["price_per"] = int(corrupt_rec.get("price_per", 0)) + 1
+		_meta["corrupt_manifest_field"] = _corrupt_manifest
+		_meta["corrupt_manifest_id"] = corrupt_id
+		# The product HUD is event-driven.  The bench mutation bypasses that event on purpose, so
+		# normalize it before the "before" frame; otherwise the roundtrip would compare stale-ready
+		# text against the correctly refreshed invalid text after returning from the warehouse.
+		_main.call("_update_status")
 	var pb = _main.get("_probe")
 	if pb == null:
 		print("[SPACESHOT] ❌ 拿不到 Main._probe")
@@ -111,6 +131,12 @@ func _ready() -> void:
 		_refresh()
 		await _wait(4, 200)
 	_meta["player_journey"] = not capture_player.is_empty()
+	var cargo_status: Dictionary = Sim.cargo_status_for_node("port_dock")
+	_meta["cargo_state"] = String(cargo_status.get("state", ""))
+	_meta["cargo_good"] = String(cargo_status.get("good", ""))
+	_meta["cargo_qty"] = int(cargo_status.get("qty", 0))
+	var view = _main.get("_view")
+	_meta["carrier_count"] = int((view.call("_cargo_carrier_projections") as Array).size()) if view != null else -1
 	var cam0_pos: Vector2 = pb.cam.position
 	var cam0_zoom: Vector2 = pb.cam.zoom
 	# A physical portal click adds a visible system row.  Preserve the real

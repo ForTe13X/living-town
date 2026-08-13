@@ -1600,6 +1600,9 @@ func _validate_cargo_state(state: Dictionary) -> String:
 		if not (raw_rec is Dictionary):
 			return "schema 1 cargo record is not a Dictionary"
 		var rec: Dictionary = raw_rec
+		for string_key in ["id", "route_id", "node", "good", "state"]:
+			if typeof(rec.get(string_key)) != TYPE_STRING:
+				return "schema 1 cargo %s is not a String" % string_key
 		for int_key in ["lane_index", "arrived_day", "initial_qty", "remaining_qty", "price_per", "price_den"]:
 			if typeof(rec.get(int_key)) != TYPE_INT:
 				return "schema 1 cargo %s is not an int" % int_key
@@ -1612,6 +1615,9 @@ func _validate_cargo_state(state: Dictionary) -> String:
 			return "schema 1 cargo quantity/state is invalid"
 		if int(rec.get("lane_index", -1)) < 0 or int(rec.get("arrived_day", -1)) < 1 or int(rec.get("price_per", -1)) < 0 or int(rec.get("price_den", 0)) <= 0:
 			return "schema 1 cargo lane/day/price is invalid"
+		var authored_error := _manifest_authority_error(manifest_id, rec, state.get("logistics", {}), int(state.get("day", 0)), state.get("event_log", []))
+		if authored_error != "":
+			return authored_error
 	if seen.size() != (manifests as Dictionary).size():
 		return "schema 1 cargo dictionary/order diverge"
 	for raw_ag in state.get("agents", []):
@@ -1627,6 +1633,86 @@ func _validate_cargo_state(state: Dictionary) -> String:
 		if String((option as Dictionary).get("manifest_node", "")) != String(rec.get("node", "")) or String(rec.get("state", "")) != "ready":
 			return "schema 1 cargo option does not match a ready manifest"
 	return ""
+
+## P1-o single source of truth for a live/saved manifest's authored import lane.
+## Pure validation only: callers may use a prepared save copy, live state, or an invariant probe
+## without mutating cargo, money, stock, events, or UI.  Integer conversion is deliberately not
+## accepted for manifest fields: a malformed runtime/save value must not inherit a valid lane by cast.
+func _manifest_authored_lane_error(manifest_id: String, rec: Dictionary, source_logistics, source_day: int) -> String:
+	if not (source_logistics is Dictionary):
+		return "cargo %s has no logistics contract" % manifest_id
+	var raw_lanes = (source_logistics as Dictionary).get("import_lanes")
+	if not (raw_lanes is Array):
+		return "cargo %s has no authored import lanes" % manifest_id
+	for key in ["id", "route_id", "node", "good", "state"]:
+		if typeof(rec.get(key)) != TYPE_STRING:
+			return "cargo %s field %s is not a String" % [manifest_id, key]
+	for key in ["lane_index", "arrived_day", "initial_qty", "remaining_qty", "price_per", "price_den"]:
+		if typeof(rec.get(key)) != TYPE_INT:
+			return "cargo %s field %s is not an int" % [manifest_id, key]
+	var lane_index := int(rec["lane_index"])
+	var lanes: Array = raw_lanes
+	if lane_index < 0 or lane_index >= lanes.size() or not (lanes[lane_index] is Dictionary):
+		return "cargo %s lacks authored lane %d" % [manifest_id, lane_index]
+	var lane: Dictionary = lanes[lane_index]
+	var route := String(lane.get("route_id", ""))
+	var node := String(lane.get("node", ""))
+	var good := String(lane.get("good", ""))
+	var batch := int(lane.get("batch", 0))
+	var every := int(lane.get("every_days", 0))
+	var pnum := int(lane.get("price_per", 0))
+	var pden := int(lane.get("price_den", 1))
+	var arrived_day := int(rec["arrived_day"])
+	if route == "" or node == "" or good == "" or batch <= 0 or every <= 0 or pnum < 0 or pden <= 0:
+		return "cargo %s authored lane is malformed" % manifest_id
+	var expected_id := "manifest_%s_%d_%d" % [route, arrived_day, lane_index]
+	if manifest_id != expected_id or String(rec["id"]) != expected_id:
+		return "cargo %s has a non-canonical manifest id" % manifest_id
+	if arrived_day < 1 or arrived_day > source_day or arrived_day % every != 0:
+		return "cargo %s arrival day %d violates authored cadence/current day %d" % [manifest_id, arrived_day, source_day]
+	if String(rec["route_id"]) != route or String(rec["node"]) != node or String(rec["good"]) != good \
+		or int(rec["initial_qty"]) != batch \
+		or (String(rec["state"]) == "ready" and int(rec["remaining_qty"]) != batch) \
+		or int(rec["price_per"]) != pnum or int(rec["price_den"]) != pden:
+		return "cargo %s diverges from authored lane" % manifest_id
+	return ""
+
+func _manifest_arrival_receipt_error(manifest_id: String, rec: Dictionary, source_events) -> String:
+	if not (source_events is Array):
+		return "cargo %s has no event-log contract" % manifest_id
+	var exact := 0
+	var expected_note := "cargo_arrive:%s*%d" % [manifest_id, int(rec.get("initial_qty", 0))]
+	for raw_event in source_events:
+		if not (raw_event is Dictionary):
+			continue
+		var event: Dictionary = raw_event
+		var note := String(event.get("note", ""))
+		if String(event.get("target", "")) != manifest_id and not note.begins_with("cargo_arrive:" + manifest_id + "*"):
+			continue
+		if String(event.get("type", "")) != "world" or event.get("accepted", false) != true \
+			or String(event.get("actor", "")) != String(rec.get("route_id", "")) \
+			or String(event.get("target", "")) != manifest_id or String(event.get("subject", "")) != String(rec.get("good", "")) \
+			or note != expected_note:
+			return "cargo %s arrival receipt conflicts with manifest" % manifest_id
+		exact += 1
+	if exact != 1:
+		return "cargo %s arrival receipt count %d, expected 1" % [manifest_id, exact]
+	return ""
+
+func _manifest_authority_error(manifest_id: String, rec: Dictionary, source_logistics, source_day: int, source_events) -> String:
+	var lane_error := _manifest_authored_lane_error(manifest_id, rec, source_logistics, source_day)
+	if lane_error != "":
+		return lane_error
+	return _manifest_arrival_receipt_error(manifest_id, rec, source_events)
+
+func _manifest_targets_node(rec: Dictionary, node: String) -> bool:
+	if String(rec.get("node", "")) == node:
+		return true
+	var lanes = logistics.get("import_lanes", [])
+	var lane_index := int(rec.get("lane_index", -1))
+	return lanes is Array and lane_index >= 0 and lane_index < (lanes as Array).size() \
+		and (lanes as Array)[lane_index] is Dictionary \
+		and String(((lanes as Array)[lane_index] as Dictionary).get("node", "")) == node
 
 ## Validate the complete copy before set(). This keeps bad header/blob pairs, partial migrations,
 ## unknown keys and type-confused payloads from partially overwriting a running quickload target.
@@ -1692,27 +1778,15 @@ func _compact_prepared_completed_manifests(state: Dictionary) -> String:
 	var saved_economy = state.get("economy", {})
 	var economy_on: bool = saved_economy is Dictionary and not (saved_economy as Dictionary).is_empty()
 	var saved_logistics = state.get("logistics", {})
-	var lanes: Array = (saved_logistics as Dictionary).get("import_lanes", []) \
-		if saved_logistics is Dictionary and (saved_logistics as Dictionary).get("import_lanes", []) is Array else []
 	for i in range(order.size() - 1, -1, -1):
 		var manifest_id := String(order[i])
 		var rec: Dictionary = manifests.get(manifest_id, {})
 		if String(rec.get("state", "")) != "complete":
 			continue
 		var qty := int(rec.get("initial_qty", 0))
-		var lane_index := int(rec.get("lane_index", -1))
-		if lane_index < 0 or lane_index >= lanes.size() or not (lanes[lane_index] is Dictionary):
-			return "complete cargo %s lacks authored lane" % manifest_id
-		var lane: Dictionary = lanes[lane_index]
-		var expected_id := "manifest_%s_%d_%d" % [String(rec.get("route_id", "")), int(rec.get("arrived_day", -1)), lane_index]
-		if manifest_id != expected_id or String(rec.get("id", "")) != expected_id:
-			return "complete cargo %s has a non-canonical manifest id" % manifest_id
-		if String(lane.get("route_id", "")) != String(rec.get("route_id", "")) \
-			or String(lane.get("node", "")) != String(rec.get("node", "")) \
-			or String(lane.get("good", "")) != String(rec.get("good", "")) \
-			or int(lane.get("batch", 0)) != qty or int(lane.get("price_per", 0)) != int(rec.get("price_per", 0)) \
-			or int(lane.get("price_den", 1)) != int(rec.get("price_den", 1)):
-			return "complete cargo %s diverges from authored lane" % manifest_id
+		var authored_error := _manifest_authority_error(manifest_id, rec, saved_logistics, int(state.get("day", 0)), events)
+		if authored_error != "":
+			return authored_error
 		var arrival_count := 0
 		var tx_rows: Array = []
 		var txid := "cargo_unload/" + manifest_id
@@ -4346,6 +4420,14 @@ func _arrive_import_manifest(lane: Dictionary, lane_index: int) -> String:
 	if _econ_on() and pnum > 0 and (pden <= 0 or batch * pnum / pden <= 0):
 		return ""
 	var manifest_id := "manifest_%s_%d_%d" % [route, day, lane_index]
+	var prospective := {
+		"id": manifest_id, "route_id": route, "lane_index": lane_index,
+		"node": node, "good": good, "arrived_day": day,
+		"initial_qty": batch, "remaining_qty": batch,
+		"price_per": pnum, "price_den": pden, "state": "ready",
+	}
+	if _manifest_authored_lane_error(manifest_id, prospective, logistics, day) != "":
+		return ""
 	var expected_note := "cargo_arrive:%s*%d" % [manifest_id, batch]
 	var arrival_receipts := 0
 	for raw in event_log:
@@ -4371,14 +4453,7 @@ func _arrive_import_manifest(lane: Dictionary, lane_index: int) -> String:
 	if cargo_manifests.has(manifest_id):
 		push_error("CargoManifest live record lacks arrival receipt id=%s" % manifest_id)
 		return ""
-	var rec := {
-		"id": manifest_id, "route_id": route, "lane_index": lane_index,
-		"node": node, "good": good, "arrived_day": day,
-		"initial_qty": batch, "remaining_qty": batch,
-		"price_per": pnum, "price_den": pden,
-		"state": "ready",
-	}
-	cargo_manifests[manifest_id] = rec
+	cargo_manifests[manifest_id] = prospective
 	cargo_manifest_order.append(manifest_id)
 	_log_event("world", route, manifest_id, good, true, [], expected_note)
 	return manifest_id
@@ -4391,6 +4466,11 @@ func _first_unloadable_manifest(node: String) -> String:
 		if not cargo_manifests.has(manifest_id):
 			continue
 		var rec: Dictionary = cargo_manifests[manifest_id]
+		var authored_error := _manifest_authority_error(manifest_id, rec, logistics, day, event_log)
+		if authored_error != "":
+			if _manifest_targets_node(rec, node):
+				return ""
+			continue
 		var qty := int(rec.get("remaining_qty", 0))
 		if String(rec.get("state", "")) != "ready" or String(rec.get("node", "")) != node or qty <= 0:
 			continue
@@ -4406,16 +4486,22 @@ func _first_unloadable_manifest(node: String) -> String:
 	return ""
 
 ## 给玩家/HUD/测试的只读港口状态；严格按 manifest arrival order 看最早 ready 单，不把 UI 变成第二权威。
-## state: empty / ready / working / blocked_capacity / blocked_funds。
+## state: empty / ready / working / blocked_capacity / blocked_funds / invalid。
 func cargo_status_for_node(node: String) -> Dictionary:
 	var out := {"state": "empty", "node": node, "manifest_id": "", "good": "", "qty": 0, "cost": 0,
-		"worker_id": "", "ready_count": 0, "ready_qty": 0}
+		"worker_id": "", "ready_count": 0, "ready_qty": 0, "invalid_count": 0, "error": ""}
 	var first: Dictionary = {}
 	for raw_id in cargo_manifest_order:
 		var manifest_id := String(raw_id)
 		if not cargo_manifests.has(manifest_id):
 			continue
 		var rec: Dictionary = cargo_manifests[manifest_id]
+		var authored_error := _manifest_authority_error(manifest_id, rec, logistics, day, event_log)
+		if authored_error != "":
+			if _manifest_targets_node(rec, node):
+				out.merge({"state": "invalid", "invalid_count": 1, "error": authored_error}, true)
+				return out
+			continue
 		var qty := int(rec.get("remaining_qty", 0))
 		if String(rec.get("state", "")) != "ready" or String(rec.get("node", "")) != node or qty <= 0:
 			continue
@@ -4487,6 +4573,8 @@ func _commit_manifest_unload(manifest_id: String, worker_id: String, node: Strin
 	var rec: Dictionary = cargo_manifests[manifest_id]
 	var manifest_index := cargo_manifest_order.find(manifest_id)
 	if manifest_index < 0:
+		return 0
+	if _manifest_authority_error(manifest_id, rec, logistics, day, event_log) != "":
 		return 0
 	var qty := int(rec.get("remaining_qty", 0))
 	var good := String(rec.get("good", ""))

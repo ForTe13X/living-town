@@ -1632,6 +1632,8 @@ func _player_cargo_hint(pl: Dictionary) -> String:
 	var st: Dictionary = Sim.cargo_status_for_node("port_dock")
 	if String(st.get("state", "")) == "empty":
 		return "  [color=#9fb8c8]港：暂无待卸货物[/color]"
+	if String(st.get("state", "")) == "invalid":
+		return "  [color=#ffb06a]港：货单异常·暂停卸货[/color]"
 	var worker := Sim._name(Sim.get_agent(String(st.get("worker_id", ""))))
 	if worker == "": worker = "码头工"
 	var state_label: String = String({

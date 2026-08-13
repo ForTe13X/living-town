@@ -174,12 +174,14 @@ if [ "${1:-}" = "--shoot" ]; then
   fi
   # P1-i：真实 player 从东港门走进货仓并返回；另拍 status OFF 作为像素负对照。
   # 独立目录避免覆盖上面的 legacy cafe 三帧；两次共享 seed/tick 与 pinned framebuffer。
-  mkdir -p "$OUT/warehouse" "$OUT/warehouse_off"
+  mkdir -p "$OUT/warehouse" "$OUT/warehouse_off" "$OUT/warehouse_corrupt"
   if RT_OWN_XVFB=0 RT_GAME="$GAME" RT_SPACE=port_warehouse RT_PLAYER_POS=57,8 GODOT="$GBIN" \
        bash "$(dirname "$0")/space_roundtrip.sh" --shoot "$OUT/warehouse" >>/tmp/vg-godot.log 2>&1 \
      && RT_OWN_XVFB=0 RT_GAME="$GAME" RT_SPACE=port_warehouse RT_PLAYER_POS=57,8 RT_DRAW_SKIP=warehouse_status GODOT="$GBIN" \
-       bash "$(dirname "$0")/space_roundtrip.sh" --shoot "$OUT/warehouse_off" >>/tmp/vg-godot.log 2>&1; then
-    echo "  p1i-warehouse 采集 ok  (player 东港近景 → 货仓 → 返回 + status ON/OFF)"
+       bash "$(dirname "$0")/space_roundtrip.sh" --shoot "$OUT/warehouse_off" >>/tmp/vg-godot.log 2>&1 \
+     && RT_OWN_XVFB=0 RT_GAME="$GAME" RT_SPACE=port_warehouse RT_PLAYER_POS=57,8 RT_CORRUPT_MANIFEST=price_per GODOT="$GBIN" \
+       bash "$(dirname "$0")/space_roundtrip.sh" --shoot "$OUT/warehouse_corrupt" >>/tmp/vg-godot.log 2>&1; then
+    echo "  p1i/p1o-warehouse 采集 ok  (player 往返 + status ON/OFF + corrupt authority)"
   else
     echo "  p1i-warehouse 采集 FAIL (见上面的 [SPACESHOT] 行)"; [ "$rc" -eq 0 ] && rc=11
   fi
@@ -415,6 +417,8 @@ WRT1=$?
 WRT2=$?
 "$PY" tools/assert_p1i_warehouse.py "$OUT/warehouse" "$OUT/warehouse_off" --tol "$TOL"
 WPRC=$?
+"$PY" tools/assert_p1o_manifest_authority.py "$OUT/warehouse" "$OUT/warehouse_corrupt"
+WMARC=$?
 # 岸线判据（G5 / docs/49 §七）。**不额外渲一帧**：吃的正是上面已经拍好的 vg_noon / vg_night
 # ——它们已经是 `--shot-fit` 的整镇入画帧，正是 pond.py 需要的取景。
 # 昼夜两帧都判：本棒实测过一版**只在白天绿、入夜就红**的判据（绝对亮度阈值），
@@ -468,6 +472,7 @@ FLRC=$?
 [ $WRT1 -ne 0 ] && exit $WRT1
 [ $WRT2 -ne 0 ] && exit $WRT2
 [ $WPRC -ne 0 ] && exit $WPRC
+[ $WMARC -ne 0 ] && exit $WMARC
 [ $PRC -ne 0 ] && exit $PRC
 [ $IRC -ne 0 ] && exit $IRC
 [ $FRC -ne 0 ] && exit $FRC

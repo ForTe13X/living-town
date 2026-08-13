@@ -13,7 +13,7 @@ func ck(ok: bool, msg: String) -> void:
 	print(("  OK   " if ok else "  FAIL ") + msg)
 
 func projection(S) -> Array:
-	return ViewScript.carrier_projections_for(S.logistics, S.cargo_manifests, S.cargo_manifest_order)
+	return ViewScript.carrier_projections_for(S, S.logistics, S.cargo_manifests, S.cargo_manifest_order)
 
 func v2(raw) -> Vector2i:
 	return Vector2i(int(raw[0]), int(raw[1])) if raw is Array and raw.size() >= 2 else Vector2i(-1, -1)
@@ -157,6 +157,20 @@ func _ready() -> void:
 	var hud_status: Dictionary = S.cargo_status_for_node("port_dock")
 	ck(int(hud_status.get("ready_count", 0)) == 3 and int(hud_status.get("ready_qty", 0)) == 12,
 		"玩家港口状态与船徽记共用同一 backlog 3单/12件投影")
+	var corrupt_price := int(S.cargo_manifests["manifest_east_ocean_3_0"]["price_per"])
+	S.cargo_manifests["manifest_east_ocean_3_0"]["price_per"] = corrupt_price + 1
+	ck(projection(S).size() == 1 and String(projection(S)[0].get("manifest_id", "")) == "manifest_east_ocean_6_0",
+		"坏的首单不画幽灵船，carrier 确定跳到下一张 authored-valid ready 单")
+	ck(String(S.cargo_status_for_node("port_dock").get("state", "")) == "invalid",
+		"同一坏首单在玩家状态明确显示暂停，而不是伪装成无货/下一单")
+	S.cargo_manifests["manifest_east_ocean_6_0"]["price_per"] += 1
+	S.cargo_manifests["manifest_east_ocean_9_0"]["price_per"] += 1
+	ck(projection(S).is_empty(), "route/node 全部 ready 单坏时外景严格零 carrier")
+	S.cargo_manifests["manifest_east_ocean_3_0"]["price_per"] = corrupt_price
+	S.cargo_manifests["manifest_east_ocean_6_0"]["price_per"] -= 1
+	S.cargo_manifests["manifest_east_ocean_9_0"]["price_per"] -= 1
+	ck(projection(S).size() == 1 and String(S.cargo_status_for_node("port_dock").get("state", "")) != "invalid",
+		"恢复 authored 价格后 carrier 与玩家状态同步恢复")
 	S.cargo_manifests["manifest_east_ocean_3_0"]["remaining_qty"] = 0
 	S.cargo_manifests["manifest_east_ocean_3_0"]["state"] = "complete"
 	p = projection(S)
@@ -182,7 +196,7 @@ func _ready() -> void:
 	var manifests0: Dictionary = S.cargo_manifests.duplicate(true)
 	var order0: Array = S.cargo_manifest_order.duplicate(true)
 	var events0: Array = S.event_log.duplicate(true)
-	ck(ViewScript.carrier_projections_for(logistics_off, S.cargo_manifests, S.cargo_manifest_order).is_empty()
+	ck(ViewScript.carrier_projections_for(S, logistics_off, S.cargo_manifests, S.cargo_manifest_order).is_empty()
 		and S.cargo_manifests == manifests0 and S.cargo_manifest_order == order0 and S.event_log == events0
 		and int(Inv.chain_step(0, S, S.event_log.size())) == chain0,
 		"删 carriers 配置时只有货船不可见，Sim 权威态/事件/chain 不变")
@@ -190,7 +204,7 @@ func _ready() -> void:
 	for i in range(order0.size() - 1, -1, -1):
 		var mid := String(order0[i])
 		manifests_rekeyed[mid] = manifests0[mid].duplicate(true)
-	ck(ViewScript.carrier_projections_for(S.logistics, manifests_rekeyed, order0) == p,
+	ck(ViewScript.carrier_projections_for(S, S.logistics, manifests_rekeyed, order0) == p,
 		"Dictionary 插入序反转不影响 authored order 的 carrier projection")
 
 	print("p1c_east_ocean_carrier_test: %s (%d fail)" % [("PASS ✅" if _fails == 0 else "FAIL ❌"), _fails])
