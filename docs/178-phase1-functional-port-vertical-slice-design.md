@@ -344,3 +344,11 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 - **玩家语义**：坏单不伪装成 empty/ready，也不泄露不可信 good/qty/cost/worker；外景零货船，HUD/仓内统一显示“货单异常·暂停卸货”。valid→corrupt 玩家对拍固定 seed3/tick600/[57,8]：外景变化 26,931 px（船+提示）、仓内只改状态板行 3,046 px；两臂都真实进仓返回且 town 前后逐像素相同。判据已接入 visual gate，不把本地 pinned GL 冒充 GHA receipt。
 - **牙与回归**：P1-g 覆盖 12 个单字段/类型负臂、offline schema-2 原子拒绝、future/cadence、arrival accepted/target/note；每臂要求零候选/commit/副作用、#44 红与恢复。P1-b/P1-c/save migration/state projection 均绿；标准 12×60d det3 hard/#40/#44/#45/#46 全 12/12，import/export `156/57` 覆盖全 seed，det3/3。
 - **边界**：这是存档内部合同而非密码学签名；同时篡 lane 与 manifest 的 provenance 另议。完整接口、receipt、presentation 来源/许可/恢复见 `analysis/p1o/manifest-authored-lane-authority.md`。golden/modelpath/complement 不重烘，PR #6 继续 draft。
+
+### 13.12 P1-p：统一传送门权限事务 + 玩家拒绝实帧（2026-08-13；未重烘）
+
+- **单一交付**：移除接受任意 portal 字典的原始传送面，把 Main 玩家点击和 NPC journey 统一到 `Sim._try_traverse_portal`。边界从 actor 当前 plane/位置重新解析 authored edge，自行派生玩家相邻/NPC 端点规则，验证 access、owner、方向与两端导航后，才原子提交地址、路径缓存和一次 transition signal。
+- **真实反例已关闭**：schema-2 中伪造 player home、伪造当前 cafe/2f plane、或只把保存的 owner portal 改为 public，过去都能经真实 UI 越权；现在保存的 spaces/portals/homes/agent address 必须精确满足 authored graph 与可授权可达域，`peek/load` 在触碰 receiver 前拒绝。静态数据门同步拒绝未知 access、错类型、越界/重复端点和无效 owner。
+- **至少十二步闭环**：上下文/review 对账、四条反例、事务设计、authored graph、双调用方、原子提交、current-schema 验证、负控矩阵、正向/Probe 纠偏、分层回归、exact 玩家实帧、Lore/Git/PR 收口全部属于同一权限纵切；不把无关 UI 重构拼入本批。
+- **玩家呈现**：seed3/tick600/player `[57,8]` 的真实点击正向仍复用 P1-i 两帧；新增 `docs/media/p1p_portal_denied.png`。拒绝臂保持 player/Probe/camera/cargo 精确不变，画面明确显示“东海货仓：私人区域，未获通行许可”，7,191 个变化像素全部位于反馈区。反馈仍只在左下 feed、室内返程门受 HUD 挤压，诚实登记为后续 player-shell polish 债，不在本批用假 toast/离线合成掩盖。
+- **验证/边界**：portal/save/projection/cargo/player focused 与 standard 1-12×60d det3 no-golden 均绿；exact committed-product-tree framebuffer 绑定 `a48ee58`。最新 completed review 冻结 tip 落后且仍为 REQUEST CHANGES，托管 exact-tip CI 需在 push 后重新取证；golden/modelpath/complement 未重烘，PR #6 继续 draft/不可合并。完整合同、SHA、runner digest、receipt、来源/许可、限制与恢复见 `analysis/p1p/portal-traversal-authority.md`。
