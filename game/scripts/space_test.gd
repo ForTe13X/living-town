@@ -26,6 +26,12 @@ func _agent_portal_snapshot(ag: Dictionary) -> Dictionary:
 func _count_portal_signal(_agent_id: String) -> void:
 	_portal_signals += 1
 
+func _has_error_fragment(errs: Array, fragment: String) -> bool:
+	for err in errs:
+		if fragment in String(err):
+			return true
+	return false
+
 func _ready() -> void:
 	Sim.start_new(1)
 	Sim.agent_changed.connect(_count_portal_signal)
@@ -36,6 +42,29 @@ func _ready() -> void:
 	ck(sg.loaded, "spaces.json 已加载")
 	var errs: Array = sg.validate()
 	ck(errs.is_empty(), "validate() 无错 (%s)" % ("ok" if errs.is_empty() else str(errs)))
+	# Cross-platform JSON contract: integral floats are canonical numeric values, but a
+	# string, fraction, or non-positive traversal cost must still fail closed.
+	var numeric_portal: Dictionary = sg.portals[0]
+	var canonical_cost: Variant = numeric_portal["traversal_cost"]
+	var canonical_pos: Array = (numeric_portal["from"] as Dictionary)["pos"]
+	numeric_portal["traversal_cost"] = 2.0
+	ck(not _has_error_fragment(sg.validate(), "traversal_cost"), "JSON integral-float traversal_cost 跨平台合法")
+	numeric_portal["traversal_cost"] = 1.5
+	ck(_has_error_fragment(sg.validate(), "traversal_cost"), "fractional traversal_cost fail-closed")
+	numeric_portal["traversal_cost"] = "1"
+	ck(_has_error_fragment(sg.validate(), "traversal_cost"), "string traversal_cost fail-closed")
+	numeric_portal["traversal_cost"] = 0.0
+	ck(_has_error_fragment(sg.validate(), "traversal_cost"), "zero traversal_cost fail-closed")
+	numeric_portal["traversal_cost"] = canonical_cost
+	var canonical_x: Variant = canonical_pos[0]
+	canonical_pos[0] = float(canonical_x)
+	ck(not _has_error_fragment(sg.validate(), "pos 必须是整数格"), "JSON integral-float portal pos 跨平台合法")
+	canonical_pos[0] = float(canonical_x) + 0.5
+	ck(_has_error_fragment(sg.validate(), "pos 必须是整数格"), "fractional portal pos fail-closed")
+	canonical_pos[0] = "1"
+	ck(_has_error_fragment(sg.validate(), "pos 必须是整数格"), "string portal pos fail-closed")
+	canonical_pos[0] = canonical_x
+	ck(sg.validate().is_empty(), "numeric negative teeth restore canonical graph exactly")
 	ck(sg.has_space("town") and sg.has_floor("town", "outdoor"), "town/outdoor 存在")
 	ck(sg.has_space("test_loft") and sg.has_floor("test_loft", "2f"), "test_loft/2f 存在")
 	ck(not sg.has_floor("town", "2f"), "town 没有 2f（floor 归属正确）")

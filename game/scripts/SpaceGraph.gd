@@ -93,6 +93,17 @@ func address_of(agent: Dictionary) -> Dictionary:
 			"position": d.get("position", agent.get("pos", Vector2i.ZERO)), "room_id": String(d.get("room_id", ""))}
 	return {"space_id": "town", "floor_id": "outdoor", "position": agent.get("pos", Vector2i.ZERO), "room_id": ""}
 
+## JSON.parse_string may decode integral literals as either int or float depending on the
+## platform/build.  Authority validation cares about the mathematical value, while still
+## rejecting strings and fractional numbers instead of relying on a lossy int() cast.
+func _is_integer_number(value: Variant) -> bool:
+	if typeof(value) == TYPE_INT:
+		return true
+	if typeof(value) != TYPE_FLOAT:
+		return false
+	var number := float(value)
+	return is_finite(number) and number == floor(number)
+
 # ── 校验（P1 Gate：无悬挂 Portal 引用）───────────────────────────────────────
 ## 返回错误列表（空=通过）。CI 由 tools/lint_data.py 跑同源检查，这里供运行期/测试用。
 func validate() -> Array:
@@ -135,7 +146,7 @@ func validate() -> Array:
 		if typeof(p.get("bidirectional")) != TYPE_BOOL:
 			errs.append("portal '%s'.bidirectional 必须是 bool" % pid)
 		var traversal_cost = p.get("traversal_cost")
-		if typeof(traversal_cost) != TYPE_INT or int(traversal_cost) <= 0:
+		if not _is_integer_number(traversal_cost) or int(traversal_cost) <= 0:
 			errs.append("portal '%s'.traversal_cost 必须是正整数" % pid)
 		for side in ["from", "to"]:
 			if not (p.get(side) is Dictionary):
@@ -152,7 +163,7 @@ func validate() -> Array:
 			if pos.size() != 2:
 				errs.append("portal '%s'.%s: pos 必须是 [x,y]" % [pid, side])
 				continue
-			if typeof(pos[0]) != TYPE_INT or typeof(pos[1]) != TYPE_INT:
+			if not _is_integer_number(pos[0]) or not _is_integer_number(pos[1]):
 				errs.append("portal '%s'.%s: pos 必须是整数格" % [pid, side])
 				continue
 			if has_space(sid):
