@@ -88,6 +88,9 @@ func _ready() -> void:
 		_drop(F)
 
 	var S = _fixture()
+	# These three corrupted-history arms deliberately call product paths that must keep using
+	# push_error. tools/ci.sh owns the other half of the contract: each exact error family must
+	# occur once, no family may substitute for another, and no unrelated runtime error is allowed.
 	var live_events: Array = S.event_log.duplicate(true)
 	for i in range(S.event_log.size() - 1, -1, -1):
 		if String(S.event_log[i].get("note", "")).begins_with("cargo_arrive:" + manifest_id):
@@ -250,6 +253,8 @@ func _ready() -> void:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(bad_id_path))
 	ck(not Legacy.save_game(bad_id_path) and not FileAccess.file_exists(bad_id_path),
 		"schema-2 writer 拒绝非 canonical live manifest，且不留下半档")
+	# This fourth expected rejection is counted independently by CI. The following offline
+	# transformer remains the only authorized way to construct the adversarial save fixture.
 	Legacy.cargo_manifests[old_id]["id"] = old_id
 	ck(_write_manifest_id_mutation(legacy_path, bad_id_path, old_id, "manifest_east_ocean_99_0"),
 		"离线 transformer 从合法档构造单字段 manifest-id 负例")

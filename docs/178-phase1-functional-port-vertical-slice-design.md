@@ -330,3 +330,10 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 - **分层验收**：save/load/state projection、P1-b/c/d/g、space/player/static gates 全绿；标准 12-seed hard/soft 12/12、held-out hard 18/18（#40 17/18 达门）、total-N24 hard 12/12（#40 11/12 达门），三格 #44/#45/#46 与 determinism 全绿，N24 import/export `167/82` 覆盖 12/12，均为同一稳定 candidate 指纹且未传 golden。
 - **玩家位置 / presentation**：固定 Godot 4.6.2、seed3、tick600、player `[57,8]` 真走“东海外景→货仓1F→返回”；返回帧与出发帧逐字节相等、内景相对外景变化 98.59%。ON/OFF 56,048 像素差全部落在仓库状态板 crop，肉眼同框可读玩家、船/货箱、仓门、到货簿、三类库存、HUD、需求/钱、时间与交互。帧 hash 与已跟踪 P1-i presentation pool 精确一致，故复用、不复制；完整命令、receipt、SHA-256、许可、边界和恢复见 `analysis/p1m/schema-writer-supervisor-player-proof.md`。
 - **delivery/hygiene**：本棒不重烘 stale golden/modelpath/complement，不把本地 pinned-GL 冒充 GHA visual receipt；PR 继续 draft，等待 committed exact-tip CI 与独立 finalize。README/首屏 demo、protected branches、unknown-owner worktree 均未触碰；无 archive/clean。
+
+### 13.10 P1-n：预期拒绝也必须成为受约束日志（2026-08-13；未重烘）
+
+- **问题**：PR #6 run `31659112066` 中 P1-g 行为断言最终 PASS，但三个 arrival tombstone 负控与一个 writer 负控各自正确 `push_error`，通用 runtime sentinel 因没有 owning-scene 合同而把四条全部当成未解释错误。它不是产品 guard 红，也不能靠忽略 stderr 或把 `push_error` 降级成 warning 修。
+- **合同**：`scan_exact_once_set` 要求每个声明的错误 family **各恰好一次**，过滤后任何第五条 `ERROR` / `SCRIPT ERROR` 仍红；缺一、同族重复替代另一族、额外错误三类负控全部自测。P1-g 与 state projection 是两个既有消费者，故抽取边界成立；`Sim.gd`/数据/不变量零改动。
+- **候选证据**：canonical supervisor 下 P1-g、state projection、save migration 均 PASS 且 source stable/cleanup verified；前两者的四族拒绝逐项 exact-once、未声明 runtime error 为零。P1-m 的标准/held-out/total-N24 无 golden 网格继续适用，因为本棒不改仿真权威面。玩家位置再次从 exact HEAD 重建东海外景→货仓→返回三帧及 8 秒 H.264 短片，tracked P1-i 图 hash 不变；同时诚实记录 dossier 压返程门、无 NPC 时仍显示社交动作等后续 UX 债。
+- **边界**：本棒不重烘 golden/modelpath/complement；Draft PR 在 committed exact-tip CI 和独立重烘协议完成前仍不可合入。完整根因、失败路线、命令、receipt、视觉/许可/恢复见 `analysis/p1n/expected-runtime-error-contract.md`。
