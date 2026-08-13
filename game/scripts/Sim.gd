@@ -1324,26 +1324,32 @@ const SAVE_SCHEMA_LEGACY := 1
 const SAVE_SCHEMA := 2
 const SAVE_RUNTIME_HANDLES := ["backend", "ext", "decision_sink"]
 const SAVE_LOAD_DENY := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink"]
+const SAVE_CURRENT_BLOB_KEYS := ["magic", "schema", "game_version", "saved_tick", "saved_day", "seed", "meta", "active_commit_ids", "state"]
+
+## The current-schema contract is the exact field set emitted by save_game, derived from the same
+## reflection/exclusion policy instead of a second hand-maintained allowlist. This is intentionally
+## fail-closed: adding a new authoritative script var changes the schema-2 shape, so an older
+## schema-2 payload is rejected instead of inheriting that field from the live quickload receiver.
+func _current_save_state_keys() -> Dictionary:
+	var keys := {}
+	for p in get_property_list():
+		if not (int(p["usage"]) & PROPERTY_USAGE_SCRIPT_VARIABLE):
+			continue
+		var key := String(p["name"])
+		if key in SAVE_LOAD_DENY:
+			continue
+		var v = get(key)
+		if v is Object or v is Callable:
+			continue
+		keys[key] = true
+	return keys
 
 func save_game(path: String, meta := {}) -> bool:
 	# 派生引用结构【不入档】：它们只是 agents[]/commitments[] 的别名视图，存了也只能得到孤儿副本；
 	# 读档后由 _rebuild_after_load 从真源重建（_active_commitments 靠下面存的 id 列表还原成员资格）。
-	const DERIVED := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos"]  # 派生/每 tick 重建，别名视图不入档
-	# lod_focus 是【相机/视口窗口】参数(默认(12,8)，红线：真机绝不喂它)，非 sim 状态——不入档，防"绝不接相机"的红线经存档泄漏(评审 open_risk)。
-	const VIEW_PARAMS := ["lod_focus"]
-	# 探针状态不入档：shadow_on 是 bench 开关、shadow_trace 是 bench 遥测——存了会改变 save-blob 字节
-	# （评审指出：默认 0 对 event digest 逐字节不变，但若存档反射所有 script 变量则 save-blob 会变）→ 显式排除，还原 save 逐字节一致。
-	const BENCH_ONLY := ["shadow_on", "shadow_trace"]
 	var state := {}
-	for p in get_property_list():
-		if not (int(p["usage"]) & PROPERTY_USAGE_SCRIPT_VARIABLE):
-			continue
-		if String(p["name"]) in DERIVED or String(p["name"]) in BENCH_ONLY or String(p["name"]) in VIEW_PARAMS or String(p["name"]) in SAVE_RUNTIME_HANDLES:
-			continue
-		var v = get(p["name"])
-		if v is Object or v is Callable:            # backend/ext/decision_sink：接线非状态，不入档
-			continue
-		state[p["name"]] = v
+	for key in _current_save_state_keys():
+		state[key] = get(key)
 	# agent["memory"] 是【嵌套 Object】（MemoryStream）——store_var 会把它编码成 EncodedObjectAsID 死壳，
 	# 读回后 mem.add() 直接崩（硬门抓到的头号 bug）。→ 存它的 items 数据，读档时重建对象。
 	var ser_agents := []
@@ -1368,6 +1374,10 @@ func save_game(path: String, meta := {}) -> bool:
 		"saved_tick": tick_no, "saved_day": day, "seed": seed_base, "meta": meta,
 		"active_commit_ids": active_ids, "state": state,
 	}
+	var shape_error := _validate_current_save_shape(blob)
+	if shape_error != "":
+		push_error("save_game REFUSED — %s" % shape_error)
+		return false
 	var f := FileAccess.open(path, FileAccess.WRITE)
 	if f == null:
 		push_warning("save_game: cannot open %s" % path)
@@ -1392,9 +1402,59 @@ func peek_save(path: String) -> Dictionary:
 	f.close()
 	if not (blob is Dictionary) or blob.get("magic") != SAVE_MAGIC or int(blob.get("schema", -1)) != sch or not (blob.get("state") is Dictionary):
 		return {}
+	if sch == SAVE_SCHEMA and _validate_current_save_shape(blob) != "":
+		return {}
 	blob.erase("state")                             # 只回头信息
 	blob["requires_migration"] = sch < SAVE_SCHEMA
 	return blob
+
+func _validate_current_save_shape(blob: Dictionary) -> String:
+	for key in SAVE_CURRENT_BLOB_KEYS:
+		if not blob.has(key):
+			return "schema %d missing current envelope key: %s" % [SAVE_SCHEMA, key]
+	if blob.size() != SAVE_CURRENT_BLOB_KEYS.size():
+		return "schema %d envelope key count %d, expected %d" % [SAVE_SCHEMA, blob.size(), SAVE_CURRENT_BLOB_KEYS.size()]
+	for typed_key in ["schema", "saved_tick", "saved_day", "seed"]:
+		if typeof(blob.get(typed_key)) != TYPE_INT:
+			return "schema %d envelope %s is not an int" % [SAVE_SCHEMA, typed_key]
+	if typeof(blob.get("magic")) != TYPE_STRING or typeof(blob.get("game_version")) != TYPE_STRING \
+		or not (blob.get("meta") is Dictionary):
+		return "schema %d envelope string/meta types are invalid" % SAVE_SCHEMA
+	var raw_state = blob.get("state")
+	if not (raw_state is Dictionary):
+		return "state is not a Dictionary"
+	var state: Dictionary = raw_state
+	var state_error := _validate_loaded_state(state, SAVE_SCHEMA)
+	if state_error != "":
+		return state_error
+	for pair in [["saved_tick", "tick_no"], ["saved_day", "day"], ["seed", "seed_base"]]:
+		if typeof(blob.get(pair[0])) != TYPE_INT or int(blob.get(pair[0])) != int(state.get(pair[1], -1)):
+			return "schema %d envelope %s does not match state %s" % [SAVE_SCHEMA, pair[0], pair[1]]
+	var active_ids = blob.get("active_commit_ids")
+	if not (active_ids is Array) or not (active_ids as Array).all(func(v): return typeof(v) == TYPE_INT):
+		return "active_commit_ids is not an int Array"
+	var commitment_ids := {}
+	var active_commitment_ids := {}
+	for raw_commitment in state.get("commitments", []):
+		if not (raw_commitment is Dictionary) or typeof((raw_commitment as Dictionary).get("id")) != TYPE_INT:
+			return "commitment id is invalid"
+		var commitment_id := int((raw_commitment as Dictionary)["id"])
+		if commitment_ids.has(commitment_id):
+			return "commitment id %d is duplicate" % commitment_id
+		commitment_ids[commitment_id] = true
+		if String((raw_commitment as Dictionary).get("status", "")) == "active":
+			active_commitment_ids[commitment_id] = true
+	var seen_active := {}
+	for raw_id in active_ids:
+		var active_id := int(raw_id)
+		if seen_active.has(active_id) or not commitment_ids.has(active_id):
+			return "active commitment id %d is duplicate or missing" % active_id
+		if not active_commitment_ids.has(active_id):
+			return "active commitment id %d points to inactive state" % active_id
+		seen_active[active_id] = true
+	if seen_active.size() != active_commitment_ids.size():
+		return "active commitment membership is incomplete"
+	return ""
 
 func load_game(path: String) -> bool:
 	if not FileAccess.file_exists(path):
@@ -1411,6 +1471,11 @@ func load_game(path: String) -> bool:
 	f.close()
 	if not (blob is Dictionary) or blob.get("magic") != SAVE_MAGIC or int(blob.get("schema", -1)) != sch:
 		return false
+	if sch == SAVE_SCHEMA:
+		var shape_error := _validate_current_save_shape(blob)
+		if shape_error != "":
+			push_warning("load_game: %s" % shape_error)
+			return false
 	var active_ids = blob.get("active_commit_ids", [])
 	if not (active_ids is Array) or not (active_ids as Array).all(func(v): return typeof(v) == TYPE_INT):
 		return false
@@ -1442,14 +1507,15 @@ func _prepare_loaded_state(blob: Dictionary, sch: int) -> Dictionary:
 	if not (raw_state is Dictionary):
 		return {"ok": false, "error": "state is not a Dictionary"}
 	var state: Dictionary = (raw_state as Dictionary).duplicate(true)
-	# Runtime services are receiver-owned. Historical headless schema 1 files could contain backend/ext=null;
-	# applying that to Main's live Sim would silently disconnect AI/extensions after quickload.
-	for handle in SAVE_RUNTIME_HANDLES:
-		state.erase(handle)
 	if sch == SAVE_SCHEMA:
 		return {"ok": true, "state": state}
 	if sch != SAVE_SCHEMA_LEGACY:
 		return {"ok": false, "error": "no migration path for schema %d" % sch}
+	# Runtime services are receiver-owned. Historical headless schema 1 files could contain backend/ext=null;
+	# applying that to Main's live Sim would silently disconnect AI/extensions after quickload. Current schema
+	# never emitted these keys, so schema 2 rejects them as a shape violation instead of silently normalizing.
+	for handle in SAVE_RUNTIME_HANDLES:
+		state.erase(handle)
 
 	var has_manifests := state.has("cargo_manifests")
 	var has_order := state.has("cargo_manifest_order")
@@ -1579,6 +1645,13 @@ func _validate_loaded_state(state: Dictionary, sch: int) -> String:
 			return "state key %s has type %d, expected %d" % [key, typeof(incoming), typeof(live)]
 		if typeof(live) == TYPE_NIL and typeof(incoming) != TYPE_NIL:
 			return "runtime handle %s is not null" % key
+	if sch == SAVE_SCHEMA:
+		var expected := _current_save_state_keys()
+		for key in expected:
+			if not state.has(key):
+				return "schema %d missing current state key: %s" % [sch, key]
+		if state.size() != expected.size():
+			return "schema %d state key count %d, expected %d" % [sch, state.size(), expected.size()]
 	for key in ["agents", "world", "production", "logistics", "tick_no", "day", "seed_base", "event_log", "event_digest", "town_stock", "town_coin", "external_coin", "econ_total0", "commitments", "cargo_manifests", "cargo_manifest_order", "core_population"]:
 		if not state.has(key):
 			return "missing required state key: %s" % key

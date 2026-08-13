@@ -110,6 +110,11 @@ func _legacyize(path: String, contract: Dictionary, p1a_only: bool = false) -> b
 		if raw_ws is Dictionary and String((raw_ws as Dictionary).get("id", "")) == "bench_pier":
 			(raw_ws as Dictionary)["area"] = "dock"
 			(raw_ws as Dictionary)["pos"] = [31, 7]
+	if p1a_only:
+		for raw_ag in state.get("agents", []):
+			if raw_ag is Dictionary and String((raw_ag as Dictionary).get("id", "")) == "tao":
+				(raw_ag as Dictionary)["option"] = {"kind": "object", "action": "卸货", "target": "port_dock",
+					"need": "fun", "amount": 46, "dur_total": 28, "remaining": 2, "phase": "use"}
 	blob["state"] = state
 	blob["schema"] = 1
 	blob["meta"] = {"fixture": "d46cbb1" if not p1a_only else "p1a-only"}
@@ -132,13 +137,15 @@ func _wage_unload_count(S) -> int:
 func _reject_is_atomic(path: String, label: String) -> void:
 	var S = SimScript.new(); add_child(S); S.auto_run = false; S.start_new(991)
 	S.day = 3; S._logi_import(); S.core_population = 59
+	S.festival_active = "__receiver_poison__"
 	var digest0 := Inv.digest(S)
 	var event0 := int(S.event_digest)
 	var cargo0: Dictionary = S.cargo_manifests.duplicate(true)
 	var order0: Array = S.cargo_manifest_order.duplicate(true)
 	ck(not S.load_game(path), label + " 被拒绝")
 	ck(Inv.digest(S) == digest0 and int(S.event_digest) == event0 and S.cargo_manifests == cargo0
-		and S.cargo_manifest_order == order0 and int(S.core_population) == 59,
+		and S.cargo_manifest_order == order0 and int(S.core_population) == 59
+		and String(S.festival_active) == "__receiver_poison__",
 		label + " 拒绝前后 live state 原子不变")
 
 func _ready() -> void:
@@ -190,9 +197,6 @@ func _ready() -> void:
 	# saved logistics 与 compiled world，避免只清一次 option 后下一 tick 又 ghost-unload。
 	var ghost_path := "user://save_migration_p1a_ghost.dat"
 	var G = SimScript.new(); add_child(G); G.auto_run = false; G.start_new(88)
-	var tao: Dictionary = G.get_agent("tao")
-	tao["option"] = {"kind": "object", "action": "卸货", "target": "port_dock", "need": "fun",
-		"amount": 46, "dur_total": 28, "remaining": 2, "phase": "use"}
 	ck(G.save_game(ghost_path, {"fixture": "p1a"}) and _legacyize(ghost_path, contract, true),
 		"写出 P1-a-only schema-1 ghost 形状")
 	var H = SimScript.new(); add_child(H); H.auto_run = false
@@ -214,6 +218,27 @@ func _ready() -> void:
 	var handle_state: Dictionary = (handle_env.get("blob", {}) as Dictionary).get("state", {})
 	ck(not handle_state.has("backend") and not handle_state.has("ext") and not handle_state.has("decision_sink"),
 		"schema 2 永不序列化 runtime handles")
+	var expected_state_keys: Dictionary = HandleSrc._current_save_state_keys()
+	ck(handle_state.size() == expected_state_keys.size()
+		and expected_state_keys.keys().all(func(key): return handle_state.has(key)),
+		"schema 2 state 字段集合逐项等于当前保存器合同")
+	var current_blob: Dictionary = handle_env.get("blob", {})
+	var every_envelope_missing_rejected := true
+	for key in SimScript.SAVE_CURRENT_BLOB_KEYS:
+		var missing_envelope: Dictionary = current_blob.duplicate(true)
+		missing_envelope.erase(key)
+		if HandleSrc._validate_current_save_shape(missing_envelope) == "":
+			every_envelope_missing_rejected = false
+			break
+	ck(every_envelope_missing_rejected, "schema 2 任一 current envelope 字段缺失均 fail-closed")
+	var every_missing_rejected := true
+	for key in expected_state_keys:
+		var missing_state: Dictionary = handle_state.duplicate(true)
+		missing_state.erase(key)
+		if HandleSrc._validate_loaded_state(missing_state, 2) == "":
+			every_missing_rejected = false
+			break
+	ck(every_missing_rejected, "schema 2 任一当前 state 字段缺失均 fail-closed")
 	var HandleDst = SimScript.new(); add_child(HandleDst); HandleDst.auto_run = false
 	var service := Node.new(); add_child(service)
 	HandleDst.backend = service; HandleDst.ext = service
@@ -259,8 +284,44 @@ func _ready() -> void:
 	((flag_blob["state"] as Dictionary)["agents"] as Array)[0]["affiliate"] = 0
 	ck(_write_envelope(bad_flag, 2, flag_blob), "schema-2 bad-agent-flag fixture 写盘")
 	_reject_is_atomic(bad_flag, "schema-2 non-bool affiliate flag")
+	var missing_current := "user://save_migration_missing_current.dat"
+	var missing_blob: Dictionary = (v2_env["blob"] as Dictionary).duplicate(true)
+	(missing_blob["state"] as Dictionary).erase("festival_active")
+	ck(_write_envelope(missing_current, 2, missing_blob), "schema-2 missing-current-field fixture 写盘")
+	ck(A.peek_save(missing_current).is_empty(), "peek_save 不把 missing-current 坏档列为可加载")
+	_reject_is_atomic(missing_current, "schema-2 missing current authoritative field")
+	var missing_active_ids := "user://save_migration_missing_active_ids.dat"
+	var active_blob: Dictionary = (v2_env["blob"] as Dictionary).duplicate(true)
+	active_blob.erase("active_commit_ids")
+	ck(_write_envelope(missing_active_ids, 2, active_blob), "schema-2 missing-active-ids fixture 写盘")
+	ck(A.peek_save(missing_active_ids).is_empty(), "peek_save 不把 missing-active-ids 坏档列为可加载")
+	_reject_is_atomic(missing_active_ids, "schema-2 missing active commitment membership")
+	var extra_current := "user://save_migration_extra_current.dat"
+	var extra_blob: Dictionary = (v2_env["blob"] as Dictionary).duplicate(true)
+	(extra_blob["state"] as Dictionary)["backend"] = null
+	ck(_write_envelope(extra_current, 2, extra_blob), "schema-2 extra-runtime-handle fixture 写盘")
+	ck(A.peek_save(extra_current).is_empty(), "peek_save 不把 extra-state 坏档列为可加载")
+	_reject_is_atomic(extra_current, "schema-2 extra current state field")
+	var extra_envelope := "user://save_migration_extra_envelope.dat"
+	var envelope_blob: Dictionary = (v2_env["blob"] as Dictionary).duplicate(true)
+	envelope_blob["__future_envelope"] = 1
+	ck(_write_envelope(extra_envelope, 2, envelope_blob), "schema-2 extra-envelope fixture 写盘")
+	ck(A.peek_save(extra_envelope).is_empty(), "peek_save 不把 extra-envelope 坏档列为可加载")
+	_reject_is_atomic(extra_envelope, "schema-2 extra envelope field")
+	var lying_header := "user://save_migration_lying_header.dat"
+	var lying_blob: Dictionary = (v2_env["blob"] as Dictionary).duplicate(true)
+	lying_blob["saved_tick"] = int(lying_blob.get("saved_tick", 0)) + 1
+	ck(_write_envelope(lying_header, 2, lying_blob), "schema-2 lying-header fixture 写盘")
+	ck(A.peek_save(lying_header).is_empty(), "peek_save 不展示与 state 不符的头信息")
+	_reject_is_atomic(lying_header, "schema-2 envelope/state metadata mismatch")
+	var dangling_active := "user://save_migration_dangling_active.dat"
+	var dangling_blob: Dictionary = (v2_env["blob"] as Dictionary).duplicate(true)
+	dangling_blob["active_commit_ids"] = [2147483647]
+	ck(_write_envelope(dangling_active, 2, dangling_blob), "schema-2 dangling-active fixture 写盘")
+	ck(A.peek_save(dangling_active).is_empty(), "peek_save 不展示悬空 active commitment 档")
+	_reject_is_atomic(dangling_active, "schema-2 dangling active commitment")
 
-	for path in [legacy_path, v2_path, ghost_path, handle_path, mismatch, partial, unknown, wrong_type, bad_core, bad_cargo, bad_flag]:
+	for path in [legacy_path, v2_path, ghost_path, handle_path, mismatch, partial, unknown, wrong_type, bad_core, bad_cargo, bad_flag, missing_current, missing_active_ids, extra_current, extra_envelope, lying_header, dangling_active]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 	print("save_migration_test: %s (%d fail)" % [("PASS ✅" if _fails == 0 else "FAIL ❌"), _fails])

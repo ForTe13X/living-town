@@ -315,3 +315,10 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 - **验收**：`audit_map` 锁定门、地类、室内材料与 display-only 家具；`space_test` 锁定真实进出、墙体碰撞、可走地毯与返回；玩家 UI/save/P1-a/P1-b/P1-c/P1-g focused scenes 均绿。标准 seeds 1–12 ×60d 为 S0 PASS，hard/soft 12/12、#40/#44/#45/#46 12/12、真实 import/export `156/57` 覆盖全 seed、det3/3；未传 golden。
 - **视觉负控 / presentation pool**：固定 Godot 4.6.2、seed3、tick600、player `[57,8]` 的 ON/OFF 对拍为 56,048 变化像素，bbox `(512,156)-(778,367)` 全落在状态板 crop `(505,147)-(784,371)`。两张 1280×768 玩家帧已入 `docs/media/p1i_east_ocean_{player,warehouse}.png`；它们是可重建 presentation receipt，不是 pixel golden。完整命令、SHA-256、来源/许可证与边界见 `analysis/p1i/east-ocean-warehouse.md`。
 - **delivery gate**：P1-i 不改变贸易权威，但 `game/`/空间/View 变化仍令 complement freshness 与旧 visual assumptions 漂移。本棒不重烘 golden/modelpath/complement，不把本地 pinned GL green 冒充 GHA visual receipt；PR #6 继续 draft，等待 committed exact-tip CI、三锚 finalize 与新 review 判决。
+
+### 13.8 P1-l：schema-2 完整权威字段合同（2026-08-13；未重烘）
+
+- **根因 / 红测**：P1-e 的 current-schema 校验只手列 17 个 required state key；从真实 schema-2 档删除另一个权威字段 `festival_active` 后仍可加载，并保留 quickload 接收实例的污染值。envelope 的 `active_commit_ids` 缺失也会默认为空，使同一档依赖 receiver/工作集历史。
+- **合同**：`_current_save_state_keys()` 复用保存器同一套 script-var 反射与 `SAVE_LOAD_DENY` 排除策略；schema 2 的 state 必须与保存器实际字段集合逐项精确相等，current envelope 也必须精确含九个协议键。缺/多任一字段均在触碰 live Sim 前 fail-closed。schema 1 仍走显式迁移，不被强迫伪装当前 shape。
+- **牙齿 / 资源池**：focused test 对真实 current save 的每个 state key 做逐字段 deletion mutation，并用完整 envelope 证明缺 `festival_active`、缺 `active_commit_ids` 都原子拒绝；污染 receiver 的 cargo/order/core/festival/digest 均保持不变。exact d46 fixture、P1-a ghost gate、schema-2 roundtrip/续跑、runtime handles 与 cargo/population 负控继续保留。完整接口与边界见 `analysis/p1l/schema2-complete-state-contract.md`。
+- **产品与视觉边界**：本棒只收紧存读档 codec，不改变玩法/UI/UX/美术/地图/帧输出；P1-i 的玩家/仓库实帧继续是 visual reference，无 changed presentation property 可由新截图验证。本棒不重烘 golden/modelpath/complement，也不解除 PR Draft 与 review delivery gate。
