@@ -31,6 +31,13 @@ if (-not $positive.source_stable -or $positive.source_identity -notin @('exact_c
   throw "Positive control lacks stable source identity: $($positive | ConvertTo-Json -Compress)"
 }
 
+$logical = Invoke-Control -TimeoutSec $PositiveTimeoutSec `
+  -Arguments @('--headless', '--script', 'res://bench/SupervisorLogicFailure.gd') -ExpectedExit 72
+if ($logical.outcome -ne 'logic_failure_pattern' -or -not $logical.logic_failure_pattern `
+  -or $logical.native_crash_pattern -or -not $logical.cleanup_verified) {
+  throw "Zero-exit logical-failure control was not rejected: $($logical | ConvertTo-Json -Compress)"
+}
+
 $negative = Invoke-Control -TimeoutSec $NegativeTimeoutSec -Arguments @('--headless') -ExpectedExit 124
 if ($negative.outcome -ne 'timeout' -or -not $negative.timed_out -or -not $negative.cleanup_verified) {
   throw "Timeout control receipt failed contract: $($negative | ConvertTo-Json -Compress)"
@@ -75,6 +82,7 @@ if ($scoped.Count -ne 0) { throw "Godot processes survived controls: $($scoped.P
 
 Write-Output 'SUPERVISED_GODOT_TEST=PASS'
 Write-Output "POSITIVE_RUN=$($positive.run_id)"
+Write-Output "LOGICAL_FAIL_RUN=$($logical.run_id)"
 Write-Output "TIMEOUT_RUN=$($negative.run_id)"
 Write-Output "BLOCKED_RUN=$($blocked.run_id)"
 exit 0

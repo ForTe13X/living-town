@@ -40,6 +40,37 @@ func _row44(S) -> Dictionary:
 			return row
 	return {}
 
+## Adversarial saves must be produced by an offline transformer, never by asking the
+## production writer to serialize a state that it correctly rejects.  Keep the valid
+## envelope/header intact and mutate only the record field under test.
+func _write_manifest_id_mutation(source_path: String, target_path: String, manifest_id: String, mutated_id: String) -> bool:
+	var source := FileAccess.open(source_path, FileAccess.READ)
+	if source == null or source.get_length() < 8:
+		return false
+	var header := source.get_32()
+	var raw_blob = source.get_var()
+	source.close()
+	if not (raw_blob is Dictionary):
+		return false
+	var blob: Dictionary = (raw_blob as Dictionary).duplicate(true)
+	var state = blob.get("state")
+	if not (state is Dictionary):
+		return false
+	var manifests = (state as Dictionary).get("cargo_manifests")
+	if not (manifests is Dictionary) or not (manifests as Dictionary).has(manifest_id):
+		return false
+	var record = (manifests as Dictionary)[manifest_id]
+	if not (record is Dictionary):
+		return false
+	(record as Dictionary)["id"] = mutated_id
+	var target := FileAccess.open(target_path, FileAccess.WRITE)
+	if target == null:
+		return false
+	target.store_32(header)
+	target.store_var(blob)
+	target.close()
+	return true
+
 func _ready() -> void:
 	var manifest_id := "manifest_east_ocean_3_0"
 	for failpoint in ["after_pay", "after_stock", "after_manifest", "after_receipt", "after_retire"]:
@@ -215,7 +246,13 @@ func _ready() -> void:
 		"读旧 P1-g 档时仅凭 exact receipts 退休 complete record，历史 #44 仍绿")
 	var bad_id_path := "user://p1h_noncanonical_complete_manifest.save"
 	Legacy.cargo_manifests[old_id]["id"] = "manifest_east_ocean_99_0"
-	ck(Legacy.save_game(bad_id_path), "非 canonical complete manifest id mutation 可写盘")
+	if FileAccess.file_exists(bad_id_path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(bad_id_path))
+	ck(not Legacy.save_game(bad_id_path) and not FileAccess.file_exists(bad_id_path),
+		"schema-2 writer 拒绝非 canonical live manifest，且不留下半档")
+	Legacy.cargo_manifests[old_id]["id"] = old_id
+	ck(_write_manifest_id_mutation(legacy_path, bad_id_path, old_id, "manifest_east_ocean_99_0"),
+		"离线 transformer 从合法档构造单字段 manifest-id 负例")
 	var IdGuard = _fixture()
 	var id_guard_before := _snapshot(IdGuard, old_id)
 	ck(not IdGuard.load_game(bad_id_path) and _snapshot(IdGuard, old_id) == id_guard_before,

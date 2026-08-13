@@ -10,13 +10,23 @@ Purpose: prevent a supervised local run from presenting committed SHA/tree metad
 
 P1-f v1 recorded `source_head`, `HEAD:game` and `status_before`, but it never rejected a dirty tree and did not fingerprint the dirty content. Several historical receipts therefore named a commit while executing additional working-tree changes. Their process cleanup evidence remains valid; their exact-source claim does not.
 
-## v2 contract
+## v2 source-identity contract
 
 - Clean tree, stable for the whole run: `source_identity=exact_commit`.
 - Dirty tree without explicit opt-in: preflight receipt, `source_identity=rejected_dirty`, exit 78, Godot never starts.
 - Dirty tree with `-AllowDirtyCandidate`: `source_identity=dirty_candidate`; receipt binds status, tracked binary-diff SHA-256, every untracked file's Git-blob SHA-1, and a combined SHA-256 fingerprint.
 - After Godot exits (or times out), HEAD, branch, committed game tree and the full worktree fingerprint are recomputed. Any before/after drift overrides an otherwise clean result with `outcome=source_drift`, exit 79; cleanup failure and native-crash evidence retain higher severity.
 - Receipt contract is `living-town-supervised-godot-v2`; before/after fields remain explicit so consumers need not infer provenance from prose.
+
+## P1-m v3 verdict addendum
+
+P1-m preserves every v2 identity/cleanup field and changes the receipt contract to
+`living-town-supervised-godot-v3`. The runner now scans the combined Godot/stdout/stderr
+logs for the repository's standard terminal verdicts (`*_test: FAIL` and `... GATE: FAIL`).
+If Godot returned zero, such a verdict is classified as `logic_failure_pattern`, exit 72.
+This closes the Windows Godot case where `get_tree().quit(1)` printed a red final verdict
+but the OS process still returned zero. `SupervisorLogicFailure.gd` is the permanent
+zero-exit negative control; the ordinary P1-d scene remains the non-red positive control.
 
 Ignored files are intentionally outside the product-source fingerprint. The source-drift control uses a unique, unignored `.probe` file; using the repository's ignored `*.tmp` pattern was an invalid negative control and was discarded.
 

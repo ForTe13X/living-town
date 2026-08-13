@@ -8,6 +8,8 @@
   this checkout, enforces a timeout, and removes only processes carrying the unique run
   log path. Clean trees produce exact-commit evidence. Dirty trees fail closed unless
   -AllowDirtyCandidate is explicit; candidate receipts bind the full worktree fingerprint.
+  Standard `*_test: FAIL` / `... GATE: FAIL` verdicts also fail closed because Windows
+  Godot can return process exit 0 after `get_tree().quit(1)`.
 
 .EXAMPLE
   & .\tools\run-godot-supervised.ps1 -TimeoutSec 180 -GodotArgs @(
@@ -191,6 +193,7 @@ $startedUtc = [DateTime]::UtcNow
 $finishedUtc = $null
 $timedOut = $false
 $nativeCrash = $false
+$logicFailure = $false
 $cleanupVerified = $false
 $exitCode = $null
 $outcome = 'runner_error'
@@ -287,6 +290,11 @@ finally {
     $outcome = 'native_crash_pattern'
     $exitCode = 70
   }
+  $logicFailure = [bool]($combined -match '(?im)^[ \t]*(?:===\s*)?[^\r\n]*(?:_test|gate):[ \t]*FAIL\b')
+  if ($logicFailure -and $exitCode -eq 0) {
+    $outcome = 'logic_failure_pattern'
+    $exitCode = 72
+  }
   if ($processStarted -and -not $sourceStable -and $cleanupVerified -and -not $nativeCrash) {
     $outcome = 'source_drift'
     $exitCode = 79
@@ -296,12 +304,13 @@ finally {
   if ($lockOwned -and (Test-Path -LiteralPath $lockPath -PathType Leaf)) { Remove-Item -LiteralPath $lockPath -Force }
 
   $receipt = [ordered]@{
-    contract = 'living-town-supervised-godot-v2'
+    contract = 'living-town-supervised-godot-v3'
     run_id = $runId
     outcome = $outcome
     exit_code = $exitCode
     timed_out = $timedOut
     native_crash_pattern = $nativeCrash
+    logic_failure_pattern = $logicFailure
     cleanup_verified = $cleanupVerified
     started_utc = $startedUtc.ToString('o')
     finished_utc = $finishedUtc.ToString('o')

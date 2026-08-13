@@ -322,3 +322,11 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 - **合同**：`_current_save_state_keys()` 复用保存器同一套 script-var 反射与 `SAVE_LOAD_DENY` 排除策略；schema 2 的 state 必须与保存器实际字段集合逐项精确相等，current envelope 也必须精确含九个协议键。缺/多任一字段均在触碰 live Sim 前 fail-closed。schema 1 仍走显式迁移，不被强迫伪装当前 shape。
 - **牙齿 / 资源池**：focused test 对真实 current save 的每个 state key 做逐字段 deletion mutation，并用完整 envelope 证明缺 `festival_active`、缺 `active_commit_ids` 都原子拒绝；污染 receiver 的 cargo/order/core/festival/digest 均保持不变。exact d46 fixture、P1-a ghost gate、schema-2 roundtrip/续跑、runtime handles 与 cargo/population 负控继续保留。完整接口与边界见 `analysis/p1l/schema2-complete-state-contract.md`。
 - **产品与视觉边界**：本棒只收紧存读档 codec，不改变玩法/UI/UX/美术/地图/帧输出；P1-i 的玩家/仓库实帧继续是 visual reference，无 changed presentation property 可由新截图验证。本棒不重烘 golden/modelpath/complement，也不解除 PR Draft 与 review delivery gate。
+
+### 13.9 P1-m：writer/fixture 对齐 + 本地判决 fail-closed + 玩家三帧回执（2026-08-13；未重烘）
+
+- **CI 根因与修复**：PR #6 的 `31653814665` 首个新代码红是 P1-g fixture 要求严格 schema-2 writer 写出被篡改的 complete manifest id；writer 拒绝本来正确。fixture 现在先断言 live writer fail-closed 且不留半文件，再只对一份合法 store-var envelope 做离线单字段 mutation，loader 仍须原子拒绝；`Sim.gd` 不降级。
+- **监督器 v3**：Windows Godot 曾在打印 `p1g_manifest_transaction_test: FAIL (1 fail)` 后返回 OS exit0，使 v2 本地假绿。canonical supervisor 现识别标准 `*_test: FAIL` / `... GATE: FAIL` 终态并转成 `logic_failure_pattern/72`；永久零退出红控、正常 focused、timeout、并发 owner、dirty 拒绝和 source-drift/79 牙齿全部通过，v2 的 source fingerprint/cleanup 合同完整保留。
+- **分层验收**：save/load/state projection、P1-b/c/d/g、space/player/static gates 全绿；标准 12-seed hard/soft 12/12、held-out hard 18/18（#40 17/18 达门）、total-N24 hard 12/12（#40 11/12 达门），三格 #44/#45/#46 与 determinism 全绿，N24 import/export `167/82` 覆盖 12/12，均为同一稳定 candidate 指纹且未传 golden。
+- **玩家位置 / presentation**：固定 Godot 4.6.2、seed3、tick600、player `[57,8]` 真走“东海外景→货仓1F→返回”；返回帧与出发帧逐字节相等、内景相对外景变化 98.59%。ON/OFF 56,048 像素差全部落在仓库状态板 crop，肉眼同框可读玩家、船/货箱、仓门、到货簿、三类库存、HUD、需求/钱、时间与交互。帧 hash 与已跟踪 P1-i presentation pool 精确一致，故复用、不复制；完整命令、receipt、SHA-256、许可、边界和恢复见 `analysis/p1m/schema-writer-supervisor-player-proof.md`。
+- **delivery/hygiene**：本棒不重烘 stale golden/modelpath/complement，不把本地 pinned-GL 冒充 GHA visual receipt；PR 继续 draft，等待 committed exact-tip CI 与独立 finalize。README/首屏 demo、protected branches、unknown-owner worktree 均未触碰；无 archive/clean。
