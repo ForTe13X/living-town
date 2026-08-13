@@ -13,6 +13,8 @@
 
 ## 最新报告
 
+- [2026-08-13 09:00 CST：可玩 East Ocean 仓库纵切、focused 真红与 manifest 权威收口](reviews/2026-08-13-0900-cst.md)
+- [2026-08-11 21:00 CST：CargoManifest/East Ocean 候选转场、交付阻断与空间纵切计划](reviews/2026-08-11-2100-cst.md)
 - [2026-08-11 09:00 CST：#44/#46 真空假绿、P1-c 窄反馈与拒绝 ghost-unloading](reviews/2026-08-11-0900-cst.md)
 - [2026-08-10 09:00 CST：standing 修复落地、DP-A 撤回与 complement 假绿仍阻断](reviews/2026-08-10-0900-cst.md)
 - [2026-08-09 21:00 CST：standing/E7/DP-A 证据阻断、multi-good 边界与功能港口第一刀](reviews/2026-08-09-2100-cst.md)
