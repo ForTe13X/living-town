@@ -370,3 +370,10 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 - **hosted 终态分类**：run/job 均 terminal `failure`；270,836-byte 完整日志 SHA-256=`1871dd21...9061`，恰好四个 `FAIL:`：complement stale、S0 golden、DetGate golden、ModelPath anchor。其余 16 个 focused scenes、BackendGate、runtime exact-set scanner 及 state-projection 十二族 writer 拒绝均绿；没有第五个 product/infrastructure failure。GHA visual 仍因 Mesa 未 pin 而显式 SKIP。
 - **review sync / stop**：21:10 review 已冻结 `614ec14` 并确认 P1-m/o/p/q 旧阻断关闭；其尚未完成的对抗判定把“机械具备受控重烘条件”与“产品语义已冻结”分开，当前指出 East Ocean draw↔nav、仓库观测室/活仓库里程碑选择与跨 plane 社交边界仍需裁决。进行中意见不是批准，因此本批不写 Harness/DetGate/ModelPath/complement 任一锚，PR 继续 draft/不可合并。
 - **恢复与 hygiene**：完整 hosted 分类、正/负 verifier 牙、fresh-review 输入与限制见 `analysis/p1s/exact-tip-delivery-handoff.md`。恢复触发器是覆盖 `d366811` 的 completed 独立 review；若仍要求产品修正，先闭合新 blocker，再重新取 exact-tip CI。README/首屏 demo、protected branches、unknown-owner worktree、golden/modelpath/complement 均未触碰，无 archive/clean。
+
+### 13.16 P1-t：社交事务 plane authority（2026-08-14；未重烘）
+
+- **真实缺口**：玩家在同一平面跨 area 边界贴身时，`player_act` 的“同区或距离≤2”先放行，`_apply_social` 又只按 area 拒绝，形成假放行；反向的对抗臂里，只要不同 space/floor 的缓存 area 碰撞，apply/advance/commit/mediate 又会把 plane-local 坐标当成同一地点并改写关系、记忆、冲突与事件账本。
+- **单一合同**：复用既有 `_same_plane`，新增 `_socially_reachable` 统一“先同 plane，再同非空 area 或距离≤2”。玩家入口、外部 intent apply、计时推进、最终 commit 共用它；调解要求玩家与两名当事人同 plane 且仍保留原本同一非空 area 的更严范围。NPC 候选仍走已经 plane-aware 的 `_nearby_agents`，默认无玩家轨迹不变。
+- **牙与 exact 证据**：P1-t focused scene 覆盖 cross-space/floor cache collision、入口/apply/advance/commit/mediate 原子拒绝、跨 area 贴身正臂、距离负臂与恢复正臂，修前 9 fail、exact commit `6f6c5e1` 后 16/16 PASS。标准 `1-12×60d×det3` no-golden exact receipt hard/soft/#40/#44/#45/#46 全绿、17 类活性存在、det3/3；其 stdout 与候选网格 SHA-256 完全相同。完整矩阵、receipt、SHA、失败教训、来源/限制/恢复见 `analysis/p1t/social-plane-authority.md`。
+- **review / stop / hygiene**：本批只关闭 21:10 进行中 review 指出的跨 plane 社交边界，不把未完成评审当批准；其余 draw↔nav 与仓库里程碑选择仍开放。README/首屏 demo、protected branches、golden/modelpath/complement、unknown-owner worktree 均未触碰，无 archive/clean；PR #6 继续 draft，等待 completed review 与本 tip hosted 分类。
