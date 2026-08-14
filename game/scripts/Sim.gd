@@ -1173,10 +1173,12 @@ func player_act(action: String, target_id: String) -> String:
 	var tgt: Dictionary = _agent_by_id.get(target_id, {})
 	if tgt.is_empty() or tgt.get("is_player", false):
 		return "先点选一位居民"
-	# 邻近判定（对抗审查#6）：须同一【非空】区域，或曼哈顿距离≤2——堵住"区域外空地 '' == '' 隔全图社交"漏洞
-	var here := String(pl.get("area", ""))
-	var mdist := absi(pl["pos"].x - tgt["pos"].x) + absi(pl["pos"].y - tgt["pos"].y)
-	if not ((here != "" and here == String(tgt.get("area", ""))) or mdist <= 2):
+	# P1-t：space+floor 是第一层权限；area 只是同平面的感知缓存，坐标也只在同平面内有意义。
+	# 邻近判定继续保留旧合同：同一【非空】区域，或曼哈顿距离≤2。执行/推进/提交三层复用同一谓词，
+	# 不再出现入口说能聊、_apply_social 又因隔着 area 边界拒绝的假放行。
+	if not _same_plane(pl, tgt):
+		return "对方不在同一空间"
+	if not _socially_reachable(pl, tgt):
 		return "太远了，走近点（同一区域或贴身）"
 	if int(pl["talking"]) > 0:
 		return "正在交谈中"
@@ -1246,7 +1248,8 @@ func player_mediate(target_id: String) -> String:
 	if A.is_empty() or B.is_empty():
 		return "冲突另一方不在了"
 	var here := String(pl.get("area", ""))
-	if here == "" or String(A.get("area", "")) != here or String(B.get("area", "")) != here:
+	if here == "" or not _same_plane(pl, A) or not _same_plane(pl, B) \
+			or String(A.get("area", "")) != here or String(B.get("area", "")) != here:
 		return "得把 %s 和 %s 都请到同一区域才好说和" % [_name(A), _name(B)]
 	var witnesses: Array = []
 	for w in _nearby_agents(pl):
@@ -2362,7 +2365,7 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 
 func _advance_social(ag: Dictionary, opt: Dictionary) -> void:
 	var partner: Dictionary = _agent_by_id.get(opt["partner"], {})
-	if partner.is_empty() or String(ag.get("area", "")) != String(partner.get("area", "")):
+	if partner.is_empty() or not _socially_reachable(ag, partner):
 		ag["option"] = null      # 对方离开 → 作废
 		ag["talking"] = 0
 		return
@@ -3263,8 +3266,9 @@ func _apply_social(ag: Dictionary, intent: Dictionary) -> void:
 	if action == "" or pid == "":
 		return
 	var partner: Dictionary = _agent_by_id.get(pid, {})
-	# 兜底：对方不存在/正忙/不同区 → 本 tick 不动，下 tick 重选（永不破坏仿真）
-	if partner.is_empty() or int(partner["talking"]) > 0 or String(ag.get("area", "")) != String(partner.get("area", "")):
+	# 兜底：对方不存在/正忙/不在同一平面可交互范围 → 本 tick 不动，下 tick 重选（永不破坏仿真）。
+	# 外部 backend 可提交 intent，所以不能只信候选枚举曾经看过的 area 缓存。
+	if partner.is_empty() or int(partner["talking"]) > 0 or not _socially_reachable(ag, partner):
 		return
 	ag["option"] = {
 		"kind": "social", "action": action, "partner": pid,
@@ -3282,7 +3286,7 @@ func _apply_social(ag: Dictionary, intent: Dictionary) -> void:
 # ── SocialTransaction：发起 → 评估(接受/拒绝) → 提交 → 双方+旁观者写视角记忆 ─────
 func _commit_social(ag: Dictionary, opt: Dictionary) -> void:
 	var target: Dictionary = _agent_by_id.get(opt["partner"], {})
-	if target.is_empty() or String(ag.get("area", "")) != String(target.get("area", "")):
+	if target.is_empty() or not _socially_reachable(ag, target):
 		return
 	var action := String(opt["action"])
 	var subject := String(opt.get("subject", ""))
@@ -5180,6 +5184,19 @@ func _move_agent(ag: Dictionary, newpos: Vector2i) -> void:
 func _same_plane(a: Dictionary, b: Dictionary) -> bool:
 	return String(a.get("space", "town")) == String(b.get("space", "town")) \
 		and String(a.get("floor", "outdoor")) == String(b.get("floor", "outdoor"))
+
+## P1-t：社交事务唯一的 reach 判据。坐标与 area 都是 plane-local；先证明同 plane，再允许
+## 「同一非空 area」或「曼哈顿距离≤2」。NPC 候选仍由 _nearby_agents 限在同 area，故默认
+## 仿真候选集逐字节不变；额外的贴身跨 area 正臂只服务既有 player_act 合同。
+func _socially_reachable(a: Dictionary, b: Dictionary) -> bool:
+	if not _same_plane(a, b):
+		return false
+	var a_area := String(a.get("area", ""))
+	if a_area != "" and a_area == String(b.get("area", "")):
+		return true
+	var ap: Vector2i = a.get("pos", Vector2i.ZERO)
+	var bp: Vector2i = b.get("pos", Vector2i.ZERO)
+	return absi(ap.x - bp.x) + absi(ap.y - bp.y) <= 2
 
 ## 同区其他 agent（用缓存 area，去掉 _area_at 的 areas 内循环；遍历仍按 agents 固定序 → 字节一致）。
 ## P3：先按平面(space,floor)门，再按 area——楼上楼下/店内店外互不"在场"。town 全同平面 → 与旧版一致。
