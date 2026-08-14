@@ -377,3 +377,9 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 - **单一合同**：复用既有 `_same_plane`，新增 `_socially_reachable` 统一“先同 plane，再同非空 area 或距离≤2”。玩家入口、外部 intent apply、计时推进、最终 commit 共用它；调解要求玩家与两名当事人同 plane 且仍保留原本同一非空 area 的更严范围。NPC 候选仍走已经 plane-aware 的 `_nearby_agents`，默认无玩家轨迹不变。
 - **牙与 exact 证据**：P1-t focused scene 覆盖 cross-space/floor cache collision、入口/apply/advance/commit/mediate 原子拒绝、跨 area 贴身正臂、距离负臂与恢复正臂，修前 9 fail、exact commit `6f6c5e1` 后 16/16 PASS。标准 `1-12×60d×det3` no-golden exact receipt hard/soft/#40/#44/#45/#46 全绿、17 类活性存在、det3/3；其 stdout 与候选网格 SHA-256 完全相同。完整矩阵、receipt、SHA、失败教训、来源/限制/恢复见 `analysis/p1t/social-plane-authority.md`。
 - **review / stop / hygiene**：本批只关闭 21:10 进行中 review 指出的跨 plane 社交边界，不把未完成评审当批准；其余 draw↔nav 与仓库里程碑选择仍开放。README/首屏 demo、protected branches、golden/modelpath/complement、unknown-owner worktree 均未触碰，无 archive/clean；PR #6 继续 draft，等待 completed review 与本 tip hosted 分类。
+
+### 13.17 P1-u：East Ocean 可见实体与导航共享 authored footprint（2026-08-14；未重烘）
+
+- **真实缺口**：东海码头画出的船屋、货箱、木桶和麻袋占五格实体，但旧导航只阻挡 `[59,8]` 的功能港口对象；玩家能穿过全部可见实体，阿涛还出生在麻袋 `[58,8]` 中。新 `dock.solid_props` 以四条有序记录声明五格 footprint，Sim、WorldView、current-save 验证、schema-1 迁移、map audit 与 focused fixture 共用这一来源；仓库门 `[57,8]`、港口交互和阿涛新位置 `[59,7]` 保持可达。
+- **至少十二步闭环**：身份/review/ownership 冻结、绘制与 blocker 盘点、11-fail 前置反例、最小数据契约、Tao 迁移、Sim 导航/存档、WorldView 消费、OFF/ON 与坏档牙、map/CI audit、plain/nav 实帧、focused/adjacent/standard 网格、Lore/Git/PR 收口均属于同一 draw→nav 纵切；不夹带仓库玩法重设计。
+- **候选证据与边界**：P1-u/save migration/P1-c/space focused、静态数据/地图/shell、`1-12×60d×det3` no-golden 和 37 帧 split visual assertions 均绿；两张 1280×768 可重建图固定 seed3/tick600/player `[57,8]`，nav overlay 恰覆盖五格实体且门/阿涛格开放。完整命令、receipt、SHA、来源/许可、失败教训和恢复条件见 `analysis/p1u/east-ocean-solid-prop-authority.md`。本棒会改变默认路径与 digest，因此四个 protected anchors 继续 stale；不重烘、不合并，PR #6 保持 draft，等待覆盖本树的 completed review。
