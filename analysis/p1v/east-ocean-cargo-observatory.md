@@ -141,4 +141,3 @@ golden/modelpath/complement anchors remain untouched. Temporary visual outputs a
 generated/rebuildable; no archive or clean action occurred. The branch may be normally pushed, but
 Draft PR #6 must stay draft/unmergeable until hosted exact-tip classification, a completed review
 covering the current product tree, and the controlled anchor-finalize gate all succeed.
-
