@@ -1829,7 +1829,11 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 	# 家具被跳掉 ⇒ 只剩地板/墙 ⇒ assert_cafe_2f 的"非空/可分"必红（= 这道门有牙，见 tools/assert_cafe_2f.py）。
 	for fr in _ac("interior_furniture", content.get("furniture", [])):
 		var fp: Array = (fr as Dictionary).get("pos", [0, 0])
-		_draw_interior_furniture(String((fr as Dictionary).get("slot", "")), Vector2(ox + int(fp[0]) * T, oy + int(fp[1]) * T), role)
+		var furniture_base := Vector2(ox + int(fp[0]) * T, oy + int(fp[1]) * T)
+		_draw_interior_furniture(String((fr as Dictionary).get("slot", "")), furniture_base, role)
+		if bool((fr as Dictionary).get("cargo_observatory", false)):
+			draw_rect(Rect2(furniture_base + Vector2(4, 4), Vector2(T - 8, T - 8)), Color(X_GLOW, 0.72), false, 2.0)
+			draw_string(Art.font(), furniture_base + Vector2(-T * 0.20, -5), "点柜台 · 查回执", HORIZONTAL_ALIGNMENT_LEFT, T * 1.45, 12, X_GOLD)
 	if sid == "port_warehouse":
 		_draw_port_warehouse_status(b)
 	# P3 打磨：夜间氛围（暖底光 + 每盏灯源暖池，占用的床更旺）——画在家具之上、居民之下，居民自身仍清晰
@@ -1846,27 +1850,29 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 ## P1-i 东海货仓账簿：室内不是静态布景，直接读同一份 town_stock + CargoManifest 查询投影。
 ## 纯 View、无缓存/无 RNG；`warehouse_status` 负对照可只关这块，证明视觉确实来自权威状态。
 func _draw_port_warehouse_status(b: Rect2) -> void:
-	draw_string(Art.font(), b.end - Vector2(T * 3.55, T * 0.34), "右侧木门 · 返回东海码头", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, D_WOOD_LINE)
+	# 提示贴近右侧门的中线，不再落在被底部动作条/输入框盖住的最末行。
+	draw_string(Art.font(), b.position + Vector2(T * 5.25, T * 3.58), "右侧木门 → 返回东海码头", HORIZONTAL_ALIGNMENT_LEFT, T * 3.15, 13, D_WOOD_LINE)
 	if not _ap("warehouse_status"):
 		return
-	var panel := Rect2(b.position + Vector2(T * 3.18, T * 0.62), Vector2(T * 2.72, T * 2.12))
+	var projection: Dictionary = Sim.warehouse_observatory_projection("port_dock")
+	var panel := Rect2(b.position + Vector2(T * 3.18, T * 0.62), Vector2(T * 2.72, T * 2.55))
 	draw_rect(Rect2(panel.position + Vector2(3, 4), panel.size), Color(0, 0, 0, 0.26), true)
 	draw_rect(panel, P_COM_FOOT, true)
 	draw_rect(panel, X_WOOD_MID, false, 3.0)
 	draw_rect(Rect2(panel.position + Vector2(5, 5), Vector2(panel.size.x - 10, T * 0.44)), P_FOLIAGE_D, true)
-	draw_string(Art.font(), panel.position + Vector2(12, T * 0.35), "东港到货簿", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, X_PARCHMENT)
+	draw_string(Art.font(), panel.position + Vector2(9, T * 0.35), "港运观测台 · 只读", HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 18, 14, X_PARCHMENT)
 	var goods := ["柴薪", "豆子", "口粮"]
 	for i in goods.size():
 		var good: String = goods[i]
-		var cfg: Dictionary = (Sim.production.get("goods", {}) as Dictionary).get(good, {})
-		var cap := maxi(1, int(cfg.get("cap", 1)))
-		var qty := Sim._stock_of(good)
+		var stock: Dictionary = (projection.get("stocks", {}) as Dictionary).get(good, {})
+		var cap := maxi(1, int(stock.get("cap", 1)))
+		var qty := int(stock.get("qty", 0))
 		var y := panel.position.y + T * (0.67 + float(i) * 0.31)
 		draw_string(Art.font(), Vector2(panel.position.x + 10, y + 11), "%s %d/%d" % [good, qty, cap], HORIZONTAL_ALIGNMENT_LEFT, T * 1.05, 13, X_COLD_WHITE)
 		var bx := panel.position.x + T * 1.48
 		draw_rect(Rect2(bx, y, T * 0.98, 10), Color(0.03, 0.07, 0.08, 0.65), true)
 		draw_rect(Rect2(bx + 1, y + 1, (T * 0.98 - 2) * clampf(float(qty) / float(cap), 0.0, 1.0), 8), X_GLOW if good == "柴薪" else P_WATER_LIT, true)
-	var st := Sim.cargo_status_for_node("port_dock")
+	var st: Dictionary = projection.get("cargo", {})
 	var status := "泊位：暂无待卸货物"
 	if String(st.get("state", "empty")) == "invalid":
 		status = "泊位：货单异常 · 暂停卸货"
@@ -1874,6 +1880,15 @@ func _draw_port_warehouse_status(b: Rect2) -> void:
 		var state_label := String({"ready": "待卸", "working": "卸货中", "blocked_capacity": "仓位不足", "blocked_funds": "镇库不足"}.get(String(st.get("state", "")), "待处理"))
 		status = "泊位：%s×%d · %s" % [String(st.get("good", "货物")), int(st.get("qty", 0)), state_label]
 	draw_string(Art.font(), panel.position + Vector2(10, T * 1.82), status, HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 20, 13, X_GOLD)
+	var receipt: Dictionary = projection.get("receipt", {})
+	var receipt_text := "回执：尚无完成记录"
+	if String(receipt.get("state", "")) == "invalid":
+		receipt_text = "回执：异常 · 已隐藏明细"
+	elif String(receipt.get("state", "")) == "complete":
+		receipt_text = "回执 #%d：%s×%d · %s" % [int(receipt.get("event_id", -1)), String(receipt.get("good", "货物")),
+			int(receipt.get("qty", 0)), Sim._name(Sim.get_agent(String(receipt.get("worker_id", ""))))]
+	draw_string(Art.font(), panel.position + Vector2(10, T * 2.18), receipt_text,
+		HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 20, 12, X_COLD_WHITE)
 
 ## P3 打磨：室内夜间氛围。CanvasModulate 把整幅世界画布乘暗（室内也不例外）→ 夜里进屋本是【冷灰洞】：
 ## 暖木地板被夜蓝乘平。这里靠【相对暖光】把屋子从冷夜拉出来：整层压一层暖底光 + 每件光源家具

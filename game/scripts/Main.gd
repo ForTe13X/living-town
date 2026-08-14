@@ -808,12 +808,39 @@ func verb_for_key(kc: int) -> String:
 func _sync_action_bar(dx: float = 0.0, dy: float = 0.0) -> void:
 	if _act_pan == null:
 		return
-	_act_pan.visible = _player_mode
+	var show := _player_mode and not _player_in_warehouse_observatory()
+	_act_pan.visible = show
 	_act_pan.position = Vector2(ACT_X - 8.0, ACT_Y - 6.0 + dy)
 	for i in _act_btns.size():
 		var b: Button = _act_btns[i]
-		b.visible = _player_mode
+		b.visible = show
 		b.position = Vector2(ACT_X + ACT_STEP * i, ACT_Y + dy)
+
+## P1-v：货运观测室是只读控制面，不伪装成社交目标或玩家卸货台。
+## 只在 visibility 上切上下文；键盘路径另由 _player_do 同门拒绝。
+func _sync_action_bar_context() -> void:
+	if _act_pan == null:
+		return
+	var show := _player_mode and not _player_in_warehouse_observatory()
+	_act_pan.visible = show
+	for raw in _act_btns:
+		(raw as Button).visible = show
+
+func _player_in_warehouse_observatory() -> bool:
+	if not _player_mode:
+		return false
+	var pl: Dictionary = Sim.get_agent("player")
+	return not pl.is_empty() and String(pl.get("space", "town")) == "port_warehouse" \
+		and String(pl.get("floor", "outdoor")) == "1f"
+
+func _agent_location_label(ag: Dictionary) -> String:
+	var sid := String(ag.get("space", "town"))
+	var fid := String(ag.get("floor", "outdoor"))
+	if sid == "port_warehouse" and fid == "1f":
+		return "东海货仓 · 货运观测室"
+	if sid != "town":
+		return "%s · %s" % [_sg.label_of(sid) if _sg != null else sid, fid]
+	return Sim._area_label(ag.get("pos", Vector2i.ZERO))
 
 func _mk_panel(layer: CanvasLayer, pos: Vector2, sz: Vector2) -> ColorRect:
 	var p := ColorRect.new()
@@ -1572,6 +1599,7 @@ func _process(dt: float) -> void:
 func _update_status() -> void:
 	if _status == null:
 		return
+	_sync_action_bar_context()
 	var tod := Sim.time_of_day()
 	var mins := int(tod * 24.0 * 60.0)
 	var clock := "%02d:%02d" % [mins / 60, mins % 60]
@@ -1608,12 +1636,15 @@ func _update_status() -> void:
 				if String(c["status"]) == "active" and (String(c["a"]) == "player" or String(c["b"]) == "player"):
 					var other := String(c["b"]) if String(c["a"]) == "player" else String(c["a"])
 					pmeets.append("和%s约在%s(剩%dt)" % [Sim._name(Sim.get_agent(other)), Sim._area_label_id(String(c["area"])), int(c["deadline"]) - Sim.tick_no])
-			var vkeys := []
-			for v in PLAYER_VERBS:                                             # 单一真源：与动作条按钮同表，不再各写一份
-				vkeys.append("%s%s" % [String(v["key"]), String(v["label"])])
-			var cargo_hint := _player_cargo_hint(pl)
-			ptxt = "\n[color=#ffd700]你：礼物×%d  WASD移动  选中居民后 %s C聊天（或点下方动作条）%s[/color]%s" % [
-				int(pl["inventory"].get("gift", 0)), " ".join(vkeys), ("  约定：" + "；".join(pmeets)) if not pmeets.is_empty() else "", cargo_hint]
+			if _player_in_warehouse_observatory():
+				ptxt = "\n[color=#80e1ff]你：东海货仓 · 货运观测室（只读）  点右侧柜台查泊位/回执  卸货由码头工执行[/color]"
+			else:
+				var vkeys := []
+				for v in PLAYER_VERBS:                                             # 单一真源：与动作条按钮同表，不再各写一份
+					vkeys.append("%s%s" % [String(v["key"]), String(v["label"])])
+				var cargo_hint := _player_cargo_hint(pl)
+				ptxt = "\n[color=#ffd700]你：礼物×%d  WASD移动  选中居民后 %s C聊天（或点下方动作条）%s[/color]%s" % [
+					int(pl["inventory"].get("gift", 0)), " ".join(vkeys), ("  约定：" + "；".join(pmeets)) if not pmeets.is_empty() else "", cargo_hint]
 	_status.text = "[color=#e6e9f2]小镇有灵 Living Town  ·  第 %d 天 %s %s%s%s  ·  %s  ·  %s  ·  NPC %d  ｜  事件 %d  约会 %d(活%d)  冲突 %d(活%d)[/color]%s" % [
 		Sim.day, clock, phase, wx, etxt, spd, btxt, Sim.agents.size(), Sim.event_log.size(), Sim.commitments.size(), meets_active, Sim.conflicts.size(), conf_active, ptxt]
 
@@ -1719,7 +1750,7 @@ func _update_obs() -> void:
 		_obs.text = _panel_text(not _obs_expanded)
 	if _chat_in != null:
 		# ★ gate 在【玩家模式】上（C8 item 3）：非玩家模式里没有"你"，那个输入框只是浮在世界中间的一块 UI。
-		if not _player_mode or _selected_id == "":
+		if not _player_mode or _selected_id == "" or _selected_id == "player" or _player_in_warehouse_observatory():
 			_chat_in.visible = false
 		elif not _chat_in.has_focus():
 			_chat_in.visible = true
@@ -1832,7 +1863,7 @@ func _panel_text(brief: bool = false) -> String:
 	var p: Dictionary = ag.get("persona", {})
 	var L := []
 	L.append("[color=#ffe08a]%s[/color]  [color=#9aa0b5]%s[/color]" % [str(p.get("name", _selected_id)), " ".join(p.get("traits", []))])
-	L.append("[color=#9aa0b5]%s · 在 %s[/color]" % [str(p.get("bio", "")), Sim._area_label(ag["pos"])])
+	L.append("[color=#9aa0b5]%s · 在 %s[/color]" % [str(p.get("bio", "")), _agent_location_label(ag)])
 	var opt = ag.get("option")
 	var doing := "闲着"
 	if opt != null:
@@ -2079,6 +2110,10 @@ func _demo_tick() -> void:
 func _player_do(action: String) -> String:
 	if not _player_mode:
 		return "未开玩家模式"
+	if _player_in_warehouse_observatory():
+		var reason := "货运观测室只读；卸货由码头工执行"
+		_push("[color=#80e1ff]（%s）[/color]" % reason)
+		return reason
 	if _selected_id == "" or _selected_id == "player":
 		_push("[color=#f2a3a3]（先用 Tab/点选一位居民，再按动作键）[/color]")
 		return "未选中居民"
@@ -2679,6 +2714,7 @@ func _portal_click(world_pos: Vector2) -> bool:
 			_selected_id = "player" if player_crossed else ""
 			var verb := "上下楼" if String(p.get("kind", "")) == "stairs" else ("进门" if os != "town" else "出门")
 			_push("[color=#9ad0ff]%s / %s 层（点%s）[/color]" % [_sg.label_of(os), of, verb])
+			_update_obs()
 			_update_status()
 			return true
 	return false
@@ -2686,7 +2722,34 @@ func _portal_click(world_pos: Vector2) -> bool:
 func _on_probe_tap(world_pos: Vector2) -> void:
 	if _portal_click(world_pos):                       # 先看点没点门/楼梯；点了就穿，不再选人
 		return
+	if _warehouse_observatory_click(world_pos):        # 观测柜台只读查询；不落 Sim 账、不选人
+		return
 	_select_at_world(world_pos)
+
+func _warehouse_observatory_click(world_pos: Vector2) -> bool:
+	if _probe == null or String(_probe.active_space) != "port_warehouse" or String(_probe.active_floor) != "1f":
+		return false
+	var cell := Vector2i(int(floor(world_pos.x / 48.0)), int(floor(world_pos.y / 48.0)))
+	if cell != Sim.warehouse_observatory_console_cell():
+		return false
+	var projection: Dictionary = Sim.warehouse_observatory_projection("port_dock")
+	var cargo: Dictionary = projection.get("cargo", {})
+	var receipt: Dictionary = projection.get("receipt", {})
+	var cargo_text := "泊位暂无待卸货物"
+	if String(cargo.get("state", "")) == "invalid":
+		cargo_text = "泊位货单异常，已暂停展示"
+	elif String(cargo.get("state", "")) != "empty":
+		cargo_text = "泊位 %s×%d（%s）" % [String(cargo.get("good", "货物")), int(cargo.get("qty", 0)),
+			String({"ready": "待卸", "working": "卸货中", "blocked_capacity": "仓位不足", "blocked_funds": "镇库不足"}.get(String(cargo.get("state", "")), "待处理"))]
+	var receipt_text := "尚无卸货回执"
+	if String(receipt.get("state", "")) == "invalid":
+		receipt_text = "最近回执异常，已隐藏明细"
+	elif String(receipt.get("state", "")) == "complete":
+		receipt_text = "最近回执 #%d：%s×%d · %s" % [int(receipt.get("event_id", -1)),
+			String(receipt.get("good", "货物")), int(receipt.get("qty", 0)), Sim._name(Sim.get_agent(String(receipt.get("worker_id", ""))))]
+	_push("[color=#80e1ff]观测台｜%s；%s（只读）[/color]" % [cargo_text, receipt_text])
+	_update_status()
+	return true
 
 ## Probe 双击 → 聚焦所点房间（analysis §4.2 Focus）。
 func _on_probe_double_tap(world_pos: Vector2) -> void:

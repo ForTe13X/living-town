@@ -210,6 +210,32 @@ func _ready() -> void:
 			print("[SPACESHOT] ❌ 玩家点门后仍不在目标平面：%s/%s" % [player.get("space", "?"), player.get("floor", "?")])
 			_rc = 1
 		_meta["player_entered"] = player_in
+	# P1-v：东海仓内帧必须来自一次真实柜台点击，而不只是“墙上恰好画了字”。
+	# 点击走 Main._on_probe_tap → authored console cell → 只读 projection；同时钉住 Sim exact no-op。
+	if _space == "port_warehouse":
+		var console_cell: Vector2i = Sim.warehouse_observatory_console_cell()
+		var sim_before := _observatory_sim_snapshot()
+		_main.call("_on_probe_tap", Vector2(console_cell.x * 48 + 24, console_cell.y * 48 + 24))
+		var sim_after := _observatory_sim_snapshot()
+		var recent: Array = _main.get("_log_recent")
+		var observatory_log := String(recent[-1]) if not recent.is_empty() else ""
+		var projection: Dictionary = Sim.warehouse_observatory_projection("port_dock")
+		_meta["observatory"] = {
+			"console_cell": [console_cell.x, console_cell.y],
+			"sim_noop": sim_before == sim_after,
+			"log_bbcode": observatory_log,
+			"mode": String(projection.get("mode", "")),
+			"cargo_state": String((projection.get("cargo", {}) as Dictionary).get("state", "")),
+			"receipt_state": String((projection.get("receipt", {}) as Dictionary).get("state", "")),
+			"action_bar_hidden": not bool((_main.get("_act_pan") as Control).visible),
+			"chat_hidden": not bool((_main.get("_chat_in") as Control).visible),
+			"location_truthful": "东海货仓 · 货运观测室" in String((_main.get("_obs") as RichTextLabel).text),
+		}
+		if sim_before != sim_after or not ("观测台｜" in observatory_log) or not ("（只读）" in observatory_log):
+			print("[SPACESHOT] ❌ 货运观测柜台未形成只读 exact-noop 回执")
+			_rc = 1
+		_refresh()
+		await _wait(4, 200)
 	_snap("interior" if _journey != "full" else "cafe_1f", pb)
 
 	# ── 全楼层观察旅程（AM3/编号135）：cafe/1f →（楼梯 portal）2f →（楼梯）1f ────────────
@@ -445,6 +471,14 @@ func _snap(name: String, pb) -> void:
 		% [name, String(pb.active_space), String(pb.active_floor), img.get_width(), img.get_height(),
 			pb.cam.position.x, pb.cam.position.y, pb.cam.zoom.x,
 			tl.x, tl.y, br.x - tl.x, br.y - tl.y, vd])
+
+func _observatory_sim_snapshot() -> String:
+	return JSON.stringify({
+		"town": Sim.town_coin, "external": Sim.external_coin, "stock": Sim.town_stock,
+		"events": Sim.event_log, "next": Sim._next_event_id, "event_digest": Sim.event_digest,
+		"manifests": Sim.cargo_manifests, "order": Sim.cargo_manifest_order,
+		"path_cache": Sim._path_cache, "player": Sim.get_agent("player"),
+	})
 
 ## 等够 n 帧 **且** 够 ms 毫秒。两个条件都要：容器软渲染实测 5-10 fps（docs/41 §6 盲区⑧），
 ## 光数帧在快机器上会短到纹理还没加载完；光看墙钟在慢机器上会拿到一张半渲的图。

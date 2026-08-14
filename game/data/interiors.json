@@ -601,7 +601,7 @@
  },
  "port_warehouse": {
   "1f": {
-   "label": "到货库",
+   "label": "货运观测室",
    "floor": "stone",
    "furniture": [
     {
@@ -623,7 +623,9 @@
      "pos": [
       6,
       1
-     ]
+     ],
+     "label": "货运观测台",
+     "cargo_observatory": true
     },
     {
      "slot": "crate",

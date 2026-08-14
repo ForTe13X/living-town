@@ -4815,6 +4815,137 @@ func cargo_status_for_node(node: String) -> Dictionary:
 				break
 	return out
 
+## P1-v：东海货运观测室的【唯一只读投影】。当前泊位仍完全复用
+## cargo_status_for_node() 的 authored-lane 判决；这里不生成候选、不签发 option、
+## 不改库存/钱/manifest/event，也不抽 RNG。View 与柜台点击共同消费这一份结果，
+## 避免“墙上账簿”和“玩家提示”各自重抄一套货运真相。
+func warehouse_observatory_projection(node: String = "port_dock") -> Dictionary:
+	var stocks := {}
+	for good in ["柴薪", "豆子", "口粮"]:
+		var cfg: Dictionary = (production.get("goods", {}) as Dictionary).get(good, {})
+		stocks[good] = {"qty": _stock_of(good), "cap": maxi(1, int(cfg.get("cap", 1)))}
+	return {
+		"mode": "read_only", "node": node,
+		"cargo": cargo_status_for_node(node),
+		"receipt": _latest_cargo_unload_receipt(node),
+		"stocks": stocks,
+	}
+
+## interiors.json 的观测柜台是产品交互 authored seam；它没有 advertises，故不会
+## 成为 NPC 经济候选。Main 只问这一格在哪里，不自行抄 [6,1]。
+func warehouse_observatory_console_cell() -> Vector2i:
+	var floor_data = (_interiors_data.get("port_warehouse", {}) as Dictionary).get("1f", {})
+	if not (floor_data is Dictionary):
+		return Vector2i(-1, -1)
+	for raw in (floor_data as Dictionary).get("furniture", []):
+		if not (raw is Dictionary) or not bool((raw as Dictionary).get("cargo_observatory", false)):
+			continue
+		var pos: Array = (raw as Dictionary).get("pos", [])
+		if pos.size() == 2:
+			return Vector2i(int(pos[0]), int(pos[1]))
+	return Vector2i(-1, -1)
+
+## 最近一笔卸货历史只在 exact append-only tx chain 可证明时才向玩家暴露。
+## 最新匹配行若坏，返回 invalid 并清空货名/数量/工人；绝不跳过坏账去展示更老的“好消息”。
+func _latest_cargo_unload_receipt(node: String) -> Dictionary:
+	var none := {"state": "none", "node": node, "manifest_id": "", "good": "", "qty": 0,
+		"worker_id": "", "txid": "", "event_id": -1, "error": ""}
+	for i in range(event_log.size() - 1, -1, -1):
+		var raw = event_log[i]
+		if not (raw is Dictionary):
+			continue
+		var event: Dictionary = raw
+		if String(event.get("type", "")) != "world" or String(event.get("target", "")) != node:
+			continue
+		if not String(event.get("note", "")).begins_with("cargo_unload:") \
+				and not String(event.get("txid", "")).begins_with("cargo_unload/"):
+			continue
+		return _cargo_unload_receipt_at(i, node)
+	return none
+
+func _invalid_cargo_receipt(node: String, error: String) -> Dictionary:
+	return {"state": "invalid", "node": node, "manifest_id": "", "good": "", "qty": 0,
+		"worker_id": "", "txid": "", "event_id": -1, "error": error}
+
+func _cargo_unload_receipt_at(index: int, node: String) -> Dictionary:
+	if index < 0 or index >= event_log.size() or not (event_log[index] is Dictionary):
+		return _invalid_cargo_receipt(node, "receipt index invalid")
+	var receipt: Dictionary = event_log[index]
+	var note := String(receipt.get("note", ""))
+	var prefix := "cargo_unload:"
+	var star := note.rfind("*")
+	if star <= prefix.length() or star >= note.length() - 1:
+		return _invalid_cargo_receipt(node, "receipt note malformed")
+	var manifest_id := note.substr(prefix.length(), star - prefix.length())
+	var qty_text := note.substr(star + 1)
+	if manifest_id == "" or not qty_text.is_valid_int() or int(qty_text) <= 0:
+		return _invalid_cargo_receipt(node, "receipt identity/qty invalid")
+	var qty := int(qty_text)
+	var txid := "cargo_unload/" + manifest_id
+	if String(receipt.get("txid", "")) != txid or not bool(receipt.get("accepted", false)) \
+			or not _unload_worker_assigned(String(receipt.get("actor", ""))) or String(receipt.get("subject", "")) == "":
+		return _invalid_cargo_receipt(node, "receipt world row invalid")
+	var tx_rows: Array = []
+	for raw in event_log:
+		if raw is Dictionary and String((raw as Dictionary).get("txid", "")) == txid:
+			tx_rows.append(raw)
+	if tx_rows.size() not in [2, 3] or tx_rows[tx_rows.size() - 1] != receipt:
+		return _invalid_cargo_receipt(node, "receipt tx exact-set invalid")
+	for i in range(1, tx_rows.size()):
+		if int((tx_rows[i] as Dictionary).get("id", -2)) != int((tx_rows[i - 1] as Dictionary).get("id", -1)) + 1:
+			return _invalid_cargo_receipt(node, "receipt tx ids not adjacent")
+	var paid := tx_rows.size() == 3
+	var stock: Dictionary = tx_rows[1 if paid else 0]
+	var good := String(receipt.get("subject", ""))
+	var historical := _historical_manifest_from_receipt(manifest_id, node, good, qty)
+	if historical.is_empty():
+		return _invalid_cargo_receipt(node, "receipt lacks authored manifest/arrival proof")
+	var expected_paid := _econ_on() and int(historical.get("price_per", 0)) > 0
+	if paid != expected_paid:
+		return _invalid_cargo_receipt(node, "receipt paid/free shape diverges from authored lane")
+	if not bool(stock.get("accepted", false)) or String(stock.get("type", "")) != "import" \
+			or String(stock.get("actor", "")) != node or String(stock.get("target", "")) != "town" \
+			or String(stock.get("subject", "")) != good or String(stock.get("note", "")) != "import*%d" % qty:
+		return _invalid_cargo_receipt(node, "receipt stock row invalid")
+	if paid:
+		var pay: Dictionary = tx_rows[0]
+		if not bool(pay.get("accepted", false)) or String(pay.get("type", "")) != "pay" \
+				or String(pay.get("actor", "")) != "town" or String(pay.get("target", "")) != "external" \
+				or String(pay.get("subject", "")) != "" or String(pay.get("note", "")) != "import*%d" % qty:
+			return _invalid_cargo_receipt(node, "receipt pay row invalid")
+	return {"state": "complete", "node": node, "manifest_id": manifest_id, "good": good, "qty": qty,
+		"worker_id": String(receipt.get("actor", "")), "txid": txid,
+		"event_id": int(receipt.get("id", -1)), "error": ""}
+
+## Retired manifests no longer have a live record. Reconstruct the one possible complete record
+## from canonical id + authored lane, then reuse the same lane/arrival validator as live cargo.
+func _historical_manifest_from_receipt(manifest_id: String, node: String, good: String, qty: int) -> Dictionary:
+	var lanes = logistics.get("import_lanes", [])
+	if not (lanes is Array):
+		return {}
+	for i in (lanes as Array).size():
+		if not ((lanes as Array)[i] is Dictionary):
+			continue
+		var lane: Dictionary = (lanes as Array)[i]
+		var route := String(lane.get("route_id", ""))
+		var prefix := "manifest_%s_" % route
+		var suffix := "_%d" % i
+		if not manifest_id.begins_with(prefix) or not manifest_id.ends_with(suffix):
+			continue
+		var day_text := manifest_id.substr(prefix.length(), manifest_id.length() - prefix.length() - suffix.length())
+		if not day_text.is_valid_int():
+			continue
+		var rec := {
+			"id": manifest_id, "route_id": route, "lane_index": i,
+			"node": node, "good": good, "arrived_day": int(day_text),
+			"initial_qty": qty, "remaining_qty": 0,
+			"price_per": int(lane.get("price_per", 0)), "price_den": int(lane.get("price_den", 1)),
+			"state": "complete",
+		}
+		if _manifest_authority_error(manifest_id, rec, logistics, day, event_log) == "":
+			return rec
+	return {}
+
 ## P1-h：complete 是已由 append-only tx receipt 证明的历史，不再驱动候选/船/UI/未来决策。
 ## 退休只碰 live queue；event_log 保留 arrival+pay+stock+unload 的完整审计链。
 func _retire_completed_manifest(manifest_id: String) -> bool:

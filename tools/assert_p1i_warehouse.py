@@ -48,6 +48,17 @@ def main() -> int:
         interior = meta.get("interior", {})
         if interior.get("space") != "port_warehouse" or interior.get("floor") != "1f":
             failures.append(f"{name} interior metadata is not port_warehouse/1f")
+        observatory = meta.get("observatory", {})
+        if observatory.get("console_cell") != [6, 1] or observatory.get("mode") != "read_only":
+            failures.append(f"{name} did not use the authored read-only observatory console")
+        if (observatory.get("sim_noop") is not True
+                or observatory.get("action_bar_hidden") is not True
+                or observatory.get("chat_hidden") is not True
+                or observatory.get("location_truthful") is not True):
+            failures.append(f"{name} observatory mutated Sim or exposed stale/social player UI")
+        feedback = observatory.get("log_bbcode", "")
+        if "观测台｜" not in feedback or "（只读）" not in feedback:
+            failures.append(f"{name} interior frame lacks the real console interaction receipt")
     if failures:
         print("[P1I-WAREHOUSE] FAIL: " + "; ".join(failures))
         return 1
@@ -60,7 +71,7 @@ def main() -> int:
         print(f"[P1I-WAREHOUSE] FAIL: frame size mismatch {(aw, ah)} != {(bw, bh)}")
         return 1
 
-    # Status panel is authored at cells x=3.18..5.90, y=.62..2.74.  Transform
+    # P1-v observatory panel is authored at cells x=3.18..5.90, y=.62..3.17.  Transform
     # that world box through SpaceShot's measured map rect rather than pinning
     # screen pixels, with a small margin for shadow and glyph antialiasing.
     rect = on_meta["interior"]["map_rect_design"]
@@ -69,7 +80,7 @@ def main() -> int:
         max(0, int(rect[0] + 3.08 * sx)),
         max(0, int(rect[1] + 0.50 * sy)),
         min(aw, int(rect[0] + 6.02 * sx + 0.999)),
-        min(ah, int(rect[1] + 2.86 * sy + 0.999)),
+        min(ah, int(rect[1] + 3.30 * sy + 0.999)),
     )
     changed = outside = 0
     xs: list[int] = []

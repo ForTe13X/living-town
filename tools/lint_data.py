@@ -180,6 +180,7 @@ for p in (portals if isinstance(portals, list) else []):
 
 # 7b) P3 室内内容 interiors.json：space/floor 键须指向真 Space/Floor；家具坐标须落在该 Space 的 bounds 内。
 interiors_d = load("interiors") or {}
+observatory_consoles = []
 for isid, floors in (interiors_d.items() if isinstance(interiors_d, dict) else []):
     if isid.startswith("_"):
         continue
@@ -194,6 +195,12 @@ for isid, floors in (interiors_d.items() if isinstance(interiors_d, dict) else [
             pos = fu.get("pos", [])
             if len(pos) != 2 or not (0 <= pos[0] < bw and 0 <= pos[1] < bh):
                 errs.append(f"interiors '{isid}/{ifid}': furniture '{fu.get('slot','?')}' pos {pos} 越界 {bw}x{bh}")
+            if fu.get("cargo_observatory") is True:
+                observatory_consoles.append((isid, ifid, fu))
+                if fu.get("slot") != "counter" or fu.get("advertises"):
+                    errs.append(f"interiors '{isid}/{ifid}': cargo_observatory must be a non-advertising counter")
+if len(observatory_consoles) != 1 or observatory_consoles[0][0:2] != ("port_warehouse", "1f"):
+    errs.append("interiors: exactly one cargo_observatory is required at port_warehouse/1f")
 
 n_json = len(glob.glob(os.path.join(ROOT, "*.json")))
 if errs:
