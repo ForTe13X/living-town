@@ -383,3 +383,10 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 - **真实缺口**：东海码头画出的船屋、货箱、木桶和麻袋占五格实体，但旧导航只阻挡 `[59,8]` 的功能港口对象；玩家能穿过全部可见实体，阿涛还出生在麻袋 `[58,8]` 中。新 `dock.solid_props` 以四条有序记录声明五格 footprint，Sim、WorldView、current-save 验证、schema-1 迁移、map audit 与 focused fixture 共用这一来源；仓库门 `[57,8]`、港口交互和阿涛新位置 `[59,7]` 保持可达。
 - **至少十二步闭环**：身份/review/ownership 冻结、绘制与 blocker 盘点、11-fail 前置反例、最小数据契约、Tao 迁移、Sim 导航/存档、WorldView 消费、OFF/ON 与坏档牙、map/CI audit、plain/nav 实帧、focused/adjacent/standard 网格、Lore/Git/PR 收口均属于同一 draw→nav 纵切；不夹带仓库玩法重设计。
 - **候选证据与边界**：P1-u/save migration/P1-c/space focused、静态数据/地图/shell、`1-12×60d×det3` no-golden 和 37 帧 split visual assertions 均绿；两张 1280×768 可重建图固定 seed3/tick600/player `[57,8]`，nav overlay 恰覆盖五格实体且门/阿涛格开放。完整命令、receipt、SHA、来源/许可、失败教训和恢复条件见 `analysis/p1u/east-ocean-solid-prop-authority.md`。本棒会改变默认路径与 digest，因此四个 protected anchors 继续 stale；不重烘、不合并，PR #6 保持 draft，等待覆盖本树的 completed review。
+
+### 13.18 P1-v：East Ocean 只读货运观测室（2026-08-14；未重烘）
+
+- **产品决策/单一目标**：本里程碑明确选择“观测室”，不把仓库扩成玩家卸货玩法。`port_warehouse/1f` 的真实玩家可经 authored portal 进入，在唯一 authored 柜台查询三项镇库存、当前 fail-closed manifest 与最新精确卸货回执；柜台与室内社交键都要求 Sim 逐字段 no-op，卸货、库存、付款、工资、事件与 manifest 完成仍只归现有码头工事务所有。
+- **共享权威与呈现**：Main 柜台和 WorldView 状态板共用 `Sim.warehouse_observatory_projection`；paid/free 回执分别要求相邻三行/两行共享 txid，并复核 canonical lane/cadence/arrival、worker、subject、qty、note 与 event id。坏 cargo/receipt 显式 invalid 且剥离不可信字段。右侧 dossier 现显示真实 `space/floor`，室内隐藏无目标社交动作和 self-chat，返程门提示移到 HUD 之上；真实点击留下“只读”反馈。
+- **牙与 exact 证据**：focused scene 覆盖 empty/ready/invalid、paid/free、错数量、坏 note、重复 tx、伪 worker、坏 arrival、真实进出/柜台/隐藏控件/no-op。clean implementation `86a3ebf` / game tree `8dfd5dec` 的 focused receipt `20260814T043633724Z_7bc5784c18cd4caaae15d6fd900f756f` 与标准 `1-12×60d×det3` receipt `20260814T043648118Z_3055a1a71dd848038a2ebaa77ae4c72f` 均绿；标准 stdout SHA 与 P1-u 基线逐字节相同，证明零仿真漂移。
+- **实帧/边界/恢复**：pinned 1280×768 seed3/tick600/[57,8] 的 ON/OFF 真 portal 两臂均进出成功、town 前后 0 px、室内差 98.99%；板区变化 66,954 px 且全部落在计算 crop，metadata 证明柜台 `[6,1]`、read-only、Sim no-op、真实位置和隐藏社交/chat。完整 hash、runner、命令、失败教训、来源/许可、限制与恢复见 `analysis/p1v/east-ocean-cargo-observatory.md`。无短片/玩家卸货声明，不重烘四锚；PR #6 继续 draft，等待本 tip hosted 分类与 completed review。
