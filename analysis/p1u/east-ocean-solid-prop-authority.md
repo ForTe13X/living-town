@@ -1,7 +1,7 @@
 # P1-u East Ocean solid-prop authority
 
-Status: implemented and candidate-verified on 2026-08-14; exact-commit and hosted verification are
-pending. This is a draw/navigation consistency
+Status: implemented and exact-commit verified on 2026-08-14; hosted verification is pending. This
+is a draw/navigation consistency
 repair, not a warehouse redesign, anchor rebake, merge receipt, or approval of Draft PR #6.
 
 Implementation commit: `6d4a983ceeb16c266675c2e2710a1e42322f5d14`
@@ -80,6 +80,23 @@ Static gates passed for 24 JSON files/13 agents, the full 64×48 map contract, J
 `git diff --check`, Docker shell syntax for CI/visual/roundtrip scripts, and Python compilation with
 `PYTHONPYCACHEPREFIX=/tmp/pycache` on the read-only mount.
 
+The clean evidence commit `87c87c0d6bde531c50df46a1cbf85fbb09fb53b6` has the same exact game
+tree as the implementation commit. Its canonical receipts are:
+
+- P1-u exact PASS: `20260814T032338602Z_119e78dea10f42ab85a5e3cbf9d34cab`, source/game-tree
+  stable, cleanup verified, stdout SHA-256
+  `5023ede329ffde7992dca9ac56f3b43a522db824d4deb9bf942da2d1e27657b6`;
+- save migration exact PASS: `20260814T032340828Z_073bff51a1dc49b28dcce38dfaf9970f`;
+- East Ocean carrier exact PASS: `20260814T032344803Z_919f386ddc594330b60dc1d2a422c681`;
+- portal/space exact PASS: `20260814T032346979Z_c06b8f7e49214b1fa5775f1141c09da0`;
+- standard exact PASS: `20260814T032407098Z_506f6bd9d4f44473a04b4b549a3db79d`, source/game-tree
+  stable, cleanup verified, 249.1 seconds, stdout SHA-256
+  `EAE92A13E0B723FF8CF5AB58B20DE05B7DDE192379A1A4D8023A1FEF061CDBB9`.
+
+The exact standard stdout is byte-identical to the final candidate grid, including hard/soft,
+#40/#44/#45/#46, liveness, import/export, and digest rows. This proves the post-commit source is the
+tested candidate, not merely a later clean tree that happened to pass a weaker gate.
+
 ## Visual resource pool
 
 Both frames are generated/rebuildable repository assets captured with `gamecraft-runner:4.6.2`,
@@ -94,6 +111,13 @@ art; no external art, code, or license enters the repository.
 The nav frame visibly overlays exactly the boathouse's two cells plus crate, barrel, and sacks; the
 warehouse portal/player cell and Tao's new dock cell remain open. These are presentation receipts,
 not protected pixel goldens.
+
+Both PNGs were rebuilt from clean exact game tree `9ef3486c` in the pinned image via Xvfb/opengl3;
+the rebuilt files are byte-identical to the tracked SHA-256 values. The first headless-only attempt
+used Godot's dummy renderer and produced no file, so it is explicitly rejected as evidence. A first
+two-shot Xvfb invocation produced the plain frame but its second process returned nonzero; rerunning
+the nav arm in a fresh uniquely owned Xvfb produced `shot ok`, only the declared NobodyWho extension
+absence plus V-Sync/ObjectDB warnings, and the exact tracked hash.
 
 The pinned image produced all 37 full visual-gate frames. Its internal Python lacks Pillow, so the
 all-inside assertion phase correctly stopped as infrastructure-incomplete. The intended split was
