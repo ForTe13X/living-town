@@ -181,6 +181,36 @@ jobs:
           # summary and artifact instead of changing merge policy mid-batch.
           exit 0
 
+      - name: Exercise same-runtime visual negative tooth
+        shell: bash
+        env:
+          GODOT: godot
+          PYTHON: python3
+          LT_VISUAL_NEG_SOURCE: ${{ github.workspace }}/game
+          LT_VISUAL_NEG_WORK: ${{ runner.temp }}/visual-negative-game
+          LT_VISUAL_NEG_OUT: ${{ runner.temp }}/visual-negative-evidence
+        run: |
+          set -euo pipefail
+          if [[ "${{ steps.visual.outputs.verdict }}" != pass ]]; then
+            mkdir -p "$LT_VISUAL_NEG_OUT"
+            printf 'VISUAL_NEGATIVE verdict=not_run positive_verdict=%s\n' \
+              "${{ steps.visual.outputs.verdict }}" \
+              | tee "$LT_VISUAL_NEG_OUT/negative-verdict.txt"
+            exit 0
+          fi
+          bash tools/visual_canary_negative.sh
+          # The injector records a before/after source hash; this live Git tooth
+          # also proves that the checked-out product tree was never the target.
+          git diff --exit-code -- game
+          {
+            echo
+            echo '### Hosted visual negative tooth'
+            echo
+            echo '- expected injected defect: startup day/night modulation disabled'
+            echo '- expected detector shape: FAIL A1 + FAIL A2 only'
+            echo "- $(cat "$LT_VISUAL_NEG_OUT/negative-verdict.txt")"
+          } >>"$GITHUB_STEP_SUMMARY"
+
       - name: Upload hosted visual canary evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
@@ -192,5 +222,6 @@ jobs:
             ${{ runner.temp }}/visual-verdict.txt
             ${{ runner.temp }}/visual-artifacts.sha256
             ${{ runner.temp }}/visual-gate
+            ${{ runner.temp }}/visual-negative-evidence
           if-no-files-found: error
           retention-days: 14

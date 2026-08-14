@@ -404,3 +404,9 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 - **运行时合同**：固定 `ubuntu-24.04` OS family，安装并逐项记录 Mesa/GLX/Xvfb、Godot 4.6.2 archive/binary hash、Python/Pillow 与 `glxinfo -B`；复用原 `tools/visual_gate.sh` 的 native/auto 路径，上传 raw rc、`pass|skip|candidate_fail`、PNG 数量、未声明 runtime-error 数量、全日志和逐文件 SHA-256。
 - **隔离与验收**：canary 独占 35 分钟预算并与核心 job 并行；产品判据首次只观察、不改变合并策略，但 checkout、依赖、指纹或 artifact 上传失败仍真实标红。只有 hosted 帧非空、现有属性断言全绿、无 runtime error 且后续补齐同环境负牙，才允许另批升级为 `LT_VISUAL=require`。
 - **停止/边界**：本批先等 exact PR-head hosted 终态再收口；任何空 artifact、renderer assertion 红或 rc77 都保留原始证据并阻止升级，不弱化本地 pinned `gamecraft-runner:4.6.2` / Mesa 23.2.1 / tolerance-zero lane。独立 review 仍未 completed，PR #6 保持 Draft/UNSTABLE，四锚继续 `prepared_not_authorized`。
+
+### 13.21 P1-y：hosted visual canary 同运行时负牙（2026-08-14；未升级 required）
+
+- **单一目标**：给 P1-x 的 hosted 正臂补一枚同 GitHub runner / Godot / Mesa-llvmpipe / Xvfb / Python 的真负控，证明量具能抓住历史上真实存在的“首帧未施加昼夜光照”回归；不改 `game/`、README、core `ci` job 或四份受保护锚。
+- **可复用 fixture / 判据**：`prepare_visual_canary_negative.py` 只在新临时树结构化绑定 `CanvasModulate` 的第一条 daylight 赋值，精确改成白色并证明 source hash 前后不变；`visual_canary_negative.sh` 复用现役 `vg_shoot` 在真 X11 framebuffer 拍 tick488/600，只有 assertion rc=1、A1/A2 各一次、aggregate `FAIL (2)` 一次且无 runtime fatal 才算“抓住预期缺陷”；假绿、崩溃、缺图或错误失败形状都使 canary job 真红。
+- **交付边界**：只有 P1-x 正臂为 `pass` 时才运行负牙；正臂 `skip/candidate_fail` 明记 `not_run`，不冒充已验证。即使负牙通过，GitHub 滚动 image/Mesa 仍未 pin，因此本批不改变合并策略、不改 `LT_VISUAL=require`、不重烘四锚；PR #6 继续 Draft/UNSTABLE，完整合同、恢复与限制见 `analysis/p1y/hosted-visual-negative-tooth.md`。
