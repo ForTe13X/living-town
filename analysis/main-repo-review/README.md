@@ -13,6 +13,7 @@
 
 ## 最新报告
 
+- [2026-08-14 17:08 CST：港口纵切接近证据迁移，但 chat 旁路阻止 anchor-finalize](reviews/2026-08-14-1708-cst.md)
 - [2026-08-13 09:00 CST：可玩 East Ocean 仓库纵切、focused 真红与 manifest 权威收口](reviews/2026-08-13-0900-cst.md)
 - [2026-08-11 21:00 CST：CargoManifest/East Ocean 候选转场、交付阻断与空间纵切计划](reviews/2026-08-11-2100-cst.md)
 - [2026-08-11 09:00 CST：#44/#46 真空假绿、P1-c 窄反馈与拒绝 ghost-unloading](reviews/2026-08-11-0900-cst.md)
