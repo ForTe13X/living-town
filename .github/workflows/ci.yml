@@ -67,3 +67,130 @@ jobs:
           GODOT: godot
           PYTHON: python3
         run: bash tools/ci.sh
+
+  visual_canary:
+    # This observation lane is deliberately separate from the required core
+    # job: the full visual collection must not consume the core 35-minute
+    # budget or reclassify the four intentionally stale product anchors.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify checked-out event SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual_sha="$(git rev-parse HEAD)"
+          if [[ "$actual_sha" != "$GITHUB_SHA" ]]; then
+            echo "checkout SHA mismatch: actual=$actual_sha event=$GITHUB_SHA" >&2
+            exit 1
+          fi
+          printf 'VISUAL_SOURCE event=%s ref=%s sha=%s\n' \
+            "$GITHUB_EVENT_NAME" "$GITHUB_REF" "$actual_sha"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Godot 4.6.2 and hosted visual runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          GV=4.6.2-stable
+          curl -fLo godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GV}/Godot_v${GV}_linux.x86_64.zip"
+          unzip -q godot.zip
+          sudo mv "Godot_v${GV}_linux.x86_64" /usr/local/bin/godot
+          sudo chmod +x /usr/local/bin/godot
+          python -m pip install --disable-pip-version-check "pillow>=10,<12"
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libgl1 libglx-mesa0 libgl1-mesa-dri mesa-utils xauth xvfb
+          {
+            printf 'RUNNER_IMAGE os=%s version=%s arch=%s\n' \
+              "${ImageOS:-unknown}" "${ImageVersion:-unknown}" "${RUNNER_ARCH:-unknown}"
+            printf 'GODOT_ARCHIVE sha256=%s\n' "$(sha256sum godot.zip | awk '{print $1}')"
+            printf 'GODOT_BINARY sha256=%s version=%s\n' \
+              "$(sha256sum /usr/local/bin/godot | awk '{print $1}')" "$(godot --version)"
+            python -c \
+              'import PIL,platform; print(f"PYTHON version={platform.python_version()} pillow={PIL.__version__}")'
+            dpkg-query -W -f='VISUAL_PACKAGE ${Package}=${Version}\n' \
+              libgl1 libglx-mesa0 libgl1-mesa-dri mesa-utils xauth xvfb
+            LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a -s '-screen 0 1280x768x24' glxinfo -B
+          } | tee "$RUNNER_TEMP/visual-runtime.txt"
+
+      - name: Import project (headless)
+        run: godot --headless --path game --import || true
+
+      - name: Observe native visual gate
+        id: visual
+        shell: bash
+        env:
+          GODOT: godot
+          PYTHON: python3
+          # First hosted observation: once capture starts, assertions remain
+          # hard; a renderer-start failure retains the explicit rc=77 signal.
+          LT_VISUAL: auto
+          LT_VISUAL_RUNNER: native
+          LT_VISUAL_OUT: ${{ runner.temp }}/visual-gate
+        run: |
+          set -uo pipefail
+          set +e
+          bash tools/visual_gate.sh 2>&1 | tee "$RUNNER_TEMP/visual.log"
+          rc=${PIPESTATUS[0]}
+          set -e
+          png_count=0
+          if [[ -d "$LT_VISUAL_OUT" ]]; then
+            png_count="$(find "$LT_VISUAL_OUT" -type f -name '*.png' | wc -l)"
+            find "$LT_VISUAL_OUT" -type f -print0 \
+              | sort -z \
+              | xargs -0 -r sha256sum >"$RUNNER_TEMP/visual-artifacts.sha256"
+          else
+            : >"$RUNNER_TEMP/visual-artifacts.sha256"
+          fi
+          runtime_errors="$(grep -Eic \
+            'SCRIPT ERROR|signal 11|segmentation fault|fatal error|out of bounds' \
+            "$RUNNER_TEMP/visual.log" || true)"
+          case "$rc" in
+            0)
+              if [[ "$png_count" -gt 0 && "$runtime_errors" -eq 0 ]]; then
+                verdict=pass
+              else
+                verdict=candidate_fail
+              fi
+              ;;
+            77) verdict=skip ;;
+            *) verdict=candidate_fail ;;
+          esac
+          printf 'VISUAL_CANARY verdict=%s rc=%s png_count=%s runtime_errors=%s\n' \
+            "$verdict" "$rc" "$png_count" "$runtime_errors" \
+            | tee "$RUNNER_TEMP/visual-verdict.txt"
+          printf 'rc=%s\nverdict=%s\npng_count=%s\nruntime_errors=%s\n' \
+            "$rc" "$verdict" "$png_count" "$runtime_errors" >>"$GITHUB_OUTPUT"
+          {
+            echo '### Hosted visual canary'
+            echo
+            echo "- verdict: $verdict"
+            echo "- visual gate rc: $rc"
+            echo "- PNG artifacts: $png_count"
+            echo "- undeclared runtime errors: $runtime_errors"
+          } >>"$GITHUB_STEP_SUMMARY"
+          # Observation only: infrastructure/setup/upload failures still make
+          # this job red, while the first product verdict is preserved in the
+          # summary and artifact instead of changing merge policy mid-batch.
+          exit 0
+
+      - name: Upload hosted visual canary evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: hosted-visual-canary-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/visual-runtime.txt
+            ${{ runner.temp }}/visual.log
+            ${{ runner.temp }}/visual-verdict.txt
+            ${{ runner.temp }}/visual-artifacts.sha256
+            ${{ runner.temp }}/visual-gate
+          if-no-files-found: error
+          retention-days: 14

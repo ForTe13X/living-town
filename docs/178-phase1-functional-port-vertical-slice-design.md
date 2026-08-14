@@ -397,3 +397,10 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 - **现树证据**：held-out `13-30×60d×det1` receipt `20260814T053846082Z_4ad6be1ef7654f6888edd81fd7368945` 为 hard/#40/#44/#45/#46 `18/18`、det `1/1`；total N24 receipt `20260814T052330969Z_2dc7d8429ea144c3a637963cf353d795` 为 hard `12/12`、#40 `11/12`、#44/#45/#46 `12/12`。隔离 ON 每族覆盖 `12/12`，OFF 三 seed 双跑四族严格为零。
 - **资源池与门**：`analysis/p1w/readiness-evidence.json` 记录输入/摘要/哈希/anchor 指纹；`verify-anchor-finalize-readiness.ps1` 校验精确 Git 身份、clean/upstream、三 anchor、两张网格、ON/OFF、hosted 四失败族和 review 状态。当前唯一允许的 verdict 是 `prepared_not_authorized`；请求 `ready_to_finalize` 必须有 exact-tree completed approval，否则必红。
 - **停止决定**：run `31770888448` 的非 anchor 门已闭合，但 21:10 独立 review 仍在进行中，不能由产品 session 自我授权。PR #6 继续 Draft/UNSTABLE；恢复触发器是覆盖 `8dfd5dec` 的 completed review 明确允许受控重烘，随后另开单一 exact-tree 四锚 finalize batch。
+
+### 13.20 P1-x：GitHub hosted visual canary（2026-08-14；观察臂）
+
+- **单一目标**：关闭 GitHub Actions 视觉门长期只留下显式 `SKIP`、没有 hosted renderer/帧证据的缺口；新增独立并行 `visual_canary`，不改 `game/`、README、四锚或核心 `ci` job，不把首次观察冒充 required pixel gate。
+- **运行时合同**：固定 `ubuntu-24.04` OS family，安装并逐项记录 Mesa/GLX/Xvfb、Godot 4.6.2 archive/binary hash、Python/Pillow 与 `glxinfo -B`；复用原 `tools/visual_gate.sh` 的 native/auto 路径，上传 raw rc、`pass|skip|candidate_fail`、PNG 数量、未声明 runtime-error 数量、全日志和逐文件 SHA-256。
+- **隔离与验收**：canary 独占 35 分钟预算并与核心 job 并行；产品判据首次只观察、不改变合并策略，但 checkout、依赖、指纹或 artifact 上传失败仍真实标红。只有 hosted 帧非空、现有属性断言全绿、无 runtime error 且后续补齐同环境负牙，才允许另批升级为 `LT_VISUAL=require`。
+- **停止/边界**：本批先等 exact PR-head hosted 终态再收口；任何空 artifact、renderer assertion 红或 rc77 都保留原始证据并阻止升级，不弱化本地 pinned `gamecraft-runner:4.6.2` / Mesa 23.2.1 / tolerance-zero lane。独立 review 仍未 completed，PR #6 保持 Draft/UNSTABLE，四锚继续 `prepared_not_authorized`。
