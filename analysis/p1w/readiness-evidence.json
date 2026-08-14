@@ -1,0 +1,162 @@
+{
+  "contract": "living-town-anchor-finalize-readiness-v1",
+  "recorded_at_utc": "2026-08-14T06:00:00Z",
+  "decision": "prepared_not_authorized",
+  "frozen": {
+    "branch": "codex/p1a-takeover",
+    "product_head": "70f7575fd7e5c1ff07be0a1f4c5679928c53dcc9",
+    "game_tree": "8dfd5dec5990274daffdec106476828b5f87daa5",
+    "base": "d46cbb132595185c3420bb4eb8fd7f28512baa85"
+  },
+  "held_out": {
+    "receipt": "20260814T053846082Z_4ad6be1ef7654f6888edd81fd7368945",
+    "source_identity": "exact_commit",
+    "source_stable": true,
+    "cleanup_verified": true,
+    "outcome": "pass",
+    "seeds": 18,
+    "days": 60,
+    "determinism_pass": 1,
+    "hard_pass": 18,
+    "soft_40_pass": 18,
+    "trade_44_pass": 18,
+    "trade_45_pass": 18,
+    "trade_46_pass": 18,
+    "import_count": 248,
+    "import_seed_coverage": 18,
+    "export_count": 82,
+    "export_seed_coverage": 17,
+    "godot_log_sha256": "d8619fed1ccecec495cd5e30d9a11439ac351c6ad8bd57821fa81e7b8bcb9d46",
+    "script_error_count": 0,
+    "fatal_count": 0
+  },
+  "total_n24": {
+    "receipt": "20260814T052330969Z_2dc7d8429ea144c3a637963cf353d795",
+    "source_identity": "exact_commit",
+    "source_stable": true,
+    "cleanup_verified": true,
+    "outcome": "pass",
+    "mode": "total",
+    "requested": 24,
+    "core": 23,
+    "total": 24,
+    "seeds": 12,
+    "days": 60,
+    "determinism_pass": 1,
+    "hard_pass": 12,
+    "soft_40_pass": 11,
+    "soft_40_red_seeds": [6],
+    "trade_44_pass": 12,
+    "trade_45_pass": 12,
+    "trade_46_pass": 12,
+    "godot_log_sha256": "26d32e12fbc44a2f4a08905c5844236a052e7a6677d54ed7663f75d59648d251",
+    "script_error_count": 0,
+    "fatal_count": 0
+  },
+  "logistics_on": {
+    "source": "isolated git archive of frozen product head",
+    "runner": "gamecraft-runner@sha256:90eaf3f8b60e15ea95de0c3e87e3276414c4cae1355b49471e9d2f52dddaa33d",
+    "probe_sha256": "3aded7bcfd275f6b3d2411eb48cc40fe3b4d431d0a56fcd4391739ca56f7ca47",
+    "exit_code": 0,
+    "core": 23,
+    "total": 24,
+    "seeds": 12,
+    "days": 60,
+    "coverage": {
+      "arrival": 12,
+      "import": 12,
+      "export": 12,
+      "unload": 12
+    },
+    "totals": {
+      "arrival": 240,
+      "import": 126,
+      "export": 84,
+      "unload": 126
+    },
+    "trade_invariants_pass": 12,
+    "log_sha256": "080675839f486e9c5dcc6c778c887a8e322be8ffdc60454a5cf78909f205c612",
+    "script_error_count": 0,
+    "fatal_count": 0
+  },
+  "logistics_off": {
+    "source": "isolated git archive with only game/data/logistics.json removed",
+    "runner": "gamecraft-runner@sha256:90eaf3f8b60e15ea95de0c3e87e3276414c4cae1355b49471e9d2f52dddaa33d",
+    "exit_code": 0,
+    "core": 23,
+    "total": 23,
+    "seeds": 3,
+    "days": 20,
+    "deterministic_repeats": 2,
+    "coverage": {
+      "arrival": 0,
+      "import": 0,
+      "export": 0,
+      "unload": 0
+    },
+    "totals": {
+      "arrival": 0,
+      "import": 0,
+      "export": 0,
+      "unload": 0
+    },
+    "trade_invariants_pass": 3,
+    "log_sha256": "32d9d91c9612603e34667da47182922bc90c48a26f4395e326299d64b7b1df3c",
+    "script_error_count": 0,
+    "fatal_count": 0
+  },
+  "anchors": [
+    {
+      "path": "tools/gate_complement_ledger.json",
+      "sha256": "d7c481df39f09f6a0e3aa6837d6b808672a315b1d5f8d989b3856a80e093a189",
+      "anchor_commit": "0fe08141512e83a962c330f7d326b950285a73db",
+      "baked_game_tree": "eabcb07d8ffe6712abab4d46a0c7070aa96498dd"
+    },
+    {
+      "path": "game/bench/golden_digests.json",
+      "sha256": "575ecbd17222eabc2d1e9bd0cd991e9b7bc2cdf1b83b8cb5765c6fdcc449cb87",
+      "anchor_commit": "86e1d4e9098030384a98e34bfaaa433eff604a7d",
+      "baked_game_tree": "935b2361b78724a3ac6b93ecc6bdc91c7a6d5d94"
+    },
+    {
+      "path": "game/bench/modelpath_anchor.json",
+      "sha256": "febcb2a46ee65e815e48159207f29503d98a3c41e2699ecb514521667df640d8",
+      "anchor_commit": "86e1d4e9098030384a98e34bfaaa433eff604a7d",
+      "baked_game_tree": "935b2361b78724a3ac6b93ecc6bdc91c7a6d5d94"
+    }
+  ],
+  "hosted_product_run": {
+    "run_id": 31770888448,
+    "head": "70f7575fd7e5c1ff07be0a1f4c5679928c53dcc9",
+    "base": "d46cbb132595185c3420bb4eb8fd7f28512baa85",
+    "merge": "8b7ec894be3bd27d38315d62457eb96ae3608dd4",
+    "game_tree": "8dfd5dec5990274daffdec106476828b5f87daa5",
+    "status": "completed",
+    "conclusion": "failure",
+    "failure_count": 4,
+    "failure_families": [
+      "complement_ledger_stale",
+      "harness_golden_stale",
+      "detgate_golden_stale",
+      "modelpath_anchor_stale"
+    ],
+    "log_sha256": "04833a18dedc8d1635d6255b36ed6638743dc279f7871eb006bab69ecba54425",
+    "non_anchor_failure_count": 0
+  },
+  "review_gate": {
+    "latest_completed": {
+      "cutoff": "2026-08-13T09:00:00+08:00",
+      "review_head": "486353a",
+      "verdict": "REQUEST_CHANGES",
+      "reviewed_product_head": "e01c5a1",
+      "covers_current_game_tree": false
+    },
+    "current_scheduled": {
+      "started": "2026-08-13T21:10:57+08:00",
+      "status": "in_progress",
+      "provisional_mechanical_readiness": true,
+      "completed_verdict": false
+    },
+    "authorizing_completed": null
+  }
+}

@@ -390,3 +390,10 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 - **共享权威与呈现**：Main 柜台和 WorldView 状态板共用 `Sim.warehouse_observatory_projection`；paid/free 回执分别要求相邻三行/两行共享 txid，并复核 canonical lane/cadence/arrival、worker、subject、qty、note 与 event id。坏 cargo/receipt 显式 invalid 且剥离不可信字段。右侧 dossier 现显示真实 `space/floor`，室内隐藏无目标社交动作和 self-chat，返程门提示移到 HUD 之上；真实点击留下“只读”反馈。
 - **牙与 exact 证据**：focused scene 覆盖 empty/ready/invalid、paid/free、错数量、坏 note、重复 tx、伪 worker、坏 arrival、真实进出/柜台/隐藏控件/no-op。clean implementation `86a3ebf` / game tree `8dfd5dec` 的 focused receipt `20260814T043633724Z_7bc5784c18cd4caaae15d6fd900f756f` 与标准 `1-12×60d×det3` receipt `20260814T043648118Z_3055a1a71dd848038a2ebaa77ae4c72f` 均绿；标准 stdout SHA 与 P1-u 基线逐字节相同，证明零仿真漂移。
 - **实帧/边界/恢复**：pinned 1280×768 seed3/tick600/[57,8] 的 ON/OFF 真 portal 两臂均进出成功、town 前后 0 px、室内差 98.99%；板区变化 66,954 px 且全部落在计算 crop，metadata 证明柜台 `[6,1]`、read-only、Sim no-op、真实位置和隐藏社交/chat。完整 hash、runner、命令、失败教训、来源/许可、限制与恢复见 `analysis/p1v/east-ocean-cargo-observatory.md`。无短片/玩家卸货声明，不重烘四锚；PR #6 继续 draft，等待本 tip hosted 分类与 completed review。
+
+### 13.19 P1-w：语义冻结后的 anchor-finalize readiness 刷新（2026-08-14；仍未授权重烘）
+
+- **单一目标**：在 P1-t/u/v 关闭跨平面社交、东港 draw↔nav、仓库里程碑选择三项 provisional blocker 后，对 current game tree `8dfd5dec` 重跑 held-out、exact-total N24 与 logistics ON/OFF，并把 fresh completed review 缺口做成 fail-closed 机器门；不改 `game/`、README 或任何 anchor。
+- **现树证据**：held-out `13-30×60d×det1` receipt `20260814T053846082Z_4ad6be1ef7654f6888edd81fd7368945` 为 hard/#40/#44/#45/#46 `18/18`、det `1/1`；total N24 receipt `20260814T052330969Z_2dc7d8429ea144c3a637963cf353d795` 为 hard `12/12`、#40 `11/12`、#44/#45/#46 `12/12`。隔离 ON 每族覆盖 `12/12`，OFF 三 seed 双跑四族严格为零。
+- **资源池与门**：`analysis/p1w/readiness-evidence.json` 记录输入/摘要/哈希/anchor 指纹；`verify-anchor-finalize-readiness.ps1` 校验精确 Git 身份、clean/upstream、三 anchor、两张网格、ON/OFF、hosted 四失败族和 review 状态。当前唯一允许的 verdict 是 `prepared_not_authorized`；请求 `ready_to_finalize` 必须有 exact-tree completed approval，否则必红。
+- **停止决定**：run `31770888448` 的非 anchor 门已闭合，但 21:10 独立 review 仍在进行中，不能由产品 session 自我授权。PR #6 继续 Draft/UNSTABLE；恢复触发器是覆盖 `8dfd5dec` 的 completed review 明确允许受控重烘，随后另开单一 exact-tree 四锚 finalize batch。
