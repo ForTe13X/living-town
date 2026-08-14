@@ -3,7 +3,8 @@
 Status: implemented and exact-commit verified on 2026-08-14. This is a player/social authority
 repair, not an anchor rebake, merge receipt, visual-redesign claim or approval of Draft PR #6.
 
-Implementation commit: `6f6c5e132810abe1e084604bf3fb8ca9fa7f10d5`  
+Implementation commit: `6f6c5e132810abe1e084604bf3fb8ca9fa7f10d5`
+
 Exact game tree: `0859b1adff1367a534da4e83eeb44fae42326243`
 
 ## Single delivery target
