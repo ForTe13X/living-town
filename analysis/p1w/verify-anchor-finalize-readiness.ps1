@@ -59,7 +59,6 @@ try {
     Assert-True (Test-Path -LiteralPath $EvidencePath) "evidence file missing: $EvidencePath"
     $evidence = Get-Content -LiteralPath $EvidencePath -Raw -Encoding UTF8 | ConvertFrom-Json
     Assert-Exact "evidence contract" ([string]$evidence.contract) "living-town-anchor-finalize-readiness-v1"
-    Assert-Exact "evidence decision" ([string]$evidence.decision) $ExpectedDecision
 
     $head = Git-Text @("rev-parse", "HEAD")
     $branch = Git-Text @("branch", "--show-current")
@@ -198,6 +197,7 @@ try {
 
     $review = $evidence.review_gate
     if ($ExpectedDecision -eq "prepared_not_authorized") {
+        Assert-Exact "evidence decision" ([string]$evidence.decision) "prepared_not_authorized"
         Assert-Exact "latest completed review verdict" ([string]$review.latest_completed.verdict) "REQUEST_CHANGES"
         Assert-True (-not [bool]$review.latest_completed.covers_current_game_tree) `
             "stale completed review unexpectedly claims current-tree coverage"
@@ -208,6 +208,7 @@ try {
             "prepared_not_authorized evidence unexpectedly contains an authorizing review"
     } else {
         Assert-True ($null -ne $review.authorizing_completed) "fresh authorizing review is absent"
+        Assert-Exact "evidence decision" ([string]$evidence.decision) "ready_to_finalize"
         $approval = $review.authorizing_completed
         Assert-Exact "authorizing review status" ([string]$approval.status) "completed"
         Assert-Exact "authorizing review verdict" ([string]$approval.verdict) "APPROVE_ANCHOR_FINALIZE"
