@@ -245,6 +245,7 @@ var _authored_spaces := {}      # receiver-owned portal authority; never restore
 var _authored_portals := []     # exact current data/spaces.json graph; traversal reads only this copy
 var _authored_agent_homes := {} # agent id -> {space,floor}, rebuilt from data/agents.json
 var _authored_interiors_data := {} # current interior collision source; never restored from a save
+var _authored_solid_props := [] # map.json draw/nav authority; current-schema saves must match exactly
 var _nav_grids := {}            # space -> floor -> {w,h,blocked}：每平面独立导航网（town 复用 _blocked 引用）
 var rhythm := {}                # 昼夜节律偏好表 data/rhythm.json：{phases:{name:[lo,hi)}, prefs:{need:{phase:factor}}, default}
 var utility := {}               # 效用/接受权重表 data/utility.json（docs/14 §1 步骤4）：行为调参数据化，缺键→代码默认(逐字节不变)
@@ -561,6 +562,7 @@ func _read_json(path: String) -> Dictionary:
 func _load_data() -> void:
 	needs_def = _read_json("res://data/needs.json").get("needs", [])
 	world = _read_json("res://data/map.json")
+	_authored_solid_props = _as_arr((world.get("areas", {}).get("dock", {}) as Dictionary).get("solid_props", [])).duplicate(true)
 	_compile_buildings()                            # 阶段2：buildings.json 编译期展开室内(直接写 world 数组/字典，须在 objects 转字典之前)
 	rhythm = _read_json("res://data/rhythm.json")   # 昼夜节律偏好表（缺文件→空→_phase_pref 恒返 1.0=零扰动）
 	utility = _read_json("res://data/utility.json") # 行为效用/接受权重（缺文件/缺键→_w 返代码默认=零扰动）
@@ -1342,7 +1344,7 @@ const SAVE_MAGIC := "LTSAVE"
 const SAVE_SCHEMA_LEGACY := 1
 const SAVE_SCHEMA := 2
 const SAVE_RUNTIME_HANDLES := ["backend", "ext", "decision_sink"]
-const SAVE_LOAD_DENY := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink"]
+const SAVE_LOAD_DENY := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink"]
 const SAVE_CURRENT_BLOB_KEYS := ["magic", "schema", "game_version", "saved_tick", "saved_day", "seed", "meta", "active_commit_ids", "state"]
 
 ## The current-schema contract is the exact field set emitted by save_game, derived from the same
@@ -1541,6 +1543,9 @@ func _prepare_loaded_state(blob: Dictionary, sch: int) -> Dictionary:
 	# never emitted these keys, so schema 2 rejects them as a shape violation instead of silently normalizing.
 	for handle in SAVE_RUNTIME_HANDLES:
 		state.erase(handle)
+	var spatial_migration_error := _migrate_schema1_solid_props(state)
+	if spatial_migration_error != "":
+		return {"ok": false, "error": spatial_migration_error}
 
 	var has_manifests := state.has("cargo_manifests")
 	var has_order := state.has("cargo_manifest_order")
@@ -1577,6 +1582,56 @@ func _prepare_loaded_state(blob: Dictionary, sch: int) -> Dictionary:
 			core += 1
 		state["core_population"] = core
 	return {"ok": true, "state": state}
+
+## Schema 1 predates East Ocean's authored solid-prop collision. Upgrade that one map seam to the
+## current authority and deterministically evacuate any legacy agent caught inside a newly-solid cell.
+## This is deliberately not a general world rebake: every other legacy world field remains untouched.
+func _migrate_schema1_solid_props(state: Dictionary) -> String:
+	var saved_world = state.get("world")
+	if not (saved_world is Dictionary):
+		return "schema 1 world is not a Dictionary"
+	var areas = (saved_world as Dictionary).get("areas")
+	if not (areas is Dictionary) or not ((areas as Dictionary).get("dock") is Dictionary):
+		return "schema 1 dock authority is missing"
+	((areas as Dictionary)["dock"] as Dictionary)["solid_props"] = _authored_solid_props.duplicate(true)
+	var solid_cells := _solid_prop_cells_in_world(saved_world)
+	for raw_agent in state.get("agents", []):
+		if not (raw_agent is Dictionary):
+			continue
+		var ag: Dictionary = raw_agent
+		if String(ag.get("id", "")) == "tao" and ag.get("home") == Vector2i(58, 8):
+			ag["home"] = Vector2i(59, 7)
+		if String(ag.get("space", "town")) != "town" or String(ag.get("floor", "outdoor")) != "outdoor":
+			continue
+		var pos: Vector2i = ag.get("pos", Vector2i.ZERO)
+		if not (pos in solid_cells):
+			continue
+		var replacement := Vector2i(59, 7) if String(ag.get("id", "")) == "tao" else _nearest_legacy_town_cell(saved_world, pos)
+		if replacement.x < 0:
+			return "schema 1 agent %s cannot be evacuated from a new solid prop" % String(ag.get("id", ""))
+		ag["pos"] = replacement
+		ag["area"] = _area_key_in_world(saved_world, "town", "outdoor", replacement)
+		ag["room"] = _room_in_world(saved_world, replacement)
+	return ""
+
+func _nearest_legacy_town_cell(saved_world: Dictionary, start: Vector2i) -> Vector2i:
+	var q: Array = [start]
+	var seen := {start: true}
+	var width := int(saved_world.get("width", 0))
+	var height := int(saved_world.get("height", 0))
+	var occupied := {}
+	for raw_object in saved_world.get("objects", {}).values():
+		if raw_object is Dictionary and String((raw_object as Dictionary).get("space", "town")) == "town":
+			occupied[_v2i((raw_object as Dictionary).get("pos", []))] = true
+	while not q.is_empty():
+		var cell: Vector2i = q.pop_front()
+		if cell != start and _position_walkable_in_state(saved_world, "town", "outdoor", cell) and not occupied.has(cell):
+			return cell
+		for direction in [Vector2i(0, 1), Vector2i(-1, 0), Vector2i(1, 0), Vector2i(0, -1)]:
+			var next: Vector2i = cell + direction
+			if next.x >= 0 and next.y >= 0 and next.x < width and next.y < height and not seen.has(next):
+				seen[next] = true; q.append(next)
+	return Vector2i(-1, -1)
 
 func _option_mentions_cargo(option: Dictionary) -> bool:
 	return String(option.get("action", "")) == "卸货" or option.has("manifest_id") or option.has("manifest_node") or option.has("manifest_authorized")
@@ -1769,6 +1824,32 @@ func _room_in_world(saved_world: Dictionary, pos: Vector2i) -> String:
 			return String(raw_id)
 	return ""
 
+## Ordered authored solid props remain ordinary map data for rendering, while this pure projection
+## is the shared collision source for live nav and prepared-save validation. Malformed records yield
+## no cells here; map audit and the exact receiver-owned save comparison reject them upstream.
+func _solid_prop_cells_in_world(source_world: Dictionary) -> Array:
+	var out: Array = []
+	var areas = source_world.get("areas", {})
+	if not (areas is Dictionary):
+		return out
+	var dock = (areas as Dictionary).get("dock", {})
+	if not (dock is Dictionary):
+		return out
+	for raw_prop in (dock as Dictionary).get("solid_props", []):
+		if not (raw_prop is Dictionary):
+			continue
+		var pos := _as_arr((raw_prop as Dictionary).get("pos", []))
+		var footprint := _as_arr((raw_prop as Dictionary).get("footprint", []))
+		if pos.size() != 2 or footprint.size() != 2:
+			continue
+		var fw := int(footprint[0]); var fh := int(footprint[1])
+		if fw <= 0 or fh <= 0:
+			continue
+		for y in range(int(pos[1]), int(pos[1]) + fh):
+			for x in range(int(pos[0]), int(pos[0]) + fw):
+				out.append(Vector2i(x, y))
+	return out
+
 func _authored_portal_cell(space: String, floor: String, pos: Vector2i) -> bool:
 	for raw_portal in _authored_portals:
 		if not (raw_portal is Dictionary):
@@ -1792,6 +1873,8 @@ func _position_walkable_in_state(saved_world: Dictionary, space: String, floor: 
 		for raw_blocker in saved_world.get("blockers", []):
 			if _v2i(raw_blocker) == pos:
 				return false
+		if pos in _solid_prop_cells_in_world(saved_world):
+			return false
 		# World objects are legal interaction goals: A* deliberately permits the final occupied
 		# cell, so a save may legitimately catch an agent standing at a counter or worksite.
 		return true
@@ -1836,6 +1919,9 @@ func _validate_agent_spatial_authority(state: Dictionary) -> String:
 	var saved_world = state.get("world")
 	if not (saved_world is Dictionary):
 		return "world is not a Dictionary"
+	var saved_dock = (saved_world as Dictionary).get("areas", {}).get("dock", {})
+	if not (saved_dock is Dictionary) or (saved_dock as Dictionary).get("solid_props", []) != _authored_solid_props:
+		return "town solid-prop authority diverges from current authored data"
 	var town_w := int((saved_world as Dictionary).get("width", 0))
 	var town_h := int((saved_world as Dictionary).get("height", 0))
 	var seen_ids := {}
@@ -5291,6 +5377,10 @@ func _build_nav() -> void:
 	var H := int(world.get("height", GRID.y))
 	for b in world.get("blockers", []):            # 64×48 显式阻挡层(墙/水/树)，缺则空
 		_blocked[int(b[1]) * W + int(b[0])] = true
+	for raw_cell in _solid_prop_cells_in_world(world): # 可见实体道具与 View 共读 map.json authored footprint
+		var cell: Vector2i = raw_cell
+		if cell.x >= 0 and cell.y >= 0 and cell.x < W and cell.y < H:
+			_blocked[cell.y * W + cell.x] = true
 	for oid in world.get("objects", {}):
 		if String(oid).begins_with("fest_") or String(oid).begins_with("civic_"):
 			continue

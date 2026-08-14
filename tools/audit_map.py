@@ -123,6 +123,23 @@ def main():
             or dock.get("facing") != "east" or dock.get("berth") != [60, 8]
             or dock.get("route_id") != "east_ocean" or dock.get("population_anchor") is not False):
         fails.append("dock 物理锚必须是 rect[56,7,4,2]/east/berth[60,8]/east_ocean/population_anchor=false")
+    expected_solid_props = [
+        {"id": "port_boathouse", "kind": "boathouse", "pos": [56, 7], "footprint": [1, 2]},
+        {"id": "port_crate", "kind": "crate", "pos": [57, 7], "footprint": [1, 1]},
+        {"id": "port_barrel", "kind": "barrel", "pos": [58, 7], "footprint": [1, 1]},
+        {"id": "port_sacks", "kind": "sacks", "pos": [58, 8], "footprint": [1, 1]},
+    ]
+    solid_props = dock.get("solid_props", []) if isinstance(dock, dict) else []
+    if solid_props != expected_solid_props:
+        fails.append("East Ocean solid_props 必须逐项冻结 boathouse/crate/barrel/sacks 的 authored footprint")
+        solid_props = []
+    solid_cells = set()
+    for prop in solid_props:
+        px, py = map(int, prop["pos"]); fw, fh = map(int, prop["footprint"])
+        cells = set((x, y) for x in range(px, px + fw) for y in range(py, py + fh))
+        if fw <= 0 or fh <= 0 or solid_cells & cells:
+            fails.append("East Ocean solid_props footprint 非正或互相重叠: %r" % prop)
+        solid_cells.update(cells)
     if (not isinstance(north_pier, dict) or north_pier.get("rect") != [30, 7, 4, 2]
             or north_pier.get("type") != "plaza" or north_pier.get("population_anchor") is not True):
         fails.append("north_pier 必须唯一为 rect[30,7,4,2]/plaza/population_anchor=true")
@@ -173,8 +190,8 @@ def main():
                     or c.get("berth") != [60, 8] or c.get("facing") != "west"):
                 fails.append("carrier 必须闭合到 east_ocean/port_dock/berth[60,8]/west")
     tao = [a for a in ag.get("affiliates", []) if isinstance(a, dict) and a.get("id") == "tao"]
-    if len(tao) != 1 or tao[0].get("home") != [58, 8] or tao[0].get("spawn") != [58, 8]:
-        fails.append("Tao home/spawn 必须冻结在 East Ocean dock[58,8]")
+    if len(tao) != 1 or tao[0].get("home") != [59, 7] or tao[0].get("spawn") != [59, 7]:
+        fails.append("Tao home/spawn 必须冻结在 East Ocean dock 开放交互邻格[59,7]")
     piers = [w for w in (pr.get("worksites", []) if isinstance(pr, dict) else [])
              if isinstance(w, dict) and w.get("id") == "bench_pier"]
     if len(piers) != 1 or piers[0].get("pos") != [31, 7] or piers[0].get("area") != "north_pier":
@@ -186,8 +203,10 @@ def main():
                 logistics_refs.append("%s:%s" % (section, rec.get("id", rec.get("good", "?"))))
     if logistics_refs:
         fails.append("north_pier 只承载渔业，不得被 logistics route/node/carrier 引用：%r" % logistics_refs)
-    if (59, 8) in blk or (58, 8) in blk or (60, 8) not in water:
-        fails.append("Tao/port 必须是 East dock 陆地可走格，carrier berth 必须是水格")
+    if not solid_cells.issubset(rect_cells(dock)) or solid_cells & (blk | objcells | set(wscells)):
+        fails.append("solid_props 必须全落在 dock，且不得与 typed/object/worksite blocker 重叠")
+    if (59, 7) in (blk | solid_cells | objcells | set(wscells)) or (59, 8) not in set(wscells) or (60, 8) not in water:
+        fails.append("Tao[59,7] 必须开放、port[59,8] 必须是交互对象、carrier berth 必须是水格")
     # P1-i 玩家空间：东港外门必须落在 dock 可走陆格，内门必须落在 9x6 货仓右墙缺口；
     # interiors 只允许纯展示家具（首片不能藉室内悄悄新增经济候选）。
     spaces = sp.get("spaces", {}) if isinstance(sp, dict) else {}
@@ -205,7 +224,7 @@ def main():
             or whdoors[0].get("bidirectional") is not True or whdoors[0].get("access") != "public"):
         fails.append("东港货仓门必须唯一闭合 town[57,8]↔port_warehouse[8,3] 且双向/public")
     dock_cells = rect_cells(dock)
-    if (57, 8) not in dock_cells or (57, 8) in blk or (57, 8) in wscells or (57, 8) in objcells:
+    if (57, 8) not in dock_cells or (57, 8) in blk or (57, 8) in wscells or (57, 8) in objcells or (57, 8) in solid_cells:
         fails.append("东港货仓外门 [57,8] 必须是 dock 内无碰撞可走格")
     whfloor = (it.get("port_warehouse", {}) if isinstance(it, dict) else {}).get("1f", {})
     furn = whfloor.get("furniture", []) if isinstance(whfloor, dict) else []
@@ -226,7 +245,8 @@ def main():
     # Sim._build_nav 对 world.objects 一视同仁地标 blocked，工位来自哪个 json 文件它并不知道。
     # 只查 map.json 的家具 = 在一张比运行期【更宽松】的图上做可达性证明，那种绿是假的。
     walk = set((x, y) for x in range(W) for y in range(H)
-               if (x, y) not in blk and (x, y) not in objcells and (x, y) not in wscells)
+               if (x, y) not in blk and (x, y) not in objcells and (x, y) not in wscells
+               and (x, y) not in solid_cells)
     # ③ 可达性种子 = 第一个居民 home
     seed = tuple(ag["agents"][0]["home"])
     if seed not in walk:

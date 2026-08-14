@@ -108,8 +108,34 @@
     60,
     8
    ],
-   "route_id": "east_ocean",
-   "population_anchor": false,
+    "route_id": "east_ocean",
+    "solid_props": [
+     {
+      "id": "port_boathouse",
+      "kind": "boathouse",
+      "pos": [56, 7],
+      "footprint": [1, 2]
+     },
+     {
+      "id": "port_crate",
+      "kind": "crate",
+      "pos": [57, 7],
+      "footprint": [1, 1]
+     },
+     {
+      "id": "port_barrel",
+      "kind": "barrel",
+      "pos": [58, 7],
+      "footprint": [1, 1]
+     },
+     {
+      "id": "port_sacks",
+      "kind": "sacks",
+      "pos": [58, 8],
+      "footprint": [1, 1]
+     }
+    ],
+    "population_anchor": false,
    "_why": "P1-c East Ocean 物理锚：陆上四格栈桥面朝东，berth 是紧邻的首个水格；货船只由 ready CargoManifest 纯 View 投影，不进导航或存档。"
   }
  },

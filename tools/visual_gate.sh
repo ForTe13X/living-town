@@ -139,7 +139,7 @@ if [ "${1:-}" = "--shoot" ]; then
   vg_shoot "$OUT/vg_player_east_ocean.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
     --resolution ${W}x${H} --single-window -- \
     --backend logic --shot "$OUT/vg_player_east_ocean.png" --seed "$SEED" --warmup-tick "$NOON_TICK" \
-    --player --player-pos 58 8 --select player \
+    --player --player-pos 59 7 --select player \
     || { [ "$rc" -eq 0 ] && rc=10; }
   # ── D7 的界外层重画门（同一个 Xvfb，省一次容器启动）──────────────────────
   # 为什么它在这里而不是自己一步：它和昼夜断言一样，**需要一个真 framebuffer**，

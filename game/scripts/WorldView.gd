@@ -3623,12 +3623,24 @@ func _draw_port_east(dock: Dictionary) -> void:
 		draw_rect(Rect2(deck.end.x - T * 0.12, deck.position.y, T * 0.12, deck.size.y), seam, true)
 		_port_bollard(deck.end.x - T * 0.15, deck.position.y + T * 0.18)
 		_port_bollard(deck.end.x - T * 0.15, deck.end.y - T * 0.42)
-		_port_boathouse(deck.position.x + T * 0.06, deck.position.y + T * 0.05, T * 0.92)
-		_port_crate(deck.position.x + T * 1.30, deck.position.y + T * 0.22, T * 0.34)
-		_port_barrel(deck.position.x + T * 2.12, deck.position.y + T * 0.28, T * 0.22, T * 0.36)
-		var bean_cap := maxi(1, int(((Sim.production.get("goods", {}) as Dictionary).get("豆子", {}) as Dictionary).get("cap", 45)))
-		var bean_fill := clampf(float(Sim._stock_of("豆子")) / float(bean_cap), 0.0, 1.0)
-		_port_sacks(deck.position.x + T * 2.62, deck.position.y + T * 1.34, T * 0.28, bean_fill)
+		# Prop geometry and collision share the exact ordered `solid_props` records. Pixel offsets remain
+		# kind-owned presentation details; authored grid positions/footprints are no longer duplicated here.
+		for raw_prop in dock.get("solid_props", []):
+			if not (raw_prop is Dictionary):
+				continue
+			var prop: Dictionary = raw_prop
+			var cell = prop.get("pos", [])
+			if not (cell is Array) or (cell as Array).size() != 2:
+				continue
+			var px := float(int(cell[0])) * T; var py := float(int(cell[1])) * T
+			match String(prop.get("kind", "")):
+				"boathouse": _port_boathouse(px + T * 0.06, py + T * 0.05, T * 0.92)
+				"crate": _port_crate(px + T * 0.30, py + T * 0.22, T * 0.34)
+				"barrel": _port_barrel(px + T * 0.12, py + T * 0.28, T * 0.22, T * 0.36)
+				"sacks":
+					var bean_cap := maxi(1, int(((Sim.production.get("goods", {}) as Dictionary).get("豆子", {}) as Dictionary).get("cap", 45)))
+					var bean_fill := clampf(float(Sim._stock_of("豆子")) / float(bean_cap), 0.0, 1.0)
+					_port_sacks(px + T * 0.62, py + T * 0.34, T * 0.28, bean_fill)
 		_port_signpost(deck.position.x + T * 0.55, deck.end.y + T * 0.52)
 	# 船体可能仍在画面内而 deck 已在左侧画面外；carrier 必须按自己的 hull 做裁剪。
 	if not _ap("carrier"):

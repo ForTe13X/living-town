@@ -55,8 +55,8 @@ func _ready() -> void:
 		and not bool(dock.get("population_anchor", true))
 		and bench.get("area") == "north_pier" and bench.get("pos") == Vector2i(31, 7),
 		"north_pier 独立承载渔台，并精确保留旧人口扩容锚（north=%s bench=%s）" % [str(north_pier), str(bench)])
-	ck(port.get("pos") == Vector2i(59, 8) and tao.get("home") == Vector2i(58, 8)
-		and tao.get("pos") == Vector2i(58, 8),
+	ck(port.get("pos") == Vector2i(59, 8) and tao.get("home") == Vector2i(59, 7)
+		and tao.get("pos") == Vector2i(59, 7),
 		"port_dock/Tao home+spawn 闭合到 East Ocean")
 	var expected_population := [
 		["home", Vector2i(22, 16)], ["cafe", Vector2i(41, 16)],
