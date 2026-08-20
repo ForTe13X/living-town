@@ -1,0 +1,132 @@
+{
+  "schema": "living-town.resource-pool-batch-receipt/v1",
+  "batch": "RP-0008",
+  "status": "verified",
+  "verified_on": "2026-08-16",
+  "branch": "codex/map-tile-lab",
+  "runtime": "Godot 4.6.2.stable via gamecraft-runner:4.6.2",
+  "product_problem": "Make today's accepted faction promise constrain a later planet epoch through a real honor, one-amendment, or withdrawal decision without inventing faction authority or reinterpreting an abstract RP-0007 directive as physical success.",
+  "contributes_to": [
+    "three authored multi-epoch faction covenants",
+    "non-dominated spring promise board",
+    "pure due, overdue, and settled obligation projection",
+    "one bounded amendment with future-feasibility consequence",
+    "exact RP-0007 directive-record honor evidence",
+    "three-link region-owner evidence continuity",
+    "joint covenant and faction-region proposals",
+    "typed superseded honor and withdrawal"
+  ],
+  "contract_gate": {
+    "scene": "res://scenes/labs/resource_pool/campaign_covenant_test.tscn",
+    "checks": 52,
+    "groups": 13,
+    "result": "pass",
+    "fresh_process_runs": 2,
+    "cross_process_receipts": "identical",
+    "catalog_covenants": 3,
+    "state_phases": ["open", "active", "terminal"],
+    "actions": ["bind", "amend", "honor", "withdraw"],
+    "maximum_amendments": 1,
+    "terminal_epoch": 3,
+    "hostile_arms": [
+      "catalog exact-recompiles from the accepted RP-0007 catalog and rejects forged self-rehashed terms, benefit, identity, and delta candidates",
+      "state revision, phase, sorted lifecycle ledgers, parent links, and canonical receipts fail closed under unknown or mixed fields",
+      "the spring board exposes exact due costs three, two, and three without a scalar score or observation-dependent ordering",
+      "all covenant, RP-0007 campaign, faction-region, adapter, and shared RP-0006 checkpoints remain external owner anchors",
+      "three sibling binds are pure proposals but only one survives an accepted covenant and region-owner CAS",
+      "projection is observation-independent and derives only not_due, due, overdue, or settled from an accepted RP-0007 epoch",
+      "Exchange and amended Watch honor only exact accepted Trade or Fortify directive records and settle honestly as at-cap superseded region deltas",
+      "Relief withdrawal applies the bounded minus-two access proposal while its winter amendment remains formally available but infeasible",
+      "semantically similar due records from a different region owner or shared-network owner cannot honor and never strand terminal withdrawal",
+      "R1 covenant input to R2 RP-0007 origin to R3 resolution input requires distinct checkpoint and adapter evidence at both links",
+      "terminal honor and withdrawal remain reachable, including typed floor or cap superseded region deltas",
+      "JSON and Variant continuation normalize bounded integral numbers and reject fraction, non-finite, huge, bool, String, unknown, cyclic, deep, oversized-container, and oversized-string inputs",
+      "public schemas and receipts never claim faction authority, physical travel, execution, completion, or success"
+    ],
+    "catalog_receipt": "sha256:11154d9668cb40b6bdaeb516cbe6bed3f32c4cc021b9e24adadd0c22f2bea42f",
+    "board_receipt": "sha256:2be4238c046a17512c65f12e8f9df64427c50529b257005024e0ab1022fd6bea",
+    "bind_receipt": "sha256:3ea5fc77266bca1774ad6a6133d78d94e7016da0eb90762ec17624c7b965ef8a",
+    "amend_receipt": "sha256:220a52dbf790198bda0aa78aa82fe582413a1554dd3c1c0a203770bc030d6f6c",
+    "resolution_receipt": "sha256:3f5180e382b41094d3e44dec3b8cd0d4f0da2f677908a8fe5bcaf1cf83008c18",
+    "state_receipt": "sha256:5a3eb49a40ee40d05af4eccc85092b82d0e4c010bcc7329d8cb182c4027ca7d8"
+  },
+  "source_hashes": {
+    "CampaignCovenantModel.gd": "sha256:c0bcd718dd979fb0ea33ac0cf5782672b4e51742907c0032621fc31314487be0",
+    "campaign_covenant_test.gd": "sha256:fc6fe89f2dbfe82abb2e2b3b127d7f9416af1393cfe7951fc1028c5400fa4f3a",
+    "campaign_covenant_test.tscn": "sha256:08c11adf31634894e426e7b9a5bb13471b8d3e38cc71d276ccecf0ea5172343d",
+    "CampaignCovenantLab.gd": "sha256:92b5e6ca07a287ddad1b220faec4977f94bd5d63fc6ce3aaafab0201876cee18",
+    "CampaignCovenantLab.tscn": "sha256:124bb42dd7830bfd912236a30418fb503b753475c725445b15e1756d4f9d890b"
+  },
+  "regressions": {
+    "scale_address": "31/31 pass",
+    "expedition_contract": "40/40 pass",
+    "region_route": "33/33 pass",
+    "site_compiler": "33/33 pass",
+    "site_visit_journal": "22/22 pass",
+    "settlement_network": "33/33 pass",
+    "planet_campaign": "43/43 pass",
+    "map_tile_lab": "24/24 pass",
+    "lint_data": "pass",
+    "lint_links": "pass",
+    "art_gate": "pass",
+    "asset_gate": "pass",
+    "terrain_gate": "pass",
+    "runtime_dependency_scan": "CampaignCovenantModel preloads only PlanetCampaignModel; no production-to-lab runtime reference; RP-0008 mutates no Sim, Main, WorldView, SpaceGraph, RP-0007, RP-0006, region, faction, or save authority"
+  },
+  "visual_gate": {
+    "scene": "res://scenes/labs/resource_pool/CampaignCovenantLab.tscn",
+    "size": "1280x768",
+    "repeat_count": 2,
+    "all_repeat_hashes_identical": true,
+    "review": "no P0, P1, or P2; spring promise tradeoffs, amendment opportunity cost, R1-to-R2-to-R3 continuity, ledger-versus-region settlement, withdrawal cost, and at-cap superseded honor are readable without physical-outcome claims",
+    "frames": [
+      {
+        "fixture": "spring-board",
+        "bytes": 112530,
+        "sha256": "aa17d33944666c17ae56cac2690475d1671d41b41e313dc3d3474ba75cecb341"
+      },
+      {
+        "fixture": "watch-due",
+        "bytes": 116339,
+        "sha256": "f88eb04cb3b00c68ca212781b8b748be3aedb604cd6189303cf9a527f8ea1400"
+      },
+      {
+        "fixture": "watch-amended",
+        "bytes": 115211,
+        "sha256": "479f308e127f6b60050e6a99874eb26f936ceb7559375e11ad876ab82fc15642"
+      },
+      {
+        "fixture": "watch-honored",
+        "bytes": 118307,
+        "sha256": "08715c7a151f74876e9daf8dcaa47662d8c07013d1b56a8d8eae6dc8cd033166"
+      },
+      {
+        "fixture": "relief-withdrawn",
+        "bytes": 113221,
+        "sha256": "21db551a5df4216a6aa45510f40f97b153024f17df62dfa0cd3ea3709a265f4e"
+      },
+      {
+        "fixture": "exchange-superseded",
+        "bytes": 117815,
+        "sha256": "31670cc96ae0551ce8fa5929fcf3c042e472d7906296d50c1255c2089018a411"
+      }
+    ]
+  },
+  "owner_boundary": {
+    "production_paths_modified": [],
+    "authority_applied_by_resource_pool": false,
+    "promotion_requires": [
+      "persist the accepted covenant state plus exact RP-0007 campaign, faction-region, adapter, and shared RP-0006 checkpoints",
+      "derive faction access from receiver-owned regional state under stable authored faction scopes rather than dynamic medoids or caller claims",
+      "atomically compare-and-swap covenant and faction-region owners for bind, amendment, honor, and withdrawal",
+      "preserve the R1 to R2 to R3 owner lineage and bind each accepted directive record to one replay decision",
+      "archive and migrate terms, lifecycle, replay, and superseded ledgers without accepting candidate self-hashes as authority",
+      "add authorization, multiplayer conflict policy, untrusted-input byte limits, and a production save-schema migration"
+    ],
+    "deferred_to_rp0009": [
+      "limited planet reconnaissance capacity",
+      "two-of-three uncertainty portfolio choice",
+      "owner-accepted report bundles that update belief without changing hidden truth"
+    ]
+  }
+}

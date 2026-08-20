@@ -1,0 +1,126 @@
+{
+  "schema": "living-town.resource-pool-batch-receipt/v1",
+  "batch": "RP-0007",
+  "status": "verified",
+  "verified_on": "2026-08-16",
+  "branch": "codex/map-tile-lab",
+  "runtime": "Godot 4.6.2.stable via gamecraft-runner:4.6.2",
+  "product_problem": "Allocate one scarce planet-scale command slot across seasonal, non-dominated cross-region directives without turning a strategic choice into invented route, launch, arrival, success, or one-sided owner authority.",
+  "contributes_to": [
+    "three authored planet register windows",
+    "season-sensitive non-dominated directive board",
+    "externally anchored command and region evidence",
+    "three-owner directive commitment proposal",
+    "explicit epoch advance and defer",
+    "observation-independent delayed consequence",
+    "fresh-target two-owner delivery proposal",
+    "typed superseded terminal settlement"
+  ],
+  "contract_gate": {
+    "scene": "res://scenes/labs/resource_pool/planet_campaign_test.tscn",
+    "checks": 43,
+    "groups": 13,
+    "result": "pass",
+    "fresh_process_runs": 2,
+    "cross_process_receipts": "identical",
+    "planet_windows": 3,
+    "catalog_directives": 3,
+    "seasons": ["spring", "autumn", "winter"],
+    "terminal_epoch": 3,
+    "flex_options": 3,
+    "tight_capacity_rotation": ["aid", "trade", "fortify"],
+    "hostile_arms": [
+      "catalog identity remains canonical across three REGION addresses and rejects noncanonical or wrong-level impostors",
+      "all region adapters bind independent owner scopes and checkpoints to one shared read-only RP-0006 checkpoint",
+      "changed self-rehashed adapters and inflated command anchors reject against external expected receipts",
+      "boards expose no scalar score and deterministically filter options by season, slot, capacity, deadline, and bounded source effect",
+      "stage one returns a pure campaign, command-owner, and origin-region proposal with separate conservation and CAS boundaries",
+      "stale boards, mixed choices, sibling replay, arbitrary replay keys, all-noop ledgers, and rewritten owner scopes reject",
+      "epoch records derive season and revision, advance exactly one epoch, permit explicit defer, and keep terminal delivery reachable",
+      "projection is observation-independent and cannot mature a pending consequence without an accepted epoch advance",
+      "stage two requires a due consequence plus a fresh different-target adapter and checkpoint under the same global network authority",
+      "applied delivery conserves the target track while at-bound delivery closes as typed superseded and cannot replay",
+      "future delivery epochs, sparse self-hashed boards, epoch-link swaps, durable target-scope rewrites, and unknown fields fail closed",
+      "JSON and Variant continuation normalize bounded integral numbers and reject non-finite, fractional, String, bool, huge, and unknown inputs",
+      "public schemas and proposals cannot substitute for RP-0003 route evidence or claim launch, arrival, or success"
+    ],
+    "catalog_receipt": "sha256:469ed8375d6c88d360796d704442bd2137607a4cf213c5bcf501ac153f44fd38",
+    "board_receipt": "sha256:0ba3830596b98b52014e6676b727623e584c5a892271164506f462af2fa5fef0",
+    "commit_receipt": "sha256:6957eae246229c3754006be4d6bae5215aff10feacdadaf7c24cecbd2df0f26b",
+    "advance_receipt": "sha256:b21643d73ff53275bea36b31f1cd56eab669b29302b5ec38c34f8b7299dbdf2b",
+    "delivery_receipt": "sha256:95cad8dae52e93f14e9bd0f925cc7d7c280a37ba7fe3c8b91d93cf081b58f108",
+    "state_receipt": "sha256:a975db8c4f9d5e689c82cc1a6e307789739cc7dd936315fb95e8190bfdb992d3"
+  },
+  "source_hashes": {
+    "PlanetCampaignModel.gd": "sha256:3956e9f3f9711070f844a4ef0a35b5d6b1abacda94e53c5fe0ca7c2730e3702c",
+    "planet_campaign_test.gd": "sha256:ab8b6e72ebe1c34fdde96bde8ddf39b5b50303333876d9833d137ba7812e8e38",
+    "planet_campaign_test.tscn": "sha256:dea1fb8a5a04be98b92d7d8366dddaf26c9414f75c731dd4fe714c169796a84b",
+    "PlanetCampaignLab.gd": "sha256:381e12003906fceb1b0a55a83b7190e73bc11f4b07bfb4fd853259516979eb74",
+    "PlanetCampaignLab.tscn": "sha256:7e088771d6a25743eb3a96bc2a65a7a85d57ed3b8b421f61e448ebe5f1ca7b6a"
+  },
+  "regressions": {
+    "scale_address": "31/31 pass",
+    "expedition_contract": "40/40 pass",
+    "region_route": "33/33 pass",
+    "site_compiler": "33/33 pass",
+    "site_visit_journal": "22/22 pass",
+    "settlement_network": "33/33 pass",
+    "map_tile_lab": "24/24 pass",
+    "lint_data": "pass",
+    "lint_links": "pass",
+    "art_gate": "pass",
+    "asset_gate": "pass",
+    "terrain_gate": "pass",
+    "runtime_dependency_scan": "PlanetCampaignModel preloads only ScaleAddress; no production-to-lab runtime reference; RP-0007 mutates no Sim, Main, WorldView, SpaceGraph, road, network, command, region, or site authority"
+  },
+  "visual_gate": {
+    "scene": "res://scenes/labs/resource_pool/PlanetCampaignLab.tscn",
+    "size": "1280x768",
+    "repeat_count": 2,
+    "all_repeat_hashes_identical": true,
+    "review": "no P0, P1, or P2; one shared network checkpoint, three disconnected register windows, seasonal eligibility, joint owner boundaries, delayed delivery, and proposal-only semantics are readable without globe or route claims",
+    "frames": [
+      {
+        "fixture": "scope",
+        "sha256": "8df782bd53caa5c002895e0a57f4a4fd8e8be92c30ba98eea048eb130a196ed9"
+      },
+      {
+        "fixture": "flex-board",
+        "sha256": "a373cebcaf7f79611fc80874de58e732c4707dd3248d91480de1f95ed3d11f45"
+      },
+      {
+        "fixture": "spring-tight",
+        "sha256": "72ad60e7196fea73c857326744c98ba6961c8aabe47acc052ad6c07cd7e8c667"
+      },
+      {
+        "fixture": "autumn-tight",
+        "sha256": "ee9ac91e83ef3e4c8b9d52a8b039068c4b764089cb07f5a609d10ee6ec4486f0"
+      },
+      {
+        "fixture": "winter-tight",
+        "sha256": "bb2f51af5c2789517ab500eed8a21457722344e633a29b7897973ba41eacc29e"
+      },
+      {
+        "fixture": "stage2-applied",
+        "sha256": "1dfd1712f4627df6247752da960cceab2bb06c1f800b0d5ab147731681e36f5e"
+      }
+    ]
+  },
+  "owner_boundary": {
+    "production_paths_modified": [],
+    "authority_applied_by_resource_pool": false,
+    "promotion_requires": [
+      "persist the accepted campaign, command-owner, three region-owner, and whole RP-0006 network checkpoints",
+      "construct command capacity and region signals from receiver-owned state instead of caller claims",
+      "atomically compare-and-swap campaign, command owner, and origin region for stage one",
+      "atomically compare-and-swap campaign and the fresh target region for stage two",
+      "archive and migrate terms, epoch, replay, consequence, and delivery ledgers without accepting candidate self-hashes as authority",
+      "add authorization, multiplayer conflict policy, untrusted-input byte limits, and a production save-schema migration"
+    ],
+    "deferred_to_rp0008": [
+      "multi-epoch faction covenants",
+      "honor, amend, or withdraw opportunity cost",
+      "covenant history constraining later planet directives"
+    ]
+  }
+}

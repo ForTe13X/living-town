@@ -1,0 +1,84 @@
+{
+  "schema": "living-town.resource-pool-batch-receipt/v1",
+  "batch": "RP-0002",
+  "status": "verified",
+  "verified_on": "2026-08-14",
+  "branch": "codex/map-tile-lab",
+  "runtime": "Godot 4.6.2.stable via gamecraft-runner:4.6.2",
+  "product_problem": "Give expeditions a reason to leave, distinguish pickup from delivery, and preserve partial, retreat, strained, and collapsed outcomes without touching owner authority.",
+  "contributes_to": [
+    "expedition mission cards",
+    "terminal outcome classification",
+    "capped settlement handoff",
+    "MapTileLab terminal evidence",
+    "planet-scale event provenance"
+  ],
+  "contract_gate": {
+    "scene": "res://scenes/labs/resource_pool/expedition_contract_test.tscn",
+    "checks": 40,
+    "result": "pass",
+    "cross_process_receipt": "identical",
+    "real_map_tile_transitions": [
+      "extract_local",
+      "combat_collapse"
+    ],
+    "receipt": {
+      "schema": "living-town.expedition-receipt/v1",
+      "contract_id": "exp1:1559bd902070291f",
+      "outcome_id": "exo1:a28cc2f66e82ee7f",
+      "settlement_key": "exps1:1559bd902070291f",
+      "status": "partial",
+      "grade": "incomplete",
+      "receipt": "sha256:a28cc2f66e82ee7fea096838d4b0034f0428d062ea42f4a0eada803af984605d"
+    }
+  },
+  "regressions": {
+    "scale_address": "31/31 pass; cross-process receipt identical",
+    "map_tile_lab": "24/24 pass",
+    "lint_data": "pass",
+    "lint_links": "pass",
+    "art_gate": "pass",
+    "asset_gate": "pass",
+    "terrain_gate": "pass",
+    "runtime_dependency_scan": "no Sim, Main, or WorldView runtime reference"
+  },
+  "visual_gate": {
+    "scene": "res://scenes/labs/resource_pool/ExpeditionBriefLab.tscn",
+    "size": "1280x768",
+    "repeat_count": 2,
+    "all_repeat_hashes_identical": true,
+    "review": "no P0 or P1",
+    "frames": [
+      {
+        "fixture": "winter_rations/success",
+        "sha256": "6f1a257d16c3a144bd3fc474a4c3e4567bcac3c986beb1d51431301291c7ae74"
+      },
+      {
+        "fixture": "relay_parts/partial",
+        "sha256": "da1aea861d38eee0db229f084e71aa760df04f92eef64200aac17eb5b6387238"
+      },
+      {
+        "fixture": "field_medicine/retreat",
+        "sha256": "9aab765eb49fd0c96c4d139d8587c903d3483e3b48689e5b66909ec6dbf1e834"
+      },
+      {
+        "fixture": "field_medicine/collapse",
+        "sha256": "72ba08ec4f3138edbce45e1e922c5fc2d0683e566b9ea13ca4415a9668d8945e"
+      },
+      {
+        "fixture": "relay_parts/strained",
+        "sha256": "e98e6095f638f7eff4209889ca30b20133180f140bd70e913710083c0795d66b"
+      }
+    ]
+  },
+  "owner_boundary": {
+    "production_paths_modified": [],
+    "settlement_applied_by_resource_pool": false,
+    "promotion_requires": [
+      "accepted brief and stable site binding",
+      "typed action event journal",
+      "atomic settlement replay ledger",
+      "save schema migration"
+    ]
+  }
+}

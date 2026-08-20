@@ -1,0 +1,117 @@
+{
+  "schema": "living-town.resource-pool-batch-receipt/v1",
+  "batch": "RP-0006",
+  "status": "verified",
+  "verified_on": "2026-08-16",
+  "branch": "codex/map-tile-lab",
+  "runtime": "Godot 4.6.2.stable via gamecraft-runner:4.6.2",
+  "product_problem": "Spend one scarce owner-accepted caravan cargo bundle on aid, trade, or fortification without turning distant settlements into duplicate live towns or trusting caller-authored cargo, arrival, or consequence claims.",
+  "contributes_to": [
+    "four-node aggregated settlement network",
+    "owner scope and cargo checkpoint anchoring",
+    "non-dominated aid, trade, and fortification board",
+    "exact RP-0003 arrived-journey admission",
+    "joint network and owner cargo proposal",
+    "global cargo replay key",
+    "stale sibling CAS rejection",
+    "delayed and observation-independent regional intel"
+  ],
+  "contract_gate": {
+    "scene": "res://scenes/labs/resource_pool/settlement_network_test.tscn",
+    "checks": 33,
+    "result": "pass",
+    "fresh_process_runs": 2,
+    "cross_process_receipts": "identical",
+    "settlement_nodes": 4,
+    "context_only_sites": 2,
+    "catalog_offers": 4,
+    "parts_fixture_eligible_options": 3,
+    "hostile_arms": [
+      "catalog contains only RP-0003 safe-stop settlements while ruins and quarry remain context",
+      "network state recomputes bounded node tracks from sorted unique settled-offer and consumed-cargo ledgers",
+      "cargo requires independent accepted owner scope and checkpoint; a scope swap cannot mint a second replay key",
+      "RP-0002 and RP-0005 source receipts remain provenance and cannot authorize cargo quantity",
+      "boards and choices reject stale, mixed, unknown-field, and self-rehashed candidates",
+      "arrival requires an exact RP-0003 arrived journey plus an external journey-state checkpoint",
+      "aid, trade, and fortify proposals conserve cargo and bounded supply without hidden remote stock",
+      "after owner CAS, replayed cargo, stale siblings, old boards, and old network checkpoints reject",
+      "intel stays opaque and pending until a later distinct positive settlement advances the accepted revision",
+      "the final catalog intel remains pending rather than receiving an instant exhaustion flush",
+      "JSON and Variant continuation normalize bounded integral numbers and reject non-finite, fractional, String, bool, huge, and unknown inputs"
+    ],
+    "catalog_receipt": "sha256:297d2a63e96cc14d7167ebf5f42ed183b30041193ad75562f7f789ef70e1dc73",
+    "board_receipt": "sha256:7f06d451ba6ad2dbae74f636828dda18e9f9737fc920f20fe093133d6d903e84",
+    "transition_receipt": "sha256:d7450b6780bf8eeb45aab26c34f703b6d3cb5ae882e15907c7e6a344cf384ba7",
+    "state_receipt": "sha256:148bf8c46a3c079a6c1afc9ff5a655786a2c920428142edf7c933d5bb00a1de6"
+  },
+  "source_hashes": {
+    "SettlementNetworkModel.gd": "sha256:76cd725593f21694c983b3d9ab86b8dcbaf0c888c719696a80a801414ebfe30e",
+    "settlement_network_test.gd": "sha256:503a02044a8e8559a20063685879c01fd7a147042462c06b5e52c0322b1cee21",
+    "settlement_network_test.tscn": "sha256:0d051196b3d95717c431573ad819d78140b2cff95ce1b6583f717bc4e1cef1d0",
+    "SettlementNetworkLab.gd": "sha256:bb7b56700cb0396e0929bceff10a15eeefe0b45426ad3ac190670c1c97dc7526",
+    "SettlementNetworkLab.tscn": "sha256:ad905e1e677f86cde5965799c69305f0459676ee461c4f7814663ce9038e6916"
+  },
+  "regressions": {
+    "scale_address": "31/31 pass",
+    "expedition_contract": "40/40 pass",
+    "region_route": "33/33 pass",
+    "site_compiler": "33/33 pass",
+    "site_visit_journal": "22/22 pass",
+    "map_tile_lab": "24/24 pass",
+    "lint_data": "pass",
+    "lint_links": "pass",
+    "art_gate": "pass",
+    "asset_gate": "pass",
+    "terrain_gate": "pass",
+    "runtime_dependency_scan": "SettlementNetworkModel preloads only ScaleAddress and RegionRouteModel; SettlementNetworkLab preloads only resource-pool models; no Sim, Main, WorldView, SpaceGraph, or production-to-lab runtime reference"
+  },
+  "visual_gate": {
+    "scene": "res://scenes/labs/resource_pool/SettlementNetworkLab.tscn",
+    "size": "1280x768",
+    "repeat_count": 2,
+    "all_repeat_hashes_identical": true,
+    "review": "no P0, P1, or P2; one accepted parts bundle, three non-dominated branches, rejected Cinder offer, context-only intel subjects, joint consequences, and delayed release are readable",
+    "frames": [
+      {
+        "fixture": "before",
+        "sha256": "cd440d30a0221415a28e697fbfb24bf661d5ac4bfb771f71cbf6fb1c3efa0a2d"
+      },
+      {
+        "fixture": "options",
+        "sha256": "ba9e96d1f178c83f1307a73273705cbea4aa90cdf81b53d8c5c3f2aa4be854da"
+      },
+      {
+        "fixture": "aid-settled",
+        "sha256": "732ec8ddbf925dcae52858d5526df07aa24e73d9563e37b6727a2c5bcc0f8ae0"
+      },
+      {
+        "fixture": "trade-settled",
+        "sha256": "cc8359ed8f11c002434777b438acef2f257d360da20796bf9af2d281ee07d728"
+      },
+      {
+        "fixture": "fortify-settled",
+        "sha256": "8948564f32f31e347742afa5322fb0ed7fb3103743b2be16a24f17aacb3801d1"
+      },
+      {
+        "fixture": "intel-release",
+        "sha256": "e78c265e2f404d3f0c5f3d6c5d87426a018acdb5b91e07c7f959302c73a91329"
+      }
+    ]
+  },
+  "owner_boundary": {
+    "production_paths_modified": [],
+    "authority_applied_by_resource_pool": false,
+    "promotion_requires": [
+      "persist the accepted network state, owner scope and cargo checkpoint, and RP-0003 arrived journey checkpoint",
+      "construct cargo and supply from receiver-owned state instead of provenance or client claims",
+      "atomically compare-and-swap the network and cargo owners so one checkpoint cannot fund two sibling proposals",
+      "archive and migrate catalog and terms revisions without resetting consumed replay keys or pending intel",
+      "add authorization, multiplayer conflict policy, untrusted-input byte limits, and a production save-schema migration"
+    ],
+    "deferred_to_rp0007": [
+      "cross-region seasons and logistics",
+      "faction commitments and planet-scale objectives",
+      "planet campaign save and presentation shell"
+    ]
+  }
+}

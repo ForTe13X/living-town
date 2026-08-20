@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource path="res://scripts/labs/resource_pool/scale_address_test.gd" type="Script" id="1"]
+
+[node name="ScaleAddressTest" type="Node"]
+script = ExtResource("1")

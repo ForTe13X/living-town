@@ -1,0 +1,524 @@
+{
+  "schema": "living-town.resource-pool/v1",
+  "program": "map-to-planet-labs",
+  "owner_policy": {
+    "integration": "opt-in",
+    "production_paths_modified": [],
+    "authority_claim": "lab-only",
+    "forbidden_dependencies": [
+      "Sim",
+      "Main",
+      "WorldView"
+    ]
+  },
+  "shared_catalog_paths": [
+    "res://scenes/labs/resource_pool/manifest.json",
+    "res://scenes/labs/resource_pool/README.md"
+  ],
+  "product_thesis": "Every scale must add a player decision, not merely a farther camera.",
+  "scale_ladder": [
+    {
+      "scale": "cell-site",
+      "player_decision": "How much noise, injury, and carried value should I risk before extracting?",
+      "contributes_to": ["local raid", "roof reveal", "loot and threat readability"]
+    },
+    {
+      "scale": "tile",
+      "player_decision": "Which site is worth a scarce expedition and what outcome counts as success?",
+      "contributes_to": ["expedition brief", "site identity", "result debrief"]
+    },
+    {
+      "scale": "region",
+      "player_decision": "Which road, season, supply load, and fallback route make the journey survivable?",
+      "contributes_to": ["caravan planning", "fog and discovery", "region persistence"]
+    },
+    {
+      "scale": "settlement-network",
+      "player_decision": "Which community or route should receive limited aid, trade, or protection?",
+      "contributes_to": ["aggregated settlements", "regional economy", "rumor delay"]
+    },
+    {
+      "scale": "planet",
+      "player_decision": "Which cross-region window, faction corridor, or campaign objective deserves years of commitment?",
+      "contributes_to": ["planet campaign", "semantic zoom", "long-horizon logistics"]
+    }
+  ],
+  "batches": [
+    {
+      "id": "RP-0001",
+      "title": "Planet scale identity contract",
+      "status": "verified",
+      "product_problem": "The same place cannot persist across local, tile, region, and planet views without one stable identity and deterministic seed namespace.",
+      "contributes_to": [
+        "save keys",
+        "caravan destinations",
+        "site delta ledgers",
+        "region aggregation",
+        "event provenance"
+      ],
+      "owned_paths": [
+        "res://scripts/labs/resource_pool/ScaleAddress.gd",
+        "res://scripts/labs/resource_pool/scale_address_test.gd",
+        "res://scenes/labs/resource_pool/scale_address_test.tscn"
+      ],
+      "owner_opt_in": "Preload ScaleAddress.gd or copy its pure-data contract after choosing a production save migration. No scene integration is required.",
+      "verification": {
+        "focused_checks": 31,
+        "collision_regression_addresses": 2646,
+        "cross_process_receipt": "identical",
+        "map_tile_regression": "pass",
+        "static_gates": ["lint_data", "lint_links", "art_gate", "asset_gate", "terrain_gate"]
+      },
+      "exclusions": [
+        "planet projection",
+        "production save migration",
+        "Sim authority",
+        "camera or HUD",
+        "claim of collision-proof hashing"
+      ]
+    },
+    {
+      "id": "RP-0002",
+      "title": "Expedition brief and causal debrief",
+      "status": "verified",
+      "product_problem": "Loot has no player-facing reason, partial success is invisible, and a collapsed raid can be mistaken for delivered progress.",
+      "contributes_to": [
+        "expedition mission cards",
+        "partial success and retreat",
+        "causal result ledger",
+        "idempotent settlement handoff",
+        "MapTileLab snapshot adapter"
+      ],
+      "owned_paths": [
+        "res://scripts/labs/resource_pool/ExpeditionContract.gd",
+        "res://scripts/labs/resource_pool/MapTileExpeditionAdapter.gd",
+        "res://scripts/labs/resource_pool/expedition_contract_test.gd",
+        "res://scripts/labs/resource_pool/ExpeditionBriefLab.gd",
+        "res://scenes/labs/resource_pool/expedition_contract_test.tscn",
+        "res://scenes/labs/resource_pool/ExpeditionBriefLab.tscn",
+        "res://scenes/labs/resource_pool/rp0002_receipt.json"
+      ],
+      "owner_opt_in": "Use the pure brief/snapshot/outcome contract and enforce settlement_key once in an owner transaction. The two-phase adapter verifies a real MapTileLab terminal transition, only reads the model, and performs no second settlement.",
+      "verification": {
+        "receipt": "res://scenes/labs/resource_pool/rp0002_receipt.json",
+        "focused_checks": 40,
+        "cross_process_receipt": "identical",
+        "real_terminal_arms": ["extract_local", "combat_collapse"],
+        "visual_fixtures": 5,
+        "repeat_render_hashes": "identical",
+        "architecture_review": "no P0 or P1",
+        "visual_review": "no P0 or P1",
+        "map_tile_regression": "pass",
+        "static_gates": ["lint_data", "lint_links", "art_gate", "asset_gate", "terrain_gate"]
+      },
+      "exclusions": [
+        "production quests or task tree",
+        "Sim inventory or resident mutation",
+        "CargoManifest reuse",
+        "production HUD or save schema",
+        "claim that final noise caused a particular injury"
+      ]
+    },
+    {
+      "id": "RP-0003",
+      "title": "Region atlas and persistent caravan route",
+      "status": "verified",
+      "product_problem": "A larger map must create an explainable route tradeoff and preserve caravan progress without making observation advance authority.",
+      "contributes_to": [
+        "regional caravan planning",
+        "seasonal route closure",
+        "fog and discovery persistence",
+        "one-leg causal settlement",
+        "save/load continuation",
+        "fallback and stranding"
+      ],
+      "owned_paths": [
+        "res://scripts/labs/resource_pool/RegionRouteModel.gd",
+        "res://scripts/labs/resource_pool/region_route_test.gd",
+        "res://scripts/labs/resource_pool/RegionRouteLab.gd",
+        "res://scenes/labs/resource_pool/region_route_test.tscn",
+        "res://scenes/labs/resource_pool/RegionRouteLab.tscn",
+        "res://scenes/labs/resource_pool/rp0003_receipt.json"
+      ],
+      "owner_opt_in": "Adopt the pure atlas/plan/transition DTOs only with full-receipt collision checks, atomic before-state CAS, a typed event ledger, a frozen road snapshot or typed replan, and a real production save migration.",
+      "verification": {
+        "receipt": "res://scenes/labs/resource_pool/rp0003_receipt.json",
+        "focused_checks": 33,
+        "cross_process_receipt": "identical",
+        "atlas_tiles": 192,
+        "atlas_edges": 521,
+        "scale_address_regions": 2,
+        "initially_discovered_tiles": 19,
+        "route_policies": ["fast", "safe", "frugal"],
+        "terminal_decisions": ["routes_available", "fallback_only", "no_plan"],
+        "visual_fixtures": 5,
+        "repeat_render_hashes": "identical",
+        "architecture_review": "no P0 or P1",
+        "visual_review": "no P0 or P1",
+        "scale_address_regression": "31/31 pass",
+        "expedition_regression": "40/40 pass",
+        "map_tile_regression": "pass",
+        "static_gates": ["lint_data", "lint_links", "art_gate", "asset_gate", "terrain_gate"]
+      },
+      "exclusions": [
+        "production Sim or save authority",
+        "complete region or planet projection",
+        "automatic mid-journey road migration",
+        "receipt as signature or authorization",
+        "second town or cargo authority"
+      ]
+    },
+    {
+      "id": "RP-0004",
+      "title": "Tile promise to durable local site",
+      "status": "verified",
+      "product_problem": "A region destination must compile to a distinct reachable tactical site, and revisiting it must preserve depletion without serializing or regenerating a second local world.",
+      "contributes_to": [
+        "tile-to-local procedural content",
+        "stable building and content identities",
+        "roof, door, loot, threat, and extraction reachability",
+        "arrived-route admission",
+        "single-active site visits",
+        "seed-plus-scar persistence",
+        "revisit scar ledger and terminal handoff"
+      ],
+      "owned_paths": [
+        "res://scripts/labs/resource_pool/SiteBlueprintModel.gd",
+        "res://scripts/labs/resource_pool/site_compiler_test.gd",
+        "res://scripts/labs/resource_pool/SiteCompilerLab.gd",
+        "res://scenes/labs/resource_pool/site_compiler_test.tscn",
+        "res://scenes/labs/resource_pool/SiteCompilerLab.tscn",
+        "res://scenes/labs/resource_pool/rp0004_receipt.json"
+      ],
+      "owner_opt_in": "Rebuild immutable blueprints from canonical atlas promises, validate arrival against an independently owner-accepted journey-state receipt, atomically CAS the accepted site state from idle-before to active-after on enter and from active-before to idle-after on resolve, derive scars from a trusted action reducer, and commit scars with once-only expedition settlement in the same owner transaction.",
+      "verification": {
+        "receipt": "res://scenes/labs/resource_pool/rp0004_receipt.json",
+        "focused_checks": 33,
+        "cross_process_receipt": "identical",
+        "site_archetypes": 6,
+        "grid_cells_per_site": 704,
+        "purpose_separated_seed_streams": 3,
+        "state_phases": ["idle", "active"],
+        "visual_fixtures": 6,
+        "visual_state_variants": ["fresh", "scarred"],
+        "repeat_render_hashes": "identical",
+        "architecture_review": "no P0 or P1",
+        "visual_review": "no P0 or P1",
+        "region_route_regression": "33/33 pass",
+        "scale_address_regression": "31/31 pass",
+        "expedition_regression": "40/40 pass",
+        "map_tile_regression": "24/24 pass",
+        "static_gates": ["lint_data", "lint_links", "art_gate", "asset_gate", "terrain_gate"]
+      },
+      "exclusions": [
+        "production Sim, save, cargo, or settlement authority",
+        "raw client terminal claims as authorization",
+        "trusted local action reduction and scarred-site materialization (RP-0005)",
+        "mid-raid player and threat checkpoint",
+        "automatic SpaceGraph injection",
+        "site scars inside region road or discovery state",
+        "receipt as signature or anti-tamper security"
+      ]
+    },
+    {
+      "id": "RP-0005",
+      "title": "Trusted local visit reducer and no-respawn revisit",
+      "status": "verified",
+      "product_problem": "A terminal summary cannot prove local actions, and a generated site cannot become durable world memory if depleted loot, neutralized threats, destroyed blockers, or known roofs respawn on revisit.",
+      "contributes_to": [
+        "typed local action reduction",
+        "full-chain journal replay and continuation",
+        "reducer-owned extraction and collapse",
+        "causal terminal scar derivation",
+        "no-respawn revisit projection",
+        "destroyed-blocker navigation",
+        "roof memory",
+        "exact RP-0004 settlement handoff"
+      ],
+      "owned_paths": [
+        "res://scripts/labs/resource_pool/SiteVisitJournalModel.gd",
+        "res://scripts/labs/resource_pool/site_visit_journal_test.gd",
+        "res://scripts/labs/resource_pool/ScarredRevisitLab.gd",
+        "res://scenes/labs/resource_pool/site_visit_journal_test.tscn",
+        "res://scenes/labs/resource_pool/ScarredRevisitLab.tscn",
+        "res://scenes/labs/resource_pool/rp0005_receipt.json"
+      ],
+      "owner_opt_in": "Accept commands through the deterministic reducer, store the complete journal plus an owner-held latest receipt, enforce one (journal_id, sequence) result by CAS, validate the original RP-0004 enter and independent idle/journey checkpoints, and atomically commit active-to-idle scars with once-only expedition or cargo settlement.",
+      "verification": {
+        "receipt": "res://scenes/labs/resource_pool/rp0005_receipt.json",
+        "focused_checks": 22,
+        "cross_process_receipts": "identical",
+        "site_archetypes": 6,
+        "action_kinds": ["move", "take_loot", "attack_threat", "destroy_prop", "wait", "extract", "abort"],
+        "terminal_phases": ["extracted", "collapsed", "retreated"],
+        "maximum_replayed_actions": 512,
+        "visual_fixtures": 6,
+        "visual_stages": ["fresh", "journal", "scars", "revisit"],
+        "repeat_render_hashes": "identical",
+        "architecture_review": "no P0 or P1",
+        "visual_review": "no P0 or P1",
+        "site_compiler_regression": "33/33 pass",
+        "region_route_regression": "33/33 pass",
+        "scale_address_regression": "31/31 pass",
+        "expedition_regression": "40/40 pass",
+        "map_tile_regression": "24/24 pass",
+        "static_gates": ["lint_data", "lint_links", "art_gate", "asset_gate", "terrain_gate"]
+      },
+      "exclusions": [
+        "production Sim, save, cargo, or settlement authority",
+        "client receipt as signature or anti-cheat proof",
+        "stable-ID backfill into the current MapTileLab runtime",
+        "persistent surviving-threat tactical position or health",
+        "wall or immutable cell destruction",
+        "site scars inside region road or discovery state",
+        "automatic SpaceGraph injection"
+      ]
+    },
+    {
+      "id": "RP-0006",
+      "title": "Accepted cargo and aggregated settlement network",
+      "status": "verified",
+      "product_problem": "One scarce accepted caravan bundle needs a medium-term aid, trade, or fortification decision without creating duplicate live towns or trusting caller-authored cargo, arrival, and consequence claims.",
+      "contributes_to": [
+        "four-node aggregated settlement network",
+        "owner scope and cargo checkpoint anchoring",
+        "non-dominated aid, trade, and fortification board",
+        "exact RP-0003 arrived-journey admission",
+        "joint network and owner cargo proposal",
+        "global cargo replay key",
+        "stale sibling CAS rejection",
+        "delayed regional intel"
+      ],
+      "owned_paths": [
+        "res://scripts/labs/resource_pool/SettlementNetworkModel.gd",
+        "res://scripts/labs/resource_pool/settlement_network_test.gd",
+        "res://scripts/labs/resource_pool/SettlementNetworkLab.gd",
+        "res://scenes/labs/resource_pool/settlement_network_test.tscn",
+        "res://scenes/labs/resource_pool/SettlementNetworkLab.tscn",
+        "res://scenes/labs/resource_pool/rp0006_receipt.json"
+      ],
+      "owner_opt_in": "Persist independently accepted network, owner scope/cargo, and arrived-journey checkpoints; build cargo from receiver-owned state; then atomically CAS the network and cargo owners so only one sibling proposal can commit.",
+      "verification": {
+        "receipt": "res://scenes/labs/resource_pool/rp0006_receipt.json",
+        "focused_checks": 33,
+        "cross_process_receipts": "identical",
+        "settlement_nodes": 4,
+        "context_only_sites": 2,
+        "catalog_offers": 4,
+        "parts_fixture_options": ["aid", "trade", "fortify"],
+        "visual_fixtures": 6,
+        "visual_states": ["before", "options", "aid-settled", "trade-settled", "fortify-settled", "intel-release"],
+        "repeat_render_hashes": "identical",
+        "architecture_review": "no P0 or P1",
+        "visual_review": "no P0, P1, or P2",
+        "site_visit_regression": "22/22 pass",
+        "site_compiler_regression": "33/33 pass",
+        "region_route_regression": "33/33 pass",
+        "scale_address_regression": "31/31 pass",
+        "expedition_regression": "40/40 pass",
+        "map_tile_regression": "24/24 pass",
+        "static_gates": ["lint_data", "lint_links", "art_gate", "asset_gate", "terrain_gate"]
+      },
+      "exclusions": [
+        "production Sim, save, cargo, town stock, coin, resident belief, or settlement authority",
+        "client receipt as signature, capability, or anti-cheat proof",
+        "one-sided application of the joint network and owner proposal",
+        "continuous distant-settlement simulation",
+        "ruins or quarry promoted into settlement nodes",
+        "road, site-scar, or SpaceGraph mutation",
+        "automatic release of final pending intel at catalog exhaustion"
+      ]
+    },
+    {
+      "id": "RP-0007",
+      "title": "Planet campaign directives and delayed regional consequence",
+      "status": "verified",
+      "product_problem": "A planet view must allocate one scarce command slot across seasonal cross-region objectives without becoming a larger route map or treating an abstract directive as physical launch, arrival, or success evidence.",
+      "contributes_to": [
+        "three authored planet register windows",
+        "season-sensitive non-dominated directive board",
+        "externally anchored command and region evidence",
+        "three-owner directive commitment proposal",
+        "explicit epoch advance and defer",
+        "observation-independent delayed consequence",
+        "fresh-target two-owner delivery proposal",
+        "typed superseded terminal settlement"
+      ],
+      "owned_paths": [
+        "res://scripts/labs/resource_pool/PlanetCampaignModel.gd",
+        "res://scripts/labs/resource_pool/planet_campaign_test.gd",
+        "res://scripts/labs/resource_pool/PlanetCampaignLab.gd",
+        "res://scenes/labs/resource_pool/planet_campaign_test.tscn",
+        "res://scenes/labs/resource_pool/PlanetCampaignLab.tscn",
+        "res://scenes/labs/resource_pool/rp0007_receipt.json"
+      ],
+      "owner_opt_in": "Persist independently accepted campaign, command-owner, region-owner, and whole RP-0006 checkpoints; build command capacity and region signals from receiver state; atomically CAS campaign + command + origin for commitment and campaign + fresh target for delivery.",
+      "verification": {
+        "receipt": "res://scenes/labs/resource_pool/rp0007_receipt.json",
+        "focused_checks": 43,
+        "focused_groups": 13,
+        "cross_process_receipts": "identical",
+        "planet_windows": 3,
+        "catalog_directives": 3,
+        "seasons": ["spring", "autumn", "winter"],
+        "terminal_epoch": 3,
+        "flex_options": 3,
+        "tight_capacity_rotation": ["aid", "trade", "fortify"],
+        "state_phases": ["open", "committed", "terminal"],
+        "delivery_statuses": ["applied", "superseded"],
+        "visual_fixtures": 6,
+        "visual_states": ["scope", "flex-board", "spring-tight", "autumn-tight", "winter-tight", "stage2-applied"],
+        "repeat_render_hashes": "identical",
+        "architecture_review": "no P0 or P1",
+        "visual_review": "no P0, P1, or P2",
+        "settlement_network_regression": "33/33 pass",
+        "site_visit_regression": "22/22 pass",
+        "site_compiler_regression": "33/33 pass",
+        "region_route_regression": "33/33 pass",
+        "scale_address_regression": "31/31 pass",
+        "expedition_regression": "40/40 pass",
+        "map_tile_regression": "24/24 pass",
+        "static_gates": ["lint_data", "lint_links", "art_gate", "asset_gate", "terrain_gate"]
+      },
+      "exclusions": [
+        "production Sim, save, command, region, faction, settlement-network, road, cargo, or site authority",
+        "client receipt as signature, capability, authorization, or anti-cheat proof",
+        "physical launch, route, journey, arrival, completion, or success claim",
+        "globe projection, face adjacency, or distance inferred from authored register slots",
+        "one-sided application of either joint owner proposal",
+        "observation or wall-clock time advancing an epoch or consequence",
+        "automatic mutation of RP-0006 network state or SpaceGraph"
+      ]
+    },
+    {
+      "id": "RP-0008",
+      "title": "Multi-epoch faction covenant",
+      "status": "verified",
+      "product_problem": "Today's accepted faction promise must constrain a later planet epoch through a real honor, one-amendment, or withdrawal decision without inventing faction authority or treating an RP-0007 directive as physical success.",
+      "contributes_to": [
+        "three authored multi-epoch faction covenants",
+        "non-dominated spring promise board",
+        "pure obligation projection",
+        "bounded amendment opportunity cost",
+        "exact RP-0007 directive-record honor evidence",
+        "three-link region-owner evidence continuity",
+        "joint covenant and faction-region proposals",
+        "typed superseded honor and withdrawal"
+      ],
+      "owned_paths": [
+        "res://scripts/labs/resource_pool/CampaignCovenantModel.gd",
+        "res://scripts/labs/resource_pool/campaign_covenant_test.gd",
+        "res://scripts/labs/resource_pool/CampaignCovenantLab.gd",
+        "res://scenes/labs/resource_pool/campaign_covenant_test.tscn",
+        "res://scenes/labs/resource_pool/CampaignCovenantLab.tscn",
+        "res://scenes/labs/resource_pool/rp0008_receipt.json"
+      ],
+      "owner_opt_in": "Persist independently accepted covenant, RP-0007 campaign, faction-region, adapter, and whole RP-0006 checkpoints; derive faction access from receiver state; atomically CAS covenant and region owners while preserving R1-to-R2-to-R3 evidence continuity.",
+      "verification": {
+        "receipt": "res://scenes/labs/resource_pool/rp0008_receipt.json",
+        "focused_checks": 52,
+        "focused_groups": 13,
+        "cross_process_receipts": "identical",
+        "catalog_covenants": 3,
+        "actions": ["bind", "amend", "honor", "withdraw"],
+        "maximum_amendments": 1,
+        "terminal_epoch": 3,
+        "state_phases": ["open", "active", "terminal"],
+        "obligation_statuses": ["not_due", "due", "overdue", "settled"],
+        "region_delta_statuses": ["applied", "superseded"],
+        "visual_fixtures": 6,
+        "visual_states": ["spring-board", "watch-due", "watch-amended", "watch-honored", "relief-withdrawn", "exchange-superseded"],
+        "repeat_render_hashes": "identical",
+        "architecture_review": "no P0 or P1",
+        "visual_review": "no P0, P1, or P2",
+        "planet_campaign_regression": "43/43 pass",
+        "settlement_network_regression": "33/33 pass",
+        "site_visit_regression": "22/22 pass",
+        "site_compiler_regression": "33/33 pass",
+        "region_route_regression": "33/33 pass",
+        "scale_address_regression": "31/31 pass",
+        "expedition_regression": "40/40 pass",
+        "map_tile_regression": "24/24 pass",
+        "static_gates": ["lint_data", "lint_links", "art_gate", "asset_gate", "terrain_gate"]
+      },
+      "exclusions": [
+        "production Sim, save, command, region, faction, settlement-network, road, cargo, or site authority",
+        "client receipt as signature, capability, authorization, anti-cheat proof, or owner checkpoint",
+        "physical travel, execution, completion, delivery, or success claim",
+        "dynamic production faction medoids used as stable covenant identities",
+        "one-sided application of any covenant and faction-region joint proposal",
+        "observation or wall-clock time advancing an epoch, due state, or covenant",
+        "automatic mutation of RP-0007, RP-0006, SpaceGraph, or production faction state"
+      ]
+    },
+    {
+      "id": "RP-0009",
+      "title": "Limited planet reconnaissance portfolio",
+      "status": "verified",
+      "product_problem": "One active covenant creates three future-support uncertainties, but scarce reconnaissance should force a visible two-of-three opportunity cost without inventing hidden truth, advancing time, or projecting one face's discovery across the planet.",
+      "contributes_to": [
+        "exact RP-0003 through RP-0008 evidence envelope",
+        "three covenant-derived reconnaissance roles",
+        "grounded and external-only support-band priors",
+        "non-dominated two-of-three portfolio board",
+        "joint belief and recon-capacity commitment proposal",
+        "externally anchored two-report resolution",
+        "unchanged-prior no-refund stale closure",
+        "observation-pure belief projection"
+      ],
+      "owned_paths": [
+        "res://scripts/labs/resource_pool/PlanetReconPortfolioModel.gd",
+        "res://scripts/labs/resource_pool/planet_recon_portfolio_test.gd",
+        "res://scripts/labs/resource_pool/PlanetReconPortfolioLab.gd",
+        "res://scenes/labs/resource_pool/planet_recon_portfolio_test.tscn",
+        "res://scenes/labs/resource_pool/PlanetReconPortfolioLab.tscn",
+        "res://scenes/labs/resource_pool/rp0009_receipt.json"
+      ],
+      "owner_opt_in": "Persist independently accepted atlas, network, campaign, covenant, recon-capacity, report, and belief checkpoints; derive the evidence envelope from receiver-owned RP-0003 through RP-0008 state; atomically CAS belief plus capacity at commitment and only the belief owner at resolve or stale close.",
+      "verification": {
+        "receipt": "res://scenes/labs/resource_pool/rp0009_receipt.json",
+        "focused_checks": 39,
+        "focused_groups": 13,
+        "cross_process_receipts": "identical",
+        "questions": 3,
+        "required_probes": 2,
+        "portfolio_options": 3,
+        "portfolio_cost": 2,
+        "state_phases": ["open", "committed", "terminal"],
+        "terminal_outcomes": ["resolved", "stale"],
+        "signals": ["adverse", "mixed", "favorable"],
+        "visual_fixtures": 6,
+        "visual_states": ["active-priors", "portfolio-board", "duty-spillover", "duty-fallback", "spillover-fallback", "cycle-stale"],
+        "repeat_render_hashes": "identical",
+        "architecture_review": "no P0 or P1",
+        "visual_review": "no P0, P1, or P2",
+        "planet_campaign_regression": "43/43 pass",
+        "campaign_covenant_regression": "52/52 pass",
+        "settlement_network_regression": "33/33 pass",
+        "site_visit_regression": "22/22 pass",
+        "site_compiler_regression": "33/33 pass",
+        "region_route_regression": "33/33 pass",
+        "scale_address_regression": "31/31 pass",
+        "expedition_regression": "40/40 pass",
+        "map_tile_regression": "24/24 pass",
+        "static_gates": ["lint_data", "lint_links", "art_gate", "asset_gate", "terrain_gate"]
+      },
+      "exclusions": [
+        "production Sim, save, belief, discovery, intel, campaign, covenant, network, road, cargo, faction, or site authority",
+        "client receipt as signature, capability, authorization, anti-cheat proof, hidden truth, or report accuracy proof",
+        "probability, confidence score, success chance, recommendation score, or scalar portfolio ranking",
+        "fog reveal, discovery, route, movement, arrival, completion, or success claim",
+        "face adjacency or evidence projected from face zero onto face two or five",
+        "capacity refund when the accepted campaign or covenant snapshot makes a committed cycle stale",
+        "automatic mutation of RP-0003 through RP-0008, SpaceGraph, or production resident beliefs"
+      ]
+    }
+  ],
+  "next_candidates": [
+    {
+      "id": "RP-0010",
+      "title": "Multi-covenant fulfillment council",
+      "stop_rule": "Only proceed when an external aggregate checkpoint proves at least two same-planet obligations coexist before an RP-0007 directive is committed, one real fulfillment slot cannot satisfy all of them, at least three plans expose different durable sacrifices, and exact downstream RP-0007/RP-0008 receipts can settle every plan without lab-owned faction or campaign authority."
+    }
+  ]
+}

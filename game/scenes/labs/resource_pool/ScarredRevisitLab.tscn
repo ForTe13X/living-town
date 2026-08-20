@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/labs/resource_pool/ScarredRevisitLab.gd" id="1_scarred_revisit"]
+
+[node name="ScarredRevisitLab" type="Node2D"]
+script = ExtResource("1_scarred_revisit")

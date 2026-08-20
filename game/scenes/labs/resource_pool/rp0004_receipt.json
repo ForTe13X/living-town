@@ -1,0 +1,170 @@
+{
+  "schema": "living-town.resource-pool-batch-receipt/v1",
+  "batch": "RP-0004",
+  "status": "verified",
+  "verified_on": "2026-08-14",
+  "branch": "codex/map-tile-lab",
+  "runtime": "Godot 4.6.2.stable via gamecraft-runner:4.6.2",
+  "product_problem": "Compile each arrived region destination into a distinct reachable tactical site, then preserve depletion across revisits without serializing or regenerating a second local world.",
+  "contributes_to": [
+    "tile-to-local procedural content",
+    "stable building and content identities",
+    "roof, door, loot, threat, and extraction reachability",
+    "owner-checkpointed arrived-route admission",
+    "single-active site visits",
+    "seed-plus-scar persistence",
+    "revisit scar ledger and terminal handoff"
+  ],
+  "contract_gate": {
+    "scene": "res://scenes/labs/resource_pool/site_compiler_test.tscn",
+    "checks": 33,
+    "result": "pass",
+    "fresh_process_runs": 2,
+    "cross_process_receipts": "identical",
+    "fixtures": [
+      {
+        "site_key": "ash_market",
+        "site_kind": "ruins",
+        "layout_key": "ruined_market_block",
+        "reachable_cells": 534,
+        "buildings": 4,
+        "loot": 8,
+        "threats": 3
+      },
+      {
+        "site_key": "cinder_crossing",
+        "site_kind": "haven",
+        "layout_key": "crossing_haven",
+        "reachable_cells": 545,
+        "buildings": 4,
+        "loot": 5,
+        "threats": 1
+      },
+      {
+        "site_key": "orra_relay",
+        "site_kind": "relay",
+        "layout_key": "orra_relay_compound",
+        "reachable_cells": 507,
+        "buildings": 3,
+        "loot": 6,
+        "threats": 3
+      },
+      {
+        "site_key": "redglass_quarry",
+        "site_kind": "quarry",
+        "layout_key": "redglass_quarry_works",
+        "reachable_cells": 491,
+        "buildings": 3,
+        "loot": 7,
+        "threats": 4
+      },
+      {
+        "site_key": "saint_vey_clinic",
+        "site_kind": "clinic",
+        "layout_key": "field_clinic_campus",
+        "reachable_cells": 544,
+        "buildings": 4,
+        "loot": 7,
+        "threats": 2
+      },
+      {
+        "site_key": "dunlin_homestead",
+        "site_kind": "farm",
+        "layout_key": "dunlin_homestead",
+        "reachable_cells": 571,
+        "buildings": 3,
+        "loot": 7,
+        "threats": 2
+      }
+    ],
+    "hostile_arms": [
+      "self-rehashed forged arrived journey and route pass RP-0003 structural validation but fail the independent owner journey checkpoint",
+      "forged active snapshots fail exact enter-transition validation",
+      "rolled-back idle snapshots fail the owner site-state checkpoint",
+      "replayed, mixed, duplicated, and self-rehashed terminal DTOs fail closed",
+      "non-finite, fractional, string, and out-of-range numeric values fail before integer conversion"
+    ],
+    "blueprint_receipt": {
+      "schema": "living-town.site-blueprint-receipt/v1",
+      "blueprint_id": "sbp1:5ebcd5a262b1f1e0",
+      "blueprint_receipt": "sha256:dcf3dee38c34a108fda0b5e43b40aaa80fe95b3b9505500e2f974ab7dcef8f78",
+      "promise_receipt": "sha256:38980550a09c442649cf7a6316746ea30f303a1349410c3fb16e5e22a7688f6c",
+      "site_id": "psa1|p:ashfall|f:0|r:0,0|t:2,3|s:cinder_crossing",
+      "site_kind": "haven",
+      "layout_key": "crossing_haven",
+      "compiler_revision": "tile-local-compiler-v1",
+      "content_revision": "ashfall-sites-v1",
+      "seed_token": "s63:53a398d4185d08ab",
+      "grid": "32x22",
+      "buildings": "u32:4",
+      "loot": "u32:5",
+      "threats": "u32:1",
+      "reachable_cells": "u32:545",
+      "topology_receipt": "sha256:898f7af7102b2d7654a52cf3f82884419c21d58e28c018a70e80dddbc7eb7841",
+      "receipt": "sha256:8014aab5b2c65c7cdc533ec5a45a302bc1206f72044a1261acb6d538b1d0f0f5"
+    },
+    "scarred_idle_state_receipt": "sha256:3cb173c1cc47cde12e4441f93e2d0e0d7e72aa06564c74600a98a4463e289ab9",
+    "state_transition_receipt": "sha256:fc8e72cc63edbaf9013ba7c9a86d24cd384649db68f6c5f6df1753de96a2c6e9"
+  },
+  "regressions": {
+    "scale_address": "31/31 pass",
+    "expedition_contract": "40/40 pass",
+    "region_route": "33/33 pass",
+    "map_tile_lab": "24/24 pass",
+    "lint_data": "pass",
+    "lint_links": "pass",
+    "art_gate": "pass",
+    "asset_gate": "pass",
+    "terrain_gate": "pass",
+    "runtime_dependency_scan": "SiteBlueprintModel preloads only ScaleAddress and RegionRouteModel; SiteCompilerLab preloads only resource-pool models; no Sim, Main, WorldView, SpaceGraph, or production-to-lab runtime reference"
+  },
+  "visual_gate": {
+    "scene": "res://scenes/labs/resource_pool/SiteCompilerLab.tscn",
+    "size": "1280x768",
+    "repeat_count": 2,
+    "all_repeat_hashes_identical": true,
+    "review": "no P0, P1, or P2 after moving the map legend out of the grid and restoring cutaway building names",
+    "frames": [
+      {
+        "fixture": "ruins/fresh",
+        "sha256": "3bcae63a7d95be6d7ccb93f4d2e0e279a498cce475252485460f1ad98323f2a9"
+      },
+      {
+        "fixture": "clinic/scarred",
+        "sha256": "4c3288b502bfb27bd9c588875641c651f76aee58db02ee384e50b80003e479f8"
+      },
+      {
+        "fixture": "relay/fresh",
+        "sha256": "ec4aa74aab6dea91a68f5a4ebfbc2571e92d7a697341a9c699cef9932e75d6ba"
+      },
+      {
+        "fixture": "quarry/scarred",
+        "sha256": "3d0449ca15981b29b97606aba1d3578822bff0ff25e2bf5ed5e2c15f25735a57"
+      },
+      {
+        "fixture": "farm/fresh",
+        "sha256": "8ee069eba98333cbb522ad7935a69e799a9220a963df7d8de4ccc43b0b327184"
+      },
+      {
+        "fixture": "haven/scarred",
+        "sha256": "2a58666468b937aca8dc181f11d41049ab25a895de0ca038f42b53f52aded292"
+      }
+    ]
+  },
+  "owner_boundary": {
+    "production_paths_modified": [],
+    "authority_applied_by_resource_pool": false,
+    "promotion_requires": [
+      "independently owner-accepted journey-state and site-state receipts",
+      "atomic idle-to-active and active-to-idle site-state compare-and-swap",
+      "trusted local action reducer or two-phase terminal witness",
+      "one owner transaction for scars and once-only expedition settlement",
+      "production save-schema migration plus compiler/content revision archive or typed migration"
+    ],
+    "deferred_to_rp0005": [
+      "trusted local action reduction",
+      "scarred-site materialization",
+      "mid-raid player and threat continuation"
+    ]
+  }
+}

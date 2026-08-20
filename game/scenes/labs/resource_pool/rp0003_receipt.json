@@ -1,0 +1,106 @@
+{
+  "schema": "living-town.resource-pool-batch-receipt/v1",
+  "batch": "RP-0003",
+  "status": "verified",
+  "verified_on": "2026-08-14",
+  "branch": "codex/map-tile-lab",
+  "runtime": "Godot 4.6.2.stable via gamecraft-runner:4.6.2",
+  "product_problem": "Make a larger map create an explainable route decision, then persist exact caravan position, resources, discovery, stranding, and fallback without making observation advance authority.",
+  "contributes_to": [
+    "regional caravan planning",
+    "seasonal route closure",
+    "fog and discovery persistence",
+    "one-leg causal settlement",
+    "save/load journey continuation",
+    "planet-scale logistics identity"
+  ],
+  "contract_gate": {
+    "scene": "res://scenes/labs/resource_pool/region_route_test.tscn",
+    "checks": 33,
+    "result": "pass",
+    "cross_process_receipt": "identical",
+    "fixture": {
+      "tiles": 192,
+      "edges": 521,
+      "regions": 2,
+      "initially_discovered": 19,
+      "autumn_board": "routes_available",
+      "winter_board": "fallback_only"
+    },
+    "receipt": {
+      "atlas_id": "rga1:5b635e795772fa5e",
+      "atlas_receipt": "sha256:5b635e795772fa5eba355368a9b9039074848110ff77a29fd35b60e946638839",
+      "atlas_state_receipt": "sha256:b0bc2b428de66b21fdc012bc17a31696ea248181d90bd20a89522e5bd4504901",
+      "condition_milli": "u32:96380",
+      "current_tile": "psa1|p:ashfall|f:0|r:0,0|t:2,3",
+      "elapsed_minutes": "u32:1350",
+      "journey_id": "rrj1:ea807a7f4758b570",
+      "journey_state_receipt": "sha256:72b0fead3f0a04e3d519b9c897734d182e6ce65e0b2a2eca743bb9eaa960aa1f",
+      "last_leg_receipt": "sha256:0fb13fee5e023527f1a6f0b1c36b849c25537b5fadf3d809a45405d534baa2f3",
+      "leg_index": "u32:10",
+      "network_revision": "ashfall-south-window-v1",
+      "origin_plan_id": "rrp1:86f99672eacf460d",
+      "phase": "arrived",
+      "plan_id": "rrp1:86f99672eacf460d",
+      "plan_receipt": "sha256:86f99672eacf460dd8213fe7950cd0e531402be1ff3ef28803ad23b88c784f4f",
+      "policy": "safe",
+      "road_revision": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "route_receipt": "sha256:bd6614e87bd326b3b621307dfdfa3c93d1419e6ed2da3984f20e28988768c2f1",
+      "schema": "living-town.region-route-receipt/v1",
+      "season": "autumn",
+      "segment_count": "u32:1",
+      "supplies_milli": "u32:93616"
+    }
+  },
+  "regressions": {
+    "scale_address": "31/31 pass",
+    "expedition_contract": "40/40 pass",
+    "map_tile_lab": "pass",
+    "lint_data": "pass",
+    "lint_links": "pass",
+    "art_gate": "pass",
+    "asset_gate": "pass",
+    "terrain_gate": "pass",
+    "runtime_dependency_scan": "only RegionRouteModel and ScaleAddress are preloaded; no Sim, Main, or WorldView runtime reference"
+  },
+  "visual_gate": {
+    "scene": "res://scenes/labs/resource_pool/RegionRouteLab.tscn",
+    "size": "1280x768",
+    "repeat_count": 2,
+    "all_repeat_hashes_identical": true,
+    "review": "no P0 or P1; copy and blocked-route P2 findings fixed before final rerender",
+    "frames": [
+      {
+        "fixture": "autumn",
+        "sha256": "73cdfbc7fce8d71a2cbc91c84432f84a8d182fb72f5f06bec340a17341ed164a"
+      },
+      {
+        "fixture": "spring",
+        "sha256": "21cab20d74b004f582e6bcd7441c7058b7583a951432f2e28a3bb55cdfcb9876"
+      },
+      {
+        "fixture": "winter",
+        "sha256": "d8450cdf6c2738919c3ca82fe95c1d0aadd153ea5f50c78d2170855ad57618bd"
+      },
+      {
+        "fixture": "two_legs",
+        "sha256": "53fee8004128230b8a2ce8aa3a0a67460d5c6404ce564d2f48187cb7eeb2c79e"
+      },
+      {
+        "fixture": "empty",
+        "sha256": "3cc639f2de8295bfdc3d996157661b7b7b057ad923ba9bdb3695a1906ac62225"
+      }
+    ]
+  },
+  "owner_boundary": {
+    "production_paths_modified": [],
+    "authority_applied_by_resource_pool": false,
+    "promotion_requires": [
+      "full receipt retention plus compact-ID collision checks",
+      "typed transition ledger and atomic before-state compare-and-swap",
+      "semantic validate_route_receipt call before canonical serialization",
+      "frozen road snapshot or typed replan transition",
+      "production save-schema migration and replay ledger"
+    ]
+  }
+}

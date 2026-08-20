@@ -1,0 +1,20 @@
+{
+  "schema": "living-town.rp0010-receipt/v1",
+  "batch": "RP-0010",
+  "status": "verified",
+  "focused_checks": 27,
+  "cross_process_receipts": "identical",
+  "receipts": {
+    "catalog": "sha256:a0564a80d6dc8d64c67603057086f34a16f8e4c88bf1a7e0297a83145464ab80",
+    "board": "sha256:059a9f1424e2d54106ffb677c83c9f5f59614ec008a3680949e5b654bc20ede6",
+    "commit": "sha256:90547026e11586fc9837b67b161117537effa5db7861881dc00ced69f85a103a",
+    "settlement": "sha256:d47828d0010f1873d15eccc337ac88af7e5a9f35447b49fec83aba431c7bbf6e",
+    "stale": "sha256:f1822e2421636378b39b70e58389fbc539470af900c8e6c09e8e4426194bdcf2"
+  },
+  "environment": "Godot 4.6.2 gamecraft-runner",
+  "known_noise": [
+    "missing nobodywho GDExtension",
+    "ObjectDB instances leaked at exit"
+  ],
+  "authority_boundary": "lab-only; no production Sim/Main/WorldView mutation"
+}

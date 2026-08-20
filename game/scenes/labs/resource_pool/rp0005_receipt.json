@@ -1,0 +1,123 @@
+{
+  "schema": "living-town.resource-pool-batch-receipt/v1",
+  "batch": "RP-0005",
+  "status": "verified",
+  "verified_on": "2026-08-16",
+  "branch": "codex/map-tile-lab",
+  "runtime": "Godot 4.6.2.stable via gamecraft-runner:4.6.2",
+  "product_problem": "Derive durable site consequences from typed local actions instead of caller terminal claims, then materialize the same immutable blueprint without respawning depleted or neutralized content.",
+  "contributes_to": [
+    "typed local action reduction",
+    "full-chain journal replay and continuation",
+    "reducer-owned extraction and collapse",
+    "causal terminal scar derivation",
+    "no-respawn revisit projection",
+    "destroyed-blocker navigation",
+    "roof memory",
+    "exact RP-0004 settlement handoff"
+  ],
+  "contract_gate": {
+    "scene": "res://scenes/labs/resource_pool/site_visit_journal_test.tscn",
+    "checks": 22,
+    "result": "pass",
+    "fresh_process_runs": 2,
+    "cross_process_receipts": "identical",
+    "site_archetypes": 6,
+    "maximum_replayed_actions": 512,
+    "action_kinds": [
+      "move",
+      "take_loot",
+      "attack_threat",
+      "destroy_prop",
+      "wait",
+      "extract",
+      "abort"
+    ],
+    "terminal_phases": [
+      "extracted",
+      "collapsed",
+      "retreated"
+    ],
+    "hostile_arms": [
+      "idle, wrong, mixed, and self-rehashed active checkpoints fail admission",
+      "teleport, diagonal, zero-step, remote targets, unknown actions, and caller terminal claims fail closed",
+      "stale journal checkpoints and dropped, reordered, duplicated, mixed, or self-rehashed event chains fail replay",
+      "threat ticks follow an independent lexical-ID oracle and lethal effects conserve actual applied damage",
+      "terminal settlement binds the full journal and exact RP-0004 enter, idle, and journey checkpoints",
+      "JSON and Variant mid-visit continuation normalize integral numbers and reject non-finite, fractional, string, and huge values",
+      "second visits inherit scars and cannot target depleted loot or neutralized threats",
+      "the 512th ordinary action produces reducer-owned exhaustion collapse instead of an unresolvable active state"
+    ],
+    "journal_receipt": "sha256:da3b6030cd7e3dcee6cb959638dc8ec1ae28da8f3ccb4dfb6d725f4498f3daa0",
+    "terminal_receipt": "sha256:f5497bcfab980f4c9f523e2b7e7b91bd4cb0e2d06570d53a6f6f66c10d4ad2f5",
+    "revisit_receipt": "sha256:7cbb81580bc9c9965dce1e4da45cd32722780fdf0027322ab419a3b1839c636b"
+  },
+  "source_hashes": {
+    "SiteVisitJournalModel.gd": "sha256:92a196154d055bab20b3878023c01d6e35a0445da9a4e81d1798697f08e7fb85",
+    "site_visit_journal_test.gd": "sha256:f1081d58f0b3026c3cede7578a7ea326826979a6ea6381d4122c171bd1e70742",
+    "ScarredRevisitLab.gd": "sha256:4b0b160d9f15ddbc283551b34fecf3142482e8b08a4167e7515d2e8e87e13f81"
+  },
+  "regressions": {
+    "scale_address": "31/31 pass",
+    "expedition_contract": "40/40 pass",
+    "region_route": "33/33 pass",
+    "site_compiler": "33/33 pass",
+    "map_tile_lab": "24/24 pass",
+    "lint_data": "pass",
+    "lint_links": "pass",
+    "art_gate": "pass",
+    "asset_gate": "pass",
+    "terrain_gate": "pass",
+    "runtime_dependency_scan": "SiteVisitJournalModel preloads only SiteBlueprintModel and ScaleAddress; ScarredRevisitLab preloads only resource-pool models; no Sim, Main, WorldView, SpaceGraph, or production-to-lab runtime reference"
+  },
+  "visual_gate": {
+    "scene": "res://scenes/labs/resource_pool/ScarredRevisitLab.tscn",
+    "size": "1280x768",
+    "repeat_count": 2,
+    "all_repeat_hashes_identical": true,
+    "review": "no P0, P1, or P2; fresh promise, typed prefix, collapse scars, destroyed-blocker route, depletion revisit, and zero-scar abort are readable",
+    "frames": [
+      {
+        "fixture": "ruins/fresh",
+        "sha256": "f6b846fef217f65ff87f482e5e48e2b619b2852e48aaa23d3c29d6fe0692fc9c"
+      },
+      {
+        "fixture": "clinic/journal",
+        "sha256": "90226b49bb1919768fc9f0c9f0e64de6d372a9c192e2452e38a823bbdf762baa"
+      },
+      {
+        "fixture": "relay/scars",
+        "sha256": "184b4eb35a6ea97012ea4b74367070142b7f5e976a6217e393c0900247800bfe"
+      },
+      {
+        "fixture": "quarry/revisit",
+        "sha256": "eb453c0e4fd52e3b977dbb84f2e39da7c4c2f0d8b08b1e862653ceaeb0f0bc94"
+      },
+      {
+        "fixture": "farm/revisit",
+        "sha256": "e4b9a4a24ea8113ab40f3047fe205aee592c3980c9494a866183e2083ea52e1e"
+      },
+      {
+        "fixture": "haven/abort",
+        "sha256": "064db43d248562657f775100ef637ebb67e3f36b79e41a25b682569c89280fd3"
+      }
+    ]
+  },
+  "owner_boundary": {
+    "production_paths_modified": [],
+    "authority_applied_by_resource_pool": false,
+    "promotion_requires": [
+      "persist the RP-0004 active checkpoint, journal start, full ordered events, and owner-held latest journal receipt",
+      "atomically accept each journal sequence once and reject sibling receipts at that sequence",
+      "validate the original RP-0004 enter transition and independent idle and journey checkpoints",
+      "commit active-to-idle site scars and once-only expedition or cargo settlement in one owner transaction",
+      "inject authored stable IDs into receiver-owned local entities rather than infer identity from label, position, or count",
+      "add untrusted-input size limits, a production save-schema migration, and compiler/content/rules revision migration"
+    ],
+    "deferred_to_rp0006": [
+      "aggregated settlement aid, trade, and fortification choices",
+      "cross-owner cargo anchor consumption",
+      "delayed regional intel"
+    ]
+  }
+}

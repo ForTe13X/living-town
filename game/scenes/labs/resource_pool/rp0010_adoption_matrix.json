@@ -1,0 +1,81 @@
+{
+  "schema": "living-town.resource-pool-adoption-matrix/v1",
+  "batch": "RP-0010",
+  "product_problem": "已验证的 planet contracts 仍没有安全、可跳过的 owner 接入路径；需要把纯 DTO 与生产 authority 明确分界。",
+  "baseline": {
+    "branch": "codex/map-tile-lab",
+    "authority": "lab-only",
+    "production_paths_modified": [],
+    "forbidden_runtime_loads": ["Sim", "Main", "WorldView"]
+  },
+  "adoption_order": [
+    "read_only_projection",
+    "owner_checkpoint_adapter",
+    "atomic_cas_proposal",
+    "production_save_migration"
+  ],
+  "external_owners": [
+    "CampaignOwner",
+    "CovenantOwner",
+    "ObligationSetCoordinator",
+    "FulfillmentCapacityOwner",
+    "OutcomeAggregator"
+  ],
+  "seams": [
+    {
+      "owner": "Sim",
+      "resource_pool_consumers": ["ScaleAddress", "RegionRouteModel", "SiteVisitJournalModel", "SettlementNetworkModel", "PlanetCampaignModel", "CampaignCovenantModel", "PlanetReconPortfolioModel", "PlanetObligationCouncilModel"],
+      "opt_in": "仅由 owner 提供 accepted checkpoint、seed/address 与 before/after CAS；资源池不 preload 或写入 Sim。",
+      "must_not": ["复制 inventory/cargo/faction/road authority", "把 lab receipt 当 capability 或签名", "由 observation 推进时间或 epoch"]
+    },
+    {
+      "owner": "Main",
+      "resource_pool_consumers": ["Planet*Lab scenes", "receipt summaries"],
+      "opt_in": "保持 standalone scene；未来只接只读 projection 或 owner-approved proposal preview。",
+      "must_not": ["挂载 RP model 到 Main._ready", "绕过 owner action/CAS 直接应用 settlement", "改变 Main/Sim 启动顺序"]
+    },
+    {
+      "owner": "WorldView",
+      "resource_pool_consumers": ["visual lab renderers"],
+      "opt_in": "复制程序绘制配方或读取 canonical DTO，按 NEAREST/整数像素缩放绘制。",
+      "must_not": ["把 lab cell codes 当 MapTile authority", "从视图反推 discovery/roof/loot state", "让 camera/inspection 改变 receipt"]
+    },
+    {
+      "owner": "ProbeController",
+      "resource_pool_consumers": ["planet/region visual labs"],
+      "opt_in": "仅作 camera/focus/plane navigation；输入动作仍由 owner reducer 解释。",
+      "must_not": ["把 focus/follow 当 gameplay transition", "通过观察推进 route/epoch/covenant/recon state"]
+    },
+    {
+      "owner": "CargoManifest",
+      "resource_pool_consumers": ["RP-0002", "RP-0006", "RP-0007"],
+      "opt_in": "owner 提供 accepted cargo checkpoint，资源池只生成 joint proposal。",
+      "must_not": ["复制 cargo balance", "把 settlement receipt 当 unload/arrival proof", "单边扣货或退款"]
+    }
+  ],
+  "reusable_contracts": [
+    "ScaleAddress canonical hierarchy and seed receipts",
+    "RP-0003 route/journey external checkpoint",
+    "RP-0004/RP-0005 site scar and journal receipts",
+    "RP-0006 network/cargo joint proposal",
+    "RP-0007 campaign directive and delayed delivery",
+    "RP-0008 covenant evidence continuity",
+    "RP-0009 belief/recon capacity CAS",
+    "RP-0010 multi-obligation fulfillment CAS"
+  ],
+  "verification_boundary": {
+    "evidence": "lab focused gates and canonical receipts only",
+    "not_proven": ["production save migration", "owner CAS integration", "runtime authority acceptance", "anti-cheat security"],
+    "rollback": "remove or ignore the additive matrix/receipt; no production state is changed"
+  },
+  "forbidden_crossings": [
+    "aggregate anchor is not acceptance of any campaign or covenant transition",
+    "resource-pool validators never execute cross-owner CAS; owners return accepted before/after receipts",
+    "proposal receipts and hashes are not signatures, capabilities, authorization, or anti-cheat proof",
+    "lane owner scopes, checkpoints, and replay keys must remain distinct; one global Sim scope cannot replace them",
+    "stale closure never refunds fulfillment capacity automatically",
+    "projection, UI, camera, and inspection never advance epoch, route, recon, covenant, or settlement",
+    "RP-0010 does not read or deduct CargoManifest; cargo is only a transitive downstream owner concern"
+  ],
+  "owner_handoff": "Owner may adopt one seam at a time; first recommended seam is read-only projection plus externally accepted checkpoint validation, followed by a separately reviewed atomic CAS adapter."
+}

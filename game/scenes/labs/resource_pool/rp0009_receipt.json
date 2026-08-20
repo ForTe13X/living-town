@@ -1,0 +1,140 @@
+{
+  "schema": "living-town.resource-pool-batch-receipt/v1",
+  "batch": "RP-0009",
+  "status": "verified",
+  "verified_on": "2026-08-16",
+  "branch": "codex/map-tile-lab",
+  "runtime": "Godot 4.6.2.stable via gamecraft-runner:4.6.2",
+  "product_problem": "Spend two scarce reconnaissance points on two of three covenant-derived future-support questions, making the omitted uncertainty visible without inventing hidden truth, advancing campaign time, or projecting face-zero discovery across the planet.",
+  "contributes_to": [
+    "exact RP-0003 through RP-0008 evidence envelope",
+    "three covenant-derived reconnaissance roles",
+    "grounded and external-only support-band priors",
+    "non-dominated two-of-three portfolio board",
+    "joint belief and recon-capacity commitment proposal",
+    "externally anchored two-report resolution",
+    "unchanged-prior no-refund stale closure",
+    "observation-pure belief projection"
+  ],
+  "contract_gate": {
+    "scene": "res://scenes/labs/resource_pool/planet_recon_portfolio_test.tscn",
+    "checks": 39,
+    "groups": 13,
+    "result": "pass",
+    "fresh_process_runs": 2,
+    "cross_process_receipts": "identical",
+    "receipt_block_sha256": "0ef4bb779a3c6901c0379331a7b57f22bc6925acbcde387812887d0c7509e30f",
+    "questions": 3,
+    "required_probes": 2,
+    "portfolio_options": 3,
+    "portfolio_cost": 2,
+    "prior_widths_bp": {
+      "duty": 6000,
+      "spillover": 6000,
+      "fallback": 4000
+    },
+    "posterior_width_bp": 2000,
+    "hostile_arms": [
+      "catalog exact-recompiles from accepted RP-0007 and RP-0008 catalogs and rejects reidentified forged terms, windows, factions, priors, or mappings",
+      "evidence exact-recomputes accepted RP-0003 atlas state, RP-0006 network and available intel, RP-0007 campaign, RP-0008 active obligation, and external owner scopes",
+      "RP-0003 and RP-0006 must share the exact RP-0007 root and planet; mixed valid stacks cannot form one evidence envelope",
+      "only available redglass_route_watch intel whose canonical face-zero Redglass tile exists and is discovered can ground the Basin prior",
+      "Exchange derives duty Meridian, spillover Nightward, and fallback Basin without label, distance, adjacency, or face projection inference",
+      "an independent Pareto oracle proves all three two-of-three reduction vectors are non-dominated and the board exposes no scalar score",
+      "recon scope, checkpoint, evidence-cycle key, capacity, anchor receipt, and replay key remain externally anchored and cannot alias campaign or network owners",
+      "commit exact-rebuilds the open state, full board, option, choice, selected role-to-question probes, anchor, parent chain, and belief-plus-capacity conservation",
+      "two-report bundles require exactly the selected probes, unique sources, typed signals, a fresh recon-owner checkpoint, and an external accepted bundle receipt",
+      "resolution requires unchanged accepted RP-0007 and RP-0008 snapshots, exact signal-to-band mapping, selected observation receipts, and a byte-identical unselected prior",
+      "changed accepted campaign or covenant snapshots reject resolution and close terminal stale with unchanged unobserved priors and zero refund",
+      "JSON and Variant continuation normalize bounded integral nested values and reject fractional, non-finite, huge, bool, String, unknown, cyclic, deep, oversized-container, and oversized-string inputs",
+      "board and belief projection are observation-independent; every RP-0003 through RP-0008 input remains deeply unchanged and no output claims truth, probability, discovery, intel release, epoch advance, route, arrival, completion, or success"
+    ],
+    "catalog_receipt": "sha256:08bf77847f07679468d987e3218b6fdb48ddfe3cefa5bd7d1696aa06b03764aa",
+    "evidence_receipt": "sha256:49b97e5dbe788a862a0ad32cbbb815e0b9bf341db446b83f9830471e60b9b903",
+    "commit_receipt": "sha256:2584051f06de60e0824541f5fcca52e33e5eb24f889ebea4e5190d0cc58d930a",
+    "observation_receipt": "sha256:86b6fdd7062dfdad816de6a7e168d73dc200b249aea696ba0ac3a12c57980a70",
+    "resolution_receipt": "sha256:669cc6cb96faefed4ad214611f3d0356c1381b59ea3da70997bd318398f9ef33",
+    "stale_receipt": "sha256:6641024bce6d7114457ef6c929fc07b24ee8c9d4f508c112e55a683abb9369c9"
+  },
+  "source_hashes": {
+    "PlanetReconPortfolioModel.gd": "sha256:db9011108d2ee234a45214c51482f01572360484db3c0793907d2738c15e89f9",
+    "planet_recon_portfolio_test.gd": "sha256:1045e84e735d08d15a3e533f0c1c9174045bbb8a927cc2b81b473ee911010bfb",
+    "planet_recon_portfolio_test.tscn": "sha256:d1b7cc07b275c8eb21dd7d0991135b88bda33ab986217220ceddec185030d4ac",
+    "PlanetReconPortfolioLab.gd": "sha256:8873efaa381e6d8c99dca466c50d29c8a4791baffb0fc0a76d85bace50fb82b1",
+    "PlanetReconPortfolioLab.tscn": "sha256:5b30ddb1acef2327401a48d211f160642c07bf9173195c65165c27cc6b7129bb"
+  },
+  "regressions": {
+    "scale_address": "31/31 pass",
+    "expedition_contract": "40/40 pass",
+    "region_route": "33/33 pass",
+    "site_compiler": "33/33 pass",
+    "site_visit_journal": "22/22 pass",
+    "settlement_network": "33/33 pass",
+    "planet_campaign": "43/43 pass",
+    "campaign_covenant": "52/52 pass",
+    "map_tile_lab": "24/24 pass",
+    "lint_data": "pass",
+    "lint_links": "pass",
+    "art_gate": "pass",
+    "asset_gate": "pass",
+    "terrain_gate": "pass",
+    "runtime_dependency_scan": "PlanetReconPortfolioModel preloads only ScaleAddress plus the RP-0003, RP-0006, RP-0007, and RP-0008 pure models; no production-to-resource-pool runtime reference; RP-0009 mutates no production or earlier-batch authority"
+  },
+  "visual_gate": {
+    "scene": "res://scenes/labs/resource_pool/PlanetReconPortfolioLab.tscn",
+    "size": "1280x768",
+    "repeat_count": 2,
+    "all_repeat_hashes_identical": true,
+    "review": "no P0, P1, or P2 after correcting pair highlighting; active covenant, capacity two, three no-rank vectors, selected posterior bands, omitted retained priors, read-only evidence, and zero-refund stale closure are readable without maps, units, probabilities, or hidden-truth markers",
+    "frames": [
+      {
+        "fixture": "active-priors",
+        "bytes": 116228,
+        "sha256": "e9028ca1a1b280c7885bb577e57198bef7da4fb1235a9bcadf08138ec2658b7a"
+      },
+      {
+        "fixture": "portfolio-board",
+        "bytes": 115561,
+        "sha256": "614c276933c2d93cd5539a4717b8e470a2cd10b9dc93354c522d08f11f81bfac"
+      },
+      {
+        "fixture": "duty-spillover",
+        "bytes": 117225,
+        "sha256": "f3b39c1fb3ecc2ea22edaba01604363b4933da9b82a9299382f4f6280be7c5d8"
+      },
+      {
+        "fixture": "duty-fallback",
+        "bytes": 116089,
+        "sha256": "46b58083d7ae83356315385ddecebedb99cc1b17936a7b6298a769a3ee71f0ab"
+      },
+      {
+        "fixture": "spillover-fallback",
+        "bytes": 116424,
+        "sha256": "6e22c08b7a5d14ae44691fc13190fdf9f4ff0125b5cea09910fef1be5290ba2e"
+      },
+      {
+        "fixture": "cycle-stale",
+        "bytes": 114657,
+        "sha256": "d9e8be30cb8fcc5685517f1cb73da4b8e3c6c73d68e973c1960b5a64faefcf36"
+      }
+    ]
+  },
+  "owner_boundary": {
+    "production_paths_modified": [],
+    "authority_applied_by_resource_pool": false,
+    "promotion_requires": [
+      "persist independently accepted atlas, network, campaign, covenant, recon-capacity, report, and belief checkpoints",
+      "derive the evidence envelope and report bundle from receiver-owned state rather than caller-authored receipts or support bands",
+      "atomically compare-and-swap belief plus recon-capacity owners at commitment and only the belief owner at resolution or stale close",
+      "keep support bands distinct from world truth, production resident beliefs, probability, confidence, success chance, discovery, and fog",
+      "preserve no-refund stale closure when the accepted campaign or obligation snapshot changes after capacity is spent",
+      "archive and migrate terms, evidence provenance, replay, observation, and terminal ledgers with authorization and untrusted-input byte limits"
+    ],
+    "deferred_to_rp0010": [
+      "externally proven simultaneous covenant set",
+      "one fulfillment slot contested by multiple due obligations",
+      "priority plan that sponsors one directive, amends one covenant, and withdraws or defaults the residual",
+      "exact RP-0007 and RP-0008 factual settlement of the arbitration plan"
+    ]
+  }
+}

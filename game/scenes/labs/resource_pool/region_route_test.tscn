@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource path="res://scripts/labs/resource_pool/region_route_test.gd" type="Script" id="1"]
+
+[node name="RegionRouteTest" type="Node"]
+script = ExtResource("1")
