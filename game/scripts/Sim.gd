@@ -373,6 +373,9 @@ var observatory_projection_event_reads := 0 # compatibility receipt: successful 
 var observatory_projection_query_ops := 0 # total bounded ledger/index/tx dereferences in one projection
 const OBSERVATORY_QUERY_OP_BUDGET := 96
 var observatory_projection_query_budget_failed := false
+## Test-only fault hook; inert unless a focused fixture installs it.
+var observatory_projection_query_hook: Callable = Callable()
+var observatory_projection_query_budget_override := -1
 # S4：模型决策当「外部输入」记入 trace → 即使模型非确定，回放也可复现（docs/11 §5）
 var decision_trace: Array = []  # [{tick,agent,kind,action,partner,subject,say,cand_hash}]（落地的模型决策）
 var decision_sink: Callable = Callable()  # Phase-0 对拍数据集：默认空=off；设了则每次 logic 决策把 (ag,cands,pick_i) 喂给它。不抽 RNG、不进 event_log/digest、CI 恒空 → 红线零影响。
@@ -1771,8 +1774,15 @@ func _cargo_index_key(event: Dictionary) -> String:
 
 func _projection_query_op(weight: int = 1) -> void:
 	observatory_projection_query_ops += maxi(1, weight)
-	if observatory_projection_query_ops > OBSERVATORY_QUERY_OP_BUDGET:
+	var budget := OBSERVATORY_QUERY_OP_BUDGET
+	if observatory_projection_query_budget_override >= 0:
+		budget = observatory_projection_query_budget_override
+	if observatory_projection_query_ops > budget:
 		observatory_projection_query_budget_failed = true
+	if observatory_projection_query_hook.is_valid():
+		var hook := observatory_projection_query_hook
+		observatory_projection_query_hook = Callable()
+		hook.call()
 
 func _index_cargo_event(event: Dictionary, index: int) -> void:
 	var note := String(event.get("note", ""))

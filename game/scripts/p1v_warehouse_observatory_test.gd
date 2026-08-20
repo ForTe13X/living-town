@@ -67,6 +67,11 @@ func _safe_invalid_cargo(row: Dictionary) -> bool:
 		and String(row.get("good", "")) == "" and int(row.get("qty", -1)) == 0 \
 		and int(row.get("cost", -1)) == 0 and String(row.get("worker_id", "")) == ""
 
+func _inject_projection_query_deref() -> void:
+	# Called once from the real production projection path; the hook is cleared
+	# by Sim before invocation, so this is one additional counted dereference.
+	Sim._projection_query_op()
+
 func _ready() -> void:
 	_pin_settings()
 	_main = load("res://scenes/Main.tscn").instantiate()
@@ -157,14 +162,20 @@ func _ready() -> void:
 		and query_ops_after <= Sim.OBSERVATORY_QUERY_OP_BUDGET
 		and not Sim.observatory_projection_query_budget_failed,
 		"E=5000 无关历史下 projection 总查询工作保持有界（含 ledger/index/tx dereference）")
-	var budget_before_mutation := Sim.observatory_projection_query_ops
-	Sim.observatory_projection_query_ops = Sim.OBSERVATORY_QUERY_OP_BUDGET
-	Sim.observatory_projection_query_budget_failed = false
-	Sim._projection_query_op()
-	ck(Sim.observatory_projection_query_ops == Sim.OBSERVATORY_QUERY_OP_BUDGET + 1
+	var clean_query_ops := query_ops_after
+	Sim.observatory_projection_query_budget_override = clean_query_ops
+	Sim.observatory_projection_query_hook = Callable(self, "_inject_projection_query_deref")
+	var mutated_projection: Dictionary = Sim.warehouse_observatory_projection("port_dock")
+	ck(String((mutated_projection.get("receipt", {}) as Dictionary).get("state", "")) == "complete"
+		and Sim.observatory_projection_query_ops == clean_query_ops + 1
 		and Sim.observatory_projection_query_budget_failed,
-		"查询预算负对照：注入一次额外 ledger/index dereference 会真实触发 over-budget")
-	Sim.observatory_projection_query_ops = budget_before_mutation
+		"查询预算负对照：真实 projection 路径注入一次额外 dereference 后确定变红")
+	Sim.observatory_projection_query_budget_override = -1
+	Sim.observatory_projection_query_hook = Callable()
+	var restored_projection: Dictionary = Sim.warehouse_observatory_projection("port_dock")
+	ck(String((restored_projection.get("receipt", {}) as Dictionary).get("state", "")) == "complete"
+		and not Sim.observatory_projection_query_budget_failed,
+		"查询预算 hook/state 清理后正向路径恢复")
 	Sim.observatory_projection_query_budget_failed = false
 	ck(Sim.OBSERVATORY_RECEIPT_SCAN_LIMIT == 1024,
 		"兼容常量保留但不再作为 redraw 扫描窗口")
@@ -265,6 +276,11 @@ func _ready() -> void:
 	_main._chat_generation = request_b
 	target["_chat_request_token"] = str(request_b)
 	target["thinking"] = true
+	var owner_cleanup_before := _snapshot()
+	_main._invalidate_chat_generation(request_a)
+	ck(bool(target.get("thinking", false)) and String(target.get("_chat_request_token", "")) == str(request_b)
+		and _snapshot() == owner_cleanup_before,
+		"旧 request A 生命周期清理不触碰同目标较新的 request B 展示/令牌/记忆")
 	var late_a_before := _snapshot()
 	ck(not _main._apply_chat_reply(request_a, "tao", "town", "outdoor", target_pos,
 		"town", "outdoor", pl["pos"], sim_identity, session_id, "A", "late A")

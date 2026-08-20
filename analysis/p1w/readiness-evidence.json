@@ -126,11 +126,11 @@
     }
   ],
   "hosted_product_run": {
-    "run_id": 32426143022,
-    "head": "b3721c44a236b521d5a70c45405df4d6d1a58258",
+    "run_id": 32428656629,
+    "head": "1dae5e7a690c228c11e420033c1855e1a1b5c335",
     "base": "d46cbb132595185c3420bb4eb8fd7f28512baa85",
     "merge": "",
-    "game_tree": "c580e4e15ee0bce65337502abac8511cdbb6ebea",
+    "game_tree": "c4f58aec987afba24f258698ee1d78b658960478",
     "status": "completed",
     "conclusion": "failure",
     "failure_count": 4,
@@ -141,16 +141,18 @@
       "modelpath_anchor_stale"
     ],
     "log_sha256": "",
-    "log_provenance": "hosted run 32426143022: visual_canary PASS; core failure is limited to the four protected anchor families (complement ledger, S0/harness golden, DetGate golden, ModelPath anchor); all focused and integration scenes PASS",
+    "log_provenance": "hosted run 32428656629: visual_canary PASS; core failure is limited to the four protected anchor families (complement ledger, S0/harness golden, DetGate golden, ModelPath anchor); all focused and integration scenes PASS",
     "non_anchor_failure_count": 0
   },
   "fresh_review": {
     "source_identity": "exact_commit",
-    "product_head": "b3721c44a236b521d5a70c45405df4d6d1a58258",
-    "game_tree": "c580e4e15ee0bce65337502abac8511cdbb6ebea",
+    "product_head": "1dae5e7a690c228c11e420033c1855e1a1b5c335",
+    "game_tree": "c4f58aec987afba24f258698ee1d78b658960478",
     "verdict": "REQUEST_CHANGES",
     "receipt": "C:\\Users\\yp\\AppData\\Local\\Temp\\living-town-godot-runs\\20260820T223911348Z_5b76a99e93d44ee79d6b1de4bc53568b\\receipt.json",
-    "external_git_report_binding": "required before any authorization; this local receipt is not itself an external Git report blob"
+    "external_git_report_binding": "origin/codex/main-repo-review@a4f5659716aeed09419520eb04cb2ac2ab6f252e1; analysis/main-repo-review/external-reviews/p1ac-1dae5e7-request-changes.json; blob=91aaa5f3050cc2ef8dd0d8db21c673c86abf4e5e; sha256=a11e56e297d9a67756c13ad4548382b2058e71423efa637606ce6f286a3b2a90; non-authorizing REQUEST_CHANGES",
+    "supervised_receipt": "C:\\Users\\yp\\AppData\\Local\\Temp\\living-town-godot-runs\\20260820T233830427Z_962bf7d4a4bc4378bc514d9719dddd40\\receipt.json",
+    "supervised_receipt_outcome": "blocked_unknown_existing_godot_pids"
   },
     "review_gate": {
     "latest_completed": {

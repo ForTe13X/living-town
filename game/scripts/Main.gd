@@ -1765,11 +1765,12 @@ func _update_obs() -> void:
 func _esc(s: String) -> String:
 	return s.replace("[", "[lb]")
 
-func _invalidate_chat_generation() -> void:
+func _invalidate_chat_generation(owner_token: int = -1) -> void:
 	# Lifecycle cancellation owns presentation cleanup.  Async callbacks are never
 	# allowed to mutate a target while proving their request stale.
 	for raw_ag in Sim.agents:
-		if raw_ag is Dictionary and (raw_ag as Dictionary).has("_chat_request_token"):
+		if raw_ag is Dictionary and (raw_ag as Dictionary).has("_chat_request_token") \
+			and (owner_token < 0 or int((raw_ag as Dictionary).get("_chat_request_token", -2)) == owner_token):
 			(raw_ag as Dictionary)["thinking"] = false
 			(raw_ag as Dictionary).erase("_chat_request_token")
 	_chat_generation += 1

@@ -89,9 +89,16 @@ function Resolve-ExternalReview {
     $supplied = @(@($ExternalReviewRef, $ExternalReviewReportPath, $ExternalReviewReportSha256) | Where-Object { $_ -ne "" })
     if ($RequireExternalReviewBinding -or $supplied.Count -gt 0) {
         Assert-True ($supplied.Count -eq 3) "external review binding requires ref, report path and report sha256"
+        Assert-Exact "external review ref identity" $ExternalReviewRef "origin/codex/main-repo-review"
+        $originUrl = (Git-Text @("remote", "get-url", "origin")).TrimEnd("/").ToLowerInvariant()
+        Assert-True ($originUrl -eq "https://github.com/forte13x/living-town.git") `
+            "canonical origin repository identity is not trusted: $originUrl"
         Assert-True (-not [System.IO.Path]::IsPathRooted($ExternalReviewReportPath)) `
             "external review report path must be a repository-relative Git path"
-        Assert-True (-not $ExternalReviewReportPath.Contains("..")) `
+        $normalizedReportPath = $ExternalReviewReportPath.Replace("\\", "/")
+        Assert-True ($normalizedReportPath.StartsWith("analysis/main-repo-review/external-reviews/", [System.StringComparison]::Ordinal)) `
+            "external review report path is outside the trusted review directory"
+        Assert-True (-not $normalizedReportPath.Contains("..")) `
             "external review report path may not escape the external Git tree"
         Assert-True ($ExternalReviewRef -cne $ExpectedBranch -and $ExternalReviewRef -cne $ExpectedUpstream) `
             "external review ref must not be the candidate branch or its upstream"
@@ -106,6 +113,8 @@ function Resolve-ExternalReview {
         Assert-Exact "external review content sha256" $actualSha $ExternalReviewReportSha256.ToLowerInvariant()
         try { $report = $raw | ConvertFrom-Json } catch { throw "external review report is not valid JSON: $blobSpec" }
         Assert-Exact "external review ref" ([string]$report.review_ref) $ExternalReviewRef
+        Assert-Exact "external review contract" ([string]$report.contract) "living-town-independent-review-report-v1"
+        Assert-Exact "external review role" ([string]$report.review_role) "independent_qa_refute"
         Assert-Exact "external review status" ([string]$report.status) "completed"
         Assert-Exact "external review product head" ([string]$report.product_head) $CandidateHead
         Assert-Exact "external review game tree" ([string]$report.game_tree) $CandidateGameTree
@@ -242,7 +251,8 @@ try {
     Assert-Int "OFF fatal" $off.fatal_count 0
 
     $hosted = $evidence.hosted_product_run
-    Assert-Exact "hosted game tree" ([string]$hosted.game_tree) $ExpectedGameTree
+    $hostedResolvedTree = Git-Text @("rev-parse", "$($hosted.head):game")
+    Assert-Exact "hosted game tree" ([string]$hosted.game_tree) $hostedResolvedTree
     Assert-Exact "hosted status" ([string]$hosted.status) "completed"
     Assert-Exact "hosted conclusion" ([string]$hosted.conclusion) "failure"
     Assert-Int "hosted failure families" $hosted.failure_count 4
