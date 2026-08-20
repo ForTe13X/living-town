@@ -1766,9 +1766,12 @@ func _on_player_say(text: String) -> void:
 	text = text.strip_edges()
 	if _selected_id == "" or text == "":
 		return
+	if _player_in_warehouse_observatory():
+		_push("[color=#80e1ff]（货运观测室只读；不能在此聊天）[/color]")
+		return
 	var id := _selected_id
 	var ag := Sim.get_agent(id)
-	if ag.is_empty():
+	if ag.is_empty() or id == "player" or not _agent_on_active_plane(ag):
 		return
 	_push("[color=#9ad0ff]你 → %s：%s[/color]" % [_nm(id), _esc(text)])   # P2-9：不可信文本转义 [，防 BBCode 注入
 	ag["thinking"] = true
@@ -2127,7 +2130,7 @@ func _cycle_selection(dir: int) -> void:
 		return
 	var ids := []
 	for a in Sim.agents:
-		if not a.get("is_player", false):
+		if not a.get("is_player", false) and _agent_on_active_plane(a):
 			ids.append(a["id"])       # 玩家不进观察循环（动作目标只会是居民）
 	if ids.is_empty():
 		return
@@ -2502,7 +2505,7 @@ func _on_log_meta(meta: Variant) -> void:
 
 func _focus_agent(id: String) -> void:
 	var ag := Sim.get_agent(id)
-	if ag.is_empty():
+	if ag.is_empty() or not _agent_on_active_plane(ag):
 		return
 	_selected_id = id
 	if _probe != null:
@@ -2539,11 +2542,9 @@ func _unhandled_input(e: InputEvent) -> void:
 					_probe.unfollow()
 					_selected_id = ""
 					_update_obs()
-			KEY_C: _on_player_say("你好，最近怎么样？")        # 快捷：对选中居民打个招呼（也便于无键盘验证）
-			                                                 # ★C8 刻意【不】把这个键 gate 在玩家模式上：
-			                                                 # tools/chat-shoot.sh:20 就是在【不带 --player】的情况下按 c 出图的，
-			                                                 # 加 gate 会让那个脚本静默产出"没有对话"的截图（而 tools/ 归 C4，我不能改）。
-			                                                 # 收起来的只是那个浮在世界中间的【输入框】，不是这条路径本身。
+			KEY_C: _on_player_say("你好，最近怎么样？")        # 快捷：对当前平面选中居民打招呼
+			                                                 # 非玩家观察模式仍允许演示对话；玩家进入货运观测室时，
+			                                                 # _on_player_say 会 fail-closed，不能绕过只读合同写入聊天记忆。
 			KEY_N:                                               # P2-4 导航开发叠层：阻挡格(红)+交互格(绿) 可视化
 				if _view != null:
 					_view.dbg_nav = not _view.dbg_nav
@@ -2773,6 +2774,8 @@ func _select_at_world(w: Vector2) -> void:
 	var best := ""
 	var bestd := 1.0e9
 	for a in Sim.agents:
+		if not _agent_on_active_plane(a):
+			continue
 		var c := Vector2(a["pos"].x * 48 + 24, a["pos"].y * 48 + 24)
 		var d := c.distance_to(w)
 		if d < bestd:
@@ -2781,3 +2784,18 @@ func _select_at_world(w: Vector2) -> void:
 	if bestd <= 42.0:
 		_selected_id = best
 		_update_obs()
+
+func _agent_on_active_plane(ag: Dictionary) -> bool:
+	if ag.is_empty():
+		return false
+	var space := "town"
+	var floor_id := "outdoor"
+	if _player_mode:
+		var player := Sim.get_agent("player")
+		if not player.is_empty():
+			space = String(player.get("space", space))
+			floor_id = String(player.get("floor", floor_id))
+	elif _probe != null:
+		space = String(_probe.active_space)
+		floor_id = String(_probe.active_floor)
+	return String(ag.get("space", "town")) == space and String(ag.get("floor", "outdoor")) == floor_id

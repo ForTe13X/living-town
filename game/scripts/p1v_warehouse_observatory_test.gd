@@ -155,6 +155,25 @@ func _ready() -> void:
 	ck("东海货仓 · 货运观测室" in String(_main._obs.text)
 		and "货运观测室（只读）" in String(_main._status.text) and not _main._chat_in.visible,
 		"实际观察台/顶栏按真实 plane 显示里程碑，仓内自聊输入框收起")
+	var before_chat := _snapshot()
+	var c_event := InputEventKey.new()
+	c_event.keycode = KEY_C
+	c_event.pressed = true
+	_main._unhandled_input(c_event)
+	ck(_snapshot() == before_chat
+		and "货运观测室只读" in String(_main._log_recent[-1]),
+		"观测室 C 键快捷入口 fail-closed，仅留下明确 UI 拒绝，不写 Sim 或居民记忆")
+	_main._on_player_say("绕过输入框的探针")
+	ck(_snapshot() == before_chat
+		and "货运观测室只读" in String(_main._log_recent[-1]),
+		"观测室直调聊天入口同样 fail-closed，不写 Sim 或居民记忆")
+	var aria := Sim.get_agent("aria")
+	var aria_pos: Vector2i = aria.get("pos", Vector2i.ZERO)
+	_main._selected_id = "player"
+	_main._select_at_world(Vector2(aria_pos.x * 48 + 24, aria_pos.y * 48 + 24))
+	ck(_main._selected_id == "player", "观测室点选不会跨 space/floor 选中镇上居民")
+	_main._focus_agent("aria")
+	ck(_main._selected_id == "player", "日志/程序化 focus 也拒绝跨 plane 选人")
 	var console_cell := Sim.warehouse_observatory_console_cell()
 	ck(console_cell == Vector2i(6, 1), "柜台格来自 interiors authored marker，而非 Main 抄坐标")
 	var before_click := _snapshot()

@@ -410,3 +410,10 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 - **单一目标**：给 P1-x 的 hosted 正臂补一枚同 GitHub runner / Godot / Mesa-llvmpipe / Xvfb / Python 的真负控，证明量具能抓住历史上真实存在的“首帧未施加昼夜光照”回归；不改 `game/`、README、core `ci` job 或四份受保护锚。
 - **可复用 fixture / 判据**：`prepare_visual_canary_negative.py` 只在新临时树结构化绑定 `CanvasModulate` 的第一条 daylight 赋值，精确改成白色并证明 source hash 前后不变；`visual_canary_negative.sh` 复用现役 `vg_shoot` 在真 X11 framebuffer 拍 tick488/600，只有 assertion rc=1、A1/A2 各一次、aggregate `FAIL (2)` 一次且无 runtime fatal 才算“抓住预期缺陷”；假绿、崩溃、缺图或错误失败形状都使 canary job 真红。
 - **交付边界**：只有 P1-x 正臂为 `pass` 时才运行负牙；正臂 `skip/candidate_fail` 明记 `not_run`，不冒充已验证。即使负牙通过，GitHub 滚动 image/Mesa 仍未 pin，因此本批不改变合并策略、不改 `LT_VISUAL=require`、不重烘四锚；PR #6 继续 Draft/UNSTABLE，完整合同、恢复与限制见 `analysis/p1y/hosted-visual-negative-tooth.md`。
+
+### 13.22 P1-aa：观测室聊天与选择平面权限收口（2026-08-20；未重烘）
+
+- **单一目标**：响应最新 completed review 的真实权限 blocker：货运观测室内的 `C` 键/直调聊天入口不能绕过只读合同，点选与程序化 focus 不能跨 `space/floor` 选择居民。普通 Probe 演示聊天保留，不把无关性能、文档或锚点工作拼入本批。
+- **实现合同**：玩家处于 `port_warehouse/1f` 时，`KEY_C` 和 `_on_player_say` 都 fail-closed，只留下明确“货运观测室只读”反馈且不改 Sim/记忆；`_focus_agent`、循环选择和世界点击共用 `_agent_on_active_plane`，拒绝跨 plane 观察/控制。
+- **分层证据**：固定 `living-town-visual:p1z` 容器下，P1-v、save/load、save migration、player touch、space focused/integration 全部 PASS（0 fail）；P1-v 明确覆盖真实 C 键、直调聊天、跨 plane 点选与程序化 focus。完整输入、限制、narrative ACCEPT/REJECT/DEFER 与恢复见 `analysis/p1aa/observatory-plane-authority.md`。
+- **交付边界**：没有新的 hosted visual receipt，不重烘 golden/modelpath/complement；review 仍 REQUEST CHANGES，PR #6 继续 Draft/不可合并。无界历史扫描、evidence 工资字段、readiness verifier 授权绑定仍是后续 blocker。
