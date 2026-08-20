@@ -1,6 +1,26 @@
-# P1-ac fresh-review closure (2026-08-20)
+# P1-ac fresh-review closure (corrective pass, 2026-08-21)
 
 This batch closes the live review blockers without rebaking protected anchors.
+
+## Corrective review findings addressed
+
+The corrective pass is intentionally limited to this file, `Main.gd`, the focused
+warehouse test, and the P1-w readiness verifier/evidence. Protected anchors remain
+untouched. The asynchronous context now binds target id, target position, player
+context, Sim instance identity, session identity, and request generation. A stale
+callback cannot clear a newer request's thinking state or write UI/memory; only the
+request that owns the current presentation may clear its own thinking flag.
+
+The focused test covers target movement while still in range, request A replaced by
+request B followed by late A, portal/load invalidation, and a duplicate txid separated
+by 5,001 unrelated rows. The projection receipt budget is asserted against the
+existing projection query counter rather than the history-size constant.
+
+The readiness verifier now requires an externally supplied review ref, report blob,
+and SHA-256 when authorization is requested. The blob must be completed, bind the
+candidate product head and game tree, and carry the expected verdict. The committed
+readiness evidence explicitly remains `not_bound_until_external_report_is_supplied`;
+it cannot self-approve an anchor rebake.
 
 ## Chat authority
 

@@ -1,11 +1,11 @@
 {
   "contract": "living-town-anchor-finalize-readiness-v1",
-  "recorded_at_utc": "2026-08-14T06:00:00Z",
+  "recorded_at_utc": "2026-08-21T00:00:00Z",
   "decision": "prepared_not_authorized",
   "frozen": {
     "branch": "codex/p1a-takeover",
-    "product_head": "70f7575fd7e5c1ff07be0a1f4c5679928c53dcc9",
-    "game_tree": "8dfd5dec5990274daffdec106476828b5f87daa5",
+    "product_head": "1e0b2350f6474e2fa873dbb927b04a84d6b8dc1a",
+    "game_tree": "5068fb03f978d0394484d350ddc5e972ed5bc08a",
     "base": "d46cbb132595185c3420bb4eb8fd7f28512baa85"
   },
   "held_out": {
@@ -126,11 +126,11 @@
     }
   ],
   "hosted_product_run": {
-    "run_id": 31770888448,
-    "head": "70f7575fd7e5c1ff07be0a1f4c5679928c53dcc9",
+    "run_id": 32345416925,
+    "head": "1e0b2350f6474e2fa873dbb927b04a84d6b8dc1a",
     "base": "d46cbb132595185c3420bb4eb8fd7f28512baa85",
-    "merge": "8b7ec894be3bd27d38315d62457eb96ae3608dd4",
-    "game_tree": "8dfd5dec5990274daffdec106476828b5f87daa5",
+    "merge": "",
+    "game_tree": "5068fb03f978d0394484d350ddc5e972ed5bc08a",
     "status": "completed",
     "conclusion": "failure",
     "failure_count": 4,
@@ -140,10 +140,11 @@
       "detgate_golden_stale",
       "modelpath_anchor_stale"
     ],
-    "log_sha256": "04833a18dedc8d1635d6255b36ed6638743dc279f7871eb006bab69ecba54425",
+    "log_sha256": "",
+    "log_provenance": "hosted run is current but log digest was not captured in this corrective worktree",
     "non_anchor_failure_count": 0
   },
-  "review_gate": {
+    "review_gate": {
     "latest_completed": {
       "cutoff": "2026-08-13T09:00:00+08:00",
       "review_head": "486353a",
@@ -158,5 +159,10 @@
       "completed_verdict": false
     },
     "authorizing_completed": null
+  },
+  "external_review_binding": {
+    "required": true,
+    "status": "not_bound_until_external_report_is_supplied",
+    "does_not_prove": "This file cannot self-approve anchor rebake; verifier requires an external report blob and SHA-256 bound to the candidate head and game tree."
   }
 }

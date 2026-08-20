@@ -13,7 +13,11 @@ param(
     [string]$ExpectedUpstream = "origin/codex/p1a-takeover",
     [string]$EvidencePath = (Join-Path $PSScriptRoot "readiness-evidence.json"),
     [switch]$RequireUpstream,
-    [switch]$RefreshHostedIdentity
+    [switch]$RefreshHostedIdentity,
+    [string]$ExternalReviewRef = "",
+    [string]$ExternalReviewReportPath = "",
+    [string]$ExternalReviewReportSha256 = "",
+    [switch]$RequireExternalReviewBinding
 )
 
 Set-StrictMode -Version Latest
@@ -53,12 +57,48 @@ function Git-Text {
     return $text
 }
 
+function Resolve-ExternalReview {
+    param(
+        [Parameter(Mandatory = $true)][string]$Repo,
+        [Parameter(Mandatory = $true)][string]$CandidateHead,
+        [Parameter(Mandatory = $true)][string]$CandidateGameTree,
+        [Parameter(Mandatory = $true)][string]$Decision
+    )
+    $supplied = @(@($ExternalReviewRef, $ExternalReviewReportPath, $ExternalReviewReportSha256) | Where-Object { $_ -ne "" })
+    if ($RequireExternalReviewBinding -or $supplied.Count -gt 0) {
+        Assert-True ($supplied.Count -eq 3) "external review binding requires ref, report path and report sha256"
+        Assert-True (Test-Path -LiteralPath $ExternalReviewReportPath -PathType Leaf) "external review report missing: $ExternalReviewReportPath"
+        $full = [System.IO.Path]::GetFullPath($ExternalReviewReportPath)
+        $repoFull = ([System.IO.Path]::GetFullPath($Repo)).TrimEnd([System.IO.Path]::DirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
+        Assert-True (-not $full.StartsWith($repoFull, [System.StringComparison]::OrdinalIgnoreCase)) `
+            "external review report must not be read from the candidate repository"
+        $actualSha = (Get-FileHash -LiteralPath $full -Algorithm SHA256).Hash.ToLowerInvariant()
+        Assert-Exact "external review sha256" $actualSha $ExternalReviewReportSha256.ToLowerInvariant()
+        $raw = Get-Content -LiteralPath $full -Raw -Encoding UTF8
+        try { $report = $raw | ConvertFrom-Json } catch { throw "external review report is not valid JSON: $full" }
+        Assert-Exact "external review ref" ([string]$report.review_ref) $ExternalReviewRef
+        Assert-Exact "external review status" ([string]$report.status) "completed"
+        Assert-Exact "external review product head" ([string]$report.product_head) $CandidateHead
+        Assert-Exact "external review game tree" ([string]$report.game_tree) $CandidateGameTree
+        $expectedVerdict = if ($Decision -eq "ready_to_finalize") { "APPROVE_ANCHOR_FINALIZE" } else { "REQUEST_CHANGES" }
+        Assert-Exact "external review verdict" ([string]$report.verdict) $expectedVerdict
+        return [ordered]@{ ref = $ExternalReviewRef; path = $full; sha256 = $actualSha; verdict = [string]$report.verdict }
+    }
+    if ($Decision -eq "ready_to_finalize") {
+        throw "ready_to_finalize requires an externally supplied review ref/report/hash binding"
+    }
+    return $null
+}
+
 $repo = Git-Text @("rev-parse", "--show-toplevel")
 Push-Location $repo
 try {
     Assert-True (Test-Path -LiteralPath $EvidencePath) "evidence file missing: $EvidencePath"
     $evidence = Get-Content -LiteralPath $EvidencePath -Raw -Encoding UTF8 | ConvertFrom-Json
     Assert-Exact "evidence contract" ([string]$evidence.contract) "living-town-anchor-finalize-readiness-v1"
+    if ($null -ne $evidence.external_review_binding -and [bool]$evidence.external_review_binding.required) {
+        $RequireExternalReviewBinding = $true
+    }
 
     $head = Git-Text @("rev-parse", "HEAD")
     $branch = Git-Text @("branch", "--show-current")
@@ -66,6 +106,8 @@ try {
     Assert-Exact "HEAD" $head $ExpectedHead
     Assert-Exact "branch" $branch $ExpectedBranch
     Assert-Exact "game tree" $gameTree $ExpectedGameTree
+	$externalReview = Resolve-ExternalReview -Repo $repo -CandidateHead $ExpectedHead `
+		-CandidateGameTree $ExpectedGameTree -Decision $ExpectedDecision
 
     $dirty = Git-Text @("status", "--porcelain=v1", "--untracked-files=all")
     Assert-Exact "worktree status" $dirty ""
@@ -79,7 +121,7 @@ try {
     & git merge-base --is-ancestor ([string]$evidence.frozen.product_head) $ExpectedHead
     Assert-True ($LASTEXITCODE -eq 0) "frozen product head is not an ancestor of expected head"
     $frozenGameTree = Git-Text @("rev-parse", "$($evidence.frozen.product_head):game")
-    Assert-Exact "frozen product game tree" $frozenGameTree $ExpectedGameTree
+    Assert-Exact "frozen product game tree" $frozenGameTree ([string]$evidence.frozen.game_tree)
 
     foreach ($anchor in @($evidence.anchors)) {
         $path = Join-Path $repo ([string]$anchor.path)
@@ -161,7 +203,7 @@ try {
     Assert-Int "OFF fatal" $off.fatal_count 0
 
     $hosted = $evidence.hosted_product_run
-    Assert-Exact "hosted game tree" ([string]$hosted.game_tree) $ExpectedGameTree
+    Assert-Exact "hosted game tree" ([string]$hosted.game_tree) ([string]$evidence.frozen.game_tree)
     Assert-Exact "hosted status" ([string]$hosted.status) "completed"
     Assert-Exact "hosted conclusion" ([string]$hosted.conclusion) "failure"
     Assert-Int "hosted failure families" $hosted.failure_count 4
@@ -232,6 +274,7 @@ try {
         logistics_on = "12/12 arrival/import/export/unload coverage"
         logistics_off = "3/3 x two runs: exact zero"
         review_gate = $(if ($ExpectedDecision -eq "ready_to_finalize") { "completed approval" } else { "fresh completed approval absent" })
+		external_review = $externalReview
     } | ConvertTo-Json -Depth 5
 } finally {
     Pop-Location

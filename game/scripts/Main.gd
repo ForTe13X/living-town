@@ -60,6 +60,7 @@ var _demo_steps: Array = []           # [{type:walk_to|select|act|chat|wait, ...
 var _demo_i := 0
 var _chat_in: LineEdit                # 玩家→NPC 对话输入框
 var _chat_generation := 0             # 世界/会话替换使在飞回调失效
+var _chat_session_id := 0             # world/load session identity, distinct from request generation
 var _backend_btn: Button              # 后端切换按钮（手机无 CLI：点按在 logic/slm/… 间轮换；桌面也可点）
 # ── 演示镜头编排（--demo-cam；docs/46 §三-D4）──────────────────────────────
 ## 轨迹本体在 ProbeController（连同"为什么框地方不框人"的理由）。Main 这一侧只有三件事：
@@ -1766,6 +1767,7 @@ func _esc(s: String) -> String:
 
 func _invalidate_chat_generation() -> void:
 	_chat_generation += 1
+	_chat_session_id += 1
 
 func _chat_target_reachable(target: Dictionary, player: Dictionary) -> bool:
 	if target.is_empty() or String(target.get("id", "")) == "player":
@@ -1785,12 +1787,25 @@ func _chat_target_allowed(id: String, target: Dictionary) -> bool:
 	var player := Sim.get_agent("player")
 	return not player.is_empty() and _chat_target_reachable(target, player)
 
-func _apply_chat_reply(token: int, target_id: String, target_space: String, target_floor: String,
-		player_space: String, player_floor: String, player_pos: Vector2i, prompt: String, reply: String) -> bool:
+func _clear_chat_thinking_if_owned(target_id: String, token: int) -> void:
 	var target := Sim.get_agent(target_id)
-	if token != _chat_generation or target.is_empty() or String(target.get("id", "")) != target_id:
+	if target.is_empty() or String(target.get("_chat_request_token", "")) != str(token):
+		return
+	target["thinking"] = false
+	target.erase("_chat_request_token")
+
+func _apply_chat_reply(token: int, target_id: String, target_space: String, target_floor: String,
+		target_pos: Vector2i, player_space: String, player_floor: String, player_pos: Vector2i,
+		sim_identity: int, session_id: int, prompt: String, reply: String) -> bool:
+	var target := Sim.get_agent(target_id)
+	if token != _chat_generation or session_id != _chat_session_id or Sim.get_instance_id() != sim_identity:
 		return false
-	if String(target.get("space", "town")) != target_space or String(target.get("floor", "outdoor")) != target_floor:
+	if target.is_empty() or String(target.get("id", "")) != target_id:
+		_clear_chat_thinking_if_owned(target_id, token)
+		return false
+	if String(target.get("space", "town")) != target_space or String(target.get("floor", "outdoor")) != target_floor \
+			or Vector2i(target.get("pos", Vector2i(-99, -99))) != target_pos:
+		_clear_chat_thinking_if_owned(target_id, token)
 		return false
 	if _player_mode:
 		var player := Sim.get_agent("player")
@@ -1798,9 +1813,10 @@ func _apply_chat_reply(token: int, target_id: String, target_space: String, targ
 				or String(player.get("floor", "outdoor")) != player_floor \
 				or Vector2i(player.get("pos", Vector2i(-99, -99))) != player_pos \
 				or not _chat_target_reachable(target, player) or _player_in_warehouse_observatory():
-			target["thinking"] = false
+			_clear_chat_thinking_if_owned(target_id, token)
 			return false
 	target["thinking"] = false
+	target.erase("_chat_request_token")
 	if _view != null and _view.has_method("show_say"):
 		_view.show_say(target_id, reply, 90)
 	_push("[color=#cfe8ff]%s：%s[/color]" % [_nm(target_id), _esc(reply)])
@@ -1827,14 +1843,19 @@ func _on_player_say(text: String) -> void:
 	_chat_generation = token
 	var target_space := String(ag.get("space", "town"))
 	var target_floor := String(ag.get("floor", "outdoor"))
+	var target_pos: Vector2i = ag.get("pos", Vector2i(-99, -99))
 	var player := Sim.get_agent("player")
 	var player_space := String(player.get("space", "town"))
 	var player_floor := String(player.get("floor", "outdoor"))
 	var player_pos: Vector2i = player.get("pos", Vector2i(-99, -99))
+	var sim_identity := Sim.get_instance_id()
+	var session_id := _chat_session_id
 	_push("[color=#9ad0ff]你 → %s：%s[/color]" % [_nm(id), _esc(text)])   # P2-9：不可信文本转义 [，防 BBCode 注入
 	ag["thinking"] = true
+	ag["_chat_request_token"] = str(token)
 	AIBackend.chat(ag, text, {"tick": Sim.tick_no, "day": Sim.day}, func(reply: String):
-		_apply_chat_reply(token, id, target_space, target_floor, player_space, player_floor, player_pos, text, reply)
+		_apply_chat_reply(token, id, target_space, target_floor, target_pos, player_space, player_floor,
+			player_pos, sim_identity, session_id, text, reply)
 	)
 	if _chat_in != null:
 		_chat_in.text = ""

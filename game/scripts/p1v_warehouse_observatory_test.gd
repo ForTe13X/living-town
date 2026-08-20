@@ -116,10 +116,12 @@ func _ready() -> void:
 	Sim.event_log = clean_events.duplicate(true)
 	Sim._rebuild_cargo_event_index()
 	var duplicate_stock: Dictionary = Sim.event_log[Sim.event_log.size() - 2].duplicate(true)
-	duplicate_stock["id"] = Sim._next_event_id
+	for i in 5001:
+		Sim.event_log.append({"id": 900000 + i, "tick": i, "type": "noise", "actor": "noise",
+			"target": "noise", "subject": "", "accepted": true, "witnesses": [], "note": "history"})
 	Sim.event_log.append(duplicate_stock)
 	ck(_safe_invalid_receipt(Sim.warehouse_observatory_projection("port_dock")["receipt"]),
-		"同 txid 多一行时 exact-set 变红，不以总数近似放行")
+		"相隔 5001 条无关历史后同 txid 多一行仍 exact-set 变红，不以总数近似放行")
 	Sim.event_log = clean_events.duplicate(true)
 	Sim._rebuild_cargo_event_index()
 	Sim.event_log[Sim.event_log.size() - 1]["actor"] = "forged_worker"
@@ -148,9 +150,10 @@ func _ready() -> void:
 		Sim._log_event("debug", "probe", "history_%d" % i, "", true, [], "synthetic_history")
 	var reads_before := Sim.observatory_projection_event_reads
 	var large_projection: Dictionary = Sim.warehouse_observatory_projection("port_dock")
+	var reads_after := Sim.observatory_projection_event_reads
 	ck(String((large_projection.get("receipt", {}) as Dictionary).get("state", "")) == "complete"
-		and Sim.event_log.size() > 5000 and Sim.observatory_projection_event_reads <= reads_before + 2,
-		"E=5000 无关历史下投影仍只读有界 cargo 索引（不是常数上限假绿）")
+		and Sim.event_log.size() > 5000 and reads_after - reads_before <= 2,
+		"E=5000 无关历史下 projection query 读取预算不随历史增长")
 	ck(Sim.OBSERVATORY_RECEIPT_SCAN_LIMIT == 1024,
 		"兼容常量保留但不再作为 redraw 扫描窗口")
 
@@ -208,21 +211,52 @@ func _ready() -> void:
 	pl["pos"] = target_pos + Vector2i(1, 0)
 	_main._selected_id = "tao"
 	var chat_token: int = _main._chat_generation
-	var applied: bool = _main._apply_chat_reply(chat_token, "tao", "town", "outdoor", "town", "outdoor", pl["pos"], "hi", "adjacent reply")
+	var sim_identity := Sim.get_instance_id()
+	var session_id: int = _main._chat_session_id
+	var applied: bool = _main._apply_chat_reply(chat_token, "tao", "town", "outdoor", target_pos,
+		"town", "outdoor", pl["pos"], sim_identity, session_id, "hi", "adjacent reply")
 	ck(applied, "同平面相邻目标允许聊天回包并写入当前目标")
+	var memory_before_move: Array = target["memory"].items.duplicate(true)
+	var log_before_move: int = _main._log_recent.size()
+	target["thinking"] = true
+	target["_chat_request_token"] = str(chat_token)
+	target["pos"] = target_pos + Vector2i(1, 0)
+	ck(not _main._apply_chat_reply(chat_token, "tao", "town", "outdoor", target_pos,
+		"town", "outdoor", pl["pos"], sim_identity, session_id, "hi", "moved reply")
+		and not bool(target.get("thinking", false))
+		and target["memory"].items == memory_before_move and _main._log_recent.size() == log_before_move,
+		"目标在仍可达范围内移动后，旧回包 fail-closed 且不写 UI/记忆")
+	target["pos"] = target_pos
 	pl["pos"] = target_pos + Vector2i(8, 0)
 	var remote_before := _snapshot()
 	_main._on_player_say("远程探针")
 	ck(_snapshot() == remote_before, "同平面远距离目标被聊天权威拒绝")
 	pl["pos"] = target_pos + Vector2i(1, 0)
 	chat_token = _main._chat_generation
+	var request_a := chat_token + 1
+	_main._chat_generation = request_a
+	target["_chat_request_token"] = str(request_a)
+	target["thinking"] = true
+	var request_b := request_a + 1
+	_main._chat_generation = request_b
+	target["_chat_request_token"] = str(request_b)
+	target["thinking"] = true
+	var late_a_before := _snapshot()
+	ck(not _main._apply_chat_reply(request_a, "tao", "town", "outdoor", target_pos,
+		"town", "outdoor", pl["pos"], sim_identity, session_id, "A", "late A")
+		and _snapshot() == late_a_before and bool(target.get("thinking", false))
+		and String(target.get("_chat_request_token", "")) == str(request_b),
+		"请求 B 取代请求 A 后，迟到 A 不清理 B 的 thinking 且不写 UI/记忆")
+	chat_token = _main._chat_generation
 	pl["space"] = "port_warehouse"; pl["floor"] = "1f"
-	ck(not _main._apply_chat_reply(chat_token, "tao", "town", "outdoor", "town", "outdoor", target_pos + Vector2i(1, 0), "hi", "stale portal"),
+	ck(not _main._apply_chat_reply(chat_token, "tao", "town", "outdoor", target_pos,
+		"town", "outdoor", pl["pos"], sim_identity, session_id, "hi", "stale portal"),
 		"玩家进仓后延迟回包不写 UI/记忆")
 	pl["space"] = "town"; pl["floor"] = "outdoor"; pl["pos"] = target_pos + Vector2i(1, 0)
 	chat_token = _main._chat_generation
 	_main._invalidate_chat_generation()
-	ck(not _main._apply_chat_reply(chat_token, "tao", "town", "outdoor", "town", "outdoor", pl["pos"], "hi", "stale load"),
+	ck(not _main._apply_chat_reply(chat_token, "tao", "town", "outdoor", target_pos,
+		"town", "outdoor", pl["pos"], sim_identity, session_id, "hi", "stale load"),
 		"load/session generation 替换后延迟回包失效")
 
 	_restore_settings()
