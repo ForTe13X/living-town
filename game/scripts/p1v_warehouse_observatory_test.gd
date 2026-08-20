@@ -154,8 +154,18 @@ func _ready() -> void:
 	var query_ops_after := Sim.observatory_projection_query_ops
 	ck(String((large_projection.get("receipt", {}) as Dictionary).get("state", "")) == "complete"
 		and Sim.event_log.size() > 5000 and reads_after - reads_before <= 2
-		and query_ops_after <= 96,
+		and query_ops_after <= Sim.OBSERVATORY_QUERY_OP_BUDGET
+		and not Sim.observatory_projection_query_budget_failed,
 		"E=5000 无关历史下 projection 总查询工作保持有界（含 ledger/index/tx dereference）")
+	var budget_before_mutation := Sim.observatory_projection_query_ops
+	Sim.observatory_projection_query_ops = Sim.OBSERVATORY_QUERY_OP_BUDGET
+	Sim.observatory_projection_query_budget_failed = false
+	Sim._projection_query_op()
+	ck(Sim.observatory_projection_query_ops == Sim.OBSERVATORY_QUERY_OP_BUDGET + 1
+		and Sim.observatory_projection_query_budget_failed,
+		"查询预算负对照：注入一次额外 ledger/index dereference 会真实触发 over-budget")
+	Sim.observatory_projection_query_ops = budget_before_mutation
+	Sim.observatory_projection_query_budget_failed = false
 	ck(Sim.OBSERVATORY_RECEIPT_SCAN_LIMIT == 1024,
 		"兼容常量保留但不再作为 redraw 扫描窗口")
 
@@ -261,6 +271,27 @@ func _ready() -> void:
 		and _snapshot() == late_a_before and bool(target.get("thinking", false))
 		and String(target.get("_chat_request_token", "")) == str(request_b),
 		"请求 B 取代请求 A 后，迟到 A 不清理 B 的 thinking 且不写 UI/记忆")
+	var wrong_sim_before := _snapshot()
+	var wrong_sim_memory: Array = target["memory"].items.duplicate(true)
+	var wrong_sim_token := String(target.get("_chat_request_token", ""))
+	var wrong_sim_thinking := bool(target.get("thinking", false))
+	ck(not _main._apply_chat_reply(request_b, "tao", "town", "outdoor", target_pos,
+		"town", "outdoor", pl["pos"], sim_identity + 1, session_id, "B", "wrong Sim")
+		and _snapshot() == wrong_sim_before and target["memory"].items == wrong_sim_memory
+		and bool(target.get("thinking", false)) == wrong_sim_thinking
+		and String(target.get("_chat_request_token", "")) == wrong_sim_token,
+		"wrong Sim instance 的迟到回包是 exact no-op")
+	var session_before: int = _main._chat_session_id
+	_main._chat_session_id = session_before + 1
+	var session_only_before := _snapshot()
+	var session_only_memory: Array = target["memory"].items.duplicate(true)
+	ck(not _main._apply_chat_reply(request_b, "tao", "town", "outdoor", target_pos,
+		"town", "outdoor", pl["pos"], sim_identity, session_before, "B", "wrong session")
+		and _snapshot() == session_only_before and target["memory"].items == session_only_memory
+		and bool(target.get("thinking", false)) == wrong_sim_thinking
+		and String(target.get("_chat_request_token", "")) == wrong_sim_token,
+		"仅 session 替换的迟到回包是 exact no-op")
+	_main._chat_session_id = session_before
 	chat_token = _main._chat_generation
 	pl["space"] = "port_warehouse"; pl["floor"] = "1f"
 	ck(not _main._apply_chat_reply(chat_token, "tao", "town", "outdoor", target_pos,
@@ -272,6 +303,15 @@ func _ready() -> void:
 	ck(not _main._apply_chat_reply(chat_token, "tao", "town", "outdoor", target_pos,
 		"town", "outdoor", pl["pos"], sim_identity, session_id, "hi", "stale load"),
 		"load/session generation 替换后延迟回包失效")
+	var lifecycle_token: int = _main._chat_generation
+	target["thinking"] = true
+	target["_chat_request_token"] = str(lifecycle_token)
+	var lifecycle_memory: Array = target["memory"].items.duplicate(true)
+	var lifecycle_log_size: int = _main._log_recent.size()
+	_main._invalidate_chat_generation()
+	ck(not bool(target.get("thinking", false)) and not target.has("_chat_request_token")
+		and target["memory"].items == lifecycle_memory and _main._log_recent.size() == lifecycle_log_size,
+		"生命周期取消在回调之外清理当前拥有的 request，不触碰 UI/记忆")
 
 	_restore_settings()
 	print("p1v_warehouse_observatory_test: " + ("PASS ✅" if _fails == 0 else "FAIL ❌ (%d)" % _fails))

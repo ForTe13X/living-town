@@ -371,6 +371,8 @@ var _next_event_id := 1
 var _cargo_event_index := {"event_size": 0, "arrivals": {}, "receipts": {}, "tx": {}}
 var observatory_projection_event_reads := 0 # compatibility receipt: successful indexed event reads
 var observatory_projection_query_ops := 0 # total bounded ledger/index/tx dereferences in one projection
+const OBSERVATORY_QUERY_OP_BUDGET := 96
+var observatory_projection_query_budget_failed := false
 # S4：模型决策当「外部输入」记入 trace → 即使模型非确定，回放也可复现（docs/11 §5）
 var decision_trace: Array = []  # [{tick,agent,kind,action,partner,subject,say,cand_hash}]（落地的模型决策）
 var decision_sink: Callable = Callable()  # Phase-0 对拍数据集：默认空=off；设了则每次 logic 决策把 (ag,cands,pick_i) 喂给它。不抽 RNG、不进 event_log/digest、CI 恒空 → 红线零影响。
@@ -1769,6 +1771,8 @@ func _cargo_index_key(event: Dictionary) -> String:
 
 func _projection_query_op(weight: int = 1) -> void:
 	observatory_projection_query_ops += maxi(1, weight)
+	if observatory_projection_query_ops > OBSERVATORY_QUERY_OP_BUDGET:
+		observatory_projection_query_budget_failed = true
 
 func _index_cargo_event(event: Dictionary, index: int) -> void:
 	var note := String(event.get("note", ""))
@@ -4897,6 +4901,7 @@ func cargo_status_for_node(node: String, indexed: bool = false) -> Dictionary:
 func warehouse_observatory_projection(node: String = "port_dock") -> Dictionary:
 	observatory_projection_event_reads = 0
 	observatory_projection_query_ops = 0
+	observatory_projection_query_budget_failed = false
 	var stocks := {}
 	for good in ["柴薪", "豆子", "口粮"]:
 		var cfg: Dictionary = (production.get("goods", {}) as Dictionary).get(good, {})

@@ -16,6 +16,11 @@ request B followed by late A, portal/load invalidation, and a duplicate txid sep
 by 5,001 unrelated rows. The projection receipt budget is asserted against the
 existing projection query counter rather than the history-size constant.
 
+The third corrective pass adds lifecycle cancellation outside the failed callback,
+with exact no-mutation assertions for wrong Sim instance and session-only replacement.
+The query-budget mutation control injects one extra counted dereference and observes
+the budget failure before restoring the counter, proving a discriminating red path.
+
 The readiness verifier now requires an externally supplied review ref, report blob,
 and SHA-256 when authorization is requested. `ExternalReviewReportPath` is a
 repository-relative path resolved with `git show <ref>:<path>`; the verifier first
@@ -25,6 +30,12 @@ candidate head, game tree, and verdict. Missing ref/path/blob, hash mismatch,
 tampering, same-ref, and candidate-owned controls all fail closed. The committed
 readiness evidence explicitly remains `not_bound_until_external_report_is_supplied`;
 it cannot self-approve an anchor rebake.
+
+Detached QA mode is fail-closed: it is permitted only for the non-authorizing
+`prepared_not_authorized` decision, requires a genuinely detached HEAD, and requires
+the externally resolved upstream candidate ref to equal the exact expected head.
+Attached execution still requires the named product branch. The positive fixture is a
+committed external `REQUEST_CHANGES` report only; no authorizing verdict is fabricated.
 
 ## Chat authority
 
@@ -53,7 +64,7 @@ asserts completion plus bounded event reads (`<= 2`) and bounded total projectio
 query operations (`<= 96`) covering ledger/index/transaction dereferences. This is
 a behavioral/performance tooth rather than checking only a limit constant.
 
-The hosted run `32423850259` completed with visual canary PASS and only the four
+The hosted run `32426143022` completed with visual canary PASS and only the four
 known protected anchor families red (complement ledger, S0 golden, DetGate golden,
 and ModelPath anchor). Its core failure is recorded as stale-anchor evidence, not
 as permission to rebake. Fresh independent QA for this corrective head returned

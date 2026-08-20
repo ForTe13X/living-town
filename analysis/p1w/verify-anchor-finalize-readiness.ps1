@@ -17,7 +17,8 @@ param(
     [string]$ExternalReviewRef = "",
     [string]$ExternalReviewReportPath = "",
     [string]$ExternalReviewReportSha256 = "",
-    [switch]$RequireExternalReviewBinding
+    [switch]$RequireExternalReviewBinding,
+    [switch]$AllowDetachedQa
 )
 
 Set-StrictMode -Version Latest
@@ -132,7 +133,15 @@ try {
     $branch = Git-Text @("branch", "--show-current")
     $gameTree = Git-Text @("rev-parse", "HEAD:game")
     Assert-Exact "HEAD" $head $ExpectedHead
-    Assert-Exact "branch" $branch $ExpectedBranch
+    if ($AllowDetachedQa) {
+        Assert-True ($ExpectedDecision -eq "prepared_not_authorized") `
+            "detached QA mode cannot be used for an authorization/finalize decision"
+        Assert-Exact "detached branch" $branch ""
+        $candidateRef = Git-Text @("rev-parse", "--verify", "$ExpectedUpstream`^{commit}")
+        Assert-Exact "detached candidate ref" $candidateRef $ExpectedHead
+    } else {
+        Assert-Exact "branch" $branch $ExpectedBranch
+    }
     Assert-Exact "game tree" $gameTree $ExpectedGameTree
 	$externalReview = Resolve-ExternalReview -Repo $repo -CandidateHead $ExpectedHead `
 		-CandidateGameTree $ExpectedGameTree -Decision $ExpectedDecision
@@ -145,7 +154,9 @@ try {
     }
 
     Assert-Exact "evidence branch" ([string]$evidence.frozen.branch) $ExpectedBranch
-    Assert-Exact "evidence game tree" ([string]$evidence.frozen.game_tree) $ExpectedGameTree
+    if (-not $AllowDetachedQa) {
+        Assert-Exact "evidence game tree" ([string]$evidence.frozen.game_tree) $ExpectedGameTree
+    }
     & git merge-base --is-ancestor ([string]$evidence.frozen.product_head) $ExpectedHead
     Assert-True ($LASTEXITCODE -eq 0) "frozen product head is not an ancestor of expected head"
     $frozenGameTree = Git-Text @("rev-parse", "$($evidence.frozen.product_head):game")
@@ -294,7 +305,8 @@ try {
         head = $ExpectedHead
         game_tree = $ExpectedGameTree
         branch = $ExpectedBranch
-        upstream_checked = [bool]$RequireUpstream
+        upstream_checked = [bool]($RequireUpstream -or $AllowDetachedQa)
+        detached_qa = [bool]$AllowDetachedQa
         hosted_identity_refreshed = [bool]$RefreshHostedIdentity
         protected_anchors_unchanged = $true
         held_out = "18/18 hard; 18/18 #40; 18/18 #44/#45/#46; det 1/1"
