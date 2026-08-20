@@ -369,7 +369,8 @@ var _next_event_id := 1
 ## P1-ac：货运投影只消费这个由 event_log 派生的索引。索引不是第二权威；
 ## event_log 仍是账本，size/逐行签名不一致就 fail-closed，而不是猜测修复。
 var _cargo_event_index := {"event_size": 0, "arrivals": {}, "receipts": {}, "tx": {}}
-var observatory_projection_event_reads := 0 # focused perf tooth: successful projection reads, not history size
+var observatory_projection_event_reads := 0 # compatibility receipt: successful indexed event reads
+var observatory_projection_query_ops := 0 # total bounded ledger/index/tx dereferences in one projection
 # S4：模型决策当「外部输入」记入 trace → 即使模型非确定，回放也可复现（docs/11 §5）
 var decision_trace: Array = []  # [{tick,agent,kind,action,partner,subject,say,cand_hash}]（落地的模型决策）
 var decision_sink: Callable = Callable()  # Phase-0 对拍数据集：默认空=off；设了则每次 logic 决策把 (ag,cands,pick_i) 喂给它。不抽 RNG、不进 event_log/digest、CI 恒空 → 红线零影响。
@@ -1766,6 +1767,9 @@ func _manifest_authored_lane_error(manifest_id: String, rec: Dictionary, source_
 func _cargo_index_key(event: Dictionary) -> String:
 	return String(event.get("id", -1))
 
+func _projection_query_op(weight: int = 1) -> void:
+	observatory_projection_query_ops += maxi(1, weight)
+
 func _index_cargo_event(event: Dictionary, index: int) -> void:
 	var note := String(event.get("note", ""))
 	var txid := String(event.get("txid", ""))
@@ -1795,15 +1799,20 @@ func _rebuild_cargo_event_index() -> void:
 			_index_cargo_event(event_log[i] as Dictionary, i)
 
 func _cargo_index_valid() -> bool:
+	_projection_query_op()
 	if int(_cargo_event_index.get("event_size", -1)) != event_log.size():
 		return false
 	# Validate only indexed rows; this is bounded by cargo rows, never by unrelated history.
 	for bucket in ["arrivals", "receipts", "tx"]:
+		_projection_query_op()
 		var groups: Dictionary = _cargo_event_index.get(bucket, {})
 		for key in groups:
+			_projection_query_op()
 			for raw_i in groups[key]:
+				_projection_query_op(2)
 				var j := int(raw_i)
 				if j < 0 or j >= event_log.size() or not (event_log[j] is Dictionary): return false
+				_projection_query_op()
 				var e: Dictionary = event_log[j]
 				if bucket == "tx" and String(e.get("txid", "")) != String(key): return false
 	return true
@@ -1817,6 +1826,7 @@ func _manifest_arrival_receipt_error(manifest_id: String, rec: Dictionary, sourc
 		if not _cargo_index_valid(): return "cargo event index stale or ledger malformed"
 		var arrivals: Dictionary = _cargo_event_index.get("arrivals", {})
 		for raw_i in arrivals.get(manifest_id, []):
+			_projection_query_op(2)
 			var event: Dictionary = event_log[int(raw_i)]
 			observatory_projection_event_reads += 1
 			if String(event.get("type", "")) != "world" or event.get("accepted", false) != true \
@@ -4886,6 +4896,7 @@ func cargo_status_for_node(node: String, indexed: bool = false) -> Dictionary:
 ## 避免“墙上账簿”和“玩家提示”各自重抄一套货运真相。
 func warehouse_observatory_projection(node: String = "port_dock") -> Dictionary:
 	observatory_projection_event_reads = 0
+	observatory_projection_query_ops = 0
 	var stocks := {}
 	for good in ["柴薪", "豆子", "口粮"]:
 		var cfg: Dictionary = (production.get("goods", {}) as Dictionary).get(good, {})
@@ -4919,8 +4930,10 @@ const OBSERVATORY_RECEIPT_SCAN_LIMIT := 1024 # compatibility constant; no redraw
 func _latest_cargo_unload_receipt(node: String) -> Dictionary:
 	var none := {"state": "none", "node": node, "manifest_id": "", "good": "", "qty": 0,
 		"worker_id": "", "txid": "", "event_id": -1, "error": ""}
+	_projection_query_op()
 	if not _cargo_index_valid(): return _invalid_cargo_receipt(node, "cargo event index stale or ledger malformed")
 	var receipts: Dictionary = _cargo_event_index.get("receipts", {})
+	_projection_query_op()
 	if receipts.has(node):
 		return _cargo_unload_receipt_at(int(receipts[node]), node)
 	return none
@@ -4930,10 +4943,12 @@ func _invalid_cargo_receipt(node: String, error: String) -> Dictionary:
 		"worker_id": "", "txid": "", "event_id": -1, "error": error}
 
 func _cargo_unload_receipt_at(index: int, node: String) -> Dictionary:
+	_projection_query_op()
 	if not _cargo_index_valid():
 		return _invalid_cargo_receipt(node, "cargo event index stale or ledger malformed")
 	if index < 0 or index >= event_log.size() or not (event_log[index] is Dictionary):
 		return _invalid_cargo_receipt(node, "receipt index invalid")
+	_projection_query_op(2)
 	var receipt: Dictionary = event_log[index]
 	var note := String(receipt.get("note", ""))
 	var prefix := "cargo_unload:"
@@ -4952,12 +4967,15 @@ func _cargo_unload_receipt_at(index: int, node: String) -> Dictionary:
 	var tx_rows: Array = []
 	var tx_indices: Array = (_cargo_event_index.get("tx", {}) as Dictionary).get(txid, [])
 	for raw_i in tx_indices:
+		_projection_query_op(2)
 		var i := int(raw_i)
 		if i < 0 or i >= event_log.size(): return _invalid_cargo_receipt(node, "receipt tx index invalid")
 		tx_rows.append(event_log[i])
+		_projection_query_op()
 	if tx_rows.size() not in [2, 3] or tx_rows[tx_rows.size() - 1] != receipt:
 		return _invalid_cargo_receipt(node, "receipt tx exact-set invalid")
 	for i in range(1, tx_rows.size()):
+		_projection_query_op(2)
 		if int((tx_rows[i] as Dictionary).get("id", -2)) != int((tx_rows[i - 1] as Dictionary).get("id", -1)) + 1:
 			return _invalid_cargo_receipt(node, "receipt tx ids not adjacent")
 	var paid := tx_rows.size() == 3
@@ -4990,6 +5008,7 @@ func _historical_manifest_from_receipt(manifest_id: String, node: String, good: 
 	if not (lanes is Array):
 		return {}
 	for i in (lanes as Array).size():
+		_projection_query_op()
 		if not ((lanes as Array)[i] is Dictionary):
 			continue
 		var lane: Dictionary = (lanes as Array)[i]

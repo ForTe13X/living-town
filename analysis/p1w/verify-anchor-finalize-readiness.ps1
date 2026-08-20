@@ -57,6 +57,27 @@ function Git-Text {
     return $text
 }
 
+function Git-CapturedText {
+    param([Parameter(Mandatory = $true)][string[]]$Arguments)
+    $psi = [System.Diagnostics.ProcessStartInfo]::new()
+    $psi.FileName = "git"
+    $psi.UseShellExecute = $false
+    $psi.RedirectStandardOutput = $true
+    $psi.RedirectStandardError = $true
+    $psi.StandardOutputEncoding = [System.Text.Encoding]::UTF8
+    foreach ($arg in $Arguments) { [void]$psi.ArgumentList.Add($arg) }
+    $proc = [System.Diagnostics.Process]::new()
+    $proc.StartInfo = $psi
+    [void]$proc.Start()
+    $stdout = $proc.StandardOutput.ReadToEnd()
+    $stderr = $proc.StandardError.ReadToEnd()
+    $proc.WaitForExit()
+    if ($proc.ExitCode -ne 0) {
+        throw "git $($Arguments -join ' ') failed: $stderr"
+    }
+    return $stdout
+}
+
 function Resolve-ExternalReview {
     param(
         [Parameter(Mandatory = $true)][string]$Repo,
@@ -67,22 +88,29 @@ function Resolve-ExternalReview {
     $supplied = @(@($ExternalReviewRef, $ExternalReviewReportPath, $ExternalReviewReportSha256) | Where-Object { $_ -ne "" })
     if ($RequireExternalReviewBinding -or $supplied.Count -gt 0) {
         Assert-True ($supplied.Count -eq 3) "external review binding requires ref, report path and report sha256"
-        Assert-True (Test-Path -LiteralPath $ExternalReviewReportPath -PathType Leaf) "external review report missing: $ExternalReviewReportPath"
-        $full = [System.IO.Path]::GetFullPath($ExternalReviewReportPath)
-        $repoFull = ([System.IO.Path]::GetFullPath($Repo)).TrimEnd([System.IO.Path]::DirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
-        Assert-True (-not $full.StartsWith($repoFull, [System.StringComparison]::OrdinalIgnoreCase)) `
-            "external review report must not be read from the candidate repository"
-        $actualSha = (Get-FileHash -LiteralPath $full -Algorithm SHA256).Hash.ToLowerInvariant()
-        Assert-Exact "external review sha256" $actualSha $ExternalReviewReportSha256.ToLowerInvariant()
-        $raw = Get-Content -LiteralPath $full -Raw -Encoding UTF8
-        try { $report = $raw | ConvertFrom-Json } catch { throw "external review report is not valid JSON: $full" }
+        Assert-True (-not [System.IO.Path]::IsPathRooted($ExternalReviewReportPath)) `
+            "external review report path must be a repository-relative Git path"
+        Assert-True (-not $ExternalReviewReportPath.Contains("..")) `
+            "external review report path may not escape the external Git tree"
+        Assert-True ($ExternalReviewRef -cne $ExpectedBranch -and $ExternalReviewRef -cne $ExpectedUpstream) `
+            "external review ref must not be the candidate branch or its upstream"
+        $reviewCommit = Git-Text @("rev-parse", "--verify", "$ExternalReviewRef`^{commit}")
+        Assert-True ($reviewCommit -cne $CandidateHead) `
+            "external review ref resolves to the candidate head; same-ref provenance is rejected"
+        $blobSpec = "$ExternalReviewRef`:$ExternalReviewReportPath"
+        $blobSha = Git-Text @("rev-parse", "--verify", $blobSpec)
+        $raw = Git-CapturedText @("show", "--format=", $blobSpec)
+        $actualSha = [Convert]::ToHexString([System.Security.Cryptography.SHA256]::HashData(
+            [System.Text.Encoding]::UTF8.GetBytes($raw))).ToLowerInvariant()
+        Assert-Exact "external review content sha256" $actualSha $ExternalReviewReportSha256.ToLowerInvariant()
+        try { $report = $raw | ConvertFrom-Json } catch { throw "external review report is not valid JSON: $blobSpec" }
         Assert-Exact "external review ref" ([string]$report.review_ref) $ExternalReviewRef
         Assert-Exact "external review status" ([string]$report.status) "completed"
         Assert-Exact "external review product head" ([string]$report.product_head) $CandidateHead
         Assert-Exact "external review game tree" ([string]$report.game_tree) $CandidateGameTree
         $expectedVerdict = if ($Decision -eq "ready_to_finalize") { "APPROVE_ANCHOR_FINALIZE" } else { "REQUEST_CHANGES" }
         Assert-Exact "external review verdict" ([string]$report.verdict) $expectedVerdict
-        return [ordered]@{ ref = $ExternalReviewRef; path = $full; sha256 = $actualSha; verdict = [string]$report.verdict }
+        return [ordered]@{ ref = $ExternalReviewRef; ref_commit = $reviewCommit; path = $ExternalReviewReportPath; blob_sha = $blobSha; sha256 = $actualSha; verdict = [string]$report.verdict }
     }
     if ($Decision -eq "ready_to_finalize") {
         throw "ready_to_finalize requires an externally supplied review ref/report/hash binding"
@@ -203,7 +231,7 @@ try {
     Assert-Int "OFF fatal" $off.fatal_count 0
 
     $hosted = $evidence.hosted_product_run
-    Assert-Exact "hosted game tree" ([string]$hosted.game_tree) ([string]$evidence.frozen.game_tree)
+    Assert-Exact "hosted game tree" ([string]$hosted.game_tree) $ExpectedGameTree
     Assert-Exact "hosted status" ([string]$hosted.status) "completed"
     Assert-Exact "hosted conclusion" ([string]$hosted.conclusion) "failure"
     Assert-Int "hosted failure families" $hosted.failure_count 4

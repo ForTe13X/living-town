@@ -1,6 +1,6 @@
 {
   "contract": "living-town-anchor-finalize-readiness-v1",
-  "recorded_at_utc": "2026-08-21T00:00:00Z",
+  "recorded_at_utc": "2026-08-21T06:20:00Z",
   "decision": "prepared_not_authorized",
   "frozen": {
     "branch": "codex/p1a-takeover",
@@ -126,11 +126,11 @@
     }
   ],
   "hosted_product_run": {
-    "run_id": 32345416925,
-    "head": "1e0b2350f6474e2fa873dbb927b04a84d6b8dc1a",
+    "run_id": 32423850259,
+    "head": "dc7b3d60e3f86f0d47f14dd7d8aeb084fde2a866",
     "base": "d46cbb132595185c3420bb4eb8fd7f28512baa85",
     "merge": "",
-    "game_tree": "5068fb03f978d0394484d350ddc5e972ed5bc08a",
+    "game_tree": "4967e22191d080133702f8ab91fa1ae3e72a646e",
     "status": "completed",
     "conclusion": "failure",
     "failure_count": 4,
@@ -141,8 +141,16 @@
       "modelpath_anchor_stale"
     ],
     "log_sha256": "",
-    "log_provenance": "hosted run is current but log digest was not captured in this corrective worktree",
+    "log_provenance": "hosted run 32423850259: visual_canary PASS; core failure is limited to the four protected anchor families; log digest was not captured in this corrective worktree",
     "non_anchor_failure_count": 0
+  },
+  "fresh_review": {
+    "source_identity": "exact_commit",
+    "product_head": "dc7b3d60e3f86f0d47f14dd7d8aeb084fde2a866",
+    "game_tree": "4967e22191d080133702f8ab91fa1ae3e72a646e",
+    "verdict": "REQUEST_CHANGES",
+    "receipt": "C:\\Users\\yp\\AppData\\Local\\Temp\\living-town-godot-runs\\20260820T223911348Z_5b76a99e93d44ee79d6b1de4bc53568b\\receipt.json",
+    "external_git_report_binding": "required before any authorization; this local receipt is not itself an external Git report blob"
   },
     "review_gate": {
     "latest_completed": {

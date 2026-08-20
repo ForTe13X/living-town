@@ -151,9 +151,11 @@ func _ready() -> void:
 	var reads_before := Sim.observatory_projection_event_reads
 	var large_projection: Dictionary = Sim.warehouse_observatory_projection("port_dock")
 	var reads_after := Sim.observatory_projection_event_reads
+	var query_ops_after := Sim.observatory_projection_query_ops
 	ck(String((large_projection.get("receipt", {}) as Dictionary).get("state", "")) == "complete"
-		and Sim.event_log.size() > 5000 and reads_after - reads_before <= 2,
-		"E=5000 无关历史下 projection query 读取预算不随历史增长")
+		and Sim.event_log.size() > 5000 and reads_after - reads_before <= 2
+		and query_ops_after <= 96,
+		"E=5000 无关历史下 projection 总查询工作保持有界（含 ledger/index/tx dereference）")
 	ck(Sim.OBSERVATORY_RECEIPT_SCAN_LIMIT == 1024,
 		"兼容常量保留但不再作为 redraw 扫描窗口")
 
@@ -223,10 +225,22 @@ func _ready() -> void:
 	target["pos"] = target_pos + Vector2i(1, 0)
 	ck(not _main._apply_chat_reply(chat_token, "tao", "town", "outdoor", target_pos,
 		"town", "outdoor", pl["pos"], sim_identity, session_id, "hi", "moved reply")
-		and not bool(target.get("thinking", false))
+		and bool(target.get("thinking", false))
+		and String(target.get("_chat_request_token", "")) == str(chat_token)
 		and target["memory"].items == memory_before_move and _main._log_recent.size() == log_before_move,
-		"目标在仍可达范围内移动后，旧回包 fail-closed 且不写 UI/记忆")
+		"目标在仍可达范围内移动后，旧回包是 literal no-op（不清 thinking/token/UI/记忆）")
 	target["pos"] = target_pos
+	var memory_before_plane: Array = target["memory"].items.duplicate(true)
+	target["space"] = "port_warehouse"; target["floor"] = "1f"
+	ck(not _main._apply_chat_reply(chat_token, "tao", "town", "outdoor", target_pos,
+		"town", "outdoor", pl["pos"], sim_identity, session_id, "hi", "plane replaced")
+		and target["space"] == "port_warehouse" and target["floor"] == "1f"
+		and bool(target.get("thinking", false))
+		and String(target.get("_chat_request_token", "")) == str(chat_token)
+		and target["memory"].items == memory_before_plane
+		and _main._log_recent.size() == log_before_move,
+		"目标 plane/floor 被替换后，迟到回包仍是 literal no-op")
+	target["space"] = "town"; target["floor"] = "outdoor"
 	pl["pos"] = target_pos + Vector2i(8, 0)
 	var remote_before := _snapshot()
 	_main._on_player_say("远程探针")

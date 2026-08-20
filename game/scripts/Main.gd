@@ -1766,6 +1766,12 @@ func _esc(s: String) -> String:
 	return s.replace("[", "[lb]")
 
 func _invalidate_chat_generation() -> void:
+	# Lifecycle cancellation owns presentation cleanup.  Async callbacks are never
+	# allowed to mutate a target while proving their request stale.
+	for raw_ag in Sim.agents:
+		if raw_ag is Dictionary and (raw_ag as Dictionary).has("_chat_request_token"):
+			(raw_ag as Dictionary)["thinking"] = false
+			(raw_ag as Dictionary).erase("_chat_request_token")
 	_chat_generation += 1
 	_chat_session_id += 1
 
@@ -1787,13 +1793,6 @@ func _chat_target_allowed(id: String, target: Dictionary) -> bool:
 	var player := Sim.get_agent("player")
 	return not player.is_empty() and _chat_target_reachable(target, player)
 
-func _clear_chat_thinking_if_owned(target_id: String, token: int) -> void:
-	var target := Sim.get_agent(target_id)
-	if target.is_empty() or String(target.get("_chat_request_token", "")) != str(token):
-		return
-	target["thinking"] = false
-	target.erase("_chat_request_token")
-
 func _apply_chat_reply(token: int, target_id: String, target_space: String, target_floor: String,
 		target_pos: Vector2i, player_space: String, player_floor: String, player_pos: Vector2i,
 		sim_identity: int, session_id: int, prompt: String, reply: String) -> bool:
@@ -1801,11 +1800,9 @@ func _apply_chat_reply(token: int, target_id: String, target_space: String, targ
 	if token != _chat_generation or session_id != _chat_session_id or Sim.get_instance_id() != sim_identity:
 		return false
 	if target.is_empty() or String(target.get("id", "")) != target_id:
-		_clear_chat_thinking_if_owned(target_id, token)
 		return false
 	if String(target.get("space", "town")) != target_space or String(target.get("floor", "outdoor")) != target_floor \
 			or Vector2i(target.get("pos", Vector2i(-99, -99))) != target_pos:
-		_clear_chat_thinking_if_owned(target_id, token)
 		return false
 	if _player_mode:
 		var player := Sim.get_agent("player")
@@ -1813,7 +1810,6 @@ func _apply_chat_reply(token: int, target_id: String, target_space: String, targ
 				or String(player.get("floor", "outdoor")) != player_floor \
 				or Vector2i(player.get("pos", Vector2i(-99, -99))) != player_pos \
 				or not _chat_target_reachable(target, player) or _player_in_warehouse_observatory():
-			_clear_chat_thinking_if_owned(target_id, token)
 			return false
 	target["thinking"] = false
 	target.erase("_chat_request_token")

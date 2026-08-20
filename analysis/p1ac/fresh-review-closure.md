@@ -17,8 +17,12 @@ by 5,001 unrelated rows. The projection receipt budget is asserted against the
 existing projection query counter rather than the history-size constant.
 
 The readiness verifier now requires an externally supplied review ref, report blob,
-and SHA-256 when authorization is requested. The blob must be completed, bind the
-candidate product head and game tree, and carry the expected verdict. The committed
+and SHA-256 when authorization is requested. `ExternalReviewReportPath` is a
+repository-relative path resolved with `git show <ref>:<path>`; the verifier first
+resolves the ref commit, rejects the candidate branch/upstream and same-head refs,
+hashes the exact Git-provided UTF-8 bytes, and then checks the completed report's
+candidate head, game tree, and verdict. Missing ref/path/blob, hash mismatch,
+tampering, same-ref, and candidate-owned controls all fail closed. The committed
 readiness evidence explicitly remains `not_bound_until_external_report_is_supplied`;
 it cannot self-approve an anchor rebake.
 
@@ -45,8 +49,24 @@ scans unrelated history. Exact transaction membership uses every indexed row for
 txid, so a far-separated duplicate cannot be hidden by a local neighborhood.
 
 The focused test appends 5,000 unrelated events, projects the same receipt, and
-asserts completion plus a bounded projection-read counter (`<= 2`), providing a
-behavioral/performance tooth rather than checking only a limit constant.
+asserts completion plus bounded event reads (`<= 2`) and bounded total projection
+query operations (`<= 96`) covering ledger/index/transaction dereferences. This is
+a behavioral/performance tooth rather than checking only a limit constant.
+
+The hosted run `32423850259` completed with visual canary PASS and only the four
+known protected anchor families red (complement ledger, S0 golden, DetGate golden,
+and ModelPath anchor). Its core failure is recorded as stale-anchor evidence, not
+as permission to rebake. Fresh independent QA for this corrective head returned
+REQUEST_CHANGES from the clean receipt
+`C:\Users\yp\AppData\Local\Temp\living-town-godot-runs\20260820T223911348Z_5b76a99e93d44ee79d6b1de4bc53568b\receipt.json`.
+
+External-binding control matrix (run from a clean detached checkout):
+
+1. Positive: external review ref + repository-relative report path + exact SHA-256
+   of `git show <ref>:<path>` ⇒ accepts only when head/tree/verdict match.
+2. Negative: omit ref/path/hash; use missing path; alter one report byte; supply a
+   wrong SHA; use `codex/p1a-takeover`/its upstream; or use a ref resolving to the
+   candidate head ⇒ each is rejected before any anchor decision.
 
 Narrative packet: DEFER. It is a useful observatory checklist but adds no human
 consequence or new persistent state, so it is not consumed as product content here.
