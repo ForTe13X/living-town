@@ -1,0 +1,37 @@
+{
+  "contract": "living-town-independent-review-report-v1",
+  "review_ref": "origin/codex/main-repo-review",
+  "report_path": "analysis/main-repo-review/external-reviews/p1ac-1dae5e7-request-changes.json",
+  "review_role": "independent_qa_refute",
+  "review_task_id": "01a0212b-ff4c-7d53-96a6-26a55d7fe38f",
+  "review_sequence": 4,
+  "status": "completed",
+  "verdict": "REQUEST_CHANGES",
+  "product_head": "1dae5e7a690c228c11e420033c1855e1a1b5c335",
+  "commit_tree": "25948c1decae1237281077e2b98630c65b1201e1",
+  "game_tree": "c4f58aec987afba24f258698ee1d78b658960478",
+  "base": "d46cbb132595185c3420bb4eb8fd7f28512baa85",
+  "review_cutoff_receipt_utc": "2026-08-20T23:38:30.427Z",
+  "supervised_receipt": "C:/Users/yp/AppData/Local/Temp/living-town-godot-runs/20260820T233830427Z_962bf7d4a4bc4378bc514d9719dddd40/receipt.json",
+  "supervised_receipt_outcome": "blocked_unknown_existing_godot_pids",
+  "blocking_findings": [
+    "query-budget mutation control bypasses warehouse_observatory_projection production dereference paths",
+    "external review ref validation lacks a trusted independent review identity allowlist",
+    "lifecycle cleanup test does not prove an older cleanup cannot clear a newer request"
+  ],
+  "hosted_state_at_cutoff": {
+    "run_id": 32428656629,
+    "status": "in_progress",
+    "visual_canary": "success",
+    "core_conclusion": null
+  },
+  "does_not_authorize": [
+    "anchor rebake",
+    "anchor finalize",
+    "merge",
+    "release",
+    "recording",
+    "gameplay guide",
+    "human acceptance"
+  ]
+}
