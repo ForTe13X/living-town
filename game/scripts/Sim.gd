@@ -4847,10 +4847,14 @@ func warehouse_observatory_console_cell() -> Vector2i:
 
 ## 最近一笔卸货历史只在 exact append-only tx chain 可证明时才向玩家暴露。
 ## 最新匹配行若坏，返回 invalid 并清空货名/数量/工人；绝不跳过坏账去展示更老的“好消息”。
+## 观测室是近况视图，不是全量审计器：每次投影最多回看最近 1024 条事件，
+## 避免每次 redraw 都按世界历史长度增长；更老的回执不伪装成“最新”，直接不展示。
+const OBSERVATORY_RECEIPT_SCAN_LIMIT := 1024
 func _latest_cargo_unload_receipt(node: String) -> Dictionary:
 	var none := {"state": "none", "node": node, "manifest_id": "", "good": "", "qty": 0,
 		"worker_id": "", "txid": "", "event_id": -1, "error": ""}
-	for i in range(event_log.size() - 1, -1, -1):
+	var first := maxi(0, event_log.size() - OBSERVATORY_RECEIPT_SCAN_LIMIT)
+	for i in range(event_log.size() - 1, first - 1, -1):
 		var raw = event_log[i]
 		if not (raw is Dictionary):
 			continue
@@ -4886,7 +4890,11 @@ func _cargo_unload_receipt_at(index: int, node: String) -> Dictionary:
 			or not _unload_worker_assigned(String(receipt.get("actor", ""))) or String(receipt.get("subject", "")) == "":
 		return _invalid_cargo_receipt(node, "receipt world row invalid")
 	var tx_rows: Array = []
-	for raw in event_log:
+	# _commit_manifest_unload appends pay? → stock → world contiguously. Inspect only
+	# the bounded neighborhood around the receipt (including a duplicate immediately
+	# after it) instead of rescanning the complete append-only history.
+	for i in range(maxi(0, index - 2), mini(event_log.size(), index + 3)):
+		var raw = event_log[i]
 		if raw is Dictionary and String((raw as Dictionary).get("txid", "")) == txid:
 			tx_rows.append(raw)
 	if tx_rows.size() not in [2, 3] or tx_rows[tx_rows.size() - 1] != receipt:

@@ -139,6 +139,8 @@ func _ready() -> void:
 	var free_receipt: Dictionary = Sim.warehouse_observatory_projection("port_dock")["receipt"]
 	ck(String(free_receipt.get("state", "")) == "complete" and int(free_receipt.get("qty", 0)) == 4,
 		"免费 stock→world 两行 exact chain 也可审计")
+	ck(Sim.OBSERVATORY_RECEIPT_SCAN_LIMIT == 1024,
+		"观测室历史回看有明确上限，不随 event_log 长度无限增长")
 
 	# 4) 真 Main 门路 + 柜台：室内隐藏社交动作，位置写真实 plane；点击只写 UI feed。
 	manifest_id = _fixture(true)

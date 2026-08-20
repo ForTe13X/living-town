@@ -417,3 +417,9 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 - **实现合同**：玩家处于 `port_warehouse/1f` 时，`KEY_C` 和 `_on_player_say` 都 fail-closed，只留下明确“货运观测室只读”反馈且不改 Sim/记忆；`_focus_agent`、循环选择和世界点击共用 `_agent_on_active_plane`，拒绝跨 plane 观察/控制。
 - **分层证据**：固定 `living-town-visual:p1z` 容器下，P1-v、save/load、save migration、player touch、space focused/integration 全部 PASS（0 fail）；P1-v 明确覆盖真实 C 键、直调聊天、跨 plane 点选与程序化 focus。完整输入、限制、narrative ACCEPT/REJECT/DEFER 与恢复见 `analysis/p1aa/observatory-plane-authority.md`。
 - **交付边界**：没有新的 hosted visual receipt，不重烘 golden/modelpath/complement；review 仍 REQUEST CHANGES，PR #6 继续 Draft/不可合并。无界历史扫描、evidence 工资字段、readiness verifier 授权绑定仍是后续 blocker。
+
+### 13.23 P1-ab：观测室历史投影有界化（2026-08-20；未重烘）
+
+- **单一目标**：关闭 projection 在每次 redraw 中按完整 `event_log` 重复扫描的性能 blocker；仅改近况读取，不改变货运事务权威、聊天权限、证据文档或 anchor。
+- **实现合同**：最新回执最多回看 1024 条事件；事务校验只检查回执前最多两行，依赖既有 append-only `pay→stock→world` / `stock→world` 合同。更老历史不伪装成最新消息，全量审计留给账本/专用工具。
+- **证据与边界**：P1-v、P1-b、P1-g、save/load、save migration、space 相关 Godot integration loop 通过后收口；完整命令、限制与恢复见 `analysis/p1ab/observatory-bounded-history.md`。本批无 hosted visual receipt，不重烘四锚；evidence 工资字段与 readiness 授权绑定仍后置。
