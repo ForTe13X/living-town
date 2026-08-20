@@ -109,20 +109,24 @@ func _ready() -> void:
 	ck(_safe_invalid_receipt(Sim.warehouse_observatory_projection("port_dock")["receipt"]),
 		"最新 receipt 数量错绑时 invalid 且不泄露旧明细")
 	Sim.event_log = clean_events.duplicate(true)
+	Sim._rebuild_cargo_event_index()
 	Sim.event_log[Sim.event_log.size() - 1]["note"] = "corrupt"
 	ck(_safe_invalid_receipt(Sim.warehouse_observatory_projection("port_dock")["receipt"]),
 		"最新 receipt note 丢前缀时仍由 txid 捕获为 invalid，不回退旧账")
 	Sim.event_log = clean_events.duplicate(true)
+	Sim._rebuild_cargo_event_index()
 	var duplicate_stock: Dictionary = Sim.event_log[Sim.event_log.size() - 2].duplicate(true)
 	duplicate_stock["id"] = Sim._next_event_id
 	Sim.event_log.append(duplicate_stock)
 	ck(_safe_invalid_receipt(Sim.warehouse_observatory_projection("port_dock")["receipt"]),
 		"同 txid 多一行时 exact-set 变红，不以总数近似放行")
 	Sim.event_log = clean_events.duplicate(true)
+	Sim._rebuild_cargo_event_index()
 	Sim.event_log[Sim.event_log.size() - 1]["actor"] = "forged_worker"
 	ck(_safe_invalid_receipt(Sim.warehouse_observatory_projection("port_dock")["receipt"]),
 		"回执 worker 非 authored 码头工时隐藏业务明细")
 	Sim.event_log = clean_events.duplicate(true)
+	Sim._rebuild_cargo_event_index()
 	for event in Sim.event_log:
 		if String(event.get("note", "")).begins_with("cargo_arrive:" + manifest_id):
 			event["accepted"] = false
@@ -130,6 +134,7 @@ func _ready() -> void:
 	ck(_safe_invalid_receipt(Sim.warehouse_observatory_projection("port_dock")["receipt"]),
 		"退休单缺 exact accepted arrival proof 时历史投影 fail-closed")
 	Sim.event_log = clean_events.duplicate(true)
+	Sim._rebuild_cargo_event_index()
 	ck(String((Sim.warehouse_observatory_projection("port_dock")["receipt"] as Dictionary).get("state", "")) == "complete",
 		"恢复 exact event chain 后回执重新可读")
 
@@ -139,8 +144,15 @@ func _ready() -> void:
 	var free_receipt: Dictionary = Sim.warehouse_observatory_projection("port_dock")["receipt"]
 	ck(String(free_receipt.get("state", "")) == "complete" and int(free_receipt.get("qty", 0)) == 4,
 		"免费 stock→world 两行 exact chain 也可审计")
+	for i in 5000:
+		Sim._log_event("debug", "probe", "history_%d" % i, "", true, [], "synthetic_history")
+	var reads_before := Sim.observatory_projection_event_reads
+	var large_projection: Dictionary = Sim.warehouse_observatory_projection("port_dock")
+	ck(String((large_projection.get("receipt", {}) as Dictionary).get("state", "")) == "complete"
+		and Sim.event_log.size() > 5000 and Sim.observatory_projection_event_reads <= reads_before + 2,
+		"E=5000 无关历史下投影仍只读有界 cargo 索引（不是常数上限假绿）")
 	ck(Sim.OBSERVATORY_RECEIPT_SCAN_LIMIT == 1024,
-		"观测室历史回看有明确上限，不随 event_log 长度无限增长")
+		"兼容常量保留但不再作为 redraw 扫描窗口")
 
 	# 4) 真 Main 门路 + 柜台：室内隐藏社交动作，位置写真实 plane；点击只写 UI feed。
 	manifest_id = _fixture(true)
@@ -190,6 +202,28 @@ func _ready() -> void:
 	ck(_main._portal_click(Vector2(8 * 48 + 24, 3 * 48 + 24))
 		and String(pl.get("space", "")) == "town" and String(pl.get("floor", "")) == "outdoor",
 		"右侧木门仍经真实 portal 返回东海码头")
+	# P1-ac chat authority: adjacent positive, same-plane remote denial, and delayed reply invalidation.
+	var target := Sim.get_agent("tao")
+	var target_pos: Vector2i = target.get("pos", Vector2i.ZERO)
+	pl["pos"] = target_pos + Vector2i(1, 0)
+	_main._selected_id = "tao"
+	var chat_token: int = _main._chat_generation
+	var applied: bool = _main._apply_chat_reply(chat_token, "tao", "town", "outdoor", "town", "outdoor", pl["pos"], "hi", "adjacent reply")
+	ck(applied, "同平面相邻目标允许聊天回包并写入当前目标")
+	pl["pos"] = target_pos + Vector2i(8, 0)
+	var remote_before := _snapshot()
+	_main._on_player_say("远程探针")
+	ck(_snapshot() == remote_before, "同平面远距离目标被聊天权威拒绝")
+	pl["pos"] = target_pos + Vector2i(1, 0)
+	chat_token = _main._chat_generation
+	pl["space"] = "port_warehouse"; pl["floor"] = "1f"
+	ck(not _main._apply_chat_reply(chat_token, "tao", "town", "outdoor", "town", "outdoor", target_pos + Vector2i(1, 0), "hi", "stale portal"),
+		"玩家进仓后延迟回包不写 UI/记忆")
+	pl["space"] = "town"; pl["floor"] = "outdoor"; pl["pos"] = target_pos + Vector2i(1, 0)
+	chat_token = _main._chat_generation
+	_main._invalidate_chat_generation()
+	ck(not _main._apply_chat_reply(chat_token, "tao", "town", "outdoor", "town", "outdoor", pl["pos"], "hi", "stale load"),
+		"load/session generation 替换后延迟回包失效")
 
 	_restore_settings()
 	print("p1v_warehouse_observatory_test: " + ("PASS ✅" if _fails == 0 else "FAIL ❌ (%d)" % _fails))

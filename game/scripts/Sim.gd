@@ -366,6 +366,10 @@ var event_digest := 0          # L4 增量滚动摘要：每事件 O(1) 折叠�
 
 var event_log: Array = []       # 不可变事件账本（replay/debug/bench 的根）
 var _next_event_id := 1
+## P1-ac：货运投影只消费这个由 event_log 派生的索引。索引不是第二权威；
+## event_log 仍是账本，size/逐行签名不一致就 fail-closed，而不是猜测修复。
+var _cargo_event_index := {"event_size": 0, "arrivals": {}, "receipts": {}, "tx": {}}
+var observatory_projection_event_reads := 0 # focused perf tooth: successful projection reads, not history size
 # S4：模型决策当「外部输入」记入 trace → 即使模型非确定，回放也可复现（docs/11 §5）
 var decision_trace: Array = []  # [{tick,agent,kind,action,partner,subject,say,cand_hash}]（落地的模型决策）
 var decision_sink: Callable = Callable()  # Phase-0 对拍数据集：默认空=off；设了则每次 logic 决策把 (ag,cands,pick_i) 喂给它。不抽 RNG、不进 event_log/digest、CI 恒空 → 红线零影响。
@@ -911,6 +915,8 @@ func start_new(p_seed: int = 12345) -> void:
 	agents.clear()
 	_agent_by_id.clear()
 	event_log.clear()
+	_cargo_event_index = {"event_size": 0, "arrivals": {}, "receipts": {}, "tx": {}}
+	observatory_projection_event_reads = 0
 	_next_event_id = 1
 	event_digest = 0
 	cand_calls = 0
@@ -1757,11 +1763,69 @@ func _manifest_authored_lane_error(manifest_id: String, rec: Dictionary, source_
 		return "cargo %s diverges from authored lane" % manifest_id
 	return ""
 
-func _manifest_arrival_receipt_error(manifest_id: String, rec: Dictionary, source_events) -> String:
+func _cargo_index_key(event: Dictionary) -> String:
+	return String(event.get("id", -1))
+
+func _index_cargo_event(event: Dictionary, index: int) -> void:
+	var note := String(event.get("note", ""))
+	var txid := String(event.get("txid", ""))
+	if txid.begins_with("cargo_unload/"):
+		var tx: Dictionary = _cargo_event_index["tx"]
+		if not tx.has(txid): tx[txid] = []
+		(tx[txid] as Array).append(index)
+	if String(event.get("type", "")) != "world":
+		return
+	if note.begins_with("cargo_arrive:"):
+		var star := note.rfind("*")
+		if star > "cargo_arrive:".length():
+			var mid := note.substr("cargo_arrive:".length(), star - "cargo_arrive:".length())
+			if mid != "":
+				var arrivals: Dictionary = _cargo_event_index["arrivals"]
+				if not arrivals.has(mid): arrivals[mid] = []
+				(arrivals[mid] as Array).append(index)
+	if note.begins_with("cargo_unload:"):
+		var node := String(event.get("target", ""))
+		var receipts: Dictionary = _cargo_event_index["receipts"]
+		if node != "": receipts[node] = index
+
+func _rebuild_cargo_event_index() -> void:
+	_cargo_event_index = {"event_size": event_log.size(), "arrivals": {}, "receipts": {}, "tx": {}}
+	for i in event_log.size():
+		if event_log[i] is Dictionary:
+			_index_cargo_event(event_log[i] as Dictionary, i)
+
+func _cargo_index_valid() -> bool:
+	if int(_cargo_event_index.get("event_size", -1)) != event_log.size():
+		return false
+	# Validate only indexed rows; this is bounded by cargo rows, never by unrelated history.
+	for bucket in ["arrivals", "receipts", "tx"]:
+		var groups: Dictionary = _cargo_event_index.get(bucket, {})
+		for key in groups:
+			for raw_i in groups[key]:
+				var j := int(raw_i)
+				if j < 0 or j >= event_log.size() or not (event_log[j] is Dictionary): return false
+				var e: Dictionary = event_log[j]
+				if bucket == "tx" and String(e.get("txid", "")) != String(key): return false
+	return true
+
+func _manifest_arrival_receipt_error(manifest_id: String, rec: Dictionary, source_events, indexed: bool = false) -> String:
 	if not (source_events is Array):
 		return "cargo %s has no event-log contract" % manifest_id
 	var exact := 0
 	var expected_note := "cargo_arrive:%s*%d" % [manifest_id, int(rec.get("initial_qty", 0))]
+	if indexed:
+		if not _cargo_index_valid(): return "cargo event index stale or ledger malformed"
+		var arrivals: Dictionary = _cargo_event_index.get("arrivals", {})
+		for raw_i in arrivals.get(manifest_id, []):
+			var event: Dictionary = event_log[int(raw_i)]
+			observatory_projection_event_reads += 1
+			if String(event.get("type", "")) != "world" or event.get("accepted", false) != true \
+				or String(event.get("actor", "")) != String(rec.get("route_id", "")) \
+				or String(event.get("target", "")) != manifest_id or String(event.get("subject", "")) != String(rec.get("good", "")) \
+				or String(event.get("note", "")) != expected_note:
+				return "cargo %s arrival receipt conflicts with manifest" % manifest_id
+			exact += 1
+		return "" if exact == 1 else "cargo %s arrival receipt count %d, expected 1" % [manifest_id, exact]
 	for raw_event in source_events:
 		if not (raw_event is Dictionary):
 			continue
@@ -1779,11 +1843,11 @@ func _manifest_arrival_receipt_error(manifest_id: String, rec: Dictionary, sourc
 		return "cargo %s arrival receipt count %d, expected 1" % [manifest_id, exact]
 	return ""
 
-func _manifest_authority_error(manifest_id: String, rec: Dictionary, source_logistics, source_day: int, source_events) -> String:
+func _manifest_authority_error(manifest_id: String, rec: Dictionary, source_logistics, source_day: int, source_events, indexed: bool = false) -> String:
 	var lane_error := _manifest_authored_lane_error(manifest_id, rec, source_logistics, source_day)
 	if lane_error != "":
 		return lane_error
-	return _manifest_arrival_receipt_error(manifest_id, rec, source_events)
+	return _manifest_arrival_receipt_error(manifest_id, rec, source_events, indexed)
 
 func _manifest_targets_node(rec: Dictionary, node: String) -> bool:
 	if String(rec.get("node", "")) == node:
@@ -2139,6 +2203,7 @@ func _rebuild_after_load(active_commit_ids: Array = []) -> void:
 	_player_pos = Vector2i(-1, -1)   # cohort 玩家位缓存：load 后清（每 tick 由 _compute_lod_cohort 重建）
 	_build_nav()                                     # P3：从 world/_spaces 重建 town _blocked + 各平面 _nav_grids（派生，不入档）
 	_path_cache = {}
+	_rebuild_cargo_event_index()
 
 # ── 主循环 ───────────────────────────────────────────────────────────────
 func tick() -> void:
@@ -4770,7 +4835,7 @@ func _first_unloadable_manifest(node: String) -> String:
 
 ## 给玩家/HUD/测试的只读港口状态；严格按 manifest arrival order 看最早 ready 单，不把 UI 变成第二权威。
 ## state: empty / ready / working / blocked_capacity / blocked_funds / invalid。
-func cargo_status_for_node(node: String) -> Dictionary:
+func cargo_status_for_node(node: String, indexed: bool = false) -> Dictionary:
 	var out := {"state": "empty", "node": node, "manifest_id": "", "good": "", "qty": 0, "cost": 0,
 		"worker_id": "", "ready_count": 0, "ready_qty": 0, "invalid_count": 0, "error": ""}
 	var first: Dictionary = {}
@@ -4779,7 +4844,7 @@ func cargo_status_for_node(node: String) -> Dictionary:
 		if not cargo_manifests.has(manifest_id):
 			continue
 		var rec: Dictionary = cargo_manifests[manifest_id]
-		var authored_error := _manifest_authority_error(manifest_id, rec, logistics, day, event_log)
+		var authored_error := _manifest_authority_error(manifest_id, rec, logistics, day, event_log, indexed)
 		if authored_error != "":
 			if _manifest_targets_node(rec, node):
 				out.merge({"state": "invalid", "invalid_count": 1, "error": authored_error}, true)
@@ -4820,13 +4885,14 @@ func cargo_status_for_node(node: String) -> Dictionary:
 ## 不改库存/钱/manifest/event，也不抽 RNG。View 与柜台点击共同消费这一份结果，
 ## 避免“墙上账簿”和“玩家提示”各自重抄一套货运真相。
 func warehouse_observatory_projection(node: String = "port_dock") -> Dictionary:
+	observatory_projection_event_reads = 0
 	var stocks := {}
 	for good in ["柴薪", "豆子", "口粮"]:
 		var cfg: Dictionary = (production.get("goods", {}) as Dictionary).get(good, {})
 		stocks[good] = {"qty": _stock_of(good), "cap": maxi(1, int(cfg.get("cap", 1)))}
 	return {
 		"mode": "read_only", "node": node,
-		"cargo": cargo_status_for_node(node),
+		"cargo": cargo_status_for_node(node, true),
 		"receipt": _latest_cargo_unload_receipt(node),
 		"stocks": stocks,
 	}
@@ -4847,24 +4913,16 @@ func warehouse_observatory_console_cell() -> Vector2i:
 
 ## 最近一笔卸货历史只在 exact append-only tx chain 可证明时才向玩家暴露。
 ## 最新匹配行若坏，返回 invalid 并清空货名/数量/工人；绝不跳过坏账去展示更老的“好消息”。
-## 观测室是近况视图，不是全量审计器：每次投影最多回看最近 1024 条事件，
-## 避免每次 redraw 都按世界历史长度增长；更老的回执不伪装成“最新”，直接不展示。
-const OBSERVATORY_RECEIPT_SCAN_LIMIT := 1024
+## 观测室是近况视图；最新回执与 tx/arrival 集合来自 append/load 维护的派生索引。
+## 账本仍是唯一权威：索引与 event_log 不一致就 invalid，不回退到历史扫描。
+const OBSERVATORY_RECEIPT_SCAN_LIMIT := 1024 # compatibility constant; no redraw scan uses it
 func _latest_cargo_unload_receipt(node: String) -> Dictionary:
 	var none := {"state": "none", "node": node, "manifest_id": "", "good": "", "qty": 0,
 		"worker_id": "", "txid": "", "event_id": -1, "error": ""}
-	var first := maxi(0, event_log.size() - OBSERVATORY_RECEIPT_SCAN_LIMIT)
-	for i in range(event_log.size() - 1, first - 1, -1):
-		var raw = event_log[i]
-		if not (raw is Dictionary):
-			continue
-		var event: Dictionary = raw
-		if String(event.get("type", "")) != "world" or String(event.get("target", "")) != node:
-			continue
-		if not String(event.get("note", "")).begins_with("cargo_unload:") \
-				and not String(event.get("txid", "")).begins_with("cargo_unload/"):
-			continue
-		return _cargo_unload_receipt_at(i, node)
+	if not _cargo_index_valid(): return _invalid_cargo_receipt(node, "cargo event index stale or ledger malformed")
+	var receipts: Dictionary = _cargo_event_index.get("receipts", {})
+	if receipts.has(node):
+		return _cargo_unload_receipt_at(int(receipts[node]), node)
 	return none
 
 func _invalid_cargo_receipt(node: String, error: String) -> Dictionary:
@@ -4872,6 +4930,8 @@ func _invalid_cargo_receipt(node: String, error: String) -> Dictionary:
 		"worker_id": "", "txid": "", "event_id": -1, "error": error}
 
 func _cargo_unload_receipt_at(index: int, node: String) -> Dictionary:
+	if not _cargo_index_valid():
+		return _invalid_cargo_receipt(node, "cargo event index stale or ledger malformed")
 	if index < 0 or index >= event_log.size() or not (event_log[index] is Dictionary):
 		return _invalid_cargo_receipt(node, "receipt index invalid")
 	var receipt: Dictionary = event_log[index]
@@ -4890,13 +4950,11 @@ func _cargo_unload_receipt_at(index: int, node: String) -> Dictionary:
 			or not _unload_worker_assigned(String(receipt.get("actor", ""))) or String(receipt.get("subject", "")) == "":
 		return _invalid_cargo_receipt(node, "receipt world row invalid")
 	var tx_rows: Array = []
-	# _commit_manifest_unload appends pay? → stock → world contiguously. Inspect only
-	# the bounded neighborhood around the receipt (including a duplicate immediately
-	# after it) instead of rescanning the complete append-only history.
-	for i in range(maxi(0, index - 2), mini(event_log.size(), index + 3)):
-		var raw = event_log[i]
-		if raw is Dictionary and String((raw as Dictionary).get("txid", "")) == txid:
-			tx_rows.append(raw)
+	var tx_indices: Array = (_cargo_event_index.get("tx", {}) as Dictionary).get(txid, [])
+	for raw_i in tx_indices:
+		var i := int(raw_i)
+		if i < 0 or i >= event_log.size(): return _invalid_cargo_receipt(node, "receipt tx index invalid")
+		tx_rows.append(event_log[i])
 	if tx_rows.size() not in [2, 3] or tx_rows[tx_rows.size() - 1] != receipt:
 		return _invalid_cargo_receipt(node, "receipt tx exact-set invalid")
 	for i in range(1, tx_rows.size()):
@@ -4905,7 +4963,7 @@ func _cargo_unload_receipt_at(index: int, node: String) -> Dictionary:
 	var paid := tx_rows.size() == 3
 	var stock: Dictionary = tx_rows[1 if paid else 0]
 	var good := String(receipt.get("subject", ""))
-	var historical := _historical_manifest_from_receipt(manifest_id, node, good, qty)
+	var historical := _historical_manifest_from_receipt(manifest_id, node, good, qty, true)
 	if historical.is_empty():
 		return _invalid_cargo_receipt(node, "receipt lacks authored manifest/arrival proof")
 	var expected_paid := _econ_on() and int(historical.get("price_per", 0)) > 0
@@ -4927,7 +4985,7 @@ func _cargo_unload_receipt_at(index: int, node: String) -> Dictionary:
 
 ## Retired manifests no longer have a live record. Reconstruct the one possible complete record
 ## from canonical id + authored lane, then reuse the same lane/arrival validator as live cargo.
-func _historical_manifest_from_receipt(manifest_id: String, node: String, good: String, qty: int) -> Dictionary:
+func _historical_manifest_from_receipt(manifest_id: String, node: String, good: String, qty: int, indexed: bool = false) -> Dictionary:
 	var lanes = logistics.get("import_lanes", [])
 	if not (lanes is Array):
 		return {}
@@ -4950,7 +5008,7 @@ func _historical_manifest_from_receipt(manifest_id: String, node: String, good: 
 			"price_per": int(lane.get("price_per", 0)), "price_den": int(lane.get("price_den", 1)),
 			"state": "complete",
 		}
-		if _manifest_authority_error(manifest_id, rec, logistics, day, event_log) == "":
+		if _manifest_authority_error(manifest_id, rec, logistics, day, event_log, indexed) == "":
 			return rec
 	return {}
 
@@ -4977,6 +5035,7 @@ func _rollback_manifest_unload(snapshot: Dictionary, manifest_id: String, good: 
 	else:
 		town_stock.erase(good)
 	event_log.resize(int(snapshot["event_size"]))
+	_rebuild_cargo_event_index()
 	_next_event_id = int(snapshot["next_event_id"])
 	event_digest = int(snapshot["event_digest"])
 	cargo_manifests[manifest_id] = (snapshot["manifest"] as Dictionary).duplicate(true)
@@ -5324,6 +5383,11 @@ func _log_event(type: String, actor_id: String, target_id: String, subject: Stri
 		ev["txid"] = txid
 	_next_event_id += 1
 	event_log.append(ev)
+	if int(_cargo_event_index.get("event_size", -1)) == event_log.size() - 1:
+		_index_cargo_event(ev, event_log.size() - 1)
+		_cargo_event_index["event_size"] = event_log.size()
+	else:
+		_rebuild_cargo_event_index()
 	# L4 增量滚动摘要：每事件 O(1) 折叠 → 不必末尾遍历整条 event_log 即得全程确定性见证（大规模/长跑友好）。
 	var es := "%d:%s:%s:%s:%d:%s:%d" % [int(ev["id"]), type, actor_id, target_id, int(accepted), subject, tick_no]
 	if txid != "":

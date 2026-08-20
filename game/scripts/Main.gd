@@ -59,6 +59,7 @@ var _player_spawn_override := Vector2i(-1, -1) # --player-pos x y：产品截图
 var _demo_steps: Array = []           # [{type:walk_to|select|act|chat|wait, ...}] 顺序执行
 var _demo_i := 0
 var _chat_in: LineEdit                # 玩家→NPC 对话输入框
+var _chat_generation := 0             # 世界/会话替换使在飞回调失效
 var _backend_btn: Button              # 后端切换按钮（手机无 CLI：点按在 logic/slm/… 间轮换；桌面也可点）
 # ── 演示镜头编排（--demo-cam；docs/46 §三-D4）──────────────────────────────
 ## 轨迹本体在 ProbeController（连同"为什么框地方不框人"的理由）。Main 这一侧只有三件事：
@@ -443,6 +444,8 @@ func _ready() -> void:
 		Sim.ext = ext
 	if _lod_agg_arg:
 		Sim.lod_aggregate = true            # 置于 start_new 前 → warmup goto_tick + 出图定格都跑聚合档，前缀与 live 同档、goto_tick 逐字节可复现，截到的正是聚合档
+	if not Sim.world_reset.is_connected(_invalidate_chat_generation):
+		Sim.world_reset.connect(_invalidate_chat_generation)
 	Sim.start_new(seed)
 	if warmup_tick > 0:
 		Sim.goto_tick(warmup_tick)          # 眼验：精确定格到某一 tick
@@ -1761,7 +1764,53 @@ func _update_obs() -> void:
 func _esc(s: String) -> String:
 	return s.replace("[", "[lb]")
 
-## 玩家对选中 NPC 说话 → AIBackend.chat（llm/mock/罐头）→ 头顶回复气泡 + 日志 + 写入 NPC 记忆。
+func _invalidate_chat_generation() -> void:
+	_chat_generation += 1
+
+func _chat_target_reachable(target: Dictionary, player: Dictionary) -> bool:
+	if target.is_empty() or String(target.get("id", "")) == "player":
+		return false
+	if String(target.get("space", "town")) != String(player.get("space", "town")) \
+		or String(target.get("floor", "outdoor")) != String(player.get("floor", "outdoor")):
+		return false
+	var tp: Vector2i = target.get("pos", Vector2i(-99, -99))
+	var pp: Vector2i = player.get("pos", Vector2i(-99, -99))
+	return absi(tp.x - pp.x) + absi(tp.y - pp.y) <= 2
+
+func _chat_target_allowed(id: String, target: Dictionary) -> bool:
+	if id == "" or id == "player" or target.is_empty() or not _agent_on_active_plane(target):
+		return false
+	if not _player_mode:
+		return true # demo/observer context has no player body; active-plane is the explicit scope
+	var player := Sim.get_agent("player")
+	return not player.is_empty() and _chat_target_reachable(target, player)
+
+func _apply_chat_reply(token: int, target_id: String, target_space: String, target_floor: String,
+		player_space: String, player_floor: String, player_pos: Vector2i, prompt: String, reply: String) -> bool:
+	var target := Sim.get_agent(target_id)
+	if token != _chat_generation or target.is_empty() or String(target.get("id", "")) != target_id:
+		return false
+	if String(target.get("space", "town")) != target_space or String(target.get("floor", "outdoor")) != target_floor:
+		return false
+	if _player_mode:
+		var player := Sim.get_agent("player")
+		if player.is_empty() or String(player.get("space", "town")) != player_space \
+				or String(player.get("floor", "outdoor")) != player_floor \
+				or Vector2i(player.get("pos", Vector2i(-99, -99))) != player_pos \
+				or not _chat_target_reachable(target, player) or _player_in_warehouse_observatory():
+			target["thinking"] = false
+			return false
+	target["thinking"] = false
+	if _view != null and _view.has_method("show_say"):
+		_view.show_say(target_id, reply, 90)
+	_push("[color=#cfe8ff]%s：%s[/color]" % [_nm(target_id), _esc(reply)])
+	var mem = target.get("memory")
+	if mem != null:
+		mem.add("玩家问『%s』，我答『%s』" % [_esc(prompt.substr(0, 18)), _esc(reply.substr(0, 18))], 5, Sim.tick_no, [target_id, "player", "chat"])
+	return true
+
+## 唯一聊天权威：输入框、快捷键和 demo 都先经过同一套空间/距离门；
+## AI 回包只可通过 _apply_chat_reply，重新解析目标与玩家上下文后才写 UI/记忆。
 func _on_player_say(text: String) -> void:
 	text = text.strip_edges()
 	if _selected_id == "" or text == "":
@@ -1771,18 +1820,21 @@ func _on_player_say(text: String) -> void:
 		return
 	var id := _selected_id
 	var ag := Sim.get_agent(id)
-	if ag.is_empty() or id == "player" or not _agent_on_active_plane(ag):
+	if not _chat_target_allowed(id, ag):
+		if _player_mode: _push("[color=#f2a3a3]（目标不在可达范围内）[/color]")
 		return
+	var token := _chat_generation + 1
+	_chat_generation = token
+	var target_space := String(ag.get("space", "town"))
+	var target_floor := String(ag.get("floor", "outdoor"))
+	var player := Sim.get_agent("player")
+	var player_space := String(player.get("space", "town"))
+	var player_floor := String(player.get("floor", "outdoor"))
+	var player_pos: Vector2i = player.get("pos", Vector2i(-99, -99))
 	_push("[color=#9ad0ff]你 → %s：%s[/color]" % [_nm(id), _esc(text)])   # P2-9：不可信文本转义 [，防 BBCode 注入
 	ag["thinking"] = true
 	AIBackend.chat(ag, text, {"tick": Sim.tick_no, "day": Sim.day}, func(reply: String):
-		ag["thinking"] = false
-		if _view != null and _view.has_method("show_say"):
-			_view.show_say(id, reply, 90)                       # 气泡走 draw_string，用原文（非 BBCode，无需转义）
-		_push("[color=#cfe8ff]%s：%s[/color]" % [_nm(id), _esc(reply)])   # 日志是 RichTextLabel(BBCode) → 转义模型回复
-		var mem = ag.get("memory")
-		if mem != null:
-			mem.add("玩家问『%s』，我答『%s』" % [_esc(text.substr(0, 18)), _esc(reply.substr(0, 18))], 5, Sim.tick_no, [id, "player", "chat"])
+		_apply_chat_reply(token, id, target_space, target_floor, player_space, player_floor, player_pos, text, reply)
 	)
 	if _chat_in != null:
 		_chat_in.text = ""

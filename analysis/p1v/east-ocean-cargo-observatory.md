@@ -51,8 +51,9 @@ The authored console cell is discovered from `interiors.json` through
 For a good receipt, the projection requires the canonical manifest/lane/cadence/arrival proof plus
 an exact contiguous event transaction:
 
-- paid unload: stock, import payment, and wage rows share one transaction ID in that order;
-- free unload: stock and wage rows share one transaction ID in that order;
+- paid unload: import payment and stock rows share the cargo transaction ID in that order;
+- free unload: stock rows share the cargo transaction ID; worker wage is a separate
+  post-commit best-effort event and is never part of cargo tx identity;
 - the stock actor is the manifest's assigned unload worker and its quantity equals the manifest;
 - pay actors/targets, subjects, deltas, notes, event IDs, and adjacent rows match the existing
   P1-g transaction contract;

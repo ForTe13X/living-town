@@ -423,3 +423,9 @@ E1 defer 的三条理由逐一拆：① type=码头无槽 → **P1-a 加一个�
 - **单一目标**：关闭 projection 在每次 redraw 中按完整 `event_log` 重复扫描的性能 blocker；仅改近况读取，不改变货运事务权威、聊天权限、证据文档或 anchor。
 - **实现合同**：最新回执最多回看 1024 条事件；事务校验只检查回执前最多两行，依赖既有 append-only `pay→stock→world` / `stock→world` 合同。更老历史不伪装成最新消息，全量审计留给账本/专用工具。
 - **证据与边界**：P1-v、P1-b、P1-g、save/load、save migration、space 相关 Godot integration loop 通过后收口；完整命令、限制与恢复见 `analysis/p1ab/observatory-bounded-history.md`。本批无 hosted visual receipt，不重烘四锚；evidence 工资字段与 readiness 授权绑定仍后置。
+
+### 13.24 P1-ac：fresh-review 聊天与货运索引收口（2026-08-20；未重烘）
+
+- **聊天权威**：输入框、`KEY_C` 与 demo 共用 `_on_player_say`；玩家上下文要求非 self、同 `space/floor` 且 Manhattan 距离不超过 2，远端同平面目标拒绝。回包携带 generation、不可变 target id 与采样上下文，回调重新解析并在 thinking/UI/memory 写入前复核目标、玩家位置/平面、观测室只读门和 session generation；portal、玩家平面变化与 load/session 替换均为 no-op。
+- **货运索引**：arrival、latest receipt、tx exact-set 由 load 重建、`_log_event` 增量维护；账本仍唯一权威，event size/索引行不一致即 invalid。投影不再扫描无关历史，far-separated duplicate tx 不能绕过 exact-set；`E=5000` 合成历史下 focused projection-read counter 仍有界。
+- **分层验证与边界**：P1-v scene 新增相邻正臂、远距负臂、延迟回包负臂和 E-size 性能牙并 PASS；不消费 narrative packet（其无新持久后果），不改 unresolved visual 工具，不重烘 anchor，PR #6 继续 Draft/UNSTABLE。完整证据见 `analysis/p1ac/fresh-review-closure.md`。
