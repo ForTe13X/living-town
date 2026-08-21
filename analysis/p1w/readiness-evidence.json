@@ -108,7 +108,7 @@
   "anchors": [
     {
       "path": "tools/gate_complement_ledger.json",
-      "sha256": "0e5576821b38220f9b06c2e80d486126ca0dd957aeb3345e7dd189926100f2bc",
+      "sha256": "87f83b99205a81ae9074768ffc393696c263d08f89e5f4ba44e251c98a035c82",
       "anchor_commit": "b75653acffd3ad32346a895c507c989646f7bdd0",
       "baked_game_tree": "2d282ddbdd5f216cc09414a66d01404269546526"
     },
