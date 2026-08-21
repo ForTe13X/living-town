@@ -1,0 +1,42 @@
+{
+  "contract": "living-town-independent-review-report-v1",
+  "review_ref": "origin/codex/main-repo-review",
+  "report_path": "analysis/main-repo-review/external-reviews/p1ac-e779b47-blocked-evidence.json",
+  "review_role": "independent_qa_refute",
+  "review_task_id": "01a0212b-ff4c-7d53-96a6-26a55d7fe38f",
+  "review_sequence": 7,
+  "status": "completed",
+  "verdict": "BLOCKED_EVIDENCE",
+  "product_head": "e779b4713f0e22cd00c1eec36ee59a1ac1ae24a9",
+  "commit_tree": "510bf8bdccd711bf60734dc575df8aee2cb7421f",
+  "game_tree": "24811c7f5f36cbab381c721815d599ea16de259a",
+  "base": "d46cbb132595185c3420bb4eb8fd7f28512baa85",
+  "review_cutoff_receipt_utc": "2026-08-21T01:10:05.342Z",
+  "supervised_receipt": "C:/Users/yp/AppData/Local/Temp/living-town-godot-runs/20260821T011005342Z_c977c825f485420584b679743e1efe69/receipt.json",
+  "supervised_receipt_outcome": "blocked_unknown_existing_godot_pids",
+  "closed_findings": [
+    "lifecycle ownership and global load invalidation",
+    "named production tx-row mutation at event_log[i]",
+    "fixed 91 clean, 92 injected red, and 91 restored assertions",
+    "no state write and identical restored projection receipt"
+  ],
+  "blocking_findings": [
+    "five local exact supervised scene receipts were unavailable because unknown Godot PIDs triggered safe preflight blocking",
+    "current exact hosted core run was not terminal at the review cutoff"
+  ],
+  "hosted_state_at_cutoff": {
+    "run_id": 32434753687,
+    "status": "in_progress",
+    "visual_canary": "success",
+    "core_conclusion": null
+  },
+  "does_not_authorize": [
+    "anchor rebake",
+    "anchor finalize",
+    "merge",
+    "release",
+    "recording",
+    "gameplay guide",
+    "human acceptance"
+  ]
+}
