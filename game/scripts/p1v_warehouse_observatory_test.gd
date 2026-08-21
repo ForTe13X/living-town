@@ -68,11 +68,6 @@ func _safe_invalid_cargo(row: Dictionary) -> bool:
 		and String(row.get("good", "")) == "" and int(row.get("qty", -1)) == 0 \
 		and int(row.get("cost", -1)) == 0 and String(row.get("worker_id", "")) == ""
 
-func _inject_projection_query_deref() -> void:
-	# Called once from the real production projection path; the hook is cleared
-	# by Sim before invocation, so this is one additional counted dereference.
-	Sim._observatory_projection_test_dereference()
-
 func _ready() -> void:
 	_pin_settings()
 	_main = load("res://scenes/Main.tscn").instantiate()
@@ -164,19 +159,24 @@ func _ready() -> void:
 		and query_ops_after <= Sim.OBSERVATORY_QUERY_OP_BUDGET
 		and not Sim.observatory_projection_query_budget_failed,
 		"E=5000 无关历史下 projection 总查询工作保持有界（含 ledger/index/tx dereference）")
+	var event_count_before_mutation := Sim.event_log.size()
 	Sim.observatory_projection_query_budget_override = P1V_EXPECTED_QUERY_OPS
-	Sim.observatory_projection_query_hook = Callable(self, "_inject_projection_query_deref")
+	Sim.observatory_projection_test_extra_tx_row_deref = true
 	var mutated_projection: Dictionary = Sim.warehouse_observatory_projection("port_dock")
 	ck(String((mutated_projection.get("receipt", {}) as Dictionary).get("state", "")) == "complete"
+		and mutated_projection.get("receipt", {}) == large_projection.get("receipt", {})
+		and Sim.event_log.size() == event_count_before_mutation
 		and Sim.observatory_projection_query_ops == P1V_EXPECTED_QUERY_OPS + 1
 		and Sim.observatory_projection_query_budget_failed,
-		"查询预算负对照：真实 projection 路径注入一次额外 dereference 后确定变红")
+		"查询预算负对照：生产 tx-row dereference 注入一次额外访问后确定变红")
 	Sim.observatory_projection_query_budget_override = -1
-	Sim.observatory_projection_query_hook = Callable()
 	var restored_projection: Dictionary = Sim.warehouse_observatory_projection("port_dock")
 	ck(String((restored_projection.get("receipt", {}) as Dictionary).get("state", "")) == "complete"
+		and restored_projection.get("receipt", {}) == large_projection.get("receipt", {})
+		and Sim.event_log.size() == event_count_before_mutation
+		and Sim.observatory_projection_query_ops == P1V_EXPECTED_QUERY_OPS
 		and not Sim.observatory_projection_query_budget_failed,
-		"查询预算 hook/state 清理后正向路径恢复")
+		"查询预算 mutation 清理后恢复 exact 91 操作正向路径")
 	Sim.observatory_projection_query_budget_failed = false
 	ck(Sim.OBSERVATORY_RECEIPT_SCAN_LIMIT == 1024,
 		"兼容常量保留但不再作为 redraw 扫描窗口")

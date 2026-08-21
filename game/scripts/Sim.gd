@@ -373,9 +373,8 @@ var observatory_projection_event_reads := 0 # compatibility receipt: successful 
 var observatory_projection_query_ops := 0 # total bounded ledger/index/tx dereferences in one projection
 const OBSERVATORY_QUERY_OP_BUDGET := 96
 var observatory_projection_query_budget_failed := false
-## Test-only fault hook; inert unless a focused fixture installs it.
-var observatory_projection_query_hook: Callable = Callable()
 var observatory_projection_query_budget_override := -1
+var observatory_projection_test_extra_tx_row_deref := false
 # S4：模型决策当「外部输入」记入 trace → 即使模型非确定，回放也可复现（docs/11 §5）
 var decision_trace: Array = []  # [{tick,agent,kind,action,partner,subject,say,cand_hash}]（落地的模型决策）
 var decision_sink: Callable = Callable()  # Phase-0 对拍数据集：默认空=off；设了则每次 logic 决策把 (ag,cands,pick_i) 喂给它。不抽 RNG、不进 event_log/digest、CI 恒空 → 红线零影响。
@@ -1779,17 +1778,6 @@ func _projection_query_op(weight: int = 1) -> void:
 		budget = observatory_projection_query_budget_override
 	if observatory_projection_query_ops > budget:
 		observatory_projection_query_budget_failed = true
-	if observatory_projection_query_hook.is_valid():
-		var hook := observatory_projection_query_hook
-		observatory_projection_query_hook = Callable()
-		hook.call()
-
-func _observatory_projection_test_dereference() -> void:
-	# Test-only hook target: one concrete index dereference on the production
-	# accounting path. Normal product behavior never installs the hook.
-	var ignored = _cargo_event_index.get("event_size", -1)
-	_projection_query_op()
-
 func _index_cargo_event(event: Dictionary, index: int) -> void:
 	var note := String(event.get("note", ""))
 	var txid := String(event.get("txid", ""))
@@ -4991,8 +4979,14 @@ func _cargo_unload_receipt_at(index: int, node: String) -> Dictionary:
 		_projection_query_op(2)
 		var i := int(raw_i)
 		if i < 0 or i >= event_log.size(): return _invalid_cargo_receipt(node, "receipt tx index invalid")
-		tx_rows.append(event_log[i])
+		var tx_row: Dictionary = event_log[i] # named production tx-row dereference
+		tx_rows.append(tx_row)
 		_projection_query_op()
+		if observatory_projection_test_extra_tx_row_deref:
+			# Test-only mutation at this same production dereference; inert by default.
+			observatory_projection_test_extra_tx_row_deref = false
+			var ignored_tx_row: Dictionary = event_log[i]
+			_projection_query_op()
 	if tx_rows.size() not in [2, 3] or tx_rows[tx_rows.size() - 1] != receipt:
 		return _invalid_cargo_receipt(node, "receipt tx exact-set invalid")
 	for i in range(1, tx_rows.size()):
