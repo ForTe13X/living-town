@@ -1,9 +1,9 @@
 {
   "contract": "living-town-anchor-finalize-readiness-v1",
-  "recorded_at_utc": "2026-08-21T05:09:13Z",
+  "recorded_at_utc": "2026-08-21T07:01:00Z",
   "decision": "ready_to_finalize",
   "frozen": {
-    "branch": "codex/p1a-finalize-72dc",
+    "branch": "codex/p1a-takeover",
     "product_head": "f06cc675f03145e8409c8842fb0feb77704ad477",
     "game_tree": "24811c7f5f36cbab381c721815d599ea16de259a",
     "base": "d46cbb132595185c3420bb4eb8fd7f28512baa85"
@@ -108,21 +108,21 @@
   "anchors": [
     {
       "path": "tools/gate_complement_ledger.json",
-      "sha256": "e87879376805664919e8b41d29d5b3ce5860c6c76a328b59a29edeb9c5d50a02",
-      "anchor_commit": "2d1ae815bc8af99096cc0f224eac275ef9755a76",
-      "baked_game_tree": "24811c7f5f36cbab381c721815d599ea16de259a"
+      "sha256": "0e5576821b38220f9b06c2e80d486126ca0dd957aeb3345e7dd189926100f2bc",
+      "anchor_commit": "b75653acffd3ad32346a895c507c989646f7bdd0",
+      "baked_game_tree": "2d282ddbdd5f216cc09414a66d01404269546526"
     },
     {
       "path": "game/bench/golden_digests.json",
       "sha256": "5ab7d6e14c75132112038734d0d6473ed46154dc5f64b29c82c61df29e5c7bfc",
       "anchor_commit": "2d1ae815bc8af99096cc0f224eac275ef9755a76",
-      "baked_game_tree": "24811c7f5f36cbab381c721815d599ea16de259a"
+      "baked_game_tree": "2d282ddbdd5f216cc09414a66d01404269546526"
     },
     {
       "path": "game/bench/modelpath_anchor.json",
       "sha256": "1a570375bdcd0cd0fbadad25ccd3082dc0ba03af62c798e222fd7bab42f6019a",
       "anchor_commit": "2d1ae815bc8af99096cc0f224eac275ef9755a76",
-      "baked_game_tree": "24811c7f5f36cbab381c721815d599ea16de259a"
+      "baked_game_tree": "2d282ddbdd5f216cc09414a66d01404269546526"
     }
   ],
   "hosted_product_run": {
@@ -150,7 +150,7 @@
     "game_tree": "24811c7f5f36cbab381c721815d599ea16de259a",
     "verdict": "APPROVE_ANCHOR_FINALIZE",
     "review_ref": "origin/codex/main-repo-review",
-    "review_ref_commit": "73441ae212e35a8f85e676c9589396be48ee5382",
+    "review_ref_commit": "e4cd508fa8337d0e5959aff56cae3a102e53e52b",
     "report_intro_commit": "4b67d3620e25a9234a25657743a4d721f94beb1d",
     "report_path": "analysis/main-repo-review/external-reviews/p1ac-f06cc67-approve-anchor-finalize.json",
     "blob_sha": "f87587851f0499e409d940ef83f58c290e52965e",
@@ -177,7 +177,7 @@
       "product_head": "f06cc675f03145e8409c8842fb0feb77704ad477",
       "game_tree": "24811c7f5f36cbab381c721815d599ea16de259a",
       "review_ref": "origin/codex/main-repo-review",
-      "review_ref_commit": "73441ae212e35a8f85e676c9589396be48ee5382",
+      "review_ref_commit": "e4cd508fa8337d0e5959aff56cae3a102e53e52b",
       "report_path": "analysis/main-repo-review/external-reviews/p1ac-f06cc67-approve-anchor-finalize.json",
       "blob_sha": "f87587851f0499e409d940ef83f58c290e52965e",
       "content_sha256": "2bbe142be965b0aa3ced93dfc5861c6819b832f444b3d09c4fb0bb000a362de2"
@@ -187,7 +187,7 @@
     "required": true,
     "status": "verified_external_git_blob",
     "review_ref": "origin/codex/main-repo-review",
-    "review_ref_commit": "73441ae212e35a8f85e676c9589396be48ee5382",
+    "review_ref_commit": "e4cd508fa8337d0e5959aff56cae3a102e53e52b",
     "report_intro_commit": "4b67d3620e25a9234a25657743a4d721f94beb1d",
     "report_path": "analysis/main-repo-review/external-reviews/p1ac-f06cc67-approve-anchor-finalize.json",
     "blob_sha": "f87587851f0499e409d940ef83f58c290e52965e",
@@ -197,12 +197,14 @@
   },
   "anchor_finalize_receipts": {
     "complement": {
-      "bake": "C:\\Users\\yp\\AppData\\Local\\Temp\\p1ac-f06-authority\\complement-bake.log",
-      "audit_self_test": "C:\\Users\\yp\\AppData\\Local\\Temp\\p1ac-f06-authority\\complement-audit-selftest.log",
-      "guard_self_test": "C:\\Users\\yp\\AppData\\Local\\Temp\\p1ac-f06-authority\\complement-guard-selftest.log",
-      "production_guard": "C:\\Users\\yp\\AppData\\Local\\Temp\\p1ac-f06-authority\\complement-production-guard.log",
+      "bake": "C:\\Users\\yp\\AppData\\Local\\Temp\\p1ac-dfedf-complement-bake.log",
+      "audit_self_test": "C:\\Users\\yp\\AppData\\Local\\Temp\\p1ac-dfedf-complement-audit-selftest.log",
+      "guard_self_test": "C:\\Users\\yp\\AppData\\Local\\Temp\\p1ac-dfedf-complement-guard-selftest.log",
+      "production_guard": "C:\\Users\\yp\\AppData\\Local\\Temp\\p1ac-dfedf-complement-production-guard.log",
       "dead_at_bake": [],
-      "provider_20": "S0"
+      "provider_20": "S0",
+      "baked_game_tree": "2d282ddbdd5f216cc09414a66d01404269546526",
+      "baked_commit": "217cfd308c6ac942408f4750ded6ded49dbc1513"
     },
     "s0": {
       "bake": "C:\\Users\\yp\\AppData\\Local\\Temp\\p1ac-f06-authority\\s0-bake.log",
@@ -227,5 +229,25 @@
       "verify": "C:\\Users\\yp\\AppData\\Local\\Temp\\p1ac-f06-authority\\modelpath-verify.log",
       "result": "A/B/C and seeds 1-4 PASS"
     }
+  },
+  "authorization_chain": {
+    "report_product_head": "f06cc675f03145e8409c8842fb0feb77704ad477",
+    "report_game_tree": "24811c7f5f36cbab381c721815d599ea16de259a",
+    "authorized_transition_head": "dfedf6954b22b5b8a410d1450f3d39313b55d940",
+    "authorized_transition_root_tree": "78aa025f0283e50472cbbdbf6e1df992d9905434",
+    "authorized_transition_game_tree": "2d282ddbdd5f216cc09414a66d01404269546526",
+    "authorized_paths": [
+      "tools/gate_complement_ledger.json",
+      "game/bench/golden_digests.json",
+      "game/bench/modelpath_anchor.json",
+      "analysis/p1w/readiness-evidence.json"
+    ],
+    "corrective_paths": [
+      "tools/gate_complement_ledger.json",
+      "analysis/p1w/verify-anchor-finalize-readiness.ps1",
+      "analysis/p1w/readiness-evidence.json"
+    ],
+    "independent_qa_verdict": "REQUEST_CHANGES",
+    "repair_scope": "ledger provenance and external authorization-chain verifier only"
   }
 }
