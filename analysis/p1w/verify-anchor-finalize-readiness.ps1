@@ -18,7 +18,10 @@ param(
     [string]$ExternalReviewReportPath = "",
     [string]$ExternalReviewReportSha256 = "",
     [switch]$RequireExternalReviewBinding,
-    [switch]$AllowDetachedQa
+    [switch]$AllowDetachedQa,
+    [string]$ExpectedAuthorizationHead = "",
+    [string]$ExpectedAuthorizationGameTree = "",
+    [string]$ExpectedAuthorizedTransitionHead = ""
 )
 
 Set-StrictMode -Version Latest
@@ -79,11 +82,28 @@ function Git-CapturedText {
     return $stdout
 }
 
+function Assert-ExactPathSet {
+    param(
+        [Parameter(Mandatory = $true)][string]$Name,
+        [Parameter(Mandatory = $true)][string]$From,
+        [Parameter(Mandatory = $true)][string]$To,
+        [Parameter(Mandatory = $true)][string[]]$Expected
+    )
+    $actual = @((& git diff --name-only $From $To 2>&1 | Out-String).Trim().Split("`n", [System.StringSplitOptions]::RemoveEmptyEntries) |
+        ForEach-Object { $_.Trim() } | Sort-Object -Unique)
+    if ($LASTEXITCODE -ne 0) {
+        throw "git diff --name-only $From $To failed"
+    }
+    $want = @($Expected | Sort-Object -Unique)
+    Assert-Exact "$Name paths" ($actual -join "|") ($want -join "|")
+}
+
 function Resolve-ExternalReview {
     param(
         [Parameter(Mandatory = $true)][string]$Repo,
         [Parameter(Mandatory = $true)][string]$CandidateHead,
-        [Parameter(Mandatory = $true)][string]$CandidateGameTree,
+        [Parameter(Mandatory = $true)][string]$AuthorizationHead,
+        [Parameter(Mandatory = $true)][string]$AuthorizationGameTree,
         [Parameter(Mandatory = $true)][string]$Decision
     )
     $supplied = @(@($ExternalReviewRef, $ExternalReviewReportPath, $ExternalReviewReportSha256) | Where-Object { $_ -ne "" })
@@ -116,11 +136,15 @@ function Resolve-ExternalReview {
         Assert-Exact "external review contract" ([string]$report.contract) "living-town-independent-review-report-v1"
         Assert-Exact "external review role" ([string]$report.review_role) "independent_qa_refute"
         Assert-Exact "external review status" ([string]$report.status) "completed"
-        Assert-Exact "external review product head" ([string]$report.product_head) $CandidateHead
-        Assert-Exact "external review game tree" ([string]$report.game_tree) $CandidateGameTree
+        Assert-Exact "external review product head" ([string]$report.product_head) $AuthorizationHead
+        Assert-Exact "external review game tree" ([string]$report.game_tree) $AuthorizationGameTree
+        $authorizationTree = Git-Text @("show", "-s", "--format=%T", $AuthorizationHead)
+        Assert-Exact "external review root tree" ([string]$report.commit_tree) $authorizationTree
+        & git merge-base --is-ancestor $AuthorizationHead $CandidateHead
+        Assert-True ($LASTEXITCODE -eq 0) "external authorization target is not an ancestor of candidate"
         $expectedVerdict = if ($Decision -eq "ready_to_finalize") { "APPROVE_ANCHOR_FINALIZE" } else { "REQUEST_CHANGES" }
         Assert-Exact "external review verdict" ([string]$report.verdict) $expectedVerdict
-        return [ordered]@{ ref = $ExternalReviewRef; ref_commit = $reviewCommit; path = $ExternalReviewReportPath; blob_sha = $blobSha; sha256 = $actualSha; verdict = [string]$report.verdict }
+        return [ordered]@{ ref = $ExternalReviewRef; ref_commit = $reviewCommit; path = $ExternalReviewReportPath; blob_sha = $blobSha; sha256 = $actualSha; verdict = [string]$report.verdict; authorization_head = $AuthorizationHead; authorization_game_tree = $AuthorizationGameTree }
     }
     if ($Decision -eq "ready_to_finalize") {
         throw "ready_to_finalize requires an externally supplied review ref/report/hash binding"
@@ -141,10 +165,12 @@ try {
     $head = Git-Text @("rev-parse", "HEAD")
     $branch = Git-Text @("branch", "--show-current")
     $gameTree = Git-Text @("rev-parse", "HEAD:game")
+    $authorizationHead = if ($ExpectedAuthorizationHead -ne "") { $ExpectedAuthorizationHead } else { $ExpectedHead }
+    $authorizationGameTree = if ($ExpectedAuthorizationGameTree -ne "") { $ExpectedAuthorizationGameTree } else { $ExpectedGameTree }
     Assert-Exact "HEAD" $head $ExpectedHead
     if ($AllowDetachedQa) {
-        Assert-True ($ExpectedDecision -eq "prepared_not_authorized") `
-            "detached QA mode cannot be used for an authorization/finalize decision"
+        Assert-True ($ExpectedDecision -eq "prepared_not_authorized" -or ($ExpectedAuthorizationHead -ne "" -and $ExpectedAuthorizationGameTree -ne "" -and $ExpectedAuthorizedTransitionHead -ne "")) `
+            "detached ready QA requires exact authorization target and transition head"
         Assert-Exact "detached branch" $branch ""
         $candidateRef = Git-Text @("rev-parse", "--verify", "$ExpectedUpstream`^{commit}")
         Assert-Exact "detached candidate ref" $candidateRef $ExpectedHead
@@ -152,8 +178,8 @@ try {
         Assert-Exact "branch" $branch $ExpectedBranch
     }
     Assert-Exact "game tree" $gameTree $ExpectedGameTree
-	$externalReview = Resolve-ExternalReview -Repo $repo -CandidateHead $ExpectedHead `
-		-CandidateGameTree $ExpectedGameTree -Decision $ExpectedDecision
+    $externalReview = Resolve-ExternalReview -Repo $repo -CandidateHead $ExpectedHead `
+		-AuthorizationHead $authorizationHead -AuthorizationGameTree $authorizationGameTree -Decision $ExpectedDecision
 
     $dirty = Git-Text @("status", "--porcelain=v1", "--untracked-files=all")
     Assert-Exact "worktree status" $dirty ""
@@ -162,14 +188,39 @@ try {
         Assert-Exact "upstream head" $upstream $ExpectedHead
     }
 
-    Assert-Exact "evidence branch" ([string]$evidence.frozen.branch) $ExpectedBranch
-    if (-not $AllowDetachedQa) {
-        Assert-Exact "evidence game tree" ([string]$evidence.frozen.game_tree) $ExpectedGameTree
+    if ($ExpectedDecision -eq "ready_to_finalize") {
+        Assert-True ($ExpectedAuthorizationHead -ne "" -and $ExpectedAuthorizationGameTree -ne "" -and $ExpectedAuthorizedTransitionHead -ne "") `
+            "ready_to_finalize requires exact authorization target/head/tree and authorized transition head"
+        Assert-Exact "evidence authorization head" ([string]$evidence.frozen.product_head) $authorizationHead
+        Assert-Exact "evidence authorization game tree" ([string]$evidence.frozen.game_tree) $authorizationGameTree
+        $authorizedPaths = @(
+            "tools/gate_complement_ledger.json",
+            "game/bench/golden_digests.json",
+            "game/bench/modelpath_anchor.json",
+            "analysis/p1w/readiness-evidence.json"
+        )
+        $correctivePaths = @(
+            "tools/gate_complement_ledger.json",
+            "analysis/p1w/verify-anchor-finalize-readiness.ps1",
+            "analysis/p1w/readiness-evidence.json"
+        )
+        & git merge-base --is-ancestor $authorizationHead $ExpectedAuthorizedTransitionHead
+        Assert-True ($LASTEXITCODE -eq 0) "authorization target is not an ancestor of authorized transition"
+        & git merge-base --is-ancestor $ExpectedAuthorizedTransitionHead $ExpectedHead
+        Assert-True ($LASTEXITCODE -eq 0) "authorized transition is not an ancestor of candidate"
+        Assert-ExactPathSet "authorized anchor transition" $authorizationHead $ExpectedAuthorizedTransitionHead $authorizedPaths
+        Assert-ExactPathSet "post-authorization corrective transition" $ExpectedAuthorizedTransitionHead $ExpectedHead $correctivePaths
+        Assert-Exact "authorized transition game tree" (Git-Text @("rev-parse", "$($ExpectedAuthorizedTransitionHead):game")) $ExpectedGameTree
+    } else {
+        Assert-Exact "evidence branch" ([string]$evidence.frozen.branch) $ExpectedBranch
+        if (-not $AllowDetachedQa) {
+            Assert-Exact "evidence game tree" ([string]$evidence.frozen.game_tree) $ExpectedGameTree
+        }
+        & git merge-base --is-ancestor ([string]$evidence.frozen.product_head) $ExpectedHead
+        Assert-True ($LASTEXITCODE -eq 0) "frozen product head is not an ancestor of expected head"
+        $frozenGameTree = Git-Text @("rev-parse", "$($evidence.frozen.product_head):game")
+        Assert-Exact "frozen product game tree" $frozenGameTree ([string]$evidence.frozen.game_tree)
     }
-    & git merge-base --is-ancestor ([string]$evidence.frozen.product_head) $ExpectedHead
-    Assert-True ($LASTEXITCODE -eq 0) "frozen product head is not an ancestor of expected head"
-    $frozenGameTree = Git-Text @("rev-parse", "$($evidence.frozen.product_head):game")
-    Assert-Exact "frozen product game tree" $frozenGameTree ([string]$evidence.frozen.game_tree)
 
     foreach ($anchor in @($evidence.anchors)) {
         $path = Join-Path $repo ([string]$anchor.path)
@@ -180,7 +231,11 @@ try {
         Assert-Exact "anchor baked tree $($anchor.path)" $anchorTree ([string]$anchor.baked_game_tree)
         & git merge-base --is-ancestor ([string]$anchor.anchor_commit) $ExpectedHead
         Assert-True ($LASTEXITCODE -eq 0) "anchor commit is not reachable: $($anchor.anchor_commit)"
-        Assert-True ($anchorTree -cne $ExpectedGameTree) "anchor unexpectedly already matches current game tree"
+        if ($ExpectedDecision -eq "ready_to_finalize") {
+            Assert-Exact "anchor final game tree $($anchor.path)" $anchorTree $ExpectedGameTree
+        } else {
+            Assert-True ($anchorTree -cne $ExpectedGameTree) "anchor unexpectedly already matches current game tree"
+        }
     }
 
     $held = $evidence.held_out
