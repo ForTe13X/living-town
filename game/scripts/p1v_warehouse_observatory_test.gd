@@ -3,6 +3,7 @@ extends Node
 
 const Inv = preload("res://bench/Invariants.gd")
 const CFG := "user://settings.cfg"
+const P1V_EXPECTED_QUERY_OPS := 91
 
 var _fails := 0
 var _main: Node2D
@@ -70,7 +71,7 @@ func _safe_invalid_cargo(row: Dictionary) -> bool:
 func _inject_projection_query_deref() -> void:
 	# Called once from the real production projection path; the hook is cleared
 	# by Sim before invocation, so this is one additional counted dereference.
-	Sim._projection_query_op()
+	Sim._observatory_projection_test_dereference()
 
 func _ready() -> void:
 	_pin_settings()
@@ -159,15 +160,15 @@ func _ready() -> void:
 	var query_ops_after := Sim.observatory_projection_query_ops
 	ck(String((large_projection.get("receipt", {}) as Dictionary).get("state", "")) == "complete"
 		and Sim.event_log.size() > 5000 and reads_after - reads_before <= 2
+		and query_ops_after == P1V_EXPECTED_QUERY_OPS
 		and query_ops_after <= Sim.OBSERVATORY_QUERY_OP_BUDGET
 		and not Sim.observatory_projection_query_budget_failed,
 		"E=5000 无关历史下 projection 总查询工作保持有界（含 ledger/index/tx dereference）")
-	var clean_query_ops := query_ops_after
-	Sim.observatory_projection_query_budget_override = clean_query_ops
+	Sim.observatory_projection_query_budget_override = P1V_EXPECTED_QUERY_OPS
 	Sim.observatory_projection_query_hook = Callable(self, "_inject_projection_query_deref")
 	var mutated_projection: Dictionary = Sim.warehouse_observatory_projection("port_dock")
 	ck(String((mutated_projection.get("receipt", {}) as Dictionary).get("state", "")) == "complete"
-		and Sim.observatory_projection_query_ops == clean_query_ops + 1
+		and Sim.observatory_projection_query_ops == P1V_EXPECTED_QUERY_OPS + 1
 		and Sim.observatory_projection_query_budget_failed,
 		"查询预算负对照：真实 projection 路径注入一次额外 dereference 后确定变红")
 	Sim.observatory_projection_query_budget_override = -1
@@ -267,6 +268,7 @@ func _ready() -> void:
 	_main._on_player_say("远程探针")
 	ck(_snapshot() == remote_before, "同平面远距离目标被聊天权威拒绝")
 	pl["pos"] = target_pos + Vector2i(1, 0)
+	session_id = _main._chat_session_id
 	chat_token = _main._chat_generation
 	var request_a := chat_token + 1
 	_main._chat_generation = request_a
@@ -277,16 +279,35 @@ func _ready() -> void:
 	target["_chat_request_token"] = str(request_b)
 	target["thinking"] = true
 	var owner_cleanup_before := _snapshot()
+	var generation_before_owner_cleanup: int = _main._chat_generation
+	var session_before_owner_cleanup: int = _main._chat_session_id
 	_main._invalidate_chat_generation(request_a)
 	ck(bool(target.get("thinking", false)) and String(target.get("_chat_request_token", "")) == str(request_b)
-		and _snapshot() == owner_cleanup_before,
+		and _snapshot() == owner_cleanup_before
+		and _main._chat_generation == generation_before_owner_cleanup
+		and _main._chat_session_id == session_before_owner_cleanup,
 		"旧 request A 生命周期清理不触碰同目标较新的 request B 展示/令牌/记忆")
+	var b_memory_before: Array = target["memory"].items.duplicate(true)
+	var b_applied: bool = _main._apply_chat_reply(request_b, "tao", "town", "outdoor", target_pos,
+		"town", "outdoor", pl["pos"], sim_identity, session_id, "B", "valid B")
+	ck(b_applied and not bool(target.get("thinking", false))
+		and not target.has("_chat_request_token")
+		and target["memory"].items.size() == b_memory_before.size() + 1
+		and String((_main._view._say.get("tao", {}) as Dictionary).get("text", "")) == "valid B",
+		"request A 清理后，较新的 request B 仍能一次性应用 UI/记忆/展示")
+	var late_a_memory: Array = target["memory"].items.duplicate(true)
+	var late_a_log: int = _main._log_recent.size()
 	var late_a_before := _snapshot()
 	ck(not _main._apply_chat_reply(request_a, "tao", "town", "outdoor", target_pos,
 		"town", "outdoor", pl["pos"], sim_identity, session_id, "A", "late A")
-		and _snapshot() == late_a_before and bool(target.get("thinking", false))
-		and String(target.get("_chat_request_token", "")) == str(request_b),
-		"请求 B 取代请求 A 后，迟到 A 不清理 B 的 thinking 且不写 UI/记忆")
+		and _snapshot() == late_a_before and target["memory"].items == late_a_memory
+		and _main._log_recent.size() == late_a_log,
+		"请求 B 已完成后，迟到 A 仍是 literal no-op")
+	chat_token = _main._chat_generation + 1
+	_main._chat_generation = chat_token
+	target["_chat_request_token"] = str(chat_token)
+	target["thinking"] = true
+	request_b = chat_token
 	var wrong_sim_before := _snapshot()
 	var wrong_sim_memory: Array = target["memory"].items.duplicate(true)
 	var wrong_sim_token := String(target.get("_chat_request_token", ""))

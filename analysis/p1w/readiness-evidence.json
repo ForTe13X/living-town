@@ -1,6 +1,6 @@
 {
   "contract": "living-town-anchor-finalize-readiness-v1",
-  "recorded_at_utc": "2026-08-21T07:35:00Z",
+  "recorded_at_utc": "2026-08-21T08:35:00Z",
   "decision": "prepared_not_authorized",
   "frozen": {
     "branch": "codex/p1a-takeover",
@@ -126,11 +126,11 @@
     }
   ],
   "hosted_product_run": {
-    "run_id": 32428656629,
-    "head": "1dae5e7a690c228c11e420033c1855e1a1b5c335",
+    "run_id": 32431484183,
+    "head": "ded53e95db0c8b8666aeac64a199b59cf6fb8574",
     "base": "d46cbb132595185c3420bb4eb8fd7f28512baa85",
     "merge": "",
-    "game_tree": "c4f58aec987afba24f258698ee1d78b658960478",
+    "game_tree": "ce46441a3e16e863752704375d0a01f814b75399",
     "status": "completed",
     "conclusion": "failure",
     "failure_count": 4,
@@ -141,7 +141,7 @@
       "modelpath_anchor_stale"
     ],
     "log_sha256": "",
-    "log_provenance": "hosted run 32428656629: visual_canary PASS; core failure is limited to the four protected anchor families (complement ledger, S0/harness golden, DetGate golden, ModelPath anchor); all focused and integration scenes PASS",
+    "log_provenance": "hosted run 32431484183: visual_canary PASS; S0 and runtime/integration scenes PASS; core failure is limited to the four protected anchor families (complement ledger, S0/harness golden, DetGate golden, ModelPath anchor)",
     "non_anchor_failure_count": 0
   },
   "fresh_review": {

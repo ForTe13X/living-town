@@ -1773,6 +1773,8 @@ func _invalidate_chat_generation(owner_token: int = -1) -> void:
 			and (owner_token < 0 or int((raw_ag as Dictionary).get("_chat_request_token", -2)) == owner_token):
 			(raw_ag as Dictionary)["thinking"] = false
 			(raw_ag as Dictionary).erase("_chat_request_token")
+	if owner_token >= 0:
+		return
 	_chat_generation += 1
 	_chat_session_id += 1
 

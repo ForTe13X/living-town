@@ -1784,6 +1784,12 @@ func _projection_query_op(weight: int = 1) -> void:
 		observatory_projection_query_hook = Callable()
 		hook.call()
 
+func _observatory_projection_test_dereference() -> void:
+	# Test-only hook target: one concrete index dereference on the production
+	# accounting path. Normal product behavior never installs the hook.
+	var ignored = _cargo_event_index.get("event_size", -1)
+	_projection_query_op()
+
 func _index_cargo_event(event: Dictionary, index: int) -> void:
 	var note := String(event.get("note", ""))
 	var txid := String(event.get("txid", ""))

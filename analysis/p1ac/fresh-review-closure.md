@@ -60,16 +60,20 @@ scans unrelated history. Exact transaction membership uses every indexed row for
 txid, so a far-separated duplicate cannot be hidden by a local neighborhood.
 
 The focused test appends 5,000 unrelated events, projects the same receipt, and
-asserts completion plus bounded event reads (`<= 2`) and bounded total projection
-query operations (`<= 96`) covering ledger/index/transaction dereferences. This is
-a behavioral/performance tooth rather than checking only a limit constant.
+asserts completion plus bounded event reads (`<= 2`) and a fixed production query
+contract of exactly `91` operations covering ledger/index/transaction dereferences.
+The mutation hook injects one concrete production-path dereference (`92`) and must
+trip the fixed budget before the hook/state is restored to the exact `91`-operation
+positive path. This is a behavioral/performance tooth rather than checking only a
+limit constant.
 
-The hosted run `32426143022` completed with visual canary PASS and only the four
+The hosted run `32431484183` completed with visual canary PASS and only the four
 known protected anchor families red (complement ledger, S0 golden, DetGate golden,
 and ModelPath anchor). Its core failure is recorded as stale-anchor evidence, not
-as permission to rebake. Fresh independent QA for this corrective head returned
-REQUEST_CHANGES from the clean receipt
-`C:\Users\yp\AppData\Local\Temp\living-town-godot-runs\20260820T223911348Z_5b76a99e93d44ee79d6b1de4bc53568b\receipt.json`.
+as permission to rebake. Visual and focused/integration runtime paths passed; no
+fifth runtime/determinism/focused/provenance family was observed. The run head is
+`ded53e95db0c8b8666aeac64a199b59cf6fb8574` with game tree
+`ce46441a3e16e863752704375d0a01f814b75399`.
 
 External-binding control matrix (run from a clean detached checkout):
 
