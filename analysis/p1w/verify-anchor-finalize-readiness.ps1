@@ -82,6 +82,36 @@ function Git-CapturedText {
     return $stdout
 }
 
+function Git-BlobSha256 {
+    param(
+        [Parameter(Mandatory = $true)][string]$CandidateHead,
+        [Parameter(Mandatory = $true)][string]$RelativePath
+    )
+    Assert-True (-not [System.IO.Path]::IsPathRooted($RelativePath)) "anchor path must be repository-relative: $RelativePath"
+    $normalized = $RelativePath.Replace("\\", "/")
+    Assert-True (-not $normalized.Contains("..")) "anchor path may not escape candidate tree: $RelativePath"
+    $blob = Git-Text @("rev-parse", "--verify", "$CandidateHead`:$normalized")
+    Assert-Exact "anchor object type $RelativePath" (Git-Text @("cat-file", "-t", $blob)) "blob"
+
+    $psi = [System.Diagnostics.ProcessStartInfo]::new()
+    $psi.FileName = "git"
+    $psi.UseShellExecute = $false
+    $psi.RedirectStandardOutput = $true
+    $psi.RedirectStandardError = $true
+    foreach ($arg in @("cat-file", "blob", $blob)) { [void]$psi.ArgumentList.Add($arg) }
+    $proc = [System.Diagnostics.Process]::new()
+    $proc.StartInfo = $psi
+    [void]$proc.Start()
+    $bytes = [System.IO.MemoryStream]::new()
+    $proc.StandardOutput.BaseStream.CopyTo($bytes)
+    $stderr = $proc.StandardError.ReadToEnd()
+    $proc.WaitForExit()
+    if ($proc.ExitCode -ne 0) {
+        throw "git cat-file blob $blob failed: $stderr"
+    }
+    return [Convert]::ToHexString([System.Security.Cryptography.SHA256]::HashData($bytes.ToArray())).ToLowerInvariant()
+}
+
 function Assert-ExactPathSet {
     param(
         [Parameter(Mandatory = $true)][string]$Name,
@@ -223,9 +253,7 @@ try {
     }
 
     foreach ($anchor in @($evidence.anchors)) {
-        $path = Join-Path $repo ([string]$anchor.path)
-        Assert-True (Test-Path -LiteralPath $path) "anchor missing: $($anchor.path)"
-        $sha = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant()
+        $sha = Git-BlobSha256 -CandidateHead $ExpectedHead -RelativePath ([string]$anchor.path)
         Assert-Exact "anchor sha $($anchor.path)" $sha ([string]$anchor.sha256)
         $anchorTree = Git-Text @("rev-parse", "$($anchor.anchor_commit):game")
         Assert-Exact "anchor baked tree $($anchor.path)" $anchorTree ([string]$anchor.baked_game_tree)
