@@ -1,0 +1,37 @@
+{
+  "contract": "living-town-independent-review-report-v1",
+  "review_ref": "origin/codex/main-repo-review",
+  "report_path": "analysis/main-repo-review/external-reviews/p1ac-ded53e9-request-changes.json",
+  "review_role": "independent_qa_refute",
+  "review_task_id": "01a0212b-ff4c-7d53-96a6-26a55d7fe38f",
+  "review_sequence": 5,
+  "status": "completed",
+  "verdict": "REQUEST_CHANGES",
+  "product_head": "ded53e95db0c8b8666aeac64a199b59cf6fb8574",
+  "commit_tree": "407b6e0ed79c6fd3615aa2f97c56492af7ab676d",
+  "game_tree": "ce46441a3e16e863752704375d0a01f814b75399",
+  "base": "d46cbb132595185c3420bb4eb8fd7f28512baa85",
+  "review_cutoff_receipt_utc": "2026-08-21T00:11:36.643Z",
+  "supervised_receipt": "C:/Users/yp/AppData/Local/Temp/living-town-godot-runs/20260821T001136643Z_ea778e1c0c6c4a049ef3f2e0d60ab43e/receipt.json",
+  "supervised_receipt_outcome": "blocked_unknown_existing_godot_pids",
+  "blocking_findings": [
+    "older-request lifecycle cleanup increments global generation/session and invalidates a newer owned request callback",
+    "query-budget mutation control self-calibrates to current instrumentation and does not inject a specific production ledger/index/transaction dereference",
+    "five-scene exact supervised receipt requirement remains unmet at the review cutoff"
+  ],
+  "hosted_state_at_cutoff": {
+    "run_id": 32431484183,
+    "status": "in_progress",
+    "visual_canary": "in_progress",
+    "core_conclusion": null
+  },
+  "does_not_authorize": [
+    "anchor rebake",
+    "anchor finalize",
+    "merge",
+    "release",
+    "recording",
+    "gameplay guide",
+    "human acceptance"
+  ]
+}
