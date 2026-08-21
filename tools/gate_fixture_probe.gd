@@ -158,7 +158,7 @@ func _live(S, starved: int) -> Dictionary:
 	var export_related := int(export_scan["related"])
 	return {
 		"tag_seed": [S.agents.size(), S.tick_no],
-		"scenario": String(S.scenario), "n_agents": S.agents.size(),
+		"scenario": String(S.scenario), "n_agents": S.agents.size(), "core_population": S.core_population,
 		"starved": starved, "events": log.size(), "types": ty,
 		"commitments": S.commitments.size(), "c_broken": c_broken, "c_active_past_due": c_active_past,
 		"conflicts": S.conflicts.size(), "cf_repaired": cf_rep,

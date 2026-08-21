@@ -223,7 +223,7 @@ SPEC = {
     17: ("A", "负向声誉 + 修复（归零即红）", lambda L, D: -1),
     18: ("G", "判据未被 scenario 豁免", lambda L, D: 1 if L["scenario"] == "" else 0),
     19: ("G", "判据未被 scenario 豁免", lambda L, D: 1 if L["scenario"] == "" else 0),
-    20: ("G", "小 N 守护放行（agents ≤ 12）", lambda L, D: 1 if L["n_agents"] <= 12 else 0),
+    20: ("G", "小 N 守护放行（core_population ≤ 12）", lambda L, D: 1 if L["core_population"] <= 12 else 0),
     21: ("C", "秘密 belief 条数", lambda L, D: L["beliefs_secret"]),
     22: ("C", "betray 事件数", lambda L, D: _t(L, "betray")),
     23: ("C", "betray 事件数", lambda L, D: _t(L, "betray")),
@@ -690,7 +690,7 @@ def self_test():
     """解析器的负对照：含贸易零/单向/双向与孤儿五格，必须击穿“系统开启即 provider=1”。"""
     tmp = tempfile.mkdtemp(prefix="gfa_selftest_")
     try:
-        base = {"scenario": "", "n_agents": 12, "types": {}, "beliefs_need_trace": 3, "rel_ptrs": 5,
+        base = {"scenario": "", "n_agents": 13, "core_population": 12, "types": {}, "beliefs_need_trace": 3, "rel_ptrs": 5,
                 "commitments": 1, "c_broken": 0, "conflicts": 1, "cf_repaired": 1, "beliefs_secret": 1,
                 "factions": 2, "aid_accepted": 0, "pacts": 0, "pacts_active": 0, "pacts_broken": 0,
                 "pacts_broken_freerider": 0, "economy_on": True, "production_on": True, "elections": 1,
@@ -776,7 +776,8 @@ def self_test():
             ("betray=0 ⇒ #22 前件必须是 0", SPEC[22][2](s[1]["live"], s[1]["detail"]) == 0),
             ("aid_accepted=0 ⇒ #29 样本守卫必须判空", SPEC[29][2](s[1]["live"], s[1]["detail"]) == 0),
             ("detail 写「未启用」⇒ #40 满足率臂必须判空", SPEC[40][2](s[1]["live"], s[1]["detail"]) == 0),
-            ("n_agents=12 ⇒ #20 小 N 守护必须判活", SPEC[20][2](s[1]["live"], s[1]["detail"]) == 1),
+            ("core=12 且 total=13 ⇒ #20 小 N 守护必须判活", SPEC[20][2](s[1]["live"], s[1]["detail"]) == 1),
+            ("core=13 ⇒ #20 小 N 守护必须豁免", SPEC[20][2](dict(s[1]["live"], core_population=13), s[1]["detail"]) == 0),
             ("production_on ⇒ #38 必须判活", SPEC[38][2](s[1]["live"], s[1]["detail"]) == 1),
             ("logistics on + 零贸易 ⇒ #44/#46 provider 都为 0",
              SPEC[44][2](s[1]["live"], s[1]["detail"]) == 0 and
