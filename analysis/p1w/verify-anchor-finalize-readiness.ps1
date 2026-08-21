@@ -358,7 +358,8 @@ try {
         $approval = $review.authorizing_completed
         Assert-Exact "authorizing review status" ([string]$approval.status) "completed"
         Assert-Exact "authorizing review verdict" ([string]$approval.verdict) "APPROVE_ANCHOR_FINALIZE"
-        Assert-Exact "authorizing review game tree" ([string]$approval.game_tree) $ExpectedGameTree
+        $approvalGameTree = if ($ExpectedDecision -eq "ready_to_finalize") { $authorizationGameTree } else { $ExpectedGameTree }
+        Assert-Exact "authorizing review game tree" ([string]$approval.game_tree) $approvalGameTree
         & git merge-base --is-ancestor ([string]$approval.product_head) $ExpectedHead
         Assert-True ($LASTEXITCODE -eq 0) "authorizing review head is not an ancestor of expected head"
     }
