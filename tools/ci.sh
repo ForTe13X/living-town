@@ -75,6 +75,96 @@ scan(){  # scan <label> <logfile> [额外白名单正则] [该正则的预期条
   if [ -n "$hits" ]; then echo "$hits" | head -12; bad "$1 (运行期错误行，见上)"; fi
 }
 
+# A negative-control scene may deliberately exercise several distinct push_error branches.
+# A single alternation plus a total count is insufficient: one duplicated branch could replace
+# one branch that never ran and still satisfy the total.  This helper therefore requires every
+# declared error family exactly once, removes only those exact records, and keeps every remaining
+# runtime error red.  Product code must keep using push_error; only the owning test scene receives
+# this narrow, count-sensitive interpretation.
+scan_exact_once_set(){  # scan_exact_once_set <label> <logfile> <regex>...
+  local label="$1" file="$2" hits pattern n
+  shift 2
+  hits=$(pair_errs "$file" 2>/dev/null | grep -avE "$ERR_OK")
+  for pattern in "$@"; do
+    n=$(printf '%s\n' "$hits" | grep -acE "$pattern")
+    if [ "$n" -ne 1 ]; then
+      bad "$label (预期错误 '$pattern' 出现 $n 次，必须恰好 1 次)"
+    fi
+    hits=$(printf '%s\n' "$hits" | grep -avE "$pattern")
+  done
+  hits=$(printf '%s' "$hits" | grep -av '^[[:space:]]*$')
+  if [ -n "$hits" ]; then echo "$hits" | head -12; bad "$label (未声明的运行期错误行，见上)"; fi
+}
+
+scan_p1g_runtime_contract(){
+  scan_exact_once_set "$1" "$2" \
+    'CargoManifest live record lacks arrival receipt id=manifest_east_ocean_3_0' \
+    'CargoManifest arrival history conflicts with deterministic id=manifest_east_ocean_3_0' \
+    'CargoManifest arrival history duplicates deterministic id=manifest_east_ocean_3_0' \
+    'save_game REFUSED .* schema 1 cargo identity is invalid'
+}
+
+scan_state_projection_runtime_contract(){
+  scan_exact_once_set "$1" "$2" \
+    'save_game REFUSED .* agent aria position is outside authored plane bounds' \
+    'save_game REFUSED .* agent aria_ao1probe has no authored home authority' \
+    'save_game REFUSED .* agent aria space is not authored' \
+    'save_game REFUSED .* agent aria floor is not authored' \
+    'save_game REFUSED .* agent aria home_space authority diverges from authored identity' \
+    'save_game REFUSED .* agent aria home_floor authority diverges from authored identity' \
+    'save_game REFUSED .* agent aria area cache diverges from address' \
+    'save_game REFUSED .* agent aria room cache diverges from address' \
+    'save_game REFUSED .* schema 1 cargo order is invalid' \
+    'save_game REFUSED .* schema 1 cargo dictionary/order diverge' \
+    'save_game REFUSED .* commitment id is invalid' \
+    'save_game REFUSED .* core_population [0-9]+ does not equal eligible core [0-9]+'
+}
+
+scan_contract_self_test(){
+  local fixture="$LT_LOG/runtime-scan-contract.log"
+  printf '%s\n' \
+    'ERROR: expected alpha' '   at: push_error (fixture.gd:1)' \
+    'ERROR: expected beta'  '   at: push_error (fixture.gd:2)' >"$fixture"
+  ( FAIL=0; scan_exact_once_set self-test "$fixture" 'expected alpha' 'expected beta'; [ "$FAIL" -eq 0 ] ) \
+    || return 1
+  printf '%s\n' \
+    'ERROR: expected alpha' '   at: push_error (fixture.gd:1)' \
+    'ERROR: expected alpha' '   at: push_error (fixture.gd:2)' >"$fixture"
+  ( FAIL=0; scan_exact_once_set self-test "$fixture" 'expected alpha' 'expected beta'; [ "$FAIL" -ne 0 ] ) \
+    >/dev/null 2>&1 || return 1
+  printf '%s\n' \
+    'ERROR: expected alpha' '   at: push_error (fixture.gd:1)' \
+    'ERROR: expected beta'  '   at: push_error (fixture.gd:2)' \
+    'ERROR: surprise gamma' '   at: push_error (fixture.gd:3)' >"$fixture"
+  ( FAIL=0; scan_exact_once_set self-test "$fixture" 'expected alpha' 'expected beta'; [ "$FAIL" -ne 0 ] ) \
+    >/dev/null 2>&1 || return 1
+  printf '%s\n' \
+    'ERROR: expected alpha' '   at: push_error (fixture.gd:1)' \
+    'ERROR: expected beta'  '   at: push_error (fixture.gd:2)' \
+    'SCRIPT ERROR: invalid access in unrelated code' '   at: _ready (fixture.gd:4)' >"$fixture"
+  ( FAIL=0; scan_exact_once_set self-test "$fixture" 'expected alpha' 'expected beta'; [ "$FAIL" -ne 0 ] ) \
+    >/dev/null 2>&1 || return 1
+  return 0
+}
+
+step "0-pre. runtime-error scanner contract self-test"
+scan_contract_self_test && ok "runtime scanner exact-set / duplicate / missing / unexpected controls" \
+                        || bad "runtime scanner contract self-test"
+if [ "${CI_SCAN_SELF_TEST_ONLY:-0}" = "1" ]; then
+  step_done
+  [ "$FAIL" -eq 0 ] && exit 0 || exit 1
+fi
+if [ -n "${CI_SCAN_LOG_ONLY:-}" ]; then
+  [ -f "$CI_SCAN_LOG_ONLY" ] || { bad "runtime scanner input missing: $CI_SCAN_LOG_ONLY"; exit 1; }
+  case "${CI_SCAN_PROFILE:-}" in
+    p1g) scan_p1g_runtime_contract "p1g manifest runtime contract" "$CI_SCAN_LOG_ONLY" ;;
+    state_projection) scan_state_projection_runtime_contract "state projection runtime contract" "$CI_SCAN_LOG_ONLY" ;;
+    *) bad "unknown CI_SCAN_PROFILE=${CI_SCAN_PROFILE:-}" ;;
+  esac
+  step_done
+  [ "$FAIL" -eq 0 ] && exit 0 || exit 1
+fi
+
 step "0. 版权红线：git 里不得有模型权重 / 预编译二进制"
 # 红线#4。.gitignore 今天只挡 game/models/*.gguf —— 换个目录放权重就会被静默入库。
 # 这里对【整棵已跟踪树】把关，而不是对某个目录。
@@ -610,6 +700,10 @@ step "4h. state_projection 门 (存读档 round-trip + 逐字段 mutation 覆盖
 grep -q 'state_projection_gate: PASS' "$LT_LOG/state_projection.log" \
   && ok "state_projection 门（round-trip 一致 + 全权威面 mutation 覆盖 + AF1 漏 belief 被抓）" \
   || bad "state_projection 门（round-trip/覆盖/AF1 回归有一项没过，见上）"
+# The full-field sweep intentionally makes four current-schema states unwritable. They are
+# useful only if every refusal remains loud and distinct, while every unrelated runtime error is
+# still fatal. Apply the same exact-set contract as P1-g instead of leaving step 4h unscanned.
+scan_state_projection_runtime_contract "state_projection 门" "$LT_LOG/state_projection.log"
 
 step "5. unit / integration scenes"
 # player_touch_test：C3 的 31 条 + C8 的 13 条断言（触屏按钮路径 ≡ 按键路径、7 个动词可分辨、
@@ -670,7 +764,7 @@ echo "  ℹ  story_test 夹具 = seeds $CI_STORY_SEEDS × $CI_STORY_DAYS 天 · 
 #   不得讲成"做成了"。AE1 owns 只有 Main.gd + 这个新测试，【不许碰 ci.sh】（那是 AE2 的行），
 #   所以它加了门却没接线——协调者在此接线（"一道没接线的门不是门"，V3 的树丛门当年同样是这样补上的）。
 #   接线前已按本 for 循环的口径实跑过一次：res://scenes/event_prose_test.tscn ⇒ EXIT=0、GATE PASS、无 GBK 编码坑。
-for scene in m2_test reqlife_test player_agency_test player_touch_test s4_replay_test space_test save_load_test goals_test story_test event_prose_test; do
+for scene in m2_test reqlife_test player_agency_test player_touch_test p1t_social_plane_test p1a_affiliate_test p1b_cargo_manifest_test p1c_east_ocean_carrier_test p1d_scale_export_test p1g_manifest_transaction_test p1u_port_nav_test p1v_warehouse_observatory_test s4_replay_test space_test save_load_test save_migration_test goals_test story_test event_prose_test; do
   SCENE_T0=$SECONDS
   "$GODOT" --headless --path game "res://scenes/$scene.tscn" >"$LT_LOG/$scene.log" 2>&1
   code=$?
@@ -679,6 +773,12 @@ for scene in m2_test reqlife_test player_agency_test player_touch_test s4_replay
     # m2_test 是【负例测试】：故意把畸形 JSON 喂给 AIBackend.parse_decision 验证它拒收，
     # 引擎因此必打【恰好两行】"Parse JSON failed"（实测）。这是被断言的行为，不是回归 → 只对本场景、只放行这两条。
     m2_test) scan "$scene" "$LT_LOG/$scene.log" 'Parse JSON failed' 2 ;;
+    # P1-g deliberately proves four fail-closed product guards.  Keep push_error loud in Sim.gd,
+    # but require each distinct guard exactly once; duplicates, missing arms and any fifth error
+    # remain red.  This closes the PASS+ERROR ambiguity without weakening the writer/arrival path.
+    p1g_manifest_transaction_test)
+      scan_p1g_runtime_contract "$scene" "$LT_LOG/$scene.log"
+      ;;
     *)       scan "$scene" "$LT_LOG/$scene.log" ;;
   esac
 done

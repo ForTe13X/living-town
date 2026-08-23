@@ -1829,7 +1829,13 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 	# 家具被跳掉 ⇒ 只剩地板/墙 ⇒ assert_cafe_2f 的"非空/可分"必红（= 这道门有牙，见 tools/assert_cafe_2f.py）。
 	for fr in _ac("interior_furniture", content.get("furniture", [])):
 		var fp: Array = (fr as Dictionary).get("pos", [0, 0])
-		_draw_interior_furniture(String((fr as Dictionary).get("slot", "")), Vector2(ox + int(fp[0]) * T, oy + int(fp[1]) * T), role)
+		var furniture_base := Vector2(ox + int(fp[0]) * T, oy + int(fp[1]) * T)
+		_draw_interior_furniture(String((fr as Dictionary).get("slot", "")), furniture_base, role)
+		if bool((fr as Dictionary).get("cargo_observatory", false)):
+			draw_rect(Rect2(furniture_base + Vector2(4, 4), Vector2(T - 8, T - 8)), Color(X_GLOW, 0.72), false, 2.0)
+			draw_string(Art.font(), furniture_base + Vector2(-T * 0.20, -5), "点柜台 · 查回执", HORIZONTAL_ALIGNMENT_LEFT, T * 1.45, 12, X_GOLD)
+	if sid == "port_warehouse":
+		_draw_port_warehouse_status(b)
 	# P3 打磨：夜间氛围（暖底光 + 每盏灯源暖池，占用的床更旺）——画在家具之上、居民之下，居民自身仍清晰
 	_draw_interior_night(b, content, sid, fid)
 	# P3 Tier-B：画【此刻真在这层】的居民（阿丽在自家咖啡馆睡觉/看摊）。Space bounds 从原点起 → _draw_agent 用
@@ -1840,6 +1846,49 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 	# 楼层标签
 	draw_string(Art.font(), b.position + Vector2(T + 8, 22), "%s · %s" % [sg.label_of(sid), content.get("label", fid)],
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 15, D_WOOD_LINE)
+
+## P1-i 东海货仓账簿：室内不是静态布景，直接读同一份 town_stock + CargoManifest 查询投影。
+## 纯 View、无缓存/无 RNG；`warehouse_status` 负对照可只关这块，证明视觉确实来自权威状态。
+func _draw_port_warehouse_status(b: Rect2) -> void:
+	# 提示贴近右侧门的中线，不再落在被底部动作条/输入框盖住的最末行。
+	draw_string(Art.font(), b.position + Vector2(T * 5.25, T * 3.58), "右侧木门 → 返回东海码头", HORIZONTAL_ALIGNMENT_LEFT, T * 3.15, 13, D_WOOD_LINE)
+	if not _ap("warehouse_status"):
+		return
+	var projection: Dictionary = Sim.warehouse_observatory_projection("port_dock")
+	var panel := Rect2(b.position + Vector2(T * 3.18, T * 0.62), Vector2(T * 2.72, T * 2.55))
+	draw_rect(Rect2(panel.position + Vector2(3, 4), panel.size), Color(0, 0, 0, 0.26), true)
+	draw_rect(panel, P_COM_FOOT, true)
+	draw_rect(panel, X_WOOD_MID, false, 3.0)
+	draw_rect(Rect2(panel.position + Vector2(5, 5), Vector2(panel.size.x - 10, T * 0.44)), P_FOLIAGE_D, true)
+	draw_string(Art.font(), panel.position + Vector2(9, T * 0.35), "港运观测台 · 只读", HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 18, 14, X_PARCHMENT)
+	var goods := ["柴薪", "豆子", "口粮"]
+	for i in goods.size():
+		var good: String = goods[i]
+		var stock: Dictionary = (projection.get("stocks", {}) as Dictionary).get(good, {})
+		var cap := maxi(1, int(stock.get("cap", 1)))
+		var qty := int(stock.get("qty", 0))
+		var y := panel.position.y + T * (0.67 + float(i) * 0.31)
+		draw_string(Art.font(), Vector2(panel.position.x + 10, y + 11), "%s %d/%d" % [good, qty, cap], HORIZONTAL_ALIGNMENT_LEFT, T * 1.05, 13, X_COLD_WHITE)
+		var bx := panel.position.x + T * 1.48
+		draw_rect(Rect2(bx, y, T * 0.98, 10), Color(0.03, 0.07, 0.08, 0.65), true)
+		draw_rect(Rect2(bx + 1, y + 1, (T * 0.98 - 2) * clampf(float(qty) / float(cap), 0.0, 1.0), 8), X_GLOW if good == "柴薪" else P_WATER_LIT, true)
+	var st: Dictionary = projection.get("cargo", {})
+	var status := "泊位：暂无待卸货物"
+	if String(st.get("state", "empty")) == "invalid":
+		status = "泊位：货单异常 · 暂停卸货"
+	elif String(st.get("state", "empty")) != "empty":
+		var state_label := String({"ready": "待卸", "working": "卸货中", "blocked_capacity": "仓位不足", "blocked_funds": "镇库不足"}.get(String(st.get("state", "")), "待处理"))
+		status = "泊位：%s×%d · %s" % [String(st.get("good", "货物")), int(st.get("qty", 0)), state_label]
+	draw_string(Art.font(), panel.position + Vector2(10, T * 1.82), status, HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 20, 13, X_GOLD)
+	var receipt: Dictionary = projection.get("receipt", {})
+	var receipt_text := "回执：尚无完成记录"
+	if String(receipt.get("state", "")) == "invalid":
+		receipt_text = "回执：异常 · 已隐藏明细"
+	elif String(receipt.get("state", "")) == "complete":
+		receipt_text = "回执 #%d：%s×%d · %s" % [int(receipt.get("event_id", -1)), String(receipt.get("good", "货物")),
+			int(receipt.get("qty", 0)), Sim._name(Sim.get_agent(String(receipt.get("worker_id", ""))))]
+	draw_string(Art.font(), panel.position + Vector2(10, T * 2.18), receipt_text,
+		HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 20, 12, X_COLD_WHITE)
 
 ## P3 打磨：室内夜间氛围。CanvasModulate 把整幅世界画布乘暗（室内也不例外）→ 夜里进屋本是【冷灰洞】：
 ## 暖木地板被夜蓝乘平。这里靠【相对暖光】把屋子从冷夜拉出来：整层压一层暖底光 + 每件光源家具
@@ -1951,6 +2000,8 @@ func _interior_wall(shell: Dictionary, x: float, y: float, is_door: bool) -> voi
 ##   5. `shelf`≥2 且有 `desk` 且无 `bed` ⇒ 藏书（library/1f）——成排书架配书桌、且不是卧室
 ##   6. 其余                          ⇒ 起居（home/1f、home2/1f、cafe/2f）
 func _furniture_role(sid: String, content: Dictionary) -> String:
+	if sid == "port_warehouse":
+		return "store"
 	var slots := {}
 	for fr in content.get("furniture", []):
 		var s := String((fr as Dictionary).get("slot", ""))
@@ -3304,6 +3355,7 @@ func _draw_body() -> void:
 		match slot:
 			"bed": _draw_bed(base)
 			"stove": _draw_stove(base)
+			"dock": _draw_dock(base)
 			"fest": _draw_festival(base)   # Wave 2b：节日机会地形（灯笼，暖光）
 			_:
 				var otex: Texture2D = Art.object_tex(slot) if slot != "" else null
@@ -3505,6 +3557,147 @@ func _draw_landmarks() -> void:
 ## F5 建的 `dock` 区（type:plaza、rect [30,7,4,2]、北池南岸、蓄意不含水格）此前只铺了广场石板 +
 ## 一个借 bench 精灵的 `bench_pier 渔台` worksite，读作"一块带凳子的铺装"，没有任何码头/船/仓库。
 ## 本函数把这块铺装【就地】画成真港口：木栈桥板 + 临水边梁 + 系缆桩 + 系着的渔船 + 货箱/桶/麻袋 +
+## P1-c：carrier 是 CargoManifest 的【纯 View 投影】，不是第二份 world 状态。
+## 一个 route/node 无论积压多少 ready manifest 都只画一艘泊位船，单数用徽记表示；零 ready 即零货船。
+## 这条路不 spawn/despawn、不写 event、不进导航/存档/chain，权威时序仍是 manifest arrival→exact unload。
+static func carrier_projections_for(sim, logistics_data: Dictionary, manifests: Dictionary, order: Array) -> Array:
+	var out: Array = []
+	var raw_carriers = logistics_data.get("carriers", [])
+	if not (raw_carriers is Array):
+		return out
+	for raw_cfg in raw_carriers:
+		if not (raw_cfg is Dictionary):
+			continue
+		var cfg: Dictionary = raw_cfg
+		var route := String(cfg.get("route_id", ""))
+		var node := String(cfg.get("node", ""))
+		var berth = cfg.get("berth", [])
+		if route == "" or node == "" or not (berth is Array) or (berth as Array).size() < 2:
+			continue
+		var first: Dictionary = {}
+		var ready_count := 0
+		var ready_qty := 0
+		for raw_id in order:
+			var manifest_id := String(raw_id)
+			var rec = manifests.get(manifest_id, {})
+			if not (rec is Dictionary):
+				continue
+			var rd: Dictionary = rec
+			if sim._manifest_authority_error(manifest_id, rd, logistics_data, int(sim.day), sim.event_log) != "":
+				continue
+			if String(rd.get("route_id", "")) != route or String(rd.get("node", "")) != node:
+				continue
+			var qty := int(rd.get("remaining_qty", 0))
+			if String(rd.get("state", "")) != "ready" or qty <= 0:
+				continue
+			if first.is_empty():
+				first = rd
+			ready_count += 1
+			ready_qty += qty
+		if first.is_empty():
+			continue
+		var p: Dictionary = cfg.duplicate(true)
+		p["manifest_id"] = String(first.get("id", ""))
+		p["good"] = String(first.get("good", ""))
+		p["remaining_qty"] = int(first.get("remaining_qty", 0))
+		p["ready_count"] = ready_count
+		p["ready_qty"] = ready_qty
+		out.append(p)
+	return out
+
+func _cargo_carrier_projections() -> Array:
+	return carrier_projections_for(Sim, Sim.logistics, Sim.cargo_manifests, Sim.cargo_manifest_order)
+
+func _draw_port() -> void:
+	var dock = Sim.world.get("areas", {}).get("dock", {})
+	if dock is Dictionary and String((dock as Dictionary).get("facing", "")) == "east":
+		_draw_port_east(dock)
+		return
+	_draw_port_legacy_north()
+
+## East Ocean 港面：陆上 deck 完全落在 dock rect；货船 anchor 完全取 authored berth，不硬编码 route 坐标。
+func _draw_port_east(dock: Dictionary) -> void:
+	var dr = dock.get("rect", [])
+	if not (dr is Array) or (dr as Array).size() < 4:
+		return
+	var dx := int(dr[0]); var dy := int(dr[1]); var dw := int(dr[2]); var dh := int(dr[3])
+	if dw <= 0 or dh <= 0:
+		return
+	var deck := Rect2(dx * T, dy * T, dw * T, dh * T)
+	if _vis.intersects(deck):
+		var seam := D_WOOD_LINE
+		var plank := X_WOOD_MID.lightened(0.14)
+		draw_rect(deck, plank, true)
+		for x in range(dw * 2 + 1):
+			var px := deck.position.x + float(x) * T * 0.5
+			draw_line(Vector2(px, deck.position.y), Vector2(px, deck.end.y), Color(seam.r, seam.g, seam.b, 0.45), 1.0)
+		for y in range(dh + 1):
+			var py := deck.position.y + float(y) * T
+			draw_line(Vector2(deck.position.x, py), Vector2(deck.end.x, py), Color(seam.r, seam.g, seam.b, 0.52), 1.2)
+		# 面海护舷、系缆桩与货堆；east 分支蓄意不画旧北池常驻渔船。
+		draw_rect(Rect2(deck.end.x - T * 0.12, deck.position.y, T * 0.12, deck.size.y), seam, true)
+		_port_bollard(deck.end.x - T * 0.15, deck.position.y + T * 0.18)
+		_port_bollard(deck.end.x - T * 0.15, deck.end.y - T * 0.42)
+		# Prop geometry and collision share the exact ordered `solid_props` records. Pixel offsets remain
+		# kind-owned presentation details; authored grid positions/footprints are no longer duplicated here.
+		for raw_prop in dock.get("solid_props", []):
+			if not (raw_prop is Dictionary):
+				continue
+			var prop: Dictionary = raw_prop
+			var cell = prop.get("pos", [])
+			if not (cell is Array) or (cell as Array).size() != 2:
+				continue
+			var px := float(int(cell[0])) * T; var py := float(int(cell[1])) * T
+			match String(prop.get("kind", "")):
+				"boathouse": _port_boathouse(px + T * 0.06, py + T * 0.05, T * 0.92)
+				"crate": _port_crate(px + T * 0.30, py + T * 0.22, T * 0.34)
+				"barrel": _port_barrel(px + T * 0.12, py + T * 0.28, T * 0.22, T * 0.36)
+				"sacks":
+					var bean_cap := maxi(1, int(((Sim.production.get("goods", {}) as Dictionary).get("豆子", {}) as Dictionary).get("cap", 45)))
+					var bean_fill := clampf(float(Sim._stock_of("豆子")) / float(bean_cap), 0.0, 1.0)
+					_port_sacks(px + T * 0.62, py + T * 0.34, T * 0.28, bean_fill)
+		_port_signpost(deck.position.x + T * 0.55, deck.end.y + T * 0.52)
+	# 船体可能仍在画面内而 deck 已在左侧画面外；carrier 必须按自己的 hull 做裁剪。
+	if not _ap("carrier"):
+		return
+	for projection in _cargo_carrier_projections():
+		_draw_cargo_carrier(projection)
+
+## 泊位货船：west-facing 横向船体，与 `_port_boat` 的常驻小渔船在生命周期、尺寸和货单徽记上明确区分。
+func _draw_cargo_carrier(projection: Dictionary) -> void:
+	var berth = projection.get("berth", [])
+	if not (berth is Array) or (berth as Array).size() < 2:
+		return
+	var bx := int(berth[0]); var by := int(berth[1])
+	# 2.65×1.16 格：在 --shot-fit 的 0.23x 全镇帧里仍约 30×13px，可读；又完整收在四列海域内。
+	var hull := Rect2((float(bx) + 0.06) * T, (float(by) - 0.08) * T, T * 2.65, T * 1.16)
+	if not _vis.intersects(hull):
+		return
+	var shadow := Rect2(hull.position + Vector2(T * 0.05, T * 0.08), hull.size)
+	draw_rect(shadow, Color(0.04, 0.10, 0.14, 0.55), true)
+	# 西向尖艏、宽货舱、桅杆与显眼帆色；全部确定性整数/常量几何。
+	var bow := Vector2(hull.position.x, hull.get_center().y)
+	var stern_x := hull.end.x
+	var poly := PackedVector2Array([
+		bow, Vector2(hull.position.x + T * 0.34, hull.position.y),
+		Vector2(stern_x, hull.position.y + T * 0.10), Vector2(stern_x, hull.end.y - T * 0.10),
+		Vector2(hull.position.x + T * 0.34, hull.end.y)])
+	draw_colored_polygon(poly, X_WOOD_MID.darkened(0.20))
+	draw_polyline(PackedVector2Array([poly[0], poly[1], poly[2], poly[3], poly[4], poly[0]]), D_WOOD_LINE, 2.0)
+	var mast_x := hull.position.x + T * 1.34
+	draw_line(Vector2(mast_x, hull.position.y - T * 0.72), Vector2(mast_x, hull.end.y), D_WOOD_LINE, 2.4)
+	var sail := PackedVector2Array([
+		Vector2(mast_x + 2, hull.position.y - T * 0.68), Vector2(mast_x + T * 0.86, hull.position.y - T * 0.06),
+		Vector2(mast_x + 2, hull.position.y - T * 0.06)])
+	draw_colored_polygon(sail, X_PARCHMENT)
+	# 三只货箱表示 cargo，不按数量线性增对象；backlog 用 bounded 徽记。
+	for i in 3:
+		_port_crate(hull.position.x + T * (0.78 + float(i) * 0.38), hull.position.y + T * 0.48, T * 0.30)
+	var count := int(projection.get("ready_count", 1))
+	var badge_c := Vector2(hull.end.x - T * 0.16, hull.position.y + T * 0.06)
+	draw_circle(badge_c, T * 0.27, X_SIGNAL_NEG if count > 1 else X_GLOW)
+	draw_string(Art.font(), badge_c + Vector2(-T * 0.15, T * 0.10), str(count), HORIZONTAL_ALIGNMENT_CENTER, T * 0.30, 16, Color.WHITE)
+
 ## 小船屋 silhouette + 一个方向路牌（呼应 item#2「交通:港口」）。
 ##
 ## ★零金标：只读 `Sim.world.areas.dock.rect`（Sim 也读的面，只读不写；Sim 从不读 type/terrain/本层 draw）
@@ -3517,7 +3710,7 @@ func _draw_landmarks() -> void:
 ##   —— 无 randi/randf/Time/OS ⇒ `--shot` 逐像素可复现(ROUNDTRIP 冻结帧)。
 ## ★复用现有色常量(木 X_WOOD_MID/D_WOOD_LINE、水 P_WATER_DEEP/LIT、暖光 X_GLOW*、麻布 P_PLAZA)，不加新 BLD_PAL。
 ## `port_dock` 只是 logistics 声明节点(保留位 [33,8]、不落 world.objects)，本函数不读它、不碰 logistics.json。
-func _draw_port() -> void:
+func _draw_port_legacy_north() -> void:
 	var areas: Dictionary = Sim.world.get("areas", {})
 	if not areas.has("dock"):
 		return
@@ -4334,6 +4527,7 @@ const OBJ_SLOT_BY_TYPE := {
 	# ── 程序化画（无贴图；见 _draw_bed / _draw_stove）──
 	"床": "bed",
 	"灶台": "stove",
+	"码头": "dock",
 	# ── 有专属贴图（assets/art/obj/*.png；pro/obj_*.png 优先覆盖）──
 	"吧台": "counter",
 	"浴池": "bath",
@@ -4361,7 +4555,7 @@ const OBJ_SLOT_BY_TYPE := {
 const OBJ_SLOT_BY_ID_PREFIX := {"fest": "fest"}
 
 ## 程序化画出来的槽（没有对应 png，但**有**渲染器）。改这里要同步改 _draw() 里的 match。
-const OBJ_SLOT_PROCEDURAL := {"bed": true, "stove": true, "fest": true}
+const OBJ_SLOT_PROCEDURAL := {"bed": true, "stove": true, "dock": true, "fest": true}
 
 # ══ H3-b · 别名预算（aliasing budget）——H1 真机眼验之后补的第二条判据 ═══════════════
 #
@@ -4572,6 +4766,22 @@ func _draw_stove(base: Vector2) -> void:
 	draw_circle(Vector2(x + w - 8, y + 8), 1.6, X_GOLD)
 	draw_rect(Rect2(x + 3, y + h - 7, w - 6, 5), P_PANEL, true)        # 烤箱门
 	draw_rect(Rect2(x, y, w, h), Color(0, 0, 0, 0.35), false, 1.5)
+
+## P1-a 功能码头：木栈板、系缆桩、缆绳与卸货箭头。程序化槽不占贴图别名预算。
+func _draw_dock(base: Vector2) -> void:
+	var deck := Rect2(base.x + 4, base.y + 6, T - 8, T - 12)
+	draw_rect(deck, X_WOOD_MID, true)
+	for i in range(1, 5):
+		var py := deck.position.y + float(i) * deck.size.y / 5.0
+		draw_line(Vector2(deck.position.x, py), Vector2(deck.end.x, py), P_PANEL, 1.0)
+	for bx in [deck.position.x + 4.0, deck.end.x - 4.0]:
+		draw_circle(Vector2(bx, deck.position.y + 3.0), 2.5, P_PANEL)
+		draw_line(Vector2(bx, deck.position.y + 3.0), Vector2(base.x + T * 0.5, base.y + T * 0.5), X_SIGNAL_POS, 1.5)
+	var c := base + Vector2(T * 0.5, T * 0.5)
+	draw_line(c + Vector2(-7, 0), c + Vector2(7, 0), X_COLD_WHITE, 2.0)
+	draw_line(c + Vector2(3, -4), c + Vector2(7, 0), X_COLD_WHITE, 2.0)
+	draw_line(c + Vector2(3, 4), c + Vector2(7, 0), X_COLD_WHITE, 2.0)
+	draw_rect(deck, Color(0, 0, 0, 0.35), false, 1.5)
 
 ## Wave 2b 节日灯笼（暖光晕 + 灯身 + 挑杆），一眼可辨"这里在办节日"。纯渲染。
 func _draw_festival(base: Vector2) -> void:

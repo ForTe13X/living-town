@@ -218,6 +218,174 @@ static func _starve_shape(shape: Dictionary) -> String:
 ## 一个字节不用改，输出也与改名前逐字相同）。今天只有 Harness 传它。
 ## starve_shape：可选的**形状**明细（涉及几人 / 最长连续段），同样只进 detail 字符串、不进判据。
 ## 默认 {} ⇒ 8 个既有调用点里的 7 个一个字节不用改，输出也与本次改动前逐字相同。
+## P1-d：#46 与 complement probe 共用同一条 filtered pay→stock 扫描，防 provider 口径漂移。
+## pairs 在 qty 比较前计数：mismatch 仍是 #46 真正检查的一对，不能让 provider 掉回 0。
+static func export_pair_scan(log: Array) -> Dictionary:
+	var seq: Array = []
+	for raw in log:
+		if not (raw is Dictionary):
+			continue
+		var e: Dictionary = raw
+		var ty := String(e.get("type", ""))
+		if ty == "export":
+			seq.append({"kind": "stock", "e": e})
+		elif ty == "pay" and String(e.get("note", "")).split("*")[0] == "export":
+			seq.append({"kind": "pay", "e": e})
+	var bad: Array = []
+	var pairs := 0
+	var i := 0
+	while i < seq.size():
+		var a: Dictionary = seq[i]
+		var ae: Dictionary = a["e"]
+		if String(a["kind"]) != "pay":
+			bad.append("#%d export 货事件无前导 pay(发货没收钱/F1 免费流失)" % int(ae.get("id", -1)))
+			i += 1
+			continue
+		if i + 1 >= seq.size() or String(seq[i + 1]["kind"]) != "stock":
+			bad.append("#%d export pay 无紧随货事件(收钱没发货)" % int(ae.get("id", -1)))
+			i += 1
+			continue
+		var se: Dictionary = seq[i + 1]["e"]
+		pairs += 1
+		var pq := _amt_of(String(ae.get("note", "")))
+		var sq := _amt_of(String(se.get("note", "")))
+		if pq != sq:
+			bad.append("#%d/#%d 钱货数量不符 pay.qty=%d stock.qty=%d(收 N 发 k)" % [int(ae.get("id", -1)), int(se.get("id", -1)), pq, sq])
+		i += 2
+	return {"related": seq.size(), "pairs": pairs, "bad": bad}
+
+## P1-h：进口历史只依赖 append-only receipt + authored lane，不要求 complete manifest 永久滞留在 live queue。
+## paid 单 = pay→stock→receipt；免费/off-economy 单 = stock→receipt。两种都要求连续 event id、同量、同节点/货/manifest，
+## 且必须能反向绑定唯一 cargo_arrive receipt 与 route/lane-index/batch。live manifests 只容纳仍会驱动未来的 ready cargo。
+static func import_manifest_tx_scan(S) -> Dictionary:
+	var groups := {}
+	var arrivals := {}
+	var bad: Array = []
+	var related := 0
+	var import_lanes: Array = S.logistics.get("import_lanes", []) if S.logistics.get("import_lanes", []) is Array else []
+	for raw in S.event_log:
+		if not (raw is Dictionary):
+			continue
+		var e: Dictionary = raw
+		var ty := String(e.get("type", ""))
+		var note := String(e.get("note", ""))
+		if ty == "world" and note.begins_with("cargo_arrive:"):
+			var arrived_id := String(e.get("target", ""))
+			if arrived_id == "":
+				bad.append("#%d cargo_arrive 缺 manifest target" % int(e.get("id", -1)))
+			else:
+				if not arrivals.has(arrived_id):
+					arrivals[arrived_id] = []
+				arrivals[arrived_id].append(e)
+			continue
+		var kind := ""
+		if ty == "pay" and note.split("*")[0] == "import":
+			kind = "pay"
+		elif ty == "import":
+			kind = "stock"
+		elif ty == "world" and note.begins_with("cargo_unload:"):
+			kind = "receipt"
+		else:
+			continue
+		related += 1
+		var txid := String(e.get("txid", ""))
+		if txid == "":
+			bad.append("#%d %s 缺 txid" % [int(e.get("id", -1)), kind])
+			continue
+		if not groups.has(txid):
+			groups[txid] = []
+		groups[txid].append({"kind": kind, "e": e})
+	for txid in groups:
+		var manifest_id := String(txid).trim_prefix("cargo_unload/")
+		if not String(txid).begins_with("cargo_unload/") or manifest_id == "":
+			bad.append("txid=%s 非 cargo_unload/<manifest>" % String(txid))
+			continue
+		var arrival_rows: Array = arrivals.get(manifest_id, [])
+		if arrival_rows.size() != 1:
+			bad.append("txid=%s cargo_arrive 数=%d，期望1" % [String(txid), arrival_rows.size()])
+			continue
+		var arrival: Dictionary = arrival_rows[0]
+		var rows: Array = groups[txid]
+		var kinds: Array = rows.map(func(row): return String(row["kind"]))
+		if not (kinds == ["pay", "stock", "receipt"] or kinds == ["stock", "receipt"]):
+			bad.append("txid=%s 顺序=%s 非 paid/free exact 事务" % [String(txid), str(kinds)])
+			continue
+		var paid := kinds.size() == 3
+		for i in range(1, rows.size()):
+			if int(rows[i]["e"].get("id", -1)) != int(rows[i - 1]["e"].get("id", -1)) + 1:
+				bad.append("txid=%s receipt 非连续 event id" % String(txid))
+		var stock_e: Dictionary = rows[1 if paid else 0]["e"]
+		var receipt_e: Dictionary = rows[2 if paid else 1]["e"]
+		var qty := _amt_of(String(stock_e.get("note", "")))
+		var node := String(stock_e.get("actor", ""))
+		var good := String(stock_e.get("subject", ""))
+		var route := String(arrival.get("actor", ""))
+		var lane_index := -1
+		var lane: Dictionary = {}
+		for i in range(import_lanes.size()):
+			if not (import_lanes[i] is Dictionary):
+				continue
+			var candidate: Dictionary = import_lanes[i]
+			var prefix := "manifest_%s_" % String(candidate.get("route_id", ""))
+			var suffix := "_%d" % i
+			if manifest_id.begins_with(prefix) and manifest_id.ends_with(suffix):
+				var day_text := manifest_id.substr(prefix.length(), manifest_id.length() - prefix.length() - suffix.length())
+				if day_text.is_valid_int() and int(day_text) >= 1:
+					lane_index = i
+					lane = candidate
+					break
+		if lane_index < 0 or String(lane.get("route_id", "")) != route or String(lane.get("node", "")) != node \
+			or String(lane.get("good", "")) != good or int(lane.get("batch", 0)) != qty:
+			bad.append("txid=%s manifest/route/lane/node/good/batch 不可溯源" % String(txid))
+			continue
+		var expected_paid: bool = not S.economy.is_empty() and int(lane.get("price_per", 0)) > 0
+		if paid != expected_paid:
+			bad.append("txid=%s paid=%s 与 authored lane/economy=%s 不符" % [String(txid), str(paid), str(expected_paid)])
+		if paid:
+			var pay_e: Dictionary = rows[0]["e"]
+			if String(pay_e.get("actor", "")) != "town" or String(pay_e.get("target", "")) != "external" or _amt_of(String(pay_e.get("note", ""))) != qty:
+				bad.append("txid=%s pay actor/target/qty 不符" % String(txid))
+		if String(stock_e.get("target", "")) != "town" or String(stock_e.get("note", "")) != "import*%d" % qty or qty <= 0:
+			bad.append("txid=%s stock node/good/qty 不符" % String(txid))
+		if String(arrival.get("target", "")) != manifest_id or String(arrival.get("subject", "")) != good \
+			or String(arrival.get("note", "")) != "cargo_arrive:%s*%d" % [manifest_id, qty]:
+			bad.append("txid=%s cargo arrival manifest/route/good/qty 不符" % String(txid))
+		if String(receipt_e.get("target", "")) != node or String(receipt_e.get("subject", "")) != good \
+			or String(receipt_e.get("note", "")) != "cargo_unload:%s*%d" % [manifest_id, qty]:
+			bad.append("txid=%s cargo receipt manifest/node/good/qty 不符" % String(txid))
+	var live_seen := {}
+	for raw_id in S.cargo_manifest_order:
+		var live_id := String(raw_id)
+		var live: Dictionary = S.cargo_manifests.get(live_id, {})
+		if live_seen.has(live_id):
+			bad.append("live cargo order 重复 id=%s" % live_id)
+		live_seen[live_id] = true
+		var authored_error = S._manifest_authority_error(live_id, live, S.logistics, int(S.day), S.event_log) \
+			if not live.is_empty() else "missing live record"
+		var live_arrivals: Array = arrivals.get(live_id, [])
+		if authored_error != "":
+			bad.append("live cargo=%s 非 authored pending-ready（%s）" % [live_id, authored_error])
+			continue
+		var arrival_bad := false
+		if not live_arrivals.is_empty():
+			var live_arrival: Dictionary = live_arrivals[0]
+			arrival_bad = String(live_arrival.get("type", "")) != "world" or live_arrival.get("accepted", false) != true \
+				or String(live_arrival.get("actor", "")) != String(live.get("route_id", "")) \
+				or String(live_arrival.get("target", "")) != live_id \
+				or String(live_arrival.get("subject", "")) != String(live.get("good", "")) \
+				or String(live_arrival.get("note", "")) != "cargo_arrive:%s*%d" % [live_id, int(live.get("initial_qty", 0))]
+		if live.is_empty() or String(live.get("state", "")) != "ready" or int(live.get("remaining_qty", 0)) <= 0 \
+			or live_arrivals.size() != 1 \
+			or arrival_bad:
+			bad.append("live cargo=%s 非 authored pending-ready（%s）" % [live_id, authored_error])
+	if live_seen.size() != S.cargo_manifests.size():
+		bad.append("live cargo dictionary/order diverge")
+	for raw_id in arrivals:
+		var arrived_id := String(raw_id)
+		if not live_seen.has(arrived_id) and not groups.has("cargo_unload/" + arrived_id):
+			bad.append("cargo_arrive=%s 既非 live pending 也无完成 tx" % arrived_id)
+	return {"related": related, "transactions": groups.size(), "bad": bad}
+
 static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_shape: Dictionary = {}) -> Array:
 	var R: Array = []
 	var log: Array = S.event_log
@@ -237,7 +405,7 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 			                     #   type 已是 "pay"、本就在排除集，无需再动。
 
 	var harmony: bool = String(S.scenario) == ""   # 定向场景(faction/betray/freerider)会扭曲关系/致饿穿 → 豁免和睦不变量
-	var small_n: bool = S.agents.size() <= 12       # 涌现/单源传播类只在设计 N(≤12)硬断言；大 N 单源谣言 fizzle 是现实(docs/12 L4)
+	var small_n: bool = int(S.core_population) <= 12 # P1-a：affiliate 是一等参与者，但不把 12 核心居民的小镇口径偷翻成大 N 豁免
 	# 1) 无 need 触底（旧名「无饿穿」——判据从来就是【任一】need≤0.5，见 INV1_NAME 处的实测与四格对照）
 	R.append(_chk(1, INV1_NAME, starved == 0 or not harmony,
 		"触底 need·tick=%d%s%s (应=0;场景豁免)" % [starved, _need_breakdown(starve_by_need), _starve_shape(starve_shape)]))
@@ -1044,7 +1212,7 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 			"" if starved_goods.is_empty() else "；【长期供不应求】" + ", ".join(starved_goods),
 			glut + reach,
 			contract]))
-	# 44) 进口溯源到声明的节点与货（E1，docs/144 §六；**结构照抄 #39 产出溯源**，符号是「进货」这一侧）：
+	# 44) 进口 CargoManifest 事务绑定 + 声明溯源（P1-g）：
 	#     每条 import 事件的 actor 必须是 logistics.nodes 里声明过的节点、subject(货) 必须是某条 import_lane 声明过的货、
 	#     target 必须是 town、件数必须 >0、note 原因必须是 "import"。它跨 logistics.json × event_log × 代码路径对账 ——
 	#     让"货从没声明的港口冒出来"或"进口了没有 lane 的货"变红（对称 #39 的『张三产出李四的货 / 货从天上掉』）。
@@ -1053,6 +1221,8 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 	#       (经 _stock_move 但 actor/good 没声明 → 红)。两条都经同一唯一通道，但查的是不同的性质。
 	var logi_on2: bool = not S.logistics.is_empty()
 	var imp_bad: Array = []
+	var imp_tx := import_manifest_tx_scan(S)
+	imp_bad.append_array(imp_tx["bad"])
 	if logi_on2:
 		var node_ids := {}
 		for n in S.logistics.get("nodes", []):
@@ -1078,9 +1248,9 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 				imp_bad.append("#%d 件数=%d 非正" % [int(e["id"]), iamt])
 			elif String(e.get("note", "")).split("*")[0] != "import":
 				imp_bad.append("#%d note 原因=%s 非 import" % [int(e["id"]), String(e.get("note", "")).split("*")[0]])
-	R.append(_chk(44, "进口溯源到声明的节点与货", imp_bad.is_empty(),
+	R.append(_chk(44, "进口 manifest 钱货事务绑定与声明溯源", imp_bad.is_empty(),
 		("异常=%d: %s" % [imp_bad.size(), "; ".join(imp_bad.slice(0, 3))]) if not imp_bad.is_empty()
-		else ("import 事件全部可溯源" if logi_on2 else "物流系统关闭(缺 logistics.json)")))
+		else (("事务=%d/相关事件=%d，txid/钱/货/cargo exact" % [int(imp_tx["transactions"]), int(imp_tx["related"])]) if logi_on2 else "物流系统关闭(缺 logistics.json)")))
 	# 45) 钱跨镇边界溯源（E2a import 付费 + E-export 收钱两侧对账，docs/151/154/157/158；#36 全 money 逐账户完备性=E2b）：
 	#     ★E-export 泛化（docs/157 §四，绕不开的口径变更）：E2a 原式假设「external 只被 import 贷入」，export 借出 ⇒
 	#       首次 export 即把旧式打红。改为【双向对账】：
@@ -1202,32 +1372,9 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 				exp_bad.append("#%d 件数=%d 非正" % [int(e["id"]), xamt])
 			elif String(e.get("note", "")).split("*")[0] != "export":
 				exp_bad.append("#%d note 原因=%s 非 export" % [int(e["id"]), String(e.get("note", "")).split("*")[0]])
-		# ② F7 原子绑定（严格 pay,stock 交替 + 逐对 qty 相等）。
-		var seq: Array = []
-		for e in log:
-			var ty := String(e["type"])
-			if ty == "export":
-				seq.append({"kind": "stock", "e": e})
-			elif ty == "pay" and String(e.get("note", "")).split("*")[0] == "export":
-				seq.append({"kind": "pay", "e": e})
-		var i := 0
-		while i < seq.size():
-			var a: Dictionary = seq[i]
-			var ae: Dictionary = a["e"]
-			if String(a["kind"]) != "pay":
-				exp_bad.append("#%d export 货事件无前导 pay(发货没收钱/F1 免费流失)" % [int(ae["id"])])
-				i += 1
-				continue
-			if i + 1 >= seq.size() or String(seq[i + 1]["kind"]) != "stock":
-				exp_bad.append("#%d export pay 无紧随货事件(收钱没发货)" % [int(ae["id"])])
-				i += 1
-				continue
-			var se: Dictionary = seq[i + 1]["e"]
-			var pq := _amt_of(String(ae.get("note", "")))
-			var sq := _amt_of(String(se.get("note", "")))
-			if pq != sq:
-				exp_bad.append("#%d/#%d 钱货数量不符 pay.qty=%d stock.qty=%d(收 N 发 k)" % [int(ae["id"]), int(se["id"]), pq, sq])
-			i += 2
+		# ② F7 原子绑定：与 complement provider 共用纯 scanner，避免两份口径漂移。
+		var export_scan := export_pair_scan(log)
+		exp_bad.append_array(export_scan["bad"])
 	R.append(_chk(46, "出口贸易原子性绑定", exp_bad.is_empty(),
 		("异常=%d: %s" % [exp_bad.size(), "; ".join(exp_bad.slice(0, 3))]) if not exp_bad.is_empty()
 		else ("export 钱货一一绑定同量" if logi_on2 else "物流系统关闭(缺 logistics.json)")))
@@ -1651,11 +1798,14 @@ static func digest(S) -> int:
 		for i in wits.size():
 			if i > 0: wstr += ","
 			wstr += String(wits[i])
-		parts.append("%d:%s:%s:%s:%d:%s:%d:%s:%s" % [
+		var event_part := "%d:%s:%s:%s:%d:%s:%d:%s:%s" % [
 			int(e.get("id", 0)), String(e.get("type", "")), String(e.get("actor", "")),
 			String(e.get("target", "")), int(bool(e.get("accepted", false))),
 			String(e.get("subject", "")), int(e.get("tick", 0)),
-			wstr, String(e.get("note", ""))])
+			wstr, String(e.get("note", ""))]
+		if e.has("txid"):
+			event_part += ":tx:" + String(e.get("txid", ""))
+		parts.append(event_part)
 	# ★用【项目自有】Sim.fnv1a32 而不是引擎的 String.hash()：金标的每一个数字都必须由本仓库的源码定义，
 	#   否则 Godot 升级换一次内部哈希实现，全部金标一起漂，而行为其实一个字节没变（红线#1 假红/假绿两头都占）。
 	return SimScript.fnv1a32("|".join(parts))
@@ -1688,12 +1838,28 @@ static func chain_step(prev: int, S, ev_from: int) -> int:
 			h = SimScript.fnv1a32_into(h, "%s|%s|%s|%s|%s|%s" % [
 				str(opt.get("kind", "")), str(opt.get("target", "")), str(opt.get("partner", "")),
 				str(opt.get("area", "")), str(opt.get("phase", "")), str(opt.get("remaining", ""))])
+			# Off-gate 保持旧 6 字段逐字节不变；只有真实 cargo option 才追加 exact manifest 绑定。
+			if opt.has("manifest_node") or opt.has("manifest_id") or opt.has("manifest_authorized"):
+				h = SimScript.fnv1a32_into(h, "%s|%s|%s" % [
+					str(opt.get("manifest_node", "")), str(opt.get("manifest_id", "")),
+					str(opt.get("manifest_authorized", false))])
 		else:
 			h = SimScript.mix32(h, -1)
+	# P1-b：pending cargo 会决定卸货候选是否存在，属于会驱动未来决策的权威活状态。
+	# 严格按 arrival order 投影，不遍历 Dictionary keys；空数组时是逐字节 no-op。
+	for raw_id in S.cargo_manifest_order:
+		var manifest_id := String(raw_id)
+		var rec: Dictionary = S.cargo_manifests.get(manifest_id, {})
+		h = SimScript.fnv1a32_into(h, "%s|%s|%s|%s|%d|%d|%d|%s" % [
+			manifest_id, String(rec.get("route_id", "")), String(rec.get("node", "")),
+			String(rec.get("good", "")), int(rec.get("remaining_qty", 0)),
+			int(rec.get("price_per", 0)), int(rec.get("price_den", 1)), String(rec.get("state", ""))])
 	for i in range(ev_from, S.event_log.size()):              # 本 tick 新产生的事件（canon_events_t）
 		var e: Dictionary = S.event_log[i]
 		h = SimScript.fnv1a32_into(h, "%d:%s:%s:%s:%d:%s:%s" % [
 			int(e.get("id", 0)), String(e.get("type", "")), String(e.get("actor", "")),
 			String(e.get("target", "")), int(bool(e.get("accepted", false))),
 			String(e.get("subject", "")), String(e.get("note", ""))])
+		if e.has("txid"):
+			h = SimScript.fnv1a32_into(h, "tx:" + String(e.get("txid", "")))
 	return h

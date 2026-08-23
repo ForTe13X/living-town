@@ -126,6 +126,21 @@ if [ "${1:-}" = "--shoot" ]; then
       --backend logic --shot "$OUT/vg_${nm}.png" --seed "$SEED" --warmup-tick "$tk" --shot-fit \
       || rc=1
   done
+  # P1-c：同 seed / 同 tick 的货船 ON/OFF 负对照。货船是 CargoManifest 的纯 View 投影，
+  # 因此两帧除了 East Ocean 泊位里的 carrier 像素外必须相同；无 cargo 或永久装饰船都会判红。
+  vg_shoot "$OUT/vg_noon_no_carrier.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
+    --resolution ${W}x${H} --single-window -- \
+    --backend logic --shot "$OUT/vg_noon_no_carrier.png" --seed "$SEED" --warmup-tick "$NOON_TICK" --shot-fit --draw-skip carrier \
+    || { [ "$rc" -eq 0 ] && rc=9; }
+  # 产品集成参照：同一确定性到港时刻，把【真实 player agent】放在 East Ocean dock 陆格，
+  # 以玩家为中心拍特写。它不是宣传图伪舞台：货船来自 ready manifest，底部 7 个动作按钮走真实
+  # player_do 路径，NPC/观察台/HUD 也都是出货 UI。失败只表示参照帧没产出；玩法语义另由
+  # player_touch_test + P1-b/P1-c focused contracts 守住。
+  vg_shoot "$OUT/vg_player_east_ocean.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
+    --resolution ${W}x${H} --single-window -- \
+    --backend logic --shot "$OUT/vg_player_east_ocean.png" --seed "$SEED" --warmup-tick "$NOON_TICK" \
+    --player --player-pos 59 7 --select player \
+    || { [ "$rc" -eq 0 ] && rc=10; }
   # ── D7 的界外层重画门（同一个 Xvfb，省一次容器启动）──────────────────────
   # 为什么它在这里而不是自己一步：它和昼夜断言一样，**需要一个真 framebuffer**，
   # 于是也需要同一套「探不到就 SKIP、GHA 上显式跳过」的可移植性逻辑。
@@ -156,6 +171,19 @@ if [ "${1:-}" = "--shoot" ]; then
     echo "  space-roundtrip 采集 ok  (town_before → interior → town_after)"
   else
     echo "  space-roundtrip 采集 FAIL (见上面的 [SPACESHOT] 行)"; [ "$rc" -eq 0 ] && rc=3
+  fi
+  # P1-i：真实 player 从东港门走进货仓并返回；另拍 status OFF 作为像素负对照。
+  # 独立目录避免覆盖上面的 legacy cafe 三帧；两次共享 seed/tick 与 pinned framebuffer。
+  mkdir -p "$OUT/warehouse" "$OUT/warehouse_off" "$OUT/warehouse_corrupt"
+  if RT_OWN_XVFB=0 RT_GAME="$GAME" RT_SPACE=port_warehouse RT_PLAYER_POS=57,8 GODOT="$GBIN" \
+       bash "$(dirname "$0")/space_roundtrip.sh" --shoot "$OUT/warehouse" >>/tmp/vg-godot.log 2>&1 \
+     && RT_OWN_XVFB=0 RT_GAME="$GAME" RT_SPACE=port_warehouse RT_PLAYER_POS=57,8 RT_DRAW_SKIP=warehouse_status GODOT="$GBIN" \
+       bash "$(dirname "$0")/space_roundtrip.sh" --shoot "$OUT/warehouse_off" >>/tmp/vg-godot.log 2>&1 \
+     && RT_OWN_XVFB=0 RT_GAME="$GAME" RT_SPACE=port_warehouse RT_PLAYER_POS=57,8 RT_CORRUPT_MANIFEST=price_per GODOT="$GBIN" \
+       bash "$(dirname "$0")/space_roundtrip.sh" --shoot "$OUT/warehouse_corrupt" >>/tmp/vg-godot.log 2>&1; then
+    echo "  p1i/p1o-warehouse 采集 ok  (player 往返 + status ON/OFF + corrupt authority)"
+  else
+    echo "  p1i-warehouse 采集 FAIL (见上面的 [SPACESHOT] 行)"; [ "$rc" -eq 0 ] && rc=11
   fi
   # ── R2 的室内外壳采集（同一个 Xvfb）────────────────────────────────────────
   # 判据在 tools/assert_interior_shell.py（宿主侧跑），本步只负责拍。
@@ -318,6 +346,9 @@ fi
 #   2 void-gate 判红   3 空间往返采集失败   4 室内帧采集失败
 #   5 季节四季帧采集失败（AK1）   6 降水帧采集失败（AK1）   7 cafe 2F 帧采集失败（AM1）
 #   8 全楼层往返采集失败（AM3：某一跳没落在对的 Floor / 前提断言破了）
+#   9 East Ocean 货船 OFF 负对照帧采集失败（P1-c）
+#   10 玩家位于 East Ocean 码头的产品参照帧采集失败
+#   11 P1-i 玩家货仓往返/状态负对照帧采集失败
 # 2026-07-28 第一版把 1 和 2 混成一个 rc，于是 void-gate 变红时打印的是"渲染环境在位却拍不出帧"——
 # 一条**指向错误方向**的诊断（帧其实拍出来了）。rc=3 是 2026-07-30 加的第三种，理由同上。
 # rc=5/6 是 AK1（2026-08-06）加的第五、六种：季节/降水的采集失败与上面各步修法不同，分开报。
@@ -349,6 +380,18 @@ if [ $SHOT_RC -eq 8 ]; then
   echo "  ❌ VISUAL GATE：全楼层往返采集失败（前面几步都过了）—— 见上面的 [SPACESHOT] 行（某一跳没落在对的 Floor / 前提断言破了）"
   exit 1
 fi
+if [ $SHOT_RC -eq 9 ]; then
+  echo "  ❌ VISUAL GATE：East Ocean 货船负对照帧采集失败——见上面的 shot FAIL vg_noon_no_carrier.png 行"
+  exit 1
+fi
+if [ $SHOT_RC -eq 10 ]; then
+  echo "  ❌ VISUAL GATE：玩家 East Ocean 产品参照帧采集失败——见 shot FAIL vg_player_east_ocean.png 行"
+  exit 1
+fi
+if [ $SHOT_RC -eq 11 ]; then
+  echo "  ❌ VISUAL GATE：P1-i 玩家货仓往返/状态负对照帧采集失败——见 [SPACESHOT] 行"
+  exit 1
+fi
 if [ $SHOT_RC -ne 0 ]; then
   if [ "$PICK" = native ] && [ "$MODE" != "require" ]; then
     skip "native 渲染路径拍不出帧（未 pin 的环境不背这个锅；LT_VISUAL=require 可让它变红）"
@@ -359,10 +402,23 @@ fi
 
 "$PY" tools/assert_daynight.py "$OUT/vg_night.png" "$OUT/vg_noon.png" "$NIGHT_TICK" "$NOON_TICK" --tol "$TOL"
 ARC=$?
+# East Ocean 可见货船门（P1-c）。复用正午整镇帧，另吃同 tick 的 --draw-skip carrier 负对照；
+# 判据同时守住“ready manifest 真可见”“零 cargo 不画永久船”“差异只落在泊位”三条性质。
+"$PY" tools/assert_east_ocean_carrier.py "$OUT/vg_noon.png" "$OUT/vg_noon_no_carrier.png" --tol "$TOL"
+CARC=$?
 # 空间往返判据（E6/W7）。**故意跑在昼夜断言之后而不是短路**：两条门守的是不同的性质，
 # 一条红了另一条的读数仍然有诊断价值（"界外带塌了" vs "整个昼夜尺子坏了"是两种完全不同的排查）。
 "$PY" tools/assert_space_roundtrip.py "$OUT"
 RRC=$?
+# P1-i 玩家货仓：两条旅程分别守空间/玩家 receipt，再由 ON/OFF 门守实时账簿确实被渲染且只落在面板。
+"$PY" tools/assert_space_roundtrip.py "$OUT/warehouse"
+WRT1=$?
+"$PY" tools/assert_space_roundtrip.py "$OUT/warehouse_off"
+WRT2=$?
+"$PY" tools/assert_p1i_warehouse.py "$OUT/warehouse" "$OUT/warehouse_off" --tol "$TOL"
+WPRC=$?
+"$PY" tools/assert_p1o_manifest_authority.py "$OUT/warehouse" "$OUT/warehouse_corrupt"
+WMARC=$?
 # 岸线判据（G5 / docs/49 §七）。**不额外渲一帧**：吃的正是上面已经拍好的 vg_noon / vg_night
 # ——它们已经是 `--shot-fit` 的整镇入画帧，正是 pond.py 需要的取景。
 # 昼夜两帧都判：本棒实测过一版**只在白天绿、入夜就红**的判据（绝对亮度阈值），
@@ -411,7 +467,12 @@ C2RC=$?
 FLRC=$?
 [ $EPHEMERAL -eq 1 ] && rm -rf "$OUT"
 [ $ARC -ne 0 ] && exit $ARC
+[ $CARC -ne 0 ] && exit $CARC
 [ $RRC -ne 0 ] && exit $RRC
+[ $WRT1 -ne 0 ] && exit $WRT1
+[ $WRT2 -ne 0 ] && exit $WRT2
+[ $WPRC -ne 0 ] && exit $WPRC
+[ $WMARC -ne 0 ] && exit $WMARC
 [ $PRC -ne 0 ] && exit $PRC
 [ $IRC -ne 0 ] && exit $IRC
 [ $FRC -ne 0 ] && exit $FRC

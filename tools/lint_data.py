@@ -57,9 +57,12 @@ jobs = load("jobs") or {}
 housing = load("housing") or {}
 secrets = load("secrets") or {}
 mapd = load("map") or {}
+logistics = load("logistics") or {}
 
 persona_ids = set(personas.keys()) if isinstance(personas, dict) else set()
-agent_defs = agents_d.get("agents", []) if isinstance(agents_d, dict) else []
+agent_defs = []
+if isinstance(agents_d, dict):
+    agent_defs = list(agents_d.get("agents", [])) + list(agents_d.get("affiliates", []))
 agent_ids = set(a.get("id") for a in agent_defs if isinstance(a, dict))
 object_ids = set(o.get("id") for o in mapd.get("objects", []) if isinstance(o, dict))
 
@@ -76,6 +79,22 @@ for a in agent_defs:
 # 3) jobs.jobs keys -> agents
 for aid in (jobs.get("jobs", {}) if isinstance(jobs.get("jobs"), dict) else {}):
     fk(f"jobs.jobs key", aid, agent_ids, "agent id")
+
+# 3b) logistics functional nodes: ids unique; advertised job titles resolve.
+node_ids = set()
+job_titles = set(j.get("title") for j in jobs.get("jobs", {}).values() if isinstance(j, dict))
+for node in logistics.get("nodes", []) if isinstance(logistics.get("nodes"), list) else []:
+    if not isinstance(node, dict):
+        continue
+    nid = node.get("id")
+    if not nid:
+        errs.append("logistics.nodes: missing id")
+    elif nid in node_ids:
+        errs.append(f"logistics.nodes: duplicate id '{nid}'")
+    node_ids.add(nid)
+    for adv in node.get("advertises", []) if isinstance(node.get("advertises"), list) else []:
+        if isinstance(adv, dict):
+            fk(f"logistics.nodes[{nid}].advertises.job", adv.get("job"), job_titles, "job title")
 # 4) jobs.extra_advertises[].object -> map objects  (the P1-5 dangling-ref guard)
 for ea in jobs.get("extra_advertises", []) if isinstance(jobs.get("extra_advertises"), list) else []:
     if isinstance(ea, dict):
@@ -97,6 +116,9 @@ spaces_d = load("spaces") or {}
 sp = spaces_d.get("spaces", {}) if isinstance(spaces_d, dict) else {}
 portals = spaces_d.get("portals", []) if isinstance(spaces_d, dict) else []
 for sid, s in (sp.items() if isinstance(sp, dict) else []):
+    if not isinstance(s, dict):
+        errs.append(f"space '{sid}': definition must be an object")
+        continue
     b = s.get("bounds", [])
     if len(b) != 4 or b[2] <= 0 or b[3] <= 0:
         errs.append(f"space '{sid}': bounds must be [x,y,w,h] with w/h>0")
@@ -106,15 +128,34 @@ for sid, s in (sp.items() if isinstance(sp, dict) else []):
     if "default_floor" in s and s["default_floor"] not in fl:
         errs.append(f"space '{sid}': default_floor '{s['default_floor']}' not in floors {fl}")
 seen_pid = set()
+seen_portal_endpoints = {}
 for p in (portals if isinstance(portals, list) else []):
+    if not isinstance(p, dict):
+        errs.append("portal entry must be an object")
+        continue
     pid = p.get("id", "")
     if not pid:
         errs.append("portal missing id"); continue
     if pid in seen_pid:
         errs.append(f"duplicate portal id '{pid}'")
     seen_pid.add(pid)
+    if p.get("access") not in ("public", "owner"):
+        errs.append(f"portal '{pid}'.access must be public|owner")
+    if p.get("access") == "owner" and not isinstance(p.get("owner_space"), str):
+        errs.append(f"portal '{pid}'.owner_space must be a string")
+    elif p.get("access") == "owner" and p.get("owner_space") not in sp:
+        errs.append(f"portal '{pid}'.owner_space is not a known space")
+    elif p.get("access") == "public" and "owner_space" in p:
+        errs.append(f"portal '{pid}' public access must not declare owner_space")
+    if type(p.get("bidirectional")) is not bool:
+        errs.append(f"portal '{pid}'.bidirectional must be bool")
+    if type(p.get("traversal_cost")) is not int or p.get("traversal_cost", 0) <= 0:
+        errs.append(f"portal '{pid}'.traversal_cost must be a positive int")
     for side in ("from", "to"):
         e = p.get(side, {})
+        if not isinstance(e, dict):
+            errs.append(f"portal '{pid}'.{side}: endpoint must be an object")
+            continue
         sid, fid = e.get("space", ""), e.get("floor", "")
         if sid not in sp:
             errs.append(f"portal '{pid}'.{side}: unknown space '{sid}'")
@@ -122,9 +163,24 @@ for p in (portals if isinstance(portals, list) else []):
             errs.append(f"portal '{pid}'.{side}: space '{sid}' has no floor '{fid}'")
         if len(e.get("pos", [])) != 2:
             errs.append(f"portal '{pid}'.{side}: pos must be [x,y]")
+            continue
+        pos = e["pos"]
+        if any(type(v) not in (int, float) or int(v) != v for v in pos):
+            errs.append(f"portal '{pid}'.{side}: pos must use integer cells")
+            continue
+        if sid in sp:
+            bounds = sp[sid].get("bounds", [])
+            if len(bounds) == 4 and not (0 <= pos[0] < bounds[2] and 0 <= pos[1] < bounds[3]):
+                errs.append(f"portal '{pid}'.{side}: pos is outside space bounds")
+        endpoint = (sid, fid, int(pos[0]), int(pos[1]))
+        if endpoint in seen_portal_endpoints:
+            errs.append(f"portal '{pid}'.{side}: endpoint duplicates {seen_portal_endpoints[endpoint]}")
+        else:
+            seen_portal_endpoints[endpoint] = f"{pid}.{side}"
 
 # 7b) P3 室内内容 interiors.json：space/floor 键须指向真 Space/Floor；家具坐标须落在该 Space 的 bounds 内。
 interiors_d = load("interiors") or {}
+observatory_consoles = []
 for isid, floors in (interiors_d.items() if isinstance(interiors_d, dict) else []):
     if isid.startswith("_"):
         continue
@@ -139,6 +195,12 @@ for isid, floors in (interiors_d.items() if isinstance(interiors_d, dict) else [
             pos = fu.get("pos", [])
             if len(pos) != 2 or not (0 <= pos[0] < bw and 0 <= pos[1] < bh):
                 errs.append(f"interiors '{isid}/{ifid}': furniture '{fu.get('slot','?')}' pos {pos} 越界 {bw}x{bh}")
+            if fu.get("cargo_observatory") is True:
+                observatory_consoles.append((isid, ifid, fu))
+                if fu.get("slot") != "counter" or fu.get("advertises"):
+                    errs.append(f"interiors '{isid}/{ifid}': cargo_observatory must be a non-advertising counter")
+if len(observatory_consoles) != 1 or observatory_consoles[0][0:2] != ("port_warehouse", "1f"):
+    errs.append("interiors: exactly one cargo_observatory is required at port_warehouse/1f")
 
 n_json = len(glob.glob(os.path.join(ROOT, "*.json")))
 if errs:

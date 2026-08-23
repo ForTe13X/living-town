@@ -145,8 +145,8 @@
         { "action": "摆摊", "job": "商贩", "need": "fun", "amount": 46, "duration": 24 },
         { "action": "赶集", "need": "hunger", "amount": 52, "duration": 14 }
       ] },
-    { "id": "bench_pier", "type": "渔台", "area": "dock", "pos": [31, 7],
-      "_why": "F5：渔夫终于在水边打渔——渔夫【没有】被改成别的职业。★本条是本棒唯一一个需要【新区】的工位：map.json 的 water 层有 80 格（x28-35 的南北两塘），而八个既有 area 没有一个挨着它，_compile_worksites 与 audit_map 又都要求工位落在某个 area 内 ⇒ 不建区就没有合法的水边工位。选北塘不选南塘是量出来的：北塘岸 (31,7) 离住宅区约 17 格，比 desk_1[40,31] 的 34 格【还近一半】，所以 _f1_negative_results ① 那条『通勤走一半被饥饿 pre-empt』在这里结构上不成立；南塘岸 (31,41) 是 35 格，跟图书馆同量级。",
+    { "id": "bench_pier", "type": "渔台", "area": "north_pier", "pos": [31, 7],
+      "_why": "P1-c 将渔业工位与 East Ocean 货运港分离：bench_pier 回到合法北塘渔埠 [31,7]，仍走原打渔合同；north_pier 不声明 route/node/berth，不参与 CargoManifest。隔离 K 矩阵保留 Tao home/spawn[58,8] 与东海货港，同时让七个目标 seed 的 #40 7/7 绿。",
       "advertises": [ { "action": "打渔", "job": "渔夫", "need": "fun", "amount": 46, "duration": 28 } ] },
     { "id": "desk_lectern", "type": "讲台", "area": "plaza", "pos": [34, 26],
       "_why": "F5：教书先生在广场告示牌旁边开讲。★这【不是】重走 _f1_negative_results ① 那条路：F1 撤回的是图书馆(12,41)——离住宅区 37 格；广场(34,26) 是 23 格，且是全镇通勤的十字路口（吃饭/玩耍/赶集都路过）。同一条『把讲案搬出 desk_1』的意图，换了一个【近的】落点，这正是 F1 那条负结果自己写的补法：『需要的是一个【近的】讲堂』。整洁乘子不打折它（cl_mult 只作用于无 job 的广告位）。",

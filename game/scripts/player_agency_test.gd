@@ -56,8 +56,10 @@ func _ready() -> void:
 	print("=== 玩家能动性 M1 验证 ===")
 
 	# ── 0) 入镇 ──
+	var resident_count := Sim.agents.size()
 	var pl := Sim.add_player()
-	_ck("入镇", Sim.agents.size() == 13 and pl.get("is_player", false) and Sim.get_agent("player") == pl, "agents=%d (12-cast + player)" % Sim.agents.size())
+	_ck("入镇", Sim.agents.size() == resident_count + 1 and pl.get("is_player", false) and Sim.get_agent("player") == pl,
+		"agents=%d (%d residents + player)" % [Sim.agents.size(), resident_count])
 	Sim.player_move(Vector2i(1, 0))
 	_ck("移动", true, "pos=%s area=%s" % [str(pl["pos"]), Sim._area_at(pl["pos"])])
 

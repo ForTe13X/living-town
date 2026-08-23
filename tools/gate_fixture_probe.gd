@@ -31,6 +31,7 @@ func _initialize() -> void:
 	var agents := 0
 	var scen := ""
 	var tag := "X"
+	var trade_control := ""
 	var args := OS.get_cmdline_user_args()
 	for i in args.size():
 		if args[i] == "--seeds" and i + 1 < args.size(): seeds_spec = String(args[i + 1])
@@ -38,11 +39,22 @@ func _initialize() -> void:
 		elif args[i] == "--agents" and i + 1 < args.size(): agents = int(args[i + 1])
 		elif args[i] == "--scenario" and i + 1 < args.size(): scen = String(args[i + 1])
 		elif args[i] == "--tag" and i + 1 < args.size(): tag = String(args[i + 1])
+		elif args[i] == "--trade-control" and i + 1 < args.size(): trade_control = String(args[i + 1])
+	if not trade_control in ["", "zero-import", "zero-export", "zero-both"]:
+		push_error("unknown --trade-control: " + trade_control)
+		quit(2)
+		return
 	var seeds := _parse_seeds(seeds_spec)
 	for sd in seeds:
 		var S = SimScript.new()
 		get_root().add_child(S)
 		S._load_data()
+		# 量具专用方向消融：保持 logistics 字典/另一方向开启，只归零目标 lane，
+		# 用于证明 #44/#46 provider 读的是事件而不是“配置存在”。不进入游戏运行时。
+		if trade_control == "zero-import" or trade_control == "zero-both":
+			S.logistics["import_lanes"] = []
+		if trade_control == "zero-export" or trade_control == "zero-both":
+			S.logistics["export_lanes"] = []
 		S.auto_run = false
 		S.backend = null
 		if agents > 0: S.spawn_count = agents
@@ -137,9 +149,16 @@ func _live(S, starved: int) -> Dictionary:
 	for ag in S.agents:
 		for oid in ag["relationships"]:
 			st_min = minf(st_min, float(ag["relationships"][oid]["standing"]))
+	# 贸易硬门 #44/#46 的真实前件。不能用“logistics 开着”代替：系统开启但本局
+	# 零进/出口时，逐事件断言仍然是真空为真，不能算作 complement provider。
+	var import_events := int(ty.get("import", 0))
+	# 与 #46 共用 scanner：孤儿/mismatch 仍是非零 provider，由 #46 决定红绿。
+	var export_scan := Inv.export_pair_scan(log)
+	var export_pairs := int(export_scan["pairs"])
+	var export_related := int(export_scan["related"])
 	return {
 		"tag_seed": [S.agents.size(), S.tick_no],
-		"scenario": String(S.scenario), "n_agents": S.agents.size(),
+		"scenario": String(S.scenario), "n_agents": S.agents.size(), "core_population": S.core_population,
 		"starved": starved, "events": log.size(), "types": ty,
 		"commitments": S.commitments.size(), "c_broken": c_broken, "c_active_past_due": c_active_past,
 		"conflicts": S.conflicts.size(), "cf_repaired": cf_rep,
@@ -154,6 +173,8 @@ func _live(S, starved: int) -> Dictionary:
 		"economy_on": not S.economy.is_empty(), "production_on": not S.production.is_empty(),
 		"elections": S.election_log.size(), "fest_objects": fest_now, "festival_active": String(S.festival_active),
 		"produce_events": prod_n, "produce_with_witness": prod_wit, "craft_titles_on": craft_titles,
+		"import_events": import_events,
+		"export_related": export_related, "export_pairs": export_pairs,
 	}
 
 func _parse_seeds(spec: String) -> Array:

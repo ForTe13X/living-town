@@ -136,6 +136,21 @@
     "1f"
    ],
    "default_floor": "1f"
+  },
+  "port_warehouse": {
+   "_why": "P1-i East Ocean 玩家纵切：东港门口可进入的真实货仓。首片只承载玩家导航、库存/待卸货可视化与往返，不给 NPC 新增 advertises，避免把展示空间误当经济候选源。",
+   "kind": "interior",
+   "label": "东海货仓",
+   "bounds": [
+    0,
+    0,
+    9,
+    6
+   ],
+   "floors": [
+    "1f"
+   ],
+   "default_floor": "1f"
   }
  },
  "portals": [
@@ -183,6 +198,7 @@
    },
    "bidirectional": true,
    "access": "owner",
+   "owner_space": "test_loft",
    "traversal_cost": 2
   },
   {
@@ -229,6 +245,7 @@
    },
    "bidirectional": true,
    "access": "owner",
+   "owner_space": "cafe",
    "traversal_cost": 2
   },
   {
@@ -369,6 +386,29 @@
     "pos": [
      3,
      0
+    ]
+   },
+   "bidirectional": true,
+   "access": "public",
+   "traversal_cost": 1
+  },
+  {
+   "id": "p_port_warehouse_door",
+   "kind": "door",
+   "from": {
+    "space": "town",
+    "floor": "outdoor",
+    "pos": [
+     57,
+     8
+    ]
+   },
+   "to": {
+    "space": "port_warehouse",
+    "floor": "1f",
+    "pos": [
+     8,
+     3
     ]
    },
    "bidirectional": true,

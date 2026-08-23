@@ -35,7 +35,7 @@ extends Node
 ##     --backend logic --seed 3 --warmup-tick 600 --rt-out /out \
 ##     [--rt-space cafe] [--rt-mode portal|flip] [--rt-journey simple|full] [--rt-redraw auto|none]
 ##   `--rt-redraw none` = 【暂停复现】档，见下面 `_refresh()` 上方那段（它是本脚本第一次跑就量到的一个真问题）。
-##   `--rt-journey full`（AM3/编号135）= 全楼层旅程 town→cafe/1f→上楼2f→下楼1f→出门，逐段断言落在对的 Floor。
+##   `--rt-journey full`（AM3/编号135）= 玩家进出咖啡馆 + Probe 观察 2F；owner-only 楼梯帧不是玩家上楼证据。
 ## 产物：simple → <out>/rt_town_before.png / rt_interior.png / rt_town_after.png + rt_meta.json；
 ##       full   → <out>/rt_town_before.png / rt_cafe_1f.png / rt_cafe_2f.png / rt_cafe_1f_back.png / rt_town_after.png + rt_meta.json
 ## 退出码：0=三帧都拍出来了且前提断言成立；1=拍不出来或前提断言破了（**像素判据在 python 那边**）。
@@ -48,13 +48,15 @@ const MAIN_SCENE := "res://scenes/Main.tscn"
 var _out := ""
 var _space := "cafe"
 var _mode := "portal"
-var _journey := "simple"    # simple=进店→出店三帧（现役 1F 往返门）；full=全楼层旅程 town→1f→上楼2f→下楼1f→出门（AM3/编号135）
+var _journey := "simple"    # simple=玩家进店→出店；full=玩家进出 + Probe 观察 owner-only 楼层（AM3/编号135）
 var _redraw := "auto"       # auto=切完空间补一次 _redraw_all()（= 下一个 tick 到来时的稳定态）；none=不补（暂停复现，见下）
 var _settle0 := 40          # 首帧之后的暖机帧数（纹理加载 + 插值吸附）
 var _settle := 24           # 每次空间切换之后的暖机帧数
 var _min_ms0 := 2500        # 暖机的墙钟下限（软渲染下帧率极低，光数帧会太短）
 var _min_ms := 1200
 var _watchdog_ms := 180000  # 看门狗：到点还没跑完就 rc=1 退出（绝不让本场景把 CI 挂住，见下）
+var _corrupt_manifest := "" # P1-o presentation-only adversarial arm; never used by product runtime.
+var _deny_portal := ""      # P1-p presentation-only access arm; drives the real Main tap transaction.
 var _main: Node
 var _meta := {}
 var _rc := 0
@@ -68,6 +70,8 @@ func _ready() -> void:
 		elif args[i] == "--rt-journey" and i + 1 < args.size(): _journey = args[i + 1]
 		elif args[i] == "--rt-redraw" and i + 1 < args.size(): _redraw = args[i + 1]
 		elif args[i] == "--rt-settle" and i + 1 < args.size(): _settle = int(args[i + 1])
+		elif args[i] == "--rt-corrupt-manifest" and i + 1 < args.size(): _corrupt_manifest = args[i + 1]
+		elif args[i] == "--rt-deny-portal" and i + 1 < args.size(): _deny_portal = args[i + 1]
 	if _out == "":
 		print("[SPACESHOT] ❌ 缺 --rt-out <dir>")
 		get_tree().quit(2)
@@ -93,14 +97,101 @@ func _ready() -> void:
 	Sim.auto_run = false
 
 	await _wait(_settle0, _min_ms0)
+	if _corrupt_manifest != "":
+		if Sim.cargo_manifest_order.is_empty():
+			print("[SPACESHOT] ❌ P1-o corrupt arm 没有 pending manifest")
+			get_tree().quit(1)
+			return
+		var corrupt_id := String(Sim.cargo_manifest_order[0])
+		var corrupt_rec: Dictionary = Sim.cargo_manifests.get(corrupt_id, {})
+		if _corrupt_manifest != "price_per" or corrupt_rec.is_empty():
+			print("[SPACESHOT] ❌ 未支持的 corrupt manifest field=%s" % _corrupt_manifest)
+			get_tree().quit(1)
+			return
+		corrupt_rec["price_per"] = int(corrupt_rec.get("price_per", 0)) + 1
+		_meta["corrupt_manifest_field"] = _corrupt_manifest
+		_meta["corrupt_manifest_id"] = corrupt_id
+		# The product HUD is event-driven.  The bench mutation bypasses that event on purpose, so
+		# normalize it before the "before" frame; otherwise the roundtrip would compare stale-ready
+		# text against the correctly refreshed invalid text after returning from the warehouse.
+		_main.call("_update_status")
+	if _deny_portal != "":
+		var found_deny := false
+		for raw_portal in Sim._authored_portals:
+			if String((raw_portal as Dictionary).get("id", "")) == _deny_portal:
+				(raw_portal as Dictionary)["access"] = "owner"
+				(raw_portal as Dictionary)["owner_space"] = _space
+				found_deny = true
+		if not found_deny:
+			print("[SPACESHOT] ❌ P1-p deny arm 找不到 portal=%s" % _deny_portal)
+			get_tree().quit(1)
+			return
+		_meta["denied_portal"] = _deny_portal
 	var pb = _main.get("_probe")
 	if pb == null:
 		print("[SPACESHOT] ❌ 拿不到 Main._probe")
 		get_tree().quit(1)
 		return
+	# 玩家旅程从玩家所在地取景；出门后 Main 也会回到同一跟随镜头。
+	# 因此前后帧仍可逐像素比较，同时产品参照不再是假装玩家在场的全镇鸟瞰。
+	var capture_player := Sim.get_agent("player")
+	if not capture_player.is_empty():
+		var capture_pos: Vector2i = capture_player.get("pos", Vector2i.ZERO)
+		pb.focus_on(Vector2(capture_pos.x * 48 + 24, capture_pos.y * 48 + 24), "player")
+		_refresh()
+		await _wait(_settle, _min_ms)
+		# LOD key follows the camera in _process; redraw once more after it settles
+		# so the first close-up cannot retain a full-town label command list.
+		_refresh()
+		await _wait(4, 200)
+	_meta["player_journey"] = not capture_player.is_empty()
+	var cargo_status: Dictionary = Sim.cargo_status_for_node("port_dock")
+	_meta["cargo_state"] = String(cargo_status.get("state", ""))
+	_meta["cargo_good"] = String(cargo_status.get("good", ""))
+	_meta["cargo_qty"] = int(cargo_status.get("qty", 0))
+	var view = _main.get("_view")
+	_meta["carrier_count"] = int((view.call("_cargo_carrier_projections") as Array).size()) if view != null else -1
 	var cam0_pos: Vector2 = pb.cam.position
 	var cam0_zoom: Vector2 = pb.cam.zoom
+	# A physical portal click adds a visible system row.  Preserve the real
+	# player traversal receipts, but restore view-only log/selection state before
+	# the after frame so the original exact roundtrip pixel tooth stays sharp.
+	var log0: Array = (_main.get("_log_recent") as Array).duplicate(true)
+	var selected0: String = String(_main.get("_selected_id"))
 	_snap("town_before", pb)
+	if _deny_portal != "":
+		var player_before := _player_address()
+		var probe_before := {"space": String(pb.active_space), "floor": String(pb.active_floor),
+			"cam": [pb.cam.position.x, pb.cam.position.y], "zoom": pb.cam.zoom.x}
+		if not _enter(pb):
+			print("[SPACESHOT] ❌ deny arm 无法驱动 portal tap")
+			get_tree().quit(1)
+			return
+		_refresh()
+		await _wait(_settle, _min_ms)
+		var player_after := _player_address()
+		var recent: Array = _main.get("_log_recent")
+		var last_log := String(recent[-1]) if not recent.is_empty() else ""
+		var cargo_after: Dictionary = Sim.cargo_status_for_node("port_dock")
+		_meta["journey"] = "denied"
+		_meta["space"] = _space
+		_meta["mode"] = _mode
+		_meta["tick"] = Sim.tick_no
+		_meta["player_before"] = player_before
+		_meta["player_after"] = player_after
+		_meta["probe_before"] = probe_before
+		_meta["probe_after"] = {"space": String(pb.active_space), "floor": String(pb.active_floor),
+			"cam": [pb.cam.position.x, pb.cam.position.y], "zoom": pb.cam.zoom.x}
+		_meta["denial_log_bbcode"] = last_log
+		_meta["cargo_after"] = {"state": String(cargo_after.get("state", "")),
+			"good": String(cargo_after.get("good", "")), "qty": int(cargo_after.get("qty", 0))}
+		_snap("denied", pb)
+		var denied_meta := FileAccess.open(_out + "/rt_meta.json", FileAccess.WRITE)
+		if denied_meta != null:
+			denied_meta.store_string(JSON.stringify(_meta, "  "))
+			denied_meta.close()
+		get_tree().quit(_rc)
+		return
 
 	# ── 进店 ────────────────────────────────────────────────────────────────
 	if not _enter(pb):
@@ -112,11 +203,45 @@ func _ready() -> void:
 	if String(pb.active_space) != _space:
 		print("[SPACESHOT] ❌ 点了门却没进去：active_space=%s" % String(pb.active_space))
 		_rc = 1
+	var player := Sim.get_agent("player")
+	if not player.is_empty():
+		var player_in := String(player.get("space", "town")) == _space and String(player.get("floor", "outdoor")) == String(pb.active_floor)
+		if not player_in:
+			print("[SPACESHOT] ❌ 玩家点门后仍不在目标平面：%s/%s" % [player.get("space", "?"), player.get("floor", "?")])
+			_rc = 1
+		_meta["player_entered"] = player_in
+	# P1-v：东海仓内帧必须来自一次真实柜台点击，而不只是“墙上恰好画了字”。
+	# 点击走 Main._on_probe_tap → authored console cell → 只读 projection；同时钉住 Sim exact no-op。
+	if _space == "port_warehouse":
+		var console_cell: Vector2i = Sim.warehouse_observatory_console_cell()
+		var sim_before := _observatory_sim_snapshot()
+		_main.call("_on_probe_tap", Vector2(console_cell.x * 48 + 24, console_cell.y * 48 + 24))
+		var sim_after := _observatory_sim_snapshot()
+		var recent: Array = _main.get("_log_recent")
+		var observatory_log := String(recent[-1]) if not recent.is_empty() else ""
+		var projection: Dictionary = Sim.warehouse_observatory_projection("port_dock")
+		_meta["observatory"] = {
+			"console_cell": [console_cell.x, console_cell.y],
+			"sim_noop": sim_before == sim_after,
+			"log_bbcode": observatory_log,
+			"mode": String(projection.get("mode", "")),
+			"cargo_state": String((projection.get("cargo", {}) as Dictionary).get("state", "")),
+			"receipt_state": String((projection.get("receipt", {}) as Dictionary).get("state", "")),
+			"action_bar_hidden": not bool((_main.get("_act_pan") as Control).visible),
+			"chat_hidden": not bool((_main.get("_chat_in") as Control).visible),
+			"location_truthful": "东海货仓 · 货运观测室" in String((_main.get("_obs") as RichTextLabel).text),
+		}
+		if sim_before != sim_after or not ("观测台｜" in observatory_log) or not ("（只读）" in observatory_log):
+			print("[SPACESHOT] ❌ 货运观测柜台未形成只读 exact-noop 回执")
+			_rc = 1
+		_refresh()
+		await _wait(4, 200)
 	_snap("interior" if _journey != "full" else "cafe_1f", pb)
 
-	# ── 全楼层旅程（AM3/编号135）：cafe/1f →（楼梯 portal）2f →（楼梯）1f ──────────────
+	# ── 全楼层观察旅程（AM3/编号135）：cafe/1f →（楼梯 portal）2f →（楼梯）1f ────────────
 	# 只在 --rt-journey full 时跑；simple 模式一个字节都不变（现役 1F 往返门原样）。
-	# 逐段断言【落在对的 Floor】——这是"目标层改错 ⇒ 门必红"的机器化（与宿主 python 侧的 meta 楼层核对互为双证）。
+	# 逐段断言 Probe【落在对的 Floor】。带 player 时普通玩家仍留在 1F：owner-only 楼梯的
+	# 上下层帧是远程观察回执，不是玩家穿越证据。玩家进/出店另由 player_entered/player_returned 断言。
 	# 楼梯 cell 由 _stairs_world_pos 从 SpaceGraph 真源取（不抄第二份坐标），点它 → Main._portal_click 按
 	# 当前 active_floor 判方向（1f→2f 上、2f→1f 下），access=owner 不拦 Probe（观察者不是 agent，见 Main.gd:2439）。
 	if _journey == "full":
@@ -130,6 +255,8 @@ func _ready() -> void:
 		await _wait(_settle, _min_ms)
 		if String(pb.active_floor) != "2f":
 			print("[SPACESHOT] ❌ 上楼后应在 2f，实为 %s（楼梯目标层不对/portal 断）" % String(pb.active_floor)); _rc = 1
+		if not capture_player.is_empty() and String(Sim.get_agent("player").get("floor", "")) != "1f":
+			print("[SPACESHOT] ❌ Probe 远程观察时普通玩家不得跟进 owner-only 2f"); _rc = 1
 		_snap("cafe_2f", pb)
 		# 下楼 (cafe/2f → cafe/1f)
 		if not _climb(pb):
@@ -151,6 +278,20 @@ func _ready() -> void:
 	if String(pb.active_space) != "town":
 		print("[SPACESHOT] ❌ 点了门却没回到 town：active_space=%s" % String(pb.active_space))
 		_rc = 1
+	player = Sim.get_agent("player")
+	if not player.is_empty():
+		var player_returned := String(player.get("space", "")) == "town" and String(player.get("floor", "")) == "outdoor"
+		if not player_returned:
+			print("[SPACESHOT] ❌ 玩家出门后未回 town/outdoor")
+			_rc = 1
+		_meta["player_returned"] = player_returned
+	if not capture_player.is_empty():
+		_main.set("_log_recent", log0)
+		_main.set("_selected_id", selected0)
+		_main.call("_render_log")
+		_main.call("_update_status")
+		_refresh()
+		await _wait(4, 200)
 	_snap("town_after", pb)
 
 	# ── 前提断言：出店后的取景必须与进店前【逐字节相同】 ────────────────────────
@@ -169,6 +310,8 @@ func _ready() -> void:
 
 	_meta["mode"] = _mode
 	_meta["journey"] = _journey
+	_meta["stairs_probe_only"] = _journey == "full" and not capture_player.is_empty()
+	_meta["player_floor_during_probe_stairs"] = "1f" if bool(_meta["stairs_probe_only"]) else ""
 	_meta["space"] = _space
 	_meta["cam_same"] = cam_same
 	_meta["tick"] = Sim.tick_no
@@ -207,6 +350,14 @@ func _refresh() -> void:
 	var view = _main.get("_view") if _main != null else null
 	if view != null:
 		view.call("_redraw_all")
+
+func _player_address() -> Dictionary:
+	var player := Sim.get_agent("player")
+	if player.is_empty():
+		return {}
+	var pos: Vector2i = player.get("pos", Vector2i.ZERO)
+	return {"space": String(player.get("space", "")), "floor": String(player.get("floor", "")),
+		"pos": [pos.x, pos.y], "area": String(player.get("area", "")), "room": String(player.get("room", ""))}
 
 ## 进店。portal=走出货路径（tapped→_portal_click）；flip=只翻 active_space（--void-gate 同款）。
 func _enter(pb) -> bool:
@@ -320,6 +471,14 @@ func _snap(name: String, pb) -> void:
 		% [name, String(pb.active_space), String(pb.active_floor), img.get_width(), img.get_height(),
 			pb.cam.position.x, pb.cam.position.y, pb.cam.zoom.x,
 			tl.x, tl.y, br.x - tl.x, br.y - tl.y, vd])
+
+func _observatory_sim_snapshot() -> String:
+	return JSON.stringify({
+		"town": Sim.town_coin, "external": Sim.external_coin, "stock": Sim.town_stock,
+		"events": Sim.event_log, "next": Sim._next_event_id, "event_digest": Sim.event_digest,
+		"manifests": Sim.cargo_manifests, "order": Sim.cargo_manifest_order,
+		"path_cache": Sim._path_cache, "player": Sim.get_agent("player"),
+	})
 
 ## 等够 n 帧 **且** 够 ms 毫秒。两个条件都要：容器软渲染实测 5-10 fps（docs/41 §6 盲区⑧），
 ## 光数帧在快机器上会短到纹理还没加载完；光看墙钟在慢机器上会拿到一张半渲的图。

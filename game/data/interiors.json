@@ -598,5 +598,78 @@
     }
    ]
   }
+ },
+ "port_warehouse": {
+  "1f": {
+   "label": "货运观测室",
+   "floor": "stone",
+   "furniture": [
+    {
+     "slot": "shelf",
+     "pos": [
+      1,
+      1
+     ]
+    },
+    {
+     "slot": "shelf",
+     "pos": [
+      2,
+      1
+     ]
+    },
+    {
+     "slot": "counter",
+     "pos": [
+      6,
+      1
+     ],
+     "label": "货运观测台",
+     "cargo_observatory": true
+    },
+    {
+     "slot": "crate",
+     "pos": [
+      1,
+      3
+     ]
+    },
+    {
+     "slot": "crate",
+     "pos": [
+      2,
+      3
+     ]
+    },
+    {
+     "slot": "sacks",
+     "pos": [
+      3,
+      3
+     ]
+    },
+    {
+     "slot": "rug",
+     "pos": [
+      6,
+      3
+     ]
+    },
+    {
+     "slot": "rug",
+     "pos": [
+      7,
+      3
+     ]
+    },
+    {
+     "slot": "lamp",
+     "pos": [
+      4,
+      4
+     ]
+    }
+   ]
+  }
  }
 }

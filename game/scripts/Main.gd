@@ -55,9 +55,12 @@ var _scrub_handle: ColorRect          # 拖动手柄
 var _selected_id := ""                # 当前观察的角色
 var _player_mode := false             # --player：玩家入镇（gameplay M1）
 var _demo_mode := false               # --player-demo：脚本化玩家 autopilot（录 demo）
+var _player_spawn_override := Vector2i(-1, -1) # --player-pos x y：产品截图/玩法验收把玩家放到被测纵切；默认仍是广场
 var _demo_steps: Array = []           # [{type:walk_to|select|act|chat|wait, ...}] 顺序执行
 var _demo_i := 0
 var _chat_in: LineEdit                # 玩家→NPC 对话输入框
+var _chat_generation := 0             # 世界/会话替换使在飞回调失效
+var _chat_session_id := 0             # world/load session identity, distinct from request generation
 var _backend_btn: Button              # 后端切换按钮（手机无 CLI：点按在 logic/slm/… 间轮换；桌面也可点）
 # ── 演示镜头编排（--demo-cam；docs/46 §三-D4）──────────────────────────────
 ## 轨迹本体在 ProbeController（连同"为什么框地方不框人"的理由）。Main 这一侧只有三件事：
@@ -362,6 +365,9 @@ func _ready() -> void:
 			Sim.spawn_count = int(args[i + 1]) # 扩 N：克隆到 N（含 L6 调色板变体演示）
 		elif args[i] == "--player":
 			_player_mode = true                # 玩家入镇（gameplay M1：WASD 移动 + G/F/B/Y/P/M 社交动作）
+		elif args[i] == "--player-pos" and i + 2 < args.size():
+			_player_mode = true                # 可见集成钩：玩家站在被测机制旁，截图/录屏呈现真实操作视角
+			_player_spawn_override = Vector2i(int(args[i + 1]), int(args[i + 2]))
 		elif args[i] == "--player-demo":
 			_player_mode = true                # 录 demo 用：脚本化玩家 autopilot（确定性按 tick 触发动作）
 			_demo_mode = true
@@ -423,7 +429,7 @@ func _ready() -> void:
 	# 玩家模式：同款优先级 CLI --player > user://settings.cfg > 默认【关】。
 	# 默认必须是关：开着会调 Sim.add_player() 从而合法地移动 digest（docs/41 §3），
 	# 而 tools/probe_digest_test.sh 之类的容器跑用的是全新的 user://，读到的就是这个默认值。
-	if not ("--player" in args) and not ("--player-demo" in args):
+	if not ("--player" in args) and not ("--player-demo" in args) and not ("--player-pos" in args):
 		_player_mode = bool(_scfg.get_value("sim", "player", false))
 	AIBackend.slm_model_override = String(_scfg.get_value("slm", "model_path", ""))   # 上次在设置里手选的 gguf
 	# 观察台档位（纯视图偏好，不进仿真）。默认【名片档】——研究用法（钉住卷宗刷时间轴）按一次就回来，
@@ -439,6 +445,8 @@ func _ready() -> void:
 		Sim.ext = ext
 	if _lod_agg_arg:
 		Sim.lod_aggregate = true            # 置于 start_new 前 → warmup goto_tick + 出图定格都跑聚合档，前缀与 live 同档、goto_tick 逐字节可复现，截到的正是聚合档
+	if not Sim.world_reset.is_connected(_invalidate_chat_generation):
+		Sim.world_reset.connect(_invalidate_chat_generation)
 	Sim.start_new(seed)
 	if warmup_tick > 0:
 		Sim.goto_tick(warmup_tick)          # 眼验：精确定格到某一 tick
@@ -452,7 +460,7 @@ func _ready() -> void:
 	Sim.speed = spd
 	_npc_target = maxi(6, Sim.agents.size())   # 设置面板 NPC 数量初值 = 实际居民数（基础 cast=agents.json，或 spawn_count 克隆总数）
 	if _player_mode:
-		Sim.add_player()              # 玩家入社交图：NPC 会主动搭话/接受规则/账本/记忆全生效
+		Sim.add_player(_player_spawn_override) # 玩家入社交图；产品截图可把玩家放到被测纵切，正常启动仍回落广场
 	if _demo_mode:
 		_demo_setup()                 # 舞台布置（首帧前，无可见跳变）+ 动作剧本
 	Sim.auto_run = true               # 镇子立刻跑（logic 地板）——slm/llm 探测改后台异步，不再挡首帧
@@ -804,12 +812,39 @@ func verb_for_key(kc: int) -> String:
 func _sync_action_bar(dx: float = 0.0, dy: float = 0.0) -> void:
 	if _act_pan == null:
 		return
-	_act_pan.visible = _player_mode
+	var show := _player_mode and not _player_in_warehouse_observatory()
+	_act_pan.visible = show
 	_act_pan.position = Vector2(ACT_X - 8.0, ACT_Y - 6.0 + dy)
 	for i in _act_btns.size():
 		var b: Button = _act_btns[i]
-		b.visible = _player_mode
+		b.visible = show
 		b.position = Vector2(ACT_X + ACT_STEP * i, ACT_Y + dy)
+
+## P1-v：货运观测室是只读控制面，不伪装成社交目标或玩家卸货台。
+## 只在 visibility 上切上下文；键盘路径另由 _player_do 同门拒绝。
+func _sync_action_bar_context() -> void:
+	if _act_pan == null:
+		return
+	var show := _player_mode and not _player_in_warehouse_observatory()
+	_act_pan.visible = show
+	for raw in _act_btns:
+		(raw as Button).visible = show
+
+func _player_in_warehouse_observatory() -> bool:
+	if not _player_mode:
+		return false
+	var pl: Dictionary = Sim.get_agent("player")
+	return not pl.is_empty() and String(pl.get("space", "town")) == "port_warehouse" \
+		and String(pl.get("floor", "outdoor")) == "1f"
+
+func _agent_location_label(ag: Dictionary) -> String:
+	var sid := String(ag.get("space", "town"))
+	var fid := String(ag.get("floor", "outdoor"))
+	if sid == "port_warehouse" and fid == "1f":
+		return "东海货仓 · 货运观测室"
+	if sid != "town":
+		return "%s · %s" % [_sg.label_of(sid) if _sg != null else sid, fid]
+	return Sim._area_label(ag.get("pos", Vector2i.ZERO))
 
 func _mk_panel(layer: CanvasLayer, pos: Vector2, sz: Vector2) -> ColorRect:
 	var p := ColorRect.new()
@@ -1470,7 +1505,7 @@ func _toggle_player_mode() -> void:
 	Sim.start_new(_seed)
 	Sim.auto_run = true
 	if _player_mode:
-		Sim.add_player()
+		Sim.add_player(_player_spawn_override)
 	_selected_id = ""
 	_max_tick = 0
 	_save_sim_setting("player", _player_mode)       # 手机上没有 CLI：下次启动记住（--player 显式给出时不读这里）
@@ -1493,7 +1528,7 @@ func _apply_npc(delta: int) -> void:
 	Sim.start_new(_seed)
 	Sim.auto_run = true
 	if _player_mode:
-		Sim.add_player()
+		Sim.add_player(_player_spawn_override)
 	_npc_target = maxi(6, Sim.agents.size() - (1 if _player_mode else 0))   # 低于基础 cast 时克隆环不减→回读实际数，显示不骗人
 	_selected_id = ""
 	_max_tick = 0
@@ -1568,6 +1603,7 @@ func _process(dt: float) -> void:
 func _update_status() -> void:
 	if _status == null:
 		return
+	_sync_action_bar_context()
 	var tod := Sim.time_of_day()
 	var mins := int(tod * 24.0 * 60.0)
 	var clock := "%02d:%02d" % [mins / 60, mins % 60]
@@ -1604,13 +1640,44 @@ func _update_status() -> void:
 				if String(c["status"]) == "active" and (String(c["a"]) == "player" or String(c["b"]) == "player"):
 					var other := String(c["b"]) if String(c["a"]) == "player" else String(c["a"])
 					pmeets.append("和%s约在%s(剩%dt)" % [Sim._name(Sim.get_agent(other)), Sim._area_label_id(String(c["area"])), int(c["deadline"]) - Sim.tick_no])
-			var vkeys := []
-			for v in PLAYER_VERBS:                                             # 单一真源：与动作条按钮同表，不再各写一份
-				vkeys.append("%s%s" % [String(v["key"]), String(v["label"])])
-			ptxt = "\n[color=#ffd700]你：礼物×%d  WASD移动  选中居民后 %s C聊天（或点下方动作条）%s[/color]" % [
-				int(pl["inventory"].get("gift", 0)), " ".join(vkeys), ("  约定：" + "；".join(pmeets)) if not pmeets.is_empty() else ""]
+			if _player_in_warehouse_observatory():
+				ptxt = "\n[color=#80e1ff]你：东海货仓 · 货运观测室（只读）  点右侧柜台查泊位/回执  卸货由码头工执行[/color]"
+			else:
+				var vkeys := []
+				for v in PLAYER_VERBS:                                             # 单一真源：与动作条按钮同表，不再各写一份
+					vkeys.append("%s%s" % [String(v["key"]), String(v["label"])])
+				var cargo_hint := _player_cargo_hint(pl)
+				ptxt = "\n[color=#ffd700]你：礼物×%d  WASD移动  选中居民后 %s C聊天（或点下方动作条）%s[/color]%s" % [
+					int(pl["inventory"].get("gift", 0)), " ".join(vkeys), ("  约定：" + "；".join(pmeets)) if not pmeets.is_empty() else "", cargo_hint]
 	_status.text = "[color=#e6e9f2]小镇有灵 Living Town  ·  第 %d 天 %s %s%s%s  ·  %s  ·  %s  ·  NPC %d  ｜  事件 %d  约会 %d(活%d)  冲突 %d(活%d)[/color]%s" % [
 		Sim.day, clock, phase, wx, etxt, spd, btxt, Sim.agents.size(), Sim.event_log.size(), Sim.commitments.size(), meets_active, Sim.conflicts.size(), conf_active, ptxt]
+
+## 玩家站在真实 port_dock 三格内才显示；只读 Sim 的 manifest 投影，不制造“玩家能亲手卸货”的假按钮。
+func _player_cargo_hint(pl: Dictionary) -> String:
+	var port: Dictionary = Sim.world.get("objects", {}).get("port_dock", {})
+	var pp: Vector2i = pl.get("pos", Vector2i(-99, -99))
+	var raw_pos = port.get("pos", Vector2i(-99, -99))
+	var port_pos := Vector2i(-99, -99)
+	if raw_pos is Vector2i:
+		port_pos = raw_pos
+	elif raw_pos is Array and raw_pos.size() >= 2:
+		port_pos = Vector2i(int(raw_pos[0]), int(raw_pos[1]))
+	if port_pos.x < 0 or absi(pp.x - port_pos.x) + absi(pp.y - port_pos.y) > 3:
+		return ""
+	var st: Dictionary = Sim.cargo_status_for_node("port_dock")
+	if String(st.get("state", "")) == "empty":
+		return "  [color=#9fb8c8]港：暂无待卸货物[/color]"
+	if String(st.get("state", "")) == "invalid":
+		return "  [color=#ffb06a]港：货单异常·暂停卸货[/color]"
+	var worker := Sim._name(Sim.get_agent(String(st.get("worker_id", ""))))
+	if worker == "": worker = "码头工"
+	var state_label: String = String({
+		"ready": "待卸", "working": "卸货中", "blocked_capacity": "仓位不足", "blocked_funds": "镇库不足",
+	}.get(String(st.get("state", "")), "待处理"))
+	var backlog := ""
+	if int(st.get("ready_count", 0)) > 1:
+		backlog = "·共%d单%d件" % [int(st.get("ready_count", 0)), int(st.get("ready_qty", 0))]
+	return "  [color=#80e1ff]港：%s×%d %s%s·%s负责[/color]" % [String(st.get("good", "货物")), int(st.get("qty", 0)), state_label, backlog, worker]
 
 # ── 观察台 / 时间轴 ────────────────────────────────────────────────────────
 func _update_scrubber() -> void:
@@ -1687,7 +1754,7 @@ func _update_obs() -> void:
 		_obs.text = _panel_text(not _obs_expanded)
 	if _chat_in != null:
 		# ★ gate 在【玩家模式】上（C8 item 3）：非玩家模式里没有"你"，那个输入框只是浮在世界中间的一块 UI。
-		if not _player_mode or _selected_id == "":
+		if not _player_mode or _selected_id == "" or _selected_id == "player" or _player_in_warehouse_observatory():
 			_chat_in.visible = false
 		elif not _chat_in.has_focus():
 			_chat_in.visible = true
@@ -1698,25 +1765,96 @@ func _update_obs() -> void:
 func _esc(s: String) -> String:
 	return s.replace("[", "[lb]")
 
-## 玩家对选中 NPC 说话 → AIBackend.chat（llm/mock/罐头）→ 头顶回复气泡 + 日志 + 写入 NPC 记忆。
+func _invalidate_chat_generation(owner_token: int = -1) -> void:
+	# Lifecycle cancellation owns presentation cleanup.  Async callbacks are never
+	# allowed to mutate a target while proving their request stale.
+	for raw_ag in Sim.agents:
+		if raw_ag is Dictionary and (raw_ag as Dictionary).has("_chat_request_token") \
+			and (owner_token < 0 or int((raw_ag as Dictionary).get("_chat_request_token", -2)) == owner_token):
+			(raw_ag as Dictionary)["thinking"] = false
+			(raw_ag as Dictionary).erase("_chat_request_token")
+	if owner_token >= 0:
+		return
+	_chat_generation += 1
+	_chat_session_id += 1
+
+func _chat_target_reachable(target: Dictionary, player: Dictionary) -> bool:
+	if target.is_empty() or String(target.get("id", "")) == "player":
+		return false
+	if String(target.get("space", "town")) != String(player.get("space", "town")) \
+		or String(target.get("floor", "outdoor")) != String(player.get("floor", "outdoor")):
+		return false
+	var tp: Vector2i = target.get("pos", Vector2i(-99, -99))
+	var pp: Vector2i = player.get("pos", Vector2i(-99, -99))
+	return absi(tp.x - pp.x) + absi(tp.y - pp.y) <= 2
+
+func _chat_target_allowed(id: String, target: Dictionary) -> bool:
+	if id == "" or id == "player" or target.is_empty() or not _agent_on_active_plane(target):
+		return false
+	if not _player_mode:
+		return true # demo/observer context has no player body; active-plane is the explicit scope
+	var player := Sim.get_agent("player")
+	return not player.is_empty() and _chat_target_reachable(target, player)
+
+func _apply_chat_reply(token: int, target_id: String, target_space: String, target_floor: String,
+		target_pos: Vector2i, player_space: String, player_floor: String, player_pos: Vector2i,
+		sim_identity: int, session_id: int, prompt: String, reply: String) -> bool:
+	var target := Sim.get_agent(target_id)
+	if token != _chat_generation or session_id != _chat_session_id or Sim.get_instance_id() != sim_identity:
+		return false
+	if target.is_empty() or String(target.get("id", "")) != target_id:
+		return false
+	if String(target.get("space", "town")) != target_space or String(target.get("floor", "outdoor")) != target_floor \
+			or Vector2i(target.get("pos", Vector2i(-99, -99))) != target_pos:
+		return false
+	if _player_mode:
+		var player := Sim.get_agent("player")
+		if player.is_empty() or String(player.get("space", "town")) != player_space \
+				or String(player.get("floor", "outdoor")) != player_floor \
+				or Vector2i(player.get("pos", Vector2i(-99, -99))) != player_pos \
+				or not _chat_target_reachable(target, player) or _player_in_warehouse_observatory():
+			return false
+	target["thinking"] = false
+	target.erase("_chat_request_token")
+	if _view != null and _view.has_method("show_say"):
+		_view.show_say(target_id, reply, 90)
+	_push("[color=#cfe8ff]%s：%s[/color]" % [_nm(target_id), _esc(reply)])
+	var mem = target.get("memory")
+	if mem != null:
+		mem.add("玩家问『%s』，我答『%s』" % [_esc(prompt.substr(0, 18)), _esc(reply.substr(0, 18))], 5, Sim.tick_no, [target_id, "player", "chat"])
+	return true
+
+## 唯一聊天权威：输入框、快捷键和 demo 都先经过同一套空间/距离门；
+## AI 回包只可通过 _apply_chat_reply，重新解析目标与玩家上下文后才写 UI/记忆。
 func _on_player_say(text: String) -> void:
 	text = text.strip_edges()
 	if _selected_id == "" or text == "":
 		return
+	if _player_in_warehouse_observatory():
+		_push("[color=#80e1ff]（货运观测室只读；不能在此聊天）[/color]")
+		return
 	var id := _selected_id
 	var ag := Sim.get_agent(id)
-	if ag.is_empty():
+	if not _chat_target_allowed(id, ag):
+		if _player_mode: _push("[color=#f2a3a3]（目标不在可达范围内）[/color]")
 		return
+	var token := _chat_generation + 1
+	_chat_generation = token
+	var target_space := String(ag.get("space", "town"))
+	var target_floor := String(ag.get("floor", "outdoor"))
+	var target_pos: Vector2i = ag.get("pos", Vector2i(-99, -99))
+	var player := Sim.get_agent("player")
+	var player_space := String(player.get("space", "town"))
+	var player_floor := String(player.get("floor", "outdoor"))
+	var player_pos: Vector2i = player.get("pos", Vector2i(-99, -99))
+	var sim_identity := Sim.get_instance_id()
+	var session_id := _chat_session_id
 	_push("[color=#9ad0ff]你 → %s：%s[/color]" % [_nm(id), _esc(text)])   # P2-9：不可信文本转义 [，防 BBCode 注入
 	ag["thinking"] = true
+	ag["_chat_request_token"] = str(token)
 	AIBackend.chat(ag, text, {"tick": Sim.tick_no, "day": Sim.day}, func(reply: String):
-		ag["thinking"] = false
-		if _view != null and _view.has_method("show_say"):
-			_view.show_say(id, reply, 90)                       # 气泡走 draw_string，用原文（非 BBCode，无需转义）
-		_push("[color=#cfe8ff]%s：%s[/color]" % [_nm(id), _esc(reply)])   # 日志是 RichTextLabel(BBCode) → 转义模型回复
-		var mem = ag.get("memory")
-		if mem != null:
-			mem.add("玩家问『%s』，我答『%s』" % [_esc(text.substr(0, 18)), _esc(reply.substr(0, 18))], 5, Sim.tick_no, [id, "player", "chat"])
+		_apply_chat_reply(token, id, target_space, target_floor, target_pos, player_space, player_floor,
+			player_pos, sim_identity, session_id, text, reply)
 	)
 	if _chat_in != null:
 		_chat_in.text = ""
@@ -1800,7 +1938,7 @@ func _panel_text(brief: bool = false) -> String:
 	var p: Dictionary = ag.get("persona", {})
 	var L := []
 	L.append("[color=#ffe08a]%s[/color]  [color=#9aa0b5]%s[/color]" % [str(p.get("name", _selected_id)), " ".join(p.get("traits", []))])
-	L.append("[color=#9aa0b5]%s · 在 %s[/color]" % [str(p.get("bio", "")), Sim._area_label(ag["pos"])])
+	L.append("[color=#9aa0b5]%s · 在 %s[/color]" % [str(p.get("bio", "")), _agent_location_label(ag)])
 	var opt = ag.get("option")
 	var doing := "闲着"
 	if opt != null:
@@ -2047,6 +2185,10 @@ func _demo_tick() -> void:
 func _player_do(action: String) -> String:
 	if not _player_mode:
 		return "未开玩家模式"
+	if _player_in_warehouse_observatory():
+		var reason := "货运观测室只读；卸货由码头工执行"
+		_push("[color=#80e1ff]（%s）[/color]" % reason)
+		return reason
 	if _selected_id == "" or _selected_id == "player":
 		_push("[color=#f2a3a3]（先用 Tab/点选一位居民，再按动作键）[/color]")
 		return "未选中居民"
@@ -2060,7 +2202,7 @@ func _cycle_selection(dir: int) -> void:
 		return
 	var ids := []
 	for a in Sim.agents:
-		if not a.get("is_player", false):
+		if not a.get("is_player", false) and _agent_on_active_plane(a):
 			ids.append(a["id"])       # 玩家不进观察循环（动作目标只会是居民）
 	if ids.is_empty():
 		return
@@ -2435,7 +2577,7 @@ func _on_log_meta(meta: Variant) -> void:
 
 func _focus_agent(id: String) -> void:
 	var ag := Sim.get_agent(id)
-	if ag.is_empty():
+	if ag.is_empty() or not _agent_on_active_plane(ag):
 		return
 	_selected_id = id
 	if _probe != null:
@@ -2472,11 +2614,9 @@ func _unhandled_input(e: InputEvent) -> void:
 					_probe.unfollow()
 					_selected_id = ""
 					_update_obs()
-			KEY_C: _on_player_say("你好，最近怎么样？")        # 快捷：对选中居民打个招呼（也便于无键盘验证）
-			                                                 # ★C8 刻意【不】把这个键 gate 在玩家模式上：
-			                                                 # tools/chat-shoot.sh:20 就是在【不带 --player】的情况下按 c 出图的，
-			                                                 # 加 gate 会让那个脚本静默产出"没有对话"的截图（而 tools/ 归 C4，我不能改）。
-			                                                 # 收起来的只是那个浮在世界中间的【输入框】，不是这条路径本身。
+			KEY_C: _on_player_say("你好，最近怎么样？")        # 快捷：对当前平面选中居民打招呼
+			                                                 # 非玩家观察模式仍允许演示对话；玩家进入货运观测室时，
+			                                                 # _on_player_say 会 fail-closed，不能绕过只读合同写入聊天记忆。
 			KEY_N:                                               # P2-4 导航开发叠层：阻挡格(红)+交互格(绿) 可视化
 				if _view != null:
 					_view.dbg_nav = not _view.dbg_nav
@@ -2614,17 +2754,40 @@ func _portal_click(world_pos: Vector2) -> bool:
 				continue
 			var other: Dictionary = p.get("to") if side == "from" else p.get("from")
 			var os := String(other.get("space", "town")); var of := String(other.get("floor", "outdoor"))
+			# 玩家模式下，人在当前平面且真的站到门边才随门穿越；远处点门仍保留 Probe inspect。
+			# 这让产品截图/玩法验收里的“进仓”是玩家实体的空间变化，不是相机切到一张室内图。
+			var player_crossed := false
+			if _player_mode:
+				var pl: Dictionary = Sim.get_agent("player")
+				var ppos: Vector2i = pl.get("pos", Vector2i(-99, -99)) if not pl.is_empty() else Vector2i(-99, -99)
+				if not pl.is_empty() and String(pl.get("space", "town")) == asp and String(pl.get("floor", "outdoor")) == afl \
+						and absi(ppos.x - cell.x) + absi(ppos.y - cell.y) <= 1:
+					# Display hit-testing identifies the intended edge only.  Sim owns the
+					# entire permission + topology + atomic agent transition transaction.
+					var crossed: Dictionary = Sim._try_traverse_portal("player", asp, afl, cell, os, of)
+					if not bool(crossed.get("ok", false)):
+						var denied_reason := String(crossed.get("reason", ""))
+						var denied_text := "%s：私人区域，未获通行许可" % _sg.label_of(os) if denied_reason == "portal_not_permitted" \
+							else "%s：入口暂时无法通行" % _sg.label_of(os)
+						_push("[color=#ff9b82]（%s）[/color]" % denied_text)
+						return true
+					player_crossed = true
 			var b: Rect2 = _sg.bounds_px(os)
 			_probe.set_space(os, of, b)                # 入历史栈 → ESC 可原路退回
 			if os == "town":
 				_probe.go_home()                       # 出门 → 回全镇视角
+				if player_crossed:
+					var pnow: Dictionary = Sim.get_agent("player")
+					var pc: Vector2i = pnow.get("pos", Vector2i.ZERO)
+					_probe.focus_on(Vector2(pc.x * 48 + 24, pc.y * 48 + 24), "player")
 			else:                                      # 进店/换层 → 缩放到室内刚好入画
 				var fit: Vector2 = (_vp() - Vector2(120.0, 200.0)) / b.size
 				_probe.cam.zoom = Vector2.ONE * clampf(minf(fit.x, fit.y), _probe.ZOOM_MIN.x, _probe.ZOOM_MAX.x)
 				_probe.cam.position = b.get_center()
-			_selected_id = ""
+			_selected_id = "player" if player_crossed else ""
 			var verb := "上下楼" if String(p.get("kind", "")) == "stairs" else ("进门" if os != "town" else "出门")
 			_push("[color=#9ad0ff]%s / %s 层（点%s）[/color]" % [_sg.label_of(os), of, verb])
+			_update_obs()
 			_update_status()
 			return true
 	return false
@@ -2632,7 +2795,34 @@ func _portal_click(world_pos: Vector2) -> bool:
 func _on_probe_tap(world_pos: Vector2) -> void:
 	if _portal_click(world_pos):                       # 先看点没点门/楼梯；点了就穿，不再选人
 		return
+	if _warehouse_observatory_click(world_pos):        # 观测柜台只读查询；不落 Sim 账、不选人
+		return
 	_select_at_world(world_pos)
+
+func _warehouse_observatory_click(world_pos: Vector2) -> bool:
+	if _probe == null or String(_probe.active_space) != "port_warehouse" or String(_probe.active_floor) != "1f":
+		return false
+	var cell := Vector2i(int(floor(world_pos.x / 48.0)), int(floor(world_pos.y / 48.0)))
+	if cell != Sim.warehouse_observatory_console_cell():
+		return false
+	var projection: Dictionary = Sim.warehouse_observatory_projection("port_dock")
+	var cargo: Dictionary = projection.get("cargo", {})
+	var receipt: Dictionary = projection.get("receipt", {})
+	var cargo_text := "泊位暂无待卸货物"
+	if String(cargo.get("state", "")) == "invalid":
+		cargo_text = "泊位货单异常，已暂停展示"
+	elif String(cargo.get("state", "")) != "empty":
+		cargo_text = "泊位 %s×%d（%s）" % [String(cargo.get("good", "货物")), int(cargo.get("qty", 0)),
+			String({"ready": "待卸", "working": "卸货中", "blocked_capacity": "仓位不足", "blocked_funds": "镇库不足"}.get(String(cargo.get("state", "")), "待处理"))]
+	var receipt_text := "尚无卸货回执"
+	if String(receipt.get("state", "")) == "invalid":
+		receipt_text = "最近回执异常，已隐藏明细"
+	elif String(receipt.get("state", "")) == "complete":
+		receipt_text = "最近回执 #%d：%s×%d · %s" % [int(receipt.get("event_id", -1)),
+			String(receipt.get("good", "货物")), int(receipt.get("qty", 0)), Sim._name(Sim.get_agent(String(receipt.get("worker_id", ""))))]
+	_push("[color=#80e1ff]观测台｜%s；%s（只读）[/color]" % [cargo_text, receipt_text])
+	_update_status()
+	return true
 
 ## Probe 双击 → 聚焦所点房间（analysis §4.2 Focus）。
 func _on_probe_double_tap(world_pos: Vector2) -> void:
@@ -2656,6 +2846,8 @@ func _select_at_world(w: Vector2) -> void:
 	var best := ""
 	var bestd := 1.0e9
 	for a in Sim.agents:
+		if not _agent_on_active_plane(a):
+			continue
 		var c := Vector2(a["pos"].x * 48 + 24, a["pos"].y * 48 + 24)
 		var d := c.distance_to(w)
 		if d < bestd:
@@ -2664,3 +2856,18 @@ func _select_at_world(w: Vector2) -> void:
 	if bestd <= 42.0:
 		_selected_id = best
 		_update_obs()
+
+func _agent_on_active_plane(ag: Dictionary) -> bool:
+	if ag.is_empty():
+		return false
+	var space := "town"
+	var floor_id := "outdoor"
+	if _player_mode:
+		var player := Sim.get_agent("player")
+		if not player.is_empty():
+			space = String(player.get("space", space))
+			floor_id = String(player.get("floor", floor_id))
+	elif _probe != null:
+		space = String(_probe.active_space)
+		floor_id = String(_probe.active_floor)
+	return String(ag.get("space", "town")) == space and String(ag.get("floor", "outdoor")) == floor_id

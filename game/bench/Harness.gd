@@ -3,6 +3,9 @@ extends SceneTree
 ## 用法：godot --headless --path . --script res://bench/Harness.gd -- [--suite S0] [--seeds 1-12] [--days 60] [--det 3]
 ##   --seeds  种子范围 "a-b" 或单值（默认 1-12）          --days  每局天数（默认 60，覆盖 S2 谣言变冷轨迹）
 ##   --det    抽样 N 个种子做"同 seed 两跑摘要一致"校验（默认 3，0=跳过）
+##   --core-agents N  明确指定 core/NPC 产能口径；affiliate 在其后追加
+##   --total-agents N 明确指定最终总人口；按当前场景/数据反算 core，并在启动后断言 core+total
+##   --agents N       兼容旧 fixture：等价 --core-agents N（不会改成 total，以免历史命令静默换义）
 ##   --golden <path>       载入金标表比对（任一 seed 的 digest/event_digest/chain 对不上 → 门红 exit 1）
 ##   --bake-golden <path>  重烘金标表（仅在【有意的行为变更】后手工执行；会覆盖 seeds 段，保留 scenarios 段）
 ##   --chain-dump <path>   把逐 tick 前缀链全量写出（每 seed 一行）——排查"第几 tick 开始分叉"的参照物
@@ -104,7 +107,8 @@ const CHAIN_STRIDE := 240
 
 var _shadow := false        # --shadow：开 shadow 探针（Sim.shadow_on）——纯观测，digest 应逐字节不变
 var _shadow_dump := ""      # --shadow-dump <path>：把每 seed 的 shadow_trace 追加成 JSONL（供反事实 / #15v2 分析）
-var _agents := 0            # --agents N：克隆扩容到 N 个 agent（Sim.spawn_count）；0=数据原样 cast，逐字节不变
+var _population_mode := ""  # ""=数据原样；legacy-core/core/total 三种显式口径（互斥）
+var _population_target := 0 # 所选口径的正整数目标；total 会经 Sim.scale_population_plan 反算 core
 var _permute := 0           # --permute N：仅测试，打乱候选数组（置换不变性机检）；0=off 逐字节不变
 var _chain_dump := ""       # --chain-dump <path>：逐 tick 前缀链全量写出（每 seed 一行）
 var _chain_ref := ""        # --chain-ref <path>：与一份 dump 比对，报精确到 tick 的首个分叉
@@ -117,6 +121,7 @@ func _init() -> void:
 	var golden_path := ""
 	var bake_path := ""
 	var args := OS.get_cmdline_user_args()
+	var population_error := ""
 	for i in args.size():
 		if args[i] == "--seeds" and i + 1 < args.size():
 			seeds_spec = args[i + 1]; seeds = _parse_seeds(seeds_spec)
@@ -124,8 +129,17 @@ func _init() -> void:
 			days = int(args[i + 1])
 		elif args[i] == "--det" and i + 1 < args.size():
 			det_n = int(args[i + 1])
-		elif args[i] == "--agents" and i + 1 < args.size():
-			_agents = int(args[i + 1])   # 扩 N 规模诊断
+		elif args[i] in ["--agents", "--core-agents", "--total-agents"]:
+			var flag := String(args[i])
+			if _population_mode != "":
+				population_error = "population flags are mutually exclusive: already selected %s, then got %s" % [_population_mode, flag]
+			elif i + 1 >= args.size():
+				population_error = "%s requires a positive integer" % flag
+			elif not String(args[i + 1]).is_valid_int() or int(args[i + 1]) <= 0:
+				population_error = "%s requires a positive integer, got '%s'" % [flag, String(args[i + 1])]
+			else:
+				_population_mode = "legacy-core" if flag == "--agents" else ("core" if flag == "--core-agents" else "total")
+				_population_target = int(args[i + 1])
 		elif args[i] == "--shadow":
 			_shadow = true
 		elif args[i] == "--shadow-dump" and i + 1 < args.size():
@@ -142,6 +156,13 @@ func _init() -> void:
 			_chain_ref = args[i + 1]
 		elif args[i] == "--suite" and i + 1 < args.size():
 			pass  # 目前仅 S0；保留位给 S5
+	if population_error != "":
+		print("❌ 人口参数无效：" + population_error)
+		print("   → 只能选一个：--agents N（legacy core）、--core-agents N、--total-agents N")
+		quit(2)
+		return
+	if _population_mode == "legacy-core":
+		print("  ⚠ --agents 是兼容入口，语义固定为 core；新脚本请改用 --core-agents 或 --total-agents")
 	if _shadow_dump != "":
 		var f0 := FileAccess.open(_shadow_dump, FileAccess.WRITE)   # 清空/新建
 		if f0: f0.close()
@@ -170,8 +191,12 @@ func _init() -> void:
 		return
 	print("  ✅ standing 漂移性质自检：%d 向量向 0 不翻号、绝对值不增（move_toward）" % SimScript.STANDING_DRIFT_VEC.size())
 
-	print("=== Causal Bench S0 · 不变量回归门  seeds=%s days=%d%s ===" % [str(seeds), days,
-		("  【--permute %d：候选数组被打乱，digest 应一字不变】" % _permute) if _permute != 0 else ""])
+	var population_note := ""
+	if _population_mode != "":
+		population_note = "  population=%s:%d" % [_population_mode, _population_target]
+	print("=== Causal Bench S0 · 不变量回归门  seeds=%s days=%d%s%s ===" % [str(seeds), days,
+		("  【--permute %d：候选数组被打乱，digest 应一字不变】" % _permute) if _permute != 0 else "",
+		population_note])
 	var inv_pass := {}      # id -> 通过的 seed 数
 	var inv_name := {}      # id -> 名称
 	var inv_fail_eg := {}   # id -> 一个失败样例 "seed N: detail"
@@ -187,6 +212,11 @@ func _init() -> void:
 
 	for sd in seeds:
 		var res := _run_once(sd, days)
+		if res.has("setup_error"):
+			print("❌ 人口契约未满足（seed %d）：%s" % [sd, String(res["setup_error"])])
+			_dispose(res["S"])
+			quit(2)
+			return
 		var S = res["S"]
 		first_run_digest[sd] = Inv.digest(S)
 		first_run_edig[sd] = S.event_digest
@@ -226,6 +256,9 @@ func _init() -> void:
 			s0["starve_by_need"] = res["starve_by_need"]
 		if not (res["starve_shape"] as Dictionary).is_empty():
 			s0["starve_shape"] = res["starve_shape"]
+		if _population_mode != "":
+			s0["population"] = {"mode": _population_mode, "requested": _population_target,
+				"core": int(S.core_population), "total": S.agents.size()}
 		print("[S0] " + JSON.stringify(s0))
 		if _shadow_dump != "":
 			_dump_shadow(sd, S.shadow_trace)   # 只在主循环 dump 一次（det 复跑不再重复）
@@ -239,6 +272,11 @@ func _init() -> void:
 	var det_fail: Array = []
 	for sd in det_seeds:
 		var res2 := _run_once(sd, days)
+		if res2.has("setup_error"):
+			print("❌ 人口契约在确定性复跑未满足（seed %d）：%s" % [sd, String(res2["setup_error"])])
+			_dispose(res2["S"])
+			quit(2)
+			return
 		var d2: int = Inv.digest(res2["S"])
 		var e2: int = res2["S"].event_digest
 		var c2: int = int(res2["chain"])
@@ -680,9 +718,26 @@ func _run_once(seed: int, days: int) -> Dictionary:
 	S.backend = null
 	S.shadow_on = _shadow   # 探针开关（默认 false → 逐字节不变）；set before start_new
 	S.cand_permute = _permute   # 置换不变性机检（默认 0=off → Sim 里一条分支都不进）
-	if _agents > 0:
-		S.spawn_count = _agents   # 扩 N 规模诊断（克隆扩容；0=数据原样 cast）
+	var expected_core := 0
+	var expected_total := 0
+	if _population_mode == "total":
+		var plan: Dictionary = S.scale_population_plan(_population_target)
+		if not bool(plan.get("ok", false)):
+			return {"S": S, "setup_error": "cannot plan total=%d: %s (base_core=%d)" % [
+				_population_target, String(plan.get("reason", "unknown")), int(plan.get("base_core", -1))]}
+		expected_core = int(plan["core"])
+		expected_total = _population_target
+		S.spawn_count = expected_core
+	elif _population_mode in ["legacy-core", "core"]:
+		expected_core = _population_target
+		S.spawn_count = expected_core
 	S.start_new(seed)
+	if expected_core > 0 and int(S.core_population) != expected_core:
+		return {"S": S, "setup_error": "requested core=%d, got core=%d total=%d" % [
+			expected_core, int(S.core_population), S.agents.size()]}
+	if expected_total > 0 and S.agents.size() != expected_total:
+		return {"S": S, "setup_error": "requested total=%d, planned core=%d, got core=%d total=%d" % [
+			expected_total, expected_core, int(S.core_population), S.agents.size()]}
 	var total: int = days * int(S.TICKS_PER_DAY)
 	var starved := 0
 	var starve_by_need := {}    # need -> 触底 (agent,tick) 实例数。**纯观测**：只进 detail 字符串，不进判据

@@ -130,7 +130,13 @@ static func fold(h: int, v) -> int:
 ##   AIBackend Object 时 `v is Object == true` → 整个键消失。同一权威态却两套键集 → 两个投影哈希，
 ##   直接违反本模块卖点"冷热镇/跨机等价"。⇒ 在此**统一剔除顶层这两个键**，投影与注入态无关。
 ##   （AO1 原实现漏了这条：把 headless 的 backend:null 也折了进去。审查 F1 收口。）
-const NONAUTH_STATE_KEYS := ["backend", "ext"]
+## Spatial config snapshots remain in the schema-2 envelope for exact compatibility checks, but
+## they are not mutable Sim authority anymore: save_game always rewrites them from receiver-owned
+## authored data and runtime traversal/nav never reads the restored copies.  Counting them in the
+## projection mutation denominator would therefore create a deliberate false hole (mutating the
+## live compatibility copy is correctly erased by the writer).  Strip them at the same boundary
+## as runtime handles; graph drift is guarded by Sim's exact current-schema validator instead.
+const NONAUTH_STATE_KEYS := ["backend", "ext", "_spaces", "_portals", "_interiors_data"]
 
 ## 权威 state：剥掉顶层非权威注入句柄。只动顶层键（浅拷 + erase），不递归污染同名嵌套键。
 static func _auth_state(blob: Dictionary) -> Dictionary:

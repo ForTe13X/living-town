@@ -163,6 +163,11 @@ def main():
         print("  FAIL 前提：出店后取景与进店前不同 —— A 判据失去意义（见 [SPACESHOT] 行）")
         return 1
 
+    if meta.get("player_journey", False):
+        if meta.get("player_entered") is not True or meta.get("player_returned") is not True:
+            print("  FAIL 玩家旅程没有证明真实 player agent 已进仓并返回 town/outdoor")
+            return 1
+
     reg = regions(meta["town_after"]["map_rect_design"], w, h)
     fails = 0
 

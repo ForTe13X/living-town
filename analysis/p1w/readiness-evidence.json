@@ -1,0 +1,253 @@
+{
+  "contract": "living-town-anchor-finalize-readiness-v1",
+  "recorded_at_utc": "2026-08-21T07:01:00Z",
+  "decision": "ready_to_finalize",
+  "frozen": {
+    "branch": "codex/p1a-takeover",
+    "product_head": "f06cc675f03145e8409c8842fb0feb77704ad477",
+    "game_tree": "24811c7f5f36cbab381c721815d599ea16de259a",
+    "base": "d46cbb132595185c3420bb4eb8fd7f28512baa85"
+  },
+  "held_out": {
+    "receipt": "20260814T053846082Z_4ad6be1ef7654f6888edd81fd7368945",
+    "source_identity": "exact_commit",
+    "source_stable": true,
+    "cleanup_verified": true,
+    "outcome": "pass",
+    "seeds": 18,
+    "days": 60,
+    "determinism_pass": 1,
+    "hard_pass": 18,
+    "soft_40_pass": 18,
+    "trade_44_pass": 18,
+    "trade_45_pass": 18,
+    "trade_46_pass": 18,
+    "import_count": 248,
+    "import_seed_coverage": 18,
+    "export_count": 82,
+    "export_seed_coverage": 17,
+    "godot_log_sha256": "d8619fed1ccecec495cd5e30d9a11439ac351c6ad8bd57821fa81e7b8bcb9d46",
+    "script_error_count": 0,
+    "fatal_count": 0
+  },
+  "total_n24": {
+    "receipt": "20260814T052330969Z_2dc7d8429ea144c3a637963cf353d795",
+    "source_identity": "exact_commit",
+    "source_stable": true,
+    "cleanup_verified": true,
+    "outcome": "pass",
+    "mode": "total",
+    "requested": 24,
+    "core": 23,
+    "total": 24,
+    "seeds": 12,
+    "days": 60,
+    "determinism_pass": 1,
+    "hard_pass": 12,
+    "soft_40_pass": 11,
+    "soft_40_red_seeds": [6],
+    "trade_44_pass": 12,
+    "trade_45_pass": 12,
+    "trade_46_pass": 12,
+    "godot_log_sha256": "26d32e12fbc44a2f4a08905c5844236a052e7a6677d54ed7663f75d59648d251",
+    "script_error_count": 0,
+    "fatal_count": 0
+  },
+  "logistics_on": {
+    "source": "isolated git archive of frozen product head",
+    "runner": "gamecraft-runner@sha256:90eaf3f8b60e15ea95de0c3e87e3276414c4cae1355b49471e9d2f52dddaa33d",
+    "probe_sha256": "3aded7bcfd275f6b3d2411eb48cc40fe3b4d431d0a56fcd4391739ca56f7ca47",
+    "exit_code": 0,
+    "core": 23,
+    "total": 24,
+    "seeds": 12,
+    "days": 60,
+    "coverage": {
+      "arrival": 12,
+      "import": 12,
+      "export": 12,
+      "unload": 12
+    },
+    "totals": {
+      "arrival": 240,
+      "import": 126,
+      "export": 84,
+      "unload": 126
+    },
+    "trade_invariants_pass": 12,
+    "log_sha256": "080675839f486e9c5dcc6c778c887a8e322be8ffdc60454a5cf78909f205c612",
+    "script_error_count": 0,
+    "fatal_count": 0
+  },
+  "logistics_off": {
+    "source": "isolated git archive with only game/data/logistics.json removed",
+    "runner": "gamecraft-runner@sha256:90eaf3f8b60e15ea95de0c3e87e3276414c4cae1355b49471e9d2f52dddaa33d",
+    "exit_code": 0,
+    "core": 23,
+    "total": 23,
+    "seeds": 3,
+    "days": 20,
+    "deterministic_repeats": 2,
+    "coverage": {
+      "arrival": 0,
+      "import": 0,
+      "export": 0,
+      "unload": 0
+    },
+    "totals": {
+      "arrival": 0,
+      "import": 0,
+      "export": 0,
+      "unload": 0
+    },
+    "trade_invariants_pass": 3,
+    "log_sha256": "32d9d91c9612603e34667da47182922bc90c48a26f4395e326299d64b7b1df3c",
+    "script_error_count": 0,
+    "fatal_count": 0
+  },
+  "anchors": [
+    {
+      "path": "tools/gate_complement_ledger.json",
+      "sha256": "87f83b99205a81ae9074768ffc393696c263d08f89e5f4ba44e251c98a035c82",
+      "anchor_commit": "b75653acffd3ad32346a895c507c989646f7bdd0",
+      "baked_game_tree": "2d282ddbdd5f216cc09414a66d01404269546526"
+    },
+    {
+      "path": "game/bench/golden_digests.json",
+      "sha256": "5ab7d6e14c75132112038734d0d6473ed46154dc5f64b29c82c61df29e5c7bfc",
+      "anchor_commit": "2d1ae815bc8af99096cc0f224eac275ef9755a76",
+      "baked_game_tree": "2d282ddbdd5f216cc09414a66d01404269546526"
+    },
+    {
+      "path": "game/bench/modelpath_anchor.json",
+      "sha256": "1a570375bdcd0cd0fbadad25ccd3082dc0ba03af62c798e222fd7bab42f6019a",
+      "anchor_commit": "2d1ae815bc8af99096cc0f224eac275ef9755a76",
+      "baked_game_tree": "2d282ddbdd5f216cc09414a66d01404269546526"
+    }
+  ],
+  "hosted_product_run": {
+    "run_id": 32431484183,
+    "head": "ded53e95db0c8b8666aeac64a199b59cf6fb8574",
+    "base": "d46cbb132595185c3420bb4eb8fd7f28512baa85",
+    "merge": "",
+    "game_tree": "ce46441a3e16e863752704375d0a01f814b75399",
+    "status": "completed",
+    "conclusion": "failure",
+    "failure_count": 4,
+    "failure_families": [
+      "complement_ledger_stale",
+      "harness_golden_stale",
+      "detgate_golden_stale",
+      "modelpath_anchor_stale"
+    ],
+    "log_sha256": "",
+    "log_provenance": "hosted run 32431484183: visual_canary PASS; S0 and runtime/integration scenes PASS; core failure is limited to the four protected anchor families (complement ledger, S0/harness golden, DetGate golden, ModelPath anchor)",
+    "non_anchor_failure_count": 0
+  },
+  "fresh_review": {
+    "source_identity": "exact_commit",
+    "product_head": "f06cc675f03145e8409c8842fb0feb77704ad477",
+    "game_tree": "24811c7f5f36cbab381c721815d599ea16de259a",
+    "verdict": "APPROVE_ANCHOR_FINALIZE",
+    "review_ref": "origin/codex/main-repo-review",
+    "review_ref_commit": "e4cd508fa8337d0e5959aff56cae3a102e53e52b",
+    "report_intro_commit": "4b67d3620e25a9234a25657743a4d721f94beb1d",
+    "report_path": "analysis/main-repo-review/external-reviews/p1ac-f06cc67-approve-anchor-finalize.json",
+    "blob_sha": "f87587851f0499e409d940ef83f58c290e52965e",
+    "content_sha256": "2bbe142be965b0aa3ced93dfc5861c6819b832f444b3d09c4fb0bb000a362de2",
+    "verifier_receipt": "C:\\Users\\yp\\AppData\\Local\\Temp\\p1ac-f06-authority\\positive-verifier.json"
+  },
+    "review_gate": {
+    "latest_completed": {
+      "cutoff": "2026-08-13T09:00:00+08:00",
+      "review_head": "486353a",
+      "verdict": "REQUEST_CHANGES",
+      "reviewed_product_head": "e01c5a1",
+      "covers_current_game_tree": false
+    },
+    "current_scheduled": {
+      "started": "2026-08-13T21:10:57+08:00",
+      "status": "in_progress",
+      "provisional_mechanical_readiness": true,
+      "completed_verdict": false
+    },
+    "authorizing_completed": {
+      "status": "completed",
+      "verdict": "APPROVE_ANCHOR_FINALIZE",
+      "product_head": "f06cc675f03145e8409c8842fb0feb77704ad477",
+      "game_tree": "24811c7f5f36cbab381c721815d599ea16de259a",
+      "review_ref": "origin/codex/main-repo-review",
+      "review_ref_commit": "e4cd508fa8337d0e5959aff56cae3a102e53e52b",
+      "report_path": "analysis/main-repo-review/external-reviews/p1ac-f06cc67-approve-anchor-finalize.json",
+      "blob_sha": "f87587851f0499e409d940ef83f58c290e52965e",
+      "content_sha256": "2bbe142be965b0aa3ced93dfc5861c6819b832f444b3d09c4fb0bb000a362de2"
+    }
+  },
+  "external_review_binding": {
+    "required": true,
+    "status": "verified_external_git_blob",
+    "review_ref": "origin/codex/main-repo-review",
+    "review_ref_commit": "e4cd508fa8337d0e5959aff56cae3a102e53e52b",
+    "report_intro_commit": "4b67d3620e25a9234a25657743a4d721f94beb1d",
+    "report_path": "analysis/main-repo-review/external-reviews/p1ac-f06cc67-approve-anchor-finalize.json",
+    "blob_sha": "f87587851f0499e409d940ef83f58c290e52965e",
+    "content_sha256": "2bbe142be965b0aa3ced93dfc5861c6819b832f444b3d09c4fb0bb000a362de2",
+    "verdict": "APPROVE_ANCHOR_FINALIZE",
+    "verified_by": "analysis/p1w/verify-anchor-finalize-readiness.ps1"
+  },
+  "anchor_finalize_receipts": {
+    "complement": {
+      "bake": "C:\\Users\\yp\\AppData\\Local\\Temp\\p1ac-dfedf-complement-bake.log",
+      "audit_self_test": "C:\\Users\\yp\\AppData\\Local\\Temp\\p1ac-dfedf-complement-audit-selftest.log",
+      "guard_self_test": "C:\\Users\\yp\\AppData\\Local\\Temp\\p1ac-dfedf-complement-guard-selftest.log",
+      "production_guard": "C:\\Users\\yp\\AppData\\Local\\Temp\\p1ac-dfedf-complement-production-guard.log",
+      "dead_at_bake": [],
+      "provider_20": "S0",
+      "baked_game_tree": "2d282ddbdd5f216cc09414a66d01404269546526",
+      "baked_commit": "217cfd308c6ac942408f4750ded6ded49dbc1513"
+    },
+    "s0": {
+      "bake": "C:\\Users\\yp\\AppData\\Local\\Temp\\p1ac-f06-authority\\s0-bake.log",
+      "verify": "C:\\Users\\yp\\AppData\\Local\\Temp\\p1ac-f06-authority\\s0-verify.log",
+      "hard": "12/12",
+      "soft_40": "11/12",
+      "golden": "12/12",
+      "determinism": "1/1"
+    },
+    "detgate": {
+      "bake": "C:\\Users\\yp\\AppData\\Local\\Temp\\p1ac-f06-authority\\detgate-bake.log",
+      "bake_exit": 1,
+      "bake_expected_reason": "only stale pre-bake golden comparisons; rebuilt rows written",
+      "verify": "C:\\Users\\yp\\AppData\\Local\\Temp\\p1ac-f06-authority\\detgate-verify.log",
+      "hard": "16/16",
+      "determinism": "16/16",
+      "data_fingerprint": "16/16",
+      "golden": "16/16"
+    },
+    "modelpath": {
+      "bake": "C:\\Users\\yp\\AppData\\Local\\Temp\\p1ac-f06-authority\\modelpath-bake.log",
+      "verify": "C:\\Users\\yp\\AppData\\Local\\Temp\\p1ac-f06-authority\\modelpath-verify.log",
+      "result": "A/B/C and seeds 1-4 PASS"
+    }
+  },
+  "authorization_chain": {
+    "report_product_head": "f06cc675f03145e8409c8842fb0feb77704ad477",
+    "report_game_tree": "24811c7f5f36cbab381c721815d599ea16de259a",
+    "authorized_transition_head": "dfedf6954b22b5b8a410d1450f3d39313b55d940",
+    "authorized_transition_root_tree": "78aa025f0283e50472cbbdbf6e1df992d9905434",
+    "authorized_transition_game_tree": "2d282ddbdd5f216cc09414a66d01404269546526",
+    "authorized_paths": [
+      "tools/gate_complement_ledger.json",
+      "game/bench/golden_digests.json",
+      "game/bench/modelpath_anchor.json",
+      "analysis/p1w/readiness-evidence.json"
+    ],
+    "corrective_paths": [
+      "tools/gate_complement_ledger.json",
+      "analysis/p1w/verify-anchor-finalize-readiness.ps1",
+      "analysis/p1w/readiness-evidence.json"
+    ],
+    "independent_qa_verdict": "REQUEST_CHANGES",
+    "repair_scope": "ledger provenance and external authorization-chain verifier only"
+  }
+}
