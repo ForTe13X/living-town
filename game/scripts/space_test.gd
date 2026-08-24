@@ -158,32 +158,48 @@ func _ready() -> void:
 		if String(h.get("to_space", "")) == "cafe" and String(h.get("to_floor", "")) == "2f":
 			owner_can_private = true
 	ck(owner_can_private, "空间主人仍可走 owner-only 楼梯")
+	# Public player intent must preserve the private transaction's stable success receipt and
+	# exact committed state.  Reset only this fixture's player/cache/signal snapshot between arms.
+	var public_start := _agent_portal_snapshot(pl)
+	var private_success: Dictionary = Sim._try_traverse_portal("player", "town", "outdoor", Vector2i(57, 8), "port_warehouse", "1f")
+	var private_commit := _agent_portal_snapshot(pl)
+	pl["space"] = String(public_start["space"]); pl["floor"] = String(public_start["floor"])
+	Sim._move_agent(pl, public_start["pos"])
+	Sim._path_cache = (public_start["path_cache"] as Dictionary).duplicate(true)
+	_portal_signals = int(public_start["agent_changed_signals"])
 	var signal0 := _portal_signals
-	var public_result: Dictionary = Sim._try_traverse_portal("player", "town", "outdoor", Vector2i(57, 8), "port_warehouse", "1f")
+	var public_result: Dictionary = Sim.player_portal_intent({"source_space": "town", "source_floor": "outdoor", "portal_pos": Vector2i(57, 8)})
 	ck(bool(public_result.get("ok", false)) and String(public_result.get("portal_id", "")) == "p_port_warehouse_door"
 		and String(pl.get("space", "")) == "port_warehouse" and pl.get("pos") == Vector2i(8, 3)
-		and _portal_signals == signal0 + 1,
-		"玩家实体经单一 authority 门进入货仓")
+		and _portal_signals == signal0 + 1 and public_result == private_success
+		and _agent_portal_snapshot(pl) == private_commit,
+		"public player intent 与私有 transaction 的成功收据/提交状态完全一致")
 	Sim.player_move(Vector2i(1, 0))
 	ck(pl.get("pos") == Vector2i(8, 3), "货仓外墙阻止玩家向右穿墙")
 	Sim.player_move(Vector2i(-1, 0))
 	ck(pl.get("pos") == Vector2i(7, 3), "货仓入口向左的地毯格允许玩家踏入室内")
 	signal0 = _portal_signals
-	var return_result: Dictionary = Sim._try_traverse_portal("player", "port_warehouse", "1f", Vector2i(8, 3), "town", "outdoor")
+	var return_result: Dictionary = Sim.player_portal_intent({"source_space": "port_warehouse", "source_floor": "1f", "portal_pos": Vector2i(8, 3)})
 	ck(bool(return_result.get("ok", false)) and String(pl.get("space", "")) == "town" and pl.get("pos") == Vector2i(57, 8),
 		"玩家实体经同一 authority 门返回东港")
 	ck(_portal_signals == signal0 + 1, "成功返回只发一次 agent_changed")
 
-	# P1-p fail-closed transaction teeth: no raw hop can authorize a teleport.  Every arm snapshots
-	# authoritative address/cache state and must reject before the single commit point.
+	# P1-p/C1 fail-closed intent teeth: malformed, stale and wrong-plane input must reject before
+	# the existing transaction commit point, preserving agent/cache/signal state exactly.
 	Sim._path_cache["player"] = {"goal": Vector2i(1, 1), "path": [Vector2i(57, 8)], "i": 0}
 	var denied0 := _agent_portal_snapshot(pl)
-	var stale_source := Sim._try_traverse_portal("player", "cafe", "1f", Vector2i(1, 1), "cafe", "2f")
+	var malformed_intent := Sim.player_portal_intent({"source_space": "town", "portal_pos": Vector2i(57, 8)})
+	ck(not bool(malformed_intent.get("ok", true)) and String(malformed_intent.get("reason", "")) == "malformed_intent"
+		and _agent_portal_snapshot(pl) == denied0, "缺 floor 的 malformed player intent 原子拒绝")
+	var stale_source := Sim.player_portal_intent({"source_space": "cafe", "source_floor": "1f", "portal_pos": Vector2i(1, 1)})
 	ck(not bool(stale_source.get("ok", true)) and String(stale_source.get("reason", "")) == "source_plane_mismatch"
-		and _agent_portal_snapshot(pl) == denied0, "伪造 source plane 原子拒绝且 path cache 不动")
-	var far_click := Sim._try_traverse_portal("player", "town", "outdoor", Vector2i(41, 19), "cafe", "1f")
+		and _agent_portal_snapshot(pl) == denied0, "stale player intent 原子拒绝且 path cache 不动")
+	var wrong_plane := Sim.player_portal_intent({"source_space": "town", "source_floor": "1f", "portal_pos": Vector2i(57, 8)})
+	ck(not bool(wrong_plane.get("ok", true)) and String(wrong_plane.get("reason", "")) == "source_plane_mismatch"
+		and _agent_portal_snapshot(pl) == denied0, "wrong-plane player intent 原子拒绝")
+	var far_click := Sim.player_portal_intent({"source_space": "town", "source_floor": "outdoor", "portal_pos": Vector2i(41, 19)})
 	ck(not bool(far_click.get("ok", true)) and String(far_click.get("reason", "")) == "source_not_adjacent"
-		and _agent_portal_snapshot(pl) == denied0, "远程点门不能移动玩家，拒绝零副作用")
+		and _agent_portal_snapshot(pl) == denied0, "nonadjacent player intent 拒绝零副作用")
 	var forged_target := Sim._try_traverse_portal("player", "town", "outdoor", Vector2i(57, 8), "cafe", "2f")
 	ck(not bool(forged_target.get("ok", true)) and String(forged_target.get("reason", "")) == "portal_not_permitted"
 		and _agent_portal_snapshot(pl) == denied0, "伪造 portal target/floor 原子拒绝")
@@ -226,8 +242,10 @@ func _ready() -> void:
 	Sim._path_cache["player"] = denied0["path_cache"]["player"]
 	var private0 := _agent_portal_snapshot(pl)
 	var private_result := Sim._try_traverse_portal("player", "cafe", "1f", Vector2i(1, 1), "cafe", "2f")
+	var public_private_result := Sim.player_portal_intent({"source_space": "cafe", "source_floor": "1f", "portal_pos": Vector2i(1, 1)})
 	ck(not bool(private_result.get("ok", true)) and String(private_result.get("reason", "")) == "portal_not_permitted"
-		and _agent_portal_snapshot(pl) == private0, "非 owner 玩家在真实楼梯旁也原子拒绝")
+		and public_private_result == private_result and _agent_portal_snapshot(pl) == private0,
+		"private stair denial 与 public intent 收据完全一致且可恢复")
 	# Neither a forged agent cache nor a forged legacy save snapshot is authority.
 	pl["home_space"] = "cafe"; pl["home_floor"] = "1f"
 	var forged_home0 := _agent_portal_snapshot(pl)

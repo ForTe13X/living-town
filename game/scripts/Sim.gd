@@ -5742,14 +5742,32 @@ func _has_exact_nav_plane(space: String, floor: String) -> bool:
 	return _nav_grids.has(space) and _nav_grids[space] is Dictionary \
 		and (_nav_grids[space] as Dictionary).has(floor) and (_nav_grids[space] as Dictionary)[floor] is Dictionary
 
+## Public player entry: the projection may emit only this typed intent.  Sim re-resolves
+## the canonical edge and keeps the transaction/commit point below as the sole authority.
+func player_portal_intent(intent: Dictionary) -> Dictionary:
+	var source_space_value: Variant = intent.get("source_space")
+	var source_floor_value: Variant = intent.get("source_floor")
+	var portal_pos_value: Variant = intent.get("portal_pos")
+	if not (source_space_value is String) or not (source_floor_value is String) or not (portal_pos_value is Vector2i):
+		return _portal_denied_receipt("malformed_intent")
+	var source_space: String = source_space_value
+	var source_floor: String = source_floor_value
+	var portal_pos: Vector2i = portal_pos_value
+	if source_space == "" or source_floor == "":
+		return _portal_denied_receipt("malformed_intent", source_space, source_floor, portal_pos)
+	return _try_traverse_portal("player", source_space, source_floor, portal_pos)
+
+func _portal_denied_receipt(reason: String, source_space := "", source_floor := "", portal_pos := Vector2i.ZERO) -> Dictionary:
+	return {"ok": false, "reason": reason, "portal_id": "", "kind": "", "from_space": source_space,
+		"from_floor": source_floor, "from_pos": portal_pos, "to_space": "", "to_floor": "", "to_pos": Vector2i.ZERO}
+
 ## Portal 的唯一执行入口：按权威 agent id 重取 live record，在 apply 前一次性重验
 ## source plane/endpoint、agent-aware access、期望目标、目标 floor/nav 与落点可走性。
 ## 返回 stable verdict 给 Main/测试；失败不改 agent/path cache、不发 signal，成功才原子改
 ## (space,floor,pos,area,room) + 清该 agent path cache + 发一次 agent_changed。整数、无 RNG/Time。
 func _try_traverse_portal(agent_id: String, source_space: String, source_floor: String, portal_pos: Vector2i,
 		expected_to_space := "", expected_to_floor := "") -> Dictionary:
-	var denied := {"ok": false, "reason": "", "portal_id": "", "kind": "", "from_space": source_space,
-		"from_floor": source_floor, "from_pos": portal_pos, "to_space": "", "to_floor": "", "to_pos": Vector2i.ZERO}
+	var denied := _portal_denied_receipt("", source_space, source_floor, portal_pos)
 	if agent_id == "" or not _agent_by_id.has(agent_id):
 		denied["reason"] = "unknown_agent"
 		return denied
