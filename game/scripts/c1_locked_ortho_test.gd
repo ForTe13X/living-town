@@ -110,8 +110,7 @@ func _ready() -> void:
 	var main = preload("res://scripts/Main.gd").new()
 	add_child(main)
 	await get_tree().process_frame
-	var locked = preload("res://scripts/LockedOrthoC1.gd").new()
-	main.add_child(locked); locked.setup(main._probe); main._locked_ortho_c1 = locked
+	main._activate_locked_ortho_c1()
 	var locked_pos: Vector2 = main._probe.cam.position
 	var locked_zoom: Vector2 = main._probe.cam.zoom
 	var plus := InputEventKey.new(); plus.pressed = true; plus.keycode = KEY_EQUAL
@@ -121,6 +120,21 @@ func _ready() -> void:
 	var drag := InputEventMouseMotion.new(); drag.position = Vector2(300, 300); drag.relative = Vector2(200, 200)
 	main._unhandled_input(drag)
 	ck(main._probe.cam.position == locked_pos and main._probe.cam.zoom == locked_zoom, "actual Main C1 router rejects keyboard zoom and mouse pan")
+	Sim.backend = null; Sim.auto_run = false; Sim.start_new(20260825)
+	main._player_mode = true; Sim.add_player(Vector2i(41, 19))
+	main._probe.set_space("town", "outdoor", main._sg.bounds_px("town")); main._locked_ortho_c1.apply_fixed_frame(main._vp(), main._probe.HOME_PAD)
+	# Emit the Probe's real tap signal rather than calling the portal helper:
+	# this is the same left-tap callback connected by Main._ready.
+	main._probe.emit_signal("tapped", Vector2(41 * 48 + 24, 19 * 48 + 24))
+	var entered: Dictionary = Sim.get_agent("player")
+	ck(String(entered.get("space", "")) == "cafe" and String(main._probe.active_space) == "cafe" and String(main._probe.active_floor) == "1f", "real Main left-tap door follows public receipt then locks 1F frame")
+	for code in [KEY_LEFT, KEY_UP, KEY_UP, KEY_UP, KEY_LEFT, KEY_UP, KEY_LEFT]:
+		var move := InputEventKey.new(); move.pressed = true; move.keycode = code; main._unhandled_input(move)
+	var stair_frame := {"space": main._probe.active_space, "floor": main._probe.active_floor, "pos": main._probe.cam.position, "zoom": main._probe.cam.zoom}
+	var stair_player: Dictionary = Sim.get_agent("player")
+	main._probe.emit_signal("tapped", Vector2(1 * 48 + 24, 1 * 48 + 24))
+	var denied_player: Dictionary = Sim.get_agent("player")
+	ck(String(main._probe.active_floor) == "1f" and {"space": main._probe.active_space, "floor": main._probe.active_floor, "pos": main._probe.cam.position, "zoom": main._probe.cam.zoom} == stair_frame and denied_player.get("pos") == stair_player.get("pos") and "portal_not_permitted" in main._locked_ortho_c1.feedback_text(), "real Main left-tap owner stair cannot inspect 2F or move C1 frame")
 	main._locked_ortho_c1 = null
 	main._unhandled_input(plus)
 	ck(main._probe.cam.zoom != locked_zoom, "feature-off Main router preserves Probe zoom behavior")

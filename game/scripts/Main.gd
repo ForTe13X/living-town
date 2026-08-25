@@ -473,8 +473,7 @@ func _ready() -> void:
 	_view.dbg_nav = _dbg_nav_arg      # --dbg-nav：出图/启动即开导航叠层（否则运行时按 N 切）
 	add_child(_view)
 	if _locked_ortho_c1_arg:
-		_locked_ortho_c1 = preload("res://scripts/LockedOrthoC1.gd").new()
-		add_child(_locked_ortho_c1)
+		_activate_locked_ortho_c1()
 
 	# 相机：可拖可缩的"探针"。红线（docs/19 §3）：相机【纯视图】——只决定画哪、怎么映射输入，
 	# 绝不喂 Sim.lod_focus。若"精细模拟哪块"取决于人眼在看哪，小镇历史就成了观察路径的函数 →
@@ -496,12 +495,18 @@ func _ready() -> void:
 	_probe.double_tapped.connect(_on_probe_double_tap)
 	if _locked_ortho_c1 != null:
 		_locked_ortho_c1.setup(_probe)
+		_locked_ortho_c1.apply_fixed_frame(_vp(), _probe.HOME_PAD)
 	if _demo_cam:
 		_probe.demo_cam = true
 		_demo_cam_apply()                        # 首帧就在轨迹上（否则录屏第一帧仍是 go_home，第二帧才跳过去）
 	if _probe_space_arg != "" and _sg.has_space(_probe_space_arg):   # --probe-space：启动即进某 Space（P3 室内眼验）
 		var _pf: String = _probe_floor_arg if _probe_floor_arg != "" else _sg.default_floor(_probe_space_arg)
 		_probe.set_space(_probe_space_arg, _pf, _sg.bounds_px(_probe_space_arg))
+	if _locked_ortho_c1 != null:
+		# C1 never permits a CLI/Probe inspection shortcut around player portals.
+		_probe.set_space("town", "outdoor", _sg.bounds_px("town"))
+		_probe._history.clear()
+		_locked_ortho_c1.apply_fixed_frame(_vp(), _probe.HOME_PAD)
 
 	# 昼夜光照：CanvasModulate 只染世界画布，不染 HUD（HUD 在独立 CanvasLayer）
 	_modulate = CanvasModulate.new()
@@ -1582,6 +1587,8 @@ func _toggle_perf() -> void:
 
 ## dev 性能 overlay 每帧刷（FPS 要每帧才平滑；关时早退，零开销）。
 func _process(dt: float) -> void:
+	if _locked_ortho_c1 != null:
+		_locked_ortho_c1.apply_fixed_frame(_vp(), _probe.HOME_PAD)
 	_flush_scrub()                                 # 时间轴拖动合并点：每【渲染帧】至多一次 goto_tick
 	if _obs_fit_frames > 0:
 		_obs_fit_frames -= 1
@@ -2778,7 +2785,23 @@ func _portal_click(world_pos: Vector2) -> bool:
 			# 玩家模式下，人在当前平面且真的站到门边才随门穿越；远处点门仍保留 Probe inspect。
 			# 这让产品截图/玩法验收里的“进仓”是玩家实体的空间变化，不是相机切到一张室内图。
 			var player_crossed := false
-			if _player_mode:
+			if _locked_ortho_c1 != null:
+				# C1 admits no Probe-inspect fallback: a portal tap is either a
+				# successful public Sim receipt or a visible no-op on this frame.
+				var c1_player: Dictionary = Sim.get_agent("player")
+				var c1_pos: Vector2i = c1_player.get("pos", Vector2i(-99, -99)) if not c1_player.is_empty() else Vector2i(-99, -99)
+				if not _player_mode or c1_player.is_empty() or String(c1_player.get("space", "town")) != asp \
+						or String(c1_player.get("floor", "outdoor")) != afl or absi(c1_pos.x - cell.x) + absi(c1_pos.y - cell.y) > 1:
+					_locked_ortho_c1.show_receipt("请走到入口旁")
+					return true
+				var c1_receipt: Dictionary = Sim.player_portal_intent({"source_space": asp, "source_floor": afl, "portal_pos": cell})
+				if not bool(c1_receipt.get("ok", false)):
+					var c1_reason := String(c1_receipt.get("reason", "入口不可通行"))
+					_push("[color=#ff9b82]（%s）[/color]" % ("私人区域，未获通行许可" if c1_reason == "portal_not_permitted" else "入口暂时无法通行"))
+					_locked_ortho_c1.show_receipt(c1_reason)
+					return true
+				player_crossed = true
+			elif _player_mode:
 				var pl: Dictionary = Sim.get_agent("player")
 				var ppos: Vector2i = pl.get("pos", Vector2i(-99, -99)) if not pl.is_empty() else Vector2i(-99, -99)
 				if not pl.is_empty() and String(pl.get("space", "town")) == asp and String(pl.get("floor", "outdoor")) == afl \
@@ -2797,7 +2820,9 @@ func _portal_click(world_pos: Vector2) -> bool:
 					player_crossed = true
 			var b: Rect2 = _sg.bounds_px(os)
 			_probe.set_space(os, of, b)                # 入历史栈 → ESC 可原路退回
-			if os == "town":
+			if _locked_ortho_c1 != null:
+				_locked_ortho_c1.apply_fixed_frame(_vp(), _probe.HOME_PAD)
+			elif os == "town":
 				_probe.go_home()                       # 出门 → 回全镇视角
 				if player_crossed:
 					var pnow: Dictionary = Sim.get_agent("player")
@@ -2881,6 +2906,16 @@ func _select_at_world(w: Vector2) -> void:
 	if bestd <= 42.0:
 		_selected_id = best
 		_update_obs()
+
+## One activation seam for the CLI product path and the composed C1 contract
+## scene. The adapter remains optional and has no authority outside View state.
+func _activate_locked_ortho_c1() -> void:
+	if _locked_ortho_c1 == null:
+		_locked_ortho_c1 = preload("res://scripts/LockedOrthoC1.gd").new()
+		add_child(_locked_ortho_c1)
+	if _probe != null:
+		_locked_ortho_c1.setup(_probe)
+		_locked_ortho_c1.apply_fixed_frame(_vp(), _probe.HOME_PAD)
 
 func _agent_on_active_plane(ag: Dictionary) -> bool:
 	if ag.is_empty():

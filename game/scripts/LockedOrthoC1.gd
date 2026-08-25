@@ -19,6 +19,19 @@ func show_receipt(text: String) -> void:
 	_feedback = text
 	queue_redraw()
 
+func feedback_text() -> String:
+	return _feedback
+
+## Fixed C1 framing is View-only. It reads only the active Probe plane and
+## writes only the camera transform; no simulation or portal state is touched.
+func apply_fixed_frame(viewport: Vector2, pad: Vector2) -> void:
+	if _probe == null or viewport.x <= 1.0 or viewport.y <= 1.0:
+		return
+	var size := Vector2(64.0, 48.0) * CELL if String(_probe.active_space) == "town" else Vector2(8.0, 6.0) * CELL
+	var fit := (viewport - pad) / size
+	_probe.cam.zoom = Vector2.ONE * minf(fit.x, fit.y)
+	_probe.cam.position = Rect2(Vector2.ZERO, size).get_center()
+
 func state() -> Dictionary:
 	if _probe == null:
 		return {"space": "", "floor": "", "interactive": false, "label": ""}
