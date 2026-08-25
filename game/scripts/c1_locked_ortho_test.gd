@@ -33,6 +33,15 @@ func find_cafe_guest() -> Dictionary:
 				return ag
 	return {}
 
+func find_button(root: Node, caption: String) -> Button:
+	if root is Button and (root as Button).text == caption:
+		return root as Button
+	for child in root.get_children():
+		var found := find_button(child, caption)
+		if found != null:
+			return found
+	return null
+
 func _ready() -> void:
 	print("=== C1 locked-orthographic cafe contract ===")
 	Sim.backend = null
@@ -175,6 +184,34 @@ func _ready() -> void:
 	var rewind := InputEventKey.new(); rewind.pressed = true; rewind.keycode = KEY_BRACKETLEFT
 	main._unhandled_input(rewind)
 	ck(Sim.tick_no == 0 and String(Sim.get_agent("player").get("space", "")) == "town" and String(main._probe.active_space) == "town" and String(main._probe.active_floor) == "outdoor" and main._probe.cam.position == town_size * 0.5 and main._probe.cam.zoom == Vector2.ONE * town_zoom and Sim.get_player_trace() == before_timeline_trace, "actual timeline jump reconciles replayed canonical town with immutable C1 frame")
+	# Exercise the actual settings controls from a cafe frame.  Turning player
+	# mode off is a successful Sim.start_new with no canonical player, so C1 must
+	# choose its deterministic town observer frame rather than retain cafe/1F.
+	main._probe.emit_signal("tapped", Vector2(41 * 48 + 24, 19 * 48 + 24))
+	# The test enabled player mode through the product setup, so synchronize the
+	# existing settings label before finding and pressing that real control.
+	main._sync_player_btn()
+	var player_button := find_button(main._settings_panel, "开（你已入镇）")
+	ck(player_button != null, "settings player-mode control is composed in real Main")
+	if player_button != null:
+		player_button.emit_signal("pressed")
+	ck(Sim.get_agent("player").is_empty() and not main._player_mode and String(main._probe.active_space) == "town" and String(main._probe.active_floor) == "outdoor" and main._probe.cam.position == town_size * 0.5 and main._probe.cam.zoom == Vector2.ONE * town_zoom and main._selected_id == "", "settings player-mode reset clears stale cafe plane into deterministic no-player town frame")
+	player_button = find_button(main._settings_panel, "关（只观察）")
+	if player_button != null:
+		player_button.emit_signal("pressed")
+	main._probe.emit_signal("tapped", Vector2(41 * 48 + 24, 19 * 48 + 24))
+	var npc_plus := find_button(main._settings_panel, "+")
+	ck(npc_plus != null, "settings NPC increment control is composed in real Main")
+	if npc_plus != null:
+		npc_plus.emit_signal("pressed")
+	ck(main._player_mode and String(Sim.get_agent("player").get("space", "")) == "town" and String(main._probe.active_space) == "town" and String(main._probe.active_floor) == "outdoor" and main._probe.cam.position == town_size * 0.5 and main._probe.cam.zoom == Vector2.ONE * town_zoom, "settings NPC reset reconciles canonical player town and C1 frame")
+	# A no-op settings request is not a reset and must leave every View field
+	# untouched; this is the guard against unconditional reconciliation.
+	main._probe.emit_signal("tapped", Vector2(41 * 48 + 24, 19 * 48 + 24))
+	var no_reset_before := {"sim": state(), "space": main._probe.active_space, "floor": main._probe.active_floor, "pos": main._probe.cam.position, "zoom": main._probe.cam.zoom}
+	main._apply_npc(0)
+	var no_reset_after := {"sim": state(), "space": main._probe.active_space, "floor": main._probe.active_floor, "pos": main._probe.cam.position, "zoom": main._probe.cam.zoom}
+	ck(no_reset_after == no_reset_before, "non-reset NPC input fabricates no C1 View change")
 	main._locked_ortho_c1 = null
 	main._unhandled_input(plus)
 	ck(main._probe.cam.zoom != locked_zoom, "feature-off Main router preserves Probe zoom behavior")

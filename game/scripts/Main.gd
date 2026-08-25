@@ -1521,6 +1521,7 @@ func _toggle_player_mode() -> void:
 	if _player_mode:
 		Sim.add_player(_player_spawn_override)
 	_selected_id = ""
+	_reconcile_locked_ortho_c1()
 	_max_tick = 0
 	_save_sim_setting("player", _player_mode)       # 手机上没有 CLI：下次启动记住（--player 显式给出时不读这里）
 	_sync_player_btn()
@@ -1545,6 +1546,7 @@ func _apply_npc(delta: int) -> void:
 		Sim.add_player(_player_spawn_override)
 	_npc_target = maxi(6, Sim.agents.size() - (1 if _player_mode else 0))   # 低于基础 cast 时克隆环不减→回读实际数，显示不骗人
 	_selected_id = ""
+	_reconcile_locked_ortho_c1()
 	_max_tick = 0
 	_save_sim_setting("npc_count", n)
 	_sync_npc_val()
@@ -2936,8 +2938,9 @@ func _reconcile_locked_ortho_c1() -> void:
 	if _locked_ortho_c1 == null or _probe == null or _sg == null:
 		return
 	var player: Dictionary = Sim.get_agent("player")
-	if player.is_empty():
-		return
+	# No-player mode has no canonical actor plane.  C1's deterministic observer
+	# fallback is town/outdoor, so a settings reset cannot preserve stale cafe
+	# projection state while still remaining wholly outside Sim authority.
 	var space := String(player.get("space", "town"))
 	var floor_id := String(player.get("floor", "outdoor"))
 	_probe.set_space(space, floor_id, _sg.bounds_px(space))
