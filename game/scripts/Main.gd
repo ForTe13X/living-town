@@ -122,6 +122,7 @@ var _models: Array = []               # 扫到的 *.gguf 绝对路径列表
 var _model_idx := 0
 var _max_tick := 0                    # 见过的最大 tick（scrub 范围上限）
 var _scrubbing := false
+var _status_refresh_count := 0        # test-visible UI-only refresh sequencing
 const SCRUB_X0 := 584.0
 const SCRUB_X1 := 1268.0
 const SCRUB_Y := 724.0
@@ -1619,6 +1620,7 @@ func _process(dt: float) -> void:
 		int(st.get("fired", 0)), int(st.get("landed", 0)), int(st.get("timeout", 0)), int(st.get("bad_parse", 0))]
 
 func _update_status() -> void:
+	_status_refresh_count += 1
 	if _status == null:
 		return
 	_sync_action_bar_context()
@@ -2687,8 +2689,10 @@ func _unhandled_input(e: InputEvent) -> void:
 		# C1 only permits left-button taps through the existing Probe tap signal.
 		# Motion/right/middle/wheel/gesture never reach Probe, so they cannot pan,
 		# zoom, follow, or alter the fixed architectural frame.
-		if _locked_ortho_c1 != null and (not (e is InputEventMouseButton) or e.button_index != MOUSE_BUTTON_LEFT):
-			return
+		if _locked_ortho_c1 != null:
+			var c1_left_drag: bool = e is InputEventMouseMotion and _scrubbing and (e.button_mask & MOUSE_BUTTON_MASK_LEFT) != 0
+			if not (e is InputEventMouseButton and e.button_index == MOUSE_BUTTON_LEFT) and not c1_left_drag:
+				return
 		# 输入仲裁（analysis §4.3）：HUD/时间轴【先吃】——拖时间轴绝不能带动世界；剩下的才交给 Probe。
 		if e is InputEventMouseButton and e.button_index == MOUSE_BUTTON_LEFT:
 			if e.pressed and _in_scrub(e.position):

@@ -22,16 +22,19 @@ func state() -> Dictionary:
 		"memory": (pl.get("memory").items as Array).duplicate(true) if pl.get("memory") != null else [],
 		"relationships": (pl.get("relationships", {}) as Dictionary).duplicate(true)}
 
-func stable_main_snapshot(main: Node) -> Dictionary:
+func stable_main_snapshot(main: Node, include_status_refresh := true) -> Dictionary:
 	var sim_state := state()
 	# A failed replay records a diagnostic in its transient trace error field;
 	# compare canonical world/receipt contents separately from that diagnosis.
 	# Inv.digest also includes the diagnostic field, so it is excluded here.
 	sim_state.erase("trace")
 	sim_state.erase("digest")
-	return {"sim": sim_state, "running": Sim.running, "auto_run": Sim.auto_run, "space": main._probe.active_space, "floor": main._probe.active_floor,
+	var result := {"sim": sim_state, "running": Sim.running, "auto_run": Sim.auto_run, "replaying": Sim.replaying, "space": main._probe.active_space, "floor": main._probe.active_floor,
 		"pos": main._probe.cam.position, "zoom": main._probe.cam.zoom, "selected": main._selected_id,
 		"obs": main._obs.text, "status": main._status.text, "feedback": main._locked_ortho_c1.feedback_text()}
+	if include_status_refresh:
+		result["status_refreshes"] = main._status_refresh_count
+	return result
 
 func snapshot_diff(before: Dictionary, after: Dictionary) -> String:
 	var changed := []
@@ -86,6 +89,7 @@ func mouse_button(main: Node, pressed: bool, position: Vector2) -> void:
 func mouse_motion(main: Node, position: Vector2) -> void:
 	var event := InputEventMouseMotion.new()
 	event.position = position
+	event.button_mask = MOUSE_BUTTON_MASK_LEFT
 	main._unhandled_input(event)
 
 func failed_timeline_route(main: Node, name: String) -> void:
@@ -109,6 +113,7 @@ func failed_timeline_route(main: Node, name: String) -> void:
 			# immediate scrub attempt; no private scrub helper is invoked.
 			var immediate := Vector2(main._sx0 + 1.0, main._sy)
 			mouse_button(main, true, immediate)
+			ck(Sim.player_trace_last_error == "player_trace_unavailable", "public timeline press executes immediate scrub attempt")
 			mouse_button(main, false, immediate)
 		"flush":
 			# Press starts Main._scrubbing, motion coalesces _scrub_pending, and the
@@ -117,8 +122,10 @@ func failed_timeline_route(main: Node, name: String) -> void:
 			var deferred := Vector2(main._sx1 - 1.0, main._sy)
 			mouse_button(main, true, press)
 			mouse_motion(main, deferred)
-			ck(main._scrubbing, "public timeline press-motion keeps Main scrub capture until release")
+			ck(main._scrubbing and main._scrub_pending == main._tick_at_x(deferred.x), "public left-drag motion coalesces the deferred scrub target")
+			Sim.player_trace_last_error = ""
 			mouse_button(main, false, deferred)
+			ck(main._scrub_pending < 0 and Sim.player_trace_last_error == "player_trace_unavailable", "public release flushes the deferred scrub attempt")
 	Sim.player_trace_available = trace_available
 	var after := stable_main_snapshot(main)
 	ck(after == before and Sim.running and not main._scrubbing and main._scrub_pending < 0, "failed autoplay %s timeline route restores running and complete C1 snapshot" % name, snapshot_diff(before, after))
@@ -147,15 +154,21 @@ func partial_replay_failure(main: Node, via_mouse: bool) -> void:
 	main._max_tick = maxi(main._max_tick, Sim.tick_no)
 	var before := stable_main_snapshot(main)
 	var trace_before := Sim.get_player_trace()
+	var trace_status_before := Sim.player_trace_status(); trace_status_before.erase("error")
 	if via_mouse:
-		var x: float = main._sx0 + (main._sx1 - main._sx0) * (float(Sim.tick_no - 1) / float(maxi(1, main._max_tick)))
-		mouse_button(main, true, Vector2(x, main._sy))
-		mouse_button(main, false, Vector2(x, main._sy))
+		var press_x: float = main._sx1 - 1.0
+		var deferred_x: float = main._sx0 + (main._sx1 - main._sx0) * (float(Sim.tick_no - 1) / float(maxi(1, main._max_tick)))
+		mouse_button(main, true, Vector2(press_x, main._sy))
+		Sim.player_trace_last_error = ""
+		mouse_motion(main, Vector2(deferred_x, main._sy))
+		ck(main._scrubbing and main._scrub_pending == main._tick_at_x(deferred_x), "partial replay left-drag queues real deferred target")
+		mouse_button(main, false, Vector2(deferred_x, main._sy))
 	else:
 		var comma := InputEventKey.new(); comma.pressed = true; comma.keycode = KEY_COMMA
 		main._unhandled_input(comma)
 	var after := stable_main_snapshot(main)
-	ck(Sim.player_trace_last_error == "recomputed_receipt_mismatch" and after == before and Sim.running and Sim.get_player_trace() == trace_before, "partial replay %s failure preserves live C1 authority and runtime" % ("mouse" if via_mouse else "keyboard"), snapshot_diff(before, after))
+	var trace_status_after := Sim.player_trace_status(); trace_status_after.erase("error")
+	ck(Sim.player_trace_last_error == "recomputed_receipt_mismatch" and after == before and Sim.running and Sim.get_player_trace() == trace_before and trace_status_after == trace_status_before, "partial replay %s failure preserves live C1 authority and runtime" % ("mouse" if via_mouse else "keyboard"), snapshot_diff(before, after))
 
 func find_button(root: Node, caption: String) -> Button:
 	if root is Button and (root as Button).text == caption:
@@ -320,10 +333,10 @@ func _ready() -> void:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(quick_path))
 	Sim.running = true
 	main._update_status()
-	var failed_load_before := stable_main_snapshot(main)
+	var failed_load_before := stable_main_snapshot(main, false)
 	var f8 := InputEventKey.new(); f8.pressed = true; f8.keycode = KEY_F8
 	main._unhandled_input(f8)
-	var failed_load_after := stable_main_snapshot(main)
+	var failed_load_after := stable_main_snapshot(main, false)
 	ck(failed_load_after == failed_load_before, "failed public Main F8 quick-load preserves complete C1 snapshot", snapshot_diff(failed_load_before, failed_load_after))
 	if quick_existed:
 		var restore := FileAccess.open(quick_path, FileAccess.WRITE)
