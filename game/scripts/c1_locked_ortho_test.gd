@@ -79,18 +79,57 @@ func deny_owner_stair(main: Node) -> void:
 		Sim.player_move(direction)
 	main._probe.emit_signal("tapped", Vector2(1 * 48 + 24, 1 * 48 + 24))
 
-func mouse_button(main: Node, pressed: bool, position: Vector2) -> void:
+func mouse_button(main: Node, pressed: bool, position: Vector2, button := MOUSE_BUTTON_LEFT) -> void:
 	var event := InputEventMouseButton.new()
 	event.pressed = pressed
-	event.button_index = MOUSE_BUTTON_LEFT
+	event.button_index = button
 	event.position = position
 	main._unhandled_input(event)
 
-func mouse_motion(main: Node, position: Vector2) -> void:
+func mouse_motion(main: Node, position: Vector2, button_mask := MOUSE_BUTTON_MASK_LEFT) -> void:
 	var event := InputEventMouseMotion.new()
 	event.position = position
-	event.button_mask = MOUSE_BUTTON_MASK_LEFT
+	event.button_mask = button_mask
 	main._unhandled_input(event)
+
+func scrub_input_boundaries(main: Node) -> void:
+	# All inputs are routed through Main.  No-mask, foreign-mask, outside motion,
+	# repeated press, and uncaptured release must never reach the timeline helper.
+	Sim.running = true
+	var trace_available := Sim.player_trace_available
+	Sim.player_trace_available = false
+	var initial := stable_main_snapshot(main)
+	var attempts: int = main._timeline_attempt_count
+	var in_rect := Vector2(main._sx0 + 1.0, main._sy)
+	var outside := Vector2(main._sx1 + 80.0, main._sy + 80.0)
+	mouse_button(main, false, in_rect)
+	mouse_motion(main, in_rect, 0)
+	mouse_motion(main, in_rect, MOUSE_BUTTON_MASK_RIGHT)
+	mouse_motion(main, in_rect, MOUSE_BUTTON_MASK_MIDDLE)
+	ck(stable_main_snapshot(main) == initial and main._timeline_attempt_count == attempts and not main._scrubbing and main._scrub_pending < 0, "uncaptured release and non-left motion are exact C1 timeline no-ops")
+	mouse_button(main, true, in_rect)
+	var after_press: int = main._timeline_attempt_count
+	mouse_motion(main, outside)
+	mouse_button(main, true, in_rect)
+	ck(main._scrubbing and main._scrub_pending < 0 and main._timeline_attempt_count == after_press, "outside motion and repeated press cannot queue or repeat a C1 scrub attempt")
+	mouse_button(main, false, outside)
+	var after_outside_release: int = main._timeline_attempt_count
+	mouse_button(main, false, outside)
+	main._process(0.0)
+	ck(not main._scrubbing and main._scrub_pending < 0 and main._timeline_attempt_count == after_outside_release, "outside-only capture, double release, and next-frame flush cannot create a deferred attempt")
+	# Positive control: a distinct in-range masked drag queues one target and its
+	# release consumes exactly one deferred attempt, then leaves no stale capture.
+	mouse_button(main, true, in_rect)
+	var before_release: int = main._timeline_attempt_count
+	var target := Vector2(main._sx1 - 1.0, main._sy)
+	mouse_motion(main, target)
+	ck(main._scrub_pending == main._tick_at_x(target.x), "in-range masked motion queues the distinct deferred target")
+	mouse_button(main, false, target)
+	var after_release: int = main._timeline_attempt_count
+	mouse_button(main, false, target)
+	main._process(0.0)
+	ck(after_release == before_release + 1 and main._timeline_attempt_count == after_release and not main._scrubbing and main._scrub_pending < 0, "release single-consumes exactly one deferred C1 scrub attempt")
+	Sim.player_trace_available = trace_available
 
 func failed_timeline_route(main: Node, name: String) -> void:
 	Sim.running = true
@@ -317,6 +356,7 @@ func _ready() -> void:
 	# composed test drives Sim directly, so seed the same observed range here.
 	main._max_tick = maxi(main._max_tick, Sim.tick_no)
 	main._update_scrubber()
+	scrub_input_boundaries(main)
 	for route in ["comma", "left", "right", "scrub", "flush"]:
 		failed_timeline_route(main, route)
 	partial_replay_failure(main, false)

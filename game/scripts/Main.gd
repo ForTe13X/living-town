@@ -123,6 +123,7 @@ var _model_idx := 0
 var _max_tick := 0                    # 见过的最大 tick（scrub 范围上限）
 var _scrubbing := false
 var _status_refresh_count := 0        # test-visible UI-only refresh sequencing
+var _timeline_attempt_count := 0      # test-visible input-routing sequencing
 const SCRUB_X0 := 584.0
 const SCRUB_X1 := 1268.0
 const SCRUB_Y := 724.0
@@ -2263,6 +2264,7 @@ func _flush_scrub() -> void:
 ## C1 failures are true live-state no-ops: retain the running state until Sim
 ## accepts the replay. Successful jumps retain the established paused state.
 func _attempt_timeline_jump(target: int) -> bool:
+	_timeline_attempt_count += 1
 	var was_running := Sim.running
 	Sim.running = false
 	var jumped := Sim.goto_tick(target)
@@ -2695,15 +2697,20 @@ func _unhandled_input(e: InputEvent) -> void:
 				return
 		# 输入仲裁（analysis §4.3）：HUD/时间轴【先吃】——拖时间轴绝不能带动世界；剩下的才交给 Probe。
 		if e is InputEventMouseButton and e.button_index == MOUSE_BUTTON_LEFT:
-			if e.pressed and _in_scrub(e.position):
-				_scrubbing = true
-				_scrub_to_x(e.position.x)
-				return
-			if not e.pressed and _scrubbing:
+			if e.pressed:
+				if _scrubbing:
+					return # one capture has exactly one immediate scrub attempt
+				if _in_scrub(e.position):
+					_scrubbing = true
+					_scrub_to_x(e.position.x)
+					return
+			elif _scrubbing:
 				_scrubbing = false
 				_flush_scrub()          # 松手立刻落到最后一个采样点（不等下一帧）
 				return
-		if e is InputEventMouseMotion and _scrubbing:
+			elif _locked_ortho_c1 != null and _in_scrub(e.position):
+				return # an uncaptured timeline release is a strict no-op; world taps keep Probe's public path
+		if e is InputEventMouseMotion and _scrubbing and _in_scrub(e.position):
 			_scrub_pending = _tick_at_x(e.position.x)   # 合并：每帧最多一次 goto_tick（见 _flush_scrub）
 			_preview_scrub(_scrub_pending)
 			return
