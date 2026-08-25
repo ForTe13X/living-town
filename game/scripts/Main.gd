@@ -2788,6 +2788,9 @@ func _portal_click(world_pos: Vector2) -> bool:
 			if _locked_ortho_c1 != null:
 				# C1 admits no Probe-inspect fallback: a portal tap is either a
 				# successful public Sim receipt or a visible no-op on this frame.
+				if not _locked_ortho_c1.allows_portal(String(p.get("id", ""))):
+					_locked_ortho_c1.show_receipt("C1 咖啡馆路线外：未进入")
+					return true
 				var c1_player: Dictionary = Sim.get_agent("player")
 				var c1_pos: Vector2i = c1_player.get("pos", Vector2i(-99, -99)) if not c1_player.is_empty() else Vector2i(-99, -99)
 				if not _player_mode or c1_player.is_empty() or String(c1_player.get("space", "town")) != asp \

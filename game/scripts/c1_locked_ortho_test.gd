@@ -127,7 +127,9 @@ func _ready() -> void:
 	# this is the same left-tap callback connected by Main._ready.
 	main._probe.emit_signal("tapped", Vector2(41 * 48 + 24, 19 * 48 + 24))
 	var entered: Dictionary = Sim.get_agent("player")
-	ck(String(entered.get("space", "")) == "cafe" and String(main._probe.active_space) == "cafe" and String(main._probe.active_floor) == "1f", "real Main left-tap door follows public receipt then locks 1F frame")
+	var cafe_size := Vector2(8 * 48, 6 * 48)
+	var cafe_zoom := minf((main._vp() - main._probe.HOME_PAD).x / cafe_size.x, (main._vp() - main._probe.HOME_PAD).y / cafe_size.y)
+	ck(String(entered.get("space", "")) == "cafe" and String(main._probe.active_space) == "cafe" and String(main._probe.active_floor) == "1f" and main._probe.cam.position == cafe_size * 0.5 and main._probe.cam.zoom == Vector2.ONE * cafe_zoom, "real Main left-tap door follows public receipt then locks exact 1F frame")
 	for code in [KEY_LEFT, KEY_UP, KEY_UP, KEY_UP, KEY_LEFT, KEY_UP, KEY_LEFT]:
 		var move := InputEventKey.new(); move.pressed = true; move.keycode = code; main._unhandled_input(move)
 	var stair_frame := {"space": main._probe.active_space, "floor": main._probe.active_floor, "pos": main._probe.cam.position, "zoom": main._probe.cam.zoom}
@@ -135,6 +137,20 @@ func _ready() -> void:
 	main._probe.emit_signal("tapped", Vector2(1 * 48 + 24, 1 * 48 + 24))
 	var denied_player: Dictionary = Sim.get_agent("player")
 	ck(String(main._probe.active_floor) == "1f" and {"space": main._probe.active_space, "floor": main._probe.active_floor, "pos": main._probe.cam.position, "zoom": main._probe.cam.zoom} == stair_frame and denied_player.get("pos") == stair_player.get("pos") and "portal_not_permitted" in main._locked_ortho_c1.feedback_text(), "real Main left-tap owner stair cannot inspect 2F or move C1 frame")
+	# Use real left-button press/release through Main -> Probe.handle_input. The
+	# adjacent home door is public in the world but deliberately outside C1's
+	# presentation allowlist, so it must not emit a Sim portal intent at all.
+	Sim.backend = null; Sim.auto_run = false; Sim.start_new(20260825)
+	main._player_mode = true; Sim.add_player(Vector2i(22, 19))
+	main._probe.set_space("town", "outdoor", main._sg.bounds_px("town")); main._locked_ortho_c1.apply_fixed_frame(main._vp(), main._probe.HOME_PAD)
+	var unsupported_before := {"sim": state(), "space": main._probe.active_space, "floor": main._probe.active_floor, "pos": main._probe.cam.position, "zoom": main._probe.cam.zoom}
+	var home_world := Vector2(22 * 48 + 24, 19 * 48 + 24)
+	var home_screen: Vector2 = main._vp() * 0.5 + (home_world - main._probe.cam.position) * main._probe.cam.zoom
+	var left_down := InputEventMouseButton.new(); left_down.pressed = true; left_down.button_index = MOUSE_BUTTON_LEFT; left_down.position = home_screen
+	var left_up := InputEventMouseButton.new(); left_up.pressed = false; left_up.button_index = MOUSE_BUTTON_LEFT; left_up.position = home_screen
+	main._unhandled_input(left_down); main._unhandled_input(left_up)
+	var unsupported_after := {"sim": state(), "space": main._probe.active_space, "floor": main._probe.active_floor, "pos": main._probe.cam.position, "zoom": main._probe.cam.zoom}
+	ck(unsupported_after == unsupported_before and "路线外" in main._locked_ortho_c1.feedback_text(), "real left input rejects adjacent public non-cafe door before Sim intent with exact C1 immutability")
 	main._locked_ortho_c1 = null
 	main._unhandled_input(plus)
 	ck(main._probe.cam.zoom != locked_zoom, "feature-off Main router preserves Probe zoom behavior")

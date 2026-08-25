@@ -10,6 +10,7 @@ const CELL := 48.0
 const INK := Color("#f6e7c1")
 const MUTED := Color("#786f72")
 const ACCENT := Color("#d88c62")
+const PRESENTATION_PORTALS := ["p_cafe_door", "p_cafe_stairs"]
 
 func setup(probe: Node) -> void:
 	_probe = probe
@@ -21,6 +22,12 @@ func show_receipt(text: String) -> void:
 
 func feedback_text() -> String:
 	return _feedback
+
+## This is a presentation-route filter, not a permission rule. Main asks it
+## before emitting any Sim intent; admitted routes still use Sim's canonical
+## topology/access validation and receipts.
+func allows_portal(portal_id: String) -> bool:
+	return portal_id in PRESENTATION_PORTALS
 
 ## Fixed C1 framing is View-only. It reads only the active Probe plane and
 ## writes only the camera transform; no simulation or portal state is touched.
