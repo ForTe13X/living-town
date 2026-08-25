@@ -2266,10 +2266,12 @@ func _after_jump(reconcile_c1 := false) -> void:
 	_modulate.color = _daylight(Sim.time_of_day())
 	_update_status()
 	_update_scrubber()
-	_update_obs()
-	_rebuild_feed()   # 时间线换了：播报必须照当前 event_log 重建，不能留上一条时间线的字
 	if reconcile_c1:
 		_reconcile_locked_ortho_c1()
+	# C1 reconciliation can clear a cross-plane selection.  Render observation
+	# only after that final View state is known, in the same successful jump frame.
+	_update_obs()
+	_rebuild_feed()   # 时间线换了：播报必须照当前 event_log 重建，不能留上一条时间线的字
 
 func _nm(id: Variant) -> String:
 	var a := Sim.get_agent(String(id))
@@ -2713,10 +2715,11 @@ func _after_load() -> void:
 	_modulate.color = _daylight(Sim.time_of_day())
 	_selected_id = ""
 	_update_status()
-	_update_obs()
 	_update_scrubber()
-	_rebuild_feed()   # 读档=换世界：播报同样按新 event_log 重建
 	_reconcile_locked_ortho_c1()
+	# Keep the rendered panel coupled to the final reconciled plane/selection.
+	_update_obs()
+	_rebuild_feed()   # 读档=换世界：播报同样按新 event_log 重建
 
 func _vp() -> Vector2:
 	return get_viewport_rect().size

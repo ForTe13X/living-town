@@ -33,6 +33,24 @@ func find_cafe_guest() -> Dictionary:
 				return ag
 	return {}
 
+func find_cafe_resident() -> Dictionary:
+	for raw in Sim.agents:
+		var ag: Dictionary = raw
+		if not bool(ag.get("is_player", false)) and String(ag.get("space", "")) == "cafe" and String(ag.get("floor", "")) == "1f":
+			return ag
+	return {}
+
+func wait_cafe_resident() -> Dictionary:
+	var resident := find_cafe_resident()
+	# The authored cafe schedule produces a resident well before one day.  Keeping
+	# this below TICKS_PER_DAY lets the real bracket jump still land before entry.
+	for _i in range(240):
+		if not resident.is_empty():
+			break
+		Sim.tick()
+		resident = find_cafe_resident()
+	return resident
+
 func find_button(root: Node, caption: String) -> Button:
 	if root is Button and (root as Button).text == caption:
 		return root as Button
@@ -170,20 +188,30 @@ func _ready() -> void:
 	var saved_town := state()
 	main._probe.emit_signal("tapped", Vector2(41 * 48 + 24, 19 * 48 + 24))
 	ck(String(Sim.get_agent("player").get("space", "")) == "cafe", "save/load setup enters cafe through connected public door")
+	var load_resident := wait_cafe_resident()
+	var load_name := str(load_resident.get("persona", {}).get("name", ""))
+	if not load_resident.is_empty():
+		main._focus_agent(String(load_resident.get("id", "")))
+		ck(main._obs.text.contains(load_name), "cafe resident is visibly selected before cross-plane quick-load")
 	main._quick_load()
 	var town_size := Vector2(64 * 48, 48 * 48)
 	var town_zoom := minf((main._vp() - main._probe.HOME_PAD).x / town_size.x, (main._vp() - main._probe.HOME_PAD).y / town_size.y)
-	ck(state() == saved_town and String(main._probe.active_space) == "town" and String(main._probe.active_floor) == "outdoor" and main._probe.cam.position == town_size * 0.5 and main._probe.cam.zoom == Vector2.ONE * town_zoom and main._selected_id == "", "Main quick-load reconciles canonical town, Probe plane, selection and fixed town frame")
+	ck(not load_name.is_empty() and state() == saved_town and String(main._probe.active_space) == "town" and String(main._probe.active_floor) == "outdoor" and main._probe.cam.position == town_size * 0.5 and main._probe.cam.zoom == Vector2.ONE * town_zoom and main._selected_id == "" and not main._obs.text.contains(load_name), "Main quick-load reconciles canonical town, Probe plane, selection, observation panel and fixed town frame")
 	# Make the door receipt part of a later timeline, then use the actual bracket
 	# key route to jump before it.  Direct Probe assignment here would hide the
 	# precise regression this test is intended to catch.
 	tickn(3)
 	main._probe.emit_signal("tapped", Vector2(41 * 48 + 24, 19 * 48 + 24))
+	var jump_resident := wait_cafe_resident()
+	var jump_name := str(jump_resident.get("persona", {}).get("name", ""))
+	if not jump_resident.is_empty():
+		main._focus_agent(String(jump_resident.get("id", "")))
+		ck(main._obs.text.contains(jump_name), "cafe resident is visibly selected before real timeline jump")
 	tickn(2)
 	var before_timeline_trace := Sim.get_player_trace().duplicate(true)
 	var rewind := InputEventKey.new(); rewind.pressed = true; rewind.keycode = KEY_BRACKETLEFT
 	main._unhandled_input(rewind)
-	ck(Sim.tick_no == 0 and String(Sim.get_agent("player").get("space", "")) == "town" and String(main._probe.active_space) == "town" and String(main._probe.active_floor) == "outdoor" and main._probe.cam.position == town_size * 0.5 and main._probe.cam.zoom == Vector2.ONE * town_zoom and Sim.get_player_trace() == before_timeline_trace, "actual timeline jump reconciles replayed canonical town with immutable C1 frame")
+	ck(not jump_name.is_empty() and Sim.tick_no == 0 and String(Sim.get_agent("player").get("space", "")) == "town" and String(main._probe.active_space) == "town" and String(main._probe.active_floor) == "outdoor" and main._probe.cam.position == town_size * 0.5 and main._probe.cam.zoom == Vector2.ONE * town_zoom and main._selected_id == "" and not main._obs.text.contains(jump_name) and "点一个居民" in main._obs.text and Sim.get_player_trace() == before_timeline_trace, "actual timeline jump clears stale cafe observation in the same reconciled town frame")
 	# Exercise the actual settings controls from a cafe frame.  Turning player
 	# mode off is a successful Sim.start_new with no canonical player, so C1 must
 	# choose its deterministic town observer frame rather than retain cafe/1F.
