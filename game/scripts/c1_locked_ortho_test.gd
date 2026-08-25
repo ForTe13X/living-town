@@ -31,7 +31,7 @@ func stable_main_snapshot(main: Node) -> Dictionary:
 	sim_state.erase("digest")
 	return {"sim": sim_state, "running": Sim.running, "space": main._probe.active_space, "floor": main._probe.active_floor,
 		"pos": main._probe.cam.position, "zoom": main._probe.cam.zoom, "selected": main._selected_id,
-		"obs": main._obs.text, "feedback": main._locked_ortho_c1.feedback_text()}
+		"obs": main._obs.text, "status": main._status.text, "feedback": main._locked_ortho_c1.feedback_text()}
 
 func snapshot_diff(before: Dictionary, after: Dictionary) -> String:
 	var changed := []
@@ -70,12 +70,35 @@ func wait_cafe_resident() -> Dictionary:
 	return resident
 
 func deny_owner_stair(main: Node) -> void:
-	for code in [KEY_LEFT, KEY_UP, KEY_UP, KEY_UP, KEY_LEFT, KEY_UP, KEY_LEFT]:
-		var move := InputEventKey.new()
-		move.pressed = true
-		move.keycode = code
-		main._unhandled_input(move)
+	# Public player movement plus the connected Main/Probe left-tap route: no
+	# coordinates, topology, or permission result is injected by this helper.
+	for direction in [Vector2i.LEFT, Vector2i.UP, Vector2i.UP, Vector2i.UP, Vector2i.LEFT, Vector2i.UP, Vector2i.LEFT]:
+		Sim.player_move(direction)
 	main._probe.emit_signal("tapped", Vector2(1 * 48 + 24, 1 * 48 + 24))
+
+func failed_timeline_route(main: Node, name: String) -> void:
+	Sim.running = true
+	main._update_status()
+	var before := stable_main_snapshot(main)
+	var trace_available := Sim.player_trace_available
+	Sim.player_trace_available = false
+	match name:
+		"comma":
+			var comma := InputEventKey.new(); comma.pressed = true; comma.keycode = KEY_COMMA
+			main._unhandled_input(comma)
+		"left":
+			var left := InputEventKey.new(); left.pressed = true; left.keycode = KEY_BRACKETLEFT
+			main._unhandled_input(left)
+		"right":
+			var right := InputEventKey.new(); right.pressed = true; right.keycode = KEY_BRACKETRIGHT
+			main._unhandled_input(right)
+		"scrub": main._scrub_to_x(main._sx0)
+		"flush":
+			main._scrub_pending = 0
+			main._flush_scrub()
+	Sim.player_trace_available = trace_available
+	var after := stable_main_snapshot(main)
+	ck(after == before and Sim.running, "failed autoplay %s timeline route restores running and complete C1 snapshot" % name, snapshot_diff(before, after))
 
 func find_button(root: Node, caption: String) -> Button:
 	if root is Button and (root as Button).text == caption:
@@ -190,6 +213,9 @@ func _ready() -> void:
 	main._probe.emit_signal("tapped", Vector2(1 * 48 + 24, 1 * 48 + 24))
 	var denied_player: Dictionary = Sim.get_agent("player")
 	ck(String(main._probe.active_floor) == "1f" and {"space": main._probe.active_space, "floor": main._probe.active_floor, "pos": main._probe.cam.position, "zoom": main._probe.cam.zoom} == stair_frame and denied_player.get("pos") == stair_player.get("pos") and "portal_not_permitted" in main._locked_ortho_c1.feedback_text(), "real Main left-tap owner stair cannot inspect 2F or move C1 frame")
+	main._update_obs()
+	await get_tree().process_frame
+	ck("portal_not_permitted" in main._locked_ortho_c1.feedback_text(), "ordinary same-world UI processing preserves visible owner denial")
 	# A real NPC settings button resets the canonical world. The old denial is
 	# strictly transient, so public cafe re-entry in the new world cannot redraw it.
 	main._player_spawn_override = Vector2i(41, 19)
@@ -214,20 +240,31 @@ func _ready() -> void:
 	main._unhandled_input(left_down); main._unhandled_input(left_up)
 	var unsupported_after := {"sim": state(), "space": main._probe.active_space, "floor": main._probe.active_floor, "pos": main._probe.cam.position, "zoom": main._probe.cam.zoom}
 	ck(unsupported_after == unsupported_before and "路线外" in main._locked_ortho_c1.feedback_text(), "real left input rejects adjacent public non-cafe door before Sim intent with exact C1 immutability")
-	# A failed Main timeline key path and a failed public load both leave the
-	# canonical/View/panel/receipt snapshot alone; neither reaches reconciliation.
-	Sim.running = false
-	var failed_before := stable_main_snapshot(main)
-	var trace_available := Sim.player_trace_available
-	Sim.player_trace_available = false
-	var failed_jump := InputEventKey.new(); failed_jump.pressed = true; failed_jump.keycode = KEY_COMMA
-	main._unhandled_input(failed_jump)
-	Sim.player_trace_available = trace_available
-	var failed_after_jump := stable_main_snapshot(main)
-	ck(failed_after_jump == failed_before, "failed real Main timeline jump preserves canonical and complete C1 View snapshot", snapshot_diff(failed_before, failed_after_jump))
-	ck(not Sim.load_game("user://c1_missing_restore_boundary.save"), "missing public save fails closed")
-	var failed_after_load := stable_main_snapshot(main)
-	ck(failed_after_load == failed_after_jump, "failed public load preserves canonical and complete C1 View snapshot")
+	# All five real Main timeline entrances attempt a rejected replay while live
+	# autoplay is on. They must restore the running bit and every View observable.
+	for route in ["comma", "left", "right", "scrub", "flush"]:
+		failed_timeline_route(main, route)
+	# The rejected replay diagnostic is expected and explicitly excluded above;
+	# clear it before the following independent real-player scenario.
+	Sim.player_trace_last_error = ""
+	# F8 must use Main's public router too. Preserve any test-runtime quicksave,
+	# temporarily remove it to make the product path fail, then restore its bytes.
+	var quick_path: String = main.QUICKSAVE
+	var quick_existed := FileAccess.file_exists(quick_path)
+	var quick_bytes := FileAccess.get_file_as_bytes(quick_path) if quick_existed else PackedByteArray()
+	if quick_existed:
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(quick_path))
+	Sim.running = true
+	main._update_status()
+	var failed_load_before := stable_main_snapshot(main)
+	var f8 := InputEventKey.new(); f8.pressed = true; f8.keycode = KEY_F8
+	main._unhandled_input(f8)
+	var failed_load_after := stable_main_snapshot(main)
+	ck(failed_load_after == failed_load_before, "failed public Main F8 quick-load preserves complete C1 snapshot", snapshot_diff(failed_load_before, failed_load_after))
+	if quick_existed:
+		var restore := FileAccess.open(quick_path, FileAccess.WRITE)
+		if restore != null:
+			restore.store_buffer(quick_bytes)
 	# Save through Main's public quick-save/load route, then enter through the
 	# connected Probe tap.  Loading must read Sim's restored plane back into the
 	# Probe before the per-frame fixed-frame pass can preserve stale cafe state.
@@ -249,26 +286,30 @@ func _ready() -> void:
 	var town_size := Vector2(64 * 48, 48 * 48)
 	var town_zoom := minf((main._vp() - main._probe.HOME_PAD).x / town_size.x, (main._vp() - main._probe.HOME_PAD).y / town_size.y)
 	ck(not load_name.is_empty() and state() == saved_town and String(main._probe.active_space) == "town" and String(main._probe.active_floor) == "outdoor" and main._probe.cam.position == town_size * 0.5 and main._probe.cam.zoom == Vector2.ONE * town_zoom and main._selected_id == "" and not main._obs.text.contains(load_name) and main._locked_ortho_c1.feedback_text() == "", "Main quick-load reconciles canonical town, Probe plane, selection, observation panel, transient feedback and fixed town frame")
-	# Make the door receipt part of a later timeline, then use the actual bracket
-	# key route to jump before it.  Direct Probe assignment here would hide the
-	# precise regression this test is intended to catch.
-	tickn(3)
+	# Make a fresh real café denial part of a later timeline, then use the actual
+	# bracket key route to jump before it. No adapter receipt is fabricated here.
+	Sim.backend = null; Sim.auto_run = false; Sim.start_new(20260825)
+	tickn(2) # establish a town timeline before the player enters it
+	main._player_mode = true; Sim.add_player(Vector2i(41, 19))
+	main._probe.set_space("town", "outdoor", main._sg.bounds_px("town")); main._locked_ortho_c1.apply_fixed_frame(main._vp(), main._probe.HOME_PAD)
+	tickn(1)
+	Sim.running = false
 	main._probe.emit_signal("tapped", Vector2(41 * 48 + 24, 19 * 48 + 24))
 	ck(String(Sim.get_agent("player").get("space", "")) == "cafe", "timeline setup re-enters cafe through public door", str(Sim.get_agent("player").get("pos", Vector2i.ZERO)))
-	# The earlier settings/load sequences already use a real stair denial. This
-	# View-only seed isolates the shared successful-jump receipt lifetime contract.
-	main._locked_ortho_c1.show_receipt("portal_not_permitted")
-	ck("portal_not_permitted" in main._locked_ortho_c1.feedback_text(), "timeline feedback seed is visible before successful jump")
+	deny_owner_stair(main)
+	ck("portal_not_permitted" in main._locked_ortho_c1.feedback_text(), "real owner-stair denial is visible before successful timeline jump", "%s / %s" % [main._locked_ortho_c1.feedback_text(), str(Sim.get_agent("player").get("pos", Vector2i.ZERO))])
 	var jump_resident := wait_cafe_resident()
 	var jump_name := str(jump_resident.get("persona", {}).get("name", ""))
 	if not jump_resident.is_empty():
 		main._focus_agent(String(jump_resident.get("id", "")))
 		ck(main._obs.text.contains(jump_name), "cafe resident is visibly selected before real timeline jump")
-	tickn(2)
+	# One real bracket jump is one simulated day. Advance far enough that it
+	# lands at the player-spawn town tick, before the café door receipt.
+	tickn(maxi(0, int(Sim.TICKS_PER_DAY) + 2 - Sim.tick_no))
 	var before_timeline_trace := Sim.get_player_trace().duplicate(true)
 	var rewind := InputEventKey.new(); rewind.pressed = true; rewind.keycode = KEY_BRACKETLEFT
 	main._unhandled_input(rewind)
-	ck(not jump_name.is_empty() and Sim.tick_no == 0 and String(Sim.get_agent("player").get("space", "")) == "town" and String(main._probe.active_space) == "town" and String(main._probe.active_floor) == "outdoor" and main._probe.cam.position == town_size * 0.5 and main._probe.cam.zoom == Vector2.ONE * town_zoom and main._selected_id == "" and not main._obs.text.contains(jump_name) and "点一个居民" in main._obs.text and main._locked_ortho_c1.feedback_text() == "" and Sim.get_player_trace() == before_timeline_trace, "actual timeline jump clears stale cafe observation and transient feedback in the same reconciled town frame")
+	ck(not jump_name.is_empty() and Sim.tick_no == 2 and String(Sim.get_agent("player").get("space", "")) == "town" and String(main._probe.active_space) == "town" and String(main._probe.active_floor) == "outdoor" and main._probe.cam.position == town_size * 0.5 and main._probe.cam.zoom == Vector2.ONE * town_zoom and main._selected_id == "" and not main._obs.text.contains(jump_name) and "点一个居民" in main._obs.text and main._locked_ortho_c1.feedback_text() == "" and Sim.get_player_trace() == before_timeline_trace, "actual timeline jump clears stale cafe observation and transient feedback in the same reconciled town frame")
 	# Exercise the actual settings controls from a cafe frame.  Turning player
 	# mode off is a successful Sim.start_new with no canonical player, so C1 must
 	# choose its deterministic town observer frame rather than retain cafe/1F.
@@ -292,6 +333,7 @@ func _ready() -> void:
 	ck(main._player_mode and String(Sim.get_agent("player").get("space", "")) == "town" and String(main._probe.active_space) == "town" and String(main._probe.active_floor) == "outdoor" and main._probe.cam.position == town_size * 0.5 and main._probe.cam.zoom == Vector2.ONE * town_zoom, "settings NPC reset reconciles canonical player town and C1 frame")
 	# A no-op settings request is not a reset and must leave every View field
 	# untouched; this is the guard against unconditional reconciliation.
+	main._npc_target = 6
 	main._probe.emit_signal("tapped", Vector2(41 * 48 + 24, 19 * 48 + 24))
 	var no_reset_before := {"sim": state(), "space": main._probe.active_space, "floor": main._probe.active_floor, "pos": main._probe.cam.position, "zoom": main._probe.cam.zoom}
 	main._apply_npc(0)

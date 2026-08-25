@@ -2238,9 +2238,7 @@ func _tick_at_x(x: float) -> int:
 	return int(round(f * _max_tick))
 
 func _scrub_to_x(x: float) -> void:
-	Sim.running = false
-	var jumped := Sim.goto_tick(_tick_at_x(x))
-	_after_jump(jumped)
+	_attempt_timeline_jump(_tick_at_x(x))
 
 ## 拖动时【只】挪手柄（不重演）：真正的 goto_tick 每帧最多一次，在 _flush_scrub 里做。
 ## 一次 goto_tick = start_new(seed) + 从 0 重跑到目标 tick（Sim.gd:802-826，~0.4ms/tick），
@@ -2258,8 +2256,16 @@ func _flush_scrub() -> void:
 		return
 	var t := _scrub_pending
 	_scrub_pending = -1
+	_attempt_timeline_jump(t)
+
+## C1 failures are true live-state no-ops: retain the running state until Sim
+## accepts the replay. Successful jumps retain the established paused state.
+func _attempt_timeline_jump(target: int) -> void:
+	var was_running := Sim.running
 	Sim.running = false
-	var jumped := Sim.goto_tick(t)
+	var jumped := Sim.goto_tick(target)
+	if not jumped and _locked_ortho_c1 != null:
+		Sim.running = was_running
 	_after_jump(jumped)
 
 func _after_jump(reconcile_c1 := false) -> void:
@@ -2667,14 +2673,11 @@ func _unhandled_input(e: InputEvent) -> void:
 			KEY_G, KEY_F, KEY_B, KEY_Y, KEY_T, KEY_P, KEY_M: _player_do(verb_for_key(e.keycode))
 			KEY_PERIOD: if not Sim.running: Sim.tick()                                   # 单步 +1
 			KEY_COMMA:
-				Sim.running = false
-				_after_jump(Sim.goto_tick(maxi(0, Sim.tick_no - 1)))
+				_attempt_timeline_jump(maxi(0, Sim.tick_no - 1))
 			KEY_BRACKETLEFT:
-				Sim.running = false
-				_after_jump(Sim.goto_tick(maxi(0, Sim.tick_no - Sim.TICKS_PER_DAY)))
+				_attempt_timeline_jump(maxi(0, Sim.tick_no - Sim.TICKS_PER_DAY))
 			KEY_BRACKETRIGHT:
-				Sim.running = false
-				_after_jump(Sim.goto_tick(Sim.tick_no + Sim.TICKS_PER_DAY))
+				_attempt_timeline_jump(Sim.tick_no + Sim.TICKS_PER_DAY)
 		_update_status()
 	elif e is InputEventMouseButton or e is InputEventMouseMotion 			or e is InputEventMagnifyGesture or e is InputEventPanGesture:
 		# C1 only permits left-button taps through the existing Probe tap signal.
@@ -2706,12 +2709,14 @@ func _quick_save() -> void:
 
 func _quick_load() -> void:
 	if not FileAccess.file_exists(QUICKSAVE):
-		_push("[color=#ff8c42]没有存档（先按 F5 / 设置里存一份）[/color]")
+		if _locked_ortho_c1 == null:
+			_push("[color=#ff8c42]没有存档（先按 F5 / 设置里存一份）[/color]")
 		return
 	var ok: bool = Sim.load_game(QUICKSAVE)          # load 内部发 world_reset → AIBackend.cancel_all
 	if ok:
 		_after_load()
-	_push("[color=#9ad0ff]读档%s（第 %d 天 · tick %d）[/color]" % [("成功" if ok else "失败：坏档或版本不符"), Sim.day, Sim.tick_no])
+	if ok or _locked_ortho_c1 == null:
+		_push("[color=#9ad0ff]读档%s（第 %d 天 · tick %d）[/color]" % [("成功" if ok else "失败：坏档或版本不符"), Sim.day, Sim.tick_no])
 
 ## 读档后的 UI 对齐（同 _after_jump 的精神：世界换了，视图全部重对齐）。
 func _after_load() -> void:
