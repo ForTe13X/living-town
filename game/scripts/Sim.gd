@@ -385,6 +385,21 @@ var _replay_active := false
 var _replay_ticks := {}         # agent_id -> [sorted 记录决策 tick]（按序+按 tick 还原异步时机）
 var _replay_ptr := {}           # agent_id -> 当前回放指针
 
+# PlayerTraceV1 is authoritative Sim state.  Main emits public inputs; receipts are
+# deterministic witnesses recomputed by those same public boundaries during replay.
+const PLAYER_TRACE_VERSION := 1
+const PLAYER_TRACE_MAX_ENTRIES := 4096
+const PLAYER_TRACE_MAX_ENTRIES_PER_TICK := 64
+const PLAYER_TRACE_MAX_PAYLOAD_BYTES := 4096
+const PLAYER_TRACE_MAX_CHAT_BYTES := 1024
+const PLAYER_TRACE_MAX_SAVE_BYTES := 8388608
+var player_trace: Dictionary = {}
+var player_trace_available := true
+var player_trace_last_error := ""
+var _player_trace_tick_index: Dictionary = {}
+var _player_trace_replay_active := false
+var _player_trace_replay_expected: Dictionary = {}
+
 ## S4：从 decision_trace 装载回放（在 start_new 前调用）。回放将复现记录的每个模型决策与其时机。
 func set_replay(trace: Array) -> void:
 	replay_trace = build_replay_trace(trace)
@@ -943,6 +958,7 @@ func start_new(p_seed: int = 12345) -> void:
 	_day_anchor = Vector2i(-1, -1)   # 远端漂移锚点 per-run 清（防复用实例带旧值；map 固定时值不变，清了也确定）
 	_player_pos = Vector2i(-1, -1)   # cohort 玩家位缓存 per-run 清（每 tick 重建，此为复用实例卫生）
 	_replay_ptr = {}
+	_player_trace_reset()
 	for aid in _replay_ticks:
 		_replay_ptr[aid] = 0
 	var personas := _read_json("res://data/personas.json")
@@ -1147,12 +1163,198 @@ func get_agent(id: String) -> Dictionary:
 const MEDIATE_AFF := 5.0        # 调解门槛：冲突双方对玩家好感 ≥ 此才听得进劝
 # 引擎内建社交动作全集（conflict 类在 _commit_social 上游单独分流）；不在此集=扩展动作 → 走 ext.execute（L7 挂点#2）
 const KNOWN_SOCIAL_ACTIONS := ["greet", "give", "gossip", "gossip_rep", "discuss", "invite", "confide", "leak", "endorse", "aid", "mediate"]
+
+func _player_trace_session() -> Dictionary:
+	var config := "%d|%s|%d|%d" % [seed_base, scenario, spawn_count, decide_period]
+	return {"seed": seed_base, "scenario": scenario, "autonomous_config_fingerprint": fnv1a32(config)}
+
+func _player_trace_reset() -> void:
+	player_trace = {"version": PLAYER_TRACE_VERSION, "session": _player_trace_session(), "entries": [], "next_seq": 0}
+	player_trace_available = true
+	player_trace_last_error = ""
+	_player_trace_tick_index = {}
+	_player_trace_replay_active = false
+	_player_trace_replay_expected = {}
+
+func _player_trace_canonical(value: Variant) -> String:
+	match typeof(value):
+		TYPE_NIL: return "null"
+		TYPE_BOOL: return "true" if value else "false"
+		TYPE_INT: return "i:%d" % int(value)
+		TYPE_FLOAT: return "f:%.9f" % float(value)
+		TYPE_STRING, TYPE_STRING_NAME: return "s:%s" % JSON.stringify(String(value))
+		TYPE_VECTOR2I: return "v2i:%d,%d" % [value.x, value.y]
+		TYPE_ARRAY:
+			var parts: Array[String] = []
+			for item in value: parts.append(_player_trace_canonical(item))
+			return "[" + ",".join(parts) + "]"
+		TYPE_DICTIONARY:
+			var keys: Array = value.keys()
+			keys.sort_custom(func(a, b): return String(a) < String(b))
+			var parts: Array[String] = []
+			for key in keys:
+				parts.append("%s:%s" % [JSON.stringify(String(key)), _player_trace_canonical(value[key])])
+			return "{" + ",".join(parts) + "}"
+	return "unsupported:%d" % typeof(value)
+
+func _player_trace_bytes(value: Variant) -> int:
+	return _player_trace_canonical(value).to_utf8_buffer().size()
+
+func _player_trace_player_snapshot() -> Dictionary:
+	var pl: Dictionary = _agent_by_id.get("player", {})
+	if pl.is_empty():
+		return {}
+	return {"pos": pl.get("pos", Vector2i.ZERO), "space": String(pl.get("space", "town")),
+		"floor": String(pl.get("floor", "outdoor")), "area": String(pl.get("area", "")),
+		"room": String(pl.get("room", "")), "inventory": (pl.get("inventory", {}) as Dictionary).duplicate(true)}
+
+func _player_trace_receipt(result: Variant) -> Dictionary:
+	return {"result": result, "player": _player_trace_player_snapshot(), "event_size": event_log.size(),
+		"event_digest": event_digest}
+
+func _player_trace_entry_seal(entry_without_seal: Dictionary) -> int:
+	return fnv1a32(_player_trace_canonical(entry_without_seal))
+
+func _player_trace_payload_error(kind: String, payload: Dictionary) -> String:
+	if _player_trace_bytes(payload) > PLAYER_TRACE_MAX_PAYLOAD_BYTES:
+		return "payload_too_large"
+	match kind:
+		"spawn":
+			if payload.keys().size() != 1 or not (payload.get("pos") is Vector2i): return "spawn_payload"
+		"move":
+			if payload.keys().size() != 1 or not (payload.get("dir") is Vector2i): return "move_payload"
+			var d: Vector2i = payload["dir"]
+			if absi(d.x) + absi(d.y) != 1: return "move_not_cardinal"
+		"social":
+			if payload.keys().size() != 2 or not (payload.get("action") is String) or not (payload.get("target_id") is String): return "social_payload"
+		"mediate":
+			if payload.keys().size() != 1 or not (payload.get("target_id") is String): return "mediate_payload"
+		"portal":
+			if payload.keys().size() != 3 or not (payload.get("source_space") is String) \
+					or not (payload.get("source_floor") is String) or not (payload.get("portal_pos") is Vector2i): return "portal_payload"
+		"chat_reply":
+			if payload.keys().size() != 3 or not (payload.get("target_id") is String) \
+					or not (payload.get("prompt") is String) or not (payload.get("reply") is String): return "chat_payload"
+			if String(payload.get("prompt", "")).to_utf8_buffer().size() > PLAYER_TRACE_MAX_CHAT_BYTES \
+					or String(payload.get("reply", "")).to_utf8_buffer().size() > PLAYER_TRACE_MAX_CHAT_BYTES: return "chat_too_large"
+		_: return "unknown_kind"
+	return ""
+
+func _player_trace_preflight(kind: String, payload: Dictionary) -> String:
+	if _player_trace_replay_active:
+		return ""
+	var err := _player_trace_payload_error(kind, payload)
+	if err != "": return err
+	if not player_trace_available:
+		return "" # old saves remain playable, but explicitly cannot replay their missing history
+	if (player_trace.get("entries", []) as Array).size() >= PLAYER_TRACE_MAX_ENTRIES:
+		return "trace_full"
+	if (_player_trace_tick_index.get(tick_no, []) as Array).size() >= PLAYER_TRACE_MAX_ENTRIES_PER_TICK:
+		return "trace_tick_full"
+	var entries: Array = player_trace.get("entries", [])
+	if not entries.is_empty() and int((entries[-1] as Dictionary).get("tick", -1)) > tick_no:
+		return "trace_future_boundary"
+	return ""
+
+func _player_trace_commit(kind: String, payload: Dictionary, receipt: Dictionary) -> bool:
+	if not player_trace_available:
+		return true
+	if _player_trace_replay_active:
+		var expected := _player_trace_replay_expected
+		_player_trace_replay_expected = {}
+		if expected.is_empty() or String(expected.get("kind", "")) != kind \
+				or _player_trace_canonical(expected.get("payload", {})) != _player_trace_canonical(payload) \
+				or _player_trace_canonical(expected.get("receipt", {})) != _player_trace_canonical(receipt):
+			player_trace_last_error = "recomputed_receipt_mismatch"
+			return false
+		return true
+	var entries: Array = player_trace.get("entries", [])
+	var seq := int(player_trace.get("next_seq", entries.size()))
+	var order := 0
+	if not entries.is_empty() and int((entries[-1] as Dictionary).get("tick", -1)) == tick_no:
+		order = int((entries[-1] as Dictionary).get("order", -1)) + 1
+	var entry := {"version": PLAYER_TRACE_VERSION, "seq": seq, "tick": tick_no, "order": order,
+		"actor": "player", "kind": kind, "payload": payload.duplicate(true), "receipt": receipt.duplicate(true)}
+	entry["seal"] = _player_trace_entry_seal(entry)
+	entries.append(entry)
+	player_trace["entries"] = entries
+	player_trace["next_seq"] = seq + 1
+	var bucket: Array = _player_trace_tick_index.get(tick_no, [])
+	bucket.append(seq)
+	_player_trace_tick_index[tick_no] = bucket
+	return true
+
+func _player_trace_validate(trace: Dictionary, bind_session := true) -> String:
+	if int(trace.get("version", -1)) != PLAYER_TRACE_VERSION: return "trace_version"
+	if not (trace.get("session") is Dictionary) or not (trace.get("entries") is Array): return "trace_shape"
+	var entries: Array = trace.get("entries", [])
+	if entries.size() > PLAYER_TRACE_MAX_ENTRIES or int(trace.get("next_seq", -1)) != entries.size(): return "trace_count"
+	if bind_session:
+		var session: Dictionary = trace.get("session", {})
+		var current := _player_trace_session()
+		for key in ["seed", "scenario", "autonomous_config_fingerprint"]:
+			if session.get(key) != current.get(key): return "trace_session_%s" % key
+	var prior_tick := -1
+	var prior_order := -1
+	var tick_count := 0
+	for i in range(entries.size()):
+		if not (entries[i] is Dictionary): return "entry_shape"
+		var entry: Dictionary = entries[i]
+		if int(entry.get("version", -1)) != PLAYER_TRACE_VERSION or int(entry.get("seq", -1)) != i \
+				or String(entry.get("actor", "")) != "player" or not (entry.get("payload") is Dictionary) \
+				or not (entry.get("receipt") is Dictionary): return "entry_identity"
+		var et := int(entry.get("tick", -1)); var eo := int(entry.get("order", -1))
+		if et < 0 or et < prior_tick or (et == prior_tick and eo != prior_order + 1) or (et != prior_tick and eo != 0): return "entry_order"
+		tick_count = tick_count + 1 if et == prior_tick else 1
+		if tick_count > PLAYER_TRACE_MAX_ENTRIES_PER_TICK: return "entry_tick_budget"
+		var kind := String(entry.get("kind", "")); var payload: Dictionary = entry.get("payload", {})
+		var payload_error := _player_trace_payload_error(kind, payload)
+		if payload_error != "": return payload_error
+		var unsigned := entry.duplicate(true); var seal := int(unsigned.get("seal", -1)); unsigned.erase("seal")
+		if seal != _player_trace_entry_seal(unsigned): return "entry_seal"
+		prior_tick = et; prior_order = eo
+	return ""
+
+func get_player_trace() -> Dictionary:
+	return player_trace.duplicate(true) if player_trace_available else {}
+
+func set_player_trace_for_replay(trace: Dictionary) -> bool:
+	var err := _player_trace_validate(trace)
+	if err != "":
+		player_trace_last_error = err
+		return false
+	player_trace = trace.duplicate(true)
+	player_trace_available = true
+	_player_trace_rebuild_index()
+	player_trace_last_error = ""
+	return true
+
+func _player_trace_rebuild_index() -> void:
+	_player_trace_tick_index = {}
+	for raw in player_trace.get("entries", []):
+		var entry: Dictionary = raw
+		var et := int(entry.get("tick", -1)); var bucket: Array = _player_trace_tick_index.get(et, [])
+		bucket.append(int(entry.get("seq", -1))); _player_trace_tick_index[et] = bucket
+
+func player_trace_status() -> Dictionary:
+	return {"available": player_trace_available, "version": PLAYER_TRACE_VERSION,
+		"entries": (player_trace.get("entries", []) as Array).size() if player_trace_available else 0,
+		"max_entries": PLAYER_TRACE_MAX_ENTRIES, "max_entries_per_tick": PLAYER_TRACE_MAX_ENTRIES_PER_TICK,
+		"max_payload_bytes": PLAYER_TRACE_MAX_PAYLOAD_BYTES,
+		"max_chat_bytes": PLAYER_TRACE_MAX_CHAT_BYTES, "max_save_bytes": PLAYER_TRACE_MAX_SAVE_BYTES,
+		"indexed_ticks": _player_trace_tick_index.size(), "error": player_trace_last_error}
+
 func add_player(pos: Vector2i = Vector2i(-1, -1)) -> Dictionary:
 	if _agent_by_id.has("player"):
 		return _agent_by_id["player"]
 	var p := pos
 	if p.x < 0:
 		p = _area_centroid("plaza")
+	var payload := {"pos": p}
+	var trace_error := _player_trace_preflight("spawn", payload)
+	if trace_error != "":
+		player_trace_last_error = trace_error
+		return {}
 	var pl := _make_agent({"id": "player", "persona": "", "spawn": [p.x, p.y], "home": [p.x, p.y]}, {})
 	pl["is_player"] = true
 	pl["persona"] = {"name": "你", "color": "#ffd700", "traits": [], "bio": "刚搬来的新居民。", "style": "", "sprite": ""}
@@ -1162,24 +1364,49 @@ func add_player(pos: Vector2i = Vector2i(-1, -1)) -> Dictionary:
 	_agent_by_id["player"] = pl
 	econ_total0 += int(pl["inventory"].get("coin", 0))   # 玩家带钱入镇 → 守恒基准同步上调（钱不凭空出现）
 	emit_signal("agent_changed", "player")
+	if not _player_trace_commit("spawn", payload, _player_trace_receipt({"ok": true})):
+		return {}
 	return pl
 
 ## 玩家格移动（WASD/方向键）。按玩家当前 Space/Floor 的同一份导航网判边界/碰撞，
 ## 再走 _move_agent 刷新 area 缓存。这样玩家进室内后不会穿墙/家具，也不会继续拿 town 尺寸放行。
 func player_move(dir: Vector2i) -> void:
+	var payload := {"dir": dir}
+	var trace_error := _player_trace_preflight("move", payload)
+	if trace_error != "":
+		player_trace_last_error = trace_error
+		return
 	var pl: Dictionary = _agent_by_id.get("player", {})
+	var result := {"moved": false, "reason": "player_missing"}
 	if pl.is_empty() or int(pl["talking"]) > 0:
+		if not pl.is_empty(): result["reason"] = "talking"
+		_player_trace_commit("move", payload, _player_trace_receipt(result))
 		return
 	var np: Vector2i = pl["pos"] + dir
 	var grid := _grid_for(String(pl.get("space", "town")), String(pl.get("floor", "outdoor")))
 	if not _cell_walkable(grid, np):
+		result["reason"] = "blocked"
+		_player_trace_commit("move", payload, _player_trace_receipt(result))
 		return
 	_move_agent(pl, np)
 	emit_signal("agent_changed", "player")
+	result = {"moved": true, "reason": ""}
+	_player_trace_commit("move", payload, _player_trace_receipt(result))
 
 ## 玩家社交动作：验证前提 → _apply_social 发起 → tick 推进 → _commit_social 裁决（NPC 可拒绝玩家！）。
 ## 返回 "" = 已发起；非空 = 不可行原因（HUD 显示）。
 func player_act(action: String, target_id: String) -> String:
+	var payload := {"action": action, "target_id": target_id}
+	var trace_error := _player_trace_preflight("social", payload)
+	if trace_error != "":
+		player_trace_last_error = trace_error
+		return "玩家指令记录被拒绝（%s）" % trace_error
+	var result := _player_act_untraced(action, target_id)
+	if not _player_trace_commit("social", payload, _player_trace_receipt(result)):
+		return "玩家指令回放不匹配"
+	return result
+
+func _player_act_untraced(action: String, target_id: String) -> String:
 	var pl: Dictionary = _agent_by_id.get("player", {})
 	if pl.is_empty():
 		return "玩家未入镇"
@@ -1234,6 +1461,17 @@ func player_act(action: String, target_id: String) -> String:
 ## 玩家专属「调解」：促成 target 所涉冲突的和解。确定性规则=双方对玩家好感 ≥ MEDIATE_AFF 才听劝。
 ## 成功 → 冲突 repaired + 清怨气 + 双方互信/好感回升 + 都感谢玩家 + 旁观者视玩家为 help（standing↑）。
 func player_mediate(target_id: String) -> String:
+	var payload := {"target_id": target_id}
+	var trace_error := _player_trace_preflight("mediate", payload)
+	if trace_error != "":
+		player_trace_last_error = trace_error
+		return "玩家指令记录被拒绝（%s）" % trace_error
+	var result := _player_mediate_untraced(target_id)
+	if not _player_trace_commit("mediate", payload, _player_trace_receipt(result)):
+		return "玩家指令回放不匹配"
+	return result
+
+func _player_mediate_untraced(target_id: String) -> String:
 	var pl: Dictionary = _agent_by_id.get("player", {})
 	if pl.is_empty():
 		return "玩家未入镇"
@@ -1313,30 +1551,174 @@ func player_mediate(target_id: String) -> String:
 	emit_signal("social_event", ev2)
 	return "%s 还不信任你（好感不够），先处好关系再来劝" % "和".join(cold_names)
 
-## 确定性回放：重置到当前种子并推进到 target tick（观察台时间轴 scrub 用）。
-## 因全程确定性，重演必得同一状态——无需存快照即可前后拖动。
-func goto_tick(target: int) -> void:
+## Canonical completed chat reply.  Live AI is outside Sim, but the accepted reply
+## crosses this deterministic boundary exactly once; replay never invokes AI.
+func player_chat_commit(target_id: String, prompt: String, reply: String) -> Dictionary:
+	var payload := {"target_id": target_id, "prompt": prompt, "reply": reply}
+	var trace_error := _player_trace_preflight("chat_reply", payload)
+	if trace_error != "":
+		player_trace_last_error = trace_error
+		return {"ok": false, "reason": trace_error}
+	var pl: Dictionary = _agent_by_id.get("player", {})
+	var target: Dictionary = _agent_by_id.get(target_id, {})
+	var result := {"ok": false, "reason": "target_missing"}
+	if pl.is_empty():
+		result["reason"] = "player_missing"
+	elif target.is_empty() or target_id == "player":
+		result["reason"] = "target_missing"
+	elif not _same_plane(pl, target):
+		result["reason"] = "target_plane"
+	else:
+		var pp: Vector2i = pl.get("pos", Vector2i(-99, -99))
+		var tp: Vector2i = target.get("pos", Vector2i(-99, -99))
+		if absi(pp.x - tp.x) + absi(pp.y - tp.y) > 2:
+			result["reason"] = "target_distance"
+		else:
+			var mem = target.get("memory")
+			if mem == null:
+				result["reason"] = "target_memory"
+			else:
+				mem.add("玩家问『%s』，我答『%s』" % [prompt.substr(0, 18), reply.substr(0, 18)], 5, tick_no,
+					[target_id, "player", "chat"])
+				result = {"ok": true, "reason": ""}
+	if not _player_trace_commit("chat_reply", payload, _player_trace_receipt(result)):
+		return {"ok": false, "reason": "trace_replay_mismatch"}
+	return result
+
+func _player_trace_replay_boundary(boundary_tick: int) -> bool:
+	var entries: Array = player_trace.get("entries", [])
+	for raw_seq in _player_trace_tick_index.get(boundary_tick, []):
+		var seq := int(raw_seq)
+		if seq < 0 or seq >= entries.size():
+			player_trace_last_error = "trace_index"
+			return false
+		var entry: Dictionary = entries[seq]
+		_player_trace_replay_expected = entry
+		var payload: Dictionary = entry.get("payload", {})
+		match String(entry.get("kind", "")):
+			"spawn": add_player(payload.get("pos", Vector2i(-1, -1)))
+			"move": player_move(payload.get("dir", Vector2i.ZERO))
+			"social": player_act(String(payload.get("action", "")), String(payload.get("target_id", "")))
+			"mediate": player_mediate(String(payload.get("target_id", "")))
+			"portal": player_portal_intent(payload)
+			"chat_reply": player_chat_commit(String(payload.get("target_id", "")), String(payload.get("prompt", "")), String(payload.get("reply", "")))
+			_:
+				player_trace_last_error = "trace_kind"
+				return false
+		if not _player_trace_replay_expected.is_empty() or player_trace_last_error != "":
+			if player_trace_last_error == "": player_trace_last_error = "trace_input_not_consumed"
+			return false
+	return true
+
+func _capture_player_replay_transaction() -> Dictionary:
+	var state := {}
+	for key in _current_save_state_keys():
+		state[key] = get(key)
+	var serialized_agents := []
+	for ag in agents:
+		var data: Dictionary = (ag as Dictionary).duplicate(true)
+		var memory = ag.get("memory")
+		data["memory"] = {"__mem_items__": (memory.items as Array).duplicate(true) if memory is Object and "items" in memory else []}
+		serialized_agents.append(data)
+	state["agents"] = serialized_agents
+	var leaks: Array = []
+	_scan_objects(state, "goto_tick.state", leaks)
+	if not leaks.is_empty():
+		player_trace_last_error = "transaction_snapshot_object"
+		return {}
+	var active_ids: Array = []
+	for commitment in _active_commitments:
+		active_ids.append(int(commitment.get("id", -1)))
+	return {
+		"state_bytes": var_to_bytes(state),
+		"active_commit_ids": active_ids,
+		"near_set": _near_set.duplicate(true),
+		"path_cache": _path_cache.duplicate(true),
+		"nav_grids": _nav_grids.duplicate(true),
+		"player_pos": _player_pos,
+		"cargo_event_index": _cargo_event_index.duplicate(true),
+		"lod_focus": lod_focus,
+		"shadow_on": shadow_on,
+		"shadow_trace": shadow_trace.duplicate(true),
+		"backend": backend,
+		"ext": ext,
+		"decision_sink": decision_sink,
+		"player_trace": player_trace.duplicate(true),
+		"player_trace_available": player_trace_available,
+		"player_trace_last_error": player_trace_last_error,
+		"player_trace_tick_index": _player_trace_tick_index.duplicate(true),
+		"player_trace_replay_active": _player_trace_replay_active,
+		"player_trace_replay_expected": _player_trace_replay_expected.duplicate(true),
+	}
+
+func _restore_player_replay_transaction(snapshot: Dictionary, failure_error: String) -> bool:
+	var decoded = bytes_to_var(snapshot.get("state_bytes", PackedByteArray()))
+	if not (decoded is Dictionary):
+		player_trace_last_error = "transaction_restore_invalid"
+		return false
+	var state: Dictionary = decoded
+	for key in state:
+		set(key, state[key])
+	_rebuild_after_load(snapshot.get("active_commit_ids", []))
+	_near_set = snapshot.get("near_set", {}).duplicate(true)
+	_path_cache = snapshot.get("path_cache", {}).duplicate(true)
+	_nav_grids = snapshot.get("nav_grids", {}).duplicate(true)
+	_player_pos = snapshot.get("player_pos", Vector2i(-1, -1))
+	_cargo_event_index = snapshot.get("cargo_event_index", {}).duplicate(true)
+	lod_focus = snapshot.get("lod_focus", null)
+	shadow_on = bool(snapshot.get("shadow_on", false))
+	shadow_trace = snapshot.get("shadow_trace", []).duplicate(true)
+	backend = snapshot.get("backend")
+	ext = snapshot.get("ext")
+	decision_sink = snapshot.get("decision_sink")
+	player_trace = snapshot.get("player_trace", {}).duplicate(true)
+	player_trace_available = bool(snapshot.get("player_trace_available", false))
+	player_trace_last_error = failure_error
+	_player_trace_tick_index = snapshot.get("player_trace_tick_index", {}).duplicate(true)
+	_player_trace_replay_active = bool(snapshot.get("player_trace_replay_active", false))
+	_player_trace_replay_expected = snapshot.get("player_trace_replay_expected", {}).duplicate(true)
+	return false
+
+## Deterministic scrub replays canonical player inputs at their closed tick/order boundary.
+## Old saves without a trace fail closed when a player exists instead of inventing history.
+## Once replay begins, every rejected boundary restores the complete pre-call Sim authority.
+func goto_tick(target: int) -> bool:
 	var a := auto_run
-	auto_run = false
-	# 玩家豁免（对抗审查#1）：start_new 只从数据重建 NPC，会把玩家连人带关系清掉 → scrub 后 WASD/动作全失灵。
-	# 记住玩家（位置/物品）→ 重演后原位放回。诚实局限：玩家的历史干预不在重演里（player_act 非 decision_trace），
-	# 时间轴呈现的是"无玩家介入的平行世界"+玩家现身当下；根治=player_trace 回放（S4 范式），留待后续。
 	var had_player := _agent_by_id.has("player")
-	var p_pos := Vector2i.ZERO
-	var p_inv := {}
-	if had_player:
-		p_pos = _agent_by_id["player"]["pos"]
-		p_inv = (_agent_by_id["player"]["inventory"] as Dictionary).duplicate()
+	if had_player and not player_trace_available:
+		player_trace_last_error = "player_trace_unavailable"
+		return false
+	var source_trace := player_trace.duplicate(true) if player_trace_available else {}
+	if player_trace_available:
+		var trace_error := _player_trace_validate(source_trace)
+		if trace_error != "":
+			player_trace_last_error = trace_error
+			return false
+	var transaction := _capture_player_replay_transaction()
+	if transaction.is_empty():
+		return false
+	auto_run = false
 	start_new(seed_base)
+	if not source_trace.is_empty():
+		player_trace = source_trace
+		player_trace_available = true
+		_player_trace_rebuild_index()
+		_player_trace_replay_active = true
 	replaying = true                       # 回放期间 AIBackend.decide 走 logic，不发 live 请求(P1-6)
 	var t := maxi(0, target)
+	if not source_trace.is_empty() and not _player_trace_replay_boundary(0):
+		var failure_error := player_trace_last_error
+		return _restore_player_replay_transaction(transaction, failure_error)
 	while tick_no < t:
 		tick()
+		if not source_trace.is_empty() and not _player_trace_replay_boundary(tick_no):
+			var failure_error := player_trace_last_error
+			return _restore_player_replay_transaction(transaction, failure_error)
 	replaying = false
-	if had_player:
-		var pl := add_player(p_pos)
-		pl["inventory"] = p_inv
+	_player_trace_replay_active = false
+	_player_trace_replay_expected = {}
 	auto_run = a
+	return true
 
 ## 导出本局事件账本为可存档 trace（seed + event_log）。
 func export_trace(path: String) -> void:
@@ -1355,7 +1737,7 @@ const SAVE_MAGIC := "LTSAVE"
 const SAVE_SCHEMA_LEGACY := 1
 const SAVE_SCHEMA := 2
 const SAVE_RUNTIME_HANDLES := ["backend", "ext", "decision_sink"]
-const SAVE_LOAD_DENY := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink"]
+const SAVE_LOAD_DENY := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected"]
 const SAVE_CURRENT_BLOB_KEYS := ["magic", "schema", "game_version", "saved_tick", "saved_day", "seed", "meta", "active_commit_ids", "state"]
 
 ## The current-schema contract is the exact field set emitted by save_game, derived from the same
@@ -1412,9 +1794,18 @@ func save_game(path: String, meta := {}) -> bool:
 		"saved_tick": tick_no, "saved_day": day, "seed": seed_base, "meta": meta,
 		"active_commit_ids": active_ids, "state": state,
 	}
+	if player_trace_available and _agent_by_id.has("player"):
+		var trace_error := _player_trace_validate(player_trace)
+		if trace_error != "":
+			push_error("save_game REFUSED — invalid PlayerTraceV1: %s" % trace_error)
+			return false
+		blob["player_trace"] = player_trace.duplicate(true)
 	var shape_error := _validate_current_save_shape(blob)
 	if shape_error != "":
 		push_error("save_game REFUSED — %s" % shape_error)
+		return false
+	if var_to_bytes(blob).size() + 4 > PLAYER_TRACE_MAX_SAVE_BYTES:
+		push_error("save_game REFUSED — bounded save size exceeded")
 		return false
 	var f := FileAccess.open(path, FileAccess.WRITE)
 	if f == null:
@@ -1443,6 +1834,7 @@ func peek_save(path: String) -> Dictionary:
 	if sch == SAVE_SCHEMA and _validate_current_save_shape(blob) != "":
 		return {}
 	blob.erase("state")                             # 只回头信息
+	blob.erase("player_trace")                      # trace 可很大；列表视图只返回 O(1) 头信息
 	blob["requires_migration"] = sch < SAVE_SCHEMA
 	return blob
 
@@ -1450,8 +1842,9 @@ func _validate_current_save_shape(blob: Dictionary) -> String:
 	for key in SAVE_CURRENT_BLOB_KEYS:
 		if not blob.has(key):
 			return "schema %d missing current envelope key: %s" % [SAVE_SCHEMA, key]
-	if blob.size() != SAVE_CURRENT_BLOB_KEYS.size():
-		return "schema %d envelope key count %d, expected %d" % [SAVE_SCHEMA, blob.size(), SAVE_CURRENT_BLOB_KEYS.size()]
+	var expected_size := SAVE_CURRENT_BLOB_KEYS.size() + (1 if blob.has("player_trace") else 0)
+	if blob.size() != expected_size:
+		return "schema %d envelope contains unknown keys" % SAVE_SCHEMA
 	for typed_key in ["schema", "saved_tick", "saved_day", "seed"]:
 		if typeof(blob.get(typed_key)) != TYPE_INT:
 			return "schema %d envelope %s is not an int" % [SAVE_SCHEMA, typed_key]
@@ -1465,6 +1858,10 @@ func _validate_current_save_shape(blob: Dictionary) -> String:
 	var state_error := _validate_loaded_state(state, SAVE_SCHEMA)
 	if state_error != "":
 		return state_error
+	if blob.has("player_trace"):
+		if not (blob.get("player_trace") is Dictionary): return "player_trace is not a Dictionary"
+		var trace_error := _player_trace_validate_save_binding(blob.get("player_trace", {}), blob, state)
+		if trace_error != "": return trace_error
 	for pair in [["saved_tick", "tick_no"], ["saved_day", "day"], ["seed", "seed_base"]]:
 		if typeof(blob.get(pair[0])) != TYPE_INT or int(blob.get(pair[0])) != int(state.get(pair[1], -1)):
 			return "schema %d envelope %s does not match state %s" % [SAVE_SCHEMA, pair[0], pair[1]]
@@ -1492,6 +1889,17 @@ func _validate_current_save_shape(blob: Dictionary) -> String:
 		seen_active[active_id] = true
 	if seen_active.size() != active_commitment_ids.size():
 		return "active commitment membership is incomplete"
+	return ""
+
+func _player_trace_validate_save_binding(trace: Dictionary, blob: Dictionary, state: Dictionary) -> String:
+	var trace_error := _player_trace_validate(trace, false)
+	if trace_error != "": return "player_trace %s" % trace_error
+	var session: Dictionary = trace.get("session", {})
+	if int(session.get("seed", -1)) != int(blob.get("seed", -2)): return "player_trace seed mismatch"
+	if String(session.get("scenario", "")) != String(state.get("scenario", "")): return "player_trace scenario mismatch"
+	var config := "%d|%s|%d|%d" % [int(state.get("seed_base", -1)), String(state.get("scenario", "")),
+		int(state.get("spawn_count", 0)), int(state.get("decide_period", 1))]
+	if int(session.get("autonomous_config_fingerprint", -1)) != fnv1a32(config): return "player_trace config mismatch"
 	return ""
 
 func load_game(path: String) -> bool:
@@ -1530,10 +1938,22 @@ func load_game(path: String) -> bool:
 	if compact_error != "":
 		push_warning("load_game: %s" % compact_error)
 		return false
+	var loaded_trace: Dictionary = blob.get("player_trace", {}).duplicate(true) if blob.get("player_trace") is Dictionary else {}
 	# 到这里才触碰 live Sim。上面的迁移/验证全在 deep copy 上完成，因此任何拒绝都保持接收实例原样。
 	for k in state:
 		set(k, state[k])
 	_rebuild_after_load(active_ids)
+	if loaded_trace.is_empty():
+		player_trace = {}
+		player_trace_available = false
+		_player_trace_tick_index = {}
+	else:
+		player_trace = loaded_trace
+		player_trace_available = true
+		_player_trace_rebuild_index()
+	player_trace_last_error = ""
+	_player_trace_replay_active = false
+	_player_trace_replay_expected = {}
 	emit_signal("world_reset")               # 读档=换世界：AIBackend cancel_all(bump epoch)，在飞旧回包一律作废（P1-3 同款）
 	return true
 
@@ -5745,6 +6165,23 @@ func _has_exact_nav_plane(space: String, floor: String) -> bool:
 ## Public player entry: the projection may emit only this typed intent.  Sim re-resolves
 ## the canonical edge and keeps the transaction/commit point below as the sole authority.
 func player_portal_intent(intent: Dictionary) -> Dictionary:
+	var payload := {"source_space": intent.get("source_space"), "source_floor": intent.get("source_floor"),
+		"portal_pos": intent.get("portal_pos")}
+	var trace_error := _player_trace_payload_error("portal", payload)
+	if trace_error != "":
+		return _player_portal_intent_untraced(intent)
+	trace_error = _player_trace_preflight("portal", payload)
+	if trace_error != "":
+		player_trace_last_error = trace_error
+		return _portal_denied_receipt("trace_refused", String(payload.get("source_space", "")),
+			String(payload.get("source_floor", "")), payload.get("portal_pos", Vector2i.ZERO))
+	var result := _player_portal_intent_untraced(intent)
+	if not _player_trace_commit("portal", payload, _player_trace_receipt(result)):
+		return _portal_denied_receipt("trace_replay_mismatch", String(payload.get("source_space", "")),
+			String(payload.get("source_floor", "")), payload.get("portal_pos", Vector2i.ZERO))
+	return result
+
+func _player_portal_intent_untraced(intent: Dictionary) -> Dictionary:
 	var source_space_value: Variant = intent.get("source_space")
 	var source_floor_value: Variant = intent.get("source_floor")
 	var portal_pos_value: Variant = intent.get("portal_pos")
