@@ -4,13 +4,17 @@
 Colors are compared using squared Euclidean distance in encoded 8-bit sRGB
 space.  Equal distances select the first color in GPL file order.  The alpha
 channel is copied byte-for-byte; this is an offline production tool and never
-uses randomness, the network, or source-image metadata.
+uses randomness, the network, or source-image metadata.  GPL ``Name:`` must
+be non-empty when present; GPL ``Columns:`` must be one decimal integer from
+1 through 256 when present.
 """
 
 from __future__ import annotations
 
 import argparse
+import os
 import sys
+import tempfile
 from pathlib import Path
 from typing import Iterable
 
@@ -35,11 +39,28 @@ def parse_gpl(path: Path) -> list[tuple[int, int, int]]:
 
     colors: list[tuple[int, int, int]] = []
     seen: set[tuple[int, int, int]] = set()
+    metadata_seen: set[str] = set()
     for line_number, raw in enumerate(lines[1:], start=2):
         line = raw.strip()
-        if not line or line.startswith("#") or line.startswith("Name:") or line.startswith("Columns:"):
+        if not line or line.startswith("#"):
             continue
         fields = line.split()
+        if line.startswith("Name:") or line.startswith("Columns:"):
+            key, value = line.split(":", 1)
+            if colors:
+                raise QuantizeError("GPL metadata must precede colors at line %d" % line_number)
+            if key in metadata_seen:
+                raise QuantizeError("duplicate GPL %s metadata at line %d" % (key, line_number))
+            value = value.strip()
+            if key == "Name" and not value:
+                raise QuantizeError("empty GPL Name metadata at line %d" % line_number)
+            if key == "Columns":
+                if not value.isascii() or not value.isdecimal() or not 1 <= int(value) <= 256:
+                    raise QuantizeError("invalid GPL Columns metadata at line %d" % line_number)
+            metadata_seen.add(key)
+            continue
+        if ":" in line:
+            raise QuantizeError("unknown GPL metadata at line %d" % line_number)
         if len(fields) < 3:
             raise QuantizeError("malformed GPL color at line %d" % line_number)
         try:
@@ -94,10 +115,30 @@ def quantize_image(source: Path, destination: Path, palette_path: Path) -> None:
             red, green, blue, alpha = pixels[x, y]
             mapped = nearest_color((red, green, blue), palette)
             pixels[x, y] = (*mapped, alpha)
+    temporary: Path | None = None
     try:
-        image.save(destination, format="PNG")
+        descriptor, temporary_name = tempfile.mkstemp(
+            prefix=".%s.quantize-" % destination.name,
+            suffix=".tmp",
+            dir=destination.parent,
+        )
+        os.close(descriptor)
+        temporary = Path(temporary_name)
+        image.save(temporary, format="PNG")
+        # os.link is an atomic create-if-absent operation on both NTFS and POSIX
+        # filesystems. Unlike os.replace, it cannot clobber a destination that
+        # appeared after the initial existence check.
+        os.link(temporary, destination)
+    except FileExistsError as exc:
+        raise QuantizeError("output already exists: %s" % destination) from exc
     except OSError as exc:
         raise QuantizeError("cannot write output PNG: %s" % destination) from exc
+    finally:
+        if temporary is not None:
+            try:
+                temporary.unlink()
+            except FileNotFoundError:
+                pass
 
 
 def main(argv: list[str] | None = None) -> int:
