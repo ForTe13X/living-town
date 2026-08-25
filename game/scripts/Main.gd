@@ -2762,9 +2762,9 @@ func _portal_click(world_pos: Vector2) -> bool:
 				var ppos: Vector2i = pl.get("pos", Vector2i(-99, -99)) if not pl.is_empty() else Vector2i(-99, -99)
 				if not pl.is_empty() and String(pl.get("space", "town")) == asp and String(pl.get("floor", "outdoor")) == afl \
 						and absi(ppos.x - cell.x) + absi(ppos.y - cell.y) <= 1:
-					# Display hit-testing identifies the intended edge only.  Sim owns the
-					# entire permission + topology + atomic agent transition transaction.
-					var crossed: Dictionary = Sim._try_traverse_portal("player", asp, afl, cell, os, of)
+					# Display hit-testing emits a typed player intent only.  Sim re-resolves
+					# permission, topology and the atomic agent transition from authored state.
+					var crossed: Dictionary = Sim.player_portal_intent({"source_space": asp, "source_floor": afl, "portal_pos": cell})
 					if not bool(crossed.get("ok", false)):
 						var denied_reason := String(crossed.get("reason", ""))
 						var denied_text := "%s：私人区域，未获通行许可" % _sg.label_of(os) if denied_reason == "portal_not_permitted" \
