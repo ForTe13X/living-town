@@ -104,5 +104,26 @@ func _ready() -> void:
 	var return_receipt: Dictionary = Sim.player_portal_intent({"source_space": "cafe", "source_floor": "1f", "portal_pos": Vector2i(4, 5)})
 	ck(bool(return_receipt.get("ok", false)) and String(Sim.get_agent("player").get("space", "")) == "town", "public cafe return restores town through real door")
 
+	# Compose the actual Main router (rather than a duplicate input implementation)
+	# and prove the C1 hook suppresses every exposed free-camera path while the
+	# same Probe remains available to the feature-off product.
+	var main = preload("res://scripts/Main.gd").new()
+	add_child(main)
+	await get_tree().process_frame
+	var locked = preload("res://scripts/LockedOrthoC1.gd").new()
+	main.add_child(locked); locked.setup(main._probe); main._locked_ortho_c1 = locked
+	var locked_pos: Vector2 = main._probe.cam.position
+	var locked_zoom: Vector2 = main._probe.cam.zoom
+	var plus := InputEventKey.new(); plus.pressed = true; plus.keycode = KEY_EQUAL
+	main._unhandled_input(plus)
+	var right := InputEventMouseButton.new(); right.pressed = true; right.button_index = MOUSE_BUTTON_RIGHT; right.position = Vector2(100, 100)
+	main._unhandled_input(right)
+	var drag := InputEventMouseMotion.new(); drag.position = Vector2(300, 300); drag.relative = Vector2(200, 200)
+	main._unhandled_input(drag)
+	ck(main._probe.cam.position == locked_pos and main._probe.cam.zoom == locked_zoom, "actual Main C1 router rejects keyboard zoom and mouse pan")
+	main._locked_ortho_c1 = null
+	main._unhandled_input(plus)
+	ck(main._probe.cam.zoom != locked_zoom, "feature-off Main router preserves Probe zoom behavior")
+
 	print("c1_locked_ortho_test: %s (%d fail)" % [("PASS" if fails == 0 else "FAIL"), fails])
 	get_tree().quit(0 if fails == 0 else 1)

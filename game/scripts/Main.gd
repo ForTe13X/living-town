@@ -2591,7 +2591,7 @@ func _focus_agent(id: String) -> void:
 	if ag.is_empty() or not _agent_on_active_plane(ag):
 		return
 	_selected_id = id
-	if _probe != null:
+	if _probe != null and _locked_ortho_c1 == null:
 		_probe.focus_on(Vector2(int(ag["pos"].x) * 48 + 24, int(ag["pos"].y) * 48 + 24), id)
 	_update_obs()
 
@@ -2604,13 +2604,13 @@ func _unhandled_input(e: InputEvent) -> void:
 			KEY_2, KEY_KP_2: Sim.running = true; Sim.speed = 2.0
 			KEY_3, KEY_KP_3: Sim.running = true; Sim.speed = 4.0
 			KEY_4, KEY_KP_4: Sim.running = true; Sim.speed = 8.0
-			KEY_EQUAL, KEY_KP_ADD: _demo_off(); _probe.zoom_at(1.15, _vp() * 0.5, _vp())
-			KEY_MINUS, KEY_KP_SUBTRACT: _demo_off(); _probe.zoom_at(1.0 / 1.15, _vp() * 0.5, _vp())
-			KEY_L: _demo_off(); _toggle_follow()                 # Probe 跟随/取消（F 已被"送礼"占用）
-			KEY_HOME: _demo_off(); _probe.go_home()              # 回到全镇
-			KEY_I: _probe_toggle_space()                         # Probe 进/出测试 Space（P1 Gate）
-			KEY_PAGEUP: _probe_cycle_floor(1)                    # 换楼层（Probe inspect）
-			KEY_PAGEDOWN: _probe_cycle_floor(-1)
+			KEY_EQUAL, KEY_KP_ADD: if _locked_ortho_c1 == null: _demo_off(); _probe.zoom_at(1.15, _vp() * 0.5, _vp())
+			KEY_MINUS, KEY_KP_SUBTRACT: if _locked_ortho_c1 == null: _demo_off(); _probe.zoom_at(1.0 / 1.15, _vp() * 0.5, _vp())
+			KEY_L: if _locked_ortho_c1 == null: _demo_off(); _toggle_follow()                 # Probe 跟随/取消（F 已被"送礼"占用）
+			KEY_HOME: if _locked_ortho_c1 == null: _demo_off(); _probe.go_home()              # 回到全镇
+			KEY_I: if _locked_ortho_c1 == null: _probe_toggle_space()                         # Probe 进/出测试 Space（P1 Gate）
+			KEY_PAGEUP: if _locked_ortho_c1 == null: _probe_cycle_floor(1)                    # 换楼层（Probe inspect）
+			KEY_PAGEDOWN: if _locked_ortho_c1 == null: _probe_cycle_floor(-1)
 			KEY_TAB: _cycle_selection(-1 if e.shift_pressed else 1)
 			KEY_O: _toggle_settings()                            # ⚙ 设置面板开关（NPC 数量/速度/后端）
 			KEY_V: _toggle_obs()                                 # 观察台名片档 ⇄ 完整卷宗（手机走右上「详情」钮，同一函数）
@@ -2621,6 +2621,11 @@ func _unhandled_input(e: InputEvent) -> void:
 			KEY_F9: _write_digest()                             # dev：把当前 digest 写盘（--digest-out）
 			KEY_F3: _toggle_perf()                               # dev 性能 overlay 开关
 			KEY_ESCAPE:                                          # 先退观察态(focus/follow/历史)，否则才清选中
+				if _locked_ortho_c1 != null:
+					_selected_id = ""
+					_update_obs()
+					_update_status()
+					return
 				if _probe.mode != 0 or not _probe.go_back():
 					_probe.unfollow()
 					_selected_id = ""
@@ -2648,6 +2653,11 @@ func _unhandled_input(e: InputEvent) -> void:
 			KEY_BRACKETRIGHT: Sim.running = false; Sim.goto_tick(Sim.tick_no + Sim.TICKS_PER_DAY); _after_jump()
 		_update_status()
 	elif e is InputEventMouseButton or e is InputEventMouseMotion 			or e is InputEventMagnifyGesture or e is InputEventPanGesture:
+		# C1 only permits left-button taps through the existing Probe tap signal.
+		# Motion/right/middle/wheel/gesture never reach Probe, so they cannot pan,
+		# zoom, follow, or alter the fixed architectural frame.
+		if _locked_ortho_c1 != null and (not (e is InputEventMouseButton) or e.button_index != MOUSE_BUTTON_LEFT):
+			return
 		# 输入仲裁（analysis §4.3）：HUD/时间轴【先吃】——拖时间轴绝不能带动世界；剩下的才交给 Probe。
 		if e is InputEventMouseButton and e.button_index == MOUSE_BUTTON_LEFT:
 			if e.pressed and _in_scrub(e.position):
@@ -2839,6 +2849,8 @@ func _warehouse_observatory_click(world_pos: Vector2) -> bool:
 
 ## Probe 双击 → 聚焦所点房间（analysis §4.2 Focus）。
 func _on_probe_double_tap(world_pos: Vector2) -> void:
+	if _locked_ortho_c1 != null:
+		return
 	for rid in Sim.world.get("rooms", {}):
 		var rm: Dictionary = Sim.world["rooms"][rid]
 		var r: Array = rm.get("rect", [0, 0, 0, 0])

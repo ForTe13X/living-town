@@ -57,9 +57,9 @@ func _draw_cafe_frame(floor: String, interactive: bool) -> void:
 	# Architectural-model shell: static, unlit primitives only.  It has no
 	# collision or hit-test role; Main keeps its canonical active-plane input.
 	for x in range(1, 8):
-		draw_line(Vector2(x * CELL, 0), Vector2(x * CELL, 12), MUTED, 1.0)
+		draw_line(Vector2(x * CELL, rect.position.y), Vector2(x * CELL, rect.end.y), MUTED, 1.0)
 	for y in range(1, 6):
-		draw_line(Vector2(0, y * CELL), Vector2(12, y * CELL), MUTED, 1.0)
+		draw_line(Vector2(rect.position.x, y * CELL), Vector2(rect.end.x, y * CELL), MUTED, 1.0)
 	var title := "咖啡馆 1F · 公共厅" if floor == "1f" else "咖啡馆 2F · 仅供查看"
 	draw_string(ThemeDB.fallback_font, Vector2(12, 28), title, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, INK if interactive else MUTED)
 	if floor == "1f":
