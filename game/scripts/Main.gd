@@ -56,6 +56,16 @@ var _selected_id := ""                # 当前观察的角色
 var _player_mode := false             # --player：玩家入镇（gameplay M1）
 var _demo_mode := false               # --player-demo：脚本化玩家 autopilot（录 demo）
 var _player_spawn_override := Vector2i(-1, -1) # --player-pos x y：产品截图/玩法验收把玩家放到被测纵切；默认仍是广场
+## C1 café projection is deliberately a removable Main-side adapter.  It reads the active
+## Probe floor and committed Sim state; it never supplies nav, collision, portal or save truth.
+var _c1_cafe_enabled := true
+var _c1_cafe_pan: ColorRect
+var _c1_cafe_text: RichTextLabel
+var _c1_cafe_observe_btn: Button
+var _c1_cafe_return_btn: Button
+var _c1_cafe_denial := ""
+const C1_CAFE_POS := Vector2(386.0, 48.0)
+const C1_CAFE_SIZE := Vector2(492.0, 126.0)
 var _demo_steps: Array = []           # [{type:walk_to|select|act|chat|wait, ...}] 顺序执行
 var _demo_i := 0
 var _chat_in: LineEdit                # 玩家→NPC 对话输入框
@@ -371,6 +381,8 @@ func _ready() -> void:
 		elif args[i] == "--player-demo":
 			_player_mode = true                # 录 demo 用：脚本化玩家 autopilot（确定性按 tick 触发动作）
 			_demo_mode = true
+		elif args[i] == "--c0-cafe-projection":
+			_c1_cafe_enabled = false           # 回滚/负对照：不建 C1 视图，C0 路径逐字节沿用
 		elif args[i] == "--warmup" and i + 1 < args.size():
 			warmup_days = int(args[i + 1])     # 录 demo：跳到第 N 天开场（确定，goto_tick 同款重演）
 		elif args[i] == "--warmup-tick" and i + 1 < args.size():
@@ -669,6 +681,7 @@ func _build_hud() -> void:
 	layer.add_child(_chat_in)
 
 	_build_action_bar(layer, fnt)
+	_build_c1_cafe_projection(layer, fnt)
 
 	# 观察台档位钮（顶栏右侧，后端钮左边）。放在这里而不是面板里的理由见 OBS_PAD 的注释。
 	# 手机上没有键盘 ⇒ 这一个按钮就是「完整卷宗」的唯一入口（V 键只是桌面同款，走同一个 _toggle_obs）。
@@ -800,6 +813,107 @@ func _build_action_bar(layer: CanvasLayer, fnt: Font) -> void:
 		b.pressed.connect(func(): _player_do(verb))
 		layer.add_child(b)
 		_act_btns.append(b)
+
+## Locked orthographic café adapter.  Geometry and interaction labels come from the already
+## active Space/Floor and live Sim state; the adapter owns no world facts and is absent in C0.
+func _build_c1_cafe_projection(layer: CanvasLayer, fnt: Font) -> void:
+	_c1_cafe_pan = ColorRect.new()
+	_c1_cafe_pan.color = Color(0.035, 0.028, 0.024, 0.88)
+	_c1_cafe_pan.position = C1_CAFE_POS
+	_c1_cafe_pan.size = C1_CAFE_SIZE
+	_c1_cafe_pan.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_c1_cafe_pan.visible = false
+	layer.add_child(_c1_cafe_pan)
+	_c1_cafe_text = _mk_label(layer, fnt, 16, C1_CAFE_POS + Vector2(14, 9), Vector2(464, 72))
+	_c1_cafe_text.visible = false
+	_c1_cafe_observe_btn = Button.new()
+	_c1_cafe_observe_btn.text = "观察二楼"
+	_c1_cafe_observe_btn.tooltip_text = "仅切换观察视图；不会让玩家越过私人楼梯"
+	_c1_cafe_observe_btn.add_theme_font_override("font", fnt)
+	_c1_cafe_observe_btn.add_theme_font_size_override("font_size", 15)
+	_c1_cafe_observe_btn.position = C1_CAFE_POS + Vector2(270, 86)
+	_c1_cafe_observe_btn.size = Vector2(98, 30)
+	_c1_cafe_observe_btn.focus_mode = Control.FOCUS_NONE
+	_c1_cafe_observe_btn.visible = false
+	_c1_cafe_observe_btn.pressed.connect(_c1_cafe_observe_private_floor)
+	layer.add_child(_c1_cafe_observe_btn)
+	_c1_cafe_return_btn = Button.new()
+	_c1_cafe_return_btn.text = "回到一楼"
+	_c1_cafe_return_btn.tooltip_text = "回到玩家所在楼层继续行动"
+	_c1_cafe_return_btn.add_theme_font_override("font", fnt)
+	_c1_cafe_return_btn.add_theme_font_size_override("font_size", 15)
+	_c1_cafe_return_btn.position = C1_CAFE_POS + Vector2(376, 86)
+	_c1_cafe_return_btn.size = Vector2(98, 30)
+	_c1_cafe_return_btn.focus_mode = Control.FOCUS_NONE
+	_c1_cafe_return_btn.visible = false
+	_c1_cafe_return_btn.pressed.connect(_c1_cafe_return_to_player_floor)
+	layer.add_child(_c1_cafe_return_btn)
+	_c1_cafe_sync()
+
+func _c1_cafe_active() -> bool:
+	return _c1_cafe_enabled and _probe != null and String(_probe.active_space) == "cafe"
+
+## Fixed active-space framing: the canonical 2D grid remains underneath and continues to own
+## picking/nav/collision.  Reapplying the same closed-form camera keeps drag/zoom view-only.
+func _c1_cafe_lock_frame() -> void:
+	if not _c1_cafe_active():
+		return
+	var bounds := _space_bounds()
+	var pad: Vector2 = _probe.HOME_PAD
+	var fit: Vector2 = (_vp() - pad) / bounds.size
+	_probe.cam.position = bounds.get_center()
+	_probe.cam.zoom = Vector2.ONE * minf(fit.x, fit.y)
+
+func _c1_cafe_consumer_text() -> String:
+	for raw_agent in Sim.agents:
+		var ag: Dictionary = raw_agent
+		if String(ag.get("space", "town")) != "cafe" or String(ag.get("floor", "outdoor")) != "1f":
+			continue
+		var opt = ag.get("option")
+		if opt is Dictionary and String(opt.get("action", "")) == "喝咖啡":
+			return "%s正在喝咖啡 · 愉悦 %.1f · 剩余 %dt" % [_nm(String(ag.get("id", ""))), float(ag.get("needs", {}).get("fun", 0.0)), int(opt.get("remaining", 0))]
+		var mem = ag.get("memory")
+		if mem is Object and "items" in mem:
+			for i in range((mem.items as Array).size() - 1, -1, -1):
+				var item: Dictionary = (mem.items as Array)[i]
+				if "喝咖啡" in String(item.get("text", "")):
+					return "%s喝过咖啡 · 愉悦 %.1f · 记忆已进入存档" % [_nm(String(ag.get("id", ""))), float(ag.get("needs", {}).get("fun", 0.0))]
+	return "一楼公共桌：等待常客使用现有“喝咖啡”服务"
+
+func _c1_cafe_sync() -> void:
+	if _c1_cafe_pan == null:
+		return
+	var active := _c1_cafe_active()
+	_c1_cafe_pan.visible = active
+	_c1_cafe_text.visible = active
+	_c1_cafe_observe_btn.visible = active and String(_probe.active_floor) == "1f"
+	_c1_cafe_return_btn.visible = active and String(_probe.active_floor) == "2f"
+	if not active:
+		return
+	_c1_cafe_lock_frame()
+	var floor_id := String(_probe.active_floor)
+	var scope := "玩家所在公共一楼" if floor_id == "1f" else "Probe 授权观察 · 玩家仍在一楼"
+	var guidance := _c1_cafe_denial if _c1_cafe_denial != "" else ("点楼梯可验证私人拒绝" if floor_id == "1f" else "二楼仅观察；点“回到一楼”继续行动")
+	_c1_cafe_text.text = "[color=#ffd89b]C1 · 阿丽的咖啡馆 / %s[/color]  [color=#9ad0ff]%s[/color]\n%s\n[color=#f2b8a0]%s[/color]" % [floor_id.to_upper(), scope, _c1_cafe_consumer_text(), guidance]
+
+func _c1_cafe_observe_private_floor() -> void:
+	if not _c1_cafe_active() or not _sg.has_floor("cafe", "2f"):
+		return
+	_probe.set_space("cafe", "2f", _sg.bounds_px("cafe"))
+	_selected_id = ""
+	_c1_cafe_denial = "私人楼梯仍未授权；当前是只读观察，不移动玩家"
+	_c1_cafe_sync()
+	_update_obs()
+
+func _c1_cafe_return_to_player_floor() -> void:
+	if not _c1_cafe_active():
+		return
+	var player := Sim.get_agent("player")
+	var floor_id := String(player.get("floor", "1f")) if not player.is_empty() and String(player.get("space", "")) == "cafe" else "1f"
+	_probe.set_space("cafe", floor_id, _sg.bounds_px("cafe"))
+	_c1_cafe_denial = "已回到公共一楼；可继续观察真实消费与存档后果"
+	_c1_cafe_sync()
+	_update_obs()
 
 ## keycode → 动词（PLAYER_VERBS 的 "key" 字段是唯一真源）。查不到 → ""，_player_do 会当作未知动作交给 Sim 拒绝。
 func verb_for_key(kc: int) -> String:
@@ -1574,6 +1688,7 @@ func _toggle_perf() -> void:
 ## dev 性能 overlay 每帧刷（FPS 要每帧才平滑；关时早退，零开销）。
 func _process(dt: float) -> void:
 	_flush_scrub()                                 # 时间轴拖动合并点：每【渲染帧】至多一次 goto_tick
+	_c1_cafe_sync()
 	if _obs_fit_frames > 0:
 		_obs_fit_frames -= 1
 		if _obs_fit_frames == 0:
@@ -2770,6 +2885,9 @@ func _portal_click(world_pos: Vector2) -> bool:
 						var denied_text := "%s：私人区域，未获通行许可" % _sg.label_of(os) if denied_reason == "portal_not_permitted" \
 							else "%s：入口暂时无法通行" % _sg.label_of(os)
 						_push("[color=#ff9b82]（%s）[/color]" % denied_text)
+						if _c1_cafe_active() and denied_reason == "portal_not_permitted":
+							_c1_cafe_denial = "私人楼梯拒绝：玩家未移动；可点“观察二楼”后回一楼继续"
+							_c1_cafe_sync()
 						return true
 					player_crossed = true
 			var b: Rect2 = _sg.bounds_px(os)
@@ -2785,10 +2903,13 @@ func _portal_click(world_pos: Vector2) -> bool:
 				_probe.cam.zoom = Vector2.ONE * clampf(minf(fit.x, fit.y), _probe.ZOOM_MIN.x, _probe.ZOOM_MAX.x)
 				_probe.cam.position = b.get_center()
 			_selected_id = "player" if player_crossed else ""
+			if player_crossed and os == "cafe":
+				_c1_cafe_denial = "公共门已通过；楼梯仍按私人权限独立判定"
 			var verb := "上下楼" if String(p.get("kind", "")) == "stairs" else ("进门" if os != "town" else "出门")
 			_push("[color=#9ad0ff]%s / %s 层（点%s）[/color]" % [_sg.label_of(os), of, verb])
 			_update_obs()
 			_update_status()
+			_c1_cafe_sync()
 			return true
 	return false
 
@@ -2862,7 +2983,10 @@ func _agent_on_active_plane(ag: Dictionary) -> bool:
 		return false
 	var space := "town"
 	var floor_id := "outdoor"
-	if _player_mode:
+	if _c1_cafe_active():
+		space = String(_probe.active_space)
+		floor_id = String(_probe.active_floor)
+	elif _player_mode:
 		var player := Sim.get_agent("player")
 		if not player.is_empty():
 			space = String(player.get("space", space))
