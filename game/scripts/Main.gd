@@ -2263,6 +2263,11 @@ func _flush_scrub() -> void:
 	_after_jump(jumped)
 
 func _after_jump(reconcile_c1 := false) -> void:
+	# A failed C1 replay must be an exact View no-op: it has no new canonical
+	# world to reconcile, and even rebuilding the panel can redraw stale text.
+	# Feature-off retains the historical failed-jump UI refresh behavior.
+	if _locked_ortho_c1 != null and not reconcile_c1:
+		return
 	_modulate.color = _daylight(Sim.time_of_day())
 	_update_status()
 	_update_scrubber()
@@ -2713,10 +2718,13 @@ func _after_load() -> void:
 	Sim.running = false
 	_max_tick = maxi(_max_tick, Sim.tick_no)
 	_modulate.color = _daylight(Sim.time_of_day())
-	_selected_id = ""
+	# C0 keeps its historical eager clear. C1 lets the successful restore seam
+	# make this decision so dependent UI is refreshed from its final state.
+	if _locked_ortho_c1 == null:
+		_selected_id = ""
 	_update_status()
 	_update_scrubber()
-	_reconcile_locked_ortho_c1()
+	_reconcile_locked_ortho_c1(true)
 	# Keep the rendered panel coupled to the final reconciled plane/selection.
 	_update_obs()
 	_rebuild_feed()   # 读档=换世界：播报同样按新 event_log 重建
@@ -2937,7 +2945,7 @@ func _activate_locked_ortho_c1() -> void:
 ## Successful load/replay is authoritative in Sim.  C1 only mirrors that
 ## canonical player plane back into Probe, then reapplies its immutable frame;
 ## it never writes a portal, save, trace, or topology decision.
-func _reconcile_locked_ortho_c1() -> void:
+func _reconcile_locked_ortho_c1(clear_selection := false) -> void:
 	if _locked_ortho_c1 == null or _probe == null or _sg == null:
 		return
 	var player: Dictionary = Sim.get_agent("player")
@@ -2948,8 +2956,9 @@ func _reconcile_locked_ortho_c1() -> void:
 	var floor_id := String(player.get("floor", "outdoor"))
 	_probe.set_space(space, floor_id, _sg.bounds_px(space))
 	var selected := Sim.get_agent(_selected_id)
-	if selected.is_empty() or String(selected.get("space", "town")) != space or String(selected.get("floor", "outdoor")) != floor_id:
+	if clear_selection or selected.is_empty() or String(selected.get("space", "town")) != space or String(selected.get("floor", "outdoor")) != floor_id:
 		_selected_id = ""
+	_locked_ortho_c1.clear_receipt()
 	_locked_ortho_c1.apply_fixed_frame(_vp(), _probe.HOME_PAD)
 
 func _agent_on_active_plane(ag: Dictionary) -> bool:

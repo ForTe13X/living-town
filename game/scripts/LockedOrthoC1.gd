@@ -23,6 +23,12 @@ func show_receipt(text: String) -> void:
 func feedback_text() -> String:
 	return _feedback
 
+## Receipts are transient View feedback. A successful canonical world replace
+## makes any earlier receipt stale; failed/no-op operations never call this.
+func clear_receipt() -> void:
+	_feedback = ""
+	queue_redraw()
+
 ## This is a presentation-route filter, not a permission rule. Main asks it
 ## before emitting any Sim intent; admitted routes still use Sim's canonical
 ## topology/access validation and receipts.
