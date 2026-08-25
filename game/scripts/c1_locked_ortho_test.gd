@@ -151,6 +151,30 @@ func _ready() -> void:
 	main._unhandled_input(left_down); main._unhandled_input(left_up)
 	var unsupported_after := {"sim": state(), "space": main._probe.active_space, "floor": main._probe.active_floor, "pos": main._probe.cam.position, "zoom": main._probe.cam.zoom}
 	ck(unsupported_after == unsupported_before and "路线外" in main._locked_ortho_c1.feedback_text(), "real left input rejects adjacent public non-cafe door before Sim intent with exact C1 immutability")
+	# Save through Main's public quick-save/load route, then enter through the
+	# connected Probe tap.  Loading must read Sim's restored plane back into the
+	# Probe before the per-frame fixed-frame pass can preserve stale cafe state.
+	Sim.backend = null; Sim.auto_run = false; Sim.start_new(20260825)
+	main._player_mode = true; Sim.add_player(Vector2i(41, 19))
+	main._probe.set_space("town", "outdoor", main._sg.bounds_px("town")); main._locked_ortho_c1.apply_fixed_frame(main._vp(), main._probe.HOME_PAD)
+	main._quick_save()
+	var saved_town := state()
+	main._probe.emit_signal("tapped", Vector2(41 * 48 + 24, 19 * 48 + 24))
+	ck(String(Sim.get_agent("player").get("space", "")) == "cafe", "save/load setup enters cafe through connected public door")
+	main._quick_load()
+	var town_size := Vector2(64 * 48, 48 * 48)
+	var town_zoom := minf((main._vp() - main._probe.HOME_PAD).x / town_size.x, (main._vp() - main._probe.HOME_PAD).y / town_size.y)
+	ck(state() == saved_town and String(main._probe.active_space) == "town" and String(main._probe.active_floor) == "outdoor" and main._probe.cam.position == town_size * 0.5 and main._probe.cam.zoom == Vector2.ONE * town_zoom and main._selected_id == "", "Main quick-load reconciles canonical town, Probe plane, selection and fixed town frame")
+	# Make the door receipt part of a later timeline, then use the actual bracket
+	# key route to jump before it.  Direct Probe assignment here would hide the
+	# precise regression this test is intended to catch.
+	tickn(3)
+	main._probe.emit_signal("tapped", Vector2(41 * 48 + 24, 19 * 48 + 24))
+	tickn(2)
+	var before_timeline_trace := Sim.get_player_trace().duplicate(true)
+	var rewind := InputEventKey.new(); rewind.pressed = true; rewind.keycode = KEY_BRACKETLEFT
+	main._unhandled_input(rewind)
+	ck(Sim.tick_no == 0 and String(Sim.get_agent("player").get("space", "")) == "town" and String(main._probe.active_space) == "town" and String(main._probe.active_floor) == "outdoor" and main._probe.cam.position == town_size * 0.5 and main._probe.cam.zoom == Vector2.ONE * town_zoom and Sim.get_player_trace() == before_timeline_trace, "actual timeline jump reconciles replayed canonical town with immutable C1 frame")
 	main._locked_ortho_c1 = null
 	main._unhandled_input(plus)
 	ck(main._probe.cam.zoom != locked_zoom, "feature-off Main router preserves Probe zoom behavior")

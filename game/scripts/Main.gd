@@ -2237,8 +2237,8 @@ func _tick_at_x(x: float) -> int:
 
 func _scrub_to_x(x: float) -> void:
 	Sim.running = false
-	Sim.goto_tick(_tick_at_x(x))
-	_after_jump()
+	var jumped := Sim.goto_tick(_tick_at_x(x))
+	_after_jump(jumped)
 
 ## 拖动时【只】挪手柄（不重演）：真正的 goto_tick 每帧最多一次，在 _flush_scrub 里做。
 ## 一次 goto_tick = start_new(seed) + 从 0 重跑到目标 tick（Sim.gd:802-826，~0.4ms/tick），
@@ -2257,15 +2257,17 @@ func _flush_scrub() -> void:
 	var t := _scrub_pending
 	_scrub_pending = -1
 	Sim.running = false
-	Sim.goto_tick(t)
-	_after_jump()
+	var jumped := Sim.goto_tick(t)
+	_after_jump(jumped)
 
-func _after_jump() -> void:
+func _after_jump(reconcile_c1 := false) -> void:
 	_modulate.color = _daylight(Sim.time_of_day())
 	_update_status()
 	_update_scrubber()
 	_update_obs()
 	_rebuild_feed()   # 时间线换了：播报必须照当前 event_log 重建，不能留上一条时间线的字
+	if reconcile_c1:
+		_reconcile_locked_ortho_c1()
 
 func _nm(id: Variant) -> String:
 	var a := Sim.get_agent(String(id))
@@ -2655,9 +2657,15 @@ func _unhandled_input(e: InputEvent) -> void:
 			# 等价性变成构造性的；player_touch_test.gd 再把这句话钉死。
 			KEY_G, KEY_F, KEY_B, KEY_Y, KEY_T, KEY_P, KEY_M: _player_do(verb_for_key(e.keycode))
 			KEY_PERIOD: if not Sim.running: Sim.tick()                                   # 单步 +1
-			KEY_COMMA: Sim.running = false; Sim.goto_tick(maxi(0, Sim.tick_no - 1)); _after_jump()
-			KEY_BRACKETLEFT: Sim.running = false; Sim.goto_tick(maxi(0, Sim.tick_no - Sim.TICKS_PER_DAY)); _after_jump()
-			KEY_BRACKETRIGHT: Sim.running = false; Sim.goto_tick(Sim.tick_no + Sim.TICKS_PER_DAY); _after_jump()
+			KEY_COMMA:
+				Sim.running = false
+				_after_jump(Sim.goto_tick(maxi(0, Sim.tick_no - 1)))
+			KEY_BRACKETLEFT:
+				Sim.running = false
+				_after_jump(Sim.goto_tick(maxi(0, Sim.tick_no - Sim.TICKS_PER_DAY)))
+			KEY_BRACKETRIGHT:
+				Sim.running = false
+				_after_jump(Sim.goto_tick(Sim.tick_no + Sim.TICKS_PER_DAY))
 		_update_status()
 	elif e is InputEventMouseButton or e is InputEventMouseMotion 			or e is InputEventMagnifyGesture or e is InputEventPanGesture:
 		# C1 only permits left-button taps through the existing Probe tap signal.
@@ -2706,6 +2714,7 @@ func _after_load() -> void:
 	_update_obs()
 	_update_scrubber()
 	_rebuild_feed()   # 读档=换世界：播报同样按新 event_log 重建
+	_reconcile_locked_ortho_c1()
 
 func _vp() -> Vector2:
 	return get_viewport_rect().size
@@ -2919,6 +2928,23 @@ func _activate_locked_ortho_c1() -> void:
 	if _probe != null:
 		_locked_ortho_c1.setup(_probe)
 		_locked_ortho_c1.apply_fixed_frame(_vp(), _probe.HOME_PAD)
+
+## Successful load/replay is authoritative in Sim.  C1 only mirrors that
+## canonical player plane back into Probe, then reapplies its immutable frame;
+## it never writes a portal, save, trace, or topology decision.
+func _reconcile_locked_ortho_c1() -> void:
+	if _locked_ortho_c1 == null or _probe == null or _sg == null:
+		return
+	var player: Dictionary = Sim.get_agent("player")
+	if player.is_empty():
+		return
+	var space := String(player.get("space", "town"))
+	var floor_id := String(player.get("floor", "outdoor"))
+	_probe.set_space(space, floor_id, _sg.bounds_px(space))
+	var selected := Sim.get_agent(_selected_id)
+	if selected.is_empty() or String(selected.get("space", "town")) != space or String(selected.get("floor", "outdoor")) != floor_id:
+		_selected_id = ""
+	_locked_ortho_c1.apply_fixed_frame(_vp(), _probe.HOME_PAD)
 
 func _agent_on_active_plane(ag: Dictionary) -> bool:
 	if ag.is_empty():
