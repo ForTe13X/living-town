@@ -29,7 +29,7 @@ func stable_main_snapshot(main: Node) -> Dictionary:
 	# Inv.digest also includes the diagnostic field, so it is excluded here.
 	sim_state.erase("trace")
 	sim_state.erase("digest")
-	return {"sim": sim_state, "running": Sim.running, "space": main._probe.active_space, "floor": main._probe.active_floor,
+	return {"sim": sim_state, "running": Sim.running, "auto_run": Sim.auto_run, "space": main._probe.active_space, "floor": main._probe.active_floor,
 		"pos": main._probe.cam.position, "zoom": main._probe.cam.zoom, "selected": main._selected_id,
 		"obs": main._obs.text, "status": main._status.text, "feedback": main._locked_ortho_c1.feedback_text()}
 
@@ -76,6 +76,18 @@ func deny_owner_stair(main: Node) -> void:
 		Sim.player_move(direction)
 	main._probe.emit_signal("tapped", Vector2(1 * 48 + 24, 1 * 48 + 24))
 
+func mouse_button(main: Node, pressed: bool, position: Vector2) -> void:
+	var event := InputEventMouseButton.new()
+	event.pressed = pressed
+	event.button_index = MOUSE_BUTTON_LEFT
+	event.position = position
+	main._unhandled_input(event)
+
+func mouse_motion(main: Node, position: Vector2) -> void:
+	var event := InputEventMouseMotion.new()
+	event.position = position
+	main._unhandled_input(event)
+
 func failed_timeline_route(main: Node, name: String) -> void:
 	Sim.running = true
 	main._update_status()
@@ -92,13 +104,58 @@ func failed_timeline_route(main: Node, name: String) -> void:
 		"right":
 			var right := InputEventKey.new(); right.pressed = true; right.keycode = KEY_BRACKETRIGHT
 			main._unhandled_input(right)
-		"scrub": main._scrub_to_x(main._sx0)
+		"scrub":
+			# Public press hits the live timeline and exercises Main's hit-test plus
+			# immediate scrub attempt; no private scrub helper is invoked.
+			var immediate := Vector2(main._sx0 + 1.0, main._sy)
+			mouse_button(main, true, immediate)
+			mouse_button(main, false, immediate)
 		"flush":
-			main._scrub_pending = 0
-			main._flush_scrub()
+			# Press starts Main._scrubbing, motion coalesces _scrub_pending, and the
+			# public release executes the deferred flush path.
+			var press := Vector2(main._sx0 + 1.0, main._sy)
+			var deferred := Vector2(main._sx1 - 1.0, main._sy)
+			mouse_button(main, true, press)
+			mouse_motion(main, deferred)
+			ck(main._scrubbing, "public timeline press-motion keeps Main scrub capture until release")
+			mouse_button(main, false, deferred)
 	Sim.player_trace_available = trace_available
 	var after := stable_main_snapshot(main)
-	ck(after == before and Sim.running, "failed autoplay %s timeline route restores running and complete C1 snapshot" % name, snapshot_diff(before, after))
+	ck(after == before and Sim.running and not main._scrubbing and main._scrub_pending < 0, "failed autoplay %s timeline route restores running and complete C1 snapshot" % name, snapshot_diff(before, after))
+
+func partial_replay_failure(main: Node, via_mouse: bool) -> void:
+	# Build a real player portal receipt, then coherently reseal a forged result so
+	# replay gets past structural validation and fails at the replay boundary.
+	Sim.backend = null; Sim.auto_run = false; Sim.start_new(20260825)
+	main._player_mode = true; Sim.add_player(Vector2i(41, 19))
+	main._probe.set_space("town", "outdoor", main._sg.bounds_px("town")); main._locked_ortho_c1.apply_fixed_frame(main._vp(), main._probe.HOME_PAD)
+	tickn(2)
+	main._probe.emit_signal("tapped", Vector2(41 * 48 + 24, 19 * 48 + 24))
+	tickn(1)
+	var forged := Sim.get_player_trace()
+	var entries: Array = forged.get("entries", [])
+	if entries.is_empty():
+		ck(false, "partial replay setup records a real public portal trace")
+		return
+	var entry: Dictionary = entries[0]
+	entry["receipt"]["event_digest"] = int(entry["receipt"].get("event_digest", 0)) + 1
+	var unsigned := entry.duplicate(true); unsigned.erase("seal")
+	entry["seal"] = Sim._player_trace_entry_seal(unsigned)
+	entries[0] = entry; forged["entries"] = entries
+	ck(Sim.set_player_trace_for_replay(forged), "coherently resealed partial replay fixture imports")
+	Sim.running = true
+	main._max_tick = maxi(main._max_tick, Sim.tick_no)
+	var before := stable_main_snapshot(main)
+	var trace_before := Sim.get_player_trace()
+	if via_mouse:
+		var x: float = main._sx0 + (main._sx1 - main._sx0) * (float(Sim.tick_no - 1) / float(maxi(1, main._max_tick)))
+		mouse_button(main, true, Vector2(x, main._sy))
+		mouse_button(main, false, Vector2(x, main._sy))
+	else:
+		var comma := InputEventKey.new(); comma.pressed = true; comma.keycode = KEY_COMMA
+		main._unhandled_input(comma)
+	var after := stable_main_snapshot(main)
+	ck(Sim.player_trace_last_error == "recomputed_receipt_mismatch" and after == before and Sim.running and Sim.get_player_trace() == trace_before, "partial replay %s failure preserves live C1 authority and runtime" % ("mouse" if via_mouse else "keyboard"), snapshot_diff(before, after))
 
 func find_button(root: Node, caption: String) -> Button:
 	if root is Button and (root as Button).text == caption:
@@ -242,8 +299,15 @@ func _ready() -> void:
 	ck(unsupported_after == unsupported_before and "路线外" in main._locked_ortho_c1.feedback_text(), "real left input rejects adjacent public non-cafe door before Sim intent with exact C1 immutability")
 	# All five real Main timeline entrances attempt a rejected replay while live
 	# autoplay is on. They must restore the running bit and every View observable.
+	Sim.tick()
+	# The real tick signal normally advances this presentation-only range.  This
+	# composed test drives Sim directly, so seed the same observed range here.
+	main._max_tick = maxi(main._max_tick, Sim.tick_no)
+	main._update_scrubber()
 	for route in ["comma", "left", "right", "scrub", "flush"]:
 		failed_timeline_route(main, route)
+	partial_replay_failure(main, false)
+	partial_replay_failure(main, true)
 	# The rejected replay diagnostic is expected and explicitly excluded above;
 	# clear it before the following independent real-player scenario.
 	Sim.player_trace_last_error = ""

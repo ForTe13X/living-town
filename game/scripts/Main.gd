@@ -2260,13 +2260,14 @@ func _flush_scrub() -> void:
 
 ## C1 failures are true live-state no-ops: retain the running state until Sim
 ## accepts the replay. Successful jumps retain the established paused state.
-func _attempt_timeline_jump(target: int) -> void:
+func _attempt_timeline_jump(target: int) -> bool:
 	var was_running := Sim.running
 	Sim.running = false
 	var jumped := Sim.goto_tick(target)
 	if not jumped and _locked_ortho_c1 != null:
 		Sim.running = was_running
 	_after_jump(jumped)
+	return jumped
 
 func _after_jump(reconcile_c1 := false) -> void:
 	# A failed C1 replay must be an exact View no-op: it has no new canonical
@@ -2673,11 +2674,14 @@ func _unhandled_input(e: InputEvent) -> void:
 			KEY_G, KEY_F, KEY_B, KEY_Y, KEY_T, KEY_P, KEY_M: _player_do(verb_for_key(e.keycode))
 			KEY_PERIOD: if not Sim.running: Sim.tick()                                   # 单步 +1
 			KEY_COMMA:
-				_attempt_timeline_jump(maxi(0, Sim.tick_no - 1))
+				if _locked_ortho_c1 != null and not _attempt_timeline_jump(maxi(0, Sim.tick_no - 1)):
+					return # rejected C1 restores are true UI/View no-ops
 			KEY_BRACKETLEFT:
-				_attempt_timeline_jump(maxi(0, Sim.tick_no - Sim.TICKS_PER_DAY))
+				if _locked_ortho_c1 != null and not _attempt_timeline_jump(maxi(0, Sim.tick_no - Sim.TICKS_PER_DAY)):
+					return
 			KEY_BRACKETRIGHT:
-				_attempt_timeline_jump(Sim.tick_no + Sim.TICKS_PER_DAY)
+				if _locked_ortho_c1 != null and not _attempt_timeline_jump(Sim.tick_no + Sim.TICKS_PER_DAY):
+					return
 		_update_status()
 	elif e is InputEventMouseButton or e is InputEventMouseMotion 			or e is InputEventMagnifyGesture or e is InputEventPanGesture:
 		# C1 only permits left-button taps through the existing Probe tap signal.
