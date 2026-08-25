@@ -21,6 +21,32 @@ func _player_state() -> Dictionary:
 			"relationships": (pl.get("relationships", {}) as Dictionary).duplicate(true),
 			"memory": (pl.get("memory").items as Array).duplicate(true) if pl.get("memory") != null else []}}
 
+func _trace_canonical(value: Variant) -> String:
+	match typeof(value):
+		TYPE_NIL: return "null"
+		TYPE_BOOL: return "true" if value else "false"
+		TYPE_INT: return "i:%d" % int(value)
+		TYPE_FLOAT: return "f:%.9f" % float(value)
+		TYPE_STRING, TYPE_STRING_NAME: return "s:%s" % JSON.stringify(String(value))
+		TYPE_VECTOR2I: return "v2i:%d,%d" % [value.x, value.y]
+		TYPE_ARRAY:
+			var parts: Array[String] = []
+			for item in value: parts.append(_trace_canonical(item))
+			return "[" + ",".join(parts) + "]"
+		TYPE_DICTIONARY:
+			var keys: Array = value.keys(); keys.sort_custom(func(a, b): return String(a) < String(b))
+			var parts: Array[String] = []
+			for key in keys: parts.append("%s:%s" % [JSON.stringify(String(key)), _trace_canonical(value[key])])
+			return "{" + ",".join(parts) + "}"
+	return "unsupported:%d" % typeof(value)
+
+func _save_bytes(path: String) -> PackedByteArray:
+	if not Sim.save_game(path, {"test": "goto_tick_atomicity"}): return PackedByteArray()
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null: return PackedByteArray()
+	var bytes := file.get_buffer(file.get_length()); file.close()
+	return bytes
+
 func _find_player_event(kind: String) -> Dictionary:
 	for raw in Sim.event_log:
 		var ev: Dictionary = raw
@@ -54,6 +80,32 @@ func _mutations_reject(trace: Dictionary) -> void:
 	var wrong_actor := trace.duplicate(true); wrong_actor["entries"][0]["actor"] = "observer"
 	_ck("non-player actor rejected", not Sim.set_player_trace_for_replay(wrong_actor))
 	_ck("failed trace import is atomic", Sim.get_player_trace() == before)
+
+func _goto_tick_failure_is_atomic(valid_trace: Dictionary) -> void:
+	Sim.backend = null; Sim.auto_run = true; Sim.start_new(7); Sim.add_player(Vector2i(1, 0))
+	var forged := valid_trace.duplicate(true)
+	var forged_entry: Dictionary = (forged["entries"] as Array)[0]
+	forged_entry["receipt"]["event_digest"] = int(forged_entry["receipt"].get("event_digest", 0)) + 1
+	var unsigned := forged_entry.duplicate(true); unsigned.erase("seal")
+	forged_entry["seal"] = Sim.fnv1a32(_trace_canonical(unsigned))
+	_ck("coherently resealed forged receipt imports structurally", Sim.set_player_trace_for_replay(forged))
+	var before_path := "user://player_trace_atomic_before.save"
+	var after_path := "user://player_trace_atomic_after.save"
+	var before_bytes := _save_bytes(before_path)
+	var before_trace := Sim.get_player_trace()
+	var before_status := Sim.player_trace_status(); before_status.erase("error")
+	var before_auto_run := Sim.auto_run; var before_replaying := Sim.replaying
+	var before_pos: Vector2i = Sim.get_agent("player").get("pos", Vector2i.ZERO)
+	var replay_ok := Sim.goto_tick(0)
+	var failure_error := Sim.player_trace_last_error
+	var after_status := Sim.player_trace_status(); after_status.erase("error")
+	var after_bytes := _save_bytes(after_path)
+	_ck("forged replay fails at recomputed receipt", not replay_ok and failure_error == "recomputed_receipt_mismatch", failure_error)
+	_ck("failed goto_tick restores complete authoritative save state", not before_bytes.is_empty() and after_bytes == before_bytes)
+	_ck("failed goto_tick restores trace index and runtime controls", Sim.get_player_trace() == before_trace and after_status == before_status \
+		and Sim.auto_run == before_auto_run and Sim.replaying == before_replaying)
+	_ck("failed goto_tick restores player position", Sim.get_agent("player").get("pos", Vector2i.ZERO) == before_pos, \
+		"%s -> %s" % [str(before_pos), str(Sim.get_agent("player").get("pos", Vector2i.ZERO))])
 
 func _rewrite_save_without_trace(source: String, target: String) -> bool:
 	var f := FileAccess.open(source, FileAccess.READ)
@@ -199,6 +251,7 @@ func _ready() -> void:
 	Sim.start_new(7)
 	_ck("restore accepted trace for mutation controls", Sim.set_player_trace_for_replay(accepted_trace))
 	_mutations_reject(accepted_trace)
+	_goto_tick_failure_is_atomic(accepted_trace)
 
 	var caps := Sim.player_trace_status()
 	_ck("explicit finite trace/query/payload/chat/save budgets", int(caps["max_entries"]) == 4096 and int(caps["max_entries_per_tick"]) == 64 and int(caps["max_payload_bytes"]) == 4096 \

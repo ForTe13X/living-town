@@ -1610,23 +1610,94 @@ func _player_trace_replay_boundary(boundary_tick: int) -> bool:
 			return false
 	return true
 
+func _capture_player_replay_transaction() -> Dictionary:
+	var state := {}
+	for key in _current_save_state_keys():
+		state[key] = get(key)
+	var serialized_agents := []
+	for ag in agents:
+		var data: Dictionary = (ag as Dictionary).duplicate(true)
+		var memory = ag.get("memory")
+		data["memory"] = {"__mem_items__": (memory.items as Array).duplicate(true) if memory is Object and "items" in memory else []}
+		serialized_agents.append(data)
+	state["agents"] = serialized_agents
+	var leaks: Array = []
+	_scan_objects(state, "goto_tick.state", leaks)
+	if not leaks.is_empty():
+		player_trace_last_error = "transaction_snapshot_object"
+		return {}
+	var active_ids: Array = []
+	for commitment in _active_commitments:
+		active_ids.append(int(commitment.get("id", -1)))
+	return {
+		"state_bytes": var_to_bytes(state),
+		"active_commit_ids": active_ids,
+		"near_set": _near_set.duplicate(true),
+		"path_cache": _path_cache.duplicate(true),
+		"nav_grids": _nav_grids.duplicate(true),
+		"player_pos": _player_pos,
+		"cargo_event_index": _cargo_event_index.duplicate(true),
+		"lod_focus": lod_focus,
+		"shadow_on": shadow_on,
+		"shadow_trace": shadow_trace.duplicate(true),
+		"backend": backend,
+		"ext": ext,
+		"decision_sink": decision_sink,
+		"player_trace": player_trace.duplicate(true),
+		"player_trace_available": player_trace_available,
+		"player_trace_last_error": player_trace_last_error,
+		"player_trace_tick_index": _player_trace_tick_index.duplicate(true),
+		"player_trace_replay_active": _player_trace_replay_active,
+		"player_trace_replay_expected": _player_trace_replay_expected.duplicate(true),
+	}
+
+func _restore_player_replay_transaction(snapshot: Dictionary, failure_error: String) -> bool:
+	var decoded = bytes_to_var(snapshot.get("state_bytes", PackedByteArray()))
+	if not (decoded is Dictionary):
+		player_trace_last_error = "transaction_restore_invalid"
+		return false
+	var state: Dictionary = decoded
+	for key in state:
+		set(key, state[key])
+	_rebuild_after_load(snapshot.get("active_commit_ids", []))
+	_near_set = snapshot.get("near_set", {}).duplicate(true)
+	_path_cache = snapshot.get("path_cache", {}).duplicate(true)
+	_nav_grids = snapshot.get("nav_grids", {}).duplicate(true)
+	_player_pos = snapshot.get("player_pos", Vector2i(-1, -1))
+	_cargo_event_index = snapshot.get("cargo_event_index", {}).duplicate(true)
+	lod_focus = snapshot.get("lod_focus", null)
+	shadow_on = bool(snapshot.get("shadow_on", false))
+	shadow_trace = snapshot.get("shadow_trace", []).duplicate(true)
+	backend = snapshot.get("backend")
+	ext = snapshot.get("ext")
+	decision_sink = snapshot.get("decision_sink")
+	player_trace = snapshot.get("player_trace", {}).duplicate(true)
+	player_trace_available = bool(snapshot.get("player_trace_available", false))
+	player_trace_last_error = failure_error
+	_player_trace_tick_index = snapshot.get("player_trace_tick_index", {}).duplicate(true)
+	_player_trace_replay_active = bool(snapshot.get("player_trace_replay_active", false))
+	_player_trace_replay_expected = snapshot.get("player_trace_replay_expected", {}).duplicate(true)
+	return false
+
 ## Deterministic scrub replays canonical player inputs at their closed tick/order boundary.
 ## Old saves without a trace fail closed when a player exists instead of inventing history.
+## Once replay begins, every rejected boundary restores the complete pre-call Sim authority.
 func goto_tick(target: int) -> bool:
 	var a := auto_run
-	auto_run = false
 	var had_player := _agent_by_id.has("player")
 	if had_player and not player_trace_available:
 		player_trace_last_error = "player_trace_unavailable"
-		auto_run = a
 		return false
 	var source_trace := player_trace.duplicate(true) if player_trace_available else {}
 	if player_trace_available:
 		var trace_error := _player_trace_validate(source_trace)
 		if trace_error != "":
 			player_trace_last_error = trace_error
-			auto_run = a
 			return false
+	var transaction := _capture_player_replay_transaction()
+	if transaction.is_empty():
+		return false
+	auto_run = false
 	start_new(seed_base)
 	if not source_trace.is_empty():
 		player_trace = source_trace
@@ -1636,13 +1707,13 @@ func goto_tick(target: int) -> bool:
 	replaying = true                       # 回放期间 AIBackend.decide 走 logic，不发 live 请求(P1-6)
 	var t := maxi(0, target)
 	if not source_trace.is_empty() and not _player_trace_replay_boundary(0):
-		replaying = false; _player_trace_replay_active = false; auto_run = a
-		return false
+		var failure_error := player_trace_last_error
+		return _restore_player_replay_transaction(transaction, failure_error)
 	while tick_no < t:
 		tick()
 		if not source_trace.is_empty() and not _player_trace_replay_boundary(tick_no):
-			replaying = false; _player_trace_replay_active = false; auto_run = a
-			return false
+			var failure_error := player_trace_last_error
+			return _restore_player_replay_transaction(transaction, failure_error)
 	replaying = false
 	_player_trace_replay_active = false
 	_player_trace_replay_expected = {}
