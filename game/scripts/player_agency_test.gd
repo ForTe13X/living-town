@@ -215,11 +215,22 @@ func _ready() -> void:
 	_ck("玩家不入派系/盟约", not in_faction and not in_pact)
 
 	# ── 13) 对抗审查回归：goto_tick 后玩家健在（#1，放最后——会重置世界）──
-	var inv_before := int(pl["inventory"].get("gift", 0))
-	Sim.goto_tick(100)
+	# 前 12 节包含测试专用的直接关系/位置注入，故不能拿那段非玩家输入假装可回放。
+	# 这里另开一个只经 public PlayerTraceV1 边界的最小局，验证诚实 scrub。
+	Sim.start_new(7)
+	Sim.add_player()
+	Sim.player_move(Vector2i.RIGHT)
+	_tickn(5)
+	var scrub_ok := Sim.goto_tick(100)
 	var pl2: Dictionary = Sim.get_agent("player")
-	_ck("scrub 后玩家健在", not pl2.is_empty() and int(pl2["inventory"].get("gift", 0)) == inv_before,
-		"gift=%d(应%d)" % [int(pl2.get("inventory", {}).get("gift", -1)), inv_before])
+	var scrub_witness := {"pos": pl2.get("pos"), "inventory": pl2.get("inventory", {}).duplicate(true),
+		"event_digest": Sim.event_digest, "trace": Sim.get_player_trace()}
+	var scrub_repeat_ok := Sim.goto_tick(100)
+	var pl3: Dictionary = Sim.get_agent("player")
+	var scrub_repeat := {"pos": pl3.get("pos"), "inventory": pl3.get("inventory", {}).duplicate(true),
+		"event_digest": Sim.event_digest, "trace": Sim.get_player_trace()}
+	_ck("scrub 后玩家历史由 PlayerTraceV1 精确重演", scrub_ok and scrub_repeat_ok and not pl3.is_empty() and scrub_repeat == scrub_witness,
+		"gift=%d trace=%d" % [int(pl3.get("inventory", {}).get("gift", -1)), int(Sim.player_trace_status()["entries"])])
 
 	# ── 14) NPC 主动找玩家：跨种子【分布】门（取代原第 7 节的单样本首达断言）──────────
 	# 意图一字未改：一个【什么都不做】的玩家不该被小镇社交无视。变的是怎么问这句话。

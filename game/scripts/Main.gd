@@ -1814,14 +1814,14 @@ func _apply_chat_reply(token: int, target_id: String, target_space: String, targ
 				or Vector2i(player.get("pos", Vector2i(-99, -99))) != player_pos \
 				or not _chat_target_reachable(target, player) or _player_in_warehouse_observatory():
 			return false
+		var chat_receipt: Dictionary = Sim.player_chat_commit(target_id, prompt, reply)
+		if not bool(chat_receipt.get("ok", false)):
+			return false
 	target["thinking"] = false
 	target.erase("_chat_request_token")
 	if _view != null and _view.has_method("show_say"):
 		_view.show_say(target_id, reply, 90)
 	_push("[color=#cfe8ff]%s：%s[/color]" % [_nm(target_id), _esc(reply)])
-	var mem = target.get("memory")
-	if mem != null:
-		mem.add("玩家问『%s』，我答『%s』" % [_esc(prompt.substr(0, 18)), _esc(reply.substr(0, 18))], 5, Sim.tick_no, [target_id, "player", "chat"])
 	return true
 
 ## 唯一聊天权威：输入框、快捷键和 demo 都先经过同一套空间/距离门；
