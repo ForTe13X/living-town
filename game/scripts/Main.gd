@@ -4,6 +4,7 @@ extends Node2D
 
 var _view: Node2D
 var _probe: Node                      # ProbeController：拥有 Camera2D + 观察状态（纯 View，不写 Sim）
+var _locked_ortho_c1: Node2D          # optional C1 projection; no Sim authority or input ownership
 var _sg: RefCounted                   # SpaceGraph：Space/Floor/Portal 合同（纯数据查询；兼容期 town/outdoor 兜底）
 var _modulate: CanvasModulate
 var _status: RichTextLabel
@@ -345,6 +346,7 @@ func _ready() -> void:
 	var _probe_floor_arg := ""             # --probe-floor id：配 --probe-space 指定楼层
 	var _obs_arg := false                  # --obs-full：启动即展开观察台完整卷宗（出图对照用；默认档是名片档）
 	var _lod_agg_arg := false              # --lod-agg：仅【测量/眼验】用，启用观察无关 aggregate LOD（CLI-only，绝不进 boot/面板出货路径；默认 off=逐字节不变）
+	var _locked_ortho_c1_arg := false      # --locked-ortho-c1：可删除的 C1 纯 View 适配器，默认绝不实例化
 	var args := OS.get_cmdline_user_args()
 	for i in args.size():
 		if args[i] == "--backend" and i + 1 < args.size():
@@ -371,6 +373,8 @@ func _ready() -> void:
 		elif args[i] == "--player-demo":
 			_player_mode = true                # 录 demo 用：脚本化玩家 autopilot（确定性按 tick 触发动作）
 			_demo_mode = true
+		elif args[i] == "--locked-ortho-c1":
+			_locked_ortho_c1_arg = true
 		elif args[i] == "--warmup" and i + 1 < args.size():
 			warmup_days = int(args[i + 1])     # 录 demo：跳到第 N 天开场（确定，goto_tick 同款重演）
 		elif args[i] == "--warmup-tick" and i + 1 < args.size():
@@ -468,6 +472,9 @@ func _ready() -> void:
 	_view = preload("res://scripts/WorldView.gd").new()
 	_view.dbg_nav = _dbg_nav_arg      # --dbg-nav：出图/启动即开导航叠层（否则运行时按 N 切）
 	add_child(_view)
+	if _locked_ortho_c1_arg:
+		_locked_ortho_c1 = preload("res://scripts/LockedOrthoC1.gd").new()
+		add_child(_locked_ortho_c1)
 
 	# 相机：可拖可缩的"探针"。红线（docs/19 §3）：相机【纯视图】——只决定画哪、怎么映射输入，
 	# 绝不喂 Sim.lod_focus。若"精细模拟哪块"取决于人眼在看哪，小镇历史就成了观察路径的函数 →
@@ -487,6 +494,8 @@ func _ready() -> void:
 	_probe._history.clear()
 	_probe.tapped.connect(_on_probe_tap)
 	_probe.double_tapped.connect(_on_probe_double_tap)
+	if _locked_ortho_c1 != null:
+		_locked_ortho_c1.setup(_probe)
 	if _demo_cam:
 		_probe.demo_cam = true
 		_demo_cam_apply()                        # 首帧就在轨迹上（否则录屏第一帧仍是 go_home，第二帧才跳过去）
@@ -2193,6 +2202,8 @@ func _player_do(action: String) -> String:
 		_push("[color=#f2a3a3]（先用 Tab/点选一位居民，再按动作键）[/color]")
 		return "未选中居民"
 	var msg := Sim.player_mediate(_selected_id) if action == "mediate" else Sim.player_act(action, _selected_id)
+	if _locked_ortho_c1 != null and action == "greet":
+		_locked_ortho_c1.show_receipt("问候已发起" if msg == "" else msg)
 	if msg != "":
 		_push("[color=#f2a3a3]（%s）[/color]" % msg)
 	return msg
@@ -2770,6 +2781,8 @@ func _portal_click(world_pos: Vector2) -> bool:
 						var denied_text := "%s：私人区域，未获通行许可" % _sg.label_of(os) if denied_reason == "portal_not_permitted" \
 							else "%s：入口暂时无法通行" % _sg.label_of(os)
 						_push("[color=#ff9b82]（%s）[/color]" % denied_text)
+						if _locked_ortho_c1 != null:
+							_locked_ortho_c1.show_receipt(String(crossed.get("reason", "入口不可通行")))
 						return true
 					player_crossed = true
 			var b: Rect2 = _sg.bounds_px(os)
