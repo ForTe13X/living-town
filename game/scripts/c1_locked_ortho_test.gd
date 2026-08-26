@@ -306,6 +306,14 @@ func _ready() -> void:
 	var c0_relayouts: int = main._hud_relayout_count
 	get_viewport().emit_signal("size_changed")
 	ck(main._hud_relayout_count == c0_relayouts + 1, "C0 viewport size signal retains its one-time HUD relayout subscription")
+	var c0_size: Vector2i = get_viewport().size
+	var c0_resize := Vector2i(800, 480) if c0_size == Vector2i(640, 384) else Vector2i(640, 384)
+	var c0_resize_relayouts: int = main._hud_relayout_count
+	get_viewport().size = c0_resize
+	await get_tree().process_frame
+	ck(get_viewport().size == c0_resize and main._hud_relayout_count > c0_resize_relayouts, "C0 real viewport resize invokes HUD relayout")
+	get_viewport().size = c0_size
+	await get_tree().process_frame
 	main._activate_locked_ortho_c1()
 	var c1_relayouts: int = main._hud_relayout_count
 	get_viewport().emit_signal("size_changed")
