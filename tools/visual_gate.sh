@@ -101,52 +101,98 @@ PRECIP_SEEDS="${LT_VISUAL_PRECIP_SEEDS:-1 3 5}"
 WINTER_TICK=11160
 rain_tick(){ case "$1" in 1) echo 600 ;; 3) echo 840 ;; 5) echo 1560 ;; *) echo 600 ;; esac; }
 
-# Café-density evidence receipt.  The image assertion refuses filename-only evidence:
-# this is written only after vg_shoot has removed stale output and each real Godot
-# capture has succeeded.  SHA-256 binds the concrete pixels to the requested space,
-# floor, resolution, and draw mode; a later swap/crop/mirror therefore fails closed.
-write_cafe_density_receipt(){ # <out-dir> <width> <height>
-  local cafe_py
-  cafe_py="$(command -v python3 2>/dev/null || command -v python 2>/dev/null || true)"
-  if [ -z "$cafe_py" ]; then
-    echo "  cafe-density receipt FAIL (python missing; refusing unbound evidence)"
-    return 1
-  fi
-  "$cafe_py" - "$1" "$2" "$3" <<'PY'
-import hashlib, json, os, sys, tempfile
-out, width, height = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
-captures = (
-    ("vg_int_cafe.png", "1f", "normal", "none"),
-    ("vg_cafe1f_bare.png", "1f", "bare", "interior_furniture"),
-    ("vg_cafe2f.png", "2f", "normal", "none"),
-    ("vg_cafe2f_bare.png", "2f", "bare", "interior_furniture"),
-)
+# Café-density command receipt.  One structured record builds both the exact
+# vg_shoot argv and, only after that command has produced a fresh PNG, its row.
+# Thus receipt floor/mode are observed from argv rather than retyped afterwards.
+cafe_density_python(){ command -v python3 2>/dev/null || command -v python 2>/dev/null || true; }
+cafe_density_begin(){
+  CAFE_PY="$(cafe_density_python)"
+  [ -n "$CAFE_PY" ] || { echo "  cafe-density receipt FAIL (python missing)"; return 1; }
+  CAFE_SESSION="$("$CAFE_PY" - <<'PY'
+import secrets
+print(secrets.token_hex(16))
+PY
+)" || return 1
+  CAFE_ROW_DIR="$OUT/.cafe-density-session-$CAFE_SESSION"
+  CAFE_ROW_FILES=()
+  rm -f "$OUT/cafe_density_receipt.json"
+  mkdir -p "$CAFE_ROW_DIR"
+}
+cafe_density_capture(){ # <slot> <space> <floor> <mode> <seed> <tick>
+  local slot="$1" space="$2" floor="$3" mode="$4" seed="$5" tick="$6" filename draw_skip row
+  case "$slot" in
+    cafe_1f_normal) filename=vg_int_cafe.png ;;
+    cafe_1f_bare)   filename=vg_cafe1f_bare.png ;;
+    cafe_2f_normal) filename=vg_cafe2f.png ;;
+    cafe_2f_bare)   filename=vg_cafe2f_bare.png ;;
+    *) echo "  cafe-density capture FAIL (unknown slot $slot)"; return 1 ;;
+  esac
+  case "$mode" in normal) draw_skip=none ;; bare) draw_skip=interior_furniture ;; *)
+    echo "  cafe-density capture FAIL (unknown mode $mode)"; return 1 ;;
+  esac
+  case "${W}x${H}" in 1280x768|320x192) ;; *)
+    echo "  cafe-density capture FAIL (unsupported viewport ${W}x${H})"; return 1 ;;
+  esac
+  local -a argv=(--path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy
+    --resolution "${W}x${H}" --single-window -- --backend logic --seed "$seed" --warmup-tick "$tick"
+    --probe-space "$space" --probe-floor "$floor" --shot-fit)
+  [ "$draw_skip" = none ] || argv+=(--draw-skip "$draw_skip")
+  argv+=(--shot "$OUT/$filename")
+  vg_shoot "$OUT/$filename" "${argv[@]}" || return 1
+  row="$CAFE_ROW_DIR/$slot.json"
+  "$CAFE_PY" - "$row" "$CAFE_SESSION" "$slot" "$filename" "${argv[@]}" <<'PY'
+import hashlib, json, os, sys
+row_path, session, slot, filename = sys.argv[1:5]
+argv = sys.argv[5:]
+def val(flag):
+    if argv.count(flag) != 1: raise SystemExit("bad argv " + flag)
+    i = argv.index(flag)
+    if i + 1 >= len(argv): raise SystemExit("missing argv value " + flag)
+    return argv[i + 1]
+if argv.count("--") != 1 or "--shot-fit" not in argv: raise SystemExit("bad argv structure")
+try: width, height = (int(v) for v in val("--resolution").split("x", 1))
+except ValueError: raise SystemExit("bad argv resolution")
+draw_skip = val("--draw-skip") if "--draw-skip" in argv else "none"
+if draw_skip not in ("none", "interior_furniture"): raise SystemExit("bad argv draw-skip")
+shot = val("--shot")
+if os.path.basename(shot) != filename: raise SystemExit("argv output does not match slot")
+image_path = os.path.join(os.path.dirname(row_path), "..", filename)
+image_path = os.path.normpath(image_path)
+if not os.path.isfile(image_path) or not os.path.getsize(image_path): raise SystemExit("fresh output missing")
+h = hashlib.sha256()
+with open(image_path, "rb") as f:
+    for block in iter(lambda: f.read(1024 * 1024), b""): h.update(block)
+row = {"session": session, "slot": slot, "file": filename, "space": val("--probe-space"),
+       "floor": val("--probe-floor"), "mode": "bare" if draw_skip == "interior_furniture" else "normal",
+       "draw_skip": draw_skip, "width": width, "height": height, "seed": int(val("--seed")),
+       "tick": int(val("--warmup-tick")), "argv": argv,
+       "argv_sha256": hashlib.sha256(json.dumps(argv, separators=(",", ":"), ensure_ascii=True).encode("ascii")).hexdigest(),
+       "sha256": h.hexdigest()}
+with open(row_path, "w", encoding="utf-8") as f: json.dump(row, f, sort_keys=True, separators=(",", ":"))
+PY
+  CAFE_ROW_FILES+=("$row")
+}
+cafe_density_finalize(){
+  [ "${#CAFE_ROW_FILES[@]}" -eq 4 ] || { echo "  cafe-density receipt FAIL (partial capture session)"; return 1; }
+  "$CAFE_PY" - "$OUT" "$CAFE_SESSION" "${CAFE_ROW_FILES[@]}" <<'PY'
+import json, os, sys, tempfile
+out, session, *paths = sys.argv[1:]
 rows = []
-for filename, floor, mode, draw_skip in captures:
-    path = os.path.join(out, filename)
-    if not os.path.isfile(path) or os.path.getsize(path) == 0:
-        raise SystemExit("missing capture " + filename)
-    h = hashlib.sha256()
-    with open(path, "rb") as f:
-        for block in iter(lambda: f.read(1024 * 1024), b""):
-            h.update(block)
-    rows.append({"file": filename, "space": "cafe", "floor": floor,
-                 "mode": mode, "draw_skip": draw_skip, "width": width,
-                 "height": height, "sha256": h.hexdigest()})
-receipt = {"schema": "cafe-density-receipt-v1", "source": "visual_gate.sh",
-           "captures": rows}
+for path in paths:
+    with open(path, encoding="utf-8") as f: row = json.load(f)
+    if row.get("session") != session: raise SystemExit("mixed capture session")
+    rows.append(row)
+if len({r.get("file") for r in rows}) != 4: raise SystemExit("duplicate capture slot")
 fd, tmp = tempfile.mkstemp(prefix=".cafe-density-receipt-", dir=out)
 with os.fdopen(fd, "w", encoding="utf-8") as f:
-    json.dump(receipt, f, sort_keys=True, separators=(",", ":"))
-    f.write("\n")
+    json.dump({"schema": "cafe-density-receipt-v2", "source": "visual_gate.sh", "session": session,
+               "captures": rows}, f, sort_keys=True, separators=(",", ":")); f.write("\n")
 os.replace(tmp, os.path.join(out, "cafe_density_receipt.json"))
 PY
-  local receipt_rc=$?
-  if [ "$receipt_rc" -ne 0 ]; then
-    echo "  cafe-density receipt FAIL (refusing unbound evidence)"
-    return "$receipt_rc"
-  fi
-  echo "  cafe-density receipt ok (4 SHA-256-bound café captures)"
+  local final_rc=$?
+  rm -rf "$CAFE_ROW_DIR"
+  [ "$final_rc" -eq 0 ] || { echo "  cafe-density receipt FAIL (partial/mixed session)"; return "$final_rc"; }
+  echo "  cafe-density receipt ok (4 argv-derived, SHA-256-bound captures)"
 }
 
 # Focused real-render capture for the density assertion's two supported viewports.
@@ -171,19 +217,12 @@ if [ "${1:-}" = "--shoot-cafe-density" ]; then
   sleep 1.5
   export DISPLAY="$DISP"
   cafe_rc=0
-  vg_shoot "$OUT/vg_int_cafe.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
-    --resolution ${W}x${H} --single-window -- --backend logic --seed "$SEED" --warmup-tick "$NOON_TICK" \
-    --probe-space cafe --probe-floor 1f --shot-fit --shot "$OUT/vg_int_cafe.png" || cafe_rc=1
-  vg_shoot "$OUT/vg_cafe1f_bare.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
-    --resolution ${W}x${H} --single-window -- --backend logic --seed "$SEED" --warmup-tick "$NOON_TICK" \
-    --probe-space cafe --probe-floor 1f --shot-fit --draw-skip interior_furniture --shot "$OUT/vg_cafe1f_bare.png" || cafe_rc=1
-  vg_shoot "$OUT/vg_cafe2f.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
-    --resolution ${W}x${H} --single-window -- --backend logic --seed "$SEED" --warmup-tick "$NOON_TICK" \
-    --probe-space cafe --probe-floor 2f --shot-fit --shot "$OUT/vg_cafe2f.png" || cafe_rc=1
-  vg_shoot "$OUT/vg_cafe2f_bare.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
-    --resolution ${W}x${H} --single-window -- --backend logic --seed "$SEED" --warmup-tick "$NOON_TICK" \
-    --probe-space cafe --probe-floor 2f --shot-fit --draw-skip interior_furniture --shot "$OUT/vg_cafe2f_bare.png" || cafe_rc=1
-  [ "$cafe_rc" -eq 0 ] && write_cafe_density_receipt "$OUT" "$W" "$H" || cafe_rc=1
+  cafe_density_begin || cafe_rc=1
+  [ "$cafe_rc" -eq 0 ] && cafe_density_capture cafe_1f_normal cafe 1f normal "$SEED" "$NOON_TICK" || cafe_rc=1
+  [ "$cafe_rc" -eq 0 ] && cafe_density_capture cafe_1f_bare   cafe 1f bare   "$SEED" "$NOON_TICK" || cafe_rc=1
+  [ "$cafe_rc" -eq 0 ] && cafe_density_capture cafe_2f_normal cafe 2f normal "$SEED" "$NOON_TICK" || cafe_rc=1
+  [ "$cafe_rc" -eq 0 ] && cafe_density_capture cafe_2f_bare   cafe 2f bare   "$SEED" "$NOON_TICK" || cafe_rc=1
+  [ "$cafe_rc" -eq 0 ] && cafe_density_finalize || cafe_rc=1
   kill "$XV" 2>/dev/null
   [ "$cafe_rc" -ne 0 ] && tail -25 "$VG_GODOT_LOG"
   exit "$cafe_rc"
@@ -288,12 +327,18 @@ if [ "${1:-}" = "--shoot" ]; then
   #     它同时也是 `store` 这一档物件（货架）在门里的唯一样本。
   #   顺带：这两张给 R2 的外壳门各多了一对**同类**对子（home2↔home 住宅、shop↔cafe 商业），
   #   即两道门都因此变严了一点，没有任何一道被放松。
+  cafe_density_begin || { [ "$rc" -eq 0 ] && rc=7; }
   for sid in $INT_SPACES; do
-    vg_shoot "$OUT/vg_int_${sid}.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
-      --resolution ${W}x${H} --single-window -- \
-      --backend logic --seed "$SEED" --warmup-tick "$NOON_TICK" \
-      --probe-space "$sid" --probe-floor 1f --shot-fit --shot "$OUT/vg_int_${sid}.png" \
-      || { [ "$rc" -eq 0 ] && rc=4; }
+    if [ "$sid" = cafe ]; then
+      cafe_density_capture cafe_1f_normal cafe 1f normal "$SEED" "$NOON_TICK" \
+        || { [ "$rc" -eq 0 ] && rc=7; }
+    else
+      vg_shoot "$OUT/vg_int_${sid}.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
+        --resolution ${W}x${H} --single-window -- \
+        --backend logic --seed "$SEED" --warmup-tick "$NOON_TICK" \
+        --probe-space "$sid" --probe-floor 1f --shot-fit --shot "$OUT/vg_int_${sid}.png" \
+        || { [ "$rc" -eq 0 ] && rc=4; }
+    fi
   done
   # ── AM1（编号133）：cafe 2F 像素门采集（同一个 Xvfb）──────────────────────────
   # 现役室内壳采集只拍 1f（上面 --probe-floor 1f 写死）⇒ cafe 2F 从没被任何门看过（docs/126 §一.2）。
@@ -301,31 +346,13 @@ if [ "${1:-}" = "--shoot" ]; then
   # 判据在宿主侧 tools/assert_cafe_2f.py（非空 + 与 1F 可分 + 空2F 会判红=有牙）。rc=7 专给它。
   # ⚠️ 命名【不用 vg_int_ 前缀】：那前缀会被 assert_interior_shell/assert_furniture_role 当成 space id
   #    globby 进去（cafe_2f 不是 space ⇒ 壳门会红）。1F 参照直接复用上面的 vg_int_cafe.png。
-  vg_shoot "$OUT/vg_cafe2f.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
-    --resolution ${W}x${H} --single-window -- \
-    --backend logic --seed "$SEED" --warmup-tick "$NOON_TICK" \
-    --probe-space cafe --probe-floor 2f --shot-fit --shot "$OUT/vg_cafe2f.png" \
+  cafe_density_capture cafe_2f_normal cafe 2f normal "$SEED" "$NOON_TICK" \
     || { [ "$rc" -eq 0 ] && rc=7; }
-  vg_shoot "$OUT/vg_cafe2f_bare.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
-    --resolution ${W}x${H} --single-window -- \
-    --backend logic --seed "$SEED" --warmup-tick "$NOON_TICK" \
-    --probe-space cafe --probe-floor 2f --shot-fit --draw-skip interior_furniture --shot "$OUT/vg_cafe2f_bare.png" \
+  cafe_density_capture cafe_2f_bare cafe 2f bare "$SEED" "$NOON_TICK" \
     || { [ "$rc" -eq 0 ] && rc=7; }
-  vg_shoot "$OUT/vg_cafe1f_bare.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
-    --resolution ${W}x${H} --single-window -- \
-    --backend logic --seed "$SEED" --warmup-tick "$NOON_TICK" \
-    --probe-space cafe --probe-floor 1f --shot-fit --draw-skip interior_furniture --shot "$OUT/vg_cafe1f_bare.png" \
+  cafe_density_capture cafe_1f_bare cafe 1f bare "$SEED" "$NOON_TICK" \
     || { [ "$rc" -eq 0 ] && rc=7; }
-  # Receipt is part of the evidence contract, not a convenience log.  It is emitted
-  # only after all four actual captures have succeeded, so the host assertion can
-  # reject stale/mirrored PNGs before it evaluates density thresholds.
-  if [ -s "$OUT/vg_int_cafe.png" ] && [ -s "$OUT/vg_cafe1f_bare.png" ] \
-     && [ -s "$OUT/vg_cafe2f.png" ] && [ -s "$OUT/vg_cafe2f_bare.png" ]; then
-    write_cafe_density_receipt "$OUT" "$W" "$H" || { [ "$rc" -eq 0 ] && rc=7; }
-  else
-    echo "  cafe-density receipt FAIL (one or more café captures are missing)"
-    [ "$rc" -eq 0 ] && rc=7
-  fi
+  cafe_density_finalize || { [ "$rc" -eq 0 ] && rc=7; }
   # ── AM3（编号135）：全楼层往返门采集（同一个 Xvfb，省一次容器启动）──────────────
   # 现役空间往返门只走 town↔cafe/1f（上面那步）⇒ 楼梯往返（1f↔2f）没门（docs/126 §一.3）。
   # 本步走完整旅程 town→cafe/1f→上楼2f→下楼1f→出门（SpaceShot --rt-journey full，出货路径 tapped→_portal_click），
