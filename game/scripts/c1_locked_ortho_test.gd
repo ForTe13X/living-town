@@ -303,7 +303,15 @@ func _ready() -> void:
 	var main = preload("res://scripts/Main.gd").new()
 	add_child(main)
 	await get_tree().process_frame
+	var c0_relayouts: int = main._hud_relayout_count
+	get_viewport().emit_signal("size_changed")
+	ck(main._hud_relayout_count == c0_relayouts + 1, "C0 viewport size signal retains its one-time HUD relayout subscription")
 	main._activate_locked_ortho_c1()
+	var c1_relayouts: int = main._hud_relayout_count
+	get_viewport().emit_signal("size_changed")
+	for _i in range(4):
+		main._process(0.0)
+	ck(main._hud_relayout_count == c1_relayouts + 1, "C1 refresh remains geometry-only and does not duplicate the viewport resize subscription")
 	var locked_pos: Vector2 = main._probe.cam.position
 	var locked_zoom: Vector2 = main._probe.cam.zoom
 	var plus := InputEventKey.new(); plus.pressed = true; plus.keycode = KEY_EQUAL

@@ -123,6 +123,7 @@ var _model_idx := 0
 var _max_tick := 0                    # 见过的最大 tick（scrub 范围上限）
 var _scrubbing := false
 var _status_refresh_count := 0        # test-visible UI-only refresh sequencing
+var _hud_relayout_count := 0          # test-visible resize signal seam; View-only
 var _timeline_attempt_count := 0      # test-visible input-routing sequencing
 const SCRUB_X0 := 584.0
 const SCRUB_X1 := 1268.0
@@ -791,6 +792,9 @@ func _build_hud() -> void:
 
 	# B15：按当前视口锚定一次；并接 size_changed —— 手机转屏/桌面拉窗口都会重排（这是唯一入口）。
 	_relayout_hud()
+	var _vpn := get_viewport()
+	if _vpn != null:
+		_vpn.size_changed.connect(_relayout_hud)
 
 ## C1 has a deliberately separate, compact HUD.  The normal timeline hint
 ## advertises Home/L/free-camera controls that C1 correctly rejects, so it is
@@ -865,9 +869,6 @@ func _refresh_c1_hud() -> void:
 		_c1_hud_receipt.text = feedback
 	if _scrub_hint != null:
 		_scrub_hint.visible = false
-	var _vpn := get_viewport()
-	if _vpn != null:
-		_vpn.size_changed.connect(_relayout_hud)
 
 ## 触屏动作条：7 个玩家动词各一个屏幕按钮，走【与物理键完全同一条】的 _player_do。
 ## 为什么这件事是出货级的：出货目标是 Android APK，而 7 个动词此前全锁在
@@ -961,6 +962,7 @@ func _mk_panel(layer: CanvasLayer, pos: Vector2, sz: Vector2) -> ColorRect:
 ## 一串手写坐标，这里就【显式】按 (dx,dy) 摆一次，比装成布局系统更诚实，也更好对着截图 debug。
 ## 每条规则都是「设计基准常量 + 增量」→ dx=dy=0 时逐像素回到改动前。
 func _relayout_hud() -> void:
+	_hud_relayout_count += 1
 	if _status == null:
 		return
 	var vp := get_viewport_rect().size
