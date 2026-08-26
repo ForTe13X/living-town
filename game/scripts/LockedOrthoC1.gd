@@ -11,13 +11,22 @@ const INK := Color("#f6e7c1")
 const MUTED := Color("#786f72")
 const ACCENT := Color("#d88c62")
 const PRESENTATION_PORTALS := ["p_cafe_door", "p_cafe_stairs"]
+const OWNER_STAIR_RECEIPT := "私人楼梯暂不开放。你仍在咖啡馆 1F；请返回公共路线或门口。"
+
+## C1 is drawn into a project that already owns a CJK font.  Keep this seam
+## explicit: ThemeDB's fallback varies by host and can turn Chinese UI into tofu.
+func draw_font() -> Font:
+	return Art.font()
 
 func setup(probe: Node) -> void:
 	_probe = probe
 	queue_redraw()
 
 func show_receipt(text: String) -> void:
-	_feedback = text
+	# Sim reasons are machine tokens.  They may decide authority, but never
+	# become player-facing copy.  The receipt remains until a successful world
+	# replacement clears it through Main's existing reconciliation seam.
+	_feedback = OWNER_STAIR_RECEIPT if text == "portal_not_permitted" else text
 	queue_redraw()
 
 func feedback_text() -> String:
@@ -75,7 +84,7 @@ func _draw() -> void:
 func _draw_town_frame() -> void:
 	var rect := Rect2(Vector2.ZERO, Vector2(64.0, 48.0) * CELL)
 	draw_rect(rect, MUTED, false, 2.0)
-	draw_string(ThemeDB.fallback_font, Vector2(24, 42), "C1 · 镇外景 / 咖啡馆入口", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, INK)
+	draw_string(draw_font(), Vector2(24, 42), "C1 · 镇外景 / 咖啡馆入口", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, INK)
 
 func _draw_cafe_frame(floor: String, interactive: bool) -> void:
 	var rect := Rect2(Vector2.ZERO, Vector2(8.0, 6.0) * CELL)
@@ -87,9 +96,9 @@ func _draw_cafe_frame(floor: String, interactive: bool) -> void:
 	for y in range(1, 6):
 		draw_line(Vector2(rect.position.x, y * CELL), Vector2(rect.end.x, y * CELL), MUTED, 1.0)
 	var title := "咖啡馆 1F · 公共厅" if floor == "1f" else "咖啡馆 2F · 仅供查看"
-	draw_string(ThemeDB.fallback_font, Vector2(12, 28), title, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, INK if interactive else MUTED)
+	draw_string(draw_font(), Vector2(12, 28), title, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, INK if interactive else MUTED)
 	if floor == "1f":
 		draw_rect(Rect2(Vector2(CELL, CELL), Vector2(CELL, CELL)), ACCENT, false, 2.0)
-		draw_string(ThemeDB.fallback_font, Vector2(CELL + 4, CELL + 28), "私人楼梯", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, ACCENT)
-	if _feedback != "":
-		draw_string(ThemeDB.fallback_font, Vector2(12, rect.end.y - 12), _feedback, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, ACCENT)
+		draw_string(draw_font(), Vector2(CELL + 4, CELL + 28), "私人楼梯", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, ACCENT)
+	# The receipt is intentionally not drawn in world coordinates.  Main puts it
+	# in its C1 CanvasLayer, above the fixed frame and every regular HUD panel.

@@ -220,6 +220,11 @@ func find_button(root: Node, caption: String) -> Button:
 
 func _ready() -> void:
 	print("=== C1 locked-orthographic cafe contract ===")
+	var capture_path := ""
+	var args := OS.get_cmdline_user_args()
+	for i in args.size():
+		if args[i] == "--capture-c1-denial" and i + 1 < args.size():
+			capture_path = args[i + 1]
 	Sim.backend = null
 	Sim.auto_run = false
 	Sim.start_new(20260825)
@@ -231,6 +236,9 @@ func _ready() -> void:
 	var view = preload("res://scripts/LockedOrthoC1.gd").new()
 	add_child(view)
 	view.setup(probe)
+	view.show_receipt("portal_not_permitted")
+	ck(view.feedback_text() == view.OWNER_STAIR_RECEIPT and not view.feedback_text().contains("portal_not_permitted") and view.draw_font() == Art.font(), "C1 receipt localizes owner denial and draws with the project CJK font")
+	view.clear_receipt()
 	var before_view := {"digest": Inv.digest(Sim), "event": Sim.event_digest, "trace": Sim.get_player_trace()}
 	probe.active_space = "cafe"; probe.active_floor = "2f"
 	ck(not bool(view.state().get("interactive", true)) and "仅供查看" in String(view.state().get("label", "")), "2F view context has zero interaction targets")
@@ -321,10 +329,19 @@ func _ready() -> void:
 	var stair_player: Dictionary = Sim.get_agent("player")
 	main._probe.emit_signal("tapped", Vector2(1 * 48 + 24, 1 * 48 + 24))
 	var denied_player: Dictionary = Sim.get_agent("player")
-	ck(String(main._probe.active_floor) == "1f" and {"space": main._probe.active_space, "floor": main._probe.active_floor, "pos": main._probe.cam.position, "zoom": main._probe.cam.zoom} == stair_frame and denied_player.get("pos") == stair_player.get("pos") and "portal_not_permitted" in main._locked_ortho_c1.feedback_text(), "real Main left-tap owner stair cannot inspect 2F or move C1 frame")
+	ck(String(main._probe.active_floor) == "1f" and {"space": main._probe.active_space, "floor": main._probe.active_floor, "pos": main._probe.cam.position, "zoom": main._probe.cam.zoom} == stair_frame and denied_player.get("pos") == stair_player.get("pos") and main._locked_ortho_c1.feedback_text() == main._locked_ortho_c1.OWNER_STAIR_RECEIPT, "real Main left-tap owner stair cannot inspect 2F or move C1 frame")
 	main._update_obs()
 	await get_tree().process_frame
-	ck("portal_not_permitted" in main._locked_ortho_c1.feedback_text(), "ordinary same-world UI processing preserves visible owner denial")
+	ck(main._locked_ortho_c1.feedback_text() == main._locked_ortho_c1.OWNER_STAIR_RECEIPT, "ordinary same-world UI processing preserves visible owner denial")
+	for size in [Vector2(320, 192), Vector2(640, 384), Vector2(1280, 768), Vector2(1920, 1152)]:
+		var c1_layout := main.c1_hud_layout(size)
+		var top: Rect2 = c1_layout["top"]; var receipt: Rect2 = c1_layout["receipt"]
+		ck(top.size.x > 0 and top.size.y > 0 and receipt.size.x > 0 and receipt.end.x <= maxf(size.x, main.C1_MIN_VIEWPORT.x) and receipt.end.y <= maxf(size.y, main.C1_MIN_VIEWPORT.y), "C1 compact HUD stays inside supported viewport %dx%d" % [size.x, size.y])
+	ck(not main._c1_hud_controls.text.contains("Home") and not main._c1_hud_controls.text.contains("L 跟随") and main._scrub_hint != null and not main._scrub_hint.visible, "C1 hint omits disabled Home/L/free-camera controls while C0 hint seam remains separate")
+	if capture_path != "":
+		await RenderingServer.frame_post_draw
+		var image := get_viewport().get_texture().get_image()
+		ck(image != null and image.save_png(capture_path) == OK, "real-framebuffer capture saves the composed C1 denial state")
 	# A real NPC settings button resets the canonical world. The old denial is
 	# strictly transient, so public cafe re-entry in the new world cannot redraw it.
 	main._player_spawn_override = Vector2i(41, 19)
@@ -393,7 +410,7 @@ func _ready() -> void:
 	main._probe.emit_signal("tapped", Vector2(41 * 48 + 24, 19 * 48 + 24))
 	ck(String(Sim.get_agent("player").get("space", "")) == "cafe", "save/load setup enters cafe through connected public door")
 	deny_owner_stair(main)
-	ck("portal_not_permitted" in main._locked_ortho_c1.feedback_text(), "real stair denial seeds transient feedback before successful quick-load")
+	ck(main._locked_ortho_c1.feedback_text() == main._locked_ortho_c1.OWNER_STAIR_RECEIPT, "real stair denial seeds transient feedback before successful quick-load")
 	var load_resident := wait_cafe_resident()
 	var load_name := str(load_resident.get("persona", {}).get("name", ""))
 	if not load_resident.is_empty():
@@ -414,7 +431,7 @@ func _ready() -> void:
 	main._probe.emit_signal("tapped", Vector2(41 * 48 + 24, 19 * 48 + 24))
 	ck(String(Sim.get_agent("player").get("space", "")) == "cafe", "timeline setup re-enters cafe through public door", str(Sim.get_agent("player").get("pos", Vector2i.ZERO)))
 	deny_owner_stair(main)
-	ck("portal_not_permitted" in main._locked_ortho_c1.feedback_text(), "real owner-stair denial is visible before successful timeline jump", "%s / %s" % [main._locked_ortho_c1.feedback_text(), str(Sim.get_agent("player").get("pos", Vector2i.ZERO))])
+	ck(main._locked_ortho_c1.feedback_text() == main._locked_ortho_c1.OWNER_STAIR_RECEIPT, "real owner-stair denial is visible before successful timeline jump", "%s / %s" % [main._locked_ortho_c1.feedback_text(), str(Sim.get_agent("player").get("pos", Vector2i.ZERO))])
 	var jump_resident := wait_cafe_resident()
 	var jump_name := str(jump_resident.get("persona", {}).get("name", ""))
 	if not jump_resident.is_empty():

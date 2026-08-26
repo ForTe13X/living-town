@@ -166,6 +166,13 @@ var _log_pan: TextureRect             # 左下播报底板（跟底边）——�
 var _obs_pan: TextureRect             # 右侧观察台底板（跟右边，高度跟底边）——羽化 scrim
 var _scrub_pan: ColorRect             # 时间轴底板（跟底边 + 右边）
 var _scrub_hint: RichTextLabel        # 时间轴提示行
+var _c1_hud: CanvasLayer               # compact, C1-only safe-area presentation
+var _c1_hud_pan: ColorRect
+var _c1_hud_receipt_pan: ColorRect
+var _c1_hud_title: Label
+var _c1_hud_controls: Label
+var _c1_hud_receipt: Label
+const C1_MIN_VIEWPORT := Vector2(320.0, 192.0)
 var _status_pan: ColorRect            # 顶栏底板（跟右边；宽度=整屏，见 _build_hud 里的注释）
 var _act_pan: ColorRect               # 玩家动作条底板（跟底边；仅玩家模式可见）
 var _act_btns: Array = []             # 7 个动词按钮（顺序 = PLAYER_VERBS）
@@ -541,6 +548,8 @@ func _ready() -> void:
 		_goals_open = false                # 两块共用左上角槽位 ⇒ --story 与 --goals 同时给时以 --story 为准
 
 	_build_hud()
+	if _locked_ortho_c1 != null:
+		_build_c1_hud()
 	Sim.ticked.connect(_on_tick)
 	Sim.social_event.connect(_on_social)
 	Sim.day_changed.connect(func(d): _push("[color=#ffe08a]——— 第 %d 天 ———[/color]" % d))
@@ -782,6 +791,80 @@ func _build_hud() -> void:
 
 	# B15：按当前视口锚定一次；并接 size_changed —— 手机转屏/桌面拉窗口都会重排（这是唯一入口）。
 	_relayout_hud()
+
+## C1 has a deliberately separate, compact HUD.  The normal timeline hint
+## advertises Home/L/free-camera controls that C1 correctly rejects, so it is
+## hidden only while the optional C1 adapter is active; C0 remains unchanged.
+func _build_c1_hud() -> void:
+	if _c1_hud != null:
+		return
+	_hide_c1_legacy_hud()
+	_c1_hud = CanvasLayer.new()
+	_c1_hud.layer = 20
+	add_child(_c1_hud)
+	var fnt := Art.font()
+	_c1_hud_pan = ColorRect.new()
+	_c1_hud_pan.color = Color(0.02, 0.03, 0.05, 0.88)
+	_c1_hud_pan.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_c1_hud.add_child(_c1_hud_pan)
+	_c1_hud_receipt_pan = ColorRect.new()
+	_c1_hud_receipt_pan.color = Color(0.22, 0.08, 0.05, 0.94)
+	_c1_hud_receipt_pan.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_c1_hud.add_child(_c1_hud_receipt_pan)
+	for item in [["title", 16], ["controls", 14], ["receipt", 15]]:
+		var label := Label.new()
+		label.add_theme_font_override("font", fnt)
+		label.add_theme_font_size_override("font_size", int(item[1]))
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_c1_hud.add_child(label)
+		if String(item[0]) == "title": _c1_hud_title = label
+		elif String(item[0]) == "controls": _c1_hud_controls = label
+		else: _c1_hud_receipt = label
+	_c1_hud_title.text = "C1 咖啡馆 · 锁定视角"
+	_c1_hud_controls.text = "方向键/WASD 移动 · 点公共门进出 · 点居民查看"
+	_refresh_c1_hud()
+
+func _hide_c1_legacy_hud() -> void:
+	# These panels are a C0 dashboard.  Keeping them behind C1's small overlay
+	# makes the 320x192 review size unreadable and leaves two competing control
+	# vocabularies on screen.  This runs only on C1 activation.
+	for node in [_status_pan, _status, _log_pan, _logbox, _obs_pan, _obs, _scrub_pan,
+		_scrub_track, _scrub_fill, _scrub_handle, _scrub_hint, _obs_btn, _backend_btn]:
+		if node != null:
+			node.visible = false
+
+## Public test seam: all supported review sizes use this same safe layout.
+func c1_hud_layout(viewport: Vector2) -> Dictionary:
+	var vp := Vector2(maxf(viewport.x, C1_MIN_VIEWPORT.x), maxf(viewport.y, C1_MIN_VIEWPORT.y))
+	var margin := clampf(vp.x * 0.025, 8.0, 24.0)
+	var top_h := clampf(vp.y * 0.24, 48.0, 82.0)
+	var receipt_y := margin + top_h + 6.0
+	return {"margin": margin, "top": Rect2(margin, margin, vp.x - margin * 2.0, top_h),
+		"receipt": Rect2(margin, receipt_y, vp.x - margin * 2.0, clampf(vp.y * 0.25, 42.0, 74.0))}
+
+func _refresh_c1_hud() -> void:
+	if _c1_hud == null or _locked_ortho_c1 == null:
+		return
+	var layout := c1_hud_layout(_vp())
+	var top: Rect2 = layout["top"]
+	var receipt: Rect2 = layout["receipt"]
+	var small := _vp().x <= 640.0 or _vp().y <= 384.0
+	_c1_hud_pan.position = top.position; _c1_hud_pan.size = top.size
+	_c1_hud_title.position = top.position + Vector2(8, 4); _c1_hud_title.size = Vector2(top.size.x - 16, top.size.y * 0.45)
+	_c1_hud_controls.position = top.position + Vector2(8, top.size.y * 0.45); _c1_hud_controls.size = Vector2(top.size.x - 16, top.size.y * 0.5)
+	_c1_hud_title.add_theme_font_size_override("font_size", 14 if small else 18)
+	_c1_hud_controls.add_theme_font_size_override("font_size", 11 if small else 14)
+	var feedback: String = _locked_ortho_c1.feedback_text()
+	_c1_hud_receipt.visible = feedback != ""
+	_c1_hud_receipt_pan.visible = feedback != ""
+	if feedback != "":
+		_c1_hud_receipt_pan.position = receipt.position; _c1_hud_receipt_pan.size = receipt.size
+		_c1_hud_receipt.position = receipt.position + Vector2(8, 4); _c1_hud_receipt.size = receipt.size - Vector2(16, 8)
+		_c1_hud_receipt.add_theme_font_size_override("font_size", 11 if small else 15)
+		_c1_hud_receipt.text = feedback
+	if _scrub_hint != null:
+		_scrub_hint.visible = false
 	var _vpn := get_viewport()
 	if _vpn != null:
 		_vpn.size_changed.connect(_relayout_hud)
@@ -1593,6 +1676,7 @@ func _toggle_perf() -> void:
 func _process(dt: float) -> void:
 	if _locked_ortho_c1 != null:
 		_locked_ortho_c1.apply_fixed_frame(_vp(), _probe.HOME_PAD)
+		_refresh_c1_hud()
 	_flush_scrub()                                 # 时间轴拖动合并点：每【渲染帧】至多一次 goto_tick
 	if _obs_fit_frames > 0:
 		_obs_fit_frames -= 1
@@ -2958,6 +3042,10 @@ func _activate_locked_ortho_c1() -> void:
 	if _locked_ortho_c1 == null:
 		_locked_ortho_c1 = preload("res://scripts/LockedOrthoC1.gd").new()
 		add_child(_locked_ortho_c1)
+	# The composed contract scene activates C1 after Main._ready; the CLI path
+	# reaches this seam before _build_hud.  Both receive the same compact HUD.
+	if _status != null:
+		_build_c1_hud()
 	if _probe != null:
 		_locked_ortho_c1.setup(_probe)
 		_locked_ortho_c1.apply_fixed_frame(_vp(), _probe.HOME_PAD)
