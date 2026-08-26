@@ -4,6 +4,7 @@ extends Node2D
 
 var _view: Node2D
 var _probe: Node                      # ProbeController：拥有 Camera2D + 观察状态（纯 View，不写 Sim）
+var _locked_ortho_c1: Node2D          # optional C1 projection; no Sim authority or input ownership
 var _sg: RefCounted                   # SpaceGraph：Space/Floor/Portal 合同（纯数据查询；兼容期 town/outdoor 兜底）
 var _modulate: CanvasModulate
 var _status: RichTextLabel
@@ -121,6 +122,8 @@ var _models: Array = []               # 扫到的 *.gguf 绝对路径列表
 var _model_idx := 0
 var _max_tick := 0                    # 见过的最大 tick（scrub 范围上限）
 var _scrubbing := false
+var _status_refresh_count := 0        # test-visible UI-only refresh sequencing
+var _timeline_attempt_count := 0      # test-visible input-routing sequencing
 const SCRUB_X0 := 584.0
 const SCRUB_X1 := 1268.0
 const SCRUB_Y := 724.0
@@ -345,6 +348,7 @@ func _ready() -> void:
 	var _probe_floor_arg := ""             # --probe-floor id：配 --probe-space 指定楼层
 	var _obs_arg := false                  # --obs-full：启动即展开观察台完整卷宗（出图对照用；默认档是名片档）
 	var _lod_agg_arg := false              # --lod-agg：仅【测量/眼验】用，启用观察无关 aggregate LOD（CLI-only，绝不进 boot/面板出货路径；默认 off=逐字节不变）
+	var _locked_ortho_c1_arg := false      # --locked-ortho-c1：可删除的 C1 纯 View 适配器，默认绝不实例化
 	var args := OS.get_cmdline_user_args()
 	for i in args.size():
 		if args[i] == "--backend" and i + 1 < args.size():
@@ -371,6 +375,8 @@ func _ready() -> void:
 		elif args[i] == "--player-demo":
 			_player_mode = true                # 录 demo 用：脚本化玩家 autopilot（确定性按 tick 触发动作）
 			_demo_mode = true
+		elif args[i] == "--locked-ortho-c1":
+			_locked_ortho_c1_arg = true
 		elif args[i] == "--warmup" and i + 1 < args.size():
 			warmup_days = int(args[i + 1])     # 录 demo：跳到第 N 天开场（确定，goto_tick 同款重演）
 		elif args[i] == "--warmup-tick" and i + 1 < args.size():
@@ -468,6 +474,8 @@ func _ready() -> void:
 	_view = preload("res://scripts/WorldView.gd").new()
 	_view.dbg_nav = _dbg_nav_arg      # --dbg-nav：出图/启动即开导航叠层（否则运行时按 N 切）
 	add_child(_view)
+	if _locked_ortho_c1_arg:
+		_activate_locked_ortho_c1()
 
 	# 相机：可拖可缩的"探针"。红线（docs/19 §3）：相机【纯视图】——只决定画哪、怎么映射输入，
 	# 绝不喂 Sim.lod_focus。若"精细模拟哪块"取决于人眼在看哪，小镇历史就成了观察路径的函数 →
@@ -487,12 +495,20 @@ func _ready() -> void:
 	_probe._history.clear()
 	_probe.tapped.connect(_on_probe_tap)
 	_probe.double_tapped.connect(_on_probe_double_tap)
+	if _locked_ortho_c1 != null:
+		_locked_ortho_c1.setup(_probe)
+		_locked_ortho_c1.apply_fixed_frame(_vp(), _probe.HOME_PAD)
 	if _demo_cam:
 		_probe.demo_cam = true
 		_demo_cam_apply()                        # 首帧就在轨迹上（否则录屏第一帧仍是 go_home，第二帧才跳过去）
 	if _probe_space_arg != "" and _sg.has_space(_probe_space_arg):   # --probe-space：启动即进某 Space（P3 室内眼验）
 		var _pf: String = _probe_floor_arg if _probe_floor_arg != "" else _sg.default_floor(_probe_space_arg)
 		_probe.set_space(_probe_space_arg, _pf, _sg.bounds_px(_probe_space_arg))
+	if _locked_ortho_c1 != null:
+		# C1 never permits a CLI/Probe inspection shortcut around player portals.
+		_probe.set_space("town", "outdoor", _sg.bounds_px("town"))
+		_probe._history.clear()
+		_locked_ortho_c1.apply_fixed_frame(_vp(), _probe.HOME_PAD)
 
 	# 昼夜光照：CanvasModulate 只染世界画布，不染 HUD（HUD 在独立 CanvasLayer）
 	_modulate = CanvasModulate.new()
@@ -1507,6 +1523,7 @@ func _toggle_player_mode() -> void:
 	if _player_mode:
 		Sim.add_player(_player_spawn_override)
 	_selected_id = ""
+	_reconcile_locked_ortho_c1()
 	_max_tick = 0
 	_save_sim_setting("player", _player_mode)       # 手机上没有 CLI：下次启动记住（--player 显式给出时不读这里）
 	_sync_player_btn()
@@ -1531,6 +1548,7 @@ func _apply_npc(delta: int) -> void:
 		Sim.add_player(_player_spawn_override)
 	_npc_target = maxi(6, Sim.agents.size() - (1 if _player_mode else 0))   # 低于基础 cast 时克隆环不减→回读实际数，显示不骗人
 	_selected_id = ""
+	_reconcile_locked_ortho_c1()
 	_max_tick = 0
 	_save_sim_setting("npc_count", n)
 	_sync_npc_val()
@@ -1573,6 +1591,8 @@ func _toggle_perf() -> void:
 
 ## dev 性能 overlay 每帧刷（FPS 要每帧才平滑；关时早退，零开销）。
 func _process(dt: float) -> void:
+	if _locked_ortho_c1 != null:
+		_locked_ortho_c1.apply_fixed_frame(_vp(), _probe.HOME_PAD)
 	_flush_scrub()                                 # 时间轴拖动合并点：每【渲染帧】至多一次 goto_tick
 	if _obs_fit_frames > 0:
 		_obs_fit_frames -= 1
@@ -1601,6 +1621,7 @@ func _process(dt: float) -> void:
 		int(st.get("fired", 0)), int(st.get("landed", 0)), int(st.get("timeout", 0)), int(st.get("bad_parse", 0))]
 
 func _update_status() -> void:
+	_status_refresh_count += 1
 	if _status == null:
 		return
 	_sync_action_bar_context()
@@ -2193,6 +2214,8 @@ func _player_do(action: String) -> String:
 		_push("[color=#f2a3a3]（先用 Tab/点选一位居民，再按动作键）[/color]")
 		return "未选中居民"
 	var msg := Sim.player_mediate(_selected_id) if action == "mediate" else Sim.player_act(action, _selected_id)
+	if _locked_ortho_c1 != null and action == "greet":
+		_locked_ortho_c1.show_receipt("问候已发起" if msg == "" else msg)
 	if msg != "":
 		_push("[color=#f2a3a3]（%s）[/color]" % msg)
 	return msg
@@ -2218,9 +2241,7 @@ func _tick_at_x(x: float) -> int:
 	return int(round(f * _max_tick))
 
 func _scrub_to_x(x: float) -> void:
-	Sim.running = false
-	Sim.goto_tick(_tick_at_x(x))
-	_after_jump()
+	_attempt_timeline_jump(_tick_at_x(x))
 
 ## 拖动时【只】挪手柄（不重演）：真正的 goto_tick 每帧最多一次，在 _flush_scrub 里做。
 ## 一次 goto_tick = start_new(seed) + 从 0 重跑到目标 tick（Sim.gd:802-826，~0.4ms/tick），
@@ -2238,14 +2259,33 @@ func _flush_scrub() -> void:
 		return
 	var t := _scrub_pending
 	_scrub_pending = -1
-	Sim.running = false
-	Sim.goto_tick(t)
-	_after_jump()
+	_attempt_timeline_jump(t)
 
-func _after_jump() -> void:
+## C1 failures are true live-state no-ops: retain the running state until Sim
+## accepts the replay. Successful jumps retain the established paused state.
+func _attempt_timeline_jump(target: int) -> bool:
+	_timeline_attempt_count += 1
+	var was_running := Sim.running
+	Sim.running = false
+	var jumped := Sim.goto_tick(target)
+	if not jumped and _locked_ortho_c1 != null:
+		Sim.running = was_running
+	_after_jump(jumped)
+	return jumped
+
+func _after_jump(reconcile_c1 := false) -> void:
+	# A failed C1 replay must be an exact View no-op: it has no new canonical
+	# world to reconcile, and even rebuilding the panel can redraw stale text.
+	# Feature-off retains the historical failed-jump UI refresh behavior.
+	if _locked_ortho_c1 != null and not reconcile_c1:
+		return
 	_modulate.color = _daylight(Sim.time_of_day())
 	_update_status()
 	_update_scrubber()
+	if reconcile_c1:
+		_reconcile_locked_ortho_c1()
+	# C1 reconciliation can clear a cross-plane selection.  Render observation
+	# only after that final View state is known, in the same successful jump frame.
 	_update_obs()
 	_rebuild_feed()   # 时间线换了：播报必须照当前 event_log 重建，不能留上一条时间线的字
 
@@ -2580,7 +2620,7 @@ func _focus_agent(id: String) -> void:
 	if ag.is_empty() or not _agent_on_active_plane(ag):
 		return
 	_selected_id = id
-	if _probe != null:
+	if _probe != null and _locked_ortho_c1 == null:
 		_probe.focus_on(Vector2(int(ag["pos"].x) * 48 + 24, int(ag["pos"].y) * 48 + 24), id)
 	_update_obs()
 
@@ -2593,13 +2633,13 @@ func _unhandled_input(e: InputEvent) -> void:
 			KEY_2, KEY_KP_2: Sim.running = true; Sim.speed = 2.0
 			KEY_3, KEY_KP_3: Sim.running = true; Sim.speed = 4.0
 			KEY_4, KEY_KP_4: Sim.running = true; Sim.speed = 8.0
-			KEY_EQUAL, KEY_KP_ADD: _demo_off(); _probe.zoom_at(1.15, _vp() * 0.5, _vp())
-			KEY_MINUS, KEY_KP_SUBTRACT: _demo_off(); _probe.zoom_at(1.0 / 1.15, _vp() * 0.5, _vp())
-			KEY_L: _demo_off(); _toggle_follow()                 # Probe 跟随/取消（F 已被"送礼"占用）
-			KEY_HOME: _demo_off(); _probe.go_home()              # 回到全镇
-			KEY_I: _probe_toggle_space()                         # Probe 进/出测试 Space（P1 Gate）
-			KEY_PAGEUP: _probe_cycle_floor(1)                    # 换楼层（Probe inspect）
-			KEY_PAGEDOWN: _probe_cycle_floor(-1)
+			KEY_EQUAL, KEY_KP_ADD: if _locked_ortho_c1 == null: _demo_off(); _probe.zoom_at(1.15, _vp() * 0.5, _vp())
+			KEY_MINUS, KEY_KP_SUBTRACT: if _locked_ortho_c1 == null: _demo_off(); _probe.zoom_at(1.0 / 1.15, _vp() * 0.5, _vp())
+			KEY_L: if _locked_ortho_c1 == null: _demo_off(); _toggle_follow()                 # Probe 跟随/取消（F 已被"送礼"占用）
+			KEY_HOME: if _locked_ortho_c1 == null: _demo_off(); _probe.go_home()              # 回到全镇
+			KEY_I: if _locked_ortho_c1 == null: _probe_toggle_space()                         # Probe 进/出测试 Space（P1 Gate）
+			KEY_PAGEUP: if _locked_ortho_c1 == null: _probe_cycle_floor(1)                    # 换楼层（Probe inspect）
+			KEY_PAGEDOWN: if _locked_ortho_c1 == null: _probe_cycle_floor(-1)
 			KEY_TAB: _cycle_selection(-1 if e.shift_pressed else 1)
 			KEY_O: _toggle_settings()                            # ⚙ 设置面板开关（NPC 数量/速度/后端）
 			KEY_V: _toggle_obs()                                 # 观察台名片档 ⇄ 完整卷宗（手机走右上「详情」钮，同一函数）
@@ -2610,6 +2650,11 @@ func _unhandled_input(e: InputEvent) -> void:
 			KEY_F9: _write_digest()                             # dev：把当前 digest 写盘（--digest-out）
 			KEY_F3: _toggle_perf()                               # dev 性能 overlay 开关
 			KEY_ESCAPE:                                          # 先退观察态(focus/follow/历史)，否则才清选中
+				if _locked_ortho_c1 != null:
+					_selected_id = ""
+					_update_obs()
+					_update_status()
+					return
 				if _probe.mode != 0 or not _probe.go_back():
 					_probe.unfollow()
 					_selected_id = ""
@@ -2632,22 +2677,40 @@ func _unhandled_input(e: InputEvent) -> void:
 			# 等价性变成构造性的；player_touch_test.gd 再把这句话钉死。
 			KEY_G, KEY_F, KEY_B, KEY_Y, KEY_T, KEY_P, KEY_M: _player_do(verb_for_key(e.keycode))
 			KEY_PERIOD: if not Sim.running: Sim.tick()                                   # 单步 +1
-			KEY_COMMA: Sim.running = false; Sim.goto_tick(maxi(0, Sim.tick_no - 1)); _after_jump()
-			KEY_BRACKETLEFT: Sim.running = false; Sim.goto_tick(maxi(0, Sim.tick_no - Sim.TICKS_PER_DAY)); _after_jump()
-			KEY_BRACKETRIGHT: Sim.running = false; Sim.goto_tick(Sim.tick_no + Sim.TICKS_PER_DAY); _after_jump()
+			KEY_COMMA:
+				if _locked_ortho_c1 != null and not _attempt_timeline_jump(maxi(0, Sim.tick_no - 1)):
+					return # rejected C1 restores are true UI/View no-ops
+			KEY_BRACKETLEFT:
+				if _locked_ortho_c1 != null and not _attempt_timeline_jump(maxi(0, Sim.tick_no - Sim.TICKS_PER_DAY)):
+					return
+			KEY_BRACKETRIGHT:
+				if _locked_ortho_c1 != null and not _attempt_timeline_jump(Sim.tick_no + Sim.TICKS_PER_DAY):
+					return
 		_update_status()
 	elif e is InputEventMouseButton or e is InputEventMouseMotion 			or e is InputEventMagnifyGesture or e is InputEventPanGesture:
+		# C1 only permits left-button taps through the existing Probe tap signal.
+		# Motion/right/middle/wheel/gesture never reach Probe, so they cannot pan,
+		# zoom, follow, or alter the fixed architectural frame.
+		if _locked_ortho_c1 != null:
+			var c1_left_drag: bool = e is InputEventMouseMotion and _scrubbing and (e.button_mask & MOUSE_BUTTON_MASK_LEFT) != 0
+			if not (e is InputEventMouseButton and e.button_index == MOUSE_BUTTON_LEFT) and not c1_left_drag:
+				return
 		# 输入仲裁（analysis §4.3）：HUD/时间轴【先吃】——拖时间轴绝不能带动世界；剩下的才交给 Probe。
 		if e is InputEventMouseButton and e.button_index == MOUSE_BUTTON_LEFT:
-			if e.pressed and _in_scrub(e.position):
-				_scrubbing = true
-				_scrub_to_x(e.position.x)
-				return
-			if not e.pressed and _scrubbing:
+			if e.pressed:
+				if _scrubbing:
+					return # one capture has exactly one immediate scrub attempt
+				if _in_scrub(e.position):
+					_scrubbing = true
+					_scrub_to_x(e.position.x)
+					return
+			elif _scrubbing:
 				_scrubbing = false
 				_flush_scrub()          # 松手立刻落到最后一个采样点（不等下一帧）
 				return
-		if e is InputEventMouseMotion and _scrubbing:
+			elif _locked_ortho_c1 != null and _in_scrub(e.position):
+				return # an uncaptured timeline release is a strict no-op; world taps keep Probe's public path
+		if e is InputEventMouseMotion and _scrubbing and _in_scrub(e.position):
 			_scrub_pending = _tick_at_x(e.position.x)   # 合并：每帧最多一次 goto_tick（见 _flush_scrub）
 			_preview_scrub(_scrub_pending)
 			return
@@ -2661,22 +2724,29 @@ func _quick_save() -> void:
 
 func _quick_load() -> void:
 	if not FileAccess.file_exists(QUICKSAVE):
-		_push("[color=#ff8c42]没有存档（先按 F5 / 设置里存一份）[/color]")
+		if _locked_ortho_c1 == null:
+			_push("[color=#ff8c42]没有存档（先按 F5 / 设置里存一份）[/color]")
 		return
 	var ok: bool = Sim.load_game(QUICKSAVE)          # load 内部发 world_reset → AIBackend.cancel_all
 	if ok:
 		_after_load()
-	_push("[color=#9ad0ff]读档%s（第 %d 天 · tick %d）[/color]" % [("成功" if ok else "失败：坏档或版本不符"), Sim.day, Sim.tick_no])
+	if ok or _locked_ortho_c1 == null:
+		_push("[color=#9ad0ff]读档%s（第 %d 天 · tick %d）[/color]" % [("成功" if ok else "失败：坏档或版本不符"), Sim.day, Sim.tick_no])
 
 ## 读档后的 UI 对齐（同 _after_jump 的精神：世界换了，视图全部重对齐）。
 func _after_load() -> void:
 	Sim.running = false
 	_max_tick = maxi(_max_tick, Sim.tick_no)
 	_modulate.color = _daylight(Sim.time_of_day())
-	_selected_id = ""
+	# C0 keeps its historical eager clear. C1 lets the successful restore seam
+	# make this decision so dependent UI is refreshed from its final state.
+	if _locked_ortho_c1 == null:
+		_selected_id = ""
 	_update_status()
-	_update_obs()
 	_update_scrubber()
+	_reconcile_locked_ortho_c1(true)
+	# Keep the rendered panel coupled to the final reconciled plane/selection.
+	_update_obs()
 	_rebuild_feed()   # 读档=换世界：播报同样按新 event_log 重建
 
 func _vp() -> Vector2:
@@ -2757,7 +2827,26 @@ func _portal_click(world_pos: Vector2) -> bool:
 			# 玩家模式下，人在当前平面且真的站到门边才随门穿越；远处点门仍保留 Probe inspect。
 			# 这让产品截图/玩法验收里的“进仓”是玩家实体的空间变化，不是相机切到一张室内图。
 			var player_crossed := false
-			if _player_mode:
+			if _locked_ortho_c1 != null:
+				# C1 admits no Probe-inspect fallback: a portal tap is either a
+				# successful public Sim receipt or a visible no-op on this frame.
+				if not _locked_ortho_c1.allows_portal(String(p.get("id", ""))):
+					_locked_ortho_c1.show_receipt("C1 咖啡馆路线外：未进入")
+					return true
+				var c1_player: Dictionary = Sim.get_agent("player")
+				var c1_pos: Vector2i = c1_player.get("pos", Vector2i(-99, -99)) if not c1_player.is_empty() else Vector2i(-99, -99)
+				if not _player_mode or c1_player.is_empty() or String(c1_player.get("space", "town")) != asp \
+						or String(c1_player.get("floor", "outdoor")) != afl or absi(c1_pos.x - cell.x) + absi(c1_pos.y - cell.y) > 1:
+					_locked_ortho_c1.show_receipt("请走到入口旁")
+					return true
+				var c1_receipt: Dictionary = Sim.player_portal_intent({"source_space": asp, "source_floor": afl, "portal_pos": cell})
+				if not bool(c1_receipt.get("ok", false)):
+					var c1_reason := String(c1_receipt.get("reason", "入口不可通行"))
+					_push("[color=#ff9b82]（%s）[/color]" % ("私人区域，未获通行许可" if c1_reason == "portal_not_permitted" else "入口暂时无法通行"))
+					_locked_ortho_c1.show_receipt(c1_reason)
+					return true
+				player_crossed = true
+			elif _player_mode:
 				var pl: Dictionary = Sim.get_agent("player")
 				var ppos: Vector2i = pl.get("pos", Vector2i(-99, -99)) if not pl.is_empty() else Vector2i(-99, -99)
 				if not pl.is_empty() and String(pl.get("space", "town")) == asp and String(pl.get("floor", "outdoor")) == afl \
@@ -2770,11 +2859,15 @@ func _portal_click(world_pos: Vector2) -> bool:
 						var denied_text := "%s：私人区域，未获通行许可" % _sg.label_of(os) if denied_reason == "portal_not_permitted" \
 							else "%s：入口暂时无法通行" % _sg.label_of(os)
 						_push("[color=#ff9b82]（%s）[/color]" % denied_text)
+						if _locked_ortho_c1 != null:
+							_locked_ortho_c1.show_receipt(String(crossed.get("reason", "入口不可通行")))
 						return true
 					player_crossed = true
 			var b: Rect2 = _sg.bounds_px(os)
 			_probe.set_space(os, of, b)                # 入历史栈 → ESC 可原路退回
-			if os == "town":
+			if _locked_ortho_c1 != null:
+				_locked_ortho_c1.apply_fixed_frame(_vp(), _probe.HOME_PAD)
+			elif os == "town":
 				_probe.go_home()                       # 出门 → 回全镇视角
 				if player_crossed:
 					var pnow: Dictionary = Sim.get_agent("player")
@@ -2826,6 +2919,8 @@ func _warehouse_observatory_click(world_pos: Vector2) -> bool:
 
 ## Probe 双击 → 聚焦所点房间（analysis §4.2 Focus）。
 func _on_probe_double_tap(world_pos: Vector2) -> void:
+	if _locked_ortho_c1 != null:
+		return
 	for rid in Sim.world.get("rooms", {}):
 		var rm: Dictionary = Sim.world["rooms"][rid]
 		var r: Array = rm.get("rect", [0, 0, 0, 0])
@@ -2856,6 +2951,35 @@ func _select_at_world(w: Vector2) -> void:
 	if bestd <= 42.0:
 		_selected_id = best
 		_update_obs()
+
+## One activation seam for the CLI product path and the composed C1 contract
+## scene. The adapter remains optional and has no authority outside View state.
+func _activate_locked_ortho_c1() -> void:
+	if _locked_ortho_c1 == null:
+		_locked_ortho_c1 = preload("res://scripts/LockedOrthoC1.gd").new()
+		add_child(_locked_ortho_c1)
+	if _probe != null:
+		_locked_ortho_c1.setup(_probe)
+		_locked_ortho_c1.apply_fixed_frame(_vp(), _probe.HOME_PAD)
+
+## Successful load/replay is authoritative in Sim.  C1 only mirrors that
+## canonical player plane back into Probe, then reapplies its immutable frame;
+## it never writes a portal, save, trace, or topology decision.
+func _reconcile_locked_ortho_c1(clear_selection := false) -> void:
+	if _locked_ortho_c1 == null or _probe == null or _sg == null:
+		return
+	var player: Dictionary = Sim.get_agent("player")
+	# No-player mode has no canonical actor plane.  C1's deterministic observer
+	# fallback is town/outdoor, so a settings reset cannot preserve stale cafe
+	# projection state while still remaining wholly outside Sim authority.
+	var space := String(player.get("space", "town"))
+	var floor_id := String(player.get("floor", "outdoor"))
+	_probe.set_space(space, floor_id, _sg.bounds_px(space))
+	var selected := Sim.get_agent(_selected_id)
+	if clear_selection or selected.is_empty() or String(selected.get("space", "town")) != space or String(selected.get("floor", "outdoor")) != floor_id:
+		_selected_id = ""
+	_locked_ortho_c1.clear_receipt()
+	_locked_ortho_c1.apply_fixed_frame(_vp(), _probe.HOME_PAD)
 
 func _agent_on_active_plane(ag: Dictionary) -> bool:
 	if ag.is_empty():
