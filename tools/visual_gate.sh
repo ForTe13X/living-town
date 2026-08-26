@@ -101,6 +101,94 @@ PRECIP_SEEDS="${LT_VISUAL_PRECIP_SEEDS:-1 3 5}"
 WINTER_TICK=11160
 rain_tick(){ case "$1" in 1) echo 600 ;; 3) echo 840 ;; 5) echo 1560 ;; *) echo 600 ;; esac; }
 
+# Café-density evidence receipt.  The image assertion refuses filename-only evidence:
+# this is written only after vg_shoot has removed stale output and each real Godot
+# capture has succeeded.  SHA-256 binds the concrete pixels to the requested space,
+# floor, resolution, and draw mode; a later swap/crop/mirror therefore fails closed.
+write_cafe_density_receipt(){ # <out-dir> <width> <height>
+  local cafe_py
+  cafe_py="$(command -v python3 2>/dev/null || command -v python 2>/dev/null || true)"
+  if [ -z "$cafe_py" ]; then
+    echo "  cafe-density receipt FAIL (python missing; refusing unbound evidence)"
+    return 1
+  fi
+  "$cafe_py" - "$1" "$2" "$3" <<'PY'
+import hashlib, json, os, sys, tempfile
+out, width, height = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
+captures = (
+    ("vg_int_cafe.png", "1f", "normal", "none"),
+    ("vg_cafe1f_bare.png", "1f", "bare", "interior_furniture"),
+    ("vg_cafe2f.png", "2f", "normal", "none"),
+    ("vg_cafe2f_bare.png", "2f", "bare", "interior_furniture"),
+)
+rows = []
+for filename, floor, mode, draw_skip in captures:
+    path = os.path.join(out, filename)
+    if not os.path.isfile(path) or os.path.getsize(path) == 0:
+        raise SystemExit("missing capture " + filename)
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for block in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(block)
+    rows.append({"file": filename, "space": "cafe", "floor": floor,
+                 "mode": mode, "draw_skip": draw_skip, "width": width,
+                 "height": height, "sha256": h.hexdigest()})
+receipt = {"schema": "cafe-density-receipt-v1", "source": "visual_gate.sh",
+           "captures": rows}
+fd, tmp = tempfile.mkstemp(prefix=".cafe-density-receipt-", dir=out)
+with os.fdopen(fd, "w", encoding="utf-8") as f:
+    json.dump(receipt, f, sort_keys=True, separators=(",", ":"))
+    f.write("\n")
+os.replace(tmp, os.path.join(out, "cafe_density_receipt.json"))
+PY
+  local receipt_rc=$?
+  if [ "$receipt_rc" -ne 0 ]; then
+    echo "  cafe-density receipt FAIL (refusing unbound evidence)"
+    return "$receipt_rc"
+  fi
+  echo "  cafe-density receipt ok (4 SHA-256-bound café captures)"
+}
+
+# Focused real-render capture for the density assertion's two supported viewports.
+# It is intentionally separate from the full visual suite: 320x192 is an accessibility
+# evidence size, while several legacy visual gates are calibrated at 1280x768.
+if [ "${1:-}" = "--shoot-cafe-density" ]; then
+  OUT="${2:?--shoot-cafe-density needs an output directory}"
+  W="${3:?--shoot-cafe-density needs width}"
+  H="${4:?--shoot-cafe-density needs height}"
+  case "${W}x${H}" in 1280x768|320x192) ;; *)
+    echo "  cafe-density capture FAIL (unsupported viewport ${W}x${H})"; exit 1 ;;
+  esac
+  GAME="${VG_GAME:-/game}"
+  GBIN="${GODOT:-godot}"
+  DISP="${VG_DISPLAY:-:95}"
+  export LIBGL_ALWAYS_SOFTWARE=1 LP_NUM_THREADS=1 GODOT_SILENCE_ROOT_WARNING=1
+  export VG_GODOT_LOG=/tmp/vg-cafe-density.log
+  . "$(dirname "$0")/vg_shoot.sh"
+  mkdir -p "$OUT"
+  : >"$VG_GODOT_LOG"
+  Xvfb "$DISP" -screen 0 ${W}x${H}x24 -nolisten tcp >/tmp/vg-cafe-density-xvfb.log 2>&1 & XV=$!
+  sleep 1.5
+  export DISPLAY="$DISP"
+  cafe_rc=0
+  vg_shoot "$OUT/vg_int_cafe.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
+    --resolution ${W}x${H} --single-window -- --backend logic --seed "$SEED" --warmup-tick "$NOON_TICK" \
+    --probe-space cafe --probe-floor 1f --shot-fit --shot "$OUT/vg_int_cafe.png" || cafe_rc=1
+  vg_shoot "$OUT/vg_cafe1f_bare.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
+    --resolution ${W}x${H} --single-window -- --backend logic --seed "$SEED" --warmup-tick "$NOON_TICK" \
+    --probe-space cafe --probe-floor 1f --shot-fit --draw-skip interior_furniture --shot "$OUT/vg_cafe1f_bare.png" || cafe_rc=1
+  vg_shoot "$OUT/vg_cafe2f.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
+    --resolution ${W}x${H} --single-window -- --backend logic --seed "$SEED" --warmup-tick "$NOON_TICK" \
+    --probe-space cafe --probe-floor 2f --shot-fit --shot "$OUT/vg_cafe2f.png" || cafe_rc=1
+  vg_shoot "$OUT/vg_cafe2f_bare.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
+    --resolution ${W}x${H} --single-window -- --backend logic --seed "$SEED" --warmup-tick "$NOON_TICK" \
+    --probe-space cafe --probe-floor 2f --shot-fit --draw-skip interior_furniture --shot "$OUT/vg_cafe2f_bare.png" || cafe_rc=1
+  [ "$cafe_rc" -eq 0 ] && write_cafe_density_receipt "$OUT" "$W" "$H" || cafe_rc=1
+  kill "$XV" 2>/dev/null
+  [ "$cafe_rc" -ne 0 ] && tail -25 "$VG_GODOT_LOG"
+  exit "$cafe_rc"
+fi
+
 # ══ 模式 B：在渲染环境【内部】拍两帧 ════════════════════════════════════════
 # 容器里用 `bash /tools/visual_gate.sh --shoot /out`；native 路径下同一份脚本原地跑。
 # 写成"自我再入"而不是再开一个脚本，是为了让容器内外只有一份拍图参数——两份必然漂移。
@@ -228,6 +316,16 @@ if [ "${1:-}" = "--shoot" ]; then
     --backend logic --seed "$SEED" --warmup-tick "$NOON_TICK" \
     --probe-space cafe --probe-floor 1f --shot-fit --draw-skip interior_furniture --shot "$OUT/vg_cafe1f_bare.png" \
     || { [ "$rc" -eq 0 ] && rc=7; }
+  # Receipt is part of the evidence contract, not a convenience log.  It is emitted
+  # only after all four actual captures have succeeded, so the host assertion can
+  # reject stale/mirrored PNGs before it evaluates density thresholds.
+  if [ -s "$OUT/vg_int_cafe.png" ] && [ -s "$OUT/vg_cafe1f_bare.png" ] \
+     && [ -s "$OUT/vg_cafe2f.png" ] && [ -s "$OUT/vg_cafe2f_bare.png" ]; then
+    write_cafe_density_receipt "$OUT" "$W" "$H" || { [ "$rc" -eq 0 ] && rc=7; }
+  else
+    echo "  cafe-density receipt FAIL (one or more café captures are missing)"
+    [ "$rc" -eq 0 ] && rc=7
+  fi
   # ── AM3（编号135）：全楼层往返门采集（同一个 Xvfb，省一次容器启动）──────────────
   # 现役空间往返门只走 town↔cafe/1f（上面那步）⇒ 楼梯往返（1f↔2f）没门（docs/126 §一.3）。
   # 本步走完整旅程 town→cafe/1f→上楼2f→下楼1f→出门（SpaceShot --rt-journey full，出货路径 tapped→_portal_click），
