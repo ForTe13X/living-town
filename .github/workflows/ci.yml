@@ -21,7 +21,7 @@ jobs:
     # 正式方案是拆成并行 required jobs（见 docs/113 §四·2），这只是过渡。
     timeout-minutes: 35
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       # push 事件的 GITHUB_SHA 是刚推到该 ref 的 tip；pull_request 则是 GitHub 的 merge ref。
       # checkout 默认取事件 ref/SHA。把两者逐位对账并打印单行回执，避免以后把旧 base 的
@@ -38,7 +38,7 @@ jobs:
           printf 'CI_SOURCE event=%s ref=%s sha=%s\n' \
             "$GITHUB_EVENT_NAME" "$GITHUB_REF" "$actual_sha"
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.11"
 
@@ -75,7 +75,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Verify checked-out event SHA
         shell: bash
@@ -89,7 +89,7 @@ jobs:
           printf 'VISUAL_SOURCE event=%s ref=%s sha=%s\n' \
             "$GITHUB_EVENT_NAME" "$GITHUB_REF" "$actual_sha"
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.11"
 
@@ -213,7 +213,7 @@ jobs:
 
       - name: Upload hosted visual canary evidence
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: hosted-visual-canary-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
