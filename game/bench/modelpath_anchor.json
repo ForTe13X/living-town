@@ -1,0 +1,53 @@
+{
+  "_meta": {
+    "baked_by": "godot --headless --path game res://bench/ModelPathGate.tscn -- --seeds 1-4 --days 8 --agents 12 --bake-anchor game/bench/modelpath_anchor.json",
+    "godot": "4.6.2-stable (official)",
+    "rebake_history": [
+      "2026-07-26 D1 · 首烘。C 段此前零条断言（只 print digest），本文件把它变成真门。锚的对象是 random(full) 臂——模型路径上唯一的跨进程/跨提交锚（golden_digests.json 恒 Sim.backend=null，看不见这条路）。",
+      "2026-07-30 Wave E1 · 劳动产出闭环上线 ⇒ 世界轨迹蓄意移动（docs/47 §二-E1 / R12），random(full) 臂的 digest/event_digest/landed 与候选规模一并移动。本锚锚的是【模型路径上的世界轨迹】，不是 prompt 编码本身（A/B 两段未动、仍绿）⇒ 它跟着 golden_digests.json 一起重烘是正确反应。★ docs/47 §二-E1 的 brief 只写了「Harness 与 DetGate 两个 --bake-golden 都要跑」——漏了这第三份提交锚，照 brief 做会让 ci.sh 第 4e 关变红。",
+      "2026-07-30 Wave F1 · 同上：production.json 里新增的工位/岗位/整洁三段蓄意移动世界轨迹，random(full) 臂随之移动。A/B 两段（prompt 编码）未动。本次仍然是三份锚一起烘 —— R12 里那条『只烘前两份 ci.sh 必红』的教训对 F1 同样成立。",
+      "2026-07-30 Wave F5 · 同上：production.json 新增三个工位 + job_action 三条、map.json 新增 dock 区，蓄意移动世界轨迹，random(full) 臂随之移动。A/B 两段（prompt 编码）未动。三份锚一起烘。",
+      "2026-07-30 Wave G3 · 同上（建筑分工落地，golden_digests 的同一条原因）。本锚锚的是 random(full) 后端臂的世界轨迹，世界一动它必动。顺带的口径数字：max|C| 44 → 39，|C|>26 的决策点 92/2644 → 104/2624 —— 新工位是【职位专属】广告位（只有现任泥瓦匠枚举得到），所以它不给全镇加候选；候选规模的变化来自轨迹重排（谁跟谁在同一格），不是来自这条广告位本身。",
+      "2026-08-01 Wave U · U1 把 T1 的镇库回拉（production.stock_pull）【打开】⇒ 世界轨迹【蓄意】移动（docs/79 §一 / docs/47 R12）。为什么：#40 的红在 60 个 seed 上是基率不是特例（docs/72），根因是产出侧【开环】——Sim._object_candidates 给工位广告打分时一项都不读 town_stock，空仓与满仓的分数逐位相同（docs/76）。T1 做出了机制但键没进出货数据，因为打开它会把 ci.sh 4a（N=16）顶红。U1 找到的原因不是 T1 猜的那个（『6 个货位有 2 个被豆子/话本永久占着』——在 N=16 上豆子只占 7/12，而且用干预证伪了：把那两种货的产量砍到真的会缺，key 开着时红格数一个都没少），而是 T1 §9.2 自己推出来的那条约束没有任何固定的 lo 能满足：work_pull_mult(N)·lo/den < 1 要对所有 N 成立就得 lo<=66。改动：Sim._object_candidates 里【人口项与库存项不叠加】（wp_applied 时把 stock_pull 乘子除以 work_pull_mult）⇒ 合成的工作吸引力乘子恒为 [lo/den, hi/den]、与 N 无关；并把 production.json 的 stock_pull{hi:110, lo:90, den:100} 写进出货数据。★N=12 上 work_pull_mult 恒为 1.0 ⇒ U1 那四行一条指令都不多跑 ⇒ 与只开 T1 的键【逐字节相同】（隔离副本实测 seeds 1-12 12/12 + seeds 13-60 48/48 digest 相同）。★摘掉 production.stock_pull 键 ⇒ 整条机制关闭、逐字节回到 Wave T 末（缺数据即零扰动）。★hi==lo==den ⇒ f≡1.0 逐位（零假设对照）。验收（门自己的判决行，全部多 seed 网格）：--seeds 49-60 PASS ✅ #40 12/12（未改动的树上这一格是 FAIL ❌，docs/72 §1.3）；--seeds 13-30 PASS ✅ 18/18；--seeds 31-60 PASS ✅ 29/30（首违 seed 44 豆子 0.50）；4a（N=16 seeds 1-12）PASS ✅ 12/12，零缺货货数 max 回到 3（= 未改动树的余量）、最差货 min 0.627（未改动树 0.556）。硬不变量：12/12 · 18/18 · 30/30 · 12/12(N=16) 全绿，饿穿 0。剩余边界（两条，都据实记在 docs/80）：①seed 44 豆子 0.495 仍低于 SUPPLY_FLOOR 0.005（软门过，T1 自定的 0/48 未达标）；②N=24 seeds 1-12 从 0/12 回归到 2/12（ci.sh 今天不跑这一格；而 N=60 seeds 1-6 从 4/6 改善到 0/6）。判据一个字节没动（Invariants.gd 未改），SUPPLY_FLOOR/SUPPLY_MIN_DEMAND/SUPPLY_MIN_DAYS 与软通过率门均未放宽。",
+      "2026-08-01 Wave V · V1 给【一门手艺】装上社会后果（production.craft_credit，出货只开【环卫工】）⇒ 世界轨迹【蓄意】移动（docs/83 §一 / docs/47 R12）。为什么：改前的清点表实测——全镇 497 条 produce 事件里 witnesses 非空 0 条、5540 条 pay 事件同样 0 条，而产出那一刻工位旁平均站着 0.44-3.32 个人；一个岗位今天唯一能改到别人社会状态的路是 _shortage_fallout，也就是他【没干好】的时候，而木匠/渔夫/商贩连这条都没有。⇒ 全镇的『社会产出』只有一种口径：怪谁。本次改动是它的正向镜像，逐条照抄同一个形状（带目击者的事件 + 在场者一手信念 via=seen + _adjust_standing 走同一道守卫 + 旁观者记忆），不新增事件类型（复用 produce，已在 Main.FEED_SKIP 里）。验收：零扰动对照——删掉 production.craft_credit ⇒ seeds 1-5 digest 5/5 与改前逐位相同；负对照——CR:环卫工 信念持有者 0/12 seed → 8..11 人，produce 事件被看见 0 → 13..28 条/seed，而同一次运行里未被触碰的 8 个岗位在 12 个 seed 上恒为 0（内建零假设）；留出种子 13-30 硬 18/18·#40 18/18·新增硬 #41 18/18（改前同格 18/18·18/18），31-60 硬 30/30·#40 29/30（首违 seed 32 上限臂）——改前同格 29/30（首违 seed 44 下限臂），红格数不变；#16 的前件『存在坏名声』在两条臂上都是 True 12/12（没被正声誉抹平）、#5 知道 R1 的人数逐 seed 完全相同、#20 停传数同量级。剩余边界两条：①本机制的行为效应量在 N=12×12 seed 上【分辨不出】——未被触碰的岗位接受率移动幅度比被触碰的还大（木匠 +0.047 / 渔夫 -0.055 vs 环卫工 -0.020），所以能声称的是『社会痕迹存在且可门控』，不是『被看见干活的人更受欢迎』；②只在 N=12 上量过社会侧，N=16/24/60 的社会通道数没量，而这一族参数在 N 上已知非单调（docs/80 §3.5c）。回滚成本=删一个 JSON 键。",
+      "2026-08-02 Wave Z · Z2 手艺口碑铺到四门（production.craft_credit 增三行）⇒ 世界轨迹蓄意移动（docs/101 / docs/47 R12）。本锚锚的是 random(full) 臂的【世界轨迹】，随 golden_digests.json 一起重烘是正确反应；prompt 编码本身（A/B 两段）未动、仍绿。重烘后 ModelPathGate 失败 0。",
+      "2026-08-02 Wave AA · AA3 消费侧（商贩赶集）的买卖口碑⇒ 世界轨迹蓄意移动（docs/106 / docs/47 R12）。本锚锚的是 random(full) 臂的【世界轨迹】，随 golden_digests.json 一起重烘是正确反应；prompt 编码本身（A/B 两段）未动、仍绿。重烘后 ModelPathGate 失败 0。",
+      "2026-08-06 AA3-FIX（docs/112）· 商贩自证过滤（witnesses 滤掉收款商贩）⇒ random(full) 臂 4/4 seed 只有 digest 动，event_digest/landed/候选规模行逐位不动——纯观测变更，随 golden_digests.json 一起重烘（R12 的第三份锚；docs/47 §二-E1 那条『brief 只写两份锚』的教训继续有效）。",
+      "2026-08-07 · AS1/E1 车道 E 第一片：柴薪进口 lane 上线 ⇒ 模型路径上的世界轨迹【蓄意】移动（docs/147 / docs/144 §六）。random(full) 臂 4/4 seed 的 digest/event_digest/landed 与候选规模一并移动（days=8 内 day%3==0 到港 ⇒ 柴薪供给改缺货/消费/加价 ⇒ 决策序移动）。本锚锚的是【模型路径上的世界轨迹】、不是 prompt 编码本身（A/B 两段未动、仍绿——只 C 段 5 条移动）⇒ 它跟着 golden_digests.json 一起重烘是正确反应（同 Wave E1、docs/47 §二-E1）——★又一次印证 brief 只写两份锚(Harness/DetGate)、第三份 ModelPathGate 必须自己补上，否则 ci.sh 第 4e 步变红（本片实测撞到）。off 门：删 logistics.json ⇒ 逐字节回到重烘前。",
+      "2026-08-08 E2a（AS4）import 付费：import 到货后新增 transfer('town','external',cost) 的 pay 事件 ⇒ C 段 random_full 世界轨迹的 event_digest/inv_digest 移动（A/B prompt 编码段未动，本片不碰 AIBackend）。随 seeds/scenarios 金标 + 硬 #45 三锚同批重烘。price_per=3/price_den=4。",
+      "2026-08-08 E-export（AS5）：export 收钱进 town_coin ⇒ 每出港日 event_log 新增 external→town pay(export)+export 货事件 ⇒ 进 event_digest ⇒ C 段 random_full 网格 4 seed × days8_n12 的 event_digest/inv_digest 移动（A/B prompt 编码段未动——本片不碰 AIBackend）。原因=E-export 货出钱进（新硬 #46 出口贸易原子性+#45 双向泛化，见 golden_digests.json rebake_history 同日条）。",
+      "2026-08-09 E3b（闲聊-attach treat 链，移金标，docs/164）：coco 由 spare 零工转【糕点师】，在广场 counter_pastry[31,23]（type 摊位复用 counter 槽 ⇒ 零 WorldView 改动、别名预算不变）产【糕点】（produce.糕点师 无 inputs、照抄咖啡师形状），消费【挂在既有 闲聊(social) 动作】上（consume.闲聊={糕点,1}）而非新加 town 平面动作——这正是 E3a（docs/153）实测证伪的稀释源：新 town 动作加 60-80 决策槽/seed、系统性压核心产出约 0.03。本片零新决策槽：闲聊本就 ~150-200 次/seed 被选中，而『缺货绝不阻断动作』红线保证其选中频率不随糕点库存变（有糕点照吃、没糕点照闲聊+写 shortage）。三锚全动且可归因：①做点心 job-gated 广告给 coco 加一个候选 ⇒ modelpath 候选规模 max_n 42→46、C 段 random_full 4/4 seed 全移；②糕点 produce/consume/spoil 事件进 event_digest ⇒ scenarios 16/16、seeds 12/12 全移；③town_stock[糕点] 轨迹进批量 digest/chain。★核心验收锚（留出 seeds 13-30、N=12、backend=null）：口粮/柴薪/屋瓦 满足率 median Δrate=+0.041/−0.001/+0.006（口粮 12/18 上、柴薪 9/9 平、屋瓦 10/18 上）——与 E3a 全三货系统性 −0.028~−0.036（66-78% 下）方向相反；NULL 对照（coco=糕点师但删 consume.闲聊、糕点成死货）证 consume.闲聊 本身零稀释（柴薪 −0.028/屋瓦 −0.018 的残余来自 coco 转产者这一不可避免项，非 treat）。off-gate：删本片键 ⇒ S0 金标 12/12 逐字节回 pre-E3b。#40 12/12、硬 12/12、det 3/3。标定 batch6/W48/cap20/spoil1/start12/闲聊 amount1。HARD_IDS 未动（additive 无新不变量）。",
+      "2026-08-10 修 standing 漂移翻号 bug（Codex 外审 P0-2）：S1 名声每 3 天向 0 漂移的旧实现 `x - signf(x)` 对 |x|<1 会【翻号】（−0.2→+0.8，接受规则 STANDING_K=6 放大成约 6 分 acceptance 摆动，非可忽略噪声），把慢淡化写成永久跨零振荡。改用 `_standing_drift = move_toward(x,0,1)`（向 0 至多 1、不跨零，纯 abs/sign/min、无 libm ⇒ 逐字节可复现）。加 Harness/S0 性质自检（9 向量：不翻号/绝对值不增/零保持零；旧实现在此【必红】，已实测）。这是行为 bug 修复、长期轨迹改变是【预期】（非任意重烘——性质测试是正当性凭据）。三锚（golden seeds+scenarios / modelpath / ledger）全重烘。"
+    ]
+  },
+  "random_full": {
+    "days8_n12": {
+      "1": {
+        "digest": "2408737308",
+        "event_digest": "3131952814862902535",
+        "landed": 732
+      },
+      "2": {
+        "digest": "734794279",
+        "event_digest": "2761547602050575038",
+        "landed": 732
+      },
+      "3": {
+        "digest": "190452682",
+        "event_digest": "9144560439508370981",
+        "landed": 716
+      },
+      "4": {
+        "digest": "2246561265",
+        "event_digest": "1107867961911496835",
+        "landed": 714
+      },
+      "_scale": {
+        "max_n": 47,
+        "n_dec": 2894,
+        "over_cap": 166,
+        "over_old": 17
+      }
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "detects": [
+    "大事记引用了投影里不存在的 event id（发明情节/串号）⇒ 门红。本次 1961 行全部命中真实 id。",
+    "社交类 accepted=false 的事件被渲染成 happened（漏标被拒，AA2 的 27.4% 病）⇒ 门红。本次 932/932 条社交被拒事件被如实标注。",
+    "【总览】网络边指向关系账本里不存在的一对居民，或边的 亲密/怨气 与账本重算不符 ⇒ 门红（负对照 V1/V2 实测抓到）。",
+    "【总览】镇级年表引用不存在的 event id，或把社交被拒谎标成 happened ⇒ 门红（负对照 V3/V4 实测抓到）。"
+  ],
+  "does_not_detect": [
+    "大事记/年表措辞的语义保真度（subject 指错人、器物/年代错等）——只校 event.accepted 与 id 这两位，不校文案质量。",
+    "Sim 自身把事件标错 accepted 的情形（wiki 层如实转写 Sim 的字段，不复核 Sim 的判定）。",
+    "非社交类 accepted=false（shortage/conflict 结构性 false）——那不是被拒，按类型另行叙述，故意不套被拒框。",
+    "witness-only 参与的事件不逐条上大事记（避免刷屏），故不在追溯范围内（可追溯性只覆盖当事人行）。",
+    "【总览】收边阈值/年表类型选择是否'合适'——门只校【被显示的每一项都有真源且数值一致】，不评判取舍口径（阈值写在图注里透明交代）。",
+    "【总览】边把有向关系合并成无向时的聚合口径（亲密取均值/怨气取最大）是否'最优'——门只断言渲染值=按此口径重算值。"
+  ],
+  "confidence": "在 seed 7 / 60 天 / 12 个 NPC 的投影上校验：N=1961 条大事记行、932 条社交被拒事件；跨页对账全镇社交被拒 event 共 498 条。总览：49 条边 / 88 条年表 / 5 个施压目标 / 48 个怨气对全部可追溯；负对照注入 4 种伪造项，逐一被抓（N=4）。",
+  "checks": {
+    "chronicle_lines": 1961,
+    "all_lines_traceable": true,
+    "social_rejected_in_pages": 932,
+    "social_rejected_marked": 932,
+    "global_social_rejected_events": 498,
+    "violations": [],
+    "n_violations": 0,
+    "overview": {
+      "n_edges": 49,
+      "n_pairs_total": 66,
+      "n_timeline": 88,
+      "n_pressure_targets": 5,
+      "n_resentment_pairs": 48,
+      "n_factions": 4,
+      "all_traceable": true,
+      "n_violations": 0,
+      "violations": []
+    },
+    "negative_control": {
+      "injected": [
+        "V1 幽灵边 aria—__ghost__",
+        "V2 篡改 qin—shu 的亲密",
+        "V3 不存在 event #13234",
+        "V4 社交被拒 #17 谎标 done"
+      ],
+      "each_variant_detected": {
+        "V1": true,
+        "V2": true,
+        "V3": true,
+        "V4": true
+      },
+      "all_detected": true,
+      "n_violations_when_poisoned": 4
+    }
+  },
+  "verdict": "PASS"
+}

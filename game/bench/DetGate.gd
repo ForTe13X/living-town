@@ -61,6 +61,9 @@ func _init() -> void:
 
 	var red := false
 	var baked := {}
+	var fp_ref := -1                # U1：第一跑读到的数据指纹，后面每一跑都必须与它相同（见 _data_fp 抬头）
+	var n_fp_ok := 0
+	var n_fp_cmp := 0
 	var n_hard_ok := 0
 	var n_det_ok := 0
 	var n_gold_ok := 0
@@ -92,6 +95,17 @@ func _init() -> void:
 			var c2: int = int(r2["chain"])
 			var t2: PackedInt64Array = r2["chain_ticks"]
 			_dispose(r2["S"])
+			# ── U1：数据指纹对照（见 _data_fp 抬头）。放在 det_ok 之前，因为它是 det_ok 的【解释】：
+			#    指纹不同 ⇒ 两跑读到的不是同一个世界 ⇒ digest 不同不是随机性，是磁盘被人改了。
+			var fp1: int = int(r1["data_fp"])
+			var fp2: int = int(r2["data_fp"])
+			if fp_ref == -1:
+				fp_ref = fp1
+			var fp_ok: bool = (fp1 == fp_ref) and (fp2 == fp_ref)
+			n_fp_cmp += 1
+			if fp_ok: n_fp_ok += 1
+			else: red = true
+
 			var det_ok: bool = (d1 == d2) and (e1 == e2) and (c1 == c2)
 			var det_where := ""
 			if not det_ok:
@@ -116,11 +130,12 @@ func _init() -> void:
 			if det_ok: n_det_ok += 1
 			else: red = true
 
-			print("  [%s] seed=%d 事件=%-5d 硬=%s 确定=%s 金标=%s" % [
+			print("  [%s] seed=%d 事件=%-5d 硬=%s 确定=%s 金标=%s%s" % [
 				label, sd, nev,
 				"✅" if hard_fails.is_empty() else ("❌ " + "; ".join(hard_fails)),
 				"✅" if det_ok else ("❌ digest %d/%d/%d vs %d/%d/%d%s" % [d1, e1, c1, d2, e2, c2, det_where]),
-				gold_mark])
+				gold_mark,
+				"" if fp_ok else ("  ❌ 数据指纹在本门运行期间变了：首跑 %d · 本对两跑 %d/%d —— res://data/** 被改过（两跑读到的不是同一个世界；上面那条『确定』不是随机性）" % [fp_ref, fp1, fp2])])
 			tbake[str(sd)] = {"digest": str(d1), "event_digest": str(e1), "days": days, "events": nev,
 				"chain": str(c1)}
 		baked[_gkey(track)] = tbake
@@ -137,18 +152,52 @@ func _init() -> void:
 		else:
 			print("\n❌ 金标写入失败：%s" % bake_path); red = true
 
-	print("\n=== DetGate: %s  (硬不变量 %d/%d, 同seed两跑一致 %d/%d, 金标 %d/%d 可比) ===" % [
-		"PASS ✅" if not red else "FAIL ❌", n_hard_ok, total, n_det_ok, total, n_gold_ok, n_gold_cmp])
+	print("\n=== DetGate: %s  (硬不变量 %d/%d, 同seed两跑一致 %d/%d, 数据指纹一致 %d/%d[%d], 金标 %d/%d 可比) ===" % [
+		"PASS ✅" if not red else "FAIL ❌", n_hard_ok, total, n_det_ok, total,
+		n_fp_ok, n_fp_cmp, fp_ref, n_gold_ok, n_gold_cmp])
 	quit(0 if not red else 1)
 
 static func _gkey(track: String) -> String:
 	return track if track != "" else "default"
+
+## U1：**磁盘上的世界**在本门运行期间的指纹（res://data/** 全部文件，按路径排序，内容折进 FNV-1a/32）。
+##
+## 为什么要有它 —— 它不是"多一道保险"，它是把一条**已经发生过、而且当时没人追得出来**的红说清楚：
+##   T1 的一次 CI 里出现过 `[freerider] seed=1 … 确定=❌ digest 1409322286/… vs 1771125531/…`，
+##   而同一份代码在隔离副本上 16/16 复现不出来（docs/76 §十）。U1 追出来的答案是：
+##   **那不是随机性**——`DetGate._run()` 每一跑都调 `S._load_data()` 重读磁盘，
+##   而那一次 `game/data/production.json` 的 `stock_pull` 键在两跑之间被摘掉了
+##   （T1 §八⑥ 记着他在 4a 变红之后就开始回滚，而 `ci.sh` 那时还在往下跑到 4c）。
+##   ⇒ `d1` 是键开着的轨迹、`d2` 是键关着的轨迹，两个数**逐位**等于 U1 在本机分别跑出来的那两条。
+##   同一次里 freerider seed 2/3/4 的"实得"也**逐位**等于键关着的值、事件数 1062/1053/1054 同样逐位吻合。
+##
+## ⇒ 本函数把那条红从"不可解释"变成"指名道姓"：`确定=❌` 旁边会直接打印
+##   「res://data/** 被改过」，而不是让下一个人再花一棒去追一个不存在的红线 #1 违规。
+##   这与 [docs/41 §1.5②]「别在 ci.sh 正在跑的时候改它」是同一条纪律，只是那一条只写了**脚本**、
+##   没写**数据**——而数据这一侧才是真正踩到的那一边。
+##
+## 口径：只读，不进任何 digest / 金标；两跑之间不变 ⇒ 对未改动的树逐字节零影响。
+static func _data_fp(dir_path: String, h: int) -> int:
+	var d := DirAccess.open(dir_path)
+	if d == null:
+		return h
+	var files := d.get_files()
+	files.sort()                                   # 目录枚举顺序不进指纹，路径序才进
+	for fn in files:
+		var p: String = dir_path.path_join(fn)
+		h = SimScript.mix32(h, SimScript.fnv1a32(p + "\n" + FileAccess.get_file_as_string(p)))
+	var subs := d.get_directories()
+	subs.sort()
+	for sd in subs:
+		h = _data_fp(dir_path.path_join(sd), h)
+	return h
 
 ## 跑一局定向场景。scenario 必须在 start_new 之前赋值（start_new 内部才调 _seed_scenario）——同 sim_soak.gd:49/61。
 func _run(scen: String, seed: int, days: int) -> Dictionary:
 	var S = SimScript.new()
 	get_root().add_child(S)
 	S._load_data()
+	var data_fp := _data_fp("res://data", Inv.CHAIN_INIT)   # U1：这一跑真正读到的那份数据（见 _data_fp 抬头）
 	S.auto_run = false
 	S.backend = null                 # 红线#2：零模型 logic 底座
 	S.scenario = scen
@@ -175,7 +224,7 @@ func _run(scen: String, seed: int, days: int) -> Dictionary:
 			for nid in ag["needs"]:
 				if float(ag["needs"][nid]) <= 0.5:
 					starved += 1
-	return {"S": S, "starved": starved, "chain": chain, "chain_ticks": chain_ticks}
+	return {"S": S, "starved": starved, "chain": chain, "chain_ticks": chain_ticks, "data_fp": data_fp}
 
 func _dispose(S) -> void:
 	get_root().remove_child(S)

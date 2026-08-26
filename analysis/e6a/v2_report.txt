@@ -1,0 +1,338 @@
+==============================================================================
+E6a analysis: base=analysis/e6a/baseline_s1-30.jsonl  after=analysis/e6a/v2_s1-30.jsonl (V2: BOTH treats abundant (task-literal))
+==============================================================================
+
+[A] ABUNDANCE (discretionary treats never-short across seeds 1-30)
+ seed | 糕点 rate/short | 饼干 rate/short/spoiled/end | inv40_ok
+    1 | 糕点 1.000/ 0 | 饼干 1.000/0/0/105 | True
+    2 | 糕点 1.000/ 0 | 饼干 1.000/0/0/101 | True
+    3 | 糕点 1.000/ 0 | 饼干 1.000/0/0/118 | False
+    4 | 糕点 1.000/ 0 | 饼干 1.000/0/0/115 | True
+    5 | 糕点 1.000/ 0 | 饼干 1.000/0/0/119 | True
+    6 | 糕点 1.000/ 0 | 饼干 1.000/0/0/120 | True
+    7 | 糕点 1.000/ 0 | 饼干 1.000/0/0/114 | True
+    8 | 糕点 1.000/ 0 | 饼干 1.000/0/0/113 | True
+    9 | 糕点 1.000/ 0 | 饼干 1.000/0/0/118 | True
+   10 | 糕点 1.000/ 0 | 饼干 1.000/0/0/108 | True
+   11 | 糕点 1.000/ 0 | 饼干 1.000/0/0/119 | True
+   12 | 糕点 1.000/ 0 | 饼干 1.000/0/0/115 | True
+   13 | 糕点 1.000/ 0 | 饼干 1.000/0/0/104 | True
+   14 | 糕点 1.000/ 0 | 饼干 1.000/0/0/116 | True
+   15 | 糕点 1.000/ 0 | 饼干 1.000/0/0/119 | True
+   16 | 糕点 1.000/ 0 | 饼干 1.000/0/0/105 | True
+   17 | 糕点 1.000/ 0 | 饼干 1.000/0/0/117 | True
+   18 | 糕点 1.000/ 0 | 饼干 1.000/0/0/109 | True
+   19 | 糕点 1.000/ 0 | 饼干 1.000/0/0/119 | False
+   20 | 糕点 1.000/ 0 | 饼干 1.000/0/0/114 | True
+   21 | 糕点 1.000/ 0 | 饼干 1.000/0/0/119 | True
+   22 | 糕点 1.000/ 0 | 饼干 1.000/0/0/119 | True
+   23 | 糕点 1.000/ 0 | 饼干 1.000/0/0/116 | True
+   24 | 糕点 1.000/ 0 | 饼干 1.000/0/0/120 | True
+   25 | 糕点 1.000/ 0 | 饼干 1.000/0/0/117 | True
+   26 | 糕点 1.000/ 0 | 饼干 1.000/0/0/105 | True
+   27 | 糕点 1.000/ 0 | 饼干 1.000/0/0/111 | True
+   28 | 糕点 1.000/ 0 | 饼干 1.000/0/0/119 | True
+   29 | 糕点 1.000/ 0 | 饼干 1.000/0/0/110 | True
+   30 | 糕点 1.000/ 0 | 饼干 1.000/0/0/101 | True
+   糕点: never-short on 30/30 seeds  (ABUNDANT)
+   饼干: never-short on 30/30 seeds  (ABUNDANT)
+
+[byte-identity] core goods served/demand identical to baseline?
+   seed 1 口粮: base sv=760 dm=1046 | after sv=716 dm=1048
+   seed 1 柴薪: base sv=613 dm=618 | after sv=601 dm=610
+   seed 1 屋瓦: base sv=706 dm=706 | after sv=708 dm=708
+   seed 1 糕点: base sv=131 dm=165 | after sv=189 dm=189
+   seed 1 整洁: base sv=247 dm=249 | after sv=244 dm=246
+   seed 1 话本: base sv=60 dm=62 | after sv=60 dm=61
+   seed 1 豆子: base sv=141 dm=142 | after sv=122 dm=122
+   seed 1 social_events 1309 -> 1319
+   seed 1 work_by_title differs
+   seed 2 口粮: base sv=747 dm=1059 | after sv=899 dm=1054
+   seed 2 柴薪: base sv=538 dm=661 | after sv=564 dm=633
+   seed 2 屋瓦: base sv=626 dm=708 | after sv=643 dm=709
+   seed 2 糕点: base sv=101 dm=167 | after sv=167 dm=167
+   seed 2 整洁: base sv=291 dm=291 | after sv=242 dm=243
+   seed 2 话本: base sv=64 dm=64 | after sv=57 dm=66
+   seed 2 豆子: base sv=86 dm=86 | after sv=81 dm=81
+   seed 2 social_events 1262 -> 1368
+   seed 2 work_by_title differs
+   seed 3 口粮: base sv=941 dm=1060 | after sv=936 dm=1035
+   seed 3 柴薪: base sv=528 dm=652 | after sv=542 dm=631
+   seed 3 屋瓦: base sv=662 dm=705 | after sv=685 dm=701
+   seed 3 糕点: base sv=126 dm=164 | after sv=186 dm=186
+   seed 3 整洁: base sv=217 dm=233 | after sv=241 dm=245
+   seed 3 话本: base sv=53 dm=53 | after sv=63 dm=63
+   seed 3 豆子: base sv=137 dm=137 | after sv=52 dm=144
+   seed 3 social_events 1266 -> 1406
+   seed 3 work_by_title differs
+   seed 4 口粮: base sv=794 dm=1049 | after sv=960 dm=1042
+   seed 4 柴薪: base sv=554 dm=620 | after sv=571 dm=609
+   seed 4 屋瓦: base sv=684 dm=709 | after sv=611 dm=713
+   seed 4 糕点: base sv=145 dm=158 | after sv=168 dm=168
+   seed 4 整洁: base sv=265 dm=265 | after sv=263 dm=263
+   seed 4 话本: base sv=64 dm=68 | after sv=67 dm=67
+   seed 4 豆子: base sv=69 dm=130 | after sv=107 dm=107
+   seed 4 social_events 1323 -> 1403
+   seed 4 work_by_title differs
+   seed 5 口粮: base sv=917 dm=1067 | after sv=702 dm=1062
+   seed 5 柴薪: base sv=600 dm=636 | after sv=593 dm=623
+   seed 5 屋瓦: base sv=567 dm=708 | after sv=550 dm=718
+   seed 5 糕点: base sv=99 dm=152 | after sv=147 dm=147
+   seed 5 整洁: base sv=271 dm=271 | after sv=308 dm=308
+   seed 5 话本: base sv=72 dm=89 | after sv=80 dm=80
+   seed 5 豆子: base sv=76 dm=85 | after sv=87 dm=87
+   seed 5 social_events 1217 -> 1149
+   seed 5 work_by_title differs
+   seed 6 口粮: base sv=917 dm=1047 | after sv=965 dm=1044
+   seed 6 柴薪: base sv=545 dm=622 | after sv=566 dm=645
+   seed 6 屋瓦: base sv=658 dm=707 | after sv=690 dm=704
+   seed 6 糕点: base sv=136 dm=197 | after sv=182 dm=182
+   seed 6 整洁: base sv=276 dm=276 | after sv=271 dm=271
+   seed 6 话本: base sv=50 dm=71 | after sv=46 dm=46
+   seed 6 豆子: base sv=117 dm=117 | after sv=118 dm=122
+   seed 6 social_events 1342 -> 1418
+   seed 6 work_by_title differs
+   seed 7 口粮: base sv=945 dm=1052 | after sv=906 dm=1028
+   seed 7 柴薪: base sv=606 dm=627 | after sv=611 dm=632
+   seed 7 屋瓦: base sv=680 dm=701 | after sv=709 dm=709
+   seed 7 糕点: base sv=132 dm=193 | after sv=168 dm=168
+   seed 7 整洁: base sv=243 dm=244 | after sv=259 dm=264
+   seed 7 话本: base sv=67 dm=69 | after sv=55 dm=72
+   seed 7 豆子: base sv=86 dm=86 | after sv=101 dm=106
+   seed 7 social_events 1411 -> 1393
+   seed 7 work_by_title differs
+   seed 8 口粮: base sv=966 dm=1050 | after sv=851 dm=1052
+   seed 8 柴薪: base sv=536 dm=624 | after sv=566 dm=631
+   seed 8 屋瓦: base sv=700 dm=700 | after sv=663 dm=716
+   seed 8 糕点: base sv=132 dm=189 | after sv=167 dm=167
+   seed 8 整洁: base sv=227 dm=232 | after sv=285 dm=285
+   seed 8 话本: base sv=44 dm=66 | after sv=61 dm=61
+   seed 8 豆子: base sv=108 dm=109 | after sv=98 dm=111
+   seed 8 social_events 1384 -> 1323
+   seed 8 work_by_title differs
+   seed 9 口粮: base sv=1018 dm=1075 | after sv=733 dm=1063
+   seed 9 柴薪: base sv=569 dm=669 | after sv=642 dm=673
+   seed 9 屋瓦: base sv=644 dm=708 | after sv=710 dm=710
+   seed 9 糕点: base sv=99 dm=134 | after sv=158 dm=158
+   seed 9 整洁: base sv=211 dm=227 | after sv=271 dm=271
+   seed 9 话本: base sv=61 dm=61 | after sv=56 dm=61
+   seed 9 豆子: base sv=95 dm=106 | after sv=91 dm=102
+   seed 9 social_events 1114 -> 1254
+   seed 9 work_by_title differs
+   seed 10 口粮: base sv=716 dm=1047 | after sv=795 dm=1023
+   seed 10 柴薪: base sv=589 dm=604 | after sv=577 dm=583
+   seed 10 屋瓦: base sv=656 dm=701 | after sv=704 dm=704
+   seed 10 糕点: base sv=158 dm=184 | after sv=218 dm=218
+   seed 10 整洁: base sv=241 dm=241 | after sv=261 dm=261
+   seed 10 话本: base sv=57 dm=57 | after sv=68 dm=83
+   seed 10 豆子: base sv=132 dm=132 | after sv=116 dm=116
+   seed 10 social_events 1347 -> 1518
+   seed 10 work_by_title differs
+   seed 11 口粮: base sv=718 dm=1057 | after sv=890 dm=1054
+   seed 11 柴薪: base sv=583 dm=622 | after sv=585 dm=613
+   seed 11 屋瓦: base sv=659 dm=704 | after sv=602 dm=711
+   seed 11 糕点: base sv=99 dm=158 | after sv=154 dm=154
+   seed 11 整洁: base sv=277 dm=277 | after sv=284 dm=284
+   seed 11 话本: base sv=69 dm=70 | after sv=71 dm=73
+   seed 11 豆子: base sv=88 dm=88 | after sv=103 dm=103
+   seed 11 social_events 1272 -> 1309
+   seed 11 work_by_title differs
+   seed 12 口粮: base sv=870 dm=1049 | after sv=834 dm=1038
+   seed 12 柴薪: base sv=620 dm=633 | after sv=586 dm=630
+   seed 12 屋瓦: base sv=709 dm=714 | after sv=659 dm=706
+   seed 12 糕点: base sv=154 dm=194 | after sv=201 dm=201
+   seed 12 整洁: base sv=234 dm=244 | after sv=246 dm=246
+   seed 12 话本: base sv=58 dm=58 | after sv=53 dm=53
+   seed 12 豆子: base sv=80 dm=108 | after sv=107 dm=125
+   seed 12 social_events 1302 -> 1456
+   seed 12 work_by_title differs
+   seed 13 口粮: base sv=808 dm=1050 | after sv=771 dm=1047
+   seed 13 柴薪: base sv=612 dm=644 | after sv=555 dm=618
+   seed 13 屋瓦: base sv=712 dm=712 | after sv=684 dm=706
+   seed 13 糕点: base sv=119 dm=181 | after sv=167 dm=167
+   seed 13 整洁: base sv=231 dm=234 | after sv=232 dm=234
+   seed 13 话本: base sv=60 dm=60 | after sv=63 dm=63
+   seed 13 豆子: base sv=114 dm=127 | after sv=110 dm=110
+   seed 13 social_events 1266 -> 1314
+   seed 13 work_by_title differs
+   seed 14 口粮: base sv=671 dm=1046 | after sv=776 dm=1032
+   seed 14 柴薪: base sv=541 dm=609 | after sv=511 dm=579
+   seed 14 屋瓦: base sv=676 dm=704 | after sv=584 dm=695
+   seed 14 糕点: base sv=116 dm=206 | after sv=211 dm=211
+   seed 14 整洁: base sv=233 dm=250 | after sv=240 dm=240
+   seed 14 话本: base sv=55 dm=55 | after sv=54 dm=66
+   seed 14 豆子: base sv=111 dm=111 | after sv=115 dm=121
+   seed 14 social_events 1451 -> 1401
+   seed 14 work_by_title differs
+   seed 15 口粮: base sv=932 dm=1066 | after sv=937 dm=1063
+   seed 15 柴薪: base sv=567 dm=611 | after sv=569 dm=609
+   seed 15 屋瓦: base sv=640 dm=703 | after sv=501 dm=709
+   seed 15 糕点: base sv=133 dm=167 | after sv=166 dm=166
+   seed 15 整洁: base sv=253 dm=253 | after sv=211 dm=216
+   seed 15 话本: base sv=63 dm=63 | after sv=55 dm=56
+   seed 15 豆子: base sv=90 dm=96 | after sv=101 dm=113
+   seed 15 social_events 1363 -> 1331
+   seed 15 work_by_title differs
+   seed 16 口粮: base sv=935 dm=1052 | after sv=845 dm=1039
+   seed 16 柴薪: base sv=575 dm=617 | after sv=567 dm=615
+   seed 16 屋瓦: base sv=659 dm=705 | after sv=673 dm=712
+   seed 16 糕点: base sv=113 dm=168 | after sv=166 dm=166
+   seed 16 整洁: base sv=197 dm=222 | after sv=227 dm=227
+   seed 16 话本: base sv=52 dm=54 | after sv=71 dm=73
+   seed 16 豆子: base sv=117 dm=131 | after sv=133 dm=133
+   seed 16 social_events 1352 -> 1320
+   seed 16 work_by_title differs
+   seed 17 口粮: base sv=837 dm=1058 | after sv=903 dm=1068
+   seed 17 柴薪: base sv=594 dm=641 | after sv=573 dm=653
+   seed 17 屋瓦: base sv=625 dm=711 | after sv=595 dm=706
+   seed 17 糕点: base sv=106 dm=162 | after sv=136 dm=136
+   seed 17 整洁: base sv=250 dm=250 | after sv=288 dm=288
+   seed 17 话本: base sv=80 dm=80 | after sv=71 dm=79
+   seed 17 豆子: base sv=99 dm=102 | after sv=95 dm=97
+   seed 17 social_events 1170 -> 1162
+   seed 17 work_by_title differs
+   seed 18 口粮: base sv=992 dm=1049 | after sv=749 dm=1052
+   seed 18 柴薪: base sv=577 dm=633 | after sv=576 dm=637
+   seed 18 屋瓦: base sv=633 dm=705 | after sv=705 dm=709
+   seed 18 糕点: base sv=140 dm=161 | after sv=174 dm=174
+   seed 18 整洁: base sv=283 dm=283 | after sv=287 dm=287
+   seed 18 话本: base sv=60 dm=63 | after sv=66 dm=66
+   seed 18 豆子: base sv=117 dm=135 | after sv=95 dm=95
+   seed 18 social_events 1353 -> 1386
+   seed 18 work_by_title differs
+   seed 19 口粮: base sv=1055 dm=1055 | after sv=914 dm=1031
+   seed 19 柴薪: base sv=606 dm=631 | after sv=551 dm=607
+   seed 19 屋瓦: base sv=627 dm=711 | after sv=555 dm=700
+   seed 19 糕点: base sv=130 dm=163 | after sv=202 dm=202
+   seed 19 整洁: base sv=268 dm=268 | after sv=202 dm=207
+   seed 19 话本: base sv=72 dm=80 | after sv=67 dm=68
+   seed 19 豆子: base sv=92 dm=114 | after sv=70 dm=142
+   seed 19 social_events 1281 -> 1447
+   seed 19 work_by_title differs
+   seed 20 口粮: base sv=957 dm=1050 | after sv=986 dm=1054
+   seed 20 柴薪: base sv=564 dm=632 | after sv=610 dm=652
+   seed 20 屋瓦: base sv=707 dm=721 | after sv=700 dm=714
+   seed 20 糕点: base sv=121 dm=163 | after sv=179 dm=179
+   seed 20 整洁: base sv=262 dm=262 | after sv=253 dm=256
+   seed 20 话本: base sv=75 dm=75 | after sv=76 dm=78
+   seed 20 豆子: base sv=80 dm=97 | after sv=69 dm=86
+   seed 20 social_events 1261 -> 1224
+   seed 20 work_by_title differs
+   seed 21 口粮: base sv=741 dm=1035 | after sv=782 dm=1044
+   seed 21 柴薪: base sv=528 dm=630 | after sv=568 dm=622
+   seed 21 屋瓦: base sv=705 dm=708 | after sv=700 dm=704
+   seed 21 糕点: base sv=100 dm=209 | after sv=191 dm=191
+   seed 21 整洁: base sv=231 dm=239 | after sv=280 dm=280
+   seed 21 话本: base sv=52 dm=52 | after sv=59 dm=59
+   seed 21 豆子: base sv=121 dm=121 | after sv=140 dm=140
+   seed 21 social_events 1362 -> 1413
+   seed 21 work_by_title differs
+   seed 22 口粮: base sv=987 dm=1046 | after sv=848 dm=1045
+   seed 22 柴薪: base sv=599 dm=606 | after sv=564 dm=630
+   seed 22 屋瓦: base sv=692 dm=705 | after sv=647 dm=711
+   seed 22 糕点: base sv=149 dm=189 | after sv=162 dm=162
+   seed 22 整洁: base sv=217 dm=228 | after sv=246 dm=246
+   seed 22 话本: base sv=49 dm=56 | after sv=52 dm=58
+   seed 22 豆子: base sv=111 dm=116 | after sv=125 dm=134
+   seed 22 social_events 1360 -> 1313
+   seed 22 work_by_title differs
+   seed 23 口粮: base sv=803 dm=1021 | after sv=906 dm=1056
+   seed 23 柴薪: base sv=587 dm=603 | after sv=549 dm=634
+   seed 23 屋瓦: base sv=690 dm=693 | after sv=708 dm=708
+   seed 23 糕点: base sv=133 dm=223 | after sv=178 dm=178
+   seed 23 整洁: base sv=203 dm=225 | after sv=247 dm=247
+   seed 23 话本: base sv=45 dm=56 | after sv=63 dm=63
+   seed 23 豆子: base sv=100 dm=100 | after sv=105 dm=109
+   seed 23 social_events 1530 -> 1289
+   seed 23 work_by_title differs
+   seed 24 口粮: base sv=918 dm=1062 | after sv=828 dm=1049
+   seed 24 柴薪: base sv=566 dm=635 | after sv=613 dm=613
+   seed 24 屋瓦: base sv=672 dm=717 | after sv=656 dm=706
+   seed 24 糕点: base sv=111 dm=151 | after sv=165 dm=165
+   seed 24 整洁: base sv=243 dm=257 | after sv=267 dm=267
+   seed 24 话本: base sv=67 dm=67 | after sv=48 dm=48
+   seed 24 豆子: base sv=104 dm=112 | after sv=124 dm=127
+   seed 24 social_events 1287 -> 1308
+   seed 24 work_by_title differs
+   seed 25 口粮: base sv=953 dm=1038 | after sv=799 dm=1052
+   seed 25 柴薪: base sv=581 dm=628 | after sv=573 dm=634
+   seed 25 屋瓦: base sv=704 dm=704 | after sv=652 dm=704
+   seed 25 糕点: base sv=122 dm=182 | after sv=180 dm=180
+   seed 25 整洁: base sv=275 dm=275 | after sv=279 dm=283
+   seed 25 话本: base sv=61 dm=67 | after sv=64 dm=66
+   seed 25 豆子: base sv=128 dm=169 | after sv=100 dm=110
+   seed 25 social_events 1366 -> 1321
+   seed 25 work_by_title differs
+   seed 26 口粮: base sv=974 dm=1035 | after sv=594 dm=1047
+   seed 26 柴薪: base sv=582 dm=627 | after sv=605 dm=618
+   seed 26 屋瓦: base sv=676 dm=712 | after sv=681 dm=703
+   seed 26 糕点: base sv=149 dm=174 | after sv=175 dm=175
+   seed 26 整洁: base sv=260 dm=260 | after sv=234 dm=234
+   seed 26 话本: base sv=56 dm=65 | after sv=69 dm=78
+   seed 26 豆子: base sv=113 dm=113 | after sv=117 dm=117
+   seed 26 work_by_title differs
+   seed 27 口粮: base sv=900 dm=1068 | after sv=815 dm=1053
+   seed 27 柴薪: base sv=626 dm=640 | after sv=641 dm=658
+   seed 27 屋瓦: base sv=710 dm=710 | after sv=700 dm=700
+   seed 27 糕点: base sv=136 dm=169 | after sv=166 dm=166
+   seed 27 整洁: base sv=224 dm=231 | after sv=230 dm=234
+   seed 27 话本: base sv=62 dm=62 | after sv=53 dm=53
+   seed 27 豆子: base sv=114 dm=114 | after sv=108 dm=115
+   seed 27 social_events 1234 -> 1390
+   seed 27 work_by_title differs
+   seed 28 口粮: base sv=965 dm=1054 | after sv=897 dm=1051
+   seed 28 柴薪: base sv=628 dm=650 | after sv=632 dm=632
+   seed 28 屋瓦: base sv=713 dm=713 | after sv=697 dm=709
+   seed 28 糕点: base sv=108 dm=155 | after sv=153 dm=153
+   seed 28 整洁: base sv=276 dm=276 | after sv=244 dm=253
+   seed 28 话本: base sv=51 dm=53 | after sv=58 dm=60
+   seed 28 豆子: base sv=89 dm=116 | after sv=103 dm=115
+   seed 28 social_events 1215 -> 1293
+   seed 28 work_by_title differs
+   seed 29 口粮: base sv=921 dm=1049 | after sv=655 dm=1035
+   seed 29 柴薪: base sv=600 dm=640 | after sv=571 dm=616
+   seed 29 屋瓦: base sv=689 dm=708 | after sv=670 dm=704
+   seed 29 糕点: base sv=127 dm=164 | after sv=188 dm=188
+   seed 29 整洁: base sv=210 dm=221 | after sv=223 dm=226
+   seed 29 话本: base sv=59 dm=62 | after sv=49 dm=49
+   seed 29 豆子: base sv=96 dm=96 | after sv=117 dm=117
+   seed 29 social_events 1313 -> 1417
+   seed 29 work_by_title differs
+   seed 30 口粮: base sv=831 dm=1039 | after sv=780 dm=1036
+   seed 30 柴薪: base sv=562 dm=618 | after sv=531 dm=626
+   seed 30 屋瓦: base sv=691 dm=706 | after sv=708 dm=713
+   seed 30 糕点: base sv=102 dm=184 | after sv=188 dm=188
+   seed 30 整洁: base sv=297 dm=297 | after sv=284 dm=284
+   seed 30 话本: base sv=62 dm=62 | after sv=60 dm=60
+   seed 30 豆子: base sv=100 dm=100 | after sv=95 dm=95
+   seed 30 social_events 1432 -> 1411
+   seed 30 work_by_title differs
+   -> **210 core mismatches**
+
+[B] CORE HELD-OUT ANCHOR (seeds 13-30, n=18) — criterion 口粮 Δ >= 0 (flat-or-up)
+ good | mean Δ | 95%% CI(t) | median | down/up/flat | verdict
+ 口粮  | -0.0732 | [-0.1345,-0.0119] | -0.0654 | 12/6/0 | SIG DOWN
+ 柴薪  | -0.0087 | [-0.0369,+0.0194] | -0.0086 | 12/6/0 | n.s.(leans down)
+ 屋瓦  | -0.0294 | [-0.0617,+0.0030] | -0.0125 | 11/5/2 | n.s.(leans down)
+ 糕点  | +0.2940 | [+0.2395,+0.3484] | +0.2841 | 0/18/0 | SIG UP
+ 整洁  | +0.0200 | [-0.0010,+0.0410] | +0.0021 | 5/9/4 | n.s.(leans up)
+
+[C] #40 SOFT GATE (seeds 1-12) — inv40_ok is the REAL verdict (incl. discretionary exemption)
+ seed | inv40_ok | glut_gated(non-disc) never_short(non-disc) | detail
+    1 | True  | glut_gated=6 never_short=2 [屋瓦,豆子]                | -
+    2 | True  | glut_gated=6 never_short=1 [豆子]                   | -
+    3 | False | glut_gated=6 never_short=1 [话本]                   | produce=151 consume=401 满足率门下限=0.50·上限=多数不缺；【长期供不应求】豆子 满足率=0.36(到手52/想
+    4 | True  | glut_gated=6 never_short=3 [整洁,话本,豆子]             | -
+    5 | True  | glut_gated=6 never_short=3 [整洁,话本,豆子]             | -
+    6 | True  | glut_gated=6 never_short=2 [整洁,话本]                | -
+    7 | True  | glut_gated=6 never_short=1 [屋瓦]                   | -
+    8 | True  | glut_gated=6 never_short=2 [整洁,话本]                | -
+    9 | True  | glut_gated=6 never_short=2 [屋瓦,整洁]                | -
+   10 | True  | glut_gated=6 never_short=3 [屋瓦,整洁,豆子]             | -
+   11 | True  | glut_gated=6 never_short=2 [整洁,豆子]                | -
+   12 | True  | glut_gated=6 never_short=2 [整洁,话本]                | -
+   -> #40 [soft] pass 11/12  (gate needs >=11/12): PASS
+
+[D] HARD invariants (all seeds) — hard_fails must be empty
+   -> ALL HARD GREEN (0 hard fails across 30 seeds)
+   soft fails by id: {40: [3, 19]}

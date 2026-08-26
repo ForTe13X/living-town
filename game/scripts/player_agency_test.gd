@@ -9,7 +9,10 @@ extends Node
 # 阈值全部由实测定，不猜。测量方法与数据见 14 节注释。
 const AGENCY_SEEDS: Array = [1, 2, 3, 4, 5, 6, 7, 8]
 const AGENCY_DAYS := 4            # 每个 seed 的挂机时长
-const AGENCY_MIN_TOTAL := 50      # 8 seed 合计接触次数下限（实测地板 101 → 2.0× 余量）
+const AGENCY_MIN_TOTAL := 50      # 8 seed 合计接触次数下限。★ 余量【现算现打印】，见第 14 节
+                                  #   （这里原本写着"实测地板 101 → 2.0× 余量"。那个数已经过期两代：
+                                  #    S2 在 bbe1dc6 上量到 81、X3 在 0667018 上量到 85，
+                                  #    而 101 一直照常印在屏幕上。别再往这行里写死任何实测数。）
 const AGENCY_MIN_SEEDS := 6       # 至少几个 seed 要"有人来搭话"（实测 8/8 → 可先坏掉 2 个 seed 才红）
 const AGENCY_MIN_ACTORS := 4      # 合计有多少个【不同】NPC 来找过（实测 11-12/12 → 挡"一个人刷满"的空过）
 
@@ -53,8 +56,10 @@ func _ready() -> void:
 	print("=== 玩家能动性 M1 验证 ===")
 
 	# ── 0) 入镇 ──
+	var resident_count := Sim.agents.size()
 	var pl := Sim.add_player()
-	_ck("入镇", Sim.agents.size() == 13 and pl.get("is_player", false) and Sim.get_agent("player") == pl, "agents=%d (12-cast + player)" % Sim.agents.size())
+	_ck("入镇", Sim.agents.size() == resident_count + 1 and pl.get("is_player", false) and Sim.get_agent("player") == pl,
+		"agents=%d (%d residents + player)" % [Sim.agents.size(), resident_count])
 	Sim.player_move(Vector2i(1, 0))
 	_ck("移动", true, "pos=%s area=%s" % [str(pl["pos"]), Sim._area_at(pl["pos"])])
 
@@ -210,11 +215,22 @@ func _ready() -> void:
 	_ck("玩家不入派系/盟约", not in_faction and not in_pact)
 
 	# ── 13) 对抗审查回归：goto_tick 后玩家健在（#1，放最后——会重置世界）──
-	var inv_before := int(pl["inventory"].get("gift", 0))
-	Sim.goto_tick(100)
+	# 前 12 节包含测试专用的直接关系/位置注入，故不能拿那段非玩家输入假装可回放。
+	# 这里另开一个只经 public PlayerTraceV1 边界的最小局，验证诚实 scrub。
+	Sim.start_new(7)
+	Sim.add_player()
+	Sim.player_move(Vector2i.RIGHT)
+	_tickn(5)
+	var scrub_ok := Sim.goto_tick(100)
 	var pl2: Dictionary = Sim.get_agent("player")
-	_ck("scrub 后玩家健在", not pl2.is_empty() and int(pl2["inventory"].get("gift", 0)) == inv_before,
-		"gift=%d(应%d)" % [int(pl2.get("inventory", {}).get("gift", -1)), inv_before])
+	var scrub_witness := {"pos": pl2.get("pos"), "inventory": pl2.get("inventory", {}).duplicate(true),
+		"event_digest": Sim.event_digest, "trace": Sim.get_player_trace()}
+	var scrub_repeat_ok := Sim.goto_tick(100)
+	var pl3: Dictionary = Sim.get_agent("player")
+	var scrub_repeat := {"pos": pl3.get("pos"), "inventory": pl3.get("inventory", {}).duplicate(true),
+		"event_digest": Sim.event_digest, "trace": Sim.get_player_trace()}
+	_ck("scrub 后玩家历史由 PlayerTraceV1 精确重演", scrub_ok and scrub_repeat_ok and not pl3.is_empty() and scrub_repeat == scrub_witness,
+		"gift=%d trace=%d" % [int(pl3.get("inventory", {}).get("gift", -1)), int(Sim.player_trace_status()["entries"])])
 
 	# ── 14) NPC 主动找玩家：跨种子【分布】门（取代原第 7 节的单样本首达断言）──────────
 	# 意图一字未改：一个【什么都不做】的玩家不该被小镇社交无视。变的是怎么问这句话。
@@ -259,8 +275,25 @@ func _ready() -> void:
 		agency_per_seed.append(n)
 		if n > 0:
 			agency_seeds_hit += 1
+	# ★ 余量现算现打印（2026-08-02 Y2）。原来这里是 "实测地板 101" —— 一个写死在格式串里的字面量，
+	#   S2（编号 73 §一·4-N1）把它更正成 81，X3（编号 94 §四·3④）量到 85：**同一个字面量的第三代**。
+	#   S2 在 11 条臂上量出的统一结论是：**每次重算并打印的臂至今全准，打印冻结字面量的两族全部过期。**
+	#   ⇒ 这一行从此不写任何历史数，只印**这一跑**的余量与逐 seed 极值（极值带并列个数：
+	#   `0..16` 与 `0×8..16` 在"这道门离红有多远"上完全是两回事，docs/41 §4）。
+	var _amin: int = agency_per_seed.min() if not agency_per_seed.is_empty() else 0
+	var _amax: int = agency_per_seed.max() if not agency_per_seed.is_empty() else 0
+	var _nmin := 0
+	var _nmax := 0
+	for _v in agency_per_seed:
+		if int(_v) == _amin:
+			_nmin += 1
+		if int(_v) == _amax:
+			_nmax += 1
+	var _margin := (float(agency_total) / float(AGENCY_MIN_TOTAL)) if AGENCY_MIN_TOTAL > 0 else 0.0
 	_ck("挂机社交·合计接触量", agency_total >= AGENCY_MIN_TOTAL,
-		"%d 次 / %d seed × %d 天 (门 %d；实测地板 101)" % [agency_total, AGENCY_SEEDS.size(), AGENCY_DAYS, AGENCY_MIN_TOTAL])
+		"%d 次 / %d seed × %d 天 (门 %d；本跑余量 %.2f× · 逐 seed %d×%d..%d×%d)" % [
+			agency_total, AGENCY_SEEDS.size(), AGENCY_DAYS, AGENCY_MIN_TOTAL,
+			_margin, _amin, _nmin, _amax, _nmax])
 	_ck("挂机社交·没有被无视的 seed", agency_seeds_hit >= AGENCY_MIN_SEEDS,
 		"%d/%d seed 有人主动搭话 (门 %d) 各 seed=%s" % [agency_seeds_hit, AGENCY_SEEDS.size(), AGENCY_MIN_SEEDS, str(agency_per_seed)])
 	_ck("挂机社交·搭话者不止一人", agency_actors.size() >= AGENCY_MIN_ACTORS,

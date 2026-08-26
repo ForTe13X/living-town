@@ -1,0 +1,17 @@
+lint_links: OK — 121 markdown files, all relative links resolve and all docs/NN citations exist (102 numbered docs)
+  `docs/NN@branch` 逃生门 5 条不同引用 / 29 处（**只打印不判红**，理由见本文件抬头）：
+    docs/26@phase-d-contract-hardening  ×3  —— 在该分支上 ✅
+    docs/27@exile-hardening  ×10  —— 在该分支上 ✅
+    docs/45@claude/objective-lumiere-e6f125  ×3  —— **不在该分支上**，但 HEAD 上有 docs/45-* ⇒ 引用能到达，分支名已经不对了
+    docs/52@worktree-agent-a0c76a3f96ae5dbcf  ×11  —— **分支在、文档不在** ⇒ 这条引用今天指向一个不存在的文件
+    docs/54@worktree-agent-a31b222a4dfd444a7  ×2  —— 在该分支上 ✅（**且已并进 HEAD** ⇒ `@worktree-agent-a31b222a4dfd444a7` 可以去掉了）
+  另有 7 条 / 19 处是【正文里的省略写法】（`docs/NN@分支…`），**不是引用，不进上面的计数**：
+    docs/26@…  ×1
+    docs/27@…  ×1
+    docs/45@claude/…  ×4
+    docs/52@…  ×1
+    docs/52@worktree-…  ×3
+    docs/52@worktree-agent-…  ×3
+    docs/54@worktree-agent-…  ×6
+  ⚠ 其中 11 处指向【分支在、文档不在】的引用 —— 逃生门放行的正是这一类。 设 LT_LINKS_STRICT=1 可让它变红（默认不判：本地分支集因机器而异）。
+lint_rc=0

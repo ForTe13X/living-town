@@ -1,0 +1,13 @@
+=== DAYNIGHT GATE: PASS ===
+=== ROUNDTRIP GATE: PASS ===
+=== POND GATE PASS ✅ ===
+[INTSHELL] ✅ 室内外壳类型门 PASS（7 栋 / 4 类，异类最小 ΔE ≥ 8.0、同类最大 ΔE ≤ 4.0）
+[FURNROLE] ✅ 家具语义分化门 PASS（6 栋 / 5 类，异类最小 ΔE ≥ 12.0、同类最大 ΔE ≤ 8.0）
+[TREESTAND] ✅ 林相点阵门 PASS（P >= 8.00 且 地面色 <= 22%）
+[TREESTAND] ✅ 林相点阵门 PASS（P >= 8.00 且 地面色 <= 22%）
+=== SEASON GATE: PASS ===
+=== PRECIP GATE: PASS ===
+[CAFE2F] ✅ cafe 2F 像素门 PASS（非空 0.129≥0.060；与1F可分 0.230≥0.100；色数落差 18≥8 ⇒ 空2F 会判红=有牙）
+  PASS A1[map      ] 变化像素=0/366800 (0.000%) 首例=None 最大通道差=0
+=== FLOOR ROUNDTRIP GATE: PASS ===
+VISUAL_EXIT=0 (真机 exit, task output)

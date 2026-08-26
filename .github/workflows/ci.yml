@@ -2,7 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [master]
+    # integration/batons 是产品累计分支；它此前没有 push 触发器，导致 live product tip
+    # 可以长期保持 0 checks / 0 runs，而评审 PR 的 synthetic merge green 也无法替代它。
+    branches: [master, integration/batons]
   pull_request:
 
 # Cancel superseded runs on the same ref
@@ -13,13 +15,39 @@ concurrency:
 jobs:
   ci:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # 短期把 15→35：本地全量 CI ~17-26 分钟，15 分钟每次都在 story_test 处被平台取消
+    # （Codex 2026-08-06 §二实测两次 PR run 都 cancelled@15m，唯一红因是预算不是断言）。
+    # 提高只放宽上限、不弱化任何门，反而让更多门跑到完成 ⇒ 解锁候选 PR 的 exact-head 收据。
+    # 正式方案是拆成并行 required jobs（见 docs/113 §四·2），这只是过渡。
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
+
+      # push 事件的 GITHUB_SHA 是刚推到该 ref 的 tip；pull_request 则是 GitHub 的 merge ref。
+      # checkout 默认取事件 ref/SHA。把两者逐位对账并打印单行回执，避免以后把旧 base 的
+      # synthetic-merge green 误写成当前 integration/batons exact-tip green。
+      - name: Verify checked-out event SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual_sha="$(git rev-parse HEAD)"
+          if [[ "$actual_sha" != "$GITHUB_SHA" ]]; then
+            echo "checkout SHA mismatch: actual=$actual_sha event=$GITHUB_SHA" >&2
+            exit 1
+          fi
+          printf 'CI_SOURCE event=%s ref=%s sha=%s\n' \
+            "$GITHUB_EVENT_NAME" "$GITHUB_REF" "$actual_sha"
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
+      # tools/ci.sh 第 2b 步（art gate）当场重建十张出货角色表再逐字节比对，重建管线依赖 Pillow。
+      # 不装它 ⇒ art_gate.py 直接退出、这道门在 GHA 上【每一个 PR 都红】而与改动无关 —— 正是
+      # tools/visual_gate.sh 抬头②说的"没有任何 commit 却会自己变色的门"。
+      # （G1 声明的越界：.github/ 不在本棒的所有权表里。回滚 = 删掉本步。）
+      - name: Install Pillow (art gate 的重建管线依赖)
+        run: python -m pip install --disable-pip-version-check "pillow>=10,<12"
 
       - name: Install Godot 4.6.2 (headless)
         run: |
@@ -39,3 +67,161 @@ jobs:
           GODOT: godot
           PYTHON: python3
         run: bash tools/ci.sh
+
+  visual_canary:
+    # This observation lane is deliberately separate from the required core
+    # job: the full visual collection must not consume the core 35-minute
+    # budget or reclassify the four intentionally stale product anchors.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify checked-out event SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual_sha="$(git rev-parse HEAD)"
+          if [[ "$actual_sha" != "$GITHUB_SHA" ]]; then
+            echo "checkout SHA mismatch: actual=$actual_sha event=$GITHUB_SHA" >&2
+            exit 1
+          fi
+          printf 'VISUAL_SOURCE event=%s ref=%s sha=%s\n' \
+            "$GITHUB_EVENT_NAME" "$GITHUB_REF" "$actual_sha"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Godot 4.6.2 and hosted visual runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          GV=4.6.2-stable
+          curl -fLo godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GV}/Godot_v${GV}_linux.x86_64.zip"
+          unzip -q godot.zip
+          sudo mv "Godot_v${GV}_linux.x86_64" /usr/local/bin/godot
+          sudo chmod +x /usr/local/bin/godot
+          python -m pip install --disable-pip-version-check "pillow>=10,<12"
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libgl1 libglx-mesa0 libgl1-mesa-dri mesa-utils xauth xvfb
+          {
+            printf 'RUNNER_IMAGE os=%s version=%s arch=%s\n' \
+              "${ImageOS:-unknown}" "${ImageVersion:-unknown}" "${RUNNER_ARCH:-unknown}"
+            printf 'GODOT_ARCHIVE sha256=%s\n' "$(sha256sum godot.zip | awk '{print $1}')"
+            printf 'GODOT_BINARY sha256=%s version=%s\n' \
+              "$(sha256sum /usr/local/bin/godot | awk '{print $1}')" "$(godot --version)"
+            python -c \
+              'import PIL,platform; print(f"PYTHON version={platform.python_version()} pillow={PIL.__version__}")'
+            dpkg-query -W -f='VISUAL_PACKAGE ${Package}=${Version}\n' \
+              libgl1 libglx-mesa0 libgl1-mesa-dri mesa-utils xauth xvfb
+            LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a -s '-screen 0 1280x768x24' glxinfo -B
+          } | tee "$RUNNER_TEMP/visual-runtime.txt"
+
+      - name: Import project (headless)
+        run: godot --headless --path game --import || true
+
+      - name: Observe native visual gate
+        id: visual
+        shell: bash
+        env:
+          GODOT: godot
+          PYTHON: python3
+          # First hosted observation: once capture starts, assertions remain
+          # hard; a renderer-start failure retains the explicit rc=77 signal.
+          LT_VISUAL: auto
+          LT_VISUAL_RUNNER: native
+          LT_VISUAL_OUT: ${{ runner.temp }}/visual-gate
+        run: |
+          set -uo pipefail
+          set +e
+          bash tools/visual_gate.sh 2>&1 | tee "$RUNNER_TEMP/visual.log"
+          rc=${PIPESTATUS[0]}
+          set -e
+          png_count=0
+          if [[ -d "$LT_VISUAL_OUT" ]]; then
+            png_count="$(find "$LT_VISUAL_OUT" -type f -name '*.png' | wc -l)"
+            find "$LT_VISUAL_OUT" -type f -print0 \
+              | sort -z \
+              | xargs -0 -r sha256sum >"$RUNNER_TEMP/visual-artifacts.sha256"
+          else
+            : >"$RUNNER_TEMP/visual-artifacts.sha256"
+          fi
+          runtime_errors="$(grep -Eic \
+            'SCRIPT ERROR|signal 11|segmentation fault|fatal error|out of bounds' \
+            "$RUNNER_TEMP/visual.log" || true)"
+          case "$rc" in
+            0)
+              if [[ "$png_count" -gt 0 && "$runtime_errors" -eq 0 ]]; then
+                verdict=pass
+              else
+                verdict=candidate_fail
+              fi
+              ;;
+            77) verdict=skip ;;
+            *) verdict=candidate_fail ;;
+          esac
+          printf 'VISUAL_CANARY verdict=%s rc=%s png_count=%s runtime_errors=%s\n' \
+            "$verdict" "$rc" "$png_count" "$runtime_errors" \
+            | tee "$RUNNER_TEMP/visual-verdict.txt"
+          printf 'rc=%s\nverdict=%s\npng_count=%s\nruntime_errors=%s\n' \
+            "$rc" "$verdict" "$png_count" "$runtime_errors" >>"$GITHUB_OUTPUT"
+          {
+            echo '### Hosted visual canary'
+            echo
+            echo "- verdict: $verdict"
+            echo "- visual gate rc: $rc"
+            echo "- PNG artifacts: $png_count"
+            echo "- undeclared runtime errors: $runtime_errors"
+          } >>"$GITHUB_STEP_SUMMARY"
+          # Observation only: infrastructure/setup/upload failures still make
+          # this job red, while the first product verdict is preserved in the
+          # summary and artifact instead of changing merge policy mid-batch.
+          exit 0
+
+      - name: Exercise same-runtime visual negative tooth
+        shell: bash
+        env:
+          GODOT: godot
+          PYTHON: python3
+          LT_VISUAL_NEG_SOURCE: ${{ github.workspace }}/game
+          LT_VISUAL_NEG_WORK: ${{ runner.temp }}/visual-negative-game
+          LT_VISUAL_NEG_OUT: ${{ runner.temp }}/visual-negative-evidence
+        run: |
+          set -euo pipefail
+          if [[ "${{ steps.visual.outputs.verdict }}" != pass ]]; then
+            mkdir -p "$LT_VISUAL_NEG_OUT"
+            printf 'VISUAL_NEGATIVE verdict=not_run positive_verdict=%s\n' \
+              "${{ steps.visual.outputs.verdict }}" \
+              | tee "$LT_VISUAL_NEG_OUT/negative-verdict.txt"
+            exit 0
+          fi
+          bash tools/visual_canary_negative.sh
+          # The injector records a before/after source hash; this live Git tooth
+          # also proves that the checked-out product tree was never the target.
+          git diff --exit-code -- game
+          {
+            echo
+            echo '### Hosted visual negative tooth'
+            echo
+            echo '- expected injected defect: startup day/night modulation disabled'
+            echo '- expected detector shape: FAIL A1 + FAIL A2 only'
+            echo "- $(cat "$LT_VISUAL_NEG_OUT/negative-verdict.txt")"
+          } >>"$GITHUB_STEP_SUMMARY"
+
+      - name: Upload hosted visual canary evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: hosted-visual-canary-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/visual-runtime.txt
+            ${{ runner.temp }}/visual.log
+            ${{ runner.temp }}/visual-verdict.txt
+            ${{ runner.temp }}/visual-artifacts.sha256
+            ${{ runner.temp }}/visual-gate
+            ${{ runner.temp }}/visual-negative-evidence
+          if-no-files-found: error
+          retention-days: 14

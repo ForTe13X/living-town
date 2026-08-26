@@ -1,0 +1,202 @@
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: GDExtension dynamic library not found: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: open_library (core/extension/gdextension.cpp:740)
+ERROR: Error loading extension: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: load_extensions (core/extension/gdextension_manager.cpp:329)
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+小镇故事验收：5 种弧 · seeds=[1, 2, 3, 4, 5, 6] · 40 天
+  ✅ F-trim fixture 有效性：40 条弧全部收场 ⇒ 裁掉 8 段（必须 >0，否则本 fixture 自己是空门）
+  ✅ F-trim 终身收场 40 == 开过 40（负对照：closed_count() 改从 `arcs` 数则为 32 ⇒ 必红）
+  ✅ F-trim 留存 32 = 终身 40 − 裁掉 8，且严格小于终身（面板翻得到的比讲过的少）
+  ✅ F-trim 账本自洽：进行中 0 + 终身收场 40 == 开过 40（这次裁掉的是 8 段，不是 0）
+
+[F] 合成对照 —— 每条都有唯一正确答案
+  ✅ F1 只喂 200 条 greet → 故事 0 条（必须 0）· chain=1326725570（必须非 0，证明它确实折了这 200 条）
+  ✅ F2 手写因果链 → 1 条 grudge/mended/幕=[heard,rebuff]/旁支=3/第100→300 tick（实得 1 条 · mended · 幕["heard", "rebuff"] · 旁支3 · 100→300）
+  ✅ F2 成文无占位符残留且讲出了结局：第1天 阿丽 对 本 积起了怨气 第1天 阿丽 当面把话挑明，本 听了进去 第1天 本 来道了歉，阿丽 一时还没法原谅 这中间 阿丽 在旁人面前说了 3 次 本 的不是 第2天 · 本 低了头，阿丽 原谅了 —— 这段梁子解开了
+  ✅ F2 逐条增量折 ≡ 全量折
+  ✅ F3 无下文 → cold 收场于 tick 3700（最后一幕+cold=3600，不随发现时刻 7300 漂）；实得 1 条 · cold · t1=3700
+  ✅ F3′ cold 之内（3599 tick）不许判死：仍在进行中 = true
+  ✅ F4 两条约定分别收成 [broken, kept]（实得 ["broken", "kept"]）
+  ✅ F5 泄密支与散伙支都认得（含反序的 dissolved）：实得 ["secret/leaked/1幕", "pact/dissolved/1幕"]
+  ✅ F6 一条 produce 两个目击者 → 两条手艺弧，分别以扑空/结盟收场：实得 ["craft/ben>aria/failed/1幕/旁1", "craft/coco>aria/allied/0幕/旁0", "pact/aria>coco//0幕/旁0"]
+  ✅ F6′ produce 无目击者 → 手艺弧 0 条（必须 0；这就是 craft_credit 关掉后的样子）
+  ✅ F7 玩家说和：1 条 grudge/mediated/幕=[tried,mediated,sided]（实得 1 条 · mediated · ["tried", "mediated", "sided"]）
+  ✅ F7 成文里玩家出场了：第1天 阿丽 对 本 积起了怨气 第1天 你想替 阿丽 和 本 说和，话没能递进去 第1天 在你的说和下，阿丽 与 本 当面把话说开了 第1天 阿丽 跟旁人对 本 的看法统一了口径 第2天 · 在你的说和下，本 低了头，阿丽 也放下了 —— 这段梁子解开了
+  ✅ F8 泄密给第三方 → `slipped` 结局**够不着**（心事弧仍开着 = true）；见 docs/90 的已知边界
+  ✅ F9a 未动手脚的弧 → 审计 0 违规（不许假红）
+  ✅ F9b 幕指向一条不存在的 event → 审计必红
+  ✅ F9c 把弧系到第三个人身上（引用还都在）→ 审计必红
+  ✅ F9d 旁支虚报次数（引用只有 3 条）→ 审计必红
+  ✅ F9e 幕上印的天数与它引用的 event 的 tick 对不上 → 审计必红
+
+[PL] 措辞锁 —— 往「说得对」那一侧挪的一步（判据的真值取自事件自己的 type）
+  ❌ PL1 未动手脚的文法表 → 措辞锁 0 违规（不许假红）；实得 2 条：["promise/end:kept：措辞「泡了汤」宣称 accepted=false，而这条槽位的匹配器筛的是 accepted=true", "promise/end:broken：措辞「如约」宣称 accepted=true，而这条槽位的匹配器筛的是 accepted=false"]
+     文案槽位 35 个 · 已上【措辞】锁 35 个 · 没有任何标志性短语的 0 个：[]
+     其中带【极性】锁的 14 个（accepted / note 两维；仿真侧没有字段可分的槽位盖不住，见 docs/105）
+  ✅ PL2 W3 的 M2（梁子的开头改说盟约的话，出处仍是 conflict）→ 必红：["措辞「结成了互助盟约」只有 [\"pact\"] 类事件能说，而这里依据的是 `conflict`"]
+  ✅ PL2′ 反向对调（盟约的开头改说梁子的话，出处仍是 pact）→ 必红：["措辞「积起了怨气」只有 [\"conflict\"] 类事件能说，而这里依据的是 `pact`"]
+  ✅ PL2″ 阴性对照：文案配回自己的类型 → 0 违规（证明 PL2 的红不是「逢查必红」）
+  ✅ PL2‴-0 前提复核：赴约↔爽约对调在【措辞锁】上仍然 0 违规（Y3 的 19 条漏网之一，本条一红就说明前提变了）
+  ❌ PL2‴ 赴约↔爽约对调 → 极性锁必红（双向）：[] ／ []
+  ❌ PL2⁗ 阴性对照：文案配回自己的匹配器 → 极性锁 0 违规（证明 PL2‴ 的红不是「逢查必红」）
+     两条文案对调的**全变异空间**：592 个变异体，三道锁合计认出 586 个（99.0%）
+       · 跨类型（两槽位 type 集合不同）：573/573
+       · 同类型（两槽位 type 集合相同）：13/19   ← Y3 这一栏是 0/19
+       · 各锁单独的检出（可重叠）：措辞 573 · 极性 344 · 复述 35
+     同类型里被抓住的 13 条，逐条列：
+       ✔ grudge/beat:mediated ↔ grudge/beat:heard  ←极性
+       ✔ grudge/beat:mediated ↔ grudge/beat:denied  ←极性
+       ✔ grudge/beat:heard ↔ grudge/beat:denied  ←极性
+       ✔ grudge/beat:rally ↔ grudge/beat:alone  ←极性
+       ✔ grudge/beat:rebuff ↔ grudge/end:mediated  ←极性
+       ✔ grudge/beat:rebuff ↔ grudge/end:mended  ←极性
+       ✔ grudge/end:mediated ↔ grudge/end:mended  ←极性
+       ✔ promise/end:kept ↔ pact/beat:met  ←极性
+       ✔ promise/end:broken ↔ pact/beat:met  ←极性
+       ✔ secret/open ↔ secret/beat:more  ←复述
+       ✔ pact/open ↔ pact/end:dissolved  ←极性
+       ✔ pact/end:dissolved ↔ craft/end:allied  ←极性
+       ✔ craft/open ↔ craft/beat:again  ←复述
+     漏网 6 条（= does_not_detect 那一栏，跑出来的不是想出来的）：
+       · grudge/beat:empty ↔ craft/end:failed
+       · grudge/aside ↔ craft/aside
+       · promise/end:kept ↔ promise/end:broken
+       · secret/beat:aid ↔ pact/beat:aid
+       · secret/beat:aid ↔ craft/beat:handed
+       · pact/beat:aid ↔ craft/beat:handed
+  ✅ PL3 变异空间非空且检出 > 0（比率 586/592，逐次重算，不冻结字面量）
+  ✅ PL3′ 同类型那一栏的检出 > 0（13/19；Y3 这一栏是 0/19，本条守的正是那一段）
+  ✅ PL4 安全向：31 条短语无一出现在【不允许】的类型的独立渲染里（编年史 24 类 + Sim._verb）
+     佐证向：17/31 条短语被独立渲染逐字佐证（对不上不算错——用词本来可以不同，见 docs/98）
+  ✅ PL5 安全向：12 条极性短语无一出现在【相反极性】的独立渲染里（编年史分支 + goals.json 的 hint）
+     PL5 佐证向：7/12 条极性短语被独立渲染**逐字**佐证：["不认", "施压", "没人应和", "低了头", "如约", "结成了互助盟约", "盟约散了"]
+        （对不上不算错——两位作者用词本来可以不同；安全向那条断言才是牙齿）
+
+  ✅ seed 1 · A0≡A1 零扰动（Inv 1494156543/1494156543 · event_digest 8104691641259946542/8104691641259946542 · 事件 2177/2177）
+  ❌ seed 1 · 可追溯：83 条弧共 296 行叙述逐行回 event_log 核出处 —— 违规 19 条：["弧#82 的 end 行引用 event #1626：措辞「泡了汤」只有 accepted=false 的事件能说，而这里依据的那条是 accepted=true", "弧#85 的 end 行引用 event #1752：措辞「泡了汤」只有 accepted=false 的事件能说，而这里依据的那条是 accepted=true", "弧#89 的 end 行引用 event #1817：措辞「泡了汤」只有 accepted=false 的事件能说，而这里依据的那条是 accepted=true"]
+  ✅ seed 1 · A1≡A2 增量折 ≡ 全量折（digest 3329036997/3329036997 · chain 2852681237/2852681237 · 弧 83/83）
+  ✅ seed 1 · A1≡A3 回放安全 @T=9600（digest 3329036997/3329036997 · chain 2852681237/2852681237）
+  ✅ seed 1 · A1≡A3 回放安全 @T/2=4800（digest 2522625881/2522625881 · chain 4102925902/4102925902）
+  ✅ seed 1 · 账本自洽：进行中 51 + 终身收场 65 == 开过 116 段（裁掉 33 段不影响这条）
+  ✅ seed 1 · grudge 开场数 61 == event_log 里的 conflict 事件数 61（1:1，没有被吞掉的开头）
+  ✅ seed 2 · A0≡A1 零扰动（Inv 523037207/523037207 · event_digest 1452683980052057796/1452683980052057796 · 事件 2183/2183）
+  ❌ seed 2 · 可追溯：90 条弧共 327 行叙述逐行回 event_log 核出处 —— 违规 21 条：["弧#60 的 end 行引用 event #1246：措辞「泡了汤」只有 accepted=false 的事件能说，而这里依据的那条是 accepted=true", "弧#61 的 end 行引用 event #1268：措辞「泡了汤」只有 accepted=false 的事件能说，而这里依据的那条是 accepted=true", "弧#62 的 end 行引用 event #1299：措辞「泡了汤」只有 accepted=false 的事件能说，而这里依据的那条是 accepted=true"]
+  ✅ seed 2 · A1≡A2 增量折 ≡ 全量折（digest 562706757/562706757 · chain 3918960669/3918960669 · 弧 90/90）
+  ✅ seed 2 · A1≡A3 回放安全 @T=9600（digest 562706757/562706757 · chain 3918960669/3918960669）
+  ✅ seed 2 · A1≡A3 回放安全 @T/2=4800（digest 1957766631/1957766631 · chain 3344687887/3344687887）
+  ✅ seed 2 · 账本自洽：进行中 58 + 终身收场 61 == 开过 119 段（裁掉 29 段不影响这条）
+  ✅ seed 2 · grudge 开场数 63 == event_log 里的 conflict 事件数 63（1:1，没有被吞掉的开头）
+  ✅ seed 3 · A0≡A1 零扰动（Inv 1956858697/1956858697 · event_digest 32361019166490577/32361019166490577 · 事件 2068/2068）
+  ❌ seed 3 · 可追溯：86 条弧共 285 行叙述逐行回 event_log 核出处 —— 违规 17 条：["弧#76 的 end 行引用 event #1427：措辞「泡了汤」只有 accepted=false 的事件能说，而这里依据的那条是 accepted=true", "弧#81 的 end 行引用 event #1598：措辞「泡了汤」只有 accepted=false 的事件能说，而这里依据的那条是 accepted=true", "弧#88 的 end 行引用 event #1652：措辞「泡了汤」只有 accepted=false 的事件能说，而这里依据的那条是 accepted=true"]
+  ✅ seed 3 · A1≡A2 增量折 ≡ 全量折（digest 276110156/276110156 · chain 1151099415/1151099415 · 弧 86/86）
+  ✅ seed 3 · A1≡A3 回放安全 @T=9600（digest 276110156/276110156 · chain 1151099415/1151099415）
+  ✅ seed 3 · A1≡A3 回放安全 @T/2=4800（digest 1118795967/1118795967 · chain 2155624796/2155624796）
+  ✅ seed 3 · 账本自洽：进行中 54 + 终身收场 65 == 开过 119 段（裁掉 33 段不影响这条）
+  ✅ seed 3 · grudge 开场数 63 == event_log 里的 conflict 事件数 63（1:1，没有被吞掉的开头）
+  ✅ seed 4 · A0≡A1 零扰动（Inv 4169371566/4169371566 · event_digest 8933395982860315169/8933395982860315169 · 事件 2267/2267）
+  ❌ seed 4 · 可追溯：98 条弧共 379 行叙述逐行回 event_log 核出处 —— 违规 1 条：["弧#125 的 end 行引用 event #2060：措辞「泡了汤」只有 accepted=false 的事件能说，而这里依据的那条是 accepted=true"]
+  ✅ seed 4 · A1≡A2 增量折 ≡ 全量折（digest 1231562085/1231562085 · chain 148357962/148357962 · 弧 98/98）
+  ✅ seed 4 · A1≡A3 回放安全 @T=9600（digest 1231562085/1231562085 · chain 148357962/148357962）
+  ✅ seed 4 · A1≡A3 回放安全 @T/2=4800（digest 1121694044/1121694044 · chain 1072233049/1072233049）
+  ✅ seed 4 · 账本自洽：进行中 66 + 终身收场 73 == 开过 139 段（裁掉 41 段不影响这条）
+  ✅ seed 4 · grudge 开场数 102 == event_log 里的 conflict 事件数 102（1:1，没有被吞掉的开头）
+  ✅ seed 5 · A0≡A1 零扰动（Inv 2696683636/2696683636 · event_digest 5626416421428260413/5626416421428260413 · 事件 2166/2166）
+  ❌ seed 5 · 可追溯：80 条弧共 247 行叙述逐行回 event_log 核出处 —— 违规 30 条：["弧#107 的 end 行引用 event #1540：措辞「泡了汤」只有 accepted=false 的事件能说，而这里依据的那条是 accepted=true", "弧#108 的 end 行引用 event #1556：措辞「泡了汤」只有 accepted=false 的事件能说，而这里依据的那条是 accepted=true", "弧#110 的 end 行引用 event #1578：措辞「泡了汤」只有 accepted=false 的事件能说，而这里依据的那条是 accepted=true"]
+  ✅ seed 5 · A1≡A2 增量折 ≡ 全量折（digest 3380714313/3380714313 · chain 971001721/971001721 · 弧 80/80）
+  ✅ seed 5 · A1≡A3 回放安全 @T=9600（digest 3380714313/3380714313 · chain 971001721/971001721）
+  ✅ seed 5 · A1≡A3 回放安全 @T/2=4800（digest 3814211023/3814211023 · chain 1601536375/1601536375）
+  ✅ seed 5 · 账本自洽：进行中 48 + 终身收场 107 == 开过 155 段（裁掉 75 段不影响这条）
+  ✅ seed 5 · grudge 开场数 72 == event_log 里的 conflict 事件数 72（1:1，没有被吞掉的开头）
+  ✅ seed 6 · A0≡A1 零扰动（Inv 71969642/71969642 · event_digest 6594134985088630714/6594134985088630714 · 事件 2131/2131）
+  ❌ seed 6 · 可追溯：82 条弧共 272 行叙述逐行回 event_log 核出处 —— 违规 17 条：["弧#90 的 end 行引用 event #1485：措辞「泡了汤」只有 accepted=false 的事件能说，而这里依据的那条是 accepted=true", "弧#91 的 end 行引用 event #1554：措辞「泡了汤」只有 accepted=false 的事件能说，而这里依据的那条是 accepted=true", "弧#93 的 end 行引用 event #1573：措辞「泡了汤」只有 accepted=false 的事件能说，而这里依据的那条是 accepted=true"]
+  ✅ seed 6 · A1≡A2 增量折 ≡ 全量折（digest 1862715523/1862715523 · chain 2016293721/2016293721 · 弧 82/82）
+  ✅ seed 6 · A1≡A3 回放安全 @T=9600（digest 1862715523/1862715523 · chain 2016293721/2016293721）
+  ✅ seed 6 · A1≡A3 回放安全 @T/2=4800（digest 990800449/990800449 · chain 2047649982/2047649982）
+  ✅ seed 6 · 账本自洽：进行中 50 + 终身收场 75 == 开过 125 段（裁掉 43 段不影响这条）
+  ✅ seed 6 · grudge 开场数 73 == event_log 里的 conflict 事件数 73（1:1，没有被吞掉的开头）
+
+逐 seed 故事矩阵（40 天）· 每格 = 进行中/已收场（**终身口径**，含被裁掉的）
+seed  grudge   promise  secret   pact     craft     合计(开/收) 裁剪
+   1  18/43    0/19     1/0      1/0      31/3      51/65      33
+   2  23/40    0/21     2/0      0/0      33/0      58/61      29
+   3  19/44    0/17     2/0      0/0      33/4      54/65      33
+   4  32/70    0/1      0/0      0/0      34/2      66/73      41
+   5  22/50    0/54     4/0      1/1      21/2      48/107      75
+   6  21/52    0/17     2/0      1/0      26/6      50/75      43
+
+结局分布（6 seed 合计）：
+  grudge   进行中 135   cold=168  mended=131
+  promise  进行中 0     kept=129
+  secret   进行中 11    （无收场）
+  pact     进行中 3     dissolved=1
+  craft    进行中 178   allied=2  failed=15
+
+覆盖率（真实事件 → 被系进故事的那一份；分母是 event_log 里数出来的）：
+  和解  apologize+ 136 次 → 讲成 mended 131 段（96.3%）
+  约定  invite+ 129 / invite- 0 · meet 129 次 → 讲成 kept 129 + broken 0 段（100.0%）
+  心事  confide 11 次 · betray 0 · leak 0 → 讲成 leaked 0 段
+  梁子  conflict 434 次（= grudge 弧的开头数，必然 1:1）
+
+[W1] 回放安全的真实适用范围（8 天 · 非 logic 后端 / 玩家在场 / 前向拖动）
+  [W1-a 非logic后端(random)] seed=1
+     Q1 折叠纯函数（同一份日志）      ✅
+     Q2 重演出同一份日志              ❌   事件 375→430 · event_digest 2167351341660537111→5187567481535372672
+     R  重演后整份重算 ≡ live         ❌   开过 26/22 段 · 收场 21/0 段 · digest 382717643/1918096873
+     F  重演后顺游标续折 ≡ 整份重算   ✅   digest 1918096873/1918096873 · 锚触发重折 1 次（live 侧 0 次，必须 0）
+  ✅ W1-a 非logic后端(random) seed 1 · Q1 折叠是纯函数（**这条与后端/玩家无关**，它是 Story.gd 的红线本身）
+  ✅ W1-a 非logic后端(random) seed 1 · F 前向拖动后顺游标续折 ≡ 整份重算（`_anchor` 守着；负对照：删掉 `_anchor` 这条必红）
+  ✅ W1-a 非logic后端(random) seed 1 · 锚在 live 逐 tick 路上**一次都不触发**（实得 0 次）
+  [W1-b 玩家在场(logic)] seed=1  玩家动作 32 次
+     Q1 折叠纯函数（同一份日志）      ✅
+     Q2 重演出同一份日志              ❌   事件 494→430 · event_digest 1925771805562836797→5187567481535372672
+     R  重演后整份重算 ≡ live         ❌   开过 27/22 段 · 收场 0/0 段 · digest 4041157190/1918096873
+     F  重演后顺游标续折 ≡ 整份重算   ✅   digest 1918096873/1918096873 · 锚触发重折 1 次（live 侧 0 次，必须 0）
+  ✅ W1-b 玩家在场(logic) seed 1 · Q1 折叠是纯函数（**这条与后端/玩家无关**，它是 Story.gd 的红线本身）
+  ✅ W1-b 玩家在场(logic) seed 1 · F 前向拖动后顺游标续折 ≡ 整份重算（`_anchor` 守着；负对照：删掉 `_anchor` 这条必红）
+  ✅ W1-b 玩家在场(logic) seed 1 · 锚在 live 逐 tick 路上**一次都不触发**（实得 0 次）
+  [W1-0 对照:纯logic无玩家] seed=1
+     Q1 折叠纯函数（同一份日志）      ✅
+     Q2 重演出同一份日志              ✅   事件 430→430 · event_digest 5187567481535372672→5187567481535372672
+     R  重演后整份重算 ≡ live         ✅   开过 22/22 段 · 收场 0/0 段 · digest 1918096873/1918096873
+     F  重演后顺游标续折 ≡ 整份重算   ✅   digest 1918096873/1918096873 · 锚触发重折 0 次（live 侧 0 次，必须 0）
+  ✅ W1-0 对照:纯logic无玩家 seed 1 · Q1 折叠是纯函数（**这条与后端/玩家无关**，它是 Story.gd 的红线本身）
+  ✅ W1-0 对照:纯logic无玩家 seed 1 · F 前向拖动后顺游标续折 ≡ 整份重算（`_anchor` 守着；负对照：删掉 `_anchor` 这条必红）
+  ✅ W1-0 对照:纯logic无玩家 seed 1 · 锚在 live 逐 tick 路上**一次都不触发**（实得 0 次）
+  ✅ W1-0 对照:纯logic无玩家 seed 1 · Q2 ✅ ⇒ R 必须 ✅（同一份日志 + 纯折叠 ⇒ 同一批故事）
+  ✅ W1-0 seed 1 · 对照臂必须 Q2 ✅（logic 地板 + 无玩家 ⇒ 重演逐字节复现 event_log）
+  [W1-a 非logic后端(random)] seed=2
+     Q1 折叠纯函数（同一份日志）      ✅
+     Q2 重演出同一份日志              ❌   事件 346→436 · event_digest 6782138076980687208→3597781260996913430
+     R  重演后整份重算 ≡ live         ❌   开过 28/16 段 · 收场 14/1 段 · digest 3087628506/3961238463
+     F  重演后顺游标续折 ≡ 整份重算   ✅   digest 3961238463/3961238463 · 锚触发重折 1 次（live 侧 0 次，必须 0）
+  ✅ W1-a 非logic后端(random) seed 2 · Q1 折叠是纯函数（**这条与后端/玩家无关**，它是 Story.gd 的红线本身）
+  ✅ W1-a 非logic后端(random) seed 2 · F 前向拖动后顺游标续折 ≡ 整份重算（`_anchor` 守着；负对照：删掉 `_anchor` 这条必红）
+  ✅ W1-a 非logic后端(random) seed 2 · 锚在 live 逐 tick 路上**一次都不触发**（实得 0 次）
+  [W1-b 玩家在场(logic)] seed=2  玩家动作 32 次
+     Q1 折叠纯函数（同一份日志）      ✅
+     Q2 重演出同一份日志              ❌   事件 457→436 · event_digest 7832676405516721919→3597781260996913430
+     R  重演后整份重算 ≡ live         ❌   开过 22/16 段 · 收场 1/1 段 · digest 186308512/3961238463
+     F  重演后顺游标续折 ≡ 整份重算   ✅   digest 3961238463/3961238463 · 锚触发重折 1 次（live 侧 0 次，必须 0）
+  ✅ W1-b 玩家在场(logic) seed 2 · Q1 折叠是纯函数（**这条与后端/玩家无关**，它是 Story.gd 的红线本身）
+  ✅ W1-b 玩家在场(logic) seed 2 · F 前向拖动后顺游标续折 ≡ 整份重算（`_anchor` 守着；负对照：删掉 `_anchor` 这条必红）
+  ✅ W1-b 玩家在场(logic) seed 2 · 锚在 live 逐 tick 路上**一次都不触发**（实得 0 次）
+  [W1-0 对照:纯logic无玩家] seed=2
+     Q1 折叠纯函数（同一份日志）      ✅
+     Q2 重演出同一份日志              ✅   事件 436→436 · event_digest 3597781260996913430→3597781260996913430
+     R  重演后整份重算 ≡ live         ✅   开过 16/16 段 · 收场 1/1 段 · digest 3961238463/3961238463
+     F  重演后顺游标续折 ≡ 整份重算   ✅   digest 3961238463/3961238463 · 锚触发重折 0 次（live 侧 0 次，必须 0）
+  ✅ W1-0 对照:纯logic无玩家 seed 2 · Q1 折叠是纯函数（**这条与后端/玩家无关**，它是 Story.gd 的红线本身）
+  ✅ W1-0 对照:纯logic无玩家 seed 2 · F 前向拖动后顺游标续折 ≡ 整份重算（`_anchor` 守着；负对照：删掉 `_anchor` 这条必红）
+  ✅ W1-0 对照:纯logic无玩家 seed 2 · 锚在 live 逐 tick 路上**一次都不触发**（实得 0 次）
+  ✅ W1-0 对照:纯logic无玩家 seed 2 · Q2 ✅ ⇒ R 必须 ✅（同一份日志 + 纯折叠 ⇒ 同一批故事）
+  ✅ W1-0 seed 2 · 对照臂必须 Q2 ✅（logic 地板 + 无玩家 ⇒ 重演逐字节复现 event_log）
+  ✅ W1 判别力：4/6 条臂的重演给出了**另一份** event_log —— 若这条红了，说明重演已经能忠实重放模型决策/玩家历史（好消息），请回来删掉本断言并把 README/docs/46 的适用范围放宽
+
+❌ 小镇故事验收 9 条断言失败
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)

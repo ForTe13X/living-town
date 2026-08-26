@@ -1,0 +1,895 @@
+### 0. 版权红线：git 里不得有模型权重 / 预编译二进制
+[红线#4] 入库文件 2360 个，读到头字节 2360 个；A 名字臂命中 0，B 内容臂命中 0
+[红线#4] ✅ 无入库权重/二进制
+  ✅ no tracked weights/binaries
+  ✅ 红线#4 负对照（该抓的三例都抓住了）
+  ⏱  上一步 0. 用时 2s
+### 1. data lint (json parse + foreign keys + 必需数据文件在位)
+lint_data: OK �� 24 json parsed, 16 required files present, FKs resolve (12 agents, 24 personas, 8 objects)
+  ✅ lint_data
+  ⏱  上一步 1. 用时 0s
+### 1b. map audit (town-world 导航自洽：typed-layers 一致 + 全可达 + 每家具有交互格 + ≥2 路线)
+audit_map: 64x48 walkable=2653 blockers=403 objects=8 worksites=8 agents=12 festival-objects=1
+AUDIT PASS: typed-layers һ�� + ȫ�ɴ� + ÿ�Ҿ�/��λ�н����� + ��λ���������ȷ + ��λ/��λ/��������պ� + ��2 ·�� + ���ն���Ϸ�
+  ✅ audit_map
+  ⏱  上一步 1b. 用时 0s
+### 2. link lint (markdown relative links)
+lint_links: OK — 185 markdown files, all relative links resolve and all docs/NN citations exist (153 numbered docs)
+  `docs/NN@branch` 逃生门 6 条不同引用 / 43 处（**只打印不判红**，理由见本文件抬头）：
+    docs/107@codex/narrative  ×13  —— 在该分支上 ✅
+    docs/26@phase-d-contract-hardening  ×3  —— 在该分支上 ✅
+    docs/27@exile-hardening  ×10  —— 在该分支上 ✅
+    docs/45@claude/objective-lumiere-e6f125  ×3  —— **不在该分支上**，但 HEAD 上有 docs/45-* ⇒ 引用能到达，分支名已经不对了
+    docs/52@worktree-agent-a0c76a3f96ae5dbcf  ×12  —— **分支在、文档不在** ⇒ 这条引用今天指向一个不存在的文件
+    docs/54@worktree-agent-a31b222a4dfd444a7  ×2  —— 在该分支上 ✅（**且已并进 HEAD** ⇒ `@worktree-agent-a31b222a4dfd444a7` 可以去掉了）
+  另有 7 条 / 20 处是【正文里的省略写法】（`docs/NN@分支…`），**不是引用，不进上面的计数**：
+    docs/26@…  ×1
+    docs/27@…  ×1
+    docs/45@claude/…  ×4
+    docs/52@…  ×1
+    docs/52@worktree-…  ×4
+    docs/52@worktree-agent-…  ×3
+    docs/54@worktree-agent-…  ×6
+  ⚠ 其中 12 处指向【分支在、文档不在】的引用 —— 逃生门放行的正是这一类。 设 LT_LINKS_STRICT=1 可让它变红（默认不判：本地分支集因机器而异）。
+  ✅ lint_links
+  ⏱  上一步 2. 用时 1s
+### 2b. art gate (出货 game/assets/art/pro 必须等于 coif_characters.py 当场重建的结果)
+### art gate：出货 pro/ 必须等于 coif_characters.py 当场重建的结果（docs/49 §一）
+  源   game/assets/art/library/puny-characters/Puny-Characters
+  出货 game/assets/art/pro
+  ✅ 文件集合：10 张 png，与 coif_characters.STYLES 逐名相同（0 缺失 / 0 多余）
+  ✅ 重建来源自证：读了 10 个 library/ 文件、0 个 pro/ 文件 ⇒ 重建独立于出货目录
+  ✅ 判别力自检：向 Archer-Green 的可达帧注入 1 px 扰动 ⇒ 比对器报「1 px 不同（可达帧 1）」且指名该表（比对器有牙）
+  ✅ 逐字节比对：10/10 张与当场重建**逐像素相同**；共比对 1,966,080 像素 / 7,864,320 字节（每张 768x256 x RGBA）
+  ✅ PNG 容器字节（软判据，不判红）：10/10 张与本机 Pillow 11.3.0 重编码逐字节相同
+
+=== ART GATE PASS ✅ ===
+  ✅ art gate（出货 pro/ == 当场重建）
+  ⏱  上一步 2b. 用时 1s
+### 2c. terrain gate (hybrid：8 张 CC0 岸线瓦=当场重建，5 张生成瓦=hash-pin)
+### terrain gate (hybrid)：8 张 CC0 岸线瓦=当场重建，5 张生成瓦=hash-pin（docs/49 §七 + AV2/docs/159）
+  CC0 源 game/assets/art/library/punyworld-overworld/punyworld-overworld-tileset.png
+  清单   tools/terrain_hashes.json
+  出货   game/assets/art/terrain
+  ✅ 文件集合：13 张 png = LEGACY(生成 5) ∪ SHORE(CC0 8)（0 缺失 / 0 多余）
+  ✅ 重建来源自证：读了 1 次 CC0 总表、0 个出货文件 ⇒ 重建独立于出货目录
+  ✅ 判别力自检(SHORE)：向 water_e 注入 1 px ⇒ compare() 报「1 px 不同」且指名该瓦（比对器有牙）
+  ✅ CC0 岸线逐像素比对：8/8 张与当场重建**逐像素相同**；共比 2,048 像素 / 8,192 字节
+  ✅ 判别力自检(生成瓦)：向 dirt 翻 1 px ⇒ sha256 改变且原图 hash==钉子（hash 有牙，非常量/非 return-True）
+  ✅ 生成瓦 hash-pin：5/5 张解码 RGBA sha256 与清单相同；共 hash 1,280 像素 / 5,120 字节
+  ✅ CC0 容器字节（软判据，不判红）：8/8 张与本机 Pillow 11.3.0 重编码逐字节相同
+  ℹ  已删自证④（slice_visual.py↔LEGACY 切图坐标一致）：生成瓦无切图坐标，此臂结构上不适用；代价见本文件抬头「丢掉的那条自证」。
+
+=== TERRAIN GATE PASS ✅ ===
+  ✅ terrain gate（8 CC0 岸线=重建 + 5 生成瓦=hash-pin）
+  ⏱  上一步 2c. 用时 0s
+### 2d. asset gate (上门的 22 张 emote/decor/obj png == 切图/自绘配方当场重建 + 表情两两可分 + 配方无断口)
+### asset gate：①上门的 22 张出货 png == 切图/自绘配方当场重建；②上门的 10 张 emote 两两分得开；③配方里没有一条 crop 从连着的美术中间切过去
+  配方 tools/slice_all.py + tools/slice_visual.py
+  出货 game/assets/art/{emote,decor,obj,building}
+  ✅ 门自身无副作用：采集配方前后 23 个出货 png 的 (mtime, size) 逐个未变
+  ✅ 配方采集：从 2 份切图脚本里拦下 28 条 crop（未真的调用 ffmpeg；坐标全部来自配方自己算的）
+  ✅ 范围自证：配方 28 张 = 上门 22 + 不上门 1 + 别的门管 5，逐名对齐（0 未分类 / 0 幽灵）
+  ✅ 断口自证：11 条 crop 逐条自足（最大断口 decor/tree_small = 0.031 < 0.10，余量 3.2x；自绘 12 张不适用）
+     ℹ  并列在最大值 0.031 上的 crop：decor/tree_small
+  ✅ 交接自证：记成「terrain_gate.py 管」的 5 张，逐个仍在 slice_shore 的 LEGACY+SHORE 里（去问代码，不问注释）
+  ✅ 可达性：上门的 22 张逐个在代码里可达（decor∈DECOR_POOL 7 项 / obj∈OBJ_SLOT_BY_TYPE 8 槽 / emote∈_emote_key 19 键）
+  ✅ 死资产仍然是死的：`tree_small` 代码里**零命中**（非注释行）⇒ decor/tree_small 继续不上门（本门每次重核，不是抄结论）
+  ✅ 删除态自证：building/{house,hut,shop} 三处皆无 —— 出货目录 0 张 / 切图配方 0 条 / `.gd` 非注释引用 0 处（棘轮换了输入，不是没了：原来那条查 `building_tex` 调用点，而它的输入已随函数一起删除）
+  ✅ 重建来源自证：读了 2 个 library/ CC0 源表、0 个出货文件 ⇒ 重建独立于出货目录
+  ✅ 判别力自检（逐张）：22 张各注入 1 px 扰动 ⇒ 比对器逐张报「1 px 不同」且**指名那一张**  detected 22/22
+  ℹ  getbbox 陷阱量具（docs/41 §6，只打印不判红）：decor/bush 翻 1 个像素的 RGB ⇒ getbbox()=None  /  convert("RGB") 后 =(8, 8, 9, 9)  （Pillow 11.3.0）
+     ⚠  本机 getbbox() 把它判成「完全相同」—— **本门没有用 getbbox()**，比的是 load() 出来的 RGBA 元组
+  ✅ 逐像素比对：22/22 张与当场重建**解码后 RGBA 逐像素相同**；共比对 7,840 像素 / 31,360 字节
+  ℹ  PNG 容器字节（软判据，**不判红**）：0/22 张与本机 Pillow 11.3.0 重编码逐字节相同
+     （预期如此，**理由不是「出货被重新压缩过」**：这一行比的是 Pillow 编出来的字节，而出货是容器 ffmpeg 4.4.2 / 本仓自绘编码器写的 —— 三个编码器，字节当然不同。
+      J2 实测：把两份配方原样放回容器跑一遍，28/28 逐【字节】相同。字节随编码器版本走 ⇒ 拿它判红 = 换台机器就全假红。逐像素 22/22 同、逐字节 0/22 同。）
+  ✅ 两两可分：10 张 emote 的 45 对全部过地板（源 min=109 ≥ 60，余量 1.82x；28px 灰度 min=15.73 ≥ 10.0，余量 1.57x）
+     ℹ  并列在最小值上的对 —— 源: meet_broken|meet_fulfilled ／ 28px灰度: meet_broken|meet_fulfilled
+  ℹ  未上门 1 张：文件都在，**一个像素都没查**（刻意的，理由逐条见 -v）
+
+=== ASSET GATE PASS ✅ ===
+  ✅ asset gate（上门的 22 张 emote/decor/obj == 当场重建 + 表情可分 + 配方无断口）
+  ⏱  上一步 2d. 用时 0s
+### 2e. 可重算门 (文档里的数 == 现跑那条命令算出来的数)
+  ✅ 可重算门 负对照（改文档值/改实测值/丢锚点/缺理由 四条都会红）
+=== recalc · 注册表 7 条（上门 5 条 / 只记录 2 条）===
+  id                           上门              文档值          现跑值  判决
+  assetgate-bleed-worst        是             0.031        0.031  ✅
+  assetgate-sep-src            是               109          109  ✅
+  assetgate-sep-grey28         是             15.73        15.73  ✅
+  ciede-grass-anchor           是            8.0659       8.0659  ✅
+  ciede-sharma                 是                34           34  ✅
+  palette-gpl-de00-6p3         否               6.3       8.0659  ❌
+      ↳ 文档写 6.3，现跑得 8.0659（差 1.7659 > 容差 0）
+      ↳ 不上门的理由：对不上（写 6.3、锚点重算 8.07），但【不判红】有两个理由，缺一不可：① 源码注释写明这一族数是「四昼夜档×四季×三天气」的最差值，而那条合成链（alpha 合成→季节→大气罩→昼夜）不在树上 ⇒ 本工具只有锚点这一档尺子，量不到它；② palette.gpl 属 game/**，本棒不得修改。留在这里是为了让这条差异【每次 CI 都被打印一次】，而不是躺在某份回执里。
+  lint-links-md-count          否                93          185  ❌
+      ↳ 文档写 93.0，现跑得 185.0（差 92 > 容差 0）
+      ↳ 不上门的理由：结构上不该上门：它是【随文档数移动的快照】，不是 HEAD 这棵树的性质。谁加一份文档它都会变，而那与 T2 记录的那件事无关。给它上门 = 造一道会因为无关改动变红的门（docs/41 §6：那比没有门更坏）。留作对照：本注册表里唯一一条【不可上门】的样本，好让『能上门/不能上门』这条界线是有例子的。
+  ── 上门的 5 条：5 条对得上，0 条对不上 ──
+  ── 另有 2 条【只记录】的条目也对不上（不判红，见上面各自的理由）──
+=== RECALC GATE: PASS ✅（5 条数字现读现算现比）===
+  ✅ 可重算门（注册表逐条现读现算现比）
+  ✅ CIEDE2000 量具自检（Sharma-Wu-Dalal 34 对外部真值 + 扰动 + 与 assert_interior_shell 同源）
+  ✅ 可重算普查器 负对照（三条分类翻面）
+  ⏱  上一步 2e. 用时 2s
+### 2f. 互补性守卫 (某条不变量【唯一】的活输入来源还在不在)
+  ✅ 互补性守卫 负对照（处处空转/删掉 4c/删掉 betray 轨/夹具变弱/注释掉 五条都会红；变强与冗余不红）
+互补性守卫：锚烘于 2026-08-08（commit 837c056，7 个夹具 × 35 条不变量）
+  单点依赖（这一条夹具一旦没了，右边这些不变量整条 CI 都不可能再变红）：
+    S0             ← #20
+  ⚠  Invariants.gd 有 3 条锚不认识的不变量：#44, #45, #46 ⇒ 没人普查过它们的夹具。重烘：`GODOT=… python tools/gate_fixture_audit.py --run --bake-ledger`
+  ✅ 互补性守卫（单点依赖的夹具逐条现读现比）
+  ⏱  上一步 2f. 用时 1s
+### 3. godot import + parse smoke
+  ✅ import/parse clean
+  ⏱  上一步 3. 用时 6s
+### 4. S0 gate (invariants + determinism + 金标; seeds=1-12 days=60 det=3)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: GDExtension dynamic library not found: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: open_library (core/extension/gdextension.cpp:740)
+ERROR: Error loading extension: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: load_extensions (core/extension/gdextension_manager.cpp:329)
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+  ✅ 哈希自检：6 条 fnv1a32 + 4 条 mix32 测试向量全对（项目自有哈希，不依赖引擎 String.hash()）
+=== Causal Bench S0 · 不变量回归门  seeds=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] days=60 ===
+[S0] {"chain":"1863629597","days":60,"diag_fails":[],"digest":"1467991201","event_digest":"1410817469881264075","events":3448,"hard_fails":[],"pass":true,"seed":1,"soft_fails":[]}
+[S0] {"chain":"1917183476","days":60,"diag_fails":[],"digest":"2898337845","event_digest":"1697451415764372517","events":3478,"hard_fails":[],"pass":true,"seed":2,"soft_fails":[]}
+[S0] {"chain":"2255013848","days":60,"diag_fails":[],"digest":"751726515","event_digest":"8117002065637897083","events":3337,"hard_fails":[],"pass":true,"seed":3,"soft_fails":[]}
+[S0] {"chain":"665999531","days":60,"diag_fails":[],"digest":"535253316","event_digest":"5416531754009154681","events":3341,"hard_fails":[],"pass":true,"seed":4,"soft_fails":[]}
+[S0] {"chain":"795423895","days":60,"diag_fails":[],"digest":"3161397371","event_digest":"709764478757220650","events":3574,"hard_fails":[],"pass":true,"seed":5,"soft_fails":[]}
+[S0] {"chain":"85825046","days":60,"diag_fails":[],"digest":"2270896925","event_digest":"2163104460346824964","events":3360,"hard_fails":[],"pass":true,"seed":6,"soft_fails":[]}
+[S0] {"chain":"570946515","days":60,"diag_fails":[15],"digest":"2448548409","event_digest":"7618808960370226122","events":3393,"hard_fails":[],"pass":true,"seed":7,"soft_fails":[]}
+[S0] {"chain":"606987449","days":60,"diag_fails":[],"digest":"1852067540","event_digest":"4329184989757779453","events":3337,"hard_fails":[],"pass":true,"seed":8,"soft_fails":[]}
+[S0] {"chain":"2351154376","days":60,"diag_fails":[],"digest":"1275397668","event_digest":"3148280954035963765","events":3305,"hard_fails":[],"pass":true,"seed":9,"soft_fails":[]}
+[S0] {"chain":"546343611","days":60,"diag_fails":[],"digest":"4162516051","event_digest":"8007934408249964504","events":3377,"hard_fails":[],"pass":true,"seed":10,"soft_fails":[]}
+[S0] {"chain":"2932734397","days":60,"diag_fails":[],"digest":"862742899","event_digest":"8192177095265281320","events":3325,"hard_fails":[],"pass":true,"seed":11,"soft_fails":[]}
+[S0] {"chain":"3781077549","days":60,"diag_fails":[],"digest":"1710531875","event_digest":"5692514692762643733","events":3456,"hard_fails":[],"pass":true,"seed":12,"soft_fails":[]}
+
+— 不变量跨 seed 通过率（硬=全绿必需 / 软=通过率≥11/12 / 诊断=只报不门）—
+  ✅ #01 [硬]无 need 触底（任一需求，不只饥饿）  12/12
+  ✅ #02 [软]社交发生  12/12
+  ✅ #03 [软]无永久孤立  12/12
+  ✅ #04 [软]关系分化  12/12
+  ✅ #05 [软]谣言传播  12/12
+  ✅ #06 [硬]知识边界  12/12
+  ✅ #07 [硬]账本可溯源  12/12
+  ✅ #08 [软]承诺生命周期  12/12
+  ✅ #09 [硬]无悬挂承诺  12/12
+  ✅ #10 [硬]违约可溯源有后果  12/12
+  ✅ #11 [软]冲突生命周期  12/12
+  ✅ #12 [硬]先对质后和解  12/12
+  ✅ #13 [硬]修复可溯源  12/12
+  ✅ #14 [软]standing分化  12/12
+  🔎 #15 [诊断]涌现放逐  11/12  (不入门·度量已知泄漏,见 docs/31)   首违 seed 7: 最坏 ben(-0.8) 接受率 0.67 / 镇均 0.59
+  ✅ #16 [软]声誉传播  12/12
+  ✅ #17 [软]坏名声形成可恢复  12/12
+  ✅ #18 [软]观点演化不坍缩  12/12
+  ✅ #19 [软]有界信任Deffuant  12/12
+  ✅ #20 [软]谣言变冷MakiThompson  12/12
+  ✅ #21 [硬]秘密专道  12/12
+  ✅ #22 [硬]背叛有后果可溯源  12/12
+  ✅ #23 [硬]背叛重挫名声  12/12
+  ✅ #24 [硬]背叛无误判  12/12
+  ✅ #25 [硬]S3派系派生一致(对齐且相识)  12/12
+  ✅ #26 [软]S3同派系亲和>跨派系  12/12
+  ✅ #27 [硬]S3协同守边界  12/12
+  ✅ #28 [硬]S3派系视图自洽  12/12
+  ✅ #29 [硬]I-PACT互助偏内  12/12
+  ✅ #30 [硬]I-PACT-free-rider可溯源  12/12
+  ✅ #31 [硬]I-PACT结盟门达标  12/12
+  ✅ #32 [硬]I-PACT无悬挂无重复对称  12/12
+  ✅ #33 [硬]I-PACT解体可恢复  12/12
+  ✅ #34 [硬]金钱守恒  12/12
+  ✅ #35 [硬]货币非负  12/12
+  ✅ #36 [硬]节日对象配对无残留  12/12
+  ✅ #37 [硬]选举计票自洽  12/12
+  ✅ #38 [硬]库存账本自洽  12/12
+  ✅ #39 [硬]产出溯源到在班本职  12/12
+  ✅ #40 [软]产出闭环活性与供给充足  12/12
+  ✅ #41 [硬]手艺的社会痕迹(被看见·被知道·不外溢)  12/12
+  ✅ #42 [硬]生存推力的收窄(只 social·只 argmin·不反客为主)  12/12
+  ✅ #43 [硬]买卖的社会痕迹(被看见·被知道·不外溢)  12/12
+  ✅ #44 [硬]进口溯源到声明的节点与货  12/12
+  ✅ #45 [硬]钱跨镇边界溯源  12/12
+  ✅ #46 [硬]出口贸易原子性绑定  12/12
+
+— 套件级活性（跨全网格计数；门控类归零即红）—
+  🔒Q aid                次数=62     覆盖 seed=11/12
+  🔒 apologize          次数=439    覆盖 seed=12/12
+     betray             次数=1      覆盖 seed=1/12
+  🔒 confide            次数=76     覆盖 seed=12/12
+  🔒 conflict           次数=1132   覆盖 seed=12/12
+  🔒 confront           次数=468    覆盖 seed=12/12
+     consume            次数=3563   覆盖 seed=12/12
+  🔒 discuss            次数=1134   覆盖 seed=12/12
+  🔒 election           次数=48     覆盖 seed=12/12
+  🔒 endorse            次数=166    覆盖 seed=12/12
+     export             次数=63     覆盖 seed=12/12
+     festival_despawn   次数=80     覆盖 seed=12/12
+  🔒 festival_spawn     次数=80     覆盖 seed=12/12
+  🔒 give               次数=432    覆盖 seed=12/12
+  🔒 gossip             次数=636    覆盖 seed=12/12
+  🔒 gossip_rep         次数=6776   覆盖 seed=12/12
+  🔒 greet              次数=6206   覆盖 seed=12/12
+     import             次数=237    覆盖 seed=12/12
+  🔒 invite             次数=921    覆盖 seed=12/12
+     leak               次数=8      覆盖 seed=2/12
+  🔒 meet               次数=921    覆盖 seed=12/12
+     pact_formed        次数=45     覆盖 seed=12/12
+  🔒 pay                次数=13974  覆盖 seed=12/12
+     produce            次数=1220   覆盖 seed=12/12
+  🔒 rally_oust         次数=203    覆盖 seed=12/12
+     shortage           次数=502    覆盖 seed=12/12
+     spoil              次数=1291   覆盖 seed=12/12
+     world_other        次数=47     覆盖 seed=12/12
+  🔒Q aid               法定覆盖 11/12（需 ≥6，余量 5）
+  ✅ 门控事件类 17 种全部仍在发生（含法定覆盖 1 种）
+
+— 金标（跨进程锚）—
+  ✅ 金标一致 12/12 seed（含逐 tick 前缀链 12 条；烘于 godot 4.6.2-stable (official).71f334935，本机 4.6.2-stable (official).71f334935）
+
+— 确定性 —
+  ✅ 同 seed 两跑摘要一致(批量+增量滚动+逐tick前缀链)  3/3
+
+=== S0 GATE: PASS ✅  (硬不变量 seed 12/12 全绿, 软通过率门 ≥11/12(90%) 过, 活性 过, 金标 过, det 3/3) ===
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)
+  ✅ S0 gate
+# ★ 默认从 N=24 翻成 N=16（2026-07-31，L1 给的建议 + 主 session 实测复核）：
+#   ① 更便宜：合并树上 146s vs 239s（−39%）。
+#   ② 覆盖更宽：16/12 = ×4/3 会走【整数截断】那条路，而 24 是 12 的整数倍 ⇒ 因子恰好 ×2、
+#      `maxi(1,·)` 永不触发，K1 那句"inputs 不会舍入到 0"的守卫在 N=24 上【结构上测不到】。
+#   ③ 它同时是 I3 实测的【边缘】（软门最早在 N=16 破）⇒ fixture 朝被守的性质最容易破的方向选，
+#      而不是朝最容易绿的方向（契约 §2 第三个盲区）。
+#   余量：⚠️ 这里原本写着"最紧一格仍有 0.188 的余量，不是卡边"。**那个数已经过期。**
+#      S2（编号 73）把 6c7c8bc 拉进隔离副本复核：那棵树确实是 +0.189；
+#      而在今天的树上做消融（从 utility.json 删 gossip_news_first/bonus）恢复到 +0.183
+#      ⇒ **O1 的调参吃掉了约 3.4 倍余量，今天最紧一格是 0.056。**
+#      这个数写在这里【本身就是 S2 那条统一结论的样本】：打印冻结字面量的都会过期。
+#      ⇒ 别再手抄它了；要当真就去读 4a 每次运行自己打印的判决行。
+#   L1 当时改不了这个默认，因为在它自己的分支上（L2 未合入）N=16 是红的。
+  ⏱  上一步 4. 用时 123s
+### 4a. 宏观池尺度门 (N=16 seeds=1-12 days=60 det=1；S0 判据首次跑在池倍率≠1 的配置上)
+  ✅ 4a 预检：池倍率 ×16/12 ≠ 1（换尺度的算术真的会跑） · days=60 ≥ SUPPLY_MIN_DAYS=60（#40 满足率臂真的会评估）
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: GDExtension dynamic library not found: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: open_library (core/extension/gdextension.cpp:740)
+ERROR: Error loading extension: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: load_extensions (core/extension/gdextension_manager.cpp:329)
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+  ✅ 哈希自检：6 条 fnv1a32 + 4 条 mix32 测试向量全对（项目自有哈希，不依赖引擎 String.hash()）
+=== Causal Bench S0 · 不变量回归门  seeds=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] days=60 ===
+[S0] {"chain":"3238986265","days":60,"diag_fails":[],"digest":"3178551063","event_digest":"860537043735734237","events":4830,"hard_fails":[],"pass":true,"seed":1,"soft_fails":[]}
+[S0] {"chain":"1651154574","days":60,"diag_fails":[],"digest":"1209592608","event_digest":"4553110441107743785","events":4599,"hard_fails":[],"pass":true,"seed":2,"soft_fails":[]}
+[S0] {"chain":"386876411","days":60,"diag_fails":[],"digest":"848622171","event_digest":"6882131243757721613","events":4622,"hard_fails":[],"pass":true,"seed":3,"soft_fails":[]}
+[S0] {"chain":"4231325219","days":60,"diag_fails":[],"digest":"1583783028","event_digest":"5430052780207262706","events":4721,"hard_fails":[],"pass":true,"seed":4,"soft_fails":[]}
+[S0] {"chain":"995942407","days":60,"diag_fails":[],"digest":"2020422808","event_digest":"8811920820196887824","events":4710,"hard_fails":[],"pass":true,"seed":5,"soft_fails":[]}
+[S0] {"chain":"974063226","days":60,"diag_fails":[],"digest":"923795033","event_digest":"7390805618883883736","events":4851,"hard_fails":[],"pass":true,"seed":6,"soft_fails":[]}
+[S0] {"chain":"1213428818","days":60,"diag_fails":[],"digest":"1081708751","event_digest":"1380777030328735976","events":4683,"hard_fails":[],"pass":true,"seed":7,"soft_fails":[]}
+[S0] {"chain":"4035694454","days":60,"diag_fails":[],"digest":"2585723653","event_digest":"2700491303259212024","events":4824,"hard_fails":[],"pass":true,"seed":8,"soft_fails":[]}
+[S0] {"chain":"1161934185","days":60,"diag_fails":[],"digest":"4026179215","event_digest":"4626632190400699334","events":4754,"hard_fails":[],"pass":true,"seed":9,"soft_fails":[]}
+[S0] {"chain":"4082564227","days":60,"diag_fails":[],"digest":"483266660","event_digest":"1168608597863933104","events":4863,"hard_fails":[],"pass":true,"seed":10,"soft_fails":[]}
+[S0] {"chain":"2224590236","days":60,"diag_fails":[],"digest":"1881467758","event_digest":"6072410396565191354","events":4683,"hard_fails":[],"pass":true,"seed":11,"soft_fails":[]}
+[S0] {"chain":"2834492018","days":60,"diag_fails":[],"digest":"968552000","event_digest":"5044276719327699338","events":4723,"hard_fails":[],"pass":true,"seed":12,"soft_fails":[]}
+
+— 不变量跨 seed 通过率（硬=全绿必需 / 软=通过率≥11/12 / 诊断=只报不门）—
+  ✅ #01 [硬]无 need 触底（任一需求，不只饥饿）  12/12
+  ✅ #02 [软]社交发生  12/12
+  ✅ #03 [软]无永久孤立  12/12
+  ✅ #04 [软]关系分化  12/12
+  ✅ #05 [软]谣言传播  12/12
+  ✅ #06 [硬]知识边界  12/12
+  ✅ #07 [硬]账本可溯源  12/12
+  ✅ #08 [软]承诺生命周期  12/12
+  ✅ #09 [硬]无悬挂承诺  12/12
+  ✅ #10 [硬]违约可溯源有后果  12/12
+  ✅ #11 [软]冲突生命周期  12/12
+  ✅ #12 [硬]先对质后和解  12/12
+  ✅ #13 [硬]修复可溯源  12/12
+  ✅ #14 [软]standing分化  12/12
+  🔎 #15 [诊断]涌现放逐  12/12  (不入门·度量已知泄漏,见 docs/31)
+  ✅ #16 [软]声誉传播  12/12
+  ✅ #17 [软]坏名声形成可恢复  12/12
+  ✅ #18 [软]观点演化不坍缩  12/12
+  ✅ #19 [软]有界信任Deffuant  12/12
+  ✅ #20 [软]谣言变冷MakiThompson  12/12
+  ✅ #21 [硬]秘密专道  12/12
+  ✅ #22 [硬]背叛有后果可溯源  12/12
+  ✅ #23 [硬]背叛重挫名声  12/12
+  ✅ #24 [硬]背叛无误判  12/12
+  ✅ #25 [硬]S3派系派生一致(对齐且相识)  12/12
+  ✅ #26 [软]S3同派系亲和>跨派系  12/12
+  ✅ #27 [硬]S3协同守边界  12/12
+  ✅ #28 [硬]S3派系视图自洽  12/12
+  ✅ #29 [硬]I-PACT互助偏内  12/12
+  ✅ #30 [硬]I-PACT-free-rider可溯源  12/12
+  ✅ #31 [硬]I-PACT结盟门达标  12/12
+  ✅ #32 [硬]I-PACT无悬挂无重复对称  12/12
+  ✅ #33 [硬]I-PACT解体可恢复  12/12
+  ✅ #34 [硬]金钱守恒  12/12
+  ✅ #35 [硬]货币非负  12/12
+  ✅ #36 [硬]节日对象配对无残留  12/12
+  ✅ #37 [硬]选举计票自洽  12/12
+  ✅ #38 [硬]库存账本自洽  12/12
+  ✅ #39 [硬]产出溯源到在班本职  12/12
+  ✅ #40 [软]产出闭环活性与供给充足  12/12
+  ✅ #41 [硬]手艺的社会痕迹(被看见·被知道·不外溢)  12/12
+  ✅ #42 [硬]生存推力的收窄(只 social·只 argmin·不反客为主)  12/12
+  ✅ #43 [硬]买卖的社会痕迹(被看见·被知道·不外溢)  12/12
+  ✅ #44 [硬]进口溯源到声明的节点与货  12/12
+  ✅ #45 [硬]钱跨镇边界溯源  12/12
+  ✅ #46 [硬]出口贸易原子性绑定  12/12
+
+— 套件级活性（跨全网格计数；门控类归零即红）—
+  🔒Q aid                次数=136    覆盖 seed=12/12
+  🔒 apologize          次数=862    覆盖 seed=12/12
+  🔒 confide            次数=59     覆盖 seed=12/12
+  🔒 conflict           次数=2249   覆盖 seed=12/12
+  🔒 confront           次数=916    覆盖 seed=12/12
+     consume            次数=3659   覆盖 seed=12/12
+  🔒 discuss            次数=1059   覆盖 seed=12/12
+  🔒 election           次数=48     覆盖 seed=12/12
+  🔒 endorse            次数=426    覆盖 seed=12/12
+     festival_despawn   次数=80     覆盖 seed=12/12
+  🔒 festival_spawn     次数=80     覆盖 seed=12/12
+  🔒 give               次数=576    覆盖 seed=12/12
+  🔒 gossip             次数=1102   覆盖 seed=12/12
+  🔒 gossip_rep         次数=16151  覆盖 seed=12/12
+  🔒 greet              次数=6825   覆盖 seed=12/12
+     import             次数=237    覆盖 seed=12/12
+  🔒 invite             次数=1167   覆盖 seed=12/12
+  🔒 meet               次数=1167   覆盖 seed=12/12
+     pact_dissolved     次数=3      覆盖 seed=2/12
+     pact_formed        次数=59     覆盖 seed=12/12
+  🔒 pay                次数=16728  覆盖 seed=12/12
+     produce            次数=1228   覆盖 seed=12/12
+  🔒 rally_oust         次数=360    覆盖 seed=12/12
+     shortage           次数=402    覆盖 seed=12/12
+     spoil              次数=1284   覆盖 seed=12/12
+  🔒Q aid               法定覆盖 12/12（需 ≥6，余量 6）
+  ✅ 门控事件类 17 种全部仍在发生（含法定覆盖 1 种）
+
+— 金标（跨进程锚）—
+  (未启用 --golden)
+
+— 确定性 —
+  ✅ 同 seed 两跑摘要一致(批量+增量滚动+逐tick前缀链)  1/1
+
+=== S0 GATE: PASS ✅  (硬不变量 seed 12/12 全绿, 软通过率门 ≥11/12(90%) 过, 活性 过, 金标 N/A·未传--golden, det 1/1) ===
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)
+  ✅ 宏观池尺度门 (N=16，产出契约=宏观池 ×16/12)
+  ⏱  上一步 4a. 用时 137s
+### 4b. LOD 观察无关红线 (V2 相机路径无关 + V3 确定性/存读/fresh-restart)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: GDExtension dynamic library not found: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: open_library (core/extension/gdextension.cpp:740)
+ERROR: Error loading extension: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: load_extensions (core/extension/gdextension_manager.cpp:329)
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+=== LOD 观察无关红线验证  N=48 days=3  (lod_aggregate=true) ===
+  ✅  V2 相机路径无关（观察无关）
+  ✅  V3a 同 seed 确定性
+  ✅  V3b 存档/读档 == 直跑
+  ✅  V3c fresh == restart
+
+=== LOD-VERIFY GATE: ✅ PASS  (V2+V3abc 全绿) ===
+  ✅ LOD viewer-independence gate
+  ⏱  上一步 4b. 用时 10s
+### 4c. DetGate 场景确定性门 (default / faction / betray / freerider)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: GDExtension dynamic library not found: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: open_library (core/extension/gdextension.cpp:740)
+ERROR: Error loading extension: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: load_extensions (core/extension/gdextension_manager.cpp:329)
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+=== DetGate · 场景确定性门  tracks=["", "faction", "betray", "freerider"] seeds=1-4 days=20 ===
+  金标：res://bench/golden_digests.json（烘于 godot 4.6.2-stable (official).71f334935）
+  [(default)] seed=1 事件=1210  硬=✅ 确定=✅ 金标=✅
+  [(default)] seed=2 事件=1129  硬=✅ 确定=✅ 金标=✅
+  [(default)] seed=3 事件=1080  硬=✅ 确定=✅ 金标=✅
+  [(default)] seed=4 事件=1123  硬=✅ 确定=✅ 金标=✅
+  [faction] seed=1 事件=1154  硬=✅ 确定=✅ 金标=✅
+  [faction] seed=2 事件=1033  硬=✅ 确定=✅ 金标=✅
+  [faction] seed=3 事件=1079  硬=✅ 确定=✅ 金标=✅
+  [faction] seed=4 事件=1027  硬=✅ 确定=✅ 金标=✅
+  [betray] seed=1 事件=1140  硬=✅ 确定=✅ 金标=✅
+  [betray] seed=2 事件=1104  硬=✅ 确定=✅ 金标=✅
+  [betray] seed=3 事件=1085  硬=✅ 确定=✅ 金标=✅
+  [betray] seed=4 事件=1150  硬=✅ 确定=✅ 金标=✅
+  [freerider] seed=1 事件=1077  硬=✅ 确定=✅ 金标=✅
+  [freerider] seed=2 事件=1104  硬=✅ 确定=✅ 金标=✅
+  [freerider] seed=3 事件=1037  硬=✅ 确定=✅ 金标=✅
+  [freerider] seed=4 事件=1118  硬=✅ 确定=✅ 金标=✅
+
+=== DetGate: PASS ✅  (硬不变量 16/16, 同seed两跑一致 16/16, 数据指纹一致 16/16[3658415736], 金标 16/16 可比) ===
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)
+  ✅ DetGate scenario determinism
+  ⏱  上一步 4c. 用时 78s
+### 4d. BackendGate 外部后端门 (硬不变量含#01 / 同seed两跑一致 / 闭集封闭)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: GDExtension dynamic library not found: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: open_library (core/extension/gdextension.cpp:740)
+ERROR: Error loading extension: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: load_extensions (core/extension/gdextension_manager.cpp:329)
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+=== BackendGate · 外部后端硬不变量门  arms=2 seeds=1-4 days=30 N=12 ===
+  [random(full)] seed=1 L/C=100% d=621851726 e=8397002311827655064 饿穿=0 硬=✅ 确定=✅ 闭集=4782/4782 ✅
+  [random(full)] seed=2 L/C=100% d=3590422332 e=7915847908237051926 饿穿=0 硬=✅ 确定=✅ 闭集=4808/4808 ✅
+  [random(full)] seed=3 L/C=100% d=1187776766 e=3092774219040801660 饿穿=0 硬=✅ 确定=✅ 闭集=4716/4716 ✅
+  [random(full)] seed=4 L/C=100% d=4049095963 e=6270094624865834273 饿穿=0 硬=✅ 确定=✅ 闭集=4714/4714 ✅
+  [random@K=2] seed=1 L/C=66% d=2670606638 e=1635234635616264336 饿穿=0 硬=✅ 确定=✅ 闭集=4514/4514 ✅
+  [random@K=2] seed=2 L/C=67% d=2472878909 e=6375530848708471473 饿穿=0 硬=✅ 确定=✅ 闭集=4444/4444 ✅
+  [random@K=2] seed=3 L/C=67% d=1508723971 e=1541634782052462280 饿穿=0 硬=✅ 确定=✅ 闭集=4464/4464 ✅
+  [random@K=2] seed=4 L/C=67% d=310476472 e=4308665352102792099 饿穿=0 硬=✅ 确定=✅ 闭集=4460/4460 ✅
+  ── 自检臂（gate-internal，绝不在出货路径上）：C 臂的负对照，判据是【必须红】──
+    [inject:fabricate] seed=1 伪造=556 抓到=556/2364 ✅ 探针有判别力 | 引擎原样落地=409 ✅ 引擎不强制闭包（红线#2 靠的就是这道门） | 世界轨迹 vs 干净臂: d=2624127061 ≠ 621851726 已移动
+    [inject:fabricate] seed=2 伪造=556 抓到=556/2350 ✅ 探针有判别力 | 引擎原样落地=387 ✅ 引擎不强制闭包（红线#2 靠的就是这道门） | 世界轨迹 vs 干净臂: d=3333335698 ≠ 3590422332 已移动
+    [inject:fabricate] seed=3 伪造=560 抓到=560/2321 ✅ 探针有判别力 | 引擎原样落地=413 ✅ 引擎不强制闭包（红线#2 靠的就是这道门） | 世界轨迹 vs 干净臂: d=2336456442 ≠ 1187776766 已移动
+    [inject:fabricate] seed=4 伪造=559 抓到=559/2393 ✅ 探针有判别力 | 引擎原样落地=410 ✅ 引擎不强制闭包（红线#2 靠的就是这道门） | 世界轨迹 vs 干净臂: d=3653726861 ≠ 4049095963 已移动
+
+=== BackendGate: PASS ✅  (硬不变量 8/8, 同seed两跑一致 8/8, 闭集封闭 8/8, 自检臂必红 4/4, 伪造落地 4/4) ===
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)
+  ✅ BackendGate 外部后端门（硬不变量/两跑一致/闭集封闭）
+  ⏱  上一步 4d. 用时 84s
+### 4e. ModelPathGate 出货 prompt 编码门 (闭集编号字母表 / 示例编号 / 裁剪保序)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: GDExtension dynamic library not found: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: open_library (core/extension/gdextension.cpp:740)
+ERROR: Error loading extension: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: load_extensions (core/extension/gdextension_manager.cpp:329)
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+=== ModelPathGate · 模型路径对照 seeds=1-4 days=8 N=12 ===
+  [A] 闭集选号编码契约
+    ✅ 系统 prompt 无字面示例编号（残留数字 ''）
+    ✅ [0,cap) 的 label 全是单个 A-Z（越界：）
+    ✅ label↔index 往返恒等（破：）
+    ✅ 数字不再是合法编号（fail-closed 到引擎兜底）
+    ✅ 40 候选 → 裁到 26（实测 26）
+    ✅ 裁剪后保持枚举序（不是按 score 降序喂模型）—— 实测首项 'a14'（应为 'a14'）
+    ✅ ≤cap 时原样返回、保持枚举序
+    ✅ parse_decision(label(i)) ≡ candidates[i]（破：）
+ERROR: Parse JSON failed. Error at line 0: Expected 'true', 'false', or 'null', got 'A'
+   at: parse_string (core/io/json.cpp:624)
+   GDScript backtrace (most recent call first):
+       [0] parse_decision (res://scripts/AIBackend.gd:894)
+       [1] _part_a (res://bench/ModelPathGate.gd:153)
+       [2] _ready (res://bench/ModelPathGate.gd:70)
+    ✅ prose fail-closed 仍然有效
+  [B] SLM 熔断器复位
+    ✅ 起点：熔断器是关的
+WARNING: [SLM] 熔断触发：连续 6 次超时且无成功 → 停发 SLM、回退 logic 地板（防原生内存泄漏 OOM，见 docs/34；换模型/换推理档可解除）
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] decide (res://scripts/AIBackend.gd:858)
+       [1] _trip (res://bench/ModelPathGate.gd:246)
+       [2] _part_b (res://bench/ModelPathGate.gd:185)
+       [3] _ready (res://bench/ModelPathGate.gd:71)
+    ✅ 连续 6 次超时 → 熔断器开（实测触发于第 6 次）
+    ✅ 熔断后 decide() 走引擎地板（不再 fire）
+[SLM] 熔断解除：换权重文件 → __modelpathgate_probe.gguf（新的失败假设，不继承旧熔断）
+    ✅ set_model_path() 后熔断器关
+    ✅ set_model_path() 后连败计数清零（否则新模型只剩 1 次机会，不是 6 次）
+WARNING: [SLM] 熔断触发：连续 6 次超时且无成功 → 停发 SLM、回退 logic 地板（防原生内存泄漏 OOM，见 docs/34；换模型/换推理档可解除）
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] decide (res://scripts/AIBackend.gd:858)
+       [1] _trip (res://bench/ModelPathGate.gd:246)
+       [2] _part_b (res://bench/ModelPathGate.gd:204)
+       [3] _ready (res://bench/ModelPathGate.gd:71)
+    ✅ ③ 前置：熔断器再次打开
+    ✅ request_backend() 后熔断器**仍然开着**（这条路刻意没改）
+[SLM] 熔断解除：切换推理档 → CPU（新的失败假设，不继承旧熔断）
+    ✅ set_slm_use_gpu() 后熔断器关
+  [C] random(full) 臂逐 seed 摘要 ×【提交锚】比对
+    seed=1  inv_digest=804908715  event_digest=5019431918080314877  landed=680
+    seed=2  inv_digest=222673463  event_digest=4825597615221408733  landed=664
+    seed=3  inv_digest=342946565  event_digest=3770590058136007219  landed=664
+    seed=4  inv_digest=3185718676  event_digest=223408840730958820  landed=646
+    候选规模：max|C|=42，|C|>26 的决策点 105/2654（旧上限 |C|>36：8/2654）
+    ✅ 锚在位且含本网格 days8_n12（锚=res://bench/modelpath_anchor.json；重烘：--bake-anchor game/bench/modelpath_anchor.json）
+    ✅ seed=1 逐字节对上锚（差：）
+    ✅ seed=2 逐字节对上锚（差：）
+    ✅ seed=3 逐字节对上锚（差：）
+    ✅ seed=4 逐字节对上锚（差：）
+    ✅ 候选规模对上锚——裁剪仍然真的在生效（差：）
+
+=== ModelPathGate: PASS ✅  (失败 0)
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)
+  ✅ ModelPathGate 模型路径编码门
+  ⏱  上一步 4e. 用时 5s
+### 4f. VoiceGate 台词覆盖门 (每个被 offer 的候选动作都要有本人格的话可说)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: GDExtension dynamic library not found: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: open_library (core/extension/gdextension.cpp:740)
+ERROR: Error loading extension: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: load_extensions (core/extension/gdextension_manager.cpp:329)
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+VoiceGate  seeds=1-3 days=60
+  覆盖：297 个 (人格,动作) 对 · 35 个不同动作
+  ✅ 结构覆盖：阵容 12 个人格全部被枚举到（不靠数量地板）
+  ✅ 每个被 offer 的候选都有本人格的话可说（0 对为空）
+=== VoiceGate: PASS ✅ ===
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)
+  ✅ VoiceGate 台词覆盖门
+  ⏱  上一步 4f. 用时 21s
+### 4g. #43 观察侧抗回归门 (natural 必绿 / vendoronly·buyeronly·partiesonly 必红；外审 2026-08-06 P0.③)
+### #43 观察侧抗回归门 (natural 必绿 / vendoronly·buyeronly·partiesonly 必红；seed=1 days=30 N=12)
+  ✅ natural: hard_fails=[]（预期 []） buy_total=41
+  ✅ vendoronly: hard_fails=[43]（预期 [43]） buy_total=41
+  ✅ buyeronly: hard_fails=[43]（预期 [43]） buy_total=41
+  ✅ partiesonly: hard_fails=[43]（预期 [43]） buy_total=41
+  ✅ 豁免线自证：buy_total=41 ≥ TRADE_MIN_SALES=5（负例的红是判据咬的，不是豁免线放的）
+=== AA3 #43 REGRESSION GATE: PASS ✅ ===
+  ✅ #43 观察侧抗回归门（4 例判决 == 预期：natural 绿 / 三负例红 hard=[43]）
+  ⏱  上一步 4g. 用时 20s
+### 4h. state_projection 门 (存读档 round-trip + 逐字段 mutation 覆盖；AO1 编号137, 路线图 §一架构第一刀)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: GDExtension dynamic library not found: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: open_library (core/extension/gdextension.cpp:740)
+ERROR: Error loading extension: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: load_extensions (core/extension/gdextension_manager.cpp:329)
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+=== state_projection_gate (v1) ===
+— ① round-trip（save→load→re-save 投影相等）—
+  OK   save A
+  OK   load B
+  OK   re-save B
+  OK   round-trip 投影相等 (A=1281965568 B=1281965568)
+  OK   project_sim(A) == project_file(A)
+— ② 具名 A/B：点对点 digest·chain·proj（SAME=盲，DIFF=抓住）—
+    干预(只改一个字段)                 | digest   chain    proj     | 判
+    清空某 agent beliefs          | SAME     SAME     DIFF     | ✓
+  OK   投影抓住 [清空某 agent beliefs]
+    town_stock 每种 +20          | SAME     SAME     DIFF     | ✓
+  OK   投影抓住 [town_stock 每种 +20]
+    某 agent 换平面(space/floor/area) | SAME     SAME     DIFF     | ✓
+  OK   投影抓住 [某 agent 换平面(space/floor/area)]
+    某 agent attitude=0.9       | SAME     SAME     DIFF     | ✓
+  OK   投影抓住 [某 agent attitude=0.9]
+    某 agent standing=-30       | SAME     SAME     DIFF     | ✓
+  OK   投影抓住 [某 agent standing=-30]
+    relationships.affinity=-50 | SAME     SAME     DIFF     | ✓
+  OK   投影抓住 [relationships.affinity=-50]
+    agent.affinity[pid]=1.0    | SAME     SAME     DIFF     | ✓
+  OK   投影抓住 [agent.affinity[pid]=1.0]
+    某 agent 加一条 pact           | SAME     SAME     DIFF     | ✓
+  OK   投影抓住 [某 agent 加一条 pact]
+    某 agent faction=PROBE      | SAME     SAME     DIFF     | ✓
+  OK   投影抓住 [某 agent faction=PROBE]
+    某 agent skills[act]+=5     | SAME     SAME     DIFF     | ✓
+  OK   投影抓住 [某 agent skills[act]+=5]
+    inventory.coin=99999(money) | SAME     SAME     DIFF     | ✓
+  OK   投影抓住 [inventory.coin=99999(money)]
+    inventory.gift=999         | SAME     SAME     DIFF     | ✓
+  OK   投影抓住 [inventory.gift=999]
+    memory 加一条                 | SAME     SAME     DIFF     | ✓
+  OK   投影抓住 [memory 加一条]
+    complementSeen[pid]=9      | SAME     SAME     DIFF     | ✓
+  OK   投影抓住 [complementSeen[pid]=9]
+    faction_size=99            | SAME     SAME     DIFF     | ✓
+  OK   投影抓住 [faction_size=99]
+    town_coin+=1000            | SAME     SAME     DIFF     | ✓
+  OK   投影抓住 [town_coin+=1000]
+    day+=1                     | SAME     SAME     DIFF     | ✓
+  OK   投影抓住 [day+=1]
+    weather_today=PROBE        | SAME     SAME     DIFF     | ✓
+  OK   投影抓住 [weather_today=PROBE]
+    factions[probe]            | SAME     SAME     DIFF     | ✓
+  OK   投影抓住 [factions[probe]]
+    pacts_index 加一条            | SAME     SAME     DIFF     | ✓
+  OK   投影抓住 [pacts_index 加一条]
+— ② 全量扫：每个持久字段泛型扰动 → 投影必变（覆盖=全权威面）—
+  OK   扫后状态复原 [agent.id]
+  OK   扫后状态复原 [agent.persona]
+  OK   扫后状态复原 [agent.persona_key]
+  OK   扫后状态复原 [agent.pos]
+  OK   扫后状态复原 [agent.home]
+  OK   扫后状态复原 [agent.space]
+  OK   扫后状态复原 [agent.floor]
+  OK   扫后状态复原 [agent.home_space]
+  OK   扫后状态复原 [agent.home_floor]
+  OK   扫后状态复原 [agent.cafe_regular]
+  OK   扫后状态复原 [agent.home_needs]
+  OK   扫后状态复原 [agent.needs]
+  OK   扫后状态复原 [agent.option]
+  OK   扫后状态复原 [agent.mood]
+  OK   扫后状态复原 [agent.talking]
+  OK   扫后状态复原 [agent.inventory]
+  OK   扫后状态复原 [agent.relationships]
+  OK   扫后状态复原 [agent.beliefs]
+  OK   扫后状态复原 [agent.affinity]
+  OK   扫后状态复原 [agent.attitudes]
+  OK   扫后状态复原 [agent.attitude0]
+  OK   扫后状态复原 [agent.xi]
+  OK   扫后状态复原 [agent.eps]
+  OK   扫后状态复原 [agent.stifled]
+  OK   扫后状态复原 [agent.metKnower]
+  OK   扫后状态复原 [agent.faction]
+  OK   扫后状态复原 [agent.faction_size]
+  OK   扫后状态复原 [agent.pacts]
+  OK   扫后状态复原 [agent.complementSeen]
+  OK   扫后状态复原 [agent.skills]
+  OK   扫后状态复原 [agent.thinking]
+  OK   扫后状态复原 [agent.last_say]
+  OK   扫后状态复原 [agent.memory]
+  OK   扫后状态复原 [agent.area]
+  OK   扫后状态复原 [agent.room]
+    agent 字段: 覆盖 35 / 洞 0 / 跳过 0 []
+    world 字段: 覆盖 101 / 洞 0 / 跳过 0 []
+  OK   agent 分母(agents[0] 键集)内无覆盖洞（并集覆盖是 v1 边界，见 docs/137）
+  OK   world 分母内无覆盖洞（backend/ext 已从分母剥除，非白名单跳过）
+    覆盖清单: world=101 agent=35 agents=12（分母口径见 docs/137 §四）
+— ③ 规范序：键序不同、逻辑相同 → 投影相等 —
+  OK   键序无关：fold(d1)==fold(d2) (206731627)
+  OK   值不同则哈希不同（灵敏）
+  OK   int 1 ≠ string "1"
+  OK   bool true ≠ int 1
+  OK   真 relationships 逆序重建 → fold 相等
+— ④ AF1 回归：漏 belief 的读档，Inv.digest 门盲 vs 投影抓住 —
+  OK   构造出漏 belief 的 B（有 belief 可丢）
+    Inv.digest:  A=3130778475  B(漏档)=3130778475  → SAME(盲)
+    Projection:  A=1281965568  B(漏档)=3683821301  → DIFF(抓住)
+  OK   复刻: Inv.digest 对漏 belief 盲（SAME）
+  OK   投影抓住漏 belief（DIFF）← 这是新门的牙
+    续跑 60 tick Inv.digest 漂移点 = 17（-1=永不现形，复刻 docs/121 §四）
+— ⑤ does_not_detect：非持久面扰动 → 投影 SAME（按设计，正确）—
+  OK   DERIVED _near_set 扰动 → SAME（缓存非真源）
+  OK   DERIVED _path_cache 扰动 → SAME
+  OK   DERIVED _player_pos 扰动 → SAME
+  OK   VIEW lod_focus 扰动 → SAME
+  OK   BENCH shadow_on 扰动 → SAME
+  OK   存档 meta(name) 不同 → SAME（投影只折 sim 状态）
+— ⑥ 注入无关性：backend/ext 键在/不在 → 投影同（跨机/冷热等价，F1）—
+  OK   读回存档 blob
+    headless(键在/null) proj=1281965568 · 真机(键不在) proj=1281965568
+  OK   headless(键在/null) 与 真机(键不在) 投影相同（backend/ext 已剥，注入态无关）
+— 性能：折叠成本（边界调用，非每 tick）—
+    N=12 agents · world 字段 101 · agent 字段 35
+    纯折叠  = 34679.3 µs/次 (200 次均)
+    save+读+折 端到端 = 60449.8 µs/次 (200 次均)
+  OK   纯折叠 < 50ms（边界预算充裕）
+state_projection_gate: PASS ✅ (0 fail)
+  ✅ state_projection 门（round-trip 一致 + 全权威面 mutation 覆盖 + AF1 漏 belief 被抓）
+  ⏱  上一步 4h. 用时 35s
+### 5. unit / integration scenes
+  ℹ  story_test 夹具 = seeds 1-12 × 40 天 · goals_test 夹具 = seeds 1-12 × 14 天
+  ✅ m2_test (2s)
+  ✅ reqlife_test (1s)
+  ✅ player_agency_test (4s)
+  ✅ player_touch_test (8s)
+  ✅ s4_replay_test (1s)
+  ✅ space_test (1s)
+  ✅ save_load_test (1s)
+  ✅ goals_test (69s)
+  ✅ story_test (191s)
+  ✅ event_prose_test (1s)
+  ⏱  上一步 5. 用时 284s
+### 6. 视觉门：昼夜 + 界外层重画 + 空间往返 + 岸线 + 室内外壳 + 家具语义（无渲染环境时自动 SKIP，不假红）
+  runner=docker  mode=auto  game=E:/Documents/Dev/June/26th/.claude/worktrees/agent-a1bd5870dfcda537b/game  out=/tmp/tmp.zib2pd3ZLw
+  shot ok   vg_night.png
+  shot ok   vg_noon.png
+  void-gate ok   (静态不重画 + settle 期真的画过 + 空间往返必重画)
+  space-roundtrip 采集 ok  (town_before → interior → town_after)
+  shot ok   vg_int_home.png
+  shot ok   vg_int_home2.png
+  shot ok   vg_int_cafe.png
+  shot ok   vg_int_shop.png
+  shot ok   vg_int_wash.png
+  shot ok   vg_int_work.png
+  shot ok   vg_int_library.png
+  shot ok   vg_cafe2f.png
+  shot ok   vg_cafe2f_bare.png
+  floor-roundtrip 采集 ok  (town→1f→上楼2f→下楼1f→town，逐段楼层对)
+  shot ok   spring_noon.png
+  shot ok   spring_night.png
+  shot ok   summer_noon.png
+  shot ok   summer_night.png
+  shot ok   autumn_noon.png
+  shot ok   autumn_night.png
+  shot ok   winter_noon.png
+  shot ok   winter_night.png
+  shot ok   s1_winter_on.png
+  shot ok   s1_winter_off.png
+  shot ok   s1_rain_on.png
+  shot ok   s1_rain_off.png
+  shot ok   s3_winter_on.png
+  shot ok   s3_winter_off.png
+  shot ok   s3_rain_on.png
+  shot ok   s3_rain_off.png
+  shot ok   s5_winter_on.png
+  shot ok   s5_winter_off.png
+  shot ok   s5_rain_on.png
+  shot ok   s5_rain_off.png
+  base  正午帧世界主色 = (117, 141, 54)  im.size=(1280, 768)  (tod=0.5000 => _daylight 恰为纯白 => 它【就是】未调制基色)
+  PASS A1 夜帧  tick=488 tod=0.0333  im.size=(1280, 768)  world_mode=(50, 66, 43)  expect=(50, 66, 43)  dmax=0 (tol=0)
+  PASS A2 夜 (50, 66, 43) != 昼 (117, 141, 54)
+=== DAYNIGHT GATE: PASS ===
+  帧 1280x768  mode=portal space=cafe tick=600  cam_same=True  void_draws: before=1 interior=1 after=2
+  PASS A[map      ] rect=(290, 122, 990, 646) 变化像素=0/366800 (0.000%) 首例=None 最大通道差=0
+  PASS A[band_top ] rect=(288, 44, 992, 116) 变化像素=0/50688 (0.000%) 首例=None 最大通道差=0
+  PASS A[band_bot ] rect=(288, 652, 992, 690) 变化像素=0/26752 (0.000%) 首例=None 最大通道差=0
+  PASS B[before/band_top ] n=50688 颜色数=99(≥32) 标准差=28.15(≥10.0)
+  PASS B[before/band_bot ] n=26752 颜色数=1085(≥32) 标准差=30.00(≥10.0)
+  PASS B[after/band_top ] n=50688 颜色数=99(≥32) 标准差=28.15(≥10.0)
+  PASS B[after/band_bot ] n=26752 颜色数=1085(≥32) 标准差=30.00(≥10.0)
+  PASS C[interior] 与 town_before 不同的像素=98.37% (≥20%) —— 证明这一趟真的进过 cafe
+=== ROUNDTRIP GATE: PASS ===
+vg_noon.png  1280x768
+   池心取样 (599, 145, 681, 194)  4018 px  ⇒ distinct=55   [((31, 161, 175), 1607), ((60, 129, 134), 252), ((53, 122, 127), 126)]
+   参考差 REF=149.79  (草众数 (117, 141, 54) → 水众数 (31, 161, 175))   台阶阈值 noise=22.47
+   ★过渡折线/直线 path median=1.727  p10=1.281  一步直达占比=6.7%  (n=60 条剖线有完整 草→水 过渡段)
+   跨岸剖线 n=66  诊断 cross/REF median=0.419   (绝对 cross median=62.80 p90=108.63 · 诊断 win_max=170.19 被岸边装饰钉死，不判定)
+   台阶数   p90=7 median=5 min=1
+vg_night.png  1280x768
+   池心取样 (599, 145, 681, 194)  4018 px  ⇒ distinct=55   [((13, 41, 59), 1607), ((25, 34, 49), 252), ((22, 33, 48), 126)]
+   参考差 REF=47.43  (草众数 (50, 66, 43) → 水众数 (13, 41, 59))   台阶阈值 noise=7.12
+   ★过渡折线/直线 path median=1.922  p10=1.402  一步直达占比=5.5%  (n=55 条剖线有完整 草→水 过渡段)
+   跨岸剖线 n=66  诊断 cross/REF median=0.593   (绝对 cross median=28.11 p90=66.60 · 诊断 win_max=85.02 被岸边装饰钉死，不判定)
+   台阶数   p90=8 median=6 min=3
+
+  ✅ vg_noon.png：distinct=55 ≥ 2 · path median=1.727 ≥ 1.25 · 一步直达占比 6.7% ≤ 25% · 台阶 median=5 ≥ 2
+
+  ✅ vg_night.png：distinct=55 ≥ 2 · path median=1.922 ≥ 1.25 · 一步直达占比 5.5% ≤ 25% · 台阶 median=6 ≥ 2
+
+=== POND GATE PASS ✅ ===
+[INTSHELL] cafe       type=commercial   墙主面众数=#5a4028  (12272/16224 采样点)
+[INTSHELL] home       type=residential  墙主面众数=#886d49  (11616/14520 采样点)
+[INTSHELL] home2      type=residential  墙主面众数=#836a48  (14384/17360 采样点)
+[INTSHELL] library    type=public       墙主面众数=#556169  (12168/16224 采样点)
+[INTSHELL] shop       type=commercial   墙主面众数=#5a4028  (12272/16224 采样点)
+[INTSHELL] wash       type=public       墙主面众数=#556169  (11616/14520 采样点)
+[INTSHELL] work       type=workshop     墙主面众数=#44423e  (11616/14520 采样点)
+[INTSHELL] 7 栋 / 4 类：commercial, public, residential, workshop
+    cafe       home       异类     ΔE= 19.26  ok
+    cafe       home2      异类     ΔE= 17.72  ok
+    cafe       library    异类     ΔE= 29.50  ok
+    cafe       shop       同类     ΔE=  0.00  ok
+    cafe       wash       异类     ΔE= 29.50  ok
+    cafe       work       异类     ΔE= 18.28  ok
+    home       home2      同类     ΔE=  1.98  ok
+    home       library    异类     ΔE= 32.21  ok
+    home       shop       异类     ΔE= 19.26  ok
+    home       wash       异类     ΔE= 32.21  ok
+    home       work       异类     ΔE= 29.68  ok
+    home2      library    异类     ΔE= 30.54  ok
+    home2      shop       异类     ΔE= 17.72  ok
+    home2      wash       异类     ΔE= 30.54  ok
+    home2      work       异类     ΔE= 27.71  ok
+    library    shop       异类     ΔE= 29.50  ok
+    library    wash       同类     ΔE=  0.00  ok
+    library    work       异类     ΔE= 15.43  ok
+    shop       wash       异类     ΔE= 29.50  ok
+    shop       work       异类     ΔE= 18.28  ok
+    wash       work       异类     ΔE= 15.43  ok
+[INTSHELL] ✅ 室内外壳类型门 PASS（7 栋 / 4 类，异类最小 ΔE ≥ 8.0、同类最大 ΔE ≤ 4.0）
+[FURNROLE] cafe       期望=杯碟架    1 格 /  3600 px  签名6 色: #6e4d31 #3c2a1b #585c64 #eaf3f8 #c3a97a #9a8253
+[FURNROLE] home2      期望=书架     1 格 /  5329 px  签名5 色: #5a4028 #3c2a1b #5f7b34 #41607f #a8443a
+[FURNROLE] library    期望=书架     3 格 / 10800 px  签名5 色: #5a4028 #3c2a1b #5f7b34 #41607f #a8443a
+           └ C 臂：同屋 3 格 shelf 逐像素一致 ✅
+[FURNROLE] shop       期望=货架     2 格 /  7200 px  签名7 色: #5a4028 #3c2a1b #c3a97a #9c7748 #b98956 #e85a5a #815b36
+           └ C 臂：同屋 2 格 shelf 逐像素一致 ✅
+[FURNROLE] wash       期望=毛巾架    1 格 /  2652 px  签名6 色: #82868f #213b47 #eaf3f8 #f2dca8 #c3a97a #585c64
+[FURNROLE] work       期望=工具架    1 格 /  2652 px  签名6 色: #44423e #5a4028 #6e4d31 #a0a4ac #585c64 #ffd166
+[FURNROLE] 6 栋 / 5 类物件：书架、工具架、杯碟架、毛巾架、货架
+    cafe       home2      异类     ΔE= 58.36  ok
+    cafe       library    异类     ΔE= 58.36  ok
+    cafe       shop       异类     ΔE= 50.07  ok
+    cafe       wash       异类     ΔE= 29.19  ok
+    cafe       work       异类     ΔE= 34.08  ok
+    home2      library    同类     ΔE=  0.00  ok
+    home2      shop       异类     ΔE= 40.68  ok
+    home2      wash       异类     ΔE= 58.36  ok
+    home2      work       异类     ΔE= 51.83  ok
+    library    shop       异类     ΔE= 40.68  ok
+    library    wash       异类     ΔE= 58.36  ok
+    library    work       异类     ΔE= 51.83  ok
+    shop       wash       异类     ΔE= 53.92  ok
+    shop       work       异类     ΔE= 50.07  ok
+    wash       work       异类     ΔE= 32.64  ok
+[FURNROLE] ✅ 家具语义分化门 PASS（6 栋 / 5 类，异类最小 ΔE ≥ 12.0、同类最大 ΔE ≤ 8.0）
+[TREESTAND] 地面参考色 = #a8a492（取自空地格 (20, 20)，块内占比 14.6%）
+[TREESTAND] 林块1 格(2,18 6x13) 内部(4x11, 5324 px)  P竖=25.951 P横=24.796  地面色占比=0.0%
+[TREESTAND] 林块2 格(56,18 6x13) 内部(4x11, 5324 px)  P竖=25.919 P横=26.402  地面色占比=0.0%
+[TREESTAND] ✅ 林相点阵门 PASS（P >= 8.00 且 地面色 <= 22%）
+[TREESTAND] 地面参考色 = #0c1011（取自空地格 (5, 43)，块内占比 27.2%）
+[TREESTAND] 林块1 格(2,18 6x13) 内部(4x11, 5324 px)  P竖=13.069 P横=12.535  地面色占比=0.0%
+[TREESTAND] 林块2 格(56,18 6x13) 内部(4x11, 5324 px)  P竖=13.064 P横=13.322  地面色占比=0.0%
+[TREESTAND] ✅ 林相点阵门 PASS（P >= 8.00 且 地面色 <= 22%）
+[SEASON] 昼/春 地面主色 = (114, 140, 33)
+[SEASON] 昼/夏 地面主色 = (78, 112, 20)
+[SEASON] 昼/秋 地面主色 = (147, 128, 23)
+[SEASON] 昼/冬 地面主色 = (120, 144, 85)
+    春↔夏  ΔE00 =  11.74   ok
+    春↔秋  ΔE00 =  12.78   ok
+    春↔冬  ΔE00 =   8.21   ok
+    夏↔秋  ΔE00 =  18.42   ok
+    夏↔冬  ΔE00 =  14.69   ok
+    秋↔冬  ΔE00 =  15.93   ok
+[SEASON] 昼 最小两两 ΔE00 = 8.21 (春↔冬)  阈值 3.20  ⇒ PASS
+[SEASON] 夜/春 地面主色 = (48, 66, 27)
+[SEASON] 夜/夏 地面主色 = (33, 53, 16)
+[SEASON] 夜/秋 地面主色 = (62, 60, 18)
+[SEASON] 夜/冬 地面主色 = (51, 68, 68)
+    春↔夏  ΔE00 =   4.28   ok
+    春↔秋  ΔE00 =   8.19   ok
+    春↔冬  ΔE00 =  16.33   ok
+    夏↔秋  ΔE00 =   9.61   ok
+    夏↔冬  ΔE00 =  16.95   ok
+    秋↔冬  ΔE00 =  18.64   ok
+[SEASON] 夜 最小两两 ΔE00 = 4.28 (春↔夏)  阈值 3.20  ⇒ PASS
+=== SEASON GATE: PASS ===
+  PASS A1 SNOW s1_winter_on.png       coverage= 1617  (min=600)
+  PASS A1 SNOW s3_winter_on.png       coverage= 1154  (min=600)
+  PASS A1 SNOW s5_winter_on.png       coverage= 3508  (min=600)
+  PASS A2 RAIN s1_rain_on.png         coverage= 1460  (min=700)
+  PASS A2 RAIN s3_rain_on.png         coverage= 1460  (min=700)
+  PASS A2 RAIN s5_rain_on.png         coverage= 1459  (min=700)
+=== PRECIP GATE: PASS ===
+[CAFE2F] 内格区域 (376, 208, 904, 560)（~185856 px）  Q=24  DTOL=28
+[CAFE2F]   A 2F↔空2F 变化占比 = 0.1290 (门槛 ≥ 0.0600)  ← 非空/负对照
+[CAFE2F]   B 2F↔1F   变化占比 = 0.2304 (门槛 ≥ 0.1000)  ← 楼层可分
+[CAFE2F]   C 色数 2F=35 空2F=17 落差=18 (门槛 ≥ 8)  ← 有牙自证
+[CAFE2F] ✅ cafe 2F 像素门 PASS（非空 0.129≥0.060；与1F可分 0.230≥0.100；色数落差 18≥8 ⇒ 空2F 会判红=有牙）
+  帧 1280x768  journey=full mode=portal tick=600 cam_same=True
+    town_before   space=town   floor=outdoor  void_draws=1
+    cafe_1f       space=cafe   floor=1f       void_draws=1
+    cafe_2f       space=cafe   floor=2f       void_draws=1
+    cafe_1f_back  space=cafe   floor=1f       void_draws=1
+    town_after    space=town   floor=outdoor  void_draws=2
+  PASS L[town_before  ] space=town(应town) floor=outdoor(应*)
+  PASS L[cafe_1f      ] space=cafe(应cafe) floor=1f(应1f)
+  PASS L[cafe_2f      ] space=cafe(应cafe) floor=2f(应2f)
+  PASS L[cafe_1f_back ] space=cafe(应cafe) floor=1f(应1f)
+  PASS L[town_after   ] space=town(应town) floor=outdoor(应*)
+  PASS A1[map      ] 变化像素=0/366800 (0.000%) 首例=None 最大通道差=0
+  PASS A1[band_top ] 变化像素=0/50688 (0.000%) 首例=None 最大通道差=0
+  PASS A1[band_bot ] 变化像素=0/26752 (0.000%) 首例=None 最大通道差=0
+  PASS A1B[band_top ] 颜色数=99(≥32) 标准差=28.15(≥10.0)
+  PASS A1B[band_bot ] 颜色数=1085(≥32) 标准差=30.00(≥10.0)
+  PASS A2[cafe_1f 往返] 下楼回到的 1F 与进店 1F 变化像素=0/424692 (0.000%) 首例=None 最大通道差=0
+  PASS B[2F↔1F] 内格变化占比=0.1767 (≥0.07) (75033/424692) —— 2F 那一跳真的换了平面
+  PASS C[cafe_1f↔town] 全帧变化占比=0.9837 (≥0.20) —— 证明这一趟真的进过 cafe
+=== FLOOR ROUNDTRIP GATE: PASS ===
+  ✅ 视觉门（昼夜 / 界外层重画 / 空间往返 / 岸线 / 室内外壳 / 家具语义 / 树丛点阵 / 季节 / 降水）
+  ⏱  上一步 6. 用时 477s
+
+  ⏱  全程 1287s（**现算的**，不是抄的；机器忙闲会让它上下浮动，别把单次读成基准）
+=== CI PASS ✅ ===

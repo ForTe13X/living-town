@@ -32,6 +32,9 @@ const NAV_DIRS := [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, 
 const HOME_NEEDS := ["energy", "fun"]
 const JOURNEY_URGENT := 30.0    # 偏紧(need<70)才发起跨平面行程（本地已无满足者时）
 const PREEMPT_CRISIS := 12.0    # 承诺行程执行中，若【另一】需求跌破此危机线且当前行程目标本身不急 → 中止改救急（守 #01）
+const STARVE_NEED := 0.5        # 硬不变量 #01「无饿穿」的判据线：need ≤ 此值的 agent-tick 必须为 0。
+                                # 与 Harness._run_once:599 / DetGate._run:176 / Invariants.check_all 的那个 0.5 是同一条线，
+                                # 此前只以字面量散在三处。引擎自己从不拿它做决策 ⇒ 提取为常量对 logic 路零影响。
 # 顾客进店（多人室内）：镇上的【常客】(cafe_regular)在营业时段、fun 偏低且无紧急事时 → 承诺行程进咖啡馆喝咖啡，
 # 进去后与阿丽/其他客人同平面自然社交(闲坐/串门/八卦)，某需求偏紧再承诺行程出店办事。让咖啡馆成活的社交枢纽。
 const CAFE_VISIT_FUN := 68.0    # fun<此(营业时段) → 常客动了"去喝杯咖啡"的心思（抢在就近游戏机之前）
@@ -44,11 +47,47 @@ const GIFT_START := 3           # 每个 NPC 初始礼物数（give 破冰用）
 const MEET_HORIZON := 40        # invite 创建的 meet 承诺：deadline = now + 此
 const ATTEND_WINDOW := 16       # 离 deadline ≤ 此 → 引擎给「赴约」加权
 const NEED_CRISIS := 15.0       # 任一需求 < 此 → 放弃赴约（真危机才爽约 → broken）
-const SURVIVAL_GATE := 32.0     # 任一需求 < 此 → 本 tick 不社交，先去吃/睡（留赶路缓冲，防大 N 饿穿）。
+const SURVIVAL_GATE := 36.0     # 任一需求 < 此 → 本 tick 不社交，先去吃/睡（留赶路缓冲，防大 N 饿穿）。
                                 # 20→24→28→30→32：每次给 need-floor 更足缓冲，使 #01 无饿穿对【决策/地图扰动】鲁棒
                                 # （endorse 抑制曾令阿本社交需求饿穿；P2-4 加建筑改 blockers→轨迹蝶变，seed11 阿本赴咖啡馆途中饿穿）。
                                 # 30→32(B7,2026-07-25)：confide 倾诉压力调高后 seed6 蝶变饿穿(#01 11/12)——二分坐实肇因是
                                 # utility.json 的 confide_secret_pressure，与 S3b 三门无关；照旧循「加缓冲而非缩抑制」的老方子修复。
+                                # ★32→36（M2，2026-07-31）：**前五次都是「某个 seed 红了就往上抬一格」的蝶变修**，
+                                #   这一次是把整条剂量-响应曲线扫出来的。同一份 N∈{16,18,20,22,24} × seeds 1-36 × 60 天
+                                #   × backend=null 的 180 格网格，只改这一个数：
+                                #       gate   24    28    32(旧)   36    40
+                                #       #01 红 35/180  8/180  3/180  0/180  0/180
+                                #   **单调，跨 5 个剂量，且跨度一个数量级** ⇒ 这不是抽签，是一条真的鲁棒性曲线，
+                                #   而 32 落在它还没走平的那一段上（N=12 上够，N≥16 上不够）。
+                                #   真正的证据不是红绿计数（3→0 只有 3 个事件，Fisher p≈0.25，分辨不出），
+                                #   而是**连续余量**（216 格 × 6 个 N 的逐局最低 need）：
+                                #       全网格最差 need 地板 0.00 → **4.80**；p10 5.80 → 8.96；
+                                #       最长「social<15」连续段 **2974 tick(12.4 天) → 58 tick(0.24 天)**。
+                                #   ⇒ 抬这一格消掉的是**那一整类「一个人被钉住好几天」的吸收态**，不是把红格挪到别的 seed。
+                                #   机制（M2 逐 tick 追 N=20 seed 8 的 npc_13，60 天 14400 tick）——**先分清哪些是量的、哪些是推的**：
+                                #   【量到的】社交是五条 need 里**唯一没有无条件满足物**的一条（吃/睡/洗/玩都有物件，
+                                #     且 `_consume_for` 的红线是缺货绝不阻断动作；社交要对方同意）。social 在 tick 11313
+                                #     跌破本门之后**再没回来**，而此后 3087 个 tick 里 `_social_candidates` 返回的候选数
+                                #     **恒为 0（实测 max=0）** ⇒ **它是一个吸收态，不是一段低谷。**
+                                #   【量到的】此后四条非社交 need 的**均值**从 67-81 掉到 21-32（`hunger` 62 个 tick ≤0.5，
+                                #     而那 62 个 tick 的 option **全部是「吃饭」**）。⚠ 它们的**最大值仍能到 57-90**
+                                #     ⇒ **不是**"被截在门上"——我一开始按日边界采样读出这个结论，逐 tick 看是错的。
+                                #   【量到的】第 48 天之后别人对他发起的社交是 **21 次、全部是 gossip_rep、全部被他拒掉**：
+                                #     `_acceptance_margin` 里只有 greet/invite 带 `(100−need)×0.4` 这项「他很缺人」补偿，
+                                #     **gossip_rep 没有** ⇒ 越缺社交越拒得狠，而拒绝双向 −3 affinity ⇒ 棘轮。
+                                #     另有 2 次 confront 被接受，但 `_apply_social` 对 confront/apologize/rally_oust
+                                #     **在 `needs["social"] += 16/12` 那一行之前就 return 了** ⇒ 零社交进账。
+                                #   【推的，没做隔离干预】把"吸收态 ⇒ 其余 need 一起塌"这一步归给 P3 承诺抢占
+                                #     （social≡0 ⇒ `_min_need < PREEMPT_CRISIS` 从此恒真 ⇒ 任何目标 need ≥本门的行程每 tick 被打断）。
+                                #     **这条链没有被反事实验证过**，别把它当已证。
+                                #   ⇒ 抬门买到的是「掉进吸收态之前的余量」，**它没有消掉吸收态本身**（回执 does_not_detect 有原文）。
+                                #   代价（N=12 seeds 1-12 活性实测）：invite/meet 1166→1067(−8.5%)、confide 89→86(−3.4%)，
+                                #   seed 覆盖 27 类全部仍是 12/12（活性门过）。**40 也量了**：大 N 红 0/300、余量更好一点
+                                #   （地板 6.20、p10 11.30），但代价翻两到五倍（invite/meet −16%、confide −19%）
+                                #   ⇒ 取 36：32→36 那一步买到的是 0.00→4.80 的地板与 2974→58 的钉住时长，
+                                #   36→40 只再买 4.80→6.20 与 58→36，而 B7 用了一整波才把「温暖的一半」救回来。
+                                #   ⚠ 它**不是零**：36 在 seeds 1-60 的 300 格上仍有 1 格红（N=18 seed 53，18 need·tick、
+                                #   0.1 天的一次擦碰），与本次要消掉的那一类（6.3 天、2867 need·tick）不是同一件事。
 const CONFLICT_TRIGGER := 6.0   # resentment 累积到此 → 触发一段冲突（simmering）
 const ESC_THRESH := 2           # 升级次数到此 → escalated
 const LINGER_AFTER := 350       # 触发后 tick 未对质 → lingering（冷战）
@@ -87,6 +126,21 @@ const MOB_ERUPT_STANDING := -2.5  # 对象在 ag 眼里名声极差(≤此，比
 # （故有 1 个人设例外、不同于 rally_oust 的零例外）。ON：仅 _is_gossipy(爱八卦=阿丽) 拉人统一口径、余弃权。
 # #01-safe：全面弃权曾蝴蝶到 seed-4 的 #01 无饿穿——根因是抑制 endorse 减了全镇社交吞吐、阿本社交需求赶不上；
 #   解法不是缩抑制、而是把 SURVIVAL_GATE 20→24 给 need-floor 更足赶路缓冲（真·鲁棒性升级，见其定义处）→ 12/12 绿。
+# ★2026-07-30 F5 复核（F4 报「endorse 只对 aria 一个人设出现在候选集里」，此处备案，免得再被当成 bug 查一遍）：
+#   **观察属实，而且它【就是】上面这三行写的那个设计，不是缺陷。** 用既有的 Sim.decision_sink 钩子
+#   （只读、不抽 RNG、不进 digest）量引擎真的枚举出来的候选集：
+#   · N=12 × seeds 1-12 × 60 天，决策 61258 次：endorse 被供 **448 次全部是 aria**，其余 11 人 **0**。
+#   · **限制器不是派系门**——同一张表里 ben 5367 / shu 5696 / qin 5454 次决策时都【在派系中】，
+#     它们缺的只是 `_is_gossipy`。而 GOSSIP_TRAITS 只有「爱八卦」，12 个人设里只有 aria 带它。
+#   · **F4 那句「只对 aria」在 N=60 下要收窄**：扩容克隆按 `adata[i % 12]` 轮转人设，
+#     于是 npc_12/24/36/48 也拿到阿丽的人设 ⇒ 实测 seeds 1-2 × 20 天 × N=60，
+#     endorse 被供的是 **5/60 个 agent**（aria + 那四个克隆），不是 1 个。
+#     正确的说法是「**按 trait 限定**」而不是「按 aria 这个人限定」。
+#   ⇒ 其余 11 个人设的 endorse 台词是【明知的死数据】：只要没人被赋予「爱八卦」，它们就永远取不到。
+#     这是可接受的，因为把门放开【会移动金标】（R12 三锚 + 留出种子），而放开的理由只有"台词没被用上"——
+#     那是让证据去迁就数据，不是让数据去迁就证据。要改就单独派一棒，并且先重跑盲评。
+#   ⚠️ 上面那句「余 9 人设皆 0」的分母已经过期：盲评时全镇 10 个人设，今天 12 个
+#     （Wave 3 加人时没有回来补跑盲评）⇒ 后加的那两个人设【没有被盲评覆盖过】。这是记录，不是结论。
 const FACTION_ENDORSE_DEFER := true
 # S1（声誉×八卦×宽恕，docs/10 §A/§B）
 const STANDING_CAP := 3.0       # standing 范围 [-CAP,+CAP]；sign=good/bad
@@ -112,6 +166,17 @@ const FACTION_ENDORSE_BONUS := 12.0
 const FACTION_ENDORSE_AFF := 3.0
 const OUST_BASE := 20.0
 const FACTION_AFF_MARGIN := 2.0
+## ★Q1 派系接触门（docs/65）：只有【真的打过交道】的人才可能被聚进同一派系。
+## 为什么需要它：`_recompute_factions` 原本对全镇每个人的私有 `attitudes` 逐对比较，**零空间/知识门**
+## ⇒ 只改一个人的私有立场（零事件、零信念、零接触），别人的 `faction` 在下一个日界就跟着变，
+## 而 `faction` 直接进候选生成（endorse / rally_oust / 同派系亲和）与接受判定（`_faction_term`）。
+## 实测（docs/65 §一，5 个 N × 5 个 seed 的隔离臂，逐格自证 co_ticks=0 且 familiarity=0）：
+##   **10/25 格有别人当夜换派系（4-16 人）、5/25 格世界前缀链真的分叉**；加门后 25/25 格逐字节相同。
+## 判据取 `familiarity`：它只在**两处**自增，都是真的共处并完成了一次事务
+## （`_commit_social` 里被接受的社交、`_resolve_commitments` 里守约赴会的 meet），且**从不衰减** ⇒
+## `familiarity >= 1` 恰好等于"至少完整打过一次交道"。`_impt` 早就用 `<=1.0` 表示"首次接触更显著"，同一习语。
+## （引符号不引行号——见 Invariants.digest 抬头那条教训：行号是本仓库最容易腐烂的一类事实。）
+var faction_fam_th := 1.0         # <=0 ⇒ 门关闭，逐字节回到 Q1 之前的轨迹（ablation 开关，见 docs/65 §二·3）
 const PACT_TRUST_TH := 12.0
 const PACT_FAM_TH := 6.0
 const PACT_COMPLEMENT_TH := 3
@@ -176,6 +241,11 @@ var _path_cache := {}           # aid -> {goal,path,i}：算一次跟着走(大�
 var _spaces := {}               # spaces.json spaces：id -> {kind,label,bounds,floors,default_floor}
 var _portals := []              # spaces.json portals：[{id,kind,from:{space,floor,pos},to,bidirectional,...}]
 var _interiors_data := {}       # interiors.json：space -> floor -> {label,floor,furniture[]}
+var _authored_spaces := {}      # receiver-owned portal authority; never restored from a save
+var _authored_portals := []     # exact current data/spaces.json graph; traversal reads only this copy
+var _authored_agent_homes := {} # agent id -> {space,floor}, rebuilt from data/agents.json
+var _authored_interiors_data := {} # current interior collision source; never restored from a save
+var _authored_solid_props := [] # map.json draw/nav authority; current-schema saves must match exactly
 var _nav_grids := {}            # space -> floor -> {w,h,blocked}：每平面独立导航网（town 复用 _blocked 引用）
 var rhythm := {}                # 昼夜节律偏好表 data/rhythm.json：{phases:{name:[lo,hi)}, prefs:{need:{phase:factor}}, default}
 var utility := {}               # 效用/接受权重表 data/utility.json（docs/14 §1 步骤4）：行为调参数据化，缺键→代码默认(逐字节不变)
@@ -204,7 +274,13 @@ var _buildings_compiled := false # 阶段2 室内编译只跑一次（防重入�
 # ── Wave 1b 经济（docs/15 §3）：data/economy.json 驱动；缺文件→_econ_on()=false→全部短路=逐字节不变 ──
 var economy := {}               # {start_coin, town_start, prices:{action:int}, wages:{action:int}}
 var town_coin := 0              # 镇库（吃饭收费流入、做活工资流出 → 闭环）
-var econ_total0 := 0            # 开局货币总量（金钱守恒硬不变量的基准：Σagent coin + town_coin 恒等于它）
+# ── 车道 E2a 钱跨镇边界（docs/151/154）：external_coin = 「外部世界」这一档账户，进 #34 守恒集 ──
+#   import 付费 = transfer("town","external",cost)：钱不再凭空消失/出现，而是搬进这个常驻账户
+#   （对称 Sim.gd:996 玩家带钱入镇 econ_total0+=玩家coin 的"钱不凭空出现"哲学）。
+#   ⚠ 它必须与 town_coin 一样【per-run 重置】（下方 start_new）——否则 goto_tick 反复 start_new 时
+#     上一局的 external 残值污染 econ_total0 快照、整局 money_total 位移、#34 反把 bug 盖绿（docs/154 blocker-1）。
+var external_coin := 0          # 「外部世界」账户（import 付费的收款方；export 收钱的付款方，留 E2b）
+var econ_total0 := 0            # 开局货币总量（金钱守恒硬不变量的基准：Σagent coin + town_coin + external_coin 恒等于它）
 # ── Wave 3c 住房产权（docs/15 标注低优先；接 buildings.json rooms.owner）：每夜房客→房东经 Ledger 转租金 ──
 var housing := {}               # {rent:int, tenancies:[{tenant:id, landlord:id}]}；缺文件→无租金=逐字节不变
 # ── Wave 3a 治理/选举（docs/15 §3.3「收获期」）：S2 attitude 即选票，快照纯函数计票；缺文件→零扰动 ──
@@ -212,9 +288,57 @@ var elections := {}             # {topic, every_days, offset, abstain_below}
 var election_log: Array = []    # 每次选举结果 {day,topic,yea,nay,abstain,pass,voters}（soak + 硬不变量#37 用）
 var last_election := {}         # 最近一次结果（观察台/HUD）
 var econ_stats := {"meals_paid": 0, "meals_free": 0, "wages_paid": 0, "wages_skipped": 0}  # 诊断计数
+# ── Wave E 劳动产出（docs/47 §二-E1）：data/production.json 驱动；缺文件→_prod_on()=false→全部短路=逐字节不变 ──
+## ★红线继承：economy.json 的 `_doc` 写死了"钱只造分化与戏剧、不造饿死（付不起照吃 meals_free）"。
+##   本系统整个建在这条之下：**缺货绝不阻断动作、绝不削减需求补给**（没货也照吃），后果只落社会面。
+##   任何把库存做成生存门的改动都是在给硬不变量 #01 开新的饿死通道 —— 不允许。
+var production := {}            # {start_stock, goods:{g:{cap,spoil_per_day,blame}}, produce:{职位:{good,amount}}, consume:{动作:{good,amount}}, scarcity_markup, shortage_standing}
+                                #   ★Wave K1 起它是**派生值**：= _pool_rescale(_production_raw, 人口)。见 _pool_rescale。
+var _production_raw := {}       # data/production.json 的原样（未换尺度）。start_new 每次都从它重算 production
+                                #   ——不能就地改 production，否则 goto_tick 反复 start_new 会把倍率乘上去。
+# Wave E / P1-b：物流进口。lane 到期先生成 CargoManifest，码头工完成卸货才经唯一钱/库存通道提交。
+#   缺文件 → _logi_on()==false → 整段短路 → 逐字节回到今天（off 门，与 production.json / economy.json 同一套纪律）。
+#   arrival 是纯 f(route,day,lane-index)；commit 的 type="import"、actor=node 仍由 #38/#44/#45 守账与溯源。
+var logistics := {}
+## ── Wave K1 双尺度（docs/41 §0.5 规模能力矩阵，用户 2026-07-31 定）────────────────────────
+## **消耗侧一个字不动**（60 个 agent 逐个真算：谁吃了什么、谁缺了什么、缺了记恨谁）。
+## **产出侧换尺度**：一次"本职在班完成"不再代表【一个人】的产量，而代表【这一行在这么大的镇子上】的产量。
+## 为什么必须换：岗位表恒为 9 人（jobs.json 6 + production.jobs 3），克隆出来的 npc_<i> 不入表 ⇒
+##   **任何 N 下都只有一个泥瓦匠**，而睡觉次数随人口精确线性涨（docs/54 §三）。
+## 契约（prod_pooled）：**按【产出是逐笔还是宏观池】分档，不按人口分档**——后者等于给出货配置预埋一条永不变红的门。
+var prod_pooled := false        # 产出契约：true=宏观池（production.scale 生效），false=逐笔（缺 scale 块 ⇒ 逐字节回到今天）
+var prod_pool_num := 1          # 池倍率 = num/den（**整数有理数，不引浮点** ⇒ 逐字节可回放）
+var prod_pool_den := 1          # num==den（出货阵容 N=12）⇒ 倍率恰为 1 ⇒ 直接返回原 dict ⇒ 逐字节等同逐笔
+## L2（docs/58 §二）：工位广告的【人口感知】吸引力乘子。缺 `production.work_pull` 键、
+## 或本局人口 ≤ base_population ⇒ 恒 1.0 ⇒ **出货阵容 N=12 逐字节不变**（结构性，不是走运）。见 _work_pull_mult。
+var work_pull_mult := 1.0
+## T1（docs/76）：工位广告的【镇库回拉】。缓存的是数据里那三个整数，不是一个乘子——
+## 乘子随 town_stock 每 tick 变，只有 `den<=0`（缺键/关掉）这一档能预先短路。见 _stock_pull_mult。
+var stock_pull_hi := 0          # 空仓时的分子（/den）；den<=0 ⇒ 整条关掉 ⇒ 逐字节回到 T1 之前
+var stock_pull_lo := 0          # 满仓时的分子（/den）
+var stock_pull_den := 0
+var town_stock := {}            # 镇级库存 good -> 件数（唯一通道 = _stock_move；#38 从 event_log 独立重算）
+var stock_total0 := {}          # 开局库存快照（#38 的基准，同 econ_total0 之于 #34）
+var _stock_day := {}            # good -> 当日已消耗但尚未入账的件数：日界一次性写一条 consume 事件
+                                #   （若逐次记账，60 天要往 event_log 里塞 ~1400 条"有人吃了一口"，
+                                #    Main._rebuild_feed 只回扫尾部 200 条 ⇒ 会把小镇纪事整块冲掉。按天入账既保住账本又不刷屏。）
+var _short_day := {}            # good -> 上一次写过 shortage 事件的 day（同一天同一货只报一次；后果计数仍逐次累加）
+var _trade_day := {}            # ★AA3：商贩 id -> 上一次写过买卖口碑后果的 day（日名额，理由与 _short_day 同一条，见 _trade_fallout）
+## P1-b CargoManifest 权威态。Dictionary 供 id 精确寻址，order 保存 authored arrival 顺序；二者只含可存档纯数据。
+## 物理 East Ocean 港与 carrier 视觉尚未落地；route_id 只声明货源，不把当前 port_dock 坐标冒充东海岸。
+var cargo_manifests: Dictionary = {}   # id -> {route_id,lane_index,node,good,arrived_day,initial_qty,remaining_qty,price_*,state}
+var cargo_manifest_order: Array = []   # manifest id，严格按 lane 著者序 × day 到港顺序追加
+var prod_stats := {"produced": {}, "consumed": {}, "short": {}, "spoiled": {}, "attempts": {}, "work": {}}  # 诊断计数（逐 good / 逐动作 / 逐职位）
 var agents: Array = []          # [agent dict]
 var _agent_by_id := {}
-var spawn_count := 0            # >0：克隆扩容到该 agent 数（扩 N 测试用；0=用数据原样 6 个）
+var core_population := 0        # 本局核心居民数；港口 affiliate append-after-pool，不得把 #15/#20 的小镇口径悄悄翻成大 N
+var spawn_count := 0            # >0：克隆扩容到该 agent 数（扩 N 测试用；0=用数据原样 **12** 条 agents.json）
+                                #   ⚠ 这里原先写死"6 个"，docs/54 §八 2026-07-30 报过它过期、当时没人改；
+                                #     数是 `agents.json.agents.length` 长出来的，别再写死（K1 修，同 Invariants.gd 文件头那条）。
+                                #   ★K1 起它还决定产出侧的宏观池倍率（见 _pool_rescale）：克隆出来的 npc_<i>
+                                #     **不入岗位表**（:702 只给 id/persona/spawn/home），所以任何 N 下每个职位仍只有一个持有人
+                                #     ⇒ 评审建议的 `worker_count × work_capacity_factor(population)` 里，
+                                #       `worker_count` 这一半在现有结构下【不可动】，只有 capacity_factor 那一半够得着。
 var decide_period := 1          # L2 决策切片：每 agent 仅在 tick%P==hash(id)%P 做重决策(摊平大N尖峰)；1=不切片(零行为变化)
 var lod := false               # L3 保守 LOD：true=远端 agent 降频决策（扩 N 用）；false=全保真
 var lod_aggregate := false     # L3 激进 LOD：true=远端 agent 完全不跑 option/候选，只被动维持需求(冲上百 NPC)
@@ -226,6 +350,11 @@ var lod_focus := Vector2i(12, 8)
 const AGG_RELIEF := 6.0        # 激进 far：每次被动维持给最低需求补的量
 const SURVIVAL_NET_FLOOR := 8.0  # LOD 兜底：need 跌破此值就地小补（仅 LOD 开启时，补 LOD 节流/远端化造成的进食延迟；off 永不触发）
 var cand_calls := 0            # 成本探针：本 run 累计候选枚举次数（LOD 收益的客观度量）
+var ext_veto := 0              # P2-3 探针：外部后端的选择被【生存否决】真的改掉的次数（backend==null 时恒 0）
+## P2-3 生存否决线（见 _survival_ok）。min_need 跌破它 ⇒ 外部后端只能挑"在救某条告急 need"的候选。
+## 只对【外部后端】生效，backend==null 时 _survival_ok 根本不被调用 ⇒ 金标路与本值无关。
+## 定这个值是一次【守 #01 vs 留给决策路多少自由度】的取舍，实测扫线见 docs/45。
+var survival_veto_line := SURVIVAL_GATE
 ## ★仅 bench/测试用的置换开关（默认 0=off → 一条分支都不进 → 逐字节不变）。
 ## 用途：机检「tie-break 与候选【枚举顺序】无关」这条不变量。旧实现按数组下标加盐，任何重排都改写历史；
 ## 现在盐取自候选身份(_cand_salt)，于是打乱数组应当【选出同一个动作、跑出同一份 digest】。
@@ -237,6 +366,15 @@ var event_digest := 0          # L4 增量滚动摘要：每事件 O(1) 折叠�
 
 var event_log: Array = []       # 不可变事件账本（replay/debug/bench 的根）
 var _next_event_id := 1
+## P1-ac：货运投影只消费这个由 event_log 派生的索引。索引不是第二权威；
+## event_log 仍是账本，size/逐行签名不一致就 fail-closed，而不是猜测修复。
+var _cargo_event_index := {"event_size": 0, "arrivals": {}, "receipts": {}, "tx": {}}
+var observatory_projection_event_reads := 0 # compatibility receipt: successful indexed event reads
+var observatory_projection_query_ops := 0 # total bounded ledger/index/tx dereferences in one projection
+const OBSERVATORY_QUERY_OP_BUDGET := 96
+var observatory_projection_query_budget_failed := false
+var observatory_projection_query_budget_override := -1
+var observatory_projection_test_extra_tx_row_deref := false
 # S4：模型决策当「外部输入」记入 trace → 即使模型非确定，回放也可复现（docs/11 §5）
 var decision_trace: Array = []  # [{tick,agent,kind,action,partner,subject,say,cand_hash}]（落地的模型决策）
 var decision_sink: Callable = Callable()  # Phase-0 对拍数据集：默认空=off；设了则每次 logic 决策把 (ag,cands,pick_i) 喂给它。不抽 RNG、不进 event_log/digest、CI 恒空 → 红线零影响。
@@ -246,6 +384,21 @@ var replay_drift := 0           # 回放时记录的 pick 已不在当前合法�
 var _replay_active := false
 var _replay_ticks := {}         # agent_id -> [sorted 记录决策 tick]（按序+按 tick 还原异步时机）
 var _replay_ptr := {}           # agent_id -> 当前回放指针
+
+# PlayerTraceV1 is authoritative Sim state.  Main emits public inputs; receipts are
+# deterministic witnesses recomputed by those same public boundaries during replay.
+const PLAYER_TRACE_VERSION := 1
+const PLAYER_TRACE_MAX_ENTRIES := 4096
+const PLAYER_TRACE_MAX_ENTRIES_PER_TICK := 64
+const PLAYER_TRACE_MAX_PAYLOAD_BYTES := 4096
+const PLAYER_TRACE_MAX_CHAT_BYTES := 1024
+const PLAYER_TRACE_MAX_SAVE_BYTES := 8388608
+var player_trace: Dictionary = {}
+var player_trace_available := true
+var player_trace_last_error := ""
+var _player_trace_tick_index: Dictionary = {}
+var _player_trace_replay_active := false
+var _player_trace_replay_expected: Dictionary = {}
 
 ## S4：从 decision_trace 装载回放（在 start_new 前调用）。回放将复现记录的每个模型决策与其时机。
 func set_replay(trace: Array) -> void:
@@ -278,6 +431,14 @@ var confide_events := 0
 var betray_events := 0
 var freerider_dissolves := 0
 var aid_accepted := 0
+## ★Q1 接触门的**累计**违例计数（只观测、决策路零引用，与 endorse_events 等同一档）。
+## 为什么必须有它：`#25` 只在跑完时查**终态**，而 12 人的镇跑 60 天之后【人人都认识人人】
+##   ⇒ 把接触门整条删掉，终态判据照样全绿（实测：N=12×20 天 3/3 绿；同一变异体在 N=60×20 天
+##      与 N=12×1 天上才红。见 docs/65 §二·5 与 §五）。
+##   那正是 docs/41 §2 第三个盲区——**判据没问题，出问题的是喂给它的那个世界**。
+## 这个计数器把判据从"终态有没有未谋面同派系"改成"**这一局有没有【发生过】一次未谋面的归堆**"，
+## 于是它在任何 N、任何天数上都有牙（day 1 就会红）。门关时 `_acquainted` 恒真 ⇒ 恒 0 ⇒ ablation 不假红。
+var fac_unmet_placements := 0
 var factions := {}              # medoid_id -> [member_id...]（每夜全量重建的只读视图）
 var pacts_index: Array = []     # [{id,key,a,b,formed,status,defect_streak,...}]（单一真相源）
 var _next_pact_id := 1
@@ -375,6 +536,25 @@ static func hash_self_test() -> String:
 		return "fnv1a32_into 与 fnv1a32 不一致"
 	return ""
 
+## ★Codex 外审 P0-2（2026-08-10）：名声每 3 天向 0 漂移【1】。旧实现 `x - signf(x)` 对 |x|<1 会【翻号】
+## （−0.2→+0.8；接受规则 STANDING_K=6 放大成约 6 分 acceptance 摆动，非可忽略数值噪声），把"慢淡化"写成了
+## "永久跨零振荡"。改用 move_toward：向 0 移动至多 1（|x|≤1 直接归 0、|x|>1 减 1）。纯 abs/sign/min/加、无 libm ⇒ 逐字节可复现。
+static func _standing_drift(x: float) -> float:
+	return move_toward(x, 0.0, 1.0)
+
+## 性质自检（Harness/S0 启动即跑、红先于绿）：漂移一次后必满足【不翻号·绝对值不增·零保持零】。旧 `x-signf(x)` 在此必红。
+const STANDING_DRIFT_VEC := [-2.0, -1.0, -0.6, -0.2, 0.0, 0.25, 0.5, 1.0, 2.0]
+static func standing_drift_self_test() -> String:
+	for x in STANDING_DRIFT_VEC:
+		var y := _standing_drift(float(x))
+		if signf(y) != signf(float(x)) and y != 0.0:
+			return "standing_drift(%s)=%s 翻号（应向 0 淡化、绝不跨零）" % [str(x), str(y)]
+		if absf(y) > absf(float(x)):
+			return "standing_drift(%s)=%s 绝对值增大（应单调向 0）" % [str(x), str(y)]
+		if float(x) == 0.0 and y != 0.0:
+			return "standing_drift(0)=%s 非零" % str(y)
+	return ""
+
 # ── 确定性 RNG（per-agent 计数器子流，docs/12 §L0）：种子混入 agent 维 who → 同 tick 同 salt 的
 # 不同 agent 不再撞同一随机流(WSC15 相关坑)，且扩 N 时各 agent 的流不随 N 漂。who=0 兼容旧的非 per-agent 调用。
 func _rng_at(salt: int, who: int = 0) -> RandomNumberGenerator:
@@ -406,6 +586,7 @@ func _read_json(path: String) -> Dictionary:
 func _load_data() -> void:
 	needs_def = _read_json("res://data/needs.json").get("needs", [])
 	world = _read_json("res://data/map.json")
+	_authored_solid_props = _as_arr((world.get("areas", {}).get("dock", {}) as Dictionary).get("solid_props", [])).duplicate(true)
 	_compile_buildings()                            # 阶段2：buildings.json 编译期展开室内(直接写 world 数组/字典，须在 objects 转字典之前)
 	rhythm = _read_json("res://data/rhythm.json")   # 昼夜节律偏好表（缺文件→空→_phase_pref 恒返 1.0=零扰动）
 	utility = _read_json("res://data/utility.json") # 行为效用/接受权重（缺文件/缺键→_w 返代码默认=零扰动）
@@ -419,12 +600,39 @@ func _load_data() -> void:
 	housing = _read_json("res://data/housing.json") # Wave 3c 住房租金（缺文件→无租金=零扰动）
 	elections = _read_json("res://data/elections.json") # Wave 3a 选举（缺文件→不选举=零扰动）
 	lifecycle = _read_json("res://data/lifecycle.json") # Wave 3b 生命周期（缺文件→无季节无年龄=零扰动）
+	# Wave E 劳动产出（缺文件→_prod_on()=false 全短路=逐字节不变）。
+	# ⚠ 这一行【不能】直接调 _read_json：那个函数在文件缺失时 push_error("缺数据文件")，而 ci.sh 的 scan 会把
+	#   USER ERROR 判红 —— 于是"删掉 production.json 跑一遍"这个【零扰动对照】自己会把 CI 弄红，
+	#   本棒最重要的那条验收就没法在 CI 里跑。先 file_exists 再读 ⇒ 缺文件是【合法的关闭态】，不是错误。
+	if FileAccess.file_exists("res://data/production.json"):
+		production = _read_json("res://data/production.json")
+	# Wave E1 物流/进口（缺文件→_logi_on()=false 全短路=逐字节不变）。同 production.json：先 file_exists 再读，
+	#   免得 _read_json 的 push_error("缺数据文件") 把「删掉 logistics.json 跑一遍」这条零扰动对照自己弄红。
+	if FileAccess.file_exists("res://data/logistics.json"):
+		logistics = _read_json("res://data/logistics.json")
+	# K1：留一份未换尺度的原样。start_new 每次从它重算 production（人口在那时才知道，且 goto_tick 会反复重开）。
+	_production_raw = production
+	_merge_prod_jobs()                              # F1：production.jobs 里的新岗位(商贩/环卫工)并进岗位表；缺该键=今天的六个岗位
 	# P3 Tier-B：Space/Floor/Portal 合同 + 室内内容（缺 spaces.json → 空 → 全 town/outdoor → 逐字节不变）。
 	var _sp := _read_json("res://data/spaces.json")
 	_spaces = _sp.get("spaces", {})
 	_portals = _sp.get("portals", [])
+	_authored_spaces = (_spaces as Dictionary).duplicate(true)
+	_authored_portals = (_portals as Array).duplicate(true)
+	_authored_agent_homes = {}
+	var authored_agents := _read_json("res://data/agents.json")
+	for raw_def in _as_arr(authored_agents.get("agents", [])) + _as_arr(authored_agents.get("affiliates", [])):
+		if not (raw_def is Dictionary):
+			continue
+		var adef: Dictionary = raw_def
+		var sa: Dictionary = adef.get("spatial_address", {}) if adef.get("spatial_address", {}) is Dictionary else {}
+		_authored_agent_homes[String(adef.get("id", ""))] = {
+			"space": String(sa.get("space_id", "town")), "floor": String(sa.get("floor_id", "outdoor"))}
 	_interiors_data = _read_json("res://data/interiors.json")
+	_authored_interiors_data = (_interiors_data as Dictionary).duplicate(true)
 	_compile_interiors()                            # 把带 advertises 的室内家具编译成 world 对象(标平面)，须在数组→字典之前
+	_compile_worksites()                            # F1：production.worksites → town 平面的工位对象，同样须在数组→字典之前
+	_compile_ports()                                # P1-a：logistics.nodes 中有广告位的功能港口 → town world 对象
 	var objs := {}
 	for o in world.get("objects", []):
 		o["pos"] = Vector2i(int(o["pos"][0]), int(o["pos"][1]))
@@ -558,9 +766,165 @@ func _compile_interiors() -> void:
 					"advertises": adv.duplicate(true)})
 	world["objects"] = objs
 
+## ── F1 分工的空间落点（docs/48 §一-F1）───────────────────────────────────────────
+## ★为什么新岗位与新工位都写在 production.json，而不是写进 jobs.json / map.json：
+##   本棒的零扰动对照是「把新数据摘掉 ⇒ 金标逐字节回到今天」。写进 map.json 的对象无论 production 在不在
+##   都会存在、写进 jobs.json 的岗位无论 production 在不在都会上班 ⇒ 那条对照【结构上不可能成立】。
+##   一个门、一份数据、一次 ablate —— 与 economy.json / jobs.json / production.json 已验证好用的那套同形。
+
+## production.json 的 jobs 段 = 本波新增的岗位（商贩 / 环卫工）。只补不覆盖：jobs.json 已给该居民派了活就不动，
+## 手写数据永远压过本段。缺 jobs.json（jobs 为空）时【整段不生效】——新岗位不能凭空造出一个没有岗位表的世界。
+func _merge_prod_jobs() -> void:
+	if not _prod_on() or jobs.is_empty() or not (jobs.get("jobs", {}) is Dictionary):
+		return
+	var add: Dictionary = production.get("jobs", {}) if production.get("jobs", {}) is Dictionary else {}
+	var tbl: Dictionary = jobs["jobs"]
+	for aid in add:                                     # JSON 字典保序 → 遍历序确定 → _holder_of_title 稳定
+		if not tbl.has(String(aid)) and add[aid] is Dictionary:
+			tbl[String(aid)] = (add[aid] as Dictionary).duplicate(true)
+
+## production.json 的 worksites 段 → town 平面上的工位对象（工作台/面案/清扫车/摊位）。
+## 确定性：authored 顺序、id 来自数据、无 RNG/Time/计数器。缺该键 → 一个对象都不加 → 地图逐格原样。
+## 护栏与 _compile_buildings 同形：畸形项【确定性跳过 + push_error】，绝不半改 world。
+## ★区域归属是硬校验而不是注释：申报的 area 必须与 _area_at(pos) 相符，否则跳过。
+##   docs/43 §1.2b 记过「地图门抓不到合法但语义不对」——把工位放进正确的区是这一棒要守的那条语义，
+##   所以它有两道独立的门：这里（运行期，落 push_error → ci.sh 的 scan 判红）与 tools/audit_map.py（CI 静态）。
+func _compile_worksites() -> void:
+	if not _prod_on():
+		return
+	var objs: Array = world.get("objects", [])
+	var used := {}
+	for o in objs:
+		used[String((o as Dictionary).get("id", ""))] = true
+	for w in _as_arr(production.get("worksites", [])):
+		if not (w is Dictionary):
+			continue
+		var wd: Dictionary = w
+		var wid := String(wd.get("id", ""))
+		var pos: Array = _as_arr(wd.get("pos", []))
+		if wid == "" or used.has(wid) or pos.size() < 2:
+			push_error("worksite id 缺失/撞车/pos 非法，跳过(否则静默覆盖或凭空候选→漂 digest): " + wid)
+			continue
+		var adv: Array = _as_arr(wd.get("advertises", []))
+		if adv.is_empty():
+			continue                                    # 无广告位 = 不产候选 → 不必进 world（纯装饰留给视图层）
+		var apos := Vector2i(int(pos[0]), int(pos[1]))
+		var ar := _area_at(apos)
+		if ar == "" or String(wd.get("area", ar)) != ar:
+			push_error("worksite %s 的格 %s 申报 area='%s' 实为 '%s'（空=不在任何区），跳过" % [
+				wid, str(apos), String(wd.get("area", "")), ar])
+			continue
+		used[wid] = true
+		objs.append({"id": wid, "type": String(wd.get("type", "")), "area": ar,
+			"pos": [apos.x, apos.y], "advertises": adv.duplicate(true)})
+	world["objects"] = objs
+
+## E1 数据门：缺 logistics.json → 恒 false → 进口/#44 每一处都在第一行短路 → 逐字节回到今天。
+func _logi_on() -> bool:
+	return not logistics.is_empty()
+
+## P1-a：把 logistics.nodes 里【有 advertises】的节点编译成真实 town world 对象。
+## 与 worksites 同一纪律：静态、著者序、无 RNG/Time；删 logistics.json 即整段关闭。
+func _compile_ports() -> void:
+	if not _logi_on():
+		return
+	var objs: Array = world.get("objects", [])
+	var used := {}
+	for o in objs:
+		used[String((o as Dictionary).get("id", ""))] = true
+	for node in _as_arr(logistics.get("nodes", [])):
+		if not (node is Dictionary):
+			continue
+		var nd: Dictionary = node
+		var nid := String(nd.get("id", ""))
+		var pos: Array = _as_arr(nd.get("pos", []))
+		var adv: Array = _as_arr(nd.get("advertises", []))
+		if adv.is_empty():
+			continue
+		if nid == "" or used.has(nid) or pos.size() < 2:
+			push_error("port node id 缺失/撞车/pos 非法，跳过: " + nid)
+			continue
+		var apos := Vector2i(int(pos[0]), int(pos[1]))
+		var ar := _area_at(apos)
+		if ar == "" or String(nd.get("area", ar)) != ar:
+			push_error("port node %s 的格 %s 申报 area='%s' 实为 '%s'，跳过" % [
+				nid, str(apos), String(nd.get("area", "")), ar])
+			continue
+		used[nid] = true
+		objs.append({"id": nid, "type": String(nd.get("type", "")), "area": ar,
+			"pos": [apos.x, apos.y], "advertises": adv.duplicate(true)})
+	world["objects"] = objs
+
 ## Variant→Array 强转（缺失/错类型的 JSON 数组字段一律退化为空，守"错类型=零扰动"契约，替代会崩的 `as Array`）。
 func _as_arr(v: Variant) -> Array:
 	return v if v is Array else []
+
+## plan 与真正 append 共用同一 selector，避免两份 affiliate eligibility 规则日后漂开。
+## used_ids 只读；本函数复制后才登记本批已选 id，因此重复/空 id、撞 core/clone 都一致跳过。
+func _eligible_affiliate_defs(agent_data: Dictionary, used_ids: Dictionary) -> Array:
+	if scenario != "" or not _logi_on():
+		return []
+	var seen := used_ids.duplicate()
+	var eligible: Array = []
+	for adef in _as_arr(agent_data.get("affiliates", [])):
+		if not (adef is Dictionary):
+			continue
+		var aid := String(adef.get("id", ""))
+		if aid == "" or seen.has(aid):
+			continue
+		seen[aid] = true
+		eligible.append(adef)
+	return eligible
+
+## 把「最终总人口」换算成当前数据/场景下的 core spawn_count，供规模 bench 共用。
+##
+## 为什么不让每个 bench 自己做 `total - affiliates.size()`：affiliate 只在默认 logistics 场景追加，
+## 且 id 撞 core/克隆 id 时会被 start_new 跳过；手算会再次把 N=60 静默跑成 N=61/N=59。
+## 返回 {ok, core, affiliates, base_core, total, reason}；不改状态、不消费 RNG。
+## 当前扩容器只会 clone、不会缩小 authored core，因此无法精确构造的目标 fail-closed。
+func scale_population_plan(target_total: int) -> Dictionary:
+	var agent_data := _read_json("res://data/agents.json")
+	var core_defs := _as_arr(agent_data.get("agents", []))
+	var base_core := core_defs.size()
+	if target_total <= 0:
+		return {"ok": false, "core": 0, "affiliates": 0, "base_core": base_core,
+			"total": target_total, "reason": "total population must be > 0"}
+	var affiliate_defs := _as_arr(agent_data.get("affiliates", [])) if scenario == "" and _logi_on() else []
+	# 最多每条 affiliate 加 1 人，所以 core 不可能小于 target-affiliate_defs.size()；逐个候选求精确固定点。
+	var first_core := maxi(base_core, target_total - affiliate_defs.size())
+	for core_n in range(first_core, target_total + 1):
+		var used := {}
+		for cdef in core_defs:
+			if cdef is Dictionary:
+				used[String(cdef.get("id", ""))] = true
+		for i in range(base_core, core_n):
+			used["npc_%d" % i] = true
+		var append_n := _eligible_affiliate_defs(agent_data, used).size()
+		if core_n + append_n == target_total:
+			return {"ok": true, "core": core_n, "affiliates": append_n, "base_core": base_core,
+				"total": target_total, "reason": ""}
+	return {"ok": false, "core": 0, "affiliates": 0, "base_core": base_core,
+		"total": target_total, "reason": "target cannot be represented without shrinking authored core"}
+
+## N>12 clone placement reads only authored population anchors.  A new spatial area may opt out
+## without changing the historical anchor count/order/centroids used by scale grids.
+## _area_at() intentionally still sees every area: population_anchor controls bootstrap placement,
+## not social/work membership.
+func _population_area_ids() -> Array:
+	var out: Array = []
+	var areas = world.get("areas", {})
+	if not (areas is Dictionary):
+		return out
+	for raw_id in areas.keys():
+		var area = areas.get(raw_id, {})
+		if not (area is Dictionary):
+			continue # fail closed; tools/audit_map.py rejects malformed authored data
+		if area.has("population_anchor"):
+			var flag = area.get("population_anchor")
+			if typeof(flag) != TYPE_BOOL or flag == false:
+				continue # only exact bool true includes; malformed flags cannot perturb clone placement
+		out.append(String(raw_id))
+	return out
 
 func start_new(p_seed: int = 12345) -> void:
 	emit_signal("world_reset")             # 新世界 → 通知 AIBackend 取消所有在飞请求 + 进新 epoch（旧回包作废）。CI 无监听=no-op。
@@ -571,9 +935,12 @@ func start_new(p_seed: int = 12345) -> void:
 	agents.clear()
 	_agent_by_id.clear()
 	event_log.clear()
+	_cargo_event_index = {"event_size": 0, "arrivals": {}, "receipts": {}, "tx": {}}
+	observatory_projection_event_reads = 0
 	_next_event_id = 1
 	event_digest = 0
 	cand_calls = 0
+	ext_veto = 0
 	commitments.clear()
 	_active_commitments.clear()
 	_next_commit_id = 1
@@ -583,6 +950,7 @@ func start_new(p_seed: int = 12345) -> void:
 	refused_by_bound = 0
 	endorse_events = 0; oust_events = 0; oust_neg_events = 0
 	confide_events = 0; betray_events = 0; freerider_dissolves = 0; aid_accepted = 0
+	fac_unmet_placements = 0
 	factions.clear(); pacts_index.clear(); _next_pact_id = 1; last_broken_with.clear(); _st_delta.clear()
 	decision_trace.clear(); replay_drift = 0   # S4 per-run 重置（replay_trace 由调用方控制，不在此清）
 	shadow_trace.clear()   # shadow 探针数据 per-run 清（shadow_on 是 bench 配的开关，不在此动）
@@ -590,19 +958,27 @@ func start_new(p_seed: int = 12345) -> void:
 	_day_anchor = Vector2i(-1, -1)   # 远端漂移锚点 per-run 清（防复用实例带旧值；map 固定时值不变，清了也确定）
 	_player_pos = Vector2i(-1, -1)   # cohort 玩家位缓存 per-run 清（每 tick 重建，此为复用实例卫生）
 	_replay_ptr = {}
+	_player_trace_reset()
 	for aid in _replay_ticks:
 		_replay_ptr[aid] = 0
 	var personas := _read_json("res://data/personas.json")
 	var adata: Array = _read_json("res://data/agents.json").get("agents", [])
 	var defs := adata.duplicate(true)
 	# 扩 N：克隆扩容到 spawn_count（确定性：persona 轮转、按区心生成、id 唯一→天生立场各异）
+	# AQ1(doc 142)：克隆 persona 改从【扩后全池】personas.keys() 轮转（原 12 + 追加 12），
+	#   替代旧的 adata 轮转（只 12 个基座人设）——拨大人口时露出更多张不同的脸/名字，不再是 12 复读机。
+	#   ⚠ 只在此 spawn_count>defs.size() 分支生效：出货 N=12（spawn_count=0）从不进来，S0 金标路一字节不碰。
+	#   ⚠ 追加人设的 traits 一律【镜像】其轮转位对应的原人设（keys[i%24].traits == 旧 adata[i%12].traits），
+	#     而 digest/chain 只经 traits 入 Sim（name/color/sprite/persona_key 只进显示层与 voicebank 气泡）
+	#     ⇒ 各 N 逐字节不变、4a/4b/不变量门零回归（见 analysis/aq1 的逐 tick 前缀链对比）。
 	if spawn_count > defs.size():
-		var area_ids: Array = world.get("areas", {}).keys()
+		var area_ids: Array = _population_area_ids()
+		var pool_ids: Array = personas.keys()          # 扩后全池，保序[原12,新12]；仅本分支消费，N=12 从不读
 		for i in range(defs.size(), spawn_count):
-			var base: Dictionary = adata[i % adata.size()]
+			var pk: String = String(pool_ids[i % pool_ids.size()]) if not pool_ids.is_empty() else String((adata[i % adata.size()] as Dictionary)["persona"])
 			var c := _area_centroid(String(area_ids[i % maxi(1, area_ids.size())])) if not area_ids.is_empty() else Vector2i(2 + i % 20, 2 + i % 12)
 			var sp := Vector2i(c.x + (i % 3) - 1, c.y + ((i / 3) % 3) - 1)
-			defs.append({"id": "npc_%d" % i, "persona": base["persona"], "spawn": [sp.x, sp.y], "home": [sp.x, sp.y]})
+			defs.append({"id": "npc_%d" % i, "persona": pk, "spawn": [sp.x, sp.y], "home": [sp.x, sp.y]})
 	for adef in defs:
 		var ag := _make_agent(adef, personas)
 		agents.append(ag)
@@ -623,8 +999,51 @@ func start_new(p_seed: int = 12345) -> void:
 				"source": oid, "via": "seed", "tick": 0, "secret": true, "owner": oid, "confidedBy": {}}
 	# Wave 1b 经济：镇库注资 + 记录开局货币总量（守恒硬不变量基准）。缺 economy.json → 全为 0 零扰动。
 	town_coin = int(economy.get("town_start", 0)) if not economy.is_empty() else 0
+	# ★E2a BLOCKER-1（docs/154 §二.1）：external_coin 必须【per-run 重置】——镜像上一行 town_coin。
+	#   goto_tick(:1146) 反复调 start_new 重演；import 付费让 external_coin 局末非零，若不清零，
+	#   第二遍的残值会在下一行 econ_total0 = money_total() 里被计入基准 ⇒ 整局 money_total 位移、
+	#   非逐字节可回放，且 #34 因基准与总量同带残值可能【反把 bug 盖绿】。故必须在快照【之前】清零。
+	external_coin = 0
 	econ_stats = {"meals_paid": 0, "meals_free": 0, "wages_paid": 0, "wages_skipped": 0}
 	econ_total0 = money_total()
+	# ★K1 双尺度：产出侧按【本局人口】换尺度。必须落在这里——克隆扩容已经做完（agents 已填），
+	#   而 town_stock 的开局注资就在下面几行，读的正是换过尺度的 start_stock。
+	#   agents.size() 此刻是 **NPC 数**：add_player() 是 start_new 之后才 append 的，玩家不参与定池。
+	production = _pool_rescale(_production_raw, agents.size())
+	# ★L2：工作吸引力的人口项。跟池同一处、同一个"本局人口"口径（都在克隆扩容做完之后、
+	#   town_stock 注资之前），本局内冻结 ⇒ 与池一样不受生老病死影响、可逐字节回放。
+	work_pull_mult = _work_pull_mult(production, agents.size())
+	core_population = agents.size()
+	# P1-a：affiliate 在池与 work-pull 冻结后追加，因此 12 位核心居民的产能/出口口径不被第 13 张嘴偷改。
+	# 它仍是完整 agent：needs、消费、社交、选举、金钱守恒全部走原管线；只在默认港口沙盘出现。
+	if scenario == "" and _logi_on():
+		var agent_data := _read_json("res://data/agents.json")
+		for adef in _eligible_affiliate_defs(agent_data, _agent_by_id):
+			var aff := _make_agent(adef, personas)
+			aff["affiliate"] = true
+			agents.append(aff)
+			_agent_by_id[aff["id"]] = aff
+			econ_total0 += int(aff["inventory"].get("coin", 0))
+	# ★T1：镇库回拉的三个整数。与池/work_pull 同一处读，本局内冻结（数据不会中途换）。
+	var _sp: Dictionary = production.get("stock_pull", {}) if production.get("stock_pull", {}) is Dictionary else {}
+	stock_pull_den = int(_sp.get("den", 0))
+	stock_pull_hi = int(_sp.get("hi", 0))
+	stock_pull_lo = int(_sp.get("lo", 0))
+	if stock_pull_den <= 0 or stock_pull_hi < 0 or stock_pull_lo < 0:
+		stock_pull_den = 0                      # 任一项非法 ⇒ 整条关掉（缺数据即零扰动，同 work_pull / scale）
+	# Wave E 产出：镇级库存 per-run 重置（goto_tick 会反复 start_new，残留库存＝回放不一致）。
+	# production.json 缺失 → 三个字典全空 → 每个挂点都短路 → 逐字节回到 Wave D 末的轨迹。
+	town_stock = {}
+	_stock_day = {}
+	_short_day = {}
+	_trade_day = {}
+	cargo_manifests.clear()
+	cargo_manifest_order.clear()
+	prod_stats = {"produced": {}, "consumed": {}, "short": {}, "spoiled": {}, "attempts": {}, "work": {}}
+	if _prod_on():
+		for g in production.get("goods", {}):
+			town_stock[String(g)] = int(production.get("start_stock", {}).get(String(g), 0))
+	stock_total0 = town_stock.duplicate(true)
 	election_log.clear(); last_election = {}   # Wave 3a：per-run 重置（goto_tick 反复 start_new）
 	weather_today = _weather_of_day(day)   # Wave 1c：开局天气（日界在 tick() 重算）
 	season_today = _season_of_day(day)     # Wave 3b：开局当季（日界在 tick() 重算；纯 f(day)）
@@ -661,6 +1080,18 @@ func _seed_scenario() -> void:
 		for i in range(3, agents.size()):
 			for t in TOPICS: agents[i]["attitudes"][t] = -0.8; agents[i]["attitude0"][t] = -0.8
 		_rel(agents[0], String(agents[3]["id"]))["standing"] = -3.0
+		# ★Q1：接触门开着时，光有立场还结不成派系——**得先认识**。照 freerider 那一支的做法
+		# （它同样显式种上 trust / complementSeen 这些前置），把两个阵营【组内】的 familiarity 种到门线上，
+		# 否则这条定向场景第 1 天一个派系都没有，等于把它自己要测的机制关掉了。
+		# 组间不种：反正立场相反、`_aligned` 本来就不成立，种了也不改变任何聚类结果。
+		# 门关时（faction_fam_th<=0）**整段跳过** —— 否则 `_rel` 会建出关系条目，ablation 就不再逐字节。
+		if faction_fam_th > 0.0:
+			for blocs in [range(0, 3), range(3, agents.size())]:
+				for i in blocs:
+					for j in blocs:
+						if i == j: continue
+						var r := _rel(agents[i], String(agents[j]["id"]))
+						r["familiarity"] = maxf(float(r["familiarity"]), faction_fam_th)
 	elif scenario == "freerider" and agents.size() >= 2:
 		var a: Dictionary = agents[0]
 		var b: Dictionary = agents[1]
@@ -732,12 +1163,198 @@ func get_agent(id: String) -> Dictionary:
 const MEDIATE_AFF := 5.0        # 调解门槛：冲突双方对玩家好感 ≥ 此才听得进劝
 # 引擎内建社交动作全集（conflict 类在 _commit_social 上游单独分流）；不在此集=扩展动作 → 走 ext.execute（L7 挂点#2）
 const KNOWN_SOCIAL_ACTIONS := ["greet", "give", "gossip", "gossip_rep", "discuss", "invite", "confide", "leak", "endorse", "aid", "mediate"]
+
+func _player_trace_session() -> Dictionary:
+	var config := "%d|%s|%d|%d" % [seed_base, scenario, spawn_count, decide_period]
+	return {"seed": seed_base, "scenario": scenario, "autonomous_config_fingerprint": fnv1a32(config)}
+
+func _player_trace_reset() -> void:
+	player_trace = {"version": PLAYER_TRACE_VERSION, "session": _player_trace_session(), "entries": [], "next_seq": 0}
+	player_trace_available = true
+	player_trace_last_error = ""
+	_player_trace_tick_index = {}
+	_player_trace_replay_active = false
+	_player_trace_replay_expected = {}
+
+func _player_trace_canonical(value: Variant) -> String:
+	match typeof(value):
+		TYPE_NIL: return "null"
+		TYPE_BOOL: return "true" if value else "false"
+		TYPE_INT: return "i:%d" % int(value)
+		TYPE_FLOAT: return "f:%.9f" % float(value)
+		TYPE_STRING, TYPE_STRING_NAME: return "s:%s" % JSON.stringify(String(value))
+		TYPE_VECTOR2I: return "v2i:%d,%d" % [value.x, value.y]
+		TYPE_ARRAY:
+			var parts: Array[String] = []
+			for item in value: parts.append(_player_trace_canonical(item))
+			return "[" + ",".join(parts) + "]"
+		TYPE_DICTIONARY:
+			var keys: Array = value.keys()
+			keys.sort_custom(func(a, b): return String(a) < String(b))
+			var parts: Array[String] = []
+			for key in keys:
+				parts.append("%s:%s" % [JSON.stringify(String(key)), _player_trace_canonical(value[key])])
+			return "{" + ",".join(parts) + "}"
+	return "unsupported:%d" % typeof(value)
+
+func _player_trace_bytes(value: Variant) -> int:
+	return _player_trace_canonical(value).to_utf8_buffer().size()
+
+func _player_trace_player_snapshot() -> Dictionary:
+	var pl: Dictionary = _agent_by_id.get("player", {})
+	if pl.is_empty():
+		return {}
+	return {"pos": pl.get("pos", Vector2i.ZERO), "space": String(pl.get("space", "town")),
+		"floor": String(pl.get("floor", "outdoor")), "area": String(pl.get("area", "")),
+		"room": String(pl.get("room", "")), "inventory": (pl.get("inventory", {}) as Dictionary).duplicate(true)}
+
+func _player_trace_receipt(result: Variant) -> Dictionary:
+	return {"result": result, "player": _player_trace_player_snapshot(), "event_size": event_log.size(),
+		"event_digest": event_digest}
+
+func _player_trace_entry_seal(entry_without_seal: Dictionary) -> int:
+	return fnv1a32(_player_trace_canonical(entry_without_seal))
+
+func _player_trace_payload_error(kind: String, payload: Dictionary) -> String:
+	if _player_trace_bytes(payload) > PLAYER_TRACE_MAX_PAYLOAD_BYTES:
+		return "payload_too_large"
+	match kind:
+		"spawn":
+			if payload.keys().size() != 1 or not (payload.get("pos") is Vector2i): return "spawn_payload"
+		"move":
+			if payload.keys().size() != 1 or not (payload.get("dir") is Vector2i): return "move_payload"
+			var d: Vector2i = payload["dir"]
+			if absi(d.x) + absi(d.y) != 1: return "move_not_cardinal"
+		"social":
+			if payload.keys().size() != 2 or not (payload.get("action") is String) or not (payload.get("target_id") is String): return "social_payload"
+		"mediate":
+			if payload.keys().size() != 1 or not (payload.get("target_id") is String): return "mediate_payload"
+		"portal":
+			if payload.keys().size() != 3 or not (payload.get("source_space") is String) \
+					or not (payload.get("source_floor") is String) or not (payload.get("portal_pos") is Vector2i): return "portal_payload"
+		"chat_reply":
+			if payload.keys().size() != 3 or not (payload.get("target_id") is String) \
+					or not (payload.get("prompt") is String) or not (payload.get("reply") is String): return "chat_payload"
+			if String(payload.get("prompt", "")).to_utf8_buffer().size() > PLAYER_TRACE_MAX_CHAT_BYTES \
+					or String(payload.get("reply", "")).to_utf8_buffer().size() > PLAYER_TRACE_MAX_CHAT_BYTES: return "chat_too_large"
+		_: return "unknown_kind"
+	return ""
+
+func _player_trace_preflight(kind: String, payload: Dictionary) -> String:
+	if _player_trace_replay_active:
+		return ""
+	var err := _player_trace_payload_error(kind, payload)
+	if err != "": return err
+	if not player_trace_available:
+		return "" # old saves remain playable, but explicitly cannot replay their missing history
+	if (player_trace.get("entries", []) as Array).size() >= PLAYER_TRACE_MAX_ENTRIES:
+		return "trace_full"
+	if (_player_trace_tick_index.get(tick_no, []) as Array).size() >= PLAYER_TRACE_MAX_ENTRIES_PER_TICK:
+		return "trace_tick_full"
+	var entries: Array = player_trace.get("entries", [])
+	if not entries.is_empty() and int((entries[-1] as Dictionary).get("tick", -1)) > tick_no:
+		return "trace_future_boundary"
+	return ""
+
+func _player_trace_commit(kind: String, payload: Dictionary, receipt: Dictionary) -> bool:
+	if not player_trace_available:
+		return true
+	if _player_trace_replay_active:
+		var expected := _player_trace_replay_expected
+		_player_trace_replay_expected = {}
+		if expected.is_empty() or String(expected.get("kind", "")) != kind \
+				or _player_trace_canonical(expected.get("payload", {})) != _player_trace_canonical(payload) \
+				or _player_trace_canonical(expected.get("receipt", {})) != _player_trace_canonical(receipt):
+			player_trace_last_error = "recomputed_receipt_mismatch"
+			return false
+		return true
+	var entries: Array = player_trace.get("entries", [])
+	var seq := int(player_trace.get("next_seq", entries.size()))
+	var order := 0
+	if not entries.is_empty() and int((entries[-1] as Dictionary).get("tick", -1)) == tick_no:
+		order = int((entries[-1] as Dictionary).get("order", -1)) + 1
+	var entry := {"version": PLAYER_TRACE_VERSION, "seq": seq, "tick": tick_no, "order": order,
+		"actor": "player", "kind": kind, "payload": payload.duplicate(true), "receipt": receipt.duplicate(true)}
+	entry["seal"] = _player_trace_entry_seal(entry)
+	entries.append(entry)
+	player_trace["entries"] = entries
+	player_trace["next_seq"] = seq + 1
+	var bucket: Array = _player_trace_tick_index.get(tick_no, [])
+	bucket.append(seq)
+	_player_trace_tick_index[tick_no] = bucket
+	return true
+
+func _player_trace_validate(trace: Dictionary, bind_session := true) -> String:
+	if int(trace.get("version", -1)) != PLAYER_TRACE_VERSION: return "trace_version"
+	if not (trace.get("session") is Dictionary) or not (trace.get("entries") is Array): return "trace_shape"
+	var entries: Array = trace.get("entries", [])
+	if entries.size() > PLAYER_TRACE_MAX_ENTRIES or int(trace.get("next_seq", -1)) != entries.size(): return "trace_count"
+	if bind_session:
+		var session: Dictionary = trace.get("session", {})
+		var current := _player_trace_session()
+		for key in ["seed", "scenario", "autonomous_config_fingerprint"]:
+			if session.get(key) != current.get(key): return "trace_session_%s" % key
+	var prior_tick := -1
+	var prior_order := -1
+	var tick_count := 0
+	for i in range(entries.size()):
+		if not (entries[i] is Dictionary): return "entry_shape"
+		var entry: Dictionary = entries[i]
+		if int(entry.get("version", -1)) != PLAYER_TRACE_VERSION or int(entry.get("seq", -1)) != i \
+				or String(entry.get("actor", "")) != "player" or not (entry.get("payload") is Dictionary) \
+				or not (entry.get("receipt") is Dictionary): return "entry_identity"
+		var et := int(entry.get("tick", -1)); var eo := int(entry.get("order", -1))
+		if et < 0 or et < prior_tick or (et == prior_tick and eo != prior_order + 1) or (et != prior_tick and eo != 0): return "entry_order"
+		tick_count = tick_count + 1 if et == prior_tick else 1
+		if tick_count > PLAYER_TRACE_MAX_ENTRIES_PER_TICK: return "entry_tick_budget"
+		var kind := String(entry.get("kind", "")); var payload: Dictionary = entry.get("payload", {})
+		var payload_error := _player_trace_payload_error(kind, payload)
+		if payload_error != "": return payload_error
+		var unsigned := entry.duplicate(true); var seal := int(unsigned.get("seal", -1)); unsigned.erase("seal")
+		if seal != _player_trace_entry_seal(unsigned): return "entry_seal"
+		prior_tick = et; prior_order = eo
+	return ""
+
+func get_player_trace() -> Dictionary:
+	return player_trace.duplicate(true) if player_trace_available else {}
+
+func set_player_trace_for_replay(trace: Dictionary) -> bool:
+	var err := _player_trace_validate(trace)
+	if err != "":
+		player_trace_last_error = err
+		return false
+	player_trace = trace.duplicate(true)
+	player_trace_available = true
+	_player_trace_rebuild_index()
+	player_trace_last_error = ""
+	return true
+
+func _player_trace_rebuild_index() -> void:
+	_player_trace_tick_index = {}
+	for raw in player_trace.get("entries", []):
+		var entry: Dictionary = raw
+		var et := int(entry.get("tick", -1)); var bucket: Array = _player_trace_tick_index.get(et, [])
+		bucket.append(int(entry.get("seq", -1))); _player_trace_tick_index[et] = bucket
+
+func player_trace_status() -> Dictionary:
+	return {"available": player_trace_available, "version": PLAYER_TRACE_VERSION,
+		"entries": (player_trace.get("entries", []) as Array).size() if player_trace_available else 0,
+		"max_entries": PLAYER_TRACE_MAX_ENTRIES, "max_entries_per_tick": PLAYER_TRACE_MAX_ENTRIES_PER_TICK,
+		"max_payload_bytes": PLAYER_TRACE_MAX_PAYLOAD_BYTES,
+		"max_chat_bytes": PLAYER_TRACE_MAX_CHAT_BYTES, "max_save_bytes": PLAYER_TRACE_MAX_SAVE_BYTES,
+		"indexed_ticks": _player_trace_tick_index.size(), "error": player_trace_last_error}
+
 func add_player(pos: Vector2i = Vector2i(-1, -1)) -> Dictionary:
 	if _agent_by_id.has("player"):
 		return _agent_by_id["player"]
 	var p := pos
 	if p.x < 0:
 		p = _area_centroid("plaza")
+	var payload := {"pos": p}
+	var trace_error := _player_trace_preflight("spawn", payload)
+	if trace_error != "":
+		player_trace_last_error = trace_error
+		return {}
 	var pl := _make_agent({"id": "player", "persona": "", "spawn": [p.x, p.y], "home": [p.x, p.y]}, {})
 	pl["is_player"] = true
 	pl["persona"] = {"name": "你", "color": "#ffd700", "traits": [], "bio": "刚搬来的新居民。", "style": "", "sprite": ""}
@@ -747,32 +1364,61 @@ func add_player(pos: Vector2i = Vector2i(-1, -1)) -> Dictionary:
 	_agent_by_id["player"] = pl
 	econ_total0 += int(pl["inventory"].get("coin", 0))   # 玩家带钱入镇 → 守恒基准同步上调（钱不凭空出现）
 	emit_signal("agent_changed", "player")
+	if not _player_trace_commit("spawn", payload, _player_trace_receipt({"ok": true})):
+		return {}
 	return pl
 
-## 玩家格移动（WASD/方向键）。走 _move_agent 以刷新 area 缓存（NPC 的邻近枚举依赖它）。
+## 玩家格移动（WASD/方向键）。按玩家当前 Space/Floor 的同一份导航网判边界/碰撞，
+## 再走 _move_agent 刷新 area 缓存。这样玩家进室内后不会穿墙/家具，也不会继续拿 town 尺寸放行。
 func player_move(dir: Vector2i) -> void:
+	var payload := {"dir": dir}
+	var trace_error := _player_trace_preflight("move", payload)
+	if trace_error != "":
+		player_trace_last_error = trace_error
+		return
 	var pl: Dictionary = _agent_by_id.get("player", {})
+	var result := {"moved": false, "reason": "player_missing"}
 	if pl.is_empty() or int(pl["talking"]) > 0:
+		if not pl.is_empty(): result["reason"] = "talking"
+		_player_trace_commit("move", payload, _player_trace_receipt(result))
 		return
 	var np: Vector2i = pl["pos"] + dir
-	if np.x < 0 or np.y < 0 or np.x >= int(world.get("width", 24)) or np.y >= int(world.get("height", 16)):
+	var grid := _grid_for(String(pl.get("space", "town")), String(pl.get("floor", "outdoor")))
+	if not _cell_walkable(grid, np):
+		result["reason"] = "blocked"
+		_player_trace_commit("move", payload, _player_trace_receipt(result))
 		return
 	_move_agent(pl, np)
 	emit_signal("agent_changed", "player")
+	result = {"moved": true, "reason": ""}
+	_player_trace_commit("move", payload, _player_trace_receipt(result))
 
 ## 玩家社交动作：验证前提 → _apply_social 发起 → tick 推进 → _commit_social 裁决（NPC 可拒绝玩家！）。
 ## 返回 "" = 已发起；非空 = 不可行原因（HUD 显示）。
 func player_act(action: String, target_id: String) -> String:
+	var payload := {"action": action, "target_id": target_id}
+	var trace_error := _player_trace_preflight("social", payload)
+	if trace_error != "":
+		player_trace_last_error = trace_error
+		return "玩家指令记录被拒绝（%s）" % trace_error
+	var result := _player_act_untraced(action, target_id)
+	if not _player_trace_commit("social", payload, _player_trace_receipt(result)):
+		return "玩家指令回放不匹配"
+	return result
+
+func _player_act_untraced(action: String, target_id: String) -> String:
 	var pl: Dictionary = _agent_by_id.get("player", {})
 	if pl.is_empty():
 		return "玩家未入镇"
 	var tgt: Dictionary = _agent_by_id.get(target_id, {})
 	if tgt.is_empty() or tgt.get("is_player", false):
 		return "先点选一位居民"
-	# 邻近判定（对抗审查#6）：须同一【非空】区域，或曼哈顿距离≤2——堵住"区域外空地 '' == '' 隔全图社交"漏洞
-	var here := String(pl.get("area", ""))
-	var mdist := absi(pl["pos"].x - tgt["pos"].x) + absi(pl["pos"].y - tgt["pos"].y)
-	if not ((here != "" and here == String(tgt.get("area", ""))) or mdist <= 2):
+	# P1-t：space+floor 是第一层权限；area 只是同平面的感知缓存，坐标也只在同平面内有意义。
+	# 邻近判定继续保留旧合同：同一【非空】区域，或曼哈顿距离≤2。执行/推进/提交三层复用同一谓词，
+	# 不再出现入口说能聊、_apply_social 又因隔着 area 边界拒绝的假放行。
+	if not _same_plane(pl, tgt):
+		return "对方不在同一空间"
+	if not _socially_reachable(pl, tgt):
 		return "太远了，走近点（同一区域或贴身）"
 	if int(pl["talking"]) > 0:
 		return "正在交谈中"
@@ -815,6 +1461,17 @@ func player_act(action: String, target_id: String) -> String:
 ## 玩家专属「调解」：促成 target 所涉冲突的和解。确定性规则=双方对玩家好感 ≥ MEDIATE_AFF 才听劝。
 ## 成功 → 冲突 repaired + 清怨气 + 双方互信/好感回升 + 都感谢玩家 + 旁观者视玩家为 help（standing↑）。
 func player_mediate(target_id: String) -> String:
+	var payload := {"target_id": target_id}
+	var trace_error := _player_trace_preflight("mediate", payload)
+	if trace_error != "":
+		player_trace_last_error = trace_error
+		return "玩家指令记录被拒绝（%s）" % trace_error
+	var result := _player_mediate_untraced(target_id)
+	if not _player_trace_commit("mediate", payload, _player_trace_receipt(result)):
+		return "玩家指令回放不匹配"
+	return result
+
+func _player_mediate_untraced(target_id: String) -> String:
 	var pl: Dictionary = _agent_by_id.get("player", {})
 	if pl.is_empty():
 		return "玩家未入镇"
@@ -842,7 +1499,8 @@ func player_mediate(target_id: String) -> String:
 	if A.is_empty() or B.is_empty():
 		return "冲突另一方不在了"
 	var here := String(pl.get("area", ""))
-	if here == "" or String(A.get("area", "")) != here or String(B.get("area", "")) != here:
+	if here == "" or not _same_plane(pl, A) or not _same_plane(pl, B) \
+			or String(A.get("area", "")) != here or String(B.get("area", "")) != here:
 		return "得把 %s 和 %s 都请到同一区域才好说和" % [_name(A), _name(B)]
 	var witnesses: Array = []
 	for w in _nearby_agents(pl):
@@ -893,30 +1551,174 @@ func player_mediate(target_id: String) -> String:
 	emit_signal("social_event", ev2)
 	return "%s 还不信任你（好感不够），先处好关系再来劝" % "和".join(cold_names)
 
-## 确定性回放：重置到当前种子并推进到 target tick（观察台时间轴 scrub 用）。
-## 因全程确定性，重演必得同一状态——无需存快照即可前后拖动。
-func goto_tick(target: int) -> void:
+## Canonical completed chat reply.  Live AI is outside Sim, but the accepted reply
+## crosses this deterministic boundary exactly once; replay never invokes AI.
+func player_chat_commit(target_id: String, prompt: String, reply: String) -> Dictionary:
+	var payload := {"target_id": target_id, "prompt": prompt, "reply": reply}
+	var trace_error := _player_trace_preflight("chat_reply", payload)
+	if trace_error != "":
+		player_trace_last_error = trace_error
+		return {"ok": false, "reason": trace_error}
+	var pl: Dictionary = _agent_by_id.get("player", {})
+	var target: Dictionary = _agent_by_id.get(target_id, {})
+	var result := {"ok": false, "reason": "target_missing"}
+	if pl.is_empty():
+		result["reason"] = "player_missing"
+	elif target.is_empty() or target_id == "player":
+		result["reason"] = "target_missing"
+	elif not _same_plane(pl, target):
+		result["reason"] = "target_plane"
+	else:
+		var pp: Vector2i = pl.get("pos", Vector2i(-99, -99))
+		var tp: Vector2i = target.get("pos", Vector2i(-99, -99))
+		if absi(pp.x - tp.x) + absi(pp.y - tp.y) > 2:
+			result["reason"] = "target_distance"
+		else:
+			var mem = target.get("memory")
+			if mem == null:
+				result["reason"] = "target_memory"
+			else:
+				mem.add("玩家问『%s』，我答『%s』" % [prompt.substr(0, 18), reply.substr(0, 18)], 5, tick_no,
+					[target_id, "player", "chat"])
+				result = {"ok": true, "reason": ""}
+	if not _player_trace_commit("chat_reply", payload, _player_trace_receipt(result)):
+		return {"ok": false, "reason": "trace_replay_mismatch"}
+	return result
+
+func _player_trace_replay_boundary(boundary_tick: int) -> bool:
+	var entries: Array = player_trace.get("entries", [])
+	for raw_seq in _player_trace_tick_index.get(boundary_tick, []):
+		var seq := int(raw_seq)
+		if seq < 0 or seq >= entries.size():
+			player_trace_last_error = "trace_index"
+			return false
+		var entry: Dictionary = entries[seq]
+		_player_trace_replay_expected = entry
+		var payload: Dictionary = entry.get("payload", {})
+		match String(entry.get("kind", "")):
+			"spawn": add_player(payload.get("pos", Vector2i(-1, -1)))
+			"move": player_move(payload.get("dir", Vector2i.ZERO))
+			"social": player_act(String(payload.get("action", "")), String(payload.get("target_id", "")))
+			"mediate": player_mediate(String(payload.get("target_id", "")))
+			"portal": player_portal_intent(payload)
+			"chat_reply": player_chat_commit(String(payload.get("target_id", "")), String(payload.get("prompt", "")), String(payload.get("reply", "")))
+			_:
+				player_trace_last_error = "trace_kind"
+				return false
+		if not _player_trace_replay_expected.is_empty() or player_trace_last_error != "":
+			if player_trace_last_error == "": player_trace_last_error = "trace_input_not_consumed"
+			return false
+	return true
+
+func _capture_player_replay_transaction() -> Dictionary:
+	var state := {}
+	for key in _current_save_state_keys():
+		state[key] = get(key)
+	var serialized_agents := []
+	for ag in agents:
+		var data: Dictionary = (ag as Dictionary).duplicate(true)
+		var memory = ag.get("memory")
+		data["memory"] = {"__mem_items__": (memory.items as Array).duplicate(true) if memory is Object and "items" in memory else []}
+		serialized_agents.append(data)
+	state["agents"] = serialized_agents
+	var leaks: Array = []
+	_scan_objects(state, "goto_tick.state", leaks)
+	if not leaks.is_empty():
+		player_trace_last_error = "transaction_snapshot_object"
+		return {}
+	var active_ids: Array = []
+	for commitment in _active_commitments:
+		active_ids.append(int(commitment.get("id", -1)))
+	return {
+		"state_bytes": var_to_bytes(state),
+		"active_commit_ids": active_ids,
+		"near_set": _near_set.duplicate(true),
+		"path_cache": _path_cache.duplicate(true),
+		"nav_grids": _nav_grids.duplicate(true),
+		"player_pos": _player_pos,
+		"cargo_event_index": _cargo_event_index.duplicate(true),
+		"lod_focus": lod_focus,
+		"shadow_on": shadow_on,
+		"shadow_trace": shadow_trace.duplicate(true),
+		"backend": backend,
+		"ext": ext,
+		"decision_sink": decision_sink,
+		"player_trace": player_trace.duplicate(true),
+		"player_trace_available": player_trace_available,
+		"player_trace_last_error": player_trace_last_error,
+		"player_trace_tick_index": _player_trace_tick_index.duplicate(true),
+		"player_trace_replay_active": _player_trace_replay_active,
+		"player_trace_replay_expected": _player_trace_replay_expected.duplicate(true),
+	}
+
+func _restore_player_replay_transaction(snapshot: Dictionary, failure_error: String) -> bool:
+	var decoded = bytes_to_var(snapshot.get("state_bytes", PackedByteArray()))
+	if not (decoded is Dictionary):
+		player_trace_last_error = "transaction_restore_invalid"
+		return false
+	var state: Dictionary = decoded
+	for key in state:
+		set(key, state[key])
+	_rebuild_after_load(snapshot.get("active_commit_ids", []))
+	_near_set = snapshot.get("near_set", {}).duplicate(true)
+	_path_cache = snapshot.get("path_cache", {}).duplicate(true)
+	_nav_grids = snapshot.get("nav_grids", {}).duplicate(true)
+	_player_pos = snapshot.get("player_pos", Vector2i(-1, -1))
+	_cargo_event_index = snapshot.get("cargo_event_index", {}).duplicate(true)
+	lod_focus = snapshot.get("lod_focus", null)
+	shadow_on = bool(snapshot.get("shadow_on", false))
+	shadow_trace = snapshot.get("shadow_trace", []).duplicate(true)
+	backend = snapshot.get("backend")
+	ext = snapshot.get("ext")
+	decision_sink = snapshot.get("decision_sink")
+	player_trace = snapshot.get("player_trace", {}).duplicate(true)
+	player_trace_available = bool(snapshot.get("player_trace_available", false))
+	player_trace_last_error = failure_error
+	_player_trace_tick_index = snapshot.get("player_trace_tick_index", {}).duplicate(true)
+	_player_trace_replay_active = bool(snapshot.get("player_trace_replay_active", false))
+	_player_trace_replay_expected = snapshot.get("player_trace_replay_expected", {}).duplicate(true)
+	return false
+
+## Deterministic scrub replays canonical player inputs at their closed tick/order boundary.
+## Old saves without a trace fail closed when a player exists instead of inventing history.
+## Once replay begins, every rejected boundary restores the complete pre-call Sim authority.
+func goto_tick(target: int) -> bool:
 	var a := auto_run
-	auto_run = false
-	# 玩家豁免（对抗审查#1）：start_new 只从数据重建 NPC，会把玩家连人带关系清掉 → scrub 后 WASD/动作全失灵。
-	# 记住玩家（位置/物品）→ 重演后原位放回。诚实局限：玩家的历史干预不在重演里（player_act 非 decision_trace），
-	# 时间轴呈现的是"无玩家介入的平行世界"+玩家现身当下；根治=player_trace 回放（S4 范式），留待后续。
 	var had_player := _agent_by_id.has("player")
-	var p_pos := Vector2i.ZERO
-	var p_inv := {}
-	if had_player:
-		p_pos = _agent_by_id["player"]["pos"]
-		p_inv = (_agent_by_id["player"]["inventory"] as Dictionary).duplicate()
+	if had_player and not player_trace_available:
+		player_trace_last_error = "player_trace_unavailable"
+		return false
+	var source_trace := player_trace.duplicate(true) if player_trace_available else {}
+	if player_trace_available:
+		var trace_error := _player_trace_validate(source_trace)
+		if trace_error != "":
+			player_trace_last_error = trace_error
+			return false
+	var transaction := _capture_player_replay_transaction()
+	if transaction.is_empty():
+		return false
+	auto_run = false
 	start_new(seed_base)
+	if not source_trace.is_empty():
+		player_trace = source_trace
+		player_trace_available = true
+		_player_trace_rebuild_index()
+		_player_trace_replay_active = true
 	replaying = true                       # 回放期间 AIBackend.decide 走 logic，不发 live 请求(P1-6)
 	var t := maxi(0, target)
+	if not source_trace.is_empty() and not _player_trace_replay_boundary(0):
+		var failure_error := player_trace_last_error
+		return _restore_player_replay_transaction(transaction, failure_error)
 	while tick_no < t:
 		tick()
+		if not source_trace.is_empty() and not _player_trace_replay_boundary(tick_no):
+			var failure_error := player_trace_last_error
+			return _restore_player_replay_transaction(transaction, failure_error)
 	replaying = false
-	if had_player:
-		var pl := add_player(p_pos)
-		pl["inventory"] = p_inv
+	_player_trace_replay_active = false
+	_player_trace_replay_expected = {}
 	auto_run = a
+	return true
 
 ## 导出本局事件账本为可存档 trace（seed + event_log）。
 func export_trace(path: String) -> void:
@@ -932,27 +1734,42 @@ func export_trace(path: String) -> void:
 ## ★关键事实：RNG 无状态（`_rng_at` 纯 f(seed_base,tick_no)）→ 没有 RNG 态要存，seed+tick 已在 var 里。
 ## 红线：save 只读状态+写文件（不动 digest）；load 只在用户显式读档时调（CI/tick 从不经此）→ digest 零影响。
 const SAVE_MAGIC := "LTSAVE"
-const SAVE_SCHEMA := 1
+const SAVE_SCHEMA_LEGACY := 1
+const SAVE_SCHEMA := 2
+const SAVE_RUNTIME_HANDLES := ["backend", "ext", "decision_sink"]
+const SAVE_LOAD_DENY := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected"]
+const SAVE_CURRENT_BLOB_KEYS := ["magic", "schema", "game_version", "saved_tick", "saved_day", "seed", "meta", "active_commit_ids", "state"]
+
+## The current-schema contract is the exact field set emitted by save_game, derived from the same
+## reflection/exclusion policy instead of a second hand-maintained allowlist. This is intentionally
+## fail-closed: adding a new authoritative script var changes the schema-2 shape, so an older
+## schema-2 payload is rejected instead of inheriting that field from the live quickload receiver.
+func _current_save_state_keys() -> Dictionary:
+	var keys := {}
+	for p in get_property_list():
+		if not (int(p["usage"]) & PROPERTY_USAGE_SCRIPT_VARIABLE):
+			continue
+		var key := String(p["name"])
+		if key in SAVE_LOAD_DENY:
+			continue
+		var v = get(key)
+		if v is Object or v is Callable:
+			continue
+		keys[key] = true
+	return keys
 
 func save_game(path: String, meta := {}) -> bool:
 	# 派生引用结构【不入档】：它们只是 agents[]/commitments[] 的别名视图，存了也只能得到孤儿副本；
 	# 读档后由 _rebuild_after_load 从真源重建（_active_commitments 靠下面存的 id 列表还原成员资格）。
-	const DERIVED := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos"]  # 派生/每 tick 重建，别名视图不入档
-	# lod_focus 是【相机/视口窗口】参数(默认(12,8)，红线：真机绝不喂它)，非 sim 状态——不入档，防"绝不接相机"的红线经存档泄漏(评审 open_risk)。
-	const VIEW_PARAMS := ["lod_focus"]
-	# 探针状态不入档：shadow_on 是 bench 开关、shadow_trace 是 bench 遥测——存了会改变 save-blob 字节
-	# （评审指出：默认 0 对 event digest 逐字节不变，但若存档反射所有 script 变量则 save-blob 会变）→ 显式排除，还原 save 逐字节一致。
-	const BENCH_ONLY := ["shadow_on", "shadow_trace"]
 	var state := {}
-	for p in get_property_list():
-		if not (int(p["usage"]) & PROPERTY_USAGE_SCRIPT_VARIABLE):
-			continue
-		if String(p["name"]) in DERIVED or String(p["name"]) in BENCH_ONLY or String(p["name"]) in VIEW_PARAMS:
-			continue
-		var v = get(p["name"])
-		if v is Object or v is Callable:            # backend/ext/decision_sink：接线非状态，不入档
-			continue
-		state[p["name"]] = v
+	for key in _current_save_state_keys():
+		state[key] = get(key)
+	# Configuration snapshots are retained for schema compatibility, but the writer always emits
+	# the current authored copies.  A migrated legacy live world may keep its old world/logistics;
+	# it cannot persist a forged portal/access/collision contract into a new schema-2 file.
+	state["_spaces"] = _authored_spaces.duplicate(true)
+	state["_portals"] = _authored_portals.duplicate(true)
+	state["_interiors_data"] = _authored_interiors_data.duplicate(true)
 	# agent["memory"] 是【嵌套 Object】（MemoryStream）——store_var 会把它编码成 EncodedObjectAsID 死壳，
 	# 读回后 mem.add() 直接崩（硬门抓到的头号 bug）。→ 存它的 items 数据，读档时重建对象。
 	var ser_agents := []
@@ -977,6 +1794,19 @@ func save_game(path: String, meta := {}) -> bool:
 		"saved_tick": tick_no, "saved_day": day, "seed": seed_base, "meta": meta,
 		"active_commit_ids": active_ids, "state": state,
 	}
+	if player_trace_available and _agent_by_id.has("player"):
+		var trace_error := _player_trace_validate(player_trace)
+		if trace_error != "":
+			push_error("save_game REFUSED — invalid PlayerTraceV1: %s" % trace_error)
+			return false
+		blob["player_trace"] = player_trace.duplicate(true)
+	var shape_error := _validate_current_save_shape(blob)
+	if shape_error != "":
+		push_error("save_game REFUSED — %s" % shape_error)
+		return false
+	if var_to_bytes(blob).size() + 4 > PLAYER_TRACE_MAX_SAVE_BYTES:
+		push_error("save_game REFUSED — bounded save size exceeded")
+		return false
 	var f := FileAccess.open(path, FileAccess.WRITE)
 	if f == null:
 		push_warning("save_game: cannot open %s" % path)
@@ -991,14 +1821,86 @@ func peek_save(path: String) -> Dictionary:
 	if not FileAccess.file_exists(path):
 		return {}
 	var f := FileAccess.open(path, FileAccess.READ)
-	if f == null or f.get_length() < 8 or f.get_32() != SAVE_SCHEMA:
+	if f == null or f.get_length() < 8:
+		return {}
+	var sch := f.get_32()
+	if sch < SAVE_SCHEMA_LEGACY or sch > SAVE_SCHEMA:
+		f.close()
 		return {}
 	var blob = f.get_var()
 	f.close()
-	if not (blob is Dictionary) or blob.get("magic") != SAVE_MAGIC:
+	if not (blob is Dictionary) or blob.get("magic") != SAVE_MAGIC or int(blob.get("schema", -1)) != sch or not (blob.get("state") is Dictionary):
+		return {}
+	if sch == SAVE_SCHEMA and _validate_current_save_shape(blob) != "":
 		return {}
 	blob.erase("state")                             # 只回头信息
+	blob.erase("player_trace")                      # trace 可很大；列表视图只返回 O(1) 头信息
+	blob["requires_migration"] = sch < SAVE_SCHEMA
 	return blob
+
+func _validate_current_save_shape(blob: Dictionary) -> String:
+	for key in SAVE_CURRENT_BLOB_KEYS:
+		if not blob.has(key):
+			return "schema %d missing current envelope key: %s" % [SAVE_SCHEMA, key]
+	var expected_size := SAVE_CURRENT_BLOB_KEYS.size() + (1 if blob.has("player_trace") else 0)
+	if blob.size() != expected_size:
+		return "schema %d envelope contains unknown keys" % SAVE_SCHEMA
+	for typed_key in ["schema", "saved_tick", "saved_day", "seed"]:
+		if typeof(blob.get(typed_key)) != TYPE_INT:
+			return "schema %d envelope %s is not an int" % [SAVE_SCHEMA, typed_key]
+	if typeof(blob.get("magic")) != TYPE_STRING or typeof(blob.get("game_version")) != TYPE_STRING \
+		or not (blob.get("meta") is Dictionary):
+		return "schema %d envelope string/meta types are invalid" % SAVE_SCHEMA
+	var raw_state = blob.get("state")
+	if not (raw_state is Dictionary):
+		return "state is not a Dictionary"
+	var state: Dictionary = raw_state
+	var state_error := _validate_loaded_state(state, SAVE_SCHEMA)
+	if state_error != "":
+		return state_error
+	if blob.has("player_trace"):
+		if not (blob.get("player_trace") is Dictionary): return "player_trace is not a Dictionary"
+		var trace_error := _player_trace_validate_save_binding(blob.get("player_trace", {}), blob, state)
+		if trace_error != "": return trace_error
+	for pair in [["saved_tick", "tick_no"], ["saved_day", "day"], ["seed", "seed_base"]]:
+		if typeof(blob.get(pair[0])) != TYPE_INT or int(blob.get(pair[0])) != int(state.get(pair[1], -1)):
+			return "schema %d envelope %s does not match state %s" % [SAVE_SCHEMA, pair[0], pair[1]]
+	var active_ids = blob.get("active_commit_ids")
+	if not (active_ids is Array) or not (active_ids as Array).all(func(v): return typeof(v) == TYPE_INT):
+		return "active_commit_ids is not an int Array"
+	var commitment_ids := {}
+	var active_commitment_ids := {}
+	for raw_commitment in state.get("commitments", []):
+		if not (raw_commitment is Dictionary) or typeof((raw_commitment as Dictionary).get("id")) != TYPE_INT:
+			return "commitment id is invalid"
+		var commitment_id := int((raw_commitment as Dictionary)["id"])
+		if commitment_ids.has(commitment_id):
+			return "commitment id %d is duplicate" % commitment_id
+		commitment_ids[commitment_id] = true
+		if String((raw_commitment as Dictionary).get("status", "")) == "active":
+			active_commitment_ids[commitment_id] = true
+	var seen_active := {}
+	for raw_id in active_ids:
+		var active_id := int(raw_id)
+		if seen_active.has(active_id) or not commitment_ids.has(active_id):
+			return "active commitment id %d is duplicate or missing" % active_id
+		if not active_commitment_ids.has(active_id):
+			return "active commitment id %d points to inactive state" % active_id
+		seen_active[active_id] = true
+	if seen_active.size() != active_commitment_ids.size():
+		return "active commitment membership is incomplete"
+	return ""
+
+func _player_trace_validate_save_binding(trace: Dictionary, blob: Dictionary, state: Dictionary) -> String:
+	var trace_error := _player_trace_validate(trace, false)
+	if trace_error != "": return "player_trace %s" % trace_error
+	var session: Dictionary = trace.get("session", {})
+	if int(session.get("seed", -1)) != int(blob.get("seed", -2)): return "player_trace seed mismatch"
+	if String(session.get("scenario", "")) != String(state.get("scenario", "")): return "player_trace scenario mismatch"
+	var config := "%d|%s|%d|%d" % [int(state.get("seed_base", -1)), String(state.get("scenario", "")),
+		int(state.get("spawn_count", 0)), int(state.get("decide_period", 1))]
+	if int(session.get("autonomous_config_fingerprint", -1)) != fnv1a32(config): return "player_trace config mismatch"
+	return ""
 
 func load_game(path: String) -> bool:
 	if not FileAccess.file_exists(path):
@@ -1007,20 +1909,701 @@ func load_game(path: String) -> bool:
 	if f == null or f.get_length() < 8:
 		return false
 	var sch := f.get_32()
-	if sch != SAVE_SCHEMA:                           # 版本不符 → 拒绝，绝不静默套错格式
+	if sch < SAVE_SCHEMA_LEGACY or sch > SAVE_SCHEMA: # 未知过去/未来版本 → 拒绝，绝不猜格式
 		f.close()
-		push_warning("load_game: schema %d != %d, refusing" % [sch, SAVE_SCHEMA])
+		push_warning("load_game: unsupported schema %d (supported %d..%d), refusing" % [sch, SAVE_SCHEMA_LEGACY, SAVE_SCHEMA])
 		return false
 	var blob = f.get_var()
 	f.close()
-	if not (blob is Dictionary) or blob.get("magic") != SAVE_MAGIC:
+	if not (blob is Dictionary) or blob.get("magic") != SAVE_MAGIC or int(blob.get("schema", -1)) != sch:
 		return false
-	var state: Dictionary = blob.get("state", {})
+	if sch == SAVE_SCHEMA:
+		var shape_error := _validate_current_save_shape(blob)
+		if shape_error != "":
+			push_warning("load_game: %s" % shape_error)
+			return false
+	var active_ids = blob.get("active_commit_ids", [])
+	if not (active_ids is Array) or not (active_ids as Array).all(func(v): return typeof(v) == TYPE_INT):
+		return false
+	var prepared := _prepare_loaded_state(blob, sch)
+	if not bool(prepared.get("ok", false)):
+		push_warning("load_game: %s" % String(prepared.get("error", "invalid save state")))
+		return false
+	var state: Dictionary = prepared["state"]
+	var invalid := _validate_loaded_state(state, sch)
+	if invalid != "":
+		push_warning("load_game: %s" % invalid)
+		return false
+	var compact_error := _compact_prepared_completed_manifests(state)
+	if compact_error != "":
+		push_warning("load_game: %s" % compact_error)
+		return false
+	var loaded_trace: Dictionary = blob.get("player_trace", {}).duplicate(true) if blob.get("player_trace") is Dictionary else {}
+	# 到这里才触碰 live Sim。上面的迁移/验证全在 deep copy 上完成，因此任何拒绝都保持接收实例原样。
 	for k in state:
 		set(k, state[k])
-	_rebuild_after_load(blob.get("active_commit_ids", []))
+	_rebuild_after_load(active_ids)
+	if loaded_trace.is_empty():
+		player_trace = {}
+		player_trace_available = false
+		_player_trace_tick_index = {}
+	else:
+		player_trace = loaded_trace
+		player_trace_available = true
+		_player_trace_rebuild_index()
+	player_trace_last_error = ""
+	_player_trace_replay_active = false
+	_player_trace_replay_expected = {}
 	emit_signal("world_reset")               # 读档=换世界：AIBackend cancel_all(bump epoch)，在飞旧回包一律作废（P1-3 同款）
 	return true
+
+## schema 1 曾覆盖多个产品 tip。d46cbb1→本 schema 2 的顶层权威字段只新增下面三项；
+## 不改写旧 world/logistics/agents，也不凭历史 import 合成 cargo（否则会把已入库/已付款重复计算）。
+## 迁移必须覆盖接收实例的现值：Main.quickload 会在 live Sim 上读档，靠脚本默认会残留幽灵 manifest/core。
+func _prepare_loaded_state(blob: Dictionary, sch: int) -> Dictionary:
+	var raw_state = blob.get("state")
+	if not (raw_state is Dictionary):
+		return {"ok": false, "error": "state is not a Dictionary"}
+	var state: Dictionary = (raw_state as Dictionary).duplicate(true)
+	if sch == SAVE_SCHEMA:
+		return {"ok": true, "state": state}
+	if sch != SAVE_SCHEMA_LEGACY:
+		return {"ok": false, "error": "no migration path for schema %d" % sch}
+	# Runtime services are receiver-owned. Historical headless schema 1 files could contain backend/ext=null;
+	# applying that to Main's live Sim would silently disconnect AI/extensions after quickload. Current schema
+	# never emitted these keys, so schema 2 rejects them as a shape violation instead of silently normalizing.
+	for handle in SAVE_RUNTIME_HANDLES:
+		state.erase(handle)
+	var spatial_migration_error := _migrate_schema1_solid_props(state)
+	if spatial_migration_error != "":
+		return {"ok": false, "error": spatial_migration_error}
+
+	var has_manifests := state.has("cargo_manifests")
+	var has_order := state.has("cargo_manifest_order")
+	var has_core := state.has("core_population")
+	if has_manifests != has_order:
+		return {"ok": false, "error": "schema 1 cargo pair is partial"}
+	if has_manifests and not has_core:
+		return {"ok": false, "error": "schema 1 cargo state is missing core_population"}
+	if not has_manifests:
+		state["cargo_manifests"] = {}
+		state["cargo_manifest_order"] = []
+		_gate_schema1_unload_adverts(state)
+		for raw_ag in state.get("agents", []):
+			if raw_ag is Dictionary:
+				var option = (raw_ag as Dictionary).get("option")
+				if option is Dictionary and _option_mentions_cargo(option):
+					(raw_ag as Dictionary)["option"] = null
+	else:
+		var cargo_error := _validate_cargo_state(state)
+		if cargo_error != "":
+			return {"ok": false, "error": cargo_error}
+
+	if not has_core:
+		var core := 0
+		var raw_agents = state.get("agents")
+		if not (raw_agents is Array):
+			return {"ok": false, "error": "schema 1 agents is not an Array"}
+		for raw_ag in raw_agents:
+			if not (raw_ag is Dictionary):
+				return {"ok": false, "error": "schema 1 agent is not a Dictionary"}
+			var ag: Dictionary = raw_ag
+			if ag.get("is_player", false) == true or ag.get("affiliate", false) == true:
+				continue
+			core += 1
+		state["core_population"] = core
+	return {"ok": true, "state": state}
+
+## Schema 1 predates East Ocean's authored solid-prop collision. Upgrade that one map seam to the
+## current authority and deterministically evacuate any legacy agent caught inside a newly-solid cell.
+## This is deliberately not a general world rebake: every other legacy world field remains untouched.
+func _migrate_schema1_solid_props(state: Dictionary) -> String:
+	var saved_world = state.get("world")
+	if not (saved_world is Dictionary):
+		return "schema 1 world is not a Dictionary"
+	var areas = (saved_world as Dictionary).get("areas")
+	if not (areas is Dictionary) or not ((areas as Dictionary).get("dock") is Dictionary):
+		return "schema 1 dock authority is missing"
+	((areas as Dictionary)["dock"] as Dictionary)["solid_props"] = _authored_solid_props.duplicate(true)
+	var solid_cells := _solid_prop_cells_in_world(saved_world)
+	for raw_agent in state.get("agents", []):
+		if not (raw_agent is Dictionary):
+			continue
+		var ag: Dictionary = raw_agent
+		if String(ag.get("id", "")) == "tao" and ag.get("home") == Vector2i(58, 8):
+			ag["home"] = Vector2i(59, 7)
+		if String(ag.get("space", "town")) != "town" or String(ag.get("floor", "outdoor")) != "outdoor":
+			continue
+		var pos: Vector2i = ag.get("pos", Vector2i.ZERO)
+		if not (pos in solid_cells):
+			continue
+		var replacement := Vector2i(59, 7) if String(ag.get("id", "")) == "tao" else _nearest_legacy_town_cell(saved_world, pos)
+		if replacement.x < 0:
+			return "schema 1 agent %s cannot be evacuated from a new solid prop" % String(ag.get("id", ""))
+		ag["pos"] = replacement
+		ag["area"] = _area_key_in_world(saved_world, "town", "outdoor", replacement)
+		ag["room"] = _room_in_world(saved_world, replacement)
+	return ""
+
+func _nearest_legacy_town_cell(saved_world: Dictionary, start: Vector2i) -> Vector2i:
+	var q: Array = [start]
+	var seen := {start: true}
+	var width := int(saved_world.get("width", 0))
+	var height := int(saved_world.get("height", 0))
+	var occupied := {}
+	for raw_object in saved_world.get("objects", {}).values():
+		if raw_object is Dictionary and String((raw_object as Dictionary).get("space", "town")) == "town":
+			occupied[_v2i((raw_object as Dictionary).get("pos", []))] = true
+	while not q.is_empty():
+		var cell: Vector2i = q.pop_front()
+		if cell != start and _position_walkable_in_state(saved_world, "town", "outdoor", cell) and not occupied.has(cell):
+			return cell
+		for direction in [Vector2i(0, 1), Vector2i(-1, 0), Vector2i(1, 0), Vector2i(0, -1)]:
+			var next: Vector2i = cell + direction
+			if next.x >= 0 and next.y >= 0 and next.x < width and next.y < height and not seen.has(next):
+				seen[next] = true; q.append(next)
+	return Vector2i(-1, -1)
+
+func _option_mentions_cargo(option: Dictionary) -> bool:
+	return String(option.get("action", "")) == "卸货" or option.has("manifest_id") or option.has("manifest_node") or option.has("manifest_authorized")
+
+## P1-a-only schema 1 有永久“卸货”广告却没有 manifest 权威态。只清 in-flight option 不够，
+## 下一 tick 还会重签 ghost job；给旧快照中的广告补 manifest_node 后，它会在空 cargo 上结构性关闭。
+func _gate_schema1_unload_adverts(state: Dictionary) -> void:
+	var saved_logistics = state.get("logistics")
+	if saved_logistics is Dictionary:
+		for raw_node in (saved_logistics as Dictionary).get("nodes", []):
+			if not (raw_node is Dictionary):
+				continue
+			var node: Dictionary = raw_node
+			var node_id := String(node.get("id", ""))
+			for raw_adv in node.get("advertises", []):
+				if raw_adv is Dictionary and String((raw_adv as Dictionary).get("action", "")) == "卸货":
+					(raw_adv as Dictionary)["manifest_node"] = node_id
+	var saved_world = state.get("world")
+	if not (saved_world is Dictionary):
+		return
+	var objects = (saved_world as Dictionary).get("objects")
+	if not (objects is Dictionary):
+		return
+	for raw_id in (objects as Dictionary):
+		var raw_obj = (objects as Dictionary)[raw_id]
+		if not (raw_obj is Dictionary):
+			continue
+		for raw_adv in (raw_obj as Dictionary).get("advertises", []):
+			if raw_adv is Dictionary and String((raw_adv as Dictionary).get("action", "")) == "卸货":
+				(raw_adv as Dictionary)["manifest_node"] = String(raw_id)
+
+func _validate_cargo_state(state: Dictionary) -> String:
+	var manifests = state.get("cargo_manifests")
+	var order = state.get("cargo_manifest_order")
+	if not (manifests is Dictionary) or not (order is Array):
+		return "schema 1 cargo pair has wrong type"
+	var seen := {}
+	for raw_id in order:
+		if typeof(raw_id) != TYPE_STRING:
+			return "schema 1 cargo order id is not a String"
+		var manifest_id := String(raw_id)
+		if manifest_id == "" or seen.has(manifest_id) or not (manifests as Dictionary).has(manifest_id):
+			return "schema 1 cargo order is invalid"
+		seen[manifest_id] = true
+		var raw_rec = (manifests as Dictionary)[manifest_id]
+		if not (raw_rec is Dictionary):
+			return "schema 1 cargo record is not a Dictionary"
+		var rec: Dictionary = raw_rec
+		for string_key in ["id", "route_id", "node", "good", "state"]:
+			if typeof(rec.get(string_key)) != TYPE_STRING:
+				return "schema 1 cargo %s is not a String" % string_key
+		for int_key in ["lane_index", "arrived_day", "initial_qty", "remaining_qty", "price_per", "price_den"]:
+			if typeof(rec.get(int_key)) != TYPE_INT:
+				return "schema 1 cargo %s is not an int" % int_key
+		var remaining := int(rec.get("remaining_qty", -1))
+		var initial := int(rec.get("initial_qty", -1))
+		var status := String(rec.get("state", ""))
+		if String(rec.get("id", "")) != manifest_id or String(rec.get("route_id", "")) == "" or String(rec.get("node", "")) == "" or String(rec.get("good", "")) == "":
+			return "schema 1 cargo identity is invalid"
+		if initial <= 0 or remaining < 0 or remaining > initial or (status == "ready" and remaining <= 0) or (status == "complete" and remaining != 0) or not (status in ["ready", "complete"]):
+			return "schema 1 cargo quantity/state is invalid"
+		if int(rec.get("lane_index", -1)) < 0 or int(rec.get("arrived_day", -1)) < 1 or int(rec.get("price_per", -1)) < 0 or int(rec.get("price_den", 0)) <= 0:
+			return "schema 1 cargo lane/day/price is invalid"
+		var authored_error := _manifest_authority_error(manifest_id, rec, state.get("logistics", {}), int(state.get("day", 0)), state.get("event_log", []))
+		if authored_error != "":
+			return authored_error
+	if seen.size() != (manifests as Dictionary).size():
+		return "schema 1 cargo dictionary/order diverge"
+	for raw_ag in state.get("agents", []):
+		if not (raw_ag is Dictionary):
+			return "schema 1 agent is not a Dictionary"
+		var option = (raw_ag as Dictionary).get("option")
+		if not (option is Dictionary) or not _option_mentions_cargo(option):
+			continue
+		var manifest_id := String((option as Dictionary).get("manifest_id", ""))
+		if (option as Dictionary).get("manifest_authorized", false) != true or not (manifests as Dictionary).has(manifest_id):
+			return "schema 1 cargo option is not engine-authorized"
+		var rec: Dictionary = (manifests as Dictionary)[manifest_id]
+		if String((option as Dictionary).get("manifest_node", "")) != String(rec.get("node", "")) or String(rec.get("state", "")) != "ready":
+			return "schema 1 cargo option does not match a ready manifest"
+	return ""
+
+## P1-o single source of truth for a live/saved manifest's authored import lane.
+## Pure validation only: callers may use a prepared save copy, live state, or an invariant probe
+## without mutating cargo, money, stock, events, or UI.  Integer conversion is deliberately not
+## accepted for manifest fields: a malformed runtime/save value must not inherit a valid lane by cast.
+func _manifest_authored_lane_error(manifest_id: String, rec: Dictionary, source_logistics, source_day: int) -> String:
+	if not (source_logistics is Dictionary):
+		return "cargo %s has no logistics contract" % manifest_id
+	var raw_lanes = (source_logistics as Dictionary).get("import_lanes")
+	if not (raw_lanes is Array):
+		return "cargo %s has no authored import lanes" % manifest_id
+	for key in ["id", "route_id", "node", "good", "state"]:
+		if typeof(rec.get(key)) != TYPE_STRING:
+			return "cargo %s field %s is not a String" % [manifest_id, key]
+	for key in ["lane_index", "arrived_day", "initial_qty", "remaining_qty", "price_per", "price_den"]:
+		if typeof(rec.get(key)) != TYPE_INT:
+			return "cargo %s field %s is not an int" % [manifest_id, key]
+	var lane_index := int(rec["lane_index"])
+	var lanes: Array = raw_lanes
+	if lane_index < 0 or lane_index >= lanes.size() or not (lanes[lane_index] is Dictionary):
+		return "cargo %s lacks authored lane %d" % [manifest_id, lane_index]
+	var lane: Dictionary = lanes[lane_index]
+	var route := String(lane.get("route_id", ""))
+	var node := String(lane.get("node", ""))
+	var good := String(lane.get("good", ""))
+	var batch := int(lane.get("batch", 0))
+	var every := int(lane.get("every_days", 0))
+	var pnum := int(lane.get("price_per", 0))
+	var pden := int(lane.get("price_den", 1))
+	var arrived_day := int(rec["arrived_day"])
+	if route == "" or node == "" or good == "" or batch <= 0 or every <= 0 or pnum < 0 or pden <= 0:
+		return "cargo %s authored lane is malformed" % manifest_id
+	var expected_id := "manifest_%s_%d_%d" % [route, arrived_day, lane_index]
+	if manifest_id != expected_id or String(rec["id"]) != expected_id:
+		return "cargo %s has a non-canonical manifest id" % manifest_id
+	if arrived_day < 1 or arrived_day > source_day or arrived_day % every != 0:
+		return "cargo %s arrival day %d violates authored cadence/current day %d" % [manifest_id, arrived_day, source_day]
+	if String(rec["route_id"]) != route or String(rec["node"]) != node or String(rec["good"]) != good \
+		or int(rec["initial_qty"]) != batch \
+		or (String(rec["state"]) == "ready" and int(rec["remaining_qty"]) != batch) \
+		or int(rec["price_per"]) != pnum or int(rec["price_den"]) != pden:
+		return "cargo %s diverges from authored lane" % manifest_id
+	return ""
+
+func _cargo_index_key(event: Dictionary) -> String:
+	return String(event.get("id", -1))
+
+func _projection_query_op(weight: int = 1) -> void:
+	observatory_projection_query_ops += maxi(1, weight)
+	var budget := OBSERVATORY_QUERY_OP_BUDGET
+	if observatory_projection_query_budget_override >= 0:
+		budget = observatory_projection_query_budget_override
+	if observatory_projection_query_ops > budget:
+		observatory_projection_query_budget_failed = true
+func _index_cargo_event(event: Dictionary, index: int) -> void:
+	var note := String(event.get("note", ""))
+	var txid := String(event.get("txid", ""))
+	if txid.begins_with("cargo_unload/"):
+		var tx: Dictionary = _cargo_event_index["tx"]
+		if not tx.has(txid): tx[txid] = []
+		(tx[txid] as Array).append(index)
+	if String(event.get("type", "")) != "world":
+		return
+	if note.begins_with("cargo_arrive:"):
+		var star := note.rfind("*")
+		if star > "cargo_arrive:".length():
+			var mid := note.substr("cargo_arrive:".length(), star - "cargo_arrive:".length())
+			if mid != "":
+				var arrivals: Dictionary = _cargo_event_index["arrivals"]
+				if not arrivals.has(mid): arrivals[mid] = []
+				(arrivals[mid] as Array).append(index)
+	if note.begins_with("cargo_unload:"):
+		var node := String(event.get("target", ""))
+		var receipts: Dictionary = _cargo_event_index["receipts"]
+		if node != "": receipts[node] = index
+
+func _rebuild_cargo_event_index() -> void:
+	_cargo_event_index = {"event_size": event_log.size(), "arrivals": {}, "receipts": {}, "tx": {}}
+	for i in event_log.size():
+		if event_log[i] is Dictionary:
+			_index_cargo_event(event_log[i] as Dictionary, i)
+
+func _cargo_index_valid() -> bool:
+	_projection_query_op()
+	if int(_cargo_event_index.get("event_size", -1)) != event_log.size():
+		return false
+	# Validate only indexed rows; this is bounded by cargo rows, never by unrelated history.
+	for bucket in ["arrivals", "receipts", "tx"]:
+		_projection_query_op()
+		var groups: Dictionary = _cargo_event_index.get(bucket, {})
+		for key in groups:
+			_projection_query_op()
+			for raw_i in groups[key]:
+				_projection_query_op(2)
+				var j := int(raw_i)
+				if j < 0 or j >= event_log.size() or not (event_log[j] is Dictionary): return false
+				_projection_query_op()
+				var e: Dictionary = event_log[j]
+				if bucket == "tx" and String(e.get("txid", "")) != String(key): return false
+	return true
+
+func _manifest_arrival_receipt_error(manifest_id: String, rec: Dictionary, source_events, indexed: bool = false) -> String:
+	if not (source_events is Array):
+		return "cargo %s has no event-log contract" % manifest_id
+	var exact := 0
+	var expected_note := "cargo_arrive:%s*%d" % [manifest_id, int(rec.get("initial_qty", 0))]
+	if indexed:
+		if not _cargo_index_valid(): return "cargo event index stale or ledger malformed"
+		var arrivals: Dictionary = _cargo_event_index.get("arrivals", {})
+		for raw_i in arrivals.get(manifest_id, []):
+			_projection_query_op(2)
+			var event: Dictionary = event_log[int(raw_i)]
+			observatory_projection_event_reads += 1
+			if String(event.get("type", "")) != "world" or event.get("accepted", false) != true \
+				or String(event.get("actor", "")) != String(rec.get("route_id", "")) \
+				or String(event.get("target", "")) != manifest_id or String(event.get("subject", "")) != String(rec.get("good", "")) \
+				or String(event.get("note", "")) != expected_note:
+				return "cargo %s arrival receipt conflicts with manifest" % manifest_id
+			exact += 1
+		return "" if exact == 1 else "cargo %s arrival receipt count %d, expected 1" % [manifest_id, exact]
+	for raw_event in source_events:
+		if not (raw_event is Dictionary):
+			continue
+		var event: Dictionary = raw_event
+		var note := String(event.get("note", ""))
+		if String(event.get("target", "")) != manifest_id and not note.begins_with("cargo_arrive:" + manifest_id + "*"):
+			continue
+		if String(event.get("type", "")) != "world" or event.get("accepted", false) != true \
+			or String(event.get("actor", "")) != String(rec.get("route_id", "")) \
+			or String(event.get("target", "")) != manifest_id or String(event.get("subject", "")) != String(rec.get("good", "")) \
+			or note != expected_note:
+			return "cargo %s arrival receipt conflicts with manifest" % manifest_id
+		exact += 1
+	if exact != 1:
+		return "cargo %s arrival receipt count %d, expected 1" % [manifest_id, exact]
+	return ""
+
+func _manifest_authority_error(manifest_id: String, rec: Dictionary, source_logistics, source_day: int, source_events, indexed: bool = false) -> String:
+	var lane_error := _manifest_authored_lane_error(manifest_id, rec, source_logistics, source_day)
+	if lane_error != "":
+		return lane_error
+	return _manifest_arrival_receipt_error(manifest_id, rec, source_events, indexed)
+
+func _manifest_targets_node(rec: Dictionary, node: String) -> bool:
+	if String(rec.get("node", "")) == node:
+		return true
+	var lanes = logistics.get("import_lanes", [])
+	var lane_index := int(rec.get("lane_index", -1))
+	return lanes is Array and lane_index >= 0 and lane_index < (lanes as Array).size() \
+		and (lanes as Array)[lane_index] is Dictionary \
+		and String(((lanes as Array)[lane_index] as Dictionary).get("node", "")) == node
+
+func _authored_home_for_agent(ag: Dictionary) -> Dictionary:
+	if ag.get("is_player", false) == true or String(ag.get("id", "")) == "player" \
+			or String(ag.get("id", "")).begins_with("npc_"):
+		return {"space": "town", "floor": "outdoor"}
+	return (_authored_agent_homes.get(String(ag.get("id", "")), {}) as Dictionary).duplicate(true)
+
+func _area_key_in_world(saved_world: Dictionary, space: String, floor: String, pos: Vector2i) -> String:
+	if space != "town" or floor != "outdoor":
+		return space + ":" + floor
+	for raw_id in saved_world.get("areas", {}):
+		var raw_area = saved_world.get("areas", {}).get(raw_id)
+		if not (raw_area is Dictionary):
+			continue
+		var rect := _as_arr((raw_area as Dictionary).get("rect", []))
+		if rect.size() == 4 and pos.x >= int(rect[0]) and pos.x < int(rect[0]) + int(rect[2]) \
+				and pos.y >= int(rect[1]) and pos.y < int(rect[1]) + int(rect[3]):
+			return String(raw_id)
+	return ""
+
+func _room_in_world(saved_world: Dictionary, pos: Vector2i) -> String:
+	for raw_id in saved_world.get("rooms", {}):
+		var raw_room = saved_world.get("rooms", {}).get(raw_id)
+		if not (raw_room is Dictionary):
+			continue
+		var rect := _as_arr((raw_room as Dictionary).get("rect", []))
+		if rect.size() == 4 and pos.x >= int(rect[0]) and pos.x < int(rect[0]) + int(rect[2]) \
+				and pos.y >= int(rect[1]) and pos.y < int(rect[1]) + int(rect[3]):
+			return String(raw_id)
+	return ""
+
+## Ordered authored solid props remain ordinary map data for rendering, while this pure projection
+## is the shared collision source for live nav and prepared-save validation. Malformed records yield
+## no cells here; map audit and the exact receiver-owned save comparison reject them upstream.
+func _solid_prop_cells_in_world(source_world: Dictionary) -> Array:
+	var out: Array = []
+	var areas = source_world.get("areas", {})
+	if not (areas is Dictionary):
+		return out
+	var dock = (areas as Dictionary).get("dock", {})
+	if not (dock is Dictionary):
+		return out
+	for raw_prop in (dock as Dictionary).get("solid_props", []):
+		if not (raw_prop is Dictionary):
+			continue
+		var pos := _as_arr((raw_prop as Dictionary).get("pos", []))
+		var footprint := _as_arr((raw_prop as Dictionary).get("footprint", []))
+		if pos.size() != 2 or footprint.size() != 2:
+			continue
+		var fw := int(footprint[0]); var fh := int(footprint[1])
+		if fw <= 0 or fh <= 0:
+			continue
+		for y in range(int(pos[1]), int(pos[1]) + fh):
+			for x in range(int(pos[0]), int(pos[0]) + fw):
+				out.append(Vector2i(x, y))
+	return out
+
+func _authored_portal_cell(space: String, floor: String, pos: Vector2i) -> bool:
+	for raw_portal in _authored_portals:
+		if not (raw_portal is Dictionary):
+			continue
+		for side in ["from", "to"]:
+			var endpoint = (raw_portal as Dictionary).get(side)
+			if endpoint is Dictionary and String((endpoint as Dictionary).get("space", "")) == space \
+					and String((endpoint as Dictionary).get("floor", "")) == floor \
+					and _v2i((endpoint as Dictionary).get("pos", [])) == pos:
+				return true
+	return false
+
+## Pure walkability check for a prepared save.  Loading must never consult the receiver's live
+## nav grid: doing so would make the same bytes pass or fail according to pre-load runtime state.
+func _position_walkable_in_state(saved_world: Dictionary, space: String, floor: String, pos: Vector2i) -> bool:
+	if space == "town" and floor == "outdoor":
+		var width := int(saved_world.get("width", 0))
+		var height := int(saved_world.get("height", 0))
+		if pos.x < 0 or pos.y < 0 or pos.x >= width or pos.y >= height:
+			return false
+		for raw_blocker in saved_world.get("blockers", []):
+			if _v2i(raw_blocker) == pos:
+				return false
+		if pos in _solid_prop_cells_in_world(saved_world):
+			return false
+		# World objects are legal interaction goals: A* deliberately permits the final occupied
+		# cell, so a save may legitimately catch an agent standing at a counter or worksite.
+		return true
+	var authored_space = _authored_spaces.get(space)
+	if not (authored_space is Dictionary) or not (floor in _as_arr((authored_space as Dictionary).get("floors", []))):
+		return false
+	var bounds := _as_arr((authored_space as Dictionary).get("bounds", []))
+	if bounds.size() != 4:
+		return false
+	var width := int(bounds[2])
+	var height := int(bounds[3])
+	if pos.x < 0 or pos.y < 0 or pos.x >= width or pos.y >= height:
+		return false
+	var portal_cell := _authored_portal_cell(space, floor, pos)
+	if not portal_cell and (pos.x == 0 or pos.y == 0 or pos.x == width - 1 or pos.y == height - 1):
+		return false
+	# Interior furniture cells likewise remain valid interaction goals; bounds, exterior walls,
+	# authored plane reachability, and canonical area/room caches are the load authority teeth.
+	return true
+
+func _agent_reachable_plane(agent_id: String, from_space: String, from_floor: String, to_space: String, to_floor: String) -> bool:
+	if from_space == to_space and from_floor == to_floor:
+		return true
+	var probe_ag := {"id": agent_id}
+	var q: Array = [from_space + "/" + from_floor]
+	var seen := {}
+	seen[q[0]] = true
+	var goal := to_space + "/" + to_floor
+	while not q.is_empty():
+		var node: String = q.pop_front()
+		var pair := node.split("/")
+		for hop in _portals_from(pair[0], pair[1], probe_ag):
+			var next := String(hop.get("to_space", "")) + "/" + String(hop.get("to_floor", ""))
+			if next == goal:
+				return true
+			if not seen.has(next):
+				seen[next] = true
+				q.append(next)
+	return false
+
+func _validate_agent_spatial_authority(state: Dictionary) -> String:
+	var saved_world = state.get("world")
+	if not (saved_world is Dictionary):
+		return "world is not a Dictionary"
+	var saved_dock = (saved_world as Dictionary).get("areas", {}).get("dock", {})
+	if not (saved_dock is Dictionary) or (saved_dock as Dictionary).get("solid_props", []) != _authored_solid_props:
+		return "town solid-prop authority diverges from current authored data"
+	var town_w := int((saved_world as Dictionary).get("width", 0))
+	var town_h := int((saved_world as Dictionary).get("height", 0))
+	var seen_ids := {}
+	var player_count := 0
+	for raw_ag in state.get("agents", []):
+		var ag: Dictionary = raw_ag
+		var aid := String(ag.get("id", ""))
+		if seen_ids.has(aid):
+			return "agent id %s is duplicate" % aid
+		seen_ids[aid] = true
+		var is_player: bool = ag.get("is_player", false) == true
+		if is_player:
+			player_count += 1
+		if (aid == "player") != is_player:
+			return "player id/flag authority mismatch"
+		var home := _authored_home_for_agent(ag)
+		if home.is_empty():
+			return "agent %s has no authored home authority" % aid
+		if typeof(ag.get("home_space")) != TYPE_STRING \
+				or String(ag.get("home_space", "")) != String(home.get("space", "")):
+			return "agent %s home_space authority diverges from authored identity" % aid
+		if typeof(ag.get("home_floor")) != TYPE_STRING \
+				or String(ag.get("home_floor", "")) != String(home.get("floor", "")):
+			return "agent %s home_floor authority diverges from authored identity" % aid
+		for key in ["space", "floor", "area", "room"]:
+			if typeof(ag.get(key)) != TYPE_STRING:
+				return "agent %s spatial field %s is not a String" % [aid, key]
+		if typeof(ag.get("pos")) != TYPE_VECTOR2I:
+			return "agent %s position is not Vector2i" % aid
+		var space := String(ag["space"])
+		var floor := String(ag["floor"])
+		var pos: Vector2i = ag["pos"]
+		var w := 0
+		var h := 0
+		if space == "town" and floor == "outdoor":
+			w = town_w; h = town_h
+		else:
+			var authored_space = _authored_spaces.get(space)
+			if not (authored_space is Dictionary):
+				return "agent %s space is not authored" % aid
+			if not (floor in _as_arr((authored_space as Dictionary).get("floors", []))):
+				return "agent %s floor is not authored" % aid
+			var bounds := _as_arr((authored_space as Dictionary).get("bounds", []))
+			if bounds.size() != 4:
+				return "agent %s plane bounds are invalid" % aid
+			w = int(bounds[2]); h = int(bounds[3])
+		if pos.x < 0 or pos.y < 0 or pos.x >= w or pos.y >= h:
+			return "agent %s position is outside authored plane bounds" % aid
+		if not _position_walkable_in_state(saved_world, space, floor, pos):
+			return "agent %s position is not walkable in the prepared state" % aid
+		if not _agent_reachable_plane(aid, String(home["space"]), String(home["floor"]), space, floor):
+			return "agent %s current plane is not authorized from authored home" % aid
+		var expected_area := _area_key_in_world(saved_world, space, floor, pos)
+		var expected_room := _room_in_world(saved_world, pos)
+		if String(ag.get("area", "")) != expected_area:
+			return "agent %s area cache diverges from address" % aid
+		if String(ag.get("room", "")) != expected_room:
+			return "agent %s room cache diverges from address" % aid
+	if player_count > 1:
+		return "more than one player authority record"
+	return ""
+
+## Validate the complete copy before set(). This keeps bad header/blob pairs, partial migrations,
+## unknown keys and type-confused payloads from partially overwriting a running quickload target.
+func _validate_loaded_state(state: Dictionary, sch: int) -> String:
+	var allowed := {}
+	for p in get_property_list():
+		if int(p.get("usage", 0)) & PROPERTY_USAGE_SCRIPT_VARIABLE:
+			allowed[String(p.get("name", ""))] = true
+	for raw_key in state:
+		var key := String(raw_key)
+		if not allowed.has(key) or key in SAVE_LOAD_DENY:
+			return "unknown or derived state key: %s" % key
+		var live = get(key)
+		var incoming = state[raw_key]
+		if typeof(live) != TYPE_NIL and typeof(live) != typeof(incoming):
+			return "state key %s has type %d, expected %d" % [key, typeof(incoming), typeof(live)]
+		if typeof(live) == TYPE_NIL and typeof(incoming) != TYPE_NIL:
+			return "runtime handle %s is not null" % key
+	if sch == SAVE_SCHEMA:
+		var expected := _current_save_state_keys()
+		for key in expected:
+			if not state.has(key):
+				return "schema %d missing current state key: %s" % [sch, key]
+		if state.size() != expected.size():
+			return "schema %d state key count %d, expected %d" % [sch, state.size(), expected.size()]
+		if state.get("_spaces") != _authored_spaces or state.get("_portals") != _authored_portals \
+				or state.get("_interiors_data") != _authored_interiors_data:
+			return "schema %d spatial authority diverges from current authored data" % sch
+	for key in ["agents", "world", "production", "logistics", "tick_no", "day", "seed_base", "event_log", "event_digest", "town_stock", "town_coin", "external_coin", "econ_total0", "commitments", "cargo_manifests", "cargo_manifest_order", "core_population"]:
+		if not state.has(key):
+			return "missing required state key: %s" % key
+	if not (state["agents"] is Array) or (state["agents"] as Array).is_empty():
+		return "agents must be a non-empty Array"
+	if typeof(state["core_population"]) != TYPE_INT:
+		return "core_population is not an int"
+	var core := int(state["core_population"])
+	var eligible_core := 0
+	for raw_ag in state["agents"]:
+		if not (raw_ag is Dictionary):
+			return "agent entry is not a Dictionary"
+		var ag: Dictionary = raw_ag
+		if String(ag.get("id", "")) == "" or not (ag.get("memory") is Dictionary):
+			return "agent identity/memory payload is invalid"
+		for flag_key in ["is_player", "affiliate"]:
+			if ag.has(flag_key) and typeof(ag.get(flag_key)) != TYPE_BOOL:
+				return "agent %s flag is not bool" % flag_key
+		if ag.get("is_player", false) != true and ag.get("affiliate", false) != true:
+			eligible_core += 1
+	if core <= 0 or core != eligible_core:
+		return "core_population %d does not equal eligible core %d" % [core, eligible_core]
+	if sch == SAVE_SCHEMA:
+		var spatial_error := _validate_agent_spatial_authority(state)
+		if spatial_error != "":
+			return spatial_error
+	var leaks: Array = []
+	_scan_objects(state, "state", leaks)
+	if not leaks.is_empty():
+		return "state contains Object/Callable: %s" % ", ".join(leaks)
+	var cargo_error := _validate_cargo_state(state)
+	if cargo_error != "":
+		return cargo_error
+	return ""
+
+## P1-h load migration：旧 P1-g schema-2 档曾持久化 complete records。只有存档自己的 append-only
+## arrival + exact tx receipts 足以证明该单完成时，才从 prepared copy 退休；缺证据一律拒绝，不能借 compact 抹坏状态。
+func _compact_prepared_completed_manifests(state: Dictionary) -> String:
+	var manifests: Dictionary = state.get("cargo_manifests", {})
+	var order: Array = state.get("cargo_manifest_order", [])
+	var events: Array = state.get("event_log", [])
+	var saved_economy = state.get("economy", {})
+	var economy_on: bool = saved_economy is Dictionary and not (saved_economy as Dictionary).is_empty()
+	var saved_logistics = state.get("logistics", {})
+	for i in range(order.size() - 1, -1, -1):
+		var manifest_id := String(order[i])
+		var rec: Dictionary = manifests.get(manifest_id, {})
+		if String(rec.get("state", "")) != "complete":
+			continue
+		var qty := int(rec.get("initial_qty", 0))
+		var authored_error := _manifest_authority_error(manifest_id, rec, saved_logistics, int(state.get("day", 0)), events)
+		if authored_error != "":
+			return authored_error
+		var arrival_count := 0
+		var tx_rows: Array = []
+		var txid := "cargo_unload/" + manifest_id
+		for raw in events:
+			if not (raw is Dictionary):
+				return "event_log contains a non-Dictionary entry"
+			var e: Dictionary = raw
+			if String(e.get("type", "")) == "world" and String(e.get("note", "")) == "cargo_arrive:%s*%d" % [manifest_id, qty] \
+				and String(e.get("actor", "")) == String(rec.get("route_id", "")) and String(e.get("target", "")) == manifest_id \
+				and String(e.get("subject", "")) == String(rec.get("good", "")):
+				arrival_count += 1
+			if String(e.get("txid", "")) == txid:
+				tx_rows.append(e)
+		var paid: bool = economy_on and int(rec.get("price_per", 0)) > 0
+		var expected_size := 3 if paid else 2
+		if arrival_count != 1 or tx_rows.size() != expected_size:
+			return "complete cargo %s lacks exact arrival/tx receipt proof" % manifest_id
+		for j in range(1, tx_rows.size()):
+			if int(tx_rows[j].get("id", -1)) != int(tx_rows[j - 1].get("id", -1)) + 1:
+				return "complete cargo %s tx receipt ids are not adjacent" % manifest_id
+		var stock_e: Dictionary = tx_rows[1 if paid else 0]
+		var receipt_e: Dictionary = tx_rows[2 if paid else 1]
+		if paid:
+			var pay_e: Dictionary = tx_rows[0]
+			if String(pay_e.get("type", "")) != "pay" or String(pay_e.get("actor", "")) != "town" \
+				or String(pay_e.get("target", "")) != "external" or String(pay_e.get("note", "")) != "import*%d" % qty:
+				return "complete cargo %s pay receipt is invalid" % manifest_id
+		if String(stock_e.get("type", "")) != "import" or String(stock_e.get("actor", "")) != String(rec.get("node", "")) \
+			or String(stock_e.get("target", "")) != "town" or String(stock_e.get("subject", "")) != String(rec.get("good", "")) \
+			or String(stock_e.get("note", "")) != "import*%d" % qty:
+			return "complete cargo %s stock receipt is invalid" % manifest_id
+		if String(receipt_e.get("type", "")) != "world" or String(receipt_e.get("target", "")) != String(rec.get("node", "")) \
+			or String(receipt_e.get("subject", "")) != String(rec.get("good", "")) \
+			or String(receipt_e.get("note", "")) != "cargo_unload:%s*%d" % [manifest_id, qty]:
+			return "complete cargo %s unload receipt is invalid" % manifest_id
+		order.remove_at(i)
+		manifests.erase(manifest_id)
+	return ""
 
 ## 深扫状态树找残留 Object/Callable（save_game 的 fail-closed 门用）。
 func _scan_objects(v, path: String, out: Array) -> void:
@@ -1058,6 +2641,7 @@ func _rebuild_after_load(active_commit_ids: Array = []) -> void:
 	_player_pos = Vector2i(-1, -1)   # cohort 玩家位缓存：load 后清（每 tick 由 _compute_lod_cohort 重建）
 	_build_nav()                                     # P3：从 world/_spaces 重建 town _blocked + 各平面 _nav_grids（派生，不入档）
 	_path_cache = {}
+	_rebuild_cargo_event_index()
 
 # ── 主循环 ───────────────────────────────────────────────────────────────
 func tick() -> void:
@@ -1175,6 +2759,16 @@ func _advance_agent(ag: Dictionary) -> void:
 				return                              # M2：思考中，本 tick 不落地（保持 option==null 下 tick 再问）
 			if intent.is_empty():
 				intent = _logic_decide(ag, cands)   # 放弃/超时/脏输出 → 引擎兜底
+			elif not (_survival_ok(ag, intent) and _horizon_ok(ag, intent)):
+				# P2-3 生存否决：危机中挑了不救急的 → 引擎收回决定权（见 _survival_ok）。
+				# ⚠ 计数只记【真的换了】的那些：backend.decide() 在很多档位下返回的本来就是
+				#   Sim._logic_decide 的结果（worker 忙 / 节流 / 预算门 / 过载），那些也会走到这里，
+				#   而重算一次是【同一个纯函数同一份输入】→ 逐字节同一个 intent，什么也没改变。
+				#   把那些也计进来会让"引擎驳回了后端多少次"虚高一个量级（实测 K=2 档 1499 vs 真实 205）。
+				var floored := _logic_decide(ag, cands)
+				if _cand_key(floored) != _cand_key(intent):   # 复用既有的候选身份串（P1-1 重验用的同一把尺）
+					ext_veto += 1
+				intent = floored
 			elif record_decisions:
 				_record_decision(ag, cands, intent) # S4：模型落地决策记入 trace
 		else:
@@ -1213,10 +2807,15 @@ func _advance_journey(ag: Dictionary, opt: Dictionary) -> void:
 		ag["option"] = null                # 不可达 → 放弃（下 tick 重新决策）
 		return
 	if ag["pos"] == hop["from_pos"]:
-		_traverse_portal(ag, hop)          # 到本层 portal 口 → 跨过去（【不清 option】，承诺继续）
+		var crossed := _try_traverse_portal(String(ag.get("id", "")), String(ag.get("space", "town")),
+			String(ag.get("floor", "outdoor")), ag["pos"], String(hop.get("to_space", "")), String(hop.get("to_floor", "")))
+		if not bool(crossed.get("ok", false)):
+			ag["option"] = null             # 权限/拓扑在 plan→commit 间漂移：放弃，不执行陈旧 hop
+			emit_signal("agent_changed", ag["id"])
+			return
 	else:
 		_move_agent(ag, _nav_step(ag, hop["from_pos"]))
-	emit_signal("agent_changed", ag["id"])
+		emit_signal("agent_changed", ag["id"])
 
 func _advance_attend(ag: Dictionary, opt: Dictionary) -> void:
 	var c := _find_commitment(int(opt["commit"]))
@@ -1239,43 +2838,114 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 		# use、绝不迈上家具格。那个邻格由 A* 走到=保证可达(gen_town 审计每个家具≥1 可达邻格)→ 无饿穿零风险，
 		# 且比旧"踩上家具"早一格到达(需求更早满足、更安全)。同区邻格 → area 门控(社交/赴约)不变。
 		if _manh(ag["pos"], target_obj["pos"]) <= 1:
+			var manifest_node := String(opt.get("manifest_node", _manifest_node_for_action(target_obj, String(opt.get("action", "")))))
+			if manifest_node != "":
+				if not _cargo_option_eligible(ag, opt, manifest_node):
+					ag["option"] = null            # 途中 cargo/货位/余额变化：不偷换另一单，下 tick 重选
+					return
 			opt["phase"] = "use"
+			# Wave E 扣货点：消耗类动作(吃饭/洗澡/喝咖啡/歇着)开用时扣一件镇库存。
+			# ★缺货【不阻断】：这里既不 return 也不清 option，need 照在 use 分支补满 ——
+			#   与 meals_free 同一条设计红线：缺货绝不成为新的饿死通道(硬不变量 #01)。
+			#   返回 false 只用来 ①缺货加价 ②记社会后果。置于收费之前：加价要先知道缺没缺。
+			var short := false
+			if _prod_on():
+				short = not _consume_for(ag, String(opt["action"]))
 			# Wave 1b 收费点：有价动作(吃饭等)开用时向镇库付费。付不起→照用不误(meals_free)——
 			# 生存永不被钱门住(守"无饿穿"硬不变量)，钱只造分化/戏剧，不造饿死。
 			if _econ_on():
 				var price := int(economy.get("prices", {}).get(String(opt["action"]), 0))
+				# ★F1 商贩：全镇唯一一笔【人→人】的货款。收款方从镇库换成【现任商贩本人】，
+				#   价钱从 production.vendor.price 来（economy.json 不属于本棒，也不该由它定一个岗位的加价）。
+				#   守恒仍然只靠 transfer 这一道门 → 硬 #34 一个字节都不用改。
+				#   注意本项目里"人→人"并不是本棒首创：Wave 3c 的房租(_nightly 的 transfer(房客,房东))已经是了；
+				#   本棒新的是【货与钱同时易手】——镇库的货经 _stock_take 出账、钱进的是个人口袋。
+				#   买家恰好就是商贩本人时跳过收款（自己卖给自己不是交易，只会在账本上留一条净零的 pay）。
+				var payee := "town"
+				var vend: Dictionary = production.get("vendor", {}) if _prod_on() and production.get("vendor", {}) is Dictionary else {}
+				if not vend.is_empty() and String(vend.get("action", "")) == String(opt["action"]):
+					var vid := _holder_of_title(String(vend.get("title", "")))
+					if vid != "" and vid != String(ag["id"]) and _agent_by_id.has(vid):
+						price = int(vend.get("price", 0))
+						payee = vid
+				if price > 0 and short:
+					price += int(production.get("scarcity_markup", 0))   # 缺货溢价：仍走 transfer 唯一通道 → #34 不受影响
 				if price > 0:
-					if transfer(String(ag["id"]), "town", price, "price:" + String(opt["action"])):
+					# ★AA3 消费侧的口碑挂点（docs/106）：**只在 payee 是【商贩本人】的那一笔上**去数在场者，
+					#   否则连 `_nearby_agents` 都不调 ⇒ 缺 `vendor.trade_credit` 键 / 非 vendor 动作 /
+					#   收款方是镇库 ⇒ 一条指令都不多跑、`witnesses` 仍是 `[]` ⇒ 逐字节回到 AA3 之前。
+					# ★AA3-FIX（docs/112）：witnesses 里再滤掉【商贩本人】（payee）。
+					#   语义："被看见" = 交易双方之外的人看见——买家已被 _nearby_agents 排除，
+					#   而商贩恰好与买家同区时（实测 19-24% 的成交，docs/106 §一）会混进来，
+					#   于是一笔只被商贩自己"看见"的成交也算"被看见"（40/715，逐 seed 1-6 笔），
+					#   把 #43 正向臂的 sales_w 喂绿（自证）。信念/standing 层 _trade_fallout
+					#   本就跳过商贩（那边 seers 循环里的 continue；引符号不引行号）⇒ 本过滤是
+					#   纯观测变更：只动 pay 事件的 witnesses 成员
+					#   ⇒ 只动 Inv.digest，event_digest/chain 不动（M1 实测 12/12 vs 0/12）。
+					var tc: Dictionary = _trade_credit() if payee != "town" else {}
+					var twits: Array = []
+					if not tc.is_empty():
+						for tw in _nearby_agents(ag):
+							if String(tw["id"]) != payee:
+								twits.append(tw)
+					if transfer(String(ag["id"]), payee, price, ("buy:" if payee != "town" else "price:") + String(opt["action"]), twits):
 						econ_stats["meals_paid"] += 1
+						if not tc.is_empty():
+							_trade_fallout(ag, payee, twits, String(opt["action"]), tc)
 					else:
-						econ_stats["meals_free"] += 1
+						econ_stats["meals_free"] += 1      # 付不起照吃（meals_free）——商贩路同样继承这条红线
 		else:
 			_move_agent(ag, _nav_step(ag, target_obj["pos"]))
 		emit_signal("agent_changed", ag["id"])
 	else:  # use
+		# cargo 合同必须在【任何 need mutation 之前】重检。否则强制/旧 option 即使最终领不到工资，
+		# 仍能在空港逐 tick 凭空获得“卸货”的 fun，形成另一种 ghost-unloading。
+		var use_manifest_node := String(opt.get("manifest_node", _manifest_node_for_action(target_obj, String(opt.get("action", "")))))
+		if use_manifest_node != "":
+			if not _cargo_option_eligible(ag, opt, use_manifest_node):
+				ag["option"] = null
+				emit_signal("agent_changed", ag["id"])
+				return
 		var per := float(opt["amount"]) / float(opt["dur_total"])
 		var nid: String = opt["need"]
 		ag["needs"][nid] = clamp(float(ag["needs"][nid]) + per, 0.0, 100.0)
 		opt["remaining"] = int(opt["remaining"]) - 1
 		if int(opt["remaining"]) <= 0:
+			# P1-b：完成卸货前再次走 exact commit。强制 option、旧存档或未来多工人竞争都不能绕过这道门。
+			# 失败必须发生在完成记忆/技能/工资之前，保证【无 cargo ⇒ 零 unloading】不只是“少发一笔钱”。
+			var manifest_node := String(opt.get("manifest_node", _manifest_node_for_action(target_obj, String(opt.get("action", "")))))
+			if manifest_node != "":
+				var manifest_id := String(opt.get("manifest_id", ""))
+				var unloaded := _commit_manifest_unload(manifest_id, String(ag["id"]), manifest_node,
+					bool(opt.get("manifest_authorized", false)))
+				if unloaded <= 0:
+					ag["option"] = null
+					emit_signal("agent_changed", ag["id"])
+					return
 			ag["memory"].add("在%s%s了" % [target_obj.get("area", ""), opt["action"]], 3, tick_no, [opt["need"], opt["target"]])
+			# Wave E 产出点：本职在班干完一活 → 往镇库存交一批货（口径与 _wage_for 的"本职在班"同一条）。
+			# 先交货再领钱。这一行就是"劳动不再只是钱包数字"的落点：它写的是世界状态(town_stock)，不是 agent 的钱。
+			if _prod_on():
+				_produce_for(ag, String(opt["action"]))
 			# Wave 1b 发薪点：有薪动作(做活)完成时镇库付工资。镇库空→跳过(wages_skipped)——闭环:饭钱流入、工资流出。
 			# Wave 2a：工资经 _wage_for（本职在班拿职位工资；差异工资→贫富分化）；本职完成写"上工"记忆(voice grounding)。
 			if _econ_on():
 				# Wave 2c 技能：本职动作完成 → 熟练度+1，升级写里程碑记忆(voice grounding)。先涨技能再算工资 → 升级当次即涨薪。数据门控。
 				if not skills.is_empty():
 					var jb1 := _job_of(String(ag["id"]))
-					if not jb1.is_empty() and String(jb1.get("action", "")) == String(opt["action"]):
+					if not jb1.is_empty() and _job_action(jb1) == String(opt["action"]):
 						var lv0 := _skill_level(ag, String(opt["action"]))
 						ag["skills"][String(opt["action"])] = int((ag["skills"] as Dictionary).get(String(opt["action"]), 0)) + 1
 						if _skill_level(ag, String(opt["action"])) > lv0:
 							ag["memory"].add("手艺又精进了，%s越发得心应手" % String(jb1.get("title", "")), 5, tick_no, ["skill", "job"])
-				var wage := _wage_for(ag, String(opt["action"]))
+				var cargo_overtime := String(opt.get("manifest_node", "")) != "" \
+					and bool(opt.get("manifest_authorized", false))
+				var wage := _wage_for(ag, String(opt["action"]), cargo_overtime)
 				if wage > 0:
 					if transfer("town", String(ag["id"]), wage, "wage:" + String(opt["action"])):
 						econ_stats["wages_paid"] += 1
 						var jb := _job_of(String(ag["id"]))
-						if not jb.is_empty() and String(jb.get("action", "")) == String(opt["action"]):
+						if not jb.is_empty() and _job_action(jb) == String(opt["action"]):
 							ag["memory"].add("上工%s，挣了%d个钱" % [String(jb.get("title", "")), wage], 4, tick_no, ["job", "coin"])
 					else:
 						econ_stats["wages_skipped"] += 1
@@ -1284,7 +2954,7 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 
 func _advance_social(ag: Dictionary, opt: Dictionary) -> void:
 	var partner: Dictionary = _agent_by_id.get(opt["partner"], {})
-	if partner.is_empty() or String(ag.get("area", "")) != String(partner.get("area", "")):
+	if partner.is_empty() or not _socially_reachable(ag, partner):
 		ag["option"] = null      # 对方离开 → 作废
 		ag["talking"] = 0
 		return
@@ -1295,6 +2965,17 @@ func _advance_social(ag: Dictionary, opt: Dictionary) -> void:
 		ag["talking"] = 0
 
 func _nightly() -> void:
+	# Wave E 库存日结：把当天的消耗一次性记进账本 + 按 spoil_per_day 让存货损耗。
+	# 排在最前：当晚的租金/阶层 gossip 之前先把"今天镇上吃掉多少、坏掉多少"落定，账本按天闭合。
+	if _prod_on():
+		_stock_nightly()
+	# P1-b 进口日结：当天消耗/spoil 入账后，外部货以 CargoManifest 到港；此刻不改镇库/钱。
+	#   后续只在码头工在班完成卸货时 exact commit。缺 logistics/route_id → 零 cargo、零卸货。
+	if _logi_on():
+		_logi_import()
+		# export 仍在日界尝试；它只能花【此前已真实卸货】贷入的 external，今晚仅 arrival 的 cargo 不算信用。
+		# 因而闭环仍是 external=Σcommitted import−Σexport≥0。缺文件→本行不达。
+		_logi_export()
 	# M3 反思（Stanford 生成式 agent）：每夜从社会状态提炼一条洞察写回记忆 → 丰富语音 grounding。
 	# 引擎地板=确定性合成(下)；模型后端可再 LLM 润色(AIBackend.reflect)。far agent(激进 LOD)跳过=背景群演。
 	for ag in agents:
@@ -1326,7 +3007,7 @@ func _nightly() -> void:
 			if float(r["resentment"]) > 0.0:
 				r["resentment"] = maxf(0.0, float(r["resentment"]) - RESENT_DECAY)
 			if drift and float(r["standing"]) != 0.0:
-				r["standing"] = float(r["standing"]) - signf(float(r["standing"]))
+				r["standing"] = _standing_drift(float(r["standing"]))   # ★P0-2 修：move_toward 向 0，不再翻号（旧 x-signf(x) 对 |x|<1 跨零）
 	if ext != null:
 		ext.nightly(self)          # 注册的 NightlyHook（按 (order,id) 定序，排在内建夜间机制之后）
 
@@ -1404,7 +3085,11 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 			continue
 		var amt := 0; var dur := 0; var act := ""
 		for adv in _as_arr(o.get("advertises", [])):
-			if adv is Dictionary and String(adv.get("need", "")) == nid and int(adv.get("amount", 0)) > amt:
+			if not (adv is Dictionary):
+				continue
+			if not _adv_open(ag, adv):
+				continue                                        # F1：跨平面行程也要过工位专属/市集时段两道门（否则会承诺跑一趟去一个关着的摊）
+			if String(adv.get("need", "")) == nid and int(adv.get("amount", 0)) > amt:
 				amt = int(adv.get("amount", 0)); dur = int(adv.get("duration", 0)); act = String(adv.get("action", ""))
 		if amt <= 0:
 			continue
@@ -1433,14 +3118,279 @@ func _home_needs(ag: Dictionary) -> Array:
 func _staff_ok(ag: Dictionary, o: Dictionary) -> bool:
 	return not bool(o.get("staff", false)) or String(ag.get("home_space", "town")) == String(o.get("space", "town"))
 
+## F1：一条【广告位】此刻对这个人开不开。两道门，都写在 advertise 一级（不是对象一级）——
+## 摊位同一件家具上既有对内的"摆摊"(只有商贩)又有对外的"赶集"(全镇)，对象一级的门表达不了这件事。
+##   ① 工位专属：带 job 的广告位只有该职位的【现任持有人】枚举得到（结构照抄 _staff_ok）。
+##   ② 市集时段：见 _market_open。
+## 两者都缺 → 恒真 → 所有旧广告位逐字节不变。
+func _adv_open(ag: Dictionary, adv: Dictionary) -> bool:
+	var t := String(adv.get("job", ""))
+	if t != "" and String(_job_of(String(ag["id"])).get("title", "")) != t:
+		return false
+	var manifest_node := String(adv.get("manifest_node", ""))
+	if manifest_node != "":
+		if not _unload_worker_eligible(String(ag["id"])) or _first_unloadable_manifest(manifest_node) == "":
+			return false                       # 非班次/无可提交 cargo ⇒ 卸货机会不存在（不是做完再假发工资）
+	return _market_open(String(adv.get("action", "")))
+
+## 只有【开始一单】必须在班；已经由 _apply_object 在班验证过的同一单可跨班次做完。
+## 这不是放松 cargo 门：旧存档/强制 option 没有引擎签发的 manifest_authorized，仍在第一次 use 前 fail-closed。
+func _unload_worker_eligible(worker_id: String) -> bool:
+	return _unload_worker_assigned(worker_id) and _in_shift(_job_of(worker_id))
+
+func _unload_worker_assigned(worker_id: String) -> bool:
+	if not _agent_by_id.has(worker_id):
+		return false
+	var job := _job_of(worker_id)
+	return not job.is_empty() and _job_action(job) == "卸货"
+
+## 在班签发后，途中/使用/提交共用同一条 exact option 合同。每 tick 仍重验货位、余额与最早 manifest；
+## 唯一不再重验的是墙钟班次，避免 28-tick 工序在 dusk 边界被清空后无限重试。
+func _cargo_option_eligible(ag: Dictionary, opt: Dictionary, node: String) -> bool:
+	if not bool(opt.get("manifest_authorized", false)) or not _unload_worker_assigned(String(ag.get("id", ""))):
+		return false
+	var target_obj: Dictionary = world.get("objects", {}).get(String(opt.get("target", "")), {})
+	if target_obj.is_empty() or _manifest_node_for_action(target_obj, String(opt.get("action", ""))) != node:
+		return false
+	var manifest_id := String(opt.get("manifest_id", ""))
+	return manifest_id != "" and _first_unloadable_manifest(node) == manifest_id
+
+## 从对象声明恢复 cargo contract。不能只信 option 的可选字段：外部 backend、强制测试与旧存档都可能缺它。
+func _manifest_node_for_action(target_obj: Dictionary, action: String) -> String:
+	for adv in target_obj.get("advertises", []):
+		if adv is Dictionary and String((adv as Dictionary).get("action", "")) == action:
+			var node := String((adv as Dictionary).get("manifest_node", ""))
+			if node != "":
+				return node
+	return ""
+
+## F1 市集时段门：摊位对外的那条广告位只在【商贩在班】时存在。
+## ★这是本波唯一一个「有没有人上班」直接决定「镇上有没有这件事可做」的机制——分工第一次改变了
+##   别人的【机会集】而不只是自己的钱包。纯 f(tick, jobs)：无墙钟、无 RNG。
+## 非 vendor 动作 / 缺 vendor 键 / 缺 production.json → 恒真 → 其余广告位逐字节不变。
+func _market_open(action: String) -> bool:
+	if not _prod_on():
+		return true
+	var vend: Dictionary = production.get("vendor", {}) if production.get("vendor", {}) is Dictionary else {}
+	if vend.is_empty() or String(vend.get("action", "")) != action:
+		return true
+	var vid := _holder_of_title(String(vend.get("title", "")))
+	if vid == "" or not _agent_by_id.has(vid):
+		return false                                    # 镇上没有商贩 → 没有市集（不是"永远开着"）
+	return _in_shift(_job_of(vid))
+
+## ── L2：工位广告的【人口感知】吸引力（docs/58 §二）────────────────────────────
+##
+## **它修的是什么**：K1 的宏观池把"一次本职在班完成"代表的产量按人口换了尺度，
+## 但它乘的那个【次数】本身在大 N 下是往下掉的 ⇒ 池乘的是一个已经塌了的基数（K1 自己在回执里点名）。
+##
+## **为什么会塌——这是量出来的结构性比较，不是一个数没调好**（隔离副本探针，走既有的只读钩子
+## `Sim.decision_sink`，N=12 上 digest 与金标逐字节相同 ⇒ 探针不扰动；逐 N 12 个 seed）：
+##   · 每次决策看到的**社交候选数**：N=12 是 3.6-4.2 → N=16 5.3-6.2 → N=24 9.0-9.9 → N=60 **24.9-26.3**
+##     （人口 ×5，社交供给 ×6.5）；选中 social 的比例 35.2-39.8% → **51.6-52.8%**。
+##   · 而一个工位只有【一条】广告、收益是常数 ⇒ argmax 里"社交那一侧的最大值"随人口涨、工作那一侧不涨。
+##   · 八个岗位广告的在班被选中率（中位，N=12→N=60）：烤点 10.2→5.1 · 劈柴 5.6→3.7 · 打渔 10.8→7.1 ·
+##     摆摊 17.0→11.9 · 清扫 27.9→21.7 · 修屋 32.5→24.2 —— **六个单调下滑**；授课 7.3→6.8、刨木 9.7→9.4 持平。
+##   ⇒ **不是"把烤点的 20 调到 40"**：那只会换一种货先破。八个一起滑，所以补的是一条**随人口的项**，
+##     而 F1/F5/G3 三波手工标定出来的相对比例（34/20/46/46/46/32/46/38）**原样保留**。
+##
+## **它【不】做什么**：只乘进打分用的 `benefit`，**不动 `amount`**——
+## `amount / dur_total` 是每 tick 回补的 need 量（_advance_object 的 use 分支），改它就是改**微观需求侧**，
+## 而 §0.5 的能力矩阵写死了微观不降级。所以工作【更被想去做】，但做一次工恢复的趣味**一分没变**。
+##
+## **曲线的形状是扫出来的**（production.json 的 work_pull._calibration 记了逐档实测）：
+##   饱和型 `f = 1 + k·(1 − base/pop)`。选它的两条理由都不是审美：
+##   ① 实测的损伤本身是饱和的（工作被选中率相对 N=12 的比值 1.00 / 0.65 / 0.57 / 0.50），线性型会在 N=60 过冲；
+##   ② **不引 libm**：整数算完只做一次 IEEE 除法（除法是正确舍入的）⇒ 逐位可复现。
+##      log/sqrt 型曲线因此被否掉——它们的实现随平台/libm 版本变，而红线 #1 要的是逐字节重放。
+##      （这条纪律直接继承 K1 的池"用整数有理数、不引浮点"。）
+##
+## **零扰动 / 逐字节**：缺 `work_pull` 键 ⇒ 1.0；`k_num`/`k_den` 任一 ≤0 ⇒ 1.0；
+## `pop <= base_population` ⇒ 1.0 ⇒ **出货阵容 N=12 一个浮点都不算**。
+func _work_pull_mult(prod: Dictionary, pop: int) -> float:
+	if prod.is_empty():
+		return 1.0
+	var wp: Dictionary = prod.get("work_pull", {}) if prod.get("work_pull", {}) is Dictionary else {}
+	if wp.is_empty():
+		return 1.0
+	var base := int(wp.get("base_population", 0))
+	var kn := int(wp.get("k_num", 0))
+	var kd := int(wp.get("k_den", 0))
+	if base <= 0 or kn <= 0 or kd <= 0 or pop <= base:
+		return 1.0
+	# ── R1（docs/68）：**可选的第二种形状**，由数据里多一个键 `k_c` 打开 ────────────────
+	#   由来：L2 自己在 `work_pull._cost` 里写了「数据要的是【低渐近线 + 早期更陡】的形状，
+	#   而它交付的是被 N=16 的余量钉死的那一条」。上面那条 `1 + (kn/kd)(1 − base/pop)` 的渐近线
+	#   是 `1 + kn/kd`，**抬 N=16 就必然同时抬 N=60**——两端是同一个 k，改不动形状只改得动高度。
+	#   饱和型（Michaelis-Menten 族）多一个半饱和常数 `k_c`，两端就解耦了：
+	#       f = 1 + kn·(pop−base) / (kd·(pop−base) + kc)
+	#   渐近线仍是 `1 + kn/kd`，而 `kc` 单独控制"多快到顶"。
+	#   ★仍然只做一次 IEEE 除法、分子分母全整数 ⇒ 红线 #1 的逐位可复现不变（同 L2 的 `_form_why`）。
+	#   ★**缺 `k_c` 键 / `k_c <= 0` ⇒ 走原式，逐字节回到 L2**（零扰动对照，与本仓库其它 off 门同一套纪律）。
+	#   ⚠ 出货树今天**没有**这个键 —— 本分支在出货配置上一条指令都不跑。扫描数据见 docs/68 §五。
+	var kc := int(wp.get("k_c", 0))
+	if kc > 0:
+		var d := pop - base
+		var den := kd * d + kc
+		return float(den + kn * d) / float(den)
+	# f = 1 + (kn/kd)·(1 − base/pop) = (kd·pop + kn·(pop − base)) / (kd·pop)
+	# 分子分母都是整数，只做一次 IEEE 除法 ⇒ 逐位可复现（不调 log/sqrt）。
+	return float(kd * pop + kn * (pop - base)) / float(kd * pop)
+
+## ── T1：工位广告的【镇库回拉】(stock pull)（docs/76）─────────────────────────────
+##
+## **它修的是什么——根因是结构性的，不是某个数没调好**：
+##   `_object_candidates` 给一条**工位广告**打分时读的东西是
+##   `urgency(fun) · amount/60 · _phase_pref · _weather_mult · _season_mult · work_pull_mult − dist·0.4`
+##   （`cl_mult` 那一条明确把带 job 的广告位排除在外）。
+##   **这里面没有一项读 `town_stock`。** ⇒ 镇上这种货**空仓**与**满仓**时，
+##   "去上工"这条候选的分数**逐位相同**。产出侧对短缺是**开环**的。
+##
+## **后果**：一个岗位 60 天的在班完成次数 ≈ Binomial(在班上台数, p)，而 p 是一个**常数**。
+##   实测（t1_workfloor_probe，N=12 × 9 seed × 60 天，走既有只读钩子 decision_sink）
+##   在班上台数 76..257、p 的中位数逐岗位是 2.0%..40.0%（**20 倍的跨度**）。
+##   低 p 的那几个岗位 np≈4..20 ⇒ 相对标准差 22%..50% ⇒ **左尾就是这么来的**，
+##   而没有任何东西把它拉回来。
+##
+## **同一条开环还有【另一头】，而它此前没人量过**：`_stock_move` 撞 cap 时
+##   `applied = min(delta, cap − cur)`——**满仓上工，多出来的那部分当场丢掉**。
+##   实测（S1 的 60 个 seed 原始数据，申报批量×在班完成 vs event_log 真入账）：
+##     口粮 丢弃 5.1%(seed 50) .. **61.3%**(seed 60) · 屋瓦 9.9%(seed 19) .. **55.6%**(seed 30)
+##     柴薪 7.0% .. 51.3% · 豆子 0.0% .. 80.7% · 话本 0.0% .. 54.3% · 整洁 0.0% .. 9.3%
+##   ⇒ **有的 seed 一半以上的工时是白干的**，而引擎自己知道（它就是在 `_stock_move` 里丢的），
+##     **只有做决定的那一端不知道**。
+##
+## **形状**：在 `stock/cap` 上线性插值，`hi` 是空仓那一端、`lo` 是满仓那一端（均 /den）：
+##     f = (hi·(cap − stock) + lo·stock) / (den · cap)
+##   · `hi == lo == den` ⇒ **f ≡ 1.0 逐位**（自带零假设对照：代码路照跑、乘法照做，而世界不动）。
+##   · 分子分母全整数、只做**一次** IEEE 除法（除法是正确舍入的）⇒ 红线 #1 的逐位可复现。
+##     log/sqrt/pow 一概不用——理由与 K1 的池、L2 的 `_form_why` 逐字相同。
+##   · `lo < den < hi` ⇒ 它**两头都管**：空仓加把劲（补下限臂），满仓歇一歇（补上限臂）。
+##     只写一头是不够的——`#40` 的两条臂在 seeds 1-60 上**各红过一次**（下限臂 18/40/50/58，
+##     上限臂 36），而只抬不压会把上限臂推得更红。
+##
+## **三道门，与 work_pull 逐条同构（不是设计洁癖，是抄已经被实测过的那一套）**：
+##   ① `stock_pull_den <= 0`（缺 `production.stock_pull` 键 / 任一项非法）⇒ 恒 1.0，一条指令都不多跑；
+##   ② `mods_ok` —— 与 rhythm/weather/season/cleanliness/work_pull 共用生存门：
+##      任一需求告急 ⇒ 整个关掉。它是**抬**乘子，所以这道门在这里承重（同 work_pull 的注释）；
+##   ③ **这条候选的动作 == 这个人的本职动作，且他在班** —— 逐字就是 `_produce_for` 开头那道守卫。
+##      不在班时 `_produce_for` 一件货都不产，抬它只会让人半夜白干（L2 的 `_shift_why` 量过一遍）。
+##      ⚠ 这一条**不是**照抄 L2 的 `adv["job"] != ""`：全镇九个岗位里恰好**咖啡师**那条广告没有 `job` 键
+##      （`看摊` 来自 `jobs.json.extra_advertises` 与 `interiors.json` 的吧台，两处都没有 job 门），
+##      按 `adv["job"]` 判会**正好漏掉豆子那一族**。用 `_job_action`（本仓库自己指定的
+##      「本职动作」单一真相源）则与 `_produce_for` 的范围在构造上重合。
+##
+## **它【不】做什么**：只乘进打分用的 `benefit`，**不动 `amount`**——
+##   `amount / dur_total` 是每 tick 回补的 need 量，改它就是改微观需求侧（§0.5 写死微观不降级）。
+##   也不动 F1/F5/G3 三波手工标定出来的相对比例（34/20/46/46/46/32/46/38），一个字节没碰。
+func _stock_pull_mult(title: String) -> float:
+	if stock_pull_den <= 0:
+		return 1.0
+	# ★E4d-A 双形状：produce[title] 可为多货 Array 或单货 dict。此工位回拉乘子【锁定首件货】
+	#   （列表著者序第一件非空记录）——刻意【不】取 min-across-goods：那会让第二件货的低库存把工位吸引力
+	#   再抬一次 ⇒ 首个产者上工更勤 ⇒ 反而稀释核心。E4c（docs/168）「加第二件货不改首个产者上工节律」这条
+	#   核心中性论点，正依赖此处锁首件。镜像 E4a 的 _trade_fallout「取首件非空货」。单货 dict → [dict] → 首件 = 改前逐字节。
+	var praw = production.get("produce", {}).get(title, {}) if production.get("produce", {}) is Dictionary else {}
+	var precs: Array = praw if praw is Array else [praw]
+	var rec: Dictionary = {}
+	for pr in precs:
+		if pr is Dictionary and not (pr as Dictionary).is_empty():
+			rec = pr as Dictionary
+			break
+	if rec.is_empty():
+		return 1.0                                  # 该职位没有产物（零工/未接入的工种）⇒ 无库存可读 ⇒ 不施加
+	var good := String(rec.get("good", ""))
+	var gd: Dictionary = (production.get("goods", {}) as Dictionary).get(good, {}) if (production.get("goods", {}) as Dictionary).get(good, {}) is Dictionary else {}
+	var cap := int(gd.get("cap", 0))
+	if cap <= 0:
+		return 1.0                                  # 未申报 cap ⇒ "满不满"无定义 ⇒ 不施加（同 _clean_mult）
+	var st := clampi(_stock_of(good), 0, cap)       # start_stock 若被改到 > cap，钳住，别让 f 跑到负数
+	return float(stock_pull_hi * (cap - st) + stock_pull_lo * st) / float(stock_pull_den * cap)
+
+## F1 整洁度 → 效用乘子 ∈ [floor, 1.0]，线性于「现存 / cap」。缺 cleanliness 键或该货未申报 cap → 恒 1.0。
+## 只压不抬是刻意的：它跟 _weather_mult / _season_mult 是同一族，抬升会让物件吸引力膨胀、挤掉社交发起
+## （buildings.json 的 _furnish_note 已经量过这条代价）。
+func _clean_mult() -> float:
+	if not _prod_on():
+		return 1.0
+	var cl: Dictionary = production.get("cleanliness", {}) if production.get("cleanliness", {}) is Dictionary else {}
+	if cl.is_empty():
+		return 1.0
+	var g := String(cl.get("good", ""))
+	var gd: Dictionary = (production.get("goods", {}) as Dictionary).get(g, {}) if (production.get("goods", {}) as Dictionary).get(g, {}) is Dictionary else {}
+	var cap := int(gd.get("cap", 0))
+	if cap <= 0:
+		return 1.0
+	var fl := clampf(float(cl.get("floor", 1.0)), 0.0, 1.0)
+	return fl + (1.0 - fl) * clampf(float(_stock_of(g)) / float(cap), 0.0, 1.0)
+
+## ★Y1（docs/96）：生存线以下时，把人【推向物件那条出路】。
+## 由来（X1 逐 tick 追出来的，docs/92 §1.2）：`_social_candidates` 在 `_min_need < SURVIVAL_GATE`
+##   时返回 `[]`（注释写的是"先去吃/睡"）—— 而**当那个 argmin 恰恰是 `social` 自己时，
+##   这道门关掉的正是唯一能补它的通道**：social 从 36 以 0.15/tick 确定性地自由落体到 0，
+##   中途没有任何自救分支。两颗硬红的触底 tick 成因 27/27 与 125/125 全是 GATED，
+##   而"周围没人"(ALONE) 恰为 0 —— 身边站着 17 个人、11 个空闲，他一条社交候选都枚举不出来。
+## 出路一直是开着的、只是赢不下 argmax：长椅「社交」+40 与吧台「闲聊」+42 都广告 need=social，
+##   而本函数**不过生存门**（那道门只写在 `_social_candidates` 里）。这一项就是那个缺掉的推力。
+##
+## 三道门，缺一不可（每一道都是量出来的，不是洁癖）：
+##   ① **缺键 / 为 0 ⇒ 返回 0.0 ⇒ `score + 0.0` ⇒ 逐字节回到改动之前。**
+##      实测：本文件这一段在、`utility.obj_survival_pull` 不在 ⇒ N=40 seeds 1-12 的 12 个
+##      `Inv.digest` 与未改动的树逐位相同。
+##   ② **只对 `social` 生效。** 负对照臂（同一个 k=1.0，施加到【除 social 外的每一条 need】上）
+##      在 N=40 × 24 局上对未改动的树是 **8 好 / 9 坏 / 7 不变，p=0.50 —— 与什么都不做分不开**；
+##      而"全部 need"臂减掉它（= 只剩 social 那一项）是 **16 好 / 3 坏，p=0.0022**。
+##      ⇒ 效果整个住在 social 这一项里，另外四条 need 一份都不出。
+##   ③ **只在 social 【就是】argmin 时生效** ⇒ 它在构造上不可能压过一条比它更急的需求
+##      （硬不变量 #01 的方向）。这一道在本剂量上是**免费**的：k=1.0、24 局，带门与不带门的
+##      digest 逐位相同；而 k=3.0 上只剩 5/11 相同 —— **大剂量的"额外收益"有一部分正是靠
+##      让 social 压过更急的需求换来的**，这一道门把那条路堵死。
+##
+## ⚠ 剂量为什么取 1.0（**量过 0.5/0.75/1.0/1.25/1.5/2.0/3.0/10.0 八档之后选的，不是第一个能用的值**）：
+##   收益侧在 0.5..10 上**单调、没有内点顶点**（N=40 24 局，最长锁段对零假设臂：
+##   0.5→17/7、0.75→17/5、1.0→18/6、1.25→16/5、1.5→19/5、2.0→20/4、3.0→18/6、10→20/2），
+##   ⇒ 顶点只能由**代价侧**定。代价侧在 0.5..10 上恰好有一处不连续：
+##   **k ≤ 1.5 时出货阵容 N=12 seeds 1-12 × 60 天逐字节不动（含逐 tick 前缀链）、活性 25 类一类不动；
+##   k = 2.0 起 seed 12 开始移动、`aid` +16.2%。** 而 N=12 上这一族问题**本来就不存在**
+##   （X1 实测 0/12 红、social 地板最小 22.35）⇒ 在那里改行为是纯付标定风险、零收益。
+##   1.0 取的是 [0.5, 1.5] 这段平台的**中间**而不是边缘：边缘上的值经不起一次数据改动
+##   （多一张长椅、换一套阵容就可能翻过去）。**这不是"为了让门保持绿"**——
+##   4a 的 N=16 那一格照样移动 6/12 个 seed，并且是按它自己的判据判的。
+func _survival_pull(need_id: String, cur: float, min_need: float) -> float:
+	var k := _w("obj_survival_pull", 0.0)
+	if k == 0.0 or need_id != "social" or cur > min_need:
+		return 0.0
+	return maxf(0.0, SURVIVAL_GATE - cur) * k
+
 func _object_candidates(ag: Dictionary) -> Array:
 	var out: Array = []
 	# 昼夜节律（docs/14）：仅当 agent 无紧急需求(min≥SURVIVAL_GATE)时，用时段偏好乘子塑造"何时"满足需求(睡偏夜/吃偏三餐)。
 	# 有任一紧急需求 → 节律关闭 → 纯 urgency 主导 → 绝不因时段延误进食 → 守 HARD#1 无饿穿。缺 rhythm.json → 恒关=零扰动。
-	var mods_ok := _min_need(ag) >= SURVIVAL_GATE            # 共用生存门：紧急需求时一切偏好乘子关闭，纯 urgency 主导
+	var min_need := _min_need(ag)                           # ★Y1：提出来复用（下面 _survival_pull 要读它）；数值与原式逐位相同
+	var mods_ok := min_need >= SURVIVAL_GATE                # 共用生存门：紧急需求时一切偏好乘子关闭，纯 urgency 主导
 	var rhythm_on := not rhythm.is_empty() and mods_ok
 	var wx_on := weather_today != "" and mods_ok             # Wave 1c：天气与节律独立门控（各自缺数据文件即各自关闭）
 	var sn_on := season_today != "" and mods_ok              # Wave 3b：季节乘子同样只在非紧急时塑形（生存优先不受季节影响）
+	# F1 整洁度乘子（docs/48 §一-F1）：镇上越脏，被点名的那些区（数据里只有广场）里的活动越不吸引人。
+	# 与天气/季节同一条纪律：**只压不抬**（≤1.0）且共用 mods_ok 生存门 —— 任一需求告急时整个关掉，
+	# 结构上不可能变成新的饿穿通道。缺 cleanliness 键/缺 production.json → cl_on=false → 逐字节不变。
+	var cl_cfg: Dictionary = production.get("cleanliness", {}) if production.get("cleanliness", {}) is Dictionary else {}
+	var cl_areas: Array = _as_arr(cl_cfg.get("areas", []))
+	# needs 白名单：只压【闲事】(fun/social)，绝不压 hunger/energy。这不只是口味——
+	# 实测把它压到 hunger 上时，广场脏 → 摊位的赶集从 95 次/seed 掉到 27 次/seed：
+	# 一个"脏"的乘子把一条【食物供给】掐掉了 2/3。mods_ok 生存门保证了它不会造成饿穿，
+	# 但把乘子从生存需求上【结构性地】摘掉，比"有一道门拦着"强一档：门可能被改，白名单在数据里。
+	# ★F5 修：这条白名单此前【fail-open】——判据写的是 `cl_needs.is_empty() or need_id in cl_needs`，
+	#   于是把 `needs` 键删掉/写成空数组，白名单的意思就从"只有这两样"翻成了"所有需求"，
+	#   hunger 立刻重新被脏度打折。一个"空=全部"的白名单是白名单的反面。
+	#   实测负对照（seeds 1-3 × 60 天，删掉 needs 键、其余不动）：摊位的赶集 153/159/147 → 43/79/54，
+	#   与上面那条 F1 记下的症状逐字重现 ⇒ 上面那句"白名单在数据里"在修之前是【不成立】的。
+	#   改成 `need_id in cl_needs`：缺键/空数组 ⇒ 恒 false ⇒ 整洁乘子整个不施加（缺数据即零扰动，
+	#   与 rhythm/weather/season 的 off 门同一条约定）。**对出货数据是逐字节 no-op**——
+	#   `needs` 现在是 ["fun","social"]、非空，两种写法在它上面完全等价（已用 12/12 金标验过）。
+	var cl_needs: Array = _as_arr(cl_cfg.get("needs", []))
+	var cl_on := mods_ok and not cl_areas.is_empty()
+	var cl_mult := _clean_mult() if cl_on else 1.0
 	var tod := time_of_day()
 	for id in world["objects"]:
 		var o: Dictionary = world["objects"][id]
@@ -1454,6 +3404,8 @@ func _object_candidates(ag: Dictionary) -> Array:
 			# 避免"缺键裸括号"每 tick 崩。合规条目(四键齐全)取值与旧逐字节一致 → 不新增/移动候选 → digest 不漂。
 			if not (adv is Dictionary):
 				continue
+			if not _adv_open(ag, adv):
+				continue                # F1：工位专属（只有该职位现任持有人）+ 市集时段（商贩不在班则摊位没这一条）
 			var amount := int(adv.get("amount", 0))
 			if amount <= 0:
 				continue
@@ -1478,18 +3430,78 @@ func _object_candidates(ag: Dictionary) -> Array:
 				benefit *= _weather_mult(action)          # Wave 1c：坏天压户外偏好(≤1 dampen-only)
 			if sn_on:
 				benefit *= _season_mult(action)           # Wave 3b：当季压某些活动偏好(≤1 dampen-only)
-			var score := benefit - float(dist) * _w("obj_dist_penalty", 0.4)
+			if cl_on and String(adv.get("job", "")) == "" and String(o.get("area", "")) in cl_areas \
+					and need_id in cl_needs:
+				benefit *= cl_mult                       # F1：镇上脏 → 该区活动打折。工位广告位【不打折】——
+				                                         # 越脏越该有人来扫，不是越脏越没人来扫（否则环卫是个负反馈自锁）
+			# ★L2：镇子越大，本行【这一班】越重（docs/58 §二）。三道门，缺一不可：
+			#   ① work_pull_mult != 1.0 —— 出货阵容 N=12 上恒真地短路，一条指令都不多跑；
+			#   ② mods_ok —— 与 rhythm/weather/season/cleanliness 共用生存门。它是本仓库第一个
+			#      **抬**而不是**压**的乘子（_clean_mult 那条"只压不抬"的注释解释了为什么危险），
+			#      所以生存门在这里比在那几个上更承重：任一需求告急 ⇒ 整个关掉；
+			#   ③ 带 job 的广告位【且在班】—— 不在班时干活一件货都不产（_produce_for 开头的班次守卫），
+			#      抬它只会让人半夜白干。**这一条是量出来的**，不是设计洁癖：见 production.json
+			#      的 work_pull._shift_why（不加班次门时 N=16 仍剩 1/12 红、社交发起数被压低；加了之后 0/12 红、
+			#      社交发起数回到基线带内）。
+			var wp_applied := false            # ★U1：这条广告有没有真的被人口项抬过（下面 stock_pull 要用，见 §U1）
+			if work_pull_mult != 1.0 and mods_ok and String(adv.get("job", "")) != "" \
+					and _in_shift(_job_of(String(ag["id"]))):
+				benefit *= work_pull_mult
+				wp_applied = true
+			# ★T1：镇库回拉（docs/76）——空仓加把劲、满仓歇一歇。三道门见 _stock_pull_mult 抬头。
+			#   放在 work_pull 之后是刻意的：两条乘子彼此独立（一条随人口、一条随库存），
+			#   而乘法可交换 ⇒ 顺序不影响数值；写在后面只是为了让"人口项 → 库存项"的阅读顺序与 docs 一致。
+			#
+			# ★★ 门用的是 `_job_action(job) == action`，**不是** L2 用的 `adv["job"] != ""`。
+			#   这一条被数据逼着改过一次，值得写清楚：全镇九个岗位里，**恰好咖啡师那一条广告没有 `job` 键**
+			#   （`看摊` 来自 jobs.json 的 `extra_advertises` 与 interiors 的吧台，两处都没有 job 门）
+			#   ⇒ 按 `adv["job"]` 判，**修法会正好漏掉 §〇 里的 B 族（豆子 / 咖啡师）**，
+			#   而那恰恰是五个红里的一个。
+			#   改用 `_job_action` 还有第二个、更硬的理由：`_job_action` 是本仓库自己写下的
+			#   **「这个人的本职动作」的单一真相源**（见它的抬头注释：`_wage_for` / `_produce_for` / 技能三处共用），
+			#   而这里的三个条件（本职动作 + 在班 + 有产出登记）**逐字就是 `_produce_for` 开头那道守卫**
+			#   ⇒ 乘子施加的范围与"这次决定做完了真的会往镇库交货"**在构造上重合**，不会分家。
+			#
+			# ★★★ U1（docs/80）：**人口项与库存项不叠加** —— `wp_applied` 时把库存乘子除回去。
+			#   T1 §9.2 自己推出来的约束是「`work_pull_mult(N) × lo/den < 1` 对 CI 跑的每个 N 成立」，
+			#   否则"满仓歇一歇"在 N>12 上根本不是在歇（N=16：合成区间 [1.0125, 1.2375]，下界跨过了 1）。
+			#   **一个固定的 `lo` 结构上满足不了这条约束**：`work_pull_mult` 随人口上升趋于 1.5
+			#   ⇒ 要对所有 N 成立就得 `lo ≤ 66`，而那在 N=12 上是一次远超本机制意图的扰动。
+			#   T1 按 N=16 解出 `lo ≤ 88` 并试了 85，4a 仍然红——**换了个红法**（上限臂 → 下限臂），
+			#   它证明的正是"这不是那两个数调得准不准的问题"。
+			#   ⇒ 这里改成让约束**按构造成立**：合成的工作吸引力乘子恒为 `[lo/den, hi/den]`，**与 N 无关**。
+			#   语义写清楚：**本职在班的那条广告，工作吸引力由【镇库】直接决定，人口代理不再另外叠加。**
+			#   人口只是需求压力的**代理**（production.json `scale._pool_why` 自己写的），
+			#   而 `town_stock` 是同一件事的**直接测量**；两者叠乘 = 把同一份压力算两遍。
+			#   ⚠ 代价要写在这里，不要藏：**商贩不产货**（`produce` 里没有他），
+			#     所以他那条广告的 `_stock_pull_mult` 恒为 1.0，除回去之后他就**净损失**了人口项。
+			#     这是上面那条语义的直接推论，不是意外；实测见 docs/80（N=16 两条臂都比未改动的树更松）。
+			#   ⚠ **N=12 上 `work_pull_mult ≡ 1.0` ⇒ `wp_applied` 恒 false ⇒ 本段一条指令都不多跑**
+			#     ⇒ 对 N=12 的全部网格（1-12 / 13-60）**与不加这一段逐字节相同**（实测 12/12 + 48/48 digest 相同）。
+			if stock_pull_den > 0 and mods_ok:
+				var _jb: Dictionary = _job_of(String(ag["id"]))
+				if not _jb.is_empty() and _job_action(_jb) == action and _in_shift(_jb):
+					var spf := _stock_pull_mult(String(_jb.get("title", "")))
+					if wp_applied:
+						spf /= work_pull_mult      # 除法是正确舍入的 ⇒ 逐位可复现（同 _stock_pull_mult 抬头）
+					benefit *= spf
+			var score := benefit - float(dist) * _w("obj_dist_penalty", 0.4) + _survival_pull(need_id, cur, min_need)
 			# Wave 1b 经济动机环：穷(coin<poor_line)时有薪动作加分 → 缺钱→去做活→挣了付饭钱(闭环)。
 			# 确定性、数据门控；只加分不减分 → 生存(urgency 主导)不受威胁；economy.json 缺失恒不触发。
 			# Wave 2a：工资经 _wage_for（本职在班=职位工资>零工价 → 班次时间自然被工作吸引；jobs 缺失≡旧查表）。
 			if _econ_on() and _wage_for(ag, action) > 0 \
 					and _coin_of(String(ag["id"])) < int(economy.get("poor_line", 6)):
 				score += float(economy.get("work_urgency", 8.0))
-			out.append({
+			var cand := {
 				"kind": "object", "action": action, "target": id, "need": need_id,
 				"amount": amount, "dur_total": duration,
 				"score": score, "say": "",
-			})
+			}
+			var manifest_node := String(adv.get("manifest_node", ""))
+			if manifest_node != "":
+				cand["manifest_node"] = manifest_node
+				cand["manifest_id"] = _first_unloadable_manifest(manifest_node)
+			out.append(cand)
 	return out
 
 ## 社交候选：对每个【同区可感知】的其他 agent 枚举 greet/give/gossip。
@@ -1530,8 +3542,18 @@ func _social_candidates(ag: Dictionary) -> Array:
 		var cid := _unspread_belief(ag, o)
 		if cid != "":
 			var gossipy := 8.0 if "爱八卦" in ag.get("persona", {}).get("traits", []) else 0.0
+			# ★O1(2026-07-31) 消息加分：只加给【转述来的传闻】(via != "seen")，亲眼所见的贫富/断供闲话一分不加。
+			# 为什么必须有这一项（实测，不是推断）：greet 对同一个 o 是**无条件**发的，而
+			#   greet - gossip = urgency*0.1 + fam*0.05 + 1.0 - gossipy。非爱八卦者 gossipy=0，
+			#   且社交候选只在 social>=SURVIVAL_GATE 时才存在 ⇒ urgency<=64 ⇒ 该差恒 >= 1.2，
+			#   而平局抖动只有 randf()*0.5 ⇒ **greet 严格支配 gossip**。
+			#   实测：非爱八卦者在 25567 次"有 gossip 候选"的决策里赢了 **0** 次（N=12/20/60 × seed 1/5 全格）。
+			#   ⇒ 全镇 12 个人设里只有阿丽(爱八卦)能转述传闻，谣言在第 1 跳之后必然停 —— 与常数 5.0 无关。
+			# 只加给"消息"这一档，是为了不误伤 gossip_rep：闲话档的分一字未动 ⇒ 名声通道的竞争面不变。
+			# 缺键/为 0 → `+ 0.0` → IEEE 恒等 → 逐字节不变（off 门）。
+			var news := _w("gossip_news_bonus", 0.0) if String((ag["beliefs"][cid] as Dictionary).get("via", "")) != "seen" else 0.0
 			out.append({"kind": "social", "action": "gossip", "partner": o["id"], "subject": cid,
-				"need": "social", "score": urgency * 0.6 + aff * 0.1 + gossipy + 5.0, "say": ""})
+				"need": "social", "score": urgency * 0.6 + aff * 0.1 + gossipy + 5.0 + news, "say": ""})
 		# docs/16 隐私门（广义版，见 _secret_private）：封闭房间 或 独处无旁人 才吐露/说漏；缺 rooms→恒 true=逐字节不变。
 		var priv_ok := _secret_private(ag, o)
 		# S3c confide —— 仅 owner 向高 trust+aff 者吐露心事（最脆弱条件投资，门高于 give/invite）
@@ -1671,6 +3693,95 @@ func agent_apply(ag: Dictionary, intent: Dictionary) -> void:
 			"remaining": int(intent.get("dur_total", 1)), "phase": "travel"}
 		_: _apply_object(ag, intent)
 
+## P2-3 生存边界：外部 backend 挑的这个 intent，在【需求危机中】可不可以被采纳。
+## 与下面的 _object_intent_ok 是一对：那条守【合法】（字段齐全、不除零、need 存在），这条守【活得下去】。
+##
+## 为什么必须有这一条（docs/38 §五 实测发现，B14 补门）：
+##   引擎自己的生存保护有两层，而【两层都不约束外部选择】——
+##     ① _social_candidates 在 min_need < SURVIVAL_GATE 时返回 []（把社交候选【摘出候选集】）；
+##     ② _logic_decide 靠 urgency 主导的 score 让"吃/睡"胜出（只是【打分】，不是【禁令】）。
+##   ② 对 `_logic_decide` 有效，对"在同一候选集里按下标挑一个"的外部后端【完全无效】：晒太阳/做活/洗澡
+##   照样在候选集里，模型/随机挑中它就照样落地 → 一路饿穿。docs/38 §五 实测：同配置 `logic` 0/8 seed 饿穿，
+##   `random`/`slm` 都是 8/8 —— #01 是【硬】不变量（结构性、任何降频/规模下都必须真），
+##   它不该建立在"外部后端会自觉挑对"之上。engine makes opportunity, backend proposes ordering ——
+##   那么"能不能把人饿死"这件事就必须由 engine 判，不能由 ordering 决定。
+##
+## 口径：min_need 已跌破 SURVIVAL_GATE ⇒ 只接受【正在救某条已告急 need】的 intent，其余一律驳回改走引擎地板。
+##   · 不要求救的是【最】紧的那条：同时有两条告急时，先救哪条仍留给后端（保住"排序权"这一层的自由度）。
+##   · 无 need 字段的 intent（social/attend）在危机中一律驳回——social 候选此时本就已被 ① 摘掉，
+##     attend 则由 _advance_attend 的 NEED_CRISIS 分支另行放弃，这里只是把口子彻底封上。
+## ★ 零扰动：backend==null（金标/Harness/DetGate 的红线#2 地板）时本函数【永不被调用】——
+##   调用点在 `if backend != null and backend.has_method("decide")` 分支内 ⇒ 金标逐字节不变，无需重烘。
+## ⚠ 试过但【实测更坏】、留作路标（别再走一遍）：把承诺 pre-empt 的抢占线从 PREEMPT_CRISIS(12)
+##   提到 SURVIVAL_GATE(32)（只在外部后端驱动时），本以为能补掉下面那条"长承诺付不起车费"的残留。
+##   实测（random 全剂量, seeds 1-4 × 8 天）饿穿 11 → 3344，反而炸了两个量级：抢占线一提，
+##   min_need<32 期间【任何】不救急的 option 每 tick 都被打断 → 决策黏性没了 → livelock：
+##   人一直在"重决策—走两步—又被抢回"里空转，什么也办不成，于是饿穿。
+##   PREEMPT_CRISIS 那行注释里"既有决策黏性(消 livelock)又不会饿穿"是【两个都承重】的约束，不是修辞。
+func _survival_ok(ag: Dictionary, intent: Dictionary) -> bool:
+	var line := survival_veto_line
+	if _min_need(ag) >= line:
+		return true                                      # 不在危机中 → 后端想挑什么挑什么（决策路径的自由度不缩）
+	var nid := String(intent.get("need", ""))
+	if nid == "" or not (ag.get("needs", {}) as Dictionary).has(nid):
+		return false                                     # 危机中却挑了不带 need 的（social/attend）→ 驳回
+	return float(ag["needs"][nid]) < line                # 只放行"在救一条告急 need"的选择
+
+## P2-3 的第二半：承诺【期限】边界 —— 这趟差事的车费，需求预算付得起吗。
+##
+## 为什么光有 _survival_ok 不够（docs/38 残留漏网例，实测逐 tick 追出来的）：
+##   _survival_ok 只管【决策那一刻】。外部后端还能在 agent 还健康时（min_need=36.3 > 线 32）
+##   把它按进一次【很长】的承诺：seed 2 的 evy 在 tick 1506 提交"去 34 格外的 counter_1 看摊 24 tick"，
+##   全程 ~58 tick，而 hunger 以 0.28/tick 掉，(36.3−32)/0.28 ≈ 15 tick 就会跌破生存线 —— 这趟车费根本付不起。
+##   等承诺 pre-empt 在 need<12 抢回来时，已经走不到灶台了 → 饿穿。
+##   （试过直接把抢占线提到 32，实测炸成 livelock，见 _survival_ok 上方的路标注释。抢占是【止损】，
+##     真正该做的是【一开始就别签这张支票】。）
+##
+## 口径：成本 = 曼哈顿距离(到目标对象) + dur_total —— 与 _object_candidates 给 score 算距离惩罚用的
+##   【同一个 dist】（那里 :1489 一模一样的式子），不新引入一套代价模型；移动实测 1 格/tick。
+##   预算 = (当前最低 need − 否决线) / 该 need 的 decay —— decay 是 needs.json 里的常量，故预算是精确的 tick 数。
+##   付不起 → 驳回改走引擎地板；地板的 score 本来就带距离惩罚，会挑近的那个。
+## 注意几件【故意】的事：
+##   · 连"正在救最低 need 的那趟远差"也一并按预算判。它不豁免：真要去很远的地方吃饭，
+##     引擎地板会挑更近的那个；若地板挑的就是同一个（无更近的），_cand_key 相同 → 什么也没改，且不计数。
+##   · 跨平面 journey 没有同平面曼哈顿距离可言 → 不判（返回 true），交给 _survival_ok 与 pre-empt。
+##   · dur_total<=0（social/attend）不锁人 → 不判。
+## ★ 零扰动同 _survival_ok：只在 backend != null 的分支里被调用 ⇒ 金标路逐字节不变。
+func _horizon_ok(ag: Dictionary, intent: Dictionary) -> bool:
+	var dur := int(intent.get("dur_total", 0))
+	if dur <= 0 or String(intent.get("kind", "object")) != "object":
+		return true
+	var tgt := String(intent.get("target", ""))
+	if not world["objects"].has(tgt):
+		return true                                      # 目标不明 → 交给 _object_intent_ok 那条合法边界处理
+	var mn := 100.0
+	var mn_id := ""
+	for k in ag["needs"]:
+		var v := float(ag["needs"][k])
+		if v < mn:
+			mn = v; mn_id = k
+	var decay := _need_decay(mn_id)
+	if decay <= 0.0:
+		return true                                      # 不衰减的 need 没有"预算"可言
+	# 死线【恒】取生存线，包括已经跌破它的时候——那时 budget 为负 ⇒ 危机中任何 object intent 都被否 ⇒
+	# 引擎地板全面接管。这不是疏漏，是实测选出来的：
+	#   试过分两档（危机中把死线放宽到真饿穿线 STARVE_NEED，好让 _survival_ok 那层"同时两条告急时
+	#   先救哪条仍归后端"的自由度真的活着）——4 seed × 8 天看着还是全绿，但 **12 seed × 20 天 漏了**
+	#   （seed 3 @K=2：饿穿 15）。宽出来的那点预算刚好够 agent 挑一条更远的救急路然后没走到。
+	#   ⇒ 危机中不留自由度。_survival_ok 的分档在【非 object】intent（social/attend，下面 kind 判据放行）
+	#     上仍然承重，在 object 上则被本判据吸收。宁可把这件事写清楚，也不留一个注释声称还活着的死档。
+	var budget := (mn - survival_veto_line) / decay      # 还有多少 tick 跌破生存线（危机中为负 = 一律驳回）
+	var o: Dictionary = world["objects"][tgt]
+	var cost := float(absi(ag["pos"].x - o["pos"].x) + absi(ag["pos"].y - o["pos"].y) + dur)
+	return cost <= budget
+
+## needs.json 里该 need 的每 tick 衰减量（_decay_needs:1124 用的同一份 needs_def）。5 条以内，直扫。
+func _need_decay(need_id: String) -> float:
+	for n in needs_def:
+		if String((n as Dictionary).get("id", "")) == need_id:
+			return float((n as Dictionary).get("decay", 0.0))
+	return 0.0
+
 ## P2-2 合法边界：object intent 是否可信。只检 target 存在不够——可插拔 backend / 扩展 / 迟到回包
 ## 可能塞来残缺或非法字段：dur_total<=0 会在推进时【除零】、未知 need 会【索引失败】。
 ## 引擎自产候选恒满足此式 → 对 logic 路是恒真的 no-op（digest 逐字节不变）。
@@ -1696,12 +3807,42 @@ func _apply_object(ag: Dictionary, intent: Dictionary) -> void:
 		intent = _best(c)
 		if not _object_intent_ok(ag, intent):   # 引擎候选本应恒合法；仍不合法（数据脏）→ 放弃本 tick，永不崩
 			return
+	var manifest_node := String(intent.get("manifest_node", ""))
+	var manifest_id := String(intent.get("manifest_id", ""))
+	if manifest_node != "":
+		# 外部 backend 只能回放【此刻仍存在的完整 authored candidate】，不能自签 cargo 授权，
+		# 也不能拿正确 manifest id 却篡改 need/amount/duration 把 28-tick 工序缩成 1 tick。
+		var manifest_target: Dictionary = world.get("objects", {}).get(String(intent.get("target", "")), {})
+		if manifest_target.is_empty() \
+				or _manifest_node_for_action(manifest_target, String(intent.get("action", ""))) != manifest_node \
+				or not _unload_worker_eligible(String(ag.get("id", ""))) or manifest_id == "" \
+				or _first_unloadable_manifest(manifest_node) != manifest_id:
+			return
+		var canonical_cargo: Dictionary = {}
+		for current in _object_candidates(ag):
+			if current is Dictionary and String(current.get("manifest_node", "")) == manifest_node \
+					and String(current.get("manifest_id", "")) == manifest_id:
+				canonical_cargo = current
+				break
+		if canonical_cargo.is_empty():
+			return
+		for key in ["action", "target", "need", "manifest_node", "manifest_id"]:
+			if String(intent.get(key, "")) != String(canonical_cargo.get(key, "")):
+				return
+		for key in ["amount", "dur_total"]:
+			if int(intent.get(key, 0)) != int(canonical_cargo.get(key, 0)):
+				return
 	ag["option"] = {
 		"kind": "object",
 		"action": intent["action"], "target": intent["target"], "need": intent["need"],
 		"amount": int(intent["amount"]), "dur_total": int(intent["dur_total"]),
 		"remaining": int(intent["dur_total"]), "phase": "travel",
 	}
+	for k in ["manifest_node", "manifest_id"]:
+		if intent.has(k):
+			ag["option"][k] = intent[k]
+	if manifest_node != "":
+		ag["option"]["manifest_authorized"] = true
 	ag["last_say"] = str(intent.get("say", ""))
 	emit_signal("log_line", "%s → %s @%s" % [_name(ag), intent["action"], intent["target"]])
 	emit_signal("agent_changed", ag["id"])
@@ -1714,8 +3855,9 @@ func _apply_social(ag: Dictionary, intent: Dictionary) -> void:
 	if action == "" or pid == "":
 		return
 	var partner: Dictionary = _agent_by_id.get(pid, {})
-	# 兜底：对方不存在/正忙/不同区 → 本 tick 不动，下 tick 重选（永不破坏仿真）
-	if partner.is_empty() or int(partner["talking"]) > 0 or String(ag.get("area", "")) != String(partner.get("area", "")):
+	# 兜底：对方不存在/正忙/不在同一平面可交互范围 → 本 tick 不动，下 tick 重选（永不破坏仿真）。
+	# 外部 backend 可提交 intent，所以不能只信候选枚举曾经看过的 area 缓存。
+	if partner.is_empty() or int(partner["talking"]) > 0 or not _socially_reachable(ag, partner):
 		return
 	ag["option"] = {
 		"kind": "social", "action": action, "partner": pid,
@@ -1733,7 +3875,7 @@ func _apply_social(ag: Dictionary, intent: Dictionary) -> void:
 # ── SocialTransaction：发起 → 评估(接受/拒绝) → 提交 → 双方+旁观者写视角记忆 ─────
 func _commit_social(ag: Dictionary, opt: Dictionary) -> void:
 	var target: Dictionary = _agent_by_id.get(opt["partner"], {})
-	if target.is_empty() or String(ag.get("area", "")) != String(target.get("area", "")):
+	if target.is_empty() or not _socially_reachable(ag, target):
 		return
 	var action := String(opt["action"])
 	var subject := String(opt.get("subject", ""))
@@ -2375,10 +4517,23 @@ func _skill_level(ag: Dictionary, action: String) -> int:
 	var c := int((ag.get("skills", {}) as Dictionary).get(action, 0))
 	return mini(int(skills.get("max_level", 5)), c / maxi(1, int(skills.get("per_level", 15))))
 
+## F1：岗位的【有效动作】。production.json 的 job_action 按职位名覆盖 jobs.json 的 action
+## （木匠→刨木、面点师→烤点）。缺该键 / 缺 production.json → 原样返回 jobs.json 的 action = 今天。
+## 为什么不直接改 jobs.json：同 _compile_worksites 抬头那条——新数据必须能整体摘掉，否则零扰动对照不成立。
+## ★口径唯一：本函数是"这个人的本职动作"的【单一真相源】，_wage_for / _produce_for / 技能三处共用它，
+##   三处一旦分家就会出现"发了职位工资却不产货"这类只在某个 seed 上现形的偏差。
+func _job_action(job: Dictionary) -> String:
+	var a := String(job.get("action", ""))
+	if job.is_empty() or not _prod_on():
+		return a
+	var ov: Dictionary = production.get("job_action", {}) if production.get("job_action", {}) is Dictionary else {}
+	return String(ov.get(String(job.get("title", "")), a))
+
 ## 某 agent 做某动作此刻的工资：本职工作且在班 → 职位工资 + 技能加成（熟练工挣更多→深化分化）；否则 → 基础零工价。
-func _wage_for(ag: Dictionary, action: String) -> int:
+## cargo_overtime 只来自引擎已签发 option：在班开工、跨班次完工仍应领同一单工资，不能把真实提交降成无薪劳动。
+func _wage_for(ag: Dictionary, action: String, cargo_overtime: bool = false) -> int:
 	var job := _job_of(String(ag["id"]))
-	if not job.is_empty() and String(job.get("action", "")) == action and _in_shift(job):
+	if not job.is_empty() and _job_action(job) == action and (_in_shift(job) or cargo_overtime):
 		return int(job.get("wage", 0)) + _skill_level(ag, action) * int(skills.get("wage_bonus", 0) if not skills.is_empty() else 0)
 	return int(economy.get("wages", {}).get(action, 0))
 
@@ -2517,7 +4672,14 @@ func _econ_on() -> bool:
 
 ## 金钱增减的【唯一通道】：整数、不足即拒、写 event_log 溯源（type=pay，note=reason）。
 ## from/to = agent id 或 "town"（镇库）。守恒由"只此一门"结构保证 → 硬不变量 #34 可机检。
-func transfer(from_id: String, to_id: String, amt: int, reason: String) -> bool:
+##
+## ★AA3：`witnesses` 是**可选**的第五个参数，缺省 `[]` = 今天的行为逐字节不变
+##   （形状逐条照抄 V1 给 `_stock_move` 加的那个可选第六参，见那一段的 ★V1 注释）。
+##   加它的理由是量出来的：`pay` 事件此前**恒无目击者**——AA3 清点 9 格 108 局、共 15,860 笔赶集，
+##   `pay_events_witnessed` 逐格逐 seed **恒 0**；V1 §十③ 与 Z2 §十一③ 两次点名"工资/买卖那条通道
+##   一个字节都没动过"。⚠ 它只在**商贩那条人→人的货款**上被真正传进来（`_advance_object` 的 vendor 分支），
+##   工资 / 房租 / 镇库收费三条**照旧传空**——`#43` 的第③臂（不外溢）就是守这句话的。
+func transfer(from_id: String, to_id: String, amt: int, reason: String, witnesses: Array = [], txid: String = "") -> bool:
 	if amt <= 0:
 		return false
 	var from_coin := _coin_of(from_id)
@@ -2525,13 +4687,15 @@ func transfer(from_id: String, to_id: String, amt: int, reason: String) -> bool:
 		return false
 	_set_coin(from_id, from_coin - amt)
 	_set_coin(to_id, _coin_of(to_id) + amt)
-	var ev := _log_event("pay", from_id, to_id, "", true, [], reason)
+	var ev := _log_event("pay", from_id, to_id, "", true, witnesses, reason, txid)
 	var _e = ev   # 事件仅作账本溯源（不 emit social_event——经济事务非社交）
 	return true
 
 func _coin_of(id: String) -> int:
 	if id == "town":
 		return town_coin
+	if id == "external":                    # E2a：外部世界账户（照抄 "town" 分支）
+		return external_coin
 	var ag: Dictionary = _agent_by_id.get(id, {})
 	return int(ag.get("inventory", {}).get("coin", 0)) if not ag.is_empty() else 0
 
@@ -2539,16 +4703,970 @@ func _set_coin(id: String, v: int) -> void:
 	if id == "town":
 		town_coin = v
 		return
+	if id == "external":                    # E2a：外部世界账户（照抄 "town" 分支）
+		external_coin = v
+		return
 	var ag: Dictionary = _agent_by_id.get(id, {})
 	if not ag.is_empty():
 		ag["inventory"]["coin"] = v
 
-## 全镇货币总量（守恒不变量用）。
+## 全镇货币总量（守恒不变量用）。★E2a：external_coin 收进守恒集（+一项，判据形状不变，docs/151 §一.3）。
 func money_total() -> int:
-	var s := town_coin
+	var s := town_coin + external_coin
 	for ag in agents:
 		s += int(ag["inventory"].get("coin", 0))
 	return s
+
+# ── Wave E 劳动产出·库存 Ledger 原语（docs/47 §二-E1；结构照抄上面的 transfer/#34）────────
+## 数据门：缺 production.json → 恒 false → 下面每一个挂点都在第一行短路 → 引擎逐字节回到 Wave D 末。
+func _prod_on() -> bool:
+	return not production.is_empty()
+
+## ── K1 双尺度：产出侧的宏观池（docs/41 §0.5 的"货物【产出】的算法：N=12 逐个岗位真算 / N=60 宏观池估算"）──
+##
+## **它做什么**：把 production.json 里【产出侧】的每一个数按 `人口 / base_population` 换尺度。
+## 一次"本职在班完成"于是不再是"张三一个人烧了 30 片瓦"，而是"泥瓦这一行今天交了 N 片瓦"——
+## 居民不需要知道三个伐木工各砍了多少，只需要知道柴薪紧不紧张（§0.5 原话）。
+##
+## **它【不】做什么**：`consume` 一个字节都不动。60 个 agent 仍然逐个真算——谁吃了什么、谁没拿到、
+## 缺了记恨谁（_consume_for / _shortage_fallout 全程未改）。微观侧不降级是 §0.5 写死的。
+##
+## **为什么按人口，而不是按岗位数或在班完成次数**——三条都量过（本棒实测，seeds 1-3 × 60 天，见回执）：
+##   · 岗位数：**任何 N 下恒为 9**（克隆的 npc_<i> 不入岗位表）⇒ 倍率恒 1 ⇒ 什么都没做。
+##   · 在班完成次数：实测**基本不随 N 涨**（八个岗位合计/seed：N=12 是 98-130，N=60 是 107-145，
+##     约 ×1.1）⇒ 倍率 ~1.1 ⇒ 同上。
+##   · 人口：三种真正短缺的货，需求随人口**线性**（口粮 1048→5080 ×4.85 / 屋瓦 700→3544 ×5.06 /
+##     整洁 262→1290 ×4.92，而人口是 ×5.00）⇒ **只有人口这一条的曲线跟得上**。
+## **绝不按【该货的需求】定池**：那样 供给≡需求，#40 的满足率判据会变成恒真——一道永不变红的门，
+##   正是本波最容易造出来的那个空门（§0.5 点名）。人口是需求的**上游代理**而不是需求本身：
+##   实测豆子需求只涨 ×1.40、话本反而**跌到 ×0.55**，所以按人口定的池**并不保证**满足率达标 ⇒ 门仍有判别力。
+##
+## **哪些字段跟着换尺度**是数据说了算（`scale.pool` 列表），本棒扫过三档（回执 §"扫出来的曲线"）：
+##   amount / inputs / cap / spoil_per_day / start_stock。
+##   · `inputs` 必须跟着 amount 一起换，否则"货由货做成"这条链在宏观口径上断掉（§0.5 要求它在池层面成立）；
+##     且换尺度后**永不取整到 0**（原本 >0 的原料至少留 1），否则一窑瓦会变成不要柴。
+##   · `cap` 必须换：不换的话一批货撞满仓被丢掉，而且 _clean_mult 是 `现存/cap`，
+##     cap 不动会让整洁恒顶到 1.0、环卫的负反馈环整条失效。
+##   · `spoil_per_day` 必须换：不换的话损耗相对库存趋近于零，"缺货【周期性】发生"退化成"从不"
+##     （_calibration 明写设计意图是周期性）。
+##
+## **零扰动 / 逐字节纪律**（本棒最重要的一条不变量：N=12 必须逐字节不变）：
+##   · 缺 `scale` 块（或 base_population ≤ 0）⇒ 返回原 dict、prod_pooled=false ⇒ **任何 N 下都逐字节回到今天**。
+##   · num == den（出货阵容 N=12，base_population=12）⇒ **直接返回原 dict，一个整数都不算** ⇒ 逐字节等同逐笔。
+##   · 换尺度用整数有理数 `v * num / den`（GDScript 整除），**不引浮点** ⇒ 逐字节可回放。
+func _pool_rescale(raw: Dictionary, pop: int) -> Dictionary:
+	prod_pooled = false
+	prod_pool_num = 1
+	prod_pool_den = 1
+	if raw.is_empty():
+		return raw
+	var sc: Dictionary = raw.get("scale", {}) if raw.get("scale", {}) is Dictionary else {}
+	var base := int(sc.get("base_population", 0))
+	if base <= 0:
+		return raw                                       # 缺 scale 块 ⇒ 逐笔契约 ⇒ 逐字节回到 Wave J 末
+	var num := maxi(1, pop)
+	var quantum := int(sc.get("quantum", 0))
+	if quantum > 0:                                      # >0：按【整班】取整（一个班顶 quantum 个居民）；0=连续
+		num = ((num + quantum - 1) / quantum) * quantum
+	prod_pooled = true
+	prod_pool_num = num
+	prod_pool_den = base
+	if num == base:
+		return raw                                       # 倍率恰为 1：不复制、不计算 ⇒ 逐字节等同逐笔
+	var fields: Array = sc.get("pool", []) if sc.get("pool", []) is Array else []
+	var out := raw.duplicate(true)
+	if "start_stock" in fields and out.get("start_stock", {}) is Dictionary:
+		for g in (out["start_stock"] as Dictionary):
+			out["start_stock"][g] = int(out["start_stock"][g]) * num / base
+	for g in out.get("goods", {}):
+		var gd: Dictionary = (out["goods"] as Dictionary)[g]
+		if "cap" in fields and gd.has("cap"):
+			gd["cap"] = maxi(1, int(gd["cap"]) * num / base)
+		if "spoil_per_day" in fields and gd.has("spoil_per_day"):
+			var sp0 := int(gd["spoil_per_day"])
+			gd["spoil_per_day"] = maxi(1, sp0 * num / base) if sp0 > 0 else sp0   # 原本不损耗的货不因换尺度开始损耗
+	for t in out.get("produce", {}):
+		# ★E4d-A 双形状：produce[t] 可为多货 Array 或单货 dict。逐 rec 缩放 .amount / .inputs——
+		#   否则第二件货的批量在 N≠12 时不被缩放 ⇒ 破 ci.sh 4a 宏观池尺度门。out = raw.duplicate(true) 深拷贝，
+		#   dict 是引用类型，原地改即改 out。单货 dict → [dict] → 单次循环 → 逐字节回改前。按列表著者序遍历、不排序。
+		var praw = (out["produce"] as Dictionary)[t]
+		var precs: Array = praw if praw is Array else [praw]
+		for pr in precs:
+			if not (pr is Dictionary):
+				continue
+			if "amount" in fields and (pr as Dictionary).has("amount"):
+				pr["amount"] = int(pr["amount"]) * num / base
+			if "inputs" in fields and (pr as Dictionary).has("inputs") and pr["inputs"] is Dictionary:
+				for ing in (pr["inputs"] as Dictionary):
+					var v0 := int((pr["inputs"] as Dictionary)[ing])
+					# 原本要料的，换尺度后至少还要 1 ⇒ "货由货做成"这条链在宏观口径上不会被整除抹掉。
+					pr["inputs"][ing] = maxi(1, v0 * num / base) if v0 > 0 else v0
+	return out
+
+func _stock_of(good: String) -> int:
+	return int(town_stock.get(good, 0))
+
+## 库存增减的【唯一通道】：整数、写 event_log 溯源（produce / consume / spoil），note="<原因>*<真正落账的件数>"。
+## 守恒由"只此一门"结构保证 → 硬不变量 #38 可从 event_log 独立重算（同 transfer 之于 #34）。
+## 返回【真正落账】的件数：产出撞 cap 会少于请求量，消耗撞 0 会少于请求量——落账多少就记多少，账本因此恒闭。
+## ★V1：`witnesses` 是**可选**的第六个参数，缺省 `[]` = 今天的行为逐字节不变。
+##   加它的理由见 `_craft_fallout`：`produce` 事件此前**恒无目击者**（V1 清点：5 seed × 60 天共 497 条
+##   produce 事件，`witnesses` 非空的 **0** 条），而同一时刻工位旁平均站着 0.44-3.32 个人。
+func _stock_move(good: String, delta: int, type: String, actor_id: String, reason: String, witnesses: Array = [], txid: String = "") -> int:
+	if delta == 0 or not (production.get("goods", {}) as Dictionary).has(good):
+		return 0
+	var cur := _stock_of(good)
+	var applied := delta
+	if delta > 0:
+		var cap := int((production["goods"] as Dictionary)[good].get("cap", 999999))
+		applied = mini(delta, maxi(0, cap - cur))       # 满仓 → 少收/不收（多出来的那部分不入账，也就不进账本）
+	else:
+		applied = -mini(-delta, cur)                    # 见底 → 只扣到 0，绝不为负（#38 的非负臂由此结构保证）
+	if applied == 0:
+		return 0
+	town_stock[good] = cur + applied
+	_log_event(type, actor_id, "town", good, true, witnesses, "%s*%d" % [reason, absi(applied)], txid)
+	return applied
+
+## 职位 title → 现任持有人 id（jobs.json 书写序，首个命中；无则 ""）。纯查表、无 RNG。
+func _holder_of_title(title: String) -> String:
+	for aid in jobs.get("jobs", {}):
+		if String((jobs["jobs"] as Dictionary)[aid].get("title", "")) == title:
+			return String(aid)
+	return ""
+
+## 产出挂点：本职、在班、完成一次工作 → 往镇库存记【一批】（口径与 _wage_for 的"本职在班"完全同一条）。
+## 为什么是一批不是一件：实测全镇本职完成 ~70 次/60 天，而吃饭 1011 次/60 天——1:1 会让镇子永远断粮
+## （见 production.json 的 _calibration）。批量是数据，不是代码常数。
+##
+## ★G3 追加 `produce[职位].inputs`（docs/49 §三）：**这一批货是用另一种货做出来的**。
+##   此前七个岗位的产物全部【凭空生成】——上工一次，货就出现。泥瓦匠是第一个有【原料】的工种：
+##   烧一窑瓦要烧柴，而柴薪同时是澡堂唯一的燃料 ⇒ 全镇第一件【被两条需求争抢】的货。
+##   四条纪律：
+##   ① 原料走的还是 _stock_take（消耗侧唯一通道）⇒ #38 的账本恒等式一个字节都不用改；
+##   ② 缺料【不阻断动作】：他照样上工、照样领工资、照样涨技能——只是这一窑出不了那么多瓦。
+##      这与 meals_free / 缺货不阻断消费是同一条设计红线，不新开饿死通道；
+##   ③ 产量按【最紧的那一样】原料的到手比例整数缩放 ⇒ 恒 ≤ 申报批量 ⇒ 硬 #39 的「件数不超申报」自然成立；
+##   ④ 缺料的后果落在【干活的人】身上（他记一条不满、在场者形成一手信念埋怨柴薪的责任岗位）——
+##      这是本仓库第一条【从一个工种传到另一个工种】的缺货后果，而它复用的是 _shortage_fallout 原样。
+##   缺 inputs 键 / 缺 production.json ⇒ 整段短路 ⇒ 逐字节回到 G3 之前。
+func _produce_for(ag: Dictionary, action: String) -> void:
+	var job := _job_of(String(ag["id"]))
+	if job.is_empty() or _job_action(job) != action or not _in_shift(job):
+		return
+	var title := String(job.get("title", ""))
+	# ★E4d-A 双形状读者（consume 侧 E4a 的镜像）：`produce[title]` 可以是 Array of {good,amount,inputs?}
+	#   （一个产者一【场】做多件货），也【继续接受】既有的裸 {good,amount,inputs?} dict（单货）——归一化为列表 recs。
+	#   现有 production.json 每个产者都是裸 dict ⇒ 单元素列表 ⇒ 逐字节回到改前控制流（零金标）。
+	# ★确定性红线：严格按【列表著者序】迭代——永不排序、永不依赖 dict 键序。
+	#   顺序即语义：每件货一条 produce 事件（经 _stock_move 顺序写 event_log，进 event_digest）+ 顺序扣料/记忆，
+	#   多货由数据的书写序唯一定序；单元素列表天然序无关，故保住零金标。
+	var raw = production.get("produce", {}).get(title, {})
+	var raw_recs: Array = raw if raw is Array else [raw]
+	var recs: Array = []                                # 过滤空/非 dict：缺产者 raw={} → [{}] → recs=[]（= 改前 rec.is_empty()）
+	for r in raw_recs:
+		if r is Dictionary and not (r as Dictionary).is_empty():
+			recs.append(r)
+	if recs.is_empty():
+		return                                          # 该职位没有产物（如未接入的工种）→ 与今天一致
+	# ★work++ 每【场】只加一次（首次迭代守卫 first），与做几件货无关——保在改前的确切位置：
+	#   在【首件货】的扣料/停工后果之后、首件货的 amount<=0 短路之前。
+	#   work 是【场次】计数（prod_stats.work[title]），#40 的原料需求分母与满足率都读它；prod_stats 不进任何 digest。
+	var first := true
+	for rec in recs:
+		var good := String((rec as Dictionary).get("good", ""))
+		var amount := int((rec as Dictionary).get("amount", 0))
+		# G3 原料：按 JSON 书写序遍历（Godot 字典保序）⇒ 扣料顺序确定、无 RNG、可逐字节回放。
+		var ins: Dictionary = (rec as Dictionary).get("inputs", {}) if (rec as Dictionary).get("inputs", {}) is Dictionary else {}
+		var lacked := ""                                # 第一样没凑齐的原料（后果只报一次，同 _shortage_fallout 的口径）
+		var r_num := 1                                  # 缩水比 = min over 原料 (到手/需要)，整数分数、不引入浮点
+		var r_den := 1
+		for ing in ins:
+			var need_in := int(ins[ing])
+			if need_in <= 0:
+				continue
+			var got_in := _stock_take(String(ing), need_in)  # 料照扣（扣多少算多少）——半窑瓦也把那半窑柴烧掉了
+			if got_in < need_in:
+				if lacked == "":
+					lacked = String(ing)
+				if got_in * r_den < r_num * need_in:     # 取【最紧】的那一样，不是逐样连乘
+					r_num = got_in
+					r_den = need_in
+		if r_den != 1 or r_num != 1:
+			amount = amount * r_num / r_den              # 整数缩放 ⇒ 恒 ≤ 申报批量 ⇒ #39 的「不超申报」结构上成立
+		if lacked != "":
+			prod_stats["short"][lacked] = int((prod_stats["short"] as Dictionary).get(lacked, 0)) + 1
+			# 缺料的是【干活的人】——全镇第一条跨工种的缺货后果。日名额用 "料:<货>"，与消费侧的 "<货>" 分开（见 _shortage_fallout）。
+			_shortage_fallout(ag, action, lacked, "料:" + lacked)
+		if first:
+			prod_stats["work"][title] = int((prod_stats["work"] as Dictionary).get(title, 0)) + 1
+			first = false
+		if amount <= 0:
+			continue                                    # 这一件没料/空手 ⇒ 跳过（不写 produce 事件，#39 的「件数>0」因此恒成立）。单货时=改前 return。
+		# ★V1 手艺口碑（docs/84）：这门手艺开了 `craft_credit` 才去数在场者，否则连 `_nearby_agents` 都不调
+		# ⇒ 缺键/该职位不在表里 ⇒ 一条指令都不多跑、`witnesses` 仍是 `[]` ⇒ 逐字节回到今天。
+		var cc: Dictionary = _craft_credit(title)
+		var wits: Array = _nearby_agents(ag) if not cc.is_empty() else []
+		var got := _stock_move(good, amount, "produce", String(ag["id"]), title, wits)
+		if got > 0:
+			if not cc.is_empty() and not wits.is_empty():
+				_craft_fallout(ag, wits, title, good, cc)
+			prod_stats["produced"][good] = int((prod_stats["produced"] as Dictionary).get(good, 0)) + got
+			# K1：池倍率 >1 时这一批**不是他一个人干出来的**，措辞必须跟着换尺度——
+			# 否则记忆里会出现"一个泥瓦匠一天烧了 150 片瓦"，而那正是外审点名的"一个铁匠在 60 人里产 60 把剑"。
+			# 这条串直接进 MemoryStream / 语音 grounding。倍率==1（出货阵容 N=12）⇒ 走原分支 ⇒ 逐字节不变。
+			if prod_pool_num != prod_pool_den:
+				ag["memory"].add("今天带着帮工%s，一行人出了%d份%s，交进镇上" % [action, got, good], 4, tick_no, ["job", "produce", good])
+			else:
+				ag["memory"].add("今天%s出了%d份%s，交进镇上" % [action, got, good], 4, tick_no, ["job", "produce", good])
+
+## 消耗挂点：动作开用时扣一件。**返回 false = 缺货**。
+## ★缺货【不阻断动作】：本函数不改 option、不改 need、不返回"别做了"——调用方拿 false 只用来加价与记后果。
+##   这正是 economy.json `_doc` 里 meals_free 那条设计意图的直接继承：付不起照吃、没货也照吃。
+func _consume_for(ag: Dictionary, action: String) -> bool:
+	# ★E4a 双形状读者：`consume[action]` 可以是 Array of {good,amount}（一个动作消费多件货），
+	#   也【继续接受】既有的裸 {good,amount} dict（单货）——归一化为列表 `recs`。
+	#   现有 production.json 每个动作都是裸 dict ⇒ 单元素列表 ⇒ 逐字节回到改前控制流（零金标）。
+	# ★确定性红线：严格按【列表著者序】迭代——永不排序、永不依赖 dict 键序。
+	#   顺序即语义：`_shortage_fallout` 顺序写 event_log（进 event_digest）+ 顺序插 belief（gossip 序）。
+	#   单元素列表天然序无关，故保住零金标；多货由数据的书写序定序。
+	var raw = production.get("consume", {}).get(action, {})
+	var raw_recs: Array = raw if raw is Array else [raw]
+	var recs: Array = []                                 # 过滤空/非 dict 记录：缺键 raw={} → [{}] → recs=[]（= 改前 rec.is_empty()）
+	for r in raw_recs:
+		if r is Dictionary and not (r as Dictionary).is_empty():
+			recs.append(r)
+	if recs.is_empty():
+		return true                                     # 非消耗类动作 → 天然不缺货（且【不】计 attempts，同改前）
+	# attempts 每次动作只加一次（在非空判定之后，同改前），与消费几件货无关。
+	prod_stats["attempts"][action] = int((prod_stats["attempts"] as Dictionary).get(action, 0)) + 1
+	var all_ok := true                                  # ★AND-fold：任一件货缺 ⇒ 返回 false（缺货仍不阻断动作，只喂加价+社会后果）
+	for rec in recs:
+		var good := String((rec as Dictionary).get("good", ""))
+		var want := int((rec as Dictionary).get("amount", 1))
+		var took := _stock_take(good, want)
+		if took >= want:
+			prod_stats["consumed"][good] = int((prod_stats["consumed"] as Dictionary).get(good, 0)) + took
+			continue
+		if took > 0:
+			prod_stats["consumed"][good] = int((prod_stats["consumed"] as Dictionary).get(good, 0)) + took
+		prod_stats["short"][good] = int((prod_stats["short"] as Dictionary).get(good, 0)) + 1
+		_shortage_fallout(ag, action, good)
+		all_ok = false
+	return all_ok
+
+## 消耗侧的库存扣减：立刻改 town_stock，但把"今天扣了多少"攒进 _stock_day，日界一次性写一条 consume 事件。
+## 为什么不逐次写：见 _stock_day 的声明注释（会把 Main 的小镇纪事整块冲掉）。
+## #38 的账本恒等式因此带一个 pending 项：stock == 基准 + Σproduce − Σconsume(已入账) − Σspoil − pending。
+func _stock_take(good: String, want: int) -> int:
+	var cur := _stock_of(good)
+	var take := mini(want, cur)
+	if take <= 0:
+		return 0
+	town_stock[good] = cur - take
+	_stock_day[good] = int(_stock_day.get(good, 0)) + take
+	return take
+
+## 缺货的社会后果（红线：只落在社会面，绝不落在生存面）。四条，全部可观测：
+##   ① event_log 写一条 shortage（同一天同一货只写一条——一天四十次断货是同一件事，不是四十条新闻）；
+##   ② 当事人一条不满记忆（voice grounding）；
+##   ③ 在场者 + 当事人形成一手信念(via=seen，主语=责任岗位的人) → 走既有 gossip 管线被议论（结构照抄 _observe_wealth）；
+##   ④ 对责任岗位小挫声誉（经 _adjust_standing，受 STANDING_DELTA_CAP/STANDING_CAP 双重钳制；
+##      而 S1 每 3 天的 standing 漂移会把它慢慢抹平 ⇒ 只有【连着断货】才留得下印象）。
+func _shortage_fallout(ag: Dictionary, action: String, good: String, dedup: String = "") -> void:
+	# ★同一天同一种货只记一次。理由不是省事，是两条实测约束：
+	#   ① MemoryStream 只有 CAP=200/KEEP=150 且 _forget 按 importance 排序 —— 逐次记账会让几百条
+	#      "面包又没了"把社交记忆整片挤出去，语音 grounding 当场退化成一句抱怨；
+	#   ② Main 的小镇纪事只回扫尾部 200 条事件。
+	#   语义上也对：一天里断第 40 次不是新闻，是同一件事。此后再缺仍然照常【加价 + 计数】，只是不再重复宣告。
+	# ★G3：`dedup` 让【停工】与【买不到】各自独占一条日名额。为什么必须分开——这是量出来的，不是设计洁癖：
+	#   共用 good 作日名额时，柴薪断了那天几乎总是澡堂(546 次洗澡/seed)先撞上，泥瓦匠的停工被它吃掉 ⇒
+	#   实测 seeds 1-5 只写出 1 条『柴薪@修屋』（0.2 条/seed），机制在账本上存在、在社会面【看不见】。
+	#   分开之后同一批 seed 变成 3/7/2/4/5 条（数与出处见 production.json 的 _g3_negative_results）。
+	#   仍然是【每天每条一次】，MemoryStream 的两条约束不受影响。
+	var dk := dedup if dedup != "" else good
+	if int(_short_day.get(dk, -1)) == day:
+		return
+	_short_day[dk] = day
+	var gd: Dictionary = production.get("goods", {}).get(good, {})
+	var blame := _holder_of_title(String(gd.get("blame", "")))
+	var seen: Array = _nearby_agents(ag)
+	_log_event("shortage", String(ag["id"]), blame, good, false, seen, action)
+	# F1：措辞可按货覆盖。理由不是修辞洁癖——"整洁"这种【状态型】的货套上"镇上的整洁却空了"会读成机翻，
+	# 而这两条串直接进 MemoryStream 与 belief.claim，是模型语音 grounding 的原料。缺键 → 原样 = 逐字节不变。
+	# 只有措辞变；belief 的【键】仍是 SH:<good>，所以传播/gossip 行为不受措辞影响。
+	ag["memory"].add(String(gd.get("shortage_memo", "想%s，镇上的%s却空了")) % [action, good], 4, tick_no, ["shortage", good])
+	if blame == "" or not _agent_by_id.has(blame):
+		return
+	var bid := "SH:%s" % good
+	var claim := String(gd.get("shortage_claim", "镇上的%s总是断，%s那边跟不上")) % [good, _name(_agent_by_id[blame])]
+	var seers: Array = [ag]
+	seers.append_array(seen)
+	for s in seers:
+		if String(s["id"]) == blame:
+			continue                                    # 不当着（也不由）责任人自己形成这条埋怨
+		if not s["beliefs"].has(bid):
+			s["beliefs"][bid] = {"claim": claim, "subject": blame, "source": "__seen__", "via": "seen", "tick": tick_no}
+		_adjust_standing(s, blame, float(gd.get("shortage_standing", production.get("shortage_standing", 0.0))))
+
+## ★V1 手艺口碑的数据门（docs/84）。缺 `production.craft_credit` / 该职位不在表里 → 返回 `{}` →
+## `_produce_for` 里那两行整段短路 → 引擎逐字节回到 V1 之前。回滚成本 = 删一个 JSON 键（照抄 `stock_pull` 的形状）。
+func _craft_credit(title: String) -> Dictionary:
+	var tbl: Dictionary = production.get("craft_credit", {}) if production.get("craft_credit", {}) is Dictionary else {}
+	if tbl.is_empty():
+		return {}
+	var rec = tbl.get(title, {})
+	return rec if rec is Dictionary else {}
+
+## ★V1 手艺口碑：**一门手艺被人看见，镇上才会因为它而改变对这个人的看法。**
+##
+## 为什么需要它（清点表在 docs/84 §一，跑出来的不是想出来的）：今天九个岗位的产出是**一件货 + 一笔工资**，
+## 而这两样在社会面上**一条通道都没有**——`_stock_move` 写的 `produce` 事件 `witnesses` 恒 `[]`
+## （5 seed × 60 天 497 条，非空 0 条），`transfer` 写的 `pay` 事件同样恒 `[]`（5540 条，非空 0 条）。
+## 一个岗位今天唯一能改到别人社会状态的通道是 **`_shortage_fallout`**——也就是**他没干好的时候**。
+## ⇒ 全镇的"社会产出"只有一种口径：**怪谁**。本函数是它的**正向镜像**，结构逐条照抄：
+##   ① `produce` 事件带上真实目击者（`_stock_move` 的可选第六参）——账本里第一次看得见"谁看见他干活"；
+##   ② 在场者形成一手信念 `CR:<职位>`（`via=seen`、`subject=干活的人`）→ 走**既有** gossip 管线被转述，
+##      不新开任何管线、不新增事件类型（新类型会绕过 `Main.FEED_SKIP`/`Story` 的既有处理，而那两个文件不属于本棒）；
+##   ③ 在场者对他 `_adjust_standing(+standing)`，受 `STANDING_DELTA_CAP`/`STANDING_CAP` 双重钳制
+##      ——与 `shortage_standing` 完全同一道守卫，只是符号相反；
+##   ④ 在场者一条低权重记忆（importance 2，与 `_commit_social` 的旁观者记忆同档）→ 语音 grounding 的原料。
+##
+## ★为什么这不是"多打一行日志"，以及**它到底改了多少**——这一段是实测，不是设计意图（docs/84 §四.4）：
+##   把三样东西逐条关掉跑同一格（隔离副本，seeds 1-4 × 60 天）比 `event_log` 摘要：
+##     · **只有 ③ `standing` 会改变世界。** 它是 `_acceptance_rule` 的一项（`st = standing * STANDING_K`）。
+##     · **② 的信念与 ④ 的记忆今天【几乎】不改变行为**：关掉 ③ 之后，"②④ 全写"与"②④ 全不写"的
+##       `Inv.digest` 在 seeds 1-4 上 **4/4 逐位相同**。原因是 `CR:*` 唯一的下游是 `_unspread_belief` 的 gossip 候选，
+##       而大家都是**亲眼**形成的 ⇒ 它在传出去之前就饱和了。
+##       > ⚠ **W1 更正（2026-08-01）**：原文写的是"【一个字节都不改变行为】"，**过头了**——那是 4 个 seed 的结论。
+##       > 把同一条臂（`standing=0`、②④ 照写）扩到 seeds 1-12：**11/12 个 seed 逐位相同，seed 11 不同**
+##       > （盟约 tick 和 10803→5043、`aid` 6→1）。分岔口就是 §四.2 记的那次转述：
+##       > **12 个 seed 里唯一发生过 `CR:*` 被 gossip 转述的那个 seed，正是 seed 11。**
+##       > ⇒ 正确说法是"这条通道**极少**被读到，不是**从不**"。
+##     · ① 的 `witnesses` 只改**观测**（`Inv.digest` 把目击者折进了哈希），不改行为。
+##   ⇒ **能声称的是"这条社会痕迹存在、可门控、可回滚"，不是"被看见干活的人更受欢迎"。**
+##     后者我量过、量不出来：8 个**没被触碰**的岗位在同一网格上的社交接受率移动幅度比被触碰的那个还大。
+## ★★~~代价：`standing` 那一路会把盟约互助 `aid` 压掉约 42%（118 → 68，12 seed 里 11 个方向一致）~~
+##   **⇒ 这条代价 W1（2026-08-01，docs/88）实测【撤回】：它不成立。** 三条独立证据：
+##     ① **留出种子上符号是反的**——同一次改动，seeds 13-30 `aid` **105 → 110**、seeds 31-60 **170 → 180**。
+##        （这两个数就在 V1 自己跑的 `analysis/v1/heldout_*.txt` 里，与它引用的那几行只隔一两行。）
+##     ② **剂量-响应不单调**：`standing` = −0.25 / 0 / +0.125 / +0.25 / +0.5 ⇒ `aid` = 79 / 113 / 101 / 68 / 93。
+##        连"好评"和"差评"都往同一个方向压 ⇒ 不是"手艺信誉挤占互助"。
+##     ③ **零社会含量的假扰动一样压**：只把 `utility.obj_dist_penalty` 0.400→0.401（一个寻路代价常数，
+##        与声誉/手艺毫无关系，且 `craft_credit` 整个键都没开）⇒ `aid` 118 → **94**；改成 0.38 ⇒ **65**（比出货还低）。
+##   **真正成立的说法**：`aid` 在 N=12×12 seed×60 天这一格上逐 seed 是 0..21 的稀疏计数，
+##   **它的 12-seed 合计对【任何】同量级轨迹扰动都要掉 15-45%**，与扰动的语义无关。
+##   ⇒ **不要用它当任何改动的代价指标**；要判活性请看 `Harness.LIVENESS_QUORUM`（覆盖率，不是计数）。
+##
+## ★知识边界（docs/41 §0.7 仍在用户手里未定）：本函数**不动那一层**。信念只形成于
+##   `_nearby_agents` 给出的**同平面同区在场者**，这比 §0.7 提案里那句"能进候选表的对象必须是他本来就能感知的对象"
+##   **更窄**——⇒ 用户无论采纳与否，本机制都不需要改。
+func _craft_fallout(worker: Dictionary, seen: Array, title: String, good: String, cc: Dictionary) -> void:
+	var st := float(cc.get("standing", 0.0))
+	var bid := "CR:%s" % title
+	# 参数序**逐字照抄 `shortage_claim`**（`% [good, _name(blame)]`）：同一个文件里两条镜像的串
+	# 用两套参数序是下一次 "not all arguments converted" 的种子——本棒已经踩过一次（docs/84 §六）。
+	var claim := String(cc.get("claim", "镇上的%s，是%s做出来的")) % [good, _name(worker)]
+	var memo := String(cc.get("witness_memo", "看见%s在%s干活"))
+	for s in seen:
+		if String(s["id"]) == String(worker["id"]):
+			continue                                    # _nearby_agents 本就排除自己；留着这行是给将来的调用方
+		if not s["beliefs"].has(bid):
+			s["beliefs"][bid] = {"claim": claim, "subject": String(worker["id"]), "source": "__seen__", "via": "seen", "tick": tick_no}
+		if st != 0.0:
+			_adjust_standing(s, String(worker["id"]), st)
+		s["memory"].add(memo % [_name(worker), _area_label(worker["pos"])], 2, tick_no, [String(worker["id"]), "observe", "craft"])
+
+## ★AA3 买卖口碑的数据门（docs/106）。缺 `production.vendor.trade_credit` → 返回 `{}` →
+## `_advance_object` 的 vendor 分支里那两行整段短路 → 引擎逐字节回到 AA3 之前。
+## 回滚成本 = 删一个 JSON 键（照抄 `craft_credit` / `stock_pull` 的形状）。
+func _trade_credit() -> Dictionary:
+	var vend: Dictionary = production.get("vendor", {}) if production.get("vendor", {}) is Dictionary else {}
+	if vend.is_empty():
+		return {}
+	var rec = vend.get("trade_credit", {})
+	return rec if rec is Dictionary else {}
+
+## ★AA3 买卖口碑：**手艺的社会痕迹挂在【产出】那一侧，而商贩的产出在【消费】那一侧。**
+##
+## 为什么需要它，以及为什么它【不是】给商贩补一条 `craft_credit`（清点在 docs/106 §一，跑出来的）：
+##   商贩 mei 有岗位、有班次、有两条广告位，实测拿走全镇 14.0-15.8% 的饭口（9 格 108 局，
+##   `赶集/(赶集+吃饭)`）；他缺的不是活儿，是**挂点**——`craft_credit` 由 `_produce_for` 调用，
+##   而 `_produce_for` 在 `rec.is_empty()` 时就 return（他没有产物）⇒ 把"商贩"写进 `craft_credit`
+##   会被 `#41` 的 `produce < CRAFT_MIN_WORKS` 豁免**静默跳过**：一道结构上不可能变红的门。
+##
+## ★"消费侧的被看见是什么"——四种口径都量过，**判定用的是余量**（不豁免的 seed 里的最小值，
+##   门槛 3 = 环卫工在最紧那一格的余量，抄自 Z2）。九格取最小：
+##     D1 买家自己（钱真到手）        余量 15
+##     D2 商贩**当场在摊子上**        余量 **3**   ← 零假设臂（obj_dist_penalty 0.400→0.401）就压到 3
+##     D3 旁边有第三个人              余量 27
+##     D4 D2 且 D3                    余量 **3**
+##     D5 **钱真到手 且 有旁人**      余量 **13**  ← 本实现用的就是这一个
+##   ⇒ **"商贩当场在摊子上"这条读法被证伪**：`_market_open` 只要求他**在班**，不要求他**在摊上**，
+##     实测他只在 19-24% 的成交里与买家同区 —— 摊子在无人售货。把口碑挂在"他被看见站在那儿"上，
+##     等于给 `#43` 装一道跟着无关扰动闪的门（这正是 Z2 否掉木匠的那条理由）。
+##   ⇒ **正确的见证者是【买家自己 + 当场的旁人】，而商贩在不在场无关。**
+##     这在本仓库有现成先例、不是新发明：`_shortage_fallout` 让在场者对一个**缺席的**责任岗位形成信念、
+##     挫他的声誉——本函数是它的正向镜像，连见证者集合 `[当事人] + _nearby_agents(当事人)` 都逐条照抄。
+##
+## ★为什么有【日名额】而 `_craft_fallout` 没有：这是量出来的比例，不是设计洁癖。
+##   `production.json._calibration` 记的是"劳动比消费稀【约 40 倍】"；实测 60 天 N=12 一个 seed 里
+##   产出侧带目击者的 `produce` 是 545 条（Z2 §四.2，四门合计），而商贩一个人的成交就有 135-180 笔、
+##   其中钱真到手的 58-84 笔。不设名额 ⇒ 单这一条通道投放的 `standing` 就超过现有四门手艺的总和。
+##   日名额的两条理由与 `_shortage_fallout` 逐字相同（MemoryStream CAP=200/KEEP=150；
+##   Main 的小镇纪事只回扫尾部 200 条），语义上也一样：一天里第三次赶集不是新闻。
+##   ⚠ **名额只管【后果】，不管【账本】**：`pay` 事件的 `witnesses` 逐笔照写
+##   （那一路只进 `Inv.digest`、不改行为，V1 §四.4 已经拆开量过），所以"消费侧被看见"在账本上是逐笔的。
+##
+## ★这不是"多打一行日志"，但**能声称的只有"痕迹存在、可门控、可回滚"**——
+##   V1 §四.4 拆开量过：`CR:*` 这一族信念今天几乎没有下游，真正改变世界的只有 `standing` 那一路。
+##   本函数的 `standing` 效应量见 docs/106 §四，**没有**声称"卖东西的人更受欢迎"。
+func _trade_fallout(buyer: Dictionary, vendor_id: String, seen: Array, action: String, tc: Dictionary) -> void:
+	if int(_trade_day.get(vendor_id, -1)) == day:
+		return                                          # 日名额（见抬头）：一天一条，与 _short_day 同一条纪律
+	_trade_day[vendor_id] = day
+	var vag: Dictionary = _agent_by_id.get(vendor_id, {})
+	if vag.is_empty():
+		return
+	var title := String(_job_of(vendor_id).get("title", ""))
+	if title == "":
+		return
+	var st := float(tc.get("standing", 0.0))
+	# ★E4a 双形状读者：consume[action] 可为多货 Array 或单货 dict。商贩口碑串只提【首件】货
+	#   （摊子撑着"某货"），按列表著者序取第一件非空记录。单货 dict → [dict] → 首件 = 改前逐字节。
+	var craw = (production.get("consume", {}) as Dictionary).get(action, {})
+	var crecs: Array = craw if craw is Array else [craw]
+	var good := ""
+	for cr in crecs:
+		if cr is Dictionary and not (cr as Dictionary).is_empty():
+			good = String((cr as Dictionary).get("good", ""))
+			break
+	var bid := "TR:%s" % title
+	# 参数序**逐字照抄** `shortage_claim` / `craft_credit.claim`（`% [good, name]`）：
+	# 同一个文件里三条镜像的串用三套参数序是下一次 "not all arguments converted" 的种子（docs/84 §六①）。
+	var claim := String(tc.get("claim", "街面上还买得着%s，是%s的摊子撑着")) % [good, _name(vag)]
+	var memo := String(tc.get("witness_memo", "%s的摊子还开着，%s上买得着东西"))
+	var seers: Array = [buyer]
+	seers.append_array(seen)
+	for s in seers:
+		if String(s["id"]) == vendor_id:
+			continue                                    # 不由商贩自己形成关于自己的这条（他也可能恰好站在旁边）
+		if not s["beliefs"].has(bid):
+			s["beliefs"][bid] = {"claim": claim, "subject": vendor_id, "source": "__seen__", "via": "seen", "tick": tick_no}
+		if st != 0.0:
+			_adjust_standing(s, vendor_id, st)          # 同一道 STANDING_DELTA_CAP / STANDING_CAP 守卫
+		s["memory"].add(memo % [_name(vag), _area_label(buyer["pos"])], 2, tick_no, [vendor_id, "observe", "trade"])
+
+## 日界结算：把当天的消耗一次性写进账本，再按 spoil_per_day 让存货自然损耗。
+## 损耗存在的理由不是"真实"，是【让缺货周期性发生】：没有它，供大于求的种子会把库存顶到 cap 后永不缺货，
+## 缺货信号退化成常数 → 这条机制就又变回装饰。
+func _stock_nightly() -> void:
+	for good in production.get("goods", {}):
+		var g := String(good)
+		var used := int(_stock_day.get(g, 0))
+		if used > 0:
+			_stock_day[g] = 0
+			_log_event("consume", "town", "town", g, true, [], "day*%d" % used)
+		var sp := int((production["goods"] as Dictionary)[g].get("spoil_per_day", 0))
+		if sp > 0:
+			var lost := -_stock_move(g, -sp, "spoil", "town", "spoil")
+			if lost > 0:
+				prod_stats["spoiled"][g] = int((prod_stats["spoiled"] as Dictionary).get(g, 0)) + lost
+
+## P1-b import arrival：到期日按 lane 著者序生成整单 CargoManifest；arrival 不再冒充库存 import。
+## 货位不足或镇库付不起时 cargo 留港，卸货广告关闭；条件恢复后由码头工动作同步提交付款、入库与 cargo 清零。
+## 缺 logistics / route_id / 合法 good / 正 batch ⇒ 不生成 manifest。economy off 或无正价 ⇒ commit 时免费入库（保留 E1 off 门）。
+func _logi_import() -> void:
+	var lanes := _as_arr(logistics.get("import_lanes", []))
+	for lane_index in range(lanes.size()):
+		var lane = lanes[lane_index]
+		if not (lane is Dictionary):
+			continue
+		var ld: Dictionary = lane
+		var every := int(ld.get("every_days", 0))
+		if every <= 0 or day % every != 0:
+			continue
+		_arrive_import_manifest(ld, lane_index)
+
+## P1-b CargoManifest 到港 seam：只增 cargo 权威态 + world receipt，不碰镇库与钱。
+## id = route × day × lane 著者序，纯 f(data,day)，不读 RNG/Time/事件计数器；重复调用同日幂等。
+## P1-j：complete 单退休后，append-only arrival receipt 继续充当已消费 id 的墓碑；不得复活同 id cargo。
+func _arrive_import_manifest(lane: Dictionary, lane_index: int) -> String:
+	var batch := int(lane.get("batch", 0))
+	var good := String(lane.get("good", ""))
+	var node := String(lane.get("node", ""))
+	var route := String(lane.get("route_id", ""))
+	if batch <= 0 or good == "" or node == "" or route == "":
+		return ""
+	if not (production.get("goods", {}) as Dictionary).has(good):
+		return ""
+	var pnum := int(lane.get("price_per", 0))
+	var pden := int(lane.get("price_den", 1))
+	# 付费 lane 必须能让【整单】算出正价；否则 cargo 会永久 ready 却永远不可卸，且拆单会放大整数地板漏洞。
+	if _econ_on() and pnum > 0 and (pden <= 0 or batch * pnum / pden <= 0):
+		return ""
+	var manifest_id := "manifest_%s_%d_%d" % [route, day, lane_index]
+	var prospective := {
+		"id": manifest_id, "route_id": route, "lane_index": lane_index,
+		"node": node, "good": good, "arrived_day": day,
+		"initial_qty": batch, "remaining_qty": batch,
+		"price_per": pnum, "price_den": pden, "state": "ready",
+	}
+	if _manifest_authored_lane_error(manifest_id, prospective, logistics, day) != "":
+		return ""
+	var expected_note := "cargo_arrive:%s*%d" % [manifest_id, batch]
+	var arrival_receipts := 0
+	for raw in event_log:
+		if not (raw is Dictionary):
+			continue
+		var e: Dictionary = raw
+		var note := String(e.get("note", ""))
+		var targets_id := String(e.get("target", "")) == manifest_id
+		var names_id := note.begins_with("cargo_arrive:" + manifest_id + "*")
+		if not targets_id and not names_id:
+			continue
+		if String(e.get("type", "")) != "world" or not bool(e.get("accepted", false)) \
+			or String(e.get("actor", "")) != route or String(e.get("target", "")) != manifest_id \
+			or String(e.get("subject", "")) != good or note != expected_note:
+			push_error("CargoManifest arrival history conflicts with deterministic id=%s" % manifest_id)
+			return ""
+		arrival_receipts += 1
+	if arrival_receipts == 1:
+		return manifest_id
+	if arrival_receipts > 1:
+		push_error("CargoManifest arrival history duplicates deterministic id=%s" % manifest_id)
+		return ""
+	if cargo_manifests.has(manifest_id):
+		push_error("CargoManifest live record lacks arrival receipt id=%s" % manifest_id)
+		return ""
+	cargo_manifests[manifest_id] = prospective
+	cargo_manifest_order.append(manifest_id)
+	_log_event("world", route, manifest_id, good, true, [], expected_note)
+	return manifest_id
+
+## 只返回【此刻可整单提交】的最早 manifest。首片刻意不拆单：3/4 的价格若拆成四笔 1 件，
+## 每笔整数地板都会变 0，形成免费货；整单也让 cargo_delta == stock_delta 可直接审计。
+func _first_unloadable_manifest(node: String) -> String:
+	for raw_id in cargo_manifest_order:
+		var manifest_id := String(raw_id)
+		if not cargo_manifests.has(manifest_id):
+			continue
+		var rec: Dictionary = cargo_manifests[manifest_id]
+		var authored_error := _manifest_authority_error(manifest_id, rec, logistics, day, event_log)
+		if authored_error != "":
+			if _manifest_targets_node(rec, node):
+				return ""
+			continue
+		var qty := int(rec.get("remaining_qty", 0))
+		if String(rec.get("state", "")) != "ready" or String(rec.get("node", "")) != node or qty <= 0:
+			continue
+		if _import_fit(String(rec.get("good", "")), qty) != qty:
+			continue
+		var pnum := int(rec.get("price_per", 0))
+		var pden := int(rec.get("price_den", 1))
+		if _econ_on() and pnum > 0:
+			var cost := qty * pnum / pden if pden > 0 else 0
+			if pden <= 0 or cost <= 0 or town_coin < cost:
+				continue
+		return manifest_id
+	return ""
+
+## 给玩家/HUD/测试的只读港口状态；严格按 manifest arrival order 看最早 ready 单，不把 UI 变成第二权威。
+## state: empty / ready / working / blocked_capacity / blocked_funds / invalid。
+func cargo_status_for_node(node: String, indexed: bool = false) -> Dictionary:
+	var out := {"state": "empty", "node": node, "manifest_id": "", "good": "", "qty": 0, "cost": 0,
+		"worker_id": "", "ready_count": 0, "ready_qty": 0, "invalid_count": 0, "error": ""}
+	var first: Dictionary = {}
+	for raw_id in cargo_manifest_order:
+		var manifest_id := String(raw_id)
+		if not cargo_manifests.has(manifest_id):
+			continue
+		var rec: Dictionary = cargo_manifests[manifest_id]
+		var authored_error := _manifest_authority_error(manifest_id, rec, logistics, day, event_log, indexed)
+		if authored_error != "":
+			if _manifest_targets_node(rec, node):
+				out.merge({"state": "invalid", "invalid_count": 1, "error": authored_error}, true)
+				return out
+			continue
+		var qty := int(rec.get("remaining_qty", 0))
+		if String(rec.get("state", "")) != "ready" or String(rec.get("node", "")) != node or qty <= 0:
+			continue
+		out["ready_count"] = int(out["ready_count"]) + 1
+		out["ready_qty"] = int(out["ready_qty"]) + qty
+		if first.is_empty():
+			first = rec
+	if first.is_empty():
+		return out
+	var manifest_id := String(first.get("id", ""))
+	var qty := int(first.get("remaining_qty", 0))
+	var good := String(first.get("good", ""))
+	var pnum := int(first.get("price_per", 0))
+	var pden := int(first.get("price_den", 1))
+	var cost := qty * pnum / pden if _econ_on() and pnum > 0 and pden > 0 else 0
+	out.merge({"state": "ready", "manifest_id": manifest_id, "good": good, "qty": qty,
+		"cost": cost, "worker_id": _holder_of_title("码头工")}, true)
+	if _import_fit(good, qty) != qty:
+		out["state"] = "blocked_capacity"
+	elif _econ_on() and pnum > 0 and (pden <= 0 or cost <= 0 or town_coin < cost):
+		out["state"] = "blocked_funds"
+	else:
+		for ag in agents:
+			var opt = ag.get("option")
+			if opt is Dictionary and String(opt.get("manifest_id", "")) == manifest_id and bool(opt.get("manifest_authorized", false)):
+				out["state"] = "working"
+				out["worker_id"] = String(ag.get("id", ""))
+				break
+	return out
+
+## P1-v：东海货运观测室的【唯一只读投影】。当前泊位仍完全复用
+## cargo_status_for_node() 的 authored-lane 判决；这里不生成候选、不签发 option、
+## 不改库存/钱/manifest/event，也不抽 RNG。View 与柜台点击共同消费这一份结果，
+## 避免“墙上账簿”和“玩家提示”各自重抄一套货运真相。
+func warehouse_observatory_projection(node: String = "port_dock") -> Dictionary:
+	observatory_projection_event_reads = 0
+	observatory_projection_query_ops = 0
+	observatory_projection_query_budget_failed = false
+	var stocks := {}
+	for good in ["柴薪", "豆子", "口粮"]:
+		var cfg: Dictionary = (production.get("goods", {}) as Dictionary).get(good, {})
+		stocks[good] = {"qty": _stock_of(good), "cap": maxi(1, int(cfg.get("cap", 1)))}
+	return {
+		"mode": "read_only", "node": node,
+		"cargo": cargo_status_for_node(node, true),
+		"receipt": _latest_cargo_unload_receipt(node),
+		"stocks": stocks,
+	}
+
+## interiors.json 的观测柜台是产品交互 authored seam；它没有 advertises，故不会
+## 成为 NPC 经济候选。Main 只问这一格在哪里，不自行抄 [6,1]。
+func warehouse_observatory_console_cell() -> Vector2i:
+	var floor_data = (_interiors_data.get("port_warehouse", {}) as Dictionary).get("1f", {})
+	if not (floor_data is Dictionary):
+		return Vector2i(-1, -1)
+	for raw in (floor_data as Dictionary).get("furniture", []):
+		if not (raw is Dictionary) or not bool((raw as Dictionary).get("cargo_observatory", false)):
+			continue
+		var pos: Array = (raw as Dictionary).get("pos", [])
+		if pos.size() == 2:
+			return Vector2i(int(pos[0]), int(pos[1]))
+	return Vector2i(-1, -1)
+
+## 最近一笔卸货历史只在 exact append-only tx chain 可证明时才向玩家暴露。
+## 最新匹配行若坏，返回 invalid 并清空货名/数量/工人；绝不跳过坏账去展示更老的“好消息”。
+## 观测室是近况视图；最新回执与 tx/arrival 集合来自 append/load 维护的派生索引。
+## 账本仍是唯一权威：索引与 event_log 不一致就 invalid，不回退到历史扫描。
+const OBSERVATORY_RECEIPT_SCAN_LIMIT := 1024 # compatibility constant; no redraw scan uses it
+func _latest_cargo_unload_receipt(node: String) -> Dictionary:
+	var none := {"state": "none", "node": node, "manifest_id": "", "good": "", "qty": 0,
+		"worker_id": "", "txid": "", "event_id": -1, "error": ""}
+	_projection_query_op()
+	if not _cargo_index_valid(): return _invalid_cargo_receipt(node, "cargo event index stale or ledger malformed")
+	var receipts: Dictionary = _cargo_event_index.get("receipts", {})
+	_projection_query_op()
+	if receipts.has(node):
+		return _cargo_unload_receipt_at(int(receipts[node]), node)
+	return none
+
+func _invalid_cargo_receipt(node: String, error: String) -> Dictionary:
+	return {"state": "invalid", "node": node, "manifest_id": "", "good": "", "qty": 0,
+		"worker_id": "", "txid": "", "event_id": -1, "error": error}
+
+func _cargo_unload_receipt_at(index: int, node: String) -> Dictionary:
+	_projection_query_op()
+	if not _cargo_index_valid():
+		return _invalid_cargo_receipt(node, "cargo event index stale or ledger malformed")
+	if index < 0 or index >= event_log.size() or not (event_log[index] is Dictionary):
+		return _invalid_cargo_receipt(node, "receipt index invalid")
+	_projection_query_op(2)
+	var receipt: Dictionary = event_log[index]
+	var note := String(receipt.get("note", ""))
+	var prefix := "cargo_unload:"
+	var star := note.rfind("*")
+	if star <= prefix.length() or star >= note.length() - 1:
+		return _invalid_cargo_receipt(node, "receipt note malformed")
+	var manifest_id := note.substr(prefix.length(), star - prefix.length())
+	var qty_text := note.substr(star + 1)
+	if manifest_id == "" or not qty_text.is_valid_int() or int(qty_text) <= 0:
+		return _invalid_cargo_receipt(node, "receipt identity/qty invalid")
+	var qty := int(qty_text)
+	var txid := "cargo_unload/" + manifest_id
+	if String(receipt.get("txid", "")) != txid or not bool(receipt.get("accepted", false)) \
+			or not _unload_worker_assigned(String(receipt.get("actor", ""))) or String(receipt.get("subject", "")) == "":
+		return _invalid_cargo_receipt(node, "receipt world row invalid")
+	var tx_rows: Array = []
+	var tx_indices: Array = (_cargo_event_index.get("tx", {}) as Dictionary).get(txid, [])
+	for raw_i in tx_indices:
+		_projection_query_op(2)
+		var i := int(raw_i)
+		if i < 0 or i >= event_log.size(): return _invalid_cargo_receipt(node, "receipt tx index invalid")
+		var tx_row: Dictionary = event_log[i] # named production tx-row dereference
+		tx_rows.append(tx_row)
+		_projection_query_op()
+		if observatory_projection_test_extra_tx_row_deref:
+			# Test-only mutation at this same production dereference; inert by default.
+			observatory_projection_test_extra_tx_row_deref = false
+			var ignored_tx_row: Dictionary = event_log[i]
+			_projection_query_op()
+	if tx_rows.size() not in [2, 3] or tx_rows[tx_rows.size() - 1] != receipt:
+		return _invalid_cargo_receipt(node, "receipt tx exact-set invalid")
+	for i in range(1, tx_rows.size()):
+		_projection_query_op(2)
+		if int((tx_rows[i] as Dictionary).get("id", -2)) != int((tx_rows[i - 1] as Dictionary).get("id", -1)) + 1:
+			return _invalid_cargo_receipt(node, "receipt tx ids not adjacent")
+	var paid := tx_rows.size() == 3
+	var stock: Dictionary = tx_rows[1 if paid else 0]
+	var good := String(receipt.get("subject", ""))
+	var historical := _historical_manifest_from_receipt(manifest_id, node, good, qty, true)
+	if historical.is_empty():
+		return _invalid_cargo_receipt(node, "receipt lacks authored manifest/arrival proof")
+	var expected_paid := _econ_on() and int(historical.get("price_per", 0)) > 0
+	if paid != expected_paid:
+		return _invalid_cargo_receipt(node, "receipt paid/free shape diverges from authored lane")
+	if not bool(stock.get("accepted", false)) or String(stock.get("type", "")) != "import" \
+			or String(stock.get("actor", "")) != node or String(stock.get("target", "")) != "town" \
+			or String(stock.get("subject", "")) != good or String(stock.get("note", "")) != "import*%d" % qty:
+		return _invalid_cargo_receipt(node, "receipt stock row invalid")
+	if paid:
+		var pay: Dictionary = tx_rows[0]
+		if not bool(pay.get("accepted", false)) or String(pay.get("type", "")) != "pay" \
+				or String(pay.get("actor", "")) != "town" or String(pay.get("target", "")) != "external" \
+				or String(pay.get("subject", "")) != "" or String(pay.get("note", "")) != "import*%d" % qty:
+			return _invalid_cargo_receipt(node, "receipt pay row invalid")
+	return {"state": "complete", "node": node, "manifest_id": manifest_id, "good": good, "qty": qty,
+		"worker_id": String(receipt.get("actor", "")), "txid": txid,
+		"event_id": int(receipt.get("id", -1)), "error": ""}
+
+## Retired manifests no longer have a live record. Reconstruct the one possible complete record
+## from canonical id + authored lane, then reuse the same lane/arrival validator as live cargo.
+func _historical_manifest_from_receipt(manifest_id: String, node: String, good: String, qty: int, indexed: bool = false) -> Dictionary:
+	var lanes = logistics.get("import_lanes", [])
+	if not (lanes is Array):
+		return {}
+	for i in (lanes as Array).size():
+		_projection_query_op()
+		if not ((lanes as Array)[i] is Dictionary):
+			continue
+		var lane: Dictionary = (lanes as Array)[i]
+		var route := String(lane.get("route_id", ""))
+		var prefix := "manifest_%s_" % route
+		var suffix := "_%d" % i
+		if not manifest_id.begins_with(prefix) or not manifest_id.ends_with(suffix):
+			continue
+		var day_text := manifest_id.substr(prefix.length(), manifest_id.length() - prefix.length() - suffix.length())
+		if not day_text.is_valid_int():
+			continue
+		var rec := {
+			"id": manifest_id, "route_id": route, "lane_index": i,
+			"node": node, "good": good, "arrived_day": int(day_text),
+			"initial_qty": qty, "remaining_qty": 0,
+			"price_per": int(lane.get("price_per", 0)), "price_den": int(lane.get("price_den", 1)),
+			"state": "complete",
+		}
+		if _manifest_authority_error(manifest_id, rec, logistics, day, event_log, indexed) == "":
+			return rec
+	return {}
+
+## P1-h：complete 是已由 append-only tx receipt 证明的历史，不再驱动候选/船/UI/未来决策。
+## 退休只碰 live queue；event_log 保留 arrival+pay+stock+unload 的完整审计链。
+func _retire_completed_manifest(manifest_id: String) -> bool:
+	if not cargo_manifests.has(manifest_id):
+		return false
+	var rec: Dictionary = cargo_manifests[manifest_id]
+	if String(rec.get("state", "")) != "complete" or int(rec.get("remaining_qty", -1)) != 0:
+		return false
+	var at := cargo_manifest_order.find(manifest_id)
+	if at < 0:
+		return false
+	cargo_manifests.erase(manifest_id)
+	cargo_manifest_order.remove_at(at)
+	return true
+
+func _rollback_manifest_unload(snapshot: Dictionary, manifest_id: String, good: String) -> void:
+	town_coin = int(snapshot["town_coin"])
+	external_coin = int(snapshot["external_coin"])
+	if bool(snapshot["stock_had"]):
+		town_stock[good] = int(snapshot["stock_qty"])
+	else:
+		town_stock.erase(good)
+	event_log.resize(int(snapshot["event_size"]))
+	_rebuild_cargo_event_index()
+	_next_event_id = int(snapshot["next_event_id"])
+	event_digest = int(snapshot["event_digest"])
+	cargo_manifests[manifest_id] = (snapshot["manifest"] as Dictionary).duplicate(true)
+	if cargo_manifest_order.find(manifest_id) < 0:
+		cargo_manifest_order.insert(int(snapshot["manifest_index"]), manifest_id)
+
+## P1-g 钱货事务：完整 preflight 后以同一 txid 顺序落 pay→stock→cargo receipt；任一步异常/注入故障都精确回滚。
+## failpoint 仅是 focused test 的进程内参数（after_pay/after_stock/after_manifest/after_receipt/after_retire），不入存档/产品状态。
+## 工资仍是 commit 成功后的 best-effort 独立事务，不冒充进口钱货原子性的一部分。
+func _commit_manifest_unload(manifest_id: String, worker_id: String, node: String, authorized: bool = false, failpoint: String = "") -> int:
+	if manifest_id == "" or not cargo_manifests.has(manifest_id) or not _unload_worker_assigned(worker_id):
+		return 0
+	# 直接调用仍要求在班；只有经 _apply_object 签发并随 option 延续的授权可跨班次完成。
+	if not authorized and not _unload_worker_eligible(worker_id):
+		return 0
+	var rec: Dictionary = cargo_manifests[manifest_id]
+	var manifest_index := cargo_manifest_order.find(manifest_id)
+	if manifest_index < 0:
+		return 0
+	if _manifest_authority_error(manifest_id, rec, logistics, day, event_log) != "":
+		return 0
+	var qty := int(rec.get("remaining_qty", 0))
+	var good := String(rec.get("good", ""))
+	if String(rec.get("state", "")) != "ready" or String(rec.get("node", "")) != node or qty <= 0:
+		return 0
+	if _import_fit(good, qty) != qty:
+		return 0
+	var pnum := int(rec.get("price_per", 0))
+	var pden := int(rec.get("price_den", 1))
+	var cost := 0
+	if _econ_on() and pnum > 0:
+		if pden <= 0:
+			return 0
+		cost = qty * pnum / pden
+		if cost <= 0 or town_coin < cost:
+			return 0
+	var snapshot := {
+		"town_coin": town_coin, "external_coin": external_coin,
+		"stock_had": town_stock.has(good), "stock_qty": _stock_of(good),
+		"event_size": event_log.size(), "next_event_id": _next_event_id, "event_digest": event_digest,
+		"manifest": rec.duplicate(true), "manifest_index": manifest_index,
+	}
+	var txid := "cargo_unload/" + manifest_id
+	if cost > 0:
+		if not transfer("town", "external", cost, "import*%d" % qty, [], txid):
+			return 0
+	if failpoint == "after_pay":
+		_rollback_manifest_unload(snapshot, manifest_id, good)
+		return 0
+	var applied := _stock_move(good, qty, "import", node, "import", [], txid)
+	if applied != qty:
+		_rollback_manifest_unload(snapshot, manifest_id, good)
+		push_error("CargoManifest 钱货脱钩：id=%s qty=%d applied=%d" % [manifest_id, qty, applied])
+		return 0
+	if failpoint == "after_stock":
+		_rollback_manifest_unload(snapshot, manifest_id, good)
+		return 0
+	rec["remaining_qty"] = 0
+	rec["state"] = "complete"
+	if failpoint == "after_manifest":
+		_rollback_manifest_unload(snapshot, manifest_id, good)
+		return 0
+	_log_event("world", worker_id, node, good, true, [], "cargo_unload:%s*%d" % [manifest_id, qty], txid)
+	if failpoint == "after_receipt":
+		_rollback_manifest_unload(snapshot, manifest_id, good)
+		return 0
+	if not _retire_completed_manifest(manifest_id):
+		_rollback_manifest_unload(snapshot, manifest_id, good)
+		push_error("CargoManifest 完成单退休失败：id=%s" % manifest_id)
+		return 0
+	if failpoint == "after_retire":
+		_rollback_manifest_unload(snapshot, manifest_id, good)
+		return 0
+	return qty
+
+## E2a：这批 import【实际能到多少】(撞 cap 少收) —— 纯读、不落账、不写事件，供选项 A「先付后到」先定价。
+## 与 _stock_move 的 +delta 分支同一条 cap 逻辑（min(batch, cap−cur)、非负）⇒ 保证 fit == _stock_move 随后返回的 applied。
+func _import_fit(good: String, batch: int) -> int:
+	if batch <= 0 or not (production.get("goods", {}) as Dictionary).has(good):
+		return 0
+	var cap := int((production["goods"] as Dictionary)[good].get("cap", 999999))
+	return mini(batch, maxi(0, cap - _stock_of(good)))
+
+## ── 车道 E-export 首片（docs/157/158，§0.8=SOUND_WITH_FIXES）：货出→钱进 ─────────────────────
+## export 日结：把镇里【过剩】的一种货出港换钱。import 的镜像、方向相反，挂【同一日界】。
+##   P1-b 后 `_logi_import` 当晚只 arrival cargo；export 只能抽此前真实 unload commit 已贷入的 external。day%every_days==0 纯 f(day)、
+##   一天一次非 per-tick、无 randi/randf/Time/浮点 ⇒ 逐字节可回放。
+##
+## ★F1（命门·符号）：sold_qty 是【显式正数】(_export_fit 干算)，NOT _stock_move 返回的有符号 applied——
+##   −delta 臂返回负 applied，若照 docs/157 §二字面 revenue=applied×price/den 会得【负值】⇒ transfer(amt<=0:false)
+##   静默拒收 ⇒ 货已出、钱没收(免费流失)且【全绿】(#34 钱没变/#38 库存−N 正常/#45 export 项从事件统计=0)。
+##   ⇒ 用正 sold_qty，revenue=sold_qty×price/den，钱货在下面的 _export_commit exact wrapper 里同步提交。
+## ★F7（硬 #46 贸易原子性）：_export_commit 保证一次成功 export == 恰一条 external→town pay(export) +
+##   恰一条同 sold_qty 的 export stock 事件；Invariants #46 从 event_log 独立校验这个绑定(严格 pay,stock
+##   交替 + 逐对 revenue==sold_qty×price/den + 货/港合法)——收 N 不发 / 发不收 / 收 N 发 k 当场红。
+## ★选项 A′【先收钱后出货】：external 付不起(external_coin<revenue)当天【不出货】(镜像 import 的 town 付不起不到货)。
+## ★P1-d【规模出口 provider】：N=12 逐字保留旧 lane；N>12 只放开显式 scale_floor=true 的 lane，
+##   并按实际 production pool 比例向上取整保护线。batch/cadence/price 仍是固定物理航线合同，不随人口放大。
+##   N<base 与未 opt-in lane 继续 fail-closed，避免把本地库存保护或船舶吞吐顺手扩语义。
+## ★off 门 2 轴：轴①缺 logistics.json ⇒ _logi_on()==false ⇒ 本函数根本不被 _nightly 调用；
+##   轴② economy off(缺 economy.json→_econ_on false) 或 export lane 无 price_per ⇒ export 【惰性】(NOT 免费出港——
+##   与 import 的 economy-off 免费到货【蓄意不对称】，docs/157 §六：无补偿的 stock 损耗无 E1 先例)。
+func _logi_export() -> void:
+	# 低于 base 的旧语义仍为整条惰性；大于 base 时由 lane 显式 opt-in。
+	if prod_pool_den <= 0 or prod_pool_num < prod_pool_den:
+		return
+	for lane in _as_arr(logistics.get("export_lanes", [])):
+		if not (lane is Dictionary):
+			continue
+		var ld: Dictionary = lane
+		var every := int(ld.get("every_days", 0))
+		if every <= 0 or day % every != 0:
+			continue
+		var batch := int(ld.get("batch", 0))
+		if batch <= 0:
+			continue
+		var good := String(ld.get("good", ""))
+		var node := String(ld.get("node", ""))
+		var floor := int(ld.get("floor", 0))
+		if prod_pool_num > prod_pool_den:
+			var scale_flag = ld.get("scale_floor", false)
+			if typeof(scale_flag) != TYPE_BOOL or not bool(scale_flag):
+				continue
+			floor = _scaled_export_floor(floor)
+		var pnum := int(ld.get("price_per", 0))          # 分子：每 price_den 件收 pnum 钱
+		var pden := int(ld.get("price_den", 1))          # 分母：缺省 1 ⇒ pnum 即每件钱数
+		# off 门轴②：economy off 或 lane 无合法 price_per ⇒ export 惰性（不免费出港）。
+		if not _econ_on() or pnum <= 0 or pden <= 0:
+			continue
+		# F1：显式正数 sold_qty = min(batch, 地板以上余量, external 付得起件数)。全整数、纯读、不落账。
+		var sold_qty := _export_fit(good, batch, floor, pnum, pden)
+		if sold_qty <= 0:
+			continue                                     # 无余量 / external 付不起 ⇒ 当天不出货（选项 A′）
+		_export_commit(good, sold_qty, node, pnum, pden)
+
+## P1-d：保持 authored floor/cap 比例的纯整数 ceil；N=12 精确返回原值。
+func _scaled_export_floor(floor: int) -> int:
+	if floor <= 0 or prod_pool_den <= 0:
+		return maxi(0, floor)
+	return (floor * prod_pool_num + prod_pool_den - 1) / prod_pool_den
+
+## E-export：这批【实际能出多少】(显式正数) —— 纯读、不落账、不写事件，供选项 A′「先收钱后出货」先定价。
+## 三上界（全整数 mini/maxi）：
+##   ① lane_batch；② surplus_above_floor = max(0, stock − floor)（floor 保本地消费，只出地板以上余量）；
+##   ③ affordable_by_external = external_coin × price_den / price_per（external 付得起的件数，闭环上界）。
+## ⇒ 保证随后 _stock_move(good,−sold_qty) 返回的 |applied| == sold_qty（stock≥sold_qty，−臂只扣到 0 不触发）。
+func _export_fit(good: String, batch: int, floor: int, price_per: int, price_den: int) -> int:
+	if batch <= 0 or price_per <= 0 or price_den <= 0:
+		return 0
+	if not (production.get("goods", {}) as Dictionary).has(good):
+		return 0
+	var surplus := maxi(0, _stock_of(good) - maxi(0, floor))
+	var affordable := external_coin * price_den / price_per   # 整数地板：external 付得起几件
+	return mini(mini(batch, surplus), affordable)
+
+## E-export exact wrapper（F1/F7 命门）：把【收钱 + 出货】收进一个【无 await/无回调】的同步提交。
+##   合同：sold_qty>0（调用方已保证）、revenue=sold_qty×price_per/price_den、stock_delta==−sold_qty、
+##   一次成功 == 恰一条 external→town pay(export) + 恰一条同 sold_qty 的 export stock 事件（硬 #46 校验）。
+## 顺序 = 选项 A′【先收钱后出货】：transfer 成功(external 付得起)⇒ 再 _stock_move 出货；transfer 失败⇒ 不出货。
+##   （sold_qty 已被 _export_fit 的 affordable 上界夹住 ⇒ external_coin≥revenue ⇒ transfer 必成；这里再核一次守内聚。）
+func _export_commit(good: String, sold_qty: int, node: String, price_per: int, price_den: int) -> void:
+	if sold_qty <= 0:
+		return
+	var revenue := sold_qty * price_per / price_den          # 整数地板，与 #45/#46 校验同口径
+	if revenue <= 0:
+		return                                               # 定价过低地板到 0 ⇒ 不出货（不做无偿出港）
+	# 先收钱：external→town，reason 编码本笔 sold_qty("export*<qty>") ⇒ 硬 #46 可逐对核 pay.qty==stock.qty
+	#   （transfer 把 reason 原样写进 pay 事件 note；note 不进 event_digest，故不额外移金标）。
+	#   付不起(external_coin<revenue)⇒ transfer 返 false ⇒ 不出货（选项 A′，无货白流失）。
+	if not transfer("external", "town", revenue, "export*%d" % sold_qty):
+		return
+	# 收到钱 ⇒ 出恰好 sold_qty 件货（−臂，撞 0 少扣；sold_qty≤stock 已由 _export_fit 保证 ⇒ |applied|==sold_qty）。
+	var applied := _stock_move(good, -sold_qty, "export", node, "export")
+	# 内聚守卫（F7 运行时侧）：|applied| 必 == sold_qty，否则钱货脱钩。结构上不可达（sold_qty≤surplus≤stock），
+	#   万一被未来改动破坏，push_error 留痕（不改判据——判据是 event_log 侧的硬 #46）。
+	if absi(applied) != sold_qty:
+		push_error("E-export 钱货脱钩：sold_qty=%d applied=%d good=%s" % [sold_qty, applied, good])
 
 ## 确定性 [0,1) 哈希（字符串→稳定小数；天生立场用）。
 func _hash01(s: String) -> float:
@@ -2680,7 +5798,18 @@ func _judge_actor(observer: Dictionary, actor_id: String, is_help: bool, recipie
 	_adjust_standing(observer, actor_id, d)   # 经跨机制 per-tick 守卫
 
 ## actor 已知、但 target 还不知道的 belief（用于 gossip；体现知识边界）。
+##
+## ★O1(2026-07-31)：旧版返回【插入序最早】的那条未传 belief，而这一条选择规则本身就是谣言通道的主要死因。
+##   实测（探针 o1_probe，30 天）：`_observe_wealth` 每夜给每人生成一批 `W:<id>:rich/broke`（via=seen），
+##   数量随 N 平方涨；它们从第一夜起就排在任何【转述来的】传闻前面 ⇒ 每对 (actor,target) 只有一个 gossip 槽，
+##   而那个槽被贫富闲话永久占住。N=60 seed1：gossip 候选的 subject 里 R1 只占 1519/72617 = **2.1%**，
+##   W:* 占 93.2%。⇒ 就算把 gossip 的分抬到必胜，传出去的 98% 也是"npc_31 手头紧"。
+##   ⇒ `gossip_news_first != 0` 时：**转述来的传闻(via != "seen") 优先于亲眼所见的闲话**，同类内仍按插入序。
+##   返回值为 "" 的条件与旧版**完全相同**（只改选哪一条，不改有没有）⇒ 候选【存在性】逐字节不变。
+##   缺键/为 0 → 走 return-first 老路 → 逐字节不变（off 门）。
 func _unspread_belief(actor: Dictionary, target: Dictionary) -> String:
+	var news_first := _w("gossip_news_first", 0.0) != 0.0
+	var fallback := ""
 	for cid in actor["beliefs"]:
 		var b: Dictionary = actor["beliefs"][cid]
 		if bool(b.get("secret", false)):
@@ -2690,19 +5819,33 @@ func _unspread_belief(actor: Dictionary, target: Dictionary) -> String:
 		if String(b["subject"]) == String(target["id"]):
 			continue                                         # 不当面议论本人
 		if not target["beliefs"].has(cid):
-			return cid
-	return ""
+			if not news_first:
+				return cid
+			if String(b.get("via", "")) != "seen":
+				return cid                                   # 别人【转述给我】的才是消息；亲眼所见的是闲话
+			if fallback == "":
+				fallback = cid                               # 没有消息可讲时，闲话照旧（与旧版同一条）
+	return fallback
 
-func _log_event(type: String, actor_id: String, target_id: String, subject: String, accepted: bool, witnesses: Array, note: String = "") -> Dictionary:
+func _log_event(type: String, actor_id: String, target_id: String, subject: String, accepted: bool, witnesses: Array, note: String = "", txid: String = "") -> Dictionary:
 	var wids: Array = []
 	for w in witnesses:
 		wids.append(w["id"])
 	var ev := {"id": _next_event_id, "tick": tick_no, "type": type, "actor": actor_id,
 		"target": target_id, "subject": subject, "accepted": accepted, "witnesses": wids, "note": note}
+	if txid != "":
+		ev["txid"] = txid
 	_next_event_id += 1
 	event_log.append(ev)
+	if int(_cargo_event_index.get("event_size", -1)) == event_log.size() - 1:
+		_index_cargo_event(ev, event_log.size() - 1)
+		_cargo_event_index["event_size"] = event_log.size()
+	else:
+		_rebuild_cargo_event_index()
 	# L4 增量滚动摘要：每事件 O(1) 折叠 → 不必末尾遍历整条 event_log 即得全程确定性见证（大规模/长跑友好）。
 	var es := "%d:%s:%s:%s:%d:%s:%d" % [int(ev["id"]), type, actor_id, target_id, int(accepted), subject, tick_no]
+	if txid != "":
+		es += ":tx:" + txid
 	# 折进来的每事件哈希用【项目自有】fnv1a32，不用引擎的 String.hash()——否则 Godot 换版本就能改写金标。
 	event_digest = ((event_digest * 1099511628211) ^ fnv1a32(es)) & 0x7FFFFFFFFFFFFFFF
 	return ev
@@ -2784,6 +5927,19 @@ func _move_agent(ag: Dictionary, newpos: Vector2i) -> void:
 func _same_plane(a: Dictionary, b: Dictionary) -> bool:
 	return String(a.get("space", "town")) == String(b.get("space", "town")) \
 		and String(a.get("floor", "outdoor")) == String(b.get("floor", "outdoor"))
+
+## P1-t：社交事务唯一的 reach 判据。坐标与 area 都是 plane-local；先证明同 plane，再允许
+## 「同一非空 area」或「曼哈顿距离≤2」。NPC 候选仍由 _nearby_agents 限在同 area，故默认
+## 仿真候选集逐字节不变；额外的贴身跨 area 正臂只服务既有 player_act 合同。
+func _socially_reachable(a: Dictionary, b: Dictionary) -> bool:
+	if not _same_plane(a, b):
+		return false
+	var a_area := String(a.get("area", ""))
+	if a_area != "" and a_area == String(b.get("area", "")):
+		return true
+	var ap: Vector2i = a.get("pos", Vector2i.ZERO)
+	var bp: Vector2i = b.get("pos", Vector2i.ZERO)
+	return absi(ap.x - bp.x) + absi(ap.y - bp.y) <= 2
 
 ## 同区其他 agent（用缓存 area，去掉 _area_at 的 areas 内循环；遍历仍按 agents 固定序 → 字节一致）。
 ## P3：先按平面(space,floor)门，再按 area——楼上楼下/店内店外互不"在场"。town 全同平面 → 与旧版一致。
@@ -2878,6 +6034,10 @@ func _build_nav() -> void:
 	var H := int(world.get("height", GRID.y))
 	for b in world.get("blockers", []):            # 64×48 显式阻挡层(墙/水/树)，缺则空
 		_blocked[int(b[1]) * W + int(b[0])] = true
+	for raw_cell in _solid_prop_cells_in_world(world): # 可见实体道具与 View 共读 map.json authored footprint
+		var cell: Vector2i = raw_cell
+		if cell.x >= 0 and cell.y >= 0 and cell.x < W and cell.y < H:
+			_blocked[cell.y * W + cell.x] = true
 	for oid in world.get("objects", {}):
 		if String(oid).begins_with("fest_") or String(oid).begins_with("civic_"):
 			continue
@@ -2893,17 +6053,17 @@ func _build_nav() -> void:
 ## (楼梯/装饰 slot 可踩、portal 格必放行)。纯 f(数据)，无 RNG/Time。缺 spaces/interiors → 无非-town 网。
 func _build_interior_grids() -> void:
 	const WALKABLE_SLOTS := ["stairs", "rug", "window"]
-	for space in _spaces:
-		if String(space) == "town" or not (_spaces[space] is Dictionary):
+	for space in _authored_spaces:
+		if String(space) == "town" or not (_authored_spaces[space] is Dictionary):
 			continue
-		var b: Array = _as_arr((_spaces[space] as Dictionary).get("bounds", []))
+		var b: Array = _as_arr((_authored_spaces[space] as Dictionary).get("bounds", []))
 		if b.size() < 4:
 			continue
 		var w := int(b[2]); var h := int(b[3])
-		for floor in _as_arr((_spaces[space] as Dictionary).get("floors", [])):
+		for floor in _as_arr((_authored_spaces[space] as Dictionary).get("floors", [])):
 			var fl := String(floor)
 			var portal_cells := {}                 # portal 端点落在本层 → 必可走(门缺口+楼梯)
-			for p in _portals:
+			for p in _authored_portals:
 				for side in ["from", "to"]:
 					var e: Dictionary = p.get(side, {})
 					if String(e.get("space", "")) == String(space) and String(e.get("floor", "")) == fl:
@@ -2917,7 +6077,7 @@ func _build_interior_grids() -> void:
 						var idx := y * w + x
 						if not portal_cells.has(idx):
 							blocked[idx] = true
-			var content: Dictionary = (_interiors_data.get(space, {}) as Dictionary).get(fl, {}) if _interiors_data.get(space, {}) is Dictionary else {}
+			var content: Dictionary = (_authored_interiors_data.get(space, {}) as Dictionary).get(fl, {}) if _authored_interiors_data.get(space, {}) is Dictionary else {}
 			for fu in _as_arr(content.get("furniture", [])):
 				if not (fu is Dictionary) or String((fu as Dictionary).get("slot", "")) in WALKABLE_SLOTS:
 					continue
@@ -2948,17 +6108,26 @@ func _v2i(a) -> Vector2i:
 ## ag 缺省(空)=不设访问门(渲染/校验用)；带 ag 走访问门(导航/决策用)。
 func _portals_from(space: String, floor: String, ag: Dictionary = {}) -> Array:
 	var out: Array = []
-	for p in _portals:
+	# Runtime traversal reads only the receiver-owned authored graph.  The saved `_portals`
+	# snapshot may describe a legacy world, but it can never grant access.
+	for p in _authored_portals:
 		var fr: Dictionary = p.get("from", {})
 		var to: Dictionary = p.get("to", {})
-		if String(p.get("access", "public")) == "owner" and not ag.is_empty():
-			var owned := String(fr.get("space", "")) if String(fr.get("space", "")) != "town" else String(to.get("space", ""))
-			if String(ag.get("home_space", "town")) != owned:
+		var access := String(p.get("access", ""))
+		if access != "public" and access != "owner":
+			continue                              # 未知/缺 access 永不默认 public
+		if access == "owner" and not ag.is_empty():
+			var authored_home: Dictionary = _authored_agent_homes.get(String(ag.get("id", "")), {})
+			if String(p.get("owner_space", "")) == "" or String(authored_home.get("space", "")) != String(p.get("owner_space", "")):
 				continue                    # 非主人 → 私有 portal(楼梯)走不了
 		if String(fr.get("space", "")) == space and String(fr.get("floor", "")) == floor:
-			out.append({"from_pos": _v2i(fr.get("pos")), "to_space": String(to.get("space", "")), "to_floor": String(to.get("floor", "")), "to_pos": _v2i(to.get("pos")), "cost": int(p.get("traversal_cost", 1))})
+			out.append({"portal_id": String(p.get("id", "")), "kind": String(p.get("kind", "")), "access": String(p.get("access", "public")),
+				"from_pos": _v2i(fr.get("pos")), "to_space": String(to.get("space", "")), "to_floor": String(to.get("floor", "")),
+				"to_pos": _v2i(to.get("pos")), "cost": int(p.get("traversal_cost", 1))})
 		elif bool(p.get("bidirectional", false)) and String(to.get("space", "")) == space and String(to.get("floor", "")) == floor:
-			out.append({"from_pos": _v2i(to.get("pos")), "to_space": String(fr.get("space", "")), "to_floor": String(fr.get("floor", "")), "to_pos": _v2i(fr.get("pos")), "cost": int(p.get("traversal_cost", 1))})
+			out.append({"portal_id": String(p.get("id", "")), "kind": String(p.get("kind", "")), "access": String(p.get("access", "public")),
+				"from_pos": _v2i(to.get("pos")), "to_space": String(fr.get("space", "")), "to_floor": String(fr.get("floor", "")),
+				"to_pos": _v2i(fr.get("pos")), "cost": int(p.get("traversal_cost", 1))})
 	return out
 
 ## 从 (fromS,fromF) 到 (toS,toF) 的【下一跳 portal】（BFS，FIFO+portal 文件序 → 确定）。同层→{}。不可达→{}。
@@ -2989,12 +6158,102 @@ func _route_next_hop(fromS: String, fromF: String, toS: String, toF: String, ag:
 		cur = String(parent[cur])
 	return via.get(cur, {})
 
-## 跨 portal：原子改 (space,floor,pos) 到对面，刷新平面感知缓存，清该 agent 路径缓存。整数格、无 RNG。
-func _traverse_portal(ag: Dictionary, hop: Dictionary) -> void:
-	ag["space"] = String(hop["to_space"])
-	ag["floor"] = String(hop["to_floor"])
-	_move_agent(ag, hop["to_pos"])                  # 更新 pos + _area_key 平面感知 area/room
-	_path_cache.erase(String(ag["id"]))
+func _has_exact_nav_plane(space: String, floor: String) -> bool:
+	return _nav_grids.has(space) and _nav_grids[space] is Dictionary \
+		and (_nav_grids[space] as Dictionary).has(floor) and (_nav_grids[space] as Dictionary)[floor] is Dictionary
+
+## Public player entry: the projection may emit only this typed intent.  Sim re-resolves
+## the canonical edge and keeps the transaction/commit point below as the sole authority.
+func player_portal_intent(intent: Dictionary) -> Dictionary:
+	var payload := {"source_space": intent.get("source_space"), "source_floor": intent.get("source_floor"),
+		"portal_pos": intent.get("portal_pos")}
+	var trace_error := _player_trace_payload_error("portal", payload)
+	if trace_error != "":
+		return _player_portal_intent_untraced(intent)
+	trace_error = _player_trace_preflight("portal", payload)
+	if trace_error != "":
+		player_trace_last_error = trace_error
+		return _portal_denied_receipt("trace_refused", String(payload.get("source_space", "")),
+			String(payload.get("source_floor", "")), payload.get("portal_pos", Vector2i.ZERO))
+	var result := _player_portal_intent_untraced(intent)
+	if not _player_trace_commit("portal", payload, _player_trace_receipt(result)):
+		return _portal_denied_receipt("trace_replay_mismatch", String(payload.get("source_space", "")),
+			String(payload.get("source_floor", "")), payload.get("portal_pos", Vector2i.ZERO))
+	return result
+
+func _player_portal_intent_untraced(intent: Dictionary) -> Dictionary:
+	var source_space_value: Variant = intent.get("source_space")
+	var source_floor_value: Variant = intent.get("source_floor")
+	var portal_pos_value: Variant = intent.get("portal_pos")
+	if not (source_space_value is String) or not (source_floor_value is String) or not (portal_pos_value is Vector2i):
+		return _portal_denied_receipt("malformed_intent")
+	var source_space: String = source_space_value
+	var source_floor: String = source_floor_value
+	var portal_pos: Vector2i = portal_pos_value
+	if source_space == "" or source_floor == "":
+		return _portal_denied_receipt("malformed_intent", source_space, source_floor, portal_pos)
+	return _try_traverse_portal("player", source_space, source_floor, portal_pos)
+
+func _portal_denied_receipt(reason: String, source_space := "", source_floor := "", portal_pos := Vector2i.ZERO) -> Dictionary:
+	return {"ok": false, "reason": reason, "portal_id": "", "kind": "", "from_space": source_space,
+		"from_floor": source_floor, "from_pos": portal_pos, "to_space": "", "to_floor": "", "to_pos": Vector2i.ZERO}
+
+## Portal 的唯一执行入口：按权威 agent id 重取 live record，在 apply 前一次性重验
+## source plane/endpoint、agent-aware access、期望目标、目标 floor/nav 与落点可走性。
+## 返回 stable verdict 给 Main/测试；失败不改 agent/path cache、不发 signal，成功才原子改
+## (space,floor,pos,area,room) + 清该 agent path cache + 发一次 agent_changed。整数、无 RNG/Time。
+func _try_traverse_portal(agent_id: String, source_space: String, source_floor: String, portal_pos: Vector2i,
+		expected_to_space := "", expected_to_floor := "") -> Dictionary:
+	var denied := _portal_denied_receipt("", source_space, source_floor, portal_pos)
+	if agent_id == "" or not _agent_by_id.has(agent_id):
+		denied["reason"] = "unknown_agent"
+		return denied
+	var ag: Dictionary = _agent_by_id[agent_id]
+	if String(ag.get("space", "town")) != source_space or String(ag.get("floor", "outdoor")) != source_floor:
+		denied["reason"] = "source_plane_mismatch"
+		return denied
+	var agent_pos: Vector2i = ag.get("pos", Vector2i(-99, -99))
+	var source_distance := absi(agent_pos.x - portal_pos.x) + absi(agent_pos.y - portal_pos.y)
+	if (agent_id == "player" and source_distance > 1) or (agent_id != "player" and source_distance != 0):
+		denied["reason"] = "source_not_adjacent"
+		return denied
+	if not _has_exact_nav_plane(source_space, source_floor) or not _cell_walkable(_nav_grids[source_space][source_floor], portal_pos):
+		denied["reason"] = "source_endpoint_invalid"
+		return denied
+	var matches: Array = []
+	for hop in _portals_from(source_space, source_floor, ag):
+		if hop.get("from_pos", Vector2i(-99, -99)) != portal_pos:
+			continue
+		if expected_to_space != "" and String(hop.get("to_space", "")) != expected_to_space:
+			continue
+		if expected_to_floor != "" and String(hop.get("to_floor", "")) != expected_to_floor:
+			continue
+		matches.append(hop)
+	if matches.is_empty():
+		denied["reason"] = "portal_not_permitted"
+		return denied
+	if matches.size() != 1:
+		denied["reason"] = "portal_ambiguous"
+		return denied
+	var hop: Dictionary = matches[0]
+	var to_space := String(hop.get("to_space", ""))
+	var to_floor := String(hop.get("to_floor", ""))
+	var to_pos: Vector2i = hop.get("to_pos", Vector2i(-99, -99))
+	if to_space == "" or to_floor == "" or not _has_exact_nav_plane(to_space, to_floor):
+		denied["reason"] = "destination_plane_invalid"
+		return denied
+	if not _cell_walkable(_nav_grids[to_space][to_floor], to_pos):
+		denied["reason"] = "destination_blocked"
+		return denied
+	# All fallible checks are complete.  The following writes are the one commit point.
+	ag["space"] = to_space
+	ag["floor"] = to_floor
+	_move_agent(ag, to_pos)
+	_path_cache.erase(agent_id)
+	emit_signal("agent_changed", agent_id)
+	return {"ok": true, "reason": "", "portal_id": String(hop.get("portal_id", "")), "kind": String(hop.get("kind", "")),
+		"from_space": source_space, "from_floor": source_floor, "from_pos": portal_pos,
+		"to_space": to_space, "to_floor": to_floor, "to_pos": to_pos}
 
 func _cell_walkable(grid: Dictionary, c: Vector2i) -> bool:
 	var W := int(grid.get("w", 0)); var H := int(grid.get("h", 0))
@@ -3116,6 +6375,12 @@ func _verb(action: String) -> String:
 		"endorse": return "统一了口径"
 		"rally_oust": return "施压"
 		"aid": return "雪中送炭"
+		# Wave E 产出闭环的四类账本事件。写在这里是因为 Main._event_prose 的兜底会来问它
+		#   （Main.gd 归 E2 独占，我不改；给它一个中文说法，屏幕上就不会抖英文 id）。
+		"produce": return "交了一批货进镇上"
+		"consume": return "把今天该用的用掉了"
+		"spoil": return "有存货放坏了"
+		"shortage": return "扑了个空——东西断了"
 		_: return action
 
 # ── S3 辅助函数（逻辑镜像 tools/sim_social_port.mjs）────────────────────────
@@ -3147,8 +6412,26 @@ func _aligned(a: Dictionary, b: Dictionary) -> bool:
 			agree += 1
 	return agree >= FACTION_MIN_AGREE
 
+## ★Q1 接触门（docs/65）：a 与 b 是否**真的打过交道**。只读，不经 `_rel`——`_rel` 缺键时会**建**一条
+## 零关系写进账本，而本函数每夜对 O(N·medoids) 对调用，那会把"评估"变成"写全镇的账本"。
+## 双向都查：今天 familiarity 在 `_commit_social` 与 `_resolve_commitments` 两处都是**对称**自增的，
+## 双向查是免费的保险——万一将来有单侧自增的路径，门不会被半边悄悄打开。
+func _acquainted(a_id: String, b_id: String) -> bool:
+	if faction_fam_th <= 0.0:
+		return true                                    # 门关：逐字节回到 Q1 之前
+	return _fam_of(a_id, b_id) >= faction_fam_th and _fam_of(b_id, a_id) >= faction_fam_th
+
+func _fam_of(a_id: String, b_id: String) -> float:
+	var rs: Dictionary = _agent_by_id[a_id]["relationships"]
+	if not rs.has(b_id):
+		return 0.0
+	return float((rs[b_id] as Dictionary)["familiarity"])
+
 ## 每夜从 attitudes 单遍贪心派生派系（sorted id 固定序，确定性、非显式 join）。
 ## R1(docs/14 §3)：激进 LOD 下只聚类 near 集(O(cap²))；far→factionless(attitudes 冻结、行为上不用派系、near 不引用其派系)。全量配置逐字节不变。
+## ★Q1：对齐**且**打过交道才归堆（见 `faction_fam_th` 抬头）。两个判据的分工是刻意的——
+## `_aligned` 说"我们想的一样"，`_acquainted` 说"而且我们真的照过面"。缺后者时，
+## 一个陌生人的私有心思会隔着整个镇改写你的派系归属（docs/65 §二 实测）。
 func _recompute_factions() -> void:
 	factions.clear()
 	var ids: Array = _nightly_active_ids()   # 全量(全/保守) 或 near 集(激进)，均已定序
@@ -3157,9 +6440,13 @@ func _recompute_factions() -> void:
 	for id in ids:
 		var placed := ""
 		for m in medoids:
-			if _aligned(_agent_by_id[id], _agent_by_id[m]):
+			if _aligned(_agent_by_id[id], _agent_by_id[m]) and _acquainted(id, m):
 				placed = m; break
 		if placed != "":
+			# ★Q1 见证：**独立于上面那个合取式再查一次**。故意不写成 `else` ——
+			# 一个把 `and _acquainted(id, m)` 删掉的回归，正是靠这一行在 day 1 就被抓住。
+			if not _acquainted(id, placed):
+				fac_unmet_placements += 1
 			assign[id] = placed; (factions[placed] as Array).append(id)
 		else:
 			medoids.append(id); assign[id] = id; factions[id] = [id]
@@ -3356,11 +6643,14 @@ func _form_pact(ag: Dictionary, o: Dictionary) -> void:
 ##   —— 手头两个临期约会时，回放按 key 找会取错那一个。补上后四类内建候选各自唯一。
 ## 顺序无关：本函数只读【候选是什么】，不含任何位置/下标信息 → 同时是 tie-break 盐的来源(_cand_salt)。
 func _cand_key(c: Dictionary) -> String:
-	return "%s|%s|%s|%s|%s|%s|%s|%s|%s|%s" % [
+	var base := "%s|%s|%s|%s|%s|%s|%s|%s|%s|%s" % [
 		str(c.get("kind", "object")), str(c.get("action", "")), str(c.get("partner", "")),
 		str(c.get("target", "")), str(c.get("subject", "")), str(c.get("need", "")),
 		str(c.get("area", "")), str(c.get("commit", "")),
 		str(c.get("amount", "")), str(c.get("dur_total", ""))]
+	if c.has("manifest_node") or c.has("manifest_id"):
+		return base + "|cargo|%s|%s" % [str(c.get("manifest_node", "")), str(c.get("manifest_id", ""))]
+	return base
 
 ## 候选身份 → tie-break 抖动的盐。取 31 位非负（_rng_at 里还要 *7919，留足 int64 余量）。
 ## 实测（seeds 1-3 × 60d）：本式 38.3s；改成"逐字段折叠 + 记忆化"反而 40.3s，"字符串记忆化"38.25s(噪声内)。

@@ -4,18 +4,15 @@ extends Node
 
 const TILE := 48
 
-var area_palette := {
-	"home":  Color("#3a4663"),
-	"cafe":  Color("#5a4636"),
-	"plaza": Color("#3a5a44"),
-	"wash":  Color("#36505a"),
-	"work":  Color("#4a4636"),
-}
-var ground := Color("#22232f")
-var grid_line := Color("#2c2e3c")
-
-func area_color(area: String) -> Color:
-	return area_palette.get(area, ground)
+## ── D6：本文件曾持有 7 个硬编码色值，其中 6 个是死代码 ───────────────────────
+## `area_palette`(5) + `grid_line`(1) + `area_color()`：**全仓零调用**
+## （`grep -rn 'area_color\|grid_line\|area_palette'` 除本文件自身外零命中，实测 2026-07-28）。
+## docs/44 §三 的缺口表把「分区叠色 area_palette + ground + grid_line = 7」列成
+## 「40 色覆盖不到的一组」——**实际上它不需要被覆盖，它需要被删掉**。
+## 最后一个活着的 `ground` 只在「缺 grass_a.png 切片时铺满地图」这一条兜底路径上被读
+## （`WorldView.gd:_draw_body`），而它是一个**深蓝灰** `#22232f`——给"地面"兜底却兜出一块夜空色。
+## 已改为由 `WorldView.GRASS_FALLBACK` 兜底（同一文件、同一族），于是 Art.gd 不再持有任何色值：
+## 调色板只有一个家。
 
 var _font: Font = null
 ## 加载自带中文字体（运行时直接喂字节，绕过「项目未导入则无 .ttf 资源」的 headless 坑）。
@@ -84,17 +81,26 @@ func agent_tex(sprite_name: String) -> Texture2D:
 func emote_tex(event_key: String) -> Texture2D:
 	return tex("res://assets/art/emote/%s.png" % event_key)
 
-## 物件精灵（slot 取自 object id 前缀，如 bench/bath/counter/desk/arcade）；缺则 null → 渲染层程序化兜底。
+## 物件精灵（slot 取自 `WorldView.OBJ_SLOT_BY_TYPE`——数据的 `type` 字段，**不是** id 前缀；
+## H3 2026-07-30 把那条隐式约定换成了显式表）；缺则 null → 渲染层走醒目占位（不再静默兜底）。
 func object_tex(slot: String) -> Texture2D:
 	var pro := tex("res://assets/art/pro/obj_%s.png" % slot)
 	return pro if pro != null else tex("res://assets/art/obj/%s.png" % slot)
 
-## 地形/装饰/建筑瓦片（来自 overworld tileset 切片，视觉大改用）。缺则 null。
+## 地形/装饰瓦片（来自 overworld tileset 切片，视觉大改用）。缺则 null。
 func terrain_tex(name: String) -> Texture2D:
 	return tex("res://assets/art/terrain/%s.png" % name)
 
 func decor_tex(name: String) -> Texture2D:
 	return tex("res://assets/art/decor/%s.png" % name)
 
-func building_tex(name: String) -> Texture2D:
-	return tex("res://assets/art/building/%s.png" % name)
+## ── I2 2026-07-30：`building_tex()` 与 `assets/art/building/{house,hut,shop}.png` 已删除 ────────
+## 它不是"还没接线"，是**接过线、又被当成 bug 拆掉的**。拆它的是 `841d4c4`（2026-07-15），
+## 那条 commit 把它列为用户报的「比例失调」的**头号成因**，原话：
+##   "a decorative 1-tile `hut` icon was drawn at each area corner (hut.png is 16x16 -> 48px =
+##    exactly ONE tile), i.e. a whole house the size of a person. ... Removed the hut lie and
+##    made rooms render as actual buildings"
+## 替代品今天在出货：`WorldView._draw_facades / _draw_building_dressing / _draw_sign` 把每个 district
+## 画成有屋檐、山墙、窗（夜里分点灯/熄灯两档）、烟囱、分类型招牌的**真建筑**——而且**按 4 种 type 各画一款**，
+## 严格宽于"每个角落同一张 hut"。docs/09 §1 那句承诺同批删掉。
+## ⚠️ 想再加建筑贴图的人请先读 `841d4c4`：1 格贴图 = 1 格居民，这是尺度谎言，不是素材问题。

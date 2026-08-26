@@ -1,0 +1,127 @@
+{
+  "_meta": {
+    "what": "「小镇纪事」——单局形状 / 社会成就的定义表。docs/01 §3.2 承诺过、docs/46 §一 #1 记为本波最大缺口。",
+    "redline": "本表只被 scripts/Goals.gd 【只读】折算 Sim.event_log 得出；仿真侧永不读本文件，改它不移动金标。",
+    "order": "书写序 = 展示序 = 进度线顺序，按【实测中位达成日】从早到晚排 —— next_goal 报的'下一步'因此大致就是最近的那一步。",
+    "kinds": {
+      "count": "match 命中次数 ≥ target",
+      "distinct_pairs": "命中事件涉及的【不同居民对】数 ≥ target（同一对刷多次只算一次）",
+      "distinct_actors": "命中事件涉及的【不同居民】数 ≥ target（include_target=true 时 target 也算）",
+      "distinct_days": "命中事件落在【不同日子】的天数 ≥ target",
+      "pair_then": "同一对居民身上先命中 first、其后（≥ min_gap tick）再命中 then 的【对数】≥ target"
+    },
+    "filter_fields": ["type", "exclude_type", "accepted", "note_prefix", "min_witnesses", "actor", "between_residents"],
+    "calibration": [
+      "阈值不是拍脑袋：由 scenes/goals_test.tscn（含 --stats 事件直方图）在 12 居民默认沙盘上实测的达成日分布定。",
+      "中位达成日（6 seed × 30 天实测，按本表书写序）：1 / 1.7 / 4.3 / 6.2 / 10.5 / 13.2 / 14.0 / 16.8 / 22.5 / 27.5 / 28.0。",
+      "【实测证伪的两条】—— 写下来是为了让后人别再走一遍：",
+      "· 「举办一次全员到场的活动」(docs/01 §3.2) 今天【测不出来】：引擎确实会办灯会、B17 也已把人聚起来(9.94 人/节日)，",
+      "  但'逛灯会'是对象交互、**不写 event_log**；而用 witnesses(= 同区全员, Sim.gd:2898) 代打的第一版判据",
+      "  在 12/12 个 seed 上【第 1 天】就点亮（开局全镇同区），阈值抬到理论上限 10 仍然如此 —— 一个什么都不做的世界也能过它",
+      "  （docs/41 §6-★）。改成按日去重(distinct_days≥2)后又掉到 60 天只有 2/6。故本表【不收】它，改收可观测的 lantern_nights，",
+      "  并把限制记在这里：要真正兑现那条承诺，得先让'到场/参与'成为一个事件，或加一个玩家发起活动的机制。",
+      "· 60 天里 mediate 恒为 0 —— NPC 从不说和（Sim.gd:882 的 mediate 事件写死 actor=\"player\"）。",
+      "  故本表【不收】一条只有玩家能点亮的'从中说和'：出货默认是纯观察模式，那条在里面永远是暗的 —— 那是 chrome，不是进度。",
+      "文案有一条 HUD 侧的硬规矩（R10 整帧眼验抓到的）：**别用长得像豆腐块的字**。",
+      "  'bad_blood' 的提示原文是「彼此憋着一口气」，出图上那个'口'与缺字占位框几乎无法分辨（字体确实有 U+53E3，是【看起来】像），",
+      "  在一块本来就靠符号讲话的 HUD 上，这等于自造一个假 bug。已改成「结下了心结」。",
+      "最后四条(lantern_nights/kept_promise/confided/pact_formed)【蓄意】留成长线：14 天验收窗口内它们必须是暗的。",
+      "这就是这套追踪器的负对照 —— 证明它不是把什么都点亮（invite/meet 与 pact/confide 实测第 18-33 天才首次出现，",
+      "与 tools/ci.sh 抬头记的「20 天里承诺生命周期 0/3」同源）。"
+    ]
+  },
+  "version": 1,
+  "goals": [
+    {
+      "id": "nobody_left_out",
+      "title": "谁也没被落下",
+      "hint": "镇上每一位居民都至少与人有过一次往来",
+      "kind": "distinct_actors",
+      "target": 12,
+      "include_target": true,
+      "match": {"accepted": true, "exclude_type": ["world", "pay", "election"], "between_residents": true}
+    },
+    {
+      "id": "half_town",
+      "title": "半个镇子的交情",
+      "hint": "有 24 对不同的居民彼此搭上过话",
+      "kind": "distinct_pairs",
+      "target": 24,
+      "match": {"type": ["greet", "give", "discuss", "gossip", "gossip_rep", "endorse", "aid", "invite"], "accepted": true}
+    },
+    {
+      "id": "bad_blood",
+      "title": "结下三段梁子",
+      "hint": "镇上有三对人彼此结下了心结 —— 有恩怨，才有后面的和解",
+      "kind": "distinct_pairs",
+      "target": 3,
+      "match": {"type": ["conflict"]}
+    },
+    {
+      "id": "rally",
+      "title": "有人串联起来",
+      "hint": "有人拉上帮手，一起给某个居民施压（而且真有人应和）",
+      "kind": "count",
+      "target": 1,
+      "match": {"type": ["rally_oust"], "accepted": true}
+    },
+    {
+      "id": "quarrel_healed",
+      "title": "化解一场争执",
+      "hint": "一场当面对质之后，有人先低了头",
+      "kind": "pair_then",
+      "target": 1,
+      "first": {"type": ["confront", "conflict"]},
+      "then": {"type": ["apologize"], "accepted": true}
+    },
+    {
+      "id": "wide_circle",
+      "title": "熟络满镇",
+      "hint": "有 50 对不同的居民彼此搭上过话（12 个人最多也就 66 对）",
+      "kind": "distinct_pairs",
+      "target": 50,
+      "match": {"type": ["greet", "give", "discuss", "gossip", "gossip_rep", "endorse", "aid", "invite"], "accepted": true}
+    },
+    {
+      "id": "town_vote",
+      "title": "全镇拿定主意",
+      "hint": "一项提议经全镇表决通过",
+      "kind": "count",
+      "target": 1,
+      "match": {"type": ["election"], "accepted": true}
+    },
+    {
+      "id": "lantern_nights",
+      "title": "办过三场灯会",
+      "hint": "镇上办起了第三场灯会（长线：实测第 14 天以后）",
+      "kind": "count",
+      "target": 3,
+      "match": {"type": ["world"], "note_prefix": "spawn"}
+    },
+    {
+      "id": "kept_promise",
+      "title": "约成了一次见面",
+      "hint": "有人约了人，而对方真的赴了约（长线：实测第 18 天以后）",
+      "kind": "pair_then",
+      "target": 1,
+      "first": {"type": ["invite"], "accepted": true},
+      "then": {"type": ["meet"], "accepted": true}
+    },
+    {
+      "id": "confided",
+      "title": "有人托付了心事",
+      "hint": "秘密只在信得过的人面前说得出口（长线：实测第 25 天以后）",
+      "kind": "count",
+      "target": 1,
+      "match": {"type": ["confide"]}
+    },
+    {
+      "id": "pact_formed",
+      "title": "结下一纸盟约",
+      "hint": "两个人约定往后互相搭把手（长线：实测第 26 天以后）",
+      "kind": "count",
+      "target": 1,
+      "match": {"type": ["pact"], "note_prefix": "formed"}
+    }
+  ]
+}

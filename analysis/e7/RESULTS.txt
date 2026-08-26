@@ -1,0 +1,47 @@
+=== E7 ATTRIBUTION (held-out 13-30, base=CLEAN committed batons no-饼干) ===
+
+--- 口粮 ---
+arm                    | mean d(vs CLEAN) | 95%CI | median | dn/up/fl | leak-carried(=d_arm - d_WITH)
+with                   | -0.0480 | +-0.0312 | -0.0457 | 14/2/2
+arm1_abl_standing      | -0.0001 | +-0.0046 | +0.0000 | 1/1/16  recover=+0.0479
+arm2_abl_belief        | -0.0523 | +-0.0333 | -0.0540 | 13/3/2  recover=-0.0043
+arm3_abl_both          | +0.0000 | +-0.0000 | +0.0000 | 0/0/18  recover=+0.0480
+arm4_dpb_mei           | -0.0231 | +-0.0381 | -0.0115 | 11/7/0  recover=+0.0249
+
+--- 柴薪 ---
+arm                    | mean d(vs CLEAN) | 95%CI | median | dn/up/fl | leak-carried(=d_arm - d_WITH)
+with                   | -0.0074 | +-0.0191 | -0.0016 | 10/5/3
+arm1_abl_standing      | -0.0032 | +-0.0059 | +0.0000 | 2/0/16  recover=+0.0041
+arm2_abl_belief        | -0.0025 | +-0.0200 | -0.0001 | 8/6/4  recover=+0.0049
+arm3_abl_both          | +0.0000 | +-0.0000 | +0.0000 | 0/0/18  recover=+0.0074
+arm4_dpb_mei           | -0.0298 | +-0.0360 | -0.0107 | 12/3/3  recover=-0.0225
+
+--- 屋瓦 ---
+arm                    | mean d(vs CLEAN) | 95%CI | median | dn/up/fl | leak-carried(=d_arm - d_WITH)
+with                   | -0.0053 | +-0.0182 | -0.0002 | 5/2/11
+arm1_abl_standing      | -0.0006 | +-0.0013 | +0.0000 | 1/0/17  recover=+0.0047
+arm2_abl_belief        | -0.0047 | +-0.0182 | -0.0001 | 4/2/12  recover=+0.0006
+arm3_abl_both          | +0.0000 | +-0.0000 | +0.0000 | 0/0/18  recover=+0.0053
+arm4_dpb_mei           | -0.0116 | +-0.0365 | +0.0000 | 5/5/8  recover=-0.0062
+
+--- 糕点 ---
+arm                    | mean d(vs CLEAN) | 95%CI | median | dn/up/fl | leak-carried(=d_arm - d_WITH)
+with                   | -0.0129 | +-0.0460 | +0.0006 | 8/9/1
+arm1_abl_standing      | -0.0000 | +-0.0036 | +0.0000 | 1/1/16  recover=+0.0128
+arm2_abl_belief        | -0.0217 | +-0.0501 | +0.0006 | 8/9/1  recover=-0.0088
+arm3_abl_both          | +0.0000 | +-0.0000 | +0.0000 | 0/0/18  recover=+0.0129
+arm4_dpb_mei           | +0.0102 | +-0.0588 | +0.0229 | 8/10/0  recover=+0.0231
+
+--- 整洁 ---
+arm                    | mean d(vs CLEAN) | 95%CI | median | dn/up/fl | leak-carried(=d_arm - d_WITH)
+with                   | +0.0154 | +-0.0178 | +0.0000 | 3/6/9
+arm1_abl_standing      | +0.0019 | +-0.0036 | +0.0000 | 0/2/16  recover=-0.0135
+arm2_abl_belief        | +0.0147 | +-0.0178 | +0.0000 | 3/5/10  recover=-0.0007
+arm3_abl_both          | +0.0000 | +-0.0000 | +0.0000 | 0/0/18  recover=-0.0154
+arm4_dpb_mei           | +0.0111 | +-0.0200 | +0.0000 | 5/7/6  recover=-0.0043
+
+=== 口粮 paired recovery vs WITH (per-seed, arm.rate - WITH.rate, held-out 13-30) ===
+arm1_abl_standing      | mean(arm-WITH)=+0.0479 95%CI[+0.0159,+0.0798] | up/dn=13/3 | SIG UP(recover)
+arm2_abl_belief        | mean(arm-WITH)=-0.0043 95%CI[-0.0211,+0.0124] | up/dn=1/1 | n.s.
+arm3_abl_both          | mean(arm-WITH)=+0.0480 95%CI[+0.0168,+0.0792] | up/dn=14/2 | SIG UP(recover)
+arm4_dpb_mei           | mean(arm-WITH)=+0.0249 95%CI[-0.0240,+0.0739] | up/dn=11/7 | n.s.

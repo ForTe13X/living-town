@@ -1,0 +1,52 @@
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: GDExtension dynamic library not found: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: open_library (core/extension/gdextension.cpp:740)
+ERROR: Error loading extension: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: load_extensions (core/extension/gdextension_manager.cpp:329)
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+=== 小镇故事面板 · seed 1 · 第 40 天 ===
+◇ 小镇故事 —— 在讲 51 段 · 已收场 65 段
+
+近来收场的
+第29天 hai 对 fei 积起了怨气
+第37天 hai 当面把话挑明，fei 听了进去
+这中间 hai 在旁人面前说了 2 次 fei 的不是
+第40天 · fei 低了头，hai 原谅了 —— 这段梁子解开了
+◇ 梁子 coco与ben 第24→39天 往后谁也没再提 —— 这段梁子就这么冷着
+◇ 梁子 ben与tie 第24→39天 往后谁也没再提 —— 这段梁子就这么冷着
+
+还在往下走
+◇ 手艺 lin与aria 第9天起 · 4幕
+◇ 梁子 qin与fei 第40天起 · 3幕
+◇ 梁子 evy与dan 第40天起 · 2幕
+◇ 手艺 shu与lin 第40天起 · 1幕
+K 键 / 点播报里的 ◇ 那一行 = 开关本页
+
+=== promise 弧的全部结局（终身账）===
+promise: { "kept": 19 }
+
+=== 头 6 段已收场的 promise 弧，逐字成文 ===
+  [结局=kept · 依据 event #2152 的 accepted=true]
+    第40天 mei 约了 shu 稍后见面
+    第40天 · 两人如约见上了面
+  [结局=kept · 依据 event #2144 的 accepted=true]
+    第40天 hai 约了 dan 稍后见面
+    第40天 · 两人如约见上了面
+  [结局=kept · 依据 event #2093 的 accepted=true]
+    第39天 mei 约了 qin 稍后见面
+    第39天 · 两人如约见上了面
+  [结局=kept · 依据 event #2087 的 accepted=true]
+    第39天 fei 约了 shu 稍后见面
+    第39天 · 两人如约见上了面
+  [结局=kept · 依据 event #2067 的 accepted=true]
+    第39天 mei 约了 qin 稍后见面
+    第39天 · 两人如约见上了面
+  [结局=kept · 依据 event #2061 的 accepted=true]
+    第39天 evy 约了 ben 稍后见面
+    第39天 · 两人如约见上了面
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)

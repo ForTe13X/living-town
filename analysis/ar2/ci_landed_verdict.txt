@@ -1,0 +1,6 @@
+AR2 landing CI —— 权威 committed-tree run（fresh ledger），协调者 finalize（AR2 卡自 CI 未提交）
+HEAD=049e5ee  CI_EXIT=0
+=== CI PASS ✅ ===
+- S0 GATE: PASS ✅ (硬不变量 12/12, 金标 过, det 3/3)   ← 编年史散文纯 View 派生零金标(含链)
+- event_prose_test: PASS (2s)   ← AE1 被拒事件叙述"被拒"不讲成做成
+- 互补性守卫: PASS (锚烘于 584e4bb, fresh) · 全门绿

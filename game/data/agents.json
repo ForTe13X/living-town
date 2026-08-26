@@ -236,5 +236,22 @@
     "energy"
    ]
   }
+ ],
+ "affiliates": [
+  {
+   "id": "tao",
+   "persona": "tao",
+   "home": [
+    59,
+    7
+   ],
+   "spawn": [
+    59,
+    7
+   ],
+   "affiliate": true,
+   "cafe_regular": true,
+   "_why": "P1-a/P1-c 港口附属成员：独立于 12 位核心居民声明，使产出池仍按核心人口定标；默认港口沙盘且 logistics 开启时才编入世界。P1-u 将 home/spawn 从画面中的麻袋实体格 [58,8] 迁到同一 East Ocean dock 的开放交互邻格 [59,7]；功能港口仍在 [59,8]，货船 berth [60,8] 仍是水格。渔台保持独立 north_pier，不再用旧北塘 spawn 掩盖港口语义。"
+  }
  ]
 }

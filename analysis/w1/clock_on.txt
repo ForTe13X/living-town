@@ -1,0 +1,17 @@
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+=== w1_pact_clock · agents=12 seeds=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] days=60 craft=on standing= util= ===
+[W1CLOCK] {"alive_end":5,"craft":"on","digest":"3906210527","first_formed_day":31,"formed_days":[31,38,48,51,59],"lifetimes_days":[29,22,12,9,1],"n_pacts":5,"pactdays_sum":73,"seed":1,"standing":"","util":""}
+[W1CLOCK] {"alive_end":4,"craft":"on","digest":"3974897474","first_formed_day":29,"formed_days":[29,31,45,46],"lifetimes_days":[31,29,15,14],"n_pacts":4,"pactdays_sum":89,"seed":2,"standing":"","util":""}
+[W1CLOCK] {"alive_end":1,"craft":"on","digest":"1273095155","first_formed_day":51,"formed_days":[51],"lifetimes_days":[9],"n_pacts":1,"pactdays_sum":9,"seed":3,"standing":"","util":""}
+[W1CLOCK] {"alive_end":2,"craft":"on","digest":"3014890111","first_formed_day":41,"formed_days":[41,60],"lifetimes_days":[19,0],"n_pacts":2,"pactdays_sum":19,"seed":4,"standing":"","util":""}
+[W1CLOCK] {"alive_end":3,"craft":"on","digest":"3709304432","first_formed_day":28,"formed_days":[28,28,58],"lifetimes_days":[32,32,2],"n_pacts":3,"pactdays_sum":66,"seed":5,"standing":"","util":""}
+[W1CLOCK] {"alive_end":3,"craft":"on","digest":"1966851711","first_formed_day":40,"formed_days":[40,44,53],"lifetimes_days":[20,16,7],"n_pacts":3,"pactdays_sum":43,"seed":6,"standing":"","util":""}
+[W1CLOCK] {"alive_end":2,"craft":"on","digest":"1168097310","first_formed_day":52,"formed_days":[52,54],"lifetimes_days":[8,6],"n_pacts":2,"pactdays_sum":14,"seed":7,"standing":"","util":""}
+[W1CLOCK] {"alive_end":7,"craft":"on","digest":"3979542693","first_formed_day":25,"formed_days":[25,31,34,34,48,49,57,58],"lifetimes_days":[35,22,26,26,12,11,3,2],"n_pacts":8,"pactdays_sum":137,"seed":8,"standing":"","util":""}
+[W1CLOCK] {"alive_end":4,"craft":"on","digest":"3564990643","first_formed_day":34,"formed_days":[34,46,52,53,59],"lifetimes_days":[23,14,8,7,1],"n_pacts":5,"pactdays_sum":53,"seed":9,"standing":"","util":""}
+[W1CLOCK] {"alive_end":4,"craft":"on","digest":"262927589","first_formed_day":44,"formed_days":[44,44,45,59],"lifetimes_days":[16,16,15,1],"n_pacts":4,"pactdays_sum":48,"seed":10,"standing":"","util":""}
+[W1CLOCK] {"alive_end":3,"craft":"on","digest":"898264779","first_formed_day":50,"formed_days":[50,56,57],"lifetimes_days":[10,4,3],"n_pacts":3,"pactdays_sum":17,"seed":11,"standing":"","util":""}
+[W1CLOCK] {"alive_end":4,"craft":"on","digest":"3727444716","first_formed_day":36,"formed_days":[36,37,40,57],"lifetimes_days":[24,23,20,3],"n_pacts":4,"pactdays_sum":70,"seed":12,"standing":"","util":""}
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)

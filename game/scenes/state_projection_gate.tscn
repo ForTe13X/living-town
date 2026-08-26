@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b26twstateproj01"]
+
+[ext_resource type="Script" path="res://scripts/state_projection_gate.gd" id="1_sp"]
+
+[node name="StateProjectionGate" type="Node"]
+script = ExtResource("1_sp")

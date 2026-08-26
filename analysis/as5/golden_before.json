@@ -1,0 +1,362 @@
+{
+  "_meta": {
+    "backend": "null (零模型 logic 底座；红线#2)",
+    "baked_by": "godot --headless --path game --script res://bench/Harness.gd -- --seeds 1-12 --days 60 --bake-golden game/bench/golden_digests.json",
+    "days": 60,
+    "godot": "4.6.2-stable (official).71f334935",
+    "liveness_observed": {
+      "aid": {
+        "count": 61.0,
+        "seeds": 12.0
+      },
+      "apologize": {
+        "count": 427.0,
+        "seeds": 12.0
+      },
+      "betray": {
+        "count": 3.0,
+        "seeds": 3.0
+      },
+      "confide": {
+        "count": 82.0,
+        "seeds": 12.0
+      },
+      "conflict": {
+        "count": 1099.0,
+        "seeds": 12.0
+      },
+      "confront": {
+        "count": 453.0,
+        "seeds": 12.0
+      },
+      "consume": {
+        "count": 3571.0,
+        "seeds": 12.0
+      },
+      "discuss": {
+        "count": 1107.0,
+        "seeds": 12.0
+      },
+      "election": {
+        "count": 48.0,
+        "seeds": 12.0
+      },
+      "endorse": {
+        "count": 162.0,
+        "seeds": 12.0
+      },
+      "festival_despawn": {
+        "count": 80.0,
+        "seeds": 12.0
+      },
+      "festival_spawn": {
+        "count": 80.0,
+        "seeds": 12.0
+      },
+      "give": {
+        "count": 432.0,
+        "seeds": 12.0
+      },
+      "gossip": {
+        "count": 646.0,
+        "seeds": 12.0
+      },
+      "gossip_rep": {
+        "count": 6614.0,
+        "seeds": 12.0
+      },
+      "greet": {
+        "count": 6164.0,
+        "seeds": 12.0
+      },
+      "import": {
+        "count": 238.0,
+        "seeds": 12.0
+      },
+      "invite": {
+        "count": 921.0,
+        "seeds": 12.0
+      },
+      "leak": {
+        "count": 6.0,
+        "seeds": 3.0
+      },
+      "meet": {
+        "count": 921.0,
+        "seeds": 12.0
+      },
+      "pact_formed": {
+        "count": 44.0,
+        "seeds": 12.0
+      },
+      "pay": {
+        "count": 14044.0,
+        "seeds": 12.0
+      },
+      "produce": {
+        "count": 1236.0,
+        "seeds": 12.0
+      },
+      "rally_oust": {
+        "count": 208.0,
+        "seeds": 12.0
+      },
+      "shortage": {
+        "count": 475.0,
+        "seeds": 12.0
+      },
+      "spoil": {
+        "count": 1294.0,
+        "seeds": 12.0
+      },
+      "world_other": {
+        "count": 47.0,
+        "seeds": 12.0
+      }
+    },
+    "note": "跨进程金标：红线#1『逐字节可回放』的机检锚。只在【有意的行为变更】后重烘，且重烘必须与该变更同一个 commit、并在 commit message 里写明为什么摘要该动。CI 意外变红时，正确反应是查代码，不是重烘。摘要以【字符串】存：event_digest 可达 2^63，JSON number 会丢精度。",
+    "rebake_history": [
+      "2026-07-25 · B7 唤醒社交沉睡的一半（有意的行为变更，非意外漂移）：S3b 互助盟约的三个门原按 needs.json 的 low(25-30=弃社交去救急的危机线)标定，而 agent 在社交时段的 need 实测落在 45-80 —— 于是 aid 的窗口从未打开(aid_offered=0)、互补证据几乎攒不出(命中 11/4253)，pact/aid/pact_dissolved/leak/betray 在默认沙盘里全年零发生，使硬不变量 #22/#23/#24/#29 空转(前件恒假=真空为真)。改动：COMPLEMENT_LOW 35→50、AID_NEED_TH 30→60、AID_BASE 16→30(aid 是唯一无 urgency 项的社交候选，基分需与 confront 同级)、utility.json 的 confide_secret_pressure 4→20；该压力调高会蝶变 seed6 的 #01 无饿穿(二分坐实肇因)，照旧循『加缓冲而非缩抑制』把 SURVIVAL_GATE 30→32 修复。活性(seeds 1-12 × 60d)：pact_formed 1→37、aid 0→73、leak 0→2、betray 0→2、pact_dissolved 0→2、confide 73→104；greet/gossip_rep 仍占绝对多数(6184/4994)，镇子的日常性格未变。S0 硬不变量 12/12、det 3/3、DetGate 16/16。",
+      "2026-07-26 B9 拆掉两颗回放地雷（摘要必然移动，属【有意】的行为变更）。(a) tie-break 平局抖动此前按候选在数组里的【下标】加盐（_rng_at(i*7+1, who)）—— 于是「候选枚举顺序」成了仿真契约的一部分：任何不改变候选【集合】、只改变枚举次序的重构（换个遍历序、加个提前 continue、ext provider 插队）都会静默改写全镇全部历史，而金标只会说「雷炸了」，说不出为什么。现改为按候选【身份】加盐 (_cand_salt = fnv1a32(_cand_key))，_cand_key 同时补齐 area/commit（此前全部 attend 候选共用同一个 key，回放会取错约会）。机检：Harness --permute 1/2/3（逆序 / 洗牌 / 枚举出口洗牌）在 seeds 1-3 × 60d 上digest/event_digest/逐tick链三路全部逐字节不变；负对照（把盐改回 i*7+1）下仅--permute 1 就让三个 seed 的全部摘要与事件数一起变。(b) _aid() / event_digest / Inv.digest 此前用 GDScript 引擎内部的 String.hash() —— Godot 换个版本就能在行为一字未动的情况下改写全部金标。现改为仓库自有的 FNV-1a/32（Sim.fnv1a32/mix32，测试向量提交进源码：''/'a'/'abc' 用 FNV-1a 规范公开向量做锚，另加 agent id / 中文 UTF-8 / 候选身份串三条），Harness 与 DetGate 启动即自检，尺子变了当场红。(c) 新增逐 tick 前缀哈希链 H_t = h(H_{t-1} ‖ 状态_t ‖ 事件_t)（金标新增 chain + 逐日检查点 chain_ck）：digest/event_digest 都是终态汇总，中途分叉再合流会被抹平——实测把某 agent 的 pos 在 tick 1234 挪一格、tick 1235 挪回来，两路旧摘要与事件数【一字不变】，只有链变了，且 --chain-ref 精确报出 tick_no=1234。活性影响（seeds 1-12 × 60d）：aid 73→101(seed 覆盖 11/12→12/12)、pact_formed 37→46(12/12)、pact_dissolved 2→1、betray 2→0、leak 2→0；留出种子 13-30 × 60d：aid 164→154(18/18)、pact_formed 72→89(18/18)、硬不变量 18/18 全绿。B7 唤醒的社交热半边没有回落。S0 硬不变量 12/12、det 3/3、DetGate 16/16。",
+      "2026-07-26 · B16 点亮切顶室内：给空了的 data/buildings.json 填内容（摘要必然移动，属【有意】的数据变更）。起因：WorldView 里那 135 行切顶建筑渲染器（外墙/屋檐/落地影/南墙门/北墙窗/按房型的材质地板/地毯/靠墙杂物/夜里的暖灯池）自 P2-2 生成 64x48 大镇时 gen_town.py 清空 buildings.json 起就一直是死代码——渲染器在、编译管线在、护栏在，只是没有数据喂它。现按 map.json 的 8 个 area 补了 12 间房：中央四区(home/cafe/wash/work)各切两三间 + 一条对齐本区门的走廊，每间尽量含一件原有家具(床/灶台/吧台/浴池/雕刻台)；外围三栋(home2/shop/library)按 gen_town 里 EXTRA_BUILDINGS 的原意只切一间纯视觉房。全部 furnish=\"\" → 新增 world 对象数 = 0 → 不新增候选、不新增导航阻挡、不碰需求经济与工资守恒。为什么摘要仍然该动：world.rooms 从空变非空，_secret_private 的顶层数据门（rooms 为空 → 恒 true）随之关闭，docs/16 设计的『同一封闭房间 或 耳边无第三者才吐露秘密』正式生效；同时 agent 多缓存一个 room 字段。这正是这份数据文件存在的目的。剂量是量出来的：seeds 1-12 与留出 13-30（各 60 天）两张网格上，除 aid(−12.9%/−5.2%)、confide(−7.8%/+2.6%)、pact_formed(−4.3%/−10.1%)外全部活性变动 ≤5%；历史上担心的『隐私门把 confide 卡死』没有发生——confide 的 seed 覆盖两网格都仍是满格。作为剂量对照还量了带家具的三档（不入库，见 buildings.json 的 _furnish_note）：加【一件】蒲团 → aid −33.7%/−13.6%、endorse −29.5%；把家具放到澡堂/工坊这种日常动线上的区 → invite/meet −16%、aid −19%、pay −7%。所以这一棒只切房不放家具。留出种子 13-30 硬不变量 改前 18/18、改后 18/18；软不变量全部不变（#05 谣言传播两侧同为 17/18），诊断 #15 涌现放逐 17/18→18/18（不入门，度量已知泄漏，见 docs/31）。每 seed 事件总量 mean −0.2%、sd 1.0%（活动总量守恒，变的是构成）。S0 硬不变量 12/12、det 3/3、DetGate 硬 16/16。",
+      "2026-07-30 · Wave E1 劳动产出与消耗闭环上线（摘要必然移动，属【有意】的行为变更，docs/47 §二-E1 / R12）。改的是什么：本职在班干完一活 → 往镇级库存 town_stock 交一批货（produce）；吃饭/洗澡/喝咖啡/歇着开用时扣一件（consume，按天入账）；库存见底不阻断动作（红线：继承 economy.json 的 meals_free——没货也照吃），只落社会后果：shortage 事件 + 不满记忆 + 目击者一手信念(via=seen，走既有 gossip) + 责任岗位声誉小挫(-0.5) + 缺货加价(+1，仍走 transfer)。digest 为什么必然动：①event_log 新增 produce/consume/spoil/shortage 四类账本事件（12seed×60d 共 470/1915/463/696 条）；②缺货加价改 coin → 经 economy.poor_line 的 work_urgency 加分改决策；③缺货信念与 standing 改社交接受 —— ②③是真轨迹移动，不只是多了几条日志。首个分叉落在第 1 天（消耗从开局就发生）。证据：删掉 data/production.json ⇒ 本文件 seeds 段 12/12 与 scenarios 段 16/16 逐字节回到重烘前的值（含逐 tick 前缀链），held-out 13-30 全 18 seed 逐字段相同；开启后 seeds 1-12 硬不变量 12/12、held-out 13-30 硬 18/18 软 18/18、两侧饿穿均为 0；新增硬 #38 库存账本自洽 / #39 产出溯源到在班本职，软 #40 产出闭环活性。",
+      "2026-07-30 Wave F1 · 分工有了自己的空间落点 ⇒ 世界轨迹蓄意移动（docs/48 §一-F1 / R12）。改的三样都在 production.json 里、都可整体摘掉：①四个【职位专属】工位对象（工作台/面案/清扫车/摊位）编译进 town 平面 —— 此前全镇每一次『做活』都发生在同一格 desk_1[40,31]（实测 152-186 次/60天，四个岗位共用），『看摊』同理共用 counter_1；②新增商贩/环卫工两个岗位，商贩是全镇唯一一条【货与钱同时在人之间易手】的通道（买家→商贩本人的 transfer，实测 153 次/seed/60天，占全镇饭口约 14%），#34 仍只有 transfer 一道门；③整洁作为一种【货】进账本，环卫工产、广场活动耗、每日自损，并按存量给广场的 fun/social 一个只压不抬的效用乘子。★零扰动对照成立：把 production.json 里 F1 新增的每一个键摘掉 ⇒ 本表【重烘前】的值 12/12 逐字节吻合（含 12 条逐 tick 前缀链）；把 production.json 整个删掉 ⇒ 与 pre-E1 的金标 12/12 逐字节吻合（E1 那条对照未被本棒破坏）。留出种子 13-30 × 60 天：改前/改后硬不变量各 18/18 全绿、软失败各 0、逐 seed 饿穿各恒 0（#01 是硬不变量且 scenario 为空 ⇒ hard_fails 为空 ⟺ starved==0），事件数 2349-2764 → 3053-3375，digest 与逐 tick 链 18/18 全部移动。",
+      "2026-07-30 Wave F5 · 三个共用一张雕刻台的岗位各自有了工位 ⇒ 世界轨迹蓄意移动（docs/48 §三-F5 / R12）。改的是什么：①production.job_action 补齐 杂役→劈柴 / 渔夫→打渔 / 教书先生→授课，并在 production.worksites 里给它们三个各建一个工位（柴垛[24,31]澡堂 / 渔台[31,7]滩头 / 讲台[34,26]广场）—— 改前实测『本职工作』只落在 6 个不同格子上，杂役/渔夫/教书先生三个人共用 desk_1[40,31]（渔夫在雕刻台上打渔）；改后逐 seed 恒 8 个格子（seeds 1-5 全部 8/8）。②map.json 新增第 9 个 area『滩头』dock[30,7,4,2]：全镇 80 格水面（x28-35 南北两塘）此前不属于任何 area，而工位有【两道】区域归属门（Sim._compile_worksites 运行期 + tools/audit_map.py 静态，后者只读 map.json）⇒ 不建区就没有合法的水边工位。★渔夫【没有】被改成别的职业。③Sim.gd 修掉 cleanliness.needs 白名单的 fail-open（判据 `cl_needs.is_empty() or need_id in cl_needs` ⇒ 空白名单等于『所有需求』，hunger 会被脏度打折）——**对出货数据是逐字节 no-op**，已单独用 12/12 金标 A/B 验过。④七个工位的 id 前缀改成命中现有精灵槽位（ws_* ⇒ desk_/counter_/bench_）：WorldView 用 id 前缀查贴图，ws_* 查不到 ⇒ 四个工位一直是印着数据键的占位方块（出图实测）。★零扰动对照成立：把 production.json 整个删掉（map.json 的 dock 区与 Sim.gd 的修都保留）⇒ 与 pre-E1 金标 12/12 逐字节吻合（含 12 条逐 tick 前缀链）—— F1 的那条消融契约没有被本棒的 map.json 改动破坏；另有一次单独实测：只加空的 dock 区、不加任何工位 ⇒ 与【重烘前】金标 12/12 逐字节吻合。留出种子 13-30 × 60 天：改前/改后硬不变量各 18/18 全绿、软失败各 0、逐 seed 饿穿各恒 0（另用 bench/find_starve.gd 在 seeds 13/14/25/29 上独立复核：饿穿 tick 实例数 0、饿穿 agent 0/12），事件数 3053-3375 → 3138-3481，digest/event_digest/链 18/18 全部移动。代价明写：dock 是全镇第 9 个 area，而 area 就是 _nearby_agents 的桶 ⇒ 它按构造是一个新的社交场所；实测 seeds 1-5 × 60 天在 dock 上成立的约见承诺是 0/89、0/92、0/94、0/114、0/62 —— 一次都没有。",
+      "2026-07-30 Wave G3 · 建筑：全镇第 9 个工位、第 8 个岗位、第 6 种货 ⇒ 世界轨迹蓄意移动（docs/49 §三 / R12）。改的是什么：①production.jobs 新增 evy=泥瓦匠（动作『修屋』，班次 day/dusk），worksites 新增 bench_brickpile『砖垛』[25,17]——**第一个落在住宅区的工位**（F1/F5 的七个全在工坊/咖啡馆/广场/澡堂/滩头）；本职在班动作因此从 8 个格子变成 9 个，seeds 1-5 逐 seed 恒 9。②新货『屋瓦』：产=泥瓦匠、耗=**睡觉**（改前全镇最大的『什么都不消耗』动作，700 次/seed/60天），缺货后果沿用既有 shortage 管线（memo/claim 按货覆盖，standing −0.35）。③Sim.gd 新增 produce[职位].inputs：屋瓦要烧柴 ⇒ **全镇第一件由另一件货做出来的货**，而柴薪同时是澡堂唯一的燃料 ⇒ 第一件被两条需求争抢的货。原料走 _stock_take 既有唯一通道，#38 一个字节没改。④Sim._shortage_fallout 增加可选 dedup 参数：把『停工』与『买不到』分成两条日名额——这是量出来的，共用 good 时泥瓦匠的停工被 546 次洗澡吃掉，seeds 1-5 只写出 1 条『柴薪@修屋』（0.2 条/seed），分开后是 4/4/2/5/6 条/seed。★零扰动对照成立：把 G3 新增的六个键逐个摘掉（Sim.gd 的新代码留着）⇒ 与**重烘前**金标 12/12 逐字节吻合（含 12 条逐 tick 前缀链）。★负对照（都亲眼看着红）：删 _produce_for 的在班门 ⇒ 硬 #39 0/3（seed1 异常 67 条）；直接写 town_stock['屋瓦'] 绕过 _stock_move ⇒ 硬 #38 0/3（现存 276 / 账本算得 −557）；砖垛挪到住宅区南墙唯一通路 [22,19] ⇒ audit_map 红（2620 格失联）；申报 area=plaza ⇒ audit_map 红；删掉砖垛只留岗位 ⇒ audit_map rule ⑨ 红。★**一条负对照没红，值得写进锚里**：把 evy 的 shift 写成 ['night'] 或写错成 ['daytime','dusk'] ⇒ S0 GATE 依旧 PASS、#39 3/3 绿、#40 3/3 绿——屋瓦产量塌到 90-390（正常 646-771）、缺货事件涨到 28-51 条（正常 2-13）而**没有任何门会响**。原因是 #39 与 _produce_for 读的是同一个 shift 字段，两者结构上不可能不一致；#39 的牙齿针对的是【代码绕过班次】，不是【数据把班次写错】。留出种子 13-30 × 60 天：硬不变量改前 18/18 → 改后 18/18，软失败 0 → 0，逐 seed 饿穿恒 0（#01 18/18）；事件 3138-3481 → 3195-3583。",
+      "2026-07-31 · M2 SURVIVAL_GATE 32→36 ⇒ 世界轨迹蓄意移动（docs/41 §3 / docs/47 R12）。改的是什么：**Sim.gd 里的一个常量，没有别的**。为什么：#01（无 need 触底）在 N≥16 上以 1-2% 的 (N,seed) 抽签变红，而 CI 只采 N=12（第 4 步）与 N=16 seeds 1-12（第 4a 步）⇒ 契约 §2 第三个盲区。机制（逐 tick 追 N=20 seed 8 的 npc_13，60 天）：**社交是五条 need 里唯一没有无条件满足物的一条**（吃/睡/洗/玩都有物件且缺货绝不阻断动作，社交要对方同意）。一旦 social 跌破 SURVIVAL_GATE，_social_candidates 在其后的 3087 个 tick 里返回的候选数【恒为 0】(实测 max=0) ⇒ social 自己成了【吸收态】，不是一段低谷。此后四条非社交 need 的均值从 67-81 掉到 21-32，hunger 有 62 个 tick ≤0.5、而那 62 个 tick 的 option 全部是「吃饭」；⚠ 它们的最大值仍能到 57-90 ⇒ 【不是】被截在门上（按日边界采样会读出这个错结论，逐 tick 看是错的）。第 48 天之后别人对他发起的社交是 21 次、全部是 gossip_rep、全部被他拒掉：_acceptance_margin 里只有 greet/invite 带 (100−need)×0.4 这项『他很缺人』的补偿，gossip_rep 没有 ⇒ 越缺社交越拒得狠，而拒绝双向 −3 affinity ⇒ 棘轮；另有 2 次 confront 被接受，但 _apply_social 对 confront/apologize/rally_oust 在 needs[social]+=16/12 那一行之前就 return 了 ⇒ 零社交进账。【推断，未做隔离干预】把『吸收态 ⇒ 其余 need 一起塌』归给 P3 承诺抢占(social≡0 ⇒ _min_need<PREEMPT_CRISIS 恒真)——这条链没被反事实验证过。★为什么是 36：把整条剂量-响应扫出来了（N∈{16,18,20,22,24} × seeds 1-36 × 60 天 × backend=null，每档 180 格，只改这一个常量）：gate 24→【35 红】、28→【8】、32(旧)→【3】、36→【0】、40→【0】。单调、跨 5 个剂量、跨一个数量级 ⇒ 是一条真的鲁棒性曲线，不是抽签；32 落在还没走平的那一段上。红绿计数本身证据不足（3→0 只有 3 个事件，Fisher p≈0.25），真正的判据是【连续余量】（216 格 × 6 个 N 的逐局最低 need）：全网格最差 need 地板 0.00 → 4.80、p10 5.80 → 8.96、最长『social<15』连续段 2974 tick(12.4 天) → 58 tick(0.24 天) ⇒ 消掉的是【钉住好几天】那一整类，不是把红格挪到别的 seed。★诚实边界：它不是零 —— seeds 1-60 × 5 个 N 的 300 格上仍有 1 格红（N=18 seed 53，18 need·tick、0.1 天），改前同一张 300 格是 4 格（含 2867 need·tick / 6.3 天那一格）。吸收态【没有】被消掉，只是掉进去之前的余量变厚了。★取 36 不取 40 的理由是量出来的代价：N=12 seeds 1-12 活性 invite/meet 1166→1067(−8.5%)/→980(−16%)、confide 89→86(−3.4%)/→72(−19%)，其余 25 类变动 <5%、27 类的 seed 覆盖全部仍 12/12。32→36 买到地板 0.00→4.80、钉住 2974→58；36→40 只再买 4.80→6.20、58→36，代价却翻两到五倍。★两条量过之后否掉的干预（别再走一遍）：①把生存门对『social 已进真危机(<15) 且其余 need 全 ≥GATE』的人放开（严格窄于 M1 已证伪的那一版）⇒ 大 N 红 3→9，且它把 N=20 seed 8 的 2867 压到 6 的同时在 N=22 seed 29 造出 4038 —— 是挪位不是修好；而它的 N=12 金标 12/12 逐字节不变，所以这次挪位【金标看不见】。②把 aid（雪中送炭）对『social<15』的邻居放开、不再要求 active pact ⇒ #01 3→2、最深那格 2867→44，但硬 #29「互助偏内」在 180 格里红了 46 格 —— 救孤独者的那条通道不是睡着了，是被另一条硬不变量明令禁止的。留出种子 13-30 × 60 天（N=12）：硬不变量 改前 18/18 → 改后 18/18，软失败 0 → 0，逐 seed 触底 need·tick 两侧恒 0，事件数 3073-3458 → 3162-3480，digest/event_digest/逐 tick 链 18/18 全部移动。S0 seeds 1-12 硬 12/12、软 12/12、活性 16 类全在、det 3/3；DetGate 16/16；ModelPathGate 锚同 commit 重烘。",
+      "2026-07-31 · O1 谣言分数再平衡：消息通道打通 ⇒ 世界轨迹蓄意移动（docs/61 §一 / docs/47 R12）。改的是什么：**两处，都在决策评分层，都由 data/utility.json 的两个新键整体开关，缺键/为 0 ⇒ 逐字节回到重烘前**（已验：两键设 0 时 seeds 段 12/12 与本表重烘前逐位相同，含 12 条逐 tick 前缀链）。① `Sim._unspread_belief` 在多条未传 belief 之间由『返回插入序最早的一条』改成『转述来的传闻(via != seen) 优先于亲眼所见的闲话(W:* 贫富 / SH:* 断供)』——返回 \"\" 的条件一字未改，只改选哪一条；② `_social_candidates` 的 gossip 候选在 subject 是转述传闻时 `+ _w(\"gossip_news_bonus\", 0.0)`，闲话档一分未加。为什么必须动：**旧树上谣言通道是结构性死的，而死因不是常数 5.0**。逐项拆开（探针挂既有 Sim.decision_sink，只读、不抽 RNG）：greet 对同一个人无条件发出，greet−gossip = urgency*0.1 + fam*0.05 + 1.0 − 爱八卦?8；社交候选只在 social≥SURVIVAL_GATE 时存在 ⇒ urgency≤64 ⇒ 非爱八卦者这个差恒 ≥1.2，而平局抖动只有 randf()*0.5 ⇒ **greet 严格支配 gossip**，实测非爱八卦者在 25567 次『有 gossip 候选』的决策里赢 0 次（N∈{12,20,60}×seed{1,5}全格）。同时 `_observe_wealth` 每夜产的 W:* 从第一夜起就把每对(说者,听者)唯一的 gossip 槽占死：N=60 seed1 的 gossip 候选 subject 里 R1 占 2.1%、W:* 占 93.2%。⇒ 12 个人设里只有阿丽(爱八卦)能转述传闻，且她讲的多半是贫富闲话 ⇒ R1 恒止于第 1 跳。证据（60 天，逐 seed 展布）：R1 知晓人数 N=12 seeds1-12 改前 2,3,3,2,2,2,2,3,2,3,3,3 → 改后 7..11；N=16 改前 3,2,3,2,2,3,3,3,4,2,3,5 → 改后 9..13；N=20/N=60(seeds 1,5,13) 改前 2,3,2 / 2,2,2 → 改后 14,16,13 / 53,54,55。**传播链最深跳数改前恒为 1（9/9 格）、二跳人数恒为 0；改后最深 5-12 跳。**★取 6.0 不取 8.0 是量出来的：8.0 在 held-out 13-30 × 60 天上把软门跑破（#40 产出闭环 16/18 < 门槛 17/18），6.0 是 17/18，改前是 18/18。机制不是『八卦把产量吃掉』——18 个 held-out seed 的最差货满足率**中位数是涨的**(0.691→0.733，柴薪 0.825→0.853)，涨的同时**尾巴变长**(最小 0.500→0.454，2 个 seed 掉到 0.50 地板下)。柴薪全镇只有【杂役】一个产者，他 60 天的在班次数改前就在 3-12 之间摆，改后摆成 0-11；而 #40 供给臂是 min-over-货 × min-over-seed，**改前 18 个 held-out 的最小值恰好 0.500 = 门槛本身，余量本来就是 0**。这是本次改动最诚实的代价，写在这里免得下一棒以为它是干净的。gossip_rep **没有被压死**（硬要求 1）：N=60 60 天 7624/7664/7999 → 7677/7544/7996（−0.7%/−1.6%/−0.04%）；N=20 994/1047/1091 → 923/986/839；#16 声誉传播在 N=12 与 N=16 上各 12/12 绿。同一 commit 里 `Invariants.gd` 删掉了 #5 谣言传播的 `or not small_n`（大 N 豁免）。⚠ **删豁免本身不改变任何一格红绿**：负对照（隔离副本，两键设 0 = 改前轨迹，N=16 seeds 1-12 × 60 天）⇒ #5 仍 12/12 绿 ⇒ 那条豁免在 N=16 上**从来不承重**，没牙的是阈值 `>=2` 而不是豁免。detects（实测变红）：`gossip_news_bonus = -100`（消息档永不当选）⇒ N=16 seeds 1-12 **#5 红 0/12、软门破**，首违 detail『知道 R1=1 人 最深0跳 [aria]』。三份提交锚同 commit 重烘：Harness seeds 段、DetGate scenarios 段、ModelPathGate 锚。留出种子 13-30 × 60 天：硬不变量 改前 18/18 → 改后 18/18，逐 seed 饿穿两侧恒 0；软失败 改前 0 → 改后 1 个 seed（#40 @ seed 22，柴薪 0.48）；事件数 3162-3480 → 3227-3542；digest/event_digest/逐 tick 链 18/18 全部移动。",
+      "2026-08-01 · Q1 派系接触门：意见不再瞬移 ⇒ 世界轨迹蓄意移动（docs/65 / docs/64 §一 / docs/47 R12）。改的是什么：`_recompute_factions()` 的归堆判据从「对齐」改成「对齐 **且** 打过交道」（`_aligned(...) and _acquainted(id, m)`）。判据取 `familiarity >= faction_fam_th`（1.0）：它全仓只在两处自增（`_commit_social` 被接受的社交 / `_resolve_commitments` 守约赴会）、从不衰减 ⇒ `>=1` 恰好等于「至少完整打过一次交道」（`_impt` 早就用 `<=1.0` 表示「首次接触」）。为什么必须动：旧树上只改**一个人的私有 `attitudes`**（零事件、零信念、`event_log` 一个字都没多），别人的 `faction` 在**下一个日界**就跟着变，而 `faction` 直接进候选生成（endorse / rally_oust / 同派系亲和）与接受判定（`_faction_term` ±8.0）。★ 本棒把这一步从【时序推论】换成【构造隔离】：把被改动者从 tick 0 起钉在自造平面 `q:cell` （`_same_plane` 比 space+floor）⇒ 他从头到尾不可能进任何人的 `_nearby_agents`；隔离自证逐格打印：同区 tick=0、familiarity=0，**25/25 格全为 0**。改前：该隔离臂在 5×5 网格（N∈{12,16,20,24,60} × seed∈{1,5,7,13,21}，10 天，t0=1200）上**9-10 个格有别人当夜换派系（4-16 人）、5 个格世界 chain 真的分叉**；改后 **25/25 格 chain 逐字节相同**（`chain同=true`）。★ 可 ablate：`faction_fam_th <= 0` ⇒ `_acquainted` 恒真 ⇒ **逐字节回到重烘前**（实测：seeds 1-12 × 60 天 + `--golden` ⇒ 金标一致 12/12、含 12 条逐 tick 前缀链，S0 GATE PASS）。同一次改动里还有两处，两处都在门关时整段跳过：① `_seed_scenario()` 的 `faction` 定向场景补种【组内 familiarity】（照同一函数里 `freerider` 分支已有的做法）——不种的话这条场景第 1 天一个派系都没有，等于把它自己要测的机制关掉；② 新增只观测的累计计数 `Sim.fac_unmet_placements`（决策路零引用，与 `endorse_events` 同一档）。★ `#25` 跟着收紧成合取式（docs/41 §2 第四个盲区：名字是合取而实现只查一半，#39 就这么漏的）：现名为「S3派系派生一致(对齐且相识)」，三个计数分开报。⚠ 最值得写进锚里的一条：**只查终态的那版 `#25` 在 CI 自己的配置上没有牙**。负对照（隔离副本，只删 `and _acquainted(id, m)` 一处）：N=12 × 20 天 ⇒ **3/3 全绿**（终态未谋面同派系=0）——因为 12 人的镇跑完之后人人都认识人人；而 N=60 × 20 天 ⇒ 红 0/3（未谋面同派系=15）、N=12 × 1 天 ⇒ 红 0/3（=3）。⇒ 加上累计计数之后，**同一个变异体在 N=12 × 20 天上红 0/3**（终态未谋面同派系=0、**全程未谋面归堆=32**），未变异的树在三个 fixture 上均无假红。★ 通道没有静默消失（docs/64 验收 3），seeds 1-12 × 60 天、同一条命令只差 `faction_fam_th`：endorse 257 → **198**（−23%，覆盖 seed 12/12 → 12/12）、rally_oust 325 → **244**（−25%，12/12 → 12/12）、discuss 970 → **1053**（+8.6%）；门控事件类 16 种全部仍在发生；#16 声誉传播 12/12、#20 谣言变冷 12/12、#26 同派系亲和 12/12。代价明写：派系参与度（faction_size>=QUORUM 的 agent-tick）探针里 20641 → 15369（N=12 s1 对照臂，−26%）；`pact_dissolved` 3（3/12 seed）→ 0——它**不在**门控类里、硬 #33 是条件式判据所以两边都绿，基数又只有 3，按 docs/41 §5 只报告不下结论。⚠ **修好的只是一半，另一半按构造修不掉**：接触门把【从没见过面】那一半打成逐字节零影响（= 多镇/多 domain 那一格），但【见过面】那一半仍然存在：`lin` 改主意 ⇒ 不再与 `tie` 对齐 ⇒ `tie` 掉回单人、跌破 QUORUM，而 `tie` 没经历任何事件。原因：`_aligned` 比的是对方**当前真实的** attitudes，任何建立在真实 attitudes 上的全局划分都有这个性质；真正的局部化要 per-agent 的「我以为他怎么想」模型 = 架构改动 ⇒ 按 docs/41 §0.8 先过外部对抗评审，本棒只留建议。留出种子 13-30 × 60 天：硬不变量 改前 18/18 → 改后 18/18（两侧均 S0 GATE PASS），软失败 改前 1（#40 @ seed 22，柴薪 0.48）→ 改后 1（#40 @ seed 18，口粮 0.42），逐 seed 饿穿两侧恒 0，endorse 365 → 304（17/18 → 18/18 覆盖）、rally_oust 358 → 312（18/18），事件数 3227-3542 → 3219-3592。三份提交锚同 commit 重烘：Harness seeds 段、DetGate scenarios 段（重烘后复跑 PASS 16/16）、ModelPathGate 锚。",
+      "2026-08-01 Wave U · U1 把 T1 的镇库回拉（production.stock_pull）【打开】⇒ 世界轨迹【蓄意】移动（docs/79 §一 / docs/47 R12）。为什么：#40 的红在 60 个 seed 上是基率不是特例（docs/72），根因是产出侧【开环】——Sim._object_candidates 给工位广告打分时一项都不读 town_stock，空仓与满仓的分数逐位相同（docs/76）。T1 做出了机制但键没进出货数据，因为打开它会把 ci.sh 4a（N=16）顶红。U1 找到的原因不是 T1 猜的那个（『6 个货位有 2 个被豆子/话本永久占着』——在 N=16 上豆子只占 7/12，而且用干预证伪了：把那两种货的产量砍到真的会缺，key 开着时红格数一个都没少），而是 T1 §9.2 自己推出来的那条约束没有任何固定的 lo 能满足：work_pull_mult(N)·lo/den < 1 要对所有 N 成立就得 lo<=66。改动：Sim._object_candidates 里【人口项与库存项不叠加】（wp_applied 时把 stock_pull 乘子除以 work_pull_mult）⇒ 合成的工作吸引力乘子恒为 [lo/den, hi/den]、与 N 无关；并把 production.json 的 stock_pull{hi:110, lo:90, den:100} 写进出货数据。★N=12 上 work_pull_mult 恒为 1.0 ⇒ U1 那四行一条指令都不多跑 ⇒ 与只开 T1 的键【逐字节相同】（隔离副本实测 seeds 1-12 12/12 + seeds 13-60 48/48 digest 相同）。★摘掉 production.stock_pull 键 ⇒ 整条机制关闭、逐字节回到 Wave T 末（缺数据即零扰动）。★hi==lo==den ⇒ f≡1.0 逐位（零假设对照）。验收（门自己的判决行，全部多 seed 网格）：--seeds 49-60 PASS ✅ #40 12/12（未改动的树上这一格是 FAIL ❌，docs/72 §1.3）；--seeds 13-30 PASS ✅ 18/18；--seeds 31-60 PASS ✅ 29/30（首违 seed 44 豆子 0.50）；4a（N=16 seeds 1-12）PASS ✅ 12/12，零缺货货数 max 回到 3（= 未改动树的余量）、最差货 min 0.627（未改动树 0.556）。硬不变量：12/12 · 18/18 · 30/30 · 12/12(N=16) 全绿，饿穿 0。剩余边界（两条，都据实记在 docs/80）：①seed 44 豆子 0.495 仍低于 SUPPLY_FLOOR 0.005（软门过，T1 自定的 0/48 未达标）；②N=24 seeds 1-12 从 0/12 回归到 2/12（ci.sh 今天不跑这一格；而 N=60 seeds 1-6 从 4/6 改善到 0/6）。判据一个字节没动（Invariants.gd 未改），SUPPLY_FLOOR/SUPPLY_MIN_DEMAND/SUPPLY_MIN_DAYS 与软通过率门均未放宽。",
+      "2026-08-01 Wave V · V1 给【一门手艺】装上社会后果（production.craft_credit，出货只开【环卫工】）⇒ 世界轨迹【蓄意】移动（docs/83 §一 / docs/47 R12）。为什么：改前的清点表实测——全镇 497 条 produce 事件里 witnesses 非空 0 条、5540 条 pay 事件同样 0 条，而产出那一刻工位旁平均站着 0.44-3.32 个人；一个岗位今天唯一能改到别人社会状态的路是 _shortage_fallout，也就是他【没干好】的时候，而木匠/渔夫/商贩连这条都没有。⇒ 全镇的『社会产出』只有一种口径：怪谁。本次改动是它的正向镜像，逐条照抄同一个形状（带目击者的事件 + 在场者一手信念 via=seen + _adjust_standing 走同一道守卫 + 旁观者记忆），不新增事件类型（复用 produce，已在 Main.FEED_SKIP 里）。验收：零扰动对照——删掉 production.craft_credit ⇒ seeds 1-5 digest 5/5 与改前逐位相同；负对照——CR:环卫工 信念持有者 0/12 seed → 8..11 人，produce 事件被看见 0 → 13..28 条/seed，而同一次运行里未被触碰的 8 个岗位在 12 个 seed 上恒为 0（内建零假设）；留出种子 13-30 硬 18/18·#40 18/18·新增硬 #41 18/18（改前同格 18/18·18/18），31-60 硬 30/30·#40 29/30（首违 seed 32 上限臂）——改前同格 29/30（首违 seed 44 下限臂），红格数不变；#16 的前件『存在坏名声』在两条臂上都是 True 12/12（没被正声誉抹平）、#5 知道 R1 的人数逐 seed 完全相同、#20 停传数同量级。剩余边界两条：①本机制的行为效应量在 N=12×12 seed 上【分辨不出】——未被触碰的岗位接受率移动幅度比被触碰的还大（木匠 +0.047 / 渔夫 -0.055 vs 环卫工 -0.020），所以能声称的是『社会痕迹存在且可门控』，不是『被看见干活的人更受欢迎』；②只在 N=12 上量过社会侧，N=16/24/60 的社会通道数没量，而这一族参数在 N 上已知非单调（docs/80 §3.5c）。回滚成本=删一个 JSON 键。",
+      "2026-08-02 Wave Y · Y1 生存线以下把人推向【物件】那条社交出路（utility.obj_survival_pull=1.0 + Sim._survival_pull）⇒ 世界轨迹【蓄意】移动（docs/96 / docs/47 R12）。改的是什么：_object_candidates 给一条广告打分时，若该广告的 need 是 social、且 social 当下【就是】argmin，则 score += maxf(0, SURVIVAL_GATE-social) * k。为什么必须动：X1 逐 tick 追出来（docs/92 §1.2），_social_candidates 在 _min_need<SURVIVAL_GATE 时返回 []，而锁死恰恰发生在【那个 argmin 就是 social 自己】时——这道门关掉的正是唯一能补它的通道，social 从 36 以 0.15/tick 自由落体到 0，中途无自救分支；两颗硬红的触底 tick 成因 27/27 与 125/125 全是 GATED，而 ALONE 恰为 0（身边 17 人、11 个空闲）。出路一直开着（长椅「社交」+40 / 吧台「闲聊」+42，_object_candidates 不过生存门），只是赢不下 argmax。★三道门：①缺键/为 0 ⇒ score+0.0 ⇒ 逐字节回到重烘前（实测 N=40 seeds 1-12 的 12 个 Inv.digest 逐位相同）；②只对 social —— 负对照臂（同 k 施加到【除 social 外的四条 need】）对基线是 8 好/9 坏/7 不变 p=0.50，与什么都不做分不开，而「全部 need」臂减掉它是 16 好/3 坏 p=0.0022 ⇒ 效果整个住在 social 这一项里；③只在 social 是 argmin 时 ⇒ 构造上不可能压过更急的需求，k=1.0 上这道门免费（带门/不带门 22/22 逐位相同），k=3.0 上只剩 12/21 ⇒ 大剂量的额外收益有一部分正是靠压过更急的需求换来的。★剂量取 1.0 是量过八档（0.5/0.75/1.0/1.25/1.5/2.0/3.0/10.0，N=40 各 24 局）之后选的：收益侧【单调、无内点顶点】（对零假设臂 obj_dist_penalty=0.401 的最长锁段配对比分 17/7 · 17/5 · 18/6 · 16/5 · 19/5 · 20/4 · 18/6 · 20/2），所以顶点由结构判据定：这一项的上限 36k 不该超过它所修饰的分数本身（长椅满 urgency 的 benefit=66.67）⇒ k=1.0 是 0.54 倍、k=2.0 是 1.08 倍（加分项反客为主）。⚠️ 我原本用的判据是「取最大的、能让 N=12 逐字节不动的剂量」，被【留出种子】当场证伪：同样 N=12、同样 k=1.0，金标那 12 个 seed 一个不动，而 seeds 13-30 里动了 5 个（18/25/27/29/30）⇒「金标 12/12 不动」只等于「金标抽到的那 12 个 seed 不动」，拿它选剂量就是把剂量拟合到一道门的边界上。★摘要为什么只动一格：三份锚都在出货树上跑过 —— Harness seeds 段 12/12 金标一致（含逐 tick 链）、ModelPathGate 失败 0，两份都【没动】；只有 DetGate 的 betray seed 1 移动（2895846081/326780007998127894/1117411208 → 4067550143/979380727193785299/1133450791，硬不变量 16/16、两跑一致 16/16、数据指纹一致 16/16，只有摘要动）。三份锚仍按 R12 同 commit 全部重烘（E1 实测只烘两份会让 ci.sh 变红），而重烘后的 git diff 只有那一格的 4 行 —— 烘了三份不等于三份都动了。★N=12/N=16 回归：两格改前/改后 S0 GATE 均 PASS，硬不变量各 12/12 全绿、软失败 0、事件类 seed 覆盖一类没掉；N=12 seeds 1-12 三元组 12/12 逐位相同、活性 25 类全部 ±0.0%；N=16 移动 6/12 个 seed（真的在动），基数>=20 的事件类没有一类变动超过 5%。留出种子 13-30 × 60 天：硬不变量 改前 18/18 → 改后 18/18，软失败 0 → 0，逐 seed 饿穿两侧恒 0，三元组动 5/18；seeds 31-60 × 60 天 改后 硬 30/30 全绿、软门过。★N=40（本次修法真正针对的那一格，24 局）：social 全局地板中位 16.52 → 17.92、最长 social<GATE 连续段中位 151 → 131、两颗硬红（seed 8 的 0.00/367、seed 56 的 0.00/380）→ 19.20/155 与 20.65/110。⚠️ 判据一律用连续余量对着零假设臂判、不看红绿：那条与社交毫无关系的 obj_dist_penalty 0.400→0.401 同样把两颗硬红都消掉了，同时把地板中位从 16.52 弄到 13.90。判据一个字节没动（Invariants.gd 未改），SURVIVAL_GATE/SUPPLY_FLOOR/软通过率门均未放宽。",
+      "2026-08-02 Wave Z · Z2 把 V1 的手艺口碑从【一门】铺到【四门】（production.craft_credit 增 面点师 / 咖啡师 / 教书先生 三行）⇒ 世界轨迹【蓄意】移动（docs/101 / docs/99 §二 / docs/47 R12）。★改的是什么：出货树上只有 game/data/production.json 一个文件、三行数据；Sim.gd 与 game/bench/ 的判据一个字节没动——#41 本来就是读 craft_credit 的。★为什么不是【全铺开】：8 个产出岗位里 4 个铺不得，而这是量出来的不是挑出来的。#41 真正判的是『不豁免的 seed 里至少被看见一次』，所以要量的不是 V1 报的『平均在场人数』，而是【余量】=『produce ≥ CRAFT_MIN_WORKS(5) 的 seed 里 bys>0 的最小值』。跑了 108 局（N=12 seeds 1-60 × 60 天、N=16 seeds 1-12 × 60 天、零假设臂 utility.obj_dist_penalty 0.400→0.401 共 12 局、以及 CI 短局所在的 30 天 / 20 天各 12 局）：面点师 5 · 咖啡师 4 · 教书先生 3 · 环卫工 3（已在树上）｜泥瓦匠 1 · 杂役 1 · 木匠 0 · 渔夫 0。门槛取 3 = 环卫工自己在最紧那一格（20 天）的余量，抄的是【已经被接受的风险水平】，不是我挑的数。渔夫是【结构性】的零（321 条产出 0 条身边有人：工位 bench_pier 在 map.areas.dock，而那个区是 F5 专为这一个工位新建的、全区没有第二条广告位 ⇒ _nearby_agents 恒空，开了它 #41 在 60 天格上 43/48 个 seed 直接红）；木匠的余量 2 在零假设臂上就掉到 0（seed 2 产出 8 次、一次没被看见）⇒ 那个 2 是巧合不是性质。★验收：①零扰动对照 12/12 逐字节（把三行摘掉、只留注释键 ⇒ digest 与改前逐位相同）；②金标先自己红出来（36 处 = 12 seed × 3 个摘要，首个分叉第 4-22 天），而同一跑硬不变量 12/12 全绿（含 #41）、#40 软 12/12、det 3/3；③留出 13-30 改前/改后各 18/18 硬全绿 + #41 18/18 + S0 PASS；④留出 31-60 两侧同为 30/30 硬全绿、#40 同为 29/30 且【同一个 seed 32、同一条上限臂】、#41 30/30；⑤DetGate 硬 16/16、BackendGate 8/8、ModelPathGate 失败 0。★活性侧跟着动的数，记在这里免得下一棒当成新漂移：aid 68→84（法定覆盖 11/12→12/12，需 ≥6）、confide 91→80（门槛 60，余量 31→20）、endorse 267→192、gossip_rep 6795→6219；而 leak / betray 这条路【第一次】在默认沙盘里跑起来（改前 12 seed 各 0 条，改后 leak 7 条 / betray 1 条）。★没做到的：泥瓦匠 / 木匠 / 杂役 / 渔夫 四个岗位的社会产出仍然是零，而其中三个的成因在【地图】不在【数据】——要接上他们得动工位落点，那不是本键能修的。",
+      "2026-08-02 Wave AA · AA3 把社会痕迹从【产出侧】接到【消费侧】（商贩的『赶集』：全镇唯一一条人→人的货钱通道）⇒ 世界轨迹【蓄意】移动（docs/106 / docs/103 §三 / docs/47 R12）。★改的是什么：①Sim.transfer 加一个可选第五参 witnesses（缺省 [] = 逐字节不变，形状逐条照抄 V1 给 _stock_move 加的那个可选参）；②新 Sim._trade_credit / _trade_fallout（结构照抄 _shortage_fallout，符号翻过来，含它的【日名额】）；③数据键 production.vendor.trade_credit；④新硬不变量 #43。★为什么不是给商贩补一条 craft_credit：他没有 produce 记录，#41 会因为「produce < CRAFT_MIN_WORKS」把他【静默豁免】——那是一道结构上不可能变红的门。★【消费侧的被看见是什么】是量出来的（新探针 game/bench/aa3_vendor_census.gd，9 格 108 局）：余量（不豁免的 seed 里『有见证者的成交条数』的最小值，门槛 3 拄自 Z2）：D1 买家自己 15 · D2 商贩当场在场 3 · D3 有旁人 27 · D4 D2且D3 3 · **D5 钱真到手且有旁人 13**（出货实现用的就是 D5）。⇒「商贩当场在摊子上」这条读法被证伪：_market_open 只要求他【在班】、不要求他【在摊上】，实测他只在 19-24% 的成交里与买家同区（摊子在无人售货），而 D2/D4 的余量 3 正是被零假设臂压出来的——与 Z2 否掉木匠同一条理由。★standing 出货取 **0.0** 而不是镜像规则给的 0.5，两条理由：①镜像的【负半边】在他这里结构上不存在（goods.口粮.blame 指的是面点师，赶集时摊子空了也是怕面点师）⇒ 照抄 +0.5 等于只抄镜像规则的正半边；②实测：留出种子 31-60 的 #40 红格集合——改前(摘键) {32} ｜ 零假设臂 0.401 {32,36} ｜ 零假设臂 0.399 {36} ｜ standing=0.5 {32,36,49,60}（软门 26/30 破）｜ **standing=0（出货）{32}，与改前同一个集合**。★验收：零扰动对照 12/12 逐字节（摘掉 trade_credit 键、只留注释键 ⇒ digest 与改前逐位相同，且与 docs/101 记的 Z2 出货基线逐位相同）；重烘前金标自己先红：**18 处 = 12 个 seed 的 digest（账本/观测）+ 3 个 seed（2/3/11）的 event_digest 与 chain（行为）**⇒ 观测全变、行为只动 3/12；43 条不变量在金标红的同时全绿；留出 13-30 硬 18/18、留出 31-60 硬 30/30，两侧 S0 GATE 均 PASS。⚠ 代价写在这里：留出 13-30 的 #40 从 18/18 变成 17/18（seed 26 下限臂、豆子 0.42），而两条零假设臂在该格都是 0 红；但 48 个留出 seed 合计的 #40 红数是 改前 1 · 零假设 2 与 1 · **出货 2** · standing=0.5 是 4 ⇒ 出货落在零假设带内。",
+      "2026-08-06 AA3-FIX（docs/112）· 修商贩自证：buy:赶集 的 pay 事件 witnesses 从此滤掉收款方（商贩本人）（Sim.gd 采集侧），#43 sales_w 改数【商贩以外】的目击者（Invariants 观察侧防御纵深）。纯观测变更、零行为变更：重烘前金标先自己红——Harness 12 处不符全是 digest 行（event_digest 0/12、chain 0/12、逐 seed 事件数相同）；DetGate 15/16 只差 digest（freerider seed3 无商贩同区带证成交 ⇒ 不动）；ModelPathGate 4/4 只差 digest、landed 与候选规模行逐位对上。结构原因：witnesses 只折进 Inv.digest 的 wstr，event_digest/chain_step 不折，且 _trade_fallout 本就跳过商贩。负对照：摘 trade_credit 键 ⇒ 12/12 逐字节回到 AA3 之前（与 docs/106 §四.1 预 AA3 行逐位同）；零假设臂 obj_dist_penalty 0.400→0.401 的自证计数 36/697 仍在基线带（基线 40/715），修后 12/12 全 0（结构性归零，不在零假设带内）。留出 13-30 两侧 18/18 硬全绿、digest 动 18/18、event_digest/chain 0/18。",
+      "2026-08-07 · AS1/E1 车道 E 第一片：柴薪进口 lane 上线 ⇒ 世界轨迹【蓄意】移动（docs/147 / docs/144 §六 / 用户 2026-08-07 放行移金标）。改的是什么：①新增 game/data/logistics.json（一条 import lane：柴薪 batch=4/every_days=3、节点 port_dock），off 门=删文件即逐字节回到今天；②Sim.gd 新增 _logi_on/_compile_logistics(码头节点，无 advertises、标 logi=true ⇒ _build_nav 不当阻挡)/_logi_import（日界 _stock_nightly 之后 day%every_days==0 纯 f(day) 经 _stock_move 唯一通道写 type=import 事件注入镇库，无 randi/randf/Time/浮点，件数整数）；③Invariants #38 的 +delta 集加 import（同 produce 记正号）、社交事件排除集加 import、新硬 #44 进口溯源（actor∈声明节点、货∈lane货，对称 #39、入 HARD_IDS）；④Main.FEED_SKIP 加 import（ledger 事件不进社交播报）。digest 为什么必然动：event_log 新增 import 事件（seeds 段 12seed×60d 共 235 条、scenarios 段每局 6 条）+ 柴薪供给松动改缺货/消费/加价轨迹（首个分叉落在第 3 天首次到港），故 seeds 段 12/12、scenarios 段 16/16 全部移动（event_digest/chain 同动；事件数有涨有落——seed 1 3336→3416、seed 3 3402→3293 缺货变少）。★零扰动对照实测：删掉 logistics.json ⇒ 本表 seeds 段 12/12 逐字节回到重烘前（含 12 条逐 tick 前缀链）、S0 GATE 金标一致 12/12、det 3/3。★两跑一致 det 12/12。★#38 绿（seeds 1-12 12/12、留出 13-30 18/18）+ 负对照（绕 _stock_move 直写 town_stock ⇒ 硬 #38 0/3『柴薪 现存=20 账本算得=−60』、而 #44 仍 3/3 绿）；#44 绿（12/12·18/18）+ 负对照（lane 指向未声明节点 ghost_port ⇒ 硬 #44 0/3『actor 非声明节点』、而 #38 仍 3/3 绿）——两条负对照互证 #38/#44 各查一件事。★留出 13-30 硬 18/18、#40 软 18/18、饿穿 0；柴薪 rate 改前/改后 0.61/0.89/0.98 → 0.77/0.94/0.98、缺货天数中位 9→7、屋瓦满足率普遍升（seed 1 0.883→1.000）——蓄意松动（self-contain 弧 P1『外部管够』），而柴薪 0/30 seed 全年零缺货 ⇒ #40 上限臂『缺货绝迹』一格没红（arm_high 0/30）。★N=16/24/60 各 12 seed #40：imports-OFF 红 1/0/1 → ON 0/0/0，最差货 rate 贴 SUPPLY_FLOOR（0.72/0.61/0.54，非 1.0），柴薪逐 seed 仍缺货，N=60 上进口甚至让最差货略降（0.564→0.543）⇒ 没把 #40 灌绿。★不碰钱：transfer / economy.json / 硬 #34 全程一字未动（进口在 E1 免费到货）。",
+      "2026-08-08 E2a（AS4）import 付费 external_coin+#45：钱跨镇边界第一片——import 到货后经 transfer('town','external', applied×price_per/price_den) 把货款搬进 external_coin（收进 #34 守恒集）。三锚全动且可归因：每个 import 日新增一条 town→external 的 pay 事件进 event_digest（modelpath C 段/scenarios 必移）+ town_coin/external_coin 状态进批量 digest/chain ⇒ seeds 12/12 全动、scenarios 16/16 全动、modelpath random_full 网格移。price_per=3/price_den=4（0.75 钱/件，AS4 标定，纠 docs/154『盈亏平衡≈0.8』的理由：town 有饭钱盈余、真实 N=12 盈亏平衡≈1.3）。硬 #45（import 付费溯源 external==Σprice_per×applied）+ #35 补 external 非负臂。off 门：删 economy/price_per 回 E1 免费到货逐字节（金标 12/12 一致实测）。BLOCKER-1：start_new 加 external_coin=0 per-run 重置，goto_tick 回放一致实测（禁用则 econ_total0 被残值污染 204→260、#34 反盖绿）。"
+    ],
+    "scenarios_baked_by": "godot --headless --path game --script res://bench/DetGate.gd -- --seeds 1-4 --days 20 --bake-golden game/bench/golden_digests.json",
+    "scenarios_godot": "4.6.2-stable (official).71f334935",
+    "seeds": "1-12"
+  },
+  "scenarios": {
+    "betray": {
+      "1": {
+        "chain": "2904879946",
+        "days": 20,
+        "digest": "1507511770",
+        "event_digest": "1688571391270272181",
+        "events": 1138
+      },
+      "2": {
+        "chain": "1123985400",
+        "days": 20,
+        "digest": "1830275300",
+        "event_digest": "194214240608130841",
+        "events": 1104
+      },
+      "3": {
+        "chain": "4170866012",
+        "days": 20,
+        "digest": "1322348419",
+        "event_digest": "2820515784801409686",
+        "events": 1085
+      },
+      "4": {
+        "chain": "4036607682",
+        "days": 20,
+        "digest": "515106575",
+        "event_digest": "7371638148277150540",
+        "events": 1146
+      }
+    },
+    "default": {
+      "1": {
+        "chain": "822571262",
+        "days": 20,
+        "digest": "50312461",
+        "event_digest": "3629594020605994113",
+        "events": 1210
+      },
+      "2": {
+        "chain": "3090874604",
+        "days": 20,
+        "digest": "2155611672",
+        "event_digest": "3314729176861119663",
+        "events": 1127
+      },
+      "3": {
+        "chain": "607113484",
+        "days": 20,
+        "digest": "2898209290",
+        "event_digest": "7075321665060658292",
+        "events": 1080
+      },
+      "4": {
+        "chain": "770149539",
+        "days": 20,
+        "digest": "2991033035",
+        "event_digest": "3428381461234165221",
+        "events": 1119
+      }
+    },
+    "faction": {
+      "1": {
+        "chain": "1109070579",
+        "days": 20,
+        "digest": "33609720",
+        "event_digest": "6817245481592562590",
+        "events": 1154
+      },
+      "2": {
+        "chain": "2577051776",
+        "days": 20,
+        "digest": "1483230916",
+        "event_digest": "5273380738303056191",
+        "events": 1029
+      },
+      "3": {
+        "chain": "1997893102",
+        "days": 20,
+        "digest": "3183392241",
+        "event_digest": "5916173283137690233",
+        "events": 1077
+      },
+      "4": {
+        "chain": "3537630794",
+        "days": 20,
+        "digest": "3038593668",
+        "event_digest": "212471297739731828",
+        "events": 1027
+      }
+    },
+    "freerider": {
+      "1": {
+        "chain": "973960202",
+        "days": 20,
+        "digest": "1404790652",
+        "event_digest": "4917436689619190789",
+        "events": 1077
+      },
+      "2": {
+        "chain": "3856785208",
+        "days": 20,
+        "digest": "2843880043",
+        "event_digest": "7745481974981708553",
+        "events": 1098
+      },
+      "3": {
+        "chain": "3914256970",
+        "days": 20,
+        "digest": "949270148",
+        "event_digest": "8409841211951949721",
+        "events": 1037
+      },
+      "4": {
+        "chain": "3505259344",
+        "days": 20,
+        "digest": "4290032219",
+        "event_digest": "3807196574512274976",
+        "events": 1114
+      }
+    }
+  },
+  "seeds": {
+    "1": {
+      "chain": "2254877672",
+      "chain_ck": "af0fcaae,aa6d5fee,978ff5f8,541c4628,d810a40b,29a5321b,3f5c3102,53abc562,54918524,57a954f7,a9829923,a79fefcb,2edb1c61,fe40f487,48f2b176,83ea5512,b0cbd521,1f774b9f,8c5ffced,310770fe,1db7bc53,64e14d8b,f5e62bed,c265f7e4,bae1e6a6,237f58e2,59b2195e,94d7710,7e4c47d,c151d558,c3710e3,1adf8dc4,b28539dd,c44cd974,15e0d7dc,2ea73c7,6fd37843,423c75a0,9bb0fe3f,60be09a0,12bfa96b,1ad2f539,3f9d2d30,160bd7dc,f987384e,3f8b0518,c3d01b1d,db9e8e23,d2caf0f4,667a6d8a,12109eb2,f3333a60,d0623b38,8a07d9fc,8dbe6c16,a2898fca,34b24868,f1ce7ceb,4595df30,8666b3e8",
+      "days": 60,
+      "digest": "2840124",
+      "event_digest": "4092798599200292446",
+      "events": 3436
+    },
+    "10": {
+      "chain": "4233568159",
+      "chain_ck": "f9b89b25,ed73999f,edcf5583,416c15a1,fcfeeafc,94ed63b9,7018deb4,2cf693e5,12ead7b1,f0428020,a3ade02a,cdb9c65d,b6093742,1c3c4ff8,e59fc2bd,37b3e411,d2e7d92d,1235be0b,fc214557,97562298,e94f57b1,ca99d773,b2534f0c,6b0cd230,9cd060e1,16b15f23,8ea44083,847958cc,bc697d6,f5422043,5a70a60,6b5092c6,98c0f9bc,f2e009bc,f87bc45a,afc6006d,5210a662,b4db5e2c,790132a3,fba861bd,23b396bf,f40c0779,e95404e2,9e4a044d,d776e703,3fbeea8e,e1430e1c,94e1ff37,e6d900af,4a71fda5,df9b24f2,9bc419c8,b0798c5b,22c2e64c,e2080c9,f15ab106,a2b6c5f6,3bf3a8d5,d3753a24,fc571f9f",
+      "days": 60,
+      "digest": "2253901785",
+      "event_digest": "1817827944705377622",
+      "events": 3357
+    },
+    "11": {
+      "chain": "3634361055",
+      "chain_ck": "945383b0,19426bf2,8e60f6c5,e65384a7,38425b39,df1bf238,4551107d,675cac05,58b9c4fa,a07e80b4,1193a157,35c587ce,c2a9e150,11ba5904,dc6a2b66,8db5fa05,2de23863,1fa753db,b2dfc0e3,88dbb92b,3e211f63,e6d27556,c68b66fb,d97a91c0,8c47f121,afaee9cb,7e944682,a9b04bfe,9277ec77,138cbe87,e37ba833,853c216f,57e9d1a6,4edc47d1,8239db58,806c965d,735018c7,5e9f8ba7,da678d6b,7157fc1c,117d90b5,da1fbb1d,34ba01aa,ac0ad5c0,efe1348f,20194dbd,e76bc218,9c4899e5,ee5be32e,d5b357a,7e4412aa,e957a82f,9af936a4,644dbfd2,e18cfc0b,a7b06a47,515041ad,cee16b87,f52401fe,d89ff2df",
+      "days": 60,
+      "digest": "340019897",
+      "event_digest": "612877900024875855",
+      "events": 3244
+    },
+    "12": {
+      "chain": "825882696",
+      "chain_ck": "2a0c1a8f,c5bf356a,8385fb66,28cd2f24,8ad7b999,b208437c,41fa184b,c07682dc,bf0e21a0,5d3d44a7,e0327138,27b42d23,2fa7298d,19207ff3,e0d6a58,ed096d23,f0a210ac,34abde6e,835eb72c,acc4ce58,2725a7f8,7254eb6b,338b047,16c3ff2b,d845b3e,b0a7b94b,ff601d96,3eb910ba,981920ae,2ec35bf7,727b3246,f27d2e01,6c37379c,1eb36b36,52436716,d86a6975,9d7186a7,e9f3c4be,21234561,e0628687,5e446956,d1ac617a,b62f311,df34f8dd,ebd9b026,5557ea4b,3db49330,8a37a56a,2a00e6,fcaf2c03,447bec70,a7430276,bc1cab03,d4180065,309ee95a,a7050952,9f92bbfe,bb47e446,1047b656,3139f848",
+      "days": 60,
+      "digest": "3491933784",
+      "event_digest": "5866698816528001575",
+      "events": 3452
+    },
+    "2": {
+      "chain": "538400807",
+      "chain_ck": "878718b3,5de64813,b048a872,c56fbb9f,e4abe787,6cad77f2,625b8c75,a8437c35,ed380666,e15201fe,cabee9a9,ae868a51,6febb8e,eefd3bb,bd82b6dc,8c71bb52,11952d20,d995a9f1,98cdd4c1,b83b00ec,38e941b2,4f0efa3c,ca0e5738,e5f8f0de,e38dfa7,61850fe8,74416c0d,cebd4967,5369eaa,d4ab3bc6,1b90931d,bc8983a1,c738b990,559aab1e,83c2f32a,d64e88bf,bd5cfaf0,c96bbebd,e2d8b02c,4a39ae8b,ac702b64,17ce5ab8,c9184aad,90b81cb0,9d7bb8ca,6b33a1e0,a914deec,717587d9,71fcfaf4,cb44e25e,3a2bef9f,6759fb2e,da116ae1,838a1511,102bd5a8,e626aab8,22bde8d1,eb7c48f0,de5365e5,20175827",
+      "days": 60,
+      "digest": "4093823934",
+      "event_digest": "8331822146057352562",
+      "events": 3494
+    },
+    "3": {
+      "chain": "2010296780",
+      "chain_ck": "544801fb,9f9e99a,be5a8c8,ddf8efb1,c40ceea7,2878bd6,1d862b99,7ba322fd,be94ffe1,5801e83e,d9c0df1f,a2a73a2e,d61d46c,8ff3598c,d3de5e68,c6d8a49f,79fa4f16,9e24540e,505de8ad,242fd10c,8e4658d5,898b7cb1,35a4e8a7,7bc8ea4e,df545554,e12f21b2,ecf3f450,1ca4bc80,351d0d8,8e5ec15d,6db964b4,16709b15,eb86651f,7a6a8d76,2ffa50b5,9e99d3de,28eb81bf,d9bdf5c8,26d975a4,e1f26e22,cdb29435,4496331f,944cee15,f691ca92,8d4ca05a,62f37818,36cfc2c8,b333d029,88d1fa38,10eba561,b89258c2,c1cbc2a9,6ff6bd45,fec81a9c,7f136c77,eb9d75e8,3ae60353,68f18a48,89ec3aa2,77d2b1cc",
+      "days": 60,
+      "digest": "1540898332",
+      "event_digest": "4080351559465144138",
+      "events": 3313
+    },
+    "4": {
+      "chain": "2115437313",
+      "chain_ck": "9a985763,97e46d5b,b0c7baae,363d0647,61cf5f87,d1021381,8047e81,e5a7bc4c,e1abca97,c9e16c81,5a3e47aa,375b81bc,55edd96d,7b770588,9832862,c025833f,8c286bb1,f44d01d5,b1f5ef3e,2de78ca3,c4bbb1c1,4147a7da,2eb9847,fef61565,49555c8d,ff4b1899,e45f503c,43bf4b8d,447bcbf4,a5262c61,4f54c2c8,37b92949,deae9bd3,cd52cdfa,6bb12d0b,fb215386,5ba58e8d,3dcf2b39,9a1b9aeb,5b1b380a,782a45a0,a215a46f,e2a80e90,f8676854,8b706fe,7365c59e,fa116458,fd724a19,1c7d9e21,12601963,44dd18aa,3e984d8e,c257e807,58e862a3,f8aa4029,7452c1c1,e82b3222,c5983653,7261d9ad,7e170301",
+      "days": 60,
+      "digest": "2449929165",
+      "event_digest": "4537391576808015231",
+      "events": 3305
+    },
+    "5": {
+      "chain": "415198601",
+      "chain_ck": "28f29147,7ad55f0,b69d19b2,3a1ffd96,b6e1c9f5,d2a1fde0,a57cf02e,7519aa32,d4307b94,39abb155,b4b5c691,96526290,b7e60ab,55def084,8a5476a3,a8316efe,b6d1c908,ac43ab31,ea8549d3,5e702d5,b37d0681,86d7efaf,5dd6c6bc,1515b2db,93880c17,1d32513e,a1d3c6f,8eaa8357,e44ab217,134481ad,941a75d4,1d855dce,8fa6a229,33f356d7,c60a9919,c8498011,8dc122d0,17f0095,83d2746a,715bff42,ce84d3b8,c2f56e66,974cba42,e7d40e7d,7bbf913b,2409c80f,608bf71a,7690e52e,1d6670d6,20ea507e,4457e8fa,de302061,4829b492,9835ae5b,5a389f84,d9dd3a8d,83b88454,d28f6ea7,8a1f0068,18bf6d89",
+      "days": 60,
+      "digest": "3733863849",
+      "event_digest": "2920716945527867270",
+      "events": 3542
+    },
+    "6": {
+      "chain": "579409559",
+      "chain_ck": "1573a38d,6e48a692,83c805d0,113b572e,818cd0e,99c61451,f9363506,20c9b3fc,3d3385d7,aa864ff3,3e88c953,29202a09,153cfa0,7b2fb99a,3e08e956,72af817e,f3c81e16,8c16f394,3d9d2070,bac319a1,cddf7ad8,2e1f00ad,4e8a2157,220860c7,4135b1a9,ede21493,6edc1318,6f6f30aa,5c3453b3,16547c2f,ae69ffd9,64ea0341,3b6e459,b47dfa2a,ce8fa198,4bc4c4c0,221e584f,b2df073d,dd7d5ea6,9caa936b,af929e82,7337ed88,9ba0e432,ca064ccb,5e03cedc,7daaf3a1,5a19de35,d8f1fc3c,e754936b,a7c48fff,4859b520,5616ea5e,584b44fe,723d1c2d,cbb5b811,5f7e9d75,28d45081,90dbbe2e,cfacc751,22891697",
+      "days": 60,
+      "digest": "2359456235",
+      "event_digest": "2230202333207861011",
+      "events": 3313
+    },
+    "7": {
+      "chain": "3601154677",
+      "chain_ck": "a43e7985,b130f96d,275b443e,8863de54,b5295399,66a5385b,fe25e74,ad2234d,cb4c9c6f,3ad9fc0e,4afaace2,b7809639,a823707b,a6023ade,5cdf7b04,a9539878,a5d59951,7c232cf6,b968b6b,8c8f7869,50802898,5c18bd7f,1c485667,f568ecf7,b23599b5,c8131192,740c1e13,677fd68f,ee6462d2,149941bb,6dc92d1d,176dba20,c427ed51,c499dd73,6b5b4b14,1d69e5e7,12ca230d,d80e9560,b97a7b1a,43f63ef8,8ac6c082,c7846437,39d1e092,a1a53081,18c8f69b,947ec21c,32243da8,7e04eb50,6ba4c54d,617cb0dd,e72e6a09,63dd62cf,af1be9b3,8a461237,a8d98fa7,bfa97101,2e121990,dd7be910,f922085b,d6a54275",
+      "days": 60,
+      "digest": "2665185994",
+      "event_digest": "5153841052277483745",
+      "events": 3379
+    },
+    "8": {
+      "chain": "224834975",
+      "chain_ck": "8ec11f5c,2270792e,328b5026,674ccb7,4c73250b,3264b82c,be9502ae,3f330430,65cc036b,ca0af172,bbecae68,c8f8efe8,e6875b4d,116c0806,ae4a4646,1a5d60cb,37a0b6cc,90bc16b,2f1e1d53,95e735b6,770c8290,a3508916,48c1320d,d2398e4e,c48e3b76,71626dc,cbaf0cf7,eddc92b9,3dd0dfb8,16a6c55f,b49c07e4,509f70e9,1d218368,6e63d0a0,6223c424,58c78a4b,54b4ffe3,53c7b4da,c8c20196,53ebb309,7e65fa64,d25620ca,6fd81ed9,6e915840,a341dd37,71f33a90,6a9ff92a,a2fbe8ce,cbfe8830,932d2c15,91ca72ca,c601bff6,679e8b8b,1a8e8d2f,eeb9cfc5,d6776b52,c035fb59,70a7700b,4a88cec6,d66b59f",
+      "days": 60,
+      "digest": "2063932344",
+      "event_digest": "3296642691678812689",
+      "events": 3333
+    },
+    "9": {
+      "chain": "706067913",
+      "chain_ck": "53ef2978,1e3c88d,d34517e8,f1e37ebc,1cb560e6,825273ac,4b774217,60506622,906c034d,6a2853b4,2ab05baf,625b4b2,8a4bf5d,b2abec9f,553f4b,1c51976e,9548d672,f209a699,30e27ea8,455fa391,de918ced,b52ce2f9,8004790e,630b7ca2,bc457d74,dfa92d31,9bfd4679,25bfdce0,529a239d,7db2ad09,346320e7,82bab765,6c888994,fcf412b0,44661123,48381c47,b92b5bc,859d2c7a,bb4e302c,72d5b40a,68dc2f5e,4806257c,702c259c,a218dd77,74e5e974,cfe9ac8f,9fa9e9bd,348d7881,20f43064,e4488b44,2e07a559,964e28bd,86749462,ef423b97,3bf1ec65,ec9d8617,7af09928,618b52d0,f636de93,2a15bdc9",
+      "days": 60,
+      "digest": "4076099797",
+      "event_digest": "3546295546808432441",
+      "events": 3295
+    }
+  }
+}

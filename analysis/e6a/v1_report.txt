@@ -1,0 +1,69 @@
+==============================================================================
+E6a analysis: base=analysis/e6a/baseline_s1-30.jsonl  after=analysis/e6a/v1_s1-30.jsonl (V1: 糕点 baseline + 饼干 abundant)
+==============================================================================
+
+[A] ABUNDANCE (discretionary treats never-short across seeds 1-30)
+ seed | 糕点 rate/short | 饼干 rate/short/spoiled/end | inv40_ok
+    1 | 糕点 0.794/13 | 饼干 1.000/0/0/112 | True
+    2 | 糕点 0.605/31 | 饼干 1.000/0/0/102 | True
+    3 | 糕点 0.768/16 | 饼干 1.000/0/0/115 | True
+    4 | 糕点 0.918/ 8 | 饼干 1.000/0/0/115 | True
+    5 | 糕点 0.651/19 | 饼干 1.000/0/0/103 | True
+    6 | 糕点 0.690/26 | 饼干 1.000/0/0/120 | True
+    7 | 糕点 0.684/21 | 饼干 1.000/0/0/118 | True
+    8 | 糕点 0.698/23 | 饼干 1.000/0/0/120 | True
+    9 | 糕点 0.739/17 | 饼干 1.000/0/0/115 | True
+   10 | 糕点 0.859/11 | 饼干 1.000/0/0/120 | True
+   11 | 糕点 0.627/26 | 饼干 1.000/0/0/112 | True
+   12 | 糕点 0.794/17 | 饼干 1.000/0/0/96 | True
+   13 | 糕点 0.657/25 | 饼干 1.000/0/0/102 | True
+   14 | 糕点 0.563/28 | 饼干 1.000/0/0/108 | True
+   15 | 糕点 0.796/15 | 饼干 1.000/0/0/116 | True
+   16 | 糕点 0.673/22 | 饼干 1.000/0/0/103 | True
+   17 | 糕点 0.654/25 | 饼干 1.000/0/0/118 | True
+   18 | 糕点 0.870/ 9 | 饼干 1.000/0/0/108 | True
+   19 | 糕点 0.798/15 | 饼干 1.000/0/0/118 | True
+   20 | 糕点 0.742/20 | 饼干 1.000/0/0/115 | True
+   21 | 糕点 0.478/34 | 饼干 1.000/0/0/71 | False
+   22 | 糕点 0.788/14 | 饼干 1.000/0/0/109 | True
+   23 | 糕点 0.596/28 | 饼干 1.000/0/0/117 | True
+   24 | 糕点 0.735/22 | 饼干 1.000/0/0/113 | True
+   25 | 糕点 0.670/22 | 饼干 1.000/0/0/120 | True
+   26 | 糕点 0.856/12 | 饼干 1.000/0/0/110 | True
+   27 | 糕点 0.805/16 | 饼干 1.000/0/0/115 | True
+   28 | 糕点 0.697/20 | 饼干 1.000/0/0/119 | True
+   29 | 糕点 0.774/17 | 饼干 1.000/0/0/119 | True
+   30 | 糕点 0.554/28 | 饼干 1.000/0/0/99 | True
+   糕点: never-short on 0/30 seeds  (**SHORTS on 30 seeds**)
+   饼干: never-short on 30/30 seeds  (ABUNDANT)
+
+[byte-identity] core goods served/demand identical to baseline?
+   -> DECISION BYTE-IDENTICAL (core served/demand + social + work all match)
+
+[B] CORE HELD-OUT ANCHOR (seeds 13-30, n=18) — criterion 口粮 Δ >= 0 (flat-or-up)
+ good | mean Δ | 95%% CI(t) | median | down/up/flat | verdict
+ 口粮  | +0.0000 | [+0.0000,+0.0000] | +0.0000 | 0/0/18 | flat
+ 柴薪  | +0.0000 | [+0.0000,+0.0000] | +0.0000 | 0/0/18 | flat
+ 屋瓦  | +0.0000 | [+0.0000,+0.0000] | +0.0000 | 0/0/18 | flat
+ 糕点  | +0.0000 | [+0.0000,+0.0000] | +0.0000 | 0/0/18 | flat
+ 整洁  | +0.0000 | [+0.0000,+0.0000] | +0.0000 | 0/0/18 | flat
+
+[C] #40 SOFT GATE (seeds 1-12) — inv40_ok is the REAL verdict (incl. discretionary exemption)
+ seed | inv40_ok | glut_gated(non-disc) never_short(non-disc) | detail
+    1 | True  | glut_gated=6 never_short=1 [屋瓦]                   | -
+    2 | True  | glut_gated=6 never_short=3 [整洁,话本,豆子]             | -
+    3 | True  | glut_gated=6 never_short=2 [话本,豆子]                | -
+    4 | True  | glut_gated=6 never_short=1 [整洁]                   | -
+    5 | True  | glut_gated=6 never_short=1 [整洁]                   | -
+    6 | True  | glut_gated=6 never_short=2 [整洁,豆子]                | -
+    7 | True  | glut_gated=6 never_short=1 [豆子]                   | -
+    8 | True  | glut_gated=6 never_short=1 [屋瓦]                   | -
+    9 | True  | glut_gated=6 never_short=1 [话本]                   | -
+   10 | True  | glut_gated=6 never_short=3 [整洁,话本,豆子]             | -
+   11 | True  | glut_gated=6 never_short=2 [整洁,豆子]                | -
+   12 | True  | glut_gated=6 never_short=1 [话本]                   | -
+   -> #40 [soft] pass 12/12  (gate needs >=11/12): PASS
+
+[D] HARD invariants (all seeds) — hard_fails must be empty
+   -> ALL HARD GREEN (0 hard fails across 30 seeds)
+   soft fails by id: {40: [21]}

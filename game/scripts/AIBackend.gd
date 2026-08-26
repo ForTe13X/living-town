@@ -37,7 +37,7 @@ const SLM_CIRCUIT_TRIP := 6      # 连续超时阈值（>MAX_INFLIGHT，给足�
 # ── random 后端 + 合成延迟（docs/38「决策路径值不值」）────────────────────────
 ## docs/36 的结论是「模型的覆写与均匀瞎猜在统计上不可区分」，但那条随机基线是【算出来的期望值】，
 ## 不是【跑出来的一局镇子】。要回答"这些偏离在产品层买到了什么"，必须把零假设做成一条真能跑的臂：
-##   random ── 在 slm 看到的【同一个】闭集（top-36）里均匀挑一个。
+##   random ── 在 slm 看到的【同一个】闭集（top-cap）里均匀挑一个。
 ##
 ## ★ 随机源必须是项目自己的确定性种子流 Sim._rng_at(RANDOM_SALT, who)，绝不用 randi()：
 ##   ① 可复现：同 (seed, tick, agent) → 同一选择 ⇒ 整条 random 臂逐字节可重跑。slm 臂做不到这点，
@@ -142,10 +142,15 @@ func _free_transport(http, slm_chat) -> void:
 
 ## 候选稳定 key（完整身份，含 P2-1 遗漏的 kind/target/need/amount/duration）：等待期间候选重排/替换后仍能重认同一动作。
 func _cand_key(c: Dictionary) -> String:
-	return "%s|%s|%s|%s|%s|%s|%s|%s|%s" % [
+	var base := "%s|%s|%s|%s|%s|%s|%s|%s|%s" % [
 		str(c.get("kind", "")), str(c.get("action", "")), str(c.get("partner", "")),
 		str(c.get("target", "")), str(c.get("subject", "")), str(c.get("need", "")),
 		str(c.get("object", "")), str(c.get("amount", "")), str(c.get("duration", ""))]
+	if c.has("manifest_node") or c.has("manifest_id"):
+		# 普通候选保留旧 key；cargo 额外钉 authored duration + exact manifest，避免异步回包把 A 单重绑成 B 单。
+		return base + "|cargo|%s|%s|%s" % [str(c.get("dur_total", "")),
+			str(c.get("manifest_node", "")), str(c.get("manifest_id", ""))]
+	return base
 # ── 嵌入式 SLM（NobodyWho GDExtension + 本地 GGUF）──实测：Godot 4.6.2 加载需 glibc≥2.38 + libvulkan1 loader。
 var slm_model_path := "res://models/qwen2.5-3b-instruct-q4_k_m.gguf"   # 默认 3B-Q4：中端 780M 实测 ~2.9s、质量明显优于 1.5B(docs/11 §12.2b)
 var slm_model_override := ""                      # 设置面板里手选的 gguf 绝对路径（存 settings.cfg）；非空且存在则优先（换模型 A/B 用）
@@ -181,7 +186,16 @@ var llm_aging := true          # true=优先+老化门控(仅 llm_budget>0 时�
 const AGING_GATE := 1.5        # 预算耗尽比例=1 时要求的最低优先级
 var _fire_count := {}          # id -> 本 run 该 agent 触发 LLM 的次数（bench 测发声公平性/反饿死）
 const MAX_TOKENS := 128   # 自由对话(chat)用；决策见 DECIDE_MAX_TOKENS
-const DECIDE_MAX_TOKENS := 8   # 决策=闭集选号(单字符 0-9/A-Z)，decode≈1 token → 与 80-token JSON 解耦(voice 走冻结语音库)。据 edge-npu-8elite「决策≠生成」洞察
+const DECIDE_MAX_TOKENS := 8   # 决策=闭集选号(单字符 A-Z)，decode≈1 token → 与 80-token JSON 解耦(voice 走冻结语音库)。据 edge-npu-8elite「决策≠生成」洞察
+
+## 闭集选号的编号字母表 = A-Z ⇒ 可编号候选上限 26（曾是 0-9/A-Z 的 36）。docs/42 §7.3-2。
+## ★ 为什么把数字踢出字母表（这是修 bug，不是加能力）：
+##   docs/42 §4.2 实测 1.5B 生成字符 '0' 的首 token 概率是 1.6e-4 ⇒ 【一次也不选 0 号槽】(0/3285)；
+##   而 §5 量到 index 0 有 74.84% 的时候是【吃饭】或【睡觉】(自然枚举序把维生对象排在最前)
+##   ⇒ "从不答 0" 精确等价于 "系统性跳过维生动作" ⇒ docs/38 §5 那条 8/8 seed 破硬不变量 #01（饿穿）。
+##   只把字母表换成 A-Z（候选顺序一字不动）→ 选首位率 0.0000 → 0.1374，与随机基线 0.1297 不可区分。
+##   ⚠ 名次仍是 0.46-0.50（随机 0.495）—— 这条改动【买不到判断力】，只拆掉一个格式病灶。
+const LLM_PICK_CAP := 26
 
 # NPC 决策 schema（结构化输出契约，详见 docs/03 §3）：模型只输出 pick 下标 + 台词/情绪。
 const DECISION_SCHEMA := {
@@ -222,6 +236,17 @@ func available_backends() -> Array:
 
 ## 运行期切换后端（手机 UI 调用）：记录意图 + 持久化到 user://settings.cfg；真正生效在 decide() 安全点（无在飞请求时）。
 ## slm/llm 无需在此重探测：慢请求各自到截止线(默认 12s)超时 → 逐个 agent 回落 logic，仍确定兜底、不卡死。
+## ★ 这里【故意不】调 _reset_slm_circuit()。判据不是"用户点了 UI 上哪一行"，而是：
+##   **这个操作有没有造出一个新的 fault domain（新的原生运行时世代）？**
+##   —— 这条更准的措辞来自 2026-07-26 的外部对抗评审，它正确地指出原来那句"切后端不改变任何失败假设"
+##      并不牢靠：如果切后端会卸载模型、销毁原生上下文、重建 worker，那"切走再切回"反而可能是唯一有效的恢复动作，
+##      不复位就等于把一个【已经被重置过】的运行时永久锁死。
+##   实测本仓库的答案：`_teardown_slm_worker()` 只被 set_model_path(:510) / set_slm_use_gpu(:529) / 内部两处调用，
+##   **request_backend() 不拆不建**（它只 cancel_all() 作废在飞请求）⇒ 同一个原生世代 ⇒ 不复位是对的。
+##   **若将来有人让 request_backend() 重建 worker，这条策略就必须跟着改。**
+##   反向也要诚实：换权重/换推理档【也不保证】换掉了失败原因（连超可能来自请求队列死锁、wrapper 状态损坏、
+##   原生线程泄漏——这些不随权重文件改变）。所以复位是一条**基于 fault domain 的启发式**，不是"病因已变"的证明。
+##   由 bench/ModelPathGate 机检。
 func request_backend(mode: String) -> void:
 	if not mode in available_backends():
 		return
@@ -463,9 +488,26 @@ func list_models() -> Array:
 		da.list_dir_end()
 	return out
 
+## 解除 SLM 熔断（docs/43 §1.2b 发现 1）。
+## ★ 只有【改变了失败假设】的操作才可以调它。会话内永久熔断本身是【故意的】——docs/34 那个原生泄漏
+##   OOM 的封顶就靠它，decide() 里那条熔断告警的原意（"回退 logic 地板"）**不动**。
+##   但"永久"的正确范围是【同一个失败假设】：换一个权重文件、换 GPU/CPU 推理档，都是一个全新的假设，
+##   没有理由继承旧假设的熔断。否则用户熔断后按设置面板"换个模型试试 / 换成 CPU 试试"（正是 docs/34
+##   给出的自救法）得到的是**无声的失败**——面板照常切换，SLM 一次也不会再发。
+## ⚠ 必须连 _slm_fail_streak 一起清：否则复位后计数仍停在 ≥TRIP，新模型的【第一次】超时就立刻重新熔断，
+##   等于只给了它 1 次机会而不是 SLM_CIRCUIT_TRIP 次。
+## ⚠ 不复位的那条路：request_backend()（切后端）——它不改变任何失败假设（同权重、同 GPU 档、同 worker），
+##   且是设置面板里被反复点的那一行；若它也复位，"切走再切回"就能绕过泄漏封顶，docs/34 的保护形同虚设。
+func _reset_slm_circuit(reason: String) -> void:
+	if _slm_circuit_open:
+		print("[SLM] 熔断解除：%s（新的失败假设，不继承旧熔断）" % reason)
+	_slm_circuit_open = false
+	_slm_fail_streak = 0
+
 ## 设置面板选定某个 gguf：记住路径 + 存盘 + 释放已加载的共享模型（下次 slm 决策按新路径重载）。
 func set_model_path(path: String) -> void:
 	slm_model_override = path
+	_reset_slm_circuit("换权重文件 → " + path.get_file())
 	var cfg := ConfigFile.new()
 	cfg.load("user://settings.cfg")
 	cfg.set_value("slm", "model_path", path)
@@ -485,6 +527,9 @@ func set_slm_use_gpu(v: bool) -> void:
 	if v == slm_use_gpu:
 		return
 	slm_use_gpu = v
+	# 同 set_model_path：换推理档 = 全新的失败假设。docs/34 那次挂死正是 Adreno **GPU** 特有的，
+	# "改用 CPU" 就是文档给出的解法 —— 若不复位，用户按文档自救会撞上无声失败。
+	_reset_slm_circuit("切换推理档 → " + ("GPU" if v else "CPU"))
 	var cfg := ConfigFile.new()
 	cfg.load("user://settings.cfg")
 	cfg.set_value("slm", "use_gpu", v)
@@ -552,7 +597,10 @@ func probe_capability(be: String, agent: Dictionary, candidates: Array, ctx: Dic
 ## 直连一发计时决策（绕过 pending 状态机），返回 raw 串。
 func _probe_once(be: String, agent: Dictionary, candidates: Array, ctx: Dictionary) -> String:
 	var sys := _system_prompt()
-	var usr := build_prompt(agent, candidates, ctx)
+	# 探针必须量【出货那一份】的 prefill：调用方(Main.gd:480)给的是全量候选，没过 _cap_for_llm。
+	# 上限 36→26 之后这条漏洞更常触发——|C|>cap 时 _idx_label 会吐出多字符编号("26"…)，
+	# 既不是出货 prompt 的样子，也把 prefill 量偏大 ⇒ p50 偏高 ⇒ 可能误判 demoted_logic。
+	var usr := build_prompt(agent, _cap_for_llm(candidates), ctx)
 	if be == "slm" and ClassDB.class_exists("NobodyWhoModel"):
 		# C3 修：走池化持久 worker（不再 per-call new+free，避免与决策路径同款 use-after-free），且给 await 加【超时兜底】——
 		# 旧实现【裸 await response_finished】在 Adreno 挂死时永阻 → probe_capability 的 cb 永不触发、卡启动探测。
@@ -660,10 +708,10 @@ func decision_stats() -> Dictionary:
 var shadow_baseline := false   # bench 打开；出货默认关（测量设施不进热路径）
 
 ## 在【落地那一刻】把模型的选择与引擎策略对拍。两个基线，都在同一 tick 求值（RNG 盐同源）：
-##   frozen = 模型这次实际挑选的那个闭集（decide 的 capped，top-36）——评审要的"同一冻结候选集"口径，
-##            剔掉了"裁到 36 个"这个混淆项，纯粹量【模型 vs 引擎策略】的分歧。
+##   frozen = 模型这次实际挑选的那个闭集（decide 的 capped，top-cap）——评审要的"同一冻结候选集"口径，
+##            剔掉了"裁到 cap 个"这个混淆项，纯粹量【模型 vs 引擎策略】的分歧。
 ##   full   = 本 tick 的【全量】候选——这才是真·反事实：模型若返回 {}，Sim.gd:1090 走的正是
-##            _logic_decide(ag, cands) 全量这一支。候选 ≤36 时两者同集，Δ 必然相等。
+##            _logic_decide(ag, cands) 全量这一支。候选 ≤cap 时两者同集，Δ 必然相等。
 ## 注意口径边界：这是【逐次决策的直接覆写率】，不是"关掉模型重跑一局"的世界级反事实——
 ## 前面的覆写会改变世界态，且等待期(_wait)那几 tick agent 什么也不做，这条影响通道 Δ 完全没数进去。
 func _shadow_compare(agent: Dictionary, applied: Dictionary, frozen: Array, full: Array) -> void:
@@ -674,7 +722,7 @@ func _shadow_compare(agent: Dictionary, applied: Dictionary, frozen: Array, full
 	Sim.decision_sink = sink_saved                       # 原样还原：读-改-还原，退出时与进入时逐字段相同
 	var k_applied := _cand_key(applied)
 	stats["shadow_n"] = int(stats.get("shadow_n", 0)) + 1
-	if full.size() > 36:
+	if full.size() > LLM_PICK_CAP:
 		stats["capped_n"] = int(stats.get("capped_n", 0)) + 1
 	# ── 退化排查（docs/36 §四）：光有高 Δ 不等于"模型在行使判断" ──────────────
 	# 一个【均匀瞎猜】的模型 Δ 同样很高（期望 Δ/L = 1 − mean(1/|C|)）。要把"有主见"和"扔骰子"
@@ -750,7 +798,7 @@ func decide(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Dictionary
 	# 算力档节流：距上次 LLM 决策还不够久 → 直接走引擎（省一次 fire+可能的超时），快档 interval=1 几乎不节流
 	if not _pending.has(id) and Sim.tick_no - int(_last_llm.get(id, -99999)) < _decide_interval():
 		return Sim._logic_decide(agent, candidates)
-	var capped := _cap_for_llm(candidates)  # 仅喂 LLM(_fire) + 回包重验用 top-36；logic 兜底/过载仍用全量 candidates
+	var capped := _cap_for_llm(candidates)  # 仅喂 LLM(_fire) + 回包重验用 top-cap；logic 兜底/过载仍用全量 candidates
 	# random 全剂量档（不模拟解码时延）：本 tick 就地均匀挑一个并落地，零 _wait、零在飞。
 	# 它是"如果每一次决策都掷骰子，小镇会变成什么样"的上界臂 —— 也是产品指标的【灵敏度标定】：
 	# 若连 100% 随机都推不动某条指标，那条指标对 slm 也必然是瞎的，不可用来下结论（docs/38 §量具功效）。
@@ -766,7 +814,7 @@ func decide(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Dictionary
 			return Sim._logic_decide(agent, candidates)  # 合成串行 worker 正忙 → 与上面 slm 那条门【同义】，保证剂量可比
 		if not _budget_gate(id, agent):
 			return {}                                    # L5 预算耗尽/被老化门挡下 → 本 tick 走引擎地板(LLM ∝ 预算而非 N；发声由优先级+老化公平分配)
-		_fire(id, agent, capped, ctx)                    # 只把 top-36 喂给模型
+		_fire(id, agent, capped, ctx)                    # 只把 top-cap 喂给模型
 		if not block_while_thinking:                     # 不阻塞档：本 tick 先按引擎地板行动，答案留给下一次决策点
 			stats["nowait"] = int(stats.get("nowait", 0)) + 1
 			return Sim._logic_decide(agent, candidates)  #   → 这【是】一次落地决策，故不进 waits（诚实分母不变形）
@@ -785,7 +833,7 @@ func decide(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Dictionary
 		# 不在了(需求已满足/对象离开/候选重排) → 兜底 logic，绝不把旧选择套到变了的世界(P1-1)。
 		var key := _cand_key(picked)
 		var chosen := {}
-		for c in capped:                                            # 本 tick 的 top-36（模型当初看的也是 top-36）
+		for c in capped:                                            # 本 tick 的 top-cap（模型当初看的也是 top-cap）
 			if _cand_key(c) == key:
 				chosen = c
 				break
@@ -811,7 +859,8 @@ func decide(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Dictionary
 			_slm_fail_streak += 1
 			if _slm_fail_streak >= SLM_CIRCUIT_TRIP and not _slm_circuit_open:
 				_slm_circuit_open = true
-				push_warning("[SLM] 熔断触发：连续 %d 次超时且无成功 → 停发 SLM、永久回退 logic 地板（防原生内存泄漏 OOM，见 docs/34）" % _slm_fail_streak)
+				# "永久"的正确范围是【这一个失败假设】：换权重/换 GPU 档会解除，见 _reset_slm_circuit()。
+				push_warning("[SLM] 熔断触发：连续 %d 次超时且无成功 → 停发 SLM、回退 logic 地板（防原生内存泄漏 OOM，见 docs/34；换模型/换推理档可解除）" % _slm_fail_streak)
 				cancel_all()                                    # 清在飞 + 尽力释放，止血
 		return {}
 	if not block_while_thinking:                          # 不阻塞档：还没就绪也照样行动（引擎地板），不空转一 tick
@@ -833,7 +882,7 @@ func parse_decision(raw: String, candidates: Array) -> Dictionary:
 	if raw.strip_edges() == "" or candidates.is_empty():
 		return {}
 	var s := raw.strip_edges()
-	# 主路（闭集选号）：仅当响应本质就是编号——首字符是合法编号(0-9/A-Z)、且其后无任何字母/数字续接。
+	# 主路（闭集选号）：仅当响应本质就是编号——首字符是合法编号(A-Z)、且其后无任何字母/数字续接。
 	# fail-closed 防 prose（P2-3）："The answer is 2"(T=29)、"I choose A"(I)、"2 talk" 都不当编号 → 落 JSON 兜底/logic。
 	# 台词不在此，由 decide() 从冻结语音库补。
 	var pk := _label_idx(s.substr(0, 1))
@@ -868,25 +917,45 @@ func parse_decision(raw: String, candidates: Array) -> Dictionary:
 		intent["affinity_delta"] = clampi(int((data as Dictionary)["affinity_delta"]), -3, 3)
 	return intent
 
-## 闭集选号上限=36（单字符 0-9/A-Z 全是单 token）。候选 >36 时取 score 最高的 36 个喂 LLM；
+## 闭集选号上限=LLM_PICK_CAP（单字符 A-Z 全是单 token）。候选 >cap 时取 score 最高的 cap 个喂 LLM；
 ## 低分候选（logic 几乎不会选）被裁掉，顺带缩 prefill。只作用于 LLM prompt，logic 兜底看全量。
+## ⚠ 36→26 让裁剪更常生效（本仓实测 N=12 下 |C|>26 占 5.8%，而 |C|>36 只占 0.4%，15 倍）。
+##   这是一次蓄意的模型路径行为变更（金标路 backend=null 不受影响），由 4d BackendGate 与
+##   bench/ModelPathGate 两道门守着。
+## ★ 选 top-cap 之后必须把它们【放回枚举序】再喂模型（本次随 26 一起补的）：
+##   旧实现直接返回按 score 降序排好的列表 = 把答案写在 0 号槽上——docs/42 §9-4 记录的正是这个坑
+##   （`bench/log_decisions.gd` 因此对位置类问题给出相反结论）。它还会摧毁自然枚举序的那条性质：
+##   docs/42 §5 量到 index 0 有 74.84% 是【吃饭/睡觉】，而本次修的 bug 恰恰是"模型系统性跳过维生动作"。
+##   若不补这一条，把上限压到 26 反而会把这个混淆项从 0.4% 放大到 5.8%——修一个 bug、种一个更大的。
+##   代价为零：裁掉的仍然是 score 最低的那批（引擎几乎不会选），只是保留次序不再泄漏"谁分最高"。
 func _cap_for_llm(candidates: Array) -> Array:
-	if candidates.size() <= 36:
+	if candidates.size() <= LLM_PICK_CAP:
 		return candidates
-	var dup := candidates.duplicate()
-	dup.sort_custom(func(a, b): return float((a as Dictionary).get("score", 0.0)) > float((b as Dictionary).get("score", 0.0)))
-	return dup.slice(0, 36)
+	var idx := []
+	for i in candidates.size():
+		idx.append(i)
+	# 比较器是【全序】（分数相同则比下标）→ 不依赖排序算法的稳定性，逐字节可复现（红线#1）。
+	idx.sort_custom(func(a, b):
+		var sa := float((candidates[a] as Dictionary).get("score", 0.0))
+		var sb := float((candidates[b] as Dictionary).get("score", 0.0))
+		if sa != sb: return sa > sb
+		return a < b)
+	var keep: Array = idx.slice(0, LLM_PICK_CAP)
+	keep.sort()                                          # 放回枚举序
+	var out := []
+	for i in keep:
+		out.append(candidates[i])
+	return out
 
-## 候选下标 ↔ 单字符编号（0-9 → A-Z，共 36）。闭集决策让模型只回一个字符 → decode≈1 token。
+## 候选下标 ↔ 单字符编号（A-Z，共 26）。闭集决策让模型只回一个字符 → decode≈1 token。
+## 数字【不再】是合法编号：越界/数字答案一律 -1 → parse_decision fail-closed → 引擎兜底（见 LLM_PICK_CAP）。
 func _idx_label(i: int) -> String:
-	if i < 10: return str(i)
-	if i < 36: return String.chr(65 + i - 10)            # A-Z
-	return str(i)                                        # >36：多字符(罕见)，回落数字
+	if i < LLM_PICK_CAP: return String.chr(65 + i)       # A-Z
+	return str(i)                                        # ≥cap：多字符(罕见)，回落数字——_cap_for_llm 已保证喂给模型的不会到这
 func _label_idx(c: String) -> int:
 	if c.length() != 1: return -1
 	var code := c.unicode_at(0)
-	if code >= 48 and code <= 57: return code - 48        # 0-9
-	if code >= 65 and code <= 90: return code - 65 + 10   # A-Z（大写，小写不认→JSON 里的字母不会误读）
+	if code >= 65 and code <= 90: return code - 65        # A-Z（大写，小写不认→JSON 里的字母不会误读）
 	return -1
 ## ASCII 字母/数字判定（parse_decision 的 fail-closed prose 检测用）。
 func _is_alnum_ascii(c: String) -> bool:
@@ -908,7 +977,7 @@ func _fire(id: String, agent: Dictionary, candidates: Array, ctx: Dictionary) ->
 	_req_seq += 1
 	_pending[id] = {
 		"epoch": world_epoch, "req_id": _req_seq, "prompt_tick": Sim.tick_no,
-		"snapshot": candidates.duplicate(true),          # 模型看到的候选(decide 已截 top-36)：回包按此解析、再对当前候选重验
+		"snapshot": candidates.duplicate(true),          # 模型看到的候选(decide 已截 top-cap)：回包按此解析、再对当前候选重验
 		"due_ms": Time.get_ticks_msec() + deadline_ms, "ready": Sim.tick_no, "raw": "", "has": false, "http": null, "slm_chat": null}
 	if backend == "random":
 		_pending[id]["raw"] = _rand_raw(agent, candidates)    # 均匀选号（确定性 _rng_at 流）
@@ -1177,7 +1246,10 @@ func _chat_slm(agent: Dictionary, player_text: String, ctx: Dictionary, cb: Call
 func _system_prompt() -> String:
 	# 决策=闭集选号（edge-npu-8elite「决策≠生成」洞察）：只让模型出一个编号 → decode≈1 token（不再生成 80-token JSON），
 	# 台词改由冻结·70B 语音库补（decouple）。系统 prompt 缩到最短，prefill 也随之降。/no_think 关思考(否则烧满 token)。
-	return "你是像素小镇的居民。从下面【候选】里挑一个此刻最想做的行动，只回它的【编号】（一个字符，如 3 或 A），别回任何其它字。" \
+	# ★ 那个字面示例编号「如 3」被删掉了（docs/42 §7.3-1）。它本是写来帮模型的，实际把 30.0% 的决策
+	#   焊死在 index 3 上（§4.3：删掉它 → index-3 的堆从 204 掉到 78）。改成【描述字母表】而不是
+	#   【举一个编号的例子】：字符类不指向任何一个槽位，示例编号指向一个。
+	return "你是像素小镇的居民。从下面【候选】里挑一个此刻最想做的行动，只回它的【编号】（一个大写字母），别回任何其它字。" \
 		+ (" /no_think" if no_think else "")
 
 # ── 语音深化辅助（docs/03）：把 agent 当下处境喂给模型，产更贴人设/更 grounded 的台词 ──
@@ -1256,6 +1328,6 @@ func build_prompt(agent: Dictionary, candidates: Array, ctx: Dictionary) -> Stri
 		if String(c.get("kind", "")) == "social":
 			var pid := String(c.get("partner", ""))
 			label += "→%s(%s)" % [Sim._name(Sim.get_agent(pid)), _rel_hint(agent, pid)]
-		opts.append("%s=%s" % [_idx_label(i), label])   # 单字符编号(0-9/A-Z)→ 模型只回这一个字符
+		opts.append("%s=%s" % [_idx_label(i), label])   # 单字符编号(A-Z)→ 模型只回这一个字符
 	lines.append("[候选] " + " ".join(opts))
 	return "\n".join(lines)

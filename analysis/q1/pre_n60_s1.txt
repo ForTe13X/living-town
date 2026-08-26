@@ -1,0 +1,22 @@
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+[Q1] seed=1 days=10 N=60 t0=1200
+[Q1] === ATT1 (ref=CTRL) 被改动者=npc_30 ===
+[Q1]   隔离自证: 被改动者与人同区 tick=45515(ctrl=46781)  familiarity总和=31.0(ctrl=30.0)
+[Q1]   ★非被改动者 首次分叉：attitudes@1713  faction@1440  行为@1473  关系账本@1483
+[Q1]     faction 变的人: ["aria(aria/15→aria/14)", "ben(aria/15→aria/14)", "dan(dan/10→dan/11)", "hai(dan/10→dan/11)", "mei(dan/10→dan/11)", "npc_15(aria/15→aria/14)", "npc_16(aria/15→aria/14)", "npc_20(aria/15→aria/14)", "npc_24(dan/10→dan/11)", "npc_25(aria/15→aria/14)", "npc_27(aria/15→aria/14)", "npc_31(dan/10→dan/11)", "npc_34(aria/15→aria/14)", "npc_36(aria/15→aria/14)", "npc_39(aria/15→aria/14)", "npc_44(dan/10→dan
+[Q1]     attitudes 变的人: ["npc_58", "npc_59"]
+[Q1]   含被改动者 行为首次分叉@1473  chain同=false(2152338691 vs 3947831778)
+[Q1]   判决: ★零传播派系耦合成立   (faction@1440 vs 别人 attitudes@1713)
+[Q1]   通道活性 本臂/对照: endorse 36/32  rally_oust 22/14  discuss 141/156  派系数 8/8  quorum内agent-tick 128402/128402
+[Q1]   硬=[] 软=[8, 40] 触底=0(ctrl=0)
+[Q1] === QATT1 (ref=QCTRL) 被改动者=npc_30 ===
+[Q1]   隔离自证: 被改动者与人同区 tick=0(ctrl=0)  familiarity总和=0.0(ctrl=0.0)
+[Q1]   ★非被改动者 首次分叉：attitudes@从未  faction@1440  行为@从未  关系账本@从未
+[Q1]     faction 变的人: ["aria(aria/15→aria/14)", "ben(aria/15→aria/14)", "dan(dan/9→dan/10)", "hai(dan/9→dan/10)", "npc_15(aria/15→aria/14)", "npc_16(aria/15→aria/14)", "npc_20(aria/15→aria/14)", "npc_24(dan/9→dan/10)", "npc_25(aria/15→aria/14)", "npc_27(aria/15→aria/14)", "npc_31(dan/9→dan/10)", "npc_34(aria/15→aria/14)", "npc_36(aria/15→aria/14)", "npc_39(aria/15→aria/14)", "npc_44(dan/9→dan/10)", "npc_45(aria/15→aria
+[Q1]     attitudes 变的人: []
+[Q1]   含被改动者 行为首次分叉@从未  chain同=true(2081184706 vs 2081184706)
+[Q1]   判决: ★零传播派系耦合成立   (faction@1440 vs 别人 attitudes@从未)
+[Q1]   通道活性 本臂/对照: endorse 34/34  rally_oust 15/15  discuss 173/173  派系数 10/10  quorum内agent-tick 132005/132005
+[Q1]   硬=[1] 软=[3, 8, 40] 触底=9776(ctrl=9776)
+[Q1] DONE

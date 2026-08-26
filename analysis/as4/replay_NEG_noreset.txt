@@ -1,0 +1,8 @@
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+=== as4_replay_probe · seeds=[1, 2] days=60 target=7200 ===
+[AS4RPL] {"dirty_run_econ_total0":204,"dirty_run_external_coin":56,"econ_total0_stable":false,"fresh_ref":{"digest":"3097185526","econ_total0":204,"event_digest":"2637738925891223326","external_coin":28,"money_total":204,"town_coin":110},"goto_tick_after":{"digest":"3097185526","econ_total0":260,"event_digest":"2637738925891223326","external_coin":84,"money_total":260,"town_coin":110},"match":false,"seed":1,"target_tick":7200}
+[AS4RPL] {"dirty_run_econ_total0":204,"dirty_run_external_coin":57,"econ_total0_stable":false,"fresh_ref":{"digest":"3983468249","econ_total0":204,"event_digest":"5670582914467118998","external_coin":29,"money_total":204,"town_coin":130},"goto_tick_after":{"digest":"3983468249","econ_total0":261,"event_digest":"5670582914467118998","external_coin":86,"money_total":261,"town_coin":130},"match":false,"seed":2,"target_tick":7200}
+[AS4RPLSUM] {"all_match":false,"seeds":"[1, 2]"}
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)

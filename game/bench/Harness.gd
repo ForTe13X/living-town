@@ -3,6 +3,9 @@ extends SceneTree
 ## 用法：godot --headless --path . --script res://bench/Harness.gd -- [--suite S0] [--seeds 1-12] [--days 60] [--det 3]
 ##   --seeds  种子范围 "a-b" 或单值（默认 1-12）          --days  每局天数（默认 60，覆盖 S2 谣言变冷轨迹）
 ##   --det    抽样 N 个种子做"同 seed 两跑摘要一致"校验（默认 3，0=跳过）
+##   --core-agents N  明确指定 core/NPC 产能口径；affiliate 在其后追加
+##   --total-agents N 明确指定最终总人口；按当前场景/数据反算 core，并在启动后断言 core+total
+##   --agents N       兼容旧 fixture：等价 --core-agents N（不会改成 total，以免历史命令静默换义）
 ##   --golden <path>       载入金标表比对（任一 seed 的 digest/event_digest/chain 对不上 → 门红 exit 1）
 ##   --bake-golden <path>  重烘金标表（仅在【有意的行为变更】后手工执行；会覆盖 seeds 段，保留 scenarios 段）
 ##   --chain-dump <path>   把逐 tick 前缀链全量写出（每 seed 一行）——排查"第几 tick 开始分叉"的参照物
@@ -10,7 +13,7 @@ extends SceneTree
 ##   --permute N           仅测试：N!=0 时打乱候选数组再评分（1=逆序 2=洗牌 3=枚举出口洗牌）。
 ##                         置换不变性机检——tie-break 的盐取自候选身份而非下标，故 digest 应【一字不变】。
 ## 输出：每 seed 一行 [S0]{json}（JSONL，便于机读）+ 每不变量跨 seed 通过率表 + 套件级活性表 + 最终红绿门；任一失败 quit(1)。
-## 纪律同 sim_soak：--script 不加载 autoload → preload Sim/Invariants 实例化，backend=null 走确定性 logic。
+## 纪律同 sim_soak：--script 的 _init() 阶段 autoload 尚未挂上（docs/41 §2 更正：autoload 其实是加载的） → preload Sim/Invariants 实例化，backend=null 走确定性 logic。
 ##
 ## 四层证据（为什么要金标 + 前缀链）：
 ##   L1 同进程同 seed 两跑一致（--det）      → 只证「同一二进制、同一进程内可复现」
@@ -55,6 +58,15 @@ const SOFT_RATE := 0.90
 ##   ↑ 这正是本门要暴露的东西：#22/#23/#24（背叛三条硬不变量）与 #29（互助偏内）今天全绿，
 ##     纯粹是因为 betray/aid 一次都没发生——「若 X 发生则 X 良构」对空输入恒真。
 ##     它们归零是【已知的产品缺口】（暖向社交太稀），不是回归；等基线调平后再把它们加进本表。
+##
+## > **⚠ 2026-08-01 W1 更正：上面这一段里 `aid=0` 与 `pact_formed=1` 【已经过期】，而它们是这张表
+## > 不收 `aid` 的【理由】——理由没了，表却没跟着改。** 那句话写于 2026-07-25，而**当天晚些时候的 B7**
+## > 就把 `AID_NEED_TH` 30→60、`COMPLEMENT_LOW` 35→50 重标了一遍（见 Sim.gd 那段 B7 注释），
+## > 互助窗口从此打开。出货树实测（backend=null，60 天）：
+## >   N=12 seeds 1-12 **aid 68 次 · 覆盖 11/12**；N=16 seeds 1-12 **156 次 · 11/12**；
+## >   seeds 13-30 **110 次 · 17/18**；seeds 31-60 **180 次 · 29/30**。
+## > ⇒ 「B7 之后回来把 aid 加进本表」这件事**没有人做**，于是 `aid`（连同 #29）在 5 个 wave 里
+## > 一直是这张表的盲区。下面的 `LIVENESS_QUORUM` 就是补这一格的，**但补的是"还活着"，不是"没变少"**。
 const LIVENESS_GATED := {
 	"greet": 20, "give": 20, "gossip": 20, "gossip_rep": 20, "discuss": 20,
 	"conflict": 20, "confront": 20, "apologize": 20, "endorse": 20, "rally_oust": 20,
@@ -62,6 +74,30 @@ const LIVENESS_GATED := {
 	"invite": 30, "meet": 30,
 	"confide": 60,
 }
+
+## 套件级活性的**第二种形状：法定覆盖（quorum）**。
+##
+## `LIVENESS_GATED` 判的是「全网格合计 > 0」——对 `aid` 这类**逐 seed 极稀疏**的类没有判别力：
+## 60 个 seed 里只要有一个发生过一次就恒绿，而"这个机制在绝大多数镇子里已经不发生了"照样过。
+## 本表改判**覆盖率**：该类必须在 ≥ `frac` 比例的 seed 上出现过。
+##
+## 为什么只收 `aid` 一个（W1 2026-08-01，量过才收）：
+##   · **它是 `#29` 的前件**。`#29「I-PACT互助偏内」` 的判据是 `aid_accepted < 8 or aid_nonpact == 0`
+##     ——`aid` 越少，这条硬不变量越是**靠样本不够**通过。实测出货树上真正让 `#29` 有牙的 seed：
+##     seeds 1-12 **4/12**、seeds 13-30 **5/18**（未开 craft_credit 的基线是 7/12 与 6/18）
+##     ⇒ **#29 在六到七成的 seed 上是空过的，而这在 V1 之前就已经如此**（不是谁造成的回归）。
+##   · **余量是量出来的，不是拍的**。`frac=0.5` 在下面这 10 条臂上的最低覆盖是 **10/12**
+##     （`standing=0.5` 那条），要求 6/12 ⇒ 最小余量 **4 个 seed**；
+##     CI 真正跑的两格（N=12 与 N=16，均 seeds 1-12）都是 11/12 ⇒ 余量 5。
+##   · **历史负对照是真的**：B7 之前 `aid` 就是 **0/12**（上面那段注释自己记着），本门在那棵树上是红的。
+## ⚠ 明写它**抓不到**什么：`aid` 从 118 掉到 68 这类**数量**变化它一概不管（覆盖仍 11/12）。
+##   而 W1 实测那个 118→68 本身就不是回归（seeds 13-30 是 105→110、31-60 是 170→180，见 docs/88），
+##   ⇒ **这道门刻意不去守一个连"是不是真的"都没立住的数**。它守的是"整条通道死掉"，那一格有过真实先例。
+const LIVENESS_QUORUM := {
+	"aid": {"days": 60, "frac": 0.5},
+}
+## quorum 判据的最小网格：单 seed / 极小网格上「覆盖率」没有意义（docs/41 §5：n 很小时读作"分辨不出"）。
+const QUORUM_MIN_SEEDS := 4
 
 ## 前缀链在金标里的落盘粒度：每 CHAIN_STRIDE tick 存一个检查点（=1 天，Sim.TICKS_PER_DAY）。
 ## 为什么不逐 tick 落盘：60 天 = 14400 个值 × 12 seed ≈ 1.5MB，把一份人要 review 的金标撑爆。
@@ -71,7 +107,8 @@ const CHAIN_STRIDE := 240
 
 var _shadow := false        # --shadow：开 shadow 探针（Sim.shadow_on）——纯观测，digest 应逐字节不变
 var _shadow_dump := ""      # --shadow-dump <path>：把每 seed 的 shadow_trace 追加成 JSONL（供反事实 / #15v2 分析）
-var _agents := 0            # --agents N：克隆扩容到 N 个 agent（Sim.spawn_count）；0=数据原样 cast，逐字节不变
+var _population_mode := ""  # ""=数据原样；legacy-core/core/total 三种显式口径（互斥）
+var _population_target := 0 # 所选口径的正整数目标；total 会经 Sim.scale_population_plan 反算 core
 var _permute := 0           # --permute N：仅测试，打乱候选数组（置换不变性机检）；0=off 逐字节不变
 var _chain_dump := ""       # --chain-dump <path>：逐 tick 前缀链全量写出（每 seed 一行）
 var _chain_ref := ""        # --chain-ref <path>：与一份 dump 比对，报精确到 tick 的首个分叉
@@ -84,6 +121,7 @@ func _init() -> void:
 	var golden_path := ""
 	var bake_path := ""
 	var args := OS.get_cmdline_user_args()
+	var population_error := ""
 	for i in args.size():
 		if args[i] == "--seeds" and i + 1 < args.size():
 			seeds_spec = args[i + 1]; seeds = _parse_seeds(seeds_spec)
@@ -91,8 +129,17 @@ func _init() -> void:
 			days = int(args[i + 1])
 		elif args[i] == "--det" and i + 1 < args.size():
 			det_n = int(args[i + 1])
-		elif args[i] == "--agents" and i + 1 < args.size():
-			_agents = int(args[i + 1])   # 扩 N 规模诊断
+		elif args[i] in ["--agents", "--core-agents", "--total-agents"]:
+			var flag := String(args[i])
+			if _population_mode != "":
+				population_error = "population flags are mutually exclusive: already selected %s, then got %s" % [_population_mode, flag]
+			elif i + 1 >= args.size():
+				population_error = "%s requires a positive integer" % flag
+			elif not String(args[i + 1]).is_valid_int() or int(args[i + 1]) <= 0:
+				population_error = "%s requires a positive integer, got '%s'" % [flag, String(args[i + 1])]
+			else:
+				_population_mode = "legacy-core" if flag == "--agents" else ("core" if flag == "--core-agents" else "total")
+				_population_target = int(args[i + 1])
 		elif args[i] == "--shadow":
 			_shadow = true
 		elif args[i] == "--shadow-dump" and i + 1 < args.size():
@@ -109,6 +156,13 @@ func _init() -> void:
 			_chain_ref = args[i + 1]
 		elif args[i] == "--suite" and i + 1 < args.size():
 			pass  # 目前仅 S0；保留位给 S5
+	if population_error != "":
+		print("❌ 人口参数无效：" + population_error)
+		print("   → 只能选一个：--agents N（legacy core）、--core-agents N、--total-agents N")
+		quit(2)
+		return
+	if _population_mode == "legacy-core":
+		print("  ⚠ --agents 是兼容入口，语义固定为 core；新脚本请改用 --core-agents 或 --total-agents")
 	if _shadow_dump != "":
 		var f0 := FileAccess.open(_shadow_dump, FileAccess.WRITE)   # 清空/新建
 		if f0: f0.close()
@@ -128,8 +182,21 @@ func _init() -> void:
 	print("  ✅ 哈希自检：%d 条 fnv1a32 + %d 条 mix32 测试向量全对（项目自有哈希，不依赖引擎 String.hash()）"
 		% [SimScript.HASH_VECTORS.size(), SimScript.MIX_VECTORS.size()])
 
-	print("=== Causal Bench S0 · 不变量回归门  seeds=%s days=%d%s ===" % [str(seeds), days,
-		("  【--permute %d：候选数组被打乱，digest 应一字不变】" % _permute) if _permute != 0 else ""])
+	# ── standing 漂移性质自检（Codex 外审 P0-2）：名声向 0 淡化必须【不翻号】。旧 `x-signf(x)` 对 |x|<1 跨零 → 此门必红。
+	var drift_bad := SimScript.standing_drift_self_test()
+	if drift_bad != "":
+		print("❌ standing 漂移性质自检不符：%s" % drift_bad)
+		print("   → S1 名声每 3 天向 0 漂移应【向 0 单调淡化、绝不跨零翻号】（Codex 外审 P0-2）。修好前金标比对无意义。")
+		quit(1)
+		return
+	print("  ✅ standing 漂移性质自检：%d 向量向 0 不翻号、绝对值不增（move_toward）" % SimScript.STANDING_DRIFT_VEC.size())
+
+	var population_note := ""
+	if _population_mode != "":
+		population_note = "  population=%s:%d" % [_population_mode, _population_target]
+	print("=== Causal Bench S0 · 不变量回归门  seeds=%s days=%d%s%s ===" % [str(seeds), days,
+		("  【--permute %d：候选数组被打乱，digest 应一字不变】" % _permute) if _permute != 0 else "",
+		population_note])
 	var inv_pass := {}      # id -> 通过的 seed 数
 	var inv_name := {}      # id -> 名称
 	var inv_fail_eg := {}   # id -> 一个失败样例 "seed N: detail"
@@ -145,6 +212,11 @@ func _init() -> void:
 
 	for sd in seeds:
 		var res := _run_once(sd, days)
+		if res.has("setup_error"):
+			print("❌ 人口契约未满足（seed %d）：%s" % [sd, String(res["setup_error"])])
+			_dispose(res["S"])
+			quit(2)
+			return
 		var S = res["S"]
 		first_run_digest[sd] = Inv.digest(S)
 		first_run_edig[sd] = S.event_digest
@@ -152,7 +224,7 @@ func _init() -> void:
 		first_run_chain[sd] = int(res["chain"])
 		first_run_ticks[sd] = res["chain_ticks"]
 		_tally_liveness(S, live_total, live_seeds)
-		var checks: Array = Inv.check_all(S, int(res["starved"]))
+		var checks: Array = Inv.check_all(S, int(res["starved"]), res["starve_by_need"], res["starve_shape"])
 		var hard_fails: Array = []
 		var soft_fails: Array = []
 		var diag_fails: Array = []
@@ -175,10 +247,19 @@ func _init() -> void:
 		if hard_fails.is_empty():
 			seed_pass += 1
 		# JSONL 机读行（digest/event_digest 以字符串输出：event_digest 可达 2^63，JSON number 会丢精度）
-		print("[S0] " + JSON.stringify({"seed": sd, "days": days, "pass": hard_fails.is_empty(),
+		var s0 := {"seed": sd, "days": days, "pass": hard_fails.is_empty(),
 			"hard_fails": hard_fails, "soft_fails": soft_fails, "diag_fails": diag_fails,
 			"events": S.event_log.size(), "digest": str(first_run_digest[sd]),
-			"event_digest": str(first_run_edig[sd]), "chain": str(first_run_chain[sd])}))
+			"event_digest": str(first_run_edig[sd]), "chain": str(first_run_chain[sd])}
+		# 只在真触底时多带一个键 ⇒ 全绿网格的这一行与改动前逐字节相同（下游解析器不受影响）
+		if not (res["starve_by_need"] as Dictionary).is_empty():
+			s0["starve_by_need"] = res["starve_by_need"]
+		if not (res["starve_shape"] as Dictionary).is_empty():
+			s0["starve_shape"] = res["starve_shape"]
+		if _population_mode != "":
+			s0["population"] = {"mode": _population_mode, "requested": _population_target,
+				"core": int(S.core_population), "total": S.agents.size()}
+		print("[S0] " + JSON.stringify(s0))
 		if _shadow_dump != "":
 			_dump_shadow(sd, S.shadow_trace)   # 只在主循环 dump 一次（det 复跑不再重复）
 		if _chain_dump != "":
@@ -191,6 +272,11 @@ func _init() -> void:
 	var det_fail: Array = []
 	for sd in det_seeds:
 		var res2 := _run_once(sd, days)
+		if res2.has("setup_error"):
+			print("❌ 人口契约在确定性复跑未满足（seed %d）：%s" % [sd, String(res2["setup_error"])])
+			_dispose(res2["S"])
+			quit(2)
+			return
 		var d2: int = Inv.digest(res2["S"])
 		var e2: int = res2["S"].event_digest
 		var c2: int = int(res2["chain"])
@@ -216,7 +302,14 @@ func _init() -> void:
 		var is_diag: bool = id in Inv.DIAG_IDS
 		var is_hard: bool = (id in Inv.HARD_IDS) and not is_diag
 		var need := (0 if is_diag else (seeds.size() if is_hard else soft_min))
+		# ⚠️ n<=1 时 soft_min==0 ⇒ 软门的判据退化成「≥0」，恒真。此前这里照样打 ✅，
+		#    于是 `--seeds 18` 会打印「✅ #40 … 0/1  首违 seed 18: … 满足率=0.42 … 断供38/60天」
+		#    ——一个绿勾，紧挨着它自己的失败明细。T2 实测有【三根独立的棒】被这一行骗过。
+		#    这里只改**报告**不改**判据**：退化时打 ⚠️ 而不是 ✅，退出码与 gate_ok 一个字节不变。
+		var soft_vacuous: bool = (not is_diag) and (not is_hard) and need == 0
 		var mark := "🔎" if is_diag else ("✅" if p >= need else "❌")   # 诊断永远不是红/绿，只是观测
+		if soft_vacuous and p < seeds.size():
+			mark = "⚠️"
 		if (not is_diag) and p < need:
 			if is_hard: hard_red = true
 			else: soft_red = true
@@ -239,9 +332,22 @@ func _init() -> void:
 		var need_d := int(LIVENESS_GATED.get(k, -1))
 		var gated: bool = need_d >= 0 and days >= need_d
 		var tag := "🔒" if gated else ("⏳" if need_d >= 0 else "  ")
+		if LIVENESS_QUORUM.has(k):
+			tag = "🔒Q" if _quorum_applies(String(k), days, seeds.size()) else "⏳Q"
 		print("  %s %-18s 次数=%-6d 覆盖 seed=%d/%d%s" % [tag, k, int(live_total[k]),
 			int(live_seeds.get(k, 0)), seeds.size(),
 			("   (需 days≥%d 才入门，本跑 days=%d)" % [need_d, days]) if (need_d >= 0 and not gated) else ""])
+	# 法定覆盖（quorum）：稀疏类判"还在多少个 seed 上发生"，不判"合计>0"（后者对稀疏类没有判别力）
+	for k in LIVENESS_QUORUM:
+		if not _quorum_applies(String(k), days, seeds.size()):
+			live_skipped.append("%s(quorum)" % k)
+			continue
+		live_gated_n += 1
+		var need_n := int(ceil(float(seeds.size()) * float((LIVENESS_QUORUM[k] as Dictionary)["frac"])))
+		var got_n := int(live_seeds.get(k, 0))
+		print("  🔒Q %-17s 法定覆盖 %d/%d（需 ≥%d，余量 %d）" % [k, got_n, seeds.size(), need_n, got_n - need_n])
+		if got_n < need_n:
+			live_red.append("%s(覆盖 %d/%d < 法定 %d)" % [k, got_n, seeds.size(), need_n])
 	for k in LIVENESS_GATED:
 		if days < int(LIVENESS_GATED[k]):
 			live_skipped.append(k)          # horizon 不够，该机制本就没到发生的时候 → 不门（并明示跳过）
@@ -253,12 +359,19 @@ func _init() -> void:
 		live_skipped.sort()
 		print("  ⏳ 本跑 days=%d，以下类未达最短 horizon 故不入门：%s" % [days, str(live_skipped)])
 	if live_red.is_empty():
-		print("  ✅ 门控事件类 %d 种全部仍在发生" % live_gated_n)
+		print("  ✅ 门控事件类 %d 种全部仍在发生（含法定覆盖 %d 种）" % [live_gated_n, LIVENESS_QUORUM.size()])
 	else:
-		print("  ❌ 门控事件类归零：%s —— 某个子系统被关掉了，而硬不变量对空输入恒过" % str(live_red))
+		print("  ❌ 门控事件类归零/跌破法定覆盖：%s —— 某个子系统被关掉了，而硬不变量对空输入恒过" % str(live_red))
 
 	# ── 金标：跨进程/跨提交/跨引擎版本的锚（红线#1 真正的机检点）──
+	# ⚠ ★Z1：`golden_red` 在【一次比较都没发生】时同样是 false —— 有两条路会落到这里：
+	#     ① 根本没传 `--golden`（`ci.sh` 第 4a 步 N=16 就是这一条；Y1/Y3 各自独立撞到，docs/96 §〇④）；
+	#     ② 传了 `--golden` 但 `cmp_n == 0`（seed/days 与金标表不重叠，如 CI_DAYS≠60 的快跑）。
+	#   此前这两条都会在判决行上印出绿色的「金标 过」——**一行读起来是判决的输出，其实什么都没判**。
+	#   这里只改**报告**不改**判据**：`golden_cmp_n` 只喂那一个字符串，`gate_ok` 与退出码一个字节不变。
+	#   （同 84bd95d「单 seed 下软门恒过却照样打绿勾」的先例，改法逐条照抄。）
 	var golden_red := false
+	var golden_cmp_n := -1              # -1=未传 --golden；0=传了但 0 条可比；>0=真比过这么多条
 	var golden_note := "(未启用 --golden)"
 	if bake_path != "":
 		golden_note = _bake_golden(bake_path, seeds_spec, days, seeds, first_run_digest, first_run_edig,
@@ -268,6 +381,7 @@ func _init() -> void:
 			first_run_chain, first_run_ticks)
 		golden_red = bool(gres["red"])
 		golden_note = String(gres["note"])
+		golden_cmp_n = int(gres.get("cmp_n", 0))
 	print("\n— 金标（跨进程锚）—\n  " + golden_note)
 
 	# ── 逐 tick 前缀链：与一份 --chain-dump 参照物比对 → 精确到 tick 的首个分叉 ──
@@ -292,11 +406,17 @@ func _init() -> void:
 
 	var gate_ok := (seed_pass == seeds.size()) and not hard_red and not soft_red \
 		and live_red.is_empty() and not golden_red and not chain_ref_red and (det_n <= 0 or det_fail.is_empty())
+	# ★Z1：判决行上"金标"那一格。红永远先说话；只有**真比过 >0 条**才有资格说「过」。
+	#   这个串**只喂 print**，`gate_ok` 与 `quit()` 一个字节都不读它（见 golden_cmp_n 的抬头）。
+	var golden_verdict := "破" if golden_red else ("过" if golden_cmp_n > 0 else
+		("N/A·0条可比" if golden_cmp_n == 0 else
+			("N/A·本跑是--bake-golden不是比对" if bake_path != "" else "N/A·未传--golden")))
 	print("\n=== S0 GATE: %s  (硬不变量 seed %d/%d 全绿, 软通过率门 ≥%d/%d(%d%%) %s, 活性 %s, 金标 %s, det %d/%d) ===" % [
 		"PASS ✅" if gate_ok else "FAIL ❌", seed_pass, seeds.size(),
 		soft_min, seeds.size(), int(round(SOFT_RATE * 100.0)),
-		"过" if not soft_red else "破", "过" if live_red.is_empty() else "破",
-		"过" if not golden_red else "破", det_ok, det_seeds.size()])
+		("过" if not soft_red else "破") if soft_min > 0 else "N/A·单seed无判别力",
+		"过" if live_red.is_empty() else "破",
+		golden_verdict, det_ok, det_seeds.size()])
 	quit(0 if gate_ok else 1)
 
 ## 软门阈值：比率制（≥90%），但用 seeds-1 封顶 → 【永不严于】历史的绝对容差 1，小网格(1-3 seed)行为不变。
@@ -305,6 +425,12 @@ static func soft_threshold(n: int) -> int:
 	if n <= 1:
 		return 0
 	return mini(int(ceil(float(n) * SOFT_RATE)), n - 1)
+
+## 法定覆盖判据在本次网格上生不生效：horizon 够 + 网格不小于 QUORUM_MIN_SEEDS。
+static func _quorum_applies(k: String, days: int, n_seeds: int) -> bool:
+	if not LIVENESS_QUORUM.has(k):
+		return false
+	return days >= int((LIVENESS_QUORUM[k] as Dictionary)["days"]) and n_seeds >= QUORUM_MIN_SEEDS
 
 ## 把一局的 event_log 折成活性计数（类 -> 次数 / 覆盖 seed 数）。
 func _tally_liveness(S, total: Dictionary, per_seed: Dictionary) -> void:
@@ -428,10 +554,10 @@ func _check_golden(path: String, days: int, seeds: Array, dig: Dictionary, edig:
 		chain: Dictionary, chain_ticks: Dictionary) -> Dictionary:
 	var doc := load_golden(path)
 	if doc.is_empty():
-		return {"red": true, "note": "❌ 金标文件缺失/不可解析：%s" % path}
+		return {"red": true, "cmp_n": 0, "note": "❌ 金标文件缺失/不可解析：%s" % path}
 	var tbl: Dictionary = doc.get("seeds", {})
 	if tbl.is_empty():
-		return {"red": true, "note": "❌ 金标文件无 seeds 段：%s" % path}
+		return {"red": true, "cmp_n": 0, "note": "❌ 金标文件无 seeds 段：%s" % path}
 	var gmeta: Dictionary = doc.get("_meta", {})
 	var cmp_n := 0
 	var chain_cmp_n := 0
@@ -468,10 +594,10 @@ func _check_golden(path: String, days: int, seeds: Array, dig: Dictionary, edig:
 		msg += "      若是【有意】的基线移动，才重烘：--bake-golden game/bench/golden_digests.json（与该变更同一 commit）。\n"
 		msg += "    → 要把首个分叉【精确到 tick】：先在已知良好的提交上 --chain-dump /tmp/ref.chain，\n"
 		msg += "      再在本提交上 --chain-ref /tmp/ref.chain（逐 tick 比对，直接报 tick 号）。"
-		return {"red": true, "note": msg}
+		return {"red": true, "cmp_n": cmp_n, "note": msg}
 	if cmp_n == 0:
-		return {"red": false, "note": "⚠ 金标 0 条可比（seed/days 与金标表不重叠）——本跑未构成跨进程校验"}
-	return {"red": false, "note": "✅ 金标一致 %d/%d seed（含逐 tick 前缀链 %d 条；烘于 godot %s，本机 %s）" % [
+		return {"red": false, "cmp_n": 0, "note": "⚠ 金标 0 条可比（seed/days 与金标表不重叠）——本跑未构成跨进程校验"}
+	return {"red": false, "cmp_n": cmp_n, "note": "✅ 金标一致 %d/%d seed（含逐 tick 前缀链 %d 条；烘于 godot %s，本机 %s）" % [
 		cmp_n, seeds.size(), chain_cmp_n, String(gmeta.get("godot", "?")), godot_version()]}
 
 # ── 逐 tick 前缀链的编码 / 定位 ──────────────────────────────────────────────
@@ -571,8 +697,19 @@ func _check_chain_ref(path: String, days: int, seeds: Array, ticks: Dictionary) 
 		return {"red": false, "note": "⚠ 参照 0 条可比（seed/days 不重叠）"}
 	return {"red": false, "note": "✅ 逐 tick 前缀链与参照逐 tick 一致 %d/%d seed" % [cmp_n, seeds.size()]}
 
-## 跑一局确定性仿真，返回 {S, starved, chain, chain_ticks}。S 由调用方 _dispose。
+## 跑一局确定性仿真，返回 {S, starved, starve_by_need, chain, chain_ticks}。S 由调用方 _dispose。
+## `starved` 是喂给 `Inv.check_all` 的那个数，也就是 **#1 的口径由这里定义**：
+##   Σ over (agent, tick, need) of [need ≤ 0.5] —— **任何一条 need**，不按 agent 去重（一个人同时饿又困计 2）。
 ## chain_ticks[i] = 第 i+1 个 tick 结束后的前缀链值（全量留在内存里：60 天 = 14400 个 int64 ≈ 115KB，可忽略）。
+##
+## ⚠ 这个循环在仓库里有 **8 份逐字复制**（引符号不引行号，见 Invariants.digest 抬头那条教训）：
+##   本文件 · `BackendGate._run` · `DetGate._run` · `LodAblation` · `lod_observation_probe` ·
+##   `ScaleSupply` · `scale_agg` · `BackendBench._starve_ticks`（那一份多一个 `break`，是 per-agent-tick 口径，
+##   数会偏小）；另 `find_starve.gd` 是诊断探针，且它**跳过 player**，与上面 8 份都不同口径。
+##   阈值 `0.5` 也被写死了 8 遍，而 `Sim.gd` 有一个**从未被调用**的 `const STARVE_NEED := 0.5` 就是它
+##   （`git log -S STARVE_NEED` ⇒ `6e2ba78` 加进来的时候就没接上，**不是**后来被摘掉的；docs/41 §1.5①）。
+##   本棒**没有**把这 8 处收敛：只改其中 1 处去引那个常量，会做出一个"改了它却只有 1/8 跟着变"的活陷阱，
+##   比现在这种一致的重复更危险。要收就得 8 处一起收，那超出本棒的行（只有本文件与 Invariants.gd）。
 func _run_once(seed: int, days: int) -> Dictionary:
 	var S = SimScript.new()
 	get_root().add_child(S)
@@ -581,11 +718,37 @@ func _run_once(seed: int, days: int) -> Dictionary:
 	S.backend = null
 	S.shadow_on = _shadow   # 探针开关（默认 false → 逐字节不变）；set before start_new
 	S.cand_permute = _permute   # 置换不变性机检（默认 0=off → Sim 里一条分支都不进）
-	if _agents > 0:
-		S.spawn_count = _agents   # 扩 N 规模诊断（克隆扩容；0=数据原样 cast）
+	var expected_core := 0
+	var expected_total := 0
+	if _population_mode == "total":
+		var plan: Dictionary = S.scale_population_plan(_population_target)
+		if not bool(plan.get("ok", false)):
+			return {"S": S, "setup_error": "cannot plan total=%d: %s (base_core=%d)" % [
+				_population_target, String(plan.get("reason", "unknown")), int(plan.get("base_core", -1))]}
+		expected_core = int(plan["core"])
+		expected_total = _population_target
+		S.spawn_count = expected_core
+	elif _population_mode in ["legacy-core", "core"]:
+		expected_core = _population_target
+		S.spawn_count = expected_core
 	S.start_new(seed)
+	if expected_core > 0 and int(S.core_population) != expected_core:
+		return {"S": S, "setup_error": "requested core=%d, got core=%d total=%d" % [
+			expected_core, int(S.core_population), S.agents.size()]}
+	if expected_total > 0 and S.agents.size() != expected_total:
+		return {"S": S, "setup_error": "requested total=%d, planned core=%d, got core=%d total=%d" % [
+			expected_total, expected_core, int(S.core_population), S.agents.size()]}
 	var total: int = days * int(S.TICKS_PER_DAY)
 	var starved := 0
+	var starve_by_need := {}    # need -> 触底 (agent,tick) 实例数。**纯观测**：只进 detail 字符串，不进判据
+	# M1：`starved` 是 (人数 × need 种类 × 持续 tick) 的乘积，光看这个标量分不清
+	# 「很多人各触底一下」与「一个人躺了六天」——而这两件事的处置完全不同（见 Invariants._starve_shape）。
+	# 三个都是**纯观测**，只进 detail 字符串；判据吃的仍然只有 `starved` 这一个 int。
+	var starve_agents := {}     # agent id -> true
+	var starve_run_last := {}   # "agentneed" -> 上一次触底的 tick（判连续用）
+	var starve_run_start := {}  # "agentneed" -> 当前连续段的起始 tick
+	var starve_run_max := 0     # 全局最长连续触底段（tick）
+	var starve_run_key := ""    # 该最长段属于谁的哪条 need
 	var chain: int = Inv.CHAIN_INIT
 	var chain_ticks := PackedInt64Array()
 	chain_ticks.resize(total)
@@ -599,8 +762,26 @@ func _run_once(seed: int, days: int) -> Dictionary:
 			for nid in ag["needs"]:
 				if float(ag["needs"][nid]) <= 0.5:
 					starved += 1
+					starve_by_need[nid] = int(starve_by_need.get(nid, 0)) + 1   # 分支几乎从不进 ⇒ 热路径零开销
+					# ↓ 同一条冷分支里做，热路径仍然零开销（全绿的网格上这几行一次都不执行）
+					var _sid := String(ag["id"])
+					starve_agents[_sid] = true
+					var _k := _sid + "/" + String(nid)
+					if int(starve_run_last.get(_k, -2)) != t - 1:
+						starve_run_start[_k] = t          # 断了 ⇒ 开新段
+					starve_run_last[_k] = t
+					var _len: int = t - int(starve_run_start[_k]) + 1
+					if _len > starve_run_max:
+						starve_run_max = _len; starve_run_key = _k
+	var starve_shape := {}
+	if not starve_agents.is_empty():
+		var _who: Array = starve_agents.keys()
+		_who.sort()   # 定序：报告可复现
+		starve_shape = {"agents": _who, "max_run_ticks": starve_run_max,
+			"max_run_days": float(starve_run_max) / float(S.TICKS_PER_DAY), "max_run_key": starve_run_key}
 	# 注：dump 不在此做——否则 det 复跑(也调 _run_once)会把同 seed 追加两次（评审 P1）
-	return {"S": S, "starved": starved, "chain": chain, "chain_ticks": chain_ticks}
+	return {"S": S, "starved": starved, "starve_by_need": starve_by_need,
+		"starve_shape": starve_shape, "chain": chain, "chain_ticks": chain_ticks}
 
 ## 把一 seed 的 shadow_trace 追加进 JSONL（每行一条决策，带 seed 前缀）。
 func _dump_shadow(seed: int, trace: Array) -> void:

@@ -1,0 +1,87 @@
+
+########## ① 改前的树 (seed3, 旧 SEASON_VEG[夏]) ⇒ 期望 红 ##########
+[SEASON] 昼/春 地面主色 = (134, 179, 63)
+[SEASON] 昼/夏 地面主色 = (125, 170, 52)
+[SEASON] 昼/秋 地面主色 = (170, 161, 42)
+[SEASON] 昼/冬 地面主色 = (134, 171, 112)
+    春↔夏  ΔE00 =   2.71   ❌越界
+    春↔秋  ΔE00 =  13.08   ok
+    春↔冬  ΔE00 =   9.43   ok
+    夏↔秋  ΔE00 =  12.81   ok
+    夏↔冬  ΔE00 =   9.66   ok
+    秋↔冬  ΔE00 =  16.70   ok
+[SEASON] 昼 最小两两 ΔE00 = 2.71 (春↔夏)  阈值 3.20  ⇒ FAIL
+[SEASON] 夜/春 地面主色 = (57, 84, 51)
+[SEASON] 夜/夏 地面主色 = (53, 80, 41)
+[SEASON] 夜/秋 地面主色 = (72, 76, 33)
+[SEASON] 夜/冬 地面主色 = (57, 80, 89)
+    春↔夏  ΔE00 =   2.40   ❌越界
+    春↔秋  ΔE00 =   8.96   ok
+    春↔冬  ΔE00 =  20.01   ok
+    夏↔秋  ΔE00 =   7.95   ok
+    夏↔冬  ΔE00 =  21.91   ok
+    秋↔冬  ΔE00 =  23.47   ok
+[SEASON] 夜 最小两两 ΔE00 = 2.40 (春↔夏)  阈值 3.20  ⇒ FAIL
+=== SEASON GATE: FAIL (2) ===
+EXIT=1  (expect nonzero=RED)
+
+########## ② 四季全塌成一个色 (四帧都喂 spring) ⇒ 期望 红 ##########
+[SEASON] 昼/春 地面主色 = (134, 179, 63)
+[SEASON] 昼/夏 地面主色 = (134, 179, 63)
+[SEASON] 昼/秋 地面主色 = (134, 179, 63)
+[SEASON] 昼/冬 地面主色 = (134, 179, 63)
+    春↔夏  ΔE00 =   0.00   ❌越界
+    春↔秋  ΔE00 =   0.00   ❌越界
+    春↔冬  ΔE00 =   0.00   ❌越界
+    夏↔秋  ΔE00 =   0.00   ❌越界
+    夏↔冬  ΔE00 =   0.00   ❌越界
+    秋↔冬  ΔE00 =   0.00   ❌越界
+[SEASON] 昼 最小两两 ΔE00 = 0.00 (春↔夏)  阈值 3.20  ⇒ FAIL
+=== SEASON GATE: FAIL (1) ===
+EXIT=1  (expect nonzero=RED)
+
+########## ③ 取景几何算错 (160x96) ⇒ 期望 红 (C 臂) ##########
+[SEASON] ❌ 昼/春 帧尺寸 160x96 不是基准 1280x768 的整数倍 —— 取样带会取歪，拒绝给判决
+=== SEASON GATE: FAIL (1) ===
+EXIT=1  (expect nonzero=RED)
+
+########## ④ 少喂一帧 (只给 3 季) ⇒ 期望 红 (C 臂) ##########
+[SEASON] ❌ 昼 期望 4 帧（春夏秋冬），实得 3 —— 这【不是】通过
+=== SEASON GATE: FAIL (1) ===
+EXIT=1  (expect nonzero=RED)
+
+
+########## ⑤ 改后的树 · 端到端 (analysis/af2/run_season_gate.sh: docker 拍 8 帧晴天四季 + 判据) ⇒ 期望 绿 ##########
+  runner=docker  game=E:/Documents/Dev/June/26th/.claude/worktrees/agent-aef98a97e7157ecec/game  out=C:/Users/yp/AppData/Local/Temp/claude/E--Documents-Dev-June-26th/4ab4ceee-f2b5-4791-b52a-1f1d70c374f4/scratchpad/af2/seasongate_e2e
+  shot ok   spring_noon.png (tick=360)
+  shot ok   spring_night.png (tick=248)
+  shot ok   summer_noon.png (tick=4680)
+  shot ok   summer_night.png (tick=4568)
+  shot ok   autumn_noon.png (tick=8280)
+  shot ok   autumn_night.png (tick=8168)
+  shot ok   winter_noon.png (tick=12120)
+  shot ok   winter_night.png (tick=12008)
+[SEASON] 昼/春 地面主色 = (134, 179, 63)
+[SEASON] 昼/夏 地面主色 = (105, 154, 43)
+[SEASON] 昼/秋 地面主色 = (170, 161, 42)
+[SEASON] 昼/冬 地面主色 = (134, 171, 112)
+    春↔夏  ΔE00 =   8.06   ok
+    春↔秋  ΔE00 =  13.08   ok
+    春↔冬  ΔE00 =   9.43   ok
+    夏↔秋  ΔE00 =  15.02   ok
+    夏↔冬  ΔE00 =  10.87   ok
+    秋↔冬  ΔE00 =  16.70   ok
+[SEASON] 昼 最小两两 ΔE00 = 8.06 (春↔夏)  阈值 3.20  ⇒ PASS
+[SEASON] 夜/春 地面主色 = (57, 84, 51)
+[SEASON] 夜/夏 地面主色 = (45, 73, 34)
+[SEASON] 夜/秋 地面主色 = (72, 76, 33)
+[SEASON] 夜/冬 地面主色 = (57, 80, 89)
+    春↔夏  ΔE00 =   4.30   ok
+    春↔秋  ΔE00 =   8.96   ok
+    春↔冬  ΔE00 =  20.01   ok
+    夏↔秋  ΔE00 =   8.51   ok
+    夏↔冬  ΔE00 =  22.33   ok
+    秋↔冬  ΔE00 =  23.47   ok
+[SEASON] 夜 最小两两 ΔE00 = 4.30 (春↔夏)  阈值 3.20  ⇒ PASS
+=== SEASON GATE: PASS ===
+E2E_EXIT=0
