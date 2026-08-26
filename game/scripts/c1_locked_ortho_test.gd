@@ -349,6 +349,14 @@ func _ready() -> void:
 	main._update_obs()
 	await get_tree().process_frame
 	ck(main._locked_ortho_c1.feedback_text() == main._locked_ortho_c1.OWNER_STAIR_RECEIPT, "ordinary same-world UI processing preserves visible owner denial")
+	var review_size: Vector2i = get_viewport().size
+	get_viewport().size = Vector2i(320, 192)
+	await get_tree().process_frame
+	main._apply_c1_hud_presentation(Vector2(320, 192))
+	var tiny_presentation: Dictionary = main.c1_hud_presentation(Vector2(320, 192), main._locked_ortho_c1.feedback_text())
+	ck(main._c1_hud_title.get_theme_font_size("font_size") >= 20 and main._c1_hud_controls.get_theme_font_size("font_size") >= 16 and main._c1_hud_receipt.get_theme_font_size("font_size") >= 16 and main._c1_hud_controls.text.count("\n") == 1 and main._c1_hud_receipt.text.count("\n") == 2 and String(tiny_presentation["receipt"]).contains("公共路线") and main._c1_hud_receipt.visible, "320 C1 runtime HUD uses readable reflowed title, controls, denial and recovery text")
+	get_viewport().size = review_size
+	await get_tree().process_frame
 	for size in [Vector2(320, 192), Vector2(640, 384), Vector2(1280, 768), Vector2(1920, 1152)]:
 		var c1_layout := main.c1_hud_layout(size)
 		var top: Rect2 = c1_layout["top"]; var receipt: Rect2 = c1_layout["receipt"]

@@ -841,32 +841,73 @@ func _hide_c1_legacy_hud() -> void:
 ## Public test seam: all supported review sizes use this same safe layout.
 func c1_hud_layout(viewport: Vector2) -> Dictionary:
 	var vp := Vector2(maxf(viewport.x, C1_MIN_VIEWPORT.x), maxf(viewport.y, C1_MIN_VIEWPORT.y))
+	var tiny := vp.x <= C1_MIN_VIEWPORT.x and vp.y <= C1_MIN_VIEWPORT.y
+	if tiny:
+		var tiny_margin := 6.0
+		var tiny_top := Rect2(tiny_margin, tiny_margin, vp.x - tiny_margin * 2.0, 78.0)
+		return {"margin": tiny_margin, "top": tiny_top,
+			"receipt": Rect2(tiny_margin, tiny_top.end.y + 4.0, vp.x - tiny_margin * 2.0, 72.0)}
 	var margin := clampf(vp.x * 0.025, 8.0, 24.0)
 	var top_h := clampf(vp.y * 0.24, 48.0, 82.0)
 	var receipt_y := margin + top_h + 6.0
 	return {"margin": margin, "top": Rect2(margin, margin, vp.x - margin * 2.0, top_h),
 		"receipt": Rect2(margin, receipt_y, vp.x - margin * 2.0, clampf(vp.y * 0.25, 42.0, 74.0))}
 
+## The 320x192 floor is a real compact mode, not a scaled-down desktop line.
+## Its line breaks and minimum type are intentionally explicit and are read by
+## the runtime control layout and its contract test below.
+func c1_hud_presentation(viewport: Vector2, feedback: String) -> Dictionary:
+	var tiny := viewport.x <= C1_MIN_VIEWPORT.x and viewport.y <= C1_MIN_VIEWPORT.y
+	if tiny:
+		return {"title": "咖啡馆 · 锁定视角", "controls": "移动：方向键 / WASD\n交互：点公共门或居民",
+			"receipt": "私人楼梯暂不开放\n你仍在咖啡馆 1F\n请返回公共路线或门口" if feedback != "" else "",
+			"title_size": 20, "controls_size": 16, "receipt_size": 16, "tiny": true}
+	var small := viewport.x <= 640.0 or viewport.y <= 384.0
+	return {"title": "C1 咖啡馆 · 锁定视角", "controls": "方向键/WASD 移动 · 点公共门进出 · 点居民查看",
+		"receipt": feedback, "title_size": 14 if small else 18, "controls_size": 11 if small else 14,
+		"receipt_size": 11 if small else 15, "tiny": false}
+
 func _refresh_c1_hud() -> void:
 	if _c1_hud == null or _locked_ortho_c1 == null:
 		return
-	var layout := c1_hud_layout(_vp())
+	_apply_c1_hud_presentation(_vp())
+
+## Kept separate from the per-frame caller so the contract can apply each
+## supported viewport to the real controls, not merely inspect layout data.
+func _apply_c1_hud_presentation(viewport: Vector2) -> void:
+	# The project keeps a larger logical viewport when a tiny native window is
+	# used.  Scale this one compact HUD back up in logical pixels so its declared
+	# 320x192 support floor is physically readable, rather than merely in-bounds.
+	var display := Vector2(DisplayServer.window_get_size())
+	var render_scale := minf(display.x / maxf(1.0, viewport.x), display.y / maxf(1.0, viewport.y))
+	var physical_tiny := display.x <= C1_MIN_VIEWPORT.x and display.y <= C1_MIN_VIEWPORT.y and render_scale < 1.0
+	var presentation_viewport := viewport * render_scale if physical_tiny else viewport
+	var logical_scale := 1.0 / maxf(render_scale, 0.01) if physical_tiny else 1.0
+	var raw_layout := c1_hud_layout(presentation_viewport)
+	var layout := {"top": Rect2((raw_layout["top"] as Rect2).position * logical_scale, (raw_layout["top"] as Rect2).size * logical_scale),
+		"receipt": Rect2((raw_layout["receipt"] as Rect2).position * logical_scale, (raw_layout["receipt"] as Rect2).size * logical_scale)}
 	var top: Rect2 = layout["top"]
 	var receipt: Rect2 = layout["receipt"]
-	var small := _vp().x <= 640.0 or _vp().y <= 384.0
-	_c1_hud_pan.position = top.position; _c1_hud_pan.size = top.size
-	_c1_hud_title.position = top.position + Vector2(8, 4); _c1_hud_title.size = Vector2(top.size.x - 16, top.size.y * 0.45)
-	_c1_hud_controls.position = top.position + Vector2(8, top.size.y * 0.45); _c1_hud_controls.size = Vector2(top.size.x - 16, top.size.y * 0.5)
-	_c1_hud_title.add_theme_font_size_override("font_size", 14 if small else 18)
-	_c1_hud_controls.add_theme_font_size_override("font_size", 11 if small else 14)
 	var feedback: String = _locked_ortho_c1.feedback_text()
+	var present: Dictionary = c1_hud_presentation(presentation_viewport, feedback)
+	var tiny := bool(present["tiny"])
+	_c1_hud_pan.position = top.position; _c1_hud_pan.size = top.size
+	var hud_pad := 8.0 * logical_scale
+	_c1_hud_title.position = top.position + Vector2(8, 3 if tiny else 4) * logical_scale
+	_c1_hud_title.size = Vector2(top.size.x - hud_pad * 2.0, (25 if tiny else top.size.y * 0.45) * logical_scale)
+	_c1_hud_controls.position = top.position + Vector2(8, 28 if tiny else top.size.y * 0.45) * logical_scale
+	_c1_hud_controls.size = Vector2(top.size.x - hud_pad * 2.0, (46 if tiny else top.size.y * 0.5) * logical_scale)
+	_c1_hud_title.add_theme_font_size_override("font_size", int(round(int(present["title_size"]) * logical_scale)))
+	_c1_hud_controls.add_theme_font_size_override("font_size", int(round(int(present["controls_size"]) * logical_scale)))
+	_c1_hud_title.text = String(present["title"])
+	_c1_hud_controls.text = String(present["controls"])
 	_c1_hud_receipt.visible = feedback != ""
 	_c1_hud_receipt_pan.visible = feedback != ""
 	if feedback != "":
 		_c1_hud_receipt_pan.position = receipt.position; _c1_hud_receipt_pan.size = receipt.size
-		_c1_hud_receipt.position = receipt.position + Vector2(8, 4); _c1_hud_receipt.size = receipt.size - Vector2(16, 8)
-		_c1_hud_receipt.add_theme_font_size_override("font_size", 11 if small else 15)
-		_c1_hud_receipt.text = feedback
+		_c1_hud_receipt.position = receipt.position + Vector2(8, 4) * logical_scale; _c1_hud_receipt.size = receipt.size - Vector2(16, 8) * logical_scale
+		_c1_hud_receipt.add_theme_font_size_override("font_size", int(round(int(present["receipt_size"]) * logical_scale)))
+		_c1_hud_receipt.text = String(present["receipt"])
 	if _scrub_hint != null:
 		_scrub_hint.visible = false
 
