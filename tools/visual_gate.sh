@@ -223,6 +223,11 @@ if [ "${1:-}" = "--shoot" ]; then
     --backend logic --seed "$SEED" --warmup-tick "$NOON_TICK" \
     --probe-space cafe --probe-floor 2f --shot-fit --draw-skip interior_furniture --shot "$OUT/vg_cafe2f_bare.png" \
     || { [ "$rc" -eq 0 ] && rc=7; }
+  vg_shoot "$OUT/vg_cafe1f_bare.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
+    --resolution ${W}x${H} --single-window -- \
+    --backend logic --seed "$SEED" --warmup-tick "$NOON_TICK" \
+    --probe-space cafe --probe-floor 1f --shot-fit --draw-skip interior_furniture --shot "$OUT/vg_cafe1f_bare.png" \
+    || { [ "$rc" -eq 0 ] && rc=7; }
   # ── AM3（编号135）：全楼层往返门采集（同一个 Xvfb，省一次容器启动）──────────────
   # 现役空间往返门只走 town↔cafe/1f（上面那步）⇒ 楼梯往返（1f↔2f）没门（docs/126 §一.3）。
   # 本步走完整旅程 town→cafe/1f→上楼2f→下楼1f→出门（SpaceShot --rt-journey full，出货路径 tapped→_portal_click），
@@ -460,6 +465,10 @@ PPRC=$?
 # 负对照【就在判据内】：vg_cafe2f_bare 是 --draw-skip interior_furniture 的空 2F，A/C 两臂拿它自证有牙。
 "$PY" tools/assert_cafe_2f.py "$OUT"
 C2RC=$?
+# Existing café slots must add density only inside the authored room footprint.  The paired
+# 1F/2F bare frames are true renderer controls, not generated fixtures.
+"$PY" tools/assert_cafe_interior_density.py "$OUT"
+CDRC=$?
 # 全楼层往返门（AM3 / 编号135）。同样**不短路**：守第十一条性质（"观察者能走完整旅程，逐段落在对的 Floor、
 # 2F 那一跳真换平面、回程取景逐像素复位"）。吃上面 $OUT/floor 里的 5 帧；负对照见 tools/assert_floor_roundtrip.py 抬头。
 # ⚠️ 它与 assert_space_roundtrip（town↔1f）**不重叠**：那条只走 1f，本条补的是楼梯往返（1f↔2f）+ 2F 判别力。
@@ -479,5 +488,6 @@ FLRC=$?
 [ $SEARC -ne 0 ] && exit $SEARC
 [ $PPRC -ne 0 ] && exit $PPRC
 [ $C2RC -ne 0 ] && exit $C2RC
+[ $CDRC -ne 0 ] && exit $CDRC
 [ $FLRC -ne 0 ] && exit $FLRC
 exit $TRC
