@@ -4,6 +4,10 @@
     "checkout": "11d5960a326750d5838078e36cf38b85af677262",
     "upload_artifact": "ea165f8d65b6e75b540449e92b4886f43607fa02"
   },
+  "attestation_bootstrap_image": {
+    "platform": "linux/amd64",
+    "reference": "docker.io/library/python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c"
+  },
   "authority": {
     "evidence_only": true,
     "does_not_authorize": [
@@ -66,10 +70,7 @@
     "url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_linux_amd64.tar.gz"
   },
   "host_tools": {
-    "buildah": "1.33.7",
-    "gh": "2.98.0",
-    "podman": "5.8.4",
-    "skopeo": "1.13.3"
+    "gh": "2.98.0"
   },
   "limits": {
     "artifact_retention_days": 90,
@@ -82,6 +83,27 @@
     "max_validation_archive_bytes": 262144000,
     "max_validation_delta_archive_bytes": 41943040,
     "max_total_artifact_bytes": 262144000
+  },
+  "oci_toolchain": {
+    "archive_contract": {
+      "format": "posix",
+      "group": 0,
+      "mtime": 0,
+      "numeric_owner": true,
+      "owner": 0,
+      "sort": "name",
+      "strip_pax_times": true
+    },
+    "platform": "linux/amd64",
+    "podman_image": "quay.io/podman/stable@sha256:e90073d89870417f7bd0f581eed1ee6ddd8e55f0246a746516fd11059eac3335",
+    "skopeo_image": "quay.io/skopeo/stable@sha256:572747e168b4cb920bc7f5b321ca6c6da13717ff28c8d671a203935d53cf1089",
+    "versions": {
+      "podman": "5.8.4",
+      "python": "3.14.7",
+      "sha256sum": "sha256sum (GNU coreutils) 9.10",
+      "skopeo": "1.22.2",
+      "tar": "tar (GNU tar) 1.35"
+    }
   },
   "pillow": {
     "filename": "pillow-11.3.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",

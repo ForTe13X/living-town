@@ -72,6 +72,9 @@ EXPECTED_PAYLOAD_PATHS = tuple(
 )
 EXPECTED_BUNDLE_MEMBERS = tuple(sorted((*EXPECTED_PAYLOAD_PATHS, "trusted-cafe-manifest.json")))
 MAX_PNG_DECOMPRESSED_BYTES = 8 * 1024 * 1024
+OCI_TOOLCHAIN_IMAGE = "quay.io/podman/stable@sha256:e90073d89870417f7bd0f581eed1ee6ddd8e55f0246a746516fd11059eac3335"
+SKOPEO_TOOLCHAIN_IMAGE = "quay.io/skopeo/stable@sha256:572747e168b4cb920bc7f5b321ca6c6da13717ff28c8d671a203935d53cf1089"
+ATTESTATION_BOOTSTRAP_IMAGE = "docker.io/library/python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c"
 DOES_NOT_AUTHORIZE = [
     "canon",
     "collision",
@@ -247,12 +250,115 @@ def verify_budget_gate_contract(workflow: str) -> None:
             raise VerificationError(f"workflow budget stdin/receipt gate drift: {schema}")
 
 
+def verify_oci_toolchain_contract(trusted_root: Path, runtime_lock: dict[str, Any]) -> None:
+    toolchain = exact_keys(
+        runtime_lock.get("oci_toolchain"),
+        {"archive_contract", "platform", "podman_image", "skopeo_image", "versions"},
+        "OCI toolchain",
+    )
+    archive = exact_keys(
+        toolchain["archive_contract"],
+        {"format", "group", "mtime", "numeric_owner", "owner", "sort", "strip_pax_times"},
+        "OCI archive contract",
+    )
+    versions = exact_keys(
+        toolchain["versions"],
+        {"podman", "python", "sha256sum", "skopeo", "tar"},
+        "OCI toolchain versions",
+    )
+    if toolchain["platform"] != "linux/amd64" or toolchain["podman_image"] != OCI_TOOLCHAIN_IMAGE:
+        raise VerificationError("OCI Podman toolchain image/platform drift or unpinned reference")
+    if toolchain["skopeo_image"] != SKOPEO_TOOLCHAIN_IMAGE:
+        raise VerificationError("OCI Skopeo toolchain image drift or unpinned reference")
+    if archive != {
+        "format": "posix",
+        "group": 0,
+        "mtime": 0,
+        "numeric_owner": True,
+        "owner": 0,
+        "sort": "name",
+        "strip_pax_times": True,
+    }:
+        raise VerificationError("canonical OCI tar contract drift")
+    if versions != {
+        "podman": "5.8.4",
+        "python": "3.14.7",
+        "sha256sum": "sha256sum (GNU coreutils) 9.10",
+        "skopeo": "1.22.2",
+        "tar": "tar (GNU tar) 1.35",
+    }:
+        raise VerificationError("OCI toolchain binary identity drift")
+    bootstrap = exact_keys(
+        runtime_lock.get("attestation_bootstrap_image"),
+        {"platform", "reference"},
+        "attestation bootstrap image",
+    )
+    if bootstrap != {"platform": "linux/amd64", "reference": ATTESTATION_BOOTSTRAP_IMAGE}:
+        raise VerificationError("attestation bootstrap image drift or unpinned reference")
+    script = (trusted_root / "tools/trusted_cafe_capture.sh").read_text(encoding="utf-8")
+    required = (
+        OCI_TOOLCHAIN_IMAGE,
+        "docker run --pull=always --rm --privileged --platform linux/amd64",
+        "CAFE_OCI_TOOLCHAIN_ACTIVE=1",
+        'p["oci_toolchain"]["skopeo_image"]',
+        '--entrypoint sh "$skopeo_image"',
+        'skopeo inspect --raw "$1"',
+        "--sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner",
+        "--format=posix --pax-option=delete=atime,delete=ctime",
+    )
+    if any(fragment not in script for fragment in required):
+        raise VerificationError("containerized OCI build/archive contract drift")
+
+
+def verify_protected_bootstrap_contract(workflow: str) -> None:
+    marker = "  protected_capture_and_attestation:"
+    if marker not in workflow:
+        raise VerificationError("protected workflow job missing")
+    protected = workflow[workflow.index(marker) :]
+    bootstrap_name = "      - name: Verify archive attestations before subject load in pinned bootstrap"
+    load_name = "      - name: Load the attested exact-digest subjects"
+    if protected.count(bootstrap_name) != 1 or protected.count(load_name) != 1:
+        raise VerificationError("protected bootstrap/load steps missing or duplicated")
+    bootstrap_at, load_at = protected.index(bootstrap_name), protected.index(load_name)
+    if bootstrap_at >= load_at:
+        raise VerificationError("archive attestation verification occurs after subject load")
+    bootstrap_step = protected[bootstrap_at:load_at]
+    required = (
+        ATTESTATION_BOOTSTRAP_IMAGE,
+        "--env GH_TOKEN",
+        "--archive-bootstrap",
+        "archive-bootstrap-receipt.json",
+        "subject_load_count_before_verification",
+    )
+    if any(fragment not in bootstrap_step for fragment in required):
+        raise VerificationError("archive attestation bootstrap contract drift")
+    load_end = protected.find("      - name: ", load_at + len(load_name))
+    load_step = protected[load_at:] if load_end < 0 else protected[load_at:load_end]
+    receipt_gate = 'test -s "$RUNNER_TEMP/cafe-runtime-verification/archive-bootstrap-receipt.json"'
+    if receipt_gate not in load_step or "podman load" not in load_step:
+        raise VerificationError("subject load is not gated by the bootstrap receipt")
+    if load_step.index(receipt_gate) > load_step.index("podman load"):
+        raise VerificationError("subject load precedes bootstrap receipt gate")
+    steps = re.split(r"(?m)^      - name: ", protected)
+    token_steps = [step for step in steps if "GH_TOKEN" in step]
+    if not token_steps:
+        raise VerificationError("attestation bootstrap token step missing")
+    for step in token_steps:
+        if ATTESTATION_BOOTSTRAP_IMAGE not in step or "$RUNTIME_REF" in step or "$VALIDATION_REF" in step:
+            raise VerificationError("GH_TOKEN is exposed outside the digest-pinned bootstrap")
+
+
 def inspect_png(data: bytes, where: str) -> tuple[int, int]:
     if not data.startswith(b"\x89PNG\r\n\x1a\n"):
         raise VerificationError(f"{where} is not a PNG")
     offset = 8
     chunks: list[tuple[bytes, bytes]] = []
     saw_iend = False
+    saw_ihdr = False
+    saw_idat = False
+    ended_idat = False
+    saw_plte = False
+    known_critical = {b"IHDR", b"PLTE", b"IDAT", b"IEND"}
     while offset < len(data):
         if len(data) - offset < 12:
             raise VerificationError(f"{where} has a truncated PNG chunk")
@@ -266,6 +372,28 @@ def inspect_png(data: bytes, where: str) -> tuple[int, int]:
         actual_crc = binascii.crc32(chunk_type + payload) & 0xFFFFFFFF
         if expected_crc != actual_crc:
             raise VerificationError(f"{where} has a bad PNG CRC")
+        if len(chunk_type) != 4 or any(not (65 <= byte <= 90 or 97 <= byte <= 122) for byte in chunk_type):
+            raise VerificationError(f"{where} has an invalid PNG chunk type")
+        if not (chunk_type[0] & 0x20) and chunk_type not in known_critical:
+            raise VerificationError(f"{where} has unknown critical PNG chunk {chunk_type!r}")
+        if chunk_type == b"IHDR":
+            if saw_ihdr or chunks:
+                raise VerificationError(f"{where} has duplicate or non-first IHDR")
+            saw_ihdr = True
+        elif not saw_ihdr:
+            raise VerificationError(f"{where} does not begin with IHDR")
+        if chunk_type == b"PLTE":
+            if saw_plte or saw_idat or not payload or len(payload) % 3 or len(payload) > 768:
+                raise VerificationError(f"{where} has invalid or misplaced PLTE")
+            saw_plte = True
+        elif chunk_type == b"IDAT":
+            if ended_idat:
+                raise VerificationError(f"{where} has noncontiguous IDAT chunks")
+            saw_idat = True
+        elif saw_idat and chunk_type != b"IEND":
+            ended_idat = True
+        if chunk_type == b"IEND" and payload:
+            raise VerificationError(f"{where} has nonempty IEND")
         chunks.append((chunk_type, payload))
         offset = end
         if chunk_type == b"IEND":
@@ -273,7 +401,7 @@ def inspect_png(data: bytes, where: str) -> tuple[int, int]:
             break
     if not saw_iend or offset != len(data):
         raise VerificationError(f"{where} has no terminal IEND or has trailing bytes")
-    if not chunks or chunks[0][0] != b"IHDR" or len(chunks[0][1]) != 13:
+    if not saw_ihdr or not chunks or chunks[0][0] != b"IHDR" or len(chunks[0][1]) != 13:
         raise VerificationError(f"{where} has an invalid IHDR")
     width, height, bit_depth, color_type, compression, filtering, interlace = struct.unpack(
         ">IIBBBBB", chunks[0][1]
@@ -295,7 +423,7 @@ def inspect_png(data: bytes, where: str) -> tuple[int, int]:
             f"{where} exceeds the {MAX_PNG_DECOMPRESSED_BYTES}-byte PNG expansion limit"
         )
     idat = b"".join(payload for kind, payload in chunks if kind == b"IDAT")
-    if not idat:
+    if not saw_idat or not idat:
         raise VerificationError(f"{where} has no IDAT")
     try:
         decompressor = zlib.decompressobj()
@@ -462,6 +590,60 @@ def validate_attestation_output(data: bytes, bundle_sha256: str, bundle_name: st
     return matches[0]
 
 
+def verify_archive_bootstrap(
+    *,
+    runtime_archive: Path,
+    runtime_attestation: bytes,
+    validation_archive: Path,
+    validation_attestation: bytes,
+    repository: str,
+    workflow_sha: str,
+    receipt_output: Path | None = None,
+) -> dict[str, Any]:
+    if repository.count("/") != 1:
+        raise VerificationError("archive bootstrap repository is invalid")
+    require_hex(workflow_sha, "archive bootstrap workflow SHA", git=True)
+    archives = []
+    for role, path, attestation_raw in (
+        ("runtime", runtime_archive.resolve(strict=True), runtime_attestation),
+        ("validation", validation_archive.resolve(strict=True), validation_attestation),
+    ):
+        value = sha256_file(path)
+        attestation = validate_attestation_output(attestation_raw, value, path.name)
+        archives.append(
+            {
+                "bytes": path.stat().st_size,
+                "name": path.name,
+                "role": role,
+                "sha256": value,
+                "predicate_type": attestation["verificationResult"]["statement"]["predicateType"],
+            }
+        )
+    if archives[0]["sha256"] == archives[1]["sha256"]:
+        raise VerificationError("runtime and validation archive subjects must be distinct")
+    receipt = {
+        "archives": archives,
+        "repository": repository,
+        "schema": "living-town.cafe-archive-bootstrap-receipt.v1",
+        "subject_load_count_before_verification": 0,
+        "subject_token_exposed": False,
+        "verified": True,
+        "workflow_sha": workflow_sha,
+    }
+    if receipt_output is not None:
+        receipt_output.parent.mkdir(parents=True, exist_ok=True)
+        temporary = receipt_output.with_name(f".{receipt_output.name}.{os.getpid()}.tmp")
+        try:
+            temporary.write_bytes(canonical_bytes(receipt))
+            os.replace(temporary, receipt_output)
+        finally:
+            try:
+                temporary.unlink()
+            except FileNotFoundError:
+                pass
+    return receipt
+
+
 def run_github_attestation(
     bundle: Path,
     repository: str,
@@ -563,6 +745,8 @@ def verify_bundle(
     if runtime_lock.get("limits", {}).get("max_png_decompressed_bytes") != MAX_PNG_DECOMPRESSED_BYTES:
         raise VerificationError("runtime lock PNG decompression limit drift")
     verify_action_pins(trusted_root, runtime_lock)
+    verify_oci_toolchain_contract(trusted_root, runtime_lock)
+    verify_protected_bootstrap_contract((trusted_root / WORKFLOW_PATH).read_text(encoding="utf-8"))
 
     trusted_ids = trusted_root / "evidence/cafe/cafe-authored-ids.v1.json"
     trusted_authored_manifest = trusted_root / "evidence/cafe/cafe-authored-manifest.v1.json"
@@ -735,9 +919,13 @@ def verify_bundle(
                 "pillow",
                 "godot",
                 "podman",
-                "buildah",
                 "skopeo",
                 "gh",
+                "oci_toolchain_image",
+                "skopeo_image",
+                "toolchain_tar",
+                "toolchain_python",
+                "toolchain_sha256sum",
                 "validation_image",
                 "validation_oci_manifest_digest",
                 "container_platform",
@@ -767,10 +955,14 @@ def verify_bundle(
             "python": versions["python"],
             "pillow": versions["pillow"],
             "godot": versions["godot"],
-            "podman": runtime_lock["host_tools"]["podman"],
-            "buildah": runtime_lock["host_tools"]["buildah"],
-            "skopeo": runtime_lock["host_tools"]["skopeo"],
+            "podman": runtime_lock["oci_toolchain"]["versions"]["podman"],
+            "skopeo": runtime_lock["oci_toolchain"]["versions"]["skopeo"],
             "gh": runtime_lock["host_tools"]["gh"],
+            "oci_toolchain_image": runtime_lock["oci_toolchain"]["podman_image"],
+            "skopeo_image": runtime_lock["oci_toolchain"]["skopeo_image"],
+            "toolchain_tar": runtime_lock["oci_toolchain"]["versions"]["tar"],
+            "toolchain_python": runtime_lock["oci_toolchain"]["versions"]["python"],
+            "toolchain_sha256sum": runtime_lock["oci_toolchain"]["versions"]["sha256sum"],
             "validation_image": runtime_lock["validation_image"]["reference"],
             "validation_oci_manifest_digest": runtime_receipt["validation_oci_manifest_digest"],
             "container_platform": runtime_lock["validation_image"]["platform"],
@@ -1000,6 +1192,37 @@ def verify_bundle(
 
 
 def main(argv: list[str] | None = None) -> int:
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if "--archive-bootstrap" in argv:
+        parser = argparse.ArgumentParser(description="Validate pre-load runtime and validation attestations")
+        parser.add_argument("--archive-bootstrap", action="store_true", required=True)
+        parser.add_argument("--runtime-archive", type=Path, required=True)
+        parser.add_argument("--runtime-attestation", type=Path, required=True)
+        parser.add_argument("--validation-archive", type=Path, required=True)
+        parser.add_argument("--validation-attestation", type=Path, required=True)
+        parser.add_argument("--repository", required=True)
+        parser.add_argument("--workflow-sha", required=True)
+        parser.add_argument("--receipt-output", type=Path, required=True)
+        args = parser.parse_args(argv)
+        try:
+            receipt = verify_archive_bootstrap(
+                runtime_archive=args.runtime_archive,
+                runtime_attestation=args.runtime_attestation.read_bytes(),
+                validation_archive=args.validation_archive,
+                validation_attestation=args.validation_attestation.read_bytes(),
+                repository=args.repository,
+                workflow_sha=args.workflow_sha,
+                receipt_output=args.receipt_output,
+            )
+        except (VerificationError, OSError) as exc:
+            print(f"VERIFY_CAFE_ARCHIVE_BOOTSTRAP FAIL: {exc}", file=sys.stderr)
+            return 1
+        print(
+            "VERIFY_CAFE_ARCHIVE_BOOTSTRAP PASS "
+            f"runtime={receipt['archives'][0]['sha256']} validation={receipt['archives'][1]['sha256']}",
+            file=sys.stderr,
+        )
+        return 0
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bundle", type=Path, required=True)
     parser.add_argument("--candidate-root", type=Path, required=True)
@@ -1015,6 +1238,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--preverified-checkouts", type=Path)
     parser.add_argument("--compiled-authored-manifest", type=Path)
     parser.add_argument("--gh-bin", default="gh")
+    parser.add_argument("--attestation-json", type=Path)
     parser.add_argument("--receipt-output", type=Path, required=True)
     args = parser.parse_args(argv)
     expected = {
@@ -1035,8 +1259,12 @@ def main(argv: list[str] | None = None) -> int:
             runtime_archive_sha256=args.runtime_archive_sha256,
             preverified_checkouts=args.preverified_checkouts,
             compiled_authored_manifest=args.compiled_authored_manifest,
-            attestation_runner=lambda bundle, repository, workflow_sha: run_github_attestation(
-                bundle, repository, workflow_sha, args.gh_bin
+            attestation_runner=(
+                (lambda *_: args.attestation_json.read_bytes())
+                if args.attestation_json is not None
+                else lambda bundle, repository, workflow_sha: run_github_attestation(
+                    bundle, repository, workflow_sha, args.gh_bin
+                )
             ),
             receipt_output=args.receipt_output,
         )

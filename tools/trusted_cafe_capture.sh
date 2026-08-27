@@ -32,8 +32,50 @@ canonical_oci_archive() {
     -cf "$archive" -C "$layout" .
 }
 
+build_runtime_in_pinned_toolchain() {
+  [ "$#" -eq 2 ] || usage
+  local trusted_root out state toolchain_image skopeo_image python_index_ref
+  trusted_root="$(cd "$1" && pwd)"
+  out="$2"
+  [ ! -e "$out" ] || fail "output path already exists: $out"
+  mkdir -p "$out"
+  out="$(cd "$out" && pwd)"
+  state="$(mktemp -d "${TMPDIR:-/tmp}/trusted-cafe-oci-toolchain.XXXXXXXX")"
+  mkdir -p "$state/storage" "$state/run" "$state/tmp" "$state/input"
+  toolchain_image="quay.io/podman/stable@sha256:e90073d89870417f7bd0f581eed1ee6ddd8e55f0246a746516fd11059eac3335"
+  skopeo_image="quay.io/skopeo/stable@sha256:572747e168b4cb920bc7f5b321ca6c6da13717ff28c8d671a203935d53cf1089"
+  python_index_ref="docker.io/library/python@sha256:0bee7276f83efd4a1ee05bbbf4281d95ed28e079220a9457f25a93e3f1e3c31b"
+  cleanup_toolchain() {
+    case "$state" in
+      "${TMPDIR:-/tmp}"/trusted-cafe-oci-toolchain.*) rm -rf -- "$state" ;;
+      *) fail "refusing unsafe toolchain cleanup: $state" ;;
+    esac
+  }
+  trap cleanup_toolchain EXIT
+  docker run --pull=always --rm --platform linux/amd64 \
+    --pids-limit 128 --memory 512m --cpus 1 --volume "$state/input:/toolchain-input:rw" \
+    --entrypoint sh "$skopeo_image" -euc \
+    'test "$(skopeo --version | awk "{print \$3}")" = 1.22.2; skopeo inspect --raw "$1" > /toolchain-input/python-index.json' \
+    sh "docker://$python_index_ref"
+  docker run --pull=always --rm --privileged --platform linux/amd64 \
+    --pids-limit 4096 --memory 8g --cpus 4 \
+    --env CAFE_OCI_TOOLCHAIN_ACTIVE=1 --env "CAFE_OCI_TOOLCHAIN_IMAGE=$toolchain_image" \
+    --env "CAFE_SKOPEO_IMAGE=$skopeo_image" \
+    --volume "$trusted_root:/trusted:ro" --volume "$out:/output:rw" \
+    --volume "$state/input:/toolchain-input:ro" \
+    --volume "$state/storage:/var/lib/containers:rw" \
+    --volume "$state/run:/run/containers:rw" --volume "$state/tmp:/tmp:rw" \
+    "$toolchain_image" bash /trusted/tools/trusted_cafe_capture.sh build-runtime /trusted /output
+  cleanup_toolchain
+  trap - EXIT
+}
+
 build_runtime() {
   [ "$#" -eq 2 ] || usage
+  if [ "${CAFE_OCI_TOOLCHAIN_ACTIVE:-}" != 1 ]; then
+    build_runtime_in_pinned_toolchain "$@"
+    return
+  fi
   local trusted_root out lock context tag validation_tag layout archive first second
   local validation_first validation_second validation_archive
   local validation_delta_first validation_delta_second validation_delta_archive
@@ -42,8 +84,8 @@ build_runtime() {
   out="$2"
   lock="$trusted_root/evidence/cafe/runtime-lock.v1.json"
   [ -f "$lock" ] || fail "runtime lock missing"
-  [ ! -e "$out" ] || fail "output path already exists: $out"
-  mkdir -p "$out"
+  [ -d "$out" ] || fail "containerized output mount missing: $out"
+  [ -z "$(find "$out" -mindepth 1 -maxdepth 1 -print -quit)" ] || fail "output path is not empty: $out"
   out="$(cd "$out" && pwd)"
   context="$(mktemp -d "${TMPDIR:-/tmp}/trusted-cafe-runtime.XXXXXXXX")"
   tag="localhost/living-town/trusted-cafe-runtime:v1"
@@ -79,11 +121,14 @@ values = [
     p["godot"]["url"], p["godot"]["archive_sha256"], p["godot"]["binary_sha256"],
     p["debian_snapshot"]["debian"], p["debian_snapshot"]["security"],
     p["versions"]["python"], p["versions"]["pillow"], p["versions"]["godot"],
-    p["host_tools"]["podman"], p["host_tools"]["buildah"],
-    p["host_tools"]["skopeo"], p["host_tools"]["gh"],
+    p["host_tools"]["gh"],
     str(p["limits"]["max_runtime_archive_bytes"]),
     str(p["limits"]["max_validation_archive_bytes"]),
     str(p["limits"]["max_validation_delta_archive_bytes"]),
+    p["oci_toolchain"]["podman_image"], p["oci_toolchain"]["skopeo_image"],
+    p["oci_toolchain"]["versions"]["podman"], p["oci_toolchain"]["versions"]["skopeo"],
+    p["oci_toolchain"]["versions"]["tar"], p["oci_toolchain"]["versions"]["python"],
+    p["oci_toolchain"]["versions"]["sha256sum"],
 ]
 for value in values:
     if "\n" in str(value) or "\r" in str(value):
@@ -91,7 +136,7 @@ for value in values:
     print(value)
 PY
   )
-  [ "${#lock_values[@]}" -eq 21 ] || fail "runtime lock scalar extraction failed"
+  [ "${#lock_values[@]}" -eq 25 ] || fail "runtime lock scalar extraction failed"
   local base_ref="${lock_values[0]}" base_digest="${lock_values[1]}"
   local index_ref="${lock_values[2]}"
   local pillow_filename="${lock_values[3]}" pillow_url="${lock_values[4]}" pillow_sha="${lock_values[5]}"
@@ -99,17 +144,23 @@ PY
   local godot_binary_sha="${lock_values[8]}" debian_snapshot="${lock_values[9]}"
   local security_snapshot="${lock_values[10]}" python_version="${lock_values[11]}"
   local pillow_version="${lock_values[12]}" godot_version="${lock_values[13]}"
-  local podman_version="${lock_values[14]}" buildah_version="${lock_values[15]}"
-  local skopeo_version="${lock_values[16]}" gh_version="${lock_values[17]}"
-  local max_archive_bytes="${lock_values[18]}"
-  local max_validation_archive_bytes="${lock_values[19]}"
-  local max_validation_delta_archive_bytes="${lock_values[20]}"
+  local gh_version="${lock_values[14]}" max_archive_bytes="${lock_values[15]}"
+  local max_validation_archive_bytes="${lock_values[16]}"
+  local max_validation_delta_archive_bytes="${lock_values[17]}"
+  local toolchain_image="${lock_values[18]}" skopeo_image="${lock_values[19]}"
+  local podman_version="${lock_values[20]}" skopeo_version="${lock_values[21]}"
+  local tar_version="${lock_values[22]}" toolchain_python="${lock_values[23]}"
+  local sha256sum_version="${lock_values[24]}"
 
+  [ "$toolchain_image" = "${CAFE_OCI_TOOLCHAIN_IMAGE:-}" ] || fail "OCI toolchain image drift"
   [ "$(podman --version | awk '{print $3}')" = "$podman_version" ] || fail "Podman drift"
-  [ "$(buildah --version | awk '{print $3}')" = "$buildah_version" ] || fail "Buildah drift"
-  [ "$(skopeo --version | awk '{print $3}')" = "$skopeo_version" ] || fail "Skopeo drift"
+  [ "$(tar --version | head -1)" = "$tar_version" ] || fail "tar drift"
+  [ "$(python3 --version | awk '{print $2}')" = "$toolchain_python" ] || fail "toolchain Python drift"
+  [ "$(sha256sum --version | head -1)" = "$sha256sum_version" ] || fail "sha256sum drift"
 
-  skopeo inspect --raw "docker://$index_ref" >"$context/python-index.json"
+  [ "$skopeo_image" = "${CAFE_SKOPEO_IMAGE:-}" ] || fail "Skopeo toolchain image drift"
+  [ -s /toolchain-input/python-index.json ] || fail "digest-pinned Skopeo index inspection missing"
+  cp /toolchain-input/python-index.json "$context/python-index.json"
   [ "$(sha256_file "$context/python-index.json")" = "${index_ref##*@sha256:}" ] || \
     fail "Python index digest mismatch"
   container_python - /context/python-index.json "$base_digest" <<'PY'
@@ -161,6 +212,7 @@ RUN printf '%s\n' \
       "deb [check-valid-until=no] ${SECURITY_SNAPSHOT} bookworm-security main" \
       > /etc/apt/sources.list \
  && rm -f /etc/apt/sources.list.d/* \
+ && mkdir -p /var/lib/apt/lists/partial \
  && apt-get -o Acquire::Check-Valid-Until=false update \
  && apt-get -o Acquire::Check-Valid-Until=false install -y --no-install-recommends \
       bash ca-certificates coreutils findutils gzip libasound2 libfontconfig1 \
@@ -287,6 +339,7 @@ RUN printf '%s\n' \
       "deb [check-valid-until=no] ${DEBIAN_SNAPSHOT} bookworm-updates main" \
       "deb [check-valid-until=no] ${SECURITY_SNAPSHOT} bookworm-security main" \
       > /etc/apt/sources.list \
+ && mkdir -p /var/lib/apt/lists/partial \
  && apt-get -o Acquire::Check-Valid-Until=false update \
  && apt-get -o Acquire::Check-Valid-Until=false install -y --no-install-recommends git \
  && rm -rf /var/lib/apt/lists/* /var/cache/apt/* /var/log/apt/* \
@@ -493,12 +546,14 @@ PY
   )"
   container_python - /output/runtime-build-receipt.json "$lock_sha" "$archive_sha" \
     "$oci_manifest_digest" "${base_digest#sha256:}" "$python_version" "$pillow_version" \
-    "$godot_version" "$podman_version" "$buildah_version" "$skopeo_version" "$gh_version" \
-    "$validation_image" "$validation_oci_manifest_digest" <<'PY'
+    "$godot_version" "$podman_version" "$skopeo_version" "$gh_version" \
+    "$validation_image" "$validation_oci_manifest_digest" "$toolchain_image" "$skopeo_image" \
+    "$tar_version" "$toolchain_python" "$sha256sum_version" <<'PY'
 import json, os, sys, tempfile
 (out, lock_sha, archive_sha, manifest_digest, base_digest, python_version,
- pillow_version, godot_version, podman, buildah, skopeo, gh, validation_image,
- validation_oci_manifest_digest) = sys.argv[1:]
+ pillow_version, godot_version, podman, skopeo, gh, validation_image,
+ validation_oci_manifest_digest, toolchain_image, skopeo_image, tar_version,
+ toolchain_python, sha256sum_version) = sys.argv[1:]
 p = {
     "schema": "living-town.cafe-runtime-build-receipt.v1",
     "lock_sha256": lock_sha,
@@ -509,9 +564,13 @@ p = {
     "pillow": pillow_version,
     "godot": godot_version,
     "podman": podman,
-    "buildah": buildah,
     "skopeo": skopeo,
     "gh": gh,
+    "oci_toolchain_image": toolchain_image,
+    "skopeo_image": skopeo_image,
+    "toolchain_tar": tar_version,
+    "toolchain_python": toolchain_python,
+    "toolchain_sha256sum": sha256sum_version,
     "validation_image": validation_image,
     "validation_oci_manifest_digest": validation_oci_manifest_digest,
     "container_platform": "linux/amd64",
@@ -652,6 +711,13 @@ assert receipt["reproducible"] is True
 for key in ("python", "pillow", "godot"):
     assert receipt[key] == lock["versions"][key]
 assert receipt["validation_image"] == lock["validation_image"]["reference"]
+assert receipt["oci_toolchain_image"] == lock["oci_toolchain"]["podman_image"]
+assert receipt["skopeo_image"] == lock["oci_toolchain"]["skopeo_image"]
+assert receipt["podman"] == lock["oci_toolchain"]["versions"]["podman"]
+assert receipt["skopeo"] == lock["oci_toolchain"]["versions"]["skopeo"]
+assert receipt["toolchain_tar"] == lock["oci_toolchain"]["versions"]["tar"]
+assert receipt["toolchain_python"] == lock["oci_toolchain"]["versions"]["python"]
+assert receipt["toolchain_sha256sum"] == lock["oci_toolchain"]["versions"]["sha256sum"]
 assert re.fullmatch(r"[0-9a-f]{64}", receipt["validation_oci_manifest_digest"])
 assert receipt["container_platform"] == lock["validation_image"]["platform"]
 assert receipt["container_network"] == "none"

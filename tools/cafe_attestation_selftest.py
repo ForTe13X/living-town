@@ -74,20 +74,22 @@ def write(path: Path, data: bytes | str) -> None:
     path.write_bytes(data.encode("utf-8") if isinstance(data, str) else data)
 
 
+def png_chunk(kind: bytes, payload: bytes) -> bytes:
+    return (
+        struct.pack(">I", len(payload))
+        + kind
+        + payload
+        + struct.pack(">I", binascii.crc32(kind + payload) & 0xFFFFFFFF)
+    )
+
+
 def png_from_scanlines(width: int, height: int, raw: bytes, *, interlace: int = 0) -> bytes:
-    def chunk(kind: bytes, payload: bytes) -> bytes:
-        return (
-            struct.pack(">I", len(payload))
-            + kind
-            + payload
-            + struct.pack(">I", binascii.crc32(kind + payload) & 0xFFFFFFFF)
-        )
 
     return (
         b"\x89PNG\r\n\x1a\n"
-        + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, interlace))
-        + chunk(b"IDAT", zlib.compress(raw, 9))
-        + chunk(b"IEND", b"")
+        + png_chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, interlace))
+        + png_chunk(b"IDAT", zlib.compress(raw, 9))
+        + png_chunk(b"IEND", b"")
     )
 
 
@@ -270,10 +272,14 @@ def build_bundle(root: Path, repo: Path, context: dict[str, str], authored_manif
         "python": runtime_lock["versions"]["python"],
         "pillow": runtime_lock["versions"]["pillow"],
         "godot": runtime_lock["versions"]["godot"],
-        "podman": runtime_lock["host_tools"]["podman"],
-        "buildah": runtime_lock["host_tools"]["buildah"],
-        "skopeo": runtime_lock["host_tools"]["skopeo"],
+        "podman": runtime_lock["oci_toolchain"]["versions"]["podman"],
+        "skopeo": runtime_lock["oci_toolchain"]["versions"]["skopeo"],
         "gh": runtime_lock["host_tools"]["gh"],
+        "oci_toolchain_image": runtime_lock["oci_toolchain"]["podman_image"],
+        "skopeo_image": runtime_lock["oci_toolchain"]["skopeo_image"],
+        "toolchain_tar": runtime_lock["oci_toolchain"]["versions"]["tar"],
+        "toolchain_python": runtime_lock["oci_toolchain"]["versions"]["python"],
+        "toolchain_sha256sum": runtime_lock["oci_toolchain"]["versions"]["sha256sum"],
         "validation_image": runtime_lock["validation_image"]["reference"],
         "validation_oci_manifest_digest": "c" * 64,
         "container_platform": runtime_lock["validation_image"]["platform"],
@@ -541,6 +547,118 @@ def execute(work: Path, source_root: Path) -> dict[str, Any]:
     expect_failure(
         "budget_stdin_loss",
         lambda: verifier.verify_budget_gate_contract(workflow[:step_at] + broken_step + workflow[step_end:]),
+        failures,
+    )
+
+    verifier.verify_protected_bootstrap_contract(workflow)
+    swapped_headers = workflow.replace(
+        "      - name: Verify archive attestations before subject load in pinned bootstrap",
+        "      - name: __bootstrap_placeholder__",
+        1,
+    ).replace(
+        "      - name: Load the attested exact-digest subjects",
+        "      - name: Verify archive attestations before subject load in pinned bootstrap",
+        1,
+    ).replace(
+        "      - name: __bootstrap_placeholder__",
+        "      - name: Load the attested exact-digest subjects",
+        1,
+    )
+    expect_failure(
+        "archive_verification_after_load",
+        lambda: verifier.verify_protected_bootstrap_contract(swapped_headers),
+        failures,
+    )
+    token_exposure = workflow.replace(
+        "      - name: Independently verify bundle and GitHub provenance",
+        "      - name: Independently verify bundle and GitHub provenance\n        # GH_TOKEN must never enter a subject container",
+        1,
+    )
+    expect_failure(
+        "subject_token_exposure",
+        lambda: verifier.verify_protected_bootstrap_contract(token_exposure),
+        failures,
+    )
+
+    runtime_lock = json.loads((repo / "evidence/cafe/runtime-lock.v1.json").read_text(encoding="utf-8"))
+    verifier.verify_oci_toolchain_contract(repo, runtime_lock)
+    unpinned = json.loads(json.dumps(runtime_lock))
+    unpinned["oci_toolchain"]["podman_image"] = "quay.io/podman/stable:latest"
+    expect_failure(
+        "unpinned_oci_toolchain",
+        lambda: verifier.verify_oci_toolchain_contract(repo, unpinned),
+        failures,
+    )
+    changed_tar = json.loads(json.dumps(runtime_lock))
+    changed_tar["oci_toolchain"]["versions"]["tar"] = "tar (GNU tar) 1.34"
+    expect_failure(
+        "changed_tar_toolchain",
+        lambda: verifier.verify_oci_toolchain_contract(repo, changed_tar),
+        failures,
+    )
+
+    runtime_subject = work / "runtime.oci.tar"
+    validation_subject = work / "validation.oci.tar"
+    write(runtime_subject, b"runtime-subject\n")
+    write(validation_subject, b"validation-subject\n")
+    runtime_attestation = attestation_for(runtime_subject)
+    validation_attestation = attestation_for(validation_subject)
+    verifier.verify_archive_bootstrap(
+        runtime_archive=runtime_subject,
+        runtime_attestation=runtime_attestation,
+        validation_archive=validation_subject,
+        validation_attestation=validation_attestation,
+        repository=context["repository"],
+        workflow_sha=context["workflow_sha"],
+    )
+    corrupt_subject = work / "runtime-corrupt.oci.tar"
+    write(corrupt_subject, runtime_subject.read_bytes() + b"corrupt")
+    expect_failure(
+        "corrupt_archive_preload",
+        lambda: verifier.verify_archive_bootstrap(
+            runtime_archive=corrupt_subject,
+            runtime_attestation=runtime_attestation,
+            validation_archive=validation_subject,
+            validation_attestation=validation_attestation,
+            repository=context["repository"],
+            workflow_sha=context["workflow_sha"],
+        ),
+        failures,
+    )
+    expect_failure(
+        "swapped_archive_attestation_preload",
+        lambda: verifier.verify_archive_bootstrap(
+            runtime_archive=runtime_subject,
+            runtime_attestation=validation_attestation,
+            validation_archive=validation_subject,
+            validation_attestation=runtime_attestation,
+            repository=context["repository"],
+            workflow_sha=context["workflow_sha"],
+        ),
+        failures,
+    )
+    expect_failure(
+        "wrong_archive_subject_preload",
+        lambda: verifier.verify_archive_bootstrap(
+            runtime_archive=runtime_subject,
+            runtime_attestation=attestation_for(runtime_subject, subject_sha="f" * 64),
+            validation_archive=validation_subject,
+            validation_attestation=validation_attestation,
+            repository=context["repository"],
+            workflow_sha=context["workflow_sha"],
+        ),
+        failures,
+    )
+    expect_failure(
+        "unattested_archive_preload",
+        lambda: verifier.verify_archive_bootstrap(
+            runtime_archive=runtime_subject,
+            runtime_attestation=b"[]",
+            validation_archive=validation_subject,
+            validation_attestation=validation_attestation,
+            repository=context["repository"],
+            workflow_sha=context["workflow_sha"],
+        ),
         failures,
     )
 
@@ -863,6 +981,35 @@ def execute(work: Path, source_root: Path) -> dict[str, Any]:
         "interlaced_png",
         png_from_scanlines(width, height, scanlines, interlace=1),
     )
+    signature = b"\x89PNG\r\n\x1a\n"
+    ihdr = png_chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0))
+    compressed = zlib.compress(scanlines, 9)
+    malformed_scanlines(
+        "duplicate_ihdr_png",
+        signature + ihdr + ihdr + png_chunk(b"IDAT", compressed) + png_chunk(b"IEND", b""),
+    )
+    malformed_scanlines(
+        "nonempty_iend_png",
+        signature + ihdr + png_chunk(b"IDAT", compressed) + png_chunk(b"IEND", b"x"),
+    )
+    malformed_scanlines(
+        "unknown_critical_png",
+        signature
+        + ihdr
+        + png_chunk(b"ABCD", b"")
+        + png_chunk(b"IDAT", compressed)
+        + png_chunk(b"IEND", b""),
+    )
+    split = len(compressed) // 2
+    malformed_scanlines(
+        "noncontiguous_idat_png",
+        signature
+        + ihdr
+        + png_chunk(b"IDAT", compressed[:split])
+        + png_chunk(b"tEXt", b"gap")
+        + png_chunk(b"IDAT", compressed[split:])
+        + png_chunk(b"IEND", b""),
+    )
 
     required = {
         "stale_source_manifest",
@@ -895,11 +1042,23 @@ def execute(work: Path, source_root: Path) -> dict[str, Any]:
         "hardlink_archive_member",
         "high_expansion_png",
         "budget_stdin_loss",
+        "archive_verification_after_load",
+        "subject_token_exposure",
+        "unpinned_oci_toolchain",
+        "changed_tar_toolchain",
+        "corrupt_archive_preload",
+        "swapped_archive_attestation_preload",
+        "wrong_archive_subject_preload",
+        "unattested_archive_preload",
         "zero_decoded_scanlines_png",
         "truncated_scanlines_png",
         "excess_scanlines_png",
         "invalid_filter_png",
         "interlaced_png",
+        "duplicate_ihdr_png",
+        "nonempty_iend_png",
+        "unknown_critical_png",
+        "noncontiguous_idat_png",
     }
     if set(failures) != required:
         raise SelftestError(f"negative control coverage mismatch: {sorted(failures)}")
