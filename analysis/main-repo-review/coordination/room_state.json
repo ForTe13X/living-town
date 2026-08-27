@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T01:31:47Z",
+  "updated_at": "2026-08-27T01:58:35Z",
   "producer": {
     "task": "019f555f-dfd4-7d91-aa6b-9655caa34871",
     "branch": "codex/main-repo-review",
@@ -52,15 +52,16 @@
       ],
       "consumer": "Producer task 019f555f-dfd4-7d91-aa6b-9655caa34871 and the publication decision for the PR #21 stacked repair",
       "status": "active_read_only_diagnostic",
-      "last_heartbeat": "2026-08-27T01:31:47Z",
-      "stale_after": "2026-08-27T02:31:47Z",
+      "last_heartbeat": "2026-08-27T01:58:35Z",
+      "stale_after": "2026-08-27T02:58:35Z",
       "pr": null,
       "checks": {
         "candidate_full_natural_ci": "fail_space_and_floor_roundtrip_capture_only",
         "candidate_repair_specific_controls": "pass",
         "candidate_true_crash_scan": "zero",
         "untouched_parent_same_environment_visual_control": "pass",
-        "root_cause": "unexplained"
+        "candidate_first_fresh_diagnostic_rerun": "space_and_floor_roundtrip_capture_passed_while_full_visual_gate_continues",
+        "root_cause": "intermittency_or_order_environment_under_active_ab_test"
       },
       "recovery_count": 0,
       "rollback": "Read-only diagnostic: discard temporary receipts; do not mutate repository, branches, PRs, checks, or anchors.",
