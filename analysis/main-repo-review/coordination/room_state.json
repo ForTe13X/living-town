@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T11:40:00Z",
+  "updated_at": "2026-08-27T11:42:00Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -48,7 +48,7 @@
       "stale_after": null,
       "pr": 25,
       "checks": {"architect_contract":"READY","source_candidate_core":"success","source_candidate_visual":"success","source_candidate_run":33042786023,"official_python_tag_resolved":true,"official_python_index_digest":"sha256:0bee7276f83efd4a1ee05bbbf4281d95ed28e079220a9457f25a93e3f1e3c31b","official_python_amd64_digest":"sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c","official_pillow_wheel_sha256":"106064daa23a745510dabce1d84f29137a37224831d88eb4ce94bb187b1d7e5f","godot_archive_sha256":"30e6b6d141f0cd5bebd629ad1d0ef1324e60091bb20662d026b402ba58c59937","godot_binary_sha256":"5a806b2b385279d9607094d33e946ed828e9606df4cb46d258ca27468dc5c1c9"},
-      "hosted_transition": {"draft_pr":25,"pr_state":"OPEN_DRAFT_BLOCKED","hosted_run":33066750754,"runtime_qualification":"success","runtime_archive_sha256":"47242a8a5b8418f9748b7c781a74842a0558163510fa99edbc4b2d30a0c54929","oci_manifest_digest":"9e6be53ae9d4cee425f4f45f4178eaf52a010ade5429d644618afa1b47521281","artifact_id":9644050314,"artifact_digest":"sha256:01cca1ee292e4d22555469fa8a787d20bc1659abc2760f39c23a28b1299d73d7","artifact_expires":"2026-11-25T11:17:55Z","six_path_scope":"success","deterministic_selftest":"success","protected_capture":"expected_skipped_on_pr","ci_run":33066750750,"ci_status":"in_progress","visual_canary":"success"},
+      "hosted_transition": {"draft_pr":25,"pr_state":"OPEN_DRAFT_BLOCKED","hosted_run":33066750754,"runtime_qualification":"success","runtime_archive_sha256":"47242a8a5b8418f9748b7c781a74842a0558163510fa99edbc4b2d30a0c54929","oci_manifest_digest":"9e6be53ae9d4cee425f4f45f4178eaf52a010ade5429d644618afa1b47521281","artifact_id":9644050314,"artifact_digest":"sha256:01cca1ee292e4d22555469fa8a787d20bc1659abc2760f39c23a28b1299d73d7","artifact_expires":"2026-11-25T11:17:55Z","six_path_scope":"success","deterministic_selftest":"success","protected_capture":"expected_skipped_on_pr","ci_run":33066750750,"ci_status":"success","visual_canary":"success","visual_artifact_id":9644256723,"visual_artifact_digest":"sha256:d80227db860359a1c63a8bcfa7bd2221566c4408cc420c7b1b65c4e502917d93"},
       "recovery_count": 0,
       "rollback": "Close the Draft and revert only Stack A commits through review; never rewrite master. Disable dispatch before any later trust-root revert.",
       "stop_lines": ["master or branch baseline drift","dirty or shared worktree","any out-of-lease path is required","candidate source or Stack B paths must change","secret credentials are required","runtime digest cannot be reproducibly pinned","protected anchor rebake or View-to-Sim authority is proposed"]
@@ -73,7 +73,7 @@
       "last_heartbeat": "2026-08-27T11:30:00Z",
       "stale_after": "2026-08-27T13:30:00Z",
       "pr": 25,
-      "checks": {"runtime_qualification":"success","visual_canary":"success","ci":"in_progress"},
+      "checks": {"runtime_qualification":"success","visual_canary":"success","ci":"success"},
       "recovery_count": 0,
       "rollback": "Delete only isolated temporary review outputs; no repository or GitHub rollback applies.",
       "stop_lines": ["exact head changes","repository or GitHub write would be required","artifact digest mismatch","Docker isolation cannot be established"]
@@ -98,7 +98,7 @@
       "last_heartbeat": "2026-08-27T11:30:00Z",
       "stale_after": "2026-08-27T13:30:00Z",
       "pr": 25,
-      "checks": {"runtime_qualification":"success","visual_canary":"success","ci":"in_progress"},
+      "checks": {"runtime_qualification":"success","visual_canary":"success","ci":"success"},
       "recovery_count": 0,
       "rollback": "Delete only isolated temporary adversarial outputs; no repository or GitHub rollback applies.",
       "stop_lines": ["exact head changes","repository or GitHub write would be required","test would mutate shared runtime state","claim cannot be tested without Stack B or protected master dispatch"]
