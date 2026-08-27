@@ -76,7 +76,11 @@
     "hosted_timeout_minutes": 35,
     "max_evidence_frames": 12,
     "max_png_decompressed_bytes": 8388608,
+    "max_protected_payload_bytes": 251658240,
+    "max_qualification_payload_bytes": 251658240,
     "max_runtime_archive_bytes": 230686720,
+    "max_validation_archive_bytes": 262144000,
+    "max_validation_delta_archive_bytes": 41943040,
     "max_total_artifact_bytes": 262144000
   },
   "pillow": {

@@ -74,7 +74,7 @@ def write(path: Path, data: bytes | str) -> None:
     path.write_bytes(data.encode("utf-8") if isinstance(data, str) else data)
 
 
-def png(width: int, height: int, color: tuple[int, int, int, int]) -> bytes:
+def png_from_scanlines(width: int, height: int, raw: bytes, *, interlace: int = 0) -> bytes:
     def chunk(kind: bytes, payload: bytes) -> bytes:
         return (
             struct.pack(">I", len(payload))
@@ -83,14 +83,17 @@ def png(width: int, height: int, color: tuple[int, int, int, int]) -> bytes:
             + struct.pack(">I", binascii.crc32(kind + payload) & 0xFFFFFFFF)
         )
 
-    row = b"\0" + bytes(color) * width
-    raw = row * height
     return (
         b"\x89PNG\r\n\x1a\n"
-        + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0))
+        + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, interlace))
         + chunk(b"IDAT", zlib.compress(raw, 9))
         + chunk(b"IEND", b"")
     )
+
+
+def png(width: int, height: int, color: tuple[int, int, int, int]) -> bytes:
+    row = b"\0" + bytes(color) * width
+    return png_from_scanlines(width, height, row * height)
 
 
 def make_tar(source: Path, destination: Path) -> None:
@@ -520,6 +523,27 @@ def execute(work: Path, source_root: Path) -> dict[str, Any]:
     )
     failures: list[str] = []
 
+    workflow = (repo / verifier.WORKFLOW_PATH).read_text(encoding="utf-8")
+    verifier.verify_budget_gate_contract(workflow)
+    schema = "living-town.cafe-qualification-budget-receipt.v1"
+    schema_at = workflow.index(schema)
+    step_at = workflow.rfind("      - name: ", 0, schema_at)
+    step_end = workflow.find("      - name: ", schema_at)
+    step_end = len(workflow) if step_end < 0 else step_end
+    budget_step = workflow[step_at:step_end]
+    broken_step = budget_step.replace(
+        "podman run --pull=never --rm --interactive",
+        "podman run --pull=never --rm",
+        1,
+    )
+    if broken_step == budget_step:
+        raise SelftestError("budget stdin fixture mutation did not apply")
+    expect_failure(
+        "budget_stdin_loss",
+        lambda: verifier.verify_budget_gate_contract(workflow[:step_at] + broken_step + workflow[step_end:]),
+        failures,
+    )
+
     interiors = repo / "game/data/interiors.json"
     original_interiors = interiors.read_bytes()
     interiors.write_bytes(original_interiors + b" \n")
@@ -806,6 +830,40 @@ def execute(work: Path, source_root: Path) -> dict[str, Any]:
         failures,
     )
 
+    width, height = 1280, 768
+    row = b"\0" + bytes((180, 80, 60, 255)) * width
+    scanlines = row * height
+
+    def malformed_scanlines(label: str, replacement: bytes) -> None:
+        def mutation(content: Path) -> None:
+            frame = content / "1280x768/vg_int_cafe.png"
+            frame.write_bytes(replacement)
+            receipt_path = content / "1280x768/cafe-capture-receipt.json"
+            value = json.loads(receipt_path.read_text(encoding="utf-8"))
+            value["captures"][0]["sha256"] = digest(replacement)
+            value["captures"][0]["bytes"] = len(replacement)
+            write(receipt_path, canonical(value))
+
+        expect_failure(
+            label,
+            lambda: (
+                lambda changed: verify_changed(changed, attestation=attestation_for(changed))
+            )(mutate_bundle(bundle, work, label, mutation, refresh=True)),
+            failures,
+        )
+
+    malformed_scanlines("zero_decoded_scanlines_png", png_from_scanlines(width, height, b""))
+    malformed_scanlines("truncated_scanlines_png", png_from_scanlines(width, height, scanlines[:-1]))
+    malformed_scanlines("excess_scanlines_png", png_from_scanlines(width, height, scanlines + b"\0"))
+    malformed_scanlines(
+        "invalid_filter_png",
+        png_from_scanlines(width, height, b"\x05" + scanlines[1:]),
+    )
+    malformed_scanlines(
+        "interlaced_png",
+        png_from_scanlines(width, height, scanlines, interlace=1),
+    )
+
     required = {
         "stale_source_manifest",
         "unauthored_plausible_source",
@@ -836,6 +894,12 @@ def execute(work: Path, source_root: Path) -> dict[str, Any]:
         "symlink_archive_member",
         "hardlink_archive_member",
         "high_expansion_png",
+        "budget_stdin_loss",
+        "zero_decoded_scanlines_png",
+        "truncated_scanlines_png",
+        "excess_scanlines_png",
+        "invalid_filter_png",
+        "interlaced_png",
     }
     if set(failures) != required:
         raise SelftestError(f"negative control coverage mismatch: {sorted(failures)}")

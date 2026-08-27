@@ -36,7 +36,8 @@ build_runtime() {
   [ "$#" -eq 2 ] || usage
   local trusted_root out lock context tag validation_tag layout archive first second
   local validation_first validation_second validation_archive
-  local -a validation_values
+  local validation_delta_first validation_delta_second validation_delta_archive
+  local -a validation_values validation_delta_values
   trusted_root="$(cd "$1" && pwd)"
   out="$2"
   lock="$trusted_root/evidence/cafe/runtime-lock.v1.json"
@@ -81,6 +82,8 @@ values = [
     p["host_tools"]["podman"], p["host_tools"]["buildah"],
     p["host_tools"]["skopeo"], p["host_tools"]["gh"],
     str(p["limits"]["max_runtime_archive_bytes"]),
+    str(p["limits"]["max_validation_archive_bytes"]),
+    str(p["limits"]["max_validation_delta_archive_bytes"]),
 ]
 for value in values:
     if "\n" in str(value) or "\r" in str(value):
@@ -88,7 +91,7 @@ for value in values:
     print(value)
 PY
   )
-  [ "${#lock_values[@]}" -eq 19 ] || fail "runtime lock scalar extraction failed"
+  [ "${#lock_values[@]}" -eq 21 ] || fail "runtime lock scalar extraction failed"
   local base_ref="${lock_values[0]}" base_digest="${lock_values[1]}"
   local index_ref="${lock_values[2]}"
   local pillow_filename="${lock_values[3]}" pillow_url="${lock_values[4]}" pillow_sha="${lock_values[5]}"
@@ -99,6 +102,8 @@ PY
   local podman_version="${lock_values[14]}" buildah_version="${lock_values[15]}"
   local skopeo_version="${lock_values[16]}" gh_version="${lock_values[17]}"
   local max_archive_bytes="${lock_values[18]}"
+  local max_validation_archive_bytes="${lock_values[19]}"
+  local max_validation_delta_archive_bytes="${lock_values[20]}"
 
   [ "$(podman --version | awk '{print $3}')" = "$podman_version" ] || fail "Podman drift"
   [ "$(buildah --version | awk '{print $3}')" = "$buildah_version" ] || fail "Buildah drift"
@@ -313,7 +318,8 @@ EOF
   build_validation_once first "$validation_first"
   build_validation_once second "$validation_second"
   mapfile -t validation_values < <(container_python - \
-    /context/validation-first.oci.tar /context/validation-second.oci.tar <<'PY'
+    /context/validation-first.oci.tar /context/validation-second.oci.tar \
+    "$max_validation_archive_bytes" <<'PY'
 import hashlib, os, sys
 
 def sha256(path):
@@ -323,21 +329,122 @@ def sha256(path):
             value.update(block)
     return value.hexdigest()
 
-first, second = sys.argv[1:]
+first, second, max_validation_archive_bytes = sys.argv[1:]
 first_sha, second_sha = sha256(first), sha256(second)
 if first_sha != second_sha:
     raise SystemExit("independent validation builds are not byte deterministic")
 if os.path.getsize(first) != os.path.getsize(second):
     raise SystemExit("independent validation archive sizes differ")
+if os.path.getsize(first) > int(max_validation_archive_bytes):
+    raise SystemExit("validation archive exceeds budget")
 print(first_sha)
 print(os.path.getsize(first))
 PY
   )
   [ "${#validation_values[@]}" -eq 2 ] || fail "validation archive comparison failed"
+
+  make_validation_delta() {
+    local label="$1"
+    container_python - "/context/layout-validation-$label" /context/layout-first \
+      "/context/layout-validation-delta-$label" "/context/layout-validation-reconstructed-$label" <<'PY'
+import hashlib, json, pathlib, shutil, sys
+
+validation, runtime, delta, reconstructed = map(pathlib.Path, sys.argv[1:])
+
+def read_json(path):
+    return json.load(open(path, encoding="utf-8"))
+
+def blob_path(layout, digest):
+    algorithm, value = digest.split(":", 1)
+    if algorithm != "sha256" or len(value) != 64:
+        raise SystemExit(f"invalid OCI digest: {digest}")
+    return layout / "blobs" / algorithm / value
+
+def verified_blob(layout, digest):
+    path = blob_path(layout, digest)
+    if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != digest.split(":", 1)[1]:
+        raise SystemExit(f"missing or corrupt OCI blob: {digest}")
+    return path
+
+index = read_json(validation / "index.json")
+manifests = index.get("manifests")
+if not isinstance(manifests, list) or len(manifests) != 1:
+    raise SystemExit("validation OCI index must contain exactly one manifest")
+manifest_digest = manifests[0]["digest"]
+manifest_path = verified_blob(validation, manifest_digest)
+manifest = read_json(manifest_path)
+required = [manifest_digest, manifest["config"]["digest"]]
+required.extend(item["digest"] for item in manifest.get("layers", []))
+
+for target in (delta, reconstructed):
+    (target / "blobs" / "sha256").mkdir(parents=True)
+    shutil.copyfile(validation / "oci-layout", target / "oci-layout")
+    shutil.copyfile(validation / "index.json", target / "index.json")
+
+for digest in required:
+    source = verified_blob(validation, digest)
+    runtime_source = blob_path(runtime, digest)
+    if runtime_source.is_file():
+        verified_blob(runtime, digest)
+    else:
+        shutil.copyfile(source, blob_path(delta, digest))
+    reconstruction_source = blob_path(delta, digest)
+    if not reconstruction_source.is_file():
+        reconstruction_source = verified_blob(runtime, digest)
+    shutil.copyfile(reconstruction_source, blob_path(reconstructed, digest))
+
+delta_blobs = sorted(path.name for path in (delta / "blobs" / "sha256").iterdir())
+if len(delta_blobs) < 3:
+    raise SystemExit("validation delta must retain manifest, config, and unique layer")
+if sorted(path.name for path in (reconstructed / "blobs" / "sha256").iterdir()) != sorted(
+    digest.split(":", 1)[1] for digest in required
+):
+    raise SystemExit("validation reconstruction blob set mismatch")
+PY
+    canonical_oci_archive "$context/layout-validation-delta-$label" \
+      "$context/validation-delta-$label.oci.tar"
+    canonical_oci_archive "$context/layout-validation-reconstructed-$label" \
+      "$context/validation-reconstructed-$label.oci.tar"
+  }
+
+  make_validation_delta first
+  make_validation_delta second
+  validation_delta_first="$context/validation-delta-first.oci.tar"
+  validation_delta_second="$context/validation-delta-second.oci.tar"
+  mapfile -t validation_delta_values < <(container_python - \
+    /context/validation-delta-first.oci.tar /context/validation-delta-second.oci.tar \
+    /context/validation-reconstructed-first.oci.tar /context/validation-first.oci.tar \
+    /context/validation-reconstructed-second.oci.tar /context/validation-second.oci.tar \
+    "$max_validation_delta_archive_bytes" <<'PY'
+import hashlib, os, sys
+
+def sha256(path):
+    value = hashlib.sha256()
+    with open(path, "rb") as source:
+        for block in iter(lambda: source.read(1024 * 1024), b""):
+            value.update(block)
+    return value.hexdigest()
+
+(first_delta, second_delta, first_reconstructed, first_full,
+ second_reconstructed, second_full, max_delta_bytes) = sys.argv[1:]
+first_sha, second_sha = sha256(first_delta), sha256(second_delta)
+if first_sha != second_sha or os.path.getsize(first_delta) != os.path.getsize(second_delta):
+    raise SystemExit("independent validation deltas are not byte deterministic")
+if sha256(first_reconstructed) != sha256(first_full) or sha256(second_reconstructed) != sha256(second_full):
+    raise SystemExit("runtime plus validation delta does not reconstruct the exact validation archive")
+if os.path.getsize(first_delta) > int(max_delta_bytes):
+    raise SystemExit("validation delta archive exceeds budget")
+print(first_sha)
+print(os.path.getsize(first_delta))
+PY
+  )
+  [ "${#validation_delta_values[@]}" -eq 2 ] || fail "validation delta comparison failed"
   archive="$out/runtime.oci.tar"
   validation_archive="$out/validation.oci.tar"
+  validation_delta_archive="$out/validation.delta.oci.tar"
   cp "$first" "$archive"
   cp "$validation_first" "$validation_archive"
+  cp "$validation_delta_first" "$validation_delta_archive"
   layout="$context/layout-first"
   local oci_manifest_digest
   oci_manifest_digest="$(container_python - /context/layout-first/index.json <<'PY'
@@ -377,6 +484,8 @@ PY
   )"
   local validation_archive_sha="${validation_values[0]}"
   local validation_archive_bytes="${validation_values[1]}"
+  local validation_delta_archive_sha="${validation_delta_values[0]}"
+  local validation_delta_archive_bytes="${validation_delta_values[1]}"
   lock_sha="$(container_python - /trusted/evidence/cafe/runtime-lock.v1.json <<'PY'
 import hashlib, sys
 print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())
@@ -422,17 +531,22 @@ os.replace(tmp, out)
 PY
   container_python - /output/validation-build-receipt.json "$archive_sha" \
     "$validation_archive_sha" "$validation_archive_bytes" \
-    "$validation_oci_manifest_digest" <<'PY'
+    "$validation_oci_manifest_digest" "$validation_delta_archive_sha" \
+    "$validation_delta_archive_bytes" <<'PY'
 import json, os, sys, tempfile
 
 (out, runtime_archive_sha, validation_archive_sha, validation_archive_bytes,
- validation_oci_manifest_digest) = sys.argv[1:]
+ validation_oci_manifest_digest, validation_delta_archive_sha,
+ validation_delta_archive_bytes) = sys.argv[1:]
 p = {
     "schema": "living-town.cafe-validation-build-receipt.v1",
     "runtime_archive_sha256": runtime_archive_sha,
     "validation_archive_sha256": validation_archive_sha,
     "validation_archive_bytes": int(validation_archive_bytes),
     "validation_oci_manifest_digest": validation_oci_manifest_digest,
+    "validation_delta_archive_sha256": validation_delta_archive_sha,
+    "validation_delta_archive_bytes": int(validation_delta_archive_bytes),
+    "validation_delta_reconstruction": "runtime.oci.tar+validation.delta.oci.tar",
     "first_archive_sha256": validation_archive_sha,
     "second_archive_sha256": validation_archive_sha,
     "container_platform": "linux/amd64",
@@ -452,6 +566,8 @@ PY
     "$archive_sha" "$oci_manifest_digest"
   printf 'TRUSTED_CAFE_VALIDATION PASS archive_sha256=%s oci_manifest_digest=%s bytes=%s\n' \
     "$validation_archive_sha" "$validation_oci_manifest_digest" "$validation_archive_bytes"
+  printf 'TRUSTED_CAFE_VALIDATION_DELTA PASS archive_sha256=%s bytes=%s\n' \
+    "$validation_delta_archive_sha" "$validation_delta_archive_bytes"
 }
 
 capture() {

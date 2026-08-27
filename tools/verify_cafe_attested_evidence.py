@@ -223,6 +223,28 @@ def verify_action_pins(trusted_root: Path, runtime_lock: dict[str, Any]) -> None
         found = re.findall(rf"uses:\s*{re.escape(action_name)}@([^\s#]+)", workflow)
         if not found or set(found) != {pin}:
             raise VerificationError(f"workflow action pin drift for {action_name}: {found}")
+    verify_budget_gate_contract(workflow)
+
+
+def verify_budget_gate_contract(workflow: str) -> None:
+    schemas = {
+        "living-town.cafe-qualification-budget-receipt.v1",
+        "living-town.cafe-protected-budget-receipt.v1",
+    }
+    steps = re.split(r"(?m)^      - name: ", workflow)
+    for schema in schemas:
+        matches = [step for step in steps if schema in step]
+        if len(matches) != 1:
+            raise VerificationError(f"workflow budget gate missing or duplicated: {schema}")
+        step = matches[0]
+        required = (
+            "podman run --pull=never --rm --interactive",
+            "python -B -",
+            "stdin-loss-negative-control",
+            'test -s "$receipt"',
+        )
+        if any(fragment not in step for fragment in required):
+            raise VerificationError(f"workflow budget stdin/receipt gate drift: {schema}")
 
 
 def inspect_png(data: bytes, where: str) -> tuple[int, int]:
@@ -256,29 +278,43 @@ def inspect_png(data: bytes, where: str) -> tuple[int, int]:
     width, height, bit_depth, color_type, compression, filtering, interlace = struct.unpack(
         ">IIBBBBB", chunks[0][1]
     )
-    if width < 1 or height < 1 or compression != 0 or filtering != 0 or interlace not in (0, 1):
+    if (
+        width < 1
+        or height < 1
+        or bit_depth != 8
+        or color_type != 6
+        or compression != 0
+        or filtering != 0
+        or interlace != 0
+    ):
         raise VerificationError(f"{where} has unsupported PNG geometry/encoding")
-    if bit_depth not in (1, 2, 4, 8, 16) or color_type not in (0, 2, 3, 4, 6):
-        raise VerificationError(f"{where} has unsupported PNG color metadata")
+    row_bytes = width * 4
+    decoded_size = height * (row_bytes + 1)
+    if decoded_size > MAX_PNG_DECOMPRESSED_BYTES:
+        raise VerificationError(
+            f"{where} exceeds the {MAX_PNG_DECOMPRESSED_BYTES}-byte PNG expansion limit"
+        )
     idat = b"".join(payload for kind, payload in chunks if kind == b"IDAT")
     if not idat:
         raise VerificationError(f"{where} has no IDAT")
     try:
         decompressor = zlib.decompressobj()
-        decoded = decompressor.decompress(idat, MAX_PNG_DECOMPRESSED_BYTES + 1)
-        if len(decoded) > MAX_PNG_DECOMPRESSED_BYTES or decompressor.unconsumed_tail:
+        decoded = decompressor.decompress(idat, decoded_size + 1)
+        if len(decoded) > decoded_size or decompressor.unconsumed_tail:
             raise VerificationError(
-                f"{where} exceeds the {MAX_PNG_DECOMPRESSED_BYTES}-byte PNG expansion limit"
+                f"{where} has excess decoded PNG scanline bytes"
             )
-        decoded += decompressor.flush(MAX_PNG_DECOMPRESSED_BYTES + 1 - len(decoded))
-        if len(decoded) > MAX_PNG_DECOMPRESSED_BYTES:
-            raise VerificationError(
-                f"{where} exceeds the {MAX_PNG_DECOMPRESSED_BYTES}-byte PNG expansion limit"
-            )
+        decoded += decompressor.flush(decoded_size + 1 - len(decoded))
+        if len(decoded) != decoded_size:
+            raise VerificationError(f"{where} has truncated or excess decoded PNG scanlines")
         if not decompressor.eof or decompressor.unused_data:
             raise VerificationError(f"{where} has incomplete or trailing PNG image data")
     except zlib.error as exc:
         raise VerificationError(f"{where} has corrupt PNG image data: {exc}") from exc
+    for row in range(height):
+        filter_type = decoded[row * (row_bytes + 1)]
+        if filter_type > 4:
+            raise VerificationError(f"{where} has invalid PNG scanline filter {filter_type}")
     return width, height
 
 

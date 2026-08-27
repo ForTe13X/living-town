@@ -85,11 +85,13 @@ jobs:
           runtime_validation_digest="$(sed -n 's/.*"validation_oci_manifest_digest":"\([0-9a-f]\{64\}\)".*/\1/p' "$receipt")"
           validation_digest="$(sed -n 's/.*"validation_oci_manifest_digest":"\([0-9a-f]\{64\}\)".*/\1/p' "$validation_receipt")"
           validation_archive_sha="$(sed -n 's/.*"validation_archive_sha256":"\([0-9a-f]\{64\}\)".*/\1/p' "$validation_receipt")"
+          validation_delta_sha="$(sed -n 's/.*"validation_delta_archive_sha256":"\([0-9a-f]\{64\}\)".*/\1/p' "$validation_receipt")"
           paired_runtime_sha="$(sed -n 's/.*"runtime_archive_sha256":"\([0-9a-f]\{64\}\)".*/\1/p' "$validation_receipt")"
           [[ "$manifest_digest" =~ ^[0-9a-f]{64}$ ]]
           [[ "$runtime_archive_sha" =~ ^[0-9a-f]{64}$ ]]
           [[ "$validation_digest" =~ ^[0-9a-f]{64}$ ]]
           [[ "$validation_archive_sha" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$validation_delta_sha" =~ ^[0-9a-f]{64}$ ]]
           [[ "$runtime_validation_digest" == "$validation_digest" ]]
           [[ "$paired_runtime_sha" == "$runtime_archive_sha" ]]
           podman image rm -f localhost/living-town/trusted-cafe-runtime:v1 \
@@ -104,8 +106,12 @@ jobs:
           actual_validation_sha="$(podman run --pull=never --rm --network none --read-only --cap-drop all \
             --security-opt no-new-privileges --volume "$RUNNER_TEMP/cafe-runtime:/runtime:ro" \
             "$runtime_ref" sha256sum /runtime/validation.oci.tar | awk '{print $1}')"
+          actual_validation_delta_sha="$(podman run --pull=never --rm --network none --read-only --cap-drop all \
+            --security-opt no-new-privileges --volume "$RUNNER_TEMP/cafe-runtime:/runtime:ro" \
+            "$runtime_ref" sha256sum /runtime/validation.delta.oci.tar | awk '{print $1}')"
           [[ "$actual_runtime_sha" == "$runtime_archive_sha" ]]
           [[ "$actual_validation_sha" == "$validation_archive_sha" ]]
+          [[ "$actual_validation_delta_sha" == "$validation_delta_sha" ]]
           podman load --input "$validation_archive"
           podman image exists "$validation_ref"
           if podman run --pull=never --rm \
@@ -129,6 +135,7 @@ jobs:
             printf 'validation_ref=%s\n' "$validation_ref"
             printf 'runtime_archive_sha256=%s\n' "$actual_runtime_sha"
             printf 'validation_archive_sha256=%s\n' "$actual_validation_sha"
+            printf 'validation_delta_archive_sha256=%s\n' "$actual_validation_delta_sha"
             printf 'podman=%s\n' "$(podman --version)"
             printf 'docker_context=%s\n' "$(docker context show)"
             printf 'platform=linux/amd64 network=none read_only=true cap_drop=ALL no_new_privileges=true\n'
@@ -177,21 +184,126 @@ jobs:
           RUNTIME_REF: ${{ steps.runtime.outputs.ref }}
         run: |
           set -euo pipefail
-          podman run --pull=never --rm --network none --read-only --cap-drop all \
+          mkdir "$RUNNER_TEMP/cafe-budget"
+          receipt="$RUNNER_TEMP/cafe-budget/qualification-budget-receipt.json"
+          # stdin-loss-negative-control: without --interactive the body cannot create its receipt.
+          if (
+            podman run --pull=never --rm --network none --read-only --cap-drop all \
+              --security-opt no-new-privileges --pids-limit 32 --memory 128m --cpus 1 \
+              --volume "$RUNNER_TEMP/cafe-budget:/budget:rw" "$RUNTIME_REF" \
+              python -B - /budget/stdin-loss.json <<'PY'
+          open(__import__("sys").argv[1], "wb").write(b"must-not-run\n")
+          PY
+            test -s "$RUNNER_TEMP/cafe-budget/stdin-loss.json"
+          ); then
+            echo 'budget stdin-loss negative control unexpectedly executed' >&2
+            exit 1
+          fi
+          test ! -e "$RUNNER_TEMP/cafe-budget/stdin-loss.json"
+          podman run --pull=never --rm --interactive --network none --read-only --cap-drop all \
             --security-opt no-new-privileges --pids-limit 64 --memory 256m --cpus 1 \
             --tmpfs /tmp:rw,nosuid,nodev,size=67108864 \
             --volume "$PWD/trusted:/trusted:ro" \
-            --volume "$RUNNER_TEMP/cafe-runtime:/runtime:ro" "$RUNTIME_REF" \
-            python -B - /trusted/evidence/cafe/runtime-lock.v1.json /runtime/runtime.oci.tar <<'PY'
-          import hashlib, json, os, sys
-          lock = json.load(open(sys.argv[1], encoding="utf-8"))
-          archive = sys.argv[2]
-          size = os.path.getsize(archive)
-          assert size <= lock["limits"]["max_runtime_archive_bytes"], (size, lock["limits"])
-          assert lock["limits"]["hosted_timeout_minutes"] <= 35
-          assert lock["limits"]["artifact_retention_days"] >= 90
-          print(hashlib.sha256(open(archive, "rb").read()).hexdigest(), size)
+            --volume "$RUNNER_TEMP/cafe-runtime:/runtime:ro" \
+            --volume "$RUNNER_TEMP/cafe-selftest-a:/selftest-a:ro" \
+            --volume "$RUNNER_TEMP/cafe-selftest-b:/selftest-b:ro" \
+            --volume "$RUNNER_TEMP:/runner:ro" \
+            --volume "$RUNNER_TEMP/cafe-budget:/budget:rw" "$RUNTIME_REF" \
+            python -B - /trusted/evidence/cafe/runtime-lock.v1.json \
+              /budget/qualification-budget-receipt.json <<'PY'
+          import hashlib, json, os, sys, tempfile
+
+          lock_path, output = sys.argv[1:]
+          lock = json.load(open(lock_path, encoding="utf-8"))
+          limits = lock["limits"]
+
+          def sha256(path):
+              value = hashlib.sha256()
+              with open(path, "rb") as source:
+                  for block in iter(lambda: source.read(1024 * 1024), b""):
+                      value.update(block)
+              return value.hexdigest()
+
+          def record(path, name):
+              return {"bytes": os.path.getsize(path), "path": name, "sha256": sha256(path)}
+
+          archives = {
+              "runtime": record("/runtime/runtime.oci.tar", "runtime.oci.tar"),
+              "validation": record("/runtime/validation.oci.tar", "validation.oci.tar"),
+              "validation_delta": record(
+                  "/runtime/validation.delta.oci.tar", "validation.delta.oci.tar"
+              ),
+          }
+          runtime_receipt = json.load(open("/runtime/runtime-build-receipt.json", encoding="utf-8"))
+          validation_receipt = json.load(
+              open("/runtime/validation-build-receipt.json", encoding="utf-8")
+          )
+          assert runtime_receipt["runtime_archive_sha256"] == archives["runtime"]["sha256"]
+          assert validation_receipt["validation_archive_sha256"] == archives["validation"]["sha256"]
+          assert validation_receipt["validation_archive_bytes"] == archives["validation"]["bytes"]
+          assert (
+              validation_receipt["validation_delta_archive_sha256"]
+              == archives["validation_delta"]["sha256"]
+          )
+          assert (
+              validation_receipt["validation_delta_archive_bytes"]
+              == archives["validation_delta"]["bytes"]
+          )
+          assert (
+              validation_receipt["validation_delta_reconstruction"]
+              == "runtime.oci.tar+validation.delta.oci.tar"
+          )
+          assert archives["runtime"]["bytes"] <= limits["max_runtime_archive_bytes"]
+          assert archives["validation"]["bytes"] <= limits["max_validation_archive_bytes"]
+          assert (
+              archives["validation_delta"]["bytes"]
+              <= limits["max_validation_delta_archive_bytes"]
+          )
+          payloads = [
+              archives["runtime"],
+              record("/runtime/runtime-build-receipt.json", "runtime-build-receipt.json"),
+              archives["validation_delta"],
+              record("/runtime/validation-build-receipt.json", "validation-build-receipt.json"),
+              record("/selftest-a/receipt.json", "selftest-a/receipt.json"),
+              record("/selftest-b/receipt.json", "selftest-b/receipt.json"),
+              record("/runner/runtime-container-receipt.txt", "runtime-container-receipt.txt"),
+          ]
+          payload_bytes = sum(item["bytes"] for item in payloads)
+          assert payload_bytes <= limits["max_qualification_payload_bytes"]
+          assert limits["max_qualification_payload_bytes"] < limits["max_total_artifact_bytes"]
+          assert limits["hosted_timeout_minutes"] <= 35
+          assert limits["artifact_retention_days"] >= 90
+          value = {
+              "archives": archives,
+              "limits": {
+                  key: limits[key]
+                  for key in (
+                      "max_qualification_payload_bytes",
+                      "max_runtime_archive_bytes",
+                      "max_total_artifact_bytes",
+                      "max_validation_archive_bytes",
+                      "max_validation_delta_archive_bytes",
+                  )
+              },
+              "payload_bytes_excluding_receipt": payload_bytes,
+              "payloads": sorted(payloads, key=lambda item: item["path"]),
+              "schema": "living-town.cafe-qualification-budget-receipt.v1",
+              "stdin_loss_negative_control": "passed",
+              "stdin_received": True,
+          }
+          data = (json.dumps(value, sort_keys=True, separators=(",", ":")) + "\n").encode("ascii")
+          fd, temporary = tempfile.mkstemp(prefix=".qualification-budget-", dir=os.path.dirname(output))
+          with os.fdopen(fd, "wb") as stream:
+              stream.write(data)
+          os.replace(temporary, output)
+          print(data.decode("ascii"), end="")
           PY
+          test -s "$receipt"
+          podman run --pull=never --rm --network none --read-only --cap-drop all \
+            --security-opt no-new-privileges --pids-limit 32 --memory 128m --cpus 1 \
+            --volume "$RUNNER_TEMP/cafe-budget:/budget:ro" "$RUNTIME_REF" \
+            python -B -c 'import json,pathlib,sys; p=pathlib.Path(sys.argv[1]); v=json.loads(p.read_text(encoding="ascii")); assert v["schema"]=="living-town.cafe-qualification-budget-receipt.v1"; assert p.read_bytes()==(json.dumps(v,sort_keys=True,separators=(",",":"))+"\n").encode("ascii")' \
+              /budget/qualification-budget-receipt.json
 
       - name: Upload reproducible runtime qualification
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -200,11 +312,12 @@ jobs:
           path: |
             ${{ runner.temp }}/cafe-runtime/runtime.oci.tar
             ${{ runner.temp }}/cafe-runtime/runtime-build-receipt.json
-            ${{ runner.temp }}/cafe-runtime/validation.oci.tar
+            ${{ runner.temp }}/cafe-runtime/validation.delta.oci.tar
             ${{ runner.temp }}/cafe-runtime/validation-build-receipt.json
             ${{ runner.temp }}/cafe-selftest-a/receipt.json
             ${{ runner.temp }}/cafe-selftest-b/receipt.json
             ${{ runner.temp }}/runtime-container-receipt.txt
+            ${{ runner.temp }}/cafe-budget/qualification-budget-receipt.json
           if-no-files-found: error
           retention-days: 90
           compression-level: 0
@@ -293,11 +406,13 @@ jobs:
           runtime_validation_digest="$(sed -n 's/.*"validation_oci_manifest_digest":"\([0-9a-f]\{64\}\)".*/\1/p' "$receipt")"
           validation_digest="$(sed -n 's/.*"validation_oci_manifest_digest":"\([0-9a-f]\{64\}\)".*/\1/p' "$validation_receipt")"
           validation_archive_sha="$(sed -n 's/.*"validation_archive_sha256":"\([0-9a-f]\{64\}\)".*/\1/p' "$validation_receipt")"
+          validation_delta_sha="$(sed -n 's/.*"validation_delta_archive_sha256":"\([0-9a-f]\{64\}\)".*/\1/p' "$validation_receipt")"
           paired_runtime_sha="$(sed -n 's/.*"runtime_archive_sha256":"\([0-9a-f]\{64\}\)".*/\1/p' "$validation_receipt")"
           [[ "$manifest_digest" =~ ^[0-9a-f]{64}$ ]]
           [[ "$runtime_archive_sha" =~ ^[0-9a-f]{64}$ ]]
           [[ "$validation_digest" =~ ^[0-9a-f]{64}$ ]]
           [[ "$validation_archive_sha" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$validation_delta_sha" =~ ^[0-9a-f]{64}$ ]]
           [[ "$runtime_validation_digest" == "$validation_digest" ]]
           [[ "$paired_runtime_sha" == "$runtime_archive_sha" ]]
           podman image rm -f localhost/living-town/trusted-cafe-runtime:v1 \
@@ -312,8 +427,12 @@ jobs:
           actual_validation_sha="$(podman run --pull=never --rm --network none --read-only --cap-drop all \
             --security-opt no-new-privileges --volume "$RUNNER_TEMP/cafe-runtime:/runtime:ro" \
             "$runtime_ref" sha256sum /runtime/validation.oci.tar | awk '{print $1}')"
+          actual_validation_delta_sha="$(podman run --pull=never --rm --network none --read-only --cap-drop all \
+            --security-opt no-new-privileges --volume "$RUNNER_TEMP/cafe-runtime:/runtime:ro" \
+            "$runtime_ref" sha256sum /runtime/validation.delta.oci.tar | awk '{print $1}')"
           [[ "$actual_runtime_sha" == "$runtime_archive_sha" ]]
           [[ "$actual_validation_sha" == "$validation_archive_sha" ]]
+          [[ "$actual_validation_delta_sha" == "$validation_delta_sha" ]]
           podman load --input "$RUNNER_TEMP/cafe-runtime/validation.oci.tar"
           podman image exists "$validation_ref"
           if podman run --pull=never --rm \
@@ -331,6 +450,7 @@ jobs:
             printf 'validation_ref=%s\n' "$validation_ref"
             printf 'runtime_archive_sha256=%s\n' "$actual_runtime_sha"
             printf 'validation_archive_sha256=%s\n' "$actual_validation_sha"
+            printf 'validation_delta_archive_sha256=%s\n' "$actual_validation_delta_sha"
             printf 'podman=%s\n' "$(podman --version)"
             printf 'docker_context=%s\n' "$(docker context show)"
             docker version --format 'docker_client={{.Client.Version}} docker_server={{.Server.Version}} docker_os={{.Server.Os}} docker_arch={{.Server.Arch}}'
@@ -523,22 +643,151 @@ jobs:
           RUNTIME_REF: ${{ steps.runtime.outputs.ref }}
         run: |
           set -euo pipefail
-          podman run --pull=never --rm --network none --read-only --cap-drop all \
+          mkdir "$RUNNER_TEMP/cafe-budget-protected"
+          receipt="$RUNNER_TEMP/cafe-budget-protected/protected-budget-receipt.json"
+          # stdin-loss-negative-control: without --interactive the body cannot create its receipt.
+          if (
+            podman run --pull=never --rm --network none --read-only --cap-drop all \
+              --security-opt no-new-privileges --pids-limit 32 --memory 128m --cpus 1 \
+              --volume "$RUNNER_TEMP/cafe-budget-protected:/budget:rw" "$RUNTIME_REF" \
+              python -B - /budget/stdin-loss.json <<'PY'
+          open(__import__("sys").argv[1], "wb").write(b"must-not-run\n")
+          PY
+            test -s "$RUNNER_TEMP/cafe-budget-protected/stdin-loss.json"
+          ); then
+            echo 'budget stdin-loss negative control unexpectedly executed' >&2
+            exit 1
+          fi
+          test ! -e "$RUNNER_TEMP/cafe-budget-protected/stdin-loss.json"
+          podman run --pull=never --rm --interactive --network none --read-only --cap-drop all \
             --security-opt no-new-privileges --pids-limit 64 --memory 256m --cpus 1 \
             --tmpfs /tmp:rw,nosuid,nodev,size=67108864 \
             --volume "$PWD/trusted:/trusted:ro" --volume "$RUNNER_TEMP/cafe-runtime:/runtime:ro" \
-            --volume "$RUNNER_TEMP/cafe-output:/output:ro" "$RUNTIME_REF" \
+            --volume "$RUNNER_TEMP/cafe-output:/output:ro" \
+            --volume "$RUNNER_TEMP/cafe-preflight:/preflight:ro" \
+            --volume "$RUNNER_TEMP/cafe-selftest-a:/selftest-a:ro" \
+            --volume "$RUNNER_TEMP/cafe-selftest-b:/selftest-b:ro" \
+            --volume "$RUNNER_TEMP/cafe-runtime-verification:/runtime-verification:ro" \
+            --volume "$RUNNER_TEMP/cafe-budget-protected:/budget:rw" "$RUNTIME_REF" \
             python -B - /trusted/evidence/cafe/runtime-lock.v1.json \
-              /runtime/runtime.oci.tar /output/evidence/trusted-cafe-evidence.tar.gz <<'PY'
-          import json, os, sys
-          lock = json.load(open(sys.argv[1], encoding="utf-8"))
-          runtime_size, evidence_size = map(os.path.getsize, sys.argv[2:])
-          assert lock["capture_contract"]["frames"] <= lock["limits"]["max_evidence_frames"] <= 12
-          assert runtime_size <= lock["limits"]["max_runtime_archive_bytes"]
-          assert runtime_size + evidence_size <= lock["limits"]["max_total_artifact_bytes"]
-          assert lock["limits"]["hosted_timeout_minutes"] <= 35
-          assert lock["limits"]["artifact_retention_days"] >= 90
+              /budget/protected-budget-receipt.json <<'PY'
+          import hashlib, json, os, sys, tempfile
+
+          lock_path, output = sys.argv[1:]
+          lock = json.load(open(lock_path, encoding="utf-8"))
+          limits = lock["limits"]
+
+          def sha256(path):
+              value = hashlib.sha256()
+              with open(path, "rb") as source:
+                  for block in iter(lambda: source.read(1024 * 1024), b""):
+                      value.update(block)
+              return value.hexdigest()
+
+          def record(path, name):
+              return {"bytes": os.path.getsize(path), "path": name, "sha256": sha256(path)}
+
+          archives = {
+              "evidence": record(
+                  "/output/evidence/trusted-cafe-evidence.tar.gz", "trusted-cafe-evidence.tar.gz"
+              ),
+              "runtime": record("/runtime/runtime.oci.tar", "runtime.oci.tar"),
+              "validation": record("/runtime/validation.oci.tar", "validation.oci.tar"),
+              "validation_delta": record(
+                  "/runtime/validation.delta.oci.tar", "validation.delta.oci.tar"
+              ),
+          }
+          runtime_receipt = json.load(open("/runtime/runtime-build-receipt.json", encoding="utf-8"))
+          validation_receipt = json.load(
+              open("/runtime/validation-build-receipt.json", encoding="utf-8")
+          )
+          assert runtime_receipt["runtime_archive_sha256"] == archives["runtime"]["sha256"]
+          assert validation_receipt["validation_archive_sha256"] == archives["validation"]["sha256"]
+          assert validation_receipt["validation_archive_bytes"] == archives["validation"]["bytes"]
+          assert (
+              validation_receipt["validation_delta_archive_sha256"]
+              == archives["validation_delta"]["sha256"]
+          )
+          assert (
+              validation_receipt["validation_delta_archive_bytes"]
+              == archives["validation_delta"]["bytes"]
+          )
+          assert (
+              validation_receipt["validation_delta_reconstruction"]
+              == "runtime.oci.tar+validation.delta.oci.tar"
+          )
+          assert lock["capture_contract"]["frames"] <= limits["max_evidence_frames"] <= 12
+          assert archives["runtime"]["bytes"] <= limits["max_runtime_archive_bytes"]
+          assert archives["validation"]["bytes"] <= limits["max_validation_archive_bytes"]
+          assert (
+              archives["validation_delta"]["bytes"]
+              <= limits["max_validation_delta_archive_bytes"]
+          )
+          payloads = [
+              archives["runtime"],
+              record("/runtime/runtime-build-receipt.json", "runtime-build-receipt.json"),
+              archives["validation_delta"],
+              record("/runtime/validation-build-receipt.json", "validation-build-receipt.json"),
+              record("/runtime/runtime-container-receipt.txt", "runtime-container-receipt.txt"),
+              record(
+                  "/runtime-verification/runtime-attestation-verification.json",
+                  "runtime-attestation-verification.json",
+              ),
+              record(
+                  "/runtime-verification/validation-attestation-verification.json",
+                  "validation-attestation-verification.json",
+              ),
+              archives["evidence"],
+              record(
+                  "/output/evidence/trusted-cafe-manifest.json", "trusted-cafe-manifest.json"
+              ),
+              record(
+                  "/output/cafe-attested-verification-receipt.json",
+                  "cafe-attested-verification-receipt.json",
+              ),
+              record("/preflight/preverified-checkouts.v1.json", "preverified-checkouts.v1.json"),
+              record(
+                  "/preflight/cafe-authored-manifest.v1.json", "cafe-authored-manifest.v1.json"
+              ),
+              record("/selftest-a/receipt.json", "selftest-a/receipt.json"),
+              record("/selftest-b/receipt.json", "selftest-b/receipt.json"),
+          ]
+          payload_bytes = sum(item["bytes"] for item in payloads)
+          assert payload_bytes <= limits["max_protected_payload_bytes"]
+          assert limits["max_protected_payload_bytes"] < limits["max_total_artifact_bytes"]
+          assert limits["hosted_timeout_minutes"] <= 35
+          assert limits["artifact_retention_days"] >= 90
+          value = {
+              "archives": archives,
+              "limits": {
+                  key: limits[key]
+                  for key in (
+                      "max_protected_payload_bytes",
+                      "max_runtime_archive_bytes",
+                      "max_total_artifact_bytes",
+                      "max_validation_archive_bytes",
+                      "max_validation_delta_archive_bytes",
+                  )
+              },
+              "payload_bytes_excluding_receipt": payload_bytes,
+              "payloads": sorted(payloads, key=lambda item: item["path"]),
+              "schema": "living-town.cafe-protected-budget-receipt.v1",
+              "stdin_loss_negative_control": "passed",
+              "stdin_received": True,
+          }
+          data = (json.dumps(value, sort_keys=True, separators=(",", ":")) + "\n").encode("ascii")
+          fd, temporary = tempfile.mkstemp(prefix=".protected-budget-", dir=os.path.dirname(output))
+          with os.fdopen(fd, "wb") as stream:
+              stream.write(data)
+          os.replace(temporary, output)
+          print(data.decode("ascii"), end="")
           PY
+          test -s "$receipt"
+          podman run --pull=never --rm --network none --read-only --cap-drop all \
+            --security-opt no-new-privileges --pids-limit 32 --memory 128m --cpus 1 \
+            --volume "$RUNNER_TEMP/cafe-budget-protected:/budget:ro" "$RUNTIME_REF" \
+            python -B -c 'import json,pathlib,sys; p=pathlib.Path(sys.argv[1]); v=json.loads(p.read_text(encoding="ascii")); assert v["schema"]=="living-town.cafe-protected-budget-receipt.v1"; assert p.read_bytes()==(json.dumps(v,sort_keys=True,separators=(",",":"))+"\n").encode("ascii")' \
+              /budget/protected-budget-receipt.json
 
       - name: Upload attested runtime archive
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -547,11 +796,12 @@ jobs:
           path: |
             ${{ runner.temp }}/cafe-runtime/runtime.oci.tar
             ${{ runner.temp }}/cafe-runtime/runtime-build-receipt.json
-            ${{ runner.temp }}/cafe-runtime/validation.oci.tar
+            ${{ runner.temp }}/cafe-runtime/validation.delta.oci.tar
             ${{ runner.temp }}/cafe-runtime/validation-build-receipt.json
             ${{ runner.temp }}/cafe-runtime/runtime-container-receipt.txt
             ${{ runner.temp }}/cafe-runtime-verification/runtime-attestation-verification.json
             ${{ runner.temp }}/cafe-runtime-verification/validation-attestation-verification.json
+            ${{ runner.temp }}/cafe-budget-protected/protected-budget-receipt.json
           if-no-files-found: error
           retention-days: 90
           compression-level: 0
