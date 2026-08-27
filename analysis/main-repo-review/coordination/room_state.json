@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T14:20:00Z",
+  "updated_at": "2026-08-27T14:25:00Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -14,7 +14,7 @@
     "coordination_ledger_ref": "origin/codex/main-repo-review",
     "coordination_state_commit": "self"
   },
-  "remote_branch_inventory": {"at":"2026-08-27T14:20:00Z","github_api_count":32,"git_ls_remote_count":32,"local_tracking_count":32,"reconciliation":"exact_after_successful_fetch_prune_tags","sorted_name_sha_set_sha256":"836abb69059ec59a224a74a75e679d2a93dde4f67613a1445ce8d3ffd1733067","master":"5b7ac426b6bc059517dba843db4150a2b38d33a7","integration_batons":"ac85fc6b35b83d6a9c7c678386fe35dab666b217","coordination":"22712b794917065759fc27814aa50360ca3afe19","pr25":"c6b80696511ebf16d6b52897e238ab8c097ee09d","open_prs":9,"open_issues":0,"releases":0,"full_branch_metadata_scan":"completed including last commit, ancestry and ahead-behind versus master and integration, PR/worktree/task relationship, checks, latest run, artifacts and retention classification"},
+  "remote_branch_inventory": {"at":"2026-08-27T14:25:00Z","github_api_count":32,"git_ls_remote_count":32,"local_tracking_count":32,"reconciliation":"exact_at_14_20_then_pr25_and_coordination_advanced_by_recorded_non_force_api_commits","sorted_name_sha_set_sha256":"836abb69059ec59a224a74a75e679d2a93dde4f67613a1445ce8d3ffd1733067","master":"5b7ac426b6bc059517dba843db4150a2b38d33a7","integration_batons":"ac85fc6b35b83d6a9c7c678386fe35dab666b217","coordination":"6df6efb2c98c34940e8f34d5c8179cbfe8d88b95","pr25":"da204c40552be715b812b32b0bf4d3961fd40bef","open_prs":9,"open_issues":0,"releases":0,"full_branch_metadata_scan":"completed including last commit, ancestry and ahead-behind versus master and integration, PR/worktree/task relationship, checks, latest run, artifacts and retention classification"},
   "portfolio_policy": {
     "default_active_writers": 2,
     "maximum_active_writers": 3,
@@ -112,7 +112,7 @@
       "role": "Sole serialized Dev writer for PR #25 exact-head P1 repair",
       "objective": "Close the mandatory Docker execution and strict evidence payload-contract P1s on Draft PR #25 without expanding Stack A authority or changing Sim/View/canon boundaries.",
       "baseline": "c6b80696511ebf16d6b52897e238ab8c097ee09d",
-      "head": "b31baaac796d08400101abd7dd74fe55bf3f9d32",
+      "head": "da204c40552be715b812b32b0bf4d3961fd40bef",
       "tree": "b6621e5b0c7064f5e551eda372fe3f8ab4a94535",
       "branch": "codex/cafe-source-attestation-trust-root-v1-replacement-2",
       "worktree": "D:\\Documents\\Dev\\living-town-pr25-p1-repair-wt",
@@ -122,19 +122,19 @@
       "generated_outputs": ["temporary isolated Docker fixtures and receipts outside repository","hosted replacement qualification artifact on PR #25"],
       "dependencies": ["pr:25:c6b80696511ebf16d6b52897e238ab8c097ee09d","security-qa:REQUEST_CHANGES:P1-docker-invariant","refute:REQUEST_CHANGES:P1-docker-invariant:P1-extra-payload","attack-matrix:sha256:5b4bc93b2b8e24de722ccd0336fd96ea9bc5029694a5cf64af599e9e538077c8","hosted-run:33076652788:failure_runtime_budget","general-ci:33076652734:success"],
       "consumer": "Producer, then fresh independent Security/QA and REFUTE at the repaired exact head",
-      "status": "terminal_clean_four_path_budget_repair_producer_api_delivery_reserved",
+      "status": "terminal_clean_four_path_budget_repair_api_delivered_hosted_requalification_pending",
       "write_lease": false,
       "last_heartbeat": "2026-08-27T14:20:00Z",
       "stale_after": null,
       "pr": 25,
-      "checks": {"p0":0,"p1":4,"p2":2,"merge":"forbidden","stack_b":"frozen","local_docker_repair":"success_29_of_29_fail_closed","local_receipt_sha256":"1c4da38af5c61246618b0ceba6c72c88809ae1401683f2e73ed22c84d6444ccc","synthetic_bundle_sha256":"53757aa2289e31b33637e53b1f3b75b42246a9fa9e8a600e57a6b6ac6f917d2c","verification_receipt_sha256":"34d5c42a45bc63340fed4a983e3bfdfa11510f5e0a2909ccdeff6c8d5a6c367b","hosted_exact_head":"delivery_pending_after_failure_run_33076652788","prior_hosted_failure_run":33075701738,"runtime_recipe":"byte_identical_to_prior_216309760_byte_under_cap_recipe"},
-      "delivery": {"local_commit":"b31baaac796d08400101abd7dd74fe55bf3f9d32","local_tree":"b6621e5b0c7064f5e551eda372fe3f8ab4a94535","remote_head_before_recovery":"c6b80696511ebf16d6b52897e238ab8c097ee09d","producer_recovery":"reserved_git_data_api_no_force_linear_commit_exact_four_blobs","exact_paths":[".github/workflows/trusted-cafe-attestation.yml","tools/cafe_attestation_selftest.py","tools/trusted_cafe_capture.sh","tools/verify_cafe_attested_evidence.py"],"api_blobs":{"workflow":"ab8d241876820500966672fc5d47acb5c2d2b945","selftest":"449737f35fe8acccda8dbbefe797ad64385be742","capture":"d792b65615635be75695cd32376d9697e4719581","verifier":"b2688e89d7b813480ef37de970b8a2865e90f928"}},
+      "checks": {"p0":0,"p1":4,"p2":2,"merge":"forbidden","stack_b":"frozen","local_docker_repair":"success_29_of_29_fail_closed","local_receipt_sha256":"1c4da38af5c61246618b0ceba6c72c88809ae1401683f2e73ed22c84d6444ccc","synthetic_bundle_sha256":"53757aa2289e31b33637e53b1f3b75b42246a9fa9e8a600e57a6b6ac6f917d2c","verification_receipt_sha256":"34d5c42a45bc63340fed4a983e3bfdfa11510f5e0a2909ccdeff6c8d5a6c367b","hosted_exact_head":"in_progress_da204c40552be715b812b32b0bf4d3961fd40bef","trusted_run":33081888666,"general_ci_run":33081888657,"runtime_recipe":"byte_identical_to_prior_216309760_byte_under_cap_recipe"},
+      "delivery": {"local_commit":"b31baaac796d08400101abd7dd74fe55bf3f9d32","local_tree":"b6621e5b0c7064f5e551eda372fe3f8ab4a94535","remote_head_before_recovery":"c6b80696511ebf16d6b52897e238ab8c097ee09d","remote_api_commit":"da204c40552be715b812b32b0bf4d3961fd40bef","remote_tree":"b6621e5b0c7064f5e551eda372fe3f8ab4a94535","producer_recovery":"completed_git_data_api_no_force_linear_commit_exact_four_blobs","exact_paths":[".github/workflows/trusted-cafe-attestation.yml","tools/cafe_attestation_selftest.py","tools/trusted_cafe_capture.sh","tools/verify_cafe_attested_evidence.py"],"api_blobs":{"workflow":"ab8d241876820500966672fc5d47acb5c2d2b945","selftest":"449737f35fe8acccda8dbbefe797ad64385be742","capture":"d792b65615635be75695cd32376d9697e4719581","verifier":"b2688e89d7b813480ef37de970b8a2865e90f928"}},
       "recovery_count": 1,
       "rollback": "Leave or close Draft PR #25; revert only new repair commits through review if later rejected; never rewrite shared history or master.",
       "stop_lines": ["PR head or master drifts before checkout verification","any out-of-lease path is required","strict payload contract requires Stack B or canon change","secrets or protected dispatch are required","Docker image/runtime cannot be pinned by digest","host-native material gate would remain merge-authoritative","shared Docker or cache state would be mutated"]
     }
   ],
-  "current_conflict_graph": {"at":"2026-08-27T14:20:00Z","active_writers":0,"read_only_reviewers":0,"shared_write_conflicts":0,"decision":"The four-path budget-preserving repair is terminal clean and its writer lease is released. Producer alone holds a non-force API delivery reservation against exact remote parent c6b8069; runtime-lock, budget, Stack B, all game paths, QA, REFUTE and other writers remain frozen until exact remote delivery and hosted terminal evidence."},
+  "current_conflict_graph": {"at":"2026-08-27T14:25:00Z","active_writers":0,"read_only_reviewers":0,"shared_write_conflicts":0,"decision":"Producer delivered the four-path repair as non-force remote commit da204c4 with exact tree b6621e5. No writer holds authority; runtime-lock, budget, Stack B, all game paths, QA, REFUTE and other writers remain frozen until hosted runs 33081888666 and 33081888657 are terminal."},
   "released_claims": [
     {
       "claim_id": "lease-cafe-source-attestation-trust-root-v1-replacement",
@@ -465,7 +465,7 @@
     "open_exact_sha_p0": 0,
     "open_exact_sha_p1": 4,
     "post_merge_regressions": 0,
-    "player_visible_closure_state": "source_attestation_stack_a_pr25_budget_preserving_four_path_repair_delivery_reserved"
+    "player_visible_closure_state": "source_attestation_stack_a_pr25_budget_preserving_four_path_repair_remote_hosted_requalification_pending"
   },
   "human_acceptance": "not_ready"
 }
