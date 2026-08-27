@@ -34,24 +34,53 @@ canonical_oci_archive() {
 
 build_runtime_in_pinned_toolchain() {
   [ "$#" -eq 2 ] || usage
-  local trusted_root out state toolchain_image skopeo_image python_index_ref
+  local trusted_root out state state_root toolchain_image skopeo_image python_index_ref
+  local output_uid output_gid cleanup_trap
   trusted_root="$(cd "$1" && pwd)"
   out="$2"
   [ ! -e "$out" ] || fail "output path already exists: $out"
   mkdir -p "$out"
+  chmod 0750 "$out"
   out="$(cd "$out" && pwd)"
-  state="$(mktemp -d "${TMPDIR:-/tmp}/trusted-cafe-oci-toolchain.XXXXXXXX")"
+  output_uid="$(stat -c '%u' "$out")"
+  output_gid="$(stat -c '%g' "$out")"
+  [[ "$output_uid" =~ ^[0-9]+$ && "$output_gid" =~ ^[0-9]+$ ]] || \
+    fail "output owner is not numeric"
+  state_root="${TMPDIR:-/tmp}"
+  state="$(mktemp -d "$state_root/trusted-cafe-oci-toolchain.XXXXXXXX")"
   mkdir -p "$state/storage" "$state/run" "$state/tmp" "$state/input"
   toolchain_image="quay.io/podman/stable@sha256:e90073d89870417f7bd0f581eed1ee6ddd8e55f0246a746516fd11059eac3335"
   skopeo_image="quay.io/skopeo/stable@sha256:572747e168b4cb920bc7f5b321ca6c6da13717ff28c8d671a203935d53cf1089"
   python_index_ref="docker.io/library/python@sha256:0bee7276f83efd4a1ee05bbbf4281d95ed28e079220a9457f25a93e3f1e3c31b"
-  cleanup_toolchain() {
-    case "$state" in
-      "${TMPDIR:-/tmp}"/trusted-cafe-oci-toolchain.*) rm -rf -- "$state" ;;
-      *) fail "refusing unsafe toolchain cleanup: $state" ;;
+  cleanup_toolchain_state() {
+    local cleanup_state="$1" cleanup_root="$2" cleanup_image="$3"
+    case "$cleanup_state" in
+      "$cleanup_root"/trusted-cafe-oci-toolchain.*) ;;
+      *) printf 'TRUSTED_CAFE_CAPTURE cleanup refused unsafe path: %s\n' \
+           "$cleanup_state" >&2; return 1 ;;
     esac
+    if rm -rf -- "$cleanup_state" 2>/dev/null && [ ! -e "$cleanup_state" ]; then
+      return 0
+    fi
+    [ -d "$cleanup_state" ] || return 1
+    docker run --pull=never --rm --platform linux/amd64 --network none --read-only \
+      --cap-drop all --cap-add DAC_OVERRIDE --cap-add FOWNER \
+      --security-opt no-new-privileges --pids-limit 32 --memory 128m --cpus 1 \
+      --volume "$cleanup_state:/cleanup:rw" "$cleanup_image" \
+      sh -euc 'find /cleanup -mindepth 1 -depth -delete; test -z "$(find /cleanup -mindepth 1 -print -quit)"'
+    rmdir -- "$cleanup_state"
   }
-  trap cleanup_toolchain EXIT
+  cleanup_toolchain_on_exit() {
+    local cleanup_state="$1" cleanup_root="$2" cleanup_image="$3" primary_status="$4"
+    trap - EXIT
+    cleanup_toolchain_state "$cleanup_state" "$cleanup_root" "$cleanup_image" || \
+      printf 'TRUSTED_CAFE_CAPTURE cleanup failed; preserving exit %s\n' \
+        "$primary_status" >&2
+    exit "$primary_status"
+  }
+  printf -v cleanup_trap 'cleanup_toolchain_on_exit %q %q %q "$?"' \
+    "$state" "$state_root" "$toolchain_image"
+  trap "$cleanup_trap" EXIT
   docker run --pull=always --rm --platform linux/amd64 \
     --pids-limit 128 --memory 512m --cpus 1 --volume "$state/input:/toolchain-input:rw" \
     --entrypoint sh "$skopeo_image" -euc \
@@ -60,14 +89,16 @@ build_runtime_in_pinned_toolchain() {
   docker run --pull=always --rm --privileged --platform linux/amd64 \
     --pids-limit 4096 --memory 8g --cpus 4 \
     --env CAFE_OCI_TOOLCHAIN_ACTIVE=1 --env "CAFE_OCI_TOOLCHAIN_IMAGE=$toolchain_image" \
-    --env "CAFE_SKOPEO_IMAGE=$skopeo_image" \
+    --env "CAFE_SKOPEO_IMAGE=$skopeo_image" --env "CAFE_OUTPUT_UID=$output_uid" \
+    --env "CAFE_OUTPUT_GID=$output_gid" \
     --volume "$trusted_root:/trusted:ro" --volume "$out:/output:rw" \
     --volume "$state/input:/toolchain-input:ro" \
     --volume "$state/storage:/var/lib/containers:rw" \
     --volume "$state/run:/run/containers:rw" --volume "$state/tmp:/tmp:rw" \
     "$toolchain_image" bash /trusted/tools/trusted_cafe_capture.sh build-runtime /trusted /output
-  cleanup_toolchain
   trap - EXIT
+  cleanup_toolchain_state "$state" "$state_root" "$toolchain_image" || \
+    fail "toolchain cleanup failed"
 }
 
 build_runtime() {
@@ -77,6 +108,7 @@ build_runtime() {
     return
   fi
   local trusted_root out lock context tag validation_tag layout archive first second
+  local output_uid output_gid output_mode
   local validation_first validation_second validation_archive
   local validation_delta_first validation_delta_second validation_delta_archive
   local -a validation_values validation_delta_values
@@ -87,7 +119,17 @@ build_runtime() {
   [ -d "$out" ] || fail "containerized output mount missing: $out"
   [ -z "$(find "$out" -mindepth 1 -maxdepth 1 -print -quit)" ] || fail "output path is not empty: $out"
   out="$(cd "$out" && pwd)"
+  output_uid="${CAFE_OUTPUT_UID:-}"
+  output_gid="${CAFE_OUTPUT_GID:-}"
+  [[ "$output_uid" =~ ^[0-9]+$ && "$output_gid" =~ ^[0-9]+$ ]] || \
+    fail "containerized output owner contract missing"
+  [ "$(stat -c '%u' "$out")" = "$output_uid" ] || fail "containerized output UID drift"
+  [ "$(stat -c '%g' "$out")" = "$output_gid" ] || fail "containerized output GID drift"
+  output_mode="$(stat -c '%a' "$out")"
+  [ "$output_mode" = 750 ] || fail "containerized output mode drift: $output_mode"
   context="$(mktemp -d "${TMPDIR:-/tmp}/trusted-cafe-runtime.XXXXXXXX")"
+  chown "$output_uid:$output_gid" "$context"
+  chmod 0750 "$context"
   tag="localhost/living-town/trusted-cafe-runtime:v1"
   validation_tag="localhost/living-town/trusted-cafe-validation:v1"
   trap "podman image rm -f '$tag' '$validation_tag' >/dev/null 2>&1 || true; rm -rf '$context'" EXIT
@@ -100,6 +142,7 @@ build_runtime() {
   container_python() {
     podman run --rm --interactive --network none --read-only --cap-drop all \
       --security-opt no-new-privileges --pids-limit 128 --memory 768m --cpus 2 \
+      --user "$output_uid:$output_gid" \
       --tmpfs /tmp:rw,nosuid,nodev,size=268435456 \
       --volume "$trusted_root:/trusted:ro" \
       --volume "$context:/context:rw" \
@@ -621,6 +664,12 @@ with os.fdopen(fd, "wb") as f:
     f.write(data)
 os.replace(tmp, out)
 PY
+  chown "$output_uid:$output_gid" \
+    "$archive" "$validation_archive" "$validation_delta_archive" \
+    "$out/runtime-build-receipt.json" "$out/validation-build-receipt.json"
+  chmod 0640 \
+    "$archive" "$validation_archive" "$validation_delta_archive" \
+    "$out/runtime-build-receipt.json" "$out/validation-build-receipt.json"
   printf 'TRUSTED_CAFE_RUNTIME PASS archive_sha256=%s oci_manifest_digest=%s\n' \
     "$archive_sha" "$oci_manifest_digest"
   printf 'TRUSTED_CAFE_VALIDATION PASS archive_sha256=%s oci_manifest_digest=%s bytes=%s\n' \
