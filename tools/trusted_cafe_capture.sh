@@ -285,7 +285,8 @@ RUN printf '%s\n' \
  && apt-get -o Acquire::Check-Valid-Until=false update \
  && apt-get -o Acquire::Check-Valid-Until=false install -y --no-install-recommends git \
  && rm -rf /var/lib/apt/lists/* /var/cache/apt/* /var/log/apt/* \
-      /var/log/dpkg.log /var/log/alternatives.log /usr/share/doc/* /usr/share/man/*
+      /var/log/dpkg.log /var/log/alternatives.log /var/cache/ldconfig/aux-cache \
+      /usr/share/doc/* /usr/share/man/*
 LABEL org.opencontainers.image.title="living-town-trusted-cafe-validation" \
       org.opencontainers.image.version="v1"
 EOF
