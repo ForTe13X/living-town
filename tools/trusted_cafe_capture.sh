@@ -146,7 +146,7 @@ RUN printf '%s\n' \
       libxinerama1 libxrandr2 libxrender1 procps tar xauth xvfb \
  && rm -rf /var/lib/apt/lists/* /var/cache/apt/* /var/log/apt/* \
       /var/log/dpkg.log /var/log/alternatives.log /var/cache/fontconfig/* \
-      /var/lib/systemd/random-seed \
+      /var/cache/ldconfig/aux-cache /var/lib/systemd/random-seed \
  && rm -f /etc/machine-id /var/lib/dbus/machine-id
 COPY ${PILLOW_FILENAME} /tmp/${PILLOW_FILENAME}
 COPY godot.zip /tmp/godot.zip
