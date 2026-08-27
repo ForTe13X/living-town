@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T09:48:00Z",
+  "updated_at": "2026-08-27T10:53:00Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -39,11 +39,12 @@
       "generated_outputs": ["temporary deterministic test bundles and hash-bound receipts outside repository only"],
       "dependencies": ["architect-task:01a041cb-9e65-7700-b342-75787b53537c:READY","origin/master:5b7ac426b6bc059517dba843db4150a2b38d33a7","prior-writer:01a041e7-229a-74e1-a8a3-21988cac78e5:BLOCKED_RUNTIME_SUPPLY","stale-replacement:01a0421b-3d85-7ed3-af00-cf73e538b177:NO_REMOTE_BRANCH_OR_PR_AFTER_EXPIRY","python-image-index:sha256:0bee7276f83efd4a1ee05bbbf4281d95ed28e079220a9457f25a93e3f1e3c31b","python-image-amd64:sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c","pillow-wheel:sha256:106064daa23a745510dabce1d84f29137a37224831d88eb4ce94bb187b1d7e5f","draft-pr:24:terminal_heuristic_limit","hosted-run:33042786023:success"],
       "consumer": "Producer, then independent security/QA and REFUTE; after protected-root merge, one serialized Stack B candidate owner",
-      "status": "active_second_replacement_writer_exact_detached_baseline",
-      "last_heartbeat": "2026-08-27T09:48:00Z",
-      "stale_after": "2026-08-27T11:48:00Z",
-      "pr": null,
+      "status": "active_exact_head_draft_pr25_hosted_runtime_repair",
+      "last_heartbeat": "2026-08-27T10:53:00Z",
+      "stale_after": "2026-08-27T12:53:00Z",
+      "pr": 25,
       "checks": {"architect_contract":"READY","source_candidate_core":"success","source_candidate_visual":"success","source_candidate_run":33042786023,"official_python_tag_resolved":true,"official_python_index_digest":"sha256:0bee7276f83efd4a1ee05bbbf4281d95ed28e079220a9457f25a93e3f1e3c31b","official_python_amd64_digest":"sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c","official_pillow_wheel_sha256":"106064daa23a745510dabce1d84f29137a37224831d88eb4ce94bb187b1d7e5f","godot_archive_sha256":"30e6b6d141f0cd5bebd629ad1d0ef1324e60091bb20662d026b402ba58c59937","godot_binary_sha256":"5a806b2b385279d9607094d33e946ed828e9606df4cb46d258ca27468dc5c1c9"},
+      "hosted_transition": {"draft_pr":25,"pr_state":"OPEN_DRAFT_BLOCKED","hosted_run":33064883085,"runtime_qualification":"failure_github_cli_drift_preflight","six_path_scope":"success","deterministic_selftest":"success","artifact":"not_produced","protected_capture":"expected_skipped_on_pr","ci_run":33064883381,"ci_status":"in_progress"},
       "recovery_count": 0,
       "rollback": "Close the Draft and revert only Stack A commits through review; never rewrite master. Disable dispatch before any later trust-root revert.",
       "stop_lines": ["master or branch baseline drift","dirty or shared worktree","any out-of-lease path is required","candidate source or Stack B paths must change","secret credentials are required","runtime digest cannot be reproducibly pinned","protected anchor rebake or View-to-Sim authority is proposed"]
@@ -53,8 +54,8 @@
     {
       "claim_id": "lease-cafe-source-attestation-trust-root-v1-replacement",
       "task": "01a0421b-3d85-7ed3-af00-cf73e538b177",
-      "head": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
-      "tree": "56173a6b69b256f825548c3d53c78acb3c1a0ee7",
+      "head": "74062985ba3d418f1086642ac413c2ab9b51c529",
+      "tree": "0277174d2ead67b98d0f2edbf932cdca779319b9",
       "branch": "codex/cafe-source-attestation-trust-root-v1-replacement",
       "worktree": "C:\\Users\\yp\\.codex\\worktrees\\a3fc\\26th",
       "status": "terminal_stale_unrecoverable_owner_revoked",
@@ -367,7 +368,7 @@
     }
   },
   "workspace_observation": {
-    "registered_worktrees": 190,
+    "registered_worktrees": 191,
     "dirty_worktrees": 30,
     "worktree_errors": 0,
     "unknown_or_historical_dirt_policy": "quarantine_preserve"
@@ -379,7 +380,7 @@
     "open_exact_sha_p0": 0,
     "open_exact_sha_p1": 1,
     "post_merge_regressions": 0,
-    "player_visible_closure_state": "source_attestation_stack_a_second_replacement_dispatched_before_candidate_and_playable_closure"
+    "player_visible_closure_state": "source_attestation_stack_a_draft_pr25_published_hosted_runtime_repair_active_before_candidate_and_playable_closure"
   },
   "human_acceptance": "not_ready"
 }
