@@ -44,7 +44,7 @@ build_runtime() {
   out="$(cd "$out" && pwd)"
   context="$(mktemp -d "${TMPDIR:-/tmp}/trusted-cafe-runtime.XXXXXXXX")"
   tag="localhost/living-town/trusted-cafe-runtime:v1"
-  trap 'podman image rm -f "$tag" >/dev/null 2>&1 || true; rm -rf "$context"' EXIT
+  trap "podman image rm -f '$tag' >/dev/null 2>&1 || true; rm -rf '$context'" EXIT
 
   mapfile -t lock_values < <(python -B - "$lock" <<'PY'
 import json, sys
@@ -54,7 +54,7 @@ values = [
     p["python_image"]["build_reference"],
     p["python_image"]["amd64_manifest_digest"],
     p["python_image"]["index_reference"],
-    p["pillow"]["url"], p["pillow"]["sha256"],
+    p["pillow"]["filename"], p["pillow"]["url"], p["pillow"]["sha256"],
     p["godot"]["url"], p["godot"]["archive_sha256"], p["godot"]["binary_sha256"],
     p["debian_snapshot"]["debian"], p["debian_snapshot"]["security"],
     p["versions"]["python"], p["versions"]["pillow"], p["versions"]["godot"],
@@ -68,17 +68,17 @@ for value in values:
     print(value)
 PY
   )
-  [ "${#lock_values[@]}" -eq 18 ] || fail "runtime lock scalar extraction failed"
+  [ "${#lock_values[@]}" -eq 19 ] || fail "runtime lock scalar extraction failed"
   local base_ref="${lock_values[0]}" base_digest="${lock_values[1]}"
   local index_ref="${lock_values[2]}"
-  local pillow_url="${lock_values[3]}" pillow_sha="${lock_values[4]}"
-  local godot_url="${lock_values[5]}" godot_archive_sha="${lock_values[6]}"
-  local godot_binary_sha="${lock_values[7]}" debian_snapshot="${lock_values[8]}"
-  local security_snapshot="${lock_values[9]}" python_version="${lock_values[10]}"
-  local pillow_version="${lock_values[11]}" godot_version="${lock_values[12]}"
-  local podman_version="${lock_values[13]}" buildah_version="${lock_values[14]}"
-  local skopeo_version="${lock_values[15]}" gh_version="${lock_values[16]}"
-  local max_archive_bytes="${lock_values[17]}"
+  local pillow_filename="${lock_values[3]}" pillow_url="${lock_values[4]}" pillow_sha="${lock_values[5]}"
+  local godot_url="${lock_values[6]}" godot_archive_sha="${lock_values[7]}"
+  local godot_binary_sha="${lock_values[8]}" debian_snapshot="${lock_values[9]}"
+  local security_snapshot="${lock_values[10]}" python_version="${lock_values[11]}"
+  local pillow_version="${lock_values[12]}" godot_version="${lock_values[13]}"
+  local podman_version="${lock_values[14]}" buildah_version="${lock_values[15]}"
+  local skopeo_version="${lock_values[16]}" gh_version="${lock_values[17]}"
+  local max_archive_bytes="${lock_values[18]}"
 
   [ "$(python -B -c 'import platform; print(platform.python_version())')" = "$python_version" ] || \
     fail "host Python drift"
@@ -105,10 +105,10 @@ if matches != [expected]:
 PY
 
   curl --fail --location --silent --show-error --retry 5 --retry-all-errors \
-    --output "$context/pillow.whl" "$pillow_url"
+    --output "$context/$pillow_filename" "$pillow_url"
   curl --fail --location --silent --show-error --retry 5 --retry-all-errors \
     --output "$context/godot.zip" "$godot_url"
-  [ "$(sha256_file "$context/pillow.whl")" = "$pillow_sha" ] || fail "Pillow wheel hash mismatch"
+  [ "$(sha256_file "$context/$pillow_filename")" = "$pillow_sha" ] || fail "Pillow wheel hash mismatch"
   [ "$(sha256_file "$context/godot.zip")" = "$godot_archive_sha" ] || fail "Godot archive hash mismatch"
 
   cat >"$context/Containerfile" <<'EOF'
@@ -116,6 +116,7 @@ ARG BASE_IMAGE
 FROM ${BASE_IMAGE}
 ARG DEBIAN_SNAPSHOT
 ARG SECURITY_SNAPSHOT
+ARG PILLOW_FILENAME
 ARG PILLOW_SHA256
 ARG GODOT_ARCHIVE_SHA256
 ARG GODOT_BINARY_SHA256
@@ -144,15 +145,15 @@ RUN printf '%s\n' \
       libxinerama1 libxrandr2 libxrender1 procps tar xauth xvfb \
  && rm -rf /var/lib/apt/lists/* /var/cache/apt/* /var/log/apt/* \
       /var/log/dpkg.log /var/log/alternatives.log
-COPY pillow.whl /tmp/pillow.whl
+COPY ${PILLOW_FILENAME} /tmp/${PILLOW_FILENAME}
 COPY godot.zip /tmp/godot.zip
-RUN printf '%s  %s\n' "$PILLOW_SHA256" /tmp/pillow.whl | sha256sum -c - \
+RUN printf '%s  %s\n' "$PILLOW_SHA256" "/tmp/$PILLOW_FILENAME" | sha256sum -c - \
  && printf '%s  %s\n' "$GODOT_ARCHIVE_SHA256" /tmp/godot.zip | sha256sum -c - \
  && python -B -c "import zipfile; zipfile.ZipFile('/tmp/godot.zip').extractall('/tmp/godot')" \
  && install -m 0755 /tmp/godot/Godot_v4.6.2-stable_linux.x86_64 /usr/local/bin/godot \
  && printf '%s  %s\n' "$GODOT_BINARY_SHA256" /usr/local/bin/godot | sha256sum -c - \
- && python -B -m pip install --no-cache-dir --no-deps --no-index /tmp/pillow.whl \
- && rm -rf /tmp/pillow.whl /tmp/godot.zip /tmp/godot \
+ && python -B -m pip install --no-cache-dir --no-deps --no-index "/tmp/$PILLOW_FILENAME" \
+ && rm -rf "/tmp/$PILLOW_FILENAME" /tmp/godot.zip /tmp/godot \
  && ! ldd /usr/local/bin/godot | grep -F 'not found' \
  && test "$(python -B -c 'import platform; print(platform.python_version())')" = "$PYTHON_VERSION" \
  && test "$(python -B -c 'import PIL; print(PIL.__version__)')" = "$PILLOW_VERSION" \
@@ -171,6 +172,7 @@ EOF
       --build-arg "BASE_IMAGE=$base_ref" \
       --build-arg "DEBIAN_SNAPSHOT=$debian_snapshot" \
       --build-arg "SECURITY_SNAPSHOT=$security_snapshot" \
+      --build-arg "PILLOW_FILENAME=$pillow_filename" \
       --build-arg "PILLOW_SHA256=$pillow_sha" \
       --build-arg "GODOT_ARCHIVE_SHA256=$godot_archive_sha" \
       --build-arg "GODOT_BINARY_SHA256=$godot_binary_sha" \
