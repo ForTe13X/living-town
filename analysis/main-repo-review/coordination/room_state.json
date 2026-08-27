@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T01:24:12Z",
+  "updated_at": "2026-08-27T01:31:47Z",
   "producer": {
     "task": "019f555f-dfd4-7d91-aa6b-9655caa34871",
     "branch": "codex/main-repo-review",
@@ -25,14 +25,14 @@
   "active_claims": [
     {
       "claim_id": "claim-pr21-floor-semantic-ci-discrepancy-diagnostic",
-      "task": "pending_create_thread",
+      "task": "01a040d6-b367-72a1-b421-65b3ce74861d",
       "role": "independent read-only QA and REFUTE diagnostician",
       "objective": "Explain why the repair-head natural CI failed two roundtrip captures while the untouched parent passed in the same environment, and determine the safe next publication gate.",
       "baseline": "6d4b60665f8e4f4c439a24e5f27647e8a5254376",
       "head": "55e05f84569c7bfdb6ebf475f787709200cd265b",
       "tree": "04a73a2895b3676fdbb15ca9df2229eee2ab074f",
       "branch": "codex/pr21-floor-semantic-gate-repair",
-      "worktree": "pending_isolated_worktree",
+      "worktree": "C:\\Users\\yp\\.codex\\worktrees\\d576\\26th",
       "owned_paths": [],
       "forbidden_paths": [
         "**/*"
@@ -51,9 +51,9 @@
         "parent-visual-control-log@sha256:62e7064a996ab1a268b7c65623a053dcce48bf9bdb1f05c818f43f2bb0bafac1"
       ],
       "consumer": "Producer task 019f555f-dfd4-7d91-aa6b-9655caa34871 and the publication decision for the PR #21 stacked repair",
-      "status": "reserved_pending_task_creation",
-      "last_heartbeat": "2026-08-27T01:24:12Z",
-      "stale_after": "2026-08-27T02:24:12Z",
+      "status": "active_read_only_diagnostic",
+      "last_heartbeat": "2026-08-27T01:31:47Z",
+      "stale_after": "2026-08-27T02:31:47Z",
       "pr": null,
       "checks": {
         "candidate_full_natural_ci": "fail_space_and_floor_roundtrip_capture_only",
