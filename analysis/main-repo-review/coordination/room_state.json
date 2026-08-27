@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T11:36:00Z",
+  "updated_at": "2026-08-27T11:40:00Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -42,7 +42,7 @@
       "status": "terminal_clean_handoff_acknowledged_archive_authorized",
       "write_lease": false,
       "archive_condition_met": true,
-      "archive_status": "pending_archive_call",
+      "archive_status": "archived",
       "terminal_acknowledgement": {"branch_upstream_exact":true,"head":"4bd8b6770d03e19283e962fcb556944dfd3c5d94","tree":"eef3fe9b32a4598c7d774eb57570cb67d658f6d6","worktree_clean":true,"remote_mutation_after_freeze":false},
       "last_heartbeat": "2026-08-27T11:28:00Z",
       "stale_after": null,
