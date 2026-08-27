@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T13:15:00Z",
+  "updated_at": "2026-08-27T13:22:00Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -29,7 +29,7 @@
       "role": "Second replacement sole serialized Dev writer for protected café source-to-capture attestation trust root v1, Stack A only",
       "objective": "Implement the protected compiler, pinned capture, independent verifier, self-test, runtime lock, and GitHub build-attestation workflow that bind café evidence to maintained authored source without changing runtime authority.",
       "baseline": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
-      "head": "3d04ed5f62b3a751b992c7427ac40550113a068c",
+      "head": "1dfc72067badff2cdbb849bd190dfc04ce03d221",
       "tree": "767ef6b9637d4f02fcb1770edd94554dd590e435",
       "branch": "codex/cafe-source-attestation-trust-root-v1-replacement-2",
       "worktree": "C:\\Users\\admin\\.codex\\worktrees\\ed00\\living-town",
@@ -115,25 +115,25 @@
       "tree": "eef3fe9b32a4598c7d774eb57570cb67d658f6d6",
       "branch": "codex/cafe-source-attestation-trust-root-v1-replacement-2",
       "worktree": "D:\\Documents\\Dev\\living-town-pr25-p1-repair-wt",
-      "owned_paths": [".github/workflows/trusted-cafe-attestation.yml","evidence/cafe/runtime-lock.v1.json","tools/cafe_attestation_selftest.py","tools/trusted_cafe_capture.sh","tools/verify_cafe_attested_evidence.py"],
-      "forbidden_paths": ["**/* except exact owned_paths","tools/cafe_authored_manifest.py","evidence/cafe/cafe-authored-ids.v1.json","evidence/cafe/cafe-authored-manifest.v1.json","tools/ci.sh","game/**","docs/**","analysis/**","shared registries/schemas/anchors/ledgers"],
+      "owned_paths": ["tools/trusted_cafe_capture.sh"],
+      "forbidden_paths": ["**/* except tools/trusted_cafe_capture.sh",".github/workflows/trusted-cafe-attestation.yml","evidence/cafe/runtime-lock.v1.json","tools/cafe_attestation_selftest.py","tools/verify_cafe_attested_evidence.py","tools/cafe_authored_manifest.py","evidence/cafe/cafe-authored-ids.v1.json","evidence/cafe/cafe-authored-manifest.v1.json","tools/ci.sh","game/**","docs/**","analysis/**","shared registries/schemas/anchors/ledgers"],
       "authority_keys": ["trusted-cafe-attestation-workflow","cafe-runtime-lock-v1","cafe-verification-container-contract","cafe-evidence-payload-allowlist"],
       "generated_outputs": ["temporary isolated Docker fixtures and receipts outside repository","hosted replacement qualification artifact on PR #25"],
       "dependencies": ["pr:25:4bd8b6770d03e19283e962fcb556944dfd3c5d94","security-qa:REQUEST_CHANGES:P1-docker-invariant","refute:REQUEST_CHANGES:P1-docker-invariant:P1-extra-payload","attack-matrix:sha256:5b4bc93b2b8e24de722ccd0336fd96ea9bc5029694a5cf64af599e9e538077c8","hosted-run:33066750754:success_but_not_merge_eligible","general-ci:33066750750:success"],
       "consumer": "Producer, then fresh independent Security/QA and REFUTE at the repaired exact head",
-      "status": "terminal_clean_repair_handoff_api_delivered_hosted_requalification_pending",
-      "write_lease": false,
-      "last_heartbeat": "2026-08-27T13:10:00Z",
-      "stale_after": null,
+      "status": "active_serialized_hosted_stdin_forwarding_repair",
+      "write_lease": true,
+      "last_heartbeat": "2026-08-27T13:22:00Z",
+      "stale_after": "2026-08-27T14:22:00Z",
       "pr": 25,
-      "checks": {"p0":0,"p1":2,"p2":2,"merge":"forbidden","stack_b":"frozen","local_docker_repair":"success_27_of_27_fail_closed","local_receipt_sha256":"253d2fc1d20734603add60cfe7bc9c15b05bf4155f71e0e83f43a70d5ffb7e6e","hosted_exact_head":"pending_at_1dfc72067badff2cdbb849bd190dfc04ce03d221"},
+      "checks": {"p0":0,"p1":3,"p2":2,"merge":"forbidden","stack_b":"frozen","local_docker_repair":"success_27_of_27_fail_closed","local_receipt_sha256":"253d2fc1d20734603add60cfe7bc9c15b05bf4155f71e0e83f43a70d5ffb7e6e","hosted_exact_head":"failure_run_33075701738","hosted_failure":"validation podman run omitted interactive stdin forwarding so heredoc parser produced zero scalars"},
       "delivery": {"local_commit":"3d04ed5f62b3a751b992c7427ac40550113a068c","local_tree":"767ef6b9637d4f02fcb1770edd94554dd590e435","remote_head_before_recovery":"4bd8b6770d03e19283e962fcb556944dfd3c5d94","remote_api_commit":"1dfc72067badff2cdbb849bd190dfc04ce03d221","remote_tree":"767ef6b9637d4f02fcb1770edd94554dd590e435","normal_push_attempts":2,"normal_push_result":"github_com_443_timeout","producer_recovery":"completed_git_data_api_no_force_linear_commit_tree_exact","exact_paths":[".github/workflows/trusted-cafe-attestation.yml","evidence/cafe/runtime-lock.v1.json","tools/cafe_attestation_selftest.py","tools/trusted_cafe_capture.sh","tools/verify_cafe_attested_evidence.py"]},
       "recovery_count": 1,
       "rollback": "Leave or close Draft PR #25; revert only new repair commits through review if later rejected; never rewrite shared history or master.",
       "stop_lines": ["PR head or master drifts before checkout verification","any out-of-lease path is required","strict payload contract requires Stack B or canon change","secrets or protected dispatch are required","Docker image/runtime cannot be pinned by digest","host-native material gate would remain merge-authoritative","shared Docker or cache state would be mutated"]
     }
   ],
-  "current_conflict_graph": {"at":"2026-08-27T13:15:00Z","active_writers":0,"read_only_reviewers":0,"shared_write_conflicts":0,"decision":"Producer completed the sole non-force API delivery recovery as remote commit 1dfc720 with the exact reviewed tree. No writer holds authority; Stack B and all other writers remain frozen while hosted exact-head checks run, after which fresh read-only Security/QA and REFUTE may be dispatched."},
+  "current_conflict_graph": {"at":"2026-08-27T13:22:00Z","active_writers":1,"read_only_reviewers":0,"shared_write_conflicts":0,"decision":"Hosted qualification exposed one bounded stdin-forwarding defect at remote head 1dfc720. The same repair owner is re-leased only tools/trusted_cafe_capture.sh on the tree-identical local mirror; all other paths, writers, Stack B, QA, and REFUTE remain frozen until a one-path repair is delivered and hosted checks are terminal."},
   "released_claims": [
     {
       "claim_id": "lease-cafe-source-attestation-trust-root-v1-replacement",
@@ -462,9 +462,9 @@
     "stale_or_empty_handoffs": 3,
     "recoveries_or_replacements": 10,
     "open_exact_sha_p0": 0,
-    "open_exact_sha_p1": 3,
+    "open_exact_sha_p1": 4,
     "post_merge_regressions": 0,
-    "player_visible_closure_state": "source_attestation_stack_a_pr25_repair_remote_exact_tree_hosted_requalification_pending"
+    "player_visible_closure_state": "source_attestation_stack_a_pr25_hosted_stdin_forwarding_p1_bounded_repair_active"
   },
   "human_acceptance": "not_ready"
 }
