@@ -75,6 +75,21 @@ LANDMARK_MAX_ASPECT = 2.5
 # resolution).  A furniture footprint instead has substantial occupancy across
 # the median local row and column, so neither axis can be carried by one arm.
 LANDMARK_MIN_MEDIAN_CROSS_SECTION = 0.50
+# A named room is not three copies of one generic occupancy stamp.  The
+# authored bed, desk, and vanity have independently drawn local silhouettes;
+# at either supported scale their changed-pixel coverages span this much.  This
+# deliberately compares local shapes to each other, rather than to a palette,
+# a frame hash, or a baked reference image.
+PRIVATE_SILHOUETTE_MIN_COVERAGE_SPREAD = 0.06
+# A checkerboard is dense enough to pass coverage, but it is fragmented rather
+# than one furniture silhouette.  Small sprite details may disconnect, so the
+# meaningful criterion is that one 4-connected body carries most changed
+# pixels, not that every pixel belongs to it.
+LANDMARK_MIN_LARGEST_COMPONENT = 0.80
+# A hollow ring has the right outer box and two-axis extent but no authored
+# furniture body.  Limit only voids enclosed by changed pixels inside the
+# local silhouette box; ordinary background outside the sprite is ignored.
+LANDMARK_MAX_ENCLOSED_VOID = 0.20
 
 
 def canonical(value):
@@ -289,11 +304,40 @@ def landmark_geometry(mask, size, landmarks):
                                for x in range(min_x, max_x + 1))
             row_median = row_fills[len(row_fills) // 2]
             col_median = col_fills[len(col_fills) // 2]
+            body, void = silhouette_topology(mask, w, min_x, min_y, max_x, max_y, changed)
         else:
-            bounding_fill = aspect = row_median = col_median = 0.0
+            bounding_fill = aspect = row_median = col_median = body = void = 0.0
         measured.append((name, cell, changed / area, rows / (y1 - y0), cols / (x1 - x0),
-                         bounding_fill, aspect, row_median, col_median))
+                         bounding_fill, aspect, row_median, col_median, body, void))
     return measured
+
+
+def silhouette_topology(mask, width, min_x, min_y, max_x, max_y, changed):
+    """Return the largest 4-connected body and enclosed-void fractions."""
+    occupied = {(x, y) for y in range(min_y, max_y + 1) for x in range(min_x, max_x + 1)
+                if mask[y * width + x]}
+    pending, largest = set(occupied), 0
+    while pending:
+        stack, component = [pending.pop()], 0
+        while stack:
+            x, y = stack.pop(); component += 1
+            for neighbor in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+                if neighbor in pending:
+                    pending.remove(neighbor); stack.append(neighbor)
+        largest = max(largest, component)
+    # Flood from the bounding-box edge through empty pixels.  What remains is
+    # a true hole, so a surrounding empty room cannot be mistaken for one.
+    empty = {(x, y) for y in range(min_y, max_y + 1) for x in range(min_x, max_x + 1)
+             if (x, y) not in occupied}
+    outside = {(x, y) for x, y in empty if x in (min_x, max_x) or y in (min_y, max_y)}
+    stack = list(outside)
+    while stack:
+        x, y = stack.pop()
+        for neighbor in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+            if neighbor in empty and neighbor not in outside:
+                outside.add(neighbor); stack.append(neighbor)
+    box_area = (max_x - min_x + 1) * (max_y - min_y + 1)
+    return largest / changed, (len(empty) - len(outside)) / box_area
 
 
 def semantic_geometry(one, one_bare, two, two_bare):
@@ -311,13 +355,13 @@ def semantic_geometry(one, one_bare, two, two_bare):
     for floor, kind in (("1F", "public"), ("1F", "private"), ("2F", "public"), ("2F", "private")):
         values = ", ".join("%s@%s=%.3f rows=%.3f cols=%.3f fill=%.3f aspect=%.3f median=%.3f/%.3f" %
                            (name, cell, coverage, rows, cols, fill, aspect, row_median, col_median)
-                           for name, cell, coverage, rows, cols, fill, aspect, row_median, col_median in observed[(floor, kind)])
+                           for name, cell, coverage, rows, cols, fill, aspect, row_median, col_median, body, void in observed[(floor, kind)])
         print("[CAFEDENSITY] semantic geometry %s %s [%s]" % (floor, kind, values))
 
     failures = []
     for floor, kind, present in (("1F", "public", True), ("1F", "private", False),
                                  ("2F", "private", True), ("2F", "public", False)):
-        for name, cell, coverage, rows, cols, fill, aspect, row_median, col_median in observed[(floor, kind)]:
+        for name, cell, coverage, rows, cols, fill, aspect, row_median, col_median, body, void in observed[(floor, kind)]:
             if present and coverage < LANDMARK_MIN_COVERAGE:
                 failures.append(
                     "%s %s landmark %s at %s has changed coverage %.3f < %.3f" %
@@ -346,12 +390,28 @@ def semantic_geometry(one, one_bare, two, two_bare):
                 failures.append(
                     "%s %s landmark %s at %s lacks a compact furniture cross-section "
                     "(median rows %.3f, cols %.3f; each >= %.3f)" %
-                    (floor, kind, name, cell, row_median, col_median,
+                     (floor, kind, name, cell, row_median, col_median,
                      LANDMARK_MIN_MEDIAN_CROSS_SECTION))
+            if present and body < LANDMARK_MIN_LARGEST_COMPONENT:
+                failures.append(
+                    "%s %s landmark %s at %s is fragmented, not one authored silhouette "
+                    "(largest body %.3f < %.3f)" %
+                    (floor, kind, name, cell, body, LANDMARK_MIN_LARGEST_COMPONENT))
+            if present and void > LANDMARK_MAX_ENCLOSED_VOID:
+                failures.append(
+                    "%s %s landmark %s at %s is hollow, not an authored furniture body "
+                    "(enclosed void %.3f > %.3f)" %
+                    (floor, kind, name, cell, void, LANDMARK_MAX_ENCLOSED_VOID))
             if not present and coverage > LANDMARK_MAX_COVERAGE:
                 failures.append(
                     "%s received %s landmark geometry %s at %s (coverage %.3f > %.3f)" %
                     (floor, kind, name, cell, coverage, LANDMARK_MAX_COVERAGE))
+    private_coverages = [entry[2] for entry in observed[("2F", "private")]]
+    if max(private_coverages) - min(private_coverages) < PRIVATE_SILHOUETTE_MIN_COVERAGE_SPREAD:
+        failures.append(
+            "2F private landmarks repeat one generic silhouette "
+            "(coverage spread %.3f < %.3f)" %
+            (max(private_coverages) - min(private_coverages), PRIVATE_SILHOUETTE_MIN_COVERAGE_SPREAD))
     return failures
 
 
@@ -405,8 +465,17 @@ def make_fixture(out_dir, size):
             d = ImageDraw.Draw(im)
             color = (220, 110, 50) if floor == "1f" else (50, 150, 220)
             landmarks = PUBLIC_CAFE_LANDMARKS if floor == "1f" else PRIVATE_ROOM_LANDMARKS
-            for _, cell in landmarks:
-                fill_landmark(d, cell, color)
+            for index, (_, cell) in enumerate(landmarks):
+                if floor == "2f" and index == 1:
+                    x0, y0, x1, y1 = cell_rect(size, cell)
+                    d.rectangle((x0 + 1, y0 + 1, x0 + (x1 - x0) * 3 // 5, y1 - 2), fill=color)
+                    d.rectangle((x0 + 1, y1 - (y1 - y0) * 3 // 5, x1 - 2, y1 - 2), fill=color)
+                elif floor == "2f" and index == 2:
+                    x0, y0, x1, y1 = cell_rect(size, cell)
+                    d.rectangle((x0 + (x1 - x0) // 4, y0 + (y1 - y0) // 4,
+                                 x1 - 2, y1 - (y1 - y0) // 3), fill=color)
+                else:
+                    fill_landmark(d, cell, color)
         im.save(os.path.join(out_dir, filename))
     _fixture_receipt(out_dir, size)
 
@@ -491,6 +560,37 @@ def self_test():
         # have enough extent in each axis but sparse bounding boxes; the exact
         # quarter-height stripe is dense in its own box but too elongated.
         for size in sorted(SUPPORTED_VIEWPORTS):
+            # REFUTE: a uniform solid stamp, hollow frame, or checkerboard can
+            # be receipt-valid and dense at either viewport, but none carries
+            # the independent authored silhouettes of bed/desk/vanity.
+            for topology in ("solid", "hollow", "checker"):
+                case = clone("%s-%dx%d" % (topology, size[0], size[1]), size)
+                normal = Image.open(os.path.join(case, "vg_cafe2f_bare.png")).convert("RGB")
+                draw = ImageDraw.Draw(normal)
+                for _, cell in PRIVATE_ROOM_LANDMARKS:
+                    x0, y0, x1, y1 = cell_rect(size, cell)
+                    if topology == "solid":
+                        draw.rectangle((x0 + (x1 - x0) // 5, y0 + (y1 - y0) // 5,
+                                        x1 - (x1 - x0) // 5 - 1, y1 - (y1 - y0) // 5 - 1),
+                                       fill=(50, 150, 220))
+                    elif topology == "hollow":
+                        inset = max(1, min(x1 - x0, y1 - y0) // 5)
+                        draw.rectangle((x0 + inset, y0 + inset, x1 - inset - 1, y1 - inset - 1),
+                                       outline=(50, 150, 220), width=max(1, inset // 2))
+                    else:
+                        step = max(2, min(x1 - x0, y1 - y0) // 5)
+                        for y in range(y0, y1, step):
+                            for x in range(x0, x1, step):
+                                if ((x - x0) // step + (y - y0) // step) % 2 == 0:
+                                    draw.rectangle((x, y, min(x + step - 1, x1 - 1),
+                                                    min(y + step - 1, y1 - 1)), fill=(50, 150, 220))
+                normal.save(os.path.join(case, "vg_cafe2f.png"))
+                with open(os.path.join(case, RECEIPT_NAME), encoding="utf-8") as f: receipt = json.load(f)
+                refresh_rows(receipt, case, ("vg_cafe2f.png",))
+                with open(os.path.join(case, RECEIPT_NAME), "w", encoding="utf-8") as f: json.dump(receipt, f)
+                reason = "hollow" if topology == "hollow" else (
+                    "fragmented" if topology == "checker" else "repeat one generic silhouette")
+                if not expect_reject("self-consistent %s %dx%d" % (topology, size[0], size[1]), case, reason): return 1
             for topology in ("cross", "tee", "quarter-stripe"):
                 case = clone("%s-%dx%d" % (topology, size[0], size[1]), size)
                 normal = Image.open(os.path.join(case, "vg_cafe2f_bare.png")).convert("RGB")
