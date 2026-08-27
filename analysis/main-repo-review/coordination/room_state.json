@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T04:22:08Z",
+  "updated_at": "2026-08-27T04:24:46Z",
   "producer": {
     "task": "019f555f-dfd4-7d91-aa6b-9655caa34871",
     "branch": "codex/main-repo-review",
@@ -25,23 +25,23 @@
   "active_claims": [
     {
       "claim_id": "claim-pr23-replacement-handoff-audit",
-      "task": "pending_create_thread_replacement_auditor",
+      "task": "01a04176-050f-7fa1-8b23-1298f60f8b7f",
       "role": "replacement read-only provenance and evidence auditor",
       "objective": "Recover a complete exact-head handoff for commit 6161a02 from Git, hosted evidence, and existing temporary receipts after the original writer returned two empty task responses.",
       "baseline": "a0a1740870bdfd038f40af813d9eb90ab4c960eb",
       "head": "6161a02d14334826d3a2f982ea9939595a2780af",
       "tree": "36e82e1ef1265a2677cf6679d3cf747322383bd1",
       "branch": "codex/pr22-authored-geometry-binding-repair",
-      "worktree": "C:\\Users\\yp\\.codex\\worktrees\\6a12\\26th",
+      "worktree": "C:\\Users\\yp\\.codex\\worktrees\\9011\\26th",
       "owned_paths": [],
       "forbidden_paths": ["**/*"],
       "authority_keys": ["pr23-replacement-handoff-verdict"],
       "generated_outputs": ["task_response_only","temporary_receipts_only"],
       "dependencies": ["draft-pr:23","commit:6161a02d14334826d3a2f982ea9939595a2780af","hosted-run:33038078718","failed-owner:01a04128-79ce-70f0-b503-56dac075356c"],
       "consumer": "Draft PR #23 then stacked PR #22 and PR #21",
-      "status": "reserved_pending_task_creation",
-      "last_heartbeat": "2026-08-27T04:22:08Z",
-      "stale_after": "2026-08-27T05:22:08Z",
+      "status": "active_read_only_replacement_audit",
+      "last_heartbeat": "2026-08-27T04:24:46Z",
+      "stale_after": "2026-08-27T05:24:46Z",
       "pr": 23,
       "checks": {"hosted_core":"in_progress","hosted_visual":"success","run":33038078718},
       "recovery_count": 0,
@@ -216,7 +216,7 @@
     }
   },
   "workspace_observation": {
-    "registered_worktrees": 180,
+    "registered_worktrees": 181,
     "dirty_worktrees": 30,
     "worktree_errors": 0,
     "unknown_or_historical_dirt_policy": "quarantine_preserve"
