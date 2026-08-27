@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T10:54:00Z",
+  "updated_at": "2026-08-27T11:00:00Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -29,8 +29,8 @@
       "role": "Second replacement sole serialized Dev writer for protected café source-to-capture attestation trust root v1, Stack A only",
       "objective": "Implement the protected compiler, pinned capture, independent verifier, self-test, runtime lock, and GitHub build-attestation workflow that bind café evidence to maintained authored source without changing runtime authority.",
       "baseline": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
-      "head": "74062985ba3d418f1086642ac413c2ab9b51c529",
-      "tree": "0277174d2ead67b98d0f2edbf932cdca779319b9",
+      "head": "446403b664873df13af4d45307efdfa368c417f1",
+      "tree": "225aa231eeed14a166ce848d57d1fa5d9cf3378d",
       "branch": "codex/cafe-source-attestation-trust-root-v1-replacement-2",
       "worktree": "C:\\Users\\admin\\.codex\\worktrees\\ed00\\living-town",
       "owned_paths": [".github/workflows/trusted-cafe-attestation.yml","tools/trusted_cafe_capture.sh","tools/cafe_authored_manifest.py","tools/verify_cafe_attested_evidence.py","tools/cafe_attestation_selftest.py","evidence/cafe/runtime-lock.v1.json"],
@@ -40,11 +40,11 @@
       "dependencies": ["architect-task:01a041cb-9e65-7700-b342-75787b53537c:READY","origin/master:5b7ac426b6bc059517dba843db4150a2b38d33a7","prior-writer:01a041e7-229a-74e1-a8a3-21988cac78e5:BLOCKED_RUNTIME_SUPPLY","stale-replacement:01a0421b-3d85-7ed3-af00-cf73e538b177:NO_REMOTE_BRANCH_OR_PR_AFTER_EXPIRY","python-image-index:sha256:0bee7276f83efd4a1ee05bbbf4281d95ed28e079220a9457f25a93e3f1e3c31b","python-image-amd64:sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c","pillow-wheel:sha256:106064daa23a745510dabce1d84f29137a37224831d88eb4ce94bb187b1d7e5f","draft-pr:24:terminal_heuristic_limit","hosted-run:33042786023:success"],
       "consumer": "Producer, then independent security/QA and REFUTE; after protected-root merge, one serialized Stack B candidate owner",
       "status": "active_exact_head_draft_pr25_hosted_runtime_repair",
-      "last_heartbeat": "2026-08-27T10:53:00Z",
-      "stale_after": "2026-08-27T12:53:00Z",
+      "last_heartbeat": "2026-08-27T11:00:00Z",
+      "stale_after": "2026-08-27T13:00:00Z",
       "pr": 25,
       "checks": {"architect_contract":"READY","source_candidate_core":"success","source_candidate_visual":"success","source_candidate_run":33042786023,"official_python_tag_resolved":true,"official_python_index_digest":"sha256:0bee7276f83efd4a1ee05bbbf4281d95ed28e079220a9457f25a93e3f1e3c31b","official_python_amd64_digest":"sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c","official_pillow_wheel_sha256":"106064daa23a745510dabce1d84f29137a37224831d88eb4ce94bb187b1d7e5f","godot_archive_sha256":"30e6b6d141f0cd5bebd629ad1d0ef1324e60091bb20662d026b402ba58c59937","godot_binary_sha256":"5a806b2b385279d9607094d33e946ed828e9606df4cb46d258ca27468dc5c1c9"},
-      "hosted_transition": {"draft_pr":25,"pr_state":"OPEN_DRAFT_BLOCKED","hosted_run":33064883085,"runtime_qualification":"failure_github_cli_drift_preflight","six_path_scope":"success","deterministic_selftest":"success","artifact":"not_produced","protected_capture":"expected_skipped_on_pr","ci_run":33064883381,"ci_status":"in_progress"},
+      "hosted_transition": {"draft_pr":25,"pr_state":"OPEN_DRAFT_BLOCKED","hosted_run":33065402393,"runtime_qualification":"in_progress_after_two_bounded_fixes","prior_failures":["33064883085:github_cli_drift_preflight","33065169532:pinned_wheel_renamed_and_cleanup_trap"],"six_path_scope":"success","deterministic_selftest":"success","artifact":"pending","protected_capture":"expected_skipped_on_pr","ci_run":33065402368,"ci_status":"in_progress"},
       "recovery_count": 0,
       "rollback": "Close the Draft and revert only Stack A commits through review; never rewrite master. Disable dispatch before any later trust-root revert.",
       "stop_lines": ["master or branch baseline drift","dirty or shared worktree","any out-of-lease path is required","candidate source or Stack B paths must change","secret credentials are required","runtime digest cannot be reproducibly pinned","protected anchor rebake or View-to-Sim authority is proposed"]
