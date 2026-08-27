@@ -20,7 +20,7 @@ import sys
 import tempfile
 
 try:
-    from PIL import Image, ImageDraw
+    from PIL import Image, ImageChops, ImageDraw
 except ImportError:
     print("[CAFEDENSITY] FAIL Pillow is required; refusing to skip")
     sys.exit(1)
@@ -58,6 +58,11 @@ PRIVATE_ROOM_LANDMARKS = (
 )
 LANDMARK_MIN_COVERAGE = 0.08
 LANDMARK_MAX_COVERAGE = 0.03
+# A landmark is an authored furniture footprint, not merely an occupied cell.
+# Its changed pixels must therefore extend materially on both tile axes.  This
+# leaves room for palette, rasterizer, and small shot-fit variation, while a
+# thin horizontal/vertical stripe cannot impersonate a bed, desk, or vanity.
+LANDMARK_MIN_AXIS_COVERAGE = 0.25
 
 
 def canonical(value):
@@ -239,14 +244,24 @@ def assess(normal, bare):
     return inside, outside
 
 
-def landmark_coverages(mask, size, landmarks):
-    """Measure furniture geometry only; RGB values are never interpreted as identity."""
+def landmark_geometry(mask, size, landmarks):
+    """Measure palette-independent local furniture occupancy and orthogonal extent."""
     w, h = size
     measured = []
     for name, cell in landmarks:
         x0, y0, x1, y1 = cell_rect(size, cell)
-        changed = sum(mask[y * w + x] for y in range(y0, y1) for x in range(x0, x1))
-        measured.append((name, cell, changed / ((x1 - x0) * (y1 - y0))))
+        changed = rows = cols = 0
+        for y in range(y0, y1):
+            row_changed = False
+            for x in range(x0, x1):
+                if mask[y * w + x]:
+                    changed += 1
+                    row_changed = True
+            rows += row_changed
+        for x in range(x0, x1):
+            cols += any(mask[y * w + x] for y in range(y0, y1))
+        area = (x1 - x0) * (y1 - y0)
+        measured.append((name, cell, changed / area, rows / (y1 - y0), cols / (x1 - x0)))
     return measured
 
 
@@ -257,24 +272,29 @@ def semantic_geometry(one, one_bare, two, two_bare):
         "2F": changes(two, two_bare),
     }
     observed = {
-        ("1F", "public"): landmark_coverages(masks["1F"], one.size, PUBLIC_CAFE_LANDMARKS),
-        ("1F", "private"): landmark_coverages(masks["1F"], one.size, PRIVATE_ROOM_LANDMARKS),
-        ("2F", "public"): landmark_coverages(masks["2F"], two.size, PUBLIC_CAFE_LANDMARKS),
-        ("2F", "private"): landmark_coverages(masks["2F"], two.size, PRIVATE_ROOM_LANDMARKS),
+        ("1F", "public"): landmark_geometry(masks["1F"], one.size, PUBLIC_CAFE_LANDMARKS),
+        ("1F", "private"): landmark_geometry(masks["1F"], one.size, PRIVATE_ROOM_LANDMARKS),
+        ("2F", "public"): landmark_geometry(masks["2F"], two.size, PUBLIC_CAFE_LANDMARKS),
+        ("2F", "private"): landmark_geometry(masks["2F"], two.size, PRIVATE_ROOM_LANDMARKS),
     }
     for floor, kind in (("1F", "public"), ("1F", "private"), ("2F", "public"), ("2F", "private")):
-        values = ", ".join("%s@%s=%.3f" % (name, cell, coverage)
-                           for name, cell, coverage in observed[(floor, kind)])
+        values = ", ".join("%s@%s=%.3f rows=%.3f cols=%.3f" % (name, cell, coverage, rows, cols)
+                           for name, cell, coverage, rows, cols in observed[(floor, kind)])
         print("[CAFEDENSITY] semantic geometry %s %s [%s]" % (floor, kind, values))
 
     failures = []
     for floor, kind, present in (("1F", "public", True), ("1F", "private", False),
                                  ("2F", "private", True), ("2F", "public", False)):
-        for name, cell, coverage in observed[(floor, kind)]:
+        for name, cell, coverage, rows, cols in observed[(floor, kind)]:
             if present and coverage < LANDMARK_MIN_COVERAGE:
                 failures.append(
                     "%s %s landmark %s at %s has changed coverage %.3f < %.3f" %
                     (floor, kind, name, cell, coverage, LANDMARK_MIN_COVERAGE))
+            if present and (rows < LANDMARK_MIN_AXIS_COVERAGE or cols < LANDMARK_MIN_AXIS_COVERAGE):
+                failures.append(
+                    "%s %s landmark %s at %s lacks authored two-axis footprint "
+                    "(rows %.3f, cols %.3f; each >= %.3f)" %
+                    (floor, kind, name, cell, rows, cols, LANDMARK_MIN_AXIS_COVERAGE))
             if not present and coverage > LANDMARK_MAX_COVERAGE:
                 failures.append(
                     "%s received %s landmark geometry %s at %s (coverage %.3f > %.3f)" %
@@ -344,6 +364,11 @@ def refresh_row(receipt, filename, path):
     row["argv_sha256"] = argv_digest(row["argv"])
 
 
+def refresh_rows(receipt, out_dir, filenames):
+    for filename in filenames:
+        refresh_row(receipt, filename, os.path.join(out_dir, filename))
+
+
 def expect_reject(label, out_dir, reason):
     stream = io.StringIO()
     try:
@@ -387,6 +412,44 @@ def self_test():
             refresh_row(receipt, fn, os.path.join(palette, fn))
         with open(os.path.join(palette, RECEIPT_NAME), "w", encoding="utf-8") as f: json.dump(receipt, f)
         if not expect_reject("self-consistent palette-inverted 1F-as-2F", palette, "semantic geometry"): return 1
+        # REFUTE: each claimed private landmark contains an 11%-high horizontal
+        # band, with sufficient unrelated changed pixels elsewhere in the valid
+        # footprint.  Rebuild the receipt so this reaches semantic geometry;
+        # occupancy alone must not make these stripes furniture.
+        coarse = clone("alternate-coarse-geometry")
+        normal = Image.open(os.path.join(coarse, "vg_cafe2f_bare.png")).convert("RGB")
+        draw = ImageDraw.Draw(normal)
+        for _, cell in PRIVATE_ROOM_LANDMARKS:
+            x0, y0, x1, y1 = cell_rect(normal.size, cell)
+            band_height = max(1, round((y1 - y0) / 9))
+            draw.rectangle((x0, y0 + (y1 - y0) // 2, x1 - 1,
+                            y0 + (y1 - y0) // 2 + band_height - 1), fill=(50, 150, 220))
+        x0, y0, x1, y1 = cell_rect(normal.size, (1, 1))
+        draw.rectangle((x0 + 4, y0 + 4, x1 - 5, y1 - 5), fill=(50, 150, 220))
+        normal.save(os.path.join(coarse, "vg_cafe2f.png"))
+        with open(os.path.join(coarse, RECEIPT_NAME), encoding="utf-8") as f: receipt = json.load(f)
+        refresh_rows(receipt, coarse, ("vg_cafe2f.png",))
+        with open(os.path.join(coarse, RECEIPT_NAME), "w", encoding="utf-8") as f: json.dump(receipt, f)
+        if not expect_reject("self-consistent alternate coarse geometry", coarse, "authored two-axis footprint"): return 1
+        # Positive robustness controls: color is not identity, and a small
+        # capture-space translation remains a valid local furniture footprint.
+        palette_positive = clone("benign palette transform")
+        for filename in EXPECTED_BY_FILE:
+            path = os.path.join(palette_positive, filename)
+            im = Image.open(path).convert("RGB").point(lambda v: min(255, 20 + 3 * v // 4))
+            im.save(path)
+        with open(os.path.join(palette_positive, RECEIPT_NAME), encoding="utf-8") as f: receipt = json.load(f)
+        refresh_rows(receipt, palette_positive, EXPECTED_BY_FILE)
+        with open(os.path.join(palette_positive, RECEIPT_NAME), "w", encoding="utf-8") as f: json.dump(receipt, f)
+        if check(palette_positive) != 0: return 1
+        translated = clone("small normalized capture translation")
+        for filename in ("vg_int_cafe.png", "vg_cafe2f.png"):
+            path = os.path.join(translated, filename)
+            ImageChops.offset(Image.open(path).convert("RGB"), 2, 1).save(path)
+        with open(os.path.join(translated, RECEIPT_NAME), encoding="utf-8") as f: receipt = json.load(f)
+        refresh_rows(receipt, translated, ("vg_int_cafe.png", "vg_cafe2f.png"))
+        with open(os.path.join(translated, RECEIPT_NAME), "w", encoding="utf-8") as f: json.dump(receipt, f)
+        if check(translated) != 0: return 1
         swap = clone("normal-bare-swap")
         shutil.copyfile(os.path.join(swap, "vg_cafe2f_bare.png"), os.path.join(swap, "vg_cafe2f.png"))
         with open(os.path.join(swap, RECEIPT_NAME), encoding="utf-8") as f: receipt = json.load(f)
