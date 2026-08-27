@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T21:03:00Z",
+  "updated_at": "2026-08-27T21:52:02Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -137,9 +137,33 @@
       "sixth_delivery": {"remote_parent":"6ff410936b8d380abda8279dbbee92bec1c9cef4","remote_parent_tree":"ee689eab865d589a961851ce9f49e14f88abadea","local_parent":"6dc6a1c143981c269f30180e1a29e4fdfdbba21d","local_parent_tree":"ee689eab865d589a961851ce9f49e14f88abadea","local_commit":"b43be6df620f819d936a429a6ef0d211edd26574","local_tree":"6622b52f4149f4c8902f011c836ecef652906d1a","remote_commit":"fee9d774a08796f52abcfb1730546b12f4a36f57","remote_tree":"6622b52f4149f4c8902f011c836ecef652906d1a","exact_paths":[".github/workflows/trusted-cafe-attestation.yml","evidence/cafe/runtime-lock.v1.json","tools/cafe_attestation_selftest.py","tools/trusted_cafe_capture.sh","tools/verify_cafe_attested_evidence.py"],"worktree_clean":true,"remote_mutation":true,"producer_delivery":"completed_non_force_git_data_api_after_exact_parent_blob_tree_and_PR_identity_verification"},
       "rollback": "Leave or close Draft PR #25; revert only new repair commits through review if later rejected; never rewrite shared history or master.",
       "stop_lines": ["PR head or master drifts before checkout verification","any out-of-lease path is required","strict payload contract requires Stack B or canon change","secrets or protected dispatch are required","Docker image/runtime cannot be pinned by digest","host-native material gate would remain merge-authoritative","shared Docker or cache state would be mutated"]
+    },
+    {
+      "claim_id": "lease-ui-ux-my-ai-town-quality-floor-v1",
+      "task": "019ffe9a-f908-78c1-bfb1-e485767a867a",
+      "role": "Bounded UI/UX and art-direction benchmark writer",
+      "objective": "Turn mewamew/my_ai_town main at exact aac9992 into a non-copying minimum visual-quality gate for Living Town, score the current exact evidence honestly, and define the first executable cafe exterior-to-world-log production slice plus original-asset manifest without changing game runtime or Sim authority.",
+      "baseline": "635d113129ad463ababa800dc7c42c914aab600c",
+      "head": "635d113129ad463ababa800dc7c42c914aab600c",
+      "tree": "75fac9d63cc35cc3772bbbad0e8f2e2fc01aa875",
+      "branch": "codex/ui-ux-design-exploration",
+      "worktree": "D:\\Documents\\Dev\\living-town-ui-ux-resource-pool",
+      "owned_paths": ["analysis/resource-pool/ui-ux/visual/benchmarks/my-ai-town-quality-floor-v1/**","analysis/resource-pool/ui-ux/tools/validate_my_ai_town_quality_floor.mjs","analysis/resource-pool/ui-ux/receipts/batch-028-my-ai-town-quality-floor.md"],
+      "forbidden_paths": ["**/* except exact owned_paths","game/**","tools/ci.sh","docs/**","analysis/main-repo-review/**","shared registries/schemas/anchors/ledgers","mewamew/my_ai_town source or assets"],
+      "authority_keys": ["ui-ux-visual-quality-floor-v1","original-asset-provenance-contract"],
+      "generated_outputs": ["benchmark screenshot metadata and hashes","side-by-side gap matrix","original asset request manifest only; generated assets optional and proposal-only"],
+      "dependencies": ["mewamew/my_ai_town:main:aac9992c2d195402a90327754c1f6ef279675076","living-town-current-visual-evidence:dff3656a0b46b0f108f60abb6fa5ab7b1b5068b7","existing-resource-pool:B15-art-direction:B16-pixellab-auth-no-go","consumer:future-cafe-polish-writer"],
+      "consumer": "Producer conflict graph, then one future production cafe visual/UI slice owner after Stack A and authority gates permit",
+      "status": "dispatch_reserved_benchmark_and_gap_contract_only",
+      "write_lease": true,
+      "last_heartbeat": "2026-08-27T21:52:02Z",
+      "stale_after": "2026-08-27T22:52:02Z",
+      "checks": {"reference_repo":"mewamew/my_ai_town","reference_exact_head":"aac9992c2d195402a90327754c1f6ef279675076","reference_screenshots":5,"current_visual_verdict":"below_required_floor","license_boundary":"root_license_unresolved_no_copy_or_redistribution","pixellab":"optional_unavailable_or_auth_blocked_does_not_waive_gate","game_changes":"forbidden","merge":"not_applicable_output_only","human_acceptance":"not_ready"},
+      "rollback": "Drop the isolated benchmark commit or omit cherry-pick; no production files, remote refs, PRs or authority state are changed.",
+      "stop_lines": ["any game/runtime/Sim path is required","reference assets would be copied or redistributed","license provenance cannot be stated honestly","benchmark cannot name a real future consumer","existing resource-pool path outside the lease must change","task or worktree is dirty or baseline drifts"]
     }
   ],
-  "current_conflict_graph": {"at":"2026-08-27T21:03:00Z","active_writers":1,"read_only_reviewers":0,"shared_write_conflicts":0,"decision":"Trusted run 33116098285 failed at exact PR25 head fee9d774 when the pinned container could not atomically create a receipt under mounted /output, followed by a cleanup trap using unbound state. Exactly one writer holds tools/trusted_cafe_capture.sh; workflow, runtime lock, self-test, verifier, Stack B, Ready, merge and authority lanes remain frozen."},
+  "current_conflict_graph": {"at":"2026-08-27T21:52:02Z","active_writers":2,"read_only_reviewers":0,"shared_write_conflicts":0,"decision":"PR25 recovery remains serialized to tools/trusted_cafe_capture.sh. A second writer may write only the isolated UI/UX resource-pool benchmark paths at baseline 635d113; it cannot touch game, runtime, Sim, CI, coordination, docs, shared authority or third-party assets. The two lanes have distinct branches, worktrees, paths, authority keys, generated outputs, tests and consumers."},
   "released_claims": [
     {
       "claim_id": "lease-cafe-source-attestation-trust-root-v1-replacement",
