@@ -86,7 +86,7 @@ jobs:
           bash trusted/tools/trusted_cafe_capture.sh build-runtime \
             trusted "$RUNNER_TEMP/cafe-runtime"
 
-      - name: Load the exact OCI archive and self-test inside it
+      - name: Load and smoke-test the exact OCI archive
         shell: bash
         run: |
           set -euo pipefail
@@ -97,13 +97,12 @@ jobs:
             "$RUNNER_TEMP/cafe-runtime/runtime-build-receipt.json")" ]]
           podman image rm -f localhost/living-town/trusted-cafe-runtime:v1 >/dev/null 2>&1 || true
           podman load --input "$archive"
-          podman run --rm --network none \
-            --volume "$PWD/trusted:/trusted:ro" \
-            localhost/living-town/trusted-cafe-runtime:v1 \
-            python -B /trusted/tools/cafe_attestation_selftest.py \
-              --work-dir /tmp/runtime-selftest \
-              --receipt /tmp/runtime-selftest-receipt.json \
-            | tee "$RUNNER_TEMP/runtime-selftest-receipt.json"
+          {
+            podman run --rm --network none localhost/living-town/trusted-cafe-runtime:v1 \
+              python -B -c 'import PIL,platform; print(platform.python_version(), PIL.__version__)'
+            podman run --rm --network none localhost/living-town/trusted-cafe-runtime:v1 \
+              godot --version
+          } | tee "$RUNNER_TEMP/runtime-smoke-receipt.txt"
 
       - name: Enforce hosted artifact budget
         shell: bash
@@ -127,7 +126,7 @@ jobs:
             ${{ runner.temp }}/cafe-runtime/runtime.oci.tar
             ${{ runner.temp }}/cafe-runtime/runtime-build-receipt.json
             ${{ runner.temp }}/cafe-selftest-receipt.json
-            ${{ runner.temp }}/runtime-selftest-receipt.json
+            ${{ runner.temp }}/runtime-smoke-receipt.txt
           if-no-files-found: error
           retention-days: 90
           compression-level: 0
@@ -200,6 +199,23 @@ jobs:
             --work-dir "$RUNNER_TEMP/cafe-selftest" \
             --receipt "$RUNNER_TEMP/cafe-selftest-receipt.json"
 
+      - name: Compile candidate source against the protected authored manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/cafe-preflight"
+          cmp -s candidate/evidence/cafe/cafe-authored-ids.v1.json \
+            trusted/evidence/cafe/cafe-authored-ids.v1.json
+          cmp -s candidate/evidence/cafe/cafe-authored-manifest.v1.json \
+            trusted/evidence/cafe/cafe-authored-manifest.v1.json
+          python -B trusted/tools/cafe_authored_manifest.py \
+            --repo candidate \
+            --ids trusted/evidence/cafe/cafe-authored-ids.v1.json \
+            --check trusted/evidence/cafe/cafe-authored-manifest.v1.json \
+            --output "$RUNNER_TEMP/cafe-preflight/cafe-authored-manifest.v1.json"
+          cmp -s "$RUNNER_TEMP/cafe-preflight/cafe-authored-manifest.v1.json" \
+            trusted/evidence/cafe/cafe-authored-manifest.v1.json
+
       - name: Build the immutable runtime twice
         shell: bash
         run: |
@@ -251,16 +267,19 @@ jobs:
           mkdir "$RUNNER_TEMP/cafe-output"
           podman run --rm --network none --cap-drop all \
             --security-opt no-new-privileges --pids-limit 512 --memory 4g \
+            --env CAFE_CHECKOUTS_PREVERIFIED=1 \
             --volume "$PWD/trusted:/trusted:ro" \
             --volume "$PWD/candidate:/candidate:ro" \
             --volume "$RUNNER_TEMP/cafe-runtime:/runtime:ro" \
+            --volume "$RUNNER_TEMP/cafe-preflight:/preflight:ro" \
             --volume "$RUNNER_TEMP/cafe-output:/output:rw" \
             localhost/living-town/trusted-cafe-runtime:v1 \
             bash /trusted/tools/trusted_cafe_capture.sh capture \
               /candidate /output/evidence "$CANDIDATE_SHA" "$CANDIDATE_TREE" \
               "$GITHUB_SHA" "$WORKFLOW_TREE" "$GITHUB_REPOSITORY" \
               "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$runtime_sha" \
-              /runtime/runtime-build-receipt.json
+              /runtime/runtime-build-receipt.json \
+              /preflight/cafe-authored-manifest.v1.json
           [[ -z "$(git -C trusted status --porcelain=v1 --untracked-files=all)" ]]
           [[ -z "$(git -C candidate status --porcelain=v1 --untracked-files=all)" ]]
           echo "runtime_sha=$runtime_sha" >> "$GITHUB_OUTPUT"

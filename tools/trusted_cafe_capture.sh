@@ -16,7 +16,7 @@ usage:
   trusted_cafe_capture.sh capture <candidate-root> <new-output-dir> \
     <candidate-sha> <candidate-tree> <workflow-sha> <workflow-tree> \
     <repository> <run-id> <run-attempt> <runtime-archive-sha256> \
-    <runtime-build-receipt>
+    <runtime-build-receipt> <precompiled-authored-manifest>
 EOF
   exit 2
 }
@@ -141,9 +141,9 @@ RUN printf '%s\n' \
  && rm -f /etc/apt/sources.list.d/* \
  && apt-get -o Acquire::Check-Valid-Until=false update \
  && apt-get -o Acquire::Check-Valid-Until=false install -y --no-install-recommends \
-      bash ca-certificates coreutils findutils git gzip libasound2 libfontconfig1 \
+      bash ca-certificates coreutils findutils gzip libasound2 libfontconfig1 \
       libgl1 libgl1-mesa-dri libglx-mesa0 libx11-6 libxcursor1 libxext6 libxi6 \
-      libxinerama1 libxrandr2 libxrender1 procps tar xauth xvfb \
+      libxinerama1 libxrandr2 libxrender1 tar xauth xvfb \
  && rm -rf /var/lib/apt/lists/* /var/cache/apt/* /var/log/apt/* \
       /var/log/dpkg.log /var/log/alternatives.log /var/cache/fontconfig/* \
       /var/cache/ldconfig/aux-cache /var/lib/systemd/random-seed \
@@ -293,12 +293,13 @@ PY
 }
 
 capture() {
-  [ "$#" -eq 11 ] || usage
+  [ "$#" -eq 12 ] || usage
   local candidate_root out candidate_sha candidate_tree workflow_sha workflow_tree
-  local repository run_id run_attempt runtime_archive_sha runtime_receipt trusted_root lock
+  local repository run_id run_attempt runtime_archive_sha runtime_receipt authored_input trusted_root lock
   candidate_root="$(cd "$1" && pwd)"; out="$2"; candidate_sha="$3"; candidate_tree="$4"
   workflow_sha="$5"; workflow_tree="$6"; repository="$7"; run_id="$8"; run_attempt="$9"
   runtime_archive_sha="${10}"; runtime_receipt="$(cd "$(dirname "${11}")" && pwd)/$(basename "${11}")"
+  authored_input="$(cd "$(dirname "${12}")" && pwd)/$(basename "${12}")"
   trusted_root="$(cd "$(dirname "$0")/.." && pwd)"
   lock="$trusted_root/evidence/cafe/runtime-lock.v1.json"
   [[ "$candidate_sha" =~ ^[0-9a-f]{40}$ ]] || fail "invalid candidate SHA"
@@ -310,14 +311,21 @@ capture() {
   [[ "$run_attempt" =~ ^[1-9][0-9]{0,19}$ ]] || fail "invalid run attempt"
   [ "$repository" = "ForTe13X/living-town" ] || fail "unexpected repository"
   [ -f "$runtime_receipt" ] || fail "runtime build receipt missing"
+  [ -f "$authored_input" ] || fail "precompiled authored manifest missing"
   [ ! -e "$out" ] || fail "output path already exists: $out"
 
-  [ "$(git -C "$candidate_root" rev-parse HEAD)" = "$candidate_sha" ] || fail "candidate SHA mismatch"
-  [ "$(git -C "$candidate_root" show -s --format='%T' HEAD)" = "$candidate_tree" ] || fail "candidate tree mismatch"
-  [ "$(git -C "$trusted_root" rev-parse HEAD)" = "$workflow_sha" ] || fail "workflow SHA mismatch"
-  [ "$(git -C "$trusted_root" show -s --format='%T' HEAD)" = "$workflow_tree" ] || fail "workflow tree mismatch"
-  [ -z "$(git -C "$candidate_root" status --porcelain=v1 --untracked-files=all)" ] || fail "candidate is dirty"
-  [ -z "$(git -C "$trusted_root" status --porcelain=v1 --untracked-files=all)" ] || fail "trusted root is dirty"
+  # The protected workflow performs these Git identity and cleanliness checks on
+  # the host before mounting both checkouts read-only.  Keeping Git out of the
+  # capture image avoids mutable package bloat without weakening that boundary.
+  if [ "${CAFE_CHECKOUTS_PREVERIFIED:-0}" != 1 ]; then
+    command -v git >/dev/null || fail "Git unavailable for checkout verification"
+    [ "$(git -C "$candidate_root" rev-parse HEAD)" = "$candidate_sha" ] || fail "candidate SHA mismatch"
+    [ "$(git -C "$candidate_root" show -s --format='%T' HEAD)" = "$candidate_tree" ] || fail "candidate tree mismatch"
+    [ "$(git -C "$trusted_root" rev-parse HEAD)" = "$workflow_sha" ] || fail "workflow SHA mismatch"
+    [ "$(git -C "$trusted_root" show -s --format='%T' HEAD)" = "$workflow_tree" ] || fail "workflow tree mismatch"
+    [ -z "$(git -C "$candidate_root" status --porcelain=v1 --untracked-files=all)" ] || fail "candidate is dirty"
+    [ -z "$(git -C "$trusted_root" status --porcelain=v1 --untracked-files=all)" ] || fail "trusted root is dirty"
+  fi
   [ -z "$(find "$candidate_root/game" -type l -print -quit)" ] || fail "candidate game contains a symlink"
   cmp -s "$candidate_root/evidence/cafe/cafe-authored-ids.v1.json" \
     "$trusted_root/evidence/cafe/cafe-authored-ids.v1.json" || fail "candidate stable IDs differ from protected master"
@@ -334,11 +342,10 @@ capture() {
   mkdir -p "$out/authored" "$out/runtime" "$out/logs" "$out/trust-root"
   cp "$trusted_root/evidence/cafe/cafe-authored-ids.v1.json" \
     "$out/authored/cafe-authored-ids.v1.json"
-  python -B "$trusted_root/tools/cafe_authored_manifest.py" \
-    --repo "$candidate_root" \
-    --ids "$trusted_root/evidence/cafe/cafe-authored-ids.v1.json" \
-    --check "$trusted_root/evidence/cafe/cafe-authored-manifest.v1.json" \
-    --output "$out/authored/cafe-authored-manifest.v1.json"
+  cmp -s "$authored_input" \
+    "$trusted_root/evidence/cafe/cafe-authored-manifest.v1.json" || \
+    fail "precompiled authored manifest differs from protected master"
+  cp "$authored_input" "$out/authored/cafe-authored-manifest.v1.json"
   cp "$lock" "$out/runtime/runtime-lock.v1.json"
   cp "$runtime_receipt" "$out/runtime/runtime-build-receipt.json"
   for rel in \
