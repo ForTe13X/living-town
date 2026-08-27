@@ -8,8 +8,10 @@ This detects accidental capture-pipeline drift and stale/substituted evidence. I
 does not claim to defend against someone who deliberately rewrites both tools.
 """
 import argparse
+import contextlib
 import copy
 import hashlib
+import io
 import json
 import math
 import os
@@ -35,6 +37,28 @@ CAPTURES = (
 )
 EXPECTED_BY_FILE = {row[1]: row for row in CAPTURES}
 
+# This is a small semantic layout contract, not a color or frame-pixel golden.
+# It is projected from the exact authored cafe furniture layout in
+# game/data/interiors.json: 1F has public service furniture in the first group,
+# while Aria's 2F room has the private bed/desk/vanity group.  The slots are
+# deliberately disjoint across floors, so changing a palette cannot satisfy the
+# wrong floor's geometry.  A later intentional layout change must review this
+# projection together with the source layout instead of silently rebaking image
+# pixels.
+PUBLIC_CAFE_LANDMARKS = (
+    ("counter", (4, 1)),
+    ("coffee machine", (5, 1)),
+    ("table", (5, 3)),
+    ("barstool", (5, 4)),
+)
+PRIVATE_ROOM_LANDMARKS = (
+    ("bed", (2, 2)),
+    ("desk", (5, 2)),
+    ("vanity", (6, 4)),
+)
+LANDMARK_MIN_COVERAGE = 0.08
+LANDMARK_MAX_COVERAGE = 0.03
+
 
 def canonical(value):
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
@@ -51,6 +75,23 @@ def rect(size):
     sx = lambda v: (v - 4 * T) * scale + w / 2.0
     sy = lambda v: (v - 3 * T) * scale + h / 2.0
     return (math.ceil(sx(T)), math.ceil(sy(T)), math.floor(sx(7 * T)), math.floor(sy(5 * T)))
+
+
+def cell_rect(size, cell):
+    """Return one authored 8x6 cafe tile in a shot-fit frame."""
+    w, h = size
+    x, y = cell
+    if not (0 <= x < 8 and 0 <= y < 6):
+        raise ValueError("invalid semantic landmark cell %r" % (cell,))
+    scale = min((w - PAD[0] * w / BASE_VP[0]) / (8 * T),
+                (h - PAD[1] * h / BASE_VP[1]) / (6 * T))
+    sx = lambda v: (v - 4 * T) * scale + w / 2.0
+    sy = lambda v: (v - 3 * T) * scale + h / 2.0
+    x0, y0 = math.ceil(sx(x * T)), math.ceil(sy(y * T))
+    x1, y1 = math.floor(sx((x + 1) * T)), math.floor(sy((y + 1) * T))
+    if x1 <= x0 or y1 <= y0:
+        raise ValueError("invalid semantic landmark geometry for viewport %r" % (size,))
+    return x0, y0, x1, y1
 
 
 def footprint(size):
@@ -198,6 +239,49 @@ def assess(normal, bare):
     return inside, outside
 
 
+def landmark_coverages(mask, size, landmarks):
+    """Measure furniture geometry only; RGB values are never interpreted as identity."""
+    w, h = size
+    measured = []
+    for name, cell in landmarks:
+        x0, y0, x1, y1 = cell_rect(size, cell)
+        changed = sum(mask[y * w + x] for y in range(y0, y1) for x in range(x0, x1))
+        measured.append((name, cell, changed / ((x1 - x0) * (y1 - y0))))
+    return measured
+
+
+def semantic_geometry(one, one_bare, two, two_bare):
+    """Require public 1F and private 2F landmark shapes in their authored cells."""
+    masks = {
+        "1F": changes(one, one_bare),
+        "2F": changes(two, two_bare),
+    }
+    observed = {
+        ("1F", "public"): landmark_coverages(masks["1F"], one.size, PUBLIC_CAFE_LANDMARKS),
+        ("1F", "private"): landmark_coverages(masks["1F"], one.size, PRIVATE_ROOM_LANDMARKS),
+        ("2F", "public"): landmark_coverages(masks["2F"], two.size, PUBLIC_CAFE_LANDMARKS),
+        ("2F", "private"): landmark_coverages(masks["2F"], two.size, PRIVATE_ROOM_LANDMARKS),
+    }
+    for floor, kind in (("1F", "public"), ("1F", "private"), ("2F", "public"), ("2F", "private")):
+        values = ", ".join("%s@%s=%.3f" % (name, cell, coverage)
+                           for name, cell, coverage in observed[(floor, kind)])
+        print("[CAFEDENSITY] semantic geometry %s %s [%s]" % (floor, kind, values))
+
+    failures = []
+    for floor, kind, present in (("1F", "public", True), ("1F", "private", False),
+                                 ("2F", "private", True), ("2F", "public", False)):
+        for name, cell, coverage in observed[(floor, kind)]:
+            if present and coverage < LANDMARK_MIN_COVERAGE:
+                failures.append(
+                    "%s %s landmark %s at %s has changed coverage %.3f < %.3f" %
+                    (floor, kind, name, cell, coverage, LANDMARK_MIN_COVERAGE))
+            if not present and coverage > LANDMARK_MAX_COVERAGE:
+                failures.append(
+                    "%s received %s landmark geometry %s at %s (coverage %.3f > %.3f)" %
+                    (floor, kind, name, cell, coverage, LANDMARK_MAX_COVERAGE))
+    return failures
+
+
 def check(out_dir):
     size, images = verify_provenance(out_dir)
     one, one_bare = images["vg_int_cafe.png"], images["vg_cafe1f_bare.png"]
@@ -212,9 +296,10 @@ def check(out_dir):
     if b_in < floor_pixels // 25: failures.append("2F furniture is too sparse or draw-skip was not applied")
     if a_out or b_out: failures.append("furniture pixels escaped the authored inner-cell footprint")
     if floor_diff < floor_pixels // 12: failures.append("1F public café and 2F private room are insufficiently distinct")
+    failures.extend(semantic_geometry(one, one_bare, two, two_bare))
     if failures:
         print("[CAFEDENSITY] FAIL " + "; ".join(failures)); return 1
-    print("[CAFEDENSITY] PASS command-bound density and footprint are bounded"); return 0
+    print("[CAFEDENSITY] PASS command-bound density, footprint, and floor-semantic geometry are bounded"); return 0
 
 
 def _fixture_receipt(out_dir, size):
@@ -237,13 +322,18 @@ def _fixture_receipt(out_dir, size):
 
 
 def make_fixture(out_dir, size):
-    fp, r = footprint(size), rect(size)
+    def fill_landmark(draw, cell, color):
+        x0, y0, x1, y1 = cell_rect(size, cell)
+        draw.rectangle((x0 + 1, y0 + 1, x1 - 2, y1 - 2), fill=color)
+
     for _, filename, floor, mode, _ in CAPTURES:
         im = Image.new("RGB", size, (20, 20, 20) if floor == "1f" else (24, 24, 30))
         if mode == "normal":
-            d, color = ImageDraw.Draw(im), ((220, 110, 50) if floor == "1f" else (50, 150, 220))
-            d.rectangle((r[0] + 2, r[1] + 2, r[2] - 3, r[3] - 3), fill=color)
-            d.rectangle((fp[0] + 2, fp[1] + 2, fp[0] + 20, fp[1] + 20), fill=color)
+            d = ImageDraw.Draw(im)
+            color = (220, 110, 50) if floor == "1f" else (50, 150, 220)
+            landmarks = PUBLIC_CAFE_LANDMARKS if floor == "1f" else PRIVATE_ROOM_LANDMARKS
+            for _, cell in landmarks:
+                fill_landmark(d, cell, color)
         im.save(os.path.join(out_dir, filename))
     _fixture_receipt(out_dir, size)
 
@@ -255,13 +345,23 @@ def refresh_row(receipt, filename, path):
 
 
 def expect_reject(label, out_dir, reason):
-    try: rc = check(out_dir)
+    stream = io.StringIO()
+    try:
+        with contextlib.redirect_stdout(stream):
+            rc = check(out_dir)
     except ValueError as e:
+        transcript = stream.getvalue()
+        if transcript:
+            print(transcript, end="")
         if reason and reason not in str(e):
             print("[CAFEDENSITY] FAIL self-test %s wrong reason: %s" % (label, e)); return False
         print("[CAFEDENSITY] self-test rejected %s: %s" % (label, e)); return True
+    transcript = stream.getvalue()
+    print(transcript, end="")
     if rc == 0: print("[CAFEDENSITY] FAIL self-test %s passed unexpectedly" % label); return False
-    print("[CAFEDENSITY] self-test rejected %s at density stage" % label); return True
+    if reason and reason not in transcript:
+        print("[CAFEDENSITY] FAIL self-test %s wrong rejection stage (expected %s)" % (label, reason)); return False
+    print("[CAFEDENSITY] self-test rejected %s at assertion stage" % label); return True
 
 
 def self_test():
@@ -274,20 +374,19 @@ def self_test():
         base = os.path.join(root, "1280x768")
         def clone(name):
             path = os.path.join(root, name); shutil.copytree(base, path); return path
-        # REFUTE: transformed 1F pixels and recomputed PNG hash/labels still carry a 1F argv transcript.
+        # REFUTE: color-inverted 1F normal/bare PNGs replace the 2F payloads while
+        # the receipt retains a legitimate 2F transcript/session/mode/seed/tick and
+        # recomputes every per-row hash.  Provenance must pass; semantic geometry must
+        # reject the public-cafe furniture pattern in the claimed private room.
         palette = clone("palette-1f-as-2f")
         for source, target in (("vg_int_cafe.png", "vg_cafe2f.png"), ("vg_cafe1f_bare.png", "vg_cafe2f_bare.png")):
             im = Image.open(os.path.join(palette, source)).convert("RGB")
-            im = im.point(lambda v: (v * 7 + 31) % 256); im.save(os.path.join(palette, target))
+            im = im.point(lambda v: 255 - v); im.save(os.path.join(palette, target))
         with open(os.path.join(palette, RECEIPT_NAME), encoding="utf-8") as f: receipt = json.load(f)
-        for source, fn in (("vg_int_cafe.png", "vg_cafe2f.png"), ("vg_cafe1f_bare.png", "vg_cafe2f_bare.png")):
-            source_row = next(x for x in receipt["captures"] if x["file"] == source)
-            target_row = next(x for x in receipt["captures"] if x["file"] == fn)
-            target_row["argv"] = list(source_row["argv"])
-            target_row["argv"][-1] = "/synthetic/out/" + fn
+        for fn in ("vg_cafe2f.png", "vg_cafe2f_bare.png"):
             refresh_row(receipt, fn, os.path.join(palette, fn))
         with open(os.path.join(palette, RECEIPT_NAME), "w", encoding="utf-8") as f: json.dump(receipt, f)
-        if not expect_reject("palette-transformed 1F-as-2F", palette, "command transcript"): return 1
+        if not expect_reject("self-consistent palette-inverted 1F-as-2F", palette, "semantic geometry"): return 1
         swap = clone("normal-bare-swap")
         shutil.copyfile(os.path.join(swap, "vg_cafe2f_bare.png"), os.path.join(swap, "vg_cafe2f.png"))
         with open(os.path.join(swap, RECEIPT_NAME), encoding="utf-8") as f: receipt = json.load(f)
@@ -322,11 +421,25 @@ def self_test():
         refresh_row(receipt, "vg_cafe2f.png", os.path.join(duplicated, "vg_cafe2f.png"))
         with open(os.path.join(duplicated, RECEIPT_NAME), "w", encoding="utf-8") as f: json.dump(receipt, f)
         if not expect_reject("duplicate payload", duplicated, "duplicated evidence"): return 1
+        one_bit = clone("one-bit PNG tamper")
+        one_bit_path = os.path.join(one_bit, "vg_cafe2f.png")
+        with open(one_bit_path, "rb") as f: payload = bytearray(f.read())
+        payload[-1] ^= 1
+        with open(one_bit_path, "wb") as f: f.write(payload)
+        if not expect_reject("one-bit PNG tamper", one_bit, "receipt hash mismatch"): return 1
         for label, source, target in (("swapped floors", "vg_cafe2f.png", "vg_int_cafe.png"),):
             case = clone(label); shutil.copyfile(os.path.join(case, source), os.path.join(case, target))
             if not expect_reject(label, case, "stale-provenance"): return 1
         missing = clone("missing receipt"); os.remove(os.path.join(missing, RECEIPT_NAME))
         if not expect_reject("missing receipt", missing, "missing receipt/metadata"): return 1
+        partial = clone("partial receipt")
+        with open(os.path.join(partial, RECEIPT_NAME), encoding="utf-8") as f: receipt = json.load(f)
+        receipt["captures"].pop()
+        with open(os.path.join(partial, RECEIPT_NAME), "w", encoding="utf-8") as f: json.dump(receipt, f)
+        if not expect_reject("partial receipt", partial, "capture session"): return 1
+        malformed = clone("malformed receipt")
+        with open(os.path.join(malformed, RECEIPT_NAME), "w", encoding="utf-8") as f: f.write("{")
+        if not expect_reject("malformed receipt", malformed, "invalid receipt/metadata"): return 1
         cropped = clone("crop"); Image.open(os.path.join(cropped, "vg_cafe2f.png")).resize((640, 384)).save(os.path.join(cropped, "vg_cafe2f.png"))
         with open(os.path.join(cropped, RECEIPT_NAME), encoding="utf-8") as f: receipt = json.load(f)
         refresh_row(receipt, "vg_cafe2f.png", os.path.join(cropped, "vg_cafe2f.png"))
@@ -337,7 +450,7 @@ def self_test():
         refresh_row(receipt, "vg_int_cafe.png", os.path.join(escaped, "vg_int_cafe.png"))
         with open(os.path.join(escaped, RECEIPT_NAME), "w", encoding="utf-8") as f: json.dump(receipt, f)
         if not expect_reject("out-of-footprint pixel", escaped, ""): return 1
-        print("[CAFEDENSITY] PASS self-test rejects transcript, session, mode, crop, and footprint controls"); return 0
+        print("[CAFEDENSITY] PASS self-test rejects semantic, provenance, mode, crop, and footprint controls"); return 0
     finally: shutil.rmtree(root)
 
 
