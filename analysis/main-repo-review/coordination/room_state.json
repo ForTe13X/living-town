@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T12:05:00Z",
+  "updated_at": "2026-08-27T12:08:00Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -114,7 +114,7 @@
       "head": "4bd8b6770d03e19283e962fcb556944dfd3c5d94",
       "tree": "eef3fe9b32a4598c7d774eb57570cb67d658f6d6",
       "branch": "codex/cafe-source-attestation-trust-root-v1-replacement-2",
-      "worktree": "C:\\Users\\admin\\.codex\\worktrees\\ed00\\living-town",
+      "worktree": "D:\\Documents\\Dev\\living-town-pr25-p1-repair-wt",
       "owned_paths": [".github/workflows/trusted-cafe-attestation.yml","evidence/cafe/runtime-lock.v1.json","tools/cafe_attestation_selftest.py","tools/trusted_cafe_capture.sh","tools/verify_cafe_attested_evidence.py"],
       "forbidden_paths": ["**/* except exact owned_paths","tools/cafe_authored_manifest.py","evidence/cafe/cafe-authored-ids.v1.json","evidence/cafe/cafe-authored-manifest.v1.json","tools/ci.sh","game/**","docs/**","analysis/**","shared registries/schemas/anchors/ledgers"],
       "authority_keys": ["trusted-cafe-attestation-workflow","cafe-runtime-lock-v1","cafe-verification-container-contract","cafe-evidence-payload-allowlist"],
