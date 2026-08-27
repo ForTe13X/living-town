@@ -35,6 +35,8 @@ canonical_oci_archive() {
 build_runtime() {
   [ "$#" -eq 2 ] || usage
   local trusted_root out lock context tag validation_tag layout archive first second
+  local validation_first validation_second validation_archive
+  local -a validation_values
   trusted_root="$(cd "$1" && pwd)"
   out="$2"
   lock="$trusted_root/evidence/cafe/runtime-lock.v1.json"
@@ -45,7 +47,7 @@ build_runtime() {
   context="$(mktemp -d "${TMPDIR:-/tmp}/trusted-cafe-runtime.XXXXXXXX")"
   tag="localhost/living-town/trusted-cafe-runtime:v1"
   validation_tag="localhost/living-town/trusted-cafe-validation:v1"
-  trap "podman image rm -f '$tag' >/dev/null 2>&1 || true; rm -rf '$context'" EXIT
+  trap "podman image rm -f '$tag' '$validation_tag' >/dev/null 2>&1 || true; rm -rf '$context'" EXIT
 
   # This literal is itself protected by the trust-root snapshot.  The
   # containerized lock parser below requires the lock to name the same digest
@@ -287,16 +289,54 @@ RUN printf '%s\n' \
 LABEL org.opencontainers.image.title="living-town-trusted-cafe-validation" \
       org.opencontainers.image.version="v1"
 EOF
-  podman image rm -f "$validation_tag" >/dev/null 2>&1 || true
-  podman build --pull=never --no-cache --layers=false --timestamp 0 \
-    --format oci --platform linux/amd64 \
-    --build-arg "CAPTURE_IMAGE=$tag" \
-    --build-arg "DEBIAN_SNAPSHOT=$debian_snapshot" \
-    --build-arg "SECURITY_SNAPSHOT=$security_snapshot" \
-    --file "$context/ValidationContainerfile" --tag "$validation_tag" "$context"
-  podman save --format oci-dir --output "$context/layout-validation" "$validation_tag"
+  build_validation_once() {
+    local label="$1" destination="$2"
+    local layout_path="$context/layout-validation-$label"
+    podman image rm -f "$validation_tag" >/dev/null 2>&1 || true
+    podman build --pull=never --no-cache --layers=false --timestamp 0 \
+      --format oci --platform linux/amd64 \
+      --build-arg "CAPTURE_IMAGE=$tag" \
+      --build-arg "DEBIAN_SNAPSHOT=$debian_snapshot" \
+      --build-arg "SECURITY_SNAPSHOT=$security_snapshot" \
+      --file "$context/ValidationContainerfile" --tag "$validation_tag" "$context"
+    podman run --rm --network none --read-only --cap-drop all \
+      --security-opt no-new-privileges --pids-limit 64 --memory 256m --cpus 1 \
+      --tmpfs /tmp:rw,nosuid,nodev,size=67108864 "$validation_tag" \
+      bash -euo pipefail -c 'git --version && python -B -c "import PIL; print(PIL.__version__)"'
+    podman save --format oci-dir --output "$layout_path" "$validation_tag"
+    canonical_oci_archive "$layout_path" "$destination"
+  }
+
+  validation_first="$context/validation-first.oci.tar"
+  validation_second="$context/validation-second.oci.tar"
+  build_validation_once first "$validation_first"
+  build_validation_once second "$validation_second"
+  mapfile -t validation_values < <(container_python - \
+    /context/validation-first.oci.tar /context/validation-second.oci.tar <<'PY'
+import hashlib, os, sys
+
+def sha256(path):
+    value = hashlib.sha256()
+    with open(path, "rb") as source:
+        for block in iter(lambda: source.read(1024 * 1024), b""):
+            value.update(block)
+    return value.hexdigest()
+
+first, second = sys.argv[1:]
+first_sha, second_sha = sha256(first), sha256(second)
+if first_sha != second_sha:
+    raise SystemExit("independent validation builds are not byte deterministic")
+if os.path.getsize(first) != os.path.getsize(second):
+    raise SystemExit("independent validation archive sizes differ")
+print(first_sha)
+print(os.path.getsize(first))
+PY
+  )
+  [ "${#validation_values[@]}" -eq 2 ] || fail "validation archive comparison failed"
   archive="$out/runtime.oci.tar"
+  validation_archive="$out/validation.oci.tar"
   cp "$first" "$archive"
+  cp "$validation_first" "$validation_archive"
   layout="$context/layout-first"
   local oci_manifest_digest
   oci_manifest_digest="$(container_python - /context/layout-first/index.json <<'PY'
@@ -312,7 +352,7 @@ print(digest.removeprefix("sha256:"))
 PY
   )"
   local validation_oci_manifest_digest
-  validation_oci_manifest_digest="$(container_python - /context/layout-validation/index.json <<'PY'
+  validation_oci_manifest_digest="$(container_python - /context/layout-validation-first/index.json <<'PY'
 import json, re, sys
 p = json.load(open(sys.argv[1], encoding="utf-8"))
 manifests = p.get("manifests")
@@ -334,6 +374,8 @@ with open(sys.argv[1], "rb") as source:
 print(value.hexdigest())
 PY
   )"
+  local validation_archive_sha="${validation_values[0]}"
+  local validation_archive_bytes="${validation_values[1]}"
   lock_sha="$(container_python - /trusted/evidence/cafe/runtime-lock.v1.json <<'PY'
 import hashlib, sys
 print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())
@@ -377,8 +419,38 @@ with os.fdopen(fd, "wb") as f:
     f.write(data)
 os.replace(tmp, out)
 PY
+  container_python - /output/validation-build-receipt.json "$archive_sha" \
+    "$validation_archive_sha" "$validation_archive_bytes" \
+    "$validation_oci_manifest_digest" <<'PY'
+import json, os, sys, tempfile
+
+(out, runtime_archive_sha, validation_archive_sha, validation_archive_bytes,
+ validation_oci_manifest_digest) = sys.argv[1:]
+p = {
+    "schema": "living-town.cafe-validation-build-receipt.v1",
+    "runtime_archive_sha256": runtime_archive_sha,
+    "validation_archive_sha256": validation_archive_sha,
+    "validation_archive_bytes": int(validation_archive_bytes),
+    "validation_oci_manifest_digest": validation_oci_manifest_digest,
+    "first_archive_sha256": validation_archive_sha,
+    "second_archive_sha256": validation_archive_sha,
+    "container_platform": "linux/amd64",
+    "container_network": "none",
+    "container_read_only": True,
+    "container_cap_drop": "ALL",
+    "container_no_new_privileges": True,
+    "reproducible": True,
+}
+data = (json.dumps(p, sort_keys=True, separators=(",", ":")) + "\n").encode("ascii")
+fd, tmp = tempfile.mkstemp(prefix=".validation-receipt-", dir=os.path.dirname(out))
+with os.fdopen(fd, "wb") as f:
+    f.write(data)
+os.replace(tmp, out)
+PY
   printf 'TRUSTED_CAFE_RUNTIME PASS archive_sha256=%s oci_manifest_digest=%s\n' \
     "$archive_sha" "$oci_manifest_digest"
+  printf 'TRUSTED_CAFE_VALIDATION PASS archive_sha256=%s oci_manifest_digest=%s bytes=%s\n' \
+    "$validation_archive_sha" "$validation_oci_manifest_digest" "$validation_archive_bytes"
 }
 
 capture() {

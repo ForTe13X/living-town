@@ -78,19 +78,44 @@ jobs:
           set -euo pipefail
           archive="$RUNNER_TEMP/cafe-runtime/runtime.oci.tar"
           receipt="$RUNNER_TEMP/cafe-runtime/runtime-build-receipt.json"
+          validation_archive="$RUNNER_TEMP/cafe-runtime/validation.oci.tar"
+          validation_receipt="$RUNNER_TEMP/cafe-runtime/validation-build-receipt.json"
           manifest_digest="$(sed -n 's/.*"oci_manifest_digest":"\([0-9a-f]\{64\}\)".*/\1/p' "$receipt")"
-          validation_digest="$(sed -n 's/.*"validation_oci_manifest_digest":"\([0-9a-f]\{64\}\)".*/\1/p' "$receipt")"
+          runtime_archive_sha="$(sed -n 's/.*"runtime_archive_sha256":"\([0-9a-f]\{64\}\)".*/\1/p' "$receipt")"
+          runtime_validation_digest="$(sed -n 's/.*"validation_oci_manifest_digest":"\([0-9a-f]\{64\}\)".*/\1/p' "$receipt")"
+          validation_digest="$(sed -n 's/.*"validation_oci_manifest_digest":"\([0-9a-f]\{64\}\)".*/\1/p' "$validation_receipt")"
+          validation_archive_sha="$(sed -n 's/.*"validation_archive_sha256":"\([0-9a-f]\{64\}\)".*/\1/p' "$validation_receipt")"
+          paired_runtime_sha="$(sed -n 's/.*"runtime_archive_sha256":"\([0-9a-f]\{64\}\)".*/\1/p' "$validation_receipt")"
           [[ "$manifest_digest" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$runtime_archive_sha" =~ ^[0-9a-f]{64}$ ]]
           [[ "$validation_digest" =~ ^[0-9a-f]{64}$ ]]
-          podman image rm -f localhost/living-town/trusted-cafe-runtime:v1 >/dev/null 2>&1 || true
+          [[ "$validation_archive_sha" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$runtime_validation_digest" == "$validation_digest" ]]
+          [[ "$paired_runtime_sha" == "$runtime_archive_sha" ]]
+          podman image rm -f localhost/living-town/trusted-cafe-runtime:v1 \
+            localhost/living-town/trusted-cafe-validation:v1 >/dev/null 2>&1 || true
           podman load --input "$archive"
           runtime_ref="localhost/living-town/trusted-cafe-runtime@sha256:$manifest_digest"
           validation_ref="localhost/living-town/trusted-cafe-validation@sha256:$validation_digest"
           podman image exists "$runtime_ref"
+          actual_runtime_sha="$(podman run --pull=never --rm --network none --read-only --cap-drop all \
+            --security-opt no-new-privileges --volume "$RUNNER_TEMP/cafe-runtime:/runtime:ro" \
+            "$runtime_ref" sha256sum /runtime/runtime.oci.tar | awk '{print $1}')"
+          actual_validation_sha="$(podman run --pull=never --rm --network none --read-only --cap-drop all \
+            --security-opt no-new-privileges --volume "$RUNNER_TEMP/cafe-runtime:/runtime:ro" \
+            "$runtime_ref" sha256sum /runtime/validation.oci.tar | awk '{print $1}')"
+          [[ "$actual_runtime_sha" == "$runtime_archive_sha" ]]
+          [[ "$actual_validation_sha" == "$validation_archive_sha" ]]
+          podman load --input "$validation_archive"
           podman image exists "$validation_ref"
           if podman run --pull=never --rm \
             "localhost/living-town/trusted-cafe-runtime@sha256:$(printf '0%.0s' {1..64})" true; then
             echo 'wrong runtime digest executed' >&2
+            exit 1
+          fi
+          if podman run --pull=never --rm \
+            "localhost/living-town/trusted-cafe-validation@sha256:$(printf '0%.0s' {1..64})" true; then
+            echo 'wrong validation digest executed' >&2
             exit 1
           fi
           if podman run --pull=never --rm --network none --read-only --cap-drop all \
@@ -101,6 +126,9 @@ jobs:
           fi
           {
             printf 'runtime_ref=%s\n' "$runtime_ref"
+            printf 'validation_ref=%s\n' "$validation_ref"
+            printf 'runtime_archive_sha256=%s\n' "$actual_runtime_sha"
+            printf 'validation_archive_sha256=%s\n' "$actual_validation_sha"
             printf 'podman=%s\n' "$(podman --version)"
             printf 'docker_context=%s\n' "$(docker context show)"
             printf 'platform=linux/amd64 network=none read_only=true cap_drop=ALL no_new_privileges=true\n'
@@ -172,6 +200,8 @@ jobs:
           path: |
             ${{ runner.temp }}/cafe-runtime/runtime.oci.tar
             ${{ runner.temp }}/cafe-runtime/runtime-build-receipt.json
+            ${{ runner.temp }}/cafe-runtime/validation.oci.tar
+            ${{ runner.temp }}/cafe-runtime/validation-build-receipt.json
             ${{ runner.temp }}/cafe-selftest-a/receipt.json
             ${{ runner.temp }}/cafe-selftest-b/receipt.json
             ${{ runner.temp }}/runtime-container-receipt.txt
@@ -245,29 +275,62 @@ jobs:
         with:
           subject-path: ${{ runner.temp }}/cafe-runtime/runtime.oci.tar
 
+      - name: Attest exact validation OCI archive
+        id: attest_validation
+        uses: actions/attest-build-provenance@43d14bc2b83dec42d39ecae14e916627a18bb661 # v3
+        with:
+          subject-path: ${{ runner.temp }}/cafe-runtime/validation.oci.tar
+
       - name: Load the exact digest runtime and prepare hash-pinned gate tools
         id: runtime
         shell: bash
         run: |
           set -euo pipefail
           receipt="$RUNNER_TEMP/cafe-runtime/runtime-build-receipt.json"
+          validation_receipt="$RUNNER_TEMP/cafe-runtime/validation-build-receipt.json"
           manifest_digest="$(sed -n 's/.*"oci_manifest_digest":"\([0-9a-f]\{64\}\)".*/\1/p' "$receipt")"
-          validation_digest="$(sed -n 's/.*"validation_oci_manifest_digest":"\([0-9a-f]\{64\}\)".*/\1/p' "$receipt")"
+          runtime_archive_sha="$(sed -n 's/.*"runtime_archive_sha256":"\([0-9a-f]\{64\}\)".*/\1/p' "$receipt")"
+          runtime_validation_digest="$(sed -n 's/.*"validation_oci_manifest_digest":"\([0-9a-f]\{64\}\)".*/\1/p' "$receipt")"
+          validation_digest="$(sed -n 's/.*"validation_oci_manifest_digest":"\([0-9a-f]\{64\}\)".*/\1/p' "$validation_receipt")"
+          validation_archive_sha="$(sed -n 's/.*"validation_archive_sha256":"\([0-9a-f]\{64\}\)".*/\1/p' "$validation_receipt")"
+          paired_runtime_sha="$(sed -n 's/.*"runtime_archive_sha256":"\([0-9a-f]\{64\}\)".*/\1/p' "$validation_receipt")"
           [[ "$manifest_digest" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$runtime_archive_sha" =~ ^[0-9a-f]{64}$ ]]
           [[ "$validation_digest" =~ ^[0-9a-f]{64}$ ]]
-          podman image rm -f localhost/living-town/trusted-cafe-runtime:v1 >/dev/null 2>&1 || true
+          [[ "$validation_archive_sha" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$runtime_validation_digest" == "$validation_digest" ]]
+          [[ "$paired_runtime_sha" == "$runtime_archive_sha" ]]
+          podman image rm -f localhost/living-town/trusted-cafe-runtime:v1 \
+            localhost/living-town/trusted-cafe-validation:v1 >/dev/null 2>&1 || true
           podman load --input "$RUNNER_TEMP/cafe-runtime/runtime.oci.tar"
           runtime_ref="localhost/living-town/trusted-cafe-runtime@sha256:$manifest_digest"
           validation_ref="localhost/living-town/trusted-cafe-validation@sha256:$validation_digest"
           podman image exists "$runtime_ref"
+          actual_runtime_sha="$(podman run --pull=never --rm --network none --read-only --cap-drop all \
+            --security-opt no-new-privileges --volume "$RUNNER_TEMP/cafe-runtime:/runtime:ro" \
+            "$runtime_ref" sha256sum /runtime/runtime.oci.tar | awk '{print $1}')"
+          actual_validation_sha="$(podman run --pull=never --rm --network none --read-only --cap-drop all \
+            --security-opt no-new-privileges --volume "$RUNNER_TEMP/cafe-runtime:/runtime:ro" \
+            "$runtime_ref" sha256sum /runtime/validation.oci.tar | awk '{print $1}')"
+          [[ "$actual_runtime_sha" == "$runtime_archive_sha" ]]
+          [[ "$actual_validation_sha" == "$validation_archive_sha" ]]
+          podman load --input "$RUNNER_TEMP/cafe-runtime/validation.oci.tar"
           podman image exists "$validation_ref"
           if podman run --pull=never --rm \
             "localhost/living-town/trusted-cafe-runtime@sha256:$(printf '0%.0s' {1..64})" true; then
             echo 'wrong runtime digest executed' >&2
             exit 1
           fi
+          if podman run --pull=never --rm \
+            "localhost/living-town/trusted-cafe-validation@sha256:$(printf '0%.0s' {1..64})" true; then
+            echo 'wrong validation digest executed' >&2
+            exit 1
+          fi
           {
             printf 'runtime_ref=%s\n' "$runtime_ref"
+            printf 'validation_ref=%s\n' "$validation_ref"
+            printf 'runtime_archive_sha256=%s\n' "$actual_runtime_sha"
+            printf 'validation_archive_sha256=%s\n' "$actual_validation_sha"
             printf 'podman=%s\n' "$(podman --version)"
             printf 'docker_context=%s\n' "$(docker context show)"
             docker version --format 'docker_client={{.Client.Version}} docker_server={{.Server.Version}} docker_os={{.Server.Os}} docker_arch={{.Server.Arch}}'
@@ -346,7 +409,7 @@ jobs:
               ! touch /candidate/.write-must-fail
             '
 
-      - name: Verify runtime attestation before loading
+      - name: Verify runtime and validation archive attestations
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -369,6 +432,13 @@ jobs:
                 --source-ref refs/heads/master --cert-oidc-issuer https://token.actions.githubusercontent.com \
                 --deny-self-hosted-runners --predicate-type https://slsa.dev/provenance/v1 \
                 --format json > /verification/runtime-attestation-verification.json
+              /gate-tools/gh_2.98.0_linux_amd64/bin/gh attestation verify /runtime/validation.oci.tar \
+                --repo "$GITHUB_REPOSITORY" \
+                --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/trusted-cafe-attestation.yml" \
+                --signer-digest "$GITHUB_SHA" --source-digest "$GITHUB_SHA" \
+                --source-ref refs/heads/master --cert-oidc-issuer https://token.actions.githubusercontent.com \
+                --deny-self-hosted-runners --predicate-type https://slsa.dev/provenance/v1 \
+                --format json > /verification/validation-attestation-verification.json
             '
 
       - name: Load attested archive and capture exact candidate
@@ -477,8 +547,11 @@ jobs:
           path: |
             ${{ runner.temp }}/cafe-runtime/runtime.oci.tar
             ${{ runner.temp }}/cafe-runtime/runtime-build-receipt.json
+            ${{ runner.temp }}/cafe-runtime/validation.oci.tar
+            ${{ runner.temp }}/cafe-runtime/validation-build-receipt.json
             ${{ runner.temp }}/cafe-runtime/runtime-container-receipt.txt
             ${{ runner.temp }}/cafe-runtime-verification/runtime-attestation-verification.json
+            ${{ runner.temp }}/cafe-runtime-verification/validation-attestation-verification.json
           if-no-files-found: error
           retention-days: 90
           compression-level: 0
