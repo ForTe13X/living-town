@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T18:25:00Z",
+  "updated_at": "2026-08-27T18:31:00Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -14,7 +14,7 @@
     "coordination_ledger_ref": "origin/codex/main-repo-review",
     "coordination_state_commit": "self"
   },
-  "remote_branch_inventory": {"at":"2026-08-27T18:25:00Z","github_api_count":32,"git_ls_remote_count":null,"local_tracking_count":32,"reconciliation":"snapshot_incomplete_smart_https_fetch_and_ls_remote_failed_github_api_authoritative_secondary_complete","sorted_name_sha_set_sha256":"77ad8da77adbae0a056d6dd52d1a0bc391860385b99f03f927e5bee6011efa59","master":"5b7ac426b6bc059517dba843db4150a2b38d33a7","integration_batons":"ac85fc6b35b83d6a9c7c678386fe35dab666b217","coordination":"3c37b89cc6a220d0766ccff824b89cbd8328d2e2","pr25":"c647ba69bfa60237585f74171d21b49c7fe1deab","open_prs":9,"open_issues":0,"releases":0,"full_branch_metadata_scan":"GitHub API enumerated all 32 hosted heads; cached Git objects supplied last commit and ancestry metadata but were not promoted over API heads. PR/check/worktree/retention relationships were inspected for every branch."},
+  "remote_branch_inventory": {"at":"2026-08-27T18:31:00Z","github_api_count":32,"git_ls_remote_count":null,"local_tracking_count":32,"reconciliation":"snapshot_incomplete_smart_https_failed_github_api_authoritative_secondary_complete_then_recorded_api_mutations","sorted_name_sha_set_sha256":"813f2d4e58a8be28d257a18521c396c8e023b235d23e0a96d23b3ba9d330d386","master":"5b7ac426b6bc059517dba843db4150a2b38d33a7","integration_batons":"ac85fc6b35b83d6a9c7c678386fe35dab666b217","coordination":"002a67a5c83703a807b638f7aa2282c28cd9d74e","pr25":"6ff410936b8d380abda8279dbbee92bec1c9cef4","open_prs":9,"open_issues":0,"releases":0,"full_branch_metadata_scan":"GitHub API enumerated all 32 hosted heads after exact recorded non-force API mutations; cached Git objects were not promoted over API heads."},
   "portfolio_policy": {
     "default_active_writers": 2,
     "maximum_active_writers": 3,
@@ -30,7 +30,7 @@
       "role": "Second replacement sole serialized Dev writer for protected café source-to-capture attestation trust root v1, Stack A only",
       "objective": "Implement the protected compiler, pinned capture, independent verifier, self-test, runtime lock, and GitHub build-attestation workflow that bind café evidence to maintained authored source without changing runtime authority.",
       "baseline": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
-      "head": "6dc6a1c143981c269f30180e1a29e4fdfdbba21d",
+      "head": "6ff410936b8d380abda8279dbbee92bec1c9cef4",
       "tree": "ee689eab865d589a961851ce9f49e14f88abadea",
       "branch": "codex/cafe-source-attestation-trust-root-v1-replacement-2",
       "worktree": "C:\\Users\\admin\\.codex\\worktrees\\ed00\\living-town",
@@ -124,20 +124,20 @@
       "generated_outputs": ["temporary isolated Docker fixtures and receipts outside repository","hosted replacement qualification artifact on PR #25"],
       "dependencies": ["pr:25:c647ba69bfa60237585f74171d21b49c7fe1deab","hosted-run:33093410202:success","general-ci:33093410136:success","security-qa:REQUEST_CHANGES:P1-budget-stdin-and-total-artifact","refute:REQUEST_CHANGES:P1-zero-scanline-png:P1-budget-artifact","artifact:9655397341:sha256:ea20ac8cf3cf907fab2654cb9b2f0ed67a2630ded26477afa0289a9cd813bb4c"],
       "consumer": "Producer, then fresh independent Security/QA and REFUTE at the repaired exact head",
-      "status": "terminal_clean_five_path_handoff_delivery_reserved",
+      "status": "terminal_clean_five_path_repair_delivered_hosted_qualification_in_progress",
       "write_lease": false,
-      "last_heartbeat": "2026-08-27T18:25:00Z",
+      "last_heartbeat": "2026-08-27T18:31:00Z",
       "stale_after": null,
       "pr": 25,
-      "checks": {"p0":0,"p1":2,"p2":3,"merge":"forbidden","stack_b":"frozen","local_docker_repair":"success_35_of_35_twice_byte_identical","local_receipt_sha256":"cbfcd04c888b474e62a9a091b801c69fdb4a7370ef3367194645b9019308b911","local_bundle_sha256":"dc8d6fea54fc486d876997fd56c8f28f5be334eebe462e8e6fe126f0cb357eae","compiled_manifest_sha256":"a7f9724706b82d2e860bba56659a2c9df92db193c1ac153330c5965aec9b72ba","verification_receipt_sha256":"47ea81ff4aaa95ac6d8ed275d8978805bc2aaf744d79c56d6424a35a40ed9e5d","budget_stdin":"local_success_interactive_and_loss_tooth","max_runtime_archive_bytes":230686720,"max_qualification_payload_bytes":251658240,"max_total_artifact_bytes":262144000,"validation_delta_fixture_sha256":"8594599d5f75a9b1ff7bd2e6ac7fe32b35417b84dcc67d76d1d2992448aa8e58","reconstructed_validation_fixture_sha256":"771cb671f16344e5ca4a3753a9021413f0b3f9fc389484c07a5ae4468acb7235","png_decoded_scanline_contract":"local_success_rgba8_noninterlaced_exact_rows_filters_0_4","hosted_exact_head":"not_proven_until_delivery","runtime_recipe":"unchanged"},
-      "delivery": {"local_commit":"6dc6a1c143981c269f30180e1a29e4fdfdbba21d","local_parent_tree_identical_mirror":"3fa3662c27f539c18d8c61ce2bc012425d5ff429","local_tree":"ee689eab865d589a961851ce9f49e14f88abadea","remote_head_before_recovery":"c647ba69bfa60237585f74171d21b49c7fe1deab","remote_commit":null,"remote_tree":null,"producer_recovery":"reserved_non_force_linear_delivery_against_exact_remote_parent","exact_paths":[".github/workflows/trusted-cafe-attestation.yml","evidence/cafe/runtime-lock.v1.json","tools/cafe_attestation_selftest.py","tools/trusted_cafe_capture.sh","tools/verify_cafe_attested_evidence.py"],"worktree_clean":true},
+      "checks": {"p0":0,"p1":2,"p2":3,"merge":"forbidden","stack_b":"frozen","local_docker_repair":"success_35_of_35_twice_byte_identical","local_receipt_sha256":"cbfcd04c888b474e62a9a091b801c69fdb4a7370ef3367194645b9019308b911","local_bundle_sha256":"dc8d6fea54fc486d876997fd56c8f28f5be334eebe462e8e6fe126f0cb357eae","compiled_manifest_sha256":"a7f9724706b82d2e860bba56659a2c9df92db193c1ac153330c5965aec9b72ba","verification_receipt_sha256":"47ea81ff4aaa95ac6d8ed275d8978805bc2aaf744d79c56d6424a35a40ed9e5d","budget_stdin":"local_success_interactive_and_loss_tooth","max_runtime_archive_bytes":230686720,"max_qualification_payload_bytes":251658240,"max_total_artifact_bytes":262144000,"validation_delta_fixture_sha256":"8594599d5f75a9b1ff7bd2e6ac7fe32b35417b84dcc67d76d1d2992448aa8e58","reconstructed_validation_fixture_sha256":"771cb671f16344e5ca4a3753a9021413f0b3f9fc389484c07a5ae4468acb7235","png_decoded_scanline_contract":"local_success_rgba8_noninterlaced_exact_rows_filters_0_4","hosted_exact_head":"in_progress_6ff410936b8d380abda8279dbbee92bec1c9cef4","trusted_run":33103681658,"general_ci_run":33103681571,"runtime_recipe":"unchanged"},
+      "delivery": {"local_commit":"6dc6a1c143981c269f30180e1a29e4fdfdbba21d","local_parent_tree_identical_mirror":"3fa3662c27f539c18d8c61ce2bc012425d5ff429","local_tree":"ee689eab865d589a961851ce9f49e14f88abadea","remote_head_before_recovery":"c647ba69bfa60237585f74171d21b49c7fe1deab","remote_commit":"6ff410936b8d380abda8279dbbee92bec1c9cef4","remote_tree":"ee689eab865d589a961851ce9f49e14f88abadea","producer_recovery":"completed_non_force_git_data_api_linear_commit_after_exact_raw_blob_and_tree_verification","exact_paths":[".github/workflows/trusted-cafe-attestation.yml","evidence/cafe/runtime-lock.v1.json","tools/cafe_attestation_selftest.py","tools/trusted_cafe_capture.sh","tools/verify_cafe_attested_evidence.py"],"worktree_clean":true},
       "recovery_count": 1,
       "repair_round": 5,
       "rollback": "Leave or close Draft PR #25; revert only new repair commits through review if later rejected; never rewrite shared history or master.",
       "stop_lines": ["PR head or master drifts before checkout verification","any out-of-lease path is required","strict payload contract requires Stack B or canon change","secrets or protected dispatch are required","Docker image/runtime cannot be pinned by digest","host-native material gate would remain merge-authoritative","shared Docker or cache state would be mutated"]
     }
   ],
-  "current_conflict_graph": {"at":"2026-08-27T18:25:00Z","active_writers":0,"read_only_reviewers":0,"shared_write_conflicts":0,"decision":"The sole repair owner returned a clean five-path candidate and released its lease. Producer reserved exact-parent non-force delivery. Stack B, Ready, merge and all other authority lanes remain frozen until hosted Podman budget/delta/PNG evidence and fresh independent review pass."},
+  "current_conflict_graph": {"at":"2026-08-27T18:31:00Z","active_writers":0,"read_only_reviewers":0,"shared_write_conflicts":0,"decision":"The five-path repair was delivered linearly to Draft PR25 exact head 6ff41093. Stack B, Ready, merge and all other authority lanes remain frozen while trusted run 33103681658 and general run 33103681571 complete."},
   "released_claims": [
     {
       "claim_id": "lease-cafe-source-attestation-trust-root-v1-replacement",
@@ -468,7 +468,7 @@
     "open_exact_sha_p0": 0,
     "open_exact_sha_p1": 2,
     "post_merge_regressions": 0,
-    "player_visible_closure_state": "source_attestation_stack_a_pr25_budget_and_png_repair_delivery_reserved"
+    "player_visible_closure_state": "source_attestation_stack_a_pr25_budget_and_png_repair_hosted_qualification_in_progress"
   },
   "human_acceptance": "not_ready"
 }
