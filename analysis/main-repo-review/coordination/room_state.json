@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T00:24:05Z",
+  "updated_at": "2026-08-27T00:32:00Z",
   "producer": {
     "task": "019f555f-dfd4-7d91-aa6b-9655caa34871",
     "branch": "codex/main-repo-review",
@@ -11,7 +11,8 @@
     "repository": "ForTe13X/living-town",
     "master": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination_ledger": "c5f58a013add786005efcd3fdd419d89b5e4d331"
+    "coordination_ledger_ref": "origin/codex/main-repo-review",
+    "coordination_state_commit": "self"
   },
   "portfolio_policy": {
     "default_active_writers": 2,
