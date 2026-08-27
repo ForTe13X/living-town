@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T11:42:00Z",
+  "updated_at": "2026-08-27T12:00:00Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -69,9 +69,10 @@
       "generated_outputs": ["temporary review receipts outside repository only"],
       "dependencies": ["pr:25:4bd8b6770d03e19283e962fcb556944dfd3c5d94","hosted-run:33066750754:success","artifact:9644050314:sha256:01cca1ee292e4d22555469fa8a787d20bc1659abc2760f39c23a28b1299d73d7","general-ci:33066750750:in_progress"],
       "consumer": "Producer decision on bounded repair, REFUTE convergence, and merge eligibility",
-      "status": "active_read_only",
-      "last_heartbeat": "2026-08-27T11:30:00Z",
-      "stale_after": "2026-08-27T13:30:00Z",
+      "status": "terminal_request_changes_p0_0_p1_1_p2_2",
+      "last_heartbeat": "2026-08-27T12:00:00Z",
+      "stale_after": null,
+      "review_result": {"verdict":"REQUEST_CHANGES","p0":0,"p1":1,"p2":2,"p1":"material self-test, authored compile, attestation verify, evidence verifier and budgets run host-native and are NOT_PROVEN under mandatory Docker invariant","p2":["master protection requires zero approvals and no last-push approval","Debian snapshot closure is dated but package Release and closure hashes are not content-addressed"],"docker_receipt_sha256":"ab6c6b98dfd3b54a8ebd0586270e250987cf6db44c4863b877ba89dd0c8a203d","artifact_verified":true,"repository_or_github_writes":false},
       "pr": 25,
       "checks": {"runtime_qualification":"success","visual_canary":"success","ci":"success"},
       "recovery_count": 0,
@@ -94,17 +95,18 @@
       "generated_outputs": ["temporary adversarial fixtures and receipts outside repository only"],
       "dependencies": ["pr:25:4bd8b6770d03e19283e962fcb556944dfd3c5d94","hosted-run:33066750754:success","artifact:9644050314:sha256:01cca1ee292e4d22555469fa8a787d20bc1659abc2760f39c23a28b1299d73d7","security-qa:independent_parallel"],
       "consumer": "Producer decision on P0/P1 closure and repair or merge eligibility",
-      "status": "active_read_only",
-      "last_heartbeat": "2026-08-27T11:30:00Z",
-      "stale_after": "2026-08-27T13:30:00Z",
+      "status": "terminal_request_changes_message_recoverable_final_filter_error_recovery_reserved",
+      "last_heartbeat": "2026-08-27T12:00:00Z",
+      "stale_after": "2026-08-27T13:00:00Z",
+      "review_result": {"verdict":"REQUEST_CHANGES","p0":0,"p1":2,"p2":2,"p1":["mandatory Docker invariant breach confirmed","candidate output mount is writable and packer plus verifier accept arbitrary self-listed extra payloads"],"p2":["PNG verifier uses unbounded zlib decompression","pinned Actions executed under forced Node24 without a repository runtime pin"],"attack_matrix_sha256":"5b4bc93b2b8e24de722ccd0336fd96ea9bc5029694a5cf64af599e9e538077c8","repository_or_github_writes":false,"final_transport":"substantive progress message recovered; final response filtered"},
       "pr": 25,
       "checks": {"runtime_qualification":"success","visual_canary":"success","ci":"success"},
-      "recovery_count": 0,
+      "recovery_count": 1,
       "rollback": "Delete only isolated temporary adversarial outputs; no repository or GitHub rollback applies.",
       "stop_lines": ["exact head changes","repository or GitHub write would be required","test would mutate shared runtime state","claim cannot be tested without Stack B or protected master dispatch"]
     }
   ],
-  "current_conflict_graph": {"at":"2026-08-27T11:30:00Z","active_writers":0,"read_only_reviewers":2,"shared_write_conflicts":0,"decision":"former writer frozen after recoverable handoff; Security/QA and REFUTE may run concurrently because both have empty repository write sets, isolated Docker scratch, and independent outputs"},
+  "current_conflict_graph": {"at":"2026-08-27T12:00:00Z","active_writers":0,"read_only_reviewers":1,"shared_write_conflicts":0,"decision":"Security/QA is terminal REQUEST_CHANGES; REFUTE produced a recoverable substantive REQUEST_CHANGES message but its final transport was filtered, so one concise non-operational recovery is reserved before the repair lease is dispatched"},
   "released_claims": [
     {
       "claim_id": "lease-cafe-source-attestation-trust-root-v1-replacement",
@@ -433,9 +435,9 @@
     "stale_or_empty_handoffs": 3,
     "recoveries_or_replacements": 9,
     "open_exact_sha_p0": 0,
-    "open_exact_sha_p1": 1,
+    "open_exact_sha_p1": 3,
     "post_merge_regressions": 0,
-    "player_visible_closure_state": "source_attestation_stack_a_draft_pr25_published_hosted_runtime_repair_active_before_candidate_and_playable_closure"
+    "player_visible_closure_state": "source_attestation_stack_a_pr25_exact_head_request_changes_p1_2_refute_summary_recovery_active_before_candidate_and_playable_closure"
   },
   "human_acceptance": "not_ready"
 }
