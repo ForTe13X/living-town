@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T00:32:00Z",
+  "updated_at": "2026-08-27T00:54:11Z",
   "producer": {
     "task": "019f555f-dfd4-7d91-aa6b-9655caa34871",
     "branch": "codex/main-repo-review",
@@ -55,16 +55,20 @@
         "refute-p1-floor-semantic-counterexample"
       ],
       "consumer": "Producer task 019f555f-dfd4-7d91-aa6b-9655caa34871 and the stacked repair review for PR #21",
-      "status": "active_full_ci",
-      "last_heartbeat": "2026-08-27T00:24:05Z",
-      "stale_after": "2026-08-27T01:24:05Z",
+      "status": "active_local_visual_infrastructure_control",
+      "last_heartbeat": "2026-08-27T00:54:11Z",
+      "stale_after": "2026-08-27T01:54:11Z",
       "pr": null,
       "checks": {
         "focused_self_test": "pass",
         "honest_1280_and_320": "pass",
-        "full_natural_ci": "running"
+        "full_natural_ci": "fail_space_and_floor_roundtrip_capture_only",
+        "core_and_integration": "pass",
+        "cafe_density_inside_visual_gate": "pass",
+        "true_crash_scan": "zero",
+        "untouched_parent_same_environment_control": "running"
       },
-      "recovery_count": 0,
+      "recovery_count": 1,
       "rollback": "Revert only commit 55e05f84569c7bfdb6ebf475f787709200cd265b through the stacked PR; do not rewrite history.",
       "stop_lines": [
         "second repository path required",
@@ -110,7 +114,7 @@
   "metrics": {
     "conflicts_rejected_before_write": 1,
     "stale_or_empty_handoffs": 0,
-    "recoveries_or_replacements": 0,
+    "recoveries_or_replacements": 1,
     "open_exact_sha_p0": 0,
     "open_exact_sha_p1": 1,
     "post_merge_regressions": 0,
