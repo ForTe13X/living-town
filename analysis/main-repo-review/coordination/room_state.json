@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T06:29:24Z",
+  "updated_at": "2026-08-27T06:51:54Z",
   "producer": {
     "task": "019f555f-dfd4-7d91-aa6b-9655caa34871",
     "branch": "codex/main-repo-review",
@@ -39,12 +39,12 @@
       "generated_outputs": ["temporary deterministic test bundles and hash-bound receipts outside repository only"],
       "dependencies": ["architect-task:01a041cb-9e65-7700-b342-75787b53537c:READY","origin/master:5b7ac426b6bc059517dba843db4150a2b38d33a7","draft-pr:24:terminal_heuristic_limit","hosted-run:33042786023:success"],
       "consumer": "Producer, then independent security/QA and REFUTE; after protected-root merge, one serialized Stack B candidate owner",
-      "status": "active_writer_preflight_exact_detached_baseline",
-      "last_heartbeat": "2026-08-27T06:29:24Z",
-      "stale_after": "2026-08-27T08:29:24Z",
+      "status": "recovery_1_reserved_derive_pinned_runtime_within_lease",
+      "last_heartbeat": "2026-08-27T06:51:54Z",
+      "stale_after": "2026-08-27T08:51:54Z",
       "pr": null,
-      "checks": {"architect_contract":"READY","source_candidate_core":"success","source_candidate_visual":"success","source_candidate_run":33042786023},
-      "recovery_count": 0,
+      "checks": {"architect_contract":"READY","source_candidate_core":"success","source_candidate_visual":"success","source_candidate_run":33042786023,"initial_writer":"STOP_NO_QUALIFYING_PULLABLE_RUNTIME","local_base_digest":"sha256:90eaf3f8b60e15ea95de0c3e87e3276414c4cae1355b49471e9d2f52dddaa33d","local_base_python":"3.10.12","local_base_pillow":"missing","local_base_godot":"4.6.2"},
+      "recovery_count": 1,
       "rollback": "Close the Draft and revert only Stack A commits through review; never rewrite master. Disable dispatch before any later trust-root revert.",
       "stop_lines": ["master or branch baseline drift","dirty or shared worktree","any out-of-lease path is required","candidate source or Stack B paths must change","secret credentials are required","runtime digest cannot be reproducibly pinned","protected anchor rebake or View-to-Sim authority is proposed"]
     }
@@ -343,7 +343,7 @@
   "metrics": {
     "conflicts_rejected_before_write": 1,
     "stale_or_empty_handoffs": 2,
-    "recoveries_or_replacements": 6,
+    "recoveries_or_replacements": 7,
     "open_exact_sha_p0": 0,
     "open_exact_sha_p1": 1,
     "post_merge_regressions": 0,
