@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T22:58:00Z",
+  "updated_at": "2026-08-27T23:00:24Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -15,7 +15,7 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-08-27T22:58:00Z",
+    "at": "2026-08-27T23:00:24Z",
     "github_api_count": 32,
     "git_ls_remote_count": 32,
     "local_tracking_count": 32,
@@ -23,7 +23,7 @@
     "sorted_name_sha_set_sha256": "92b4bd08004b64f17dafd6f2d177cb9725a935e7e60b68d405350be9d246bfb2",
     "master": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "ce93cae29f08251304e2276ced8e3cb871e8d77c",
+    "coordination": "e2795eb808d953fbd24ac677261e83d0f933f701",
     "pr25": "26e22985f9982e31b3982777f002ba3c46169acb",
     "open_prs": 9,
     "open_issues": 0,
@@ -378,9 +378,9 @@
         "artifact:9659612274:sha256:169f52ff9900812d622a4d40e53a1eeb45e305406fdc784bdf0510bcf6e82ba0"
       ],
       "consumer": "Producer, then fresh independent Security/QA and REFUTE at the repaired exact head",
-      "status": "hosted_exact_head_requalification_in_progress_writer_released",
+      "status": "hosted_qualification_success_general_ci_in_progress_writer_released",
       "write_lease": false,
-      "last_heartbeat": "2026-08-27T22:58:00Z",
+      "last_heartbeat": "2026-08-27T23:00:24Z",
       "stale_after": null,
       "pr": 25,
       "checks": {
@@ -428,12 +428,22 @@
         "recovery_receipt_sha256": "27d38ae6ed946eb3f364fc00339a45b78de47fab45393ba4e3b4d34ebd543859",
         "recovery_scope": "explicit mounted-output UID/GID and 0750 contract; receipts returned 0640 to caller owner; scope-safe cleanup trap preserves primary exit; bounded pinned cleanup fallback",
         "hosted_exact_head": "26e22985f9982e31b3982777f002ba3c46169acb",
-        "hosted_requalification": "in_progress",
+        "hosted_requalification": "success",
         "trusted_run": 33124524622,
         "general_ci_run": 33124524587,
-        "trusted_result": "in_progress",
-        "general_ci_status": "queued",
-        "protected_dispatch": "expected_skipped_on_pr"
+        "trusted_result": "success",
+        "general_ci_status": "in_progress",
+        "protected_dispatch": "expected_skipped_on_pr",
+        "artifact_id": 9667854874,
+        "artifact_digest": "sha256:1627d6b6401b5256471cedcb1b93d6e94013bb14832c750b1ff9f789a185b70f",
+        "artifact_bytes": 246199708,
+        "artifact_expires": "2026-11-25T22:57:54Z",
+        "hosted_runtime_archive_sha256": "a6830cf7ecd7f67a78a10b3df57c43a855fd7f51c8e01af8a52ad8878a52041f",
+        "hosted_runtime_archive_bytes": 216299520,
+        "hosted_validation_archive_sha256": "589f1846424b8c2e9497af5ab1a49a6e83e3c12aa947635ab54c162a4f694637",
+        "hosted_validation_delta_sha256": "b503c942added857f99363b93ab0a55bb5aa12d072d6f29534e7ba01a07c844c",
+        "hosted_selftest_receipt_sha256": "4eaeccb62cd3a80a93c408ae709cd8969141db0f992fbe964f1d64165897c023",
+        "hosted_payload_bytes": 246196689
       },
       "delivery": {
         "local_commit": "6dc6a1c143981c269f30180e1a29e4fdfdbba21d",
