@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T02:33:41Z",
+  "updated_at": "2026-08-27T02:37:32Z",
   "producer": {
     "task": "019f555f-dfd4-7d91-aa6b-9655caa34871",
     "branch": "codex/main-repo-review",
@@ -49,8 +49,8 @@
       ],
       "consumer": "Producer merge-gate decision for PR #22 and then PR #21",
       "status": "active_read_only_review",
-      "last_heartbeat": "2026-08-27T02:33:41Z",
-      "stale_after": "2026-08-27T03:33:41Z",
+      "last_heartbeat": "2026-08-27T02:37:32Z",
+      "stale_after": "2026-08-27T03:37:32Z",
       "pr": 22,
       "checks": {"hosted_exact_head":"in_progress"},
       "recovery_count": 0,
@@ -78,12 +78,12 @@
       "generated_outputs": ["task_response_only","temporary_receipts_only"],
       "dependencies": ["draft-pr:22","hosted-run:33033412867"],
       "consumer": "Producer merge-gate decision for PR #22 and then PR #21",
-      "status": "active_read_only_review",
-      "last_heartbeat": "2026-08-27T02:33:41Z",
-      "stale_after": "2026-08-27T03:33:41Z",
+      "status": "recovery_requested_after_platform_classification_failure",
+      "last_heartbeat": "2026-08-27T02:37:32Z",
+      "stale_after": "2026-08-27T03:37:32Z",
       "pr": 22,
       "checks": {"hosted_exact_head":"in_progress"},
-      "recovery_count": 0,
+      "recovery_count": 1,
       "rollback": "Read-only review: discard temporary receipts and return no repository or GitHub mutation.",
       "stop_lines": ["candidate or base SHA drift","repository or GitHub mutation requested","attack requires committed edits or anchor rebake","duplicate another live reviewer instead of adversarial testing"]
     }
@@ -165,7 +165,7 @@
     }
   },
   "workspace_observation": {
-    "registered_worktrees": 175,
+    "registered_worktrees": 177,
     "dirty_worktrees": 30,
     "worktree_errors": 0,
     "unknown_or_historical_dirt_policy": "quarantine_preserve"
