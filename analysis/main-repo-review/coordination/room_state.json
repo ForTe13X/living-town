@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T12:08:00Z",
+  "updated_at": "2026-08-27T12:10:00Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -107,7 +107,7 @@
     },
     {
       "claim_id": "lease-pr25-stack-a-p1-docker-payload-repair",
-      "task": "pending_spawn_pr25_p1_repair",
+      "task": "/root/pr25_p1_repair",
       "role": "Sole serialized Dev writer for PR #25 exact-head P1 repair",
       "objective": "Close the mandatory Docker execution and strict evidence payload-contract P1s on Draft PR #25 without expanding Stack A authority or changing Sim/View/canon boundaries.",
       "baseline": "4bd8b6770d03e19283e962fcb556944dfd3c5d94",
@@ -121,9 +121,9 @@
       "generated_outputs": ["temporary isolated Docker fixtures and receipts outside repository","hosted replacement qualification artifact on PR #25"],
       "dependencies": ["pr:25:4bd8b6770d03e19283e962fcb556944dfd3c5d94","security-qa:REQUEST_CHANGES:P1-docker-invariant","refute:REQUEST_CHANGES:P1-docker-invariant:P1-extra-payload","attack-matrix:sha256:5b4bc93b2b8e24de722ccd0336fd96ea9bc5029694a5cf64af599e9e538077c8","hosted-run:33066750754:success_but_not_merge_eligible","general-ci:33066750750:success"],
       "consumer": "Producer, then fresh independent Security/QA and REFUTE at the repaired exact head",
-      "status": "reserved_pending_spawn",
-      "last_heartbeat": "2026-08-27T12:05:00Z",
-      "stale_after": "2026-08-27T14:05:00Z",
+      "status": "active_serialized_writer",
+      "last_heartbeat": "2026-08-27T12:10:00Z",
+      "stale_after": "2026-08-27T14:10:00Z",
       "pr": 25,
       "checks": {"p0":0,"p1":2,"p2":2,"merge":"forbidden","stack_b":"frozen"},
       "recovery_count": 0,
@@ -131,7 +131,7 @@
       "stop_lines": ["PR head or master drifts before checkout verification","any out-of-lease path is required","strict payload contract requires Stack B or canon change","secrets or protected dispatch are required","Docker image/runtime cannot be pinned by digest","host-native material gate would remain merge-authoritative","shared Docker or cache state would be mutated"]
     }
   ],
-  "current_conflict_graph": {"at":"2026-08-27T12:05:00Z","active_writers":1,"read_only_reviewers":0,"shared_write_conflicts":0,"decision":"Both read-only reviews are terminal and released; one serialized repair writer is reserved on the existing PR branch and five exact paths. Stack B, authored manifest compiler, runtime game paths, CI registry, schemas and ledgers remain forbidden."},
+  "current_conflict_graph": {"at":"2026-08-27T12:10:00Z","active_writers":1,"read_only_reviewers":0,"shared_write_conflicts":0,"decision":"Both read-only reviews are terminal and released; one serialized repair writer is active on the existing PR branch and five exact paths. Stack B, authored manifest compiler, runtime game paths, CI registry, schemas and ledgers remain forbidden."},
   "released_claims": [
     {
       "claim_id": "lease-cafe-source-attestation-trust-root-v1-replacement",
