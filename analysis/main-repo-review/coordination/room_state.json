@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T05:58:11Z",
+  "updated_at": "2026-08-27T06:18:09Z",
   "producer": {
     "task": "019f555f-dfd4-7d91-aa6b-9655caa34871",
     "branch": "codex/main-repo-review",
@@ -24,32 +24,47 @@
   },
   "active_claims": [
     {
+      "claim_id": "lease-cafe-source-attestation-trust-root-v1",
+      "task": "pending_create_thread_attestation_writer",
+      "role": "Sole serialized Dev writer for protected café source-to-capture attestation trust root v1, Stack A only",
+      "objective": "Implement the protected compiler, pinned capture, independent verifier, self-test, runtime lock, and GitHub build-attestation workflow that bind café evidence to maintained authored source without changing runtime authority.",
+      "baseline": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
+      "head": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
+      "tree": "56173a6b69b256f825548c3d53c78acb3c1a0ee7",
+      "branch": "codex/cafe-source-attestation-trust-root-v1",
+      "worktree": "pending_isolated_worktree",
+      "owned_paths": [".github/workflows/trusted-cafe-attestation.yml","tools/trusted_cafe_capture.sh","tools/cafe_authored_manifest.py","tools/verify_cafe_attested_evidence.py","tools/cafe_attestation_selftest.py","evidence/cafe/runtime-lock.v1.json"],
+      "forbidden_paths": ["**/* except exact owned_paths","evidence/cafe/cafe-authored-ids.v1.json","evidence/cafe/cafe-authored-manifest.v1.json","tools/ci.sh","game/**","docs/**","analysis/**","protected golden/modelpath/complement ledgers"],
+      "authority_keys": ["cafe-source-attestation-trust-root","trusted-cafe-attestation-workflow","cafe-runtime-lock-v1"],
+      "generated_outputs": ["temporary deterministic test bundles and hash-bound receipts outside repository only"],
+      "dependencies": ["architect-task:01a041cb-9e65-7700-b342-75787b53537c:READY","origin/master:5b7ac426b6bc059517dba843db4150a2b38d33a7","draft-pr:24:terminal_heuristic_limit","hosted-run:33042786023:success"],
+      "consumer": "Producer, then independent security/QA and REFUTE; after protected-root merge, one serialized Stack B candidate owner",
+      "status": "reserved_before_dispatch",
+      "last_heartbeat": "2026-08-27T06:18:09Z",
+      "stale_after": "2026-08-27T08:18:09Z",
+      "pr": null,
+      "checks": {"architect_contract":"READY","source_candidate_core":"success","source_candidate_visual":"success","source_candidate_run":33042786023},
+      "recovery_count": 0,
+      "rollback": "Close the Draft and revert only Stack A commits through review; never rewrite master. Disable dispatch before any later trust-root revert.",
+      "stop_lines": ["master or branch baseline drift","dirty or shared worktree","any out-of-lease path is required","candidate source or Stack B paths must change","secret credentials are required","runtime digest cannot be reproducibly pinned","protected anchor rebake or View-to-Sim authority is proposed"]
+    }
+  ],
+  "released_claims": [
+    {
       "claim_id": "claim-cafe-source-derived-evidence-contract",
       "task": "01a041cb-9e65-7700-b342-75787b53537c",
-      "role": "Technical Architect for a source-derived café visual evidence contract, strict read-only/output-only",
-      "objective": "Produce one implementation-bounding contract that cryptographically and semantically binds normal output to maintained authored source/render provenance without moving runtime authority into View or relying on heuristic pixel classes.",
-      "baseline": "03fe7bd1945516535fa53ee96987a68eb77e58c9",
       "head": "03fe7bd1945516535fa53ee96987a68eb77e58c9",
       "tree": "ccebb77298927fcce860b019d136f012d37aa177",
       "branch": "codex/pr23-authored-silhouette-binding-repair",
       "worktree": "C:\\Users\\yp\\.codex\\worktrees\\7aa7\\26th",
-      "owned_paths": [],
-      "forbidden_paths": ["**/*"],
-      "authority_keys": ["cafe-source-derived-evidence-contract"],
-      "generated_outputs": ["task_response_only"],
-      "dependencies": ["draft-pr:24:blocked_impossible","refute-task:01a041b9-2686-7d13-8f7e-56d5e998901a","recovery-task:01a041ab-ad71-7990-a562-d9c362415492","hosted-run:33042786023:success"],
-      "consumer": "Future single Dev implementation owner, then Producer for a replacement stacked Draft PR and fresh QA/REFUTE",
-      "status": "active_read_only_contract",
-      "last_heartbeat": "2026-08-27T05:58:11Z",
-      "stale_after": "2026-08-27T06:58:11Z",
-      "pr": null,
-      "checks": {"source_candidate_core":"success","source_candidate_visual":"success","source_candidate_run":33042786023},
-      "recovery_count": 0,
-      "rollback": "Read-only contract: discard task output if it cannot define a bounded consumer, authority boundary, negative controls, and reviewable rollback.",
-      "stop_lines": ["repository or GitHub mutation requested","contract makes View or pixels authoritative for Sim/navigation/collision/save/replay/portal/canon","requires opaque full-frame golden or exact antialias identity","cannot define source provenance, deterministic derivation, versioning, migration, and negative controls","no bounded future writer path set exists"]
-    }
-  ],
-  "released_claims": [
+      "status": "terminal_ready_contract_authority_released",
+      "released_at": "2026-08-27T06:18:09Z",
+      "release_reason": "Architect returned READY with a protected source-to-capture attestation chain, exact Stack A and B leases, deterministic runtime/tool pinning, source-derived manifest semantics, tamper/replay negative controls, migration, budgets, and reviewable rollback while keeping pixels non-authoritative.",
+      "evidence": ["architect-verdict:READY","draft-pr:24:03fe7bd1945516535fa53ee96987a68eb77e58c9","hosted-run:33042786023:success","origin/master:5b7ac426b6bc059517dba843db4150a2b38d33a7"],
+      "remote_mutation": false,
+      "provenance_preserved": true,
+      "released_authority_keys": ["cafe-source-derived-evidence-contract"]
+    },
     {
       "claim_id": "lease-pr24-authored-silhouette-identity-recovery-1",
       "task": "01a041ab-ad71-7990-a562-d9c362415492",
@@ -277,7 +292,7 @@
       "head": "03fe7bd1945516535fa53ee96987a68eb77e58c9",
       "state": "draft_terminal_heuristic_limit_not_mergeable",
       "blocker": "Recovery 1 of 1 returned BLOCKED_IMPOSSIBLE: the one-file verifier has no maintained source-derived normal/render contract and cannot establish authored identity from receipt-valid pixels without forbidden brittle identity techniques.",
-      "next_trigger": "Technical Architect returns a READY source-derived evidence contract with bounded future writer paths, authority boundaries, provenance/versioning, negative controls, and rollback."
+      "next_trigger": "Stack A protected source-to-capture trust root passes exact-head review and merges to master; only then may Stack B create source IDs and generated manifest against that root."
     },
     {
       "pr": 23,
@@ -332,7 +347,7 @@
     "open_exact_sha_p0": 0,
     "open_exact_sha_p1": 1,
     "post_merge_regressions": 0,
-    "player_visible_closure_state": "blocked_by_pr21_evidence_p1"
+    "player_visible_closure_state": "source_attestation_stack_a_dispatched_before_candidate_and_playable_closure"
   },
   "human_acceptance": "not_ready"
 }
