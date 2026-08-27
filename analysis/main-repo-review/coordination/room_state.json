@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T12:00:00Z",
+  "updated_at": "2026-08-27T12:05:00Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -95,18 +95,43 @@
       "generated_outputs": ["temporary adversarial fixtures and receipts outside repository only"],
       "dependencies": ["pr:25:4bd8b6770d03e19283e962fcb556944dfd3c5d94","hosted-run:33066750754:success","artifact:9644050314:sha256:01cca1ee292e4d22555469fa8a787d20bc1659abc2760f39c23a28b1299d73d7","security-qa:independent_parallel"],
       "consumer": "Producer decision on P0/P1 closure and repair or merge eligibility",
-      "status": "terminal_request_changes_message_recoverable_final_filter_error_recovery_reserved",
+      "status": "terminal_request_changes_recovery_failed_reviewer_released",
       "last_heartbeat": "2026-08-27T12:00:00Z",
-      "stale_after": "2026-08-27T13:00:00Z",
+      "stale_after": null,
       "review_result": {"verdict":"REQUEST_CHANGES","p0":0,"p1":2,"p2":2,"p1":["mandatory Docker invariant breach confirmed","candidate output mount is writable and packer plus verifier accept arbitrary self-listed extra payloads"],"p2":["PNG verifier uses unbounded zlib decompression","pinned Actions executed under forced Node24 without a repository runtime pin"],"attack_matrix_sha256":"5b4bc93b2b8e24de722ccd0336fd96ea9bc5029694a5cf64af599e9e538077c8","repository_or_github_writes":false,"final_transport":"substantive progress message recovered; final response filtered"},
       "pr": 25,
       "checks": {"runtime_qualification":"success","visual_canary":"success","ci":"success"},
       "recovery_count": 1,
       "rollback": "Delete only isolated temporary adversarial outputs; no repository or GitHub rollback applies.",
       "stop_lines": ["exact head changes","repository or GitHub write would be required","test would mutate shared runtime state","claim cannot be tested without Stack B or protected master dispatch"]
+    },
+    {
+      "claim_id": "lease-pr25-stack-a-p1-docker-payload-repair",
+      "task": "pending_spawn_pr25_p1_repair",
+      "role": "Sole serialized Dev writer for PR #25 exact-head P1 repair",
+      "objective": "Close the mandatory Docker execution and strict evidence payload-contract P1s on Draft PR #25 without expanding Stack A authority or changing Sim/View/canon boundaries.",
+      "baseline": "4bd8b6770d03e19283e962fcb556944dfd3c5d94",
+      "head": "4bd8b6770d03e19283e962fcb556944dfd3c5d94",
+      "tree": "eef3fe9b32a4598c7d774eb57570cb67d658f6d6",
+      "branch": "codex/cafe-source-attestation-trust-root-v1-replacement-2",
+      "worktree": "C:\\Users\\admin\\.codex\\worktrees\\ed00\\living-town",
+      "owned_paths": [".github/workflows/trusted-cafe-attestation.yml","evidence/cafe/runtime-lock.v1.json","tools/cafe_attestation_selftest.py","tools/trusted_cafe_capture.sh","tools/verify_cafe_attested_evidence.py"],
+      "forbidden_paths": ["**/* except exact owned_paths","tools/cafe_authored_manifest.py","evidence/cafe/cafe-authored-ids.v1.json","evidence/cafe/cafe-authored-manifest.v1.json","tools/ci.sh","game/**","docs/**","analysis/**","shared registries/schemas/anchors/ledgers"],
+      "authority_keys": ["trusted-cafe-attestation-workflow","cafe-runtime-lock-v1","cafe-verification-container-contract","cafe-evidence-payload-allowlist"],
+      "generated_outputs": ["temporary isolated Docker fixtures and receipts outside repository","hosted replacement qualification artifact on PR #25"],
+      "dependencies": ["pr:25:4bd8b6770d03e19283e962fcb556944dfd3c5d94","security-qa:REQUEST_CHANGES:P1-docker-invariant","refute:REQUEST_CHANGES:P1-docker-invariant:P1-extra-payload","attack-matrix:sha256:5b4bc93b2b8e24de722ccd0336fd96ea9bc5029694a5cf64af599e9e538077c8","hosted-run:33066750754:success_but_not_merge_eligible","general-ci:33066750750:success"],
+      "consumer": "Producer, then fresh independent Security/QA and REFUTE at the repaired exact head",
+      "status": "reserved_pending_spawn",
+      "last_heartbeat": "2026-08-27T12:05:00Z",
+      "stale_after": "2026-08-27T14:05:00Z",
+      "pr": 25,
+      "checks": {"p0":0,"p1":2,"p2":2,"merge":"forbidden","stack_b":"frozen"},
+      "recovery_count": 0,
+      "rollback": "Leave or close Draft PR #25; revert only new repair commits through review if later rejected; never rewrite shared history or master.",
+      "stop_lines": ["PR head or master drifts before checkout verification","any out-of-lease path is required","strict payload contract requires Stack B or canon change","secrets or protected dispatch are required","Docker image/runtime cannot be pinned by digest","host-native material gate would remain merge-authoritative","shared Docker or cache state would be mutated"]
     }
   ],
-  "current_conflict_graph": {"at":"2026-08-27T12:00:00Z","active_writers":0,"read_only_reviewers":1,"shared_write_conflicts":0,"decision":"Security/QA is terminal REQUEST_CHANGES; REFUTE produced a recoverable substantive REQUEST_CHANGES message but its final transport was filtered, so one concise non-operational recovery is reserved before the repair lease is dispatched"},
+  "current_conflict_graph": {"at":"2026-08-27T12:05:00Z","active_writers":1,"read_only_reviewers":0,"shared_write_conflicts":0,"decision":"Both read-only reviews are terminal and released; one serialized repair writer is reserved on the existing PR branch and five exact paths. Stack B, authored manifest compiler, runtime game paths, CI registry, schemas and ledgers remain forbidden."},
   "released_claims": [
     {
       "claim_id": "lease-cafe-source-attestation-trust-root-v1-replacement",
@@ -433,11 +458,11 @@
   "metrics": {
     "conflicts_rejected_before_write": 1,
     "stale_or_empty_handoffs": 3,
-    "recoveries_or_replacements": 9,
+    "recoveries_or_replacements": 10,
     "open_exact_sha_p0": 0,
     "open_exact_sha_p1": 3,
     "post_merge_regressions": 0,
-    "player_visible_closure_state": "source_attestation_stack_a_pr25_exact_head_request_changes_p1_2_refute_summary_recovery_active_before_candidate_and_playable_closure"
+    "player_visible_closure_state": "source_attestation_stack_a_pr25_p1_docker_payload_repair_reserved_before_candidate_and_playable_closure"
   },
   "human_acceptance": "not_ready"
 }
