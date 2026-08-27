@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T02:25:43Z",
+  "updated_at": "2026-08-27T02:29:59Z",
   "producer": {
     "task": "019f555f-dfd4-7d91-aa6b-9655caa34871",
     "branch": "codex/main-repo-review",
@@ -24,59 +24,85 @@
   },
   "active_claims": [
     {
-      "claim_id": "claim-pr21-floor-semantic-stacked-publication",
-      "task": "019f555f-dfd4-7d91-aa6b-9655caa34871",
-      "role": "Producer exact-head Draft publisher",
-      "objective": "Normal-push the frozen one-commit repair branch and create one Draft stacked PR for hosted exact-head qualification without changing repository content.",
+      "claim_id": "claim-pr22-exact-head-qa",
+      "task": "pending_create_thread_qa",
+      "role": "independent QA, Evidence, and Technical Visual reviewer",
+      "objective": "Verify exact Draft PR #22 as a bounded floor-semantic evidence repair and issue APPROVE, REQUEST_CHANGES, or BLOCKED_EVIDENCE with an exact-SHA P0/P1 matrix.",
       "baseline": "6d4b60665f8e4f4c439a24e5f27647e8a5254376",
       "head": "55e05f84569c7bfdb6ebf475f787709200cd265b",
       "tree": "04a73a2895b3676fdbb15ca9df2229eee2ab074f",
       "branch": "codex/pr21-floor-semantic-gate-repair",
-      "worktree": "C:\\Users\\yp\\.codex\\worktrees\\9d19\\26th",
+      "worktree": "pending_isolated_worktree_qa",
       "owned_paths": [],
-      "forbidden_paths": [
-        "**/*"
-      ],
+      "forbidden_paths": ["**/*"],
       "authority_keys": [
-        "pr21-floor-semantic-stacked-publication",
-        "github-head:codex/pr21-floor-semantic-gate-repair"
+        "pr22-exact-head-qa-verdict"
       ],
       "generated_outputs": [
-        "remote_branch:codex/pr21-floor-semantic-gate-repair",
-        "draft_stacked_pr",
-        "hosted_exact_head_checks"
+        "task_response_only",
+        "temporary_receipts_only"
       ],
       "dependencies": [
-        "base-branch:codex/pr18-combined-ac85-d534@6d4b60665f8e4f4c439a24e5f27647e8a5254376",
-        "candidate@55e05f84569c7bfdb6ebf475f787709200cd265b",
-        "diagnostic:01a040d6-b367-72a1-b421-65b3ce74861d@SAFE_TO_PUBLISH_DRAFT_FOR_HOSTED_QUALIFICATION",
-        "fresh-visual-log@sha256:084b895739f7ad42efa579bb9e9a2a613daa0cb455b9bcabcf8fa7ad507aaae"
+        "draft-pr:22",
+        "hosted-run:33033412867",
+        "diagnostic:01a040d6-b367-72a1-b421-65b3ce74861d"
       ],
-      "consumer": "Draft PR #21 repair qualification and subsequent independent exact-head QA/REFUTE",
-      "status": "reserved_pre_pr_mutation",
-      "last_heartbeat": "2026-08-27T02:25:43Z",
-      "stale_after": "2026-08-27T03:25:43Z",
-      "pr": null,
-      "checks": {
-        "candidate_original_full_natural_ci": "fail_space_and_floor_roundtrip_capture_only",
-        "candidate_repair_specific_controls": "pass",
-        "candidate_fresh_visual_gate": "pass_rc0_558.5s",
-        "candidate_fresh_visual_log": "sha256:084b895739f7ad42efa579bb9e9a2a613daa0cb455b9bcabcf8fa7ad507aaae",
-        "candidate_true_crash_scan": "zero",
-        "hosted_exact_head": "pending_publication"
-      },
+      "consumer": "Producer merge-gate decision for PR #22 and then PR #21",
+      "status": "reserved_pending_task_creation",
+      "last_heartbeat": "2026-08-27T02:29:59Z",
+      "stale_after": "2026-08-27T03:29:59Z",
+      "pr": 22,
+      "checks": {"hosted_exact_head":"in_progress"},
       "recovery_count": 0,
-      "rollback": "If hosted qualification or independent review fails, keep the Draft PR and exact branch frozen as provenance; repair or close only through a new reviewable decision, never rewrite history.",
+      "rollback": "Read-only review: discard temporary receipts and return no repository or GitHub mutation.",
       "stop_lines": [
         "candidate or base SHA drift",
-        "worktree becomes dirty or diff expands beyond the one committed path",
-        "a duplicate open PR or overlapping live publisher appears",
-        "PR base is not codex/pr18-combined-ac85-d534",
-        "any request to mark Ready, merge, rebake anchors, or change committed content"
+        "repository or GitHub mutation requested",
+        "evidence requires changing committed files or protected anchors",
+        "overlap with the REFUTE attack lane"
       ]
+    },
+    {
+      "claim_id": "claim-pr22-exact-head-refute",
+      "task": "pending_create_thread_refute",
+      "role": "independent adversarial REFUTE reviewer",
+      "objective": "Try to falsify PR #22 floor-semantic binding with lawful transcript, receipt, metadata, palette, geometry, and resolution mutations and issue APPROVE, REQUEST_CHANGES, or BLOCKED_EVIDENCE.",
+      "baseline": "6d4b60665f8e4f4c439a24e5f27647e8a5254376",
+      "head": "55e05f84569c7bfdb6ebf475f787709200cd265b",
+      "tree": "04a73a2895b3676fdbb15ca9df2229eee2ab074f",
+      "branch": "codex/pr21-floor-semantic-gate-repair",
+      "worktree": "pending_isolated_worktree_refute",
+      "owned_paths": [],
+      "forbidden_paths": ["**/*"],
+      "authority_keys": ["pr22-exact-head-refute-verdict"],
+      "generated_outputs": ["task_response_only","temporary_receipts_only"],
+      "dependencies": ["draft-pr:22","hosted-run:33033412867"],
+      "consumer": "Producer merge-gate decision for PR #22 and then PR #21",
+      "status": "reserved_pending_task_creation",
+      "last_heartbeat": "2026-08-27T02:29:59Z",
+      "stale_after": "2026-08-27T03:29:59Z",
+      "pr": 22,
+      "checks": {"hosted_exact_head":"in_progress"},
+      "recovery_count": 0,
+      "rollback": "Read-only review: discard temporary receipts and return no repository or GitHub mutation.",
+      "stop_lines": ["candidate or base SHA drift","repository or GitHub mutation requested","attack requires committed edits or anchor rebake","duplicate another live reviewer instead of adversarial testing"]
     }
   ],
   "released_claims": [
+    {
+      "claim_id": "claim-pr21-floor-semantic-stacked-publication",
+      "task": "019f555f-dfd4-7d91-aa6b-9655caa34871",
+      "head": "55e05f84569c7bfdb6ebf475f787709200cd265b",
+      "tree": "04a73a2895b3676fdbb15ca9df2229eee2ab074f",
+      "branch": "codex/pr21-floor-semantic-gate-repair",
+      "worktree": "C:\\Users\\yp\\.codex\\worktrees\\9d19\\26th",
+      "pr": 22,
+      "status": "terminal_draft_published",
+      "released_at": "2026-08-27T02:29:59Z",
+      "release_reason": "Exact frozen branch was normal-pushed and Draft PR #22 created against codex/pr18-combined-ac85-d534; hosted run 33033412867 started.",
+      "remote_mutation": true,
+      "provenance_preserved": true
+    },
     {
       "claim_id": "claim-pr21-floor-semantic-ci-discrepancy-diagnostic",
       "task": "01a040d6-b367-72a1-b421-65b3ce74861d",
@@ -105,6 +131,13 @@
     }
   ],
   "frozen_candidates": [
+    {
+      "pr": 22,
+      "head": "55e05f84569c7bfdb6ebf475f787709200cd265b",
+      "state": "draft_hosted_qualification_and_independent_review",
+      "blocker": "Hosted exact-head checks and independent QA plus REFUTE are pending.",
+      "next_trigger": "Run 33033412867 terminal plus exact-head QA and REFUTE P0/P1 closure."
+    },
     {
       "pr": 21,
       "head": "6d4b60665f8e4f4c439a24e5f27647e8a5254376",
