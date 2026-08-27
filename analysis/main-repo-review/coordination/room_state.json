@@ -1,0 +1,119 @@
+{
+  "schema": "living-town.coordination-room.v0",
+  "updated_at": "2026-08-27T00:24:05Z",
+  "producer": {
+    "task": "019f555f-dfd4-7d91-aa6b-9655caa34871",
+    "branch": "codex/main-repo-review",
+    "ledger_pr": 5,
+    "write_policy": "producer_single_writer"
+  },
+  "authoritative_refs": {
+    "repository": "ForTe13X/living-town",
+    "master": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
+    "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
+    "coordination_ledger": "c5f58a013add786005efcd3fdd419d89b5e4d331"
+  },
+  "portfolio_policy": {
+    "default_active_writers": 2,
+    "maximum_active_writers": 3,
+    "third_writer_requires_full_independence": true,
+    "maximum_read_only_reviewers": 2,
+    "crdt_or_co_editing": false,
+    "conflict_resolution": "reject_before_write_then_freeze_or_serialize_lower_value_lane"
+  },
+  "active_claims": [
+    {
+      "claim_id": "lease-pr21-floor-semantic-gate-repair",
+      "task": "01a0408e-3039-7852-b256-7a186574b7c0",
+      "role": "sole bounded Dev repair owner",
+      "objective": "Close PR #21 P1 floor-semantic visual-evidence false positive without runtime or framework expansion.",
+      "baseline": "6d4b60665f8e4f4c439a24e5f27647e8a5254376",
+      "head": "55e05f84569c7bfdb6ebf475f787709200cd265b",
+      "tree": "04a73a2895b3676fdbb15ca9df2229eee2ab074f",
+      "branch": "codex/pr21-floor-semantic-gate-repair",
+      "worktree": "C:\\Users\\yp\\.codex\\worktrees\\9d19\\26th",
+      "owned_paths": [
+        "tools/assert_cafe_interior_density.py"
+      ],
+      "forbidden_paths": [
+        "game/**",
+        "tools/assert_cafe_2f.py",
+        "tools/visual_gate.sh",
+        "tools/ci.sh",
+        ".github/**",
+        "tools/gate_*_ledger.json",
+        "analysis/**",
+        "docs/**"
+      ],
+      "authority_keys": [
+        "cafe-floor-semantic-evidence-gate"
+      ],
+      "generated_outputs": [],
+      "dependencies": [
+        "pr21@6d4b60665f8e4f4c439a24e5f27647e8a5254376",
+        "refute-p1-floor-semantic-counterexample"
+      ],
+      "consumer": "Producer task 019f555f-dfd4-7d91-aa6b-9655caa34871 and the stacked repair review for PR #21",
+      "status": "active_full_ci",
+      "last_heartbeat": "2026-08-27T00:24:05Z",
+      "stale_after": "2026-08-27T01:24:05Z",
+      "pr": null,
+      "checks": {
+        "focused_self_test": "pass",
+        "honest_1280_and_320": "pass",
+        "full_natural_ci": "running"
+      },
+      "recovery_count": 0,
+      "rollback": "Revert only commit 55e05f84569c7bfdb6ebf475f787709200cd265b through the stacked PR; do not rewrite history.",
+      "stop_lines": [
+        "second repository path required",
+        "runtime or protected-anchor mutation required",
+        "exact attack cannot be rejected without brittle golden copying",
+        "new P0 or P1 outside the lease"
+      ]
+    }
+  ],
+  "frozen_candidates": [
+    {
+      "pr": 21,
+      "head": "6d4b60665f8e4f4c439a24e5f27647e8a5254376",
+      "state": "draft_request_changes",
+      "blocker": "P1 floor-semantic evidence false positive",
+      "next_trigger": "Stacked repair exact-head CI plus independent QA and REFUTE P0/P1 closure."
+    },
+    {
+      "pr": 18,
+      "head": "22accd690a7fa6bd5ec7d0c74d1c4b4acd889c3b",
+      "state": "draft_superseded_provenance",
+      "blocker": "Retained until replacement lineage is recoverably integrated."
+    }
+  ],
+  "required_tasks": {
+    "narrative": {
+      "task": "019fe402-0cbb-7713-bc78-cad6ecceebe1",
+      "status": "terminal_advisory_noncanon_human_acceptance_not_ready",
+      "write_lease": false
+    },
+    "implementation": {
+      "task": "019feb58-6f66-7c12-9b22-068a66929884",
+      "status": "stale_interrupted_pr10_repair_turn",
+      "write_lease": false
+    }
+  },
+  "workspace_observation": {
+    "registered_worktrees": 174,
+    "dirty_worktrees": 30,
+    "worktree_errors": 0,
+    "unknown_or_historical_dirt_policy": "quarantine_preserve"
+  },
+  "metrics": {
+    "conflicts_rejected_before_write": 1,
+    "stale_or_empty_handoffs": 0,
+    "recoveries_or_replacements": 0,
+    "open_exact_sha_p0": 0,
+    "open_exact_sha_p1": 1,
+    "post_merge_regressions": 0,
+    "player_visible_closure_state": "blocked_by_pr21_evidence_p1"
+  },
+  "human_acceptance": "not_ready"
+}
