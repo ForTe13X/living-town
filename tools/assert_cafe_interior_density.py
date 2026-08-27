@@ -63,6 +63,18 @@ LANDMARK_MAX_COVERAGE = 0.03
 # leaves room for palette, rasterizer, and small shot-fit variation, while a
 # thin horizontal/vertical stripe cannot impersonate a bed, desk, or vanity.
 LANDMARK_MIN_AXIS_COVERAGE = 0.25
+# A meaningful furniture footprint occupies most of its own local bounding box.
+# This rejects a broad cross/T made from thin orthogonal bands without requiring
+# the furniture to be a particular rectangle or color.  The real 320px
+# barstool is the tightest authored example (about 0.59 bounding-box fill).
+LANDMARK_MIN_BOUNDING_FILL = 0.50
+# A one-axis stripe has a very elongated local box; authored landmarks stay
+# compact even when their occupied tile coverage is deliberately small.
+LANDMARK_MAX_ASPECT = 2.5
+# Thin-band unions can have a plausible bounding fill (notably a T at low
+# resolution).  A furniture footprint instead has substantial occupancy across
+# the median local row and column, so neither axis can be carried by one arm.
+LANDMARK_MIN_MEDIAN_CROSS_SECTION = 0.50
 
 
 def canonical(value):
@@ -245,23 +257,42 @@ def assess(normal, bare):
 
 
 def landmark_geometry(mask, size, landmarks):
-    """Measure palette-independent local furniture occupancy and orthogonal extent."""
+    """Measure palette-independent local furniture occupancy and compactness."""
     w, h = size
     measured = []
     for name, cell in landmarks:
         x0, y0, x1, y1 = cell_rect(size, cell)
         changed = rows = cols = 0
+        min_x = min_y = None
+        max_x = max_y = None
         for y in range(y0, y1):
             row_changed = False
             for x in range(x0, x1):
                 if mask[y * w + x]:
                     changed += 1
                     row_changed = True
+                    min_x = x if min_x is None else min(min_x, x)
+                    max_x = x if max_x is None else max(max_x, x)
+                    min_y = y if min_y is None else min(min_y, y)
+                    max_y = y if max_y is None else max(max_y, y)
             rows += row_changed
         for x in range(x0, x1):
             cols += any(mask[y * w + x] for y in range(y0, y1))
         area = (x1 - x0) * (y1 - y0)
-        measured.append((name, cell, changed / area, rows / (y1 - y0), cols / (x1 - x0)))
+        if changed:
+            box_width, box_height = max_x - min_x + 1, max_y - min_y + 1
+            bounding_fill = changed / (box_width * box_height)
+            aspect = max(box_width / box_height, box_height / box_width)
+            row_fills = sorted(sum(mask[y * w + x] for x in range(min_x, max_x + 1)) / box_width
+                               for y in range(min_y, max_y + 1))
+            col_fills = sorted(sum(mask[y * w + x] for y in range(min_y, max_y + 1)) / box_height
+                               for x in range(min_x, max_x + 1))
+            row_median = row_fills[len(row_fills) // 2]
+            col_median = col_fills[len(col_fills) // 2]
+        else:
+            bounding_fill = aspect = row_median = col_median = 0.0
+        measured.append((name, cell, changed / area, rows / (y1 - y0), cols / (x1 - x0),
+                         bounding_fill, aspect, row_median, col_median))
     return measured
 
 
@@ -278,14 +309,15 @@ def semantic_geometry(one, one_bare, two, two_bare):
         ("2F", "private"): landmark_geometry(masks["2F"], two.size, PRIVATE_ROOM_LANDMARKS),
     }
     for floor, kind in (("1F", "public"), ("1F", "private"), ("2F", "public"), ("2F", "private")):
-        values = ", ".join("%s@%s=%.3f rows=%.3f cols=%.3f" % (name, cell, coverage, rows, cols)
-                           for name, cell, coverage, rows, cols in observed[(floor, kind)])
+        values = ", ".join("%s@%s=%.3f rows=%.3f cols=%.3f fill=%.3f aspect=%.3f median=%.3f/%.3f" %
+                           (name, cell, coverage, rows, cols, fill, aspect, row_median, col_median)
+                           for name, cell, coverage, rows, cols, fill, aspect, row_median, col_median in observed[(floor, kind)])
         print("[CAFEDENSITY] semantic geometry %s %s [%s]" % (floor, kind, values))
 
     failures = []
     for floor, kind, present in (("1F", "public", True), ("1F", "private", False),
                                  ("2F", "private", True), ("2F", "public", False)):
-        for name, cell, coverage, rows, cols in observed[(floor, kind)]:
+        for name, cell, coverage, rows, cols, fill, aspect, row_median, col_median in observed[(floor, kind)]:
             if present and coverage < LANDMARK_MIN_COVERAGE:
                 failures.append(
                     "%s %s landmark %s at %s has changed coverage %.3f < %.3f" %
@@ -295,6 +327,27 @@ def semantic_geometry(one, one_bare, two, two_bare):
                     "%s %s landmark %s at %s lacks authored two-axis footprint "
                     "(rows %.3f, cols %.3f; each >= %.3f)" %
                     (floor, kind, name, cell, rows, cols, LANDMARK_MIN_AXIS_COVERAGE))
+            if present and fill < LANDMARK_MIN_BOUNDING_FILL:
+                failures.append(
+                    "%s %s landmark %s at %s lacks compact authored footprint "
+                    "(bounding fill %.3f < %.3f)" %
+                    (floor, kind, name, cell, fill, LANDMARK_MIN_BOUNDING_FILL))
+            if present and aspect > LANDMARK_MAX_ASPECT:
+                failures.append(
+                    "%s %s landmark %s at %s is a one-axis band, not furniture "
+                    "(aspect %.3f > %.3f)" %
+                    (floor, kind, name, cell, aspect, LANDMARK_MAX_ASPECT))
+            # The reproduced bypass targets only the claimed private 2F group.
+            # Public café furniture includes an intentionally sparse table, so
+            # apply this finer topology discriminator at the authored private
+            # landmarks rather than falsely imposing one silhouette vocabulary.
+            if present and kind == "private" and (row_median < LANDMARK_MIN_MEDIAN_CROSS_SECTION or
+                                                   col_median < LANDMARK_MIN_MEDIAN_CROSS_SECTION):
+                failures.append(
+                    "%s %s landmark %s at %s lacks a compact furniture cross-section "
+                    "(median rows %.3f, cols %.3f; each >= %.3f)" %
+                    (floor, kind, name, cell, row_median, col_median,
+                     LANDMARK_MIN_MEDIAN_CROSS_SECTION))
             if not present and coverage > LANDMARK_MAX_COVERAGE:
                 failures.append(
                     "%s received %s landmark geometry %s at %s (coverage %.3f > %.3f)" %
@@ -397,8 +450,10 @@ def self_test():
             if check(case) != 0: return 1
             print("[CAFEDENSITY] self-test positive command-bound %s" % (size,))
         base = os.path.join(root, "1280x768")
-        def clone(name):
-            path = os.path.join(root, name); shutil.copytree(base, path); return path
+        def clone(name, size=(1280, 768)):
+            path = os.path.join(root, name)
+            shutil.copytree(os.path.join(root, "%dx%d" % size), path)
+            return path
         # REFUTE: color-inverted 1F normal/bare PNGs replace the 2F payloads while
         # the receipt retains a legitimate 2F transcript/session/mode/seed/tick and
         # recomputes every per-row hash.  Provenance must pass; semantic geometry must
@@ -431,6 +486,71 @@ def self_test():
         refresh_rows(receipt, coarse, ("vg_cafe2f.png",))
         with open(os.path.join(coarse, RECEIPT_NAME), "w", encoding="utf-8") as f: json.dump(receipt, f)
         if not expect_reject("self-consistent alternate coarse geometry", coarse, "authored two-axis footprint"): return 1
+        # REFUTE: both independently reproduced topology false-positive families
+        # are internally consistent at both evidence resolutions.  Crosses/Ts
+        # have enough extent in each axis but sparse bounding boxes; the exact
+        # quarter-height stripe is dense in its own box but too elongated.
+        for size in sorted(SUPPORTED_VIEWPORTS):
+            for topology in ("cross", "tee", "quarter-stripe"):
+                case = clone("%s-%dx%d" % (topology, size[0], size[1]), size)
+                normal = Image.open(os.path.join(case, "vg_cafe2f_bare.png")).convert("RGB")
+                draw = ImageDraw.Draw(normal)
+                for _, cell in PRIVATE_ROOM_LANDMARKS:
+                    x0, y0, x1, y1 = cell_rect(size, cell)
+                    width, height = x1 - x0, y1 - y0
+                    if topology == "quarter-stripe":
+                        thick = max(1, math.ceil(height / 4))
+                        draw.rectangle((x0, y0 + (height - thick) // 2, x1 - 1,
+                                        y0 + (height - thick) // 2 + thick - 1), fill=(50, 150, 220))
+                    else:
+                        thick = max(1, round(min(width, height) * 0.24))
+                        cx, cy = x0 + width // 2, y0 + height // 2
+                        draw.rectangle((x0, cy - thick // 2, x1 - 1,
+                                        cy - thick // 2 + thick - 1), fill=(50, 150, 220))
+                        if topology == "cross":
+                            draw.rectangle((cx - thick // 2, y0, cx - thick // 2 + thick - 1,
+                                            y1 - 1), fill=(50, 150, 220))
+                        else:
+                            draw.rectangle((cx - thick // 2, cy, cx - thick // 2 + thick - 1,
+                                            y1 - 1), fill=(50, 150, 220))
+                # Unrelated, valid-footprint density keeps this a topology test.
+                x0, y0, x1, y1 = cell_rect(size, (1, 1))
+                draw.rectangle((x0 + 2, y0 + 2, x1 - 3, y1 - 3), fill=(50, 150, 220))
+                normal.save(os.path.join(case, "vg_cafe2f.png"))
+                with open(os.path.join(case, RECEIPT_NAME), encoding="utf-8") as f: receipt = json.load(f)
+                refresh_rows(receipt, case, ("vg_cafe2f.png",))
+                with open(os.path.join(case, RECEIPT_NAME), "w", encoding="utf-8") as f: json.dump(receipt, f)
+                reason = "compact furniture cross-section" if topology == "tee" else (
+                    "one-axis band" if topology == "quarter-stripe" else "compact authored footprint")
+                if not expect_reject("self-consistent %s %dx%d" % (topology, size[0], size[1]), case, reason): return 1
+            # A compact block, compact L, and compact stepped footprint are
+            # positive neighbors: the discriminator is about topology, not a
+            # demand for one rectangular sprite silhouette.
+            furniture = clone("furniture-like-%dx%d" % size, size)
+            normal = Image.open(os.path.join(furniture, "vg_cafe2f_bare.png")).convert("RGB")
+            draw = ImageDraw.Draw(normal)
+            for index, (_, cell) in enumerate(PRIVATE_ROOM_LANDMARKS):
+                x0, y0, x1, y1 = cell_rect(size, cell)
+                width, height = x1 - x0, y1 - y0
+                left, top = x0 + width // 6, y0 + height // 6
+                right, bottom = x1 - width // 6 - 1, y1 - height // 6 - 1
+                if index == 0:
+                    draw.rectangle((left, top, right, bottom), fill=(50, 150, 220))
+                elif index == 1:
+                    arm = max(2, min(right - left + 1, bottom - top + 1) * 3 // 5)
+                    draw.rectangle((left, top, left + arm - 1, bottom), fill=(50, 150, 220))
+                    draw.rectangle((left, bottom - arm + 1, right, bottom), fill=(50, 150, 220))
+                else:
+                    for step in range(3):
+                        sx = left + step * (right - left + 1) // 5
+                        sy = top + step * (bottom - top + 1) // 5
+                        draw.rectangle((sx, sy, right - step * (right - left + 1) // 8,
+                                        bottom - step * (bottom - top + 1) // 8), fill=(50, 150, 220))
+            normal.save(os.path.join(furniture, "vg_cafe2f.png"))
+            with open(os.path.join(furniture, RECEIPT_NAME), encoding="utf-8") as f: receipt = json.load(f)
+            refresh_rows(receipt, furniture, ("vg_cafe2f.png",))
+            with open(os.path.join(furniture, RECEIPT_NAME), "w", encoding="utf-8") as f: json.dump(receipt, f)
+            if check(furniture) != 0: return 1
         # Positive robustness controls: color is not identity, and a small
         # capture-space translation remains a valid local furniture footprint.
         palette_positive = clone("benign palette transform")
