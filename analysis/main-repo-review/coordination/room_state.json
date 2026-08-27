@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T05:55:46Z",
+  "updated_at": "2026-08-27T05:58:11Z",
   "producer": {
     "task": "019f555f-dfd4-7d91-aa6b-9655caa34871",
     "branch": "codex/main-repo-review",
@@ -25,23 +25,23 @@
   "active_claims": [
     {
       "claim_id": "claim-cafe-source-derived-evidence-contract",
-      "task": "pending_create_thread_source_contract",
+      "task": "01a041cb-9e65-7700-b342-75787b53537c",
       "role": "Technical Architect for a source-derived café visual evidence contract, strict read-only/output-only",
       "objective": "Produce one implementation-bounding contract that cryptographically and semantically binds normal output to maintained authored source/render provenance without moving runtime authority into View or relying on heuristic pixel classes.",
       "baseline": "03fe7bd1945516535fa53ee96987a68eb77e58c9",
       "head": "03fe7bd1945516535fa53ee96987a68eb77e58c9",
       "tree": "ccebb77298927fcce860b019d136f012d37aa177",
       "branch": "codex/pr23-authored-silhouette-binding-repair",
-      "worktree": "pending_isolated_worktree_source_contract",
+      "worktree": "C:\\Users\\yp\\.codex\\worktrees\\7aa7\\26th",
       "owned_paths": [],
       "forbidden_paths": ["**/*"],
       "authority_keys": ["cafe-source-derived-evidence-contract"],
       "generated_outputs": ["task_response_only"],
       "dependencies": ["draft-pr:24:blocked_impossible","refute-task:01a041b9-2686-7d13-8f7e-56d5e998901a","recovery-task:01a041ab-ad71-7990-a562-d9c362415492","hosted-run:33042786023:success"],
       "consumer": "Future single Dev implementation owner, then Producer for a replacement stacked Draft PR and fresh QA/REFUTE",
-      "status": "reserved_pending_task_creation",
-      "last_heartbeat": "2026-08-27T05:55:46Z",
-      "stale_after": "2026-08-27T06:55:46Z",
+      "status": "active_read_only_contract",
+      "last_heartbeat": "2026-08-27T05:58:11Z",
+      "stale_after": "2026-08-27T06:58:11Z",
       "pr": null,
       "checks": {"source_candidate_core":"success","source_candidate_visual":"success","source_candidate_run":33042786023},
       "recovery_count": 0,
@@ -320,7 +320,7 @@
     }
   },
   "workspace_observation": {
-    "registered_worktrees": 186,
+    "registered_worktrees": 187,
     "dirty_worktrees": 30,
     "worktree_errors": 0,
     "unknown_or_historical_dirt_policy": "quarantine_preserve"
