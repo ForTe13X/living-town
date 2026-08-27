@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T11:30:00Z",
+  "updated_at": "2026-08-27T11:36:00Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -39,8 +39,11 @@
       "generated_outputs": ["temporary deterministic test bundles and hash-bound receipts outside repository only"],
       "dependencies": ["architect-task:01a041cb-9e65-7700-b342-75787b53537c:READY","origin/master:5b7ac426b6bc059517dba843db4150a2b38d33a7","prior-writer:01a041e7-229a-74e1-a8a3-21988cac78e5:BLOCKED_RUNTIME_SUPPLY","stale-replacement:01a0421b-3d85-7ed3-af00-cf73e538b177:NO_REMOTE_BRANCH_OR_PR_AFTER_EXPIRY","python-image-index:sha256:0bee7276f83efd4a1ee05bbbf4281d95ed28e079220a9457f25a93e3f1e3c31b","python-image-amd64:sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c","pillow-wheel:sha256:106064daa23a745510dabce1d84f29137a37224831d88eb4ce94bb187b1d7e5f","draft-pr:24:terminal_heuristic_limit","hosted-run:33042786023:success"],
       "consumer": "Producer, then independent security/QA and REFUTE; after protected-root merge, one serialized Stack B candidate owner",
-      "status": "terminal_recoverable_handoff_confirmed_write_frozen_pending_independent_reviews",
+      "status": "terminal_clean_handoff_acknowledged_archive_authorized",
       "write_lease": false,
+      "archive_condition_met": true,
+      "archive_status": "pending_archive_call",
+      "terminal_acknowledgement": {"branch_upstream_exact":true,"head":"4bd8b6770d03e19283e962fcb556944dfd3c5d94","tree":"eef3fe9b32a4598c7d774eb57570cb67d658f6d6","worktree_clean":true,"remote_mutation_after_freeze":false},
       "last_heartbeat": "2026-08-27T11:28:00Z",
       "stale_after": null,
       "pr": 25,
