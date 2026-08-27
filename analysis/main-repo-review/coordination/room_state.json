@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T02:37:32Z",
+  "updated_at": "2026-08-27T02:55:36Z",
   "producer": {
     "task": "019f555f-dfd4-7d91-aa6b-9655caa34871",
     "branch": "codex/main-repo-review",
@@ -24,71 +24,77 @@
   },
   "active_claims": [
     {
-      "claim_id": "claim-pr22-exact-head-qa",
-      "task": "01a0410f-ae43-7792-b572-50661c7b5bb0",
-      "role": "independent QA, Evidence, and Technical Visual reviewer",
-      "objective": "Verify exact Draft PR #22 as a bounded floor-semantic evidence repair and issue APPROVE, REQUEST_CHANGES, or BLOCKED_EVIDENCE with an exact-SHA P0/P1 matrix.",
-      "baseline": "6d4b60665f8e4f4c439a24e5f27647e8a5254376",
+      "claim_id": "lease-pr22-authored-geometry-binding-repair",
+      "task": "pending_create_thread_writer",
+      "role": "sole bounded Dev repair owner for PR #22 P1",
+      "objective": "Strengthen the floor-semantic assertion so coherent alternate coarse geometry cannot satisfy authored 2F furniture semantics while preserving every valid positive and existing negative control.",
+      "baseline": "55e05f84569c7bfdb6ebf475f787709200cd265b",
       "head": "55e05f84569c7bfdb6ebf475f787709200cd265b",
       "tree": "04a73a2895b3676fdbb15ca9df2229eee2ab074f",
-      "branch": "codex/pr21-floor-semantic-gate-repair",
-      "worktree": "C:\\Users\\yp\\.codex\\worktrees\\ea18\\26th",
-      "owned_paths": [],
-      "forbidden_paths": ["**/*"],
+      "branch": "codex/pr22-authored-geometry-binding-repair",
+      "worktree": "pending_isolated_worktree_writer",
+      "owned_paths": ["tools/assert_cafe_interior_density.py"],
+      "forbidden_paths": ["**/* except tools/assert_cafe_interior_density.py"],
       "authority_keys": [
-        "pr22-exact-head-qa-verdict"
+        "tools/assert_cafe_interior_density.py",
+        "pr22-authored-geometry-binding-repair"
       ],
       "generated_outputs": [
-        "task_response_only",
-        "temporary_receipts_only"
+        "feature_branch:codex/pr22-authored-geometry-binding-repair",
+        "draft_stacked_repair_pr",
+        "focused_and_full_ci_receipts"
       ],
       "dependencies": [
         "draft-pr:22",
-        "hosted-run:33033412867",
-        "diagnostic:01a040d6-b367-72a1-b421-65b3ce74861d"
+        "hosted-run:33033412867@success",
+        "refute:01a04110-3101-7e10-b5b2-cd9abe64fd4e@REQUEST_CHANGES_P1",
+        "refute-receipt@sha256:216d1662dad43dc2a4edb8aafa8361c3a3a32895ae0d3a6a9968e88035fdcda8",
+        "refute-log@sha256:11ca0e979c847905990d0f5c49c9c30835d92666ca51a52c8063c5e715e7c350"
       ],
-      "consumer": "Producer merge-gate decision for PR #22 and then PR #21",
-      "status": "active_read_only_review",
-      "last_heartbeat": "2026-08-27T02:37:32Z",
-      "stale_after": "2026-08-27T03:37:32Z",
-      "pr": 22,
-      "checks": {"hosted_exact_head":"in_progress"},
+      "consumer": "Draft PR #22, then PR #21 integration candidate",
+      "status": "reserved_pending_task_creation",
+      "last_heartbeat": "2026-08-27T02:55:36Z",
+      "stale_after": "2026-08-27T03:55:36Z",
+      "pr": null,
+      "checks": {"parent_hosted_exact_head":"success","new_head":"pending"},
       "recovery_count": 0,
-      "rollback": "Read-only review: discard temporary receipts and return no repository or GitHub mutation.",
+      "rollback": "Revert only the new bounded repair commit through review or close its stacked Draft PR; never rewrite PR #22 history.",
       "stop_lines": [
-        "candidate or base SHA drift",
-        "repository or GitHub mutation requested",
-        "evidence requires changing committed files or protected anchors",
-        "overlap with the REFUTE attack lane"
+        "baseline SHA or PR #22 head drifts",
+        "worktree is dirty before editing",
+        "repair requires any second repository path, protected anchor, CI registry, runtime, scene, or schema change",
+        "valid 1280 or 320 authored 2F evidence cannot remain green",
+        "the REFUTE fixture cannot be rejected for a causal authored-geometry reason within this one file"
       ]
-    },
-    {
-      "claim_id": "claim-pr22-exact-head-refute",
-      "task": "01a04110-3101-7e10-b5b2-cd9abe64fd4e",
-      "role": "independent adversarial REFUTE reviewer",
-      "objective": "Try to falsify PR #22 floor-semantic binding with lawful transcript, receipt, metadata, palette, geometry, and resolution mutations and issue APPROVE, REQUEST_CHANGES, or BLOCKED_EVIDENCE.",
-      "baseline": "6d4b60665f8e4f4c439a24e5f27647e8a5254376",
-      "head": "55e05f84569c7bfdb6ebf475f787709200cd265b",
-      "tree": "04a73a2895b3676fdbb15ca9df2229eee2ab074f",
-      "branch": "codex/pr21-floor-semantic-gate-repair",
-      "worktree": "C:\\Users\\yp\\.codex\\worktrees\\70ab\\26th",
-      "owned_paths": [],
-      "forbidden_paths": ["**/*"],
-      "authority_keys": ["pr22-exact-head-refute-verdict"],
-      "generated_outputs": ["task_response_only","temporary_receipts_only"],
-      "dependencies": ["draft-pr:22","hosted-run:33033412867"],
-      "consumer": "Producer merge-gate decision for PR #22 and then PR #21",
-      "status": "recovery_requested_after_platform_classification_failure",
-      "last_heartbeat": "2026-08-27T02:37:32Z",
-      "stale_after": "2026-08-27T03:37:32Z",
-      "pr": 22,
-      "checks": {"hosted_exact_head":"in_progress"},
-      "recovery_count": 1,
-      "rollback": "Read-only review: discard temporary receipts and return no repository or GitHub mutation.",
-      "stop_lines": ["candidate or base SHA drift","repository or GitHub mutation requested","attack requires committed edits or anchor rebake","duplicate another live reviewer instead of adversarial testing"]
     }
   ],
   "released_claims": [
+    {
+      "claim_id": "claim-pr22-exact-head-refute",
+      "task": "01a04110-3101-7e10-b5b2-cd9abe64fd4e",
+      "head": "55e05f84569c7bfdb6ebf475f787709200cd265b",
+      "tree": "04a73a2895b3676fdbb15ca9df2229eee2ab074f",
+      "worktree": "C:\\Users\\yp\\.codex\\worktrees\\70ab\\26th",
+      "status": "terminal_request_changes_p1_after_recovery",
+      "released_at": "2026-08-27T02:55:36Z",
+      "release_reason": "A coherent alternate-coarse-geometry fixture with valid four-frame receipts, transcripts, and hashes passed semantic_geometry without proving authored 2F furniture semantics.",
+      "evidence": ["sha256:216d1662dad43dc2a4edb8aafa8361c3a3a32895ae0d3a6a9968e88035fdcda8","sha256:11ca0e979c847905990d0f5c49c9c30835d92666ca51a52c8063c5e715e7c350"],
+      "recovery_count": 1,
+      "remote_mutation": false,
+      "provenance_preserved": true
+    },
+    {
+      "claim_id": "claim-pr22-exact-head-qa",
+      "task": "01a0410f-ae43-7792-b572-50661c7b5bb0",
+      "head": "55e05f84569c7bfdb6ebf475f787709200cd265b",
+      "tree": "04a73a2895b3676fdbb15ca9df2229eee2ab074f",
+      "worktree": "C:\\Users\\yp\\.codex\\worktrees\\ea18\\26th",
+      "status": "terminal_blocked_evidence_at_cutoff_no_product_p1",
+      "released_at": "2026-08-27T02:55:36Z",
+      "release_reason": "Focused positive and negative evidence passed, but hosted core was still in progress at the task cutoff; it subsequently completed SUCCESS.",
+      "remote_mutation": false,
+      "provenance_preserved": true
+    },
     {
       "claim_id": "claim-pr21-floor-semantic-stacked-publication",
       "task": "019f555f-dfd4-7d91-aa6b-9655caa34871",
@@ -134,9 +140,9 @@
     {
       "pr": 22,
       "head": "55e05f84569c7bfdb6ebf475f787709200cd265b",
-      "state": "draft_hosted_qualification_and_independent_review",
-      "blocker": "Hosted exact-head checks and independent QA plus REFUTE are pending.",
-      "next_trigger": "Run 33033412867 terminal plus exact-head QA and REFUTE P0/P1 closure."
+      "state": "draft_request_changes_p1",
+      "blocker": "REFUTE reproduced an alternate-coarse-geometry false positive at semantic_geometry despite exact hosted core and visual SUCCESS.",
+      "next_trigger": "One-file authored-geometry binding repair, then fresh hosted exact-head checks and independent QA plus REFUTE."
     },
     {
       "pr": 21,
@@ -173,7 +179,7 @@
   "metrics": {
     "conflicts_rejected_before_write": 1,
     "stale_or_empty_handoffs": 0,
-    "recoveries_or_replacements": 2,
+    "recoveries_or_replacements": 3,
     "open_exact_sha_p0": 0,
     "open_exact_sha_p1": 1,
     "post_merge_regressions": 0,
