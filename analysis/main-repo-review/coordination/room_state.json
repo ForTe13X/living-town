@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T05:50:06Z",
+  "updated_at": "2026-08-27T05:53:07Z",
   "producer": {
     "task": "019f555f-dfd4-7d91-aa6b-9655caa34871",
     "branch": "codex/main-repo-review",
@@ -39,9 +39,9 @@
       "generated_outputs": ["temporary_receipts_only"],
       "dependencies": ["draft-pr:24","refute-task:01a041b9-2686-7d13-8f7e-56d5e998901a","qa-task:01a041b8-d82a-73f3-a2a3-b79118eeae8a","hosted-run:33042786023:visual_success_core_in_progress"],
       "consumer": "Updated Draft PR #24, then PR #23, PR #22, and PR #21",
-      "status": "reserved_pending_followup_recovery",
-      "last_heartbeat": "2026-08-27T05:50:06Z",
-      "stale_after": "2026-08-27T06:50:06Z",
+      "status": "active_recovery_1_of_1",
+      "last_heartbeat": "2026-08-27T05:53:07Z",
+      "stale_after": "2026-08-27T06:53:07Z",
       "pr": 24,
       "checks": {"hosted_core":"in_progress","hosted_visual":"success","run":33042786023},
       "recovery_count": 1,
