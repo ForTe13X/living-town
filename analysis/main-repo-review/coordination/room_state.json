@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T22:47:24Z",
+  "updated_at": "2026-08-27T22:58:00Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -15,7 +15,7 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-08-27T22:47:24Z",
+    "at": "2026-08-27T22:58:00Z",
     "github_api_count": 32,
     "git_ls_remote_count": 32,
     "local_tracking_count": 32,
@@ -23,8 +23,8 @@
     "sorted_name_sha_set_sha256": "92b4bd08004b64f17dafd6f2d177cb9725a935e7e60b68d405350be9d246bfb2",
     "master": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "b969ba2d41c06b38bc3c72cb61038904dbb2ddb8",
-    "pr25": "fee9d774a08796f52abcfb1730546b12f4a36f57",
+    "coordination": "ce93cae29f08251304e2276ced8e3cb871e8d77c",
+    "pr25": "26e22985f9982e31b3982777f002ba3c46169acb",
     "open_prs": 9,
     "open_issues": 0,
     "releases": 0,
@@ -337,7 +337,7 @@
       "role": "Sole serialized Dev writer for PR #25 sixth exact-head trust-boundary repair",
       "objective": "Close the exact-head PNG structural parser ambiguity, verify attestations before any subject load or execution with GH_TOKEN confined to a pinned bootstrap, and move canonical OCI archive production plus material host-tool use into a digest-pinned Docker toolchain without weakening existing budget, payload, delta, or authority controls.",
       "baseline": "fee9d774a08796f52abcfb1730546b12f4a36f57",
-      "head": "373094b7802b6235903273afbe038da53d309372",
+      "head": "26e22985f9982e31b3982777f002ba3c46169acb",
       "tree": "c8835191107026c6a7c566722738dcdf465db6a9",
       "branch": "codex/cafe-source-attestation-trust-root-v1-replacement-2",
       "worktree": "D:\\Documents\\Dev\\living-town-pr25-p1-repair-wt",
@@ -378,9 +378,9 @@
         "artifact:9659612274:sha256:169f52ff9900812d622a4d40e53a1eeb45e305406fdc784bdf0510bcf6e82ba0"
       ],
       "consumer": "Producer, then fresh independent Security/QA and REFUTE at the repaired exact head",
-      "status": "terminal_clean_one_path_recovery_docker_revalidated_delivery_reserved",
+      "status": "hosted_exact_head_requalification_in_progress_writer_released",
       "write_lease": false,
-      "last_heartbeat": "2026-08-27T22:47:24Z",
+      "last_heartbeat": "2026-08-27T22:58:00Z",
       "stale_after": null,
       "pr": 25,
       "checks": {
@@ -415,16 +415,10 @@
           "selftest_image": "sha256:2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d"
         },
         "budgets": "unchanged_and_local_pass",
-        "hosted_exact_head": "failure_fee9d774a08796f52abcfb1730546b12f4a36f57",
-        "trusted_run": 33116098285,
-        "trusted_result": "failure",
         "trusted_failure_step": "Build the immutable runtime twice",
         "trusted_failure_primary": "PermissionError: [Errno 13] Permission denied: /output/.runtime-receipt-c45ilzpt",
         "trusted_failure_cleanup": "tools/trusted_cafe_capture.sh line 49: state: unbound variable",
-        "general_ci_run": 33116098209,
-        "general_ci_status": "in_progress",
         "recovery_acceptance": "explicit deterministic output UID/GID/permissions plus scope-safe cleanup trap; isolated Docker regression and negative controls; exact one-path clean handoff",
-        "protected_dispatch": "not_proven_expected_skipped_on_pr",
         "recovery_local_commit": "373094b7802b6235903273afbe038da53d309372",
         "recovery_local_tree": "c8835191107026c6a7c566722738dcdf465db6a9",
         "recovery_exact_paths": [
@@ -433,24 +427,28 @@
         "recovery_selftest": "47/47 twice byte-identical",
         "recovery_receipt_sha256": "27d38ae6ed946eb3f364fc00339a45b78de47fab45393ba4e3b4d34ebd543859",
         "recovery_scope": "explicit mounted-output UID/GID and 0750 contract; receipts returned 0640 to caller owner; scope-safe cleanup trap preserves primary exit; bounded pinned cleanup fallback",
-        "hosted_requalification": "reserved_after_non_force_exact_parent_delivery"
+        "hosted_exact_head": "26e22985f9982e31b3982777f002ba3c46169acb",
+        "hosted_requalification": "in_progress",
+        "trusted_run": 33124524622,
+        "general_ci_run": 33124524587,
+        "trusted_result": "in_progress",
+        "general_ci_status": "queued",
+        "protected_dispatch": "expected_skipped_on_pr"
       },
       "delivery": {
         "local_commit": "6dc6a1c143981c269f30180e1a29e4fdfdbba21d",
         "local_parent_tree_identical_mirror": "3fa3662c27f539c18d8c61ce2bc012425d5ff429",
         "local_tree": "ee689eab865d589a961851ce9f49e14f88abadea",
         "remote_head_before_recovery": "c647ba69bfa60237585f74171d21b49c7fe1deab",
-        "remote_commit": "6ff410936b8d380abda8279dbbee92bec1c9cef4",
-        "remote_tree": "ee689eab865d589a961851ce9f49e14f88abadea",
         "producer_recovery": "completed_non_force_git_data_api_linear_commit_after_exact_raw_blob_and_tree_verification",
+        "worktree_clean": true,
+        "remote_parent": "fee9d774a08796f52abcfb1730546b12f4a36f57",
+        "remote_commit": "26e22985f9982e31b3982777f002ba3c46169acb",
+        "remote_tree": "c8835191107026c6a7c566722738dcdf465db6a9",
+        "force": false,
         "exact_paths": [
-          ".github/workflows/trusted-cafe-attestation.yml",
-          "evidence/cafe/runtime-lock.v1.json",
-          "tools/cafe_attestation_selftest.py",
-          "tools/trusted_cafe_capture.sh",
-          "tools/verify_cafe_attested_evidence.py"
-        ],
-        "worktree_clean": true
+          "tools/trusted_cafe_capture.sh"
+        ]
       },
       "recovery_count": 1,
       "hosted_failure_recovery_count": 1,
