@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T10:53:00Z",
+  "updated_at": "2026-08-27T10:54:00Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -29,8 +29,8 @@
       "role": "Second replacement sole serialized Dev writer for protected café source-to-capture attestation trust root v1, Stack A only",
       "objective": "Implement the protected compiler, pinned capture, independent verifier, self-test, runtime lock, and GitHub build-attestation workflow that bind café evidence to maintained authored source without changing runtime authority.",
       "baseline": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
-      "head": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
-      "tree": "56173a6b69b256f825548c3d53c78acb3c1a0ee7",
+      "head": "74062985ba3d418f1086642ac413c2ab9b51c529",
+      "tree": "0277174d2ead67b98d0f2edbf932cdca779319b9",
       "branch": "codex/cafe-source-attestation-trust-root-v1-replacement-2",
       "worktree": "C:\\Users\\admin\\.codex\\worktrees\\ed00\\living-town",
       "owned_paths": [".github/workflows/trusted-cafe-attestation.yml","tools/trusted_cafe_capture.sh","tools/cafe_authored_manifest.py","tools/verify_cafe_attested_evidence.py","tools/cafe_attestation_selftest.py","evidence/cafe/runtime-lock.v1.json"],
@@ -54,8 +54,8 @@
     {
       "claim_id": "lease-cafe-source-attestation-trust-root-v1-replacement",
       "task": "01a0421b-3d85-7ed3-af00-cf73e538b177",
-      "head": "74062985ba3d418f1086642ac413c2ab9b51c529",
-      "tree": "0277174d2ead67b98d0f2edbf932cdca779319b9",
+      "head": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
+      "tree": "56173a6b69b256f825548c3d53c78acb3c1a0ee7",
       "branch": "codex/cafe-source-attestation-trust-root-v1-replacement",
       "worktree": "C:\\Users\\yp\\.codex\\worktrees\\a3fc\\26th",
       "status": "terminal_stale_unrecoverable_owner_revoked",
