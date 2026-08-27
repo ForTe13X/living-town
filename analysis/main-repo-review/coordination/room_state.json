@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T00:54:11Z",
+  "updated_at": "2026-08-27T01:24:12Z",
   "producer": {
     "task": "019f555f-dfd4-7d91-aa6b-9655caa34871",
     "branch": "codex/main-repo-review",
@@ -24,58 +24,67 @@
   },
   "active_claims": [
     {
-      "claim_id": "lease-pr21-floor-semantic-gate-repair",
-      "task": "01a0408e-3039-7852-b256-7a186574b7c0",
-      "role": "sole bounded Dev repair owner",
-      "objective": "Close PR #21 P1 floor-semantic visual-evidence false positive without runtime or framework expansion.",
+      "claim_id": "claim-pr21-floor-semantic-ci-discrepancy-diagnostic",
+      "task": "pending_create_thread",
+      "role": "independent read-only QA and REFUTE diagnostician",
+      "objective": "Explain why the repair-head natural CI failed two roundtrip captures while the untouched parent passed in the same environment, and determine the safe next publication gate.",
       "baseline": "6d4b60665f8e4f4c439a24e5f27647e8a5254376",
       "head": "55e05f84569c7bfdb6ebf475f787709200cd265b",
       "tree": "04a73a2895b3676fdbb15ca9df2229eee2ab074f",
       "branch": "codex/pr21-floor-semantic-gate-repair",
-      "worktree": "C:\\Users\\yp\\.codex\\worktrees\\9d19\\26th",
-      "owned_paths": [
-        "tools/assert_cafe_interior_density.py"
-      ],
+      "worktree": "pending_isolated_worktree",
+      "owned_paths": [],
       "forbidden_paths": [
-        "game/**",
-        "tools/assert_cafe_2f.py",
-        "tools/visual_gate.sh",
-        "tools/ci.sh",
-        ".github/**",
-        "tools/gate_*_ledger.json",
-        "analysis/**",
-        "docs/**"
+        "**/*"
       ],
       "authority_keys": [
-        "cafe-floor-semantic-evidence-gate"
+        "pr21-floor-semantic-ci-discrepancy-diagnostic"
       ],
-      "generated_outputs": [],
+      "generated_outputs": [
+        "task_response_only",
+        "temporary_receipts_only"
+      ],
       "dependencies": [
-        "pr21@6d4b60665f8e4f4c439a24e5f27647e8a5254376",
-        "refute-p1-floor-semantic-counterexample"
+        "parent@6d4b60665f8e4f4c439a24e5f27647e8a5254376",
+        "candidate@55e05f84569c7bfdb6ebf475f787709200cd265b",
+        "candidate-full-ci-log@sha256:a8729b3d1048944f9cb203b0b02f4b6df76ca16f90eef9a38d94ef2ccb9a714c",
+        "parent-visual-control-log@sha256:62e7064a996ab1a268b7c65623a053dcce48bf9bdb1f05c818f43f2bb0bafac1"
       ],
-      "consumer": "Producer task 019f555f-dfd4-7d91-aa6b-9655caa34871 and the stacked repair review for PR #21",
-      "status": "active_local_visual_infrastructure_control",
-      "last_heartbeat": "2026-08-27T00:54:11Z",
-      "stale_after": "2026-08-27T01:54:11Z",
+      "consumer": "Producer task 019f555f-dfd4-7d91-aa6b-9655caa34871 and the publication decision for the PR #21 stacked repair",
+      "status": "reserved_pending_task_creation",
+      "last_heartbeat": "2026-08-27T01:24:12Z",
+      "stale_after": "2026-08-27T02:24:12Z",
       "pr": null,
       "checks": {
-        "focused_self_test": "pass",
-        "honest_1280_and_320": "pass",
-        "full_natural_ci": "fail_space_and_floor_roundtrip_capture_only",
-        "core_and_integration": "pass",
-        "cafe_density_inside_visual_gate": "pass",
-        "true_crash_scan": "zero",
-        "untouched_parent_same_environment_control": "running"
+        "candidate_full_natural_ci": "fail_space_and_floor_roundtrip_capture_only",
+        "candidate_repair_specific_controls": "pass",
+        "candidate_true_crash_scan": "zero",
+        "untouched_parent_same_environment_visual_control": "pass",
+        "root_cause": "unexplained"
       },
-      "recovery_count": 1,
-      "rollback": "Revert only commit 55e05f84569c7bfdb6ebf475f787709200cd265b through the stacked PR; do not rewrite history.",
+      "recovery_count": 0,
+      "rollback": "Read-only diagnostic: discard temporary receipts; do not mutate repository, branches, PRs, checks, or anchors.",
       "stop_lines": [
-        "second repository path required",
-        "runtime or protected-anchor mutation required",
-        "exact attack cannot be rejected without brittle golden copying",
-        "new P0 or P1 outside the lease"
+        "repository or PR mutation requested",
+        "test requires changing committed files rather than disposable copies",
+        "candidate or parent SHA drift",
+        "a second live task begins diagnosing the same discrepancy"
       ]
+    }
+  ],
+  "released_claims": [
+    {
+      "claim_id": "lease-pr21-floor-semantic-gate-repair",
+      "task": "01a0408e-3039-7852-b256-7a186574b7c0",
+      "head": "55e05f84569c7bfdb6ebf475f787709200cd265b",
+      "tree": "04a73a2895b3676fdbb15ca9df2229eee2ab074f",
+      "branch": "codex/pr21-floor-semantic-gate-repair",
+      "worktree": "C:\\Users\\yp\\.codex\\worktrees\\9d19\\26th",
+      "status": "terminal_stopped_unpublished",
+      "released_at": "2026-08-27T01:24:12Z",
+      "release_reason": "Recovery control contradicted the proposed infrastructure classification: untouched parent visual gate passed while candidate full CI failed both roundtrip captures.",
+      "remote_mutation": false,
+      "provenance_preserved": true
     }
   ],
   "frozen_candidates": [
@@ -114,7 +123,7 @@
   "metrics": {
     "conflicts_rejected_before_write": 1,
     "stale_or_empty_handoffs": 0,
-    "recoveries_or_replacements": 1,
+    "recoveries_or_replacements": 2,
     "open_exact_sha_p0": 0,
     "open_exact_sha_p1": 1,
     "post_merge_regressions": 0,
