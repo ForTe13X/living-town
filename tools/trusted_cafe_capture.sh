@@ -126,6 +126,7 @@ ARG GODOT_VERSION
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONHASHSEED=0 \
+    SOURCE_DATE_EPOCH=0 \
     TZ=UTC \
     LANG=C.UTF-8 \
     LC_ALL=C.UTF-8 \
@@ -144,7 +145,9 @@ RUN printf '%s\n' \
       libgl1 libgl1-mesa-dri libglx-mesa0 libx11-6 libxcursor1 libxext6 libxi6 \
       libxinerama1 libxrandr2 libxrender1 procps tar xauth xvfb \
  && rm -rf /var/lib/apt/lists/* /var/cache/apt/* /var/log/apt/* \
-      /var/log/dpkg.log /var/log/alternatives.log
+      /var/log/dpkg.log /var/log/alternatives.log /var/cache/fontconfig/* \
+      /var/lib/systemd/random-seed \
+ && rm -f /etc/machine-id /var/lib/dbus/machine-id
 COPY ${PILLOW_FILENAME} /tmp/${PILLOW_FILENAME}
 COPY godot.zip /tmp/godot.zip
 RUN printf '%s  %s\n' "$PILLOW_SHA256" "/tmp/$PILLOW_FILENAME" | sha256sum -c - \
@@ -191,8 +194,51 @@ EOF
   second="$context/runtime-second.oci.tar"
   build_once first "$first"
   build_once second "$second"
-  [ "$(sha256_file "$first")" = "$(sha256_file "$second")" ] || \
+  if [ "$(sha256_file "$first")" != "$(sha256_file "$second")" ]; then
+    python -B - "$context/layout-first" "$context/layout-second" <<'PY'
+import hashlib, json, pathlib, sys, tarfile
+
+def blob(layout, digest):
+    algorithm, value = digest.split(":", 1)
+    return pathlib.Path(layout, "blobs", algorithm, value)
+
+def manifest(layout):
+    index = json.load(open(pathlib.Path(layout, "index.json"), encoding="utf-8"))
+    descriptor = index["manifests"][0]
+    return json.load(open(blob(layout, descriptor["digest"]), encoding="utf-8"))
+
+def layer_inventory(path):
+    result = {}
+    with tarfile.open(path, "r:*") as archive:
+        for member in archive.getmembers():
+            payload = b""
+            if member.isfile():
+                source = archive.extractfile(member)
+                payload = source.read() if source else b""
+            result[member.name] = (
+                member.type.decode("latin1") if isinstance(member.type, bytes) else str(member.type),
+                member.mode, member.uid, member.gid, member.size, member.linkname,
+                hashlib.sha256(payload).hexdigest(),
+            )
+    return result
+
+left_layout, right_layout = sys.argv[1:]
+left, right = manifest(left_layout), manifest(right_layout)
+print("OCI_NONDETERMINISM config", left["config"]["digest"], right["config"]["digest"])
+for index, (left_layer, right_layer) in enumerate(zip(left["layers"], right["layers"])):
+    if left_layer["digest"] == right_layer["digest"]:
+        continue
+    print("OCI_NONDETERMINISM layer", index, left_layer["digest"], right_layer["digest"])
+    a = layer_inventory(blob(left_layout, left_layer["digest"]))
+    b = layer_inventory(blob(right_layout, right_layer["digest"]))
+    differences = sorted(path for path in set(a) | set(b) if a.get(path) != b.get(path))
+    for path in differences[:200]:
+        print("OCI_NONDETERMINISM path", path, a.get(path), b.get(path))
+    if len(differences) > 200:
+        print("OCI_NONDETERMINISM truncated", len(differences))
+PY
     fail "independent runtime builds are not byte deterministic"
+  fi
   [ "$(stat -c '%s' "$first")" -le "$max_archive_bytes" ] || fail "runtime archive exceeds budget"
   archive="$out/runtime.oci.tar"
   cp "$first" "$archive"
