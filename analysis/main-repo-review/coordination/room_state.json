@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T03:53:34Z",
+  "updated_at": "2026-08-27T04:19:24Z",
   "producer": {
     "task": "019f555f-dfd4-7d91-aa6b-9655caa34871",
     "branch": "codex/main-repo-review",
@@ -29,8 +29,8 @@
       "role": "sole bounded Dev repair owner for PR #23 topology false positives",
       "objective": "Reject thin cross or T geometry and exact-threshold one-axis stripes with unrelated density while preserving legitimate furniture evidence at 1280 and 320.",
       "baseline": "a0a1740870bdfd038f40af813d9eb90ab4c960eb",
-      "head": "a0a1740870bdfd038f40af813d9eb90ab4c960eb",
-      "tree": "7b200c2416ff1b8ea3c37e786544fe655a336776",
+      "head": "6161a02d14334826d3a2f982ea9939595a2780af",
+      "tree": "36e82e1ef1265a2677cf6679d3cf747322383bd1",
       "branch": "codex/pr22-authored-geometry-binding-repair",
       "worktree": "C:\\Users\\yp\\.codex\\worktrees\\6a12\\26th",
       "owned_paths": ["tools/assert_cafe_interior_density.py"],
@@ -39,12 +39,12 @@
       "generated_outputs": ["temporary_receipts_only"],
       "dependencies": ["draft-pr:23","refute-task:01a04141-cb68-7540-9333-ae247c598121","hosted-run:33035729314:success"],
       "consumer": "Draft PR #23 then stacked PR #22 and PR #21",
-      "status": "active_bounded_writer",
-      "last_heartbeat": "2026-08-27T03:53:34Z",
-      "stale_after": "2026-08-27T04:53:34Z",
+      "status": "recovery_handoff_requested",
+      "last_heartbeat": "2026-08-27T04:19:24Z",
+      "stale_after": "2026-08-27T04:49:24Z",
       "pr": 23,
-      "checks": {"hosted_core":"success","hosted_visual":"success"},
-      "recovery_count": 0,
+      "checks": {"hosted_core":"in_progress","hosted_visual":"success","run":33038078718},
+      "recovery_count": 1,
       "rollback": "Revert only the new bounded repair commit through review; never rewrite a0a1740.",
       "stop_lines": ["candidate or branch SHA drift","worktree becomes dirty before handoff","repair requires another repository path","solution relies on palette, exact antialias pixels, a full-frame golden, opaque hashes, or protected anchor rebake","legitimate 1280 or 320 furniture evidence regresses"]
     }
@@ -161,10 +161,10 @@
   "frozen_candidates": [
     {
       "pr": 23,
-      "head": "a0a1740870bdfd038f40af813d9eb90ab4c960eb",
-      "state": "draft_request_changes_p1",
-      "blocker": "Independent robustness review reproduced thin cross or T and exact-threshold one-axis stripe false positives at both resolutions despite exact-head hosted core and visual SUCCESS.",
-      "next_trigger": "One-file topology-bound repair, then fresh hosted exact-head checks and independent QA plus REFUTE."
+      "head": "6161a02d14334826d3a2f982ea9939595a2780af",
+      "state": "draft_recovery_handoff_pending",
+      "blocker": "One-file repair commit is clean and normal-pushed, but the writer turn completed with an empty task response; exact tests and residual-risk handoff must be recovered once before independent review.",
+      "next_trigger": "Recovery handoff plus run 33038078718 terminal, then fresh exact-head QA and REFUTE."
     },
     {
       "pr": 22,
@@ -207,8 +207,8 @@
   },
   "metrics": {
     "conflicts_rejected_before_write": 1,
-    "stale_or_empty_handoffs": 0,
-    "recoveries_or_replacements": 3,
+    "stale_or_empty_handoffs": 1,
+    "recoveries_or_replacements": 4,
     "open_exact_sha_p0": 0,
     "open_exact_sha_p1": 2,
     "post_merge_regressions": 0,
