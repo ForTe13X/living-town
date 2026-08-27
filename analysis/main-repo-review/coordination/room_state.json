@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T21:52:02Z",
+  "updated_at": "2026-08-27T22:09:34Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -144,8 +144,8 @@
       "role": "Bounded UI/UX and art-direction benchmark writer",
       "objective": "Turn mewamew/my_ai_town main at exact aac9992 into a non-copying minimum visual-quality gate for Living Town, score the current exact evidence honestly, and define the first executable cafe exterior-to-world-log production slice plus original-asset manifest without changing game runtime or Sim authority.",
       "baseline": "635d113129ad463ababa800dc7c42c914aab600c",
-      "head": "635d113129ad463ababa800dc7c42c914aab600c",
-      "tree": "75fac9d63cc35cc3772bbbad0e8f2e2fc01aa875",
+      "head": "b462aa381626ab95913958a7ec448dea7bddafa8",
+      "tree": "c1aa40e34b04c38a2e4e208c3ec74a723e5fad41",
       "branch": "codex/ui-ux-design-exploration",
       "worktree": "D:\\Documents\\Dev\\living-town-ui-ux-resource-pool",
       "owned_paths": ["analysis/resource-pool/ui-ux/visual/benchmarks/my-ai-town-quality-floor-v1/**","analysis/resource-pool/ui-ux/tools/validate_my_ai_town_quality_floor.mjs","analysis/resource-pool/ui-ux/receipts/batch-028-my-ai-town-quality-floor.md"],
@@ -154,16 +154,17 @@
       "generated_outputs": ["benchmark screenshot metadata and hashes","side-by-side gap matrix","original asset request manifest only; generated assets optional and proposal-only"],
       "dependencies": ["mewamew/my_ai_town:main:aac9992c2d195402a90327754c1f6ef279675076","living-town-current-visual-evidence:dff3656a0b46b0f108f60abb6fa5ab7b1b5068b7","existing-resource-pool:B15-art-direction:B16-pixellab-auth-no-go","consumer:future-cafe-polish-writer"],
       "consumer": "Producer conflict graph, then one future production cafe visual/UI slice owner after Stack A and authority gates permit",
-      "status": "dispatch_reserved_benchmark_and_gap_contract_only",
-      "write_lease": true,
-      "last_heartbeat": "2026-08-27T21:52:02Z",
-      "stale_after": "2026-08-27T22:52:02Z",
-      "checks": {"reference_repo":"mewamew/my_ai_town","reference_exact_head":"aac9992c2d195402a90327754c1f6ef279675076","reference_screenshots":5,"current_visual_verdict":"below_required_floor","license_boundary":"root_license_unresolved_no_copy_or_redistribution","pixellab":"optional_unavailable_or_auth_blocked_does_not_waive_gate","game_changes":"forbidden","merge":"not_applicable_output_only","human_acceptance":"not_ready"},
+      "status": "terminal_clean_benchmark_gate_ready_for_producer_review",
+      "write_lease": false,
+      "last_heartbeat": "2026-08-27T22:09:34Z",
+      "stale_after": null,
+      "checks": {"reference_repo":"mewamew/my_ai_town","reference_exact_head":"aac9992c2d195402a90327754c1f6ef279675076","reference_screenshots":5,"asset_requests":7,"negative_teeth":6,"current_visual_verdict":"below_required_floor","license_boundary":"root_license_unresolved_no_copy_or_redistribution","pixellab":"optional_unavailable_or_auth_blocked_does_not_waive_gate","game_changes":"forbidden","exact_paths":8,"worktree_clean":true,"docker":{"client":"29.6.2","server":"29.6.2","context":"desktop-linux","platform":"linux/amd64","image":"node@sha256:d2166de198f26e17e5a442f537754dd616ab069c47cc57b889310a717e0abbf9","node":"22.19.0","network":"none","rootfs":"read_only","capabilities":"all_dropped","no_new_privileges":true,"runs":2,"outputs_byte_identical":true,"result":"PASS quality floor reference_images=5 asset_requests=7 negative_teeth=6 decision=BELOW_REQUIRED_FLOOR","cleanup":"two task containers removed; no task container remains"},"merge":"not_applicable_output_only","human_acceptance":"not_ready"},
+      "release_reason": "B28 produced one clean eight-path commit with exact live reference identity, no-copy license boundary, honest scorecard, measurable desktop/mobile gate, named-consumer production slice, seven original-asset requests and six negative teeth; independent Producer Docker revalidation passed twice byte-identically.",
       "rollback": "Drop the isolated benchmark commit or omit cherry-pick; no production files, remote refs, PRs or authority state are changed.",
       "stop_lines": ["any game/runtime/Sim path is required","reference assets would be copied or redistributed","license provenance cannot be stated honestly","benchmark cannot name a real future consumer","existing resource-pool path outside the lease must change","task or worktree is dirty or baseline drifts"]
     }
   ],
-  "current_conflict_graph": {"at":"2026-08-27T21:52:02Z","active_writers":2,"read_only_reviewers":0,"shared_write_conflicts":0,"decision":"PR25 recovery remains serialized to tools/trusted_cafe_capture.sh. A second writer may write only the isolated UI/UX resource-pool benchmark paths at baseline 635d113; it cannot touch game, runtime, Sim, CI, coordination, docs, shared authority or third-party assets. The two lanes have distinct branches, worktrees, paths, authority keys, generated outputs, tests and consumers."},
+  "current_conflict_graph": {"at":"2026-08-27T22:09:34Z","active_writers":1,"read_only_reviewers":0,"shared_write_conflicts":0,"decision":"The isolated B28 UI/UX benchmark writer is terminal clean and released at b462aa3/tree c1aa40e; its output remains local and unmerged pending Producer adoption. PR25 recovery remains the sole active writer on tools/trusted_cafe_capture.sh. Game, Sim, CI, Stack B, Ready, merge and authority lanes remain frozen."},
   "released_claims": [
     {
       "claim_id": "lease-cafe-source-attestation-trust-root-v1-replacement",
