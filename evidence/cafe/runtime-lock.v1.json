@@ -1,0 +1,91 @@
+{
+  "actions": {
+    "attest_build_provenance": "43d14bc2b83dec42d39ecae14e916627a18bb661",
+    "checkout": "11d5960a326750d5838078e36cf38b85af677262",
+    "setup_python": "a26af69be951a213d495a4c3e4e4022e16d87065",
+    "upload_artifact": "ea165f8d65b6e75b540449e92b4886f43607fa02"
+  },
+  "authority": {
+    "evidence_only": true,
+    "does_not_authorize": [
+      "canon",
+      "collision",
+      "navigation",
+      "pixels",
+      "portals",
+      "replay",
+      "save",
+      "simulation",
+      "view"
+    ]
+  },
+  "capture_contract": {
+    "audio": "Dummy",
+    "display": "x11/Xvfb",
+    "draw_skip_for_bare": "interior_furniture",
+    "frames": 8,
+    "renderer": "opengl3",
+    "seed": 3,
+    "slots": [
+      "cafe_1f_normal",
+      "cafe_1f_bare",
+      "cafe_2f_normal",
+      "cafe_2f_bare"
+    ],
+    "space": "cafe",
+    "tick": 600,
+    "viewports": [
+      "1280x768",
+      "320x192"
+    ]
+  },
+  "debian_snapshot": {
+    "debian": "https://snapshot.debian.org/archive/debian/20260801T000000Z",
+    "security": "https://snapshot.debian.org/archive/debian-security/20260801T000000Z",
+    "timestamp": "20260801T000000Z"
+  },
+  "godot": {
+    "archive_filename": "Godot_v4.6.2-stable_linux.x86_64.zip",
+    "archive_sha256": "30e6b6d141f0cd5bebd629ad1d0ef1324e60091bb20662d026b402ba58c59937",
+    "binary_sha256": "5a806b2b385279d9607094d33e946ed828e9606df4cb46d258ca27468dc5c1c9",
+    "url": "https://github.com/godotengine/godot/releases/download/4.6.2-stable/Godot_v4.6.2-stable_linux.x86_64.zip"
+  },
+  "host_tools": {
+    "buildah": "1.33.7",
+    "gh": "2.97.0",
+    "podman": "5.8.4",
+    "skopeo": "1.13.3"
+  },
+  "limits": {
+    "artifact_retention_days": 90,
+    "hosted_timeout_minutes": 35,
+    "max_evidence_frames": 12,
+    "max_runtime_archive_bytes": 230686720,
+    "max_total_artifact_bytes": 262144000
+  },
+  "pillow": {
+    "filename": "pillow-11.3.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "106064daa23a745510dabce1d84f29137a37224831d88eb4ce94bb187b1d7e5f",
+    "url": "https://files.pythonhosted.org/packages/f2/2f/d7675ecae6c43e9f12aa8d58b6012683b20b6edfbdac7abcb4e6af7a3784/pillow-11.3.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl"
+  },
+  "python_image": {
+    "amd64_manifest_digest": "sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c",
+    "build_reference": "docker.io/library/python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c",
+    "index_digest": "sha256:0bee7276f83efd4a1ee05bbbf4281d95ed28e079220a9457f25a93e3f1e3c31b",
+    "index_reference": "docker.io/library/python@sha256:0bee7276f83efd4a1ee05bbbf4281d95ed28e079220a9457f25a93e3f1e3c31b",
+    "platform": "linux/amd64",
+    "tag": "3.11.16-slim-bookworm"
+  },
+  "recipe_schema": "living-town.cafe-runtime-recipe.v1",
+  "schema": "living-town.cafe-runtime-lock.v1",
+  "versions": {
+    "godot": "4.6.2.stable.official.71f334935",
+    "pillow": "11.3.0",
+    "python": "3.11.16"
+  },
+  "workflow": {
+    "path": ".github/workflows/trusted-cafe-attestation.yml",
+    "ref": "ForTe13X/living-town/.github/workflows/trusted-cafe-attestation.yml@refs/heads/master",
+    "repository": "ForTe13X/living-town"
+  }
+}

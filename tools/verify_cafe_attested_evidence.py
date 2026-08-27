@@ -1,0 +1,891 @@
+#!/usr/bin/env python3
+"""Independently verify a protected cafe evidence bundle and GitHub attestation."""
+
+from __future__ import annotations
+
+import argparse
+import binascii
+import hashlib
+import json
+import os
+import re
+import shutil
+import struct
+import subprocess
+import sys
+import tarfile
+import tempfile
+import zlib
+from pathlib import Path, PurePosixPath
+from typing import Any, Callable
+
+import cafe_authored_manifest as authored
+
+
+BUNDLE_SCHEMA = "living-town.trusted-cafe-evidence.v1"
+RECEIPT_SCHEMA = "living-town.trusted-cafe-capture-receipt.v1"
+TRANSCRIPT_SCHEMA = "living-town.trusted-cafe-capture-transcript.v1"
+RUNTIME_LOCK_SCHEMA = "living-town.cafe-runtime-lock.v1"
+RUNTIME_RECEIPT_SCHEMA = "living-town.cafe-runtime-build-receipt.v1"
+WORKFLOW_PATH = ".github/workflows/trusted-cafe-attestation.yml"
+WORKFLOW_REF_SUFFIX = f"/{WORKFLOW_PATH}@refs/heads/master"
+SLSA_PREDICATE = "https://slsa.dev/provenance/v1"
+HEX_RE = re.compile(r"^[0-9a-f]{64}$")
+GIT_RE = re.compile(r"^[0-9a-f]{40}$")
+RUN_ID_RE = re.compile(r"^[1-9][0-9]{0,19}$")
+VIEWPORTS = {"1280x768": (1280, 768), "320x192": (320, 192)}
+SLOTS = {
+    "cafe_1f_normal": ("1f", "normal", "none", "vg_int_cafe.png"),
+    "cafe_1f_bare": ("1f", "bare", "interior_furniture", "vg_cafe1f_bare.png"),
+    "cafe_2f_normal": ("2f", "normal", "none", "vg_cafe2f.png"),
+    "cafe_2f_bare": ("2f", "bare", "interior_furniture", "vg_cafe2f_bare.png"),
+}
+TRUSTED_TOOL_PATHS = (
+    WORKFLOW_PATH,
+    "evidence/cafe/runtime-lock.v1.json",
+    "tools/cafe_attestation_selftest.py",
+    "tools/cafe_authored_manifest.py",
+    "tools/trusted_cafe_capture.sh",
+    "tools/verify_cafe_attested_evidence.py",
+    "tools/vg_shoot.sh",
+)
+DOES_NOT_AUTHORIZE = [
+    "canon",
+    "collision",
+    "navigation",
+    "pixels",
+    "portals",
+    "replay",
+    "save",
+    "simulation",
+    "view",
+]
+
+
+class VerificationError(ValueError):
+    """A fail-closed evidence or provenance violation."""
+
+
+def _reject_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise VerificationError(f"duplicate JSON key: {key}")
+        result[key] = value
+    return result
+
+
+def load_json_bytes(data: bytes, where: str) -> Any:
+    try:
+        text = data.decode("utf-8")
+        return json.loads(
+            text,
+            object_pairs_hook=_reject_duplicates,
+            parse_constant=lambda value: (_ for _ in ()).throw(
+                VerificationError(f"non-finite JSON number in {where}: {value}")
+            ),
+        )
+    except (UnicodeError, json.JSONDecodeError) as exc:
+        raise VerificationError(f"malformed UTF-8 JSON in {where}: {exc}") from exc
+
+
+def load_json_file(path: Path) -> Any:
+    try:
+        return load_json_bytes(path.read_bytes(), str(path))
+    except OSError as exc:
+        raise VerificationError(f"cannot read {path}: {exc}") from exc
+
+
+def canonical_bytes(value: Any) -> bytes:
+    try:
+        return (
+            json.dumps(
+                value,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=True,
+                allow_nan=False,
+            )
+            + "\n"
+        ).encode("ascii")
+    except (TypeError, ValueError) as exc:
+        raise VerificationError(f"non-canonical JSON value: {exc}") from exc
+
+
+def sha256_bytes(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def exact_keys(value: Any, expected: set[str], where: str) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise VerificationError(f"{where} must be an object")
+    actual = set(value)
+    if actual != expected:
+        raise VerificationError(
+            f"{where} keys mismatch; missing={sorted(expected - actual)}, extra={sorted(actual - expected)}"
+        )
+    return value
+
+
+def require_hex(value: Any, where: str, *, git: bool = False) -> str:
+    pattern = GIT_RE if git else HEX_RE
+    if not isinstance(value, str) or not pattern.fullmatch(value):
+        raise VerificationError(f"{where} is not a canonical digest")
+    return value
+
+
+def git(repo: Path, *args: str) -> str:
+    command = ["git", "-C", str(repo), *args]
+    try:
+        return subprocess.check_output(command, text=True, stderr=subprocess.STDOUT).strip()
+    except (OSError, subprocess.CalledProcessError) as exc:
+        detail = getattr(exc, "output", "")
+        raise VerificationError(f"git command failed: {' '.join(command)}: {str(detail).strip()}") from exc
+
+
+def verify_checkout(repo: Path, expected_sha: str, expected_tree: str, label: str) -> None:
+    if git(repo, "rev-parse", "HEAD") != expected_sha:
+        raise VerificationError(f"{label} HEAD does not match the attested commit")
+    if git(repo, "show", "-s", "--format=%T", "HEAD") != expected_tree:
+        raise VerificationError(f"{label} tree does not match the attested tree")
+    dirty = git(repo, "status", "--porcelain=v1", "--untracked-files=all")
+    if dirty:
+        raise VerificationError(f"{label} checkout is dirty: {dirty}")
+
+
+def verify_action_pins(trusted_root: Path, runtime_lock: dict[str, Any]) -> None:
+    workflow_path = trusted_root / WORKFLOW_PATH
+    try:
+        workflow = workflow_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        raise VerificationError(f"cannot read protected workflow: {exc}") from exc
+    actions = {
+        "attest_build_provenance": "actions/attest-build-provenance",
+        "checkout": "actions/checkout",
+        "setup_python": "actions/setup-python",
+        "upload_artifact": "actions/upload-artifact",
+    }
+    for lock_key, action_name in actions.items():
+        pin = runtime_lock.get("actions", {}).get(lock_key)
+        require_hex(pin, f"runtime lock action pin {lock_key}", git=True)
+        found = re.findall(rf"uses:\s*{re.escape(action_name)}@([^\s#]+)", workflow)
+        if not found or set(found) != {pin}:
+            raise VerificationError(f"workflow action pin drift for {action_name}: {found}")
+
+
+def inspect_png(data: bytes, where: str) -> tuple[int, int]:
+    if not data.startswith(b"\x89PNG\r\n\x1a\n"):
+        raise VerificationError(f"{where} is not a PNG")
+    offset = 8
+    chunks: list[tuple[bytes, bytes]] = []
+    saw_iend = False
+    while offset < len(data):
+        if len(data) - offset < 12:
+            raise VerificationError(f"{where} has a truncated PNG chunk")
+        length = struct.unpack(">I", data[offset : offset + 4])[0]
+        chunk_type = data[offset + 4 : offset + 8]
+        end = offset + 12 + length
+        if end > len(data):
+            raise VerificationError(f"{where} has a truncated PNG payload")
+        payload = data[offset + 8 : offset + 8 + length]
+        expected_crc = struct.unpack(">I", data[offset + 8 + length : end])[0]
+        actual_crc = binascii.crc32(chunk_type + payload) & 0xFFFFFFFF
+        if expected_crc != actual_crc:
+            raise VerificationError(f"{where} has a bad PNG CRC")
+        chunks.append((chunk_type, payload))
+        offset = end
+        if chunk_type == b"IEND":
+            saw_iend = True
+            break
+    if not saw_iend or offset != len(data):
+        raise VerificationError(f"{where} has no terminal IEND or has trailing bytes")
+    if not chunks or chunks[0][0] != b"IHDR" or len(chunks[0][1]) != 13:
+        raise VerificationError(f"{where} has an invalid IHDR")
+    width, height, bit_depth, color_type, compression, filtering, interlace = struct.unpack(
+        ">IIBBBBB", chunks[0][1]
+    )
+    if width < 1 or height < 1 or compression != 0 or filtering != 0 or interlace not in (0, 1):
+        raise VerificationError(f"{where} has unsupported PNG geometry/encoding")
+    if bit_depth not in (1, 2, 4, 8, 16) or color_type not in (0, 2, 3, 4, 6):
+        raise VerificationError(f"{where} has unsupported PNG color metadata")
+    idat = b"".join(payload for kind, payload in chunks if kind == b"IDAT")
+    if not idat:
+        raise VerificationError(f"{where} has no IDAT")
+    try:
+        zlib.decompress(idat)
+    except zlib.error as exc:
+        raise VerificationError(f"{where} has corrupt PNG image data: {exc}") from exc
+    return width, height
+
+
+def safe_extract(bundle: Path, destination: Path) -> list[str]:
+    names: list[str] = []
+    total = 0
+    try:
+        with tarfile.open(bundle, "r:gz") as archive:
+            members = archive.getmembers()
+            if len(members) > 128:
+                raise VerificationError("bundle contains too many members")
+            for member in members:
+                pure = PurePosixPath(member.name)
+                if (
+                    pure.is_absolute()
+                    or not pure.parts
+                    or ".." in pure.parts
+                    or "\\" in member.name
+                    or ":" in member.name
+                    or member.name != pure.as_posix()
+                    or member.name.startswith("./")
+                ):
+                    raise VerificationError(f"unsafe bundle path: {member.name}")
+                if member.name in names:
+                    raise VerificationError(f"duplicate bundle member: {member.name}")
+                if not member.isfile():
+                    raise VerificationError(f"bundle member is not a regular file: {member.name}")
+                if member.size < 0 or member.size > 100 * 1024 * 1024:
+                    raise VerificationError(f"bundle member size is invalid: {member.name}")
+                total += member.size
+                if total > 250 * 1024 * 1024:
+                    raise VerificationError("bundle exceeds the 250 MiB limit")
+                names.append(member.name)
+            for member in members:
+                target = destination.joinpath(*PurePosixPath(member.name).parts)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                source = archive.extractfile(member)
+                if source is None:
+                    raise VerificationError(f"cannot extract {member.name}")
+                with target.open("xb") as output:
+                    shutil.copyfileobj(source, output)
+    except (OSError, tarfile.TarError) as exc:
+        raise VerificationError(f"malformed evidence archive: {exc}") from exc
+    return sorted(names)
+
+
+def expected_argv(viewport: str, floor: str, mode: str, filename: str) -> list[str]:
+    args = [
+        "godot",
+        "--path",
+        "<candidate-game-copy>",
+        "--display-driver",
+        "x11",
+        "--rendering-driver",
+        "opengl3",
+        "--audio-driver",
+        "Dummy",
+        "--resolution",
+        viewport,
+        "--single-window",
+        "--",
+        "--backend",
+        "logic",
+        "--seed",
+        "3",
+        "--warmup-tick",
+        "600",
+        "--probe-space",
+        "cafe",
+        "--probe-floor",
+        floor,
+        "--shot-fit",
+    ]
+    if mode == "bare":
+        args += ["--draw-skip", "interior_furniture"]
+    return args + ["--shot", f"<output>/{viewport}/{filename}"]
+
+
+def _expected_session(context: dict[str, str], viewport: str) -> str:
+    material = "\0".join(
+        [
+            context["repository"],
+            context["candidate_sha"],
+            context["candidate_tree"],
+            context["workflow_sha"],
+            context["workflow_tree"],
+            context["run_id"],
+            context["run_attempt"],
+            viewport,
+        ]
+    ).encode("ascii")
+    return hashlib.sha256(material).hexdigest()
+
+
+def _expected_pair(session: str, floor: str, authored_binding: str) -> str:
+    return hashlib.sha256(f"{session}\0{floor}\0{authored_binding}".encode("ascii")).hexdigest()
+
+
+def validate_attestation_output(data: bytes, bundle_sha256: str, bundle_name: str) -> dict[str, Any]:
+    result = load_json_bytes(data, "gh attestation verification output")
+    if not isinstance(result, list) or not result:
+        raise VerificationError("gh returned no verified build-provenance attestation")
+    matches: list[dict[str, Any]] = []
+    for index, item in enumerate(result):
+        if not isinstance(item, dict) or not isinstance(item.get("verificationResult"), dict):
+            raise VerificationError(f"gh result[{index}] is malformed")
+        statement = item["verificationResult"].get("statement")
+        if not isinstance(statement, dict) or statement.get("predicateType") != SLSA_PREDICATE:
+            continue
+        subjects = statement.get("subject")
+        if not isinstance(subjects, list):
+            raise VerificationError(f"gh result[{index}] has malformed subjects")
+        for subject in subjects:
+            if not isinstance(subject, dict) or not isinstance(subject.get("digest"), dict):
+                continue
+            if subject["digest"].get("sha256") == bundle_sha256 and subject.get("name") in (
+                bundle_name,
+                f"./{bundle_name}",
+            ):
+                matches.append(item)
+    if len(matches) != 1:
+        raise VerificationError(f"expected exactly one verified attestation subject, found {len(matches)}")
+    return matches[0]
+
+
+def run_github_attestation(
+    bundle: Path,
+    repository: str,
+    workflow_sha: str,
+    gh_bin: str,
+) -> bytes:
+    signer_workflow = f"{repository}/{WORKFLOW_PATH}"
+    command = [
+        gh_bin,
+        "attestation",
+        "verify",
+        str(bundle),
+        "--repo",
+        repository,
+        "--signer-workflow",
+        signer_workflow,
+        "--signer-digest",
+        workflow_sha,
+        "--source-digest",
+        workflow_sha,
+        "--source-ref",
+        "refs/heads/master",
+        "--cert-oidc-issuer",
+        "https://token.actions.githubusercontent.com",
+        "--deny-self-hosted-runners",
+        "--predicate-type",
+        SLSA_PREDICATE,
+        "--format",
+        "json",
+    ]
+    try:
+        completed = subprocess.run(command, check=False, capture_output=True)
+    except OSError as exc:
+        raise VerificationError(f"cannot execute gh attestation verifier: {exc}") from exc
+    if completed.returncode != 0:
+        detail = completed.stderr.decode("utf-8", "replace").strip()
+        raise VerificationError(f"GitHub attestation verification failed: {detail}")
+    return completed.stdout
+
+
+AttestationRunner = Callable[[Path, str, str], bytes]
+
+
+def verify_bundle(
+    *,
+    bundle: Path,
+    candidate_root: Path,
+    trusted_root: Path,
+    expected: dict[str, str],
+    runtime_archive_sha256: str,
+    attestation_runner: AttestationRunner,
+    receipt_output: Path | None = None,
+) -> dict[str, Any]:
+    bundle = bundle.resolve(strict=True)
+    candidate_root = candidate_root.resolve(strict=True)
+    trusted_root = trusted_root.resolve(strict=True)
+    bundle_sha256 = sha256_file(bundle)
+    require_hex(runtime_archive_sha256, "runtime archive SHA-256")
+    for field in ("candidate_sha", "candidate_tree", "workflow_sha", "workflow_tree"):
+        require_hex(expected.get(field), field, git=True)
+    if not isinstance(expected.get("repository"), str) or expected["repository"].count("/") != 1:
+        raise VerificationError("repository must be owner/name")
+    if not RUN_ID_RE.fullmatch(expected.get("run_id", "")) or not RUN_ID_RE.fullmatch(
+        expected.get("run_attempt", "")
+    ):
+        raise VerificationError("run identity is invalid")
+
+    verify_checkout(candidate_root, expected["candidate_sha"], expected["candidate_tree"], "candidate")
+    verify_checkout(trusted_root, expected["workflow_sha"], expected["workflow_tree"], "trusted")
+
+    runtime_lock_path = trusted_root / "evidence/cafe/runtime-lock.v1.json"
+    runtime_lock = load_json_file(runtime_lock_path)
+    if not isinstance(runtime_lock, dict) or runtime_lock.get("schema") != RUNTIME_LOCK_SCHEMA:
+        raise VerificationError("runtime lock schema mismatch")
+    verify_action_pins(trusted_root, runtime_lock)
+
+    trusted_ids = trusted_root / "evidence/cafe/cafe-authored-ids.v1.json"
+    trusted_authored_manifest = trusted_root / "evidence/cafe/cafe-authored-manifest.v1.json"
+    candidate_ids = candidate_root / "evidence/cafe/cafe-authored-ids.v1.json"
+    candidate_authored_manifest = candidate_root / "evidence/cafe/cafe-authored-manifest.v1.json"
+    for left, right, label in (
+        (trusted_ids, candidate_ids, "stable IDs"),
+        (trusted_authored_manifest, candidate_authored_manifest, "authored manifest"),
+    ):
+        try:
+            if left.read_bytes() != right.read_bytes():
+                raise VerificationError(f"candidate {label} differs from protected master")
+        except OSError as exc:
+            raise VerificationError(f"missing protected/candidate {label}: {exc}") from exc
+
+    compiler_path = trusted_root / "tools/cafe_authored_manifest.py"
+    try:
+        compiled = authored.compile_manifest(candidate_root, trusted_ids, compiler_path=compiler_path)
+        compiled_bytes = authored.canonical_bytes(compiled)
+    except authored.ContractError as exc:
+        raise VerificationError(f"authored compiler rejected candidate: {exc}") from exc
+    if compiled_bytes != trusted_authored_manifest.read_bytes():
+        raise VerificationError("protected authored manifest is stale for the exact candidate source")
+    authored_manifest = load_json_bytes(compiled_bytes, "compiled authored manifest")
+
+    with tempfile.TemporaryDirectory(prefix="cafe-attested-verify-") as temporary:
+        extracted = Path(temporary)
+        member_names = safe_extract(bundle, extracted)
+        manifest_path = extracted / "trusted-cafe-manifest.json"
+        if "trusted-cafe-manifest.json" not in member_names:
+            raise VerificationError("bundle has no trusted-cafe-manifest.json")
+        manifest_raw = manifest_path.read_bytes()
+        manifest = load_json_bytes(manifest_raw, "trusted-cafe-manifest.json")
+        if canonical_bytes(manifest) != manifest_raw:
+            raise VerificationError("trusted-cafe-manifest.json is not canonical")
+        exact_keys(
+            manifest,
+            {
+                "schema",
+                "repository",
+                "candidate",
+                "workflow",
+                "run",
+                "runtime",
+                "authored",
+                "capture_contract",
+                "tools",
+                "payloads",
+                "evidence_only",
+                "does_not_authorize",
+            },
+            "bundle manifest",
+        )
+        if manifest["schema"] != BUNDLE_SCHEMA or manifest["repository"] != expected["repository"]:
+            raise VerificationError("bundle schema/repository mismatch")
+        if manifest["evidence_only"] is not True or manifest["does_not_authorize"] != DOES_NOT_AUTHORIZE:
+            raise VerificationError("bundle attempts to broaden visual evidence authority")
+
+        candidate = exact_keys(manifest["candidate"], {"sha", "tree"}, "manifest candidate")
+        workflow = exact_keys(
+            manifest["workflow"], {"sha", "tree", "path", "ref"}, "manifest workflow"
+        )
+        run = exact_keys(manifest["run"], {"id", "attempt"}, "manifest run")
+        if candidate != {"sha": expected["candidate_sha"], "tree": expected["candidate_tree"]}:
+            raise VerificationError("manifest candidate identity mismatch")
+        if workflow != {
+            "sha": expected["workflow_sha"],
+            "tree": expected["workflow_tree"],
+            "path": WORKFLOW_PATH,
+            "ref": f"{expected['repository']}{WORKFLOW_REF_SUFFIX}",
+        }:
+            raise VerificationError("manifest workflow identity mismatch")
+        if run != {"id": expected["run_id"], "attempt": expected["run_attempt"]}:
+            raise VerificationError("manifest run identity mismatch (receipt replay)")
+
+        payloads = manifest["payloads"]
+        if not isinstance(payloads, list) or not payloads:
+            raise VerificationError("manifest payload list is empty")
+        expected_members = {"trusted-cafe-manifest.json"}
+        seen_payloads: set[str] = set()
+        for index, payload in enumerate(payloads):
+            exact_keys(payload, {"path", "sha256", "bytes"}, f"payloads[{index}]")
+            path = payload["path"]
+            if not isinstance(path, str):
+                raise VerificationError(f"payload path is not a string: {path!r}")
+            pure = PurePosixPath(path)
+            if (
+                pure.is_absolute()
+                or ".." in pure.parts
+                or "\\" in path
+                or ":" in path
+                or path != pure.as_posix()
+                or path in seen_payloads
+            ):
+                raise VerificationError(f"invalid/duplicate payload path: {path}")
+            seen_payloads.add(path)
+            expected_members.add(path)
+            full = extracted.joinpath(*pure.parts)
+            if not full.is_file():
+                raise VerificationError(f"manifest payload is absent: {path}")
+            raw = full.read_bytes()
+            if payload["bytes"] != len(raw) or payload["sha256"] != sha256_bytes(raw):
+                raise VerificationError(f"payload hash/size mismatch: {path}")
+        if expected_members != set(member_names):
+            raise VerificationError(
+                f"manifest/member set mismatch: missing={sorted(set(member_names)-expected_members)}, "
+                f"extra={sorted(expected_members-set(member_names))}"
+            )
+
+        bundled_ids = extracted / "authored/cafe-authored-ids.v1.json"
+        bundled_authored = extracted / "authored/cafe-authored-manifest.v1.json"
+        if bundled_ids.read_bytes() != trusted_ids.read_bytes() or bundled_authored.read_bytes() != compiled_bytes:
+            raise VerificationError("bundled authored inputs differ from protected, recompiled source")
+        authored_binding = exact_keys(
+            manifest["authored"],
+            {"ids_sha256", "manifest_sha256", "render_closure_sha256", "game_tree_git_oid"},
+            "manifest authored",
+        )
+        if authored_binding != {
+            "ids_sha256": sha256_file(trusted_ids),
+            "manifest_sha256": sha256_bytes(compiled_bytes),
+            "render_closure_sha256": authored_manifest["render_closure_sha256"],
+            "game_tree_git_oid": authored_manifest["game_tree_git_oid"],
+        }:
+            raise VerificationError("manifest authored-source binding mismatch")
+
+        bundled_runtime_lock = extracted / "runtime/runtime-lock.v1.json"
+        if bundled_runtime_lock.read_bytes() != runtime_lock_path.read_bytes():
+            raise VerificationError("bundled runtime lock differs from protected master")
+        runtime = exact_keys(
+            manifest["runtime"],
+            {
+                "lock_sha256",
+                "archive_sha256",
+                "oci_manifest_digest",
+                "python",
+                "pillow",
+                "godot",
+            },
+            "manifest runtime",
+        )
+        if runtime["lock_sha256"] != sha256_file(runtime_lock_path):
+            raise VerificationError("runtime lock digest mismatch")
+        if runtime["archive_sha256"] != runtime_archive_sha256:
+            raise VerificationError("runtime archive digest mismatch")
+        require_hex(runtime["oci_manifest_digest"], "OCI manifest digest")
+        versions = runtime_lock["versions"]
+        if runtime["python"] != versions["python"] or runtime["pillow"] != versions["pillow"]:
+            raise VerificationError("Python/Pillow runtime drift")
+        if runtime["godot"] != versions["godot"]:
+            raise VerificationError("Godot runtime drift")
+
+        runtime_receipt_path = extracted / "runtime/runtime-build-receipt.json"
+        runtime_receipt_raw = runtime_receipt_path.read_bytes()
+        runtime_receipt = load_json_bytes(runtime_receipt_raw, "runtime build receipt")
+        if canonical_bytes(runtime_receipt) != runtime_receipt_raw:
+            raise VerificationError("runtime build receipt is not canonical")
+        exact_keys(
+            runtime_receipt,
+            {
+                "schema",
+                "lock_sha256",
+                "runtime_archive_sha256",
+                "oci_manifest_digest",
+                "base_manifest_digest",
+                "python",
+                "pillow",
+                "godot",
+                "podman",
+                "buildah",
+                "skopeo",
+                "gh",
+                "first_archive_sha256",
+                "second_archive_sha256",
+                "reproducible",
+            },
+            "runtime build receipt",
+        )
+        if runtime_receipt["schema"] != RUNTIME_RECEIPT_SCHEMA or runtime_receipt["reproducible"] is not True:
+            raise VerificationError("runtime reproducibility receipt mismatch")
+        if not (
+            runtime_receipt["runtime_archive_sha256"]
+            == runtime_receipt["first_archive_sha256"]
+            == runtime_receipt["second_archive_sha256"]
+            == runtime_archive_sha256
+        ):
+            raise VerificationError("runtime double-build/archive binding mismatch")
+        runtime_expected = {
+            "lock_sha256": sha256_file(runtime_lock_path),
+            "oci_manifest_digest": runtime["oci_manifest_digest"],
+            "base_manifest_digest": runtime_lock["python_image"]["amd64_manifest_digest"],
+            "python": versions["python"],
+            "pillow": versions["pillow"],
+            "godot": versions["godot"],
+            "podman": runtime_lock["host_tools"]["podman"],
+            "buildah": runtime_lock["host_tools"]["buildah"],
+            "skopeo": runtime_lock["host_tools"]["skopeo"],
+            "gh": runtime_lock["host_tools"]["gh"],
+        }
+        for key, value in runtime_expected.items():
+            if runtime_receipt[key] != value:
+                raise VerificationError(f"runtime receipt drift: {key}")
+
+        tool_records = manifest["tools"]
+        if not isinstance(tool_records, list) or len(tool_records) != len(TRUSTED_TOOL_PATHS):
+            raise VerificationError("trusted tool set mismatch")
+        expected_tool_records = []
+        for path in TRUSTED_TOOL_PATHS:
+            protected = trusted_root.joinpath(*PurePosixPath(path).parts)
+            snapshot = extracted / "trust-root" / path
+            if not protected.is_file() or not snapshot.is_file():
+                raise VerificationError(f"trusted tool snapshot is missing: {path}")
+            if protected.read_bytes() != snapshot.read_bytes():
+                raise VerificationError(f"trusted tool drift/snapshot mismatch: {path}")
+            expected_tool_records.append(
+                {"authority": "protected-master", "path": path, "sha256": sha256_file(protected)}
+            )
+        if tool_records != expected_tool_records:
+            raise VerificationError("manifest trusted tool hashes/order mismatch")
+
+        capture_contract = exact_keys(
+            manifest["capture_contract"],
+            {"space", "viewports", "seed", "tick", "renderer", "display", "audio", "slots", "frames"},
+            "capture contract",
+        )
+        if capture_contract != {
+            "space": "cafe",
+            "viewports": ["1280x768", "320x192"],
+            "seed": 3,
+            "tick": 600,
+            "renderer": "opengl3",
+            "display": "x11/Xvfb",
+            "audio": "Dummy",
+            "slots": list(SLOTS),
+            "frames": 8,
+        }:
+            raise VerificationError("capture contract drift or frame budget violation")
+
+        floor_bindings = {item["floor"]: item["authored_binding_sha256"] for item in authored_manifest["floors"]}
+        transcript_receipts: list[dict[str, str]] = []
+        context = dict(expected)
+        frame_hashes: dict[tuple[str, str], str] = {}
+        for viewport, dimensions in VIEWPORTS.items():
+            receipt_path = extracted / viewport / "cafe-capture-receipt.json"
+            receipt_raw = receipt_path.read_bytes()
+            receipt = load_json_bytes(receipt_raw, f"{viewport} receipt")
+            if canonical_bytes(receipt) != receipt_raw:
+                raise VerificationError(f"{viewport} receipt is not canonical")
+            exact_keys(
+                receipt,
+                {
+                    "schema",
+                    "repository",
+                    "candidate_sha",
+                    "candidate_tree",
+                    "workflow_sha",
+                    "workflow_tree",
+                    "run_id",
+                    "run_attempt",
+                    "viewport",
+                    "session",
+                    "captures",
+                },
+                f"{viewport} receipt",
+            )
+            if receipt["schema"] != RECEIPT_SCHEMA or any(
+                receipt[key] != context[key]
+                for key in (
+                    "repository",
+                    "candidate_sha",
+                    "candidate_tree",
+                    "workflow_sha",
+                    "workflow_tree",
+                    "run_id",
+                    "run_attempt",
+                )
+            ):
+                raise VerificationError(f"{viewport} receipt identity/replay mismatch")
+            session = _expected_session(context, viewport)
+            if receipt["viewport"] != viewport or receipt["session"] != session:
+                raise VerificationError(f"{viewport} receipt session mismatch")
+            captures = receipt["captures"]
+            if not isinstance(captures, list) or len(captures) != 4:
+                raise VerificationError(f"{viewport} receipt must contain four captures")
+            by_slot: dict[str, dict[str, Any]] = {}
+            for index, capture in enumerate(captures):
+                exact_keys(
+                    capture,
+                    {
+                        "slot",
+                        "file",
+                        "floor",
+                        "mode",
+                        "draw_skip",
+                        "width",
+                        "height",
+                        "seed",
+                        "tick",
+                        "pair_id",
+                        "authored_binding_sha256",
+                        "argv",
+                        "argv_sha256",
+                        "sha256",
+                        "bytes",
+                    },
+                    f"{viewport}.captures[{index}]",
+                )
+                slot = capture["slot"]
+                if slot not in SLOTS or slot in by_slot:
+                    raise VerificationError(f"{viewport} has an invalid/duplicate capture slot")
+                floor, mode, draw_skip, filename = SLOTS[slot]
+                if (
+                    capture["file"] != filename
+                    or capture["floor"] != floor
+                    or capture["mode"] != mode
+                    or capture["draw_skip"] != draw_skip
+                    or (capture["width"], capture["height"]) != dimensions
+                    or capture["seed"] != 3
+                    or capture["tick"] != 600
+                    or capture["authored_binding_sha256"] != floor_bindings[floor]
+                ):
+                    raise VerificationError(f"{viewport}/{slot} semantic binding mismatch")
+                expected_pair = _expected_pair(session, floor, floor_bindings[floor])
+                if capture["pair_id"] != expected_pair:
+                    raise VerificationError(f"{viewport}/{slot} normal/bare pair mismatch")
+                argv = expected_argv(viewport, floor, mode, filename)
+                if capture["argv"] != argv or capture["argv_sha256"] != sha256_bytes(
+                    json.dumps(argv, separators=(",", ":"), ensure_ascii=True).encode("ascii")
+                ):
+                    raise VerificationError(f"{viewport}/{slot} capture command mismatch")
+                frame_path = extracted / viewport / filename
+                frame_raw = frame_path.read_bytes()
+                if capture["bytes"] != len(frame_raw) or capture["sha256"] != sha256_bytes(frame_raw):
+                    raise VerificationError(f"{viewport}/{slot} frame byte tamper")
+                if inspect_png(frame_raw, f"{viewport}/{filename}") != dimensions:
+                    raise VerificationError(f"{viewport}/{slot} crop/resize detected")
+                by_slot[slot] = capture
+                frame_hashes[(viewport, slot)] = capture["sha256"]
+            if set(by_slot) != set(SLOTS):
+                raise VerificationError(f"{viewport} capture slot set mismatch")
+            for floor in ("1f", "2f"):
+                normal = by_slot[f"cafe_{floor}_normal"]
+                bare = by_slot[f"cafe_{floor}_bare"]
+                if normal["pair_id"] != bare["pair_id"] or normal["sha256"] == bare["sha256"]:
+                    raise VerificationError(f"{viewport}/{floor} normal/bare pairing is invalid")
+            if by_slot["cafe_1f_normal"]["sha256"] == by_slot["cafe_2f_normal"]["sha256"]:
+                raise VerificationError(f"{viewport} floor-normal substitution detected")
+            transcript_receipts.append(
+                {
+                    "path": f"{viewport}/cafe-capture-receipt.json",
+                    "sha256": sha256_bytes(receipt_raw),
+                    "viewport": viewport,
+                }
+            )
+
+        transcript_path = extracted / "capture-transcript.json"
+        transcript_raw = transcript_path.read_bytes()
+        transcript = load_json_bytes(transcript_raw, "capture transcript")
+        if canonical_bytes(transcript) != transcript_raw:
+            raise VerificationError("capture transcript is not canonical")
+        exact_keys(
+            transcript,
+            {
+                "schema",
+                "repository",
+                "candidate_sha",
+                "candidate_tree",
+                "workflow_sha",
+                "workflow_tree",
+                "run_id",
+                "run_attempt",
+                "frame_count",
+                "receipts",
+            },
+            "capture transcript",
+        )
+        if transcript != {
+            "schema": TRANSCRIPT_SCHEMA,
+            **context,
+            "frame_count": 8,
+            "receipts": transcript_receipts,
+        }:
+            raise VerificationError("capture transcript identity/hash mismatch")
+
+    attestation_raw = attestation_runner(bundle, expected["repository"], expected["workflow_sha"])
+    attestation = validate_attestation_output(attestation_raw, bundle_sha256, bundle.name)
+    receipt = {
+        "schema": "living-town.cafe-attested-verification-receipt.v1",
+        "repository": expected["repository"],
+        "candidate_sha": expected["candidate_sha"],
+        "candidate_tree": expected["candidate_tree"],
+        "workflow_sha": expected["workflow_sha"],
+        "workflow_tree": expected["workflow_tree"],
+        "run_id": expected["run_id"],
+        "run_attempt": expected["run_attempt"],
+        "runtime_archive_sha256": runtime_archive_sha256,
+        "bundle_sha256": bundle_sha256,
+        "attestation_predicate_type": attestation["verificationResult"]["statement"]["predicateType"],
+        "verified": True,
+        "evidence_only": True,
+        "does_not_authorize": DOES_NOT_AUTHORIZE,
+    }
+    if receipt_output is not None:
+        receipt_output.parent.mkdir(parents=True, exist_ok=True)
+        temporary = receipt_output.with_name(f".{receipt_output.name}.{os.getpid()}.tmp")
+        try:
+            temporary.write_bytes(canonical_bytes(receipt))
+            os.replace(temporary, receipt_output)
+        finally:
+            try:
+                temporary.unlink()
+            except FileNotFoundError:
+                pass
+    return receipt
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--bundle", type=Path, required=True)
+    parser.add_argument("--candidate-root", type=Path, required=True)
+    parser.add_argument("--trusted-root", type=Path, required=True)
+    parser.add_argument("--candidate-sha", required=True)
+    parser.add_argument("--candidate-tree", required=True)
+    parser.add_argument("--workflow-sha", required=True)
+    parser.add_argument("--workflow-tree", required=True)
+    parser.add_argument("--repository", required=True)
+    parser.add_argument("--run-id", required=True)
+    parser.add_argument("--run-attempt", required=True)
+    parser.add_argument("--runtime-archive-sha256", required=True)
+    parser.add_argument("--gh-bin", default="gh")
+    parser.add_argument("--receipt-output", type=Path, required=True)
+    args = parser.parse_args(argv)
+    expected = {
+        "repository": args.repository,
+        "candidate_sha": args.candidate_sha,
+        "candidate_tree": args.candidate_tree,
+        "workflow_sha": args.workflow_sha,
+        "workflow_tree": args.workflow_tree,
+        "run_id": args.run_id,
+        "run_attempt": args.run_attempt,
+    }
+    try:
+        receipt = verify_bundle(
+            bundle=args.bundle,
+            candidate_root=args.candidate_root,
+            trusted_root=args.trusted_root,
+            expected=expected,
+            runtime_archive_sha256=args.runtime_archive_sha256,
+            attestation_runner=lambda bundle, repository, workflow_sha: run_github_attestation(
+                bundle, repository, workflow_sha, args.gh_bin
+            ),
+            receipt_output=args.receipt_output,
+        )
+    except (VerificationError, authored.ContractError, OSError) as exc:
+        print(f"VERIFY_CAFE_ATTESTED_EVIDENCE FAIL: {exc}", file=sys.stderr)
+        return 1
+    print(
+        "VERIFY_CAFE_ATTESTED_EVIDENCE PASS "
+        f"bundle_sha256={receipt['bundle_sha256']} candidate={receipt['candidate_sha']}",
+        file=sys.stderr,
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

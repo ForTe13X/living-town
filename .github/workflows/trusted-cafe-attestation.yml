@@ -1,6 +1,15 @@
-name: Trusted cafe visual attestation
+name: Trusted cafe source attestation
 
 on:
+  pull_request:
+    branches: [master]
+    paths:
+      - .github/workflows/trusted-cafe-attestation.yml
+      - tools/trusted_cafe_capture.sh
+      - tools/cafe_authored_manifest.py
+      - tools/verify_cafe_attested_evidence.py
+      - tools/cafe_attestation_selftest.py
+      - evidence/cafe/runtime-lock.v1.json
   workflow_dispatch:
     inputs:
       candidate_sha:
@@ -10,135 +19,333 @@ on:
 
 permissions:
   contents: read
-  attestations: write
-  id-token: write
 
 concurrency:
-  group: trusted-cafe-${{ inputs.candidate_sha }}
+  group: trusted-cafe-${{ github.event_name }}-${{ inputs.candidate_sha || github.event.pull_request.head.sha }}
   cancel-in-progress: false
 
 jobs:
-  trusted_capture:
+  pull_request_runtime_qualification:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 35
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout exact pull-request head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          path: trusted
+          persist-credentials: false
+
+      - name: Enforce the six-path Stack A lease
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$(git -C trusted rev-parse HEAD)" == "$HEAD_SHA" ]]
+          [[ -z "$(git -C trusted status --porcelain=v1 --untracked-files=all)" ]]
+          mapfile -t changed < <(git -C trusted diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          ((${#changed[@]} > 0))
+          for path in "${changed[@]}"; do
+            case "$path" in
+              .github/workflows/trusted-cafe-attestation.yml|\
+              tools/trusted_cafe_capture.sh|\
+              tools/cafe_authored_manifest.py|\
+              tools/verify_cafe_attested_evidence.py|\
+              tools/cafe_attestation_selftest.py|\
+              evidence/cafe/runtime-lock.v1.json) ;;
+              *) echo "out-of-lease path: $path" >&2; exit 1 ;;
+            esac
+          done
+          [[ "${#changed[@]}" -eq 6 ]]
+
+      - name: Set up pinned host Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.11.16"
+          check-latest: false
+
+      - name: Run deterministic trust-root self-test
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PYTHONDONTWRITEBYTECODE=1 PYTHONHASHSEED=0
+          python -B trusted/tools/cafe_attestation_selftest.py \
+            --work-dir "$RUNNER_TEMP/cafe-selftest" \
+            --receipt "$RUNNER_TEMP/cafe-selftest-receipt.json"
+
+      - name: Build the immutable runtime twice
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash trusted/tools/trusted_cafe_capture.sh build-runtime \
+            trusted "$RUNNER_TEMP/cafe-runtime"
+
+      - name: Load the exact OCI archive and self-test inside it
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/cafe-runtime/runtime.oci.tar"
+          expected="$(sha256sum "$archive" | awk '{print $1}')"
+          [[ "$expected" == "$(python -B -c \
+            'import json,sys; print(json.load(open(sys.argv[1]))["runtime_archive_sha256"])' \
+            "$RUNNER_TEMP/cafe-runtime/runtime-build-receipt.json")" ]]
+          podman image rm -f localhost/living-town/trusted-cafe-runtime:v1 >/dev/null 2>&1 || true
+          podman load --input "$archive"
+          podman run --rm --network none \
+            --volume "$PWD/trusted:/trusted:ro" \
+            localhost/living-town/trusted-cafe-runtime:v1 \
+            python -B /trusted/tools/cafe_attestation_selftest.py \
+              --work-dir /tmp/runtime-selftest \
+              --receipt /tmp/runtime-selftest-receipt.json \
+            | tee "$RUNNER_TEMP/runtime-selftest-receipt.json"
+
+      - name: Enforce hosted artifact budget
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -B - trusted/evidence/cafe/runtime-lock.v1.json \
+            "$RUNNER_TEMP/cafe-runtime/runtime.oci.tar" <<'PY'
+          import json, os, sys
+          lock = json.load(open(sys.argv[1], encoding="utf-8"))
+          size = os.path.getsize(sys.argv[2])
+          assert size <= lock["limits"]["max_runtime_archive_bytes"], (size, lock["limits"])
+          assert lock["limits"]["hosted_timeout_minutes"] <= 35
+          assert lock["limits"]["artifact_retention_days"] >= 90
+          PY
+
+      - name: Upload reproducible runtime qualification
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: cafe-runtime-qualification-${{ github.event.pull_request.head.sha }}-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/cafe-runtime/runtime.oci.tar
+            ${{ runner.temp }}/cafe-runtime/runtime-build-receipt.json
+            ${{ runner.temp }}/cafe-selftest-receipt.json
+            ${{ runner.temp }}/runtime-selftest-receipt.json
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 0
+
+  protected_capture_and_attestation:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    permissions:
+      contents: read
+      attestations: write
+      id-token: write
     steps:
       - name: Require protected default-branch workflow identity
         shell: bash
         env:
           EXPECTED_WORKFLOW_REF: ForTe13X/living-town/.github/workflows/trusted-cafe-attestation.yml@refs/heads/master
+          CANDIDATE_SHA: ${{ inputs.candidate_sha }}
         run: |
           set -euo pipefail
           [[ "$GITHUB_REPOSITORY" == "ForTe13X/living-town" ]]
           [[ "$GITHUB_REF" == "refs/heads/master" ]]
           [[ "$GITHUB_WORKFLOW_REF" == "$EXPECTED_WORKFLOW_REF" ]]
-          [[ "${{ inputs.candidate_sha }}" =~ ^[0-9a-f]{40}$ ]]
-          printf 'TRUST_ROOT repository=%s workflow_ref=%s workflow_sha=%s candidate=%s\n' \
-            "$GITHUB_REPOSITORY" "$GITHUB_WORKFLOW_REF" "$GITHUB_SHA" \
-            "${{ inputs.candidate_sha }}"
+          [[ "$CANDIDATE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$GITHUB_RUN_ID" =~ ^[1-9][0-9]*$ ]]
+          [[ "$GITHUB_RUN_ATTEMPT" =~ ^[1-9][0-9]*$ ]]
 
-      - name: Checkout trusted control tree
+      - name: Checkout protected trust root
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ github.sha }}
+          fetch-depth: 0
           path: trusted
           persist-credentials: false
 
-      - name: Checkout exact candidate tree as untrusted input
+      - name: Checkout exact same-repository candidate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ inputs.candidate_sha }}
+          fetch-depth: 0
           path: candidate
           persist-credentials: false
 
-      - name: Verify both checkout identities
+      - name: Verify checkout identities
+        id: identity
         shell: bash
+        env:
+          CANDIDATE_SHA: ${{ inputs.candidate_sha }}
         run: |
           set -euo pipefail
           [[ "$(git -C trusted rev-parse HEAD)" == "$GITHUB_SHA" ]]
-          [[ "$(git -C candidate rev-parse HEAD)" == "${{ inputs.candidate_sha }}" ]]
-          [[ -z "$(git -C trusted status --porcelain)" ]]
-          [[ -z "$(git -C candidate status --porcelain)" ]]
+          [[ "$(git -C candidate rev-parse HEAD)" == "$CANDIDATE_SHA" ]]
+          [[ -z "$(git -C trusted status --porcelain=v1 --untracked-files=all)" ]]
+          [[ -z "$(git -C candidate status --porcelain=v1 --untracked-files=all)" ]]
+          echo "candidate_tree=$(git -C candidate show -s --format='%T' HEAD)" >> "$GITHUB_OUTPUT"
+          echo "workflow_tree=$(git -C trusted show -s --format='%T' HEAD)" >> "$GITHUB_OUTPUT"
 
-      - name: Set up pinned Python runtime
+      - name: Set up pinned host Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.11.16"
+          check-latest: false
 
-      - name: Install and verify trusted renderer runtime
+      - name: Run deterministic trust-root self-test
         shell: bash
         run: |
           set -euo pipefail
-          GV=4.6.2-stable
-          curl -fLo godot.zip \
-            "https://github.com/godotengine/godot/releases/download/${GV}/Godot_v${GV}_linux.x86_64.zip"
-          printf '%s  %s\n' \
-            '30e6b6d141f0cd5bebd629ad1d0ef1324e60091bb20662d026b402ba58c59937' \
-            godot.zip | sha256sum -c -
-          unzip -q godot.zip
-          sudo mv "Godot_v${GV}_linux.x86_64" /usr/local/bin/godot
-          sudo chmod +x /usr/local/bin/godot
-          [[ "$(sha256sum /usr/local/bin/godot | awk '{print $1}')" == \
-              '5a806b2b385279d9607094d33e946ed828e9606df4cb46d258ca27468dc5c1c9' ]]
-          python -m pip install --disable-pip-version-check 'pillow==11.3.0'
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            libgl1=1.7.0-1build1 \
-            libglx-mesa0=25.2.8-0ubuntu0.24.04.2 \
-            libgl1-mesa-dri=25.2.8-0ubuntu0.24.04.2 \
-            mesa-utils=9.0.0-2 \
-            xauth=1:1.1.2-1build1 \
-            xvfb=2:21.1.12-1ubuntu1.6
-          godot --version
-          python --version
-          dpkg-query -W -f='${Package}=${Version}\n' \
-            libgl1 libglx-mesa0 libgl1-mesa-dri mesa-utils xauth xvfb
+          export PYTHONDONTWRITEBYTECODE=1 PYTHONHASHSEED=0
+          python -B trusted/tools/cafe_attestation_selftest.py \
+            --work-dir "$RUNNER_TEMP/cafe-selftest" \
+            --receipt "$RUNNER_TEMP/cafe-selftest-receipt.json"
 
-      - name: Import exact candidate project
+      - name: Build the immutable runtime twice
         shell: bash
-        run: godot --headless --path candidate/game --import || true
+        run: |
+          set -euo pipefail
+          bash trusted/tools/trusted_cafe_capture.sh build-runtime \
+            trusted "$RUNNER_TEMP/cafe-runtime"
 
-      - name: Capture and verify with trusted control tree
+      - name: Attest exact runtime OCI archive
+        id: attest_runtime
+        uses: actions/attest-build-provenance@43d14bc2b83dec42d39ecae14e916627a18bb661 # v3
+        with:
+          subject-path: ${{ runner.temp }}/cafe-runtime/runtime.oci.tar
+
+      - name: Verify runtime attestation before loading
         shell: bash
         env:
-          GODOT: godot
-          PYTHON: python
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          bash trusted/tools/trusted_cafe_capture.sh \
-            candidate "$RUNNER_TEMP/trusted-cafe-evidence" \
-            "${{ inputs.candidate_sha }}" "$GITHUB_SHA" "$GITHUB_REPOSITORY"
-          git -C trusted diff --exit-code
-          git -C candidate diff --exit-code
+          [[ "$(gh --version | awk 'NR==1 {print $3}')" == \
+            "$(python -B -c 'import json; print(json.load(open("trusted/evidence/cafe/runtime-lock.v1.json"))["host_tools"]["gh"])')" ]]
+          gh attestation verify "$RUNNER_TEMP/cafe-runtime/runtime.oci.tar" \
+            --repo "$GITHUB_REPOSITORY" \
+            --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/trusted-cafe-attestation.yml" \
+            --signer-digest "$GITHUB_SHA" \
+            --source-digest "$GITHUB_SHA" \
+            --source-ref refs/heads/master \
+            --cert-oidc-issuer https://token.actions.githubusercontent.com \
+            --deny-self-hosted-runners \
+            --predicate-type https://slsa.dev/provenance/v1 \
+            --format json > "$RUNNER_TEMP/cafe-runtime/runtime-attestation-verification.json"
 
-      - name: Attest canonical evidence bundle
-        id: attest
-        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
+      - name: Load attested archive and capture exact candidate
+        id: capture
+        shell: bash
+        env:
+          CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+          CANDIDATE_TREE: ${{ steps.identity.outputs.candidate_tree }}
+          WORKFLOW_TREE: ${{ steps.identity.outputs.workflow_tree }}
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/cafe-runtime/runtime.oci.tar"
+          runtime_sha="$(sha256sum "$archive" | awk '{print $1}')"
+          [[ "$runtime_sha" == "$(python -B -c \
+            'import json,sys; print(json.load(open(sys.argv[1]))["runtime_archive_sha256"])' \
+            "$RUNNER_TEMP/cafe-runtime/runtime-build-receipt.json")" ]]
+          podman image rm -f localhost/living-town/trusted-cafe-runtime:v1 >/dev/null 2>&1 || true
+          podman load --input "$archive"
+          mkdir "$RUNNER_TEMP/cafe-output"
+          podman run --rm --network none --cap-drop all \
+            --security-opt no-new-privileges --pids-limit 512 --memory 4g \
+            --volume "$PWD/trusted:/trusted:ro" \
+            --volume "$PWD/candidate:/candidate:ro" \
+            --volume "$RUNNER_TEMP/cafe-runtime:/runtime:ro" \
+            --volume "$RUNNER_TEMP/cafe-output:/output:rw" \
+            localhost/living-town/trusted-cafe-runtime:v1 \
+            bash /trusted/tools/trusted_cafe_capture.sh capture \
+              /candidate /output/evidence "$CANDIDATE_SHA" "$CANDIDATE_TREE" \
+              "$GITHUB_SHA" "$WORKFLOW_TREE" "$GITHUB_REPOSITORY" \
+              "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$runtime_sha" \
+              /runtime/runtime-build-receipt.json
+          [[ -z "$(git -C trusted status --porcelain=v1 --untracked-files=all)" ]]
+          [[ -z "$(git -C candidate status --porcelain=v1 --untracked-files=all)" ]]
+          echo "runtime_sha=$runtime_sha" >> "$GITHUB_OUTPUT"
+          echo "bundle_sha=$(sha256sum "$RUNNER_TEMP/cafe-output/evidence/trusted-cafe-evidence.tar.gz" | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+
+      - name: Attest exact evidence bundle
+        id: attest_evidence
+        uses: actions/attest-build-provenance@43d14bc2b83dec42d39ecae14e916627a18bb661 # v3
         with:
-          subject-path: ${{ runner.temp }}/trusted-cafe-evidence/trusted-cafe-evidence.tar.gz
+          subject-path: ${{ runner.temp }}/cafe-output/evidence/trusted-cafe-evidence.tar.gz
 
-      - name: Upload attested trusted capture
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: trusted-cafe-${{ inputs.candidate_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            ${{ runner.temp }}/trusted-cafe-evidence/trusted-cafe-evidence.tar.gz
-            ${{ runner.temp }}/trusted-cafe-evidence/trusted-cafe-manifest.json
-          if-no-files-found: error
-          retention-days: 30
+      - name: Independently verify bundle and GitHub provenance
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+          CANDIDATE_TREE: ${{ steps.identity.outputs.candidate_tree }}
+          WORKFLOW_TREE: ${{ steps.identity.outputs.workflow_tree }}
+          RUNTIME_SHA: ${{ steps.capture.outputs.runtime_sha }}
+        run: |
+          set -euo pipefail
+          python -B trusted/tools/verify_cafe_attested_evidence.py \
+            --bundle "$RUNNER_TEMP/cafe-output/evidence/trusted-cafe-evidence.tar.gz" \
+            --candidate-root candidate --trusted-root trusted \
+            --candidate-sha "$CANDIDATE_SHA" --candidate-tree "$CANDIDATE_TREE" \
+            --workflow-sha "$GITHUB_SHA" --workflow-tree "$WORKFLOW_TREE" \
+            --repository "$GITHUB_REPOSITORY" \
+            --run-id "$GITHUB_RUN_ID" --run-attempt "$GITHUB_RUN_ATTEMPT" \
+            --runtime-archive-sha256 "$RUNTIME_SHA" \
+            --receipt-output "$RUNNER_TEMP/cafe-output/cafe-attested-verification-receipt.json"
 
-      - name: Publish verification receipt
+      - name: Enforce frame, retention, and total artifact budgets
         shell: bash
         run: |
           set -euo pipefail
-          bundle="$RUNNER_TEMP/trusted-cafe-evidence/trusted-cafe-evidence.tar.gz"
-          manifest="$RUNNER_TEMP/trusted-cafe-evidence/trusted-cafe-manifest.json"
+          python -B - trusted/evidence/cafe/runtime-lock.v1.json \
+            "$RUNNER_TEMP/cafe-runtime/runtime.oci.tar" \
+            "$RUNNER_TEMP/cafe-output/evidence/trusted-cafe-evidence.tar.gz" <<'PY'
+          import json, os, sys
+          lock = json.load(open(sys.argv[1], encoding="utf-8"))
+          runtime_size, evidence_size = map(os.path.getsize, sys.argv[2:])
+          assert lock["capture_contract"]["frames"] <= lock["limits"]["max_evidence_frames"] <= 12
+          assert runtime_size <= lock["limits"]["max_runtime_archive_bytes"]
+          assert runtime_size + evidence_size <= lock["limits"]["max_total_artifact_bytes"]
+          assert lock["limits"]["hosted_timeout_minutes"] <= 35
+          assert lock["limits"]["artifact_retention_days"] >= 90
+          PY
+
+      - name: Upload attested runtime archive
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: trusted-cafe-runtime-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/cafe-runtime/runtime.oci.tar
+            ${{ runner.temp }}/cafe-runtime/runtime-build-receipt.json
+            ${{ runner.temp }}/cafe-runtime/runtime-attestation-verification.json
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 0
+
+      - name: Upload attested cafe evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: trusted-cafe-evidence-${{ inputs.candidate_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/cafe-output/evidence/trusted-cafe-evidence.tar.gz
+            ${{ runner.temp }}/cafe-output/evidence/trusted-cafe-manifest.json
+            ${{ runner.temp }}/cafe-output/cafe-attested-verification-receipt.json
+            ${{ runner.temp }}/cafe-selftest-receipt.json
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 0
+
+      - name: Publish hash-bound handoff summary
+        shell: bash
+        run: |
+          set -euo pipefail
           {
-            echo '### Trusted cafe evidence attestation'
+            echo '### Trusted cafe source-to-capture attestation v1'
             echo
-            echo "- candidate SHA: ${{ inputs.candidate_sha }}"
-            echo "- trusted workflow SHA: $GITHUB_SHA"
-            echo "- bundle SHA-256: $(sha256sum "$bundle" | awk '{print $1}')"
-            echo "- manifest SHA-256: $(sha256sum "$manifest" | awk '{print $1}')"
-            echo "- attestation URL: ${{ steps.attest.outputs.attestation-url }}"
-            echo '- verify: `gh attestation verify trusted-cafe-evidence.tar.gz --repo ForTe13X/living-town --signer-workflow ForTe13X/living-town/.github/workflows/trusted-cafe-attestation.yml`'
-          } >>"$GITHUB_STEP_SUMMARY"
+            echo "- candidate SHA/tree: ${{ inputs.candidate_sha }} / ${{ steps.identity.outputs.candidate_tree }}"
+            echo "- protected workflow SHA/tree: $GITHUB_SHA / ${{ steps.identity.outputs.workflow_tree }}"
+            echo "- runtime OCI archive SHA-256: ${{ steps.capture.outputs.runtime_sha }}"
+            echo "- evidence bundle SHA-256: ${{ steps.capture.outputs.bundle_sha }}"
+            echo "- runtime attestation: ${{ steps.attest_runtime.outputs.attestation-url }}"
+            echo "- evidence attestation: ${{ steps.attest_evidence.outputs.attestation-url }}"
+            echo '- authority: evidence only; never Sim/navigation/collision/save/replay/portal/canon authority'
+          } >> "$GITHUB_STEP_SUMMARY"
