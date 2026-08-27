@@ -46,10 +46,27 @@ build_runtime() {
   tag="localhost/living-town/trusted-cafe-runtime:v1"
   trap "podman image rm -f '$tag' >/dev/null 2>&1 || true; rm -rf '$context'" EXIT
 
-  mapfile -t lock_values < <(python -B - "$lock" <<'PY'
+  # This literal is itself protected by the trust-root snapshot.  The
+  # containerized lock parser below requires the lock to name the same digest
+  # before any material recipe value is accepted.
+  local validation_image="docker.io/library/python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c"
+  podman pull --platform linux/amd64 "$validation_image" >/dev/null
+  container_python() {
+    podman run --rm --network none --read-only --cap-drop all \
+      --security-opt no-new-privileges --pids-limit 128 --memory 768m --cpus 2 \
+      --tmpfs /tmp:rw,nosuid,nodev,size=268435456 \
+      --volume "$trusted_root:/trusted:ro" \
+      --volume "$context:/context:rw" \
+      --volume "$out:/output:rw" \
+      "$validation_image" python -B "$@"
+  }
+
+  mapfile -t lock_values < <(container_python - /trusted/evidence/cafe/runtime-lock.v1.json "$validation_image" <<'PY'
 import json, sys
-p = json.load(open(sys.argv[1], encoding="utf-8"))
+lock_path, validation_image = sys.argv[1:]
+p = json.load(open(lock_path, encoding="utf-8"))
 assert p["schema"] == "living-town.cafe-runtime-lock.v1"
+assert p["validation_image"] == {"reference": validation_image, "platform": "linux/amd64"}
 values = [
     p["python_image"]["build_reference"],
     p["python_image"]["amd64_manifest_digest"],
@@ -80,17 +97,14 @@ PY
   local skopeo_version="${lock_values[16]}" gh_version="${lock_values[17]}"
   local max_archive_bytes="${lock_values[18]}"
 
-  [ "$(python -B -c 'import platform; print(platform.python_version())')" = "$python_version" ] || \
-    fail "host Python drift"
   [ "$(podman --version | awk '{print $3}')" = "$podman_version" ] || fail "Podman drift"
   [ "$(buildah --version | awk '{print $3}')" = "$buildah_version" ] || fail "Buildah drift"
   [ "$(skopeo --version | awk '{print $3}')" = "$skopeo_version" ] || fail "Skopeo drift"
-  [ "$(gh --version | awk 'NR==1 {print $3}')" = "$gh_version" ] || fail "GitHub CLI drift"
 
   skopeo inspect --raw "docker://$index_ref" >"$context/python-index.json"
   [ "$(sha256_file "$context/python-index.json")" = "${index_ref##*@sha256:}" ] || \
     fail "Python index digest mismatch"
-  python -B - "$context/python-index.json" "$base_digest" <<'PY'
+  container_python - /context/python-index.json "$base_digest" <<'PY'
 import json, sys
 index = json.load(open(sys.argv[1], encoding="utf-8"))
 expected = sys.argv[2]
@@ -141,7 +155,7 @@ RUN printf '%s\n' \
  && rm -f /etc/apt/sources.list.d/* \
  && apt-get -o Acquire::Check-Valid-Until=false update \
  && apt-get -o Acquire::Check-Valid-Until=false install -y --no-install-recommends \
-      bash ca-certificates coreutils findutils gzip libasound2 libfontconfig1 \
+      bash ca-certificates coreutils findutils git gzip libasound2 libfontconfig1 \
       libgl1 libgl1-mesa-dri libglx-mesa0 libx11-6 libxcursor1 libxext6 libxi6 \
       libxinerama1 libxrandr2 libxrender1 tar xauth xvfb \
  && rm -rf /var/lib/apt/lists/* /var/cache/apt/* /var/log/apt/* \
@@ -183,9 +197,13 @@ EOF
       --build-arg "PILLOW_VERSION=$pillow_version" \
       --build-arg "GODOT_VERSION=$godot_version" \
       --tag "$tag" "$context"
-    podman run --rm "$tag" python -B -c \
+    podman run --rm --network none --read-only --cap-drop all \
+      --security-opt no-new-privileges --pids-limit 128 --memory 768m --cpus 2 \
+      --tmpfs /tmp:rw,nosuid,nodev,size=134217728 "$tag" python -B -c \
       'import PIL,platform; print(platform.python_version(), PIL.__version__)'
-    podman run --rm "$tag" godot --version
+    podman run --rm --network none --read-only --cap-drop all \
+      --security-opt no-new-privileges --pids-limit 128 --memory 768m --cpus 2 \
+      --tmpfs /tmp:rw,nosuid,nodev,size=134217728 "$tag" godot --version
     podman save --format oci-dir --output "$layout_path" "$tag"
     canonical_oci_archive "$layout_path" "$destination"
   }
@@ -194,8 +212,8 @@ EOF
   second="$context/runtime-second.oci.tar"
   build_once first "$first"
   build_once second "$second"
-  if [ "$(sha256_file "$first")" != "$(sha256_file "$second")" ]; then
-    python -B - "$context/layout-first" "$context/layout-second" <<'PY'
+  container_python - /context/layout-first /context/layout-second /context/runtime-first.oci.tar \
+    /context/runtime-second.oci.tar "$max_archive_bytes" <<'PY'
 import hashlib, json, pathlib, sys, tarfile
 
 def blob(layout, digest):
@@ -222,8 +240,20 @@ def layer_inventory(path):
             )
     return result
 
-left_layout, right_layout = sys.argv[1:]
+left_layout, right_layout, first_archive, second_archive, max_archive_bytes = sys.argv[1:]
 left, right = manifest(left_layout), manifest(right_layout)
+def sha256(path):
+    value = hashlib.sha256()
+    with open(path, "rb") as source:
+        for block in iter(lambda: source.read(1024 * 1024), b""):
+            value.update(block)
+    return value.hexdigest()
+first_sha, second_sha = sha256(first_archive), sha256(second_archive)
+if first_sha == second_sha:
+    if pathlib.Path(first_archive).stat().st_size > int(max_archive_bytes):
+        raise SystemExit("runtime archive exceeds budget")
+    print(first_sha)
+    raise SystemExit(0)
 print("OCI_NONDETERMINISM config", left["config"]["digest"], right["config"]["digest"])
 for index, (left_layer, right_layer) in enumerate(zip(left["layers"], right["layers"])):
     if left_layer["digest"] == right_layer["digest"]:
@@ -236,15 +266,13 @@ for index, (left_layer, right_layer) in enumerate(zip(left["layers"], right["lay
         print("OCI_NONDETERMINISM path", path, a.get(path), b.get(path))
     if len(differences) > 200:
         print("OCI_NONDETERMINISM truncated", len(differences))
+raise SystemExit("independent runtime builds are not byte deterministic")
 PY
-    fail "independent runtime builds are not byte deterministic"
-  fi
-  [ "$(stat -c '%s' "$first")" -le "$max_archive_bytes" ] || fail "runtime archive exceeds budget"
   archive="$out/runtime.oci.tar"
   cp "$first" "$archive"
   layout="$context/layout-first"
   local oci_manifest_digest
-  oci_manifest_digest="$(python -B - "$layout/index.json" <<'PY'
+  oci_manifest_digest="$(container_python - /context/layout-first/index.json <<'PY'
 import json, re, sys
 p = json.load(open(sys.argv[1], encoding="utf-8"))
 manifests = p.get("manifests")
@@ -257,14 +285,27 @@ print(digest.removeprefix("sha256:"))
 PY
   )"
   local archive_sha lock_sha
-  archive_sha="$(sha256_file "$archive")"
-  lock_sha="$(sha256_file "$lock")"
-  python -B - "$out/runtime-build-receipt.json" "$lock_sha" "$archive_sha" \
+  archive_sha="$(container_python - /output/runtime.oci.tar <<'PY'
+import hashlib, sys
+value = hashlib.sha256()
+with open(sys.argv[1], "rb") as source:
+    for block in iter(lambda: source.read(1024 * 1024), b""):
+        value.update(block)
+print(value.hexdigest())
+PY
+  )"
+  lock_sha="$(container_python - /trusted/evidence/cafe/runtime-lock.v1.json <<'PY'
+import hashlib, sys
+print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())
+PY
+  )"
+  container_python - /output/runtime-build-receipt.json "$lock_sha" "$archive_sha" \
     "$oci_manifest_digest" "${base_digest#sha256:}" "$python_version" "$pillow_version" \
-    "$godot_version" "$podman_version" "$buildah_version" "$skopeo_version" "$gh_version" <<'PY'
+    "$godot_version" "$podman_version" "$buildah_version" "$skopeo_version" "$gh_version" \
+    "$validation_image" <<'PY'
 import json, os, sys, tempfile
 (out, lock_sha, archive_sha, manifest_digest, base_digest, python_version,
- pillow_version, godot_version, podman, buildah, skopeo, gh) = sys.argv[1:]
+ pillow_version, godot_version, podman, buildah, skopeo, gh, validation_image) = sys.argv[1:]
 p = {
     "schema": "living-town.cafe-runtime-build-receipt.v1",
     "lock_sha256": lock_sha,
@@ -278,6 +319,12 @@ p = {
     "buildah": buildah,
     "skopeo": skopeo,
     "gh": gh,
+    "validation_image": validation_image,
+    "container_platform": "linux/amd64",
+    "container_network": "none",
+    "container_read_only": True,
+    "container_cap_drop": "ALL",
+    "container_no_new_privileges": True,
     "first_archive_sha256": archive_sha,
     "second_archive_sha256": archive_sha,
     "reproducible": True,
@@ -373,6 +420,12 @@ assert receipt["first_archive_sha256"] == archive_sha == receipt["second_archive
 assert receipt["reproducible"] is True
 for key in ("python", "pillow", "godot"):
     assert receipt[key] == lock["versions"][key]
+assert receipt["validation_image"] == lock["validation_image"]["reference"]
+assert receipt["container_platform"] == lock["validation_image"]["platform"]
+assert receipt["container_network"] == "none"
+assert receipt["container_read_only"] is True
+assert receipt["container_cap_drop"] == "ALL"
+assert receipt["container_no_new_privileges"] is True
 print(lock["versions"]["python"])
 print(lock["versions"]["pillow"])
 print(lock["versions"]["godot"])
@@ -439,7 +492,7 @@ PY
     python -B - "$directory" "$viewport" "$repository" "$candidate_sha" "$candidate_tree" \
       "$workflow_sha" "$workflow_tree" "$run_id" "$run_attempt" \
       "$out/authored/cafe-authored-manifest.v1.json" <<'PY'
-import hashlib, json, os, sys, tempfile
+import hashlib, json, os, stat, sys, tempfile
 from PIL import Image
 (root, viewport, repository, candidate_sha, candidate_tree, workflow_sha,
  workflow_tree, run_id, run_attempt, authored_path) = sys.argv[1:]
@@ -531,15 +584,40 @@ tool_paths = [
     "tools/trusted_cafe_capture.sh", "tools/verify_cafe_attested_evidence.py", "tools/vg_shoot.sh",
 ]
 tools = [{"authority": "protected-master", "path": p, "sha256": digest(os.path.join(trusted, p))} for p in tool_paths]
+expected_payloads = sorted([
+    "authored/cafe-authored-ids.v1.json",
+    "authored/cafe-authored-manifest.v1.json",
+    "capture-transcript.json",
+    "logs/godot-capture.log",
+    "logs/godot-import.log",
+    "logs/xvfb-1280x768.log",
+    "logs/xvfb-320x192.log",
+    "runtime/runtime-build-receipt.json",
+    "runtime/runtime-lock.v1.json",
+    *[f"trust-root/{path}" for path in tool_paths],
+    *[
+        f"{viewport}/{filename}"
+        for viewport in ("1280x768", "320x192")
+        for filename in ("vg_int_cafe.png", "vg_cafe1f_bare.png", "vg_cafe2f.png", "vg_cafe2f_bare.png")
+    ],
+    *[f"{viewport}/cafe-capture-receipt.json" for viewport in ("1280x768", "320x192")],
+])
+actual_payloads = sorted(
+    os.path.relpath(os.path.join(root, name), out).replace(os.sep, "/")
+    for root, dirs, files in os.walk(out)
+    for name in sorted(files)
+)
+if actual_payloads != expected_payloads:
+    raise SystemExit(
+        f"capture payload allowlist mismatch: expected={expected_payloads!r} actual={actual_payloads!r}"
+    )
 payloads = []
-for root, dirs, files in os.walk(out):
-    dirs.sort()
-    for name in sorted(files):
-        if name in ("trusted-cafe-manifest.json", "trusted-cafe-evidence.tar.gz"):
-            continue
-        path = os.path.join(root, name)
-        rel = os.path.relpath(path, out).replace(os.sep, "/")
-        payloads.append({"path": rel, "sha256": digest(path), "bytes": os.path.getsize(path)})
+for rel in expected_payloads:
+    path = os.path.join(out, *rel.split("/"))
+    metadata = os.lstat(path)
+    if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1:
+        raise SystemExit(f"capture payload is not a unique regular file: {rel}")
+    payloads.append({"path": rel, "sha256": digest(path), "bytes": metadata.st_size})
 manifest = {
     "schema": "living-town.trusted-cafe-evidence.v1", "repository": repository,
     "candidate": {"sha": candidate_sha, "tree": candidate_tree},
@@ -575,14 +653,43 @@ PY
   trap 'rm -rf "$work"; rm -f "$first_bundle" "$second_bundle"' EXIT
   write_evidence_bundle() {
     python -B - "$out" "$1" <<'PY'
-import gzip, io, os, pathlib, sys, tarfile
+import gzip, io, os, pathlib, stat, sys, tarfile
 root, destination = map(pathlib.Path, sys.argv[1:])
-files = sorted(path for path in root.rglob("*") if path.is_file())
+tool_paths = [
+    ".github/workflows/trusted-cafe-attestation.yml", "evidence/cafe/runtime-lock.v1.json",
+    "tools/cafe_attestation_selftest.py", "tools/cafe_authored_manifest.py",
+    "tools/trusted_cafe_capture.sh", "tools/verify_cafe_attested_evidence.py", "tools/vg_shoot.sh",
+]
+expected = sorted([
+    "authored/cafe-authored-ids.v1.json",
+    "authored/cafe-authored-manifest.v1.json",
+    "capture-transcript.json",
+    "logs/godot-capture.log",
+    "logs/godot-import.log",
+    "logs/xvfb-1280x768.log",
+    "logs/xvfb-320x192.log",
+    "runtime/runtime-build-receipt.json",
+    "runtime/runtime-lock.v1.json",
+    *[f"trust-root/{path}" for path in tool_paths],
+    *[
+        f"{viewport}/{filename}"
+        for viewport in ("1280x768", "320x192")
+        for filename in ("vg_int_cafe.png", "vg_cafe1f_bare.png", "vg_cafe2f.png", "vg_cafe2f_bare.png")
+    ],
+    *[f"{viewport}/cafe-capture-receipt.json" for viewport in ("1280x768", "320x192")],
+    "trusted-cafe-manifest.json",
+])
+actual = sorted(path.relative_to(root).as_posix() for path in root.rglob("*") if path.is_file())
+if actual != expected:
+    raise SystemExit(f"bundle member allowlist mismatch: expected={expected!r} actual={actual!r}")
 with destination.open("wb") as raw:
     with gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0, compresslevel=9) as compressed:
         with tarfile.open(fileobj=compressed, mode="w", format=tarfile.PAX_FORMAT) as archive:
-            for path in files:
-                rel = path.relative_to(root).as_posix()
+            for rel in expected:
+                path = root.joinpath(*rel.split("/"))
+                metadata = path.lstat()
+                if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1:
+                    raise SystemExit(f"bundle member is not a unique regular file: {rel}")
                 data = path.read_bytes()
                 info = tarfile.TarInfo(rel)
                 info.size = len(data); info.mtime = 0; info.mode = 0o644

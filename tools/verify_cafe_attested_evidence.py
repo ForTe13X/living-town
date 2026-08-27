@@ -15,6 +15,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import unicodedata
 import zlib
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable
@@ -49,6 +50,30 @@ TRUSTED_TOOL_PATHS = (
     "tools/verify_cafe_attested_evidence.py",
     "tools/vg_shoot.sh",
 )
+EXPECTED_PAYLOAD_PATHS = tuple(
+    sorted(
+        (
+            "authored/cafe-authored-ids.v1.json",
+            "authored/cafe-authored-manifest.v1.json",
+            "capture-transcript.json",
+            "logs/godot-capture.log",
+            "logs/godot-import.log",
+            "logs/xvfb-1280x768.log",
+            "logs/xvfb-320x192.log",
+            "runtime/runtime-build-receipt.json",
+            "runtime/runtime-lock.v1.json",
+            *(f"trust-root/{path}" for path in TRUSTED_TOOL_PATHS),
+            *(
+                f"{viewport}/{filename}"
+                for viewport in VIEWPORTS
+                for _, _, _, filename in SLOTS.values()
+            ),
+            *(f"{viewport}/cafe-capture-receipt.json" for viewport in VIEWPORTS),
+        )
+    )
+)
+EXPECTED_BUNDLE_MEMBERS = tuple(sorted((*EXPECTED_PAYLOAD_PATHS, "trusted-cafe-manifest.json")))
+MAX_PNG_DECOMPRESSED_BYTES = 8 * 1024 * 1024
 DOES_NOT_AUTHORIZE = [
     "canon",
     "collision",
@@ -170,7 +195,6 @@ def verify_action_pins(trusted_root: Path, runtime_lock: dict[str, Any]) -> None
     actions = {
         "attest_build_provenance": "actions/attest-build-provenance",
         "checkout": "actions/checkout",
-        "setup_python": "actions/setup-python",
         "upload_artifact": "actions/upload-artifact",
     }
     for lock_key, action_name in actions.items():
@@ -220,10 +244,45 @@ def inspect_png(data: bytes, where: str) -> tuple[int, int]:
     if not idat:
         raise VerificationError(f"{where} has no IDAT")
     try:
-        zlib.decompress(idat)
+        decompressor = zlib.decompressobj()
+        decoded = decompressor.decompress(idat, MAX_PNG_DECOMPRESSED_BYTES + 1)
+        if len(decoded) > MAX_PNG_DECOMPRESSED_BYTES or decompressor.unconsumed_tail:
+            raise VerificationError(
+                f"{where} exceeds the {MAX_PNG_DECOMPRESSED_BYTES}-byte PNG expansion limit"
+            )
+        decoded += decompressor.flush(MAX_PNG_DECOMPRESSED_BYTES + 1 - len(decoded))
+        if len(decoded) > MAX_PNG_DECOMPRESSED_BYTES:
+            raise VerificationError(
+                f"{where} exceeds the {MAX_PNG_DECOMPRESSED_BYTES}-byte PNG expansion limit"
+            )
+        if not decompressor.eof or decompressor.unused_data:
+            raise VerificationError(f"{where} has incomplete or trailing PNG image data")
     except zlib.error as exc:
         raise VerificationError(f"{where} has corrupt PNG image data: {exc}") from exc
     return width, height
+
+
+def _canonical_archive_name(name: str) -> str:
+    try:
+        encoded = name.encode("ascii")
+    except UnicodeEncodeError as exc:
+        raise VerificationError(f"non-ASCII bundle path: {name!r}") from exc
+    if not encoded or any(byte < 0x20 or byte == 0x7F for byte in encoded):
+        raise VerificationError(f"control character in bundle path: {name!r}")
+    if unicodedata.normalize("NFC", name) != name:
+        raise VerificationError(f"non-canonical Unicode bundle path: {name!r}")
+    pure = PurePosixPath(name)
+    if (
+        pure.is_absolute()
+        or not pure.parts
+        or ".." in pure.parts
+        or "\\" in name
+        or ":" in name
+        or name != pure.as_posix()
+        or name.startswith("./")
+    ):
+        raise VerificationError(f"unsafe bundle path: {name!r}")
+    return name
 
 
 def safe_extract(bundle: Path, destination: Path) -> list[str]:
@@ -232,20 +291,12 @@ def safe_extract(bundle: Path, destination: Path) -> list[str]:
     try:
         with tarfile.open(bundle, "r:gz") as archive:
             members = archive.getmembers()
-            if len(members) > 128:
-                raise VerificationError("bundle contains too many members")
+            if len(members) != len(EXPECTED_BUNDLE_MEMBERS):
+                raise VerificationError(
+                    f"bundle member count mismatch: {len(members)} != {len(EXPECTED_BUNDLE_MEMBERS)}"
+                )
             for member in members:
-                pure = PurePosixPath(member.name)
-                if (
-                    pure.is_absolute()
-                    or not pure.parts
-                    or ".." in pure.parts
-                    or "\\" in member.name
-                    or ":" in member.name
-                    or member.name != pure.as_posix()
-                    or member.name.startswith("./")
-                ):
-                    raise VerificationError(f"unsafe bundle path: {member.name}")
+                _canonical_archive_name(member.name)
                 if member.name in names:
                     raise VerificationError(f"duplicate bundle member: {member.name}")
                 if not member.isfile():
@@ -256,6 +307,13 @@ def safe_extract(bundle: Path, destination: Path) -> list[str]:
                 if total > 250 * 1024 * 1024:
                     raise VerificationError("bundle exceeds the 250 MiB limit")
                 names.append(member.name)
+            if tuple(sorted(names)) != EXPECTED_BUNDLE_MEMBERS:
+                actual = set(names)
+                expected = set(EXPECTED_BUNDLE_MEMBERS)
+                raise VerificationError(
+                    "bundle member allowlist mismatch: "
+                    f"missing={sorted(expected - actual)}, extra={sorted(actual - expected)}"
+                )
             for member in members:
                 target = destination.joinpath(*PurePosixPath(member.name).parts)
                 target.parent.mkdir(parents=True, exist_ok=True)
@@ -422,6 +480,33 @@ def verify_bundle(
     runtime_lock = load_json_file(runtime_lock_path)
     if not isinstance(runtime_lock, dict) or runtime_lock.get("schema") != RUNTIME_LOCK_SCHEMA:
         raise VerificationError("runtime lock schema mismatch")
+    container_contract = exact_keys(
+        runtime_lock.get("container_contract"),
+        {
+            "cap_drop",
+            "candidate_mount",
+            "network_default",
+            "no_new_privileges",
+            "platform",
+            "read_only_root",
+            "scratch_mount",
+            "trusted_mount",
+        },
+        "runtime lock container contract",
+    )
+    if container_contract != {
+        "cap_drop": "ALL",
+        "candidate_mount": "read-only",
+        "network_default": "none",
+        "no_new_privileges": True,
+        "platform": "linux/amd64",
+        "read_only_root": True,
+        "scratch_mount": "task-owned-read-write",
+        "trusted_mount": "read-only",
+    }:
+        raise VerificationError("runtime lock weakens the isolated container contract")
+    if runtime_lock.get("limits", {}).get("max_png_decompressed_bytes") != MAX_PNG_DECOMPRESSED_BYTES:
+        raise VerificationError("runtime lock PNG decompression limit drift")
     verify_action_pins(trusted_root, runtime_lock)
 
     trusted_ids = trusted_root / "evidence/cafe/cafe-authored-ids.v1.json"
@@ -499,8 +584,8 @@ def verify_bundle(
             raise VerificationError("manifest run identity mismatch (receipt replay)")
 
         payloads = manifest["payloads"]
-        if not isinstance(payloads, list) or not payloads:
-            raise VerificationError("manifest payload list is empty")
+        if not isinstance(payloads, list) or len(payloads) != len(EXPECTED_PAYLOAD_PATHS):
+            raise VerificationError("manifest payload count does not match the protected allowlist")
         expected_members = {"trusted-cafe-manifest.json"}
         seen_payloads: set[str] = set()
         for index, payload in enumerate(payloads):
@@ -508,15 +593,13 @@ def verify_bundle(
             path = payload["path"]
             if not isinstance(path, str):
                 raise VerificationError(f"payload path is not a string: {path!r}")
+            if path != EXPECTED_PAYLOAD_PATHS[index]:
+                raise VerificationError(
+                    f"payloads[{index}] is outside or out of order in the protected allowlist: {path!r}"
+                )
+            _canonical_archive_name(path)
             pure = PurePosixPath(path)
-            if (
-                pure.is_absolute()
-                or ".." in pure.parts
-                or "\\" in path
-                or ":" in path
-                or path != pure.as_posix()
-                or path in seen_payloads
-            ):
+            if path in seen_payloads:
                 raise VerificationError(f"invalid/duplicate payload path: {path}")
             seen_payloads.add(path)
             expected_members.add(path)
@@ -595,6 +678,12 @@ def verify_bundle(
                 "buildah",
                 "skopeo",
                 "gh",
+                "validation_image",
+                "container_platform",
+                "container_network",
+                "container_read_only",
+                "container_cap_drop",
+                "container_no_new_privileges",
                 "first_archive_sha256",
                 "second_archive_sha256",
                 "reproducible",
@@ -621,6 +710,12 @@ def verify_bundle(
             "buildah": runtime_lock["host_tools"]["buildah"],
             "skopeo": runtime_lock["host_tools"]["skopeo"],
             "gh": runtime_lock["host_tools"]["gh"],
+            "validation_image": runtime_lock["validation_image"]["reference"],
+            "container_platform": runtime_lock["validation_image"]["platform"],
+            "container_network": "none",
+            "container_read_only": True,
+            "container_cap_drop": "ALL",
+            "container_no_new_privileges": True,
         }
         for key, value in runtime_expected.items():
             if runtime_receipt[key] != value:

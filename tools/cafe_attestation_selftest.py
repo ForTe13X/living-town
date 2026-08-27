@@ -110,6 +110,33 @@ def make_tar(source: Path, destination: Path) -> None:
                     archive.addfile(info, __import__("io").BytesIO(data))
 
 
+def rewrite_tar(
+    source: Path,
+    destination: Path,
+    mutation: Callable[[list[tuple[tarfile.TarInfo, bytes]]], None],
+) -> Path:
+    records: list[tuple[tarfile.TarInfo, bytes]] = []
+    with tarfile.open(source, "r:gz") as archive:
+        for member in archive.getmembers():
+            extracted = archive.extractfile(member) if member.isfile() else None
+            records.append((copy.copy(member), extracted.read() if extracted is not None else b""))
+    mutation(records)
+    with destination.open("wb") as raw:
+        with gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0, compresslevel=9) as compressed:
+            with tarfile.open(fileobj=compressed, mode="w", format=tarfile.PAX_FORMAT) as archive:
+                for member, data in records:
+                    member.mtime = 0
+                    member.uid = member.gid = 0
+                    member.uname = member.gname = ""
+                    if member.isfile():
+                        member.size = len(data)
+                        archive.addfile(member, __import__("io").BytesIO(data))
+                    else:
+                        member.size = 0
+                        archive.addfile(member)
+    return destination
+
+
 def unpack_tar(bundle: Path, destination: Path) -> None:
     with tarfile.open(bundle, "r:gz") as archive:
         for member in archive.getmembers():
@@ -244,11 +271,24 @@ def build_bundle(root: Path, repo: Path, context: dict[str, str], authored_manif
         "buildah": runtime_lock["host_tools"]["buildah"],
         "skopeo": runtime_lock["host_tools"]["skopeo"],
         "gh": runtime_lock["host_tools"]["gh"],
+        "validation_image": runtime_lock["validation_image"]["reference"],
+        "container_platform": runtime_lock["validation_image"]["platform"],
+        "container_network": "none",
+        "container_read_only": True,
+        "container_cap_drop": "ALL",
+        "container_no_new_privileges": True,
         "first_archive_sha256": RUNTIME_ARCHIVE_SHA,
         "second_archive_sha256": RUNTIME_ARCHIVE_SHA,
         "reproducible": True,
     }
     write(content / "runtime/runtime-build-receipt.json", canonical(runtime_receipt))
+    for rel in (
+        "logs/godot-capture.log",
+        "logs/godot-import.log",
+        "logs/xvfb-1280x768.log",
+        "logs/xvfb-320x192.log",
+    ):
+        write(content / rel, b"")
 
     tool_records = []
     for rel in verifier.TRUSTED_TOOL_PATHS:
@@ -311,8 +351,15 @@ def build_bundle(root: Path, repo: Path, context: dict[str, str], authored_manif
     write(content / "capture-transcript.json", canonical(transcript))
 
     payloads = []
-    for path in sorted(item for item in content.rglob("*") if item.is_file()):
-        rel = path.relative_to(content).as_posix()
+    actual_payloads = tuple(
+        sorted(path.relative_to(content).as_posix() for path in content.rglob("*") if path.is_file())
+    )
+    if actual_payloads != verifier.EXPECTED_PAYLOAD_PATHS:
+        raise SelftestError(
+            f"fixture payload allowlist mismatch: {actual_payloads!r} != {verifier.EXPECTED_PAYLOAD_PATHS!r}"
+        )
+    for rel in verifier.EXPECTED_PAYLOAD_PATHS:
+        path = content.joinpath(*rel.split("/"))
         raw = path.read_bytes()
         payloads.append({"path": rel, "sha256": digest(raw), "bytes": len(raw)})
     manifest = {
@@ -465,14 +512,14 @@ def execute(work: Path, source_root: Path) -> dict[str, Any]:
     )
     plausible.unlink()
 
-    def verify_changed(changed: Path, *, attestation: bytes = positive_attestation, changed_expected=None) -> Any:
+    def verify_changed(changed: Path, *, attestation: bytes | None = positive_attestation, changed_expected=None) -> Any:
         return verifier.verify_bundle(
             bundle=changed,
             candidate_root=repo,
             trusted_root=repo,
             expected=changed_expected or expected,
             runtime_archive_sha256=RUNTIME_ARCHIVE_SHA,
-            attestation_runner=lambda *_: attestation,
+            attestation_runner=lambda *_: attestation if attestation is not None else attestation_for(changed),
         )
 
     substituted = mutate_bundle(
@@ -589,6 +636,113 @@ def execute(work: Path, source_root: Path) -> dict[str, Any]:
         failures,
     )
 
+    def add_named_extra(label: str, name: str) -> None:
+        expect_failure(
+            label,
+            lambda: (
+                lambda changed: verify_changed(changed, attestation=attestation_for(changed))
+            )(
+                mutate_bundle(
+                    bundle,
+                    work,
+                    label,
+                    lambda content: write(content / name, b"unexpected\n"),
+                    refresh=True,
+                )
+            ),
+            failures,
+        )
+
+    add_named_extra("arbitrary_extra_payload", "arbitrary-extra.txt")
+
+    def mutated_member(
+        label: str,
+        mutator: Callable[[list[tuple[tarfile.TarInfo, bytes]]], None],
+    ) -> None:
+        changed = rewrite_tar(bundle, work / f"{label}.tar.gz", mutator)
+        expect_failure(
+            label,
+            lambda: verify_changed(changed, attestation=attestation_for(changed)),
+            failures,
+        )
+
+    def duplicate(records: list[tuple[tarfile.TarInfo, bytes]]) -> None:
+        records.append((copy.copy(records[0][0]), records[0][1]))
+
+    mutated_member("duplicate_archive_member", duplicate)
+
+    def rename_first(name: str) -> Callable[[list[tuple[tarfile.TarInfo, bytes]]], None]:
+        def mutate(records: list[tuple[tarfile.TarInfo, bytes]]) -> None:
+            records[0][0].name = name
+
+        return mutate
+
+    def rename_named(
+        old: str, new: str
+    ) -> Callable[[list[tuple[tarfile.TarInfo, bytes]]], None]:
+        def mutate(records: list[tuple[tarfile.TarInfo, bytes]]) -> None:
+            matches = [member for member, _ in records if member.name == old]
+            if len(matches) != 1:
+                raise SelftestError(f"archive fixture member mismatch for {old}: {len(matches)}")
+            matches[0].name = new
+
+        return mutate
+
+    mutated_member("canonicalization_ambiguity", rename_first("1280x768//vg_int_cafe.png"))
+    mutated_member(
+        "case_only_payload_name",
+        rename_named("runtime/runtime-lock.v1.json", "Runtime/runtime-lock.v1.json"),
+    )
+    mutated_member(
+        "unicode_lookalike_payload_name",
+        rename_named(
+            "runtime/runtime-lock.v1.json",
+            "runtime/runtime-lock.v1.jso\N{CYRILLIC SMALL LETTER EN}",
+        ),
+    )
+    mutated_member(
+        "trust_root_lookalike_payload_name",
+        rename_named(
+            "trust-root/tools/verify_cafe_attested_evidence.py",
+            "trust‐root/tools/verify_cafe_attested_evidence.py",
+        ),
+    )
+    mutated_member(
+        "newline_payload_name",
+        rename_named("logs/godot-capture.log", "logs/godot-capture\n.log"),
+    )
+    mutated_member("dot_archive_path_variant", rename_first("./1280x768/vg_int_cafe.png"))
+    mutated_member("parent_archive_path_variant", rename_first("../1280x768/vg_int_cafe.png"))
+    mutated_member("backslash_archive_path_variant", rename_first("1280x768\\vg_int_cafe.png"))
+
+    def link_member(link_type: bytes) -> Callable[[list[tuple[tarfile.TarInfo, bytes]]], None]:
+        def mutate(records: list[tuple[tarfile.TarInfo, bytes]]) -> None:
+            records[0][0].type = link_type
+            records[0][0].linkname = "trusted-cafe-manifest.json"
+
+        return mutate
+
+    mutated_member("symlink_archive_member", link_member(tarfile.SYMTYPE))
+    mutated_member("hardlink_archive_member", link_member(tarfile.LNKTYPE))
+
+    def high_expansion(content: Path) -> None:
+        frame = content / "1280x768/vg_int_cafe.png"
+        replacement = png(2048, 2048, (0, 0, 0, 0))
+        frame.write_bytes(replacement)
+        receipt_path = content / "1280x768/cafe-capture-receipt.json"
+        value = json.loads(receipt_path.read_text(encoding="utf-8"))
+        value["captures"][0]["sha256"] = digest(replacement)
+        value["captures"][0]["bytes"] = len(replacement)
+        write(receipt_path, canonical(value))
+
+    expect_failure(
+        "high_expansion_png",
+        lambda: (
+            lambda changed: verify_changed(changed, attestation=attestation_for(changed))
+        )(mutate_bundle(bundle, work, "high-expansion-png", high_expansion, refresh=True)),
+        failures,
+    )
+
     required = {
         "stale_source_manifest",
         "unauthored_plausible_source",
@@ -604,6 +758,19 @@ def execute(work: Path, source_root: Path) -> dict[str, Any]:
         "wrong_workflow_attestation",
         "malformed_attestation",
         "attestation_subject_mismatch",
+        "arbitrary_extra_payload",
+        "case_only_payload_name",
+        "unicode_lookalike_payload_name",
+        "trust_root_lookalike_payload_name",
+        "newline_payload_name",
+        "duplicate_archive_member",
+        "canonicalization_ambiguity",
+        "dot_archive_path_variant",
+        "parent_archive_path_variant",
+        "backslash_archive_path_variant",
+        "symlink_archive_member",
+        "hardlink_archive_member",
+        "high_expansion_png",
     }
     if set(failures) != required:
         raise SelftestError(f"negative control coverage mismatch: {sorted(failures)}")
