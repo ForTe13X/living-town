@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T06:51:54Z",
+  "updated_at": "2026-08-27T06:54:47Z",
   "producer": {
     "task": "019f555f-dfd4-7d91-aa6b-9655caa34871",
     "branch": "codex/main-repo-review",
@@ -39,9 +39,9 @@
       "generated_outputs": ["temporary deterministic test bundles and hash-bound receipts outside repository only"],
       "dependencies": ["architect-task:01a041cb-9e65-7700-b342-75787b53537c:READY","origin/master:5b7ac426b6bc059517dba843db4150a2b38d33a7","draft-pr:24:terminal_heuristic_limit","hosted-run:33042786023:success"],
       "consumer": "Producer, then independent security/QA and REFUTE; after protected-root merge, one serialized Stack B candidate owner",
-      "status": "recovery_1_reserved_derive_pinned_runtime_within_lease",
-      "last_heartbeat": "2026-08-27T06:51:54Z",
-      "stale_after": "2026-08-27T08:51:54Z",
+      "status": "active_recovery_1_derive_pinned_runtime_within_lease",
+      "last_heartbeat": "2026-08-27T06:54:47Z",
+      "stale_after": "2026-08-27T08:54:47Z",
       "pr": null,
       "checks": {"architect_contract":"READY","source_candidate_core":"success","source_candidate_visual":"success","source_candidate_run":33042786023,"initial_writer":"STOP_NO_QUALIFYING_PULLABLE_RUNTIME","local_base_digest":"sha256:90eaf3f8b60e15ea95de0c3e87e3276414c4cae1355b49471e9d2f52dddaa33d","local_base_python":"3.10.12","local_base_pillow":"missing","local_base_godot":"4.6.2"},
       "recovery_count": 1,
