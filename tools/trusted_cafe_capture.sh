@@ -52,7 +52,7 @@ build_runtime() {
   local validation_image="docker.io/library/python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c"
   podman pull --platform linux/amd64 "$validation_image" >/dev/null
   container_python() {
-    podman run --rm --network none --read-only --cap-drop all \
+    podman run --rm --interactive --network none --read-only --cap-drop all \
       --security-opt no-new-privileges --pids-limit 128 --memory 768m --cpus 2 \
       --tmpfs /tmp:rw,nosuid,nodev,size=268435456 \
       --volume "$trusted_root:/trusted:ro" \
