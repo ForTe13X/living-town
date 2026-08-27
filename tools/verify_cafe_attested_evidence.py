@@ -20,14 +20,12 @@ import zlib
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable
 
-import cafe_authored_manifest as authored
-
-
 BUNDLE_SCHEMA = "living-town.trusted-cafe-evidence.v1"
 RECEIPT_SCHEMA = "living-town.trusted-cafe-capture-receipt.v1"
 TRANSCRIPT_SCHEMA = "living-town.trusted-cafe-capture-transcript.v1"
 RUNTIME_LOCK_SCHEMA = "living-town.cafe-runtime-lock.v1"
 RUNTIME_RECEIPT_SCHEMA = "living-town.cafe-runtime-build-receipt.v1"
+PREVERIFIED_CHECKOUT_SCHEMA = "living-town.cafe-preverified-checkouts.v1"
 WORKFLOW_PATH = ".github/workflows/trusted-cafe-attestation.yml"
 WORKFLOW_REF_SUFFIX = f"/{WORKFLOW_PATH}@refs/heads/master"
 SLSA_PREDICATE = "https://slsa.dev/provenance/v1"
@@ -167,23 +165,45 @@ def require_hex(value: Any, where: str, *, git: bool = False) -> str:
     return value
 
 
-def git(repo: Path, *args: str) -> str:
-    command = ["git", "-C", str(repo), *args]
+def verify_preverified_checkouts(
+    path: Path | None,
+    expected: dict[str, str],
+    compiled_authored_sha256: str,
+) -> None:
+    if path is None:
+        raise VerificationError("explicit preverified-checkout contract is required")
     try:
-        return subprocess.check_output(command, text=True, stderr=subprocess.STDOUT).strip()
-    except (OSError, subprocess.CalledProcessError) as exc:
-        detail = getattr(exc, "output", "")
-        raise VerificationError(f"git command failed: {' '.join(command)}: {str(detail).strip()}") from exc
-
-
-def verify_checkout(repo: Path, expected_sha: str, expected_tree: str, label: str) -> None:
-    if git(repo, "rev-parse", "HEAD") != expected_sha:
-        raise VerificationError(f"{label} HEAD does not match the attested commit")
-    if git(repo, "show", "-s", "--format=%T", "HEAD") != expected_tree:
-        raise VerificationError(f"{label} tree does not match the attested tree")
-    dirty = git(repo, "status", "--porcelain=v1", "--untracked-files=all")
-    if dirty:
-        raise VerificationError(f"{label} checkout is dirty: {dirty}")
+        raw = path.resolve(strict=True).read_bytes()
+    except OSError as exc:
+        raise VerificationError(f"cannot read preverified-checkout contract: {exc}") from exc
+    contract = load_json_bytes(raw, "preverified-checkout contract")
+    if canonical_bytes(contract) != raw:
+        raise VerificationError("preverified-checkout contract is not canonical")
+    exact_keys(
+        contract,
+        {"schema", "source", "repository", "candidate", "workflow", "authored_manifest_sha256"},
+        "preverified-checkout contract",
+    )
+    candidate = exact_keys(contract["candidate"], {"sha", "tree", "clean"}, "preverified candidate")
+    workflow = exact_keys(contract["workflow"], {"sha", "tree", "clean"}, "preverified workflow")
+    if contract["schema"] != PREVERIFIED_CHECKOUT_SCHEMA:
+        raise VerificationError("preverified-checkout schema mismatch")
+    if contract["source"] != "host-read-only-git" or contract["repository"] != expected["repository"]:
+        raise VerificationError("preverified-checkout source/repository mismatch")
+    if candidate != {
+        "sha": expected["candidate_sha"],
+        "tree": expected["candidate_tree"],
+        "clean": True,
+    }:
+        raise VerificationError("preverified candidate identity/cleanliness mismatch")
+    if workflow != {
+        "sha": expected["workflow_sha"],
+        "tree": expected["workflow_tree"],
+        "clean": True,
+    }:
+        raise VerificationError("preverified workflow identity/cleanliness mismatch")
+    if contract["authored_manifest_sha256"] != compiled_authored_sha256:
+        raise VerificationError("preverified authored-manifest digest mismatch")
 
 
 def verify_action_pins(trusted_root: Path, runtime_lock: dict[str, Any]) -> None:
@@ -457,6 +477,8 @@ def verify_bundle(
     expected: dict[str, str],
     runtime_archive_sha256: str,
     attestation_runner: AttestationRunner,
+    preverified_checkouts: Path | None,
+    compiled_authored_manifest: Path | None,
     receipt_output: Path | None = None,
 ) -> dict[str, Any]:
     bundle = bundle.resolve(strict=True)
@@ -472,9 +494,6 @@ def verify_bundle(
         expected.get("run_attempt", "")
     ):
         raise VerificationError("run identity is invalid")
-
-    verify_checkout(candidate_root, expected["candidate_sha"], expected["candidate_tree"], "candidate")
-    verify_checkout(trusted_root, expected["workflow_sha"], expected["workflow_tree"], "trusted")
 
     runtime_lock_path = trusted_root / "evidence/cafe/runtime-lock.v1.json"
     runtime_lock = load_json_file(runtime_lock_path)
@@ -523,14 +542,19 @@ def verify_bundle(
         except OSError as exc:
             raise VerificationError(f"missing protected/candidate {label}: {exc}") from exc
 
-    compiler_path = trusted_root / "tools/cafe_authored_manifest.py"
+    if compiled_authored_manifest is None:
+        raise VerificationError("container-authored manifest input is required")
     try:
-        compiled = authored.compile_manifest(candidate_root, trusted_ids, compiler_path=compiler_path)
-        compiled_bytes = authored.canonical_bytes(compiled)
-    except authored.ContractError as exc:
-        raise VerificationError(f"authored compiler rejected candidate: {exc}") from exc
+        compiled_bytes = compiled_authored_manifest.resolve(strict=True).read_bytes()
+    except OSError as exc:
+        raise VerificationError(f"cannot read container-authored manifest: {exc}") from exc
     if compiled_bytes != trusted_authored_manifest.read_bytes():
-        raise VerificationError("protected authored manifest is stale for the exact candidate source")
+        raise VerificationError("container-authored manifest differs from protected master")
+    verify_preverified_checkouts(
+        preverified_checkouts,
+        expected,
+        sha256_bytes(compiled_bytes),
+    )
     authored_manifest = load_json_bytes(compiled_bytes, "compiled authored manifest")
 
     with tempfile.TemporaryDirectory(prefix="cafe-attested-verify-") as temporary:
@@ -679,6 +703,7 @@ def verify_bundle(
                 "skopeo",
                 "gh",
                 "validation_image",
+                "validation_oci_manifest_digest",
                 "container_platform",
                 "container_network",
                 "container_read_only",
@@ -711,12 +736,14 @@ def verify_bundle(
             "skopeo": runtime_lock["host_tools"]["skopeo"],
             "gh": runtime_lock["host_tools"]["gh"],
             "validation_image": runtime_lock["validation_image"]["reference"],
+            "validation_oci_manifest_digest": runtime_receipt["validation_oci_manifest_digest"],
             "container_platform": runtime_lock["validation_image"]["platform"],
             "container_network": "none",
             "container_read_only": True,
             "container_cap_drop": "ALL",
             "container_no_new_privileges": True,
         }
+        require_hex(runtime_receipt["validation_oci_manifest_digest"], "validation OCI manifest digest")
         for key, value in runtime_expected.items():
             if runtime_receipt[key] != value:
                 raise VerificationError(f"runtime receipt drift: {key}")
@@ -914,6 +941,8 @@ def verify_bundle(
         "run_id": expected["run_id"],
         "run_attempt": expected["run_attempt"],
         "runtime_archive_sha256": runtime_archive_sha256,
+        "preverified_checkouts_sha256": sha256_file(preverified_checkouts.resolve(strict=True)),
+        "compiled_authored_manifest_sha256": sha256_bytes(compiled_bytes),
         "bundle_sha256": bundle_sha256,
         "attestation_predicate_type": attestation["verificationResult"]["statement"]["predicateType"],
         "verified": True,
@@ -947,6 +976,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--run-attempt", required=True)
     parser.add_argument("--runtime-archive-sha256", required=True)
+    parser.add_argument("--preverified-checkouts", type=Path)
+    parser.add_argument("--compiled-authored-manifest", type=Path)
     parser.add_argument("--gh-bin", default="gh")
     parser.add_argument("--receipt-output", type=Path, required=True)
     args = parser.parse_args(argv)
@@ -966,12 +997,14 @@ def main(argv: list[str] | None = None) -> int:
             trusted_root=args.trusted_root,
             expected=expected,
             runtime_archive_sha256=args.runtime_archive_sha256,
+            preverified_checkouts=args.preverified_checkouts,
+            compiled_authored_manifest=args.compiled_authored_manifest,
             attestation_runner=lambda bundle, repository, workflow_sha: run_github_attestation(
                 bundle, repository, workflow_sha, args.gh_bin
             ),
             receipt_output=args.receipt_output,
         )
-    except (VerificationError, authored.ContractError, OSError) as exc:
+    except (VerificationError, OSError) as exc:
         print(f"VERIFY_CAFE_ATTESTED_EVIDENCE FAIL: {exc}", file=sys.stderr)
         return 1
     print(

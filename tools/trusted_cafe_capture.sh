@@ -34,7 +34,7 @@ canonical_oci_archive() {
 
 build_runtime() {
   [ "$#" -eq 2 ] || usage
-  local trusted_root out lock context tag layout archive first second
+  local trusted_root out lock context tag validation_tag layout archive first second
   trusted_root="$(cd "$1" && pwd)"
   out="$2"
   lock="$trusted_root/evidence/cafe/runtime-lock.v1.json"
@@ -44,6 +44,7 @@ build_runtime() {
   out="$(cd "$out" && pwd)"
   context="$(mktemp -d "${TMPDIR:-/tmp}/trusted-cafe-runtime.XXXXXXXX")"
   tag="localhost/living-town/trusted-cafe-runtime:v1"
+  validation_tag="localhost/living-town/trusted-cafe-validation:v1"
   trap "podman image rm -f '$tag' >/dev/null 2>&1 || true; rm -rf '$context'" EXIT
 
   # This literal is itself protected by the trust-root snapshot.  The
@@ -155,7 +156,7 @@ RUN printf '%s\n' \
  && rm -f /etc/apt/sources.list.d/* \
  && apt-get -o Acquire::Check-Valid-Until=false update \
  && apt-get -o Acquire::Check-Valid-Until=false install -y --no-install-recommends \
-      bash ca-certificates coreutils findutils git gzip libasound2 libfontconfig1 \
+      bash ca-certificates coreutils findutils gzip libasound2 libfontconfig1 \
       libgl1 libgl1-mesa-dri libglx-mesa0 libx11-6 libxcursor1 libxext6 libxi6 \
       libxinerama1 libxrandr2 libxrender1 tar xauth xvfb \
  && rm -rf /var/lib/apt/lists/* /var/cache/apt/* /var/log/apt/* \
@@ -268,6 +269,32 @@ for index, (left_layer, right_layer) in enumerate(zip(left["layers"], right["lay
         print("OCI_NONDETERMINISM truncated", len(differences))
 raise SystemExit("independent runtime builds are not byte deterministic")
 PY
+
+  cat >"$context/ValidationContainerfile" <<'EOF'
+ARG CAPTURE_IMAGE
+FROM ${CAPTURE_IMAGE}
+ARG DEBIAN_SNAPSHOT
+ARG SECURITY_SNAPSHOT
+RUN printf '%s\n' \
+      "deb [check-valid-until=no] ${DEBIAN_SNAPSHOT} bookworm main" \
+      "deb [check-valid-until=no] ${DEBIAN_SNAPSHOT} bookworm-updates main" \
+      "deb [check-valid-until=no] ${SECURITY_SNAPSHOT} bookworm-security main" \
+      > /etc/apt/sources.list \
+ && apt-get -o Acquire::Check-Valid-Until=false update \
+ && apt-get -o Acquire::Check-Valid-Until=false install -y --no-install-recommends git \
+ && rm -rf /var/lib/apt/lists/* /var/cache/apt/* /var/log/apt/* \
+      /var/log/dpkg.log /var/log/alternatives.log /usr/share/doc/* /usr/share/man/*
+LABEL org.opencontainers.image.title="living-town-trusted-cafe-validation" \
+      org.opencontainers.image.version="v1"
+EOF
+  podman image rm -f "$validation_tag" >/dev/null 2>&1 || true
+  podman build --pull=never --no-cache --layers=false --timestamp 0 \
+    --format oci --platform linux/amd64 \
+    --build-arg "CAPTURE_IMAGE=$tag" \
+    --build-arg "DEBIAN_SNAPSHOT=$debian_snapshot" \
+    --build-arg "SECURITY_SNAPSHOT=$security_snapshot" \
+    --file "$context/ValidationContainerfile" --tag "$validation_tag" "$context"
+  podman save --format oci-dir --output "$context/layout-validation" "$validation_tag"
   archive="$out/runtime.oci.tar"
   cp "$first" "$archive"
   layout="$context/layout-first"
@@ -281,6 +308,19 @@ if not isinstance(manifests, list) or len(manifests) != 1:
 digest = manifests[0].get("digest", "")
 if not re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
     raise SystemExit("invalid OCI manifest digest")
+print(digest.removeprefix("sha256:"))
+PY
+  )"
+  local validation_oci_manifest_digest
+  validation_oci_manifest_digest="$(container_python - /context/layout-validation/index.json <<'PY'
+import json, re, sys
+p = json.load(open(sys.argv[1], encoding="utf-8"))
+manifests = p.get("manifests")
+if not isinstance(manifests, list) or len(manifests) != 1:
+    raise SystemExit("validation OCI index must contain exactly one manifest")
+digest = manifests[0].get("digest", "")
+if not re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
+    raise SystemExit("invalid validation OCI manifest digest")
 print(digest.removeprefix("sha256:"))
 PY
   )"
@@ -302,10 +342,11 @@ PY
   container_python - /output/runtime-build-receipt.json "$lock_sha" "$archive_sha" \
     "$oci_manifest_digest" "${base_digest#sha256:}" "$python_version" "$pillow_version" \
     "$godot_version" "$podman_version" "$buildah_version" "$skopeo_version" "$gh_version" \
-    "$validation_image" <<'PY'
+    "$validation_image" "$validation_oci_manifest_digest" <<'PY'
 import json, os, sys, tempfile
 (out, lock_sha, archive_sha, manifest_digest, base_digest, python_version,
- pillow_version, godot_version, podman, buildah, skopeo, gh, validation_image) = sys.argv[1:]
+ pillow_version, godot_version, podman, buildah, skopeo, gh, validation_image,
+ validation_oci_manifest_digest) = sys.argv[1:]
 p = {
     "schema": "living-town.cafe-runtime-build-receipt.v1",
     "lock_sha256": lock_sha,
@@ -320,6 +361,7 @@ p = {
     "skopeo": skopeo,
     "gh": gh,
     "validation_image": validation_image,
+    "validation_oci_manifest_digest": validation_oci_manifest_digest,
     "container_platform": "linux/amd64",
     "container_network": "none",
     "container_read_only": True,
@@ -408,7 +450,7 @@ capture() {
   done
 
   mapfile -t versions < <(python -B - "$lock" "$runtime_receipt" "$runtime_archive_sha" <<'PY'
-import hashlib, json, sys
+import hashlib, json, re, sys
 lock_path, receipt_path, archive_sha = sys.argv[1:]
 lock = json.load(open(lock_path, encoding="utf-8"))
 receipt = json.load(open(receipt_path, encoding="utf-8"))
@@ -421,6 +463,7 @@ assert receipt["reproducible"] is True
 for key in ("python", "pillow", "godot"):
     assert receipt[key] == lock["versions"][key]
 assert receipt["validation_image"] == lock["validation_image"]["reference"]
+assert re.fullmatch(r"[0-9a-f]{64}", receipt["validation_oci_manifest_digest"])
 assert receipt["container_platform"] == lock["validation_image"]["platform"]
 assert receipt["container_network"] == "none"
 assert receipt["container_read_only"] is True

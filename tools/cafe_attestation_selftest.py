@@ -272,6 +272,7 @@ def build_bundle(root: Path, repo: Path, context: dict[str, str], authored_manif
         "skopeo": runtime_lock["host_tools"]["skopeo"],
         "gh": runtime_lock["host_tools"]["gh"],
         "validation_image": runtime_lock["validation_image"]["reference"],
+        "validation_oci_manifest_digest": "c" * 64,
         "container_platform": runtime_lock["validation_image"]["platform"],
         "container_network": "none",
         "container_read_only": True,
@@ -481,6 +482,29 @@ def expect_failure(label: str, action: Callable[[], Any], failures: list[str]) -
 
 def execute(work: Path, source_root: Path) -> dict[str, Any]:
     repo, context, authored_manifest = initialize_fixture(work, source_root)
+    compiled_authored_manifest = repo / "evidence/cafe/cafe-authored-manifest.v1.json"
+    preverified_checkouts = work / "preverified-checkouts.json"
+    write(
+        preverified_checkouts,
+        canonical(
+            {
+                "schema": verifier.PREVERIFIED_CHECKOUT_SCHEMA,
+                "source": "host-read-only-git",
+                "repository": context["repository"],
+                "candidate": {
+                    "sha": context["candidate_sha"],
+                    "tree": context["candidate_tree"],
+                    "clean": True,
+                },
+                "workflow": {
+                    "sha": context["workflow_sha"],
+                    "tree": context["workflow_tree"],
+                    "clean": True,
+                },
+                "authored_manifest_sha256": file_digest(compiled_authored_manifest),
+            }
+        ),
+    )
     bundle = build_bundle(work, repo, context, authored_manifest)
     positive_attestation = attestation_for(bundle)
     expected = dict(context)
@@ -491,6 +515,8 @@ def execute(work: Path, source_root: Path) -> dict[str, Any]:
         expected=expected,
         runtime_archive_sha256=RUNTIME_ARCHIVE_SHA,
         attestation_runner=lambda *_: positive_attestation,
+        preverified_checkouts=preverified_checkouts,
+        compiled_authored_manifest=compiled_authored_manifest,
     )
     failures: list[str] = []
 
@@ -520,6 +546,8 @@ def execute(work: Path, source_root: Path) -> dict[str, Any]:
             expected=changed_expected or expected,
             runtime_archive_sha256=RUNTIME_ARCHIVE_SHA,
             attestation_runner=lambda *_: attestation if attestation is not None else attestation_for(changed),
+            preverified_checkouts=preverified_checkouts,
+            compiled_authored_manifest=compiled_authored_manifest,
         )
 
     substituted = mutate_bundle(
@@ -626,6 +654,8 @@ def execute(work: Path, source_root: Path) -> dict[str, Any]:
             attestation_runner=lambda *_: (_ for _ in ()).throw(
                 verifier.VerificationError("signer workflow mismatch")
             ),
+            preverified_checkouts=preverified_checkouts,
+            compiled_authored_manifest=compiled_authored_manifest,
         ),
         failures,
     )
@@ -633,6 +663,39 @@ def execute(work: Path, source_root: Path) -> dict[str, Any]:
     expect_failure(
         "attestation_subject_mismatch",
         lambda: verify_changed(bundle, attestation=attestation_for(bundle, subject_sha="e" * 64)),
+        failures,
+    )
+
+    expect_failure(
+        "missing_preverified_checkout",
+        lambda: verifier.verify_bundle(
+            bundle=bundle,
+            candidate_root=repo,
+            trusted_root=repo,
+            expected=expected,
+            runtime_archive_sha256=RUNTIME_ARCHIVE_SHA,
+            attestation_runner=lambda *_: positive_attestation,
+            preverified_checkouts=None,
+            compiled_authored_manifest=compiled_authored_manifest,
+        ),
+        failures,
+    )
+    inconsistent_preverified = work / "inconsistent-preverified-checkouts.json"
+    inconsistent = json.loads(preverified_checkouts.read_text(encoding="utf-8"))
+    inconsistent["candidate"]["tree"] = "d" * 40
+    write(inconsistent_preverified, canonical(inconsistent))
+    expect_failure(
+        "inconsistent_preverified_checkout",
+        lambda: verifier.verify_bundle(
+            bundle=bundle,
+            candidate_root=repo,
+            trusted_root=repo,
+            expected=expected,
+            runtime_archive_sha256=RUNTIME_ARCHIVE_SHA,
+            attestation_runner=lambda *_: positive_attestation,
+            preverified_checkouts=inconsistent_preverified,
+            compiled_authored_manifest=compiled_authored_manifest,
+        ),
         failures,
     )
 
@@ -758,6 +821,8 @@ def execute(work: Path, source_root: Path) -> dict[str, Any]:
         "wrong_workflow_attestation",
         "malformed_attestation",
         "attestation_subject_mismatch",
+        "missing_preverified_checkout",
+        "inconsistent_preverified_checkout",
         "arbitrary_extra_payload",
         "case_only_payload_name",
         "unicode_lookalike_payload_name",

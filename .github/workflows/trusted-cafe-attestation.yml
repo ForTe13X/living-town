@@ -79,11 +79,15 @@ jobs:
           archive="$RUNNER_TEMP/cafe-runtime/runtime.oci.tar"
           receipt="$RUNNER_TEMP/cafe-runtime/runtime-build-receipt.json"
           manifest_digest="$(sed -n 's/.*"oci_manifest_digest":"\([0-9a-f]\{64\}\)".*/\1/p' "$receipt")"
+          validation_digest="$(sed -n 's/.*"validation_oci_manifest_digest":"\([0-9a-f]\{64\}\)".*/\1/p' "$receipt")"
           [[ "$manifest_digest" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$validation_digest" =~ ^[0-9a-f]{64}$ ]]
           podman image rm -f localhost/living-town/trusted-cafe-runtime:v1 >/dev/null 2>&1 || true
           podman load --input "$archive"
           runtime_ref="localhost/living-town/trusted-cafe-runtime@sha256:$manifest_digest"
+          validation_ref="localhost/living-town/trusted-cafe-validation@sha256:$validation_digest"
           podman image exists "$runtime_ref"
+          podman image exists "$validation_ref"
           if podman run --pull=never --rm \
             "localhost/living-town/trusted-cafe-runtime@sha256:$(printf '0%.0s' {1..64})" true; then
             echo 'wrong runtime digest executed' >&2
@@ -113,11 +117,12 @@ jobs:
               godot --version
           } | tee "$RUNNER_TEMP/runtime-container-receipt.txt"
           echo "ref=$runtime_ref" >> "$GITHUB_OUTPUT"
+          echo "validation_ref=$validation_ref" >> "$GITHUB_OUTPUT"
 
       - name: Run two fresh isolated trust-root self-tests
         shell: bash
         env:
-          RUNTIME_REF: ${{ steps.runtime.outputs.ref }}
+          VALIDATION_REF: ${{ steps.runtime.outputs.validation_ref }}
         run: |
           set -euo pipefail
           mkdir "$RUNNER_TEMP/cafe-selftest-a" "$RUNNER_TEMP/cafe-selftest-b"
@@ -128,14 +133,14 @@ jobs:
               --tmpfs /tmp:rw,nosuid,nodev,size=536870912 \
               --volume "$PWD/trusted:/trusted:ro" \
               --volume "$RUNNER_TEMP/cafe-selftest-${lane}:/scratch:rw" \
-              --workdir /trusted "$RUNTIME_REF" \
+              --workdir /trusted "$VALIDATION_REF" \
               python -B tools/cafe_attestation_selftest.py \
                 --work-dir /scratch/work --receipt /scratch/receipt.json
           done
           podman run --pull=never --rm --network none --read-only --cap-drop all \
             --security-opt no-new-privileges --pids-limit 64 --memory 256m --cpus 1 \
             --volume "$RUNNER_TEMP/cafe-selftest-a:/a:ro" \
-            --volume "$RUNNER_TEMP/cafe-selftest-b:/b:ro" "$RUNTIME_REF" \
+            --volume "$RUNNER_TEMP/cafe-selftest-b:/b:ro" "$VALIDATION_REF" \
             cmp /a/receipt.json /b/receipt.json
 
       - name: Enforce hosted artifact budget in the exact runtime
@@ -247,11 +252,15 @@ jobs:
           set -euo pipefail
           receipt="$RUNNER_TEMP/cafe-runtime/runtime-build-receipt.json"
           manifest_digest="$(sed -n 's/.*"oci_manifest_digest":"\([0-9a-f]\{64\}\)".*/\1/p' "$receipt")"
+          validation_digest="$(sed -n 's/.*"validation_oci_manifest_digest":"\([0-9a-f]\{64\}\)".*/\1/p' "$receipt")"
           [[ "$manifest_digest" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$validation_digest" =~ ^[0-9a-f]{64}$ ]]
           podman image rm -f localhost/living-town/trusted-cafe-runtime:v1 >/dev/null 2>&1 || true
           podman load --input "$RUNNER_TEMP/cafe-runtime/runtime.oci.tar"
           runtime_ref="localhost/living-town/trusted-cafe-runtime@sha256:$manifest_digest"
+          validation_ref="localhost/living-town/trusted-cafe-validation@sha256:$validation_digest"
           podman image exists "$runtime_ref"
+          podman image exists "$validation_ref"
           if podman run --pull=never --rm \
             "localhost/living-town/trusted-cafe-runtime@sha256:$(printf '0%.0s' {1..64})" true; then
             echo 'wrong runtime digest executed' >&2
@@ -281,11 +290,12 @@ jobs:
               test "$(/gate-tools/gh_2.98.0_linux_amd64/bin/gh --version | awk "NR==1 {print \$3}")" = 2.98.0
             '
           echo "ref=$runtime_ref" >> "$GITHUB_OUTPUT"
+          echo "validation_ref=$validation_ref" >> "$GITHUB_OUTPUT"
 
       - name: Run two fresh isolated trust-root self-tests
         shell: bash
         env:
-          RUNTIME_REF: ${{ steps.runtime.outputs.ref }}
+          VALIDATION_REF: ${{ steps.runtime.outputs.validation_ref }}
         run: |
           set -euo pipefail
           mkdir "$RUNNER_TEMP/cafe-selftest-a" "$RUNNER_TEMP/cafe-selftest-b"
@@ -296,18 +306,21 @@ jobs:
               --tmpfs /tmp:rw,nosuid,nodev,size=536870912 \
               --volume "$PWD/trusted:/trusted:ro" \
               --volume "$RUNNER_TEMP/cafe-selftest-${lane}:/scratch:rw" \
-              --workdir /trusted "$RUNTIME_REF" python -B tools/cafe_attestation_selftest.py \
+              --workdir /trusted "$VALIDATION_REF" python -B tools/cafe_attestation_selftest.py \
                 --work-dir /scratch/work --receipt /scratch/receipt.json
           done
           podman run --pull=never --rm --network none --read-only --cap-drop all \
             --security-opt no-new-privileges --volume "$RUNNER_TEMP/cafe-selftest-a:/a:ro" \
-            --volume "$RUNNER_TEMP/cafe-selftest-b:/b:ro" "$RUNTIME_REF" \
+            --volume "$RUNNER_TEMP/cafe-selftest-b:/b:ro" "$VALIDATION_REF" \
             cmp /a/receipt.json /b/receipt.json
 
       - name: Compile candidate source inside the exact runtime
         shell: bash
         env:
-          RUNTIME_REF: ${{ steps.runtime.outputs.ref }}
+          VALIDATION_REF: ${{ steps.runtime.outputs.validation_ref }}
+          CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+          CANDIDATE_TREE: ${{ steps.identity.outputs.candidate_tree }}
+          WORKFLOW_TREE: ${{ steps.identity.outputs.workflow_tree }}
         run: |
           set -euo pipefail
           mkdir "$RUNNER_TEMP/cafe-preflight"
@@ -315,7 +328,9 @@ jobs:
             --security-opt no-new-privileges --pids-limit 128 --memory 768m --cpus 2 \
             --tmpfs /tmp:rw,nosuid,nodev,size=268435456 \
             --volume "$PWD/trusted:/trusted:ro" --volume "$PWD/candidate:/candidate:ro" \
-            --volume "$RUNNER_TEMP/cafe-preflight:/preflight:rw" "$RUNTIME_REF" bash -euo pipefail -c '
+            --volume "$RUNNER_TEMP/cafe-preflight:/preflight:rw" \
+            --env CANDIDATE_SHA --env CANDIDATE_TREE --env GITHUB_REPOSITORY --env GITHUB_SHA \
+            --env WORKFLOW_TREE "$VALIDATION_REF" bash -euo pipefail -c '
               cmp -s /candidate/evidence/cafe/cafe-authored-ids.v1.json /trusted/evidence/cafe/cafe-authored-ids.v1.json
               cmp -s /candidate/evidence/cafe/cafe-authored-manifest.v1.json /trusted/evidence/cafe/cafe-authored-manifest.v1.json
               python -B /trusted/tools/cafe_authored_manifest.py --repo /candidate \
@@ -323,6 +338,10 @@ jobs:
                 --check /trusted/evidence/cafe/cafe-authored-manifest.v1.json \
                 --output /preflight/cafe-authored-manifest.v1.json
               cmp -s /preflight/cafe-authored-manifest.v1.json /trusted/evidence/cafe/cafe-authored-manifest.v1.json
+              authored_sha="$(sha256sum /preflight/cafe-authored-manifest.v1.json | awk "{print \$1}")"
+              printf "{\"authored_manifest_sha256\":\"%s\",\"candidate\":{\"clean\":true,\"sha\":\"%s\",\"tree\":\"%s\"},\"repository\":\"%s\",\"schema\":\"living-town.cafe-preverified-checkouts.v1\",\"source\":\"host-read-only-git\",\"workflow\":{\"clean\":true,\"sha\":\"%s\",\"tree\":\"%s\"}}\n" \
+                "$authored_sha" "$CANDIDATE_SHA" "$CANDIDATE_TREE" "$GITHUB_REPOSITORY" "$GITHUB_SHA" "$WORKFLOW_TREE" \
+                > /preflight/preverified-checkouts.v1.json
               ! touch /trusted/.write-must-fail
               ! touch /candidate/.write-must-fail
             '
@@ -414,6 +433,7 @@ jobs:
             --tmpfs /tmp:rw,nosuid,nodev,size=536870912 --env GH_TOKEN \
             --volume "$PWD/trusted:/trusted:ro" --volume "$PWD/candidate:/candidate:ro" \
             --volume "$RUNNER_TEMP/cafe-output:/output:rw" \
+            --volume "$RUNNER_TEMP/cafe-preflight:/preflight:ro" \
             --volume "$RUNNER_TEMP/cafe-gate-tools:/gate-tools:ro" "$RUNTIME_REF" \
             python -B /trusted/tools/verify_cafe_attested_evidence.py \
               --bundle /output/evidence/trusted-cafe-evidence.tar.gz \
@@ -422,6 +442,8 @@ jobs:
               --workflow-sha "$GITHUB_SHA" --workflow-tree "$WORKFLOW_TREE" \
               --repository "$GITHUB_REPOSITORY" --run-id "$GITHUB_RUN_ID" \
               --run-attempt "$GITHUB_RUN_ATTEMPT" --runtime-archive-sha256 "$RUNTIME_SHA" \
+              --preverified-checkouts /preflight/preverified-checkouts.v1.json \
+              --compiled-authored-manifest /preflight/cafe-authored-manifest.v1.json \
               --gh-bin /gate-tools/gh_2.98.0_linux_amd64/bin/gh \
               --receipt-output /output/cafe-attested-verification-receipt.json
 
@@ -469,6 +491,8 @@ jobs:
             ${{ runner.temp }}/cafe-output/evidence/trusted-cafe-evidence.tar.gz
             ${{ runner.temp }}/cafe-output/evidence/trusted-cafe-manifest.json
             ${{ runner.temp }}/cafe-output/cafe-attested-verification-receipt.json
+            ${{ runner.temp }}/cafe-preflight/preverified-checkouts.v1.json
+            ${{ runner.temp }}/cafe-preflight/cafe-authored-manifest.v1.json
             ${{ runner.temp }}/cafe-selftest-a/receipt.json
             ${{ runner.temp }}/cafe-selftest-b/receipt.json
           if-no-files-found: error
