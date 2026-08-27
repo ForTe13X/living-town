@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T01:58:35Z",
+  "updated_at": "2026-08-27T02:25:43Z",
   "producer": {
     "task": "019f555f-dfd4-7d91-aa6b-9655caa34871",
     "branch": "codex/main-repo-review",
@@ -24,56 +24,72 @@
   },
   "active_claims": [
     {
-      "claim_id": "claim-pr21-floor-semantic-ci-discrepancy-diagnostic",
-      "task": "01a040d6-b367-72a1-b421-65b3ce74861d",
-      "role": "independent read-only QA and REFUTE diagnostician",
-      "objective": "Explain why the repair-head natural CI failed two roundtrip captures while the untouched parent passed in the same environment, and determine the safe next publication gate.",
+      "claim_id": "claim-pr21-floor-semantic-stacked-publication",
+      "task": "019f555f-dfd4-7d91-aa6b-9655caa34871",
+      "role": "Producer exact-head Draft publisher",
+      "objective": "Normal-push the frozen one-commit repair branch and create one Draft stacked PR for hosted exact-head qualification without changing repository content.",
       "baseline": "6d4b60665f8e4f4c439a24e5f27647e8a5254376",
       "head": "55e05f84569c7bfdb6ebf475f787709200cd265b",
       "tree": "04a73a2895b3676fdbb15ca9df2229eee2ab074f",
       "branch": "codex/pr21-floor-semantic-gate-repair",
-      "worktree": "C:\\Users\\yp\\.codex\\worktrees\\d576\\26th",
+      "worktree": "C:\\Users\\yp\\.codex\\worktrees\\9d19\\26th",
       "owned_paths": [],
       "forbidden_paths": [
         "**/*"
       ],
       "authority_keys": [
-        "pr21-floor-semantic-ci-discrepancy-diagnostic"
+        "pr21-floor-semantic-stacked-publication",
+        "github-head:codex/pr21-floor-semantic-gate-repair"
       ],
       "generated_outputs": [
-        "task_response_only",
-        "temporary_receipts_only"
+        "remote_branch:codex/pr21-floor-semantic-gate-repair",
+        "draft_stacked_pr",
+        "hosted_exact_head_checks"
       ],
       "dependencies": [
-        "parent@6d4b60665f8e4f4c439a24e5f27647e8a5254376",
+        "base-branch:codex/pr18-combined-ac85-d534@6d4b60665f8e4f4c439a24e5f27647e8a5254376",
         "candidate@55e05f84569c7bfdb6ebf475f787709200cd265b",
-        "candidate-full-ci-log@sha256:a8729b3d1048944f9cb203b0b02f4b6df76ca16f90eef9a38d94ef2ccb9a714c",
-        "parent-visual-control-log@sha256:62e7064a996ab1a268b7c65623a053dcce48bf9bdb1f05c818f43f2bb0bafac1"
+        "diagnostic:01a040d6-b367-72a1-b421-65b3ce74861d@SAFE_TO_PUBLISH_DRAFT_FOR_HOSTED_QUALIFICATION",
+        "fresh-visual-log@sha256:084b895739f7ad42efa579bb9e9a2a613daa0cb455b9bcabcf8fa7ad507aaae"
       ],
-      "consumer": "Producer task 019f555f-dfd4-7d91-aa6b-9655caa34871 and the publication decision for the PR #21 stacked repair",
-      "status": "active_read_only_diagnostic",
-      "last_heartbeat": "2026-08-27T01:58:35Z",
-      "stale_after": "2026-08-27T02:58:35Z",
+      "consumer": "Draft PR #21 repair qualification and subsequent independent exact-head QA/REFUTE",
+      "status": "reserved_pre_pr_mutation",
+      "last_heartbeat": "2026-08-27T02:25:43Z",
+      "stale_after": "2026-08-27T03:25:43Z",
       "pr": null,
       "checks": {
-        "candidate_full_natural_ci": "fail_space_and_floor_roundtrip_capture_only",
+        "candidate_original_full_natural_ci": "fail_space_and_floor_roundtrip_capture_only",
         "candidate_repair_specific_controls": "pass",
+        "candidate_fresh_visual_gate": "pass_rc0_558.5s",
+        "candidate_fresh_visual_log": "sha256:084b895739f7ad42efa579bb9e9a2a613daa0cb455b9bcabcf8fa7ad507aaae",
         "candidate_true_crash_scan": "zero",
-        "untouched_parent_same_environment_visual_control": "pass",
-        "candidate_first_fresh_diagnostic_rerun": "space_and_floor_roundtrip_capture_passed_while_full_visual_gate_continues",
-        "root_cause": "intermittency_or_order_environment_under_active_ab_test"
+        "hosted_exact_head": "pending_publication"
       },
       "recovery_count": 0,
-      "rollback": "Read-only diagnostic: discard temporary receipts; do not mutate repository, branches, PRs, checks, or anchors.",
+      "rollback": "If hosted qualification or independent review fails, keep the Draft PR and exact branch frozen as provenance; repair or close only through a new reviewable decision, never rewrite history.",
       "stop_lines": [
-        "repository or PR mutation requested",
-        "test requires changing committed files rather than disposable copies",
-        "candidate or parent SHA drift",
-        "a second live task begins diagnosing the same discrepancy"
+        "candidate or base SHA drift",
+        "worktree becomes dirty or diff expands beyond the one committed path",
+        "a duplicate open PR or overlapping live publisher appears",
+        "PR base is not codex/pr18-combined-ac85-d534",
+        "any request to mark Ready, merge, rebake anchors, or change committed content"
       ]
     }
   ],
   "released_claims": [
+    {
+      "claim_id": "claim-pr21-floor-semantic-ci-discrepancy-diagnostic",
+      "task": "01a040d6-b367-72a1-b421-65b3ce74861d",
+      "head": "55e05f84569c7bfdb6ebf475f787709200cd265b",
+      "tree": "04a73a2895b3676fdbb15ca9df2229eee2ab074f",
+      "worktree": "C:\\Users\\yp\\.codex\\worktrees\\d576\\26th",
+      "status": "terminal_safe_to_publish_draft_for_hosted_qualification_with_p1_residual",
+      "released_at": "2026-08-27T02:25:43Z",
+      "release_reason": "Fresh candidate visual gate passed rc=0 with both roundtrip lanes and zero true crash matches; static call-order review excluded the sole changed file as causal for the earlier captures.",
+      "evidence": "sha256:084b895739f7ad42efa579bb9e9a2a613daa0cb455b9bcabcf8fa7ad507aaae",
+      "remote_mutation": false,
+      "provenance_preserved": true
+    },
     {
       "claim_id": "lease-pr21-floor-semantic-gate-repair",
       "task": "01a0408e-3039-7852-b256-7a186574b7c0",
@@ -116,7 +132,7 @@
     }
   },
   "workspace_observation": {
-    "registered_worktrees": 174,
+    "registered_worktrees": 175,
     "dirty_worktrees": 30,
     "worktree_errors": 0,
     "unknown_or_historical_dirt_policy": "quarantine_preserve"
