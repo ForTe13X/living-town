@@ -50,6 +50,12 @@
     "binary_sha256": "5a806b2b385279d9607094d33e946ed828e9606df4cb46d258ca27468dc5c1c9",
     "url": "https://github.com/godotengine/godot/releases/download/4.6.2-stable/Godot_v4.6.2-stable_linux.x86_64.zip"
   },
+  "gh_cli": {
+    "archive_filename": "gh_2.98.0_linux_amd64.tar.gz",
+    "archive_sha256": "3b8ac6b30336802fc1a858d7c084e11cdf24ac1a761ca90b68022d7d729208de",
+    "archive_top_level": "gh_2.98.0_linux_amd64",
+    "url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_linux_amd64.tar.gz"
+  },
   "host_tools": {
     "buildah": "1.33.7",
     "gh": "2.98.0",

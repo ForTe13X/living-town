@@ -70,6 +70,29 @@ jobs:
           python-version: "3.11.16"
           check-latest: false
 
+      - name: Install hash-pinned GitHub CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t pin < <(python -B - trusted/evidence/cafe/runtime-lock.v1.json <<'PY'
+          import json, sys
+          lock = json.load(open(sys.argv[1], encoding="utf-8"))
+          for value in (lock["gh_cli"]["url"], lock["gh_cli"]["archive_filename"],
+                        lock["gh_cli"]["archive_sha256"], lock["gh_cli"]["archive_top_level"],
+                        lock["host_tools"]["gh"]):
+              print(value)
+          PY
+          )
+          [[ "${#pin[@]}" -eq 5 ]]
+          mkdir "$RUNNER_TEMP/cafe-host-tools"
+          curl --fail --location --silent --show-error --retry 5 --retry-all-errors \
+            --output "$RUNNER_TEMP/cafe-host-tools/${pin[1]}" "${pin[0]}"
+          printf '%s  %s\n' "${pin[2]}" "$RUNNER_TEMP/cafe-host-tools/${pin[1]}" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/cafe-host-tools/${pin[1]}" -C "$RUNNER_TEMP/cafe-host-tools"
+          gh_dir="$RUNNER_TEMP/cafe-host-tools/${pin[3]}/bin"
+          [[ "$("$gh_dir/gh" --version | awk 'NR==1 {print $3}')" == "${pin[4]}" ]]
+          echo "$gh_dir" >> "$GITHUB_PATH"
+
       - name: Run deterministic trust-root self-test
         shell: bash
         run: |
@@ -189,6 +212,29 @@ jobs:
         with:
           python-version: "3.11.16"
           check-latest: false
+
+      - name: Install hash-pinned GitHub CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t pin < <(python -B - trusted/evidence/cafe/runtime-lock.v1.json <<'PY'
+          import json, sys
+          lock = json.load(open(sys.argv[1], encoding="utf-8"))
+          for value in (lock["gh_cli"]["url"], lock["gh_cli"]["archive_filename"],
+                        lock["gh_cli"]["archive_sha256"], lock["gh_cli"]["archive_top_level"],
+                        lock["host_tools"]["gh"]):
+              print(value)
+          PY
+          )
+          [[ "${#pin[@]}" -eq 5 ]]
+          mkdir "$RUNNER_TEMP/cafe-host-tools"
+          curl --fail --location --silent --show-error --retry 5 --retry-all-errors \
+            --output "$RUNNER_TEMP/cafe-host-tools/${pin[1]}" "${pin[0]}"
+          printf '%s  %s\n' "${pin[2]}" "$RUNNER_TEMP/cafe-host-tools/${pin[1]}" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/cafe-host-tools/${pin[1]}" -C "$RUNNER_TEMP/cafe-host-tools"
+          gh_dir="$RUNNER_TEMP/cafe-host-tools/${pin[3]}/bin"
+          [[ "$("$gh_dir/gh" --version | awk 'NR==1 {print $3}')" == "${pin[4]}" ]]
+          echo "$gh_dir" >> "$GITHUB_PATH"
 
       - name: Run deterministic trust-root self-test
         shell: bash
