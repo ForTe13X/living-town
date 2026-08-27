@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T07:21:46Z",
+  "updated_at": "2026-08-27T07:25:48Z",
   "producer": {
     "task": "019f555f-dfd4-7d91-aa6b-9655caa34871",
     "branch": "codex/main-repo-review",
@@ -25,23 +25,23 @@
   "active_claims": [
     {
       "claim_id": "lease-cafe-source-attestation-trust-root-v1-replacement",
-      "task": "pending_create_thread_attestation_replacement",
+      "task": "01a0421b-3d85-7ed3-af00-cf73e538b177",
       "role": "Replacement sole serialized Dev writer for protected café source-to-capture attestation trust root v1, Stack A only",
       "objective": "Implement the protected compiler, pinned capture, independent verifier, self-test, runtime lock, and GitHub build-attestation workflow that bind café evidence to maintained authored source without changing runtime authority.",
       "baseline": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
       "head": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
       "tree": "56173a6b69b256f825548c3d53c78acb3c1a0ee7",
       "branch": "codex/cafe-source-attestation-trust-root-v1-replacement",
-      "worktree": "pending_isolated_worktree",
+      "worktree": "C:\\Users\\yp\\.codex\\worktrees\\a3fc\\26th",
       "owned_paths": [".github/workflows/trusted-cafe-attestation.yml","tools/trusted_cafe_capture.sh","tools/cafe_authored_manifest.py","tools/verify_cafe_attested_evidence.py","tools/cafe_attestation_selftest.py","evidence/cafe/runtime-lock.v1.json"],
       "forbidden_paths": ["**/* except exact owned_paths","evidence/cafe/cafe-authored-ids.v1.json","evidence/cafe/cafe-authored-manifest.v1.json","tools/ci.sh","game/**","docs/**","analysis/**","protected golden/modelpath/complement ledgers"],
       "authority_keys": ["cafe-source-attestation-trust-root","trusted-cafe-attestation-workflow","cafe-runtime-lock-v1"],
       "generated_outputs": ["temporary deterministic test bundles and hash-bound receipts outside repository only"],
       "dependencies": ["architect-task:01a041cb-9e65-7700-b342-75787b53537c:READY","origin/master:5b7ac426b6bc059517dba843db4150a2b38d33a7","prior-writer:01a041e7-229a-74e1-a8a3-21988cac78e5:BLOCKED_RUNTIME_SUPPLY","python-image-index:sha256:0bee7276f83efd4a1ee05bbbf4281d95ed28e079220a9457f25a93e3f1e3c31b","python-image-amd64:sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c","pillow-wheel:sha256:106064daa23a745510dabce1d84f29137a37224831d88eb4ce94bb187b1d7e5f","draft-pr:24:terminal_heuristic_limit","hosted-run:33042786023:success"],
       "consumer": "Producer, then independent security/QA and REFUTE; after protected-root merge, one serialized Stack B candidate owner",
-      "status": "replacement_reserved_after_official_runtime_inputs_resolved",
-      "last_heartbeat": "2026-08-27T07:21:46Z",
-      "stale_after": "2026-08-27T09:21:46Z",
+      "status": "active_replacement_writer_preflight_exact_detached_baseline",
+      "last_heartbeat": "2026-08-27T07:25:48Z",
+      "stale_after": "2026-08-27T09:25:48Z",
       "pr": null,
       "checks": {"architect_contract":"READY","source_candidate_core":"success","source_candidate_visual":"success","source_candidate_run":33042786023,"official_python_tag_resolved":true,"official_python_index_digest":"sha256:0bee7276f83efd4a1ee05bbbf4281d95ed28e079220a9457f25a93e3f1e3c31b","official_python_amd64_digest":"sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c","official_pillow_wheel_sha256":"106064daa23a745510dabce1d84f29137a37224831d88eb4ce94bb187b1d7e5f","godot_archive_sha256":"30e6b6d141f0cd5bebd629ad1d0ef1324e60091bb20662d026b402ba58c59937","godot_binary_sha256":"5a806b2b385279d9607094d33e946ed828e9606df4cb46d258ca27468dc5c1c9"},
       "recovery_count": 0,
@@ -351,7 +351,7 @@
     }
   },
   "workspace_observation": {
-    "registered_worktrees": 188,
+    "registered_worktrees": 189,
     "dirty_worktrees": 30,
     "worktree_errors": 0,
     "unknown_or_historical_dirt_policy": "quarantine_preserve"
