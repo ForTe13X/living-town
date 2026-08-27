@@ -113,7 +113,7 @@
       "task": "/root/pr25_p1_repair",
       "role": "Sole serialized Dev writer for PR #25 sixth exact-head trust-boundary repair",
       "objective": "Close the exact-head PNG structural parser ambiguity, verify attestations before any subject load or execution with GH_TOKEN confined to a pinned bootstrap, and move canonical OCI archive production plus material host-tool use into a digest-pinned Docker toolchain without weakening existing budget, payload, delta, or authority controls.",
-      "baseline": "c647ba69bfa60237585f74171d21b49c7fe1deab",
+      "baseline": "6ff410936b8d380abda8279dbbee92bec1c9cef4",
       "head": "6ff410936b8d380abda8279dbbee92bec1c9cef4",
       "tree": "ee689eab865d589a961851ce9f49e14f88abadea",
       "branch": "codex/cafe-source-attestation-trust-root-v1-replacement-2",
