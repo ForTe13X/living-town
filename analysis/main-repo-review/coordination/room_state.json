@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T18:36:00Z",
+  "updated_at": "2026-08-27T19:30:31Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -14,7 +14,7 @@
     "coordination_ledger_ref": "origin/codex/main-repo-review",
     "coordination_state_commit": "self"
   },
-  "remote_branch_inventory": {"at":"2026-08-27T18:36:00Z","github_api_count":32,"git_ls_remote_count":null,"local_tracking_count":32,"reconciliation":"snapshot_incomplete_smart_https_failed_github_api_authoritative_secondary_complete_then_recorded_api_mutations","sorted_name_sha_set_sha256":"813f2d4e58a8be28d257a18521c396c8e023b235d23e0a96d23b3ba9d330d386","master":"5b7ac426b6bc059517dba843db4150a2b38d33a7","integration_batons":"ac85fc6b35b83d6a9c7c678386fe35dab666b217","coordination":"65215340e1816f4757823d4723ef5db951096edd","pr25":"6ff410936b8d380abda8279dbbee92bec1c9cef4","open_prs":9,"open_issues":0,"releases":0,"full_branch_metadata_scan":"GitHub API enumerated all 32 hosted heads after exact recorded non-force API mutations; cached Git objects were not promoted over API heads."},
+  "remote_branch_inventory": {"at":"2026-08-27T19:30:31Z","github_api_count":32,"git_ls_remote_count":null,"local_tracking_count":32,"reconciliation":"fetch_prune_tags_obtained_current_refs_then_smart_https_reverification_failed_github_443; GitHub GraphQL/API authoritative secondary enumerated all heads and every non-symbolic local tracking ref matched","sorted_name_sha_set_sha256":"40bd59f5cb52eb8c58b57f4e391a12b2424e19a376a18588c752bb445a68d658","master":"5b7ac426b6bc059517dba843db4150a2b38d33a7","integration_batons":"ac85fc6b35b83d6a9c7c678386fe35dab666b217","coordination":"9edbb9ada411a56dd956fef9c74079392db40a6b","pr25":"6ff410936b8d380abda8279dbbee92bec1c9cef4","open_prs":9,"open_issues":0,"releases":0,"tags":0,"full_branch_metadata_scan":"All 32 hosted branches were enumerated directly with exact SHA, commit time/subject, PR relation, status rollup, and ahead/behind plus ancestry against master and integration/batons. No hosted head drift; API/local mismatches zero; origin/HEAD symbolic ref excluded from the count."},
   "portfolio_policy": {
     "default_active_writers": 2,
     "maximum_active_writers": 3,
@@ -70,13 +70,13 @@
       "generated_outputs": ["temporary review receipts outside repository only"],
       "dependencies": ["pr:25:6ff410936b8d380abda8279dbbee92bec1c9cef4","hosted-run:33103681658:success","artifact:9659612274:sha256:169f52ff9900812d622a4d40e53a1eeb45e305406fdc784bdf0510bcf6e82ba0","general-ci:33103681571:in_progress","refute:independent_parallel"],
       "consumer": "Producer decision on bounded repair, REFUTE convergence, and merge eligibility",
-      "status": "dispatched_read_only_exact_head_hosted_artifact_review",
-      "last_heartbeat": "2026-08-27T18:36:00Z",
-      "stale_after": "2026-08-27T19:36:00Z",
-      "review_result": {"verdict":"PENDING","p0":0,"p1":0,"p2":0,"must_reverify":["interactive stdin budget receipt actually executed","artifact and payload remain within unchanged locks","validation delta reconstructs exact validation OCI","malformed PNG controls fail closed","exact five-path diff and OCI provenance","general CI terminal state"],"repository_or_github_writes":false},
+      "status": "terminal_request_changes_p0_0_p1_2_p2_3_reviewer_released",
+      "last_heartbeat": "2026-08-27T19:30:31Z",
+      "stale_after": null,
+      "review_result": {"verdict":"REQUEST_CHANGES","p0":0,"p1":2,"p2":3,"p1_findings":["protected workflow loads and executes both generated OCI subjects before attestation verification, then gives GH_TOKEN to gh/verifier inside the unverified subject runtime","canonical OCI bytes depend on unpinned host GNU tar; pinned GNU tar 1.34 reconstruction produced validation 803b096639e9f1b3b845607e1dbe864a0a0d008ae8353dda92f2a55556f26e26 and runtime be03375cee117fb36e32bf61df073de59b8bec9cdc5694915d7f3ce979651761 instead of hosted subjects"],"p2_findings":["max_total_artifact_bytes lacks post-upload API enforcement","master requires zero approvals and no last-push approval","Debian package closure remains snapshot-based without exact package/index receipts"],"positive":{"artifact_verified":true,"budget_receipt_verified":true,"delta_semantics_verified":true,"selftest":"35/35 twice byte-identical","general_ci":"success"},"repository_or_github_writes":false,"cleanup":"all task containers and task-local temporary credentials/files removed"},
       "prior_review_result": {"head":"c647ba69bfa60237585f74171d21b49c7fe1deab","verdict":"REQUEST_CHANGES","p0":0,"p1":1,"p2":3,"p1":"budget stdin and total artifact","superseded_for_current_head":true},
       "pr": 25,
-      "checks": {"runtime_qualification":"success","trusted_run":33103681658,"artifact_id":9659612274,"artifact_digest":"sha256:169f52ff9900812d622a4d40e53a1eeb45e305406fdc784bdf0510bcf6e82ba0","artifact_bytes":246444494,"payload_bytes":246441475,"max_total_artifact_bytes":262144000,"max_qualification_payload_bytes":251658240,"budget_receipt":"success_stdin_received_true_loss_tooth_passed","validation_delta_bytes":30126080,"validation_delta_sha256":"c09a86a945e1249c2d97383e0e17dc026ecf17046c51b84ff3b6dff40c666b17","validation_archive_sha256":"ee6ebc4c534c9c051e6d859a62dd4d0ca4e4fd6f1c379dbe3c1513502b07d934","visual_canary":"in_progress","ci":"in_progress","general_run":33103681571},
+      "checks": {"runtime_qualification":"success","trusted_run":33103681658,"artifact_id":9659612274,"artifact_digest":"sha256:169f52ff9900812d622a4d40e53a1eeb45e305406fdc784bdf0510bcf6e82ba0","artifact_bytes":246444494,"payload_bytes":246441475,"max_total_artifact_bytes":262144000,"max_qualification_payload_bytes":251658240,"budget_receipt":"success_stdin_received_true_loss_tooth_passed","validation_delta_bytes":30126080,"validation_delta_sha256":"c09a86a945e1249c2d97383e0e17dc026ecf17046c51b84ff3b6dff40c666b17","validation_archive_sha256":"ee6ebc4c534c9c051e6d859a62dd4d0ca4e4fd6f1c379dbe3c1513502b07d934","visual_canary":"success","ci":"success","general_run":33103681571},
       "recovery_count": 0,
       "rollback": "Delete only isolated temporary review outputs; no repository or GitHub rollback applies.",
       "stop_lines": ["exact head changes","repository or GitHub write would be required","artifact digest mismatch","Docker isolation cannot be established"]
@@ -97,13 +97,13 @@
       "generated_outputs": ["temporary adversarial fixtures and receipts outside repository only"],
       "dependencies": ["pr:25:6ff410936b8d380abda8279dbbee92bec1c9cef4","hosted-run:33103681658:success","artifact:9659612274:sha256:169f52ff9900812d622a4d40e53a1eeb45e305406fdc784bdf0510bcf6e82ba0","security-qa:independent_parallel","general-ci:33103681571:in_progress"],
       "consumer": "Producer decision on P0/P1 closure and repair or merge eligibility",
-      "status": "dispatched_read_only_exact_head_adversarial_review",
-      "last_heartbeat": "2026-08-27T18:36:00Z",
-      "stale_after": "2026-08-27T19:36:00Z",
-      "review_result": {"verdict":"PENDING","p0":0,"p1":0,"p2":0,"must_refute":["empty truncated excess and invalid-filter PNG structures","budget stdin loss and receipt replay","validation delta omission substitution duplication and reconstruction","artifact byte cap accounting","OCI digest and provenance confusion","authority escalation and Stack B leakage"],"repository_or_github_writes":false},
+      "status": "terminal_request_changes_p0_0_p1_2_p2_0_reviewer_released",
+      "last_heartbeat": "2026-08-27T19:30:31Z",
+      "stale_after": null,
+      "review_result": {"verdict":"REQUEST_CHANGES","p0":0,"p1":2,"p2":0,"p1_findings":["PNG parser accepts duplicate IHDR, non-empty IEND, unknown critical chunk, and non-contiguous IDAT despite valid decoded rows","material build/archive reproducibility uses unpinned host tar, Podman, and Skopeo outside the pinned review boundary; independent reconstruction kept size but changed exact SHA"],"repro":{"duplicate_ihdr_sha256":"5fcc395b9803bbc4b4f8799032733709bbdc7d752afc64bc0730fa99a096c0b8","nonempty_iend_sha256":"fb557ce31fee341d08cacf79cf1f88cbe49e679f8b4a5ddd6412f4f577534751","unknown_critical_sha256":"d2560088fbc912c46b63def349c9bb24d17e0c4e093d88a2034b9bb523aed0a5","noncontiguous_idat_sha256":"c25a4b50b97a661328003f3d6c5252bd69e46e01b77b91e6ac8a42386af67e2b","harness_sha256":"a8ae395a124dd4a29d248c8300dfe81506aa7f73e9702e00249acc96816f5030","reconstructed_validation_sha256":"803b096639e9f1b3b845607e1dbe864a0a0d008ae8353dda92f2a55556f26e26"},"positive":{"artifact_verified":true,"payload_ambiguity_controls":"pass","budget":"pass","delta_descriptor_controls":"pass","selftest":"35/35 twice byte-identical","general_ci":"success"},"repository_or_github_writes":false,"cleanup":"task-owned containers and scratch removed"},
       "prior_review_result": {"head":"c647ba69bfa60237585f74171d21b49c7fe1deab","verdict":"REQUEST_CHANGES","p0":0,"p1":2,"p2":1,"p1_findings":["zero-scanline PNG accepted","qualification artifact over budget"],"superseded_for_current_head":true},
       "pr": 25,
-      "checks": {"runtime_qualification":"success","trusted_run":33103681658,"artifact_id":9659612274,"artifact_digest":"sha256:169f52ff9900812d622a4d40e53a1eeb45e305406fdc784bdf0510bcf6e82ba0","artifact_bytes":246444494,"payload_bytes":246441475,"budget_receipt":"success_stdin_received_true_loss_tooth_passed","validation_delta_bytes":30126080,"runtime_archive_sha256":"47242a8a5b8418f9748b7c781a74842a0558163510fa99edbc4b2d30a0c54929","validation_archive_sha256":"ee6ebc4c534c9c051e6d859a62dd4d0ca4e4fd6f1c379dbe3c1513502b07d934","visual_canary":"in_progress","ci":"in_progress","general_run":33103681571},
+      "checks": {"runtime_qualification":"success","trusted_run":33103681658,"artifact_id":9659612274,"artifact_digest":"sha256:169f52ff9900812d622a4d40e53a1eeb45e305406fdc784bdf0510bcf6e82ba0","artifact_bytes":246444494,"payload_bytes":246441475,"budget_receipt":"success_stdin_received_true_loss_tooth_passed","validation_delta_bytes":30126080,"runtime_archive_sha256":"47242a8a5b8418f9748b7c781a74842a0558163510fa99edbc4b2d30a0c54929","validation_archive_sha256":"ee6ebc4c534c9c051e6d859a62dd4d0ca4e4fd6f1c379dbe3c1513502b07d934","visual_canary":"success","ci":"success","general_run":33103681571},
       "recovery_count": 1,
       "rollback": "Delete only isolated temporary adversarial outputs; no repository or GitHub rollback applies.",
       "stop_lines": ["exact head changes","repository or GitHub write would be required","test would mutate shared runtime state","claim cannot be tested without Stack B or protected master dispatch"]
@@ -111,8 +111,8 @@
     {
       "claim_id": "lease-pr25-stack-a-p1-docker-payload-repair",
       "task": "/root/pr25_p1_repair",
-      "role": "Sole serialized Dev writer for PR #25 exact-head P1 repair",
-      "objective": "Close the exact-head budget-execution and malformed-PNG P1s without raising locked budgets, weakening Docker isolation, expanding Stack A authority, or changing Sim/View/canon boundaries.",
+      "role": "Sole serialized Dev writer for PR #25 sixth exact-head trust-boundary repair",
+      "objective": "Close the exact-head PNG structural parser ambiguity, verify attestations before any subject load or execution with GH_TOKEN confined to a pinned bootstrap, and move canonical OCI archive production plus material host-tool use into a digest-pinned Docker toolchain without weakening existing budget, payload, delta, or authority controls.",
       "baseline": "c647ba69bfa60237585f74171d21b49c7fe1deab",
       "head": "6ff410936b8d380abda8279dbbee92bec1c9cef4",
       "tree": "ee689eab865d589a961851ce9f49e14f88abadea",
@@ -122,22 +122,22 @@
       "forbidden_paths": ["**/* except exact owned_paths","tools/cafe_authored_manifest.py","evidence/cafe/cafe-authored-ids.v1.json","evidence/cafe/cafe-authored-manifest.v1.json","tools/ci.sh","game/**","docs/**","analysis/**","shared registries/schemas/anchors/ledgers"],
       "authority_keys": ["trusted-cafe-attestation-workflow","cafe-runtime-lock-v1","cafe-verification-container-contract","cafe-evidence-payload-allowlist"],
       "generated_outputs": ["temporary isolated Docker fixtures and receipts outside repository","hosted replacement qualification artifact on PR #25"],
-      "dependencies": ["pr:25:6ff410936b8d380abda8279dbbee92bec1c9cef4","hosted-run:33103681658:success","general-ci:33103681571:in_progress","security-qa:fresh-review-dispatched","refute:fresh-review-dispatched","artifact:9659612274:sha256:169f52ff9900812d622a4d40e53a1eeb45e305406fdc784bdf0510bcf6e82ba0"],
+      "dependencies": ["pr:25:6ff410936b8d380abda8279dbbee92bec1c9cef4","hosted-run:33103681658:success","general-ci:33103681571:success","security-qa:REQUEST_CHANGES:P1-attestation-token-order:P1-unpinned-host-tar","refute:REQUEST_CHANGES:P1-png-structure:P1-host-tool-portability","artifact:9659612274:sha256:169f52ff9900812d622a4d40e53a1eeb45e305406fdc784bdf0510bcf6e82ba0"],
       "consumer": "Producer, then fresh independent Security/QA and REFUTE at the repaired exact head",
-      "status": "terminal_clean_five_path_repair_delivered_hosted_qualification_success_reviews_dispatched",
-      "write_lease": false,
-      "last_heartbeat": "2026-08-27T18:36:00Z",
-      "stale_after": null,
+      "status": "active_sixth_repair_exact_five_path_lease",
+      "write_lease": true,
+      "last_heartbeat": "2026-08-27T19:30:31Z",
+      "stale_after": "2026-08-27T20:30:31Z",
       "pr": 25,
-      "checks": {"p0":0,"p1_known_open":0,"p1_closure_review":"pending","p2_prior":3,"merge":"forbidden","stack_b":"frozen","local_docker_repair":"success_35_of_35_twice_byte_identical","local_receipt_sha256":"cbfcd04c888b474e62a9a091b801c69fdb4a7370ef3367194645b9019308b911","local_bundle_sha256":"dc8d6fea54fc486d876997fd56c8f28f5be334eebe462e8e6fe126f0cb357eae","compiled_manifest_sha256":"a7f9724706b82d2e860bba56659a2c9df92db193c1ac153330c5965aec9b72ba","verification_receipt_sha256":"47ea81ff4aaa95ac6d8ed275d8978805bc2aaf744d79c56d6424a35a40ed9e5d","budget_stdin":"hosted_success_stdin_received_true_loss_tooth_passed","max_runtime_archive_bytes":230686720,"max_qualification_payload_bytes":251658240,"max_total_artifact_bytes":262144000,"hosted_payload_bytes":246441475,"hosted_artifact_bytes":246444494,"hosted_artifact_digest":"sha256:169f52ff9900812d622a4d40e53a1eeb45e305406fdc784bdf0510bcf6e82ba0","hosted_artifact_id":9659612274,"hosted_runtime_archive_sha256":"47242a8a5b8418f9748b7c781a74842a0558163510fa99edbc4b2d30a0c54929","hosted_validation_archive_sha256":"ee6ebc4c534c9c051e6d859a62dd4d0ca4e4fd6f1c379dbe3c1513502b07d934","hosted_validation_delta_sha256":"c09a86a945e1249c2d97383e0e17dc026ecf17046c51b84ff3b6dff40c666b17","hosted_validation_delta_bytes":30126080,"png_decoded_scanline_contract":"local_success_rgba8_noninterlaced_exact_rows_filters_0_4","hosted_exact_head":"success_6ff410936b8d380abda8279dbbee92bec1c9cef4","trusted_run":33103681658,"general_ci_run":33103681571,"general_ci":"in_progress","runtime_recipe":"unchanged"},
+      "checks": {"p0":0,"p1_known_open":3,"p2_open":3,"merge":"forbidden","stack_b":"frozen","prior_budget_png_repair":"hosted_success","trusted_run":33103681658,"general_ci_run":33103681571,"general_ci":"success","artifact_id":9659612274,"artifact_digest":"sha256:169f52ff9900812d622a4d40e53a1eeb45e305406fdc784bdf0510bcf6e82ba0","repair_acceptance":["exactly one first IHDR; zero-length terminal IEND; reject unknown critical chunks; IDAT chunks contiguous; reject any chunk after IEND while preserving valid RGBA8 filters 0-4","digest-pinned bootstrap verifies both archive attestations before podman load or subject execution; GH_TOKEN exists only in bootstrap; corrupt swapped wrong-subject and unattested controls fail before load/start","canonical OCI archive creation and every material tar Podman Skopeo operation run inside an isolated digest-pinned Docker Linux toolchain; lock tool/image/binary identities; two independent containers plus runtime+delta reconstruction reproduce exact bytes","35 prior controls plus new teeth pass twice byte-identically; unchanged runtime/payload/delta/total budgets hold; exact five-path scope and clean handoff"],"host_native_material_gate":"forbidden_not_proven"},
       "delivery": {"local_commit":"6dc6a1c143981c269f30180e1a29e4fdfdbba21d","local_parent_tree_identical_mirror":"3fa3662c27f539c18d8c61ce2bc012425d5ff429","local_tree":"ee689eab865d589a961851ce9f49e14f88abadea","remote_head_before_recovery":"c647ba69bfa60237585f74171d21b49c7fe1deab","remote_commit":"6ff410936b8d380abda8279dbbee92bec1c9cef4","remote_tree":"ee689eab865d589a961851ce9f49e14f88abadea","producer_recovery":"completed_non_force_git_data_api_linear_commit_after_exact_raw_blob_and_tree_verification","exact_paths":[".github/workflows/trusted-cafe-attestation.yml","evidence/cafe/runtime-lock.v1.json","tools/cafe_attestation_selftest.py","tools/trusted_cafe_capture.sh","tools/verify_cafe_attested_evidence.py"],"worktree_clean":true},
       "recovery_count": 1,
-      "repair_round": 5,
+      "repair_round": 6,
       "rollback": "Leave or close Draft PR #25; revert only new repair commits through review if later rejected; never rewrite shared history or master.",
       "stop_lines": ["PR head or master drifts before checkout verification","any out-of-lease path is required","strict payload contract requires Stack B or canon change","secrets or protected dispatch are required","Docker image/runtime cannot be pinned by digest","host-native material gate would remain merge-authoritative","shared Docker or cache state would be mutated"]
     }
   ],
-  "current_conflict_graph": {"at":"2026-08-27T18:36:00Z","active_writers":0,"read_only_reviewers":2,"shared_write_conflicts":0,"decision":"Trusted qualification is SUCCESS at Draft PR25 exact head 6ff41093 with hosted budget receipt and 246444494-byte artifact under the unchanged cap. Security/QA and REFUTE are independently dispatched read-only; Stack B, Ready, merge and all authority writers remain frozen while reviews and general run 33103681571 complete."},
+  "current_conflict_graph": {"at":"2026-08-27T19:30:31Z","active_writers":1,"read_only_reviewers":0,"shared_write_conflicts":0,"decision":"Security/QA and REFUTE independently converged on three unique P1 boundaries at exact Draft PR25 head 6ff41093. Their overlapping workflow/runtime-lock/capture/verifier/selftest surfaces are serialized to one repair writer; all other writers, Stack B, Ready, merge and authority lanes remain frozen."},
   "released_claims": [
     {
       "claim_id": "lease-cafe-source-attestation-trust-root-v1-replacement",
@@ -466,9 +466,9 @@
     "stale_or_empty_handoffs": 3,
     "recoveries_or_replacements": 10,
     "open_exact_sha_p0": 0,
-    "open_exact_sha_p1": 0,
+    "open_exact_sha_p1": 3,
     "post_merge_regressions": 0,
-    "player_visible_closure_state": "source_attestation_stack_a_pr25_hosted_qualification_success_independent_reviews_and_general_ci_pending"
+    "player_visible_closure_state": "source_attestation_stack_a_pr25_independent_reviews_request_changes_three_unique_p1_sixth_repair_active"
   },
   "human_acceptance": "not_ready"
 }
