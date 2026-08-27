@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T17:25:00Z",
+  "updated_at": "2026-08-27T17:28:00Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -97,10 +97,10 @@
       "generated_outputs": ["temporary adversarial fixtures and receipts outside repository only"],
       "dependencies": ["pr:25:c647ba69bfa60237585f74171d21b49c7fe1deab","hosted-run:33093410202:success","artifact:9655397341:sha256:ea20ac8cf3cf907fab2654cb9b2f0ed67a2630ded26477afa0289a9cd813bb4c","security-qa:independent_parallel","general-ci:33093410136:in_progress"],
       "consumer": "Producer decision on P0/P1 closure and repair or merge eligibility",
-      "status": "recovery_1_active_after_terminal_transport_failure_with_substantive_findings",
-      "last_heartbeat": "2026-08-27T17:20:00Z",
-      "stale_after": "2026-08-27T17:50:00Z",
-      "review_result": {"verdict":"REQUEST_CHANGES_SUBSTANTIVE_MESSAGE_RECOVERED_FINAL_TRANSPORT_FAILED","p0":0,"p1":2,"p1_findings":["verifier accepts hash-bound attested 1280x768 IHDR PNG with zero decoded scanline bytes","qualification artifact exceeds locked total budget and budget workflow is ineffective"],"repro":{"bundle_sha256":"bb950409","png_sha256":"24860119","matrix_sha256":"2ed50da5"},"prior_p1_repairs":"closed at current head","repository_or_github_writes":false},
+      "status": "terminal_request_changes_p0_0_p1_2_p2_1_recovery_complete",
+      "last_heartbeat": "2026-08-27T17:28:00Z",
+      "stale_after": null,
+      "review_result": {"verdict":"REQUEST_CHANGES","p0":0,"p1":2,"p2":1,"p1_findings":["verifier accepts hash-bound attested 1280x768 IHDR PNG with zero decoded scanline bytes","qualification artifact exceeds locked total budget and workflow checks only runtime archive"],"p2":"SHA-pinned actions are forced from Node20 to mutable Node24 platform runtime","repro":{"png_sha256":"24860119a3f8d8fcc702ba1adaac40c18415b6fc64426da77be9dad25e654675","bundle_sha256":"bb95040917c9f83aabf7546372009c0a9131c4f0a51ccdc67344050c466da3bf","verification_receipt_sha256":"16d2723f5fe2b24f1ee734bc3de25559d8817fd514ac3ad5e33658c72cf26767","matrix_sha256":"2ed50da55f683321889d570177a4c84eb0604117d7f1d6affcf1783c3bb4a0ed","budget_receipt_sha256":"e8f9eb4b7dd003e27b1f31cbfd54cf85baf35bdeffc8014674a330815b33def8"},"prior_p1_repairs":"closed at current head","does_not_prove":["protected dispatch","production evidence attestation","Stack B compatibility","visual/canon/Sim authority","full local runtime/validation rebuild"],"cleanup":"containers removed; task-owned temporary fixtures retained at C:\\Users\\admin\\AppData\\Local\\Temp\\lt-pr25-refute-c647-19115337","repository_or_github_writes":false},
       "prior_review_result": {"head":"4bd8b6770d03e19283e962fcb556944dfd3c5d94","verdict":"REQUEST_CHANGES","p0":0,"p1":2,"p2":2,"attack_matrix_sha256":"5b4bc93b2b8e24de722ccd0336fd96ea9bc5029694a5cf64af599e9e538077c8","superseded_for_current_head":true},
       "pr": 25,
       "checks": {"runtime_qualification":"success","trusted_run":33093410202,"artifact_id":9655397341,"artifact_digest":"sha256:ea20ac8cf3cf907fab2654cb9b2f0ed67a2630ded26477afa0289a9cd813bb4c","visual_canary":"success","ci":"success","general_run":33093410136},
@@ -137,7 +137,7 @@
       "stop_lines": ["PR head or master drifts before checkout verification","any out-of-lease path is required","strict payload contract requires Stack B or canon change","secrets or protected dispatch are required","Docker image/runtime cannot be pinned by digest","host-native material gate would remain merge-authoritative","shared Docker or cache state would be mutated"]
     }
   ],
-  "current_conflict_graph": {"at":"2026-08-27T17:25:00Z","active_writers":1,"read_only_reviewers":1,"shared_write_conflicts":0,"decision":"Security/QA and REFUTE identified two causal exact-head P1s. The sole existing repair owner is leased five Stack A paths to close budget execution and malformed-PNG validation together; REFUTE recovery is output-only. Stack B, Ready, merge and all other authority lanes remain frozen."},
+  "current_conflict_graph": {"at":"2026-08-27T17:28:00Z","active_writers":1,"read_only_reviewers":0,"shared_write_conflicts":0,"decision":"Security/QA and recovered REFUTE terminal receipts establish two causal exact-head P1s. The sole repair owner holds five Stack A paths; both reviewers are released. Stack B, Ready, merge and all other authority lanes remain frozen."},
   "released_claims": [
     {
       "claim_id": "lease-cafe-source-attestation-trust-root-v1-replacement",
