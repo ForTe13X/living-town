@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T05:53:07Z",
+  "updated_at": "2026-08-27T05:55:46Z",
   "producer": {
     "task": "019f555f-dfd4-7d91-aa6b-9655caa34871",
     "branch": "codex/main-repo-review",
@@ -24,32 +24,49 @@
   },
   "active_claims": [
     {
-      "claim_id": "lease-pr24-authored-silhouette-identity-recovery-1",
-      "task": "01a041ab-ad71-7990-a562-d9c362415492",
-      "role": "same-owner bounded recovery 1 of 1 for PR #24 arbitrary-connected-alias P1",
-      "objective": "Causally reject receipt-valid arbitrary connected spiral, snake, L, and generic polyomino substitutions, including real-hosted-bare-bound mutations, without regressing legitimate sparse furniture or using opaque allowlists, exact pixels, palette, or protected anchors.",
+      "claim_id": "claim-cafe-source-derived-evidence-contract",
+      "task": "pending_create_thread_source_contract",
+      "role": "Technical Architect for a source-derived café visual evidence contract, strict read-only/output-only",
+      "objective": "Produce one implementation-bounding contract that cryptographically and semantically binds normal output to maintained authored source/render provenance without moving runtime authority into View or relying on heuristic pixel classes.",
       "baseline": "03fe7bd1945516535fa53ee96987a68eb77e58c9",
       "head": "03fe7bd1945516535fa53ee96987a68eb77e58c9",
       "tree": "ccebb77298927fcce860b019d136f012d37aa177",
       "branch": "codex/pr23-authored-silhouette-binding-repair",
-      "worktree": "C:\\Users\\yp\\.codex\\worktrees\\c0d9\\26th",
-      "owned_paths": ["tools/assert_cafe_interior_density.py"],
-      "forbidden_paths": ["**/* except tools/assert_cafe_interior_density.py"],
-      "authority_keys": ["cafe-authored-silhouette-assertion"],
-      "generated_outputs": ["temporary_receipts_only"],
-      "dependencies": ["draft-pr:24","refute-task:01a041b9-2686-7d13-8f7e-56d5e998901a","qa-task:01a041b8-d82a-73f3-a2a3-b79118eeae8a","hosted-run:33042786023:visual_success_core_in_progress"],
-      "consumer": "Updated Draft PR #24, then PR #23, PR #22, and PR #21",
-      "status": "active_recovery_1_of_1",
-      "last_heartbeat": "2026-08-27T05:53:07Z",
-      "stale_after": "2026-08-27T06:53:07Z",
-      "pr": 24,
-      "checks": {"hosted_core":"in_progress","hosted_visual":"success","run":33042786023},
-      "recovery_count": 1,
-      "rollback": "Revert only the recovery commit through review or leave PR #24 Draft/close it; never rewrite 03fe7bd or 6161a02.",
-      "stop_lines": ["baseline or branch SHA drift","worktree dirty before edits","repair requires another repository path or protected anchor","only possible solution is an opaque hard-coded shape allowlist, exact pixel comparison, or magic threshold tuned to adversarial fixtures","legitimate sparse 1280 or 320 furniture evidence regresses","one-file causal identity proof is not technically sustainable"]
+      "worktree": "pending_isolated_worktree_source_contract",
+      "owned_paths": [],
+      "forbidden_paths": ["**/*"],
+      "authority_keys": ["cafe-source-derived-evidence-contract"],
+      "generated_outputs": ["task_response_only"],
+      "dependencies": ["draft-pr:24:blocked_impossible","refute-task:01a041b9-2686-7d13-8f7e-56d5e998901a","recovery-task:01a041ab-ad71-7990-a562-d9c362415492","hosted-run:33042786023:success"],
+      "consumer": "Future single Dev implementation owner, then Producer for a replacement stacked Draft PR and fresh QA/REFUTE",
+      "status": "reserved_pending_task_creation",
+      "last_heartbeat": "2026-08-27T05:55:46Z",
+      "stale_after": "2026-08-27T06:55:46Z",
+      "pr": null,
+      "checks": {"source_candidate_core":"success","source_candidate_visual":"success","source_candidate_run":33042786023},
+      "recovery_count": 0,
+      "rollback": "Read-only contract: discard task output if it cannot define a bounded consumer, authority boundary, negative controls, and reviewable rollback.",
+      "stop_lines": ["repository or GitHub mutation requested","contract makes View or pixels authoritative for Sim/navigation/collision/save/replay/portal/canon","requires opaque full-frame golden or exact antialias identity","cannot define source provenance, deterministic derivation, versioning, migration, and negative controls","no bounded future writer path set exists"]
     }
   ],
   "released_claims": [
+    {
+      "claim_id": "lease-pr24-authored-silhouette-identity-recovery-1",
+      "task": "01a041ab-ad71-7990-a562-d9c362415492",
+      "head": "03fe7bd1945516535fa53ee96987a68eb77e58c9",
+      "tree": "ccebb77298927fcce860b019d136f012d37aa177",
+      "branch": "codex/pr23-authored-silhouette-binding-repair",
+      "worktree": "C:\\Users\\yp\\.codex\\worktrees\\c0d9\\26th",
+      "pr": 24,
+      "status": "terminal_blocked_impossible_authority_released",
+      "released_at": "2026-08-27T05:55:46Z",
+      "release_reason": "One-file recovery proved that receipt provenance plus normal/bare pixels cannot distinguish arbitrary receipt-valid connected aliases from required legitimate sparse L/stepped forms without forbidden allowlists/exact pixels or an out-of-lease maintained source/render contract. No recovery commit or push was made.",
+      "evidence": ["sha256:6306AD0505018132D64CAE7F81FB79AB68AA7937693B346166D11B8D6FE3DCE0","sha256:F1F8C4033AAA612D0E7C6485A9BF83A279F55BD5374093450B0C8E27003AF7CD","hosted-run:33042786023:success"],
+      "recovery_count": 1,
+      "remote_mutation": false,
+      "provenance_preserved": true,
+      "released_authority_keys": ["cafe-authored-silhouette-assertion"]
+    },
     {
       "claim_id": "claim-pr24-03fe-refute",
       "task": "01a041b9-2686-7d13-8f7e-56d5e998901a",
@@ -258,9 +275,9 @@
     {
       "pr": 24,
       "head": "03fe7bd1945516535fa53ee96987a68eb77e58c9",
-      "state": "draft_request_changes_arbitrary_connected_alias_p1",
-      "blocker": "Independent REFUTE reproduced receipt-valid arbitrary connected spiral/snake/L and generic aliases at both resolutions, including a mutation bound to the real hosted bare capture; visual hosted success and QA positives do not close authored identity.",
-      "next_trigger": "Same owner recovery 1 of 1 either produces a sustainable one-file causal identity repair or returns a bounded impossibility handoff for replacement architecture."
+      "state": "draft_terminal_heuristic_limit_not_mergeable",
+      "blocker": "Recovery 1 of 1 returned BLOCKED_IMPOSSIBLE: the one-file verifier has no maintained source-derived normal/render contract and cannot establish authored identity from receipt-valid pixels without forbidden brittle identity techniques.",
+      "next_trigger": "Technical Architect returns a READY source-derived evidence contract with bounded future writer paths, authority boundaries, provenance/versioning, negative controls, and rollback."
     },
     {
       "pr": 23,
