@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T13:32:53Z",
+  "updated_at": "2026-08-28T13:36:38Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1928,13 +1928,14 @@
       "generated_outputs": ["task-local Docker receipts and terminal review message only"],
       "dependencies": ["PR29 body SHA256 5d5751a49b0cdf7ace410215a30634dfb667868890fc9f1113844673f6e250ca", "CI run33174988226 terminal", "authority run33174986895 expected fail", "master fd122e62 unchanged"],
       "consumer": "Producer protected-base transition decision",
-      "status": "reserved_for_dispatch_exact_head_ci_pending",
+      "status": "active_preliminary_p0_0_p1_0_p2_2_plus_operational_p2_ci_pending",
       "write_lease": false,
-      "last_heartbeat": "2026-08-28T13:25:42Z",
+      "last_heartbeat": "2026-08-28T13:35:47Z",
       "stale_after": "2026-08-28T14:25:42Z",
       "pr": 29,
       "recovery_count": 0,
       "pr_state": {"draft":true,"base":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","head":"a10486918276963b3b693f178b239bd115c03975","body_sha256":"5d5751a49b0cdf7ace410215a30634dfb667868890fc9f1113844673f6e250ca","ci_run":33174988226,"authority_run":33174986895},
+      "preliminary_findings": {"p0":0,"p1":0,"p2_code":2,"p2_operational":1,"code":["bundle.files[*].path reaches set(paths) before type validation, so an unhashable dict leaks TypeError; numeric 40-digit source_head and boolean bytes also pass schema validation before later non-match","blob decoding removes all split whitespace, accepting embedded spaces/tabs beyond the PR body claim of GitHub line-wrapping whitespace"],"operational":"authority context and approval are not mechanically required by master protection","final_pending":"CI terminal and drift recheck"},
       "acceptance_tests": ["hosted blob bytes and SHA256 exact", "all 26 base and 32 PR28 Docker cases deterministic", "canonical path validation fails closed", "malformed Base64 fails closed while wrapped valid Base64 passes", "exact head/tree/review binding and live PR25 controls pass", "P0/P1/P2 and merge-readiness explicit"],
       "negative_controls": ["empty and malformed path arrays", "unhashable paths", "absolute/backslash/dot segments", "invalid Base64", "same-files false head/tree", "pending/request-changes reviews", "duplicate identity", "self-modification"],
       "rollback": "Remove task-local containers/cache/scratch only; no repository or GitHub mutation is authorized.",
@@ -1974,11 +1975,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T13:32:53Z",
+    "at": "2026-08-28T13:36:38Z",
     "active_writers": 0,
     "read_only_reviewers": 2,
     "shared_write_conflicts": 0,
-    "decision": "PR29 body is verified and two independent read-only reviews are active. The 36-branch full scan found no unknown write conflict, but PR5 is unexpectedly CLOSED at stale recorded head ac8f5d46 while its hosted ledger branch is 58e3c737. Reopening PR5 as Draft at the live branch is reserved; no Ready/merge or protection/manifest mutation is authorized."
+    "decision": "PR5 is restored OPEN Draft at live coordination head1b8afb72/base ac85fc6b. PR29 Security/QA is still active with preliminary P0=0/P1=0 and two code P2 plus the existing protection P2; REFUTE and CI remain pending. No writer is active and PR29 Ready/merge, protection, manifest, PR25 and PR28 remain frozen."
   },
   "released_claims": [
     {
@@ -2466,8 +2467,10 @@
     "remote_branch_full_scan_36": "Hosted API fully scanned 36 branches and found no unknown transition. Master fd122e62 and integration ac85fc6b are stable; branch-set SHA256 d344aecd. Fetch and ls-remote failed, so snapshot_complete=false and six stale/missing local refs are explicitly recorded. Ten PRs open; no issues/releases/tags.",
     "required_and_dynamic_task_scan": "Required Narrative 019fe402 and Implementation 019feb58 are no longer readable on local host. Dynamic tasks: dev 019ffa43 is old/inactive with RP-0005 O(A^2) lab diagnosis; map lab 019ffe8d is terminal additive/no-owner-feedback; UI-UX 019ffe9a terminal B28 at b462aa3 with BELOW_REQUIRED_FLOOR and executable cafe slice packet. No active external writer conflicts with PR29.",
     "pr5_reopen_reservation": "PR5 is CLOSED Draft at stale recorded head ac8f5d46/base d18cc431 while live coordination branch is 58e3c737 and integration is ac85fc6b. Reopen-only mutation is reserved after this ledger publication; verify it remains Draft and resolves to live branch/base before any body update.",
+    "pr5_reopened_live": "PR5 is OPEN Draft and GitHub now resolves live coordination head1b8afb72 against current integration base ac85fc6b; no Ready/merge/body mutation occurred.",
+    "pr29_fresh_security_preliminary": "At exact a1048691/body 5d5751a4, Security/QA reproduces P0=0/P1=0 with two code P2: unhashable bundle file path leaks TypeError before canonical validation and numeric/boolean schema values pass initial validation; Base64 split accepts embedded spaces/tabs beyond the body claim. Existing protection P2 remains. Final waits CI terminal.",
     "human_acceptance": "not_ready",
-    "pr5_projection": "closed_drift_detected_reopen_as_draft_reserved"
+    "pr5_projection": "open_draft_live_head_1b8afb72_verified"
   },
-  "next_trigger": "Publish full remote/task scan and PR5 reopen reservation. Reopen PR5 only, verify Draft/live head/base, then continue waiting for CI run33174988226 and both exact-head reviews; manifest, protection, Ready and merge remain frozen."
+  "next_trigger": "Publish PR5 reopen plus preliminary PR29 P2 evidence. Wait for CI run33174988226 and both exact-head final reviews; if REFUTE confirms bounded same-file P2s, ledger one final repair lease before any code/body mutation."
 }
