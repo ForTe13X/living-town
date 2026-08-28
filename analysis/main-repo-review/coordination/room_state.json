@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T12:17:10Z",
+  "updated_at": "2026-08-28T12:27:37Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1696,13 +1696,15 @@
       "generated_outputs": ["read-only exact-head Security/QA report with P0/P1/P2 and evidence"],
       "dependencies": ["PR28 exact identity unchanged", "CI run33169271123 terminal", "PR25 exact head 2760325d qualification/CI evidence", "parallel REFUTE independence"],
       "consumer": "Producer decision on manifest metadata repair, controlled merge, or rejection",
-      "status": "in_progress_preliminary_refute_p1_2_wait_terminal_ci",
+      "status": "terminal_blocked_p0_0_p1_1_p2_4_reviewer_released",
       "write_lease": false,
-      "last_heartbeat": "2026-08-28T12:17:10Z",
-      "stale_after": "2026-08-28T13:00:31Z",
+      "last_heartbeat": "2026-08-28T12:27:37Z",
+      "stale_after": null,
       "pr": 28,
       "recovery_count": 0,
-      "preliminary_findings": {"p0":0,"p1":2,"p2":"pending_final","merge_readiness":"blocked","finding_1":"Base verifier matches six file records but does not bind source_head, source_tree, or evidence; identical blobs replayed at a false head remain approved-bundle.","finding_2":"trusted_cafe_authority_gate is not a required master protection context, so its fail-closed result is not a mechanical merge block.","evidence":"Independent pinned-Docker reproduction reported by REFUTE; final verdict waits for CI run33169271123 terminal and exact identity recheck."},
+      "final_findings": {"p0":0,"p1":1,"p2":4,"merge_readiness":"blocked","p1":"security_qa and refute remain PENDING in the exact manifest entry; replacement creates a new head requiring new reviews","p2":["duplicate trust-path records are not rejected structurally","source_head/source_tree/evidence are not machine-validated","trusted_cafe_authority_gate is not a required protection context","old bundle remains a live authorized identity without explicit expiry"],"docker":"independent pinned Docker; authority 8/8 twice, attestation 47/47 twice","hosted":"CI run33169271123 success at exact head; expected authority self-modification failure"},
+      "released_at": "2026-08-28T12:27:37Z",
+      "release_reason": "Terminal exact-head Security/QA report consumed; review is invalid for any future PR28 head.",
       "rollback": "Delete only task-owned temporary review outputs; no repository or GitHub rollback applies.",
       "stop_lines": ["PR28 head/base/path drift", "write would be required", "CI is not terminal", "Docker isolation unavailable"],
       "archive_condition": "Terminal exact-head report consumed or identity drift invalidates review."
@@ -1723,23 +1725,55 @@
       "generated_outputs": ["read-only exact-head adversarial REFUTE report with P0/P1/P2 and reproducible attacks"],
       "dependencies": ["PR28 exact identity unchanged", "CI run33169271123 terminal", "PR25 exact head 2760325d qualification/CI evidence", "parallel Security/QA independence"],
       "consumer": "Producer decision on manifest metadata repair, controlled merge, or rejection",
-      "status": "reserved_for_dispatch_wait_terminal_ci",
+      "status": "terminal_blocked_p0_0_p1_2_p2_1_reviewer_released",
       "write_lease": false,
-      "last_heartbeat": "2026-08-28T12:00:31Z",
-      "stale_after": "2026-08-28T13:00:31Z",
+      "last_heartbeat": "2026-08-28T12:27:37Z",
+      "stale_after": null,
       "pr": 28,
       "recovery_count": 0,
+      "final_findings": {"p0":0,"p1":2,"p2":1,"merge_readiness":"blocked","p1":["authorization matches file records but not source_head/source_tree/evidence, permitting same-blob replay at a false identity","trusted_cafe_authority_gate is absent from required master contexts"],"p2":"self-test exercises bundles[0] only and generic CI lacks sustained manifest attack coverage","docker":"Docker Desktop 29.6.2 linux/amd64, python@sha256:ffb752e139c0a19692a43af8d8523b274222dd68eebad5d583b45c2201c6e30a, isolated and removed","hosted":"CI run33169271123 success at exact head; PR28 still blocked and Draft"},
+      "released_at": "2026-08-28T12:27:37Z",
+      "release_reason": "Terminal exact-head adversarial report consumed; review is invalid for any future PR28 head.",
       "rollback": "Delete only task-owned temporary adversarial outputs; no repository or GitHub rollback applies.",
       "stop_lines": ["PR28 head/base/path drift", "write would be required", "CI is not terminal", "shared state mutation would be required"],
       "archive_condition": "Terminal exact-head report consumed or identity drift invalidates review."
+    },
+    {
+      "claim_id": "lease-cafe-authority-exact-identity-v2",
+      "task": "producer:01a04233-497e-7942-8da0-7958b314b199",
+      "role": "Dev writer - bounded authority repair",
+      "objective": "Repair the protected-base verifier so approval is bound to exact candidate head and tree, review evidence is terminal rather than pending, duplicate records fail closed, and deterministic self-tests cover every bundle plus same-files/different-identity attacks.",
+      "baseline": "fd122e6235f8870c7e3f8e6b43b35f04392765d9",
+      "head": "fd122e6235f8870c7e3f8e6b43b35f04392765d9",
+      "tree": "503376dbd7fb8c0a877e40f3843dc8b6fe4f6aa8",
+      "branch": "codex/cafe-authority-exact-identity-v2",
+      "worktree": "D:\\Documents\\Dev\\living-town-authority-exact-identity-v2-wt",
+      "owned_paths": [".github/trusted-cafe-authority/verify_candidate_bundle.py"],
+      "forbidden_paths": [".github/trusted-cafe-authority/approved-bundles.v1.json", ".github/workflows/**", "all game/assets/docs/analysis paths", "master", "integration/batons", "GitHub protection until separate serialized transition"],
+      "authority_keys": ["trusted_cafe_authority_exact_head_tree_review_semantics_v2"],
+      "generated_outputs": ["task-local Docker receipts and negative controls outside repository", "one-file Draft PR after proof"],
+      "dependencies": ["PR28 terminal Security/QA and REFUTE findings", "master fd122e62", "PR25 exact head 2760325d", "PR28 remains Draft and immutable"],
+      "consumer": "PR28 manifest repair and subsequent protected PR25 authority gate",
+      "status": "reserved_for_isolated_worktree_and_docker_implementation",
+      "write_lease": true,
+      "last_heartbeat": "2026-08-28T12:27:37Z",
+      "stale_after": "2026-08-28T14:27:37Z",
+      "pr": "pre_pr",
+      "recovery_count": 0,
+      "acceptance_tests": ["candidate source_head equals live PR head", "candidate source_tree equals live commit tree", "PENDING or non-approval review evidence rejects", "duplicate/missing trust-path records reject", "same file records under different head or tree reject", "all manifest bundles are exercised deterministically", "current PR25 remains rejected until PR28 terminal approval metadata is separately repaired", "Python AST, self-test twice byte-identical, git diff --check"],
+      "negative_controls": ["same blobs false head", "same blobs false tree", "pending reviews", "request-changes reviews", "duplicate record", "stale blob", "rename", "mixed scope", "self-modification", "other workflow", "fork"],
+      "rollback": "Leave or close the one-file Draft repair PR unmerged; if later merged, revert through a new reviewed PR before any manifest or PR25 merge.",
+      "stop_lines": ["master drift", "second repository path", "manifest/workflow/protection mutation", "positive synthetic approved fixture failure", "any negative control accepted", "Docker isolation unavailable"],
+      "handoff_recipient": "Independent Security/QA and REFUTE exact-head review, then Producer controlled protected-base merge decision",
+      "archive_condition": "Exact one-file Draft handoff and terminal independent reviews, or one failed recovery with lease release."
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T12:17:10Z",
-    "active_writers": 0,
-    "read_only_reviewers": 2,
+    "at": "2026-08-28T12:27:37Z",
+    "active_writers": 1,
+    "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "Draft PR28 remains exact and Draft but REFUTE independently reproduced two preliminary P1s: bundle authorization is not bound to source_head/source_tree/evidence, and trusted_cafe_authority_gate is absent from required master contexts. PR28 is blocked. Security/QA and final REFUTE verdict still wait for CI run33169271123 terminal. No master, protection, PR25, Ready or merge mutation is authorized."
+    "decision": "PR28 exact CI is green but both independent reviews block merge; Producer adopts the stricter P0=0/P1=2 result. One bounded writer is serialized on verify_candidate_bundle.py only. Manifest, workflow, protection, PR25, Ready and merge remain frozen; no path or authority-key conflict exists."
   },
   "released_claims": [
     {
@@ -2214,8 +2248,9 @@
     "pr25_approved_bundle_manifest_api_commit": "API reconstruction matched blob 18b100e7 and tree 82350016 exactly. GitHub omitted the local commit message's trailing newline, producing API commit 8fb6895d with identical parent, tree, visible message, author, committer and timestamp. Remote ref remains absent; branch and Draft PR creation are reserved at 8fb6895d.",
     "pr28_creation": "Draft PR28 OPEN at exact head 8fb6895d/base fd122e62 with only approved-bundles.v1.json (+62). Authority run33169271086/job98842142215 rejected expected self-modification; CI run33169271123 is in progress. Master, strict protection and PR25 head/state remain unchanged. Writer released; Security/QA and REFUTE reserved read-only.",
     "pr28_preliminary_refute": "At exact head 8fb6895d, independent pinned-Docker REFUTE reproduced P1-1: the base verifier authorizes an identical six-blob bundle even when source_head/source_tree/evidence are forged, and P1-2: trusted_cafe_authority_gate is not a required master protection check. PR28 merge-readiness is BLOCKED; pending metadata replacement alone is insufficient.",
+    "pr28_terminal_reviews": "PR28 run33169271123 completed success at exact head 8fb6895d. Security/QA P0=0/P1=1/P2=4 and REFUTE P0=0/P1=2/P2=1 both BLOCK merge. Producer adopts stricter P1=2. Review leases released; any new head requires fresh reviews.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish the two preliminary PR28 REFUTE P1s while keeping PR28 Draft and immutable. Wait for CI run33169271123 terminal plus independent Security/QA and final REFUTE reports. If confirmed, serialize a bounded authority repair before any manifest metadata update, protection transition, Ready, or merge."
+  "next_trigger": "Publish terminal PR28 review results and the one-file authority-repair lease. Create the isolated worktree at fd122e62, implement exact head/tree and terminal-review binding plus sustained negative controls in pinned Docker, then create a one-file Draft PR only after proof."
 }
