@@ -25,7 +25,7 @@ jobs:
       - name: Checkout protected base authority only
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: ${{ github.event.pull_request.base.sha }}
+          ref: ${{ github.sha }}
           fetch-depth: 1
           path: authority
           persist-credentials: false
@@ -33,7 +33,7 @@ jobs:
       - name: Verify protected base checkout identity
         shell: bash
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
           [[ "$(git -C authority rev-parse HEAD)" == "$BASE_SHA" ]]
