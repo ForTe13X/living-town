@@ -49,8 +49,8 @@ build_runtime_in_pinned_toolchain() {
   state_root="${TMPDIR:-/tmp}"
   state="$(mktemp -d "$state_root/trusted-cafe-oci-toolchain.XXXXXXXX")"
   mkdir -p "$state/storage" "$state/run" "$state/tmp" "$state/input"
-  toolchain_image="quay.io/podman/stable@sha256:e90073d89870417f7bd0f581eed1ee6ddd8e55f0246a746516fd11059eac3335"
-  skopeo_image="quay.io/skopeo/stable@sha256:572747e168b4cb920bc7f5b321ca6c6da13717ff28c8d671a203935d53cf1089"
+  toolchain_image="quay.io/podman/stable@sha256:b0173238dceedf46a10d2c3a7bf9b217a85dce19706d2d9c80b01345839ae779"
+  skopeo_image="quay.io/skopeo/stable@sha256:4a16d57b37617a04b3d643079a477a2848efe892dffcdf0ce56df4262b65f810"
   python_index_ref="docker.io/library/python@sha256:0bee7276f83efd4a1ee05bbbf4281d95ed28e079220a9457f25a93e3f1e3c31b"
   cleanup_toolchain_state() {
     local cleanup_state="$1" cleanup_root="$2" cleanup_image="$3"
