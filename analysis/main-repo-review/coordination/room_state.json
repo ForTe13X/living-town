@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T10:59:05Z",
+  "updated_at": "2026-08-28T11:02:27Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1600,14 +1600,43 @@
       "stop_lines": ["any third path", "any content change beyond the existing two-path diff", "any deterministic identity mismatch", "any immutable source failure after one recovery", "remote head drift", "authority boundary change"],
       "handoff_recipient": "Producer protected-base manifest update transaction",
       "archive_condition": "Complete exact receipt and normal publication handoff, or one recovery failure and release without publication."
+    },
+    {
+      "claim_id": "lease-pr25-immutable-quay-toolchain-supply-repair-v1-replacement-3",
+      "task": "producer-local-serialized-writer",
+      "role": "Third replacement sole serialized Dev writer for PR25 verifier toolchain-identity alignment",
+      "objective": "Replace only the two obsolete immutable Quay toolchain constants in the independent café evidence verifier so it agrees with the already proven runtime lock and outer bootstrap, then rerun the fail-closed self-test in isolated Docker without weakening any verifier policy.",
+      "baseline": "26a0d0114052d302a0cb768418d5c00501920eb3",
+      "head": "26a0d0114052d302a0cb768418d5c00501920eb3",
+      "tree": "4f819ca3a4b593e150fbbb4df4de0e2853e9a984",
+      "branch": "codex/pr25-immutable-toolchain-supply-repair-v1",
+      "delivery_ref": "origin/codex/cafe-source-attestation-trust-root-v1-replacement-2",
+      "worktree": "D:\\Documents\\Dev\\living-town-pr25-immutable-toolchain-repair-wt",
+      "owned_paths": ["tools/verify_cafe_attested_evidence.py"],
+      "forbidden_paths": ["**/* except tools/verify_cafe_attested_evidence.py", ".github/**", "evidence/**", "tools/** except tools/verify_cafe_attested_evidence.py", "game/**", "docs/**", "analysis/**", "schemas/registries/anchors/ledgers"],
+      "authority_keys": ["cafe-verifier-toolchain-identity", "cafe-runtime-lock-v1"],
+      "generated_outputs": ["isolated Docker self-test receipt outside repository"],
+      "dependencies": ["PR25 exact head 26a0d011", "runtime and validation build/load pass in run33165395931", "self-test failure at verifier toolchain constant comparison", "authority run33165394243 expected fail-closed with zero approved current identities", "CI run33165395930 in progress"],
+      "consumer": "PR25 exact six-path candidate, then protected-base approved-bundle manifest update and fresh exact-head reviews",
+      "status": "reserved_before_write",
+      "write_lease": true,
+      "last_heartbeat": "2026-08-28T11:02:27Z",
+      "stale_after": "2026-08-28T13:02:27Z",
+      "pr": 25,
+      "recovery_count": 0,
+      "acceptance_tests": ["exactly one repository path changes", "verifier constants equal the runtime lock immutable Podman and Skopeo references", "Docker-isolated full café attestation self-test passes", "negative unpinned and drift controls remain fail-closed", "git diff --check and Python syntax pass in Docker"],
+      "rollback": "Leave the one-path repair unpublished on any failure. After normal publication, keep PR25 Draft and use a new reviewed revert; never force-reset shared history.",
+      "stop_lines": ["any second repository path", "any verifier behavior beyond exact toolchain identity constants", "Docker self-test failure after one recovery", "remote head drift", "authority boundary change"],
+      "handoff_recipient": "Producer protected-base manifest update transaction",
+      "archive_condition": "Exact Docker receipt and clean normal fast-forward handoff, or one recovery failure and release without publication."
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T10:59:05Z",
-    "active_writers": 0,
+    "at": "2026-08-28T11:02:27Z",
+    "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "Exact candidate 26a0d011 was normally fast-forwarded to PR25 with six-path scope and OPEN Draft state preserved. Its writer is released. Fresh authority, qualification and CI are in progress; the authority-manifest update remains a distinct serialized protected-base transaction and no candidate writer/reviewer is active."
+    "decision": "Hosted qualification built and loaded the immutable runtime successfully but the independent verifier correctly rejected its obsolete hard-coded Quay identities. A single one-path replacement-3 writer is serialized for verifier constant alignment. Authority-manifest work remains frozen and no reviewer is active until a new exact head passes hosted evidence."
   },
   "released_claims": [
     {
@@ -2068,8 +2097,9 @@
     "coordination_ref_recovery_20260828T1054Z": "An attempted content publication used git commit-tree without the API-created remote parent object locally present. The empty computed commit variable was interpreted by git push as a ref deletion. The producer immediately recreated refs/heads/codex/main-repo-review at its exact prior commit ac8f5d46308e271f8e253f7f0c36be58286ddf18 through GitHub. Master, integration, PR25, candidate refs and content were untouched. Future coordination publication in this transaction is restricted to GitHub Git Data API with an explicit parent and a non-force ref update.",
     "immutable_toolchain_candidate_commit": "Exact local commit 26a0d0114052d302a0cb768418d5c00501920eb3, tree 4f819ca3a4b593e150fbbb4df4de0e2853e9a984, parent 8d9926b8. Only runtime-lock blob 80848d99 and trusted-capture blob a40ade2d changed. Live PR25 remains OPEN Draft at expected remote head and base with six semantic paths and strict full protection. Normal fast-forward push is reserved; authority-manifest update remains a separate protected-base PR.",
     "immutable_toolchain_candidate_publication": "Normal fast-forward 8d9926b8 to 26a0d011 completed on the existing PR25 feature ref. PR25 remains OPEN Draft against fd122e62 with exactly six semantic paths. Fresh runs: authority 33165394243, qualification 33165395931 and CI 33165395930 in progress. Candidate writer released; no Ready or merge mutation.",
+    "immutable_toolchain_hosted_p1": "At exact head 26a0d011, authority run33165394243 failed as expected because the changed two-blob bundle matched zero approved identities. Qualification run33165395931 successfully built the immutable runtime twice and loaded/qualified it, then failed the first self-test because tools/verify_cafe_attested_evidence.py still hard-coded the retired Podman e90073d8 and Skopeo 572747e1 identities. This is a real P1 coupling omission. Replacement-3 owns only that verifier path; manifest approval is frozen.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish the exact PR25 fast-forward result and writer release. Wait for authority 33165394243, qualification 33165395931 and CI 33165395930 to become terminal, inspect exact logs/artifacts, then reserve the separate protected-base approved-bundle manifest PR if the only authority failure is the expected unapproved two-blob identity."
+  "next_trigger": "Publish the exact hosted P1 and replacement-3 one-path lease. Change only the two verifier constants, run Python syntax and the full café self-test in isolated pinned-digest Docker, then record exact evidence before any local commit or remote mutation. Continue monitoring CI 33165395930."
 }
