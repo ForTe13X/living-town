@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T06:56:33Z",
+  "updated_at": "2026-08-28T07:01:37Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1482,12 +1482,12 @@
       "generated_outputs": ["isolated immutable-image version receipts", "deterministic two-build runtime receipt outside repository", "two new candidate blob identities for a separately reviewed protected-base bundle update"],
       "dependencies": ["released predecessor lease with recovery_count 1", "Skopeo immutable index 4a16d57b reports 1.22.2", "Podman immutable index b0173238 reports Podman 5.8.4, Python 3.14.6, tar 1.35, coreutils 9.10", "baseline CI run33147650879 success", "protected authority unchanged"],
       "consumer": "PR25 exact six-path candidate, then a separate protected-base approved-bundle manifest update and fresh authority/CI/reviews",
-      "status": "reserved_not_started",
+      "status": "recovery_1_reserved_after_docker_hub_tls_timeout_with_task_cache_preserved",
       "write_lease": true,
       "last_heartbeat": "2026-08-28T06:56:33Z",
       "stale_after": "2026-08-28T07:56:33Z",
       "pr": 25,
-      "recovery_count": 0,
+      "recovery_count": 1,
       "acceptance_tests": ["Python 3.14.7 expectation fails closed against the immutable image as a negative control", "lock matches exact Skopeo 1.22.2, Podman 5.8.4, Python 3.14.6, tar 1.35 and coreutils 9.10", "runtime build completes its internal two-build byte-identity checks in isolated Docker/Podman", "only the two exact owned paths differ", "candidate PR semantic diff remains the exact six trust paths after normal publication"],
       "rollback": "Before publication retain or discard only task-owned edits/worktree. After normal publication, leave or close Draft PR25 and use a new reviewed revert; never force-reset shared history.",
       "stop_lines": ["any third repository path must change", "any other pinned tool version mismatches", "runtime archives are not byte-identical", "immutable references stop resolving", "authority or canonical Sim/View boundary changes", "remote head drift"],
@@ -1914,7 +1914,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "PR25_IMMUTABLE_QUAY_TWO_PATH_REPAIR_REPLACEMENT_1_RESERVED_AFTER_PYTHON_VERSION_STOP",
+    "state": "PR25_IMMUTABLE_QUAY_TWO_PATH_REPAIR_REPLACEMENT_1_RECOVERY_1_RESERVED",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
@@ -1955,8 +1955,9 @@
     "pr25_updated_head_legacy": "run33147650883 failed after classification passed, at immutable runtime build because quay.io/skopeo/stable@sha256:572747e168b4cb920bc7f5b321ca6c6da13717ff28c8d671a203935d53cf1089 returned manifest unknown. This is a new supply-availability/sustainability blocker, not the prior stale-base scope false positive and not evidence of candidate path drift.",
     "pr25_updated_head_ci": "run33147650879 SUCCESS at head 8d9926b8: visual_canary job98772144921 success 2026-08-28T06:27:43Z and ci job98772145048 success 2026-08-28T06:46:19Z.",
     "immutable_toolchain_repair_attempt_1": "Static Docker checks passed. A cold isolated nested-Podman runtime build resolved and pulled the Skopeo immutable index, then exhausted built-in retries while pulling the Podman immutable index due Quay TLS handshake timeouts/EOF. This differs from the old digest's deterministic manifest-unknown failure. Host-isolated version probes had already pulled both immutable references successfully. One recovery is reserved with a fresh isolated cache after recording this transient network failure.",
+    "immutable_toolchain_replacement_attempt_1": "The accurate Python 3.14.6 lock passed the prior version stop. In a fresh task-owned Podman cache, Skopeo immutable index resolved and pulled, then Skopeo inspect of the pinned Docker Hub Python index exhausted on a TLS handshake timeout. Runtime output remained verified empty; the labeled task cache volume is preserved for the sole replacement recovery.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish the predecessor release and replacement lease, change only runtime-lock Python 3.14.7 to the immutable image's verified 3.14.6, remove only the verified empty task runtime directory, then rerun the complete isolated build. Any further version mismatch or failed replacement recovery blocks publication."
+  "next_trigger": "Publish replacement recovery 1, remove only the verified empty task runtime directory, then rerun using the same labeled task-owned Podman cache volume. If it fails, release replacement blocked with no publication; if it passes, record runtime hashes, sizes, image identities and exact two-path diff before commit/push."
 }
