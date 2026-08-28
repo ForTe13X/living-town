@@ -72,8 +72,8 @@ EXPECTED_PAYLOAD_PATHS = tuple(
 )
 EXPECTED_BUNDLE_MEMBERS = tuple(sorted((*EXPECTED_PAYLOAD_PATHS, "trusted-cafe-manifest.json")))
 MAX_PNG_DECOMPRESSED_BYTES = 8 * 1024 * 1024
-OCI_TOOLCHAIN_IMAGE = "quay.io/podman/stable@sha256:e90073d89870417f7bd0f581eed1ee6ddd8e55f0246a746516fd11059eac3335"
-SKOPEO_TOOLCHAIN_IMAGE = "quay.io/skopeo/stable@sha256:572747e168b4cb920bc7f5b321ca6c6da13717ff28c8d671a203935d53cf1089"
+OCI_TOOLCHAIN_IMAGE = "quay.io/podman/stable@sha256:b0173238dceedf46a10d2c3a7bf9b217a85dce19706d2d9c80b01345839ae779"
+SKOPEO_TOOLCHAIN_IMAGE = "quay.io/skopeo/stable@sha256:4a16d57b37617a04b3d643079a477a2848efe892dffcdf0ce56df4262b65f810"
 ATTESTATION_BOOTSTRAP_IMAGE = "docker.io/library/python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c"
 DOES_NOT_AUTHORIZE = [
     "canon",
@@ -282,7 +282,7 @@ def verify_oci_toolchain_contract(trusted_root: Path, runtime_lock: dict[str, An
         raise VerificationError("canonical OCI tar contract drift")
     if versions != {
         "podman": "5.8.4",
-        "python": "3.14.7",
+        "python": "3.14.6",
         "sha256sum": "sha256sum (GNU coreutils) 9.10",
         "skopeo": "1.22.2",
         "tar": "tar (GNU tar) 1.35",
