@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T13:00:32Z",
+  "updated_at": "2026-08-28T13:03:45Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1845,23 +1845,25 @@
       "generated_outputs": ["read-only exact-head PR29 regression/counterexample report"],
       "dependencies": ["PR29 exact identity and corrected hosted blob evidence unchanged", "CI run33172016796 terminal", "Security/QA independence"],
       "consumer": "Producer controlled protected-base repair merge decision",
-      "status": "reserved_for_dispatch_wait_terminal_ci",
+      "status": "recovery_1_reserved_after_authorized_body_provenance_drift_wait_terminal_ci",
       "write_lease": false,
-      "last_heartbeat": "2026-08-28T12:50:11Z",
+      "last_heartbeat": "2026-08-28T13:03:45Z",
       "stale_after": "2026-08-28T13:50:11Z",
       "pr": 29,
-      "recovery_count": 0,
+      "recovery_count": 1,
+      "recovery_reason": "Reviewer correctly stopped when the Producer-authorized body provenance correction landed after its initial read. Code identity remained exact. Re-run once against the now-stable corrected body and terminal CI.",
+      "pre_stop_observation": {"severity":"P2 provisional","finding":"validate_manifest accepts empty trust_paths, empty authority_paths and hashable non-string paths; unhashable paths raise TypeError instead of GateError","current_manifest_impact":"none; current protected manifest is non-empty, string-only and valid","required_final_action":"classify in terminal exact-head report"},
       "rollback": "Delete only task-owned temporary review outputs; no repository or GitHub rollback applies.",
       "stop_lines": ["PR29 head/base/path/blob/body evidence drift", "write would be required", "CI is not terminal", "Docker isolation unavailable"],
       "archive_condition": "Terminal exact-head report consumed or identity drift invalidates review."
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T13:00:32Z",
+    "at": "2026-08-28T13:03:45Z",
     "active_writers": 0,
     "read_only_reviewers": 2,
     "shared_write_conflicts": 0,
-    "decision": "Draft PR29 code identity and hosted blob SHA-256 remain exact. Provenance wording is further corrected: e0b565 is a 22187-byte mixed-EOL Windows worktree projection, not a full CRLF transform. Security/QA and the replacement regression/counterexample reviewer continue. Manifest, workflow, protection, PR25, PR28, Ready and merge remain frozen."
+    "decision": "Draft PR29 code identity, hosted blob evidence and corrected body are now stable. The replacement reviewer correctly stopped on the authorized body change, reported one provisional schema P2, and has one exact-body recovery reserved. Security/QA continues. Manifest, workflow, protection, PR25, PR28, Ready and merge remain frozen."
   },
   "released_claims": [
     {
@@ -2341,8 +2343,9 @@
     "pr29_creation": "Draft PR29 OPEN at exact base fd122e62/head 1e99012/tree ce604fba with only verify_candidate_bundle.py. Authority run33172016861 rejected expected self-modification; CI run33172016796 is in progress. Master, PR28 and PR25 are unchanged. Writer released; Security/QA and REFUTE reserved read-only.",
     "pr29_hosted_blob_sha256_correction": "Security/QA stopped P1 on false evidence: packet/body e0b565 measured a 22187-byte Windows mixed-EOL worktree projection, not the hosted candidate and not a full CRLF transform. GitHub raw exact head and Git Blob API both prove blob b0a9fa90 is 21901 LF bytes with SHA-256 23836b3aee590faec4bbca6ded6ad0578c90f8f02648e0e01df2096a0ccae673; full CRLF would be 22431 bytes/SHA256 fd684d0c. Code/head/tree unchanged; exact-head re-review continues.",
     "pr29_refute_replacement": "The original REFUTE task produced no evidence on its initial and one allowed recovery because both prompts were safety-classifier rejected. Lease revoked with provenance; /root/pr29_refute_replacement reserved as independent read-only regression/counterexample review at the same exact identity.",
+    "pr29_replacement_review_body_drift_recovery": "Replacement reviewer stopped correctly because the authorized mixed-EOL PR body correction landed after its initial read; code identity stayed exact. Pre-stop Docker evidence passed and one provisional schema P2 was found. One recovery against the stable corrected body and terminal CI is reserved.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish the mixed-EOL provenance correction, update only PR29 body wording from CRLF to mixed-EOL, and reverify exact identity/body. Continue waiting for CI run33172016796 terminal plus both independent reports before any merge transition."
+  "next_trigger": "Publish the replacement review recovery count and provisional schema P2. Redispatch it once against the stable corrected PR29 body; wait for CI run33172016796 terminal plus both independent final reports before deciding whether a bounded P2 repair is required."
 }
