@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T17:03:08Z",
+  "updated_at": "2026-08-28T17:16:05Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -2396,12 +2396,33 @@
       "generated_outputs": ["temporary review receipts and adversarial fixtures outside repository only"],
       "dependencies": ["PR30 exact4974244f", "CI33190511868 success", "authority33190511839 expected self-modification failure", "Docker receipts8e61bacd and7c03d1a7", "parallel independent REFUTE"],
       "consumer": "Producer decision on bounded repair or reversible protected-base transition",
-      "status": "active_dispatched_read_only",
+      "status": "terminal_approved_released",
       "read_only": true,
-      "last_heartbeat": "2026-08-28T17:03:08Z",
-      "stale_after": "2026-08-28T18:03:08Z",
+      "last_heartbeat": "2026-08-28T17:14:49Z",
+      "stale_after": null,
       "pr": 30,
       "checks": {"ci": "success", "visual_canary": "success", "authority": "expected self-modification failure"},
+      "review_result": {
+        "verdict": "APPROVED_P0_0_P1_0_EXACT_HEAD_4974244F784C8BCB9AA1A5C88FD358F5A671BD8D",
+        "p0": 0,
+        "p1": 0,
+        "p2": 2,
+        "findings": [
+          "P2 governance: terminal review strings in the manifest are not authenticated GitHub actors or events; protected master currently requires zero approving reviews, so task provenance remains mandatory.",
+          "P2 observability: the verification receipt is emitted only to RUNNER_TEMP and logs and is not durably uploaded as an artifact."
+        ],
+        "mechanical_merge_readiness": "NOT_READY: PR30 remains Draft, the required authority check fails by intended self-modification policy, and the required runtime qualification check is absent.",
+        "docker_evidence": {
+          "image": "python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c",
+          "master_68x2_receipt_sha256": "8e61bacdd9c8107f22ba915151170016e6a4ee1eb052fb4377b9f3e308a62f46",
+          "pr28_81x2_receipt_sha256": "7c03d1a7b7583f3ff2c285a74abc3800f3970a4e7f9c4e62c0c444baa5040de9",
+          "adversarial_15_case_receipt_sha256": "632993ac0231533d78fff32753689327a2a14ce6c7b6b5188f382b9014f3eb72",
+          "live_pr25": "zero-match fail-closed",
+          "cleanup": "complete; no repository or shared-resource writes"
+        }
+      },
+      "released_at": "2026-08-28T17:14:49Z",
+      "release_reason": "Exact-head Security/QA terminal verdict delivered with P0=0, P1=0 and two retained P2 observations; independent REFUTE remains required before any protected transition.",
       "recovery_count": 0,
       "rollback": "Read-only; discard report on identity drift and delete only reviewer-owned temporary outputs.",
       "stop_lines": ["head/tree/body drift", "repository or GitHub write required", "unisolated executable test", "scope exceeds PR30 verifier contract"],
@@ -2424,12 +2445,32 @@
       "generated_outputs": ["temporary adversarial fixtures and receipts outside repository only"],
       "dependencies": ["PR30 exact4974244f", "CI33190511868 success", "authority33190511839 expected self-modification failure", "Docker receipts8e61bacd and7c03d1a7", "parallel independent Security/QA"],
       "consumer": "Producer decision on P0/P1 closure, repair or reversible protected-base transition",
-      "status": "active_dispatched_read_only",
+      "status": "terminal_refute_p0_0_p1_0_released",
       "read_only": true,
-      "last_heartbeat": "2026-08-28T17:03:08Z",
-      "stale_after": "2026-08-28T18:03:08Z",
+      "last_heartbeat": "2026-08-28T17:15:35Z",
+      "stale_after": null,
       "pr": 30,
       "checks": {"ci": "success", "visual_canary": "success", "authority": "expected self-modification failure"},
+      "review_result": {
+        "verdict": "REFUTE_P0_0_P1_0_P2_1_EXACT_HEAD_4974244F784C8BCB9AA1A5C88FD358F5A671BD8D",
+        "p0": 0,
+        "p1": 0,
+        "p2": 1,
+        "finding": "P2 defense/contract robustness: successful GitHub ref and compare response parsers do not bind echoed ref/type/base/head/merge-base identities and counters to the request. A synthetic context-confused response can authorize an unrelated candidate, although real api.github.com responses were complete/context-correct and no attacker-controlled path or P1 was reproduced.",
+        "recommended_hardening": "Pass expected ref/base/head to validators; require refs/heads/master and commit object type; bind base, merge-base and head identities plus consistent ahead/behind counters and status; reject identical for distinct requested SHAs.",
+        "mechanical_merge_readiness": "NOT_READY before a separately ledgered reversible protection transition: PR30 remains Draft/BLOCKED, authority fails by intended self-modification policy, and runtime qualification is absent.",
+        "docker_evidence": {
+          "image": "python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c",
+          "master_68x2_receipt_sha256": "8e61bacdd9c8107f22ba915151170016e6a4ee1eb052fb4377b9f3e308a62f46",
+          "pr28_81x2_receipt_sha256": "7c03d1a7b7583f3ff2c285a74abc3800f3970a4e7f9c4e62c0c444baa5040de9",
+          "derived_receipt_sha256": "2526cb7672a647a526fda77e3390691c1bb161184eb4b63361be0a3ff60cdac1",
+          "exact_source_receipt_sha256": "13917f2271280454359c166675b220828b6cebf35bd77991f2a0f7ec5e5744c8",
+          "live_pr25": "zero-match fail-closed against base and PR28-pending manifests",
+          "cleanup": "containers removed; four read-only reviewer evidence files retained at C:\\Users\\admin\\AppData\\Local\\Temp\\living-town-pr30-4974244-refute-c628a0f5 after recursive deletion was blocked"
+        }
+      },
+      "released_at": "2026-08-28T17:15:35Z",
+      "release_reason": "Exact-head adversarial REFUTE delivered P0=0/P1=0/P2=1; no repository, GitHub, protection or ledger writes by reviewer.",
       "recovery_count": 0,
       "rollback": "Read-only; discard report on identity drift and delete only reviewer-owned temporary outputs.",
       "stop_lines": ["head/tree/body drift", "repository or GitHub write required", "unisolated executable test", "scope exceeds PR30 verifier contract"],
@@ -2449,9 +2490,9 @@
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-08-28T17:00:07Z",
+    "at": "2026-08-28T17:15:35Z",
     "active_writers": 0,
-    "read_only_reviewers": 2,
+    "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
     "decision": "PR28 and PR25 remain frozen. Exactly one isolated writer now owns only the protected-base verifier for a reviewed-source plus current-master derivation protocol. Manifest, workflows, protection, integration, game paths and every dirty/unknown worktree remain forbidden; no second writer is admitted until the authority contract is stable."
   },
@@ -2961,5 +3002,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_39687a6b_verified"
   },
-  "next_trigger": "Await both active read-only PR30 reviewers at exact4974244f/body105e46cc. Keep PR30 Draft plus PR25/PR28/protection/manifest frozen; on any P0/P1 reserve only a bounded verifier repair, otherwise prepare the reversible protected-base merge transition."
+  "next_trigger": "Both independent PR30 reviewers are terminal at exact4974244f/body105e46cc with aggregate P0=0/P1=0/P2=3. Revalidate live identity, branch protection, hosted checks and duplicate candidates; if unchanged, ledger a reversible temporary required-check transition, mark PR30 Ready, merge exact head, immediately restore all four required checks, then monitor post-merge CI. Retain the three P2 observations for bounded follow-up hardening; PR25/PR28/manifest remain frozen until post-merge success."
 }
