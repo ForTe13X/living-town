@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T04:46:21Z",
+  "updated_at": "2026-08-28T04:51:42Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1310,8 +1310,8 @@
       "baseline": "b5d02e499480540d90ae215d91a8cf772985b099",
       "baseline_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
       "local_equivalent_baseline": "313d9af462f36f23fdf9ffaa4350372d2a38d1aa:tree:7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
-      "head": "uncommitted",
-      "tree": "uncommitted",
+      "head": "d80f115b0d3d3b6c2f2e8d06e45990d93149ac77",
+      "tree": "503376dbd7fb8c0a877e40f3843dc8b6fe4f6aa8",
       "branch": "codex/pr26-protected-base-ref-repair-v1",
       "worktree": "D:\\Documents\\Dev\\living-town-pr26-protected-base-ref-repair-wt",
       "owned_paths": [".github/workflows/trusted-cafe-authority-gate.yml"],
@@ -1320,12 +1320,12 @@
       "generated_outputs": ["one-file workflow repair commit", "isolated pinned-Docker self-test and exact-diff receipts", "Draft repair PR against master"],
       "dependencies": ["master:b5d02e499480540d90ae215d91a8cf772985b099:tree:7a08c75b3a54455e012f0f0798be02c5d77eb6e9", "failed-run:33142614324:job:98756569578", "official-pull_request_target:GITHUB_SHA-is-last-commit-on-base-branch"],
       "consumer": "Unchanged Draft PR25 exact protected-base authority rerun",
-      "status": "active_isolated_writer_reserved_before_write",
-      "last_heartbeat": "2026-08-28T04:46:21Z",
+      "status": "frozen_clean_exact_one_path_pinned_docker_pass_ready_for_non_force_draft_delivery",
+      "last_heartbeat": "2026-08-28T04:51:42Z",
       "stale_after": "2026-08-28T05:31:21Z",
       "pr": null,
       "pr_policy": "Create a Draft PR against master only after exact one-path diff and pinned-Docker tests pass; never merge without fresh hosted checks plus independent Security/QA and REFUTE P0/P1=0.",
-      "acceptance_tests": ["workflow checkout ref and identity env both use github.sha", "protected-base checkout contains verifier and manifest in a clean event-SHA fixture", "8-case verifier self-test remains byte-identical", "git diff --check and exact one-path scope"],
+      "acceptance_tests": ["workflow checkout ref and identity env both use github.sha:pass", "protected-base checkout contains verifier and manifest in a clean event-SHA fixture:pass", "two independent 8-case verifier self-tests byte-identical:dedb09985b12c7a94b4bb60cf6efc2502960968362bc59731b1d6f51600e6cd9", "git diff --check and exact one-path scope:pass"],
       "negative_controls": ["github.event.pull_request.base.sha is absent from checkout and identity binding", "candidate workflow/code is never checked out or executed", "no token write permission or classic required-context mutation"],
       "rollback": "Close the Draft repair PR and retain branch for provenance; if later merged and regression occurs, revert through a reviewed PR while PR25 remains Draft.",
       "stop_lines": ["master or PR25 head drifts", "repair requires verifier/manifest or any second path", "Docker evidence cannot be reproduced", "candidate code would execute", "protection or PR25 mutation becomes necessary"],
@@ -1334,11 +1334,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T04:46:21Z",
+    "at": "2026-08-28T04:51:42Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "Run 33142614324 failed before verifier execution because the workflow checked out the PR creation-time base snapshot 5b7ac426, which predates the merged authority files. Reserve one isolated one-file recovery writer. PR25, verifier, manifest, protection and every other lane remain frozen."
+    "decision": "The one-file recovery writer is frozen clean after two byte-identical pinned-Docker self-tests and exact scope checks. Reserve only non-force Draft delivery against unchanged master b5d02e49; PR25, verifier, manifest, protection and every other lane remain frozen."
   },
   "released_claims": [
     {
@@ -1752,7 +1752,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "PR25_PROTECTED_BASE_AUTHORITY_RUN_FAILED_STALE_BASE_SNAPSHOT_P1_ONE_FILE_REPAIR_ACTIVE",
+    "state": "PR25_AUTHORITY_P1_ONE_FILE_REPAIR_FROZEN_CLEAN_DRAFT_DELIVERY_RESERVED",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
@@ -1774,9 +1774,9 @@
     "pr25_event_binding": "unchanged OPEN Draft PR25 head 5a449cad tree 60621741; six changed paths and sixteen commits; existing exact-head ci, visual_canary and legacy qualification success; close then immediately reopen only to trigger protected-base reopened event; draft/head/tree must remain unchanged or transaction aborts/reopens prior state",
     "protected_base_authority": "master b5d02e49; workflow blob 12b33ec6; manifest blob baad7334; verifier blob e7f68568; native result remains operational evidence only and is never added to classic required contexts",
     "authority_run": "33142614324 failed: checkout used github.event.pull_request.base.sha=5b7ac426, so authority/.github/trusted-cafe-authority/verify_candidate_bundle.py was absent; verifier policy never executed and no artifact was produced",
-    "repair_lease": "lease-pr26-protected-base-ref-repair-v1; exactly .github/workflows/trusted-cafe-authority-gate.yml; use github.sha for protected current base checkout and identity",
+    "repair_lease": "lease-pr26-protected-base-ref-repair-v1; local head d80f115b tree 503376db; exactly .github/workflows/trusted-cafe-authority-gate.yml; two-line github.sha repair; Docker receipt dedb0998 twice",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Create the isolated repair worktree from the local commit with the exact master tree, change only the workflow ref and BASE_SHA to github.sha, run pinned-Docker self-tests and negative controls, then deliver a Draft PR against exact master b5d02e49 for hosted and independent review."
+  "next_trigger": "Reverify remote master b5d02e49, publish the exact local repair tree through a new non-force feature ref with parent master, create a Draft PR, then wait for hosted ci/visual and independent Security/QA plus REFUTE."
 }
