@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T11:09:30Z",
+  "updated_at": "2026-08-28T11:11:29Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1440,8 +1440,8 @@
       "role": "Sole serialized Dev writer for PR25 immutable OCI toolchain supply repair",
       "objective": "Replace garbage-collected rolling Quay stable digests in both the declarative runtime lock and its outer pinned bootstrap with the same-version official immutable-tag index digests so exact Docker Linux runtime construction is retrievable without changing trust-root behavior or authority boundaries.",
       "baseline": "8d9926b82d5b07d00208d9f21ff88f8892487988",
-      "head": "26a0d0114052d302a0cb768418d5c00501920eb3",
-      "tree": "4f819ca3a4b593e150fbbb4df4de0e2853e9a984",
+      "head": "c0f9cba714a73cc9b327dd61ebaf93058684fcf6",
+      "tree": "c87b064479089b0036d6544b377531946e0f96f5",
       "branch": "codex/pr25-immutable-toolchain-supply-repair-v1",
       "delivery_ref": "origin/codex/cafe-source-attestation-trust-root-v1-replacement-2",
       "worktree": "D:\\Documents\\Dev\\living-town-pr25-immutable-toolchain-repair-wt",
@@ -1618,10 +1618,10 @@
       "generated_outputs": ["isolated Docker self-test receipt outside repository"],
       "dependencies": ["PR25 exact head 26a0d011", "runtime and validation build/load pass in run33165395931", "self-test failure at verifier toolchain constant comparison", "authority run33165394243 expected fail-closed with zero approved current identities", "CI run33165395930 in progress"],
       "consumer": "PR25 exact six-path candidate, then protected-base approved-bundle manifest update and fresh exact-head reviews",
-      "status": "terminal_recovery_1_docker_proof_success_local_commit_authorized_remote_push_forbidden",
+      "status": "terminal_recovery_1_proof_success_exact_normal_fast_forward_push_reserved",
       "write_lease": true,
-      "last_heartbeat": "2026-08-28T11:09:30Z",
-      "stale_after": "2026-08-28T13:09:30Z",
+      "last_heartbeat": "2026-08-28T11:11:29Z",
+      "stale_after": "2026-08-28T13:11:29Z",
       "pr": 25,
       "recovery_count": 1,
       "recovery_reason": "The first Docker self-test passed the newly aligned image-reference check and then failed the adjacent verifier binary-identity check because the same file still expected Python 3.14.7 while the proven immutable Podman image and runtime lock both contain 3.14.6. No second path or behavioral change is needed.",
@@ -1637,7 +1637,7 @@
         "negative_controls": 47,
         "result": "pass"
       },
-      "local_commit_authorization": {"authorized":true,"baseline":"26a0d0114052d302a0cb768418d5c00501920eb3","exact_paths":["tools/verify_cafe_attested_evidence.py"],"remote_push_authorized":false,"next_transaction":"Create exact local commit, then ledger its commit/tree/blob/SHA identity and reserve a normal fast-forward separately."},
+      "local_commit_authorization": {"authorized":true,"baseline":"26a0d0114052d302a0cb768418d5c00501920eb3","exact_paths":["tools/verify_cafe_attested_evidence.py"],"local_commit":"c0f9cba714a73cc9b327dd61ebaf93058684fcf6","local_tree":"c87b064479089b0036d6544b377531946e0f96f5","parent":"26a0d0114052d302a0cb768418d5c00501920eb3","blob":"b655b61bf8d4772155885f8533a11a36083f94e4","sha256":"b904f81d4f4a2c9b489938daf6f18b24b201a47ebcffb5cef6ca9c7c774dff05","bytes":57512,"remote_push_authorized":true,"remote_ref":"refs/heads/codex/cafe-source-attestation-trust-root-v1-replacement-2","expected_remote_head":"26a0d0114052d302a0cb768418d5c00501920eb3","mode":"normal fast-forward only; no force or history rewrite","preconditions":"PR25 OPEN Draft, base fd122e62, head 26a0d011, exact six semantic paths, strict three-context app15368 protection with admins and conversations enforced and force/deletion disabled","postconditions":"PR25 remains OPEN Draft with exact six paths; fresh authority, qualification and CI are observed; no Ready or merge mutation."},
       "acceptance_tests": ["exactly one repository path changes", "verifier constants equal the runtime lock immutable Podman and Skopeo references and Python 3.14.6", "Docker-isolated full café attestation self-test passes twice with byte-identical receipts", "negative unpinned and drift controls remain fail-closed", "git diff --check and Python syntax pass in Docker"],
       "rollback": "Leave the one-path repair unpublished on any failure. After normal publication, keep PR25 Draft and use a new reviewed revert; never force-reset shared history.",
       "stop_lines": ["any second repository path", "any verifier behavior beyond exact toolchain identity constants", "Docker self-test failure after one recovery", "remote head drift", "authority boundary change"],
@@ -1646,11 +1646,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T11:09:30Z",
+    "at": "2026-08-28T11:11:29Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "Replacement-3 recovery passed Python AST and two full Docker-isolated self-tests with byte-identical receipts and all 47 negative controls. Only an exact local one-path commit is authorized; remote push and authority-manifest work remain separately gated."
+    "decision": "Replacement-3 exact local commit c0f9cba7 changes only the verifier identity constants and retains the successful two-run Docker proof. A normal fast-forward to PR25 is reserved after live OPEN Draft, six-path and strict-protection verification. Authority-manifest work remains frozen until fresh hosted evidence."
   },
   "released_claims": [
     {
@@ -2114,8 +2114,9 @@
     "immutable_toolchain_hosted_p1": "At exact head 26a0d011, authority run33165394243 failed as expected because the changed two-blob bundle matched zero approved identities. Qualification run33165395931 successfully built the immutable runtime twice and loaded/qualified it, then failed the first self-test because tools/verify_cafe_attested_evidence.py still hard-coded the retired Podman e90073d8 and Skopeo 572747e1 identities. This is a real P1 coupling omission. Replacement-3 owns only that verifier path; manifest approval is frozen.",
     "immutable_toolchain_replacement_3_recovery": "First isolated Docker self-test after the two image-reference edits advanced to the binary identity gate and failed because the same verifier expected Python 3.14.7. The proven Podman 5.8.4 image and runtime lock both report 3.14.6. The same one-path lease is expanded to that third identity constant and recovery_count is now 1; no further recovery or wider edit is allowed.",
     "immutable_toolchain_replacement_3_proof": "Recovery passed in pinned Docker/Podman using validation manifest 128771ec. Python AST passed; two full café self-tests produced byte-identical receipt SHA 2b37559d with 47/47 negative controls, bundle 5f09114a, compiled manifest a7f97247 and verification receipt a1952460. Exact one-path local commit is authorized; no remote mutation yet.",
+    "immutable_toolchain_replacement_3_commit": "Exact one-path commit c0f9cba714a73cc9b327dd61ebaf93058684fcf6, tree c87b064479089b0036d6544b377531946e0f96f5, parent 26a0d011, verifier blob b655b61b, SHA256 b904f81d and 57512 bytes. Live PR25 and protection preconditions passed; normal fast-forward is reserved, no force/Ready/merge.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish replacement-3 proof and local-commit authorization. Commit only tools/verify_cafe_attested_evidence.py locally, then publish its exact commit/tree/blob fast-forward reservation before any PR25 remote mutation. CI 33165395930 visual_canary is success and ci remains in progress."
+  "next_trigger": "Publish exact replacement-3 commit c0f9cba7 and fast-forward reservation. Reverify PR25 remote head 26a0d011 and strict protection, then push only c0f9cba7 to the existing feature ref. Observe fresh hosted runs; do not mark Ready or merge."
 }
