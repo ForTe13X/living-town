@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T03:54:00Z",
+  "updated_at": "2026-08-28T04:02:31Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1150,14 +1150,100 @@
         "review cannot remain read-only",
         "adversarial fixture would mutate shared runtime state"
       ]
+    },
+    {
+      "claim_id": "lease-pr26-body-control-security-qa-reread",
+      "task": "/root/pr25_final_security_qa",
+      "role": "Independent read-only Security/QA body-control rereviewer for PR26",
+      "objective": "Re-read the live PR26 body-only governance repair and decide whether the converged platform-enforcement P1 is closed without a technical rerun.",
+      "baseline": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
+      "head": "f96aac62caed955c600737e0c26ee15e19df3352",
+      "tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
+      "branch": "codex/cafe-base-authority-gate-bootstrap-v1",
+      "worktree": null,
+      "owned_paths": [],
+      "forbidden_paths": [
+        "all repository and GitHub writes",
+        "coordination room files",
+        "technical rerun unless a new body defect requires it",
+        "branch protection, PR state, reviews, labels, comments and merge"
+      ],
+      "authority_keys": [
+        "read-only-pr26-body-control-security-qa",
+        "trusted-cafe-base-authority-operational-procedure-v1"
+      ],
+      "generated_outputs": [
+        "terminal body-reread verdict only"
+      ],
+      "dependencies": [
+        "pr26:f96aac62caed955c600737e0c26ee15e19df3352:tree:7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
+        "pr26-live-body-sha256:1944c039a16b594119e1da3a69323f753103d8af1defab4a9f216ab3f115f777",
+        "pr26-body-updated-at:2026-08-28T04:00:05Z",
+        "prior-security-qa:p0-0:p1-1:p2-3"
+      ],
+      "consumer": "Producer one-time PR26 bootstrap transition decision",
+      "status": "reserved_read_only_body_reread",
+      "last_heartbeat": "2026-08-28T04:02:31Z",
+      "stale_after": "2026-08-28T04:32:31Z",
+      "pr": 26,
+      "recovery_count": 0,
+      "rollback": "Release the read-only claim and keep PR26 Draft; no technical or protection mutation applies.",
+      "stop_lines": [
+        "PR26 base/head/tree or body hash changes",
+        "repository or GitHub mutation would be required",
+        "review cannot remain body-only and read-only"
+      ]
+    },
+    {
+      "claim_id": "lease-pr26-body-control-refute-reread",
+      "task": "/root/pr25_final_refute",
+      "role": "Independent read-only adversarial body-control rereviewer for PR26",
+      "objective": "Re-read the live PR26 body-only governance repair and challenge residual platform overclaim, required-context misuse, one-time bootstrap bounds and continued PR25 hold.",
+      "baseline": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
+      "head": "f96aac62caed955c600737e0c26ee15e19df3352",
+      "tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
+      "branch": "codex/cafe-base-authority-gate-bootstrap-v1",
+      "worktree": null,
+      "owned_paths": [],
+      "forbidden_paths": [
+        "all repository and GitHub writes",
+        "coordination room files",
+        "technical rerun unless a new body defect requires it",
+        "branch protection, PR state, reviews, labels, comments and merge"
+      ],
+      "authority_keys": [
+        "read-only-pr26-body-control-refute",
+        "trusted-cafe-base-authority-operational-procedure-v1"
+      ],
+      "generated_outputs": [
+        "terminal adversarial body-reread verdict only"
+      ],
+      "dependencies": [
+        "pr26:f96aac62caed955c600737e0c26ee15e19df3352:tree:7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
+        "pr26-live-body-sha256:1944c039a16b594119e1da3a69323f753103d8af1defab4a9f216ab3f115f777",
+        "pr26-body-updated-at:2026-08-28T04:00:05Z",
+        "prior-refute:p0-0:p1-1:p2-5"
+      ],
+      "consumer": "Producer one-time PR26 bootstrap transition decision",
+      "status": "reserved_read_only_body_reread",
+      "last_heartbeat": "2026-08-28T04:02:31Z",
+      "stale_after": "2026-08-28T04:32:31Z",
+      "pr": 26,
+      "recovery_count": 0,
+      "rollback": "Release the read-only claim and keep PR26 Draft; no technical or protection mutation applies.",
+      "stop_lines": [
+        "PR26 base/head/tree or body hash changes",
+        "repository or GitHub mutation would be required",
+        "review cannot remain body-only and read-only"
+      ]
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T03:54:00Z",
+    "at": "2026-08-28T04:02:31Z",
     "active_writers": 0,
-    "read_only_reviewers": 0,
+    "read_only_reviewers": 2,
     "shared_write_conflicts": 0,
-    "decision": "Both PR26 reviews are terminal and released. Their single converged P1 is a false platform-enforcement promise in the PR body/control procedure, not a candidate-code execution bypass. Reserve only a body-only repair; PR26 remains Draft, while PR25, Stack B, game/UI production, protection mutation and merge remain frozen."
+    "decision": "The live PR26 body-only repair is exact and leaves candidate code unchanged. Two independent read-only body rereads are reserved against the same immutable body hash. PR26 remains Draft; PR25, Stack B, game/UI production, protection mutation and merge remain frozen until both rereads reach P0/P1=0."
   },
   "released_claims": [
     {
@@ -1571,7 +1657,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "PR26_REVIEWS_TERMINAL_BODY_CONTROL_P1_REPAIR_RESERVED_OPERATIONAL_GATE_ONLY",
+    "state": "PR26_BODY_CONTROL_REPAIRED_EXACT_HASH_INDEPENDENT_REREADS_RESERVED",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
@@ -1583,9 +1669,10 @@
     "governance": "required qualification context is enforced but remains candidate-self-defined by the PR-head workflow; platform-independent-approval enforcement is also unavailable with the sole collaborator",
     "pr_body": "exact evidence projection repaired and live re-read at SHA-256 ca83ba75aaf248be560a060da89e254847d301029e456d7139823619a3bcc563",
     "branch_protection_change": "applied and reverified, but insufficient as an immutable trust root: context plus GitHub Actions app binding cannot stop a future PR from replacing its own same-name job with trivial success",
-    "merge": "forbidden",
+    "bootstrap_body": "live SHA-256 1944c039a16b594119e1da3a69323f753103d8af1defab4a9f216ab3f115f777 updated 2026-08-28T04:00:05Z; operational-only evidence, never a classic required context",
+    "merge": "forbidden_pending_two_body_rereads",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Repair PR26 body only: label trusted_cafe_authority_gate as Producer-enforced operational evidence, forbid adding its native base-associated context to classic protection, document exact pre-merge bindings and P2 rotation residuals; then obtain independent body reread before any protection transition."
+  "next_trigger": "Dispatch the two reserved read-only PR26 body rereads. Only if both independently report P0/P1=0 may Producer record and execute the narrowly bounded one-time protection transition for exact PR26."
 }
