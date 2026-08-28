@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T06:24:00Z",
+  "updated_at": "2026-08-28T06:36:10Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1400,7 +1400,7 @@
       "generated_outputs": ["read-only final Security/QA report with exact evidence and P0/P1/P2"],
       "dependencies": ["PR25 exact identity unchanged", "authority run33146171197 success bound to current master", "legacy run33146171005 explicit false-positive failure", "CI run33146170952 terminal"],
       "consumer": "Producer PR25 merge/no-merge decision",
-      "status": "dispatched_read_only_waiting_exact_ci_terminal_then_review",
+      "status": "terminal_invalidated_released_by_normal_update_branch_head_change",
       "last_heartbeat": "2026-08-28T06:02:09Z",
       "stale_after": "2026-08-28T06:42:09Z",
       "pr": 25,
@@ -1425,7 +1425,7 @@
       "generated_outputs": ["read-only adversarial REFUTE report with exact evidence and P0/P1/P2"],
       "dependencies": ["PR25 exact identity unchanged", "authority run33146171197 success bound to current master", "legacy run33146171005 explicit false-positive failure", "CI run33146170952 terminal"],
       "consumer": "Producer PR25 merge/no-merge decision",
-      "status": "dispatched_read_only_waiting_exact_ci_terminal_then_review",
+      "status": "terminal_invalidated_released_by_normal_update_branch_head_change",
       "last_heartbeat": "2026-08-28T06:02:09Z",
       "stale_after": "2026-08-28T06:42:09Z",
       "pr": 25,
@@ -1433,14 +1433,42 @@
       "stop_lines": ["any write is required", "authority binding cannot be reproduced", "exact CI remains non-terminal", "candidate code executed in privileged run", "identity drift"],
       "handoff_recipient": "Producer",
       "archive_condition": "Terminal report consumed or identity drift invalidates review."
+    },
+    {
+      "claim_id": "lease-pr25-immutable-quay-toolchain-supply-repair-v1",
+      "task": "producer-local-serialized-writer",
+      "role": "Sole serialized Dev writer for PR25 immutable OCI toolchain supply repair",
+      "objective": "Replace garbage-collected rolling Quay stable digests with the same-version official immutable-tag index digests so exact Docker Linux runtime construction is retrievable without changing trust-root behavior or authority boundaries.",
+      "baseline": "8d9926b82d5b07d00208d9f21ff88f8892487988",
+      "head": "8d9926b82d5b07d00208d9f21ff88f8892487988",
+      "tree": "2a848ad3ac9ef59b1e695a712666810666ed30f7",
+      "branch": "codex/pr25-immutable-toolchain-supply-repair-v1",
+      "delivery_ref": "origin/codex/cafe-source-attestation-trust-root-v1-replacement-2",
+      "worktree": "D:\\Documents\\Dev\\living-town-pr25-immutable-toolchain-repair-wt",
+      "owned_paths": ["evidence/cafe/runtime-lock.v1.json"],
+      "forbidden_paths": ["**/* except evidence/cafe/runtime-lock.v1.json", ".github/trusted-cafe-authority/**", ".github/workflows/**", "tools/**", "game/**", "docs/**", "analysis/**", "schemas/registries/anchors/ledgers"],
+      "authority_keys": ["cafe-runtime-lock-v1", "cafe-oci-toolchain-supply", "quay-immutable-version-tags"],
+      "generated_outputs": ["isolated Docker pull/version receipts", "two-build deterministic runtime receipts outside repository", "new runtime-lock blob identity for a separately reviewed protected-base manifest update"],
+      "dependencies": ["PR25 updated head 8d9926b8", "protected master fd122e62", "authority run33147649538 success for prior six blobs", "legacy run33147650883 failure at vanished rolling Skopeo digest", "Quay immutable Skopeo v1.22.2 index sha256:4a16d57b", "Quay immutable Podman v5.8.4 index sha256:b0173238", "CI run33147650879 terminal before publish decision"],
+      "consumer": "PR25 exact six-path candidate, then a separate protected-base approved-bundle manifest update and fresh authority/CI/reviews",
+      "status": "reserved_not_started",
+      "write_lease": true,
+      "last_heartbeat": "2026-08-28T06:36:10Z",
+      "stale_after": "2026-08-28T07:36:10Z",
+      "pr": 25,
+      "acceptance_tests": ["old rolling Skopeo and Podman digests fail resolution as negative control", "immutable index digests resolve for linux/amd64 and report exactly Skopeo 1.22.2 and Podman 5.8.4", "runtime-lock JSON and repository scope checks pass", "runtime builds twice byte-identically in task-isolated Docker with pinned digests", "candidate semantic PR diff remains the exact six trust paths"],
+      "rollback": "Before publication delete only the new task worktree/branch if clean. After normal publication, leave or close Draft PR25 and revert through a new reviewed commit; never force-reset the shared PR branch.",
+      "stop_lines": ["any second repository path must change", "immutable image version or platform mismatch", "immutable tag index cannot be pulled twice", "runtime archives are not byte-identical", "authority boundary or canonical Sim/View contract changes", "remote head drift"],
+      "handoff_recipient": "Producer protected-base manifest update transaction",
+      "archive_condition": "Exact commit published normally with Docker receipts and handed to protected-base manifest update, or one failed recovery releases the lease with provenance."
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T06:13:31Z",
+    "at": "2026-08-28T06:36:10Z",
     "active_writers": 1,
-    "read_only_reviewers": 2,
+    "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "PR25 authority approved exact six-path bundle while legacy qualification false-positively rejected three base-only authority paths. Current PR body hash ca83ba75 is materially stale about base authority, current evidence, rollback and strict-behind status. Reserve one body-only projection correction while code/head/Draft/protection remain frozen; reviewers must consume the new body hash after exact CI terminal."
+    "decision": "The normal update invalidated both prior review leases. Fresh authority passes, but legacy qualification now fails because both rolling Quay stable digests were garbage-collected. Reserve exactly one runtime-lock-only writer to move the same Skopeo 1.22.2 and Podman 5.8.4 dependencies onto official immutable-tag index digests. No overlapping writer or reviewer is active; protected authority paths remain forbidden."
   },
   "released_claims": [
     {
@@ -1854,7 +1882,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "PR25_CURRENT_MASTER_UPDATE_COMPLETE_AUTHORITY_PASS_LEGACY_IMMUTABLE_RUNTIME_SUPPLY_FAILURE_CI_RUNNING",
+    "state": "PR25_IMMUTABLE_QUAY_SAME_VERSION_RUNTIME_LOCK_ONLY_REPAIR_RESERVED_CI_RUNNING",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
@@ -1896,5 +1924,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish the exact update result, wait for CI run33147650879 terminal, then reserve and apply a refreshed PR body for head 8d9926b8 and dispatch both independent reviewers to classify the vanished pinned Skopeo manifest and exact-head merge eligibility. No protection or Ready mutation before P0/P1 closure."
+  "next_trigger": "Publish this one-path repair lease, create the isolated worktree from 8d9926b8, change only the two rolling Quay digests to same-version immutable index digests, and run pinned isolated Docker negative/version/determinism checks. Do not publish candidate changes until CI run33147650879 is terminal and all acceptance tests pass."
 }
