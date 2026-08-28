@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T11:17:35Z",
+  "updated_at": "2026-08-28T11:20:02Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1440,7 +1440,7 @@
       "role": "Sole serialized Dev writer for PR25 immutable OCI toolchain supply repair",
       "objective": "Replace garbage-collected rolling Quay stable digests in both the declarative runtime lock and its outer pinned bootstrap with the same-version official immutable-tag index digests so exact Docker Linux runtime construction is retrievable without changing trust-root behavior or authority boundaries.",
       "baseline": "8d9926b82d5b07d00208d9f21ff88f8892487988",
-      "head": "c0f9cba714a73cc9b327dd61ebaf93058684fcf6",
+      "head": "2760325d5946ae2d5d8632a704f6c180f90976e4",
       "tree": "c87b064479089b0036d6544b377531946e0f96f5",
       "branch": "codex/pr25-immutable-toolchain-supply-repair-v1",
       "delivery_ref": "origin/codex/cafe-source-attestation-trust-root-v1-replacement-2",
@@ -1618,10 +1618,10 @@
       "generated_outputs": ["isolated Docker self-test receipt outside repository"],
       "dependencies": ["PR25 exact head 26a0d011", "runtime and validation build/load pass in run33165395931", "self-test failure at verifier toolchain constant comparison", "authority run33165394243 expected fail-closed with zero approved current identities", "CI run33165395930 in progress"],
       "consumer": "PR25 exact six-path candidate, then protected-base approved-bundle manifest update and fresh exact-head reviews",
-      "status": "terminal_proof_success_api_equivalent_commit_nonforce_ref_update_reserved",
-      "write_lease": true,
-      "last_heartbeat": "2026-08-28T11:17:35Z",
-      "stale_after": "2026-08-28T13:17:35Z",
+      "status": "terminal_content_identical_api_commit_nonforce_published_hosted_evidence_in_progress_writer_released",
+      "write_lease": false,
+      "last_heartbeat": "2026-08-28T11:20:02Z",
+      "stale_after": null,
       "pr": 25,
       "recovery_count": 1,
       "recovery_reason": "The first Docker self-test passed the newly aligned image-reference check and then failed the adjacent verifier binary-identity check because the same file still expected Python 3.14.7 while the proven immutable Podman image and runtime lock both contain 3.14.6. No second path or behavioral change is needed.",
@@ -1638,6 +1638,9 @@
         "result": "pass"
       },
       "local_commit_authorization": {"authorized":true,"baseline":"26a0d0114052d302a0cb768418d5c00501920eb3","exact_paths":["tools/verify_cafe_attested_evidence.py"],"local_commit":"c0f9cba714a73cc9b327dd61ebaf93058684fcf6","local_tree":"c87b064479089b0036d6544b377531946e0f96f5","parent":"26a0d0114052d302a0cb768418d5c00501920eb3","blob":"b655b61bf8d4772155885f8533a11a36083f94e4","sha256":"b904f81d4f4a2c9b489938daf6f18b24b201a47ebcffb5cef6ca9c7c774dff05","bytes":57512,"remote_push_authorized":true,"remote_ref":"refs/heads/codex/cafe-source-attestation-trust-root-v1-replacement-2","expected_remote_head":"26a0d0114052d302a0cb768418d5c00501920eb3","smart_http_result":"failed before ref update: Failed to connect to github.com:443 after 21050 ms","mode":"GitHub Git Data API content-identical commit then non-force ref update","api_commit":{"sha":"2760325d5946ae2d5d8632a704f6c180f90976e4","blob":"b655b61bf8d4772155885f8533a11a36083f94e4","tree":"c87b064479089b0036d6544b377531946e0f96f5","parent":"26a0d0114052d302a0cb768418d5c00501920eb3","message":"fix: align cafe verifier toolchain identity","author":"Codex <codex@openai.com>","committer":"Codex <codex@openai.com>","date":"2026-08-28T11:11:06Z","difference_from_local_commit":"GitHub normalized the same instant from +08:00 to Z in commit-object serialization; content tree, parent, message, name, email and instant are exact"},"abort":"Do not update the ref unless it still equals 26a0d011 and PR/protection preconditions remain exact.","preconditions":"PR25 OPEN Draft, base fd122e62, head 26a0d011, exact six semantic paths, strict three-context app15368 protection with admins and conversations enforced and force/deletion disabled","postconditions":"PR25 remains OPEN Draft with exact six paths; fresh authority, qualification and CI are observed; no Ready or merge mutation."},
+      "publication": {"published_at":"2026-08-28T11:19:39Z","old_remote_head":"26a0d0114052d302a0cb768418d5c00501920eb3","new_remote_head":"2760325d5946ae2d5d8632a704f6c180f90976e4","tree":"c87b064479089b0036d6544b377531946e0f96f5","mode":"GitHub Git Data API non-force fast-forward","force":false,"pr_state":"OPEN_DRAFT","base":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","semantic_paths":6,"fresh_runs":{"authority":{"id":33166722979,"status":"in_progress"},"qualification":{"id":33166722949,"status":"in_progress"},"ci":{"id":33166722929,"status":"pending"}}},
+      "released_at": "2026-08-28T11:20:02Z",
+      "release_reason": "Content-identical one-path repair commit was non-force fast-forwarded through GitHub Git Data API with exact blob/tree/provenance after smart-HTTP failure. PR25 remains OPEN Draft with six paths. Fresh hosted evidence now owns the next gate.",
       "acceptance_tests": ["exactly one repository path changes", "verifier constants equal the runtime lock immutable Podman and Skopeo references and Python 3.14.6", "Docker-isolated full café attestation self-test passes twice with byte-identical receipts", "negative unpinned and drift controls remain fail-closed", "git diff --check and Python syntax pass in Docker"],
       "rollback": "Leave the one-path repair unpublished on any failure. After normal publication, keep PR25 Draft and use a new reviewed revert; never force-reset shared history.",
       "stop_lines": ["any second repository path", "any verifier behavior beyond exact toolchain identity constants", "Docker self-test failure after one recovery", "remote head drift", "authority boundary change"],
@@ -1646,11 +1649,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T11:17:35Z",
-    "active_writers": 1,
+    "at": "2026-08-28T11:20:02Z",
+    "active_writers": 0,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "Git Data API reconstructed the exact blob b655b61b and tree c87b0644. GitHub normalized the commit timestamp offset from +08:00 to Z, yielding API commit 2760325d instead of local c0f9cba7; all semantic and provenance fields represent the same instant and are otherwise exact. A non-force update to 2760325d is reserved after live precondition recheck. Authority-manifest work remains frozen."
+    "decision": "API commit 2760325d was non-force fast-forwarded after all live checks. PR25 remains OPEN Draft with six semantic paths; replacement-3 writer is released. Fresh authority, qualification and CI are active, while protected-base manifest work remains frozen until their exact terminal evidence is inspected."
   },
   "released_claims": [
     {
@@ -2117,8 +2120,9 @@
     "immutable_toolchain_replacement_3_commit": "Exact one-path commit c0f9cba714a73cc9b327dd61ebaf93058684fcf6, tree c87b064479089b0036d6544b377531946e0f96f5, parent 26a0d011, verifier blob b655b61b, SHA256 b904f81d and 57512 bytes. Live PR25 and protection preconditions passed; normal fast-forward is reserved, no force/Ready/merge.",
     "immutable_toolchain_replacement_3_transport": "The first push call returned no result and remote remained 26a0d011; a direct literal retry failed to connect to github.com:443 after 21050 ms and again left remote unchanged. Exact-object Git Data API reconstruction is reserved with required blob b655b61b, tree c87b0644 and commit c0f9cba7. Any identity mismatch aborts before ref update.",
     "immutable_toolchain_replacement_3_api_commit": "API reconstruction first rejected CRLF worktree bytes, then used canonical LF Git content and matched blob b655b61b plus tree c87b0644 exactly. GitHub normalized the same author/committer instant to Z, producing content-identical child commit 2760325d. Remote ref remains 26a0d011; non-force update to 2760325d is reserved after recheck.",
+    "immutable_toolchain_replacement_3_publication": "Non-force API fast-forward 26a0d011 to content-identical commit 2760325d completed. PR25 remains OPEN Draft against fd122e62 with exactly six semantic paths. Fresh runs authority 33166722979, qualification 33166722949 and CI 33166722929 started; writer released, no Ready/merge mutation.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish the API timestamp-normalization result and content-identical commit 2760325d reservation. Reverify feature ref 26a0d011, PR25 OPEN Draft six-path identity and strict protection, then non-force update only to 2760325d. Observe fresh hosted runs; do not mark Ready or merge."
+  "next_trigger": "Publish replacement-3 API fast-forward and writer release. Wait for authority 33166722979, qualification 33166722949 and CI 33166722929 terminal evidence. If qualification and CI pass and authority fails only for unapproved identity, reserve the separate protected-base approved-bundle manifest PR."
 }
