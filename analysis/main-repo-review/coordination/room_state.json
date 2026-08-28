@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T06:39:32Z",
+  "updated_at": "2026-08-28T06:50:04Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1451,11 +1451,12 @@
       "generated_outputs": ["isolated Docker pull/version receipts", "two-build deterministic runtime receipts outside repository", "new runtime-lock blob identity for a separately reviewed protected-base manifest update"],
       "dependencies": ["PR25 updated head 8d9926b8", "protected master fd122e62", "authority run33147649538 success for prior six blobs", "legacy run33147650883 failure at vanished rolling Skopeo digest", "Quay immutable Skopeo v1.22.2 index sha256:4a16d57b", "Quay immutable Podman v5.8.4 index sha256:b0173238", "CI run33147650879 terminal before publish decision"],
       "consumer": "PR25 exact six-path candidate, then a separate protected-base approved-bundle manifest update and fresh authority/CI/reviews",
-      "status": "lease_expanded_before_second_path_write_after_bootstrap_hardcode_discovery",
+      "status": "recovery_1_reserved_after_transient_quay_tls_failure_cold_cache_build",
       "write_lease": true,
       "last_heartbeat": "2026-08-28T06:36:10Z",
       "stale_after": "2026-08-28T07:36:10Z",
       "pr": 25,
+      "recovery_count": 1,
       "acceptance_tests": ["old rolling Skopeo and Podman digests fail resolution as negative control", "immutable index digests resolve for linux/amd64 and report exactly Skopeo 1.22.2 and Podman 5.8.4", "runtime-lock JSON and repository scope checks pass", "runtime builds twice byte-identically in task-isolated Docker with pinned digests", "candidate semantic PR diff remains the exact six trust paths"],
       "rollback": "Before publication delete only the new task worktree/branch if clean. After normal publication, leave or close Draft PR25 and revert through a new reviewed commit; never force-reset the shared PR branch.",
       "stop_lines": ["any third repository path must change", "immutable image version or platform mismatch", "immutable tag index cannot be pulled twice", "runtime archives are not byte-identical", "authority boundary or canonical Sim/View contract changes", "remote head drift"],
@@ -1882,7 +1883,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "PR25_IMMUTABLE_QUAY_SAME_VERSION_TWO_PATH_BOOTSTRAP_AND_LOCK_REPAIR_LEASE_EXPANDED_CI_RUNNING",
+    "state": "PR25_IMMUTABLE_QUAY_TWO_PATH_REPAIR_RECOVERY_1_RESERVED_BASELINE_CI_SUCCESS",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
@@ -1921,8 +1922,10 @@
     "pr25_update_branch_result": "GitHub Update Branch accepted expected head 5a449cad and created normal merge-update head 8d9926b82d5b07d00208d9f21ff88f8892487988, tree 2a848ad3ac9ef59b1e695a712666810666ed30f7, parents 5a449cad then fd122e62. PR remains OPEN Draft with 17 commits and exactly six semantic paths. All three authority blobs equal protected master and all six approved candidate blobs equal prior candidate. Strict full protection remained unchanged.",
     "pr25_updated_head_authority": "run33147649538/job98772140346 SUCCESS attached to updated head 8d9926b8; protected-base checkout fd122e62; candidate API-data-only approved exact six-path bundle; no candidate checkout/execution in authority job.",
     "pr25_updated_head_legacy": "run33147650883 failed after classification passed, at immutable runtime build because quay.io/skopeo/stable@sha256:572747e168b4cb920bc7f5b321ca6c6da13717ff28c8d671a203935d53cf1089 returned manifest unknown. This is a new supply-availability/sustainability blocker, not the prior stale-base scope false positive and not evidence of candidate path drift.",
+    "pr25_updated_head_ci": "run33147650879 SUCCESS at head 8d9926b8: visual_canary job98772144921 success 2026-08-28T06:27:43Z and ci job98772145048 success 2026-08-28T06:46:19Z.",
+    "immutable_toolchain_repair_attempt_1": "Static Docker checks passed. A cold isolated nested-Podman runtime build resolved and pulled the Skopeo immutable index, then exhausted built-in retries while pulling the Podman immutable index due Quay TLS handshake timeouts/EOF. This differs from the old digest's deterministic manifest-unknown failure. Host-isolated version probes had already pulled both immutable references successfully. One recovery is reserved with a fresh isolated cache after recording this transient network failure.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish the two-path lease expansion, update only the two hard-coded bootstrap references in trusted_cafe_capture.sh to match the already edited runtime lock, then run pinned isolated Docker negative/version/determinism checks. Do not publish candidate changes until CI run33147650879 is terminal and all acceptance tests pass."
+  "next_trigger": "Publish recovery 1, remove only the verified empty task-owned runtime directory, and rerun the cold isolated nested-Podman runtime build in a fresh task container/cache. If recovery fails, release the lease as blocked without publishing candidate changes. If it passes, record exact receipts before any commit/push."
 }
