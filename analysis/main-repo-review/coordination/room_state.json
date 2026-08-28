@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T02:54:16Z",
+  "updated_at": "2026-08-28T02:58:15Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -934,7 +934,7 @@
       "role": "Sole serialized Dev writer for a protected-default-branch non-candidate-controlled cafe authority gate bootstrap",
       "objective": "Create a pull_request_target gate that runs only default-branch code, treats candidate content solely as GitHub API data, classifies old and new paths without rename ambiguity, fail-closes authority self-modification and mixed scope, and authorizes only an exact independently reviewed six-file bundle from a base-owned manifest.",
       "baseline": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
-      "head": "313d9af462f36f23fdf9ffaa4350372d2a38d1aa",
+      "head": "f96aac62caed955c600737e0c26ee15e19df3352",
       "tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
       "branch": "codex/cafe-base-authority-gate-bootstrap-v1",
       "worktree": "D:\\Documents\\Dev\\living-town-cafe-authority-bootstrap-wt",
@@ -972,11 +972,11 @@
         "approved-bundle:derive-exact-six-blob-identities-from-pr25-head"
       ],
       "consumer": "Independent Security/QA and REFUTE, then reviewed master bootstrap; after landing, PR25 exact bundle and master protection transition",
-      "status": "terminal_clean_three_path_docker_validated_non_force_delivery_reserved",
+      "status": "open_draft_exact_three_path_hosted_checks_in_progress_writer_released",
       "write_lease": false,
       "last_heartbeat": "2026-08-28T02:54:16Z",
       "stale_after": null,
-      "pr": null,
+      "pr": 26,
       "checks": {
         "p0": 0,
         "p1_open": 1,
@@ -1015,7 +1015,14 @@
           ".github/workflows/trusted-cafe-authority-gate.yml": "d30a78cdbef58f6f14a6e51a558e06a74ff5f2e9355ea7849f2d90a89b1cc2d3"
         },
         "smart_http_push": "failed GitHub 443; no remote mutation",
-        "delivery": "reserved Git Data API exact-parent branch creation after this ledger commit"
+        "delivery": "Git Data API exact-parent new branch creation succeeded; Draft PR26 created",
+        "hosted": {
+          "run": 33137472069,
+          "ci": "in_progress",
+          "visual_canary": "in_progress",
+          "trusted_cafe_authority_gate": "expected_absent_until_default_branch_bootstrap_lands",
+          "pull_request_runtime_qualification": "missing_required_context_bootstrap_condition"
+        }
       },
       "recovery_count": 0,
       "rollback": "Leave or close the Draft unmerged. After a reviewed bootstrap merge, remove the new required context first and revert through a new reviewed PR; never rewrite master.",
@@ -1448,7 +1455,10 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "BASE_CONTROLLED_CAFE_AUTHORITY_GATE_BOOTSTRAP_DELIVERY_RESERVED",
+    "state": "BASE_CONTROLLED_CAFE_AUTHORITY_GATE_BOOTSTRAP_PR26_HOSTED_CHECKS_IN_PROGRESS",
+    "bootstrap_pr": 26,
+    "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
+    "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
     "exact_head": "5a449cad6d486e3680d2febba8203b0be7d215b9",
     "p0": 0,
     "p1": 1,
@@ -1461,5 +1471,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish the exact three-path bootstrap branch by non-force Git Data API, create only a Draft PR, then gather hosted and independent exact-head evidence before any temporary protection or master merge transition."
+  "next_trigger": "Wait for PR26 exact-head ci and visual_canary; on success reserve and dispatch fresh independent bootstrap Security/QA and REFUTE before any temporary protection or master merge transition."
 }
