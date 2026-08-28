@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T02:30:13Z",
+  "updated_at": "2026-08-28T02:38:29Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -850,11 +850,20 @@
         "refute:independent_parallel"
       ],
       "consumer": "Producer exact-head P0/P1 closure and Ready/merge hold decision",
-      "status": "active_read_only_review_body_evidence_and_self_validation_p1_repair_requested",
-      "last_heartbeat": "2026-08-28T02:30:13Z",
-      "stale_after": "2026-08-28T03:19:51Z",
+      "status": "terminal_request_changes_p0_0_p1_1_p2_1_reviewer_released",
+      "last_heartbeat": "2026-08-28T02:38:29Z",
+      "stale_after": null,
       "pr": 25,
       "recovery_count": 0,
+      "review_result": {
+        "verdict": "REQUEST_CHANGES",
+        "p0": 0,
+        "p1": 1,
+        "p2": 1,
+        "p1_finding": "The required qualification context is defined by candidate-controlled PR-head workflow content; context plus GitHub Actions app binding does not identify an immutable workflow and can be replaced by trivial success.",
+        "p2_finding": "Only collaborator, viewer and PR author is ForTe13X; approvals remain zero because self-approval is impossible and operational reviewers are not GitHub approvals.",
+        "body_evidence_p1": "closed by live API re-read at body SHA-256 ca83ba75aaf248be560a060da89e254847d301029e456d7139823619a3bcc563"
+      },
       "rollback": "Delete only task-owned temporary review outputs; no repository or GitHub rollback applies.",
       "stop_lines": [
         "exact PR head or tree changes",
@@ -892,11 +901,25 @@
         "security-qa:independent_parallel"
       ],
       "consumer": "Producer exact-head P0/P1 closure and Ready/merge hold decision",
-      "status": "active_read_only_review",
-      "last_heartbeat": "2026-08-28T02:19:51Z",
-      "stale_after": "2026-08-28T03:19:51Z",
+      "status": "terminal_refute_p0_0_p1_1_p2_2_reviewer_released",
+      "last_heartbeat": "2026-08-28T02:38:29Z",
+      "stale_after": null,
       "pr": 25,
       "recovery_count": 0,
+      "review_result": {
+        "verdict": "REFUTE",
+        "p0": 0,
+        "p1": 1,
+        "p2": 2,
+        "p1_findings": [
+          "Candidate-controlled PR-head workflow defines the required context and can self-authorize under the same GitHub Actions app binding.",
+          "Rename detection lets renaming the trusted workflow surface only the new path and classify not-applicable; duplicate same-name workflow contexts remain ambiguous."
+        ],
+        "p2_findings": [
+          "The newly required context is absent on existing master PRs until a default-branch trigger exists, so PRs 2 and 3 are temporarily pending.",
+          "Context and app identity do not bind workflow path identity."
+        ]
+      },
       "rollback": "Delete only task-owned temporary review outputs; no repository or GitHub rollback applies.",
       "stop_lines": [
         "exact PR head or tree changes",
@@ -904,14 +927,88 @@
         "test would mutate shared runtime state",
         "claim cannot be tested without protected master dispatch"
       ]
+    },
+    {
+      "claim_id": "lease-cafe-base-authority-gate-bootstrap-v1",
+      "task": "/root/cafe_base_authority_gate_bootstrap_v1",
+      "role": "Sole serialized Dev writer for a protected-default-branch non-candidate-controlled cafe authority gate bootstrap",
+      "objective": "Create a pull_request_target gate that runs only default-branch code, treats candidate content solely as GitHub API data, classifies old and new paths without rename ambiguity, fail-closes authority self-modification and mixed scope, and authorizes only an exact independently reviewed six-file bundle from a base-owned manifest.",
+      "baseline": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
+      "head": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
+      "tree": "56173a6b69b256f825548c3d53c78acb3c1a0ee7",
+      "branch": "codex/cafe-base-authority-gate-bootstrap-v1",
+      "worktree": "D:\\Documents\\Dev\\living-town-cafe-authority-bootstrap-wt",
+      "owned_paths": [
+        ".github/workflows/trusted-cafe-authority-gate.yml",
+        ".github/trusted-cafe-authority/approved-bundles.v1.json",
+        ".github/trusted-cafe-authority/verify_candidate_bundle.py"
+      ],
+      "forbidden_paths": [
+        "**/* except exact owned_paths",
+        ".github/workflows/trusted-cafe-attestation.yml",
+        "tools/**",
+        "evidence/**",
+        "game/**",
+        "docs/**",
+        "analysis/**",
+        "branch protection until bootstrap exact-head hosted and independent review succeeds"
+      ],
+      "authority_keys": [
+        "trusted-cafe-base-authority-gate-v1",
+        "trusted-cafe-approved-bundle-manifest-v1",
+        "master-required-cafe-authority-context"
+      ],
+      "generated_outputs": [
+        "task-owned Docker self-test receipts outside repository",
+        "Draft bootstrap PR and hosted exact-head checks after local verification"
+      ],
+      "dependencies": [
+        "master:5b7ac426b6bc059517dba843db4150a2b38d33a7",
+        "pr25:5a449cad6d486e3680d2febba8203b0be7d215b9",
+        "security-qa:REQUEST_CHANGES:P1-candidate-self-validation",
+        "refute:REFUTE:P1-candidate-self-validation-and-rename-bypass",
+        "github-required-workflow:unavailable-user-owned-repository",
+        "github-actions-default-permissions:read-only:cannot-approve",
+        "approved-bundle:derive-exact-six-blob-identities-from-pr25-head"
+      ],
+      "consumer": "Independent Security/QA and REFUTE, then reviewed master bootstrap; after landing, PR25 exact bundle and master protection transition",
+      "status": "reserved_isolated_writer",
+      "write_lease": true,
+      "last_heartbeat": "2026-08-28T02:38:29Z",
+      "stale_after": "2026-08-28T03:38:29Z",
+      "pr": null,
+      "checks": {
+        "p0": 0,
+        "p1_open": 1,
+        "required_negative_controls": [
+          "unrelated PR succeeds not-applicable",
+          "exact approved six-file bundle succeeds",
+          "stale or substituted blob fails",
+          "old or new path rename fails",
+          "mixed outside path fails",
+          "gate workflow verifier or manifest self-modification fails",
+          "duplicate required job workflow path fails",
+          "fork candidate fails"
+        ]
+      },
+      "recovery_count": 0,
+      "rollback": "Leave or close the Draft unmerged. After a reviewed bootstrap merge, remove the new required context first and revert through a new reviewed PR; never rewrite master.",
+      "stop_lines": [
+        "master, PR25 or coordination ref drifts",
+        "any candidate code must execute with GITHUB_TOKEN or elevated permission",
+        "candidate checkout or candidate workflow definition controls the final authority result",
+        "any path outside the exact lease is required",
+        "GitHub API candidate identity cannot be bound to exact head and blobs",
+        "pinned Docker self-tests cannot prove negative controls"
+      ]
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-27T22:09:34Z",
+    "at": "2026-08-28T02:38:29Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "The isolated B28 UI/UX benchmark writer is terminal clean and released at b462aa3/tree c1aa40e; its output remains local and unmerged pending Producer adoption. PR25 recovery remains the sole active writer on tools/trusted_cafe_capture.sh. Game, Sim, CI, Stack B, Ready, merge and authority lanes remain frozen."
+    "decision": "Exactly one writer is reserved for the three-path default-branch cafe authority bootstrap. Both PR25 final reviewers are terminal and released. PR25 remains Draft with one converged self-validation P1; Stack B, game/UI production, Ready and merge remain frozen."
   },
   "released_claims": [
     {
@@ -1325,18 +1422,18 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "AUTHORIZED_GOVERNANCE_REPAIR_REQUIRED_CHECK_ENFORCED_SELF_VALIDATION_P1_REPAIR_EVALUATION",
+    "state": "BASE_CONTROLLED_CAFE_AUTHORITY_GATE_BOOTSTRAP_WRITER_RESERVED",
     "exact_head": "5a449cad6d486e3680d2febba8203b0be7d215b9",
     "p0": 0,
-    "p1": 3,
-    "p2": 0,
+    "p1": 1,
+    "p2": 2,
     "technical_exact_head": "passed",
     "governance": "required qualification context is enforced but remains candidate-self-defined by the PR-head workflow; platform-independent-approval enforcement is also unavailable with the sole collaborator",
-    "pr_body": "Security/QA found U+000B in visual_canary, missing literal approval count 0, missing current artifact 9671395005, and a workflow hash that does not match the exact remote blob; body-only correction reserved after this ledger commit",
+    "pr_body": "exact evidence projection repaired and live re-read at SHA-256 ca83ba75aaf248be560a060da89e254847d301029e456d7139823619a3bcc563",
     "branch_protection_change": "applied and reverified, but insufficient as an immutable trust root: context plus GitHub Actions app binding cannot stop a future PR from replacing its own same-name job with trivial success",
     "merge": "forbidden",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Correct the PR body and evaluate a default-branch or centrally required verifier whose definition the candidate cannot modify; keep PR25 Draft and unmergeable while Security/QA and REFUTE continue."
+  "next_trigger": "Implement and pinned-Docker self-test the isolated three-path protected-default-branch authority bootstrap, then publish only a Draft PR for hosted and independent exact-head review."
 }
