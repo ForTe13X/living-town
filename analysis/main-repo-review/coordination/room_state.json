@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T04:58:18Z",
+  "updated_at": "2026-08-28T05:05:35Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1333,14 +1333,64 @@
       "stop_lines": ["master or PR25 head drifts", "repair requires verifier/manifest or any second path", "Docker evidence cannot be reproduced", "candidate code would execute", "protection or PR25 mutation becomes necessary"],
       "handoff_recipient": "Independent Security/QA and REFUTE, then Producer",
       "archive_condition": "Exact repair is merged with post-merge CI success and PR25 protected-base authority rerun reaches a bound terminal result."
+    },
+    {
+      "claim_id": "lease-pr27-final-security-qa-readonly",
+      "task": "subagent:/root/pr25_final_security_qa",
+      "role": "Independent read-only Security/QA reviewer",
+      "objective": "Review frozen Draft PR27 exact one-path github.sha repair, candidate non-execution, expected authority self-rejection, hosted evidence and any controlled merge transition; issue P0/P1/P2 verdict only after general CI is terminal.",
+      "baseline": "b5d02e499480540d90ae215d91a8cf772985b099",
+      "head": "eb51b01595819a782d1588844776caea0e0fc750",
+      "tree": "503376dbd7fb8c0a877e40f3843dc8b6fe4f6aa8",
+      "branch": "codex/pr26-protected-base-ref-repair-v1",
+      "worktree": null,
+      "owned_paths": [],
+      "forbidden_paths": ["all repository files", "all PR bodies/states", "all branches/refs", "branch protection", "coordination room files"],
+      "authority_keys": [],
+      "generated_outputs": ["read-only Security/QA report with exact evidence and P0/P1/P2"],
+      "dependencies": ["PR27 exact identity unchanged", "visual_canary job 98758755626 success", "ci job 98758755779 terminal", "authority run 33143304796 expected fail-closed self-modification rejection"],
+      "consumer": "Producer PR27 merge/no-merge decision",
+      "status": "dispatched_read_only_waiting_for_terminal_ci_then_review",
+      "last_heartbeat": "2026-08-28T05:05:35Z",
+      "stale_after": "2026-08-28T05:45:35Z",
+      "pr": 27,
+      "rollback": "Discard report if any base/head/tree/body/check/protection identity drifts; make no mutation.",
+      "stop_lines": ["any write or PR mutation is required", "candidate code execution is observed", "general CI is non-terminal", "identity drift"],
+      "handoff_recipient": "Producer",
+      "archive_condition": "Terminal report consumed or identity drift invalidates review."
+    },
+    {
+      "claim_id": "lease-pr27-final-refute-readonly",
+      "task": "subagent:/root/pr25_final_refute",
+      "role": "Independent read-only REFUTE reviewer",
+      "objective": "Attempt to falsify the frozen PR27 claim that github.sha selects current protected-base authority without candidate execution or policy weakening; issue P0/P1/P2 verdict only after general CI is terminal.",
+      "baseline": "b5d02e499480540d90ae215d91a8cf772985b099",
+      "head": "eb51b01595819a782d1588844776caea0e0fc750",
+      "tree": "503376dbd7fb8c0a877e40f3843dc8b6fe4f6aa8",
+      "branch": "codex/pr26-protected-base-ref-repair-v1",
+      "worktree": null,
+      "owned_paths": [],
+      "forbidden_paths": ["all repository files", "all PR bodies/states", "all branches/refs", "branch protection", "coordination room files"],
+      "authority_keys": [],
+      "generated_outputs": ["read-only adversarial REFUTE report with exact evidence and P0/P1/P2"],
+      "dependencies": ["PR27 exact identity unchanged", "visual_canary job 98758755626 success", "ci job 98758755779 terminal", "authority run 33143304796 expected fail-closed self-modification rejection"],
+      "consumer": "Producer PR27 merge/no-merge decision",
+      "status": "dispatched_read_only_waiting_for_terminal_ci_then_review",
+      "last_heartbeat": "2026-08-28T05:05:35Z",
+      "stale_after": "2026-08-28T05:45:35Z",
+      "pr": 27,
+      "rollback": "Discard report if any base/head/tree/body/check/protection identity drifts; make no mutation.",
+      "stop_lines": ["any write or PR mutation is required", "candidate code execution is observed", "general CI is non-terminal", "identity drift"],
+      "handoff_recipient": "Producer",
+      "archive_condition": "Terminal report consumed or identity drift invalidates review."
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T04:58:18Z",
+    "at": "2026-08-28T05:05:35Z",
     "active_writers": 1,
-    "read_only_reviewers": 0,
+    "read_only_reviewers": 2,
     "shared_write_conflicts": 0,
-    "decision": "Draft PR27 now owns the exact one-file repair at remote head eb51b015/tree 503376db. Its base-authority run rejected authority self-modification as designed; general ci/visual remain in progress. PR25, verifier, manifest, protection and every other lane remain frozen."
+    "decision": "Draft PR27 owns the exact one-file repair at remote head eb51b015/tree 503376db. Authority self-modification rejected as designed and visual_canary passed; ci remains in progress. Two output-only reviewers are serialized on terminal CI and cannot write. PR25 and every other lane remain frozen."
   },
   "released_claims": [
     {
@@ -1754,7 +1804,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "PR27_DRAFT_EXACT_REPAIR_HOSTED_GENERAL_CHECKS_IN_PROGRESS_EXPECTED_AUTHORITY_SELF_REJECT_CONFIRMED",
+    "state": "PR27_DRAFT_VISUAL_SUCCESS_CI_RUNNING_TWO_READONLY_REVIEWS_DISPATCHED_WITH_TERMINAL_DEPENDENCY",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
@@ -1777,9 +1827,10 @@
     "protected_base_authority": "master b5d02e49; workflow blob 12b33ec6; manifest blob baad7334; verifier blob e7f68568; native result remains operational evidence only and is never added to classic required contexts",
     "authority_run": "33142614324 failed: checkout used github.event.pull_request.base.sha=5b7ac426, so authority/.github/trusted-cafe-authority/verify_candidate_bundle.py was absent; verifier policy never executed and no artifact was produced",
     "repair_lease": "lease-pr26-protected-base-ref-repair-v1; Draft PR27 remote head eb51b015 tree 503376db parent master b5d02e49; exactly .github/workflows/trusted-cafe-authority-gate.yml; two-line github.sha repair; Docker receipt dedb0998 twice",
-    "repair_hosted": "authority run 33143304796 failed closed on explicit base authority self-modification rejection as expected; general CI run 33143304668 ci and visual_canary in progress; protection unchanged",
+    "repair_hosted": "authority run 33143304796 failed closed on explicit base authority self-modification rejection as expected; general CI run 33143304668 visual_canary job 98758755626 success in 7m50s and ci job 98758755779 in progress; protection unchanged",
+    "repair_reviews": "Security/QA and REFUTE read-only reviewers dispatched, but terminal verdicts are forbidden until exact-head ci job 98758755779 is terminal",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Wait for exact-head PR27 general ci and visual_canary to become terminal, then dispatch read-only independent Security/QA and REFUTE against the frozen one-path repair and its expected fail-closed self-modification run."
+  "next_trigger": "Wait for exact-head PR27 ci job 98758755779 to become terminal, then allow the two already-dispatched read-only reviewers to issue bound terminal verdicts; any identity drift invalidates both."
 }
