@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T18:33:04Z",
+  "updated_at": "2026-08-28T18:35:42Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -2562,19 +2562,51 @@
       "generated_outputs": ["one manifest-only commit replacing exactly two PENDING strings", "pinned-Docker deterministic selftest and live evaluation receipts"],
       "dependencies": ["PR28 exact3ba6d78d", "CI33196939024 success", "authority33196937222 expected self-modification failure", "source PR25 exact2760325/c87b0644", "recorded independent source review outputs from PR28 Security/QA and REFUTE", "verifier v3 protected master5c3e5cb6"],
       "consumer": "Fresh exact-head PR28 Security/QA and REFUTE, then controlled manifest transition",
-      "status": "reserved_before_write",
+      "status": "released_before_write_divergent_local_branch_preserved",
       "read_only": false,
-      "last_heartbeat": "2026-08-28T18:33:04Z",
-      "stale_after": "2026-08-28T19:00:21Z",
+      "last_heartbeat": "2026-08-28T18:35:42Z",
+      "stale_after": null,
       "pr": 28,
       "checks": {"baseline_ci": "success", "baseline_visual_canary": "success", "authority": "expected manifest self-modification failure"},
       "replacement": {"security_qa": "APPROVED_P0_0_P1_0_EXACT_HEAD_2760325D5946AE2D5D8632A704F6C180F90976E4", "refute": "REFUTE_P0_0_P1_0_EXACT_HEAD_2760325D5946AE2D5D8632A704F6C180F90976E4", "count": 2, "other_changes_allowed": 0},
       "recovery_count": 1,
       "recovery_note": "First Git Data blob-publication attempt was rejected HTTP422 because the gh client invocation omitted --input - and therefore sent no JSON body. No ref changed. Retry is constrained to the same expected remote parent e40dccd6 with corrected stdin binding and freshly canonicalized blobs.",
+      "released_at": "2026-08-28T18:35:42Z",
+      "release_reason": "Clean worktree branch was not fast-forwardable: local15071bd has one unique historical manifest commit while remote3ba6d78d has ten unique commits. The local branch/worktree is preserved unchanged; no reset, rebase, merge or manifest write occurred.",
       "rollback": "Before publication discard only this clean one-file commit. After publication leave PR28 Draft or revert through a new reviewed commit; never rewrite the shared branch.",
       "stop_lines": ["baseline/master/PR25/protection drift", "worktree not clean", "more or fewer than two exact replacements", "any other manifest change", "Docker isolation unavailable", "source identity or record mismatch", "live PR25 fails to become exactly one approved match in synthetic candidate evaluation"],
       "handoff_recipient": "Independent exact-head Security/QA and REFUTE reviewers",
       "archive_condition": "Exact one-file Draft handoff with Docker and hosted evidence, or one recovery exhausted without publication."
+    },
+    {
+      "claim_id": "lease-pr28-terminal-review-leaves-detached-3ba6d78d-recovery-1",
+      "task": "producer:01a04233-497e-7942-8da0-7958b314b199",
+      "role": "Single bounded manifest writer recovery",
+      "objective": "From exact remote PR28 head, replace exactly the two PENDING review leaves for immutable PR25 source identity; preserve every other manifest byte and keep PR28 Draft.",
+      "baseline": "3ba6d78d99246bdeda5d80d48062aaec69d96174",
+      "head": "pending_local_commit",
+      "tree": "pending_local_tree",
+      "branch": "detached from origin/codex/pr25-approved-bundle-2760325-v1; publication target codex/pr25-approved-bundle-2760325-v1",
+      "worktree": "D:\\Documents\\Dev\\living-town-pr28-terminal-review-3ba6d78d-wt",
+      "owned_paths": [".github/trusted-cafe-authority/approved-bundles.v1.json"],
+      "forbidden_paths": ["verifier", "workflows", "PR25", "master", "integration/batons", "game", "assets", "coordination ledger", "all other repository paths", "preserved divergent worktree D:\\Documents\\Dev\\living-town-pr25-approved-bundle-2760325-wt"],
+      "authority_keys": ["protected-cafe-approved-bundle-manifest", "pr25-six-path-identity-2760325", "review-leaves-exact-source-2760325"],
+      "generated_outputs": ["one manifest-only commit replacing exactly two PENDING strings", "pinned-Docker deterministic selftest and live evaluation receipts"],
+      "dependencies": ["PR28 exact3ba6d78d", "CI33196939024 success", "authority33196937222 expected self-modification failure", "source PR25 exact2760325/c87b0644", "recorded independent source review outputs", "verifier v3 protected master5c3e5cb6"],
+      "consumer": "Fresh exact-head PR28 Security/QA and REFUTE, then controlled manifest transition",
+      "status": "reserved_before_recovery_worktree_creation",
+      "read_only": false,
+      "last_heartbeat": "2026-08-28T18:35:42Z",
+      "stale_after": "2026-08-28T19:05:42Z",
+      "pr": 28,
+      "checks": {"baseline_ci": "success", "baseline_visual_canary": "success", "authority": "expected manifest self-modification failure"},
+      "replacement": {"security_qa": "APPROVED_P0_0_P1_0_EXACT_HEAD_2760325D5946AE2D5D8632A704F6C180F90976E4", "refute": "REFUTE_P0_0_P1_0_EXACT_HEAD_2760325D5946AE2D5D8632A704F6C180F90976E4", "count": 2, "other_changes_allowed": 0},
+      "recovery_count": 1,
+      "recovery_provenance": {"preserved_worktree_head": "15071bd79c0b8254329b90b83bf9e59808ecc737", "remote_head": "3ba6d78d99246bdeda5d80d48062aaec69d96174", "left_right_count": "1_10", "attempted_operation": "git merge --ff-only", "result": "refused_no_mutation"},
+      "rollback": "Before publication remove only the newly created clean detached recovery worktree after confirming its exact path; preserve the old divergent worktree. After publication keep Draft or revert through a reviewed commit; never rewrite history.",
+      "stop_lines": ["remote baseline/master/PR25/protection drift", "new worktree not exact or not clean", "more or fewer than two replacements", "any other path or manifest semantic change", "Docker isolation unavailable", "source identity mismatch", "non-fast-forward publication"],
+      "handoff_recipient": "Independent exact-head Security/QA and REFUTE reviewers",
+      "archive_condition": "Exact one-file Draft handoff with Docker and hosted evidence, or this sole recovery fails before publication."
     }
   ],
   "active_dependency_graph": {
@@ -2583,17 +2615,17 @@
     "ranking": "dependency unlock first, then evidence closure, then player-visible cafe production; conflict risk serialized across shared authority",
     "phases": [
       {"phase":1,"objective":"Verifier v3 reviewed-source plus current-protected-base derivation","owner":"released","status":"complete_master5c3e5cb6_post_merge_ci_success","player_value":"unblocks protected trust-root delivery","conflict_risk":"closed with P2 follow-up retained","exit":"post-merge CI33194686491 success at exact5c3e5cb6"},
-      {"phase":2,"objective":"Synchronize PR28 normally, replace only pending review leaves after fresh exact-source reviews, and re-run exact-head evidence","owner":"lease-pr28-terminal-review-leaves-3ba6d78d","status":"baseline_ci_success_two_leaf_write_reserved","player_value":"installs data-only authorization","conflict_risk":"high manifest authority; one path and two string leaves only","exit":"PR28 exact head P0/P1=0 and controlled manifest transition package"},
+      {"phase":2,"objective":"Synchronize PR28 normally, replace only pending review leaves after fresh exact-source reviews, and re-run exact-head evidence","owner":"lease-pr28-terminal-review-leaves-detached-3ba6d78d-recovery-1","status":"divergent_historical_worktree_preserved_detached_exact_head_recovery_reserved","player_value":"installs data-only authorization","conflict_risk":"high manifest authority; one path and two string leaves only","exit":"PR28 exact head P0/P1=0 and controlled manifest transition package"},
       {"phase":3,"objective":"Merge reviewed manifest through reversible protected transition, then normally synchronize PR25 so candidate contains reviewed source plus current protected master","owner":"unassigned","status":"blocked_on_phase2","player_value":"makes protected candidate executable without stale identity","conflict_risk":"critical protection and trust paths; serialized","exit":"PR25 fresh authority+qualification+CI at exact synchronized head and independent P0/P1=0"},
       {"phase":4,"objective":"Merge eligible PR25, monitor post-merge, then unlock Stack B authored IDs and exactly one cafe exterior-to-persistence production owner","owner":"unassigned","status":"blocked_on_phase3","player_value":"direct prerequisite to player-visible cafe vertical slice","conflict_risk":"trust root then canonical scene authority; separate leases","exit":"post-merge green, P0/P1=0, cafe production packet dispatched"}
     ]
   },
   "current_conflict_graph": {
     "at": "2026-08-28T17:15:35Z",
-    "active_writers": 0,
+    "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "PR28 baseline CI is terminal success. Exactly one isolated manifest writer is admitted for two exact review-leaf replacements; every other path, PR25, protection, integration and dirty/unknown worktree remains frozen."
+    "decision": "The original clean PR28 worktree is divergent and preserved without mutation. Exactly one replacement writer may create a detached isolated worktree at remote exact3ba6d78d for two review-leaf replacements; every other path and worktree remains frozen."
   },
   "released_claims": [
     {
@@ -3101,5 +3133,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_39687a6b_verified"
   },
-  "next_trigger": "After this ledger reservation is published, fast-forward the clean isolated PR28 worktree to exact3ba6d78d, replace exactly two PENDING leaves with recorded exact-source verdict strings, run pinned-Docker deterministic selftests and live positive/negative evaluations, commit one path, publish non-force, update Draft body, then dispatch fresh independent exact-head Security/QA and REFUTE."
+  "next_trigger": "After publishing the recovery lease, create a new detached isolated worktree at remote exact3ba6d78d while preserving divergent local15071bd, replace exactly two PENDING leaves, run pinned-Docker deterministic selftests and live positive/negative evaluations, commit one path, publish non-force, update Draft body, then dispatch fresh independent exact-head Security/QA and REFUTE."
 }
