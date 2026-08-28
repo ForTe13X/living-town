@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T20:50:30Z",
+  "updated_at": "2026-08-28T20:55:30Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -2766,14 +2766,15 @@
       "generated_outputs": ["merge commit parents2760325+1ea7aafd tree3c5d8599", "two byte-identical pinned-Docker self-test receipts", "fresh hosted authority/qualification/CI/artifacts"],
       "dependencies": ["PR28 merge1ea7aafd post-merge CI33206762935 success", "strict four-check protection restored", "PR25 OPEN Draft exact2760325/treec87b0644", "git merge-tree conflict-free predicted tree3c5d8599", "all 37 refreshed local tracking refs exact hosted", "zero active external writer"],
       "consumer": "Fresh independent Security/QA and REFUTE at synchronized PR25 exact head, then protected merge eligibility",
-      "status": "local_exact_merge_candidate_docker_twice_identical_non_force_publication_reserved",
+      "status": "smart_http_push_failed_remote_unchanged_git_data_api_recovery_reserved",
       "read_only": false,
-      "last_heartbeat": "2026-08-28T20:50:30Z",
+      "last_heartbeat": "2026-08-28T20:55:30Z",
       "stale_after": "2026-08-28T21:12:13Z",
       "pr": 25,
       "checks": {"source_qualification": "33166722949 success", "source_ci": "33166722929 success", "source_authority": "33166722979 expected pre-manifest failure", "master_post_merge": "33206762935 success"},
       "local_proof": {"commit": "41b249d88e409d0bb1d9267e03dff2262931b9eb", "parents": ["2760325d5946ae2d5d8632a704f6c180f90976e4", "1ea7aafd28414bb9690e2c55b222ca85d33424a0"], "tree": "3c5d859982c66bc5711659bf8f78548595717a4a", "conflicts": false, "manual_resolution": false, "worktree_clean": true, "docker": {"image": "python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c", "platform": "linux/amd64", "engine": "Docker29.6.2 desktop-linux", "isolation": "--rm read-only network-none cap-drop-ALL no-new-privileges tmpfs uid65534 RO mount no cache/volume", "runs": 2, "result": "81/81 twice", "receipt_sha256": "7c03d1a7b7583f3ff2c285a74abc3800f3970a4e7f9c4e62c0c444baa5040de9", "receipt_bytes": 5412, "cleanup": "containers0"}},
-      "recovery_count": 0,
+      "recovery_count": 1,
+      "transport_failure": {"method": "git push exact-child non-force", "result": "RPC curl28 connection failure after 21061ms", "remote_after": "2760325d5946ae2d5d8632a704f6c180f90976e4", "pr_after": "OPEN Draft BEHIND exact old head", "mutation": false, "recovery": "Git Data API reconstruct exact tree3c5d8599 and two-parent merge commit, then non-force ref PATCH after exact recheck"},
       "rollback": "Before publication remove only the verified exact task worktree. After publication keep Draft and revert synchronization only through a new reviewed child if needed; never reset, force or rewrite PR25 history.",
       "stop_lines": ["master/PR25/protection/manifest/branch drift", "worktree path exists or is dirty", "merge has conflicts or tree differs from3c5d8599", "Docker digest/isolation unavailable", "self-test receipts differ", "remote ref not exact2760325 before non-force update", "any path semantics require manual combination"],
       "handoff_recipient": "Independent PR25 Security/QA and REFUTE reviewers",
@@ -3304,5 +3305,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_39687a6b_verified"
   },
-  "next_trigger": "Publish the exact PR25 merge-candidate and Docker proof, recheck remote PR25 remains2760325 Draft with unchanged protection, then advance only its feature ref non-force to41b249d8 and monitor fresh hosted authority/qualification/CI."
+  "next_trigger": "Publish the failed smart-HTTP/no-mutation record and one recovery lease, reconstruct exact tree3c5d8599 through canonical Git blobs on Git Data API, create a two-parent merge commit, then non-force update only the still-exact PR25 ref or freeze."
 }
