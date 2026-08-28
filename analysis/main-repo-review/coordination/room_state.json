@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T13:25:42Z",
+  "updated_at": "2026-08-28T13:32:53Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -15,28 +15,40 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-08-28T03:23:17Z",
-    "github_api_count": 33,
+    "at": "2026-08-28T13:32:53Z",
+    "github_api_count": 36,
     "git_ls_remote_count": null,
-    "local_tracking_count": 32,
+    "local_tracking_count": 33,
+    "local_exact_count": 30,
     "snapshot_complete": false,
-    "secondary_authority": "GitHub branches API returned the complete hosted set after both smart-HTTP fetch and git ls-remote failed on GitHub 443",
-    "reconciliation": "GitHub API directly enumerated 33 hosted branches. Local refs contain 32 branch refs plus origin/HEAD: 29 exact matches, stale PR25 and coordination heads, and no PR26 tracking ref. Cached refs were not promoted. Every hosted branch was scanned for exact head, commit time/subject, PR relation, worktree mapping, and ahead/behind against master and integration/batons.",
+    "secondary_authority": "GitHub branches, commits, compare, checks, artifacts and pull APIs returned the complete 36-branch hosted set after smart-HTTP fetch and direct git ls-remote both failed on GitHub 443",
+    "reconciliation": "GitHub API directly enumerated and fully scanned 36 hosted branches. Local refs contain 33 branch refs plus origin/HEAD: 30 exact matches; master, PR25 and PR29 tracking refs are stale, while PR27, PR28 and coordination have no local tracking ref. Cached refs were not promoted. Every hosted branch was scanned for exact head, commit time/subject, PR relation, worktree mapping, ahead/behind against master and integration/batons, checks and artifacts.",
     "network_failures": [
-      "git fetch --all --prune --tags: Failed to connect to github.com:443",
-      "git ls-remote --heads: Recv failure: Connection was reset"
+      "git fetch --all --tags --prune: Recv failure: Connection was reset",
+      "git ls-remote --heads: Failed to connect to github.com:443 after 21049 ms"
     ],
-    "sorted_name_sha_set_sha256": "c84a2abf21b8c58220a96323ae71b329810b02004c3fca0e4990514b391e50d8",
-    "master": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
+    "sorted_name_sha_set_sha256": "d344aecd83088b138a7085d20b165cc964df2208a742288ff20b838a2fd591da",
+    "master": "fd122e6235f8870c7e3f8e6b43b35f04392765d9",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "b23eb900e4aa5d27e39d7a8759045baa58c487fd",
-    "pr25": "5a449cad6d486e3680d2febba8203b0be7d215b9",
+    "coordination": "58e3c7371bbcddbef47d5667548cee1b40584295",
+    "pr25": "2760325d5946ae2d5d8632a704f6c180f90976e4",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
+    "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
+    "pr28": "8fb6895acdb14347f944767b484c2531518114f4",
+    "pr29": "a10486918276963b3b693f178b239bd115c03975",
+    "mismatched_or_missing_local": {
+      "master": {"hosted":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","local_tracking":"5b7ac426b6bc059517dba843db4150a2b38d33a7"},
+      "codex/cafe-source-attestation-trust-root-v1-replacement-2": {"hosted":"2760325d5946ae2d5d8632a704f6c180f90976e4","local_tracking":"26a0d0114052d302a0cb768418d5c00501920eb3"},
+      "codex/cafe-authority-exact-identity-v2": {"hosted":"a10486918276963b3b693f178b239bd115c03975","local_tracking":"1e99012a459a317376090e28ab7671a3bfda4700"},
+      "codex/pr26-protected-base-ref-repair-v1": {"hosted":"eb51b01595819a782d1588844776caea0e0fc750","local_tracking":null},
+      "codex/pr25-approved-bundle-2760325-v1": {"hosted":"8fb6895acdb14347f944767b484c2531518114f4","local_tracking":null},
+      "codex/main-repo-review": {"hosted":"58e3c7371bbcddbef47d5667548cee1b40584295","local_tracking":null}
+    },
     "open_prs": 10,
     "open_issues": 0,
     "releases": 0,
     "tags": 0,
-    "full_branch_metadata_scan": "All 33 hosted branches were enumerated directly. Master and integration/batons did not drift. The only new hosted branch is PR26 bootstrap; PR25 and coordination advanced as ledgered. No unknown hosted branch transition was discovered."
+    "full_branch_metadata_scan": "All 36 hosted branches were enumerated directly and scanned for exact head, time/subject, PR/worktree relation, master/integration ahead-behind, checks and artifacts. Master and integration/batons did not drift. The three branches added since the prior 33-branch scan are the already-ledgered PR27, PR28 and PR29 lineage; no unknown branch transition was discovered. Ten PRs are open, zero issues/releases/tags exist, and master protection remains strict with ci, visual_canary and pull_request_runtime_qualification required."
   },
   "portfolio_policy": {
     "default_active_writers": 2,
@@ -1962,11 +1974,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T13:25:42Z",
+    "at": "2026-08-28T13:32:53Z",
     "active_writers": 0,
     "read_only_reviewers": 2,
     "shared_write_conflicts": 0,
-    "decision": "PR29 body is verified against exact hosted head/tree/blob and current Docker receipts; writer lease is released. Two independent read-only reviews are reserved for a1048691 while CI completes. Manifest, workflow, protection, PR25, PR28, Ready and merge remain frozen."
+    "decision": "PR29 body is verified and two independent read-only reviews are active. The 36-branch full scan found no unknown write conflict, but PR5 is unexpectedly CLOSED at stale recorded head ac8f5d46 while its hosted ledger branch is 58e3c737. Reopening PR5 as Draft at the live branch is reserved; no Ready/merge or protection/manifest mutation is authorized."
   },
   "released_claims": [
     {
@@ -2451,8 +2463,11 @@
     "pr29_p2_hardening_local_proof": "Local commit342f65d/tree cd6b7cc8/blob a35f1ad0 is one-path clean. Pinned Docker base26 and PR28-32 cases twice byte-identical; malformed path/Base64 controls reject, wrapped GitHub Base64 and live exact PR25 behave correctly. Non-force PR29 fast-forward reserved; hosted SHA256 pending API verification.",
     "pr29_p2_hardening_api_publication": "After two reset smart-HTTP pushes, Git Data API reconstructed exact blob a35f1ad0 (24517 bytes, SHA256 d5ce530e) and tree cd6b7cc8, then non-force advanced PR29 to content-identical API commit a1048691. Fresh authority run33174986895 and CI run33174988226 started; body refresh reserved.",
     "pr29_body_refresh_and_fresh_reviews": "Draft PR29 body SHA256 5d5751a4 now records exact a1048691/tree cd6b7cc8/blob a35f1ad0, current 26/32-case Docker receipts and P2 closures. Writer released; Security/QA and replacement REFUTE reserved read-only at exact identity.",
+    "remote_branch_full_scan_36": "Hosted API fully scanned 36 branches and found no unknown transition. Master fd122e62 and integration ac85fc6b are stable; branch-set SHA256 d344aecd. Fetch and ls-remote failed, so snapshot_complete=false and six stale/missing local refs are explicitly recorded. Ten PRs open; no issues/releases/tags.",
+    "required_and_dynamic_task_scan": "Required Narrative 019fe402 and Implementation 019feb58 are no longer readable on local host. Dynamic tasks: dev 019ffa43 is old/inactive with RP-0005 O(A^2) lab diagnosis; map lab 019ffe8d is terminal additive/no-owner-feedback; UI-UX 019ffe9a terminal B28 at b462aa3 with BELOW_REQUIRED_FLOOR and executable cafe slice packet. No active external writer conflicts with PR29.",
+    "pr5_reopen_reservation": "PR5 is CLOSED Draft at stale recorded head ac8f5d46/base d18cc431 while live coordination branch is 58e3c737 and integration is ac85fc6b. Reopen-only mutation is reserved after this ledger publication; verify it remains Draft and resolves to live branch/base before any body update.",
     "human_acceptance": "not_ready",
-    "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
+    "pr5_projection": "closed_drift_detected_reopen_as_draft_reserved"
   },
-  "next_trigger": "Publish body refresh and reviewer reservations, dispatch both exact-head reviewers, wait for CI run33174988226 terminal, consume P0/P1 findings, then decide whether a separately ledgered reversible protected-base transition is eligible."
+  "next_trigger": "Publish full remote/task scan and PR5 reopen reservation. Reopen PR5 only, verify Draft/live head/base, then continue waiting for CI run33174988226 and both exact-head reviews; manifest, protection, Ready and merge remain frozen."
 }
