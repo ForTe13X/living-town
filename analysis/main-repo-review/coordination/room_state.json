@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T15:32:58Z",
+  "updated_at": "2026-08-28T15:42:54Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -2226,15 +2226,15 @@
       "generated_outputs": ["normal GitHub merge commit from master into feature branch", "fresh hosted checks", "fresh exact-head review packet"],
       "dependencies": ["PR29 merged as master43c72a8f", "post-merge CI33182561513 success", "final four-context protection verified", "PR28 old head8fb6895 clean one-manifest diff", "PR25 remains Draft at2760325"],
       "consumer": "Fresh independent Security/QA and REFUTE, then separately ledgered PR28 protected-manifest transition; PR25 remains blocked",
-      "status": "exact_body_and_pinned_docker_validation_complete_hosted_ci_in_progress",
+      "status": "exact_body_docker_and_hosted_ci_success_fresh_reviewers_reserved",
       "write_lease": true,
-      "last_heartbeat": "2026-08-28T15:32:58Z",
+      "last_heartbeat": "2026-08-28T15:42:54Z",
       "stale_after": "2026-08-28T15:44:37Z",
       "pr": 28,
       "recovery_count": 0,
       "pre_update_exact": {"at":"2026-08-28T15:21:43Z","master":"43c72a8faa4e927fa5e324f589c611dd2a402a0e","head":"8fb6895acdb14347f944767b484c2531518114f4","head_tree":"82350016c317ef14cdf30f5c5f79eae3ee4c0fef","head_parent":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","pr_base_snapshot":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","pr_state":"open_draft","mergeable":true,"mergeable_state":"behind","body_sha256":"d3969380d4e1ef48ff9a40edfac84c5ba00f3d1fb6ea7350ee0ca8bd0f776744","body_bytes":2611,"manifest_blob":"18b100e78036830e15e85af8648fe212ca060428","manifest_bytes":6087,"manifest_sha256":"fe07cface30e6dcbc8e1629331aaf4192658d443ada8d1211749e38c733230ed","semantic_diff":[".github/trusted-cafe-authority/approved-bundles.v1.json"],"ahead":1,"behind":5,"merge_base":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","pr25":"2760325d5946ae2d5d8632a704f6c180f90976e4","protection_mutation":false},
       "branch_update_actual": {"at":"2026-08-28T15:24:26Z","method":"GitHub merges API normal non-force merge commit","old_head":"8fb6895acdb14347f944767b484c2531518114f4","master":"43c72a8faa4e927fa5e324f589c611dd2a402a0e","new_head":"e70cebba46cdeaf3116090efbfdb2532b0be024a","new_tree":"c9e0273eeb121d8f55bb696f0fd933b78d220863","parents":["8fb6895acdb14347f944767b484c2531518114f4","43c72a8faa4e927fa5e324f589c611dd2a402a0e"],"manifest_blob":"18b100e78036830e15e85af8648fe212ca060428","manifest_bytes":6087,"manifest_sha256":"fe07cface30e6dcbc8e1629331aaf4192658d443ada8d1211749e38c733230ed","manifest_unchanged":true,"semantic_diff":[".github/trusted-cafe-authority/approved-bundles.v1.json"],"compare":{"status":"ahead","ahead":2,"behind":0},"pr_state":"open_draft","force":false,"protection_mutation":false,"hosted":{"ci_run":33184928495,"ci":"in_progress","visual_canary":"in_progress","authority_run":33184926593,"authority":"failure_expected_self_modification"}},
-      "body_and_validation": {"at":"2026-08-28T15:32:58Z","body_sha256":"10e446b3dab2f90fbdc0c297cdd4bb091b03dd9ff5708b9052b8ea27c934462f","body_bytes":4312,"draft_preserved":true,"docker":{"client":"29.6.2","server":"29.6.2","context":"desktop-linux","platform":"linux/amd64","image":"python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c","python":"3.11.16","source":"GitHub exact-head tarball e70cebba46cdeaf3116090efbfdb2532b0be024a","source_mount":"read-only","selftest_network":"none","read_only":true,"cap_drop":"ALL","no_new_privileges":true,"tmpfs":"isolated","runs":2,"cases":"53/53 each","byte_identical":true,"receipt_sha256":"0fb5ee78c0fb7ece0651731e3766e02e96bce3b24e45a48ae879a06d52f3d0aa","live_pr25":"expected rejection: candidate bundle matched 0 approved identities","containers_removed":true,"task_scratch":"D:\\Documents\\Dev\\living-town-pr28-verify-e70cebba-scratch"},"hosted":{"ci_run":33184928495,"ci":"in_progress","visual_canary":"success","authority_run":33184926593,"authority":"expected self-modification failure"}},
+      "body_and_validation": {"at":"2026-08-28T15:42:54Z","body_sha256":"10e446b3dab2f90fbdc0c297cdd4bb091b03dd9ff5708b9052b8ea27c934462f","body_bytes":4312,"draft_preserved":true,"docker":{"client":"29.6.2","server":"29.6.2","context":"desktop-linux","platform":"linux/amd64","image":"python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c","python":"3.11.16","source":"GitHub exact-head tarball e70cebba46cdeaf3116090efbfdb2532b0be024a","source_mount":"read-only","selftest_network":"none","read_only":true,"cap_drop":"ALL","no_new_privileges":true,"tmpfs":"isolated","runs":2,"cases":"53/53 each","byte_identical":true,"receipt_sha256":"0fb5ee78c0fb7ece0651731e3766e02e96bce3b24e45a48ae879a06d52f3d0aa","live_pr25":"expected rejection: candidate bundle matched 0 approved identities","containers_removed":true,"task_scratch":"D:\\Documents\\Dev\\living-town-pr28-verify-e70cebba-scratch"},"hosted":{"ci_run":33184928495,"conclusion":"success","ci_job":98895342953,"ci":"success","visual_job":98895343135,"visual_canary":"success","completed_at":"2026-08-28T15:42:17Z","visual_artifact":{"id":9691520499,"bytes":18087781,"digest":"sha256:ee5609acf53adc59036c07d7888620b82d4377eccd337b3cf6291ec58202faa5","expires":"2026-09-11T15:31:35Z"},"authority_run":33184926593,"authority":"expected self-modification failure"}},
       "pr_policy": "Keep PR28 Draft. Update only by normal merge commit from exact master. Do not mark Ready, alter protection or merge PR28 from this lease.",
       "acceptance_tests": ["PR28 and feature ref exact old head8fb6895", "master exact43c72a8f", "one semantic diff path after merge", "manifest bytes unchanged by ancestry update", "merge parents exact old head plus master", "fresh CI and expected authority self-modification failure start", "body exact identity refreshed"],
       "negative_controls": ["head/base/body drift", "merge conflict", "second semantic diff path", "manifest bytes change", "PR25 identity drift", "protection mutation"],
@@ -2242,14 +2242,70 @@
       "stop_lines": ["master/PR28/PR25 drift", "merge conflict", "semantic diff exceeds manifest", "manifest content changes", "branch protection change required", "unknown worktree mutation required"],
       "handoff_recipient": "Fresh independent Security/QA and REFUTE",
       "archive_condition": "Updated exact Draft head/body/checks handed to reviewers or update abandoned without branch mutation."
+    },
+    {
+      "claim_id": "claim-pr28-security-qa-exact-e70cebba",
+      "task": "reserved:reuse-pr28-security-qa",
+      "role": "Independent read-only Security/QA reviewer",
+      "objective": "Review PR28 exact head e70cebba, its one-manifest scope, PR25 immutable source identity/evidence, verifier acceptance semantics, pending-evidence replacement procedure, hosted results, protection and rollback; report P0/P1/P2 and an exact verdict.",
+      "baseline": "43c72a8faa4e927fa5e324f589c611dd2a402a0e",
+      "baseline_tree": "a07840f3c4d098e8e88e0a149c6d2bad25fa8eb9",
+      "head": "e70cebba46cdeaf3116090efbfdb2532b0be024a",
+      "head_tree": "c9e0273eeb121d8f55bb696f0fd933b78d220863",
+      "branch": "codex/pr25-approved-bundle-2760325-v1",
+      "worktree": "read-only task-local exact-head archive/container scratch only",
+      "owned_paths": [],
+      "forbidden_paths": ["**/*", "GitHub mutation", "coordination ledger", "PR body", "branch protection"],
+      "authority_keys": ["pr28_security_qa_verdict_exact_e70cebba"],
+      "generated_outputs": ["read-only evidence report and exact terminal verdict"],
+      "dependencies": ["CI33184928495 success", "authority33184926593 expected self-modification failure", "Docker receipt0fb5ee78", "PR25 exact2760325/c87b0644"],
+      "consumer": "Producer decision whether a bounded pending-evidence manifest repair is safe",
+      "status": "reserved_pre_dispatch",
+      "write_lease": false,
+      "last_heartbeat": "2026-08-28T15:42:54Z",
+      "stale_after": "2026-08-28T16:42:54Z",
+      "pr": 28,
+      "recovery_count": 0,
+      "rollback": "Read-only; discard report on identity drift.",
+      "stop_lines": ["head/tree/body drift", "scope exceeds one manifest", "new P0/P1", "hosted result drift"],
+      "handoff_recipient": "Producer",
+      "archive_condition": "Exact-head verdict delivered or one recovery exhausted."
+    },
+    {
+      "claim_id": "claim-pr28-refute-exact-e70cebba",
+      "task": "reserved:reuse-pr29-refute-replacement",
+      "role": "Independent read-only adversarial REFUTE reviewer",
+      "objective": "Attempt to falsify PR28 exact head e70cebba by attacking manifest identity, duplicate/ambiguity, stale or substituted PR25 evidence, review-string semantics, self-authorization, ancestry, hosted checks, rollback and protection; report P0/P1/P2 and an exact verdict.",
+      "baseline": "43c72a8faa4e927fa5e324f589c611dd2a402a0e",
+      "baseline_tree": "a07840f3c4d098e8e88e0a149c6d2bad25fa8eb9",
+      "head": "e70cebba46cdeaf3116090efbfdb2532b0be024a",
+      "head_tree": "c9e0273eeb121d8f55bb696f0fd933b78d220863",
+      "branch": "codex/pr25-approved-bundle-2760325-v1",
+      "worktree": "read-only task-local exact-head archive/container scratch only",
+      "owned_paths": [],
+      "forbidden_paths": ["**/*", "GitHub mutation", "coordination ledger", "PR body", "branch protection"],
+      "authority_keys": ["pr28_refute_verdict_exact_e70cebba"],
+      "generated_outputs": ["read-only falsification report and exact terminal verdict"],
+      "dependencies": ["CI33184928495 success", "authority33184926593 expected self-modification failure", "Docker receipt0fb5ee78", "PR25 exact2760325/c87b0644"],
+      "consumer": "Producer decision whether a bounded pending-evidence manifest repair is safe",
+      "status": "reserved_pre_dispatch",
+      "write_lease": false,
+      "last_heartbeat": "2026-08-28T15:42:54Z",
+      "stale_after": "2026-08-28T16:42:54Z",
+      "pr": 28,
+      "recovery_count": 0,
+      "rollback": "Read-only; discard report on identity drift.",
+      "stop_lines": ["head/tree/body drift", "scope exceeds one manifest", "new P0/P1", "hosted result drift"],
+      "handoff_recipient": "Producer",
+      "archive_condition": "Exact-head verdict delivered or one recovery exhausted."
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T15:32:58Z",
+    "at": "2026-08-28T15:42:54Z",
     "active_writers": 1,
-    "read_only_reviewers": 0,
+    "read_only_reviewers": 2,
     "shared_write_conflicts": 0,
-    "decision": "PR29 transition is terminal clean. Exactly one new control-plane writer owns PR28 branch ancestry/body update; its sole semantic owned path is the approved-bundles manifest. PR25, protection, integration, all implementation paths and every dirty/unknown worktree remain frozen."
+    "decision": "PR28 exact head, scope, body, pinned-Docker evidence and hosted CI are terminal clean. Exactly two independent read-only reviewers are reserved beside the sole producer control-plane writer. PR25, protection, integration, all implementation paths and every dirty/unknown worktree remain frozen."
   },
   "released_claims": [
     {
@@ -2756,5 +2812,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_1b8afb72_verified"
   },
-  "next_trigger": "Wait exact-head hosted CI33184928495 terminal; on ci+visual success, ledger two read-only exact-head reviewer claims and dispatch Security/QA plus REFUTE. Authority33184926593 failure remains expected self-modification rejection."
+  "next_trigger": "Dispatch the two reserved read-only exact-head PR28 reviewer claims; after both terminal, ledger P0/P1/P2 and either authorize one bounded pending-evidence manifest repair or freeze on any P0/P1."
 }
