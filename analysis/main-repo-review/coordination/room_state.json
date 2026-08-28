@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T01:42:15Z",
+  "updated_at": "2026-08-28T01:49:07Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -734,8 +734,8 @@
       "role": "Sole serialized Dev writer for PR25 sustainable required qualification gate and authorized master protection transition",
       "objective": "Make pull_request_runtime_qualification emit a terminal conclusion for every master PR while running the full trust-root qualification for any trust-root path change, then after exact-head hosted success preserve all existing master protection and add this required context plus one independent approval.",
       "baseline": "26e22985f9982e31b3982777f002ba3c46169acb",
-      "head": "26e22985f9982e31b3982777f002ba3c46169acb",
-      "tree": "c8835191107026c6a7c566722738dcdf465db6a9",
+      "head": "0f4ab6d130e5d09472a19c813f834c4463e13411",
+      "tree": "60621741d4f453c7316a424d626849be2776581c",
       "branch": "codex/pr25-required-qualification-governance-repair",
       "worktree": "D:\\Documents\\Dev\\living-town-pr25-governance-repair-wt",
       "owned_paths": [
@@ -768,10 +768,10 @@
         "master-protection-snapshot:strict-ci-visual_canary-approvals0"
       ],
       "consumer": "Producer then fresh independent Security/QA and REFUTE; Stack B remains frozen until governance P1 closes",
-      "status": "reserved_authorized_governance_repair",
+      "status": "terminal_clean_one_path_delivery_reserved",
       "write_lease": true,
-      "last_heartbeat": "2026-08-28T01:42:15Z",
-      "stale_after": "2026-08-28T02:42:15Z",
+      "last_heartbeat": "2026-08-28T01:49:07Z",
+      "stale_after": null,
       "pr": 25,
       "checks": {
         "p0": 0,
@@ -787,7 +787,10 @@
           "pull_request_runtime_qualification"
         ],
         "target_required_approvals": 1,
-        "merge": "forbidden"
+        "merge": "forbidden",
+        "local_validation": "two byte-identical pinned-Docker suites pass",
+        "validation_receipt_sha256": "4a6def2f52ffd93fb5e25ac5ba9595649c09977199210bce33fbc70f79905802",
+        "workflow_sha256": "4669f4412a718a21cfcaa0eaec75a7abd6deff2c860f618c4eccddd9465edb58"
       },
       "recovery_count": 0,
       "rollback": "Before code delivery, remove only the task worktree/branch. After delivery, leave PR25 Draft or revert through a new reviewed linear commit. After protection mutation, restore the captured prior protection exactly: strict ci+visual_canary, approval count 0, dismiss stale reviews true, admins enforced, conversation resolution required; never rewrite Git history.",
@@ -1221,7 +1224,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "AUTHORIZED_GOVERNANCE_REPAIR_IN_PROGRESS",
+    "state": "AUTHORIZED_GOVERNANCE_REPAIR_DELIVERY_RESERVED",
     "exact_head": "26e22985f9982e31b3982777f002ba3c46169acb",
     "p0": 0,
     "p1": 2,
@@ -1234,5 +1237,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Implement one-path reusable qualification gate in isolated Docker, deliver a linear PR25 commit, wait for exact-head CI, then atomically add required qualification and one independent approval while preserving all existing protections."
+  "next_trigger": "Non-force deliver exact one-path commit to PR25, wait for full hosted qualification plus ci and visual_canary at resulting exact head; only then mutate master protection."
 }
