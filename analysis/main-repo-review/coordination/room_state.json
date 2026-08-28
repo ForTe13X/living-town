@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T12:50:11Z",
+  "updated_at": "2026-08-28T13:00:32Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1760,7 +1760,7 @@
       "stale_after": null,
       "pr": 29,
       "recovery_count": 0,
-      "candidate": {"commit":"1e99012a459a317376090e28ab7671a3bfda4700","tree":"ce604fba6b65ec7fbae88207db0c2a4b7a2da036","parent":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","path":".github/trusted-cafe-authority/verify_candidate_bundle.py","blob":"b0a9fa90ce58256228ba6fcbe5330501469f043c","bytes":21901,"sha256":"23836b3aee590faec4bbca6ded6ad0578c90f8f02648e0e01df2096a0ccae673","working_tree_crlf_sha256":"e0b565939e5de6e9bc42957ea90390a4f210aab03459d7fb91e0d93824a34194","correction":"Authoritative SHA-256 is over the 21901 hosted Git blob bytes; the prior value measured a Windows CRLF working-tree projection.","clean":true},
+      "candidate": {"commit":"1e99012a459a317376090e28ab7671a3bfda4700","tree":"ce604fba6b65ec7fbae88207db0c2a4b7a2da036","parent":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","path":".github/trusted-cafe-authority/verify_candidate_bundle.py","blob":"b0a9fa90ce58256228ba6fcbe5330501469f043c","bytes":21901,"sha256":"23836b3aee590faec4bbca6ded6ad0578c90f8f02648e0e01df2096a0ccae673","working_tree_mixed_eol_sha256":"e0b565939e5de6e9bc42957ea90390a4f210aab03459d7fb91e0d93824a34194","correction":"Authoritative SHA-256 is over the 21901 hosted LF Git blob bytes. The prior value measured a 22187-byte Windows mixed-EOL worktree projection; a full CRLF projection would be 22431 bytes and hash fd684d0c872f5446154778a3e5a0615789797bf87748677f6ebfdeb01c690d40.","clean":true},
       "proof": {"docker":{"client":"29.6.2","server":"29.6.2","context":"desktop-linux","platform":"linux/amd64","image":"docker.io/library/python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c","read_only":true,"task_local_names":true,"cleanup":"--rm; no residual containers"},"base_manifest":{"cases":16,"runs":2,"byte_identical":true,"receipt_sha256":"07751ac0c83801b9ea6cff9db1aca62f094feb7128a809c9162e987e63574636"},"pr28_manifest":{"bundles":2,"cases":22,"runs":2,"byte_identical":true,"receipt_sha256":"39ff6be9559f206d6aef317ff289c127b36c518a408c0564756f7c840b4ed293"},"live_pr25":{"actual_pending_manifest":"rejected matched 0","synthetic_terminal_exact_identity":{"mode":"approved-bundle","head":"2760325d5946ae2d5d8632a704f6c180f90976e4","tree":"c87b064479089b0036d6544b377531946e0f96f5","bundle":"pr25-stack-a-six-path-2760325d-v2"}},"ast":"pass","diff_check":"pass","scope":"one file"},
       "remote_reservation": {"master":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","branch_absent":true,"duplicate_prs":0,"action":"publish normal feature branch then create one Draft PR to master","ready":false,"merge":false},
       "publication": {"published_at":"2026-08-28T12:39:53Z","branch":"codex/cafe-authority-exact-identity-v2","head":"1e99012a459a317376090e28ab7671a3bfda4700","tree":"ce604fba6b65ec7fbae88207db0c2a4b7a2da036","pr":29,"state":"OPEN_DRAFT","base":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","paths":[".github/trusted-cafe-authority/verify_candidate_bundle.py"],"authority":{"run":33172016861,"job":98851220718,"conclusion":"failure","reason":"base authority self-modification is forbidden","classification":"expected fail-closed"},"ci":{"run":33172016796,"status":"in_progress"},"ready":false,"merged":false},
@@ -1857,11 +1857,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T12:50:11Z",
+    "at": "2026-08-28T13:00:32Z",
     "active_writers": 0,
     "read_only_reviewers": 2,
     "shared_write_conflicts": 0,
-    "decision": "Draft PR29 code identity and corrected hosted blob evidence remain exact. The original REFUTE lease produced no evidence in both its initial attempt and sole recovery, so it is revoked and replaced with a new independent read-only regression/counterexample reviewer. Security/QA continues. Manifest, workflow, protection, PR25, PR28, Ready and merge remain frozen."
+    "decision": "Draft PR29 code identity and hosted blob SHA-256 remain exact. Provenance wording is further corrected: e0b565 is a 22187-byte mixed-EOL Windows worktree projection, not a full CRLF transform. Security/QA and the replacement regression/counterexample reviewer continue. Manifest, workflow, protection, PR25, PR28, Ready and merge remain frozen."
   },
   "released_claims": [
     {
@@ -2339,10 +2339,10 @@
     "pr28_terminal_reviews": "PR28 run33169271123 completed success at exact head 8fb6895d. Security/QA P0=0/P1=1/P2=4 and REFUTE P0=0/P1=2/P2=1 both BLOCK merge. Producer adopts stricter P1=2. Review leases released; any new head requires fresh reviews.",
     "authority_exact_identity_v2_local_proof": "Exact one-file commit 1e99012/tree ce604fba binds approval to source head/tree and exact terminal review strings, rejects duplicate identities/records, and tests every bundle. Pinned Docker: base 16 cases and PR28 22 cases twice byte-identical; live PR25 pending rejected and synthetic exact terminal identity accepted. Branch and Draft PR reserved; no publication yet.",
     "pr29_creation": "Draft PR29 OPEN at exact base fd122e62/head 1e99012/tree ce604fba with only verify_candidate_bundle.py. Authority run33172016861 rejected expected self-modification; CI run33172016796 is in progress. Master, PR28 and PR25 are unchanged. Writer released; Security/QA and REFUTE reserved read-only.",
-    "pr29_hosted_blob_sha256_correction": "Security/QA stopped P1 on false evidence: packet/body e0b565 measured Windows CRLF working-tree bytes. GitHub raw exact head and Git Blob API both prove blob b0a9fa90 is 21901 bytes with SHA-256 23836b3aee590faec4bbca6ded6ad0578c90f8f02648e0e01df2096a0ccae673. Code/head/tree unchanged; ledger and PR body correction plus exact-head re-review reserved.",
+    "pr29_hosted_blob_sha256_correction": "Security/QA stopped P1 on false evidence: packet/body e0b565 measured a 22187-byte Windows mixed-EOL worktree projection, not the hosted candidate and not a full CRLF transform. GitHub raw exact head and Git Blob API both prove blob b0a9fa90 is 21901 LF bytes with SHA-256 23836b3aee590faec4bbca6ded6ad0578c90f8f02648e0e01df2096a0ccae673; full CRLF would be 22431 bytes/SHA256 fd684d0c. Code/head/tree unchanged; exact-head re-review continues.",
     "pr29_refute_replacement": "The original REFUTE task produced no evidence on its initial and one allowed recovery because both prompts were safety-classifier rejected. Lease revoked with provenance; /root/pr29_refute_replacement reserved as independent read-only regression/counterexample review at the same exact identity.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish revocation of the empty REFUTE recovery and the replacement read-only lease. Dispatch /root/pr29_refute_replacement with neutral correctness/regression wording; wait for CI run33172016796 terminal plus both independent reports before any merge transition."
+  "next_trigger": "Publish the mixed-EOL provenance correction, update only PR29 body wording from CRLF to mixed-EOL, and reverify exact identity/body. Continue waiting for CI run33172016796 terminal plus both independent reports before any merge transition."
 }
