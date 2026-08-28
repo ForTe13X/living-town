@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T11:24:04Z",
+  "updated_at": "2026-08-28T11:46:07Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1638,7 +1638,7 @@
         "result": "pass"
       },
       "local_commit_authorization": {"authorized":true,"baseline":"26a0d0114052d302a0cb768418d5c00501920eb3","exact_paths":["tools/verify_cafe_attested_evidence.py"],"local_commit":"c0f9cba714a73cc9b327dd61ebaf93058684fcf6","local_tree":"c87b064479089b0036d6544b377531946e0f96f5","parent":"26a0d0114052d302a0cb768418d5c00501920eb3","blob":"b655b61bf8d4772155885f8533a11a36083f94e4","sha256":"b904f81d4f4a2c9b489938daf6f18b24b201a47ebcffb5cef6ca9c7c774dff05","bytes":57512,"remote_push_authorized":true,"remote_ref":"refs/heads/codex/cafe-source-attestation-trust-root-v1-replacement-2","expected_remote_head":"26a0d0114052d302a0cb768418d5c00501920eb3","smart_http_result":"failed before ref update: Failed to connect to github.com:443 after 21050 ms","mode":"GitHub Git Data API content-identical commit then non-force ref update","api_commit":{"sha":"2760325d5946ae2d5d8632a704f6c180f90976e4","blob":"b655b61bf8d4772155885f8533a11a36083f94e4","tree":"c87b064479089b0036d6544b377531946e0f96f5","parent":"26a0d0114052d302a0cb768418d5c00501920eb3","message":"fix: align cafe verifier toolchain identity","author":"Codex <codex@openai.com>","committer":"Codex <codex@openai.com>","date":"2026-08-28T11:11:06Z","difference_from_local_commit":"GitHub normalized the same instant from +08:00 to Z in commit-object serialization; content tree, parent, message, name, email and instant are exact"},"abort":"Do not update the ref unless it still equals 26a0d011 and PR/protection preconditions remain exact.","preconditions":"PR25 OPEN Draft, base fd122e62, head 26a0d011, exact six semantic paths, strict three-context app15368 protection with admins and conversations enforced and force/deletion disabled","postconditions":"PR25 remains OPEN Draft with exact six paths; fresh authority, qualification and CI are observed; no Ready or merge mutation."},
-      "publication": {"published_at":"2026-08-28T11:19:39Z","old_remote_head":"26a0d0114052d302a0cb768418d5c00501920eb3","new_remote_head":"2760325d5946ae2d5d8632a704f6c180f90976e4","tree":"c87b064479089b0036d6544b377531946e0f96f5","mode":"GitHub Git Data API non-force fast-forward","force":false,"pr_state":"OPEN_DRAFT","base":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","semantic_paths":6,"fresh_runs":{"authority":{"id":33166722979,"job":98833797535,"status":"completed","conclusion":"failure","reason":"candidate bundle matched 0 approved identities","classification":"expected fail-closed"},"qualification":{"id":33166722949,"job":98833797427,"status":"completed","conclusion":"success","artifact_id":9683942019,"artifact_digest":"sha256:9fe309e4a4723bdc86403d2bb228aec79b9578105f929ee1d38d96ccf014e729","artifact_bytes":246199708,"expires":"2026-11-26T11:19:40Z"},"ci":{"id":33166722929,"status":"in_progress"}}},
+      "publication": {"published_at":"2026-08-28T11:19:39Z","old_remote_head":"26a0d0114052d302a0cb768418d5c00501920eb3","new_remote_head":"2760325d5946ae2d5d8632a704f6c180f90976e4","tree":"c87b064479089b0036d6544b377531946e0f96f5","mode":"GitHub Git Data API non-force fast-forward","force":false,"pr_state":"OPEN_DRAFT","base":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","semantic_paths":6,"fresh_runs":{"authority":{"id":33166722979,"job":98833797535,"status":"completed","conclusion":"failure","reason":"candidate bundle matched 0 approved identities","classification":"expected fail-closed"},"qualification":{"id":33166722949,"job":98833797427,"status":"completed","conclusion":"success","artifact_id":9683942019,"artifact_digest":"sha256:9fe309e4a4723bdc86403d2bb228aec79b9578105f929ee1d38d96ccf014e729","artifact_bytes":246199708,"expires":"2026-11-26T11:19:40Z"},"ci":{"id":33166722929,"job":98833853354,"status":"completed","conclusion":"success"},"visual_canary":{"run":33166722929,"job":98833853218,"status":"completed","conclusion":"success","artifact_id":9684049408,"artifact_digest":"sha256:a14e56cbde4b41559bc4bff1e451603db588645c111277435deedc27755197fa","artifact_bytes":18087781,"expires":"2026-09-11T11:27:00Z"}}},
       "released_at": "2026-08-28T11:20:02Z",
       "release_reason": "Content-identical one-path repair commit was non-force fast-forwarded through GitHub Git Data API with exact blob/tree/provenance after smart-HTTP failure. PR25 remains OPEN Draft with six paths. Fresh hosted evidence now owns the next gate.",
       "acceptance_tests": ["exactly one repository path changes", "verifier constants equal the runtime lock immutable Podman and Skopeo references and Python 3.14.6", "Docker-isolated full café attestation self-test passes twice with byte-identical receipts", "negative unpinned and drift controls remain fail-closed", "git diff --check and Python syntax pass in Docker"],
@@ -1646,14 +1646,42 @@
       "stop_lines": ["any second repository path", "any verifier behavior beyond exact toolchain identity constants", "Docker self-test failure after one recovery", "remote head drift", "authority boundary change"],
       "handoff_recipient": "Producer protected-base manifest update transaction",
       "archive_condition": "Exact Docker receipt and clean normal fast-forward handoff, or one recovery failure and release without publication."
+    },
+    {
+      "claim_id": "lease-pr25-approved-bundle-manifest-2760325-v1",
+      "task": "producer-local-serialized-writer",
+      "role": "Sole serialized protected-base Dev writer for PR25 exact six-file approved-bundle identity",
+      "objective": "Append one new provenance-preserving approved-bundle entry for PR25 exact head 2760325d and its exact six semantic file identities so the protected-base authority gate can authorize only that reviewed content without changing workflow or verifier policy.",
+      "baseline": "fd122e6235f8870c7e3f8e6b43b35f04392765d9",
+      "head": "fd122e6235f8870c7e3f8e6b43b35f04392765d9",
+      "tree": "503376dbd7fb8c0a877e40f3843dc8b6fe4f6aa8",
+      "branch": "codex/pr25-approved-bundle-2760325-v1",
+      "worktree": "D:\\Documents\\Dev\\living-town-pr25-approved-bundle-2760325-wt",
+      "owned_paths": [".github/trusted-cafe-authority/approved-bundles.v1.json"],
+      "forbidden_paths": ["**/* except .github/trusted-cafe-authority/approved-bundles.v1.json", ".github/workflows/**", ".github/trusted-cafe-authority/verify_candidate_bundle.py", "evidence/**", "tools/**", "game/**", "docs/**", "analysis/**", "schemas/registries/anchors/ledgers"],
+      "authority_keys": ["protected-cafe-approved-bundle-manifest", "pr25-six-path-identity-2760325"],
+      "generated_outputs": ["one manifest bundle entry only; Docker-isolated positive and negative verifier receipts outside repository"],
+      "dependencies": ["protected master fd122e62", "PR25 exact head 2760325d", "qualification run33166722949 success", "CI and visual run33166722929 success", "authority run33166722979 rejects only unapproved identity"],
+      "consumer": "Protected-base authority gate for PR25, then independent Security/QA and REFUTE before controlled manifest merge",
+      "status": "reserved_before_worktree_and_write",
+      "write_lease": true,
+      "last_heartbeat": "2026-08-28T11:46:07Z",
+      "stale_after": "2026-08-28T13:46:07Z",
+      "pr": null,
+      "recovery_count": 0,
+      "acceptance_tests": ["exactly one manifest path changes", "existing approved bundles remain byte-for-byte semantically preserved", "all six candidate path/blob/byte/SHA256 identities are recomputed from GitHub objects", "Docker-isolated verifier accepts exact PR25 fixture", "one-bit or wrong-blob negative fixture is rejected", "JSON parse and git diff --check pass"],
+      "rollback": "Leave or close the Draft manifest PR unmerged. After any later merge, revert the one manifest entry through a new reviewed PR; never rewrite master.",
+      "stop_lines": ["master or PR25 head drift", "any second repository path", "workflow/verifier policy change", "candidate path set differs from six", "positive verifier failure", "negative control acceptance", "protection drift"],
+      "handoff_recipient": "Independent Security/QA and REFUTE, then Producer controlled protected-base merge decision",
+      "archive_condition": "Draft PR exact handoff plus independent terminal reviews, or one recovery failure and release without publication."
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T11:24:04Z",
-    "active_writers": 0,
+    "at": "2026-08-28T11:46:07Z",
+    "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "At exact head 2760325d, qualification is terminal success including immutable double-build, runtime load, two self-tests, budget and artifact upload. Authority failed only because this exact six-blob identity is not yet approved. CI remains in progress, so protected-base manifest work stays frozen until exact-head CI is terminal."
+    "decision": "PR25 exact head 2760325d has terminal qualification, CI and visual success; authority rejects only its unapproved identity. One independent protected-base writer is serialized for the single manifest path. PR25 candidate paths and all workflow/verifier authority surfaces are frozen; no reviewer is active until the Draft manifest PR exact head exists."
   },
   "released_claims": [
     {
@@ -2122,8 +2150,9 @@
     "immutable_toolchain_replacement_3_api_commit": "API reconstruction first rejected CRLF worktree bytes, then used canonical LF Git content and matched blob b655b61b plus tree c87b0644 exactly. GitHub normalized the same author/committer instant to Z, producing content-identical child commit 2760325d. Remote ref remains 26a0d011; non-force update to 2760325d is reserved after recheck.",
     "immutable_toolchain_replacement_3_publication": "Non-force API fast-forward 26a0d011 to content-identical commit 2760325d completed. PR25 remains OPEN Draft against fd122e62 with exactly six semantic paths. Fresh runs authority 33166722979, qualification 33166722949 and CI 33166722929 started; writer released, no Ready/merge mutation.",
     "immutable_toolchain_replacement_3_hosted": "Exact-head qualification run33166722949/job98833797427 SUCCESS: classify, immutable runtime twice, load/qualify, two self-tests, artifact budget and upload all passed. Artifact 9683942019 digest sha256:9fe309e4, 246199708 bytes, expires 2026-11-26. Authority run33166722979 failed only with zero approved identities. CI run33166722929 remains in progress.",
+    "immutable_toolchain_replacement_3_ci": "Exact-head CI run33166722929 SUCCESS: visual_canary job98833853218 completed 11:27:05Z with artifact 9684049408 digest sha256:a14e56cb (18087781 bytes), and ci job98833853354 completed 11:45:10Z after the full lint/S0/test-scenes gate. Strict protection and PR25 Draft/six-path identity remain unchanged.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish exact-head qualification success and expected authority rejection. Wait for CI 33166722929 to become terminal and inspect both ci and visual_canary. Only if both pass, reserve a separate one-path protected-base approved-bundle manifest PR for the exact six candidate blobs."
+  "next_trigger": "Publish exact-head CI/visual success and the one-path protected-base manifest lease. Create the isolated worktree at fd122e62, recompute all six candidate identities from GitHub Git objects, append one new bundle without changing old entries, and run Docker-isolated positive plus negative verifier controls before any commit or PR."
 }
