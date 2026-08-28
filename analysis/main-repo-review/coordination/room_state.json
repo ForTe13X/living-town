@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T11:02:27Z",
+  "updated_at": "2026-08-28T11:06:20Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1605,7 +1605,7 @@
       "claim_id": "lease-pr25-immutable-quay-toolchain-supply-repair-v1-replacement-3",
       "task": "producer-local-serialized-writer",
       "role": "Third replacement sole serialized Dev writer for PR25 verifier toolchain-identity alignment",
-      "objective": "Replace only the two obsolete immutable Quay toolchain constants in the independent café evidence verifier so it agrees with the already proven runtime lock and outer bootstrap, then rerun the fail-closed self-test in isolated Docker without weakening any verifier policy.",
+      "objective": "Align only the three stale toolchain-identity constants in the independent café evidence verifier: the immutable Podman and Skopeo references plus the actual Python 3.14.6 version from the proven Podman 5.8.4 image, then rerun the fail-closed self-test in isolated Docker without weakening any verifier policy.",
       "baseline": "26a0d0114052d302a0cb768418d5c00501920eb3",
       "head": "26a0d0114052d302a0cb768418d5c00501920eb3",
       "tree": "4f819ca3a4b593e150fbbb4df4de0e2853e9a984",
@@ -1618,13 +1618,14 @@
       "generated_outputs": ["isolated Docker self-test receipt outside repository"],
       "dependencies": ["PR25 exact head 26a0d011", "runtime and validation build/load pass in run33165395931", "self-test failure at verifier toolchain constant comparison", "authority run33165394243 expected fail-closed with zero approved current identities", "CI run33165395930 in progress"],
       "consumer": "PR25 exact six-path candidate, then protected-base approved-bundle manifest update and fresh exact-head reviews",
-      "status": "reserved_before_write",
+      "status": "recovery_1_reserved_after_same_path_python_identity_stop",
       "write_lease": true,
-      "last_heartbeat": "2026-08-28T11:02:27Z",
-      "stale_after": "2026-08-28T13:02:27Z",
+      "last_heartbeat": "2026-08-28T11:06:20Z",
+      "stale_after": "2026-08-28T13:06:20Z",
       "pr": 25,
-      "recovery_count": 0,
-      "acceptance_tests": ["exactly one repository path changes", "verifier constants equal the runtime lock immutable Podman and Skopeo references", "Docker-isolated full café attestation self-test passes", "negative unpinned and drift controls remain fail-closed", "git diff --check and Python syntax pass in Docker"],
+      "recovery_count": 1,
+      "recovery_reason": "The first Docker self-test passed the newly aligned image-reference check and then failed the adjacent verifier binary-identity check because the same file still expected Python 3.14.7 while the proven immutable Podman image and runtime lock both contain 3.14.6. No second path or behavioral change is needed.",
+      "acceptance_tests": ["exactly one repository path changes", "verifier constants equal the runtime lock immutable Podman and Skopeo references and Python 3.14.6", "Docker-isolated full café attestation self-test passes twice with byte-identical receipts", "negative unpinned and drift controls remain fail-closed", "git diff --check and Python syntax pass in Docker"],
       "rollback": "Leave the one-path repair unpublished on any failure. After normal publication, keep PR25 Draft and use a new reviewed revert; never force-reset shared history.",
       "stop_lines": ["any second repository path", "any verifier behavior beyond exact toolchain identity constants", "Docker self-test failure after one recovery", "remote head drift", "authority boundary change"],
       "handoff_recipient": "Producer protected-base manifest update transaction",
@@ -1632,11 +1633,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T11:02:27Z",
+    "at": "2026-08-28T11:06:20Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "Hosted qualification built and loaded the immutable runtime successfully but the independent verifier correctly rejected its obsolete hard-coded Quay identities. A single one-path replacement-3 writer is serialized for verifier constant alignment. Authority-manifest work remains frozen and no reviewer is active until a new exact head passes hosted evidence."
+    "decision": "Replacement-3's first Docker self-test passed the image-reference alignment and exposed the adjacent stale Python 3.14.7 verifier constant. The same one-path lease is expanded before that third constant changes and its sole recovery is consumed. Any further self-test failure releases the lease without publication. Authority-manifest work remains frozen."
   },
   "released_claims": [
     {
@@ -2098,8 +2099,9 @@
     "immutable_toolchain_candidate_commit": "Exact local commit 26a0d0114052d302a0cb768418d5c00501920eb3, tree 4f819ca3a4b593e150fbbb4df4de0e2853e9a984, parent 8d9926b8. Only runtime-lock blob 80848d99 and trusted-capture blob a40ade2d changed. Live PR25 remains OPEN Draft at expected remote head and base with six semantic paths and strict full protection. Normal fast-forward push is reserved; authority-manifest update remains a separate protected-base PR.",
     "immutable_toolchain_candidate_publication": "Normal fast-forward 8d9926b8 to 26a0d011 completed on the existing PR25 feature ref. PR25 remains OPEN Draft against fd122e62 with exactly six semantic paths. Fresh runs: authority 33165394243, qualification 33165395931 and CI 33165395930 in progress. Candidate writer released; no Ready or merge mutation.",
     "immutable_toolchain_hosted_p1": "At exact head 26a0d011, authority run33165394243 failed as expected because the changed two-blob bundle matched zero approved identities. Qualification run33165395931 successfully built the immutable runtime twice and loaded/qualified it, then failed the first self-test because tools/verify_cafe_attested_evidence.py still hard-coded the retired Podman e90073d8 and Skopeo 572747e1 identities. This is a real P1 coupling omission. Replacement-3 owns only that verifier path; manifest approval is frozen.",
+    "immutable_toolchain_replacement_3_recovery": "First isolated Docker self-test after the two image-reference edits advanced to the binary identity gate and failed because the same verifier expected Python 3.14.7. The proven Podman 5.8.4 image and runtime lock both report 3.14.6. The same one-path lease is expanded to that third identity constant and recovery_count is now 1; no further recovery or wider edit is allowed.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish the exact hosted P1 and replacement-3 one-path lease. Change only the two verifier constants, run Python syntax and the full café self-test in isolated pinned-digest Docker, then record exact evidence before any local commit or remote mutation. Continue monitoring CI 33165395930."
+  "next_trigger": "Publish replacement-3 recovery expansion. Change only verifier Python 3.14.7 to 3.14.6, then run Python syntax and the full café self-test twice in isolated pinned-digest Docker with byte-identical receipts. On any failure release without publication. Continue monitoring CI 33165395930."
 }
