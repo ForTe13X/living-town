@@ -1,0 +1,81 @@
+name: Trusted cafe base authority gate
+
+on:
+  pull_request_target:
+    branches: [master]
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: trusted-cafe-base-authority-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+  cancel-in-progress: false
+
+jobs:
+  trusted_cafe_authority_gate:
+    name: trusted_cafe_authority_gate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout protected base authority only
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+          path: authority
+          persist-credentials: false
+
+      - name: Verify protected base checkout identity
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$(git -C authority rev-parse HEAD)" == "$BASE_SHA" ]]
+          [[ -z "$(git -C authority status --porcelain=v1 --untracked-files=all)" ]]
+
+      - name: Authorize candidate as API data only
+        id: authority
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          test -n "$GH_TOKEN"
+          test -n "$HEAD_SHA"
+          test -n "$PR_NUMBER"
+          python -B authority/.github/trusted-cafe-authority/verify_candidate_bundle.py \
+            --manifest authority/.github/trusted-cafe-authority/approved-bundles.v1.json \
+            --repository "$REPOSITORY" \
+            --pull-number "$PR_NUMBER" \
+            --receipt "$RUNNER_TEMP/cafe-base-authority-receipt.json" \
+            --github-output "$GITHUB_OUTPUT"
+          test "$(python -c 'import json,sys; print(json.load(open(sys.argv[1]))["head_sha"])' \
+            "$RUNNER_TEMP/cafe-base-authority-receipt.json")" = "$HEAD_SHA"
+
+      - name: Publish base-owned authority result
+        if: always()
+        shell: bash
+        env:
+          AUTHORITY_OUTCOME: ${{ steps.authority.outcome }}
+          BUNDLE_ID: ${{ steps.authority.outputs.bundle_id }}
+          CHANGED_COUNT: ${{ steps.authority.outputs.changed_count }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          MODE: ${{ steps.authority.outputs.mode }}
+        run: |
+          set -euo pipefail
+          [[ "$AUTHORITY_OUTCOME" == success ]]
+          case "$MODE" in
+            approved-bundle|not-applicable) ;;
+            *) echo "missing base-authority result" >&2; exit 1 ;;
+          esac
+          printf 'CAFE_BASE_AUTHORITY_GATE_RESULT mode=%s changed=%s head=%s bundle=%s\n' \
+            "$MODE" "$CHANGED_COUNT" "$HEAD_SHA" "${BUNDLE_ID:-none}"
