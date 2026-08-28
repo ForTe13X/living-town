@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T13:49:28Z",
+  "updated_at": "2026-08-28T13:52:02Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1995,9 +1995,9 @@
       "generated_outputs": ["task-local Docker receipts outside repository", "content-verified Git Data API child of a1048691 after proof"],
       "dependencies": ["Security/QA a1048691 P0=0/P1=0/P2=3 terminal", "REFUTE a1048691 P0=0/P1=0/P2=3 terminal", "CI run33174988226 success", "authority run33174986895 expected self-modification failure", "PR29 remains Draft", "master fd122e62 unchanged"],
       "consumer": "Fresh exact-head Security/QA and REFUTE, then Producer protected-base decision",
-      "status": "terminal_local_clean_one_path_docker_proof_content_verified_api_publication_reserved",
+      "status": "terminal_content_verified_non_force_api_publication_success_body_refresh_reserved",
       "write_lease": true,
-      "last_heartbeat": "2026-08-28T13:49:28Z",
+      "last_heartbeat": "2026-08-28T13:52:02Z",
       "stale_after": "2026-08-28T14:42:49Z",
       "pr": 29,
       "recovery_count": 0,
@@ -2005,6 +2005,7 @@
       "candidate": {"local_commit":"38a6b8b54809d1d7f30085e6b966e28cbf8103aa","local_parent":"342f65d55ba4e2c6e206705d563588661837b42f","remote_parent":"a10486918276963b3b693f178b239bd115c03975","tree":"0759e0277f50b5b98883c3a8541a5e3cf51eedec","path":".github/trusted-cafe-authority/verify_candidate_bundle.py","blob":"7d47a4afa3756be105befa1f7cf37dffdd506985","bytes":27369,"sha256":"ae5e1f75f2ed5bde7bcf8f89c927a05a0c5acfacb4bdba1f2411a6e415f1dab2","clean":true,"scope_paths":1},
       "proof": {"docker":{"client":"29.6.2","server":"29.6.2","context":"desktop-linux","platform":"linux/amd64","image":"docker.io/library/python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c","python":"3.11.16","read_only":true,"cap_drop":"ALL","no_new_privileges":true,"cache":"none","scratch":"task-local tmpfs","cleanup":"--rm"},"base_manifest":{"cases":41,"runs":2,"byte_identical":true,"receipt_sha256":"1f1dad0d690297368a51576002e7e9320817eaeaf36975988d57622706a52eff"},"pr28_manifest":{"cases":47,"runs":2,"byte_identical":true,"receipt_sha256":"eef8a6785d9a1a54a2e9103d50464f93ffa8a457d223131fc5c07f722e6b9640"},"live_pr25":{"container_network":"bridge","result":"rejected matched 0 approved identities","exit":1},"controls":"numeric head/tree/blob/hash, boolean bytes, unhashable/NUL/drive/leading-space paths, embedded space/tab/NBSP Base64 and noncanonical pad bits reject; zero-byte count and empty blob accept; CR/LF wrapper accepts","ast":"pass","max_line":115,"over_119":0,"diff_check":"pass"},
       "publication_reservation": {"mode":"Git Data API from canonical local blob bytes","reason":"remote API commit a1048691 is not in local object database while local parent342f65d has exact same baseline tree cd6b7cc8","precondition":"remote PR29 head remains a10486918276963b3b693f178b239bd115c03975 and master remains fd122e62","blob_must_match":"7d47a4afa3756be105befa1f7cf37dffdd506985","tree_must_match":"0759e0277f50b5b98883c3a8541a5e3cf51eedec","non_force":true,"ready":false,"merge":false},
+      "api_publication": {"published_at":"2026-08-28T13:51:44Z","remote_commit":"540896e1eab0d25aae652d914ea08f5772792357","remote_parent":"a10486918276963b3b693f178b239bd115c03975","local_content_commit":"38a6b8b54809d1d7f30085e6b966e28cbf8103aa","tree":"0759e0277f50b5b98883c3a8541a5e3cf51eedec","blob":"7d47a4afa3756be105befa1f7cf37dffdd506985","hosted_bytes":27369,"hosted_sha256":"ae5e1f75f2ed5bde7bcf8f89c927a05a0c5acfacb4bdba1f2411a6e415f1dab2","non_force":true,"pr29":{"state":"OPEN","draft":true,"base":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","one_path":true,"additions":312,"deletions":38},"fresh_runs":{"authority":33177357541,"ci":33177359561},"body_refresh_reserved":true},
       "acceptance_tests": ["bundle files path dict/non-string/empty/absolute/backslash/dot/NUL/control/drive forms reject as GateError", "source head/tree and blob/hash require raw string type", "bytes requires type exactly int and allows zero", "empty Base64 decodes to empty bytes", "CR/LF wrapped canonical Base64 accepts", "space/tab/NBSP and noncanonical pad bits reject", "base and PR28 all-bundle receipts deterministic twice", "live PR25 pending rejects and synthetic exact terminal accepts", "AST, diff-check, exact one path"],
       "negative_controls": ["unhashable bundle file path", "numeric source head", "boolean bytes", "NUL/control/drive path", "embedded space/tab/NBSP Base64", "noncanonical pad bits", "same-files false head/tree", "pending/request-changes reviews", "self-modification"],
       "rollback": "Before publication discard only this one-file local delta. After publication leave/close Draft; if later merged, revert through a reviewed PR and freeze PR28/PR25.",
@@ -2014,11 +2015,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T13:49:28Z",
+    "at": "2026-08-28T13:52:02Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "Final canonicality patch is one-path clean at local commit38a6b8b/tree0759e027/blob7d47a4af. Pinned Docker base41 and PR28-47 case receipts are twice byte-identical, live PR25 rejects, and all terminal P2 controls close. A content-verified non-force Git Data API child of remote a1048691 is reserved because local and remote parent commits share the exact baseline tree but differ by prior API serialization. All other paths and merge transitions remain frozen."
+    "decision": "Content-verified non-force API publication succeeded at PR29 head540896e1 with exact tree0759e027/blob7d47a4af/27369 bytes/SHA256 ae5e1f75. Draft body refresh to current identity and proof is reserved before writer release and fresh exact-head reviews. All manifest, workflow, protection, PR25, PR28, Ready and merge changes remain frozen."
   },
   "released_claims": [
     {
@@ -2510,8 +2511,9 @@
     "pr29_fresh_security_preliminary": "At exact a1048691/body 5d5751a4, Security/QA reproduces P0=0/P1=0 with two code P2: unhashable bundle file path leaks TypeError before canonical validation and numeric/boolean schema values pass initial validation; Base64 split accepts embedded spaces/tabs beyond the body claim. Existing protection P2 remains. Final waits CI terminal.",
     "pr29_a104_terminal_reviews": "Exact a1048691/tree cd6b7cc8/blob a35f1ad0/body 5d5751a4: CI33174988226 success and expected authority self-modification failure. Security/QA and REFUTE both P0=0/P1=0/P2=3. Reviewers released; final one-file canonicality closure reserved before any protected-base transition.",
     "pr29_final_canonicality_local_proof": "One-path clean local commit38a6b8b/tree0759e027/blob7d47a4af is based on the exact cd6b7cc8 content projection. Pinned Docker base41 receipt1f1dad0d and PR28-47 receipteef8a678 are twice identical; live PR25 pending rejects; raw types, canonical paths, empty/canonical Base64 and pad-bit controls pass. Non-force API child publication from remote a1048691 reserved.",
+    "pr29_final_canonicality_api_publication": "Non-force Git Data API advanced PR29 from a1048691 to content-verified head540896e1 with exact tree0759e027/blob7d47a4af, 27369 bytes and SHA256 ae5e1f75. PR remains one-file OPEN Draft; authority33177357541 and CI33177359561 started; body refresh reserved.",
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_1b8afb72_verified"
   },
-  "next_trigger": "Publish exact local candidate and Docker proof. Recheck PR29/master/body, create Git Data API blob/tree matching 7d47a4af/0759e027, create a semantic child of a1048691, non-force advance only from exact precondition, verify hosted bytes/SHA256, then refresh Draft body and reserve fresh reviews."
+  "next_trigger": "Publish exact API publication. Refresh PR29 Draft body to head540896e1/tree0759e027/blob7d47a4af, current 41/47-case receipts and final controls; verify body and identity, release writer, and reserve fresh Security/QA plus REFUTE while CI33177359561 completes."
 }
