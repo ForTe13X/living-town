@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T04:09:09Z",
+  "updated_at": "2026-08-28T04:12:31Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1268,11 +1268,12 @@
       "generated_outputs": ["terminal bounded body/hash verdict only"],
       "dependencies": ["pr26:f96aac62caed955c600737e0c26ee15e19df3352:tree:7a08c75b3a54455e012f0f0798be02c5d77eb6e9", "pr26-live-body-sha256:23dc1f66fe29b8be9a3bd1a0510f2b5b8b7a9c2013f1d5a03a8d4b8431e9fe60", "pr26-body-updated-at:2026-08-28T04:08:58Z", "prior-security-body-reread:p0-0:p1-1:p2-3"],
       "consumer": "Producer one-time exact PR26 bootstrap transition decision",
-      "status": "reserved_read_only_bounded_text_reread",
-      "last_heartbeat": "2026-08-28T04:09:09Z",
-      "stale_after": "2026-08-28T04:39:09Z",
+      "status": "terminal_approve_p0_0_p1_0_p2_3_reviewer_released",
+      "last_heartbeat": "2026-08-28T04:12:31Z",
+      "stale_after": null,
       "pr": 26,
       "recovery_count": 0,
+      "review_result": {"verdict": "APPROVE", "p0": 0, "p1": 0, "p2": 3, "transition_packet": "unlocked subject to exact ledger, identity, protection and post-merge conditions", "technical_rerun": false},
       "rollback": "Release claim and keep PR26 Draft if the contradiction persists.",
       "stop_lines": ["PR26 identity or body hash changes", "technical or state mutation would be required", "review expands beyond bounded text"]
     },
@@ -1292,21 +1293,22 @@
       "generated_outputs": ["terminal bounded adversarial body/hash verdict only"],
       "dependencies": ["pr26:f96aac62caed955c600737e0c26ee15e19df3352:tree:7a08c75b3a54455e012f0f0798be02c5d77eb6e9", "pr26-live-body-sha256:23dc1f66fe29b8be9a3bd1a0510f2b5b8b7a9c2013f1d5a03a8d4b8431e9fe60", "pr26-body-updated-at:2026-08-28T04:08:58Z", "prior-refute-body-reread:p0-0:p1-0:p2-1"],
       "consumer": "Producer one-time exact PR26 bootstrap transition decision",
-      "status": "reserved_read_only_bounded_text_reread",
-      "last_heartbeat": "2026-08-28T04:09:09Z",
-      "stale_after": "2026-08-28T04:39:09Z",
+      "status": "terminal_accept_p0_0_p1_0_p2_0_reviewer_released",
+      "last_heartbeat": "2026-08-28T04:12:31Z",
+      "stale_after": null,
       "pr": 26,
       "recovery_count": 0,
+      "review_result": {"verdict": "PASS_ACCEPT", "p0": 0, "p1": 0, "p2": 0, "transition_packet": "unlocked only for the exact narrow PR26 bootstrap", "technical_rerun": false},
       "rollback": "Release claim and keep PR26 Draft if new ambiguity appears.",
       "stop_lines": ["PR26 identity or body hash changes", "technical or state mutation would be required", "review expands beyond bounded text"]
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T04:09:09Z",
+    "at": "2026-08-28T04:12:31Z",
     "active_writers": 0,
-    "read_only_reviewers": 2,
+    "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "The exact PR26 Rollback and step-5 wording repair is live with immutable new body hash. Two bounded read-only text rereads are reserved. All code, protection and merge state remains frozen until both reach P0/P1=0."
+    "decision": "Both bounded PR26 body rereads are terminal and independently P0/P1=0. No writers or overlapping authority leases exist. The exact one-time bootstrap transition is armed only for PR26 f96aac62 with all non-qualification protection retained and immediate restoration after merge. PR25 and all production lanes remain frozen."
   },
   "released_claims": [
     {
@@ -1720,22 +1722,25 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "PR26_ROLLBACK_CONSISTENCY_REPAIRED_BOUNDED_REREADS_RESERVED",
+    "state": "PR26_EXACT_ONE_TIME_PROTECTION_TRANSITION_ARMED_P0_P1_ZERO",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
     "exact_head": "5a449cad6d486e3680d2febba8203b0be7d215b9",
     "p0": 0,
-    "p1": 1,
+    "p1": 0,
     "p2": 2,
     "technical_exact_head": "passed",
     "governance": "required qualification context is enforced but remains candidate-self-defined by the PR-head workflow; platform-independent-approval enforcement is also unavailable with the sole collaborator",
     "pr_body": "exact evidence projection repaired and live re-read at SHA-256 ca83ba75aaf248be560a060da89e254847d301029e456d7139823619a3bcc563",
     "branch_protection_change": "applied and reverified, but insufficient as an immutable trust root: context plus GitHub Actions app binding cannot stop a future PR from replacing its own same-name job with trivial success",
     "bootstrap_body": "live SHA-256 23dc1f66fe29b8be9a3bd1a0510f2b5b8b7a9c2013f1d5a03a8d4b8431e9fe60 updated 2026-08-28T04:08:58Z; no new classic context, legacy qualification labeled non-authoritative defense-in-depth, reviewed revert path explicit",
-    "merge": "forbidden_pending_two_bounded_text_rereads",
+    "bootstrap_reviews": "Security/QA APPROVE P0=0 P1=0 P2=3; REFUTE PASS/ACCEPT P0=0 P1=0 P2=0",
+    "pre_transition_binding": "master/base 5b7ac426; PR26 head f96aac62 tree 7a08c75b; one commit and three exact paths; body hash 23dc1f66; ci and visual_canary exact-head success; mergeable true; current protection strict ci@15368 + visual_canary@15368 + pull_request_runtime_qualification@15368, admins/conversation enforced, approvals 0, no force-push/deletion",
+    "transition": "Temporarily remove only pull_request_runtime_qualification@15368, retain strict ci@15368 and visual_canary@15368 plus every non-status protection control, mark exact PR26 Ready, merge through GitHub without deleting branch, immediately restore all three contexts and verify post-merge master CI. Any identity or control drift aborts and restores protection before further action.",
+    "merge": "authorized_only_inside_exact_recorded_transition_transaction",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Dispatch two bounded read-only text rereads against PR26 body SHA-256 23dc1f66fe29b8be9a3bd1a0510f2b5b8b7a9c2013f1d5a03a8d4b8431e9fe60. Only two independent P0/P1=0 verdicts can unlock the recorded one-time transition packet."
+  "next_trigger": "Reverify the exact bound state, apply the narrow master status-check transition, mark only PR26 Ready and merge it, then restore pull_request_runtime_qualification@15368 before monitoring post-merge master CI."
 }
