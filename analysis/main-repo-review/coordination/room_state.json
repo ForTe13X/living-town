@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T15:59:43Z",
+  "updated_at": "2026-08-28T16:03:12Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -2307,14 +2307,54 @@
       "stop_lines": ["head/tree/body drift", "scope exceeds one manifest", "new P0/P1", "hosted result drift"],
       "handoff_recipient": "Producer",
       "archive_condition": "Exact-head verdict delivered or one recovery exhausted."
+    },
+    {
+      "claim_id": "lease-cafe-authority-base-sync-handoff-v3",
+      "task": "producer:01a04233-497e-7942-8da0-7958b314b199",
+      "role": "Dev writer - bounded protected-base synchronization handoff protocol repair",
+      "objective": "Extend the protected-base verifier so an approved exact source bundle can authorize only a candidate that retains identical trust-path records and is provably descended from both that reviewed source head and the current protected master, breaking the strict-base synchronization cycle without authorizing unrelated same-blob heads.",
+      "baseline": "43c72a8faa4e927fa5e324f589c611dd2a402a0e",
+      "baseline_tree": "a07840f3c4d098e8e88e0a149c6d2bad25fa8eb9",
+      "branch": "codex/cafe-authority-base-sync-handoff-v3",
+      "worktree": "D:\\Documents\\Dev\\living-town-authority-base-sync-v3-wt",
+      "owned_paths": [".github/trusted-cafe-authority/verify_candidate_bundle.py"],
+      "forbidden_paths": [".github/trusted-cafe-authority/approved-bundles.v1.json", ".github/workflows/**", "master", "integration/batons", "PR25", "PR28", "branch protection", "all game/assets/docs/analysis paths", "force push", "history rewrite"],
+      "authority_keys": ["trusted_cafe_authority_reviewed_source_plus_current_base_derivation_v3"],
+      "generated_outputs": ["one-file normal feature branch and Draft PR only after proof", "task-local pinned-Docker receipts and attack fixtures outside repository"],
+      "dependencies": ["PR29 verifier v2 merged as master43c72a8f", "PR28 exact-head Security/QA P1 and REFUTE P1", "PR25 frozen at source2760325/treec87b0644", "PR28 frozen Draft e70cebba"],
+      "consumer": "A future re-reviewed PR28 manifest transition, followed by normal PR25 synchronization whose head contains both the reviewed source and current protected master",
+      "status": "reserved_pre_worktree_exact_design_and_negative_controls_required",
+      "write_lease": true,
+      "last_heartbeat": "2026-08-28T16:03:12Z",
+      "stale_after": "2026-08-28T17:03:12Z",
+      "pr": null,
+      "recovery_count": 0,
+      "pr_policy": "Create a new Draft PR to master only after exact one-file Docker proof. Do not alter PR25/PR28, protection, Ready state or merge from this lease.",
+      "acceptance_tests": ["original exact reviewed source head/tree remains accepted", "base-synchronized successor with exact trust records and both required ancestors is accepted", "same blobs on unrelated head rejects", "reviewed source not ancestor rejects", "current master not ancestor rejects", "stale current-master snapshot rejects", "altered trust blob/mode/bytes/SHA rejects", "mixed/rename/fork/self-modification behavior remains fail-closed", "GitHub ref/compare API failure or malformed response rejects", "all manifest bundles remain deterministic", "receipt preserves candidate and approved-source provenance"],
+      "negative_controls": ["same records false source lineage", "candidate containing source but not current master", "candidate containing master but not source", "diverged compare", "behind compare", "master drift after check", "duplicate matching identities", "pending or request-changes evidence", "one-bit trust-path mutation", "outside-path PR diff", "API timeout/404/malformed JSON"],
+      "rollback": "Leave or close the new one-file Draft PR unmerged. If later merged, disable dependent manifest/candidate transitions and revert through a new reviewed PR; never rewrite protected history.",
+      "stop_lines": ["master drift before branch creation", "second repository path", "manifest/workflow/protection mutation", "same-blob unrelated candidate accepted", "current master not proven ancestor", "source not proven ancestor", "any old negative control regresses", "Docker isolation unavailable"],
+      "handoff_recipient": "Independent Security/QA and REFUTE exact-head reviewers, then Producer protected-base transition decision",
+      "archive_condition": "Exact one-file Draft handoff with terminal reviews, or one recovery exhausted and no remote publication."
     }
   ],
+  "active_dependency_graph": {
+    "at": "2026-08-28T16:03:12Z",
+    "trigger": "PR28 matching independent P1 strict-base identity handoff cycle",
+    "ranking": "dependency unlock first, then evidence closure, then player-visible cafe production; conflict risk serialized across shared authority",
+    "phases": [
+      {"phase":1,"objective":"Verifier v3 reviewed-source plus current-protected-base derivation","owner":"lease-cafe-authority-base-sync-handoff-v3","status":"active_serialized","player_value":"unblocks protected trust-root delivery","conflict_risk":"high shared authority; sole writer","exit":"one-file Draft PR, pinned-Docker negative controls, independent P0/P1=0"},
+      {"phase":2,"objective":"Synchronize PR28 normally, replace only pending review leaves after fresh exact-source reviews, and re-run exact-head evidence","owner":"unassigned","status":"blocked_on_phase1_merge","player_value":"installs data-only authorization","conflict_risk":"high manifest authority; serialized","exit":"PR28 exact head P0/P1=0 and controlled manifest transition package"},
+      {"phase":3,"objective":"Merge reviewed manifest through reversible protected transition, then normally synchronize PR25 so candidate contains reviewed source plus current protected master","owner":"unassigned","status":"blocked_on_phase2","player_value":"makes protected candidate executable without stale identity","conflict_risk":"critical protection and trust paths; serialized","exit":"PR25 fresh authority+qualification+CI at exact synchronized head and independent P0/P1=0"},
+      {"phase":4,"objective":"Merge eligible PR25, monitor post-merge, then unlock Stack B authored IDs and exactly one cafe exterior-to-persistence production owner","owner":"unassigned","status":"blocked_on_phase3","player_value":"direct prerequisite to player-visible cafe vertical slice","conflict_risk":"trust root then canonical scene authority; separate leases","exit":"post-merge green, P0/P1=0, cafe production packet dispatched"}
+    ]
+  },
   "current_conflict_graph": {
-    "at": "2026-08-28T15:59:43Z",
-    "active_writers": 0,
+    "at": "2026-08-28T16:03:12Z",
+    "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "PR28 exact head is frozen after matching independent P1 findings. No marker, PR, protection or merge mutation is authorized. PR25, integration, implementation paths and dirty/unknown worktrees remain frozen. The next safe lane is read-only design of a reversible handoff protocol that preserves exact trust-path authority across protected-base synchronization without weakening candidate identity or Sim authority."
+    "decision": "PR28 and PR25 remain frozen. Exactly one isolated writer now owns only the protected-base verifier for a reviewed-source plus current-master derivation protocol. Manifest, workflows, protection, integration, game paths and every dirty/unknown worktree remain forbidden; no second writer is admitted until the authority contract is stable."
   },
   "released_claims": [
     {
@@ -2822,5 +2862,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_1b8afb72_verified"
   },
-  "next_trigger": "Reconstruct a 2-4 phase dependency graph and produce a read-only reversible protocol design for exact trust-path authorization across strict protected-base synchronization. Do not mutate verifier, manifest, PR25, PR28 or protection until the design has explicit negative controls and independent review."
+  "next_trigger": "Verify master43c72a8f and branch absence, create the isolated v3 worktree/feature branch, implement only the verifier derivation contract, and run all old plus new negative controls twice in pinned Docker before any remote publication."
 }
