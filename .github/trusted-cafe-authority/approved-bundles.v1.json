@@ -63,6 +63,68 @@
       "id": "pr25-stack-a-six-path-5a449cad-v1",
       "source_head": "5a449cad6d486e3680d2febba8203b0be7d215b9",
       "source_tree": "60621741d4f453c7316a424d626849be2776581c"
+    },
+    {
+      "evidence": {
+        "artifact_bytes": 246199708,
+        "artifact_id": 9683942019,
+        "artifact_sha256": "9fe309e4a4723bdc86403d2bb228aec79b9578105f929ee1d38d96ccf014e729",
+        "authority_run": 33166722979,
+        "general_run": 33166722929,
+        "pull_request": 25,
+        "refute": "PENDING_INDEPENDENT_EXACT_HEAD_2760325D",
+        "security_qa": "PENDING_INDEPENDENT_EXACT_HEAD_2760325D",
+        "trusted_run": 33166722949,
+        "visual_artifact_id": 9684049408,
+        "visual_artifact_sha256": "a14e56cbde4b41559bc4bff1e451603db588645c111277435deedc27755197fa"
+      },
+      "files": [
+        {
+          "bytes": 52881,
+          "git_blob_sha": "e81167fa8eaff9efdaec60d141ae39531053f3d3",
+          "mode": "100644",
+          "path": ".github/workflows/trusted-cafe-attestation.yml",
+          "sha256": "c300b57b0efc22f3c3676d77d4175c6309c36530b8b05853a26c958ccc2ec93f"
+        },
+        {
+          "bytes": 4950,
+          "git_blob_sha": "80848d990481459f339a0d25cd0986e3f34ceece",
+          "mode": "100644",
+          "path": "evidence/cafe/runtime-lock.v1.json",
+          "sha256": "f1dd2b9d2bc0c16b5af09a81f673c53c890bdcaf31a4af495556e76e687ae7ac"
+        },
+        {
+          "bytes": 43930,
+          "git_blob_sha": "222511542ff52727954194ef9ace3cc9a020e6d7",
+          "mode": "100644",
+          "path": "tools/cafe_attestation_selftest.py",
+          "sha256": "9a8497509ae3c49b2c76947c0bb19e5c122b2278599ad7c14460d1fd8a6a0c80"
+        },
+        {
+          "bytes": 17660,
+          "git_blob_sha": "1b6412d2a75dc5e64ab7828b4e7613d5727339f6",
+          "mode": "100644",
+          "path": "tools/cafe_authored_manifest.py",
+          "sha256": "c61da50acd65eab0ac55698fa9bfebc3ce4a2eaf97e7d228864a6461ef8bbc6c"
+        },
+        {
+          "bytes": 53017,
+          "git_blob_sha": "a40ade2d1ef49527d57d41e8d2b9bc3c94693cb6",
+          "mode": "100644",
+          "path": "tools/trusted_cafe_capture.sh",
+          "sha256": "807cf82045a632204d18d0f4630e3af89da2fe6b311361cba063e70258d5d440"
+        },
+        {
+          "bytes": 56232,
+          "git_blob_sha": "b655b61bf8d4772155885f8533a11a36083f94e4",
+          "mode": "100644",
+          "path": "tools/verify_cafe_attested_evidence.py",
+          "sha256": "7f7ace4ca1ff9ed613e43fd94545d05ab605456adde7014827e25de5e5f2449f"
+        }
+      ],
+      "id": "pr25-stack-a-six-path-2760325d-v2",
+      "source_head": "2760325d5946ae2d5d8632a704f6c180f90976e4",
+      "source_tree": "c87b064479089b0036d6544b377531946e0f96f5"
     }
   ],
   "does_not_prove": [
