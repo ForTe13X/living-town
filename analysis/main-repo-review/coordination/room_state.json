@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T17:21:44Z",
+  "updated_at": "2026-08-28T17:24:20Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -2493,15 +2493,16 @@
       "generated_outputs": ["GitHub merge commit and protection audit receipts only"],
       "dependencies": ["PR30 exact base/head/tree/blob/body", "CI33190511868 success", "authority33190511839 expected self-modification failure", "Security/QA P0=0 P1=0", "REFUTE P0=0 P1=0", "37/37 branch reconciliation", "no duplicate open verifier candidate"],
       "consumer": "Protected master verifier v3, then serialized PR28 manifest repair",
-      "status": "reserved_pre_mutation_exact_preflight_passed",
+      "status": "temporary_required_checks_applied_verified_ready_merge_reserved",
       "read_only": false,
-      "last_heartbeat": "2026-08-28T17:21:44Z",
+      "last_heartbeat": "2026-08-28T17:24:20Z",
       "stale_after": "2026-08-28T17:36:44Z",
       "pr": 30,
       "checks": {"ci": "success", "visual_canary": "success", "authority": "expected self-modification failure", "qualification": "absent because no runtime path"},
       "preflight": {"hosted_ls_remote_local": "37/37/37 exact hash3e2d2515", "mergeable": true, "sole_parent_is_base": true, "one_path": true, "duplicate_open_candidates": 0, "aggregate_p0": 0, "aggregate_p1": 0, "aggregate_p2": 3},
       "temporary_required_checks": ["ci@15368", "visual_canary@15368"],
       "restore_required_checks": ["ci@15368", "visual_canary@15368", "pull_request_runtime_qualification@15368", "trusted_cafe_authority_gate@15368"],
+      "temporary_protection_result": {"applied": true, "strict": true, "checks": ["ci@15368", "visual_canary@15368"], "admins": true, "conversation_resolution": true, "approvals": 0, "dismiss_stale": true, "force_push": false, "deletion": false, "non_status_controls_unchanged": true},
       "recovery_count": 0,
       "rollback": "Before merge restore all four checks and return PR30 to Draft if any identity/protection drift occurs. After merge restore all four checks immediately; on post-merge regression use a new reviewed revert PR and never rewrite master.",
       "stop_lines": ["master or PR identity drift", "any non-status protection drift", "unexpected check or review change", "duplicate verifier candidate", "temporary protection cannot be verified", "merge result differs from exact reviewed head", "final protection restoration fails"],
@@ -2514,7 +2515,7 @@
     "trigger": "PR28 matching independent P1 strict-base identity handoff cycle",
     "ranking": "dependency unlock first, then evidence closure, then player-visible cafe production; conflict risk serialized across shared authority",
     "phases": [
-      {"phase":1,"objective":"Verifier v3 reviewed-source plus current-protected-base derivation","owner":"claim-pr30-reversible-protected-transition-exact-4974244f","status":"independent_p0_p1_closed_reversible_transition_reserved","player_value":"unblocks protected trust-root delivery","conflict_risk":"high shared authority; Producer-only protected mutation","exit":"exact PR30 merge, four-check protection restored, post-merge CI success"},
+      {"phase":1,"objective":"Verifier v3 reviewed-source plus current-protected-base derivation","owner":"claim-pr30-reversible-protected-transition-exact-4974244f","status":"temporary_ci_visual_protection_verified_ready_merge_reserved","player_value":"unblocks protected trust-root delivery","conflict_risk":"high shared authority; Producer-only protected mutation","exit":"exact PR30 merge, four-check protection restored, post-merge CI success"},
       {"phase":2,"objective":"Synchronize PR28 normally, replace only pending review leaves after fresh exact-source reviews, and re-run exact-head evidence","owner":"unassigned","status":"blocked_on_phase1_merge","player_value":"installs data-only authorization","conflict_risk":"high manifest authority; serialized","exit":"PR28 exact head P0/P1=0 and controlled manifest transition package"},
       {"phase":3,"objective":"Merge reviewed manifest through reversible protected transition, then normally synchronize PR25 so candidate contains reviewed source plus current protected master","owner":"unassigned","status":"blocked_on_phase2","player_value":"makes protected candidate executable without stale identity","conflict_risk":"critical protection and trust paths; serialized","exit":"PR25 fresh authority+qualification+CI at exact synchronized head and independent P0/P1=0"},
       {"phase":4,"objective":"Merge eligible PR25, monitor post-merge, then unlock Stack B authored IDs and exactly one cafe exterior-to-persistence production owner","owner":"unassigned","status":"blocked_on_phase3","player_value":"direct prerequisite to player-visible cafe vertical slice","conflict_risk":"trust root then canonical scene authority; separate leases","exit":"post-merge green, P0/P1=0, cafe production packet dispatched"}
@@ -3033,5 +3034,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_39687a6b_verified"
   },
-  "next_trigger": "Ledger publication of the exact PR30 reversible transition reservation, then recheck master43c72a8f/PR30head4974244f and protection. If exact, temporarily require only ci+visual, mark Ready, merge through GitHub, immediately restore ci+visual+qualification+authority, and monitor post-merge CI. Any drift aborts with original protection restored."
+  "next_trigger": "Temporary strict protection is verified with only ci@15368 and visual_canary@15368 while every non-status control is unchanged. After this ledger publication, recheck exact master and PR30 identity, mark PR30 Ready, merge exact4974244f through GitHub without deleting the branch, immediately restore all four required checks, verify merge parent/tree and protection, then monitor post-merge CI."
 }
