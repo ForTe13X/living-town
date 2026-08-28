@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T05:52:16Z",
+  "updated_at": "2026-08-28T05:54:35Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1320,8 +1320,8 @@
       "generated_outputs": ["one-file workflow repair commit", "isolated pinned-Docker self-test and exact-diff receipts", "Draft repair PR against master"],
       "dependencies": ["master:b5d02e499480540d90ae215d91a8cf772985b099:tree:7a08c75b3a54455e012f0f0798be02c5d77eb6e9", "failed-run:33142614324:job:98756569578", "official-pull_request_target:GITHUB_SHA-is-last-commit-on-base-branch"],
       "consumer": "Unchanged Draft PR25 exact protected-base authority rerun",
-      "status": "pr27_merged_exact_tree_protection_restored_post_merge_ci_success_pr25_reopen_trigger_armed",
-      "last_heartbeat": "2026-08-28T05:52:16Z",
+      "status": "pr27_complete_pr25_reopened_identity_preserved_authority_and_general_runs_in_progress",
+      "last_heartbeat": "2026-08-28T05:54:35Z",
       "stale_after": "2026-08-28T06:32:16Z",
       "pr": 27,
       "pr_state": "MERGED_2026-08-28T05:27:40Z_MERGE_FD122E62_BRANCH_RETAINED",
@@ -1386,11 +1386,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T05:52:16Z",
+    "at": "2026-08-28T05:54:35Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "PR27 merge fd122e62 passed exact post-merge run33144831252 with ci and visual_canary success under fully restored protection. Arm exactly one PR25 close/reopen event trigger that must preserve Draft head 5a449cad/tree 60621741, candidate paths and protection; no Ready, code or head mutation."
+    "decision": "PR25 close/reopen completed on the first reopen attempt with OPEN Draft head 5a449cad preserved and base OID advanced to current master fd122e62. Freeze mutations while authority run33146171197 and companion unprivileged runs reach terminal evidence."
   },
   "released_claims": [
     {
@@ -1804,7 +1804,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "PR27_POST_MERGE_SUCCESS_PR25_EXACT_CLOSE_REOPEN_AUTHORITY_TRIGGER_ARMED",
+    "state": "PR25_REOPENED_CURRENT_MASTER_BOUND_AUTHORITY_RUN_IN_PROGRESS_IDENTITY_PRESERVED",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
@@ -1834,8 +1834,9 @@
     "repair_merge": "PR27 merged 2026-08-28T05:27:40Z as fd122e6235f8870c7e3f8e6b43b35f04392765d9 tree 503376dbd7fb8c0a877e40f3843dc8b6fe4f6aa8 with parents b5d02e49 and eb51b015; branch retained; workflow blob 93a5b70e; full strict protection immediately restored",
     "repair_post_merge": "master run33144831252 SUCCESS at fd122e6235f8870c7e3f8e6b43b35f04392765d9; ci job98763457358 success 2026-08-28T05:51:34Z; visual_canary job98763457479 success 2026-08-28T05:34:14Z; full protection restored",
     "pr25_trigger_transaction": "Reverify PR25 OPEN Draft exact head 5a449cad/tree 60621741, six paths/sixteen commits, current visible checks and protection; close then immediately reopen only to emit pull_request_target reopened against current master fd122e62. If close succeeds but reopen fails, retry reopen. Abort evidence consumption on any head/tree/Draft/path/protection drift. Never mark Ready or merge.",
+    "pr25_trigger_result": "Close success then reopen success on attempt 1; PR25 OPEN Draft, head 5a449cad unchanged, baseRefOid now current master fd122e62, updated 2026-08-28T05:54:07Z; authority run33146171197/job98767595615, CI run33146170952 and qualification run33146171005 in progress",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Execute the recorded PR25 close/reopen trigger, bind the resulting trusted_cafe_authority_gate run to current master fd122e62 and unchanged candidate 5a449cad, then wait for its terminal receipt before independent PR25 review."
+  "next_trigger": "Wait for authority run33146171197 to reach terminal status, inspect its protected-base checkout/receipt/artifact and bind it to current master fd122e62 plus candidate 5a449cad; do not consume companion green checks as authority."
 }
