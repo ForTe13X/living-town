@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T02:10:49Z",
+  "updated_at": "2026-08-28T02:15:58Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -771,9 +771,9 @@
         "github-collaborators:ForTe13X-only-admin-and-pr-author"
       ],
       "consumer": "Producer then fresh independent Security/QA and REFUTE; Stack B remains frozen until governance P1 closes",
-      "status": "hosted_exact_head_all_checks_success_protection_mutation_reserved",
+      "status": "hosted_exact_head_all_checks_success_required_check_enforced_pr_projection_and_reviews_reserved",
       "write_lease": false,
-      "last_heartbeat": "2026-08-28T02:10:49Z",
+      "last_heartbeat": "2026-08-28T02:15:58Z",
       "stale_after": null,
       "pr": 25,
       "checks": {
@@ -781,7 +781,8 @@
         "p1_open": 1,
         "current_required_checks": [
           "ci",
-          "visual_canary"
+          "visual_canary",
+          "pull_request_runtime_qualification"
         ],
         "current_required_approvals": 0,
         "target_required_checks": [
@@ -796,6 +797,7 @@
         "validation_receipt_sha256": "4a6def2f52ffd93fb5e25ac5ba9595649c09977199210bce33fbc70f79905802",
         "workflow_sha256": "4669f4412a718a21cfcaa0eaec75a7abd6deff2c860f618c4eccddd9465edb58",
         "remote_delivery": "success Git Data API linear force=false",
+        "branch_protection_transition": "success targeted required_status_checks PATCH; all contexts bound to GitHub Actions app 15368; every non-check rule preserved",
         "hosted": {
           "head": "5a449cad6d486e3680d2febba8203b0be7d215b9",
           "trusted_run": 33134089326,
@@ -1239,18 +1241,18 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "AUTHORIZED_GOVERNANCE_REPAIR_PROTECTION_MUTATION_RESERVED",
+    "state": "AUTHORIZED_GOVERNANCE_REPAIR_REQUIRED_CHECK_ENFORCED_FINAL_REVIEWS_RESERVED",
     "exact_head": "5a449cad6d486e3680d2febba8203b0be7d215b9",
     "p0": 0,
     "p1": 1,
     "p2": 0,
     "technical_exact_head": "passed",
-    "governance": "required_check_transition_reserved; platform-independent-approval enforcement unavailable with sole collaborator",
-    "pr_body": "refresh_reserved_after_this_ledger_commit",
-    "branch_protection_change": "targeted required_status_checks PATCH reserved: preserve strict ci and visual_canary app 15368 and add pull_request_runtime_qualification app 15368; preserve approval count zero to avoid unsatisfiable deadlock",
+    "governance": "required qualification enforced on master; platform-independent-approval enforcement unavailable with sole collaborator and remains an explicit operational gate",
+    "pr_body": "post-protection exact evidence and single-maintainer constraint refresh reserved after this ledger commit",
+    "branch_protection_change": "applied and reverified: strict ci@15368, visual_canary@15368 and pull_request_runtime_qualification@15368; approval count zero; all other prior rules unchanged",
     "merge": "forbidden",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Apply and verify the targeted master required-status-check transition, refresh PR #25 projection, then dispatch fresh exact-head independent Security/QA and REFUTE."
+  "next_trigger": "Refresh PR #25 projection, then dispatch fresh exact-head independent Security/QA and REFUTE against the live required-check protection state."
 }
