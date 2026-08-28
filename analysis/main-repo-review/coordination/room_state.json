@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T19:45:26Z",
+  "updated_at": "2026-08-28T19:49:31Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -15,7 +15,7 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-08-28T19:45:26Z",
+    "at": "2026-08-28T19:49:31Z",
     "github_api_count": 37,
     "git_ls_remote_count": null,
     "local_tracking_count": 37,
@@ -24,10 +24,10 @@
     "secondary_authority": "GitHub branch, pull/review, Actions/artifact, protection, issue and release APIs; local refs are explicitly non-authoritative for the one mismatched coordination head after both fetch attempts failed",
     "reconciliation": "GitHub API enumerated 37 hosted branches at hash12a8f5bd and is authoritative for this incomplete snapshot. Local tracking also has 37 names but only 36 exact heads: codex/main-repo-review is hosted6b9e8ee1 versus cached786af609. PR28 exactf57fc8e and all other heads match; no cached ref was promoted. Per-branch local ancestry remains usable only for the 36 exact objects.",
     "network_failures": ["2026-08-28T19:30Z initial git fetch --all --tags --prune failed: Recv failure connection reset.", "2026-08-28T19:32Z sole fetch recovery failed after 21073 ms: could not connect to github.com:443. GitHub API remained available and was used as explicit secondary authority; git ls-remote was not silently inferred."],
-    "sorted_name_sha_set_sha256": "520c5c814c99979462232c17e1e26bf59ff8c3c1be748184683fd1c1bb5dd4e6",
+    "sorted_name_sha_set_sha256": "57fa2106c20e5a6b060eb975ba34ab872f1d9d881643fe491dd8efe3b5a07007",
     "master": "5c3e5cb6eebeea283245869a96e489d065c380b7",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "163d063c7009292ad99f03af6b295f7146ddf190",
+    "coordination": "e4de318f041347fff9ff28403460efe55cc08481",
     "pr25": "2760325d5946ae2d5d8632a704f6c180f90976e4",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
     "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
@@ -2665,13 +2665,14 @@
       "generated_outputs": ["task final message with counterexamples, exact identity, P0/P1/P2, evidence receipts and merge-readiness verdict"],
       "dependencies": ["PR28 OPEN Draft exactf57fc8e/tree9c26d720", "body sha256bfabebf97aef5743b89cd87c67532eaef0464706041ab39d5ec71116b7836ec5", "CI33200768617 success", "authority33200766627 expected self-modification rejection", "source PR25 exact2760325/c87b0644 frozen", "known retained verifier P2 request-context gaps"],
       "consumer": "Producer controlled PR28 transition decision cross-checked against Security/QA",
-      "status": "pause_reserved_due_peer_p1_and_pending_body_hash_change",
+      "status": "paused_interrupted_due_peer_p1_and_body_drift",
       "read_only": true,
-      "last_heartbeat": "2026-08-28T19:45:26Z",
+      "last_heartbeat": "2026-08-28T19:49:31Z",
       "stale_after": "2026-08-28T20:05:18Z",
       "pr": 28,
       "checks": {"ci": "success", "visual_canary": "success", "authority": "expected self-modification failure", "existing_github_reviews": 0},
       "dispatch": {"at": "2026-08-28T19:38:42Z", "target": "/root/pr29_refute_replacement", "method": "followup_task", "status": "running"},
+      "pause_result": {"at": "2026-08-28T19:47:12Z", "previous_status": "running", "result": "interrupted before relying on superseded body", "release_reason": "Security P1 requires body mutation; in-flight old-body REFUTE evidence cannot be terminal for the corrected package."},
       "recovery_count": 0,
       "rollback": "No mutation permitted. If identity, body, checks, protection or source evidence drifts, STOP and return the observed exact state; Producer revokes the review lease.",
       "stop_lines": ["head/tree/base/body/check/protection drift", "unable to isolate any optional Docker test", "any requested write or GitHub review submission", "P0 or P1 found", "duplicate/malformed response unexpectedly authorizes"],
@@ -2694,14 +2695,16 @@
       "generated_outputs": ["PR28 body 4948 UTF-8 bytes SHA256 d3c245ad055e64f0ca182dd4df20f4c5918d5b3b87c3e7045b6ed248b966b6b3"],
       "dependencies": ["Security/QA P1 exactf57fc8e", "Producer pinned-Docker hosted blob reproduction", "current body 4719 bytes SHA256bfabebf97aef5743b89cd87c67532eaef0464706041ab39d5ec71116b7836ec5", "hosted blob2e6257e5 6147 bytes SHA256 4bdb1160", "worktree projection 6299 bytes SHA256 6daf7f38"],
       "consumer": "Security/QA recovery and restarted REFUTE exact-body reviews",
-      "status": "reserved_before_pr_body_mutation",
+      "status": "first_body_mutation_semantically_exact_but_crlf_hash_mismatch_recovery_reserved",
       "read_only": false,
-      "last_heartbeat": "2026-08-28T19:45:26Z",
-      "stale_after": "2026-08-28T20:00:26Z",
+      "last_heartbeat": "2026-08-28T19:49:31Z",
+      "stale_after": "2026-08-28T20:04:31Z",
       "pr": 28,
       "body_transition": {"from_sha256": "bfabebf97aef5743b89cd87c67532eaef0464706041ab39d5ec71116b7836ec5", "from_bytes": 4719, "to_sha256": "d3c245ad055e64f0ca182dd4df20f4c5918d5b3b87c3e7045b6ed248b966b6b3", "to_bytes": 4948, "old_claim": "hosted blob is6299 bytes/6daf7f38", "new_claim": "hosted blob is6147 bytes/4bdb1160; mixed-EOL worktree is separately labeled6299 bytes/6daf7f38"},
       "checks": {"head_ci": "success", "visual_canary": "success", "authority": "expected self-modification failure", "pr_state": "OPEN_DRAFT"},
-      "recovery_count": 0,
+      "mutation_attempt": {"method": "gh pr edit --body-file - with Windows text-mode stdin", "semantic_replacement": "exact", "actual_sha256": "7d0c79efb306a6397e875678fe5eda02d529a73c5754ab1fefcfee5ac3b10c8c", "actual_bytes": 5009, "line_endings": "61 CRLF", "normalized_lf_sha256": "d3c245ad055e64f0ca182dd4df20f4c5918d5b3b87c3e7045b6ed248b966b6b3", "normalized_lf_bytes": 4948, "ref_changed": false, "draft_changed": false},
+      "recovery_count": 1,
+      "recovery_note": "Target hash stop line fired because Windows text-mode stdin converted all 61 body newlines to CRLF. One recovery is reserved through GitHub REST PATCH with binary JSON stdin, which escapes newlines and avoids host translation; exact normalized content already matches the target.",
       "rollback": "If post-edit body hash or scope differs, restore the exact prior body through a separately ledgered PR-body mutation; no ref or file rollback is involved.",
       "stop_lines": ["head/tree/base/Draft/check/protection drift", "current body hash differs from bfabebf9", "replacement count not exactly one", "target body hash differs from d3c245ad", "any non-body GitHub mutation"],
       "handoff_recipient": "Security/QA recovery and REFUTE restart",
@@ -2722,9 +2725,9 @@
   "current_conflict_graph": {
     "at": "2026-08-28T19:45:26Z",
     "active_writers": 0,
-    "read_only_reviewers": 1,
+    "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "Security/QA reproduced a P1 body-to-hosted-blob provenance error. Security review is released, REFUTE pause is reserved, and exactly one Producer PR-body metadata writer is admitted; no repository writer, Ready, merge, protection or PR25 mutation is allowed."
+    "decision": "Security/QA P1 is confirmed, REFUTE was interrupted before body drift, and the first body edit hit the exact hash stop line solely because Windows stdin produced CRLF. One binary-JSON REST recovery remains; no reviewer or repository writer is active."
   },
   "released_claims": [
     {
@@ -3232,5 +3235,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_39687a6b_verified"
   },
-  "next_trigger": "After publishing this P1 and body-repair reservation, interrupt the in-flight REFUTE review before body drift, replace exactly one PR28 body attribution line to target SHA256d3c245ad, verify head/base/Draft/checks unchanged, ledger release, then dispatch one Security/QA recovery and restart REFUTE against the corrected exact body."
+  "next_trigger": "After publishing the CRLF recovery record, PATCH PR28 body once through binary JSON stdin to exact LF SHA256d3c245ad055e64f0ca182dd4df20f4c5918d5b3b87c3e7045b6ed248b966b6b3, verify head/base/Draft/checks unchanged, ledger release, then dispatch one Security/QA recovery and restart REFUTE against the corrected body."
 }
