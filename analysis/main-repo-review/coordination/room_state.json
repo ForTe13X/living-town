@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T17:00:07Z",
+  "updated_at": "2026-08-28T17:03:08Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -2396,10 +2396,10 @@
       "generated_outputs": ["temporary review receipts and adversarial fixtures outside repository only"],
       "dependencies": ["PR30 exact4974244f", "CI33190511868 success", "authority33190511839 expected self-modification failure", "Docker receipts8e61bacd and7c03d1a7", "parallel independent REFUTE"],
       "consumer": "Producer decision on bounded repair or reversible protected-base transition",
-      "status": "reserved_not_dispatched",
+      "status": "active_dispatched_read_only",
       "read_only": true,
-      "last_heartbeat": "2026-08-28T17:00:07Z",
-      "stale_after": "2026-08-28T18:00:07Z",
+      "last_heartbeat": "2026-08-28T17:03:08Z",
+      "stale_after": "2026-08-28T18:03:08Z",
       "pr": 30,
       "checks": {"ci": "success", "visual_canary": "success", "authority": "expected self-modification failure"},
       "recovery_count": 0,
@@ -2424,10 +2424,10 @@
       "generated_outputs": ["temporary adversarial fixtures and receipts outside repository only"],
       "dependencies": ["PR30 exact4974244f", "CI33190511868 success", "authority33190511839 expected self-modification failure", "Docker receipts8e61bacd and7c03d1a7", "parallel independent Security/QA"],
       "consumer": "Producer decision on P0/P1 closure, repair or reversible protected-base transition",
-      "status": "reserved_not_dispatched",
+      "status": "active_dispatched_read_only",
       "read_only": true,
-      "last_heartbeat": "2026-08-28T17:00:07Z",
-      "stale_after": "2026-08-28T18:00:07Z",
+      "last_heartbeat": "2026-08-28T17:03:08Z",
+      "stale_after": "2026-08-28T18:03:08Z",
       "pr": 30,
       "checks": {"ci": "success", "visual_canary": "success", "authority": "expected self-modification failure"},
       "recovery_count": 0,
@@ -2438,7 +2438,7 @@
     }
   ],
   "active_dependency_graph": {
-    "at": "2026-08-28T17:00:07Z",
+    "at": "2026-08-28T17:03:08Z",
     "trigger": "PR28 matching independent P1 strict-base identity handoff cycle",
     "ranking": "dependency unlock first, then evidence closure, then player-visible cafe production; conflict risk serialized across shared authority",
     "phases": [
@@ -2961,5 +2961,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_39687a6b_verified"
   },
-  "next_trigger": "Dispatch the two reserved read-only PR30 reviewers at exact4974244f/body105e46cc, await both terminal verdicts, and keep PR30 Draft plus PR25/PR28/protection/manifest frozen until independent P0/P1=0."
+  "next_trigger": "Await both active read-only PR30 reviewers at exact4974244f/body105e46cc. Keep PR30 Draft plus PR25/PR28/protection/manifest frozen; on any P0/P1 reserve only a bounded verifier repair, otherwise prepare the reversible protected-base merge transition."
 }
