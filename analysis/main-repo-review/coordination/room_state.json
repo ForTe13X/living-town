@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T04:43:32Z",
+  "updated_at": "2026-08-28T04:46:21Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1301,14 +1301,44 @@
       "review_result": {"verdict": "PASS_ACCEPT", "p0": 0, "p1": 0, "p2": 0, "transition_packet": "unlocked only for the exact narrow PR26 bootstrap", "technical_rerun": false},
       "rollback": "Release claim and keep PR26 Draft if new ambiguity appears.",
       "stop_lines": ["PR26 identity or body hash changes", "technical or state mutation would be required", "review expands beyond bounded text"]
+    },
+    {
+      "claim_id": "lease-pr26-protected-base-ref-repair-v1",
+      "task": "producer-recovery:01a04233-497e-7942-8da0-7958b314b199",
+      "role": "Bounded Dev writer for PR26 post-merge protected-base checkout repair",
+      "objective": "Replace the stale pull_request base snapshot checkout with the pull_request_target protected-base event SHA so the merged authority verifier and manifest are present, without changing verifier policy or candidate authority.",
+      "baseline": "b5d02e499480540d90ae215d91a8cf772985b099",
+      "baseline_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
+      "local_equivalent_baseline": "313d9af462f36f23fdf9ffaa4350372d2a38d1aa:tree:7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
+      "head": "uncommitted",
+      "tree": "uncommitted",
+      "branch": "codex/pr26-protected-base-ref-repair-v1",
+      "worktree": "D:\\Documents\\Dev\\living-town-pr26-protected-base-ref-repair-wt",
+      "owned_paths": [".github/workflows/trusted-cafe-authority-gate.yml"],
+      "forbidden_paths": ["all other repository paths", "coordination room files", "PR25 branch/head/body/state", "master protection", "verifier and manifest policy", "shared Docker containers, caches and scratch"],
+      "authority_keys": ["trusted-cafe-base-authority-workflow-ref-selection-v1"],
+      "generated_outputs": ["one-file workflow repair commit", "isolated pinned-Docker self-test and exact-diff receipts", "Draft repair PR against master"],
+      "dependencies": ["master:b5d02e499480540d90ae215d91a8cf772985b099:tree:7a08c75b3a54455e012f0f0798be02c5d77eb6e9", "failed-run:33142614324:job:98756569578", "official-pull_request_target:GITHUB_SHA-is-last-commit-on-base-branch"],
+      "consumer": "Unchanged Draft PR25 exact protected-base authority rerun",
+      "status": "active_isolated_writer_reserved_before_write",
+      "last_heartbeat": "2026-08-28T04:46:21Z",
+      "stale_after": "2026-08-28T05:31:21Z",
+      "pr": null,
+      "pr_policy": "Create a Draft PR against master only after exact one-path diff and pinned-Docker tests pass; never merge without fresh hosted checks plus independent Security/QA and REFUTE P0/P1=0.",
+      "acceptance_tests": ["workflow checkout ref and identity env both use github.sha", "protected-base checkout contains verifier and manifest in a clean event-SHA fixture", "8-case verifier self-test remains byte-identical", "git diff --check and exact one-path scope"],
+      "negative_controls": ["github.event.pull_request.base.sha is absent from checkout and identity binding", "candidate workflow/code is never checked out or executed", "no token write permission or classic required-context mutation"],
+      "rollback": "Close the Draft repair PR and retain branch for provenance; if later merged and regression occurs, revert through a reviewed PR while PR25 remains Draft.",
+      "stop_lines": ["master or PR25 head drifts", "repair requires verifier/manifest or any second path", "Docker evidence cannot be reproduced", "candidate code would execute", "protection or PR25 mutation becomes necessary"],
+      "handoff_recipient": "Independent Security/QA and REFUTE, then Producer",
+      "archive_condition": "Exact repair is merged with post-merge CI success and PR25 protected-base authority rerun reaches a bound terminal result."
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T04:43:32Z",
-    "active_writers": 0,
+    "at": "2026-08-28T04:46:21Z",
+    "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "The atomic PR25 close/reopen trigger completed without head/tree/Draft drift and created exactly one new protected-base authority run. No writers or reviewers are active. Freeze every PR25 mutation while run 33142614324 is in progress and until its exact event/current-head/base-authority binding is consumed."
+    "decision": "Run 33142614324 failed before verifier execution because the workflow checked out the PR creation-time base snapshot 5b7ac426, which predates the merged authority files. Reserve one isolated one-file recovery writer. PR25, verifier, manifest, protection and every other lane remain frozen."
   },
   "released_claims": [
     {
@@ -1716,19 +1746,19 @@
     "recoveries_or_replacements": 10,
     "open_exact_sha_p0": 0,
     "open_exact_sha_p1": 4,
-    "post_merge_regressions": 0,
+    "post_merge_regressions": 1,
     "player_visible_closure_state": "source_attestation_stack_a_pr25_hosted_output_permission_recovery_active"
   },
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "PR25_REOPEN_TRIGGER_COMPLETE_PROTECTED_BASE_AUTHORITY_RUN_IN_PROGRESS",
+    "state": "PR25_PROTECTED_BASE_AUTHORITY_RUN_FAILED_STALE_BASE_SNAPSHOT_P1_ONE_FILE_REPAIR_ACTIVE",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
     "exact_head": "5a449cad6d486e3680d2febba8203b0be7d215b9",
     "p0": 0,
-    "p1": 0,
+    "p1": 1,
     "p2": 2,
     "technical_exact_head": "passed",
     "governance": "required qualification context is enforced but remains candidate-self-defined by the PR-head workflow; platform-independent-approval enforcement is also unavailable with the sole collaborator",
@@ -1743,9 +1773,10 @@
     "post_merge": "master CI run 33141284479 SUCCESS at exact merge SHA; visual_canary job 98752473040 success and ci job 98752473180 success",
     "pr25_event_binding": "unchanged OPEN Draft PR25 head 5a449cad tree 60621741; six changed paths and sixteen commits; existing exact-head ci, visual_canary and legacy qualification success; close then immediately reopen only to trigger protected-base reopened event; draft/head/tree must remain unchanged or transaction aborts/reopens prior state",
     "protected_base_authority": "master b5d02e49; workflow blob 12b33ec6; manifest blob baad7334; verifier blob e7f68568; native result remains operational evidence only and is never added to classic required contexts",
-    "authority_run": "33142614324 Trusted cafe base authority gate pull_request_target created 2026-08-28T04:43:05Z, in_progress; reported head 5a449cad and branch codex/cafe-source-attestation-trust-root-v1-replacement-2",
+    "authority_run": "33142614324 failed: checkout used github.event.pull_request.base.sha=5b7ac426, so authority/.github/trusted-cafe-authority/verify_candidate_bundle.py was absent; verifier policy never executed and no artifact was produced",
+    "repair_lease": "lease-pr26-protected-base-ref-repair-v1; exactly .github/workflows/trusted-cafe-authority-gate.yml; use github.sha for protected current base checkout and identity",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Wait for authority run 33142614324. On terminal success, re-read run/jobs/checks/artifacts and PR25/master; require event/current head 5a449cad, unchanged tree 60621741, protected-base master b5d02e49 and exact authority blobs, then record the binding before independent PR25 review dispatch."
+  "next_trigger": "Create the isolated repair worktree from the local commit with the exact master tree, change only the workflow ref and BASE_SHA to github.sha, run pinned-Docker self-tests and negative controls, then deliver a Draft PR against exact master b5d02e49 for hosted and independent review."
 }
