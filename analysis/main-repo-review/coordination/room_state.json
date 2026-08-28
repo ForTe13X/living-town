@@ -2893,13 +2893,15 @@
       "generated_outputs": ["canonical IDs JSON", "byte-reproducible protected-compiler manifest", "pinned-Docker generation/check/negative-control receipts"],
       "dependencies": ["master9b2d052c/tree3c5d8599 exact local commit object reconstructed from verified GitHub signed payload", "PR25 merge and post-merge CI success", "protected compiler and verifier at exact master", "game tree unchanged", "no competing Stack B branch/PR/files discovered"],
       "consumer": "protected_capture_and_attestation workflow followed by independent exact-head Security/QA and REFUTE",
-      "status": "reserved_before_isolated_worktree_creation",
+      "status": "worktree_created_python_image_missing_git_recovery_reserved",
       "read_only": false,
-      "last_heartbeat": "2026-08-28T23:13:32Z",
+      "last_heartbeat": "2026-08-28T23:17:51Z",
       "stale_after": "2026-08-28T23:43:32Z",
       "pr": null,
       "checks": "pre-PR; require protected compiler generation twice byte-identical, --check success, malformed/stale/unbound source negative controls, exact two-path diff, then Draft PR",
-      "recovery_count": 0,
+      "recovery_count": 1,
+      "generation_attempt": {"image": "python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c", "result": "failed before output because image lacks git", "diagnostic": "git not found exit127", "manifest_created": false, "paths_after": ["untracked canonical IDs only"], "container_cleanup": "--rm complete"},
+      "recovery": {"count": 1, "image": "quay.io/podman/stable@sha256:b0173238dceedf46a10d2c3a7bf9b217a85dce19706d2d9c80b01345839ae779", "tools": "Python3.14.6 git2.55.0", "isolation": "--rm linux/amd64 uid65534 read-only root network-none cap-drop-ALL no-new-privileges tmpfs; task worktree rw and shared Git metadata ro", "stop": "image/tool/digest drift, git identity drift, output failure or any extra path"},
       "rollback": "Before remote publication remove only the verified exact clean task worktree/branch. After Draft PR publication leave or close Draft and revert only through a reviewed child; never reset/force/rewrite shared history.",
       "stop_lines": ["worktree path exists", "exact baseline/tree cannot be verified", "any source path beyond the two owned files", "pinned Docker digest/isolation unavailable", "compiler output differs across runs", "game or compiler becomes dirty", "consumer/protection/master drift", "existing competing Stack B owner appears"],
       "handoff_recipient": "Independent Stack B Security/QA and REFUTE reviewers",
@@ -3430,5 +3432,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_39687a6b_verified"
   },
-  "next_trigger": "After this ledger publication, verify the Stack B worktree path is absent, create branch/worktree from exact local master9b2d052c, author only canonical IDs, generate/check the manifest twice in isolated pinned Docker, run negative controls, require exact two-path diff, then publish a Draft PR for independent review."
+  "next_trigger": "Publish the missing-git failure and one pinned-podman recovery reservation, then generate/check the manifest twice in isolated Docker, run negative controls, require exact two-path diff, and publish a Draft PR only if every receipt is deterministic."
 }
