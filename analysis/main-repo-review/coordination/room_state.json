@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T11:46:07Z",
+  "updated_at": "2026-08-28T11:51:11Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1663,12 +1663,14 @@
       "generated_outputs": ["one manifest bundle entry only; Docker-isolated positive and negative verifier receipts outside repository"],
       "dependencies": ["protected master fd122e62", "PR25 exact head 2760325d", "qualification run33166722949 success", "CI and visual run33166722929 success", "authority run33166722979 rejects only unapproved identity"],
       "consumer": "Protected-base authority gate for PR25, then independent Security/QA and REFUTE before controlled manifest merge",
-      "status": "reserved_before_worktree_and_write",
+      "status": "terminal_docker_positive_negative_proof_success_local_commit_authorized_remote_forbidden",
       "write_lease": true,
-      "last_heartbeat": "2026-08-28T11:46:07Z",
-      "stale_after": "2026-08-28T13:46:07Z",
+      "last_heartbeat": "2026-08-28T11:51:11Z",
+      "stale_after": "2026-08-28T13:51:11Z",
       "pr": null,
       "recovery_count": 0,
+      "proof": {"container_image":"docker.io/library/python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c","platform":"linux/amd64","offline_selftest":{"unrelated_not_applicable":"pass","exact_approved_bundle":"pass","stale_blob":"rejected","rename":"rejected","mixed_scope":"rejected","self_modification":"rejected","other_workflow":"rejected","fork":"rejected"},"live_positive":{"head":"2760325d5946ae2d5d8632a704f6c180f90976e4","changed_count":6,"mode":"approved-bundle","bundle":"pr25-stack-a-six-path-2760325d-v2"},"live_negative":{"wrong_runtime_lock_sha256":"rejected"},"manifest":{"bundles":2,"working_tree_bytes":6174,"working_tree_sha256":"c7cbef5dd0e0460e31c19389d5dec9f97b2a75847c3d3427ad0cc65d484116f8"},"scope":"exactly one path; diff-check pass"},
+      "local_commit_authorization": {"authorized":true,"baseline":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","exact_paths":[".github/trusted-cafe-authority/approved-bundles.v1.json"],"remote_branch_or_pr_authorized":false,"next_transaction":"Create exact local commit with UTC author/committer metadata, then ledger exact blob/tree/commit and new Draft PR branch reservation before any GitHub ref or PR mutation."},
       "acceptance_tests": ["exactly one manifest path changes", "existing approved bundles remain byte-for-byte semantically preserved", "all six candidate path/blob/byte/SHA256 identities are recomputed from GitHub objects", "Docker-isolated verifier accepts exact PR25 fixture", "one-bit or wrong-blob negative fixture is rejected", "JSON parse and git diff --check pass"],
       "rollback": "Leave or close the Draft manifest PR unmerged. After any later merge, revert the one manifest entry through a new reviewed PR; never rewrite master.",
       "stop_lines": ["master or PR25 head drift", "any second repository path", "workflow/verifier policy change", "candidate path set differs from six", "positive verifier failure", "negative control acceptance", "protection drift"],
@@ -1677,11 +1679,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T11:46:07Z",
+    "at": "2026-08-28T11:51:11Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "PR25 exact head 2760325d has terminal qualification, CI and visual success; authority rejects only its unapproved identity. One independent protected-base writer is serialized for the single manifest path. PR25 candidate paths and all workflow/verifier authority surfaces are frozen; no reviewer is active until the Draft manifest PR exact head exists."
+    "decision": "The one-path manifest candidate passed the base-owned offline suite and a live GitHub API positive authorization of PR25 plus a wrong-SHA negative rejection in pinned Docker. Only an exact local commit is authorized; remote branch/PR creation remains separately gated. PR25 candidate and all workflow/verifier surfaces remain frozen."
   },
   "released_claims": [
     {
@@ -2151,8 +2153,9 @@
     "immutable_toolchain_replacement_3_publication": "Non-force API fast-forward 26a0d011 to content-identical commit 2760325d completed. PR25 remains OPEN Draft against fd122e62 with exactly six semantic paths. Fresh runs authority 33166722979, qualification 33166722949 and CI 33166722929 started; writer released, no Ready/merge mutation.",
     "immutable_toolchain_replacement_3_hosted": "Exact-head qualification run33166722949/job98833797427 SUCCESS: classify, immutable runtime twice, load/qualify, two self-tests, artifact budget and upload all passed. Artifact 9683942019 digest sha256:9fe309e4, 246199708 bytes, expires 2026-11-26. Authority run33166722979 failed only with zero approved identities. CI run33166722929 remains in progress.",
     "immutable_toolchain_replacement_3_ci": "Exact-head CI run33166722929 SUCCESS: visual_canary job98833853218 completed 11:27:05Z with artifact 9684049408 digest sha256:a14e56cb (18087781 bytes), and ci job98833853354 completed 11:45:10Z after the full lint/S0/test-scenes gate. Strict protection and PR25 Draft/six-path identity remain unchanged.",
+    "pr25_approved_bundle_manifest_proof": "New entry pr25-stack-a-six-path-2760325d-v2 binds six GitHub API blobs/bytes/SHA256 from tree c87b0644 while preserving the old entry. In pinned Python Docker, the eight-case offline authority suite passed; live evaluation authorized exact PR25 head 2760325d and rejected a wrong runtime-lock SHA. Exact one-path local commit is authorized; no remote branch or PR yet.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish exact-head CI/visual success and the one-path protected-base manifest lease. Create the isolated worktree at fd122e62, recompute all six candidate identities from GitHub Git objects, append one new bundle without changing old entries, and run Docker-isolated positive plus negative verifier controls before any commit or PR."
+  "next_trigger": "Publish manifest proof and local-commit authorization. Commit only approved-bundles.v1.json locally with UTC metadata, then publish exact blob/tree/commit identities and a normal new feature-ref plus Draft PR reservation before any remote mutation."
 }
