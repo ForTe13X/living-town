@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T12:40:32Z",
+  "updated_at": "2026-08-28T12:46:52Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1760,7 +1760,7 @@
       "stale_after": null,
       "pr": 29,
       "recovery_count": 0,
-      "candidate": {"commit":"1e99012a459a317376090e28ab7671a3bfda4700","tree":"ce604fba6b65ec7fbae88207db0c2a4b7a2da036","parent":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","path":".github/trusted-cafe-authority/verify_candidate_bundle.py","blob":"b0a9fa90ce58256228ba6fcbe5330501469f043c","bytes":21901,"sha256":"e0b565939e5de6e9bc42957ea90390a4f210aab03459d7fb91e0d93824a34194","clean":true},
+      "candidate": {"commit":"1e99012a459a317376090e28ab7671a3bfda4700","tree":"ce604fba6b65ec7fbae88207db0c2a4b7a2da036","parent":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","path":".github/trusted-cafe-authority/verify_candidate_bundle.py","blob":"b0a9fa90ce58256228ba6fcbe5330501469f043c","bytes":21901,"sha256":"23836b3aee590faec4bbca6ded6ad0578c90f8f02648e0e01df2096a0ccae673","working_tree_crlf_sha256":"e0b565939e5de6e9bc42957ea90390a4f210aab03459d7fb91e0d93824a34194","correction":"Authoritative SHA-256 is over the 21901 hosted Git blob bytes; the prior value measured a Windows CRLF working-tree projection.","clean":true},
       "proof": {"docker":{"client":"29.6.2","server":"29.6.2","context":"desktop-linux","platform":"linux/amd64","image":"docker.io/library/python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c","read_only":true,"task_local_names":true,"cleanup":"--rm; no residual containers"},"base_manifest":{"cases":16,"runs":2,"byte_identical":true,"receipt_sha256":"07751ac0c83801b9ea6cff9db1aca62f094feb7128a809c9162e987e63574636"},"pr28_manifest":{"bundles":2,"cases":22,"runs":2,"byte_identical":true,"receipt_sha256":"39ff6be9559f206d6aef317ff289c127b36c518a408c0564756f7c840b4ed293"},"live_pr25":{"actual_pending_manifest":"rejected matched 0","synthetic_terminal_exact_identity":{"mode":"approved-bundle","head":"2760325d5946ae2d5d8632a704f6c180f90976e4","tree":"c87b064479089b0036d6544b377531946e0f96f5","bundle":"pr25-stack-a-six-path-2760325d-v2"}},"ast":"pass","diff_check":"pass","scope":"one file"},
       "remote_reservation": {"master":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","branch_absent":true,"duplicate_prs":0,"action":"publish normal feature branch then create one Draft PR to master","ready":false,"merge":false},
       "publication": {"published_at":"2026-08-28T12:39:53Z","branch":"codex/cafe-authority-exact-identity-v2","head":"1e99012a459a317376090e28ab7671a3bfda4700","tree":"ce604fba6b65ec7fbae88207db0c2a4b7a2da036","pr":29,"state":"OPEN_DRAFT","base":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","paths":[".github/trusted-cafe-authority/verify_candidate_bundle.py"],"authority":{"run":33172016861,"job":98851220718,"conclusion":"failure","reason":"base authority self-modification is forbidden","classification":"expected fail-closed"},"ci":{"run":33172016796,"status":"in_progress"},"ready":false,"merged":false},
@@ -1789,12 +1789,13 @@
       "generated_outputs": ["read-only exact-head PR29 Security/QA report"],
       "dependencies": ["PR29 exact identity unchanged", "CI run33172016796 terminal", "parallel REFUTE independence"],
       "consumer": "Producer controlled protected-base repair merge decision",
-      "status": "reserved_for_dispatch_wait_terminal_ci",
+      "status": "recovery_1_reserved_after_hosted_blob_sha256_metadata_correction_wait_terminal_ci",
       "write_lease": false,
-      "last_heartbeat": "2026-08-28T12:40:32Z",
+      "last_heartbeat": "2026-08-28T12:46:52Z",
       "stale_after": "2026-08-28T13:40:32Z",
       "pr": 29,
-      "recovery_count": 0,
+      "recovery_count": 1,
+      "recovery_reason": "Reviewer correctly stopped on false packet/PR-body SHA-256 evidence. Hosted raw and Git Blob API bytes independently hash to 23836b3a; code identity is unchanged. Correct ledger and PR body, then re-review the same exact head once.",
       "rollback": "Delete only task-owned temporary review outputs; no repository or GitHub rollback applies.",
       "stop_lines": ["PR29 head/base/path drift", "write would be required", "CI is not terminal", "Docker isolation unavailable"],
       "archive_condition": "Terminal exact-head report consumed or identity drift invalidates review."
@@ -1815,23 +1816,24 @@
       "generated_outputs": ["read-only exact-head PR29 adversarial REFUTE report"],
       "dependencies": ["PR29 exact identity unchanged", "CI run33172016796 terminal", "parallel Security/QA independence"],
       "consumer": "Producer controlled protected-base repair merge decision",
-      "status": "reserved_for_dispatch_wait_terminal_ci",
+      "status": "recovery_1_reserved_rephrase_software_correctness_wait_terminal_ci",
       "write_lease": false,
-      "last_heartbeat": "2026-08-28T12:40:32Z",
+      "last_heartbeat": "2026-08-28T12:44:53Z",
       "stale_after": "2026-08-28T13:40:32Z",
       "pr": 29,
-      "recovery_count": 0,
+      "recovery_count": 1,
+      "recovery_reason": "Initial read-only review prompt was rejected by the safety classifier before producing evidence; retry once with benign software-correctness and regression wording, preserving exact identity and no-write constraints.",
       "rollback": "Delete only task-owned temporary adversarial outputs; no repository or GitHub rollback applies.",
       "stop_lines": ["PR29 head/base/path drift", "write would be required", "CI is not terminal", "shared state mutation would be required"],
       "archive_condition": "Terminal exact-head report consumed or identity drift invalidates review."
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T12:40:32Z",
+    "at": "2026-08-28T12:46:52Z",
     "active_writers": 0,
     "read_only_reviewers": 2,
     "shared_write_conflicts": 0,
-    "decision": "Draft PR29 exists at exact one-file head 1e99012/tree ce604fba; writer released. Two independent read-only reviews are reserved with separate Docker surfaces and must wait for CI run33172016796 terminal. Manifest, workflow, protection, PR25, PR28, Ready and merge remain frozen."
+    "decision": "Draft PR29 code identity remains exact and immutable. Security/QA found the packet/body SHA-256 measured CRLF working-tree bytes rather than the hosted LF blob; authoritative hosted SHA-256 is 23836b3a. One metadata-correction re-review and one rephrased REFUTE recovery are reserved. Manifest, workflow, protection, PR25, PR28, Ready and merge remain frozen."
   },
   "released_claims": [
     {
@@ -2309,8 +2311,9 @@
     "pr28_terminal_reviews": "PR28 run33169271123 completed success at exact head 8fb6895d. Security/QA P0=0/P1=1/P2=4 and REFUTE P0=0/P1=2/P2=1 both BLOCK merge. Producer adopts stricter P1=2. Review leases released; any new head requires fresh reviews.",
     "authority_exact_identity_v2_local_proof": "Exact one-file commit 1e99012/tree ce604fba binds approval to source head/tree and exact terminal review strings, rejects duplicate identities/records, and tests every bundle. Pinned Docker: base 16 cases and PR28 22 cases twice byte-identical; live PR25 pending rejected and synthetic exact terminal identity accepted. Branch and Draft PR reserved; no publication yet.",
     "pr29_creation": "Draft PR29 OPEN at exact base fd122e62/head 1e99012/tree ce604fba with only verify_candidate_bundle.py. Authority run33172016861 rejected expected self-modification; CI run33172016796 is in progress. Master, PR28 and PR25 are unchanged. Writer released; Security/QA and REFUTE reserved read-only.",
+    "pr29_hosted_blob_sha256_correction": "Security/QA stopped P1 on false evidence: packet/body e0b565 measured Windows CRLF working-tree bytes. GitHub raw exact head and Git Blob API both prove blob b0a9fa90 is 21901 bytes with SHA-256 23836b3aee590faec4bbca6ded6ad0578c90f8f02648e0e01df2096a0ccae673. Code/head/tree unchanged; ledger and PR body correction plus exact-head re-review reserved.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish PR29 exact creation, expected authority self-modification failure, writer release and two read-only review reservations. Dispatch both reviewers; wait for CI run33172016796 terminal and exact-head P0/P1/P2 reports before any protected-base transition."
+  "next_trigger": "Publish both review recoveries and the hosted-blob SHA-256 correction. Update PR29 body only from e0b565 to 23836b3a with an explicit CRLF provenance note, reverify head/tree/body, then redispatch Security/QA and rephrased software-correctness REFUTE at the unchanged exact head."
 }
