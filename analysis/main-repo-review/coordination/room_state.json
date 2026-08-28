@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T00:27:37Z",
+  "updated_at": "2026-08-28T01:42:15Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -727,6 +727,79 @@
         "cleanup": "all task containers and 1.67GB task-owned temporary directory removed",
         "repository_or_github_writes": false
       }
+    },
+    {
+      "claim_id": "lease-pr25-required-qualification-governance-repair",
+      "task": "/root/pr25_governance_repair",
+      "role": "Sole serialized Dev writer for PR25 sustainable required qualification gate and authorized master protection transition",
+      "objective": "Make pull_request_runtime_qualification emit a terminal conclusion for every master PR while running the full trust-root qualification for any trust-root path change, then after exact-head hosted success preserve all existing master protection and add this required context plus one independent approval.",
+      "baseline": "26e22985f9982e31b3982777f002ba3c46169acb",
+      "head": "26e22985f9982e31b3982777f002ba3c46169acb",
+      "tree": "c8835191107026c6a7c566722738dcdf465db6a9",
+      "branch": "codex/pr25-required-qualification-governance-repair",
+      "worktree": "D:\\Documents\\Dev\\living-town-pr25-governance-repair-wt",
+      "owned_paths": [
+        ".github/workflows/trusted-cafe-attestation.yml"
+      ],
+      "forbidden_paths": [
+        "**/* except .github/workflows/trusted-cafe-attestation.yml",
+        "tools/**",
+        "evidence/**",
+        "game/**",
+        "docs/**",
+        "analysis/**",
+        "tools/ci.sh",
+        "shared schemas/registries/anchors/ledgers"
+      ],
+      "authority_keys": [
+        "pull_request_runtime_qualification-required-context",
+        "master-branch-protection-required-checks",
+        "master-required-approvals"
+      ],
+      "generated_outputs": [
+        "task-owned Docker YAML validation receipts outside repository",
+        "hosted exact-head workflow and check receipts"
+      ],
+      "dependencies": [
+        "user-authorization:proceed-if-you-see-fit",
+        "pr25:26e22985f9982e31b3982777f002ba3c46169acb",
+        "security-qa:REQUEST_CHANGES:P1-required-check-and-approval",
+        "refute:REFUTE:P1-required-check-and-approval",
+        "master-protection-snapshot:strict-ci-visual_canary-approvals0"
+      ],
+      "consumer": "Producer then fresh independent Security/QA and REFUTE; Stack B remains frozen until governance P1 closes",
+      "status": "reserved_authorized_governance_repair",
+      "write_lease": true,
+      "last_heartbeat": "2026-08-28T01:42:15Z",
+      "stale_after": "2026-08-28T02:42:15Z",
+      "pr": 25,
+      "checks": {
+        "p0": 0,
+        "p1_open": 1,
+        "current_required_checks": [
+          "ci",
+          "visual_canary"
+        ],
+        "current_required_approvals": 0,
+        "target_required_checks": [
+          "ci",
+          "visual_canary",
+          "pull_request_runtime_qualification"
+        ],
+        "target_required_approvals": 1,
+        "merge": "forbidden"
+      },
+      "recovery_count": 0,
+      "rollback": "Before code delivery, remove only the task worktree/branch. After delivery, leave PR25 Draft or revert through a new reviewed linear commit. After protection mutation, restore the captured prior protection exactly: strict ci+visual_canary, approval count 0, dismiss stale reviews true, admins enforced, conversation resolution required; never rewrite Git history.",
+      "stop_lines": [
+        "PR25 head, master, integration or coordination ref drifts",
+        "any repository path beyond the workflow is required",
+        "required context would be absent or skipped on unrelated master PRs",
+        "heavy qualification can be bypassed when any trust-root path changes",
+        "protection update would discard an existing rule",
+        "Docker validation cannot use a pinned digest",
+        "secret material or shared Docker state is required"
+      ]
     }
   ],
   "current_conflict_graph": {
@@ -1148,7 +1221,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "OPEN_DRAFT_BLOCKED",
+    "state": "AUTHORIZED_GOVERNANCE_REPAIR_IN_PROGRESS",
     "exact_head": "26e22985f9982e31b3982777f002ba3c46169acb",
     "p0": 0,
     "p1": 2,
@@ -1156,10 +1229,10 @@
     "technical_exact_head": "passed",
     "governance": "blocked",
     "pr_body": "exact_current_evidence_projection_updated_sha256_55502cd065853c76b4ca799dd9472d3b1beff9233490c93ec2e6196489af40ae",
-    "branch_protection_change": "not_authorized_human_only",
+    "branch_protection_change": "authorized_pending_code_and_hosted_exact_head_validation",
     "merge": "forbidden",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "After exact PR25 and PR5 body projections are refreshed, await human authorization for repository-governance policy change or a separately approved protection design; do not mark Ready or merge."
+  "next_trigger": "Implement one-path reusable qualification gate in isolated Docker, deliver a linear PR25 commit, wait for exact-head CI, then atomically add required qualification and one independent approval while preserving all existing protections."
 }
