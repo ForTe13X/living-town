@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T11:51:11Z",
+  "updated_at": "2026-08-28T11:54:28Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1653,8 +1653,8 @@
       "role": "Sole serialized protected-base Dev writer for PR25 exact six-file approved-bundle identity",
       "objective": "Append one new provenance-preserving approved-bundle entry for PR25 exact head 2760325d and its exact six semantic file identities so the protected-base authority gate can authorize only that reviewed content without changing workflow or verifier policy.",
       "baseline": "fd122e6235f8870c7e3f8e6b43b35f04392765d9",
-      "head": "fd122e6235f8870c7e3f8e6b43b35f04392765d9",
-      "tree": "503376dbd7fb8c0a877e40f3843dc8b6fe4f6aa8",
+      "head": "15071bd79c0b8254329b90b83bf9e59808ecc737",
+      "tree": "82350016c317ef14cdf30f5c5f79eae3ee4c0fef",
       "branch": "codex/pr25-approved-bundle-2760325-v1",
       "worktree": "D:\\Documents\\Dev\\living-town-pr25-approved-bundle-2760325-wt",
       "owned_paths": [".github/trusted-cafe-authority/approved-bundles.v1.json"],
@@ -1663,14 +1663,14 @@
       "generated_outputs": ["one manifest bundle entry only; Docker-isolated positive and negative verifier receipts outside repository"],
       "dependencies": ["protected master fd122e62", "PR25 exact head 2760325d", "qualification run33166722949 success", "CI and visual run33166722929 success", "authority run33166722979 rejects only unapproved identity"],
       "consumer": "Protected-base authority gate for PR25, then independent Security/QA and REFUTE before controlled manifest merge",
-      "status": "terminal_docker_positive_negative_proof_success_local_commit_authorized_remote_forbidden",
+      "status": "terminal_proof_success_exact_new_feature_ref_and_draft_pr_creation_reserved",
       "write_lease": true,
-      "last_heartbeat": "2026-08-28T11:51:11Z",
-      "stale_after": "2026-08-28T13:51:11Z",
-      "pr": null,
+      "last_heartbeat": "2026-08-28T11:54:28Z",
+      "stale_after": "2026-08-28T13:54:28Z",
+      "pr": "reserved_new_draft",
       "recovery_count": 0,
       "proof": {"container_image":"docker.io/library/python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c","platform":"linux/amd64","offline_selftest":{"unrelated_not_applicable":"pass","exact_approved_bundle":"pass","stale_blob":"rejected","rename":"rejected","mixed_scope":"rejected","self_modification":"rejected","other_workflow":"rejected","fork":"rejected"},"live_positive":{"head":"2760325d5946ae2d5d8632a704f6c180f90976e4","changed_count":6,"mode":"approved-bundle","bundle":"pr25-stack-a-six-path-2760325d-v2"},"live_negative":{"wrong_runtime_lock_sha256":"rejected"},"manifest":{"bundles":2,"working_tree_bytes":6174,"working_tree_sha256":"c7cbef5dd0e0460e31c19389d5dec9f97b2a75847c3d3427ad0cc65d484116f8"},"scope":"exactly one path; diff-check pass"},
-      "local_commit_authorization": {"authorized":true,"baseline":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","exact_paths":[".github/trusted-cafe-authority/approved-bundles.v1.json"],"remote_branch_or_pr_authorized":false,"next_transaction":"Create exact local commit with UTC author/committer metadata, then ledger exact blob/tree/commit and new Draft PR branch reservation before any GitHub ref or PR mutation."},
+      "local_commit_authorization": {"authorized":true,"baseline":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","exact_paths":[".github/trusted-cafe-authority/approved-bundles.v1.json"],"local_commit":"15071bd79c0b8254329b90b83bf9e59808ecc737","local_tree":"82350016c317ef14cdf30f5c5f79eae3ee4c0fef","parent":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","blob":"18b100e78036830e15e85af8648fe212ca060428","sha256":"fe07cface30e6dcbc8e1629331aaf4192658d443ada8d1211749e38c733230ed","bytes":6087,"author_committer":"Codex <codex@openai.com> 2026-08-28T11:53:49Z","remote_branch_or_pr_authorized":true,"remote_ref":"refs/heads/codex/pr25-approved-bundle-2760325-v1","expected_ref_state":"absent","mode":"GitHub Git Data API exact-object creation; create new ref only if blob/tree/commit equal local identities","draft_pr":{"base":"master","expected_base":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","head":"codex/pr25-approved-bundle-2760325-v1","title":"chore: approve PR25 immutable toolchain bundle","draft":true,"scope":"one manifest path","ready":false,"merge":false},"postconditions":"New branch exact 15071bd7, one-path Draft PR, master/protection/PR25 unchanged, fresh CI and self-modification authority failure observed."},
       "acceptance_tests": ["exactly one manifest path changes", "existing approved bundles remain byte-for-byte semantically preserved", "all six candidate path/blob/byte/SHA256 identities are recomputed from GitHub objects", "Docker-isolated verifier accepts exact PR25 fixture", "one-bit or wrong-blob negative fixture is rejected", "JSON parse and git diff --check pass"],
       "rollback": "Leave or close the Draft manifest PR unmerged. After any later merge, revert the one manifest entry through a new reviewed PR; never rewrite master.",
       "stop_lines": ["master or PR25 head drift", "any second repository path", "workflow/verifier policy change", "candidate path set differs from six", "positive verifier failure", "negative control acceptance", "protection drift"],
@@ -1679,11 +1679,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T11:51:11Z",
+    "at": "2026-08-28T11:54:28Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "The one-path manifest candidate passed the base-owned offline suite and a live GitHub API positive authorization of PR25 plus a wrong-SHA negative rejection in pinned Docker. Only an exact local commit is authorized; remote branch/PR creation remains separately gated. PR25 candidate and all workflow/verifier surfaces remain frozen."
+    "decision": "Exact one-path manifest commit 15071bd7 is clean and based directly on fd122e62. GitHub has no matching branch or PR. Exact Git Data API object reconstruction, new feature-ref creation and one Draft PR are reserved; no master, protection, PR25, Ready or merge mutation is authorized."
   },
   "released_claims": [
     {
@@ -2154,8 +2154,9 @@
     "immutable_toolchain_replacement_3_hosted": "Exact-head qualification run33166722949/job98833797427 SUCCESS: classify, immutable runtime twice, load/qualify, two self-tests, artifact budget and upload all passed. Artifact 9683942019 digest sha256:9fe309e4, 246199708 bytes, expires 2026-11-26. Authority run33166722979 failed only with zero approved identities. CI run33166722929 remains in progress.",
     "immutable_toolchain_replacement_3_ci": "Exact-head CI run33166722929 SUCCESS: visual_canary job98833853218 completed 11:27:05Z with artifact 9684049408 digest sha256:a14e56cb (18087781 bytes), and ci job98833853354 completed 11:45:10Z after the full lint/S0/test-scenes gate. Strict protection and PR25 Draft/six-path identity remain unchanged.",
     "pr25_approved_bundle_manifest_proof": "New entry pr25-stack-a-six-path-2760325d-v2 binds six GitHub API blobs/bytes/SHA256 from tree c87b0644 while preserving the old entry. In pinned Python Docker, the eight-case offline authority suite passed; live evaluation authorized exact PR25 head 2760325d and rejected a wrong runtime-lock SHA. Exact one-path local commit is authorized; no remote branch or PR yet.",
+    "pr25_approved_bundle_manifest_commit": "Exact commit 15071bd79c0b8254329b90b83bf9e59808ecc737, tree 82350016c317ef14cdf30f5c5f79eae3ee4c0fef, parent fd122e62, manifest blob 18b100e7, canonical SHA256 fe07cface and 6087 bytes. New feature ref and one-path Draft PR are reserved after confirming both are absent and strict protection plus PR25 identity are unchanged.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish manifest proof and local-commit authorization. Commit only approved-bundles.v1.json locally with UTC metadata, then publish exact blob/tree/commit identities and a normal new feature-ref plus Draft PR reservation before any remote mutation."
+  "next_trigger": "Publish exact manifest commit and branch/Draft PR reservation. Reconstruct blob 18b100e7, tree 82350016 and commit 15071bd7 through Git Data API, abort on any mismatch, then create the new feature ref and Draft one-path PR. Verify fresh hosted checks and keep Ready/merge forbidden."
 }
