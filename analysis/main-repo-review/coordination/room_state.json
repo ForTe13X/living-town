@@ -2859,15 +2859,16 @@
       "generated_outputs": ["GitHub merge commit with exact reviewed tree", "post-merge CI/protected capture receipts"],
       "dependencies": ["PR25 OPEN Draft CLEAN exact base/head/tree/body and six paths", "authority+qualification+ci+visual success at exact head", "Security/QA P0=0 P1=0 P2=0", "REFUTE P0=0 P1=0 P2=3 accepted residuals", "strict four-check protection unchanged", "zero overlapping writers"],
       "consumer": "Protected production capture and Stack B/cafe vertical-slice dependency graph",
-      "status": "rest_draft_false_noop_graphql_ready_recovery_reserved",
+      "status": "graphql_ready_success_fresh_authority_success_merge_resume_reserved",
       "read_only": false,
-      "last_heartbeat": "2026-08-28T22:26:57Z",
+      "last_heartbeat": "2026-08-28T22:29:26Z",
       "stale_after": "2026-08-28T22:54:18Z",
       "pr": 25,
-      "checks": {"authority": "success", "qualification": "success", "ci": "success", "visual_canary": "success", "protected_capture": "skipped on PR by design"},
+      "checks": {"authority": "33210533687 success plus Ready-triggered33216946618 success at same exact head", "qualification": "success", "ci": "success", "visual_canary": "success", "protected_capture": "skipped on PR by design"},
       "recovery_count": 1,
       "ready_mutation_attempt": {"method": "REST PATCH draft=false", "result": "silent no-op because REST update does not convert Draft state", "postcheck": "PR remains OPEN Draft exact base/head CLEAN; no ref/file/protection/check change"},
       "recovery": {"method": "GitHub GraphQL ConvertPullRequestToReadyForReview via gh pr ready", "count": 1, "stop": "any identity/check/protection drift or PR not exact Draft before conversion"},
+      "recovery_result": {"result": "success", "pr": "OPEN Ready CLEAN", "base": "1ea7aafd28414bb9690e2c55b222ca85d33424a0", "head": "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb", "fresh_authority": "33216946618/99002596692 success", "merge_attempt": "stopped before mutation because precheck required exactly one same-name authority check; both old and fresh checks are exact-head success", "ref_or_file_or_protection_change": false},
       "rollback": "Before merge, return only PR25 to Draft on any drift. After merge, keep protection exact and use a new reviewed revert PR for any regression; never reset or rewrite master.",
       "stop_lines": ["master/base/head/tree/body/path/check/protection drift", "any P0/P1 or overlapping writer", "merge result tree differs from3c5d8599", "branch deletion or protection mutation requested", "GitHub cannot produce normal reviewable merge"],
       "handoff_recipient": "Producer post-merge CI/protected capture monitor",
@@ -3398,5 +3399,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_39687a6b_verified"
   },
-  "next_trigger": "Publish the REST Ready no-op and one GraphQL recovery reservation, reverify exact Draft identity/protection, convert only PR25 to Ready via GraphQL, then merge normally without branch deletion/protection change and monitor post-merge evidence."
+  "next_trigger": "Publish Ready success and fresh exact-head authority success, reverify latest successful required checks plus exact identity/protection, merge PR25 normally without branch deletion/protection change, verify merge tree/parents, then monitor post-merge evidence."
 }
