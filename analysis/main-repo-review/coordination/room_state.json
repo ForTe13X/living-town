@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T16:25:20Z",
+  "updated_at": "2026-08-28T16:29:51Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -2315,9 +2315,10 @@
       "objective": "Extend the protected-base verifier so an approved exact source bundle can authorize only a candidate that retains identical trust-path records and is provably descended from both that reviewed source head and the current protected master, breaking the strict-base synchronization cycle without authorizing unrelated same-blob heads.",
       "baseline": "43c72a8faa4e927fa5e324f589c611dd2a402a0e",
       "baseline_tree": "a07840f3c4d098e8e88e0a149c6d2bad25fa8eb9",
-      "head": "ae66c2edb58cf4df682ad4b8c3f2676913df8163",
+      "head": "4974244f784c8bcb9aa1a5c88fd358f5a671bd8d",
       "tree": "71a9a3b2b5c967b9dbc3d44195ffe61512b3a7d4",
       "verifier_blob": "6273384539a0917ab582715861a1debc65ee4d8f",
+      "superseded_local_head": "ae66c2edb58cf4df682ad4b8c3f2676913df8163",
       "branch": "codex/cafe-authority-base-sync-handoff-v3",
       "worktree": "D:\\Documents\\Dev\\living-town-authority-base-sync-v3-wt",
       "owned_paths": [".github/trusted-cafe-authority/verify_candidate_bundle.py"],
@@ -2326,7 +2327,7 @@
       "generated_outputs": ["one-file normal feature branch and Draft PR only after proof", "task-local pinned-Docker receipts and attack fixtures outside repository"],
       "dependencies": ["PR29 verifier v2 merged as master43c72a8f", "PR28 exact-head Security/QA P1 and REFUTE P1", "PR25 frozen at source2760325/treec87b0644", "PR28 frozen Draft e70cebba"],
       "consumer": "A future re-reviewed PR28 manifest transition, followed by normal PR25 synchronization whose head contains both the reviewed source and current protected master",
-      "status": "smart_http_failed_remote_absence_verified_git_data_api_recovery_reserved",
+      "status": "api_canonical_replacement_commit_exact_tree_parent_verified_feature_ref_creation_reserved",
       "write_lease": true,
       "last_heartbeat": "2026-08-28T16:22:44Z",
       "stale_after": "2026-08-28T17:22:44Z",
@@ -2346,7 +2347,11 @@
         "live_pr25_pr28_pending_manifest": "expected reject: candidate bundle matched 0 approved identities",
         "docker_network": "none for self-tests; bridge only for two read-only live GitHub fail-closed probes",
         "first_publication_attempt": "smart-HTTP connection reset; exit 1; no remote branch created",
-        "remote_absence_after_failure": "GitHub ref API HTTP 404; master and coordination refs exact"
+        "remote_absence_after_failure": "GitHub ref API HTTP 404; master and coordination refs exact",
+        "api_recovery_commit": "4974244f784c8bcb9aa1a5c88fd358f5a671bd8d",
+        "api_recovery_tree": "71a9a3b2b5c967b9dbc3d44195ffe61512b3a7d4",
+        "api_recovery_parent": "43c72a8faa4e927fa5e324f589c611dd2a402a0e",
+        "api_recovery_identity": "GitHub canonicalized commit metadata; exact tree/blob/parent/message, unsigned; no feature ref yet"
       },
       "recovery_count": 1,
       "pr_policy": "Create a new Draft PR to master only after exact one-file Docker proof. Do not alter PR25/PR28, protection, Ready state or merge from this lease.",
@@ -2359,18 +2364,18 @@
     }
   ],
   "active_dependency_graph": {
-    "at": "2026-08-28T16:22:44Z",
+    "at": "2026-08-28T16:29:51Z",
     "trigger": "PR28 matching independent P1 strict-base identity handoff cycle",
     "ranking": "dependency unlock first, then evidence closure, then player-visible cafe production; conflict risk serialized across shared authority",
     "phases": [
-      {"phase":1,"objective":"Verifier v3 reviewed-source plus current-protected-base derivation","owner":"lease-cafe-authority-base-sync-handoff-v3","status":"smart_http_failed_remote_absence_verified_single_api_recovery_reserved","player_value":"unblocks protected trust-root delivery","conflict_risk":"high shared authority; sole writer","exit":"one-file Draft PR, pinned-Docker negative controls, independent P0/P1=0"},
+      {"phase":1,"objective":"Verifier v3 reviewed-source plus current-protected-base derivation","owner":"lease-cafe-authority-base-sync-handoff-v3","status":"api_canonical_replacement_exact_tree_verified_feature_ref_creation_reserved","player_value":"unblocks protected trust-root delivery","conflict_risk":"high shared authority; sole writer","exit":"one-file Draft PR, pinned-Docker negative controls, independent P0/P1=0"},
       {"phase":2,"objective":"Synchronize PR28 normally, replace only pending review leaves after fresh exact-source reviews, and re-run exact-head evidence","owner":"unassigned","status":"blocked_on_phase1_merge","player_value":"installs data-only authorization","conflict_risk":"high manifest authority; serialized","exit":"PR28 exact head P0/P1=0 and controlled manifest transition package"},
       {"phase":3,"objective":"Merge reviewed manifest through reversible protected transition, then normally synchronize PR25 so candidate contains reviewed source plus current protected master","owner":"unassigned","status":"blocked_on_phase2","player_value":"makes protected candidate executable without stale identity","conflict_risk":"critical protection and trust paths; serialized","exit":"PR25 fresh authority+qualification+CI at exact synchronized head and independent P0/P1=0"},
       {"phase":4,"objective":"Merge eligible PR25, monitor post-merge, then unlock Stack B authored IDs and exactly one cafe exterior-to-persistence production owner","owner":"unassigned","status":"blocked_on_phase3","player_value":"direct prerequisite to player-visible cafe vertical slice","conflict_risk":"trust root then canonical scene authority; separate leases","exit":"post-merge green, P0/P1=0, cafe production packet dispatched"}
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-08-28T16:22:44Z",
+    "at": "2026-08-28T16:29:51Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
@@ -2882,5 +2887,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_db8b8611_verified"
   },
-  "next_trigger": "Use the single reserved Git Data API recovery to publish exact ae66c2ed as a new feature ref only if master43c72a8f, coordination eed184db and branch absence remain exact; then create and verify the Draft PR without Ready, merge or protection mutation."
+  "next_trigger": "Create the absent feature ref once at GitHub-canonical commit4974244f only if master43c72a8f and coordination next-ledger ref remain exact; immediately verify the referenced commit/tree/blob and then create a Draft PR without Ready, merge or protection mutation."
 }
