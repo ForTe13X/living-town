@@ -43,7 +43,14 @@ def validate_paths(value: object, label: str) -> list[str]:
         raise GateError(f"{label} must contain non-empty strings")
     for path in value:
         parts = path.split("/")
-        if path.startswith("/") or "\\" in path or any(part in ("", ".", "..") for part in parts):
+        if (
+            path.startswith("/")
+            or "\\" in path
+            or path != path.strip()
+            or any(not character.isprintable() for character in path)
+            or ":" in parts[0]
+            or any(part in ("", ".", "..") for part in parts)
+        ):
             raise GateError(f"{label} contains a non-canonical repository path: {path!r}")
     if len(value) != len(set(value)):
         raise GateError(f"{label} must be unique")
@@ -72,11 +79,11 @@ def validate_manifest(manifest: object) -> dict:
         if not isinstance(bundle_id, str) or not bundle_id or bundle_id in bundle_ids:
             raise GateError("bundle ids must be unique non-empty strings")
         bundle_ids.add(bundle_id)
-        source_head = str(bundle.get("source_head", ""))
-        source_tree = str(bundle.get("source_tree", ""))
-        if not HEX40.fullmatch(source_head):
+        source_head = bundle.get("source_head")
+        source_tree = bundle.get("source_tree")
+        if not isinstance(source_head, str) or not HEX40.fullmatch(source_head):
             raise GateError(f"bundle {bundle_id} has invalid source head")
-        if not HEX40.fullmatch(source_tree):
+        if not isinstance(source_tree, str) or not HEX40.fullmatch(source_tree):
             raise GateError(f"bundle {bundle_id} has invalid source tree")
         identity = (source_head, source_tree)
         if identity in bundle_identities:
@@ -91,17 +98,22 @@ def validate_manifest(manifest: object) -> dict:
         files = bundle.get("files")
         if not isinstance(files, list) or any(not isinstance(item, dict) for item in files):
             raise GateError(f"bundle {bundle_id} files must be objects")
-        paths = [item.get("path") for item in files]
-        if len(files) != len(expected) or len(paths) != len(set(paths)) or set(paths) != expected:
+        paths = validate_paths(
+            [item.get("path") for item in files], f"bundle {bundle_id} file paths"
+        )
+        if len(files) != len(expected) or set(paths) != expected:
             raise GateError(f"bundle {bundle_id} must bind every trust path exactly once")
         for item in files:
-            if not HEX40.fullmatch(str(item.get("git_blob_sha", ""))):
+            git_blob_sha = item.get("git_blob_sha")
+            sha256 = item.get("sha256")
+            byte_count = item.get("bytes")
+            if not isinstance(git_blob_sha, str) or not HEX40.fullmatch(git_blob_sha):
                 raise GateError(f"bundle {bundle_id} has invalid git blob SHA")
-            if not HEX64.fullmatch(str(item.get("sha256", ""))):
+            if not isinstance(sha256, str) or not HEX64.fullmatch(sha256):
                 raise GateError(f"bundle {bundle_id} has invalid SHA-256")
             if item.get("mode") not in ("100644", "100755"):
                 raise GateError(f"bundle {bundle_id} has invalid file mode")
-            if not isinstance(item.get("bytes"), int) or item["bytes"] < 0:
+            if type(byte_count) is not int or byte_count < 0:
                 raise GateError(f"bundle {bundle_id} has invalid byte count")
     return manifest
 
@@ -175,15 +187,16 @@ def decode_github_blob(value: object) -> bytes:
     if not isinstance(value, dict) or value.get("encoding") != "base64":
         raise GateError("candidate blob is not base64 encoded")
     content = value.get("content")
-    if not isinstance(content, str) or not content:
+    if not isinstance(content, str):
         raise GateError("candidate blob base64 content is missing")
-    compact = "".join(content.split())
-    if not compact:
-        raise GateError("candidate blob base64 content is empty")
+    compact = content.replace("\r", "").replace("\n", "")
     try:
-        return base64.b64decode(compact, validate=True)
+        decoded = base64.b64decode(compact, validate=True)
     except (ValueError, binascii.Error) as error:
         raise GateError("candidate blob base64 is invalid") from error
+    if base64.b64encode(decoded).decode("ascii") != compact:
+        raise GateError("candidate blob base64 is non-canonical")
+    return decoded
 
 
 def changed_paths(files: list[dict]) -> tuple[set[str], set[str], list[str]]:
@@ -367,10 +380,14 @@ def run_self_test(manifest: dict) -> dict:
             raise AssertionError(f"{name}: expected rejected, got {result}")
         cases.append({"name": name, "result": result})
 
-    def blob_case(name: str, value: object, expect: str) -> None:
+    def manifest_accept_case(name: str, value: dict) -> None:
+        validate_manifest(value)
+        cases.append({"name": name, "result": "accepted"})
+
+    def blob_case(name: str, value: object, expect: str, expected_bytes: bytes = b"a") -> None:
         try:
             decoded = decode_github_blob(value)
-            result = "decoded" if decoded == b"a" else "wrong-bytes"
+            result = "decoded" if decoded == expected_bytes else "wrong-bytes"
         except GateError:
             result = "rejected"
         if result != expect:
@@ -477,6 +494,12 @@ def run_self_test(manifest: dict) -> dict:
     invalid_source = copy.deepcopy(manifest)
     invalid_source["bundles"][0]["source_head"] = "0" * 39
     manifest_case("invalid-source-head", invalid_source)
+    numeric_source = copy.deepcopy(manifest)
+    numeric_source["bundles"][0]["source_head"] = int("1" * 40)
+    manifest_case("numeric-source-head", numeric_source)
+    numeric_tree = copy.deepcopy(manifest)
+    numeric_tree["bundles"][0]["source_tree"] = int("1" * 40)
+    manifest_case("numeric-source-tree", numeric_tree)
     missing_review = copy.deepcopy(manifest)
     del missing_review["bundles"][0]["evidence"]["security_qa"]
     manifest_case("missing-review-evidence", missing_review)
@@ -501,8 +524,37 @@ def run_self_test(manifest: dict) -> dict:
     dot_segment_path = copy.deepcopy(manifest)
     dot_segment_path["trust_paths"][0] = "folder/../path"
     manifest_case("dot-segment-trust-path", dot_segment_path)
+    nul_path = copy.deepcopy(manifest)
+    nul_path["trust_paths"][0] = "folder/invalid\0path"
+    manifest_case("nul-trust-path", nul_path)
+    drive_path = copy.deepcopy(manifest)
+    drive_path["trust_paths"][0] = "C:/invalid"
+    manifest_case("drive-trust-path", drive_path)
+    leading_space_path = copy.deepcopy(manifest)
+    leading_space_path["trust_paths"][0] = " leading-space"
+    manifest_case("leading-space-trust-path", leading_space_path)
+    unhashable_bundle_path = copy.deepcopy(manifest)
+    unhashable_bundle_path["bundles"][0]["files"][0]["path"] = {"path": "invalid"}
+    manifest_case("unhashable-bundle-file-path", unhashable_bundle_path)
+    numeric_blob_sha = copy.deepcopy(manifest)
+    numeric_blob_sha["bundles"][0]["files"][0]["git_blob_sha"] = int("1" * 40)
+    manifest_case("numeric-git-blob-sha", numeric_blob_sha)
+    numeric_sha256 = copy.deepcopy(manifest)
+    numeric_sha256["bundles"][0]["files"][0]["sha256"] = int("1" * 64)
+    manifest_case("numeric-sha256", numeric_sha256)
+    boolean_bytes = copy.deepcopy(manifest)
+    boolean_bytes["bundles"][0]["files"][0]["bytes"] = True
+    manifest_case("boolean-byte-count", boolean_bytes)
+    zero_bytes = copy.deepcopy(manifest)
+    zero_bytes["bundles"][0]["files"][0]["bytes"] = 0
+    manifest_accept_case("zero-byte-count", zero_bytes)
     blob_case("strict-base64-valid", {"encoding": "base64", "content": "YQ=="}, "decoded")
-    blob_case("strict-base64-wrapped", {"encoding": "base64", "content": "YQ==\n"}, "decoded")
+    blob_case("strict-base64-empty", {"encoding": "base64", "content": ""}, "decoded", b"")
+    blob_case("strict-base64-wrapped", {"encoding": "base64", "content": "YQ==\r\n"}, "decoded")
+    blob_case("strict-base64-embedded-space", {"encoding": "base64", "content": "Y Q=="}, "rejected")
+    blob_case("strict-base64-embedded-tab", {"encoding": "base64", "content": "Y\tQ=="}, "rejected")
+    blob_case("strict-base64-embedded-nbsp", {"encoding": "base64", "content": "Y\u00a0Q=="}, "rejected")
+    blob_case("strict-base64-noncanonical-pad-bits", {"encoding": "base64", "content": "YR=="}, "rejected")
     blob_case(
         "strict-base64-invalid-characters",
         {"encoding": "base64", "content": "YQ==@@"},
