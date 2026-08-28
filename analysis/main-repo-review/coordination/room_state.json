@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T04:07:03Z",
+  "updated_at": "2026-08-28T04:09:09Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1251,14 +1251,62 @@
         "repository or GitHub mutation would be required",
         "review cannot remain body-only and read-only"
       ]
+    },
+    {
+      "claim_id": "lease-pr26-rollback-security-qa-reread-v2",
+      "task": "/root/pr25_final_security_qa",
+      "role": "Independent read-only Security/QA bounded text rereviewer for PR26 rollback repair",
+      "objective": "Verify only that the stale required-context contradiction and legacy qualification authority ambiguity are closed in the live PR26 body.",
+      "baseline": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
+      "head": "f96aac62caed955c600737e0c26ee15e19df3352",
+      "tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
+      "branch": "codex/cafe-base-authority-gate-bootstrap-v1",
+      "worktree": null,
+      "owned_paths": [],
+      "forbidden_paths": ["all repository and GitHub writes", "coordination room files", "technical rerun", "branch protection, PR state and merge"],
+      "authority_keys": ["read-only-pr26-rollback-security-qa", "trusted-cafe-base-authority-operational-procedure-v1"],
+      "generated_outputs": ["terminal bounded body/hash verdict only"],
+      "dependencies": ["pr26:f96aac62caed955c600737e0c26ee15e19df3352:tree:7a08c75b3a54455e012f0f0798be02c5d77eb6e9", "pr26-live-body-sha256:23dc1f66fe29b8be9a3bd1a0510f2b5b8b7a9c2013f1d5a03a8d4b8431e9fe60", "pr26-body-updated-at:2026-08-28T04:08:58Z", "prior-security-body-reread:p0-0:p1-1:p2-3"],
+      "consumer": "Producer one-time exact PR26 bootstrap transition decision",
+      "status": "reserved_read_only_bounded_text_reread",
+      "last_heartbeat": "2026-08-28T04:09:09Z",
+      "stale_after": "2026-08-28T04:39:09Z",
+      "pr": 26,
+      "recovery_count": 0,
+      "rollback": "Release claim and keep PR26 Draft if the contradiction persists.",
+      "stop_lines": ["PR26 identity or body hash changes", "technical or state mutation would be required", "review expands beyond bounded text"]
+    },
+    {
+      "claim_id": "lease-pr26-rollback-refute-reread-v2",
+      "task": "/root/pr25_final_refute",
+      "role": "Independent read-only adversarial bounded text rereviewer for PR26 rollback repair",
+      "objective": "Verify only that the revised rollback cannot be read as adding or removing the native base-SHA context and that restored legacy qualification is explicitly non-authoritative defense-in-depth.",
+      "baseline": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
+      "head": "f96aac62caed955c600737e0c26ee15e19df3352",
+      "tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
+      "branch": "codex/cafe-base-authority-gate-bootstrap-v1",
+      "worktree": null,
+      "owned_paths": [],
+      "forbidden_paths": ["all repository and GitHub writes", "coordination room files", "technical rerun", "branch protection, PR state and merge"],
+      "authority_keys": ["read-only-pr26-rollback-refute", "trusted-cafe-base-authority-operational-procedure-v1"],
+      "generated_outputs": ["terminal bounded adversarial body/hash verdict only"],
+      "dependencies": ["pr26:f96aac62caed955c600737e0c26ee15e19df3352:tree:7a08c75b3a54455e012f0f0798be02c5d77eb6e9", "pr26-live-body-sha256:23dc1f66fe29b8be9a3bd1a0510f2b5b8b7a9c2013f1d5a03a8d4b8431e9fe60", "pr26-body-updated-at:2026-08-28T04:08:58Z", "prior-refute-body-reread:p0-0:p1-0:p2-1"],
+      "consumer": "Producer one-time exact PR26 bootstrap transition decision",
+      "status": "reserved_read_only_bounded_text_reread",
+      "last_heartbeat": "2026-08-28T04:09:09Z",
+      "stale_after": "2026-08-28T04:39:09Z",
+      "pr": 26,
+      "recovery_count": 0,
+      "rollback": "Release claim and keep PR26 Draft if new ambiguity appears.",
+      "stop_lines": ["PR26 identity or body hash changes", "technical or state mutation would be required", "review expands beyond bounded text"]
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T04:07:03Z",
+    "at": "2026-08-28T04:09:09Z",
     "active_writers": 0,
-    "read_only_reviewers": 0,
+    "read_only_reviewers": 2,
     "shared_write_conflicts": 0,
-    "decision": "Both PR26 body rereads are terminal and released. REFUTE accepts P0/P1=0; Security/QA retains one body-only P1 because Rollback contradicts the no-new-required-context rule. Reserve one exact body-only consistency repair; all code, protection and merge state remains frozen."
+    "decision": "The exact PR26 Rollback and step-5 wording repair is live with immutable new body hash. Two bounded read-only text rereads are reserved. All code, protection and merge state remains frozen until both reach P0/P1=0."
   },
   "released_claims": [
     {
@@ -1672,7 +1720,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "PR26_BODY_REREADS_TERMINAL_ROLLBACK_CONSISTENCY_P1_REPAIR_RESERVED",
+    "state": "PR26_ROLLBACK_CONSISTENCY_REPAIRED_BOUNDED_REREADS_RESERVED",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
@@ -1684,10 +1732,10 @@
     "governance": "required qualification context is enforced but remains candidate-self-defined by the PR-head workflow; platform-independent-approval enforcement is also unavailable with the sole collaborator",
     "pr_body": "exact evidence projection repaired and live re-read at SHA-256 ca83ba75aaf248be560a060da89e254847d301029e456d7139823619a3bcc563",
     "branch_protection_change": "applied and reverified, but insufficient as an immutable trust root: context plus GitHub Actions app binding cannot stop a future PR from replacing its own same-name job with trivial success",
-    "bootstrap_body": "live SHA-256 1944c039a16b594119e1da3a69323f753103d8af1defab4a9f216ab3f115f777 updated 2026-08-28T04:00:05Z; core operational-only repair accepted by REFUTE, but stale Rollback sentence remains Security/QA P1",
-    "merge": "forbidden_pending_rollback_body_repair_and_bounded_reread",
+    "bootstrap_body": "live SHA-256 23dc1f66fe29b8be9a3bd1a0510f2b5b8b7a9c2013f1d5a03a8d4b8431e9fe60 updated 2026-08-28T04:08:58Z; no new classic context, legacy qualification labeled non-authoritative defense-in-depth, reviewed revert path explicit",
+    "merge": "forbidden_pending_two_bounded_text_rereads",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Repair only PR26 Rollback and transition wording: PR26 introduces no trusted_cafe_authority_gate classic context; preserve/restore existing contexts, label the restored legacy qualification defense-in-depth and non-authoritative, and revert through reviewed PR. Then obtain bounded hash/text rereads."
+  "next_trigger": "Dispatch two bounded read-only text rereads against PR26 body SHA-256 23dc1f66fe29b8be9a3bd1a0510f2b5b8b7a9c2013f1d5a03a8d4b8431e9fe60. Only two independent P0/P1=0 verdicts can unlock the recorded one-time transition packet."
 }
