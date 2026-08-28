@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T19:49:33Z",
+  "updated_at": "2026-08-28T19:52:08Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -2631,13 +2631,13 @@
       "generated_outputs": ["task final message with exact identity, P0/P1/P2, evidence receipts, merge-readiness and rollback findings"],
       "dependencies": ["PR28 OPEN Draft exactf57fc8e/tree9c26d720", "corrected body sha256d3c245ad055e64f0ca182dd4df20f4c5918d5b3b87c3e7045b6ed248b966b6b3", "CI33200768617 success", "authority33200766627 expected self-modification rejection", "source PR25 exact2760325/c87b0644 frozen", "pinned Docker receipts7c03d1a7 and241f08a4"],
       "consumer": "Producer controlled PR28 transition decision and subsequent independent REFUTE cross-check",
-      "status": "recovery_review_reserved_against_corrected_body",
+      "status": "recovery_review_running_against_corrected_body",
       "read_only": true,
-      "last_heartbeat": "2026-08-28T19:49:33Z",
-      "stale_after": "2026-08-28T20:19:33Z",
+      "last_heartbeat": "2026-08-28T19:52:08Z",
+      "stale_after": "2026-08-28T20:22:08Z",
       "pr": 28,
       "checks": {"ci": "success", "visual_canary": "success", "authority": "expected self-modification failure", "existing_github_reviews": 0},
-      "dispatch": {"at": "2026-08-28T19:38:42Z", "target": "/root/pr28_security_qa", "method": "followup_task", "status": "running"},
+      "dispatch": {"at": "2026-08-28T19:52:08Z", "target": "/root/pr28_security_qa", "method": "followup_task", "status": "recovery_running"},
       "review_result": {"p0": 0, "p1": 1, "p2": 3, "verdict": "REQUEST_CHANGES_P0_0_P1_1_EXACT_HEAD_F57FC8E0755E27DA36A980611EC0E0E6B5B5D47F", "class": "EVIDENCE_INTEGRITY", "finding": "PR body labels the 6299-byte mixed-EOL Windows worktree projection as the hosted Git blob. GitHub blob2e6257e5 is canonical LF-only 6147 bytes SHA256 4bdb11602355d84ae928220361d8912f7f2957e258b23a371016802ea8e7d534; the body instead records worktree SHA256 6daf7f3820cb8385a3931dd2ca50a7047e1a861867c12bb4bc3af397b2279289.", "merge_readiness": "NOT_READY"},
       "producer_reproduction": {"image": "python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c", "hosted": {"bytes": 6147, "sha256": "4bdb11602355d84ae928220361d8912f7f2957e258b23a371016802ea8e7d534", "lf": 154, "crlf": 0}, "worktree": {"bytes": 6299, "sha256": "6daf7f3820cb8385a3931dd2ca50a7047e1a861867c12bb4bc3af397b2279289", "lf": 154, "crlf": 152}, "cleanup": "--rm; no cache or volume"},
       "recovery_count": 1,
@@ -2665,13 +2665,13 @@
       "generated_outputs": ["task final message with counterexamples, exact identity, P0/P1/P2, evidence receipts and merge-readiness verdict"],
       "dependencies": ["PR28 OPEN Draft exactf57fc8e/tree9c26d720", "corrected body sha256d3c245ad055e64f0ca182dd4df20f4c5918d5b3b87c3e7045b6ed248b966b6b3", "CI33200768617 success", "authority33200766627 expected self-modification rejection", "source PR25 exact2760325/c87b0644 frozen", "known retained verifier P2 request-context gaps"],
       "consumer": "Producer controlled PR28 transition decision cross-checked against Security/QA",
-      "status": "restart_reserved_against_corrected_body",
+      "status": "restart_running_against_corrected_body",
       "read_only": true,
-      "last_heartbeat": "2026-08-28T19:49:33Z",
-      "stale_after": "2026-08-28T20:19:33Z",
+      "last_heartbeat": "2026-08-28T19:52:08Z",
+      "stale_after": "2026-08-28T20:22:08Z",
       "pr": 28,
       "checks": {"ci": "success", "visual_canary": "success", "authority": "expected self-modification failure", "existing_github_reviews": 0},
-      "dispatch": {"at": "2026-08-28T19:38:42Z", "target": "/root/pr29_refute_replacement", "method": "followup_task", "status": "running"},
+      "dispatch": {"at": "2026-08-28T19:52:08Z", "target": "/root/pr29_refute_replacement", "method": "followup_task", "status": "restart_running"},
       "pause_result": {"at": "2026-08-28T19:47:12Z", "previous_status": "running", "result": "interrupted before relying on superseded body", "release_reason": "Security P1 requires body mutation; in-flight old-body REFUTE evidence cannot be terminal for the corrected package."},
       "recovery_count": 1,
       "rollback": "No mutation permitted. If identity, body, checks, protection or source evidence drifts, STOP and return the observed exact state; Producer revokes the review lease.",
@@ -2720,7 +2720,7 @@
     "ranking": "dependency unlock first, then evidence closure, then player-visible cafe production; conflict risk serialized across shared authority",
     "phases": [
       {"phase":1,"objective":"Verifier v3 reviewed-source plus current-protected-base derivation","owner":"released","status":"complete_master5c3e5cb6_post_merge_ci_success","player_value":"unblocks protected trust-root delivery","conflict_risk":"closed with P2 follow-up retained","exit":"post-merge CI33194686491 success at exact5c3e5cb6"},
-      {"phase":2,"objective":"Synchronize PR28 normally, replace only pending review leaves after fresh exact-source reviews, and re-run exact-head evidence","owner":"review-pr28-security-qa-f57fc8e plus review-pr28-refute-f57fc8e","status":"metadata_p1_corrected_exact_body_security_recovery_and_refute_restart_reserved","player_value":"restores evidence integrity without code/ref churn","conflict_risk":"two output-only reviewers; zero writers and zero GitHub mutations","exit":"corrected exact body plus fresh Security/QA and REFUTE P0/P1=0"},
+      {"phase":2,"objective":"Synchronize PR28 normally, replace only pending review leaves after fresh exact-source reviews, and re-run exact-head evidence","owner":"review-pr28-security-qa-f57fc8e plus review-pr28-refute-f57fc8e","status":"metadata_p1_corrected_exact_body_security_recovery_and_refute_restart_running","player_value":"restores evidence integrity without code/ref churn","conflict_risk":"two output-only reviewers; zero writers and zero GitHub mutations","exit":"corrected exact body plus fresh Security/QA and REFUTE P0/P1=0"},
       {"phase":3,"objective":"Merge reviewed manifest through reversible protected transition, then normally synchronize PR25 so candidate contains reviewed source plus current protected master","owner":"unassigned","status":"blocked_on_phase2","player_value":"makes protected candidate executable without stale identity","conflict_risk":"critical protection and trust paths; serialized","exit":"PR25 fresh authority+qualification+CI at exact synchronized head and independent P0/P1=0"},
       {"phase":4,"objective":"Merge eligible PR25, monitor post-merge, then unlock Stack B authored IDs and exactly one cafe exterior-to-persistence production owner","owner":"unassigned","status":"blocked_on_phase3","player_value":"direct prerequisite to player-visible cafe vertical slice","conflict_risk":"trust root then canonical scene authority; separate leases","exit":"post-merge green, P0/P1=0, cafe production packet dispatched"}
     ]
@@ -3238,5 +3238,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_39687a6b_verified"
   },
-  "next_trigger": "After publishing the exact body-recovery and review reservations, dispatch the one Security/QA recovery and restart REFUTE against corrected body d3c245ad; aggregate exact-head P0/P1 before any controlled transition."
+  "next_trigger": "Wait for the running Security/QA recovery and REFUTE restart bound to corrected body d3c245ad; aggregate exact-head P0/P1 before any controlled transition."
 }
