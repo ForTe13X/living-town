@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T06:02:09Z",
+  "updated_at": "2026-08-28T06:13:31Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1436,11 +1436,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T06:02:09Z",
+    "at": "2026-08-28T06:13:31Z",
     "active_writers": 1,
     "read_only_reviewers": 2,
     "shared_write_conflicts": 0,
-    "decision": "PR25 authority approved exact six-path bundle while legacy qualification false-positively rejected three base-only authority paths. Two output-only reviewers are dispatched and serialized on exact CI terminal state to classify the P1 and transition; no writer may mutate PR25 or protection."
+    "decision": "PR25 authority approved exact six-path bundle while legacy qualification false-positively rejected three base-only authority paths. Current PR body hash ca83ba75 is materially stale about base authority, current evidence, rollback and strict-behind status. Reserve one body-only projection correction while code/head/Draft/protection remain frozen; reviewers must consume the new body hash after exact CI terminal."
   },
   "released_claims": [
     {
@@ -1854,7 +1854,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "PR25_AUTHORITY_APPROVED_LEGACY_FALSE_POSITIVE_P1_CI_RUNNING_TWO_READONLY_REVIEWS_DISPATCHED",
+    "state": "PR25_BODY_ONLY_CURRENT_AUTHORITY_AND_STRICT_BEHIND_PROJECTION_REPAIR_RESERVED_CI_RUNNING",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
@@ -1887,8 +1887,9 @@
     "pr25_trigger_result": "Close success then reopen success on attempt 1; PR25 OPEN Draft, head 5a449cad unchanged, baseRefOid now current master fd122e62, updated 2026-08-28T05:54:07Z; authority run33146171197/job98767595615, CI run33146170952 and qualification run33146171005 in progress",
     "pr25_authority_result": "SUCCESS run33146171197/job98767595615 completed 2026-08-28T05:54:24Z; check attaches to candidate head 5a449cad/app15368; runtime checkout ref/fetched commit/HEAD/BASE_SHA all fd122e6235f8870c7e3f8e6b43b35f04392765d9; token contents:read plus pull-requests:read; mode approved-bundle, changed=6, bundle=pr25-stack-a-six-path-5a449cad-v1; no artifact; candidate code never checked out or executed",
     "legacy_qualification_failure": "P1 operational blocker: run33146171005/job98767595458 used BASE_SHA b5d02e49 and direct git diff BASE_SHA HEAD_SHA, so it treated the three base-only PR26/27 authority paths as candidate outside-of-lease changes and failed before runtime qualification. GitHub PR files and compare from current master both report exactly the original six candidate paths with merge-base 5b7ac426. Legacy context is candidate-defined non-authoritative defense-in-depth, but it remains required until a serialized transition removes only that context.",
+    "pr25_body_repair": "Reserved body-only mutation from SHA256 ca83ba75aaf248be560a060da89e254847d301029e456d7139823619a3bcc563 to accurately distinguish merge-base 5b7ac426 from current base fd122e62, record authority success and legacy false positive, correct candidate-head check association, preserve same-App/name residual, and disclose strict behind as an unresolved merge blocker. No Ready/code/head/protection change.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Wait for PR25 exact-head CI run33146170952 to reach terminal status, then release the two already-dispatched read-only reviewers to issue final bound verdicts incorporating both authority success and legacy false-positive failure."
+  "next_trigger": "Apply the reserved PR25 body-only projection repair, record its exact new hash, then wait for exact-head CI run33146170952 terminal and require both reviewers to re-read the live body before final verdict."
 }
