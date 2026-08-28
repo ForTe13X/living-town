@@ -1,0 +1,92 @@
+{
+  "authority_paths": [
+    ".github/trusted-cafe-authority/approved-bundles.v1.json",
+    ".github/trusted-cafe-authority/verify_candidate_bundle.py",
+    ".github/workflows/trusted-cafe-authority-gate.yml"
+  ],
+  "bundles": [
+    {
+      "evidence": {
+        "artifact_bytes": 246199708,
+        "artifact_id": 9671395005,
+        "artifact_sha256": "50a14d05416c3d063631ec6a1ebf7f5f1ad4775b75712058ad4d2c59fac47b6d",
+        "general_run": 33134089332,
+        "pull_request": 25,
+        "refute": "REFUTE_P0_0_P1_1_P2_2_SELF_AUTHORIZATION_ONLY",
+        "security_qa": "REQUEST_CHANGES_P0_0_P1_1_P2_1_SELF_AUTHORIZATION_ONLY",
+        "trusted_run": 33134089326
+      },
+      "files": [
+        {
+          "bytes": 52881,
+          "git_blob_sha": "e81167fa8eaff9efdaec60d141ae39531053f3d3",
+          "mode": "100644",
+          "path": ".github/workflows/trusted-cafe-attestation.yml",
+          "sha256": "c300b57b0efc22f3c3676d77d4175c6309c36530b8b05853a26c958ccc2ec93f"
+        },
+        {
+          "bytes": 4950,
+          "git_blob_sha": "fdb3fb8252a3f4b2c02b222c5b92a8a90633241d",
+          "mode": "100644",
+          "path": "evidence/cafe/runtime-lock.v1.json",
+          "sha256": "2f0017e75753e769428616ed10a7693e11e27a7c660f34277cbcbfc3412e5d16"
+        },
+        {
+          "bytes": 43930,
+          "git_blob_sha": "222511542ff52727954194ef9ace3cc9a020e6d7",
+          "mode": "100644",
+          "path": "tools/cafe_attestation_selftest.py",
+          "sha256": "9a8497509ae3c49b2c76947c0bb19e5c122b2278599ad7c14460d1fd8a6a0c80"
+        },
+        {
+          "bytes": 17660,
+          "git_blob_sha": "1b6412d2a75dc5e64ab7828b4e7613d5727339f6",
+          "mode": "100644",
+          "path": "tools/cafe_authored_manifest.py",
+          "sha256": "c61da50acd65eab0ac55698fa9bfebc3ce4a2eaf97e7d228864a6461ef8bbc6c"
+        },
+        {
+          "bytes": 53017,
+          "git_blob_sha": "d2978cc4b82cb308174f78fe2c07a13060f69fdb",
+          "mode": "100644",
+          "path": "tools/trusted_cafe_capture.sh",
+          "sha256": "ea0fd9fcb8f48985b7176b4a7cdad14c8794dea5b0b5bfdee4cf49fe391bc5b8"
+        },
+        {
+          "bytes": 56232,
+          "git_blob_sha": "ac89bbcc1150f27cd4254d15eb52ec90599c57a1",
+          "mode": "100644",
+          "path": "tools/verify_cafe_attested_evidence.py",
+          "sha256": "1062b03c2c20c8ad39106d89707c41ec56e48e387a5e82ca14e552e9c138b38c"
+        }
+      ],
+      "id": "pr25-stack-a-six-path-5a449cad-v1",
+      "source_head": "5a449cad6d486e3680d2febba8203b0be7d215b9",
+      "source_tree": "60621741d4f453c7316a424d626849be2776581c"
+    }
+  ],
+  "does_not_prove": [
+    "production protected-dispatch evidence",
+    "Stack B authored IDs or generated manifest compatibility",
+    "canon, release, tag, distribution, or human acceptance"
+  ],
+  "policy": {
+    "candidate_checkout": false,
+    "candidate_code_execution": false,
+    "candidate_content_source": "GitHub API blob data at exact pull-request head",
+    "default_branch_owned": true,
+    "mixed_scope": "fail_closed",
+    "other_workflow_changes": "fail_closed",
+    "rename_or_copy": "fail_closed",
+    "self_modification": "fail_closed"
+  },
+  "schema": "living-town.trusted-cafe-approved-bundles.v1",
+  "trust_paths": [
+    ".github/workflows/trusted-cafe-attestation.yml",
+    "evidence/cafe/runtime-lock.v1.json",
+    "tools/cafe_attestation_selftest.py",
+    "tools/cafe_authored_manifest.py",
+    "tools/trusted_cafe_capture.sh",
+    "tools/verify_cafe_attested_evidence.py"
+  ]
+}
