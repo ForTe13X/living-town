@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T06:18:26Z",
+  "updated_at": "2026-08-28T06:24:00Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1854,11 +1854,11 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "PR25_NORMAL_UPDATE_BRANCH_FROM_CURRENT_PROTECTED_MASTER_RESERVED_AFTER_BODY_REPAIR",
+    "state": "PR25_CURRENT_MASTER_UPDATE_COMPLETE_AUTHORITY_PASS_LEGACY_IMMUTABLE_RUNTIME_SUPPLY_FAILURE_CI_RUNNING",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
-    "exact_head": "5a449cad6d486e3680d2febba8203b0be7d215b9",
+    "exact_head": "8d9926b82d5b07d00208d9f21ff88f8892487988",
     "p0": 0,
     "p1": 1,
     "p2": 2,
@@ -1890,8 +1890,11 @@
     "pr25_body_repair": "Applied body-only mutation from SHA256 ca83ba75aaf248be560a060da89e254847d301029e456d7139823619a3bcc563 to c1a6f4dec8c7cd0ca3b67150328c15c58f6f911d188ee3f40224c3f2a9d113c8. It distinguishes merge-base 5b7ac426 from current base fd122e62, records authority success and the legacy false positive, corrects candidate-head check association, preserves the same-App/name residual, and discloses strict behind as an unresolved merge blocker. Draft/head/protection remained unchanged.",
     "approved_bundle_update_semantics": "Protected-base manifest records source_head/source_tree only as audit metadata; live verifier authorizes by exact GitHub PR six-path set plus mode, git blob SHA, byte count and SHA-256. It does not compare source_head/source_tree during evaluate. A normal branch update is therefore content-safe only if all six approved blobs and semantic PR paths remain exact; authority still reruns fail closed.",
     "pr25_update_branch_reservation": "Reverify PR25 OPEN Draft exact head 5a449cad/tree 60621741 and protected master fd122e62/tree 503376db with strict full protection unchanged. Invoke GitHub Update Branch with expected_head_sha 5a449cad; no force push or history rewrite. Require resulting head to be a normal merge update whose first-parent provenance retains candidate history, whose tree contains all three protected authority blobs and all six approved candidate blobs unchanged, and whose GitHub semantic diff remains exactly six paths. Any drift aborts. New head invalidates all prior verdicts and requires fresh protected-base authority, legacy qualification diagnosis, exact-head/current-base CI and visual evidence, Security/QA and REFUTE. Never mark Ready or merge in this transaction.",
+    "pr25_update_branch_result": "GitHub Update Branch accepted expected head 5a449cad and created normal merge-update head 8d9926b82d5b07d00208d9f21ff88f8892487988, tree 2a848ad3ac9ef59b1e695a712666810666ed30f7, parents 5a449cad then fd122e62. PR remains OPEN Draft with 17 commits and exactly six semantic paths. All three authority blobs equal protected master and all six approved candidate blobs equal prior candidate. Strict full protection remained unchanged.",
+    "pr25_updated_head_authority": "run33147649538/job98772140346 SUCCESS attached to updated head 8d9926b8; protected-base checkout fd122e62; candidate API-data-only approved exact six-path bundle; no candidate checkout/execution in authority job.",
+    "pr25_updated_head_legacy": "run33147650883 failed after classification passed, at immutable runtime build because quay.io/skopeo/stable@sha256:572747e168b4cb920bc7f5b321ca6c6da13717ff28c8d671a203935d53cf1089 returned manifest unknown. This is a new supply-availability/sustainability blocker, not the prior stale-base scope false positive and not evidence of candidate path drift.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish this body-repair plus normal Update Branch reservation, reverify exact live identities/protection, then invoke GitHub Update Branch with expected head 5a449cad. Rebind the new head/tree/parents/paths before triggering fresh authority, hosted checks and independent reviews."
+  "next_trigger": "Publish the exact update result, wait for CI run33147650879 terminal, then reserve and apply a refreshed PR body for head 8d9926b8 and dispatch both independent reviewers to classify the vanished pinned Skopeo manifest and exact-head merge eligibility. No protection or Ready mutation before P0/P1 closure."
 }
