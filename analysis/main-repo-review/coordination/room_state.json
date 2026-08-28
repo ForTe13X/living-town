@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T10:54:32Z",
+  "updated_at": "2026-08-28T10:56:42Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1440,8 +1440,8 @@
       "role": "Sole serialized Dev writer for PR25 immutable OCI toolchain supply repair",
       "objective": "Replace garbage-collected rolling Quay stable digests in both the declarative runtime lock and its outer pinned bootstrap with the same-version official immutable-tag index digests so exact Docker Linux runtime construction is retrievable without changing trust-root behavior or authority boundaries.",
       "baseline": "8d9926b82d5b07d00208d9f21ff88f8892487988",
-      "head": "8d9926b82d5b07d00208d9f21ff88f8892487988",
-      "tree": "2a848ad3ac9ef59b1e695a712666810666ed30f7",
+      "head": "26a0d0114052d302a0cb768418d5c00501920eb3",
+      "tree": "4f819ca3a4b593e150fbbb4df4de0e2853e9a984",
       "branch": "codex/pr25-immutable-toolchain-supply-repair-v1",
       "delivery_ref": "origin/codex/cafe-source-attestation-trust-root-v1-replacement-2",
       "worktree": "D:\\Documents\\Dev\\living-town-pr25-immutable-toolchain-repair-wt",
@@ -1513,10 +1513,10 @@
       "generated_outputs": ["complete deterministic runtime/validation OCI receipt in new task scratch", "two candidate blob identities for protected-base bundle update"],
       "dependencies": ["replacement-1 released after test-fixture ENOSPC", "runtime image IDs matched twice a6c3bbdc", "validation image IDs matched twice 191cf67a", "same exact immutable references and Python 3.14.6 edits", "baseline CI run33147650879 success", "remote candidate head remains 8d9926b8"],
       "consumer": "PR25 exact six-path candidate, then a separate protected-base approved-bundle manifest update and fresh authority/CI/reviews",
-      "status": "terminal_local_proof_success_commit_authorized_remote_push_not_yet_authorized",
+      "status": "terminal_local_proof_success_exact_normal_fast_forward_push_reserved",
       "write_lease": true,
-      "last_heartbeat": "2026-08-28T10:51:07Z",
-      "stale_after": "2026-08-28T12:51:07Z",
+      "last_heartbeat": "2026-08-28T10:56:42Z",
+      "stale_after": "2026-08-28T12:56:42Z",
       "pr": 25,
       "recovery_count": 0,
       "container": "lt-pr25-runtime-build-immutable-replacement2-20260828",
@@ -1564,8 +1564,19 @@
         "authorized": true,
         "baseline": "8d9926b82d5b07d00208d9f21ff88f8892487988",
         "exact_paths": ["evidence/cafe/runtime-lock.v1.json", "tools/trusted_cafe_capture.sh"],
-        "remote_push_authorized": false,
-        "next_transaction": "After the local commit, record exact commit/tree/blob identities and a normal fast-forward push reservation, publish this ledger, then reverify remote PR head and protection before push."
+        "local_commit": "26a0d0114052d302a0cb768418d5c00501920eb3",
+        "local_tree": "4f819ca3a4b593e150fbbb4df4de0e2853e9a984",
+        "parent": "8d9926b82d5b07d00208d9f21ff88f8892487988",
+        "blobs": {
+          "evidence/cafe/runtime-lock.v1.json": {"git_blob":"80848d990481459f339a0d25cd0986e3f34ceece","sha256":"076cb3c1c4a23ba9e7a73ae2651ef039c94f056fd0c68559c42b4dd774e8d9f5","bytes":5084},
+          "tools/trusted_cafe_capture.sh": {"git_blob":"a40ade2d1ef49527d57d41e8d2b9bc3c94693cb6","sha256":"807cf82045a632204d18d0f4630e3af89da2fe6b311361cba063e70258d5d440","bytes":53017}
+        },
+        "remote_push_authorized": true,
+        "remote_ref": "refs/heads/codex/cafe-source-attestation-trust-root-v1-replacement-2",
+        "expected_remote_head": "8d9926b82d5b07d00208d9f21ff88f8892487988",
+        "mode": "normal fast-forward only; no force and no history rewrite",
+        "preconditions": "PR25 OPEN Draft at base fd122e62 and head 8d9926b8; exact six semantic paths; strict ci, visual_canary and pull_request_runtime_qualification checks from app 15368; admins and conversation resolution enforced; force push and deletion disabled",
+        "postconditions": "PR25 remains OPEN Draft; semantic path set remains the exact six paths; fresh authority, qualification and CI runs are observed; no Ready or merge mutation."
       },
       "acceptance_tests": ["complete internal two-runtime and two-validation builds", "canonical runtime, validation and delta archives are byte-stable and within caps", "receipt binds immutable images and exact tool versions", "only two owned paths differ", "remote head and protection unchanged before normal publication"],
       "rollback": "No publication on failure. Preserve task receipts and labeled volumes for diagnosis; delete only explicitly task-owned empty outputs after verification. Never force-reset shared history.",
@@ -1575,11 +1586,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T10:51:07Z",
+    "at": "2026-08-28T10:56:42Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "Replacement-2 completed the unchanged two-path candidate proof in isolated volume-backed Docker storage: runtime and validation image IDs matched twice, all three canonical archives passed exact SHA and byte caps, and the receipt verifier passed. The lease now authorizes only an exact local commit; remote push remains separately gated. No other writer/reviewer is active; authority/workflow paths remain frozen."
+    "decision": "Replacement-2 completed the unchanged two-path candidate proof and exact local commit 26a0d011. A normal fast-forward of only this commit onto the existing PR25 feature ref is reserved after live verification of OPEN Draft identity, exact six-path scope and strict full protection. No other writer/reviewer is active; authority/workflow paths remain frozen."
   },
   "released_claims": [
     {
@@ -2038,8 +2049,9 @@
     "immutable_toolchain_replacement_recovery_1": "The recovery passed all immutable-source and tool-version checks. It produced identical runtime image ID a6c3bbdc2d56 twice and identical validation image ID 191cf67aadec twice. The explicitly capped 2 GiB outer /tmp then returned ENOSPC while writing the second validation OCI layout, so no complete receipt was emitted and nothing was published. Replacement-2 is reserved with new volume-backed temp/cache/scratch; candidate edits remain unchanged.",
     "immutable_toolchain_replacement_2": "Complete Docker-isolated proof passed. Runtime archive a6830cf7 (216299520 bytes) and validation archive 589f1846 (246169600 bytes) were built reproducibly with duplicate image IDs; validation delta b503c942 is 29890560 bytes. Receipts bind Podman 5.8.4, Skopeo 1.22.2, Python 3.14.6, tar 1.35 and coreutils 9.10 to immutable Quay indices. Exact two-path local commit is authorized; no remote mutation yet.",
     "coordination_ref_recovery_20260828T1054Z": "An attempted content publication used git commit-tree without the API-created remote parent object locally present. The empty computed commit variable was interpreted by git push as a ref deletion. The producer immediately recreated refs/heads/codex/main-repo-review at its exact prior commit ac8f5d46308e271f8e253f7f0c36be58286ddf18 through GitHub. Master, integration, PR25, candidate refs and content were untouched. Future coordination publication in this transaction is restricted to GitHub Git Data API with an explicit parent and a non-force ref update.",
+    "immutable_toolchain_candidate_commit": "Exact local commit 26a0d0114052d302a0cb768418d5c00501920eb3, tree 4f819ca3a4b593e150fbbb4df4de0e2853e9a984, parent 8d9926b8. Only runtime-lock blob 80848d99 and trusted-capture blob a40ade2d changed. Live PR25 remains OPEN Draft at expected remote head and base with six semantic paths and strict full protection. Normal fast-forward push is reserved; authority-manifest update remains a separate protected-base PR.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish the replacement-2 proof and the recovered coordination-ref incident using GitHub Git Data API with explicit parent ac8f5d46 and non-force update. Then commit only the exact two owned candidate paths locally and publish a separate exact-head/tree/blob push reservation before PR25 branch mutation."
+  "next_trigger": "Publish exact commit 26a0d011/tree 4f819ca3 and the normal fast-forward push reservation to the coordination ledger. Reverify PR25 remote head 8d9926b8 and strict protection, then push only 26a0d011 to the existing feature ref without force. Observe fresh hosted runs; do not mark Ready or merge."
 }
