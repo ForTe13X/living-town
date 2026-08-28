@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T03:23:17Z",
+  "updated_at": "2026-08-28T03:54:00Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -979,7 +979,7 @@
         "approved-bundle:derive-exact-six-blob-identities-from-pr25-head"
       ],
       "consumer": "Independent Security/QA and REFUTE, then reviewed master bootstrap; after landing, PR25 exact bundle and master protection transition",
-      "status": "open_draft_exact_three_path_hosted_ci_visual_success_fresh_reviewers_reserved_writer_released",
+      "status": "open_draft_hosted_success_reviews_terminal_body_control_p1_repair_reserved_writer_released",
       "write_lease": false,
       "last_heartbeat": "2026-08-28T03:23:17Z",
       "stale_after": null,
@@ -1074,11 +1074,20 @@
         "pr25-self-authorization-p1"
       ],
       "consumer": "Producer protection-transition and bootstrap merge decision",
-      "status": "reserved_read_only_exact_head",
-      "last_heartbeat": "2026-08-28T03:23:17Z",
-      "stale_after": "2026-08-28T04:23:17Z",
+      "status": "terminal_request_changes_p0_0_p1_1_p2_3_reviewer_released",
+      "last_heartbeat": "2026-08-28T03:54:00Z",
+      "stale_after": null,
       "pr": 26,
       "recovery_count": 0,
+      "review_result": {
+        "verdict": "REQUEST_CHANGES",
+        "p0": 0,
+        "p1": 1,
+        "p2": 3,
+        "p1_finding": "The pull_request_target native check is associated with protected base SHA and cannot be configured as a PR-head required context; the current PR body platform-enforcement promise would deadlock PR25.",
+        "mandatory_repair": "Define the workflow as producer-enforced operational evidence only, never add its native job as a classic required context, and bind PR number, event head, current head, protected-base workflow SHA, success and no newer synchronize immediately before merge.",
+        "bootstrap": "Temporarily removing only pull_request_runtime_qualification is acceptable after body/control repair and independent REFUTE clearance; retain all other controls and restore the old context immediately after exact PR26 merge."
+      },
       "rollback": "Delete only task-owned temporary review outputs; no repository or GitHub rollback applies.",
       "stop_lines": [
         "PR26 base/head/tree changes",
@@ -1118,11 +1127,22 @@
         "security-qa:independent_parallel"
       ],
       "consumer": "Producer protection-transition and bootstrap merge decision",
-      "status": "reserved_read_only_exact_head",
-      "last_heartbeat": "2026-08-28T03:23:17Z",
-      "stale_after": "2026-08-28T04:23:17Z",
+      "status": "terminal_refute_p0_0_p1_1_p2_5_reviewer_released",
+      "last_heartbeat": "2026-08-28T03:54:00Z",
+      "stale_after": null,
       "pr": 26,
       "recovery_count": 0,
+      "review_result": {
+        "verdict": "REFUTE",
+        "p0": 0,
+        "p1": 1,
+        "p2": 5,
+        "p1_finding": "The native pull_request_target check is base-associated and same-name GitHub Actions checks remain impersonable under app 15368; it is not candidate-head platform authority.",
+        "mandatory_repair": "Never configure the native job as a required context. Treat it as producer-enforced operational evidence unless a separately trusted GitHub App or genuinely available required-workflow mechanism publishes a non-impersonable candidate-head result.",
+        "bootstrap": "A one-time exact PR26 merge with only the old qualification context temporarily removed is defensible after body/control repair; this does not authorize PR25 Ready or merge.",
+        "docker_attack_receipt_sha256": "5533be15e720e2d4fbbe127d602477458c732e2c42ef500a929386d64e33e7a2",
+        "artifact_inspection_receipt_sha256": "77d783f3f838c7dcc23ad5fe6a5e7d6b3946a6fd08014d2d794c8b7fd67bb5a5"
+      },
       "rollback": "Delete only task-owned temporary review outputs; no repository or GitHub rollback applies.",
       "stop_lines": [
         "PR26 base/head/tree changes",
@@ -1133,11 +1153,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T03:23:17Z",
+    "at": "2026-08-28T03:54:00Z",
     "active_writers": 0,
-    "read_only_reviewers": 2,
+    "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "PR26 writer is released after exact three-path delivery and hosted ci plus visual_canary success. Two independent read-only PR26 reviews are reserved with disjoint scratch only. PR25, Stack B, game/UI production, Ready, protection mutation and merge remain frozen."
+    "decision": "Both PR26 reviews are terminal and released. Their single converged P1 is a false platform-enforcement promise in the PR body/control procedure, not a candidate-code execution bypass. Reserve only a body-only repair; PR26 remains Draft, while PR25, Stack B, game/UI production, protection mutation and merge remain frozen."
   },
   "released_claims": [
     {
@@ -1551,7 +1571,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "BASE_CONTROLLED_CAFE_AUTHORITY_GATE_BOOTSTRAP_PR26_HOSTED_SUCCESS_FRESH_REVIEWS_RESERVED",
+    "state": "PR26_REVIEWS_TERMINAL_BODY_CONTROL_P1_REPAIR_RESERVED_OPERATIONAL_GATE_ONLY",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
@@ -1567,5 +1587,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Dispatch and wait for PR26 exact-head independent Security/QA and REFUTE. Only P0/P1=0 may authorize a separately ledgered, minimal reversible protection transition and bootstrap merge evaluation."
+  "next_trigger": "Repair PR26 body only: label trusted_cafe_authority_gate as Producer-enforced operational evidence, forbid adding its native base-associated context to classic protection, document exact pre-merge bindings and P2 rotation residuals; then obtain independent body reread before any protection transition."
 }
