@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T02:19:51Z",
+  "updated_at": "2026-08-28T02:30:13Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -850,8 +850,8 @@
         "refute:independent_parallel"
       ],
       "consumer": "Producer exact-head P0/P1 closure and Ready/merge hold decision",
-      "status": "active_read_only_review",
-      "last_heartbeat": "2026-08-28T02:19:51Z",
+      "status": "active_read_only_review_body_evidence_and_self_validation_p1_repair_requested",
+      "last_heartbeat": "2026-08-28T02:30:13Z",
       "stale_after": "2026-08-28T03:19:51Z",
       "pr": 25,
       "recovery_count": 0,
@@ -1325,18 +1325,18 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "AUTHORIZED_GOVERNANCE_REPAIR_REQUIRED_CHECK_ENFORCED_FINAL_REVIEWS_ACTIVE",
+    "state": "AUTHORIZED_GOVERNANCE_REPAIR_REQUIRED_CHECK_ENFORCED_SELF_VALIDATION_P1_REPAIR_EVALUATION",
     "exact_head": "5a449cad6d486e3680d2febba8203b0be7d215b9",
     "p0": 0,
-    "p1": 1,
+    "p1": 3,
     "p2": 0,
     "technical_exact_head": "passed",
-    "governance": "required qualification enforced on master; platform-independent-approval enforcement unavailable with sole collaborator and remains an explicit operational gate",
-    "pr_body": "post-protection exact evidence and single-maintainer constraint refresh reserved after this ledger commit",
-    "branch_protection_change": "applied and reverified: strict ci@15368, visual_canary@15368 and pull_request_runtime_qualification@15368; approval count zero; all other prior rules unchanged",
+    "governance": "required qualification context is enforced but remains candidate-self-defined by the PR-head workflow; platform-independent-approval enforcement is also unavailable with the sole collaborator",
+    "pr_body": "Security/QA found U+000B in visual_canary, missing literal approval count 0, missing current artifact 9671395005, and a workflow hash that does not match the exact remote blob; body-only correction reserved after this ledger commit",
+    "branch_protection_change": "applied and reverified, but insufficient as an immutable trust root: context plus GitHub Actions app binding cannot stop a future PR from replacing its own same-name job with trivial success",
     "merge": "forbidden",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Await fresh exact-head Security/QA and REFUTE terminal verdicts, then reconcile P0/P1 and update PR #5 without marking Ready or merging unless every gate actually passes."
+  "next_trigger": "Correct the PR body and evaluate a default-branch or centrally required verifier whose definition the candidate cannot modify; keep PR25 Draft and unmergeable while Security/QA and REFUTE continue."
 }
