@@ -72,8 +72,8 @@
         "authority_run": 33166722979,
         "general_run": 33166722929,
         "pull_request": 25,
-        "refute": "PENDING_INDEPENDENT_EXACT_HEAD_2760325D",
-        "security_qa": "PENDING_INDEPENDENT_EXACT_HEAD_2760325D",
+        "refute": "REFUTE_P0_0_P1_0_EXACT_HEAD_2760325D5946AE2D5D8632A704F6C180F90976E4",
+        "security_qa": "APPROVED_P0_0_P1_0_EXACT_HEAD_2760325D5946AE2D5D8632A704F6C180F90976E4",
         "trusted_run": 33166722949,
         "visual_artifact_id": 9684049408,
         "visual_artifact_sha256": "a14e56cbde4b41559bc4bff1e451603db588645c111277435deedc27755197fa"
