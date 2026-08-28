@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T17:56:20Z",
+  "updated_at": "2026-08-28T18:33:04Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -15,16 +15,16 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-08-28T17:52:58Z",
+    "at": "2026-08-28T18:30:21Z",
     "github_api_count": 37,
     "git_ls_remote_count": 37,
     "local_tracking_count": 37,
     "local_exact_count": 37,
     "snapshot_complete": true,
     "secondary_authority": "GitHub branches, pulls/reviews, Actions runs/artifacts and protection APIs plus successful fetch/prune and direct git ls-remote",
-    "reconciliation": "Fresh fetch --all --tags --prune, direct GitHub branch API, git ls-remote and local tracking refs are 37/37 exact. Every hosted branch head, commit time/subject, PR relation, ahead/behind and ancestry versus master/integration, and available recent Actions relation was recomputed. PR30 is the only open PR touching the verifier path and remains one commit ahead/zero behind master. No branch was deleted.",
-    "network_failures": ["One metadata aggregation attempt failed locally while decoding UTF-8 GitHub JSON with the Windows GBK default; retry used raw UTF-8 bytes and completed with no remote mutation."],
-    "sorted_name_sha_set_sha256": "8480a3c98e68daa71a35971a0ba1187dbb141d3ad12eb8745f3eac62af4a1924",
+    "reconciliation": "Fresh fetch/prune succeeded and GitHub hosted branch API plus local tracking refs show 37 exact branches. Direct git ls-remote failed after 21 seconds with a transient connection error, so this snapshot is explicitly secondary-authority complete but primary direct-ref incomplete; no cached ref was silently promoted. PR28 fresh exact-head CI is terminal success and expected authority self-modification rejection is unchanged.",
+    "network_failures": ["git ls-remote --heads origin failed 2026-08-28T18:29Z: Failed to connect to github.com:443 after 21087 ms. GitHub branch API returned all 37 heads and successful fetch/prune left matching local tracking refs."],
+    "sorted_name_sha_set_sha256": "4495235cc24ef0c1acb443cfe441e17b7dc4c32a3a9824ce6fafe21314df277e",
     "master": "5c3e5cb6eebeea283245869a96e489d065c380b7",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
     "coordination": "7010724b853faeb0727a690f34cb290578ff51ed",
@@ -2530,19 +2530,51 @@
       "generated_outputs": ["one normal merge-update commit with current master as second parent and unchanged manifest blob18b100e7"],
       "dependencies": ["PR30 merged as5c3e5cb6", "post-merge CI33194686491 success", "four-check master protection restored", "PR28 OPEN Draft mergeable BEHIND at e70cebba", "PR25 remains frozen at2760325"],
       "consumer": "Fresh exact-head manifest marker repair and independent Security/QA plus REFUTE",
-      "status": "normal_update_complete_manifest_unchanged_fresh_ci_active",
+      "status": "terminal_update_complete_fresh_ci_success_released",
       "read_only": false,
-      "last_heartbeat": "2026-08-28T17:56:20Z",
-      "stale_after": "2026-08-28T18:07:58Z",
+      "last_heartbeat": "2026-08-28T18:30:21Z",
+      "stale_after": null,
       "pr": 28,
-      "checks": {"old_ci": "success", "old_visual_canary": "success", "old_authority": "expected self-modification failure", "fresh_ci": "run33196939024 in_progress", "fresh_authority": "run33196937222 expected self-modification failure"},
+      "checks": {"old_ci": "success", "old_visual_canary": "success", "old_authority": "expected self-modification failure", "fresh_ci": "run33196939024 success", "fresh_visual_canary": "run33196939024 success", "fresh_authority": "run33196937222 expected self-modification failure"},
       "preflight": {"state": "OPEN_DRAFT", "mergeable": true, "merge_state": "BEHIND", "base_snapshot": "43c72a8faa4e927fa5e324f589c611dd2a402a0e", "current_master": "5c3e5cb6eebeea283245869a96e489d065c380b7", "head": "e70cebba46cdeaf3116090efbfdb2532b0be024a", "one_path": true, "manifest_blob": "18b100e78036830e15e85af8648fe212ca060428", "pending_markers": 2},
       "update_result": {"head": "3ba6d78d99246bdeda5d80d48062aaec69d96174", "tree": "9cf79330a674a3be6189bb9391254f6d77ebce87", "parents": ["e70cebba46cdeaf3116090efbfdb2532b0be024a", "5c3e5cb6eebeea283245869a96e489d065c380b7"], "base": "5c3e5cb6eebeea283245869a96e489d065c380b7", "manifest_blob": "18b100e78036830e15e85af8648fe212ca060428", "pending_markers": 2, "semantic_paths": [".github/trusted-cafe-authority/approved-bundles.v1.json"], "draft": true, "branch_update_mode": "GitHub normal merge with expected_head_sha"},
+      "released_at": "2026-08-28T18:30:21Z",
+      "release_reason": "Normal synchronization is exact and fresh CI33196939024 plus visual_canary succeeded at3ba6d78d; marker replacement becomes the next separately leased one-path write.",
       "recovery_count": 0,
       "rollback": "If Update Branch refuses or returns unexpected identity, keep PR28 Draft and freeze the new head for inspection; never force-push or rewrite. No marker replacement, Ready or merge is allowed in this transaction.",
       "stop_lines": ["master/head/Draft/path/protection drift", "non-merge update", "manifest blob changes", "semantic diff exceeds one manifest path", "pending marker changes", "PR25 mutation"],
       "handoff_recipient": "One bounded manifest-marker writer then fresh independent Security/QA and REFUTE",
       "archive_condition": "Normal exact branch-update handoff recorded, or update refusal/drift safely frozen."
+    },
+    {
+      "claim_id": "lease-pr28-terminal-review-leaves-3ba6d78d",
+      "task": "producer:01a04233-497e-7942-8da0-7958b314b199",
+      "role": "Single bounded manifest writer",
+      "objective": "Replace exactly the two PENDING review leaves for the immutable PR25 source identity with the task-provenance-bound terminal Security/QA and REFUTE strings; preserve every other manifest byte and keep PR28 Draft.",
+      "baseline": "3ba6d78d99246bdeda5d80d48062aaec69d96174",
+      "head": "pending_local_commit",
+      "tree": "pending_local_tree",
+      "branch": "codex/pr25-approved-bundle-2760325-v1",
+      "worktree": "D:\\Documents\\Dev\\living-town-pr25-approved-bundle-2760325-wt",
+      "owned_paths": [".github/trusted-cafe-authority/approved-bundles.v1.json"],
+      "forbidden_paths": ["verifier", "workflows", "PR25", "master", "integration/batons", "game", "assets", "coordination ledger", "all other repository paths"],
+      "authority_keys": ["protected-cafe-approved-bundle-manifest", "pr25-six-path-identity-2760325", "review-leaves-exact-source-2760325"],
+      "generated_outputs": ["one manifest-only commit replacing exactly two PENDING strings", "pinned-Docker deterministic selftest and live evaluation receipts"],
+      "dependencies": ["PR28 exact3ba6d78d", "CI33196939024 success", "authority33196937222 expected self-modification failure", "source PR25 exact2760325/c87b0644", "recorded independent source review outputs from PR28 Security/QA and REFUTE", "verifier v3 protected master5c3e5cb6"],
+      "consumer": "Fresh exact-head PR28 Security/QA and REFUTE, then controlled manifest transition",
+      "status": "reserved_before_write",
+      "read_only": false,
+      "last_heartbeat": "2026-08-28T18:33:04Z",
+      "stale_after": "2026-08-28T19:00:21Z",
+      "pr": 28,
+      "checks": {"baseline_ci": "success", "baseline_visual_canary": "success", "authority": "expected manifest self-modification failure"},
+      "replacement": {"security_qa": "APPROVED_P0_0_P1_0_EXACT_HEAD_2760325D5946AE2D5D8632A704F6C180F90976E4", "refute": "REFUTE_P0_0_P1_0_EXACT_HEAD_2760325D5946AE2D5D8632A704F6C180F90976E4", "count": 2, "other_changes_allowed": 0},
+      "recovery_count": 1,
+      "recovery_note": "First Git Data blob-publication attempt was rejected HTTP422 because the gh client invocation omitted --input - and therefore sent no JSON body. No ref changed. Retry is constrained to the same expected remote parent e40dccd6 with corrected stdin binding and freshly canonicalized blobs.",
+      "rollback": "Before publication discard only this clean one-file commit. After publication leave PR28 Draft or revert through a new reviewed commit; never rewrite the shared branch.",
+      "stop_lines": ["baseline/master/PR25/protection drift", "worktree not clean", "more or fewer than two exact replacements", "any other manifest change", "Docker isolation unavailable", "source identity or record mismatch", "live PR25 fails to become exactly one approved match in synthetic candidate evaluation"],
+      "handoff_recipient": "Independent exact-head Security/QA and REFUTE reviewers",
+      "archive_condition": "Exact one-file Draft handoff with Docker and hosted evidence, or one recovery exhausted without publication."
     }
   ],
   "active_dependency_graph": {
@@ -2551,7 +2583,7 @@
     "ranking": "dependency unlock first, then evidence closure, then player-visible cafe production; conflict risk serialized across shared authority",
     "phases": [
       {"phase":1,"objective":"Verifier v3 reviewed-source plus current-protected-base derivation","owner":"released","status":"complete_master5c3e5cb6_post_merge_ci_success","player_value":"unblocks protected trust-root delivery","conflict_risk":"closed with P2 follow-up retained","exit":"post-merge CI33194686491 success at exact5c3e5cb6"},
-      {"phase":2,"objective":"Synchronize PR28 normally, replace only pending review leaves after fresh exact-source reviews, and re-run exact-head evidence","owner":"claim-pr28-normal-base-sync-after-verifier-v3","status":"normal_update_complete_pending_markers_unchanged_fresh_ci_active","player_value":"installs data-only authorization","conflict_risk":"high manifest authority; serialized","exit":"PR28 exact head P0/P1=0 and controlled manifest transition package"},
+      {"phase":2,"objective":"Synchronize PR28 normally, replace only pending review leaves after fresh exact-source reviews, and re-run exact-head evidence","owner":"lease-pr28-terminal-review-leaves-3ba6d78d","status":"baseline_ci_success_two_leaf_write_reserved","player_value":"installs data-only authorization","conflict_risk":"high manifest authority; one path and two string leaves only","exit":"PR28 exact head P0/P1=0 and controlled manifest transition package"},
       {"phase":3,"objective":"Merge reviewed manifest through reversible protected transition, then normally synchronize PR25 so candidate contains reviewed source plus current protected master","owner":"unassigned","status":"blocked_on_phase2","player_value":"makes protected candidate executable without stale identity","conflict_risk":"critical protection and trust paths; serialized","exit":"PR25 fresh authority+qualification+CI at exact synchronized head and independent P0/P1=0"},
       {"phase":4,"objective":"Merge eligible PR25, monitor post-merge, then unlock Stack B authored IDs and exactly one cafe exterior-to-persistence production owner","owner":"unassigned","status":"blocked_on_phase3","player_value":"direct prerequisite to player-visible cafe vertical slice","conflict_risk":"trust root then canonical scene authority; separate leases","exit":"post-merge green, P0/P1=0, cafe production packet dispatched"}
     ]
@@ -2561,7 +2593,7 @@
     "active_writers": 0,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "PR28 normal base synchronization is complete with unchanged manifest and pending markers. No marker writer is admitted until fresh CI33196939024 is terminal; PR25, workflows, integration, game paths and every dirty/unknown worktree remain frozen."
+    "decision": "PR28 baseline CI is terminal success. Exactly one isolated manifest writer is admitted for two exact review-leaf replacements; every other path, PR25, protection, integration and dirty/unknown worktree remains frozen."
   },
   "released_claims": [
     {
@@ -3069,5 +3101,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_39687a6b_verified"
   },
-  "next_trigger": "Await fresh PR28 CI33196939024 at exact3ba6d78d; authority33196937222 rejected only expected manifest self-modification. On CI success, release the update lease and reserve one bounded manifest-only writer to replace exactly the two PENDING leaves with task-provenance-bound exact-source verdict strings, then run Docker and hosted evidence plus fresh independent reviews."
+  "next_trigger": "After this ledger reservation is published, fast-forward the clean isolated PR28 worktree to exact3ba6d78d, replace exactly two PENDING leaves with recorded exact-source verdict strings, run pinned-Docker deterministic selftests and live positive/negative evaluations, commit one path, publish non-force, update Draft body, then dispatch fresh independent exact-head Security/QA and REFUTE."
 }
