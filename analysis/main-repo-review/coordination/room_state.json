@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T23:13:32Z",
+  "updated_at": "2026-08-28T23:19:45Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -2893,19 +2893,50 @@
       "generated_outputs": ["canonical IDs JSON", "byte-reproducible protected-compiler manifest", "pinned-Docker generation/check/negative-control receipts"],
       "dependencies": ["master9b2d052c/tree3c5d8599 exact local commit object reconstructed from verified GitHub signed payload", "PR25 merge and post-merge CI success", "protected compiler and verifier at exact master", "game tree unchanged", "no competing Stack B branch/PR/files discovered"],
       "consumer": "protected_capture_and_attestation workflow followed by independent exact-head Security/QA and REFUTE",
-      "status": "worktree_created_python_image_missing_git_recovery_reserved",
+      "status": "failed_recovery_revoked_preserved_for_provenance",
       "read_only": false,
-      "last_heartbeat": "2026-08-28T23:17:51Z",
-      "stale_after": "2026-08-28T23:43:32Z",
+      "last_heartbeat": "2026-08-28T23:19:45Z",
+      "stale_after": null,
       "pr": null,
       "checks": "pre-PR; require protected compiler generation twice byte-identical, --check success, malformed/stale/unbound source negative controls, exact two-path diff, then Draft PR",
       "recovery_count": 1,
       "generation_attempt": {"image": "python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c", "result": "failed before output because image lacks git", "diagnostic": "git not found exit127", "manifest_created": false, "paths_after": ["untracked canonical IDs only"], "container_cleanup": "--rm complete"},
       "recovery": {"count": 1, "image": "quay.io/podman/stable@sha256:b0173238dceedf46a10d2c3a7bf9b217a85dce19706d2d9c80b01345839ae779", "tools": "Python3.14.6 git2.55.0", "isolation": "--rm linux/amd64 uid65534 read-only root network-none cap-drop-ALL no-new-privileges tmpfs; task worktree rw and shared Git metadata ro", "stop": "image/tool/digest drift, git identity drift, output failure or any extra path"},
+      "recovery_result": {"result": "failed closed before output", "reason": "Linux Git correctly saw the Windows CRLF checkout projection as modified game source and compiler refused dirty game", "manifest_created": false, "host_status": "only untracked IDs SHA256 456b53c5; no game/source modification", "container_cleanup": "--rm complete"},
+      "release_reason": "One allowed recovery failed on cross-platform line-ending projection. Lease revoked without deleting or cleaning its worktree; provenance and the untracked IDs input are preserved.",
       "rollback": "Before remote publication remove only the verified exact clean task worktree/branch. After Draft PR publication leave or close Draft and revert only through a reviewed child; never reset/force/rewrite shared history.",
       "stop_lines": ["worktree path exists", "exact baseline/tree cannot be verified", "any source path beyond the two owned files", "pinned Docker digest/isolation unavailable", "compiler output differs across runs", "game or compiler becomes dirty", "consumer/protection/master drift", "existing competing Stack B owner appears"],
       "handoff_recipient": "Independent Stack B Security/QA and REFUTE reviewers",
       "archive_condition": "One clean exact-head two-path Draft PR handoff with reproducible Docker receipts, or safe abort before publication."
+    },
+    {
+      "claim_id": "lease-stack-b-cafe-authored-contract-v1-9b2d052c-replacement-1",
+      "task": "producer-writer:01a04233-497e-7942-8da0-7958b314b199",
+      "role": "Replacement single isolated Stack B authored-ID and generated-manifest writer",
+      "objective": "Recreate the same two-file Stack B contract in a fresh core.autocrlf=false worktree at exact master9b2d052c, then generate and verify the manifest in pinned Linux Docker without touching game, tools, workflows or shared authority.",
+      "baseline": "9b2d052ca740a96b9b556765a7ead7fcb5425600",
+      "baseline_tree": "3c5d859982c66bc5711659bf8f78548595717a4a",
+      "head": "9b2d052ca740a96b9b556765a7ead7fcb5425600",
+      "tree": "3c5d859982c66bc5711659bf8f78548595717a4a",
+      "branch": "codex/cafe-authored-ids-manifest-v1-replacement-1",
+      "worktree": "D:\\Documents\\Dev\\living-town-stack-b-authored-contract-r1-wt",
+      "owned_paths": ["evidence/cafe/cafe-authored-ids.v1.json", "evidence/cafe/cafe-authored-manifest.v1.json"],
+      "forbidden_paths": ["all other paths including game/**, tools/**, .github/**, project.godot, Sim.gd, Main.gd, save/replay/schema/migrations, registries, tests, anchors and coordination files", "master", "integration/batons", "protection", "force/history rewrite", "original failed worktree", "unknown worktrees/containers/images/volumes/caches", "canon/release/tag/human acceptance"],
+      "authority_keys": ["cafe-authored-stable-ids-v1-replacement-1", "cafe-authored-generated-manifest-v1-replacement-1"],
+      "generated_outputs": ["canonical IDs JSON", "byte-reproducible protected-compiler manifest", "pinned-Docker generation/check/negative-control receipts"],
+      "dependencies": ["revoked original lease provenance", "exact local signed master object9b2d052c/tree3c5d8599", "fresh worktree path and branch absent", "core.autocrlf=false checkout required", "pinned podman image Python3.14.6+git2.55.0", "no competing Stack B owner"],
+      "consumer": "protected_capture_and_attestation workflow followed by independent exact-head Security/QA and REFUTE",
+      "status": "reserved_before_fresh_lf_worktree_creation",
+      "read_only": false,
+      "last_heartbeat": "2026-08-28T23:19:45Z",
+      "stale_after": "2026-08-28T23:49:45Z",
+      "pr": null,
+      "checks": "pre-PR; require container Git clean game, protected compiler generation twice byte-identical, --check success, negative controls, exact two-path diff, then Draft PR",
+      "recovery_count": 0,
+      "rollback": "Before remote publication remove only the verified exact clean replacement worktree/branch. After Draft publication leave or close Draft and use reviewed child; never reset/force/rewrite shared history.",
+      "stop_lines": ["replacement path/branch exists", "core.autocrlf=false worktree is not host and container clean", "any extra path", "Docker digest/isolation drift", "output nondeterminism", "consumer/master/protection drift", "another owner appears"],
+      "handoff_recipient": "Independent Stack B Security/QA and REFUTE reviewers",
+      "archive_condition": "One clean exact-head two-path Draft PR handoff with deterministic Docker receipts, or safe abort before publication."
     }
   ],
   "active_dependency_graph": {
@@ -2916,15 +2947,15 @@
       {"phase":1,"objective":"Verifier v3 reviewed-source plus current-protected-base derivation","owner":"released","status":"complete_master5c3e5cb6_post_merge_ci_success","player_value":"unblocks protected trust-root delivery","conflict_risk":"closed with P2 follow-up retained","exit":"post-merge CI33194686491 success at exact5c3e5cb6"},
       {"phase":2,"objective":"Synchronize PR28 normally, replace only pending review leaves after fresh exact-source reviews, and re-run exact-head evidence","owner":"released","status":"complete_merge1ea7aafd_post_merge_ci_success_protection_restored","player_value":"restores evidence integrity without code/ref churn","conflict_risk":"closed with three retained P2s","exit":"post-merge CI33206762935 success"},
       {"phase":3,"objective":"Merge reviewed manifest through reversible protected transition, then normally synchronize and merge PR25 so candidate contains reviewed source plus current protected master","owner":"released","status":"complete_master9b2d052c_post_merge_ci_success","player_value":"makes protected candidate executable without stale identity","conflict_risk":"closed with protection unchanged and P2 residuals retained","exit":"CI33217101104 success at exact9b2d052c"},
-      {"phase":4,"objective":"Create protected Stack B authored IDs/generated manifest, then unlock exactly one cafe exterior-to-persistence production owner","owner":"lease-stack-b-cafe-authored-contract-v1-9b2d052c","status":"exact_baseline_packet_reserved","player_value":"enables protected source-bound production capture before player-visible cafe work","conflict_risk":"single two-file generated-authority writer; game/tools/CI/coordination forbidden","exit":"Stack B exact-head Docker+hosted evidence and independent P0/P1=0, then protected capture success"}
+      {"phase":4,"objective":"Create protected Stack B authored IDs/generated manifest, then unlock exactly one cafe exterior-to-persistence production owner","owner":"lease-stack-b-cafe-authored-contract-v1-9b2d052c-replacement-1","status":"original_failed_recovery_revoked_lf_replacement_reserved","player_value":"enables protected source-bound production capture before player-visible cafe work","conflict_risk":"single replacement two-file writer; original frozen; game/tools/CI/coordination forbidden","exit":"Stack B exact-head Docker+hosted evidence and independent P0/P1=0, then protected capture success"}
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-08-28T23:13:32Z",
+    "at": "2026-08-28T23:19:45Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "PR25 merge lease is terminal and released after exact-master CI success. Exactly one Stack B writer owns two new evidence files on isolated exact master9b2d052c; every game, tool, workflow, shared authority and coordination path is forbidden, with no competing owner discovered."
+    "decision": "Original Stack B writer used its one recovery and failed closed on CRLF projection, so it is revoked and frozen. Exactly one replacement owns the same two evidence files in a new LF worktree; original worktree and every game/tool/workflow/shared-authority path are forbidden."
   },
   "released_claims": [
     {
@@ -3432,5 +3463,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_39687a6b_verified"
   },
-  "next_trigger": "Publish the missing-git failure and one pinned-podman recovery reservation, then generate/check the manifest twice in isolated Docker, run negative controls, require exact two-path diff, and publish a Draft PR only if every receipt is deterministic."
+  "next_trigger": "Publish failed-recovery revocation and replacement packet, create a fresh core.autocrlf=false worktree at exact9b2d052c, verify host and container game cleanliness, then generate/check twice in pinned Docker and stop permanently on any replacement drift."
 }
