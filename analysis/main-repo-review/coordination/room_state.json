@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T06:00:12Z",
+  "updated_at": "2026-08-28T06:02:09Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1383,14 +1383,64 @@
       "stop_lines": ["any write or PR mutation is required", "candidate code execution is observed", "general CI is non-terminal", "identity drift"],
       "handoff_recipient": "Producer",
       "archive_condition": "Terminal report consumed or identity drift invalidates review."
+    },
+    {
+      "claim_id": "lease-pr25-current-base-final-security-qa-v2",
+      "task": "subagent:/root/pr25_final_security_qa",
+      "role": "Independent read-only Security/QA reviewer",
+      "objective": "Review PR25 at current base fd122e62 with protected-base authority approval, exact six-path semantic diff, legacy required-context false positive, companion CI and controlled-transition implications; issue P0/P1/P2 only after exact CI is terminal.",
+      "baseline": "fd122e6235f8870c7e3f8e6b43b35f04392765d9",
+      "head": "5a449cad6d486e3680d2febba8203b0be7d215b9",
+      "tree": "60621741d4f453c7316a424d626849be2776581c",
+      "branch": "codex/cafe-source-attestation-trust-root-v1-replacement-2",
+      "worktree": null,
+      "owned_paths": [],
+      "forbidden_paths": ["all repository files", "PR25 body/state/head", "all branches/refs", "branch protection", "coordination room files"],
+      "authority_keys": [],
+      "generated_outputs": ["read-only final Security/QA report with exact evidence and P0/P1/P2"],
+      "dependencies": ["PR25 exact identity unchanged", "authority run33146171197 success bound to current master", "legacy run33146171005 explicit false-positive failure", "CI run33146170952 terminal"],
+      "consumer": "Producer PR25 merge/no-merge decision",
+      "status": "dispatched_read_only_waiting_exact_ci_terminal_then_review",
+      "last_heartbeat": "2026-08-28T06:02:09Z",
+      "stale_after": "2026-08-28T06:42:09Z",
+      "pr": 25,
+      "rollback": "Discard report on any base/head/tree/body/check/protection drift; make no mutation.",
+      "stop_lines": ["any write is required", "authority binding cannot be reproduced", "exact CI remains non-terminal", "candidate code executed in privileged run", "identity drift"],
+      "handoff_recipient": "Producer",
+      "archive_condition": "Terminal report consumed or identity drift invalidates review."
+    },
+    {
+      "claim_id": "lease-pr25-current-base-final-refute-v2",
+      "task": "subagent:/root/pr25_final_refute",
+      "role": "Independent read-only REFUTE reviewer",
+      "objective": "Attempt to falsify PR25 current-base approval and determine whether the failed legacy qualification is a real candidate defect or a base-only two-tree false positive; issue P0/P1/P2 only after exact CI is terminal.",
+      "baseline": "fd122e6235f8870c7e3f8e6b43b35f04392765d9",
+      "head": "5a449cad6d486e3680d2febba8203b0be7d215b9",
+      "tree": "60621741d4f453c7316a424d626849be2776581c",
+      "branch": "codex/cafe-source-attestation-trust-root-v1-replacement-2",
+      "worktree": null,
+      "owned_paths": [],
+      "forbidden_paths": ["all repository files", "PR25 body/state/head", "all branches/refs", "branch protection", "coordination room files"],
+      "authority_keys": [],
+      "generated_outputs": ["read-only adversarial REFUTE report with exact evidence and P0/P1/P2"],
+      "dependencies": ["PR25 exact identity unchanged", "authority run33146171197 success bound to current master", "legacy run33146171005 explicit false-positive failure", "CI run33146170952 terminal"],
+      "consumer": "Producer PR25 merge/no-merge decision",
+      "status": "dispatched_read_only_waiting_exact_ci_terminal_then_review",
+      "last_heartbeat": "2026-08-28T06:02:09Z",
+      "stale_after": "2026-08-28T06:42:09Z",
+      "pr": 25,
+      "rollback": "Discard report on any base/head/tree/body/check/protection drift; make no mutation.",
+      "stop_lines": ["any write is required", "authority binding cannot be reproduced", "exact CI remains non-terminal", "candidate code executed in privileged run", "identity drift"],
+      "handoff_recipient": "Producer",
+      "archive_condition": "Terminal report consumed or identity drift invalidates review."
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T06:00:12Z",
+    "at": "2026-08-28T06:02:09Z",
     "active_writers": 1,
-    "read_only_reviewers": 0,
+    "read_only_reviewers": 2,
     "shared_write_conflicts": 0,
-    "decision": "PR25 protected-base authority approved the exact six-path bundle, but legacy required qualification run33146171005 false-positively rejected three base-only authority files because it directly diffed base tree b5d02e49 against candidate tree instead of the merge-base 5b7ac426. GitHub PR/compare semantics still report only six candidate paths. Classify P1 operational blocker and freeze mutations pending exact CI plus independent review; do not rebake anchors or hide the failure."
+    "decision": "PR25 authority approved exact six-path bundle while legacy qualification false-positively rejected three base-only authority paths. Two output-only reviewers are dispatched and serialized on exact CI terminal state to classify the P1 and transition; no writer may mutate PR25 or protection."
   },
   "released_claims": [
     {
@@ -1804,7 +1854,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "PR25_AUTHORITY_APPROVED_LEGACY_REQUIRED_CONTEXT_FALSE_POSITIVE_P1_EXACT_CI_IN_PROGRESS",
+    "state": "PR25_AUTHORITY_APPROVED_LEGACY_FALSE_POSITIVE_P1_CI_RUNNING_TWO_READONLY_REVIEWS_DISPATCHED",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
@@ -1840,5 +1890,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Wait for PR25 exact-head CI run33146170952 to reach terminal status, then dispatch fresh independent Security/QA and REFUTE with the authority success, explicit legacy false-positive failure, six-path PR semantic diff and controlled-transition option."
+  "next_trigger": "Wait for PR25 exact-head CI run33146170952 to reach terminal status, then release the two already-dispatched read-only reviewers to issue final bound verdicts incorporating both authority success and legacy false-positive failure."
 }
