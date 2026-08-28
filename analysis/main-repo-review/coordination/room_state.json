@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T04:41:25Z",
+  "updated_at": "2026-08-28T04:43:32Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1304,11 +1304,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T04:41:25Z",
+    "at": "2026-08-28T04:43:32Z",
     "active_writers": 0,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "PR26 merge SHA post-merge ci and visual_canary are both successful and full protection remains restored. No active writers or reviewers exist. Reserve a single atomic close/reopen event trigger for unchanged Draft PR25; no head, code, protection or Ready mutation is permitted."
+    "decision": "The atomic PR25 close/reopen trigger completed without head/tree/Draft drift and created exactly one new protected-base authority run. No writers or reviewers are active. Freeze every PR25 mutation while run 33142614324 is in progress and until its exact event/current-head/base-authority binding is consumed."
   },
   "released_claims": [
     {
@@ -1722,7 +1722,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "PR26_POST_MERGE_SUCCESS_PR25_REOPEN_EVENT_TRIGGER_ARMED",
+    "state": "PR25_REOPEN_TRIGGER_COMPLETE_PROTECTED_BASE_AUTHORITY_RUN_IN_PROGRESS",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
@@ -1743,8 +1743,9 @@
     "post_merge": "master CI run 33141284479 SUCCESS at exact merge SHA; visual_canary job 98752473040 success and ci job 98752473180 success",
     "pr25_event_binding": "unchanged OPEN Draft PR25 head 5a449cad tree 60621741; six changed paths and sixteen commits; existing exact-head ci, visual_canary and legacy qualification success; close then immediately reopen only to trigger protected-base reopened event; draft/head/tree must remain unchanged or transaction aborts/reopens prior state",
     "protected_base_authority": "master b5d02e49; workflow blob 12b33ec6; manifest blob baad7334; verifier blob e7f68568; native result remains operational evidence only and is never added to classic required contexts",
+    "authority_run": "33142614324 Trusted cafe base authority gate pull_request_target created 2026-08-28T04:43:05Z, in_progress; reported head 5a449cad and branch codex/cafe-source-attestation-trust-root-v1-replacement-2",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Atomically close and reopen only PR25, verify it remains Draft at head 5a449cad/tree 60621741, then identify the new pull_request_target run and bind its event candidate head, current head and protected-base authority blobs before consuming the result."
+  "next_trigger": "Wait for authority run 33142614324. On terminal success, re-read run/jobs/checks/artifacts and PR25/master; require event/current head 5a449cad, unchanged tree 60621741, protected-base master b5d02e49 and exact authority blobs, then record the binding before independent PR25 review dispatch."
 }
