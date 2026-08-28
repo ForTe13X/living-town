@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T05:05:35Z",
+  "updated_at": "2026-08-28T05:10:12Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1351,7 +1351,7 @@
       "dependencies": ["PR27 exact identity unchanged", "visual_canary job 98758755626 success", "ci job 98758755779 terminal", "authority run 33143304796 expected fail-closed self-modification rejection"],
       "consumer": "Producer PR27 merge/no-merge decision",
       "status": "dispatched_read_only_waiting_for_terminal_ci_then_review",
-      "last_heartbeat": "2026-08-28T05:05:35Z",
+      "last_heartbeat": "2026-08-28T05:10:12Z",
       "stale_after": "2026-08-28T05:45:35Z",
       "pr": 27,
       "rollback": "Discard report if any base/head/tree/body/check/protection identity drifts; make no mutation.",
@@ -1376,7 +1376,7 @@
       "dependencies": ["PR27 exact identity unchanged", "visual_canary job 98758755626 success", "ci job 98758755779 terminal", "authority run 33143304796 expected fail-closed self-modification rejection"],
       "consumer": "Producer PR27 merge/no-merge decision",
       "status": "dispatched_read_only_waiting_for_terminal_ci_then_review",
-      "last_heartbeat": "2026-08-28T05:05:35Z",
+      "last_heartbeat": "2026-08-28T05:10:12Z",
       "stale_after": "2026-08-28T05:45:35Z",
       "pr": 27,
       "rollback": "Discard report if any base/head/tree/body/check/protection identity drifts; make no mutation.",
@@ -1386,11 +1386,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T05:05:35Z",
+    "at": "2026-08-28T05:10:12Z",
     "active_writers": 1,
     "read_only_reviewers": 2,
     "shared_write_conflicts": 0,
-    "decision": "Draft PR27 owns the exact one-file repair at remote head eb51b015/tree 503376db. Authority self-modification rejected as designed and visual_canary passed; ci remains in progress. Two output-only reviewers are serialized on terminal CI and cannot write. PR25 and every other lane remain frozen."
+    "decision": "Draft PR27 owns the exact one-file repair at remote head eb51b015/tree 503376db. Authority self-modification rejected as designed and visual_canary passed; ci remains in progress. Empirical API evidence corrects the platform model: pull_request_target runtime github.sha is protected-base-owned while its check-run is attached to candidate head; same-App/name impersonation remains the trust blocker. Two output-only reviewers remain serialized on terminal CI."
   },
   "released_claims": [
     {
@@ -1804,7 +1804,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "PR27_DRAFT_VISUAL_SUCCESS_CI_RUNNING_TWO_READONLY_REVIEWS_DISPATCHED_WITH_TERMINAL_DEPENDENCY",
+    "state": "PR27_DRAFT_PLATFORM_CHECK_ASSOCIATION_CORRECTED_VISUAL_SUCCESS_CI_RUNNING_REVIEWS_ACTIVE",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
@@ -1824,13 +1824,14 @@
     "protection_after_merge": "strict ci@15368 + visual_canary@15368 + pull_request_runtime_qualification@15368 restored; admins/conversation enforced; no force-push/deletion",
     "post_merge": "master CI run 33141284479 SUCCESS at exact merge SHA; visual_canary job 98752473040 success and ci job 98752473180 success",
     "pr25_event_binding": "unchanged OPEN Draft PR25 head 5a449cad tree 60621741; six changed paths and sixteen commits; existing exact-head ci, visual_canary and legacy qualification success; close then immediately reopen only to trigger protected-base reopened event; draft/head/tree must remain unchanged or transaction aborts/reopens prior state",
-    "protected_base_authority": "master b5d02e49; workflow blob 12b33ec6; manifest blob baad7334; verifier blob e7f68568; native result remains operational evidence only and is never added to classic required contexts",
+    "protected_base_authority": "master b5d02e49; workflow blob 12b33ec6; manifest blob baad7334; verifier blob e7f68568; pull_request_target runtime github.sha is protected-base-owned but empirical check-run API data attaches the result to candidate head; native result can technically be a classic required head context, yet same GitHub Actions App 15368 plus candidate-defined same-name workflow impersonation prevents treating the name/app binding alone as non-spoofable authority",
     "authority_run": "33142614324 failed: checkout used github.event.pull_request.base.sha=5b7ac426, so authority/.github/trusted-cafe-authority/verify_candidate_bundle.py was absent; verifier policy never executed and no artifact was produced",
     "repair_lease": "lease-pr26-protected-base-ref-repair-v1; Draft PR27 remote head eb51b015 tree 503376db parent master b5d02e49; exactly .github/workflows/trusted-cafe-authority-gate.yml; two-line github.sha repair; Docker receipt dedb0998 twice",
     "repair_hosted": "authority run 33143304796 failed closed on explicit base authority self-modification rejection as expected; general CI run 33143304668 visual_canary job 98758755626 success in 7m50s and ci job 98758755779 in progress; protection unchanged",
     "repair_reviews": "Security/QA and REFUTE read-only reviewers dispatched, but terminal verdicts are forbidden until exact-head ci job 98758755779 is terminal",
+    "platform_binding_correction": "PR27 job 98758756722 appears on candidate commit eb51b015 check-runs with head_sha eb51b015 and app 15368, absent on base b5d02e49; PR25 job 98756569578 likewise appears on candidate 5a449cad. This corrects the prior base-SHA association assumption without resolving same-App/name spoofing.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Wait for exact-head PR27 ci job 98758755779 to become terminal, then allow the two already-dispatched read-only reviewers to issue bound terminal verdicts; any identity drift invalidates both."
+  "next_trigger": "Wait for exact-head PR27 ci job 98758755779 to become terminal, then require both reviewers to incorporate the corrected candidate-head check association and distinguish it from the unresolved same-App/name impersonation risk."
 }
