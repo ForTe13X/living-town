@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T14:50:33Z",
+  "updated_at": "2026-08-28T14:53:08Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -2201,9 +2201,9 @@
       "generated_outputs": ["GitHub merge commit", "post-merge hosted checks", "exact protection snapshots"],
       "dependencies": ["PR29 exact f6cbdcf5 one-file clean and mergeable", "CI33179841766 success at exact head", "Security/QA code P0/P1/P2=0", "REFUTE P0/P1/P2=0", "master fd122e62 unchanged", "PR25 and PR28 remain Draft frozen"],
       "consumer": "Protected master authority for future PR28 manifest and PR25 trust-root decisions",
-      "status": "reserved_pre_transition_exact_recheck_required",
+      "status": "temporary_status_contexts_exactly_applied_ready_and_merge_reserved",
       "write_lease": true,
-      "last_heartbeat": "2026-08-28T14:50:33Z",
+      "last_heartbeat": "2026-08-28T14:53:08Z",
       "stale_after": "2026-08-28T15:20:33Z",
       "pr": 29,
       "recovery_count": 0,
@@ -2211,6 +2211,7 @@
       "temporary_protection": {"strict":true,"checks":[{"context":"ci","app_id":15368},{"context":"visual_canary","app_id":15368}],"all_other_settings":"exactly preserved","reason":"one-file protected verifier self-modification cannot produce pull_request_runtime_qualification and the authority gate correctly rejects itself"},
       "protection_after": {"strict":true,"checks":[{"context":"ci","app_id":15368},{"context":"visual_canary","app_id":15368},{"context":"pull_request_runtime_qualification","app_id":15368},{"context":"trusted_cafe_authority_gate","app_id":15368}],"all_other_settings":"exactly preserved","effect":"closes protection P2 for future Ready PRs"},
       "sequence": ["recheck exact PR/base/head/body/mergeability/master/protection", "apply temporary contexts only", "mark PR29 Ready", "merge using GitHub merge commit preserving candidate ancestry", "immediately apply final contexts including authority", "verify master ancestry/protection/PR state", "monitor post-merge checks and freeze dependent PRs on failure"],
+      "transition_actual": {"precheck_at":"2026-08-28T14:52:38Z","master":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","pr29_head":"f6cbdcf5ad8539bf4c4ce14ae6328ffb24d18ffc","body_sha256":"d2edf77074d919ebf81bb1f8e53795b9773e7a7937d9e5067dedae47d2b79c47","mergeable":true,"protection_before_verified":true,"temporary_applied_at":"2026-08-28T14:52:40Z","temporary_checks":[{"context":"ci","app_id":15368},{"context":"visual_canary","app_id":15368}],"non_status_settings_changed":false,"ready_reserved":true,"merge_reserved":true},
       "rollback": "Before merge restore the complete protection_before payload and return PR29 to Draft on any failure. After merge immediately restore at least protection_before, prefer protection_after, and use a new reviewed revert PR for code regression; never rewrite master.",
       "stop_lines": ["master/base/head/body/protection drift", "new P0/P1", "CI no longer success", "PR not mergeable", "temporary payload changes any non-status protection", "merge commit does not contain exact candidate", "final protection cannot be restored"],
       "handoff_recipient": "Producer post-merge monitor, then serialized PR28/PR25 decision",
@@ -2218,7 +2219,7 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T14:50:33Z",
+    "at": "2026-08-28T14:53:08Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
@@ -2723,8 +2724,9 @@
     "pr29_bundle_id_canonical_api_publication": "Canonical Git blob8fde21e published as non-force API child f6cbdcf5 of exact remote540896e1. Hosted treea07840f3, 28049 bytes and SHA256a5d328c9 verified; PR29 remains one-file OPEN Draft. Authority33179840058 failed as expected for base self-modification and CI33179841766 started. Body refresh reserved.",
     "pr29_bundle_id_body_and_fresh_reviews": "Draft PR29 body SHA256d2edf770 records exact f6cbdcf5/treea07840f3/blob8fde21e canonical hosted identity, 47/53 Docker receipts and bundle-id output controls. Writer released; Security/QA and REFUTE reserved read-only at exact identity while CI33179841766 completes.",
     "pr29_f6cbdcf5_terminal_reviews_and_protected_transition": "Exact f6cbdcf5/bodyd2edf770 CI33179841766 success. Security/QA code P0/P1/P2=0 with protection P2=1; REFUTE P0/P1/P2=0. Reviewers released. Reversible transition reserved: temporarily require ci+visual only, merge exact candidate, immediately restore ci+visual+qualification and add trusted_cafe_authority_gate; all other protection settings preserved.",
+    "pr29_temporary_protection_applied": "Exact precheck passed at masterfd122e62 and PR29f6cbdcf5/bodyd2edf770. Required checks temporarily changed from ci+visual+qualification to ci+visual only through the status-check subresource; every non-status protection setting remains unchanged. Ready+merge then immediate final restoration are reserved.",
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_1b8afb72_verified"
   },
-  "next_trigger": "Recheck exact PR29 identity, master and complete protection; if unchanged, apply the ledgered temporary status-context payload only, mark Ready, merge through GitHub with exact candidate ancestry, then immediately restore and strengthen protection and monitor post-merge checks."
+  "next_trigger": "Verify temporary checks still ci+visual and exact PR29/master unchanged, mark PR29 Ready, merge with GitHub merge commit preserving f6cbdcf5 ancestry, then immediately apply final checks ci+visual+qualification+trusted_cafe_authority_gate before any sibling action."
 }
