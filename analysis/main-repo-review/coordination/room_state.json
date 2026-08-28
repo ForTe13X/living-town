@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T12:00:31Z",
+  "updated_at": "2026-08-28T12:17:10Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1696,12 +1696,13 @@
       "generated_outputs": ["read-only exact-head Security/QA report with P0/P1/P2 and evidence"],
       "dependencies": ["PR28 exact identity unchanged", "CI run33169271123 terminal", "PR25 exact head 2760325d qualification/CI evidence", "parallel REFUTE independence"],
       "consumer": "Producer decision on manifest metadata repair, controlled merge, or rejection",
-      "status": "reserved_for_dispatch_wait_terminal_ci",
+      "status": "in_progress_preliminary_refute_p1_2_wait_terminal_ci",
       "write_lease": false,
-      "last_heartbeat": "2026-08-28T12:00:31Z",
+      "last_heartbeat": "2026-08-28T12:17:10Z",
       "stale_after": "2026-08-28T13:00:31Z",
       "pr": 28,
       "recovery_count": 0,
+      "preliminary_findings": {"p0":0,"p1":2,"p2":"pending_final","merge_readiness":"blocked","finding_1":"Base verifier matches six file records but does not bind source_head, source_tree, or evidence; identical blobs replayed at a false head remain approved-bundle.","finding_2":"trusted_cafe_authority_gate is not a required master protection context, so its fail-closed result is not a mechanical merge block.","evidence":"Independent pinned-Docker reproduction reported by REFUTE; final verdict waits for CI run33169271123 terminal and exact identity recheck."},
       "rollback": "Delete only task-owned temporary review outputs; no repository or GitHub rollback applies.",
       "stop_lines": ["PR28 head/base/path drift", "write would be required", "CI is not terminal", "Docker isolation unavailable"],
       "archive_condition": "Terminal exact-head report consumed or identity drift invalidates review."
@@ -1734,11 +1735,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T12:00:31Z",
+    "at": "2026-08-28T12:17:10Z",
     "active_writers": 0,
     "read_only_reviewers": 2,
     "shared_write_conflicts": 0,
-    "decision": "Draft PR28 exists at exact one-path head 8fb6895d. Its writer is released. Two independent read-only reviewers are reserved, each with no write set and separate task-local Docker surfaces; both must wait for CI run33169271123 terminal before final verdict. No master, protection, PR25, Ready or merge mutation is authorized."
+    "decision": "Draft PR28 remains exact and Draft but REFUTE independently reproduced two preliminary P1s: bundle authorization is not bound to source_head/source_tree/evidence, and trusted_cafe_authority_gate is absent from required master contexts. PR28 is blocked. Security/QA and final REFUTE verdict still wait for CI run33169271123 terminal. No master, protection, PR25, Ready or merge mutation is authorized."
   },
   "released_claims": [
     {
@@ -2212,8 +2213,9 @@
     "pr25_approved_bundle_manifest_commit": "Exact commit 15071bd79c0b8254329b90b83bf9e59808ecc737, tree 82350016c317ef14cdf30f5c5f79eae3ee4c0fef, parent fd122e62, manifest blob 18b100e7, canonical SHA256 fe07cface and 6087 bytes. New feature ref and one-path Draft PR are reserved after confirming both are absent and strict protection plus PR25 identity are unchanged.",
     "pr25_approved_bundle_manifest_api_commit": "API reconstruction matched blob 18b100e7 and tree 82350016 exactly. GitHub omitted the local commit message's trailing newline, producing API commit 8fb6895d with identical parent, tree, visible message, author, committer and timestamp. Remote ref remains absent; branch and Draft PR creation are reserved at 8fb6895d.",
     "pr28_creation": "Draft PR28 OPEN at exact head 8fb6895d/base fd122e62 with only approved-bundles.v1.json (+62). Authority run33169271086/job98842142215 rejected expected self-modification; CI run33169271123 is in progress. Master, strict protection and PR25 head/state remain unchanged. Writer released; Security/QA and REFUTE reserved read-only.",
+    "pr28_preliminary_refute": "At exact head 8fb6895d, independent pinned-Docker REFUTE reproduced P1-1: the base verifier authorizes an identical six-blob bundle even when source_head/source_tree/evidence are forged, and P1-2: trusted_cafe_authority_gate is not a required master protection check. PR28 merge-readiness is BLOCKED; pending metadata replacement alone is insufficient.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish PR28 exact creation, expected self-modification failure, writer release and two reviewer reservations. Dispatch /root/pr28_security_qa and /root/pr28_refute read-only; both wait for CI run33169271123 terminal, then report exact-head P0/P1/P2 without GitHub or repository mutation."
+  "next_trigger": "Publish the two preliminary PR28 REFUTE P1s while keeping PR28 Draft and immutable. Wait for CI run33169271123 terminal plus independent Security/QA and final REFUTE reports. If confirmed, serialize a bounded authority repair before any manifest metadata update, protection transition, Ready, or merge."
 }
