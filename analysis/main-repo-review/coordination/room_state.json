@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T02:15:58Z",
+  "updated_at": "2026-08-28T02:19:51Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -820,6 +820,90 @@
         "Docker validation cannot use a pinned digest",
         "secret material or shared Docker state is required"
       ]
+    },
+    {
+      "claim_id": "claim-pr25-final-security-qa-5a449cad",
+      "task": "/root/pr25_final_security_qa",
+      "role": "Fresh independent read-only Security/QA reviewer",
+      "objective": "Audit PR #25 exact repaired head, hosted evidence, stable required-context behavior, live branch protection, rollback, authority boundaries, and the honestly documented single-maintainer approval constraint.",
+      "baseline": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
+      "head": "5a449cad6d486e3680d2febba8203b0be7d215b9",
+      "tree": "60621741d4f453c7316a424d626849be2776581c",
+      "branch": "codex/cafe-source-attestation-trust-root-v1-replacement-2",
+      "worktree": "read-only exact Git object plus isolated pinned-digest Docker scratch",
+      "owned_paths": [],
+      "forbidden_paths": [
+        "**/* repository writes",
+        "GitHub PR/review/check/settings mutations",
+        "shared Docker containers/images/volumes/caches"
+      ],
+      "authority_keys": [],
+      "generated_outputs": [
+        "temporary task-owned review receipts outside repository only"
+      ],
+      "dependencies": [
+        "pr25:5a449cad6d486e3680d2febba8203b0be7d215b9",
+        "trusted-run:33134089326:success",
+        "general-run:33134089332:success",
+        "artifact:9671395005",
+        "master-protection:ci@15368:visual_canary@15368:pull_request_runtime_qualification@15368",
+        "refute:independent_parallel"
+      ],
+      "consumer": "Producer exact-head P0/P1 closure and Ready/merge hold decision",
+      "status": "active_read_only_review",
+      "last_heartbeat": "2026-08-28T02:19:51Z",
+      "stale_after": "2026-08-28T03:19:51Z",
+      "pr": 25,
+      "recovery_count": 0,
+      "rollback": "Delete only task-owned temporary review outputs; no repository or GitHub rollback applies.",
+      "stop_lines": [
+        "exact PR head or tree changes",
+        "repository or GitHub write would be required",
+        "Docker isolation cannot be established",
+        "artifact digest or hosted-run identity mismatch"
+      ]
+    },
+    {
+      "claim_id": "claim-pr25-final-refute-5a449cad",
+      "task": "/root/pr25_final_refute",
+      "role": "Fresh independent read-only adversarial REFUTE reviewer",
+      "objective": "Attempt to falsify PR #25 required-context sustainability, protection preservation, trust-root evidence, default-branch bootstrap, rollback, and no-deadlock claims at the exact repaired head.",
+      "baseline": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
+      "head": "5a449cad6d486e3680d2febba8203b0be7d215b9",
+      "tree": "60621741d4f453c7316a424d626849be2776581c",
+      "branch": "codex/cafe-source-attestation-trust-root-v1-replacement-2",
+      "worktree": "read-only exact Git object plus isolated pinned-digest Docker scratch",
+      "owned_paths": [],
+      "forbidden_paths": [
+        "**/* repository writes",
+        "GitHub PR/review/check/settings mutations",
+        "shared Docker containers/images/volumes/caches"
+      ],
+      "authority_keys": [],
+      "generated_outputs": [
+        "temporary task-owned adversarial fixtures and receipts outside repository only"
+      ],
+      "dependencies": [
+        "pr25:5a449cad6d486e3680d2febba8203b0be7d215b9",
+        "trusted-run:33134089326:success",
+        "general-run:33134089332:success",
+        "artifact:9671395005",
+        "master-protection:ci@15368:visual_canary@15368:pull_request_runtime_qualification@15368",
+        "security-qa:independent_parallel"
+      ],
+      "consumer": "Producer exact-head P0/P1 closure and Ready/merge hold decision",
+      "status": "active_read_only_review",
+      "last_heartbeat": "2026-08-28T02:19:51Z",
+      "stale_after": "2026-08-28T03:19:51Z",
+      "pr": 25,
+      "recovery_count": 0,
+      "rollback": "Delete only task-owned temporary review outputs; no repository or GitHub rollback applies.",
+      "stop_lines": [
+        "exact PR head or tree changes",
+        "repository or GitHub write would be required",
+        "test would mutate shared runtime state",
+        "claim cannot be tested without protected master dispatch"
+      ]
     }
   ],
   "current_conflict_graph": {
@@ -1241,7 +1325,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "AUTHORIZED_GOVERNANCE_REPAIR_REQUIRED_CHECK_ENFORCED_FINAL_REVIEWS_RESERVED",
+    "state": "AUTHORIZED_GOVERNANCE_REPAIR_REQUIRED_CHECK_ENFORCED_FINAL_REVIEWS_ACTIVE",
     "exact_head": "5a449cad6d486e3680d2febba8203b0be7d215b9",
     "p0": 0,
     "p1": 1,
@@ -1254,5 +1338,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Refresh PR #25 projection, then dispatch fresh exact-head independent Security/QA and REFUTE against the live required-check protection state."
+  "next_trigger": "Await fresh exact-head Security/QA and REFUTE terminal verdicts, then reconcile P0/P1 and update PR #5 without marking Ready or merging unless every gate actually passes."
 }
