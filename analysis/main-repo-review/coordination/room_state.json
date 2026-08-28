@@ -2767,10 +2767,10 @@
       "generated_outputs": ["merge commit parents2760325+1ea7aafd tree3c5d8599", "two byte-identical pinned-Docker self-test receipts", "fresh hosted authority/qualification/CI/artifacts"],
       "dependencies": ["PR28 merge1ea7aafd post-merge CI33206762935 success", "strict four-check protection restored", "PR25 OPEN Draft exact2760325/treec87b0644", "git merge-tree conflict-free predicted tree3c5d8599", "all 37 refreshed local tracking refs exact hosted", "zero active external writer"],
       "consumer": "Fresh independent Security/QA and REFUTE at synchronized PR25 exact head, then protected merge eligibility",
-      "status": "exact_body_applied_writer_released_independent_reviews_dispatched",
+      "status": "terminal_reviews_p0p1_zero_sync_writer_released_protected_merge_reserved",
       "read_only": false,
-      "last_heartbeat": "2026-08-28T21:42:03Z",
-      "stale_after": "2026-08-28T22:12:03Z",
+      "last_heartbeat": "2026-08-28T22:24:18Z",
+      "stale_after": "2026-08-28T22:54:18Z",
       "pr": 25,
       "checks": {"authority": "33210533687/98982405982 success", "qualification": "33210534190/98982408539 success artifact9701460416 sha256:2152b0a3 246199708 bytes", "ci": "33210534115/98982408608 success", "visual_canary": "33210534115/98982408537 success artifact9701562198 sha256:7d8e5615 18087789 bytes", "protected_capture": "skipped by PR design", "aggregate": "exact-head terminal success"},
       "body_transition": {"from_sha256": "c1a6f4dec8c7cd0ca3b67150328c15c58f6f911d188ee3f40224c3f2a9d113c8", "from_bytes": 2763, "to_sha256": "dc71b816b41d368733247d8a4e1a6684f3c260714e75da33a6ead2592e0ed502", "to_bytes": 3034, "scope": "identity, exact-head evidence, governance and rollback only", "ref_or_file_change": false},
@@ -2800,12 +2800,14 @@
       "generated_outputs": ["terminal exact-head P0/P1/P2 review and isolated Docker receipts"],
       "dependencies": ["target body dc71b816", "authority+qualification+ci+visual success", "strict four-check protection", "source parent2760325 and master parent1ea7aafd"],
       "consumer": "Producer PR25 merge decision and REFUTE cross-check",
-      "status": "dispatched_read_only_exact_body",
+      "status": "terminal_approved_p0_0_p1_0_p2_0_released",
       "read_only": true,
-      "last_heartbeat": "2026-08-28T21:42:03Z",
-      "stale_after": "2026-08-28T22:12:03Z",
+      "last_heartbeat": "2026-08-28T22:24:18Z",
+      "stale_after": null,
       "pr": 25,
       "recovery_count": 0,
+      "verdict": {"result": "APPROVED", "p0": 0, "p1": 0, "p2": 0, "identity": "base1ea7aafd/head6d5c6fc4/tree3c5d8599/bodydc71b816", "hosted": "authority+qualification+ci+visual success", "production_capture": "skipped on PR by design"},
+      "release_reason": "Complete exact-head terminal Security/QA handoff; no mutation performed.",
       "rollback": "No mutation; stop and report exact drift or P0/P1.",
       "stop_lines": ["head/tree/base/body/check/protection drift", "Docker isolation unavailable", "any write requested"],
       "handoff_recipient": "producer",
@@ -2827,16 +2829,47 @@
       "generated_outputs": ["terminal counterexamples, P0/P1/P2 and isolated Docker receipts"],
       "dependencies": ["target body dc71b816", "authority+qualification+ci+visual success", "strict four-check protection", "Security/QA independent parallel"],
       "consumer": "Producer exact-head P0/P1 closure decision",
-      "status": "dispatched_read_only_exact_body",
+      "status": "terminal_pass_p0_0_p1_0_p2_3_released",
       "read_only": true,
-      "last_heartbeat": "2026-08-28T21:42:03Z",
-      "stale_after": "2026-08-28T22:12:03Z",
+      "last_heartbeat": "2026-08-28T22:24:18Z",
+      "stale_after": null,
       "pr": 25,
       "recovery_count": 0,
+      "verdict": {"result": "PASS", "p0": 0, "p1": 0, "p2": 3, "identity": "base1ea7aafd/head6d5c6fc4/tree3c5d8599/bodydc71b816", "residuals": ["platform approvals remain zero and coordination-enforced", "protected dispatch is evidence-only and not approval/canon authority", "candidate-controlled pixels require independent visual review"], "production_capture": "skipped on PR by design"},
+      "release_reason": "Complete exact-head terminal adversarial handoff; no mutation performed.",
       "rollback": "No mutation; stop and report exact drift or P0/P1.",
       "stop_lines": ["head/tree/base/body/check/protection drift", "Docker isolation unavailable", "any write requested"],
       "handoff_recipient": "producer",
       "archive_condition": "One complete exact-head terminal handoff."
+    },
+    {
+      "claim_id": "lease-pr25-protected-master-merge-6d5c6fc4",
+      "task": "producer:01a04233-497e-7942-8da0-7958b314b199",
+      "role": "Single serialized protected PR Ready and merge authority",
+      "objective": "Atomically reverify PR25 exact identity, terminal exact-head evidence and independent P0/P1 closure; mark only PR25 Ready, merge normally through GitHub without branch deletion or protection change, verify merge tree/parents, then monitor post-merge CI and protected capture.",
+      "baseline": "1ea7aafd28414bb9690e2c55b222ca85d33424a0",
+      "baseline_tree": "9c26d720d3002f46a7f99b2704c3791ca5d3ed4e",
+      "head": "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb",
+      "tree": "3c5d859982c66bc5711659bf8f78548595717a4a",
+      "branch": "codex/cafe-source-attestation-trust-root-v1-replacement-2",
+      "worktree": "GitHub-only PR transaction; no worktree writes",
+      "owned_paths": ["PR25 Draft-to-Ready state", "PR25 merge transaction", "post-merge evidence observation"],
+      "forbidden_paths": ["direct master/integration push", "force push", "history rewrite", "branch deletion", "protection mutation", "other PRs/branches/worktrees", "canon/release/tag/human acceptance"],
+      "authority_keys": ["pr25-ready-merge-exact-6d5c6fc4", "protected-master-merge-serialization"],
+      "generated_outputs": ["GitHub merge commit with exact reviewed tree", "post-merge CI/protected capture receipts"],
+      "dependencies": ["PR25 OPEN Draft CLEAN exact base/head/tree/body and six paths", "authority+qualification+ci+visual success at exact head", "Security/QA P0=0 P1=0 P2=0", "REFUTE P0=0 P1=0 P2=3 accepted residuals", "strict four-check protection unchanged", "zero overlapping writers"],
+      "consumer": "Protected production capture and Stack B/cafe vertical-slice dependency graph",
+      "status": "reserved_before_ready_and_merge",
+      "read_only": false,
+      "last_heartbeat": "2026-08-28T22:24:18Z",
+      "stale_after": "2026-08-28T22:54:18Z",
+      "pr": 25,
+      "checks": {"authority": "success", "qualification": "success", "ci": "success", "visual_canary": "success", "protected_capture": "skipped on PR by design"},
+      "recovery_count": 0,
+      "rollback": "Before merge, return only PR25 to Draft on any drift. After merge, keep protection exact and use a new reviewed revert PR for any regression; never reset or rewrite master.",
+      "stop_lines": ["master/base/head/tree/body/path/check/protection drift", "any P0/P1 or overlapping writer", "merge result tree differs from3c5d8599", "branch deletion or protection mutation requested", "GitHub cannot produce normal reviewable merge"],
+      "handoff_recipient": "Producer post-merge CI/protected capture monitor",
+      "archive_condition": "Exact reviewed merge with strict protection unchanged and terminal post-merge evidence, or safe abort before merge."
     }
   ],
   "active_dependency_graph": {
@@ -2846,16 +2879,16 @@
     "phases": [
       {"phase":1,"objective":"Verifier v3 reviewed-source plus current-protected-base derivation","owner":"released","status":"complete_master5c3e5cb6_post_merge_ci_success","player_value":"unblocks protected trust-root delivery","conflict_risk":"closed with P2 follow-up retained","exit":"post-merge CI33194686491 success at exact5c3e5cb6"},
       {"phase":2,"objective":"Synchronize PR28 normally, replace only pending review leaves after fresh exact-source reviews, and re-run exact-head evidence","owner":"released","status":"complete_merge1ea7aafd_post_merge_ci_success_protection_restored","player_value":"restores evidence integrity without code/ref churn","conflict_risk":"closed with three retained P2s","exit":"post-merge CI33206762935 success"},
-      {"phase":3,"objective":"Merge reviewed manifest through reversible protected transition, then normally synchronize PR25 so candidate contains reviewed source plus current protected master","owner":"lease-pr25-normal-master-sync-1ea7aafd","status":"normal_conflict_free_sync_reserved","player_value":"makes protected candidate executable without stale identity","conflict_risk":"single PR25 ref writer; no shared file writer or protection mutation","exit":"PR25 fresh authority+qualification+CI at exact synchronized head and independent P0/P1=0"},
+      {"phase":3,"objective":"Merge reviewed manifest through reversible protected transition, then normally synchronize and merge PR25 so candidate contains reviewed source plus current protected master","owner":"lease-pr25-protected-master-merge-6d5c6fc4","status":"terminal_reviews_p0p1_zero_merge_reserved","player_value":"makes protected candidate executable without stale identity","conflict_risk":"single GitHub PR transaction; no worktree or protection mutation","exit":"PR25 exact reviewed merge plus terminal post-merge CI/protected capture"},
       {"phase":4,"objective":"Merge eligible PR25, monitor post-merge, then unlock Stack B authored IDs and exactly one cafe exterior-to-persistence production owner","owner":"unassigned","status":"blocked_on_phase3","player_value":"direct prerequisite to player-visible cafe vertical slice","conflict_risk":"trust root then canonical scene authority; separate leases","exit":"post-merge green, P0/P1=0, cafe production packet dispatched"}
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-08-28T21:42:03Z",
-    "active_writers": 0,
-    "read_only_reviewers": 2,
+    "at": "2026-08-28T22:24:18Z",
+    "active_writers": 1,
+    "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "PR25 exact target body dc71b816 is live with unchanged head/base/Draft identity and all hosted checks success. Body writer is released; two non-overlapping independent read-only exact-head reviewers are dispatched. No shared writer or authority surface overlaps."
+    "decision": "PR25 exact base/head/tree/body and six-path scope are current, all exact-head checks succeeded, Security/QA and REFUTE terminal P0/P1=0, and reviewers are released. Exactly one Producer GitHub Ready/merge transaction is reserved; no worktree writer or protection mutation overlaps."
   },
   "released_claims": [
     {
@@ -3363,5 +3396,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_39687a6b_verified"
   },
-  "next_trigger": "Collect terminal exact-head Security/QA and REFUTE handoffs, reconcile P0/P1/P2 and exact identity, then keep Draft on any P0/P1 or evaluate Ready/merge only after both independently report P0/P1=0."
+  "next_trigger": "Reverify PR25 exact identity and strict protection, mark only PR25 Ready, merge normally through GitHub without branch deletion/protection change, verify exact merge tree/parents, then monitor terminal post-merge CI and protected capture."
 }
