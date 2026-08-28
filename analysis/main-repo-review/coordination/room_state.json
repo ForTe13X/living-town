@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T19:00:18Z",
+  "updated_at": "2026-08-28T19:03:12Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -15,7 +15,7 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-08-28T19:00:18Z",
+    "at": "2026-08-28T19:03:12Z",
     "github_api_count": 37,
     "git_ls_remote_count": 37,
     "local_tracking_count": 37,
@@ -24,10 +24,10 @@
     "secondary_authority": "GitHub branches, pulls/reviews, Actions runs/artifacts and protection APIs plus successful fetch/prune and direct git ls-remote",
     "reconciliation": "GitHub hosted branch API reports 37 branches after the non-force PR28 and coordination publications; fetched/local refs were previously exact and no cached ref was promoted. Direct git ls-remote earlier remained transiently unavailable. PR28 is exactf57fc8e Draft; PR25 remains exact2760325 Draft/frozen.",
     "network_failures": ["git ls-remote --heads origin failed 2026-08-28T18:29Z: Failed to connect to github.com:443 after 21087 ms. GitHub branch API returned all 37 heads and successful fetch/prune left matching local tracking refs."],
-    "sorted_name_sha_set_sha256": "3d3e6fc550b46919b5b4ad41736c07b47510ab0d5d2abd5e565052b9741657b3",
+    "sorted_name_sha_set_sha256": "a1f1a0089ca37e38fa0008653b754804ca763c5e25181fe020e6bcfde18a312d",
     "master": "5c3e5cb6eebeea283245869a96e489d065c380b7",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "4eedb4002d32e96ad839a48a3caca93d7f481617",
+    "coordination": "fc3fe1848e05370b90f21da78bca2f056a22fb07",
     "pr25": "2760325d5946ae2d5d8632a704f6c180f90976e4",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
     "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
@@ -2594,12 +2594,12 @@
       "generated_outputs": ["one manifest-only commit replacing exactly two PENDING strings", "pinned-Docker deterministic selftest and live evaluation receipts"],
       "dependencies": ["PR28 exact3ba6d78d", "CI33196939024 success", "authority33196937222 expected self-modification failure", "source PR25 exact2760325/c87b0644", "recorded independent source review outputs", "verifier v3 protected master5c3e5cb6"],
       "consumer": "Fresh exact-head PR28 Security/QA and REFUTE, then controlled manifest transition",
-      "status": "published_exact_head_draft_body_updated_writer_released_hosted_ci_active",
+      "status": "published_exact_head_draft_body_updated_writer_released_visual_success_ci_active",
       "read_only": false,
-      "last_heartbeat": "2026-08-28T19:00:18Z",
+      "last_heartbeat": "2026-08-28T19:03:12Z",
       "stale_after": null,
       "pr": 28,
-      "checks": {"baseline_ci": "success", "baseline_visual_canary": "success", "fresh_ci": "run33200768617 in_progress exactf57fc8e", "fresh_visual_canary": "run33200768617 in_progress exactf57fc8e", "authority": "run33200766627 failure exactf57fc8e expected only base authority self-modification forbidden"},
+      "checks": {"baseline_ci": "success", "baseline_visual_canary": "success", "fresh_ci": "run33200768617 in_progress exactf57fc8e", "fresh_visual_canary": "run33200768617 success exactf57fc8e job98949367171", "visual_artifact": {"id": 9697870305, "digest": "sha256:33694b0ce29582d209c8676f036de1c54addf7006b4bc4c51591df4d6b4b8266", "bytes": 18087781, "expires": "2026-09-11T18:53:27Z"}, "authority": "run33200766627 failure exactf57fc8e expected only base authority self-modification forbidden"},
       "replacement": {"security_qa": "APPROVED_P0_0_P1_0_EXACT_HEAD_2760325D5946AE2D5D8632A704F6C180F90976E4", "refute": "REFUTE_P0_0_P1_0_EXACT_HEAD_2760325D5946AE2D5D8632A704F6C180F90976E4", "count": 2, "other_changes_allowed": 0},
       "worktree_result": {"created_detached_at": "3ba6d78d99246bdeda5d80d48062aaec69d96174", "clean_before_write": true, "old_divergent_worktree_mutated": false},
       "commit_result": {"commit": "f57fc8e0755e27da36a980611ec0e0e6b5b5d47f", "tree": "9c26d720d3002f46a7f99b2704c3791ca5d3ed4e", "parent": "3ba6d78d99246bdeda5d80d48062aaec69d96174", "manifest_blob": "2e6257e56504922b5c922882c92309d0ea7255e2", "paths": [".github/trusted-cafe-authority/approved-bundles.v1.json"], "lines_added": 2, "lines_removed": 2, "pending_markers": 0},
@@ -2621,7 +2621,7 @@
     "ranking": "dependency unlock first, then evidence closure, then player-visible cafe production; conflict risk serialized across shared authority",
     "phases": [
       {"phase":1,"objective":"Verifier v3 reviewed-source plus current-protected-base derivation","owner":"released","status":"complete_master5c3e5cb6_post_merge_ci_success","player_value":"unblocks protected trust-root delivery","conflict_risk":"closed with P2 follow-up retained","exit":"post-merge CI33194686491 success at exact5c3e5cb6"},
-      {"phase":2,"objective":"Synchronize PR28 normally, replace only pending review leaves after fresh exact-source reviews, and re-run exact-head evidence","owner":"producer exact-head hosted monitor then independent reviewers","status":"published_f57fc8e_draft_authority_expected_selfmod_failure_ci_and_visual_active","player_value":"installs data-only authorization","conflict_risk":"manifest writer released; read-only hosted monitoring until terminal","exit":"PR28 exact head P0/P1=0 and controlled manifest transition package"},
+      {"phase":2,"objective":"Synchronize PR28 normally, replace only pending review leaves after fresh exact-source reviews, and re-run exact-head evidence","owner":"producer exact-head hosted monitor then independent reviewers","status":"published_f57fc8e_draft_visual_success_authority_expected_selfmod_failure_ci_active","player_value":"installs data-only authorization","conflict_risk":"manifest writer released; read-only hosted monitoring until CI terminal","exit":"PR28 exact head P0/P1=0 and controlled manifest transition package"},
       {"phase":3,"objective":"Merge reviewed manifest through reversible protected transition, then normally synchronize PR25 so candidate contains reviewed source plus current protected master","owner":"unassigned","status":"blocked_on_phase2","player_value":"makes protected candidate executable without stale identity","conflict_risk":"critical protection and trust paths; serialized","exit":"PR25 fresh authority+qualification+CI at exact synchronized head and independent P0/P1=0"},
       {"phase":4,"objective":"Merge eligible PR25, monitor post-merge, then unlock Stack B authored IDs and exactly one cafe exterior-to-persistence production owner","owner":"unassigned","status":"blocked_on_phase3","player_value":"direct prerequisite to player-visible cafe vertical slice","conflict_risk":"trust root then canonical scene authority; separate leases","exit":"post-merge green, P0/P1=0, cafe production packet dispatched"}
     ]
@@ -3139,5 +3139,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_39687a6b_verified"
   },
-  "next_trigger": "Await CI run33200768617 and visual_canary terminal at exactf57fc8e. On success, ledger two read-only exact-head reviewer packets and dispatch existing independent Security/QA plus replacement REFUTE reviewers. Keep PR28 Draft and do not merge or mutate protection until P0/P1=0 reviews and controlled transition evidence close."
+  "next_trigger": "Visual canary is successful at exactf57fc8e with artifact9697870305. Await only ci job98949367536 in run33200768617. On success, ledger two read-only exact-head reviewer packets and dispatch existing independent Security/QA plus replacement REFUTE reviewers. Keep PR28 Draft and do not merge or mutate protection until P0/P1=0 reviews and controlled transition evidence close."
 }
