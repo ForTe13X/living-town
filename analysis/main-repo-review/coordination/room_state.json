@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T04:12:31Z",
+  "updated_at": "2026-08-28T04:15:50Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1304,11 +1304,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T04:12:31Z",
+    "at": "2026-08-28T04:15:50Z",
     "active_writers": 0,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "Both bounded PR26 body rereads are terminal and independently P0/P1=0. No writers or overlapping authority leases exist. The exact one-time bootstrap transition is armed only for PR26 f96aac62 with all non-qualification protection retained and immediate restoration after merge. PR25 and all production lanes remain frozen."
+    "decision": "PR26 exact bootstrap merged successfully and all three master required contexts were immediately restored with non-status controls unchanged. No active writers or reviewers exist. PR25 and all production lanes remain frozen until exact merge SHA post-merge CI succeeds and a new event-binding transaction is recorded."
   },
   "released_claims": [
     {
@@ -1722,7 +1722,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "PR26_EXACT_ONE_TIME_PROTECTION_TRANSITION_ARMED_P0_P1_ZERO",
+    "state": "PR26_MERGED_PROTECTION_RESTORED_POST_MERGE_CI_IN_PROGRESS",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
@@ -1738,9 +1738,11 @@
     "bootstrap_reviews": "Security/QA APPROVE P0=0 P1=0 P2=3; REFUTE PASS/ACCEPT P0=0 P1=0 P2=0",
     "pre_transition_binding": "master/base 5b7ac426; PR26 head f96aac62 tree 7a08c75b; one commit and three exact paths; body hash 23dc1f66; ci and visual_canary exact-head success; mergeable true; current protection strict ci@15368 + visual_canary@15368 + pull_request_runtime_qualification@15368, admins/conversation enforced, approvals 0, no force-push/deletion",
     "transition": "Temporarily remove only pull_request_runtime_qualification@15368, retain strict ci@15368 and visual_canary@15368 plus every non-status protection control, mark exact PR26 Ready, merge through GitHub without deleting branch, immediately restore all three contexts and verify post-merge master CI. Any identity or control drift aborts and restores protection before further action.",
-    "merge": "authorized_only_inside_exact_recorded_transition_transaction",
+    "merge": "PR26 merged as b5d02e499480540d90ae215d91a8cf772985b099; branch retained; PR closed",
+    "protection_after_merge": "strict ci@15368 + visual_canary@15368 + pull_request_runtime_qualification@15368 restored; admins/conversation enforced; no force-push/deletion",
+    "post_merge": "master CI run 33141284479 in_progress at exact merge SHA",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Reverify the exact bound state, apply the narrow master status-check transition, mark only PR26 Ready and merge it, then restore pull_request_runtime_qualification@15368 before monitoring post-merge master CI."
+  "next_trigger": "Wait for master CI run 33141284479 to finish at b5d02e499480540d90ae215d91a8cf772985b099. On success, record a separate PR25 event-trigger transaction before any close/reopen mutation; on failure, open a reviewed repair or revert path."
 }
