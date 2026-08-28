@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T10:34:54Z",
+  "updated_at": "2026-08-28T10:54:32Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1513,16 +1513,60 @@
       "generated_outputs": ["complete deterministic runtime/validation OCI receipt in new task scratch", "two candidate blob identities for protected-base bundle update"],
       "dependencies": ["replacement-1 released after test-fixture ENOSPC", "runtime image IDs matched twice a6c3bbdc", "validation image IDs matched twice 191cf67a", "same exact immutable references and Python 3.14.6 edits", "baseline CI run33147650879 success", "remote candidate head remains 8d9926b8"],
       "consumer": "PR25 exact six-path candidate, then a separate protected-base approved-bundle manifest update and fresh authority/CI/reviews",
-      "status": "reserved_not_started",
+      "status": "terminal_local_proof_success_commit_authorized_remote_push_not_yet_authorized",
       "write_lease": true,
-      "last_heartbeat": "2026-08-28T10:34:54Z",
-      "stale_after": "2026-08-28T12:34:54Z",
+      "last_heartbeat": "2026-08-28T10:51:07Z",
+      "stale_after": "2026-08-28T12:51:07Z",
       "pr": 25,
       "recovery_count": 0,
       "container": "lt-pr25-runtime-build-immutable-replacement2-20260828",
       "cache_volume": "lt-pr25-replacement2-podman-cache-20260828",
       "temp_volume": "lt-pr25-replacement2-tmp-20260828",
       "scratch": "D:\\Documents\\Dev\\living-town-pr25-immutable-toolchain-replacement2-scratch",
+      "proof": {
+        "environment": {
+          "platform": "linux/amd64",
+          "outer_image": "quay.io/podman/stable@sha256:b0173238dceedf46a10d2c3a7bf9b217a85dce19706d2d9c80b01345839ae779",
+          "skopeo_image": "quay.io/skopeo/stable@sha256:4a16d57b37617a04b3d643079a477a2848efe892dffcdf0ce56df4262b65f810",
+          "podman": "5.8.4",
+          "skopeo": "1.22.2",
+          "python": "3.14.6",
+          "tar": "1.35",
+          "coreutils": "9.10",
+          "initial_temp_free_bytes": 936000000000,
+          "cache_and_temp_ownership": "task-labeled isolated Docker volumes; no other task cache reused"
+        },
+        "runtime": {
+          "image_id_first": "a6c3bbdc2d563cd82bf1eb647382da5d3a67ce580d0187797707a68bfb50152c",
+          "image_id_second": "a6c3bbdc2d563cd82bf1eb647382da5d3a67ce580d0187797707a68bfb50152c",
+          "archive_sha256": "a6830cf7ecd7f67a78a10b3df57c43a855fd7f51c8e01af8a52ad8878a52041f",
+          "archive_bytes": 216299520,
+          "oci_manifest_digest": "eb9c68de47acb6ff283e8b41fc4a5e7f3f150455b06131e2f8b026b507f26d39",
+          "receipt_sha256": "cb252e6ee829bd1dd6c539c2a6873f8012b75da15b964459b2d21a603d3ff97f"
+        },
+        "validation": {
+          "image_id_first": "191cf67aadece3f28843f9742ea2038e945b95a6ae8cc3cb505655d7ff898169",
+          "image_id_second": "191cf67aadece3f28843f9742ea2038e945b95a6ae8cc3cb505655d7ff898169",
+          "archive_sha256": "589f1846424b8c2e9497af5ab1a49a6e83e3c12aa947635ab54c162a4f694637",
+          "archive_bytes": 246169600,
+          "archive_cap_bytes": 262144000,
+          "oci_manifest_digest": "128771ec28fc1721c6a42a838412f7a9ada76f322595c14fa76f2e5b6a5f513f",
+          "delta_sha256": "b503c942added857f99363b93ab0a55bb5aa12d072d6f29534e7ba01a07c844c",
+          "delta_bytes": 29890560,
+          "delta_cap_bytes": 41943040,
+          "receipt_sha256": "0efb036ed2f18a44b27526a91f41585322444df1f67167a038c5de105cdc73c0"
+        },
+        "runtime_lock_sha256": "076cb3c1c4a23ba9e7a73ae2651ef039c94f056fd0c68559c42b4dd774e8d9f5",
+        "receipt_verification": "Docker-isolated verifier recomputed all archive hashes, byte caps, deterministic flags, immutable image references and exact tool versions: pass",
+        "repository_scope": "exactly evidence/cafe/runtime-lock.v1.json and tools/trusted_cafe_capture.sh; diff-check pass"
+      },
+      "local_commit_authorization": {
+        "authorized": true,
+        "baseline": "8d9926b82d5b07d00208d9f21ff88f8892487988",
+        "exact_paths": ["evidence/cafe/runtime-lock.v1.json", "tools/trusted_cafe_capture.sh"],
+        "remote_push_authorized": false,
+        "next_transaction": "After the local commit, record exact commit/tree/blob identities and a normal fast-forward push reservation, publish this ledger, then reverify remote PR head and protection before push."
+      },
       "acceptance_tests": ["complete internal two-runtime and two-validation builds", "canonical runtime, validation and delta archives are byte-stable and within caps", "receipt binds immutable images and exact tool versions", "only two owned paths differ", "remote head and protection unchanged before normal publication"],
       "rollback": "No publication on failure. Preserve task receipts and labeled volumes for diagnosis; delete only explicitly task-owned empty outputs after verification. Never force-reset shared history.",
       "stop_lines": ["any third path", "any content change beyond the existing two-path diff", "any deterministic identity mismatch", "any immutable source failure after one recovery", "remote head drift", "authority boundary change"],
@@ -1531,11 +1575,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T10:34:54Z",
+    "at": "2026-08-28T10:51:07Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "Replacement-1 exhausted its recovery on an undersized task fixture after both runtime and validation image identities had already matched twice. It is released. Replacement-2 retains the unchanged two-path candidate but receives wholly new task-owned cache, temp and scratch surfaces with volume-backed temporary storage. No other writer/reviewer is active; authority/workflow paths remain frozen."
+    "decision": "Replacement-2 completed the unchanged two-path candidate proof in isolated volume-backed Docker storage: runtime and validation image IDs matched twice, all three canonical archives passed exact SHA and byte caps, and the receipt verifier passed. The lease now authorizes only an exact local commit; remote push remains separately gated. No other writer/reviewer is active; authority/workflow paths remain frozen."
   },
   "released_claims": [
     {
@@ -1992,8 +2036,10 @@
     "immutable_toolchain_repair_attempt_1": "Static Docker checks passed. A cold isolated nested-Podman runtime build resolved and pulled the Skopeo immutable index, then exhausted built-in retries while pulling the Podman immutable index due Quay TLS handshake timeouts/EOF. This differs from the old digest's deterministic manifest-unknown failure. Host-isolated version probes had already pulled both immutable references successfully. One recovery is reserved with a fresh isolated cache after recording this transient network failure.",
     "immutable_toolchain_replacement_attempt_1": "The accurate Python 3.14.6 lock passed the prior version stop. In a fresh task-owned Podman cache, Skopeo immutable index resolved and pulled, then Skopeo inspect of the pinned Docker Hub Python index exhausted on a TLS handshake timeout. Runtime output remained verified empty; the labeled task cache volume is preserved for the sole replacement recovery.",
     "immutable_toolchain_replacement_recovery_1": "The recovery passed all immutable-source and tool-version checks. It produced identical runtime image ID a6c3bbdc2d56 twice and identical validation image ID 191cf67aadec twice. The explicitly capped 2 GiB outer /tmp then returned ENOSPC while writing the second validation OCI layout, so no complete receipt was emitted and nothing was published. Replacement-2 is reserved with new volume-backed temp/cache/scratch; candidate edits remain unchanged.",
+    "immutable_toolchain_replacement_2": "Complete Docker-isolated proof passed. Runtime archive a6830cf7 (216299520 bytes) and validation archive 589f1846 (246169600 bytes) were built reproducibly with duplicate image IDs; validation delta b503c942 is 29890560 bytes. Receipts bind Podman 5.8.4, Skopeo 1.22.2, Python 3.14.6, tar 1.35 and coreutils 9.10 to immutable Quay indices. Exact two-path local commit is authorized; no remote mutation yet.",
+    "coordination_ref_recovery_20260828T1054Z": "An attempted content publication used git commit-tree without the API-created remote parent object locally present. The empty computed commit variable was interpreted by git push as a ref deletion. The producer immediately recreated refs/heads/codex/main-repo-review at its exact prior commit ac8f5d46308e271f8e253f7f0c36be58286ddf18 through GitHub. Master, integration, PR25, candidate refs and content were untouched. Future coordination publication in this transaction is restricted to GitHub Git Data API with an explicit parent and a non-force ref update.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish replacement-1 release and replacement-2 lease, create only the new labeled cache/temp volumes and new scratch directory, then rerun the unchanged complete build without a 2 GiB temp cap. Record exact receipts before any commit or remote candidate mutation."
+  "next_trigger": "Publish the replacement-2 proof and the recovered coordination-ref incident using GitHub Git Data API with explicit parent ac8f5d46 and non-force update. Then commit only the exact two owned candidate paths locally and publish a separate exact-head/tree/blob push reservation before PR25 branch mutation."
 }
