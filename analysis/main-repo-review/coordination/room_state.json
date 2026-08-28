@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T07:01:37Z",
+  "updated_at": "2026-08-28T10:34:54Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1482,25 +1482,60 @@
       "generated_outputs": ["isolated immutable-image version receipts", "deterministic two-build runtime receipt outside repository", "two new candidate blob identities for a separately reviewed protected-base bundle update"],
       "dependencies": ["released predecessor lease with recovery_count 1", "Skopeo immutable index 4a16d57b reports 1.22.2", "Podman immutable index b0173238 reports Podman 5.8.4, Python 3.14.6, tar 1.35, coreutils 9.10", "baseline CI run33147650879 success", "protected authority unchanged"],
       "consumer": "PR25 exact six-path candidate, then a separate protected-base approved-bundle manifest update and fresh authority/CI/reviews",
-      "status": "recovery_1_reserved_after_docker_hub_tls_timeout_with_task_cache_preserved",
-      "write_lease": true,
+      "status": "terminal_recovery_exhausted_test_fixture_tmp_capacity_released_with_provenance",
+      "write_lease": false,
       "last_heartbeat": "2026-08-28T06:56:33Z",
       "stale_after": "2026-08-28T07:56:33Z",
       "pr": 25,
       "recovery_count": 1,
+      "released_at": "2026-08-28T10:34:54Z",
+      "release_reason": "Recovery 1 built runtime twice with identical image ID a6c3bbdc and validation twice with identical image ID 191cf67a, then the outer test fixture's explicitly capped 2 GiB /tmp filled while writing the second validation OCI layout. Candidate determinism did not fail, but the acceptance run did not complete, so this lease is released without publication.",
       "acceptance_tests": ["Python 3.14.7 expectation fails closed against the immutable image as a negative control", "lock matches exact Skopeo 1.22.2, Podman 5.8.4, Python 3.14.6, tar 1.35 and coreutils 9.10", "runtime build completes its internal two-build byte-identity checks in isolated Docker/Podman", "only the two exact owned paths differ", "candidate PR semantic diff remains the exact six trust paths after normal publication"],
       "rollback": "Before publication retain or discard only task-owned edits/worktree. After normal publication, leave or close Draft PR25 and use a new reviewed revert; never force-reset shared history.",
       "stop_lines": ["any third repository path must change", "any other pinned tool version mismatches", "runtime archives are not byte-identical", "immutable references stop resolving", "authority or canonical Sim/View boundary changes", "remote head drift"],
       "handoff_recipient": "Producer protected-base manifest update transaction",
       "archive_condition": "Exact commit and Docker receipts handed off, or one replacement recovery fails and the lease is released without publication."
+    },
+    {
+      "claim_id": "lease-pr25-immutable-quay-toolchain-supply-repair-v1-replacement-2",
+      "task": "producer-local-serialized-writer",
+      "role": "Second replacement sole serialized Dev writer for PR25 immutable OCI toolchain proof completion",
+      "objective": "Re-run the unchanged two-path immutable-toolchain repair in a new isolated environment with task-owned volume-backed temporary storage large enough for both runtime and validation OCI layouts, and publish only after the complete deterministic receipt is produced.",
+      "baseline": "8d9926b82d5b07d00208d9f21ff88f8892487988",
+      "head": "8d9926b82d5b07d00208d9f21ff88f8892487988",
+      "tree": "2a848ad3ac9ef59b1e695a712666810666ed30f7",
+      "branch": "codex/pr25-immutable-toolchain-supply-repair-v1",
+      "delivery_ref": "origin/codex/cafe-source-attestation-trust-root-v1-replacement-2",
+      "worktree": "D:\\Documents\\Dev\\living-town-pr25-immutable-toolchain-repair-wt",
+      "owned_paths": ["evidence/cafe/runtime-lock.v1.json", "tools/trusted_cafe_capture.sh"],
+      "forbidden_paths": ["**/* except the two exact owned_paths", ".github/trusted-cafe-authority/**", ".github/workflows/**", "tools/** except tools/trusted_cafe_capture.sh", "game/**", "docs/**", "analysis/**", "schemas/registries/anchors/ledgers"],
+      "authority_keys": ["cafe-runtime-lock-v1", "cafe-oci-toolchain-supply", "quay-immutable-version-tags"],
+      "generated_outputs": ["complete deterministic runtime/validation OCI receipt in new task scratch", "two candidate blob identities for protected-base bundle update"],
+      "dependencies": ["replacement-1 released after test-fixture ENOSPC", "runtime image IDs matched twice a6c3bbdc", "validation image IDs matched twice 191cf67a", "same exact immutable references and Python 3.14.6 edits", "baseline CI run33147650879 success", "remote candidate head remains 8d9926b8"],
+      "consumer": "PR25 exact six-path candidate, then a separate protected-base approved-bundle manifest update and fresh authority/CI/reviews",
+      "status": "reserved_not_started",
+      "write_lease": true,
+      "last_heartbeat": "2026-08-28T10:34:54Z",
+      "stale_after": "2026-08-28T12:34:54Z",
+      "pr": 25,
+      "recovery_count": 0,
+      "container": "lt-pr25-runtime-build-immutable-replacement2-20260828",
+      "cache_volume": "lt-pr25-replacement2-podman-cache-20260828",
+      "temp_volume": "lt-pr25-replacement2-tmp-20260828",
+      "scratch": "D:\\Documents\\Dev\\living-town-pr25-immutable-toolchain-replacement2-scratch",
+      "acceptance_tests": ["complete internal two-runtime and two-validation builds", "canonical runtime, validation and delta archives are byte-stable and within caps", "receipt binds immutable images and exact tool versions", "only two owned paths differ", "remote head and protection unchanged before normal publication"],
+      "rollback": "No publication on failure. Preserve task receipts and labeled volumes for diagnosis; delete only explicitly task-owned empty outputs after verification. Never force-reset shared history.",
+      "stop_lines": ["any third path", "any content change beyond the existing two-path diff", "any deterministic identity mismatch", "any immutable source failure after one recovery", "remote head drift", "authority boundary change"],
+      "handoff_recipient": "Producer protected-base manifest update transaction",
+      "archive_condition": "Complete exact receipt and normal publication handoff, or one recovery failure and release without publication."
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T06:56:33Z",
+    "at": "2026-08-28T10:34:54Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "The first supply-repair lease exhausted its sole recovery at the declared Python-version stop line and is released. A replacement sole writer inherits the same two-path worktree and provenance, adds only the accurate Python 3.14.6 lock alignment, and must prove full runtime determinism. No concurrent writer/reviewer exists and protected authority/workflow paths remain frozen."
+    "decision": "Replacement-1 exhausted its recovery on an undersized task fixture after both runtime and validation image identities had already matched twice. It is released. Replacement-2 retains the unchanged two-path candidate but receives wholly new task-owned cache, temp and scratch surfaces with volume-backed temporary storage. No other writer/reviewer is active; authority/workflow paths remain frozen."
   },
   "released_claims": [
     {
@@ -1914,7 +1949,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "PR25_IMMUTABLE_QUAY_TWO_PATH_REPAIR_REPLACEMENT_1_RECOVERY_1_RESERVED",
+    "state": "PR25_IMMUTABLE_QUAY_TWO_PATH_REPAIR_REPLACEMENT_2_VOLUME_BACKED_PROOF_RESERVED",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
@@ -1956,8 +1991,9 @@
     "pr25_updated_head_ci": "run33147650879 SUCCESS at head 8d9926b8: visual_canary job98772144921 success 2026-08-28T06:27:43Z and ci job98772145048 success 2026-08-28T06:46:19Z.",
     "immutable_toolchain_repair_attempt_1": "Static Docker checks passed. A cold isolated nested-Podman runtime build resolved and pulled the Skopeo immutable index, then exhausted built-in retries while pulling the Podman immutable index due Quay TLS handshake timeouts/EOF. This differs from the old digest's deterministic manifest-unknown failure. Host-isolated version probes had already pulled both immutable references successfully. One recovery is reserved with a fresh isolated cache after recording this transient network failure.",
     "immutable_toolchain_replacement_attempt_1": "The accurate Python 3.14.6 lock passed the prior version stop. In a fresh task-owned Podman cache, Skopeo immutable index resolved and pulled, then Skopeo inspect of the pinned Docker Hub Python index exhausted on a TLS handshake timeout. Runtime output remained verified empty; the labeled task cache volume is preserved for the sole replacement recovery.",
+    "immutable_toolchain_replacement_recovery_1": "The recovery passed all immutable-source and tool-version checks. It produced identical runtime image ID a6c3bbdc2d56 twice and identical validation image ID 191cf67aadec twice. The explicitly capped 2 GiB outer /tmp then returned ENOSPC while writing the second validation OCI layout, so no complete receipt was emitted and nothing was published. Replacement-2 is reserved with new volume-backed temp/cache/scratch; candidate edits remain unchanged.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish replacement recovery 1, remove only the verified empty task runtime directory, then rerun using the same labeled task-owned Podman cache volume. If it fails, release replacement blocked with no publication; if it passes, record runtime hashes, sizes, image identities and exact two-path diff before commit/push."
+  "next_trigger": "Publish replacement-1 release and replacement-2 lease, create only the new labeled cache/temp volumes and new scratch directory, then rerun the unchanged complete build without a 2 GiB temp cap. Record exact receipts before any commit or remote candidate mutation."
 }
