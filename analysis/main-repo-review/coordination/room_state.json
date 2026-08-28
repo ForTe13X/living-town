@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T02:38:29Z",
+  "updated_at": "2026-08-28T02:54:16Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -934,8 +934,8 @@
       "role": "Sole serialized Dev writer for a protected-default-branch non-candidate-controlled cafe authority gate bootstrap",
       "objective": "Create a pull_request_target gate that runs only default-branch code, treats candidate content solely as GitHub API data, classifies old and new paths without rename ambiguity, fail-closes authority self-modification and mixed scope, and authorizes only an exact independently reviewed six-file bundle from a base-owned manifest.",
       "baseline": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
-      "head": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
-      "tree": "56173a6b69b256f825548c3d53c78acb3c1a0ee7",
+      "head": "313d9af462f36f23fdf9ffaa4350372d2a38d1aa",
+      "tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
       "branch": "codex/cafe-base-authority-gate-bootstrap-v1",
       "worktree": "D:\\Documents\\Dev\\living-town-cafe-authority-bootstrap-wt",
       "owned_paths": [
@@ -972,10 +972,10 @@
         "approved-bundle:derive-exact-six-blob-identities-from-pr25-head"
       ],
       "consumer": "Independent Security/QA and REFUTE, then reviewed master bootstrap; after landing, PR25 exact bundle and master protection transition",
-      "status": "reserved_isolated_writer",
-      "write_lease": true,
-      "last_heartbeat": "2026-08-28T02:38:29Z",
-      "stale_after": "2026-08-28T03:38:29Z",
+      "status": "terminal_clean_three_path_docker_validated_non_force_delivery_reserved",
+      "write_lease": false,
+      "last_heartbeat": "2026-08-28T02:54:16Z",
+      "stale_after": null,
       "pr": null,
       "checks": {
         "p0": 0,
@@ -989,7 +989,33 @@
           "gate workflow verifier or manifest self-modification fails",
           "duplicate required job workflow path fails",
           "fork candidate fails"
-        ]
+        ],
+        "docker": {
+          "client": "29.6.2",
+          "server": "29.6.2",
+          "context": "desktop-linux",
+          "platform": "linux/amd64",
+          "image": "gamecraft-runner@sha256:2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d",
+          "network_offline_selftests": "none",
+          "network_live_api": "bridge GitHub API only",
+          "read_only": true,
+          "cap_drop": "ALL",
+          "no_new_privileges": true,
+          "selftest_runs": 2,
+          "selftest_receipt_sha256": "dedb09985b12c7a94b4bb60cf6efc2502960968362bc59731b1d6f51600e6cd9",
+          "selftest_cases": 8,
+          "live_pr25": "approved-bundle:b1de69bb68a9c689bb75933120d01628e598c6822c2d4dd70c6d7c35d76b7665",
+          "live_pr2": "not-applicable:c104c986831773c23b0ee0c67b0cb3925a1708bda1ba2400d49e0b038f7ff132",
+          "live_pr3": "not-applicable:aec3ebfcb8556b0de34b5f4b6b9e3296fd3b318bd87458a8ea28aa9706efe215",
+          "cleanup": "all task containers removed; task scratch retained for handoff receipts"
+        },
+        "path_sha256": {
+          ".github/trusted-cafe-authority/approved-bundles.v1.json": "ad38a7e6ab632b959fc177d87e6884bd30f289d9c66d9926db94e278d84846e6",
+          ".github/trusted-cafe-authority/verify_candidate_bundle.py": "243f9d09eae01949739bed565f13d5d7b67ae1e1dc0837470ea7e11d38b5c23d",
+          ".github/workflows/trusted-cafe-authority-gate.yml": "d30a78cdbef58f6f14a6e51a558e06a74ff5f2e9355ea7849f2d90a89b1cc2d3"
+        },
+        "smart_http_push": "failed GitHub 443; no remote mutation",
+        "delivery": "reserved Git Data API exact-parent branch creation after this ledger commit"
       },
       "recovery_count": 0,
       "rollback": "Leave or close the Draft unmerged. After a reviewed bootstrap merge, remove the new required context first and revert through a new reviewed PR; never rewrite master.",
@@ -1422,7 +1448,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "BASE_CONTROLLED_CAFE_AUTHORITY_GATE_BOOTSTRAP_WRITER_RESERVED",
+    "state": "BASE_CONTROLLED_CAFE_AUTHORITY_GATE_BOOTSTRAP_DELIVERY_RESERVED",
     "exact_head": "5a449cad6d486e3680d2febba8203b0be7d215b9",
     "p0": 0,
     "p1": 1,
@@ -1435,5 +1461,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Implement and pinned-Docker self-test the isolated three-path protected-default-branch authority bootstrap, then publish only a Draft PR for hosted and independent exact-head review."
+  "next_trigger": "Publish the exact three-path bootstrap branch by non-force Git Data API, create only a Draft PR, then gather hosted and independent exact-head evidence before any temporary protection or master merge transition."
 }
