@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T14:56:07Z",
+  "updated_at": "2026-08-28T15:14:37Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -15,40 +15,30 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-08-28T13:32:53Z",
+    "at": "2026-08-28T15:02:12Z",
     "github_api_count": 36,
-    "git_ls_remote_count": null,
-    "local_tracking_count": 33,
-    "local_exact_count": 30,
-    "snapshot_complete": false,
-    "secondary_authority": "GitHub branches, commits, compare, checks, artifacts and pull APIs returned the complete 36-branch hosted set after smart-HTTP fetch and direct git ls-remote both failed on GitHub 443",
-    "reconciliation": "GitHub API directly enumerated and fully scanned 36 hosted branches. Local refs contain 33 branch refs plus origin/HEAD: 30 exact matches; master, PR25 and PR29 tracking refs are stale, while PR27, PR28 and coordination have no local tracking ref. Cached refs were not promoted. Every hosted branch was scanned for exact head, commit time/subject, PR relation, worktree mapping, ahead/behind against master and integration/batons, checks and artifacts.",
-    "network_failures": [
-      "git fetch --all --tags --prune: Recv failure: Connection was reset",
-      "git ls-remote --heads: Failed to connect to github.com:443 after 21049 ms"
-    ],
-    "sorted_name_sha_set_sha256": "d344aecd83088b138a7085d20b165cc964df2208a742288ff20b838a2fd591da",
+    "git_ls_remote_count": 36,
+    "local_tracking_count": 36,
+    "local_exact_count": 36,
+    "snapshot_complete": true,
+    "secondary_authority": "GitHub branches, pulls/reviews, Actions runs/artifacts and protection APIs plus successful fetch/prune and direct git ls-remote",
+    "reconciliation": "After PR29 merge, fetch --all --tags --prune and git ls-remote both succeeded. GitHub, ls-remote and local tracking refs are 36/36 exact. Every hosted branch was scanned for exact head, last commit time/subject, PR and worktree relation, ahead/behind and ancestry against master43c72a8f and integration/batons, recent runs/artifacts and retention. Nine old branches without PR/worktree remain retained pending provenance proof; no deletion was attempted.",
+    "network_failures": [],
+    "sorted_name_sha_set_sha256": "1e6a126151d3523f85c09be700b8ebbbe25ab1c0e161fc0fefa0a289ce431acf",
     "master": "43c72a8faa4e927fa5e324f589c611dd2a402a0e",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "58e3c7371bbcddbef47d5667548cee1b40584295",
+    "coordination": "b51ee3b1ef5c391f5bda593b2098531e0dfe5e9c",
     "pr25": "2760325d5946ae2d5d8632a704f6c180f90976e4",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
     "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
     "pr28": "8fb6895acdb14347f944767b484c2531518114f4",
-    "pr29": "a10486918276963b3b693f178b239bd115c03975",
-    "mismatched_or_missing_local": {
-      "master": {"hosted":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","local_tracking":"5b7ac426b6bc059517dba843db4150a2b38d33a7"},
-      "codex/cafe-source-attestation-trust-root-v1-replacement-2": {"hosted":"2760325d5946ae2d5d8632a704f6c180f90976e4","local_tracking":"26a0d0114052d302a0cb768418d5c00501920eb3"},
-      "codex/cafe-authority-exact-identity-v2": {"hosted":"a10486918276963b3b693f178b239bd115c03975","local_tracking":"1e99012a459a317376090e28ab7671a3bfda4700"},
-      "codex/pr26-protected-base-ref-repair-v1": {"hosted":"eb51b01595819a782d1588844776caea0e0fc750","local_tracking":null},
-      "codex/pr25-approved-bundle-2760325-v1": {"hosted":"8fb6895acdb14347f944767b484c2531518114f4","local_tracking":null},
-      "codex/main-repo-review": {"hosted":"58e3c7371bbcddbef47d5667548cee1b40584295","local_tracking":null}
-    },
+    "pr29": "f6cbdcf5ad8539bf4c4ce14ae6328ffb24d18ffc",
+    "mismatched_or_missing_local": {},
     "open_prs": 10,
     "open_issues": 0,
     "releases": 0,
     "tags": 0,
-    "full_branch_metadata_scan": "All 36 hosted branches were enumerated directly and scanned for exact head, time/subject, PR/worktree relation, master/integration ahead-behind, checks and artifacts. Master and integration/batons did not drift. The three branches added since the prior 33-branch scan are the already-ledgered PR27, PR28 and PR29 lineage; no unknown branch transition was discovered. Ten PRs are open, zero issues/releases/tags exist, and master protection remains strict with ci, visual_canary and pull_request_runtime_qualification required."
+    "full_branch_metadata_scan": "Material-transition full scan completed. All 36 hosted branches are exact locally and directly via ls-remote; per-branch head/time/subject/PR/worktree/ahead-behind/ancestry/recent runs/artifacts/retention were recorded in task-local snapshot D:\\Documents\\Dev\\living-town-material-scan-20260828-1456.json. There are 29 PRs: 10 open, 18 merged, 1 closed-unmerged, and zero formal GitHub reviews; zero issues/releases/tags. Master protection requires ci, visual_canary, pull_request_runtime_qualification and trusted_cafe_authority_gate. Twenty-nine worktrees were scanned: 14 dirty, comprising the known main-worktree 19 untracked UI/UX files plus 13 historical Temp worktrees with mass deletions; all are frozen and untouched."
   },
   "portfolio_policy": {
     "default_active_writers": 2,
@@ -2201,9 +2191,9 @@
       "generated_outputs": ["GitHub merge commit", "post-merge hosted checks", "exact protection snapshots"],
       "dependencies": ["PR29 exact f6cbdcf5 one-file clean and mergeable", "CI33179841766 success at exact head", "Security/QA code P0/P1/P2=0", "REFUTE P0/P1/P2=0", "master fd122e62 unchanged", "PR25 and PR28 remain Draft frozen"],
       "consumer": "Protected master authority for future PR28 manifest and PR25 trust-root decisions",
-      "status": "merged_exact_candidate_final_protection_verified_post_merge_ci_monitoring",
-      "write_lease": true,
-      "last_heartbeat": "2026-08-28T14:56:07Z",
+      "status": "terminal_merged_post_merge_ci_success_final_protection_verified_released",
+      "write_lease": false,
+      "last_heartbeat": "2026-08-28T15:14:37Z",
       "stale_after": "2026-08-28T15:20:33Z",
       "pr": 29,
       "recovery_count": 0,
@@ -2212,18 +2202,51 @@
       "protection_after": {"strict":true,"checks":[{"context":"ci","app_id":15368},{"context":"visual_canary","app_id":15368},{"context":"pull_request_runtime_qualification","app_id":15368},{"context":"trusted_cafe_authority_gate","app_id":15368}],"all_other_settings":"exactly preserved","effect":"closes protection P2 for future Ready PRs"},
       "sequence": ["recheck exact PR/base/head/body/mergeability/master/protection", "apply temporary contexts only", "mark PR29 Ready", "merge using GitHub merge commit preserving candidate ancestry", "immediately apply final contexts including authority", "verify master ancestry/protection/PR state", "monitor post-merge checks and freeze dependent PRs on failure"],
       "transition_actual": {"precheck_at":"2026-08-28T14:52:38Z","old_master":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","pr29_head":"f6cbdcf5ad8539bf4c4ce14ae6328ffb24d18ffc","body_sha256":"d2edf77074d919ebf81bb1f8e53795b9773e7a7937d9e5067dedae47d2b79c47","mergeable":true,"protection_before_verified":true,"temporary_applied_at":"2026-08-28T14:52:40Z","temporary_checks":[{"context":"ci","app_id":15368},{"context":"visual_canary","app_id":15368}],"non_status_settings_changed":false,"ready_at":"2026-08-28T14:54:55Z","merged_at":"2026-08-28T14:55:05Z","merge_commit":"43c72a8faa4e927fa5e324f589c611dd2a402a0e","merge_tree":"a07840f3c4d098e8e88e0a149c6d2bad25fa8eb9","merge_parents":["fd122e6235f8870c7e3f8e6b43b35f04392765d9","f6cbdcf5ad8539bf4c4ce14ae6328ffb24d18ffc"],"final_protection_applied":true,"final_checks":[{"context":"ci","app_id":15368},{"context":"visual_canary","app_id":15368},{"context":"pull_request_runtime_qualification","app_id":15368},{"context":"trusted_cafe_authority_gate","app_id":15368}],"strict":true,"admins":true,"conversation":true,"allow_force_pushes":false,"allow_deletions":false,"feature_branch_preserved":"f6cbdcf5ad8539bf4c4ce14ae6328ffb24d18ffc","post_merge_ci":33182561513},
+      "post_merge": {"run":33182561513,"conclusion":"success","ci":"success","visual_canary":"success","completed_at":"2026-08-28T15:14:13Z","regression":false},
+      "released_at": "2026-08-28T15:14:37Z",
+      "release_reason": "Exact merge ancestry/tree and final four-context protection verified; post-merge CI and visual canary terminal success; material-transition branch/PR/task/worktree scan completed.",
       "rollback": "Before merge restore the complete protection_before payload and return PR29 to Draft on any failure. After merge immediately restore at least protection_before, prefer protection_after, and use a new reviewed revert PR for code regression; never rewrite master.",
       "stop_lines": ["master/base/head/body/protection drift", "new P0/P1", "CI no longer success", "PR not mergeable", "temporary payload changes any non-status protection", "merge commit does not contain exact candidate", "final protection cannot be restored"],
       "handoff_recipient": "Producer post-merge monitor, then serialized PR28/PR25 decision",
-      "archive_condition": "PR29 merged with exact candidate ancestry, final protection verified, post-merge checks terminal, or transition rolled back completely."
+      "archive_condition": "PR29 merged with exact candidate ancestry, final protection verified, post-merge checks terminal, or transition rolled back completely.",
+      "archive_condition_met": true
+    },
+    {
+      "claim_id": "lease-pr28-approved-bundle-master-merge-and-review",
+      "task": "producer:01a04233-497e-7942-8da0-7958b314b199",
+      "role": "Sole serialized control-plane writer for PR28 approved-bundle branch update and exact-head review handoff",
+      "objective": "Merge protected master43c72a8f into PR28 without changing its one-manifest semantic diff, verify exact two-parent ancestry and scope, refresh its Draft body, then release to independent Security/QA and REFUTE before any manifest transition.",
+      "baseline": "8fb6895acdb14347f944767b484c2531518114f4",
+      "baseline_tree": "unknown_until_exact_api_recheck",
+      "branch": "codex/pr25-approved-bundle-2760325-v1",
+      "worktree": "D:\\Documents\\Dev\\living-town-pr25-approved-bundle-2760325-wt (read-only for this control-plane update)",
+      "owned_paths": [".github/trusted-cafe-authority/approved-bundles.v1.json"],
+      "forbidden_paths": ["all other repository files", "master", "integration/batons", "PR25", "branch protection", "force push", "history rewrite"],
+      "authority_keys": ["trusted_cafe_approved_bundle_manifest_v1", "pr28_branch_ancestry", "pr28_draft_body"],
+      "generated_outputs": ["normal GitHub merge commit from master into feature branch", "fresh hosted checks", "fresh exact-head review packet"],
+      "dependencies": ["PR29 merged as master43c72a8f", "post-merge CI33182561513 success", "final four-context protection verified", "PR28 old head8fb6895 clean one-manifest diff", "PR25 remains Draft at2760325"],
+      "consumer": "Fresh independent Security/QA and REFUTE, then separately ledgered PR28 protected-manifest transition; PR25 remains blocked",
+      "status": "reserved_pre_update_exact_recheck_required",
+      "write_lease": true,
+      "last_heartbeat": "2026-08-28T15:14:37Z",
+      "stale_after": "2026-08-28T15:44:37Z",
+      "pr": 28,
+      "recovery_count": 0,
+      "pr_policy": "Keep PR28 Draft. Update only by normal merge commit from exact master. Do not mark Ready, alter protection or merge PR28 from this lease.",
+      "acceptance_tests": ["PR28 and feature ref exact old head8fb6895", "master exact43c72a8f", "one semantic diff path after merge", "manifest bytes unchanged by ancestry update", "merge parents exact old head plus master", "fresh CI and expected authority self-modification failure start", "body exact identity refreshed"],
+      "negative_controls": ["head/base/body drift", "merge conflict", "second semantic diff path", "manifest bytes change", "PR25 identity drift", "protection mutation"],
+      "rollback": "Before branch update no action. After normal merge commit leave Draft and revert only through a new reviewable branch commit if necessary; never force-push or rewrite shared history.",
+      "stop_lines": ["master/PR28/PR25 drift", "merge conflict", "semantic diff exceeds manifest", "manifest content changes", "branch protection change required", "unknown worktree mutation required"],
+      "handoff_recipient": "Fresh independent Security/QA and REFUTE",
+      "archive_condition": "Updated exact Draft head/body/checks handed to reviewers or update abandoned without branch mutation."
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T14:56:07Z",
+    "at": "2026-08-28T15:14:37Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "PR29 is merged through exact two-parent merge commit43c72a8f and final four-context protection is verified. One control-plane owner remains active only to monitor post-merge CI33182561513 and rescan siblings/branches after the material transition; PR25, PR28, manifest and integration remain frozen."
+    "decision": "PR29 transition is terminal clean. Exactly one new control-plane writer owns PR28 branch ancestry/body update; its sole semantic owned path is the approved-bundles manifest. PR25, protection, integration, all implementation paths and every dirty/unknown worktree remain frozen."
   },
   "released_claims": [
     {
@@ -2726,8 +2749,9 @@
     "pr29_f6cbdcf5_terminal_reviews_and_protected_transition": "Exact f6cbdcf5/bodyd2edf770 CI33179841766 success. Security/QA code P0/P1/P2=0 with protection P2=1; REFUTE P0/P1/P2=0. Reviewers released. Reversible transition reserved: temporarily require ci+visual only, merge exact candidate, immediately restore ci+visual+qualification and add trusted_cafe_authority_gate; all other protection settings preserved.",
     "pr29_temporary_protection_applied": "Exact precheck passed at masterfd122e62 and PR29f6cbdcf5/bodyd2edf770. Required checks temporarily changed from ci+visual+qualification to ci+visual only through the status-check subresource; every non-status protection setting remains unchanged. Ready+merge then immediate final restoration are reserved.",
     "pr29_merged_final_protection_verified": "PR29 merged at43c72a8f with parents old masterfd122e62 and exact reviewed headf6cbdcf5; merge tree equals reviewed treea07840f3. Master protection immediately restored and strengthened to ci+visual+qualification+trusted_cafe_authority_gate, strict/admins/conversation/no-force/no-delete preserved. Feature branch retained; post-merge CI33182561513 active; siblings frozen pending rescan.",
+    "pr29_post_merge_success_full_scan_pr28_reserved": "Post-merge CI33182561513 succeeded at master43c72a8f. Full 36-branch snapshot is complete and exact across GitHub/ls-remote/local refs, hash1e6a1261; 29 PRs/0 reviews, 0 issues/releases/tags, 29 worktrees with 14 dirty all preserved. Required tasks unavailable; dynamic dev/map/UI-UX inactive/terminal, B28 BELOW_REQUIRED_FLOOR. PR28 one-manifest branch update/review is the next serialized lane.",
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_1b8afb72_verified"
   },
-  "next_trigger": "Monitor post-merge CI33182561513 to terminal, perform the material-transition full hosted branch/PR/check/artifact/task/worktree rescan against master43c72a8f, then release the control-plane lease or open a reviewed repair/revert PR on regression."
+  "next_trigger": "Recheck exact PR28/PR25/master refs, PR28 body and one-manifest diff; if unchanged, update PR28 by a normal GitHub merge commit from master43c72a8f, verify manifest content unchanged and semantic diff still one path, refresh Draft body, then reserve fresh Security/QA and REFUTE."
 }
