@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T02:58:15Z",
+  "updated_at": "2026-08-28T03:23:17Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -15,21 +15,28 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-08-28T00:21:55Z",
-    "github_api_count": 32,
-    "git_ls_remote_count": 32,
+    "at": "2026-08-28T03:23:17Z",
+    "github_api_count": 33,
+    "git_ls_remote_count": null,
     "local_tracking_count": 32,
-    "reconciliation": "fetch --all --prune --tags succeeded; GitHub API and git ls-remote exactly reconcile at 32 branches; local refs contain the same 32 heads plus the expected origin/HEAD symbolic ref",
-    "sorted_name_sha_set_sha256": "2f207a4bf047ad8db41130d52da8796e2cb0163e68d66a577b880eb5cd96013a",
+    "snapshot_complete": false,
+    "secondary_authority": "GitHub branches API returned the complete hosted set after both smart-HTTP fetch and git ls-remote failed on GitHub 443",
+    "reconciliation": "GitHub API directly enumerated 33 hosted branches. Local refs contain 32 branch refs plus origin/HEAD: 29 exact matches, stale PR25 and coordination heads, and no PR26 tracking ref. Cached refs were not promoted. Every hosted branch was scanned for exact head, commit time/subject, PR relation, worktree mapping, and ahead/behind against master and integration/batons.",
+    "network_failures": [
+      "git fetch --all --prune --tags: Failed to connect to github.com:443",
+      "git ls-remote --heads: Recv failure: Connection was reset"
+    ],
+    "sorted_name_sha_set_sha256": "c84a2abf21b8c58220a96323ae71b329810b02004c3fca0e4990514b391e50d8",
     "master": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "8081c7a08c4c237abf289401446b8eaded7e5881",
-    "pr25": "26e22985f9982e31b3982777f002ba3c46169acb",
-    "open_prs": 9,
+    "coordination": "b23eb900e4aa5d27e39d7a8759045baa58c487fd",
+    "pr25": "5a449cad6d486e3680d2febba8203b0be7d215b9",
+    "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
+    "open_prs": 10,
     "open_issues": 0,
     "releases": 0,
     "tags": 0,
-    "full_branch_metadata_scan": "All 32 hosted branches were enumerated directly with exact SHA, commit time/subject, PR relation, worktree mapping, and ahead/behind against master and integration/batons; no hosted branch drift."
+    "full_branch_metadata_scan": "All 33 hosted branches were enumerated directly. Master and integration/batons did not drift. The only new hosted branch is PR26 bootstrap; PR25 and coordination advanced as ledgered. No unknown hosted branch transition was discovered."
   },
   "portfolio_policy": {
     "default_active_writers": 2,
@@ -972,9 +979,9 @@
         "approved-bundle:derive-exact-six-blob-identities-from-pr25-head"
       ],
       "consumer": "Independent Security/QA and REFUTE, then reviewed master bootstrap; after landing, PR25 exact bundle and master protection transition",
-      "status": "open_draft_exact_three_path_hosted_checks_in_progress_writer_released",
+      "status": "open_draft_exact_three_path_hosted_ci_visual_success_fresh_reviewers_reserved_writer_released",
       "write_lease": false,
-      "last_heartbeat": "2026-08-28T02:54:16Z",
+      "last_heartbeat": "2026-08-28T03:23:17Z",
       "stale_after": null,
       "pr": 26,
       "checks": {
@@ -1018,8 +1025,9 @@
         "delivery": "Git Data API exact-parent new branch creation succeeded; Draft PR26 created",
         "hosted": {
           "run": 33137472069,
-          "ci": "in_progress",
-          "visual_canary": "in_progress",
+          "ci": "success:job-98740589853:completed-2026-08-28T03:22:54Z",
+          "visual_canary": "success:job-98740590026:completed-2026-08-28T03:05:27Z",
+          "visual_artifact": "9672719431:sha256:3d35b00b6401d6ee9066e11c6ada8fd9ba3d3fddb4af58fb3a3f7f5bdd50f2f3:18087795-bytes:expires-2026-09-11T03:05:23Z",
           "trusted_cafe_authority_gate": "expected_absent_until_default_branch_bootstrap_lands",
           "pull_request_runtime_qualification": "missing_required_context_bootstrap_condition"
         }
@@ -1034,14 +1042,102 @@
         "GitHub API candidate identity cannot be bound to exact head and blobs",
         "pinned Docker self-tests cannot prove negative controls"
       ]
+    },
+    {
+      "claim_id": "lease-pr26-bootstrap-security-qa-final",
+      "task": "/root/pr25_final_security_qa",
+      "role": "Independent read-only Security/QA reviewer for PR26 base-controlled cafe authority bootstrap",
+      "objective": "Review exact PR26 head/tree and independently test whether the protected-base pull_request_target verifier safely treats the candidate only as data, closes PR25 candidate-self-authorization operationally, and supports a minimal reversible bootstrap transition without introducing a new P0/P1.",
+      "baseline": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
+      "head": "f96aac62caed955c600737e0c26ee15e19df3352",
+      "tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
+      "branch": "codex/cafe-base-authority-gate-bootstrap-v1",
+      "worktree": null,
+      "owned_paths": [],
+      "forbidden_paths": [
+        "all repository and GitHub writes",
+        "coordination room files",
+        "branch protection, PR state, reviews, labels, comments and merge",
+        "shared Docker containers, caches and scratch"
+      ],
+      "authority_keys": [
+        "read-only-pr26-security-qa",
+        "trusted-cafe-base-authority-gate-v1"
+      ],
+      "generated_outputs": [
+        "terminal review message and task-isolated Docker receipts outside repository only"
+      ],
+      "dependencies": [
+        "pr26:f96aac62caed955c600737e0c26ee15e19df3352:tree:7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
+        "hosted-run:33137472069:ci-success:visual_canary-success",
+        "master-protection:ci-visual_canary-pull_request_runtime_qualification",
+        "pr25-self-authorization-p1"
+      ],
+      "consumer": "Producer protection-transition and bootstrap merge decision",
+      "status": "reserved_read_only_exact_head",
+      "last_heartbeat": "2026-08-28T03:23:17Z",
+      "stale_after": "2026-08-28T04:23:17Z",
+      "pr": 26,
+      "recovery_count": 0,
+      "rollback": "Delete only task-owned temporary review outputs; no repository or GitHub rollback applies.",
+      "stop_lines": [
+        "PR26 base/head/tree changes",
+        "repository or GitHub mutation would be required",
+        "review cannot remain read-only",
+        "candidate code would execute with token or privilege"
+      ]
+    },
+    {
+      "claim_id": "lease-pr26-bootstrap-refute-final",
+      "task": "/root/pr25_final_refute",
+      "role": "Independent read-only adversarial REFUTE reviewer for PR26 base-controlled cafe authority bootstrap",
+      "objective": "Attempt to defeat exact-bundle authorization, old/new rename classification, authority immutability, API identity binding, fork and mixed-scope controls, and challenge whether pull_request_target evidence can be consumed safely during and after the bootstrap.",
+      "baseline": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
+      "head": "f96aac62caed955c600737e0c26ee15e19df3352",
+      "tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
+      "branch": "codex/cafe-base-authority-gate-bootstrap-v1",
+      "worktree": null,
+      "owned_paths": [],
+      "forbidden_paths": [
+        "all repository and GitHub writes",
+        "coordination room files",
+        "branch protection, PR state, reviews, labels, comments and merge",
+        "shared Docker containers, caches and scratch"
+      ],
+      "authority_keys": [
+        "read-only-pr26-refute",
+        "trusted-cafe-base-authority-gate-v1"
+      ],
+      "generated_outputs": [
+        "terminal adversarial verdict and task-isolated Docker receipts outside repository only"
+      ],
+      "dependencies": [
+        "pr26:f96aac62caed955c600737e0c26ee15e19df3352:tree:7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
+        "hosted-run:33137472069:ci-success:visual_canary-success",
+        "pr25-refute-self-authorization-and-rename-findings",
+        "security-qa:independent_parallel"
+      ],
+      "consumer": "Producer protection-transition and bootstrap merge decision",
+      "status": "reserved_read_only_exact_head",
+      "last_heartbeat": "2026-08-28T03:23:17Z",
+      "stale_after": "2026-08-28T04:23:17Z",
+      "pr": 26,
+      "recovery_count": 0,
+      "rollback": "Delete only task-owned temporary review outputs; no repository or GitHub rollback applies.",
+      "stop_lines": [
+        "PR26 base/head/tree changes",
+        "repository or GitHub mutation would be required",
+        "review cannot remain read-only",
+        "adversarial fixture would mutate shared runtime state"
+      ]
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T02:38:29Z",
-    "active_writers": 1,
-    "read_only_reviewers": 0,
+    "at": "2026-08-28T03:23:17Z",
+    "active_writers": 0,
+    "read_only_reviewers": 2,
     "shared_write_conflicts": 0,
-    "decision": "Exactly one writer is reserved for the three-path default-branch cafe authority bootstrap. Both PR25 final reviewers are terminal and released. PR25 remains Draft with one converged self-validation P1; Stack B, game/UI production, Ready and merge remain frozen."
+    "decision": "PR26 writer is released after exact three-path delivery and hosted ci plus visual_canary success. Two independent read-only PR26 reviews are reserved with disjoint scratch only. PR25, Stack B, game/UI production, Ready, protection mutation and merge remain frozen."
   },
   "released_claims": [
     {
@@ -1455,7 +1551,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "BASE_CONTROLLED_CAFE_AUTHORITY_GATE_BOOTSTRAP_PR26_HOSTED_CHECKS_IN_PROGRESS",
+    "state": "BASE_CONTROLLED_CAFE_AUTHORITY_GATE_BOOTSTRAP_PR26_HOSTED_SUCCESS_FRESH_REVIEWS_RESERVED",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
@@ -1471,5 +1567,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Wait for PR26 exact-head ci and visual_canary; on success reserve and dispatch fresh independent bootstrap Security/QA and REFUTE before any temporary protection or master merge transition."
+  "next_trigger": "Dispatch and wait for PR26 exact-head independent Security/QA and REFUTE. Only P0/P1=0 may authorize a separately ledgered, minimal reversible protection transition and bootstrap merge evaluation."
 }
