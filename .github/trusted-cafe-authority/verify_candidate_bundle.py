@@ -21,6 +21,7 @@ import urllib.request
 SCHEMA = "living-town.trusted-cafe-authority-receipt.v2"
 HEX40 = re.compile(r"^[0-9a-f]{40}$")
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
+BUNDLE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 
 
 class GateError(RuntimeError):
@@ -76,8 +77,12 @@ def validate_manifest(manifest: object) -> dict:
         if not isinstance(bundle, dict):
             raise GateError("bundle entries must be objects")
         bundle_id = bundle.get("id")
-        if not isinstance(bundle_id, str) or not bundle_id or bundle_id in bundle_ids:
-            raise GateError("bundle ids must be unique non-empty strings")
+        if (
+            not isinstance(bundle_id, str)
+            or not BUNDLE_ID.fullmatch(bundle_id)
+            or bundle_id in bundle_ids
+        ):
+            raise GateError("bundle ids must be unique bounded single-line identifiers")
         bundle_ids.add(bundle_id)
         source_head = bundle.get("source_head")
         source_tree = bundle.get("source_tree")
@@ -491,6 +496,17 @@ def run_self_test(manifest: dict) -> dict:
     duplicate["id"] += "-duplicate"
     duplicate_identity["bundles"].append(duplicate)
     manifest_case("duplicate-source-identity", duplicate_identity)
+    for name, invalid_id in (
+        ("bundle-id-newline-output-injection", "safe\nmode=not-applicable"),
+        ("bundle-id-carriage-return", "safe\rmode-not-applicable"),
+        ("bundle-id-equals", "safe=not-applicable"),
+        ("bundle-id-internal-space", "safe id"),
+        ("bundle-id-leading-dash", "-safe-id"),
+        ("bundle-id-overlength", "a" * 129),
+    ):
+        invalid_bundle_id = copy.deepcopy(manifest)
+        invalid_bundle_id["bundles"][0]["id"] = invalid_id
+        manifest_case(name, invalid_bundle_id)
     invalid_source = copy.deepcopy(manifest)
     invalid_source["bundles"][0]["source_head"] = "0" * 39
     manifest_case("invalid-source-head", invalid_source)
