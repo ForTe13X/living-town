@@ -187,6 +187,20 @@ class GitHubAPI:
         value = self.get(f"/repos/{self.repository}/git/blobs/{sha}")
         return decode_github_blob(value)
 
+    def ref_sha(self, ref: str) -> str:
+        value = self.get(
+            f"/repos/{self.repository}/git/ref/{urllib.parse.quote(ref, safe='/')}"
+        )
+        return ref_response_sha(value)
+
+    def is_ancestor(self, ancestor_sha: str, descendant_sha: str) -> bool:
+        if not HEX40.fullmatch(ancestor_sha) or not HEX40.fullmatch(descendant_sha):
+            raise GateError("GitHub compare identity is invalid")
+        value = self.get(
+            f"/repos/{self.repository}/compare/{ancestor_sha}...{descendant_sha}"
+        )
+        return compare_response_is_ancestor(value)
+
 
 def decode_github_blob(value: object) -> bytes:
     if not isinstance(value, dict) or value.get("encoding") != "base64":
@@ -202,6 +216,24 @@ def decode_github_blob(value: object) -> bytes:
     if base64.b64encode(decoded).decode("ascii") != compact:
         raise GateError("candidate blob base64 is non-canonical")
     return decoded
+
+
+def compare_response_is_ancestor(value: object) -> bool:
+    if not isinstance(value, dict):
+        raise GateError("GitHub compare response is not an object")
+    status = value.get("status")
+    if status not in ("ahead", "behind", "diverged", "identical"):
+        raise GateError("GitHub compare response has invalid status")
+    return status in ("ahead", "identical")
+
+
+def ref_response_sha(value: object) -> str:
+    if not isinstance(value, dict) or not isinstance(value.get("object"), dict):
+        raise GateError("GitHub ref response lacks object identity")
+    sha = value["object"].get("sha")
+    if not isinstance(sha, str) or not HEX40.fullmatch(sha):
+        raise GateError("GitHub ref response has invalid object SHA")
+    return sha
 
 
 def changed_paths(files: list[dict]) -> tuple[set[str], set[str], list[str]]:
@@ -256,13 +288,36 @@ def candidate_records_from_api(
     return tree_sha, records
 
 
-def review_evidence_approved(bundle: dict, head_sha: str) -> bool:
+def review_evidence_approved(bundle: dict) -> bool:
     evidence = bundle["evidence"]
-    exact_head = head_sha.upper()
+    exact_head = bundle["source_head"].upper()
     return (
         evidence["security_qa"] == f"APPROVED_P0_0_P1_0_EXACT_HEAD_{exact_head}"
         and evidence["refute"] == f"REFUTE_P0_0_P1_0_EXACT_HEAD_{exact_head}"
     )
+
+
+def candidate_derivations_from_api(
+    api: GitHubAPI,
+    manifest: dict,
+    candidate_head: str,
+    candidate_records: dict[str, dict],
+) -> tuple[str, set[tuple[str, str, str]]]:
+    protected_master = api.ref_sha("heads/master")
+    if not api.is_ancestor(protected_master, candidate_head):
+        return protected_master, set()
+    derivations: set[tuple[str, str, str]] = set()
+    for bundle in manifest["bundles"]:
+        approved = {item["path"]: item for item in bundle["files"]}
+        source_head = bundle["source_head"]
+        if (
+            source_head != candidate_head
+            and approved == candidate_records
+            and review_evidence_approved(bundle)
+            and api.is_ancestor(source_head, candidate_head)
+        ):
+            derivations.add((source_head, protected_master, candidate_head))
+    return protected_master, derivations
 
 
 def evaluate(
@@ -272,6 +327,8 @@ def evaluate(
     candidate_records: dict[str, dict] | None,
     candidate_tree_sha: str | None,
     repository: str,
+    protected_master_sha: str | None = None,
+    candidate_derivations: set[tuple[str, str, str]] | None = None,
 ) -> dict:
     base_repo = pull.get("base", {}).get("repo", {}).get("full_name")
     head_repo = pull.get("head", {}).get("repo", {}).get("full_name")
@@ -320,22 +377,54 @@ def evaluate(
     if not HEX40.fullmatch(str(candidate_tree_sha or "")):
         raise GateError("candidate tree SHA is invalid")
 
-    matches: list[str] = []
+    derivations = candidate_derivations or set()
+    matches: list[dict] = []
     for bundle in manifest["bundles"]:
         approved = {item["path"]: item for item in bundle["files"]}
-        if (
+        exact_source = (
             bundle["source_head"] == head_sha
             and bundle["source_tree"] == candidate_tree_sha
-            and review_evidence_approved(bundle, head_sha)
+        )
+        protected_base_sync = (
+            isinstance(protected_master_sha, str)
+            and HEX40.fullmatch(protected_master_sha) is not None
+            and (
+                bundle["source_head"],
+                protected_master_sha,
+                head_sha,
+            )
+            in derivations
+        )
+        if (
+            (exact_source or protected_base_sync)
+            and review_evidence_approved(bundle)
             and approved == candidate_records
         ):
-            matches.append(bundle["id"])
+            matches.append(
+                {
+                    "bundle_id": bundle["id"],
+                    "derivation": (
+                        "exact-source" if exact_source else "protected-base-sync"
+                    ),
+                    "source_head": bundle["source_head"],
+                    "source_tree": bundle["source_tree"],
+                }
+            )
     if len(matches) != 1:
         raise GateError(f"candidate bundle matched {len(matches)} approved identities")
+    match = matches[0]
     return {
-        "bundle_id": matches[0],
+        "approved_source_head": match["source_head"],
+        "approved_source_tree": match["source_tree"],
+        "bundle_id": match["bundle_id"],
         "changed_count": len(current),
+        "derivation": match["derivation"],
         "head_sha": head_sha,
+        "protected_master_sha": (
+            protected_master_sha
+            if match["derivation"] == "protected-base-sync"
+            else None
+        ),
         "tree_sha": candidate_tree_sha,
         "mode": "approved-bundle",
         "schema": SCHEMA,
@@ -365,9 +454,20 @@ def run_self_test(manifest: dict) -> dict:
         files: list[dict],
         values: dict | None,
         tree_sha: str | None,
+        protected_master_sha: str | None = None,
+        derivations: set[tuple[str, str, str]] | None = None,
     ) -> None:
         try:
-            receipt = evaluate(manifest_value, pull, files, values, tree_sha, repository)
+            receipt = evaluate(
+                manifest_value,
+                pull,
+                files,
+                values,
+                tree_sha,
+                repository,
+                protected_master_sha,
+                derivations,
+            )
             result = receipt["mode"]
         except GateError:
             result = "rejected"
@@ -393,6 +493,24 @@ def run_self_test(manifest: dict) -> dict:
         try:
             decoded = decode_github_blob(value)
             result = "decoded" if decoded == expected_bytes else "wrong-bytes"
+        except GateError:
+            result = "rejected"
+        if result != expect:
+            raise AssertionError(f"{name}: expected {expect}, got {result}")
+        cases.append({"name": name, "result": result})
+
+    def compare_case(name: str, value: object, expect: str) -> None:
+        try:
+            result = "ancestor" if compare_response_is_ancestor(value) else "not-ancestor"
+        except GateError:
+            result = "rejected"
+        if result != expect:
+            raise AssertionError(f"{name}: expected {expect}, got {result}")
+        cases.append({"name": name, "result": result})
+
+    def ref_case(name: str, value: object, expect: str) -> None:
+        try:
+            result = "accepted" if ref_response_sha(value) else "empty"
         except GateError:
             result = "rejected"
         if result != expect:
@@ -446,6 +564,67 @@ def run_self_test(manifest: dict) -> dict:
             records,
             "f" * 40 if source_tree != "f" * 40 else "e" * 40,
         )
+        synced_head = hashlib.sha1(f"synced-head-{bundle_id}".encode("ascii")).hexdigest()
+        synced_tree = hashlib.sha1(f"synced-tree-{bundle_id}".encode("ascii")).hexdigest()
+        protected_master = hashlib.sha1(
+            f"protected-master-{bundle_id}".encode("ascii")
+        ).hexdigest()
+        derivation = {(source_head, protected_master, synced_head)}
+        case(
+            f"protected-base-sync-{bundle_id}",
+            "approved-bundle",
+            approved_manifest,
+            fixture_pull(repository, synced_head),
+            trust_files,
+            records,
+            synced_tree,
+            protected_master,
+            derivation,
+        )
+        case(
+            f"protected-base-sync-missing-source-ancestry-{bundle_id}",
+            "rejected",
+            approved_manifest,
+            fixture_pull(repository, synced_head),
+            trust_files,
+            records,
+            synced_tree,
+            protected_master,
+            set(),
+        )
+        case(
+            f"protected-base-sync-wrong-source-{bundle_id}",
+            "rejected",
+            approved_manifest,
+            fixture_pull(repository, synced_head),
+            trust_files,
+            records,
+            synced_tree,
+            protected_master,
+            {("f" * 40, protected_master, synced_head)},
+        )
+        case(
+            f"protected-base-sync-stale-master-{bundle_id}",
+            "rejected",
+            approved_manifest,
+            fixture_pull(repository, synced_head),
+            trust_files,
+            records,
+            synced_tree,
+            "e" * 40,
+            derivation,
+        )
+        case(
+            f"protected-base-sync-wrong-candidate-{bundle_id}",
+            "rejected",
+            approved_manifest,
+            fixture_pull(repository, synced_head),
+            trust_files,
+            records,
+            synced_tree,
+            protected_master,
+            {(source_head, protected_master, "f" * 40)},
+        )
         pending_manifest = copy.deepcopy(approved_manifest)
         pending_manifest["bundles"][bundle_index]["evidence"]["security_qa"] = (
             f"PENDING_INDEPENDENT_EXACT_HEAD_{source_head.upper()}"
@@ -459,6 +638,17 @@ def run_self_test(manifest: dict) -> dict:
             records,
             source_tree,
         )
+        case(
+            f"protected-base-sync-pending-review-{bundle_id}",
+            "rejected",
+            pending_manifest,
+            fixture_pull(repository, synced_head),
+            trust_files,
+            records,
+            synced_tree,
+            protected_master,
+            derivation,
+        )
         changes_manifest = copy.deepcopy(approved_manifest)
         changes_manifest["bundles"][bundle_index]["evidence"]["refute"] = (
             f"REQUEST_CHANGES_P0_0_P1_1_EXACT_HEAD_{source_head.upper()}"
@@ -471,6 +661,17 @@ def run_self_test(manifest: dict) -> dict:
             trust_files,
             records,
             source_tree,
+        )
+        case(
+            f"protected-base-sync-request-changes-{bundle_id}",
+            "rejected",
+            changes_manifest,
+            fixture_pull(repository, synced_head),
+            trust_files,
+            records,
+            synced_tree,
+            protected_master,
+            derivation,
         )
         stale = copy.deepcopy(records)
         stale[manifest["trust_paths"][0]]["sha256"] = "0" * 64
@@ -576,6 +777,20 @@ def run_self_test(manifest: dict) -> dict:
         {"encoding": "base64", "content": "YQ==@@"},
         "rejected",
     )
+    compare_case("compare-ahead", {"status": "ahead"}, "ancestor")
+    compare_case("compare-identical", {"status": "identical"}, "ancestor")
+    compare_case("compare-behind", {"status": "behind"}, "not-ancestor")
+    compare_case("compare-diverged", {"status": "diverged"}, "not-ancestor")
+    compare_case("compare-missing-status", {}, "rejected")
+    compare_case("compare-unknown-status", {"status": "unknown"}, "rejected")
+    compare_case("compare-non-object", [], "rejected")
+    ref_case("ref-valid", {"object": {"sha": "1" * 40}}, "accepted")
+    ref_case("ref-missing-object", {}, "rejected")
+    ref_case("ref-non-object", {"object": []}, "rejected")
+    ref_case("ref-missing-sha", {"object": {}}, "rejected")
+    ref_case("ref-invalid-sha", {"object": {"sha": "1" * 39}}, "rejected")
+    ref_case("ref-numeric-sha", {"object": {"sha": int("1" * 40)}}, "rejected")
+    ref_case("ref-response-non-object", [], "rejected")
     renamed = copy.deepcopy(trust_files[1:])
     renamed.append(
         {
@@ -627,11 +842,33 @@ def main() -> int:
     trust_paths = set(manifest["trust_paths"])
     records = None
     tree_sha = None
+    protected_master_sha = None
+    derivations: set[tuple[str, str, str]] = set()
     if touched & trust_paths:
         tree_sha, records = candidate_records_from_api(
             api, pull.get("head", {}).get("sha", ""), trust_paths
         )
-    receipt = evaluate(manifest, pull, files, records, tree_sha, args.repository)
+        head_sha = pull.get("head", {}).get("sha", "")
+        exact_source = any(
+            bundle["source_head"] == head_sha
+            and bundle["source_tree"] == tree_sha
+            and {item["path"]: item for item in bundle["files"]} == records
+            for bundle in manifest["bundles"]
+        )
+        if not exact_source:
+            protected_master_sha, derivations = candidate_derivations_from_api(
+                api, manifest, head_sha, records
+            )
+    receipt = evaluate(
+        manifest,
+        pull,
+        files,
+        records,
+        tree_sha,
+        args.repository,
+        protected_master_sha,
+        derivations,
+    )
     write_output(args.receipt, receipt)
     if args.github_output:
         with args.github_output.open("a", encoding="utf-8", newline="\n") as stream:
@@ -640,11 +877,21 @@ def main() -> int:
             stream.write(f"changed_count={receipt['changed_count']}\n")
             stream.write(f"head_sha={receipt['head_sha']}\n")
             stream.write(f"tree_sha={receipt['tree_sha'] or ''}\n")
+            stream.write(f"derivation={receipt.get('derivation') or ''}\n")
+            stream.write(
+                f"approved_source_head={receipt.get('approved_source_head') or ''}\n"
+            )
+            stream.write(
+                f"protected_master_sha={receipt.get('protected_master_sha') or ''}\n"
+            )
     print(
         f"CAFE_BASE_AUTHORITY_GATE mode={receipt['mode']} "
         f"changed={receipt['changed_count']} head={receipt['head_sha']} "
         f"tree={receipt['tree_sha'] or 'none'} "
-        f"bundle={receipt['bundle_id'] or 'none'}"
+        f"bundle={receipt['bundle_id'] or 'none'} "
+        f"derivation={receipt.get('derivation') or 'none'} "
+        f"source={receipt.get('approved_source_head') or 'none'} "
+        f"base={receipt.get('protected_master_sha') or 'none'}"
     )
     return 0
 
