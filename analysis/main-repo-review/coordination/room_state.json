@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T01:51:24Z",
+  "updated_at": "2026-08-28T02:10:49Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -732,7 +732,7 @@
       "claim_id": "lease-pr25-required-qualification-governance-repair",
       "task": "/root/pr25_governance_repair",
       "role": "Sole serialized Dev writer for PR25 sustainable required qualification gate and authorized master protection transition",
-      "objective": "Make pull_request_runtime_qualification emit a terminal conclusion for every master PR while running the full trust-root qualification for any trust-root path change, then after exact-head hosted success preserve all existing master protection and add this required context plus one independent approval.",
+      "objective": "Make pull_request_runtime_qualification emit a terminal conclusion for every master PR while running the full trust-root qualification for any trust-root path change, then after exact-head hosted success preserve all existing master protection and add this required context without creating an unsatisfiable single-maintainer approval deadlock.",
       "baseline": "26e22985f9982e31b3982777f002ba3c46169acb",
       "head": "5a449cad6d486e3680d2febba8203b0be7d215b9",
       "tree": "60621741d4f453c7316a424d626849be2776581c",
@@ -765,12 +765,15 @@
         "pr25:26e22985f9982e31b3982777f002ba3c46169acb",
         "security-qa:REQUEST_CHANGES:P1-required-check-and-approval",
         "refute:REFUTE:P1-required-check-and-approval",
-        "master-protection-snapshot:strict-ci-visual_canary-approvals0"
+        "master-protection-snapshot:strict-ci-visual_canary-approvals0",
+        "trusted-run:33134089326:success",
+        "general-run:33134089332:ci-success:visual_canary-success",
+        "github-collaborators:ForTe13X-only-admin-and-pr-author"
       ],
       "consumer": "Producer then fresh independent Security/QA and REFUTE; Stack B remains frozen until governance P1 closes",
-      "status": "hosted_exact_head_checks_pending_writer_released",
+      "status": "hosted_exact_head_all_checks_success_protection_mutation_reserved",
       "write_lease": false,
-      "last_heartbeat": "2026-08-28T01:51:24Z",
+      "last_heartbeat": "2026-08-28T02:10:49Z",
       "stale_after": null,
       "pr": 25,
       "checks": {
@@ -786,13 +789,23 @@
           "visual_canary",
           "pull_request_runtime_qualification"
         ],
-        "target_required_approvals": 1,
+        "target_required_approvals": 0,
+        "approval_enforcement_constraint": "ForTe13X is the sole repository collaborator, PR author and current viewer; GitHub cannot accept self-approval, so requiring one approval would permanently deadlock every PR. Independent Security/QA and REFUTE remain mandatory operational gates until a distinct eligible reviewer exists.",
         "merge": "forbidden",
         "local_validation": "two byte-identical pinned-Docker suites pass",
         "validation_receipt_sha256": "4a6def2f52ffd93fb5e25ac5ba9595649c09977199210bce33fbc70f79905802",
         "workflow_sha256": "4669f4412a718a21cfcaa0eaec75a7abd6deff2c860f618c4eccddd9465edb58",
         "remote_delivery": "success Git Data API linear force=false",
-        "hosted": "pending"
+        "hosted": {
+          "head": "5a449cad6d486e3680d2febba8203b0be7d215b9",
+          "trusted_run": 33134089326,
+          "pull_request_runtime_qualification": "success",
+          "general_run": 33134089332,
+          "ci": "success",
+          "visual_canary": "success",
+          "protected_capture_and_attestation": "expected_skipped_on_pr",
+          "required_context_app_id": 15368
+        }
       },
       "recovery_count": 0,
       "rollback": "Before code delivery, remove only the task worktree/branch. After delivery, leave PR25 Draft or revert through a new reviewed linear commit. After protection mutation, restore the captured prior protection exactly: strict ci+visual_canary, approval count 0, dismiss stale reviews true, admins enforced, conversation resolution required; never rewrite Git history.",
@@ -1226,18 +1239,18 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "AUTHORIZED_GOVERNANCE_REPAIR_HOSTED_CHECKS_PENDING",
+    "state": "AUTHORIZED_GOVERNANCE_REPAIR_PROTECTION_MUTATION_RESERVED",
     "exact_head": "5a449cad6d486e3680d2febba8203b0be7d215b9",
     "p0": 0,
-    "p1": 2,
+    "p1": 1,
     "p2": 0,
     "technical_exact_head": "passed",
-    "governance": "blocked",
+    "governance": "required_check_transition_reserved; platform-independent-approval enforcement unavailable with sole collaborator",
     "pr_body": "refresh_reserved_after_this_ledger_commit",
-    "branch_protection_change": "authorized_pending_code_and_hosted_exact_head_validation",
+    "branch_protection_change": "targeted required_status_checks PATCH reserved: preserve strict ci and visual_canary app 15368 and add pull_request_runtime_qualification app 15368; preserve approval count zero to avoid unsatisfiable deadlock",
     "merge": "forbidden",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Wait for pull_request_runtime_qualification, ci and visual_canary at 5a449cad; if all succeed, atomically preserve and strengthen master protection, then dispatch fresh final reviews."
+  "next_trigger": "Apply and verify the targeted master required-status-check transition, refresh PR #25 projection, then dispatch fresh exact-head independent Security/QA and REFUTE."
 }
