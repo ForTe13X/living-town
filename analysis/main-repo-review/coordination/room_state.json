@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T22:33:51Z",
+  "updated_at": "2026-08-28T23:13:32Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -15,7 +15,7 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-08-28T22:33:51Z",
+    "at": "2026-08-28T23:13:32Z",
     "github_api_count": 37,
     "git_ls_remote_count": null,
     "local_tracking_count": 37,
@@ -23,12 +23,12 @@
     "snapshot_complete": false,
     "git_ls_remote_count": null,
     "secondary_authority": "GitHub branch, PR, Actions, protection, issue and release APIs are authoritative after the post-merge smart-HTTP fetch reset; cached tracking refs are not promoted.",
-    "reconciliation": "Post-merge GitHub API enumerates 37 hosted branches at exact set SHA256 6e72292e. Local tracking has the same 37 names but master and coordination are stale because fetch reset; 35/37 heads are exact. A new fetch/ls-remote reconciliation remains required.",
-    "network_failures": ["post-merge git fetch --all --tags --prune: Recv failure connection reset", "post-merge git ls-remote produced no usable snapshot within the bounded check"],
-    "sorted_name_sha_set_sha256": "6e72292e8f9c73e3deb77ff4bd58059ad4809d71ad9cb2e6d1be44bcf95db5e5",
+    "reconciliation": "GitHub API enumerates 37 hosted branches at exact set SHA256 f327fe4a. Local tracking has the same 37 names but master and coordination are stale because fetch reset; 35/37 heads are exact. The signed GitHub verification payload reconstructed local master commit object9b2d052c byte-exact before use, but cached tracking refs are not promoted.",
+    "network_failures": ["post-merge git fetch --all --tags --prune: Recv failure connection reset", "bounded fetch of exact master9b2d052c: Could not connect github.com:443 after21102ms", "post-merge git ls-remote produced no usable snapshot within the bounded check"],
+    "sorted_name_sha_set_sha256": "f327fe4a622d651d9e1c4f209f47859d565b502e0744cbaff7066747e962eb3e",
     "master": "9b2d052ca740a96b9b556765a7ead7fcb5425600",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "22a19fb0c76a864efdcd5fbce0083e1fff2603d4",
+    "coordination": "4e1aa6c5b229086c504e9a311620f4e06a7bd153",
     "pr25": "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
     "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
@@ -2859,21 +2859,51 @@
       "generated_outputs": ["GitHub merge commit with exact reviewed tree", "post-merge CI/protected capture receipts"],
       "dependencies": ["PR25 OPEN Draft CLEAN exact base/head/tree/body and six paths", "authority+qualification+ci+visual success at exact head", "Security/QA P0=0 P1=0 P2=0", "REFUTE P0=0 P1=0 P2=3 accepted residuals", "strict four-check protection unchanged", "zero overlapping writers"],
       "consumer": "Protected production capture and Stack B/cafe vertical-slice dependency graph",
-      "status": "merged_exact_tree_post_merge_ci_in_progress",
+      "status": "terminal_merged_post_merge_ci_success_released",
       "read_only": false,
-      "last_heartbeat": "2026-08-28T22:33:51Z",
-      "stale_after": "2026-08-28T22:54:18Z",
+      "last_heartbeat": "2026-08-28T23:13:32Z",
+      "stale_after": null,
       "pr": 25,
       "checks": {"authority": "33210533687 success plus Ready-triggered33216946618 success at same exact head", "qualification": "success", "ci": "success", "visual_canary": "success", "protected_capture": "skipped on PR by design"},
       "recovery_count": 1,
       "ready_mutation_attempt": {"method": "REST PATCH draft=false", "result": "silent no-op because REST update does not convert Draft state", "postcheck": "PR remains OPEN Draft exact base/head CLEAN; no ref/file/protection/check change"},
       "recovery": {"method": "GitHub GraphQL ConvertPullRequestToReadyForReview via gh pr ready", "count": 1, "stop": "any identity/check/protection drift or PR not exact Draft before conversion"},
       "recovery_result": {"result": "success", "pr": "OPEN Ready CLEAN", "base": "1ea7aafd28414bb9690e2c55b222ca85d33424a0", "head": "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb", "fresh_authority": "33216946618/99002596692 success", "merge_attempt": "stopped before mutation because precheck required exactly one same-name authority check; both old and fresh checks are exact-head success", "ref_or_file_or_protection_change": false},
-      "merge_result": {"result": "merged normally through GitHub", "merge_sha": "9b2d052ca740a96b9b556765a7ead7fcb5425600", "tree": "3c5d859982c66bc5711659bf8f78548595717a4a", "parents": ["1ea7aafd28414bb9690e2c55b222ca85d33424a0", "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb"], "feature_branch": "retained exact6d5c6fc4", "protection": "strict four checks unchanged", "post_merge_ci": "33217101104 in_progress; ci99003073231 and visual99003073376 in_progress", "protected_capture": "awaiting eligible protected-master workflow dispatch/result"},
+      "merge_result": {"result": "merged normally through GitHub", "merge_sha": "9b2d052ca740a96b9b556765a7ead7fcb5425600", "tree": "3c5d859982c66bc5711659bf8f78548595717a4a", "parents": ["1ea7aafd28414bb9690e2c55b222ca85d33424a0", "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb"], "feature_branch": "retained exact6d5c6fc4", "protection": "strict four checks unchanged", "post_merge_ci": "33217101104 success; ci99003073231 success and visual99003073376 success; artifact9703941808 sha256:922fd24d 18087781 bytes", "protected_capture": "correctly not dispatched until protected Stack B IDs and manifest exist"},
+      "release_reason": "Exact reviewed merge, strict protection unchanged and exact-master post-merge CI/visual evidence succeeded. Protected capture remains fail-closed on missing Stack B inputs by design.",
       "rollback": "Before merge, return only PR25 to Draft on any drift. After merge, keep protection exact and use a new reviewed revert PR for any regression; never reset or rewrite master.",
       "stop_lines": ["master/base/head/tree/body/path/check/protection drift", "any P0/P1 or overlapping writer", "merge result tree differs from3c5d8599", "branch deletion or protection mutation requested", "GitHub cannot produce normal reviewable merge"],
       "handoff_recipient": "Producer post-merge CI/protected capture monitor",
       "archive_condition": "Exact reviewed merge with strict protection unchanged and terminal post-merge evidence, or safe abort before merge."
+    },
+    {
+      "claim_id": "lease-stack-b-cafe-authored-contract-v1-9b2d052c",
+      "task": "producer-writer:01a04233-497e-7942-8da0-7958b314b199",
+      "role": "Single isolated Stack B authored-ID and generated-manifest writer",
+      "objective": "Create only the canonical cafe authored stable-ID contract and protected-compiler-generated manifest against exact master9b2d052c so protected capture can bind cafe 1F/2F semantic sources and renderer closure without acquiring Sim, navigation, collision, save/replay, portal, canon or visual-quality authority.",
+      "baseline": "9b2d052ca740a96b9b556765a7ead7fcb5425600",
+      "baseline_tree": "3c5d859982c66bc5711659bf8f78548595717a4a",
+      "head": "9b2d052ca740a96b9b556765a7ead7fcb5425600",
+      "tree": "3c5d859982c66bc5711659bf8f78548595717a4a",
+      "branch": "codex/cafe-authored-ids-manifest-v1",
+      "worktree": "D:\\Documents\\Dev\\living-town-stack-b-authored-contract-wt",
+      "owned_paths": ["evidence/cafe/cafe-authored-ids.v1.json", "evidence/cafe/cafe-authored-manifest.v1.json"],
+      "forbidden_paths": ["all other paths including game/**, tools/**, .github/**, project.godot, Sim.gd, Main.gd, save/replay/schema/migrations, registries, tests, anchors and coordination files", "master", "integration/batons", "protection", "force/history rewrite", "unknown worktrees/containers/images/volumes/caches", "canon/release/tag/human acceptance"],
+      "authority_keys": ["cafe-authored-stable-ids-v1", "cafe-authored-generated-manifest-v1"],
+      "generated_outputs": ["canonical IDs JSON", "byte-reproducible protected-compiler manifest", "pinned-Docker generation/check/negative-control receipts"],
+      "dependencies": ["master9b2d052c/tree3c5d8599 exact local commit object reconstructed from verified GitHub signed payload", "PR25 merge and post-merge CI success", "protected compiler and verifier at exact master", "game tree unchanged", "no competing Stack B branch/PR/files discovered"],
+      "consumer": "protected_capture_and_attestation workflow followed by independent exact-head Security/QA and REFUTE",
+      "status": "reserved_before_isolated_worktree_creation",
+      "read_only": false,
+      "last_heartbeat": "2026-08-28T23:13:32Z",
+      "stale_after": "2026-08-28T23:43:32Z",
+      "pr": null,
+      "checks": "pre-PR; require protected compiler generation twice byte-identical, --check success, malformed/stale/unbound source negative controls, exact two-path diff, then Draft PR",
+      "recovery_count": 0,
+      "rollback": "Before remote publication remove only the verified exact clean task worktree/branch. After Draft PR publication leave or close Draft and revert only through a reviewed child; never reset/force/rewrite shared history.",
+      "stop_lines": ["worktree path exists", "exact baseline/tree cannot be verified", "any source path beyond the two owned files", "pinned Docker digest/isolation unavailable", "compiler output differs across runs", "game or compiler becomes dirty", "consumer/protection/master drift", "existing competing Stack B owner appears"],
+      "handoff_recipient": "Independent Stack B Security/QA and REFUTE reviewers",
+      "archive_condition": "One clean exact-head two-path Draft PR handoff with reproducible Docker receipts, or safe abort before publication."
     }
   ],
   "active_dependency_graph": {
@@ -2883,16 +2913,16 @@
     "phases": [
       {"phase":1,"objective":"Verifier v3 reviewed-source plus current-protected-base derivation","owner":"released","status":"complete_master5c3e5cb6_post_merge_ci_success","player_value":"unblocks protected trust-root delivery","conflict_risk":"closed with P2 follow-up retained","exit":"post-merge CI33194686491 success at exact5c3e5cb6"},
       {"phase":2,"objective":"Synchronize PR28 normally, replace only pending review leaves after fresh exact-source reviews, and re-run exact-head evidence","owner":"released","status":"complete_merge1ea7aafd_post_merge_ci_success_protection_restored","player_value":"restores evidence integrity without code/ref churn","conflict_risk":"closed with three retained P2s","exit":"post-merge CI33206762935 success"},
-      {"phase":3,"objective":"Merge reviewed manifest through reversible protected transition, then normally synchronize and merge PR25 so candidate contains reviewed source plus current protected master","owner":"lease-pr25-protected-master-merge-6d5c6fc4","status":"merged_exact9b2d052c_post_merge_ci_in_progress","player_value":"makes protected candidate executable without stale identity","conflict_risk":"merge complete; single evidence monitor remains and protection is unchanged","exit":"terminal post-merge CI/protected capture at exact9b2d052c"},
-      {"phase":4,"objective":"Merge eligible PR25, monitor post-merge, then unlock Stack B authored IDs and exactly one cafe exterior-to-persistence production owner","owner":"unassigned","status":"blocked_on_phase3","player_value":"direct prerequisite to player-visible cafe vertical slice","conflict_risk":"trust root then canonical scene authority; separate leases","exit":"post-merge green, P0/P1=0, cafe production packet dispatched"}
+      {"phase":3,"objective":"Merge reviewed manifest through reversible protected transition, then normally synchronize and merge PR25 so candidate contains reviewed source plus current protected master","owner":"released","status":"complete_master9b2d052c_post_merge_ci_success","player_value":"makes protected candidate executable without stale identity","conflict_risk":"closed with protection unchanged and P2 residuals retained","exit":"CI33217101104 success at exact9b2d052c"},
+      {"phase":4,"objective":"Create protected Stack B authored IDs/generated manifest, then unlock exactly one cafe exterior-to-persistence production owner","owner":"lease-stack-b-cafe-authored-contract-v1-9b2d052c","status":"exact_baseline_packet_reserved","player_value":"enables protected source-bound production capture before player-visible cafe work","conflict_risk":"single two-file generated-authority writer; game/tools/CI/coordination forbidden","exit":"Stack B exact-head Docker+hosted evidence and independent P0/P1=0, then protected capture success"}
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-08-28T22:33:51Z",
-    "active_writers": 0,
+    "at": "2026-08-28T23:13:32Z",
+    "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "PR25 merged normally as master9b2d052c with exact reviewed tree3c5d8599 and expected old-master/candidate parents; feature branch retained and protection unchanged. No writer remains; one read-only post-merge evidence monitor is active."
+    "decision": "PR25 merge lease is terminal and released after exact-master CI success. Exactly one Stack B writer owns two new evidence files on isolated exact master9b2d052c; every game, tool, workflow, shared authority and coordination path is forbidden, with no competing owner discovered."
   },
   "released_claims": [
     {
@@ -3400,5 +3430,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_39687a6b_verified"
   },
-  "next_trigger": "Monitor exact master9b2d052c CI run33217101104 and protected capture/attestation dispatch to terminal; on failure reserve a reviewed repair/revert PR, on success close the merge lease and unlock the next Stack B dependency packet."
+  "next_trigger": "After this ledger publication, verify the Stack B worktree path is absent, create branch/worktree from exact local master9b2d052c, author only canonical IDs, generate/check the manifest twice in isolated pinned Docker, run negative controls, require exact two-path diff, then publish a Draft PR for independent review."
 }
