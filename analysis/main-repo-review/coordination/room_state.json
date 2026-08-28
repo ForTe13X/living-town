@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T06:50:04Z",
+  "updated_at": "2026-08-28T06:56:33Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1451,25 +1451,56 @@
       "generated_outputs": ["isolated Docker pull/version receipts", "two-build deterministic runtime receipts outside repository", "new runtime-lock blob identity for a separately reviewed protected-base manifest update"],
       "dependencies": ["PR25 updated head 8d9926b8", "protected master fd122e62", "authority run33147649538 success for prior six blobs", "legacy run33147650883 failure at vanished rolling Skopeo digest", "Quay immutable Skopeo v1.22.2 index sha256:4a16d57b", "Quay immutable Podman v5.8.4 index sha256:b0173238", "CI run33147650879 terminal before publish decision"],
       "consumer": "PR25 exact six-path candidate, then a separate protected-base approved-bundle manifest update and fresh authority/CI/reviews",
-      "status": "recovery_1_reserved_after_transient_quay_tls_failure_cold_cache_build",
-      "write_lease": true,
+      "status": "terminal_recovery_exhausted_version_stop_line_released_with_provenance",
+      "write_lease": false,
       "last_heartbeat": "2026-08-28T06:36:10Z",
       "stale_after": "2026-08-28T07:36:10Z",
       "pr": 25,
       "recovery_count": 1,
+      "released_at": "2026-08-28T06:56:33Z",
+      "release_reason": "Recovery 1 resolved both immutable images but the exact pinned Podman 5.8.4 immutable image reports Python 3.14.6, while the inherited rolling-build lock requires 3.14.7. The fail-closed version check stopped before runtime construction. The original lease is revoked rather than weakening its stop line.",
       "acceptance_tests": ["old rolling Skopeo and Podman digests fail resolution as negative control", "immutable index digests resolve for linux/amd64 and report exactly Skopeo 1.22.2 and Podman 5.8.4", "runtime-lock JSON and repository scope checks pass", "runtime builds twice byte-identically in task-isolated Docker with pinned digests", "candidate semantic PR diff remains the exact six trust paths"],
       "rollback": "Before publication delete only the new task worktree/branch if clean. After normal publication, leave or close Draft PR25 and revert through a new reviewed commit; never force-reset the shared PR branch.",
       "stop_lines": ["any third repository path must change", "immutable image version or platform mismatch", "immutable tag index cannot be pulled twice", "runtime archives are not byte-identical", "authority boundary or canonical Sim/View contract changes", "remote head drift"],
       "handoff_recipient": "Producer protected-base manifest update transaction",
       "archive_condition": "Exact commit published normally with Docker receipts and handed to protected-base manifest update, or one failed recovery releases the lease with provenance."
+    },
+    {
+      "claim_id": "lease-pr25-immutable-quay-toolchain-supply-repair-v1-replacement-1",
+      "task": "producer-local-serialized-writer",
+      "role": "Replacement sole serialized Dev writer for PR25 immutable OCI toolchain lock alignment",
+      "objective": "Preserve the two official immutable Quay index references and align the declared Python toolchain version to the actual Podman 5.8.4 immutable image value 3.14.6, then prove the complete runtime build remains deterministic.",
+      "baseline": "8d9926b82d5b07d00208d9f21ff88f8892487988",
+      "head": "8d9926b82d5b07d00208d9f21ff88f8892487988",
+      "tree": "2a848ad3ac9ef59b1e695a712666810666ed30f7",
+      "branch": "codex/pr25-immutable-toolchain-supply-repair-v1",
+      "delivery_ref": "origin/codex/cafe-source-attestation-trust-root-v1-replacement-2",
+      "worktree": "D:\\Documents\\Dev\\living-town-pr25-immutable-toolchain-repair-wt",
+      "owned_paths": ["evidence/cafe/runtime-lock.v1.json", "tools/trusted_cafe_capture.sh"],
+      "forbidden_paths": ["**/* except the two exact owned_paths", ".github/trusted-cafe-authority/**", ".github/workflows/**", "tools/** except tools/trusted_cafe_capture.sh", "game/**", "docs/**", "analysis/**", "schemas/registries/anchors/ledgers"],
+      "authority_keys": ["cafe-runtime-lock-v1", "cafe-oci-toolchain-supply", "quay-immutable-version-tags"],
+      "generated_outputs": ["isolated immutable-image version receipts", "deterministic two-build runtime receipt outside repository", "two new candidate blob identities for a separately reviewed protected-base bundle update"],
+      "dependencies": ["released predecessor lease with recovery_count 1", "Skopeo immutable index 4a16d57b reports 1.22.2", "Podman immutable index b0173238 reports Podman 5.8.4, Python 3.14.6, tar 1.35, coreutils 9.10", "baseline CI run33147650879 success", "protected authority unchanged"],
+      "consumer": "PR25 exact six-path candidate, then a separate protected-base approved-bundle manifest update and fresh authority/CI/reviews",
+      "status": "reserved_not_started",
+      "write_lease": true,
+      "last_heartbeat": "2026-08-28T06:56:33Z",
+      "stale_after": "2026-08-28T07:56:33Z",
+      "pr": 25,
+      "recovery_count": 0,
+      "acceptance_tests": ["Python 3.14.7 expectation fails closed against the immutable image as a negative control", "lock matches exact Skopeo 1.22.2, Podman 5.8.4, Python 3.14.6, tar 1.35 and coreutils 9.10", "runtime build completes its internal two-build byte-identity checks in isolated Docker/Podman", "only the two exact owned paths differ", "candidate PR semantic diff remains the exact six trust paths after normal publication"],
+      "rollback": "Before publication retain or discard only task-owned edits/worktree. After normal publication, leave or close Draft PR25 and use a new reviewed revert; never force-reset shared history.",
+      "stop_lines": ["any third repository path must change", "any other pinned tool version mismatches", "runtime archives are not byte-identical", "immutable references stop resolving", "authority or canonical Sim/View boundary changes", "remote head drift"],
+      "handoff_recipient": "Producer protected-base manifest update transaction",
+      "archive_condition": "Exact commit and Docker receipts handed off, or one replacement recovery fails and the lease is released without publication."
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T06:36:10Z",
+    "at": "2026-08-28T06:56:33Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "The normal update invalidated both prior review leases. Fresh authority passes, but legacy qualification now fails because both rolling Quay stable digests were garbage-collected. Pre-write inspection found the outer bootstrap script also pins the same two digests, so the sole writer lease is expanded before its second-path write to exactly runtime-lock plus trusted_cafe_capture.sh. No overlapping writer or reviewer is active; workflow and protected authority paths remain forbidden."
+    "decision": "The first supply-repair lease exhausted its sole recovery at the declared Python-version stop line and is released. A replacement sole writer inherits the same two-path worktree and provenance, adds only the accurate Python 3.14.6 lock alignment, and must prove full runtime determinism. No concurrent writer/reviewer exists and protected authority/workflow paths remain frozen."
   },
   "released_claims": [
     {
@@ -1883,7 +1914,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "PR25_IMMUTABLE_QUAY_TWO_PATH_REPAIR_RECOVERY_1_RESERVED_BASELINE_CI_SUCCESS",
+    "state": "PR25_IMMUTABLE_QUAY_TWO_PATH_REPAIR_REPLACEMENT_1_RESERVED_AFTER_PYTHON_VERSION_STOP",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
@@ -1927,5 +1958,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish recovery 1, remove only the verified empty task-owned runtime directory, and rerun the cold isolated nested-Podman runtime build in a fresh task container/cache. If recovery fails, release the lease as blocked without publishing candidate changes. If it passes, record exact receipts before any commit/push."
+  "next_trigger": "Publish the predecessor release and replacement lease, change only runtime-lock Python 3.14.7 to the immutable image's verified 3.14.6, remove only the verified empty task runtime directory, then rerun the complete isolated build. Any further version mismatch or failed replacement recovery blocks publication."
 }
