@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T14:16:34Z",
+  "updated_at": "2026-08-28T14:19:09Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -2097,16 +2097,17 @@
       "generated_outputs": ["task-local pinned-Docker receipts outside repository", "content-verified non-force Git Data API child of 540896e1 after proof"],
       "dependencies": ["Security/QA 540896e1 P0=0/P1=0/P2=2 terminal", "REFUTE 540896e1 P0=0/P1=0/P2=0 terminal", "authority run33177357541 expected self-modification failure", "CI run33177359561 still in progress", "PR29 remains Draft", "master fd122e62 unchanged"],
       "consumer": "Fresh exact-head Security/QA and REFUTE, then Producer protected-base decision",
-      "status": "local_proof_complete_content_verified_non_force_api_publication_reserved",
+      "status": "api_disk_text_blob_mismatch_no_ref_change_canonical_git_blob_retry_reserved",
       "write_lease": true,
-      "last_heartbeat": "2026-08-28T14:16:34Z",
+      "last_heartbeat": "2026-08-28T14:19:09Z",
       "stale_after": "2026-08-28T15:11:05Z",
       "pr": 29,
-      "recovery_count": 0,
+      "recovery_count": 1,
       "pr_policy": "Keep PR29 Draft. Publish only one verifier path after exact Docker proof and remote precondition 540896e1. Never mark Ready or merge from this lease.",
       "candidate": {"local_commit":"c7e68f29dcd57a4d7b09b2390bb3a142aa063224","local_parent":"38a6b8b54809d1d7f30085e6b966e28cbf8103aa","remote_parent":"540896e1eab0d25aae652d914ea08f5772792357","tree":"a07840f3c4d098e8e88e0a149c6d2bad25fa8eb9","path":".github/trusted-cafe-authority/verify_candidate_bundle.py","blob":"8fde21e4ec2c3c0fbf43fa0073f0860466c8bec2","bytes":28305,"sha256":"d3361c723f081040fc3f06e7036f18023b9d2c6c299ea58fde73f4f96bf1a42f","clean":true,"scope_paths":1},
       "proof": {"docker":{"client":"29.6.2","server":"29.6.2","context":"desktop-linux","platform":"linux/amd64","image":"docker.io/library/python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c","image_id":"sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c","python":"3.11.16","read_only":true,"cap_drop":"ALL","no_new_privileges":true,"cache":"none","scratch":"D:\\Documents\\Dev\\living-town-pr29-bundleid-evidence-20260828-221438","cleanup":"containers --rm; scratch retained through review"},"base_manifest":{"cases":47,"runs":2,"byte_identical":true,"receipt_sha256":"31df6569877ecab458371062a01236f8d584647322d165853bda523b218e4bb3"},"pr28_manifest":{"cases":53,"runs":2,"byte_identical":true,"receipt_sha256":"0fb5ee78c0fb7ece0651731e3766e02e96bce3b24e45a48ae879a06d52f3d0aa","manifest_sha256":"fe07cface30e6dcbc8e1629331aaf4192658d443ada8d1211749e38c733230ed"},"live_pr25":{"result":"rejected candidate bundle matched 0 approved identities","exit":1},"controls":"newline, carriage return, equals, internal space, leading dash and 129-character ids reject; current safe ids accept","ast":"pass","max_line":115,"over_119":0,"diff_check":"pass"},
       "publication_reservation": {"mode":"Git Data API from canonical local blob bytes","reason":"remote API commit540896e1 is not in local object database while local content parent38a6b8b has exact same baseline tree0759e027","precondition":"remote PR29 head remains 540896e1eab0d25aae652d914ea08f5772792357, body remains9de24543 and master remains fd122e62","blob_must_match":"8fde21e4ec2c3c0fbf43fa0073f0860466c8bec2","tree_must_match":"a07840f3c4d098e8e88e0a149c6d2bad25fa8eb9","non_force":true,"ready":false,"merge":false},
+      "publication_recovery": {"failed_attempt":"filesystem upload encoded CRLF working-tree bytes as unreferenced blob c3ae401aa13325a4e1a09332b2e0158638a4f664","remote_ref_changed":false,"verified_remote_head":"540896e1eab0d25aae652d914ea08f5772792357","cause":"Windows working-tree line-ending projection differs from canonical LF Git blob","reserved_retry":"read exact 8fde21e Git object bytes through git cat-file, Base64 encode in memory, create blob with encoding=base64, require exact SHA before any tree/ref update"},
       "acceptance_tests": ["current safe bundle ids remain accepted", "newline, carriage return, equals, spaces, controls and overlength bundle ids reject as GateError", "GITHUB_OUTPUT cannot receive an injected second record from manifest data", "base and PR28 all-bundle receipts deterministic twice", "live PR25 pending rejects", "AST, diff-check and exact one-path scope"],
       "negative_controls": ["safe newline mode=not-applicable", "carriage return", "equals sign", "leading or internal space", "empty id", "identifier over 128 bytes"],
       "rollback": "Before publication discard only the one-file delta. After publication leave or close Draft; if later merged, revert through a reviewed PR and freeze PR28/PR25.",
@@ -2116,7 +2117,7 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T14:16:34Z",
+    "at": "2026-08-28T14:19:09Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
@@ -2616,8 +2617,9 @@
     "pr29_final_canonicality_body_and_reviews": "Draft body SHA256 9de24543 records exact 540896e1/tree0759e027/blob7d47a4af, 41/47 Docker receipts and final controls. Writer released; Security/QA and REFUTE reserved read-only at exact identity while CI33177359561 completes.",
     "pr29_540896e1_terminal_review_divergence_and_output_repair": "Security/QA and REFUTE both report P0/P1=0 at exact 540896e1/body9de24543. REFUTE P2=0; Security/QA reproduced bundle-id newline to GITHUB_OUTPUT injection plus the known protection P2. Stricter reproduced evidence governs; both reviewers released and one bounded same-file output-grammar writer reserved while PR29 remains Draft.",
     "pr29_bundle_id_output_local_proof": "One-path clean local commit c7e68f2/tree a07840f3/blob8fde21e, 28305 bytes SHA256d3361c72. Pinned Docker base47 receipt31df6569 and PR28-53 receipt0fb5ee78 are twice byte-identical; injection ids reject and live PR25 remains matched0. Old-head CI33177359561 is terminal success. Non-force API child of exact remote540896e1 reserved.",
+    "pr29_bundle_id_api_disk_blob_mismatch_recovery": "First API blob upload read CRLF working-tree projection and produced mismatched unreferenced blob c3ae401a; no tree, commit or ref mutation occurred and PR29 remains540896e1. One recovery is reserved using exact canonical Git blob8fde21e bytes Base64-encoded in memory with an exact SHA stop line.",
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_1b8afb72_verified"
   },
-  "next_trigger": "Recheck PR29 remote head/base/body and master, publish the exact blob/tree as a non-force Git Data API child of 540896e1, verify hosted bytes, refresh the Draft body, then release the writer and reserve fresh exact-head Security/QA and REFUTE."
+  "next_trigger": "Read canonical blob8fde21e bytes directly from git object storage, Base64 upload and require exact blob/tree SHA, recheck remote540896e1, then publish one non-force child, verify hosted bytes, refresh the Draft body and reserve fresh reviews."
 }
