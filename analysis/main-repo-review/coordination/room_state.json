@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T06:36:10Z",
+  "updated_at": "2026-08-28T06:39:32Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1438,27 +1438,27 @@
       "claim_id": "lease-pr25-immutable-quay-toolchain-supply-repair-v1",
       "task": "producer-local-serialized-writer",
       "role": "Sole serialized Dev writer for PR25 immutable OCI toolchain supply repair",
-      "objective": "Replace garbage-collected rolling Quay stable digests with the same-version official immutable-tag index digests so exact Docker Linux runtime construction is retrievable without changing trust-root behavior or authority boundaries.",
+      "objective": "Replace garbage-collected rolling Quay stable digests in both the declarative runtime lock and its outer pinned bootstrap with the same-version official immutable-tag index digests so exact Docker Linux runtime construction is retrievable without changing trust-root behavior or authority boundaries.",
       "baseline": "8d9926b82d5b07d00208d9f21ff88f8892487988",
       "head": "8d9926b82d5b07d00208d9f21ff88f8892487988",
       "tree": "2a848ad3ac9ef59b1e695a712666810666ed30f7",
       "branch": "codex/pr25-immutable-toolchain-supply-repair-v1",
       "delivery_ref": "origin/codex/cafe-source-attestation-trust-root-v1-replacement-2",
       "worktree": "D:\\Documents\\Dev\\living-town-pr25-immutable-toolchain-repair-wt",
-      "owned_paths": ["evidence/cafe/runtime-lock.v1.json"],
-      "forbidden_paths": ["**/* except evidence/cafe/runtime-lock.v1.json", ".github/trusted-cafe-authority/**", ".github/workflows/**", "tools/**", "game/**", "docs/**", "analysis/**", "schemas/registries/anchors/ledgers"],
+      "owned_paths": ["evidence/cafe/runtime-lock.v1.json", "tools/trusted_cafe_capture.sh"],
+      "forbidden_paths": ["**/* except the two exact owned_paths", ".github/trusted-cafe-authority/**", ".github/workflows/**", "tools/** except tools/trusted_cafe_capture.sh", "game/**", "docs/**", "analysis/**", "schemas/registries/anchors/ledgers"],
       "authority_keys": ["cafe-runtime-lock-v1", "cafe-oci-toolchain-supply", "quay-immutable-version-tags"],
       "generated_outputs": ["isolated Docker pull/version receipts", "two-build deterministic runtime receipts outside repository", "new runtime-lock blob identity for a separately reviewed protected-base manifest update"],
       "dependencies": ["PR25 updated head 8d9926b8", "protected master fd122e62", "authority run33147649538 success for prior six blobs", "legacy run33147650883 failure at vanished rolling Skopeo digest", "Quay immutable Skopeo v1.22.2 index sha256:4a16d57b", "Quay immutable Podman v5.8.4 index sha256:b0173238", "CI run33147650879 terminal before publish decision"],
       "consumer": "PR25 exact six-path candidate, then a separate protected-base approved-bundle manifest update and fresh authority/CI/reviews",
-      "status": "reserved_not_started",
+      "status": "lease_expanded_before_second_path_write_after_bootstrap_hardcode_discovery",
       "write_lease": true,
       "last_heartbeat": "2026-08-28T06:36:10Z",
       "stale_after": "2026-08-28T07:36:10Z",
       "pr": 25,
       "acceptance_tests": ["old rolling Skopeo and Podman digests fail resolution as negative control", "immutable index digests resolve for linux/amd64 and report exactly Skopeo 1.22.2 and Podman 5.8.4", "runtime-lock JSON and repository scope checks pass", "runtime builds twice byte-identically in task-isolated Docker with pinned digests", "candidate semantic PR diff remains the exact six trust paths"],
       "rollback": "Before publication delete only the new task worktree/branch if clean. After normal publication, leave or close Draft PR25 and revert through a new reviewed commit; never force-reset the shared PR branch.",
-      "stop_lines": ["any second repository path must change", "immutable image version or platform mismatch", "immutable tag index cannot be pulled twice", "runtime archives are not byte-identical", "authority boundary or canonical Sim/View contract changes", "remote head drift"],
+      "stop_lines": ["any third repository path must change", "immutable image version or platform mismatch", "immutable tag index cannot be pulled twice", "runtime archives are not byte-identical", "authority boundary or canonical Sim/View contract changes", "remote head drift"],
       "handoff_recipient": "Producer protected-base manifest update transaction",
       "archive_condition": "Exact commit published normally with Docker receipts and handed to protected-base manifest update, or one failed recovery releases the lease with provenance."
     }
@@ -1468,7 +1468,7 @@
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "The normal update invalidated both prior review leases. Fresh authority passes, but legacy qualification now fails because both rolling Quay stable digests were garbage-collected. Reserve exactly one runtime-lock-only writer to move the same Skopeo 1.22.2 and Podman 5.8.4 dependencies onto official immutable-tag index digests. No overlapping writer or reviewer is active; protected authority paths remain forbidden."
+    "decision": "The normal update invalidated both prior review leases. Fresh authority passes, but legacy qualification now fails because both rolling Quay stable digests were garbage-collected. Pre-write inspection found the outer bootstrap script also pins the same two digests, so the sole writer lease is expanded before its second-path write to exactly runtime-lock plus trusted_cafe_capture.sh. No overlapping writer or reviewer is active; workflow and protected authority paths remain forbidden."
   },
   "released_claims": [
     {
@@ -1882,7 +1882,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "PR25_IMMUTABLE_QUAY_SAME_VERSION_RUNTIME_LOCK_ONLY_REPAIR_RESERVED_CI_RUNNING",
+    "state": "PR25_IMMUTABLE_QUAY_SAME_VERSION_TWO_PATH_BOOTSTRAP_AND_LOCK_REPAIR_LEASE_EXPANDED_CI_RUNNING",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
@@ -1924,5 +1924,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish this one-path repair lease, create the isolated worktree from 8d9926b8, change only the two rolling Quay digests to same-version immutable index digests, and run pinned isolated Docker negative/version/determinism checks. Do not publish candidate changes until CI run33147650879 is terminal and all acceptance tests pass."
+  "next_trigger": "Publish the two-path lease expansion, update only the two hard-coded bootstrap references in trusted_cafe_capture.sh to match the already edited runtime lock, then run pinned isolated Docker negative/version/determinism checks. Do not publish candidate changes until CI run33147650879 is terminal and all acceptance tests pass."
 }
