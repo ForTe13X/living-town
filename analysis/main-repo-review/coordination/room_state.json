@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T00:21:55Z",
+  "updated_at": "2026-08-28T00:27:37Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -23,7 +23,7 @@
     "sorted_name_sha_set_sha256": "2f207a4bf047ad8db41130d52da8796e2cb0163e68d66a577b880eb5cd96013a",
     "master": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "149fad408321810cf1b7ba337de0d8f6e769e7fe",
+    "coordination": "8081c7a08c4c237abf289401446b8eaded7e5881",
     "pr25": "26e22985f9982e31b3982777f002ba3c46169acb",
     "open_prs": 9,
     "open_issues": 0,
@@ -1155,10 +1155,11 @@
     "p2": 0,
     "technical_exact_head": "passed",
     "governance": "blocked",
-    "pr_body": "stale_update_reserved",
+    "pr_body": "exact_current_evidence_projection_updated_sha256_55502cd065853c76b4ca799dd9472d3b1beff9233490c93ec2e6196489af40ae",
     "branch_protection_change": "not_authorized_human_only",
     "merge": "forbidden",
-    "human_acceptance": "not_ready"
+    "human_acceptance": "not_ready",
+    "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
   "next_trigger": "After exact PR25 and PR5 body projections are refreshed, await human authorization for repository-governance policy change or a separately approved protection design; do not mark Ready or merge."
 }
