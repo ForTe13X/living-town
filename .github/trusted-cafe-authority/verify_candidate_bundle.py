@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import binascii
 import copy
 import hashlib
 import json
@@ -35,18 +36,28 @@ def load_manifest(path: Path) -> dict:
     return validate_manifest(manifest)
 
 
+def validate_paths(value: object, label: str) -> list[str]:
+    if not isinstance(value, list) or not value:
+        raise GateError(f"{label} must be a non-empty list")
+    if any(not isinstance(path, str) or not path for path in value):
+        raise GateError(f"{label} must contain non-empty strings")
+    for path in value:
+        parts = path.split("/")
+        if path.startswith("/") or "\\" in path or any(part in ("", ".", "..") for part in parts):
+            raise GateError(f"{label} contains a non-canonical repository path: {path!r}")
+    if len(value) != len(set(value)):
+        raise GateError(f"{label} must be unique")
+    return value
+
+
 def validate_manifest(manifest: object) -> dict:
     if not isinstance(manifest, dict):
         raise GateError("approved-bundle manifest must be an object")
     if manifest.get("schema") != "living-town.trusted-cafe-approved-bundles.v1":
         raise GateError("unsupported approved-bundle manifest schema")
-    trust_paths = manifest.get("trust_paths")
-    authority_paths = manifest.get("authority_paths")
+    trust_paths = validate_paths(manifest.get("trust_paths"), "trust paths")
+    authority_paths = validate_paths(manifest.get("authority_paths"), "authority paths")
     bundles = manifest.get("bundles")
-    if not isinstance(trust_paths, list) or len(trust_paths) != len(set(trust_paths)):
-        raise GateError("trust paths must be a unique list")
-    if not isinstance(authority_paths, list) or len(authority_paths) != len(set(authority_paths)):
-        raise GateError("authority paths must be a unique list")
     if set(trust_paths) & set(authority_paths):
         raise GateError("trust and authority paths must be disjoint")
     if not isinstance(bundles, list) or not bundles:
@@ -157,12 +168,22 @@ class GitHubAPI:
 
     def blob(self, sha: str) -> bytes:
         value = self.get(f"/repos/{self.repository}/git/blobs/{sha}")
-        if not isinstance(value, dict) or value.get("encoding") != "base64":
-            raise GateError("candidate blob is not base64 encoded")
-        try:
-            return base64.b64decode(str(value.get("content", "")), validate=False)
-        except ValueError as error:
-            raise GateError("candidate blob base64 is invalid") from error
+        return decode_github_blob(value)
+
+
+def decode_github_blob(value: object) -> bytes:
+    if not isinstance(value, dict) or value.get("encoding") != "base64":
+        raise GateError("candidate blob is not base64 encoded")
+    content = value.get("content")
+    if not isinstance(content, str) or not content:
+        raise GateError("candidate blob base64 content is missing")
+    compact = "".join(content.split())
+    if not compact:
+        raise GateError("candidate blob base64 content is empty")
+    try:
+        return base64.b64decode(compact, validate=True)
+    except (ValueError, binascii.Error) as error:
+        raise GateError("candidate blob base64 is invalid") from error
 
 
 def changed_paths(files: list[dict]) -> tuple[set[str], set[str], list[str]]:
@@ -346,6 +367,16 @@ def run_self_test(manifest: dict) -> dict:
             raise AssertionError(f"{name}: expected rejected, got {result}")
         cases.append({"name": name, "result": result})
 
+    def blob_case(name: str, value: object, expect: str) -> None:
+        try:
+            decoded = decode_github_blob(value)
+            result = "decoded" if decoded == b"a" else "wrong-bytes"
+        except GateError:
+            result = "rejected"
+        if result != expect:
+            raise AssertionError(f"{name}: expected {expect}, got {result}")
+        cases.append({"name": name, "result": result})
+
     case(
         "unrelated-not-applicable",
         "not-applicable",
@@ -449,6 +480,34 @@ def run_self_test(manifest: dict) -> dict:
     missing_review = copy.deepcopy(manifest)
     del missing_review["bundles"][0]["evidence"]["security_qa"]
     manifest_case("missing-review-evidence", missing_review)
+    empty_trust_paths = copy.deepcopy(manifest)
+    empty_trust_paths["trust_paths"] = []
+    manifest_case("empty-trust-paths", empty_trust_paths)
+    empty_authority_paths = copy.deepcopy(manifest)
+    empty_authority_paths["authority_paths"] = []
+    manifest_case("empty-authority-paths", empty_authority_paths)
+    non_string_path = copy.deepcopy(manifest)
+    non_string_path["trust_paths"][0] = 7
+    manifest_case("non-string-trust-path", non_string_path)
+    unhashable_path = copy.deepcopy(manifest)
+    unhashable_path["trust_paths"][0] = {"path": "invalid"}
+    manifest_case("unhashable-trust-path", unhashable_path)
+    absolute_path = copy.deepcopy(manifest)
+    absolute_path["trust_paths"][0] = "/absolute"
+    manifest_case("absolute-trust-path", absolute_path)
+    backslash_path = copy.deepcopy(manifest)
+    backslash_path["trust_paths"][0] = "windows\\path"
+    manifest_case("backslash-trust-path", backslash_path)
+    dot_segment_path = copy.deepcopy(manifest)
+    dot_segment_path["trust_paths"][0] = "folder/../path"
+    manifest_case("dot-segment-trust-path", dot_segment_path)
+    blob_case("strict-base64-valid", {"encoding": "base64", "content": "YQ=="}, "decoded")
+    blob_case("strict-base64-wrapped", {"encoding": "base64", "content": "YQ==\n"}, "decoded")
+    blob_case(
+        "strict-base64-invalid-characters",
+        {"encoding": "base64", "content": "YQ==@@"},
+        "rejected",
+    )
     renamed = copy.deepcopy(trust_files[1:])
     renamed.append(
         {
