@@ -3,13 +3,6 @@ name: Trusted cafe source attestation
 on:
   pull_request:
     branches: [master]
-    paths:
-      - .github/workflows/trusted-cafe-attestation.yml
-      - tools/trusted_cafe_capture.sh
-      - tools/cafe_authored_manifest.py
-      - tools/verify_cafe_attested_evidence.py
-      - tools/cafe_attestation_selftest.py
-      - evidence/cafe/runtime-lock.v1.json
   workflow_dispatch:
     inputs:
       candidate_sha:
@@ -40,7 +33,8 @@ jobs:
           path: trusted
           persist-credentials: false
 
-      - name: Enforce the six-path Stack A lease
+      - name: Classify the required trust-root qualification
+        id: scope
         shell: bash
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -51,6 +45,8 @@ jobs:
           [[ -z "$(git -C trusted status --porcelain=v1 --untracked-files=all)" ]]
           mapfile -t changed < <(git -C trusted diff --name-only "$BASE_SHA" "$HEAD_SHA")
           ((${#changed[@]} > 0))
+          qualify=false
+          outside=()
           for path in "${changed[@]}"; do
             case "$path" in
               .github/workflows/trusted-cafe-attestation.yml|\
@@ -58,13 +54,25 @@ jobs:
               tools/cafe_authored_manifest.py|\
               tools/verify_cafe_attested_evidence.py|\
               tools/cafe_attestation_selftest.py|\
-              evidence/cafe/runtime-lock.v1.json) ;;
-              *) echo "out-of-lease path: $path" >&2; exit 1 ;;
+              evidence/cafe/runtime-lock.v1.json) qualify=true ;;
+              *) outside+=("$path") ;;
             esac
           done
-          [[ "${#changed[@]}" -eq 6 ]]
+          if [[ "$qualify" == true && "${#outside[@]}" -ne 0 ]]; then
+            printf 'trust-root changes cannot share a PR with out-of-lease paths:\n' >&2
+            printf '  %s\n' "${outside[@]}" >&2
+            exit 1
+          fi
+          {
+            printf 'qualify=%s\n' "$qualify"
+            printf 'changed_count=%s\n' "${#changed[@]}"
+          } >> "$GITHUB_OUTPUT"
+          printf 'CAFE_REQUIRED_GATE mode=%s changed=%s head=%s\n' \
+            "$([[ "$qualify" == true ]] && printf full || printf not-applicable)" \
+            "${#changed[@]}" "$HEAD_SHA"
 
       - name: Build the immutable runtime twice
+        if: steps.scope.outputs.qualify == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -72,6 +80,7 @@ jobs:
             trusted "$RUNNER_TEMP/cafe-runtime"
 
       - name: Load and qualify the exact digest runtime
+        if: steps.scope.outputs.qualify == 'true'
         id: runtime
         shell: bash
         run: |
@@ -155,6 +164,7 @@ jobs:
           echo "validation_ref=$validation_ref" >> "$GITHUB_OUTPUT"
 
       - name: Run two fresh isolated trust-root self-tests
+        if: steps.scope.outputs.qualify == 'true'
         shell: bash
         env:
           VALIDATION_REF: ${{ steps.runtime.outputs.validation_ref }}
@@ -179,6 +189,7 @@ jobs:
             cmp /a/receipt.json /b/receipt.json
 
       - name: Enforce hosted artifact budget in the exact runtime
+        if: steps.scope.outputs.qualify == 'true'
         shell: bash
         env:
           RUNTIME_REF: ${{ steps.runtime.outputs.ref }}
@@ -306,6 +317,7 @@ jobs:
               /budget/qualification-budget-receipt.json
 
       - name: Upload reproducible runtime qualification
+        if: steps.scope.outputs.qualify == 'true'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: cafe-runtime-qualification-${{ github.event.pull_request.head.sha }}-${{ github.run_id }}
@@ -321,6 +333,24 @@ jobs:
           if-no-files-found: error
           retention-days: 90
           compression-level: 0
+
+      - name: Publish required qualification result
+        if: always()
+        shell: bash
+        env:
+          QUALIFY: ${{ steps.scope.outputs.qualify }}
+          CHANGED_COUNT: ${{ steps.scope.outputs.changed_count }}
+          SCOPE_OUTCOME: ${{ steps.scope.outcome }}
+        run: |
+          set -euo pipefail
+          [[ "$SCOPE_OUTCOME" == success ]]
+          case "$QUALIFY" in
+            true) mode=full ;;
+            false) mode=not-applicable ;;
+            *) echo "missing required-gate classification" >&2; exit 1 ;;
+          esac
+          printf 'CAFE_REQUIRED_GATE_RESULT mode=%s changed=%s head=%s\n' \
+            "$mode" "$CHANGED_COUNT" "${{ github.event.pull_request.head.sha }}"
 
   protected_capture_and_attestation:
     if: github.event_name == 'workflow_dispatch'
