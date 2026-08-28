@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T15:42:54Z",
+  "updated_at": "2026-08-28T15:46:11Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -2226,9 +2226,9 @@
       "generated_outputs": ["normal GitHub merge commit from master into feature branch", "fresh hosted checks", "fresh exact-head review packet"],
       "dependencies": ["PR29 merged as master43c72a8f", "post-merge CI33182561513 success", "final four-context protection verified", "PR28 old head8fb6895 clean one-manifest diff", "PR25 remains Draft at2760325"],
       "consumer": "Fresh independent Security/QA and REFUTE, then separately ledgered PR28 protected-manifest transition; PR25 remains blocked",
-      "status": "exact_body_docker_and_hosted_ci_success_fresh_reviewers_reserved",
+      "status": "exact_body_docker_and_hosted_ci_success_two_fresh_reviewers_active",
       "write_lease": true,
-      "last_heartbeat": "2026-08-28T15:42:54Z",
+      "last_heartbeat": "2026-08-28T15:46:11Z",
       "stale_after": "2026-08-28T15:44:37Z",
       "pr": 28,
       "recovery_count": 0,
@@ -2245,7 +2245,7 @@
     },
     {
       "claim_id": "claim-pr28-security-qa-exact-e70cebba",
-      "task": "reserved:reuse-pr28-security-qa",
+      "task": "/root/pr28_security_qa",
       "role": "Independent read-only Security/QA reviewer",
       "objective": "Review PR28 exact head e70cebba, its one-manifest scope, PR25 immutable source identity/evidence, verifier acceptance semantics, pending-evidence replacement procedure, hosted results, protection and rollback; report P0/P1/P2 and an exact verdict.",
       "baseline": "43c72a8faa4e927fa5e324f589c611dd2a402a0e",
@@ -2260,9 +2260,9 @@
       "generated_outputs": ["read-only evidence report and exact terminal verdict"],
       "dependencies": ["CI33184928495 success", "authority33184926593 expected self-modification failure", "Docker receipt0fb5ee78", "PR25 exact2760325/c87b0644"],
       "consumer": "Producer decision whether a bounded pending-evidence manifest repair is safe",
-      "status": "reserved_pre_dispatch",
+      "status": "active_read_only_review",
       "write_lease": false,
-      "last_heartbeat": "2026-08-28T15:42:54Z",
+      "last_heartbeat": "2026-08-28T15:46:11Z",
       "stale_after": "2026-08-28T16:42:54Z",
       "pr": 28,
       "recovery_count": 0,
@@ -2273,7 +2273,7 @@
     },
     {
       "claim_id": "claim-pr28-refute-exact-e70cebba",
-      "task": "reserved:reuse-pr29-refute-replacement",
+      "task": "/root/pr29_refute_replacement",
       "role": "Independent read-only adversarial REFUTE reviewer",
       "objective": "Attempt to falsify PR28 exact head e70cebba by attacking manifest identity, duplicate/ambiguity, stale or substituted PR25 evidence, review-string semantics, self-authorization, ancestry, hosted checks, rollback and protection; report P0/P1/P2 and an exact verdict.",
       "baseline": "43c72a8faa4e927fa5e324f589c611dd2a402a0e",
@@ -2288,9 +2288,9 @@
       "generated_outputs": ["read-only falsification report and exact terminal verdict"],
       "dependencies": ["CI33184928495 success", "authority33184926593 expected self-modification failure", "Docker receipt0fb5ee78", "PR25 exact2760325/c87b0644"],
       "consumer": "Producer decision whether a bounded pending-evidence manifest repair is safe",
-      "status": "reserved_pre_dispatch",
+      "status": "active_read_only_review",
       "write_lease": false,
-      "last_heartbeat": "2026-08-28T15:42:54Z",
+      "last_heartbeat": "2026-08-28T15:46:11Z",
       "stale_after": "2026-08-28T16:42:54Z",
       "pr": 28,
       "recovery_count": 0,
@@ -2301,7 +2301,7 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T15:42:54Z",
+    "at": "2026-08-28T15:46:11Z",
     "active_writers": 1,
     "read_only_reviewers": 2,
     "shared_write_conflicts": 0,
@@ -2812,5 +2812,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_1b8afb72_verified"
   },
-  "next_trigger": "Dispatch the two reserved read-only exact-head PR28 reviewer claims; after both terminal, ledger P0/P1/P2 and either authorize one bounded pending-evidence manifest repair or freeze on any P0/P1."
+  "next_trigger": "Wait for /root/pr28_security_qa and /root/pr29_refute_replacement exact-head terminal reports; ledger P0/P1/P2 and either authorize one bounded pending-evidence manifest repair or freeze on any P0/P1."
 }
