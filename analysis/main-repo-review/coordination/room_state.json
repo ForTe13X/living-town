@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T16:03:12Z",
+  "updated_at": "2026-08-28T16:18:15Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -15,7 +15,7 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-08-28T15:02:12Z",
+    "at": "2026-08-28T16:18:15Z",
     "github_api_count": 36,
     "git_ls_remote_count": 36,
     "local_tracking_count": 36,
@@ -27,7 +27,7 @@
     "sorted_name_sha_set_sha256": "1e6a126151d3523f85c09be700b8ebbbe25ab1c0e161fc0fefa0a289ce431acf",
     "master": "43c72a8faa4e927fa5e324f589c611dd2a402a0e",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "b51ee3b1ef5c391f5bda593b2098531e0dfe5e9c",
+    "coordination": "db8b861141fdf27651f45b72b905e7a8babb7ba1",
     "pr25": "2760325d5946ae2d5d8632a704f6c180f90976e4",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
     "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
@@ -2253,6 +2253,9 @@
       "objective": "Review PR28 exact head e70cebba, its one-manifest scope, PR25 immutable source identity/evidence, verifier acceptance semantics, pending-evidence replacement procedure, hosted results, protection and rollback; report P0/P1/P2 and an exact verdict.",
       "baseline": "43c72a8faa4e927fa5e324f589c611dd2a402a0e",
       "baseline_tree": "a07840f3c4d098e8e88e0a149c6d2bad25fa8eb9",
+      "head": "ae66c2edb58cf4df682ad4b8c3f2676913df8163",
+      "tree": "71a9a3b2b5c967b9dbc3d44195ffe61512b3a7d4",
+      "verifier_blob": "6273384539a0917ab582715861a1debc65ee4d8f",
       "head": "e70cebba46cdeaf3116090efbfdb2532b0be024a",
       "head_tree": "c9e0273eeb121d8f55bb696f0fd933b78d220863",
       "branch": "codex/pr25-approved-bundle-2760325-v1",
@@ -2323,11 +2326,26 @@
       "generated_outputs": ["one-file normal feature branch and Draft PR only after proof", "task-local pinned-Docker receipts and attack fixtures outside repository"],
       "dependencies": ["PR29 verifier v2 merged as master43c72a8f", "PR28 exact-head Security/QA P1 and REFUTE P1", "PR25 frozen at source2760325/treec87b0644", "PR28 frozen Draft e70cebba"],
       "consumer": "A future re-reviewed PR28 manifest transition, followed by normal PR25 synchronization whose head contains both the reviewed source and current protected master",
-      "status": "reserved_pre_worktree_exact_design_and_negative_controls_required",
+      "status": "local_exact_commit_proven_remote_draft_publication_reserved",
       "write_lease": true,
-      "last_heartbeat": "2026-08-28T16:03:12Z",
-      "stale_after": "2026-08-28T17:03:12Z",
+      "last_heartbeat": "2026-08-28T16:18:15Z",
+      "stale_after": "2026-08-28T17:18:15Z",
       "pr": null,
+      "checks": {
+        "scope": "one exact owned path; worktree clean; parent is current protected master",
+        "docker": "29.6.2 client/server; desktop-linux; linux/amd64; read-only; cap-drop ALL; no-new-privileges; isolated cache/scratch; containers removed",
+        "image": "python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c",
+        "python": "3.11.16",
+        "canonical_blob_bytes": 37349,
+        "canonical_blob_sha256": "e8d2be7e45038299ce5d1a1676956d882f577132d38b9b91c9d14dbd4d1a4443",
+        "master_manifest_cases": "68/68 twice byte-identical",
+        "master_manifest_receipt_sha256": "8e61bacdd9c8107f22ba915151170016e6a4ee1eb052fb4377b9f3e308a62f46",
+        "pr28_manifest_cases": "81/81 twice byte-identical",
+        "pr28_manifest_receipt_sha256": "7c03d1a7b7583f3ff2c285a74abc3800f3970a4e7f9c4e62c0c444baa5040de9",
+        "live_pr25_master_manifest": "expected reject: candidate bundle matched 0 approved identities",
+        "live_pr25_pr28_pending_manifest": "expected reject: candidate bundle matched 0 approved identities",
+        "docker_network": "none for self-tests; bridge only for two read-only live GitHub fail-closed probes"
+      },
       "recovery_count": 0,
       "pr_policy": "Create a new Draft PR to master only after exact one-file Docker proof. Do not alter PR25/PR28, protection, Ready state or merge from this lease.",
       "acceptance_tests": ["original exact reviewed source head/tree remains accepted", "base-synchronized successor with exact trust records and both required ancestors is accepted", "same blobs on unrelated head rejects", "reviewed source not ancestor rejects", "current master not ancestor rejects", "stale current-master snapshot rejects", "altered trust blob/mode/bytes/SHA rejects", "mixed/rename/fork/self-modification behavior remains fail-closed", "GitHub ref/compare API failure or malformed response rejects", "all manifest bundles remain deterministic", "receipt preserves candidate and approved-source provenance"],
@@ -2339,18 +2357,18 @@
     }
   ],
   "active_dependency_graph": {
-    "at": "2026-08-28T16:03:12Z",
+    "at": "2026-08-28T16:18:15Z",
     "trigger": "PR28 matching independent P1 strict-base identity handoff cycle",
     "ranking": "dependency unlock first, then evidence closure, then player-visible cafe production; conflict risk serialized across shared authority",
     "phases": [
-      {"phase":1,"objective":"Verifier v3 reviewed-source plus current-protected-base derivation","owner":"lease-cafe-authority-base-sync-handoff-v3","status":"active_serialized","player_value":"unblocks protected trust-root delivery","conflict_risk":"high shared authority; sole writer","exit":"one-file Draft PR, pinned-Docker negative controls, independent P0/P1=0"},
+      {"phase":1,"objective":"Verifier v3 reviewed-source plus current-protected-base derivation","owner":"lease-cafe-authority-base-sync-handoff-v3","status":"local_exact_proof_complete_remote_draft_publication_reserved","player_value":"unblocks protected trust-root delivery","conflict_risk":"high shared authority; sole writer","exit":"one-file Draft PR, pinned-Docker negative controls, independent P0/P1=0"},
       {"phase":2,"objective":"Synchronize PR28 normally, replace only pending review leaves after fresh exact-source reviews, and re-run exact-head evidence","owner":"unassigned","status":"blocked_on_phase1_merge","player_value":"installs data-only authorization","conflict_risk":"high manifest authority; serialized","exit":"PR28 exact head P0/P1=0 and controlled manifest transition package"},
       {"phase":3,"objective":"Merge reviewed manifest through reversible protected transition, then normally synchronize PR25 so candidate contains reviewed source plus current protected master","owner":"unassigned","status":"blocked_on_phase2","player_value":"makes protected candidate executable without stale identity","conflict_risk":"critical protection and trust paths; serialized","exit":"PR25 fresh authority+qualification+CI at exact synchronized head and independent P0/P1=0"},
       {"phase":4,"objective":"Merge eligible PR25, monitor post-merge, then unlock Stack B authored IDs and exactly one cafe exterior-to-persistence production owner","owner":"unassigned","status":"blocked_on_phase3","player_value":"direct prerequisite to player-visible cafe vertical slice","conflict_risk":"trust root then canonical scene authority; separate leases","exit":"post-merge green, P0/P1=0, cafe production packet dispatched"}
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-08-28T16:03:12Z",
+    "at": "2026-08-28T16:18:15Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
@@ -2860,7 +2878,7 @@
     "pr29_post_merge_success_full_scan_pr28_reserved": "Post-merge CI33182561513 succeeded at master43c72a8f. Full 36-branch snapshot is complete and exact across GitHub/ls-remote/local refs, hash1e6a1261; 29 PRs/0 reviews, 0 issues/releases/tags, 29 worktrees with 14 dirty all preserved. Required tasks unavailable; dynamic dev/map/UI-UX inactive/terminal, B28 BELOW_REQUIRED_FLOOR. PR28 one-manifest branch update/review is the next serialized lane.",
     "pr28_e70cebba_terminal_p1_freeze": "PR28 exact head e70cebba/treec9e0273e/body10e446b passed one-path identity, Docker53x2 and hosted CI33184928495. Security/QA P0=0/P1=1/P2=1 and REFUTE P0=0/P1=1/P2=0 independently found the same strict-base identity handoff cycle. Draft frozen; PENDING strings, Ready, protection and merge remain untouched.",
     "human_acceptance": "not_ready",
-    "pr5_projection": "open_draft_live_head_1b8afb72_verified"
+    "pr5_projection": "open_draft_live_head_db8b8611_verified"
   },
-  "next_trigger": "Verify master43c72a8f and branch absence, create the isolated v3 worktree/feature branch, implement only the verifier derivation contract, and run all old plus new negative controls twice in pinned Docker before any remote publication."
+  "next_trigger": "Publish exact ae66c2ed one-file verifier v3 branch non-force, create a Draft PR to master43c72a8f, verify hosted base/head/tree/body and await terminal exact-head CI before reserving two independent read-only reviewers."
 }
