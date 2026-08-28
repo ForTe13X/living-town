@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T13:18:51Z",
+  "updated_at": "2026-08-28T13:21:27Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1744,7 +1744,7 @@
       "role": "Dev writer - bounded authority repair",
       "objective": "Repair the protected-base verifier so approval is bound to exact candidate head and tree, review evidence is terminal rather than pending, duplicate records fail closed, and deterministic self-tests cover every bundle plus same-files/different-identity attacks.",
       "baseline": "fd122e6235f8870c7e3f8e6b43b35f04392765d9",
-      "head": "342f65d55ba4e2c6e206705d563588661837b42f",
+      "head": "a10486918276963b3b693f178b239bd115c03975",
       "tree": "cd6b7cc8e0bfb5a49ff137f00709b8b59569a181",
       "branch": "codex/cafe-authority-exact-identity-v2",
       "worktree": "D:\\Documents\\Dev\\living-town-authority-exact-identity-v2-wt",
@@ -1879,9 +1879,9 @@
       "generated_outputs": ["task-local Docker receipts outside repository", "updated Draft PR29 head after proof"],
       "dependencies": ["PR29 head1e99012 terminal Security/QA P0/P1=0", "replacement review P0/P1=0", "CI run33172016796 success", "PR28 and PR25 remain frozen"],
       "consumer": "Final PR29 exact-head reviews, then protected-base transition before PR28 manifest repair",
-      "status": "normal_push_recovery_exhausted_content_verified_git_data_api_publication_reserved",
+      "status": "terminal_content_verified_api_publication_success_pr29_body_refresh_reserved",
       "write_lease": true,
-      "last_heartbeat": "2026-08-28T13:18:51Z",
+      "last_heartbeat": "2026-08-28T13:21:27Z",
       "stale_after": "2026-08-28T14:09:16Z",
       "pr": 29,
       "recovery_count": 1,
@@ -1890,6 +1890,7 @@
       "proof": {"docker":{"image":"docker.io/library/python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c","read_only":true,"network":"none for offline; GitHub only for live","cap_drop":"ALL","no_new_privileges":true,"cleanup":"--rm"},"base_manifest":{"cases":26,"runs":2,"byte_identical":true,"receipt_sha256":"1f62b17b56102b3c312d607351d22a43d73cd7a74d84924481051446f5fab3d9"},"pr28_manifest":{"bundles":2,"cases":32,"runs":2,"byte_identical":true,"receipt_sha256":"bfba4b1027fc3af33107eedcc384ea2b557a0ec3634cdbfb98dba0db393ab188"},"live_pr25":{"actual_pending":"rejected matched 0","synthetic_terminal_exact":"approved head2760325d treec87b0644 bundle v2"},"negative":"empty/non-string/unhashable/absolute/backslash/dot-segment paths and invalid Base64 rejected; wrapped valid GitHub Base64 accepted","ast":"pass","diff_check":"pass","scope":"one repository path"},
       "remote_reservation": {"current_pr29_head":"1e99012a459a317376090e28ab7671a3bfda4700","master":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","action":"normal non-force fast-forward feature branch to 342f65d then update PR29 body exact identity","ready":false,"merge":false},
       "api_recovery_reservation": {"reason":"initial and one retry smart-HTTP pushes both connection-reset with no remote change","source":"local Git object database, not mixed-EOL worktree bytes","expected_blob":"a35f1ad0fb656280f74d4cf78d8d5c6a0cf78678","expected_bytes":24517,"expected_sha256":"d5ce530ed68b8d2347ae0a25d9b1e4de32be4f88e0f1b0709228b7a3f0472f0f","expected_tree":"cd6b7cc8e0bfb5a49ff137f00709b8b59569a181","parent":"1e99012a459a317376090e28ab7671a3bfda4700","local_commit":"342f65d55ba4e2c6e206705d563588661837b42f","message":"fix: harden cafe authority manifest parsing","author_committer":"Codex <codex@openai.com> 2026-08-28T20:13:54+08:00","acceptance":"API blob and tree must exactly equal local; API commit may differ only by GitHub serialization of timezone or trailing message newline; ref update remains non-force and only after remote head recheck"},
+      "api_publication": {"published_at":"2026-08-28T13:20:55Z","remote_commit":"a10486918276963b3b693f178b239bd115c03975","local_content_commit":"342f65d55ba4e2c6e206705d563588661837b42f","difference":"GitHub normalized the same author/committer instant to Z and serialized the visible message without Git object trailing newline","parent":"1e99012a459a317376090e28ab7671a3bfda4700","tree":"cd6b7cc8e0bfb5a49ff137f00709b8b59569a181","blob":"a35f1ad0fb656280f74d4cf78d8d5c6a0cf78678","hosted_bytes":24517,"hosted_sha256":"d5ce530ed68b8d2347ae0a25d9b1e4de32be4f88e0f1b0709228b7a3f0472f0f","non_force":true,"pr29_head_verified":true,"body_refresh_reserved":true,"fresh_runs":{"authority":33174986895,"ci":33174988226}},
       "acceptance_tests": ["empty trust_paths rejects", "empty authority_paths rejects", "non-string and unhashable paths reject as GateError", "absolute/backslash/dot-segment paths reject", "invalid Base64 rejects with validate=True", "base and PR28 all-bundle receipts remain deterministic", "live pending rejects and synthetic exact terminal identity accepts", "AST and diff-check pass", "one repository path only"],
       "rollback": "Do not push on failure. After publication leave or close Draft PR29; if later merged use a new reviewed revert PR and freeze manifest/PR25.",
       "stop_lines": ["master or branch drift", "second repository path", "manifest/workflow/protection mutation", "positive exact fixture failure", "negative malformed input accepted", "Docker isolation unavailable"],
@@ -1898,11 +1899,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T13:18:51Z",
+    "at": "2026-08-28T13:21:27Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "Both normal smart-HTTP PR29 push attempts connection-reset with no remote change; retry is exhausted. Content-verified Git Data API reconstruction from canonical local Git objects is reserved, requiring exact blob/tree and non-force old-head recheck. Manifest, workflow, protection, PR25, PR28, Ready and merge remain frozen."
+    "decision": "Content-verified Git Data API publication succeeded at remote head a1048691 with exact blob a35f1ad0/tree cd6b7cc8 and hosted SHA256 d5ce530e. PR29 body refresh to this identity is reserved before writer release and fresh reviews. Manifest, workflow, protection, PR25, PR28, Ready and merge remain frozen."
   },
   "released_claims": [
     {
@@ -2385,8 +2386,9 @@
     "pr29_replacement_review_body_drift_recovery": "Replacement reviewer stopped correctly because the authorized mixed-EOL PR body correction landed after its initial read; code identity stayed exact. Pre-stop Docker evidence passed and one provisional schema P2 was found. One recovery against the stable corrected body and terminal CI is reserved.",
     "pr29_exact_head_terminal_reviews": "At exact head1e99012, CI run33172016796 success and expected authority self-modification failure are terminal. Security/QA P0=0/P1=0/P2=2 PASS; replacement REFUTE P0=0/P1=0/P2=1 PASS. Both leases released. Producer reserved a same-file P2 hardening pass; new head will require fresh reviews.",
     "pr29_p2_hardening_local_proof": "Local commit342f65d/tree cd6b7cc8/blob a35f1ad0 is one-path clean. Pinned Docker base26 and PR28-32 cases twice byte-identical; malformed path/Base64 controls reject, wrapped GitHub Base64 and live exact PR25 behave correctly. Non-force PR29 fast-forward reserved; hosted SHA256 pending API verification.",
+    "pr29_p2_hardening_api_publication": "After two reset smart-HTTP pushes, Git Data API reconstructed exact blob a35f1ad0 (24517 bytes, SHA256 d5ce530e) and tree cd6b7cc8, then non-force advanced PR29 to content-identical API commit a1048691. Fresh authority run33174986895 and CI run33174988226 started; body refresh reserved.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish exhaustion of normal push recovery and the content-verified API plan. Reconstruct blob a35f1ad0 and tree cd6b7cc8 from canonical Git object bytes, create a semantically identical child commit, then non-force update PR29 only if remote remains 1e99012; verify hosted bytes/SHA256 before body or review transition."
+  "next_trigger": "Publish exact API publication a1048691 and hosted blob evidence. Update PR29 body to new head/tree/blob/bytes/SHA256, P2 hardening behavior and receipts; verify body/identity, then release writer and reserve fresh Security/QA plus replacement REFUTE at a1048691."
 }
