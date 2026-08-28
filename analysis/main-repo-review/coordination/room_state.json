@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T04:51:42Z",
+  "updated_at": "2026-08-28T04:58:18Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1310,7 +1310,7 @@
       "baseline": "b5d02e499480540d90ae215d91a8cf772985b099",
       "baseline_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
       "local_equivalent_baseline": "313d9af462f36f23fdf9ffaa4350372d2a38d1aa:tree:7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
-      "head": "d80f115b0d3d3b6c2f2e8d06e45990d93149ac77",
+      "head": "eb51b01595819a782d1588844776caea0e0fc750",
       "tree": "503376dbd7fb8c0a877e40f3843dc8b6fe4f6aa8",
       "branch": "codex/pr26-protected-base-ref-repair-v1",
       "worktree": "D:\\Documents\\Dev\\living-town-pr26-protected-base-ref-repair-wt",
@@ -1320,10 +1320,12 @@
       "generated_outputs": ["one-file workflow repair commit", "isolated pinned-Docker self-test and exact-diff receipts", "Draft repair PR against master"],
       "dependencies": ["master:b5d02e499480540d90ae215d91a8cf772985b099:tree:7a08c75b3a54455e012f0f0798be02c5d77eb6e9", "failed-run:33142614324:job:98756569578", "official-pull_request_target:GITHUB_SHA-is-last-commit-on-base-branch"],
       "consumer": "Unchanged Draft PR25 exact protected-base authority rerun",
-      "status": "frozen_clean_exact_one_path_pinned_docker_pass_ready_for_non_force_draft_delivery",
-      "last_heartbeat": "2026-08-28T04:51:42Z",
-      "stale_after": "2026-08-28T05:31:21Z",
-      "pr": null,
+      "status": "draft_pr27_open_hosted_general_ci_in_progress_expected_self_modification_rejection_confirmed",
+      "last_heartbeat": "2026-08-28T04:58:18Z",
+      "stale_after": "2026-08-28T05:38:18Z",
+      "pr": 27,
+      "pr_state": "OPEN_DRAFT_MERGEABLE_BLOCKED",
+      "hosted_checks": ["trusted_cafe_authority_gate:failure:expected_fail_closed_self_modification_rejection:run33143304796:job98758756722", "ci:in_progress:run33143304668:job98758755779", "visual_canary:in_progress:run33143304668:job98758755626"],
       "pr_policy": "Create a Draft PR against master only after exact one-path diff and pinned-Docker tests pass; never merge without fresh hosted checks plus independent Security/QA and REFUTE P0/P1=0.",
       "acceptance_tests": ["workflow checkout ref and identity env both use github.sha:pass", "protected-base checkout contains verifier and manifest in a clean event-SHA fixture:pass", "two independent 8-case verifier self-tests byte-identical:dedb09985b12c7a94b4bb60cf6efc2502960968362bc59731b1d6f51600e6cd9", "git diff --check and exact one-path scope:pass"],
       "negative_controls": ["github.event.pull_request.base.sha is absent from checkout and identity binding", "candidate workflow/code is never checked out or executed", "no token write permission or classic required-context mutation"],
@@ -1334,11 +1336,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T04:51:42Z",
+    "at": "2026-08-28T04:58:18Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "The one-file recovery writer is frozen clean after two byte-identical pinned-Docker self-tests and exact scope checks. Reserve only non-force Draft delivery against unchanged master b5d02e49; PR25, verifier, manifest, protection and every other lane remain frozen."
+    "decision": "Draft PR27 now owns the exact one-file repair at remote head eb51b015/tree 503376db. Its base-authority run rejected authority self-modification as designed; general ci/visual remain in progress. PR25, verifier, manifest, protection and every other lane remain frozen."
   },
   "released_claims": [
     {
@@ -1752,7 +1754,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "PR25_AUTHORITY_P1_ONE_FILE_REPAIR_FROZEN_CLEAN_DRAFT_DELIVERY_RESERVED",
+    "state": "PR27_DRAFT_EXACT_REPAIR_HOSTED_GENERAL_CHECKS_IN_PROGRESS_EXPECTED_AUTHORITY_SELF_REJECT_CONFIRMED",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
@@ -1774,9 +1776,10 @@
     "pr25_event_binding": "unchanged OPEN Draft PR25 head 5a449cad tree 60621741; six changed paths and sixteen commits; existing exact-head ci, visual_canary and legacy qualification success; close then immediately reopen only to trigger protected-base reopened event; draft/head/tree must remain unchanged or transaction aborts/reopens prior state",
     "protected_base_authority": "master b5d02e49; workflow blob 12b33ec6; manifest blob baad7334; verifier blob e7f68568; native result remains operational evidence only and is never added to classic required contexts",
     "authority_run": "33142614324 failed: checkout used github.event.pull_request.base.sha=5b7ac426, so authority/.github/trusted-cafe-authority/verify_candidate_bundle.py was absent; verifier policy never executed and no artifact was produced",
-    "repair_lease": "lease-pr26-protected-base-ref-repair-v1; local head d80f115b tree 503376db; exactly .github/workflows/trusted-cafe-authority-gate.yml; two-line github.sha repair; Docker receipt dedb0998 twice",
+    "repair_lease": "lease-pr26-protected-base-ref-repair-v1; Draft PR27 remote head eb51b015 tree 503376db parent master b5d02e49; exactly .github/workflows/trusted-cafe-authority-gate.yml; two-line github.sha repair; Docker receipt dedb0998 twice",
+    "repair_hosted": "authority run 33143304796 failed closed on explicit base authority self-modification rejection as expected; general CI run 33143304668 ci and visual_canary in progress; protection unchanged",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Reverify remote master b5d02e49, publish the exact local repair tree through a new non-force feature ref with parent master, create a Draft PR, then wait for hosted ci/visual and independent Security/QA plus REFUTE."
+  "next_trigger": "Wait for exact-head PR27 general ci and visual_canary to become terminal, then dispatch read-only independent Security/QA and REFUTE against the frozen one-path repair and its expected fail-closed self-modification run."
 }
