@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-27T23:32:55Z",
+  "updated_at": "2026-08-28T00:21:55Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -15,21 +15,21 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-08-27T23:32:55Z",
+    "at": "2026-08-28T00:21:55Z",
     "github_api_count": 32,
     "git_ls_remote_count": 32,
     "local_tracking_count": 32,
-    "reconciliation": "fetch --all --prune --tags succeeded; GitHub API, git ls-remote and all local tracking heads exactly reconcile at 32 branches",
-    "sorted_name_sha_set_sha256": "92b4bd08004b64f17dafd6f2d177cb9725a935e7e60b68d405350be9d246bfb2",
+    "reconciliation": "fetch --all --prune --tags succeeded; GitHub API and git ls-remote exactly reconcile at 32 branches; local refs contain the same 32 heads plus the expected origin/HEAD symbolic ref",
+    "sorted_name_sha_set_sha256": "2f207a4bf047ad8db41130d52da8796e2cb0163e68d66a577b880eb5cd96013a",
     "master": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "019a640f5f27596bc19c63bf9863cd18e6b8a8c9",
+    "coordination": "149fad408321810cf1b7ba337de0d8f6e769e7fe",
     "pr25": "26e22985f9982e31b3982777f002ba3c46169acb",
     "open_prs": 9,
     "open_issues": 0,
     "releases": 0,
     "tags": 0,
-    "full_branch_metadata_scan": "All 32 hosted branches were enumerated directly with exact SHA, commit time/subject, PR relation, status rollup, and ahead/behind against master and integration/batons before exact recorded mutations; no third-party project-branch drift."
+    "full_branch_metadata_scan": "All 32 hosted branches were enumerated directly with exact SHA, commit time/subject, PR relation, worktree mapping, and ahead/behind against master and integration/batons; no hosted branch drift."
   },
   "portfolio_policy": {
     "default_active_writers": 2,
@@ -610,17 +610,18 @@
         "artifact:9667854874:sha256:1627d6b6401b5256471cedcb1b93d6e94013bb14832c750b1ff9f789a185b70f"
       ],
       "consumer": "Producer exact-head P0/P1 decision and possible Stack A merge review",
-      "status": "reserved_dispatch",
+      "status": "terminal_request_changes_p0_0_p1_2_p2_0_reviewer_released",
       "write_lease": false,
-      "last_heartbeat": "2026-08-27T23:32:55Z",
-      "stale_after": "2026-08-28T00:32:55Z",
+      "last_heartbeat": "2026-08-28T00:21:55Z",
+      "stale_after": null,
       "pr": 25,
       "checks": {
         "p0": 0,
-        "p1_open": "unknown_pending_review",
+        "p1_open": 2,
         "trusted_run": 33124524622,
         "general_run": 33124524587,
-        "artifact_id": 9667854874
+        "artifact_id": 9667854874,
+        "p2": 0
       },
       "recovery_count": 0,
       "rollback": "Delete only task-owned temporary review state; no repository or GitHub rollback applies.",
@@ -629,7 +630,30 @@
         "repository or GitHub write would be required",
         "artifact digest mismatch",
         "Docker isolation cannot be established"
-      ]
+      ],
+      "review_result": {
+        "verdict": "REQUEST_CHANGES",
+        "p0": 0,
+        "p1": 2,
+        "p2": 0,
+        "findings": [
+          "P1 sustainability: master requires ci and visual_canary only; pull_request_runtime_qualification is not required; rulesets empty; approving review count zero",
+          "P1 evidence identity: PR25 body cites stale head 4bd8b677, run 33066750754, artifact 9644050314 and 14 controls instead of exact current evidence"
+        ],
+        "positive": {
+          "artifact": "9667854874 sha256:1627d6b6401b5256471cedcb1b93d6e94013bb14832c750b1ff9f789a185b70f",
+          "scope": "six paths only",
+          "exact_tree": "c8835191107026c6a7c566722738dcdf465db6a9",
+          "docker_selftest": "47/47 twice byte-identical",
+          "receipt_sha256": "4eaeccb62cd3a80a93c408ae709cd8969141db0f992fbe964f1d64165897c023",
+          "exact_head": "26e22985f9982e31b3982777f002ba3c46169acb",
+          "runtime_sha256": "a6830cf7ecd7f67a78a10b3df57c43a855fd7f51c8e01af8a52ad8878a52041f",
+          "hosted_checks": "success",
+          "validation_sha256": "589f1846424b8c2e9497af5ab1a49a6e83e3c12aa947635ab54c162a4f694637"
+        },
+        "cleanup": "all task containers removed; task-owned temp directories retained because platform policy rejected recursive deletion",
+        "repository_or_github_writes": false
+      }
     },
     {
       "claim_id": "claim-pr25-final-refute",
@@ -660,17 +684,18 @@
         "artifact:9667854874:sha256:1627d6b6401b5256471cedcb1b93d6e94013bb14832c750b1ff9f789a185b70f"
       ],
       "consumer": "Producer exact-head P0/P1 decision and possible Stack A merge review",
-      "status": "reserved_dispatch",
+      "status": "terminal_refute_p0_0_p1_1_p2_0_reviewer_released",
       "write_lease": false,
-      "last_heartbeat": "2026-08-27T23:32:55Z",
-      "stale_after": "2026-08-28T00:32:55Z",
+      "last_heartbeat": "2026-08-28T00:21:55Z",
+      "stale_after": null,
       "pr": 25,
       "checks": {
         "p0": 0,
-        "p1_open": "unknown_pending_review",
+        "p1_open": 1,
         "trusted_run": 33124524622,
         "general_run": 33124524587,
-        "artifact_id": 9667854874
+        "artifact_id": 9667854874,
+        "p2": 0
       },
       "recovery_count": 0,
       "rollback": "Delete only task-owned adversarial state; no repository or GitHub rollback applies.",
@@ -679,7 +704,29 @@
         "repository or GitHub write would be required",
         "shared Docker state would be mutated",
         "claim cannot be tested without protected dispatch or Stack B"
-      ]
+      ],
+      "review_result": {
+        "verdict": "REFUTE",
+        "p0": 0,
+        "p1": 1,
+        "p2": 0,
+        "findings": [
+          "P1 governance: master does not require pull_request_runtime_qualification and required approving reviews is zero"
+        ],
+        "positive": {
+          "wrong_toolchain_sha256": "7207c852",
+          "hosted_checks": "success",
+          "exact_tree": "c8835191107026c6a7c566722738dcdf465db6a9",
+          "docker_selftest": "47/47 twice byte-identical",
+          "cleanup_status_preserved": 23,
+          "receipt_sha256": "4eaeccb62cd3a80a93c408ae709cd8969141db0f992fbe964f1d64165897c023",
+          "exact_head": "26e22985f9982e31b3982777f002ba3c46169acb",
+          "runtime_sha256": "a6830cf7ecd7f67a78a10b3df57c43a855fd7f51c8e01af8a52ad8878a52041f",
+          "validation_sha256": "589f1846424b8c2e9497af5ab1a49a6e83e3c12aa947635ab54c162a4f694637"
+        },
+        "cleanup": "all task containers and 1.67GB task-owned temporary directory removed",
+        "repository_or_github_writes": false
+      }
     }
   ],
   "current_conflict_graph": {
@@ -1098,5 +1145,20 @@
     "post_merge_regressions": 0,
     "player_visible_closure_state": "source_attestation_stack_a_pr25_hosted_output_permission_recovery_active"
   },
-  "human_acceptance": "not_ready"
+  "human_acceptance": "not_ready",
+  "current_gate": {
+    "pr": 25,
+    "state": "OPEN_DRAFT_BLOCKED",
+    "exact_head": "26e22985f9982e31b3982777f002ba3c46169acb",
+    "p0": 0,
+    "p1": 2,
+    "p2": 0,
+    "technical_exact_head": "passed",
+    "governance": "blocked",
+    "pr_body": "stale_update_reserved",
+    "branch_protection_change": "not_authorized_human_only",
+    "merge": "forbidden",
+    "human_acceptance": "not_ready"
+  },
+  "next_trigger": "After exact PR25 and PR5 body projections are refreshed, await human authorization for repository-governance policy change or a separately approved protection design; do not mark Ready or merge."
 }
