@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T06:13:31Z",
+  "updated_at": "2026-08-28T06:18:26Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -9,7 +9,7 @@
   },
   "authoritative_refs": {
     "repository": "ForTe13X/living-town",
-    "master": "5b7ac426b6bc059517dba843db4150a2b38d33a7",
+    "master": "fd122e6235f8870c7e3f8e6b43b35f04392765d9",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
     "coordination_ledger_ref": "origin/codex/main-repo-review",
     "coordination_state_commit": "self"
@@ -1854,7 +1854,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "PR25_BODY_ONLY_CURRENT_AUTHORITY_AND_STRICT_BEHIND_PROJECTION_REPAIR_RESERVED_CI_RUNNING",
+    "state": "PR25_NORMAL_UPDATE_BRANCH_FROM_CURRENT_PROTECTED_MASTER_RESERVED_AFTER_BODY_REPAIR",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
@@ -1864,7 +1864,7 @@
     "p2": 2,
     "technical_exact_head": "passed",
     "governance": "required qualification context is enforced but remains candidate-self-defined by the PR-head workflow; platform-independent-approval enforcement is also unavailable with the sole collaborator",
-    "pr_body": "exact evidence projection repaired and live re-read at SHA-256 ca83ba75aaf248be560a060da89e254847d301029e456d7139823619a3bcc563",
+    "pr_body": "body-only current-state projection applied and live re-read at SHA-256 c1a6f4dec8c7cd0ca3b67150328c15c58f6f911d188ee3f40224c3f2a9d113c8; Draft preserved",
     "branch_protection_change": "applied and reverified, but insufficient as an immutable trust root: context plus GitHub Actions app binding cannot stop a future PR from replacing its own same-name job with trivial success",
     "bootstrap_body": "live SHA-256 23dc1f66fe29b8be9a3bd1a0510f2b5b8b7a9c2013f1d5a03a8d4b8431e9fe60 updated 2026-08-28T04:08:58Z; no new classic context, legacy qualification labeled non-authoritative defense-in-depth, reviewed revert path explicit",
     "bootstrap_reviews": "Security/QA APPROVE P0=0 P1=0 P2=3; REFUTE PASS/ACCEPT P0=0 P1=0 P2=0",
@@ -1887,9 +1887,11 @@
     "pr25_trigger_result": "Close success then reopen success on attempt 1; PR25 OPEN Draft, head 5a449cad unchanged, baseRefOid now current master fd122e62, updated 2026-08-28T05:54:07Z; authority run33146171197/job98767595615, CI run33146170952 and qualification run33146171005 in progress",
     "pr25_authority_result": "SUCCESS run33146171197/job98767595615 completed 2026-08-28T05:54:24Z; check attaches to candidate head 5a449cad/app15368; runtime checkout ref/fetched commit/HEAD/BASE_SHA all fd122e6235f8870c7e3f8e6b43b35f04392765d9; token contents:read plus pull-requests:read; mode approved-bundle, changed=6, bundle=pr25-stack-a-six-path-5a449cad-v1; no artifact; candidate code never checked out or executed",
     "legacy_qualification_failure": "P1 operational blocker: run33146171005/job98767595458 used BASE_SHA b5d02e49 and direct git diff BASE_SHA HEAD_SHA, so it treated the three base-only PR26/27 authority paths as candidate outside-of-lease changes and failed before runtime qualification. GitHub PR files and compare from current master both report exactly the original six candidate paths with merge-base 5b7ac426. Legacy context is candidate-defined non-authoritative defense-in-depth, but it remains required until a serialized transition removes only that context.",
-    "pr25_body_repair": "Reserved body-only mutation from SHA256 ca83ba75aaf248be560a060da89e254847d301029e456d7139823619a3bcc563 to accurately distinguish merge-base 5b7ac426 from current base fd122e62, record authority success and legacy false positive, correct candidate-head check association, preserve same-App/name residual, and disclose strict behind as an unresolved merge blocker. No Ready/code/head/protection change.",
+    "pr25_body_repair": "Applied body-only mutation from SHA256 ca83ba75aaf248be560a060da89e254847d301029e456d7139823619a3bcc563 to c1a6f4dec8c7cd0ca3b67150328c15c58f6f911d188ee3f40224c3f2a9d113c8. It distinguishes merge-base 5b7ac426 from current base fd122e62, records authority success and the legacy false positive, corrects candidate-head check association, preserves the same-App/name residual, and discloses strict behind as an unresolved merge blocker. Draft/head/protection remained unchanged.",
+    "approved_bundle_update_semantics": "Protected-base manifest records source_head/source_tree only as audit metadata; live verifier authorizes by exact GitHub PR six-path set plus mode, git blob SHA, byte count and SHA-256. It does not compare source_head/source_tree during evaluate. A normal branch update is therefore content-safe only if all six approved blobs and semantic PR paths remain exact; authority still reruns fail closed.",
+    "pr25_update_branch_reservation": "Reverify PR25 OPEN Draft exact head 5a449cad/tree 60621741 and protected master fd122e62/tree 503376db with strict full protection unchanged. Invoke GitHub Update Branch with expected_head_sha 5a449cad; no force push or history rewrite. Require resulting head to be a normal merge update whose first-parent provenance retains candidate history, whose tree contains all three protected authority blobs and all six approved candidate blobs unchanged, and whose GitHub semantic diff remains exactly six paths. Any drift aborts. New head invalidates all prior verdicts and requires fresh protected-base authority, legacy qualification diagnosis, exact-head/current-base CI and visual evidence, Security/QA and REFUTE. Never mark Ready or merge in this transaction.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Apply the reserved PR25 body-only projection repair, record its exact new hash, then wait for exact-head CI run33146170952 terminal and require both reviewers to re-read the live body before final verdict."
+  "next_trigger": "Publish this body-repair plus normal Update Branch reservation, reverify exact live identities/protection, then invoke GitHub Update Branch with expected head 5a449cad. Rebind the new head/tree/parents/paths before triggering fresh authority, hosted checks and independent reviews."
 }
