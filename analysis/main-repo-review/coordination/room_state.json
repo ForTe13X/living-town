@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T05:25:07Z",
+  "updated_at": "2026-08-28T05:28:14Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1320,11 +1320,11 @@
       "generated_outputs": ["one-file workflow repair commit", "isolated pinned-Docker self-test and exact-diff receipts", "Draft repair PR against master"],
       "dependencies": ["master:b5d02e499480540d90ae215d91a8cf772985b099:tree:7a08c75b3a54455e012f0f0798be02c5d77eb6e9", "failed-run:33142614324:job:98756569578", "official-pull_request_target:GITHUB_SHA-is-last-commit-on-base-branch"],
       "consumer": "Unchanged Draft PR25 exact protected-base authority rerun",
-      "status": "draft_pr27_open_hosted_general_ci_in_progress_expected_self_modification_rejection_confirmed",
-      "last_heartbeat": "2026-08-28T04:58:18Z",
-      "stale_after": "2026-08-28T05:38:18Z",
+      "status": "pr27_merged_exact_tree_protection_restored_post_merge_ci_in_progress",
+      "last_heartbeat": "2026-08-28T05:28:14Z",
+      "stale_after": "2026-08-28T06:08:14Z",
       "pr": 27,
-      "pr_state": "OPEN_DRAFT_MERGEABLE_BLOCKED",
+      "pr_state": "MERGED_2026-08-28T05:27:40Z_MERGE_FD122E62_BRANCH_RETAINED",
       "hosted_checks": ["trusted_cafe_authority_gate:failure:expected_fail_closed_self_modification_rejection:run33143304796:job98758756722", "ci:in_progress:run33143304668:job98758755779", "visual_canary:in_progress:run33143304668:job98758755626"],
       "pr_policy": "Create a Draft PR against master only after exact one-path diff and pinned-Docker tests pass; never merge without fresh hosted checks plus independent Security/QA and REFUTE P0/P1=0.",
       "acceptance_tests": ["workflow checkout ref and identity env both use github.sha:pass", "protected-base checkout contains verifier and manifest in a clean event-SHA fixture:pass", "two independent 8-case verifier self-tests byte-identical:dedb09985b12c7a94b4bb60cf6efc2502960968362bc59731b1d6f51600e6cd9", "git diff --check and exact one-path scope:pass"],
@@ -1386,11 +1386,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T05:25:07Z",
+    "at": "2026-08-28T05:28:14Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "PR27 exact head eb51b015/tree 503376db has terminal general CI success plus independent Security/QA APPROVE and REFUTE PASS with P0/P1=0. Freeze every other lane and permit only the exact serialized Ready/protection/merge/restore/post-merge transaction recorded below."
+    "decision": "The exact serialized PR27 transaction completed: merge fd122e62 has reviewed tree 503376db, the feature branch is retained, and all three required contexts plus every non-status protection control are restored. Freeze PR25 until exact post-merge run33144831252 is terminal success."
   },
   "released_claims": [
     {
@@ -1804,7 +1804,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "PR27_EXACT_TRANSITION_FROZEN_P0_P1_ZERO_READY_FOR_SERIALIZED_MERGE_TRANSACTION",
+    "state": "PR27_MERGED_PROTECTION_RESTORED_EXACT_POST_MERGE_CI_IN_PROGRESS_PR25_FROZEN",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
@@ -1831,8 +1831,10 @@
     "repair_reviews": "Security/QA APPROVE P0=0 P1=0 P2=4 at exact base/head/tree/body hash d95e3a0b; REFUTE PASS P0=0 P1=0 P2=1 at same identity; both incorporate candidate-head check association and same-App/name impersonation residual",
     "platform_binding_correction": "PR27 job 98758756722 appears on candidate commit eb51b015 check-runs with head_sha eb51b015 and app 15368, absent on base b5d02e49; PR25 job 98756569578 likewise appears on candidate 5a449cad. This corrects the prior base-SHA association assumption without resolving same-App/name spoofing.",
     "repair_transition": "Atomically reverify PR27 OPEN Draft exact base b5d02e49/head eb51b015/tree 503376db/body SHA256 d95e3a0b, one commit/one path/+2-2, hosted run33143304668 success, terminal reviews P0/P1=0 and current strict protection. Temporarily remove only pull_request_runtime_qualification@15368 because PR27 does not emit it; retain strict ci@15368 and visual_canary@15368, admins, conversation resolution, no force-push/deletion and zero-approval residual. Mark only exact PR27 Ready, merge via GitHub without branch deletion, immediately restore all three required contexts, verify exact merge SHA/tree and post-merge master CI. Any drift aborts and restores protection before further action. Authority self-rejection is never counted as approval.",
+    "repair_merge": "PR27 merged 2026-08-28T05:27:40Z as fd122e6235f8870c7e3f8e6b43b35f04392765d9 tree 503376dbd7fb8c0a877e40f3843dc8b6fe4f6aa8 with parents b5d02e49 and eb51b015; branch retained; workflow blob 93a5b70e; full strict protection immediately restored",
+    "repair_post_merge": "master run33144831252 at fd122e6235f8870c7e3f8e6b43b35f04392765d9 is in_progress; PR25 trigger forbidden until terminal success",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Execute the exact serialized PR27 protection transition, merge only reviewed head eb51b015 if all frozen facts still match, immediately restore protection, then monitor exact post-merge master CI before any PR25 trigger."
+  "next_trigger": "Wait for exact post-merge master run33144831252 at fd122e62 to reach terminal success; only then record and perform a PR25 close/reopen event trigger while preserving its Draft head/tree and full protection."
 }
