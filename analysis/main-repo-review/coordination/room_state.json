@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T15:14:37Z",
+  "updated_at": "2026-08-28T15:21:43Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -2217,7 +2217,7 @@
       "role": "Sole serialized control-plane writer for PR28 approved-bundle branch update and exact-head review handoff",
       "objective": "Merge protected master43c72a8f into PR28 without changing its one-manifest semantic diff, verify exact two-parent ancestry and scope, refresh its Draft body, then release to independent Security/QA and REFUTE before any manifest transition.",
       "baseline": "8fb6895acdb14347f944767b484c2531518114f4",
-      "baseline_tree": "unknown_until_exact_api_recheck",
+      "baseline_tree": "82350016c317ef14cdf30f5c5f79eae3ee4c0fef",
       "branch": "codex/pr25-approved-bundle-2760325-v1",
       "worktree": "D:\\Documents\\Dev\\living-town-pr25-approved-bundle-2760325-wt (read-only for this control-plane update)",
       "owned_paths": [".github/trusted-cafe-authority/approved-bundles.v1.json"],
@@ -2226,12 +2226,13 @@
       "generated_outputs": ["normal GitHub merge commit from master into feature branch", "fresh hosted checks", "fresh exact-head review packet"],
       "dependencies": ["PR29 merged as master43c72a8f", "post-merge CI33182561513 success", "final four-context protection verified", "PR28 old head8fb6895 clean one-manifest diff", "PR25 remains Draft at2760325"],
       "consumer": "Fresh independent Security/QA and REFUTE, then separately ledgered PR28 protected-manifest transition; PR25 remains blocked",
-      "status": "reserved_pre_update_exact_recheck_required",
+      "status": "exact_precheck_passed_normal_merge_commit_authorized",
       "write_lease": true,
-      "last_heartbeat": "2026-08-28T15:14:37Z",
+      "last_heartbeat": "2026-08-28T15:21:43Z",
       "stale_after": "2026-08-28T15:44:37Z",
       "pr": 28,
       "recovery_count": 0,
+      "pre_update_exact": {"at":"2026-08-28T15:21:43Z","master":"43c72a8faa4e927fa5e324f589c611dd2a402a0e","head":"8fb6895acdb14347f944767b484c2531518114f4","head_tree":"82350016c317ef14cdf30f5c5f79eae3ee4c0fef","head_parent":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","pr_base_snapshot":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","pr_state":"open_draft","mergeable":true,"mergeable_state":"behind","body_sha256":"d3969380d4e1ef48ff9a40edfac84c5ba00f3d1fb6ea7350ee0ca8bd0f776744","body_bytes":2611,"manifest_blob":"18b100e78036830e15e85af8648fe212ca060428","manifest_bytes":6087,"manifest_sha256":"fe07cface30e6dcbc8e1629331aaf4192658d443ada8d1211749e38c733230ed","semantic_diff":[".github/trusted-cafe-authority/approved-bundles.v1.json"],"ahead":1,"behind":5,"merge_base":"fd122e6235f8870c7e3f8e6b43b35f04392765d9","pr25":"2760325d5946ae2d5d8632a704f6c180f90976e4","protection_mutation":false},
       "pr_policy": "Keep PR28 Draft. Update only by normal merge commit from exact master. Do not mark Ready, alter protection or merge PR28 from this lease.",
       "acceptance_tests": ["PR28 and feature ref exact old head8fb6895", "master exact43c72a8f", "one semantic diff path after merge", "manifest bytes unchanged by ancestry update", "merge parents exact old head plus master", "fresh CI and expected authority self-modification failure start", "body exact identity refreshed"],
       "negative_controls": ["head/base/body drift", "merge conflict", "second semantic diff path", "manifest bytes change", "PR25 identity drift", "protection mutation"],
@@ -2242,7 +2243,7 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T15:14:37Z",
+    "at": "2026-08-28T15:21:43Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
@@ -2753,5 +2754,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_1b8afb72_verified"
   },
-  "next_trigger": "Recheck exact PR28/PR25/master refs, PR28 body and one-manifest diff; if unchanged, update PR28 by a normal GitHub merge commit from master43c72a8f, verify manifest content unchanged and semantic diff still one path, refresh Draft body, then reserve fresh Security/QA and REFUTE."
+  "next_trigger": "Create one normal non-force GitHub merge commit on PR28 with parents old head8fb6895 and master43c72a8f; stop on conflict or identity drift, otherwise verify unchanged manifest blob/hash and one-path semantic diff before any body or reviewer mutation."
 }
