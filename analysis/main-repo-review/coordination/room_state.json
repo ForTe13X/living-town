@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T17:24:20Z",
+  "updated_at": "2026-08-28T17:26:45Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -9,7 +9,7 @@
   },
   "authoritative_refs": {
     "repository": "ForTe13X/living-town",
-    "master": "43c72a8faa4e927fa5e324f589c611dd2a402a0e",
+    "master": "5c3e5cb6eebeea283245869a96e489d065c380b7",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
     "coordination_ledger_ref": "origin/codex/main-repo-review",
     "coordination_state_commit": "self"
@@ -25,7 +25,7 @@
     "reconciliation": "Fresh fetch --all --tags --prune, direct GitHub branch API, git ls-remote and local tracking refs are 37/37 exact. Every hosted branch head, commit time/subject, PR relation, ahead/behind and ancestry versus master/integration, and available recent Actions relation was recomputed. PR30 is the only open PR touching the verifier path and remains one commit ahead/zero behind master. No branch was deleted.",
     "network_failures": ["One metadata aggregation attempt failed locally while decoding UTF-8 GitHub JSON with the Windows GBK default; retry used raw UTF-8 bytes and completed with no remote mutation."],
     "sorted_name_sha_set_sha256": "3e2d2515b1a92be2dad024524c43716c2fd2b930bcdbe5dcb5b7907cd720f201",
-    "master": "43c72a8faa4e927fa5e324f589c611dd2a402a0e",
+    "master": "5c3e5cb6eebeea283245869a96e489d065c380b7",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
     "coordination": "7010724b853faeb0727a690f34cb290578ff51ed",
     "pr25": "2760325d5946ae2d5d8632a704f6c180f90976e4",
@@ -2493,9 +2493,9 @@
       "generated_outputs": ["GitHub merge commit and protection audit receipts only"],
       "dependencies": ["PR30 exact base/head/tree/blob/body", "CI33190511868 success", "authority33190511839 expected self-modification failure", "Security/QA P0=0 P1=0", "REFUTE P0=0 P1=0", "37/37 branch reconciliation", "no duplicate open verifier candidate"],
       "consumer": "Protected master verifier v3, then serialized PR28 manifest repair",
-      "status": "temporary_required_checks_applied_verified_ready_merge_reserved",
+      "status": "merged_exact_protection_restored_post_merge_ci_active",
       "read_only": false,
-      "last_heartbeat": "2026-08-28T17:24:20Z",
+      "last_heartbeat": "2026-08-28T17:26:45Z",
       "stale_after": "2026-08-28T17:36:44Z",
       "pr": 30,
       "checks": {"ci": "success", "visual_canary": "success", "authority": "expected self-modification failure", "qualification": "absent because no runtime path"},
@@ -2503,6 +2503,9 @@
       "temporary_required_checks": ["ci@15368", "visual_canary@15368"],
       "restore_required_checks": ["ci@15368", "visual_canary@15368", "pull_request_runtime_qualification@15368", "trusted_cafe_authority_gate@15368"],
       "temporary_protection_result": {"applied": true, "strict": true, "checks": ["ci@15368", "visual_canary@15368"], "admins": true, "conversation_resolution": true, "approvals": 0, "dismiss_stale": true, "force_push": false, "deletion": false, "non_status_controls_unchanged": true},
+      "merge_result": {"pr": 30, "merged_at": "2026-08-28T17:26:29Z", "merge_commit": "5c3e5cb6eebeea283245869a96e489d065c380b7", "parents": ["43c72a8faa4e927fa5e324f589c611dd2a402a0e", "4974244f784c8bcb9aa1a5c88fd358f5a671bd8d"], "tree": "71a9a3b2b5c967b9dbc3d44195ffe61512b3a7d4", "branch_retained": true, "pr_state": "MERGED_READY"},
+      "final_protection_result": {"restored": true, "strict": true, "checks": ["ci@15368", "visual_canary@15368", "pull_request_runtime_qualification@15368", "trusted_cafe_authority_gate@15368"], "admins": true, "conversation_resolution": true, "approvals": 0, "dismiss_stale": true, "force_push": false, "deletion": false},
+      "post_merge": {"ci_run": 33194686491, "head": "5c3e5cb6eebeea283245869a96e489d065c380b7", "status": "in_progress"},
       "recovery_count": 0,
       "rollback": "Before merge restore all four checks and return PR30 to Draft if any identity/protection drift occurs. After merge restore all four checks immediately; on post-merge regression use a new reviewed revert PR and never rewrite master.",
       "stop_lines": ["master or PR identity drift", "any non-status protection drift", "unexpected check or review change", "duplicate verifier candidate", "temporary protection cannot be verified", "merge result differs from exact reviewed head", "final protection restoration fails"],
@@ -2515,7 +2518,7 @@
     "trigger": "PR28 matching independent P1 strict-base identity handoff cycle",
     "ranking": "dependency unlock first, then evidence closure, then player-visible cafe production; conflict risk serialized across shared authority",
     "phases": [
-      {"phase":1,"objective":"Verifier v3 reviewed-source plus current-protected-base derivation","owner":"claim-pr30-reversible-protected-transition-exact-4974244f","status":"temporary_ci_visual_protection_verified_ready_merge_reserved","player_value":"unblocks protected trust-root delivery","conflict_risk":"high shared authority; Producer-only protected mutation","exit":"exact PR30 merge, four-check protection restored, post-merge CI success"},
+      {"phase":1,"objective":"Verifier v3 reviewed-source plus current-protected-base derivation","owner":"claim-pr30-reversible-protected-transition-exact-4974244f","status":"merged_exact_four_check_protection_restored_post_ci_active","player_value":"unblocks protected trust-root delivery","conflict_risk":"high shared authority; no further mutation until post-merge evidence","exit":"post-merge CI33194686491 success at exact5c3e5cb6"},
       {"phase":2,"objective":"Synchronize PR28 normally, replace only pending review leaves after fresh exact-source reviews, and re-run exact-head evidence","owner":"unassigned","status":"blocked_on_phase1_merge","player_value":"installs data-only authorization","conflict_risk":"high manifest authority; serialized","exit":"PR28 exact head P0/P1=0 and controlled manifest transition package"},
       {"phase":3,"objective":"Merge reviewed manifest through reversible protected transition, then normally synchronize PR25 so candidate contains reviewed source plus current protected master","owner":"unassigned","status":"blocked_on_phase2","player_value":"makes protected candidate executable without stale identity","conflict_risk":"critical protection and trust paths; serialized","exit":"PR25 fresh authority+qualification+CI at exact synchronized head and independent P0/P1=0"},
       {"phase":4,"objective":"Merge eligible PR25, monitor post-merge, then unlock Stack B authored IDs and exactly one cafe exterior-to-persistence production owner","owner":"unassigned","status":"blocked_on_phase3","player_value":"direct prerequisite to player-visible cafe vertical slice","conflict_risk":"trust root then canonical scene authority; separate leases","exit":"post-merge green, P0/P1=0, cafe production packet dispatched"}
@@ -2526,7 +2529,7 @@
     "active_writers": 0,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "PR28 and PR25 remain frozen. No Dev writer or reviewer is active. Producer exclusively owns the short reversible PR30 GitHub transition; only required status checks, PR30 Draft state and exact PR30 merge are mutable. Manifest, workflows, integration, game paths and every dirty/unknown worktree remain forbidden."
+    "decision": "PR30 is merged and full four-check protection is restored. PR28, PR25, manifest, workflows, integration, game paths and every dirty/unknown worktree remain frozen until post-merge CI33194686491 is terminal success; no Dev writer or reviewer is active."
   },
   "released_claims": [
     {
@@ -3034,5 +3037,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_39687a6b_verified"
   },
-  "next_trigger": "Temporary strict protection is verified with only ci@15368 and visual_canary@15368 while every non-status control is unchanged. After this ledger publication, recheck exact master and PR30 identity, mark PR30 Ready, merge exact4974244f through GitHub without deleting the branch, immediately restore all four required checks, verify merge parent/tree and protection, then monitor post-merge CI."
+  "next_trigger": "Await post-merge CI33194686491 at exact master5c3e5cb6 with four-check protection already restored. On success, release the transition lease, fetch/prune and rescan all branches/PR siblings, then reconstruct the serialized PR28 manifest repair against the new verifier. On failure, reserve only a reviewed revert or bounded repair PR."
 }
