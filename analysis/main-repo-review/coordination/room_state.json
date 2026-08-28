@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T05:57:05Z",
+  "updated_at": "2026-08-28T06:00:12Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1320,8 +1320,8 @@
       "generated_outputs": ["one-file workflow repair commit", "isolated pinned-Docker self-test and exact-diff receipts", "Draft repair PR against master"],
       "dependencies": ["master:b5d02e499480540d90ae215d91a8cf772985b099:tree:7a08c75b3a54455e012f0f0798be02c5d77eb6e9", "failed-run:33142614324:job:98756569578", "official-pull_request_target:GITHUB_SHA-is-last-commit-on-base-branch"],
       "consumer": "Unchanged Draft PR25 exact protected-base authority rerun",
-      "status": "pr27_complete_pr25_protected_base_authority_success_companion_exact_head_runs_in_progress",
-      "last_heartbeat": "2026-08-28T05:57:05Z",
+      "status": "pr27_complete_pr25_authority_success_legacy_required_context_false_positive_p1_ci_in_progress",
+      "last_heartbeat": "2026-08-28T06:00:12Z",
       "stale_after": "2026-08-28T06:32:16Z",
       "pr": 27,
       "pr_state": "MERGED_2026-08-28T05:27:40Z_MERGE_FD122E62_BRANCH_RETAINED",
@@ -1386,11 +1386,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T05:57:05Z",
+    "at": "2026-08-28T06:00:12Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "PR25 protected-base authority run33146171197 succeeded: runtime checkout/HEAD/BASE_SHA all current master fd122e62, candidate 5a449cad was API data only, and exact six-path bundle pr25-stack-a-six-path-5a449cad-v1 was approved. Freeze mutations pending companion exact-head CI/qualification terminal results and independent final review."
+    "decision": "PR25 protected-base authority approved the exact six-path bundle, but legacy required qualification run33146171005 false-positively rejected three base-only authority files because it directly diffed base tree b5d02e49 against candidate tree instead of the merge-base 5b7ac426. GitHub PR/compare semantics still report only six candidate paths. Classify P1 operational blocker and freeze mutations pending exact CI plus independent review; do not rebake anchors or hide the failure."
   },
   "released_claims": [
     {
@@ -1804,7 +1804,7 @@
   "human_acceptance": "not_ready",
   "current_gate": {
     "pr": 25,
-    "state": "PR25_CURRENT_MASTER_BOUND_AUTHORITY_APPROVED_EXACT_BUNDLE_COMPANION_RUNS_IN_PROGRESS",
+    "state": "PR25_AUTHORITY_APPROVED_LEGACY_REQUIRED_CONTEXT_FALSE_POSITIVE_P1_EXACT_CI_IN_PROGRESS",
     "bootstrap_pr": 26,
     "bootstrap_head": "f96aac62caed955c600737e0c26ee15e19df3352",
     "bootstrap_tree": "7a08c75b3a54455e012f0f0798be02c5d77eb6e9",
@@ -1836,8 +1836,9 @@
     "pr25_trigger_transaction": "Reverify PR25 OPEN Draft exact head 5a449cad/tree 60621741, six paths/sixteen commits, current visible checks and protection; close then immediately reopen only to emit pull_request_target reopened against current master fd122e62. If close succeeds but reopen fails, retry reopen. Abort evidence consumption on any head/tree/Draft/path/protection drift. Never mark Ready or merge.",
     "pr25_trigger_result": "Close success then reopen success on attempt 1; PR25 OPEN Draft, head 5a449cad unchanged, baseRefOid now current master fd122e62, updated 2026-08-28T05:54:07Z; authority run33146171197/job98767595615, CI run33146170952 and qualification run33146171005 in progress",
     "pr25_authority_result": "SUCCESS run33146171197/job98767595615 completed 2026-08-28T05:54:24Z; check attaches to candidate head 5a449cad/app15368; runtime checkout ref/fetched commit/HEAD/BASE_SHA all fd122e6235f8870c7e3f8e6b43b35f04392765d9; token contents:read plus pull-requests:read; mode approved-bundle, changed=6, bundle=pr25-stack-a-six-path-5a449cad-v1; no artifact; candidate code never checked out or executed",
+    "legacy_qualification_failure": "P1 operational blocker: run33146171005/job98767595458 used BASE_SHA b5d02e49 and direct git diff BASE_SHA HEAD_SHA, so it treated the three base-only PR26/27 authority paths as candidate outside-of-lease changes and failed before runtime qualification. GitHub PR files and compare from current master both report exactly the original six candidate paths with merge-base 5b7ac426. Legacy context is candidate-defined non-authoritative defense-in-depth, but it remains required until a serialized transition removes only that context.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Wait for companion PR25 CI run33146170952 and qualification run33146171005 to reach terminal status at unchanged head 5a449cad, then dispatch fresh independent Security/QA and REFUTE with the bound authority logs and platform-association correction."
+  "next_trigger": "Wait for PR25 exact-head CI run33146170952 to reach terminal status, then dispatch fresh independent Security/QA and REFUTE with the authority success, explicit legacy false-positive failure, six-path PR semantic diff and controlled-transition option."
 }
