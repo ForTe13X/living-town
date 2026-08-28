@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T11:06:20Z",
+  "updated_at": "2026-08-28T11:09:30Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -1618,13 +1618,26 @@
       "generated_outputs": ["isolated Docker self-test receipt outside repository"],
       "dependencies": ["PR25 exact head 26a0d011", "runtime and validation build/load pass in run33165395931", "self-test failure at verifier toolchain constant comparison", "authority run33165394243 expected fail-closed with zero approved current identities", "CI run33165395930 in progress"],
       "consumer": "PR25 exact six-path candidate, then protected-base approved-bundle manifest update and fresh exact-head reviews",
-      "status": "recovery_1_reserved_after_same_path_python_identity_stop",
+      "status": "terminal_recovery_1_docker_proof_success_local_commit_authorized_remote_push_forbidden",
       "write_lease": true,
-      "last_heartbeat": "2026-08-28T11:06:20Z",
-      "stale_after": "2026-08-28T13:06:20Z",
+      "last_heartbeat": "2026-08-28T11:09:30Z",
+      "stale_after": "2026-08-28T13:09:30Z",
       "pr": 25,
       "recovery_count": 1,
       "recovery_reason": "The first Docker self-test passed the newly aligned image-reference check and then failed the adjacent verifier binary-identity check because the same file still expected Python 3.14.7 while the proven immutable Podman image and runtime lock both contain 3.14.6. No second path or behavioral change is needed.",
+      "proof": {
+        "environment": {"outer":"quay.io/podman/stable@sha256:b0173238dceedf46a10d2c3a7bf9b217a85dce19706d2d9c80b01345839ae779","validation":"localhost/living-town/trusted-cafe-validation@sha256:128771ec28fc1721c6a42a838412f7a9ada76f322595c14fa76f2e5b6a5f513f","network":"none","read_only":true,"cache":"lt-pr25-replacement2-podman-cache-20260828","scratch":"D:\\Documents\\Dev\\living-town-pr25-verifier-repair-test-scratch"},
+        "python_ast": "pass in validation image",
+        "selftest_runs": 2,
+        "receipts_byte_identical": true,
+        "receipt_sha256": "2b37559de2bc0bd4d8cd84479808e4b27e7319fcb126a0cdfac1c545dc2e00b6",
+        "bundle_sha256": "5f09114a390c06a0f5f9ed83971dd4e579a9e82c28b45884c44970c492798886",
+        "compiled_manifest_sha256": "a7f9724706b82d2e860bba56659a2c9df92db193c1ac153330c5965aec9b72ba",
+        "verification_receipt_sha256": "a19524609a58675109aa1deb9114b9630506f70e611a488be53aca538498b6e3a",
+        "negative_controls": 47,
+        "result": "pass"
+      },
+      "local_commit_authorization": {"authorized":true,"baseline":"26a0d0114052d302a0cb768418d5c00501920eb3","exact_paths":["tools/verify_cafe_attested_evidence.py"],"remote_push_authorized":false,"next_transaction":"Create exact local commit, then ledger its commit/tree/blob/SHA identity and reserve a normal fast-forward separately."},
       "acceptance_tests": ["exactly one repository path changes", "verifier constants equal the runtime lock immutable Podman and Skopeo references and Python 3.14.6", "Docker-isolated full café attestation self-test passes twice with byte-identical receipts", "negative unpinned and drift controls remain fail-closed", "git diff --check and Python syntax pass in Docker"],
       "rollback": "Leave the one-path repair unpublished on any failure. After normal publication, keep PR25 Draft and use a new reviewed revert; never force-reset shared history.",
       "stop_lines": ["any second repository path", "any verifier behavior beyond exact toolchain identity constants", "Docker self-test failure after one recovery", "remote head drift", "authority boundary change"],
@@ -1633,11 +1646,11 @@
     }
   ],
   "current_conflict_graph": {
-    "at": "2026-08-28T11:06:20Z",
+    "at": "2026-08-28T11:09:30Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "shared_write_conflicts": 0,
-    "decision": "Replacement-3's first Docker self-test passed the image-reference alignment and exposed the adjacent stale Python 3.14.7 verifier constant. The same one-path lease is expanded before that third constant changes and its sole recovery is consumed. Any further self-test failure releases the lease without publication. Authority-manifest work remains frozen."
+    "decision": "Replacement-3 recovery passed Python AST and two full Docker-isolated self-tests with byte-identical receipts and all 47 negative controls. Only an exact local one-path commit is authorized; remote push and authority-manifest work remain separately gated."
   },
   "released_claims": [
     {
@@ -2100,8 +2113,9 @@
     "immutable_toolchain_candidate_publication": "Normal fast-forward 8d9926b8 to 26a0d011 completed on the existing PR25 feature ref. PR25 remains OPEN Draft against fd122e62 with exactly six semantic paths. Fresh runs: authority 33165394243, qualification 33165395931 and CI 33165395930 in progress. Candidate writer released; no Ready or merge mutation.",
     "immutable_toolchain_hosted_p1": "At exact head 26a0d011, authority run33165394243 failed as expected because the changed two-blob bundle matched zero approved identities. Qualification run33165395931 successfully built the immutable runtime twice and loaded/qualified it, then failed the first self-test because tools/verify_cafe_attested_evidence.py still hard-coded the retired Podman e90073d8 and Skopeo 572747e1 identities. This is a real P1 coupling omission. Replacement-3 owns only that verifier path; manifest approval is frozen.",
     "immutable_toolchain_replacement_3_recovery": "First isolated Docker self-test after the two image-reference edits advanced to the binary identity gate and failed because the same verifier expected Python 3.14.7. The proven Podman 5.8.4 image and runtime lock both report 3.14.6. The same one-path lease is expanded to that third identity constant and recovery_count is now 1; no further recovery or wider edit is allowed.",
+    "immutable_toolchain_replacement_3_proof": "Recovery passed in pinned Docker/Podman using validation manifest 128771ec. Python AST passed; two full café self-tests produced byte-identical receipt SHA 2b37559d with 47/47 negative controls, bundle 5f09114a, compiled manifest a7f97247 and verification receipt a1952460. Exact one-path local commit is authorized; no remote mutation yet.",
     "human_acceptance": "not_ready",
     "pr5_projection": "terminal_review_projection_updated_then_reserved_for_new_coordination_head_refresh"
   },
-  "next_trigger": "Publish replacement-3 recovery expansion. Change only verifier Python 3.14.7 to 3.14.6, then run Python syntax and the full café self-test twice in isolated pinned-digest Docker with byte-identical receipts. On any failure release without publication. Continue monitoring CI 33165395930."
+  "next_trigger": "Publish replacement-3 proof and local-commit authorization. Commit only tools/verify_cafe_attested_evidence.py locally, then publish its exact commit/tree/blob fast-forward reservation before any PR25 remote mutation. CI 33165395930 visual_canary is success and ci remains in progress."
 }
