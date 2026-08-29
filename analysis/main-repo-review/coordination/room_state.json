@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-29T22:45:30Z",
+  "updated_at": "2026-08-29T23:24:30Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -2967,8 +2967,8 @@
       "role": "Single serialized Dev writer for protected bootstrap tool-mount ownership repair",
       "objective": "Make the protected pinned bootstrap able to write its task-owned gate-tools and runtime-verification mounts while preserving attestation-before-subject-load and token isolation.",
       "baseline": "37ccea829e16e5844059a11eac9b3177ac693d6a",
-      "head": null,
-      "tree": null,
+      "head": "e2652253a0024adde06960087c9a737d90cc1f97",
+      "tree": "ca94dca8485a4c09bb07234a1bfc8e18975aef41",
       "branch": "codex/pr31-protected-bootstrap-mount-repair-v1",
       "worktree": "D:\\Documents\\Dev\\living-town-pr31-protected-bootstrap-mount-repair-v1-wt",
       "owned_paths": [".github/workflows/trusted-cafe-attestation.yml"],
@@ -2977,13 +2977,14 @@
       "generated_outputs": ["task-owned Docker receipts and negative-control logs outside repository only"],
       "dependencies": ["master37ccea829e16e5844059a11eac9b3177ac693d6a", "failed protected run33277798446 job99167494700", "candidate3254577d41db0afd66017101f2ccd4a0a8827924 remains unmodified", "pinned bootstrap python image sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c"],
       "consumer": "Protected run for exact PR31 candidate3254577d, followed by independent Security/QA and REFUTE of the repair",
-      "status": "reserved_not_dispatched",
+      "status": "local_exact_one_path_commit_proven_remote_publication_and_draft_pr_reserved",
       "read_only": false,
-      "last_heartbeat": "2026-08-29T22:41:39Z",
+      "last_heartbeat": "2026-08-29T23:24:30Z",
       "stale_after": "2026-08-30T00:41:39Z",
       "pr": null,
-      "checks": "Acceptance requires explicit non-world-writable numeric UID/GID ownership for both task-owned mounts, pinned-Docker positive proof, an unwritable-mount negative tooth, no weakened GH_TOKEN/bootstrap/attestation-before-load boundary, exact one-path Draft PR and hosted checks.",
-      "recovery_count": 0,
+      "checks": {"scope":"exactly .github/workflows/trusted-cafe-attestation.yml +41/-4","blob":"1652bc30743f14ea7f6901ca4c69066753b520d6","sha256":"92b842da398b4ab67e16be2514349d8f2d6dd99148fc0a93cc1f848c5e5e32a0","bytes":55366,"ownership":"install -d mode0700 and explicit host numeric UID:GID on both token-scoped bootstrap writers","positive":"pinned Python image owner UID1001 wrote both task mounts and later bootstrap wrote verification receipt","negative":"UID1002 failed PermissionError on mode0700 gate-tools mount","boundary":"HOME only /tmp; GH_TOKEN remains only in the two bootstrap containers; subject load remains after archive-bootstrap receipt","actionlint":"v1.7.7 in pinned Python container, release archive sha256 023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757, PASS","static":"gamecraft-runner digest2a194789 boundary checks PASS","docker":"client/server29.6.2 desktop-linux linux/amd64; task volumes removed"},
+      "recovery_count": 1,
+      "recovery_note": "Initial task-owned volume fixture dropped CAP_CHOWN and therefore never established the positive owner; its misleading continuation was rejected and volumes removed. Recovery used explicit exit-code checks and initialization-only ownership, then passed positive, wrong-UID negative and second-bootstrap writes. Actionlint extraction also required explicit executable mode in tmpfs; no repository change resulted.",
       "rollback": "Close the Draft repair PR or revert only its one workflow path through review; never rewrite master or PR31.",
       "stop_lines": ["any second repository path required", "world-writable chmod proposed", "subject loads before attestation verification", "GH_TOKEN reaches unverified subject", "base or candidate drift", "Docker isolation unavailable", "another workflow writer appears"],
       "handoff_recipient": "Independent Security/QA and REFUTE, then Producer protected-capture rerun",
@@ -3608,5 +3609,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "Publish the protected-run P1 ledger, return PR31 to Draft without changing its exact head/tree/body, then implement the one-path workflow mount-ownership repair in isolated pinned Docker. Do not rerun run33277798446 blindly and do not merge PR31. HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "Publish the exact one-path repair branch and Draft PR after this ledger commit reaches the remote coordination ref. Await hosted exact-head checks, then run independent Security/QA and REFUTE before any merge or protected rerun. PR31 remains Draft and unmodified. HUMAN_ACCEPTANCE_NOT_READY."
 }
