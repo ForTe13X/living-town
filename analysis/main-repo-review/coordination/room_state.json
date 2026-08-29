@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-29T00:05:27Z",
+  "updated_at": "2026-08-29T00:07:53Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -2925,12 +2925,12 @@
       "generated_outputs": ["canonical IDs JSON", "byte-reproducible protected-compiler manifest", "pinned-Docker generation/check/negative-control receipts"],
       "dependencies": ["revoked original lease provenance", "exact master9b2d052c/tree3c5d8599", "fresh core.autocrlf=false worktree", "pinned podman image b0173238 with Python3.14.6 and git2.55.0", "no competing Stack B owner", "fresh complete 37/37 remote branch reconciliation"],
       "consumer": "protected_capture_and_attestation workflow followed by independent exact-head Security/QA and REFUTE",
-      "status": "content_equivalent_exact_tree_branch_published_awaiting_draft_pr",
+      "status": "draft_pr31_open_exact_head_checks_in_progress_independent_reviews_pending",
       "read_only": false,
-      "last_heartbeat": "2026-08-29T00:05:27Z",
-      "stale_after": "2026-08-29T00:35:27Z",
-      "pr": null,
-      "checks": "PASS at exact1114d2b7/tree51816f37: only two A paths; git diff --cached --check passed before commit; IDs SHA256 456b53c5; manifest generated twice byte-identical SHA256 f38c5da9; committed-head --check passed in pinned b0173238 Linux Docker; malformed JSON, stale pointer and unbound source fail closed; container game status0; host clean",
+      "last_heartbeat": "2026-08-29T00:07:53Z",
+      "stale_after": "2026-08-29T00:37:53Z",
+      "pr": {"number": 31, "url": "https://github.com/ForTe13X/living-town/pull/31", "state": "OPEN", "draft": true, "base": "master", "base_sha": "9b2d052ca740a96b9b556765a7ead7fcb5425600", "head_sha": "d7f2bd060f431275f9d606deb50b1cd4d5a08ed8", "tree": "51816f37dd1935c78378e39499f704b3f8b342c0", "mergeable": "MERGEABLE", "merge_state": "BLOCKED", "changed_files": 2},
+      "checks": "Local/Docker PASS at content-equivalent exact tree51816f37: only two A paths; IDs SHA256 456b53c5; manifest twice byte-identical SHA256 f38c5da9; committed-head --check and malformed/stale/unbound controls pass fail-closed. Hosted exact d7f2bd06: CI33222586011, authority33222586188 and qualification33222586095 in progress; protected capture skipped on Draft by design; no reviews yet.",
       "recovery_count": 1,
       "publication_attempt": {"method": "normal non-force git push --set-upstream", "result": "failed before ref creation", "diagnostic": "curl28 github.com:443 connection timeout and send-pack disconnect", "hosted_postcheck": "GitHub ref and branch APIs both 404; no Draft PR exists"},
       "publication_recovery": {"method": "Git Data API create content-equivalent exact two-path child commit and new branch ref", "force": false, "expected_parent": "9b2d052ca740a96b9b556765a7ead7fcb5425600", "expected_tree": "51816f37dd1935c78378e39499f704b3f8b342c0", "stop": "remote branch appears, master/head/tree drift, canonical blob mismatch or API failure"},
@@ -2953,12 +2953,13 @@
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-08-29T00:05:27Z",
+    "at": "2026-08-29T00:07:53Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "stack_b_replacement_exact_commit": "Replacement LF lane is clean at exact1114d2b7/tree51816f37 with only cafe-authored IDs and generated manifest added. Pinned Linux Docker b0173238 at committed head passed compiler --check, exact identity, game-clean and SHA checks; prior independent generation was byte-identical and malformed/stale/unbound negatives fail closed. Remote publication and Draft PR remain unperformed.",
     "stack_b_normal_push_failure": "One normal non-force push failed with curl28/connect timeout and send-pack disconnect. GitHub ref and branch APIs confirm the replacement branch is absent and no PR exists. One non-force Git Data API create-ref recovery is reserved against exact master9b2d052c and tree51816f37.",
     "stack_b_api_branch_publication": "The reserved recovery succeeded without force: hosted headd7f2bd06 is a content-equivalent child of exact master9b2d052c with exact local tree51816f37 and canonical blobs b41c550/a239968. The branch is the 38th hosted branch; no PR exists yet. Post-create smart-HTTP refresh failed and remains explicitly incomplete.",
+    "stack_b_pr31_draft": "Draft PR31 is OPEN at exact d7f2bd06/tree51816f37 against master9b2d052c, MERGEABLE but BLOCKED, with exactly two added evidence files and no reviews. Exact-head CI33222586011, authority33222586188 and qualification33222586095 are in progress; protected capture is skipped on Draft by design. Ready and merge are forbidden pending terminal hosted evidence plus independent Security/QA and REFUTE P0/P1=0.",
     "shared_write_conflicts": 0,
     "decision": "Original Stack B writer used its one recovery and failed closed on CRLF projection, so it is revoked and frozen. Exactly one replacement owns the same two evidence files in a new LF worktree; original worktree and every game/tool/workflow/shared-authority path are forbidden."
   },
@@ -3468,5 +3469,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_39687a6b_verified"
   },
-  "next_trigger": "Verify hosted headd7f2bd06 remains a clean two-path child of master9b2d052c with tree51816f37, then create one Draft PR and start hosted checks. Do not mark Ready or merge; reserve independent reviews only after exact PR identity is recorded."
+  "next_trigger": "Wait for PR31 exact-head hosted checks to become terminal, then route the immutable d7f2bd06/tree51816f37/body review packet to independent Security/QA and REFUTE. Do not mark Ready or merge."
 }
