@@ -204,20 +204,67 @@ if [ -f "$CAFE_IDS" ] || [ -f "$CAFE_MANIFEST" ]; then
       bad "cafe authored manifest is stale, non-canonical, or not source-bound"
     fi
 
-    cp "$CAFE_MANIFEST" "$CAFE_NEGATIVE"
-    printf ' ' >>"$CAFE_NEGATIVE"
-    if "$PY" tools/cafe_authored_manifest.py \
+    if ! cp "$CAFE_MANIFEST" "$CAFE_NEGATIVE" || ! printf ' ' >>"$CAFE_NEGATIVE"; then
+      bad "cafe authored manifest negative tooth setup failed"
+    elif "$PY" tools/cafe_authored_manifest.py \
       --repo . --ids "$CAFE_IDS" --check "$CAFE_NEGATIVE" \
       >"$CAFE_NEGATIVE_LOG" 2>&1; then
       cat "$CAFE_NEGATIVE_LOG"
       bad "cafe authored manifest negative tooth accepted a byte-corrupt manifest"
-    else
+    elif grep -Fq \
+      "checked authored manifest is stale or non-canonical; regenerate it with the protected compiler" \
+      "$CAFE_NEGATIVE_LOG"; then
       cat "$CAFE_NEGATIVE_LOG"
       ok "cafe authored manifest negative tooth rejected byte corruption"
+    else
+      cat "$CAFE_NEGATIVE_LOG"
+      bad "cafe authored manifest negative tooth failed for an unexpected reason"
     fi
   fi
 else
-  ok "cafe authored bundle absent (gate dormant until both Stack B files are present)"
+  CAFE_ADOPTED=0
+  CAFE_BASELINE=""
+  CAFE_BASELINE_LOG="$LT_LOG/cafe-authored-baseline.log"
+  if [ -n "$(git rev-list -n 1 --all -- "$CAFE_IDS" "$CAFE_MANIFEST")" ]; then
+    CAFE_ADOPTED=1
+  elif [ -n "${GITHUB_EVENT_PATH:-}" ]; then
+    if [ ! -f "$GITHUB_EVENT_PATH" ]; then
+      bad "cafe authored adoption baseline event is unavailable"
+    else
+      CAFE_BASELINE="$("$PY" - "$GITHUB_EVENT_PATH" <<'PY'
+import json
+import re
+import sys
+
+with open(sys.argv[1], "r", encoding="utf-8") as handle:
+    event = json.load(handle)
+candidate = event.get("pull_request", {}).get("base", {}).get("sha") or event.get("before") or ""
+if candidate and not re.fullmatch(r"[0-9a-f]{40}", candidate):
+    raise SystemExit("invalid GitHub baseline SHA")
+print(candidate)
+PY
+)" || bad "cafe authored adoption baseline could not be parsed"
+      if [ -z "$CAFE_BASELINE" ]; then
+        bad "cafe authored adoption baseline is missing from the GitHub event"
+      elif ! git cat-file -e "$CAFE_BASELINE^{commit}" 2>/dev/null; then
+        git fetch --no-tags --depth=1 origin "$CAFE_BASELINE" >"$CAFE_BASELINE_LOG" 2>&1 \
+          || bad "cafe authored adoption baseline fetch failed closed"
+      fi
+      if [ -n "$CAFE_BASELINE" ] && git cat-file -e "$CAFE_BASELINE^{commit}" 2>/dev/null; then
+        if git cat-file -e "$CAFE_BASELINE:$CAFE_IDS" 2>/dev/null \
+          || git cat-file -e "$CAFE_BASELINE:$CAFE_MANIFEST" 2>/dev/null; then
+          CAFE_ADOPTED=1
+        fi
+      fi
+    fi
+  elif [ -f "$(git rev-parse --git-path shallow 2>/dev/null)" ]; then
+    bad "cafe authored adoption baseline is unavailable in a shallow non-GitHub checkout"
+  fi
+  if [ "$CAFE_ADOPTED" -eq 1 ]; then
+    bad "cafe authored bundle removed after adoption (stable IDs and manifest are required)"
+  elif [ "$FAIL" -eq 0 ]; then
+    ok "cafe authored bundle absent before adoption (gate dormant)"
+  fi
 fi
 if [ "${CI_CAFE_MANIFEST_ONLY:-0}" = "1" ]; then
   step_done
