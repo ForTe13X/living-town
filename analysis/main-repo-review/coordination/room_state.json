@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-29T05:06:04Z",
+  "updated_at": "2026-08-29T05:41:16Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -15,19 +15,19 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-08-29T04:44:23Z",
+    "at": "2026-08-29T05:41:16Z",
     "github_api_count": 39,
     "git_ls_remote_count": 39,
     "local_tracking_count": 39,
     "local_exact_count": 39,
-    "snapshot_complete": true,
-    "secondary_authority": "Fresh GitHub API, git ls-remote --heads and fetched local origin refs independently agree at all 39 hosted branch names and exact heads. GitHub PR, Actions, protection, issue and release APIs remain authoritative for hosted metadata.",
-    "reconciliation": "Fresh fetch --all --prune --tags recovery succeeded after the prior heartbeat's reset/timeout. GitHub API, ls-remote and local tracking are 39/39 exact at sorted name+SHA set SHA256 d825f208. Master9b2d052c, integrationac85fc6b, PR31d7f2bd06 and PR32/repair14afdc05 are stable; ten PRs open, no issues/releases/tags, and all 36 registered worktrees remain preserved.",
-    "network_failures": [],
-    "sorted_name_sha_set_sha256": "d825f208fe64f492f590a61fbce4194b217e5c0268d63424a4bb7159305eeb25",
+    "snapshot_complete": false,
+    "secondary_authority": "Fresh GitHub branches API and the successful fetch/prune agree at all 39 hosted branch names and exact heads. Two direct git ls-remote --heads attempts failed by reset/timeout, so this heartbeat is explicitly incomplete under the three-source invariant; hosted GitHub API/PR/Actions state is the secondary authority.",
+    "reconciliation": "Fetch --all --prune --tags succeeded and advanced coordination to eac0f6ad plus PR32 to8d9e992b. Fresh GitHub API and fetched local tracking are 39/39 exact at sorted name+SHA set SHA256 c562fb0e. Direct ls-remote reset once and then timed out, so completeness is false. Master9b2d052c, integrationac85fc6b and PR31d7f2bd06 are stable; PR32 exact child8d9e992b has terminal-success CI, visual, qualification and authority checks. Ten PRs open, no issues/releases/tags, and all 36 registered worktrees remain preserved.",
+    "network_failures": ["git ls-remote --heads reset once, then github.com:443 timeout after 21 seconds; GitHub API and fetched local refs remained available"],
+    "sorted_name_sha_set_sha256": "c562fb0e04c0d86c00f7bd03a099062b0724d34a33867df563fa5a344705ddc7",
     "master": "9b2d052ca740a96b9b556765a7ead7fcb5425600",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "93a1c84d8ddb952bd6bdf542cbeab212707f9bcd",
+    "coordination": "eac0f6adbfc179841cfd126ea4368e61ee67a6b0",
     "pr25": "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
     "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
@@ -35,7 +35,7 @@
     "pr29": "f6cbdcf5ad8539bf4c4ce14ae6328ffb24d18ffc",
     "pr30": "4974244f784c8bcb9aa1a5c88fd358f5a671bd8d",
     "mismatched_or_missing_local": {},
-    "open_prs": 8,
+    "open_prs": 10,
     "open_issues": 0,
     "releases": 0,
     "tags": 0,
@@ -2951,8 +2951,8 @@
       "objective": "Add a bounded hosted CI validation path that recognizes the two Stack B evidence files, regenerates and byte-compares the authored manifest at the exact candidate, exercises fail-closed controls, and leaves an immutable hosted receipt before PR31 can be reconsidered.",
       "baseline": "9b2d052ca740a96b9b556765a7ead7fcb5425600",
       "baseline_tree": "3c5d859982c66bc5711659bf8f78548595717a4a",
-      "head": "14afdc0566872bc54645ddcca5cfde3a4e24c92a",
-      "tree": "73cc4ff6d7a38cb105bb65e5262e2ac37e7f0aea",
+      "head": "8d9e992b42d35f6b830debad87f9a291a33186fa",
+      "tree": "9d2abbdf1ebd11d9ec4ca58b0afae3bf059fc50c",
       "branch": "codex/pr31-stack-b-ci-gate-repair-v1",
       "worktree": "D:\\Documents\\Dev\\living-town-pr31-stack-b-ci-gate-repair-wt",
       "owned_paths": ["tools/ci.sh"],
@@ -2961,16 +2961,18 @@
       "generated_outputs": ["one-file CI repair", "pinned-Docker full CI receipt", "corrupt-manifest negative-control receipt", "Draft repair PR"],
       "dependencies": ["PR31 frozen exact d7f2bd06", "independent Security/QA and REFUTE both P0=0/P1=1", "master9b2d052c unchanged", "tools/ci.sh unleased", "no active writer", "existing compiler tools/cafe_authored_manifest.py"],
       "consumer": "PR31 exact two-path candidate after reviewed repair merge and normal base synchronization",
-      "status": "draft_pr32_exact_api_child_body_refreshed_hosted_ci_visual_in_progress",
+      "status": "draft_pr32_exact_api_child_all_hosted_checks_success_fresh_reviews_reserved",
       "read_only": false,
-      "last_heartbeat": "2026-08-29T05:06:04Z",
-      "stale_after": "2026-08-29T05:56:13Z",
+      "last_heartbeat": "2026-08-29T05:41:16Z",
       "stale_after": null,
       "pr": 32,
+      "hosted_terminal_checks": {"pr_state":"OPEN Draft CLEAN/MERGEABLE","base":"9b2d052ca740a96b9b556765a7ead7fcb5425600","head":"8d9e992b42d35f6b830debad87f9a291a33186fa","tree":"9d2abbdf1ebd11d9ec4ca58b0afae3bf059fc50c","body_sha256":"a14ba9c47b90423dda8f5c8d62d853883f889618635eb1be46de3958e6b54552","body_bytes":3361,"scope":"tools/ci.sh +89/-0 versus master","blob":"743a814652ddc2f97e7c05bcb5f61a50003bc5dd","blob_bytes":81568,"ci":"33235237958 success","visual_canary":"33235237958 success","qualification":"33235237991 success","authority":"33235236828 success","protected_capture":"skipped on Draft by design"},
       "checks": {"scope":"child commit25795c9c/tree9d2abbdf, one path tools/ci.sh +52/-5 relative parent, blob743a814/81568; diff-check and worktree clean","shell_syntax":"pass in gamecraft-runner sha256:2a194789","focused_docker":"dormant local rc0 5dca01a7; dormant GitHub-event baseline rc0 5dca01a7; active bundle rc0 44767871; asymmetric missing rc1 ed7ebd43; external corrupt rc1 370dd344; post-adoption dual delete full-history rc1 and shallow-event-fetch rc1 both 5c52966d; aggregate receipt68d022b8","negative_diagnostic":"isolated unexpected interpreter/I/O failure preserves positive pass then returns rc1 with specific unexpected-reason diagnostic; log c9d7811d","synthetic_identity":"repair14afdc05 plus PR31 data commit gives synthetic6a3992c1/treeb31e04a3; focused proof rebuilt equivalent pre/adopt/delete history in task-local Docker scratch","manifest_positive":"pass sha256 f38c5da938ae049045dba42a4ee2385361514ad1d60a22df93357e3795767616","controller_recoveries":"initial PowerShell heredoc never launched; first container could not follow Windows worktree gitdir; second lacked the assumed synthetic mount; two negative-wrapper fixtures had CRLF/noexec controller faults. No product conclusion was drawn; all owned containers were --rm and final clean isolated proof passed.","docker":"Desktop 4.85.0 engine29.6.2 linux/amd64 image gamecraft-runner@sha256:2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d; --pull=never, network none, read-only root/source, cap-drop ALL, no-new-privileges, task tmpfs scratch, no cache/volume","prior_full_non_visual":"all pass at parent through S0, macro scale, determinism, backend, model path, voice, save/projection and unit/integration scenes","prior_visual_recovery":"all visual contracts pass including space/floor roundtrip; 50 PNGs/17848052 bytes setSHA256a4eb2dfc logSHA2562480a44f","hosted":"old head14afdc05 all required checks success; new child not yet published"},
       "review_claims": [
         {"claim_id":"review-pr32-security-qa-14afdc05","task":"/root/pr25_sync_security_qa","role":"Independent read-only Security/QA","objective":"Audit exact PR32 one-file CI repair for shell safety, trigger coverage, false positives/negatives, deterministic compiler and corrupt-manifest controls, hosted receipt sufficiency, synthetic PR31 consumer identity, rollback and shared-CI sustainability; report P0/P1/P2 and exact identity.","base":"9b2d052ca740a96b9b556765a7ead7fcb5425600","head":"14afdc0566872bc54645ddcca5cfde3a4e24c92a","tree":"73cc4ff6d7a38cb105bb65e5262e2ac37e7f0aea","branch":"codex/pr31-stack-b-ci-gate-repair-v1","worktree":null,"owned_paths":[],"forbidden_paths":["all repository, PR, review, branch, protection, coordination, task, container/image/volume/cache mutation"],"authority_keys":[],"generated_outputs":["terminal read-only review handoff only"],"dependencies":["PR32 OPEN Draft CLEAN/MERGEABLE","body d5ca82bd/2369","CI33231101148 success","visual_canary success","one-path tools/ci.sh +42/-0","synthetic6a3992c1/treeb31e04a3"],"consumer":"Producer repair merge gate","status":"terminal_released_p0_0_p1_1_p2_1","last_heartbeat":"2026-08-29T04:11:22Z","stale_after":null,"pr":32,"checks":"REQUEST CHANGES: exact synthetic dual deletion returns 0 and negative tooth accepts infrastructure failure as rejection","recovery_count":0,"release_reason":"terminal exact-head handoff","rollback":"released without mutation","stop_lines":[],"handoff_recipient":"Producer","archive_condition":"met"},
-        {"claim_id":"review-pr32-refute-14afdc05","task":"/root/pr25_sync_refute","role":"Independent read-only REFUTE","objective":"Attempt to falsify exact PR32 coverage with path-selection, missing-file, malformed JSON, stale manifest, byte-corruption, shell/trap, replay/substitution, synthetic-merge, hosted-check and rollback counterexamples; report P0/P1/P2 and exact identity.","base":"9b2d052ca740a96b9b556765a7ead7fcb5425600","head":"14afdc0566872bc54645ddcca5cfde3a4e24c92a","tree":"73cc4ff6d7a38cb105bb65e5262e2ac37e7f0aea","branch":"codex/pr31-stack-b-ci-gate-repair-v1","worktree":null,"owned_paths":[],"forbidden_paths":["all repository, PR, review, branch, protection, coordination, task, container/image/volume/cache mutation"],"authority_keys":[],"generated_outputs":["terminal read-only REFUTE handoff only"],"dependencies":["PR32 OPEN Draft CLEAN/MERGEABLE","body d5ca82bd/2369","CI33231101148 success","visual_canary success","one-path tools/ci.sh +42/-0","synthetic6a3992c1/treeb31e04a3"],"consumer":"Producer repair merge gate","status":"terminal_released_p0_0_p1_1_p2_2","last_heartbeat":"2026-08-29T04:43:10Z","stale_after":null,"pr":32,"checks":"REFUTE FAIL: both files absent after adoption bypasses gate; hosted PR32 exercises only dormant branch","recovery_count":0,"release_reason":"terminal exact-head handoff","rollback":"released without mutation","stop_lines":[],"handoff_recipient":"Producer","archive_condition":"met"}
+        {"claim_id":"review-pr32-refute-14afdc05","task":"/root/pr25_sync_refute","role":"Independent read-only REFUTE","objective":"Attempt to falsify exact PR32 coverage with path-selection, missing-file, malformed JSON, stale manifest, byte-corruption, shell/trap, replay/substitution, synthetic-merge, hosted-check and rollback counterexamples; report P0/P1/P2 and exact identity.","base":"9b2d052ca740a96b9b556765a7ead7fcb5425600","head":"14afdc0566872bc54645ddcca5cfde3a4e24c92a","tree":"73cc4ff6d7a38cb105bb65e5262e2ac37e7f0aea","branch":"codex/pr31-stack-b-ci-gate-repair-v1","worktree":null,"owned_paths":[],"forbidden_paths":["all repository, PR, review, branch, protection, coordination, task, container/image/volume/cache mutation"],"authority_keys":[],"generated_outputs":["terminal read-only REFUTE handoff only"],"dependencies":["PR32 OPEN Draft CLEAN/MERGEABLE","body d5ca82bd/2369","CI33231101148 success","visual_canary success","one-path tools/ci.sh +42/-0","synthetic6a3992c1/treeb31e04a3"],"consumer":"Producer repair merge gate","status":"terminal_released_p0_0_p1_1_p2_2","last_heartbeat":"2026-08-29T04:43:10Z","stale_after":null,"pr":32,"checks":"REFUTE FAIL: both files absent after adoption bypasses gate; hosted PR32 exercises only dormant branch","recovery_count":0,"release_reason":"terminal exact-head handoff","rollback":"released without mutation","stop_lines":[],"handoff_recipient":"Producer","archive_condition":"met"},
+        {"claim_id":"review-pr32-security-qa-8d9e992b","task":"/root/pr25_sync_security_qa","role":"Independent read-only Security/QA","objective":"Audit exact repaired PR32 one-file CI gate for dual-deletion and negative-diagnostic closure, event/baseline safety, shell and network failure behavior, hosted identity, rollback and sustainable PR31 consumption; report P0/P1/P2 with exact receipts.","base":"9b2d052ca740a96b9b556765a7ead7fcb5425600","head":"8d9e992b42d35f6b830debad87f9a291a33186fa","tree":"9d2abbdf1ebd11d9ec4ca58b0afae3bf059fc50c","branch":"codex/pr31-stack-b-ci-gate-repair-v1","worktree":null,"owned_paths":[],"forbidden_paths":["all repository, PR, review, branch, protection, coordination, task, container/image/volume/cache mutation"],"authority_keys":[],"generated_outputs":["terminal read-only review handoff and task-local disposable Docker receipts only"],"dependencies":["PR32 OPEN Draft CLEAN/MERGEABLE","body a14ba9c4/3361","CI33235237958 ci and visual success","qualification33235237991 success","authority33235236828 success","one-path tools/ci.sh +89/-0","blob743a814/81568","focused aggregate68d022b8"],"consumer":"Producer PR32 merge gate then PR31 normal synchronization","status":"reserved_not_dispatched","last_heartbeat":"2026-08-29T05:41:16Z","stale_after":"2026-08-29T06:41:16Z","pr":32,"checks":"fresh review required; old head verdict invalid","recovery_count":0,"rollback":"delete task-local review scratch only; no repository or GitHub rollback applies","stop_lines":["exact base/head/tree/body/check identity drift","repository or GitHub mutation required","fresh pinned Docker isolation unavailable"],"handoff_recipient":"Producer","archive_condition":"terminal exact-head P0/P1/P2 handoff"},
+        {"claim_id":"review-pr32-refute-8d9e992b","task":"/root/pr25_sync_refute","role":"Independent read-only adversarial REFUTE","objective":"Attempt to falsify repaired PR32 with event forgery, base/before SHA edge cases, dual rename/removal, shallow/no-event/no-network histories, unexpected-error masquerade, authority confusion and rollback counterexamples; report P0/P1/P2 with exact receipts.","base":"9b2d052ca740a96b9b556765a7ead7fcb5425600","head":"8d9e992b42d35f6b830debad87f9a291a33186fa","tree":"9d2abbdf1ebd11d9ec4ca58b0afae3bf059fc50c","branch":"codex/pr31-stack-b-ci-gate-repair-v1","worktree":null,"owned_paths":[],"forbidden_paths":["all repository, PR, review, branch, protection, coordination, task, container/image/volume/cache mutation"],"authority_keys":[],"generated_outputs":["terminal read-only REFUTE handoff and task-local disposable Docker receipts only"],"dependencies":["PR32 OPEN Draft CLEAN/MERGEABLE","body a14ba9c4/3361","CI33235237958 ci and visual success","qualification33235237991 success","authority33235236828 success","one-path tools/ci.sh +89/-0","blob743a814/81568","focused aggregate68d022b8"],"consumer":"Producer PR32 merge gate then PR31 normal synchronization","status":"reserved_not_dispatched","last_heartbeat":"2026-08-29T05:41:16Z","stale_after":"2026-08-29T06:41:16Z","pr":32,"checks":"fresh review required; old head verdict invalid","recovery_count":0,"rollback":"delete task-local adversarial scratch only; no repository or GitHub rollback applies","stop_lines":["exact base/head/tree/body/check identity drift","repository or GitHub mutation required","fresh pinned Docker isolation unavailable"],"handoff_recipient":"Producer","archive_condition":"terminal exact-head P0/P1/P2 handoff"}
       ],
       "release_reason": "exact clean one-path Draft PR handoff; writer released pending hosted terminal evidence",
       "recovery_count": 2,
@@ -2993,9 +2995,9 @@
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-08-29T04:44:23Z",
-    "active_writers": 1,
-    "read_only_reviewers": 0,
+    "at": "2026-08-29T05:41:16Z",
+    "active_writers": 0,
+    "read_only_reviewers": 2,
     "stack_b_replacement_exact_commit": "Replacement LF lane is clean at exact1114d2b7/tree51816f37 with only cafe-authored IDs and generated manifest added. Pinned Linux Docker b0173238 at committed head passed compiler --check, exact identity, game-clean and SHA checks; prior independent generation was byte-identical and malformed/stale/unbound negatives fail closed. Remote publication and Draft PR remain unperformed.",
     "stack_b_normal_push_failure": "One normal non-force push failed with curl28/connect timeout and send-pack disconnect. GitHub ref and branch APIs confirm the replacement branch is absent and no PR exists. One non-force Git Data API create-ref recovery is reserved against exact master9b2d052c and tree51816f37.",
     "stack_b_api_branch_publication": "The reserved recovery succeeded without force: hosted headd7f2bd06 is a content-equivalent child of exact master9b2d052c with exact local tree51816f37 and canonical blobs b41c550/a239968. The branch is the 38th hosted branch; no PR exists yet. Post-create smart-HTTP refresh failed and remains explicitly incomplete.",
@@ -3015,6 +3017,7 @@
     "stack_b_ci_repair_pr32_transport_failure": "The single normal fast-forward push ran 53s then failed with curl56 connection reset/send-pack disconnect and contradictory client text 'Everything up-to-date'. Fresh GitHub ref and PR reads prove remote remains exact14afdc05; Git object25795c9c is absent by API. No remote PR/branch mutation occurred. One non-force Git Data API reconstruction is reserved with canonical blob/tree/parent identity stops.",
     "stack_b_ci_repair_pr32_api_publication": "Git Data API uploaded canonical blob743a814 and rebuilt exact tree9d2abbdf as a child of exact remote14afdc05, then non-force advanced the repair ref to content-equivalent commit8d9e992b. PR32 is OPEN Draft/MERGEABLE/BLOCKED with one semantic path tools/ci.sh and +89/-0 versus master. Fresh CI33235237958, visual_canary and qualification33235237991 are in progress; authority33235236828 success; protected capture skipped by Draft design. Body refresh is reserved; all old-head reviews are invalid.",
     "stack_b_ci_repair_pr32_body_refresh": "Draft body is live at SHA256a14ba9c4/3361 bytes and binds hosted head8d9e992b/tree9d2abbdf/blob743a814, the dual-deletion P1/P2 closure, focused Docker receipts, controller disclosures, rollback and old-review invalidation. Qualification33235237991 and authority33235236828 are success; CI33235237958 and visual_canary remain in progress. PR remains OPEN Draft/MERGEABLE/BLOCKED.",
+    "stack_b_ci_repair_pr32_new_head_terminal_checks_reviews_reserved": "Draft PR32 is unchanged at exact8d9e992b/tree9d2abbdf/bodya14ba9c4, OPEN/CLEAN/MERGEABLE with one path tools/ci.sh +89/-0. CI33235237958 ci and visual_canary, qualification33235237991 and authority33235236828 are terminal success; protected capture is skipped on Draft by design. Writer is released. Two fresh independent read-only reviews are reserved against the immutable new-head packet before dispatch; PR31 remains frozen Draft.",
     "shared_write_conflicts": 0,
     "decision": "Original Stack B writer used its one recovery and failed closed on CRLF projection, so it is revoked and frozen. Exactly one replacement owns the same two evidence files in a new LF worktree; original worktree and every game/tool/workflow/shared-authority path are forbidden."
   },
@@ -3524,5 +3527,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_39687a6b_verified"
   },
-  "next_trigger": "Wait for PR32 exact-head CI33235237958 and visual_canary terminal results. Only after success atomically reserve fresh independent Security/QA and REFUTE against bodya14ba9c4; PR31 remains frozen Draft."
+  "next_trigger": "Publish this review reservation to Draft PR5 ledger, then dispatch fresh independent Security/QA and REFUTE against PR32 exact8d9e992b/bodya14ba9c4. Await terminal P0/P1/P2; PR31 remains frozen Draft and HUMAN_ACCEPTANCE_NOT_READY."
 }
