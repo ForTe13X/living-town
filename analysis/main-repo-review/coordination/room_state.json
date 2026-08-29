@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-29T03:14:52Z",
+  "updated_at": "2026-08-29T03:19:51Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -2961,12 +2961,13 @@
       "generated_outputs": ["one-file CI repair", "pinned-Docker full CI receipt", "corrupt-manifest negative-control receipt", "Draft repair PR"],
       "dependencies": ["PR31 frozen exact d7f2bd06", "independent Security/QA and REFUTE both P0=0/P1=1", "master9b2d052c unchanged", "tools/ci.sh unleased", "no active writer", "existing compiler tools/cafe_authored_manifest.py"],
       "consumer": "PR31 exact two-path candidate after reviewed repair merge and normal base synchronization",
-      "status": "exact_one_path_local_commit_full_synthetic_docker_pass_remote_publication_and_draft_pr_reserved",
+      "status": "draft_pr32_exact_one_path_open_hosted_ci_in_progress_writer_released_reviews_waiting_terminal_checks",
       "read_only": false,
-      "last_heartbeat": "2026-08-29T03:14:52Z",
-      "stale_after": "2026-08-29T04:14:52Z",
-      "pr": null,
-      "checks": {"scope":"one path tools/ci.sh; 42 additions; diff-check clean","shell_syntax":"pass in gamecraft-runner sha256:2a194789","synthetic_identity":"repair14afdc05 plus PR31 data commit gives synthetic6a3992c1/treeb31e04a3","manifest_positive":"pass sha256 f38c5da938ae049045dba42a4ee2385361514ad1d60a22df93357e3795767616","corrupt_manifest_negative":"pass rejected stale/non-canonical","full_non_visual":"all pass through S0, macro scale, determinism, backend, model path, voice, save/projection and unit/integration scenes","visual_recovery":"all visual contracts pass including space/floor roundtrip; 50 PNGs, 17848052 bytes, set SHA256 a4eb2dfc52530f2c429a0581b5490cb501033889323f49caa6282c48cd9a9451; log SHA256 2480a44f7b24fc42fc839d3de383d3411b792c34c348685eba18c2ebe170f428","controller_note":"outer wrapper exited 1 only because malformed escaped PIPESTATUS produced bash numeric-argument error after tools/visual_gate.sh completed every assertion; product gate terminal output is pass","docker":"Desktop 4.85.0 engine29.6.2 linux/amd64 image gamecraft-runner@sha256:2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d Pillow11.3.0 isolated scratch/cache","hosted":"branch and Draft repair PR reserved but not yet published"},
+      "last_heartbeat": "2026-08-29T03:19:51Z",
+      "stale_after": null,
+      "pr": 32,
+      "checks": {"scope":"one path tools/ci.sh; 42 additions; diff-check clean","shell_syntax":"pass in gamecraft-runner sha256:2a194789","synthetic_identity":"repair14afdc05 plus PR31 data commit gives synthetic6a3992c1/treeb31e04a3","manifest_positive":"pass sha256 f38c5da938ae049045dba42a4ee2385361514ad1d60a22df93357e3795767616","corrupt_manifest_negative":"pass rejected stale/non-canonical","full_non_visual":"all pass through S0, macro scale, determinism, backend, model path, voice, save/projection and unit/integration scenes","visual_recovery":"all visual contracts pass including space/floor roundtrip; 50 PNGs, 17848052 bytes, set SHA256 a4eb2dfc52530f2c429a0581b5490cb501033889323f49caa6282c48cd9a9451; log SHA256 2480a44f7b24fc42fc839d3de383d3411b792c34c348685eba18c2ebe170f428","controller_note":"outer wrapper exited 1 only because malformed escaped PIPESTATUS produced bash numeric-argument error after tools/visual_gate.sh completed every assertion; product gate terminal output is pass","docker":"Desktop 4.85.0 engine29.6.2 linux/amd64 image gamecraft-runner@sha256:2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d Pillow11.3.0 isolated scratch/cache","hosted":"Draft PR32 OPEN exact base9b2d052c/head14afdc05/tree73cc4ff6/bodySHA256d5ca82bd/2369; authority33231101180 success, qualification33231101134 success, protected capture skipped by Draft design, CI33231101148 and visual_canary in progress"},
+      "release_reason": "exact clean one-path Draft PR handoff; writer released pending hosted terminal evidence",
       "recovery_count": 1,
       "rollback": "Before remote publication remove only the verified clean task worktree/branch. After Draft publication leave or close Draft and revert only through reviewed child; never reset/force/rewrite shared history.",
       "stop_lines": ["worktree/branch exists", "master/PR31/protection drift", "tools/ci.sh already leased or dirty", "repair needs workflow/protected-authority/game/schema/registry changes", "Docker digest/isolation unavailable", "full CI regression", "negative control does not fail", "extra path appears"],
@@ -2999,6 +3000,7 @@
     "stack_b_ci_repair_reservation": "One isolated writer is reserved at exact master9b2d052c for a one-file tools/ci.sh repair. It must make data-only Stack B candidates regenerate and byte-compare the manifest in hosted CI, prove a corrupt-manifest negative failure, and stop if workflow/protected authority or any other path is needed.",
     "stack_b_ci_repair_local_proof": "Exact one-path local commit14afdc05/tree73cc4ff6 adds the Stack B authored-manifest compiler check and corrupt-manifest negative tooth to tools/ci.sh. Synthetic repair+PR31 tree6a3992c1/b31e04a3 passed targeted pinned-Docker regeneration byte-identically at f38c5da9 and rejected byte corruption. Full pinned-Docker CI passed every non-visual gate and all unit/integration scenes, then failed only the existing visual space/floor roundtrip capture in local llvmpipe after the other screenshot surfaces succeeded. The stop line is honored: branch and Draft repair PR remain unpublished; one isolated visual-only recovery is reserved.",
     "stack_b_ci_repair_visual_recovery": "The sole isolated visual recovery on exact synthetic6a3992c1/treeb31e04a3 passed every visual assertion, including space/floor roundtrip, warehouse, interior shells, cafe2F, seasons, weather, carrier and negative controls. It produced 50 PNGs/17848052 bytes with set SHA256a4eb2dfc and log SHA256 2480a44f. A malformed outer PIPESTATUS escape caused only the controller wrapper rc1 after the product script completed; this is disclosed and not counted as a product failure. Normal non-force repair-branch publication and one-path Draft PR are reserved.",
+    "stack_b_ci_repair_pr32": "Normal non-force branch publication succeeded at exact14afdc05/tree73cc4ff6. Draft PR32 is OPEN/MERGEABLE/BLOCKED against master9b2d052c with one commit, one path tools/ci.sh and +42/-0; body SHA256d5ca82bd/2369 binds local and synthetic evidence plus controller disclosure. Authority33231101180 and qualification33231101134 succeeded but are not merge evidence for this shared-CI repair; CI33231101148 and visual_canary remain in progress. Writer is released and fresh read-only reviews wait for terminal exact-head checks.",
     "shared_write_conflicts": 0,
     "decision": "Original Stack B writer used its one recovery and failed closed on CRLF projection, so it is revoked and frozen. Exactly one replacement owns the same two evidence files in a new LF worktree; original worktree and every game/tool/workflow/shared-authority path are forbidden."
   },
@@ -3508,5 +3510,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_39687a6b_verified"
   },
-  "next_trigger": "Publish this ledger, reverify exact master/PR31/protection and absent repair ref/duplicate PR, then normally non-force publish repair14afdc05 and create one Draft PR. Require hosted exact-head checks plus fresh independent Security/QA and REFUTE P0/P1=0 before any repair merge or PR31 synchronization; PR31 remains frozen Draft."
+  "next_trigger": "Wait for PR32 exact-head CI33231101148 and visual_canary to finish. If terminal success with identity unchanged, atomically reserve and dispatch fresh independent Security/QA and REFUTE; require P0/P1=0 before any repair merge or PR31 synchronization. PR31 remains frozen Draft."
 }
