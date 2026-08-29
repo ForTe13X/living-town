@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-29T11:59:46Z",
+  "updated_at": "2026-08-29T12:33:23Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -2970,7 +2970,8 @@
       "consumer": "PR31 exact two-path candidate after reviewed repair merge and normal base synchronization",
       "status": "round4_exact_hosted_terminal_p0_p1_zero_body_rebound_premerge_paused_ls_remote_incomplete",
       "read_only": false,
-      "last_heartbeat": "2026-08-29T11:59:46Z",
+      "last_heartbeat": "2026-08-29T12:33:23Z",
+      "network_recovery_count": 3,
       "stale_after": null,
       "pr": 32,
       "hosted_terminal_checks": {"pr_state":"OPEN Draft CLEAN/MERGEABLE","base":"9b2d052ca740a96b9b556765a7ead7fcb5425600","head":"d5d5688115db3cb091ef279560fa6800f519b69d","tree":"8f635bb5b618a6f9510b706b04a2259bdc216ed8","body_sha256":"210282967c3669c9a5fbd03e767d6cee058f825166fd1205f275a69dd893a50e","body_bytes":5400,"scope":"tools/ci.sh +117/-0 versus master; one changed path","blob":"0e51dde9d43e7fb8b5009fbf6c4fc91dd426e94f","blob_bytes":82845,"ci":"33246533091 success","visual_canary":"33246533091 success; artifact hosted-visual-canary-33246533091-1 18087791 bytes","qualification":"33246533084 success","authority":"33246532336 success","protected_capture":"33246533084 skipped on Draft by design"},
@@ -3051,6 +3052,7 @@
     "stack_b_ci_repair_pr32_round4_terminal_body_rebound": "Draft PR32 evidence body refreshed to SHA256 21028296/5400 bytes while exact headd5d56881/tree8f635bb5/blob0e51dde9 remained unchanged. It records all four terminal hosted checks, artifact9713105566, Security/QA P0/P1/P2=0, REFUTE P0/P1=0/P2=2 and both residual trust assumptions. Ready/merge remains forbidden until a separate exact-body premerge reservation.",
     "stack_b_ci_repair_pr32_round4_premerge_network_pause": "Final API/live-local scan remains exact at 39 branches hash a080ed79, master9b2d052c, integrationac85fc6b, PR32 headd5d56881/body21028296 CLEAN with all checks success, unexpired artifact and no duplicate tools/ci.sh candidate. Direct git ls-remote enumeration failed repeatedly after one successful fetch, so the required three-source branch snapshot is incomplete. No merge reservation, Ready or merge mutation was made.",
     "stack_b_ci_repair_pr32_round4_premerge_network_recovery_2": "At 2026-08-29T11:59:46Z GitHub API still reports 39 branches, unchanged master/integration/PR32 identity, all PR32 checks success and artifact unexpired. Fetch reset once; HTTP/1.1 retry did not advance the local coordination ref; direct ls-remote again failed on github.com:443. Required branch reconciliation remains incomplete, so merge continues to fail closed.",
+    "stack_b_ci_repair_pr32_round4_premerge_network_recovery_3": "At 2026-08-29T12:33:23Z API still reports 39 branches and exact PR32 identity/check/artifact state; 36 worktrees were read with 15 dirty and zero read errors. HTTPS fetch again failed on github.com:443 and SSH fallback reached GitHub but lacked a configured public key. Three-source branch reconciliation remains incomplete after three recovery runs; preserve Draft and retry only on a later network-state change.",
     "shared_write_conflicts": 0,
     "decision": "Original Stack B writer used its one recovery and failed closed on CRLF projection, so it is revoked and frozen. Exactly one replacement owns the same two evidence files in a new LF worktree; original worktree and every game/tool/workflow/shared-authority path are forbidden."
   },
