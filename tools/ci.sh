@@ -229,6 +229,8 @@ else
   CAFE_HISTORY_LOG="$LT_LOG/cafe-authored-history.log"
   CAFE_SHALLOW_PATH=""
   CAFE_SHALLOW_LOG="$LT_LOG/cafe-authored-shallow.log"
+  CAFE_BASELINE_PATHS=""
+  CAFE_BASELINE_TREE_LOG="$LT_LOG/cafe-authored-baseline-tree.log"
   if ! CAFE_SHALLOW_PATH="$(git rev-parse --git-path shallow 2>"$CAFE_SHALLOW_LOG")" \
     || [ -z "$CAFE_SHALLOW_PATH" ]; then
     cat "$CAFE_SHALLOW_LOG"
@@ -262,10 +264,24 @@ PY
         git fetch --no-tags --depth=1 origin "$CAFE_BASELINE" >"$CAFE_BASELINE_LOG" 2>&1 \
           || bad "cafe authored adoption baseline fetch failed closed"
       fi
-      if [ -n "$CAFE_BASELINE" ] && git cat-file -e "$CAFE_BASELINE^{commit}" 2>/dev/null; then
-        if git cat-file -e "$CAFE_BASELINE:$CAFE_IDS" 2>/dev/null \
-          || git cat-file -e "$CAFE_BASELINE:$CAFE_MANIFEST" 2>/dev/null; then
-          CAFE_ADOPTED=1
+      if [ -n "$CAFE_BASELINE" ]; then
+        if ! git cat-file -e "$CAFE_BASELINE^{commit}" 2>"$CAFE_BASELINE_TREE_LOG"; then
+          cat "$CAFE_BASELINE_TREE_LOG"
+          bad "cafe authored adoption baseline commit inspection failed closed"
+        elif ! CAFE_BASELINE_PATHS="$(git ls-tree --name-only "$CAFE_BASELINE^{tree}" -- \
+          "$CAFE_IDS" "$CAFE_MANIFEST" 2>"$CAFE_BASELINE_TREE_LOG")"; then
+          cat "$CAFE_BASELINE_TREE_LOG"
+          bad "cafe authored adoption baseline tree inspection failed closed"
+        else
+          for CAFE_BASELINE_PATH in $CAFE_BASELINE_PATHS; do
+            case "$CAFE_BASELINE_PATH" in
+              "$CAFE_IDS"|"$CAFE_MANIFEST") ;;
+              *) bad "cafe authored adoption baseline tree inspection returned an unexpected path" ;;
+            esac
+          done
+          if [ -n "$CAFE_BASELINE_PATHS" ]; then
+            CAFE_ADOPTED=1
+          fi
         fi
       fi
     fi
