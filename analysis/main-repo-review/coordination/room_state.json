@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-28T23:58:09Z",
+  "updated_at": "2026-08-29T00:02:30Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -2925,13 +2925,15 @@
       "generated_outputs": ["canonical IDs JSON", "byte-reproducible protected-compiler manifest", "pinned-Docker generation/check/negative-control receipts"],
       "dependencies": ["revoked original lease provenance", "exact master9b2d052c/tree3c5d8599", "fresh core.autocrlf=false worktree", "pinned podman image b0173238 with Python3.14.6 and git2.55.0", "no competing Stack B owner", "fresh complete 37/37 remote branch reconciliation"],
       "consumer": "protected_capture_and_attestation workflow followed by independent exact-head Security/QA and REFUTE",
-      "status": "committed_exact_two_paths_docker_verified_awaiting_ledger_publication_and_nonforce_remote_publish",
+      "status": "normal_push_failed_remote_absent_one_git_data_api_publication_recovery_reserved",
       "read_only": false,
-      "last_heartbeat": "2026-08-28T23:58:09Z",
-      "stale_after": "2026-08-29T00:28:09Z",
+      "last_heartbeat": "2026-08-29T00:02:30Z",
+      "stale_after": "2026-08-29T00:32:30Z",
       "pr": null,
       "checks": "PASS at exact1114d2b7/tree51816f37: only two A paths; git diff --cached --check passed before commit; IDs SHA256 456b53c5; manifest generated twice byte-identical SHA256 f38c5da9; committed-head --check passed in pinned b0173238 Linux Docker; malformed JSON, stale pointer and unbound source fail closed; container game status0; host clean",
-      "recovery_count": 0,
+      "recovery_count": 1,
+      "publication_attempt": {"method": "normal non-force git push --set-upstream", "result": "failed before ref creation", "diagnostic": "curl28 github.com:443 connection timeout and send-pack disconnect", "hosted_postcheck": "GitHub ref and branch APIs both 404; no Draft PR exists"},
+      "publication_recovery": {"method": "Git Data API create content-equivalent exact two-path child commit and new branch ref", "force": false, "expected_parent": "9b2d052ca740a96b9b556765a7ead7fcb5425600", "expected_tree": "51816f37dd1935c78378e39499f704b3f8b342c0", "stop": "remote branch appears, master/head/tree drift, canonical blob mismatch or API failure"},
       "rollback": "Before remote publication remove only the verified exact clean replacement worktree/branch. After Draft publication leave or close Draft and use reviewed child; never reset/force/rewrite shared history.",
       "stop_lines": ["replacement path/branch exists", "core.autocrlf=false worktree is not host and container clean", "any extra path", "Docker digest/isolation drift", "output nondeterminism", "consumer/master/protection drift", "another owner appears"],
       "handoff_recipient": "Independent Stack B Security/QA and REFUTE reviewers",
@@ -2950,10 +2952,11 @@
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-08-28T23:58:09Z",
+    "at": "2026-08-29T00:02:30Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "stack_b_replacement_exact_commit": "Replacement LF lane is clean at exact1114d2b7/tree51816f37 with only cafe-authored IDs and generated manifest added. Pinned Linux Docker b0173238 at committed head passed compiler --check, exact identity, game-clean and SHA checks; prior independent generation was byte-identical and malformed/stale/unbound negatives fail closed. Remote publication and Draft PR remain unperformed.",
+    "stack_b_normal_push_failure": "One normal non-force push failed with curl28/connect timeout and send-pack disconnect. GitHub ref and branch APIs confirm the replacement branch is absent and no PR exists. One non-force Git Data API create-ref recovery is reserved against exact master9b2d052c and tree51816f37.",
     "shared_write_conflicts": 0,
     "decision": "Original Stack B writer used its one recovery and failed closed on CRLF projection, so it is revoked and frozen. Exactly one replacement owns the same two evidence files in a new LF worktree; original worktree and every game/tool/workflow/shared-authority path are forbidden."
   },
@@ -3463,5 +3466,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_39687a6b_verified"
   },
-  "next_trigger": "Publish this exact Stack B evidence packet to the coordination ledger, then non-force publish branch1114d2b7 and create one Draft two-path PR. Do not mark Ready or merge; dispatch independent exact-head Security/QA and REFUTE only after hosted checks start."
+  "next_trigger": "Create one content-equivalent exact-tree Stack B commit and absent branch ref through the non-force Git Data API recovery, verify hosted identity and two-path scope, then create one Draft PR. Do not mark Ready or merge."
 }
