@@ -225,7 +225,19 @@ else
   CAFE_ADOPTED=0
   CAFE_BASELINE=""
   CAFE_BASELINE_LOG="$LT_LOG/cafe-authored-baseline.log"
-  if [ -n "$(git rev-list -n 1 --all -- "$CAFE_IDS" "$CAFE_MANIFEST")" ]; then
+  CAFE_HISTORY_MATCH=""
+  CAFE_HISTORY_LOG="$LT_LOG/cafe-authored-history.log"
+  CAFE_SHALLOW_PATH=""
+  CAFE_SHALLOW_LOG="$LT_LOG/cafe-authored-shallow.log"
+  if ! CAFE_SHALLOW_PATH="$(git rev-parse --git-path shallow 2>"$CAFE_SHALLOW_LOG")" \
+    || [ -z "$CAFE_SHALLOW_PATH" ]; then
+    cat "$CAFE_SHALLOW_LOG"
+    bad "cafe authored adoption shallow-state inspection failed closed"
+  elif ! CAFE_HISTORY_MATCH="$(git rev-list -n 1 HEAD -- \
+    "$CAFE_IDS" "$CAFE_MANIFEST" 2>"$CAFE_HISTORY_LOG")"; then
+    cat "$CAFE_HISTORY_LOG"
+    bad "cafe authored adoption history inspection failed closed"
+  elif [ -n "$CAFE_HISTORY_MATCH" ]; then
     CAFE_ADOPTED=1
   elif [ -n "${GITHUB_EVENT_PATH:-}" ]; then
     if [ ! -f "$GITHUB_EVENT_PATH" ]; then
@@ -257,7 +269,7 @@ PY
         fi
       fi
     fi
-  elif [ -f "$(git rev-parse --git-path shallow 2>/dev/null)" ]; then
+  elif [ -f "$CAFE_SHALLOW_PATH" ]; then
     bad "cafe authored adoption baseline is unavailable in a shallow non-GitHub checkout"
   fi
   if [ "$CAFE_ADOPTED" -eq 1 ]; then
