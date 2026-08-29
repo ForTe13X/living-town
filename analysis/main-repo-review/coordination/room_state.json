@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-29T04:56:13Z",
+  "updated_at": "2026-08-29T05:00:11Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -2961,9 +2961,9 @@
       "generated_outputs": ["one-file CI repair", "pinned-Docker full CI receipt", "corrupt-manifest negative-control receipt", "Draft repair PR"],
       "dependencies": ["PR31 frozen exact d7f2bd06", "independent Security/QA and REFUTE both P0=0/P1=1", "master9b2d052c unchanged", "tools/ci.sh unleased", "no active writer", "existing compiler tools/cafe_authored_manifest.py"],
       "consumer": "PR31 exact two-path candidate after reviewed repair merge and normal base synchronization",
-      "status": "exact_one_path_child_commit_p1_p2_focused_docker_pass_normal_fast_forward_reserved",
+      "status": "exact_one_path_child_commit_p1_p2_focused_docker_pass_smart_http_failed_api_recovery_reserved",
       "read_only": false,
-      "last_heartbeat": "2026-08-29T04:56:13Z",
+      "last_heartbeat": "2026-08-29T05:00:11Z",
       "stale_after": "2026-08-29T05:56:13Z",
       "stale_after": null,
       "pr": 32,
@@ -3012,6 +3012,7 @@
     "stack_b_ci_repair_pr32_terminal_p1": "Both independent exact-head reviewers report P0=0/P1=1. Security/QA reproduced in pinned Docker that deleting both adopted files from synthetic6a3992c1 returns rc0 with log75d13282; REFUTE independently identified the same history-insensitive selector. Hosted PR32 exercised only the pre-adoption dormant branch and both cafe checks were not-applicable. Security also retains P2=1 because any negative-command nonzero is accepted without proving expected canonicality rejection; REFUTE retains P2=2. PR32 is frozen Draft and both review leases are released.",
     "stack_b_ci_repair_pr32_p1_repair_reservation": "The same isolated one-path tools/ci.sh writer is reactivated. It may add only history-aware adopted-path removal failure and expected-error-specific negative diagnostics, then must prove dormant/active/asymmetric/corrupt/dual-deletion cases in fresh pinned Docker. Any need for workflows, sentinels, authority manifests, another path or non-isolated evidence stops unpublished.",
     "stack_b_ci_repair_pr32_p1_local_proof": "Exact clean one-path child25795c9c/tree9d2abbdf/blob743a814 adds baseline-aware post-adoption removal failure plus expected-error-specific negative diagnostics. Fresh pinned Docker proved pre-adoption dormant locally and via GitHub event, active canonical pass, asymmetric/corrupt failure, full-history and shallow-event dual-deletion failure, and unexpected interpreter/I/O failure discrimination. Aggregate focused receipt68d022b8; isolated diagnostic c9d7811d. Controller-only setup faults are disclosed; all containers auto-removed. Normal fast-forward is reserved; no remote PR32 mutation yet.",
+    "stack_b_ci_repair_pr32_transport_failure": "The single normal fast-forward push ran 53s then failed with curl56 connection reset/send-pack disconnect and contradictory client text 'Everything up-to-date'. Fresh GitHub ref and PR reads prove remote remains exact14afdc05; Git object25795c9c is absent by API. No remote PR/branch mutation occurred. One non-force Git Data API reconstruction is reserved with canonical blob/tree/parent identity stops.",
     "shared_write_conflicts": 0,
     "decision": "Original Stack B writer used its one recovery and failed closed on CRLF projection, so it is revoked and frozen. Exactly one replacement owns the same two evidence files in a new LF worktree; original worktree and every game/tool/workflow/shared-authority path are forbidden."
   },
@@ -3521,5 +3522,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_39687a6b_verified"
   },
-  "next_trigger": "Publish this local-proof ledger, reverify PR32/master/protection and exact one-path ancestry, then normally fast-forward PR32 from14afdc05 to25795c9c. Refresh the Draft body and require new-head hosted checks plus fresh independent Security/QA and REFUTE; PR31 remains frozen Draft."
+  "next_trigger": "Publish this transport-failure ledger, reconstruct exact canonical blob743a814/tree9d2abbdf as a child of remote14afdc05 through Git Data API, then non-force advance only if the remote ref remains14afdc05. Refresh the Draft body and require new-head hosted checks plus fresh independent reviews; PR31 remains frozen Draft."
 }
