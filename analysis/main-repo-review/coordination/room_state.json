@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-29T08:52:53Z",
+  "updated_at": "2026-08-29T09:36:08Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -15,31 +15,31 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-08-29T06:28:19Z",
+    "at": "2026-08-29T09:36:08Z",
     "github_api_count": 39,
-    "git_ls_remote_count": 39,
+    "git_ls_remote_count": null,
     "local_tracking_count": 39,
-    "local_exact_count": 39,
-    "snapshot_complete": true,
-    "secondary_authority": "Fresh GitHub branches API, direct git ls-remote --heads, and fetched local origin tracking independently agree at all 39 hosted branch names and exact heads. The extra local for-each-ref row is the symbolic/default origin ref, not a hosted branch.",
-    "reconciliation": "Fetch --all --prune --tags succeeded. GitHub API, ls-remote and 39 real local origin branch refs are exact at sorted name+SHA set SHA256 ab60c85a. Master9b2d052c, integrationac85fc6b, PR31d7f2bd06 and PR32 8d9e992b are stable; coordination advanced only by the recorded ledger dispatch to e8174585. Ten PRs open, zero issues/releases/tags, 36 worktrees remain registered with 15 dirty and zero read errors preserved. PR5 exact e8174585 CI33237030055 succeeded.",
-    "network_failures": [],
-    "sorted_name_sha_set_sha256": "ab60c85a6d5a3036635e7130db3a450c229c3c8ec47f2be33cf2b443ba048399",
+    "local_exact_count": 37,
+    "snapshot_complete": false,
+    "secondary_authority": "Fresh GitHub branches API is current for all 39 hosted names and heads. Both fetch --prune --tags and a direct git ls-remote --heads retry failed to connect to github.com:443 after about 21 seconds, so cached local refs are explicitly non-authoritative for this run.",
+    "reconciliation": "GitHub API enumerated all 39 hosted branches at sorted name+SHA set SHA256 6c2c50a5. Master9b2d052c, integrationac85fc6b and PR31d7f2bd06 are stable. Coordination is84edb9c9 and PR32 isf47346ec; those two API heads are newer than cached origin refs because network fetch and ls-remote both timed out. Ten PRs open, zero issues/releases/tags, 36 worktrees with 15 dirty and zero read errors preserved. PR32 is Draft/CLEAN with four required exact-head checks success and artifact metadata inspected; PR5 exact84edb9c9 CI33244224106 succeeded.",
+    "network_failures": ["git fetch origin --prune --tags failed: unable to connect to github.com:443 after about 21 seconds", "git ls-remote --heads retry failed with the same bounded connect timeout"],
+    "sorted_name_sha_set_sha256": "6c2c50a5abda5109a642dde057b63548719e17e27185e59687d4915e12247c61",
     "master": "9b2d052ca740a96b9b556765a7ead7fcb5425600",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "e8174585e43e57f2915a1a698e0e354fa0043293",
+    "coordination": "84edb9c9a1b5381d14c1af160eb90a24dcd23e3a",
     "pr25": "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
     "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
     "pr28": "f57fc8e0755e27da36a980611ec0e0e6b5b5d47f",
     "pr29": "f6cbdcf5ad8539bf4c4ce14ae6328ffb24d18ffc",
     "pr30": "4974244f784c8bcb9aa1a5c88fd358f5a671bd8d",
-    "mismatched_or_missing_local": {},
+    "mismatched_or_missing_local": {"codex/main-repo-review":{"api":"84edb9c9a1b5381d14c1af160eb90a24dcd23e3a","cached_local":"e8174585e43e57f2915a1a698e0e354fa0043293"},"codex/pr31-stack-b-ci-gate-repair-v1":{"api":"f47346ec346e18d8fdc48ea9215d0b69a1a48c44","cached_local":"8d9e992b42d35f6b830debad87f9a291a33186fa"}},
     "open_prs": 10,
     "open_issues": 0,
     "releases": 0,
     "tags": 0,
-    "full_branch_metadata_scan": "Material-transition full review completed at 2026-08-29T06:28:19Z after two terminal PR32 P1 reviews. All 39 hosted branches were enumerated and each exact head, last commit time/subject, PR relation, registered worktree owner, ahead/behind and ancestry versus master9b2d052c and integrationac85fc6b, and recent exact-head Actions were recomputed. API, ls-remote and 39 real local tracking refs agree exactly; the 40th local row is symbolic origin. Ten PRs remain open; zero issues/releases/tags. Master protection remains strict with four app15368 checks, admins/conversation enabled, approvals0, force/delete disabled. Thirty-six worktrees remain registered; 15 dirty and all unknown state preserved."
+    "full_branch_metadata_scan": "Lightweight API-authoritative review at 2026-08-29T09:36:08Z enumerated every one of 39 hosted branches with exact head, commit metadata and PR relation. Cached object ancestry/ahead-behind remains available for 37 exact refs; coordination and PR32 ancestry is intentionally unavailable because fetch and ls-remote failed. Ten PRs remain open; zero issues/releases/tags. Master protection remains strict with four app15368 checks, admins/conversation enabled, approvals0, force/delete disabled. Thirty-six worktrees remain registered; 15 dirty and all unknown state preserved."
   },
   "portfolio_policy": {
     "default_active_writers": 2,
@@ -3434,8 +3434,8 @@
     }
   },
   "workspace_observation": {
-    "registered_worktrees": 22,
-    "dirty_worktrees": 14,
+    "registered_worktrees": 36,
+    "dirty_worktrees": 15,
     "worktree_errors": 0,
     "unknown_or_historical_dirt_policy": "quarantine_preserve"
   },
@@ -3543,7 +3543,7 @@
     "pr29_post_merge_success_full_scan_pr28_reserved": "Post-merge CI33182561513 succeeded at master43c72a8f. Full 36-branch snapshot is complete and exact across GitHub/ls-remote/local refs, hash1e6a1261; 29 PRs/0 reviews, 0 issues/releases/tags, 29 worktrees with 14 dirty all preserved. Required tasks unavailable; dynamic dev/map/UI-UX inactive/terminal, B28 BELOW_REQUIRED_FLOOR. PR28 one-manifest branch update/review is the next serialized lane.",
     "pr28_e70cebba_terminal_p1_freeze": "PR28 exact head e70cebba/treec9e0273e/body10e446b passed one-path identity, Docker53x2 and hosted CI33184928495. Security/QA P0=0/P1=1/P2=1 and REFUTE P0=0/P1=1/P2=0 independently found the same strict-base identity handoff cycle. Draft frozen; PENDING strings, Ready, protection and merge remain untouched.",
     "human_acceptance": "not_ready",
-    "pr5_projection": "open_draft_live_head_39687a6b_verified"
+    "pr5_projection": "open_draft_live_head_84edb9c9_ci33244224106_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "Await terminal fresh independent Security/QA and REFUTE results for exact PR32 headf47346ec/tree382312c8/body d3b220be. Merge remains forbidden until both report P0/P1=0; PR31 remains frozen Draft and HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "Await terminal fresh independent Security/QA and REFUTE results for exact PR32 headf47346ec/tree382312c8/body d3b220be, then refresh PR5 human projection and retry complete fetch/ls-remote reconciliation. Merge remains forbidden until both report P0/P1=0; PR31 remains frozen Draft and HUMAN_ACCEPTANCE_NOT_READY."
 }
