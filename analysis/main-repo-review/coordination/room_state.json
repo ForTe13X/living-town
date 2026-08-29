@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-29T00:02:30Z",
+  "updated_at": "2026-08-29T00:05:27Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -15,15 +15,15 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-08-28T23:58:09Z",
-    "github_api_count": 37,
-    "git_ls_remote_count": 37,
+    "at": "2026-08-29T00:05:27Z",
+    "github_api_count": 38,
+    "git_ls_remote_count": null,
     "local_tracking_count": 37,
     "local_exact_count": 37,
-    "snapshot_complete": true,
-    "secondary_authority": "GitHub branch API, git ls-remote --heads and fetched local tracking refs independently agree at all 37 hosted branch heads; GitHub PR, Actions, protection, issue and release APIs remain authoritative for hosted metadata.",
-    "reconciliation": "Fresh fetch --all --prune --tags succeeded. GitHub API and git ls-remote enumerate the same 37 branch names and exact heads; local refs/remotes/origin is 37/37 exact. Sorted name+SHA set SHA256 is e0f929ff.",
-    "network_failures": [],
+    "snapshot_complete": false,
+    "secondary_authority": "GitHub branch/ref/commit APIs authoritatively verify the newly created Stack B branch at d7f2bd06/tree51816f37/parent9b2d052c. The pre-mutation fetch/API/ls-remote/local snapshot was complete at 37/37; the post-create ls-remote refresh timed out and cached refs are not promoted for the new branch.",
+    "reconciliation": "Git Data API created the 38th hosted branch only after canonical blob, exact tree and exact parent checks. GitHub API now enumerates 38; local tracking retains the prior exact 37 and post-create ls-remote is unavailable, so the post-mutation snapshot is explicitly incomplete.",
+    "network_failures": ["normal branch push failed with curl28 and send-pack disconnect", "post-API-create git ls-remote timed out connecting to github.com:443"],
     "sorted_name_sha_set_sha256": "e0f929ff8ca15c0271d4554405c8269d3add11637d6f3506304a3fe9c727c094",
     "master": "9b2d052ca740a96b9b556765a7ead7fcb5425600",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
@@ -2882,7 +2882,7 @@
       "objective": "Create only the canonical cafe authored stable-ID contract and protected-compiler-generated manifest against exact master9b2d052c so protected capture can bind cafe 1F/2F semantic sources and renderer closure without acquiring Sim, navigation, collision, save/replay, portal, canon or visual-quality authority.",
       "baseline": "9b2d052ca740a96b9b556765a7ead7fcb5425600",
       "baseline_tree": "3c5d859982c66bc5711659bf8f78548595717a4a",
-      "head": "1114d2b7ba3dda2558f78e9376afdb3a1cc7fca5",
+      "head": "d7f2bd060f431275f9d606deb50b1cd4d5a08ed8",
       "tree": "51816f37dd1935c78378e39499f704b3f8b342c0",
       "branch": "codex/cafe-authored-ids-manifest-v1",
       "worktree": "D:\\Documents\\Dev\\living-town-stack-b-authored-contract-wt",
@@ -2925,15 +2925,16 @@
       "generated_outputs": ["canonical IDs JSON", "byte-reproducible protected-compiler manifest", "pinned-Docker generation/check/negative-control receipts"],
       "dependencies": ["revoked original lease provenance", "exact master9b2d052c/tree3c5d8599", "fresh core.autocrlf=false worktree", "pinned podman image b0173238 with Python3.14.6 and git2.55.0", "no competing Stack B owner", "fresh complete 37/37 remote branch reconciliation"],
       "consumer": "protected_capture_and_attestation workflow followed by independent exact-head Security/QA and REFUTE",
-      "status": "normal_push_failed_remote_absent_one_git_data_api_publication_recovery_reserved",
+      "status": "content_equivalent_exact_tree_branch_published_awaiting_draft_pr",
       "read_only": false,
-      "last_heartbeat": "2026-08-29T00:02:30Z",
-      "stale_after": "2026-08-29T00:32:30Z",
+      "last_heartbeat": "2026-08-29T00:05:27Z",
+      "stale_after": "2026-08-29T00:35:27Z",
       "pr": null,
       "checks": "PASS at exact1114d2b7/tree51816f37: only two A paths; git diff --cached --check passed before commit; IDs SHA256 456b53c5; manifest generated twice byte-identical SHA256 f38c5da9; committed-head --check passed in pinned b0173238 Linux Docker; malformed JSON, stale pointer and unbound source fail closed; container game status0; host clean",
       "recovery_count": 1,
       "publication_attempt": {"method": "normal non-force git push --set-upstream", "result": "failed before ref creation", "diagnostic": "curl28 github.com:443 connection timeout and send-pack disconnect", "hosted_postcheck": "GitHub ref and branch APIs both 404; no Draft PR exists"},
       "publication_recovery": {"method": "Git Data API create content-equivalent exact two-path child commit and new branch ref", "force": false, "expected_parent": "9b2d052ca740a96b9b556765a7ead7fcb5425600", "expected_tree": "51816f37dd1935c78378e39499f704b3f8b342c0", "stop": "remote branch appears, master/head/tree drift, canonical blob mismatch or API failure"},
+      "publication_recovery_result": {"result": "success", "local_source_commit": "1114d2b7ba3dda2558f78e9376afdb3a1cc7fca5", "hosted_head": "d7f2bd060f431275f9d606deb50b1cd4d5a08ed8", "tree": "51816f37dd1935c78378e39499f704b3f8b342c0", "parent": "9b2d052ca740a96b9b556765a7ead7fcb5425600", "ids_blob": "b41c550f3d9090c46e755f9b700427d4b9c2268f", "manifest_blob": "a239968f97f28e3604df640bfbb6c524ef5cfe6b", "force": false},
       "rollback": "Before remote publication remove only the verified exact clean replacement worktree/branch. After Draft publication leave or close Draft and use reviewed child; never reset/force/rewrite shared history.",
       "stop_lines": ["replacement path/branch exists", "core.autocrlf=false worktree is not host and container clean", "any extra path", "Docker digest/isolation drift", "output nondeterminism", "consumer/master/protection drift", "another owner appears"],
       "handoff_recipient": "Independent Stack B Security/QA and REFUTE reviewers",
@@ -2952,11 +2953,12 @@
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-08-29T00:02:30Z",
+    "at": "2026-08-29T00:05:27Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "stack_b_replacement_exact_commit": "Replacement LF lane is clean at exact1114d2b7/tree51816f37 with only cafe-authored IDs and generated manifest added. Pinned Linux Docker b0173238 at committed head passed compiler --check, exact identity, game-clean and SHA checks; prior independent generation was byte-identical and malformed/stale/unbound negatives fail closed. Remote publication and Draft PR remain unperformed.",
     "stack_b_normal_push_failure": "One normal non-force push failed with curl28/connect timeout and send-pack disconnect. GitHub ref and branch APIs confirm the replacement branch is absent and no PR exists. One non-force Git Data API create-ref recovery is reserved against exact master9b2d052c and tree51816f37.",
+    "stack_b_api_branch_publication": "The reserved recovery succeeded without force: hosted headd7f2bd06 is a content-equivalent child of exact master9b2d052c with exact local tree51816f37 and canonical blobs b41c550/a239968. The branch is the 38th hosted branch; no PR exists yet. Post-create smart-HTTP refresh failed and remains explicitly incomplete.",
     "shared_write_conflicts": 0,
     "decision": "Original Stack B writer used its one recovery and failed closed on CRLF projection, so it is revoked and frozen. Exactly one replacement owns the same two evidence files in a new LF worktree; original worktree and every game/tool/workflow/shared-authority path are forbidden."
   },
@@ -3466,5 +3468,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_39687a6b_verified"
   },
-  "next_trigger": "Create one content-equivalent exact-tree Stack B commit and absent branch ref through the non-force Git Data API recovery, verify hosted identity and two-path scope, then create one Draft PR. Do not mark Ready or merge."
+  "next_trigger": "Verify hosted headd7f2bd06 remains a clean two-path child of master9b2d052c with tree51816f37, then create one Draft PR and start hosted checks. Do not mark Ready or merge; reserve independent reviews only after exact PR identity is recorded."
 }
