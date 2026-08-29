@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-29T00:44:48Z",
+  "updated_at": "2026-08-29T01:25:16Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -2925,10 +2925,10 @@
       "generated_outputs": ["canonical IDs JSON", "byte-reproducible protected-compiler manifest", "pinned-Docker generation/check/negative-control receipts"],
       "dependencies": ["revoked original lease provenance", "exact master9b2d052c/tree3c5d8599", "fresh core.autocrlf=false worktree", "pinned podman image b0173238 with Python3.14.6 and git2.55.0", "no competing Stack B owner", "fresh complete 37/37 remote branch reconciliation"],
       "consumer": "protected_capture_and_attestation workflow followed by independent exact-head Security/QA and REFUTE",
-      "status": "writer_released_exact_head_hosted_checks_success_two_independent_reviews_reserved",
+      "status": "frozen_p1_hosted_stack_b_gate_fail_open_repair_writer_reserved",
       "read_only": false,
-      "last_heartbeat": "2026-08-29T00:41:02Z",
-      "stale_after": "2026-08-29T01:11:02Z",
+      "last_heartbeat": "2026-08-29T01:25:16Z",
+      "stale_after": "2026-08-29T01:55:16Z",
       "pr": {"number": 31, "url": "https://github.com/ForTe13X/living-town/pull/31", "state": "OPEN", "draft": true, "base": "master", "base_sha": "9b2d052ca740a96b9b556765a7ead7fcb5425600", "head_sha": "d7f2bd060f431275f9d606deb50b1cd4d5a08ed8", "tree": "51816f37dd1935c78378e39499f704b3f8b342c0", "mergeable": "MERGEABLE", "merge_state": "BLOCKED", "changed_files": 2},
       "checks": "Local/Docker PASS at content-equivalent exact tree51816f37. Hosted exact d7f2bd06: CI33222586011 success, authority33222586188 success, qualification33222586095 success, visual success; protected capture skipped on Draft by design. PR OPEN Draft CLEAN/MERGEABLE; body 1960 bytes SHA256 88877b95; no hosted reviews/comments.",
       "recovery_count": 1,
@@ -2936,13 +2936,42 @@
       "publication_recovery": {"method": "Git Data API create content-equivalent exact two-path child commit and new branch ref", "force": false, "expected_parent": "9b2d052ca740a96b9b556765a7ead7fcb5425600", "expected_tree": "51816f37dd1935c78378e39499f704b3f8b342c0", "stop": "remote branch appears, master/head/tree drift, canonical blob mismatch or API failure"},
       "publication_recovery_result": {"result": "success", "local_source_commit": "1114d2b7ba3dda2558f78e9376afdb3a1cc7fca5", "hosted_head": "d7f2bd060f431275f9d606deb50b1cd4d5a08ed8", "tree": "51816f37dd1935c78378e39499f704b3f8b342c0", "parent": "9b2d052ca740a96b9b556765a7ead7fcb5425600", "ids_blob": "b41c550f3d9090c46e755f9b700427d4b9c2268f", "manifest_blob": "a239968f97f28e3604df640bfbb6c524ef5cfe6b", "force": false},
       "review_claims": [
-        {"claim_id":"review-pr31-security-qa-d7f2bd06","task":"/root/pr25_sync_security_qa","role":"Independent read-only Security/QA","objective":"Audit exact PR31 authored-ID and generated-manifest contract, compiler/authority boundary, deterministic Docker evidence and fail-closed controls; report P0/P1/P2 and exact identity.","base":"9b2d052ca740a96b9b556765a7ead7fcb5425600","head":"d7f2bd060f431275f9d606deb50b1cd4d5a08ed8","tree":"51816f37dd1935c78378e39499f704b3f8b342c0","branch":"codex/cafe-authored-ids-manifest-v1-replacement-1","worktree":null,"owned_paths":[],"forbidden_paths":["all repository, PR, review, branch, protection, coordination, container/image/volume/cache mutation"],"authority_keys":[],"generated_outputs":["terminal read-only review handoff only"],"dependencies":["PR31 OPEN Draft CLEAN","body88877b95/1960","all exact-head hosted checks success","exact two-path scope"],"consumer":"Producer merge-gate ledger","status":"active_read_only_followup_dispatched","last_heartbeat":"2026-08-29T00:44:48Z","stale_after":"2026-08-29T01:14:48Z","pr":31,"checks":"read-only independent revalidation in progress","recovery_count":0,"rollback":"release review claim without mutation","stop_lines":["identity/body/path/check drift","need to mutate or create local Docker state"],"handoff_recipient":"Producer","archive_condition":"terminal exact-head P0/P1/P2 handoff"},
-        {"claim_id":"review-pr31-refute-d7f2bd06","task":"/root/pr25_sync_refute","role":"Independent read-only REFUTE","objective":"Adversarially challenge exact PR31 source-ID/manifest binding, stale/substitution/authority/replay/rollback boundaries and evidence-only claims; report P0/P1/P2 and exact identity.","base":"9b2d052ca740a96b9b556765a7ead7fcb5425600","head":"d7f2bd060f431275f9d606deb50b1cd4d5a08ed8","tree":"51816f37dd1935c78378e39499f704b3f8b342c0","branch":"codex/cafe-authored-ids-manifest-v1-replacement-1","worktree":null,"owned_paths":[],"forbidden_paths":["all repository, PR, review, branch, protection, coordination, container/image/volume/cache mutation"],"authority_keys":[],"generated_outputs":["terminal read-only review handoff only"],"dependencies":["PR31 OPEN Draft CLEAN","body88877b95/1960","all exact-head hosted checks success","exact two-path scope"],"consumer":"Producer merge-gate ledger","status":"active_read_only_followup_dispatched","last_heartbeat":"2026-08-29T00:44:48Z","stale_after":"2026-08-29T01:14:48Z","pr":31,"checks":"read-only adversarial revalidation in progress","recovery_count":0,"rollback":"release review claim without mutation","stop_lines":["identity/body/path/check drift","need to mutate or create local Docker state"],"handoff_recipient":"Producer","archive_condition":"terminal exact-head P0/P1/P2 handoff"}
+        {"claim_id":"review-pr31-security-qa-d7f2bd06","task":"/root/pr25_sync_security_qa","role":"Independent read-only Security/QA","objective":"Audit exact PR31 authored-ID and generated-manifest contract, compiler/authority boundary, deterministic Docker evidence and fail-closed controls; report P0/P1/P2 and exact identity.","base":"9b2d052ca740a96b9b556765a7ead7fcb5425600","head":"d7f2bd060f431275f9d606deb50b1cd4d5a08ed8","tree":"51816f37dd1935c78378e39499f704b3f8b342c0","branch":"codex/cafe-authored-ids-manifest-v1-replacement-1","worktree":null,"owned_paths":[],"forbidden_paths":["all repository, PR, review, branch, protection, coordination, container/image/volume/cache mutation"],"authority_keys":[],"generated_outputs":["terminal read-only review handoff only"],"dependencies":["PR31 OPEN Draft CLEAN","body88877b95/1960","all exact-head hosted checks success","exact two-path scope"],"consumer":"Producer merge-gate ledger","status":"terminal_released_p0_0_p1_1_p2_1","last_heartbeat":"2026-08-29T00:52:09Z","stale_after":null,"pr":31,"checks":"REQUEST CHANGES: authority and qualification were not-applicable; no immutable exact-head Docker receipt/artifact","recovery_count":0,"release_reason":"terminal exact-head handoff","rollback":"released without mutation","stop_lines":[],"handoff_recipient":"Producer","archive_condition":"met"},
+        {"claim_id":"review-pr31-refute-d7f2bd06","task":"/root/pr25_sync_refute","role":"Independent read-only REFUTE","objective":"Adversarially challenge exact PR31 source-ID/manifest binding, stale/substitution/authority/replay/rollback boundaries and evidence-only claims; report P0/P1/P2 and exact identity.","base":"9b2d052ca740a96b9b556765a7ead7fcb5425600","head":"d7f2bd060f431275f9d606deb50b1cd4d5a08ed8","tree":"51816f37dd1935c78378e39499f704b3f8b342c0","branch":"codex/cafe-authored-ids-manifest-v1-replacement-1","worktree":null,"owned_paths":[],"forbidden_paths":["all repository, PR, review, branch, protection, coordination, container/image/volume/cache mutation"],"authority_keys":[],"generated_outputs":["terminal read-only review handoff only"],"dependencies":["PR31 OPEN Draft CLEAN","body88877b95/1960","all exact-head hosted checks success","exact two-path scope"],"consumer":"Producer merge-gate ledger","status":"terminal_released_p0_0_p1_1_p2_2","last_heartbeat":"2026-08-29T01:23:07Z","stale_after":null,"pr":31,"checks":"REFUTE: all four required checks can pass while Stack B paths are not-applicable; no hosted exact-head receipt/artifact","recovery_count":0,"release_reason":"terminal exact-head handoff","rollback":"released without mutation","stop_lines":[],"handoff_recipient":"Producer","archive_condition":"met"}
       ],
       "rollback": "Before remote publication remove only the verified exact clean replacement worktree/branch. After Draft publication leave or close Draft and use reviewed child; never reset/force/rewrite shared history.",
       "stop_lines": ["replacement path/branch exists", "core.autocrlf=false worktree is not host and container clean", "any extra path", "Docker digest/isolation drift", "output nondeterminism", "consumer/master/protection drift", "another owner appears"],
       "handoff_recipient": "Independent Stack B Security/QA and REFUTE reviewers",
       "archive_condition": "One clean exact-head two-path Draft PR handoff with deterministic Docker receipts, or safe abort before publication."
+    },
+    {
+      "claim_id": "lease-pr31-stack-b-ci-gate-repair-v1",
+      "task": "producer-writer:01a04233-497e-7942-8da0-7958b314b199",
+      "role": "Single isolated Stack B hosted qualification P1 repair writer",
+      "objective": "Add a bounded hosted CI validation path that recognizes the two Stack B evidence files, regenerates and byte-compares the authored manifest at the exact candidate, exercises fail-closed controls, and leaves an immutable hosted receipt before PR31 can be reconsidered.",
+      "baseline": "9b2d052ca740a96b9b556765a7ead7fcb5425600",
+      "baseline_tree": "3c5d859982c66bc5711659bf8f78548595717a4a",
+      "head": "9b2d052ca740a96b9b556765a7ead7fcb5425600",
+      "tree": "3c5d859982c66bc5711659bf8f78548595717a4a",
+      "branch": "codex/pr31-stack-b-ci-gate-repair-v1",
+      "worktree": "D:\\Documents\\Dev\\living-town-pr31-stack-b-ci-gate-repair-wt",
+      "owned_paths": ["tools/ci.sh"],
+      "forbidden_paths": ["all other paths including PR31 evidence files, workflows, trusted-cafe authority manifests/scripts, game/**, project.godot, Sim.gd, Main.gd, save/replay/schema/migrations, registries, anchors and coordination files", "master", "integration/batons", "protection", "force/history rewrite", "unknown worktrees/containers/images/volumes/caches", "canon/release/tag/human acceptance"],
+      "authority_keys": ["shared-ci-entrypoint-serialized", "stack-b-hosted-manifest-check-v1"],
+      "generated_outputs": ["one-file CI repair", "pinned-Docker full CI receipt", "corrupt-manifest negative-control receipt", "Draft repair PR"],
+      "dependencies": ["PR31 frozen exact d7f2bd06", "independent Security/QA and REFUTE both P0=0/P1=1", "master9b2d052c unchanged", "tools/ci.sh unleased", "no active writer", "existing compiler tools/cafe_authored_manifest.py"],
+      "consumer": "PR31 exact two-path candidate after reviewed repair merge and normal base synchronization",
+      "status": "reserved_before_isolated_worktree_creation",
+      "read_only": false,
+      "last_heartbeat": "2026-08-29T01:25:16Z",
+      "stale_after": "2026-08-29T01:55:16Z",
+      "pr": null,
+      "checks": "Require exact one-path diff, pinned Linux Docker full CI, exact manifest --check when Stack B files exist, corrupt-manifest negative failure, shell syntax, clean tree and hosted Draft checks",
+      "recovery_count": 0,
+      "rollback": "Before remote publication remove only the verified clean task worktree/branch. After Draft publication leave or close Draft and revert only through reviewed child; never reset/force/rewrite shared history.",
+      "stop_lines": ["worktree/branch exists", "master/PR31/protection drift", "tools/ci.sh already leased or dirty", "repair needs workflow/protected-authority/game/schema/registry changes", "Docker digest/isolation unavailable", "full CI regression", "negative control does not fail", "extra path appears"],
+      "handoff_recipient": "Independent Security/QA and REFUTE, then Producer",
+      "archive_condition": "One clean exact-head one-path Draft repair PR with Docker receipts, or safe abort before publication."
     }
   ],
   "active_dependency_graph": {
@@ -2957,15 +2986,17 @@
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-08-29T00:44:48Z",
-    "active_writers": 0,
-    "read_only_reviewers": 2,
+    "at": "2026-08-29T01:25:16Z",
+    "active_writers": 1,
+    "read_only_reviewers": 0,
     "stack_b_replacement_exact_commit": "Replacement LF lane is clean at exact1114d2b7/tree51816f37 with only cafe-authored IDs and generated manifest added. Pinned Linux Docker b0173238 at committed head passed compiler --check, exact identity, game-clean and SHA checks; prior independent generation was byte-identical and malformed/stale/unbound negatives fail closed. Remote publication and Draft PR remain unperformed.",
     "stack_b_normal_push_failure": "One normal non-force push failed with curl28/connect timeout and send-pack disconnect. GitHub ref and branch APIs confirm the replacement branch is absent and no PR exists. One non-force Git Data API create-ref recovery is reserved against exact master9b2d052c and tree51816f37.",
     "stack_b_api_branch_publication": "The reserved recovery succeeded without force: hosted headd7f2bd06 is a content-equivalent child of exact master9b2d052c with exact local tree51816f37 and canonical blobs b41c550/a239968. The branch is the 38th hosted branch; no PR exists yet. Post-create smart-HTTP refresh failed and remains explicitly incomplete.",
     "stack_b_pr31_draft": "Draft PR31 is OPEN at exact d7f2bd06/tree51816f37 against master9b2d052c, MERGEABLE but BLOCKED, with exactly two added evidence files and no reviews. Exact-head CI33222586011, authority33222586188 and qualification33222586095 are in progress; protected capture is skipped on Draft by design. Ready and merge are forbidden pending terminal hosted evidence plus independent Security/QA and REFUTE P0/P1=0.",
     "stack_b_pr31_terminal_checks_reviews_reserved": "PR31 remains OPEN Draft CLEAN/MERGEABLE at d7f2bd06/tree51816f37/body88877b95 with exactly two added files. CI33222586011, authority33222586188, qualification33222586095 and visual succeeded; protected capture is skipped by design. Writer released and two independent read-only review claims reserved with no path or mutation authority.",
     "stack_b_pr31_reviews_dispatched": "Both recorded immutable exact-head packets were dispatched to the existing independent Security/QA and REFUTE reviewers. They are active read-only/output-only; no writer or shared authority lease is active and Draft PR31 remains unchanged.",
+    "stack_b_pr31_terminal_p1": "Both exact-head reviewers independently report P0=0/P1=1. Required qualification33222586095 and authority33222586188 returned not-applicable for the two Stack B paths, general CI does not invoke the authored-manifest compiler, and no immutable exact-head Docker receipt/artifact exists. PR31 is frozen Draft; Ready/merge forbidden. Security P2=1 and REFUTE P2=2 are retained.",
+    "stack_b_ci_repair_reservation": "One isolated writer is reserved at exact master9b2d052c for a one-file tools/ci.sh repair. It must make data-only Stack B candidates regenerate and byte-compare the manifest in hosted CI, prove a corrupt-manifest negative failure, and stop if workflow/protected authority or any other path is needed.",
     "shared_write_conflicts": 0,
     "decision": "Original Stack B writer used its one recovery and failed closed on CRLF projection, so it is revoked and frozen. Exactly one replacement owns the same two evidence files in a new LF worktree; original worktree and every game/tool/workflow/shared-authority path are forbidden."
   },
@@ -3475,5 +3506,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_39687a6b_verified"
   },
-  "next_trigger": "Wait for both terminal PR31 reviewer handoffs, revalidate immutable identity, ledger the stricter P0/P1 result, and keep Draft with no Ready/merge mutation until both are recorded."
+  "next_trigger": "Create the isolated one-file CI repair worktree at exact master9b2d052c, inspect tools/ci.sh insertion points, implement the smallest fail-closed authored-manifest check, and verify full CI plus corrupt-manifest negative control in pinned Linux Docker before any remote publication."
 }
