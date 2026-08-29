@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-29T05:00:11Z",
+  "updated_at": "2026-08-29T05:03:18Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -2915,7 +2915,7 @@
       "objective": "Recreate the same two-file Stack B contract in a fresh core.autocrlf=false worktree at exact master9b2d052c, then generate and verify the manifest in pinned Linux Docker without touching game, tools, workflows or shared authority.",
       "baseline": "9b2d052ca740a96b9b556765a7ead7fcb5425600",
       "baseline_tree": "3c5d859982c66bc5711659bf8f78548595717a4a",
-      "head": "25795c9ce4f2e59412f7c2874502fa16296c18c1",
+      "head": "8d9e992b42d35f6b830debad87f9a291a33186fa",
       "tree": "9d2abbdf1ebd11d9ec4ca58b0afae3bf059fc50c",
       "branch": "codex/cafe-authored-ids-manifest-v1-replacement-1",
       "worktree": "D:\\Documents\\Dev\\living-town-stack-b-authored-contract-r1-wt",
@@ -2961,9 +2961,9 @@
       "generated_outputs": ["one-file CI repair", "pinned-Docker full CI receipt", "corrupt-manifest negative-control receipt", "Draft repair PR"],
       "dependencies": ["PR31 frozen exact d7f2bd06", "independent Security/QA and REFUTE both P0=0/P1=1", "master9b2d052c unchanged", "tools/ci.sh unleased", "no active writer", "existing compiler tools/cafe_authored_manifest.py"],
       "consumer": "PR31 exact two-path candidate after reviewed repair merge and normal base synchronization",
-      "status": "exact_one_path_child_commit_p1_p2_focused_docker_pass_smart_http_failed_api_recovery_reserved",
+      "status": "draft_pr32_content_equivalent_api_child_published_hosted_checks_in_progress_body_refresh_reserved",
       "read_only": false,
-      "last_heartbeat": "2026-08-29T05:00:11Z",
+      "last_heartbeat": "2026-08-29T05:03:18Z",
       "stale_after": "2026-08-29T05:56:13Z",
       "stale_after": null,
       "pr": 32,
@@ -3013,6 +3013,7 @@
     "stack_b_ci_repair_pr32_p1_repair_reservation": "The same isolated one-path tools/ci.sh writer is reactivated. It may add only history-aware adopted-path removal failure and expected-error-specific negative diagnostics, then must prove dormant/active/asymmetric/corrupt/dual-deletion cases in fresh pinned Docker. Any need for workflows, sentinels, authority manifests, another path or non-isolated evidence stops unpublished.",
     "stack_b_ci_repair_pr32_p1_local_proof": "Exact clean one-path child25795c9c/tree9d2abbdf/blob743a814 adds baseline-aware post-adoption removal failure plus expected-error-specific negative diagnostics. Fresh pinned Docker proved pre-adoption dormant locally and via GitHub event, active canonical pass, asymmetric/corrupt failure, full-history and shallow-event dual-deletion failure, and unexpected interpreter/I/O failure discrimination. Aggregate focused receipt68d022b8; isolated diagnostic c9d7811d. Controller-only setup faults are disclosed; all containers auto-removed. Normal fast-forward is reserved; no remote PR32 mutation yet.",
     "stack_b_ci_repair_pr32_transport_failure": "The single normal fast-forward push ran 53s then failed with curl56 connection reset/send-pack disconnect and contradictory client text 'Everything up-to-date'. Fresh GitHub ref and PR reads prove remote remains exact14afdc05; Git object25795c9c is absent by API. No remote PR/branch mutation occurred. One non-force Git Data API reconstruction is reserved with canonical blob/tree/parent identity stops.",
+    "stack_b_ci_repair_pr32_api_publication": "Git Data API uploaded canonical blob743a814 and rebuilt exact tree9d2abbdf as a child of exact remote14afdc05, then non-force advanced the repair ref to content-equivalent commit8d9e992b. PR32 is OPEN Draft/MERGEABLE/BLOCKED with one semantic path tools/ci.sh and +89/-0 versus master. Fresh CI33235237958, visual_canary and qualification33235237991 are in progress; authority33235236828 success; protected capture skipped by Draft design. Body refresh is reserved; all old-head reviews are invalid.",
     "shared_write_conflicts": 0,
     "decision": "Original Stack B writer used its one recovery and failed closed on CRLF projection, so it is revoked and frozen. Exactly one replacement owns the same two evidence files in a new LF worktree; original worktree and every game/tool/workflow/shared-authority path are forbidden."
   },
@@ -3522,5 +3523,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_39687a6b_verified"
   },
-  "next_trigger": "Publish this transport-failure ledger, reconstruct exact canonical blob743a814/tree9d2abbdf as a child of remote14afdc05 through Git Data API, then non-force advance only if the remote ref remains14afdc05. Refresh the Draft body and require new-head hosted checks plus fresh independent reviews; PR31 remains frozen Draft."
+  "next_trigger": "Publish this API-publication ledger, refresh PR32 Draft body to exact8d9e992b/tree9d2abbdf and focused receipts, then wait for new-head hosted terminal checks. Only after success reserve fresh independent reviews; PR31 remains frozen Draft."
 }
