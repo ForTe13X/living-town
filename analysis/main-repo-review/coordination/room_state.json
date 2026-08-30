@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-30T05:14:25Z",
+  "updated_at": "2026-08-30T08:16:28Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,8 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "b2f8a006493bd500d3d5e7bcd3f9978f405f3d9d81b4270aa4fa22b300400f78",
-    "canonical_objects": 301,
+    "canonical_sha256": "dac54056c5f891527dafed7ce339fd9395e6ca9643c4554696fe232148157a6a",
+    "canonical_objects": 302,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
       "parent": "9cd199cb5337eeafb55d2437f01deea51a6cfb01",
@@ -77,6 +77,58 @@
     "conflict_resolution": "reject_before_write_then_freeze_or_serialize_lower_value_lane"
   },
   "active_claims": [
+    {
+      "claim_id": "analysis-complete-trust-path-successor-20260830",
+      "task": "/root/pr25_sync_security_qa",
+      "role": "Read-only protected complete-trust-path successor architect",
+      "objective": "Produce one concrete, non-mechanical successor packet that resolves PR #33's exact complete-trust-path governance blocker without weakening protection or mixing Stack B authored outputs into the trust-root PR.",
+      "baseline": "37ccea829e16e5844059a11eac9b3177ac693d6a",
+      "head": "28d9daf9f1ed3bd3d8ac9ea7de0ec3736f68a370",
+      "tree": "304556c3e54c1c23da902142566bdcc1f8cf414b",
+      "branch": "read-only origin/master plus PR31 and PR33 exact Git objects",
+      "worktree": "read-only exact Git objects; temporary analysis output only",
+      "owned_paths": [],
+      "forbidden_paths": ["**/* repository writes", "GitHub PR, review, check, protection, branch or ref mutation", "coordination room or event-stream mutation", "shared Docker state"],
+      "authority_keys": [],
+      "generated_outputs": ["terminal architecture handoff only"],
+      "dependencies": ["origin/master:37ccea829e16e5844059a11eac9b3177ac693d6a", "pr31:3254577d41db0afd66017101f2ccd4a0a8827924", "pr33:28d9daf9f1ed3bd3d8ac9ea7de0ec3736f68a370", "authority-gate:exact-complete-trust-path-set", "pr33-security-qa:P0_0_P1_0", "pr33-refute:P0_0_P1_0_P2_2"],
+      "consumer": "Producer, then exactly one serialized complete-trust-path implementation owner",
+      "status": "reserved_read_only_dispatch_pending",
+      "last_heartbeat": "2026-08-30T08:16:28Z",
+      "stale_after": "2026-08-30T09:46:28Z",
+      "prs": [31, 33],
+      "checks": {"required_output": "file-by-file semantic write set, PR sequence, acceptance tests, negative controls, rollback, stop lines, and go/no-go verdict", "p0": 0, "p1": 0},
+      "recovery_count": 0,
+      "release_reason": null,
+      "rollback": "Release this read-only claim; leave PR #31 and PR #33 Draft and unchanged.",
+      "stop_lines": ["any repository or GitHub mutation is required", "the proposal weakens or bypasses the authority gate", "the proposal mechanically touches unchanged trust paths", "the proposal mixes authored Stack B outputs with trust-root authority", "exact hosted identity drifts"]
+    },
+    {
+      "claim_id": "analysis-locked-ortho-cafe-contract-recovery-20260830",
+      "task": "/root/pr25_sync_refute",
+      "role": "Read-only Technical Architect for locked orthographic multi-level cafe contract recovery",
+      "objective": "Recover or replace the locked orthographic multi-level cafe contract as a 2-4 phase executable dependency graph from player action through visible feedback, real consumer, persistent world log, save/load and replay, while preserving canonical 2D Sim authority and C0 rollback.",
+      "baseline": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
+      "head": "045dc0c8b911ec26d87a224ff0beb2ebeea2da31",
+      "tree": "b3390d1ee9a61b68df5ac0c5439a41a5ef55f4c3",
+      "branch": "read-only origin/integration/batons plus origin/codex/locked-ortho-cafe-c1-r2",
+      "worktree": "read-only exact Git objects; temporary analysis output only",
+      "owned_paths": [],
+      "forbidden_paths": ["**/* repository writes", "GitHub PR, review, check, protection, branch or ref mutation", "coordination room or event-stream mutation", "shared Docker state", "canon, release or tag decisions"],
+      "authority_keys": [],
+      "generated_outputs": ["terminal Technical Architect handoff only"],
+      "dependencies": ["origin/integration/batons:ac85fc6b35b83d6a9c7c678386fe35dab666b217", "locked-ortho-proposal:045dc0c8b911ec26d87a224ff0beb2ebeea2da31", "canonical-2d-sim-authority", "deterministic-save-load-replay", "c0-rollback", "benchmark:aac9992c2d195402a90327754c1f6ef279675076"],
+      "consumer": "Producer, then exactly one cafe exterior-to-2F implementation owner",
+      "status": "reserved_read_only_dispatch_pending",
+      "last_heartbeat": "2026-08-30T08:16:28Z",
+      "stale_after": "2026-08-30T09:46:28Z",
+      "pr": null,
+      "checks": {"required_output": "2-4 phase graph, stable adapter contract, path and authority matrix, named consumer, acceptance and negative tests, visual gates, Docker packet, rollback and stop lines", "p0": 0, "p1": 0},
+      "recovery_count": 0,
+      "release_reason": null,
+      "rollback": "Release this read-only claim; retain the proposal branch and all provenance unchanged.",
+      "stop_lines": ["View becomes Sim, navigation, collision, save, replay, portal or canon authority", "shared-authority write is proposed without serialization", "the packet lacks a named real consumer or persistent consequence", "the proposal copies or derives benchmark assets", "exact hosted identity drifts"]
+    },
     {
       "claim_id": "lease-cafe-source-attestation-trust-root-v1-replacement-2",
       "task": "01a042a5-fb55-7673-850f-9e92e3292274",
@@ -3646,5 +3698,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "Use the repaired serialized Git network lane on the next heartbeat. Do not create recursive ledger commits solely for green checks caused by this ledger-only commit; record only new material state or the next established review. Keep PR5 and PR33 Draft and HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "After publishing this reservation, dispatch both read-only architects asynchronously. Harvest the first terminal handoff without waiting for the other; reject any write-set overlap before assigning one serialized implementation owner. Keep PR5, PR31 and PR33 Draft and HUMAN_ACCEPTANCE_NOT_READY."
 }
