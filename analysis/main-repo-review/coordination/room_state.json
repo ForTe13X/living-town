@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-30T02:24:38Z",
+  "updated_at": "2026-08-30T02:26:23Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,16 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "b32ac45ca8c487cf4594e856124e4640ebbc327b35d4c8b093f75867436c20c0",
-    "canonical_objects": 296,
+    "canonical_sha256": "08bbf1464db22b0d068e51740d564bff567349f236bb1a46dfc3d1d21a2c0a8c",
+    "canonical_objects": 297,
+    "last_publication": {
+      "method": "github_git_data_api_parent_child",
+      "parent": "9cd199cb5337eeafb55d2437f01deea51a6cfb01",
+      "tree": "96e713cee1f8d769453ad3b743a8b3c0615c6b60",
+      "commit": "f9654452f3651c3feb11aefdd087ae8515e6b43c",
+      "force": false,
+      "reason": "two normal smart-HTTP publication attempts failed while GitHub API remained reachable"
+    },
     "migration_baseline_sha256": "65e9b33307ef3588424daf36ea73b49dcc555d0e6b76e49ec01b21c9654a7ea4",
     "migration_baseline_objects": 293,
     "provenance_path": "analysis/main-repo-review/coordination/room_events.v1.provenance.json",
