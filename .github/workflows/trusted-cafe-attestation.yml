@@ -431,11 +431,51 @@ jobs:
           BOOTSTRAP_IMAGE: docker.io/library/python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c
         run: |
           set -euo pipefail
-          mkdir "$RUNNER_TEMP/cafe-gate-tools" "$RUNNER_TEMP/cafe-runtime-verification"
-          docker run --pull=always --rm --interactive --platform linux/amd64 \
+          RUNNER_UID="$(id -u)"
+          RUNNER_GID="$(id -g)"
+          case "$RUNNER_UID:$RUNNER_GID" in
+            *[!0-9:]*|:*|*:) echo "invalid numeric runner identity" >&2; exit 1 ;;
+          esac
+          install -d -m 0700 \
+            "$RUNNER_TEMP/cafe-gate-tools" \
+            "$RUNNER_TEMP/cafe-runtime-verification"
+          test "$(stat -c '%u:%g:%a' "$RUNNER_TEMP/cafe-gate-tools")" = "$RUNNER_UID:$RUNNER_GID:700"
+          test "$(stat -c '%u:%g:%a' "$RUNNER_TEMP/cafe-runtime-verification")" = "$RUNNER_UID:$RUNNER_GID:700"
+          docker run --pull=always --rm --platform linux/amd64 --network none --read-only \
+            --user "$RUNNER_UID:$RUNNER_GID" --cap-drop all --security-opt no-new-privileges \
+            --pids-limit 16 --memory 64m --cpus 1 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=16777216 --env HOME=/tmp \
+            --volume "$RUNNER_TEMP/cafe-gate-tools:/gate-tools:rw" \
+            --volume "$RUNNER_TEMP/cafe-runtime-verification:/verification:rw" \
+            "$BOOTSTRAP_IMAGE" python -B -c 'import pathlib; pathlib.Path("/gate-tools/.owner-write-ok").write_bytes(b"ok\n"); pathlib.Path("/verification/.owner-write-ok").write_bytes(b"ok\n")'
+          test "$(cat "$RUNNER_TEMP/cafe-gate-tools/.owner-write-ok")" = ok
+          test "$(cat "$RUNNER_TEMP/cafe-runtime-verification/.owner-write-ok")" = ok
+          rm "$RUNNER_TEMP/cafe-gate-tools/.owner-write-ok" "$RUNNER_TEMP/cafe-runtime-verification/.owner-write-ok"
+          DENIED_UID="$((RUNNER_UID + 1))"
+          WRONG_OWNER_LOG="$RUNNER_TEMP/cafe-runtime-verification/wrong-owner-write.log"
+          set +e
+          docker run --pull=never --rm --platform linux/amd64 --network none --read-only \
+            --user "$DENIED_UID:$RUNNER_GID" --cap-drop all --security-opt no-new-privileges \
+            --pids-limit 16 --memory 64m --cpus 1 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=16777216 --env HOME=/tmp \
+            --volume "$RUNNER_TEMP/cafe-gate-tools:/gate-tools:rw" \
+            "$BOOTSTRAP_IMAGE" python -B -c 'import pathlib; pathlib.Path("/gate-tools/.wrong-owner-write").write_bytes(b"unexpected\n")' \
+            >"$WRONG_OWNER_LOG" 2>&1
+          WRONG_OWNER_STATUS="$?"
+          set -e
+          if [ "$WRONG_OWNER_STATUS" -ne 1 ]; then
+            cat "$WRONG_OWNER_LOG" >&2
+            echo "wrong-owner tooth returned status $WRONG_OWNER_STATUS instead of the expected Python rejection status 1" >&2
+            exit 1
+          fi
+          grep -F "PermissionError: [Errno 13] Permission denied: '/gate-tools/.wrong-owner-write'" "$WRONG_OWNER_LOG"
+          test ! -e "$RUNNER_TEMP/cafe-gate-tools/.wrong-owner-write"
+          rm "$WRONG_OWNER_LOG"
+          docker run --pull=never --rm --interactive --platform linux/amd64 \
+            --user "$RUNNER_UID:$RUNNER_GID" \
             --read-only --cap-drop all --security-opt no-new-privileges \
             --pids-limit 128 --memory 512m --cpus 1 \
-            --tmpfs /tmp:rw,nosuid,nodev,size=134217728 --env GH_TOKEN \
+            --tmpfs /tmp:rw,nosuid,nodev,size=134217728 --env HOME=/tmp --env GH_TOKEN \
             --env GITHUB_REPOSITORY --env GITHUB_SHA \
             --volume "$PWD/trusted:/trusted:ro" \
             --volume "$RUNNER_TEMP/cafe-runtime:/runtime:ro" \
@@ -653,9 +693,15 @@ jobs:
           BOOTSTRAP_IMAGE: docker.io/library/python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c
         run: |
           set -euo pipefail
+          RUNNER_UID="$(id -u)"
+          RUNNER_GID="$(id -g)"
+          case "$RUNNER_UID:$RUNNER_GID" in
+            *[!0-9:]*|:*|*:) echo "invalid numeric runner identity" >&2; exit 1 ;;
+          esac
           docker run --pull=never --rm --platform linux/amd64 --read-only --cap-drop all \
+            --user "$RUNNER_UID:$RUNNER_GID" \
             --security-opt no-new-privileges --pids-limit 64 --memory 256m --cpus 1 \
-            --tmpfs /tmp:rw,nosuid,nodev,size=67108864 --env GH_TOKEN \
+            --tmpfs /tmp:rw,nosuid,nodev,size=67108864 --env HOME=/tmp --env GH_TOKEN \
             --env GITHUB_REPOSITORY --env GITHUB_SHA \
             --volume "$RUNNER_TEMP/cafe-output:/output:ro" \
             --volume "$RUNNER_TEMP/cafe-gate-tools:/gate-tools:ro" \
