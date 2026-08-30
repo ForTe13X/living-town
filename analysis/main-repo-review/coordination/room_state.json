@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-30T03:05:23Z",
+  "updated_at": "2026-08-30T03:40:05Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,8 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "9109e3540653cfa5b5aa98e607d84421bd51de0f8861b06eed1f872c5afe69cc",
-    "canonical_objects": 299,
+    "canonical_sha256": "69f0627712234f8b9c2948058750c77318192e17e0ed4d8f29512fb01f388306",
+    "canonical_objects": 300,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
       "parent": "9cd199cb5337eeafb55d2437f01deea51a6cfb01",
@@ -3646,5 +3646,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "The 30-minute heartbeat now appends only to room_events.v1.jsonl. On the next short tick, harvest remote drift and any governed complete-trust-path candidate; do not duplicate writers, weaken protection, mutate the immutable legacy stream, mark Ready, or merge. PR33 remains Draft and governance-blocked. HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "No new writer dispatch: wait for a governed complete-trust-path candidate or another material transition. Keep PR5 and PR33 Draft; do not duplicate work, weaken protection, mutate the immutable legacy event stream, mark Ready, or merge. HUMAN_ACCEPTANCE_NOT_READY."
 }

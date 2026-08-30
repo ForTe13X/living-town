@@ -15,8 +15,8 @@ Current migration identity:
 - Legacy objects: 292
 - Migration-baseline v1 SHA-256: `65e9b33307ef3588424daf36ea73b49dcc555d0e6b76e49ec01b21c9654a7ea4`
 - Migration-baseline objects: 293, including the migration event
-- Current canonical v1 SHA-256: `9109e3540653cfa5b5aa98e607d84421bd51de0f8861b06eed1f872c5afe69cc`
-- Current canonical v1 objects: 299, including the automation synchronization and API-recovery reservation events
+- Current canonical v1 SHA-256: `69f0627712234f8b9c2948058750c77318192e17e0ed4d8f29512fb01f388306`
+- Current canonical v1 objects: 300, including the terminal API-recovery and hosted-check harvest event
 - Provenance SHA-256: `baac249233a690211c1c735095da6b4e5bef3c48c3c85550ddf707dd35cf8574`
 
 Rollback is pointer-only: restore the legacy path in `room_state.json` and remove the two v1 artifacts through a reviewed coordination commit. Never rewrite master, integration, or the legacy event bytes.
