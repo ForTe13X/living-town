@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-30T09:02:35Z",
+  "updated_at": "2026-08-30T21:51:58Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,8 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "39389eeece1e550f2cfd61c20585dc2260c5571a87b64ba8579b4122bd8bd694",
-    "canonical_objects": 303,
+    "canonical_sha256": "4c80ea0624e160eb79dc5ea903dd17788b385a76b8523da9f263cd1046cf19f3",
+    "canonical_objects": 304,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
       "parent": "9cd199cb5337eeafb55d2437f01deea51a6cfb01",
@@ -42,19 +42,19 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-08-29T10:31:04Z",
-    "github_api_count": 39,
-    "git_ls_remote_count": 39,
-    "local_tracking_count": 39,
-    "local_exact_count": 39,
+    "at": "2026-08-30T21:51:58Z",
+    "github_api_count": 40,
+    "git_ls_remote_count": 40,
+    "local_tracking_count": 40,
+    "local_exact_count": 40,
     "snapshot_complete": true,
-    "secondary_authority": "Recovery fetch --prune --tags succeeded. Fresh GitHub branches API, direct git ls-remote --heads and all 39 real local origin refs now agree exactly; no cached ref is promoted over network authority.",
-    "reconciliation": "GitHub API, direct ls-remote and fetched local refs enumerate the same 39 hosted branches at sorted name+SHA set SHA256 05b8aa77. Master9b2d052c, integrationac85fc6b, PR31d7f2bd06 and PR32d5d56881 are stable; coordination advanced only through recorded ledger commitff8e5e7f. Ten PRs open, zero issues/releases/tags, 36 worktrees with 15 dirty and zero read errors preserved.",
-    "network_failures": ["initial fetch and one ls-remote retry timed out; bounded recovery later succeeded at 2026-08-29T09:50:37Z"],
-    "sorted_name_sha_set_sha256": "05b8aa77ae004cd7e604d9a42e6a2aa1235642513ea1802a11d224405b36b6f3",
-    "master": "9b2d052ca740a96b9b556765a7ead7fcb5425600",
+    "secondary_authority": "Fresh fetch --all --prune --tags and direct ls-remote --heads succeeded before dispatch. GitHub branches API and all real local origin refs enumerate the same 40 hosted branches; no cached ref is promoted over network authority.",
+    "reconciliation": "GitHub API, direct ls-remote and fetched local refs enumerate the same 40 hosted branches. Master37ccea82, integrationac85fc6b, PR313254577d, PR3328d9daf9 and coordinationeb12231d are stable. Ten PRs remain open, zero issues/releases/tags, and 38 registered worktrees including this isolated producer publication worktree are preserved.",
+    "network_failures": ["historical Git Smart HTTP connection resets and timeouts remain intermittent; the required serial fetch and ls-remote lane succeeded before this dispatch"],
+    "sorted_name_sha_set_sha256": "cdef18442686b992aefdd40dac3649078d37ce5ba77aeb7cb7dee6be0cb1e1dd",
+    "master": "37ccea829e16e5844059a11eac9b3177ac693d6a",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "ff8e5e7f35d8b0af5e68a6241ed416d4a90b1f09",
+    "coordination": "eb12231d97778a462a3bbcbab3b062ebb08786eb",
     "pr25": "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
     "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
@@ -66,7 +66,7 @@
     "open_issues": 0,
     "releases": 0,
     "tags": 0,
-    "full_branch_metadata_scan": "Lightweight review completed at 2026-08-29T10:31:04Z. All 39 hosted branches were enumerated and API, ls-remote and real local refs agree exactly at hash05b8aa77. No unrecorded hosted transition exists. Ten PRs remain open; zero issues/releases/tags. Master protection remains strict with four app15368 checks, admins/conversation enabled, approvals0, force/delete disabled. Thirty-six worktrees remain registered; 15 dirty and all unknown state preserved."
+    "full_branch_metadata_scan": "Material-transition review completed at 2026-08-30T21:51:58Z. All 40 hosted branches were enumerated through fresh fetch, direct ls-remote and GitHub API with no ref drift. Ten PRs remain open; zero issues/releases/tags. PR33 remains Draft BLOCKED only by trusted_cafe_authority_gate; PR31 remains Draft CLEAN. Thirty-eight worktrees remain registered and unknown state is preserved."
   },
   "portfolio_policy": {
     "default_active_writers": 2,
@@ -77,6 +77,35 @@
     "conflict_resolution": "reject_before_write_then_freeze_or_serialize_lower_value_lane"
   },
   "active_claims": [
+    {
+      "claim_id": "lease-cafe-guest-vertical-slice-v1",
+      "task": "019ffa43-dd18-7002-9b4a-bb902e5b5f74",
+      "role": "Sole serialized Cafe guest-access vertical-slice Dev writer",
+      "objective": "Implement real player invitation acceptance through cafe exterior, 1F, stairs/portal and 2F to visible interaction feedback, persistent chronicle consequence, deterministic save/load/replay and revocation recovery without changing canonical 2D authority.",
+      "baseline": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
+      "head": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
+      "tree": "56173a6b69b256f825548c3d53c78acb3c1a0ee7",
+      "branch": "codex/cafe-guest-vertical-slice-v1",
+      "worktree": "D:\\Documents\\Dev\\living-town-cafe-guest-vertical-slice-v1-wt",
+      "owned_paths": ["game/scripts/Main.gd", "game/scripts/Sim.gd", "game/scripts/cafe_guest_access_test.gd", "game/scenes/cafe_guest_access_test.tscn", "game/scripts/save_load_test.gd", "game/scripts/player_replay_test.gd", "game/scripts/save_migration_test.gd", "game/scenes/save_load_test.tscn", "game/scenes/player_replay_test.tscn", "game/scenes/save_migration_test.tscn", "tools/assert_cafe_2f.py"],
+      "forbidden_paths": ["project.godot", "tools/ci.sh", ".github/**", "evidence/cafe/**", "analysis/**", "docs/media/**", "assets/**", "coordination room and event streams", "protected anchors and registries", "all paths outside owned_paths"],
+      "authority_keys": ["canonical-2d-sim", "portal-access-policy", "cafe-guest-capability", "save-load-replay", "chronicle-consequence"],
+      "generated_outputs": ["task-owned Docker receipts and runtime captures outside the repository only"],
+      "dependencies": ["origin/integration/batons:ac85fc6b35b83d6a9c7c678386fe35dab666b217", "locked-ortho-contract:045dc0c8b911ec26d87a224ff0beb2ebeea2da31", "user-authority:2026-08-30T21:51:58Z:persisted-guest-invitation", "canonical-2d-sim-authority", "deterministic-save-load-replay", "c0-rollback"],
+      "consumer": "Existing Main/Goals event-log feed plus deterministic save/load/replay runtime",
+      "status": "reserved_before_dispatch",
+      "write_lease": true,
+      "last_heartbeat": "2026-08-30T21:51:58Z",
+      "stale_after": "2026-08-30T23:51:58Z",
+      "pr": null,
+      "pr_policy": "Create a Draft PR targeting integration/batons only after first coherent exact-head Docker evidence; never mark Ready or merge.",
+      "checks": {"required": ["real input grants invitation and permits exterior-to-1F-to-stairs-to-2F traversal", "authorized 2F interaction emits visible feedback and persistent chronicle entry", "save/load and replay reproduce capability and consequence deterministically", "revocation and stale or forged capability fail closed and recover to canonical town or 1F state", "C0 rollback restores pre-capability canonical behavior", "pinned Docker Linux receipt with tool versions, mounts and cleanup"], "p0": null, "p1": null},
+      "recovery_count": 0,
+      "rollback": "Close the Draft if created and revert only this feature branch through review; delete only the clean task-owned worktree after archive; never rewrite protected refs.",
+      "stop_lines": ["View becomes Sim, navigation, collision, save, replay, portal or canon authority", "owned path set is insufficient", "project.godot, tools/ci.sh, workflow, evidence or protected registry change is required", "benchmark-derived code or assets are proposed", "Docker isolation is unavailable", "base, branch, worktree, consumer or central-authority ownership drifts"],
+      "handoff_recipient": "Independent QA/Evidence and REFUTE, then Art Direction, UI/UX/accessibility and technical visual QA",
+      "archive_condition": "Exact branch handoff, Draft PR and Docker receipts are terminal; independent P0/P1 review can begin."
+    },
     {
       "claim_id": "analysis-complete-trust-path-successor-20260830",
       "task": "/root/pr25_sync_security_qa",
@@ -93,13 +122,14 @@
       "generated_outputs": ["terminal architecture handoff only"],
       "dependencies": ["origin/master:37ccea829e16e5844059a11eac9b3177ac693d6a", "pr31:3254577d41db0afd66017101f2ccd4a0a8827924", "pr33:28d9daf9f1ed3bd3d8ac9ea7de0ec3736f68a370", "authority-gate:exact-complete-trust-path-set", "pr33-security-qa:P0_0_P1_0", "pr33-refute:P0_0_P1_0_P2_2"],
       "consumer": "Producer, then exactly one serialized complete-trust-path implementation owner",
-      "status": "terminal_no_go_human_authority_decision_required_released",
-      "last_heartbeat": "2026-08-30T09:02:35Z",
+      "status": "terminal_human_authority_approved_released",
+      "last_heartbeat": "2026-08-30T21:51:58Z",
       "stale_after": null,
       "prs": [31, 33],
       "checks": {"required_output": "file-by-file semantic write set, PR sequence, acceptance tests, negative controls, rollback, stop lines, and go/no-go verdict", "p0": 0, "p1": 0},
       "recovery_count": 0,
       "release_reason": "Terminal packet proves candidate automation cannot both create and authorize a new exact six-path identity; a human or separately gated authority owner must approve the two-step enrollment procedure.",
+      "authority_decision": {"at": "2026-08-30T21:51:58Z", "source": "user", "approved": true, "policy": "separately gated two-step exact six-path enrollment", "status": "authorized_queued_not_dispatched"},
       "terminal_handoff": {"verdict": "NO_GO", "p0": 0, "p1": 0, "missing_dependency": "explicit authority approval for exact six-path successor enrollment on protected master", "bounded_successor_write_set": [".github/workflows/trusted-cafe-attestation.yml", "evidence/cafe/runtime-lock.v1.json", "tools/verify_cafe_attested_evidence.py", "tools/cafe_attestation_selftest.py", "tools/trusted_cafe_capture.sh", "tools/cafe_authored_manifest.py"], "next": "after authority approval, dispatch exactly one six-path writer; keep PR31 and PR33 frozen"},
       "rollback": "Release this read-only claim; leave PR #31 and PR #33 Draft and unchanged.",
       "stop_lines": ["any repository or GitHub mutation is required", "the proposal weakens or bypasses the authority gate", "the proposal mechanically touches unchanged trust paths", "the proposal mixes authored Stack B outputs with trust-root authority", "exact hosted identity drifts"]
@@ -120,13 +150,14 @@
       "generated_outputs": ["terminal Technical Architect handoff only"],
       "dependencies": ["origin/integration/batons:ac85fc6b35b83d6a9c7c678386fe35dab666b217", "locked-ortho-proposal:045dc0c8b911ec26d87a224ff0beb2ebeea2da31", "canonical-2d-sim-authority", "deterministic-save-load-replay", "c0-rollback", "benchmark:aac9992c2d195402a90327754c1f6ef279675076"],
       "consumer": "Producer, then exactly one cafe exterior-to-2F implementation owner",
-      "status": "terminal_no_go_canon_privacy_decision_required_released",
-      "last_heartbeat": "2026-08-30T09:02:35Z",
+      "status": "terminal_cafe_guest_policy_approved_released",
+      "last_heartbeat": "2026-08-30T21:51:58Z",
       "stale_after": null,
       "pr": null,
       "checks": {"required_output": "2-4 phase graph, stable adapter contract, path and authority matrix, named consumer, acceptance and negative tests, visual gates, Docker packet, rollback and stop lines", "p0": 0, "p1": 0},
       "recovery_count": 0,
       "release_reason": "Terminal recovery proves canonical stairs are owner-only, normal player home is town, 2F is zero-target/read-only, and forged player 2F state or public access is an explicit security bypass; implementation requires an authorized access policy.",
+      "access_policy_decision": {"at": "2026-08-30T21:51:58Z", "source": "user", "policy": "persisted guest/invitation capability", "public_access": false, "requirements": ["grant", "revocation", "migration", "deterministic save/load/replay", "C0 rollback", "fail-closed forged and stale capability rejection"]},
       "terminal_handoff": {"verdict": "NO_GO", "p0": 0, "p1": 0, "missing_dependency": "authorize either public cafe 2F access or a persisted guest/invitation capability with revocation, migration, replay and rollback semantics", "proposal_relation": "locked proposal is ancestor of integration; integration is 11 commits ahead and proposal has zero unique commits", "next": "after policy approval, dispatch exactly one serialized cafe vertical-slice writer; serialize visual paths behind PR21-PR24"},
       "rollback": "Release this read-only claim; retain the proposal branch and all provenance unchanged.",
       "stop_lines": ["View becomes Sim, navigation, collision, save, replay, portal or canon authority", "shared-authority write is proposed without serialization", "the packet lacks a named real consumer or persistent consequence", "the proposal copies or derives benchmark assets", "exact hosted identity drifts"]
@@ -3700,5 +3731,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "Human decisions required before any writer dispatch: approve or reject the separately gated exact six-path authority-enrollment procedure, and choose cafe 2F player access as public or persisted guest/invitation capability. Until then keep PR5, PR31 and PR33 Draft, freeze the PR21-PR24 visual stack, preserve canonical 2D authority, and keep HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "Dispatch the reserved Cafe guest-access vertical-slice writer only after this exact ledger reaches origin/codex/main-repo-review. Harvest its first branch/worktree heartbeat without blocking. Keep PR5, PR31 and PR33 Draft and PR21-PR24 frozen. The separately gated six-path successor is authorized but queued until an independent owner and separate exact lease are recorded. HUMAN_ACCEPTANCE_NOT_READY remains."
 }
