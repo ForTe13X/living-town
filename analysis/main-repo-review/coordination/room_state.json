@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-30T08:16:28Z",
+  "updated_at": "2026-08-30T09:02:35Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,8 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "dac54056c5f891527dafed7ce339fd9395e6ca9643c4554696fe232148157a6a",
-    "canonical_objects": 302,
+    "canonical_sha256": "39389eeece1e550f2cfd61c20585dc2260c5571a87b64ba8579b4122bd8bd694",
+    "canonical_objects": 303,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
       "parent": "9cd199cb5337eeafb55d2437f01deea51a6cfb01",
@@ -93,13 +93,14 @@
       "generated_outputs": ["terminal architecture handoff only"],
       "dependencies": ["origin/master:37ccea829e16e5844059a11eac9b3177ac693d6a", "pr31:3254577d41db0afd66017101f2ccd4a0a8827924", "pr33:28d9daf9f1ed3bd3d8ac9ea7de0ec3736f68a370", "authority-gate:exact-complete-trust-path-set", "pr33-security-qa:P0_0_P1_0", "pr33-refute:P0_0_P1_0_P2_2"],
       "consumer": "Producer, then exactly one serialized complete-trust-path implementation owner",
-      "status": "reserved_read_only_dispatch_pending",
-      "last_heartbeat": "2026-08-30T08:16:28Z",
-      "stale_after": "2026-08-30T09:46:28Z",
+      "status": "terminal_no_go_human_authority_decision_required_released",
+      "last_heartbeat": "2026-08-30T09:02:35Z",
+      "stale_after": null,
       "prs": [31, 33],
       "checks": {"required_output": "file-by-file semantic write set, PR sequence, acceptance tests, negative controls, rollback, stop lines, and go/no-go verdict", "p0": 0, "p1": 0},
       "recovery_count": 0,
-      "release_reason": null,
+      "release_reason": "Terminal packet proves candidate automation cannot both create and authorize a new exact six-path identity; a human or separately gated authority owner must approve the two-step enrollment procedure.",
+      "terminal_handoff": {"verdict": "NO_GO", "p0": 0, "p1": 0, "missing_dependency": "explicit authority approval for exact six-path successor enrollment on protected master", "bounded_successor_write_set": [".github/workflows/trusted-cafe-attestation.yml", "evidence/cafe/runtime-lock.v1.json", "tools/verify_cafe_attested_evidence.py", "tools/cafe_attestation_selftest.py", "tools/trusted_cafe_capture.sh", "tools/cafe_authored_manifest.py"], "next": "after authority approval, dispatch exactly one six-path writer; keep PR31 and PR33 frozen"},
       "rollback": "Release this read-only claim; leave PR #31 and PR #33 Draft and unchanged.",
       "stop_lines": ["any repository or GitHub mutation is required", "the proposal weakens or bypasses the authority gate", "the proposal mechanically touches unchanged trust paths", "the proposal mixes authored Stack B outputs with trust-root authority", "exact hosted identity drifts"]
     },
@@ -119,13 +120,14 @@
       "generated_outputs": ["terminal Technical Architect handoff only"],
       "dependencies": ["origin/integration/batons:ac85fc6b35b83d6a9c7c678386fe35dab666b217", "locked-ortho-proposal:045dc0c8b911ec26d87a224ff0beb2ebeea2da31", "canonical-2d-sim-authority", "deterministic-save-load-replay", "c0-rollback", "benchmark:aac9992c2d195402a90327754c1f6ef279675076"],
       "consumer": "Producer, then exactly one cafe exterior-to-2F implementation owner",
-      "status": "reserved_read_only_dispatch_pending",
-      "last_heartbeat": "2026-08-30T08:16:28Z",
-      "stale_after": "2026-08-30T09:46:28Z",
+      "status": "terminal_no_go_canon_privacy_decision_required_released",
+      "last_heartbeat": "2026-08-30T09:02:35Z",
+      "stale_after": null,
       "pr": null,
       "checks": {"required_output": "2-4 phase graph, stable adapter contract, path and authority matrix, named consumer, acceptance and negative tests, visual gates, Docker packet, rollback and stop lines", "p0": 0, "p1": 0},
       "recovery_count": 0,
-      "release_reason": null,
+      "release_reason": "Terminal recovery proves canonical stairs are owner-only, normal player home is town, 2F is zero-target/read-only, and forged player 2F state or public access is an explicit security bypass; implementation requires an authorized access policy.",
+      "terminal_handoff": {"verdict": "NO_GO", "p0": 0, "p1": 0, "missing_dependency": "authorize either public cafe 2F access or a persisted guest/invitation capability with revocation, migration, replay and rollback semantics", "proposal_relation": "locked proposal is ancestor of integration; integration is 11 commits ahead and proposal has zero unique commits", "next": "after policy approval, dispatch exactly one serialized cafe vertical-slice writer; serialize visual paths behind PR21-PR24"},
       "rollback": "Release this read-only claim; retain the proposal branch and all provenance unchanged.",
       "stop_lines": ["View becomes Sim, navigation, collision, save, replay, portal or canon authority", "shared-authority write is proposed without serialization", "the packet lacks a named real consumer or persistent consequence", "the proposal copies or derives benchmark assets", "exact hosted identity drifts"]
     },
@@ -3698,5 +3700,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "After publishing this reservation, dispatch both read-only architects asynchronously. Harvest the first terminal handoff without waiting for the other; reject any write-set overlap before assigning one serialized implementation owner. Keep PR5, PR31 and PR33 Draft and HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "Human decisions required before any writer dispatch: approve or reject the separately gated exact six-path authority-enrollment procedure, and choose cafe 2F player access as public or persisted guest/invitation capability. Until then keep PR5, PR31 and PR33 Draft, freeze the PR21-PR24 visual stack, preserve canonical 2D authority, and keep HUMAN_ACCEPTANCE_NOT_READY."
 }
