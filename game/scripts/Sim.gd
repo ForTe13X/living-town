@@ -1804,6 +1804,10 @@ func save_game(path: String, meta := {}) -> bool:
 			push_error("save_game REFUSED — invalid PlayerTraceV1: %s" % trace_error)
 			return false
 		blob["player_trace"] = player_trace.duplicate(true)
+	var capability_error := _cafe_guest_capability_error(cafe_guest_capability)
+	if capability_error != "":
+		push_warning("save_game REFUSED — %s" % capability_error)
+		return false
 	var shape_error := _validate_current_save_shape(blob)
 	if shape_error != "":
 		push_error("save_game REFUSED — %s" % shape_error)
