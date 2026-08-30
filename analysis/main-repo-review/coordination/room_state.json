@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-30T02:15:00Z",
+  "updated_at": "2026-08-30T02:18:46Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,10 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "65e9b33307ef3588424daf36ea73b49dcc555d0e6b76e49ec01b21c9654a7ea4",
-    "canonical_objects": 293,
+    "canonical_sha256": "2a9b68ee277dfc01c00d86b0e617f7401c93ece5acb40d7aef77fcba9e2942ca",
+    "canonical_objects": 294,
+    "migration_baseline_sha256": "65e9b33307ef3588424daf36ea73b49dcc555d0e6b76e49ec01b21c9654a7ea4",
+    "migration_baseline_objects": 293,
     "provenance_path": "analysis/main-repo-review/coordination/room_events.v1.provenance.json",
     "provenance_sha256": "baac249233a690211c1c735095da6b4e5bef3c48c3c85550ddf707dd35cf8574",
     "legacy_path": "analysis/main-repo-review/coordination/room_events.jsonl",
