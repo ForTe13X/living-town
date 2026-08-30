@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-30T00:14:30Z",
+  "updated_at": "2026-08-30T00:17:30Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -2977,7 +2977,7 @@
       "generated_outputs": ["task-owned Docker receipts and negative-control logs outside repository only"],
       "dependencies": ["master37ccea829e16e5844059a11eac9b3177ac693d6a", "failed protected run33277798446 job99167494700", "candidate3254577d41db0afd66017101f2ccd4a0a8827924 remains unmodified", "pinned bootstrap python image sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c"],
       "consumer": "Protected run for exact PR31 candidate3254577d, followed by independent Security/QA and REFUTE of the repair",
-      "status": "draft_pr33_negative_diagnostic_child_published_body_refresh_reserved",
+      "status": "draft_pr33_exact_head_body_rebound_fresh_checks_active",
       "read_only": false,
       "last_heartbeat": "2026-08-29T23:24:30Z",
       "stale_after": "2026-08-30T00:41:39Z",
@@ -2986,6 +2986,7 @@
       "hosted_initial_result": {"qualification":{"run":33281029482,"job":99176114065,"conclusion":"success","protected_capture":"skipped on Draft by design"},"authority":{"run":33281029532,"job":99176114196,"conclusion":"expected failure","message":"CAFE_BASE_AUTHORITY_GATE_REJECTED a protected bundle must change the exact complete trust-path set","classification":"governance approval constraint for a one-path protected-workflow repair, not a candidate runtime regression; do not expand write set or weaken protection in this lane"},"ci_visual":{"run":33281029469,"status":"in_progress"}},
       "self_refute_p1": {"at":"2026-08-30T00:08:30Z","head":"e2652253a0024adde06960087c9a737d90cc1f97","finding":"wrong-owner negative treats every nonzero docker run result as permission rejection, so daemon/image/infrastructure failure can masquerade as a passing negative tooth","severity":"P1 evidence fail-closed weakness","repair":"same workflow path only: capture stderr and exit status, require status exactly1 plus exact Python PermissionError for /gate-tools/.wrong-owner-write, reject every other status/diagnostic","publication":"one normal child commit after Docker and actionlint proof; all old-head hosted evidence invalid","pr31":"remain Draft and unmodified"},
       "self_refute_p1_repair_result": {"at":"2026-08-30T00:14:30Z","result":"normal fast-forward published","head":"28d9daf9f1ed3bd3d8ac9ea7de0ec3736f68a370","tree":"304556c3e54c1c23da902142566bdcc1f8cf414b","blob":"923ec03da4316aba7c08348ade971c29e37c0ee1","sha256":"a3ff3a96acf76d99fc90ce48a3b38ad697df6202396ae9afddd49eaf5367f449","scope":"same single workflow path; cumulative +50/-4 versus master","proof":"intended denial returned status1 with exact PermissionError; simulated infrastructure status125 rejected; actionlint1.7.7 PASS in pinned Docker","cleanup":"task volume/container removed","old_evidence":"all e2652253 hosted checks and body identity invalid for current head","body":"exact-head refresh reserved after ledger publication"},
+      "exact_head_body_result": {"at":"2026-08-30T00:17:30Z","head":"28d9daf9f1ed3bd3d8ac9ea7de0ec3736f68a370","tree":"304556c3e54c1c23da902142566bdcc1f8cf414b","body_sha256":"e29722dad62281f10e3d6b438b5de8252837fb7fe532cbec1aa27b6892440c87","body_bytes":2584,"draft":true,"mergeable":"MERGEABLE","fresh_runs":{"ci_visual":33282566231,"qualification":33282566232,"authority":33282565600,"authority_result":"expected complete-set governance rejection","protected_capture":"skipped on Draft"},"review_dispatch":"deferred until CI/visual and qualification terminal"},
       "recovery_count": 1,
       "recovery_note": "Initial task-owned volume fixture dropped CAP_CHOWN and therefore never established the positive owner; its misleading continuation was rejected and volumes removed. Recovery used explicit exit-code checks and initialization-only ownership, then passed positive, wrong-UID negative and second-bootstrap writes. Actionlint extraction also required explicit executable mode in tmpfs; no repository change resulted.",
       "rollback": "Close the Draft repair PR or revert only its one workflow path through review; never rewrite master or PR31.",
@@ -3612,5 +3613,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "Refresh PR33 Draft body to exact head28d9daf9 and its diagnostic-negative proof after this ledger reaches remote, then await fresh hosted checks. Do not dispatch reviews against superseded e2652253. Authority governance constraint remains separate; PR31 remains Draft with no protected rerun or merge. HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "Await PR33 exact-head runs33282566231 and33282566232. On terminal non-governance success, reserve and dispatch independent Security/QA and REFUTE at head28d9daf9/bodye29722da; otherwise classify before repair. Authority33282565600 is the expected complete-set rejection. PR31 remains Draft; no protected rerun or merge. HUMAN_ACCEPTANCE_NOT_READY."
 }
