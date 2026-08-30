@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-30T03:40:05Z",
+  "updated_at": "2026-08-30T05:14:25Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,8 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "69f0627712234f8b9c2948058750c77318192e17e0ed4d8f29512fb01f388306",
-    "canonical_objects": 300,
+    "canonical_sha256": "b2f8a006493bd500d3d5e7bcd3f9978f405f3d9d81b4270aa4fa22b300400f78",
+    "canonical_objects": 301,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
       "parent": "9cd199cb5337eeafb55d2437f01deea51a6cfb01",
@@ -3646,5 +3646,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "No new writer dispatch: wait for a governed complete-trust-path candidate or another material transition. Keep PR5 and PR33 Draft; do not duplicate work, weaken protection, mutate the immutable legacy event stream, mark Ready, or merge. HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "Use the repaired serialized Git network lane on the next heartbeat. Do not create recursive ledger commits solely for green checks caused by this ledger-only commit; record only new material state or the next established review. Keep PR5 and PR33 Draft and HUMAN_ACCEPTANCE_NOT_READY."
 }
