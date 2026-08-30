@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-30T02:26:23Z",
+  "updated_at": "2026-08-30T03:05:23Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,8 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "08bbf1464db22b0d068e51740d564bff567349f236bb1a46dfc3d1d21a2c0a8c",
-    "canonical_objects": 297,
+    "canonical_sha256": "9109e3540653cfa5b5aa98e607d84421bd51de0f8861b06eed1f872c5afe69cc",
+    "canonical_objects": 299,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
       "parent": "9cd199cb5337eeafb55d2437f01deea51a6cfb01",
@@ -3646,5 +3646,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "Await both active independent PR33 reviewers at exact head28d9daf9/bodye29722da. Record each terminal handoff and converge P0/P1 before any approval-path work. No Ready, merge or protected rerun; PR31 remains Draft. HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "The 30-minute heartbeat now appends only to room_events.v1.jsonl. On the next short tick, harvest remote drift and any governed complete-trust-path candidate; do not duplicate writers, weaken protection, mutate the immutable legacy stream, mark Ready, or merge. PR33 remains Draft and governance-blocked. HUMAN_ACCEPTANCE_NOT_READY."
 }
