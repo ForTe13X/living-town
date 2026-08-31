@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-31T11:45:02Z",
+  "updated_at": "2026-08-31T20:21:18Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,13 +11,13 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "bdd50dc14481d2d269cf21d8846915f2bee77ab9fb58fa74e1ae6bb2d7f22e01",
-    "canonical_objects": 342,
+    "canonical_sha256": "bffca0c8709d823d4a28703f432f6a7377f8d66516a0e93132b722b6fd8403b7",
+    "canonical_objects": 357,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
-      "parent": "1d8de23ef204af4c1323ca4be719b963ebf49eb5",
-      "tree": "2ad63873e7371c043b870699d0cff194bc8c290c",
-      "commit": "42f1907e36ccd1366a7cd62c4cb6b0bb0f9e5b7b",
+      "parent": "6e6caba6c88024611d72f94bb99d7214e67c9174",
+      "tree": "37235c1c50f519ba71ea4772097be28ff73b7de5",
+      "commit": "19667f4e765a54fa60835438ca6e841c90ce7716",
       "force": false,
       "reason": "producer-only non-force Git Data API publication; GitHub API authoritative for this exact parent-child mutation"
     },
@@ -42,19 +42,19 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-08-31T11:33:26Z",
+    "at": "2026-08-31T20:14:40Z",
     "github_api_count": 43,
-    "git_ls_remote_count": null,
-    "local_tracking_count": 42,
+    "git_ls_remote_count": 43,
+    "local_tracking_count": 43,
     "local_exact_count": 43,
-    "snapshot_complete": false,
-    "secondary_authority": "The required serial Smart HTTP lane failed twice before ls-remote: attempt one returned curl56 connection reset plus expected flush; the one retry returned curl28 after 21078 ms. GitHub API is secondary authority for this tick; cached local refs are not promoted.",
-    "reconciliation": "GitHub API enumerates 43 hosted branches while direct ls-remote is unavailable this tick. Master37ccea82 and integrationac85fc6b remain stable; coordination is724986db. Draft PR36 remains OPEN/MERGEABLE/UNSTABLE atdfefd9a with unchanged hosted visual success and stale-anchor-only hosted CI failure. Thirteen PRs are open; no issues, releases or tags.",
-    "network_failures": ["git fetch --all --prune --tags attempt1: RPC curl56 connection reset; fatal expected flush after ref listing", "sequential retry: curl28 failed to connect github.com:443 after 21078 ms; ls-remote not run"],
-    "sorted_name_sha_set_sha256": "6a58eb107477eb9245f2c8606d01098246631f013f56d998ff215dc5b7179c69",
+    "snapshot_complete": true,
+    "secondary_authority": "Not used: the required serial Smart HTTP fetch and ls-remote lane succeeded on first attempt, and GitHub API plus local tracking refs reconcile exactly.",
+    "reconciliation": "GitHub API, direct ls-remote and freshly fetched local tracking refs all enumerate the same 43 hosted branches. Master37ccea82, integrationac85fc6b and PR36dfefd9a are unchanged; coordination is19667f4e. PR36 remains frozen Draft with hosted visual success and stale-anchor hosted CI failure. PR5 is Draft/MERGEABLE at19667f4e with ci and visual_canary success. Thirteen PRs are open; no issues, releases or tags.",
+    "network_failures": [],
+    "sorted_name_sha_set_sha256": "ff04226ebbcea0fb01a22587efd9b0c3ced37e239e8f5a4fa1f781df39be3706",
     "master": "37ccea829e16e5844059a11eac9b3177ac693d6a",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "724986db9b2d051bb0c0fb0eb25db0522b3b450c",
+    "coordination": "19667f4e765a54fa60835438ca6e841c90ce7716",
     "pr25": "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
     "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
@@ -66,7 +66,7 @@
     "open_issues": 0,
     "releases": 0,
     "tags": 0,
-    "full_branch_metadata_scan": "Incomplete lightweight scan at 2026-08-31T11:33:26Z after two Smart HTTP failures. GitHub API enumerates 43 branches and 13 open PRs; coordination is724986db. PR36 remains frozen Draft MERGEABLE/UNSTABLE atdfefd9a with hosted visual success and stale-anchor hosted CI failure. Worktree counts remain 44/15/0 from the fresh prior scan. Required Narrative and Implementation tasks remain unreadable. Benchmark main aac9992c, README fccc0377 and all five screenshot SHA256 values were freshly revalidated unchanged through GitHub blob API; no copying.",
+    "full_branch_metadata_scan": "Complete lightweight scan at 2026-08-31T20:14:40Z: first-attempt Smart HTTP fetch and ls-remote succeeded; GitHub API, direct enumeration and 43 local tracking refs reconcile exactly at set hashff04226e. Master37ccea82 and integrationac85fc6b are stable; coordination is19667f4e. PR36 remains frozen Draft MERGEABLE atdfefd9a with visual success and stale-anchor CI failure; PR5 exact19667f4e ci/visual are success. Worktrees are44 total/15 dirty/0 unreadable and preserved. Required Narrative and Implementation tasks remain unreadable; dev/map/UIUX are terminal/idle. Benchmark mainaac9992c, READMEfccc0377 and all five screenshot hashes were freshly revalidated unchanged; no copying.",
     "benchmark_revalidation": {"repository":"mewamew/my_ai_town","ref":"main","head":"aac9992c2d195402a90327754c1f6ef279675076","readme_blob":"9aa3211f238fd6bd503b758f87cc6d5b76126603","readme_sha256":"fccc03778fcd8635851cbe604b5363a4a4854350555a9e1b3a5299469d1fac60","screenshots":{"assets/readme/town-overview.jpg":"8315851951fa4b86138ed4b66508598fa08dfd9d3ed0dd9e788c1adf422495ec","assets/readme/resident-conversation.jpg":"e5b5cf0892c34949aa2c128c554234db99b898aefd6fdea4cb89fdfe3da02c63","assets/readme/workshop-task.jpg":"7985c00433ff522c49749cb4a098e8d35776ca0f5bc3051f0966e43e70c16f6a","assets/readme/market-life.jpg":"914de2c4571bb9546a9d3e31ebc3f093b4e9034571a92c6332c128a228193895","assets/readme/world-log.jpg":"9195d4ae02db1bc81af745c245612900e780711a3a0593b2d70191e446a4bce4"},"license_boundary":"quality and information-architecture reference only; no code, pixel, asset, palette or derivative copying"}
   },
   "portfolio_policy": {
@@ -299,6 +299,37 @@
       "stop_lines": ["any setup check fails", "exact head/tree/game-tree or ledger SHA drift", "registered worktree dirty", "Pillow unavailable in task-owned target", "audit/guard/self-test/full-CI nonzero", "any source or GitHub mutation required", "unknown container collision"],
       "handoff_recipient": "Producer",
       "archive_condition": "Terminal complete full-CI PASS receipts or terminal fail-fast no-write blocker; no further replacement from this packet."
+    },
+    {
+      "claim_id": "evidence-pr36-anchor-full-ci-v4-gitconfig-successor",
+      "task": "producer:01a04233-497e-7942-8da0-7958b314b199",
+      "role": "Producer-direct execution-only clone-proof plus full-CI successor",
+      "objective": "Use a task-owned GIT_CONFIG_GLOBAL inherited by clone and local upload-pack to prove the exact PR36 clone first, then install Pillow 11.3.0 in task scratch, verify exact identity and audited ledger overlay, run audit/guard/self-tests, and launch complete tools/ci.sh without repository or GitHub mutation.",
+      "baseline": "dfefd9a673877a64998ca6fa81c61fbf51730ff7",
+      "head": "dfefd9a673877a64998ca6fa81c61fbf51730ff7",
+      "tree": "2fc7f60a87b22847f55f586eab756c4c5f1a6a61",
+      "game_tree": "4eafaf1c36e1a03302df47538b0500e92642d67d",
+      "branch": "read-only codex/pr35-roundtrip-camera-harness-repair-v1",
+      "worktree": "read-only exact PR36 source; disposable clone D:/Documents/Dev/pr36-anchor-full-ci-v4/work only",
+      "owned_paths": [],
+      "forbidden_paths": ["all repository and registered worktree writes", "all branches, commits, pushes, PRs, reviews, checks, protection and coordination mutation", "all guard/audit/source/script/scene/fixture changes", "all unknown containers, images, volumes and caches", "benchmark code or asset copying"],
+      "authority_keys": ["execution-evidence-only", "generated-ledger-overlay-not-publication"],
+      "generated_outputs": ["D:/Documents/Dev/pr36-anchor-full-ci-v4 task-owned gitconfig, clone, pylib, logs and receipts only"],
+      "dependencies": ["v3-terminal:5646fd9d:exit128:safe-directory-not-inherited", "pr36:dfefd9a673877a64998ca6fa81c61fbf51730ff7", "pr36-tree:2fc7f60a87b22847f55f586eab756c4c5f1a6a61", "game-tree:4eafaf1c36e1a03302df47538b0500e92642d67d", "ledger:D:/Documents/Dev/pr36-anchor-ci-v1/gate_complement_ledger.json:sha256-f13f3e22eeb7df887196ae2a92423de64b1791e1327223f53fcb83e62f865bbf", "focused-simple-full:terminal-pass", "uiux-review:p0_0_p1_1_p2_0", "pinned-image:sha256-2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d"],
+      "consumer": "Producer protected-anchor publication decision in a separate transaction only after terminal complete full-CI PASS",
+      "status": "reserved_docker_daemon_recovery_before_launch",
+      "write_lease": true,
+      "last_heartbeat": "2026-08-31T20:21:18Z",
+      "stale_after": "2026-08-31T22:14:40Z",
+      "pr": {"number":36,"draft":true,"status":"frozen_unstable","publication":"forbidden"},
+      "pr_policy": "No commit, push, branch, PR, review, body, Ready or merge mutation. Generated ledger is a disposable overlay only.",
+      "checks": {"required":["direct pinned Docker only; no host or WSL bash","set -Eeuo pipefail and trap terminal rc before setup","set GIT_CONFIG_GLOBAL=/out/gitconfig, add safe.directory=/src and /src/.git, and prove local upload-pack inherits it by completing clone","verify exact HEAD/tree/game-tree before overlay","install Pillow11.3.0 with --target /out/pylib and export PYTHONPATH=/out/pylib","verify ledger source/overlay SHA256 and disposable diff exactly tools/gate_complement_ledger.json","run audit and guard self-tests, audit --run, positive guard and complete tools/ci.sh","record exact command, image, mounts, versions, stage, exit, logs, hashes and registered-worktree cleanliness"],"p0":0,"p1":1,"does_not_prove":"A full-CI PASS with disposable overlay does not authorize anchor publication, PR mutation, real player stairs input, persistence, visual floor, accessibility or release."},
+      "recovery_count": 0,
+      "release_reason": null,
+      "rollback": "Preserve or archive only task-owned scratch and named container after terminal receipts; no repository rollback applies.",
+      "stop_lines": ["clone proof fails or safe.directory remains uninherited", "exact head/tree/game-tree or ledger SHA drift", "registered worktree dirty", "Pillow unavailable in task-owned target", "audit/guard/self-test/full-CI nonzero", "any source or GitHub mutation required", "unknown container collision"],
+      "handoff_recipient": "Producer",
+      "archive_condition": "Terminal complete full-CI PASS receipts or terminal fail-fast no-write blocker; no in-packet restart."
     },
     {
       "claim_id": "review-pr35-anchor-visual-gate-refute-v1",
@@ -3595,18 +3626,18 @@
     "ranking": "complete the new exact-tree anchor audit asynchronously, then independently review the stacked result, then decide the PR36-to-PR35 stack transition; keep all runtime and shared authority frozen",
     "phases": [
       {"phase":1,"objective":"Run one attributable canonical simple/full SpaceShot wrapper receipt against exact PR36 without source changes","owner":"evidence-pr36-spaceshot-canonical-invocation-v1 then review-pr36-canonical-spaceshot-evidence-v1","status":"complete_p0_0_runner_p1_cleared_full_ci_p1_retained","player_value":"distinguishes empty invocation evidence from an actual harness/runtime failure without another full-CI loop","conflict_risk":"execution and review serialized; repository authority remained frozen","exit":"met: independent terminal P0/P1 classification and one bounded successor"},
-      {"phase":2,"objective":"Run complete full CI against an audited generated-ledger overlay in a disposable exact-head clone without publication","owner":"evidence-pr36-anchor-full-ci-v3-replacement","status":"terminal_fail_fast_clone_controller_exit128_no_ci_no_write","player_value":"proves whether the candidate and new anchor measurement can pass the complete gate before any publication","conflict_risk":"producer-direct execution-only task scratch; generated anchor did not enter a clone or escape task scratch","exit":"met only as exact fail-fast no-write blocker; full-CI proof remains absent"},
+      {"phase":2,"objective":"Run complete full CI against an audited generated-ledger overlay in a disposable exact-head clone without publication","owner":"evidence-pr36-anchor-full-ci-v4-gitconfig-successor","status":"successor_reserved_before_direct_async_launch","player_value":"proves whether the candidate and new anchor measurement can pass the complete gate before any publication","conflict_risk":"producer-direct execution-only task scratch; inherited task-owned gitconfig closes the known clone-controller fault without source authority","exit":"terminal full-CI PASS receipts or exact fail-fast no-write blocker"},
       {"phase":3,"objective":"Publish one stacked Draft anchor only after Producer harvests terminal full-CI PASS, then run independent QA/Evidence and REFUTE","owner":"Producer then read-only reviewers","status":"blocked_full_ci_not_run","player_value":"closes the exact hosted CI blocker without weakening runtime or evidence authority","conflict_risk":"publication and review are separate transactions; PR35 and PR36 remain frozen","exit":"hosted exact-head checks and independent P0/P1=0"},
       {"phase":4,"objective":"Evaluate the PR36-to-PR35 stack, integration and visual-polish evidence in separate gated transactions","owner":"Producer then exactly one cafe visual owner","status":"queued","player_value":"restores a green evidence-bound cafe slice then advances player-visible closure","conflict_risk":"no integration merge in the anchor transaction; preserve Draft branches and canonical authority","exit":"stack checks, post-merge regression and clean desktop/mobile evidence; HUMAN_ACCEPTANCE separately gated"}
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-08-31T15:05:23Z",
-    "active_writers": 0,
+    "at": "2026-08-31T20:14:40Z",
+    "active_writers": 1,
     "read_only_reviewers": 0,
     "pr34_anchor_migration": "Terminal clean no-write handoff: audit rc0, guard and self-tests rc0, full CI stopped without conclusion, ledger restored, worktree clean, zero commit/push/PR, all task containers and temporary bundles/output cleaned. Claim released; regenerate only after the Sim repair.",
     "pr34_ui_review": "The reviewer returned P0=0/P1=1 against old headdf750455. Producer exact-object comparison to current0acb480 proves only unrelated save diagnostic drift and revalidates the cited revoke/spatial semantics unchanged. The P1 governs as a stop signal; the old-head review supplies no clearance.",
-    "current_independence": "The v3 execution-only runner failed closed at clone stage and is terminal/released. No writer or reviewer lease remains; PR35/PR36 and all repository authority stay frozen.",
+    "current_independence": "The v3 execution-only runner is terminal/released. Exactly one v4 execution-only successor is reserved against immutable PR36 sources and owns only task scratch plus one named container; all repository and shared authority paths stay frozen.",
     "pr34_current_head_p1": "At current0acb480 Sim.gd revoke_cafe_guest_capability lines4086-4093 only mark status revoked and emit events. Save spatial validation lines2489-2495 permits cafe/2f only for active capability, otherwise requires authored-home reachability. Revoking on 2f can therefore leave unauthorized state and make save/load fail closed without safe ejection or explicit denial/recovery.",
     "stack_b_replacement_exact_commit": "Replacement LF lane is clean at exact1114d2b7/tree51816f37 with only cafe-authored IDs and generated manifest added. Pinned Linux Docker b0173238 at committed head passed compiler --check, exact identity, game-clean and SHA checks; prior independent generation was byte-identical and malformed/stale/unbound negatives fail closed. Remote publication and Draft PR remain unperformed.",
     "stack_b_normal_push_failure": "One normal non-force push failed with curl28/connect timeout and send-pack disconnect. GitHub ref and branch APIs confirm the replacement branch is absent and no PR exists. One non-force Git Data API create-ref recovery is reserved against exact master9b2d052c and tree51816f37.",
@@ -4158,5 +4189,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "Notify the failed v3 recovery now. Any later successor must be a new packet, first record that safe.directory must be supplied through a task-owned GIT_CONFIG_GLOBAL (covering /src and /src/.git) so local upload-pack inherits it, and prove clone setup before launching full CI. Do not restart or replace from the released v3 packet. No generated ledger may enter a registered worktree or GitHub. PR35 and PR36 remain frozen; no commit, push, Ready or merge is authorized. HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "After this recovery reservation is remote, start the known user-local Docker Desktop executable hidden once, check the desktop-linux daemon once without long polling, and launch v4 only if the daemon is ready. Otherwise leave the exact lease active for a later heartbeat without host fallback. No generated ledger may enter a registered worktree or GitHub. PR35 and PR36 remain frozen; no commit, push, Ready or merge is authorized. HUMAN_ACCEPTANCE_NOT_READY."
 }
