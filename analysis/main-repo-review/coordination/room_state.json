@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-31T02:18:53Z",
+  "updated_at": "2026-08-31T02:23:19Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,8 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "5b1e96e6e2ec1e7929eff9c7b4383188f1f63ab5ac0c7270b484fcb1ac279ec8",
-    "canonical_objects": 320,
+    "canonical_sha256": "db5a87b384a5b38a4e04e0d2ee042a93d446abb7e2f07a8a8e70abf078d63a2f",
+    "canonical_objects": 321,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
       "parent": "9cd199cb5337eeafb55d2437f01deea51a6cfb01",
@@ -187,16 +187,17 @@
       "generated_outputs": ["task-owned isolated Docker receipts outside the repository only"],
       "dependencies": ["pr34:0acb480c9a3e7516d15440b16857dbfbc79369fc", "ui-review-p1:revoke-on-2f-no-recovery", "producer-current-head-revalidation:Sim-lines2489-2495-and4086-4093", "anchor-claim:terminal-clean-no-write-released", "canonical-2d-sim-authority", "deterministic-save-load-replay", "c0-rollback"],
       "consumer": "PR #34 guest invitation vertical slice, then a newly generated complementarity anchor for the repaired committed game tree",
-      "status": "recovery_1_reserved_after_full_ci_visual_failure",
+      "status": "recovery_1_final_visual_classification_dispatched_async",
       "write_lease": true,
-      "last_heartbeat": "2026-08-31T02:18:53Z",
-      "stale_after": "2026-08-31T04:18:53Z",
+      "last_heartbeat": "2026-08-31T02:23:19Z",
+      "stale_after": "2026-08-31T04:23:19Z",
       "pr": {"number": null, "stacked_base_branch": "codex/cafe-guest-vertical-slice-v1", "upstream_pr": 34, "draft_required": true, "status": "pre_pr"},
       "dispatch": {"at": "2026-08-31T01:09:27Z", "method": "send_message_to_thread", "status": "accepted", "reservation_commit": "fc4c82b0e46b039d0f68a28afde3581790f79539"},
       "pr_policy": "Create one Draft stacked PR targeting codex/cafe-guest-vertical-slice-v1 only after exact-head pinned-Docker proof and a clean two-path-or-smaller diff; never target integration/batons or master, mark Ready or merge.",
       "checks": {"required": ["revoke while player is on cafe/2f atomically relocates the player to an existing authored safe cafe/1f address before capability becomes revoked", "relocation updates space, floor, position, area and room caches through existing canonical Sim helpers and never View authority", "revoke emits visible log/social recovery feedback and a persistent event-log consequence", "revoke then save then load succeeds with revoked capability and safe 1f state", "replay reproduces the same revoke, relocation and persistent consequence deterministically using existing test surfaces", "post-revoke attempt to enter cafe/2f is denied fail-closed", "revocation off 2f does not move the player", "forged, stale or already-revoked capability remains rejected without mutation", "failure is atomic: no partial capability or spatial state", "C0 rollback remains possible by reverting this bounded stacked commit", "focused and full CI run in fresh isolated pinned Linux Docker with exact receipts", "semantic diff is no more than the two owned files and worktree is clean after commit"], "focused":{"result":"pass","fails":0,"container_proof":"pinned Docker","coverage":"revoke recovery, revoked save/load, portal denial, repeated and forged rejection, persistent event"}, "full_ci_attempt_1":{"container":"codex-pr34-revoke-ci","image":"gamecraft-runner:4.6.2@sha256:2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d","exit":1,"finished_at":"2026-08-31T02:11:12Z","elapsed_seconds":2252,"failure":"visual space/floor roundtrip capture: cafe entry left player town/outdoor; full journey player followed probe to owner-only cafe/2f; return camera changed from pos1560,1176 zoom1.8 to pos1536,1152 zoom0.229167","classification":"baseline versus repaired causality not yet proven"}, "p0": 0, "p1": 1, "does_not_prove": "Focused code and tests do not prove full-CI closure, final UI polish, desktop/mobile accessibility, clean release evidence or human acceptance."},
       "recovery_count": 1,
       "recovery_note": "Final recovery is limited to one fresh pinned-Docker baseline-versus-repaired visual classification. The write set stays exactly two files. Any repaired-only regression, second failure, identity drift or need to edit SpaceShot, Main, tools or scenes is terminal no-write.",
+      "recovery_dispatch": {"at":"2026-08-31T02:23:19Z","method":"send_message_to_thread","status":"accepted","reservation_commit":"dc2b71315024d11a9f8fe3970a6f141650731022","cadence":"async no long polling"},
       "release_reason": null,
       "rollback": "Before publication remove only the clean task-owned repair worktree and branch. After Draft publication close the stacked Draft or revert through review; never rewrite PR34, integration, master or protected history.",
       "stop_lines": ["PR34 head or tree drifts", "safe cafe/1f relocation requires a new scene, Main/View authority or invented coordinates rather than an existing authored Sim address/helper", "any path beyond the two owned files is required", "save/replay schema or shared test registry change is required", "Docker digest/isolation is unavailable", "revoke recovery cannot be atomic or deterministic", "full CI or focused negative controls fail", "existing branch, worktree, PR or overlapping Sim/save authority owner appears"],
@@ -3832,5 +3833,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "Dispatch the already reserved final recovery to the sole revoke-recovery writer: perform one bounded fresh pinned-Docker baseline-versus-repaired visual classification without a third-path edit. If repaired-only regression or a second failure occurs, return terminal no-write and release the lease. If exact non-regression plus all required gates is proven, publish one clean two-path stacked Draft and then reserve exact-head QA/Evidence, REFUTE and UI/UX re-review before regenerating the anchor. HUMAN_ACCEPTANCE_NOT_READY remains."
+  "next_trigger": "On the next short coordination tick, harvest the final baseline-versus-repaired pinned-Docker visual classification without long polling. If repaired-only regression, second failure or third-path need is terminal, release the lease and reserve a separate serialized prerequisite only after conflict review. If all required gates pass and a clean two-path stacked Draft is published, reserve exact-head QA/Evidence, REFUTE and UI/UX re-review before regenerating the anchor. HUMAN_ACCEPTANCE_NOT_READY remains."
 }
