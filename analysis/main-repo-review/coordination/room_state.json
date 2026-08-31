@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-31T00:59:02Z",
+  "updated_at": "2026-08-31T01:03:54Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,8 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "fc6595e7188e5eb09afa59ba3bb4bedf7e9734e4ab7229db33c28b00dcb11181",
-    "canonical_objects": 316,
+    "canonical_sha256": "303ae7bbeeba3656b9a421d1f203c91e0f81d84c6a6ea24ce9e8c96b5cfdb2a4",
+    "canonical_objects": 317,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
       "parent": "9cd199cb5337eeafb55d2437f01deea51a6cfb01",
@@ -154,15 +154,16 @@
       "generated_outputs": ["tools/gate_complement_ledger.json", "task-owned isolated Docker receipts outside the repository only"],
       "dependencies": ["pr34:0acb480c9a3e7516d15440b16857dbfbc79369fc", "pr34-tree:47bebcdb378e2d3fcbdc6b2996b15d4a573f088f", "pr34-game-tree:1a079fcccaadd60cc610156ca6877423304ed238", "user-explicit-consent:2026-08-30T23:58:23Z", "repository-finalize-contract:gate_fixture_audit --run --bake-ledger on committed tree", "immutable-gate-scripts", "pinned-linux-docker:gamecraft-runner-4.6.2-sha256-2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d"],
       "consumer": "PR #34 exact-head hosted CI gate_fixture_audit and gate_complement_guard",
-      "status": "stop_requested_consumer_invalidated_by_current_head_p1",
+      "status": "stop_dispatched_awaiting_active_command_boundary_no_write_authorized",
       "write_lease": false,
-      "last_heartbeat": "2026-08-31T00:59:02Z",
+      "last_heartbeat": "2026-08-31T01:03:54Z",
       "stale_after": null,
       "pr": {"number": null, "stacked_base_branch": "codex/cafe-guest-vertical-slice-v1", "upstream_pr": 34, "draft_required": true, "status": "pre_pr"},
       "dispatch": {"at": "2026-08-31T00:02:31Z", "method": "send_message_to_thread", "status": "accepted", "reservation_commit": "a6ac475", "recovery_1": {"at": "2026-08-31T00:39:08Z", "status": "accepted", "reservation_commit": "c5e0172", "route": "exact Git bundle cloned inside fresh pinned container", "final_recovery": true}},
       "pr_policy": "Create one Draft stacked PR targeting codex/cafe-guest-vertical-slice-v1 only after exact committed-tree Docker proof and a clean single-path diff; never target integration/batons or master directly, never mark Ready and never merge.",
       "checks": {"required": ["fresh isolated pinned Linux Docker records engine, image digest, mounts, commands and cleanup", "GODOT points to the pinned container runtime and python tools/gate_fixture_audit.py --run --bake-ledger completes against committed base", "generated baked_game_tree equals 1a079fcccaadd60cc610156ca6877423304ed238", "hard IDs, fixture inventory and invariant coverage remain complete and every difference is explained", "python tools/gate_complement_guard.py passes without changing the guard or audit scripts", "negative self-tests reject stale tree and incomplete ledger", "full tools/ci.sh passes in the same isolated container or returns an exact no-write blocker", "git diff is exactly tools/gate_complement_ledger.json and worktree is clean after commit"], "p0": 0, "p1": 1, "does_not_prove": "A matching generated ledger alone does not prove player-visible polish, runtime acceptance, accessibility, release readiness or permission to merge."},
       "first_attempt": {"result": "terminal_clean_no_write_timeout", "direct_mount_blocker": "Windows worktree .git indirection was not resolvable inside the Linux container, so git archive HEAD -- game failed before semantic audit", "safe_recovery": "exact commit Git bundle cloned inside the same pinned container reached the Godot fixture-probe phase", "timeout": "complete --run --bake-ledger exceeded the short task turn; container, temporary bundle and processes were cleaned", "mutations": "none; no ledger, guard, CI, commit, push or PR", "worktree": "created clean at exact base"},
+      "stop_dispatch": {"at": "2026-08-31T01:03:54Z", "method": "send_message_to_thread", "status": "accepted_queued_at_active_command_boundary", "coordination_commit": "f69b0dba1c14ca6de335921760f4e7e4dca87b20", "instruction": "stop and clean no-write; do not copy ledger, commit, push or create PR"},
       "recovery_count": 1,
       "release_reason": "The semantic audit reached a complete 7-fixture, 38 C/G invariant, hard-ID31/31 and CI-default15/15 result, but before ledger publication a current-head gameplay P1 invalidated the game-tree consumer: revoke on cafe/2f can leave player spatial state unauthorized and make save/load fail closed without recovery. Stop and clean before copying, committing, pushing or opening the anchor Draft; any anchor for this game tree would be immediately obsolete.",
       "rollback": "Before publication delete only the clean task-owned worktree and branch. After Draft publication close the stacked Draft or use a reviewed revert; never rewrite PR #34, integration/batons, master or protected history.",
@@ -3245,7 +3246,7 @@
     "at": "2026-08-30T23:58:23Z",
     "active_writers": 0,
     "read_only_reviewers": 0,
-    "pr34_anchor_migration": "The final recovery completed semantic measurement but is stop-requested before any generated ledger copy or publication because a current-head gameplay P1 makes the present game-tree anchor immediately obsolete. The write lease is revoked; task must clean containers/temp state and return no-write.",
+    "pr34_anchor_migration": "The final recovery completed semantic measurement and guard/negative controls; full CI was already running when the stop message was delivered. A current-head gameplay P1 makes the present game-tree anchor immediately obsolete. The write lease is revoked and the stop is queued at the active command boundary; task must not copy, commit, push or create a PR and must clean task-owned state.",
     "pr34_ui_review": "The reviewer returned P0=0/P1=1 against old headdf750455. Producer exact-object comparison to current0acb480 proves only unrelated save diagnostic drift and revalidates the cited revoke/spatial semantics unchanged. The P1 governs as a stop signal; the old-head review supplies no clearance.",
     "current_independence": "No writer or reviewer lease remains valid while the anchor stop is pending. A replacement revoke-recovery writer may be reserved only after stop acknowledgement. The original PR34 feature writer remains released after its only recovery; the six-path protected-authority successor remains queued and undispatched.",
     "pr34_current_head_p1": "At current0acb480 Sim.gd revoke_cafe_guest_capability lines4086-4093 only mark status revoked and emit events. Save spatial validation lines2489-2495 permits cafe/2f only for active capability, otherwise requires authored-home reachability. Revoking on 2f can therefore leave unauthorized state and make save/load fail closed without safe ejection or explicit denial/recovery.",
@@ -3291,7 +3292,7 @@
     "stack_b_pr31_normal_sync_result_body_refresh_reserved": "GitHub update-branch created exact Draft merge child3254577d/treec6d76be9 with parents d7f2bd06 + master37ccea82 and unchanged two JSON blobs. Post-sync API/local/Docker ls-remote all enumerate 39 branches. Qualification33257158954 and authority33257158256 succeeded; CI/visual33257158932 active. Old checks/reviews are invalid. Body-only exact-head evidence refresh is reserved before any fresh review dispatch.",
     "stack_b_pr31_normal_sync_body_rebound": "Draft PR31 body is rebound at SHA2561fe05ae5/3050 bytes to base37ccea82/head3254577d/treec6d76be9, exact parents, unchanged JSON blobs and source receipts. It records qualification/authority success and CI/visual active, invalidates all old-head evidence, and keeps review/readiness/merge gates unchecked. Await terminal exact-head checks.",
     "shared_write_conflicts": 0,
-    "decision": "Revoke the anchor write lease and send an immediate no-write stop after this ledger reaches origin. Do not publish an anchor for a game tree with a known current-head P1. After stop acknowledgement, reserve one bounded replacement writer for revoke-on-2f recovery; serialize Sim/save authority and require Docker revoke-save-load-replay tests before any new anchor migration."
+    "decision": "Anchor write lease revoked and no-write stop dispatched after coordination commit f69b0dba. Do not publish an anchor for a game tree with a known current-head P1. After stop acknowledgement, reserve one bounded replacement writer for revoke-on-2f recovery; serialize Sim/save authority and require Docker revoke-save-load-replay tests before any new anchor migration."
   },
   "released_claims": [
     {
