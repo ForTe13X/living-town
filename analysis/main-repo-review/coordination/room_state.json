@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-31T06:01:54Z",
+  "updated_at": "2026-08-31T06:38:23Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,8 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "133358bb4c52b13fdc0cc37e0e1b15da0ee7d30ed7dbdabb91a463fd0214981b",
-    "canonical_objects": 327,
+    "canonical_sha256": "af50533d0b63f6d1fac4c20aa06c6773ea1a6a8b07625bd3ffef5cd32f48c722",
+    "canonical_objects": 328,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
       "parent": "9cd199cb5337eeafb55d2437f01deea51a6cfb01",
@@ -42,7 +42,7 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-08-31T05:48:45Z",
+    "at": "2026-08-31T06:34:45Z",
     "github_api_count": 42,
     "git_ls_remote_count": 42,
     "local_tracking_count": 42,
@@ -54,7 +54,7 @@
     "sorted_name_sha_set_sha256": "380e459136d3533a599438dd1932e4f74dfabeddd29bea141ccd69b6ad2fc2be",
     "master": "37ccea829e16e5844059a11eac9b3177ac693d6a",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "b4d0d649fc7bf623f968729ee3af05450d45de67",
+    "coordination": "77a93d6e345c600dafad7512b7e80aa451bb14d5",
     "pr25": "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
     "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
@@ -62,11 +62,12 @@
     "pr29": "f6cbdcf5ad8539bf4c4ce14ae6328ffb24d18ffc",
     "pr30": "4974244f784c8bcb9aa1a5c88fd358f5a671bd8d",
     "mismatched_or_missing_local": {},
-    "open_prs": 11,
+    "open_prs": 12,
     "open_issues": 0,
     "releases": 0,
     "tags": 0,
-    "full_branch_metadata_scan": "Lightweight material-result scan completed at 2026-08-31T05:48:45Z. Fresh serial fetch and direct ls-remote enumerate all 42 hosted branches. PR35 is a frozen stacked Draft at 24beff82 with visual_canary success and CI failing only because the protected complement ledger is stale for repaired game tree b32865df; PR5 at b4d0d649 has CI and visual_canary success. Required Narrative and Implementation tasks remain unreadable."
+    "full_branch_metadata_scan": "Lightweight material-result scan completed at 2026-08-31T06:34:45Z. Fresh serial fetch and direct ls-remote enumerate all 42 hosted branches. Twelve PRs are open. PR35 remains frozen Draft MERGEABLE/UNSTABLE at24beff82 with visual_canary success and CI stale-anchor failure. PR5 at77a93d6 has hosted run33362717251 success. All 42 registered worktrees were read: 13 dirty historical/temporary worktrees are preserved and zero reads failed. Required Narrative and Implementation tasks remain unreadable.",
+    "benchmark_revalidation": {"repository":"mewamew/my_ai_town","ref":"main","head":"aac9992c2d195402a90327754c1f6ef279675076","readme_blob":"9aa3211f238fd6bd503b758f87cc6d5b76126603","readme_sha256":"fccc03778fcd8635851cbe604b5363a4a4854350555a9e1b3a5299469d1fac60","screenshots":{"assets/readme/town-overview.jpg":"8315851951fa4b86138ed4b66508598fa08dfd9d3ed0dd9e788c1adf422495ec","assets/readme/resident-conversation.jpg":"e5b5cf0892c34949aa2c128c554234db99b898aefd6fdea4cb89fdfe3da02c63","assets/readme/workshop-task.jpg":"7985c00433ff522c49749cb4a098e8d35776ca0f5bc3051f0966e43e70c16f6a","assets/readme/market-life.jpg":"914de2c4571bb9546a9d3e31ebc3f093b4e9034571a92c6332c128a228193895","assets/readme/world-log.jpg":"9195d4ae02db1bc81af745c245612900e780711a3a0593b2d70191e446a4bce4"},"license_boundary":"quality and information-architecture reference only; no code, pixel, asset, palette or derivative copying"}
   },
   "portfolio_policy": {
     "default_active_writers": 2,
@@ -189,15 +190,16 @@
       "generated_outputs": ["tools/gate_complement_ledger.json", "task-owned isolated Docker receipts outside the repository only"],
       "dependencies": ["pr35:24beff82ceaf246f5b6c9fa3ca74a6d2b4b29931", "pr35-tree:425935b1bdf9ff04c121b165bfb3f93f5e92f00f", "pr35-game-tree:b32865dfb1fc26ee3049673b4996617fa77cdf4d", "hosted-run33353066042:visual-success-ci-stale-anchor-only", "prior-audit-method:7-fixtures-38-invariants-hardids31-ci15", "immutable-gate-scripts", "pinned-linux-docker:gamecraft-runner-4.6.2-sha256-2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d"],
       "consumer": "PR #35 exact-head hosted CI, then Producer decision on stacking the repaired tree into PR #34",
-      "status": "dispatched_async",
+      "status": "recovery_1_reserved_before_dispatch_async_full_ci_harvest",
       "write_lease": true,
-      "last_heartbeat": "2026-08-31T05:59:12Z",
-      "stale_after": "2026-08-31T07:51:59Z",
+      "last_heartbeat": "2026-08-31T06:38:23Z",
+      "stale_after": "2026-08-31T08:38:23Z",
       "pr": {"number": null, "stacked_base_branch": "codex/pr34-revoke-recovery-v1", "upstream_pr": 35, "draft_required": true, "status": "pre_pr"},
       "dispatch": {"at":"2026-08-31T05:59:12Z","method":"send_message_to_thread","status":"accepted","reservation_commit":"012395776a74037de11aded39c6a094baf394a99","cadence":"asynchronous; harvest later without long polling"},
       "pr_policy": "Create one Draft stacked PR targeting codex/pr34-revoke-recovery-v1 only after exact committed-tree Docker proof, complete guard and negative controls, and a clean single-path diff; never mark Ready or merge.",
-      "checks": {"required": ["fresh pinned Docker records versions, image digest, mounts, commands and cleanup", "complete gate_fixture_audit --run --bake-ledger succeeds on committed head24beff82", "generated baked_game_tree equals b32865dfb1fc26ee3049673b4996617fa77cdf4d", "fixture and invariant inventory remains complete with semantic explanation for differences", "gate_complement_guard passes without script changes", "stale-tree and incomplete-ledger negatives fail closed", "focused guard plus full tools/ci.sh pass or return exact no-write blocker", "diff is exactly tools/gate_complement_ledger.json and worktree is clean after commit"], "p0": 0, "p1": 1, "does_not_prove": "A regenerated ledger does not prove PR35 functional correctness, final UI polish, accessibility, release readiness or permission to merge."},
-      "recovery_count": 0,
+      "checks": {"required": ["fresh pinned Docker records versions, image digest, mounts, commands and cleanup", "complete gate_fixture_audit --run --bake-ledger succeeds on committed head24beff82", "generated baked_game_tree equals b32865dfb1fc26ee3049673b4996617fa77cdf4d", "fixture and invariant inventory remains complete with semantic explanation for differences", "gate_complement_guard passes without script changes", "stale-tree and incomplete-ledger negatives fail closed", "focused guard plus full tools/ci.sh pass or return exact no-write blocker", "diff is exactly tools/gate_complement_ledger.json and worktree is clean after commit"], "attempt_1":{"result":"terminal_no_write_incomplete","identity":"24beff82/425935b1/b32865df","audit":"pass 7 fixtures 38 invariants hard_ids31_of31 ci_defaults15_of15","baked_game_tree":"b32865dfb1fc26ee3049673b4996617fa77cdf4d","guard":"pass","guard_selftest":"pass","audit_selftest":"pass","full_ci":"started through S0 golden bench then owner stopped long-running container before terminal result","publication":"none","cleanup":"ledger restored, worktree clean, no branch push, no PR, containers and scratch cleaned"}, "p0": 0, "p1": 1, "does_not_prove": "Audit and negative-control success without terminal full CI does not prove a publishable anchor, PR35 functional correctness, final UI polish, accessibility, release readiness or permission to merge."},
+      "recovery_count": 1,
+      "recovery_note": "Single recovery changes cadence only: re-bake the same one-path ledger, start the exact named isolated full-CI container detached, persist receipts in task-owned scratch and return immediately. A later heartbeat harvests the terminal exit/logs. No second recovery, second path or manual green anchor is permitted.",
       "release_reason": null,
       "rollback": "Before publication remove only the clean task-owned branch/worktree. After Draft publication close the stacked Draft or revert its single path through review; never rewrite PR35, PR34, integration or master.",
       "stop_lines": ["PR35 head, tree or game tree drifts", "audit or guard scripts must change", "any path beyond tools/gate_complement_ledger.json is required", "fixture or invariant proof is incomplete", "Docker isolation is unavailable", "negative controls do not fail closed", "existing branch, worktree, PR or conflicting authority lease appears"],
@@ -3790,19 +3792,19 @@
     }
   },
   "workspace_observation": {
-    "registered_worktrees": 40,
-    "dirty_worktrees": 15,
+    "registered_worktrees": 42,
+    "dirty_worktrees": 13,
     "worktree_errors": 0,
     "unknown_or_historical_dirt_policy": "quarantine_preserve"
   },
   "metrics": {
     "conflicts_rejected_before_write": 1,
     "stale_or_empty_handoffs": 3,
-    "recoveries_or_replacements": 12,
+    "recoveries_or_replacements": 13,
     "open_exact_sha_p0": 0,
     "open_exact_sha_p1": 4,
     "post_merge_regressions": 1,
-    "player_visible_closure_state": "pr34_revoke_on_2f_recovery_writer_reserved"
+    "player_visible_closure_state": "pr35_anchor_full_ci_async_recovery_reserved"
   },
   "human_acceptance": "not_ready",
   "current_gate": {
@@ -3901,5 +3903,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "Harvest the asynchronously dispatched PR35 one-path complement-anchor writer and exact-head UI/UX reviewer on a later heartbeat without long polling. Keep PR #35 frozen until the repaired-tree anchor, hosted full CI, independent exact-head QA/REFUTE/UI review and P0/P1 closure are complete. Stop on identity drift, second-path need, failed proof or review P0/P1. HUMAN_ACCEPTANCE_NOT_READY remains."
+  "next_trigger": "Publish the single PR35 anchor recovery reservation, then instruct the existing owner to re-bake the unchanged one-path ledger and start one exact named pinned-Docker full-CI container detached, persisting receipts to task-owned scratch and returning immediately. Harvest terminal exit/logs on a later heartbeat; only then may the owner commit/push/open a stacked Draft. Any second failure, second path, identity drift or incomplete receipt is terminal release. PR35 remains frozen and HUMAN_ACCEPTANCE_NOT_READY."
 }
