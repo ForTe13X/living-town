@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-30T23:58:23Z",
+  "updated_at": "2026-08-31T00:02:31Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,8 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "df3449be793aae6164b805c1dafd748c72fcefb225b8aa28a7bd253f4a827e52",
-    "canonical_objects": 312,
+    "canonical_sha256": "b13074a474339a37cad840bb7e91efae74770db4aa64c289de17d0f37734a921",
+    "canonical_objects": 313,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
       "parent": "9cd199cb5337eeafb55d2437f01deea51a6cfb01",
@@ -124,10 +124,10 @@
       "generated_outputs": ["task final answer only: exact-head findings matrix and review verdict"],
       "dependencies": ["PR34:0acb480c9a3e7516d15440b16857dbfbc79369fc", "canonical-2d-sim-authority", "user-authority:2026-08-30T21:51:58Z:persisted-guest-invitation"],
       "consumer": "Producer coordination ledger and PR #34 repair/readiness decision",
-      "status": "rebind_reserved_before_dispatch_due_exact_head_drift",
+      "status": "exact_head_rebind_dispatched_active_read_only",
       "write_lease": false,
-      "last_heartbeat": "2026-08-30T23:45:44Z",
-      "stale_after": "2026-08-31T00:30:09Z",
+      "last_heartbeat": "2026-08-31T00:02:31Z",
+      "stale_after": "2026-08-31T02:02:31Z",
       "pr": {"number": 34, "head": "0acb480c9a3e7516d15440b16857dbfbc79369fc", "draft": true},
       "checks": {"required": ["invitation acceptance is legible to a player", "grant and revocation feedback is perceivable without debug overlays", "failure states are understandable and recoverable", "keyboard and reduced-motion/accessibility implications are stated", "desktop and 320/mobile evidence gaps are explicit", "P0/P1 are tied to exact code or missing runtime evidence"], "p0": null, "p1": null},
       "recovery_count": 0,
@@ -153,11 +153,12 @@
       "generated_outputs": ["tools/gate_complement_ledger.json", "task-owned isolated Docker receipts outside the repository only"],
       "dependencies": ["pr34:0acb480c9a3e7516d15440b16857dbfbc79369fc", "pr34-tree:47bebcdb378e2d3fcbdc6b2996b15d4a573f088f", "pr34-game-tree:1a079fcccaadd60cc610156ca6877423304ed238", "user-explicit-consent:2026-08-30T23:58:23Z", "repository-finalize-contract:gate_fixture_audit --run --bake-ledger on committed tree", "immutable-gate-scripts", "pinned-linux-docker:gamecraft-runner-4.6.2-sha256-2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d"],
       "consumer": "PR #34 exact-head hosted CI gate_fixture_audit and gate_complement_guard",
-      "status": "reserved_before_dispatch_user_authorized",
+      "status": "dispatched_async_user_authorized",
       "write_lease": true,
-      "last_heartbeat": "2026-08-30T23:58:23Z",
+      "last_heartbeat": "2026-08-31T00:02:31Z",
       "stale_after": "2026-08-31T01:58:23Z",
       "pr": {"number": null, "stacked_base_branch": "codex/cafe-guest-vertical-slice-v1", "upstream_pr": 34, "draft_required": true, "status": "pre_pr"},
+      "dispatch": {"at": "2026-08-31T00:02:31Z", "method": "send_message_to_thread", "status": "accepted", "reservation_commit": "a6ac475"},
       "pr_policy": "Create one Draft stacked PR targeting codex/cafe-guest-vertical-slice-v1 only after exact committed-tree Docker proof and a clean single-path diff; never target integration/batons or master directly, never mark Ready and never merge.",
       "checks": {"required": ["fresh isolated pinned Linux Docker records engine, image digest, mounts, commands and cleanup", "GODOT points to the pinned container runtime and python tools/gate_fixture_audit.py --run --bake-ledger completes against committed base", "generated baked_game_tree equals 1a079fcccaadd60cc610156ca6877423304ed238", "hard IDs, fixture inventory and invariant coverage remain complete and every difference is explained", "python tools/gate_complement_guard.py passes without changing the guard or audit scripts", "negative self-tests reject stale tree and incomplete ledger", "full tools/ci.sh passes in the same isolated container or returns an exact no-write blocker", "git diff is exactly tools/gate_complement_ledger.json and worktree is clean after commit"], "p0": 0, "p1": 1, "does_not_prove": "A matching generated ledger alone does not prove player-visible polish, runtime acceptance, accessibility, release readiness or permission to merge."},
       "recovery_count": 0,
@@ -3232,8 +3233,8 @@
     "trigger": "PR34 exact-head hosted CI exposes a protected complementarity-anchor P1 after the sole feature recovery resolved the runtime-scanner blocker",
     "ranking": "close the exact one-path evidence gate, then independent exact-head QA/REFUTE, then integrate the player-visible cafe slice; keep unrelated authority successor queued",
     "phases": [
-      {"phase":1,"objective":"Complete semantic complementarity audit and generate the exact PR34 game-tree anchor","owner":"lease-pr34-complement-anchor-migration-v1","status":"reserved_before_dispatch_user_authorized","player_value":"unblocks trustworthy exact-head testing of invitation to cafe interaction and persistence","conflict_risk":"one generated ledger path only; feature writer released; game and gate scripts forbidden","exit":"clean stacked Draft with pinned-Docker full audit, guard and negative controls"},
-      {"phase":2,"objective":"Independent exact-head functional QA/Evidence and REFUTE plus UI/UX/accessibility review","owner":"reserved_after_phase1 plus current read-only UI reviewer","status":"UI review rebind reserved; technical reviews wait for immutable anchor head","player_value":"tests player action, visible feedback, consumer, persistence and failure recovery","conflict_risk":"read-only/output-only reviewers; no repository mutation","exit":"P0/P1=0 with exact Docker and clean runtime evidence"},
+      {"phase":1,"objective":"Complete semantic complementarity audit and generate the exact PR34 game-tree anchor","owner":"lease-pr34-complement-anchor-migration-v1","status":"dispatched_async_user_authorized","player_value":"unblocks trustworthy exact-head testing of invitation to cafe interaction and persistence","conflict_risk":"one generated ledger path only; feature writer released; game and gate scripts forbidden","exit":"clean stacked Draft with pinned-Docker full audit, guard and negative controls"},
+      {"phase":2,"objective":"Independent exact-head functional QA/Evidence and REFUTE plus UI/UX/accessibility review","owner":"reserved_after_phase1 plus current read-only UI reviewer","status":"UI review exact-head rebind dispatched; technical reviews wait for immutable anchor head","player_value":"tests player action, visible feedback, consumer, persistence and failure recovery","conflict_risk":"read-only/output-only reviewers; no repository mutation","exit":"P0/P1=0 with exact Docker and clean runtime evidence"},
       {"phase":3,"objective":"Merge eligible stacked anchor into PR34 branch, rerun hosted CI and repair only bounded P0/P1 findings","owner":"Producer separate transaction","status":"blocked_on_phase1_and_phase2","player_value":"restores a green, evidence-bound cafe slice candidate","conflict_risk":"no integration merge in the anchor transaction; preserve Draft and rollback","exit":"PR34 exact-head hosted checks success and independent P0/P1=0"},
       {"phase":4,"objective":"Evaluate integration merge and then commission visual-polish evidence against the benchmark floor","owner":"Producer then exactly one cafe visual owner","status":"queued","player_value":"moves toward clean player-visible cafe closure and persistent world log","conflict_risk":"visual work serialized behind canonical runtime and no protected authority overlap","exit":"post-merge regression green; clean desktop/mobile evidence matrix; HUMAN_ACCEPTANCE remains separately gated"}
     ]
@@ -3242,8 +3243,8 @@
     "at": "2026-08-30T23:58:23Z",
     "active_writers": 1,
     "read_only_reviewers": 1,
-    "pr34_anchor_migration": "User explicitly authorized the separately gated protected complementarity-anchor migration. Exactly one replacement writer is reserved at base0acb480/tree47bebcdb/game-tree1a079fcc with a one-path tools/gate_complement_ledger.json lease. Game, audit/guard scripts, CI, workflows, other anchors and coordination are forbidden. The branch and worktree are absent; the task is terminal/idle and has no current repository lease.",
-    "pr34_ui_review": "The existing UI/UX reviewer remains the sole read-only reviewer and is reserved for exact head0acb480; no old-head clearance carries forward.",
+    "pr34_anchor_migration": "User explicitly authorized the separately gated protected complementarity-anchor migration. Exactly one replacement writer was dispatched asynchronously at base0acb480/tree47bebcdb/game-tree1a079fcc with a one-path tools/gate_complement_ledger.json lease. Game, audit/guard scripts, CI, workflows, other anchors and coordination are forbidden. The branch and worktree were absent before dispatch.",
+    "pr34_ui_review": "The existing UI/UX reviewer remains the sole read-only reviewer and was rebound asynchronously to exact head0acb480; no old-head clearance carries forward.",
     "current_independence": "One generated-anchor writer and one read-only UI reviewer have disjoint write sets. The PR34 feature writer is released after its only recovery; the six-path protected-authority successor remains queued and undispatched.",
     "stack_b_replacement_exact_commit": "Replacement LF lane is clean at exact1114d2b7/tree51816f37 with only cafe-authored IDs and generated manifest added. Pinned Linux Docker b0173238 at committed head passed compiler --check, exact identity, game-clean and SHA checks; prior independent generation was byte-identical and malformed/stale/unbound negatives fail closed. Remote publication and Draft PR remain unperformed.",
     "stack_b_normal_push_failure": "One normal non-force push failed with curl28/connect timeout and send-pack disconnect. GitHub ref and branch APIs confirm the replacement branch is absent and no PR exists. One non-force Git Data API create-ref recovery is reserved against exact master9b2d052c and tree51816f37.",
@@ -3287,7 +3288,7 @@
     "stack_b_pr31_normal_sync_result_body_refresh_reserved": "GitHub update-branch created exact Draft merge child3254577d/treec6d76be9 with parents d7f2bd06 + master37ccea82 and unchanged two JSON blobs. Post-sync API/local/Docker ls-remote all enumerate 39 branches. Qualification33257158954 and authority33257158256 succeeded; CI/visual33257158932 active. Old checks/reviews are invalid. Body-only exact-head evidence refresh is reserved before any fresh review dispatch.",
     "stack_b_pr31_normal_sync_body_rebound": "Draft PR31 body is rebound at SHA2561fe05ae5/3050 bytes to base37ccea82/head3254577d/treec6d76be9, exact parents, unchanged JSON blobs and source receipts. It records qualification/authority success and CI/visual active, invalidates all old-head evidence, and keeps review/readiness/merge gates unchecked. Await terminal exact-head checks.",
     "shared_write_conflicts": 0,
-    "decision": "Dispatch exactly one separately gated PR34 complementarity-anchor migrator after this reservation reaches origin/codex/main-repo-review. Keep the feature writer released, the UI reviewer read-only, the six-path authority successor queued, and PR34 Draft; reject any expansion beyond the generated ledger path."
+    "decision": "Exactly one separately gated PR34 complementarity-anchor migrator and the existing read-only UI reviewer are active asynchronously after reservation commit a6ac475. Keep the feature writer released, the six-path authority successor queued, and PR34 Draft; reject any expansion beyond the generated ledger path."
   },
   "released_claims": [
     {
@@ -3795,5 +3796,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "After this exact reservation reaches origin/codex/main-repo-review, dispatch the map-lab task as the replacement one-path PR34 anchor migrator and rebind the existing UI reviewer to exact head0acb480. Return without waiting. Keep PR5, PR31, PR33 and PR34 Draft, PR21-PR24 frozen, and the six-path authority successor queued. HUMAN_ACCEPTANCE_NOT_READY remains."
+  "next_trigger": "On the next short coordination tick, harvest immediate or terminal state from the anchor migrator and exact-head UI reviewer without long polling. If the anchor task stops no-write, record the exact blocker before considering one recovery. If it produces a Draft, reserve independent exact-head QA/Evidence and REFUTE before any merge. Keep PR5, PR31, PR33 and PR34 Draft, PR21-PR24 frozen, and the six-path authority successor queued. HUMAN_ACCEPTANCE_NOT_READY remains."
 }
