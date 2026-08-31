@@ -224,10 +224,10 @@
       "generated_outputs": ["terminal read-only review handoff only"],
       "dependencies": ["pr36:dfefd9a673877a64998ca6fa81c61fbf51730ff7", "simple:container10782744 exit0 capture0 assert0", "full:container563b4de5 exit0 capture0 assert0", "pinned-image:sha256-2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d", "pr36-hosted-ci-failure-anchor", "pr36-hosted-visual-success"],
       "consumer": "Producer decision whether to reserve a fresh exact-head anchor/full-CI evidence lane or close PR36 as blocked",
-      "status": "reserved_before_async_dispatch",
+      "status": "dispatched_async_awaiting_terminal_readonly_handoff",
       "write_lease": false,
-      "last_heartbeat": "2026-08-31T13:24:06Z",
-      "stale_after": "2026-08-31T15:24:06Z",
+      "last_heartbeat": "2026-08-31T13:28:36Z",
+      "stale_after": "2026-08-31T15:28:36Z",
       "pr": {"number":36,"draft":true,"status":"frozen_unstable","publication":"forbidden"},
       "checks": {"required":["verify exact head/tree/game-tree and preserved container image/mount/command identity","recompute or inspect every simple/full metadata and PNG SHA256 receipt without changing files","validate simple camera/pixel/texture/interior assertions and full town-1F-2F-1F-town floor assertions","identify warnings and does-not-prove boundaries including player_journey=false and stairs_probe_only=false","reconcile focused PASS with hosted visual success and hosted CI anchor failure","report P0/P1/P2 and exactly one bounded next executable packet or NO_GO"],"p0":0,"p1":1,"does_not_prove":"Review cannot prove full CI, anchor publication, real player stairs input, persistence, visual-quality floor, accessibility or release readiness."},
       "recovery_count": 0,
@@ -3531,14 +3531,14 @@
     "trigger": "PR36 exact-head hosted visual_canary succeeded and hosted CI exposes only the stale protected complementarity anchor after the one-path SpaceShot roundtrip harness repair",
     "ranking": "complete the new exact-tree anchor audit asynchronously, then independently review the stacked result, then decide the PR36-to-PR35 stack transition; keep all runtime and shared authority frozen",
     "phases": [
-      {"phase":1,"objective":"Run one attributable canonical simple/full SpaceShot wrapper receipt against exact PR36 without source changes","owner":"evidence-pr36-spaceshot-canonical-invocation-v1 then review-pr36-canonical-spaceshot-evidence-v1","status":"focused_simple_full_pass_terminal_review_reserved","player_value":"distinguishes empty invocation evidence from an actual harness/runtime failure without another full-CI loop","conflict_risk":"execution and review are serialized; all repository and shared authority paths forbidden","exit":"independent terminal P0/P1 classification and one bounded successor"},
+      {"phase":1,"objective":"Run one attributable canonical simple/full SpaceShot wrapper receipt against exact PR36 without source changes","owner":"evidence-pr36-spaceshot-canonical-invocation-v1 then review-pr36-canonical-spaceshot-evidence-v1","status":"focused_simple_full_pass_terminal_review_dispatched_async","player_value":"distinguishes empty invocation evidence from an actual harness/runtime failure without another full-CI loop","conflict_risk":"execution and review are serialized; all repository and shared authority paths forbidden","exit":"independent terminal P0/P1 classification and one bounded successor"},
       {"phase":2,"objective":"Publish one stacked Draft anchor only after Producer harvests terminal PASS, then run independent QA/Evidence and REFUTE","owner":"Producer then read-only reviewers","status":"blocked_on_phase1_terminal_pass","player_value":"closes the exact hosted CI blocker without weakening runtime or evidence authority","conflict_risk":"publication and review are separate transactions; PR35 and PR36 remain frozen","exit":"hosted exact-head checks and independent P0/P1=0"},
       {"phase":3,"objective":"Evaluate the PR36-to-PR35 stack and rerun the upstream candidate checks before any integration decision","owner":"Producer separate transaction","status":"blocked_on_phase1_and_phase2","player_value":"restores a green evidence-bound cafe slice candidate","conflict_risk":"no integration merge in the anchor transaction; preserve Draft branches and rollback","exit":"stacked candidate hosted checks success with no unresolved P0/P1"},
       {"phase":4,"objective":"Evaluate integration merge and then commission visual-polish evidence against the benchmark floor","owner":"Producer then exactly one cafe visual owner","status":"queued","player_value":"moves toward clean player-visible cafe closure and persistent world log","conflict_risk":"visual work serialized behind canonical runtime and no protected authority overlap","exit":"post-merge regression green; clean desktop/mobile evidence matrix; HUMAN_ACCEPTANCE remains separately gated"}
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-08-31T13:24:06Z",
+    "at": "2026-08-31T13:28:36Z",
     "active_writers": 0,
     "read_only_reviewers": 1,
     "pr34_anchor_migration": "Terminal clean no-write handoff: audit rc0, guard and self-tests rc0, full CI stopped without conclusion, ledger restored, worktree clean, zero commit/push/PR, all task containers and temporary bundles/output cleaned. Claim released; regenerate only after the Sim repair.",
@@ -4095,5 +4095,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "After this terminal focused-evidence and read-only review reservation is remote, dispatch review-pr36-canonical-spaceshot-evidence-v1 asynchronously. The reviewer must not rerun or mutate anything and must return P0/P1/P2 plus one bounded next packet or NO_GO. PR35 and PR36 remain frozen; no anchor, source, commit, push, Ready or merge is authorized. HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "Take one immediate non-blocking snapshot of review-pr36-canonical-spaceshot-evidence-v1 after publishing this dispatch. Harvest its terminal P0/P1/P2 handoff on a later heartbeat, then either reserve exactly one bounded no-overlap successor or close the lane. PR35 and PR36 remain frozen; no anchor, source, commit, push, Ready or merge is authorized. HUMAN_ACCEPTANCE_NOT_READY."
 }
