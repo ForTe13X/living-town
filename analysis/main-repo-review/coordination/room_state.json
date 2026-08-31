@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-31T07:56:48Z",
+  "updated_at": "2026-08-31T08:00:55Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,8 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "311665f746577d0c3a1ceca754c194257882233fdf0a149c4240567a74a0d429",
-    "canonical_objects": 331,
+    "canonical_sha256": "e818867c76f27ffd02292e4f165c0a5aa3fe569c12a48745baeedf9988a19991",
+    "canonical_objects": 332,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
       "parent": "1d8de23ef204af4c1323ca4be719b963ebf49eb5",
@@ -95,11 +95,12 @@
       "generated_outputs": ["terminal exact-evidence classifier and bounded successor packet only"],
       "dependencies": ["pr35:24beff82ceaf246f5b6c9fa3ca74a6d2b4b29931", "container:4edcd340765003f006a183f57ff4630cb1cc866dd69d7f5c4401ef443860551b:exit1", "full-ci-log:4622cd736d4883e8f6fe49aabbf8904a4fe3f48c369ed63093bcd50140813cb9", "visual-log:f440521e65f1dfaffcc1ff0290b54d85ea6b5c0606c3461924fe85295b526c5f", "space-meta:38602222ee921cf2820c3dad1fe02dc3fcbe7a7c5af47fb281e88a0be714828c", "floor-meta:b10ccc7de2b13a4bc71446f9a55a1c317952ba7434ae9c825b92f4f20c6d648c", "prior-focused-floor-roundtrip:pass", "ui-review:p0_0_p1_0"],
       "consumer": "Producer decision to freeze, revert, or commission exactly one bounded runtime-versus-harness repair",
-      "status": "reserved_before_dispatch",
+      "status": "dispatched_async",
       "write_lease": false,
-      "last_heartbeat": "2026-08-31T07:56:48Z",
+      "last_heartbeat": "2026-08-31T08:00:55Z",
       "stale_after": "2026-08-31T09:56:48Z",
       "pr": {"number":35,"draft":true,"head":"24beff82ceaf246f5b6c9fa3ca74a6d2b4b29931","status":"frozen_unstable"},
+      "dispatch": {"at":"2026-08-31T08:00:55Z","method":"send_message_to_thread","status":"accepted","reservation_commit":"88acfdfd5c32a3e163bbd1df2c746780b6079d69","cadence":"asynchronous read-only; harvest later without polling"},
       "checks": {"required":["verify receipt hashes and exact container identity","separate expected NobodyWho warnings from the terminal cause","explain player_entered false, player_floor_during_probe_stairs 1f and return-camera mismatch","compare simple and full journey metadata against the prior focused PASS claim","name exact authority surface and minimal semantic write set if a repair is justified","P0/P1 and does_not_prove tied to exact evidence"],"p0":null,"p1":1},
       "recovery_count": 0,
       "release_reason": null,
@@ -3935,5 +3936,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "Publish and asynchronously dispatch the reserved read-only technical visual QA/REFUTE classifier. Do not rerun CI, revive the anchor writer, mutate the exited container or publish the generated ledger. Harvest the exact-evidence verdict later; only then may Producer commission one bounded runtime-versus-harness repair if justified. Retry the bounded Smart HTTP lane on the next tick; current branch snapshot is incomplete. PR35 remains frozen and HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "Harvest the asynchronously dispatched exact-evidence technical visual QA/REFUTE verdict later without polling. Do not rerun CI, revive the anchor writer, mutate the exited container or publish the generated ledger. Only a classifier that distinguishes runtime from harness with exact evidence may justify one bounded successor. Retry the bounded Smart HTTP lane on the next tick; current branch snapshot is incomplete. PR35 remains frozen and HUMAN_ACCEPTANCE_NOT_READY."
 }
