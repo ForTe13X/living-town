@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-31T08:37:14Z",
+  "updated_at": "2026-08-31T08:42:44Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,8 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "7a461ccc45482552422333df2b169435587cf1ede034ca58437806755da75857",
-    "canonical_objects": 333,
+    "canonical_sha256": "ae32bacbc2302b199cadcc2da14ce0aa9ab241e18cd5708d2affe0966336328a",
+    "canonical_objects": 334,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
       "parent": "1d8de23ef204af4c1323ca4be719b963ebf49eb5",
@@ -94,11 +94,12 @@
       "generated_outputs": ["task-owned isolated pinned-Docker receipts outside the repository only"],
       "dependencies": ["pr35:24beff82ceaf246f5b6c9fa3ca74a6d2b4b29931", "refute:pre-existing-SpaceShot-Main-camera-precondition-defect", "terminal-container:4edcd340765003f006a183f57ff4630cb1cc866dd69d7f5c4401ef443860551b", "space-meta:38602222ee921cf2820c3dad1fe02dc3fcbe7a7c5af47fb281e88a0be714828c", "floor-meta:b10ccc7de2b13a4bc71446f9a55a1c317952ba7434ae9c825b92f4f20c6d648c", "canonical-2d-sim-authority", "c0-rollback"],
       "consumer": "tools/visual_gate.sh plus assert_space_roundtrip.py and assert_floor_roundtrip.py, followed by a separately serialized complement-anchor migration for the new game tree",
-      "status": "reserved_before_dispatch",
+      "status": "dispatched_async",
       "write_lease": true,
-      "last_heartbeat": "2026-08-31T08:37:14Z",
+      "last_heartbeat": "2026-08-31T08:42:44Z",
       "stale_after": "2026-08-31T10:37:14Z",
       "pr": {"number":null,"stacked_base_branch":"codex/pr34-revoke-recovery-v1","upstream_pr":35,"draft_required":true,"status":"pre_pr"},
+      "dispatch": {"at":"2026-08-31T08:42:44Z","method":"send_message_to_thread","status":"accepted","reservation_commit":"819b2031ff167cfca91737f77e131cdebf529d0d","cadence":"asynchronous; harvest later without polling"},
       "pr_policy": "Create one Draft stacked PR targeting codex/pr34-revoke-recovery-v1 only after exact-head pinned-Docker focused proof and a clean one-path diff; never mark Ready or merge. Full-CI closure and complement-anchor migration remain separate downstream gates.",
       "checks": {"required":["simple and full roundtrip metadata report player_entered=true and player_returned=true","cam_same=true with exact pre-entry center and zoom after return","cafe/1f and cafe/2f frames remain distinct and authored","no player follow into owner-only cafe/2f","--rt-redraw none and corrupt or denied journeys fail closed","no Sim digest, state projection, save/load/replay or portal authority change","no debug or probe-only shortcut can substitute for real player journey","focused visual gate passes in fresh isolated pinned Docker","semantic diff is exactly game/bench/SpaceShot.gd and worktree is clean after commit"],"p0":0,"p1":1,"does_not_prove":"A one-path harness fix does not prove complement-anchor or full-CI closure, player-facing polish, accessibility, release readiness or permission to merge."},
       "recovery_count": 0,
@@ -3966,5 +3967,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "Publish and asynchronously dispatch the single-path SpaceShot harness writer. Do not touch Main, Sim, anchors or the preserved exited container. Harvest the writer later without polling. If real player entry, exact camera restoration and negative controls pass with a clean one-path diff, permit one stacked Draft; then separately regenerate the complement anchor for the new game tree and run full CI. Any second path or assertion weakening is terminal. PR35 remains frozen and HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "Harvest the asynchronously dispatched single-path SpaceShot harness writer later without polling. Do not touch Main, Sim, anchors or the preserved exited container. If real player entry, exact camera restoration and negative controls pass with a clean one-path Draft, independently review it and then separately regenerate the complement anchor for its new game tree before full CI. Any second path, fake entry or assertion weakening is terminal. PR35 remains frozen and HUMAN_ACCEPTANCE_NOT_READY."
 }
