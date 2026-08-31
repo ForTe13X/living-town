@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-31T05:51:59Z",
+  "updated_at": "2026-08-31T06:01:54Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,8 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "01180309e6303ec4d77fd34a5e3bee6af9e25ef85332620fc34075d82cebe69f",
-    "canonical_objects": 325,
+    "canonical_sha256": "133358bb4c52b13fdc0cc37e0e1b15da0ee7d30ed7dbdabb91a463fd0214981b",
+    "canonical_objects": 327,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
       "parent": "9cd199cb5337eeafb55d2437f01deea51a6cfb01",
@@ -189,11 +189,12 @@
       "generated_outputs": ["tools/gate_complement_ledger.json", "task-owned isolated Docker receipts outside the repository only"],
       "dependencies": ["pr35:24beff82ceaf246f5b6c9fa3ca74a6d2b4b29931", "pr35-tree:425935b1bdf9ff04c121b165bfb3f93f5e92f00f", "pr35-game-tree:b32865dfb1fc26ee3049673b4996617fa77cdf4d", "hosted-run33353066042:visual-success-ci-stale-anchor-only", "prior-audit-method:7-fixtures-38-invariants-hardids31-ci15", "immutable-gate-scripts", "pinned-linux-docker:gamecraft-runner-4.6.2-sha256-2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d"],
       "consumer": "PR #35 exact-head hosted CI, then Producer decision on stacking the repaired tree into PR #34",
-      "status": "reserved_before_dispatch",
+      "status": "dispatched_async",
       "write_lease": true,
-      "last_heartbeat": "2026-08-31T05:51:59Z",
+      "last_heartbeat": "2026-08-31T05:59:12Z",
       "stale_after": "2026-08-31T07:51:59Z",
       "pr": {"number": null, "stacked_base_branch": "codex/pr34-revoke-recovery-v1", "upstream_pr": 35, "draft_required": true, "status": "pre_pr"},
+      "dispatch": {"at":"2026-08-31T05:59:12Z","method":"send_message_to_thread","status":"accepted","reservation_commit":"012395776a74037de11aded39c6a094baf394a99","cadence":"asynchronous; harvest later without long polling"},
       "pr_policy": "Create one Draft stacked PR targeting codex/pr34-revoke-recovery-v1 only after exact committed-tree Docker proof, complete guard and negative controls, and a clean single-path diff; never mark Ready or merge.",
       "checks": {"required": ["fresh pinned Docker records versions, image digest, mounts, commands and cleanup", "complete gate_fixture_audit --run --bake-ledger succeeds on committed head24beff82", "generated baked_game_tree equals b32865dfb1fc26ee3049673b4996617fa77cdf4d", "fixture and invariant inventory remains complete with semantic explanation for differences", "gate_complement_guard passes without script changes", "stale-tree and incomplete-ledger negatives fail closed", "focused guard plus full tools/ci.sh pass or return exact no-write blocker", "diff is exactly tools/gate_complement_ledger.json and worktree is clean after commit"], "p0": 0, "p1": 1, "does_not_prove": "A regenerated ledger does not prove PR35 functional correctness, final UI polish, accessibility, release readiness or permission to merge."},
       "recovery_count": 0,
@@ -219,14 +220,15 @@
       "generated_outputs": ["terminal exact-head review handoff only"],
       "dependencies": ["pr35:24beff82ceaf246f5b6c9fa3ca74a6d2b4b29931", "synthetic-merge:f4cfb0503af94920b3322ac5e0057a1f5f518a02", "hosted-visual-canary:success", "hosted-ci:stale-anchor-failure", "prior-ui-p1:revoke-on-2f-no-recovery"],
       "consumer": "Producer PR35 P0/P1 closure decision",
-      "status": "reserved_before_dispatch",
+      "status": "terminal_pass_p0_0_p1_0_released",
       "write_lease": false,
-      "last_heartbeat": "2026-08-31T05:51:59Z",
-      "stale_after": "2026-08-31T07:51:59Z",
+      "last_heartbeat": "2026-08-31T06:01:54Z",
+      "stale_after": null,
       "pr": {"number": 35, "draft": true, "head": "24beff82ceaf246f5b6c9fa3ca74a6d2b4b29931"},
-      "checks": {"required": ["P0/P1 tied to exact head", "revoke recovery is player-visible without debug overlays", "chronicle consequence survives save/load/replay", "keyboard, reduced-motion, contrast, text-scale, desktop and 320-mobile evidence gaps are explicit", "no old-head clearance is reused"], "p0": null, "p1": null},
+      "dispatch": {"at":"2026-08-31T05:59:12Z","method":"send_message_to_thread","status":"accepted","reservation_commit":"012395776a74037de11aded39c6a094baf394a99","cadence":"asynchronous; harvest later without long polling"},
+      "checks": {"required": ["P0/P1 tied to exact head", "revoke recovery is player-visible without debug overlays", "chronicle consequence survives save/load/replay", "keyboard, reduced-motion, contrast, text-scale, desktop and 320-mobile evidence gaps are explicit", "no old-head clearance is reused"], "verdict":"PASS","p0":0,"p1":0,"p2":0,"identity":{"head":"24beff82ceaf246f5b6c9fa3ca74a6d2b4b29931","tree":"425935b1bdf9ff04c121b165bfb3f93f5e92f00f","base":"0acb480c9a3e7516d15440b16857dbfbc79369fc"},"finding":"Prior revoke-on-2f recovery gap is addressed through authored cafe/1f relocation before capability revocation, cache invalidation, visible log/social events and persistent cafe_guest_revoke_recovery chronicle event; tests cover safe position, revoked save/load, portal denial and idempotent second revoke.","nonblocking_hardening":"Selected authored endpoint coordinates are validated for walkability but not explicitly asserted as cafe/1f before use; current authored p_cafe_stairs satisfies the contract.","does_not_prove":"No exact-head runtime execution was available to this read-only reviewer and no desktop or 320-mobile screenshots/video, keyboard focus traversal, reduced-motion, contrast/text scaling, debug-overlay-off release capture, performance proof or independent art/technical human acceptance exists. Hosted visual_canary success is not visual clearance."},
       "recovery_count": 0,
-      "release_reason": null,
+      "release_reason": "Terminal exact-head read-only verdict PASS with P0=0 and P1=0; claim released. HUMAN_ACCEPTANCE_NOT_READY remains and PR35 stays frozen pending anchor/full CI and other independent gates.",
       "rollback": "Release the read-only claim; no repository or GitHub mutation exists.",
       "stop_lines": ["head or synthetic merge drifts", "repository or GitHub write is required", "runtime or visual clearance would be inferred without evidence"],
       "handoff_recipient": "Producer",
@@ -3899,5 +3901,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "Publish the PR35 complement-anchor and exact-head UI/UX review reservations, then asynchronously dispatch exactly one one-path anchor writer and one read-only reviewer. Keep PR #35 frozen until the repaired-tree anchor, hosted full CI, independent exact-head QA/REFUTE/UI review and P0/P1 closure are complete. Harvest results on a later heartbeat without long polling. HUMAN_ACCEPTANCE_NOT_READY remains."
+  "next_trigger": "Harvest the asynchronously dispatched PR35 one-path complement-anchor writer and exact-head UI/UX reviewer on a later heartbeat without long polling. Keep PR #35 frozen until the repaired-tree anchor, hosted full CI, independent exact-head QA/REFUTE/UI review and P0/P1 closure are complete. Stop on identity drift, second-path need, failed proof or review P0/P1. HUMAN_ACCEPTANCE_NOT_READY remains."
 }
