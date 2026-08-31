@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-31T11:40:29Z",
+  "updated_at": "2026-08-31T11:45:02Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,8 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "4627dd2acb3c659f5ea60389f18f655c363ae5fa9a9032fae7eb892de0f41044",
-    "canonical_objects": 341,
+    "canonical_sha256": "bdd50dc14481d2d269cf21d8846915f2bee77ab9fb58fa74e1ae6bb2d7f22e01",
+    "canonical_objects": 342,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
       "parent": "1d8de23ef204af4c1323ca4be719b963ebf49eb5",
@@ -161,20 +161,51 @@
       "generated_outputs": ["terminal read-only exact-evidence classifier and one bounded successor packet only"],
       "dependencies": ["pr36:dfefd9a673877a64998ca6fa81c61fbf51730ff7", "spaceshot-blob:PR36", "recovery-simple-log:sha256-2ecc1208d9bec1a43340a65657a12a65969ce1c4530237763e6e5025e41b5301", "recovery-focus-status:sha256-244851b1a583cbffd2a2024ffca068046352e0237d6edf9df6926453a4b2c23a", "original-full-ci-log:sha256-23a78f15e0c0aef816926d44663ef277d78b08d697754db955c7e5c191df5d73", "pillow:11.3.0", "preserved-container:eee3043bc8a3cf675601520d107a1ae610ef0bb37607dca407b2c9a39db8597b"],
       "consumer": "Producer decision to close anchor lane, commission an invocation-only evidence rerun, or reserve one bounded harness/runtime repair",
-      "status": "dispatched_async_readonly",
+      "status": "terminal_p0_0_p1_1_p2_0_invocation_runner_path_unresolved_released",
       "write_lease": false,
-      "last_heartbeat": "2026-08-31T11:40:29Z",
-      "stale_after": "2026-08-31T13:33:26Z",
+      "last_heartbeat": "2026-08-31T11:45:02Z",
+      "stale_after": null,
       "pr": {"number":36,"draft":true,"head":"dfefd9a673877a64998ca6fa81c61fbf51730ff7","base":"codex/pr34-revoke-recovery-v1","status":"frozen_unstable"},
       "dispatch": {"at":"2026-08-31T11:40:29Z","method":"send_message_to_thread","status":"accepted","reservation_commit":"6d139988c4a477470bb0dcbda0ee484c24126fbf","cadence":"asynchronous read-only; harvest later without polling"},
       "pr_policy": "Read-only only; no PR, review, body, Ready or merge mutation.",
-      "checks": {"required":["bind findings to exact PR36 SpaceShot.gd and visual_gate.sh lines","reconstruct the actual attempted invocation if receipts allow, otherwise identify the missing command receipt as evidence defect","explain why only Godot startup lines appear and no SPACESHOT line or exit occurs","distinguish command/scene/output/timeout/container causes from runtime product regression","compare against the prior focused PASS and hosted visual_canary success","report P0/P1/P2 and exactly one bounded successor or NO_GO","preserve authority and no-copy boundaries"],"p0":0,"p1":1,"does_not_prove":"Read-only source and receipt classification cannot prove the rerun, visual quality, accessibility, release readiness or permission to publish the anchor."},
+      "checks": {"required":["bind findings to exact PR36 SpaceShot.gd and visual_gate.sh lines","reconstruct the actual attempted invocation if receipts allow, otherwise identify the missing command receipt as evidence defect","explain why only Godot startup lines appear and no SPACESHOT line or exit occurs","distinguish command/scene/output/timeout/container causes from runtime product regression","compare against the prior focused PASS and hosted visual_canary success","report P0/P1/P2 and exactly one bounded successor or NO_GO","preserve authority and no-copy boundaries"],"verdict":"P0=0 P1=1 P2=0; anchor non-publishable; evidence/runner path failure with unresolved invocation-versus-harness cause, not demonstrated PR36 product regression","source_binding":{"SpaceShot":"_ready args lines64-78; watchdog83-90; entry196-210; leave271-307; camera295-312","space_roundtrip":"runner dispatch140-170 and failure173-178","visual_gate":"simple161-173 and full226-236"},"evidence_defect":"actual attempted focused command and container invocation were not recorded; startup-only output cannot establish scene entry, args, watchdog, graphics deadlock or product regression","ranking":"wrapper/stream capture or process never reaching SpaceShot._ready is most consistent; wrong scene/args and framebuffer deadlock remain possible; product regression unproven","successor":"one invocation-only exact-head Docker receipt with canonical command, 240s external timeout, internal 180s watchdog, stdout+stderr, SPACESHOT or explicit timeout line, rt_meta, PNGs, exit code and SHA256","p0":0,"p1":1,"p2":0,"does_not_prove":"Read-only source and receipt classification cannot prove the rerun, visual quality, accessibility, release readiness or permission to publish the anchor."},
       "recovery_count": 0,
-      "release_reason": null,
+      "release_reason": "Terminal read-only classifier localized the blocker to missing attributable invocation/diagnostics, kept product regression unproven, and supplied one bounded invocation-only successor. Reviewer released.",
       "rollback": "Release the read-only claim; delete no preserved receipt or container.",
       "stop_lines": ["any mutation or rerun is required", "exact PR36 identity or receipt hash differs", "classification cannot distinguish causes with available evidence", "proposal weakens visual, determinism, save/replay or canonical 2D authority gates"],
       "handoff_recipient": "Producer",
-      "archive_condition": "One terminal exact-evidence P0/P1/P2 classifier with one bounded successor or explicit NO_GO."
+      "archive_condition": "Met: terminal exact-evidence P0/P1/P2 classifier with one bounded invocation-only successor."
+    },
+    {
+      "claim_id": "evidence-pr36-spaceshot-canonical-invocation-v1",
+      "task": "019ffa43-dd18-7002-9b4a-bb902e5b5f74",
+      "role": "Execution-only exact-head SpaceShot evidence runner",
+      "objective": "Run the canonical simple then full SpaceShot wrapper against exact PR36 in pinned Docker with complete attributable command, diagnostics, metadata, PNG and exit receipts; make no repository or GitHub change.",
+      "baseline": "dfefd9a673877a64998ca6fa81c61fbf51730ff7",
+      "head": "dfefd9a673877a64998ca6fa81c61fbf51730ff7",
+      "tree": "2fc7f60a87b22847f55f586eab756c4c5f1a6a61",
+      "game_tree": "4eafaf1c36e1a03302df47538b0500e92642d67d",
+      "branch": "read-only codex/pr35-roundtrip-camera-harness-repair-v1",
+      "worktree": "read-only D:\\Documents\\Dev\\living-town-pr35-roundtrip-camera-harness-repair-v1-wt",
+      "owned_paths": [],
+      "forbidden_paths": ["all repository and worktree writes", "all branches, PRs, reviews, checks, protection and coordination mutation", "all source, script, scene, anchor, fixture and workflow changes", "all unknown containers, images, volumes and caches", "benchmark code or asset copying"],
+      "authority_keys": ["execution-evidence-only"],
+      "generated_outputs": ["D:/Documents/Dev/pr36-spaceshot-canonical-invocation-v1 task-owned receipts only"],
+      "dependencies": ["pr36:dfefd9a673877a64998ca6fa81c61fbf51730ff7", "review:review-pr36-focused-spaceshot-stall-refute-v1:p0_0_p1_1_p2_0", "canonical-wrapper:tools/space_roundtrip.sh", "pinned-linux-docker:gamecraft-runner-4.6.2-sha256-2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d", "canonical-2d-sim-authority", "c0-rollback"],
+      "consumer": "Producer decision whether the anchor lane can return to full-CI evidence or must close as a harness/runner blocker",
+      "status": "reserved_before_async_dispatch",
+      "write_lease": true,
+      "last_heartbeat": "2026-08-31T11:45:02Z",
+      "stale_after": "2026-08-31T13:45:02Z",
+      "pr": {"number":36,"draft":true,"status":"frozen_unstable","publication":"forbidden"},
+      "pr_policy": "No repository commit, push, PR, review, body, Ready or merge mutation. Evidence receipts only.",
+      "checks": {"required":["record exact command line, environment, Docker image ID/digest, mounts, stdout/stderr, exit code and timeout controller","simple canonical wrapper uses exact PR36 game and tools with LT_RT_RUNNER=docker, LT_RT_MODE=require, LT_RT_JOURNEY=simple and explicit output","simple must produce SPACESHOT line or explicit internal/external timeout diagnostic within 240s, plus rt_meta and PNGs on success","only after simple PASS run full journey with the same identity and requirements","assert player_entered/player_returned true, cam_same true, exact center+zoom, pixel roundtrip, distinct 1F/2F and negative controls","hash every receipt and clean only task-owned running container after terminal capture"],"p0":0,"p1":1,"does_not_prove":"Focused execution proves only the wrapper/harness path at exact head; it does not prove full CI, anchor publication, visual-quality floor, accessibility or release readiness."},
+      "recovery_count": 0,
+      "release_reason": null,
+      "rollback": "Remove only the task-owned evidence container after terminal receipt and preserve or archive its scratch; no repository rollback applies.",
+      "stop_lines": ["exact head/tree/game-tree drift", "command attribution missing", "startup-only output without SPACESHOT or explicit timeout", "simple fails or lacks rt_meta/PNGs", "source/worktree mutation", "Docker identity/isolation unavailable", "unknown container/cache collision", "Sim or authority digest changes"],
+      "handoff_recipient": "Producer",
+      "archive_condition": "Terminal simple failure with complete attributable diagnostics, or terminal simple+full PASS with complete immutable receipts."
     },
     {
       "claim_id": "review-pr35-anchor-visual-gate-refute-v1",
@@ -3470,19 +3501,19 @@
     "trigger": "PR36 exact-head hosted visual_canary succeeded and hosted CI exposes only the stale protected complementarity anchor after the one-path SpaceShot roundtrip harness repair",
     "ranking": "complete the new exact-tree anchor audit asynchronously, then independently review the stacked result, then decide the PR36-to-PR35 stack transition; keep all runtime and shared authority frozen",
     "phases": [
-      {"phase":1,"objective":"Classify the recovery-exhausted focused SpaceShot no-diagnostics stall before any further execution or write","owner":"review-pr36-focused-spaceshot-stall-refute-v1","status":"dispatched_async_readonly","player_value":"prevents another empty CI loop and identifies the smallest trustworthy next evidence step","conflict_risk":"read-only source/receipt review; all writers and authority surfaces frozen","exit":"exact P0/P1/P2 classifier with one bounded successor or NO_GO"},
+      {"phase":1,"objective":"Run one attributable canonical simple/full SpaceShot wrapper receipt against exact PR36 without source changes","owner":"evidence-pr36-spaceshot-canonical-invocation-v1","status":"reserved_before_async_dispatch","player_value":"distinguishes empty invocation evidence from an actual harness/runtime failure without another full-CI loop","conflict_risk":"execution-only task scratch; all repository and shared authority paths forbidden","exit":"terminal simple failure with diagnostics or simple+full PASS receipts"},
       {"phase":2,"objective":"Publish one stacked Draft anchor only after Producer harvests terminal PASS, then run independent QA/Evidence and REFUTE","owner":"Producer then read-only reviewers","status":"blocked_on_phase1_terminal_pass","player_value":"closes the exact hosted CI blocker without weakening runtime or evidence authority","conflict_risk":"publication and review are separate transactions; PR35 and PR36 remain frozen","exit":"hosted exact-head checks and independent P0/P1=0"},
       {"phase":3,"objective":"Evaluate the PR36-to-PR35 stack and rerun the upstream candidate checks before any integration decision","owner":"Producer separate transaction","status":"blocked_on_phase1_and_phase2","player_value":"restores a green evidence-bound cafe slice candidate","conflict_risk":"no integration merge in the anchor transaction; preserve Draft branches and rollback","exit":"stacked candidate hosted checks success with no unresolved P0/P1"},
       {"phase":4,"objective":"Evaluate integration merge and then commission visual-polish evidence against the benchmark floor","owner":"Producer then exactly one cafe visual owner","status":"queued","player_value":"moves toward clean player-visible cafe closure and persistent world log","conflict_risk":"visual work serialized behind canonical runtime and no protected authority overlap","exit":"post-merge regression green; clean desktop/mobile evidence matrix; HUMAN_ACCEPTANCE remains separately gated"}
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-08-31T11:33:26Z",
-    "active_writers": 0,
-    "read_only_reviewers": 1,
+    "at": "2026-08-31T11:45:02Z",
+    "active_writers": 1,
+    "read_only_reviewers": 0,
     "pr34_anchor_migration": "Terminal clean no-write handoff: audit rc0, guard and self-tests rc0, full CI stopped without conclusion, ledger restored, worktree clean, zero commit/push/PR, all task containers and temporary bundles/output cleaned. Claim released; regenerate only after the Sim repair.",
     "pr34_ui_review": "The reviewer returned P0=0/P1=1 against old headdf750455. Producer exact-object comparison to current0acb480 proves only unrelated save diagnostic drift and revalidates the cited revoke/spatial semantics unchanged. The P1 governs as a stop signal; the old-head review supplies no clearance.",
-    "current_independence": "The generated-ledger writer is recovery-exhausted and released with no publication. Exactly one independent read-only technical visual reviewer is reserved against immutable PR36 sources and receipt hashes; all writers, processes and shared authority surfaces are frozen.",
+    "current_independence": "The anchor writer and read-only stall reviewer are terminal/released. Exactly one execution-only evidence runner is reserved against immutable PR36 sources, owning only task scratch and a named container; every repository and shared authority path is forbidden.",
     "pr34_current_head_p1": "At current0acb480 Sim.gd revoke_cafe_guest_capability lines4086-4093 only mark status revoked and emit events. Save spatial validation lines2489-2495 permits cafe/2f only for active capability, otherwise requires authored-home reachability. Revoking on 2f can therefore leave unauthorized state and make save/load fail closed without safe ejection or explicit denial/recovery.",
     "stack_b_replacement_exact_commit": "Replacement LF lane is clean at exact1114d2b7/tree51816f37 with only cafe-authored IDs and generated manifest added. Pinned Linux Docker b0173238 at committed head passed compiler --check, exact identity, game-clean and SHA checks; prior independent generation was byte-identical and malformed/stale/unbound negatives fail closed. Remote publication and Draft PR remain unperformed.",
     "stack_b_normal_push_failure": "One normal non-force push failed with curl28/connect timeout and send-pack disconnect. GitHub ref and branch APIs confirm the replacement branch is absent and no PR exists. One non-force Git Data API create-ref recovery is reserved against exact master9b2d052c and tree51816f37.",
@@ -3526,7 +3557,7 @@
     "stack_b_pr31_normal_sync_result_body_refresh_reserved": "GitHub update-branch created exact Draft merge child3254577d/treec6d76be9 with parents d7f2bd06 + master37ccea82 and unchanged two JSON blobs. Post-sync API/local/Docker ls-remote all enumerate 39 branches. Qualification33257158954 and authority33257158256 succeeded; CI/visual33257158932 active. Old checks/reviews are invalid. Body-only exact-head evidence refresh is reserved before any fresh review dispatch.",
     "stack_b_pr31_normal_sync_body_rebound": "Draft PR31 body is rebound at SHA2561fe05ae5/3050 bytes to base37ccea82/head3254577d/treec6d76be9, exact parents, unchanged JSON blobs and source receipts. It records qualification/authority success and CI/visual active, invalidates all old-head evidence, and keeps review/readiness/merge gates unchecked. Await terminal exact-head checks.",
     "shared_write_conflicts": 0,
-    "decision": "Final recovery installed Pillow11.3.0 but focused simple emitted only Godot startup lines and no SPACESHOT diagnostics before bounded timeout; no full CI or publication followed. The exhausted writer is released and one independent read-only source/receipt classifier was dispatched after remote reservation commit6d139988."
+    "decision": "Independent REFUTE reports P0=0/P1=1/P2=0: anchor remains non-publishable, but the evidence defect does not prove a product regression. Reserve exactly one invocation-only evidence runner with canonical wrapper, complete command/timeout/diagnostic receipts and no repository write authority."
   },
   "released_claims": [
     {
@@ -4034,5 +4065,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "Use one immediate non-blocking reviewer snapshot only, then return. A later heartbeat harvests the terminal exact-evidence classifier before any new writer or execution is considered. No rerun, commit, push or PR is authorized. Preserve all receipts and exited container eee3043b; PR35 and PR36 remain frozen and HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "After this execution-only reservation is remote, dispatch the canonical simple/full SpaceShot evidence packet to the existing Dev task. It must return immediately after launching a named detached job or after a terminal attributable simple failure; a later heartbeat harvests once. No source, commit, push or PR is authorized. PR35 and PR36 remain frozen and HUMAN_ACCEPTANCE_NOT_READY."
 }
