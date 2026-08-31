@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-31T08:42:44Z",
+  "updated_at": "2026-08-31T09:22:55Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,8 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "ae32bacbc2302b199cadcc2da14ce0aa9ab241e18cd5708d2affe0966336328a",
-    "canonical_objects": 334,
+    "canonical_sha256": "b820426d38783b21b1063f8bc33ba2fb1320f3439692e01e640829753e979214",
+    "canonical_objects": 335,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
       "parent": "1d8de23ef204af4c1323ca4be719b963ebf49eb5",
@@ -42,19 +42,19 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-08-31T08:34:47Z",
-    "github_api_count": 42,
-    "git_ls_remote_count": 42,
+    "at": "2026-08-31T09:22:55Z",
+    "github_api_count": 43,
+    "git_ls_remote_count": null,
     "local_tracking_count": 42,
     "local_exact_count": 42,
-    "snapshot_complete": true,
-    "secondary_authority": "Fresh serial fetch --all --prune --tags and direct ls-remote --heads succeeded on attempt one using repository-local HTTP/1.1 and maxRequests=2. GitHub API and local tracking refs reconcile to the same 42 hosted branches; no cached ref is promoted over network authority.",
-    "reconciliation": "Fresh serial Git and GitHub API enumerate 42 hosted branches. Master37ccea82 and integrationac85fc6b are stable; coordination is1a248393. PR35 remains Draft MERGEABLE/UNSTABLE at24beff82 with CI failure and visual_canary success. Twelve PRs are open; no issues, releases or tags.",
-    "network_failures": [],
+    "snapshot_complete": false,
+    "secondary_authority": "The required serial Smart HTTP lane failed twice before ls-remote: fetch attempt one returned curl28 after 21035 ms plus expected acknowledgments; the one sequential retry returned curl28 after 21100 ms. GitHub API is secondary authority for this tick; cached local refs are not promoted.",
+    "reconciliation": "GitHub API enumerates 43 hosted branches while direct ls-remote is unavailable this tick. Master37ccea82 and integrationac85fc6b are stable; coordination is6da8e6d3. Draft PR36 is OPEN/MERGEABLE/UNSTABLE atdfefd9a: hosted visual_canary succeeded and CI failed only the stale complement anchor for game tree4eafaf1c. Thirteen PRs are open; no issues, releases or tags.",
+    "network_failures": ["git fetch --all --prune --tags attempt1: RPC curl28 failed to connect github.com:443 after 21035 ms; fatal expected acknowledgments", "sequential retry: curl28 failed to connect github.com:443 after 21100 ms; ls-remote not run"],
     "sorted_name_sha_set_sha256": "380e459136d3533a599438dd1932e4f74dfabeddd29bea141ccd69b6ad2fc2be",
     "master": "37ccea829e16e5844059a11eac9b3177ac693d6a",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "1a2483933caea009a018c6b5f254387d9be1ec6f",
+    "coordination": "6da8e6d38c7f4ddf8c14316e195c1dcbfb9cf3c9",
     "pr25": "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
     "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
@@ -62,11 +62,11 @@
     "pr29": "f6cbdcf5ad8539bf4c4ce14ae6328ffb24d18ffc",
     "pr30": "4974244f784c8bcb9aa1a5c88fd358f5a671bd8d",
     "mismatched_or_missing_local": {},
-    "open_prs": 12,
+    "open_prs": 13,
     "open_issues": 0,
     "releases": 0,
     "tags": 0,
-    "full_branch_metadata_scan": "Lightweight complete scan at 2026-08-31T08:34:47Z. Fresh serial Git and GitHub API enumerate the same 42 branches; 12 PRs are open. PR35 remains frozen Draft MERGEABLE/UNSTABLE at24beff82. PR5 exact-head run33371079233 at1a248393 succeeded. All 42 registered worktrees were read: 13 dirty historical/temporary worktrees are preserved and zero reads failed. Required Narrative and Implementation tasks remain unreadable.",
+    "full_branch_metadata_scan": "Incomplete lightweight scan at 2026-08-31T09:22:55Z after two required Smart HTTP failures. GitHub API enumerates 43 branches and 13 open PRs. PR36 is frozen Draft MERGEABLE/UNSTABLE atdfefd9a with hosted visual success and CI stale-anchor failure. PR5 exact-head run33374407760 at6da8e6d succeeded. All 43 registered worktrees were read: 13 dirty historical/temporary worktrees are preserved and zero reads failed. Required Narrative and Implementation tasks remain unreadable.",
     "benchmark_revalidation": {"repository":"mewamew/my_ai_town","ref":"main","head":"aac9992c2d195402a90327754c1f6ef279675076","readme_blob":"9aa3211f238fd6bd503b758f87cc6d5b76126603","readme_sha256":"fccc03778fcd8635851cbe604b5363a4a4854350555a9e1b3a5299469d1fac60","screenshots":{"assets/readme/town-overview.jpg":"8315851951fa4b86138ed4b66508598fa08dfd9d3ed0dd9e788c1adf422495ec","assets/readme/resident-conversation.jpg":"e5b5cf0892c34949aa2c128c554234db99b898aefd6fdea4cb89fdfe3da02c63","assets/readme/workshop-task.jpg":"7985c00433ff522c49749cb4a098e8d35776ca0f5bc3051f0966e43e70c16f6a","assets/readme/market-life.jpg":"914de2c4571bb9546a9d3e31ebc3f093b4e9034571a92c6332c128a228193895","assets/readme/world-log.jpg":"9195d4ae02db1bc81af745c245612900e780711a3a0593b2d70191e446a4bce4"},"license_boundary":"quality and information-architecture reference only; no code, pixel, asset, palette or derivative copying"}
   },
   "portfolio_policy": {
@@ -84,8 +84,9 @@
       "role": "Single-path PR35 SpaceShot roundtrip harness repair writer",
       "objective": "Repair the SpaceShot roundtrip test precondition so real player portal journeys enter and return with the exact pre-entry camera center and zoom, without changing product runtime, Sim authority, portal policy or revocation semantics.",
       "baseline": "24beff82ceaf246f5b6c9fa3ca74a6d2b4b29931",
-      "head": "24beff82ceaf246f5b6c9fa3ca74a6d2b4b29931",
-      "tree": "425935b1bdf9ff04c121b165bfb3f93f5e92f00f",
+      "head": "dfefd9a673877a64998ca6fa81c61fbf51730ff7",
+      "tree": "2fc7f60a87b22847f55f586eab756c4c5f1a6a61",
+      "game_tree": "4eafaf1c36e1a03302df47538b0500e92642d67d",
       "branch": "codex/pr35-roundtrip-camera-harness-repair-v1",
       "worktree": "D:\\Documents\\Dev\\living-town-pr35-roundtrip-camera-harness-repair-v1-wt",
       "owned_paths": ["game/bench/SpaceShot.gd"],
@@ -94,20 +95,51 @@
       "generated_outputs": ["task-owned isolated pinned-Docker receipts outside the repository only"],
       "dependencies": ["pr35:24beff82ceaf246f5b6c9fa3ca74a6d2b4b29931", "refute:pre-existing-SpaceShot-Main-camera-precondition-defect", "terminal-container:4edcd340765003f006a183f57ff4630cb1cc866dd69d7f5c4401ef443860551b", "space-meta:38602222ee921cf2820c3dad1fe02dc3fcbe7a7c5af47fb281e88a0be714828c", "floor-meta:b10ccc7de2b13a4bc71446f9a55a1c317952ba7434ae9c825b92f4f20c6d648c", "canonical-2d-sim-authority", "c0-rollback"],
       "consumer": "tools/visual_gate.sh plus assert_space_roundtrip.py and assert_floor_roundtrip.py, followed by a separately serialized complement-anchor migration for the new game tree",
-      "status": "dispatched_async",
-      "write_lease": true,
-      "last_heartbeat": "2026-08-31T08:42:44Z",
-      "stale_after": "2026-08-31T10:37:14Z",
-      "pr": {"number":null,"stacked_base_branch":"codex/pr34-revoke-recovery-v1","upstream_pr":35,"draft_required":true,"status":"pre_pr"},
+      "status": "terminal_draft_pr36_published_hosted_visual_success_ci_stale_anchor_released",
+      "write_lease": false,
+      "last_heartbeat": "2026-08-31T09:22:55Z",
+      "stale_after": null,
+      "pr": {"number":36,"stacked_base_branch":"codex/pr34-revoke-recovery-v1","upstream_pr":35,"draft_required":true,"status":"open_draft_unstable","head":"dfefd9a673877a64998ca6fa81c61fbf51730ff7","base":"codex/pr34-revoke-recovery-v1","mergeable":"MERGEABLE/UNSTABLE","run":33374763533,"checks":{"visual_canary":"success","ci":"failure_stale_complement_anchor"}},
       "dispatch": {"at":"2026-08-31T08:42:44Z","method":"send_message_to_thread","status":"accepted","reservation_commit":"819b2031ff167cfca91737f77e131cdebf529d0d","cadence":"asynchronous; harvest later without polling"},
       "pr_policy": "Create one Draft stacked PR targeting codex/pr34-revoke-recovery-v1 only after exact-head pinned-Docker focused proof and a clean one-path diff; never mark Ready or merge. Full-CI closure and complement-anchor migration remain separate downstream gates.",
-      "checks": {"required":["simple and full roundtrip metadata report player_entered=true and player_returned=true","cam_same=true with exact pre-entry center and zoom after return","cafe/1f and cafe/2f frames remain distinct and authored","no player follow into owner-only cafe/2f","--rt-redraw none and corrupt or denied journeys fail closed","no Sim digest, state projection, save/load/replay or portal authority change","no debug or probe-only shortcut can substitute for real player journey","focused visual gate passes in fresh isolated pinned Docker","semantic diff is exactly game/bench/SpaceShot.gd and worktree is clean after commit"],"p0":0,"p1":1,"does_not_prove":"A one-path harness fix does not prove complement-anchor or full-CI closure, player-facing polish, accessibility, release readiness or permission to merge."},
+      "checks": {"required":["simple and full roundtrip metadata report player_entered=true and player_returned=true","cam_same=true with exact pre-entry center and zoom after return","cafe/1f and cafe/2f frames remain distinct and authored","no player follow into owner-only cafe/2f","--rt-redraw none and corrupt or denied journeys fail closed","no Sim digest, state projection, save/load/replay or portal authority change","no debug or probe-only shortcut can substitute for real player journey","focused visual gate passes in fresh isolated pinned Docker","semantic diff is exactly game/bench/SpaceShot.gd and worktree is clean after commit"],"focused_docker":{"simple_roundtrip":"pass player_entered=true player_returned=true cam_same=true pixel_roundtrip=true","full_roundtrip":"pass town-cafe1f-cafe2f-cafe1f-town, distinct floors, camera and pixels restored","image":"gamecraft-runner:4.6.2@sha256:2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d"},"hosted":{"run":33374763533,"visual_canary":"success","ci":"failure only stale gate_complement_ledger baked game tree369c9f511032 versus current4eafaf1c36e1","other_tests":"S0, state projection and all unit/integration tests passed"},"p0":0,"p1":1,"does_not_prove":"A one-path harness fix does not prove complement-anchor or full-CI closure, player-facing polish, accessibility, release readiness or permission to merge."},
       "recovery_count": 0,
-      "release_reason": null,
+      "release_reason": "Exact one-path clean commit and Draft PR36 published with focused pinned-Docker roundtrip proof. Hosted visual_canary passed; hosted CI exposes only the separately serialized stale complement anchor. Writer released.",
       "rollback": "Before publication remove only the clean task-owned branch/worktree. After Draft publication close the Draft or revert its one commit through review; never rewrite PR35, PR34, integration or master.",
       "stop_lines": ["PR35 head or tree drifts", "Main.gd, Sim.gd or any second path is required", "real player entry remains false", "camera equality is faked by weakening assertions or copying pixels", "visual negative controls fail", "Docker identity or isolation is unavailable", "runtime or authority semantics change", "existing branch, worktree, PR or conflicting writer appears"],
       "handoff_recipient": "Independent technical visual QA/REFUTE, then complement-anchor migration",
-      "archive_condition": "One clean exact-base single-path Draft with focused Docker receipts, or terminal exact no-write blocker and task-owned cleanup."
+      "archive_condition": "Met: one clean exact-base single-path Draft with focused Docker receipts; preserve branch and PR while the downstream anchor is audited."
+    },
+    {
+      "claim_id": "lease-pr36-complement-anchor-migration-v1",
+      "task": "019ffe8d-6993-7be1-874b-5104f272d979",
+      "role": "Repaired PR36 committed-tree complementarity-anchor migrator",
+      "objective": "Run the complete committed-tree complementarity audit against exact PR36 and publish only a new single ledger path binding the unchanged protected gate to game tree 4eafaf1c36e1a03302df47538b0500e92642d67d.",
+      "baseline": "dfefd9a673877a64998ca6fa81c61fbf51730ff7",
+      "head": "dfefd9a673877a64998ca6fa81c61fbf51730ff7",
+      "tree": "2fc7f60a87b22847f55f586eab756c4c5f1a6a61",
+      "game_tree": "4eafaf1c36e1a03302df47538b0500e92642d67d",
+      "branch": "codex/pr36-complement-anchor-migration-v1",
+      "worktree": "D:\\Documents\\Dev\\living-town-pr36-complement-anchor-migration-v1-wt",
+      "owned_paths": ["tools/gate_complement_ledger.json"],
+      "forbidden_paths": ["game/**", "tools/ci.sh", "tools/gate_fixture_audit.py", "tools/gate_complement_guard.py", ".github/**", "analysis/**", "evidence/**", "docs/**", "assets/**", "project.godot", "all other anchors, registries, manifests and fixtures", "coordination room and event streams", "all paths outside owned_paths"],
+      "authority_keys": ["protected-complementarity-anchor"],
+      "generated_outputs": ["tools/gate_complement_ledger.json", "task-owned isolated Docker receipts outside the repository only"],
+      "dependencies": ["pr36:dfefd9a673877a64998ca6fa81c61fbf51730ff7", "pr36-tree:2fc7f60a87b22847f55f586eab756c4c5f1a6a61", "pr36-game-tree:4eafaf1c36e1a03302df47538b0500e92642d67d", "hosted-visual:33374763533:success", "hosted-ci:33374763533:stale-anchor-only", "repository-finalize-contract:gate_fixture_audit --run --bake-ledger", "immutable-gate-scripts", "pinned-linux-docker:gamecraft-runner-4.6.2-sha256-2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d"],
+      "consumer": "PR36 hosted CI, then Producer stack decision",
+      "status": "reserved_before_async_dispatch",
+      "write_lease": true,
+      "last_heartbeat": "2026-08-31T09:22:55Z",
+      "stale_after": "2026-08-31T11:22:55Z",
+      "pr": {"number":null,"stacked_base_branch":"codex/pr35-roundtrip-camera-harness-repair-v1","upstream_pr":36,"draft_required":true,"status":"pre_pr"},
+      "pr_policy": "Create one Draft stacked PR targeting codex/pr35-roundtrip-camera-harness-repair-v1 only after Producer separately confirms terminal detached full-CI PASS, exact committed-tree Docker proof and a clean single-path diff; never mark Ready or merge.",
+      "checks": {"required":["fresh isolated pinned Linux Docker records engine, image digest, mounts, commands and cleanup","gate_fixture_audit.py --run --bake-ledger completes against exact committed PR36 tree","generated baked_game_tree equals 4eafaf1c36e1a03302df47538b0500e92642d67d","expected 7 fixtures, 38 invariants, hard IDs 31/31 and CI defaults 15/15 remain complete unless exact audit explains a semantic difference","gate_complement_guard and self-tests pass","stale-tree and incomplete-ledger negatives fail closed","simple and full player roundtrip gates remain PASS","detached full tools/ci.sh reaches a terminal conclusion","git diff is exactly tools/gate_complement_ledger.json and worktree remains clean after any authorized commit"],"p0":0,"p1":1,"does_not_prove":"A matching generated ledger alone does not prove player-visible polish, accessibility, release readiness or permission to merge."},
+      "recovery_count": 0,
+      "release_reason": null,
+      "rollback": "Before publication delete only the clean task-owned worktree/branch. After Draft publication close the Draft or revert its one commit through review; never rewrite PR35, PR36, integration or master.",
+      "stop_lines": ["PR36 head/tree/game-tree drifts", "any second path or gate-script modification is required", "audit identity or invariant coverage changes without semantic explanation", "guard/self-test/stale/incomplete negative fails", "focused roundtrip regresses", "full CI fails", "Docker identity or isolation is unavailable", "existing branch/worktree/PR or conflicting writer appears"],
+      "handoff_recipient": "Producer terminal-container harvest, then independent QA/REFUTE",
+      "archive_condition": "One exact-head single-path Draft after complete terminal CI PASS, or one terminal exact no-write blocker with task-owned cleanup."
     },
     {
       "claim_id": "review-pr35-anchor-visual-gate-refute-v1",
@@ -3399,23 +3431,23 @@
     }
   ],
   "active_dependency_graph": {
-    "at": "2026-08-30T23:58:23Z",
-    "trigger": "PR34 exact-head hosted CI exposes a protected complementarity-anchor P1 after the sole feature recovery resolved the runtime-scanner blocker",
-    "ranking": "close the exact one-path evidence gate, then independent exact-head QA/REFUTE, then integrate the player-visible cafe slice; keep unrelated authority successor queued",
+    "at": "2026-08-31T09:22:55Z",
+    "trigger": "PR36 exact-head hosted visual_canary succeeded and hosted CI exposes only the stale protected complementarity anchor after the one-path SpaceShot roundtrip harness repair",
+    "ranking": "complete the new exact-tree anchor audit asynchronously, then independently review the stacked result, then decide the PR36-to-PR35 stack transition; keep all runtime and shared authority frozen",
     "phases": [
-      {"phase":1,"objective":"Repair PR34 revoke-on-2f recovery so revoke, save/load/replay and portal denial remain stable and player-visible","owner":"lease-pr34-revoke-2f-recovery-v1","status":"dispatched_async_replacement_writer","player_value":"restores the action to feedback to persistence chain under revocation","conflict_risk":"single two-file Sim/test writer; anchor released clean and original feature writer remains exhausted","exit":"bounded exact-head Docker-tested repair Draft with revoke to save/load/replay negative and recovery controls"},
-      {"phase":2,"objective":"Re-run complementarity audit for the repaired committed game tree, then independent exact-head QA/Evidence, REFUTE and UI/UX/accessibility","owner":"reserved only after repaired immutable head","status":"blocked_on_phase1","player_value":"binds the repaired gameplay tree to trustworthy evidence","conflict_risk":"generated anchor follows game repair and is never run in parallel with it","exit":"P0/P1=0 with exact Docker and clean runtime evidence"},
-      {"phase":3,"objective":"Merge eligible stacked anchor into PR34 branch, rerun hosted CI and repair only bounded P0/P1 findings","owner":"Producer separate transaction","status":"blocked_on_phase1_and_phase2","player_value":"restores a green, evidence-bound cafe slice candidate","conflict_risk":"no integration merge in the anchor transaction; preserve Draft and rollback","exit":"PR34 exact-head hosted checks success and independent P0/P1=0"},
+      {"phase":1,"objective":"Run exact PR36 committed-tree complementarity audit, negative controls and detached full CI without waiting in the heartbeat","owner":"lease-pr36-complement-anchor-migration-v1","status":"reserved_before_async_dispatch","player_value":"binds the repaired real-player roundtrip witness to the protected evidence gate","conflict_risk":"one generated ledger path; all game, gate scripts and shared authority forbidden","exit":"terminal exact-head Docker PASS with a clean one-path candidate"},
+      {"phase":2,"objective":"Publish one stacked Draft anchor only after Producer harvests terminal PASS, then run independent QA/Evidence and REFUTE","owner":"Producer then read-only reviewers","status":"blocked_on_phase1_terminal_pass","player_value":"closes the exact hosted CI blocker without weakening runtime or evidence authority","conflict_risk":"publication and review are separate transactions; PR35 and PR36 remain frozen","exit":"hosted exact-head checks and independent P0/P1=0"},
+      {"phase":3,"objective":"Evaluate the PR36-to-PR35 stack and rerun the upstream candidate checks before any integration decision","owner":"Producer separate transaction","status":"blocked_on_phase1_and_phase2","player_value":"restores a green evidence-bound cafe slice candidate","conflict_risk":"no integration merge in the anchor transaction; preserve Draft branches and rollback","exit":"stacked candidate hosted checks success with no unresolved P0/P1"},
       {"phase":4,"objective":"Evaluate integration merge and then commission visual-polish evidence against the benchmark floor","owner":"Producer then exactly one cafe visual owner","status":"queued","player_value":"moves toward clean player-visible cafe closure and persistent world log","conflict_risk":"visual work serialized behind canonical runtime and no protected authority overlap","exit":"post-merge regression green; clean desktop/mobile evidence matrix; HUMAN_ACCEPTANCE remains separately gated"}
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-08-30T23:58:23Z",
+    "at": "2026-08-31T09:22:55Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "pr34_anchor_migration": "Terminal clean no-write handoff: audit rc0, guard and self-tests rc0, full CI stopped without conclusion, ledger restored, worktree clean, zero commit/push/PR, all task containers and temporary bundles/output cleaned. Claim released; regenerate only after the Sim repair.",
     "pr34_ui_review": "The reviewer returned P0=0/P1=1 against old headdf750455. Producer exact-object comparison to current0acb480 proves only unrelated save diagnostic drift and revalidates the cited revoke/spatial semantics unchanged. The P1 governs as a stop signal; the old-head review supplies no clearance.",
-    "current_independence": "Exactly one replacement writer is reserved for Sim.gd plus cafe_guest_access_test.gd. Anchor and UI review claims are terminal/released; original PR34 feature writer remains exhausted. No reviewer is active and the six-path protected-authority successor remains queued.",
+    "current_independence": "Exactly one generated-ledger writer is reserved for tools/gate_complement_ledger.json at exact PR36 head dfefd9a. The SpaceShot writer is terminal/released, no reviewer is active, all game and shared authority paths are frozen, and no active write-set overlaps.",
     "pr34_current_head_p1": "At current0acb480 Sim.gd revoke_cafe_guest_capability lines4086-4093 only mark status revoked and emit events. Save spatial validation lines2489-2495 permits cafe/2f only for active capability, otherwise requires authored-home reachability. Revoking on 2f can therefore leave unauthorized state and make save/load fail closed without safe ejection or explicit denial/recovery.",
     "stack_b_replacement_exact_commit": "Replacement LF lane is clean at exact1114d2b7/tree51816f37 with only cafe-authored IDs and generated manifest added. Pinned Linux Docker b0173238 at committed head passed compiler --check, exact identity, game-clean and SHA checks; prior independent generation was byte-identical and malformed/stale/unbound negatives fail closed. Remote publication and Draft PR remain unperformed.",
     "stack_b_normal_push_failure": "One normal non-force push failed with curl28/connect timeout and send-pack disconnect. GitHub ref and branch APIs confirm the replacement branch is absent and no PR exists. One non-force Git Data API create-ref recovery is reserved against exact master9b2d052c and tree51816f37.",
@@ -3459,7 +3491,7 @@
     "stack_b_pr31_normal_sync_result_body_refresh_reserved": "GitHub update-branch created exact Draft merge child3254577d/treec6d76be9 with parents d7f2bd06 + master37ccea82 and unchanged two JSON blobs. Post-sync API/local/Docker ls-remote all enumerate 39 branches. Qualification33257158954 and authority33257158256 succeeded; CI/visual33257158932 active. Old checks/reviews are invalid. Body-only exact-head evidence refresh is reserved before any fresh review dispatch.",
     "stack_b_pr31_normal_sync_body_rebound": "Draft PR31 body is rebound at SHA2561fe05ae5/3050 bytes to base37ccea82/head3254577d/treec6d76be9, exact parents, unchanged JSON blobs and source receipts. It records qualification/authority success and CI/visual active, invalidates all old-head evidence, and keeps review/readiness/merge gates unchecked. Await terminal exact-head checks.",
     "shared_write_conflicts": 0,
-    "decision": "Anchor stopped clean with no mutation. Exactly one new bounded replacement writer was dispatched asynchronously after reservation commit fc4c82b0, owning only Sim.gd and cafe_guest_access_test.gd. Keep all anchor, registry, Main/View, scene and save/replay test paths forbidden and do not wait in this turn."
+    "decision": "Harvested the clean one-path PR36 harness repair and hosted visual success. Reserve exactly one new-game-tree anchor migrator owning only tools/gate_complement_ledger.json; dispatch asynchronously after remote ledger publication, leave detached full CI running, and do not wait in this turn."
   },
   "released_claims": [
     {
@@ -3856,7 +3888,7 @@
     }
   },
   "workspace_observation": {
-    "registered_worktrees": 42,
+    "registered_worktrees": 43,
     "dirty_worktrees": 13,
     "worktree_errors": 0,
     "unknown_or_historical_dirt_policy": "quarantine_preserve"
@@ -3967,5 +3999,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "Harvest the asynchronously dispatched single-path SpaceShot harness writer later without polling. Do not touch Main, Sim, anchors or the preserved exited container. If real player entry, exact camera restoration and negative controls pass with a clean one-path Draft, independently review it and then separately regenerate the complement anchor for its new game tree before full CI. Any second path, fake entry or assertion weakening is terminal. PR35 remains frozen and HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "After the reservation ledger is remote, dispatch the exact PR36 one-path complement-anchor migrator asynchronously. It must launch detached full CI and return without waiting; a later heartbeat harvests terminal evidence before any commit, push or Draft PR authorization. Any identity drift, second path, gate weakening, failed negative, Docker loss or full-CI failure stops no-write. PR35 and PR36 remain frozen and HUMAN_ACCEPTANCE_NOT_READY."
 }
