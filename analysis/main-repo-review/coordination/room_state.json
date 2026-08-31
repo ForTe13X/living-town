@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-31T01:06:27Z",
+  "updated_at": "2026-08-31T01:09:27Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,8 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "ad5f47a65ba6d6b7c25de02aa753ece45f95c21e37d969f942b6a19ff8702629",
-    "canonical_objects": 318,
+    "canonical_sha256": "178e8396a407fef2932d2c41c69e2afc972aed8a90b3100abc8738185b7248f9",
+    "canonical_objects": 319,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
       "parent": "9cd199cb5337eeafb55d2437f01deea51a6cfb01",
@@ -187,11 +187,12 @@
       "generated_outputs": ["task-owned isolated Docker receipts outside the repository only"],
       "dependencies": ["pr34:0acb480c9a3e7516d15440b16857dbfbc79369fc", "ui-review-p1:revoke-on-2f-no-recovery", "producer-current-head-revalidation:Sim-lines2489-2495-and4086-4093", "anchor-claim:terminal-clean-no-write-released", "canonical-2d-sim-authority", "deterministic-save-load-replay", "c0-rollback"],
       "consumer": "PR #34 guest invitation vertical slice, then a newly generated complementarity anchor for the repaired committed game tree",
-      "status": "reserved_before_dispatch_replacement_writer",
+      "status": "dispatched_async_replacement_writer",
       "write_lease": true,
-      "last_heartbeat": "2026-08-31T01:06:27Z",
+      "last_heartbeat": "2026-08-31T01:09:27Z",
       "stale_after": "2026-08-31T03:06:27Z",
       "pr": {"number": null, "stacked_base_branch": "codex/cafe-guest-vertical-slice-v1", "upstream_pr": 34, "draft_required": true, "status": "pre_pr"},
+      "dispatch": {"at": "2026-08-31T01:09:27Z", "method": "send_message_to_thread", "status": "accepted", "reservation_commit": "fc4c82b0e46b039d0f68a28afde3581790f79539"},
       "pr_policy": "Create one Draft stacked PR targeting codex/cafe-guest-vertical-slice-v1 only after exact-head pinned-Docker proof and a clean two-path-or-smaller diff; never target integration/batons or master, mark Ready or merge.",
       "checks": {"required": ["revoke while player is on cafe/2f atomically relocates the player to an existing authored safe cafe/1f address before capability becomes revoked", "relocation updates space, floor, position, area and room caches through existing canonical Sim helpers and never View authority", "revoke emits visible log/social recovery feedback and a persistent event-log consequence", "revoke then save then load succeeds with revoked capability and safe 1f state", "replay reproduces the same revoke, relocation and persistent consequence deterministically using existing test surfaces", "post-revoke attempt to enter cafe/2f is denied fail-closed", "revocation off 2f does not move the player", "forged, stale or already-revoked capability remains rejected without mutation", "failure is atomic: no partial capability or spatial state", "C0 rollback remains possible by reverting this bounded stacked commit", "focused and full CI run in fresh isolated pinned Linux Docker with exact receipts", "semantic diff is no more than the two owned files and worktree is clean after commit"], "p0": 0, "p1": 1, "does_not_prove": "Code and tests do not prove final UI polish, desktop/mobile accessibility, clean release evidence or human acceptance."},
       "recovery_count": 0,
@@ -3266,7 +3267,7 @@
     "trigger": "PR34 exact-head hosted CI exposes a protected complementarity-anchor P1 after the sole feature recovery resolved the runtime-scanner blocker",
     "ranking": "close the exact one-path evidence gate, then independent exact-head QA/REFUTE, then integrate the player-visible cafe slice; keep unrelated authority successor queued",
     "phases": [
-      {"phase":1,"objective":"Repair PR34 revoke-on-2f recovery so revoke, save/load/replay and portal denial remain stable and player-visible","owner":"lease-pr34-revoke-2f-recovery-v1","status":"reserved_before_dispatch_replacement_writer","player_value":"restores the action to feedback to persistence chain under revocation","conflict_risk":"single two-file Sim/test writer; anchor released clean and original feature writer remains exhausted","exit":"bounded exact-head Docker-tested repair Draft with revoke to save/load/replay negative and recovery controls"},
+      {"phase":1,"objective":"Repair PR34 revoke-on-2f recovery so revoke, save/load/replay and portal denial remain stable and player-visible","owner":"lease-pr34-revoke-2f-recovery-v1","status":"dispatched_async_replacement_writer","player_value":"restores the action to feedback to persistence chain under revocation","conflict_risk":"single two-file Sim/test writer; anchor released clean and original feature writer remains exhausted","exit":"bounded exact-head Docker-tested repair Draft with revoke to save/load/replay negative and recovery controls"},
       {"phase":2,"objective":"Re-run complementarity audit for the repaired committed game tree, then independent exact-head QA/Evidence, REFUTE and UI/UX/accessibility","owner":"reserved only after repaired immutable head","status":"blocked_on_phase1","player_value":"binds the repaired gameplay tree to trustworthy evidence","conflict_risk":"generated anchor follows game repair and is never run in parallel with it","exit":"P0/P1=0 with exact Docker and clean runtime evidence"},
       {"phase":3,"objective":"Merge eligible stacked anchor into PR34 branch, rerun hosted CI and repair only bounded P0/P1 findings","owner":"Producer separate transaction","status":"blocked_on_phase1_and_phase2","player_value":"restores a green, evidence-bound cafe slice candidate","conflict_risk":"no integration merge in the anchor transaction; preserve Draft and rollback","exit":"PR34 exact-head hosted checks success and independent P0/P1=0"},
       {"phase":4,"objective":"Evaluate integration merge and then commission visual-polish evidence against the benchmark floor","owner":"Producer then exactly one cafe visual owner","status":"queued","player_value":"moves toward clean player-visible cafe closure and persistent world log","conflict_risk":"visual work serialized behind canonical runtime and no protected authority overlap","exit":"post-merge regression green; clean desktop/mobile evidence matrix; HUMAN_ACCEPTANCE remains separately gated"}
@@ -3322,7 +3323,7 @@
     "stack_b_pr31_normal_sync_result_body_refresh_reserved": "GitHub update-branch created exact Draft merge child3254577d/treec6d76be9 with parents d7f2bd06 + master37ccea82 and unchanged two JSON blobs. Post-sync API/local/Docker ls-remote all enumerate 39 branches. Qualification33257158954 and authority33257158256 succeeded; CI/visual33257158932 active. Old checks/reviews are invalid. Body-only exact-head evidence refresh is reserved before any fresh review dispatch.",
     "stack_b_pr31_normal_sync_body_rebound": "Draft PR31 body is rebound at SHA2561fe05ae5/3050 bytes to base37ccea82/head3254577d/treec6d76be9, exact parents, unchanged JSON blobs and source receipts. It records qualification/authority success and CI/visual active, invalidates all old-head evidence, and keeps review/readiness/merge gates unchecked. Await terminal exact-head checks.",
     "shared_write_conflicts": 0,
-    "decision": "Anchor stopped clean with no mutation. Reserve exactly one new bounded replacement writer for revoke-on-2f recovery on exact0acb480, owning only Sim.gd and cafe_guest_access_test.gd. Publish this reservation before dispatch; keep all anchor, registry, Main/View, scene and save/replay test paths forbidden."
+    "decision": "Anchor stopped clean with no mutation. Exactly one new bounded replacement writer was dispatched asynchronously after reservation commit fc4c82b0, owning only Sim.gd and cafe_guest_access_test.gd. Keep all anchor, registry, Main/View, scene and save/replay test paths forbidden and do not wait in this turn."
   },
   "released_claims": [
     {
@@ -3830,5 +3831,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "After this replacement lease reaches origin/codex/main-repo-review, dispatch the idle map-lab task under the new two-file revoke-recovery claim and return without waiting. Harvest the first branch/worktree/Docker heartbeat later. Keep PR5, PR31, PR33 and PR34 Draft, PR21-PR24 frozen, the old anchor released and the six-path authority successor queued. HUMAN_ACCEPTANCE_NOT_READY remains."
+  "next_trigger": "On the next short coordination tick, harvest the first branch/worktree/Docker heartbeat from the revoke-recovery writer without long polling. If it reaches a coherent Draft, reserve exact-head functional QA/Evidence, REFUTE and UI/UX re-review before regenerating the anchor. Keep PR5, PR31, PR33 and PR34 Draft, PR21-PR24 frozen, the old anchor released and the six-path authority successor queued. HUMAN_ACCEPTANCE_NOT_READY remains."
 }
