@@ -224,18 +224,49 @@
       "generated_outputs": ["terminal read-only review handoff only"],
       "dependencies": ["pr36:dfefd9a673877a64998ca6fa81c61fbf51730ff7", "simple:container10782744 exit0 capture0 assert0", "full:container563b4de5 exit0 capture0 assert0", "pinned-image:sha256-2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d", "pr36-hosted-ci-failure-anchor", "pr36-hosted-visual-success"],
       "consumer": "Producer decision whether to reserve a fresh exact-head anchor/full-CI evidence lane or close PR36 as blocked",
-      "status": "dispatched_async_awaiting_terminal_readonly_handoff",
+      "status": "terminal_released_p0_0_p1_1_p2_0_runner_p1_cleared_full_ci_p1_remains",
       "write_lease": false,
-      "last_heartbeat": "2026-08-31T13:28:36Z",
-      "stale_after": "2026-08-31T15:28:36Z",
+      "last_heartbeat": "2026-08-31T13:31:42Z",
+      "stale_after": null,
       "pr": {"number":36,"draft":true,"status":"frozen_unstable","publication":"forbidden"},
-      "checks": {"required":["verify exact head/tree/game-tree and preserved container image/mount/command identity","recompute or inspect every simple/full metadata and PNG SHA256 receipt without changing files","validate simple camera/pixel/texture/interior assertions and full town-1F-2F-1F-town floor assertions","identify warnings and does-not-prove boundaries including player_journey=false and stairs_probe_only=false","reconcile focused PASS with hosted visual success and hosted CI anchor failure","report P0/P1/P2 and exactly one bounded next executable packet or NO_GO"],"p0":0,"p1":1,"does_not_prove":"Review cannot prove full CI, anchor publication, real player stairs input, persistence, visual-quality floor, accessibility or release readiness."},
+      "checks": {"required":["verify exact head/tree/game-tree and preserved container image/mount/command identity","recompute or inspect every simple/full metadata and PNG SHA256 receipt without changing files","validate simple camera/pixel/texture/interior assertions and full town-1F-2F-1F-town floor assertions","identify warnings and does-not-prove boundaries including player_journey=false and stairs_probe_only=false","reconcile focused PASS with hosted visual success and hosted CI anchor failure","report P0/P1/P2 and exactly one bounded next executable packet or NO_GO"],"verdict":"P0=0 P1=1 P2=0; prior no-diagnostic runner-path P1 cleared for focused simple/full, but candidate remains non-publishable until stale complement anchor and complete full CI are green","attribution":"exact commands, image digest, read-only mounts, exit/capture/assert codes, metadata and all PNG hashes verified","warnings":"V-Sync/llvmpipe/ObjectDB are soft environment signals at exit0","does_not_prove":"player_journey=false, stairs_probe_only=false and empty player_floor_during_probe_stairs; no real player stairs/revocation, persistence, full CI, anchor, visual floor, accessibility or release proof","successor":"one execution-only exact-head generated-ledger overlay plus complete full tools/ci.sh in pinned Docker, no source/PR mutation"},
       "recovery_count": 0,
-      "release_reason": null,
+      "release_reason": "Terminal read-only QA/Evidence and REFUTE handoff verified all focused receipts, cleared the missing-attribution runner P1, retained one P1 for stale anchor/full CI, and supplied one bounded execution-only successor. Reviewer released.",
       "rollback": "Release read-only claim; preserve receipts and exited containers; delete nothing.",
       "stop_lines": ["any exact identity or hash differs", "any mutation or rerun is required", "receipts cannot be attributed to the pinned exact-head container", "proposal weakens canonical 2D, save/replay, determinism, accessibility or evidence gates"],
       "handoff_recipient": "Producer",
-      "archive_condition": "Terminal exact-evidence review with P0/P1/P2 and one bounded successor or NO_GO."
+      "archive_condition": "Met: terminal exact-evidence P0=0 P1=1 P2=0 review with one bounded full-CI successor."
+    },
+    {
+      "claim_id": "evidence-pr36-anchor-full-ci-v2",
+      "task": "019ffa43-dd18-7002-9b4a-bb902e5b5f74",
+      "role": "Execution-only exact-head complement-ledger overlay and complete full-CI runner",
+      "objective": "Use the already audited generated complement ledger only in a disposable exact-PR36 clone, reproduce pinned Docker dependencies including Pillow 11.3.0, run complete tools/ci.sh to terminal, and produce attributable immutable receipts without changing any repository or GitHub object.",
+      "baseline": "dfefd9a673877a64998ca6fa81c61fbf51730ff7",
+      "head": "dfefd9a673877a64998ca6fa81c61fbf51730ff7",
+      "tree": "2fc7f60a87b22847f55f586eab756c4c5f1a6a61",
+      "game_tree": "4eafaf1c36e1a03302df47538b0500e92642d67d",
+      "branch": "read-only codex/pr35-roundtrip-camera-harness-repair-v1",
+      "worktree": "read-only exact PR36 source; disposable clone under task scratch only",
+      "owned_paths": [],
+      "forbidden_paths": ["all repository and registered worktree writes", "all branches, commits, pushes, PRs, reviews, checks, protection and coordination mutation", "all guard/audit/source/script/scene/fixture changes", "all unknown containers, images, volumes and caches", "benchmark code or asset copying"],
+      "authority_keys": ["execution-evidence-only", "generated-ledger-overlay-not-publication"],
+      "generated_outputs": ["D:/Documents/Dev/pr36-anchor-full-ci-v2 task-owned clone, logs and receipts only"],
+      "dependencies": ["pr36:dfefd9a673877a64998ca6fa81c61fbf51730ff7", "game-tree:4eafaf1c36e1a03302df47538b0500e92642d67d", "ledger:D:/Documents/Dev/pr36-anchor-ci-v1/gate_complement_ledger.json:sha256-f13f3e22eeb7df887196ae2a92423de64b1791e1327223f53fcb83e62f865bbf", "audit:7-fixtures-38-invariants-31of31-hard-ids-15of15-ci-defaults", "focused-simple-full:terminal-pass", "review:review-pr36-canonical-spaceshot-evidence-v1:p0_0_p1_1_p2_0", "pinned-image:sha256-2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d", "pillow:11.3.0"],
+      "consumer": "Producer protected-anchor publication decision in a separate transaction only after terminal full-CI PASS",
+      "status": "reserved_before_async_dispatch",
+      "write_lease": true,
+      "last_heartbeat": "2026-08-31T13:31:42Z",
+      "stale_after": "2026-08-31T15:31:42Z",
+      "pr": {"number":36,"draft":true,"status":"frozen_unstable","publication":"forbidden"},
+      "pr_policy": "No commit, push, branch, PR, review, body, Ready or merge mutation. Generated ledger is a disposable overlay only.",
+      "checks": {"required":["record exact source/head/tree/game-tree and generated-ledger SHA before overlay","create a task-owned disposable clone and prove the registered worktree remains clean","record Docker client/server/context/platform, pinned base image ID/digest, Pillow install source/version and tool versions","run gate_fixture_audit check, complement guard and negative self-tests against the overlay before full CI","retain prior focused simple/full receipts and run complete tools/ci.sh to terminal with unbuffered stdout/stderr","record every gate exit, container/process identity, mounts, output hashes and cleanup/archive state","fail closed on any identity drift, missing attribution or nonzero gate"],"p0":0,"p1":1,"does_not_prove":"A full-CI PASS with disposable ledger overlay does not authorize anchor publication, PR mutation, visual acceptance, real player stairs input, persistence or release."},
+      "recovery_count": 0,
+      "release_reason": null,
+      "rollback": "Delete or archive only task-owned disposable clone and running container after terminal receipts; preserve prior evidence; no repository rollback applies.",
+      "stop_lines": ["exact head/tree/game-tree or ledger SHA drift", "registered worktree dirty", "Pillow 11.3.0 or pinned image unavailable", "audit/guard/self-test/focused evidence mismatch", "any full-CI gate failure", "any source or GitHub mutation required", "unknown container/cache collision"],
+      "handoff_recipient": "Producer",
+      "archive_condition": "Terminal complete full-CI PASS with attributable receipts, or terminal no-write failure with exact blocker and no further recovery without Producer reservation."
     },
     {
       "claim_id": "review-pr35-anchor-visual-gate-refute-v1",
@@ -3531,16 +3562,16 @@
     "trigger": "PR36 exact-head hosted visual_canary succeeded and hosted CI exposes only the stale protected complementarity anchor after the one-path SpaceShot roundtrip harness repair",
     "ranking": "complete the new exact-tree anchor audit asynchronously, then independently review the stacked result, then decide the PR36-to-PR35 stack transition; keep all runtime and shared authority frozen",
     "phases": [
-      {"phase":1,"objective":"Run one attributable canonical simple/full SpaceShot wrapper receipt against exact PR36 without source changes","owner":"evidence-pr36-spaceshot-canonical-invocation-v1 then review-pr36-canonical-spaceshot-evidence-v1","status":"focused_simple_full_pass_terminal_review_dispatched_async","player_value":"distinguishes empty invocation evidence from an actual harness/runtime failure without another full-CI loop","conflict_risk":"execution and review are serialized; all repository and shared authority paths forbidden","exit":"independent terminal P0/P1 classification and one bounded successor"},
-      {"phase":2,"objective":"Publish one stacked Draft anchor only after Producer harvests terminal PASS, then run independent QA/Evidence and REFUTE","owner":"Producer then read-only reviewers","status":"blocked_on_phase1_terminal_pass","player_value":"closes the exact hosted CI blocker without weakening runtime or evidence authority","conflict_risk":"publication and review are separate transactions; PR35 and PR36 remain frozen","exit":"hosted exact-head checks and independent P0/P1=0"},
-      {"phase":3,"objective":"Evaluate the PR36-to-PR35 stack and rerun the upstream candidate checks before any integration decision","owner":"Producer separate transaction","status":"blocked_on_phase1_and_phase2","player_value":"restores a green evidence-bound cafe slice candidate","conflict_risk":"no integration merge in the anchor transaction; preserve Draft branches and rollback","exit":"stacked candidate hosted checks success with no unresolved P0/P1"},
-      {"phase":4,"objective":"Evaluate integration merge and then commission visual-polish evidence against the benchmark floor","owner":"Producer then exactly one cafe visual owner","status":"queued","player_value":"moves toward clean player-visible cafe closure and persistent world log","conflict_risk":"visual work serialized behind canonical runtime and no protected authority overlap","exit":"post-merge regression green; clean desktop/mobile evidence matrix; HUMAN_ACCEPTANCE remains separately gated"}
+      {"phase":1,"objective":"Run one attributable canonical simple/full SpaceShot wrapper receipt against exact PR36 without source changes","owner":"evidence-pr36-spaceshot-canonical-invocation-v1 then review-pr36-canonical-spaceshot-evidence-v1","status":"complete_p0_0_runner_p1_cleared_full_ci_p1_retained","player_value":"distinguishes empty invocation evidence from an actual harness/runtime failure without another full-CI loop","conflict_risk":"execution and review serialized; repository authority remained frozen","exit":"met: independent terminal P0/P1 classification and one bounded successor"},
+      {"phase":2,"objective":"Run complete full CI against an audited generated-ledger overlay in a disposable exact-head clone without publication","owner":"evidence-pr36-anchor-full-ci-v2","status":"reserved_before_async_dispatch","player_value":"proves whether the candidate and new anchor measurement can pass the complete gate before any publication","conflict_risk":"execution-only task scratch; generated anchor cannot escape the disposable clone","exit":"terminal full-CI PASS receipts or exact no-write blocker"},
+      {"phase":3,"objective":"Publish one stacked Draft anchor only after Producer harvests terminal full-CI PASS, then run independent QA/Evidence and REFUTE","owner":"Producer then read-only reviewers","status":"blocked_on_phase2_terminal_pass","player_value":"closes the exact hosted CI blocker without weakening runtime or evidence authority","conflict_risk":"publication and review are separate transactions; PR35 and PR36 remain frozen","exit":"hosted exact-head checks and independent P0/P1=0"},
+      {"phase":4,"objective":"Evaluate the PR36-to-PR35 stack, integration and visual-polish evidence in separate gated transactions","owner":"Producer then exactly one cafe visual owner","status":"queued","player_value":"restores a green evidence-bound cafe slice then advances player-visible closure","conflict_risk":"no integration merge in the anchor transaction; preserve Draft branches and canonical authority","exit":"stack checks, post-merge regression and clean desktop/mobile evidence; HUMAN_ACCEPTANCE separately gated"}
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-08-31T13:28:36Z",
-    "active_writers": 0,
-    "read_only_reviewers": 1,
+    "at": "2026-08-31T13:31:42Z",
+    "active_writers": 1,
+    "read_only_reviewers": 0,
     "pr34_anchor_migration": "Terminal clean no-write handoff: audit rc0, guard and self-tests rc0, full CI stopped without conclusion, ledger restored, worktree clean, zero commit/push/PR, all task containers and temporary bundles/output cleaned. Claim released; regenerate only after the Sim repair.",
     "pr34_ui_review": "The reviewer returned P0=0/P1=1 against old headdf750455. Producer exact-object comparison to current0acb480 proves only unrelated save diagnostic drift and revalidates the cited revoke/spatial semantics unchanged. The P1 governs as a stop signal; the old-head review supplies no clearance.",
     "current_independence": "The anchor writer and read-only stall reviewer are terminal/released. Exactly one execution-only evidence runner is reserved against immutable PR36 sources, owning only task scratch and a named container; every repository and shared authority path is forbidden.",
@@ -4095,5 +4126,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "Take one immediate non-blocking snapshot of review-pr36-canonical-spaceshot-evidence-v1 after publishing this dispatch. Harvest its terminal P0/P1/P2 handoff on a later heartbeat, then either reserve exactly one bounded no-overlap successor or close the lane. PR35 and PR36 remain frozen; no anchor, source, commit, push, Ready or merge is authorized. HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "After this terminal review and full-CI execution reservation is remote, dispatch evidence-pr36-anchor-full-ci-v2 asynchronously to the Dev task. It must launch a task-owned disposable exact-head clone/container and return without waiting; a later heartbeat harvests once. No generated ledger may enter a registered worktree or GitHub. PR35 and PR36 remain frozen; no commit, push, Ready or merge is authorized. HUMAN_ACCEPTANCE_NOT_READY."
 }
