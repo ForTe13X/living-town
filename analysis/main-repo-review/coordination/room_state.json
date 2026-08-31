@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-31T09:22:55Z",
+  "updated_at": "2026-08-31T09:34:20Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,8 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "b820426d38783b21b1063f8bc33ba2fb1320f3439692e01e640829753e979214",
-    "canonical_objects": 335,
+    "canonical_sha256": "bf96c3f4c4d281c9be5376540c9ecd75463a73c182487efcdd6bb3918131491b",
+    "canonical_objects": 336,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
       "parent": "1d8de23ef204af4c1323ca4be719b963ebf49eb5",
@@ -127,11 +127,12 @@
       "generated_outputs": ["tools/gate_complement_ledger.json", "task-owned isolated Docker receipts outside the repository only"],
       "dependencies": ["pr36:dfefd9a673877a64998ca6fa81c61fbf51730ff7", "pr36-tree:2fc7f60a87b22847f55f586eab756c4c5f1a6a61", "pr36-game-tree:4eafaf1c36e1a03302df47538b0500e92642d67d", "hosted-visual:33374763533:success", "hosted-ci:33374763533:stale-anchor-only", "repository-finalize-contract:gate_fixture_audit --run --bake-ledger", "immutable-gate-scripts", "pinned-linux-docker:gamecraft-runner-4.6.2-sha256-2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d"],
       "consumer": "PR36 hosted CI, then Producer stack decision",
-      "status": "reserved_before_async_dispatch",
+      "status": "dispatched_async_awaiting_detached_container_identity",
       "write_lease": true,
-      "last_heartbeat": "2026-08-31T09:22:55Z",
+      "last_heartbeat": "2026-08-31T09:34:20Z",
       "stale_after": "2026-08-31T11:22:55Z",
       "pr": {"number":null,"stacked_base_branch":"codex/pr35-roundtrip-camera-harness-repair-v1","upstream_pr":36,"draft_required":true,"status":"pre_pr"},
+      "dispatch": {"at":"2026-08-31T09:34:20Z","method":"send_message_to_thread","status":"accepted","reservation_commit":"3964b17eb0f5f1a91e855c73963f6e450ce4239f","cadence":"asynchronous; launch detached full CI and return without waiting; no publication until later Producer terminal-PASS authorization"},
       "pr_policy": "Create one Draft stacked PR targeting codex/pr35-roundtrip-camera-harness-repair-v1 only after Producer separately confirms terminal detached full-CI PASS, exact committed-tree Docker proof and a clean single-path diff; never mark Ready or merge.",
       "checks": {"required":["fresh isolated pinned Linux Docker records engine, image digest, mounts, commands and cleanup","gate_fixture_audit.py --run --bake-ledger completes against exact committed PR36 tree","generated baked_game_tree equals 4eafaf1c36e1a03302df47538b0500e92642d67d","expected 7 fixtures, 38 invariants, hard IDs 31/31 and CI defaults 15/15 remain complete unless exact audit explains a semantic difference","gate_complement_guard and self-tests pass","stale-tree and incomplete-ledger negatives fail closed","simple and full player roundtrip gates remain PASS","detached full tools/ci.sh reaches a terminal conclusion","git diff is exactly tools/gate_complement_ledger.json and worktree remains clean after any authorized commit"],"p0":0,"p1":1,"does_not_prove":"A matching generated ledger alone does not prove player-visible polish, accessibility, release readiness or permission to merge."},
       "recovery_count": 0,
@@ -3435,7 +3436,7 @@
     "trigger": "PR36 exact-head hosted visual_canary succeeded and hosted CI exposes only the stale protected complementarity anchor after the one-path SpaceShot roundtrip harness repair",
     "ranking": "complete the new exact-tree anchor audit asynchronously, then independently review the stacked result, then decide the PR36-to-PR35 stack transition; keep all runtime and shared authority frozen",
     "phases": [
-      {"phase":1,"objective":"Run exact PR36 committed-tree complementarity audit, negative controls and detached full CI without waiting in the heartbeat","owner":"lease-pr36-complement-anchor-migration-v1","status":"reserved_before_async_dispatch","player_value":"binds the repaired real-player roundtrip witness to the protected evidence gate","conflict_risk":"one generated ledger path; all game, gate scripts and shared authority forbidden","exit":"terminal exact-head Docker PASS with a clean one-path candidate"},
+      {"phase":1,"objective":"Run exact PR36 committed-tree complementarity audit, negative controls and detached full CI without waiting in the heartbeat","owner":"lease-pr36-complement-anchor-migration-v1","status":"dispatched_async_awaiting_detached_container_identity","player_value":"binds the repaired real-player roundtrip witness to the protected evidence gate","conflict_risk":"one generated ledger path; all game, gate scripts and shared authority forbidden","exit":"terminal exact-head Docker PASS with a clean one-path candidate"},
       {"phase":2,"objective":"Publish one stacked Draft anchor only after Producer harvests terminal PASS, then run independent QA/Evidence and REFUTE","owner":"Producer then read-only reviewers","status":"blocked_on_phase1_terminal_pass","player_value":"closes the exact hosted CI blocker without weakening runtime or evidence authority","conflict_risk":"publication and review are separate transactions; PR35 and PR36 remain frozen","exit":"hosted exact-head checks and independent P0/P1=0"},
       {"phase":3,"objective":"Evaluate the PR36-to-PR35 stack and rerun the upstream candidate checks before any integration decision","owner":"Producer separate transaction","status":"blocked_on_phase1_and_phase2","player_value":"restores a green evidence-bound cafe slice candidate","conflict_risk":"no integration merge in the anchor transaction; preserve Draft branches and rollback","exit":"stacked candidate hosted checks success with no unresolved P0/P1"},
       {"phase":4,"objective":"Evaluate integration merge and then commission visual-polish evidence against the benchmark floor","owner":"Producer then exactly one cafe visual owner","status":"queued","player_value":"moves toward clean player-visible cafe closure and persistent world log","conflict_risk":"visual work serialized behind canonical runtime and no protected authority overlap","exit":"post-merge regression green; clean desktop/mobile evidence matrix; HUMAN_ACCEPTANCE remains separately gated"}
@@ -3491,7 +3492,7 @@
     "stack_b_pr31_normal_sync_result_body_refresh_reserved": "GitHub update-branch created exact Draft merge child3254577d/treec6d76be9 with parents d7f2bd06 + master37ccea82 and unchanged two JSON blobs. Post-sync API/local/Docker ls-remote all enumerate 39 branches. Qualification33257158954 and authority33257158256 succeeded; CI/visual33257158932 active. Old checks/reviews are invalid. Body-only exact-head evidence refresh is reserved before any fresh review dispatch.",
     "stack_b_pr31_normal_sync_body_rebound": "Draft PR31 body is rebound at SHA2561fe05ae5/3050 bytes to base37ccea82/head3254577d/treec6d76be9, exact parents, unchanged JSON blobs and source receipts. It records qualification/authority success and CI/visual active, invalidates all old-head evidence, and keeps review/readiness/merge gates unchecked. Await terminal exact-head checks.",
     "shared_write_conflicts": 0,
-    "decision": "Harvested the clean one-path PR36 harness repair and hosted visual success. Reserve exactly one new-game-tree anchor migrator owning only tools/gate_complement_ledger.json; dispatch asynchronously after remote ledger publication, leave detached full CI running, and do not wait in this turn."
+    "decision": "Harvested the clean one-path PR36 harness repair and hosted visual success. Exactly one new-game-tree anchor migrator was dispatched asynchronously after remote reservation commit3964b17e, owning only tools/gate_complement_ledger.json; it must leave detached full CI running and return without publication or waiting."
   },
   "released_claims": [
     {
@@ -3999,5 +4000,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "After the reservation ledger is remote, dispatch the exact PR36 one-path complement-anchor migrator asynchronously. It must launch detached full CI and return without waiting; a later heartbeat harvests terminal evidence before any commit, push or Draft PR authorization. Any identity drift, second path, gate weakening, failed negative, Docker loss or full-CI failure stops no-write. PR35 and PR36 remain frozen and HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "Use one immediate non-blocking task snapshot only, then return. A later heartbeat harvests the exact detached container identity and terminal evidence before any commit, push or Draft PR authorization. Any identity drift, second path, gate weakening, failed negative, Docker loss or full-CI failure stops no-write. PR35 and PR36 remain frozen and HUMAN_ACCEPTANCE_NOT_READY."
 }
