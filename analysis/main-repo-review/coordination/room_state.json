@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-30T21:58:08Z",
+  "updated_at": "2026-08-30T23:58:23Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,8 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "5d5fc40f6164c187f14dffdcd894349b1e38e50ef1f61f9b97b4eacb6aa926c1",
-    "canonical_objects": 305,
+    "canonical_sha256": "df3449be793aae6164b805c1dafd748c72fcefb225b8aa28a7bd253f4a827e52",
+    "canonical_objects": 312,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
       "parent": "9cd199cb5337eeafb55d2437f01deea51a6cfb01",
@@ -135,6 +135,37 @@
       "stop_lines": ["head drifts from 0acb480c9a3e7516d15440b16857dbfbc79369fc", "review requires repository mutation", "runtime or visual clearance would be inferred without clean exact-head evidence", "benchmark assets or code would be copied"],
       "handoff_recipient": "Producer, then one bounded repair writer only if P0/P1 findings require code changes",
       "archive_condition": "Terminal exact-head verdict with P0/P1 list, does_not_prove boundary and next evidence trigger."
+    },
+    {
+      "claim_id": "lease-pr34-complement-anchor-migration-v1",
+      "task": "019ffe8d-6993-7be1-874b-5104f272d979",
+      "role": "Replacement independent committed-tree complementarity-anchor migrator",
+      "objective": "Run the repository-defined complete committed-tree complementarity audit against exact PR #34 head and, only if the semantic fixture and invariant measurement is complete, publish one generated ledger update that binds the unchanged protected gate to the new game tree.",
+      "baseline": "0acb480c9a3e7516d15440b16857dbfbc79369fc",
+      "head": "0acb480c9a3e7516d15440b16857dbfbc79369fc",
+      "tree": "47bebcdb378e2d3fcbdc6b2996b15d4a573f088f",
+      "game_tree": "1a079fcccaadd60cc610156ca6877423304ed238",
+      "branch": "codex/pr34-complement-anchor-migration-v1",
+      "worktree": "D:\\Documents\\Dev\\living-town-pr34-complement-anchor-migration-v1-wt",
+      "owned_paths": ["tools/gate_complement_ledger.json"],
+      "forbidden_paths": ["game/**", "tools/ci.sh", "tools/gate_fixture_audit.py", "tools/gate_complement_guard.py", ".github/**", "analysis/**", "evidence/**", "docs/**", "assets/**", "project.godot", "all other anchors, registries, manifests and fixtures", "coordination room and event streams", "all paths outside owned_paths"],
+      "authority_keys": ["protected-complementarity-anchor"],
+      "generated_outputs": ["tools/gate_complement_ledger.json", "task-owned isolated Docker receipts outside the repository only"],
+      "dependencies": ["pr34:0acb480c9a3e7516d15440b16857dbfbc79369fc", "pr34-tree:47bebcdb378e2d3fcbdc6b2996b15d4a573f088f", "pr34-game-tree:1a079fcccaadd60cc610156ca6877423304ed238", "user-explicit-consent:2026-08-30T23:58:23Z", "repository-finalize-contract:gate_fixture_audit --run --bake-ledger on committed tree", "immutable-gate-scripts", "pinned-linux-docker:gamecraft-runner-4.6.2-sha256-2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d"],
+      "consumer": "PR #34 exact-head hosted CI gate_fixture_audit and gate_complement_guard",
+      "status": "reserved_before_dispatch_user_authorized",
+      "write_lease": true,
+      "last_heartbeat": "2026-08-30T23:58:23Z",
+      "stale_after": "2026-08-31T01:58:23Z",
+      "pr": {"number": null, "stacked_base_branch": "codex/cafe-guest-vertical-slice-v1", "upstream_pr": 34, "draft_required": true, "status": "pre_pr"},
+      "pr_policy": "Create one Draft stacked PR targeting codex/cafe-guest-vertical-slice-v1 only after exact committed-tree Docker proof and a clean single-path diff; never target integration/batons or master directly, never mark Ready and never merge.",
+      "checks": {"required": ["fresh isolated pinned Linux Docker records engine, image digest, mounts, commands and cleanup", "GODOT points to the pinned container runtime and python tools/gate_fixture_audit.py --run --bake-ledger completes against committed base", "generated baked_game_tree equals 1a079fcccaadd60cc610156ca6877423304ed238", "hard IDs, fixture inventory and invariant coverage remain complete and every difference is explained", "python tools/gate_complement_guard.py passes without changing the guard or audit scripts", "negative self-tests reject stale tree and incomplete ledger", "full tools/ci.sh passes in the same isolated container or returns an exact no-write blocker", "git diff is exactly tools/gate_complement_ledger.json and worktree is clean after commit"], "p0": 0, "p1": 1, "does_not_prove": "A matching generated ledger alone does not prove player-visible polish, runtime acceptance, accessibility, release readiness or permission to merge."},
+      "recovery_count": 0,
+      "release_reason": null,
+      "rollback": "Before publication delete only the clean task-owned worktree and branch. After Draft publication close the stacked Draft or use a reviewed revert; never rewrite PR #34, integration/batons, master or protected history.",
+      "stop_lines": ["PR34 head, tree or game tree drifts", "audit or guard scripts must change", "any path beyond tools/gate_complement_ledger.json is required", "complete audit cannot run or any fixture/invariant is missing", "hard IDs or invariant sets change without semantic explanation", "Docker digest or isolation is unavailable", "stale-tree or incomplete-ledger negative controls do not fail closed", "existing branch, worktree, PR or conflicting authority lease appears"],
+      "handoff_recipient": "Independent QA/Evidence and REFUTE, then Producer for a separate stacked-PR merge decision",
+      "archive_condition": "One clean exact-base single-path Draft stacked PR with complete Docker receipts, or a terminal exact no-write blocker with task-owned scratch cleanup."
     },
     {
       "claim_id": "analysis-complete-trust-path-successor-20260830",
@@ -3197,20 +3228,23 @@
     }
   ],
   "active_dependency_graph": {
-    "at": "2026-08-28T20:04:00Z",
-    "trigger": "PR28 matching independent P1 strict-base identity handoff cycle",
-    "ranking": "dependency unlock first, then evidence closure, then player-visible cafe production; conflict risk serialized across shared authority",
+    "at": "2026-08-30T23:58:23Z",
+    "trigger": "PR34 exact-head hosted CI exposes a protected complementarity-anchor P1 after the sole feature recovery resolved the runtime-scanner blocker",
+    "ranking": "close the exact one-path evidence gate, then independent exact-head QA/REFUTE, then integrate the player-visible cafe slice; keep unrelated authority successor queued",
     "phases": [
-      {"phase":1,"objective":"Verifier v3 reviewed-source plus current-protected-base derivation","owner":"released","status":"complete_master5c3e5cb6_post_merge_ci_success","player_value":"unblocks protected trust-root delivery","conflict_risk":"closed with P2 follow-up retained","exit":"post-merge CI33194686491 success at exact5c3e5cb6"},
-      {"phase":2,"objective":"Synchronize PR28 normally, replace only pending review leaves after fresh exact-source reviews, and re-run exact-head evidence","owner":"released","status":"complete_merge1ea7aafd_post_merge_ci_success_protection_restored","player_value":"restores evidence integrity without code/ref churn","conflict_risk":"closed with three retained P2s","exit":"post-merge CI33206762935 success"},
-      {"phase":3,"objective":"Merge reviewed manifest through reversible protected transition, then normally synchronize and merge PR25 so candidate contains reviewed source plus current protected master","owner":"released","status":"complete_master9b2d052c_post_merge_ci_success","player_value":"makes protected candidate executable without stale identity","conflict_risk":"closed with protection unchanged and P2 residuals retained","exit":"CI33217101104 success at exact9b2d052c"},
-      {"phase":4,"objective":"Create protected Stack B authored IDs/generated manifest, then unlock exactly one cafe exterior-to-persistence production owner","owner":"lease-stack-b-cafe-authored-contract-v1-9b2d052c-replacement-1","status":"exact_two_path_commit1114d2b7_docker_verified_awaiting_nonforce_publication_and_draft_pr","player_value":"enables protected source-bound production capture before player-visible cafe work","conflict_risk":"single replacement two-file writer; original frozen; game/tools/CI/coordination forbidden","exit":"Stack B exact-head Docker+hosted evidence and independent P0/P1=0, then protected capture success"}
+      {"phase":1,"objective":"Complete semantic complementarity audit and generate the exact PR34 game-tree anchor","owner":"lease-pr34-complement-anchor-migration-v1","status":"reserved_before_dispatch_user_authorized","player_value":"unblocks trustworthy exact-head testing of invitation to cafe interaction and persistence","conflict_risk":"one generated ledger path only; feature writer released; game and gate scripts forbidden","exit":"clean stacked Draft with pinned-Docker full audit, guard and negative controls"},
+      {"phase":2,"objective":"Independent exact-head functional QA/Evidence and REFUTE plus UI/UX/accessibility review","owner":"reserved_after_phase1 plus current read-only UI reviewer","status":"UI review rebind reserved; technical reviews wait for immutable anchor head","player_value":"tests player action, visible feedback, consumer, persistence and failure recovery","conflict_risk":"read-only/output-only reviewers; no repository mutation","exit":"P0/P1=0 with exact Docker and clean runtime evidence"},
+      {"phase":3,"objective":"Merge eligible stacked anchor into PR34 branch, rerun hosted CI and repair only bounded P0/P1 findings","owner":"Producer separate transaction","status":"blocked_on_phase1_and_phase2","player_value":"restores a green, evidence-bound cafe slice candidate","conflict_risk":"no integration merge in the anchor transaction; preserve Draft and rollback","exit":"PR34 exact-head hosted checks success and independent P0/P1=0"},
+      {"phase":4,"objective":"Evaluate integration merge and then commission visual-polish evidence against the benchmark floor","owner":"Producer then exactly one cafe visual owner","status":"queued","player_value":"moves toward clean player-visible cafe closure and persistent world log","conflict_risk":"visual work serialized behind canonical runtime and no protected authority overlap","exit":"post-merge regression green; clean desktop/mobile evidence matrix; HUMAN_ACCEPTANCE remains separately gated"}
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-08-29T06:30:55Z",
+    "at": "2026-08-30T23:58:23Z",
     "active_writers": 1,
-    "read_only_reviewers": 0,
+    "read_only_reviewers": 1,
+    "pr34_anchor_migration": "User explicitly authorized the separately gated protected complementarity-anchor migration. Exactly one replacement writer is reserved at base0acb480/tree47bebcdb/game-tree1a079fcc with a one-path tools/gate_complement_ledger.json lease. Game, audit/guard scripts, CI, workflows, other anchors and coordination are forbidden. The branch and worktree are absent; the task is terminal/idle and has no current repository lease.",
+    "pr34_ui_review": "The existing UI/UX reviewer remains the sole read-only reviewer and is reserved for exact head0acb480; no old-head clearance carries forward.",
+    "current_independence": "One generated-anchor writer and one read-only UI reviewer have disjoint write sets. The PR34 feature writer is released after its only recovery; the six-path protected-authority successor remains queued and undispatched.",
     "stack_b_replacement_exact_commit": "Replacement LF lane is clean at exact1114d2b7/tree51816f37 with only cafe-authored IDs and generated manifest added. Pinned Linux Docker b0173238 at committed head passed compiler --check, exact identity, game-clean and SHA checks; prior independent generation was byte-identical and malformed/stale/unbound negatives fail closed. Remote publication and Draft PR remain unperformed.",
     "stack_b_normal_push_failure": "One normal non-force push failed with curl28/connect timeout and send-pack disconnect. GitHub ref and branch APIs confirm the replacement branch is absent and no PR exists. One non-force Git Data API create-ref recovery is reserved against exact master9b2d052c and tree51816f37.",
     "stack_b_api_branch_publication": "The reserved recovery succeeded without force: hosted headd7f2bd06 is a content-equivalent child of exact master9b2d052c with exact local tree51816f37 and canonical blobs b41c550/a239968. The branch is the 38th hosted branch; no PR exists yet. Post-create smart-HTTP refresh failed and remains explicitly incomplete.",
@@ -3253,7 +3287,7 @@
     "stack_b_pr31_normal_sync_result_body_refresh_reserved": "GitHub update-branch created exact Draft merge child3254577d/treec6d76be9 with parents d7f2bd06 + master37ccea82 and unchanged two JSON blobs. Post-sync API/local/Docker ls-remote all enumerate 39 branches. Qualification33257158954 and authority33257158256 succeeded; CI/visual33257158932 active. Old checks/reviews are invalid. Body-only exact-head evidence refresh is reserved before any fresh review dispatch.",
     "stack_b_pr31_normal_sync_body_rebound": "Draft PR31 body is rebound at SHA2561fe05ae5/3050 bytes to base37ccea82/head3254577d/treec6d76be9, exact parents, unchanged JSON blobs and source receipts. It records qualification/authority success and CI/visual active, invalidates all old-head evidence, and keeps review/readiness/merge gates unchecked. Await terminal exact-head checks.",
     "shared_write_conflicts": 0,
-    "decision": "Original Stack B writer used its one recovery and failed closed on CRLF projection, so it is revoked and frozen. Exactly one replacement owns the same two evidence files in a new LF worktree; original worktree and every game/tool/workflow/shared-authority path are forbidden."
+    "decision": "Dispatch exactly one separately gated PR34 complementarity-anchor migrator after this reservation reaches origin/codex/main-repo-review. Keep the feature writer released, the UI reviewer read-only, the six-path authority successor queued, and PR34 Draft; reject any expansion beyond the generated ledger path."
   },
   "released_claims": [
     {
@@ -3761,5 +3795,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "Dispatch the reserved Cafe guest-access vertical-slice writer only after this exact ledger reaches origin/codex/main-repo-review. Harvest its first branch/worktree heartbeat without blocking. Keep PR5, PR31 and PR33 Draft and PR21-PR24 frozen. The separately gated six-path successor is authorized but queued until an independent owner and separate exact lease are recorded. HUMAN_ACCEPTANCE_NOT_READY remains."
+  "next_trigger": "After this exact reservation reaches origin/codex/main-repo-review, dispatch the map-lab task as the replacement one-path PR34 anchor migrator and rebind the existing UI reviewer to exact head0acb480. Return without waiting. Keep PR5, PR31, PR33 and PR34 Draft, PR21-PR24 frozen, and the six-path authority successor queued. HUMAN_ACCEPTANCE_NOT_READY remains."
 }
