@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-31T01:09:27Z",
+  "updated_at": "2026-08-31T02:18:53Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,8 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "178e8396a407fef2932d2c41c69e2afc972aed8a90b3100abc8738185b7248f9",
-    "canonical_objects": 319,
+    "canonical_sha256": "5b1e96e6e2ec1e7929eff9c7b4383188f1f63ab5ac0c7270b484fcb1ac279ec8",
+    "canonical_objects": 320,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
       "parent": "9cd199cb5337eeafb55d2437f01deea51a6cfb01",
@@ -42,19 +42,19 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-08-31T00:36:38Z",
+    "at": "2026-08-31T02:12:00Z",
     "github_api_count": 41,
     "git_ls_remote_count": 41,
     "local_tracking_count": 41,
     "local_exact_count": 41,
     "snapshot_complete": true,
     "secondary_authority": "Fresh serial fetch --all --prune --tags and direct ls-remote --heads succeeded on attempt one using HTTP/1.1 and maxRequests=2. GitHub branches API and all real local origin refs enumerate the same 41 hosted branches; no cached ref is promoted over network authority.",
-    "reconciliation": "GitHub API, direct ls-remote and fetched local refs enumerate the same 41 hosted branches with identical normalized SHA256 380e459136d3533a599438dd1932e4f74dfabeddd29bea141ccd69b6ad2fc2be. Master37ccea82, integrationac85fc6b, PR340acb480c and coordinatione4b0af4 are stable. Ten PRs remain open, zero issues/releases/tags, and 40 registered worktrees with 15 dirty and zero read errors are preserved.",
+    "reconciliation": "Fresh serial fetch and direct ls-remote succeeded on attempt one and enumerated 41 hosted branches. Master37ccea82, integrationac85fc6b and PR340acb480c remain stable; coordination is ff26e112. PR34 remains OPEN Draft BLOCKED with hosted CI failure and visual_canary success; PR5 exact-head checks at ff26e112 are successful. No revoke-recovery remote branch or PR exists yet.",
     "network_failures": ["historical Git Smart HTTP connection resets and timeouts remain intermittent; the required serial fetch and ls-remote lane succeeded before this dispatch"],
     "sorted_name_sha_set_sha256": "380e459136d3533a599438dd1932e4f74dfabeddd29bea141ccd69b6ad2fc2be",
     "master": "37ccea829e16e5844059a11eac9b3177ac693d6a",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "e4b0af4a9bb36a15f6c74a5c28522098edf234e5",
+    "coordination": "ff26e1122d9c56ee9904774c4e89ac97aa799856",
     "pr25": "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
     "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
@@ -66,7 +66,7 @@
     "open_issues": 0,
     "releases": 0,
     "tags": 0,
-    "full_branch_metadata_scan": "Lightweight material-result scan completed at 2026-08-31T00:36:38Z. All 41 hosted branches were enumerated through fresh fetch, direct ls-remote and GitHub API with no ref drift. Ten PRs remain open; zero issues/releases/tags. PR34 remains Draft BLOCKED at0acb480c, PR33 Draft BLOCKED, PR31 Draft CLEAN, and PR5 Draft BEHIND with exact-head CI33343459032 success. Forty worktrees were read; 15 pre-existing dirty states are preserved and zero read errors occurred."
+    "full_branch_metadata_scan": "Lightweight material-result scan completed at 2026-08-31T02:12:00Z. Fresh serial fetch and direct ls-remote enumerate all 41 hosted branches. PR34 remains Draft BLOCKED at0acb480c; PR5 remains Draft BEHIND atff26e112 with CI and visual_canary success. The revoke repair remains local-only with exactly two authorized modified paths. Required Narrative and Implementation tasks remain unreadable; the current map-lab writer is active."
   },
   "portfolio_policy": {
     "default_active_writers": 2,
@@ -187,15 +187,16 @@
       "generated_outputs": ["task-owned isolated Docker receipts outside the repository only"],
       "dependencies": ["pr34:0acb480c9a3e7516d15440b16857dbfbc79369fc", "ui-review-p1:revoke-on-2f-no-recovery", "producer-current-head-revalidation:Sim-lines2489-2495-and4086-4093", "anchor-claim:terminal-clean-no-write-released", "canonical-2d-sim-authority", "deterministic-save-load-replay", "c0-rollback"],
       "consumer": "PR #34 guest invitation vertical slice, then a newly generated complementarity anchor for the repaired committed game tree",
-      "status": "dispatched_async_replacement_writer",
+      "status": "recovery_1_reserved_after_full_ci_visual_failure",
       "write_lease": true,
-      "last_heartbeat": "2026-08-31T01:09:27Z",
-      "stale_after": "2026-08-31T03:06:27Z",
+      "last_heartbeat": "2026-08-31T02:18:53Z",
+      "stale_after": "2026-08-31T04:18:53Z",
       "pr": {"number": null, "stacked_base_branch": "codex/cafe-guest-vertical-slice-v1", "upstream_pr": 34, "draft_required": true, "status": "pre_pr"},
       "dispatch": {"at": "2026-08-31T01:09:27Z", "method": "send_message_to_thread", "status": "accepted", "reservation_commit": "fc4c82b0e46b039d0f68a28afde3581790f79539"},
       "pr_policy": "Create one Draft stacked PR targeting codex/cafe-guest-vertical-slice-v1 only after exact-head pinned-Docker proof and a clean two-path-or-smaller diff; never target integration/batons or master, mark Ready or merge.",
-      "checks": {"required": ["revoke while player is on cafe/2f atomically relocates the player to an existing authored safe cafe/1f address before capability becomes revoked", "relocation updates space, floor, position, area and room caches through existing canonical Sim helpers and never View authority", "revoke emits visible log/social recovery feedback and a persistent event-log consequence", "revoke then save then load succeeds with revoked capability and safe 1f state", "replay reproduces the same revoke, relocation and persistent consequence deterministically using existing test surfaces", "post-revoke attempt to enter cafe/2f is denied fail-closed", "revocation off 2f does not move the player", "forged, stale or already-revoked capability remains rejected without mutation", "failure is atomic: no partial capability or spatial state", "C0 rollback remains possible by reverting this bounded stacked commit", "focused and full CI run in fresh isolated pinned Linux Docker with exact receipts", "semantic diff is no more than the two owned files and worktree is clean after commit"], "p0": 0, "p1": 1, "does_not_prove": "Code and tests do not prove final UI polish, desktop/mobile accessibility, clean release evidence or human acceptance."},
-      "recovery_count": 0,
+      "checks": {"required": ["revoke while player is on cafe/2f atomically relocates the player to an existing authored safe cafe/1f address before capability becomes revoked", "relocation updates space, floor, position, area and room caches through existing canonical Sim helpers and never View authority", "revoke emits visible log/social recovery feedback and a persistent event-log consequence", "revoke then save then load succeeds with revoked capability and safe 1f state", "replay reproduces the same revoke, relocation and persistent consequence deterministically using existing test surfaces", "post-revoke attempt to enter cafe/2f is denied fail-closed", "revocation off 2f does not move the player", "forged, stale or already-revoked capability remains rejected without mutation", "failure is atomic: no partial capability or spatial state", "C0 rollback remains possible by reverting this bounded stacked commit", "focused and full CI run in fresh isolated pinned Linux Docker with exact receipts", "semantic diff is no more than the two owned files and worktree is clean after commit"], "focused":{"result":"pass","fails":0,"container_proof":"pinned Docker","coverage":"revoke recovery, revoked save/load, portal denial, repeated and forged rejection, persistent event"}, "full_ci_attempt_1":{"container":"codex-pr34-revoke-ci","image":"gamecraft-runner:4.6.2@sha256:2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d","exit":1,"finished_at":"2026-08-31T02:11:12Z","elapsed_seconds":2252,"failure":"visual space/floor roundtrip capture: cafe entry left player town/outdoor; full journey player followed probe to owner-only cafe/2f; return camera changed from pos1560,1176 zoom1.8 to pos1536,1152 zoom0.229167","classification":"baseline versus repaired causality not yet proven"}, "p0": 0, "p1": 1, "does_not_prove": "Focused code and tests do not prove full-CI closure, final UI polish, desktop/mobile accessibility, clean release evidence or human acceptance."},
+      "recovery_count": 1,
+      "recovery_note": "Final recovery is limited to one fresh pinned-Docker baseline-versus-repaired visual classification. The write set stays exactly two files. Any repaired-only regression, second failure, identity drift or need to edit SpaceShot, Main, tools or scenes is terminal no-write.",
       "release_reason": null,
       "rollback": "Before publication remove only the clean task-owned repair worktree and branch. After Draft publication close the stacked Draft or revert through review; never rewrite PR34, integration, master or protected history.",
       "stop_lines": ["PR34 head or tree drifts", "safe cafe/1f relocation requires a new scene, Main/View authority or invented coordinates rather than an existing authored Sim address/helper", "any path beyond the two owned files is required", "save/replay schema or shared test registry change is required", "Docker digest/isolation is unavailable", "revoke recovery cannot be atomic or deterministic", "full CI or focused negative controls fail", "existing branch, worktree, PR or overlapping Sim/save authority owner appears"],
@@ -3831,5 +3832,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "On the next short coordination tick, harvest the first branch/worktree/Docker heartbeat from the revoke-recovery writer without long polling. If it reaches a coherent Draft, reserve exact-head functional QA/Evidence, REFUTE and UI/UX re-review before regenerating the anchor. Keep PR5, PR31, PR33 and PR34 Draft, PR21-PR24 frozen, the old anchor released and the six-path authority successor queued. HUMAN_ACCEPTANCE_NOT_READY remains."
+  "next_trigger": "Dispatch the already reserved final recovery to the sole revoke-recovery writer: perform one bounded fresh pinned-Docker baseline-versus-repaired visual classification without a third-path edit. If repaired-only regression or a second failure occurs, return terminal no-write and release the lease. If exact non-regression plus all required gates is proven, publish one clean two-path stacked Draft and then reserve exact-head QA/Evidence, REFUTE and UI/UX re-review before regenerating the anchor. HUMAN_ACCEPTANCE_NOT_READY remains."
 }
