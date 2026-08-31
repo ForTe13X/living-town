@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-31T06:42:08Z",
+  "updated_at": "2026-08-31T07:18:12Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,15 +11,15 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "ffd710c044b96c336cded77321e0caa05a44927e5de2a4210342367db7cfd289",
-    "canonical_objects": 329,
+    "canonical_sha256": "73e6b98a9df2e6f6269494bb29fed527b2691dab3860a40ee7a61c952277fbcf",
+    "canonical_objects": 330,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
-      "parent": "9cd199cb5337eeafb55d2437f01deea51a6cfb01",
-      "tree": "96e713cee1f8d769453ad3b743a8b3c0615c6b60",
-      "commit": "f9654452f3651c3feb11aefdd087ae8515e6b43c",
+      "parent": "1d8de23ef204af4c1323ca4be719b963ebf49eb5",
+      "tree": "2ad63873e7371c043b870699d0cff194bc8c290c",
+      "commit": "42f1907e36ccd1366a7cd62c4cb6b0bb0f9e5b7b",
       "force": false,
-      "reason": "two normal smart-HTTP publication attempts failed while GitHub API remained reachable"
+      "reason": "producer-only non-force Git Data API publication; GitHub API authoritative for this exact parent-child mutation"
     },
     "migration_baseline_sha256": "65e9b33307ef3588424daf36ea73b49dcc555d0e6b76e49ec01b21c9654a7ea4",
     "migration_baseline_objects": 293,
@@ -42,19 +42,19 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-08-31T06:34:45Z",
+    "at": "2026-08-31T07:15:16Z",
     "github_api_count": 42,
-    "git_ls_remote_count": 42,
+    "git_ls_remote_count": null,
     "local_tracking_count": 42,
     "local_exact_count": 42,
-    "snapshot_complete": true,
-    "secondary_authority": "Fresh serial fetch --all --prune --tags and direct ls-remote --heads succeeded on attempt one using HTTP/1.1 and maxRequests=2. GitHub branches API and all real local origin refs enumerate the same 42 hosted branches; no cached ref is promoted over network authority.",
-    "reconciliation": "Fresh serial fetch and direct ls-remote succeeded on attempt one and enumerated 42 hosted branches. Master37ccea82 and integrationac85fc6b remain stable; coordination is b4d0d649. New branch codex/pr34-revoke-recovery-v1 is exact at24beff82 with clean local worktree and stacked Draft PR35. PR35 hosted visual_canary succeeded; CI failed only because complement ledger game-tree369c9f51 is stale against repaired game-treeb32865df. PR5 exact-head CI and visual_canary atb4d0d649 succeeded.",
-    "network_failures": ["historical Git Smart HTTP connection resets and timeouts remain intermittent; the required serial fetch and ls-remote lane succeeded before this dispatch"],
+    "snapshot_complete": false,
+    "secondary_authority": "The required serial Smart HTTP lane was attempted twice with repository-local HTTP/1.1 and maxRequests=2 but github.com:443 was unreachable. GitHub API remained reachable and enumerated 42 branches plus exact coordination and PR35 refs. Local tracking refs are cached evidence only and are not promoted over network authority.",
+    "reconciliation": "GitHub API secondary authority enumerates 42 hosted branches and coordination42f1907e. PR35 remains Draft MERGEABLE/UNSTABLE at24beff82. Fresh fetch and direct ls-remote evidence are unavailable this tick, so the branch snapshot is incomplete despite matching the prior 42-branch inventory.",
+    "network_failures": ["attempt1 Smart HTTP lane returned no authoritative output before its bound", "attempt2 git fetch failed: Failed to connect to github.com:443 after 21090 ms"],
     "sorted_name_sha_set_sha256": "380e459136d3533a599438dd1932e4f74dfabeddd29bea141ccd69b6ad2fc2be",
     "master": "37ccea829e16e5844059a11eac9b3177ac693d6a",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "77a93d6e345c600dafad7512b7e80aa451bb14d5",
+    "coordination": "42f1907e36ccd1366a7cd62c4cb6b0bb0f9e5b7b",
     "pr25": "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
     "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
@@ -66,7 +66,7 @@
     "open_issues": 0,
     "releases": 0,
     "tags": 0,
-    "full_branch_metadata_scan": "Lightweight material-result scan completed at 2026-08-31T06:34:45Z. Fresh serial fetch and direct ls-remote enumerate all 42 hosted branches. Twelve PRs are open. PR35 remains frozen Draft MERGEABLE/UNSTABLE at24beff82 with visual_canary success and CI stale-anchor failure. PR5 at77a93d6 has hosted run33362717251 success. All 42 registered worktrees were read: 13 dirty historical/temporary worktrees are preserved and zero reads failed. Required Narrative and Implementation tasks remain unreadable.",
+    "full_branch_metadata_scan": "Lightweight incomplete network scan at 2026-08-31T07:15:16Z. GitHub API enumerates 42 branches and exact PR35/coordination refs, but both bounded Smart HTTP attempts failed, so no current direct ls-remote set is claimed. The detached PR35 anchor full-CI container is running. Required Narrative and Implementation tasks remain unreadable.",
     "benchmark_revalidation": {"repository":"mewamew/my_ai_town","ref":"main","head":"aac9992c2d195402a90327754c1f6ef279675076","readme_blob":"9aa3211f238fd6bd503b758f87cc6d5b76126603","readme_sha256":"fccc03778fcd8635851cbe604b5363a4a4854350555a9e1b3a5299469d1fac60","screenshots":{"assets/readme/town-overview.jpg":"8315851951fa4b86138ed4b66508598fa08dfd9d3ed0dd9e788c1adf422495ec","assets/readme/resident-conversation.jpg":"e5b5cf0892c34949aa2c128c554234db99b898aefd6fdea4cb89fdfe3da02c63","assets/readme/workshop-task.jpg":"7985c00433ff522c49749cb4a098e8d35776ca0f5bc3051f0966e43e70c16f6a","assets/readme/market-life.jpg":"914de2c4571bb9546a9d3e31ebc3f093b4e9034571a92c6332c128a228193895","assets/readme/world-log.jpg":"9195d4ae02db1bc81af745c245612900e780711a3a0593b2d70191e446a4bce4"},"license_boundary":"quality and information-architecture reference only; no code, pixel, asset, palette or derivative copying"}
   },
   "portfolio_policy": {
@@ -190,13 +190,14 @@
       "generated_outputs": ["tools/gate_complement_ledger.json", "task-owned isolated Docker receipts outside the repository only"],
       "dependencies": ["pr35:24beff82ceaf246f5b6c9fa3ca74a6d2b4b29931", "pr35-tree:425935b1bdf9ff04c121b165bfb3f93f5e92f00f", "pr35-game-tree:b32865dfb1fc26ee3049673b4996617fa77cdf4d", "hosted-run33353066042:visual-success-ci-stale-anchor-only", "prior-audit-method:7-fixtures-38-invariants-hardids31-ci15", "immutable-gate-scripts", "pinned-linux-docker:gamecraft-runner-4.6.2-sha256-2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d"],
       "consumer": "PR #35 exact-head hosted CI, then Producer decision on stacking the repaired tree into PR #34",
-      "status": "recovery_1_dispatched_async_awaiting_detached_container_identity",
+      "status": "recovery_1_detached_full_ci_running",
       "write_lease": true,
-      "last_heartbeat": "2026-08-31T06:42:08Z",
+      "last_heartbeat": "2026-08-31T07:18:12Z",
       "stale_after": "2026-08-31T08:38:23Z",
       "pr": {"number": null, "stacked_base_branch": "codex/pr34-revoke-recovery-v1", "upstream_pr": 35, "draft_required": true, "status": "pre_pr"},
       "dispatch": {"at":"2026-08-31T05:59:12Z","method":"send_message_to_thread","status":"accepted","reservation_commit":"012395776a74037de11aded39c6a094baf394a99","cadence":"asynchronous; harvest later without long polling"},
       "recovery_dispatch": {"at":"2026-08-31T06:42:08Z","method":"send_message_to_thread","status":"accepted","reservation_commit":"1d8de23ef204af4c1323ca4be719b963ebf49eb5","container":"codex-pr35-anchor-full-ci-recovery1","scratch":"D:\\Documents\\Dev\\living-town-pr35-anchor-ci-recovery1","instruction":"re-bake and revalidate identical one-path anchor, launch detached pinned-Docker full CI, return immediately with container identity, leave running for later harvest","cadence":"asynchronous no long polling"},
+      "detached_full_ci": {"container":"codex-pr35-anchor-full-ci-recovery1","container_id":"4edcd340765003f006a183f57ff4630cb1cc866dd69d7f5c4401ef443860551b","status":"running","started_at":"2026-08-31T06:53:03.905801809Z","image":"gamecraft-runner:4.6.2@sha256:2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d","image_id":"sha256:2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d","mounts":[{"source":"D:/Documents/Dev/living-town-pr35-complement-anchor-migration-v1-wt","destination":"/src","rw":false},{"source":"D:/Documents/Dev/pr35-anchor-ci-recovery1/base.pack","destination":"/bundle/base.pack","rw":false},{"source":"D:/Documents/Dev/pr35-anchor-ci-recovery1","destination":"/out","rw":true}],"log":"D:\\Documents\\Dev\\pr35-anchor-ci-recovery1\\full-ci.log","log_bytes":53794,"finished_receipt":false,"latest":"goals_test passed after 132s; container remains running","ownership":"task-owned isolated bind mounts; no shared cache or volume"},
       "pr_policy": "Create one Draft stacked PR targeting codex/pr34-revoke-recovery-v1 only after exact committed-tree Docker proof, complete guard and negative controls, and a clean single-path diff; never mark Ready or merge.",
       "checks": {"required": ["fresh pinned Docker records versions, image digest, mounts, commands and cleanup", "complete gate_fixture_audit --run --bake-ledger succeeds on committed head24beff82", "generated baked_game_tree equals b32865dfb1fc26ee3049673b4996617fa77cdf4d", "fixture and invariant inventory remains complete with semantic explanation for differences", "gate_complement_guard passes without script changes", "stale-tree and incomplete-ledger negatives fail closed", "focused guard plus full tools/ci.sh pass or return exact no-write blocker", "diff is exactly tools/gate_complement_ledger.json and worktree is clean after commit"], "attempt_1":{"result":"terminal_no_write_incomplete","identity":"24beff82/425935b1/b32865df","audit":"pass 7 fixtures 38 invariants hard_ids31_of31 ci_defaults15_of15","baked_game_tree":"b32865dfb1fc26ee3049673b4996617fa77cdf4d","guard":"pass","guard_selftest":"pass","audit_selftest":"pass","full_ci":"started through S0 golden bench then owner stopped long-running container before terminal result","publication":"none","cleanup":"ledger restored, worktree clean, no branch push, no PR, containers and scratch cleaned"}, "p0": 0, "p1": 1, "does_not_prove": "Audit and negative-control success without terminal full CI does not prove a publishable anchor, PR35 functional correctness, final UI polish, accessibility, release readiness or permission to merge."},
       "recovery_count": 1,
@@ -3904,5 +3905,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "On the next short tick harvest the recovery owner's immediate detached-container identity without waiting. If codex-pr35-anchor-full-ci-recovery1 is running with exact pinned image and mounts, leave it running and return quiet; when terminal, harvest exit/logs/receipts before any continuation. Only a terminal full-CI PASS may authorize a separate commit/push/Draft turn. Any empty handoff, second failure, second path, identity drift or incomplete receipt is terminal release. PR35 remains frozen and HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "Inspect only codex-pr35-anchor-full-ci-recovery1 on a later heartbeat. While running with exact pinned identity and mounts, leave it untouched and return quiet. When terminal, harvest exit/logs/receipts before any continuation. Only terminal full-CI PASS may authorize a separate commit/push/Draft turn. Any failure, second path, identity drift or incomplete receipt is terminal release. Retry the bounded Smart HTTP lane on the next tick; current branch snapshot is incomplete. PR35 remains frozen and HUMAN_ACCEPTANCE_NOT_READY."
 }
