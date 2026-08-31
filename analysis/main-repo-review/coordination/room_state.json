@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-31T00:36:38Z",
+  "updated_at": "2026-08-31T00:39:08Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,8 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "3170d9940c79f7830d183fa8535f8ed2d20a1abf7779b3c2b43efb87a4d9ccfa",
-    "canonical_objects": 314,
+    "canonical_sha256": "ae1f68ba15625f699b52203f8e2fa6ed5cbeffe7a9b45d2dd7f32e26ba7944e4",
+    "canonical_objects": 315,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
       "parent": "9cd199cb5337eeafb55d2437f01deea51a6cfb01",
@@ -153,12 +153,12 @@
       "generated_outputs": ["tools/gate_complement_ledger.json", "task-owned isolated Docker receipts outside the repository only"],
       "dependencies": ["pr34:0acb480c9a3e7516d15440b16857dbfbc79369fc", "pr34-tree:47bebcdb378e2d3fcbdc6b2996b15d4a573f088f", "pr34-game-tree:1a079fcccaadd60cc610156ca6877423304ed238", "user-explicit-consent:2026-08-30T23:58:23Z", "repository-finalize-contract:gate_fixture_audit --run --bake-ledger on committed tree", "immutable-gate-scripts", "pinned-linux-docker:gamecraft-runner-4.6.2-sha256-2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d"],
       "consumer": "PR #34 exact-head hosted CI gate_fixture_audit and gate_complement_guard",
-      "status": "recovery_1_reserved_after_clean_no_write_timeout",
+      "status": "recovery_1_dispatched_async_complete_audit_resume",
       "write_lease": true,
-      "last_heartbeat": "2026-08-31T00:36:38Z",
+      "last_heartbeat": "2026-08-31T00:39:08Z",
       "stale_after": "2026-08-31T02:36:38Z",
       "pr": {"number": null, "stacked_base_branch": "codex/cafe-guest-vertical-slice-v1", "upstream_pr": 34, "draft_required": true, "status": "pre_pr"},
-      "dispatch": {"at": "2026-08-31T00:02:31Z", "method": "send_message_to_thread", "status": "accepted", "reservation_commit": "a6ac475"},
+      "dispatch": {"at": "2026-08-31T00:02:31Z", "method": "send_message_to_thread", "status": "accepted", "reservation_commit": "a6ac475", "recovery_1": {"at": "2026-08-31T00:39:08Z", "status": "accepted", "reservation_commit": "c5e0172", "route": "exact Git bundle cloned inside fresh pinned container", "final_recovery": true}},
       "pr_policy": "Create one Draft stacked PR targeting codex/cafe-guest-vertical-slice-v1 only after exact committed-tree Docker proof and a clean single-path diff; never target integration/batons or master directly, never mark Ready and never merge.",
       "checks": {"required": ["fresh isolated pinned Linux Docker records engine, image digest, mounts, commands and cleanup", "GODOT points to the pinned container runtime and python tools/gate_fixture_audit.py --run --bake-ledger completes against committed base", "generated baked_game_tree equals 1a079fcccaadd60cc610156ca6877423304ed238", "hard IDs, fixture inventory and invariant coverage remain complete and every difference is explained", "python tools/gate_complement_guard.py passes without changing the guard or audit scripts", "negative self-tests reject stale tree and incomplete ledger", "full tools/ci.sh passes in the same isolated container or returns an exact no-write blocker", "git diff is exactly tools/gate_complement_ledger.json and worktree is clean after commit"], "p0": 0, "p1": 1, "does_not_prove": "A matching generated ledger alone does not prove player-visible polish, runtime acceptance, accessibility, release readiness or permission to merge."},
       "first_attempt": {"result": "terminal_clean_no_write_timeout", "direct_mount_blocker": "Windows worktree .git indirection was not resolvable inside the Linux container, so git archive HEAD -- game failed before semantic audit", "safe_recovery": "exact commit Git bundle cloned inside the same pinned container reached the Godot fixture-probe phase", "timeout": "complete --run --bake-ledger exceeded the short task turn; container, temporary bundle and processes were cleaned", "mutations": "none; no ledger, guard, CI, commit, push or PR", "worktree": "created clean at exact base"},
@@ -3234,7 +3234,7 @@
     "trigger": "PR34 exact-head hosted CI exposes a protected complementarity-anchor P1 after the sole feature recovery resolved the runtime-scanner blocker",
     "ranking": "close the exact one-path evidence gate, then independent exact-head QA/REFUTE, then integrate the player-visible cafe slice; keep unrelated authority successor queued",
     "phases": [
-      {"phase":1,"objective":"Complete semantic complementarity audit and generate the exact PR34 game-tree anchor","owner":"lease-pr34-complement-anchor-migration-v1","status":"recovery_1_reserved_after_clean_no_write_timeout","player_value":"unblocks trustworthy exact-head testing of invitation to cafe interaction and persistence","conflict_risk":"one generated ledger path only; feature writer released; game and gate scripts forbidden; no further recovery after this continuation","exit":"clean stacked Draft with pinned-Docker full audit, guard and negative controls"},
+      {"phase":1,"objective":"Complete semantic complementarity audit and generate the exact PR34 game-tree anchor","owner":"lease-pr34-complement-anchor-migration-v1","status":"recovery_1_dispatched_async_complete_audit_resume","player_value":"unblocks trustworthy exact-head testing of invitation to cafe interaction and persistence","conflict_risk":"one generated ledger path only; feature writer released; game and gate scripts forbidden; no further recovery after this continuation","exit":"clean stacked Draft with pinned-Docker full audit, guard and negative controls"},
       {"phase":2,"objective":"Independent exact-head functional QA/Evidence and REFUTE plus UI/UX/accessibility review","owner":"reserved_after_phase1 plus current read-only UI reviewer","status":"UI review exact-head rebind dispatched; technical reviews wait for immutable anchor head","player_value":"tests player action, visible feedback, consumer, persistence and failure recovery","conflict_risk":"read-only/output-only reviewers; no repository mutation","exit":"P0/P1=0 with exact Docker and clean runtime evidence"},
       {"phase":3,"objective":"Merge eligible stacked anchor into PR34 branch, rerun hosted CI and repair only bounded P0/P1 findings","owner":"Producer separate transaction","status":"blocked_on_phase1_and_phase2","player_value":"restores a green, evidence-bound cafe slice candidate","conflict_risk":"no integration merge in the anchor transaction; preserve Draft and rollback","exit":"PR34 exact-head hosted checks success and independent P0/P1=0"},
       {"phase":4,"objective":"Evaluate integration merge and then commission visual-polish evidence against the benchmark floor","owner":"Producer then exactly one cafe visual owner","status":"queued","player_value":"moves toward clean player-visible cafe closure and persistent world log","conflict_risk":"visual work serialized behind canonical runtime and no protected authority overlap","exit":"post-merge regression green; clean desktop/mobile evidence matrix; HUMAN_ACCEPTANCE remains separately gated"}
@@ -3289,7 +3289,7 @@
     "stack_b_pr31_normal_sync_result_body_refresh_reserved": "GitHub update-branch created exact Draft merge child3254577d/treec6d76be9 with parents d7f2bd06 + master37ccea82 and unchanged two JSON blobs. Post-sync API/local/Docker ls-remote all enumerate 39 branches. Qualification33257158954 and authority33257158256 succeeded; CI/visual33257158932 active. Old checks/reviews are invalid. Body-only exact-head evidence refresh is reserved before any fresh review dispatch.",
     "stack_b_pr31_normal_sync_body_rebound": "Draft PR31 body is rebound at SHA2561fe05ae5/3050 bytes to base37ccea82/head3254577d/treec6d76be9, exact parents, unchanged JSON blobs and source receipts. It records qualification/authority success and CI/visual active, invalidates all old-head evidence, and keeps review/readiness/merge gates unchecked. Await terminal exact-head checks.",
     "shared_write_conflicts": 0,
-    "decision": "Dispatch the single allowed recovery of the same PR34 complementarity-anchor owner only after this result and recovery reservation reach origin/codex/main-repo-review. The recovery must use the proven exact Git-bundle clone route and return without waiting after launch; no second recovery, wider path or blind rebake is permitted. Keep the UI reviewer read-only, the feature writer released, the six-path successor queued and PR34 Draft."
+    "decision": "The single allowed recovery was dispatched asynchronously after reservation commit c5e0172. It must use the exact Git-bundle clone route; no second recovery, wider path or blind rebake is permitted. Keep the UI reviewer read-only, the feature writer released, the six-path successor queued and PR34 Draft."
   },
   "released_claims": [
     {
@@ -3797,5 +3797,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "After this recovery reservation reaches origin/codex/main-repo-review, dispatch the same anchor owner once using the exact Git-bundle-in-container route and return without waiting. Harvest the UI reviewer independently. If recovery produces a Draft, reserve exact-head QA/Evidence and REFUTE; if it stops or fails, revoke the lease and record the terminal blocker with no replacement duplication. Keep PR5, PR31, PR33 and PR34 Draft, PR21-PR24 frozen, and the six-path authority successor queued. HUMAN_ACCEPTANCE_NOT_READY remains."
+  "next_trigger": "On the next short coordination tick, harvest the final anchor recovery and UI reviewer without long polling. If recovery produces a Draft, reserve exact-head QA/Evidence and REFUTE; if it stops or fails, revoke the lease and record the terminal blocker with no replacement duplication. Keep PR5, PR31, PR33 and PR34 Draft, PR21-PR24 frozen, and the six-path authority successor queued. HUMAN_ACCEPTANCE_NOT_READY remains."
 }
