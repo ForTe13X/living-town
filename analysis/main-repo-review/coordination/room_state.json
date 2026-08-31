@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-31T08:00:55Z",
+  "updated_at": "2026-08-31T08:37:14Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,8 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "e818867c76f27ffd02292e4f165c0a5aa3fe569c12a48745baeedf9988a19991",
-    "canonical_objects": 332,
+    "canonical_sha256": "7a461ccc45482552422333df2b169435587cf1ede034ca58437806755da75857",
+    "canonical_objects": 333,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
       "parent": "1d8de23ef204af4c1323ca4be719b963ebf49eb5",
@@ -42,19 +42,19 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-08-31T07:51:46Z",
+    "at": "2026-08-31T08:34:47Z",
     "github_api_count": 42,
-    "git_ls_remote_count": null,
+    "git_ls_remote_count": 42,
     "local_tracking_count": 42,
     "local_exact_count": 42,
-    "snapshot_complete": false,
-    "secondary_authority": "The required serial Smart HTTP lane was attempted twice with repository-local HTTP/1.1 and maxRequests=2; both fetch attempts ended in connection reset before direct ls-remote could run. GitHub API remained reachable and enumerated 42 branches plus exact coordination and PR35 refs. Local tracking refs are cached evidence only and are not promoted over network authority.",
-    "reconciliation": "GitHub API secondary authority enumerates 42 hosted branches and coordination0daed05e. PR35 remains Draft UNSTABLE at24beff82. Fresh fetch and direct ls-remote evidence are unavailable this tick, so the branch snapshot is incomplete despite matching the prior 42-branch inventory.",
-    "network_failures": ["attempt1 git fetch: Recv failure Connection was reset", "attempt2 git fetch: Recv failure Connection was reset"],
+    "snapshot_complete": true,
+    "secondary_authority": "Fresh serial fetch --all --prune --tags and direct ls-remote --heads succeeded on attempt one using repository-local HTTP/1.1 and maxRequests=2. GitHub API and local tracking refs reconcile to the same 42 hosted branches; no cached ref is promoted over network authority.",
+    "reconciliation": "Fresh serial Git and GitHub API enumerate 42 hosted branches. Master37ccea82 and integrationac85fc6b are stable; coordination is1a248393. PR35 remains Draft MERGEABLE/UNSTABLE at24beff82 with CI failure and visual_canary success. Twelve PRs are open; no issues, releases or tags.",
+    "network_failures": [],
     "sorted_name_sha_set_sha256": "380e459136d3533a599438dd1932e4f74dfabeddd29bea141ccd69b6ad2fc2be",
     "master": "37ccea829e16e5844059a11eac9b3177ac693d6a",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "0daed05eef159a935f643bf2c24d29f2a36a3b3d",
+    "coordination": "1a2483933caea009a018c6b5f254387d9be1ec6f",
     "pr25": "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
     "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
@@ -66,7 +66,7 @@
     "open_issues": 0,
     "releases": 0,
     "tags": 0,
-    "full_branch_metadata_scan": "Lightweight incomplete network scan at 2026-08-31T07:51:46Z. GitHub API enumerates 42 branches and exact PR35/coordination refs, but both bounded Smart HTTP fetch attempts reset, so no current direct ls-remote set is claimed. The detached PR35 anchor full-CI container exited1 at07:25:53Z after all nonvisual gates passed and the space/floor visual captures failed. Required Narrative and Implementation tasks remain unreadable.",
+    "full_branch_metadata_scan": "Lightweight complete scan at 2026-08-31T08:34:47Z. Fresh serial Git and GitHub API enumerate the same 42 branches; 12 PRs are open. PR35 remains frozen Draft MERGEABLE/UNSTABLE at24beff82. PR5 exact-head run33371079233 at1a248393 succeeded. All 42 registered worktrees were read: 13 dirty historical/temporary worktrees are preserved and zero reads failed. Required Narrative and Implementation tasks remain unreadable.",
     "benchmark_revalidation": {"repository":"mewamew/my_ai_town","ref":"main","head":"aac9992c2d195402a90327754c1f6ef279675076","readme_blob":"9aa3211f238fd6bd503b758f87cc6d5b76126603","readme_sha256":"fccc03778fcd8635851cbe604b5363a4a4854350555a9e1b3a5299469d1fac60","screenshots":{"assets/readme/town-overview.jpg":"8315851951fa4b86138ed4b66508598fa08dfd9d3ed0dd9e788c1adf422495ec","assets/readme/resident-conversation.jpg":"e5b5cf0892c34949aa2c128c554234db99b898aefd6fdea4cb89fdfe3da02c63","assets/readme/workshop-task.jpg":"7985c00433ff522c49749cb4a098e8d35776ca0f5bc3051f0966e43e70c16f6a","assets/readme/market-life.jpg":"914de2c4571bb9546a9d3e31ebc3f093b4e9034571a92c6332c128a228193895","assets/readme/world-log.jpg":"9195d4ae02db1bc81af745c245612900e780711a3a0593b2d70191e446a4bce4"},"license_boundary":"quality and information-architecture reference only; no code, pixel, asset, palette or derivative copying"}
   },
   "portfolio_policy": {
@@ -78,6 +78,36 @@
     "conflict_resolution": "reject_before_write_then_freeze_or_serialize_lower_value_lane"
   },
   "active_claims": [
+    {
+      "claim_id": "lease-pr35-roundtrip-camera-harness-repair-v1",
+      "task": "019ffa43-dd18-7002-9b4a-bb902e5b5f74",
+      "role": "Single-path PR35 SpaceShot roundtrip harness repair writer",
+      "objective": "Repair the SpaceShot roundtrip test precondition so real player portal journeys enter and return with the exact pre-entry camera center and zoom, without changing product runtime, Sim authority, portal policy or revocation semantics.",
+      "baseline": "24beff82ceaf246f5b6c9fa3ca74a6d2b4b29931",
+      "head": "24beff82ceaf246f5b6c9fa3ca74a6d2b4b29931",
+      "tree": "425935b1bdf9ff04c121b165bfb3f93f5e92f00f",
+      "branch": "codex/pr35-roundtrip-camera-harness-repair-v1",
+      "worktree": "D:\\Documents\\Dev\\living-town-pr35-roundtrip-camera-harness-repair-v1-wt",
+      "owned_paths": ["game/bench/SpaceShot.gd"],
+      "forbidden_paths": ["game/scripts/Main.gd", "game/scripts/Sim.gd", "game/scripts/cafe_guest_access_test.gd", "tools/**", ".github/**", "project.godot", "game/scenes/**", "save/replay/schema/migrations", "anchors, ledgers, registries, manifests and fixtures", "analysis/**", "evidence/**", "docs/**", "assets/**", "coordination room and event streams", "all paths outside owned_paths"],
+      "authority_keys": ["visual-roundtrip-harness-only"],
+      "generated_outputs": ["task-owned isolated pinned-Docker receipts outside the repository only"],
+      "dependencies": ["pr35:24beff82ceaf246f5b6c9fa3ca74a6d2b4b29931", "refute:pre-existing-SpaceShot-Main-camera-precondition-defect", "terminal-container:4edcd340765003f006a183f57ff4630cb1cc866dd69d7f5c4401ef443860551b", "space-meta:38602222ee921cf2820c3dad1fe02dc3fcbe7a7c5af47fb281e88a0be714828c", "floor-meta:b10ccc7de2b13a4bc71446f9a55a1c317952ba7434ae9c825b92f4f20c6d648c", "canonical-2d-sim-authority", "c0-rollback"],
+      "consumer": "tools/visual_gate.sh plus assert_space_roundtrip.py and assert_floor_roundtrip.py, followed by a separately serialized complement-anchor migration for the new game tree",
+      "status": "reserved_before_dispatch",
+      "write_lease": true,
+      "last_heartbeat": "2026-08-31T08:37:14Z",
+      "stale_after": "2026-08-31T10:37:14Z",
+      "pr": {"number":null,"stacked_base_branch":"codex/pr34-revoke-recovery-v1","upstream_pr":35,"draft_required":true,"status":"pre_pr"},
+      "pr_policy": "Create one Draft stacked PR targeting codex/pr34-revoke-recovery-v1 only after exact-head pinned-Docker focused proof and a clean one-path diff; never mark Ready or merge. Full-CI closure and complement-anchor migration remain separate downstream gates.",
+      "checks": {"required":["simple and full roundtrip metadata report player_entered=true and player_returned=true","cam_same=true with exact pre-entry center and zoom after return","cafe/1f and cafe/2f frames remain distinct and authored","no player follow into owner-only cafe/2f","--rt-redraw none and corrupt or denied journeys fail closed","no Sim digest, state projection, save/load/replay or portal authority change","no debug or probe-only shortcut can substitute for real player journey","focused visual gate passes in fresh isolated pinned Docker","semantic diff is exactly game/bench/SpaceShot.gd and worktree is clean after commit"],"p0":0,"p1":1,"does_not_prove":"A one-path harness fix does not prove complement-anchor or full-CI closure, player-facing polish, accessibility, release readiness or permission to merge."},
+      "recovery_count": 0,
+      "release_reason": null,
+      "rollback": "Before publication remove only the clean task-owned branch/worktree. After Draft publication close the Draft or revert its one commit through review; never rewrite PR35, PR34, integration or master.",
+      "stop_lines": ["PR35 head or tree drifts", "Main.gd, Sim.gd or any second path is required", "real player entry remains false", "camera equality is faked by weakening assertions or copying pixels", "visual negative controls fail", "Docker identity or isolation is unavailable", "runtime or authority semantics change", "existing branch, worktree, PR or conflicting writer appears"],
+      "handoff_recipient": "Independent technical visual QA/REFUTE, then complement-anchor migration",
+      "archive_condition": "One clean exact-base single-path Draft with focused Docker receipts, or terminal exact no-write blocker and task-owned cleanup."
+    },
     {
       "claim_id": "review-pr35-anchor-visual-gate-refute-v1",
       "task": "019ffe9a-f908-78c1-bfb1-e485767a867a",
@@ -95,15 +125,15 @@
       "generated_outputs": ["terminal exact-evidence classifier and bounded successor packet only"],
       "dependencies": ["pr35:24beff82ceaf246f5b6c9fa3ca74a6d2b4b29931", "container:4edcd340765003f006a183f57ff4630cb1cc866dd69d7f5c4401ef443860551b:exit1", "full-ci-log:4622cd736d4883e8f6fe49aabbf8904a4fe3f48c369ed63093bcd50140813cb9", "visual-log:f440521e65f1dfaffcc1ff0290b54d85ea6b5c0606c3461924fe85295b526c5f", "space-meta:38602222ee921cf2820c3dad1fe02dc3fcbe7a7c5af47fb281e88a0be714828c", "floor-meta:b10ccc7de2b13a4bc71446f9a55a1c317952ba7434ae9c825b92f4f20c6d648c", "prior-focused-floor-roundtrip:pass", "ui-review:p0_0_p1_0"],
       "consumer": "Producer decision to freeze, revert, or commission exactly one bounded runtime-versus-harness repair",
-      "status": "dispatched_async",
+      "status": "terminal_classified_preexisting_harness_p0_0_p1_1_p2_0_released",
       "write_lease": false,
-      "last_heartbeat": "2026-08-31T08:00:55Z",
-      "stale_after": "2026-08-31T09:56:48Z",
+      "last_heartbeat": "2026-08-31T08:37:14Z",
+      "stale_after": null,
       "pr": {"number":35,"draft":true,"head":"24beff82ceaf246f5b6c9fa3ca74a6d2b4b29931","status":"frozen_unstable"},
       "dispatch": {"at":"2026-08-31T08:00:55Z","method":"send_message_to_thread","status":"accepted","reservation_commit":"88acfdfd5c32a3e163bbd1df2c746780b6079d69","cadence":"asynchronous read-only; harvest later without polling"},
-      "checks": {"required":["verify receipt hashes and exact container identity","separate expected NobodyWho warnings from the terminal cause","explain player_entered false, player_floor_during_probe_stairs 1f and return-camera mismatch","compare simple and full journey metadata against the prior focused PASS claim","name exact authority surface and minimal semantic write set if a repair is justified","P0/P1 and does_not_prove tied to exact evidence"],"p0":null,"p1":1},
+      "checks": {"required":["verify receipt hashes and exact container identity","separate expected NobodyWho warnings from the terminal cause","explain player_entered false, player_floor_during_probe_stairs 1f and return-camera mismatch","compare simple and full journey metadata against the prior focused PASS claim","name exact authority surface and minimal semantic write set if a repair is justified","P0/P1 and does_not_prove tied to exact evidence"],"verdict":"PREEXISTING_SPACESHOT_MAIN_ROUNDTRIP_HARNESS_DEFECT","p0":0,"p1":1,"p2":0,"classification":"not PR35 Sim semantics and not primarily container execution","cause":"SpaceShot records camera after explicitly focusing the player; Main portal return calls go_home then focus_on position, leaving fit zoom and a different center, so the byte-identical camera assertion deterministically fails","noise":"NobodyWho missing library, V-Sync and ObjectDB warnings are nonterminal environment noise","bounded_successor":{"base":"24beff82ceaf246f5b6c9fa3ca74a6d2b4b29931","preferred_path":"game/bench/SpaceShot.gd","main_path":"forbidden unless a new serialized authority decision explicitly proves the harness-only path impossible"},"does_not_prove":"No visual acceptance, desktop/mobile accessibility, debug-off, performance or independent human clearance. visual_canary success is not visual clearance."},
       "recovery_count": 0,
-      "release_reason": null,
+      "release_reason": "Terminal exact-evidence classifier localized the P1 to a pre-existing SpaceShot/Main roundtrip precondition and produced one bounded harness successor. Read-only claim released.",
       "rollback": "Release this read-only claim; preserve the exited task-owned container and receipts until Producer archives them.",
       "stop_lines": ["any mutation or rerun is required", "exact identity or receipt hash differs", "classification cannot distinguish runtime from harness with available evidence", "proposal weakens visual, deterministic, save/replay or canonical 2D authority gates"],
       "handoff_recipient": "Producer",
@@ -3837,7 +3867,7 @@
     "open_exact_sha_p0": 0,
     "open_exact_sha_p1": 4,
     "post_merge_regressions": 1,
-    "player_visible_closure_state": "pr35_anchor_visual_gate_terminal_failure_refute_reserved"
+    "player_visible_closure_state": "pr35_single_path_roundtrip_harness_repair_reserved"
   },
   "human_acceptance": "not_ready",
   "current_gate": {
@@ -3936,5 +3966,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "Harvest the asynchronously dispatched exact-evidence technical visual QA/REFUTE verdict later without polling. Do not rerun CI, revive the anchor writer, mutate the exited container or publish the generated ledger. Only a classifier that distinguishes runtime from harness with exact evidence may justify one bounded successor. Retry the bounded Smart HTTP lane on the next tick; current branch snapshot is incomplete. PR35 remains frozen and HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "Publish and asynchronously dispatch the single-path SpaceShot harness writer. Do not touch Main, Sim, anchors or the preserved exited container. Harvest the writer later without polling. If real player entry, exact camera restoration and negative controls pass with a clean one-path diff, permit one stacked Draft; then separately regenerate the complement anchor for the new game tree and run full CI. Any second path or assertion weakening is terminal. PR35 remains frozen and HUMAN_ACCEPTANCE_NOT_READY."
 }
