@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-31T02:23:19Z",
+  "updated_at": "2026-08-31T02:57:23Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,8 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "db5a87b384a5b38a4e04e0d2ee042a93d446abb7e2f07a8a8e70abf078d63a2f",
-    "canonical_objects": 321,
+    "canonical_sha256": "fc21126ce10560313c56ef1a18af829c22b264cc1c5808a7530d44e93138f2c7",
+    "canonical_objects": 322,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
       "parent": "9cd199cb5337eeafb55d2437f01deea51a6cfb01",
@@ -42,7 +42,7 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-08-31T02:12:00Z",
+    "at": "2026-08-31T02:55:40Z",
     "github_api_count": 41,
     "git_ls_remote_count": 41,
     "local_tracking_count": 41,
@@ -54,7 +54,7 @@
     "sorted_name_sha_set_sha256": "380e459136d3533a599438dd1932e4f74dfabeddd29bea141ccd69b6ad2fc2be",
     "master": "37ccea829e16e5844059a11eac9b3177ac693d6a",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "ff26e1122d9c56ee9904774c4e89ac97aa799856",
+    "coordination": "54a104a55ec3f124036a6a2e8908410774b911df",
     "pr25": "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
     "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
@@ -187,10 +187,10 @@
       "generated_outputs": ["task-owned isolated Docker receipts outside the repository only"],
       "dependencies": ["pr34:0acb480c9a3e7516d15440b16857dbfbc79369fc", "ui-review-p1:revoke-on-2f-no-recovery", "producer-current-head-revalidation:Sim-lines2489-2495-and4086-4093", "anchor-claim:terminal-clean-no-write-released", "canonical-2d-sim-authority", "deterministic-save-load-replay", "c0-rollback"],
       "consumer": "PR #34 guest invitation vertical slice, then a newly generated complementarity anchor for the repaired committed game tree",
-      "status": "recovery_1_final_visual_classification_dispatched_async",
+      "status": "recovery_1_stale_turn_interrupt_and_restart_reserved",
       "write_lease": true,
-      "last_heartbeat": "2026-08-31T02:23:19Z",
-      "stale_after": "2026-08-31T04:23:19Z",
+      "last_heartbeat": "2026-08-31T02:57:23Z",
+      "stale_after": "2026-08-31T04:57:23Z",
       "pr": {"number": null, "stacked_base_branch": "codex/cafe-guest-vertical-slice-v1", "upstream_pr": 34, "draft_required": true, "status": "pre_pr"},
       "dispatch": {"at": "2026-08-31T01:09:27Z", "method": "send_message_to_thread", "status": "accepted", "reservation_commit": "fc4c82b0e46b039d0f68a28afde3581790f79539"},
       "pr_policy": "Create one Draft stacked PR targeting codex/cafe-guest-vertical-slice-v1 only after exact-head pinned-Docker proof and a clean two-path-or-smaller diff; never target integration/batons or master, mark Ready or merge.",
@@ -198,6 +198,7 @@
       "recovery_count": 1,
       "recovery_note": "Final recovery is limited to one fresh pinned-Docker baseline-versus-repaired visual classification. The write set stays exactly two files. Any repaired-only regression, second failure, identity drift or need to edit SpaceShot, Main, tools or scenes is terminal no-write.",
       "recovery_dispatch": {"at":"2026-08-31T02:23:19Z","method":"send_message_to_thread","status":"accepted","reservation_commit":"dc2b71315024d11a9f8fe3970a6f141650731022","cadence":"async no long polling"},
+      "stale_turn_restart": {"reserved_at":"2026-08-31T02:57:23Z","reason":"full-CI command terminal plus two heartbeat observations and an accepted follow-up produced no new commentary, tool marker or container","method":"interrupt stale current turn then re-send the same final recovery as a fresh turn","additional_recovery":false,"write_set_change":false,"terminal_if_empty_or_second_failure":true},
       "release_reason": null,
       "rollback": "Before publication remove only the clean task-owned repair worktree and branch. After Draft publication close the stacked Draft or revert through review; never rewrite PR34, integration, master or protected history.",
       "stop_lines": ["PR34 head or tree drifts", "safe cafe/1f relocation requires a new scene, Main/View authority or invented coordinates rather than an existing authored Sim address/helper", "any path beyond the two owned files is required", "save/replay schema or shared test registry change is required", "Docker digest/isolation is unavailable", "revoke recovery cannot be atomic or deterministic", "full CI or focused negative controls fail", "existing branch, worktree, PR or overlapping Sim/save authority owner appears"],
@@ -3833,5 +3834,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "On the next short coordination tick, harvest the final baseline-versus-repaired pinned-Docker visual classification without long polling. If repaired-only regression, second failure or third-path need is terminal, release the lease and reserve a separate serialized prerequisite only after conflict review. If all required gates pass and a clean two-path stacked Draft is published, reserve exact-head QA/Evidence, REFUTE and UI/UX re-review before regenerating the anchor. HUMAN_ACCEPTANCE_NOT_READY remains."
+  "next_trigger": "After publishing this reservation, interrupt the stale map-lab turn and re-send the already authorized final recovery as a fresh task turn. Return immediately after acceptance. On the next heartbeat harvest the baseline-versus-repaired pinned-Docker visual classification; an empty restart, second failure or third-path need is terminal lease release. HUMAN_ACCEPTANCE_NOT_READY remains."
 }
