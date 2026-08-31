@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-08-31T02:57:23Z",
+  "updated_at": "2026-08-31T03:01:22Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,8 +11,8 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "fc21126ce10560313c56ef1a18af829c22b264cc1c5808a7530d44e93138f2c7",
-    "canonical_objects": 322,
+    "canonical_sha256": "dd2d94b38d5207df0880d635ee381a99e317ee142d8978b86d6c30d24cac8e2e",
+    "canonical_objects": 323,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
       "parent": "9cd199cb5337eeafb55d2437f01deea51a6cfb01",
@@ -173,8 +173,8 @@
     },
     {
       "claim_id": "lease-pr34-revoke-2f-recovery-v1",
-      "task": "019ffe8d-6993-7be1-874b-5104f272d979",
-      "role": "Replacement bounded PR34 revoke-on-2f gameplay recovery writer",
+      "task": "019ffa43-dd18-7002-9b4a-bb902e5b5f74",
+      "role": "Final replacement bounded PR34 revoke-on-2f recovery executor after stale-owner revocation",
       "objective": "Repair cafe guest capability revocation so a player on cafe/2f transitions atomically to an authored safe cafe/1f state before capability loss, with visible feedback and deterministic save/load/replay and portal-denial consequences, while preserving canonical 2D Sim authority.",
       "baseline": "0acb480c9a3e7516d15440b16857dbfbc79369fc",
       "head": "0acb480c9a3e7516d15440b16857dbfbc79369fc",
@@ -187,10 +187,10 @@
       "generated_outputs": ["task-owned isolated Docker receipts outside the repository only"],
       "dependencies": ["pr34:0acb480c9a3e7516d15440b16857dbfbc79369fc", "ui-review-p1:revoke-on-2f-no-recovery", "producer-current-head-revalidation:Sim-lines2489-2495-and4086-4093", "anchor-claim:terminal-clean-no-write-released", "canonical-2d-sim-authority", "deterministic-save-load-replay", "c0-rollback"],
       "consumer": "PR #34 guest invitation vertical slice, then a newly generated complementarity anchor for the repaired committed game tree",
-      "status": "recovery_1_stale_turn_interrupt_and_restart_reserved",
+      "status": "recovery_1_existing_dev_replacement_reserved_before_dispatch",
       "write_lease": true,
-      "last_heartbeat": "2026-08-31T02:57:23Z",
-      "stale_after": "2026-08-31T04:57:23Z",
+      "last_heartbeat": "2026-08-31T03:01:22Z",
+      "stale_after": "2026-08-31T05:01:22Z",
       "pr": {"number": null, "stacked_base_branch": "codex/cafe-guest-vertical-slice-v1", "upstream_pr": 34, "draft_required": true, "status": "pre_pr"},
       "dispatch": {"at": "2026-08-31T01:09:27Z", "method": "send_message_to_thread", "status": "accepted", "reservation_commit": "fc4c82b0e46b039d0f68a28afde3581790f79539"},
       "pr_policy": "Create one Draft stacked PR targeting codex/cafe-guest-vertical-slice-v1 only after exact-head pinned-Docker proof and a clean two-path-or-smaller diff; never target integration/batons or master, mark Ready or merge.",
@@ -199,6 +199,7 @@
       "recovery_note": "Final recovery is limited to one fresh pinned-Docker baseline-versus-repaired visual classification. The write set stays exactly two files. Any repaired-only regression, second failure, identity drift or need to edit SpaceShot, Main, tools or scenes is terminal no-write.",
       "recovery_dispatch": {"at":"2026-08-31T02:23:19Z","method":"send_message_to_thread","status":"accepted","reservation_commit":"dc2b71315024d11a9f8fe3970a6f141650731022","cadence":"async no long polling"},
       "stale_turn_restart": {"reserved_at":"2026-08-31T02:57:23Z","reason":"full-CI command terminal plus two heartbeat observations and an accepted follow-up produced no new commentary, tool marker or container","method":"interrupt stale current turn then re-send the same final recovery as a fresh turn","additional_recovery":false,"write_set_change":false,"terminal_if_empty_or_second_failure":true},
+      "owner_transfer": {"at":"2026-08-31T03:01:22Z","previous_owner":"019ffe8d-6993-7be1-874b-5104f272d979","previous_owner_status":"stale active turn; write lease revoked and STOP queued","replacement_owner":"019ffa43-dd18-7002-9b4a-bb902e5b5f74","replacement_status":"existing idle task reserved before dispatch","reason":"safe direct interrupt unavailable; replace after repeated no-transition observations","same_worktree":true,"same_write_set":true,"same_recovery_count":1,"conflict":"none after revocation; replacement must stop on any previous-owner activity"},
       "release_reason": null,
       "rollback": "Before publication remove only the clean task-owned repair worktree and branch. After Draft publication close the stacked Draft or revert through review; never rewrite PR34, integration, master or protected history.",
       "stop_lines": ["PR34 head or tree drifts", "safe cafe/1f relocation requires a new scene, Main/View authority or invented coordinates rather than an existing authored Sim address/helper", "any path beyond the two owned files is required", "save/replay schema or shared test registry change is required", "Docker digest/isolation is unavailable", "revoke recovery cannot be atomic or deterministic", "full CI or focused negative controls fail", "existing branch, worktree, PR or overlapping Sim/save authority owner appears"],
@@ -3834,5 +3835,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_ff8e5e7f_ci33246657768_success_body_stale_refresh_deferred_until_pr32_reviews_terminal"
   },
-  "next_trigger": "After publishing this reservation, interrupt the stale map-lab turn and re-send the already authorized final recovery as a fresh task turn. Return immediately after acceptance. On the next heartbeat harvest the baseline-versus-repaired pinned-Docker visual classification; an empty restart, second failure or third-path need is terminal lease release. HUMAN_ACCEPTANCE_NOT_READY remains."
+  "next_trigger": "After publishing this owner transfer, queue a STOP no-write notice to the stale map-lab owner and dispatch the existing idle dev task into the same exact worktree and two-path final recovery. Return immediately after acceptance. On the next heartbeat harvest the baseline-versus-repaired pinned-Docker visual classification; previous-owner activity, an empty replacement, second failure or third-path need is terminal freeze and lease release. HUMAN_ACCEPTANCE_NOT_READY remains."
 }
