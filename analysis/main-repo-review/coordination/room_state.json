@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-09-01T06:22:13Z",
+  "updated_at": "2026-09-01T06:27:32Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,13 +11,13 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "10334a027504f3f8eacee64535c66388257c6a9b810c5ee001502a2856636e6b",
-    "canonical_objects": 383,
+    "canonical_sha256": "9469f888d4bfe2c666c0aeee9f27cde5ecaed9150b6c6e8e94d8e93ae4d6c70e",
+    "canonical_objects": 384,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
-      "parent": "50d7fa2a0f7b2957855c24aff8a1e19b0e5db2f5",
-      "tree": "d8743ca44d7afd830d8db77072dba7cc95590f9b",
-      "commit": "2dce4350f22c12e120300dd3b32eedbe3eead0f5",
+      "parent": "2dce4350f22c12e120300dd3b32eedbe3eead0f5",
+      "tree": "7f3f79f68562dd78e92daed962d3d33749f60c48",
+      "commit": "b0a13b7df9e8e1de4d373c8a34572eaf15d1f66e",
       "force": false,
       "reason": "producer-only non-force Git Data API publication; GitHub API authoritative for this exact parent-child mutation"
     },
@@ -54,7 +54,7 @@
     "sorted_name_sha_set_sha256": "ff04226ebbcea0fb01a22587efd9b0c3ced37e239e8f5a4fa1f781df39be3706",
     "master": "37ccea829e16e5844059a11eac9b3177ac693d6a",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "2dce4350f22c12e120300dd3b32eedbe3eead0f5",
+    "coordination": "b0a13b7df9e8e1de4d373c8a34572eaf15d1f66e",
     "pr25": "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
     "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
@@ -3879,16 +3879,16 @@
       "generated_outputs": ["D:\\Documents\\Dev\\pr36-cafe-player-spawn-harness-git-aware-ci-v1 task scratch only", "fresh disposable clone", "fresh Godot userdata", "immutable logs and receipts"],
       "dependencies": ["exact source head dfefd9a673877a64998ca6fa81c61fbf51730ff7", "exact modified visual_gate.sh sha256 9f2e32d88a2e5f71c2feb98acbd5a23a824f9905466524a4870a06664aa7086f", "patch-id e1e2bc57e99a915fe56c45fe72e37d258f477f6a", "audited overlay sha256 f13f3e22eeb7df887196ae2a92423de64b1791e1327223f53fcb83e62f865bbf", "derived image sha256:06267e20a02b38d29feb2e5494ea990677f12a2d91fc7451dba024572a2dcf94"],
       "consumer": "Producer exact-head repair decision, then independent QA and REFUTE",
-      "status": "terminal_setup_safe_directory_p1_recovery_1_reserved",
+      "status": "recovery_1_safe_directory_async_dispatched",
       "write_lease": true,
-      "last_heartbeat": "2026-09-01T06:22:13Z",
+      "last_heartbeat": "2026-09-01T06:27:32Z",
       "stale_after": "2026-09-01T08:22:13Z",
       "dispatch": {"at":"2026-09-01T05:46:47Z","method":"create_thread_hold_then_send_message","status":"accepted_active_in_progress","reservation_commit":"50d7fa2a0f7b2957855c24aff8a1e19b0e5db2f5","snapshot_cursor":"ef8932a8-7d0f-4944-8862-33d6a15ec0c7:1","cadence":"asynchronous nonblocking; launch once then return"},
       "pr": {"number":null,"stacked_base_branch":"codex/pr35-roundtrip-camera-harness-repair-v1","upstream_pr":36,"draft_required":true,"status":"evidence_only_no_pr"},
       "pr_policy": "No commit, push or PR in this evidence packet. A later Producer tick may authorize the exact one-path commit only after terminal full-CI PASS and independent review.",
       "checks": {"required":["clone /src into task-owned /out/work so .git is complete","checkout exact dfefd9a head and verify tree/game tree","copy exact modified visual_gate.sh by content and reverify sha256 plus one-path diff","overlay exact audited complement ledger","fresh empty task-owned Godot userdata","hard Git redline and complement prechecks pass before full CI","full tools/ci.sh launches detached once with complete log and exit receipt","no registered worktree or GitHub mutation"],"p0":0,"p1":0,"does_not_prove":"A terminal green disposable-clone CI run does not prove player-facing polish, independent QA/REFUTE closure, save/load/replay completion, benchmark parity, release readiness or permission to merge."},
       "execution": {"task_status":"idle terminal launch handoff","snapshot_cursor":"ef8932a8-7d0f-4944-8862-33d6a15ec0c7:2","container":{"name":"lt-pr36-git-aware-full-ci-v1-0901","id":"2d10fff914f2bde1b003004ac73031667bf5c8257501a0c95abead615a5cbf55","state":"exited","exit_code":128,"started_at":"2026-09-01T05:51:12.897147612Z","finished_at":"2026-09-01T05:51:13.766516159Z","image":"sha256:06267e20a02b38d29feb2e5494ea990677f12a2d91fc7451dba024572a2dcf94","user":"gamecraft","readonly_root":true,"network":"none","failure_phase":"clone_and_identity","failure":"git clone --no-hardlinks /src /out/work rejected /src/.git as dubious ownership; Git explicitly requested safe.directory /src/.git. No clone, precheck or CI ran."},"receipts":{"runner_sha256":"be49ea431f470d68e3190d1ce8ef1a84da2cfc31c1859ee1eddeee9432f0b860","git_clone_log_sha256":"5f1c0bd4c90a382a59078b9d37275c366c38d9b7ceeffb9c64f5848d42b46839","runner_stdout_sha256":"65ad6838bf126a68c4db4c58744d567d0ee787ca90a09697116dd6d0c3e6b1b0","environment_sha256":"c8c459600f79bfb488bb65045f6e9ad749fe014986af35811c2555ca24c7aea0","exit_receipt_sha256":"90f8851682f012d3d0d093325aca14c9e40c31686da5058cca8bae65b42ae517","output_sha256_manifest":"4683e53a84b5bfec294aa1c9798c5d80ccfcc42d4750479b0a1a4b755fc71591"},"repo":"registered worktree unchanged dirty exactly tools/visual_gate.sh; no commit/push/PR"},
-      "recovery": {"count":1,"limit":1,"status":"reserved_before_redispatch","objective":"modify only the task-owned runner so the clone command supplies explicit command-scoped safe.directory entries for /src and /src/.git; use a fresh output/receipt/work/userdata set and a new unique container name; preserve every source/image/mount/hash/precheck/CI condition","forbidden":"global or host Git config mutation, registered repository writes, old scratch overwrite, image rebuild, network enablement, unknown Docker mutation, commit, push or PR","stop_lines":"safe.directory requires host/global mutation, any identity/hash drift, old output reuse, duplicate container, precheck failure or second setup failure"},
+      "recovery": {"count":1,"limit":1,"status":"accepted_active_in_progress","at":"2026-09-01T06:27:32Z","reservation_commit":"b0a13b7df9e8e1de4d373c8a34572eaf15d1f66e","snapshot_cursor":"ef8932a8-7d0f-4944-8862-33d6a15ec0c7:3","objective":"modify only the task-owned runner so the clone command supplies explicit command-scoped safe.directory entries for /src and /src/.git; use a fresh output/receipt/work/userdata set and a new unique container name; preserve every source/image/mount/hash/precheck/CI condition","forbidden":"global or host Git config mutation, registered repository writes, old scratch overwrite, image rebuild, network enablement, unknown Docker mutation, commit, push or PR","stop_lines":"safe.directory requires host/global mutation, any identity/hash drift, old output reuse, duplicate container, precheck failure or second setup failure"},
       "recovery_count": 1,
       "release_reason": null,
       "rollback": "Stop or remove only the uniquely named task-owned successor container and scratch after receipts are archived; never mutate unknown Docker state or shared refs.",
@@ -3905,7 +3905,7 @@
       {"phase":1,"objective":"Run one attributable canonical simple/full SpaceShot wrapper receipt against exact PR36 without source changes","owner":"evidence-pr36-spaceshot-canonical-invocation-v1 then review-pr36-canonical-spaceshot-evidence-v1","status":"complete_p0_0_runner_p1_cleared_full_ci_p1_retained","player_value":"distinguishes empty invocation evidence from an actual harness/runtime failure without another full-CI loop","conflict_risk":"execution and review serialized; repository authority remained frozen","exit":"met: independent terminal P0/P1 classification and one bounded successor"},
       {"phase":2,"objective":"Run complete full CI against an audited generated-ledger overlay in a disposable exact-head clone without publication","owner":"evidence-pr36-anchor-full-ci-v5-daemon-recovered","status":"terminal_exit1_visual_roundtrip_p1_released","player_value":"proved the anchor overlay, audit, guard and unit/integration suite pass while isolating the remaining exact visual journey failure","conflict_risk":"execution-only task scratch preserved; repository authority remained frozen","exit":"met as terminal fail-fast no-write blocker with exact receipts"},
       {"phase":3,"objective":"Independently classify the exact PR36 v5 simple/full player_entered=false visual failure before any repair or anchor publication","owner":"review-pr36-v5-qa-evidence and review-pr36-v5-refute-technical-visual","status":"terminal_p0_0_p1_1_stricter_qa_spawn_position_cause_governs","player_value":"prevented another blind full-CI retry and narrowed the next change to one evidence-backed harness invocation repair","conflict_risk":"reviewers released; zero repository writers; PR35 and PR36 frozen","exit":"met with binding P1 and one bounded one-path successor"},
-      {"phase":4,"objective":"Repair cafe SpaceShot invocation spawn and fail closed when real-player metadata is missing, then prove focused simple/full and complete CI with the audited overlay","owner":"evidence-pr36-cafe-player-spawn-harness-git-aware-ci-v1 / task 01a05b7a-27a6-7632-89fc-a66f1c4dfff3","status":"setup_safe_directory_p1_recovery_1_reserved","player_value":"turns Probe-only or missing-player cafe captures into attributable real-player entry evidence without touching Sim, Main, SpaceShot, save/replay or canon authority","conflict_risk":"one command-scoped safe.directory recovery may edit only task-owned runner and must use fresh output/receipt/userdata/container; registered worktree and all runtime/shared authority remain frozen","exit":"exact-head Git-aware Docker full-CI PASS with hard Git gates, player_entered true, missing/far negatives fail the explicit assertion, then independent P0/P1=0"}
+      {"phase":4,"objective":"Repair cafe SpaceShot invocation spawn and fail closed when real-player metadata is missing, then prove focused simple/full and complete CI with the audited overlay","owner":"evidence-pr36-cafe-player-spawn-harness-git-aware-ci-v1 / task 01a05b7a-27a6-7632-89fc-a66f1c4dfff3","status":"setup_safe_directory_recovery_1_async_dispatched","player_value":"turns Probe-only or missing-player cafe captures into attributable real-player entry evidence without touching Sim, Main, SpaceShot, save/replay or canon authority","conflict_risk":"one command-scoped safe.directory recovery may edit only task-owned runner and must use fresh output/receipt/userdata/container; registered worktree and all runtime/shared authority remain frozen","exit":"exact-head Git-aware Docker full-CI PASS with hard Git gates, player_entered true, missing/far negatives fail the explicit assertion, then independent P0/P1=0"}
     ]
   },
   "current_conflict_graph": {
@@ -4465,7 +4465,7 @@
     "pr28_e70cebba_terminal_p1_freeze": "PR28 exact head e70cebba/treec9e0273e/body10e446b passed one-path identity, Docker53x2 and hosted CI33184928495. Security/QA P0=0/P1=1/P2=1 and REFUTE P0=0/P1=1/P2=0 independently found the same strict-base identity handoff cycle. Draft frozen; PENDING strings, Ready, protection and merge remain untouched.",
     "human_acceptance": "not_ready",
     "pr36_cafe_player_spawn_harness_async_ci": "Git-aware successor container2d10fff exited128 in clone_and_identity before any precheck/CI: Git rejected /src/.git as dubious ownership. Exact image, user, read-only root, no-network mounts and source/candidate/overlay hashes were recorded; registered worktree remains dirty exactly tools/visual_gate.sh with no commit/push/PR. Recovery1/1 is reserved for command-scoped safe.directory plus fresh task-owned output/container only.",
-    "pr5_projection": "open_draft_live_head_2dce435_run33475032188_ci_visual_success; safe-directory recovery reserved"
+    "pr5_projection": "open_draft_live_head_b0a13b7; prior exact2dce435 run33475032188 ci_visual_success; safe-directory recovery active"
   },
-  "next_trigger": "Publish the command-scoped safe.directory recovery reservation, then redispatch task01a05b7a once using fresh output/receipt/userdata and a new unique container. Return without waiting; later heartbeat harvests once. No commit, push or PR before exact terminal PASS and independent review. HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "Later heartbeat: run the serial Smart HTTP lane, then inspect task01a05b7a and unique recovery container lt-pr36-git-aware-full-ci-r1-0901 once. Harvest terminal setup or CI evidence without polling or duplicate execution. No commit, push or PR before exact terminal PASS and independent review. HUMAN_ACCEPTANCE_NOT_READY."
 }
