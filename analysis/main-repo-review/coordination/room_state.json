@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-09-01T07:13:02Z",
+  "updated_at": "2026-09-01T07:47:58Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,13 +11,13 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "8278f0f0817429cf7f7a7b05e83643460819f3b449fb68f4691561b86d11796f",
-    "canonical_objects": 386,
+    "canonical_sha256": "dc4634e986473d8e5247900a42dbffa62dc770cd42adcfba0331152b6d0647ec",
+    "canonical_objects": 387,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
-      "parent": "d436364ce2b9f9072fd79d50619b05ecc470358c",
-      "tree": "ec8527481bcbb1715222b1f4b386f56a7c2a8366",
-      "commit": "40d0f2220f601d1d9243a9b06e308fc93c303ff3",
+      "parent": "40d0f2220f601d1d9243a9b06e308fc93c303ff3",
+      "tree": "90793096b68c3f55b845fac3a5fcfa19da61580d",
+      "commit": "6622113c567f5fa067b9cdac079411f1ed73753d",
       "force": false,
       "reason": "producer-only non-force Git Data API publication; GitHub API authoritative for this exact parent-child mutation"
     },
@@ -42,19 +42,19 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-09-01T06:22:13Z",
+    "at": "2026-09-01T07:47:58Z",
     "github_api_count": 43,
-    "git_ls_remote_count": 0,
+    "git_ls_remote_count": 43,
     "local_tracking_count": 43,
     "local_exact_count": 43,
-    "snapshot_complete": false,
-    "secondary_authority": "GitHub API secondary authority enumerated 43 branches and exact PR identities after the required Smart HTTP lane failed to produce ls-remote output and its single retry failed connect 443. Cached refs were not promoted silently.",
-    "reconciliation": "Smart HTTP attempt1 fetched coordination2dce435 but produced no ls-remote listing; the single sequential retry failed connect443. GitHub API then enumerated 43 hosted branches and confirms master37ccea82, integrationac85fc6b, coordination2dce435 and PR36dfefd9a. Snapshot remains incomplete by policy because direct ls-remote did not succeed. PR5 is Draft/MERGEABLE at2dce435 with run33475032188 ci and visual_canary success.",
-    "network_failures": ["attempt1 ls-remote returned no listing after fetch", "attempt2 fetch failed connect github.com:443 after 21046ms"],
-    "sorted_name_sha_set_sha256": "ff04226ebbcea0fb01a22587efd9b0c3ced37e239e8f5a4fa1f781df39be3706",
+    "snapshot_complete": true,
+    "secondary_authority": "GitHub API, freshly fetched local refs and direct git ls-remote agree on 43 hosted branches; no cached-only ref was promoted.",
+    "reconciliation": "Required serial Smart HTTP lane completed fetch=0 and ls-remote=0 using repository-local HTTP/1.1/maxRequests=2. Direct enumeration and freshly fetched local refs agree on 43 heads, master37ccea82, integrationac85fc6b, coordination6622113 and PR36dfefd9a. GitHub reports 36 PRs total, 13 open, 12 Draft; PR5 exact6622113 run33481286938 ci and visual_canary success.",
+    "network_failures": [],
+    "sorted_name_sha_set_sha256": "6f2c82184638b30e46bcfb1f1046ba95e014657e2d8e67f3c157ca63c3a28c84",
     "master": "37ccea829e16e5844059a11eac9b3177ac693d6a",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "b0a13b7df9e8e1de4d373c8a34572eaf15d1f66e",
+    "coordination": "6622113c567f5fa067b9cdac079411f1ed73753d",
     "pr25": "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
     "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
@@ -66,7 +66,7 @@
     "open_issues": 0,
     "releases": 0,
     "tags": 0,
-    "full_branch_metadata_scan": "Material-transition scan at 2026-09-01T06:22:13Z is incomplete because direct ls-remote did not complete and its retry failed connect443. GitHub API secondary authority enumerates 43 branches and exact refs; PR5 exact2dce435 run33475032188 ci/visual succeeded, PR36 remains Draft MERGEABLE atdfefd9a. Required Narrative and Implementation tasks remain unreadable. Successor container2d10fff terminated exit128 before clone because Git safe.directory did not trust the read-only Windows bind; source, candidate and overlay identities remained exact and no CI ran.",
+    "full_branch_metadata_scan": "Lightweight material-transition scan at 2026-09-01T07:47:58Z is complete across direct ls-remote, freshly fetched local refs and GitHub API at 43 branches/hash6f2c8218. PR5 exact6622113 run33481286938 ci/visual succeeded; PR36 remains Draft MERGEABLE atdfefd9a. Required Narrative and Implementation tasks remain unreadable. Replacement2 cleared Git ownership, exact identity and all prechecks and is running full CI in the visual gate; no terminal result or source publication is claimed.",
     "benchmark_revalidation": {"repository":"mewamew/my_ai_town","ref":"main","head":"aac9992c2d195402a90327754c1f6ef279675076","readme_blob":"9aa3211f238fd6bd503b758f87cc6d5b76126603","readme_sha256":"fccc03778fcd8635851cbe604b5363a4a4854350555a9e1b3a5299469d1fac60","screenshots":{"assets/readme/town-overview.jpg":"8315851951fa4b86138ed4b66508598fa08dfd9d3ed0dd9e788c1adf422495ec","assets/readme/resident-conversation.jpg":"e5b5cf0892c34949aa2c128c554234db99b898aefd6fdea4cb89fdfe3da02c63","assets/readme/workshop-task.jpg":"7985c00433ff522c49749cb4a098e8d35776ca0f5bc3051f0966e43e70c16f6a","assets/readme/market-life.jpg":"914de2c4571bb9546a9d3e31ebc3f093b4e9034571a92c6332c128a228193895","assets/readme/world-log.jpg":"9195d4ae02db1bc81af745c245612900e780711a3a0593b2d70191e446a4bce4"},"license_boundary":"quality and information-architecture reference only; no code, pixel, asset, palette or derivative copying"}
   },
   "portfolio_policy": {
@@ -3913,11 +3913,11 @@
       "generated_outputs": ["D:\\Documents\\Dev\\pr36-cafe-player-spawn-harness-git-aware-ci-replacement2 only", "fresh disposable clone", "fresh container HOME and .gitconfig", "fresh cache/userdata/output/receipt"],
       "dependencies": ["exact source head dfefd9a673877a64998ca6fa81c61fbf51730ff7", "exact modified visual_gate.sh sha256 9f2e32d88a2e5f71c2feb98acbd5a23a824f9905466524a4870a06664aa7086f", "patch-id e1e2bc57e99a915fe56c45fe72e37d258f477f6a", "audited overlay sha256 f13f3e22eeb7df887196ae2a92423de64b1791e1327223f53fcb83e62f865bbf", "derived image sha256:06267e20a02b38d29feb2e5494ea990677f12a2d91fc7451dba024572a2dcf94", "failed recovery receipt runner 21bd35c2a60d2a23ee2940e1291a896c630d99ca06675ec46c32e516ca9f274a"],
       "consumer": "Producer exact-head repair decision, then independent QA and REFUTE",
-      "status": "async_running_clone_started",
+      "status": "async_running_full_ci_visual_gate_prechecks_passed",
       "write_lease": true,
-      "last_heartbeat": "2026-09-01T07:13:02Z",
+      "last_heartbeat": "2026-09-01T07:47:58Z",
       "stale_after": "2026-09-01T09:07:00Z",
-      "dispatch": {"at":"2026-09-01T07:12:39.610194475Z","method":"producer_direct_async_after_remote_ledger","status":"running_clone_started","reservation_commit":"40d0f2220f601d1d9243a9b06e308fc93c303ff3","container":{"name":"lt-pr36-git-aware-full-ci-replacement2-0901","id":"5eed6cbde158b7d1e8779d05f4b0dff60f3e5537329fc50def636722d54bfb8b","image":"sha256:06267e20a02b38d29feb2e5494ea990677f12a2d91fc7451dba024572a2dcf94","readonly_root":true,"network":"none"},"controller":{"runner_sha256":"16ead4a63829ead45d723382bdc8a0244324ecdd600b3f7dd3a13060c516f1ce","launch_sha256":"761ea5b5fe99791588a263ea022bb08bec28b2315b4281e4c3d5b94726eb72b7","task_global_git_config":"exact /src and /src/.git entries only"},"snapshot":"runner started; local clone entered Cloning into /out/work without immediate dubious-ownership rejection","cadence":"nonblocking; harvest once on later heartbeat"},
+      "dispatch": {"at":"2026-09-01T07:12:39.610194475Z","method":"producer_direct_async_after_remote_ledger","status":"running_full_ci_visual_gate","reservation_commit":"40d0f2220f601d1d9243a9b06e308fc93c303ff3","container":{"name":"lt-pr36-git-aware-full-ci-replacement2-0901","id":"5eed6cbde158b7d1e8779d05f4b0dff60f3e5537329fc50def636722d54bfb8b","image":"sha256:06267e20a02b38d29feb2e5494ea990677f12a2d91fc7451dba024572a2dcf94","readonly_root":true,"network":"none"},"controller":{"runner_sha256":"16ead4a63829ead45d723382bdc8a0244324ecdd600b3f7dd3a13060c516f1ce","launch_sha256":"761ea5b5fe99791588a263ea022bb08bec28b2315b4281e4c3d5b94726eb72b7","task_global_git_config":"exact /src and /src/.git entries only","task_git_config_receipt_sha256":"cf8746b30ce7d2fe4170c3fee631a2b6bca5e35e644da20a0a6538f494df9f86"},"identity":{"head":"dfefd9a673877a64998ca6fa81c61fbf51730ff7","tree":"2fc7f60a87b22847f55f586eab756c4c5f1a6a61","game_tree":"4eafaf1c36e1a03302df47538b0500e92642d67d","candidate_patch_id":"e1e2bc57e99a915fe56c45fe72e37d258f477f6a"},"prechecks":{"hard_git_redline":0,"hard_git_redline_self_test":0,"fixture_audit_self_test":0,"complement_self_test":0,"complement_freshness":0,"receipt_sha256":"adaed9420321efc9e54ca74829d3345281a2f614a0d200cf79ae7fd453b093e2"},"snapshot":"clone and exact identity passed; all five prechecks and unit/integration scenes passed; full CI is running in visual capture with no terminal result claimed","cadence":"nonblocking; harvest once on later heartbeat"},
       "pr": {"number":null,"stacked_base_branch":"codex/pr35-roundtrip-camera-harness-repair-v1","upstream_pr":36,"draft_required":true,"status":"evidence_only_no_pr"},
       "pr_policy": "No commit, push or PR. A later Producer tick may authorize the exact one-path commit only after terminal full-CI PASS and independent review.",
       "checks": {"required":["fresh HOME and GIT_CONFIG_GLOBAL live only in task-owned output","global config contains exactly safe.directory=/src and /src/.git and no wildcard","local clone produces complete .git metadata","checkout exact dfefd9a head and verify tree/game tree","candidate SHA256 and stable patch-id match and diff is exactly tools/visual_gate.sh","overlay SHA256 matches and hard Git redline/complement prechecks pass","full tools/ci.sh runs exactly once in pinned Docker","registered worktree and GitHub remain unchanged"],"p0":0,"p1":0,"does_not_prove":"A terminal green disposable-clone CI run does not prove player-facing polish, independent QA/REFUTE closure, save/load/replay completion, benchmark parity, release readiness or permission to merge."},
@@ -3937,16 +3937,16 @@
       {"phase":1,"objective":"Run one attributable canonical simple/full SpaceShot wrapper receipt against exact PR36 without source changes","owner":"evidence-pr36-spaceshot-canonical-invocation-v1 then review-pr36-canonical-spaceshot-evidence-v1","status":"complete_p0_0_runner_p1_cleared_full_ci_p1_retained","player_value":"distinguishes empty invocation evidence from an actual harness/runtime failure without another full-CI loop","conflict_risk":"execution and review serialized; repository authority remained frozen","exit":"met: independent terminal P0/P1 classification and one bounded successor"},
       {"phase":2,"objective":"Run complete full CI against an audited generated-ledger overlay in a disposable exact-head clone without publication","owner":"evidence-pr36-anchor-full-ci-v5-daemon-recovered","status":"terminal_exit1_visual_roundtrip_p1_released","player_value":"proved the anchor overlay, audit, guard and unit/integration suite pass while isolating the remaining exact visual journey failure","conflict_risk":"execution-only task scratch preserved; repository authority remained frozen","exit":"met as terminal fail-fast no-write blocker with exact receipts"},
       {"phase":3,"objective":"Independently classify the exact PR36 v5 simple/full player_entered=false visual failure before any repair or anchor publication","owner":"review-pr36-v5-qa-evidence and review-pr36-v5-refute-technical-visual","status":"terminal_p0_0_p1_1_stricter_qa_spawn_position_cause_governs","player_value":"prevented another blind full-CI retry and narrowed the next change to one evidence-backed harness invocation repair","conflict_risk":"reviewers released; zero repository writers; PR35 and PR36 frozen","exit":"met with binding P1 and one bounded one-path successor"},
-      {"phase":4,"objective":"Repair cafe SpaceShot invocation spawn and fail closed when real-player metadata is missing, then prove focused simple/full and complete CI with the audited overlay","owner":"evidence-pr36-cafe-player-spawn-harness-git-aware-ci-replacement2 / producer task 01a04233-497e-7942-8da0-7958b314b199","status":"task_local_git_trust_replacement_async_running_clone_started","player_value":"turns Probe-only or missing-player cafe captures into attributable real-player entry evidence without touching Sim, Main, SpaceShot, save/replay or canon authority","conflict_risk":"old claim is released; replacement writes only fresh task scratch and an isolated task-global config with two exact safe.directory entries; registered worktree and all runtime/shared authority remain frozen","exit":"exact-head Git-aware Docker full-CI PASS with hard Git gates, player_entered true, missing/far negatives fail the explicit assertion, then independent P0/P1=0"}
+      {"phase":4,"objective":"Repair cafe SpaceShot invocation spawn and fail closed when real-player metadata is missing, then prove focused simple/full and complete CI with the audited overlay","owner":"evidence-pr36-cafe-player-spawn-harness-git-aware-ci-replacement2 / producer task 01a04233-497e-7942-8da0-7958b314b199","status":"task_local_git_trust_replacement_full_ci_visual_gate_running_prechecks_passed","player_value":"turns Probe-only or missing-player cafe captures into attributable real-player entry evidence without touching Sim, Main, SpaceShot, save/load/replay or canon authority","conflict_risk":"replacement writes only fresh task scratch and an isolated task-global config with two exact safe.directory entries; registered worktree and all runtime/shared authority remain frozen","exit":"exact-head Git-aware Docker full-CI PASS with hard Git gates, player_entered true, missing/far negatives fail the explicit assertion, then independent P0/P1=0"}
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-09-01T07:07:00Z",
+    "at": "2026-09-01T07:47:58Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "pr34_anchor_migration": "Terminal clean no-write handoff: audit rc0, guard and self-tests rc0, full CI stopped without conclusion, ledger restored, worktree clean, zero commit/push/PR, all task containers and temporary bundles/output cleaned. Claim released; regenerate only after the Sim repair.",
     "pr34_ui_review": "The reviewer returned P0=0/P1=1 against old headdf750455. Producer exact-object comparison to current0acb480 proves only unrelated save diagnostic drift and revalidates the cited revoke/spatial semantics unchanged. The P1 governs as a stop signal; the old-head review supplies no clearance.",
-    "current_independence": "The command-scoped recovery is exhausted and released. Replacement2 is now running in a unique no-network read-only-root container with fresh scratch and a task-owned global Git config containing only /src and /src/.git; its first snapshot entered clone without the prior immediate ownership rejection. Zero reviewers are active and all registered/runtime/shared authority remains frozen.",
+    "current_independence": "Replacement2 cleared the prior Git ownership blocker with an isolated two-entry task config, verified exact head/tree/game-tree and the one-path patch, passed all five hard prechecks and all unit/integration scenes, and is running visual CI. Zero reviewers are active and all registered/runtime/shared authority remains frozen.",
     "pr34_current_head_p1": "At current0acb480 Sim.gd revoke_cafe_guest_capability lines4086-4093 only mark status revoked and emit events. Save spatial validation lines2489-2495 permits cafe/2f only for active capability, otherwise requires authored-home reachability. Revoking on 2f can therefore leave unauthorized state and make save/load fail closed without safe ejection or explicit denial/recovery.",
     "stack_b_replacement_exact_commit": "Replacement LF lane is clean at exact1114d2b7/tree51816f37 with only cafe-authored IDs and generated manifest added. Pinned Linux Docker b0173238 at committed head passed compiler --check, exact identity, game-clean and SHA checks; prior independent generation was byte-identical and malformed/stale/unbound negatives fail closed. Remote publication and Draft PR remain unperformed.",
     "stack_b_normal_push_failure": "One normal non-force push failed with curl28/connect timeout and send-pack disconnect. GitHub ref and branch APIs confirm the replacement branch is absent and no PR exists. One non-force Git Data API create-ref recovery is reserved against exact master9b2d052c and tree51816f37.",
@@ -3990,7 +3990,7 @@
     "stack_b_pr31_normal_sync_result_body_refresh_reserved": "GitHub update-branch created exact Draft merge child3254577d/treec6d76be9 with parents d7f2bd06 + master37ccea82 and unchanged two JSON blobs. Post-sync API/local/Docker ls-remote all enumerate 39 branches. Qualification33257158954 and authority33257158256 succeeded; CI/visual33257158932 active. Old checks/reviews are invalid. Body-only exact-head evidence refresh is reserved before any fresh review dispatch.",
     "stack_b_pr31_normal_sync_body_rebound": "Draft PR31 body is rebound at SHA2561fe05ae5/3050 bytes to base37ccea82/head3254577d/treec6d76be9, exact parents, unchanged JSON blobs and source receipts. It records qualification/authority success and CI/visual active, invalidates all old-head evidence, and keeps review/readiness/merge gates unchecked. Await terminal exact-head checks.",
     "shared_write_conflicts": 0,
-    "decision": "Replacement2 reservation reached remote coordination commit40d0f222 before launch. Unique container5eed6cbd is running asynchronously; do not wait, poll, duplicate, commit, push or create PR."
+    "decision": "Replacement2 reservation reached remote coordination commit40d0f222 before launch. Unique container5eed6cbd is running full CI asynchronously after exact Git/precheck success; do not wait, poll, duplicate, commit, push or create PR."
   },
   "released_claims": [
     {
@@ -4387,8 +4387,8 @@
     }
   },
   "workspace_observation": {
-    "registered_worktrees": 44,
-    "dirty_worktrees": 15,
+    "registered_worktrees": 45,
+    "dirty_worktrees": 16,
     "worktree_errors": 0,
     "unknown_or_historical_dirt_policy": "quarantine_preserve"
   },
@@ -4399,7 +4399,7 @@
     "open_exact_sha_p0": 0,
     "open_exact_sha_p1": 4,
     "post_merge_regressions": 1,
-    "player_visible_closure_state": "pr36_cafe_real_player_entry_fail_closed_harness_task_local_git_trust_replacement_running"
+    "player_visible_closure_state": "pr36_cafe_real_player_entry_fail_closed_harness_full_ci_visual_gate_running"
   },
   "human_acceptance": "not_ready",
   "current_gate": {
@@ -4496,8 +4496,8 @@
     "pr29_post_merge_success_full_scan_pr28_reserved": "Post-merge CI33182561513 succeeded at master43c72a8f. Full 36-branch snapshot is complete and exact across GitHub/ls-remote/local refs, hash1e6a1261; 29 PRs/0 reviews, 0 issues/releases/tags, 29 worktrees with 14 dirty all preserved. Required tasks unavailable; dynamic dev/map/UI-UX inactive/terminal, B28 BELOW_REQUIRED_FLOOR. PR28 one-manifest branch update/review is the next serialized lane.",
     "pr28_e70cebba_terminal_p1_freeze": "PR28 exact head e70cebba/treec9e0273e/body10e446b passed one-path identity, Docker53x2 and hosted CI33184928495. Security/QA P0=0/P1=1/P2=1 and REFUTE P0=0/P1=1/P2=0 independently found the same strict-base identity handoff cycle. Draft frozen; PENDING strings, Ready, protection and merge remain untouched.",
     "human_acceptance": "not_ready",
-    "pr36_cafe_player_spawn_harness_async_ci": "Initial container2d10fff and sole recovery b94e8aa exited128 before clone/precheck/CI; command-scoped safe.directory did not reach local upload-pack. Old claim released. Replacement2 container5eed6cbd is running with exact derived image, no network, read-only root, fresh outputs and task-owned global config containing only /src and /src/.git; first snapshot entered clone without immediate ownership rejection. Registered worktree remains dirty exactly tools/visual_gate.sh with no commit/push/PR.",
-    "pr5_projection": "open_draft_live_head_40d0f222; exact prior d436364 run33477846041 ci_visual_success; replacement2 async launch recorded"
+    "pr36_cafe_player_spawn_harness_async_ci": "Initial container2d10fff and sole recovery b94e8aa exited128 before clone/precheck/CI; command-scoped safe.directory did not reach local upload-pack. Old claim released. Replacement2 container5eed6cbd cleared the ownership blocker using exact task-local /src and /src/.git entries, verified exact Git/candidate identities, passed all hard prechecks and unit/integration scenes, and is running the visual gate. Registered worktree remains dirty exactly tools/visual_gate.sh with no commit/push/PR.",
+    "pr5_projection": "open_draft_live_head_6622113; exact run33481286938 ci_visual_success; replacement2 precheck/full-CI-running transition pending publication"
   },
-  "next_trigger": "Later heartbeat: run the serial Smart HTTP lane, then inspect only lt-pr36-git-aware-full-ci-replacement2-0901 once and harvest terminal clone/precheck/full-CI receipts without polling or duplicate execution. No commit, push or PR before exact terminal PASS and independent review. HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "Later heartbeat: run the serial Smart HTTP lane, then inspect only lt-pr36-git-aware-full-ci-replacement2-0901 once and harvest terminal full-CI receipts without polling or duplicate execution. On exact PASS, release evidence lease and reserve independent QA plus REFUTE before any source mutation. No commit, push or PR before P0/P1 closure. HUMAN_ACCEPTANCE_NOT_READY."
 }
