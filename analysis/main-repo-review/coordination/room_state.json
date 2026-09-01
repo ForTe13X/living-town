@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-09-01T09:27:13Z",
+  "updated_at": "2026-09-01T10:10:49Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,13 +11,13 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "f22c67623c1bd78069541166b38e2a0d8ecea3168eb0731fc84042493b61a468",
-    "canonical_objects": 390,
+    "canonical_sha256": "a922ac44a34a41ab2cb7a8d789f820a8a437cb31b4750e3bd7acf4f079e21071",
+    "canonical_objects": 391,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
-      "parent": "191df878d2b071975b5c797dbc57324ef7fa44ab",
-      "tree": "9fa031c60b05dd5c771a6630cb2cee66d255aa61",
-      "commit": "66163590132410a5b5c0f7e51a4a3efbd6ee1217",
+      "parent": "66163590132410a5b5c0f7e51a4a3efbd6ee1217",
+      "tree": "6b50cc31a6d44383b2bff0bddb3e8ddec230b3de",
+      "commit": "b25b1d425e4c5ae28dad4389d50730cc1080d011",
       "force": false,
       "reason": "producer-only non-force Git Data API publication; GitHub API authoritative for this exact parent-child mutation"
     },
@@ -42,19 +42,19 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-09-01T09:18:58Z",
+    "at": "2026-09-01T10:09:36Z",
     "github_api_count": 43,
     "git_ls_remote_count": 43,
     "local_tracking_count": 43,
     "local_exact_count": 43,
     "snapshot_complete": true,
     "secondary_authority": "GitHub API, freshly fetched local refs and direct git ls-remote agree on 43 hosted branches; no cached-only ref was promoted.",
-    "reconciliation": "Required serial Smart HTTP lane completed fetch=0 and ls-remote=0 using repository-local HTTP/1.1/maxRequests=2. Direct enumeration and freshly fetched local refs agree on 43 heads, master37ccea82, integrationac85fc6b, coordination191df878 and PR36dfefd9a. GitHub reports PR5 OPEN Draft MERGEABLE at exact191df878 with run33487194883 ci and visual_canary success; PR36 remains OPEN Draft MERGEABLE at exactdfefd9a with stale hosted ci failure and visual success.",
+    "reconciliation": "Required serial Smart HTTP lane completed fetch=0 and ls-remote=0 using repository-local HTTP/1.1/maxRequests=2. GitHub API, direct enumeration and freshly fetched local refs agree on 43 hosted heads, master37ccea82, integrationac85fc6b, coordinationb25b1d42 and PR36dfefd9a. PR5 is OPEN Draft MERGEABLE at exactb25b1d42 with run33492530975 ci and visual_canary success; PR36 remains OPEN Draft MERGEABLE at exactdfefd9a with stale hosted ci failure and visual success.",
     "network_failures": [],
-    "sorted_name_sha_set_sha256": "6f2c82184638b30e46bcfb1f1046ba95e014657e2d8e67f3c157ca63c3a28c84",
+    "sorted_name_sha_set_sha256": "d21e90c726fd68b8c0a9522d331f2de528598d8b6235f548e373e09d3a3b23de",
     "master": "37ccea829e16e5844059a11eac9b3177ac693d6a",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "66163590132410a5b5c0f7e51a4a3efbd6ee1217",
+    "coordination": "b25b1d425e4c5ae28dad4389d50730cc1080d011",
     "pr25": "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
     "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
@@ -66,7 +66,7 @@
     "open_issues": 0,
     "releases": 0,
     "tags": 0,
-    "full_branch_metadata_scan": "Lightweight material-transition scan at 2026-09-01T09:18:58Z is complete across direct ls-remote, freshly fetched local refs and GitHub API at 43 branches/hash6f2c8218. PR5 exact191df878 run33487194883 ci/visual succeeded; PR36 remains Draft MERGEABLE atdfefd9a. Required Narrative and Implementation tasks remain unreadable. Independent QA and REFUTE both terminally classify the P1O red as a deterministic unpinned population precondition leak, not candidate causality; one tools/space_roundtrip.sh writer is reserved and no source publication is claimed.",
+    "full_branch_metadata_scan": "Material-transition scan at 2026-09-01T10:09:36Z is complete across GitHub API, direct ls-remote and freshly fetched local refs at 43 branches/hashd21e90c7; 13 PRs open, 12 Draft, zero issues/releases/tags, master protection strict with ci, visual_canary, qualification and trusted authority. PR5 exactb25b1d42 run33492530975 ci/visual succeeded; PR36 remains Draft MERGEABLE atdfefd9a. Required Narrative and Implementation tasks remain unreadable. Hermetic one-path writer terminally passed and is released; one Docker-only combined-CI executor is reserved.",
     "benchmark_revalidation": {"repository":"mewamew/my_ai_town","ref":"main","head":"aac9992c2d195402a90327754c1f6ef279675076","readme_blob":"9aa3211f238fd6bd503b758f87cc6d5b76126603","readme_sha256":"fccc03778fcd8635851cbe604b5363a4a4854350555a9e1b3a5299469d1fac60","screenshots":{"assets/readme/town-overview.jpg":"8315851951fa4b86138ed4b66508598fa08dfd9d3ed0dd9e788c1adf422495ec","assets/readme/resident-conversation.jpg":"e5b5cf0892c34949aa2c128c554234db99b898aefd6fdea4cb89fdfe3da02c63","assets/readme/workshop-task.jpg":"7985c00433ff522c49749cb4a098e8d35776ca0f5bc3051f0966e43e70c16f6a","assets/readme/market-life.jpg":"914de2c4571bb9546a9d3e31ebc3f093b4e9034571a92c6332c128a228193895","assets/readme/world-log.jpg":"9195d4ae02db1bc81af745c245612900e780711a3a0593b2d70191e446a4bce4"},"license_boundary":"quality and information-architecture reference only; no code, pixel, asset, palette or derivative copying"}
   },
   "portfolio_policy": {
@@ -4003,20 +4003,50 @@
       "generated_outputs": ["task-owned isolated pinned-Docker receipts outside the repository only"],
       "dependencies": ["pr36:dfefd9a673877a64998ca6fa81c61fbf51730ff7", "qa:terminal-p0-0-p1-1-p2-1", "refute:terminal-p0-0-p1-1-p2-1", "n12-valid:ready/柴薪/4/carrier1", "n18-negative:working/柴薪/4/carrier1", "corrupt-negative:invalid/empty/0/carrier0"],
       "consumer": "A separately serialized synthetic combined full-CI run with the existing uncommitted tools/visual_gate.sh candidate, followed by fresh independent exact-tree QA and REFUTE.",
-      "status": "async_dispatched_running",
-      "write_lease": true,
-      "last_heartbeat": "2026-09-01T09:27:13Z",
-      "stale_after": "2026-09-01T11:19:18Z",
+      "status": "terminal_focused_pass_clean_one_path_commit_released",
+      "write_lease": false,
+      "last_heartbeat": "2026-09-01T10:10:49Z",
+      "stale_after": null,
       "pr": {"number":null,"stacked_base_branch":"codex/pr35-roundtrip-camera-harness-repair-v1","upstream_pr":36,"draft_required":true,"status":"pre_pr_no_push"},
       "dispatch": {"at":"2026-09-01T09:27:13Z","method":"collaboration.spawn_agent","status":"accepted_running_async","reservation_commit":"66163590132410a5b5c0f7e51a4a3efbd6ee1217","cadence":"harvest once on a later heartbeat; no polling or duplicate writer"},
       "pr_policy": "No push or PR. Commit exactly tools/space_roundtrip.sh only after focused pinned-Docker PASS; Producer separately decides combined evidence and publication.",
-      "checks": {"required":["every SpaceShot invocation receives the same default population 12 via --agents","an explicit caller override remains possible if existing contract requires it","clean and contaminated userdata valid arms are exactly ready/柴薪/4/carrier1","corrupt arm is exactly invalid/empty/0/carrier0 and both image-difference teeth remain nonzero","omitting the pin after C1 reproduces working/柴薪/4/carrier1 and the P1O red","diff and commit are exactly tools/space_roundtrip.sh"],"p0":0,"p1":1,"does_not_prove":"A focused hermetic harness PASS does not prove combined full CI, candidate correctness, player-facing polish, benchmark parity, merge or release readiness."},
+      "checks": {"required":["every SpaceShot invocation receives the same default population 12 via --agents","an explicit caller override remains possible if existing contract requires it","clean and contaminated userdata valid arms are exactly ready/柴薪/4/carrier1","corrupt arm is exactly invalid/empty/0/carrier0 and both image-difference teeth remain nonzero","omitting the pin after C1 reproduces working/柴薪/4/carrier1 and the P1O red","diff and commit are exactly tools/space_roundtrip.sh"],"result":"PASS in pinned Docker; commit c8172cb97b945d5f627e938a8837d71d4d50e0d6 tree56382c3a blobcefedea, clean worktree, exact one path +7/-3","p0":0,"p1":0,"does_not_prove":"A focused hermetic harness PASS does not prove combined full CI, candidate correctness, player-facing polish, benchmark parity, merge or release readiness."},
       "recovery_count": 0,
-      "release_reason": null,
+      "release_reason": "Pinned-Docker focused evidence passed clean and contaminated explicit N12 ready tuples, corrupt invalid teeth and omitted-pin working/red negative. Exact one-path commit c8172cb is clean; no push, PR, full CI or remote mutation. Writer released for a separately serialized combined evidence run.",
       "rollback": "Before publication remove only the task-owned clean branch/worktree. After an authorized commit, revert that one commit through review; never rewrite PR36, integration or master.",
       "stop_lines": ["N12 does not yield exact ready tuple", "contaminated userdata still changes metadata with explicit N12", "a second path or product/runtime/data/assertion/golden change is required", "Docker identity or isolation is unavailable", "baseline, branch, worktree or ownership drift", "duplicate or overlapping writer appears"],
       "handoff_recipient": "Producer for synthetic combined full CI and fresh independent review",
-      "archive_condition": "One clean exact-base one-path commit with focused Docker receipts, or terminal no-write stop with exact evidence."
+      "archive_condition": "Met: one clean exact-base one-path commit with focused Docker receipts; preserve branch/worktree until combined evidence is harvested or superseded."
+    },
+    {
+      "claim_id": "evidence-pr36-p1o-combined-full-ci-v1",
+      "task": "/root/pr36_p1o_combined_ci",
+      "role": "Docker-only exact synthetic combined full-CI executor",
+      "objective": "Construct a disposable exact PR36 clone containing only hermetic tools/space_roundtrip.sh commit c8172cb and the existing exact tools/visual_gate.sh candidate, then launch one pinned-Docker full tools/ci.sh asynchronously and persist terminal receipts without repository or remote mutation.",
+      "baseline": "dfefd9a673877a64998ca6fa81c61fbf51730ff7",
+      "head": "synthetic pending exact two-path tree",
+      "tree": "pending synthetic exact two-path tree",
+      "branch": "none evidence-only disposable clone",
+      "worktree": "none; task-owned D:\\Documents\\Dev\\pr36-p1o-combined-ci-v1 scratch only",
+      "owned_paths": [],
+      "forbidden_paths": ["all registered repository/worktree paths", "all branches, PRs, reviews, checks, protection and remote refs", "coordination room and event streams", "shared containers, images, volumes and caches", "any third source path, assertion relaxation, runtime/data/anchor change or second full-CI run"],
+      "authority_keys": [],
+      "generated_outputs": ["D:\\Documents\\Dev\\pr36-p1o-combined-ci-v1 receipts and one labeled task-owned detached container only"],
+      "dependencies": ["pr36:dfefd9a673877a64998ca6fa81c61fbf51730ff7", "space-roundtrip:c8172cb97b945d5f627e938a8837d71d4d50e0d6:patch76d4af64", "visual-gate:sha256-9f2e32d88a2e5f71c2feb98acbd5a23a824f9905466524a4870a06664aa7086f:patch-e1e2bc57", "pinned-image:gamecraft-runner-sha256-2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d"],
+      "consumer": "Producer terminal harvest, then fresh independent QA and REFUTE against the exact synthetic identity.",
+      "status": "reserved_before_async_dispatch",
+      "write_lease": false,
+      "last_heartbeat": "2026-09-01T10:10:49Z",
+      "stale_after": "2026-09-01T12:10:49Z",
+      "pr": {"number":null,"upstream_pr":36,"status":"evidence_only_no_pr"},
+      "pr_policy": "No commit, push or PR. Run full CI exactly once after exact two-path identity checks and hand off terminal receipts.",
+      "checks": {"required":["synthetic diff exactly tools/space_roundtrip.sh and tools/visual_gate.sh with exact hashes and patch IDs","full tools/ci.sh launches once in an isolated pinned container","terminal exit/log/env/output manifest and cleanup status persisted","no registered worktree or GitHub mutation"],"p0":0,"p1":0,"does_not_prove":"A combined CI PASS alone does not prove independent review, player-facing polish, benchmark parity, accessibility, merge or release readiness."},
+      "recovery_count": 0,
+      "release_reason": null,
+      "rollback": "Stop/remove only the labeled task-owned container and archive/remove only task scratch after terminal handoff; no source or remote rollback exists because none may be mutated.",
+      "stop_lines": ["baseline/input hash/patch-id drift", "synthetic diff contains any third path", "Docker identity/isolation unavailable", "shared cache/container or registered worktree mutation required", "duplicate runner appears"],
+      "handoff_recipient": "Producer terminal harvest then independent QA/REFUTE",
+      "archive_condition": "Exact terminal full-CI receipt and no-mutation handoff, or terminal stop-line evidence."
     }
   ],
   "active_dependency_graph": {
@@ -4027,16 +4057,17 @@
       {"phase":1,"objective":"Run one attributable canonical simple/full SpaceShot wrapper receipt against exact PR36 without source changes","owner":"evidence-pr36-spaceshot-canonical-invocation-v1 then review-pr36-canonical-spaceshot-evidence-v1","status":"complete_p0_0_runner_p1_cleared_full_ci_p1_retained","player_value":"distinguishes empty invocation evidence from an actual harness/runtime failure without another full-CI loop","conflict_risk":"execution and review serialized; repository authority remained frozen","exit":"met: independent terminal P0/P1 classification and one bounded successor"},
       {"phase":2,"objective":"Run complete full CI against an audited generated-ledger overlay in a disposable exact-head clone without publication","owner":"evidence-pr36-anchor-full-ci-v5-daemon-recovered","status":"terminal_exit1_visual_roundtrip_p1_released","player_value":"proved the anchor overlay, audit, guard and unit/integration suite pass while isolating the remaining exact visual journey failure","conflict_risk":"execution-only task scratch preserved; repository authority remained frozen","exit":"met as terminal fail-fast no-write blocker with exact receipts"},
       {"phase":3,"objective":"Independently classify the exact PR36 v5 simple/full player_entered=false visual failure before any repair or anchor publication","owner":"review-pr36-v5-qa-evidence and review-pr36-v5-refute-technical-visual","status":"terminal_p0_0_p1_1_stricter_qa_spawn_position_cause_governs","player_value":"prevented another blind full-CI retry and narrowed the next change to one evidence-backed harness invocation repair","conflict_risk":"reviewers released; zero repository writers; PR35 and PR36 frozen","exit":"met with binding P1 and one bounded one-path successor"},
-      {"phase":4,"objective":"Repair cafe SpaceShot invocation spawn and fail closed when real-player metadata is missing, then prove focused simple/full and complete CI with the audited overlay","owner":"writer-pr36-p1o-hermetic-agents-v1 after terminal QA plus REFUTE","status":"reviewers_terminal_p0_0_p1_1_hermetic_single_path_writer_reserved","player_value":"preserves the proven real-player cafe fix while removing mutable-userdata population leakage before one combined exact-tree CI run","conflict_risk":"both reviewers released; one writer owns only tools/space_roundtrip.sh; tools/visual_gate.sh candidate, runtime, assertions, data and shared authority remain frozen","exit":"focused clean and contaminated N12 PASS plus omitted-pin and corrupt negative teeth, then one clean one-path commit or exact no-write stop"}
+      {"phase":4,"objective":"Repair cafe SpaceShot invocation spawn and fail closed when real-player metadata is missing, then prove focused simple/full and complete CI with the audited overlay","owner":"evidence-pr36-p1o-combined-full-ci-v1 after terminal writer-pr36-p1o-hermetic-agents-v1","status":"hermetic_one_path_focused_pass_combined_full_ci_reserved","player_value":"preserves the proven real-player cafe fix and hermetic N12 carrier readiness while moving directly to one exact combined CI consequence","conflict_risk":"source writer released; evidence executor owns no repository path and uses only task scratch/labeled container; runtime, assertions, data and shared authority remain frozen","exit":"terminal exact synthetic two-path full-CI receipt, then independent P0/P1 review"}
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-09-01T09:27:13Z",
-    "active_writers": 1,
+    "at": "2026-09-01T10:10:49Z",
+    "active_writers": 0,
+    "active_execution_owners": 1,
     "read_only_reviewers": 0,
     "pr34_anchor_migration": "Terminal clean no-write handoff: audit rc0, guard and self-tests rc0, full CI stopped without conclusion, ledger restored, worktree clean, zero commit/push/PR, all task containers and temporary bundles/output cleaned. Claim released; regenerate only after the Sim repair.",
     "pr34_ui_review": "The reviewer returned P0=0/P1=1 against old headdf750455. Producer exact-object comparison to current0acb480 proves only unrelated save diagnostic drift and revalidates the cited revoke/spatial semantics unchanged. The P1 governs as a stop signal; the old-head review supplies no clearance.",
-    "current_independence": "Both independent reviewers terminally agree the P1O red is a deterministic harness precondition leak and release their claims. One writer is asynchronously active on only tools/space_roundtrip.sh in a clean exact-base worktree; the existing tools/visual_gate.sh candidate and every runtime, assertion, data, registry, fixture, CI and coordination authority surface remain frozen.",
+    "current_independence": "The hermetic writer is terminal PASS and released with one clean tools/space_roundtrip.sh commit. One evidence-only executor is reserved with zero repository paths to combine that exact commit and the frozen tools/visual_gate.sh candidate inside disposable Docker; all registered worktrees and shared authority remain frozen.",
     "pr34_current_head_p1": "At current0acb480 Sim.gd revoke_cafe_guest_capability lines4086-4093 only mark status revoked and emit events. Save spatial validation lines2489-2495 permits cafe/2f only for active capability, otherwise requires authored-home reachability. Revoking on 2f can therefore leave unauthorized state and make save/load fail closed without safe ejection or explicit denial/recovery.",
     "stack_b_replacement_exact_commit": "Replacement LF lane is clean at exact1114d2b7/tree51816f37 with only cafe-authored IDs and generated manifest added. Pinned Linux Docker b0173238 at committed head passed compiler --check, exact identity, game-clean and SHA checks; prior independent generation was byte-identical and malformed/stale/unbound negatives fail closed. Remote publication and Draft PR remain unperformed.",
     "stack_b_normal_push_failure": "One normal non-force push failed with curl28/connect timeout and send-pack disconnect. GitHub ref and branch APIs confirm the replacement branch is absent and no PR exists. One non-force Git Data API create-ref recovery is reserved against exact master9b2d052c and tree51816f37.",
@@ -4080,7 +4111,7 @@
     "stack_b_pr31_normal_sync_result_body_refresh_reserved": "GitHub update-branch created exact Draft merge child3254577d/treec6d76be9 with parents d7f2bd06 + master37ccea82 and unchanged two JSON blobs. Post-sync API/local/Docker ls-remote all enumerate 39 branches. Qualification33257158954 and authority33257158256 succeeded; CI/visual33257158932 active. Old checks/reviews are invalid. Body-only exact-head evidence refresh is reserved before any fresh review dispatch.",
     "stack_b_pr31_normal_sync_body_rebound": "Draft PR31 body is rebound at SHA2561fe05ae5/3050 bytes to base37ccea82/head3254577d/treec6d76be9, exact parents, unchanged JSON blobs and source receipts. It records qualification/authority success and CI/visual active, invalidates all old-head evidence, and keeps review/readiness/merge gates unchecked. Await terminal exact-head checks.",
     "shared_write_conflicts": 0,
-    "decision": "Reservation reached remote coordination commit66163590 before the absent branch/worktree was created at exactdfefd9a. The one-path hermetic population writer is now active asynchronously; return without waiting and harvest once on a later heartbeat."
+    "decision": "Publish the terminal focused PASS and no-path combined-CI reservation, dispatch one asynchronous Docker-only executor, and return without waiting. No commit/push/PR/Ready/merge or duplicate full-CI lane."
   },
   "released_claims": [
     {
@@ -4489,7 +4520,7 @@
     "open_exact_sha_p0": 0,
     "open_exact_sha_p1": 5,
     "post_merge_regressions": 1,
-    "player_visible_closure_state": "pr36_p1o_hermetic_population_writer_async_running"
+    "player_visible_closure_state": "pr36_p1o_hermetic_population_focused_pass_combined_ci_reserved"
   },
   "human_acceptance": "not_ready",
   "current_gate": {
@@ -4587,8 +4618,9 @@
     "pr28_e70cebba_terminal_p1_freeze": "PR28 exact head e70cebba/treec9e0273e/body10e446b passed one-path identity, Docker53x2 and hosted CI33184928495. Security/QA P0=0/P1=1/P2=1 and REFUTE P0=0/P1=1/P2=0 independently found the same strict-base identity handoff cycle. Draft frozen; PENDING strings, Ready, protection and merge remain untouched.",
     "human_acceptance": "not_ready",
     "pr36_cafe_player_spawn_harness_async_ci": "Replacement2 container5eed6cbd cleared Git ownership, exact identity and all hard prechecks and unit/integration scenes, then terminated exit1 on one exact visual P1: valid P1O arm not ready with 柴薪x4/carrier1. Adjacent warehouse, P1I, cafe2F and floor-roundtrip evidence passed. Evidence writer released; two independent read-only reviews reserved. Candidate worktree remains dirty exactly tools/visual_gate.sh with no commit/push/PR.",
-    "pr36_p1o_terminal_reviews": "QA and REFUTE independently report P0=0/P1=1/P2=1: c1 persists npc_count18, SpaceShot reloads it when --agents is absent, N18 deterministically yields working, explicit N12 restores exact ready, corrupt remains invalid, and the existing candidate cannot cause the tuple. One tools/space_roundtrip.sh hermetic writer is reserved.",
-    "pr5_projection": "open_draft_live_head66163590 after terminal-review reservation publication; prior exact191df878 run33487194883 ci_visual_success; async dispatch event pending publication"
+    "pr36_p1o_terminal_reviews": "QA and REFUTE independently report P0=0/P1=1/P2=1 on the old combined evidence: unpinned N18 causes working while explicit N12 restores ready; the candidate is noncausal. The bounded harness repair is now terminal focused PASS at c8172cb and awaits combined CI.",
+    "pr36_p1o_hermetic_focused_pass": "Commitc8172cb/tree56382c3/blobcefedea exactly tools/space_roundtrip.sh +7/-3. Pinned Docker clean and contaminated N12 are ready/柴薪/4/carrier1; corrupt invalid; omit-pin reproduces working/red. No push or PR.",
+    "pr5_projection": "open_draft_live_headb25b1d42; exact run33492530975 ci_visual_success; terminal focused PASS and combined-CI reservation pending publication"
   },
-  "next_trigger": "Publish event390 and this async-dispatch state as a non-force child of exact66163590, then return without waiting. A later heartbeat harvests /root/pr36_p1o_harness_fix once; no duplicate writer, long polling, push, PR, combined CI, Ready or merge. HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "Publish event391 and this reservation as a non-force child of exactb25b1d42, dispatch /root/pr36_p1o_combined_ci asynchronously, record dispatch, and return without waiting. Later heartbeat harvests the labeled container once; no duplicate run, push, PR, Ready or merge. HUMAN_ACCEPTANCE_NOT_READY."
 }
