@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-09-01T09:19:18Z",
+  "updated_at": "2026-09-01T09:27:13Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,13 +11,13 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "22bdba5542716bf436ed90faf684b601319bf535e14703bf471ffe019a211463",
-    "canonical_objects": 389,
+    "canonical_sha256": "f22c67623c1bd78069541166b38e2a0d8ecea3168eb0731fc84042493b61a468",
+    "canonical_objects": 390,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
-      "parent": "f22c743761d3223991ac92d638c64e5785548212",
-      "tree": "68984745135615758908b6e375db83a88d39e290",
-      "commit": "191df878d2b071975b5c797dbc57324ef7fa44ab",
+      "parent": "191df878d2b071975b5c797dbc57324ef7fa44ab",
+      "tree": "9fa031c60b05dd5c771a6630cb2cee66d255aa61",
+      "commit": "66163590132410a5b5c0f7e51a4a3efbd6ee1217",
       "force": false,
       "reason": "producer-only non-force Git Data API publication; GitHub API authoritative for this exact parent-child mutation"
     },
@@ -54,7 +54,7 @@
     "sorted_name_sha_set_sha256": "6f2c82184638b30e46bcfb1f1046ba95e014657e2d8e67f3c157ca63c3a28c84",
     "master": "37ccea829e16e5844059a11eac9b3177ac693d6a",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "191df878d2b071975b5c797dbc57324ef7fa44ab",
+    "coordination": "66163590132410a5b5c0f7e51a4a3efbd6ee1217",
     "pr25": "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
     "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
@@ -4003,11 +4003,12 @@
       "generated_outputs": ["task-owned isolated pinned-Docker receipts outside the repository only"],
       "dependencies": ["pr36:dfefd9a673877a64998ca6fa81c61fbf51730ff7", "qa:terminal-p0-0-p1-1-p2-1", "refute:terminal-p0-0-p1-1-p2-1", "n12-valid:ready/柴薪/4/carrier1", "n18-negative:working/柴薪/4/carrier1", "corrupt-negative:invalid/empty/0/carrier0"],
       "consumer": "A separately serialized synthetic combined full-CI run with the existing uncommitted tools/visual_gate.sh candidate, followed by fresh independent exact-tree QA and REFUTE.",
-      "status": "reserved_before_async_dispatch",
+      "status": "async_dispatched_running",
       "write_lease": true,
-      "last_heartbeat": "2026-09-01T09:19:18Z",
+      "last_heartbeat": "2026-09-01T09:27:13Z",
       "stale_after": "2026-09-01T11:19:18Z",
       "pr": {"number":null,"stacked_base_branch":"codex/pr35-roundtrip-camera-harness-repair-v1","upstream_pr":36,"draft_required":true,"status":"pre_pr_no_push"},
+      "dispatch": {"at":"2026-09-01T09:27:13Z","method":"collaboration.spawn_agent","status":"accepted_running_async","reservation_commit":"66163590132410a5b5c0f7e51a4a3efbd6ee1217","cadence":"harvest once on a later heartbeat; no polling or duplicate writer"},
       "pr_policy": "No push or PR. Commit exactly tools/space_roundtrip.sh only after focused pinned-Docker PASS; Producer separately decides combined evidence and publication.",
       "checks": {"required":["every SpaceShot invocation receives the same default population 12 via --agents","an explicit caller override remains possible if existing contract requires it","clean and contaminated userdata valid arms are exactly ready/柴薪/4/carrier1","corrupt arm is exactly invalid/empty/0/carrier0 and both image-difference teeth remain nonzero","omitting the pin after C1 reproduces working/柴薪/4/carrier1 and the P1O red","diff and commit are exactly tools/space_roundtrip.sh"],"p0":0,"p1":1,"does_not_prove":"A focused hermetic harness PASS does not prove combined full CI, candidate correctness, player-facing polish, benchmark parity, merge or release readiness."},
       "recovery_count": 0,
@@ -4030,12 +4031,12 @@
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-09-01T09:19:18Z",
+    "at": "2026-09-01T09:27:13Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "pr34_anchor_migration": "Terminal clean no-write handoff: audit rc0, guard and self-tests rc0, full CI stopped without conclusion, ledger restored, worktree clean, zero commit/push/PR, all task containers and temporary bundles/output cleaned. Claim released; regenerate only after the Sim repair.",
     "pr34_ui_review": "The reviewer returned P0=0/P1=1 against old headdf750455. Producer exact-object comparison to current0acb480 proves only unrelated save diagnostic drift and revalidates the cited revoke/spatial semantics unchanged. The P1 governs as a stop signal; the old-head review supplies no clearance.",
-    "current_independence": "Both independent reviewers terminally agree the P1O red is a deterministic harness precondition leak and release their claims. One writer is reserved for only tools/space_roundtrip.sh; the existing tools/visual_gate.sh candidate and every runtime, assertion, data, registry, fixture, CI and coordination authority surface remain frozen.",
+    "current_independence": "Both independent reviewers terminally agree the P1O red is a deterministic harness precondition leak and release their claims. One writer is asynchronously active on only tools/space_roundtrip.sh in a clean exact-base worktree; the existing tools/visual_gate.sh candidate and every runtime, assertion, data, registry, fixture, CI and coordination authority surface remain frozen.",
     "pr34_current_head_p1": "At current0acb480 Sim.gd revoke_cafe_guest_capability lines4086-4093 only mark status revoked and emit events. Save spatial validation lines2489-2495 permits cafe/2f only for active capability, otherwise requires authored-home reachability. Revoking on 2f can therefore leave unauthorized state and make save/load fail closed without safe ejection or explicit denial/recovery.",
     "stack_b_replacement_exact_commit": "Replacement LF lane is clean at exact1114d2b7/tree51816f37 with only cafe-authored IDs and generated manifest added. Pinned Linux Docker b0173238 at committed head passed compiler --check, exact identity, game-clean and SHA checks; prior independent generation was byte-identical and malformed/stale/unbound negatives fail closed. Remote publication and Draft PR remain unperformed.",
     "stack_b_normal_push_failure": "One normal non-force push failed with curl28/connect timeout and send-pack disconnect. GitHub ref and branch APIs confirm the replacement branch is absent and no PR exists. One non-force Git Data API create-ref recovery is reserved against exact master9b2d052c and tree51816f37.",
@@ -4079,7 +4080,7 @@
     "stack_b_pr31_normal_sync_result_body_refresh_reserved": "GitHub update-branch created exact Draft merge child3254577d/treec6d76be9 with parents d7f2bd06 + master37ccea82 and unchanged two JSON blobs. Post-sync API/local/Docker ls-remote all enumerate 39 branches. Qualification33257158954 and authority33257158256 succeeded; CI/visual33257158932 active. Old checks/reviews are invalid. Body-only exact-head evidence refresh is reserved before any fresh review dispatch.",
     "stack_b_pr31_normal_sync_body_rebound": "Draft PR31 body is rebound at SHA2561fe05ae5/3050 bytes to base37ccea82/head3254577d/treec6d76be9, exact parents, unchanged JSON blobs and source receipts. It records qualification/authority success and CI/visual active, invalidates all old-head evidence, and keeps review/readiness/merge gates unchecked. Await terminal exact-head checks.",
     "shared_write_conflicts": 0,
-    "decision": "Publish both terminal reviews and the exact one-path hermetic population lease, then create the absent isolated branch/worktree and dispatch the writer asynchronously. Do not wait for Docker, commit, push, PR or combined CI in this tick."
+    "decision": "Reservation reached remote coordination commit66163590 before the absent branch/worktree was created at exactdfefd9a. The one-path hermetic population writer is now active asynchronously; return without waiting and harvest once on a later heartbeat."
   },
   "released_claims": [
     {
@@ -4488,7 +4489,7 @@
     "open_exact_sha_p0": 0,
     "open_exact_sha_p1": 5,
     "post_merge_regressions": 1,
-    "player_visible_closure_state": "pr36_p1o_hermetic_population_writer_reserved"
+    "player_visible_closure_state": "pr36_p1o_hermetic_population_writer_async_running"
   },
   "human_acceptance": "not_ready",
   "current_gate": {
@@ -4587,7 +4588,7 @@
     "human_acceptance": "not_ready",
     "pr36_cafe_player_spawn_harness_async_ci": "Replacement2 container5eed6cbd cleared Git ownership, exact identity and all hard prechecks and unit/integration scenes, then terminated exit1 on one exact visual P1: valid P1O arm not ready with 柴薪x4/carrier1. Adjacent warehouse, P1I, cafe2F and floor-roundtrip evidence passed. Evidence writer released; two independent read-only reviews reserved. Candidate worktree remains dirty exactly tools/visual_gate.sh with no commit/push/PR.",
     "pr36_p1o_terminal_reviews": "QA and REFUTE independently report P0=0/P1=1/P2=1: c1 persists npc_count18, SpaceShot reloads it when --agents is absent, N18 deterministically yields working, explicit N12 restores exact ready, corrupt remains invalid, and the existing candidate cannot cause the tuple. One tools/space_roundtrip.sh hermetic writer is reserved.",
-    "pr5_projection": "open_draft_live_head191df878; exact run33487194883 ci_visual_success; terminal reviews and one-path writer reservation pending publication"
+    "pr5_projection": "open_draft_live_head66163590 after terminal-review reservation publication; prior exact191df878 run33487194883 ci_visual_success; async dispatch event pending publication"
   },
-  "next_trigger": "Publish event389 and this reservation state as a non-force child of exact191df878, verify the branch and worktree remain absent, create the isolated worktree at exactdfefd9a, dispatch /root/pr36_p1o_harness_fix asynchronously, record dispatch in a later event, and return without waiting. No push, PR, combined CI, Ready or merge. HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "Publish event390 and this async-dispatch state as a non-force child of exact66163590, then return without waiting. A later heartbeat harvests /root/pr36_p1o_harness_fix once; no duplicate writer, long polling, push, PR, combined CI, Ready or merge. HUMAN_ACCEPTANCE_NOT_READY."
 }
