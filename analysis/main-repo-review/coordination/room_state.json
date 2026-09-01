@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-09-01T01:32:37Z",
+  "updated_at": "2026-09-01T01:36:55Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,13 +11,13 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "ca8873132478d9cdf194ad268393126709e196638dd0c7411b859f6a6ac091c0",
-    "canonical_objects": 369,
+    "canonical_sha256": "ede36597b1278b544492c3d8c1c9f3ae6e131e93ac578be61583ccc5a9f2e6b0",
+    "canonical_objects": 370,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
-      "parent": "7c01de7e7272dad952915c586c51605245404889",
-      "tree": "e98122c9ac8be50475816a12042d78895861087a",
-      "commit": "b325234f91f97c5403fd6ab9b05845bb808f44a6",
+      "parent": "b325234f91f97c5403fd6ab9b05845bb808f44a6",
+      "tree": "861c61eaafe19fa81c3bf949f9d52e5808e6d42f",
+      "commit": "8cb4b50f6b909c00419694a7243accda3154a8ff",
       "force": false,
       "reason": "producer-only non-force Git Data API publication; GitHub API authoritative for this exact parent-child mutation"
     },
@@ -3779,15 +3779,46 @@
       "generated_outputs": ["task-owned isolated pinned-Docker focused/full receipts outside the repository only"],
       "dependencies": ["PR36 exact dfefd9a673877a64998ca6fa81c61fbf51730ff7", "terminal QA and REFUTE P1", "authored cafe exterior door coordinate 41,19 from exact game/data/spaces.json", "space_roundtrip.sh RT_PLAYER_POS support", "audited disposable overlay f13f3e22eeb7df887196ae2a92423de64b1791e1327223f53fcb83e62f865bbf"],
       "consumer": "PR36 exact-head focused visual evidence and complete CI, then independent QA and REFUTE",
-      "status": "empty_handoff_recovery_1_reserved_before_redispatch",
-      "write_lease": true,
-      "last_heartbeat": "2026-09-01T01:32:37Z",
-      "stale_after": "2026-09-01T02:51:52Z",
+      "status": "terminal_empty_handoff_recovery_exhausted_revoked",
+      "write_lease": false,
+      "last_heartbeat": "2026-09-01T01:36:55Z",
+      "stale_after": null,
       "dispatch": {"at":"2026-09-01T00:58:35Z","method":"send_message_to_thread","status":"accepted_active_in_progress","reservation_commit":"7c01de7e7272dad952915c586c51605245404889","snapshot_cursor":"a2eef68d-c7f6-4d7c-b8f4-860714e64ffa:1","cadence":"asynchronous non-blocking; harvest terminal result on a later heartbeat"},
       "pr": {"number":null,"stacked_base_branch":"codex/pr35-roundtrip-camera-harness-repair-v1","upstream_pr":36,"draft_required":true,"status":"pre_pr"},
       "pr_policy": "No PR until focused and full CI pass in pinned Docker; then Draft only against codex/pr35-roundtrip-camera-harness-repair-v1; never Ready or merge.",
       "checks": {"required":["exactly one changed path","simple and full cafe invocations set exact authored adjacent player position","warehouse invocations unchanged","missing and far spawn controls fail the actual player_entered assertion","simple and full focused journeys pass with player_entered=true and player_returned=true","complete tools/ci.sh passes with unchanged audited disposable overlay","clean worktree and exact commit/tree; no anchor publication"],"p0":0,"p1":1,"does_not_prove":"A harness invocation change does not prove player-facing polish, real stairs completion, save/load/replay, accessibility, benchmark parity, release readiness or permission to merge."},
       "recovery_count": 1,
+      "release_reason": "Initial and sole recovery both returned empty handoffs that waited on or referred to another writer; no edit, Docker launch, receipt, diff, commit, push or PR occurred. Owner revoked with provenance; exact clean worktree transferred serially to replacement.",
+      "rollback": "Revert the single commit through review or remove only the verified clean task branch/worktree before publication; never rewrite shared refs.",
+      "stop_lines": ["any second path", "authored coordinate drift", "SpaceShot, Main, Sim, data, tests, anchors, registries or coordination change", "Docker unavailable or identity drift", "warehouse invocation drift", "negative control does not fail"],
+      "handoff_recipient": "Producer then independent QA and REFUTE",
+      "archive_condition": "Met as terminal recovery-exhausted clean no-write handoff; preserve thread provenance."
+    },
+    {
+      "claim_id": "writer-pr36-cafe-player-spawn-harness-v1-replacement",
+      "task": "019ffa43-dd18-7002-9b4a-bb902e5b5f74",
+      "role": "Replacement single-path visual harness invocation repair Dev writer",
+      "objective": "Set RT_PLAYER_POS=41,19 only on the simple and full cafe space_roundtrip invocations in tools/visual_gate.sh, preserving warehouse invocations and every runtime/canonical authority surface.",
+      "baseline": "dfefd9a673877a64998ca6fa81c61fbf51730ff7",
+      "head": "dfefd9a673877a64998ca6fa81c61fbf51730ff7",
+      "tree": "2fc7f60a87b22847f55f586eab756c4c5f1a6a61",
+      "game_tree": "4eafaf1c36e1a03302df47538b0500e92642d67d",
+      "branch": "codex/pr36-cafe-player-spawn-harness-v1",
+      "worktree": "D:\\Documents\\Dev\\living-town-pr36-cafe-player-spawn-harness-v1-wt",
+      "owned_paths": ["tools/visual_gate.sh"],
+      "forbidden_paths": ["all paths except tools/visual_gate.sh", "game/bench/SpaceShot.gd", "game/scripts/Main.gd", "game/scripts/Sim.gd", "game data, scenes and tests", "tools/ci.sh and test registries", "anchors, ledgers, generated manifests and fixtures", "analysis, evidence, docs, assets, coordination state/event/provenance/migration metadata"],
+      "authority_keys": ["visual-harness-invocation-only"],
+      "generated_outputs": ["task-owned isolated pinned-Docker focused/full receipts outside the repository only"],
+      "dependencies": ["PR36 exact dfefd9a673877a64998ca6fa81c61fbf51730ff7", "terminal QA and REFUTE P1", "authored cafe exterior door coordinate 41,19 from exact game/data/spaces.json", "space_roundtrip.sh RT_PLAYER_POS support", "audited disposable overlay f13f3e22eeb7df887196ae2a92423de64b1791e1327223f53fcb83e62f865bbf", "original owner recovery-exhausted clean no-write revoke"],
+      "consumer": "PR36 exact-head focused visual evidence and complete CI, then independent QA and REFUTE",
+      "status": "reserved_before_replacement_dispatch",
+      "write_lease": true,
+      "last_heartbeat": "2026-09-01T01:36:55Z",
+      "stale_after": "2026-09-01T03:36:55Z",
+      "pr": {"number":null,"stacked_base_branch":"codex/pr35-roundtrip-camera-harness-repair-v1","upstream_pr":36,"draft_required":true,"status":"pre_pr"},
+      "pr_policy": "No PR until focused and full CI pass in pinned Docker; then Draft only against codex/pr35-roundtrip-camera-harness-repair-v1; never Ready or merge.",
+      "checks": {"required":["exactly one changed path","simple and full cafe invocations set exact authored adjacent player position","warehouse invocations unchanged","missing and far spawn controls fail the actual player_entered assertion","simple and full focused journeys pass with player_entered=true and player_returned=true","complete tools/ci.sh passes with unchanged audited disposable overlay","clean worktree and exact commit/tree; no anchor publication"],"p0":0,"p1":1,"does_not_prove":"A harness invocation change does not prove player-facing polish, real stairs completion, save/load/replay, accessibility, benchmark parity, release readiness or permission to merge."},
+      "recovery_count": 0,
       "release_reason": null,
       "rollback": "Revert the single commit through review or remove only the verified clean task branch/worktree before publication; never rewrite shared refs.",
       "stop_lines": ["any second path", "authored coordinate drift", "SpaceShot, Main, Sim, data, tests, anchors, registries or coordination change", "Docker unavailable or identity drift", "warehouse invocation drift", "negative control does not fail"],
@@ -3803,16 +3834,16 @@
       {"phase":1,"objective":"Run one attributable canonical simple/full SpaceShot wrapper receipt against exact PR36 without source changes","owner":"evidence-pr36-spaceshot-canonical-invocation-v1 then review-pr36-canonical-spaceshot-evidence-v1","status":"complete_p0_0_runner_p1_cleared_full_ci_p1_retained","player_value":"distinguishes empty invocation evidence from an actual harness/runtime failure without another full-CI loop","conflict_risk":"execution and review serialized; repository authority remained frozen","exit":"met: independent terminal P0/P1 classification and one bounded successor"},
       {"phase":2,"objective":"Run complete full CI against an audited generated-ledger overlay in a disposable exact-head clone without publication","owner":"evidence-pr36-anchor-full-ci-v5-daemon-recovered","status":"terminal_exit1_visual_roundtrip_p1_released","player_value":"proved the anchor overlay, audit, guard and unit/integration suite pass while isolating the remaining exact visual journey failure","conflict_risk":"execution-only task scratch preserved; repository authority remained frozen","exit":"met as terminal fail-fast no-write blocker with exact receipts"},
       {"phase":3,"objective":"Independently classify the exact PR36 v5 simple/full player_entered=false visual failure before any repair or anchor publication","owner":"review-pr36-v5-qa-evidence and review-pr36-v5-refute-technical-visual","status":"terminal_p0_0_p1_1_stricter_qa_spawn_position_cause_governs","player_value":"prevented another blind full-CI retry and narrowed the next change to one evidence-backed harness invocation repair","conflict_risk":"reviewers released; zero repository writers; PR35 and PR36 frozen","exit":"met with binding P1 and one bounded one-path successor"},
-      {"phase":4,"objective":"Repair only cafe SpaceShot invocation spawn position so real player entry is exercised, then prove focused simple/full and complete CI with the audited overlay","owner":"writer-pr36-cafe-player-spawn-harness-v1 / task 019ffe8d-6993-7be1-874b-5104f272d979","status":"empty_handoff_recovery_1_reserved_before_redispatch","player_value":"turns Probe-only cafe captures into attributable real-player entry evidence without touching Sim, Main, SpaceShot, save/replay or canon authority","conflict_risk":"same one tools/visual_gate.sh writer; recovery must execute directly rather than wait on Producer; all runtime/shared authority frozen","exit":"exact-head Docker focused and full-CI PASS, player_entered true, far/missing spawn negatives fail, independent P0/P1=0"}
+      {"phase":4,"objective":"Repair only cafe SpaceShot invocation spawn position so real player entry is exercised, then prove focused simple/full and complete CI with the audited overlay","owner":"writer-pr36-cafe-player-spawn-harness-v1-replacement / task 019ffa43-dd18-7002-9b4a-bb902e5b5f74","status":"replacement_reserved_before_dispatch","player_value":"turns Probe-only cafe captures into attributable real-player entry evidence without touching Sim, Main, SpaceShot, save/replay or canon authority","conflict_risk":"original owner revoked after repeated empty handoff; one replacement owns the same clean worktree and tools/visual_gate.sh only; all runtime/shared authority frozen","exit":"exact-head Docker focused and full-CI PASS, player_entered true, far/missing spawn negatives fail, independent P0/P1=0"}
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-09-01T01:32:37Z",
+    "at": "2026-09-01T01:36:55Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "pr34_anchor_migration": "Terminal clean no-write handoff: audit rc0, guard and self-tests rc0, full CI stopped without conclusion, ledger restored, worktree clean, zero commit/push/PR, all task containers and temporary bundles/output cleaned. Claim released; regenerate only after the Sim repair.",
     "pr34_ui_review": "The reviewer returned P0=0/P1=1 against old headdf750455. Producer exact-object comparison to current0acb480 proves only unrelated save diagnostic drift and revalidates the cited revoke/spatial semantics unchanged. The P1 governs as a stop signal; the old-head review supplies no clearance.",
-    "current_independence": "The first writer dispatch returned an empty handoff after waiting on the Producer rather than acting. The same exclusive tools/visual_gate.sh lease is retained for its one recovery; zero reviewers are active and every runtime/shared authority surface remains frozen.",
+    "current_independence": "The original owner repeated the empty handoff after its sole recovery and is revoked. One replacement is reserved for the same clean worktree and exclusive tools/visual_gate.sh lease; zero reviewers are active and every runtime/shared authority surface remains frozen.",
     "pr34_current_head_p1": "At current0acb480 Sim.gd revoke_cafe_guest_capability lines4086-4093 only mark status revoked and emit events. Save spatial validation lines2489-2495 permits cafe/2f only for active capability, otherwise requires authored-home reachability. Revoking on 2f can therefore leave unauthorized state and make save/load fail closed without safe ejection or explicit denial/recovery.",
     "stack_b_replacement_exact_commit": "Replacement LF lane is clean at exact1114d2b7/tree51816f37 with only cafe-authored IDs and generated manifest added. Pinned Linux Docker b0173238 at committed head passed compiler --check, exact identity, game-clean and SHA checks; prior independent generation was byte-identical and malformed/stale/unbound negatives fail closed. Remote publication and Draft PR remain unperformed.",
     "stack_b_normal_push_failure": "One normal non-force push failed with curl28/connect timeout and send-pack disconnect. GitHub ref and branch APIs confirm the replacement branch is absent and no PR exists. One non-force Git Data API create-ref recovery is reserved against exact master9b2d052c and tree51816f37.",
@@ -3856,7 +3887,7 @@
     "stack_b_pr31_normal_sync_result_body_refresh_reserved": "GitHub update-branch created exact Draft merge child3254577d/treec6d76be9 with parents d7f2bd06 + master37ccea82 and unchanged two JSON blobs. Post-sync API/local/Docker ls-remote all enumerate 39 branches. Qualification33257158954 and authority33257158256 succeeded; CI/visual33257158932 active. Old checks/reviews are invalid. Body-only exact-head evidence refresh is reserved before any fresh review dispatch.",
     "stack_b_pr31_normal_sync_body_rebound": "Draft PR31 body is rebound at SHA2561fe05ae5/3050 bytes to base37ccea82/head3254577d/treec6d76be9, exact parents, unchanged JSON blobs and source receipts. It records qualification/authority success and CI/visual active, invalidates all old-head evidence, and keeps review/readiness/merge gates unchecked. Await terminal exact-head checks.",
     "shared_write_conflicts": 0,
-    "decision": "Classify the terminal idle no-write response as an empty handoff. Reserve the one permitted recovery for the same task and exact worktree, explicitly requiring direct implementation rather than delegation or waiting; do not create a duplicate writer."
+    "decision": "Recovery repeated the same empty handoff, so revoke the original owner and serially transfer the unchanged clean one-path lease to task 019ffa43. Publish this ownership change before replacement dispatch."
   },
   "released_claims": [
     {
@@ -4260,8 +4291,8 @@
   },
   "metrics": {
     "conflicts_rejected_before_write": 1,
-    "stale_or_empty_handoffs": 4,
-    "recoveries_or_replacements": 14,
+    "stale_or_empty_handoffs": 5,
+    "recoveries_or_replacements": 15,
     "open_exact_sha_p0": 0,
     "open_exact_sha_p1": 4,
     "post_merge_regressions": 1,
@@ -4362,7 +4393,7 @@
     "pr29_post_merge_success_full_scan_pr28_reserved": "Post-merge CI33182561513 succeeded at master43c72a8f. Full 36-branch snapshot is complete and exact across GitHub/ls-remote/local refs, hash1e6a1261; 29 PRs/0 reviews, 0 issues/releases/tags, 29 worktrees with 14 dirty all preserved. Required tasks unavailable; dynamic dev/map/UI-UX inactive/terminal, B28 BELOW_REQUIRED_FLOOR. PR28 one-manifest branch update/review is the next serialized lane.",
     "pr28_e70cebba_terminal_p1_freeze": "PR28 exact head e70cebba/treec9e0273e/body10e446b passed one-path identity, Docker53x2 and hosted CI33184928495. Security/QA P0=0/P1=1/P2=1 and REFUTE P0=0/P1=1/P2=0 independently found the same strict-base identity handoff cycle. Draft frozen; PENDING strings, Ready, protection and merge remain untouched.",
     "human_acceptance": "not_ready",
-    "pr5_projection": "open_draft_live_head_b325234_run33457066038_ci_and_visual_success_mergeable_behind; empty writer handoff recovery reserved"
+    "pr5_projection": "open_draft_live_head_8cb4b50_run_pending_ci_mergeable_behind; recovery-exhausted owner revoke and replacement lease pending publication"
   },
-  "next_trigger": "Publish this exact recovery reservation non-force to codex/main-repo-review, then re-dispatch task 019ffe8d once with explicit direct-execution instructions and return without waiting. On a later heartbeat harvest the result; if the same empty handoff repeats, revoke and replace with provenance. PR35 and PR36 remain frozen; no Ready or merge is authorized. HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "Publish the recovery-exhausted revoke plus replacement reservation non-force to codex/main-repo-review, then dispatch task 019ffa43 asynchronously on the existing exact clean worktree and return without waiting. Harvest later before any publication. PR35 and PR36 remain frozen; no Ready or merge is authorized. HUMAN_ACCEPTANCE_NOT_READY."
 }
