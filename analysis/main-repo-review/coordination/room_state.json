@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-09-01T12:14:12Z",
+  "updated_at": "2026-09-01T12:21:49Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,13 +11,13 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "f7c4d85e2035e65d20ea4ca5e865ec20ef20942202a35cd6bf74b294f34ad461",
-    "canonical_objects": 396,
+    "canonical_sha256": "429951c9d8502aec7e1a54955a0fdb68681047f7431e0a3e0c77d6aeeafada2a",
+    "canonical_objects": 397,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
-      "parent": "6b22236911465c4ef0b86c4642305cc8ec150abe",
-      "tree": "6e61eb979504ee9b88ca70a0c9787ec310d3c2fd",
-      "commit": "264fbae87560fda4a1f077340a48c34336f3b5b6",
+      "parent": "264fbae87560fda4a1f077340a48c34336f3b5b6",
+      "tree": "48421174d17d173c6de9466d76bb7b85f5a06391",
+      "commit": "f79253ade8486f22d7e7b09c0d8c77ab21bae13f",
       "force": false,
       "reason": "producer-only non-force Git Data API publication; GitHub API authoritative for this exact parent-child mutation"
     },
@@ -54,7 +54,7 @@
     "sorted_name_sha_set_sha256": "ff79e380885175406adc8c104c91333604b2ad0398c89e1ee3ce54b262a25b3d",
     "master": "37ccea829e16e5844059a11eac9b3177ac693d6a",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "264fbae87560fda4a1f077340a48c34336f3b5b6",
+    "coordination": "f79253ade8486f22d7e7b09c0d8c77ab21bae13f",
     "pr25": "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
     "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
@@ -4066,12 +4066,12 @@
       "generated_outputs": ["D:\\Documents\\Dev\\pr36-p1o-combined-ci-replacement1 receipts and one new labeled detached container only"],
       "dependencies": ["failed-claim:evidence-pr36-p1o-combined-full-ci-v1", "synthetic-tree:7eb1e6c0a54ab62af982b2c38cefd94bf99c4221", "space-roundtrip:c8172cb:patch76d4af64", "visual-gate:sha256-9f2e32d8:patch-e1e2bc57", "qualified-image:sha256-06267e20a02b38d29feb2e5494ea990677f12a2d91fc7451dba024572a2dcf94"],
       "consumer": "Producer terminal harvest, then fresh independent QA and REFUTE.",
-      "status": "terminal_exit1_stale_committed_complement_anchor_only_recovery1_reserved",
+      "status": "recovery1_async_dispatched_pending_start_receipt",
       "write_lease": false,
-      "last_heartbeat": "2026-09-01T12:14:12Z",
-      "stale_after": "2026-09-01T14:14:12Z",
+      "last_heartbeat": "2026-09-01T12:21:49Z",
+      "stale_after": "2026-09-01T14:21:49Z",
       "pr": {"number":null,"upstream_pr":36,"status":"evidence_only_no_pr"},
-      "dispatch": {"at":"2026-09-01T10:58:36Z","method":"collaboration.spawn_agent","status":"terminal_full_ci_exit1_recovery_reserved","reservation_commit":"a37dcff9cf4b13e36d2bb8bd6e68279a7c7733d1","cadence":"first full CI terminal; sole audited-overlay recovery dispatches asynchronously after ledger publication"},
+      "dispatch": {"at":"2026-09-01T12:21:49Z","method":"collaboration.followup_task","status":"accepted_running_async","reservation_commit":"f79253ade8486f22d7e7b09c0d8c77ab21bae13f","cadence":"sole audited-overlay recovery verifies preflight, launches one detached full CI, and returns without waiting"},
       "pr_policy": "No commit, push or PR. Probe image ID, PIL11.3, Python and Godot, then launch full CI exactly once and hand off.",
       "checks": {"required":["image ID equals sha256:06267e20 and RepoDigest is immutable","PIL version exactly11.3.0 before CI","synthetic tree content-equivalent7eb1e6c with exactly two paths","full tools/ci.sh launches once in isolated network-none container","terminal receipts persisted and no registered/remote mutation"],"p0":0,"p1":1,"terminal_result":"All listed unit/integration and full visual gates including P1O passed; overall exit1 only because committed complement ledger is stale for game tree4eafaf1.","does_not_prove":"A combined functional/visual PASS does not prove complete-CI green, independent review, player-facing polish, benchmark parity, accessibility, merge or release readiness."},
       "recovery_count": 1,
@@ -4080,7 +4080,7 @@
       "stop_lines": ["qualified image or PIL11.3 probe fails", "baseline/input/synthetic two-path identity drifts", "third path", "shared or registered state mutation required", "duplicate runner"],
       "handoff_recipient": "Producer terminal harvest then independent QA/REFUTE",
       "archive_condition": "Exact terminal full-CI receipt and no-mutation handoff, or terminal stop-line evidence.",
-      "execution": {"predecessor_container":"6d9ebf132078324f866ddeba9b1fba8490fab9c005f22c6e85485feef57e8cc9 preserved read-only","full_ci_launches":1,"started_at":"2026-09-01T11:04:48Z","ended_at":"2026-09-01T11:50:02Z","exit_code":1,"synthetic_head":"40e049278b62f929d066c71de60625b85e24177e","synthetic_tree":"7eb1e6c0a54ab62af982b2c38cefd94bf99c4221","exit_receipt_sha256":"ace2083411bb43935410febd2820e2d18d468159611d41096eda3d34fbacde1c","full_log_sha256":"608ce9a8cb53afe409cb17e3596443896e5ae4ebb9224971d7bd0869dec8abfb","sole_failure":"stale committed complement ledger369c9f versus game tree4eafaf1","functional_visual_result":"PASS including P1O, P1I, cafe2F, floor roundtrip, seasons and precipitation","recovery":{"status":"reserved_before_async_dispatch","scratch":"D:\\Documents\\Dev\\pr36-p1o-combined-ci-replacement1-recovery1","overlay_sha256":"f13f3e22eeb7df887196ae2a92423de64b1791e1327223f53fcb83e62f865bbf","overlay_baked_commit":"dfefd9a673877a64998ca6fa81c61fbf51730ff7","overlay_baked_game_tree":"4eafaf1c36e1a03302df47538b0500e92642d67d","coverage":"7x38 hard31/31 defaults15/15","full_ci_launch_budget":1,"rebake":false}}
+      "execution": {"predecessor_container":"6d9ebf132078324f866ddeba9b1fba8490fab9c005f22c6e85485feef57e8cc9 preserved read-only","full_ci_launches":1,"started_at":"2026-09-01T11:04:48Z","ended_at":"2026-09-01T11:50:02Z","exit_code":1,"synthetic_head":"40e049278b62f929d066c71de60625b85e24177e","synthetic_tree":"7eb1e6c0a54ab62af982b2c38cefd94bf99c4221","exit_receipt_sha256":"ace2083411bb43935410febd2820e2d18d468159611d41096eda3d34fbacde1c","full_log_sha256":"608ce9a8cb53afe409cb17e3596443896e5ae4ebb9224971d7bd0869dec8abfb","sole_failure":"stale committed complement ledger369c9f versus game tree4eafaf1","functional_visual_result":"PASS including P1O, P1I, cafe2F, floor roundtrip, seasons and precipitation","recovery":{"status":"accepted_running_async_pending_start_receipt","scratch":"D:\\Documents\\Dev\\pr36-p1o-combined-ci-replacement1-recovery1","overlay_sha256":"f13f3e22eeb7df887196ae2a92423de64b1791e1327223f53fcb83e62f865bbf","overlay_baked_commit":"dfefd9a673877a64998ca6fa81c61fbf51730ff7","overlay_baked_game_tree":"4eafaf1c36e1a03302df47538b0500e92642d67d","coverage":"7x38 hard31/31 defaults15/15","full_ci_launch_budget":1,"rebake":false}}
     }
   ],
   "active_dependency_graph": {
@@ -4095,13 +4095,13 @@
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-09-01T12:14:12Z",
+    "at": "2026-09-01T12:21:49Z",
     "active_writers": 0,
     "active_execution_owners": 1,
     "read_only_reviewers": 0,
     "pr34_anchor_migration": "Terminal clean no-write handoff: audit rc0, guard and self-tests rc0, full CI stopped without conclusion, ledger restored, worktree clean, zero commit/push/PR, all task containers and temporary bundles/output cleaned. Claim released; regenerate only after the Sim repair.",
     "pr34_ui_review": "The reviewer returned P0=0/P1=1 against old headdf750455. Producer exact-object comparison to current0acb480 proves only unrelated save diagnostic drift and revalidates the cited revoke/spatial semantics unchanged. The P1 governs as a stop signal; the old-head review supplies no clearance.",
-    "current_independence": "One evidence-only recovery owns a fresh scratch/container and no repository path; predecessor evidence, all registered worktrees and shared authority remain frozen.",
+    "current_independence": "The sole evidence-only recovery is running asynchronously with a fresh scratch/container and no repository path; predecessor evidence, all registered worktrees and shared authority remain frozen.",
     "pr34_current_head_p1": "At current0acb480 Sim.gd revoke_cafe_guest_capability lines4086-4093 only mark status revoked and emit events. Save spatial validation lines2489-2495 permits cafe/2f only for active capability, otherwise requires authored-home reachability. Revoking on 2f can therefore leave unauthorized state and make save/load fail closed without safe ejection or explicit denial/recovery.",
     "stack_b_replacement_exact_commit": "Replacement LF lane is clean at exact1114d2b7/tree51816f37 with only cafe-authored IDs and generated manifest added. Pinned Linux Docker b0173238 at committed head passed compiler --check, exact identity, game-clean and SHA checks; prior independent generation was byte-identical and malformed/stale/unbound negatives fail closed. Remote publication and Draft PR remain unperformed.",
     "stack_b_normal_push_failure": "One normal non-force push failed with curl28/connect timeout and send-pack disconnect. GitHub ref and branch APIs confirm the replacement branch is absent and no PR exists. One non-force Git Data API create-ref recovery is reserved against exact master9b2d052c and tree51816f37.",
@@ -4145,7 +4145,7 @@
     "stack_b_pr31_normal_sync_result_body_refresh_reserved": "GitHub update-branch created exact Draft merge child3254577d/treec6d76be9 with parents d7f2bd06 + master37ccea82 and unchanged two JSON blobs. Post-sync API/local/Docker ls-remote all enumerate 39 branches. Qualification33257158954 and authority33257158256 succeeded; CI/visual33257158932 active. Old checks/reviews are invalid. Body-only exact-head evidence refresh is reserved before any fresh review dispatch.",
     "stack_b_pr31_normal_sync_body_rebound": "Draft PR31 body is rebound at SHA2561fe05ae5/3050 bytes to base37ccea82/head3254577d/treec6d76be9, exact parents, unchanged JSON blobs and source receipts. It records qualification/authority success and CI/visual active, invalidates all old-head evidence, and keeps review/readiness/merge gates unchecked. Await terminal exact-head checks.",
     "shared_write_conflicts": 0,
-    "decision": "Publish terminal exit1 classification and the sole audited-overlay recovery lease, then reactivate the same executor asynchronously. Do not wait, rebake, mutate protected anchors, duplicate runners or claim green before the recovery terminal receipt."
+    "decision": "Recovery dispatch is accepted. Return without waiting; later heartbeat harvests start or terminal receipts once. Do not rebake, mutate protected anchors, duplicate runners or claim green before terminal evidence."
   },
   "released_claims": [
     {
@@ -4657,7 +4657,7 @@
     "pr36_combined_ci_setup_failure": "Exact two-path synthetic tree7eb1e6c proven, but attempt1 Git ownership and sole recovery missing PIL stopped before tools/ci.sh. Container8ef09c exited1; setup logs ca9f60df/c17ed007 preserved; no registered or remote mutation. Qualified-image replacement reserved.",
     "pr36_combined_ci_terminal": "Exact synthetic40e0492/tree7eb1e6c completed one full CI. All listed unit/integration and full visual gates including P1O passed; exit1 solely at stale committed complement ledger369c9f versus game tree4eafaf1. Log608ce9a8, exitace20834.",
     "pr36_combined_ci_recovery": "Sole recovery reserved using audited overlayf13f3e22 baked for exact PR36/game tree4eafaf1 with7x38, hard31/31 and defaults15/15; no rebake or publication.",
-    "pr5_projection": "open_draft_live_head264fbae8; exact run33503621894 ci_visual_success; terminal classification and recovery reservation pending publication"
+    "pr5_projection": "open_draft_live_headf79253ad; run33507217605 ci_visual_in_progress; sole audited-overlay recovery dispatched"
   },
-  "next_trigger": "Publish event396 and this terminal/recovery-reserved state as a non-force child of exact264fbae8, then asynchronously reactivate the same executor for the sole audited-overlay recovery and return without waiting. No rebake, push, PR, Ready or merge. HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "Publish event397 and this dispatch state as a non-force child of exactf79253ad, then return without waiting. Later heartbeat harvests the sole recovery start or terminal receipts once; no rebake, duplicate run, push, PR, Ready or merge. HUMAN_ACCEPTANCE_NOT_READY."
 }
