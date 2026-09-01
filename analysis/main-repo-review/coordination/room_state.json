@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-09-01T04:20:41Z",
+  "updated_at": "2026-09-01T04:24:41Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,13 +11,13 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "103d75faac6c2bb4d97feb472ce23d4d9ae5f420230e64cbeeb7bde826a6fd35",
-    "canonical_objects": 377,
+    "canonical_sha256": "bab4f3f69aacfc0aa78b92f4f79d4d7b7fcbb04402b26e76e3d10f402ce661c0",
+    "canonical_objects": 378,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
-      "parent": "df78a3a3399da18886d9cbf9caf9982b9097692a",
-      "tree": "4eb9ceebe715e1eb6db25052f5af430783227e27",
-      "commit": "77df84c324fd125d8fa80e3a0cd3ab5411502be8",
+      "parent": "77df84c324fd125d8fa80e3a0cd3ab5411502be8",
+      "tree": "dd4c65c30c3cd2253eda37012048a6052534a32f",
+      "commit": "13bc6fd21af49d25a53eef7c406e8e087773f1dd",
       "force": false,
       "reason": "producer-only non-force Git Data API publication; GitHub API authoritative for this exact parent-child mutation"
     },
@@ -3845,11 +3845,11 @@
       "generated_outputs": ["task-owned scratch Dockerfile or build recipe outside repository", "derived local OCI image with recorded immutable base and image ID", "isolated full-CI log and receipts outside repository"],
       "dependencies": ["exact dirty one-path handoff from task 019ffa43", "gamecraft-runner:4.6.2@sha256:2a19478991b072a6962d54845c9beb81ef0b2850d0da64a6c19a3b11d196824d", "Pillow 11.3.0", "audited overlay SHA256 f13f3e22eeb7df887196ae2a92423de64b1791e1327223f53fcb83e62f865bbf", "terminal environment failure log SHA256 9acb1884e11992eecef293eb84bb2e685c0d289897a91fe3f3269590ff404d34"],
       "consumer": "PR36 exact-head full evidence, then independent QA and REFUTE",
-      "status": "terminal_userdata_mount_p1_recovery_1_reserved",
+      "status": "active_async_userdata_mount_recovery_1_dispatched",
       "write_lease": true,
-      "last_heartbeat": "2026-09-01T04:20:41Z",
+      "last_heartbeat": "2026-09-01T04:24:41Z",
       "stale_after": "2026-09-01T05:38:44Z",
-      "dispatch": {"at":"2026-09-01T03:44:31Z","method":"send_message_to_thread","status":"active_in_progress","reservation_commit":"df78a3a3399da18886d9cbf9caf9982b9097692a","snapshot_cursor":"3dc4c55a-d93c-42ea-a022-6b6993770bd5:4","cadence":"asynchronous nonblocking; harvest later"},
+      "dispatch": {"at":"2026-09-01T04:24:41Z","method":"send_message_to_thread","status":"active_in_progress_recovery_1","reservation_commit":"13bc6fd21af49d25a53eef7c406e8e087773f1dd","snapshot_cursor":"3dc4c55a-d93c-42ea-a022-6b6993770bd5:6","cadence":"asynchronous nonblocking; harvest later"},
       "pr": {"number":null,"stacked_base_branch":"codex/pr35-roundtrip-camera-harness-repair-v1","upstream_pr":36,"draft_required":true,"status":"pre_pr"},
       "pr_policy": "No push or PR in this environment-recovery phase. Commit exactly tools/visual_gate.sh only after terminal isolated full-CI PASS, then hand off to Producer.",
       "checks": {"required":["derived image base digest exactly matches the pinned gamecraft runner","Pillow exactly 11.3.0 and Python/tool versions recorded","build inputs and package provenance or hashes recorded","repository diff remains exactly tools/visual_gate.sh","full tools/ci.sh passes with audited overlay in isolated Docker","complete immutable log and container/image/mount/cache ownership receipt","worktree clean after exact one-path commit"],"p0":0,"p1":1,"does_not_prove":"Environment closure and harness CI do not prove player-facing polish, save/load/replay closure, accessibility, benchmark parity, release readiness or permission to merge."},
@@ -3870,11 +3870,11 @@
       {"phase":1,"objective":"Run one attributable canonical simple/full SpaceShot wrapper receipt against exact PR36 without source changes","owner":"evidence-pr36-spaceshot-canonical-invocation-v1 then review-pr36-canonical-spaceshot-evidence-v1","status":"complete_p0_0_runner_p1_cleared_full_ci_p1_retained","player_value":"distinguishes empty invocation evidence from an actual harness/runtime failure without another full-CI loop","conflict_risk":"execution and review serialized; repository authority remained frozen","exit":"met: independent terminal P0/P1 classification and one bounded successor"},
       {"phase":2,"objective":"Run complete full CI against an audited generated-ledger overlay in a disposable exact-head clone without publication","owner":"evidence-pr36-anchor-full-ci-v5-daemon-recovered","status":"terminal_exit1_visual_roundtrip_p1_released","player_value":"proved the anchor overlay, audit, guard and unit/integration suite pass while isolating the remaining exact visual journey failure","conflict_risk":"execution-only task scratch preserved; repository authority remained frozen","exit":"met as terminal fail-fast no-write blocker with exact receipts"},
       {"phase":3,"objective":"Independently classify the exact PR36 v5 simple/full player_entered=false visual failure before any repair or anchor publication","owner":"review-pr36-v5-qa-evidence and review-pr36-v5-refute-technical-visual","status":"terminal_p0_0_p1_1_stricter_qa_spawn_position_cause_governs","player_value":"prevented another blind full-CI retry and narrowed the next change to one evidence-backed harness invocation repair","conflict_risk":"reviewers released; zero repository writers; PR35 and PR36 frozen","exit":"met with binding P1 and one bounded one-path successor"},
-      {"phase":4,"objective":"Repair cafe SpaceShot invocation spawn and fail closed when real-player metadata is missing, then prove focused simple/full and complete CI with the audited overlay","owner":"writer-pr36-cafe-player-spawn-harness-pillow-env-v1 / task 019ffe9a-f908-78c1-bfb1-e485767a867a","status":"terminal_userdata_mount_p1_recovery_1_reserved","player_value":"turns Probe-only or missing-player cafe captures into attributable real-player entry evidence without touching Sim, Main, SpaceShot, save/replay or canon authority","conflict_risk":"one replacement inherits exactly tools/visual_gate.sh and may create only disposable task-owned OCI evidence inputs outside the repository; recovery adds one narrow task-owned Godot userdata mount without rebuilding or broadening authority","exit":"exact-head Docker focused and full-CI PASS, player_entered true, missing/far negatives fail the explicit assertion, independent P0/P1=0"}
+      {"phase":4,"objective":"Repair cafe SpaceShot invocation spawn and fail closed when real-player metadata is missing, then prove focused simple/full and complete CI with the audited overlay","owner":"writer-pr36-cafe-player-spawn-harness-pillow-env-v1 / task 019ffe9a-f908-78c1-bfb1-e485767a867a","status":"active_async_userdata_mount_recovery_1_dispatched","player_value":"turns Probe-only or missing-player cafe captures into attributable real-player entry evidence without touching Sim, Main, SpaceShot, save/replay or canon authority","conflict_risk":"one replacement inherits exactly tools/visual_gate.sh and may create only disposable task-owned OCI evidence inputs outside the repository; recovery adds one narrow task-owned Godot userdata mount without rebuilding or broadening authority","exit":"exact-head Docker focused and full-CI PASS, player_entered true, missing/far negatives fail the explicit assertion, independent P0/P1=0"}
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-09-01T04:20:41Z",
+    "at": "2026-09-01T04:24:41Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "pr34_anchor_migration": "Terminal clean no-write handoff: audit rc0, guard and self-tests rc0, full CI stopped without conclusion, ledger restored, worktree clean, zero commit/push/PR, all task containers and temporary bundles/output cleaned. Claim released; regenerate only after the Sim repair.",
@@ -4430,7 +4430,7 @@
     "pr28_e70cebba_terminal_p1_freeze": "PR28 exact head e70cebba/treec9e0273e/body10e446b passed one-path identity, Docker53x2 and hosted CI33184928495. Security/QA P0=0/P1=1/P2=1 and REFUTE P0=0/P1=1/P2=0 independently found the same strict-base identity handoff cycle. Draft frozen; PENDING strings, Ready, protection and merge remain untouched.",
     "human_acceptance": "not_ready",
     "pr36_cafe_player_spawn_harness_async_ci": "The task-owned derived image sha256:06267e20 includes Pillow11.3.0 and preserves the exact one-path diff, but container8bab049c exited1 because read-only root omitted a writable Godot app_userdata mount; log SHA256 ea3c4b76. Recovery1 is reserved to reuse the exact image and add only a task-owned narrow rw mount at /home/gamecraft/.local/share/godot/app_userdata, with fresh output and no repository change.",
-    "pr5_projection": "open_draft_live_head_77df84c_run33467459871_ci_visual_success; derived-image userdata P1 recovery reserved"
+    "pr5_projection": "open_draft_live_head_13bc6fd_prior_run33467459871_ci_visual_success; userdata-mount recovery1 dispatched asynchronously"
   },
-  "next_trigger": "Publish the recovery reservation remotely, then redispatch task 019ffe9a once to reuse exact image sha256:06267e20 with a task-owned narrow Godot app_userdata rw mount and fresh output, launching detached full CI without waiting. No rebuild, second repository path, push or PR. Smart HTTP remains incomplete and must be retried next heartbeat. HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "On a later heartbeat retry the required serial Smart HTTP lane, then harvest task 019ffe9a recovery1 once. Verify exact image reuse, narrow app_userdata mount, fresh output and repository one-path invariants; inspect any named detached full-CI container without waiting. No rebuild, second repository path, push or PR. HUMAN_ACCEPTANCE_NOT_READY."
 }
