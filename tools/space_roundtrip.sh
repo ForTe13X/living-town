@@ -30,7 +30,7 @@
 #                                 把 game/ 拷进 scratchpad、在拷贝上回滚 WorldView 的 `_void_key` 修复，
 #                                 再用这个变量指过去，本门必须变红。判据没有过这一关就不是判据。
 #   LT_RT_JOURNEY=simple|full     默认 simple（玩家 town↔cafe/1f 往返门）。
-#                                 full = 玩家进出 + Probe 观察 owner-only 2F（非玩家上楼证据），
+#                                 full = 受邀玩家真实进入 2F 并返回（Probe 只随同取景），
 #                                 逐段断言 Probe Floor + 回程取景一致 + 2F 与 1F 可分；判据走 assert_floor_roundtrip.py。
 #   LT_RT_DRAW_SKIP=<pass>        透传 --draw-skip <pass> 给引擎（负对照用）。
 #   LT_RT_SKIP_FURN=1             LT_RT_DRAW_SKIP=interior_furniture 的便捷别名 ——
@@ -106,7 +106,7 @@ PY="${PYTHON:-python}"
 MODE="${LT_RT:-auto}"
 RUNNER="${LT_RT_RUNNER:-auto}"
 IMG="${LT_RT_IMAGE:-gamecraft-runner:4.6.2}"
-JOURNEY="${LT_RT_JOURNEY:-simple}"    # simple=玩家 1F 往返；full=玩家进出 + Probe 楼层观察
+JOURNEY="${LT_RT_JOURNEY:-simple}"    # simple=玩家 1F 往返；full=受邀玩家真实上下楼并返回
 DRAWSKIP="${LT_RT_DRAW_SKIP:-}"        # AM3 负对照：LT_RT_DRAW_SKIP=interior_furniture ⇒ 2F/1F 都空 ⇒ B 臂（可分）红
 AGENTS="${LT_RT_AGENTS:-12}"           # 量具默认 N12；显式 CLI 参数屏蔽宿主持久化的 NPC 设置
 [ "${LT_RT_SKIP_FURN:-0}" = "1" ] && DRAWSKIP="interior_furniture"   # 便捷别名：让 2F 帧==1F 帧 的那条牙
@@ -182,7 +182,25 @@ if [ $SHOT_RC -ne 0 ]; then
   exit 1
 fi
 
-# 判据分派：simple → 玩家 1F 往返；full → 玩家进出 + Probe 楼层观察（非玩家 owner-only 穿越证据）
+
+if [ "$JOURNEY" = "full" ]; then
+  "$PY" - "$OUT/rt_meta.json" <<'PY'
+import json, sys
+with open(sys.argv[1], encoding="utf-8") as f:
+    m = json.load(f)
+required_true = ("player_journey", "player_invited", "player_entered", "player_occupied_2f", "player_returned_1f", "player_returned", "cam_same")
+bad = [f"{k}={m.get(k)!r}" for k in required_true if m.get(k) is not True]
+if m.get("stairs_probe_only") is not False:
+    bad.append(f"stairs_probe_only={m.get('stairs_probe_only')!r}")
+if bad:
+    print("  cafe full-player metadata FAIL: " + ", ".join(bad))
+    raise SystemExit(1)
+print("  cafe full-player metadata PASS: invited player occupied 2F and returned; stairs_probe_only=false")
+PY
+  [ $? -eq 0 ] || exit 1
+fi
+
+# 判据分派：simple → 玩家 1F 往返；full → 受邀玩家真实上下楼并返回
 if [ -n "${LT_RT_DENY_PORTAL:-}" ]; then
   "$PY" tools/assert_portal_denied.py "$OUT"
 elif [ "$JOURNEY" = "full" ]; then

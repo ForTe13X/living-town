@@ -177,6 +177,7 @@ const C1_MIN_VIEWPORT := Vector2(320.0, 192.0)
 var _status_pan: ColorRect            # 顶栏底板（跟右边；宽度=整屏，见 _build_hud 里的注释）
 var _act_pan: ColorRect               # 玩家动作条底板（跟底边；仅玩家模式可见）
 var _act_btns: Array = []             # 7 个动词按钮（顺序 = PLAYER_VERBS）
+var _guest_pass_btn: Button              # 归还/撤销咖啡馆访客证（触屏与 R 键同一函数）
 var _player_btn: Button               # 设置面板里的「玩家模式」开关
 
 # ── 玩家动词（触屏动作条 ≡ 物理键，同一条 _player_do 路径）──────────────────
@@ -921,7 +922,7 @@ func _build_action_bar(layer: CanvasLayer, fnt: Font) -> void:
 	_act_pan = ColorRect.new()
 	_act_pan.color = Color(0, 0, 0, 0.42)
 	_act_pan.position = Vector2(ACT_X - 8.0, ACT_Y - 6.0)
-	_act_pan.size = Vector2(ACT_STEP * PLAYER_VERBS.size() + 12.0, ACT_BH + 12.0)
+	_act_pan.size = Vector2(ACT_STEP * PLAYER_VERBS.size() + 92.0, ACT_BH + 12.0)
 	_act_pan.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_act_pan.visible = _player_mode          # 非玩家模式：整条隐藏（隐藏的 Control 不吃输入，世界点选照旧）
 	layer.add_child(_act_pan)
@@ -941,6 +942,17 @@ func _build_action_bar(layer: CanvasLayer, fnt: Font) -> void:
 		b.pressed.connect(func(): _player_do(verb))
 		layer.add_child(b)
 		_act_btns.append(b)
+	_guest_pass_btn = Button.new()
+	_guest_pass_btn.text = "归还访客证"
+	_guest_pass_btn.tooltip_text = "归还咖啡馆二楼访客证（键 R）；人在二楼会安全返回一楼"
+	_guest_pass_btn.add_theme_font_override("font", fnt)
+	_guest_pass_btn.add_theme_font_size_override("font_size", 14)
+	_guest_pass_btn.position = Vector2(ACT_X + ACT_STEP * PLAYER_VERBS.size(), ACT_Y)
+	_guest_pass_btn.size = Vector2(84.0, ACT_BH)
+	_guest_pass_btn.focus_mode = Control.FOCUS_NONE
+	_guest_pass_btn.visible = _player_mode
+	_guest_pass_btn.pressed.connect(_player_return_cafe_pass)
+	layer.add_child(_guest_pass_btn)
 
 ## keycode → 动词（PLAYER_VERBS 的 "key" 字段是唯一真源）。查不到 → ""，_player_do 会当作未知动作交给 Sim 拒绝。
 func verb_for_key(kc: int) -> String:
@@ -960,6 +972,9 @@ func _sync_action_bar(dx: float = 0.0, dy: float = 0.0) -> void:
 		var b: Button = _act_btns[i]
 		b.visible = show
 		b.position = Vector2(ACT_X + ACT_STEP * i, ACT_Y + dy)
+	if _guest_pass_btn != null:
+		_guest_pass_btn.visible = show
+		_guest_pass_btn.position = Vector2(ACT_X + ACT_STEP * PLAYER_VERBS.size(), ACT_Y + dy)
 
 ## P1-v：货运观测室是只读控制面，不伪装成社交目标或玩家卸货台。
 ## 只在 visibility 上切上下文；键盘路径另由 _player_do 同门拒绝。
@@ -970,6 +985,8 @@ func _sync_action_bar_context() -> void:
 	_act_pan.visible = show
 	for raw in _act_btns:
 		(raw as Button).visible = show
+	if _guest_pass_btn != null:
+		_guest_pass_btn.visible = show
 
 func _player_in_warehouse_observatory() -> bool:
 	if not _player_mode:
@@ -1795,7 +1812,7 @@ func _update_status() -> void:
 				for v in PLAYER_VERBS:                                             # 单一真源：与动作条按钮同表，不再各写一份
 					vkeys.append("%s%s" % [String(v["key"]), String(v["label"])])
 				var cargo_hint := _player_cargo_hint(pl)
-				ptxt = "\n[color=#ffd700]你：礼物×%d  WASD移动  选中居民后 %s C聊天（或点下方动作条）%s[/color]%s" % [
+				ptxt = "\n[color=#ffd700]你：礼物×%d  WASD移动  选中居民后 %s R归还访客证 C聊天（或点下方动作条）%s[/color]%s" % [
 					int(pl["inventory"].get("gift", 0)), " ".join(vkeys), ("  约定：" + "；".join(pmeets)) if not pmeets.is_empty() else "", cargo_hint]
 	_status.text = "[color=#e6e9f2]小镇有灵 Living Town  ·  第 %d 天 %s %s%s%s  ·  %s  ·  %s  ·  NPC %d  ｜  事件 %d  约会 %d(活%d)  冲突 %d(活%d)[/color]%s" % [
 		Sim.day, clock, phase, wx, etxt, spd, btxt, Sim.agents.size(), Sim.event_log.size(), Sim.commitments.size(), meets_active, Sim.conflicts.size(), conf_active, ptxt]
@@ -2347,6 +2364,28 @@ func _player_do(action: String) -> String:
 		_push("[color=#f2a3a3]（%s）[/color]" % msg)
 	return msg
 
+## Visible keyboard/touch consumer for the canonical Sim capability command.
+## Both R and the button call this exact function; View never edits capability,
+## player address, chronicle, save bytes or replay state itself.
+func _player_return_cafe_pass() -> String:
+	if not _player_mode:
+		return "未开玩家模式"
+	var receipt: Dictionary = Sim.player_cafe_guest_pass("revoke")
+	var ok := bool(receipt.get("ok", false))
+	var returned := bool(receipt.get("returned", false))
+	var reason := String(receipt.get("reason", ""))
+	if ok:
+		var text := "已归还咖啡馆访客证" + ("，并安全返回一楼" if returned else "")
+		_push("[color=#9fe3b1]（%s）[/color]" % text)
+		if _locked_ortho_c1 != null: _locked_ortho_c1.show_receipt(text)
+		_update_status()
+		return ""
+	var visible_reason := "没有可归还的有效访客证" if reason == "capability_invalid" else reason
+	_push("[color=#f2a3a3]（%s）[/color]" % visible_reason)
+	if _locked_ortho_c1 != null: _locked_ortho_c1.show_receipt(visible_reason)
+	_update_status()
+	return visible_reason
+
 func _cycle_selection(dir: int) -> void:
 	if Sim.agents.is_empty():
 		return
@@ -2803,6 +2842,7 @@ func _unhandled_input(e: InputEvent) -> void:
 			# 那样"按钮 ≡ 按键"就只是【巧合】，靠人盯着两处不漂。现在两边都从 PLAYER_VERBS 查，
 			# 等价性变成构造性的；player_touch_test.gd 再把这句话钉死。
 			KEY_G, KEY_F, KEY_B, KEY_Y, KEY_T, KEY_P, KEY_M: _player_do(verb_for_key(e.keycode))
+			KEY_R: _player_return_cafe_pass()
 			KEY_PERIOD: if not Sim.running: Sim.tick()                                   # 单步 +1
 			KEY_COMMA:
 				if _locked_ortho_c1 != null and not _attempt_timeline_jump(maxi(0, Sim.tick_no - 1)):

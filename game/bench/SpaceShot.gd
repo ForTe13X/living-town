@@ -48,7 +48,7 @@ const MAIN_SCENE := "res://scenes/Main.tscn"
 var _out := ""
 var _space := "cafe"
 var _mode := "portal"
-var _journey := "simple"    # simple=玩家进店→出店；full=玩家进出 + Probe 观察 owner-only 楼层（AM3/编号135）
+var _journey := "simple"    # simple=玩家进店→出店；full=受邀玩家真实上下楼并返回（AM3/编号135）
 var _redraw := "auto"       # auto=切完空间补一次 _redraw_all()（= 下一个 tick 到来时的稳定态）；none=不补（暂停复现，见下）
 var _settle0 := 40          # 首帧之后的暖机帧数（纹理加载 + 插值吸附）
 var _settle := 24           # 每次空间切换之后的暖机帧数
@@ -60,6 +60,7 @@ var _deny_portal := ""      # P1-p presentation-only access arm; drives the real
 var _main: Node
 var _meta := {}
 var _rc := 0
+var _guest_invited := false
 
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
@@ -135,6 +136,16 @@ func _ready() -> void:
 	# 玩家旅程从玩家所在地取景；出门后 Main 也会回到同一跟随镜头。
 	# 因此前后帧仍可逐像素比较，同时产品参照不再是假装玩家在场的全镇鸟瞰。
 	var capture_player := Sim.get_agent("player")
+	# Full cafe evidence must begin with a real accepted player invite.  The
+	# harness may navigate the real player through public inputs, but it never
+	# writes capability/player address/portal state directly.
+	if _journey == "full" and not capture_player.is_empty():
+		_guest_invited = _invite_player_from_current_plane()
+		if _guest_invited:
+			var town_cafe_door := _portal_cell("town", "outdoor", "cafe", "1f")
+			if not _walk_player_to(town_cafe_door):
+				print("[SPACESHOT] ❌ invited player cannot reach authored cafe entrance through public moves")
+				get_tree().quit(1); return
 	if not capture_player.is_empty():
 		var capture_pos: Vector2i = capture_player.get("pos", Vector2i.ZERO)
 		pb.focus_on(Vector2(capture_pos.x * 48 + 24, capture_pos.y * 48 + 24), "player")
@@ -156,8 +167,19 @@ func _ready() -> void:
 	# A physical portal click adds a visible system row.  Preserve the real
 	# player traversal receipts, but restore view-only log/selection state before
 	# the after frame so the original exact roundtrip pixel tooth stays sharp.
+	# Invitation retries can advance the canonical world before the first frame.
+	# Player-journey evidence observes the player on both ends; keep this
+	# presentation-only selection stable across the roundtrip.
+	if not capture_player.is_empty(): _main.set("_selected_id", "player")
+	_main.call("_update_obs")
+	_main.call("_update_status")
+	_main.call("_render_log")
+	await _wait(4, 200)
 	var log0: Array = (_main.get("_log_recent") as Array).duplicate(true)
 	var selected0: String = String(_main.get("_selected_id"))
+	var cafe_log0: Array = []
+	var cafe_selected0 := ""
+	_meta["player_town_before"] = _player_address()
 	_snap("town_before", pb)
 	if _deny_portal != "":
 		var player_before := _player_address()
@@ -210,6 +232,13 @@ func _ready() -> void:
 			print("[SPACESHOT] ❌ 玩家点门后仍不在目标平面：%s/%s" % [player.get("space", "?"), player.get("floor", "?")])
 			_rc = 1
 		_meta["player_entered"] = player_in
+	if _journey == "full" and not player.is_empty() and not _guest_invited:
+		_guest_invited = _invite_player_from_current_plane()
+	if _journey == "full" and not player.is_empty():
+		_meta["player_invited"] = _guest_invited
+		if not _guest_invited or not Sim._cafe_guest_capability_valid():
+			print("[SPACESHOT] ❌ full journey lacks an accepted authoritative cafe guest invite")
+			get_tree().quit(1); return
 	# P1-v：东海仓内帧必须来自一次真实柜台点击，而不只是“墙上恰好画了字”。
 	# 点击走 Main._on_probe_tap → authored console cell → 只读 projection；同时钉住 Sim exact no-op。
 	if _space == "port_warehouse":
@@ -236,6 +265,9 @@ func _ready() -> void:
 			_rc = 1
 		_refresh()
 		await _wait(4, 200)
+	if _journey == "full":
+		cafe_log0 = (_main.get("_log_recent") as Array).duplicate(true)
+		cafe_selected0 = String(_main.get("_selected_id"))
 	_snap("interior" if _journey != "full" else "cafe_1f", pb)
 
 	# ── 全楼层观察旅程（AM3/编号135）：cafe/1f →（楼梯 portal）2f →（楼梯）1f ────────────
@@ -247,7 +279,13 @@ func _ready() -> void:
 	if _journey == "full":
 		if String(pb.active_floor) != "1f":
 			print("[SPACESHOT] ❌ 进店后应在 1f，实为 %s" % String(pb.active_floor)); _rc = 1
-		# 上楼 (cafe/1f → cafe/2f)
+		# 上楼 (cafe/1f → cafe/2f).  Put the invited real player on the
+		# authored stairs through PlayerTrace-recorded movement before the same
+		# product tap drives both Sim and camera.
+		var stairs_1f := _portal_cell("cafe", "1f", "cafe", "2f")
+		if not capture_player.is_empty() and not _walk_player_to(stairs_1f):
+			print("[SPACESHOT] ❌ invited player cannot reach cafe/1f stairs")
+			get_tree().quit(1); return
 		if not _climb(pb):
 			print("[SPACESHOT] ❌ 上楼：找不到 cafe/%s 的楼梯 portal" % String(pb.active_floor))
 			get_tree().quit(1); return
@@ -255,8 +293,13 @@ func _ready() -> void:
 		await _wait(_settle, _min_ms)
 		if String(pb.active_floor) != "2f":
 			print("[SPACESHOT] ❌ 上楼后应在 2f，实为 %s（楼梯目标层不对/portal 断）" % String(pb.active_floor)); _rc = 1
-		if not capture_player.is_empty() and String(Sim.get_agent("player").get("floor", "")) != "1f":
-			print("[SPACESHOT] ❌ Probe 远程观察时普通玩家不得跟进 owner-only 2f"); _rc = 1
+		if not capture_player.is_empty():
+			var player_2f: Dictionary = Sim.get_agent("player")
+			var occupied_2f := String(player_2f.get("space", "")) == "cafe" and String(player_2f.get("floor", "")) == "2f"
+			_meta["player_occupied_2f"] = occupied_2f
+			_meta["player_2f_address"] = _player_address()
+			if not occupied_2f:
+				print("[SPACESHOT] ❌ invited real player did not occupy cafe/2f"); _rc = 1
 		_snap("cafe_2f", pb)
 		# 下楼 (cafe/2f → cafe/1f)
 		if not _climb(pb):
@@ -266,6 +309,26 @@ func _ready() -> void:
 		await _wait(_settle, _min_ms)
 		if String(pb.active_floor) != "1f":
 			print("[SPACESHOT] ❌ 下楼后应回 1f，实为 %s" % String(pb.active_floor)); _rc = 1
+		if not capture_player.is_empty():
+			var player_back: Dictionary = Sim.get_agent("player")
+			var returned_1f := String(player_back.get("space", "")) == "cafe" and String(player_back.get("floor", "")) == "1f"
+			_meta["player_returned_1f"] = returned_1f
+			if not returned_1f:
+				print("[SPACESHOT] ❌ invited real player did not return to cafe/1f"); _rc = 1
+		var cafe_exit := _portal_cell("cafe", "1f", "town", "outdoor")
+		if not capture_player.is_empty() and not _walk_player_to(cafe_exit):
+			print("[SPACESHOT] ❌ returning player cannot reach cafe exit")
+			get_tree().quit(1); return
+		# Capture the same player address and View-only feed/selection as the
+		# entry frame so A2 keeps its exact-pixel tooth while still proving the
+		# real 2F occupation above.
+		_main.set("_log_recent", cafe_log0)
+		_main.set("_selected_id", cafe_selected0)
+		_main.call("_render_log")
+		_main.call("_update_obs")
+		_main.call("_update_status")
+		_refresh()
+		await _wait(4, 200)
 		_snap("cafe_1f_back", pb)
 
 	# ── 出店 ────────────────────────────────────────────────────────────────
@@ -289,6 +352,7 @@ func _ready() -> void:
 		_main.set("_log_recent", log0)
 		_main.set("_selected_id", selected0)
 		_main.call("_render_log")
+		_main.call("_update_obs")
 		_main.call("_update_status")
 		_refresh()
 		await _wait(4, 200)
@@ -297,6 +361,7 @@ func _ready() -> void:
 		# the same authored town viewport before/after the roundtrip.
 		pb.cam.position = cam0_pos
 		pb.cam.zoom = cam0_zoom
+	_meta["player_town_after"] = _player_address()
 	_snap("town_after", pb)
 
 	# ── 前提断言：出店后的取景必须与进店前【逐字节相同】 ────────────────────────
@@ -315,8 +380,8 @@ func _ready() -> void:
 
 	_meta["mode"] = _mode
 	_meta["journey"] = _journey
-	_meta["stairs_probe_only"] = _journey == "full" and not capture_player.is_empty()
-	_meta["player_floor_during_probe_stairs"] = "1f" if bool(_meta["stairs_probe_only"]) else ""
+	_meta["stairs_probe_only"] = false
+	_meta["player_floor_during_probe_stairs"] = "2f" if bool(_meta.get("player_occupied_2f", false)) else ""
 	_meta["space"] = _space
 	_meta["cam_same"] = cam_same
 	_meta["tick"] = Sim.tick_no
@@ -355,6 +420,55 @@ func _refresh() -> void:
 	var view = _main.get("_view") if _main != null else null
 	if view != null:
 		view.call("_redraw_all")
+
+
+## Resolve an authored endpoint cell without copying coordinates.
+func _portal_cell(from_space: String, from_floor: String, to_space: String, to_floor: String) -> Vector2i:
+	var sg = _main.get("_sg") if _main != null else null
+	if sg == null: return Vector2i(-1, -1)
+	for p in sg.portals:
+		for side in ["from", "to"]:
+			var a: Dictionary = p.get(side, {})
+			var b: Dictionary = p.get("to") if side == "from" else p.get("from")
+			if String(a.get("space", "")) == from_space and String(a.get("floor", "")) == from_floor \
+					and String(b.get("space", "")) == to_space and String(b.get("floor", "")) == to_floor:
+				var pos: Array = a.get("pos", [])
+				if pos.size() == 2: return Vector2i(int(pos[0]), int(pos[1]))
+	return Vector2i(-1, -1)
+
+## Navigate only by the public cardinal player input. Reading the receiver-owned
+## nav grid chooses a deterministic route; every applied step is PlayerTrace.
+func _walk_player_to(target: Vector2i) -> bool:
+	var pl: Dictionary = Sim.get_agent("player")
+	if pl.is_empty() or target.x < 0: return false
+	var start: Vector2i = pl.get("pos", Vector2i(-1, -1))
+	var path: Array = Sim._astar_path(Sim._grid_for(String(pl.get("space", "town")), String(pl.get("floor", "outdoor"))), start, target)
+	if path.is_empty(): return false
+	for i in range(1, path.size()):
+		var before: Vector2i = pl.get("pos", Vector2i.ZERO)
+		Sim.player_move((path[i] as Vector2i) - (path[i - 1] as Vector2i))
+		if Vector2i(pl.get("pos", Vector2i.ZERO)) == before: return false
+	return Vector2i(pl.get("pos", Vector2i.ZERO)) == target
+
+## Find Aria on the current canonical plane, walk the real player to her, and
+## issue the real invite action. No relationship, capability or event is injected.
+func _invite_player_from_current_plane() -> bool:
+	if Sim._cafe_guest_capability_valid(): return true
+	for _attempt in range(64):
+		var pl: Dictionary = Sim.get_agent("player")
+		var aria: Dictionary = Sim.get_agent("aria")
+		if pl.is_empty() or aria.is_empty(): return false
+		if String(pl.get("space", "")) == String(aria.get("space", "")) and String(pl.get("floor", "")) == String(aria.get("floor", "")) \
+				and int(pl.get("talking", 0)) <= 0 and int(aria.get("talking", 0)) <= 0:
+			if _walk_player_to(aria.get("pos", Vector2i(-1, -1))):
+				var started := Sim.player_act("invite", "aria")
+				if started == "":
+					for _i in range(12): Sim.tick()
+					if Sim._cafe_guest_capability_valid():
+						_meta["invite_event_id"] = int(Sim.cafe_guest_capability.get("grant_event_id", -1))
+						return true
+		Sim.tick()
+	return false
 
 func _player_address() -> Dictionary:
 	var player := Sim.get_agent("player")

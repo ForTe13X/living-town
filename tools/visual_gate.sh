@@ -111,11 +111,14 @@ check_cafe_player_meta() {
 import json, sys
 with open(sys.argv[1], encoding="utf-8") as f:
     m = json.load(f)
-required = ("player_journey", "player_entered", "player_returned")
-if any(m.get(k) is not True for k in required):
-    print("  cafe-player metadata FAIL: " + ", ".join(f"{k}={m.get(k)!r}" for k in required))
+required = ("player_journey", "player_invited", "player_entered", "player_occupied_2f", "player_returned_1f", "player_returned", "cam_same")
+bad = [f"{k}={m.get(k)!r}" for k in required if m.get(k) is not True]
+if m.get("stairs_probe_only") is not False:
+    bad.append(f"stairs_probe_only={m.get('stairs_probe_only')!r}")
+if bad:
+    print("  cafe-player metadata FAIL: " + ", ".join(bad))
     raise SystemExit(1)
-print("  cafe-player metadata PASS: player_journey/entered/returned=true")
+print("  cafe-player metadata PASS: invited player occupied cafe/2f and returned; stairs_probe_only=false")
 PY
 }
 

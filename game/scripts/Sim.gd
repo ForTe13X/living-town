@@ -1236,6 +1236,9 @@ func _player_trace_payload_error(kind: String, payload: Dictionary) -> String:
 		"portal":
 			if payload.keys().size() != 3 or not (payload.get("source_space") is String) \
 					or not (payload.get("source_floor") is String) or not (payload.get("portal_pos") is Vector2i): return "portal_payload"
+		"cafe_guest_pass":
+			if payload.keys().size() != 1 or not (payload.get("action") is String) \
+					or String(payload.get("action", "")) != "revoke": return "cafe_guest_pass_payload"
 		"chat_reply":
 			if payload.keys().size() != 3 or not (payload.get("target_id") is String) \
 					or not (payload.get("prompt") is String) or not (payload.get("reply") is String): return "chat_payload"
@@ -1605,6 +1608,7 @@ func _player_trace_replay_boundary(boundary_tick: int) -> bool:
 			"social": player_act(String(payload.get("action", "")), String(payload.get("target_id", "")))
 			"mediate": player_mediate(String(payload.get("target_id", "")))
 			"portal": player_portal_intent(payload)
+			"cafe_guest_pass": player_cafe_guest_pass(String(payload.get("action", "")))
 			"chat_reply": player_chat_commit(String(payload.get("target_id", "")), String(payload.get("prompt", "")), String(payload.get("reply", "")))
 			_:
 				player_trace_last_error = "trace_kind"
@@ -1804,7 +1808,7 @@ func save_game(path: String, meta := {}) -> bool:
 			push_error("save_game REFUSED — invalid PlayerTraceV1: %s" % trace_error)
 			return false
 		blob["player_trace"] = player_trace.duplicate(true)
-	var capability_error := _cafe_guest_capability_error(cafe_guest_capability)
+	var capability_error := _cafe_guest_capability_error(cafe_guest_capability, event_log, tick_no)
 	if capability_error != "":
 		push_warning("save_game REFUSED — %s" % capability_error)
 		return false
@@ -2488,9 +2492,8 @@ func _validate_agent_spatial_authority(state: Dictionary) -> String:
 			return "agent %s position is not walkable in the prepared state" % aid
 		var saved_cap: Dictionary = state.get("cafe_guest_capability", {}) if state.get("cafe_guest_capability", {}) is Dictionary else {}
 		var guest_plane := aid == "player" and space == "cafe" and floor == "2f" \
-			and String(saved_cap.get("id", "")) == "cafe_guest_v1:player:aria" \
-			and String(saved_cap.get("holder", "")) == "player" and String(saved_cap.get("issuer", "")) == "aria" \
-			and String(saved_cap.get("status", "")) == "active"
+			and not saved_cap.is_empty() and String(saved_cap.get("status", "")) == "active" \
+			and _cafe_guest_capability_error(saved_cap, state.get("event_log", []), int(state.get("tick_no", -1))) == ""
 		if not guest_plane and not _agent_reachable_plane(aid, String(home["space"]), String(home["floor"]), space, floor):
 			return "agent %s current plane is not authorized from authored home" % aid
 		var expected_area := _area_key_in_world(saved_world, space, floor, pos)
@@ -2510,7 +2513,7 @@ func _validate_loaded_state(state: Dictionary, sch: int) -> String:
 	for p in get_property_list():
 		if int(p.get("usage", 0)) & PROPERTY_USAGE_SCRIPT_VARIABLE:
 			allowed[String(p.get("name", ""))] = true
-	var capability_error := _cafe_guest_capability_error(state.get("cafe_guest_capability", {}))
+	var capability_error := _cafe_guest_capability_error(state.get("cafe_guest_capability", {}), state.get("event_log", []), int(state.get("tick_no", -1)))
 	if capability_error != "":
 		return capability_error
 	for raw_key in state:
@@ -4075,80 +4078,177 @@ func _commit_social(ag: Dictionary, opt: Dictionary) -> void:
 
 func _grant_cafe_guest_capability() -> void:
 	var cap_id := "cafe_guest_v1:player:aria"
-	cafe_guest_capability = {"id": cap_id, "holder": "player", "issuer": "aria", "status": "active", "granted_tick": tick_no}
 	var ev := _log_event("cafe_guest_grant", "aria", "player", cap_id, true, [])
+	# The capability is a receipt for one exact authoritative chronicle prefix,
+	# never a bearer string that can be copied into a forged Dictionary.
+	cafe_guest_capability = {"id": cap_id, "holder": "player", "issuer": "aria", "status": "active",
+		"granted_tick": tick_no, "grant_event_id": int(ev["id"]), "grant_event_digest": event_digest}
 	var pl: Dictionary = _agent_by_id.get("player", {})
 	if not pl.is_empty() and pl.get("memory") is Object:
 		pl["memory"].add("阿丽邀请你成为咖啡馆二楼访客", 8, tick_no, ["aria", "cafe", "capability"])
 	emit_signal("log_line", "阿丽授予你咖啡馆二楼访客权限")
 	emit_signal("social_event", ev)
 
+## Player-facing capability command. Keyboard/touch/View can emit only this typed
+## input; Sim alone validates provenance, performs recovery, writes the chronicle
+## and seals the PlayerTrace receipt.
+func player_cafe_guest_pass(action: String) -> Dictionary:
+	var payload := {"action": action}
+	var trace_error := _player_trace_preflight("cafe_guest_pass", payload)
+	if trace_error != "":
+		player_trace_last_error = trace_error
+		return {"ok": false, "reason": trace_error, "returned": false}
+	var result := {"ok": false, "reason": "unknown_action", "returned": false}
+	var transaction: Dictionary = {}
+	if action == "revoke":
+		if not _cafe_guest_capability_valid():
+			result["reason"] = "capability_invalid"
+		else:
+			transaction = _capture_player_replay_transaction()
+			if transaction.is_empty():
+				result["reason"] = "transaction_snapshot"
+			else:
+				result = _revoke_cafe_guest_capability_untraced()
+	var receipt := _player_trace_receipt(result)
+	if not _player_trace_commit("cafe_guest_pass", payload, receipt):
+		if not transaction.is_empty():
+			var failure_error := player_trace_last_error
+			_restore_player_replay_transaction(transaction, failure_error)
+		return {"ok": false, "reason": "trace_replay_mismatch", "returned": false}
+	return result
+
 func revoke_cafe_guest_capability() -> bool:
+	return bool(player_cafe_guest_pass("revoke").get("ok", false))
+
+func _revoke_cafe_guest_capability_untraced() -> Dictionary:
+	# The validity check is repeated at the mutation boundary so an invalid or
+	# stale receipt can never partially move the player or append a revoke row.
 	if not _cafe_guest_capability_valid():
-		return false
+		return {"ok": false, "reason": "capability_invalid", "returned": false}
 	var pl: Dictionary = _agent_by_id.get("player", {})
 	var recover_from_private_floor := not pl.is_empty() \
 		and String(pl.get("space", "")) == "cafe" and String(pl.get("floor", "")) == "2f"
 	var recovery_target := Vector2i(-1, -1)
 	if recover_from_private_floor:
-		# Derive the authored public landing cell from the receiver-owned stairs portal.
-		# All validation happens before the single commit point below.
 		for raw_portal in _authored_portals:
-			if not (raw_portal is Dictionary):
-				continue
+			if not (raw_portal is Dictionary): continue
 			var portal: Dictionary = raw_portal
-			if String(portal.get("id", "")) != "p_cafe_stairs":
-				continue
+			if String(portal.get("id", "")) != "p_cafe_stairs": continue
 			var endpoint: Variant = portal.get("from", {})
 			var destination: Variant = portal.get("to", {})
-			if not (endpoint is Dictionary) or not (destination is Dictionary):
-				continue
-			if String(destination.get("space", "")) != "cafe" or String(destination.get("floor", "")) != "2f":
-				continue
+			if not (endpoint is Dictionary) or not (destination is Dictionary): continue
+			if String(destination.get("space", "")) != "cafe" or String(destination.get("floor", "")) != "2f": continue
 			var landing: Variant = (endpoint as Dictionary).get("pos", [])
-			if not (landing is Array) or landing.size() != 2:
-				continue
-			recovery_target = Vector2i(int(landing[0]), int(landing[1]))
-			break
+			if landing is Array and landing.size() == 2:
+				recovery_target = Vector2i(int(landing[0]), int(landing[1]))
+				break
 		if recovery_target.x < 0 or not _has_exact_nav_plane("cafe", "1f") \
 				or not _cell_walkable(_nav_grids["cafe"]["1f"], recovery_target):
-			return false
+			return {"ok": false, "reason": "recovery_target_invalid", "returned": false}
 	if recover_from_private_floor:
 		pl["space"] = "cafe"
 		pl["floor"] = "1f"
 		_move_agent(pl, recovery_target)
 		_path_cache.erase("player")
 		emit_signal("agent_changed", "player")
-	cafe_guest_capability["status"] = "revoked"
 	var ev := _log_event("cafe_guest_revoke", "aria", "player", String(cafe_guest_capability.get("id", "")), true, [])
+	cafe_guest_capability["status"] = "revoked"
+	cafe_guest_capability["revoked_tick"] = tick_no
+	cafe_guest_capability["revoke_event_id"] = int(ev["id"])
+	cafe_guest_capability["revoke_event_digest"] = event_digest
 	emit_signal("log_line", "咖啡馆二楼访客权限已撤销" + ("，已安全返回一楼" if recover_from_private_floor else ""))
 	emit_signal("social_event", ev)
 	if recover_from_private_floor:
 		var recovery_ev := _log_event("cafe_guest_revoke_recovery", "aria", "player", "cafe/2f->cafe/1f", true, [])
 		emit_signal("social_event", recovery_ev)
-	return true
+	return {"ok": true, "reason": "", "returned": recover_from_private_floor}
 
 func _cafe_guest_capability_valid() -> bool:
-	return cafe_guest_capability is Dictionary \
-		and String(cafe_guest_capability.get("id", "")) == "cafe_guest_v1:player:aria" \
-		and String(cafe_guest_capability.get("holder", "")) == "player" \
-		and String(cafe_guest_capability.get("issuer", "")) == "aria" \
+	return cafe_guest_capability is Dictionary and not (cafe_guest_capability as Dictionary).is_empty() \
 		and String(cafe_guest_capability.get("status", "")) == "active" \
-		and typeof(cafe_guest_capability.get("granted_tick", -1)) == TYPE_INT \
-		and int(cafe_guest_capability.get("granted_tick", -1)) >= 0
+		and _cafe_guest_capability_error(cafe_guest_capability, event_log, tick_no) == ""
 
-func _cafe_guest_capability_error(value: Variant) -> String:
-	if value == null or (value is Dictionary and (value as Dictionary).is_empty()):
-		return ""
-	if not (value is Dictionary):
-		return "cafe_guest_capability is not a Dictionary"
+func _cafe_guest_event_digest_at(events: Array, through_index: int) -> int:
+	if through_index < 0 or through_index >= events.size(): return -1
+	var digest := 0
+	for i in range(through_index + 1):
+		if not (events[i] is Dictionary): return -1
+		var ev: Dictionary = events[i]
+		for key in ["id", "tick", "type", "actor", "target", "subject", "accepted"]:
+			if not ev.has(key): return -1
+		if typeof(ev["id"]) != TYPE_INT or typeof(ev["tick"]) != TYPE_INT or typeof(ev["accepted"]) != TYPE_BOOL: return -1
+		var es := "%d:%s:%s:%s:%d:%s:%d" % [int(ev["id"]), String(ev["type"]), String(ev["actor"]),
+			String(ev["target"]), int(bool(ev["accepted"])), String(ev["subject"]), int(ev["tick"])]
+		if String(ev.get("txid", "")) != "": es += ":tx:" + String(ev["txid"])
+		digest = ((digest * 1099511628211) ^ fnv1a32(es)) & 0x7FFFFFFFFFFFFFFF
+	return digest
+
+func _cafe_guest_event_index(events: Array, event_id: int) -> int:
+	var found := -1
+	for i in range(events.size()):
+		if not (events[i] is Dictionary): return -2
+		if typeof((events[i] as Dictionary).get("id")) == TYPE_INT and int((events[i] as Dictionary)["id"]) == event_id:
+			if found >= 0: return -2
+			found = i
+	return found
+
+func _cafe_guest_receipt_event_error(ev: Dictionary, kind: String, cap_id: String, expected_tick: int) -> String:
+	if typeof(ev.get("id")) != TYPE_INT or typeof(ev.get("tick")) != TYPE_INT or typeof(ev.get("accepted")) != TYPE_BOOL:
+		return "%s event types invalid" % kind
+	if int(ev.get("tick", -1)) != expected_tick or String(ev.get("type", "")) != kind \
+			or String(ev.get("actor", "")) != "aria" or String(ev.get("target", "")) != "player" \
+			or String(ev.get("subject", "")) != cap_id or not bool(ev.get("accepted", false)) \
+			or String(ev.get("note", "")) != "" or String(ev.get("txid", "")) != "" \
+			or not (ev.get("witnesses", []) is Array) or not (ev.get("witnesses", []) as Array).is_empty():
+		return "%s event provenance mismatch" % kind
+	return ""
+
+func _cafe_guest_capability_error(value: Variant, events_value: Variant = null, current_tick: int = -1) -> String:
+	if value == null or (value is Dictionary and (value as Dictionary).is_empty()): return ""
+	if not (value is Dictionary): return "cafe_guest_capability is not a Dictionary"
+	var events: Array = event_log if events_value == null else (events_value as Array if events_value is Array else [])
+	var now := tick_no if current_tick < 0 else current_tick
+	if current_tick < -1 or now < 0: return "cafe_guest_capability current tick invalid"
 	var d: Dictionary = value
-	for k in ["id", "holder", "issuer", "status", "granted_tick"]:
+	var status := String(d.get("status", ""))
+	var required := ["id", "holder", "issuer", "status", "granted_tick", "grant_event_id", "grant_event_digest"]
+	if status == "revoked": required.append_array(["revoked_tick", "revoke_event_id", "revoke_event_digest"])
+	if not status in ["active", "revoked"]: return "cafe_guest_capability status invalid"
+	if d.size() != required.size(): return "cafe_guest_capability fields invalid"
+	for k in required:
 		if not d.has(k): return "cafe_guest_capability missing %s" % k
-	if String(d.get("id")) != "cafe_guest_v1:player:aria" or String(d.get("holder")) != "player" or String(d.get("issuer")) != "aria":
+	var cap_id := "cafe_guest_v1:player:aria"
+	if String(d["id"]) != cap_id or String(d["holder"]) != "player" or String(d["issuer"]) != "aria":
 		return "cafe_guest_capability identity mismatch"
-	if not ["active", "revoked"].has(String(d.get("status"))): return "cafe_guest_capability status invalid"
-	if typeof(d.get("granted_tick")) != TYPE_INT or int(d.get("granted_tick")) < 0: return "cafe_guest_capability tick invalid"
+	for k in ["granted_tick", "grant_event_id", "grant_event_digest"]:
+		if typeof(d[k]) != TYPE_INT: return "cafe_guest_capability %s type invalid" % k
+	var granted_tick := int(d["granted_tick"])
+	if granted_tick < 0 or granted_tick > now: return "cafe_guest_capability grant tick invalid"
+	var grant_index := _cafe_guest_event_index(events, int(d["grant_event_id"]))
+	if grant_index < 0: return "cafe_guest_capability grant event missing or ambiguous"
+	var grant_event: Dictionary = events[grant_index]
+	var event_error := _cafe_guest_receipt_event_error(grant_event, "cafe_guest_grant", cap_id, granted_tick)
+	if event_error != "": return event_error
+	if _cafe_guest_event_digest_at(events, grant_index) != int(d["grant_event_digest"]):
+		return "cafe_guest_capability grant digest mismatch"
+	var terminal_index := grant_index
+	if status == "revoked":
+		for k in ["revoked_tick", "revoke_event_id", "revoke_event_digest"]:
+			if typeof(d[k]) != TYPE_INT: return "cafe_guest_capability %s type invalid" % k
+		var revoked_tick := int(d["revoked_tick"])
+		if revoked_tick < granted_tick or revoked_tick > now: return "cafe_guest_capability revoke tick invalid"
+		terminal_index = _cafe_guest_event_index(events, int(d["revoke_event_id"]))
+		if terminal_index <= grant_index: return "cafe_guest_capability revoke event missing, ambiguous or stale"
+		var revoke_event: Dictionary = events[terminal_index]
+		event_error = _cafe_guest_receipt_event_error(revoke_event, "cafe_guest_revoke", cap_id, revoked_tick)
+		if event_error != "": return event_error
+		if _cafe_guest_event_digest_at(events, terminal_index) != int(d["revoke_event_digest"]):
+			return "cafe_guest_capability revoke digest mismatch"
+	for i in range(terminal_index + 1, events.size()):
+		if not (events[i] is Dictionary): return "cafe_guest_capability event log malformed"
+		var later: Dictionary = events[i]
+		if String(later.get("subject", "")) == cap_id and String(later.get("type", "")) in ["cafe_guest_grant", "cafe_guest_revoke"]:
+			return "cafe_guest_capability provenance stale"
 	return ""
 
 ## 承诺解算：每 tick 检查 active meet → 双方到场即 fulfilled，到点没到即 broken（归责缺席方）。
