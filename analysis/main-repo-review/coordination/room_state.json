@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-09-01T05:44:09Z",
+  "updated_at": "2026-09-01T05:46:47Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,13 +11,13 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "d5175c036dbfaf9f50d70ee749a112da1bf018b3597cec0e5cd0ec6b7fc2a86c",
-    "canonical_objects": 381,
+    "canonical_sha256": "2fc3919bf07aaee0bae5dd8ea5d2132a1856c8f9e778d2bccddce3fc05945055",
+    "canonical_objects": 382,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
-      "parent": "7ea4ffe98b5af66488c15314e8e39b8f54f4eab8",
-      "tree": "a4fe20d9d4d172d6ed2532f9d3e3bf55aea0f2c4",
-      "commit": "e0d2674a790cdf858ff7514720ccde2ceb9c6c84",
+      "parent": "e0d2674a790cdf858ff7514720ccde2ceb9c6c84",
+      "tree": "5c0999a552fcff67f0aa6c3431170e05d2fa342d",
+      "commit": "50d7fa2a0f7b2957855c24aff8a1e19b0e5db2f5",
       "force": false,
       "reason": "producer-only non-force Git Data API publication; GitHub API authoritative for this exact parent-child mutation"
     },
@@ -54,7 +54,7 @@
     "sorted_name_sha_set_sha256": "ff04226ebbcea0fb01a22587efd9b0c3ced37e239e8f5a4fa1f781df39be3706",
     "master": "37ccea829e16e5844059a11eac9b3177ac693d6a",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "7ea4ffe98b5af66488c15314e8e39b8f54f4eab8",
+    "coordination": "50d7fa2a0f7b2957855c24aff8a1e19b0e5db2f5",
     "pr25": "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
     "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
@@ -3879,11 +3879,11 @@
       "generated_outputs": ["D:\\Documents\\Dev\\pr36-cafe-player-spawn-harness-git-aware-ci-v1 task scratch only", "fresh disposable clone", "fresh Godot userdata", "immutable logs and receipts"],
       "dependencies": ["exact source head dfefd9a673877a64998ca6fa81c61fbf51730ff7", "exact modified visual_gate.sh sha256 9f2e32d88a2e5f71c2feb98acbd5a23a824f9905466524a4870a06664aa7086f", "patch-id e1e2bc57e99a915fe56c45fe72e37d258f477f6a", "audited overlay sha256 f13f3e22eeb7df887196ae2a92423de64b1791e1327223f53fcb83e62f865bbf", "derived image sha256:06267e20a02b38d29feb2e5494ea990677f12a2d91fc7451dba024572a2dcf94"],
       "consumer": "Producer exact-head repair decision, then independent QA and REFUTE",
-      "status": "reserved_pending_async_dispatch",
+      "status": "active_async_dispatch_accepted",
       "write_lease": true,
-      "last_heartbeat": "2026-09-01T05:38:56Z",
+      "last_heartbeat": "2026-09-01T05:46:47Z",
       "stale_after": "2026-09-01T07:38:56Z",
-      "dispatch": {"method":"create_thread_hold_then_send_message","status":"hold_created_no_write_packet_reserved","reservation_commit":"e0d2674a790cdf858ff7514720ccde2ceb9c6c84","cadence":"asynchronous nonblocking; launch once then return"},
+      "dispatch": {"at":"2026-09-01T05:46:47Z","method":"create_thread_hold_then_send_message","status":"accepted_active_in_progress","reservation_commit":"50d7fa2a0f7b2957855c24aff8a1e19b0e5db2f5","snapshot_cursor":"ef8932a8-7d0f-4944-8862-33d6a15ec0c7:1","cadence":"asynchronous nonblocking; launch once then return"},
       "pr": {"number":null,"stacked_base_branch":"codex/pr35-roundtrip-camera-harness-repair-v1","upstream_pr":36,"draft_required":true,"status":"evidence_only_no_pr"},
       "pr_policy": "No commit, push or PR in this evidence packet. A later Producer tick may authorize the exact one-path commit only after terminal full-CI PASS and independent review.",
       "checks": {"required":["clone /src into task-owned /out/work so .git is complete","checkout exact dfefd9a head and verify tree/game tree","copy exact modified visual_gate.sh by content and reverify sha256 plus one-path diff","overlay exact audited complement ledger","fresh empty task-owned Godot userdata","hard Git redline and complement prechecks pass before full CI","full tools/ci.sh launches detached once with complete log and exit receipt","no registered worktree or GitHub mutation"],"p0":0,"p1":0,"does_not_prove":"A terminal green disposable-clone CI run does not prove player-facing polish, independent QA/REFUTE closure, save/load/replay completion, benchmark parity, release readiness or permission to merge."},
@@ -4463,7 +4463,7 @@
     "pr28_e70cebba_terminal_p1_freeze": "PR28 exact head e70cebba/treec9e0273e/body10e446b passed one-path identity, Docker53x2 and hosted CI33184928495. Security/QA P0=0/P1=1/P2=1 and REFUTE P0=0/P1=1/P2=0 independently found the same strict-base identity handoff cycle. Draft frozen; PENDING strings, Ready, protection and merge remain untouched.",
     "human_acceptance": "not_ready",
     "pr36_cafe_player_spawn_harness_async_ci": "Recovery1 container69a1fa4 terminated exit1, log SHA256fa9cbb62. Because /repo was a linked worktree mounted without its common Git metadata, git ls-files and git rev-parse failed; hard redline/complement gates invalidated the run. P1O also reported valid arm not ready, but this infrastructure-invalid run cannot attribute that secondary signal to the product. Repository remains dirty exactly tools/visual_gate.sh SHA256 9f2e32d8, patch-id e1e2bc57, with no commit/push/PR. Prior owner released; Git-aware fresh-clone successor task01a05b7a reserved.",
-    "pr5_projection": "open_draft_live_head_7ea4ffe_run33471998844_ci_visual_success; fresh-clone successor reserved"
+    "pr5_projection": "open_draft_live_head_50d7fa2; prior exact7ea4ffe run33471998844 ci_visual_success; fresh-clone successor active"
   },
-  "next_trigger": "Publish this release-and-reservation atomically, then dispatch task01a05b7a once. It must clone the exact source into task-owned scratch, copy only the hash-bound modified visual_gate.sh, overlay the audited ledger, use fresh userdata and launch one detached full CI in the exact derived image. Return without waiting; later heartbeat harvests once. HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "Later heartbeat: run the serial Smart HTTP lane, inspect task01a05b7a and its uniquely named container once, and harvest terminal setup or CI evidence. Do not duplicate, poll, commit, push or create a PR before exact terminal PASS and independent review. HUMAN_ACCEPTANCE_NOT_READY."
 }
