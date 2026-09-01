@@ -40,6 +40,7 @@
 #                                 拍出来的 rt_interior.png 就是“暂停时点门进店，画面停在小镇上”那一帧
 #                                 （2026-07-30 由本脚本第一次跑就量到的真问题，归属 Main.gd/WorldView.gd）。
 #   LT_RT_SPACE=cafe              进哪个 Space
+#   LT_RT_AGENTS=12               显式固定采集世界的 NPC 人数（默认 12）；隔离 user://settings.cfg
 #   GODOT / PYTHON                同 ci.sh
 #
 # ── 单独跑 ──────────────────────────────────────────────────────────────────
@@ -65,6 +66,7 @@ if [ "${1:-}" = "--shoot" ]; then
   DRAWSKIP="${RT_DRAW_SKIP:-}"      # 非空 ⇒ 透传 --draw-skip <pass>（AM3 负对照：interior_furniture ⇒ 2F 与 1F 都空 ⇒ 不可分 ⇒ 门红）
   CORRUPT_MANIFEST="${RT_CORRUPT_MANIFEST:-}"
   DENY_PORTAL="${RT_DENY_PORTAL:-}"
+  AGENTS="${RT_AGENTS:-12}"
   export LIBGL_ALWAYS_SOFTWARE=1 LP_NUM_THREADS=1 GODOT_SILENCE_ROOT_WARNING=1
   OWN_XV=0
   if [ -z "${DISPLAY:-}" ] || [ "${RT_OWN_XVFB:-1}" = "1" ]; then
@@ -87,7 +89,7 @@ if [ "${1:-}" = "--shoot" ]; then
   [ -n "$DENY_PORTAL" ] && DENY_ARGS=(--rt-deny-portal "$DENY_PORTAL")
   "$GBIN" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
     --resolution ${W}x${H} --single-window res://bench/SpaceShot.tscn -- \
-    --backend logic --seed "$SEED" --warmup-tick "$TICK" \
+    --backend logic --seed "$SEED" --agents "$AGENTS" --warmup-tick "$TICK" \
     --rt-out "$OUT" --rt-space "$SPACE" --rt-mode "$MODE" --rt-journey "$JOURNEY" --rt-redraw "$REDRAW" \
     "${PLAYER_ARGS[@]}" "${DS_ARGS[@]}" "${CORRUPT_ARGS[@]}" "${DENY_ARGS[@]}"
   rc=$?
@@ -106,6 +108,7 @@ RUNNER="${LT_RT_RUNNER:-auto}"
 IMG="${LT_RT_IMAGE:-gamecraft-runner:4.6.2}"
 JOURNEY="${LT_RT_JOURNEY:-simple}"    # simple=玩家 1F 往返；full=玩家进出 + Probe 楼层观察
 DRAWSKIP="${LT_RT_DRAW_SKIP:-}"        # AM3 负对照：LT_RT_DRAW_SKIP=interior_furniture ⇒ 2F/1F 都空 ⇒ B 臂（可分）红
+AGENTS="${LT_RT_AGENTS:-12}"           # 量具默认 N12；显式 CLI 参数屏蔽宿主持久化的 NPC 设置
 [ "${LT_RT_SKIP_FURN:-0}" = "1" ] && DRAWSKIP="interior_furniture"   # 便捷别名：让 2F 帧==1F 帧 的那条牙
 
 skip(){
@@ -147,7 +150,7 @@ mkdir -p "$OUT"
 OUT_HOST="$OUT"
 case "$(uname -s)" in MINGW*|MSYS*) OUT_HOST="$(cd "$OUT" && pwd -W)" ;; esac
 
-echo "  runner=$PICK  mode=$MODE  rt-mode=${LT_RT_MODE:-portal}  journey=$JOURNEY  draw-skip=${DRAWSKIP:-none}  game=$GAME  out=$OUT"
+echo "  runner=$PICK  mode=$MODE  rt-mode=${LT_RT_MODE:-portal}  journey=$JOURNEY  agents=$AGENTS  draw-skip=${DRAWSKIP:-none}  game=$GAME  out=$OUT"
 SHOT_RC=0
 if [ "$PICK" = docker ]; then
   # ⚠️ 并行期纪律（docs/43 R6）：只按自己的名字杀自己的容器，禁止 `docker ps -q | xargs docker kill`。
@@ -158,13 +161,14 @@ if [ "$PICK" = docker ]; then
     -e RT_CORRUPT_MANIFEST="${LT_RT_CORRUPT_MANIFEST:-}" \
     -e RT_DENY_PORTAL="${LT_RT_DENY_PORTAL:-}" \
     -e RT_PLAYER_POS="${LT_RT_PLAYER_POS:-}" \
+    -e RT_AGENTS="$AGENTS" \
     -e LT_RT_SEED="$SEED" -e LT_RT_TICK="$TICK" \
     -v "$GAME:/game" -v "$REPO/tools:/tools" -v "$OUT_HOST:/out" \
     "$IMG" bash /tools/space_roundtrip.sh --shoot /out
   SHOT_RC=$?
 else
   RT_GAME="$GAME" RT_MODE="${LT_RT_MODE:-portal}" RT_SPACE="${LT_RT_SPACE:-cafe}" RT_REDRAW="${LT_RT_REDRAW:-auto}" \
-    RT_JOURNEY="$JOURNEY" RT_DRAW_SKIP="$DRAWSKIP" RT_PLAYER_POS="${LT_RT_PLAYER_POS:-}" \
+    RT_JOURNEY="$JOURNEY" RT_DRAW_SKIP="$DRAWSKIP" RT_PLAYER_POS="${LT_RT_PLAYER_POS:-}" RT_AGENTS="$AGENTS" \
     RT_CORRUPT_MANIFEST="${LT_RT_CORRUPT_MANIFEST:-}" RT_DENY_PORTAL="${LT_RT_DENY_PORTAL:-}" \
     GODOT="$GODOT" bash "$0" --shoot "$OUT"
   SHOT_RC=$?
