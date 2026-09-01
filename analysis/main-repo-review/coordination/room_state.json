@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-09-01T00:51:52Z",
+  "updated_at": "2026-09-01T00:58:35Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,13 +11,13 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "4525e1bf5b22084413d9f997bbacdd0f9efdddf03ffeebdd6fb720b984df61de",
-    "canonical_objects": 367,
+    "canonical_sha256": "d323f86d1b4efa2e68a32fe62330f4ead34771eea568373a46d3a99e21b719ef",
+    "canonical_objects": 368,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
-      "parent": "dd1e7f73e2d03aea4a8fe9982eef8b8a5c09299d",
-      "tree": "d0e02ebfdbe8b7f60eb02be9aab7981e48c3727b",
-      "commit": "50341dbfc02113a98ce896ef3634863666de0103",
+      "parent": "50341dbfc02113a98ce896ef3634863666de0103",
+      "tree": "36df40949453c3b805778942967a08675c907048",
+      "commit": "7c01de7e7272dad952915c586c51605245404889",
       "force": false,
       "reason": "producer-only non-force Git Data API publication; GitHub API authoritative for this exact parent-child mutation"
     },
@@ -3779,10 +3779,11 @@
       "generated_outputs": ["task-owned isolated pinned-Docker focused/full receipts outside the repository only"],
       "dependencies": ["PR36 exact dfefd9a673877a64998ca6fa81c61fbf51730ff7", "terminal QA and REFUTE P1", "authored cafe exterior door coordinate 41,19 from exact game/data/spaces.json", "space_roundtrip.sh RT_PLAYER_POS support", "audited disposable overlay f13f3e22eeb7df887196ae2a92423de64b1791e1327223f53fcb83e62f865bbf"],
       "consumer": "PR36 exact-head focused visual evidence and complete CI, then independent QA and REFUTE",
-      "status": "reserved_before_worktree_creation_and_async_dispatch",
+      "status": "active_async_dispatched",
       "write_lease": true,
-      "last_heartbeat": "2026-09-01T00:51:52Z",
+      "last_heartbeat": "2026-09-01T00:58:35Z",
       "stale_after": "2026-09-01T02:51:52Z",
+      "dispatch": {"at":"2026-09-01T00:58:35Z","method":"send_message_to_thread","status":"accepted_active_in_progress","reservation_commit":"7c01de7e7272dad952915c586c51605245404889","snapshot_cursor":"a2eef68d-c7f6-4d7c-b8f4-860714e64ffa:1","cadence":"asynchronous non-blocking; harvest terminal result on a later heartbeat"},
       "pr": {"number":null,"stacked_base_branch":"codex/pr35-roundtrip-camera-harness-repair-v1","upstream_pr":36,"draft_required":true,"status":"pre_pr"},
       "pr_policy": "No PR until focused and full CI pass in pinned Docker; then Draft only against codex/pr35-roundtrip-camera-harness-repair-v1; never Ready or merge.",
       "checks": {"required":["exactly one changed path","simple and full cafe invocations set exact authored adjacent player position","warehouse invocations unchanged","missing and far spawn controls fail the actual player_entered assertion","simple and full focused journeys pass with player_entered=true and player_returned=true","complete tools/ci.sh passes with unchanged audited disposable overlay","clean worktree and exact commit/tree; no anchor publication"],"p0":0,"p1":1,"does_not_prove":"A harness invocation change does not prove player-facing polish, real stairs completion, save/load/replay, accessibility, benchmark parity, release readiness or permission to merge."},
@@ -3802,11 +3803,11 @@
       {"phase":1,"objective":"Run one attributable canonical simple/full SpaceShot wrapper receipt against exact PR36 without source changes","owner":"evidence-pr36-spaceshot-canonical-invocation-v1 then review-pr36-canonical-spaceshot-evidence-v1","status":"complete_p0_0_runner_p1_cleared_full_ci_p1_retained","player_value":"distinguishes empty invocation evidence from an actual harness/runtime failure without another full-CI loop","conflict_risk":"execution and review serialized; repository authority remained frozen","exit":"met: independent terminal P0/P1 classification and one bounded successor"},
       {"phase":2,"objective":"Run complete full CI against an audited generated-ledger overlay in a disposable exact-head clone without publication","owner":"evidence-pr36-anchor-full-ci-v5-daemon-recovered","status":"terminal_exit1_visual_roundtrip_p1_released","player_value":"proved the anchor overlay, audit, guard and unit/integration suite pass while isolating the remaining exact visual journey failure","conflict_risk":"execution-only task scratch preserved; repository authority remained frozen","exit":"met as terminal fail-fast no-write blocker with exact receipts"},
       {"phase":3,"objective":"Independently classify the exact PR36 v5 simple/full player_entered=false visual failure before any repair or anchor publication","owner":"review-pr36-v5-qa-evidence and review-pr36-v5-refute-technical-visual","status":"terminal_p0_0_p1_1_stricter_qa_spawn_position_cause_governs","player_value":"prevented another blind full-CI retry and narrowed the next change to one evidence-backed harness invocation repair","conflict_risk":"reviewers released; zero repository writers; PR35 and PR36 frozen","exit":"met with binding P1 and one bounded one-path successor"},
-      {"phase":4,"objective":"Repair only cafe SpaceShot invocation spawn position so real player entry is exercised, then prove focused simple/full and complete CI with the audited overlay","owner":"writer-pr36-cafe-player-spawn-harness-v1 / task 019ffe8d-6993-7be1-874b-5104f272d979","status":"reserved_before_worktree_creation_and_async_dispatch","player_value":"turns Probe-only cafe captures into attributable real-player entry evidence without touching Sim, Main, SpaceShot, save/replay or canon authority","conflict_risk":"one tools/visual_gate.sh writer; all runtime/shared authority frozen; branch and worktree proved absent before reservation","exit":"exact-head Docker focused and full-CI PASS, player_entered true, far/missing spawn negatives fail, independent P0/P1=0"}
+      {"phase":4,"objective":"Repair only cafe SpaceShot invocation spawn position so real player entry is exercised, then prove focused simple/full and complete CI with the audited overlay","owner":"writer-pr36-cafe-player-spawn-harness-v1 / task 019ffe8d-6993-7be1-874b-5104f272d979","status":"active_async_dispatched","player_value":"turns Probe-only cafe captures into attributable real-player entry evidence without touching Sim, Main, SpaceShot, save/replay or canon authority","conflict_risk":"one tools/visual_gate.sh writer; all runtime/shared authority frozen; branch and worktree proved absent before reservation","exit":"exact-head Docker focused and full-CI PASS, player_entered true, far/missing spawn negatives fail, independent P0/P1=0"}
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-09-01T00:51:52Z",
+    "at": "2026-09-01T00:58:35Z",
     "active_writers": 1,
     "read_only_reviewers": 0,
     "pr34_anchor_migration": "Terminal clean no-write handoff: audit rc0, guard and self-tests rc0, full CI stopped without conclusion, ledger restored, worktree clean, zero commit/push/PR, all task containers and temporary bundles/output cleaned. Claim released; regenerate only after the Sim repair.",
@@ -3855,7 +3856,7 @@
     "stack_b_pr31_normal_sync_result_body_refresh_reserved": "GitHub update-branch created exact Draft merge child3254577d/treec6d76be9 with parents d7f2bd06 + master37ccea82 and unchanged two JSON blobs. Post-sync API/local/Docker ls-remote all enumerate 39 branches. Qualification33257158954 and authority33257158256 succeeded; CI/visual33257158932 active. Old checks/reviews are invalid. Body-only exact-head evidence refresh is reserved before any fresh review dispatch.",
     "stack_b_pr31_normal_sync_body_rebound": "Draft PR31 body is rebound at SHA2561fe05ae5/3050 bytes to base37ccea82/head3254577d/treec6d76be9, exact parents, unchanged JSON blobs and source receipts. It records qualification/authority success and CI/visual active, invalidates all old-head evidence, and keeps review/readiness/merge gates unchecked. Await terminal exact-head checks.",
     "shared_write_conflicts": 0,
-    "decision": "Complete Smart HTTP/API/ref/worktree/task reconciliation cleared one disjoint writer. Reserve exactly one tools/visual_gate.sh repair at PR36 exact head; create no worktree or task dispatch until this lease is remotely published."
+    "decision": "Reservation reached remote coordination commit 7c01de7e before the exact clean worktree was created and task 019ffe8d dispatched. One writer is active asynchronously; do not wait or duplicate."
   },
   "released_claims": [
     {
@@ -4361,7 +4362,7 @@
     "pr29_post_merge_success_full_scan_pr28_reserved": "Post-merge CI33182561513 succeeded at master43c72a8f. Full 36-branch snapshot is complete and exact across GitHub/ls-remote/local refs, hash1e6a1261; 29 PRs/0 reviews, 0 issues/releases/tags, 29 worktrees with 14 dirty all preserved. Required tasks unavailable; dynamic dev/map/UI-UX inactive/terminal, B28 BELOW_REQUIRED_FLOOR. PR28 one-manifest branch update/review is the next serialized lane.",
     "pr28_e70cebba_terminal_p1_freeze": "PR28 exact head e70cebba/treec9e0273e/body10e446b passed one-path identity, Docker53x2 and hosted CI33184928495. Security/QA P0=0/P1=1/P2=1 and REFUTE P0=0/P1=1/P2=0 independently found the same strict-base identity handoff cycle. Draft frozen; PENDING strings, Ready, protection and merge remain untouched.",
     "human_acceptance": "not_ready",
-    "pr5_projection": "open_draft_live_head_50341db_run33454171867_ci_and_visual_success_mergeable_behind; writer lease publication pending"
+    "pr5_projection": "open_draft_live_head_7c01de7_run33456836255_ci_and_visual_in_progress_mergeable_behind; async writer active"
   },
-  "next_trigger": "Publish this exact reservation non-force to codex/main-repo-review. Only after the lease is remote, create the isolated branch/worktree from PR36 dfefd9a and asynchronously dispatch task 019ffe8d. Record dispatch in a separate producer event/commit, then return without waiting. PR35 and PR36 remain frozen; no Ready or merge is authorized. HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "On a later heartbeat run the required serial Smart HTTP lane, harvest task 019ffe8d once, and reconcile exact branch/worktree diff, Docker receipts, negative controls and full-CI result before any push/PR/review replacement. Do not duplicate or wait now. PR35 and PR36 remain frozen; no Ready or merge is authorized. HUMAN_ACCEPTANCE_NOT_READY."
 }
