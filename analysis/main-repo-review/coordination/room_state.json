@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-09-01T00:01:37Z",
+  "updated_at": "2026-09-01T00:05:55Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,13 +11,13 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "4bf39216ddd9d83ee1cfcf3fb38189b8b4dbb9e18cc40f80bb9fd3076e0ec8c7",
-    "canonical_objects": 362,
+    "canonical_sha256": "781c08d3cf48ecb83f1f06df55efbd1670793ad0bd5d731d3614b55f7c6d7378",
+    "canonical_objects": 363,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
-      "parent": "4f47e8948bf194ea875ecb9b5e34c470faccf0de",
-      "tree": "275b42c261c048b33efcb8ab82fe4368d071afc0",
-      "commit": "09cbd4c956595c170a8e20dd61baddcea2a9eb00",
+      "parent": "09cbd4c956595c170a8e20dd61baddcea2a9eb00",
+      "tree": "520d3d5d2fd90c9e6171bcece3849547aedc508f",
+      "commit": "1735a93dc105b0df1395f16bd72699b279351311",
       "force": false,
       "reason": "producer-only non-force Git Data API publication; GitHub API authoritative for this exact parent-child mutation"
     },
@@ -429,7 +429,8 @@
       "generated_outputs": ["terminal task response only"],
       "dependencies": ["container:f76091b33e370268684d2c297f85e5ecc574814464c79d9c5e2503fd677ce28d:exit1", "full-ci-log:4bc80c98fa69c91ffd9bb24b90e877c3b1a2eb1e5f1bc79ecae89fa8a52d5874", "visual-manifest:ae151bbb6c91e9fad5d65beac10cc4ffc4365b0097f2a2b19842d82bf10f3f0a", "simple-meta:8ac76eaa14284854bcc286e8791f839d30182a5906295a1186dff20b1df58bbc", "floor-meta:7826b880b848cee1ae2af8c8de6c23a627f2be76fc33fa66148189b06fc4b0cc"],
       "consumer": "Producer bounded repair/no-go decision before any PR36 publication, Ready or merge",
-      "status": "reserved_before_async_dispatch",
+      "status": "active_async_dispatched",
+      "dispatch": {"at":"2026-09-01T00:05:55Z","method":"send_message_to_thread","status":"active_in_progress","reservation_commit":"1735a93dc105b0df1395f16bd72699b279351311","cursor":"8e0e468c-ecd1-443b-ba11-f027846c0ddf:1","cadence":"asynchronous; harvest later without polling"},
       "write_lease": false,
       "last_heartbeat": "2026-09-01T00:01:37Z",
       "stale_after": "2026-09-01T02:01:37Z",
@@ -459,7 +460,8 @@
       "generated_outputs": ["terminal task response only"],
       "dependencies": ["container:f76091b33e370268684d2c297f85e5ecc574814464c79d9c5e2503fd677ce28d:exit1", "full-ci-log:4bc80c98fa69c91ffd9bb24b90e877c3b1a2eb1e5f1bc79ecae89fa8a52d5874", "visual-manifest:ae151bbb6c91e9fad5d65beac10cc4ffc4365b0097f2a2b19842d82bf10f3f0a", "simple-meta:8ac76eaa14284854bcc286e8791f839d30182a5906295a1186dff20b1df58bbc", "floor-meta:7826b880b848cee1ae2af8c8de6c23a627f2be76fc33fa66148189b06fc4b0cc"],
       "consumer": "Producer conflict-resolved bounded repair/no-go decision before any PR36 publication, Ready or merge",
-      "status": "reserved_before_async_dispatch",
+      "status": "active_async_dispatched",
+      "dispatch": {"at":"2026-09-01T00:05:55Z","method":"send_message_to_thread","status":"active_in_progress","reservation_commit":"1735a93dc105b0df1395f16bd72699b279351311","cursor":"3dc4c55a-d93c-42ea-a022-6b6993770bd5:1","cadence":"asynchronous; harvest later without polling"},
       "write_lease": false,
       "last_heartbeat": "2026-09-01T00:01:37Z",
       "stale_after": "2026-09-01T02:01:37Z",
@@ -3768,12 +3770,12 @@
     "phases": [
       {"phase":1,"objective":"Run one attributable canonical simple/full SpaceShot wrapper receipt against exact PR36 without source changes","owner":"evidence-pr36-spaceshot-canonical-invocation-v1 then review-pr36-canonical-spaceshot-evidence-v1","status":"complete_p0_0_runner_p1_cleared_full_ci_p1_retained","player_value":"distinguishes empty invocation evidence from an actual harness/runtime failure without another full-CI loop","conflict_risk":"execution and review serialized; repository authority remained frozen","exit":"met: independent terminal P0/P1 classification and one bounded successor"},
       {"phase":2,"objective":"Run complete full CI against an audited generated-ledger overlay in a disposable exact-head clone without publication","owner":"evidence-pr36-anchor-full-ci-v5-daemon-recovered","status":"terminal_exit1_visual_roundtrip_p1_released","player_value":"proved the anchor overlay, audit, guard and unit/integration suite pass while isolating the remaining exact visual journey failure","conflict_risk":"execution-only task scratch preserved; repository authority remained frozen","exit":"met as terminal fail-fast no-write blocker with exact receipts"},
-      {"phase":3,"objective":"Independently classify the exact PR36 v5 simple/full player_entered=false visual failure before any repair or anchor publication","owner":"review-pr36-v5-qa-evidence and review-pr36-v5-refute-technical-visual","status":"two_read_only_reviewers_reserved_before_async_dispatch","player_value":"prevents another blind full-CI retry and narrows the next change to one evidence-backed repair or no-go","conflict_risk":"two independent output-only reviewers; zero repository writers; PR35 and PR36 frozen","exit":"both terminal P0/P1/P2 classifications reconcile to one bounded successor/no-go"},
+      {"phase":3,"objective":"Independently classify the exact PR36 v5 simple/full player_entered=false visual failure before any repair or anchor publication","owner":"review-pr36-v5-qa-evidence and review-pr36-v5-refute-technical-visual","status":"two_read_only_reviewers_active_async","player_value":"prevents another blind full-CI retry and narrows the next change to one evidence-backed repair or no-go","conflict_risk":"two independent output-only reviewers; zero repository writers; PR35 and PR36 frozen","exit":"both terminal P0/P1/P2 classifications reconcile to one bounded successor/no-go"},
       {"phase":4,"objective":"Evaluate the PR36-to-PR35 stack, integration and visual-polish evidence in separate gated transactions","owner":"Producer then exactly one cafe visual owner","status":"queued","player_value":"restores a green evidence-bound cafe slice then advances player-visible closure","conflict_risk":"no integration merge in the anchor transaction; preserve Draft branches and canonical authority","exit":"stack checks, post-merge regression and clean desktop/mobile evidence; HUMAN_ACCEPTANCE separately gated"}
     ]
   },
   "current_conflict_graph": {
-    "at": "2026-09-01T00:01:37Z",
+    "at": "2026-09-01T00:05:55Z",
     "active_writers": 0,
     "read_only_reviewers": 2,
     "pr34_anchor_migration": "Terminal clean no-write handoff: audit rc0, guard and self-tests rc0, full CI stopped without conclusion, ledger restored, worktree clean, zero commit/push/PR, all task containers and temporary bundles/output cleaned. Claim released; regenerate only after the Sim repair.",
@@ -4330,5 +4332,5 @@
     "human_acceptance": "not_ready",
     "pr5_projection": "open_draft_live_head_09cbd4c9_ci_and_visual_run33450797945_success_mergeable_behind_body_refresh_deferred_until_v5_reviews_terminal"
   },
-  "next_trigger": "After this terminal release and both reviewer reservations are remotely published, asynchronously dispatch the two existing read-only tasks and return without waiting. A later heartbeat harvests terminal classifications once, reconciles P0/P1 and chooses exactly one bounded repair or no-go; no v5 retry is allowed. Network snapshot is incomplete because Smart HTTP fetch reset and retry did not confirm completion; GitHub API is secondary authority and cached coordination ref must not be promoted. No generated ledger may enter a registered worktree or GitHub. PR35 and PR36 remain frozen; no Ready or merge is authorized. HUMAN_ACCEPTANCE_NOT_READY."
+  "next_trigger": "A later heartbeat harvests the two active read-only reviewer terminal classifications once using their recorded cursors, reconciles P0/P1 and chooses exactly one bounded repair or no-go; do not poll and do not restart v5. Network snapshot is incomplete because Smart HTTP fetch reset and retry did not confirm completion; GitHub API is secondary authority and cached coordination ref must not be promoted. No generated ledger may enter a registered worktree or GitHub. PR35 and PR36 remain frozen; no Ready or merge is authorized. HUMAN_ACCEPTANCE_NOT_READY."
 }
