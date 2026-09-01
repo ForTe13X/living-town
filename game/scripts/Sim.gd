@@ -365,6 +365,9 @@ var cand_permute := 0
 var event_digest := 0          # L4 增量滚动摘要：每事件 O(1) 折叠出的全程确定性见证（见 _log_event）
 
 var event_log: Array = []       # 不可变事件账本（replay/debug/bench 的根）
+## Persisted guest capability: invitation is the only grant path; portal authority consumes this state.
+## The capability is deliberately a small, typed record so save/load and replay can fail closed.
+var cafe_guest_capability: Dictionary = {}
 var _next_event_id := 1
 ## P1-ac：货运投影只消费这个由 event_log 派生的索引。索引不是第二权威；
 ## event_log 仍是账本，size/逐行签名不一致就 fail-closed，而不是猜测修复。
@@ -935,6 +938,7 @@ func start_new(p_seed: int = 12345) -> void:
 	agents.clear()
 	_agent_by_id.clear()
 	event_log.clear()
+	cafe_guest_capability = {}
 	_cargo_event_index = {"event_size": 0, "arrivals": {}, "receipts": {}, "tx": {}}
 	observatory_projection_event_reads = 0
 	_next_event_id = 1
@@ -1800,6 +1804,10 @@ func save_game(path: String, meta := {}) -> bool:
 			push_error("save_game REFUSED — invalid PlayerTraceV1: %s" % trace_error)
 			return false
 		blob["player_trace"] = player_trace.duplicate(true)
+	var capability_error := _cafe_guest_capability_error(cafe_guest_capability)
+	if capability_error != "":
+		push_warning("save_game REFUSED — %s" % capability_error)
+		return false
 	var shape_error := _validate_current_save_shape(blob)
 	if shape_error != "":
 		push_error("save_game REFUSED — %s" % shape_error)
@@ -1969,6 +1977,10 @@ func _prepare_loaded_state(blob: Dictionary, sch: int) -> Dictionary:
 		return {"ok": true, "state": state}
 	if sch != SAVE_SCHEMA_LEGACY:
 		return {"ok": false, "error": "no migration path for schema %d" % sch}
+	# Guest capability did not exist in schema 1.  Migrate to the explicit empty
+	# record instead of inheriting whatever happened to be live on the receiver.
+	if not state.has("cafe_guest_capability"):
+		state["cafe_guest_capability"] = {}
 	# Runtime services are receiver-owned. Historical headless schema 1 files could contain backend/ext=null;
 	# applying that to Main's live Sim would silently disconnect AI/extensions after quickload. Current schema
 	# never emitted these keys, so schema 2 rejects them as a shape violation instead of silently normalizing.
@@ -2474,7 +2486,12 @@ func _validate_agent_spatial_authority(state: Dictionary) -> String:
 			return "agent %s position is outside authored plane bounds" % aid
 		if not _position_walkable_in_state(saved_world, space, floor, pos):
 			return "agent %s position is not walkable in the prepared state" % aid
-		if not _agent_reachable_plane(aid, String(home["space"]), String(home["floor"]), space, floor):
+		var saved_cap: Dictionary = state.get("cafe_guest_capability", {}) if state.get("cafe_guest_capability", {}) is Dictionary else {}
+		var guest_plane := aid == "player" and space == "cafe" and floor == "2f" \
+			and String(saved_cap.get("id", "")) == "cafe_guest_v1:player:aria" \
+			and String(saved_cap.get("holder", "")) == "player" and String(saved_cap.get("issuer", "")) == "aria" \
+			and String(saved_cap.get("status", "")) == "active"
+		if not guest_plane and not _agent_reachable_plane(aid, String(home["space"]), String(home["floor"]), space, floor):
 			return "agent %s current plane is not authorized from authored home" % aid
 		var expected_area := _area_key_in_world(saved_world, space, floor, pos)
 		var expected_room := _room_in_world(saved_world, pos)
@@ -2493,6 +2510,9 @@ func _validate_loaded_state(state: Dictionary, sch: int) -> String:
 	for p in get_property_list():
 		if int(p.get("usage", 0)) & PROPERTY_USAGE_SCRIPT_VARIABLE:
 			allowed[String(p.get("name", ""))] = true
+	var capability_error := _cafe_guest_capability_error(state.get("cafe_guest_capability", {}))
+	if capability_error != "":
+		return capability_error
 	for raw_key in state:
 		var key := String(raw_key)
 		if not allowed.has(key) or key in SAVE_LOAD_DENY:
@@ -3947,6 +3967,8 @@ func _commit_social(ag: Dictionary, opt: Dictionary) -> void:
 			commitments.append(_cmt)            # 全量历史（不变量/账本用）
 			_active_commitments.append(_cmt)    # 活跃工作集（同一 dict 引用；每 tick 只扫这个，见 _resolve_commitments）
 			_next_commit_id += 1
+			if String(ag.get("id", "")) == "player" and String(target.get("id", "")) == "aria":
+				_grant_cafe_guest_capability()
 		"discuss":
 			# FJ/Deffuant 成对更新：双方观点互相靠拢(固执锚定/高怨气背离)；演化但不坍缩成单一共识
 			_fj_update(ag, target, subject)
@@ -4050,6 +4072,84 @@ func _commit_social(ag: Dictionary, opt: Dictionary) -> void:
 		w["memory"].add("看见%s和%s在%s%s" % [_name(ag), _name(target), _area_label(ag["pos"]), _verb(action)], 2, tick_no, [ag["id"], target["id"], "observe"])
 	emit_signal("log_line", "%s → %s %s%s" % [_name(ag), _name(target), _verb(action), (" [%s]" % subject) if subject != "" else ""])
 	emit_signal("social_event", ev2)
+
+func _grant_cafe_guest_capability() -> void:
+	var cap_id := "cafe_guest_v1:player:aria"
+	cafe_guest_capability = {"id": cap_id, "holder": "player", "issuer": "aria", "status": "active", "granted_tick": tick_no}
+	var ev := _log_event("cafe_guest_grant", "aria", "player", cap_id, true, [])
+	var pl: Dictionary = _agent_by_id.get("player", {})
+	if not pl.is_empty() and pl.get("memory") is Object:
+		pl["memory"].add("阿丽邀请你成为咖啡馆二楼访客", 8, tick_no, ["aria", "cafe", "capability"])
+	emit_signal("log_line", "阿丽授予你咖啡馆二楼访客权限")
+	emit_signal("social_event", ev)
+
+func revoke_cafe_guest_capability() -> bool:
+	if not _cafe_guest_capability_valid():
+		return false
+	var pl: Dictionary = _agent_by_id.get("player", {})
+	var recover_from_private_floor := not pl.is_empty() \
+		and String(pl.get("space", "")) == "cafe" and String(pl.get("floor", "")) == "2f"
+	var recovery_target := Vector2i(-1, -1)
+	if recover_from_private_floor:
+		# Derive the authored public landing cell from the receiver-owned stairs portal.
+		# All validation happens before the single commit point below.
+		for raw_portal in _authored_portals:
+			if not (raw_portal is Dictionary):
+				continue
+			var portal: Dictionary = raw_portal
+			if String(portal.get("id", "")) != "p_cafe_stairs":
+				continue
+			var endpoint: Variant = portal.get("from", {})
+			var destination: Variant = portal.get("to", {})
+			if not (endpoint is Dictionary) or not (destination is Dictionary):
+				continue
+			if String(destination.get("space", "")) != "cafe" or String(destination.get("floor", "")) != "2f":
+				continue
+			var landing: Variant = (endpoint as Dictionary).get("pos", [])
+			if not (landing is Array) or landing.size() != 2:
+				continue
+			recovery_target = Vector2i(int(landing[0]), int(landing[1]))
+			break
+		if recovery_target.x < 0 or not _has_exact_nav_plane("cafe", "1f") \
+				or not _cell_walkable(_nav_grids["cafe"]["1f"], recovery_target):
+			return false
+	if recover_from_private_floor:
+		pl["space"] = "cafe"
+		pl["floor"] = "1f"
+		_move_agent(pl, recovery_target)
+		_path_cache.erase("player")
+		emit_signal("agent_changed", "player")
+	cafe_guest_capability["status"] = "revoked"
+	var ev := _log_event("cafe_guest_revoke", "aria", "player", String(cafe_guest_capability.get("id", "")), true, [])
+	emit_signal("log_line", "咖啡馆二楼访客权限已撤销" + ("，已安全返回一楼" if recover_from_private_floor else ""))
+	emit_signal("social_event", ev)
+	if recover_from_private_floor:
+		var recovery_ev := _log_event("cafe_guest_revoke_recovery", "aria", "player", "cafe/2f->cafe/1f", true, [])
+		emit_signal("social_event", recovery_ev)
+	return true
+
+func _cafe_guest_capability_valid() -> bool:
+	return cafe_guest_capability is Dictionary \
+		and String(cafe_guest_capability.get("id", "")) == "cafe_guest_v1:player:aria" \
+		and String(cafe_guest_capability.get("holder", "")) == "player" \
+		and String(cafe_guest_capability.get("issuer", "")) == "aria" \
+		and String(cafe_guest_capability.get("status", "")) == "active" \
+		and typeof(cafe_guest_capability.get("granted_tick", -1)) == TYPE_INT \
+		and int(cafe_guest_capability.get("granted_tick", -1)) >= 0
+
+func _cafe_guest_capability_error(value: Variant) -> String:
+	if value == null or (value is Dictionary and (value as Dictionary).is_empty()):
+		return ""
+	if not (value is Dictionary):
+		return "cafe_guest_capability is not a Dictionary"
+	var d: Dictionary = value
+	for k in ["id", "holder", "issuer", "status", "granted_tick"]:
+		if not d.has(k): return "cafe_guest_capability missing %s" % k
+	if String(d.get("id")) != "cafe_guest_v1:player:aria" or String(d.get("holder")) != "player" or String(d.get("issuer")) != "aria":
+		return "cafe_guest_capability identity mismatch"
+	if not ["active", "revoked"].has(String(d.get("status"))): return "cafe_guest_capability status invalid"
+	if typeof(d.get("granted_tick")) != TYPE_INT or int(d.get("granted_tick")) < 0: return "cafe_guest_capability tick invalid"
+	return ""
 
 ## 承诺解算：每 tick 检查 active meet → 双方到场即 fulfilled，到点没到即 broken（归责缺席方）。
 ## 只扫活跃工作集 _active_commitments（未决数 ∝ N，而非累积总量 ∝ N·time）→ per-tick 成本不随历史增长(docs/14)。
@@ -6118,7 +6218,8 @@ func _portals_from(space: String, floor: String, ag: Dictionary = {}) -> Array:
 			continue                              # 未知/缺 access 永不默认 public
 		if access == "owner" and not ag.is_empty():
 			var authored_home: Dictionary = _authored_agent_homes.get(String(ag.get("id", "")), {})
-			if String(p.get("owner_space", "")) == "" or String(authored_home.get("space", "")) != String(p.get("owner_space", "")):
+			var guest_cafe := String(p.get("id", "")) == "p_cafe_stairs" and String(ag.get("id", "")) == "player" and _cafe_guest_capability_valid()
+			if not guest_cafe and (String(p.get("owner_space", "")) == "" or String(authored_home.get("space", "")) != String(p.get("owner_space", ""))):
 				continue                    # 非主人 → 私有 portal(楼梯)走不了
 		if String(fr.get("space", "")) == space and String(fr.get("floor", "")) == floor:
 			out.append({"portal_id": String(p.get("id", "")), "kind": String(p.get("kind", "")), "access": String(p.get("access", "public")),

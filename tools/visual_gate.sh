@@ -104,6 +104,21 @@ rain_tick(){ case "$1" in 1) echo 600 ;; 3) echo 840 ;; 5) echo 1560 ;; *) echo 
 # ══ 模式 B：在渲染环境【内部】拍两帧 ════════════════════════════════════════
 # 容器里用 `bash /tools/visual_gate.sh --shoot /out`；native 路径下同一份脚本原地跑。
 # 写成"自我再入"而不是再开一个脚本，是为了让容器内外只有一份拍图参数——两份必然漂移。
+check_cafe_player_meta() {
+  local meta="$1"
+  [ -s "$meta" ] || { echo "  cafe-player metadata missing: $meta"; return 1; }
+  "$PY" - "$meta" <<'PY'
+import json, sys
+with open(sys.argv[1], encoding="utf-8") as f:
+    m = json.load(f)
+required = ("player_journey", "player_entered", "player_returned")
+if any(m.get(k) is not True for k in required):
+    print("  cafe-player metadata FAIL: " + ", ".join(f"{k}={m.get(k)!r}" for k in required))
+    raise SystemExit(1)
+print("  cafe-player metadata PASS: player_journey/entered/returned=true")
+PY
+}
+
 if [ "${1:-}" = "--shoot" ]; then
   OUT="${2:-/out}"
   GAME="${VG_GAME:-/game}"
@@ -166,7 +181,7 @@ if [ "${1:-}" = "--shoot" ]; then
   #    重画被排上了、却画成一块纯色，计数器照样绿。判据在 tools/assert_space_roundtrip.py（宿主侧跑）。
   # 本步只负责**采集**：拍不出三帧 / 前提断言（出店取景复位）破了 ⇒ rc=3。
   # RT_OWN_XVFB=0：**复用上面这个 Xvfb**（再起一个会白烧一份 1280x768 软渲染，还多一个要收的进程）。
-  if RT_OWN_XVFB=0 RT_GAME="$GAME" GODOT="$GBIN" \
+  if RT_OWN_XVFB=0 RT_GAME="$GAME" RT_PLAYER_POS=41,19 GODOT="$GBIN" \
        bash "$(dirname "$0")/space_roundtrip.sh" --shoot "$OUT" >>/tmp/vg-godot.log 2>&1; then
     echo "  space-roundtrip 采集 ok  (town_before → interior → town_after)"
   else
@@ -229,7 +244,7 @@ if [ "${1:-}" = "--shoot" ]; then
   # 拍 5 帧 + 逐段断言落在对的 Floor。判据在宿主侧 tools/assert_floor_roundtrip.py。rc=8 专给它。
   # RT_OWN_XVFB=0：复用上面这个 Xvfb（同 space-roundtrip 那步的理由）。写进 $OUT/floor 子目录，避免 rt_*.png 撞名。
   mkdir -p "$OUT/floor"
-  if RT_OWN_XVFB=0 RT_JOURNEY=full RT_GAME="$GAME" GODOT="$GBIN" \
+  if RT_OWN_XVFB=0 RT_JOURNEY=full RT_GAME="$GAME" RT_PLAYER_POS=41,19 GODOT="$GBIN" \
        bash "$(dirname "$0")/space_roundtrip.sh" --shoot "$OUT/floor" >>/tmp/vg-godot.log 2>&1; then
     echo "  floor-roundtrip 采集 ok  (town→1f→上楼2f→下楼1f→town，逐段楼层对)"
   else
@@ -339,6 +354,15 @@ else
   TOL=4                      # 未 pin 的光栅器：容忍 1 个 LSB 级的漂移，判别力不受影响（见抬头）
   VG_GAME="$GAME" GODOT="$GODOT" bash "$0" --shoot "$OUT"
   SHOT_RC=$?
+fi
+
+# Do not allow a capture with no real player journey to pass merely because
+# SpaceShot omitted the optional player fields.
+if [ -f "$OUT/rt_meta.json" ] && ! check_cafe_player_meta "$OUT/rt_meta.json"; then
+  [ "$SHOT_RC" -eq 0 ] && SHOT_RC=3
+fi
+if [ -f "$OUT/floor/rt_meta.json" ] && ! check_cafe_player_meta "$OUT/floor/rt_meta.json"; then
+  [ "$SHOT_RC" -eq 0 ] && SHOT_RC=8
 fi
 
 # rc 分档（必须分开，否则失败信息指向错误方向 —— 误导性诊断和假红一样坏）：
