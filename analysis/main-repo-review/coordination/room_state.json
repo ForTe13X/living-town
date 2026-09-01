@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-09-01T05:38:56Z",
+  "updated_at": "2026-09-01T05:44:09Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,13 +11,13 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "4d7c71f1546ee2daec638c9e1e4948e5696783740a22b160a02b6d2c2bac3948",
-    "canonical_objects": 380,
+    "canonical_sha256": "d5175c036dbfaf9f50d70ee749a112da1bf018b3597cec0e5cd0ec6b7fc2a86c",
+    "canonical_objects": 381,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
-      "parent": "0184a35609feae999cb172bb81916c573d0c7f52",
-      "tree": "21fcc3f3099fae930d10ffeed6f3354cc46be950",
-      "commit": "7ea4ffe98b5af66488c15314e8e39b8f54f4eab8",
+      "parent": "7ea4ffe98b5af66488c15314e8e39b8f54f4eab8",
+      "tree": "a4fe20d9d4d172d6ed2532f9d3e3bf55aea0f2c4",
+      "commit": "e0d2674a790cdf858ff7514720ccde2ceb9c6c84",
       "force": false,
       "reason": "producer-only non-force Git Data API publication; GitHub API authoritative for this exact parent-child mutation"
     },
@@ -3883,7 +3883,7 @@
       "write_lease": true,
       "last_heartbeat": "2026-09-01T05:38:56Z",
       "stale_after": "2026-09-01T07:38:56Z",
-      "dispatch": {"method":"create_thread_hold_then_send_message","status":"hold_created_no_write","reservation_commit":"pending_publication","cadence":"asynchronous nonblocking; launch once then return"},
+      "dispatch": {"method":"create_thread_hold_then_send_message","status":"hold_created_no_write_packet_reserved","reservation_commit":"e0d2674a790cdf858ff7514720ccde2ceb9c6c84","cadence":"asynchronous nonblocking; launch once then return"},
       "pr": {"number":null,"stacked_base_branch":"codex/pr35-roundtrip-camera-harness-repair-v1","upstream_pr":36,"draft_required":true,"status":"evidence_only_no_pr"},
       "pr_policy": "No commit, push or PR in this evidence packet. A later Producer tick may authorize the exact one-path commit only after terminal full-CI PASS and independent review.",
       "checks": {"required":["clone /src into task-owned /out/work so .git is complete","checkout exact dfefd9a head and verify tree/game tree","copy exact modified visual_gate.sh by content and reverify sha256 plus one-path diff","overlay exact audited complement ledger","fresh empty task-owned Godot userdata","hard Git redline and complement prechecks pass before full CI","full tools/ci.sh launches detached once with complete log and exit receipt","no registered worktree or GitHub mutation"],"p0":0,"p1":0,"does_not_prove":"A terminal green disposable-clone CI run does not prove player-facing polish, independent QA/REFUTE closure, save/load/replay completion, benchmark parity, release readiness or permission to merge."},
