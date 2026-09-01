@@ -34,9 +34,18 @@ func _ready() -> void:
 	ck(Sim.load_game(save_path) and Sim._cafe_guest_capability_valid(), "load restores active capability deterministically")
 	pl = Sim.get_agent("player")
 	ck(Sim.revoke_cafe_guest_capability(), "revocation is explicit and persistent")
-	Sim._move_agent(pl, stairs); pl["space"] = "cafe"; pl["floor"] = "1f"
+	ck(String(pl.get("space", "")) == "cafe" and String(pl.get("floor", "")) == "1f" and pl.get("pos") == stairs, "revocation recovers player to authored cafe 1f")
+	ck(String(Sim.cafe_guest_capability.get("status", "")) == "revoked", "capability is revoked after recovery commit")
+	ck(Sim.event_log.any(func(e): return String(e.get("type", "")) == "cafe_guest_revoke_recovery"), "safe recovery is persistent chronicle event")
+	ck(Sim.save_game(save_path, {"test": "cafe_guest_revoked_recovery"}), "revoked safe state saves")
+	Sim.cafe_guest_capability = {}
+	ck(Sim.load_game(save_path) and String(Sim.get_agent("player").get("floor", "")) == "1f", "revoked safe state loads")
+	pl = Sim.get_agent("player")
 	var denied := Sim.player_portal_intent({"source_space": "cafe", "source_floor": "1f", "portal_pos": stairs})
 	ck(not bool(denied.get("ok", false)) and denied.get("reason") == "portal_not_permitted", "revoked capability fails closed (%s)" % String(denied.get("reason", "")))
+	var digest_after_revoke: int = Sim.event_digest
+	ck(not Sim.revoke_cafe_guest_capability(), "already revoked capability is rejected without mutation")
+	ck(Sim.event_digest == digest_after_revoke, "rejected revocation does not mutate chronicle")
 	# Forged identity can never authorize traversal.
 	Sim.cafe_guest_capability = {"id": "forged", "holder": "player", "issuer": "aria", "status": "active", "granted_tick": 0}
 	ck(not Sim._cafe_guest_capability_valid(), "forged capability rejected")

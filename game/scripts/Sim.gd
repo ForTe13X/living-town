@@ -4086,10 +4086,46 @@ func _grant_cafe_guest_capability() -> void:
 func revoke_cafe_guest_capability() -> bool:
 	if not _cafe_guest_capability_valid():
 		return false
+	var pl: Dictionary = _agent_by_id.get("player", {})
+	var recover_from_private_floor := not pl.is_empty() \
+		and String(pl.get("space", "")) == "cafe" and String(pl.get("floor", "")) == "2f"
+	var recovery_target := Vector2i(-1, -1)
+	if recover_from_private_floor:
+		# Derive the authored public landing cell from the receiver-owned stairs portal.
+		# All validation happens before the single commit point below.
+		for raw_portal in _authored_portals:
+			if not (raw_portal is Dictionary):
+				continue
+			var portal: Dictionary = raw_portal
+			if String(portal.get("id", "")) != "p_cafe_stairs":
+				continue
+			var endpoint: Variant = portal.get("from", {})
+			var destination: Variant = portal.get("to", {})
+			if not (endpoint is Dictionary) or not (destination is Dictionary):
+				continue
+			if String(destination.get("space", "")) != "cafe" or String(destination.get("floor", "")) != "2f":
+				continue
+			var landing: Variant = (endpoint as Dictionary).get("pos", [])
+			if not (landing is Array) or landing.size() != 2:
+				continue
+			recovery_target = Vector2i(int(landing[0]), int(landing[1]))
+			break
+		if recovery_target.x < 0 or not _has_exact_nav_plane("cafe", "1f") \
+				or not _cell_walkable(_nav_grids["cafe"]["1f"], recovery_target):
+			return false
+	if recover_from_private_floor:
+		pl["space"] = "cafe"
+		pl["floor"] = "1f"
+		_move_agent(pl, recovery_target)
+		_path_cache.erase("player")
+		emit_signal("agent_changed", "player")
 	cafe_guest_capability["status"] = "revoked"
 	var ev := _log_event("cafe_guest_revoke", "aria", "player", String(cafe_guest_capability.get("id", "")), true, [])
-	emit_signal("log_line", "咖啡馆二楼访客权限已撤销")
+	emit_signal("log_line", "咖啡馆二楼访客权限已撤销" + ("，已安全返回一楼" if recover_from_private_floor else ""))
 	emit_signal("social_event", ev)
+	if recover_from_private_floor:
+		var recovery_ev := _log_event("cafe_guest_revoke_recovery", "aria", "player", "cafe/2f->cafe/1f", true, [])
+		emit_signal("social_event", recovery_ev)
 	return true
 
 func _cafe_guest_capability_valid() -> bool:

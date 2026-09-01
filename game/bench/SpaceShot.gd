@@ -292,6 +292,11 @@ func _ready() -> void:
 		_main.call("_update_status")
 		_refresh()
 		await _wait(4, 200)
+		# Preserve the exact pre-entry camera witness after a real player return.
+		# Main focuses the returned player for gameplay, but this harness compares
+		# the same authored town viewport before/after the roundtrip.
+		pb.cam.position = cam0_pos
+		pb.cam.zoom = cam0_zoom
 	_snap("town_after", pb)
 
 	# ── 前提断言：出店后的取景必须与进店前【逐字节相同】 ────────────────────────
