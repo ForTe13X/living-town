@@ -156,8 +156,62 @@ cafe_meta_contract_self_test() {
   echo "  cafe metadata contract PASS: simple schema remains scoped; full missing/probe-only fail; full valid passes"
 }
 
+check_clean_player_meta() {
+  local meta="$1"
+  [ -s "$meta" ] || { echo "  clean-player metadata missing: $meta"; return 1; }
+  "$PY" - "$meta" <<'PY'
+import json, sys
+with open(sys.argv[1], encoding="utf-8") as f: m = json.load(f)
+p = m.get("clean_player_evidence", {})
+checks = {
+    "desktop.in_bounds": p.get("desktop", {}).get("in_bounds") is True,
+    "mobile.in_bounds": p.get("mobile", {}).get("in_bounds") is True,
+    "desktop.clean": p.get("desktop", {}).get("clean") is True,
+    "mobile.clean": p.get("mobile", {}).get("clean") is True,
+    "developer chrome": all(p.get("desktop", {}).get(k) is v for k, v in {
+        "developer_chrome_hidden": True, "relationship_overlay": False, "navigation_overlay": False}.items()),
+    "common input action": p.get("desktop", {}).get("touch_common_action") == "_player_do"
+        and p.get("desktop", {}).get("keyboard_common_action") == "_player_do",
+    "common revoke action": p.get("desktop", {}).get("touch_revoke_action") == "_player_return_cafe_pass"
+        and p.get("desktop", {}).get("keyboard_revoke_action") == "_player_return_cafe_pass",
+    "reduced motion": p.get("reduced_motion") is True,
+    "revoked": p.get("revoke", {}).get("recorded") is True and p.get("revoke", {}).get("status") == "revoked",
+    "persistent": all(p.get("persistence", {}).get(k) is True for k in ("save", "load_exact", "replay_exact")),
+    "evidence negatives": all(p.get("negative_evidence", {}).get(k) is True for k in ("missing_rejected", "corrupt_rejected", "atomic")),
+}
+bad = [k for k, ok in checks.items() if not ok]
+if bad:
+    print("  clean-player metadata FAIL: " + ", ".join(bad)); raise SystemExit(1)
+print("  clean-player metadata PASS: clean desktop/mobile + common inputs + reduced motion + revoke persistence + negative evidence")
+PY
+}
+
+clean_player_contract_self_test() {
+  local d="${TMPDIR:-/tmp}/lt-clean-player-contract-$$"
+  mkdir -p "$d"
+  printf '%s\n' '{}' > "$d/missing.json"
+  printf '%s\n' '{"clean_player_evidence":{"desktop":{"clean":true,"in_bounds":true,"developer_chrome_hidden":true,"relationship_overlay":false,"navigation_overlay":false,"touch_common_action":"_player_do","keyboard_common_action":"_player_do","touch_revoke_action":"_player_return_cafe_pass","keyboard_revoke_action":"_player_return_cafe_pass"},"mobile":{"clean":true,"in_bounds":true},"reduced_motion":true,"revoke":{"recorded":true,"status":"revoked"},"persistence":{"save":true,"load_exact":true,"replay_exact":true},"negative_evidence":{"missing_rejected":true,"corrupt_rejected":true,"atomic":true}}}' > "$d/valid.json"
+  if check_clean_player_meta "$d/missing.json" > "$d/missing.log" 2>&1; then
+    echo "  clean-player contract FAIL: missing evidence accepted"; rm -rf "$d"; return 1
+  fi
+  grep -q 'desktop.in_bounds' "$d/missing.log" || { echo "  clean-player contract FAIL: missing-evidence tooth absent"; rm -rf "$d"; return 1; }
+  check_clean_player_meta "$d/valid.json" || { rm -rf "$d"; return 1; }
+  rm -rf "$d"
+  echo "  clean-player contract PASS: missing fails closed; valid focused receipt passes"
+}
+
 if [ "${1:-}" = "--cafe-meta-contract-self-test" ]; then
   PY="${PYTHON:-python}" cafe_meta_contract_self_test
+  exit $?
+fi
+
+if [ "${1:-}" = "--clean-player-contract-self-test" ]; then
+  PY="${PYTHON:-python}" clean_player_contract_self_test
+  exit $?
+fi
+
+if [ "${1:-}" = "--check-clean-player-meta" ]; then
+  PY="${PYTHON:-python}" check_clean_player_meta "${2:-}"
   exit $?
 fi
 

@@ -51,7 +51,7 @@ SKIP_RC=77
 SEED="${LT_RT_SEED:-3}"
 TICK="${LT_RT_TICK:-600}"     # 第 3 天 12:00 正午 —— 与 visual_gate 的 NOON_TICK 同一个时刻，
                               # 于是"界外带是不是活的"不会被夜间乘子压低对比而混淆。
-W=1280; H=768
+W="${RT_WIDTH:-${LT_RT_WIDTH:-1280}}"; H="${RT_HEIGHT:-${LT_RT_HEIGHT:-768}}"
 
 # ══ 模式 B：在渲染环境【内部】拍三帧 ═══════════════════════════════════════
 if [ "${1:-}" = "--shoot" ]; then
@@ -67,6 +67,8 @@ if [ "${1:-}" = "--shoot" ]; then
   CORRUPT_MANIFEST="${RT_CORRUPT_MANIFEST:-}"
   DENY_PORTAL="${RT_DENY_PORTAL:-}"
   AGENTS="${RT_AGENTS:-12}"
+  CLEAN="${RT_CLEAN_PLAYER:-0}"
+  REDUCED="${RT_REDUCED_MOTION:-0}"
   export LIBGL_ALWAYS_SOFTWARE=1 LP_NUM_THREADS=1 GODOT_SILENCE_ROOT_WARNING=1
   OWN_XV=0
   if [ -z "${DISPLAY:-}" ] || [ "${RT_OWN_XVFB:-1}" = "1" ]; then
@@ -87,11 +89,15 @@ if [ "${1:-}" = "--shoot" ]; then
   [ -n "$CORRUPT_MANIFEST" ] && CORRUPT_ARGS=(--rt-corrupt-manifest "$CORRUPT_MANIFEST")
   DENY_ARGS=()
   [ -n "$DENY_PORTAL" ] && DENY_ARGS=(--rt-deny-portal "$DENY_PORTAL")
+  PRESENT_ARGS=()
+  [ "$CLEAN" = "1" ] && PRESENT_ARGS+=(--clean-player)
+  [ "$REDUCED" = "1" ] && PRESENT_ARGS+=(--reduced-motion)
   "$GBIN" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
     --resolution ${W}x${H} --single-window res://bench/SpaceShot.tscn -- \
     --backend logic --seed "$SEED" --agents "$AGENTS" --warmup-tick "$TICK" \
     --rt-out "$OUT" --rt-space "$SPACE" --rt-mode "$MODE" --rt-journey "$JOURNEY" --rt-redraw "$REDRAW" \
-    "${PLAYER_ARGS[@]}" "${DS_ARGS[@]}" "${CORRUPT_ARGS[@]}" "${DENY_ARGS[@]}"
+    --rt-capture-size "$W" "$H" \
+    "${PLAYER_ARGS[@]}" "${DS_ARGS[@]}" "${CORRUPT_ARGS[@]}" "${DENY_ARGS[@]}" "${PRESENT_ARGS[@]}"
   rc=$?
   [ "$OWN_XV" = "1" ] && kill $XV 2>/dev/null
   exit $rc
@@ -162,6 +168,8 @@ if [ "$PICK" = docker ]; then
     -e RT_DENY_PORTAL="${LT_RT_DENY_PORTAL:-}" \
     -e RT_PLAYER_POS="${LT_RT_PLAYER_POS:-}" \
     -e RT_AGENTS="$AGENTS" \
+    -e RT_WIDTH="${LT_RT_WIDTH:-1280}" -e RT_HEIGHT="${LT_RT_HEIGHT:-768}" \
+    -e RT_CLEAN_PLAYER="${LT_RT_CLEAN_PLAYER:-0}" -e RT_REDUCED_MOTION="${LT_RT_REDUCED_MOTION:-0}" \
     -e LT_RT_SEED="$SEED" -e LT_RT_TICK="$TICK" \
     -v "$GAME:/game" -v "$REPO/tools:/tools" -v "$OUT_HOST:/out" \
     "$IMG" bash /tools/space_roundtrip.sh --shoot /out
@@ -169,6 +177,8 @@ if [ "$PICK" = docker ]; then
 else
   RT_GAME="$GAME" RT_MODE="${LT_RT_MODE:-portal}" RT_SPACE="${LT_RT_SPACE:-cafe}" RT_REDRAW="${LT_RT_REDRAW:-auto}" \
     RT_JOURNEY="$JOURNEY" RT_DRAW_SKIP="$DRAWSKIP" RT_PLAYER_POS="${LT_RT_PLAYER_POS:-}" RT_AGENTS="$AGENTS" \
+    RT_WIDTH="${LT_RT_WIDTH:-1280}" RT_HEIGHT="${LT_RT_HEIGHT:-768}" \
+    RT_CLEAN_PLAYER="${LT_RT_CLEAN_PLAYER:-0}" RT_REDUCED_MOTION="${LT_RT_REDUCED_MOTION:-0}" \
     RT_CORRUPT_MANIFEST="${LT_RT_CORRUPT_MANIFEST:-}" RT_DENY_PORTAL="${LT_RT_DENY_PORTAL:-}" \
     GODOT="$GODOT" bash "$0" --shoot "$OUT"
   SHOT_RC=$?
@@ -196,6 +206,28 @@ if bad:
     print("  cafe full-player metadata FAIL: " + ", ".join(bad))
     raise SystemExit(1)
 print("  cafe full-player metadata PASS: invited player occupied 2F and returned; stairs_probe_only=false")
+PY
+  [ $? -eq 0 ] || exit 1
+fi
+
+if [ "${LT_RT_CLEAN_PLAYER:-0}" = "1" ]; then
+  "$PY" - "$OUT/rt_meta.json" <<'PY'
+import json, sys
+with open(sys.argv[1], encoding="utf-8") as f: m = json.load(f)
+p = m.get("clean_player_evidence", {})
+required = {
+    "desktop.in_bounds": p.get("desktop", {}).get("in_bounds") is True,
+    "mobile.in_bounds": p.get("mobile", {}).get("in_bounds") is True,
+    "reduced_motion": p.get("reduced_motion") is True,
+    "revoke.recorded": p.get("revoke", {}).get("recorded") is True,
+    "revoke.status": p.get("revoke", {}).get("status") == "revoked",
+    "save/load/replay": all(p.get("persistence", {}).get(k) is True for k in ("save", "load_exact", "replay_exact")),
+    "negative evidence": all(p.get("negative_evidence", {}).get(k) is True for k in ("missing_rejected", "corrupt_rejected", "atomic")),
+}
+bad = [k for k, ok in required.items() if not ok]
+if bad:
+    print("  clean-player metadata FAIL: " + ", ".join(bad)); raise SystemExit(1)
+print("  clean-player metadata PASS: desktop/mobile in bounds; reduced motion; revoke + save/load/replay; missing/corrupt fail closed")
 PY
   [ $? -eq 0 ] || exit 1
 fi

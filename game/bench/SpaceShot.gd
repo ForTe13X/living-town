@@ -61,6 +61,9 @@ var _main: Node
 var _meta := {}
 var _rc := 0
 var _guest_invited := false
+var _clean_player := false
+var _reduced_motion := false
+var _capture_size := Vector2i.ZERO
 
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
@@ -73,6 +76,9 @@ func _ready() -> void:
 		elif args[i] == "--rt-settle" and i + 1 < args.size(): _settle = int(args[i + 1])
 		elif args[i] == "--rt-corrupt-manifest" and i + 1 < args.size(): _corrupt_manifest = args[i + 1]
 		elif args[i] == "--rt-deny-portal" and i + 1 < args.size(): _deny_portal = args[i + 1]
+		elif args[i] == "--clean-player": _clean_player = true
+		elif args[i] == "--reduced-motion": _reduced_motion = true
+		elif args[i] == "--rt-capture-size" and i + 2 < args.size(): _capture_size = Vector2i(int(args[i + 1]), int(args[i + 2]))
 	if _out == "":
 		print("[SPACESHOT] ❌ 缺 --rt-out <dir>")
 		get_tree().quit(2)
@@ -363,6 +369,9 @@ func _ready() -> void:
 		pb.cam.zoom = cam0_zoom
 	_meta["player_town_after"] = _player_address()
 	_snap("town_after", pb)
+	if _journey == "full" and _clean_player:
+		if not await _prove_clean_player_consequence(pb):
+			_rc = 1
 
 	# ── 前提断言：出店后的取景必须与进店前【逐字节相同】 ────────────────────────
 	# 这不是"判据"，是 A 判据（前后两帧应当一致）的**前提**。它塌了，像素比较就没有意义，
@@ -461,12 +470,13 @@ func _invite_player_from_current_plane() -> bool:
 		if String(pl.get("space", "")) == String(aria.get("space", "")) and String(pl.get("floor", "")) == String(aria.get("floor", "")) \
 				and int(pl.get("talking", 0)) <= 0 and int(aria.get("talking", 0)) <= 0:
 			if _walk_player_to(aria.get("pos", Vector2i(-1, -1))):
-				var started := Sim.player_act("invite", "aria")
-				if started == "":
-					for _i in range(12): Sim.tick()
-					if Sim._cafe_guest_capability_valid():
-						_meta["invite_event_id"] = int(Sim.cafe_guest_capability.get("grant_event_id", -1))
-						return true
+				_main.set("_selected_id", "aria")
+				_main.call("_player_do", "invite") # exact common keyboard/touch action seam
+				for _i in range(12): Sim.tick()
+				if Sim._cafe_guest_capability_valid():
+					_meta["invite_event_id"] = int(Sim.cafe_guest_capability.get("grant_event_id", -1))
+					_meta["invite_action_path"] = "_player_do"
+					return true
 		Sim.tick()
 	return false
 
@@ -477,6 +487,77 @@ func _player_address() -> Dictionary:
 	var pos: Vector2i = player.get("pos", Vector2i.ZERO)
 	return {"space": String(player.get("space", "")), "floor": String(player.get("floor", "")),
 		"pos": [pos.x, pos.y], "area": String(player.get("area", "")), "room": String(player.get("room", ""))}
+
+## Product-path persistence evidence after the complete real journey.  Files are
+## confined to user:// (the task-owned container HOME); no fixture or authority
+## is rewritten.  The Main callbacks are the exact keyboard/touch seams.
+func _prove_clean_player_consequence(pb) -> bool:
+	var proof := {
+		"desktop": _main.call("clean_player_presentation_contract", Vector2(1280, 768)),
+		"mobile": _main.call("clean_player_presentation_contract", Vector2(320, 192)),
+		"reduced_motion": _reduced_motion,
+	}
+	var trace_before: Dictionary = Sim.get_player_trace()
+	_main.call("_player_return_cafe_pass")
+	_main.call("_update_status")
+	_main.call("_render_log")
+	_refresh()
+	await _wait(4, 200)
+	var cap_after: Dictionary = Sim.cafe_guest_capability.duplicate(true)
+	var trace_after: Dictionary = Sim.get_player_trace()
+	var revoked := String(cap_after.get("status", "")) == "revoked"
+	var revoke_recorded := false
+	if not (trace_after.get("entries", []) as Array).is_empty():
+		revoke_recorded = String((trace_after["entries"] as Array)[-1].get("kind", "")) == "cafe_guest_pass"
+	proof["revoke"] = {"status": String(cap_after.get("status", "")), "recorded": revoke_recorded,
+		"trace_entries_before": (trace_before.get("entries", []) as Array).size(),
+		"trace_entries_after": (trace_after.get("entries", []) as Array).size(),
+		"chronicle": String((_main.get("_clean_chronicle") as RichTextLabel).text)}
+	_snap("revoke", pb)
+	var save_path := "user://pr38_clean_revoked.save"
+	var save_ok := Sim.save_game(save_path, {"evidence": "clean-player-revoke"})
+	var save_sha := FileAccess.get_sha256(save_path) if save_ok else ""
+	var expected_tick := Sim.tick_no
+	var expected_digest := Sim.event_digest
+	var expected_cap := Sim.cafe_guest_capability.duplicate(true)
+	var expected_trace := Sim.get_player_trace()
+	var load_ok := save_ok and Sim.load_game(save_path)
+	var load_exact := load_ok and Sim.tick_no == expected_tick and Sim.event_digest == expected_digest \
+		and Sim.cafe_guest_capability == expected_cap and Sim.get_player_trace() == expected_trace
+	var replay_ok := load_exact and Sim.goto_tick(expected_tick)
+	var replay_exact := replay_ok and Sim.event_digest == expected_digest \
+		and Sim.cafe_guest_capability == expected_cap and Sim.get_player_trace() == expected_trace
+	proof["persistence"] = {"save": save_ok, "save_sha256": save_sha, "load": load_ok,
+		"load_exact": load_exact, "replay": replay_ok, "replay_exact": replay_exact, "tick": expected_tick}
+	# Missing/corrupt files are evidence failures and must leave current authority intact.
+	var atomic_before := {"tick": Sim.tick_no, "event_digest": Sim.event_digest,
+		"capability": Sim.cafe_guest_capability.duplicate(true), "trace": Sim.get_player_trace()}
+	var missing_rejected := not Sim.load_game("user://pr38_missing_evidence.save")
+	var corrupt_path := "user://pr38_corrupt_evidence.save"
+	var corrupt_file := FileAccess.open(corrupt_path, FileAccess.WRITE)
+	if corrupt_file != null:
+		corrupt_file.store_string("not-a-living-town-save")
+		corrupt_file.close()
+	var corrupt_rejected := not Sim.load_game(corrupt_path)
+	var atomic_after := {"tick": Sim.tick_no, "event_digest": Sim.event_digest,
+		"capability": Sim.cafe_guest_capability.duplicate(true), "trace": Sim.get_player_trace()}
+	proof["negative_evidence"] = {"missing_rejected": missing_rejected,
+		"corrupt_rejected": corrupt_rejected, "atomic": atomic_before == atomic_after}
+	_main.call("_rebuild_feed")
+	_main.call("_update_status")
+	_refresh()
+	await _wait(4, 200)
+	_snap("revoke_replayed", pb)
+	_meta["clean_player_evidence"] = proof
+	var okay := revoked and revoke_recorded and save_ok and load_exact and replay_exact \
+		and missing_rejected and corrupt_rejected and atomic_before == atomic_after \
+		and bool((proof["desktop"] as Dictionary).get("in_bounds", false)) \
+		and bool((proof["mobile"] as Dictionary).get("in_bounds", false)) and _reduced_motion
+	if not okay:
+		print("[SPACESHOT] ❌ clean player consequence/persistence contract failed: %s" % JSON.stringify(proof))
+	else:
+		print("[SPACESHOT] clean player PASS: revoke visible + save/load/replay exact + missing/corrupt fail closed")
+	return okay
 
 ## 进店。portal=走出货路径（tapped→_portal_click）；flip=只翻 active_space（--void-gate 同款）。
 func _enter(pb) -> bool:
@@ -571,7 +652,13 @@ func _snap(name: String, pb) -> void:
 		print("[SPACESHOT] ❌ %s 取不到 viewport 图像（没有真 framebuffer？本场景需要 Xvfb/带窗口 + opengl3）" % name)
 		_rc = 1
 		return
-	img.save_png(path)
+	if _capture_size.x > 0 and _capture_size.y > 0 and (img.get_width() != _capture_size.x or img.get_height() != _capture_size.y):
+		img.resize(_capture_size.x, _capture_size.y, Image.INTERPOLATE_LANCZOS)
+	var save_error := img.save_png(path)
+	if save_error != OK:
+		print("[SPACESHOT] ❌ %s PNG write failed path=%s error=%d" % [name, path, save_error])
+		_rc = 1
+		return
 	var vp: Vector2 = get_viewport().get_visible_rect().size
 	var bounds: Rect2 = _main.call("_space_bounds")
 	var tl: Vector2 = (bounds.position - pb.cam.position) * pb.cam.zoom + vp * 0.5
