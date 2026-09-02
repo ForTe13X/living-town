@@ -859,6 +859,7 @@ func _build_clean_player_hud() -> void:
 		b.add_theme_font_override("font", fnt)
 		b.focus_mode = Control.FOCUS_NONE
 		var verb := String(item["verb"])
+		b.set_meta("player_verb", verb)
 		b.pressed.connect(func(): _player_do(verb))
 		_clean_hud.add_child(b)
 		_clean_action_btns.append(b)
@@ -867,6 +868,7 @@ func _build_clean_player_hud() -> void:
 	_clean_guest_pass_btn.tooltip_text = "归还访客证（键 R）"
 	_clean_guest_pass_btn.add_theme_font_override("font", fnt)
 	_clean_guest_pass_btn.focus_mode = Control.FOCUS_NONE
+	_clean_guest_pass_btn.set_meta("player_verb", "cafe_guest_pass:revoke")
 	_clean_guest_pass_btn.pressed.connect(_player_return_cafe_pass)
 	_clean_hud.add_child(_clean_guest_pass_btn)
 	_apply_clean_player_presentation()
@@ -919,6 +921,43 @@ func clean_player_presentation_contract(viewport: Vector2) -> Dictionary:
 		"developer_chrome_hidden": true, "relationship_overlay": false, "navigation_overlay": false,
 		"touch_common_action": "_player_do", "keyboard_common_action": "_player_do",
 		"touch_revoke_action": "_player_return_cafe_pass", "keyboard_revoke_action": "_player_return_cafe_pass"}
+
+## Live View receipt used by the focused clean-player proof.  Unlike
+## `clean_player_layout`, this reads the instantiated Controls after Godot has
+## laid them out.  It deliberately exposes presentation state only: no value is
+## written back to Sim or persisted in a save.
+func clean_player_view_state() -> Dictionary:
+	var vp := get_viewport_rect().size
+	var controls: Array = [_clean_status, _clean_chronicle]
+	controls.append_array(_clean_action_btns)
+	controls.append(_clean_guest_pass_btn)
+	var geometry: Array = []
+	var in_bounds := true
+	var readable := true
+	for raw in controls:
+		if raw == null or not (raw is Control):
+			in_bounds = false
+			readable = false
+			continue
+		var ctl: Control = raw
+		var r := ctl.get_global_rect()
+		var font_size := ctl.get_theme_font_size("normal_font_size") if ctl is RichTextLabel else ctl.get_theme_font_size("font_size")
+		var text := String(ctl.get("text"))
+		var item := {"name": String(ctl.name), "rect": [r.position.x, r.position.y, r.size.x, r.size.y],
+			"visible": ctl.is_visible_in_tree(), "font_size": font_size, "text": text}
+		if ctl is BaseButton:
+			item["disabled"] = (ctl as BaseButton).disabled
+			item["pressed_connections"] = (ctl as BaseButton).get_signal_connection_list("pressed").size()
+		geometry.append(item)
+		in_bounds = in_bounds and r.position.x >= 0.0 and r.position.y >= 0.0 \
+			and r.end.x <= vp.x and r.end.y <= vp.y and ctl.is_visible_in_tree()
+		readable = readable and font_size >= 13 and r.size.x >= 32.0 and r.size.y >= 22.0 and text != ""
+	var feedback := String(_log_recent[-1]) if not _log_recent.is_empty() else ""
+	return {"viewport": [int(vp.x), int(vp.y)], "display": [DisplayServer.window_get_size().x, DisplayServer.window_get_size().y],
+		"in_bounds": in_bounds, "readable": readable, "geometry": geometry,
+		"normalized": {"status": _clean_status.text if _clean_status != null else "",
+			"chronicle": _clean_chronicle.text if _clean_chronicle != null else "",
+			"feedback": feedback, "pass_state": String(Sim.cafe_guest_capability.get("status", "none"))}}
 
 func _apply_clean_player_presentation() -> void:
 	if _clean_hud == null:
@@ -2556,7 +2595,10 @@ func _player_return_cafe_pass() -> String:
 	var reason := String(receipt.get("reason", ""))
 	if ok:
 		var text := "已归还咖啡馆访客证" + ("，并安全返回一楼" if returned else "")
-		_push("[color=#9fe3b1]（%s）[/color]" % text)
+		# The canonical cafe_guest_revoke event already reached `_on_social`
+		# synchronously.  Do not append a second View-only success row: that row is
+		# absent after save/load or replay rebuild and made equivalent checkpoints
+		# render differently.  C1 keeps its separate ephemeral receipt surface.
 		if _locked_ortho_c1 != null: _locked_ortho_c1.show_receipt(text)
 		_update_status()
 		return ""
@@ -2857,6 +2899,12 @@ func _event_prose(e: Dictionary) -> String:
 				], e)
 		"world":
 			return ("[color=#ffe08a]镇上多了点新东西[/color]") if note == "spawn" else ("[color=#9aa0b5]镇上的临时布置撤了[/color]")
+		"cafe_guest_grant":
+			return "[color=#9fe3b1]阿丽把咖啡馆访客证交给了你[/color]"
+		"cafe_guest_revoke":
+			return "[color=#9fe3b1]你归还了咖啡馆访客证[/color]"
+		"cafe_guest_revoke_recovery":
+			return "[color=#9fe3b1]你已从咖啡馆二楼安全返回一楼[/color]"
 	# 兜底：先问 Sim._verb（引擎里早就写好的中文动词表），再退到不提类型的说法。绝不打印英文 id。
 	var v := String(Sim._verb(t))
 	if v != t:

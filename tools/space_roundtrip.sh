@@ -56,6 +56,39 @@ W="${RT_WIDTH:-${LT_RT_WIDTH:-1280}}"; H="${RT_HEIGHT:-${LT_RT_HEIGHT:-768}}"
 # ══ 模式 B：在渲染环境【内部】拍三帧 ═══════════════════════════════════════
 if [ "${1:-}" = "--shoot" ]; then
   OUT="${2:-/out}"
+  # Focused proof logs the complete inner invocation and writes a structured
+  # status receipt from inside the fresh container.  The later manifest step
+  # hashes this receipt and every reviewed PNG/log; normal callers are unchanged.
+  if [ "${RT_FOCUSED_RECEIPT:-0}" = "1" ] && [ "${RT_FOCUSED_INNER:-0}" != "1" ]; then
+    mkdir -p "$OUT"
+    RT_FOCUSED_INNER=1 bash "$0" --shoot "$OUT" 2>&1 | tee "$OUT/focused-run.log"
+    INNER_RC=${PIPESTATUS[0]}
+    RT_INNER_RC="$INNER_RC" "${PYTHON:-python3}" - "$OUT/focused-status.json" <<'PY'
+import hashlib, json, os, platform, socket, subprocess, sys
+def version(cmd):
+    try: return subprocess.check_output(cmd, stderr=subprocess.STDOUT, text=True).splitlines()[0]
+    except Exception as exc: return "unavailable:" + type(exc).__name__
+launch = os.environ.get("RT_FOCUSED_LAUNCH_COMMAND", "")
+receipt = {
+    "schema": "living-town.pr38-clean-player.focused-status.v1",
+    "identity": {k: os.environ.get("RT_" + k.upper(), "") for k in ("head", "tree", "game_tree", "parent")},
+    "launch_command": launch,
+    "launch_command_sha256": hashlib.sha256(launch.encode()).hexdigest(),
+    "container": {"id": socket.gethostname(), "name": os.environ.get("RT_CONTAINER_NAME", ""),
+        "image": os.environ.get("RT_IMAGE", ""), "network": os.environ.get("RT_NETWORK", ""),
+        "mounts": os.environ.get("RT_MOUNTS", ""), "scratch": os.environ.get("RT_SCRATCH", "")},
+    "host": {"client": os.environ.get("RT_HOST_CLIENT", ""), "server": os.environ.get("RT_HOST_SERVER", ""),
+        "context": os.environ.get("RT_HOST_CONTEXT", ""), "platform": os.environ.get("RT_HOST_PLATFORM", "")},
+    "tools": {"godot": version([os.environ.get("GODOT", "godot"), "--version"]),
+        "python": version([os.environ.get("PYTHON", "python3"), "--version"]),
+        "bash": version(["bash", "--version"]), "container_platform": platform.platform()},
+    "status": {"exit_code": int(os.environ["RT_INNER_RC"]), "cleanup_expected": "auto-remove"},
+}
+with open(sys.argv[1], "w", encoding="utf-8", newline="\n") as f:
+    json.dump(receipt, f, ensure_ascii=False, indent=2, sort_keys=True); f.write("\n")
+PY
+    exit "$INNER_RC"
+  fi
   GAME="${RT_GAME:-/game}"
   GBIN="${GODOT:-godot}"
   DISP="${RT_DISPLAY:-:95}"
@@ -211,23 +244,24 @@ PY
 fi
 
 if [ "${LT_RT_CLEAN_PLAYER:-0}" = "1" ]; then
-  "$PY" - "$OUT/rt_meta.json" <<'PY'
+  "$PY" - "$OUT/rt_meta.json" "${LT_RT_REDUCED_MOTION:-0}" <<'PY'
 import json, sys
 with open(sys.argv[1], encoding="utf-8") as f: m = json.load(f)
 p = m.get("clean_player_evidence", {})
+expect_reduced = sys.argv[2] == "1"
 required = {
     "desktop.in_bounds": p.get("desktop", {}).get("in_bounds") is True,
     "mobile.in_bounds": p.get("mobile", {}).get("in_bounds") is True,
-    "reduced_motion": p.get("reduced_motion") is True,
+    "reduced_motion": p.get("reduced_motion") is expect_reduced,
     "revoke.recorded": p.get("revoke", {}).get("recorded") is True,
     "revoke.status": p.get("revoke", {}).get("status") == "revoked",
-    "save/load/replay": all(p.get("persistence", {}).get(k) is True for k in ("save", "load_exact", "replay_exact")),
+    "save/load/replay/View/pixels": all(p.get("persistence", {}).get(k) is True for k in ("save", "load_exact", "replay_exact", "view_exact", "pixels_exact")),
     "negative evidence": all(p.get("negative_evidence", {}).get(k) is True for k in ("missing_rejected", "corrupt_rejected", "atomic")),
 }
 bad = [k for k, ok in required.items() if not ok]
 if bad:
     print("  clean-player metadata FAIL: " + ", ".join(bad)); raise SystemExit(1)
-print("  clean-player metadata PASS: desktop/mobile in bounds; reduced motion; revoke + save/load/replay; missing/corrupt fail closed")
+print("  clean-player metadata PASS: desktop/mobile in bounds; reduced-motion=%s; real HUD revoke + save/load/replay/View/pixels; negatives fail closed" % expect_reduced)
 PY
   [ $? -eq 0 ] || exit 1
 fi

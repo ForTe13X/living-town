@@ -215,6 +215,97 @@ if [ "${1:-}" = "--check-clean-player-meta" ]; then
   exit $?
 fi
 
+if [ "${1:-}" = "--clean-player-focused-manifest" ]; then
+  ROOT="${2:-/out}"
+  PY="${PYTHON:-python3}"
+  "$PY" - "$ROOT" <<'PY'
+import hashlib, json, os, pathlib, struct, sys
+root = pathlib.Path(sys.argv[1])
+expected = {k: os.environ.get("RT_" + k.upper(), "") for k in ("head", "tree", "game_tree", "parent")}
+if any(not v for v in expected.values()): raise SystemExit("focused manifest: incomplete exact identity")
+image = os.environ.get("RT_IMAGE", "")
+if "@sha256:" not in image: raise SystemExit("focused manifest: image is not digest pinned")
+def load(path):
+    with path.open(encoding="utf-8") as f: return json.load(f)
+def sha(path):
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""): h.update(chunk)
+    return h.hexdigest()
+def png_size(path):
+    with path.open("rb") as f:
+        if f.read(8) != b"\x89PNG\r\n\x1a\n": return (0, 0)
+        length = struct.unpack(">I", f.read(4))[0]
+        if f.read(4) != b"IHDR" or length < 8: return (0, 0)
+        return struct.unpack(">II", f.read(8))
+runs, container_ids = {}, set()
+for arm, reduced in (("motion_on", True), ("motion_off", False)):
+    d = root / arm
+    status, meta = load(d / "focused-status.json"), load(d / "rt_meta.json")
+    if status.get("identity") != expected: raise SystemExit(f"{arm}: identity mismatch")
+    c = status.get("container", {})
+    if c.get("image") != image or c.get("network") != "none": raise SystemExit(f"{arm}: image/network mismatch")
+    if ":ro" not in c.get("mounts", "") or "tmpfs" not in c.get("scratch", ""): raise SystemExit(f"{arm}: mount/scratch isolation missing")
+    if status.get("status", {}).get("exit_code") != 0: raise SystemExit(f"{arm}: nonzero status")
+    cid = c.get("id", "")
+    if not cid or cid in container_ids: raise SystemExit(f"{arm}: container not fresh")
+    container_ids.add(cid)
+    receipt = meta.get("reduced_motion_receipt", {})
+    if receipt.get("enabled") is not reduced or receipt.get("pass") is not True: raise SystemExit(f"{arm}: reduced-motion receipt failed")
+    if receipt.get("camera_changed") is reduced: raise SystemExit(f"{arm}: camera behavior inverted")
+    negatives = meta.get("control_negatives", {})
+    for action in ("invite", "revoke"):
+        n = negatives.get(action, {})
+        if n.get("disabled") is not True or n.get("disconnected") is not True or n.get("connection_count", 0) < 1:
+            raise SystemExit(f"{arm}: {action} negative controls failed")
+    proof = meta.get("clean_player_evidence", {})
+    persistence = proof.get("persistence", {})
+    if not all(persistence.get(k) is True for k in ("save", "load_exact", "replay_exact", "view_exact", "pixels_exact")):
+        raise SystemExit(f"{arm}: persistence/view/pixel equivalence failed")
+    state = persistence.get("state_before", {})
+    if state.get("viewport") != [320, 192] or state.get("in_bounds") is not True or state.get("readable") is not True:
+        raise SystemExit(f"{arm}: native layout/readability failed")
+    captures = []
+    for key, value in meta.items():
+        if isinstance(value, dict) and "png" in value:
+            p = d / pathlib.Path(value["png"]).name
+            if png_size(p) != (320, 192) or value.get("native_source") is not True or value.get("post_capture_resize") is not False:
+                raise SystemExit(f"{arm}: {key} is not a native 320x192 source PNG")
+            captures.append(p.name)
+    if len(captures) < 8: raise SystemExit(f"{arm}: incomplete reviewed capture set")
+    runs[arm] = {"status_receipt_sha256": sha(d / "focused-status.json"),
+        "meta_sha256": sha(d / "rt_meta.json"), "launch_command_sha256": status.get("launch_command_sha256", ""),
+        "container_id": cid, "captures": sorted(captures), "reduced_motion": receipt,
+        "cleanup": os.environ.get("RT_CLEANUP_" + arm.upper(), "")}
+    if runs[arm]["cleanup"] != "absent": raise SystemExit(f"{arm}: auto-remove cleanup not observed")
+reviewed = []
+for p in sorted(root.rglob("*")):
+    if p.is_file() and p.name != "focused-evidence-manifest.json" and p.suffix.lower() in (".png", ".log", ".json"):
+        reviewed.append({"path": p.relative_to(root).as_posix(), "bytes": p.stat().st_size, "sha256": sha(p)})
+for suffix in (".png", ".log"):
+    found = {p.relative_to(root).as_posix() for p in root.rglob("*" + suffix)}
+    hashed = {r["path"] for r in reviewed if r["path"].endswith(suffix)}
+    if found != hashed: raise SystemExit(f"unhashed reviewed {suffix} files")
+sources = {}
+for label, p in {"game/scripts/Main.gd": pathlib.Path("/game/scripts/Main.gd"),
+        "game/bench/SpaceShot.gd": pathlib.Path("/game/bench/SpaceShot.gd"),
+        "tools/space_roundtrip.sh": pathlib.Path("/tools/space_roundtrip.sh"),
+        "tools/visual_gate.sh": pathlib.Path("/tools/visual_gate.sh")}.items():
+    sources[label] = {"bytes": p.stat().st_size, "sha256": sha(p)}
+manifest = {"schema": "living-town.pr38-clean-player.focused-evidence.v1", "identity": expected,
+    "reservation": os.environ.get("RT_RESERVATION", ""), "image": image,
+    "host": {"client": os.environ.get("RT_HOST_CLIENT", ""), "server": os.environ.get("RT_HOST_SERVER", ""),
+        "context": os.environ.get("RT_HOST_CONTEXT", ""), "platform": os.environ.get("RT_HOST_PLATFORM", "")},
+    "runs": runs, "source_files": sources, "reviewed_files": reviewed,
+    "does_not_prove": ["full tools/ci.sh", "complement ledger freshness", "visual art-floor acceptance", "remote PR or protection state"]}
+out = root / "focused-evidence-manifest.json"
+with out.open("w", encoding="utf-8", newline="\n") as f:
+    json.dump(manifest, f, ensure_ascii=False, indent=2, sort_keys=True); f.write("\n")
+print("  clean-player focused manifest PASS:", out, sha(out), "reviewed", len(reviewed))
+PY
+  exit $?
+fi
+
 if [ "${1:-}" = "--shoot" ]; then
   OUT="${2:-/out}"
   GAME="${VG_GAME:-/game}"
