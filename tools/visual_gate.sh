@@ -122,6 +122,45 @@ print("  cafe-player metadata PASS: invited player occupied cafe/2f and returned
 PY
 }
 
+# The simple roundtrip has its own schema and is validated below by
+# assert_space_roundtrip.py. Only the full floor journey owns the invited-player
+# 2F evidence fields; keeping this routing explicit prevents schema bleed.
+check_cafe_meta_scope() {
+  local journey="$1" meta="$2"
+  case "$journey" in
+    simple) return 0 ;;
+    full) check_cafe_player_meta "$meta" ;;
+    *) echo "  cafe-player metadata scope invalid: $journey"; return 2 ;;
+  esac
+}
+
+cafe_meta_contract_self_test() {
+  local d="${TMPDIR:-/tmp}/lt-cafe-meta-contract-$$"
+  mkdir -p "$d"
+  printf '%s\n' '{"player_journey":true,"player_entered":true,"player_returned":true,"cam_same":true}' > "$d/simple.json"
+  printf '%s\n' '{"player_journey":true,"player_entered":true,"player_returned":true,"cam_same":true,"stairs_probe_only":false}' > "$d/full_missing.json"
+  printf '%s\n' '{"player_journey":true,"player_invited":true,"player_entered":true,"player_occupied_2f":true,"player_returned_1f":true,"player_returned":true,"cam_same":true,"stairs_probe_only":false}' > "$d/full_valid.json"
+  printf '%s\n' '{"player_journey":true,"player_invited":true,"player_entered":true,"player_occupied_2f":true,"player_returned_1f":true,"player_returned":true,"cam_same":true,"stairs_probe_only":true}' > "$d/full_probe_only.json"
+
+  check_cafe_meta_scope simple "$d/simple.json" || { echo "  cafe metadata contract FAIL: simple schema falsely rejected"; rm -rf "$d"; return 1; }
+  if check_cafe_meta_scope full "$d/full_missing.json" > "$d/missing.log" 2>&1; then
+    echo "  cafe metadata contract FAIL: full journey accepted missing fields"; rm -rf "$d"; return 1
+  fi
+  grep -q 'player_invited=None' "$d/missing.log" || { echo "  cafe metadata contract FAIL: missing-field tooth not observed"; rm -rf "$d"; return 1; }
+  if check_cafe_meta_scope full "$d/full_probe_only.json" > "$d/probe.log" 2>&1; then
+    echo "  cafe metadata contract FAIL: full journey accepted stairs_probe_only=true"; rm -rf "$d"; return 1
+  fi
+  grep -q 'stairs_probe_only=True' "$d/probe.log" || { echo "  cafe metadata contract FAIL: probe-only tooth not observed"; rm -rf "$d"; return 1; }
+  check_cafe_meta_scope full "$d/full_valid.json" || { echo "  cafe metadata contract FAIL: valid full journey rejected"; rm -rf "$d"; return 1; }
+  rm -rf "$d"
+  echo "  cafe metadata contract PASS: simple schema remains scoped; full missing/probe-only fail; full valid passes"
+}
+
+if [ "${1:-}" = "--cafe-meta-contract-self-test" ]; then
+  PY="${PYTHON:-python}" cafe_meta_contract_self_test
+  exit $?
+fi
+
 if [ "${1:-}" = "--shoot" ]; then
   OUT="${2:-/out}"
   GAME="${VG_GAME:-/game}"
@@ -361,10 +400,10 @@ fi
 
 # Do not allow a capture with no real player journey to pass merely because
 # SpaceShot omitted the optional player fields.
-if [ -f "$OUT/rt_meta.json" ] && ! check_cafe_player_meta "$OUT/rt_meta.json"; then
+if [ -f "$OUT/rt_meta.json" ] && ! check_cafe_meta_scope simple "$OUT/rt_meta.json"; then
   [ "$SHOT_RC" -eq 0 ] && SHOT_RC=3
 fi
-if [ -f "$OUT/floor/rt_meta.json" ] && ! check_cafe_player_meta "$OUT/floor/rt_meta.json"; then
+if [ -f "$OUT/floor/rt_meta.json" ] && ! check_cafe_meta_scope full "$OUT/floor/rt_meta.json"; then
   [ "$SHOT_RC" -eq 0 ] && SHOT_RC=8
 fi
 
