@@ -431,7 +431,7 @@ if [ "${1:-}" = "--shoot" ]; then
   # 拍 5 帧 + 逐段断言落在对的 Floor。判据在宿主侧 tools/assert_floor_roundtrip.py。rc=8 专给它。
   # RT_OWN_XVFB=0：复用上面这个 Xvfb（同 space-roundtrip 那步的理由）。写进 $OUT/floor 子目录，避免 rt_*.png 撞名。
   mkdir -p "$OUT/floor"
-  if RT_OWN_XVFB=0 RT_JOURNEY=full RT_GAME="$GAME" RT_PLAYER_POS=41,19 GODOT="$GBIN" \
+  if RT_OWN_XVFB=0 RT_JOURNEY=full RT_CLEAN_PLAYER=1 RT_GAME="$GAME" RT_PLAYER_POS=41,19 GODOT="$GBIN" \
        bash "$(dirname "$0")/space_roundtrip.sh" --shoot "$OUT/floor" >>/tmp/vg-godot.log 2>&1; then
     echo "  floor-roundtrip 采集 ok  (town→1f→上楼2f→下楼1f→town，逐段楼层对)"
   else
