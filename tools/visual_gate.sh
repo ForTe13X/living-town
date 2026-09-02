@@ -122,6 +122,53 @@ print("  cafe-player metadata PASS: invited player occupied cafe/2f and returned
 PY
 }
 
+# Registered fail-closed tooth for floor separation. It preserves the genuine
+# full-journey metadata and every evidence frame except the task-owned 2F PNG.
+floor_roundtrip_negative_self_test() {
+  local positive="$1" negative="$2" log="$2/identical-frame.log" nrc=0 vrc=0
+  rm -rf "$negative"
+  mkdir -p "$negative"
+  local f
+  for f in rt_town_before.png rt_cafe_1f.png rt_cafe_2f.png rt_cafe_1f_back.png rt_town_after.png rt_meta.json; do
+    cp "$positive/$f" "$negative/$f" || return 1
+  done
+  cp "$negative/rt_cafe_1f.png" "$negative/rt_cafe_2f.png" || return 1
+
+  "$PY" tools/assert_floor_roundtrip.py "$negative" >"$log" 2>&1
+  nrc=$?
+  "$PY" - "$positive" "$negative" "$negative/negative-control.json" <<'PY'
+import hashlib, json, pathlib, sys
+src, neg, receipt = map(pathlib.Path, sys.argv[1:])
+same = ("rt_town_before.png", "rt_cafe_1f.png", "rt_cafe_1f_back.png", "rt_town_after.png", "rt_meta.json")
+digest = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+checks = {name: digest(src / name) == digest(neg / name) for name in same}
+checks["2f_equals_1f"] = digest(neg / "rt_cafe_2f.png") == digest(neg / "rt_cafe_1f.png")
+data = {
+    "schema": "living-town.floor-roundtrip.identical-frame-negative.v1",
+    "mutation": "rt_cafe_2f.png := rt_cafe_1f.png",
+    "metadata_sha256": digest(neg / "rt_meta.json"),
+    "checks": checks,
+}
+receipt.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+if not all(checks.values()):
+    raise SystemExit("floor negative changed evidence outside the registered pixel mutation")
+PY
+  vrc=$?
+  if [ "$nrc" -ne 1 ] || [ "$vrc" -ne 0 ] \
+     || [ "$(grep -c '^  PASS L\[' "$log")" -ne 5 ] \
+     || ! grep -q '^  PASS A1\[map' "$log" \
+     || ! grep -q '^  PASS A2\[' "$log" \
+     || ! grep -q '^  FAIL B\[2F.*=0\.0000 ' "$log" \
+     || ! grep -q '^  PASS C\[' "$log" \
+     || ! grep -q '^=== FLOOR ROUNDTRIP GATE: FAIL (1) ===$' "$log" \
+     || grep -Eq '^  FAIL (L|A|C)\[' "$log"; then
+    echo "  floor-roundtrip identical-frame negative FAIL: expected B-only rc=1 at 0.0000 (got rc=$nrc verify_rc=$vrc)"
+    cat "$log"
+    return 1
+  fi
+  echo "  floor-roundtrip identical-frame negative PASS: metadata and companion frames preserved; B alone failed at 0.0000"
+}
+
 # The simple roundtrip has its own schema and is validated below by
 # assert_space_roundtrip.py. Only the full floor journey owns the invited-player
 # 2F evidence fields; keeping this routing explicit prevents schema bleed.
@@ -672,10 +719,13 @@ PPRC=$?
 "$PY" tools/assert_cafe_2f.py "$OUT"
 C2RC=$?
 # 全楼层往返门（AM3 / 编号135）。同样**不短路**：守第十一条性质（"观察者能走完整旅程，逐段落在对的 Floor、
-# 2F 那一跳真换平面、回程取景逐像素复位"）。吃上面 $OUT/floor 里的 5 帧；负对照见 tools/assert_floor_roundtrip.py 抬头。
+# 2F 那一跳真换平面、回程取景逐像素复位"）。吃上面 $OUT/floor 里的 5 帧；注册 identical-frame 负对照见下方。
+# 家具跳过仍由 cafe 2F 像素门的 bare 帧证明有真实消费者，但不再冒充楼层分离的红齿。
 # ⚠️ 它与 assert_space_roundtrip（town↔1f）**不重叠**：那条只走 1f，本条补的是楼梯往返（1f↔2f）+ 2F 判别力。
 "$PY" tools/assert_floor_roundtrip.py "$OUT/floor"
 FLRC=$?
+floor_roundtrip_negative_self_test "$OUT/floor" "$OUT/floor_negative_identical"
+FNRC=$?
 [ $EPHEMERAL -eq 1 ] && rm -rf "$OUT"
 [ $ARC -ne 0 ] && exit $ARC
 [ $CARC -ne 0 ] && exit $CARC
@@ -691,4 +741,5 @@ FLRC=$?
 [ $PPRC -ne 0 ] && exit $PPRC
 [ $C2RC -ne 0 ] && exit $C2RC
 [ $FLRC -ne 0 ] && exit $FLRC
+[ $FNRC -ne 0 ] && exit $FNRC
 exit $TRC

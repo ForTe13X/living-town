@@ -32,9 +32,10 @@
 #   LT_RT_JOURNEY=simple|full     默认 simple（玩家 town↔cafe/1f 往返门）。
 #                                 full = 受邀玩家真实进入 2F 并返回（Probe 只随同取景），
 #                                 逐段断言 Probe Floor + 回程取景一致 + 2F 与 1F 可分；判据走 assert_floor_roundtrip.py。
-#   LT_RT_DRAW_SKIP=<pass>        透传 --draw-skip <pass> 给引擎（负对照用）。
+#   LT_RT_DRAW_SKIP=<pass>        透传 --draw-skip <pass> 给引擎（渲染钩子诊断用）。
 #   LT_RT_SKIP_FURN=1             LT_RT_DRAW_SKIP=interior_furniture 的便捷别名 ——
-#                                 让 2F/1F 家具都不画 ⇒ 两层帧变得一样 ⇒ full 门的"2F 与 1F 可分"臂必红（那条牙）。
+#                                 证明 1F/2F 家具层有真实像素消费者；楼层壳/角色/tint 仍会分层，
+#                                 因此它不是 full 门 B 臂的负对照红齿。
 #   LT_RT_MODE=portal|flip        默认 portal（走出货路径 `_portal_click`）
 #   LT_RT_REDRAW=auto|none        默认 auto。none = 【暂停复现】：不补 `_redraw_all()`，
 #                                 拍出来的 rt_interior.png 就是“暂停时点门进店，画面停在小镇上”那一帧
@@ -96,7 +97,7 @@ PY
   SPACE="${RT_SPACE:-cafe}"
   REDRAW="${RT_REDRAW:-auto}"
   JOURNEY="${RT_JOURNEY:-simple}"   # simple=玩家进出三帧；full=玩家进出 + Probe 观察 owner-only 楼层
-  DRAWSKIP="${RT_DRAW_SKIP:-}"      # 非空 ⇒ 透传 --draw-skip <pass>（AM3 负对照：interior_furniture ⇒ 2F 与 1F 都空 ⇒ 不可分 ⇒ 门红）
+  DRAWSKIP="${RT_DRAW_SKIP:-}"      # 非空 ⇒ 透传 --draw-skip <pass>（interior_furniture 只作家具钩子诊断）
   CORRUPT_MANIFEST="${RT_CORRUPT_MANIFEST:-}"
   DENY_PORTAL="${RT_DENY_PORTAL:-}"
   AGENTS="${RT_AGENTS:-12}"
@@ -146,9 +147,9 @@ MODE="${LT_RT:-auto}"
 RUNNER="${LT_RT_RUNNER:-auto}"
 IMG="${LT_RT_IMAGE:-gamecraft-runner:4.6.2}"
 JOURNEY="${LT_RT_JOURNEY:-simple}"    # simple=玩家 1F 往返；full=受邀玩家真实上下楼并返回
-DRAWSKIP="${LT_RT_DRAW_SKIP:-}"        # AM3 负对照：LT_RT_DRAW_SKIP=interior_furniture ⇒ 2F/1F 都空 ⇒ B 臂（可分）红
+DRAWSKIP="${LT_RT_DRAW_SKIP:-}"        # 渲染钩子诊断；不承诺关闭家具后两层像素相同
 AGENTS="${LT_RT_AGENTS:-12}"           # 量具默认 N12；显式 CLI 参数屏蔽宿主持久化的 NPC 设置
-[ "${LT_RT_SKIP_FURN:-0}" = "1" ] && DRAWSKIP="interior_furniture"   # 便捷别名：让 2F 帧==1F 帧 的那条牙
+[ "${LT_RT_SKIP_FURN:-0}" = "1" ] && DRAWSKIP="interior_furniture"   # 便捷别名：家具钩子诊断
 
 skip(){
   if [ "$MODE" = "require" ]; then
