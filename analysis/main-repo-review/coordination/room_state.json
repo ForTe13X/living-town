@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-09-03T02:34:01Z",
+  "updated_at": "2026-09-03T02:39:08Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,13 +11,13 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "e9f650da935d75aadc1ba5c6c4cf65cdbe7d93f7795baa6ff39780666471027e",
-    "canonical_objects": 483,
+    "canonical_sha256": "bce7e66f844768446dfa64acd9e1c871824cb01f3fa3b924c3adf897d11a89e2",
+    "canonical_objects": 484,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
-      "parent": "8379b4a80ce53dda271c5d970207e458021ac85a",
-      "tree": "2c1dd5c921d21474a20f96cdbea8cbad57a4f9c3",
-      "commit": "bcbcd495c37e094b1e36c97d8476b8f852d80f14",
+      "parent": "bcbcd495c37e094b1e36c97d8476b8f852d80f14",
+      "tree": "721aa13543335a8260e4899712341a37000db31c",
+      "commit": "ed6f8467cd7bb71b0353ec3f1e7974b30006c6d3",
       "force": false,
       "reason": "producer-only non-force Git Data API publication; GitHub API authoritative for this exact parent-child mutation"
     },
@@ -54,7 +54,7 @@
     "sorted_name_sha_set_sha256": "5a12181f2d7690dd245c091848ef2d7a11580e98e83de18dc1478bb07e6304da",
     "master": "37ccea829e16e5844059a11eac9b3177ac693d6a",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "bcbcd495c37e094b1e36c97d8476b8f852d80f14",
+    "coordination": "ed6f8467cd7bb71b0353ec3f1e7974b30006c6d3",
     "pr25": "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
     "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
@@ -4712,8 +4712,8 @@
     "pr36_exact_ci_qa_terminal": "Independent QA P0/P1/P2=0 at synthetic40e0492/tree7eb1e6c with receipts dce10c51/16fe806f/cf4c86b8; all listed functional and visual teeth passed; no publication clearance until REFUTE recovery.",
     "pr36_combined_refute_terminal_p1": "P0=0/P1=1/P2=0: overlay-green functional evidence does not prove the publishable exact tree; synthetic committed ledger remains stale and exact-tree guard fails. Sole three-path exact-tree closure writer reserved.",
     "pr36_exact_tree_candidate": "Repair0efc8993/treedb05e32/game-treeb0a248a terminal focused PASS with authoritative provenance, real revoke consumer/replay and invited-player 2F proof; one serialized protected-anchor plus exact-tree full-CI lane reserved; PR34 remains frozen Draft.",
-    "pr5_projection": "open Draft at coordination commitbcbcd49. PR39 hosted exact-tree merge-ref ci+visual run33705049850 SUCCESS; technical QA and REFUTE both terminal repair-local P0/P1=0 with evidence-wording P2 only. A body-only wording/provenance correction then Ready+merge into PR38 feature branch is reserved; any identity drift aborts. Global mobile occlusion P1, BELOW_REQUIRED_FLOOR and HUMAN_ACCEPTANCE_NOT_READY remain. PR34 and PR38 remain Draft NO_GO",
+    "pr5_projection": "open Draft at coordination commited6f846. PR39 body wording/provenance corrected then merged only into the PR38 feature branch as ef6f1b21/tree36583e0 with parents exact330d1f0+b8522048. PR38 remains OPEN Draft at ef6f1b21; hosted ci+visual run33708399178 are in progress and fresh technical QA/REFUTE are reserved. Integration/master/protection unchanged. Global mobile occlusion P1, BELOW_REQUIRED_FLOOR and HUMAN_ACCEPTANCE_NOT_READY remain",
     "live_phase_graph": [{"phase":1,"owner":"writer-pr34-final-p1-authority-consumer-evidence-v1","status":"terminal_focused_pass","head":"0efc8993d95ba0f23412a1c7aefb4507b52d578b"},{"phase":2,"owner":"writer-pr34-final-p1-anchor-exact-ci-v1","status":"terminal_anchor_pass","head":"3aa67e6abda90b9cea2ca6d127f1c9afb0d6f73b"},{"phase":2.1,"owner":"evidence-pr34-final-p1-exact-tree-ci-replacement-v1","status":"terminal_setup_failed"},{"phase":2.2,"owner":"evidence-pr34-final-p1-exact-tree-ci-replacement-v2","status":"terminal_setup_failed"},{"phase":2.3,"owner":"evidence-pr34-final-p1-exact-tree-ci-replacement-v3","status":"terminal_exact_tree_ci_failed_p1","exit":"single visual metadata validation scope P1 with exact receipts"},{"phase":2.4,"owner":"writer-pr34-final-p1-visual-scope-repair-v1","status":"terminal_setup_recovery_exhausted","exit":"recoverable one-path diff with structure PASS but focused proof NOT_PROVEN"},{"phase":2.5,"owner":"writer-pr34-final-p1-visual-scope-repair-replacement-v1","status":"terminal_focused_pass","head":"330d1f074cdf91b8b249cc72b9503b149a1a34fb"},{"phase":2.6,"owner":"evidence-pr34-final-p1-visual-scope-exact-tree-ci-v1","status":"terminal_pass_p0_0_p1_0","head":"330d1f074cdf91b8b249cc72b9503b149a1a34fb"},{"phase":2.7,"owner":"delivery-pr34-final-p1-candidate-publication-v1","status":"terminal_draft_pr38_published_checks_running","pr":38},{"phase":3,"owner":"review-pr38-technical-qa-refute-v1 plus review-pr38-art-ui-accessibility-v1","status":"terminal_technical_p0_p1_0_visual_p1_2","exit":"clean debug-off desktop plus 320/mobile evidence and independent visual P0/P1=0"},{"phase":3.1,"owner":"writer-pr38-clean-player-evidence-v1","status":"terminal_focused_pass_p0_0_p1_0","exit":"one clean focused-proven four-path-or-smaller commit or terminal stop"},{"phase":3.2,"owner":"writer-pr38-clean-player-anchor-v1","status":"terminal_anchor_pass","head":"a050a002d20525027657ac4fddbe1cdecaff1407","exit":"ledger-only focused Docker audit PASS"},{"phase":3.3,"owner":"evidence-pr38-clean-player-exact-tree-ci-v1","status":"terminal_pass_p0_0_p1_0","head":"a050a002d20525027657ac4fddbe1cdecaff1407","exit":"one immutable no-overlay full-CI receipt"},{"phase":3.4,"owner":"review-pr38-clean-player-exact-tree-technical-v1 plus review-pr38-clean-player-exact-tree-visual-v1","status":"terminal_blocked_p0_1_p1_2","head":"a050a002d20525027657ac4fddbe1cdecaff1407","exit":"independent technical and visual P0/P1 closure"},{"phase":3.5,"owner":"writer-pr38-clean-view-replay-proof-v1","status":"terminal_setup_recovery_exhausted","head":"a050a002d20525027657ac4fddbe1cdecaff1407","exit":"one clean max-four-path focused-proven attribution and View replay repair"},{"phase":3.6,"owner":"writer-pr38-clean-view-replay-proof-replacement-v1","status":"terminal_parse_stop","head":"a050a002d20525027657ac4fddbe1cdecaff1407","exit":"adopt preserved diff and produce focused-proven bounded commit or stop"},{"phase":3.7,"owner":"writer-pr38-clean-view-replay-compile-fix-v1","status":"terminal_native320_floor_stop","head":"a050a002d20525027657ac4fddbe1cdecaff1407","exit":"motion_on core PASS; native320 2F-versus-1F discriminator FAIL_P1 0/117"},{"phase":3.8,"owner":"review-pr38-native320-floor-diagnosis-v1","status":"reserved","head":"a050a002d20525027657ac4fddbe1cdecaff1407","exit":"read-only causal diagnosis and smallest safe repair packet"},{"phase":4,"owner":"Producer","status":"blocked","exit":"bounded integration merge and post-merge CI; human acceptance separately gated"}]
   },
-  "next_trigger": "Publish event483 as a non-force child of exactbcbcd49. Then update PR39 body wording/provenance only, reverify exact head/base/tree/scope/checks, mark Ready and merge through GitHub into the PR38 feature branch. Never touch integration, master or protection; abort on drift."
+  "next_trigger": "Publish event484 as a non-force child of exacted6f846, dispatch two fresh read-only PR38 exact-head reviewers asynchronously, and return without waiting. Later harvest run33708399178 plus both reports before any integration decision."
 }
