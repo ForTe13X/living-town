@@ -1,0 +1,75 @@
+{
+  "contract": "living-town-independent-review-report-v1",
+  "review_ref": "origin/codex/main-repo-review",
+  "report_path": "analysis/main-repo-review/external-reviews/p1ac-f06cc67-approve-anchor-finalize.json",
+  "review_role": "independent_qa_refute",
+  "review_task_id": "01a0212b-ff4c-7d53-96a6-26a55d7fe38f",
+  "review_sequence": 9,
+  "status": "completed",
+  "verdict": "APPROVE_ANCHOR_FINALIZE",
+  "product_head": "f06cc675f03145e8409c8842fb0feb77704ad477",
+  "commit_tree": "32862a023e4c09bf5129754e5265d9c9544de5f3",
+  "game_tree": "24811c7f5f36cbab381c721815d599ea16de259a",
+  "base": "d46cbb132595185c3420bb4eb8fd7f28512baa85",
+  "review_cutoff_utc": "2026-08-21T04:45:27.954Z",
+  "hosted_evidence": {
+    "run_id": 32446506033,
+    "head": "f06cc675f03145e8409c8842fb0feb77704ad477",
+    "status": "completed",
+    "visual_canary": "success",
+    "core_conclusion": "failure",
+    "failure_families": [
+      "complement_ledger_anchor",
+      "s0_golden_anchor",
+      "detgate_golden_anchor",
+      "modelpath_anchor"
+    ],
+    "focused_pass": [
+      "p1b_cargo_manifest_test",
+      "p1v_warehouse_observatory_test",
+      "space_test",
+      "save_load_test",
+      "save_migration_test"
+    ],
+    "unexpected_failure_family_count": 0
+  },
+  "temporary_complement_evidence": {
+    "directory": "C:/Users/yp/AppData/Local/Temp/qa-f06cc67-gfa2",
+    "ledger": "C:/Users/yp/AppData/Local/Temp/qa-f06cc67-gfa2/gate_complement_ledger.json",
+    "s0_output": "C:/Users/yp/AppData/Local/Temp/qa-f06cc67-gfa2/out/S0.txt",
+    "dead_at_bake": [],
+    "provider_20": [
+      "S0"
+    ],
+    "production_guard_exit": 0,
+    "s0_core_population": 12,
+    "s0_total_population": 13,
+    "s0_provider_20_pass": "12/12",
+    "native_crash_markers": 0
+  },
+  "closed_findings": [
+    "fixture probe reports core_population separately from total n_agents",
+    "audit SPEC 20 matches production core_population less-than-or-equal-to 12 predicate",
+    "core 12 total 13 live and core 13 exempt discriminating controls",
+    "temporary full audit derives no dead-at-bake invariants and S0 provides invariant 20",
+    "production complement guard accepts the explicit temporary ledger",
+    "request-scoped lifecycle and bounded query P0/P1 closures remain unchanged with identical game tree",
+    "hosted failures remain limited to the four protected anchor families"
+  ],
+  "authorized_scope": [
+    "tools/gate_complement_ledger.json",
+    "game/bench/golden_digests.json",
+    "game/bench/modelpath_anchor.json",
+    "one verifier provenance receipt or readiness evidence update"
+  ],
+  "does_not_authorize": [
+    "product code",
+    "test or fixture changes",
+    "threshold changes",
+    "merge",
+    "release",
+    "recording",
+    "gameplay guide",
+    "human acceptance"
+  ]
+}

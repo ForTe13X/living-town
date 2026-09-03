@@ -1,0 +1,41 @@
+{
+  "contract": "living-town-independent-review-report-v1",
+  "review_ref": "origin/codex/main-repo-review",
+  "report_path": "analysis/main-repo-review/external-reviews/p1ac-ec840ba-request-changes.json",
+  "review_role": "independent_qa_refute",
+  "review_task_id": "01a0212b-ff4c-7d53-96a6-26a55d7fe38f",
+  "review_sequence": 6,
+  "status": "completed",
+  "verdict": "REQUEST_CHANGES",
+  "product_head": "ec840ba2deac230254488de61020842b91d087f3",
+  "commit_tree": "cadbbb548e95dd88384f7ad601683d4e7eaeba19",
+  "game_tree": "7806d061692f8eac6df640ef3a6e6684bc2b4d3d",
+  "base": "d46cbb132595185c3420bb4eb8fd7f28512baa85",
+  "review_cutoff_receipt_utc": "2026-08-21T00:39:38.180Z",
+  "supervised_receipt": "C:/Users/yp/AppData/Local/Temp/living-town-godot-runs/20260821T003938180Z_046abc48f4ae4d4aabdfa25c91550e7a/receipt.json",
+  "supervised_receipt_outcome": "blocked_unknown_existing_godot_pids",
+  "blocking_findings": [
+    "restored observatory projection does not assert the fixed query operation count returns exactly to 91",
+    "query mutation remains mediated by an artificial test helper instead of a named existing production ledger/index/transaction dereference site",
+    "five-scene exact supervised receipts and current hosted terminal classification remain unavailable at the review cutoff"
+  ],
+  "closed_findings": [
+    "older-owner lifecycle cleanup preserves newer request generation/session and valid callback application",
+    "global lifecycle invalidation and stale-load rejection remain intact"
+  ],
+  "hosted_state_at_cutoff": {
+    "run_id": 32433220755,
+    "status": "in_progress",
+    "visual_canary": null,
+    "core_conclusion": null
+  },
+  "does_not_authorize": [
+    "anchor rebake",
+    "anchor finalize",
+    "merge",
+    "release",
+    "recording",
+    "gameplay guide",
+    "human acceptance"
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "schema": "living-town.clean-player.expected-parent.v1",
+  "authority": "Producer /root; coordination event498",
+  "scope": "local-development-and-qualified-capture-input; not hosted or candidate self-attestation",
+  "parent": {
+    "head": "347ddddbd0ec302eb0c048ec2d34424d9e8a5057",
+    "tree": "24d04391db83ba8329c8dbf0267a0080e48cb2c8",
+    "game_tree": "d0a903a71bdb5dc2cd914d070a5a582e7932dd0b",
+    "main_blob": "9846c7a103c67df5e41b3b4ec6952ea213bc58b7",
+    "main_sha256": "864c6777097b74018dd9c18046e9ed829d59aef529d80597da9317e88a218863",
+    "scene": "res://scenes/Main.tscn"
+  },
+  "runtime": {
+    "image": "living-town-pr38-exact-tree-ci-replacement-v1@sha256:3b3009dc1179a27c24a7d8b70c3cc8dd1293a0d4693f103032c924fb10700292",
+    "platform": "linux/amd64",
+    "network": "none"
+  },
+  "fixture": {
+    "backend": "logic",
+    "seed": 3,
+    "agents_argument": 12,
+    "warmup_tick": 600,
+    "tick": 600,
+    "clean_player": true,
+    "selected": "",
+    "focused": false,
+    "post_resize": false,
+    "logical_viewport": [
+      1280,
+      768
+    ],
+    "posture": "freeze autorun after warmup; go-home view; empty selection; action focus off; rebuild existing feed",
+    "settle_min_frames": 40,
+    "settle_min_ms": 2500,
+    "canonical_witness": "unchanged across settling"
+  },
+  "profiles": [
+    {
+      "id": "1280-normal",
+      "native": [
+        1280,
+        768
+      ],
+      "framebuffer": [
+        1280,
+        768
+      ],
+      "reduced_motion": false
+    },
+    {
+      "id": "1280-reduced",
+      "native": [
+        1280,
+        768
+      ],
+      "framebuffer": [
+        1280,
+        768
+      ],
+      "reduced_motion": true
+    },
+    {
+      "id": "320-normal",
+      "native": [
+        320,
+        192
+      ],
+      "framebuffer": [
+        320,
+        192
+      ],
+      "reduced_motion": false
+    },
+    {
+      "id": "320-reduced",
+      "native": [
+        320,
+        192
+      ],
+      "framebuffer": [
+        320,
+        192
+      ],
+      "reduced_motion": true
+    }
+  ],
+  "helper_approval": {
+    "status": "PENDING_EXACT_HELPER_REVIEW_AND_PRODUCER_APPROVAL",
+    "policy": "Development tests are proposal evidence only. An independently pinned descriptor hash plus a separately Producer-approved exact helper inventory is required for authoritative qualification. Candidate CLI and same-process labels are not trust roots."
+  },
+  "hosting": {
+    "status": "NOT_AUTHORIZED_BY_THIS_DESCRIPTOR",
+    "policy": "Hosted bootstrap/input provisioning requires separately scoped reviewed workflow change; no protection edits or untrusted PR-controlled trust input."
+  },
+  "retention": "Preserve task-owned containers and indexed artifacts until harvest; never clean unknown resources",
+  "rollback": "Decline adoption of proposed tools; keep prior exact source/evidence and input untouched"
+}
