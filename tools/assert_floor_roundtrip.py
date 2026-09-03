@@ -28,7 +28,9 @@ cafe 2F 从没被【往返路径】看过**。本门复用 `game/bench/SpaceShot
   A2 楼梯往返 1F 复位（Requirement 2 的楼梯腿）：`cafe_1f_back` ≡ `cafe_1f` 逐像素相同
       ——下楼回到的那一层，取景与内容都必须原样（同一 Space 同一 Floor、相机由 _portal_click 同式复位）。
   B 2F 与 1F 可分（判别力，Requirement 3）：frac_diff(cafe_2f, cafe_1f) ≥ SEP_MIN（内格区域）。
-      **挡"楼梯往返其实没换层 / 两层画成一样"的空过**；负对照 --draw-skip interior_furniture 把两层画空 ⇒ 这条红。
+      **挡"楼梯往返其实没换层 / 两层画成一样"的空过**；注册负对照保留真采集 metadata，
+      只在 task-owned scratch 把 2F 帧替换成 1F 帧 ⇒ 必须只有这条红。`interior_furniture`
+      跳过仍由 cafe 2F 像素门证明渲染钩子有消费者，但楼层壳/角色/tint 也会分层，不能充当 B 臂红齿。
   C 真的进过店（配对判别力）：frac_diff(cafe_1f, town_before) ≥ MIN_INTERIOR_DIFF（全帧）。
       没有它，"采集脚本压根没进店"与"进出一切正常"在 A/L 上读起来一样（同 assert_space_roundtrip 的 C）。
 
@@ -54,8 +56,8 @@ from assert_space_roundtrip import (          # noqa: E402
 )
 
 # ── 判据常数（来源见抬头 + 文件末实测）────────────────────────────────────────────
-# SEP_MIN 取【绿帧 0.1767 与 负对照 0.0276 的几何均值】0.070 —— 两侧各 ~2.5× 余量，不贴任一侧
-# （贴绿侧 0.17 ⇒ 下次 2F 美术微调假红；贴红侧 0.03 ⇒ 轻一点的"两层画太像"漏过）。docs/122 §四手法。
+# SEP_MIN 是既有产品判据地板；注册 identical-frame 负对照实测为 0.0000。
+# 家具跳过不再参与阈值来源，因为当前楼层壳/角色/夜间 tint 本身也会分层。
 SEP_MIN = 0.07          # B: 2F 与 1F 内格区域变化占比下界
 
 FRAMES = ("town_before", "cafe_1f", "cafe_2f", "cafe_1f_back", "town_after")
@@ -197,7 +199,7 @@ def main():
     print("  %s B[2F↔1F] 内格变化占比=%.4f (≥%.2f) (%d/%d) —— 2F 那一跳真的换了平面"
           % ("PASS" if ok else "FAIL", b_frac, SEP_MIN, bn, ba))
     if not ok:
-        print("       ↑ 2F 与 1F 画得太像 ⇒ 楼梯往返没换层 / 两层画成一样（--draw-skip interior_furniture 会命中这条）。")
+        print("       ↑ 2F 与 1F 画得太像 ⇒ 楼梯往返没换层 / 两层画成一样（注册 identical-frame 负对照命中这条）。")
 
     # ── C 真的进过店（配对判别力）────────────────────────────────────────────────
     c_frac, cn, ca = frac_over(rows["cafe_1f"], rows["town_before"], bpp, (0, 0, w, h))
@@ -219,10 +221,9 @@ _MEASURED = {
     "A1_town_after_vs_before_map_diff_px": 0,      # 逐字节相等（go_home 复位取景 + 世界冻结）
     "A2_cafe_1f_back_vs_cafe_1f_map_diff_px": 0,   # 逐字节相等（楼梯往返 1F 复位；同 Space 同 Floor 同相机）
     "B_2f_vs_1f_innerframe_frac": 0.1767,          # 绿帧：2F/1F 内格变化占比
-    "B_2f_vs_1f_frac_negctl_skipfurn": 0.0276,     # 负对照 --draw-skip interior_furniture（两层家具都不画）
-    "B_2f_vs_1f_frac_negctl_wrongfloor": 0.0000,   # 负对照 楼梯 to.floor=1f（"2F"帧其实是 1F ⇒ 与 1F 全同）
+    "B_2f_vs_1f_frac_negctl_identical_frame": 0.0000,  # 保留真 metadata，仅在 scratch 令 2F PNG 与 1F 相同
     "C_cafe_1f_vs_town_frac": 0.9832,              # 真进过店
-    # 判决：SEP_MIN=0.07 ⇒ 绿 0.1767(2.5×) PASS · 两个负对照 0.0276/0.0000 FAIL（有牙）。
+    # 判决：SEP_MIN=0.07 ⇒ 绿帧 PASS · identical-frame 0.0000 FAIL（有牙）。
 }
 
 

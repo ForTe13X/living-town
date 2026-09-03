@@ -55,6 +55,8 @@ var _scrub_fill: ColorRect            # 已播放进度
 var _scrub_handle: ColorRect          # 拖动手柄
 var _selected_id := ""                # 当前观察的角色
 var _player_mode := false             # --player：玩家入镇（gameplay M1）
+var _clean_player_presentation := false # optional player-facing capture HUD; View/UI only
+var _reduced_motion := false           # presentation preference; never enters Sim
 var _demo_mode := false               # --player-demo：脚本化玩家 autopilot（录 demo）
 var _player_spawn_override := Vector2i(-1, -1) # --player-pos x y：产品截图/玩法验收把玩家放到被测纵切；默认仍是广场
 var _demo_steps: Array = []           # [{type:walk_to|select|act|chat|wait, ...}] 顺序执行
@@ -179,6 +181,15 @@ var _act_pan: ColorRect               # 玩家动作条底板（跟底边；仅�
 var _act_btns: Array = []             # 7 个动词按钮（顺序 = PLAYER_VERBS）
 var _guest_pass_btn: Button              # 归还/撤销咖啡馆访客证（触屏与 R 键同一函数）
 var _player_btn: Button               # 设置面板里的「玩家模式」开关
+var _gear_btn: Button
+var _clean_hud: CanvasLayer
+var _clean_status_pan: ColorRect
+var _clean_status: Label
+var _clean_chronicle_pan: ColorRect
+var _clean_chronicle: RichTextLabel
+var _clean_action_pan: ColorRect
+var _clean_action_btns: Array = []
+var _clean_guest_pass_btn: Button
 
 # ── 玩家动词（触屏动作条 ≡ 物理键，同一条 _player_do 路径）──────────────────
 # ★这张表是【单一真源】：键位分发(_unhandled_input)、动作条按钮(_build_action_bar)、
@@ -378,6 +389,11 @@ func _ready() -> void:
 			Sim.spawn_count = int(args[i + 1]) # 扩 N：克隆到 N（含 L6 调色板变体演示）
 		elif args[i] == "--player":
 			_player_mode = true                # 玩家入镇（gameplay M1：WASD 移动 + G/F/B/Y/P/M 社交动作）
+		elif args[i] == "--clean-player":
+			_player_mode = true
+			_clean_player_presentation = true  # capture-selectable player HUD; no Sim authority
+		elif args[i] == "--reduced-motion":
+			_reduced_motion = true             # presentation-only preference
 		elif args[i] == "--player-pos" and i + 2 < args.size():
 			_player_mode = true                # 可见集成钩：玩家站在被测机制旁，截图/录屏呈现真实操作视角
 			_player_spawn_override = Vector2i(int(args[i + 1]), int(args[i + 2]))
@@ -444,7 +460,7 @@ func _ready() -> void:
 	# 玩家模式：同款优先级 CLI --player > user://settings.cfg > 默认【关】。
 	# 默认必须是关：开着会调 Sim.add_player() 从而合法地移动 digest（docs/41 §3），
 	# 而 tools/probe_digest_test.sh 之类的容器跑用的是全新的 user://，读到的就是这个默认值。
-	if not ("--player" in args) and not ("--player-demo" in args) and not ("--player-pos" in args):
+	if not ("--player" in args) and not ("--clean-player" in args) and not ("--player-demo" in args) and not ("--player-pos" in args):
 		_player_mode = bool(_scfg.get_value("sim", "player", false))
 	AIBackend.slm_model_override = String(_scfg.get_value("slm", "model_path", ""))   # 上次在设置里手选的 gguf
 	# 观察台档位（纯视图偏好，不进仿真）。默认【名片档】——研究用法（钉住卷宗刷时间轴）按一次就回来，
@@ -481,7 +497,9 @@ func _ready() -> void:
 	Sim.auto_run = true               # 镇子立刻跑（logic 地板）——slm/llm 探测改后台异步，不再挡首帧
 
 	_view = preload("res://scripts/WorldView.gd").new()
-	_view.dbg_nav = _dbg_nav_arg      # --dbg-nav：出图/启动即开导航叠层（否则运行时按 N 切）
+	_view.dbg_nav = _dbg_nav_arg and not _clean_player_presentation
+	if _clean_player_presentation:
+		_view.rel_mode = 0              # relationship/debug lines are diagnostic chrome, not player feedback
 	add_child(_view)
 	if _locked_ortho_c1_arg:
 		_activate_locked_ortho_c1()
@@ -550,6 +568,8 @@ func _ready() -> void:
 		_goals_open = false                # 两块共用左上角槽位 ⇒ --story 与 --goals 同时给时以 --story 为准
 
 	_build_hud()
+	if _clean_player_presentation:
+		_build_clean_player_hud()
 	if _locked_ortho_c1 != null:
 		_build_c1_hud()
 	Sim.ticked.connect(_on_tick)
@@ -608,15 +628,15 @@ func _build_hud() -> void:
 
 	# 设置钮（左上角；点开 NPC 数量/速度/后端面板。O 键同款开关）
 	# 字形纪律：随包字体 Smiley Sans 是 CJK 显示体，无 emoji 覆盖 —— HUD 里一律用汉字/ASCII，否则真机上是豆腐块。
-	var gear := Button.new()
-	gear.text = "设"
-	gear.add_theme_font_override("font", fnt)
-	gear.add_theme_font_size_override("font_size", 18)
-	gear.position = Vector2(10, 4)
-	gear.size = Vector2(36, 30)
-	gear.focus_mode = Control.FOCUS_NONE
-	gear.pressed.connect(_toggle_settings)
-	layer.add_child(gear)
+	_gear_btn = Button.new()
+	_gear_btn.text = "设"
+	_gear_btn.add_theme_font_override("font", fnt)
+	_gear_btn.add_theme_font_size_override("font_size", 18)
+	_gear_btn.position = Vector2(10, 4)
+	_gear_btn.size = Vector2(36, 30)
+	_gear_btn.focus_mode = Control.FOCUS_NONE
+	_gear_btn.pressed.connect(_toggle_settings)
+	layer.add_child(_gear_btn)
 
 	# 左下角滚动事件日志：把看不见的社交戏剧讲出来。
 	# 底板从「(8,470) 560×246 的硬边黑 0.42 矩形」换成【贴住左下角的羽化 scrim】：
@@ -797,6 +817,202 @@ func _build_hud() -> void:
 	if _vpn != null:
 		_vpn.size_changed.connect(_relayout_hud)
 
+## Optional player-facing presentation for captures and small screens.  It is
+## deliberately a second CanvasLayer: no canonical scene, save schema, input
+## action, navigation, or Sim state changes when this adapter is selected.
+func _build_clean_player_hud() -> void:
+	if _clean_hud != null:
+		return
+	_hide_clean_player_diagnostics()
+	_clean_hud = CanvasLayer.new()
+	_clean_hud.layer = 30
+	add_child(_clean_hud)
+	var fnt := Art.font()
+	_clean_status_pan = ColorRect.new()
+	_clean_status_pan.color = Color(0.025, 0.035, 0.055, 0.91)
+	_clean_status_pan.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_clean_hud.add_child(_clean_status_pan)
+	_clean_status = Label.new()
+	_clean_status.add_theme_font_override("font", fnt)
+	_clean_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_clean_status.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_clean_hud.add_child(_clean_status)
+	_clean_chronicle_pan = ColorRect.new()
+	_clean_chronicle_pan.color = Color(0.025, 0.035, 0.055, 0.91)
+	_clean_chronicle_pan.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_clean_hud.add_child(_clean_chronicle_pan)
+	_clean_chronicle = RichTextLabel.new()
+	_clean_chronicle.bbcode_enabled = true
+	_clean_chronicle.scroll_active = false
+	_clean_chronicle.add_theme_font_override("normal_font", fnt)
+	_clean_chronicle.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_clean_hud.add_child(_clean_chronicle)
+	_clean_action_pan = ColorRect.new()
+	_clean_action_pan.color = Color(0.025, 0.035, 0.055, 0.91)
+	_clean_action_pan.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_clean_hud.add_child(_clean_action_pan)
+	_clean_action_btns.clear()
+	for item in PLAYER_VERBS:
+		var b := Button.new()
+		b.text = String(item["label"])
+		b.tooltip_text = "%s（键 %s）" % [String(item["label"]), String(item["key"])]
+		b.add_theme_font_override("font", fnt)
+		b.focus_mode = Control.FOCUS_NONE
+		var verb := String(item["verb"])
+		b.set_meta("player_verb", verb)
+		b.pressed.connect(func(): _player_do(verb))
+		_clean_hud.add_child(b)
+		_clean_action_btns.append(b)
+	_clean_guest_pass_btn = Button.new()
+	_clean_guest_pass_btn.text = "归还访客证"
+	_clean_guest_pass_btn.tooltip_text = "归还访客证（键 R）"
+	_clean_guest_pass_btn.add_theme_font_override("font", fnt)
+	_clean_guest_pass_btn.focus_mode = Control.FOCUS_NONE
+	_clean_guest_pass_btn.set_meta("player_verb", "cafe_guest_pass:revoke")
+	_clean_guest_pass_btn.pressed.connect(_player_return_cafe_pass)
+	_clean_hud.add_child(_clean_guest_pass_btn)
+	_apply_clean_player_presentation()
+
+func _hide_clean_player_diagnostics() -> void:
+	for node in [_status_pan, _status, _gear_btn, _log_pan, _logbox, _obs_pan, _obs,
+		_scrub_pan, _scrub_track, _scrub_fill, _scrub_handle, _scrub_hint, _obs_btn,
+		_backend_btn, _settings_panel, _goals_pan, _goals_box, _story_pan, _story_box,
+		_act_pan, _chat_in]:
+		if node != null:
+			node.visible = false
+	for raw in _act_btns:
+		(raw as Button).visible = false
+	if _guest_pass_btn != null:
+		_guest_pass_btn.visible = false
+	if _perf != null and _perf.get_parent() != null:
+		_perf.get_parent().visible = false
+	_perf_on = false
+
+## Public evidence seam: geometry is expressed in physical presentation pixels,
+## so a real 320-wide window is tested rather than a desktop layout scaled down.
+func clean_player_layout(viewport: Vector2) -> Dictionary:
+	var vp := Vector2(maxf(viewport.x, 320.0), maxf(viewport.y, 192.0))
+	var mobile := vp.x <= 480.0
+	var margin := 6.0 if mobile else 12.0
+	if mobile:
+		var status := Rect2(margin, margin, vp.x - margin * 2.0, 38.0)
+		var chronicle := Rect2(margin, status.end.y + 3.0, vp.x - margin * 2.0, 32.0)
+		return {"viewport": vp, "mobile": true, "status": status, "chronicle": chronicle,
+			"actions": Rect2(margin, chronicle.end.y + 3.0, vp.x - margin * 2.0, vp.y - chronicle.end.y - margin - 3.0),
+			"columns": 3, "rows": 3, "font": 13, "button_font": 13}
+	var status_h := 44.0
+	return {"viewport": vp, "mobile": false,
+		"status": Rect2(margin, margin, vp.x - margin * 2.0, status_h),
+		"chronicle": Rect2(margin, vp.y - 132.0, minf(520.0, vp.x * 0.42), 120.0),
+		"actions": Rect2(maxf(548.0, vp.x * 0.43), vp.y - 64.0, vp.x - maxf(548.0, vp.x * 0.43) - margin, 52.0),
+		"columns": 8, "rows": 1, "font": 16, "button_font": 14}
+
+func clean_player_presentation_contract(viewport: Vector2) -> Dictionary:
+	var layout := clean_player_layout(viewport)
+	var vp: Vector2 = layout["viewport"]
+	var rects := [layout["status"], layout["chronicle"], layout["actions"]]
+	var in_bounds := true
+	for raw in rects:
+		var r: Rect2 = raw
+		in_bounds = in_bounds and r.position.x >= 0.0 and r.position.y >= 0.0 and r.end.x <= vp.x and r.end.y <= vp.y
+	return {"clean": _clean_player_presentation, "reduced_motion": _reduced_motion,
+		"mobile": layout["mobile"], "viewport": [int(vp.x), int(vp.y)], "in_bounds": in_bounds,
+		"font": layout["font"], "button_font": layout["button_font"], "columns": layout["columns"],
+		"developer_chrome_hidden": true, "relationship_overlay": false, "navigation_overlay": false,
+		"touch_common_action": "_player_do", "keyboard_common_action": "_player_do",
+		"touch_revoke_action": "_player_return_cafe_pass", "keyboard_revoke_action": "_player_return_cafe_pass"}
+
+## Live View receipt used by the focused clean-player proof.  Unlike
+## `clean_player_layout`, this reads the instantiated Controls after Godot has
+## laid them out.  It deliberately exposes presentation state only: no value is
+## written back to Sim or persisted in a save.
+func clean_player_view_state() -> Dictionary:
+	var vp := get_viewport_rect().size
+	var controls: Array = [_clean_status, _clean_chronicle]
+	controls.append_array(_clean_action_btns)
+	controls.append(_clean_guest_pass_btn)
+	var geometry: Array = []
+	var in_bounds := true
+	var readable := true
+	for raw in controls:
+		if raw == null or not (raw is Control):
+			in_bounds = false
+			readable = false
+			continue
+		var ctl: Control = raw
+		var r := ctl.get_global_rect()
+		var font_size := ctl.get_theme_font_size("normal_font_size") if ctl is RichTextLabel else ctl.get_theme_font_size("font_size")
+		var text := String(ctl.get("text"))
+		var item := {"name": String(ctl.name), "rect": [r.position.x, r.position.y, r.size.x, r.size.y],
+			"visible": ctl.is_visible_in_tree(), "font_size": font_size, "text": text}
+		if ctl is BaseButton:
+			item["disabled"] = (ctl as BaseButton).disabled
+			item["pressed_connections"] = (ctl as BaseButton).get_signal_connection_list("pressed").size()
+		geometry.append(item)
+		in_bounds = in_bounds and r.position.x >= 0.0 and r.position.y >= 0.0 \
+			and r.end.x <= vp.x and r.end.y <= vp.y and ctl.is_visible_in_tree()
+		readable = readable and font_size >= 13 and r.size.x >= 32.0 and r.size.y >= 22.0 and text != ""
+	var feedback := String(_log_recent[-1]) if not _log_recent.is_empty() else ""
+	return {"viewport": [int(vp.x), int(vp.y)], "display": [DisplayServer.window_get_size().x, DisplayServer.window_get_size().y],
+		"in_bounds": in_bounds, "readable": readable, "geometry": geometry,
+		"normalized": {"status": _clean_status.text if _clean_status != null else "",
+			"chronicle": _clean_chronicle.text if _clean_chronicle != null else "",
+			"feedback": feedback, "pass_state": String(Sim.cafe_guest_capability.get("status", "none"))}}
+
+func _apply_clean_player_presentation() -> void:
+	if _clean_hud == null:
+		return
+	_hide_clean_player_diagnostics()
+	var logical_vp := _vp()
+	var display := Vector2(DisplayServer.window_get_size())
+	var scale := minf(display.x / maxf(logical_vp.x, 1.0), display.y / maxf(logical_vp.y, 1.0))
+	var physical := display if scale < 1.0 else logical_vp
+	var logical_scale := 1.0 / maxf(scale, 0.01) if scale < 1.0 else 1.0
+	var layout := clean_player_layout(physical)
+	var status: Rect2 = layout["status"]
+	var chronicle: Rect2 = layout["chronicle"]
+	var actions: Rect2 = layout["actions"]
+	status = Rect2(status.position * logical_scale, status.size * logical_scale)
+	chronicle = Rect2(chronicle.position * logical_scale, chronicle.size * logical_scale)
+	actions = Rect2(actions.position * logical_scale, actions.size * logical_scale)
+	_clean_status_pan.position = status.position; _clean_status_pan.size = status.size
+	_clean_status.position = status.position + Vector2(8, 3) * logical_scale
+	_clean_status.size = status.size - Vector2(16, 6) * logical_scale
+	_clean_status.add_theme_font_size_override("font_size", int(round(int(layout["font"]) * logical_scale)))
+	_clean_chronicle_pan.position = chronicle.position; _clean_chronicle_pan.size = chronicle.size
+	_clean_chronicle.position = chronicle.position + Vector2(8, 3) * logical_scale
+	_clean_chronicle.size = chronicle.size - Vector2(16, 6) * logical_scale
+	_clean_chronicle.add_theme_font_size_override("normal_font_size", int(round(int(layout["font"]) * logical_scale)))
+	_clean_action_pan.position = actions.position; _clean_action_pan.size = actions.size
+	var buttons: Array = _clean_action_btns.duplicate()
+	buttons.append(_clean_guest_pass_btn)
+	var cols := int(layout["columns"])
+	var rows := int(ceili(float(buttons.size()) / float(cols)))
+	var gap := 3.0 * logical_scale
+	var cell_w := (actions.size.x - gap * float(cols + 1)) / float(cols)
+	var cell_h := (actions.size.y - gap * float(rows + 1)) / float(rows)
+	for i in buttons.size():
+		var b: Button = buttons[i]
+		var col := i % cols; var row := i / cols
+		b.position = actions.position + Vector2(gap + col * (cell_w + gap), gap + row * (cell_h + gap))
+		b.size = Vector2(cell_w, cell_h)
+		b.add_theme_font_size_override("font_size", int(round(int(layout["button_font"]) * logical_scale)))
+	_refresh_clean_player_text()
+
+func _refresh_clean_player_text() -> void:
+	if _clean_status == null:
+		return
+	var pl: Dictionary = Sim.get_agent("player")
+	var place := _agent_location_label(pl) if not pl.is_empty() else "小镇"
+	var pass_state := String(Sim.cafe_guest_capability.get("status", "none"))
+	var pass_label := "无" if pass_state == "none" else ("有效" if pass_state == "active" else "已归还")
+	_clean_status.text = "你在 %s · 第 %d 天 · 访客证%s%s" % [place, Sim.day, pass_label, " · 减少动态" if _reduced_motion else ""]
+	var lines: Array = ["[color=#ffd166]玩家纪事[/color]"]
+	var keep := 1 if bool(clean_player_layout(Vector2(DisplayServer.window_get_size()))["mobile"]) else 4
+	for i in range(maxi(0, _log_recent.size() - keep), _log_recent.size()):
+		lines.append(String(_log_recent[i]))
+	_clean_chronicle.text = "\n".join(lines)
+
 ## C1 has a deliberately separate, compact HUD.  The normal timeline hint
 ## advertises Home/L/free-camera controls that C1 correctly rejects, so it is
 ## hidden only while the optional C1 adapter is active; C0 remains unchanged.
@@ -965,7 +1181,7 @@ func verb_for_key(kc: int) -> String:
 func _sync_action_bar(dx: float = 0.0, dy: float = 0.0) -> void:
 	if _act_pan == null:
 		return
-	var show := _player_mode and not _player_in_warehouse_observatory()
+	var show := _player_mode and not _clean_player_presentation and not _player_in_warehouse_observatory()
 	_act_pan.visible = show
 	_act_pan.position = Vector2(ACT_X - 8.0, ACT_Y - 6.0 + dy)
 	for i in _act_btns.size():
@@ -981,7 +1197,7 @@ func _sync_action_bar(dx: float = 0.0, dy: float = 0.0) -> void:
 func _sync_action_bar_context() -> void:
 	if _act_pan == null:
 		return
-	var show := _player_mode and not _player_in_warehouse_observatory()
+	var show := _player_mode and not _clean_player_presentation and not _player_in_warehouse_observatory()
 	_act_pan.visible = show
 	for raw in _act_btns:
 		(raw as Button).visible = show
@@ -1065,6 +1281,8 @@ func _relayout_hud() -> void:
 	if _settings_panel != null:                # 设置面板：保持居中（1280x768 下算出来正好是 _build_settings 里的 430,124）
 		_settings_panel.position = Vector2(430.0 + dx * 0.5, 124.0 + dy * 0.5)
 	_update_scrubber()                         # fill/handle 由它按新的 _sx0/_sx1/_sy 重画
+	if _clean_player_presentation:
+		_apply_clean_player_presentation()
 
 ## 观察台两档几何（_relayout_hud 与 _toggle_obs 共用；dx/dy 见 B15 的"基准 + 增量"写法）。
 ## 展开档的左缘刻意仍是 x=978 —— 与改动前逐像素同位，便于差分只归因于"档位"而不是"我顺手挪了面板"。
@@ -1816,6 +2034,7 @@ func _update_status() -> void:
 					int(pl["inventory"].get("gift", 0)), " ".join(vkeys), ("  约定：" + "；".join(pmeets)) if not pmeets.is_empty() else "", cargo_hint]
 	_status.text = "[color=#e6e9f2]小镇有灵 Living Town  ·  第 %d 天 %s %s%s%s  ·  %s  ·  %s  ·  NPC %d  ｜  事件 %d  约会 %d(活%d)  冲突 %d(活%d)[/color]%s" % [
 		Sim.day, clock, phase, wx, etxt, spd, btxt, Sim.agents.size(), Sim.event_log.size(), Sim.commitments.size(), meets_active, Sim.conflicts.size(), conf_active, ptxt]
+	_refresh_clean_player_text()
 
 ## 玩家站在真实 port_dock 三格内才显示；只读 Sim 的 manifest 投影，不制造“玩家能亲手卸货”的假按钮。
 func _player_cargo_hint(pl: Dictionary) -> String:
@@ -2376,7 +2595,10 @@ func _player_return_cafe_pass() -> String:
 	var reason := String(receipt.get("reason", ""))
 	if ok:
 		var text := "已归还咖啡馆访客证" + ("，并安全返回一楼" if returned else "")
-		_push("[color=#9fe3b1]（%s）[/color]" % text)
+		# The canonical cafe_guest_revoke event already reached `_on_social`
+		# synchronously.  Do not append a second View-only success row: that row is
+		# absent after save/load or replay rebuild and made equivalent checkpoints
+		# render differently.  C1 keeps its separate ephemeral receipt surface.
 		if _locked_ortho_c1 != null: _locked_ortho_c1.show_receipt(text)
 		_update_status()
 		return ""
@@ -2677,6 +2899,12 @@ func _event_prose(e: Dictionary) -> String:
 				], e)
 		"world":
 			return ("[color=#ffe08a]镇上多了点新东西[/color]") if note == "spawn" else ("[color=#9aa0b5]镇上的临时布置撤了[/color]")
+		"cafe_guest_grant":
+			return "[color=#9fe3b1]阿丽把咖啡馆访客证交给了你[/color]"
+		"cafe_guest_revoke":
+			return "[color=#9fe3b1]你归还了咖啡馆访客证[/color]"
+		"cafe_guest_revoke_recovery":
+			return "[color=#9fe3b1]你已从咖啡馆二楼安全返回一楼[/color]"
 	# 兜底：先问 Sim._verb（引擎里早就写好的中文动词表），再退到不提类型的说法。绝不打印英文 id。
 	var v := String(Sim._verb(t))
 	if v != t:
@@ -2735,6 +2963,7 @@ func _render_log() -> void:
 		out.append("[color=#5a6072]— 近况 —[/color]")
 	out.append_array(_log_recent)
 	_logbox.text = "\n".join(out)
+	_refresh_clean_player_text()
 
 ## 回放/读档后重建播报：旧时间线的字必须清干净，否则 scrub 完屏幕上还在讲一段已被抹掉的历史。
 func _rebuild_feed() -> void:
@@ -2786,7 +3015,7 @@ func _focus_agent(id: String) -> void:
 	if ag.is_empty() or not _agent_on_active_plane(ag):
 		return
 	_selected_id = id
-	if _probe != null and _locked_ortho_c1 == null:
+	if _probe != null and _locked_ortho_c1 == null and not _reduced_motion:
 		_probe.focus_on(Vector2(int(ag["pos"].x) * 48 + 24, int(ag["pos"].y) * 48 + 24), id)
 	_update_obs()
 
@@ -2807,14 +3036,14 @@ func _unhandled_input(e: InputEvent) -> void:
 			KEY_PAGEUP: if _locked_ortho_c1 == null: _probe_cycle_floor(1)                    # 换楼层（Probe inspect）
 			KEY_PAGEDOWN: if _locked_ortho_c1 == null: _probe_cycle_floor(-1)
 			KEY_TAB: _cycle_selection(-1 if e.shift_pressed else 1)
-			KEY_O: _toggle_settings()                            # ⚙ 设置面板开关（NPC 数量/速度/后端）
-			KEY_V: _toggle_obs()                                 # 观察台名片档 ⇄ 完整卷宗（手机走右上「详情」钮，同一函数）
-			KEY_J: _toggle_goals()                               # 小镇纪事清单开关（手机走"点播报栏顶那一行"，同一函数）
-			KEY_K: _toggle_story()                               # 小镇故事开关（手机走"点播报里 ◇ 那一行"，同一函数）
+			KEY_O: if not _clean_player_presentation: _toggle_settings()
+			KEY_V: if not _clean_player_presentation: _toggle_obs()
+			KEY_J: if not _clean_player_presentation: _toggle_goals()
+			KEY_K: if not _clean_player_presentation: _toggle_story()
 			KEY_F5: _quick_save()                                # R0-2：快速存档
 			KEY_F8: _quick_load()                                # R0-2：快速读档
 			KEY_F9: _write_digest()                             # dev：把当前 digest 写盘（--digest-out）
-			KEY_F3: _toggle_perf()                               # dev 性能 overlay 开关
+			KEY_F3: if not _clean_player_presentation: _toggle_perf()
 			KEY_ESCAPE:                                          # 先退观察态(focus/follow/历史)，否则才清选中
 				if _locked_ortho_c1 != null:
 					_selected_id = ""
@@ -2829,7 +3058,7 @@ func _unhandled_input(e: InputEvent) -> void:
 			                                                 # 非玩家观察模式仍允许演示对话；玩家进入货运观测室时，
 			                                                 # _on_player_say 会 fail-closed，不能绕过只读合同写入聊天记忆。
 			KEY_N:                                               # P2-4 导航开发叠层：阻挡格(红)+交互格(绿) 可视化
-				if _view != null:
+				if _view != null and not _clean_player_presentation:
 					_view.dbg_nav = not _view.dbg_nav
 					_view.queue_redraw()
 					_push("[color=#9ad0ff]NAV 叠层 %s（红=阻挡格 绿=交互格）[/color]" % ("开" if _view.dbg_nav else "关"))

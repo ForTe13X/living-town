@@ -61,6 +61,9 @@ var _main: Node
 var _meta := {}
 var _rc := 0
 var _guest_invited := false
+var _clean_player := false
+var _reduced_motion := false
+var _capture_size := Vector2i.ZERO
 
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
@@ -73,10 +76,18 @@ func _ready() -> void:
 		elif args[i] == "--rt-settle" and i + 1 < args.size(): _settle = int(args[i + 1])
 		elif args[i] == "--rt-corrupt-manifest" and i + 1 < args.size(): _corrupt_manifest = args[i + 1]
 		elif args[i] == "--rt-deny-portal" and i + 1 < args.size(): _deny_portal = args[i + 1]
+		elif args[i] == "--clean-player": _clean_player = true
+		elif args[i] == "--reduced-motion": _reduced_motion = true
+		elif args[i] == "--rt-capture-size" and i + 2 < args.size(): _capture_size = Vector2i(int(args[i + 1]), int(args[i + 2]))
 	if _out == "":
 		print("[SPACESHOT] ❌ 缺 --rt-out <dir>")
 		get_tree().quit(2)
 		return
+	# A requested source size changes the root Window's render size before Main
+	# is instantiated.  `_snap` refuses any mismatch; it never resizes pixels.
+	if _capture_size.x > 0 and _capture_size.y > 0:
+		get_window().content_scale_size = _capture_size
+		get_window().size = _capture_size
 	# ── 看门狗（docs/41 §1 的那条教训机器化）────────────────────────────────────
 	# 「bench 场景挂住而不是变红」是**比红更坏**的失败形态：`ci.sh` 会一直等下去（D1 实测 600s 还活着）。
 	# 本场景比别的 bench 更容易踩到，因为它依赖**真 framebuffer**：少一个 Xvfb、少一个
@@ -133,6 +144,10 @@ func _ready() -> void:
 		print("[SPACESHOT] ❌ 拿不到 Main._probe")
 		get_tree().quit(1)
 		return
+	if _clean_player and not await _prove_reduced_motion_control(pb):
+		print("[SPACESHOT] ❌ reduced-motion real-input receipt failed")
+		get_tree().quit(1)
+		return
 	# 玩家旅程从玩家所在地取景；出门后 Main 也会回到同一跟随镜头。
 	# 因此前后帧仍可逐像素比较，同时产品参照不再是假装玩家在场的全镇鸟瞰。
 	var capture_player := Sim.get_agent("player")
@@ -140,7 +155,7 @@ func _ready() -> void:
 	# harness may navigate the real player through public inputs, but it never
 	# writes capability/player address/portal state directly.
 	if _journey == "full" and not capture_player.is_empty():
-		_guest_invited = _invite_player_from_current_plane()
+		_guest_invited = await _invite_player_from_current_plane()
 		if _guest_invited:
 			var town_cafe_door := _portal_cell("town", "outdoor", "cafe", "1f")
 			if not _walk_player_to(town_cafe_door):
@@ -233,7 +248,7 @@ func _ready() -> void:
 			_rc = 1
 		_meta["player_entered"] = player_in
 	if _journey == "full" and not player.is_empty() and not _guest_invited:
-		_guest_invited = _invite_player_from_current_plane()
+		_guest_invited = await _invite_player_from_current_plane()
 	if _journey == "full" and not player.is_empty():
 		_meta["player_invited"] = _guest_invited
 		if not _guest_invited or not Sim._cafe_guest_capability_valid():
@@ -363,6 +378,9 @@ func _ready() -> void:
 		pb.cam.zoom = cam0_zoom
 	_meta["player_town_after"] = _player_address()
 	_snap("town_after", pb)
+	if _journey == "full" and _clean_player:
+		if not await _prove_clean_player_consequence(pb):
+			_rc = 1
 
 	# ── 前提断言：出店后的取景必须与进店前【逐字节相同】 ────────────────────────
 	# 这不是"判据"，是 A 判据（前后两帧应当一致）的**前提**。它塌了，像素比较就没有意义，
@@ -461,12 +479,18 @@ func _invite_player_from_current_plane() -> bool:
 		if String(pl.get("space", "")) == String(aria.get("space", "")) and String(pl.get("floor", "")) == String(aria.get("floor", "")) \
 				and int(pl.get("talking", 0)) <= 0 and int(aria.get("talking", 0)) <= 0:
 			if _walk_player_to(aria.get("pos", Vector2i(-1, -1))):
-				var started := Sim.player_act("invite", "aria")
-				if started == "":
-					for _i in range(12): Sim.tick()
-					if Sim._cafe_guest_capability_valid():
-						_meta["invite_event_id"] = int(Sim.cafe_guest_capability.get("grant_event_id", -1))
-						return true
+				_main.set("_selected_id", "aria")
+				_main.call("_apply_clean_player_presentation")
+				var invite := _clean_control("invite")
+				if invite == null or not await _prove_control_negatives(invite, "invite"):
+					return false
+				if not await _click_clean_control(invite, "invite-positive"):
+					return false
+				for _i in range(12): Sim.tick()
+				if Sim._cafe_guest_capability_valid():
+					_meta["invite_event_id"] = int(Sim.cafe_guest_capability.get("grant_event_id", -1))
+					_meta["invite_action_path"] = "clean HUD Button <- viewport InputEventMouseButton <- _player_do"
+					return true
 		Sim.tick()
 	return false
 
@@ -477,6 +501,196 @@ func _player_address() -> Dictionary:
 	var pos: Vector2i = player.get("pos", Vector2i.ZERO)
 	return {"space": String(player.get("space", "")), "floor": String(player.get("floor", "")),
 		"pos": [pos.x, pos.y], "area": String(player.get("area", "")), "room": String(player.get("room", ""))}
+
+## Product-path persistence evidence after the complete real journey.  Files are
+## confined to user:// (the task-owned container HOME); no fixture or authority
+## is rewritten.  The Main callbacks are the exact keyboard/touch seams.
+func _prove_clean_player_consequence(pb) -> bool:
+	var proof := {
+		"desktop": _main.call("clean_player_presentation_contract", Vector2(1280, 768)),
+		"mobile": _main.call("clean_player_presentation_contract", Vector2(320, 192)),
+		"reduced_motion": _reduced_motion,
+	}
+	var trace_before: Dictionary = Sim.get_player_trace()
+	var revoke_button := _clean_control("cafe_guest_pass:revoke")
+	if revoke_button == null or not await _prove_control_negatives(revoke_button, "revoke"):
+		return false
+	if not await _click_clean_control(revoke_button, "revoke-positive"):
+		return false
+	_refresh()
+	await _wait(4, 200)
+	var cap_after: Dictionary = Sim.cafe_guest_capability.duplicate(true)
+	var trace_after: Dictionary = Sim.get_player_trace()
+	var revoked := String(cap_after.get("status", "")) == "revoked"
+	var revoke_recorded := false
+	if not (trace_after.get("entries", []) as Array).is_empty():
+		revoke_recorded = String((trace_after["entries"] as Array)[-1].get("kind", "")) == "cafe_guest_pass"
+	_main.set("_selected_id", "")
+	_main.call("_update_obs")
+	_main.call("_rebuild_feed")
+	_main.call("_update_status")
+	await _wait(4, 200)
+	var state_before: Dictionary = _main.call("clean_player_view_state")
+	proof["revoke"] = {"status": String(cap_after.get("status", "")), "recorded": revoke_recorded,
+		"trace_entries_before": (trace_before.get("entries", []) as Array).size(),
+		"trace_entries_after": (trace_after.get("entries", []) as Array).size(),
+		"chronicle": String((state_before.get("normalized", {}) as Dictionary).get("chronicle", ""))}
+	_snap("revoke", pb)
+	var revoke_png := _out + "/rt_revoke.png"
+	var revoke_sha := FileAccess.get_sha256(revoke_png)
+	var save_path := "user://pr38_clean_revoked.save"
+	var save_ok := Sim.save_game(save_path, {"evidence": "clean-player-revoke"})
+	var save_sha := FileAccess.get_sha256(save_path) if save_ok else ""
+	var expected_tick := Sim.tick_no
+	var expected_digest := Sim.event_digest
+	var expected_cap := Sim.cafe_guest_capability.duplicate(true)
+	var expected_trace := Sim.get_player_trace()
+	var load_ok := save_ok and Sim.load_game(save_path)
+	if load_ok:
+		_main.call("_after_load")
+		_refresh()
+		await _wait(4, 200)
+	var load_exact := load_ok and Sim.tick_no == expected_tick and Sim.event_digest == expected_digest \
+		and Sim.cafe_guest_capability == expected_cap and Sim.get_player_trace() == expected_trace
+	var state_loaded: Dictionary = _main.call("clean_player_view_state") if load_exact else {}
+	_snap("revoke_loaded", pb)
+	var loaded_sha := FileAccess.get_sha256(_out + "/rt_revoke_loaded.png")
+	var replay_ok := load_exact and Sim.goto_tick(expected_tick)
+	if replay_ok:
+		_main.call("_after_jump")
+		_refresh()
+		await _wait(4, 200)
+	var replay_exact := replay_ok and Sim.event_digest == expected_digest \
+		and Sim.cafe_guest_capability == expected_cap and Sim.get_player_trace() == expected_trace
+	var state_replayed: Dictionary = _main.call("clean_player_view_state") if replay_exact else {}
+	_snap("revoke_replayed", pb)
+	var replayed_sha := FileAccess.get_sha256(_out + "/rt_revoke_replayed.png")
+	var normalized_before: Dictionary = state_before.get("normalized", {})
+	var normalized_loaded: Dictionary = state_loaded.get("normalized", {})
+	var normalized_replayed: Dictionary = state_replayed.get("normalized", {})
+	var view_exact := normalized_before == normalized_loaded and normalized_before == normalized_replayed
+	var pixels_exact := revoke_sha != "" and revoke_sha == loaded_sha and revoke_sha == replayed_sha
+	proof["persistence"] = {"save": save_ok, "save_sha256": save_sha, "load": load_ok,
+		"load_exact": load_exact, "replay": replay_ok, "replay_exact": replay_exact, "tick": expected_tick,
+		"view_exact": view_exact, "pixels_exact": pixels_exact,
+		"pixel_sha256": {"before": revoke_sha, "loaded": loaded_sha, "replayed": replayed_sha},
+		"state_before": state_before, "state_loaded": state_loaded, "state_replayed": state_replayed}
+	# Missing/corrupt files are evidence failures and must leave current authority intact.
+	var atomic_before := {"tick": Sim.tick_no, "event_digest": Sim.event_digest,
+		"capability": Sim.cafe_guest_capability.duplicate(true), "trace": Sim.get_player_trace()}
+	var missing_rejected := not Sim.load_game("user://pr38_missing_evidence.save")
+	var corrupt_path := "user://pr38_corrupt_evidence.save"
+	var corrupt_file := FileAccess.open(corrupt_path, FileAccess.WRITE)
+	if corrupt_file != null:
+		corrupt_file.store_string("not-a-living-town-save")
+		corrupt_file.close()
+	var corrupt_rejected := not Sim.load_game(corrupt_path)
+	var atomic_after := {"tick": Sim.tick_no, "event_digest": Sim.event_digest,
+		"capability": Sim.cafe_guest_capability.duplicate(true), "trace": Sim.get_player_trace()}
+	proof["negative_evidence"] = {"missing_rejected": missing_rejected,
+		"corrupt_rejected": corrupt_rejected, "atomic": atomic_before == atomic_after}
+	_meta["clean_player_evidence"] = proof
+	var okay := revoked and revoke_recorded and save_ok and load_exact and replay_exact \
+		and view_exact and pixels_exact and bool(state_before.get("in_bounds", false)) and bool(state_before.get("readable", false)) \
+		and missing_rejected and corrupt_rejected and atomic_before == atomic_after \
+		and bool((proof["desktop"] as Dictionary).get("in_bounds", false)) \
+		and bool((proof["mobile"] as Dictionary).get("in_bounds", false)) \
+		and bool((_meta.get("reduced_motion_receipt", {}) as Dictionary).get("pass", false))
+	if not okay:
+		print("[SPACESHOT] ❌ clean player consequence/persistence contract failed: %s" % JSON.stringify(proof))
+	else:
+		print("[SPACESHOT] clean player PASS: revoke visible + save/load/replay exact + missing/corrupt fail closed")
+	return okay
+
+func _clean_control(verb: String) -> BaseButton:
+	var controls: Array = (_main.get("_clean_action_btns") as Array).duplicate()
+	controls.append(_main.get("_clean_guest_pass_btn"))
+	for raw in controls:
+		if raw is BaseButton and String((raw as BaseButton).get_meta("player_verb", "")) == verb:
+			return raw as BaseButton
+	return null
+
+func _control_witness() -> String:
+	return JSON.stringify({"tick": Sim.tick_no, "digest": Sim.event_digest,
+		"events": Sim.event_log.size(), "trace": Sim.get_player_trace(),
+		"capability": Sim.cafe_guest_capability, "player": _player_address()})
+
+## Exercise the actual Control hit-test/input route.  Neither arm may invoke the
+## product callback or alter a canonical witness; only then is the connection
+## restored for the subsequent positive click.
+func _prove_control_negatives(button: BaseButton, label: String) -> bool:
+	var receipt := {"route": "Viewport.push_input(InputEventMouseButton)", "disabled": false, "disconnected": false}
+	var before := _control_witness()
+	button.disabled = true
+	var delivered_disabled := await _click_clean_control(button, label + "-disabled")
+	receipt["disabled"] = delivered_disabled and before == _control_witness()
+	button.disabled = false
+	var connections: Array = button.get_signal_connection_list("pressed")
+	for rec in connections:
+		button.disconnect("pressed", rec["callable"])
+	before = _control_witness()
+	var delivered_disconnected := await _click_clean_control(button, label + "-disconnected")
+	receipt["disconnected"] = delivered_disconnected and before == _control_witness()
+	for rec in connections:
+		button.connect("pressed", rec["callable"], int(rec.get("flags", 0)))
+	receipt["connection_count"] = button.get_signal_connection_list("pressed").size()
+	if not _meta.has("control_negatives"):
+		_meta["control_negatives"] = {}
+	(_meta["control_negatives"] as Dictionary)[label] = receipt
+	return bool(receipt["disabled"]) and bool(receipt["disconnected"]) and int(receipt["connection_count"]) > 0
+
+func _click_clean_control(button: BaseButton, label: String) -> bool:
+	if button == null or not button.is_visible_in_tree():
+		return false
+	var r := button.get_global_rect()
+	if r.size.x < 1.0 or r.size.y < 1.0:
+		return false
+	var at := r.get_center()
+	for pressed in [true, false]:
+		var ev := InputEventMouseButton.new()
+		ev.button_index = MOUSE_BUTTON_LEFT
+		ev.pressed = pressed
+		ev.position = at
+		ev.global_position = at
+		get_viewport().push_input(ev, true)
+		await get_tree().process_frame
+	if not _meta.has("control_input"):
+		_meta["control_input"] = []
+	(_meta["control_input"] as Array).append({"label": label, "at": [at.x, at.y],
+		"rect": [r.position.x, r.position.y, r.size.x, r.size.y], "disabled": button.disabled})
+	return true
+
+func _prove_reduced_motion_control(pb) -> bool:
+	var sim_before := _control_witness()
+	var selected_before := String(_main.get("_selected_id"))
+	var pos_before: Vector2 = pb.cam.position
+	var zoom_before: Vector2 = pb.cam.zoom
+	_main.set("_selected_id", "")
+	var ev := InputEventKey.new()
+	var sent := true
+	for pressed in [true, false]:
+		ev = InputEventKey.new()
+		ev.keycode = KEY_TAB
+		ev.pressed = pressed
+		get_viewport().push_input(ev, true)
+		await get_tree().process_frame
+	await _wait(4, 100)
+	var pos_after: Vector2 = pb.cam.position
+	var zoom_after: Vector2 = pb.cam.zoom
+	var selected_after := String(_main.get("_selected_id"))
+	var camera_changed := pos_after != pos_before or zoom_after != zoom_before
+	var okay := sent and selected_after != "" and sim_before == _control_witness() \
+		and (not camera_changed if _reduced_motion else camera_changed)
+	_meta["reduced_motion_receipt"] = {"enabled": _reduced_motion,
+		"route": "Viewport.push_input(InputEventKey KEY_TAB)", "selected_before": selected_before,
+		"selected_after": selected_after, "camera_before": [pos_before.x, pos_before.y, zoom_before.x, zoom_before.y],
+		"camera_after": [pos_after.x, pos_after.y, zoom_after.x, zoom_after.y],
+		"camera_changed": camera_changed, "sim_unchanged": sim_before == _control_witness(), "pass": okay}
+	_main.set("_selected_id", selected_before)
+	pb.cam.position = pos_before
+	pb.cam.zoom = zoom_before
+	_main.call("_update_obs")
+	return okay
 
 ## 进店。portal=走出货路径（tapped→_portal_click）；flip=只翻 active_space（--void-gate 同款）。
 func _enter(pb) -> bool:
@@ -571,17 +785,35 @@ func _snap(name: String, pb) -> void:
 		print("[SPACESHOT] ❌ %s 取不到 viewport 图像（没有真 framebuffer？本场景需要 Xvfb/带窗口 + opengl3）" % name)
 		_rc = 1
 		return
-	img.save_png(path)
+	if _capture_size.x > 0 and _capture_size.y > 0 and (img.get_width() != _capture_size.x or img.get_height() != _capture_size.y):
+		print("[SPACESHOT] ❌ native source mismatch requested=%s actual=%dx%d; post-capture resize is forbidden"
+			% [_capture_size, img.get_width(), img.get_height()])
+		_rc = 1
+		return
+	var save_error := img.save_png(path)
+	if save_error != OK:
+		print("[SPACESHOT] ❌ %s PNG write failed path=%s error=%d" % [name, path, save_error])
+		_rc = 1
+		return
 	var vp: Vector2 = get_viewport().get_visible_rect().size
 	var bounds: Rect2 = _main.call("_space_bounds")
 	var tl: Vector2 = (bounds.position - pb.cam.position) * pb.cam.zoom + vp * 0.5
 	var br: Vector2 = (bounds.end - pb.cam.position) * pb.cam.zoom + vp * 0.5
+	# The pixel gate consumes one canonical 1280x768 design-space contract even
+	# when the source framebuffer is native-sized.  Keep the source viewport as
+	# separate provenance; the desktop scale is exactly Vector2.ONE.
+	var design_scale := Vector2(1280.0 / vp.x, 768.0 / vp.y)
+	var design_tl := tl * design_scale
+	var design_size := (br - tl) * design_scale
 	var view = _main.get("_view")
 	var vd: int = int(view.get("_void_draws")) if view != null else -1
 	_meta[name] = {
 		"png": path, "w": img.get_width(), "h": img.get_height(),
-		"design_vp": [vp.x, vp.y],
-		"map_rect_design": [tl.x, tl.y, br.x - tl.x, br.y - tl.y],
+		"native_source": _capture_size == Vector2i.ZERO or Vector2i(img.get_width(), img.get_height()) == _capture_size,
+		"post_capture_resize": false,
+		"source_viewport": [vp.x, vp.y],
+		"design_vp": [1280.0, 768.0],
+		"map_rect_design": [design_tl.x, design_tl.y, design_size.x, design_size.y],
 		"space": String(pb.active_space), "floor": String(pb.active_floor),
 		"cam": [pb.cam.position.x, pb.cam.position.y], "zoom": pb.cam.zoom.x,
 		"void_draws": vd,
@@ -589,7 +821,7 @@ func _snap(name: String, pb) -> void:
 	print("[SPACESHOT] %-12s space=%-6s floor=%-8s png=%dx%d cam=(%.1f,%.1f) zoom=%.4f 地图矩形(设计坐标)=(%.1f,%.1f,%.1f,%.1f) void_draws=%d"
 		% [name, String(pb.active_space), String(pb.active_floor), img.get_width(), img.get_height(),
 			pb.cam.position.x, pb.cam.position.y, pb.cam.zoom.x,
-			tl.x, tl.y, br.x - tl.x, br.y - tl.y, vd])
+			design_tl.x, design_tl.y, design_size.x, design_size.y, vd])
 
 func _observatory_sim_snapshot() -> String:
 	return JSON.stringify({
