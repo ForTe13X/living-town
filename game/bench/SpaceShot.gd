@@ -161,6 +161,10 @@ func _ready() -> void:
 			if not _walk_player_to(town_cafe_door):
 				print("[SPACESHOT] ❌ invited player cannot reach authored cafe entrance through public moves")
 				get_tree().quit(1); return
+			# The route-equivalence proof deliberately reloads its pre-action save.
+			# Reacquire the canonical agent Dictionary before using it as the camera
+			# witness; keeping the pre-load Variant would point at stale coordinates.
+			capture_player = Sim.get_agent("player")
 	if not capture_player.is_empty():
 		var capture_pos: Vector2i = capture_player.get("pos", Vector2i.ZERO)
 		pb.focus_on(Vector2(capture_pos.x * 48 + 24, capture_pos.y * 48 + 24), "player")
@@ -483,15 +487,43 @@ func _invite_player_from_current_plane() -> bool:
 				_main.call("_apply_clean_player_presentation")
 				var invite := _clean_control("invite")
 				if invite == null or not await _prove_control_negatives(invite, "invite"):
+					print("[SPACESHOT] invite control negative witness failed null=%s" % (invite == null))
+					return false
+				var route_pre := "user://pr38_route_equivalence_pre.save"
+				if not Sim.save_game(route_pre, {"evidence": "clean-player-route-equivalence"}):
 					return false
 				if not await _click_clean_control(invite, "invite-positive"):
+					print("[SPACESHOT] invite positive pointer delivery failed")
 					return false
 				for _i in range(12): Sim.tick()
-				if Sim._cafe_guest_capability_valid():
+				if not Sim._cafe_guest_capability_valid():
+					continue
+				var pointer_witness := _control_witness()
+				var pointer_trace: Dictionary = Sim.get_player_trace()
+				if not Sim.load_game(route_pre):
+					return false
+				_main.call("_after_load")
+				_main.set("_selected_id", "aria")
+				get_viewport().gui_release_focus()
+				await _push_key(KEY_Y)
+				for _i in range(12): Sim.tick()
+				var hotkey_witness := _control_witness()
+				var hotkey_trace: Dictionary = Sim.get_player_trace()
+				var route_exact := Sim._cafe_guest_capability_valid() and pointer_witness == hotkey_witness \
+					and pointer_trace == hotkey_trace
+				_meta["route_equivalence"] = {"pointer": "Viewport.push_input(InputEventMouseButton) -> _player_do",
+					"hotkey": "Viewport.push_input(InputEventKey KEY_Y) -> _player_do",
+					"callback": "_player_do", "canonical_exact": route_exact,
+					"trace_entries": (hotkey_trace.get("entries", []) as Array).size()}
+				if route_exact:
 					_meta["invite_event_id"] = int(Sim.cafe_guest_capability.get("grant_event_id", -1))
-					_meta["invite_action_path"] = "clean HUD Button <- viewport InputEventMouseButton <- _player_do"
+					_meta["invite_action_path"] = "pointer/hotkey converge at _player_do and one canonical trace"
 					return true
+				print("[SPACESHOT] route equivalence retry pointer_valid=true hotkey_valid=%s pointer_trace=%d hotkey_trace=%d"
+					% [Sim._cafe_guest_capability_valid(), (pointer_trace.get("entries", []) as Array).size(),
+						(hotkey_trace.get("entries", []) as Array).size()])
 		Sim.tick()
+	print("[SPACESHOT] invite search exhausted player=%s aria=%s" % [_player_address(), Sim.get_agent("aria")])
 	return false
 
 func _player_address() -> Dictionary:
@@ -531,6 +563,11 @@ func _prove_clean_player_consequence(pb) -> bool:
 	_main.call("_update_status")
 	await _wait(4, 200)
 	var state_before: Dictionary = _main.call("clean_player_view_state")
+	var expected_native := _capture_size if _capture_size != Vector2i.ZERO else Vector2i(DisplayServer.window_get_size())
+	var ui_receipt := _validate_clean_player_ui(state_before, expected_native)
+	proof["ui"] = ui_receipt
+	var ui_negatives := _ui_negative_controls(state_before, expected_native)
+	proof["ui_negatives"] = ui_negatives
 	proof["revoke"] = {"status": String(cap_after.get("status", "")), "recorded": revoke_recorded,
 		"trace_entries_before": (trace_before.get("entries", []) as Array).size(),
 		"trace_entries_after": (trace_after.get("entries", []) as Array).size(),
@@ -592,10 +629,12 @@ func _prove_clean_player_consequence(pb) -> bool:
 	_meta["clean_player_evidence"] = proof
 	var okay := revoked and revoke_recorded and save_ok and load_exact and replay_exact \
 		and view_exact and pixels_exact and bool(state_before.get("in_bounds", false)) and bool(state_before.get("readable", false)) \
+		and bool(ui_receipt.get("pass", false)) and bool(ui_negatives.get("pass", false)) \
 		and missing_rejected and corrupt_rejected and atomic_before == atomic_after \
 		and bool((proof["desktop"] as Dictionary).get("in_bounds", false)) \
 		and bool((proof["mobile"] as Dictionary).get("in_bounds", false)) \
-		and bool((_meta.get("reduced_motion_receipt", {}) as Dictionary).get("pass", false))
+		and bool((_meta.get("reduced_motion_receipt", {}) as Dictionary).get("pass", false)) \
+		and bool((_meta.get("route_equivalence", {}) as Dictionary).get("canonical_exact", false))
 	if not okay:
 		print("[SPACESHOT] ❌ clean player consequence/persistence contract failed: %s" % JSON.stringify(proof))
 	else:
@@ -614,6 +653,124 @@ func _control_witness() -> String:
 	return JSON.stringify({"tick": Sim.tick_no, "digest": Sim.event_digest,
 		"events": Sim.event_log.size(), "trace": Sim.get_player_trace(),
 		"capability": Sim.cafe_guest_capability, "player": _player_address()})
+
+func _rect_from(raw) -> Rect2:
+	var a: Array = raw
+	return Rect2(float(a[0]), float(a[1]), float(a[2]), float(a[3])) if a.size() == 4 else Rect2()
+
+func _rect_near(a: Rect2, b: Rect2, tolerance := 0.02) -> bool:
+	return a.position.distance_to(b.position) <= tolerance and a.size.distance_to(b.size) <= tolerance
+
+## Fail-closed verifier: it recomputes coverage and geometry from live Control
+## rectangles.  Summary fields are receipts, never authority, so forged metadata
+## cannot make the retired 87.2266% layout pass.
+func _validate_clean_player_ui(state: Dictionary, expected_native: Vector2i) -> Dictionary:
+	var failures: Array = []
+	var display: Array = state.get("display", [])
+	if display.size() != 2 or int(display[0]) != expected_native.x or int(display[1]) != expected_native.y:
+		failures.append("native_framebuffer")
+	var panels: Array = state.get("physical_panels", [])
+	var computed_coverage := 1.0
+	var computed_clear := Rect2()
+	if panels.size() != 3:
+		failures.append("panel_cardinality")
+	else:
+		var status := _rect_from(panels[0])
+		var chronicle := _rect_from(panels[1])
+		var actions := _rect_from(panels[2])
+		computed_coverage = (status.get_area() + chronicle.get_area() + actions.get_area()) \
+			/ float(expected_native.x * expected_native.y)
+		var clear_top := chronicle.end.y if expected_native.x <= 480 else status.end.y
+		var clear_bottom := actions.position.y if expected_native.x <= 480 else minf(chronicle.position.y, actions.position.y)
+		computed_clear = Rect2(status.position.x, clear_top, status.size.x, clear_bottom - clear_top)
+		var contract: Dictionary = _main.call("clean_player_presentation_contract", Vector2(expected_native))
+		var expected_panels: Dictionary = contract.get("panels", {})
+		if not _rect_near(status, _rect_from(expected_panels.get("status", []))) \
+				or not _rect_near(chronicle, _rect_from(expected_panels.get("chronicle", []))) \
+				or not _rect_near(actions, _rect_from(expected_panels.get("actions", []))):
+			failures.append("panel_geometry")
+		if absf(float(state.get("coverage", -1.0)) - computed_coverage) > 0.000001:
+			failures.append("forged_coverage")
+		if expected_native.x <= 480 and (computed_coverage > 0.42 or computed_clear.size.x < 308.0 or computed_clear.size.y < 96.0):
+			failures.append("mobile_world_window")
+	var geometry: Array = state.get("geometry", [])
+	if geometry.size() != 10:
+		failures.append("control_cardinality")
+	else:
+		var layout: Dictionary = _main.call("clean_player_layout", Vector2(expected_native))
+		var action_panel: Rect2 = layout["actions"]
+		var gap := float(layout["gap"])
+		var columns := int(layout["columns"])
+		var rows := int(layout["rows"])
+		var cell := Vector2((action_panel.size.x - gap * float(columns + 1)) / float(columns),
+			(action_panel.size.y - gap * float(rows + 1)) / float(rows))
+		var expected_verbs := ["greet", "give", "gossip", "invite", "confront", "apologize", "mediate", "cafe_guest_pass:revoke"]
+		var expected_callbacks := ["_player_do", "_player_do", "_player_do", "_player_do", "_player_do", "_player_do", "_player_do", "_player_return_cafe_pass"]
+		var action_rects: Array[Rect2] = []
+		for i in range(2, geometry.size()):
+			var item: Dictionary = geometry[i]
+			var r := _rect_from(item.get("physical_rect", []))
+			var control_index := i - 2
+			var expected_rect := Rect2(action_panel.position + Vector2(gap + (control_index % columns) * (cell.x + gap),
+				gap + (control_index / columns) * (cell.y + gap)), cell)
+			if r.size.x < 32.0 or r.size.y < 32.0 or r.position.x < 0.0 or r.position.y < 0.0 \
+					or r.end.x > expected_native.x or r.end.y > expected_native.y:
+				failures.append("action_geometry_%d" % (i - 2))
+			if not _rect_near(r, expected_rect):
+				failures.append("action_contract_%d" % (i - 2))
+			if int(item.get("physical_font_size", 0)) < 13 or not bool(item.get("text_fits", false)):
+				failures.append("action_text_%d" % (i - 2))
+			if int(item.get("focus_mode", Control.FOCUS_NONE)) != Control.FOCUS_ALL:
+				failures.append("action_focus_%d" % (i - 2))
+			if bool(item.get("disabled", true)) or int(item.get("pressed_connections", 0)) != 1:
+				failures.append("action_witness_%d" % (i - 2))
+			if String(item.get("player_verb", "")) != expected_verbs[i - 2] \
+					or String(item.get("callback", "")) != expected_callbacks[i - 2]:
+				failures.append("action_route_%d" % (i - 2))
+			for prior in action_rects:
+				if r.intersects(prior): failures.append("action_overlap_%d" % (i - 2))
+			action_rects.append(r)
+	var receipt := {"pass": failures.is_empty(), "failures": failures,
+		"expected_native": [expected_native.x, expected_native.y], "computed_coverage": computed_coverage,
+		"clear_world": [computed_clear.position.x, computed_clear.position.y, computed_clear.size.x, computed_clear.size.y]}
+	return receipt
+
+func _ui_negative_controls(state: Dictionary, expected_native: Vector2i) -> Dictionary:
+	var negatives := {}
+	var geometry: Array = state.get("geometry", [])
+	if expected_native == Vector2i(320, 192):
+		var old := state.duplicate(true)
+		old["physical_panels"] = [[6.0, 6.0, 308.0, 38.0], [6.0, 47.0, 308.0, 32.0], [6.0, 82.0, 308.0, 104.0]]
+		old["coverage"] = 0.872265625
+		negatives["old_geometry_0_872266_rejected"] = not bool(_validate_clean_player_ui(old, expected_native).get("pass", true))
+		var forged := old.duplicate(true)
+		forged["coverage"] = state.get("coverage", 0.0)
+		negatives["forged_metadata_old_live_controls_rejected"] = not bool(_validate_clean_player_ui(forged, expected_native).get("pass", true))
+	if geometry.size() == 10:
+		for key in ["focus_none", "disabled", "disconnected", "duplicate", "bypass"]:
+			var bad := state.duplicate(true)
+			var controls: Array = bad["geometry"]
+			var item: Dictionary = controls[2]
+			if key == "focus_none": item["focus_mode"] = Control.FOCUS_NONE
+			elif key == "disabled": item["disabled"] = true
+			elif key == "disconnected": item["pressed_connections"] = 0
+			elif key == "duplicate": item["pressed_connections"] = 2
+			else: item["callback"] = "_bench_bypass"
+			controls[2] = item
+			bad["geometry"] = controls
+			negatives[key + "_rejected"] = not bool(_validate_clean_player_ui(bad, expected_native).get("pass", true))
+	var wrong_native := Vector2i(expected_native.x + 1, expected_native.y)
+	negatives["wrong_framebuffer_or_post_resize_rejected"] = not bool(_validate_clean_player_ui(state, wrong_native).get("pass", true))
+	if expected_native == Vector2i(1280, 768):
+		var drift := state.duplicate(true)
+		var drift_panels: Array = drift["physical_panels"]
+		drift_panels[0][0] = float(drift_panels[0][0]) + 1.0
+		drift["physical_panels"] = drift_panels
+		negatives["desktop_1px_drift_rejected"] = not bool(_validate_clean_player_ui(drift, expected_native).get("pass", true))
+	var all_pass := true
+	for value in negatives.values(): all_pass = all_pass and bool(value)
+	negatives["pass"] = all_pass
+	return negatives
 
 ## Exercise the actual Control hit-test/input route.  Neither arm may invoke the
 ## product callback or alter a canonical witness; only then is the connection
@@ -660,36 +817,55 @@ func _click_clean_control(button: BaseButton, label: String) -> bool:
 		"rect": [r.position.x, r.position.y, r.size.x, r.size.y], "disabled": button.disabled})
 	return true
 
+func _push_key(keycode: int, shift := false) -> void:
+	for pressed in [true, false]:
+		var ev := InputEventKey.new()
+		ev.keycode = keycode
+		ev.shift_pressed = shift
+		ev.pressed = pressed
+		get_viewport().push_input(ev, true)
+		await get_tree().process_frame
+
 func _prove_reduced_motion_control(pb) -> bool:
 	var sim_before := _control_witness()
 	var selected_before := String(_main.get("_selected_id"))
 	var pos_before: Vector2 = pb.cam.position
 	var zoom_before: Vector2 = pb.cam.zoom
-	_main.set("_selected_id", "")
-	var ev := InputEventKey.new()
-	var sent := true
-	for pressed in [true, false]:
-		ev = InputEventKey.new()
-		ev.keycode = KEY_TAB
-		ev.pressed = pressed
-		get_viewport().push_input(ev, true)
-		await get_tree().process_frame
-	await _wait(4, 100)
+	var buttons: Array = (_main.get("_clean_action_btns") as Array).duplicate()
+	buttons.append(_main.get("_clean_guest_pass_btn"))
+	if buttons.size() != 8:
+		return false
+	get_viewport().gui_release_focus()
+	(buttons[0] as Control).grab_focus()
+	await get_tree().process_frame
+	var forward: Array = [String((get_viewport().gui_get_focus_owner() as Control).get_meta("player_verb", ""))]
+	for _i in buttons.size():
+		await _push_key(KEY_TAB)
+		var owner := get_viewport().gui_get_focus_owner()
+		forward.append(String(owner.get_meta("player_verb", "")) if owner != null else "")
+	var reverse: Array = [forward[-1]]
+	for _i in buttons.size():
+		await _push_key(KEY_TAB, true)
+		var owner := get_viewport().gui_get_focus_owner()
+		reverse.append(String(owner.get_meta("player_verb", "")) if owner != null else "")
+	_snap("focused", pb)
+	await _wait(2, 50)
 	var pos_after: Vector2 = pb.cam.position
 	var zoom_after: Vector2 = pb.cam.zoom
 	var selected_after := String(_main.get("_selected_id"))
 	var camera_changed := pos_after != pos_before or zoom_after != zoom_before
-	var okay := sent and selected_after != "" and sim_before == _control_witness() \
-		and (not camera_changed if _reduced_motion else camera_changed)
+	var expected_forward := ["greet", "give", "gossip", "invite", "confront", "apologize", "mediate", "cafe_guest_pass:revoke", "greet"]
+	var expected_reverse := ["greet", "cafe_guest_pass:revoke", "mediate", "apologize", "confront", "invite", "gossip", "give", "greet"]
+	var okay := forward == expected_forward and reverse == expected_reverse and selected_after == selected_before \
+		and sim_before == _control_witness() and not camera_changed
 	_meta["reduced_motion_receipt"] = {"enabled": _reduced_motion,
-		"route": "Viewport.push_input(InputEventKey KEY_TAB)", "selected_before": selected_before,
+		"route": "Viewport.push_input(InputEventKey KEY_TAB/Shift-Tab)", "selected_before": selected_before,
 		"selected_after": selected_after, "camera_before": [pos_before.x, pos_before.y, zoom_before.x, zoom_before.y],
 		"camera_after": [pos_after.x, pos_after.y, zoom_after.x, zoom_after.y],
-		"camera_changed": camera_changed, "sim_unchanged": sim_before == _control_witness(), "pass": okay}
-	_main.set("_selected_id", selected_before)
-	pb.cam.position = pos_before
-	pb.cam.zoom = zoom_before
-	_main.call("_update_obs")
+		"camera_changed": camera_changed, "sim_unchanged": sim_before == _control_witness(),
+		"forward": forward, "reverse": reverse, "focus_visible": get_viewport().gui_get_focus_owner() != null,
+		"no_trap": okay, "pass": okay}
+	get_viewport().gui_release_focus()
 	return okay
 
 ## 进店。portal=走出货路径（tapped→_portal_click）；flip=只翻 active_space（--void-gate 同款）。

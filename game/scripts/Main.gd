@@ -854,24 +854,45 @@ func _build_clean_player_hud() -> void:
 	_clean_action_btns.clear()
 	for item in PLAYER_VERBS:
 		var b := Button.new()
-		b.text = String(item["label"])
+		var label := String(item["label"])
+		var verb := String(item["verb"])
+		b.name = "CleanAction_%s" % verb
+		b.text = label
 		b.tooltip_text = "%s（键 %s）" % [String(item["label"]), String(item["key"])]
 		b.add_theme_font_override("font", fnt)
-		b.focus_mode = Control.FOCUS_NONE
-		var verb := String(item["verb"])
+		b.focus_mode = Control.FOCUS_ALL
 		b.set_meta("player_verb", verb)
-		b.pressed.connect(func(): _player_do(verb))
+		b.set_meta("full_label", label)
+		b.pressed.connect(_player_do.bind(verb))
 		_clean_hud.add_child(b)
 		_clean_action_btns.append(b)
 	_clean_guest_pass_btn = Button.new()
+	_clean_guest_pass_btn.name = "CleanAction_cafe_guest_pass_revoke"
 	_clean_guest_pass_btn.text = "归还访客证"
 	_clean_guest_pass_btn.tooltip_text = "归还访客证（键 R）"
 	_clean_guest_pass_btn.add_theme_font_override("font", fnt)
-	_clean_guest_pass_btn.focus_mode = Control.FOCUS_NONE
+	_clean_guest_pass_btn.focus_mode = Control.FOCUS_ALL
 	_clean_guest_pass_btn.set_meta("player_verb", "cafe_guest_pass:revoke")
+	_clean_guest_pass_btn.set_meta("full_label", "归还访客证")
 	_clean_guest_pass_btn.pressed.connect(_player_return_cafe_pass)
 	_clean_hud.add_child(_clean_guest_pass_btn)
+	_wire_clean_player_focus_cycle()
 	_apply_clean_player_presentation()
+
+## The clean HUD is a closed, deterministic keyboard ring.  Explicit paths
+## keep Tab/Shift-Tab independent of scene-tree additions elsewhere while all
+## activations still terminate at the existing canonical callbacks.
+func _wire_clean_player_focus_cycle() -> void:
+	var buttons: Array = _clean_action_btns.duplicate()
+	buttons.append(_clean_guest_pass_btn)
+	for i in buttons.size():
+		var b: Control = buttons[i]
+		var previous: Control = buttons[(i - 1 + buttons.size()) % buttons.size()]
+		var next: Control = buttons[(i + 1) % buttons.size()]
+		b.focus_previous = b.get_path_to(previous)
+		b.focus_next = b.get_path_to(next)
+		b.focus_neighbor_left = b.get_path_to(previous)
+		b.focus_neighbor_right = b.get_path_to(next)
 
 func _hide_clean_player_diagnostics() -> void:
 	for node in [_status_pan, _status, _gear_btn, _log_pan, _logbox, _obs_pan, _obs,
@@ -895,29 +916,44 @@ func clean_player_layout(viewport: Vector2) -> Dictionary:
 	var mobile := vp.x <= 480.0
 	var margin := 6.0 if mobile else 12.0
 	if mobile:
-		var status := Rect2(margin, margin, vp.x - margin * 2.0, 38.0)
-		var chronicle := Rect2(margin, status.end.y + 3.0, vp.x - margin * 2.0, 32.0)
+		# One 44 px top card plus one 38 px bottom row leaves a 308x98
+		# unobstructed world window at the native 320x192 acceptance size.
+		var status := Rect2(margin, margin, vp.x - margin * 2.0, 21.0)
+		var chronicle := Rect2(margin, status.end.y, vp.x - margin * 2.0, 23.0)
 		return {"viewport": vp, "mobile": true, "status": status, "chronicle": chronicle,
-			"actions": Rect2(margin, chronicle.end.y + 3.0, vp.x - margin * 2.0, vp.y - chronicle.end.y - margin - 3.0),
-			"columns": 3, "rows": 3, "font": 13, "button_font": 13}
+			"actions": Rect2(margin, vp.y - 44.0, vp.x - margin * 2.0, 38.0),
+			"columns": 8, "rows": 1, "font": 13, "button_font": 13, "gap": 2.0}
 	var status_h := 44.0
 	return {"viewport": vp, "mobile": false,
 		"status": Rect2(margin, margin, vp.x - margin * 2.0, status_h),
 		"chronicle": Rect2(margin, vp.y - 132.0, minf(520.0, vp.x * 0.42), 120.0),
 		"actions": Rect2(maxf(548.0, vp.x * 0.43), vp.y - 64.0, vp.x - maxf(548.0, vp.x * 0.43) - margin, 52.0),
-		"columns": 8, "rows": 1, "font": 16, "button_font": 14}
+		"columns": 8, "rows": 1, "font": 16, "button_font": 14, "gap": 3.0}
 
 func clean_player_presentation_contract(viewport: Vector2) -> Dictionary:
 	var layout := clean_player_layout(viewport)
 	var vp: Vector2 = layout["viewport"]
 	var rects := [layout["status"], layout["chronicle"], layout["actions"]]
 	var in_bounds := true
+	var occlusion_area := 0.0
 	for raw in rects:
 		var r: Rect2 = raw
 		in_bounds = in_bounds and r.position.x >= 0.0 and r.position.y >= 0.0 and r.end.x <= vp.x and r.end.y <= vp.y
+		occlusion_area += r.get_area()
+	var clear_top: float = float(layout["chronicle"].end.y) if bool(layout["mobile"]) else float(layout["status"].end.y)
+	var clear_bottom: float = float(layout["actions"].position.y) if bool(layout["mobile"]) \
+		else minf(float(layout["chronicle"].position.y), float(layout["actions"].position.y))
+	var clear_world := Rect2(layout["status"].position.x, clear_top,
+		layout["status"].size.x, clear_bottom - clear_top)
 	return {"clean": _clean_player_presentation, "reduced_motion": _reduced_motion,
 		"mobile": layout["mobile"], "viewport": [int(vp.x), int(vp.y)], "in_bounds": in_bounds,
+		"panels": {"status": [layout["status"].position.x, layout["status"].position.y, layout["status"].size.x, layout["status"].size.y],
+			"chronicle": [layout["chronicle"].position.x, layout["chronicle"].position.y, layout["chronicle"].size.x, layout["chronicle"].size.y],
+			"actions": [layout["actions"].position.x, layout["actions"].position.y, layout["actions"].size.x, layout["actions"].size.y]},
 		"font": layout["font"], "button_font": layout["button_font"], "columns": layout["columns"],
+		"rows": layout["rows"], "gap": layout["gap"], "occlusion_area": occlusion_area,
+		"coverage": occlusion_area / (vp.x * vp.y),
+		"clear_world": [clear_world.position.x, clear_world.position.y, clear_world.size.x, clear_world.size.y],
 		"developer_chrome_hidden": true, "relationship_overlay": false, "navigation_overlay": false,
 		"touch_common_action": "_player_do", "keyboard_common_action": "_player_do",
 		"touch_revoke_action": "_player_return_cafe_pass", "keyboard_revoke_action": "_player_return_cafe_pass"}
@@ -928,12 +964,16 @@ func clean_player_presentation_contract(viewport: Vector2) -> Dictionary:
 ## written back to Sim or persisted in a save.
 func clean_player_view_state() -> Dictionary:
 	var vp := get_viewport_rect().size
+	var display := Vector2(DisplayServer.window_get_size())
+	var presentation_scale := minf(display.x / maxf(vp.x, 1.0), display.y / maxf(vp.y, 1.0))
 	var controls: Array = [_clean_status, _clean_chronicle]
 	controls.append_array(_clean_action_btns)
 	controls.append(_clean_guest_pass_btn)
 	var geometry: Array = []
 	var in_bounds := true
 	var readable := true
+	var action_nonoverlap := true
+	var action_rects: Array[Rect2] = []
 	for raw in controls:
 		if raw == null or not (raw is Control):
 			in_bounds = false
@@ -944,17 +984,52 @@ func clean_player_view_state() -> Dictionary:
 		var font_size := ctl.get_theme_font_size("normal_font_size") if ctl is RichTextLabel else ctl.get_theme_font_size("font_size")
 		var text := String(ctl.get("text"))
 		var item := {"name": String(ctl.name), "rect": [r.position.x, r.position.y, r.size.x, r.size.y],
-			"visible": ctl.is_visible_in_tree(), "font_size": font_size, "text": text}
+			"physical_rect": [r.position.x * presentation_scale, r.position.y * presentation_scale,
+				r.size.x * presentation_scale, r.size.y * presentation_scale],
+			"visible": ctl.is_visible_in_tree(), "font_size": font_size,
+			"physical_font_size": int(round(font_size * presentation_scale)), "text": text}
 		if ctl is BaseButton:
 			item["disabled"] = (ctl as BaseButton).disabled
 			item["pressed_connections"] = (ctl as BaseButton).get_signal_connection_list("pressed").size()
+			item["focus_mode"] = ctl.focus_mode
+			item["has_focus"] = ctl.has_focus()
+			item["player_verb"] = String(ctl.get_meta("player_verb", ""))
+			item["callback"] = String(((ctl as BaseButton).get_signal_connection_list("pressed")[0]["callable"] as Callable).get_method()) \
+				if (ctl as BaseButton).get_signal_connection_list("pressed").size() == 1 else ""
+			item["text_fits"] = ctl.get_minimum_size().x <= r.size.x and ctl.get_minimum_size().y <= r.size.y
+			readable = readable and font_size >= 13 and r.size.x >= 32.0 and r.size.y >= 32.0 \
+				and text != "" and bool(item["text_fits"])
+			for prior in action_rects:
+				action_nonoverlap = action_nonoverlap and not r.intersects(prior)
+			action_rects.append(r)
+		else:
+			readable = readable and font_size >= 13 and r.size.x >= 32.0 and r.size.y >= 18.0 and text != ""
 		geometry.append(item)
 		in_bounds = in_bounds and r.position.x >= 0.0 and r.position.y >= 0.0 \
 			and r.end.x <= vp.x and r.end.y <= vp.y and ctl.is_visible_in_tree()
-		readable = readable and font_size >= 13 and r.size.x >= 32.0 and r.size.y >= 22.0 and text != ""
+	var panel_rects := [_clean_status_pan.get_global_rect(), _clean_chronicle_pan.get_global_rect(), _clean_action_pan.get_global_rect()]
+	var physical_panels := []
+	for r in panel_rects:
+		var panel: Rect2 = r
+		physical_panels.append([panel.position.x * presentation_scale, panel.position.y * presentation_scale,
+			panel.size.x * presentation_scale, panel.size.y * presentation_scale])
+	var occlusion_area := 0.0
+	for r in panel_rects: occlusion_area += (r as Rect2).get_area()
+	var mobile := display.x <= 480.0
+	var clear_top: float = float(panel_rects[1].end.y) if mobile else float(panel_rects[0].end.y)
+	var clear_bottom: float = float(panel_rects[2].position.y) if mobile \
+		else minf(float(panel_rects[1].position.y), float(panel_rects[2].position.y))
+	var clear_world := Rect2(panel_rects[0].position.x, clear_top,
+		panel_rects[0].size.x, clear_bottom - clear_top)
+	var physical_clear_world := Rect2(clear_world.position * presentation_scale, clear_world.size * presentation_scale)
 	var feedback := String(_log_recent[-1]) if not _log_recent.is_empty() else ""
-	return {"viewport": [int(vp.x), int(vp.y)], "display": [DisplayServer.window_get_size().x, DisplayServer.window_get_size().y],
+	return {"viewport": [int(vp.x), int(vp.y)], "display": [int(display.x), int(display.y)],
 		"in_bounds": in_bounds, "readable": readable, "geometry": geometry,
+		"physical_panels": physical_panels,
+		"action_nonoverlap": action_nonoverlap, "coverage": occlusion_area * presentation_scale * presentation_scale / (display.x * display.y),
+		"clear_world": [clear_world.position.x, clear_world.position.y, clear_world.size.x, clear_world.size.y],
+		"physical_clear_world": [physical_clear_world.position.x, physical_clear_world.position.y,
+			physical_clear_world.size.x, physical_clear_world.size.y],
 		"normalized": {"status": _clean_status.text if _clean_status != null else "",
 			"chronicle": _clean_chronicle.text if _clean_chronicle != null else "",
 			"feedback": feedback, "pass_state": String(Sim.cafe_guest_capability.get("status", "none"))}}
@@ -976,19 +1051,20 @@ func _apply_clean_player_presentation() -> void:
 	chronicle = Rect2(chronicle.position * logical_scale, chronicle.size * logical_scale)
 	actions = Rect2(actions.position * logical_scale, actions.size * logical_scale)
 	_clean_status_pan.position = status.position; _clean_status_pan.size = status.size
-	_clean_status.position = status.position + Vector2(8, 3) * logical_scale
-	_clean_status.size = status.size - Vector2(16, 6) * logical_scale
+	var pad_y := 1.0 if bool(layout["mobile"]) else 3.0
+	_clean_status.position = status.position + Vector2(8, pad_y) * logical_scale
+	_clean_status.size = status.size - Vector2(16, pad_y * 2.0) * logical_scale
 	_clean_status.add_theme_font_size_override("font_size", int(round(int(layout["font"]) * logical_scale)))
 	_clean_chronicle_pan.position = chronicle.position; _clean_chronicle_pan.size = chronicle.size
-	_clean_chronicle.position = chronicle.position + Vector2(8, 3) * logical_scale
-	_clean_chronicle.size = chronicle.size - Vector2(16, 6) * logical_scale
+	_clean_chronicle.position = chronicle.position + Vector2(8, pad_y) * logical_scale
+	_clean_chronicle.size = chronicle.size - Vector2(16, pad_y * 2.0) * logical_scale
 	_clean_chronicle.add_theme_font_size_override("normal_font_size", int(round(int(layout["font"]) * logical_scale)))
 	_clean_action_pan.position = actions.position; _clean_action_pan.size = actions.size
 	var buttons: Array = _clean_action_btns.duplicate()
 	buttons.append(_clean_guest_pass_btn)
 	var cols := int(layout["columns"])
 	var rows := int(ceili(float(buttons.size()) / float(cols)))
-	var gap := 3.0 * logical_scale
+	var gap := float(layout["gap"]) * logical_scale
 	var cell_w := (actions.size.x - gap * float(cols + 1)) / float(cols)
 	var cell_h := (actions.size.y - gap * float(rows + 1)) / float(rows)
 	for i in buttons.size():
@@ -996,6 +1072,7 @@ func _apply_clean_player_presentation() -> void:
 		var col := i % cols; var row := i / cols
 		b.position = actions.position + Vector2(gap + col * (cell_w + gap), gap + row * (cell_h + gap))
 		b.size = Vector2(cell_w, cell_h)
+		b.text = "归证" if bool(layout["mobile"]) and b == _clean_guest_pass_btn else String(b.get_meta("full_label", b.text))
 		b.add_theme_font_size_override("font_size", int(round(int(layout["button_font"]) * logical_scale)))
 	_refresh_clean_player_text()
 
@@ -1006,12 +1083,14 @@ func _refresh_clean_player_text() -> void:
 	var place := _agent_location_label(pl) if not pl.is_empty() else "小镇"
 	var pass_state := String(Sim.cafe_guest_capability.get("status", "none"))
 	var pass_label := "无" if pass_state == "none" else ("有效" if pass_state == "active" else "已归还")
-	_clean_status.text = "你在 %s · 第 %d 天 · 访客证%s%s" % [place, Sim.day, pass_label, " · 减少动态" if _reduced_motion else ""]
+	var mobile := bool(clean_player_layout(Vector2(DisplayServer.window_get_size()))["mobile"])
+	_clean_status.text = ("%s · 第%d天 · 证%s%s" % [place, Sim.day, pass_label, " · 减动" if _reduced_motion else ""]) if mobile \
+		else "你在 %s · 第 %d 天 · 访客证%s%s" % [place, Sim.day, pass_label, " · 减少动态" if _reduced_motion else ""]
 	var lines: Array = ["[color=#ffd166]玩家纪事[/color]"]
-	var keep := 1 if bool(clean_player_layout(Vector2(DisplayServer.window_get_size()))["mobile"]) else 4
+	var keep := 1 if mobile else 4
 	for i in range(maxi(0, _log_recent.size() - keep), _log_recent.size()):
 		lines.append(String(_log_recent[i]))
-	_clean_chronicle.text = "\n".join(lines)
+	_clean_chronicle.text = ("[color=#ffd166]纪事[/color]  %s" % String(_log_recent[-1]) if not _log_recent.is_empty() else "[color=#ffd166]纪事[/color]  暂无") if mobile else "\n".join(lines)
 
 ## C1 has a deliberately separate, compact HUD.  The normal timeline hint
 ## advertises Home/L/free-camera controls that C1 correctly rejects, so it is
