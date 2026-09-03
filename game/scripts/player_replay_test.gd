@@ -15,7 +15,7 @@ func _tickn(n: int) -> void:
 func _player_state() -> Dictionary:
 	var pl: Dictionary = Sim.get_agent("player")
 	return {"tick": Sim.tick_no, "digest": Inv.digest(Sim), "event_digest": Sim.event_digest,
-		"events": Sim.event_log.duplicate(true), "player": {
+		"events": Sim.event_log.duplicate(true), "capability": Sim.cafe_guest_capability.duplicate(true), "player": {
 			"pos": pl.get("pos", Vector2i.ZERO), "space": pl.get("space", ""), "floor": pl.get("floor", ""),
 			"inventory": (pl.get("inventory", {}) as Dictionary).duplicate(true),
 			"relationships": (pl.get("relationships", {}) as Dictionary).duplicate(true),
@@ -170,6 +170,56 @@ func _public_refused_greet_trace() -> Dictionary:
 						return {"trace": Sim.get_player_trace(), "state": _player_state(), "event": ev, "start_msg": start_msg}
 	return {}
 
+
+func _portal_endpoint(from_space: String, from_floor: String, to_space: String, to_floor: String) -> Vector2i:
+	for raw in Sim._authored_portals:
+		var p: Dictionary = raw
+		for side in ["from", "to"]:
+			var a: Dictionary = p.get(side, {})
+			var b: Dictionary = p.get("to") if side == "from" else p.get("from")
+			if String(a.get("space", "")) == from_space and String(a.get("floor", "")) == from_floor \
+					and String(b.get("space", "")) == to_space and String(b.get("floor", "")) == to_floor:
+				var pos: Array = a.get("pos", [])
+				if pos.size() == 2: return Vector2i(int(pos[0]), int(pos[1]))
+	return Vector2i(-1, -1)
+
+func _walk_player_to(target: Vector2i) -> bool:
+	var pl: Dictionary = Sim.get_agent("player")
+	if pl.is_empty() or target.x < 0: return false
+	var start: Vector2i = pl.get("pos", Vector2i(-1, -1))
+	var path: Array = Sim._astar_path(Sim._grid_for(String(pl.get("space", "town")), String(pl.get("floor", "outdoor"))), start, target)
+	if path.is_empty(): return false
+	for i in range(1, path.size()):
+		var before: Vector2i = pl.get("pos", Vector2i.ZERO)
+		Sim.player_move((path[i] as Vector2i) - (path[i - 1] as Vector2i))
+		if Vector2i(pl.get("pos", Vector2i.ZERO)) == before: return false
+	return Vector2i(pl.get("pos", Vector2i.ZERO)) == target
+
+func _guest_access_revoke_trace() -> Dictionary:
+	for seed in range(1, 33):
+		Sim.backend = null; Sim.auto_run = false; Sim.start_new(seed)
+		# Aria starts in her private 2F home. Advance the autonomous, no-player
+		# prefix until she is publicly reachable, then begin the PlayerTrace.
+		if not Sim.goto_tick(600): continue
+		var aria: Dictionary = Sim.get_agent("aria")
+		var pl := Sim.add_player(aria.get("pos", Vector2i.ZERO))
+		if Sim.player_act("invite", "aria") != "": continue
+		_tickn(12)
+		if not Sim._cafe_guest_capability_valid(): continue
+		var town_door := _portal_endpoint("town", "outdoor", "cafe", "1f")
+		if not _walk_player_to(town_door): continue
+		var enter := Sim.player_portal_intent({"source_space": "town", "source_floor": "outdoor", "portal_pos": town_door})
+		if not bool(enter.get("ok", false)): continue
+		var stairs := _portal_endpoint("cafe", "1f", "cafe", "2f")
+		if not _walk_player_to(stairs): continue
+		var access := Sim.player_portal_intent({"source_space": "cafe", "source_floor": "1f", "portal_pos": stairs})
+		if not bool(access.get("ok", false)) or String(pl.get("floor", "")) != "2f": continue
+		var revoke := Sim.player_cafe_guest_pass("revoke")
+		if not bool(revoke.get("ok", false)) or not bool(revoke.get("returned", false)): continue
+		return {"trace": Sim.get_player_trace(), "state": _player_state(), "seed": seed,
+			"access": access, "revoke": revoke}
+	return {}
+
 func _ready() -> void:
 	print("=== PlayerTraceV1 deterministic player intervention replay ===")
 
@@ -219,6 +269,21 @@ func _ready() -> void:
 	var denied := Sim.player_portal_intent({"source_space": "town", "source_floor": "outdoor", "portal_pos": Vector2i(57, 8)})
 	_ck("stale-plane portal denial remains no-state-mutation", not bool(denied.get("ok", true)) and _player_state() == denied_before)
 	_ck("portal trace remains bounded/indexed", int(Sim.player_trace_status()["entries"]) == (Sim.get_player_trace()["entries"] as Array).size())
+
+
+	# Cafe guest grant/access/revoke are all real public player inputs and replay
+	# to the same player address, capability receipt and chronicle digest.
+	var guest := _guest_access_revoke_trace()
+	_ck("public guest grant/access/revoke fixture found", not guest.is_empty())
+	if not guest.is_empty():
+		var guest_trace: Dictionary = guest["trace"]
+		var guest_state: Dictionary = guest["state"]
+		var kinds: Array = []
+		for raw in guest_trace.get("entries", []): kinds.append(String((raw as Dictionary).get("kind", "")))
+		_ck("trace explicitly records grant social + portal access + revoke", "social" in kinds and kinds.count("portal") >= 2 and "cafe_guest_pass" in kinds, str(kinds))
+		_ck("revoke receipt returned invited player from cafe/2f", String((guest_state["player"] as Dictionary).get("space", "")) == "cafe" \
+			and String((guest_state["player"] as Dictionary).get("floor", "")) == "1f" and String((guest_state["capability"] as Dictionary).get("status", "")) == "revoked")
+		_ck("guest grant/access/revoke replay exact", Sim.goto_tick(int(guest_state["tick"])) and _player_state() == guest_state)
 
 	# Completed chat memory is behind Sim and replays without live AI.
 	_start_near(41)

@@ -111,13 +111,247 @@ check_cafe_player_meta() {
 import json, sys
 with open(sys.argv[1], encoding="utf-8") as f:
     m = json.load(f)
-required = ("player_journey", "player_entered", "player_returned")
-if any(m.get(k) is not True for k in required):
-    print("  cafe-player metadata FAIL: " + ", ".join(f"{k}={m.get(k)!r}" for k in required))
+required = ("player_journey", "player_invited", "player_entered", "player_occupied_2f", "player_returned_1f", "player_returned", "cam_same")
+bad = [f"{k}={m.get(k)!r}" for k in required if m.get(k) is not True]
+if m.get("stairs_probe_only") is not False:
+    bad.append(f"stairs_probe_only={m.get('stairs_probe_only')!r}")
+if bad:
+    print("  cafe-player metadata FAIL: " + ", ".join(bad))
     raise SystemExit(1)
-print("  cafe-player metadata PASS: player_journey/entered/returned=true")
+print("  cafe-player metadata PASS: invited player occupied cafe/2f and returned; stairs_probe_only=false")
 PY
 }
+
+# Registered fail-closed tooth for floor separation. It preserves the genuine
+# full-journey metadata and every evidence frame except the task-owned 2F PNG.
+floor_roundtrip_negative_self_test() {
+  local positive="$1" negative="$2" log="$2/identical-frame.log" nrc=0 vrc=0
+  rm -rf "$negative"
+  mkdir -p "$negative"
+  local f
+  for f in rt_town_before.png rt_cafe_1f.png rt_cafe_2f.png rt_cafe_1f_back.png rt_town_after.png rt_meta.json; do
+    cp "$positive/$f" "$negative/$f" || return 1
+  done
+  cp "$negative/rt_cafe_1f.png" "$negative/rt_cafe_2f.png" || return 1
+
+  "$PY" tools/assert_floor_roundtrip.py "$negative" >"$log" 2>&1
+  nrc=$?
+  "$PY" - "$positive" "$negative" "$negative/negative-control.json" <<'PY'
+import hashlib, json, pathlib, sys
+src, neg, receipt = map(pathlib.Path, sys.argv[1:])
+same = ("rt_town_before.png", "rt_cafe_1f.png", "rt_cafe_1f_back.png", "rt_town_after.png", "rt_meta.json")
+digest = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+checks = {name: digest(src / name) == digest(neg / name) for name in same}
+checks["2f_equals_1f"] = digest(neg / "rt_cafe_2f.png") == digest(neg / "rt_cafe_1f.png")
+data = {
+    "schema": "living-town.floor-roundtrip.identical-frame-negative.v1",
+    "mutation": "rt_cafe_2f.png := rt_cafe_1f.png",
+    "metadata_sha256": digest(neg / "rt_meta.json"),
+    "checks": checks,
+}
+receipt.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+if not all(checks.values()):
+    raise SystemExit("floor negative changed evidence outside the registered pixel mutation")
+PY
+  vrc=$?
+  if [ "$nrc" -ne 1 ] || [ "$vrc" -ne 0 ] \
+     || [ "$(grep -c '^  PASS L\[' "$log")" -ne 5 ] \
+     || ! grep -q '^  PASS A1\[map' "$log" \
+     || ! grep -q '^  PASS A2\[' "$log" \
+     || ! grep -q '^  FAIL B\[2F.*=0\.0000 ' "$log" \
+     || ! grep -q '^  PASS C\[' "$log" \
+     || ! grep -q '^=== FLOOR ROUNDTRIP GATE: FAIL (1) ===$' "$log" \
+     || grep -Eq '^  FAIL (L|A|C)\[' "$log"; then
+    echo "  floor-roundtrip identical-frame negative FAIL: expected B-only rc=1 at 0.0000 (got rc=$nrc verify_rc=$vrc)"
+    cat "$log"
+    return 1
+  fi
+  echo "  floor-roundtrip identical-frame negative PASS: metadata and companion frames preserved; B alone failed at 0.0000"
+}
+
+# The simple roundtrip has its own schema and is validated below by
+# assert_space_roundtrip.py. Only the full floor journey owns the invited-player
+# 2F evidence fields; keeping this routing explicit prevents schema bleed.
+check_cafe_meta_scope() {
+  local journey="$1" meta="$2"
+  case "$journey" in
+    simple) return 0 ;;
+    full) check_cafe_player_meta "$meta" ;;
+    *) echo "  cafe-player metadata scope invalid: $journey"; return 2 ;;
+  esac
+}
+
+cafe_meta_contract_self_test() {
+  local d="${TMPDIR:-/tmp}/lt-cafe-meta-contract-$$"
+  mkdir -p "$d"
+  printf '%s\n' '{"player_journey":true,"player_entered":true,"player_returned":true,"cam_same":true}' > "$d/simple.json"
+  printf '%s\n' '{"player_journey":true,"player_entered":true,"player_returned":true,"cam_same":true,"stairs_probe_only":false}' > "$d/full_missing.json"
+  printf '%s\n' '{"player_journey":true,"player_invited":true,"player_entered":true,"player_occupied_2f":true,"player_returned_1f":true,"player_returned":true,"cam_same":true,"stairs_probe_only":false}' > "$d/full_valid.json"
+  printf '%s\n' '{"player_journey":true,"player_invited":true,"player_entered":true,"player_occupied_2f":true,"player_returned_1f":true,"player_returned":true,"cam_same":true,"stairs_probe_only":true}' > "$d/full_probe_only.json"
+
+  check_cafe_meta_scope simple "$d/simple.json" || { echo "  cafe metadata contract FAIL: simple schema falsely rejected"; rm -rf "$d"; return 1; }
+  if check_cafe_meta_scope full "$d/full_missing.json" > "$d/missing.log" 2>&1; then
+    echo "  cafe metadata contract FAIL: full journey accepted missing fields"; rm -rf "$d"; return 1
+  fi
+  grep -q 'player_invited=None' "$d/missing.log" || { echo "  cafe metadata contract FAIL: missing-field tooth not observed"; rm -rf "$d"; return 1; }
+  if check_cafe_meta_scope full "$d/full_probe_only.json" > "$d/probe.log" 2>&1; then
+    echo "  cafe metadata contract FAIL: full journey accepted stairs_probe_only=true"; rm -rf "$d"; return 1
+  fi
+  grep -q 'stairs_probe_only=True' "$d/probe.log" || { echo "  cafe metadata contract FAIL: probe-only tooth not observed"; rm -rf "$d"; return 1; }
+  check_cafe_meta_scope full "$d/full_valid.json" || { echo "  cafe metadata contract FAIL: valid full journey rejected"; rm -rf "$d"; return 1; }
+  rm -rf "$d"
+  echo "  cafe metadata contract PASS: simple schema remains scoped; full missing/probe-only fail; full valid passes"
+}
+
+check_clean_player_meta() {
+  local meta="$1"
+  [ -s "$meta" ] || { echo "  clean-player metadata missing: $meta"; return 1; }
+  "$PY" - "$meta" <<'PY'
+import json, sys
+with open(sys.argv[1], encoding="utf-8") as f: m = json.load(f)
+p = m.get("clean_player_evidence", {})
+checks = {
+    "desktop.in_bounds": p.get("desktop", {}).get("in_bounds") is True,
+    "mobile.in_bounds": p.get("mobile", {}).get("in_bounds") is True,
+    "desktop.clean": p.get("desktop", {}).get("clean") is True,
+    "mobile.clean": p.get("mobile", {}).get("clean") is True,
+    "developer chrome": all(p.get("desktop", {}).get(k) is v for k, v in {
+        "developer_chrome_hidden": True, "relationship_overlay": False, "navigation_overlay": False}.items()),
+    "common input action": p.get("desktop", {}).get("touch_common_action") == "_player_do"
+        and p.get("desktop", {}).get("keyboard_common_action") == "_player_do",
+    "common revoke action": p.get("desktop", {}).get("touch_revoke_action") == "_player_return_cafe_pass"
+        and p.get("desktop", {}).get("keyboard_revoke_action") == "_player_return_cafe_pass",
+    "reduced motion": p.get("reduced_motion") is True,
+    "revoked": p.get("revoke", {}).get("recorded") is True and p.get("revoke", {}).get("status") == "revoked",
+    "persistent": all(p.get("persistence", {}).get(k) is True for k in ("save", "load_exact", "replay_exact")),
+    "evidence negatives": all(p.get("negative_evidence", {}).get(k) is True for k in ("missing_rejected", "corrupt_rejected", "atomic")),
+}
+bad = [k for k, ok in checks.items() if not ok]
+if bad:
+    print("  clean-player metadata FAIL: " + ", ".join(bad)); raise SystemExit(1)
+print("  clean-player metadata PASS: clean desktop/mobile + common inputs + reduced motion + revoke persistence + negative evidence")
+PY
+}
+
+clean_player_contract_self_test() {
+  local d="${TMPDIR:-/tmp}/lt-clean-player-contract-$$"
+  mkdir -p "$d"
+  printf '%s\n' '{}' > "$d/missing.json"
+  printf '%s\n' '{"clean_player_evidence":{"desktop":{"clean":true,"in_bounds":true,"developer_chrome_hidden":true,"relationship_overlay":false,"navigation_overlay":false,"touch_common_action":"_player_do","keyboard_common_action":"_player_do","touch_revoke_action":"_player_return_cafe_pass","keyboard_revoke_action":"_player_return_cafe_pass"},"mobile":{"clean":true,"in_bounds":true},"reduced_motion":true,"revoke":{"recorded":true,"status":"revoked"},"persistence":{"save":true,"load_exact":true,"replay_exact":true},"negative_evidence":{"missing_rejected":true,"corrupt_rejected":true,"atomic":true}}}' > "$d/valid.json"
+  if check_clean_player_meta "$d/missing.json" > "$d/missing.log" 2>&1; then
+    echo "  clean-player contract FAIL: missing evidence accepted"; rm -rf "$d"; return 1
+  fi
+  grep -q 'desktop.in_bounds' "$d/missing.log" || { echo "  clean-player contract FAIL: missing-evidence tooth absent"; rm -rf "$d"; return 1; }
+  check_clean_player_meta "$d/valid.json" || { rm -rf "$d"; return 1; }
+  rm -rf "$d"
+  echo "  clean-player contract PASS: missing fails closed; valid focused receipt passes"
+}
+
+if [ "${1:-}" = "--cafe-meta-contract-self-test" ]; then
+  PY="${PYTHON:-python}" cafe_meta_contract_self_test
+  exit $?
+fi
+
+if [ "${1:-}" = "--clean-player-contract-self-test" ]; then
+  PY="${PYTHON:-python}" clean_player_contract_self_test
+  exit $?
+fi
+
+if [ "${1:-}" = "--check-clean-player-meta" ]; then
+  PY="${PYTHON:-python}" check_clean_player_meta "${2:-}"
+  exit $?
+fi
+
+if [ "${1:-}" = "--clean-player-focused-manifest" ]; then
+  ROOT="${2:-/out}"
+  PY="${PYTHON:-python3}"
+  "$PY" - "$ROOT" <<'PY'
+import hashlib, json, os, pathlib, struct, sys
+root = pathlib.Path(sys.argv[1])
+expected = {k: os.environ.get("RT_" + k.upper(), "") for k in ("head", "tree", "game_tree", "parent")}
+if any(not v for v in expected.values()): raise SystemExit("focused manifest: incomplete exact identity")
+image = os.environ.get("RT_IMAGE", "")
+if "@sha256:" not in image: raise SystemExit("focused manifest: image is not digest pinned")
+def load(path):
+    with path.open(encoding="utf-8") as f: return json.load(f)
+def sha(path):
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""): h.update(chunk)
+    return h.hexdigest()
+def png_size(path):
+    with path.open("rb") as f:
+        if f.read(8) != b"\x89PNG\r\n\x1a\n": return (0, 0)
+        length = struct.unpack(">I", f.read(4))[0]
+        if f.read(4) != b"IHDR" or length < 8: return (0, 0)
+        return struct.unpack(">II", f.read(8))
+runs, container_ids = {}, set()
+for arm, reduced in (("motion_on", True), ("motion_off", False)):
+    d = root / arm
+    status, meta = load(d / "focused-status.json"), load(d / "rt_meta.json")
+    if status.get("identity") != expected: raise SystemExit(f"{arm}: identity mismatch")
+    c = status.get("container", {})
+    if c.get("image") != image or c.get("network") != "none": raise SystemExit(f"{arm}: image/network mismatch")
+    if ":ro" not in c.get("mounts", "") or "tmpfs" not in c.get("scratch", ""): raise SystemExit(f"{arm}: mount/scratch isolation missing")
+    if status.get("status", {}).get("exit_code") != 0: raise SystemExit(f"{arm}: nonzero status")
+    cid = c.get("id", "")
+    if not cid or cid in container_ids: raise SystemExit(f"{arm}: container not fresh")
+    container_ids.add(cid)
+    receipt = meta.get("reduced_motion_receipt", {})
+    if receipt.get("enabled") is not reduced or receipt.get("pass") is not True: raise SystemExit(f"{arm}: reduced-motion receipt failed")
+    if receipt.get("camera_changed") is reduced: raise SystemExit(f"{arm}: camera behavior inverted")
+    negatives = meta.get("control_negatives", {})
+    for action in ("invite", "revoke"):
+        n = negatives.get(action, {})
+        if n.get("disabled") is not True or n.get("disconnected") is not True or n.get("connection_count", 0) < 1:
+            raise SystemExit(f"{arm}: {action} negative controls failed")
+    proof = meta.get("clean_player_evidence", {})
+    persistence = proof.get("persistence", {})
+    if not all(persistence.get(k) is True for k in ("save", "load_exact", "replay_exact", "view_exact", "pixels_exact")):
+        raise SystemExit(f"{arm}: persistence/view/pixel equivalence failed")
+    state = persistence.get("state_before", {})
+    if state.get("viewport") != [320, 192] or state.get("in_bounds") is not True or state.get("readable") is not True:
+        raise SystemExit(f"{arm}: native layout/readability failed")
+    captures = []
+    for key, value in meta.items():
+        if isinstance(value, dict) and "png" in value:
+            p = d / pathlib.Path(value["png"]).name
+            if png_size(p) != (320, 192) or value.get("native_source") is not True or value.get("post_capture_resize") is not False:
+                raise SystemExit(f"{arm}: {key} is not a native 320x192 source PNG")
+            captures.append(p.name)
+    if len(captures) < 8: raise SystemExit(f"{arm}: incomplete reviewed capture set")
+    runs[arm] = {"status_receipt_sha256": sha(d / "focused-status.json"),
+        "meta_sha256": sha(d / "rt_meta.json"), "launch_command_sha256": status.get("launch_command_sha256", ""),
+        "container_id": cid, "captures": sorted(captures), "reduced_motion": receipt,
+        "cleanup": os.environ.get("RT_CLEANUP_" + arm.upper(), "")}
+    if runs[arm]["cleanup"] != "absent": raise SystemExit(f"{arm}: auto-remove cleanup not observed")
+reviewed = []
+for p in sorted(root.rglob("*")):
+    if p.is_file() and p.name != "focused-evidence-manifest.json" and p.suffix.lower() in (".png", ".log", ".json"):
+        reviewed.append({"path": p.relative_to(root).as_posix(), "bytes": p.stat().st_size, "sha256": sha(p)})
+for suffix in (".png", ".log"):
+    found = {p.relative_to(root).as_posix() for p in root.rglob("*" + suffix)}
+    hashed = {r["path"] for r in reviewed if r["path"].endswith(suffix)}
+    if found != hashed: raise SystemExit(f"unhashed reviewed {suffix} files")
+sources = {}
+for label, p in {"game/scripts/Main.gd": pathlib.Path("/game/scripts/Main.gd"),
+        "game/bench/SpaceShot.gd": pathlib.Path("/game/bench/SpaceShot.gd"),
+        "tools/space_roundtrip.sh": pathlib.Path("/tools/space_roundtrip.sh"),
+        "tools/visual_gate.sh": pathlib.Path("/tools/visual_gate.sh")}.items():
+    sources[label] = {"bytes": p.stat().st_size, "sha256": sha(p)}
+manifest = {"schema": "living-town.pr38-clean-player.focused-evidence.v1", "identity": expected,
+    "reservation": os.environ.get("RT_RESERVATION", ""), "image": image,
+    "host": {"client": os.environ.get("RT_HOST_CLIENT", ""), "server": os.environ.get("RT_HOST_SERVER", ""),
+        "context": os.environ.get("RT_HOST_CONTEXT", ""), "platform": os.environ.get("RT_HOST_PLATFORM", "")},
+    "runs": runs, "source_files": sources, "reviewed_files": reviewed,
+    "does_not_prove": ["full tools/ci.sh", "complement ledger freshness", "visual art-floor acceptance", "remote PR or protection state"]}
+out = root / "focused-evidence-manifest.json"
+with out.open("w", encoding="utf-8", newline="\n") as f:
+    json.dump(manifest, f, ensure_ascii=False, indent=2, sort_keys=True); f.write("\n")
+print("  clean-player focused manifest PASS:", out, sha(out), "reviewed", len(reviewed))
+PY
+  exit $?
+fi
 
 if [ "${1:-}" = "--shoot" ]; then
   OUT="${2:-/out}"
@@ -244,7 +478,7 @@ if [ "${1:-}" = "--shoot" ]; then
   # 拍 5 帧 + 逐段断言落在对的 Floor。判据在宿主侧 tools/assert_floor_roundtrip.py。rc=8 专给它。
   # RT_OWN_XVFB=0：复用上面这个 Xvfb（同 space-roundtrip 那步的理由）。写进 $OUT/floor 子目录，避免 rt_*.png 撞名。
   mkdir -p "$OUT/floor"
-  if RT_OWN_XVFB=0 RT_JOURNEY=full RT_GAME="$GAME" RT_PLAYER_POS=41,19 GODOT="$GBIN" \
+  if RT_OWN_XVFB=0 RT_JOURNEY=full RT_CLEAN_PLAYER=1 RT_GAME="$GAME" RT_PLAYER_POS=41,19 GODOT="$GBIN" \
        bash "$(dirname "$0")/space_roundtrip.sh" --shoot "$OUT/floor" >>/tmp/vg-godot.log 2>&1; then
     echo "  floor-roundtrip 采集 ok  (town→1f→上楼2f→下楼1f→town，逐段楼层对)"
   else
@@ -358,10 +592,10 @@ fi
 
 # Do not allow a capture with no real player journey to pass merely because
 # SpaceShot omitted the optional player fields.
-if [ -f "$OUT/rt_meta.json" ] && ! check_cafe_player_meta "$OUT/rt_meta.json"; then
+if [ -f "$OUT/rt_meta.json" ] && ! check_cafe_meta_scope simple "$OUT/rt_meta.json"; then
   [ "$SHOT_RC" -eq 0 ] && SHOT_RC=3
 fi
-if [ -f "$OUT/floor/rt_meta.json" ] && ! check_cafe_player_meta "$OUT/floor/rt_meta.json"; then
+if [ -f "$OUT/floor/rt_meta.json" ] && ! check_cafe_meta_scope full "$OUT/floor/rt_meta.json"; then
   [ "$SHOT_RC" -eq 0 ] && SHOT_RC=8
 fi
 
@@ -485,10 +719,13 @@ PPRC=$?
 "$PY" tools/assert_cafe_2f.py "$OUT"
 C2RC=$?
 # 全楼层往返门（AM3 / 编号135）。同样**不短路**：守第十一条性质（"观察者能走完整旅程，逐段落在对的 Floor、
-# 2F 那一跳真换平面、回程取景逐像素复位"）。吃上面 $OUT/floor 里的 5 帧；负对照见 tools/assert_floor_roundtrip.py 抬头。
+# 2F 那一跳真换平面、回程取景逐像素复位"）。吃上面 $OUT/floor 里的 5 帧；注册 identical-frame 负对照见下方。
+# 家具跳过仍由 cafe 2F 像素门的 bare 帧证明有真实消费者，但不再冒充楼层分离的红齿。
 # ⚠️ 它与 assert_space_roundtrip（town↔1f）**不重叠**：那条只走 1f，本条补的是楼梯往返（1f↔2f）+ 2F 判别力。
 "$PY" tools/assert_floor_roundtrip.py "$OUT/floor"
 FLRC=$?
+floor_roundtrip_negative_self_test "$OUT/floor" "$OUT/floor_negative_identical"
+FNRC=$?
 [ $EPHEMERAL -eq 1 ] && rm -rf "$OUT"
 [ $ARC -ne 0 ] && exit $ARC
 [ $CARC -ne 0 ] && exit $CARC
@@ -504,4 +741,5 @@ FLRC=$?
 [ $PPRC -ne 0 ] && exit $PPRC
 [ $C2RC -ne 0 ] && exit $C2RC
 [ $FLRC -ne 0 ] && exit $FLRC
+[ $FNRC -ne 0 ] && exit $FNRC
 exit $TRC

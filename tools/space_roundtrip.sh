@@ -30,11 +30,12 @@
 #                                 把 game/ 拷进 scratchpad、在拷贝上回滚 WorldView 的 `_void_key` 修复，
 #                                 再用这个变量指过去，本门必须变红。判据没有过这一关就不是判据。
 #   LT_RT_JOURNEY=simple|full     默认 simple（玩家 town↔cafe/1f 往返门）。
-#                                 full = 玩家进出 + Probe 观察 owner-only 2F（非玩家上楼证据），
+#                                 full = 受邀玩家真实进入 2F 并返回（Probe 只随同取景），
 #                                 逐段断言 Probe Floor + 回程取景一致 + 2F 与 1F 可分；判据走 assert_floor_roundtrip.py。
-#   LT_RT_DRAW_SKIP=<pass>        透传 --draw-skip <pass> 给引擎（负对照用）。
+#   LT_RT_DRAW_SKIP=<pass>        透传 --draw-skip <pass> 给引擎（渲染钩子诊断用）。
 #   LT_RT_SKIP_FURN=1             LT_RT_DRAW_SKIP=interior_furniture 的便捷别名 ——
-#                                 让 2F/1F 家具都不画 ⇒ 两层帧变得一样 ⇒ full 门的"2F 与 1F 可分"臂必红（那条牙）。
+#                                 证明 1F/2F 家具层有真实像素消费者；楼层壳/角色/tint 仍会分层，
+#                                 因此它不是 full 门 B 臂的负对照红齿。
 #   LT_RT_MODE=portal|flip        默认 portal（走出货路径 `_portal_click`）
 #   LT_RT_REDRAW=auto|none        默认 auto。none = 【暂停复现】：不补 `_redraw_all()`，
 #                                 拍出来的 rt_interior.png 就是“暂停时点门进店，画面停在小镇上”那一帧
@@ -51,11 +52,44 @@ SKIP_RC=77
 SEED="${LT_RT_SEED:-3}"
 TICK="${LT_RT_TICK:-600}"     # 第 3 天 12:00 正午 —— 与 visual_gate 的 NOON_TICK 同一个时刻，
                               # 于是"界外带是不是活的"不会被夜间乘子压低对比而混淆。
-W=1280; H=768
+W="${RT_WIDTH:-${LT_RT_WIDTH:-1280}}"; H="${RT_HEIGHT:-${LT_RT_HEIGHT:-768}}"
 
 # ══ 模式 B：在渲染环境【内部】拍三帧 ═══════════════════════════════════════
 if [ "${1:-}" = "--shoot" ]; then
   OUT="${2:-/out}"
+  # Focused proof logs the complete inner invocation and writes a structured
+  # status receipt from inside the fresh container.  The later manifest step
+  # hashes this receipt and every reviewed PNG/log; normal callers are unchanged.
+  if [ "${RT_FOCUSED_RECEIPT:-0}" = "1" ] && [ "${RT_FOCUSED_INNER:-0}" != "1" ]; then
+    mkdir -p "$OUT"
+    RT_FOCUSED_INNER=1 bash "$0" --shoot "$OUT" 2>&1 | tee "$OUT/focused-run.log"
+    INNER_RC=${PIPESTATUS[0]}
+    RT_INNER_RC="$INNER_RC" "${PYTHON:-python3}" - "$OUT/focused-status.json" <<'PY'
+import hashlib, json, os, platform, socket, subprocess, sys
+def version(cmd):
+    try: return subprocess.check_output(cmd, stderr=subprocess.STDOUT, text=True).splitlines()[0]
+    except Exception as exc: return "unavailable:" + type(exc).__name__
+launch = os.environ.get("RT_FOCUSED_LAUNCH_COMMAND", "")
+receipt = {
+    "schema": "living-town.pr38-clean-player.focused-status.v1",
+    "identity": {k: os.environ.get("RT_" + k.upper(), "") for k in ("head", "tree", "game_tree", "parent")},
+    "launch_command": launch,
+    "launch_command_sha256": hashlib.sha256(launch.encode()).hexdigest(),
+    "container": {"id": socket.gethostname(), "name": os.environ.get("RT_CONTAINER_NAME", ""),
+        "image": os.environ.get("RT_IMAGE", ""), "network": os.environ.get("RT_NETWORK", ""),
+        "mounts": os.environ.get("RT_MOUNTS", ""), "scratch": os.environ.get("RT_SCRATCH", "")},
+    "host": {"client": os.environ.get("RT_HOST_CLIENT", ""), "server": os.environ.get("RT_HOST_SERVER", ""),
+        "context": os.environ.get("RT_HOST_CONTEXT", ""), "platform": os.environ.get("RT_HOST_PLATFORM", "")},
+    "tools": {"godot": version([os.environ.get("GODOT", "godot"), "--version"]),
+        "python": version([os.environ.get("PYTHON", "python3"), "--version"]),
+        "bash": version(["bash", "--version"]), "container_platform": platform.platform()},
+    "status": {"exit_code": int(os.environ["RT_INNER_RC"]), "cleanup_expected": "auto-remove"},
+}
+with open(sys.argv[1], "w", encoding="utf-8", newline="\n") as f:
+    json.dump(receipt, f, ensure_ascii=False, indent=2, sort_keys=True); f.write("\n")
+PY
+    exit "$INNER_RC"
+  fi
   GAME="${RT_GAME:-/game}"
   GBIN="${GODOT:-godot}"
   DISP="${RT_DISPLAY:-:95}"
@@ -63,10 +97,12 @@ if [ "${1:-}" = "--shoot" ]; then
   SPACE="${RT_SPACE:-cafe}"
   REDRAW="${RT_REDRAW:-auto}"
   JOURNEY="${RT_JOURNEY:-simple}"   # simple=玩家进出三帧；full=玩家进出 + Probe 观察 owner-only 楼层
-  DRAWSKIP="${RT_DRAW_SKIP:-}"      # 非空 ⇒ 透传 --draw-skip <pass>（AM3 负对照：interior_furniture ⇒ 2F 与 1F 都空 ⇒ 不可分 ⇒ 门红）
+  DRAWSKIP="${RT_DRAW_SKIP:-}"      # 非空 ⇒ 透传 --draw-skip <pass>（interior_furniture 只作家具钩子诊断）
   CORRUPT_MANIFEST="${RT_CORRUPT_MANIFEST:-}"
   DENY_PORTAL="${RT_DENY_PORTAL:-}"
   AGENTS="${RT_AGENTS:-12}"
+  CLEAN="${RT_CLEAN_PLAYER:-0}"
+  REDUCED="${RT_REDUCED_MOTION:-0}"
   export LIBGL_ALWAYS_SOFTWARE=1 LP_NUM_THREADS=1 GODOT_SILENCE_ROOT_WARNING=1
   OWN_XV=0
   if [ -z "${DISPLAY:-}" ] || [ "${RT_OWN_XVFB:-1}" = "1" ]; then
@@ -87,11 +123,15 @@ if [ "${1:-}" = "--shoot" ]; then
   [ -n "$CORRUPT_MANIFEST" ] && CORRUPT_ARGS=(--rt-corrupt-manifest "$CORRUPT_MANIFEST")
   DENY_ARGS=()
   [ -n "$DENY_PORTAL" ] && DENY_ARGS=(--rt-deny-portal "$DENY_PORTAL")
+  PRESENT_ARGS=()
+  [ "$CLEAN" = "1" ] && PRESENT_ARGS+=(--clean-player)
+  [ "$REDUCED" = "1" ] && PRESENT_ARGS+=(--reduced-motion)
   "$GBIN" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
     --resolution ${W}x${H} --single-window res://bench/SpaceShot.tscn -- \
     --backend logic --seed "$SEED" --agents "$AGENTS" --warmup-tick "$TICK" \
     --rt-out "$OUT" --rt-space "$SPACE" --rt-mode "$MODE" --rt-journey "$JOURNEY" --rt-redraw "$REDRAW" \
-    "${PLAYER_ARGS[@]}" "${DS_ARGS[@]}" "${CORRUPT_ARGS[@]}" "${DENY_ARGS[@]}"
+    --rt-capture-size "$W" "$H" \
+    "${PLAYER_ARGS[@]}" "${DS_ARGS[@]}" "${CORRUPT_ARGS[@]}" "${DENY_ARGS[@]}" "${PRESENT_ARGS[@]}"
   rc=$?
   [ "$OWN_XV" = "1" ] && kill $XV 2>/dev/null
   exit $rc
@@ -106,10 +146,10 @@ PY="${PYTHON:-python}"
 MODE="${LT_RT:-auto}"
 RUNNER="${LT_RT_RUNNER:-auto}"
 IMG="${LT_RT_IMAGE:-gamecraft-runner:4.6.2}"
-JOURNEY="${LT_RT_JOURNEY:-simple}"    # simple=玩家 1F 往返；full=玩家进出 + Probe 楼层观察
-DRAWSKIP="${LT_RT_DRAW_SKIP:-}"        # AM3 负对照：LT_RT_DRAW_SKIP=interior_furniture ⇒ 2F/1F 都空 ⇒ B 臂（可分）红
+JOURNEY="${LT_RT_JOURNEY:-simple}"    # simple=玩家 1F 往返；full=受邀玩家真实上下楼并返回
+DRAWSKIP="${LT_RT_DRAW_SKIP:-}"        # 渲染钩子诊断；不承诺关闭家具后两层像素相同
 AGENTS="${LT_RT_AGENTS:-12}"           # 量具默认 N12；显式 CLI 参数屏蔽宿主持久化的 NPC 设置
-[ "${LT_RT_SKIP_FURN:-0}" = "1" ] && DRAWSKIP="interior_furniture"   # 便捷别名：让 2F 帧==1F 帧 的那条牙
+[ "${LT_RT_SKIP_FURN:-0}" = "1" ] && DRAWSKIP="interior_furniture"   # 便捷别名：家具钩子诊断
 
 skip(){
   if [ "$MODE" = "require" ]; then
@@ -162,6 +202,8 @@ if [ "$PICK" = docker ]; then
     -e RT_DENY_PORTAL="${LT_RT_DENY_PORTAL:-}" \
     -e RT_PLAYER_POS="${LT_RT_PLAYER_POS:-}" \
     -e RT_AGENTS="$AGENTS" \
+    -e RT_WIDTH="${LT_RT_WIDTH:-1280}" -e RT_HEIGHT="${LT_RT_HEIGHT:-768}" \
+    -e RT_CLEAN_PLAYER="${LT_RT_CLEAN_PLAYER:-0}" -e RT_REDUCED_MOTION="${LT_RT_REDUCED_MOTION:-0}" \
     -e LT_RT_SEED="$SEED" -e LT_RT_TICK="$TICK" \
     -v "$GAME:/game" -v "$REPO/tools:/tools" -v "$OUT_HOST:/out" \
     "$IMG" bash /tools/space_roundtrip.sh --shoot /out
@@ -169,6 +211,8 @@ if [ "$PICK" = docker ]; then
 else
   RT_GAME="$GAME" RT_MODE="${LT_RT_MODE:-portal}" RT_SPACE="${LT_RT_SPACE:-cafe}" RT_REDRAW="${LT_RT_REDRAW:-auto}" \
     RT_JOURNEY="$JOURNEY" RT_DRAW_SKIP="$DRAWSKIP" RT_PLAYER_POS="${LT_RT_PLAYER_POS:-}" RT_AGENTS="$AGENTS" \
+    RT_WIDTH="${LT_RT_WIDTH:-1280}" RT_HEIGHT="${LT_RT_HEIGHT:-768}" \
+    RT_CLEAN_PLAYER="${LT_RT_CLEAN_PLAYER:-0}" RT_REDUCED_MOTION="${LT_RT_REDUCED_MOTION:-0}" \
     RT_CORRUPT_MANIFEST="${LT_RT_CORRUPT_MANIFEST:-}" RT_DENY_PORTAL="${LT_RT_DENY_PORTAL:-}" \
     GODOT="$GODOT" bash "$0" --shoot "$OUT"
   SHOT_RC=$?
@@ -182,7 +226,48 @@ if [ $SHOT_RC -ne 0 ]; then
   exit 1
 fi
 
-# 判据分派：simple → 玩家 1F 往返；full → 玩家进出 + Probe 楼层观察（非玩家 owner-only 穿越证据）
+
+if [ "$JOURNEY" = "full" ]; then
+  "$PY" - "$OUT/rt_meta.json" <<'PY'
+import json, sys
+with open(sys.argv[1], encoding="utf-8") as f:
+    m = json.load(f)
+required_true = ("player_journey", "player_invited", "player_entered", "player_occupied_2f", "player_returned_1f", "player_returned", "cam_same")
+bad = [f"{k}={m.get(k)!r}" for k in required_true if m.get(k) is not True]
+if m.get("stairs_probe_only") is not False:
+    bad.append(f"stairs_probe_only={m.get('stairs_probe_only')!r}")
+if bad:
+    print("  cafe full-player metadata FAIL: " + ", ".join(bad))
+    raise SystemExit(1)
+print("  cafe full-player metadata PASS: invited player occupied 2F and returned; stairs_probe_only=false")
+PY
+  [ $? -eq 0 ] || exit 1
+fi
+
+if [ "${LT_RT_CLEAN_PLAYER:-0}" = "1" ]; then
+  "$PY" - "$OUT/rt_meta.json" "${LT_RT_REDUCED_MOTION:-0}" <<'PY'
+import json, sys
+with open(sys.argv[1], encoding="utf-8") as f: m = json.load(f)
+p = m.get("clean_player_evidence", {})
+expect_reduced = sys.argv[2] == "1"
+required = {
+    "desktop.in_bounds": p.get("desktop", {}).get("in_bounds") is True,
+    "mobile.in_bounds": p.get("mobile", {}).get("in_bounds") is True,
+    "reduced_motion": p.get("reduced_motion") is expect_reduced,
+    "revoke.recorded": p.get("revoke", {}).get("recorded") is True,
+    "revoke.status": p.get("revoke", {}).get("status") == "revoked",
+    "save/load/replay/View/pixels": all(p.get("persistence", {}).get(k) is True for k in ("save", "load_exact", "replay_exact", "view_exact", "pixels_exact")),
+    "negative evidence": all(p.get("negative_evidence", {}).get(k) is True for k in ("missing_rejected", "corrupt_rejected", "atomic")),
+}
+bad = [k for k, ok in required.items() if not ok]
+if bad:
+    print("  clean-player metadata FAIL: " + ", ".join(bad)); raise SystemExit(1)
+print("  clean-player metadata PASS: desktop/mobile in bounds; reduced-motion=%s; real HUD revoke + save/load/replay/View/pixels; negatives fail closed" % expect_reduced)
+PY
+  [ $? -eq 0 ] || exit 1
+fi
+
+# 判据分派：simple → 玩家 1F 往返；full → 受邀玩家真实上下楼并返回
 if [ -n "${LT_RT_DENY_PORTAL:-}" ]; then
   "$PY" tools/assert_portal_denied.py "$OUT"
 elif [ "$JOURNEY" = "full" ]; then
