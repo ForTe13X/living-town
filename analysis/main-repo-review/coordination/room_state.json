@@ -1,6 +1,6 @@
 {
   "schema": "living-town.coordination-room.v0",
-  "updated_at": "2026-09-03T02:39:08Z",
+  "updated_at": "2026-09-03T03:28:26Z",
   "producer": {
     "task": "01a04233-497e-7942-8da0-7958b314b199",
     "branch": "codex/main-repo-review",
@@ -11,13 +11,13 @@
     "schema": "living-town.coordination-room.event-stream.v1",
     "documentation_path": "analysis/main-repo-review/coordination/README.md",
     "canonical_path": "analysis/main-repo-review/coordination/room_events.v1.jsonl",
-    "canonical_sha256": "bce7e66f844768446dfa64acd9e1c871824cb01f3fa3b924c3adf897d11a89e2",
-    "canonical_objects": 484,
+    "canonical_sha256": "e651be09c8d9c6b2e80c1eec35841dae58564c88ba4fd06f013c0a4b7012191f",
+    "canonical_objects": 485,
     "last_publication": {
       "method": "github_git_data_api_parent_child",
-      "parent": "bcbcd495c37e094b1e36c97d8476b8f852d80f14",
-      "tree": "721aa13543335a8260e4899712341a37000db31c",
-      "commit": "ed6f8467cd7bb71b0353ec3f1e7974b30006c6d3",
+      "parent": "ed6f8467cd7bb71b0353ec3f1e7974b30006c6d3",
+      "tree": "d427600f1ac6312f4cd66d555ad50b63cf6a4108",
+      "commit": "7ebb815df681a6abcc96d9a8ab91373fc7bb1428",
       "force": false,
       "reason": "producer-only non-force Git Data API publication; GitHub API authoritative for this exact parent-child mutation"
     },
@@ -42,32 +42,32 @@
     "coordination_state_commit": "self"
   },
   "remote_branch_inventory": {
-    "at": "2026-09-03T02:34:01Z",
+    "at": "2026-09-03T03:28:26Z",
     "github_api_count": 46,
     "git_ls_remote_count": 0,
     "local_tracking_count": 46,
-    "local_exact_count": 46,
+    "local_exact_count": 44,
     "snapshot_complete": false,
     "secondary_authority": "GitHub API complete for hosted branches, PRs, checks, artifacts, issues, releases, tags and protection; cached refs not promoted",
-    "reconciliation": "Smart HTTP fetch succeeded and fetched coordination plus the new candidate branch; ls-remote failed twice. GitHub API enumerated 46 hosted heads and all 46 fetched local tracking refs match, but snapshot remains incomplete because direct ls-remote did not complete.",
-    "network_failures": ["ls-remote attempt1 connect failure", "ls-remote attempt2 connect failure"],
-    "sorted_name_sha_set_sha256": "5a12181f2d7690dd245c091848ef2d7a11580e98e83de18dc1478bb07e6304da",
+    "reconciliation": "Smart HTTP fetch failed twice and ls-remote failed twice under repository-local HTTP/1.1 maxRequests=2. GitHub API enumerated 46 hosted heads; 44 cached tracking refs match and the PR38 plus coordination refs are stale. Cached refs were not promoted and snapshot remains incomplete.",
+    "network_failures": ["fetch attempt1 connection reset", "fetch attempt2 connect failure", "ls-remote attempt1 connect failure", "ls-remote attempt2 connect failure"],
+    "sorted_name_sha_set_sha256": "319ee5e372839d786c699f41cb99e1fd9326c04ab62311bf4b2eaafc24b93abf",
     "master": "37ccea829e16e5844059a11eac9b3177ac693d6a",
     "integration_batons": "ac85fc6b35b83d6a9c7c678386fe35dab666b217",
-    "coordination": "ed6f8467cd7bb71b0353ec3f1e7974b30006c6d3",
+    "coordination": "7ebb815df681a6abcc96d9a8ab91373fc7bb1428",
     "pr25": "6d5c6fc41f3dd55aadba29cda7ea754b3426a5fb",
     "pr26": "f96aac62caed955c600737e0c26ee15e19df3352",
     "pr27": "eb51b01595819a782d1588844776caea0e0fc750",
     "pr28": "f57fc8e0755e27da36a980611ec0e0e6b5b5d47f",
     "pr29": "f6cbdcf5ad8539bf4c4ce14ae6328ffb24d18ffc",
     "pr30": "4974244f784c8bcb9aa1a5c88fd358f5a671bd8d",
-    "mismatched_or_missing_local": {},
-    "open_prs": 13,
+    "mismatched_or_missing_local": {"codex/pr34-final-p1-visual-scope-repair-v1":{"hosted":"ef6f1b21abdc625342f1f066dc2e4f206c5c43e7","cached":"330d1f074cdf91b8b249cc72b9503b149a1a34fb"},"codex/main-repo-review":{"hosted":"7ebb815df681a6abcc96d9a8ab91373fc7bb1428","cached":"bcbcd495c37e094b1e36c97d8476b8f852d80f14"}},
+    "open_prs": 12,
     "open_issues": 0,
     "releases": 0,
     "tags": 0,
-    "full_branch_metadata_scan": "At 2026-09-03T02:34:01Z GitHub API reports 46 hosted branches and all 46 fetched local refs match; ls-remote failed twice so snapshot_complete=false. There are 39 total PRs/13 open/12 Draft/25 merged/1 closed, 0 formal reviews, issues, releases or tags, and 57 worktrees/17 dirty all preserved. PR39 is OPEN Draft CLEAN exactb8522048/tree36583e0 with ci+visual success run33705049850 and artifact9875085192. PR38 remains OPEN Draft exact330d1f0. Master/integration/protection are unchanged.",
-    "benchmark_revalidation": {"repository":"mewamew/my_ai_town","ref":"main","head":"98c73563b9a2c64025b2918c08f40ef463fcd787","readme_blob":"7b8d75aa6e3ef4e93784e33a357da46bb37c949b","readme_sha256":"78d2b79d58cc67cf042c48cd649ead70b6b460bcd524a316363f033d05ffac49","screenshots":{"assets/readme/town-overview.jpg":"8315851951fa4b86138ed4b66508598fa08dfd9d3ed0dd9e788c1adf422495ec","assets/readme/resident-conversation.jpg":"e5b5cf0892c34949aa2c128c554234db99b898aefd6fdea4cb89fdfe3da02c63","assets/readme/workshop-task.jpg":"7985c00433ff522c49749cb4a098e8d35776ca0f5bc3051f0966e43e70c16f6a","assets/readme/market-life.jpg":"914de2c4571bb9546a9d3e31ebc3f093b4e9034571a92c6332c128a228193895","assets/readme/world-log.jpg":"9195d4ae02db1bc81af745c245612900e780711a3a0593b2d70191e446a4bce4"},"transition":"main head and README changed while all five screenshot hashes stayed exact","license_boundary":"quality and information-architecture reference only; no code, pixel, asset, palette or derivative copying"}
+    "full_branch_metadata_scan": "At 2026-09-03T03:28:26Z GitHub API reports 46 hosted branches. Direct fetch and ls-remote each failed twice; 44 of 46 cached refs match, while PR38 and coordination are stale, so snapshot_complete=false. There are 39 total PRs/12 open/13 Draft/26 merged/1 closed-unmerged, zero formal PR38 reviews, zero issues/releases/tags, and 57 worktrees/17 dirty all preserved. PR38 is OPEN Draft CLEAN at ef6f1b21/tree36583e0; run33708399178 ci and visual_canary are both SUCCESS and artifact9876224203 is unexpired. Master/integration/protection are unchanged.",
+    "benchmark_revalidation": {"repository":"mewamew/my_ai_town","ref":"main","head":"43ef1d13f973cf90f0868209d0c1e3492d406312","readme_blob":"20db3eef86072db785470b104a7078e49d405b01","readme_sha256":"c4e8c6130e23762f01c5ade02e7f81e551a36f05e13b60c608b027b72c08c7f0","screenshots":{"assets/readme/town-overview.jpg":"8315851951fa4b86138ed4b66508598fa08dfd9d3ed0dd9e788c1adf422495ec","assets/readme/resident-conversation.jpg":"e5b5cf0892c34949aa2c128c554234db99b898aefd6fdea4cb89fdfe3da02c63","assets/readme/workshop-task.jpg":"7985c00433ff522c49749cb4a098e8d35776ca0f5bc3051f0966e43e70c16f6a","assets/readme/market-life.jpg":"914de2c4571bb9546a9d3e31ebc3f093b4e9034571a92c6332c128a228193895","assets/readme/world-log.jpg":"9195d4ae02db1bc81af745c245612900e780711a3a0593b2d70191e446a4bce4"},"transition":"main head and README changed again; all five screenshot SHA-256 values remain exact and unchanged","license_boundary":"quality and information-architecture reference only; no code, pixel, asset, palette or derivative copying"}
   },
   "portfolio_policy": {
     "default_active_writers": 2,
@@ -4593,8 +4593,8 @@
     }
   },
   "workspace_observation": {
-    "registered_worktrees": 45,
-    "dirty_worktrees": 16,
+    "registered_worktrees": 57,
+    "dirty_worktrees": 17,
     "worktree_errors": 0,
     "unknown_or_historical_dirt_policy": "quarantine_preserve"
   },
@@ -4603,9 +4603,9 @@
     "stale_or_empty_handoffs": 6,
     "recoveries_or_replacements": 20,
     "open_exact_sha_p0": 0,
-    "open_exact_sha_p1": 6,
+    "open_exact_sha_p1": 2,
     "post_merge_regressions": 1,
-    "player_visible_closure_state": "pr36_exact_tree_commit_full_ci_running"
+    "player_visible_closure_state": "pr38_exact_head_hosted_success_body_metadata_p1_repair_reserved_mobile_p1_open"
   },
   "human_acceptance": "not_ready",
   "current_gate": {
@@ -4712,8 +4712,9 @@
     "pr36_exact_ci_qa_terminal": "Independent QA P0/P1/P2=0 at synthetic40e0492/tree7eb1e6c with receipts dce10c51/16fe806f/cf4c86b8; all listed functional and visual teeth passed; no publication clearance until REFUTE recovery.",
     "pr36_combined_refute_terminal_p1": "P0=0/P1=1/P2=0: overlay-green functional evidence does not prove the publishable exact tree; synthetic committed ledger remains stale and exact-tree guard fails. Sole three-path exact-tree closure writer reserved.",
     "pr36_exact_tree_candidate": "Repair0efc8993/treedb05e32/game-treeb0a248a terminal focused PASS with authoritative provenance, real revoke consumer/replay and invited-player 2F proof; one serialized protected-anchor plus exact-tree full-CI lane reserved; PR34 remains frozen Draft.",
-    "pr5_projection": "open Draft at coordination commited6f846. PR39 body wording/provenance corrected then merged only into the PR38 feature branch as ef6f1b21/tree36583e0 with parents exact330d1f0+b8522048. PR38 remains OPEN Draft at ef6f1b21; hosted ci+visual run33708399178 are in progress and fresh technical QA/REFUTE are reserved. Integration/master/protection unchanged. Global mobile occlusion P1, BELOW_REQUIRED_FLOOR and HUMAN_ACCEPTANCE_NOT_READY remain",
+    "pr5_projection": "open Draft at coordination commit7ebb815. PR39 is merged only into the PR38 feature branch. PR38 remains OPEN Draft at ef6f1b21/tree36583e0; hosted run33708399178 ci+visual are SUCCESS. Fresh technical QA and REFUTE find code-side P0/P1=0 but both identify the stale PR38 body as publication P1. A body-only correction is reserved before mutation. Integration/master/protection unchanged. Global mobile occlusion P1, BELOW_REQUIRED_FLOOR and HUMAN_ACCEPTANCE_NOT_READY remain",
     "live_phase_graph": [{"phase":1,"owner":"writer-pr34-final-p1-authority-consumer-evidence-v1","status":"terminal_focused_pass","head":"0efc8993d95ba0f23412a1c7aefb4507b52d578b"},{"phase":2,"owner":"writer-pr34-final-p1-anchor-exact-ci-v1","status":"terminal_anchor_pass","head":"3aa67e6abda90b9cea2ca6d127f1c9afb0d6f73b"},{"phase":2.1,"owner":"evidence-pr34-final-p1-exact-tree-ci-replacement-v1","status":"terminal_setup_failed"},{"phase":2.2,"owner":"evidence-pr34-final-p1-exact-tree-ci-replacement-v2","status":"terminal_setup_failed"},{"phase":2.3,"owner":"evidence-pr34-final-p1-exact-tree-ci-replacement-v3","status":"terminal_exact_tree_ci_failed_p1","exit":"single visual metadata validation scope P1 with exact receipts"},{"phase":2.4,"owner":"writer-pr34-final-p1-visual-scope-repair-v1","status":"terminal_setup_recovery_exhausted","exit":"recoverable one-path diff with structure PASS but focused proof NOT_PROVEN"},{"phase":2.5,"owner":"writer-pr34-final-p1-visual-scope-repair-replacement-v1","status":"terminal_focused_pass","head":"330d1f074cdf91b8b249cc72b9503b149a1a34fb"},{"phase":2.6,"owner":"evidence-pr34-final-p1-visual-scope-exact-tree-ci-v1","status":"terminal_pass_p0_0_p1_0","head":"330d1f074cdf91b8b249cc72b9503b149a1a34fb"},{"phase":2.7,"owner":"delivery-pr34-final-p1-candidate-publication-v1","status":"terminal_draft_pr38_published_checks_running","pr":38},{"phase":3,"owner":"review-pr38-technical-qa-refute-v1 plus review-pr38-art-ui-accessibility-v1","status":"terminal_technical_p0_p1_0_visual_p1_2","exit":"clean debug-off desktop plus 320/mobile evidence and independent visual P0/P1=0"},{"phase":3.1,"owner":"writer-pr38-clean-player-evidence-v1","status":"terminal_focused_pass_p0_0_p1_0","exit":"one clean focused-proven four-path-or-smaller commit or terminal stop"},{"phase":3.2,"owner":"writer-pr38-clean-player-anchor-v1","status":"terminal_anchor_pass","head":"a050a002d20525027657ac4fddbe1cdecaff1407","exit":"ledger-only focused Docker audit PASS"},{"phase":3.3,"owner":"evidence-pr38-clean-player-exact-tree-ci-v1","status":"terminal_pass_p0_0_p1_0","head":"a050a002d20525027657ac4fddbe1cdecaff1407","exit":"one immutable no-overlay full-CI receipt"},{"phase":3.4,"owner":"review-pr38-clean-player-exact-tree-technical-v1 plus review-pr38-clean-player-exact-tree-visual-v1","status":"terminal_blocked_p0_1_p1_2","head":"a050a002d20525027657ac4fddbe1cdecaff1407","exit":"independent technical and visual P0/P1 closure"},{"phase":3.5,"owner":"writer-pr38-clean-view-replay-proof-v1","status":"terminal_setup_recovery_exhausted","head":"a050a002d20525027657ac4fddbe1cdecaff1407","exit":"one clean max-four-path focused-proven attribution and View replay repair"},{"phase":3.6,"owner":"writer-pr38-clean-view-replay-proof-replacement-v1","status":"terminal_parse_stop","head":"a050a002d20525027657ac4fddbe1cdecaff1407","exit":"adopt preserved diff and produce focused-proven bounded commit or stop"},{"phase":3.7,"owner":"writer-pr38-clean-view-replay-compile-fix-v1","status":"terminal_native320_floor_stop","head":"a050a002d20525027657ac4fddbe1cdecaff1407","exit":"motion_on core PASS; native320 2F-versus-1F discriminator FAIL_P1 0/117"},{"phase":3.8,"owner":"review-pr38-native320-floor-diagnosis-v1","status":"reserved","head":"a050a002d20525027657ac4fddbe1cdecaff1407","exit":"read-only causal diagnosis and smallest safe repair packet"},{"phase":4,"owner":"Producer","status":"blocked","exit":"bounded integration merge and post-merge CI; human acceptance separately gated"}]
   },
-  "next_trigger": "Publish event484 as a non-force child of exacted6f846, dispatch two fresh read-only PR38 exact-head reviewers asynchronously, and return without waiting. Later harvest run33708399178 plus both reports before any integration decision."
+  "latest_transition": {"at":"2026-09-03T03:28:26Z","type":"pr38_terminal_hosted_and_reviews_body_repair_reserved","task":"producer:01a04233-497e-7942-8da0-7958b314b199","role":"sole PR38 evidence-metadata repair owner","objective":"Replace stale PR38 identity and evidence claims with exact combined-head, exact-tree merge-ref, current packet, terminal hosted, independent review, mobile P1 and visual hold facts.","baseline":"5e53e7335255d278618757e33d2b5baa32baaeed","head":"ef6f1b21abdc625342f1f066dc2e4f206c5c43e7","tree":"36583e02b59a4d80f1340b9a5faa9290e5b9e68c","game_tree":"9db92ce94b8c3b5ba27bfb513ec12c1f43fb7f87","branch":"codex/pr34-final-p1-visual-scope-repair-v1","worktree":"GitHub PR body only; no source worktree","owned_paths":[],"forbidden_paths":["source files","branch refs","PR Ready/merge","integration/batons","master","protection","tags/releases"],"authority_keys":["PR38 body current-state projection"],"generated_artifacts":["body SHA-256 after live reread"],"dependencies":["run33708399178 terminal success","technical QA P0=0 P1=1 stale body","REFUTE P0=0 P1=stale body plus global mobile occlusion","coordination commit7ebb815"],"consumer":"human readers, next mobile UI repair owner, later fresh reviewers","status":"reserved_before_body_mutation","heartbeat_at":"2026-09-03T03:28:26Z","expires_at":"2026-09-03T04:28:26Z","pr_check_state":"PR38 OPEN Draft CLEAN; ci+visual SUCCESS; no formal reviews","recovery_count":0,"release_reason":null,"rollback":"restore prior body text only if exact live reread differs; never mutate source or refs","stop_lines":["base/head/tree/diff/check drift","body would claim visual readiness","Ready/merge/protection mutation required"]},
+  "next_trigger": "Publish event485 as a non-force child of exact7ebb815, then update only PR38 body to the reserved exact identity/evidence and live-reread its hash. Keep Draft; mobile UI occlusion P1 remains the next executable product lane."
 }
