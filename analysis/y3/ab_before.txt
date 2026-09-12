@@ -1,0 +1,89 @@
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+  ✅ 哈希自检：6 条 fnv1a32 + 4 条 mix32 测试向量全对（项目自有哈希，不依赖引擎 String.hash()）
+=== Causal Bench S0 · 不变量回归门  seeds=[1, 2, 3, 4, 5, 6] days=20 ===
+[S0] {"chain":"2704760339","days":20,"diag_fails":[],"digest":"3283812256","event_digest":"314405747198250905","events":1123,"hard_fails":[],"pass":true,"seed":1,"soft_fails":[8]}
+[S0] {"chain":"1673113956","days":20,"diag_fails":[15],"digest":"1233837764","event_digest":"857476246011467997","events":1069,"hard_fails":[],"pass":true,"seed":2,"soft_fails":[8]}
+[S0] {"chain":"3591549725","days":20,"diag_fails":[],"digest":"612792895","event_digest":"3498706703803936951","events":1069,"hard_fails":[],"pass":true,"seed":3,"soft_fails":[8]}
+[S0] {"chain":"449349367","days":20,"diag_fails":[],"digest":"1307375977","event_digest":"8145838196460913342","events":1140,"hard_fails":[],"pass":true,"seed":4,"soft_fails":[8,40]}
+[S0] {"chain":"2944856902","days":20,"diag_fails":[],"digest":"3194054451","event_digest":"1135016409117011913","events":1082,"hard_fails":[],"pass":true,"seed":5,"soft_fails":[]}
+[S0] {"chain":"1505257440","days":20,"diag_fails":[],"digest":"1157057277","event_digest":"8288597345489491643","events":1144,"hard_fails":[],"pass":true,"seed":6,"soft_fails":[8]}
+
+— 不变量跨 seed 通过率（硬=全绿必需 / 软=通过率≥5/6 / 诊断=只报不门）—
+  ✅ #01 [硬]无 need 触底（任一需求，不只饥饿）  6/6
+  ✅ #02 [软]社交发生  6/6
+  ✅ #03 [软]无永久孤立  6/6
+  ✅ #04 [软]关系分化  6/6
+  ✅ #05 [软]谣言传播  6/6
+  ✅ #06 [硬]知识边界  6/6
+  ✅ #07 [硬]账本可溯源  6/6
+  ❌ #08 [软]承诺生命周期  1/6   首违 seed 1: 创建=0 兑现=0 (均应>0)
+  ✅ #09 [硬]无悬挂承诺  6/6
+  ✅ #10 [硬]违约可溯源有后果  6/6
+  ✅ #11 [软]冲突生命周期  6/6
+  ✅ #12 [硬]先对质后和解  6/6
+  ✅ #13 [硬]修复可溯源  6/6
+  ✅ #14 [软]standing分化  6/6
+  🔎 #15 [诊断]涌现放逐  5/6  (不入门·度量已知泄漏,见 docs/31)   首违 seed 2: 最坏 fei(-0.9) 接受率 0.65 / 镇均 0.54
+  ✅ #16 [软]声誉传播  6/6
+  ✅ #17 [软]坏名声形成可恢复  6/6
+  ✅ #18 [软]观点演化不坍缩  6/6
+  ✅ #19 [软]有界信任Deffuant  6/6
+  ✅ #20 [软]谣言变冷MakiThompson  6/6
+  ✅ #21 [硬]秘密专道  6/6
+  ✅ #22 [硬]背叛有后果可溯源  6/6
+  ✅ #23 [硬]背叛重挫名声  6/6
+  ✅ #24 [硬]背叛无误判  6/6
+  ✅ #25 [硬]S3派系派生一致(对齐且相识)  6/6
+  ✅ #26 [软]S3同派系亲和>跨派系  6/6
+  ✅ #27 [硬]S3协同守边界  6/6
+  ✅ #28 [硬]S3派系视图自洽  6/6
+  ✅ #29 [硬]I-PACT互助偏内  6/6
+  ✅ #30 [硬]I-PACT-free-rider可溯源  6/6
+  ✅ #31 [硬]I-PACT结盟门达标  6/6
+  ✅ #32 [硬]I-PACT无悬挂无重复对称  6/6
+  ✅ #33 [硬]I-PACT解体可恢复  6/6
+  ✅ #34 [硬]金钱守恒  6/6
+  ✅ #35 [硬]货币非负  6/6
+  ✅ #36 [硬]节日对象配对无残留  6/6
+  ✅ #37 [硬]选举计票自洽  6/6
+  ✅ #38 [硬]库存账本自洽  6/6
+  ✅ #39 [硬]产出溯源到在班本职  6/6
+  ✅ #40 [软]产出闭环活性与供给充足  5/6   首违 seed 4: produce=26 consume=83 满足率门未启用(20<60天)；【断链货物】豆子(申报有产者·实产=0)；产出契约=宏观池 ×12/12
+  ✅ #41 [硬]手艺的社会痕迹(被看见·被知道·不外溢)  6/6
+
+— 套件级活性（跨全网格计数；门控类归零即红）—
+  🔒 apologize          次数=62     覆盖 seed=6/6
+  🔒 conflict           次数=256    覆盖 seed=6/6
+  🔒 confront           次数=84     覆盖 seed=6/6
+     consume            次数=573    覆盖 seed=6/6
+  🔒 discuss            次数=238    覆盖 seed=6/6
+  🔒 election           次数=6      覆盖 seed=6/6
+  🔒 endorse            次数=23     覆盖 seed=6/6
+     festival_despawn   次数=13     覆盖 seed=6/6
+  🔒 festival_spawn     次数=13     覆盖 seed=6/6
+  🔒 give               次数=216    覆盖 seed=6/6
+  🔒 gossip             次数=280    覆盖 seed=6/6
+  🔒 gossip_rep         次数=1094   覆盖 seed=6/6
+  🔒 greet              次数=850    覆盖 seed=6/6
+  ⏳ invite             次数=5      覆盖 seed=1/6   (需 days≥30 才入门，本跑 days=20)
+  ⏳ meet               次数=5      覆盖 seed=1/6   (需 days≥30 才入门，本跑 days=20)
+  🔒 pay                次数=2279   覆盖 seed=6/6
+     produce            次数=184    覆盖 seed=6/6
+  🔒 rally_oust         次数=79     覆盖 seed=6/6
+     shortage           次数=142    覆盖 seed=6/6
+     spoil              次数=219    覆盖 seed=6/6
+     world_other        次数=6      覆盖 seed=6/6
+  ⏳ 本跑 days=20，以下类未达最短 horizon 故不入门：["aid(quorum)", "confide", "invite", "meet"]
+  ✅ 门控事件类 13 种全部仍在发生（含法定覆盖 1 种）
+
+— 金标（跨进程锚）—
+  (未启用 --golden)
+
+— 逐 tick 前缀链 —
+  🔨 已写出 6 个 seed 的全量逐 tick 链到 C:/Users/yp/AppData/Local/Temp/claude/E--Documents-Dev-June-26th/4ab4ceee-f2b5-4791-b52a-1f1d70c374f4/scratchpad/y3_chain_before.txt（用 --chain-ref 与之比对可定位首个分叉 tick）
+
+— 确定性 —
+  ✅ 同 seed 两跑摘要一致(批量+增量滚动+逐tick前缀链)  3/3
+
+=== S0 GATE: FAIL ❌  (硬不变量 seed 6/6 全绿, 软通过率门 ≥5/6(90%) 破, 活性 过, 金标 过, det 3/3) ===

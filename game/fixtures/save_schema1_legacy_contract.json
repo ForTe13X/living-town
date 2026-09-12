@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "source_commit": "d46cbb132595185c3420bb4eb8fd7f28512baa85",
+  "source_godot": "4.6.2",
+  "source_seed": 20260626,
+  "source_tick": 0,
+  "source_bytes": 271000,
+  "source_sha256": "84A9353F7C85A8BA191FEB45AFB644982DE273EB7380475930E509B4D68892B4",
+  "payload_parts": [
+    "res://fixtures/save_schema1_d46cbb1.part1.b64",
+    "res://fixtures/save_schema1_d46cbb1.part2.b64",
+    "res://fixtures/save_schema1_d46cbb1.part3.b64",
+    "res://fixtures/save_schema1_d46cbb1.part4.b64"
+  ],
+  "payload_compression": "gzip+base64",
+  "absent_state_keys": [
+    "cargo_manifests",
+    "cargo_manifest_order",
+    "core_population"
+  ],
+  "source_shape": {
+    "agents": 12,
+    "affiliate_tao": false,
+    "import_route_id": false,
+    "cargo_authority": false,
+    "east_ocean_carrier": false,
+    "north_dock_rect": [30, 7, 4, 2]
+  },
+  "migration_contract": "Schema 1 is a reflective full-state snapshot. Schema 2 preserves its saved world/logistics/agents/ledger, explicitly initializes the three absent authority fields, clears receiver pollution, and never synthesizes cargo from historical import events.",
+  "fixture_method": "The payload is an exact deterministic save generated twice from git archive d46cbb1 with Godot 4.6.2; both runs produced the same SHA-256. The focused test materializes and hashes those bytes before using the current binary decoder. A separate synthetic P1-a-only arm is built through the current codec because that intermediate draft shape was not the integration baseline.",
+  "known_limit": "Safe continuation is not old-binary tick equivalence and does not upgrade the saved north dock into East Ocean. Route-less legacy logistics remains inert until the player starts a new world."
+}

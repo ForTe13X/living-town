@@ -1,0 +1,30 @@
+======================================================================
+AK1 · 负对照② godot 子进程 rc≠0 ⇒ runner 必红（证 rc 硬化闭合 fail-open）
+两条路都验：假 godot 单测（隔离三信号臂）+ 真·容器 godot（rc≠0）。
+======================================================================
+
+---- (a) 假 godot 单测：喂 visual_gate.sh 用的【同一个】vg_shoot，四种子进程行为 ----
+（scratchpad/ak1/fakegodot_test.sh；每例都预置一张合法非空旧图，模拟"godot 崩了但盘上有图"）
+
+  [ok]         写出合法非空图 + rc=0 + 无报错
+               ⇒ shot ok   frame.png                                   返回 0 ✅
+  [rc_nonzero] 写出合法非空图但 rc=1                                     ← 外审点名的 fail-open
+               ⇒ shot FAIL frame.png (godot rc=1 —— 子进程非零退出，判红)  返回 1 ✅
+               （旧判据 `[ -s frame.png ]` 在这里会【放过】：图合法非空。rc 臂拦住了它。）
+  [scripterr]  写出合法非空图 + rc=0 但日志含 SCRIPT ERROR（push_error 式）
+               ⇒ shot FAIL frame.png (godot 日志含致命错误标记: SCRIPT ERROR: ...)  返回 1 ✅
+  [emptyimg]   rc=0 无报错但没写图
+               ⇒ shot FAIL frame.png (rc=0 且无报错，但 --shot 产图为空/缺失)      返回 1 ✅
+
+=== FAKE-GODOT rc 硬化单元测试: ALL PASS ✅ ===
+（vg_shoot 返回 1 ⇒ visual_gate.sh 里 SHOT_RC 置非零 ⇒ host 打 ❌ VISUAL GATE 并 exit 1。）
+
+---- (b) 真·容器 godot（不是假的）：坏项目路径，盘上预置合法旧图 ----
+（scratchpad/ak1/rc_real_test.sh；docker gamecraft-runner:4.6.2 内 GBIN=godot 真二进制）
+
+  -rw-r--r-- 30 x.png                                    ← 盘上有合法非空旧图
+  --- real container godot, bad project path (expect nonzero rc) ---
+  shot FAIL x.png (godot rc=1 —— 子进程非零退出，判红)
+  vg_shoot_returned=1
+
+★ 结论：rc 硬化在假 godot 与真二进制两条路上都拦得住，尤其闭合"盘上有合法图但进程失败"这个 fail-open。

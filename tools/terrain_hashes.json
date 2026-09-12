@@ -1,0 +1,51 @@
+{
+  "_meta": {
+    "hash": "sha256(Image.open(png).convert('RGBA').tobytes())  —— 解码像素，非容器字节",
+    "note": "AV2 生成地形瓦（5 张）解码 RGBA 的 sha256 钉子。这 5 张来自 tools/slice_terrain_ref.py 对参考图降采样，无 CC0 源可重建 ⇒ 只能钉 hash。8 张 CC0 岸线瓦不在这里（它们仍走 terrain_gate.py 的当场重建-比对）。",
+    "ratchet": "只能由人跑 `python tools/terrain_gate.py --rebless \"原因\"` 重烘，且必须在【Read 眼验每张瓦 + 录一帧真机整镇图】之后。CI 永不自动重烘（这是 R4 waived 下唯一诚实的缓解，见 terrain_gate.py 抬头）。",
+    "rebless_history": [
+      "2026-08-08 · AV2 初烘：暖色生成瓦替换 grass_a/b/flowers/dirt/water；已 Read 眼验 5 张 16×16 + 真机整镇帧 docs/media/av2/after_town_day.png + docker 视觉门 POND/SEASON/DAYNIGHT/TREESTAND 全 PASS · ref_sha=32cbd8eb3530"
+    ],
+    "reblessed_at": "2026-08-08",
+    "reblessed_by": "python tools/terrain_gate.py --rebless",
+    "ref_sha256": "32cbd8eb353069ba9e5883b626eaa81f9e9a231a6eab406e4ddce41711164e42",
+    "source": "tools/slice_terrain_ref.py ← docs/media/references/ref_terrain_v1_stardew.png"
+  },
+  "tiles": {
+    "dirt": {
+      "sha256": "373b179ce3c3d9f3a40ee6329243a6b6d1c1e1ac6a9a3c60d28a1fd4654643de",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "grass_a": {
+      "sha256": "a371f7fb6c02ea1c94e3fae608a318bd4fc404b5d6dc5b1aa6dbf4be5eb17301",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "grass_b": {
+      "sha256": "8d8bb64486c32293ad55f2e2d7e80810d366490bec9b0233e64b64eed0de60f2",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "grass_flowers": {
+      "sha256": "f92c9037fd9b6007a3d2c1c3062d23a83900d3a062ed75ca827d2466f5185e7e",
+      "size": [
+        16,
+        16
+      ]
+    },
+    "water": {
+      "sha256": "89675bf1c495a9f9cb494cd2faac18939499f1a26097df5c197fdd9199a60714",
+      "size": [
+        16,
+        16
+      ]
+    }
+  }
+}

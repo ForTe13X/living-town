@@ -1,0 +1,37 @@
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+=== W3 改前清点表 · seeds=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] · 60 天 · N=12 居民 ===
+弧文法里的类型（ARCS 静态读）：["aid", "apologize", "betray", "confide", "conflict", "confront", "gossip_rep", "invite", "leak", "meet", "pact", "rally_oust", "shortage"]
+
+播报侧（对象A · Main.gd）：FEED_SKIP=["pay", "world", "produce", "consume", "spoil", "shortage"]
+播报侧有【专属中文成文】的类型（扫 _event_prose 的 match 臂）：["aid", "apologize", "betray", "confide", "conflict", "confront", "discuss", "election", "endorse", "give", "gossip", "gossip_rep", "greet", "invite", "leak", "mediate", "meet", "pact", "rally_oust", "world"]
+
+事件类型                       条数  seed |   open   beat    end  aside  sweep     命中 | 播报侧(A)       故事侧(B)
+aid                        68    11 |      0     68      0      0      1     68 | 专属成文         进故事 68/68=100.0%
+apologize                 459    12 |      0     10    418      0     12    428 | 专属成文         进故事 428/459=93.2%
+confide                    91    12 |     91      0      0      0      3     91 | 专属成文         进故事 91/91=100.0%
+conflict                 1129    12 |   1129      0      0      0      0   1129 | 专属成文         进故事 1129/1129=100.0%
+confront                  490    12 |      0    478      0      0     10    478 | 专属成文         进故事 478/490=97.6%
+consume                  3541    12 |      0      0      0      0      6      0 | FEED_SKIP 挡掉 不进故事
+discuss                  1151    12 |      0      0      0      0     13      0 | 专属成文         不进故事
+election                   48    12 |      0      0      0      0      1      0 | 专属成文         不进故事
+endorse                   267    12 |      0      0      0      0      8      0 | 专属成文         不进故事
+give                      432    12 |      0      0      0      0      0      0 | 专属成文         不进故事
+gossip                    568    12 |      0      0      0      0      3      0 | 专属成文         不进故事
+gossip_rep               6795    12 |      0      0      0   3274    136   3274 | 专属成文         进故事 3274/6795=48.2%
+greet                    5816    12 |      0      0      0      0    106      0 | 专属成文         不进故事
+invite                   1091    12 |   1091      0      0      0     22   1091 | 专属成文         进故事 1091/1091=100.0%
+meet                     1090    12 |      0    523   1090      0      0   1090 | 专属成文         进故事 1090/1090=100.0%
+pact/dissolved              2     2 |      0      0      2      0      0      2 | 专属成文         进故事 2/2=100.0%
+pact/formed                44    12 |     44      0      0      0      0     44 | 专属成文         进故事 44/44=100.0%
+pay                     13716    12 |      0      0      0      0    170      0 | FEED_SKIP 挡掉 不进故事
+produce/unseen            964    12 |      0      0      0      0     16      0 | FEED_SKIP 挡掉 不进故事
+produce/witnessed         237    12 |      0      0      0      0      1      0 | FEED_SKIP 挡掉 不进故事
+rally_oust                228    12 |      0    228      0      0      2    228 | 专属成文         进故事 228/228=100.0%
+shortage                  548    12 |      0     78      0      0     11     78 | FEED_SKIP 挡掉 进故事 78/548=14.2%
+spoil                    1294    12 |      0      0      0      0      0      0 | FEED_SKIP 挡掉 不进故事
+world/despawn              80    12 |      0      0      0      0      0      0 | FEED_SKIP 挡掉 不进故事
+world/spawn               124    12 |      0      0      0      0      1      0 | FEED_SKIP 挡掉 不进故事
+
+覆盖率（类型口径 · 故事侧）：12/25 = 48.0%
+覆盖率（事件条数口径 · 故事侧）：8001/40273 = 19.9%

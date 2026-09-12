@@ -1,0 +1,66 @@
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: GDExtension dynamic library not found: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: open_library (core/extension/gdextension.cpp:740)
+ERROR: Error loading extension: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: load_extensions (core/extension/gdextension_manager.cpp:329)
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+=== AA2 槽位 × 引用事件极性 · seeds=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] · 60 天 · N=12 ===
+（accepted 记作 +/-；note 只取冒号/星号前的前缀）
+craft/aside                  引用    475 条  →  + note=∅×64  - note=∅×411   ⚠️ 两种极性都落进来了
+craft/beat:again             引用    596 条  →  + note=咖啡师×100  + note=教书先生×89  + note=环卫工×296  + note=面点师×111   ⚠️ 两种极性都落进来了
+craft/beat:handed            引用     17 条  →  + note=∅×17
+craft/beat:talked            引用    225 条  →  + note=∅×50  - note=∅×175   ⚠️ 两种极性都落进来了
+craft/beat:whisper           引用     91 条  →  + note=∅×25  - note=∅×66   ⚠️ 两种极性都落进来了
+craft/end:allied             引用      1 条  →  + note=formed×1
+craft/open                   引用    400 条  →  + note=咖啡师×109  + note=教书先生×90  + note=环卫工×111  + note=面点师×90   ⚠️ 两种极性都落进来了
+grudge/aside                 引用    281 条  →  + note=∅×26  - note=∅×255   ⚠️ 两种极性都落进来了
+grudge/beat:empty            引用     11 条  →  - note=修屋×6  - note=吃饭×2  - note=洗澡×1  - note=玩耍×1  - note=赶集×1   ⚠️ 两种极性都落进来了
+grudge/beat:heard            引用     45 条  →  + note=∅×45
+grudge/beat:rally            引用     18 条  →  + note=backers×18
+grudge/beat:rebuff           引用      2 条  →  - note=∅×2
+grudge/beat:sided            引用     14 条  →  + note=∅×14
+grudge/beat:talked           引用     68 条  →  + note=∅×2  - note=∅×66   ⚠️ 两种极性都落进来了
+grudge/beat:whisper          引用      4 条  →  + note=∅×1  - note=∅×3   ⚠️ 两种极性都落进来了
+grudge/end:mended            引用      9 条  →  + note=∅×9
+grudge/open                  引用    195 条  →  - note=∅×195
+pact/beat:aid                引用     46 条  →  + note=∅×46
+pact/beat:met                引用    153 条  →  + note=∅×153
+pact/end:dissolved           引用      1 条  →  - note=dissolved×1
+pact/open                    引用     41 条  →  + note=formed×41
+promise/end:broken           引用      8 条  →  - note=∅×8
+promise/end:kept             引用    364 条  →  + note=∅×364
+promise/open                 引用    372 条  →  + note=∅×372
+secret/beat:aid              引用     49 条  →  + note=∅×49
+secret/open                  引用     79 条  →  + note=∅×79
+
+=== 全日志：事件类型 × accepted × note（与是否被引用无关）===
+aid            +84      -0        note: ∅×84
+apologize      +428     -4        note: ∅×432
+betray         +1       -0        note: leaked×1
+confide        +80      -0        note: ∅×80
+conflict       +0       -1084     note: ∅×1084
+confront       +471     -0        note: ∅×471
+consume        +3486    -0        note: day*1×469  day*10×204  day*11×246  day*12×308  day*13×187  day*14×85  day*15×84  day*16×94  day*17×111  day*18×92  day*19×92  day*2×351  day*20×54  day*21×17  day*22×12  day*23×2  day*24×1  day*3×234  day*4×164  day*5×128  day*6×126  day*7×124  day*8×138  day*9×163
+discuss        +412     -810      note: ∅×1222
+election       +43      -5        note: fail×5  pass×43
+endorse        +192     -0        note: ∅×192
+give           +432     -0        note: ∅×432
+gossip         +201     -396      note: ∅×597
+gossip_rep     +1076    -5143     note: ∅×6219
+greet          +4655    -1374     note: ∅×6029
+invite         +1002    -0        note: ∅×1002
+leak           +1       -6        note: ∅×7
+meet           +991     -11       note: ∅×1002
+pact           +44      -4        note: dissolved:freerider×4  formed×44
+pay            +13445   -0        note: buy:赶集×843  price:吃饭×6238  rent×2648  wage:修屋×365  wage:做活×2221  wage:刨木×106  wage:劈柴×64  wage:打渔×79  wage:授课×153  wage:摆摊×222  wage:清扫×312  wage:烤点×108  wage:看摊×86
+produce        +1202    -0        note: 咖啡师*1×2  咖啡师*11×5  咖啡师*12×4  咖啡师*13×3  咖啡师*15×1  咖啡师*16×5  咖啡师*17×1  咖啡师*19×2  咖啡师*2×4  咖啡师*21×1  咖啡师*22×4  咖啡师*23×3  咖啡师*26×2  咖啡师*28×1  咖啡师*3×3  咖啡师*30×1  咖啡师*31×2  咖啡师*34×1  咖啡师*35×1  咖啡师*36×17  咖啡师*4×5  咖啡师*5×1  咖啡师*6×5  咖啡师*7×1  咖啡师*8×3  咖啡师*9×1  教书先生*1×2  教书先生*2×10  教书先生*3×11  教书先生*4×3  教书先生*5×4  教书先生*6×120  木匠*1×2  木匠*10×1  木匠*11×1  木匠*12×1  木匠*13×2  木匠*14×1  木匠*15×2  木匠*16×1  木匠*17×1  木匠*18×1  木匠*19×3  木匠*20×3  木匠*21×1  木匠*22×2  木匠*25×1  木匠*26×1  木匠*28×1  木匠*29×2  木匠*3×1  木匠*31×1  木匠*33×1  木匠*34×2  木匠*35×1  木匠*36×2  木匠*37×1  木匠*38×1  木匠*39×1  木匠*4×1  木匠*40×2  木匠*41×3  木匠*45×1  木匠*46×1  木匠*47×2  木匠*48×2  木匠*49×1  木匠*50×49  木匠*6×2  木匠*8×1  木匠*9×2  杂役*11×1  杂役*12×1  杂役*14×1  杂役*16×1  杂役*17×3  杂役*19×1  杂役*20×1  杂役*21×1  杂役*22×2  杂役*23×1  杂役*24×1  杂役*26×1  杂役*27×2  杂役*28×1  杂役*29×1  杂役*31×1  杂役*32×1  杂役*33×1  杂役*34×2  杂役*35×1  杂役*37×3  杂役*38×1  杂役*40×1  杂役*43×1  杂役*50×1  杂役*51×1  杂役*52×2  杂役*53×2  杂役*54×1  杂役*55×1  杂役*57×1  杂役*59×1  杂役*6×1  杂役*60×1  杂役*65×19  杂役*8×1  杂役*9×1  泥瓦匠*10×5  泥瓦匠*11×5  泥瓦匠*12×21  泥瓦匠*13×8  泥瓦匠*14×5  泥瓦匠*15×4  泥瓦匠*16×3  泥瓦匠*17×2  泥瓦匠*19×1  泥瓦匠*20×4  泥瓦匠*21×2  泥瓦匠*23×4  泥瓦匠*24×6  泥瓦匠*25×5  泥瓦匠*26×1  泥瓦匠*27×2  泥瓦匠*28×1  泥瓦匠*29×1  泥瓦匠*30×222  泥瓦匠*7×1  泥瓦匠*9×4  渔夫*1×1  渔夫*13×1  渔夫*14×1  渔夫*15×2  渔夫*18×3  渔夫*19×2  渔夫*20×1  渔夫*22×1  渔夫*27×1  渔夫*30×2  渔夫*32×1  渔夫*33×1  渔夫*36×1  渔夫*40×1  渔夫*41×1  渔夫*42×1  渔夫*48×1  渔夫*52×1  渔夫*53×1  渔夫*56×1  渔夫*60×1  渔夫*61×3  渔夫*62×1  渔夫*63×3  渔夫*64×1  渔夫*65×2  渔夫*67×1  渔夫*68×1  渔夫*70×2  渔夫*77×1  渔夫*78×1  渔夫*79×3  渔夫*81×1  渔夫*85×32  环卫工*10×1  环卫工*13×1  环卫工*14×3  环卫工*15×2  环卫工*16×300  环卫工*6×1  环卫工*9×4  面点师*1×2  面点师*13×1  面点师*14×1  面点师*15×2  面点师*16×1  面点师*17×2  面点师*18×1  面点师*2×2  面点师*21×1  面点师*22×1  面点师*24×1  面点师*3×4  面点师*31×1  面点师*35×3  面点师*36×1  面点师*37×1  面点师*38×2  面点师*39×1  面点师*4×1  面点师*40×2  面点师*41×1  面点师*42×2  面点师*43×2  面点师*44×2  面点师*46×2  面点师*48×2  面点师*5×2  面点师*50×1  面点师*53×1  面点师*55×1  面点师*56×1  面点师*57×1  面点师*59×1  面点师*60×4  面点师*63×1  面点师*65×1  面点师*66×1  面点师*7×1  面点师*73×1  面点师*75×1  面点师*76×1  面点师*77×2  面点师*78×1  面点师*79×2  面点师*87×1  面点师*9×1  面点师*90×39
+rally_oust     +226     -0        note: backers:1×78  backers:2×96  backers:3×40  backers:4×12
+shortage       +0       -629      note: 修屋×61  吃饭×187  喝咖啡×60  歇着×37  洗澡×159  玩耍×12  睡觉×100  社交×3  赶集×10
+spoil          +1274    -0        note: spoil*1×571  spoil*2×703
+world          +203     -0        note: despawn×80  spawn×123
+
+引用行合计 3565 条

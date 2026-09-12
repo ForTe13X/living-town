@@ -1,0 +1,24 @@
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+[Q1] seed=5 days=10 N=20 t0=1200
+[Q1] === ATT1 (ref=CTRL) 被改动者=qin ===
+[Q1]   隔离自证: 被改动者与人同区 tick=13706(ctrl=12774)  familiarity总和=20.0(ctrl=23.0)
+[Q1]   ★非被改动者 首次分叉：attitudes@1323  faction@从未  行为@1203  关系账本@1213
+[Q1]     faction 变的人: []
+[Q1]     attitudes 变的人: ["ben", "npc_16"]
+[Q1]   含被改动者 行为首次分叉@1203  chain同=false(3757062591 vs 3157788296)
+[Q1]   判决: 不适用   (faction@从未 vs 别人 attitudes@1323)
+[Q1]   通道活性 本臂/对照: endorse 11/12  rally_oust 2/9  discuss 52/53  派系数 5/5  quorum内agent-tick 40800/40800
+[Q1]   硬=[] 软=[8] 触底=0(ctrl=0)
+[Q1] === QATT1 (ref=QCTRL) 被改动者=qin ===
+[Q1]   隔离自证: 被改动者与人同区 tick=0(ctrl=0)  familiarity总和=0.0(ctrl=0.0)
+[Q1]   ★非被改动者 首次分叉：attitudes@从未  faction@从未  行为@从未  关系账本@从未
+[Q1]     faction 变的人: []
+[Q1]     attitudes 变的人: []
+[Q1]   含被改动者 行为首次分叉@从未  chain同=true(2045274455 vs 2045274455)
+[Q1]   判决: 不适用   (faction@从未 vs 别人 attitudes@从未)
+[Q1]   通道活性 本臂/对照: endorse 8/8  rally_oust 23/23  discuss 30/30  派系数 6/6  quorum内agent-tick 44402/44402
+[Q1]   硬=[1] 软=[3, 8, 40] 触底=9776(ctrl=9776)
+[Q1] DONE
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bplayertouch001"]
+
+[ext_resource type="Script" path="res://scripts/player_touch_test.gd" id="1"]
+
+[node name="PlayerTouchTest" type="Node"]
+script = ExtResource("1")

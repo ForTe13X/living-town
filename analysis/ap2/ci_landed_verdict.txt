@@ -1,0 +1,13 @@
+AP2 landing CI —— 权威 committed-tree run（fresh ledger）
+HEAD=48bb381  game=685a51194897cdf7555a28925879409f02d9d3c7  CI_EXIT=0
+
+=== CI PASS ✅ ===
+- S0 GATE: PASS ✅ (硬不变量 seed 12/12 全绿, 金标 过, det 3/3)   ← AP2 pure-View 零金标(含逐 tick 链)
+- 互补性守卫: PASS (锚烘于 commit f11d689, baked_game_tree==HEAD:game 685a511 = fresh) + 负对照有牙
+- AUDIT PASS: typed-layers 一致 + 全可达 + 每家居/工位有交互格 + 工位连通 + ≥2 路线 + 地标非阻(walkable=2653/blockers=403 与改前同)
+- LOD-VERIFY GATE: PASS (V2+V3abc)   ← AP2 新绘制纯 draw、不回喂 Sim
+- state_projection_gate: PASS (0 fail)
+- INTSHELL PASS (7栋/4类) · FURNROLE PASS (6栋/5类)
+- SEASON GATE PASS · PRECIP GATE PASS · FLOOR ROUNDTRIP GATE PASS
+- (视觉门 space-roundtrip A1[map] 变化像素=0/366800=0.000% ← AP2 重铺/中心景逐像素确定性)
+注: 全 log(gitignored) analysis/ap2/ci_landed.log。棒内 CI 是提交前跑(互补性守卫假新鲜,见 docs/140);本为提交后权威 run。

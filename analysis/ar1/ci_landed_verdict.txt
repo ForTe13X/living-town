@@ -1,0 +1,10 @@
+AR1 landing CI —— 权威 committed-tree run（fresh ledger），协调者 finalize（AR1 卡自 CI 未提交）
+HEAD=522ee69  game=6c374840001cf06c2895ab6d2f3b6e09cb4bfb44  CI_EXIT=0
+
+=== CI PASS ✅ ===
+- S0 GATE: PASS ✅ (硬不变量 12/12 全绿, 金标 过, det 3/3)   ← AR1 纯 Story View 派生零金标(含逐 tick 链)
+- 互补性守卫: PASS (锚烘于 commit dbf2b6d, baked==HEAD:game 6c37484 = fresh)
+- story_test: PASS (189s)   ← A0≡A1(挂追踪器前后 event_log 折叠逐字节不变) + 新 traded 幕 F 夹具 + lint_grammar + audit 全绿
+- 全门绿
+注: 协调者另独跑 story_test + 纯 S0 金标门(seeds 1-12×60×det3 vs golden_digests.json) = 双 PASS、金标 12/12 含链。
+    AR1 子棒卡自 worktree CI waiter 未提交;协调者取 uncommitted patch、独立验证、重烘、跑本权威 CI。

@@ -1,0 +1,14 @@
+E1/AS1 landing CI —— 权威 committed-tree run（移金标：新 golden + 新 modelpath 锚 + fresh ledger）
+HEAD=9d7b9dd  game=f17ac3f9f472c1b10cc37f1d84f7cb227701cdeb  CI_EXIT=0
+
+=== CI PASS ✅ ===
+- S0 GATE: PASS ✅ (硬不变量 12/12 含 #38/#44, 金标[新] 过, det 3/3)   ← import 移金标已重烘、新 golden 一致
+- ModelPathGate: PASS ✅ (失败 0)   ← modelpath 锚随 import 世界轨迹重烘
+- 互补性守卫: PASS (锚烘于 commit 8b85a7c, 7 夹具 × 35 不变量含 #44, fresh)
+- 全门绿
+协调者独立移金标复核(committed 树, analysis/as1):
+  ① off-gate: 缺 logistics.json → S0 金标 12/12 逐字节 = pre-E1 golden(纯加法,off 时零改动)
+  ② new golden: 有 logistics.json → S0 金标 12/12 一致 + 两跑逐字节可回放
+  ③ #38 认 import + #44 进口溯源,双负对照(直写 town_stock→#38 红、ghost_port→#44 红)
+  ④ 留出 13-30: 柴薪满足率↑/缺货~腰斩/屋瓦↑(原料链),self-contain P1 预期,#40 未灌绿(0/30 零缺货)
+注: E1 子棒卡自 CI 未提交;协调者取 patch、独立复核、补 gate_fixture_audit HARD_IDS +44、重烘三锚+ledger、跑本权威 CI。

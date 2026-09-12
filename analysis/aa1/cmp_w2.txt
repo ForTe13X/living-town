@@ -1,0 +1,7 @@
+game/data/production.json
+game/data/utility.json
+game/scripts/Director.gd
+game/scripts/Sim.gd
+game/scripts/Story.gd
+game/scripts/player_agency_test.gd
+game/scripts/story_test.gd

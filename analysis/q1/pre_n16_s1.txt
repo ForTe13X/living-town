@@ -1,0 +1,24 @@
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+[Q1] seed=1 days=10 N=16 t0=1200
+[Q1] === ATT1 (ref=CTRL) 被改动者=shu ===
+[Q1]   隔离自证: 被改动者与人同区 tick=9134(ctrl=8506)  familiarity总和=25.0(ctrl=22.0)
+[Q1]   ★非被改动者 首次分叉：attitudes@1291  faction@1440  行为@1478  关系账本@1291
+[Q1]     faction 变的人: ["aria(aria/4→aria/3)", "ben(aria/4→aria/3)", "dan(dan/3→dan/4)", "hai(dan/3→dan/4)", "npc_15(aria/4→aria/3)", "qin(dan/3→dan/4)"]
+[Q1]     attitudes 变的人: ["npc_15"]
+[Q1]   含被改动者 行为首次分叉@1281  chain同=false(2224310653 vs 1488407712)
+[Q1]   判决: 否（立场先传到了别人身上）   (faction@1440 vs 别人 attitudes@1291)
+[Q1]   通道活性 本臂/对照: endorse 6/9  rally_oust 8/11  discuss 34/29  派系数 4/4  quorum内agent-tick 31921/31921
+[Q1]   硬=[] 软=[8, 40] 触底=0(ctrl=0)
+[Q1] === QATT1 (ref=QCTRL) 被改动者=shu ===
+[Q1]   隔离自证: 被改动者与人同区 tick=0(ctrl=0)  familiarity总和=0.0(ctrl=0.0)
+[Q1]   ★非被改动者 首次分叉：attitudes@从未  faction@1440  行为@从未  关系账本@从未
+[Q1]     faction 变的人: ["aria(aria/3→aria/2)", "dan(dan/3→dan/4)", "hai(dan/3→dan/4)", "npc_15(aria/3→aria/2)", "qin(dan/3→dan/4)"]
+[Q1]     attitudes 变的人: []
+[Q1]   含被改动者 行为首次分叉@从未  chain同=true(89341069 vs 89341069)
+[Q1]   判决: ★零传播派系耦合成立   (faction@1440 vs 别人 attitudes@从未)
+[Q1]   通道活性 本臂/对照: endorse 2/2  rally_oust 11/11  discuss 32/32  派系数 5/5  quorum内agent-tick 30721/30721
+[Q1]   硬=[1] 软=[3, 8, 40] 触底=9776(ctrl=9776)
+[Q1] DONE
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)

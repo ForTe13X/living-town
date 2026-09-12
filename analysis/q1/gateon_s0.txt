@@ -1,0 +1,149 @@
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+  ✅ 哈希自检：6 条 fnv1a32 + 4 条 mix32 测试向量全对（项目自有哈希，不依赖引擎 String.hash()）
+=== Causal Bench S0 · 不变量回归门  seeds=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] days=60 ===
+[S0] {"chain":"82858807","days":60,"diag_fails":[],"digest":"1321279281","event_digest":"2082941763527637254","events":3436,"hard_fails":[],"pass":true,"seed":1,"soft_fails":[]}
+[S0] {"chain":"3107927294","days":60,"diag_fails":[],"digest":"545177027","event_digest":"4922935930733386419","events":3323,"hard_fails":[],"pass":true,"seed":2,"soft_fails":[]}
+[S0] {"chain":"2270394012","days":60,"diag_fails":[],"digest":"2599824323","event_digest":"8935892820662974600","events":3226,"hard_fails":[],"pass":true,"seed":3,"soft_fails":[]}
+[S0] {"chain":"2010284083","days":60,"diag_fails":[],"digest":"2946361274","event_digest":"8664404958595421811","events":3396,"hard_fails":[],"pass":true,"seed":4,"soft_fails":[]}
+[S0] {"chain":"4124637541","days":60,"diag_fails":[],"digest":"3092844585","event_digest":"1221474801012876500","events":3416,"hard_fails":[],"pass":true,"seed":5,"soft_fails":[]}
+[S0] {"chain":"1704213841","days":60,"diag_fails":[],"digest":"525648165","event_digest":"5722085170895875252","events":3471,"hard_fails":[],"pass":true,"seed":6,"soft_fails":[]}
+[S0] {"chain":"3873605658","days":60,"diag_fails":[],"digest":"1845324112","event_digest":"568711163458070429","events":3290,"hard_fails":[],"pass":true,"seed":7,"soft_fails":[]}
+[S0] {"chain":"4189162012","days":60,"diag_fails":[],"digest":"3536850044","event_digest":"3858318936945033621","events":3407,"hard_fails":[],"pass":true,"seed":8,"soft_fails":[]}
+[S0] {"chain":"2202189226","days":60,"diag_fails":[],"digest":"2173255861","event_digest":"3314329179154180860","events":3269,"hard_fails":[],"pass":true,"seed":9,"soft_fails":[]}
+[S0] {"chain":"3472085075","days":60,"diag_fails":[],"digest":"1472190094","event_digest":"4030815019433047820","events":3327,"hard_fails":[],"pass":true,"seed":10,"soft_fails":[]}
+[S0] {"chain":"2491382232","days":60,"diag_fails":[],"digest":"1801257220","event_digest":"3496891588622009817","events":3321,"hard_fails":[],"pass":true,"seed":11,"soft_fails":[]}
+[S0] {"chain":"3783002275","days":60,"diag_fails":[],"digest":"647183561","event_digest":"6232821349592032924","events":3360,"hard_fails":[],"pass":true,"seed":12,"soft_fails":[]}
+
+— 不变量跨 seed 通过率（硬=全绿必需 / 软=通过率≥11/12 / 诊断=只报不门）—
+  ✅ #01 [硬]无 need 触底（任一需求，不只饥饿）  12/12
+  ✅ #02 [软]社交发生  12/12
+  ✅ #03 [软]无永久孤立  12/12
+  ✅ #04 [软]关系分化  12/12
+  ✅ #05 [软]谣言传播  12/12
+  ✅ #06 [硬]知识边界  12/12
+  ✅ #07 [硬]账本可溯源  12/12
+  ✅ #08 [软]承诺生命周期  12/12
+  ✅ #09 [硬]无悬挂承诺  12/12
+  ✅ #10 [硬]违约可溯源有后果  12/12
+  ✅ #11 [软]冲突生命周期  12/12
+  ✅ #12 [硬]先对质后和解  12/12
+  ✅ #13 [硬]修复可溯源  12/12
+  ✅ #14 [软]standing分化  12/12
+  🔎 #15 [诊断]涌现放逐  12/12  (不入门·度量已知泄漏,见 docs/31)
+  ✅ #16 [软]声誉传播  12/12
+  ✅ #17 [软]坏名声形成可恢复  12/12
+  ✅ #18 [软]观点演化不坍缩  12/12
+  ✅ #19 [软]有界信任Deffuant  12/12
+  ✅ #20 [软]谣言变冷MakiThompson  12/12
+  ✅ #21 [硬]秘密专道  12/12
+  ✅ #22 [硬]背叛有后果可溯源  12/12
+  ✅ #23 [硬]背叛重挫名声  12/12
+  ✅ #24 [硬]背叛无误判  12/12
+  ✅ #25 [硬]S3派系派生一致(对齐且相识)  12/12
+  ✅ #26 [软]S3同派系亲和>跨派系  12/12
+  ✅ #27 [硬]S3协同守边界  12/12
+  ✅ #28 [硬]S3派系视图自洽  12/12
+  ✅ #29 [硬]I-PACT互助偏内  12/12
+  ✅ #30 [硬]I-PACT-free-rider可溯源  12/12
+  ✅ #31 [硬]I-PACT结盟门达标  12/12
+  ✅ #32 [硬]I-PACT无悬挂无重复对称  12/12
+  ✅ #33 [硬]I-PACT解体可恢复  12/12
+  ✅ #34 [硬]金钱守恒  12/12
+  ✅ #35 [硬]货币非负  12/12
+  ✅ #36 [硬]节日对象配对无残留  12/12
+  ✅ #37 [硬]选举计票自洽  12/12
+  ✅ #38 [硬]库存账本自洽  12/12
+  ✅ #39 [硬]产出溯源到在班本职  12/12
+  ✅ #40 [软]产出闭环活性与供给充足  12/12
+
+— 套件级活性（跨全网格计数；门控类归零即红）—
+     aid                次数=80     覆盖 seed=12/12
+  🔒 apologize          次数=456    覆盖 seed=12/12
+     betray             次数=2      覆盖 seed=2/12
+  🔒 confide            次数=90     覆盖 seed=12/12
+  🔒 conflict           次数=1121   覆盖 seed=12/12
+  🔒 confront           次数=473    覆盖 seed=12/12
+     consume            次数=3389   覆盖 seed=12/12
+  🔒 discuss            次数=1053   覆盖 seed=12/12
+  🔒 election           次数=48     覆盖 seed=12/12
+  🔒 endorse            次数=198    覆盖 seed=12/12
+     festival_despawn   次数=80     覆盖 seed=12/12
+  🔒 festival_spawn     次数=80     覆盖 seed=12/12
+  🔒 give               次数=432    覆盖 seed=12/12
+  🔒 gossip             次数=524    覆盖 seed=12/12
+  🔒 gossip_rep         次数=6955   覆盖 seed=12/12
+  🔒 greet              次数=5847   覆盖 seed=12/12
+  🔒 invite             次数=1055   覆盖 seed=12/12
+     leak               次数=12     覆盖 seed=2/12
+  🔒 meet               次数=1054   覆盖 seed=12/12
+     pact_formed        次数=49     覆盖 seed=12/12
+  🔒 pay                次数=13796  覆盖 seed=12/12
+     produce            次数=1187   覆盖 seed=12/12
+  🔒 rally_oust         次数=244    覆盖 seed=12/12
+     shortage           次数=751    覆盖 seed=12/12
+     spoil              次数=1220   覆盖 seed=12/12
+     world_other        次数=46     覆盖 seed=12/12
+  ✅ 门控事件类 16 种全部仍在发生
+
+— 金标（跨进程锚）—
+  ❌ 金标不符（36 处；金标烘于 godot 4.6.2-stable (official).71f334935）：
+      seed 1 digest       期望 4082450194  实得 1321279281
+      seed 1 event_digest 期望 5839687680536808433  实得 2082941763527637254
+      seed 1 chain        期望 3927366508  实得 82858807
+        ↳ 首个分叉落在 tick_no [1..240]（第 1 天）——该天之前的逐日检查点全部吻合
+      seed 2 digest       期望 2814403658  实得 545177027
+      seed 2 event_digest 期望 943793736237798049  实得 4922935930733386419
+      seed 2 chain        期望 2412093803  实得 3107927294
+        ↳ 首个分叉落在 tick_no [721..960]（第 4 天）——该天之前的逐日检查点全部吻合
+      seed 3 digest       期望 2094194499  实得 2599824323
+      seed 3 event_digest 期望 7150346261468124555  实得 8935892820662974600
+      seed 3 chain        期望 2824711883  实得 2270394012
+        ↳ 首个分叉落在 tick_no [1..240]（第 1 天）——该天之前的逐日检查点全部吻合
+      seed 4 digest       期望 3860863338  实得 2946361274
+      seed 4 event_digest 期望 2966751993786573574  实得 8664404958595421811
+      seed 4 chain        期望 656860781  实得 2010284083
+        ↳ 首个分叉落在 tick_no [1..240]（第 1 天）——该天之前的逐日检查点全部吻合
+      seed 5 digest       期望 3511085926  实得 3092844585
+      seed 5 event_digest 期望 7512272920669991421  实得 1221474801012876500
+      seed 5 chain        期望 487795630  实得 4124637541
+        ↳ 首个分叉落在 tick_no [1..240]（第 1 天）——该天之前的逐日检查点全部吻合
+      seed 6 digest       期望 366647715  实得 525648165
+      seed 6 event_digest 期望 6157883280620768664  实得 5722085170895875252
+      seed 6 chain        期望 2044902145  实得 1704213841
+        ↳ 首个分叉落在 tick_no [1..240]（第 1 天）——该天之前的逐日检查点全部吻合
+      seed 7 digest       期望 1855305596  实得 1845324112
+      seed 7 event_digest 期望 773115893037639147  实得 568711163458070429
+      seed 7 chain        期望 3276293994  实得 3873605658
+        ↳ 首个分叉落在 tick_no [241..480]（第 2 天）——该天之前的逐日检查点全部吻合
+      seed 8 digest       期望 3379258250  实得 3536850044
+      seed 8 event_digest 期望 7244648549504291437  实得 3858318936945033621
+      seed 8 chain        期望 366944181  实得 4189162012
+        ↳ 首个分叉落在 tick_no [1..240]（第 1 天）——该天之前的逐日检查点全部吻合
+      seed 9 digest       期望 2748807451  实得 2173255861
+      seed 9 event_digest 期望 8996747533693993535  实得 3314329179154180860
+      seed 9 chain        期望 124121313  实得 2202189226
+        ↳ 首个分叉落在 tick_no [1..240]（第 1 天）——该天之前的逐日检查点全部吻合
+      seed 10 digest       期望 1932686218  实得 1472190094
+      seed 10 event_digest 期望 6481674370337520578  实得 4030815019433047820
+      seed 10 chain        期望 2224116453  实得 3472085075
+        ↳ 首个分叉落在 tick_no [481..720]（第 3 天）——该天之前的逐日检查点全部吻合
+      seed 11 digest       期望 2017948000  实得 1801257220
+      seed 11 event_digest 期望 489764930236463605  实得 3496891588622009817
+      seed 11 chain        期望 1743154913  实得 2491382232
+        ↳ 首个分叉落在 tick_no [1..240]（第 1 天）——该天之前的逐日检查点全部吻合
+      seed 12 digest       期望 449684927  实得 647183561
+      seed 12 event_digest 期望 270863768336353221  实得 6232821349592032924
+      seed 12 chain        期望 1961556002  实得 3783002275
+        ↳ 首个分叉落在 tick_no [1..240]（第 1 天）——该天之前的逐日检查点全部吻合
+    → 行为变了。若是【无意】的（引擎升级 / 候选枚举重构 / _aid() 播种变化），这是红线#1 被破，查代码；
+      若是【有意】的基线移动，才重烘：--bake-golden game/bench/golden_digests.json（与该变更同一 commit）。
+    → 要把首个分叉【精确到 tick】：先在已知良好的提交上 --chain-dump /tmp/ref.chain，
+      再在本提交上 --chain-ref /tmp/ref.chain（逐 tick 比对，直接报 tick 号）。
+
+— 确定性 —
+  ✅ 同 seed 两跑摘要一致(批量+增量滚动+逐tick前缀链)  3/3
+
+=== S0 GATE: FAIL ❌  (硬不变量 seed 12/12 全绿, 软通过率门 ≥11/12(90%) 过, 活性 过, 金标 破, det 3/3) ===
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)

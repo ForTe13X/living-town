@@ -1,0 +1,24 @@
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+[Q1] seed=1 days=10 N=20 t0=1200
+[Q1] === ATT1 (ref=CTRL) 被改动者=qin ===
+[Q1]   隔离自证: 被改动者与人同区 tick=11392(ctrl=12813)  familiarity总和=28.0(ctrl=26.0)
+[Q1]   ★非被改动者 首次分叉：attitudes@1399  faction@1680  行为@1305  关系账本@1315
+[Q1]     faction 变的人: ["mei(/1→mei/2)", "npc_14(npc_14/2→/1)", "npc_17(npc_14/2→mei/2)"]
+[Q1]     attitudes 变的人: ["npc_15", "shu"]
+[Q1]   含被改动者 行为首次分叉@1305  chain同=false(4135277823 vs 2939334344)
+[Q1]   判决: 否（立场先传到了别人身上）   (faction@1680 vs 别人 attitudes@1399)
+[Q1]   通道活性 本臂/对照: endorse 3/9  rally_oust 11/9  discuss 48/43  派系数 6/5  quorum内agent-tick 28575/28334
+[Q1]   硬=[] 软=[8] 触底=0(ctrl=0)
+[Q1] === QATT1 (ref=QCTRL) 被改动者=qin ===
+[Q1]   隔离自证: 被改动者与人同区 tick=0(ctrl=0)  familiarity总和=0.0(ctrl=0.0)
+[Q1]   ★非被改动者 首次分叉：attitudes@从未  faction@从未  行为@从未  关系账本@从未
+[Q1]     faction 变的人: []
+[Q1]     attitudes 变的人: []
+[Q1]   含被改动者 行为首次分叉@从未  chain同=true(2677336130 vs 2677336130)
+[Q1]   判决: 不适用   (faction@从未 vs 别人 attitudes@从未)
+[Q1]   通道活性 本臂/对照: endorse 8/8  rally_oust 8/8  discuss 35/35  派系数 6/6  quorum内agent-tick 32656/32656
+[Q1]   硬=[1] 软=[3, 8] 触底=9776(ctrl=9776)
+[Q1] DONE
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)

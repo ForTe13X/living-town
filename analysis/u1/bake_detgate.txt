@@ -1,0 +1,34 @@
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: GDExtension dynamic library not found: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: open_library (core/extension/gdextension.cpp:740)
+ERROR: Error loading extension: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: load_extensions (core/extension/gdextension_manager.cpp:329)
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+=== DetGate · 场景确定性门  tracks=["", "faction", "betray", "freerider"] seeds=1-4 days=20 ===
+  金标：res://bench/golden_digests.json（烘于 godot 4.6.2-stable (official).71f334935）
+  [(default)] seed=1 事件=1133  硬=✅ 确定=✅ 金标=❌ 期望 1292417980/7049366108718518950/3131387797 实得 2782282023/5731013475292934080/635697812
+  [(default)] seed=2 事件=1071  硬=✅ 确定=✅ 金标=❌ 期望 2624278023/5125997248732462633/1042875499 实得 3027099140/5920621496591987575/104050369
+  [(default)] seed=3 事件=1087  硬=✅ 确定=✅ 金标=❌ 期望 2371561027/1106679479099798915/2953099166 实得 631756663/5233729551293601229/865774723
+  [(default)] seed=4 事件=1172  硬=✅ 确定=✅ 金标=❌ 期望 1968820380/232864934741753655/1049119672 实得 2947628910/1689362917363665520/1246454570
+  [faction] seed=1 事件=1100  硬=✅ 确定=✅ 金标=❌ 期望 422207828/20429567247259471/2297055188 实得 478412089/1870336053857134239/621498766
+  [faction] seed=2 事件=1075  硬=✅ 确定=✅ 金标=❌ 期望 502531912/4587934122303222028/4162216723 实得 887719400/3440908497516143386/578686904
+  [faction] seed=3 事件=1052  硬=✅ 确定=✅ 金标=❌ 期望 4076111652/6582294084041296689/3974068942 实得 3474496025/4812541845467757702/3047601108
+  [faction] seed=4 事件=1038  硬=✅ 确定=✅ 金标=❌ 期望 1471114157/1541047785117286236/2307098124 实得 2003566968/6841062238980849231/3931705515
+  [betray] seed=1 事件=1132  硬=✅ 确定=✅ 金标=❌ 期望 2743555740/2645451393417499336/3401800311 实得 37494307/3953471103917416135/162091612
+  [betray] seed=2 事件=1098  硬=✅ 确定=✅ 金标=❌ 期望 3669530002/3112191127447664935/1004629641 实得 3104177142/3239983406731939888/2134063477
+  [betray] seed=3 事件=1016  硬=✅ 确定=✅ 金标=❌ 期望 1396843140/5008161473615975198/2298219033 实得 3965140409/1159363671677755501/1431979917
+  [betray] seed=4 事件=1150  硬=✅ 确定=✅ 金标=❌ 期望 3253349119/4513409779820254812/2665883007 实得 1510311735/8738173216650374896/3772350433
+  [freerider] seed=1 事件=1084  硬=✅ 确定=✅ 金标=❌ 期望 1771125531/7181841899908216889/1710959258 实得 1409322286/7111835604591032236/1067546138
+  [freerider] seed=2 事件=1082  硬=✅ 确定=✅ 金标=❌ 期望 3609654539/4969188570883274961/506787594 实得 690084604/345990023051943172/1563395579
+  [freerider] seed=3 事件=1021  硬=✅ 确定=✅ 金标=❌ 期望 2405500593/5222939580089663309/211073234 实得 4087830844/8940280030620188709/3029811864
+  [freerider] seed=4 事件=1052  硬=✅ 确定=✅ 金标=❌ 期望 4066887159/7100294513356795996/3059955861 实得 115405115/2271397442897742465/1541025617
+
+🔨 已烘 4 条 track × 4 seed 到 res://bench/golden_digests.json 的 scenarios 段
+
+=== DetGate: FAIL ❌  (硬不变量 16/16, 同seed两跑一致 16/16, 数据指纹一致 16/16[1313116865], 金标 0/16 可比) ===
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)

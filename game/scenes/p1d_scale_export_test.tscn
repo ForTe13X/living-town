@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/p1d_scale_export_test.gd" id="1_scale_export"]
+
+[node name="P1dScaleExportTest" type="Node"]
+script = ExtResource("1_scale_export")

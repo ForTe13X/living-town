@@ -1,0 +1,35 @@
+======================================================================
+AK1 · 负对照① 改弱视觉 ⇒ 门必红（LT_VISUAL_GAME=scratchpad 的 game/ 拷贝；真 game/ 一字未碰）
+拷贝上两处最小改弱：SEASON_VEG["夏"] 退回=春值；_draw_snow() 首行 return。
+一次 docker run 同时打红季节+降水两门，其余六门全绿（改弱是外科式的）。
+======================================================================
+  runner=docker  mode=require  game=<scratchpad>/game_weak
+  shot ok  （全 33 帧照常拍出——改弱的是画面内容，不是拍帧能力）
+
+=== DAYNIGHT GATE: PASS ===
+=== ROUNDTRIP GATE: PASS ===
+=== POND GATE PASS ✅ ===
+[INTSHELL] ✅ 室内外壳类型门 PASS
+[FURNROLE] ✅ 家具语义分化门 PASS
+[TREESTAND] ✅ 林相点阵门 PASS
+
+[SEASON] 昼/春 (134,179,63) 夏 (140,179,63) 秋 (170,161,42) 冬 (134,171,112)
+    春↔夏 1.18 ❌越界   （其余对照旧仍分得开）
+[SEASON] 昼 最小两两 ΔE00 = 1.18 (春↔夏)  阈值 3.20  ⇒ FAIL
+[SEASON] 夜/春 (57,84,51) 夏 (59,85,50) …
+    春↔夏 0.81 ❌越界
+[SEASON] 夜 最小两两 ΔE00 = 0.81 (春↔夏)  阈值 3.20  ⇒ FAIL
+=== SEASON GATE: FAIL (2) ===
+
+  FAIL A1 SNOW s1_winter_on coverage=0     (min=600)
+  FAIL A1 SNOW s3_winter_on coverage=0     (min=600)
+  PASS A1 SNOW s5_winter_on coverage=1449  (min=600)   ← 见下诚实注记
+  PASS A2 RAIN s1/s3/s5 coverage=1458      (min=700)
+=== PRECIP GATE: FAIL ===
+
+VISUAL_GATE_EXIT=1   （host 侧 [ $SEARC -ne 0 ] && exit $SEARC）
+
+诚实注记：s5_winter_on 仍 1449 而非 0——把 _draw_snow 整个删空后，冬·雨天气那一 seed 的 off 帧沿
+  `elif weather=="雨"` 掉进雨的兜底分支，on/off 遂有差（极端变异体副作用）。不改结论：单帧红（s1/s3）
+  已让降水门整体 FAIL（与 AI1 envelope MUTANT① "单帧 coverage 0 ⇒ 门红"同构）。
+★ 关键：其余六门全绿 ⇒ 改弱是外科式的，红的正是季节/降水两门——证接线的判别力落在该落的地方。

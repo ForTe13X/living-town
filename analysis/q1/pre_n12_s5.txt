@@ -1,0 +1,24 @@
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+[Q1] seed=5 days=10 N=12 t0=1200
+[Q1] === ATT1 (ref=CTRL) 被改动者=lin ===
+[Q1]   隔离自证: 被改动者与人同区 tick=6872(ctrl=6998)  familiarity总和=20.0(ctrl=18.0)
+[Q1]   ★非被改动者 首次分叉：attitudes@从未  faction@1440  行为@1533  关系账本@1543
+[Q1]     faction 变的人: ["dan(dan/3→dan/4)", "hai(dan/3→dan/4)", "qin(dan/3→dan/4)", "tie(lin/2→/1)"]
+[Q1]     attitudes 变的人: []
+[Q1]   含被改动者 行为首次分叉@1533  chain同=false(1548612368 vs 3382615202)
+[Q1]   判决: ★零传播派系耦合成立   (faction@1440 vs 别人 attitudes@从未)
+[Q1]   通道活性 本臂/对照: endorse 2/2  rally_oust 2/1  discuss 18/17  派系数 2/3  quorum内agent-tick 18239/19200
+[Q1]   硬=[] 软=[8, 26, 40] 触底=0(ctrl=0)
+[Q1] === QATT1 (ref=QCTRL) 被改动者=lin ===
+[Q1]   隔离自证: 被改动者与人同区 tick=0(ctrl=0)  familiarity总和=0.0(ctrl=0.0)
+[Q1]   ★非被改动者 首次分叉：attitudes@从未  faction@1440  行为@从未  关系账本@从未
+[Q1]     faction 变的人: ["dan(dan/3→dan/4)", "hai(dan/3→dan/4)", "qin(dan/3→dan/4)", "tie(lin/2→/1)"]
+[Q1]     attitudes 变的人: []
+[Q1]   含被改动者 行为首次分叉@从未  chain同=true(1472696735 vs 1472696735)
+[Q1]   判决: ★零传播派系耦合成立   (faction@1440 vs 别人 attitudes@从未)
+[Q1]   通道活性 本臂/对照: endorse 1/1  rally_oust 3/3  discuss 17/17  派系数 2/3  quorum内agent-tick 19440/20401
+[Q1]   硬=[1] 软=[3, 8, 40] 触底=9776(ctrl=9776)
+[Q1] DONE
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)

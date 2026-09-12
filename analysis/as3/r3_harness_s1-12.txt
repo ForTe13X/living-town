@@ -1,0 +1,103 @@
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+  ✅ 哈希自检：6 条 fnv1a32 + 4 条 mix32 测试向量全对（项目自有哈希，不依赖引擎 String.hash()）
+=== Causal Bench S0 · 不变量回归门  seeds=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] days=60 ===
+[S0] {"chain":"144405414","days":60,"diag_fails":[],"digest":"2570807307","event_digest":"5390015349579323707","events":3482,"hard_fails":[],"pass":true,"seed":1,"soft_fails":[]}
+[S0] {"chain":"2184267895","days":60,"diag_fails":[],"digest":"1148987942","event_digest":"2271089177479891046","events":3335,"hard_fails":[],"pass":true,"seed":2,"soft_fails":[]}
+[S0] {"chain":"2325965605","days":60,"diag_fails":[],"digest":"2639495550","event_digest":"6917706691677509314","events":3412,"hard_fails":[],"pass":true,"seed":3,"soft_fails":[]}
+[S0] {"chain":"26781044","days":60,"diag_fails":[],"digest":"1178592917","event_digest":"511709165112889781","events":3493,"hard_fails":[],"pass":true,"seed":4,"soft_fails":[]}
+[S0] {"chain":"1783428527","days":60,"diag_fails":[],"digest":"3047622681","event_digest":"1311785400481574350","events":3487,"hard_fails":[],"pass":true,"seed":5,"soft_fails":[]}
+[S0] {"chain":"3473696675","days":60,"diag_fails":[],"digest":"1493710233","event_digest":"3905328370544602382","events":3563,"hard_fails":[],"pass":true,"seed":6,"soft_fails":[]}
+[S0] {"chain":"1194653115","days":60,"diag_fails":[],"digest":"233524418","event_digest":"9002779021890260618","events":3509,"hard_fails":[],"pass":true,"seed":7,"soft_fails":[]}
+[S0] {"chain":"3064369509","days":60,"diag_fails":[],"digest":"946409882","event_digest":"2245872640699829589","events":3445,"hard_fails":[],"pass":true,"seed":8,"soft_fails":[]}
+[S0] {"chain":"3639905968","days":60,"diag_fails":[],"digest":"1853011448","event_digest":"8653234658776592698","events":3500,"hard_fails":[],"pass":true,"seed":9,"soft_fails":[]}
+[S0] {"chain":"1030912266","days":60,"diag_fails":[],"digest":"1621486003","event_digest":"66465066680451878","events":3566,"hard_fails":[],"pass":true,"seed":10,"soft_fails":[]}
+[S0] {"chain":"1168600602","days":60,"diag_fails":[],"digest":"3412477732","event_digest":"2314547531539707548","events":3486,"hard_fails":[],"pass":true,"seed":11,"soft_fails":[]}
+[S0] {"chain":"1056816583","days":60,"diag_fails":[],"digest":"3526102608","event_digest":"7751501831910385418","events":3509,"hard_fails":[],"pass":true,"seed":12,"soft_fails":[]}
+
+— 不变量跨 seed 通过率（硬=全绿必需 / 软=通过率≥11/12 / 诊断=只报不门）—
+  ✅ #01 [硬]无 need 触底（任一需求，不只饥饿）  12/12
+  ✅ #02 [软]社交发生  12/12
+  ✅ #03 [软]无永久孤立  12/12
+  ✅ #04 [软]关系分化  12/12
+  ✅ #05 [软]谣言传播  12/12
+  ✅ #06 [硬]知识边界  12/12
+  ✅ #07 [硬]账本可溯源  12/12
+  ✅ #08 [软]承诺生命周期  12/12
+  ✅ #09 [硬]无悬挂承诺  12/12
+  ✅ #10 [硬]违约可溯源有后果  12/12
+  ✅ #11 [软]冲突生命周期  12/12
+  ✅ #12 [硬]先对质后和解  12/12
+  ✅ #13 [硬]修复可溯源  12/12
+  ✅ #14 [软]standing分化  12/12
+  🔎 #15 [诊断]涌现放逐  12/12  (不入门·度量已知泄漏,见 docs/31)
+  ✅ #16 [软]声誉传播  12/12
+  ✅ #17 [软]坏名声形成可恢复  12/12
+  ✅ #18 [软]观点演化不坍缩  12/12
+  ✅ #19 [软]有界信任Deffuant  12/12
+  ✅ #20 [软]谣言变冷MakiThompson  12/12
+  ✅ #21 [硬]秘密专道  12/12
+  ✅ #22 [硬]背叛有后果可溯源  12/12
+  ✅ #23 [硬]背叛重挫名声  12/12
+  ✅ #24 [硬]背叛无误判  12/12
+  ✅ #25 [硬]S3派系派生一致(对齐且相识)  12/12
+  ✅ #26 [软]S3同派系亲和>跨派系  12/12
+  ✅ #27 [硬]S3协同守边界  12/12
+  ✅ #28 [硬]S3派系视图自洽  12/12
+  ✅ #29 [硬]I-PACT互助偏内  12/12
+  ✅ #30 [硬]I-PACT-free-rider可溯源  12/12
+  ✅ #31 [硬]I-PACT结盟门达标  12/12
+  ✅ #32 [硬]I-PACT无悬挂无重复对称  12/12
+  ✅ #33 [硬]I-PACT解体可恢复  12/12
+  ✅ #34 [硬]金钱守恒  12/12
+  ✅ #35 [硬]货币非负  12/12
+  ✅ #36 [硬]节日对象配对无残留  12/12
+  ✅ #37 [硬]选举计票自洽  12/12
+  ✅ #38 [硬]库存账本自洽  12/12
+  ✅ #39 [硬]产出溯源到在班本职  12/12
+  ✅ #40 [软]产出闭环活性与供给充足  12/12
+  ✅ #41 [硬]手艺的社会痕迹(被看见·被知道·不外溢)  12/12
+  ✅ #42 [硬]生存推力的收窄(只 social·只 argmin·不反客为主)  12/12
+  ✅ #43 [硬]买卖的社会痕迹(被看见·被知道·不外溢)  12/12
+  ✅ #44 [硬]进口溯源到声明的节点与货  12/12
+
+— 套件级活性（跨全网格计数；门控类归零即红）—
+  🔒Q aid                次数=59     覆盖 seed=12/12
+  🔒 apologize          次数=525    覆盖 seed=12/12
+     betray             次数=1      覆盖 seed=1/12
+  🔒 confide            次数=87     覆盖 seed=12/12
+  🔒 conflict           次数=1172   覆盖 seed=12/12
+  🔒 confront           次数=529    覆盖 seed=12/12
+     consume            次数=3793   覆盖 seed=12/12
+  🔒 discuss            次数=1184   覆盖 seed=12/12
+  🔒 election           次数=48     覆盖 seed=12/12
+  🔒 endorse            次数=200    覆盖 seed=12/12
+     festival_despawn   次数=80     覆盖 seed=12/12
+  🔒 festival_spawn     次数=80     覆盖 seed=12/12
+  🔒 give               次数=432    覆盖 seed=12/12
+  🔒 gossip             次数=607    覆盖 seed=12/12
+  🔒 gossip_rep         次数=6939   覆盖 seed=12/12
+  🔒 greet              次数=5819   覆盖 seed=12/12
+     import             次数=239    覆盖 seed=12/12
+  🔒 invite             次数=1068   覆盖 seed=12/12
+     leak               次数=2      覆盖 seed=1/12
+  🔒 meet               次数=1068   覆盖 seed=12/12
+     pact_formed        次数=45     覆盖 seed=12/12
+  🔒 pay                次数=13530  覆盖 seed=12/12
+     produce            次数=1466   覆盖 seed=12/12
+  🔒 rally_oust         次数=239    覆盖 seed=12/12
+     shortage           次数=576    覆盖 seed=12/12
+     spoil              次数=1951   覆盖 seed=12/12
+     world_other        次数=48     覆盖 seed=12/12
+  🔒Q aid               法定覆盖 12/12（需 ≥6，余量 6）
+  ✅ 门控事件类 17 种全部仍在发生（含法定覆盖 1 种）
+
+— 金标（跨进程锚）—
+  (未启用 --golden)
+
+— 确定性 —
+  (跳过)
+
+=== S0 GATE: PASS ✅  (硬不变量 seed 12/12 全绿, 软通过率门 ≥11/12(90%) 过, 活性 过, 金标 N/A·未传--golden, det 0/0) ===
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+     at: cleanup (core/object/object.cpp:2641)

@@ -1,0 +1,35 @@
+======================================================================
+AK1 · 当前树 docker 全绿 · tools/visual_gate.sh（LT_VISUAL=require，本机 auto→docker，tol=0）
+33 帧全 shot ok（昼夜2 + void1 + space3 + 室内7 + 季节8 + 降水12），八/九门全 PASS。
+======================================================================
+  runner=docker  mode=require
+  shot ok   vg_night.png / vg_noon.png
+  void-gate ok / space-roundtrip 采集 ok
+  shot ok   vg_int_{home,home2,cafe,shop,wash,work,library}.png
+  shot ok   {spring,summer,autumn,winter}_{noon,night}.png            ← AK1 季节 8 帧
+  shot ok   s{1,3,5}_{winter,rain}_{on,off}.png                        ← AK1 降水 12 帧
+
+=== DAYNIGHT GATE: PASS ===   （夜 (57,82,63)==expect dmax=0 tol=0）
+=== ROUNDTRIP GATE: PASS ===
+=== POND GATE PASS ✅ ===
+[INTSHELL] ✅ 室内外壳类型门 PASS（7 栋/4 类，异类最小 ΔE≥8、同类最大 ΔE≤4）
+[FURNROLE] ✅ 家具语义分化门 PASS（7 栋/5 类，异类最小 ΔE≥12、同类最大 ΔE≤8）
+[TREESTAND] ✅ 林相点阵门 PASS（昼 P≈27 / 夜 P≈13，地面色占比≈8-9%）
+
+---- AK1 季节可分门（AF2 判据，原地引用）----
+[SEASON] 昼/春 (134,179,63) 夏 (105,154,43) 秋 (170,161,42) 冬 (134,171,112)
+    春↔夏 8.06  春↔秋 13.08  春↔冬 9.43  夏↔秋 15.02  夏↔冬 10.87  秋↔冬 16.70
+[SEASON] 昼 最小两两 ΔE00 = 8.06 (春↔夏)  阈值 3.20  ⇒ PASS
+[SEASON] 夜/春 (57,84,51) 夏 (45,73,34) 秋 (72,76,33) 冬 (57,80,89)
+    春↔夏 4.30  春↔秋 8.96  春↔冬 20.01  夏↔秋 8.51  夏↔冬 22.33  秋↔冬 23.47
+[SEASON] 夜 最小两两 ΔE00 = 4.30 (春↔夏)  阈值 3.20  ⇒ PASS   ← 夜是约束档
+=== SEASON GATE: PASS ===
+
+---- AK1 降水可见门（AI1 判据，原地引用）----
+  PASS A1 SNOW s1_winter_on coverage=1617  s3_winter_on=1154  s5_winter_on=3505  (min=600)
+  PASS A2 RAIN s1_rain_on  coverage=1458   s3_rain_on=1458    s5_rain_on=1458    (min=700)
+=== PRECIP GATE: PASS ===
+
+★ 季节/降水每一个数与 AF2（编号122 envelope.txt）/AI1（编号129 envelope.txt）逐值相同 ⇒ 接线零漂移。
+★ 33 帧全 shot ok ⇒ vg_shoot 的致命错误标记集在 clean 帧上 0 假红。
+（本机全量 tools/ci.sh 原始输出见 analysis/ak1/ci_full.log，判决行 === CI PASS ✅ ===。）

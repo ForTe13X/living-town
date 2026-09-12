@@ -1,0 +1,16 @@
+=== n_sweep: 12 片待跑（48 局，1920 agent-局）· jobs=12 ===
+[  1/ 12] rc=0   386s N=40 seeds=25-28 -> ship_n40_s25-28.jsonl
+[  2/ 12] rc=0   392s N=40 seeds=29-32 -> ship_n40_s29-32.jsonl
+[  3/ 12] rc=0   385s N=40 seeds=33-36 -> ship_n40_s33-36.jsonl
+[  4/ 12] rc=0   392s N=40 seeds=37-40 -> ship_n40_s37-40.jsonl
+[  5/ 12] rc=0   389s N=40 seeds=41-44 -> ship_n40_s41-44.jsonl
+[  6/ 12] rc=0   380s N=40 seeds=45-48 -> ship_n40_s45-48.jsonl
+[  7/ 12] rc=0   395s N=40 seeds=49-52 -> ship_n40_s49-52.jsonl
+[  8/ 12] rc=0   387s N=40 seeds=53-56 -> ship_n40_s53-56.jsonl
+[  9/ 12] rc=0   387s N=40 seeds=57-60 -> ship_n40_s57-60.jsonl
+[ 10/ 12] rc=0   381s N=40 seeds=1-4 -> noscale_n40_s1-4.jsonl
+[ 11/ 12] rc=0   387s N=40 seeds=5-8 -> noscale_n40_s5-8.jsonl
+[ 12/ 12] rc=0   387s N=40 seeds=9-12 -> noscale_n40_s9-12.jsonl
+=== n_sweep done 墙钟=395s ===
+✅ 逐文件断言全过（seed 集合 / 无重复 / n_agents / days / 单段抬头 / 无 MISMATCH）
+SWEEP_RC=0

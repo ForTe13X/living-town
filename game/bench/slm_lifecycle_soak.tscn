@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bbnchslm0002"]
+
+[ext_resource type="Script" path="res://bench/slm_lifecycle_soak.gd" id="1_ls"]
+
+[node name="SlmLifecycleSoak" type="Node"]
+script = ExtResource("1_ls")

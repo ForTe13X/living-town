@@ -1,0 +1,540 @@
+{
+  "_meta": {
+    "note": "互补性锚：哪些夹具是哪条不变量【唯一】的活输入来源。由 tools/gate_fixture_audit.py --run --bake-ledger 烘，由 tools/gate_complement_guard.py 每次 CI 现读一遍。期望值不写在守卫里，只写在这里——守卫那一侧没有任何冻结字面量。",
+    "baked_by": "GODOT=… python tools/gate_fixture_audit.py --run --bake-ledger",
+    "baked_at": "2026-08-26",
+    "baked_commit": "51c8044e2a8d7a495985ff1336511cc059aae052",
+    "baked_game_tree": "369c9f51103265cd7db1afafa8436694dea3a1ab",
+    "hard_ids_at_bake": [
+      1,
+      6,
+      7,
+      9,
+      10,
+      12,
+      13,
+      21,
+      22,
+      23,
+      24,
+      25,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46
+    ],
+    "dead_at_bake": [],
+    "rebake_history": [
+      "2026-08-02 · 烘于 commit c9e6ee6 · 7 个夹具 × 34 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-02 · 烘于 commit 31b43e8 · 7 个夹具 × 34 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-02 · 烘于 commit 31b43e8 · 7 个夹具 × 34 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-02 · 烘于 commit abc74b3 · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-06 · 烘于 commit 3412b25 · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-07 · 烘于 commit f9e2f27 · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-07 · 烘于 commit 2ddbe2f · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-07 · 烘于 commit ee54cc7 · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-07 · 烘于 commit d37c5a0 · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-07 · 烘于 commit f11d689 · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-07 · 烘于 commit f017af4 · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-07 · 烘于 commit dbf2b6d · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-08 · 烘于 commit 8b85a7c · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-08 · 烘于 commit e247232 · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-08 · 烘于 commit 584e4bb · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-08 · 烘于 commit 904a69d · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-08 · 烘于 commit c1bccc2 · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-08 · 烘于 commit 837c056 · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-08 · 烘于 commit 76fe47d · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-08 · 烘于 commit 0ac8708 · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-08 · 烘于 commit 8c1c0d3 · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-09 · 烘于 commit 51867bb · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-09 · 烘于 commit bf79241 · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-09 · 烘于 commit d3b6b66 · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-09 · 烘于 commit 42d27a0 · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-10 · 烘于 commit 86e1d4e · 7 个夹具 × 35 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-10 · 烘于 commit 58964ca · 7 个夹具 × 38 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-10 · 烘于 commit 0fe0814 · 7 个夹具 × 38 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-21 · 烘于 commit f06cc67 · 7 个夹具 × 38 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-21 · 烘于 commit 217cfd3 · 7 个夹具 × 38 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-24 · 烘于 commit c380bf5 · 7 个夹具 × 38 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-25 · 烘于 commit 9976a8b · 7 个夹具 × 38 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-26 · 烘于 commit 5ac0e68 · 7 个夹具 × 38 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-08-26 · 烘于 commit 51c8044 · 7 个夹具 × 38 条 C/G 不变量 · 烘锚时处处空转的：（无）"
+    ]
+  },
+  "fixtures": {
+    "S0": {
+      "step": "4 S0 门",
+      "requires": [
+        {
+          "file": "tools/ci.sh",
+          "pattern": "bench/Harness\\.gd(?:[\\s\\S]{0,400}?)--golden",
+          "why": "第 4 步 S0 门（带跨进程金标锚的那一次 Harness 调用）"
+        }
+      ],
+      "floors": {
+        "CI_SEEDS": {
+          "kind": "seeds",
+          "value": 12
+        },
+        "CI_DAYS": {
+          "kind": "int",
+          "value": 60
+        }
+      }
+    },
+    "POOL16": {
+      "step": "4a 宏观池尺度门",
+      "requires": [
+        {
+          "file": "tools/ci.sh",
+          "pattern": "bench/Harness\\.gd(?:[\\s\\S]{0,400}?)--agents \"\\$POOL_N\"",
+          "why": "第 4a 步宏观池尺度门（传 --agents 的那一次 Harness 调用）"
+        }
+      ],
+      "floors": {
+        "CI_POOL_SEEDS": {
+          "kind": "seeds",
+          "value": 12
+        },
+        "CI_POOL_DAYS": {
+          "kind": "int",
+          "value": 60
+        },
+        "CI_POOL_N": {
+          "kind": "int",
+          "value": 16
+        }
+      }
+    },
+    "BG30": {
+      "step": "4d/4e 后端门（backend=null 代理）",
+      "requires": [
+        {
+          "file": "tools/ci.sh",
+          "pattern": "bench/BackendGate\\.tscn",
+          "why": "第 4d 步外部后端门（模型路唯一的硬不变量门）"
+        }
+      ],
+      "floors": {
+        "CI_BG_SEEDS": {
+          "kind": "seeds",
+          "value": 4
+        },
+        "CI_BG_DAYS": {
+          "kind": "int",
+          "value": 30
+        },
+        "CI_BG_N": {
+          "kind": "int",
+          "value": 12
+        }
+      }
+    },
+    "DET_default": {
+      "step": "4c DetGate/default",
+      "requires": [
+        {
+          "file": "tools/ci.sh",
+          "pattern": "bench/DetGate\\.gd",
+          "why": "第 4c 步场景确定性门"
+        },
+        {
+          "file": "game/bench/DetGate.gd",
+          "pattern": "TRACKS\\s*:=\\s*\\[\\s*\"\"",
+          "why": "DetGate.TRACKS 里的 `(default)` 轨"
+        }
+      ],
+      "floors": {
+        "CI_DG_SEEDS": {
+          "kind": "seeds",
+          "value": 4
+        },
+        "CI_DG_DAYS": {
+          "kind": "int",
+          "value": 20
+        }
+      }
+    },
+    "DET_faction": {
+      "step": "4c DetGate/faction",
+      "requires": [
+        {
+          "file": "tools/ci.sh",
+          "pattern": "bench/DetGate\\.gd",
+          "why": "第 4c 步场景确定性门"
+        },
+        {
+          "file": "game/bench/DetGate.gd",
+          "pattern": "TRACKS\\s*:=\\s*\\[[^\\]]*\"faction\"",
+          "why": "DetGate.TRACKS 里的 `faction` 轨"
+        }
+      ],
+      "floors": {
+        "CI_DG_SEEDS": {
+          "kind": "seeds",
+          "value": 4
+        },
+        "CI_DG_DAYS": {
+          "kind": "int",
+          "value": 20
+        }
+      }
+    },
+    "DET_betray": {
+      "step": "4c DetGate/betray",
+      "requires": [
+        {
+          "file": "tools/ci.sh",
+          "pattern": "bench/DetGate\\.gd",
+          "why": "第 4c 步场景确定性门"
+        },
+        {
+          "file": "game/bench/DetGate.gd",
+          "pattern": "TRACKS\\s*:=\\s*\\[[^\\]]*\"betray\"",
+          "why": "DetGate.TRACKS 里的 `betray` 轨"
+        }
+      ],
+      "floors": {
+        "CI_DG_SEEDS": {
+          "kind": "seeds",
+          "value": 4
+        },
+        "CI_DG_DAYS": {
+          "kind": "int",
+          "value": 20
+        }
+      }
+    },
+    "DET_freerider": {
+      "step": "4c DetGate/freerider",
+      "requires": [
+        {
+          "file": "tools/ci.sh",
+          "pattern": "bench/DetGate\\.gd",
+          "why": "第 4c 步场景确定性门"
+        },
+        {
+          "file": "game/bench/DetGate.gd",
+          "pattern": "TRACKS\\s*:=\\s*\\[[^\\]]*\"freerider\"",
+          "why": "DetGate.TRACKS 里的 `freerider` 轨"
+        }
+      ],
+      "floors": {
+        "CI_DG_SEEDS": {
+          "kind": "seeds",
+          "value": 4
+        },
+        "CI_DG_DAYS": {
+          "kind": "int",
+          "value": 20
+        }
+      }
+    }
+  },
+  "providers": {
+    "1": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "BG30"
+    ],
+    "3": [
+      "S0",
+      "POOL16"
+    ],
+    "5": [
+      "S0",
+      "POOL16"
+    ],
+    "6": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "7": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "9": [
+      "S0",
+      "POOL16",
+      "DET_faction",
+      "DET_freerider",
+      "BG30"
+    ],
+    "10": [
+      "S0",
+      "POOL16"
+    ],
+    "12": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "13": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "16": [
+      "S0",
+      "POOL16"
+    ],
+    "18": [
+      "S0",
+      "POOL16"
+    ],
+    "19": [
+      "S0",
+      "POOL16"
+    ],
+    "20": [
+      "S0"
+    ],
+    "21": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_betray",
+      "BG30"
+    ],
+    "22": [
+      "S0",
+      "DET_betray"
+    ],
+    "23": [
+      "S0",
+      "DET_betray"
+    ],
+    "24": [
+      "S0",
+      "DET_betray"
+    ],
+    "25": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "26": [
+      "S0",
+      "POOL16"
+    ],
+    "27": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "28": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "29": [
+      "S0",
+      "POOL16"
+    ],
+    "30": [
+      "S0",
+      "POOL16",
+      "DET_freerider"
+    ],
+    "31": [
+      "S0",
+      "POOL16",
+      "DET_freerider",
+      "BG30"
+    ],
+    "32": [
+      "S0",
+      "POOL16",
+      "DET_freerider",
+      "BG30"
+    ],
+    "33": [
+      "S0",
+      "POOL16",
+      "DET_freerider"
+    ],
+    "34": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "35": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "36": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "37": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "38": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "39": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "40": [
+      "S0",
+      "POOL16"
+    ],
+    "41": [
+      "S0",
+      "POOL16"
+    ],
+    "43": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "DET_faction",
+      "DET_betray",
+      "DET_freerider",
+      "BG30"
+    ],
+    "44": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "BG30"
+    ],
+    "45": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "BG30"
+    ],
+    "46": [
+      "S0",
+      "POOL16",
+      "DET_default",
+      "BG30"
+    ]
+  },
+  "invariant_kinds": {
+    "1": "G",
+    "2": "A",
+    "3": "C",
+    "4": "A",
+    "5": "G",
+    "6": "C",
+    "7": "C",
+    "8": "A",
+    "9": "C",
+    "10": "C",
+    "11": "A",
+    "12": "C",
+    "13": "C",
+    "14": "A",
+    "15": "D",
+    "16": "G",
+    "17": "A",
+    "18": "G",
+    "19": "G",
+    "20": "G",
+    "21": "C",
+    "22": "C",
+    "23": "C",
+    "24": "C",
+    "25": "C",
+    "26": "G",
+    "27": "C",
+    "28": "C",
+    "29": "G",
+    "30": "C",
+    "31": "C",
+    "32": "C",
+    "33": "C",
+    "34": "G",
+    "35": "C",
+    "36": "C",
+    "37": "C",
+    "38": "G",
+    "39": "C",
+    "40": "G",
+    "41": "G",
+    "42": "A",
+    "43": "G",
+    "44": "C",
+    "45": "C",
+    "46": "C"
+  }
+}

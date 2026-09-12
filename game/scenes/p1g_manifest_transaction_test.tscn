@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource path="res://scripts/p1g_manifest_transaction_test.gd" type="Script" id="1"]
+
+[node name="P1GManifestTransactionTest" type="Node"]
+script = ExtResource("1")

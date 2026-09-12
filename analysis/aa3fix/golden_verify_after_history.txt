@@ -1,0 +1,174 @@
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+  ✅ 哈希自检：6 条 fnv1a32 + 4 条 mix32 测试向量全对（项目自有哈希，不依赖引擎 String.hash()）
+=== Causal Bench S0 · 不变量回归门  seeds=[1, 2] days=60 ===
+[S0] {"chain":"2588462706","days":60,"diag_fails":[],"digest":"2354668902","event_digest":"7824884320643865142","events":3336,"hard_fails":[],"pass":true,"seed":1,"soft_fails":[]}
+[S0] {"chain":"89356086","days":60,"diag_fails":[],"digest":"3926188800","event_digest":"91487667824783759","events":3379,"hard_fails":[],"pass":true,"seed":2,"soft_fails":[]}
+
+— 不变量跨 seed 通过率（硬=全绿必需 / 软=通过率≥1/2 / 诊断=只报不门）—
+  ✅ #01 [硬]无 need 触底（任一需求，不只饥饿）  2/2
+  ✅ #02 [软]社交发生  2/2
+  ✅ #03 [软]无永久孤立  2/2
+  ✅ #04 [软]关系分化  2/2
+  ✅ #05 [软]谣言传播  2/2
+  ✅ #06 [硬]知识边界  2/2
+  ✅ #07 [硬]账本可溯源  2/2
+  ✅ #08 [软]承诺生命周期  2/2
+  ✅ #09 [硬]无悬挂承诺  2/2
+  ✅ #10 [硬]违约可溯源有后果  2/2
+  ✅ #11 [软]冲突生命周期  2/2
+  ✅ #12 [硬]先对质后和解  2/2
+  ✅ #13 [硬]修复可溯源  2/2
+  ✅ #14 [软]standing分化  2/2
+  🔎 #15 [诊断]涌现放逐  2/2  (不入门·度量已知泄漏,见 docs/31)
+  ✅ #16 [软]声誉传播  2/2
+  ✅ #17 [软]坏名声形成可恢复  2/2
+  ✅ #18 [软]观点演化不坍缩  2/2
+  ✅ #19 [软]有界信任Deffuant  2/2
+  ✅ #20 [软]谣言变冷MakiThompson  2/2
+  ✅ #21 [硬]秘密专道  2/2
+  ✅ #22 [硬]背叛有后果可溯源  2/2
+  ✅ #23 [硬]背叛重挫名声  2/2
+  ✅ #24 [硬]背叛无误判  2/2
+  ✅ #25 [硬]S3派系派生一致(对齐且相识)  2/2
+  ✅ #26 [软]S3同派系亲和>跨派系  2/2
+  ✅ #27 [硬]S3协同守边界  2/2
+  ✅ #28 [硬]S3派系视图自洽  2/2
+  ✅ #29 [硬]I-PACT互助偏内  2/2
+  ✅ #30 [硬]I-PACT-free-rider可溯源  2/2
+  ✅ #31 [硬]I-PACT结盟门达标  2/2
+  ✅ #32 [硬]I-PACT无悬挂无重复对称  2/2
+  ✅ #33 [硬]I-PACT解体可恢复  2/2
+  ✅ #34 [硬]金钱守恒  2/2
+  ✅ #35 [硬]货币非负  2/2
+  ✅ #36 [硬]节日对象配对无残留  2/2
+  ✅ #37 [硬]选举计票自洽  2/2
+  ✅ #38 [硬]库存账本自洽  2/2
+  ✅ #39 [硬]产出溯源到在班本职  2/2
+  ✅ #40 [软]产出闭环活性与供给充足  2/2
+  ✅ #41 [硬]手艺的社会痕迹(被看见·被知道·不外溢)  2/2
+  ✅ #42 [硬]生存推力的收窄(只 social·只 argmin·不反客为主)  2/2
+  ✅ #43 [硬]买卖的社会痕迹(被看见·被知道·不外溢)  2/2
+
+— 套件级活性（跨全网格计数；门控类归零即红）—
+  ⏳Q aid                次数=27     覆盖 seed=2/2
+  🔒 apologize          次数=56     覆盖 seed=2/2
+  🔒 confide            次数=21     覆盖 seed=2/2
+  🔒 conflict           次数=168    覆盖 seed=2/2
+  🔒 confront           次数=61     覆盖 seed=2/2
+     consume            次数=607    覆盖 seed=2/2
+  🔒 discuss            次数=224    覆盖 seed=2/2
+  🔒 election           次数=8      覆盖 seed=2/2
+  🔒 endorse            次数=38     覆盖 seed=2/2
+     festival_despawn   次数=11     覆盖 seed=2/2
+  🔒 festival_spawn     次数=11     覆盖 seed=2/2
+  🔒 give               次数=72     覆盖 seed=2/2
+  🔒 gossip             次数=106    覆盖 seed=2/2
+  🔒 gossip_rep         次数=888    覆盖 seed=2/2
+  🔒 greet              次数=1034   覆盖 seed=2/2
+  🔒 invite             次数=205    覆盖 seed=2/2
+  🔒 meet               次数=205    覆盖 seed=2/2
+     pact_dissolved     次数=1      覆盖 seed=1/2
+     pact_formed        次数=12     覆盖 seed=2/2
+  🔒 pay                次数=2442   覆盖 seed=2/2
+     produce            次数=201    覆盖 seed=2/2
+  🔒 rally_oust         次数=24     覆盖 seed=2/2
+     shortage           次数=63     覆盖 seed=2/2
+     spoil              次数=222    覆盖 seed=2/2
+     world_other        次数=8      覆盖 seed=2/2
+  ⏳ 本跑 days=60，以下类未达最短 horizon 故不入门：["aid(quorum)"]
+  ✅ 门控事件类 16 种全部仍在发生（含法定覆盖 1 种）
+
+— 金标（跨进程锚）—
+  ✅ 金标一致 2/2 seed（含逐 tick 前缀链 2 条；烘于 godot 4.6.2-stable (official).71f334935，本机 4.6.2-stable (official).71f334935）
+
+— 确定性 —
+  (跳过)
+
+=== S0 GATE: PASS ✅  (硬不变量 seed 2/2 全绿, 软通过率门 ≥1/2(90%) 过, 活性 过, 金标 过, det 0/0) ===
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+=== DetGate · 场景确定性门  tracks=["", "faction", "betray", "freerider"] seeds=1-4 days=20 ===
+  金标：res://bench/golden_digests.json（烘于 godot 4.6.2-stable (official).71f334935）
+  [(default)] seed=1 事件=1108  硬=✅ 确定=✅ 金标=✅
+  [(default)] seed=2 事件=1097  硬=✅ 确定=✅ 金标=✅
+  [(default)] seed=3 事件=1057  硬=✅ 确定=✅ 金标=✅
+  [(default)] seed=4 事件=1133  硬=✅ 确定=✅ 金标=✅
+  [faction] seed=1 事件=1140  硬=✅ 确定=✅ 金标=✅
+  [faction] seed=2 事件=1103  硬=✅ 确定=✅ 金标=✅
+  [faction] seed=3 事件=1065  硬=✅ 确定=✅ 金标=✅
+  [faction] seed=4 事件=1013  硬=✅ 确定=✅ 金标=✅
+  [betray] seed=1 事件=1116  硬=✅ 确定=✅ 金标=✅
+  [betray] seed=2 事件=1073  硬=✅ 确定=✅ 金标=✅
+  [betray] seed=3 事件=1128  硬=✅ 确定=✅ 金标=✅
+  [betray] seed=4 事件=1111  硬=✅ 确定=✅ 金标=✅
+  [freerider] seed=1 事件=1063  硬=✅ 确定=✅ 金标=✅
+  [freerider] seed=2 事件=1066  硬=✅ 确定=✅ 金标=✅
+  [freerider] seed=3 事件=1052  硬=✅ 确定=✅ 金标=✅
+  [freerider] seed=4 事件=1048  硬=✅ 确定=✅ 金标=✅
+
+=== DetGate: PASS ✅  (硬不变量 16/16, 同seed两跑一致 16/16, 数据指纹一致 16/16[1412772156], 金标 16/16 可比) ===
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+=== ModelPathGate · 模型路径对照 seeds=1-4 days=8 N=12 ===
+  [A] 闭集选号编码契约
+    ✅ 系统 prompt 无字面示例编号（残留数字 ''）
+    ✅ [0,cap) 的 label 全是单个 A-Z（越界：）
+    ✅ label↔index 往返恒等（破：）
+    ✅ 数字不再是合法编号（fail-closed 到引擎兜底）
+    ✅ 40 候选 → 裁到 26（实测 26）
+    ✅ 裁剪后保持枚举序（不是按 score 降序喂模型）—— 实测首项 'a14'（应为 'a14'）
+    ✅ ≤cap 时原样返回、保持枚举序
+    ✅ parse_decision(label(i)) ≡ candidates[i]（破：）
+ERROR: Parse JSON failed. Error at line 0: Expected 'true', 'false', or 'null', got 'A'
+   at: parse_string (core/io/json.cpp:624)
+   GDScript backtrace (most recent call first):
+       [0] parse_decision (res://scripts/AIBackend.gd:894)
+       [1] _part_a (res://bench/ModelPathGate.gd:153)
+       [2] _ready (res://bench/ModelPathGate.gd:70)
+    ✅ prose fail-closed 仍然有效
+  [B] SLM 熔断器复位
+    ✅ 起点：熔断器是关的
+WARNING: [SLM] 熔断触发：连续 6 次超时且无成功 → 停发 SLM、回退 logic 地板（防原生内存泄漏 OOM，见 docs/34；换模型/换推理档可解除）
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] decide (res://scripts/AIBackend.gd:858)
+       [1] _trip (res://bench/ModelPathGate.gd:246)
+       [2] _part_b (res://bench/ModelPathGate.gd:185)
+       [3] _ready (res://bench/ModelPathGate.gd:71)
+    ✅ 连续 6 次超时 → 熔断器开（实测触发于第 6 次）
+    ✅ 熔断后 decide() 走引擎地板（不再 fire）
+[SLM] 熔断解除：换权重文件 → __modelpathgate_probe.gguf（新的失败假设，不继承旧熔断）
+    ✅ set_model_path() 后熔断器关
+    ✅ set_model_path() 后连败计数清零（否则新模型只剩 1 次机会，不是 6 次）
+WARNING: [SLM] 熔断触发：连续 6 次超时且无成功 → 停发 SLM、回退 logic 地板（防原生内存泄漏 OOM，见 docs/34；换模型/换推理档可解除）
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] decide (res://scripts/AIBackend.gd:858)
+       [1] _trip (res://bench/ModelPathGate.gd:246)
+       [2] _part_b (res://bench/ModelPathGate.gd:204)
+       [3] _ready (res://bench/ModelPathGate.gd:71)
+    ✅ ③ 前置：熔断器再次打开
+    ✅ request_backend() 后熔断器**仍然开着**（这条路刻意没改）
+[SLM] 熔断解除：切换推理档 → CPU（新的失败假设，不继承旧熔断）
+    ✅ set_slm_use_gpu() 后熔断器关
+  [C] random(full) 臂逐 seed 摘要 ×【提交锚】比对
+    seed=1  inv_digest=129274828  event_digest=351755360139655785  landed=681
+    seed=2  inv_digest=1879144336  event_digest=7275795326261309778  landed=664
+    seed=3  inv_digest=833288000  event_digest=2025998328644289860  landed=664
+    seed=4  inv_digest=3038319620  event_digest=8321786697441672602  landed=646
+    候选规模：max|C|=40，|C|>26 的决策点 88/2655（旧上限 |C|>36：4/2655）
+    ✅ 锚在位且含本网格 days8_n12（锚=res://bench/modelpath_anchor.json；重烘：--bake-anchor game/bench/modelpath_anchor.json）
+    ✅ seed=1 逐字节对上锚（差：）
+    ✅ seed=2 逐字节对上锚（差：）
+    ✅ seed=3 逐字节对上锚（差：）
+    ✅ seed=4 逐字节对上锚（差：）
+    ✅ 候选规模对上锚——裁剪仍然真的在生效（差：）
+
+=== ModelPathGate: PASS ✅  (失败 0)
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)

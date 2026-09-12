@@ -1,0 +1,18 @@
+=== CI PASS ✅ ===   (LT_VISUAL=require LT_VISUAL_RUNNER=docker bash tools/ci.sh，本 worktree 提交前跑)
+  ⏱  全程 1302s（现算的，非抄；机器忙闲会浮动）
+  exit 0，0 步判红（grep "❌ FAIL:" = 0）
+
+0–6 每步全绿，关键判决行：
+  1b map audit           AUDIT PASS（walkable=2653 / blockers=403，与改前同）
+  3  import/parse        clean（WorldView.gd 无 SCRIPT ERROR/Parse Error）
+  4  S0 gate             PASS ✅（硬 12/12 + 软 ≥11/12 + 活性 + 金标 12/12含链 + det 3/3）
+  4b LOD-VERIFY          PASS ✅（V2 相机路径无关 + V3abc 确定性/存读/fresh-restart）
+  4h state_projection    PASS ✅（0 fail）
+  6  视觉门              DAYNIGHT/ROUNDTRIP/POND/INTSHELL/FURNROLE/TREESTAND(昼+夜)/SEASON/PRECIP/CAFE2F/FLOOR-ROUNDTRIP 全 PASS
+                         空间往返 变化像素=0/366800 (0.000%) —— town_after==town_before 逐字节相同
+
+⚠️ 2e 可重算门里有两条 `否`(gate:false) 的信息行打 ❌，但门本身 `✅ PASS`（recalc.py:38「gate:true 有一条不对才 rc=1」）：
+  - palette-gpl-de00-6p3   6.3 vs 8.0659  —— 读 `game/assets/art/palette.gpl`（本棒未碰）；注释库明写「不判红」（合成链不在树上 + palette.gpl 不许改）。**改前即如此、与本棒无关。**
+  - lint-links-md-count    93 vs 167      —— 数 markdown 文件数的快照，注册表明写「结构上不该上门」（随任何加文档漂移）。本棒新增 docs/141 使它 +1，但 gate:false 不阻门。
+
+⚠️ 互补性守卫（2f）本次为提交前跑 = 假新鲜（HEAD:game 尚=baked 旧树，同 docs/140 §⑤）——不算数；协调者 finalize 需在 committed 树重烘重跑。

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b21pickctxdmp1"]
+
+[ext_resource type="Script" path="res://bench/PickCtxDump.gd" id="1_pcd"]
+
+[node name="PickCtxDump" type="Node"]
+script = ExtResource("1_pcd")

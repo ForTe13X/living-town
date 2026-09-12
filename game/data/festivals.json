@@ -1,5 +1,6 @@
 {
   "_doc": "Wave 2b 节日（docs/15 §3）。缺此文件=无节日(引擎逐字节不变)。调度=确定函数 day%every_days==offset 且天气∈weather_req(不合则顺延——天气→节日解锁链)。objects=当日 spawn 的机会地形(WorldPatch 唯一通道,id=fest_名_日_序,次日清场,写 world 事件溯源)；高吸引力 advertise 让人群自发聚拢,不写剧本。",
+  "_anchor_note": "B17：灯笼锚点必须落在【人群本来就会去的地方】。旧点 [12,7] 在 home2(民居 rect [9,4,6,5])屋内、离广场 30 格(曼哈顿)、离 12 位居民的家 17-24 格——不是没人来(实测 12seed×60d 仍有 126 人次)，而是 _object_candidates 的 score=benefit-曼哈顿×0.4 让它只在少数人恰好在西镇时才竞争得过广场游戏机：人均 1.58 人/节日，且 75% 的节日时长花在【走路】上，'聚拢'从未发生(seed8 全程 0 tick 有两人同时在场)。改锚广场中心 [31,24](bench_1[30,23] 与 arcade_1[33,24] 之间,不与任何家具/地标同格;fest_ 对象按 Sim.gd:2882 不入导航网,故永不挡路) → 9.94 人/节日、聚拢 84 tick/节日。移锚必然移 digest(受控,见 golden_digests._meta.rebake_history)。",
   "festivals": {
     "灯会": {
       "every_days": 7,
@@ -7,7 +8,7 @@
       "weather_req": ["晴", "阴"],
       "objects": [
         {
-          "pos": [12, 7],
+          "pos": [31, 24],
           "advertises": [
             { "action": "逛灯会", "need": "fun", "amount": 62, "duration": 14 }
           ]

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b26twevprose118"]
+
+[ext_resource type="Script" path="res://scripts/event_prose_test.gd" id="1_evprose"]
+
+[node name="EventProseTest" type="Node"]
+script = ExtResource("1_evprose")

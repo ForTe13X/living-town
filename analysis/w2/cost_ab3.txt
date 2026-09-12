@@ -1,0 +1,8 @@
+# 交替跑：每一轮里 N=16 → 24 → 40 首尾相接。命令与 ci.sh 4a 同形（不传 --golden，理由见 4a 注释）。
+round=1 N=16 wall=273s rc=0 S0 GATE: PASS | #40 [软]产出闭环活性与供给充足  12/12
+round=1 N=24 wall=410s rc=1 S0 GATE: FAIL | #40 [软]产出闭环活性与供给充足  10/12
+round=1 N=40 wall=948s rc=1 S0 GATE: FAIL | #40 [软]产出闭环活性与供给充足  10/12
+round=2 N=16 wall=250s rc=0 S0 GATE: PASS | #40 [软]产出闭环活性与供给充足  12/12
+round=2 N=24 wall=476s rc=1 S0 GATE: FAIL | #40 [软]产出闭环活性与供给充足  10/12
+round=2 N=40 wall=1008s rc=1 S0 GATE: FAIL | #40 [软]产出闭环活性与供给充足  10/12
+DONE

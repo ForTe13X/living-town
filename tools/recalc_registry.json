@@ -1,0 +1,117 @@
+{
+  "_readme": [
+    "可重算注册表 —— tools/recalc.py 的输入。编号 82 · U3。",
+    "",
+    "一条 = 一个【写进文档的数】+【今天能把它重新算出来的那条命令】。",
+    "期望值不写在这里，由 locator 从文档正文现抓；实测值由 command 现跑现出。",
+    "⇒ 全仓这个数只有一份（在文档里），本文件里唯一冻结的是容差。",
+    "",
+    "★ 什么能上门、什么不能 —— 这条是本棒量出来的，不是拍的：",
+    "  能上门 = 【HEAD 这棵树的性质】。它只在被量的那件东西变了的时候才动。",
+    "  不能上门 = 【随时间移动的快照】。lint_links 的 \"93 份 markdown\" 就是这一类：",
+    "            谁加一份文档它都会变，而那与被记录的那件事无关。",
+    "            给这种数上门 = 造一道会因为无关改动变红的门，而那比没有门更坏",
+    "            （docs/41 §6：它训练所有人忽略红色）。",
+    "  ⇒ gate:false 的条目仍然每次跑、仍然打印对照，只是不判红。它们必须写 why。",
+    "",
+    "加一条的成本：写 locator + extract 两个正则，跑一次 `python tools/recalc.py --verify`。",
+    "⚠️ locator 与 extract 都要求【恰好命中一次】——命中 0 次或多次都红。",
+    "   这一条比数值比对更早生效：它守的是『这个数还在不在它该在的地方』。"
+  ],
+
+  "commands": {
+    "asset_gate": {
+      "argv": ["python", "tools/asset_gate.py"],
+      "cost_s": 0.5,
+      "note": "只要 Pillow，不进 godot / docker。CI 第 2d 步本来就跑它，这里是第二次跑（0.5s）。"
+    },
+    "ciede_pair_grass": {
+      "argv": ["python", "tools/ciede2000.py", "--names", "grass-spring", "grass-summer"],
+      "cost_s": 0.3,
+      "note": "锚点对锚点，输入是 game/assets/art/palette.gpl 里的两条。"
+    },
+    "ciede_selftest": {
+      "argv": ["python", "tools/ciede2000.py", "--self-test"],
+      "cost_s": 0.3,
+      "note": "外部真值 Sharma-Wu-Dalal 34 对。"
+    },
+    "lint_links": {
+      "argv": ["python", "tools/lint_links.py"],
+      "cost_s": 0.2,
+      "note": "CI 第 2 步本来就跑它。"
+    }
+  },
+
+  "entries": [
+    {
+      "id": "assetgate-bleed-worst",
+      "doc": "docs/73-wave-s-s2-denominator-and-gate-teeth.md",
+      "locator": "阴性最高 ([0-9.]+) / 地板 0\\.10",
+      "command": "asset_gate",
+      "extract": "最大断口 decor/tree_small = ([0-9.]+) <",
+      "tol": 0.0,
+      "gate": true,
+      "note": "S2 §二·3 把这条列进【重算并打印】那一族并判为『✅ 逐位』。现在这句判断本身也被机检了。"
+    },
+    {
+      "id": "assetgate-sep-src",
+      "doc": "docs/73-wave-s-s2-denominator-and-gate-teeth.md",
+      "locator": "两两可分（源） \\| (\\d+) ≥ 60",
+      "command": "asset_gate",
+      "extract": "源 min=(\\d+) ≥ 60",
+      "tol": 0.0,
+      "gate": true
+    },
+    {
+      "id": "assetgate-sep-grey28",
+      "doc": "docs/73-wave-s-s2-denominator-and-gate-teeth.md",
+      "locator": "两两可分（灰度） \\| ([0-9.]+) ≥ 10\\.0",
+      "command": "asset_gate",
+      "extract": "28px 灰度 min=([0-9.]+) ≥",
+      "tol": 0.0,
+      "gate": true
+    },
+    {
+      "id": "ciede-grass-anchor",
+      "doc": "docs/82-wave-u-u3-recomputable.md",
+      "locator": "锚点对锚点 ΔE00 = \\*\\*([0-9.]+)\\*\\*",
+      "command": "ciede_pair_grass",
+      "extract": "ΔE00 = ([0-9.]+)",
+      "tol": 0.0,
+      "gate": true,
+      "note": "只在 palette.gpl 的那两条色改动时才会动 —— 那正是希望它红的时刻。"
+    },
+    {
+      "id": "ciede-sharma",
+      "doc": "docs/82-wave-u-u3-recomputable.md",
+      "locator": "Sharma-Wu-Dalal 的 34 对里复现 \\*\\*(\\d+)\\*\\*",
+      "command": "ciede_selftest",
+      "extract": "Sharma-Wu-Dalal 34 对：(\\d+)/34 复现",
+      "tol": 0.0,
+      "gate": true,
+      "note": "外部真值。它红 = CIEDE2000 的实现被改坏了。"
+    },
+
+    {
+      "id": "palette-gpl-de00-6p3",
+      "doc": "game/assets/art/palette.gpl",
+      "locator": "相差 ΔE00 仅 ([0-9.]+)",
+      "command": "ciede_pair_grass",
+      "extract": "ΔE00 = ([0-9.]+)",
+      "tol": 0.0,
+      "gate": false,
+      "why": "对不上（写 6.3、锚点重算 8.07），但【不判红】有两个理由，缺一不可：① 源码注释写明这一族数是「四昼夜档×四季×三天气」的最差值，而那条合成链（alpha 合成→季节→大气罩→昼夜）不在树上 ⇒ 本工具只有锚点这一档尺子，量不到它；② palette.gpl 属 game/**，本棒不得修改。留在这里是为了让这条差异【每次 CI 都被打印一次】，而不是躺在某份回执里。",
+      "note": "同一个 6.3 在 palette.gpl 抬头 / docs/44:218 / WorldView.gd:115 三处 —— 三份拷贝，零保护。"
+    },
+    {
+      "id": "lint-links-md-count",
+      "doc": "docs/77-wave-t-t2-prospective-injection.md",
+      "locator": "([0-9]+) markdown files, all relative links",
+      "command": "lint_links",
+      "extract": "([0-9]+) markdown files, all relative links",
+      "tol": 0.0,
+      "gate": false,
+      "why": "结构上不该上门：它是【随文档数移动的快照】，不是 HEAD 这棵树的性质。谁加一份文档它都会变，而那与 T2 记录的那件事无关。给它上门 = 造一道会因为无关改动变红的门（docs/41 §6：那比没有门更坏）。留作对照：本注册表里唯一一条【不可上门】的样本，好让『能上门/不能上门』这条界线是有例子的。"
+    }
+  ]
+}

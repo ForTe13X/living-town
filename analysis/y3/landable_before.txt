@@ -1,0 +1,42 @@
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+=== Y3 可落地上界 · seeds=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] · 60 天 · N=12 居民 ===
+事件类型                       条数  seed       有向对       落得上     落地率  落在哪条弧上（前 4）
+gossip_rep               6795    12      6795      6084   89.5%  grudge/subject/fwd=3375  grudge/wit/rev=2292  grudge/wit/fwd=1876  grudge/target/fwd=1822  grudge/subject/rev=1578  grudge/target/rev=1346  grudge/ts/rev=989  grudge/ts/fwd=899  craft/wit/rev=580  craft/wit/fwd=462  craft/target/fwd=448  craft/ts/rev=428  craft/target/rev=339  craft/subject/rev=302  craft/ts/fwd=186  secret/ts/rev=174  secret/ts/fwd=165  craft/subject/fwd=159  pact/ts/fwd=79  secret/wit/fwd=75  pact/ts/rev=65  secret/wit/rev=63  pact/wit/rev=34  pact/wit/fwd=34  secret/subject/fwd=6  secret/subject/rev=6  promise/wit/fwd=2  promise/ts/fwd=1
+greet                    5816    12      5816      3304   56.8%  grudge/wit/fwd=1860  grudge/wit/rev=1795  craft/wit/fwd=546  craft/wit/rev=444  grudge/target/fwd=390  grudge/target/rev=333  craft/target/rev=325  craft/target/fwd=260  secret/wit/rev=55  secret/wit/fwd=54  pact/wit/fwd=39  pact/wit/rev=17  secret/target/fwd=3  secret/target/rev=3  pact/target/fwd=2  promise/wit/fwd=2  pact/target/rev=1
+pay                     13716    12      3546      1166    8.5%  grudge/target/rev=487  grudge/target/fwd=379  craft/target/rev=269  secret/target/fwd=170  secret/target/rev=161  pact/target/fwd=109  pact/target/rev=39
+meet                     1090    12      1090      1090  100.0%  promise/target/fwd=1090  secret/target/fwd=583  secret/target/rev=540  pact/target/fwd=276  pact/target/rev=254  craft/target/fwd=67  craft/target/rev=62  grudge/target/fwd=23  grudge/target/rev=22
+invite                   1091    12      1091       904   82.9%  secret/target/fwd=584  secret/target/rev=541  grudge/wit/fwd=290  pact/target/fwd=277  pact/target/rev=254  grudge/wit/rev=246  craft/wit/fwd=116  craft/wit/rev=115  craft/target/fwd=67  craft/target/rev=62  secret/wit/rev=29  secret/wit/fwd=27  grudge/target/fwd=23  grudge/target/rev=22  pact/wit/rev=11  pact/wit/fwd=6  promise/wit/fwd=1
+discuss                  1151    12      1151       589   51.2%  grudge/wit/fwd=265  grudge/wit/rev=176  grudge/target/fwd=173  grudge/target/rev=146  craft/wit/fwd=90  craft/target/rev=64  craft/wit/rev=62  craft/target/fwd=42  secret/wit/fwd=13  secret/wit/rev=13  pact/wit/rev=10  pact/wit/fwd=3  promise/wit/fwd=1
+confront                  490    12       490       485   99.0%  grudge/target/fwd=479  grudge/wit/fwd=174  grudge/wit/rev=172  grudge/target/rev=146  craft/wit/fwd=43  craft/wit/rev=43  craft/target/fwd=34  craft/target/rev=28  secret/wit/fwd=7  secret/wit/rev=7  pact/wit/rev=4  pact/wit/fwd=3  secret/target/rev=1
+apologize                 459    12       459       447   97.4%  grudge/target/rev=429  grudge/wit/fwd=174  grudge/wit/rev=145  grudge/target/fwd=98  craft/wit/fwd=81  craft/wit/rev=41  craft/target/rev=35  craft/target/fwd=26  secret/wit/rev=8  pact/wit/fwd=8  secret/wit/fwd=6  pact/wit/rev=3
+conflict                 1129    12      1129       343   30.4%  grudge/target/rev=240  craft/target/fwd=64  craft/target/rev=63  secret/target/fwd=4  secret/target/rev=4
+gossip                    568    12       568       254   44.7%  grudge/wit/rev=120  grudge/wit/fwd=100  grudge/target/fwd=75  grudge/target/rev=35  craft/wit/rev=29  craft/wit/fwd=18  craft/target/fwd=16  craft/target/rev=12  secret/wit/fwd=1  secret/wit/rev=1  pact/wit/fwd=1
+endorse                   267    12       267       242   90.6%  grudge/wit/rev=155  grudge/subject/fwd=147  grudge/ts/fwd=56  craft/wit/rev=55  grudge/wit/fwd=42  grudge/ts/rev=38  grudge/subject/rev=38  craft/ts/fwd=20  grudge/target/fwd=15  craft/subject/fwd=15  secret/ts/fwd=12  secret/ts/rev=10  grudge/target/rev=9  pact/ts/rev=3  pact/ts/fwd=1
+shortage                  548    12       548       236   43.1%  grudge/wit/rev=97  grudge/target/rev=82  grudge/wit/fwd=81  grudge/target/fwd=80  craft/wit/rev=21  craft/wit/fwd=14  craft/target/fwd=12  craft/target/rev=7  secret/wit/fwd=7  secret/wit/rev=5  pact/wit/rev=4  secret/target/rev=3  pact/wit/fwd=2  secret/target/fwd=2  pact/target/rev=2  pact/target/fwd=1
+rally_oust                228    12       228       228  100.0%  grudge/target/fwd=228  grudge/target/rev=90  grudge/wit/fwd=64  grudge/wit/rev=52  craft/wit/rev=28  craft/target/rev=10  craft/wit/fwd=7  craft/target/fwd=4  secret/wit/fwd=1  secret/wit/rev=1  pact/wit/fwd=1
+produce/witnessed         237    12       237       211   89.0%  craft/wit/fwd=397  grudge/wit/fwd=103  grudge/wit/rev=82  secret/wit/rev=4  pact/wit/fwd=4  secret/wit/fwd=3
+confide                    91    12        91        80   87.9%  secret/target/rev=41  pact/target/rev=27  pact/target/fwd=27  grudge/wit/fwd=25  grudge/wit/rev=17  craft/wit/fwd=14  craft/wit/rev=7  craft/target/rev=6  craft/target/fwd=5  secret/wit/fwd=4  secret/wit/rev=4  pact/wit/fwd=2  grudge/target/rev=1  grudge/target/fwd=1  pact/wit/rev=1
+aid                        68    11        68        68  100.0%  secret/target/fwd=50  secret/target/rev=44  pact/target/fwd=35  pact/target/rev=33  grudge/wit/fwd=25  grudge/wit/rev=19  craft/wit/fwd=7  craft/wit/rev=5  secret/wit/fwd=1  secret/wit/rev=1  craft/target/rev=1  craft/target/fwd=1
+pact/formed                44    12        44        12   27.3%  secret/target/rev=8  secret/target/fwd=7  craft/target/fwd=6  grudge/target/fwd=1  grudge/target/rev=1
+give                      432    12       432         4    0.9%  grudge/target/fwd=3  grudge/wit/fwd=1
+pact/dissolved              2     2         2         2  100.0%  secret/target/fwd=2  secret/target/rev=2  pact/target/rev=1  pact/target/fwd=1
+world/spawn               124    12         0         0    0.0%  
+world/despawn              80    12         0         0    0.0%  
+election                   48    12         0         0    0.0%  
+spoil                    1294    12         0         0    0.0%  
+consume                  3541    12         0         0    0.0%  
+produce/unseen            964    12       964         0    0.0%  
+
+=== 幕位余量（同一网格 · 逐弧统计）===
+  幕数 0：581 条弧
+  幕数 1：83 条弧
+  幕数 2：36 条弧
+  幕数 3：18 条弧
+  幕数 4：19 条弧
+  幕数 5：12 条弧
+  幕数 6：59 条弧
+  合计 808 条弧（**仅留存的**，被 MAX_CLOSED 裁掉的不在内）· 幕位已满(=6) 59 条 (7.3%) · 已有 extra 的 49 条 (6.1%)
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)
+LAND_RC=0

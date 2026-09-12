@@ -1,0 +1,15 @@
+=== E5a #40 upper-arm (缺货绝迹) seeds 1-12 ===
+seed  1 | BASE gated=7 never_short=1 [屋瓦]                         ok | WITH gated=7 never_short=2 [屋瓦,柴薪]                      ok
+seed  2 | BASE gated=7 never_short=3 [整洁,话本,豆子]                   ok | WITH gated=7 never_short=4 [屋瓦,整洁,话本,豆子]                TRIP
+seed  3 | BASE gated=7 never_short=2 [话本,豆子]                      ok | WITH gated=7 never_short=3 [整洁,话本,豆子]                   ok
+seed  4 | BASE gated=7 never_short=1 [整洁]                         ok | WITH gated=7 never_short=2 [整洁,话本]                      ok
+seed  5 | BASE gated=7 never_short=1 [整洁]                         ok | WITH gated=7 never_short=3 [整洁,话本,豆子]                   ok
+seed  6 | BASE gated=7 never_short=2 [整洁,豆子]                      ok | WITH gated=7 never_short=2 [整洁,豆子]                      ok
+seed  7 | BASE gated=7 never_short=1 [豆子]                         ok | WITH gated=7 never_short=1 [豆子]                         ok
+seed  8 | BASE gated=7 never_short=1 [屋瓦]                         ok | WITH gated=7 never_short=3 [屋瓦,整洁,话本]                   ok
+seed  9 | BASE gated=7 never_short=1 [话本]                         ok | WITH gated=7 never_short=1 [话本]                         ok
+seed 10 | BASE gated=7 never_short=3 [整洁,话本,豆子]                   ok | WITH gated=7 never_short=4 [屋瓦,整洁,话本,豆子]                TRIP
+seed 11 | BASE gated=7 never_short=2 [整洁,豆子]                      ok | WITH gated=7 never_short=2 [整洁,豆子]                      ok
+seed 12 | BASE gated=7 never_short=1 [话本]                         ok | WITH gated=7 never_short=2 [整洁,话本]                      ok
+--- #40 [soft] pass:  BASE 12/12   WITH 10/12   (soft gate needs >=11/12) ---
+--- ① check: 糕点 shortage_days==0 (would be a dropped-event bug) in WITH seeds: none ---

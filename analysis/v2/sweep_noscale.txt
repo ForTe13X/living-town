@@ -1,0 +1,14 @@
+=== n_sweep: 4 片待跑（24 局，480 agent-局）· jobs=2 ===
+[  1/  4] rc=0   170s N=16 seeds=1-6 -> noscale_n16_s1-6.jsonl
+[  2/  4] rc=0   168s N=16 seeds=7-12 -> noscale_n16_s7-12.jsonl
+[  3/  4] rc=0   287s N=24 seeds=1-6 -> noscale_n24_s1-6.jsonl
+[  4/  4] rc=0   287s N=24 seeds=7-12 -> noscale_n24_s7-12.jsonl
+=== n_sweep done 墙钟=457s ===
+Traceback (most recent call last):
+  File "E:\Documents\Dev\June\26th\.claude\worktrees\agent-a3f723dbfdbd9a53e\tools\n_sweep.py", line 167, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "E:\Documents\Dev\June\26th\.claude\worktrees\agent-a3f723dbfdbd9a53e\tools\n_sweep.py", line 162, in main
+    print("\u2705 逐文件断言全过（seed 集合 / 无重复 / n_agents / days / 单段抬头 / 无 MISMATCH）")
+UnicodeEncodeError: 'gbk' codec can't encode character '\u2705' in position 0: illegal multibyte sequence
+RC=1

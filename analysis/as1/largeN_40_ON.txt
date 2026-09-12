@@ -1,0 +1,18 @@
+=== N=16 batch4 ON  seeds=12 ===
+  #40 RED: 0/12   arm_low(供不应求): 0   arm_high(缺货绝迹): 0
+  柴薪 rate min/med/max: 0.807/0.917/0.966  shortage_days: 3/8/17
+  never_short/gated per seed: [(1, '3/6'), (2, '1/6'), (3, '1/6'), (4, '3/6'), (5, '2/6'), (6, '1/6'), (7, '3/6'), (8, '2/6'), (9, '2/6'), (10, '3/6'), (11, '0/6'), (12, '2/6')]
+  arm_high margin (gated-2*ns) min=0 (trip<0)
+  worst-good rate per seed min/med/max: 0.723/0.827/0.931
+=== N=24 batch4 ON  seeds=12 ===
+  #40 RED: 0/12   arm_low(供不应求): 0   arm_high(缺货绝迹): 0
+  柴薪 rate min/med/max: 0.640/0.917/0.951  shortage_days: 4/8/27
+  never_short/gated per seed: [(1, '3/6'), (2, '2/6'), (3, '1/6'), (4, '2/6'), (5, '1/6'), (6, '3/6'), (7, '2/6'), (8, '2/6'), (9, '3/6'), (10, '2/6'), (11, '3/6'), (12, '3/6')]
+  arm_high margin (gated-2*ns) min=0 (trip<0)
+  worst-good rate per seed min/med/max: 0.606/0.753/0.842
+=== N=60 batch4 ON  seeds=12 ===
+  #40 RED: 0/12   arm_low(供不应求): 0   arm_high(缺货绝迹): 0
+  柴薪 rate min/med/max: 0.688/0.905/0.959  shortage_days: 4/11/23
+  never_short/gated per seed: [(1, '2/6'), (2, '2/6'), (3, '2/6'), (4, '2/6'), (5, '2/6'), (6, '2/6'), (7, '2/6'), (8, '2/6'), (9, '2/6'), (10, '2/6'), (11, '2/6'), (12, '2/6')]
+  arm_high margin (gated-2*ns) min=2 (trip<0)
+  worst-good rate per seed min/med/max: 0.543/0.746/0.899

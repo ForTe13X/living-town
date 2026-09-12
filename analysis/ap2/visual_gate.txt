@@ -1,0 +1,186 @@
+  runner=docker  mode=require  game=E:/Documents/Dev/June/26th/.claude/worktrees/agent-a1f0737c21163bd3e/game  out=/tmp/tmp.q48MWMLOnj
+  shot ok   vg_night.png
+  shot ok   vg_noon.png
+  void-gate ok   (静态不重画 + settle 期真的画过 + 空间往返必重画)
+  space-roundtrip 采集 ok  (town_before → interior → town_after)
+  shot ok   vg_int_home.png
+  shot ok   vg_int_home2.png
+  shot ok   vg_int_cafe.png
+  shot ok   vg_int_shop.png
+  shot ok   vg_int_wash.png
+  shot ok   vg_int_work.png
+  shot ok   vg_int_library.png
+  shot ok   vg_cafe2f.png
+  shot ok   vg_cafe2f_bare.png
+  floor-roundtrip 采集 ok  (town→1f→上楼2f→下楼1f→town，逐段楼层对)
+  shot ok   spring_noon.png
+  shot ok   spring_night.png
+  shot ok   summer_noon.png
+  shot ok   summer_night.png
+  shot ok   autumn_noon.png
+  shot ok   autumn_night.png
+  shot ok   winter_noon.png
+  shot ok   winter_night.png
+  shot ok   s1_winter_on.png
+  shot ok   s1_winter_off.png
+  shot ok   s1_rain_on.png
+  shot ok   s1_rain_off.png
+  shot ok   s3_winter_on.png
+  shot ok   s3_winter_off.png
+  shot ok   s3_rain_on.png
+  shot ok   s3_rain_off.png
+  shot ok   s5_winter_on.png
+  shot ok   s5_winter_off.png
+  shot ok   s5_rain_on.png
+  shot ok   s5_rain_off.png
+  base  正午帧世界主色 = (134, 173, 79)  im.size=(1280, 768)  (tod=0.5000 => _daylight 恰为纯白 => 它【就是】未调制基色)
+  PASS A1 夜帧  tick=488 tod=0.0333  im.size=(1280, 768)  world_mode=(57, 82, 63)  expect=(57, 82, 63)  dmax=0 (tol=0)
+  PASS A2 夜 (57, 82, 63) != 昼 (134, 173, 79)
+=== DAYNIGHT GATE: PASS ===
+  帧 1280x768  mode=portal space=cafe tick=600  cam_same=True  void_draws: before=1 interior=1 after=2
+  PASS A[map      ] rect=(290, 122, 990, 646) 变化像素=0/366800 (0.000%) 首例=None 最大通道差=0
+  PASS A[band_top ] rect=(288, 44, 992, 116) 变化像素=0/50688 (0.000%) 首例=None 最大通道差=0
+  PASS A[band_bot ] rect=(288, 652, 992, 690) 变化像素=0/26752 (0.000%) 首例=None 最大通道差=0
+  PASS B[before/band_top ] n=50688 颜色数=99(≥32) 标准差=29.39(≥10.0)
+  PASS B[before/band_bot ] n=26752 颜色数=1126(≥32) 标准差=31.35(≥10.0)
+  PASS B[after/band_top ] n=50688 颜色数=99(≥32) 标准差=29.39(≥10.0)
+  PASS B[after/band_bot ] n=26752 颜色数=1126(≥32) 标准差=31.35(≥10.0)
+  PASS C[interior] 与 town_before 不同的像素=98.32% (≥20%) —— 证明这一趟真的进过 cafe
+=== ROUNDTRIP GATE: PASS ===
+vg_noon.png  1280x768
+   池心取样 (599, 145, 681, 194)  4018 px  ⇒ distinct=12   [((31, 161, 175), 3785), ((56, 186, 184), 67), ((51, 196, 193), 56)]
+   参考差 REF=141.31  (草众数 (134, 173, 79) → 水众数 (31, 161, 175))   台阶阈值 noise=21.20
+   ★过渡折线/直线 path median=1.735  p10=1.214  一步直达占比=3.2%  (n=63 条剖线有完整 草→水 过渡段)
+   跨岸剖线 n=66  诊断 cross/REF median=0.157   (绝对 cross median=22.16 p90=63.82 · 诊断 win_max=170.19 被岸边装饰钉死，不判定)
+   台阶数   p90=6 median=4 min=2
+vg_night.png  1280x768
+   池心取样 (599, 145, 681, 194)  4018 px  ⇒ distinct=12   [((13, 41, 59), 3785), ((23, 46, 61), 67), ((21, 48, 64), 56)]
+   参考差 REF=60.27  (草众数 (57, 82, 63) → 水众数 (13, 41, 59))   台阶阈值 noise=9.04
+   ★过渡折线/直线 path median=1.813  p10=1.438  一步直达占比=6.3%  (n=63 条剖线有完整 草→水 过渡段)
+   跨岸剖线 n=66  诊断 cross/REF median=0.650   (绝对 cross median=39.15 p90=47.84 · 诊断 win_max=76.87 被岸边装饰钉死，不判定)
+   台阶数   p90=5 median=4 min=1
+
+  ✅ vg_noon.png：distinct=12 ≥ 2 · path median=1.735 ≥ 1.25 · 一步直达占比 3.2% ≤ 25% · 台阶 median=4 ≥ 2
+
+  ✅ vg_night.png：distinct=12 ≥ 2 · path median=1.813 ≥ 1.25 · 一步直达占比 6.3% ≤ 25% · 台阶 median=4 ≥ 2
+
+=== POND GATE PASS ✅ ===
+[INTSHELL] cafe       type=commercial   墙主面众数=#5a4028  (12272/16224 采样点)
+[INTSHELL] home       type=residential  墙主面众数=#886d49  (11616/14520 采样点)
+[INTSHELL] home2      type=residential  墙主面众数=#836a48  (14384/17360 采样点)
+[INTSHELL] library    type=public       墙主面众数=#556169  (12168/16224 采样点)
+[INTSHELL] shop       type=commercial   墙主面众数=#5a4028  (12272/16224 采样点)
+[INTSHELL] wash       type=public       墙主面众数=#556169  (11616/14520 采样点)
+[INTSHELL] work       type=workshop     墙主面众数=#44423e  (11616/14520 采样点)
+[INTSHELL] 7 栋 / 4 类：commercial, public, residential, workshop
+    cafe       home       异类     ΔE= 19.26  ok
+    cafe       home2      异类     ΔE= 17.72  ok
+    cafe       library    异类     ΔE= 29.50  ok
+    cafe       shop       同类     ΔE=  0.00  ok
+    cafe       wash       异类     ΔE= 29.50  ok
+    cafe       work       异类     ΔE= 18.28  ok
+    home       home2      同类     ΔE=  1.98  ok
+    home       library    异类     ΔE= 32.21  ok
+    home       shop       异类     ΔE= 19.26  ok
+    home       wash       异类     ΔE= 32.21  ok
+    home       work       异类     ΔE= 29.68  ok
+    home2      library    异类     ΔE= 30.54  ok
+    home2      shop       异类     ΔE= 17.72  ok
+    home2      wash       异类     ΔE= 30.54  ok
+    home2      work       异类     ΔE= 27.71  ok
+    library    shop       异类     ΔE= 29.50  ok
+    library    wash       同类     ΔE=  0.00  ok
+    library    work       异类     ΔE= 15.43  ok
+    shop       wash       异类     ΔE= 29.50  ok
+    shop       work       异类     ΔE= 18.28  ok
+    wash       work       异类     ΔE= 15.43  ok
+[INTSHELL] ✅ 室内外壳类型门 PASS（7 栋 / 4 类，异类最小 ΔE ≥ 8.0、同类最大 ΔE ≤ 4.0）
+[FURNROLE] cafe       期望=杯碟架    1 格 /  3600 px  签名6 色: #6e4d31 #3c2a1b #585c64 #eaf3f8 #c3a97a #9a8253
+[FURNROLE] home2      期望=书架     1 格 /  5329 px  签名5 色: #5a4028 #3c2a1b #5f7b34 #41607f #a8443a
+[FURNROLE] library    期望=书架     3 格 / 10800 px  签名5 色: #5a4028 #3c2a1b #5f7b34 #41607f #a8443a
+           └ C 臂：同屋 3 格 shelf 逐像素一致 ✅
+[FURNROLE] shop       期望=货架     2 格 /  7200 px  签名7 色: #5a4028 #3c2a1b #c3a97a #9c7748 #b98956 #e85a5a #815b36
+           └ C 臂：同屋 2 格 shelf 逐像素一致 ✅
+[FURNROLE] wash       期望=毛巾架    1 格 /  2652 px  签名6 色: #82868f #213b47 #eaf3f8 #f2dca8 #c3a97a #585c64
+[FURNROLE] work       期望=工具架    1 格 /  2652 px  签名6 色: #44423e #5a4028 #6e4d31 #a0a4ac #585c64 #ffd166
+[FURNROLE] 6 栋 / 5 类物件：书架、工具架、杯碟架、毛巾架、货架
+    cafe       home2      异类     ΔE= 58.36  ok
+    cafe       library    异类     ΔE= 58.36  ok
+    cafe       shop       异类     ΔE= 50.07  ok
+    cafe       wash       异类     ΔE= 29.19  ok
+    cafe       work       异类     ΔE= 34.08  ok
+    home2      library    同类     ΔE=  0.00  ok
+    home2      shop       异类     ΔE= 40.68  ok
+    home2      wash       异类     ΔE= 58.36  ok
+    home2      work       异类     ΔE= 51.83  ok
+    library    shop       异类     ΔE= 40.68  ok
+    library    wash       异类     ΔE= 58.36  ok
+    library    work       异类     ΔE= 51.83  ok
+    shop       wash       异类     ΔE= 53.92  ok
+    shop       work       异类     ΔE= 50.07  ok
+    wash       work       异类     ΔE= 32.64  ok
+[FURNROLE] ✅ 家具语义分化门 PASS（6 栋 / 5 类，异类最小 ΔE ≥ 12.0、同类最大 ΔE ≤ 8.0）
+[TREESTAND] 地面参考色 = #86ad4f（取自空地格 (40, 0)，块内占比 100.0%）
+[TREESTAND] 林块1 格(2,18 6x13) 内部(4x11, 5324 px)  P竖=27.592 P横=26.030  地面色占比=8.4%
+[TREESTAND] 林块2 格(56,18 6x13) 内部(4x11, 5324 px)  P竖=27.351 P横=27.870  地面色占比=9.4%
+[TREESTAND] ✅ 林相点阵门 PASS（P >= 8.00 且 地面色 <= 22%）
+[TREESTAND] 地面参考色 = #39523f（取自空地格 (40, 0)，块内占比 100.0%）
+[TREESTAND] 林块1 格(2,18 6x13) 内部(4x11, 5324 px)  P竖=13.902 P横=13.120  地面色占比=8.0%
+[TREESTAND] 林块2 格(56,18 6x13) 内部(4x11, 5324 px)  P竖=13.779 P横=14.038  地面色占比=9.4%
+[TREESTAND] ✅ 林相点阵门 PASS（P >= 8.00 且 地面色 <= 22%）
+[SEASON] 昼/春 地面主色 = (134, 179, 63)
+[SEASON] 昼/夏 地面主色 = (105, 154, 43)
+[SEASON] 昼/秋 地面主色 = (170, 161, 42)
+[SEASON] 昼/冬 地面主色 = (134, 171, 112)
+    春↔夏  ΔE00 =   8.06   ok
+    春↔秋  ΔE00 =  13.08   ok
+    春↔冬  ΔE00 =   9.43   ok
+    夏↔秋  ΔE00 =  15.02   ok
+    夏↔冬  ΔE00 =  10.87   ok
+    秋↔冬  ΔE00 =  16.70   ok
+[SEASON] 昼 最小两两 ΔE00 = 8.06 (春↔夏)  阈值 3.20  ⇒ PASS
+[SEASON] 夜/春 地面主色 = (57, 84, 51)
+[SEASON] 夜/夏 地面主色 = (45, 73, 34)
+[SEASON] 夜/秋 地面主色 = (72, 76, 33)
+[SEASON] 夜/冬 地面主色 = (57, 80, 89)
+    春↔夏  ΔE00 =   4.30   ok
+    春↔秋  ΔE00 =   8.96   ok
+    春↔冬  ΔE00 =  20.01   ok
+    夏↔秋  ΔE00 =   8.51   ok
+    夏↔冬  ΔE00 =  22.33   ok
+    秋↔冬  ΔE00 =  23.47   ok
+[SEASON] 夜 最小两两 ΔE00 = 4.30 (春↔夏)  阈值 3.20  ⇒ PASS
+=== SEASON GATE: PASS ===
+  PASS A1 SNOW s1_winter_on.png       coverage= 1617  (min=600)
+  PASS A1 SNOW s3_winter_on.png       coverage= 1154  (min=600)
+  PASS A1 SNOW s5_winter_on.png       coverage= 3505  (min=600)
+  PASS A2 RAIN s1_rain_on.png         coverage= 1459  (min=700)
+  PASS A2 RAIN s3_rain_on.png         coverage= 1459  (min=700)
+  PASS A2 RAIN s5_rain_on.png         coverage= 1459  (min=700)
+=== PRECIP GATE: PASS ===
+[CAFE2F] 内格区域 (376, 208, 904, 560)（~185856 px）  Q=24  DTOL=28
+[CAFE2F]   A 2F↔空2F 变化占比 = 0.1290 (门槛 ≥ 0.0600)  ← 非空/负对照
+[CAFE2F]   B 2F↔1F   变化占比 = 0.2304 (门槛 ≥ 0.1000)  ← 楼层可分
+[CAFE2F]   C 色数 2F=35 空2F=17 落差=18 (门槛 ≥ 8)  ← 有牙自证
+[CAFE2F] ✅ cafe 2F 像素门 PASS（非空 0.129≥0.060；与1F可分 0.230≥0.100；色数落差 18≥8 ⇒ 空2F 会判红=有牙）
+  帧 1280x768  journey=full mode=portal tick=600 cam_same=True
+    town_before   space=town   floor=outdoor  void_draws=1
+    cafe_1f       space=cafe   floor=1f       void_draws=1
+    cafe_2f       space=cafe   floor=2f       void_draws=1
+    cafe_1f_back  space=cafe   floor=1f       void_draws=1
+    town_after    space=town   floor=outdoor  void_draws=2
+  PASS L[town_before  ] space=town(应town) floor=outdoor(应*)
+  PASS L[cafe_1f      ] space=cafe(应cafe) floor=1f(应1f)
+  PASS L[cafe_2f      ] space=cafe(应cafe) floor=2f(应2f)
+  PASS L[cafe_1f_back ] space=cafe(应cafe) floor=1f(应1f)
+  PASS L[town_after   ] space=town(应town) floor=outdoor(应*)
+  PASS A1[map      ] 变化像素=0/366800 (0.000%) 首例=None 最大通道差=0
+  PASS A1[band_top ] 变化像素=0/50688 (0.000%) 首例=None 最大通道差=0
+  PASS A1[band_bot ] 变化像素=0/26752 (0.000%) 首例=None 最大通道差=0
+  PASS A1B[band_top ] 颜色数=99(≥32) 标准差=29.39(≥10.0)
+  PASS A1B[band_bot ] 颜色数=1126(≥32) 标准差=31.35(≥10.0)
+  PASS A2[cafe_1f 往返] 下楼回到的 1F 与进店 1F 变化像素=0/424692 (0.000%) 首例=None 最大通道差=0
+  PASS B[2F↔1F] 内格变化占比=0.1767 (≥0.07) (75033/424692) —— 2F 那一跳真的换了平面
+  PASS C[cafe_1f↔town] 全帧变化占比=0.9832 (≥0.20) —— 证明这一趟真的进过 cafe
+=== FLOOR ROUNDTRIP GATE: PASS ===
+VISUAL_EXIT=0

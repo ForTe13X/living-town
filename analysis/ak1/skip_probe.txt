@@ -1,0 +1,9 @@
+======================================================================
+AK1 · SKIP-on-no-render-env 语义保持（接线没破坏可移植性）
+无 docker 镜像（LT_VISUAL_IMAGE=nonexistent-runner:0.0）+ 本机无 Xvfb ⇒ 能力探测在拍图【之前】判定
+"两样都没有" ⇒ exit 77 SKIP，不假红。季节/降水采集在能力探测【之后】，故这条语义不受本棒接线影响。
+======================================================================
+$ LT_VISUAL_IMAGE=nonexistent-runner:0.0 GODOT=<host godot> bash tools/visual_gate.sh
+  ⏭  VISUAL GATE SKIP：既没有镜像 nonexistent-runner:0.0，也没有 Xvfb+GODOT —— 例如 GitHub Actions 的 ubuntu-latest
+     （这不是失败。想让它必须跑：LT_VISUAL=require；补齐环境的办法见本脚本抬头。）
+SKIP_TEST_EXIT=77

@@ -36,7 +36,14 @@ BLD_TYPE = {
     "home": "residential", "cafe": "commercial", "wash": "public", "work": "workshop", "plaza": "plaza",
     "home2": "residential", "shop": "commercial", "library": "public",
 }
+LABELS = {"home": "住宅区", "cafe": "咖啡馆", "wash": "澡堂", "work": "工坊",
+          "home2": "民居", "shop": "杂货铺", "library": "图书馆"}   # 建筑显示名（区域标签 + 室内 Space label + 门口招牌共用）
 PLAZA = (28, 21, 8, 6)   # open central hub (no walls) — all 4 districts hug it (short survival treks)
+# P1-c East Ocean canon: the last four columns are open sea.  The dock remains
+# land and faces east; its authored berth is the first water cell beside it.
+DOCK = (56, 7, 4, 2)
+DOCK_BERTH = (60, 8)
+NORTH_PIER = (30, 7, 4, 2)
 # object id -> (district, interior-offset from district origin); interior floor = x 1..w-2, y 1..h-2
 OBJ_POS = {
     "bed_1": ("home", (2, 2)), "bed_2": ("home", (5, 3)),
@@ -47,9 +54,10 @@ OBJ_POS = {
 # blocker clusters in the OUTER wilderness — route variety without blocking the central survival paths
 CLUSTERS = [
     ("tree",  (2, 18, 7, 30)),    # far-left grove
-    ("tree",  (56, 18, 61, 30)),  # far-right grove
+    ("tree",  (56, 18, 59, 30)),  # east-coast grove stops before the sea
     ("water", (28, 2, 35, 6)),    # top pond
     ("water", (28, 42, 35, 46)),  # bottom pond
+    ("water", (60, 0, 63, 47)),   # East Ocean, selected in docs/179
 ]
 
 def rect_cells(x, y, w, h):
@@ -61,10 +69,8 @@ def build():
     walls, water, trees = set(), set(), set()   # typed layers (rendering); nav blocks the union
     areas = {}
     doors = {}
-    labels = {"home": "住宅区", "cafe": "咖啡馆", "wash": "澡堂", "work": "工坊",
-              "home2": "民居", "shop": "杂货铺", "library": "图书馆"}
     for name, (x, y, w, h, side, off) in {**DISTRICTS, **EXTRA_BUILDINGS}.items():
-        areas[name] = {"label": labels.get(name, name), "rect": [x, y, w, h], "type": BLD_TYPE.get(name, "residential")}
+        areas[name] = {"label": LABELS.get(name, name), "rect": [x, y, w, h], "type": BLD_TYPE.get(name, "residential")}
         for i in range(w):
             walls.add((x + i, y)); walls.add((x + i, y + h - 1))
         for j in range(h):
@@ -77,6 +83,17 @@ def build():
         walls.discard((d[0], d[1] - 1)); walls.discard((d[0], d[1] + 1))
         doors[name] = d
     areas["plaza"] = {"label": "广场", "rect": list(PLAZA), "type": "plaza"}   # open, no walls
+    areas["north_pier"] = {
+        "label": "北塘渔埠", "rect": list(NORTH_PIER), "type": "plaza",
+        "population_anchor": True,
+        "_why": "P1-c 把渔业工位与 East Ocean 货运纵切解耦：该陆上四格保留旧 dock 的著者序、矩形与人口扩容质心，只承载 bench_pier，不含物流 route/node/berth。",
+    }
+    areas["dock"] = {
+        "label": "东海码头", "rect": list(DOCK), "type": "plaza",
+        "facing": "east", "berth": list(DOCK_BERTH), "route_id": "east_ocean",
+        "population_anchor": False,
+        "_why": "P1-c East Ocean 物理锚：陆上四格栈桥面朝东，berth 是紧邻的首个水格；货船只由 ready CargoManifest 纯 View 投影，不进导航或存档。",
+    }
     for kind, (x0, y0, x1, y1) in CLUSTERS:
         s = water if kind == "water" else trees
         for x in range(x0, x1 + 1):
@@ -172,6 +189,11 @@ def main():
     for i, a in enumerate(ag["agents"]):
         c = slots[i % len(slots)]
         a["home"] = [c[0], c[1]]; a["spawn"] = [c[0], c[1]]
+    # 港口 affiliate 不属于核心住宅重排；它的落点与 dock/node/berth 一起冻结。
+    for a in ag.get("affiliates", []):
+        if a.get("id") == "tao":
+            a["home"] = [58, 8]
+            a["spawn"] = [58, 8]
     # audit BEFORE writing
     fails, nwalk = audit(blockers, areas, doors, ag["agents"], objects)
     print("64x48 town: walkable=%d/%d  blockers=%d  objects=%d  agents=%d"
@@ -187,6 +209,10 @@ def main():
            "water":  sorted([list(b) for b in water]),
            "trees":  sorted([list(b) for b in trees]),
            "landmarks": landmarks,                            # 单格类型化地标（well/board）
+           # 门（名字/格/朝向）——纯渲染用：WorldView 据此画土路（广场↔各家门口）+ 门/招牌可视线索。
+           # 不进导航（blockers 不变）→ digest 逐字节不变。
+           "doors": [{"name": n, "pos": list(doors[n]), "face": {**DISTRICTS, **EXTRA_BUILDINGS}[n][4]}
+                     for n in sorted(doors)],
            "objects": objects}
     json.dump(out, open(p("map.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     json.dump(ag, open(p("agents.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
@@ -194,13 +220,65 @@ def main():
     sp = json.load(open(p("spaces.json"), encoding="utf-8"))
     if isinstance(sp.get("spaces"), dict) and "town" in sp["spaces"]:
         sp["spaces"]["town"]["bounds"] = [0, 0, W, H]
+    # ── P3 数据驱动室内：给【每栋楼】按类型模板生成 Space + 街门 portal + 室内内容 ──────────────
+    # 手工精修的 cafe 与 P1 的 test_loft 原样保留；上一轮生成的（_gen=true）全部丢弃后重建 → 幂等可重跑。
+    # 纯渲染/inspect：不进 blockers、不产候选 → 导航与 digest 一字节不动。
+    tpl = json.load(open(p("interior_templates.json"), encoding="utf-8")).get("templates", {})
+    KEEP = {"town", "test_loft", "cafe"}
+    sp["spaces"] = {k: v for k, v in sp["spaces"].items() if k in KEEP or not v.get("_gen")}
+    sp["portals"] = [q for q in sp.get("portals", []) if not q.get("_gen")]
+    interiors = json.load(open(p("interiors.json"), encoding="utf-8")) if os.path.exists(p("interiors.json")) else {}
+    interiors = {k: v for k, v in interiors.items() if k.startswith("_") or k == "cafe"}
+    OUTD = {"S": (0, 1), "N": (0, -1), "W": (-1, 0), "E": (1, 0)}
+    n_gen = 0
+    for name, (bx, by, bw, bh, side, off) in {**DISTRICTS, **EXTRA_BUILDINGS}.items():
+        if name == "cafe":
+            continue                                        # 手写的咖啡馆（1F/2F）不覆盖
+        typ = BLD_TYPE.get(name, "residential")
+        t = tpl.get(name) or tpl.get(typ)         # 先按建筑名找专属模板（图书馆/杂货铺），再回落到粗类型
+        if not t:
+            continue
+        # 室内门格 = 与外门同侧同偏移（进门位置对得上，读起来才连贯）
+        if side == "S":   idoor = (off, bh - 1)
+        elif side == "N": idoor = (off, 0)
+        elif side == "W": idoor = (0, off)
+        else:             idoor = (bw - 1, off)
+        sp["spaces"][name] = {"_gen": True, "kind": "interior", "label": LABELS[name],
+                              "bounds": [0, 0, bw, bh], "floors": ["1f"], "default_floor": "1f"}
+        sp["portals"].append({"_gen": True, "id": "p_%s_door" % name, "kind": "door",
+                              "from": {"space": "town", "floor": "outdoor", "pos": list(doors[name])},
+                              "to": {"space": name, "floor": "1f", "pos": list(idoor)},
+                              "bidirectional": True, "access": "public", "traversal_cost": 1})
+        furn = []
+        for f in t.get("furniture", []):
+            fx, fy = 1 + int(f["d"][0]), 1 + int(f["d"][1])   # 相对可用格(1,1)
+            if not (1 <= fx <= bw - 2 and 1 <= fy <= bh - 2): continue   # 小楼放不下 → 丢弃
+            if (fx, fy) == idoor: continue                                # 门口不摆家具
+            e = {"slot": f["slot"], "pos": [fx, fy]}
+            if f.get("label"): e["label"] = f["label"]
+            if f.get("advertises"): e["advertises"] = f["advertises"]   # 带 advertises 的家具会被 Sim 编成真对象（住人的房子才有）
+            furn.append(e)
+        interiors[name] = {"1f": {"label": "一层", "floor": t.get("floor", "wood"), "furniture": furn}}
+        n_gen += 1
     json.dump(sp, open(p("spaces.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    # buildings.json rooms are authored at OLD 24x16 coords → orphaned on the 64x48 map. Clear for the
-    # graybox (base objects cover every need); real multi-floor interiors get re-authored in P3 (café slice).
+    json.dump(interiors, open(p("interiors.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    print("generated %d building interiors (cafe hand-authored, preserved)" % n_gen)
+    # buildings.json：历史上这里会【无条件清空】——原因是那批房间还是 24x16 老坐标、在 64x48 地图上成孤儿。
+    # 但 2026-07-26 起 buildings.json 里是**按当前 64x48 地图内缩坐标重新编写**的 12 个房间（B16），
+    # 无条件清空会让那份内容只有"一条命令的半衰期"，且清空会静默改变仿真：`_secret_private()` 顶上有条数据闸
+    # `if rooms.is_empty(): return true`——房间没了，吐露秘密就从"按 docs/16 规则"退回"无条件私密"，digest 随之变。
+    # 故改为：只在【明确要求】时清空（--clear-buildings），否则原样保留并提示校验。
     bj = json.load(open(p("buildings.json"), encoding="utf-8"))
-    bj["buildings"] = []
-    json.dump(bj, open(p("buildings.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    print("WROTE map.json + agents.json + spaces.json + cleared buildings.json (interiors → P3)")
+    n_rooms = sum(len(b.get("rooms", [])) for b in bj.get("buildings", []))
+    if "--clear-buildings" in sys.argv:
+        bj["buildings"] = []
+        json.dump(bj, open(p("buildings.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        print("WROTE map.json + agents.json + spaces.json + CLEARED buildings.json (--clear-buildings)")
+    else:
+        print("WROTE map.json + agents.json + spaces.json; buildings.json 保留不动（%d 个房间）" % n_rooms)
+        if n_rooms:
+            print("  WARNING: 地图刚被重新生成，但 buildings.json 的房间坐标是【上一版地图】的内缩坐标——"
+                  "请核对每个 rect 仍落在对应 area 内缩区内（要清空用 --clear-buildings）。")
 
 if __name__ == "__main__":
     main()

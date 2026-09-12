@@ -1,0 +1,9 @@
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+=== fix_census · agents=12 seeds=[1, 2, 3, 4] days=60 mutate=keepone ===
+[FIXCENSUS] {"buy_total":84,"buy_vendor_in":0,"buy_vendor_only":0,"buy_witnessed":1,"days":60,"digest":"2354668902","event_digest":"7824884320643865142","events_total":3336,"hard_fails":[],"inv43":{"detail":"trade_credit=开[商贩:成交84 被看见1 知情11人(其中转述0)]","ok":true},"mutate":"keepone","n_agents":12,"seed":1,"spill_nonbuy_witnessed":0,"vendor_id":"mei"}
+[FIXCENSUS] {"buy_total":64,"buy_vendor_in":0,"buy_vendor_only":0,"buy_witnessed":1,"days":60,"digest":"3926188800","event_digest":"91487667824783759","events_total":3379,"hard_fails":[],"inv43":{"detail":"trade_credit=开[商贩:成交64 被看见1 知情11人(其中转述4)]","ok":true},"mutate":"keepone","n_agents":12,"seed":2,"spill_nonbuy_witnessed":0,"vendor_id":"mei"}
+[FIXCENSUS] {"buy_total":71,"buy_vendor_in":0,"buy_vendor_only":0,"buy_witnessed":1,"days":60,"digest":"4171396336","event_digest":"5467811441472673005","events_total":3402,"hard_fails":[],"inv43":{"detail":"trade_credit=开[商贩:成交71 被看见1 知情11人(其中转述0)]","ok":true},"mutate":"keepone","n_agents":12,"seed":3,"spill_nonbuy_witnessed":0,"vendor_id":"mei"}
+[FIXCENSUS] {"buy_total":63,"buy_vendor_in":0,"buy_vendor_only":0,"buy_witnessed":1,"days":60,"digest":"3979521132","event_digest":"366988813314956191","events_total":3392,"hard_fails":[],"inv43":{"detail":"trade_credit=开[商贩:成交63 被看见1 知情11人(其中转述0)]","ok":true},"mutate":"keepone","n_agents":12,"seed":4,"spill_nonbuy_witnessed":0,"vendor_id":"mei"}
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)

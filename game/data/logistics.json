@@ -1,0 +1,63 @@
+{
+  "_doc": "车道 E 物流/进口 + P1-b CargoManifest。import lane 的到期日只生成港口 cargo；货物不再凭日界直接注入 town_stock，而由在班码头工认领 exact manifest、完成 gated 卸货后，经唯一库存/钱通道整单提交。off 门：删本文件 ⇒ logistics、affiliate 与 manifest 全关；删 route_id ⇒ 该 lane 不生成 cargo。",
+  "_determinism": "arrival id=manifest_<route>_<day>_<lane-index>，严格按 lane 著者序、纯 f(data,day)，无 RNG/Time/浮点；cargo order/remaining/state 与已签发 option 的 manifest 授权进入逐 tick chain。commit 无 await/回调，固定为 import pay → import stock → cargo receipt → wage；同 seed focused test 的状态、事件和 event_digest 两跑逐字一致。",
+  "_manifest_contract": "P1-b/P1-c：到期日先生成 CargoManifest，不直接改镇库/钱；码头工从当前 authored candidate 认领 exact manifest，已签发的同一单可跨班次完成，再整单同步提交 town→external 付款、import 入库、cargo 清零与工资。无 cargo、无授权、货位/余额变化或 stale intent 均在 need/库存/钱/事件前 fail-closed。East Ocean 已物理落图；货船仍不是第二份权威态，而是 ready manifest 的有界纯 View 投影。",
+  "_why_firewood": "选柴薪：它是澡堂唯一燃料（consume.洗澡→柴薪，~546 次/seed）+ 屋瓦的原料（produce.泥瓦匠.inputs.柴薪:3），是全镇第一件【被两条需求争抢】的货、供给最紧。进口柴薪【蓄意松动】柴薪/屋瓦满足率与洗澡缺货——这是 self-contain 弧 P1『外部管够、本地稀薄』的可见目标，不是 bug（逐 seed 展布见 analysis/as1/n12_supply_before_after.txt 与 docs/147 §四）。",
+  "_batch_why": "batch=4 保留既有已标定外部批量，但 P1-b 后它是【manifest 整单】而非保证每三天已入库 4 件：cap/余额/码头工班次任一不满足就留港。旧 analysis/as1 的直接注入满足率只作 legacy calibration，不是当前吞吐证据；当前最终 seed1×60d 实得 19 次真实 import commit、#40 绿。完整网格须在本纵切收敛后重测，禁止沿用旧 80 件/seed 声称。",
+  "_scale_why": "batch 不随人口缩放（不进 production.scale.pool），cargo 也是每船固定外部量。P1-d 同样保持 export batch/cadence/price 为固定物理航线吞吐；只有显式 scale_floor=true 的 lane 在 N>12 放开，并按实际 production pool 比例向上取整保护线。旧 N=16/24/60 imports-ON 结论测的是日界直接注入路径，现标 legacy-supported；当前尺度结论只认可 committed exact tree 的完整网格。",
+  "nodes": [
+    {
+      "id": "port_dock",
+      "type": "码头",
+      "area": "dock",
+      "pos": [59, 8],
+      "advertises": [
+        { "action": "卸货", "need": "fun", "amount": 46, "duration": 28, "job": "码头工", "manifest_node": "port_dock" }
+      ],
+      "_why": "P1-a/P1-c 功能码头：有 advertises 的 node 由 Sim._compile_ports 编译进 world.objects；坐标 [59,8] 是 East Ocean dock 最东陆格，正东邻 berth[60,8] 水格，与 Tao home/spawn[58,8] 分格。bench_pier 已独立到 north_pier，不再与货运节点竞争同一活动区。它继续作为硬 #44/#46 的贸易来源节点。"
+    }
+  ],
+  "carriers": [
+    {
+      "route_id": "east_ocean",
+      "node": "port_dock",
+      "type": "货船",
+      "berth": [60, 8],
+      "facing": "west",
+      "_why": "P1-c 纯 View carrier 声明。WorldView 只在同 route/node 存在 ready manifest 时画一艘有界泊位船；多单 backlog 用计数徽记，不复制 cargo 状态、不写 spawn/despawn 事件、不进 world.objects/nav/save/chain。删 carriers 只关闭可见投影，不改变 CargoManifest 权威逻辑。"
+    }
+  ],
+  "import_lanes": [
+    {
+      "good": "柴薪",
+      "route_id": "east_ocean",
+      "batch": 4,
+      "every_days": 3,
+      "node": "port_dock",
+      "price_per": 3,
+      "price_den": 4,
+      "_why": "每 3 天从 East Ocean 逻辑 route 到港一张 4 件柴薪 manifest；good 必须在 production.goods，node 必须是声明节点。arrival 不喂 #44 provider，只有真实卸货生成的 import 事件才算。",
+      "_price_why": "价格仍为 3/4，但按整单 4 件一次结算为 3 钱，避免拆单整数地板变成免费货。余额不足时 manifest 留港、广告关闭，不丢 cargo；economy off 或无正价时保留 E1 免费 commit。旧 AS4 直接注入的 town_coin/held-out 数字标 legacy calibration，需按 manifest 路重测。"
+    }
+  ],
+  "_export_doc": "车道 E-export 首片（docs/157/158，§0.8 双路收敛=SOUND_WITH_FIXES）：货出→钱进。import 的镜像、方向相反——把镇里【过剩】的一种货经 _stock_move(good,−sold_qty,'export') 从 town_stock 出港，同时经唯一钱通道 transfer('external','town',revenue,'export') 把货款【先收】进 town_coin（收款方 external 是 E2a 已进 #34 守恒集的外部账户）。★闭环有界（docs/157 §二）：external 从 0 起、只被 import 贷入 / export 借出 ⇒ external=Σimport−Σexport≥0（transfer from<amt 守卫 + #35 外部非负臂）⇒ 累计 export 收入 ≤ 累计 import 支出，镇对外净头寸恒 ≤0、export 至多【收回】此前 import 付出的钱、不能把镇灌富。★off 门 2 轴与 import 【不对称】(docs/157 §六，蓄意)：轴①删 logistics.json ⇒ export 每挂点第一行短路 ⇒ 逐字节回今天；轴② economy off 或 export lane 无 price_per ⇒ export 【惰性】(NOT 免费出港——无补偿的 stock 损耗无 E1 先例)。",
+  "_export_determinism": "出港是纯 f(day)：日界 Sim._logi_export()（排在 _logi_import 之后 ⇒ 当天 import 已把 external 贷足、export 可抽）里 day%every_days==0 才出货，sold_qty=min(batch, 地板以上余量, external 付得起件数) 全整数 mini/maxi，revenue=sold_qty×price_per/price_den 整数地板，无 randi/randf/Time/浮点 ⇒ 红线#1『逐字节可回放』结构成立。F1 命门：sold_qty 是【显式正数】(非 _stock_move 返回的有符号 applied，那是负数会让 revenue≤0、transfer 静默拒→货白流失且全绿)；钱货在一个【无 await/回调的 exact wrapper】里同步提交（先 transfer 收钱成功 ⇒ 再 _stock_move 出 sold_qty；external 付不起 ⇒ 当天不出货），契约 stock_delta==−sold_qty。F7 硬 #46 贸易原子性：一次成功 export == 恰一条 external→town pay(export) + 恰一条同 sold_qty 的 export stock 事件（严格 pay,stock 交替 + 逐对 revenue==sold_qty×price/den + 货/港合法），钱货脱钩（收 N 不发 / 发不收 / 收 N 发 k）当场红。",
+  "_p1b_export_override": "P1-b 之后，上句『当天 import 已把 external 贷足』降为 legacy：当晚 _logi_import 只生成 cargo，不贷 external；export 只能使用此前已由码头工真实 commit 的 import 付款。export 自身的 fit/exact wrapper/#46 合同不变。",
+  "_export_good_why": "选【豆子】(F4 物理库存 surplus 探针 as5_surplus_probe.gd 实测，seeds 13-30×60 天)：①非反馈耦合——F4 明排『整洁』(_clean_mult=stock/cap 驱动广场吸引力，出口它退化清洁反馈)；②非供给紧货——F4/docs/157 §一.3 红线排口粮/屋瓦/柴薪(#40 满足率紧的三货)；③豆子在非排除货里物理余量最足：stock_med 跨 seed mean~30/cap 45、常年顶到 cap 45(基线 N=12 豆子 7/12 seed 全年零缺货，是天然过剩货，撞 cap 的产量当前被 _stock_move 少收白丢)——export 正是把这截【本会丢弃的余量变收入】(docs/144 §五 P4)；④豆子需求【定点】(仅 cafe，#40 detail 自陈『分母不随人口涨』) ⇒ 固定 floor 在大 N 相对安全。豆子改前 #40 满足率跨 13-30 恒 ≥0.50(一格没进 starved 列)。",
+  "export_lanes": [
+    {
+      "good": "豆子",
+      "batch": 6,
+      "every_days": 3,
+      "node": "port_dock",
+      "floor": 36,
+      "scale_floor": true,
+      "price_per": 1,
+      "price_den": 2,
+      "_why": "每 3 天出港【最多】6 件豆子。good 必须是 production.goods 已声明的货（否则 _export_fit/_stock_move 返 0、不出货），node 必须是 nodes 声明过的 id（否则硬 #46 出港溯源判红）。★出多少 = 三上界 min(batch, 地板以上余量 max(0,stock−floor), external 付得起件数 external×den/per)。",
+      "_floor_why": "★F4 floor 逐货 held-out 标定（as5_surplus_probe.gd，seeds 13-30，尤 seed 18/22/30）：floor 保住本地消费需求、只出【地板以上】的余量 ⇒ 与消费者不抢货。豆子最坏【多日净消耗】(任意窗口 Σconsume−Σproduce 的 Kadane 上确界) 跨 13-30 = 21..39(seed 22=39 最坏)、med ~28；cap=45。★取 floor=36：贴近绝对最坏净耗 39(留 39−36=3 的极小风险余量)、盖住典型最坏 ~28 有余、留 cap−floor=9 的出港余量(豆子常顶 45 ⇒ 有货可出)。★诚实边界：36 < 绝对最坏 39 ⇒ 极端 seed 的最坏窗口理论上可让 export 把豆子多抽 ≤3，但豆子基线满足率远高于 0.50 底线。P1-d 对 N>12 只按实际 production pool 比例 ceil 缩放 floor，保持同一保护比例；batch/cadence 不缩放。完整 N16/N24/N60 网格必须同时证明真实 export provider、#40 与 #45/#46，不能拿空集绿代替。",
+      "_price_why": "★export 收钱 revenue = sold_qty × price_per / price_den（整数地板、确定性无浮点；sold_qty<2 时 revenue 地板到 0 ⇒ 不出货，良性就低不就高）。★取 1/2 = 0.5 钱/件（held-out 标定，F4 §六 goal②『不暴富』）：低于 import 柴薪的 0.75 ⇒ external 闭环有界(Σexport≤Σimport)——import 60 天贷入 external ~56/seed、export 豆子 0.5 钱/件 借出，恒 ≤ 贷入 ⇒ external 恒 ≥0、#35 外部臂不可达负。★为什么不取更高(1.0)：1.0 时 export 收入把【结构性赤字镇 seed 18】(docs/155：import-only 下 town_coin_min=0/跳 10 次工资)喂到 town_min=27/跳 0 次 ⇒ 抹平了蓄意的 self-contain 压力(docs/157 §五分布通胀风险)。0.5 + floor=36 下 seed 18 回到 town_min=0/跳 1 次工资(held-out 实测)——赤字镇仍跳工资(goal② 达成)，同时 export 仍可见(金标 1-12 出港 mean 26/seed、held-out mean 28/seed)。★残余：town_coin 硬上限=P4/E4(docs/157 §五)，本片靠标定+闭环夹。选项 A′【先收钱后出货】：external 付不起当天不出货(镜像 import 的 town 付不起不到货)——从未 import 过的镇(external=0)出不了口，须先『进』才能『出换钱』，闭环的自然节流(docs/157 §二)。★off 门：删 economy.json 或删本 price_per ⇒ export 惰性(NOT 免费出港，与 import 不对称，见 _export_doc 轴②)。",
+      "_scale_why": "★P1-d 人口缩放：N=12 仍用 authored floor=36，行为不变；N>12 仅本 lane 以 scale_floor=true 显式放开，effective_floor=ceil(36×prod_pool_num/prod_pool_den)，使用真实 core production pool 而非含 affiliate 的 agents.size()。对应 total N16/N24/N60 的 core=15/23/59，保护线为45/69/177。batch=6、every_days=3、price=1/2 均不缩放，避免把人口倍率偷换成船舶吞吐倍率。N<base 与未 opt-in lane 继续惰性。验收要求真实 export_related/export_pairs 非零、#40/#45/#46 与确定性完整网格通过。"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+######## DP-A CORE NEUTRALITY @ N=48 (held-out 13-30) ########
+---- DP-A vs CLEAN (target flat) ----
+=== E7 CORE ANCHOR DP-A@N48 : 18 held-out seeds 13-30 ===
+base=E:/Documents/Dev/June/26th/.claude/worktrees/agent-ac413009b49c4b0be/analysis/dpa/runs_hiN/clean_n48.log  after=E:/Documents/Dev/June/26th/.claude/worktrees/agent-ac413009b49c4b0be/analysis/dpa/runs_hiN/dpa_n48.log
+good | mean d | 95%% CI(t) | median | down/up/flat | |dn|/|up| | verdict
+口粮  | +0.0000 | [+0.0000,+0.0000] | +0.0000 | 0/0/18 | 0.000/0.000 | flat
+柴薪  | +0.0000 | [+0.0000,+0.0000] | +0.0000 | 0/0/18 | 0.000/0.000 | flat
+屋瓦  | +0.0000 | [+0.0000,+0.0000] | +0.0000 | 0/0/18 | 0.000/0.000 | flat
+糕点  | +0.0000 | [+0.0000,+0.0000] | +0.0000 | 0/0/18 | 0.000/0.000 | flat
+整洁  | +0.0000 | [+0.0000,+0.0000] | +0.0000 | 0/0/18 | 0.000/0.000 | flat
+---- WITH vs CLEAN (dilution?) ----
+=== E7 CORE ANCHOR WITH@N48 : 18 held-out seeds 13-30 ===
+base=E:/Documents/Dev/June/26th/.claude/worktrees/agent-ac413009b49c4b0be/analysis/dpa/runs_hiN/clean_n48.log  after=E:/Documents/Dev/June/26th/.claude/worktrees/agent-ac413009b49c4b0be/analysis/dpa/runs_hiN/with_n48.log
+good | mean d | 95%% CI(t) | median | down/up/flat | |dn|/|up| | verdict
+口粮  | -0.0238 | [-0.0704,+0.0228] | +0.0000 | 3/1/14 | 0.198/0.167 | n.s.(leans dn)
+柴薪  | -0.0007 | [-0.0074,+0.0060] | +0.0000 | 1/3/14 | 0.049/0.012 | flat
+屋瓦  | +0.0041 | [-0.0019,+0.0102] | +0.0000 | 0/2/16 | 0.000/0.037 | n.s.(leans up)
+糕点  | +0.0052 | [-0.0088,+0.0192] | +0.0000 | 1/3/14 | 0.048/0.047 | n.s.(leans up)
+整洁  | -0.0107 | [-0.0379,+0.0165] | +0.0000 | 2/2/14 | 0.118/0.022 | n.s.(leans dn)
+
+######## DP-A CORE NEUTRALITY @ N=60 (held-out 13-30) ########
+---- DP-A vs CLEAN (target flat) ----
+=== E7 CORE ANCHOR DP-A@N60 : 18 held-out seeds 13-30 ===
+base=E:/Documents/Dev/June/26th/.claude/worktrees/agent-ac413009b49c4b0be/analysis/dpa/runs_hiN/clean_n60.log  after=E:/Documents/Dev/June/26th/.claude/worktrees/agent-ac413009b49c4b0be/analysis/dpa/runs_hiN/dpa_n60.log
+good | mean d | 95%% CI(t) | median | down/up/flat | |dn|/|up| | verdict
+口粮  | +0.0000 | [+0.0000,+0.0000] | +0.0000 | 0/0/18 | 0.000/0.000 | flat
+柴薪  | +0.0000 | [+0.0000,+0.0000] | +0.0000 | 0/0/18 | 0.000/0.000 | flat
+屋瓦  | +0.0000 | [+0.0000,+0.0000] | +0.0000 | 0/0/18 | 0.000/0.000 | flat
+糕点  | +0.0000 | [+0.0000,+0.0000] | +0.0000 | 0/0/18 | 0.000/0.000 | flat
+整洁  | +0.0000 | [+0.0000,+0.0000] | +0.0000 | 0/0/18 | 0.000/0.000 | flat
+---- WITH vs CLEAN (dilution?) ----
+=== E7 CORE ANCHOR WITH@N60 : 18 held-out seeds 13-30 ===
+base=E:/Documents/Dev/June/26th/.claude/worktrees/agent-ac413009b49c4b0be/analysis/dpa/runs_hiN/clean_n60.log  after=E:/Documents/Dev/June/26th/.claude/worktrees/agent-ac413009b49c4b0be/analysis/dpa/runs_hiN/with_n60.log
+good | mean d | 95%% CI(t) | median | down/up/flat | |dn|/|up| | verdict
+口粮  | -0.0021 | [-0.0066,+0.0024] | +0.0000 | 1/0/17 | 0.038/0.000 | n.s.(leans dn)
+柴薪  | -0.0016 | [-0.0050,+0.0018] | +0.0000 | 1/0/17 | 0.029/0.000 | n.s.(leans dn)
+屋瓦  | +0.0005 | [-0.0006,+0.0016] | +0.0000 | 0/1/17 | 0.000/0.009 | flat
+糕点  | -0.0003 | [-0.0010,+0.0004] | +0.0000 | 1/0/17 | 0.006/0.000 | flat
+整洁  | +0.0032 | [-0.0037,+0.0101] | +0.0000 | 1/1/16 | 0.001/0.059 | n.s.(leans up)
+

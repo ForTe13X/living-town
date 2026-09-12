@@ -1,0 +1,12 @@
+seed  1  deals=154 D1= 71 D5= 59 pay_wit= 60  believers=24  {"S_own_mei|confide": 1, "S_own_mei|seed": 1, "TR|seen": 11, "W|seen": 11}  st_nonzero=6 st_sum=3500
+seed  2  deals=158 D1= 77 D5= 57 pay_wit= 61  believers=24  {"S_own_mei|confide": 2, "S_own_mei|seed": 1, "TR|gossip": 4, "TR|seen": 7, "W|seen": 10}  st_nonzero=5 st_sum=2500
+seed  3  deals=153 D1= 62 D5= 49 pay_wit= 52  believers=24  {"S_own_mei|seed": 1, "TR|seen": 11, "W|seen": 12}  st_nonzero=8 st_sum=2500
+seed  4  deals=146 D1= 74 D5= 54 pay_wit= 55  believers=29  {"S_own_mei|confide": 1, "S_own_mei|seed": 1, "TR|seen": 11, "W|seen": 16}  st_nonzero=7 st_sum=-6000
+seed  5  deals=145 D1= 75 D5= 57 pay_wit= 59  believers=22  {"S_own_mei|confide": 1, "S_own_mei|seed": 1, "TR|seen": 10, "W|seen": 10}  st_nonzero=7 st_sum=3500
+seed  6  deals=133 D1= 74 D5= 55 pay_wit= 55  believers=26  {"S_own_mei|confide": 1, "S_own_mei|seed": 1, "TR|seen": 11, "W|seen": 13}  st_nonzero=8 st_sum=2500
+seed  7  deals=144 D1= 76 D5= 59 pay_wit= 62  believers=23  {"S_own_mei|confide": 2, "S_own_mei|seed": 1, "TR|seen": 10, "W|seen": 10}  st_nonzero=8 st_sum=6000
+seed  8  deals=129 D1= 61 D5= 44 pay_wit= 46  believers=27  {"S_own_mei|confide": 1, "S_own_mei|seed": 1, "TR|seen": 11, "W|gossip": 1, "W|seen": 13}  st_nonzero=5 st_sum=3500
+seed  9  deals=165 D1= 83 D5= 69 pay_wit= 76  believers=22  {"S_own_mei|confide": 1, "S_own_mei|seed": 1, "TR|seen": 11, "W|seen": 9}  st_nonzero=7 st_sum=1500
+seed 10  deals=145 D1= 74 D5= 63 pay_wit= 63  believers=25  {"S_own_mei|confide": 1, "S_own_mei|seed": 1, "TR|seen": 11, "W|seen": 12}  st_nonzero=7 st_sum=4000
+seed 11  deals=151 D1= 83 D5= 62 pay_wit= 63  believers=22  {"S_own_mei|confide": 1, "S_own_mei|seed": 1, "TR|seen": 11, "W|seen": 9}  st_nonzero=5 st_sum=1500
+seed 12  deals=155 D1= 66 D5= 53 pay_wit= 55  believers=26  {"S_own_mei|confide": 1, "S_own_mei|seed": 1, "TR|seen": 11, "W|seen": 13}  st_nonzero=7 st_sum=-4500

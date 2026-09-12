@@ -1,0 +1,11 @@
+AQ1 landing CI —— 权威 committed-tree run（fresh ledger），协调者 finalize（AQ1 卡自 CI 未提交）
+HEAD=db99773  game=e4186eb8fa42fa2fcc794610167a240f613aeff8  CI_EXIT=0
+
+=== CI PASS ✅ ===
+- S0 GATE: PASS ✅ (硬不变量 12/12 全绿, 金标 过, det 3/3)   ← AQ1 各 N 零金标命门:N=12 spawn 原12人逐字节不变(含逐 tick 链)
+- 互补性守卫: PASS (锚烘于 commit f017af4, baked==HEAD:game e4186eb = fresh)
+- VoiceGate: PASS ✅ (台词覆盖门, N=12)   ← AQ1 实读纠:VoiceGate N-相关且 CI 恒 N=12 ⇒ 只枚举原 12 人设 ⇒ 绿与新 persona 无关;AQ1 仍为 12 新人设补齐 voicebank(产品质感=拨大后说人话,非门强制)
+- state_projection_gate: PASS (0 fail)
+- 全门绿(audit_map/lod_verify/视觉/DetGate/BackendGate 等)
+注: 协调者另独跑过一次纯 S0 金标门(seeds 1-12 × 60 × det3 vs golden_digests.json)= PASS 12/12 含链(analysis/aq1)。
+    AQ1 子棒卡在自 worktree 的 CI waiter 上未提交;协调者取其未提交改动 patch 到 committed 树、独立验证 S0、重烘、跑本权威 CI。

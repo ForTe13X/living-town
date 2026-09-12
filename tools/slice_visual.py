@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-# slice_visual.py — 按 visual-tiles workflow 规格，从 overworld tileset 切地形/装饰/建筑（显式像素，支持多格）。
+# slice_visual.py — 按 visual-tiles workflow 规格，从 overworld tileset 切地形/装饰（显式像素，支持多格）。
+# （建筑那三张已于 2026-07-30 删除，见文件末尾。）
 import subprocess, os
 OW = "/game/assets/art/library/punyworld-overworld/punyworld-overworld-tileset.png"
 T = 16
@@ -16,15 +17,30 @@ tile(f"{B}/terrain/dirt.png", 11, 1)
 tile(f"{B}/terrain/water.png", 18, 11)
 # 装饰
 tile(f"{B}/decor/tree_small.png", 8, 7)
-tile(f"{B}/decor/tree_big.png", 0, 7, 2, 2)
+# ── decor/tree_big —— J2 2026-07-30 从这里搬走（改为自绘，配方在 tools/slice_all.py 的 SPRITES）──
+# 原来这里是：  tile(f"{B}/decor/tree_big.png", 0, 7, 2, 2)
+# 那条 crop 是**真的切错了**（不是"选错格子"，两者要分开）：右边界 27/32、下边界 29/32 个不透明像素
+# ——它从别的树冠中间横切过去；而把它包住的 3×3 区块 (0,7)-(2,9) 才是自足的（左/右/上 = 0）。
+# 也就是说它是一块 3×3【区域填充】瓦的碎片，跟 house/shop 那两条竖条带是同一种病。
+# **但重切救不了它**：那块 3×3 画的是"一片林子"不是"一棵树"，而整张表里没有任何一处 2 格高的独立树
+# （1px 步长扫过全部 32×32 窗口，自足的 24 个去重候选全是"两个 1×1 道具上下叠"）。表里的树全是 1×1。
+# ⇒ 改自绘。别把这一行加回来：`asset_gate` 的范围自证会报「两张表里有一张配方产不出的图」。
 tile(f"{B}/decor/bush.png", 0, 26)
 tile(f"{B}/decor/flower_red.png", 2, 27)
 tile(f"{B}/decor/flower_yellow.png", 2, 26)
 tile(f"{B}/decor/rock.png", 1, 26)
 tile(f"{B}/decor/stump.png", 1, 27)
 tile(f"{B}/decor/mushroom.png", 1, 31)
-# 建筑（区域地标）
-tile(f"{B}/building/hut.png", 6, 26)           # 1x1 完整小屋
-tile(f"{B}/building/house.png", 4, 33, 1, 4)   # 窄房（teal 顶）
-tile(f"{B}/building/shop.png", 12, 26, 2, 4)   # 双开间大屋（地标）
-print("sliced terrain+decor+buildings")
+# ── 建筑（区域地标）—— I2 2026-07-30 删除 ────────────────────────────────────────────────
+# 原来这里有三行：
+#     tile(f"{B}/building/hut.png",   6, 26)          # 1x1 完整小屋
+#     tile(f"{B}/building/house.png", 4, 33, 1, 4)    # 窄房（teal 顶）
+#     tile(f"{B}/building/shop.png", 12, 26, 2, 4)    # 双开间大屋（地标）
+# 三张 png 与 `Art.building_tex()` 一并删了，理由见 docs/09 §1.1：消费者 `841d4c4`（2026-07-15）
+# 就删掉了，那条 commit 把"每个区角一张 1 格 hut"列为用户报的「比例失调」头号成因
+# （1 格贴图 = 1 格居民）；替代品是 WorldView 里**程序化**画的建筑，不用贴图。
+# 另两张更不能用：`house`(1x4) / `shop`(2x4) 是从图集竖着切下来的**多格条带**，四边都是断口
+# ——与 H1 判 decor/tree_big「需要重切」是同一种病。
+# ⚠️ **别把这三行加回来**：`tools/asset_gate.py` 的 `check_deleted()` 会红（它就是为了拦这件事写的）。
+#    真要做建筑贴图，先读 841d4c4，再把尺度问题解决掉，然后走"新素材必须显式进 GATED"那条路。
+print("sliced terrain+decor")

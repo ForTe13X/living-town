@@ -1,0 +1,16 @@
+=== S0 GATE: PASS ✅  (硬不变量 seed 12/12 全绿, 软通过率门 ≥11/12(90%) 过, 活性 过, 金标 过, det 3/3) ===
+=== S0 GATE: PASS ✅  (硬不变量 seed 12/12 全绿, 软通过率门 ≥11/12(90%) 过, 活性 过, 金标 N/A·未传--golden, det 1/1) ===
+    complementSeen[pid]=9      | SAME     SAME     DIFF     | ✓
+  OK   投影抓住 [complementSeen[pid]=9]
+  OK   扫后状态复原 [agent.complementSeen]
+    world 字段: 覆盖 99 / 洞 0 / 跳过 0 []
+— ⑥ 注入无关性：backend/ext 键在/不在 → 投影同（跨机/冷热等价，F1）—
+state_projection_gate: PASS ✅ (0 fail)
+[INTSHELL] ✅ 室内外壳类型门 PASS（7 栋 / 4 类，异类最小 ΔE ≥ 8.0、同类最大 ΔE ≤ 4.0）
+[FURNROLE] ✅ 家具语义分化门 PASS（6 栋 / 5 类，异类最小 ΔE ≥ 12.0、同类最大 ΔE ≤ 8.0）
+=== SEASON GATE: PASS ===
+=== PRECIP GATE: PASS ===
+[CAFE2F] ✅ cafe 2F 像素门 PASS（非空 0.129≥0.060；与1F可分 0.230≥0.100；色数落差 18≥8 ⇒ 空2F 会判红=有牙）
+=== FLOOR ROUNDTRIP GATE: PASS ===
+=== CI PASS ✅ ===
+HEAD=1fcbfc8d4dbadb0db01fde8a5dd3d0494922960f game=c244322ea037834af9d2944bdc1954d7967eb1e5

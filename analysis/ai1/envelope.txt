@@ -1,0 +1,50 @@
+======================================================================
+GREEN · 未改动的降水层（真帧，3 seed × 冬雪 + 3 seed × 雨） ⇒ 期望 PASS exit 0
+----------------------------------------------------------------------
+  PASS A1 SNOW s1_winter_on.png       coverage= 1617  (min=600)
+  PASS A1 SNOW s3_winter_on.png       coverage= 1154  (min=600)
+  PASS A1 SNOW s5_winter_on.png       coverage= 3505  (min=600)
+  PASS A2 RAIN s1_rain_on.png         coverage= 1458  (min=700)
+  PASS A2 RAIN s3_rain_on.png         coverage= 1458  (min=700)
+  PASS A2 RAIN s5_rain_on.png         coverage= 1458  (min=700)
+=== PRECIP GATE: PASS ===
+exit=0
+
+======================================================================
+MUTANT① 雪层删空/关掉（s3_winter_on := off ⇒ coverage 0 < 600） ⇒ 期望 FAIL exit 1
+----------------------------------------------------------------------
+  PASS A1 SNOW s1_winter_on.png       coverage= 1617  (min=600)
+  FAIL A1 SNOW s3_winter_on.png       coverage=    0  (min=600)
+  PASS A1 SNOW s5_winter_on.png       coverage= 3505  (min=600)
+  PASS A2 RAIN s1_rain_on.png         coverage= 1458  (min=700)
+  PASS A2 RAIN s3_rain_on.png         coverage= 1458  (min=700)
+  PASS A2 RAIN s5_rain_on.png         coverage= 1458  (min=700)
+=== PRECIP GATE: FAIL ===
+exit=1
+
+======================================================================
+MUTANT② 雨层删空/关掉（s3_rain_on := off ⇒ coverage 0 < 700） ⇒ 期望 FAIL exit 1
+----------------------------------------------------------------------
+  PASS A1 SNOW s1_winter_on.png       coverage= 1617  (min=600)
+  PASS A1 SNOW s3_winter_on.png       coverage= 1154  (min=600)
+  PASS A1 SNOW s5_winter_on.png       coverage= 3505  (min=600)
+  PASS A2 RAIN s1_rain_on.png         coverage= 1458  (min=700)
+  FAIL A2 RAIN s3_rain_on.png         coverage=    0  (min=700)
+  PASS A2 RAIN s5_rain_on.png         coverage= 1458  (min=700)
+=== PRECIP GATE: FAIL ===
+exit=1
+
+======================================================================
+MUTANT③ 几何错（s3_winter_on 缩到 640×384 ⇒ C 臂拒判） ⇒ 期望 FAIL exit 1
+----------------------------------------------------------------------
+  ❌ C: s3_winter_on.png 尺寸 (640, 384) != 期望 (1280,768)（几何错 ⇒ 取样带取歪，拒判）
+=== PRECIP GATE: FAIL（几何/缺帧 ⇒ 拒判）===
+exit=1
+
+======================================================================
+MUTANT④ 缺 off 帧（删 s3_winter_off ⇒ C 臂拒判） ⇒ 期望 FAIL exit 1
+----------------------------------------------------------------------
+  ❌ C: 缺 off 帧 s3_winter_off.png（少喂一帧 ⇒ 拒判）
+=== PRECIP GATE: FAIL（几何/缺帧 ⇒ 拒判）===
+exit=1
+

@@ -1,0 +1,10 @@
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+=== as4_negctl_probe · seed=1 days=60 delta=5 ===
+[AS4NEG] {"d34":"总量=204 基准=204 (应相等)","d35":"负余额agent=0 镇库=86 外部=56","d45":"external=56 应付=56 (应相等)","econ_total0":204,"external_after":56,"external_before":56,"i34":true,"i35":true,"i45":true,"mode":"CLEAN","money_total_after":204,"money_total_before":204,"seed":1}
+[AS4NEG] {"d34":"总量=199 基准=204 (应相等)","d35":"负余额agent=0 镇库=81 外部=56","d45":"external=56 应付=56 (应相等)","econ_total0":204,"external_after":56,"external_before":56,"i34":false,"i35":true,"i45":true,"mode":"NEG_34","money_total_after":199,"money_total_before":204,"seed":1}
+[AS4NEG] {"d34":"总量=204 基准=204 (应相等)","d35":"负余额agent=0 镇库=81 外部=61","d45":"external=61 应付=56 (应相等)","econ_total0":204,"external_after":61,"external_before":56,"i34":true,"i35":true,"i45":false,"mode":"NEG_45","money_total_after":204,"money_total_before":204,"seed":1}
+[AS4NEG] {"d34":"总量=143 基准=204 (应相等)","d35":"负余额agent=0 镇库=86 外部=-5","d45":"external=-5 应付=56 (应相等)","econ_total0":204,"external_after":-5,"external_before":56,"i34":false,"i35":false,"i45":false,"mode":"NEG_35ext","money_total_after":143,"money_total_before":204,"seed":1}
+[AS4NEGSUM] {"expected_matrix_ok":true,"seed":1}
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bbnchslm0003"]
+
+[ext_resource type="Script" path="res://bench/ModelPathGate.gd" id="1_mp"]
+
+[node name="ModelPathGate" type="Node"]
+script = ExtResource("1_mp")

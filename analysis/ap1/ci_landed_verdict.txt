@@ -1,0 +1,15 @@
+AP1 landing CI —— 权威 committed-tree run（fresh ledger）
+HEAD=de661981d1eee2794a24d085d45e94c759e4d32d  game=ab82afd0cd51a11b67d7e4a19bf177325f4d1b48
+CI_EXIT=0
+
+=== CI PASS ✅ ===
+- S0 GATE: PASS ✅ (硬不变量 seed 12/12 全绿, 金标 过, det 3/3)   ← AP1 pure-View 零金标(含逐 tick 链)
+- 互补性守卫: PASS (锚烘于 commit d37c5a0, 7 夹具 × 35 不变量; baked_game_tree==HEAD:game ab82afd = fresh) + 负对照有牙
+- AUDIT PASS: typed-layers 一致 + 全可达 + 每家居/工位有交互格 + 工位连通正确 + ≥2 路线 + 地标非阻(AP1 未碰 map.json 四数组)
+- LOD-VERIFY GATE: PASS (V2+V3abc 全绿)   ← AP1 新绘制纯 draw、不回喂 Sim
+- state_projection_gate: PASS (0 fail)   ← F1 仍好
+- INTSHELL PASS (7栋/4类) · FURNROLE PASS (6栋/5类)
+- SEASON GATE PASS · PRECIP GATE PASS · FLOOR ROUNDTRIP GATE PASS
+- (视觉门 space-roundtrip A1[map] 变化像素=0/366800=0.000% ← 证 AP1 重铺逐像素确定性)
+注: AP1 自 worktree 的 CI 是【提交前】跑(HEAD:game 尚=c244322 故 guard 假新鲜); 本 verdict 是【提交后】
+    committed 树(HEAD:game=ab82afd) + 重烘 fresh ledger 的权威 run。全 log(gitignored) analysis/ap1/ci_landed.log。

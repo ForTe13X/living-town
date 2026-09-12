@@ -1,0 +1,10 @@
+底座：arm=ship N=40 seed=1  gated=6 never_short=2 arm_low=False arm_high=False
+  ✅ ① 恰好 4/6 种货零缺货 ⇒ 上限臂翻红 (never_short=4/6)
+  ✅ ② 把 口粮 的 rate 压到 FLOOR−0.001 ⇒ 下限臂翻红 
+  ✅ ②b rate 恰等于 FLOOR ⇒ **不**红（判据是严格小于） 
+  ✅ ③ 只少一种（3/6 零缺货）⇒ 上限臂翻绿 (never_short=3/6)
+  ✅ ④ 把 口粮 的 demand 压到 MIN_DEMAND−1 ⇒ 退出判决 
+  ✅ ⑤ 把 SUPPLY_FLOOR 换成 0.95 ⇒ 同一份数据翻红（判据真的读了常量） (低于 0.95 的货：['口粮', '屋瓦', '整洁'])
+  ✅ ⑤b 把上限臂的乘数换成 1（never_short>gated_n）⇒ 恒不成立 
+  ✅ ⑥ days_run < SUPPLY_MIN_DAYS ⇒ 一种货都不进判决、两条臂都绿 
+selftest: PASS ✅

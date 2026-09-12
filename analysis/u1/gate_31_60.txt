@@ -1,0 +1,124 @@
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: Condition "!FileAccess::exists(path)" is true. Returning: ERR_FILE_NOT_FOUND
+   at: open_dynamic_library (platform/windows/os_windows.cpp:487)
+ERROR: GDExtension dynamic library not found: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: open_library (core/extension/gdextension.cpp:740)
+ERROR: Error loading extension: 'res://addons/nobodywho/nobodywho.gdextension'.
+   at: load_extensions (core/extension/gdextension_manager.cpp:329)
+Godot Engine v4.6.2.stable.official.71f334935 - https://godotengine.org
+
+  ✅ 哈希自检：6 条 fnv1a32 + 4 条 mix32 测试向量全对（项目自有哈希，不依赖引擎 String.hash()）
+=== Causal Bench S0 · 不变量回归门  seeds=[31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60] days=60 ===
+[S0] {"chain":"1111772106","days":60,"diag_fails":[],"digest":"238655642","event_digest":"5336579384971342172","events":3404,"hard_fails":[],"pass":true,"seed":31,"soft_fails":[]}
+[S0] {"chain":"3654226186","days":60,"diag_fails":[],"digest":"3518129254","event_digest":"7993545305109320776","events":3354,"hard_fails":[],"pass":true,"seed":32,"soft_fails":[]}
+[S0] {"chain":"3113494002","days":60,"diag_fails":[],"digest":"950476852","event_digest":"5532859744586395813","events":3247,"hard_fails":[],"pass":true,"seed":33,"soft_fails":[]}
+[S0] {"chain":"4091571252","days":60,"diag_fails":[],"digest":"205232212","event_digest":"2376367064460240657","events":3360,"hard_fails":[],"pass":true,"seed":34,"soft_fails":[]}
+[S0] {"chain":"1302065044","days":60,"diag_fails":[],"digest":"111414154","event_digest":"3887940312887599401","events":3286,"hard_fails":[],"pass":true,"seed":35,"soft_fails":[]}
+[S0] {"chain":"818355628","days":60,"diag_fails":[],"digest":"1070137594","event_digest":"4347465765489539032","events":3535,"hard_fails":[],"pass":true,"seed":36,"soft_fails":[]}
+[S0] {"chain":"4245450114","days":60,"diag_fails":[],"digest":"963487654","event_digest":"8671247384320421982","events":3558,"hard_fails":[],"pass":true,"seed":37,"soft_fails":[]}
+[S0] {"chain":"3214430633","days":60,"diag_fails":[],"digest":"4145502896","event_digest":"3518691380769352995","events":3341,"hard_fails":[],"pass":true,"seed":38,"soft_fails":[]}
+[S0] {"chain":"1406257870","days":60,"diag_fails":[],"digest":"1025440021","event_digest":"6754084684830418987","events":3456,"hard_fails":[],"pass":true,"seed":39,"soft_fails":[]}
+[S0] {"chain":"2336913847","days":60,"diag_fails":[15],"digest":"1255270986","event_digest":"2602266318568860652","events":3385,"hard_fails":[],"pass":true,"seed":40,"soft_fails":[]}
+[S0] {"chain":"769669273","days":60,"diag_fails":[],"digest":"3174914882","event_digest":"5253237795465614587","events":3411,"hard_fails":[],"pass":true,"seed":41,"soft_fails":[]}
+[S0] {"chain":"2371541712","days":60,"diag_fails":[],"digest":"821840359","event_digest":"7174210785720528949","events":3528,"hard_fails":[],"pass":true,"seed":42,"soft_fails":[]}
+[S0] {"chain":"2653330086","days":60,"diag_fails":[],"digest":"1576443557","event_digest":"702591131238944674","events":3270,"hard_fails":[],"pass":true,"seed":43,"soft_fails":[]}
+[S0] {"chain":"716093840","days":60,"diag_fails":[],"digest":"1479155366","event_digest":"6473232048094417575","events":3340,"hard_fails":[],"pass":true,"seed":44,"soft_fails":[40]}
+[S0] {"chain":"1632812365","days":60,"diag_fails":[],"digest":"4079819684","event_digest":"7431612367254021115","events":3251,"hard_fails":[],"pass":true,"seed":45,"soft_fails":[]}
+[S0] {"chain":"3700555299","days":60,"diag_fails":[],"digest":"2784386759","event_digest":"7883358226087813208","events":3375,"hard_fails":[],"pass":true,"seed":46,"soft_fails":[]}
+[S0] {"chain":"3914082593","days":60,"diag_fails":[],"digest":"2040566451","event_digest":"5877691827745339179","events":3439,"hard_fails":[],"pass":true,"seed":47,"soft_fails":[]}
+[S0] {"chain":"3541702692","days":60,"diag_fails":[],"digest":"3002151245","event_digest":"1540594089870237371","events":3407,"hard_fails":[],"pass":true,"seed":48,"soft_fails":[]}
+[S0] {"chain":"1889525000","days":60,"diag_fails":[],"digest":"4152354994","event_digest":"6689354557233112697","events":3413,"hard_fails":[],"pass":true,"seed":49,"soft_fails":[]}
+[S0] {"chain":"1153982422","days":60,"diag_fails":[],"digest":"1666524458","event_digest":"1518349679240082869","events":3385,"hard_fails":[],"pass":true,"seed":50,"soft_fails":[]}
+[S0] {"chain":"1989114918","days":60,"diag_fails":[],"digest":"974186043","event_digest":"440099958664040537","events":3476,"hard_fails":[],"pass":true,"seed":51,"soft_fails":[]}
+[S0] {"chain":"860759648","days":60,"diag_fails":[],"digest":"483955316","event_digest":"6445112349478307014","events":3236,"hard_fails":[],"pass":true,"seed":52,"soft_fails":[]}
+[S0] {"chain":"338692205","days":60,"diag_fails":[],"digest":"2297601265","event_digest":"2970091056986243273","events":3245,"hard_fails":[],"pass":true,"seed":53,"soft_fails":[]}
+[S0] {"chain":"930695294","days":60,"diag_fails":[],"digest":"41533552","event_digest":"1992799075213801476","events":3386,"hard_fails":[],"pass":true,"seed":54,"soft_fails":[]}
+[S0] {"chain":"894366799","days":60,"diag_fails":[],"digest":"3053054995","event_digest":"1624877392483825572","events":3172,"hard_fails":[],"pass":true,"seed":55,"soft_fails":[]}
+[S0] {"chain":"2403222200","days":60,"diag_fails":[],"digest":"1881045647","event_digest":"7694046035789624057","events":3380,"hard_fails":[],"pass":true,"seed":56,"soft_fails":[]}
+[S0] {"chain":"370816572","days":60,"diag_fails":[],"digest":"2343691746","event_digest":"2141308379900042974","events":3267,"hard_fails":[],"pass":true,"seed":57,"soft_fails":[26]}
+[S0] {"chain":"2147019844","days":60,"diag_fails":[],"digest":"3656050217","event_digest":"2603074735260511551","events":3229,"hard_fails":[],"pass":true,"seed":58,"soft_fails":[]}
+[S0] {"chain":"3303950638","days":60,"diag_fails":[],"digest":"3026604860","event_digest":"1578573483629010669","events":3259,"hard_fails":[],"pass":true,"seed":59,"soft_fails":[]}
+[S0] {"chain":"2777749834","days":60,"diag_fails":[],"digest":"2759091353","event_digest":"6985082636166483299","events":3351,"hard_fails":[],"pass":true,"seed":60,"soft_fails":[]}
+
+— 不变量跨 seed 通过率（硬=全绿必需 / 软=通过率≥27/30 / 诊断=只报不门）—
+  ✅ #01 [硬]无 need 触底（任一需求，不只饥饿）  30/30
+  ✅ #02 [软]社交发生  30/30
+  ✅ #03 [软]无永久孤立  30/30
+  ✅ #04 [软]关系分化  30/30
+  ✅ #05 [软]谣言传播  30/30
+  ✅ #06 [硬]知识边界  30/30
+  ✅ #07 [硬]账本可溯源  30/30
+  ✅ #08 [软]承诺生命周期  30/30
+  ✅ #09 [硬]无悬挂承诺  30/30
+  ✅ #10 [硬]违约可溯源有后果  30/30
+  ✅ #11 [软]冲突生命周期  30/30
+  ✅ #12 [硬]先对质后和解  30/30
+  ✅ #13 [硬]修复可溯源  30/30
+  ✅ #14 [软]standing分化  30/30
+  🔎 #15 [诊断]涌现放逐  29/30  (不入门·度量已知泄漏,见 docs/31)   首违 seed 40: 最坏 evy(-1.0) 接受率 0.60 / 镇均 0.43
+  ✅ #16 [软]声誉传播  30/30
+  ✅ #17 [软]坏名声形成可恢复  30/30
+  ✅ #18 [软]观点演化不坍缩  30/30
+  ✅ #19 [软]有界信任Deffuant  30/30
+  ✅ #20 [软]谣言变冷MakiThompson  30/30
+  ✅ #21 [硬]秘密专道  30/30
+  ✅ #22 [硬]背叛有后果可溯源  30/30
+  ✅ #23 [硬]背叛重挫名声  30/30
+  ✅ #24 [硬]背叛无误判  30/30
+  ✅ #25 [硬]S3派系派生一致(对齐且相识)  30/30
+  ✅ #26 [软]S3同派系亲和>跨派系  29/30   首违 seed 57: 同派系均-15.4 vs 跨派系均-13.0
+  ✅ #27 [硬]S3协同守边界  30/30
+  ✅ #28 [硬]S3派系视图自洽  30/30
+  ✅ #29 [硬]I-PACT互助偏内  30/30
+  ✅ #30 [硬]I-PACT-free-rider可溯源  30/30
+  ✅ #31 [硬]I-PACT结盟门达标  30/30
+  ✅ #32 [硬]I-PACT无悬挂无重复对称  30/30
+  ✅ #33 [硬]I-PACT解体可恢复  30/30
+  ✅ #34 [硬]金钱守恒  30/30
+  ✅ #35 [硬]货币非负  30/30
+  ✅ #36 [硬]节日对象配对无残留  30/30
+  ✅ #37 [硬]选举计票自洽  30/30
+  ✅ #38 [硬]库存账本自洽  30/30
+  ✅ #39 [硬]产出溯源到在班本职  30/30
+  ✅ #40 [软]产出闭环活性与供给充足  29/30   首违 seed 44: produce=96 consume=290 满足率门下限=0.50·上限=多数不缺；【长期供不应求】豆子 满足率=0.50(到手54/想要109，断供26/60天)；产出契约=宏观池 ×12/12
+
+— 套件级活性（跨全网格计数；门控类归零即红）—
+     aid                次数=170    覆盖 seed=29/30
+  🔒 apologize          次数=1202   覆盖 seed=30/30
+     betray             次数=3      覆盖 seed=3/30
+  🔒 confide            次数=193    覆盖 seed=29/30
+  🔒 conflict           次数=2932   覆盖 seed=30/30
+  🔒 confront           次数=1285   覆盖 seed=30/30
+     consume            次数=8947   覆盖 seed=30/30
+  🔒 discuss            次数=2757   覆盖 seed=30/30
+  🔒 election           次数=120    覆盖 seed=30/30
+  🔒 endorse            次数=484    覆盖 seed=28/30
+     festival_despawn   次数=218    覆盖 seed=30/30
+  🔒 festival_spawn     次数=218    覆盖 seed=30/30
+  🔒 give               次数=1080   覆盖 seed=30/30
+  🔒 gossip             次数=1365   覆盖 seed=30/30
+  🔒 gossip_rep         次数=18353  覆盖 seed=30/30
+  🔒 greet              次数=14947  覆盖 seed=30/30
+  🔒 invite             次数=2093   覆盖 seed=30/30
+     leak               次数=17     覆盖 seed=3/30
+  🔒 meet               次数=2092   覆盖 seed=30/30
+     pact_dissolved     次数=5      覆盖 seed=5/30
+     pact_formed        次数=108    覆盖 seed=30/30
+  🔒 pay                次数=33959  覆盖 seed=30/30
+     produce            次数=3081   覆盖 seed=30/30
+  🔒 rally_oust         次数=569    覆盖 seed=29/30
+     shortage           次数=1191   覆盖 seed=30/30
+     spoil              次数=3241   覆盖 seed=30/30
+     world_other        次数=116    覆盖 seed=30/30
+  ✅ 门控事件类 16 种全部仍在发生
+
+— 金标（跨进程锚）—
+  (未启用 --golden)
+
+— 确定性 —
+  ✅ 同 seed 两跑摘要一致(批量+增量滚动+逐tick前缀链)  3/3
+
+=== S0 GATE: PASS ✅  (硬不变量 seed 30/30 全绿, 软通过率门 ≥27/30(90%) 过, 活性 过, 金标 过, det 3/3) ===
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)
