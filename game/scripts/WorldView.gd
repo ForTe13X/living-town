@@ -1830,7 +1830,7 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 	for fr in _ac("interior_furniture", content.get("furniture", [])):
 		var fp: Array = (fr as Dictionary).get("pos", [0, 0])
 		var furniture_base := Vector2(ox + int(fp[0]) * T, oy + int(fp[1]) * T)
-		_draw_interior_furniture(String((fr as Dictionary).get("slot", "")), furniture_base, role)
+		_draw_interior_furniture(String((fr as Dictionary).get("slot", "")), furniture_base, role, sid, fid)
 		if bool((fr as Dictionary).get("cargo_observatory", false)):
 			draw_rect(Rect2(furniture_base + Vector2(4, 4), Vector2(T - 8, T - 8)), Color(X_GLOW, 0.72), false, 2.0)
 			draw_string(Art.font(), furniture_base + Vector2(-T * 0.20, -5), "点柜台 · 查回执", HORIZONTAL_ALIGNMENT_LEFT, T * 1.45, 12, X_GOLD)
@@ -2020,14 +2020,28 @@ func _furniture_role(sid: String, content: Dictionary) -> String:
 		return "study"
 	return "living"
 
-func _draw_interior_furniture(slot: String, base: Vector2, role: String = "living") -> void:
+## Café density is deliberately a View-only treatment of existing authored slots.  `sid`/`fid`
+## select no data and never feed back into Sim; they only keep the public counter and Aria's 2F
+## room from sharing the generic furniture silhouette used by the other living spaces.
+func _draw_interior_furniture(slot: String, base: Vector2, role: String = "living", sid: String = "", fid: String = "") -> void:
 	match slot:
-		"bed": _draw_bed(base)
+		"bed":
+			_draw_bed(base)
+			if sid == "cafe" and fid == "2f":
+				# Aria's existing bed: folded quilt, pillow and bedside reading cup, all inside its cell.
+				draw_rect(Rect2(base.x + T * 0.20, base.y + T * 0.46, T * 0.58, T * 0.22), D_RUG_RED, true)
+				draw_rect(Rect2(base.x + T * 0.20, base.y + T * 0.46, T * 0.58, T * 0.045), Color(X_GOLD, 0.55), true)
+				draw_rect(Rect2(base.x + T * 0.25, base.y + T * 0.22, T * 0.27, T * 0.13), X_PARCHMENT, true)
+				draw_circle(Vector2(base.x + T * 0.82, base.y + T * 0.68), T * 0.07, X_COLD_WHITE)
+				draw_rect(Rect2(base.x + T * 0.86, base.y + T * 0.65, T * 0.08, T * 0.045), X_COLD_WHITE, true)
 		"coffee":                                   # 咖啡机：深色金属机身 + 红灯 + 杯
 			draw_rect(Rect2(base.x + T * 0.2, base.y + T * 0.15, T * 0.6, T * 0.62), P_WRK_ROOF, true)
 			draw_rect(Rect2(base.x + T * 0.2, base.y + T * 0.15, T * 0.6, T * 0.14), P_WRK_FOOT, true)
 			draw_circle(Vector2(base.x + T * 0.68, base.y + T * 0.3), T * 0.05, X_SIGNAL_NEG)
 			draw_rect(Rect2(base.x + T * 0.42, base.y + T * 0.52, T * 0.16, T * 0.14), P_TEXT, true)
+			if sid == "cafe" and fid == "1f":
+				draw_circle(Vector2(base.x + T * 0.30, base.y + T * 0.66), T * 0.07, X_PARCHMENT)
+				draw_line(Vector2(base.x + T * 0.24, base.y + T * 0.31), Vector2(base.x + T * 0.18, base.y + T * 0.17), Color(X_COLD_WHITE, 0.42), 2.0)
 		"counter":                                  # 吧台 / 杂货铺柜台 —— 按房间用途分化（S3 同型，与 _draw_shelf 一样按 role 派发）
 			if role == "store":                     # AM2（编号134）：杂货铺前柜 —— 木柜台 + 收银机 + 挂秤 + 台面果篮，与咖啡吧台分得开
 				draw_rect(Rect2(base.x + 2, base.y + T * 0.6, T - 4, T * 0.35), Color(0, 0, 0, 0.18), true)      # 投影
@@ -2040,15 +2054,24 @@ func _draw_interior_furniture(slot: String, base: Vector2, role: String = "livin
 				draw_rect(Rect2(base.x + T * 0.6, base.y + T * 0.32, T * 0.24, T * 0.05), P_WRK_FOOT, true)      # 秤盘横梁
 				draw_circle(Vector2(base.x + T * 0.66, base.y + T * 0.39), T * 0.05, X_SIGNAL_NEG)               # 篮里红果
 				draw_circle(Vector2(base.x + T * 0.78, base.y + T * 0.39), T * 0.045, X_GOLD)                    # 篮里黄果
-			else:                                   # 咖啡区吧台（改前那段，逐字节不动 ⇒ cafe 渲染不受扰）
+			else:                                   # 咖啡区吧台：existing counter slot gains an active service surface.
 				draw_rect(Rect2(base.x + 2, base.y + T * 0.6, T - 4, T * 0.35), Color(0, 0, 0, 0.18), true)
 				draw_rect(Rect2(base.x + T * 0.03, base.y + T * 0.32, T * 0.94, T * 0.5), X_WOOD_MID, true)
 				draw_rect(Rect2(base.x + T * 0.03, base.y + T * 0.32, T * 0.94, T * 0.1), P_COM_LINE, true)
+				if sid == "cafe" and fid == "1f":
+					for k in range(3):
+						draw_circle(Vector2(base.x + T * (0.22 + k * 0.19), base.y + T * 0.26), T * 0.055, X_PARCHMENT)
+					draw_rect(Rect2(base.x + T * 0.68, base.y + T * 0.19, T * 0.15, T * 0.13), P_COM_FOOT, true)
+					draw_rect(Rect2(base.x + T * 0.70, base.y + T * 0.21, T * 0.11, T * 0.045), X_GOLD, true)
 		"table":                                    # 餐桌
 			draw_rect(Rect2(base.x + T * 0.24, base.y + T * 0.5, T * 0.1, T * 0.34), P_COM_FOOT, true)
 			draw_rect(Rect2(base.x + T * 0.66, base.y + T * 0.5, T * 0.1, T * 0.34), P_COM_FOOT, true)
 			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.3, T * 0.7, T * 0.24), P_COM_LINE, true)
 			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.3, T * 0.7, T * 0.08), D_FURN_HI, true)
+			if sid == "cafe" and fid == "1f":
+				draw_circle(Vector2(base.x + T * 0.38, base.y + T * 0.24), T * 0.065, X_PARCHMENT)
+				draw_circle(Vector2(base.x + T * 0.62, base.y + T * 0.24), T * 0.065, X_PARCHMENT)
+				draw_rect(Rect2(base.x + T * 0.47, base.y + T * 0.20, T * 0.06, T * 0.10), X_SIGNAL_NEG, true)
 		"chair":                                    # 椅子
 			draw_rect(Rect2(base.x + T * 0.34, base.y + T * 0.2, T * 0.32, T * 0.5), X_WOOD_MID, true)
 			draw_rect(Rect2(base.x + T * 0.34, base.y + T * 0.44, T * 0.32, T * 0.13), P_COM_LINE, true)
@@ -2080,6 +2103,10 @@ func _draw_interior_furniture(slot: String, base: Vector2, role: String = "livin
 				draw_rect(Rect2(base.x + T * 0.2, base.y + T * 0.55, T * 0.09, T * 0.28), P_COM_FOOT, true)
 				draw_rect(Rect2(base.x + T * 0.71, base.y + T * 0.55, T * 0.09, T * 0.28), P_COM_FOOT, true)
 				draw_rect(Rect2(base.x + T * 0.26, base.y + T * 0.22, T * 0.2, T * 0.14), P_TEXT, true)
+				if sid == "cafe" and fid == "2f":
+					draw_rect(Rect2(base.x + T * 0.50, base.y + T * 0.21, T * 0.18, T * 0.12), X_PARCHMENT, true)
+					draw_line(Vector2(base.x + T * 0.53, base.y + T * 0.25), Vector2(base.x + T * 0.64, base.y + T * 0.25), P_COM_FOOT, 1.5)
+					draw_circle(Vector2(base.x + T * 0.76, base.y + T * 0.25), T * 0.055, X_COLD_WHITE)
 		"window":                                    # 窗（画在墙上）：天光 + 木框 + 十字
 			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.12, T * 0.7, T * 0.5), P_WATER_LIT, true)
 			draw_rect(Rect2(base.x + T * 0.15, base.y + T * 0.12, T * 0.7, T * 0.5), P_COM_FOOT, false, 3.0)

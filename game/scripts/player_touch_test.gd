@@ -84,6 +84,13 @@ func _fixture() -> void:
 	Sim.conflicts.append({"a": "ben", "b": "coco", "status": "simmering", "severity": 8.0,
 		"escalations": 0, "confronted": 0, "repaired": 0, "triggered": Sim.tick_no, "lastEscalate": Sim.tick_no})
 
+
+func _guest_fixture() -> bool:
+	_fixture()
+	var started := Sim.player_act("invite", "aria")
+	for _i in range(12): Sim.tick()
+	return started == "" and Sim._cafe_guest_capability_valid()
+
 func _state() -> String:
 	return "%d/%d/%d/%d" % [Sim.tick_no, Inv.digest(Sim), Sim.event_digest, Sim.event_log.size()]
 
@@ -157,6 +164,40 @@ func _ready() -> void:
 	for k in digests:
 		uniq[String(digests[k])] = true
 	_ck("C·7 动词可分辨", uniq.size() >= 5, "%d 种不同结局 / 7 个动词：%s" % [uniq.size(), str(digests)])
+
+
+	# Dedicated pass-return control: touch button, R key and direct UI function
+	# converge on Sim.player_cafe_guest_pass; the View owns no revoke state.
+	_ck("访客证按钮可见且说明安全返回", _main._guest_pass_btn != null and _main._guest_pass_btn.visible \
+		and "归还" in _main._guest_pass_btn.text and "R" in _main._guest_pass_btn.tooltip_text)
+	_ck("访客证 fixture 可授予", _guest_fixture())
+	_main._player_mode = true
+	var ui_msg: String = String(_main._player_return_cafe_pass())
+	var ui_state := _state()
+	_ck("A·归还按钮函数调用 canonical Sim", ui_msg == "" and String(Sim.cafe_guest_capability.get("status", "")) == "revoked")
+	_ck("访客证 fixture 可重复", _guest_fixture())
+	_main._player_mode = true
+	var engine_receipt := Sim.player_cafe_guest_pass("revoke")
+	var engine_state := _state()
+	_ck("A·UI函数 ≡ Sim typed input", bool(engine_receipt.get("ok", false)) and ui_state == engine_state, "ui=%s sim=%s" % [ui_state, engine_state])
+	_ck("访客证 fixture 可供触屏", _guest_fixture())
+	_main._player_mode = true
+	_main._guest_pass_btn.pressed.emit()
+	var button_state := _state()
+	_ck("B·触屏归还按钮 ≡ 函数", button_state == ui_state, "button=%s fn=%s" % [button_state, ui_state])
+	_ck("访客证 fixture 可供键盘", _guest_fixture())
+	_main._player_mode = true
+	var revoke_key := InputEventKey.new(); revoke_key.keycode = KEY_R; revoke_key.pressed = true
+	_main._unhandled_input(revoke_key)
+	var key_state := _state()
+	_ck("B'·R键 ≡ 触屏归还按钮", key_state == button_state, "key=%s button=%s" % [key_state, button_state])
+	# Restore the exact post-loop fixture consumed by the pre-existing HUD tests;
+	# the guest subtest must not weaken or perturb those independent assertions.
+	_fixture()
+	_main._player_mode = true
+	_main._selected_id = "ben"
+	_main._player_do("mediate")
+	for _restore_tick in range(12): Sim.tick()
 
 	# ── 2.5) 设置面板版式：内容必须真的装得下暗底板 ──
 	# 加「玩家模式」这一行之前，面板是 9 个子项 / separation 16 / 底板 424px —— 算出来内容就超了，
