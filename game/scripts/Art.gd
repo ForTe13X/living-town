@@ -77,6 +77,33 @@ func agent_tex(sprite_name: String) -> Texture2D:
 	var pro := tex("res://assets/art/pro/%s.png" % sprite_name)
 	return pro if pro != null else tex(CHAR_DIR + sprite_name + ".png")
 
+## docs/181：PixelLab 8 向角色表（tools/import_pixellab_char.py 出货）。8 行方向 × (静止 + walk N 帧)，格 48×48。
+## 没有表 → null（调用方退回旧 Puny 表）。另返回表的格尺寸与源帧里人物【脚底行】（alpha bbox 实测，脚对落脚线用）。
+const CHARS_DIR := "res://assets/art/chars/"
+const CHAR8_CELL := 48
+var _char8_feet := {}
+func char_sheet(pid: String) -> Texture2D:
+	if pid == "":
+		return null
+	return tex(CHARS_DIR + pid + ".png")
+
+func char_sheet_feet(pid: String) -> int:
+	if _char8_feet.has(pid):
+		return _char8_feet[pid]
+	var t := char_sheet(pid)
+	var feet := CHAR8_CELL - 2
+	if t != null:
+		var img := t.get_image()
+		if img != null:
+			if img.is_compressed():
+				img = img.duplicate()
+				img.decompress()
+			var r := img.get_region(Rect2i(0, 0, CHAR8_CELL, CHAR8_CELL)).get_used_rect()   # 南向静止帧
+			if r.size.y > 0:
+				feet = r.end.y
+	_char8_feet[pid] = feet
+	return feet
+
 ## 社交事件 emote 图标（greet/give/gossip/invite/meet_fulfilled/meet_broken/conflict/confront/apologize_ok/apologize_no）
 func emote_tex(event_key: String) -> Texture2D:
 	return tex("res://assets/art/emote/%s.png" % event_key)
