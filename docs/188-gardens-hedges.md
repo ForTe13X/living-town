@@ -32,6 +32,13 @@
 - 石街格运行时剔除：`_build_paths` 的门→广场石街可能没人走过（heat=0），园子格与园中物遇到石街/广场格一律不画。
 - 园子格并入 `_house_cells` ⇒ 野花草/街具不散进园子。
 
+## 验收回执（本机，73ac6f3 干净 worktree）
+
+- `tools/ci.sh` 第 5 步 22 个 headless 场景：**22/22 exit 0、0 条 `SCRIPT ERROR`**。
+- docker 视觉门 `LT_VISUAL=require bash tools/visual_gate.sh`（`gamecraft-runner:4.6.2`）：rc=0，0 条 FAIL/SKIP；
+  DAYNIGHT / SEASON / PRECIP / ROUNDTRIP×3 / FLOOR ROUNDTRIP 全 PASS。
+- 互补锚 ledger 已重烘（5e3d8ab）。
+
 ## 零金标
 
 只画、不写：可走性一格不动，不读 RNG；布局只读 `lots.json`、`_hash_mix`、`_path_set`。
