@@ -261,6 +261,9 @@ var _authored_solid_props := [] # map.json draw/nav authority; current-schema sa
 var _nav_grids := {}            # space -> floor -> {w,h,blocked}：每平面独立导航网（town 复用 _blocked 引用）
 var rhythm := {}                # 昼夜节律偏好表 data/rhythm.json：{phases:{name:[lo,hi)}, prefs:{need:{phase:factor}}, default}
 var utility := {}               # 效用/接受权重表 data/utility.json（docs/14 §1 步骤4）：行为调参数据化，缺键→代码默认(逐字节不变)
+var desire_cfg := {}            # 欲望 v0 data/desire.json（docs/187）：缺文件/enabled≠true → 全短路=逐字节不变。
+                                # 进 SAVE_LOAD_DENY：它是【配置】，由 _load_data 重读；若入档，新增这一个 var 就会改 schema-2 形状、旧档全拒。
+                                # 每人的欲望态住在 agent["desire"] 里（随 agents 深拷贝入档），不另设 script var。
 # ── Wave 1c 天气（docs/15 §3 挂点#3 最小版）：weather(day)=纯哈希查权重表——不消耗 RNG 流、不存历史，goto_tick 天然复现 ──
 var weather := {}               # data/weather.json：{types:{名:{w:权重}}, mults:{天气:{动作:乘子≤1}}}；缺文件→恒晴=零扰动
 var weather_today := ""         # 当日天气（start_new/日界重算；纯 f(seed_base,day)）
@@ -625,6 +628,9 @@ func _load_data() -> void:
 	#   免得 _read_json 的 push_error("缺数据文件") 把「删掉 logistics.json 跑一遍」这条零扰动对照自己弄红。
 	if FileAccess.file_exists("res://data/logistics.json"):
 		logistics = _read_json("res://data/logistics.json")
+	# 欲望 v0（docs/187）：同上，先 file_exists 再读 ⇒ 缺文件是合法关闭态，不打 push_error。
+	if FileAccess.file_exists("res://data/desire.json"):
+		desire_cfg = _read_json("res://data/desire.json")
 	# K1：留一份未换尺度的原样。start_new 每次从它重算 production（人口在那时才知道，且 goto_tick 会反复重开）。
 	_production_raw = production
 	_merge_prod_jobs()                              # F1：production.jobs 里的新岗位(商贩/环卫工)并进岗位表；缺该键=今天的六个岗位
@@ -2165,7 +2171,7 @@ const SAVE_MAGIC := "LTSAVE"
 const SAVE_SCHEMA_LEGACY := 1
 const SAVE_SCHEMA := 2
 const SAVE_RUNTIME_HANDLES := ["backend", "ext", "decision_sink"]
-const SAVE_LOAD_DENY := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected",
+const SAVE_LOAD_DENY := ["desire_cfg", "_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected",
 	"controlled_id", "_tone_bonus", "loaded_meta"]   # docs/190 生活模式：附身/语气/档头都是 View 或瞬时态，不改存档形状（旧档照读）
 const SAVE_CURRENT_BLOB_KEYS := ["magic", "schema", "game_version", "saved_tick", "saved_day", "seed", "meta", "active_commit_ids", "state"]
 
@@ -3095,8 +3101,11 @@ func tick() -> void:
 		_compute_lod_cohort()                        # 观察无关 cohort（salient ∪ 轮转，不读相机）
 	elif lod and lod_near_cap > 0:
 		_compute_near_set()                          # 保守档 camera near_cap（bench-only）
+	var desire_on := _desire_on()
 	for ag in agents:
 		_decay_needs(ag)
+		if desire_on:
+			_desire_tick(ag)                 # docs/187：紧跟 decay、先于决策 ⇒ 生存门读的是本 tick 衰减后的 need
 		_advance_agent(ag)
 	_resolve_commitments()              # 解算到场/爽约
 	_sweep_conflicts()                  # 久未对质的冲突 → lingering
@@ -4110,6 +4119,8 @@ func _social_candidates(ag: Dictionary) -> Array:
 			if low != "":
 				out.append({"kind": "social", "action": "aid", "partner": o["id"], "subject": low,
 					"need": "social", "score": (AID_NEED_TH - float(o["needs"][low])) * 1.2 + fam * 0.1 + AID_BASE, "say": ""})
+	if _desire_on():
+		_desire_bonus(ag, out)               # docs/187 步骤 3：只改分、不增删候选 ⇒ tie-break salt 与候选序不变
 	return out
 
 # S3b 辅助
@@ -5013,6 +5024,119 @@ func _min_need(ag: Dictionary) -> float:
 	for nid in ag["needs"]:
 		m = minf(m, float(ag["needs"][nid]))
 	return m
+
+# ── 欲望 v0（docs/187 §三 步骤 1-2）：状态 + 对象候选 + 强度。【本步无任何行为效应】——
+#   不加分、不碰 need、不写 event_log、不消耗 RNG ⇒ 开着跑 event_digest/chain 也应与关时逐字节相同（desire_test 的 D1 强形式）。
+const DESIRE_DEEP_ACTS := ["give", "invite", "confide"]   # person 对象的证据（不含 greet：它无条件发起、已支配社交，见 docs/187 §三·4）
+const DESIRE_STATUS_ACTS := ["endorse"]                    # status 对象（想被认可）的证据
+const DESIRE_WINDOW_DAYS := 3                              # 证据窗
+const DESIRE_RECENT_K := 3                                 # 近 K 个换掉的对象不回锅（步骤 4 才会往里写）
+const DESIRE_AFF_MIN := -10.0                              # 我自己对 X 的 affinity 低于此 ⇒ X 不入选（只读自己的感受，不读对方内心）
+
+## fail-closed：必须显式布尔 true。缺文件 / 空表 / 缺键 / 写成 1 或 "true" 一律关（F5 教训：判据不得因数据残缺翻成全开）。
+func _desire_on() -> bool:
+	var v = desire_cfg.get("enabled", false)
+	return typeof(v) == TYPE_BOOL and bool(v)
+
+## 惰性建态：关时从不调用 ⇒ agent 字典里连 "desire" 键都不会出现。
+func _desire_state(ag: Dictionary) -> Dictionary:
+	if not ag.has("desire"):
+		ag["desire"] = {"kind": "", "target": "", "intensity": 0.0, "since": tick_no,
+			"rebuffs": 0, "recent": [], "seen": []}
+	return ag["desire"]
+
+## 证据只来自 event 的 witnesses（在场旁观者）——当事双方不算，未在场者不知道（知识边界）。
+func _desire_witness(ev: Dictionary) -> void:
+	var ty := String(ev["type"])
+	if not bool(ev["accepted"]) or not (ty in DESIRE_DEEP_ACTS or ty in DESIRE_STATUS_ACTS):
+		return
+	for wid in ev["witnesses"]:
+		var w: Dictionary = _agent_by_id.get(wid, {})
+		if w.is_empty() or w.get("is_player", false):
+			continue
+		(_desire_state(w)["seen"] as Array).append([tick_no, ty, String(ev["actor"]), String(ev["target"])])
+
+func _desire_tick(ag: Dictionary) -> void:
+	if ag.get("is_player", false):
+		return
+	var d := _desire_state(ag)
+	var seen: Array = d["seen"]
+	var horizon := tick_no - DESIRE_WINDOW_DAYS * TICKS_PER_DAY
+	while not seen.is_empty() and int(seen[0][0]) < horizon:
+		seen.pop_front()                     # 追加序即 tick 序 ⇒ 只需削头
+	if String(d["kind"]) == "":
+		_desire_pick(ag, d)
+	# 生存门（D2）：任一 need 低于 SURVIVAL_GATE ⇒ 强度【结构性】不增长。有界：越近 100 长得越慢。
+	if String(d["kind"]) != "" and _min_need(ag) >= SURVIVAL_GATE:
+		var gain := clampf(float(desire_cfg.get("gain", 0.15)), 0.0, 5.0)
+		var x := float(d["intensity"])
+		d["intensity"] = minf(100.0, x + gain * (1.0 - x / 100.0))
+
+## 模仿中介的对象选择：窗口内【我亲眼看到】第三方对 X 的深层动作被接受 ⇒ X 的权重 +1，
+##   若示好者是我欣赏的人（我对他 affinity>0）再加 affinity/100。单一候选权重封顶 mimetic_cap（防全镇盯一个人）。
+## 只读 ag["relationships"].has(...)，【不用 _rel】——_rel 会顺手建关系，那就成了有行为效应的写。
+## 平局用 _hash01（纯函数）而不是 _rng_at：本步零 RNG 消耗。
+func _desire_pick(ag: Dictionary, d: Dictionary) -> void:
+	var cap := maxf(0.0, float(desire_cfg.get("mimetic_cap", 5.0)))
+	var me := String(ag["id"])
+	var rels: Dictionary = ag["relationships"]
+	var w := {}
+	var status_w := 0.0
+	for s in d["seen"]:
+		var ty := String(s[1])
+		var actor := String(s[2])
+		var x := String(s[3])
+		if ty in DESIRE_STATUS_ACTS:
+			status_w += 1.0
+			continue
+		# 玩家 v0 不作欲望对象：玩家交互门（player_*_test）不该被一个 NPC 内部机制扰动。
+		if x == me or x == "player" or x in d["recent"] or not _agent_by_id.has(x):
+			continue
+		if rels.has(x) and float(rels[x]["affinity"]) < DESIRE_AFF_MIN:
+			continue
+		var admire := maxf(0.0, float(rels[actor]["affinity"])) / 100.0 if rels.has(actor) else 0.0
+		w[x] = minf(cap, float(w.get(x, 0.0)) + 1.0 + admire)
+	status_w = minf(cap, status_w)
+	var best := ""
+	var best_w := 0.0
+	var best_tie := -1.0
+	var ks: Array = w.keys()
+	ks.sort()
+	for x in ks:
+		var tie := _hash01("%s:%s:%d" % [me, x, tick_no])
+		if float(w[x]) > best_w or (float(w[x]) == best_w and tie > best_tie):
+			best = x; best_w = float(w[x]); best_tie = tie
+	if best != "" and best_w >= status_w:
+		d["kind"] = "person"; d["target"] = best
+	elif status_w > 0.0:
+		d["kind"] = "status"; d["target"] = ""
+	else:
+		return                               # 无证据 ⇒ 无对象、强度不长
+	d["since"] = tick_no
+	d["rebuffs"] = 0
+
+## 步骤 3（docs/187 §三·4）：欲望【唯一】的行为效应——给社交候选里的深层动作加 bonus_k × intensity/100。
+##   person：partner==target 的 give/invite/confide；status：aid/endorse（做能换来认可的事）。
+##   · 不加 greet：它无条件发起、已严格支配 gossip，加上去只会"对目标多打招呼"，花样不增反减。
+##   · 只在 _social_candidates 尾部调用 ⇒ 物件候选（吃/睡）结构上够不着（D3，不靠门）；
+##     社交候选本身只在 min_need≥SURVIVAL_GATE 且 social<SOCIAL_FULL 时存在 ⇒ 危机时无处可加。
+##   · 缺 bonus_k ⇒ 0 ⇒ 无效应（fail-closed：开关开了但没给强度，不猜默认值）。
+const DESIRE_STATUS_SEEK := ["aid", "endorse"]
+func _desire_bonus(ag: Dictionary, out: Array) -> void:
+	var d = ag.get("desire")
+	if d == null or String(d["kind"]) == "":
+		return
+	var k := clampf(float(desire_cfg.get("bonus_k", 0.0)), 0.0, 30.0)
+	if k == 0.0:
+		return
+	var b := k * float(d["intensity"]) / 100.0
+	var person := String(d["kind"]) == "person"
+	var tg := String(d["target"])
+	for c in out:
+		var act := String(c["action"])
+		if (person and act in DESIRE_DEEP_ACTS and String(c["partner"]) == tg) \
+				or (not person and act in DESIRE_STATUS_SEEK):
+			c["score"] = float(c["score"]) + b
 
 ## 每夜反思：从关系/冲突/派系/名声确定性提炼一条洞察写回记忆（引擎地板，无模型也在）。
 ## 记忆不入 event_log/digest/不变量 → 确定且零回归。模型后端可事后用 AIBackend.reflect 润色覆盖(见 _reflect_llm)。
@@ -6500,6 +6624,8 @@ func _log_event(type: String, actor_id: String, target_id: String, subject: Stri
 		es += ":tx:" + txid
 	# 折进来的每事件哈希用【项目自有】fnv1a32，不用引擎的 String.hash()——否则 Godot 换版本就能改写金标。
 	event_digest = ((event_digest * 1099511628211) ^ fnv1a32(es)) & 0x7FFFFFFFFFFFFFFF
+	if _desire_on():
+		_desire_witness(ev)                  # docs/187：只把【旁观者】亲眼所见记为模仿证据；不改 ev、不入 digest
 	return ev
 
 ## importance 写入期派生（评审一致：别恒为常数）。
