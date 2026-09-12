@@ -370,8 +370,8 @@ func _camera(delta: float, ag: Dictionary) -> void:
 
 func _poll_move(delta: float) -> void:
 	_move_cd -= delta
-	if _modal_open or not Sim.running:
-		return
+	if _modal_open or not Sim.running or (_chat_box != null and _chat_box.visible):
+		return                                    # 打字时 WASD 是字，不是方向
 	var dx := int(Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT)) - int(Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT))
 	var dy := int(Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN)) - int(Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP))
 	if dx == 0 and dy == 0:
@@ -514,6 +514,11 @@ func _unhandled_input(e: InputEvent) -> void:
 		_select_input(e)
 		return
 	if not active:
+		return
+	if _chat_box != null and _chat_box.visible:
+		if e is InputEventKey and e.pressed and e.keycode == KEY_ESCAPE:
+			_close_chat()
+			get_viewport().set_input_as_handled()
 		return
 	if e is InputEventKey and e.pressed:
 		var used := true
@@ -712,6 +717,8 @@ func _rebuild_modal() -> void:
 				var txt := "【%s·%s】%s   · %s%s" % [String(apd["tone"]), String(apd["emotion"]), String(apd["line"]),
 					String(VERB_ZH.get(String(apd["verb"]), apd["verb"])), ("  〔投其所好〕" if hint > 0 else ("  〔怕不对味〕" if hint < 0 else ""))]
 				y = _mk_opt(txt, true, _do_say.bind(String(e["id"]), apd), y, w)
+			if not far:
+				y = _mk_opt("自己说点什么…（输入一句话）", true, _open_chat.bind(String(e["id"])), y, w)
 			y = _mk_header("直接做", y + 4.0, w)
 			for v in Sim.life_verb_options(String(e["id"]), true):
 				var vd: Dictionary = v
@@ -832,6 +839,67 @@ func _say_now(tid: String, ap: Dictionary) -> void:
 			if reply != "" and active and v != null and not Sim.get_agent(tid).is_empty():
 				v.show_say(tid, reply, 40)
 				main.call("_push", "[color=#c9b8ff]%s：%s[/color]" % [Sim._name(Sim.get_agent(tid)), reply.replace("[", "［")]))
+
+## ── 自由对话：输入一句 → 对方用模型（或罐头）回一句 → 双方记忆落账 ─────────────
+var _chat_box: LineEdit
+var _chat_tid := ""
+
+func _open_chat(tid: String) -> void:
+	_close_modal()
+	_chat_tid = tid
+	if _chat_box == null:
+		_chat_box = LineEdit.new()
+		_chat_box.add_theme_font_override("font", _fnt)
+		_chat_box.add_theme_font_size_override("font_size", 16)
+		_chat_box.add_theme_stylebox_override("normal", _style(INK, GOLD, 6, 4))
+		_chat_box.add_theme_stylebox_override("focus", _style(INK_HI, GOLD, 6, 4))
+		_chat_box.add_theme_color_override("font_color", PARCH)
+		_chat_box.position = Vector2((DESIGN.x - 520.0) * 0.5, DESIGN.y * 0.62)
+		_chat_box.size = Vector2(520, 38)
+		_chat_box.max_length = 40
+		_chat_box.text_submitted.connect(_on_chat_submit)
+		_layer.add_child(_chat_box)
+	_chat_box.placeholder_text = "对%s说…（Enter 发送 · Esc 取消）" % Sim._name(Sim.get_agent(tid))
+	_chat_box.text = ""
+	_chat_box.visible = true
+	_chat_box.grab_focus()
+	_modal_was_running = Sim.running
+	Sim.running = false                           # 打字时世界暂停
+
+func _close_chat() -> void:
+	if _chat_box == null or not _chat_box.visible:
+		return
+	_chat_box.visible = false
+	_chat_box.release_focus()
+	Sim.running = _modal_was_running
+
+func _on_chat_submit(text: String) -> void:
+	text = text.strip_edges()
+	var tid := _chat_tid
+	_close_chat()
+	if text == "":
+		return
+	var v: Node = main.get("_view")
+	if v != null:
+		v.show_say(pid, text, 30)
+	main.call("_push", "[color=#9ad0ff]%s → %s：%s[/color]" % [Sim._name(Sim.get_agent(pid)), Sim._name(Sim.get_agent(tid)), text.replace("[", "［")])
+	var tgt := Sim.get_agent(tid)
+	if tgt.is_empty():
+		return
+	tgt["thinking"] = true
+	AIBackend.chat(tgt, text, {"tick": Sim.tick_no, "day": Sim.day, "tod": Sim.time_of_day()}, func(reply: String):
+		var t2 := Sim.get_agent(tid)
+		if t2.is_empty() or not active:
+			return
+		t2["thinking"] = false
+		if reply == "":
+			return
+		if v != null:
+			v.show_say(tid, reply, 45)
+		main.call("_push", "[color=#c9b8ff]%s：%s[/color]" % [Sim._name(t2), reply.replace("[", "［")])
+		var r := Sim.life_chat_commit(tid, text, reply)
+		if not bool(r.get("ok", false)) and String(r.get("reason", "")) == "target_distance":
+			_show_toast("%s走远了，没听完" % Sim._name(t2)))
 
 func _do_portal(pos: Vector2i) -> void:
 	_close_modal()

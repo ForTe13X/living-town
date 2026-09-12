@@ -153,6 +153,14 @@ func _ready() -> void:
 	AIBackend.backend = prev_be
 	_ck("模型档回包标记为 ai 且只含合法动词", not got.is_empty() and String(got[0]["src"]) == "ai" and String(got[0]["verb"]) in legal, str(got.slice(0, 1)))
 
+	# ── 6a) 自由对话落账：双方记忆各一条；远了拒 ──
+	_place(aria, String(ben["space"]), String(ben["floor"]), _free_neighbor(String(ben["space"]), String(ben["floor"]), ben["pos"]))   # 招呼后 14 tick 她可能已走开
+	var ma: int = aria["memory"].items.size() if aria["memory"].get("items") != null else -1
+	var cr := Sim.life_chat_commit("aria", "今天海风大吗", "大着呢，帽子都吹跑了")
+	var ma2: int = aria["memory"].items.size() if aria["memory"].get("items") != null else -1
+	_ck("自由对话落账", bool(cr.get("ok", false)) and (ma < 0 or ma2 == ma + 1), "%s mem %d→%d" % [str(cr), ma, ma2])
+	_ck("对自己说话被拒", not bool(Sim.life_chat_commit("ben", "x", "y").get("ok", false)))
+
 	# ── 6b) 语气项：确定、按性格/交情分档，默认路径恒 0 ──
 	var coco: Dictionary = Sim.get_agent("coco")      # 内向·敏感
 	_ck("语气归类（自由文本）", Sim._tone_class("有点害羞地") == "腼腆" and Sim._tone_class("开玩笑") == "调侃" and Sim._tone_class("莫名其妙") == "")

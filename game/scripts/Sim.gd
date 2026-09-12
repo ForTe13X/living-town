@@ -1720,6 +1720,23 @@ func life_portal(portal_pos: Vector2i) -> Dictionary:
 	emit_signal("agent_changed", controlled_id)
 	return r
 
+## 自由对话落账（生活模式版的 player_chat_commit）：双方各记一条记忆（进语音 grounding），不改需求/好感——
+## 聊了什么由模型生成、不可复现，所以它只能写"记忆"这种不进裁决的东西。距离门与 M1 同尺（同平面、曼哈顿≤2）。
+func life_chat_commit(target_id: String, prompt: String, reply: String) -> Dictionary:
+	var ag := controlled()
+	var target: Dictionary = _agent_by_id.get(target_id, {})
+	if ag.is_empty():
+		return {"ok": false, "reason": "未附身"}
+	if target.is_empty() or target_id == controlled_id:
+		return {"ok": false, "reason": "target_missing"}
+	if not _same_plane(ag, target) or _manh(ag["pos"], target["pos"]) > 2:
+		return {"ok": false, "reason": "target_distance"}
+	if ag.get("memory") != null:
+		ag["memory"].add("跟%s说『%s』，%s答『%s』" % [_name(target), prompt.substr(0, 18), _name(target), reply.substr(0, 18)], 4, tick_no, [target_id, "chat"])
+	if target.get("memory") != null:
+		target["memory"].add("%s跟我说『%s』，我答『%s』" % [_name(ag), prompt.substr(0, 18), reply.substr(0, 18)], 5, tick_no, [controlled_id, "chat"])
+	return {"ok": true, "reason": ""}
+
 ## HUD 用的一张快照（只读）。
 func life_status() -> Dictionary:
 	var ag := controlled()

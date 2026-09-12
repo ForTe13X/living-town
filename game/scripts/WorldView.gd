@@ -1894,9 +1894,15 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 	_draw_interior_night(b, content, sid, fid)
 	# P3 Tier-B：画【此刻真在这层】的居民（阿丽在自家咖啡馆睡觉/看摊）。Space bounds 从原点起 → _draw_agent 用
 	# ag.pos*T 的室内局部坐标即落在本层画面里。纯 View、只读 ag 平面字段。
+	var _ctl_in: Dictionary = {}
 	for ag in Sim.agents:
 		if String(ag.get("space", "town")) == sid and String(ag.get("floor", "outdoor")) == fid:
+			if Sim.controlled_id != "" and String(ag["id"]) == Sim.controlled_id:
+				_ctl_in = ag    # 生活模式：被附身者最后画（同上）
+				continue
 			_draw_agent(ag)
+	if not _ctl_in.is_empty():
+		_draw_agent(_ctl_in)
 	# 楼层标签
 	draw_string(Art.font(), b.position + Vector2(T + 8, 22), "%s · %s" % [sg.label_of(sid), content.get("label", fid)],
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 15, D_WOOD_LINE)
@@ -3539,12 +3545,18 @@ func _draw_body() -> void:
 		_draw_relationship_lines()
 	if _ap("talklinks"):
 		_draw_talking_links()
+	var _ctl: Dictionary = {}
 	for ag in _ac("agents", Sim.agents):
 		if String(ag.get("space", "town")) != "town":
 			continue            # P3 Tier-B：非-town 平面的居民(在咖啡馆室内的阿丽)不画在镇上——否则会用室内格坐标在镇上"鬼影"
 		if _agent_under_roof(ag):
 			continue            # docs/180：盖着屋顶的楼里的人不画（否则读作"人走在屋顶上"）；拉近掀顶即现
+		if Sim.controlled_id != "" and String(ag["id"]) == Sim.controlled_id:
+			_ctl = ag           # 生活模式（docs/190）：被附身者最后画，与人同格时不被遮住
+			continue
 		_draw_agent(ag)
+	if not _ctl.is_empty():
+		_draw_agent(_ctl)
 	if _ap("water"):
 		_draw_gulls()               # docs/180：海鸥（按 tick 盘旋，确定性）
 
