@@ -39,12 +39,19 @@ def main() -> int:
     n = max((len(walk.get(d, [])) for d in DIRS), default=0)
     w = int(st["character"]["size"]["width"]); h = int(st["character"]["size"]["height"])
     sheet = Image.new("RGBA", (w * (1 + max(n, 1)), h * len(DIRS)), (0, 0, 0, 0))
+    # 西向三行若没生成 walk（为省 job 槽只动画 S/SE/E/NE/N），用东向镜像补：俯视小人左右近似对称。
+    mirror = {"west": "east", "south-west": "south-east", "north-west": "north-east"}
     for r, d in enumerate(DIRS):
         idle = load(rot[d])
         sheet.alpha_composite(idle, (0, r * h))
         seq = walk.get(d) or []
+        flip = False
+        if not seq and d in mirror and walk.get(mirror[d]):
+            seq, flip = walk[mirror[d]], True
         for c in range(max(n, 1)):
             img = load(seq[c]) if c < len(seq) else idle
+            if flip and c < len(seq):
+                img = img.transpose(Image.FLIP_LEFT_RIGHT)
             sheet.alpha_composite(img, ((c + 1) * w, r * h))
     DST.mkdir(parents=True, exist_ok=True)
     out = DST / f"{pid}.png"
