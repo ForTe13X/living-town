@@ -50,10 +50,12 @@ Prompt 里写死 "seen straight from the front, flat facade facing viewer" 才�
 - `assert_daynight.py` 本机近似（seed 3、tick 488/600、`--shot-fit`、opengl3，非 docker mesa）：**PASS**，
   正午主色 (117,141,54) 仍是草地，夜帧 dmax=1。
 - `--shot` 全程 0 条 `SCRIPT ERROR`。
+- **docker 视觉门**（`LT_VISUAL=require bash tools/visual_gate.sh`，`gamecraft-runner:4.6.2`，54b26db 干净 worktree）：
+  **全部 PASS**、0 条 FAIL/SKIP —— DAYNIGHT、SEASON（昼 ΔE00 8.21 / 夜 4.28，阈值 3.20）、PRECIP、POND、TREESTAND、
+  INTSHELL、FURNROLE、CAFE2F、CAFEDENSITY、ROUNDTRIP、FLOOR ROUNDTRIP、P1I/P1O。
+- 互补锚 ledger 已在干净 worktree 重烘（1957e58）。
 
 ## 没做 / 风险（据实）
 
-- **视觉门没跑**（本机无 docker/Xvfb）。docs/180 的草甸色斑刚因 DAYNIGHT/SEASON 门取"世界主色"而撤掉（8f55a60）；
-  民居同样把一部分草地像素换成了屋顶/墙色，**可能**再次推动那两道门的主色判定——需在 docker 上实跑确认。
 - 别墅没出场；也没做屋前花园篱笆、屋后菜园。
 - heat 只覆盖默认场景；`--scenario` / 节日 / 玩家可能走到别处——靠 0.30 透明兜底，不是保证。
