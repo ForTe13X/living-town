@@ -47,6 +47,15 @@ func _init() -> void:
 		S.auto_run = false; S.backend = null
 		if n > 12: S.spawn_count = n
 		S.desire_cfg = {"enabled": true, "gain": 0.15, "mimetic_cap": 5.0, "bonus_k": bonus} if arm == "on" else {}
+		if arm == "on" and _arg("--rho", "") != "": S.desire_cfg["rho"] = float(_arg("--rho", "0"))     # 步骤 4：缺键=满足逻辑不跑
+		if arm == "on" and _arg("--rmax", "") != "": S.desire_cfg["r_max"] = int(_arg("--rmax", "0"))   # 步骤 4：缺键=放弃逻辑不跑
+		if arm == "on" and _arg("--crowd", "") != "": S.desire_cfg["crowd_k"] = float(_arg("--crowd", "0"))  # 拥挤项：缺键=不降权
+		if arm == "on" and _arg("--minseen", "") != "": S.desire_cfg["min_seen"] = int(_arg("--minseen", "0"))  # 首选前的最少证据
+		if arm == "on" and _arg("--margin", "") != "": S.desire_cfg["switch_margin"] = float(_arg("--margin", "0"))  # 满足后重估的换人门槛
+		var prev_t := {}                                    # 日末采样：aid -> 上一日的 target（换手率）
+		var changes := 0
+		var holder_days := 0
+		var holder_share_acc := 0.0
 		S.start_new(seed)
 		var TPD: int = S.TICKS_PER_DAY
 		var need_floor := 100.0
@@ -66,6 +75,12 @@ func _init() -> void:
 					if d != null and String(d["kind"]) == "person":
 						holders += 1
 						cnt[d["target"]] = int(cnt.get(d["target"], 0)) + 1
+						holder_days += 1
+						var aid := String(ag["id"])
+						if prev_t.has(aid) and String(prev_t[aid]) != String(d["target"]):
+							changes += 1
+						prev_t[aid] = String(d["target"])
+				holder_share_acc += float(holders) / maxf(1.0, float(S.agents.size()))   # 有 person 对象的居民占比（查"释放后找不到新对象"的饥饿）
 				var top := 0
 				for k in cnt: top = maxi(top, int(cnt[k]))
 				if holders > 0:
@@ -122,6 +137,8 @@ func _init() -> void:
 			"dangling": float(nconf - repaired - faded), "drama_per_day": float(drama) / float(days),
 			"target_top_share": tgt_top / maxf(1.0, float(samples)),
 			"chain_len": float(run_len) / maxf(1.0, float(runs)),
+			"holder_share": holder_share_acc / float(days) if arm == "on" else 0.0,
+			"churn_per_week": 7.0 * float(changes) / maxf(1.0, float(holder_days)),   # 持对象者每周换对象次数（日末采样，低估日内多换）
 			"ms_per_tick": ms,
 		}
 		print("DESIRE_AB_SEED " + JSON.stringify({"arm": arm, "n": n}.merged(rec)))

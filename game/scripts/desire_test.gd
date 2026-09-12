@@ -1,5 +1,5 @@
 extends Node
-## desire_test.gd — 欲望 v0 步骤 1-2 的门（docs/187 §五/§八）。
+## desire_test.gd — 欲望 v0 步骤 1-4 的门（docs/187 §五/§七·七/§八）。
 ## 用法：godot --headless --path game res://scenes/desire_test.tscn -- [--seeds 1-2] [--days 3]
 ##       （或 CI_DESIRE_SEEDS / CI_DESIRE_DAYS 环境变量）
 ##
@@ -19,6 +19,17 @@ const Inv = preload("res://bench/Invariants.gd")
 ##       【社交候选】×（person：对 target 的 give/invite/confide；status：aid/endorse）。greet / 物件候选一律不许动。
 const OBS_CFG := {"enabled": true, "gain": 0.15, "mimetic_cap": 5.0}
 const ON_CFG := {"enabled": true, "gain": 0.15, "mimetic_cap": 5.0, "bonus_k": 8.0}
+## 步骤 4：ON_CFG 故意【不带】rho/r_max ⇒ 上面 D1'/D3/SL 仍逐字节复现步骤 3。S4_CFG 另开一臂：
+##   D4  逐 tick：每人 rebuffs < r_max，且当前 target ∉ recent（放弃/满足后不回锅）；
+##       活性：全程至少一次"满足"或"放弃"真的发生（否则一个从不释放对象的实现也能过）。
+##       满足不再换对象（§七·九）⇒ 活性口径 = 满足（同对象强度下跌）或 放弃（对象变更）至少发生一次。
+##   CR  拥挤项（单元级）：同一份手搭证据，缺 crowd_k ⇒ 被 4 个不同的人示好的 X 胜（外中介）；
+##       crowd_k=0.5 ⇒ 被 1 个人反复示好的 Y 胜（内中介）。证明拥挤项真的翻转了选择，且缺键时不起作用。
+##   MS  最少证据（单元级）：seen < min_seen ⇒ 不选；达到 ⇒ 选。
+##   RV  满足后重估（单元级）：他人权重 > 当前 × (1+margin) ⇒ 换且旧对象入 recent；不够 ⇒ 不换；缺 switch_margin ⇒ 从不换。
+## = docs/187 §七·十 选定的步骤 4 缺省配置（用户 2026-09-12 选定）。
+const S4_CFG := {"enabled": true, "gain": 0.15, "mimetic_cap": 5.0, "bonus_k": 8.0, "rho": 0.6, "r_max": 3, "crowd_k": 1.0,
+	"min_seen": 8, "switch_margin": 0.5}
 
 var _fails := 0
 func ck(c: bool, m: String) -> void:
@@ -89,6 +100,62 @@ func _ready() -> void:
 	for i in range(5000): U._desire_tick(ag)
 	ck(float(d["intensity"]) <= 100.0, "有界 ≤100 (%.4f)" % float(d["intensity"]))
 	_free(U)
+
+	# ── CR：拥挤项（单元级，手搭证据直接调 _desire_pick）──
+	print("CR crowding")
+	var C = _new_sim(ON_CFG)                       # ON_CFG 不带 crowd_k
+	C.start_new(1)
+	var npcs: Array = C.agents.filter(func(a): return not a.get("is_player", false))
+	var me: Dictionary = npcs[0]
+	var ids: Array = []
+	for i in range(1, 7): ids.append(String(npcs[i]["id"]))
+	var seen_c: Array = []
+	for a_id in [ids[2], ids[3], ids[4], ids[5]]: seen_c.append([0, "give", a_id, ids[0]])   # X：4 个不同的人各示好一次
+	for k in 3: seen_c.append([0, "give", ids[2], ids[1]])                                  # Y：同一个人示好三次
+	(me["relationships"] as Dictionary).clear()                                              # admire=0，只比证据形状
+	var dc: Dictionary = C._desire_state(me)
+	dc["seen"] = seen_c.duplicate(true); dc["kind"] = ""; dc["target"] = ""
+	C._desire_pick(me, dc)
+	ck(String(dc["target"]) == ids[0], "CR 缺 crowd_k ⇒ 外中介：4 人示好的 X 胜 (got %s)" % dc["target"])
+	C.desire_cfg["crowd_k"] = 0.5
+	dc["seen"] = seen_c.duplicate(true); dc["kind"] = ""; dc["target"] = ""
+	C._desire_pick(me, dc)
+	ck(String(dc["target"]) == ids[1], "CR crowd_k=0.5 ⇒ 内中介：1 人反复示好的 Y 胜 (got %s)" % dc["target"])
+	_free(C)
+
+	# ── MS / RV：最少证据 + 满足后重估（单元级）──
+	print("MS/RV")
+	var R = _new_sim(ON_CFG)
+	R.start_new(1)
+	var rn: Array = R.agents.filter(func(a): return not a.get("is_player", false))
+	var rme: Dictionary = rn[0]
+	var rid: Array = []
+	for i in range(1, 7): rid.append(String(rn[i]["id"]))
+	(rme["relationships"] as Dictionary).clear()
+	var dr: Dictionary = R._desire_state(rme)
+	R.desire_cfg["min_seen"] = 5
+	dr["seen"] = [[0, "give", rid[2], rid[0]], [0, "give", rid[3], rid[0]], [0, "give", rid[4], rid[1]]]
+	dr["kind"] = ""; dr["target"] = ""
+	R._desire_pick(rme, dr)
+	ck(String(dr["kind"]) == "", "MS seen=3 < min_seen=5 ⇒ 不选 (kind=%s)" % dr["kind"])
+	(dr["seen"] as Array).append_array([[0, "give", rid[2], rid[0]], [0, "give", rid[5], rid[1]]])
+	R._desire_pick(rme, dr)
+	ck(String(dr["kind"]) == "person", "MS seen=5 ⇒ 选 (target=%s)" % dr["target"])
+	R.desire_cfg.erase("min_seen")
+	# RV：当前 X 被示好 1 次，Y 被同一人示好 3 次 ⇒ 3 > 1×1.5 ⇒ 换。
+	var rv_seen := [[0, "give", rid[2], rid[0]], [0, "give", rid[3], rid[1]], [0, "give", rid[3], rid[1]], [0, "give", rid[3], rid[1]]]
+	dr["seen"] = rv_seen.duplicate(true); dr["kind"] = "person"; dr["target"] = rid[0]; dr["recent"] = []
+	R._desire_reconsider(rme, dr)
+	ck(String(dr["target"]) == rid[0], "RV 缺 switch_margin ⇒ 从不换 (target=%s)" % dr["target"])
+	R.desire_cfg["switch_margin"] = 0.5
+	R._desire_reconsider(rme, dr)
+	ck(String(dr["target"]) == rid[1] and rid[0] in dr["recent"], "RV Y(3) > X(1)×1.5 ⇒ 换，旧对象入 recent (target=%s recent=%s)" % [dr["target"], str(dr["recent"])])
+	# 不够门槛：X 2 次、Y 3 次 ⇒ 3 > 2×1.5=3 不成立 ⇒ 留
+	dr["seen"] = [[0, "give", rid[2], rid[0]], [0, "give", rid[4], rid[0]], [0, "give", rid[3], rid[1]], [0, "give", rid[3], rid[1]], [0, "give", rid[3], rid[1]]]
+	dr["kind"] = "person"; dr["target"] = rid[0]; dr["recent"] = []
+	R._desire_reconsider(rme, dr)
+	ck(String(dr["target"]) == rid[0], "RV Y(3) 未超 X(2)×1.5 ⇒ 留 (target=%s)" % dr["target"])
+	_free(R)
 
 	# ── D1 / KB / LV：逐 seed 关/开对拍 ──
 	var T := days * int(SimScript.TICKS_PER_DAY)
@@ -177,6 +244,40 @@ func _ready() -> void:
 	ck(illegal.is_empty(), "D3 分数变动只落在合法 (社交×深层/求认可) 候选上 (违例=%s)" % str(illegal.slice(0, 5)))
 	ck(legal > 0, "D3 活性：确有候选被加分 (%d 次)" % legal)
 	_free(P)
+
+	# ── D4：满足/放弃（反执念 + 不回锅）──
+	print("D4 满足/放弃")
+	var Q = _new_sim(S4_CFG)
+	Q.start_new(int(seeds[0]))
+	var r_max := int(S4_CFG["r_max"])
+	var d4_bad: Array = []
+	var releases := 0
+	var sats := 0
+	var prev := {}
+	for i in range(T):
+		Q.tick()
+		for a in Q.agents:
+			if not a.has("desire"): continue
+			var d4: Dictionary = a["desire"]
+			var aid := String(a["id"])
+			if int(d4["rebuffs"]) >= r_max:
+				d4_bad.append("%s@%d rebuffs=%d" % [aid, Q.tick_no, int(d4["rebuffs"])])
+			if String(d4["target"]) != "" and String(d4["target"]) in d4["recent"]:
+				d4_bad.append("%s@%d 回锅 %s" % [aid, Q.tick_no, d4["target"]])
+			if (d4["recent"] as Array).size() > SimScript.DESIRE_RECENT_K:
+				d4_bad.append("%s@%d recent 超长" % [aid, Q.tick_no])
+			var tg4 := String(d4["target"])
+			var in4 := float(d4["intensity"])
+			if prev.has(aid):
+				var p_tg := String(prev[aid][0])
+				if p_tg != "" and tg4 != p_tg:
+					releases += 1                                  # 放弃（或被清空后重选）
+				elif p_tg != "" and tg4 == p_tg and in4 < float(prev[aid][1]) - 1e-9:
+					sats += 1                                      # 满足：强度只会因满足而同对象下跌
+			prev[aid] = [tg4, in4]
+	ck(d4_bad.is_empty(), "D4 无执念、无回锅、recent≤K (违例=%s)" % str(d4_bad.slice(0, 5)))
+	ck(sats + releases > 0, "D4 活性：满足 %d 次 / 放弃 %d 次" % [sats, releases])
+	_free(Q)
 
 	# ── SL：存档往返 ──
 	print("SL save/load")

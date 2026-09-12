@@ -5048,6 +5048,8 @@ func _desire_state(ag: Dictionary) -> Dictionary:
 ## 证据只来自 event 的 witnesses（在场旁观者）——当事双方不算，未在场者不知道（知识边界）。
 func _desire_witness(ev: Dictionary) -> void:
 	var ty := String(ev["type"])
+	if ty in DESIRE_DEEP_ACTS:
+		_desire_outcome(ev)                  # 步骤 4：行动方视角（接受/被拒都要看）
 	if not bool(ev["accepted"]) or not (ty in DESIRE_DEEP_ACTS or ty in DESIRE_STATUS_ACTS):
 		return
 	for wid in ev["witnesses"]:
@@ -5055,6 +5057,44 @@ func _desire_witness(ev: Dictionary) -> void:
 		if w.is_empty() or w.get("is_player", false):
 			continue
 		(_desire_state(w)["seen"] as Array).append([tick_no, ty, String(ev["actor"]), String(ev["target"])])
+
+## 步骤 4（docs/187 §七·七/§七·九）：我对自己 target 的深层动作的结果。
+##   被接受 ⇒ 部分满足：intensity *= (1−rho)、rebuffs 清零，【对象不换】。缺 rho 键 ⇒ 本段不跑。
+##     ★§七·八 实测：原规格"满足即强制换对象"把链一刀切断（链长跌破 off 基线）、且释放后约 1/4 居民找不到新对象
+##       ⇒ 步骤 3 的花样收益全被抹掉。不终结改由"强度削而复长"承担：满足只让它退潮，不让关系结束。
+##   被拒   ⇒ rebuffs+1；达 r_max ⇒ 放弃：intensity 减半、换对象（反执念 + 空虚态的内生出口）。缺 r_max 键 ⇒ 本段不跑。
+##   两段缺键即关 ⇒ 只带 bonus_k 的步骤 3 配置逐字节复现。
+func _desire_outcome(ev: Dictionary) -> void:
+	var ag: Dictionary = _agent_by_id.get(String(ev["actor"]), {})
+	if ag.is_empty() or not ag.has("desire"):
+		return
+	var d: Dictionary = ag["desire"]
+	if String(d["kind"]) != "person" or String(d["target"]) != String(ev["target"]):
+		return
+	if bool(ev["accepted"]):
+		if not desire_cfg.has("rho"):
+			return
+		var rho := clampf(float(desire_cfg["rho"]), 0.0, 1.0)
+		d["intensity"] = float(d["intensity"]) * (1.0 - rho)
+		d["rebuffs"] = 0                     # 得到回应 ⇒ 之前的碰壁不再累计（放弃只针对【连续】不回应）
+		_desire_reconsider(ag, d)            # §七·十：满足后才重估（有滞回）；缺 switch_margin ⇒ no-op
+	else:
+		if not desire_cfg.has("r_max"):
+			return
+		d["rebuffs"] = int(d["rebuffs"]) + 1
+		if int(d["rebuffs"]) >= maxi(1, int(desire_cfg["r_max"])):
+			d["intensity"] = float(d["intensity"]) * 0.5
+			_desire_release(d)
+
+## 旧 target 入 recent（留最近 DESIRE_RECENT_K 个），清空对象 ⇒ 下一次 _desire_tick 重选且不回锅。
+func _desire_release(d: Dictionary) -> void:
+	var recent: Array = d["recent"]
+	recent.append(String(d["target"]))
+	while recent.size() > DESIRE_RECENT_K:
+		recent.pop_front()
+	d["kind"] = ""
+	d["target"] = ""
+	d["rebuffs"] = 0
 
 func _desire_tick(ag: Dictionary) -> void:
 	if ag.get("is_player", false):
@@ -5076,11 +5116,69 @@ func _desire_tick(ag: Dictionary) -> void:
 ##   若示好者是我欣赏的人（我对他 affinity>0）再加 affinity/100。单一候选权重封顶 mimetic_cap（防全镇盯一个人）。
 ## 只读 ag["relationships"].has(...)，【不用 _rel】——_rel 会顺手建关系，那就成了有行为效应的写。
 ## 平局用 _hash01（纯函数）而不是 _rng_at：本步零 RNG 消耗。
+## §七·十：首选前须攒够证据（min_seen）。实测：不设门时 12/13 人在第 1 天 tick≈11 就凭 1–4 条、
+##   且只有 1 个示好者的证据定下对象、此后再不重选 ⇒ 拥挤项 (distinct−1)=0 恒不起作用。缺 min_seen ⇒ 0 ⇒ 不设门。
 func _desire_pick(ag: Dictionary, d: Dictionary) -> void:
+	if (d["seen"] as Array).size() < int(desire_cfg.get("min_seen", 0)):
+		return                               # 证据不够 ⇒ 暂不选（强度也不长，见 _desire_tick）
+	var wr := _desire_weights(ag, d)
+	var w: Dictionary = wr["w"]
+	var status_w := float(wr["status"])
+	var bb := _desire_best(String(ag["id"]), w, "")
+	var best := String(bb[0])
+	var best_w := float(bb[1])
+	if best != "" and best_w >= status_w:
+		d["kind"] = "person"; d["target"] = best
+	elif status_w > 0.0:
+		d["kind"] = "status"; d["target"] = ""
+	else:
+		return                               # 无证据 ⇒ 无对象、强度不长
+	d["since"] = tick_no
+	d["rebuffs"] = 0
+
+## §七·十：满足后重估（换喻滑移，但有滞回）。另一候选的权重 > 当前 × (1+switch_margin) 才换；
+##   换则旧对象入 recent、强度【带过去】（驱力挪位，不清零）。当前对象不再有证据支持（权重 0）⇒ 任何有证据的候选都胜。
+##   缺 switch_margin ⇒ 从不重估。不设 min_seen 门：重估只发生在已有对象之后。
+func _desire_reconsider(ag: Dictionary, d: Dictionary) -> void:
+	if not desire_cfg.has("switch_margin") or String(d["kind"]) != "person":
+		return
+	var margin := maxf(0.0, float(desire_cfg["switch_margin"]))
+	var w: Dictionary = _desire_weights(ag, d)["w"]
+	var cur := String(d["target"])
+	var cur_w := float(w.get(cur, 0.0))
+	var bb := _desire_best(String(ag["id"]), w, cur)
+	if String(bb[0]) == "" or float(bb[1]) <= cur_w * (1.0 + margin):
+		return
+	var recent: Array = d["recent"]
+	recent.append(cur)
+	while recent.size() > DESIRE_RECENT_K:
+		recent.pop_front()
+	d["target"] = String(bb[0])
+	d["since"] = tick_no
+	d["rebuffs"] = 0
+
+## 平局用 _hash01（纯函数）而不是 _rng_at：零 RNG 消耗。exclude = 不参与比较的 id（重估时排除当前对象）。
+func _desire_best(me: String, w: Dictionary, exclude: String) -> Array:
+	var best := ""
+	var best_w := 0.0
+	var best_tie := -1.0
+	var ks: Array = w.keys()
+	ks.sort()
+	for x in ks:
+		if x == exclude:
+			continue
+		var tie := _hash01("%s:%s:%d" % [me, x, tick_no])
+		if float(w[x]) > best_w or (float(w[x]) == best_w and tie > best_tie):
+			best = x; best_w = float(w[x]); best_tie = tie
+	return [best, best_w]
+
+## 候选权重（首选与重估共用）：返回 {w: {x: 权重}, status: 权重}。
+func _desire_weights(ag: Dictionary, d: Dictionary) -> Dictionary:
 	var cap := maxf(0.0, float(desire_cfg.get("mimetic_cap", 5.0)))
 	var me := String(ag["id"])
 	var rels: Dictionary = ag["relationships"]
 	var w := {}
+	var courters := {}                       # x -> {actor: true}：我亲眼看到的、向 x 示好的不同的人
 	var status_w := 0.0
 	for s in d["seen"]:
 		var ty := String(s[1])
@@ -5096,24 +5194,18 @@ func _desire_pick(ag: Dictionary, d: Dictionary) -> void:
 			continue
 		var admire := maxf(0.0, float(rels[actor]["affinity"])) / 100.0 if rels.has(actor) else 0.0
 		w[x] = minf(cap, float(w.get(x, 0.0)) + 1.0 + admire)
+		if not courters.has(x):
+			courters[x] = {}
+		courters[x][actor] = true
+	# 拥挤项（§七·九）：我亲眼看到的【不同】示好者越多，X 越降权 ⇒ 偏向"经由某个具体榜样"的内中介欲望，
+	#   而不是全镇各自看到同一个热门人物的外中介雪崩（步骤 3：N=40 四成欲望指向同一人）。
+	#   只读自己的 seen 证据（可观测量）。缺 crowd_k ⇒ 0 ⇒ 除以 1 ⇒ 逐字节不变。
+	var crowd_k := maxf(0.0, float(desire_cfg.get("crowd_k", 0.0)))
+	if crowd_k > 0.0:
+		for x in courters:
+			w[x] = float(w[x]) / (1.0 + crowd_k * float((courters[x] as Dictionary).size() - 1))
 	status_w = minf(cap, status_w)
-	var best := ""
-	var best_w := 0.0
-	var best_tie := -1.0
-	var ks: Array = w.keys()
-	ks.sort()
-	for x in ks:
-		var tie := _hash01("%s:%s:%d" % [me, x, tick_no])
-		if float(w[x]) > best_w or (float(w[x]) == best_w and tie > best_tie):
-			best = x; best_w = float(w[x]); best_tie = tie
-	if best != "" and best_w >= status_w:
-		d["kind"] = "person"; d["target"] = best
-	elif status_w > 0.0:
-		d["kind"] = "status"; d["target"] = ""
-	else:
-		return                               # 无证据 ⇒ 无对象、强度不长
-	d["since"] = tick_no
-	d["rebuffs"] = 0
+	return {"w": w, "status": status_w}
 
 ## 步骤 3（docs/187 §三·4）：欲望【唯一】的行为效应——给社交候选里的深层动作加 bonus_k × intensity/100。
 ##   person：partner==target 的 give/invite/confide；status：aid/endorse（做能换来认可的事）。
