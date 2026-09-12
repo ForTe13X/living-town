@@ -183,8 +183,7 @@ def main():
                 break
     gardens = plan_gardens(lots, bad, W, H)
     json.dump({"_doc": "docs/186/188 布景民居 + 园子落点（tools/place_houses.py 生成，勿手改）",
-               "lots": lots, "gardens": gardens}, open(out, "w", newline="
-"), indent=1)
+               "lots": lots, "gardens": gardens}, open(out, "w", newline="\n"), indent=1)
     print(f"{len(lots)} lots, {len(gardens)} gardens -> {out}")
     g = [["#" if (x, y) in grown else "." for x in range(W)] for y in range(H)]
     for L in lots:
