@@ -100,6 +100,7 @@ var _demo_sel_hold := 0               # 当前选中已保持的 tick 数（迟�
 ##      （goto_tick 暖机发生在信号接线之前，迟滞状态重放不出来）——所以静帧与录屏可能选中不同的人。
 ##   哈希用项目自有的 `Sim.fnv1a32`（红线 #1：不得用引擎内建 String.hash()）。
 var _shot_path := ""                  # --shot <abs.png>：渲一帧存图退出（dev 验证/出图；需真 framebuffer=Xvfb 或带窗口，纯 --headless 得空图）
+var _shot_say := ""                   # --say <id>:<台词>：出图帧上让某居民说一句（台词气泡眼验，docs/184）
 var _shot_at := Vector3.ZERO         # --shot-at X,Y,ZOOM：出图相机钉到格 (X,Y)、缩放 ZOOM（z<=0 = 不用）
 var _shot_fit := false                # --shot-fit：出图整镇入画（否则用跟随相机的角色特写，供 find_betray/endorse 眼验）
 var _digest_at := -1                  # --digest-at <tick>：跑到该 tick 时【自动】写 digest 并退出。
@@ -179,6 +180,12 @@ var _c1_hud_receipt: Label
 const C1_MIN_VIEWPORT := Vector2(320.0, 192.0)
 var _status_pan: ColorRect            # 顶栏底板（跟右边；宽度=整屏，见 _build_hud 里的注释）
 var _act_pan: ColorRect               # 玩家动作条底板（跟底边；仅玩家模式可见）
+# docs/184 HUD 卡片：墨色底 + 金边 + 圆角 + 落影，精确包住正文；旧的羽化 scrim 退成它的柔影（45%）。
+var _log_card: Panel
+var _obs_card: Panel
+var _scrub_card: Panel
+var _act_card: Panel
+var _status_line: ColorRect           # 顶栏底边的一道金线
 var _act_btns: Array = []             # 7 个动词按钮（顺序 = PLAYER_VERBS）
 var _guest_pass_btn: Button              # 归还/撤销咖啡馆访客证（触屏与 R 键同一函数）
 var _player_btn: Button               # 设置面板里的「玩家模式」开关
@@ -225,6 +232,13 @@ const STATUS_H2 := 52.0
 # 底色用 C3 已经量过的那一档 (0.02,0.03,0.05)：0.42 黑压不住浅墙（0.58×(216,189,147) 仍有 43.7% 亮度），
 # 0.74+ 档只剩 ~22%。这里取 0.84 —— 编年史正文是全屏第二密的文字，且在跟随相机下整片背景都是亮草地。
 const SCRIM_COL := Color(0.02, 0.03, 0.05, 0.84)
+# docs/184 HUD 视觉语言（对标图：深色木/墨底 + 金色描边 + 羊皮纸强调）
+const HUD_INK := Color(0.075, 0.085, 0.11, 0.90)     # 卡片底
+const HUD_INK_HI := Color(0.14, 0.15, 0.19, 0.95)    # 按钮悬停
+const HUD_GOLD := Color(0.80, 0.64, 0.36, 0.95)      # 金边
+const HUD_GOLD_DIM := Color(0.55, 0.44, 0.26, 0.85)  # 暗金（按钮常态边）
+const HUD_PARCH := Color(0.95, 0.87, 0.66)           # 羊皮纸字色
+const SCRIM_SHADOW_A := 0.45                         # 旧羽化 scrim 退成卡片柔影的不透明度
 const SCRIM_TEX := 64                 # scrim 纹理边长（靠 TEXTURE_FILTER_LINEAR 拉伸成平滑斜坡；1 个 draw call）
 # 编年史 scrim：贴住屏幕【左下角】，只羽化右边与上边。
 const LOG_SCRIM_TOP := 414.0          # 上边（羽化到 y=470 才满不透明，正文从 476 起 ⇒ 第一行已在满档上）
@@ -415,6 +429,8 @@ func _ready() -> void:
 			_digest_out = args[i + 1]          # dev 硬门：F9 写 digest（见变量注释）
 		elif args[i] == "--shot" and i + 1 < args.size():
 			_shot_path = args[i + 1]           # dev 出图：渲一帧存 png 退出（需真 framebuffer：Xvfb 或带窗口）
+		elif args[i] == "--say" and i + 1 < args.size():
+			_shot_say = args[i + 1]
 		elif args[i] == "--shot-at" and i + 1 < args.size():
 			var _sa := args[i + 1].split(",")
 			if _sa.size() == 3:
@@ -596,6 +612,8 @@ func _ready() -> void:
 		_probe_and_activate(backend)        # 不 await：后台跑，首帧已可见
 	if _shot_path != "":                    # dev 出图：等 1.5s 让世界渲染+纹理加载，再存一帧退出
 		Sim.auto_run = false                # 定格：冻结在 warmup tick，等待期间不再推进（tick-precise 眼验，防漂）
+		if _shot_say.find(":") > 0 and _view != null:
+			_view.show_say(_shot_say.get_slice(":", 0), _shot_say.substr(_shot_say.find(":") + 1), 600)
 		if _demo_cam and _probe != null:    # --demo-cam + --warmup-tick T：把录屏在 tick T 的构图【定格】拍下来。
 			_demo_cam_apply()               # 这是本棒唯一可复现的量具：轨迹是 tick 的闭式函数 ⇒ 这一帧 == 录屏那一帧
 		elif _shot_at.z > 0.0 and _probe != null:   # --shot-at X,Y,ZOOM：美术近景眼验（格坐标 + 缩放），docs/180
@@ -631,6 +649,12 @@ func _build_hud() -> void:
 	_status_pan.size = Vector2(DESIGN.x, STATUS_H1 + 12.0)
 	_status_pan.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(_status_pan)
+	_status_line = ColorRect.new()
+	_status_line.color = HUD_GOLD_DIM
+	_status_line.position = Vector2(0.0, STATUS_H1 + 11.0)
+	_status_line.size = Vector2(DESIGN.x, 1.0)
+	_status_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(_status_line)
 
 	_status = _mk_label(layer, fnt, 17, Vector2(52, 6), Vector2(STATUS_W, STATUS_H1))   # 左留 ⚙ 设置钮，右留「详情」+ 后端切换钮
 
@@ -644,6 +668,7 @@ func _build_hud() -> void:
 	_gear_btn.size = Vector2(36, 30)
 	_gear_btn.focus_mode = Control.FOCUS_NONE
 	_gear_btn.pressed.connect(_toggle_settings)
+	_style_btn(_gear_btn)
 	layer.add_child(_gear_btn)
 
 	# 左下角滚动事件日志：把看不见的社交戏剧讲出来。
@@ -654,6 +679,8 @@ func _build_hud() -> void:
 	#     白字压在亮草地上基本读不出，"既读不清字、又挡着世界"两头不讨好。
 	_log_pan = _mk_scrim(layer, Vector2(0, LOG_SCRIM_TOP), Vector2(LOG_SCRIM_W, DESIGN.y - LOG_SCRIM_TOP),
 		0.0, 1.0 - LOG_CORE_R / LOG_SCRIM_W, (476.0 - LOG_SCRIM_TOP) / (DESIGN.y - LOG_SCRIM_TOP), 0.0)
+	_log_pan.self_modulate = Color(1, 1, 1, SCRIM_SHADOW_A)   # docs/184：退成卡片柔影（纹理本身的羽化不变）
+	_log_card = _mk_card(layer, Vector2(8, 468), Vector2(564, 250))
 	_logbox = _mk_label(layer, fnt, 15, Vector2(16, 476), Vector2(548, 236))
 	# 【仅】日志面板改为吃鼠标：每行是 [url=<居民id>]，点一行 → 选中当事人并把镜头飞过去。
 	# 其余 HUD 面板保持 MOUSE_FILTER_IGNORE（世界点选/缩放照旧穿透）。手机无键盘，这是唯一能跟戏的入口。
@@ -667,13 +694,16 @@ func _build_hud() -> void:
 	#   完整卷宗（点「详情」或 V）：关系 / 冲突 / 记忆 / 派系 / 盟约 / 秘密 / 观点 / 信念，版式与改前逐行相同。
 	# 两档共用同一个 RichTextLabel 与同一份 _panel_text()，**没有第二套渲染**（同 C3 的动作条纪律）。
 	_obs_pan = _mk_scrim(layer, Vector2(DESIGN.x - OBS_FULL.x, OBS_TOP), OBS_FULL, 0.26, 0.0, 0.0, 0.18)
+	_obs_pan.self_modulate = Color(1, 1, 1, SCRIM_SHADOW_A)
+	_obs_card = _mk_card(layer, Vector2(DESIGN.x - OBS_CARD.x, OBS_TOP), OBS_CARD)
 	_obs = _mk_label(layer, fnt, OBS_FS, Vector2(986, OBS_TOP + OBS_PAD), Vector2(286, OBS_FULL.y - OBS_PAD * 2.0))
 
 	# 底部时间轴 scrubber
 	# 先铺底板再铺控件（CanvasLayer 按添加序叠放）：提示行原本是 #9aa0b5 直接画在草地上，眼验实测几乎读不出
 	# （B3 视觉复核指出，但它属 Main.gd 不在其归属内）。与日志/观察台同款半透明底板，成本一行、不碰仿真。
 	_scrub_pan = _mk_panel(layer, Vector2(SCRUB_X0 - 8, SCRUB_Y - SCRUB_PAN_DY), Vector2(SCRUB_X1 - SCRUB_X0 + 16, SCRUB_PAN_H))
-	_scrub_pan.color = Color(0.02, 0.03, 0.05, 0.74)   # T3：与顶栏同一档（0.42 压不住浅墙/亮草地，见 SCRUB_HINT_FS 处的实测）
+	_scrub_pan.color = Color(0, 0, 0, 0)               # docs/184：底色交给下面的卡片（同一矩形、墨色 0.90 ≥ 原 0.74 档，对比度不降）
+	_scrub_card = _mk_card(layer, _scrub_pan.position, _scrub_pan.size)
 	_scrub_track = ColorRect.new()
 	_scrub_track.color = Color(1, 1, 1, 0.14)
 	_scrub_track.position = Vector2(SCRUB_X0, SCRUB_Y)
@@ -721,6 +751,11 @@ func _build_hud() -> void:
 	_chat_in.size = Vector2(380, 30)   # 让开右侧观察台（它加高到 y=712）
 	_chat_in.visible = false
 	_chat_in.text_submitted.connect(_on_player_say)
+	for st in ["normal", "focus"]:
+		var sb := _card_style(HUD_INK, HUD_GOLD if st == "focus" else HUD_GOLD_DIM, 5, 0)
+		sb.content_margin_left = 8.0
+		_chat_in.add_theme_stylebox_override(st, sb)
+	_chat_in.add_theme_color_override("font_color", HUD_PARCH)
 	layer.add_child(_chat_in)
 
 	_build_action_bar(layer, fnt)
@@ -734,6 +769,7 @@ func _build_hud() -> void:
 	_obs_btn.size = Vector2(OBS_BTN_W, 30)
 	_obs_btn.focus_mode = Control.FOCUS_NONE   # 不抢键盘焦点（同 ⚙/后端/动作条钮）
 	_obs_btn.pressed.connect(_toggle_obs)
+	_style_btn(_obs_btn)
 	layer.add_child(_obs_btn)
 
 	# 后端切换按钮（右上角）。手机上无 CLI → 靠这个在 logic/slm/… 间轮换；emulate_mouse_from_touch 默认开 → 点按即触发。
@@ -745,6 +781,7 @@ func _build_hud() -> void:
 	_backend_btn.size = Vector2(132, 30)
 	_backend_btn.focus_mode = Control.FOCUS_NONE
 	_backend_btn.pressed.connect(_on_toggle_backend)
+	_style_btn(_backend_btn)
 	layer.add_child(_backend_btn)
 	_sync_backend_btn()
 
@@ -906,7 +943,7 @@ func _hide_clean_player_diagnostics() -> void:
 	for node in [_status_pan, _status, _gear_btn, _log_pan, _logbox, _obs_pan, _obs,
 		_scrub_pan, _scrub_track, _scrub_fill, _scrub_handle, _scrub_hint, _obs_btn,
 		_backend_btn, _settings_panel, _goals_pan, _goals_box, _story_pan, _story_box,
-		_act_pan, _chat_in]:
+		_act_pan, _chat_in, _log_card, _obs_card, _scrub_card, _act_card, _status_line]:
 		if node != null:
 			node.visible = false
 	for raw in _act_btns:
@@ -1138,7 +1175,8 @@ func _hide_c1_legacy_hud() -> void:
 	# makes the 320x192 review size unreadable and leaves two competing control
 	# vocabularies on screen.  This runs only on C1 activation.
 	for node in [_status_pan, _status, _log_pan, _logbox, _obs_pan, _obs, _scrub_pan,
-		_scrub_track, _scrub_fill, _scrub_handle, _scrub_hint, _obs_btn, _backend_btn]:
+		_scrub_track, _scrub_fill, _scrub_handle, _scrub_hint, _obs_btn, _backend_btn,
+		_log_card, _obs_card, _scrub_card, _status_line]:
 		if node != null:
 			node.visible = false
 
@@ -1228,7 +1266,10 @@ func _build_action_bar(layer: CanvasLayer, fnt: Font) -> void:
 	_act_pan.size = Vector2(ACT_STEP * PLAYER_VERBS.size() + 92.0, ACT_BH + 12.0)
 	_act_pan.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_act_pan.visible = _player_mode          # 非玩家模式：整条隐藏（隐藏的 Control 不吃输入，世界点选照旧）
+	_act_pan.color = Color(0, 0, 0, 0)       # docs/184：底色交给卡片
 	layer.add_child(_act_pan)
+	_act_card = _mk_card(layer, _act_pan.position, _act_pan.size)
+	_act_card.visible = _player_mode
 	_act_btns.clear()
 	for i in PLAYER_VERBS.size():
 		var v: Dictionary = PLAYER_VERBS[i]
@@ -1243,6 +1284,7 @@ func _build_action_bar(layer: CanvasLayer, fnt: Font) -> void:
 		b.visible = _player_mode
 		var verb := String(v["verb"])
 		b.pressed.connect(func(): _player_do(verb))
+		_style_btn(b)
 		layer.add_child(b)
 		_act_btns.append(b)
 	_guest_pass_btn = Button.new()
@@ -1255,6 +1297,7 @@ func _build_action_bar(layer: CanvasLayer, fnt: Font) -> void:
 	_guest_pass_btn.focus_mode = Control.FOCUS_NONE
 	_guest_pass_btn.visible = _player_mode
 	_guest_pass_btn.pressed.connect(_player_return_cafe_pass)
+	_style_btn(_guest_pass_btn)
 	layer.add_child(_guest_pass_btn)
 
 ## keycode → 动词（PLAYER_VERBS 的 "key" 字段是唯一真源）。查不到 → ""，_player_do 会当作未知动作交给 Sim 拒绝。
@@ -1271,6 +1314,9 @@ func _sync_action_bar(dx: float = 0.0, dy: float = 0.0) -> void:
 	var show := _player_mode and not _clean_player_presentation and not _player_in_warehouse_observatory()
 	_act_pan.visible = show
 	_act_pan.position = Vector2(ACT_X - 8.0, ACT_Y - 6.0 + dy)
+	if _act_card != null:
+		_act_card.visible = show
+		_act_card.position = _act_pan.position
 	for i in _act_btns.size():
 		var b: Button = _act_btns[i]
 		b.visible = show
@@ -1286,6 +1332,8 @@ func _sync_action_bar_context() -> void:
 		return
 	var show := _player_mode and not _clean_player_presentation and not _player_in_warehouse_observatory()
 	_act_pan.visible = show
+	if _act_card != null:
+		_act_card.visible = show
 	for raw in _act_btns:
 		(raw as Button).visible = show
 	if _guest_pass_btn != null:
@@ -1306,6 +1354,37 @@ func _agent_location_label(ag: Dictionary) -> String:
 	if sid != "town":
 		return "%s · %s" % [_sg.label_of(sid) if _sg != null else sid, fid]
 	return Sim._area_label(ag.get("pos", Vector2i.ZERO))
+
+## docs/184：HUD 卡片 / 按钮的统一样式（墨底 + 金边 + 圆角 + 落影）。
+func _card_style(bg: Color, border: Color, radius: int, shadow: int) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = bg
+	sb.border_color = border
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(radius)
+	sb.shadow_color = Color(0, 0, 0, 0.35)
+	sb.shadow_size = shadow
+	sb.shadow_offset = Vector2(2, 3)
+	sb.anti_aliasing = false                         # 像素游戏：圆角不要抗锯齿糊边
+	return sb
+
+func _mk_card(layer: CanvasLayer, pos: Vector2, sz: Vector2) -> Panel:
+	var p := Panel.new()
+	p.add_theme_stylebox_override("panel", _card_style(HUD_INK, HUD_GOLD, 7, 5))
+	p.position = pos
+	p.size = sz
+	p.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(p)
+	return p
+
+func _style_btn(b: Button) -> void:
+	b.add_theme_stylebox_override("normal", _card_style(HUD_INK, HUD_GOLD_DIM, 5, 2))
+	b.add_theme_stylebox_override("hover", _card_style(HUD_INK_HI, HUD_GOLD, 5, 2))
+	b.add_theme_stylebox_override("pressed", _card_style(Color(0.20, 0.16, 0.09, 0.95), HUD_GOLD, 5, 0))
+	b.add_theme_stylebox_override("disabled", _card_style(Color(0.06, 0.06, 0.07, 0.75), Color(0.3, 0.3, 0.3, 0.6), 5, 0))
+	b.add_theme_color_override("font_color", HUD_PARCH)
+	b.add_theme_color_override("font_hover_color", Color(1.0, 0.93, 0.72))
+	b.add_theme_color_override("font_pressed_color", Color(1.0, 0.85, 0.45))
 
 func _mk_panel(layer: CanvasLayer, pos: Vector2, sz: Vector2) -> ColorRect:
 	var p := ColorRect.new()
@@ -1335,6 +1414,9 @@ func _relayout_hud() -> void:
 	_status.size = Vector2(STATUS_W + dx, sh)
 	if _status_pan != null:                    # 顶栏底板：整屏宽（含 ⚙ 钮与后端钮），高度跟状态栏行数
 		_status_pan.size = Vector2(DESIGN.x + dx, sh + 12.0)
+	if _status_line != null:
+		_status_line.position = Vector2(0.0, sh + 11.0)
+		_status_line.size = Vector2(DESIGN.x + dx, 1.0)
 	if _backend_btn != null:                   # 后端切换钮：跟右边
 		_backend_btn.position = Vector2(1140.0 + dx, 4.0)
 	if _obs_btn != null:                       # 观察台档位钮：跟右边（紧贴后端钮左侧）
@@ -1345,6 +1427,8 @@ func _relayout_hud() -> void:
 		_log_pan.size = Vector2(LOG_SCRIM_W, DESIGN.y + dy - (LOG_SCRIM_TOP + dy))
 	if _logbox != null:
 		_logbox.position = Vector2(16.0, 476.0 + dy)
+	if _log_card != null:
+		_log_card.position = Vector2(8.0, 468.0 + dy)
 	_sync_obs_panel(dx, dy)                    # 右侧观察台：按当前档位摆面板与正文（「详情」钮在顶栏，上面已摆）
 	# 时间轴：左端不动（紧挨播报面板），右端跟右边 → 屏幕越宽，时间轴刻度越细
 	_sx0 = SCRUB_X0
@@ -1353,6 +1437,9 @@ func _relayout_hud() -> void:
 	if _scrub_pan != null:
 		_scrub_pan.position = Vector2(_sx0 - 8.0, _sy - SCRUB_PAN_DY)
 		_scrub_pan.size = Vector2(_sx1 - _sx0 + 16.0, SCRUB_PAN_H)
+		if _scrub_card != null:
+			_scrub_card.position = _scrub_pan.position
+			_scrub_card.size = _scrub_pan.size
 	if _scrub_track != null:
 		_scrub_track.position = Vector2(_sx0, _sy)
 		_scrub_track.size = Vector2(_sx1 - _sx0, SCRUB_H)
@@ -1387,6 +1474,9 @@ func _sync_obs_panel(dx: float = 0.0, dy: float = 0.0) -> void:
 	_obs_pan.position = Vector2(x0 - OBS_FEATH, OBS_TOP)
 	_obs_pan.size = Vector2(pw, ph)
 	_obs_pan.texture = _scrim_tex(OBS_FEATH / pw, 0.0, 0.0, OBS_FEATH / ph)
+	if _obs_card != null:                             # docs/184：卡片精确包住正文矩形（右缘留 6px 不贴屏边，读作一张卡）
+		_obs_card.position = Vector2(x0, OBS_TOP + 4.0)
+		_obs_card.size = Vector2(sz.x - 6.0, sz.y - 4.0)
 	if _obs != null:
 		_obs.position = Vector2(x0 + 8.0, OBS_TOP + OBS_PAD)
 		_obs.size = Vector2(sz.x - 16.0, sz.y - OBS_PAD * 2.0)

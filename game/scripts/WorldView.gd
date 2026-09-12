@@ -5176,9 +5176,46 @@ func _draw_agent(ag: Dictionary) -> void:
 		var opt = ag.get("option")
 		if opt != null:
 			bubble = _action_label(opt)
-	if bubble != "":
-		var ba := 1.0 if saying else detail
-		_draw_plate_text(Vector2(center.x, feet + T * 0.64), bubble, 12, Color(1, 1, 1, 0.95 * ba), Color(0, 0, 0, 0.72 * ba))
+	if saying:
+		_draw_speech_bubble(Vector2(center.x, name_y - T * 0.42), bubble)   # docs/184：台词 = 头顶羊皮纸气泡
+	elif bubble != "":
+		_draw_plate_text(Vector2(center.x, feet + T * 0.64), bubble, 12, Color(1, 1, 1, 0.95 * detail), Color(0, 0, 0, 0.72 * detail))
+
+## docs/184：台词气泡——羊皮纸底 + 深棕描边 + 金色内线 + 指向说话人的小尾巴，深色字（参照对标图的对话框）。
+## 超过 BUBBLE_W 折行（最多 3 行，尾部省略）。tip = 尾巴尖（说话人头顶上方）。
+const BUBBLE_W := 176.0
+const BUBBLE_FS := 13
+func _draw_speech_bubble(tip: Vector2, txt: String) -> void:
+	var fnt := Art.font()
+	var lines: Array = []
+	var cur := ""
+	for ch in txt:
+		if fnt.get_string_size(cur + ch, HORIZONTAL_ALIGNMENT_LEFT, -1, BUBBLE_FS).x > BUBBLE_W:
+			lines.append(cur)
+			cur = ch
+			if lines.size() == 3:
+				break
+		else:
+			cur += ch
+	if lines.size() < 3 and cur != "":
+		lines.append(cur)
+	elif lines.size() == 3 and cur != "":
+		lines[2] = String(lines[2]).substr(0, maxi(0, String(lines[2]).length() - 1)) + "…"
+	var lh := float(BUBBLE_FS) + 4.0
+	var tw := 0.0
+	for l in lines:
+		tw = maxf(tw, fnt.get_string_size(String(l), HORIZONTAL_ALIGNMENT_LEFT, -1, BUBBLE_FS).x)
+	var box := Rect2(tip.x - tw * 0.5 - 9.0, tip.y - 8.0 - lh * lines.size() - 10.0, tw + 18.0, lh * lines.size() + 10.0)
+	var ink := Color(0.24, 0.16, 0.09)
+	draw_rect(Rect2(box.position + Vector2(3, 3), box.size), Color(0, 0, 0, 0.28), true)          # 落影
+	draw_rect(box.grow(1.5), ink, true)                                                            # 深棕描边
+	draw_rect(box, X_PARCHMENT, true)                                                              # 羊皮纸底
+	draw_rect(box.grow(-2.0), Color(X_GOLD, 0.55), false, 1.0)                                     # 金色内线
+	draw_colored_polygon(PackedVector2Array([Vector2(tip.x - 6, box.end.y - 0.5), Vector2(tip.x + 6, box.end.y - 0.5), tip]), X_PARCHMENT)
+	draw_polyline(PackedVector2Array([Vector2(tip.x - 7, box.end.y + 1), tip, Vector2(tip.x + 7, box.end.y + 1)]), ink, 1.5)
+	for i in lines.size():
+		draw_string(fnt, Vector2(box.position.x + 9.0, box.position.y + 5.0 + lh * float(i) + float(BUBBLE_FS)), String(lines[i]),
+			HORIZONTAL_ALIGNMENT_LEFT, -1, BUBBLE_FS, ink)
 
 ## 恒显档的判据。**它就是这一棒的"信息还够不够得着"的定义**：凡是玩家此刻需要认出来的人，
 ## 一律不参与稀释——选中者（观察台正在讲他）、玩家自己、冲突/约会当事人（剧情的两端）、
