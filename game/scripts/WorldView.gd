@@ -140,7 +140,7 @@ const X_SEA_MID      := Color("#2e8b96")   # 近岸中水
 const X_SEA_DEEP     := Color("#1c5a76")   # 外海
 const X_SEA_FAR      := Color("#153f58")   # 界外远海（融进暗角之前的最后一档）
 const X_SAND_WET     := Color("#a8906a")   # 退潮湿沙
-const X_SAND_DRY     := Color("#dcc89a")   # 干沙
+const X_SAND_DRY     := Color("#ecd7a9")   # 干沙（docs/182：取 Wang 纯沙瓦均值 (236,215,169)，界外沙滩延长线与瓦同色）
 const X_GRANITE      := Color("#8f8078")   # 粉灰花岗岩（布列塔尼海岸礁石）
 const X_CANVAS_BLUE  := Color("#2f5ea6")   # 沙滩帐篷/阳伞的蓝条
 const X_SLATE        := Color("#56606c")   # 布列塔尼板岩屋顶（蓝灰）。gpl 的 wrk-roof #3f4b50 太黑，住宅满镇铺开会压死画面
@@ -525,6 +525,9 @@ var _beach := {}                      # idx -> 离水深度 1..BEACH_DEPTH（1 =
 var _beach_props: Array = []          # [{cell:Vector2i, kind:String}]，行优先
 var _rocks: Array = []                # [{p:Vector2, r:float}]：岬角礁石（落在海格上）
 var _meadow: Array = []               # [{rect:Rect2, col:Color}]：低频草甸色斑
+var _plateau := {}                    # docs/182：花岗岩台地格（东松林岬，树格的子集）
+var _cliff_face := {}                 # idx -> true：画崖壁的格（不再画松树精灵；本就是树格 ⇒ 本就不可走）
+var _cliff_box := Rect2i()            # 台地 ±2 的格范围（绘制裁剪）
 var dbg_nav := false     # P2-4 导航开发叠层开关（Main 的 N 键切换）：阻挡格 + 交互格可视化
 var _interiors := {}     # P3 室内内容 interiors.json：space -> floor -> {label,floor,furniture[]}
 var _interiors_loaded := false
@@ -3408,10 +3411,13 @@ func _draw_body() -> void:
 	# 用 tree_big 切图底对齐画；缺切图则程序化画树冠+树干。占满格 → 玩家一眼读出"这里过不去"。
 	var ttex := Art.decor_tex("tree_big")
 	if _ap("trees"):
+		_draw_wang_cliff(w)       # docs/182：东松林岬抬成花岗岩台地（崖壁两行落在树格上，那两行不再画树）
 		# docs/180：树冠投影（西北光 ⇒ 影子落在树脚东南）。一张径向衰减贴图 × 黑色 modulate ⇒ 130 棵合成一批。
 		var stex := _light_texture()
 		for st in _tree_draw:
 			var sc: Vector2i = st["cell"]
+			if _cliff_face.has(sc.y * w + sc.x):
+				continue
 			var so: Vector2 = st["off"]
 			var srr := Rect2(sc.x * T - T * 0.05 + so.x, sc.y * T + T * 0.50, T * 1.45, T * 0.80)
 			if _vis.intersects(srr):
@@ -3420,6 +3426,8 @@ func _draw_body() -> void:
 	#   `_ac("trees", …)` 的 pass 名不变 ⇒ D7 的逐 pass draw-call 审计仍然对得上同一行。
 	for st in _ac("trees", _tree_draw):
 		var tc: Vector2i = st["cell"]
+		if _cliff_face.has(tc.y * w + tc.x):
+			continue                   # docs/182：崖壁格（仍是阻挡格）不画松树
 		if ttex != null:
 			var tdw := float(ttex.get_width()) * (float(T) / 16.0)
 			var tdh := float(ttex.get_height()) * (float(T) / 16.0)
@@ -3750,6 +3758,7 @@ func _build_seaside(w: int, h: int) -> void:
 	_ocean_x0 = PackedInt32Array()
 	_ocean_x0.resize(h)
 	_beach.clear(); _beach_props.clear(); _rocks.clear(); _meadow.clear()
+	_plateau.clear(); _cliff_face.clear()
 	for y in h:
 		var x := w - 1
 		while x >= 0 and _water_set.has(y * w + x):
@@ -3793,6 +3802,23 @@ func _build_seaside(w: int, h: int) -> void:
 				kind = "castle"
 			if kind != "":
 				_beach_props.append({"cell": Vector2i(x, y), "kind": kind})
+	# 花岗岩台地（docs/182）：东松林岬 = 离海 ≤8 格的树格，且南邻也是树（南沿内收一行 ⇒ 两行崖壁都落在树格上）。
+	var bx0 := w; var by0 := h; var bx1 := -1; var by1 := -1
+	for tc in _tree_cells:
+		var tx: int = tc.x; var ty: int = tc.y
+		if _ocean_x0[ty] >= w or tx < _ocean_x0[ty] - 8:
+			continue
+		if not _tree_set.has((ty + 1) * w + tx):
+			continue
+		_plateau[ty * w + tx] = true
+		bx0 = mini(bx0, tx); by0 = mini(by0, ty); bx1 = maxi(bx1, tx); by1 = maxi(by1, ty)
+	if bx1 >= 0:
+		_cliff_box = Rect2i(maxi(0, bx0 - 2), maxi(0, by0 - 2), mini(w, bx1 + 3) - maxi(0, bx0 - 2), mini(h, by1 + 3) - maxi(0, by0 - 2))
+		for y in range(_cliff_box.position.y, _cliff_box.end.y):
+			for x in range(_cliff_box.position.x, _cliff_box.end.x):
+				var c := _cliff_corners(x, y, w)
+				if c.has(2):
+					_cliff_face[y * w + x] = true
 	for by in range(0, h, 3):                            # 草甸色斑：3 格一采样、~45% 落一块，离水 4 格内不落（POND 岸线）
 		for bx in range(0, w, 3):
 			var hm := _hash_mix(bx, by, 161)
@@ -3829,36 +3855,7 @@ func _draw_meadow_tones() -> void:
 func _draw_seaside_ground(w: int, h: int, wtint: Color) -> void:
 	_ensure_seaside(w, h)
 	var t := float(Sim.tick_no)
-	var veg := _season_veg()
-	# ① 沙滩：每格三条竖带做「湿→干」梯度 + 沙粒；最内一档向草地抖出不规则沙舌，另长几丛滨草。
-	for idx in _beach:
-		var bx: int = idx % w; var by: int = idx / w
-		var r := Rect2(bx * T, by * T, T, T)
-		if not _vis.intersects(r.grow(T)):
-			continue
-		var x0 := float(_ocean_x0[by]) * T
-		for s in 3:
-			var px := r.position.x + float(s) * T / 3.0
-			var u := (x0 - (px + T / 6.0)) / (float(BEACH_DEPTH) * T)
-			var col := X_SAND_WET.lerp(X_SAND_DRY, clampf((u - 0.12) / 0.55, 0.0, 1.0))
-			draw_rect(Rect2(px, r.position.y, T / 3.0 + 0.5, T), col, true)
-		for k in 4:
-			var hg := _hash(bx * 4 + k, by, 141)
-			var gp := r.position + Vector2(float(hg % 44) + 2.0, float(hg / 44 % 44) + 2.0)
-			draw_rect(Rect2(gp, Vector2(3, 3)), Color(P_STONE_LINE, 0.30) if k % 2 == 0 else Color(X_PARCHMENT, 0.55), true)
-		if int(_beach[idx]) == BEACH_DEPTH:
-			for k in 3:                                   # 沙舌伸进草地（不等距、不连续 ⇒ 不读作画框）
-				var hs := _hash_mix(bx, by * 3 + k, 143)
-				var ln := T * (0.10 + float(hs % 30) / 100.0)
-				draw_rect(Rect2(r.position.x - ln, r.position.y + float(k) * T / 3.0, ln, T / 3.0 + 0.5), Color(X_SAND_DRY, 0.70), true)
-			for k in 2:                                   # 滨草（marram）
-				var ht := _hash_mix(bx, by, 147 + k)
-				var tp := r.position + Vector2(T * (0.08 + float(ht % 30) / 100.0), T * (0.30 + float(ht / 30 % 55) / 100.0))
-				var gc := P_FOLIAGE_M * veg
-				draw_line(tp, tp + Vector2(-4, -9), gc, 2.0)
-				draw_line(tp, tp + Vector2(0, -11), gc.darkened(0.15), 2.0)
-				draw_line(tp, tp + Vector2(4, -8), gc, 2.0)
-	# ② 海：整行按 1/4 格竖带从浅滩绿过到外海；每格两道随 tick 漂向岸的浪痕 + 日间碎光。
+	# ① 海：整行按 1/4 格竖带从浅滩绿过到外海；每格两道随 tick 漂向岸的浪痕 + 日间碎光。
 	var day := _night_amt() < 0.5
 	for y in h:
 		var sx0 := _ocean_x0[y]
@@ -3884,22 +3881,18 @@ func _draw_seaside_ground(w: int, h: int, wtint: Color) -> void:
 			if day and (_hash(xi, y, 177) + Sim.tick_no / 3) % 9 == 0:
 				var hg := _hash(xi, y, 179)
 				draw_rect(Rect2((float(xi) + float(hg % 90) / 100.0) * T, (float(y) + float(hg / 90 % 90) / 100.0) * T, 3, 3), Color(1, 1, 1, 0.85), true)
-		# ③ 岸：沙滩行 = 湿沙带 + 漫上沙的浅水 + 浪花前沿（随 tick 涨退）；非沙滩行 = 贴岸白浪。
+		# 离岸碎浪线（断续，随 tick 进退）：画在 Wang 岸线瓦的外侧半格，读作一道道涌上来的浪。
 		var shore := float(sx0) * T
-		var on_beach := _beach.has(y * w + sx0 - 1)
 		for q in 4:
 			var yy := float(y) * T + float(q) * T * 0.25
-			var wv := 0.5 + 0.5 * sin(t * 0.21 + float(y * 4 + q) * 0.55)
-			if on_beach:
-				var reach := T * (0.08 + 0.50 * wv)
-				draw_rect(Rect2(shore - T * 0.78, yy, T * 0.78, T * 0.25 + 0.5), Color(X_SAND_WET.darkened(0.12), 0.40), true)
-				draw_rect(Rect2(shore - reach, yy, reach, T * 0.25 + 0.5), Color(X_SEA_SHALLOW, 0.55) * wtint, true)
-				draw_rect(Rect2(shore - reach - T * 0.05, yy, T * 0.09, T * 0.25 + 0.5), Color(X_COLD_WHITE, 0.85) * wtint, true)
-			else:
-				draw_rect(Rect2(shore, yy, T * (0.08 + 0.14 * wv), T * 0.25 + 0.5), Color(X_COLD_WHITE, 0.60) * wtint, true)
-			var wb := 0.5 + 0.5 * sin(t * 0.17 + float(y * 4 + q) * 0.37 + 1.3)   # 离岸碎浪线（断续）
+			var wb := 0.5 + 0.5 * sin(t * 0.17 + float(y * 4 + q) * 0.37 + 1.3)
 			if _hash(y * 4 + q, 3, 183) % 100 < 55:
-				draw_rect(Rect2(shore + T * (0.55 + 0.35 * wb), yy, T * 0.18, 2.0), Color(X_COLD_WHITE, 0.35 * wb) * wtint, true)
+				draw_rect(Rect2(shore + T * (0.70 + 0.35 * wb), yy, T * 0.18, 2.0), Color(X_COLD_WHITE, 0.35 * wb) * wtint, true)
+	# ② 岸线 + 沙滩 + 沙丘：PixelLab Wang 瓦（docs/182）。按顶点地类选瓦：
+	#   格地类 海=0 / 沙=1 / 其余=2；顶点地类 = 四邻格的【最大值】（陆地优先）⇒ 岸线总落在海格里，
+	#   可走的沙格上永远是实沙，不会出现"人站在半格水里"。瓦上的纯海/纯草像素导入时已挖空
+	#   ⇒ 底下的程序化动画海与出货草地瓦透出来，没有色缝。
+	_draw_wang_coast(w, h)
 	# ④ 礁石：白浪圈 + 花岗岩体（西北受光、东南背阴）
 	for rk in _rocks:
 		var p: Vector2 = rk["p"]
@@ -3928,6 +3921,144 @@ func _draw_seaside_ground(w: int, h: int, wtint: Color) -> void:
 		draw_line(p + Vector2(-rr * 0.1, -rr * 0.5), p + Vector2(rr * 0.25, rr * 0.35), X_GRANITE.darkened(0.35) * wtint, 1.5)   # 石缝
 		if sd % 3 == 0:
 			draw_circle(p + Vector2(rr * 0.35, -rr * 0.05), rr * 0.16, Color(P_FOLIAGE_D, 0.8) * wtint)   # 海藻/苔
+
+var _wang := {}                # name -> {tex, tiles, tile}（懒加载；缺文件 = {}）
+
+## 台地顶点高度：四邻格全是台地 = 1（min 规则 ⇒ 台地边落在台地格内部）。
+func _plateau_v(vx: int, vy: int, w: int) -> int:
+	for dy in [-1, 0]:
+		for dx in [-1, 0]:
+			if not _plateau.has((vy + dy) * w + (vx + dx)):
+				return 0
+	return 1
+
+## 一格的四角（NW NE SW SE）：1=台地、2=崖壁（正北顶点是台地的低处顶点）、0=草。
+## PixelLab 带崖壁的瓦集约定：崖壁占台地南沿【之下】的两行（边界格下半 + 下一格上半）。
+func _cliff_corners(x: int, y: int, w: int) -> Array:
+	var out: Array = []
+	for v in [Vector2i(x, y), Vector2i(x + 1, y), Vector2i(x, y + 1), Vector2i(x + 1, y + 1)]:
+		var hv := _plateau_v(v.x, v.y, w)
+		if hv == 0 and _plateau_v(v.x, v.y - 1, w) == 1:
+			hv = 2
+		out.append(hv)
+	return out
+
+func _draw_wang_cliff(w: int) -> void:
+	var cs := _wang_set("cliff")
+	if cs.is_empty() or _plateau.is_empty():
+		return
+	var ts := float(cs["tile"])
+	for y in range(_cliff_box.position.y, _cliff_box.end.y):
+		for x in range(_cliff_box.position.x, _cliff_box.end.x):
+			var r := Rect2(x * T, y * T, T, T)
+			if not _vis.intersects(r):
+				continue
+			var c := _cliff_corners(x, y, w)
+			if c.max() == 0:
+				continue
+			var key := ""
+			for v in c: key += str(int(v))
+			var xy = (cs["tiles"] as Dictionary).get(key, null)
+			if xy == null:
+				key = key.replace("2", "0")
+				xy = (cs["tiles"] as Dictionary).get(key, null)
+			if xy == null:
+				continue
+			draw_texture_rect_region(cs["tex"], r, Rect2(float(xy[0]), float(xy[1]), ts, ts))
+
+func _wang_set(name: String) -> Dictionary:
+	if _wang.has(name):
+		return _wang[name]
+	var ws := {}
+	var tex := Art.tex("res://assets/art/wang/%s.png" % name)
+	var f := FileAccess.open("res://assets/art/wang/%s.json" % name, FileAccess.READ)
+	if tex != null and f != null:
+		var d: Variant = JSON.parse_string(f.get_as_text())
+		if d is Dictionary:
+			ws = {"tex": tex, "tiles": d.get("tiles", {}), "tile": int(d.get("tile", 16))}
+	if f != null:
+		f.close()
+	_wang[name] = ws
+	return ws
+
+## 岸线/沙丘线的逐行抖动（纯视觉）：地图上的海岸是一条笔直的列，直接铺瓦只会用到同一张直边瓦 ⇒ 读作"边框"。
+## 按 2-3 行一段的确定性哈希把岸线往海里推一格、把沙丘线往沙里推一格，Wang 的凹凸角瓦才用得上。
+## 只改【画哪张瓦】：被推成沙的海格仍是 blockers 里的水，被推成草的沙格仍可走 ⇒ 零 sim 金标。
+func _coast_jit(y: int, salt: int) -> int:
+	return 1 if _hash_mix(y / 3 + (y / 2) * 7, 0, salt) % 3 == 0 else 0
+
+func _coast_class(x: int, y: int, w: int) -> int:
+	var x0 := _ocean_x0[y]
+	if x >= x0:
+		if x == x0 and _beach.has(y * w + x0 - 1) and _coast_jit(y, 233) == 1:
+			return 1                                   # 岸线外推：这一行多一格沙嘴
+		return 0
+	if not _beach.has(y * w + x):
+		return 2
+	if int(_beach[y * w + x]) == BEACH_DEPTH and _coast_jit(y, 239) == 1:
+		return 2                                       # 沙丘线内收：草多吃一格
+	return 1
+
+func _coast_vertex(vx: int, vy: int, w: int, h: int) -> int:
+	var m := 0
+	for dy in [-1, 0]:
+		for dx in [-1, 0]:
+			var cx: int = vx + dx; var cy: int = vy + dy
+			if cx >= 0 and cx < w and cy >= 0 and cy < h:
+				m = maxi(m, _coast_class(cx, cy, w))
+	return m
+
+func _draw_wang_coast(w: int, h: int) -> void:
+	var ss := _wang_set("seasand")
+	var sg := _wang_set("sandgrass")
+	if ss.is_empty() or sg.is_empty():
+		return
+	for y in h:
+		var x0 := _ocean_x0[y]
+		if x0 >= w:
+			continue
+		for x in range(maxi(0, x0 - BEACH_DEPTH - 1), mini(w, x0 + 1)):
+			var r := Rect2(x * T, y * T, T, T)
+			if not _vis.intersects(r):
+				continue
+			var c := [_coast_vertex(x, y, w, h), _coast_vertex(x + 1, y, w, h),
+				_coast_vertex(x, y + 1, w, h), _coast_vertex(x + 1, y + 1, w, h)]   # NW NE SW SE
+			var lo: int = c.min(); var hi: int = c.max()
+			if lo == hi and lo != 1:
+				continue                                  # 纯海 / 纯草：交给底层
+			var set_ := ss
+			var key := ""
+			if lo >= 1:                                   # 沙↔草
+				set_ = sg
+				for v in c: key += "1" if int(v) == 2 else "0"
+			else:                                         # 海↔沙（海↔草/码头也按沙收边：树脚/栈桥下一条窄沙）
+				for v in c: key += "0" if int(v) == 0 else "1"
+			var xy = (set_["tiles"] as Dictionary).get(key, null)
+			if xy == null:
+				continue
+			var ts := float(set_["tile"])
+			draw_texture_rect_region(set_["tex"], r, Rect2(float(xy[0]), float(xy[1]), ts, ts))
+	# 涨退的浪（swash）：只在岸线笔直的行上画（上下两行同一外推档），否则会和 Wang 的凹凸角瓦错位。
+	#   直边瓦 "1010" 的岸线在格中线 ⇒ 岸线世界 x = (x0 + 外推) * T + T/2。相位只读 tick。
+	var t := float(Sim.tick_no)
+	for y in range(1, h - 1):
+		var x0 := _ocean_x0[y]
+		if x0 >= w or not _beach.has(y * w + x0 - 1):
+			continue
+		var j := _coast_jit(y, 233)
+		if _coast_jit(y - 1, 233) != j or _coast_jit(y + 1, 233) != j:
+			continue
+		if not _beach.has((y - 1) * w + x0 - 1) or not _beach.has((y + 1) * w + x0 - 1):
+			continue
+		var shore := float(x0 + j) * T + T * 0.5
+		if not _vis.has_point(Vector2(shore, float(y) * T)):
+			continue
+		for q in 4:
+			var yy := float(y) * T + float(q) * T * 0.25
+			var wv := 0.5 + 0.5 * sin(t * 0.21 + float(y * 4 + q) * 0.55)
+			var reach := T * (0.04 + 0.34 * wv)
+			draw_rect(Rect2(shore - reach, yy, reach, T * 0.25 + 0.5), Color(X_SEA_SHALLOW, 0.50), true)
+			draw_rect(Rect2(shore - reach - 3.0, yy, 4.0, T * 0.25 + 0.5), Color(X_COLD_WHITE, 0.80), true)
 
 ## 界外海：东界之外延续成开阔海（静态：不读 tick，保 VOIDGATE），顶/底外带里沙滩与海继续往外走。返回海岸线世界 x。
 func _draw_void_sea(c: CanvasItem, map: Rect2, bands: Array, w: int, h: int) -> float:
