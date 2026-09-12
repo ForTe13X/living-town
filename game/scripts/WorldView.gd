@@ -132,6 +132,18 @@ const X_PACT         := Color("#39d4c8")   # 互助盟约双线。青色信号�
 ##   其后 P_PUB_FACE 19.2 / P_PUB_LINE 20.6 —— 全表没有一个色值落进"可能被看成同一个东西"的区间。
 ##   ⚠️ 我第一次写的是"最近邻 X_SIGNAL_NEG ≈ 47"，那是**猜的**；算完才发现连最近的是哪一族都猜错了。
 const X_MISSING      := Color("#ff00ff")
+## ── 海滨扩表（docs/180 · 海滨一刀）：参照系是侯麦《夏天的故事》(1996) 的 Dinard / Saint-Lunaire——
+##   Côte d'Émeraude 的祖母绿浅水、粉灰花岗岩礁、白蓝条纹沙滩帐篷。gpl 只有池塘的 teal 三档（water-*），
+##   而开阔海的「浅滩→深海」梯度、湿沙/干沙、泡沫是 gpl 覆盖不到的真缺口。全部只用于户外海滨层（纯 View，零金标）。
+const X_SEA_SHALLOW  := Color("#63b9a4")   # 祖母绿浅滩（沙底透上来的绿）
+const X_SEA_MID      := Color("#2e8b96")   # 近岸中水
+const X_SEA_DEEP     := Color("#1c5a76")   # 外海
+const X_SEA_FAR      := Color("#153f58")   # 界外远海（融进暗角之前的最后一档）
+const X_SAND_WET     := Color("#a8906a")   # 退潮湿沙
+const X_SAND_DRY     := Color("#dcc89a")   # 干沙
+const X_GRANITE      := Color("#8f8078")   # 粉灰花岗岩（布列塔尼海岸礁石）
+const X_CANVAS_BLUE  := Color("#2f5ea6")   # 沙滩帐篷/阳伞的蓝条
+const X_SLATE        := Color("#56606c")   # 布列塔尼板岩屋顶（蓝灰）。gpl 的 wrk-roof #3f4b50 太黑，住宅满镇铺开会压死画面
 
 # ── 派生明暗档（12 个；const 不能带方法调用，故用 var —— 只在实例化时算一次）──
 var D_WOOD_LINE      := X_WOOD_MID.darkened(0.45)    # 木器描边/门框/门缝/搁板线 —— 木家族自己的最暗档；映到 ui-panel 会让它变冷（dE00 14.8），那正是「室内变一坨」
@@ -481,6 +493,13 @@ var _tree_draw: Array = []   # V3 林相：[{cell,off,tone}]，行优先排好�
 var _tree_set := {}      # idx(y*W+x) -> true（同上，供 O(1) 查：_is_blocked 与界外 motif 每帧都要问它）
 var _wall_type := {}     # P2-4 idx -> 建筑类型（住宅/商业/公共/工坊）→ 墙面按类型上色
 var _terrain_built := false
+# docs/180 海滨层（纯 View）：每行海带起点、沙滩格、沙滩道具、草甸色斑。随 _invalidate_world_caches 作废。
+var _sea_built := false
+var _ocean_x0 := PackedInt32Array()   # 每行：贴东界那段连续水的第一格 x（该行无海 = w）
+var _beach := {}                      # idx -> 离水深度 1..BEACH_DEPTH（1 = 水线）
+var _beach_props: Array = []          # [{cell:Vector2i, kind:String}]，行优先
+var _rocks: Array = []                # [{p:Vector2, r:float}]：岬角礁石（落在海格上）
+var _meadow: Array = []               # [{rect:Rect2, col:Color}]：低频草甸色斑
 var dbg_nav := false     # P2-4 导航开发叠层开关（Main 的 N 键切换）：阻挡格 + 交互格可视化
 var _interiors := {}     # P3 室内内容 interiors.json：space -> floor -> {label,floor,furniture[]}
 var _interiors_loaded := false
@@ -714,6 +733,7 @@ func _invalidate_world_caches() -> void:
 	_terrain_built = false
 	_paths_built = false
 	_decor_built = false
+	_sea_built = false
 	_grass_var = PackedByteArray()
 	_verge_ground = Color(0, 0, 0, 0)
 	_slot_probe_n = -1                    # H3：换世界 ⇒ 下一次 _redraw_all 重新体检精灵槽
@@ -1609,11 +1629,13 @@ func _draw_area_floors(dirt: Texture2D) -> void:
 
 ## 区名：旧版画在 rect 左上角、字号 12、alpha 0.28 —— 那格正好是顶墙，墙随后盖上去，于是【一个字也看不见】。
 ## 现在画在墙之后、地板第一行上，并把字号按缩放反比放大 → 缩到全镇俯瞰时区名仍读得出来（这才是"地图可读"）。
-func _draw_area_labels() -> void:
+func _draw_area_labels(roofed_only := false) -> void:
 	var fnt := Art.font()
 	var fs := int(clampf(13.0 / _zoom, 13.0, 52.0))
 	for aid in Sim.world.get("areas", {}):
 		var a: Dictionary = Sim.world["areas"][aid]
+		if roofed_only and String(a.get("type", "")) == "plaza":
+			continue                  # docs/180 盖顶后的补画只补楼名；码头/渔埠区名仍让港口结构盖着（docs/163 §五）
 		var r: Array = a.get("rect", [0, 0, 0, 0])
 		if int(r[2]) <= 0 or int(r[3]) <= 0:
 			continue
@@ -2854,6 +2876,7 @@ func _draw_town_backdrop(c: CanvasItem, w: int, h: int) -> void:
 	# ★第一层：边界延续（docs/44 §四 / docs/43 §三-C7）。必须在暗林/暗角【之前】——
 	#   它是"地面继续往外走"的那一层，林子应当长在它外面，而不是压在它上面。
 	_draw_town_verge(c, map, bands, w, h)
+	var sea_x := _draw_void_sea(c, map, bands, w, h)   # docs/180：东界之外是开阔海，不是林子
 	# 镇子漏进林子的光：贴着地图外缘最亮、向外 8 圈熄灭。旧稿在这里放过一条【矩形青色岸带】，
 	# 眼验读作"给地图加了个装饰边框"——硬边框是原型感的来源，换成柔性光晕就消失了。
 	for k in range(8 if _ap("bd:spill") else 0, 0, -1):
@@ -2880,6 +2903,8 @@ func _draw_town_backdrop(c: CanvasItem, w: int, h: int) -> void:
 						+ Vector2(float(hsh % 97), float(hsh / 97 % 97)) * (cell / 97.0)
 					if map.has_point(cp):
 						continue                # 界内不长树（R5：界内必须逐像素不变）
+					if cp.x > sea_x - T * 3.0:
+						continue                # docs/180：海上与海滩延长线上不长树
 					# 离镇越远越黑越稀：林子要"退进夜里"，不是铺一层等密度的点
 					var dist := _rect_dist(map, cp)
 					var r := cell * (0.30 + float(hsh / 11 % 9) * 0.030)
@@ -3107,6 +3132,12 @@ func _collect_lights() -> Array:
 			"c": LIGHT_WIN, "a": 0.16})
 		out.append({"p": Vector2(inner.get_center().x, inner.position.y - WALL * 0.6),
 			"r": minf(inner.size.x, T * 3.0) * 0.62, "c": LIGHT_WIN, "a": 0.14})
+	if _roof_alpha() >= 0.5:                             # docs/180：盖着屋顶时，屋里/北墙/侧墙的灯不透过屋顶亮出来
+		var kept: Array = []
+		for lt in out:
+			if not _roofed_at(lt["p"]):
+				kept.append(lt)
+		out = kept
 	return out
 
 ## 加色光层的绘制入口（由内部类 NightLights._draw 调用）。
@@ -3181,6 +3212,8 @@ func _draw_body() -> void:
 				for tx in range(tx0, tx1):
 					if int(_grass_var[grow + tx]) == gi:
 						draw_texture_rect(gt, Rect2(tx * T, ty * T, T, T), false, veg)
+		if _ap("grass"):
+			_draw_meadow_tones()      # docs/180：低频草甸色斑（旱地↔湿草），打破"一整块匀绿"
 	else:
 		var grass := Art.ground_tex()
 		if grass != null:
@@ -3234,6 +3267,9 @@ func _draw_body() -> void:
 				draw_rect(wr, P_WATER_DEEP * wtint, true)
 				if _hash(wx, wy, 21) % 100 < 30:   # 静态涟漪高光
 					draw_rect(Rect2(wx * T + T * 0.18, wy * T + T * 0.30, T * 0.42, T * 0.12), Color(P_WATER_LIT, 0.35) * wtint, true)
+	if _ap("water"):
+		_draw_seaside_ground(w, h, wtint)   # docs/180：东海改画成开阔海 + 沙滩 + 拍岸浪（池塘不碰 ⇒ POND 零扰动）
+		_draw_outer_sea(w, h, wtint)        # docs/180：东界之外的海（主层画 ⇒ 与界内同吃昼夜水罩，东界无色缝）
 
 	# ── AP1(140) 门→广场【石铺连街】：把原来的土径重铺成暖石板 cobble ────────────────────────────
 	# **只改绘制/调色板**：`_path_set` 仍由 `_build_paths` 从 doors/plaza（map.json 只读）烘出，一格 walkable 都没动
@@ -3293,6 +3329,8 @@ func _draw_body() -> void:
 
 	# 分类型建筑外墙（map.json walls 层，按所属建筑 type 上色）：buildings.json 清空后，districts 的体积就靠这层墙读出。
 	# 切顶俯视：落地阴影 + 三段墙面(顶棱高光/主面/墙脚暗边)让 1 格墙读作有厚度；颜色由类型区分（住宅暖木/商业米黄/公共蓝灰/工坊灰石）。门缺口天然留白。
+	if _ap("walls"):
+		_draw_building_shadows()   # docs/180：统一西北日照 ⇒ 每栋楼向东南落一块投影，建筑才"立"在地上
 	for idx in _ac("walls", _wall_set):
 		var sx: int = idx % w
 		var sy: int = idx / w
@@ -3318,11 +3356,14 @@ func _draw_body() -> void:
 	# 装饰散布（区域外草地上的花/草丛/石，确定性布局；在物件与居民之下。**这里没有树**，见 _build_decor 抬头）
 	if not _decor_built:
 		_build_decor()
+	_ensure_seaside(w, h)
 	for it in _ac("decor", _decor_items):
 		var dtex: Texture2D = it["tex"]
 		var c: Vector2i = it["cell"]
 		if not _vis.has_point(Vector2(c.x * T, c.y * T)):
 			continue                       # 视口外的花草石不画（布局仍由 _build_decor 一次性确定，与相机无关）
+		if _beach.has(c.y * w + c.x):
+			continue                       # docs/180：沙滩上不长花草（布局不变，只是这几格不画）
 		var dw := float(dtex.get_width()) * (float(T) / 16.0)
 		var dh := float(dtex.get_height()) * (float(T) / 16.0)
 		# 底对齐格子（高物件如树向上伸出）；四季色偏与草地同源
@@ -3335,10 +3376,21 @@ func _draw_body() -> void:
 		if not _vis.has_point(Vector2(spc.x * T, spc.y * T)):
 			continue
 		_draw_street_prop(int(sp["kind"]), spc)
+	if _ap("decor"):
+		_draw_beach_props()        # docs/180：条纹沙滩帐篷 / 阳伞 / 浴巾 / 救生旗（侯麦的 Saint-Lunaire 海滩）
 
 	# authored 阻挡树（map.json trees 层）：这些是【会挡路】的真树（与上面可踩的程序化花草区分开）。
 	# 用 tree_big 切图底对齐画；缺切图则程序化画树冠+树干。占满格 → 玩家一眼读出"这里过不去"。
 	var ttex := Art.decor_tex("tree_big")
+	if _ap("trees"):
+		# docs/180：树冠投影（西北光 ⇒ 影子落在树脚东南）。一张径向衰减贴图 × 黑色 modulate ⇒ 130 棵合成一批。
+		var stex := _light_texture()
+		for st in _tree_draw:
+			var sc: Vector2i = st["cell"]
+			var so: Vector2 = st["off"]
+			var srr := Rect2(sc.x * T - T * 0.05 + so.x, sc.y * T + T * 0.50, T * 1.45, T * 0.80)
+			if _vis.intersects(srr):
+				draw_texture_rect(stex, srr, false, Color(0.02, 0.06, 0.04, 0.34))
 	# ★ V3 林相：画法从 `_tree_draw` 取（偏移/镜像/明暗档 + 行优先次序，见 _build_tree_styles）。
 	#   `_ac("trees", …)` 的 pass 名不变 ⇒ D7 的逐 pass draw-call 审计仍然对得上同一行。
 	for st in _ac("trees", _tree_draw):
@@ -3392,6 +3444,14 @@ func _draw_body() -> void:
 				else:
 					_draw_unmapped_object(base, String(id), o)
 
+	# docs/180：屋顶压在家具/室内之上、居民之下；盖顶时区名与门要重画一次，否则被屋顶吃掉。
+	if _ap("dressing"):
+		_draw_roofs()
+		if _roof_a > 0.0:
+			if _ap("towndoors"):
+				_draw_town_doors()
+			if _ap("arealabels"):
+				_draw_area_labels(true)
 	# 四季 / 天气的大气罩：压在地形与建筑之上、居民之下（居民不该被刷成一片霜白）
 	if _ap("climate"):
 		_draw_climate_wash(w, h)
@@ -3429,7 +3489,11 @@ func _draw_body() -> void:
 	for ag in _ac("agents", Sim.agents):
 		if String(ag.get("space", "town")) != "town":
 			continue            # P3 Tier-B：非-town 平面的居民(在咖啡馆室内的阿丽)不画在镇上——否则会用室内格坐标在镇上"鬼影"
+		if _agent_under_roof(ag):
+			continue            # docs/180：盖着屋顶的楼里的人不画（否则读作"人走在屋顶上"）；拉近掀顶即现
 		_draw_agent(ag)
+	if _ap("water"):
+		_draw_gulls()               # docs/180：海鸥（按 tick 盘旋，确定性）
 
 	# 降水画在【居民之上】：雨/雪在人前面落，才读作下雨/下雪而不是地面贴图。
 	# 冬季降水统一走雪（_draw_snow 自己按 weather 调密度）；其余季节的「雨」才走雨丝 ⇒ 二者不叠加。
@@ -3631,6 +3695,606 @@ static func carrier_projections_for(sim, logistics_data: Dictionary, manifests: 
 		p["ready_qty"] = ready_qty
 		out.append(p)
 	return out
+
+# ══ docs/180 · 海滨一刀（Côte d'Émeraude）════════════════════════════════════════════════
+# 参照：侯麦《夏天的故事》——Dinard / Saint-Lunaire 的祖母绿海、花岗岩礁、条纹沙滩帐篷、海边小镇。
+# ★零 sim 金标：只读 map.json 的 water/trees/areas（Sim 也读的面，只读不写）；不改任何格 walkable，
+#   沙滩/道具/海鸥全是 View。池塘（北/南池）一像素不碰 ⇒ POND 门零扰动（海 = 贴东界的那段连续水）。
+# ★确定性：布局只读 `_hash`；浪/泡沫/海鸥只读 `Sim.tick_no` ⇒ 冻结 tick 的 --shot 逐像素可复现。
+#   界外海（_draw_void_sea）**不读 tick**——界外层是静态缓存层（D7 / VOIDGATE），这里守住那条性质。
+const BEACH_DEPTH := 3
+
+func _ensure_seaside(w: int, h: int) -> void:
+	if not _sea_built:
+		_build_seaside(w, h)
+
+func _near_water(x: int, y: int, r: int, w: int) -> bool:
+	for dy in range(-r, r + 1):
+		for dx in range(-r, r + 1):
+			var nx := x + dx; var ny := y + dy
+			if nx >= 0 and nx < w and _water_set.has(ny * w + nx):
+				return true
+	return false
+
+func _build_seaside(w: int, h: int) -> void:
+	if not _terrain_built:
+		_build_terrain()
+	if not _paths_built:
+		_build_paths()
+	_sea_built = true
+	_ocean_x0 = PackedInt32Array()
+	_ocean_x0.resize(h)
+	_beach.clear(); _beach_props.clear(); _rocks.clear(); _meadow.clear()
+	for y in h:
+		var x := w - 1
+		while x >= 0 and _water_set.has(y * w + x):
+			x -= 1
+		var x0 := x + 1
+		_ocean_x0[y] = x0 if (w - x0) >= 2 else w       # 贴东界、至少 2 格宽才算海
+		if _ocean_x0[y] >= w:
+			continue
+		for d in range(1, BEACH_DEPTH + 1):              # 沙滩从水线往内铺，遇到树/码头/路/建筑即止
+			var bx := _ocean_x0[y] - d
+			var bidx := y * w + bx
+			if bx < 0 or _is_blocked(bx, y) or _plaza_cells.has(bidx) or _path_set.has(bidx) \
+					or _in_area(bx, y) or _is_object(bx, y):
+				break
+			_beach[bidx] = d
+		if _tree_set.has(y * w + _ocean_x0[y] - 1):      # 松林岬：林子直抵水边 ⇒ 水里散花岗岩礁
+			var n := 1 + _hash_mix(_ocean_x0[y], y, 131) % 2
+			for k in n:
+				var hk := _hash_mix(y, k, 137)
+				_rocks.append({
+					"p": Vector2((float(_ocean_x0[y]) + 0.10 + float(hk % 70) / 100.0 * (1.0 + float(k) * 0.5)) * T,
+						(float(y) + 0.15 + float(hk / 70 % 70) / 100.0) * T),
+					"r": T * (0.17 + float(hk / 4900 % 18) / 100.0), "s": hk})
+	for y in h:                                          # 沙滩道具：行优先 ⇒ 下方的压住上方的
+		for x in range(maxi(0, w - 16), w):
+			var idx := y * w + x
+			if not _beach.has(idx):
+				continue
+			var d: int = _beach[idx]
+			var hp := _hash_mix(x, y, 151) % 100
+			var kind := ""
+			if d == BEACH_DEPTH and y % 2 == 0 and hp < 80:   # 隔行一顶：一列帐篷之间留出沙，不连成墙
+				kind = "cabin"
+			elif d == 2 and hp < 18:
+				kind = "parasol"
+			elif d == 2 and hp < 30:
+				kind = "towel"
+			elif d == 1 and hp < 4:
+				kind = "boat"
+			elif d == 1 and hp < 8:
+				kind = "castle"
+			if kind != "":
+				_beach_props.append({"cell": Vector2i(x, y), "kind": kind})
+	for by in range(0, h, 3):                            # 草甸色斑：3 格一采样、~45% 落一块，离水 4 格内不落（POND 岸线）
+		for bx in range(0, w, 3):
+			var hm := _hash_mix(bx, by, 161)
+			if hm % 100 >= 45:
+				continue
+			var cx := float(bx) + float(hm / 100 % 30) / 10.0
+			var cy := float(by) + float(hm / 3000 % 30) / 10.0
+			if _near_water(int(cx), int(cy), 4, w):
+				continue
+			var s := 4.0 + float(hm / 90000 % 40) / 10.0
+			var dry := hm / 7 % 3 == 0
+			_meadow.append({"rect": Rect2((cx - s * 0.5) * T, (cy - s * 0.35) * T, s * T, s * 0.7 * T),
+				"col": Color(0.95, 0.84, 0.42, 0.12) if dry else Color(0.08, 0.24, 0.06, 0.13)})
+
+## 海色：u=0 水线（浅滩绿）→ 1 东界（外海），>1 进界外（远海）。
+func _sea_col(u: float) -> Color:
+	if u < 0.35:
+		return X_SEA_SHALLOW.lerp(X_SEA_MID, u / 0.35)
+	if u <= 1.0:
+		return X_SEA_MID.lerp(X_SEA_DEEP, (u - 0.35) / 0.65)
+	return X_SEA_DEEP.lerp(X_SEA_FAR, clampf((u - 1.0) / 3.0, 0.0, 1.0))
+
+func _draw_meadow_tones() -> void:
+	var w := int(Sim.world.get("width", 24)); var h := int(Sim.world.get("height", 16))
+	_ensure_seaside(w, h)
+	var tex := _light_texture()
+	var veg := _season_veg()
+	for m in _meadow:
+		var r: Rect2 = m["rect"]
+		if _vis.intersects(r):
+			var c: Color = m["col"]
+			draw_texture_rect(tex, r, false, Color(c.r * veg.r, c.g * veg.g, c.b * veg.b, c.a))
+
+func _draw_seaside_ground(w: int, h: int, wtint: Color) -> void:
+	_ensure_seaside(w, h)
+	var t := float(Sim.tick_no)
+	var veg := _season_veg()
+	# ① 沙滩：每格三条竖带做「湿→干」梯度 + 沙粒；最内一档向草地抖出不规则沙舌，另长几丛滨草。
+	for idx in _beach:
+		var bx: int = idx % w; var by: int = idx / w
+		var r := Rect2(bx * T, by * T, T, T)
+		if not _vis.intersects(r.grow(T)):
+			continue
+		var x0 := float(_ocean_x0[by]) * T
+		for s in 3:
+			var px := r.position.x + float(s) * T / 3.0
+			var u := (x0 - (px + T / 6.0)) / (float(BEACH_DEPTH) * T)
+			var col := X_SAND_WET.lerp(X_SAND_DRY, clampf((u - 0.12) / 0.55, 0.0, 1.0))
+			draw_rect(Rect2(px, r.position.y, T / 3.0 + 0.5, T), col, true)
+		for k in 4:
+			var hg := _hash(bx * 4 + k, by, 141)
+			var gp := r.position + Vector2(float(hg % 44) + 2.0, float(hg / 44 % 44) + 2.0)
+			draw_rect(Rect2(gp, Vector2(3, 3)), Color(P_STONE_LINE, 0.30) if k % 2 == 0 else Color(X_PARCHMENT, 0.55), true)
+		if int(_beach[idx]) == BEACH_DEPTH:
+			for k in 3:                                   # 沙舌伸进草地（不等距、不连续 ⇒ 不读作画框）
+				var hs := _hash_mix(bx, by * 3 + k, 143)
+				var ln := T * (0.10 + float(hs % 30) / 100.0)
+				draw_rect(Rect2(r.position.x - ln, r.position.y + float(k) * T / 3.0, ln, T / 3.0 + 0.5), Color(X_SAND_DRY, 0.70), true)
+			for k in 2:                                   # 滨草（marram）
+				var ht := _hash_mix(bx, by, 147 + k)
+				var tp := r.position + Vector2(T * (0.08 + float(ht % 30) / 100.0), T * (0.30 + float(ht / 30 % 55) / 100.0))
+				var gc := P_FOLIAGE_M * veg
+				draw_line(tp, tp + Vector2(-4, -9), gc, 2.0)
+				draw_line(tp, tp + Vector2(0, -11), gc.darkened(0.15), 2.0)
+				draw_line(tp, tp + Vector2(4, -8), gc, 2.0)
+	# ② 海：整行按 1/4 格竖带从浅滩绿过到外海；每格两道随 tick 漂向岸的浪痕 + 日间碎光。
+	var day := _night_amt() < 0.5
+	for y in h:
+		var sx0 := _ocean_x0[y]
+		if sx0 >= w:
+			continue
+		var row := Rect2(sx0 * T, y * T, (w - sx0) * T, T)
+		if not _vis.intersects(row):
+			continue
+		var span := float(w - sx0)
+		for s in int(span * 4.0):
+			var u := (float(s) + 0.5) / (span * 4.0)
+			draw_rect(Rect2(row.position.x + float(s) * T * 0.25, row.position.y, T * 0.25 + 0.5, T), _sea_col(u) * wtint, true)
+		for xi in range(sx0, w):
+			for k in 2:
+				var hw := _hash(xi, y, 171 + k)
+				var ph := fposmod(t * 0.045 + float(hw % 100) / 100.0, 1.0)
+				var a := sin(ph * PI)
+				var px := (float(xi) + float(hw / 100 % 75) / 100.0) * T - ph * T * 0.30
+				var py := (float(y) + 0.08 + float(hw / 7500 % 84) / 100.0) * T
+				var ln := T * (0.20 + float(hw / 630000 % 22) / 100.0)
+				draw_rect(Rect2(px, py + 2.0, ln, 2.0), Color(X_SEA_DEEP, 0.35 * a) * wtint, true)
+				draw_rect(Rect2(px, py, ln, 2.0), Color(X_COLD_WHITE, 0.42 * a) * wtint, true)
+			if day and (_hash(xi, y, 177) + Sim.tick_no / 3) % 9 == 0:
+				var hg := _hash(xi, y, 179)
+				draw_rect(Rect2((float(xi) + float(hg % 90) / 100.0) * T, (float(y) + float(hg / 90 % 90) / 100.0) * T, 3, 3), Color(1, 1, 1, 0.85), true)
+		# ③ 岸：沙滩行 = 湿沙带 + 漫上沙的浅水 + 浪花前沿（随 tick 涨退）；非沙滩行 = 贴岸白浪。
+		var shore := float(sx0) * T
+		var on_beach := _beach.has(y * w + sx0 - 1)
+		for q in 4:
+			var yy := float(y) * T + float(q) * T * 0.25
+			var wv := 0.5 + 0.5 * sin(t * 0.21 + float(y * 4 + q) * 0.55)
+			if on_beach:
+				var reach := T * (0.08 + 0.50 * wv)
+				draw_rect(Rect2(shore - T * 0.78, yy, T * 0.78, T * 0.25 + 0.5), Color(X_SAND_WET.darkened(0.12), 0.40), true)
+				draw_rect(Rect2(shore - reach, yy, reach, T * 0.25 + 0.5), Color(X_SEA_SHALLOW, 0.55) * wtint, true)
+				draw_rect(Rect2(shore - reach - T * 0.05, yy, T * 0.09, T * 0.25 + 0.5), Color(X_COLD_WHITE, 0.85) * wtint, true)
+			else:
+				draw_rect(Rect2(shore, yy, T * (0.08 + 0.14 * wv), T * 0.25 + 0.5), Color(X_COLD_WHITE, 0.60) * wtint, true)
+			var wb := 0.5 + 0.5 * sin(t * 0.17 + float(y * 4 + q) * 0.37 + 1.3)   # 离岸碎浪线（断续）
+			if _hash(y * 4 + q, 3, 183) % 100 < 55:
+				draw_rect(Rect2(shore + T * (0.55 + 0.35 * wb), yy, T * 0.18, 2.0), Color(X_COLD_WHITE, 0.35 * wb) * wtint, true)
+	# ④ 礁石：白浪圈 + 花岗岩体（西北受光、东南背阴）
+	for rk in _rocks:
+		var p: Vector2 = rk["p"]
+		var rr: float = rk["r"]
+		if not _vis.has_point(p):
+			continue
+		var sd: int = rk["s"]
+		var fo := 0.5 + 0.5 * sin(t * 0.25 + p.y * 0.05)
+		var body := PackedVector2Array()
+		var wet := PackedVector2Array()
+		var face := PackedVector2Array()
+		for i in 7:                                       # 不规则七边形：花岗岩是块状的，不是球
+			var a := TAU * float(i) / 7.0 + float(sd % 10) * 0.09
+			var rj := rr * (0.72 + float((sd >> (i * 3)) % 7) / 14.0)
+			var o := Vector2(cos(a) * rj * 1.20, sin(a) * rj * 0.80)
+			body.append(p + o)
+			wet.append(p + o * 1.28 + Vector2(0, rr * 0.18))
+			face.append(p + o * 0.55 + Vector2(-rr * 0.22, -rr * 0.24))
+		draw_colored_polygon(wet, Color(X_COLD_WHITE, 0.22 + 0.22 * fo) * wtint)          # 拍礁白浪
+		var sh := PackedVector2Array()
+		for q in body:
+			sh.append(q + Vector2(rr * 0.22, rr * 0.30))
+		draw_colored_polygon(sh, X_GRANITE.darkened(0.55) * wtint)                          # 东南背阴
+		draw_colored_polygon(body, X_GRANITE * wtint)
+		draw_colored_polygon(face, X_GRANITE.lightened(0.20) * wtint)                       # 西北受光面
+		draw_line(p + Vector2(-rr * 0.1, -rr * 0.5), p + Vector2(rr * 0.25, rr * 0.35), X_GRANITE.darkened(0.35) * wtint, 1.5)   # 石缝
+		if sd % 3 == 0:
+			draw_circle(p + Vector2(rr * 0.35, -rr * 0.05), rr * 0.16, Color(P_FOLIAGE_D, 0.8) * wtint)   # 海藻/苔
+
+## 界外海：东界之外延续成开阔海（静态：不读 tick，保 VOIDGATE），顶/底外带里沙滩与海继续往外走。返回海岸线世界 x。
+func _draw_void_sea(c: CanvasItem, map: Rect2, bands: Array, w: int, h: int) -> float:
+	_ensure_seaside(w, h)
+	var x0 := w
+	for y in h:
+		x0 = mini(x0, _ocean_x0[y])
+	if x0 >= w:
+		return INF
+	var sx := float(x0) * T
+	for b in bands:
+		var r: Rect2 = b
+		# 海本体不在这一层画：它要吃昼夜水罩（WATER_DAY→NIGHT，读 time）与逐 tick 的浪，而本层是静态缓存层。
+		# ⇒ 海由主层 `_draw_outer_sea` 画（盖在本层之上）；这里只铺顶/底外带的沙滩延长线。
+		var br := r.intersection(Rect2(sx - float(BEACH_DEPTH) * T, r.position.y, float(BEACH_DEPTH) * T, r.size.y))
+		if br.size.x > 0.0 and br.size.y > 0.0:          # 顶/底外带：沙滩延长线，离镇越远越淡
+			for k in 4:
+				var yr := Rect2(br.position.x, map.position.y - float(k + 1) * T, br.size.x, T) if br.end.y <= map.position.y \
+					else Rect2(br.position.x, map.end.y + float(k) * T, br.size.x, T)
+				var s2 := yr.intersection(br)
+				if s2.size.x > 0.0 and s2.size.y > 0.0:
+					c.draw_rect(s2, Color(X_SAND_DRY.lerp(X_SAND_WET, 0.35), 0.85 - 0.2 * float(k)), true)
+	return sx
+
+## 界外海（主层）：东外带整片 + 顶/底外带在海岸线以东的部分。颜色延续界内的 _sea_col，
+## 吃同一份 wtint 与季节/天气罩（界内由 _draw_climate_wash 刷，界外这里手刷）⇒ 东界零色缝；
+## 离镇越远越暗（接住下层的暗角），浪帽随 tick 眨。
+func _draw_outer_sea(w: int, h: int, wtint: Color) -> void:
+	_ensure_seaside(w, h)
+	var x0 := w
+	for y in h:
+		x0 = mini(x0, _ocean_x0[y])
+	if x0 >= w:
+		return
+	var map := Rect2(0.0, 0.0, float(w) * T, float(h) * T)
+	var sx := float(x0) * T
+	var span := float(w - x0) * T
+	var v := _vis
+	var regions: Array = []
+	if v.end.x > map.end.x:
+		regions.append(Rect2(map.end.x, v.position.y, v.end.x - map.end.x, v.size.y))
+	if v.position.y < 0.0:
+		regions.append(Rect2(sx, v.position.y, map.end.x - sx, -v.position.y))
+	if v.end.y > map.end.y:
+		regions.append(Rect2(sx, map.end.y, map.end.x - sx, v.end.y - map.end.y))
+	var strip := T * 0.5
+	var t := Sim.tick_no
+	for rg in regions:
+		var sr: Rect2 = (rg as Rect2).intersection(v)
+		if sr.size.x <= 0.0 or sr.size.y <= 0.0:
+			continue
+		var xs: float = sx + floorf((sr.position.x - sx) / strip) * strip
+		while xs < sr.end.x:
+			var u: float = (xs + strip * 0.5 - sx) / span
+			_fill_rect(Rect2(xs, sr.position.y, strip + 0.5, sr.size.y).intersection(sr), _sea_col(u) * wtint)
+			xs += strip
+		var cell := T * 2.0
+		for gy in range(int(floor(sr.position.y / cell)), int(ceil(sr.end.y / cell))):
+			for gx in range(int(floor(sr.position.x / cell)), int(ceil(sr.end.x / cell))):
+				var hh := _hash(gx, gy, 191)
+				if hh % 100 >= 34:
+					continue
+				var blink := (t / 2 + hh) % 14
+				if blink >= 6:
+					continue
+				var p := Vector2((float(gx) + float(hh / 100 % 90) / 100.0) * cell, (float(gy) + float(hh / 9000 % 90) / 100.0) * cell)
+				if sr.has_point(p):
+					var ba := sin(float(blink) / 6.0 * PI)
+					draw_rect(Rect2(p, Vector2(T * 0.30, 2.0)), Color(X_COLD_WHITE, 0.40 * ba) * wtint, true)
+		for wsh in [SEASON_WASH.get(Sim.season_today, Color(0, 0, 0, 0)), WEATHER_WASH.get(Sim.weather_today, Color(0, 0, 0, 0))]:
+			var wc: Color = wsh
+			if wc.a > 0.0:
+				draw_rect(sr, wc, true)
+		for k in 6:                                       # 离镇越远越暗：接住界外层的暗角
+			var ring := map.grow(T * (4.0 + float(k) * 3.0))
+			var a := 0.07 + float(k) * 0.035
+			for o in [Rect2(ring.end.x, sr.position.y, maxf(0.0, sr.end.x - ring.end.x), sr.size.y),
+					Rect2(sr.position.x, sr.position.y, sr.size.x, maxf(0.0, ring.position.y - sr.position.y)),
+					Rect2(sr.position.x, ring.end.y, sr.size.x, maxf(0.0, sr.end.y - ring.end.y))]:
+				var oo: Rect2 = (o as Rect2).intersection(sr)
+				if oo.size.x > 0.0 and oo.size.y > 0.0:
+					draw_rect(oo, Color(0, 0, 0, a), true)
+
+func _fill_rect(r: Rect2, col: Color) -> void:
+	if r.size.x > 0.0 and r.size.y > 0.0:
+		draw_rect(r, col, true)
+
+# ── docs/180 · 坡屋顶 + 缩放掀顶 ─────────────────────────────────────────────────────────
+# 全镇俯瞰（zoom ≤ ROOF_ZOOM_LO）：每栋楼盖上真屋顶（板岩/陶瓦、屋脊、老虎窗、花岗岩烟囱）⇒ 读作"一个镇子"，
+# 而不是一格格围墙院子；拉近（≥ ROOF_ZOOM_HI）：屋顶淡出，回到切顶视图看屋里的人与家具。
+# 选中者所在的那栋永远掀顶（找人不被屋顶挡）。纯 View：只读 zoom / 选中 / areas，Sim 读不到 ⇒ 零金标。
+# 南墙那一行不盖：它就是 3/4 俯视里看得见的正立面（窗、门、招牌都在上面）。
+const ROOF_ZOOM_LO := 0.62    # 淡变带要窄：带里的半透明屋顶读作"X 光片"，只该是一掠而过的过渡
+const ROOF_ZOOM_HI := 0.80
+var _roof_a := 0.0             # 本帧全局屋顶不透明度（f(zoom)）
+var _roof_open := {}           # aid -> true：本帧掀顶（选中者在楼里）
+var _roof_seen := -1.0         # _process 上一次看到的屋顶透明度（变了就重画）
+
+func _roof_alpha() -> float:
+	return clampf((ROOF_ZOOM_HI - _zoom) / (ROOF_ZOOM_HI - ROOF_ZOOM_LO), 0.0, 1.0)
+
+func _roof_areas() -> Array:
+	var out: Array = []
+	for aid in Sim.world.get("areas", {}):
+		var a: Dictionary = Sim.world["areas"][aid]
+		var typ := String(a.get("type", ""))
+		if typ == "" or typ == "plaza":
+			continue
+		var r: Array = a.get("rect", [0, 0, 0, 0])
+		if int(r[2]) < 3 or int(r[3]) < 3:
+			continue
+		out.append({"id": String(aid), "typ": typ, "x": int(r[0]), "y": int(r[1]), "w": int(r[2]), "h": int(r[3])})
+	return out
+
+## 这个居民此刻是否被屋顶盖住（在一栋盖着顶的楼的墙内）。
+func _agent_under_roof(ag: Dictionary) -> bool:
+	if _roof_a < 0.5:
+		return false
+	var p: Vector2i = ag["pos"]
+	for b in _roof_areas():
+		if _roof_open.has(b["id"]):
+			continue
+		if p.x > int(b["x"]) and p.x < int(b["x"]) + int(b["w"]) - 1 and p.y > int(b["y"]) and p.y < int(b["y"]) + int(b["h"]) - 1:
+			return true
+	return false
+
+func _draw_roofs() -> void:
+	_roof_a = _roof_alpha()
+	_roof_open.clear()
+	if _roof_a <= 0.0:
+		return
+	var sel := Sim.get_agent(_selected_id()) if _selected_id() != "" else {}
+	for b in _roof_areas():
+		if not sel.is_empty() and String(sel.get("space", "town")) == "town":
+			var sp: Vector2i = sel["pos"]
+			if sp.x >= int(b["x"]) and sp.x < int(b["x"]) + int(b["w"]) and sp.y >= int(b["y"]) and sp.y < int(b["y"]) + int(b["h"]):
+				_roof_open[b["id"]] = true
+				continue
+		_draw_roof(b, _roof_a)
+
+func _roof_base(typ: String, v: int) -> Color:
+	match typ:
+		"residential": return _roof_variant(X_SLATE, v)          # 布列塔尼：住宅一律板岩
+		"public": return _roof_variant(X_SLATE.lerp(P_PUB_ROOF, 0.45), v)
+		"workshop": return _roof_variant(P_WRK_ROOF.lightened(0.08), v)
+	return _roof_variant(P_COM_ROOF.darkened(0.08), v)          # 商业：陶瓦，镇上唯一的暖顶 ⇒ 店铺一眼可找
+
+func _draw_roof(b: Dictionary, a: float) -> void:
+	var x0: int = b["x"]; var y0: int = b["y"]; var bw: int = b["w"]; var bh: int = b["h"]
+	var typ: String = b["typ"]
+	var L := float(x0) * T - T * 0.16
+	var R := float(x0 + bw) * T + T * 0.16
+	var top := float(y0) * T - T * 0.40
+	var bot := float(y0 + bh - 1) * T + T * 0.08
+	if not _vis.intersects(Rect2(L, top - T, R - L, bot - top + T * 2.0)):
+		return
+	var v := _bld_variant(x0, y0)
+	var base := _roof_base(typ, v)
+	# 体块：宽楼拆成【主屋 + 矮一截的侧翼】两段屋顶（屋脊高低错开 + 主屋山墙投影压在侧翼上），
+	#   否则 9×7 的楼盖成一整块板，读作"一片屋顶色的色块"而不是房子。哪一侧是侧翼按 _hash 定（确定性）。
+	var ridge := 0.0
+	if bw >= 7:
+		var wing_left := _hash_mix(x0, y0, 227) % 2 == 0
+		var split := float(x0 + (bw * 2) / 5 if wing_left else x0 + (bw * 3) / 5) * T
+		var wtop := top + T * 0.42
+		var wbase := base.darkened(0.05)
+		if wing_left:
+			_roof_section(L, split, wtop, bot, wbase, typ, x0 * 7 + 1, y0, a)
+			ridge = _roof_section(split - T * 0.04, R, top, bot, base, typ, x0 * 7, y0, a)
+			draw_rect(Rect2(split - T * 0.04 - T * 0.30, wtop, T * 0.30, bot - wtop), Color(0, 0, 0, 0.20 * a), true)   # 主屋山墙投影（光从西北 ⇒ 落在西侧侧翼上的是背光面…取弱）
+		else:
+			_roof_section(split, R, wtop, bot, wbase, typ, x0 * 7 + 1, y0, a)
+			ridge = _roof_section(L, split + T * 0.04, top, bot, base, typ, x0 * 7, y0, a)
+			draw_rect(Rect2(split + T * 0.04, wtop, T * 0.34, bot - wtop), Color(0, 0, 0, 0.26 * a), true)   # 主屋山墙投影落在东侧侧翼
+	else:
+		ridge = _roof_section(L, R, top, bot, base, typ, x0 * 7, y0, a)
+	# 苔/地衣斑（板岩老屋顶的质感）
+	if typ != "commercial":
+		for k in bw:
+			var hm := _hash_mix(x0 + k, y0, 223)
+			if hm % 3 != 0:
+				continue
+			var mp := Vector2(L + (float(k) + float(hm / 3 % 80) / 100.0) * T, top + (bot - top) * (0.15 + float(hm / 240 % 75) / 100.0))
+			draw_rect(Rect2(mp, Vector2(T * 0.14, T * 0.07)), Color(P_GRASS_AUT.lerp(P_FOLIAGE_M, 0.4), 0.45 * a), true)
+	# 老虎窗（lucarne）：南坡上一排，白框 + 小山墙帽 —— 布列塔尼民居最认得出的一笔
+	if typ == "residential" or typ == "public":
+		var n := maxi(1, bw / 4)
+		for i in n:
+			var cx := L + (R - L) * (float(i) + 0.5) / float(n)
+			var dy := ridge + (bot - ridge) * 0.26
+			var dwid := T * 0.72
+			var dh := T * 0.62
+			draw_rect(Rect2(cx - dwid * 0.5 + 4.0, dy + 4.0, dwid, dh), Color(0, 0, 0, 0.24 * a), true)
+			draw_rect(Rect2(cx - dwid * 0.5, dy, dwid, dh), Color(X_COLD_WHITE, a), true)                # 白灰泥老虎窗脸
+			draw_rect(Rect2(cx + dwid * 0.18, dy, dwid * 0.32, dh), Color(0, 0, 0, 0.10 * a), true)      # 东侧背光
+			draw_rect(Rect2(cx - dwid * 0.30, dy + T * 0.16, dwid * 0.60, dh - T * 0.24), Color(P_WATER_DEEP if _night_amt() < 0.5 else X_GLOW, a), true)
+			draw_line(Vector2(cx, dy + T * 0.16), Vector2(cx, dy + dh - T * 0.08), Color(X_COLD_WHITE, a), 2.0)
+			draw_line(Vector2(cx - dwid * 0.30, dy + T * 0.34), Vector2(cx + dwid * 0.30, dy + T * 0.34), Color(X_COLD_WHITE, a), 1.5)
+			draw_colored_polygon(PackedVector2Array([Vector2(cx - dwid * 0.64, dy + 2.0), Vector2(cx, dy - T * 0.34), Vector2(cx + dwid * 0.64, dy + 2.0)]), Color(base.darkened(0.12), a))
+			draw_colored_polygon(PackedVector2Array([Vector2(cx, dy - T * 0.34), Vector2(cx + dwid * 0.64, dy + 2.0), Vector2(cx, dy + 2.0)]), Color(0, 0, 0, 0.18 * a))
+	# 花岗岩山墙烟囱：两端骑在屋脊上（布列塔尼石屋的招牌轮廓），住宅/工坊冒炊烟
+	if typ != "commercial":
+		for ex in [L + T * 0.55, R - T * 0.95]:
+			var cy := ridge - T * 0.46
+			draw_rect(Rect2(ex + 4.0, cy + 5.0, T * 0.40, T * 0.52), Color(0, 0, 0, 0.25 * a), true)
+			draw_rect(Rect2(ex, cy, T * 0.40, T * 0.52), Color(X_GRANITE, a), true)
+			draw_rect(Rect2(ex, cy, T * 0.14, T * 0.52), Color(X_GRANITE.lightened(0.18), a), true)
+			draw_rect(Rect2(ex - T * 0.04, cy - T * 0.05, T * 0.48, T * 0.10), Color(X_GRANITE.darkened(0.30), a), true)
+			draw_rect(Rect2(ex + T * 0.08, cy - T * 0.10, T * 0.10, T * 0.06), Color(P_COM_ROOF.darkened(0.2), a), true)   # 陶土烟囱管
+			draw_rect(Rect2(ex + T * 0.22, cy - T * 0.10, T * 0.10, T * 0.06), Color(P_COM_ROOF.darkened(0.2), a), true)
+		if typ == "residential" or typ == "workshop":
+			_chimney_smoke(R - T * 0.95 + T * 0.20, ridge - T * 0.58, x0, y0, a)
+	else:
+		_draw_awning(Rect2(float(x0) * T - T * 0.12, bot + T * 0.02, float(bw) * T + T * 0.24, T * 0.34),
+			BLD_PAL["commercial"], bw, v)
+
+## 一段坡屋顶：北坡（受光）/ 南坡 + 叠瓦 + 屋脊 + 封檐板 + 南檐落影。返回屋脊 y。
+func _roof_section(L: float, R: float, top: float, bot: float, base: Color, typ: String, sx: int, sy: int, a: float) -> float:
+	var ridge := top + (bot - top) * 0.38                     # 北坡在透视里更短
+	var north := base.lightened(0.14)                          # 西北光：北坡受光
+	var south := base.darkened(0.04)
+	draw_rect(Rect2(L, top, R - L, ridge - top), Color(north, a), true)
+	draw_rect(Rect2(L, ridge, R - L, bot - ridge), Color(south, a), true)
+	# 瓦/板岩叠铺：逐行错缝，只画 ~40% 的明暗片（其余露底色）+ 每行一条底影 ⇒ 读作叠瓦而不糊成条纹
+	var ch := T * 0.21
+	var sw := T * (0.26 if typ == "commercial" else 0.32)
+	var row := 0
+	var yy := top + T * 0.06
+	while yy < bot - T * 0.04:
+		var slope_c := north if yy < ridge else south
+		var y1 := minf(yy + ch, bot)
+		draw_rect(Rect2(L, y1 - 1.5, R - L, 1.5), Color(slope_c.darkened(0.32), a), true)
+		var off := sw * 0.5 if row % 2 == 1 else 0.0
+		var xx := L - off
+		var col_i := 0
+		while xx < R:
+			var hs := _hash_mix(sx * 97 + col_i, sy * 131 + row, 211) % 10
+			if hs < 4:
+				var tc := slope_c.lightened(0.10) if hs < 2 else slope_c.darkened(0.12)
+				var sx0 := maxf(xx, L)
+				var sx1 := minf(xx + sw - 1.0, R)
+				if sx1 > sx0:
+					draw_rect(Rect2(sx0, yy, sx1 - sx0, y1 - yy - 1.5), Color(tc, a), true)
+			xx += sw
+			col_i += 1
+		yy += ch
+		row += 1
+	draw_rect(Rect2(L, ridge - T * 0.06, R - L, T * 0.10), Color(base.darkened(0.30), a), true)   # 脊瓦
+	draw_rect(Rect2(L, ridge - T * 0.06, R - L, 2.0), Color(base.lightened(0.35), a), true)       # 脊受光棱
+	draw_rect(Rect2(L, top, T * 0.07, bot - top), Color(base.lightened(0.28), a), true)           # 西封檐板（受光）
+	draw_rect(Rect2(R - T * 0.07, top, T * 0.07, bot - top), Color(base.darkened(0.40), a), true) # 东封檐板（背光）
+	draw_rect(Rect2(L, top, R - L, 2.0), Color(base.lightened(0.30), a), true)
+	draw_rect(Rect2(L, bot, R - L, T * 0.13), Color(0, 0, 0, 0.30 * a), true)                    # 南檐落影（压在立面上）
+	draw_rect(Rect2(L, bot - 2.5, R - L, 2.5), Color(base.darkened(0.45), a), true)
+	return ridge
+
+## 这个世界点此刻是否在一栋盖着顶的楼的屋顶下（夜灯层用：屋里的灯不透过屋顶亮出来）。
+func _roofed_at(p: Vector2) -> bool:
+	for b in _roof_areas():
+		if _roof_open.has(b["id"]):
+			continue
+		var r := Rect2(float(b["x"]) * T, float(b["y"]) * T, float(b["w"]) * T, float(int(b["h"]) - 1) * T)
+		if r.has_point(p):
+			return true
+	return false
+
+## 炊烟（同 _draw_chimney 的相位纪律：_hash 定相位 + Sim.tick_no 推进，同 tick 重拍逐像素相同）。
+func _chimney_smoke(tx: float, ty: float, x0: int, y0: int, a: float) -> void:
+	var ph0 := _hash(x0, y0, 71) % 100
+	for k in range(3):
+		var ph := (Sim.tick_no + ph0 + k * 16) % 48
+		var t := float(ph) / 48.0
+		var px := tx + sin(t * TAU + float(ph0)) * T * 0.22 + (float(k) - 1.0) * T * 0.05
+		draw_circle(Vector2(px, ty - t * T * 1.15), T * (0.09 + 0.11 * t), Color(0.86, 0.86, 0.85, 0.44 * (1.0 - t) * (0.45 + 0.55 * t) * a))
+
+## 统一西北日照：每栋楼向东南落一块 L 形投影（只落在楼外，室内地板不被压暗）。
+func _draw_building_shadows() -> void:
+	var s := T * 0.42
+	var col := Color(0.03, 0.06, 0.05, 0.22)
+	for aid in Sim.world.get("areas", {}):
+		var a: Dictionary = Sim.world["areas"][aid]
+		if String(a.get("type", "")) == "plaza":
+			continue
+		var r: Array = a.get("rect", [0, 0, 0, 0])
+		var br := Rect2(float(r[0]) * T, float(r[1]) * T, float(r[2]) * T, float(r[3]) * T)
+		if not _vis.intersects(br.grow(s * 2.0)):
+			continue
+		draw_rect(Rect2(br.end.x, br.position.y + s, s, br.size.y), col, true)
+		draw_rect(Rect2(br.position.x + s, br.end.y, br.size.x - s, s), col, true)
+		draw_rect(Rect2(br.end.x + s, br.position.y + s * 1.8, s * 0.6, br.size.y - s * 0.4), Color(col, col.a * 0.45), true)
+		draw_rect(Rect2(br.position.x + s * 1.8, br.end.y + s, br.size.x - s * 0.4, s * 0.6), Color(col, col.a * 0.45), true)
+
+func _draw_beach_props() -> void:
+	for bp in _beach_props:
+		var cell: Vector2i = bp["cell"]
+		var base := Vector2(cell.x * T, cell.y * T)
+		if not _vis.intersects(Rect2(base - Vector2(T, T), Vector2(T * 3, T * 3))):
+			continue
+		var v := _hash_mix(cell.x, cell.y, 157) % 3
+		match String(bp["kind"]):
+			"cabin": _beach_cabin(base, v)
+			"parasol": _beach_parasol(base, v)
+			"towel": _beach_towel(base, v)
+			"boat": _beach_rowboat(base)
+			"castle": _beach_castle(base)
+
+## 条纹沙滩帐篷（tente de plage）：比格子高，底对齐；竖条纹 + 尖顶 + 门帘 + 顶上小旗；右侧背阴。
+func _beach_cabin(base: Vector2, v: int) -> void:
+	var stripe := X_CANVAS_BLUE if v != 2 else P_COM_ROOF
+	var x0 := base.x + T * 0.12; var x1 := base.x + T * 0.88
+	var top := base.y + T * 0.06; var bot := base.y + T * 0.88
+	draw_colored_polygon(PackedVector2Array([Vector2(x1, bot), Vector2(x1 + T * 0.42, bot - T * 0.10),
+		Vector2(x1 + T * 0.42, bot - T * 0.52), Vector2(x1, top + T * 0.30)]), Color(0.05, 0.05, 0.03, 0.20))   # 东南投影
+	var n := 6
+	for i in n:
+		var sx := x0 + (x1 - x0) * float(i) / float(n)
+		draw_rect(Rect2(sx, top, (x1 - x0) / float(n) + 0.5, bot - top), stripe if i % 2 == 0 else X_COLD_WHITE, true)
+	draw_rect(Rect2(x0 + (x1 - x0) * 0.62, top, (x1 - x0) * 0.38, bot - top), Color(0, 0, 0, 0.13), true)   # 背阴面
+	var cx := (x0 + x1) * 0.5
+	draw_colored_polygon(PackedVector2Array([Vector2(x0 - T * 0.06, top), Vector2(cx, top - T * 0.36), Vector2(x1 + T * 0.06, top)]), stripe.darkened(0.12))
+	draw_colored_polygon(PackedVector2Array([Vector2(cx, top - T * 0.36), Vector2(x1 + T * 0.06, top), Vector2(cx, top)]), Color(0, 0, 0, 0.14))
+	draw_colored_polygon(PackedVector2Array([Vector2(cx - T * 0.13, bot), Vector2(cx, bot - T * 0.46), Vector2(cx + T * 0.13, bot)]), P_PANEL.lightened(0.10))   # 门帘开口
+	draw_line(Vector2(cx, top - T * 0.36), Vector2(cx, top - T * 0.58), D_WOOD_LINE, 1.5)
+	draw_colored_polygon(PackedVector2Array([Vector2(cx, top - T * 0.58), Vector2(cx + T * 0.18, top - T * 0.52), Vector2(cx, top - T * 0.46)]), X_SIGNAL_NEG if v == 0 else X_GOLD)
+	draw_rect(Rect2(x0, bot - 2.0, x1 - x0, 2.0), Color(0, 0, 0, 0.25), true)
+
+func _beach_parasol(base: Vector2, v: int) -> void:
+	var c := base + Vector2(T * 0.5, T * 0.22)
+	var rr := T * 0.44
+	draw_texture_rect(_light_texture(), Rect2(c.x - rr * 0.6, c.y + T * 0.30, rr * 2.2, rr * 1.1), false, Color(0.05, 0.05, 0.02, 0.40))
+	draw_line(c, c + Vector2(0, T * 0.62), D_WOOD_LINE, 2.0)
+	var col := X_CANVAS_BLUE if v == 0 else (X_SIGNAL_NEG if v == 1 else X_GOLD.darkened(0.08))
+	for i in 8:
+		var a0 := TAU * float(i) / 8.0; var a1 := TAU * float(i + 1) / 8.0
+		draw_colored_polygon(PackedVector2Array([c, c + Vector2(cos(a0), sin(a0) * 0.78) * rr, c + Vector2(cos(a1), sin(a1) * 0.78) * rr]),
+			col if i % 2 == 0 else X_COLD_WHITE)
+	draw_colored_polygon(PackedVector2Array([c, c + Vector2(cos(0.0), 0.0) * rr, c + Vector2(0.0, 0.78) * rr]), Color(0, 0, 0, 0.12))   # 东南背阴扇
+	draw_circle(c, 2.5, D_WOOD_LINE)
+
+func _beach_towel(base: Vector2, v: int) -> void:
+	var r := Rect2(base.x + T * 0.30, base.y + T * 0.16, T * 0.40, T * 0.66)
+	draw_rect(Rect2(r.position + Vector2(3, 3), r.size), Color(0, 0, 0, 0.14), true)
+	var cols := [X_CANVAS_BLUE, X_COLD_WHITE, X_SIGNAL_NEG] if v != 1 else [X_GOLD, X_COLD_WHITE, X_PACT.darkened(0.2)]
+	for i in 6:
+		draw_rect(Rect2(r.position.x, r.position.y + r.size.y * float(i) / 6.0, r.size.x, r.size.y / 6.0 + 0.5), cols[i % 3], true)
+
+func _beach_rowboat(base: Vector2) -> void:
+	var c := base + Vector2(T * 0.50, T * 0.55)
+	var hull := PackedVector2Array([c + Vector2(-T * 0.18, -T * 0.52), c + Vector2(T * 0.18, -T * 0.40),
+		c + Vector2(T * 0.20, T * 0.36), c + Vector2(-T * 0.20, T * 0.40)])
+	draw_colored_polygon(PackedVector2Array([hull[0] + Vector2(5, 5), hull[1] + Vector2(5, 5), hull[2] + Vector2(5, 5), hull[3] + Vector2(5, 5)]), Color(0, 0, 0, 0.18))
+	draw_colored_polygon(hull, X_CANVAS_BLUE)
+	draw_polyline(PackedVector2Array([hull[0], hull[1], hull[2], hull[3], hull[0]]), X_COLD_WHITE, 2.0)
+	draw_rect(Rect2(c.x - T * 0.14, c.y - T * 0.30, T * 0.28, T * 0.58), X_WOOD_MID.lightened(0.10), true)
+	draw_rect(Rect2(c.x - T * 0.14, c.y - T * 0.04, T * 0.28, 3.0), D_WOOD_LINE, true)
+
+func _beach_castle(base: Vector2) -> void:
+	var sc := X_SAND_DRY.darkened(0.10)
+	draw_circle(base + Vector2(T * 0.5, T * 0.62), T * 0.24, sc.darkened(0.08))
+	draw_rect(Rect2(base.x + T * 0.34, base.y + T * 0.34, T * 0.32, T * 0.28), sc, true)
+	draw_rect(Rect2(base.x + T * 0.34, base.y + T * 0.30, T * 0.08, T * 0.06), sc, true)
+	draw_rect(Rect2(base.x + T * 0.58, base.y + T * 0.30, T * 0.08, T * 0.06), sc, true)
+	draw_rect(Rect2(base.x + T * 0.56, base.y + T * 0.34, T * 0.10, T * 0.28), Color(0, 0, 0, 0.10), true)
+
+## 海鸥：4 只绕海上盘旋（相位只读 tick），翼尖随拍翅上下；水面落一道淡影。
+func _draw_gulls() -> void:
+	var w := int(Sim.world.get("width", 24)); var h := int(Sim.world.get("height", 16))
+	_ensure_seaside(w, h)
+	var x0 := w
+	for y in h:
+		x0 = mini(x0, _ocean_x0[y])
+	if x0 >= w or _zoom < 0.18:
+		return
+	var sx := float(x0) * T
+	var t := float(Sim.tick_no)
+	for g in 4:
+		var hg := _hash(g, 7, 181)
+		var cx := sx + T * (0.4 + float(hg % 300) / 100.0)
+		var cy := T * (4.0 + float(hg / 300 % 400) / 10.0)
+		var rad := T * (1.0 + float(hg / 120000 % 15) / 10.0)
+		var ang := t * (0.045 + float(g) * 0.011) + float(hg % 628) / 100.0
+		var p := Vector2(cx + cos(ang) * rad * 1.6, cy + sin(ang) * rad)
+		if not _vis.has_point(p):
+			continue
+		var flap := sin(t * 0.9 + float(g) * 1.7)
+		var sp := T * 0.24
+		var tip := -T * (0.03 + 0.09 * flap)
+		var sh := p + Vector2(T * 0.7, T * 1.0)
+		draw_polyline(PackedVector2Array([sh + Vector2(-sp, tip), sh, sh + Vector2(sp, tip)]), Color(0, 0, 0, 0.16), 2.0)
+		draw_polyline(PackedVector2Array([p + Vector2(-sp, tip), p + Vector2(-sp * 0.4, -T * 0.03), p,
+			p + Vector2(sp * 0.4, -T * 0.03), p + Vector2(sp, tip)]), X_COLD_WHITE, 2.0)
+		draw_rect(Rect2(p.x - 1.5, p.y - 1.0, 3.0, 3.0), P_PANEL.lightened(0.2), true)
 
 func _cargo_carrier_projections() -> Array:
 	return carrier_projections_for(Sim, Sim.logistics, Sim.cargo_manifests, Sim.cargo_manifest_order)
@@ -3961,6 +4625,12 @@ func _process(delta: float) -> void:
 	if _vk != _view_key:
 		_view_key = _vk
 		queue_redraw()
+	var _ra := _roof_alpha()       # docs/180：屋顶透明度随缩放变 ⇒ 缩放（哪怕暂停）也要重画本层与夜灯层
+	if absf(_ra - _roof_seen) > 0.005:
+		_roof_seen = _ra
+		queue_redraw()
+		if _lights != null:
+			_lights.queue_redraw()
 	# 一格实际占多少实时秒：tick_interval / speed（x8 加速时只有 0.01s）。
 	# 下限 0.008 防除零/抖动，上限 0.16 防 --speed 0 时把收敛拖成"永远在爬"。
 	var step := clampf(Sim.tick_interval / maxf(Sim.speed, 0.25), 0.008, 0.16)
@@ -4011,7 +4681,7 @@ func _process(delta: float) -> void:
 ## 关系连线：|affinity|>20 才画；绿=亲密、红=敌意，粗细/透明度随强度。
 ## 是否在镇上平面（非咖啡馆等室内）——室内居民用室内局部坐标，画在镇上会"鬼影"，与 agent 主循环(:752)同款过滤。
 func _in_town(ag: Dictionary) -> bool:
-	return String(ag.get("space", "town")) == "town"
+	return String(ag.get("space", "town")) == "town" and not _agent_under_roof(ag)   # docs/180：屋顶下的人也不拉线/画环
 
 ## Main 当前选中的居民（只读，View→View）。没有选中或拿不到 → 空串。
 func _selected_id() -> String:

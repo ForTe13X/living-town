@@ -100,6 +100,7 @@ var _demo_sel_hold := 0               # 当前选中已保持的 tick 数（迟�
 ##      （goto_tick 暖机发生在信号接线之前，迟滞状态重放不出来）——所以静帧与录屏可能选中不同的人。
 ##   哈希用项目自有的 `Sim.fnv1a32`（红线 #1：不得用引擎内建 String.hash()）。
 var _shot_path := ""                  # --shot <abs.png>：渲一帧存图退出（dev 验证/出图；需真 framebuffer=Xvfb 或带窗口，纯 --headless 得空图）
+var _shot_at := Vector3.ZERO         # --shot-at X,Y,ZOOM：出图相机钉到格 (X,Y)、缩放 ZOOM（z<=0 = 不用）
 var _shot_fit := false                # --shot-fit：出图整镇入画（否则用跟随相机的角色特写，供 find_betray/endorse 眼验）
 var _digest_at := -1                  # --digest-at <tick>：跑到该 tick 时【自动】写 digest 并退出。
                                       # 为何不靠数按键：注入 40 次单步里丢 1 次，两跑就差 1 tick，
@@ -414,8 +415,12 @@ func _ready() -> void:
 			_digest_out = args[i + 1]          # dev 硬门：F9 写 digest（见变量注释）
 		elif args[i] == "--shot" and i + 1 < args.size():
 			_shot_path = args[i + 1]           # dev 出图：渲一帧存 png 退出（需真 framebuffer：Xvfb 或带窗口）
+		elif args[i] == "--shot-at" and i + 1 < args.size():
+			var _sa := args[i + 1].split(",")
+			if _sa.size() == 3:
+				_shot_at = Vector3(float(_sa[0]), float(_sa[1]), float(_sa[2]))
 		elif args[i] == "--shot-fit":
-			_shot_fit = true                   # 出图整镇入画（缩放到整图-HUD 余量）；缺省保留跟随相机（角色特写眼验）
+			_shot_fit = true                  # 出图整镇入画（缩放到整图-HUD 余量）；缺省保留跟随相机（角色特写眼验）
 		elif args[i] == "--dbg-nav":
 			_dbg_nav_arg = true                # 出图/启动即开导航叠层（阻挡格+交互格）
 		elif args[i] == "--probe-space" and i + 1 < args.size():
@@ -593,6 +598,9 @@ func _ready() -> void:
 		Sim.auto_run = false                # 定格：冻结在 warmup tick，等待期间不再推进（tick-precise 眼验，防漂）
 		if _demo_cam and _probe != null:    # --demo-cam + --warmup-tick T：把录屏在 tick T 的构图【定格】拍下来。
 			_demo_cam_apply()               # 这是本棒唯一可复现的量具：轨迹是 tick 的闭式函数 ⇒ 这一帧 == 录屏那一帧
+		elif _shot_at.z > 0.0 and _probe != null:   # --shot-at X,Y,ZOOM：美术近景眼验（格坐标 + 缩放），docs/180
+			_probe.cam.position = Vector2(_shot_at.x * 48.0, _shot_at.y * 48.0)
+			_probe.cam.zoom = Vector2.ONE * _shot_at.z
 		elif _shot_fit and _probe != null:  # --shot-fit：整镇（或当前室内 Space）入画，缩放到【bounds - HUD 余量】刚好塞进视口
 			_fit_active_space()
 		elif _selected_id != "" and _probe != null:   # --select（无 --shot-fit）：特写居中到当事人（角色眼验）
