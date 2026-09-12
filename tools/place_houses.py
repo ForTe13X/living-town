@@ -15,8 +15,22 @@ from PIL import Image
 ROOT = __file__.rsplit("tools", 1)[0]
 T = 48
 ROW = 5
-WEIGHT_PEN = {"villa": 45, "townhouse": 15}   # 别让最高最宽的别墅吃满每一行
-SPRITES = ["cottage", "whitehouse", "townhouse", "villa", "terrace"]
+WEIGHT_PEN = {"villa": 45, "townhouse": 15, "bakery": 30, "creperie": 30}   # 别让最高最宽的别墅/店铺吃满每一行
+# docs/189：可重复的民居/小店（每种封顶 MAX_EACH 栋，同一行相邻两栋不用同一张）
+SPRITES = ["cottage", "whitehouse", "townhouse", "villa", "terrace",
+           "longere", "ochre", "halftimber", "belleepoque", "bakery", "creperie"]
+MAX_EACH = {"bakery": 2, "creperie": 2, "belleepoque": 3}
+MAX_DEFAULT = 7
+# docs/189：全镇只一座的设施 —— 先于民居落位，各按自己的"最合适的地方"打分挑位
+#   score(x, y, w, h) 越小越好；W/H 在 main 里绑定
+UNIQUES = [
+    ("chapel",    lambda x, y, w, h, W, H: abs(x + w / 2 - 32) + abs(y + h - 21)),        # 离广场最近
+    ("bandstand", lambda x, y, w, h, W, H: abs(x + w / 2 - 32) + abs(y + h - 30) * 0.7),  # 广场南边
+    ("windmill",  lambda x, y, w, h, W, H: y + min(x, W - x) * 0.5),                      # 镇北缘、远离中轴
+    ("netshed",   lambda x, y, w, h, W, H: (W - x) + abs(y - 30) * 0.2),                   # 最靠海的一块地
+    ("bakery",    lambda x, y, w, h, W, H: abs(x + w / 2 - 22) + abs(y + h - 23)),         # 住宅区边上、去广场的路口
+    ("creperie",  lambda x, y, w, h, W, H: (W - x) * 0.6 + abs(y - 16) * 0.5),             # 北滩后面、海堤步道边
+]
 
 
 def bbox_cells(name):
@@ -31,6 +45,7 @@ def h32(x, y, s):
     return v ^ (v >> 15)
 
 
+NO_GARDEN = {"chapel", "windmill", "bandstand", "netshed", "bakery", "creperie"}
 GARDEN_PROPS = [("veg", 2), ("laundry", 2), ("apple", 1), ("hydrangea", 1), ("barrow", 1)]
 
 
@@ -46,6 +61,8 @@ def plan_gardens(lots, bad, W, H):
                 blocked.add((xx, yy))
     out = []
     for i, L in enumerate(lots):
+        if L["sprite"] in NO_GARDEN:
+            continue                                           # docs/189：教堂/风车/乐亭/网棚/店铺不带私家园子
         x, y, w, h = L["x"], L["y"], L["w"], L["h"]
         free = lambda cs: all(0 <= cx < W and 0 <= cy < H and (cx, cy) not in blocked for cx, cy in cs)
         back = 0
@@ -117,14 +134,43 @@ def main():
         for dy in (-1, 0, 1):
             for dx in (-1, 0, 1):
                 grown.add((x + dx, y + dy))
-    size = {s: bbox_cells(s) for s in SPRITES}
+    size = {s: bbox_cells(s) for s in SPRITES + [u[0] for u in UNIQUES]}
     taken = set()
     lots = []
+    count = {}
+
+    def take(s, x, y, cw, ch):
+        lots.append({"sprite": s, "x": x, "y": y, "w": cw, "h": ch, "flip": h32(x, y, 3) % 2 == 1 and s not in ("bakery", "chapel")})
+        count[s] = count.get(s, 0) + 1
+        for yy in range(y - 1, y + ch + 1):      # 四周一格间距（屋前留一条巷/小院）
+            for xx in range(x - 1, x + cw + 1):
+                taken.add((xx, yy))
+
+    # 设施先落：同样只落在对齐的"街"行上（底边 b ≡ ROW-2 mod ROW），按各自打分挑最好的一块
+    for name, score in UNIQUES:
+        cw, ch = size[name]
+        best = None
+        for b in range(ROW - 2, H, ROW):
+            y = b - ch + 1
+            if y < 0:
+                continue
+            for x in range(0, W - cw + 1):
+                cells = [(xx, yy) for yy in range(y, y + ch) for xx in range(x, x + cw)]
+                if any(c in grown or c in taken for c in cells):
+                    continue
+                sc = score(x, y, cw, ch, W, H)
+                if best is None or sc < best[0]:
+                    best = (sc, x, y)
+        if best:
+            take(name, best[1], best[2], cw, ch)
     # 按【底边行】扫：屋底对齐到每 ROW 行一条"街"（底边下一行是巷 lane），同一行里高矮不同的房子都能落
     for b in range(ROW - 2, H, ROW):
+        prev = None
         for x in range(W):
             order = sorted(SPRITES, key=lambda s: h32(x, b, SPRITES.index(s) + 7) % 100 + WEIGHT_PEN.get(s, 0))
             for s in order:
+                if s == prev or count.get(s, 0) >= MAX_EACH.get(s, MAX_DEFAULT):
+                    continue                              # 同一行相邻不重样；每种封顶
                 cw, ch = size[s]
                 y = b - ch + 1
                 if y < 0 or x + cw > W:
@@ -132,20 +178,19 @@ def main():
                 cells = [(xx, yy) for yy in range(y, y + ch) for xx in range(x, x + cw)]
                 if any(c in grown or c in taken for c in cells):
                     continue
-                lots.append({"sprite": s, "x": x, "y": y, "w": cw, "h": ch, "flip": h32(x, y, 3) % 2 == 1})
-                for yy in range(y - 1, y + ch + 1):      # 四周一格间距（屋前留一条巷/小院）
-                    for xx in range(x - 1, x + cw + 1):
-                        taken.add((xx, yy))
+                take(s, x, y, cw, ch)
+                prev = s
                 break
     gardens = plan_gardens(lots, bad, W, H)
     json.dump({"_doc": "docs/186/188 布景民居 + 园子落点（tools/place_houses.py 生成，勿手改）",
-               "lots": lots, "gardens": gardens}, open(out, "w"), indent=1)
+               "lots": lots, "gardens": gardens}, open(out, "w", newline="
+"), indent=1)
     print(f"{len(lots)} lots, {len(gardens)} gardens -> {out}")
     g = [["#" if (x, y) in grown else "." for x in range(W)] for y in range(H)]
     for L in lots:
         for yy in range(L["y"], L["y"] + L["h"]):
             for xx in range(L["x"], L["x"] + L["w"]):
-                g[yy][xx] = {"cottage":"C","whitehouse":"W","townhouse":"N","villa":"V","terrace":"R"}[L["sprite"]]
+                g[yy][xx] = L["sprite"][0].upper()
     print("\n".join("".join(r) for r in g))
 
 
