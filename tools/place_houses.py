@@ -31,6 +31,59 @@ def h32(x, y, s):
     return v ^ (v >> 15)
 
 
+GARDEN_PROPS = [("veg", 2), ("laundry", 2), ("apple", 1), ("hydrangea", 1), ("barrow", 1)]
+
+
+def plan_gardens(lots, bad, W, H):
+    """docs/188：每栋一个园子 = 屋后 1-2 行 + 屋两侧各 1 列（能占多少占多少），全部落在【没人站过】的格上。
+    园子不压任何房子、任何巷行、别家的园子。南面敞开（屋前就是巷）。"""
+    blocked = set(bad)
+    for L in lots:
+        for yy in range(L["y"], L["y"] + L["h"] + 1):        # 屋身 + 屋前巷行
+            for xx in range(L["x"] - 1, L["x"] + L["w"] + 1):
+                if yy < L["y"] + L["h"] and not (L["x"] <= xx < L["x"] + L["w"]):
+                    continue                                   # 屋身行只占屋宽（两侧留给园子）
+                blocked.add((xx, yy))
+    out = []
+    for i, L in enumerate(lots):
+        x, y, w, h = L["x"], L["y"], L["w"], L["h"]
+        free = lambda cs: all(0 <= cx < W and 0 <= cy < H and (cx, cy) not in blocked for cx, cy in cs)
+        back = 0
+        for k in (2, 1):
+            if free([(xx, yy) for yy in range(y - k, y) for xx in range(x - 1, x + w + 1)]):
+                back = k
+                break
+        left = free([(x - 1, yy) for yy in range(y, y + h)])
+        right = free([(x + w, yy) for yy in range(y, y + h)])
+        if back == 0 and not (left or right):
+            continue
+        x0 = x - 1 if (left or back) else x
+        x1 = x + w + 1 if (right or back) else x + w
+        g = {"house": i, "x0": x0, "y0": y - back, "x1": x1, "y1": y + h,
+             "back": back, "left": left, "right": right, "wall": h32(x, y, 29) % 3 == 0, "props": []}
+        cells = [(xx, yy) for yy in range(y - back, y) for xx in range(x0, x1)]
+        if left: cells += [(x - 1, yy) for yy in range(y, y + h)]
+        if right: cells += [(x + w, yy) for yy in range(y, y + h)]
+        for c in cells:
+            blocked.add(c)
+        # 园中物：屋后那一行从左往右按 hash 摆（两格的菜畦/晾衣绳、一格的苹果树/绣球/手推车），两侧列放绣球
+        if back:
+            by = y - 1
+            cx = x0 + 1
+            while cx < x1 - 1:
+                kind, cw = GARDEN_PROPS[h32(cx, by, 41) % len(GARDEN_PROPS)]
+                if cx + cw > x1 - 1:
+                    kind, cw = "hydrangea", 1
+                if h32(cx, by, 43) % 4 != 0:
+                    g["props"].append({"kind": kind, "x": cx, "y": by})
+                cx += cw
+        for side, sx in ((left, x - 1), (right, x + w)):
+            if side and h32(sx, y, 47) % 2 == 0:
+                g["props"].append({"kind": "hydrangea", "x": sx, "y": y + h - 1})
+        out.append(g)
+    return out
+
+
 def main():
     heat = json.load(open(sys.argv[1]))
     out = sys.argv[sys.argv.index("--out") + 1] if "--out" in sys.argv else f"{ROOT}game/assets/art/houses/lots.json"
@@ -84,8 +137,10 @@ def main():
                     for xx in range(x - 1, x + cw + 1):
                         taken.add((xx, yy))
                 break
-    json.dump({"_doc": "docs/186 布景民居落点（tools/place_houses.py 生成，勿手改）", "lots": lots}, open(out, "w"), indent=1)
-    print(f"{len(lots)} lots -> {out}")
+    gardens = plan_gardens(lots, bad, W, H)
+    json.dump({"_doc": "docs/186/188 布景民居 + 园子落点（tools/place_houses.py 生成，勿手改）",
+               "lots": lots, "gardens": gardens}, open(out, "w"), indent=1)
+    print(f"{len(lots)} lots, {len(gardens)} gardens -> {out}")
     g = [["#" if (x, y) in grown else "." for x in range(W)] for y in range(H)]
     for L in lots:
         for yy in range(L["y"], L["y"] + L["h"]):

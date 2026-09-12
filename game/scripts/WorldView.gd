@@ -4516,6 +4516,136 @@ var _houses: Array = []        # [{sprite, x, y, rect:Rect2(精灵 alpha bbox �
 var _house_cells := {}         # idx -> true：民居占的格（花草/街具让位）
 var _houses_built := false
 var _house_lanes: Array = []   # [Rect2]：屋前碎石小巷（世界坐标）
+var _gardens: Array = []       # docs/188：[{cells:Array[Vector2i], hedges:Array[{r:Rect2, v:bool}], wall:bool, props:Array}]
+const GARDEN_PROP_W := {"veg": 2, "laundry": 2}   # 其余一格
+
+## docs/188 园子：lots.json 的 gardens（place_houses.py 离线落在"没人站过"的格上）。
+## 绿篱/石墙画在园子外沿的【北、西、东】三面（南面敞开对着巷；贴屋身的那一边不画）。
+func _build_gardens(arr: Array, w: int) -> void:
+	_gardens.clear()
+	for g in arr:
+		var gs := {}
+		var cells: Array = []
+		var x0 := int(g["x0"]); var y0 := int(g["y0"]); var x1 := int(g["x1"]); var y1 := int(g["y1"])
+		# 园子格 = 包围盒 − 屋身；侧列只在 left/right 为真时才算
+		for yy in range(y0, y1):
+			for xx in range(x0, x1):
+				var in_back := yy < y0 + int(g["back"])
+				var is_side := (xx == x0 and bool(g["left"])) or (xx == x1 - 1 and bool(g["right"]))
+				# 石街/广场格（_build_paths 画的门→广场连街）可能没人走过、heat=0，但园子不能铺到街上
+				if (in_back or is_side) and not _path_set.has(yy * w + xx) and not _plaza_cells.has(yy * w + xx):
+					gs[Vector2i(xx, yy)] = true
+					cells.append(Vector2i(xx, yy))
+					_house_cells[yy * w + xx] = true
+		var hedges: Array = []
+		var th := T * 0.30
+		for c in cells:
+			var px := float(c.x) * T; var py := float(c.y) * T
+			if not gs.has(c + Vector2i(0, -1)):
+				hedges.append({"r": Rect2(px, py, T, th), "v": false})
+			if not gs.has(c + Vector2i(-1, 0)) and not _house_cells_lot(c + Vector2i(-1, 0), g):
+				hedges.append({"r": Rect2(px, py, th, T), "v": true})
+			if not gs.has(c + Vector2i(1, 0)) and not _house_cells_lot(c + Vector2i(1, 0), g):
+				hedges.append({"r": Rect2(px + T - th, py, th, T), "v": true})
+		var props: Array = []
+		for p in g.get("props", []):
+			var pc := Vector2i(int(p["x"]), int(p["y"]))
+			if not gs.has(pc) or (GARDEN_PROP_W.get(String(p["kind"]), 1) == 2 and not gs.has(pc + Vector2i(1, 0))):
+				continue
+			props.append({"kind": String(p["kind"]), "cell": Vector2i(int(p["x"]), int(p["y"]))})
+		_gardens.append({"cells": cells, "hedges": hedges, "wall": bool(g.get("wall", false)), "props": props,
+			"box": Rect2(float(x0) * T, float(y0) * T - T, float(x1 - x0) * T, float(y1 - y0 + 1) * T)})
+
+## 这一格是不是本园子那栋房的屋身（贴屋身的边不画绿篱）。
+func _house_cells_lot(c: Vector2i, g: Dictionary) -> bool:
+	var x0 := int(g["x0"]) + (1 if bool(g["left"]) or int(g["back"]) > 0 else 0)
+	var x1 := int(g["x1"]) - (1 if bool(g["right"]) or int(g["back"]) > 0 else 0)
+	var yb := int(g["y0"]) + int(g["back"])
+	return c.x >= x0 and c.x < x1 and c.y >= yb and c.y < int(g["y1"])
+
+func _draw_gardens() -> void:
+	var veg := _season_veg()
+	var stex := _light_texture()
+	for g in _gardens:
+		if not _vis.intersects(g["box"]):
+			continue
+		# ① 园里的草：修剪过的草坪，比野草地深一档 + 隔行割草纹
+		for c in g["cells"]:
+			var r := Rect2(float(c.x) * T, float(c.y) * T, T, T)
+			draw_rect(r, Color(0.10, 0.26, 0.06, 0.16), true)
+			if c.y % 2 == 0:
+				draw_rect(Rect2(r.position.x, r.position.y + T * 0.5, T, T * 0.5), Color(1.0, 1.0, 0.85, 0.05), true)
+		# ② 园中物（PixelLab 精灵，缺图不画）
+		for p in g["props"]:
+			_garden_sprite(p["kind"], p["cell"], stex)
+		# ③ 绿篱 / 布列塔尼干砌石墙
+		var wall: bool = g["wall"]
+		for hd in g["hedges"]:
+			var r: Rect2 = hd["r"]
+			if wall:
+				_draw_stone_wall(r, bool(hd["v"]))
+			else:
+				_draw_hedge(r, bool(hd["v"]), veg)
+
+func _garden_sprite(kind: String, cell: Vector2i, stex: Texture2D) -> void:
+	var tex := Art.tex("res://assets/art/gardens/%s.png" % kind)
+	if tex == null:
+		return
+	var key := "g_" + kind
+	if not _prop_foot.has(key):
+		var img := tex.get_image()
+		if img != null and img.is_compressed():
+			img = img.duplicate()
+			img.decompress()
+		_prop_foot[key] = img.get_used_rect() if img != null else Rect2i(0, 0, tex.get_width(), tex.get_height())
+	var used: Rect2i = _prop_foot[key]
+	var cw := float(GARDEN_PROP_W.get(kind, 1)) * T
+	var dst := Rect2(float(cell.x) * T + (cw - float(used.size.x)) * 0.5, float(cell.y + 1) * T - T * 0.08 - float(used.size.y), used.size.x, used.size.y)
+	draw_texture_rect(stex, Rect2(dst.position.x + dst.size.x * 0.25, dst.end.y - T * 0.22, dst.size.x * 0.95, T * 0.36), false, Color(0.03, 0.06, 0.03, 0.30))
+	if _hash_mix(cell.x, cell.y, 263) % 2 == 1:
+		_draw_mirrored(tex, dst, Rect2(used.position, used.size), Color.WHITE)
+	else:
+		draw_texture_rect_region(tex, dst, Rect2(used.position, used.size))
+
+## 修剪的黄杨绿篱：底影 + 深绿体 + 逐段 hash 的圆叶簇 + 西北受光顶棱。
+func _draw_hedge(r: Rect2, vert: bool, veg: Color) -> void:
+	var base := P_FOLIAGE_D.darkened(0.10) * veg
+	draw_rect(Rect2(r.position + Vector2(3.0, 4.0), r.size), Color(0.02, 0.05, 0.02, 0.30), true)
+	draw_rect(r, base, true)
+	var n := 4
+	for k in n:
+		var t := (float(k) + 0.5) / float(n)
+		var cp := Vector2(r.position.x + (r.size.x * t if not vert else r.size.x * 0.5), r.position.y + (r.size.y * t if vert else r.size.y * 0.5))
+		var hv := _hash_mix(int(cp.x), int(cp.y), 269) % 3
+		var rad := minf(r.size.x, r.size.y) * (0.52 + 0.08 * float(hv))
+		draw_circle(cp, rad, base)
+		draw_circle(cp + Vector2(-rad * 0.30, -rad * 0.30), rad * 0.55, (P_FOLIAGE_M * veg).lightened(0.06))
+	if vert:
+		draw_rect(Rect2(r.position.x, r.position.y, 2.0, r.size.y), Color((P_FOLIAGE_M * veg).lightened(0.25), 0.7), true)
+	else:
+		draw_rect(Rect2(r.position.x, r.position.y, r.size.x, 2.0), Color((P_FOLIAGE_M * veg).lightened(0.25), 0.7), true)
+
+## 布列塔尼干砌矮石墙（粉灰花岗岩块，错缝，顶上一线苔）。
+func _draw_stone_wall(r: Rect2, vert: bool) -> void:
+	draw_rect(Rect2(r.position + Vector2(3.0, 4.0), r.size), Color(0.02, 0.05, 0.02, 0.30), true)
+	draw_rect(r, X_GRANITE.darkened(0.18), true)
+	var long := r.size.y if vert else r.size.x
+	var short := r.size.x if vert else r.size.y
+	var s := 0.0
+	var k := 0
+	while s < long:
+		var bl := T * (0.20 + 0.06 * float(_hash_mix(int(r.position.x) + k, int(r.position.y), 271) % 3))
+		var e := minf(s + bl, long)
+		var sh := X_GRANITE.lightened(0.10) if (_hash_mix(k, int(r.position.x + r.position.y), 277) % 3 == 0) else X_GRANITE
+		var br := Rect2(r.position.x + (0.0 if vert else s) + 1.0, r.position.y + (s if vert else 0.0) + 1.0,
+			(short if vert else e - s) - 2.0, (e - s if vert else short) - 2.0)
+		draw_rect(br, sh, true)
+		s = e
+		k += 1
+	if vert:
+		draw_rect(Rect2(r.position.x, r.position.y, 2.0, r.size.y), Color(P_FOLIAGE_M, 0.55), true)
+	else:
+		draw_rect(Rect2(r.position.x, r.position.y, r.size.x, 2.0), Color(P_FOLIAGE_M, 0.55), true)
 
 func _ensure_houses() -> void:
 	if _houses_built:
@@ -4529,6 +4659,8 @@ func _ensure_houses() -> void:
 	if not (data is Dictionary):
 		return
 	var w := int(Sim.world.get("width", 24))
+	if not _paths_built:
+		_build_paths()              # docs/188：园子要避开石街格
 	for L in (data as Dictionary).get("lots", []):
 		var nm := String(L["sprite"])
 		var tex := Art.tex("res://assets/art/houses/%s.png" % nm)
@@ -4570,6 +4702,7 @@ func _ensure_houses() -> void:
 			else:
 				_house_lanes.append(Rect2(maxf(cur.x, 0.0), float(ry) - T * 0.04, cur.y - maxf(cur.x, 0.0), T * 0.42))
 				cur = nx
+	_build_gardens((data as Dictionary).get("gardens", []), w)
 
 func _draw_houses() -> void:
 	_ensure_houses()
@@ -4593,6 +4726,7 @@ func _draw_houses() -> void:
 			k += 1
 		draw_rect(Rect2(lr.position.x, lr.position.y, lr.size.x, 2.0), Color(G_STONE_LINE, 0.45), true)
 		draw_rect(Rect2(lr.position.x, lr.end.y - 2.0, lr.size.x, 2.0), Color(G_STONE_LINE, 0.45), true)
+	_draw_gardens()
 	var occupied: Array = []
 	for ag in Sim.agents:
 		if String(ag.get("space", "town")) == "town":
