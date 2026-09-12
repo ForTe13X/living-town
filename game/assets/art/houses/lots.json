@@ -1,0 +1,389 @@
+{
+ "_doc": "docs/186 \u5e03\u666f\u6c11\u5c45\u843d\u70b9\uff08tools/place_houses.py \u751f\u6210\uff0c\u52ff\u624b\u6539\uff09",
+ "lots": [
+  {
+   "sprite": "whitehouse",
+   "x": 0,
+   "y": 6,
+   "w": 3,
+   "h": 3,
+   "flip": true
+  },
+  {
+   "sprite": "whitehouse",
+   "x": 19,
+   "y": 6,
+   "w": 3,
+   "h": 3,
+   "flip": true
+  },
+  {
+   "sprite": "cottage",
+   "x": 23,
+   "y": 7,
+   "w": 3,
+   "h": 2,
+   "flip": false
+  },
+  {
+   "sprite": "terrace",
+   "x": 38,
+   "y": 6,
+   "w": 4,
+   "h": 3,
+   "flip": false
+  },
+  {
+   "sprite": "whitehouse",
+   "x": 43,
+   "y": 6,
+   "w": 3,
+   "h": 3,
+   "flip": true
+  },
+  {
+   "sprite": "cottage",
+   "x": 0,
+   "y": 12,
+   "w": 3,
+   "h": 2,
+   "flip": false
+  },
+  {
+   "sprite": "townhouse",
+   "x": 4,
+   "y": 11,
+   "w": 2,
+   "h": 3,
+   "flip": true
+  },
+  {
+   "sprite": "townhouse",
+   "x": 7,
+   "y": 11,
+   "w": 2,
+   "h": 3,
+   "flip": true
+  },
+  {
+   "sprite": "terrace",
+   "x": 10,
+   "y": 11,
+   "w": 4,
+   "h": 3,
+   "flip": true
+  },
+  {
+   "sprite": "whitehouse",
+   "x": 9,
+   "y": 16,
+   "w": 3,
+   "h": 3,
+   "flip": false
+  },
+  {
+   "sprite": "cottage",
+   "x": 13,
+   "y": 17,
+   "w": 3,
+   "h": 2,
+   "flip": true
+  },
+  {
+   "sprite": "whitehouse",
+   "x": 48,
+   "y": 16,
+   "w": 3,
+   "h": 3,
+   "flip": false
+  },
+  {
+   "sprite": "townhouse",
+   "x": 9,
+   "y": 21,
+   "w": 2,
+   "h": 3,
+   "flip": false
+  },
+  {
+   "sprite": "cottage",
+   "x": 14,
+   "y": 22,
+   "w": 3,
+   "h": 2,
+   "flip": true
+  },
+  {
+   "sprite": "cottage",
+   "x": 18,
+   "y": 22,
+   "w": 3,
+   "h": 2,
+   "flip": true
+  },
+  {
+   "sprite": "cottage",
+   "x": 43,
+   "y": 22,
+   "w": 3,
+   "h": 2,
+   "flip": false
+  },
+  {
+   "sprite": "cottage",
+   "x": 47,
+   "y": 22,
+   "w": 3,
+   "h": 2,
+   "flip": false
+  },
+  {
+   "sprite": "townhouse",
+   "x": 51,
+   "y": 21,
+   "w": 2,
+   "h": 3,
+   "flip": false
+  },
+  {
+   "sprite": "townhouse",
+   "x": 9,
+   "y": 26,
+   "w": 2,
+   "h": 3,
+   "flip": false
+  },
+  {
+   "sprite": "townhouse",
+   "x": 14,
+   "y": 26,
+   "w": 2,
+   "h": 3,
+   "flip": false
+  },
+  {
+   "sprite": "townhouse",
+   "x": 48,
+   "y": 26,
+   "w": 2,
+   "h": 3,
+   "flip": false
+  },
+  {
+   "sprite": "townhouse",
+   "x": 51,
+   "y": 26,
+   "w": 2,
+   "h": 3,
+   "flip": true
+  },
+  {
+   "sprite": "cottage",
+   "x": 0,
+   "y": 32,
+   "w": 3,
+   "h": 2,
+   "flip": true
+  },
+  {
+   "sprite": "cottage",
+   "x": 4,
+   "y": 32,
+   "w": 3,
+   "h": 2,
+   "flip": false
+  },
+  {
+   "sprite": "cottage",
+   "x": 8,
+   "y": 32,
+   "w": 3,
+   "h": 2,
+   "flip": true
+  },
+  {
+   "sprite": "townhouse",
+   "x": 14,
+   "y": 31,
+   "w": 2,
+   "h": 3,
+   "flip": true
+  },
+  {
+   "sprite": "whitehouse",
+   "x": 29,
+   "y": 31,
+   "w": 3,
+   "h": 3,
+   "flip": true
+  },
+  {
+   "sprite": "townhouse",
+   "x": 33,
+   "y": 31,
+   "w": 2,
+   "h": 3,
+   "flip": true
+  },
+  {
+   "sprite": "terrace",
+   "x": 48,
+   "y": 31,
+   "w": 4,
+   "h": 3,
+   "flip": true
+  },
+  {
+   "sprite": "townhouse",
+   "x": 0,
+   "y": 36,
+   "w": 2,
+   "h": 3,
+   "flip": true
+  },
+  {
+   "sprite": "cottage",
+   "x": 3,
+   "y": 37,
+   "w": 3,
+   "h": 2,
+   "flip": false
+  },
+  {
+   "sprite": "cottage",
+   "x": 18,
+   "y": 37,
+   "w": 3,
+   "h": 2,
+   "flip": true
+  },
+  {
+   "sprite": "cottage",
+   "x": 22,
+   "y": 37,
+   "w": 3,
+   "h": 2,
+   "flip": true
+  },
+  {
+   "sprite": "cottage",
+   "x": 26,
+   "y": 37,
+   "w": 3,
+   "h": 2,
+   "flip": true
+  },
+  {
+   "sprite": "cottage",
+   "x": 30,
+   "y": 37,
+   "w": 3,
+   "h": 2,
+   "flip": true
+  },
+  {
+   "sprite": "cottage",
+   "x": 34,
+   "y": 37,
+   "w": 3,
+   "h": 2,
+   "flip": false
+  },
+  {
+   "sprite": "cottage",
+   "x": 38,
+   "y": 37,
+   "w": 3,
+   "h": 2,
+   "flip": false
+  },
+  {
+   "sprite": "cottage",
+   "x": 42,
+   "y": 37,
+   "w": 3,
+   "h": 2,
+   "flip": true
+  },
+  {
+   "sprite": "cottage",
+   "x": 46,
+   "y": 37,
+   "w": 3,
+   "h": 2,
+   "flip": false
+  },
+  {
+   "sprite": "cottage",
+   "x": 50,
+   "y": 37,
+   "w": 3,
+   "h": 2,
+   "flip": false
+  },
+  {
+   "sprite": "cottage",
+   "x": 0,
+   "y": 42,
+   "w": 3,
+   "h": 2,
+   "flip": false
+  },
+  {
+   "sprite": "townhouse",
+   "x": 4,
+   "y": 41,
+   "w": 2,
+   "h": 3,
+   "flip": false
+  },
+  {
+   "sprite": "whitehouse",
+   "x": 18,
+   "y": 41,
+   "w": 3,
+   "h": 3,
+   "flip": true
+  },
+  {
+   "sprite": "cottage",
+   "x": 22,
+   "y": 42,
+   "w": 3,
+   "h": 2,
+   "flip": false
+  },
+  {
+   "sprite": "terrace",
+   "x": 37,
+   "y": 41,
+   "w": 4,
+   "h": 3,
+   "flip": true
+  },
+  {
+   "sprite": "whitehouse",
+   "x": 42,
+   "y": 41,
+   "w": 3,
+   "h": 3,
+   "flip": false
+  },
+  {
+   "sprite": "cottage",
+   "x": 46,
+   "y": 42,
+   "w": 3,
+   "h": 2,
+   "flip": false
+  },
+  {
+   "sprite": "cottage",
+   "x": 50,
+   "y": 42,
+   "w": 3,
+   "h": 2,
+   "flip": true
+  }
+ ]
+}

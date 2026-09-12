@@ -764,6 +764,7 @@ func _invalidate_world_caches() -> void:
 	_paths_built = false
 	_decor_built = false
 	_sea_built = false
+	_houses_built = false
 	_grass_var = PackedByteArray()
 	_verge_ground = Color(0, 0, 0, 0)
 	_slot_probe_n = -1                    # H3：换世界 ⇒ 下一次 _redraw_all 重新体检精灵槽
@@ -3165,6 +3166,12 @@ func _collect_lights() -> Array:
 	# ⑥ docs/185：海堤步道路灯（白球灯，暖一点的窗光色）
 	for lp in _prom_lamps:
 		out.append({"p": lp, "r": T * 1.6, "c": LIGHT_WIN, "a": 0.40})
+	# ⑦ docs/186：布景民居——约六成人家夜里亮着一扇窗 + 门灯
+	_ensure_houses()
+	for hs in _houses:
+		var hr: Rect2 = hs["rect"]
+		if _hash_mix(int(hs["x"]), int(hs["y"]), 241) % 10 < 6:
+			out.append({"p": Vector2(hr.get_center().x, hr.end.y - T * 0.55), "r": T * 1.3, "c": LIGHT_WIN, "a": 0.30})
 	if _roof_alpha() >= 0.5:                             # docs/180：盖着屋顶时，屋里/北墙/侧墙的灯不透过屋顶亮出来
 		var kept: Array = []
 		for lt in out:
@@ -3393,13 +3400,14 @@ func _draw_body() -> void:
 	_ensure_seaside(w, h)
 	if _ap("decor"):
 		_draw_promenade(w)        # docs/185：海堤步道（铺面 + 堤岸 + 栏杆 + 路灯 + 长椅 + 下滩台阶）
+	_ensure_houses()
 	for it in _ac("decor", _decor_items):
 		var dtex: Texture2D = it["tex"]
 		var c: Vector2i = it["cell"]
 		if not _vis.has_point(Vector2(c.x * T, c.y * T)):
 			continue                       # 视口外的花草石不画（布局仍由 _build_decor 一次性确定，与相机无关）
-		if _beach.has(c.y * w + c.x) or int(_prom_x.get(c.y, -1)) == c.x:
-			continue                       # docs/180/185：沙滩与海堤步道上不长花草（布局不变，只是这几格不画）
+		if _beach.has(c.y * w + c.x) or int(_prom_x.get(c.y, -1)) == c.x or _house_cells.has(c.y * w + c.x):
+			continue                       # docs/180/185/186：沙滩、海堤步道、布景民居底下不长花草（布局不变，只是这几格不画）
 		var dw := float(dtex.get_width()) * (float(T) / 16.0)
 		var dh := float(dtex.get_height()) * (float(T) / 16.0)
 		# 底对齐格子（高物件如树向上伸出）；四季色偏与草地同源
@@ -3411,11 +3419,12 @@ func _draw_body() -> void:
 		var spc: Vector2i = sp["cell"]
 		if not _vis.has_point(Vector2(spc.x * T, spc.y * T)):
 			continue
-		if int(_prom_x.get(spc.y, -1)) == spc.x:
-			continue                   # docs/185：步道格上的街具让位给步道自己的灯/椅
+		if int(_prom_x.get(spc.y, -1)) == spc.x or _house_cells.has(spc.y * w + spc.x):
+			continue                   # docs/185/186：步道格上的街具让位给步道自己的灯/椅；民居底下不放街具
 		_draw_street_prop(int(sp["kind"]), spc)
 	if _ap("decor"):
 		_draw_beach_props()        # docs/180：条纹沙滩帐篷 / 阳伞 / 浴巾 / 救生旗（侯麦的 Saint-Lunaire 海滩）
+		_draw_houses()             # docs/186：布景民居（PixelLab 精灵，只落在实跑里没人站过的空地）
 
 	# authored 阻挡树（map.json trees 层）：这些是【会挡路】的真树（与上面可踩的程序化花草区分开）。
 	# 用 tree_big 切图底对齐画；缺切图则程序化画树冠+树干。占满格 → 玩家一眼读出"这里过不去"。
@@ -4487,10 +4496,126 @@ func _prop_sprite(name: String, base: Vector2, flip := false) -> bool:
 	# 东南落影：一张径向软影压在脚下（西北光，与树/楼同向）
 	draw_texture_rect(_light_texture(), Rect2(dst.position.x + sz.x * 0.25, base.y + T * 0.62, sz.x * 0.95, T * 0.42), false, Color(0.05, 0.05, 0.02, 0.32))
 	if flip:
-		draw_texture_rect(tex, Rect2(dst.position.x + sz.x, dst.position.y, -sz.x, sz.y), false)
+		_draw_mirrored(tex, dst, Rect2(Vector2.ZERO, sz), Color.WHITE)
 	else:
 		draw_texture_rect(tex, dst, false)
 	return true
+
+## 水平镜像画一张（子）贴图到 dst。★不能用"负宽 Rect2"：Godot 会把负尺寸取绝对值，
+##   整张图往右平移一个宽度（docs/186 夜图眼验抓到：镜像的民居比它的门灯偏右 2.4 格；docs/183 的镜像帐篷同病）。
+func _draw_mirrored(tex: Texture2D, dst: Rect2, src: Rect2, mod: Color) -> void:
+	draw_set_transform(Vector2(dst.end.x, dst.position.y), 0.0, Vector2(-1.0, 1.0))
+	draw_texture_rect_region(tex, Rect2(Vector2.ZERO, dst.size), src, mod)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+## ── docs/186 布景民居 ──────────────────────────────────────────────────────────
+## 落点来自 assets/art/houses/lots.json（tools/place_houses.py 离线生成：精灵整块格矩形 + 外扩 1 格
+##   在 game/bench/walk_heat.gd 多 seed × 多 N × 20 天的实跑里【从没人站过】）。纯画：格子可走性一格没动。
+## 兜底：万一有人走进某栋的精灵矩形（新 seed / 玩家），那栋这一帧退成 0.30 透明（掀开），不会读作"人被房子吞了"。
+var _houses: Array = []        # [{sprite, x, y, rect:Rect2(精灵 alpha bbox 的世界矩形), flip}]，按底边行排好序
+var _house_cells := {}         # idx -> true：民居占的格（花草/街具让位）
+var _houses_built := false
+var _house_lanes: Array = []   # [Rect2]：屋前碎石小巷（世界坐标）
+
+func _ensure_houses() -> void:
+	if _houses_built:
+		return
+	_houses_built = true
+	_houses.clear(); _house_cells.clear()
+	var path := "res://assets/art/houses/lots.json"
+	if not FileAccess.file_exists(path):
+		return
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
+	if not (data is Dictionary):
+		return
+	var w := int(Sim.world.get("width", 24))
+	for L in (data as Dictionary).get("lots", []):
+		var nm := String(L["sprite"])
+		var tex := Art.tex("res://assets/art/houses/%s.png" % nm)
+		if tex == null:
+			continue
+		var img := tex.get_image()
+		if img != null and img.is_compressed():
+			img = img.duplicate()
+			img.decompress()
+		var used: Rect2i = img.get_used_rect() if img != null else Rect2i(0, 0, tex.get_width(), tex.get_height())
+		var lx := int(L["x"]); var ly := int(L["y"]); var lw := int(L["w"]); var lh := int(L["h"])
+		var flip := bool(L.get("flip", false))
+		# 精灵 alpha bbox：水平居中在地块上，底边落在地块最后一行格的 94% 处（同道具对地）
+		var bx := float(lx) * T + (float(lw) * T - float(used.size.x)) * 0.5
+		var by := float(ly + lh) * T - T * 0.06 - float(used.size.y)
+		_houses.append({"sprite": nm, "tex": tex, "used": used, "x": lx, "y": ly, "flip": flip,
+			"rect": Rect2(bx, by, used.size.x, used.size.y)})
+		for yy in range(ly, ly + lh):
+			for xx in range(lx, lx + lw):
+				_house_cells[yy * w + xx] = true
+	_houses.sort_custom(func(a, b): return (a["rect"] as Rect2).end.y < (b["rect"] as Rect2).end.y)
+	# 小巷：按底边行分组，同一行 x 区间相邻（间隔 ≤ 1 格）的并成一段
+	_house_lanes.clear()
+	var rows := {}
+	for hs in _houses:
+		var hr: Rect2 = hs["rect"]
+		var ry := int(round(hr.end.y))
+		if not rows.has(ry):
+			rows[ry] = []
+		rows[ry].append(Vector2(hr.position.x - T * 0.30, hr.end.x + T * 0.30))
+	for ry in rows:
+		var spans: Array = rows[ry]
+		spans.sort_custom(func(a, b): return a.x < b.x)
+		var cur: Vector2 = spans[0]
+		for i in range(1, spans.size() + 1):
+			var nx: Vector2 = spans[i] if i < spans.size() else Vector2(1e9, 1e9)
+			if nx.x <= cur.y + T * 1.2:              # 两栋之间不到 1.2 格：巷子连起来
+				cur.y = maxf(cur.y, nx.y)
+			else:
+				_house_lanes.append(Rect2(maxf(cur.x, 0.0), float(ry) - T * 0.04, cur.y - maxf(cur.x, 0.0), T * 0.42))
+				cur = nx
+
+func _draw_houses() -> void:
+	_ensure_houses()
+	if _houses.is_empty():
+		return
+	var stex := _light_texture()
+	# 屋前小巷：每栋底边下一行一条碎石巷（同一行相邻几栋连成一条），巷沿一线路缘草 —— 让散落的房子读作"一条街"。
+	#   只是地面颜色：巷格照旧可走、谁都能踩（本来就在空地上）。
+	for ln in _house_lanes:
+		var lr: Rect2 = ln
+		if not _vis.intersects(lr):
+			continue
+		draw_rect(lr, Color(G_STONE_WARM.lightened(0.18), 0.78), true)
+		var k := 0
+		var xx := lr.position.x
+		while xx < lr.end.x:                         # 碎石颗粒：逐 1/3 格 hash 明暗
+			var hv := _hash_mix(int(xx / (T / 3.0)), int(lr.position.y), 251) % 4
+			if hv < 2:
+				draw_rect(Rect2(xx + 2.0, lr.position.y + 3.0 + float(hv) * 4.0, T / 3.0 - 5.0, 4.0), Color(G_STONE_LO if hv == 0 else G_STONE_HI, 0.55), true)
+			xx += T / 3.0
+			k += 1
+		draw_rect(Rect2(lr.position.x, lr.position.y, lr.size.x, 2.0), Color(G_STONE_LINE, 0.45), true)
+		draw_rect(Rect2(lr.position.x, lr.end.y - 2.0, lr.size.x, 2.0), Color(G_STONE_LINE, 0.45), true)
+	var occupied: Array = []
+	for ag in Sim.agents:
+		if String(ag.get("space", "town")) == "town":
+			occupied.append(_rpos(ag))
+	for hs in _houses:
+		var r: Rect2 = hs["rect"]
+		if not _vis.intersects(r.grow(T)):
+			continue
+		var a := 1.0
+		for p in occupied:
+			if r.has_point(p):
+				a = 0.30
+				break
+		# 西北光 ⇒ 东南软影：墙脚一条贴地影 + 东侧一块斜落影
+		draw_texture_rect(stex, Rect2(r.position.x + r.size.x * 0.10, r.end.y - T * 0.30, r.size.x * 1.05, T * 0.62), false, Color(0.03, 0.06, 0.03, 0.40 * a))
+		draw_texture_rect(stex, Rect2(r.end.x - r.size.x * 0.25, r.position.y + r.size.y * 0.35, r.size.x * 0.50, r.size.y * 0.70), false, Color(0.03, 0.06, 0.03, 0.26 * a))
+		var tex: Texture2D = hs["tex"]
+		var used: Rect2i = hs["used"]
+		var src := Rect2(used.position, used.size)
+		if bool(hs["flip"]):
+			_draw_mirrored(tex, r, src, Color(1, 1, 1, a))
+		else:
+			draw_texture_rect_region(tex, r, src, Color(1, 1, 1, a))
 
 func _draw_beach_props() -> void:
 	for bp in _beach_props:
