@@ -3245,8 +3245,9 @@ func _draw_body() -> void:
 				for tx in range(tx0, tx1):
 					if int(_grass_var[grow + tx]) == gi:
 						draw_texture_rect(gt, Rect2(tx * T, ty * T, T, T), false, veg)
-		if _ap("grass"):
-			_draw_meadow_tones()      # docs/180：低频草甸色斑（旱地↔湿草），打破"一整块匀绿"
+		# docs/180 的低频草甸色斑（_draw_meadow_tones）**已撤**：视觉门 DAYNIGHT/SEASON 取"HUD-free 横带的世界主色"
+		#   作草地基色，而 45% 覆盖、α≈0.12 的软色斑把草地打散成上百档近色 ⇒ 主色退位给界外平涂底色 (11,18,9)，
+		#   两道门同时红（docker 实跑 2026-09-12）。门守的是"季节/昼夜看得出来"，不该为了一层装饰去改门的量法。
 	else:
 		var grass := Art.ground_tex()
 		if grass != null:
