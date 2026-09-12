@@ -3205,10 +3205,10 @@ func _unhandled_input(e: InputEvent) -> void:
 			KEY_2, KEY_KP_2: Sim.running = true; Sim.speed = 2.0
 			KEY_3, KEY_KP_3: Sim.running = true; Sim.speed = 4.0
 			KEY_4, KEY_KP_4: Sim.running = true; Sim.speed = 8.0
-			KEY_EQUAL, KEY_KP_ADD: if _locked_ortho_c1 == null: _demo_off(); _probe.zoom_at(1.15, _vp() * 0.5, _vp())
-			KEY_MINUS, KEY_KP_SUBTRACT: if _locked_ortho_c1 == null: _demo_off(); _probe.zoom_at(1.0 / 1.15, _vp() * 0.5, _vp())
+			KEY_EQUAL, KEY_KP_ADD: if _locked_ortho_c1 == null and _probe != null: _demo_off(); _probe.zoom_at(1.15, _vp() * 0.5, _vp())
+			KEY_MINUS, KEY_KP_SUBTRACT: if _locked_ortho_c1 == null and _probe != null: _demo_off(); _probe.zoom_at(1.0 / 1.15, _vp() * 0.5, _vp())
 			KEY_L: if _locked_ortho_c1 == null: _demo_off(); _toggle_follow()                 # Probe 跟随/取消（F 已被"送礼"占用）
-			KEY_HOME: if _locked_ortho_c1 == null: _demo_off(); _probe.go_home()              # 回到全镇
+			KEY_HOME: if _locked_ortho_c1 == null and _probe != null: _demo_off(); _probe.go_home()              # 回到全镇
 			KEY_I: if _locked_ortho_c1 == null: _probe_toggle_space()                         # Probe 进/出测试 Space（P1 Gate）
 			KEY_PAGEUP: if _locked_ortho_c1 == null: _probe_cycle_floor(1)                    # 换楼层（Probe inspect）
 			KEY_PAGEDOWN: if _locked_ortho_c1 == null: _probe_cycle_floor(-1)
@@ -3227,8 +3227,9 @@ func _unhandled_input(e: InputEvent) -> void:
 					_update_obs()
 					_update_status()
 					return
-				if _probe.mode != 0 or not _probe.go_back():
-					_probe.unfollow()
+				if _probe == null or _probe.mode != 0 or not _probe.go_back():
+					if _probe != null:
+						_probe.unfollow()
 					_selected_id = ""
 					_update_obs()
 			KEY_C: _on_player_say("你好，最近怎么样？")        # 快捷：对当前平面选中居民打招呼
@@ -3286,6 +3287,8 @@ func _unhandled_input(e: InputEvent) -> void:
 		if e is InputEventMouseMotion and _scrubbing and _in_scrub(e.position):
 			_scrub_pending = _tick_at_x(e.position.x)   # 合并：每帧最多一次 goto_tick（见 _flush_scrub）
 			_preview_scrub(_scrub_pending)
+			return
+		if _probe == null:              # 启动早期 / --shot 出图时 Probe 可能尚未就绪：鼠标事件直接丢弃
 			return
 		_probe.handle_input(e, _vp())
 
@@ -3361,6 +3364,8 @@ func _fit_active_space(reset_town := true) -> void:
 
 ## P1 Gate + P3：Probe 切 Space/Floor（inspect-only，绝不移动任何 Agent）。I=循环空间（town→咖啡馆→测试阁楼→…），PgUp/PgDn=换层。
 func _probe_toggle_space() -> void:
+	if _probe == null or _sg == null:
+		return
 	var ids: Array = _sg.spaces.keys()          # 循环所有 Space（含 P3 咖啡馆真室内）
 	if ids.is_empty():
 		return
@@ -3371,6 +3376,8 @@ func _probe_toggle_space() -> void:
 	_update_status()
 
 func _probe_cycle_floor(dir: int) -> void:
+	if _probe == null or _sg == null:
+		return
 	var fl: Array = _sg.floors_of(String(_probe.active_space))
 	if fl.size() <= 1:
 		return
@@ -3505,6 +3512,8 @@ func _on_probe_double_tap(world_pos: Vector2) -> void:
 
 ## L：Probe 跟随/取消跟随选中居民（Probe 跟随 ≠ Agent 移动）。
 func _toggle_follow() -> void:
+	if _probe == null:
+		return
 	if _probe.mode == 2:
 		_probe.unfollow()
 	elif _selected_id != "":
