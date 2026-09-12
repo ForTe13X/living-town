@@ -528,6 +528,8 @@ var _meadow: Array = []               # [{rect:Rect2, col:Color}]：低频草甸
 var _plateau := {}                    # docs/182：花岗岩台地格（东松林岬，树格的子集）
 var _cliff_face := {}                 # idx -> true：画崖壁的格（不再画松树精灵；本就是树格 ⇒ 本就不可走）
 var _cliff_box := Rect2i()            # 台地 ±2 的格范围（绘制裁剪）
+var _prom_x := {}                     # docs/185 海堤步道：行 y -> 步道格 x（沙滩背后第一列草格）
+var _prom_lamps: Array = []           # 步道路灯的世界坐标（夜灯层用）
 var dbg_nav := false     # P2-4 导航开发叠层开关（Main 的 N 键切换）：阻挡格 + 交互格可视化
 var _interiors := {}     # P3 室内内容 interiors.json：space -> floor -> {label,floor,furniture[]}
 var _interiors_loaded := false
@@ -3160,6 +3162,9 @@ func _collect_lights() -> Array:
 			"c": LIGHT_WIN, "a": 0.16})
 		out.append({"p": Vector2(inner.get_center().x, inner.position.y - WALL * 0.6),
 			"r": minf(inner.size.x, T * 3.0) * 0.62, "c": LIGHT_WIN, "a": 0.14})
+	# ⑥ docs/185：海堤步道路灯（白球灯，暖一点的窗光色）
+	for lp in _prom_lamps:
+		out.append({"p": lp, "r": T * 1.6, "c": LIGHT_WIN, "a": 0.40})
 	if _roof_alpha() >= 0.5:                             # docs/180：盖着屋顶时，屋里/北墙/侧墙的灯不透过屋顶亮出来
 		var kept: Array = []
 		for lt in out:
@@ -3385,13 +3390,15 @@ func _draw_body() -> void:
 	if not _decor_built:
 		_build_decor()
 	_ensure_seaside(w, h)
+	if _ap("decor"):
+		_draw_promenade(w)        # docs/185：海堤步道（铺面 + 堤岸 + 栏杆 + 路灯 + 长椅 + 下滩台阶）
 	for it in _ac("decor", _decor_items):
 		var dtex: Texture2D = it["tex"]
 		var c: Vector2i = it["cell"]
 		if not _vis.has_point(Vector2(c.x * T, c.y * T)):
 			continue                       # 视口外的花草石不画（布局仍由 _build_decor 一次性确定，与相机无关）
-		if _beach.has(c.y * w + c.x):
-			continue                       # docs/180：沙滩上不长花草（布局不变，只是这几格不画）
+		if _beach.has(c.y * w + c.x) or int(_prom_x.get(c.y, -1)) == c.x:
+			continue                       # docs/180/185：沙滩与海堤步道上不长花草（布局不变，只是这几格不画）
 		var dw := float(dtex.get_width()) * (float(T) / 16.0)
 		var dh := float(dtex.get_height()) * (float(T) / 16.0)
 		# 底对齐格子（高物件如树向上伸出）；四季色偏与草地同源
@@ -3403,6 +3410,8 @@ func _draw_body() -> void:
 		var spc: Vector2i = sp["cell"]
 		if not _vis.has_point(Vector2(spc.x * T, spc.y * T)):
 			continue
+		if int(_prom_x.get(spc.y, -1)) == spc.x:
+			continue                   # docs/185：步道格上的街具让位给步道自己的灯/椅
 		_draw_street_prop(int(sp["kind"]), spc)
 	if _ap("decor"):
 		_draw_beach_props()        # docs/180：条纹沙滩帐篷 / 阳伞 / 浴巾 / 救生旗（侯麦的 Saint-Lunaire 海滩）
@@ -3758,7 +3767,7 @@ func _build_seaside(w: int, h: int) -> void:
 	_ocean_x0 = PackedInt32Array()
 	_ocean_x0.resize(h)
 	_beach.clear(); _beach_props.clear(); _rocks.clear(); _meadow.clear()
-	_plateau.clear(); _cliff_face.clear()
+	_plateau.clear(); _cliff_face.clear(); _prom_x.clear(); _prom_lamps.clear()
 	for y in h:
 		var x := w - 1
 		while x >= 0 and _water_set.has(y * w + x):
@@ -3790,7 +3799,7 @@ func _build_seaside(w: int, h: int) -> void:
 			var d: int = _beach[idx]
 			var hp := _hash_mix(x, y, 151) % 100
 			var kind := ""
-			if d == BEACH_DEPTH and y % 2 == 0 and hp < 80:   # 隔行一顶：一列帐篷之间留出沙，不连成墙
+			if d == BEACH_DEPTH and y % 2 == 0 and hp < 80 and y % PROM_STEP_EVERY != 4:   # 隔行一顶；下滩台阶那一行不放（docs/185）
 				kind = "cabin"
 			elif d == 2 and hp < 18:
 				kind = "parasol"
@@ -3807,6 +3816,20 @@ func _build_seaside(w: int, h: int) -> void:
 		if y == 3 and _ocean_x0[y] < w - 2:
 			# docs/183：北滩外的礁上灯塔 —— 落在海格上（本就阻挡水），离岸两格，读作一座小岛
 			_beach_props.append({"cell": Vector2i(_ocean_x0[y] + 2, y), "kind": "lighthouse"})
+	# 海堤步道（docs/185 · la digue）：沙滩满 BEACH_DEPTH 格深的行，背后第一列若是空草格（可走、非路/区/家具）就铺步道。
+	for y in h:
+		var x0 := _ocean_x0[y]
+		if x0 >= w or x0 - BEACH_DEPTH - 1 < 0:
+			continue
+		var px := x0 - BEACH_DEPTH - 1
+		if not _beach.has(y * w + px + 1) or int(_beach[y * w + px + 1]) != BEACH_DEPTH:
+			continue
+		var pidx := y * w + px
+		if _is_blocked(px, y) or _path_set.has(pidx) or _plaza_cells.has(pidx) or _in_area(px, y) or _is_object(px, y):
+			continue
+		_prom_x[y] = px
+		if y % 6 == 1:
+			_prom_lamps.append(Vector2(px * T + T * 0.78, y * T + T * 0.10))
 	# 花岗岩台地（docs/182）：东松林岬 = 离海 ≤8 格的树格，且南邻也是树（南沿内收一行 ⇒ 两行崖壁都落在树格上）。
 	var bx0 := w; var by0 := h; var bx1 := -1; var by1 := -1
 	for tc in _tree_cells:
@@ -3999,8 +4022,10 @@ func _coast_class(x: int, y: int, w: int) -> int:
 			return 1                                   # 岸线外推：这一行多一格沙嘴
 		return 0
 	if not _beach.has(y * w + x):
-		return 2
-	if int(_beach[y * w + x]) == BEACH_DEPTH and _coast_jit(y, 239) == 1:
+		# docs/185：海堤步道格按「沙」参与选瓦 ⇒ 沙↔草的过渡落在步道格里（被石板整格盖住），
+		#   堤脚下的第一列沙格就是整块实沙，不再夹一条草边。
+		return 1 if int(_prom_x.get(y, -1)) == x else 2
+	if int(_beach[y * w + x]) == BEACH_DEPTH and _coast_jit(y, 239) == 1 and not _prom_x.has(y):   # 有海堤的行沙丘线不抖：堤是直的
 		return 2                                       # 沙丘线内收：草多吃一格
 	return 1
 
@@ -4064,6 +4089,91 @@ func _draw_wang_coast(w: int, h: int) -> void:
 			var reach := T * (0.04 + 0.34 * wv)
 			draw_rect(Rect2(shore - reach, yy, reach, T * 0.25 + 0.5), Color(X_SEA_SHALLOW, 0.50), true)
 			draw_rect(Rect2(shore - reach - 3.0, yy, 4.0, T * 0.25 + 0.5), Color(X_COLD_WHITE, 0.80), true)
+
+## docs/185 · 海堤步道（la digue，Dinard 最有辨识度的一笔）：
+##   · 铺面：大块花岗岩石板（每格两块、隔行错缝、逐块 _hash 明暗），比镇里的鹅卵石街更整、更浅；
+##   · 堤岸：步道东缘一条压顶石（受光棱）+ 一窄条堤面落在沙上 + 堤脚落影 ⇒ 读出"步道比沙滩高一截"；
+##   · 白铁栏杆：沿压顶石一条白栏 + 立柱，逢台阶断开；
+##   · 每 6 行一盏白球路灯（夜里进加色光层）、错开 3 行一张面海长椅；每 8 行一道下滩石阶。
+## 纯 View：步道格本就可走、仍然可走；堤面/台阶画在沙格上但不改那格可走性 ⇒ 零 sim 金标。
+const PROM_STEP_EVERY := 8
+func _draw_promenade(w: int) -> void:
+	if _prom_x.is_empty():
+		return
+	var slab := X_GRANITE.lightened(0.30)
+	for yk in _prom_x:
+		var y: int = yk
+		var x: int = _prom_x[yk]
+		var r := Rect2(x * T, y * T, T, T)
+		if not _vis.intersects(r.grow(T)):
+			continue
+		var cont_n := _prom_x.has(y - 1)
+		var cont_s := _prom_x.has(y + 1)
+		# ① 石板铺面
+		draw_rect(r, slab.darkened(0.20), true)                                   # 灌缝底色
+		var split := T * (0.44 if y % 2 == 0 else 0.62)
+		for si in 2:
+			var sx0 := r.position.x + (0.0 if si == 0 else split)
+			var sw := split if si == 0 else T - split
+			var tone := _hash_mix(x * 2 + si, y, 251) % 3
+			var c := slab if tone == 0 else (slab.lightened(0.07) if tone == 1 else slab.darkened(0.06))
+			draw_rect(Rect2(sx0 + 1.0, r.position.y + 1.0, sw - 2.0, T - 2.0), c, true)
+			draw_rect(Rect2(sx0 + 1.0, r.position.y + 1.0, sw - 2.0, 2.0), c.lightened(0.10), true)   # 受光上沿
+		# 西缘路缘（草 → 步道）
+		draw_rect(Rect2(r.position.x, r.position.y, T * 0.07, T), X_GRANITE.darkened(0.10), true)
+		# ② 堤岸：压顶石 + 堤面 + 沙上落影
+		var ex := r.end.x
+		var step := y % PROM_STEP_EVERY == 4 and cont_n and cont_s
+		draw_rect(Rect2(ex, r.position.y, T * 0.16, T), X_GRANITE.darkened(0.38), true)          # 堤面（落在沙格西缘）
+		draw_rect(Rect2(ex + T * 0.16, r.position.y, T * 0.22, T), Color(0.10, 0.07, 0.03, 0.20), true)   # 堤脚落影
+		draw_rect(Rect2(ex - T * 0.15, r.position.y, T * 0.15, T), X_GRANITE, true)              # 压顶石
+		draw_rect(Rect2(ex - T * 0.15, r.position.y, T * 0.04, T), X_GRANITE.lightened(0.25), true)
+		for k in 2:                                                                                # 压顶石接缝
+			draw_rect(Rect2(ex - T * 0.15, r.position.y + T * (0.5 * float(k)), T * 0.15, 1.5), X_GRANITE.darkened(0.30), true)
+		if step:
+			# ③ 下滩石阶：三级踏步从压顶石伸进沙里，栏杆在此断开
+			for s in 3:
+				var tw := T * (0.62 - 0.14 * float(s))
+				var tr := Rect2(ex - T * 0.15, r.position.y + T * 0.18 + float(s) * 3.0, tw + T * 0.15, T * 0.64 - float(s) * 6.0)
+				draw_rect(Rect2(tr.position + Vector2(3, 3), tr.size), Color(0, 0, 0, 0.16), true)
+				draw_rect(tr, X_GRANITE.lightened(0.18 - 0.07 * float(s)), true)
+				draw_rect(Rect2(tr.end.x - 3.0, tr.position.y, 3.0, tr.size.y), X_GRANITE.darkened(0.30), true)
+		# ④ 白铁栏杆（沿压顶石；台阶处断开；段端收一根粗柱）
+		var rx := ex - T * 0.08
+		var y0 := r.position.y
+		var y1 := r.end.y
+		if step:
+			y1 = r.position.y + T * 0.16
+		draw_line(Vector2(rx + 2.0, y0), Vector2(rx + 2.0, y1), Color(0, 0, 0, 0.22), 2.0)       # 栏杆落影
+		draw_line(Vector2(rx, y0), Vector2(rx, y1), X_COLD_WHITE, 2.0)
+		for p in 4:
+			var py := y0 + T * 0.25 * float(p) + T * 0.06
+			if py > y1:
+				break
+			draw_rect(Rect2(rx - 2.0, py, 4.0, 4.0), X_COLD_WHITE, true)
+			draw_rect(Rect2(rx - 2.0, py + 3.0, 4.0, 1.0), Color(0.45, 0.48, 0.52), true)
+		if step:
+			for py2 in [r.position.y + T * 0.14, r.end.y - T * 0.18]:
+				draw_rect(Rect2(rx - 3.0, py2, 6.0, 6.0), X_COLD_WHITE, true)                  # 台阶两侧门柱
+			draw_line(Vector2(rx, r.end.y - T * 0.14), Vector2(rx, r.end.y), X_COLD_WHITE, 2.0)
+		if not cont_n:
+			draw_rect(Rect2(rx - 3.0, y0, 6.0, 7.0), X_COLD_WHITE, true)                       # 段端粗柱
+		if not cont_s:
+			draw_rect(Rect2(rx - 3.0, r.end.y - 7.0, 6.0, 7.0), X_COLD_WHITE, true)
+		# ⑤ 路灯（白球铁柱）与面海长椅
+		if y % 6 == 1:
+			var lp := Vector2(r.position.x + T * 0.78, r.position.y + T * 0.10)
+			draw_rect(Rect2(lp.x - 5.0, lp.y + T * 0.58, 12.0, 4.0), Color(0, 0, 0, 0.22), true)
+			draw_rect(Rect2(lp.x - 2.0, lp.y, 4.0, T * 0.62), P_PANEL.lightened(0.12), true)
+			draw_rect(Rect2(lp.x - 4.0, lp.y + T * 0.56, 8.0, 4.0), P_PANEL.lightened(0.05), true)
+			draw_circle(lp, T * 0.11, X_COLD_WHITE)
+			draw_circle(lp + Vector2(-1.5, -1.5), T * 0.05, Color(1, 1, 1))
+		elif y % 6 == 4 and not step:
+			var bx := r.position.x + T * 0.50
+			draw_rect(Rect2(bx + 3.0, r.position.y + T * 0.14 + 3.0, T * 0.20, T * 0.72), Color(0, 0, 0, 0.18), true)
+			draw_rect(Rect2(bx, r.position.y + T * 0.14, T * 0.20, T * 0.72), S_BENCH_WOOD, true)          # 座板（纵向，面朝东边的海）
+			draw_rect(Rect2(bx, r.position.y + T * 0.14, T * 0.05, T * 0.72), S_BENCH_WOOD.darkened(0.35), true)   # 靠背（西侧）
+			draw_rect(Rect2(bx + T * 0.05, r.position.y + T * 0.14, T * 0.04, T * 0.72), D_FURN_HI, true)
 
 ## 界外海：东界之外延续成开阔海（静态：不读 tick，保 VOIDGATE），顶/底外带里沙滩与海继续往外走。返回海岸线世界 x。
 func _draw_void_sea(c: CanvasItem, map: Rect2, bands: Array, w: int, h: int) -> float:
