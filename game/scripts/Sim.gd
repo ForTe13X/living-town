@@ -229,6 +229,8 @@ var lod_rotate_span := 31          # 无状态轮转周期(素数，【不整除
 var lod_player_r := 12             # 玩家 avatar(sim 实体，非相机)曼哈顿半径内的 agent 强制满帧
 var _player_pos := Vector2i(-1, -1) # 玩家 avatar(sim 实体，非相机)位置，每 tick 由 _compute_lod_cohort 刷新；(-1,-1)=无玩家(bench)
 var controlled_id := ""             # 生活模式（docs/190）：被玩家附身的【现有居民】id；""=无附身 → 全仿真逐字节不变
+signal life_action_done(action: String, target: String, wage: int)   # 被附身者做完一件物件动作（View 的「愿望」用；信号不进 digest）
+var _tone_bonus := 0.0              # 生活模式「说法」语气对本次接受判定的加项；只在 _commit_social 里对带 tone 的单子非零
 const LOD_NEAR_RADIUS := 8        # 兼容旧引用（默认值）
 const LOD_FAR_MULT := 3           # far agent 的决策周期 = decide_period × 此（降频）
 
@@ -1567,8 +1569,8 @@ func life_use(obj_id: String, action: String) -> String:
 	return "没有这个动作"
 
 ## 对身边的居民做社交动词（与 M1 player_act 同一份前置校验与 SocialTransaction；对方可以拒绝）。
-## say：玩家在「说法」里挑中的那句台词（可空 = 引擎默认台词）。
-func life_social(action: String, target_id: String, say := "") -> String:
+## say：玩家在「说法」里挑中的那句台词（可空 = 引擎默认台词）；tone：那句话的语气（可空 = 不加减）。
+func life_social(action: String, target_id: String, say := "", tone := "") -> String:
 	var ag := controlled()
 	if ag.is_empty():
 		return "未附身"
@@ -1578,13 +1580,104 @@ func life_social(action: String, target_id: String, say := "") -> String:
 	var prev = opt
 	if opt is Dictionary and String(opt.get("kind", "")) != "social":
 		ag["option"] = null                               # 放下手头的事去搭话
-	var r := _player_act_untraced(action, target_id, controlled_id, say)
+	var r := _player_act_untraced(action, target_id, controlled_id, say, tone)
 	if r != "" and prev is Dictionary and ag.get("option") == null:
 		ag["option"] = prev                               # 没开成口 → 手头的事照旧
 	return r
 
+## ── 语气项（docs/190 §二）：把「怎么说」折成接受判定里的一个数，确定、零 RNG ──
+## 模型给的语气是自由文本 → 先按关键字归到 9 类；归不进去的 = 0（不加不减）。
+const TONE_KEYS := [["调侃", ["调侃", "逗", "玩笑", "打趣", "揶揄"]], ["神秘", ["神秘", "悄悄", "压低"]], ["兴奋", ["兴奋", "激动", "惊"]],
+	["热情", ["热情", "热络", "开朗", "爽朗", "活泼"]], ["腼腆", ["腼腆", "害羞", "羞", "拘谨", "怯"]], ["关切", ["关切", "关心", "温柔", "体贴", "温和"]],
+	["诚恳", ["诚恳", "真诚", "郑重", "愧"]], ["克制", ["克制", "平静", "冷静", "委婉"]], ["直率", ["直率", "直接", "坦率", "干脆", "严肃"]], ["随和", ["随和", "轻松", "随意", "自然"]]]
+
+func _tone_class(tone: String) -> String:
+	for kv in TONE_KEYS:
+		for k in kv[1]:
+			if tone.find(String(k)) >= 0:
+				return String(kv[0])
+	return ""
+
+## 语气 × 对方性格 × 交情 → 加项（约 −12..+12；greet 的判定式量级是 need×0.4+affinity，故一句话能翻"差一点"的那些，翻不了坏关系）。
+func _tone_term(actor: Dictionary, target: Dictionary, tone: String) -> float:
+	var tc := _tone_class(tone)
+	if tc == "":
+		return 0.0
+	var tr: Array = (target.get("persona", {}) as Dictionary).get("traits", [])
+	var r: Dictionary = (target.get("relationships", {}) as Dictionary).get(String(actor.get("id", "")), {})
+	var fam := float(r.get("familiarity", 0.0))
+	var aff := float(r.get("affinity", 0.0))
+	var low := 100.0
+	for nid in target.get("needs", {}):
+		low = minf(low, float(target["needs"][nid]))
+	var has := func(names: Array) -> bool:
+		for n in names:
+			if n in tr:
+				return true
+		return false
+	var v := 0.0
+	match tc:
+		"热情":
+			v = 8.0 if has.call(["热情", "豁达", "好奇", "爱八卦", "豪爽", "开朗"]) else 2.0
+			if has.call(["内向", "敏感", "寡言"]): v -= 8.0
+		"腼腆":
+			v = 6.0 if has.call(["温柔", "内向", "敏感", "细心"]) else 0.0
+			if has.call(["急躁", "莽撞", "豪爽"]): v -= 4.0
+		"调侃":
+			v = 8.0 if (fam >= 8.0 and aff >= 0.0) else -8.0     # 熟人才开得起玩笑
+			if has.call(["敏感", "严谨", "固执"]): v -= 6.0
+		"关切":
+			v = 3.0 + (6.0 if low < 45.0 else 0.0)                # 对方正难受时，一句关心最值钱
+		"神秘", "兴奋":
+			v = 8.0 if has.call(["爱八卦", "好奇"]) else 0.0
+			if has.call(["严谨", "寡言", "务实"]): v -= 6.0
+		"直率":
+			v = 5.0 if has.call(["务实", "豪爽", "耿直", "急躁"]) else 0.0
+			if has.call(["敏感", "内向"]): v -= 6.0
+		"克制":
+			v = 5.0 if aff < 0.0 else 1.0
+		"诚恳":
+			v = 4.0 + (4.0 if aff < 0.0 else 0.0)
+		"随和":
+			v = 2.0
+	return v
+
+## 菜单用：你【看得出】这句话会不会说到对方心坎上吗？只有熟人（familiarity≥8）才给提示，陌生人你猜不到。
+func life_tone_hint(target_id: String, tone: String) -> int:
+	var ag := controlled()
+	var tgt: Dictionary = _agent_by_id.get(target_id, {})
+	if ag.is_empty() or tgt.is_empty():
+		return 0
+	if float((ag.get("relationships", {}) as Dictionary).get(target_id, {}).get("familiarity", 0.0)) < 8.0:   # 只读：不用 _rel（它会建空账）
+		return 0
+	var v := _tone_term(ag, tgt, tone)
+	return 1 if v >= 5.0 else (-1 if v <= -4.0 else 0)
+
+## 朝某格走一步（A*，同平面）。返回 "" = 迈了一步；"arrived" = 已在 stop_dist 之内；"blocked" = 走不动。
+## 生活模式的「点地走路 / 远处下单先走过去」由 View 按步频调用它——与 WASD 同速，不受 tick 快慢影响。
+func life_step_toward(dest: Vector2i, stop_dist := 0) -> String:
+	var ag := controlled()
+	if ag.is_empty():
+		return "blocked"
+	if _manh(ag["pos"], dest) <= stop_dist:
+		return "arrived"
+	var opt = ag.get("option")
+	if int(ag["talking"]) > 0 and opt is Dictionary and String(opt.get("kind", "")) == "social":
+		return "blocked"
+	var nxt := _nav_step(ag, dest)
+	if nxt == ag["pos"] or (nxt != dest and not _cell_walkable(_grid_for(String(ag.get("space", "town")), String(ag.get("floor", "outdoor"))), nxt)):
+		return "blocked"
+	if nxt == dest and not _cell_walkable(_grid_for(String(ag.get("space", "town")), String(ag.get("floor", "outdoor"))), nxt):
+		return "arrived"                                  # 终点是家具格：贴到旁边就算到
+	ag["option"] = null
+	ag["talking"] = 0
+	_move_agent(ag, nxt)
+	emit_signal("agent_changed", controlled_id)
+	return ""
+
 ## 对某位居民此刻哪些动词【开得了口】（纯读，与 _player_act_untraced 的前置校验逐条同源）。给「说法」生成器圈定合法集。
-func life_verb_options(target_id: String) -> Array:
+## ignore_reach：只看关系/物品/冲突这些"内容门"，不看距离（View 会先走过去再开口）。
+func life_verb_options(target_id: String, ignore_reach := false) -> Array:
 	var ag := controlled()
 	var tgt: Dictionary = _agent_by_id.get(target_id, {})
 	var out: Array = []
@@ -1592,7 +1685,7 @@ func life_verb_options(target_id: String) -> Array:
 		return out
 	var reach := ""
 	if not _same_plane(ag, tgt): reach = "对方不在同一空间"
-	elif not _socially_reachable(ag, tgt): reach = "太远了，走近点"
+	elif not _socially_reachable(ag, tgt) and not ignore_reach: reach = "太远了，走近点"
 	elif int(tgt["talking"]) > 0 and String(tgt.get("talk_with", "")) != controlled_id: reach = "%s 正忙着呢" % _name(tgt)
 	for v in LIFE_VERBS:
 		var why := reach
@@ -1661,7 +1754,7 @@ func player_act(action: String, target_id: String) -> String:
 	return result
 
 ## actor_id：默认 "player"（M1 新居民）；生活模式（docs/190）传被附身居民的 id，走同一份前置校验与同一条事务。
-func _player_act_untraced(action: String, target_id: String, actor_id := "player", say_override := "") -> String:
+func _player_act_untraced(action: String, target_id: String, actor_id := "player", say_override := "", tone := "") -> String:
 	var pl: Dictionary = _agent_by_id.get(actor_id, {})
 	if pl.is_empty():
 		return "玩家未入镇"
@@ -1709,8 +1802,11 @@ func _player_act_untraced(action: String, target_id: String, actor_id := "player
 		_:
 			return "未知动作"
 	if say_override != "":
-		say = say_override.substr(0, 80)            # 生活模式：玩家挑的「说法」只换台词，事务/裁决仍按动词走
-	_apply_social(pl, {"kind": "social", "action": action, "partner": target_id, "subject": subject, "say": say})
+		say = say_override.substr(0, 80)            # 生活模式：玩家挑的「说法」换台词；语气另作接受判定的加项（见 _tone_term）
+	var intent := {"kind": "social", "action": action, "partner": target_id, "subject": subject, "say": say}
+	if tone != "":
+		intent["tone"] = tone
+	_apply_social(pl, intent)
 	if pl.get("option") == null:
 		return "现在开不了口（对方刚走开？）"
 	return ""
@@ -3223,6 +3319,9 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 							ag["memory"].add("上工%s，挣了%d个钱" % [String(jb.get("title", "")), wage], 4, tick_no, ["job", "coin"])
 					else:
 						econ_stats["wages_skipped"] += 1
+			if _is_controlled(ag):
+				emit_signal("life_action_done", String(opt["action"]), String(opt["target"]),
+					_wage_for(ag, String(opt["action"])) if _econ_on() else 0)
 			ag["option"] = null
 		emit_signal("agent_changed", ag["id"])
 
@@ -4151,6 +4250,8 @@ func _apply_social(ag: Dictionary, intent: Dictionary) -> void:
 		"kind": "social", "action": action, "partner": pid,
 		"subject": str(intent.get("subject", "")), "remaining": CONVERSE_TICKS,
 	}
+	if intent.has("tone"):
+		ag["option"]["tone"] = str(intent["tone"])      # 生活模式：语气随单子走到 _commit_social
 	ag["talking"] = CONVERSE_TICKS
 	# 把对方也绑进这次对话；玩家做被动方时 +1 补齐相位差（talking 先于 option 推进一拍归零，
 	# 否则玩家可在最后一 tick 走出区域无成本作废 NPC 的事务——对抗审查#8；bench 无玩家零回归）
@@ -4188,7 +4289,11 @@ func _commit_social(ag: Dictionary, opt: Dictionary) -> void:
 		if ext != null:
 			ext.execute(self, ag, opt)
 		return
+	# 生活模式「说法」：玩家挑的语气按对方性格/交情折成接受判定的一个加项（docs/190 §二）。只有 life_social 的单子带 tone ⇒ 默认恒 0。
+	var tone_v := _tone_term(ag, target, String(opt["tone"])) if opt.has("tone") else 0.0
+	_tone_bonus = tone_v
 	var accepted := _acceptance_rule(ag, target, action, subject)
+	_tone_bonus = 0.0
 	var ra := _rel(ag, target["id"])
 	var rt := _rel(target, ag["id"])
 
@@ -4316,6 +4421,8 @@ func _commit_social(ag: Dictionary, opt: Dictionary) -> void:
 	# S3a 同派系日常社交额外亲和（小量，防锁死；仅日常类，不与 aid/endorse 叠算）
 	if String(ag["faction"]) != "" and String(ag["faction"]) == String(target["faction"]) and action in ["greet", "give", "gossip", "discuss"]:
 		aff_a += FACTION_INGROUP_AFF; aff_t += FACTION_INGROUP_AFF
+	if tone_v != 0.0:
+		aff_t += clampf(tone_v * 0.25, -2.0, 3.0)   # 说到心坎上 → 对方多记一分好；说岔了 → 接受了也打点折
 	ra["affinity"] = clampf(float(ra["affinity"]) + aff_a, -100.0, 100.0)
 	rt["affinity"] = clampf(float(rt["affinity"]) + aff_t, -100.0, 100.0)
 	ra["familiarity"] = float(ra["familiarity"]) + 1.0
@@ -6174,6 +6281,8 @@ func _acceptance_margin(actor: Dictionary, target: Dictionary, action: String, s
 	var extra := 0.0
 	if ext != null:
 		extra = float(ext.accept_delta(self, actor, target, action, subject))
+	if _tone_bonus != 0.0:
+		extra += _tone_bonus                                  # 生活模式语气项；默认 0 ⇒ 这一行不执行，逐字节不变
 	var sum := 0.0            # 判定式左端；硬短路(爱八卦)时不参与
 	var thr := 0.0            # 阈值 _w(...)
 	var hard := false        # 性格硬规则直接 accept（爱八卦收八卦/秘密来者不拒）

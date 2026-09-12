@@ -153,6 +153,50 @@ func _ready() -> void:
 	AIBackend.backend = prev_be
 	_ck("模型档回包标记为 ai 且只含合法动词", not got.is_empty() and String(got[0]["src"]) == "ai" and String(got[0]["verb"]) in legal, str(got.slice(0, 1)))
 
+	# ── 6b) 语气项：确定、按性格/交情分档，默认路径恒 0 ──
+	var coco: Dictionary = Sim.get_agent("coco")      # 内向·敏感
+	_ck("语气归类（自由文本）", Sim._tone_class("有点害羞地") == "腼腆" and Sim._tone_class("开玩笑") == "调侃" and Sim._tone_class("莫名其妙") == "")
+	_ck("热情对热情的人加分", Sim._tone_term(ben, aria, "热情") > 0.0, "%.1f" % Sim._tone_term(ben, aria, "热情"))
+	_ck("热情对内向敏感的人减分", Sim._tone_term(ben, coco, "热情") < 0.0, "%.1f" % Sim._tone_term(ben, coco, "热情"))
+	_ck("陌生人开不起玩笑", Sim._tone_term(ben, coco, "调侃") < 0.0)
+	_ck("无法归类的语气不加减", Sim._tone_term(ben, aria, "嗯") == 0.0)
+	_ck("判定加项默认复位为 0", Sim._tone_bonus == 0.0)
+	var fam_before := (ben["relationships"] as Dictionary).has("coco")
+	Sim.life_tone_hint("coco", "热情")
+	_ck("语气提示只读（不建空账）", (ben["relationships"] as Dictionary).has("coco") == fam_before)
+
+	# ── 6c) 点地走路：A* 逐格，被附身者自己的步频 ──
+	var start: Vector2i = ben["pos"]
+	var goal := start
+	var g2 := Sim._grid_for(String(ben["space"]), String(ben["floor"]))
+	for dx in range(-4, 5):
+		for dy in range(-4, 5):
+			var c := start + Vector2i(dx, dy)
+			if absi(dx) + absi(dy) >= 3 and Sim._cell_walkable(g2, c) and goal == start:
+				goal = c
+	var arrived := false
+	for i in 40:
+		var sr := Sim.life_step_toward(goal)
+		if sr == "arrived":
+			arrived = true
+			break
+		if sr == "blocked":
+			break
+	_ck("点地走到目标格", arrived and ben["pos"] == goal, "%s → %s" % [str(start), str(goal)])
+
+	# ── 6d) 完成信号：被附身者做完一件物件动作 → life_action_done ──
+	var done_log: Array = []
+	var cb := func(a: String, t: String, _w: int): done_log.append([a, t])
+	Sim.life_action_done.connect(cb)
+	_place(ben, sp, fl, _free_neighbor(sp, fl, opos))
+	Sim.life_use(target_obj, target_act)
+	for i in 200:
+		Sim.tick()
+		if ben.get("option") == null:
+			break
+	Sim.life_action_done.disconnect(cb)
+	_ck("做完发 life_action_done", done_log.size() == 1 and String(done_log[0][0]) == target_act, str(done_log))
+
 	# ── 7) Portal：贴身穿门，权限照验 ──
 	_place(ben, "town", "outdoor", ben["pos"] if sp == "town" else Sim._area_centroid("plaza"))
 	var hop: Dictionary = {}

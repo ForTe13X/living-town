@@ -86,6 +86,18 @@ var _prev_interval := 0.08
 var _press_pos := Vector2.ZERO
 var _pressing := false
 var _t := 0.0
+# 点地走路 / 远处下单先走过去（与 WASD 同步频，由 Sim.life_step_toward 逐格 A*）
+var _walk_on := false
+var _walk_dest := Vector2i.ZERO
+var _walk_goal: Dictionary = {}     # {kind: none|use|say|portal, …}；到了就执行
+var _walk_steps := 0
+const WALK_MAX_STEPS := 160
+# 每日愿望（Sims 的 wants）：纯 View 状态，从 Sim 信号与快照判定完成，不写 Sim
+var _wants: Array = []              # [{type, text, pts, done, …}]
+var _wants_day := -1
+var _score := 0
+var _wants_panel: Panel
+var _wants_l: RichTextLabel
 
 func setup(m: Node2D) -> void:
 	main = m
@@ -103,6 +115,9 @@ func setup(m: Node2D) -> void:
 	_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_toast.visible = false
 	Sim.world_reset.connect(func(): call_deferred("_after_reset"))
+	Sim.social_event.connect(_on_social_event)
+	Sim.life_action_done.connect(_on_action_done)
+	Sim.day_changed.connect(_on_day)
 
 # ── 选人 ─────────────────────────────────────────────────────────────────────
 func begin_select() -> void:
@@ -257,8 +272,11 @@ func start_life(id: String) -> void:
 	var pb: Node = main.get("_probe")
 	pb.cam.position = _agent_px(ag)
 	pb.cam.zoom = Vector2(_zoom, _zoom)
+	_walk_stop()
+	_score = 0
+	_roll_wants()
 	_refresh_hud()
-	_show_toast("你现在是 %s。WASD 走动，走近东西或人按 E。" % Sim._name(ag), 4.0)
+	_show_toast("你现在是 %s。WASD 或点地面走动，走近东西或人按 E。" % Sim._name(ag), 4.0)
 	main.call("_push", "[color=#ffd166]——— 你成为了 %s ———[/color]" % Sim._name(ag))
 
 ## 出图/眼验用（--life-menu）：立刻按一次 E。定格 tick 下 _process 还没刷过身边列表，这里先刷一次。
@@ -357,8 +375,12 @@ func _poll_move(delta: float) -> void:
 	var dx := int(Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT)) - int(Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT))
 	var dy := int(Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN)) - int(Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP))
 	if dx == 0 and dy == 0:
-		_move_cd = 0.0
+		if _walk_on:
+			_walk_tick()
+		else:
+			_move_cd = 0.0
 		return
+	_walk_stop()                                  # 一碰方向键就接管，放弃点地路线
 	if _move_cd > 0.0:
 		return
 	_move_cd = MOVE_STEP
@@ -378,6 +400,53 @@ func _poll_move(delta: float) -> void:
 		if r != "blocked":
 			_show_toast(r)
 			return
+
+## ── 走路（点地 / 先走过去再做）──────────────────────────────────────────────
+func _walk_to(dest: Vector2i, goal: Dictionary = {}) -> void:
+	if free_will:
+		_set_free_will(false)
+	_walk_on = true
+	_walk_dest = dest
+	_walk_goal = goal
+	_walk_steps = 0
+	_move_cd = 0.0
+
+func _walk_stop() -> void:
+	_walk_on = false
+	_walk_goal = {}
+
+func _walk_tick() -> void:
+	if _move_cd > 0.0:
+		return
+	_move_cd = MOVE_STEP
+	var kind := String(_walk_goal.get("kind", "none"))
+	var stop := 0 if kind == "none" else 1
+	if kind == "say":                             # 人会走动：每步重取目标位置
+		var tgt := Sim.get_agent(String(_walk_goal["id"]))
+		var me := Sim.get_agent(pid)
+		if tgt.is_empty() or not Sim._same_plane(me, tgt):
+			_show_toast("对方走远了")
+			_walk_stop()
+			return
+		_walk_dest = tgt["pos"]
+		if Sim._socially_reachable(me, tgt):
+			_arrive()
+			return
+	var r := Sim.life_step_toward(_walk_dest, stop)
+	_walk_steps += 1
+	if r == "arrived":
+		_arrive()
+	elif r == "blocked" or _walk_steps > WALK_MAX_STEPS:
+		_show_toast("走不过去")
+		_walk_stop()
+
+func _arrive() -> void:
+	var g := _walk_goal
+	_walk_stop()
+	match String(g.get("kind", "none")):
+		"use": _use_now(String(g["id"]), String(g["action"]))
+		"say": _say_now(String(g["id"]), g["ap"])
+		"portal": _do_portal(g["pos"])
 
 func _refresh_inter() -> void:
 	_inter = Sim.life_interactions()
@@ -534,6 +603,12 @@ func _tap(screen: Vector2) -> void:
 		var me := Sim.get_agent(pid)
 		if me.get("pos", Vector2i(-99, -99)) == cell:
 			_open_modal({})                        # 点自己 → 自己的菜单
+		else:
+			for e in Sim.life_interactions(999):   # 点到远处的门：走过去再进
+				if String(e["kind"]) == "portal" and e["pos"] == cell:
+					_walk_to(cell, {"kind": "portal", "pos": cell})
+					return
+			_walk_to(cell)                         # 点地面：走过去（Sims 的点地走路）
 		return
 	_focus_id = String(best["id"])
 	_open_modal(best)
@@ -571,7 +646,7 @@ func _request_approaches(tid: String) -> void:
 	var me := Sim.get_agent(pid)
 	var tgt := Sim.get_agent(tid)
 	var legal: Array = []
-	for v in Sim.life_verb_options(tid):
+	for v in Sim.life_verb_options(tid, true):   # 距离不算门：远了就先走过去
 		if bool(v["ok"]):
 			legal.append(String(v["action"]))
 	_approaches = AIBackend.approach_floor(me, tgt, legal)
@@ -625,16 +700,20 @@ func _rebuild_modal() -> void:
 			var tgt := Sim.get_agent(String(e["id"]))
 			var me := Sim.get_agent(pid)
 			title.text = String(e["label"])
-			sub.text = "%s · 看起来%s%s" % [AIBackend._rel_hint(me, String(e["id"])), String(AIBackend._mood(tgt)[0]), tab_hint]
+			var far := not Sim._socially_reachable(me, tgt)
+			sub.text = "%s · 看起来%s%s%s" % [AIBackend._rel_hint(me, String(e["id"])), String(AIBackend._mood(tgt)[0]),
+				" · 选了会先走过去" if far else "", tab_hint]
 			y = _mk_header("怎么开口" + ("   [模型构思中…]" if _ai_pending else ("   [模型]" if _has_ai() else "")), y, w)
 			if _approaches.is_empty():
 				y = _mk_note(_why_no_talk(String(e["id"])), y, w)
 			for ap in _approaches:
 				var apd: Dictionary = ap
-				var txt := "【%s·%s】%s   · %s" % [String(apd["tone"]), String(apd["emotion"]), String(apd["line"]), String(VERB_ZH.get(String(apd["verb"]), apd["verb"]))]
+				var hint := Sim.life_tone_hint(String(e["id"]), String(apd["tone"]))
+				var txt := "【%s·%s】%s   · %s%s" % [String(apd["tone"]), String(apd["emotion"]), String(apd["line"]),
+					String(VERB_ZH.get(String(apd["verb"]), apd["verb"])), ("  〔投其所好〕" if hint > 0 else ("  〔怕不对味〕" if hint < 0 else ""))]
 				y = _mk_opt(txt, true, _do_say.bind(String(e["id"]), apd), y, w)
 			y = _mk_header("直接做", y + 4.0, w)
-			for v in Sim.life_verb_options(String(e["id"])):
+			for v in Sim.life_verb_options(String(e["id"]), true):
 				var vd: Dictionary = v
 				var txt := String(VERB_ZH.get(String(vd["action"]), vd["action"])) + ("" if bool(vd["ok"]) else "   （%s）" % String(vd["why"]))
 				y = _mk_opt(txt, bool(vd["ok"]), _do_say.bind(String(e["id"]), {"verb": String(vd["action"]), "line": ""}), y, w)
@@ -717,16 +796,29 @@ func _pick(i: int) -> void:
 
 func _do_use(oid: String, action: String) -> void:
 	_close_modal()
+	var o: Dictionary = Sim.world.get("objects", {}).get(oid, {})
+	var me := Sim.get_agent(pid)
+	if not o.is_empty() and Sim._manh(me["pos"], o["pos"]) > 1:
+		_walk_to(o["pos"], {"kind": "use", "id": oid, "action": action})   # 先按步频走过去，到了再下单
+		return
+	_use_now(oid, action)
+
+func _use_now(oid: String, action: String) -> void:
 	var r := Sim.life_use(oid, action)
-	if r != "":
-		_show_toast(r)
-	else:
-		_show_toast("去%s" % action)
+	_show_toast(r if r != "" else action)
 
 func _do_say(tid: String, ap: Dictionary) -> void:
 	_close_modal()
+	var me := Sim.get_agent(pid)
+	var tgt := Sim.get_agent(tid)
+	if not tgt.is_empty() and Sim._same_plane(me, tgt) and not Sim._socially_reachable(me, tgt):
+		_walk_to(tgt["pos"], {"kind": "say", "id": tid, "ap": ap})
+		return
+	_say_now(tid, ap)
+
+func _say_now(tid: String, ap: Dictionary) -> void:
 	var line := String(ap.get("line", ""))
-	var r := Sim.life_social(String(ap["verb"]), tid, line)
+	var r := Sim.life_social(String(ap["verb"]), tid, line, String(ap.get("tone", "")))
 	if r != "":
 		_show_toast(r)
 		return
@@ -837,7 +929,22 @@ func _build_hud() -> void:
 	_will_btn.pressed.connect(func(): _set_free_will(not free_will))
 	card.add_child(_will_btn)
 	var keys := _mk_label(_hud, 13, Vector2(10, DESIGN.y - 26), Vector2(880, 20), MUTED)
-	keys.text = "WASD 走动 · E 互动 · 点击物件/居民 · Tab 换目标 · Q 放下 · 空格 暂停 · 1-3 速度 · 滚轮 缩放 · F 自主 · C 换人 · F5/F8 存读档"
+	keys.text = "WASD/点地 走动 · E 互动 · 点物件/居民 开菜单 · Tab 换目标 · Q 放下 · 空格 暂停 · 1-3 速度 · 滚轮 缩放 · F 自主 · C 换人"
+	_wants_panel = Panel.new()
+	_wants_panel.position = Vector2(8, 48)
+	_wants_panel.size = Vector2(318, 108)
+	_wants_panel.add_theme_stylebox_override("panel", _style(INK, GOLD, 7, 5))
+	_wants_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hud.add_child(_wants_panel)
+	_wants_l = RichTextLabel.new()
+	_wants_l.bbcode_enabled = true
+	_wants_l.add_theme_font_override("normal_font", _fnt)
+	_wants_l.add_theme_font_size_override("normal_font_size", 15)
+	_wants_l.position = Vector2(12, 8)
+	_wants_l.size = Vector2(298, 96)
+	_wants_l.scroll_active = false
+	_wants_l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_wants_panel.add_child(_wants_l)
 	_prompt = _mk_label(_layer, 16, Vector2.ZERO, Vector2(260, 26), PARCH)
 	_prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var ps := _style(INK, GOLD, 5, 2)
@@ -872,8 +979,13 @@ func _refresh_hud() -> void:
 		txt = _doing_text(d)
 		if String(d.get("phase", "")) == "use" and int(d.get("total", 0)) > 0:
 			frac = 1.0 - float(d["remaining"]) / float(d["total"])
+	if _walk_on and d.is_empty():
+		txt = "走过去…" if String(_walk_goal.get("kind", "none")) == "none" else "走过去，然后%s" % String(_walk_goal.get("action", VERB_ZH.get(String((_walk_goal.get("ap", {}) as Dictionary).get("verb", "")), "进门")))
 	_doing_l.text = txt
 	_doing_fill.size.x = (372.0 - 100.0) * clampf(frac, 0.0, 1.0)
+	_check_state_wants(st)
+	if _wants_day != Sim.day:
+		_roll_wants()
 	_sync_speed_btns()
 
 func _doing_text(d: Dictionary) -> String:
@@ -934,6 +1046,127 @@ func _draw_marker(n: Node2D) -> void:
 		var p: Vector2i = e["pos"]
 		var a := 0.55 + 0.35 * sin(_t * 5.0)
 		n.draw_rect(Rect2(p.x * 48 + 2, p.y * 48 + 2, 44, 44), Color(GOLD.r, GOLD.g, GOLD.b, a), false, 2.0)
+	if _walk_on and String(_walk_goal.get("kind", "none")) == "none":   # 点地的落脚点：一圈会呼吸的金环
+		var dc := Vector2(_walk_dest.x * 48 + 24, _walk_dest.y * 48 + 30)
+		var rr := 10.0 + 3.0 * sin(_t * 6.0)
+		n.draw_arc(dc, rr, 0.0, TAU, 24, Color(GOLD.r, GOLD.g, GOLD.b, 0.85), 2.0)
+		n.draw_arc(dc, rr * 0.45, 0.0, TAU, 16, Color(GOLD.r, GOLD.g, GOLD.b, 0.6), 1.5)
+
+# ── 每日愿望（Sims 的 wants）─────────────────────────────────────────────────
+## 每个游戏日按 (人, 天) 确定性地抽 3 条；完成判定只读 Sim 的信号与快照，奖励是 View 侧的「满足感」分，不写 Sim。
+func _roll_wants() -> void:
+	_wants = []
+	_wants_day = Sim.day
+	var me := Sim.get_agent(pid)
+	if me.is_empty():
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.seed = Sim.fnv1a32("%s#%d" % [pid, Sim.day])
+	var pool: Array = []
+	var st := Sim.life_status()
+	var needs: Dictionary = st.get("needs", {})
+	var lowest := "hunger"
+	for nid in NEED_ORDER:
+		if float(needs.get(nid, 100.0)) < float(needs.get(lowest, 100.0)):
+			lowest = nid
+	pool.append({"type": "need_use", "need": lowest, "text": {"hunger": "好好吃一顿", "energy": "睡个好觉", "social": "找人热闹一下",
+		"fun": "找点乐子", "hygiene": "把自己收拾干净"}.get(lowest, "照顾好自己"), "pts": 30})
+	if String(st.get("job", "")) != "":
+		pool.append({"type": "work", "text": "上一次工（%s）" % String(st["job"]), "pts": 40})
+	pool.append({"type": "social", "verb": "greet", "count": 3, "n": 0, "text": "跟 3 个人打招呼", "pts": 30})
+	if int((me.get("inventory", {}) as Dictionary).get("gift", 0)) > 0:
+		pool.append({"type": "social", "verb": "give", "count": 1, "n": 0, "text": "送出一份礼物", "pts": 35})
+	pool.append({"type": "social", "verb": "invite", "count": 1, "n": 0, "text": "约一个人改天见面", "pts": 35})
+	var stranger := ""
+	for ag in Sim.agents:
+		var oid := String(ag["id"])
+		if oid == pid or ag.get("is_player", false) or ag.get("affiliate", false) or Art.char_sheet(oid) == null:
+			continue
+		if float((me.get("relationships", {}) as Dictionary).get(oid, {}).get("familiarity", 0.0)) < 3.0:
+			stranger = oid
+			if rng.randi() % 3 == 0:
+				break
+	if stranger != "":
+		pool.append({"type": "meet", "id": stranger, "text": "和%s说上话" % Sim._name(Sim.get_agent(stranger)), "pts": 45})
+	pool.append({"type": "coin", "amount": int(st.get("coin", 0)) + 6, "text": "攒到 %d 币" % (int(st.get("coin", 0)) + 6), "pts": 40})
+	if float(needs.get("fun", 100.0)) < 70.0:
+		pool.append({"type": "need_high", "need": "fun", "text": "让趣味涨到 80", "pts": 25})
+	while _wants.size() < 3 and not pool.is_empty():
+		var w: Dictionary = pool.pop_at(rng.randi() % pool.size())
+		w["done"] = false
+		_wants.append(w)
+	_refresh_wants()
+
+func _complete(w: Dictionary) -> void:
+	if bool(w.get("done", false)):
+		return
+	w["done"] = true
+	_score += int(w["pts"])
+	_show_toast("愿望达成：%s  满足感 +%d" % [String(w["text"]), int(w["pts"])], 3.0)
+	main.call("_push", "[color=#9be38a]√ %s 完成了愿望：%s[/color]" % [Sim._name(Sim.get_agent(pid)), String(w["text"])])
+	_refresh_wants()
+
+func _on_social_event(ev: Dictionary) -> void:
+	if not active or String(ev.get("actor", "")) != pid or not bool(ev.get("accepted", false)):
+		return
+	for w in _wants:
+		match String(w["type"]):
+			"social":
+				if String(ev.get("type", "")) == String(w["verb"]):
+					w["n"] = int(w["n"]) + 1
+					if int(w["n"]) >= int(w["count"]):
+						_complete(w)
+					else:
+						_refresh_wants()
+			"meet":
+				if String(ev.get("target", "")) == String(w["id"]):
+					_complete(w)
+
+func _on_action_done(action: String, target: String, wage: int) -> void:
+	if not active:
+		return
+	var need := ""
+	for adv in Sim.world.get("objects", {}).get(target, {}).get("advertises", []):
+		if adv is Dictionary and String(adv.get("action", "")) == action:
+			need = String(adv.get("need", ""))
+	for w in _wants:
+		match String(w["type"]):
+			"need_use":
+				if need == String(w["need"]): _complete(w)
+			"work":
+				if wage > 0: _complete(w)
+
+## 周期检查（钱/需求阈值类）：_refresh_hud 每 0.1s 调一次
+func _check_state_wants(st: Dictionary) -> void:
+	for w in _wants:
+		if bool(w["done"]):
+			continue
+		match String(w["type"]):
+			"coin":
+				if int(st.get("coin", 0)) >= int(w["amount"]): _complete(w)
+			"need_high":
+				if float((st.get("needs", {}) as Dictionary).get(String(w["need"]), 0.0)) >= 80.0: _complete(w)
+
+func _on_day(d: int) -> void:
+	if not active:
+		return
+	var n := 0
+	for w in _wants:
+		if bool(w["done"]): n += 1
+	main.call("_push", "[color=#ffd166]%s 的第 %d 天过去了：愿望完成 %d/%d · 满足感 %d[/color]" % [Sim._name(Sim.get_agent(pid)), d - 1, n, _wants.size(), _score])
+	_roll_wants()
+	_show_toast("新的一天。今天想做的事已更新。", 3.0)
+
+func _refresh_wants() -> void:
+	if _wants_l == null:
+		return
+	var s := "[color=#cda35c]今天的愿望[/color]   [color=#a8a393]满足感 %d[/color]" % _score
+	for w in _wants:
+		var prog := ""
+		if String(w["type"]) == "social" and int(w["count"]) > 1:
+			prog = " (%d/%d)" % [mini(int(w["n"]), int(w["count"])), int(w["count"])]
+		s += ("\n[color=#9be38a]√ %s[/color]" % String(w["text"])) if bool(w["done"]) else ("\n[color=#f2dca8]· %s%s[/color]  [color=#7d786c]+%d[/color]" % [String(w["text"]), prog, int(w["pts"])])
+	_wants_l.text = s
 
 # ── 小工具 ───────────────────────────────────────────────────────────────────
 func _show_toast(text: String, secs := 2.4) -> void:
