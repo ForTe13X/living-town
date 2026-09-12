@@ -372,6 +372,31 @@ const TELEPORT_TILES := 3.0    # 超过它视为瞬移（换 Space / 时间轴�
 var _render_pos := {}          # id -> Vector2（纯渲染坐标）
 var _moving := {}              # id -> bool（是否仍在追格心；行走帧靠它）
 var _walk_row := {}            # id -> int（行走帧行号，进入移动时锁定）
+# docs/181：PixelLab 8 向角色表。行序同 tools/import_pixellab_char.py 的 DIRS。
+const DIR8_ROW := {
+	Vector2i(0, 1): 0, Vector2i(1, 1): 1, Vector2i(1, 0): 2, Vector2i(1, -1): 3,
+	Vector2i(0, -1): 4, Vector2i(-1, -1): 5, Vector2i(-1, 0): 6, Vector2i(-1, 1): 7,
+}
+var _dir8 := {}                # id -> 行（0=朝南）
+var _char8_by_name := {}       # persona 显示名 -> persona key（克隆 npc_* 只带 persona 字典，没有 key）
+
+## 这个居民有没有 8 向表：先按 id（具名居民 id == persona key），再按 persona 名找（克隆）。
+func _char8_key(ag: Dictionary) -> String:
+	var id := String(ag["id"])
+	if Art.char_sheet(id) != null:
+		return id
+	if _char8_by_name.is_empty():
+		_char8_by_name["__loaded"] = ""
+		var f := FileAccess.open("res://data/personas.json", FileAccess.READ)   # Sim 只在建镇时局部读它，不留表
+		if f != null:
+			var pd: Variant = JSON.parse_string(f.get_as_text())
+			f.close()
+			if pd is Dictionary:
+				for k in pd:
+					if pd[k] is Dictionary:
+						_char8_by_name[String((pd[k] as Dictionary).get("name", ""))] = String(k)
+	var pk := String(_char8_by_name.get(String((ag.get("persona", {}) as Dictionary).get("name", "")), ""))
+	return pk if pk != "" and Art.char_sheet(pk) != null else ""
 var _emote := {}         # id -> {tex, until}
 var _say := {}           # id -> {text, until}（对话罐头台词；M2 换 LLM 生成）
 const SAY_TICKS := 40
@@ -4649,6 +4674,7 @@ func _process(delta: float) -> void:
 		var prev: Vector2i = _prev_pos.get(id, gp)
 		if gp != prev:
 			var d := gp - prev
+			_dir8[id] = DIR8_ROW.get(Vector2i(signi(d.x), signi(d.y)), int(_dir8.get(id, 0)))   # docs/181：8 向朝向
 			if absi(d.x) >= absi(d.y) and d.x != 0:
 				_walk_row[id] = 1
 				_facing_left[id] = d.x < 0
@@ -4883,7 +4909,23 @@ func _draw_agent(ag: Dictionary) -> void:
 	if spr == null:
 		spr = _fallback_tex(ag)              # 空/缺 sprite（玩家）→ 体面回退，别再画圆盘
 	var head := center.y - T * 0.32          # 头顶（fallback 圆的情形）
-	if spr != null:
+	var c8 := _char8_key(ag)
+	if c8 != "":
+		# docs/181：PixelLab 8 向表，1× 整数尺（48px 源 = 一格宽），脚底行压落脚线。
+		var sheet := Art.char_sheet(c8)
+		var cell := float(Art.CHAR8_CELL)
+		var nwalk := maxi(1, int(sheet.get_width() / Art.CHAR8_CELL) - 1)
+		var aid8 := String(ag["id"])
+		draw_set_transform(Vector2(center.x, feet), 0.0, Vector2(1.0, 0.40))
+		for si in 3:
+			draw_circle(Vector2.ZERO, T * 0.17 * (1.0 + float(2 - si) * 0.34), Color(0, 0, 0, 0.08 + float(si) * 0.030))
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		var col8 := 1 + (Sim.tick_no % nwalk) if bool(_moving.get(aid8, false)) else 0
+		var row8 := int(_dir8.get(aid8, 0))
+		var top8 := feet - float(Art.char_sheet_feet(c8))
+		head = top8 + cell * 0.10
+		draw_texture_rect_region(sheet, Rect2(center.x - cell * 0.5, top8, cell, cell), Rect2(col8 * cell, row8 * cell, cell, cell))
+	elif spr != null:
 		# 软阴影 + 按移动选行走帧（cols0-3 循环，左向水平翻转）。整数 2x 缩放，且把源帧里人物的【脚】压在落脚线上
 		var fr := _agent_frame(ag)
 		# 脚下阴影：旧版是 draw_circle(feet, T*0.22, α=.25) —— 直径 0.44 格几乎和精灵一样宽、边缘还是硬的，
