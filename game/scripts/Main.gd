@@ -3315,7 +3315,10 @@ func _unhandled_input(e: InputEvent) -> void:
 const QUICKSAVE := "user://quicksave.dat"
 
 func _quick_save() -> void:
-	var ok: bool = Sim.save_game(QUICKSAVE, {"name": "quicksave", "day": Sim.day})
+	var meta := {"name": "quicksave", "day": Sim.day}
+	if _life != null and _life.active:
+		meta["life"] = _life.save_state()                 # 生活模式：你是谁、满足感、愿望、志向（View 状态随档走）
+	var ok: bool = Sim.save_game(QUICKSAVE, meta)
 	_push("[color=#9ad0ff]存档%s（第 %d 天 · tick %d）[/color]" % [("成功" if ok else "失败"), Sim.day, Sim.tick_no])
 
 func _quick_load() -> void:
@@ -3344,6 +3347,8 @@ func _after_load() -> void:
 	# Keep the rendered panel coupled to the final reconciled plane/selection.
 	_update_obs()
 	_rebuild_feed()   # 读档=换世界：播报同样按新 event_log 重建
+	if _life != null:
+		_life.load_state(Sim.loaded_meta.get("life", {}) if Sim.loaded_meta.get("life") is Dictionary else {})
 
 func _vp() -> Vector2:
 	return get_viewport_rect().size

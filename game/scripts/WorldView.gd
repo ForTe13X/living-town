@@ -5452,6 +5452,32 @@ func _action_label(opt: Dictionary) -> String:
 		return ""
 	return Sim._verb(act) if String(opt.get("kind", "")) == "social" else act
 
+## 生活模式（docs/190）：同一格上的几个人名牌按序往上叠（被附身者 0 = 最贴头顶），不再叠成一团字。
+## 只在有人被附身时生效 ⇒ 观察者模式与所有既有出图逐像素不变。每帧建一次表。
+var _stack_frame := -1
+var _stack_of := {}
+func _label_stack(ag: Dictionary) -> int:
+	if Sim.controlled_id == "":
+		return 0
+	var fr := Engine.get_process_frames()
+	if fr != _stack_frame:
+		_stack_frame = fr
+		_stack_of = {}
+		var seen := {}
+		var order: Array = [Sim.get_agent(Sim.controlled_id)]
+		for a in Sim.agents:
+			if String(a["id"]) != Sim.controlled_id:
+				order.append(a)
+		for a in order:
+			if (a as Dictionary).is_empty():
+				continue
+			var p: Vector2i = a["pos"]
+			var k := "%s|%s|%d|%d" % [String(a.get("space", "town")), String(a.get("floor", "outdoor")), p.x, p.y]
+			var n := int(seen.get(k, 0))
+			seen[k] = n + 1
+			_stack_of[String(a["id"])] = n
+	return int(_stack_of.get(String(ag["id"]), 0))
+
 func _draw_agent(ag: Dictionary) -> void:
 	var center := _rpos(ag)                   # 绘制坐标（插值后）；本函数不做裁剪判定
 	var feet := center.y + T * 0.30          # 落脚线：影子 / 派系环 / 精灵底边都对齐它
@@ -5527,7 +5553,7 @@ func _draw_agent(ag: Dictionary) -> void:
 		_draw_urgent_need(Vector2(center.x, feet + T * 0.20), ag)
 	# 头顶 emote（社交事件触发，短暂显示）：20px 源 × 2 整数倍。
 	# **恒显、不参与稀释**：它本身就是"此刻有事发生"的信号，且是 D4 录屏抽帧要抓的东西之一。
-	var name_y := head - T * 0.12            # 名字基线：紧贴头顶上方
+	var name_y := head - T * 0.12 - float(_label_stack(ag)) * 17.0   # 名字基线：紧贴头顶上方（生活模式下同格的人名牌往上叠）
 	var em = _emote.get(aid)
 	if em != null and Sim.tick_no < int(em["until"]):
 		var et: Texture2D = em["tex"]

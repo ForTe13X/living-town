@@ -98,6 +98,22 @@ var _wants_day := -1
 var _score := 0
 var _wants_panel: Panel
 var _wants_l: RichTextLabel
+# 志向（Sims 的 aspiration）：选人时挑一个一辈子的目标；进度只读 Sim 快照
+const ASPIRATIONS := [
+	{"id": "friends", "name": "广结善缘", "desc": "交到 5 个好朋友", "goal": 5},
+	{"id": "wealth", "name": "发家致富", "desc": "攒到 60 币", "goal": 60},
+	{"id": "craft", "name": "手艺人", "desc": "本职手艺升 2 级", "goal": 2},
+	{"id": "popular", "name": "镇上红人", "desc": "让 8 个人觉得你靠谱", "goal": 8},
+]
+const ASP_PTS := 300
+var _asp_idx := 0
+var _asp: Dictionary = {}
+var _asp_base := 0
+var _asp_done := false
+var _asp_btns: Array = []
+# 人际面板（R）
+var _rel_panel: Panel
+var _rel_open := false
 
 func setup(m: Node2D) -> void:
 	main = m
@@ -209,6 +225,20 @@ func _build_select() -> void:
 	_sel_detail.scroll_active = false
 	_sel_detail.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_sel.add_child(_sel_detail)
+	var al := _mk_label(_sel, 15, Vector2(56, 694), Vector2(60, 24), GOLD)
+	al.text = "志向"
+	_asp_btns = []
+	for i in ASPIRATIONS.size():
+		var ab := Button.new()
+		ab.text = String(ASPIRATIONS[i]["name"])
+		ab.tooltip_text = String(ASPIRATIONS[i]["desc"])
+		ab.position = Vector2(100 + i * 118, 688)
+		ab.size = Vector2(110, 32)
+		ab.focus_mode = Control.FOCUS_NONE
+		_style_btn(ab, 15)
+		ab.pressed.connect(_pick_asp.bind(i))
+		_sel.add_child(ab)
+		_asp_btns.append(ab)
 	var go := Button.new()
 	go.text = "开始这段人生"
 	go.position = Vector2(DESIGN.x - 260, 646)
@@ -217,7 +247,7 @@ func _build_select() -> void:
 	go.pressed.connect(func(): start_life(String(_sel_ids[_sel_idx])))
 	_sel.add_child(go)
 	var keys := _mk_label(_sel, 13, Vector2(0, 738), Vector2(DESIGN.x, 20), MUTED)
-	keys.text = "方向键/鼠标 挑人 · Enter 或双击 开始" + (" · Esc 回到原来的人生" if pid != "" and Sim.get_agent(pid).size() > 0 else "")
+	keys.text = "方向键/鼠标 挑人 · Tab 换志向 · Enter 或双击 开始" + (" · Esc 回到原来的人生" if pid != "" and Sim.get_agent(pid).size() > 0 else "")
 	keys.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
 func _on_card_input(e: InputEvent, i: int) -> void:
@@ -241,6 +271,19 @@ func _select_card(i: int) -> void:
 	var jtxt := "无业" if job.is_empty() else "%s（日薪 %d）" % [String(job.get("title", "")), int(job.get("wage", 0))]
 	_sel_detail.text = "[color=#f2dca8][font_size=22]%s[/font_size][/color]   [color=#a8a393]%s · 家在%s · 身上 %d 币[/color]\n%s\n[color=#a8a393]说话：%s[/color]" % [
 		String(p.get("name", id)), jtxt, home, Sim._coin_of(id), String(p.get("bio", "")), String(p.get("style", ""))]
+	_pick_asp(_asp_idx)
+
+func _pick_asp(i: int) -> void:
+	if _sel_ids.is_empty():
+		return
+	var has_job := not Sim._job_of(String(_sel_ids[_sel_idx])).is_empty()
+	if String(ASPIRATIONS[i]["id"]) == "craft" and not has_job:
+		i = 0                                     # 无业的人没有本职手艺可升
+	_asp_idx = i
+	for k in _asp_btns.size():
+		var b: Button = _asp_btns[k]
+		b.disabled = String(ASPIRATIONS[k]["id"]) == "craft" and not has_job
+		b.add_theme_stylebox_override("normal", _style(INK_HI if k == _asp_idx else INK, GOLD if k == _asp_idx else GOLD_DIM, 5, 0))
 
 # ── 开始 / 离开 ──────────────────────────────────────────────────────────────
 func start_life(id: String) -> void:
@@ -274,6 +317,14 @@ func start_life(id: String) -> void:
 	pb.cam.zoom = Vector2(_zoom, _zoom)
 	_walk_stop()
 	_score = 0
+	_asp = (ASPIRATIONS[_asp_idx] as Dictionary).duplicate()
+	if String(_asp["id"]) == "craft" and Sim._job_of(id).is_empty():
+		_asp = (ASPIRATIONS[0] as Dictionary).duplicate()
+	_asp_done = false
+	_asp_base = 0
+	_asp_base = _asp_progress()                   # 手艺人按"从现在起升几级"算；其它是绝对量
+	if String(_asp["id"]) != "craft":
+		_asp_base = 0
 	_roll_wants()
 	_refresh_hud()
 	_show_toast("你现在是 %s。WASD 或点地面走动，走近东西或人按 E。" % Sim._name(ag), 4.0)
@@ -421,7 +472,7 @@ func _walk_tick() -> void:
 	_move_cd = MOVE_STEP
 	var kind := String(_walk_goal.get("kind", "none"))
 	var stop := 0 if kind == "none" else 1
-	if kind == "say":                             # 人会走动：每步重取目标位置
+	if kind == "say" or kind == "talk":           # 人会走动：每步重取目标位置
 		var tgt := Sim.get_agent(String(_walk_goal["id"]))
 		var me := Sim.get_agent(pid)
 		if tgt.is_empty() or not Sim._same_plane(me, tgt):
@@ -447,6 +498,105 @@ func _arrive() -> void:
 		"use": _use_now(String(g["id"]), String(g["action"]))
 		"say": _say_now(String(g["id"]), g["ap"])
 		"portal": _do_portal(g["pos"])
+		"talk": _open_agent_menu(String(g["id"]))
+
+func _open_agent_menu(tid: String) -> void:
+	var tgt := Sim.get_agent(tid)
+	if tgt.is_empty():
+		return
+	_focus_id = tid
+	_open_modal({"kind": "agent", "id": tid, "label": Sim._name(tgt), "pos": tgt["pos"],
+		"dist": Sim._manh(Sim.get_agent(pid)["pos"], tgt["pos"]), "busy": int(tgt["talking"]) > 0})
+
+# ── 存读档（Main 在 F5/F8 调）──────────────────────────────────────────────────
+func save_state() -> Dictionary:
+	return {"pid": pid, "score": _score, "wants": _wants.duplicate(true), "wants_day": _wants_day,
+		"asp": _asp.duplicate(), "asp_base": _asp_base, "asp_done": _asp_done}
+
+func load_state(d: Dictionary) -> void:
+	if d.is_empty() or Sim.get_agent(String(d.get("pid", ""))).is_empty():
+		return
+	if not active or pid != String(d["pid"]):
+		start_life(String(d["pid"]))
+	Sim.running = false
+	_score = int(d.get("score", 0))
+	_wants = (d.get("wants", []) as Array).duplicate(true)
+	_wants_day = int(d.get("wants_day", Sim.day))
+	_asp = (d.get("asp", {}) as Dictionary).duplicate()
+	_asp_base = int(d.get("asp_base", 0))
+	_asp_done = bool(d.get("asp_done", false))
+	_refresh_wants()
+	_sync_speed_btns()
+	_show_toast("读档完成 · 空格继续", 3.0)
+
+# ── 人际面板（R）：你认识谁、交情几何；点一行走过去开菜单 ─────────────────────────
+func _toggle_rel() -> void:
+	if _rel_open:
+		_rel_open = false
+		if _rel_panel != null:
+			_rel_panel.visible = false
+		return
+	_rel_open = true
+	if _rel_panel != null:
+		_rel_panel.queue_free()
+	_rel_panel = Panel.new()
+	_rel_panel.add_theme_stylebox_override("panel", _style(INK, GOLD, 7, 5))
+	_rel_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_layer.add_child(_rel_panel)
+	var me := Sim.get_agent(pid)
+	var rels: Dictionary = me.get("relationships", {})
+	var rows: Array = []
+	for oid in rels:
+		var o := Sim.get_agent(String(oid))
+		if o.is_empty() or o.get("affiliate", false):
+			continue
+		var r: Dictionary = rels[oid]
+		rows.append({"id": String(oid), "fam": float(r.get("familiarity", 0.0)), "aff": float(r.get("affinity", 0.0))})
+	rows.sort_custom(func(a, b): return a["fam"] > b["fam"] if a["fam"] != b["fam"] else String(a["id"]) < String(b["id"]))
+	rows = rows.slice(0, 12)
+	var t := _mk_label(_rel_panel, 18, Vector2(14, 8), Vector2(320, 26), PARCH)
+	t.text = "人际 · %s 认识的人" % Sim._name(me)
+	var y := 40.0
+	if rows.is_empty():
+		var nl := _mk_label(_rel_panel, 14, Vector2(14, y), Vector2(320, 22), MUTED)
+		nl.text = "还谁都不熟。走近别人按 E 打个招呼吧。"
+		y += 28.0
+	for rw in rows:
+		var o2 := Sim.get_agent(String(rw["id"]))
+		var here := Sim._same_plane(me, o2)
+		var b := Button.new()
+		b.text = "%s   %s   好感 %+d · 熟 %d%s" % [Sim._name(o2), AIBackend._rel_hint(me, String(rw["id"])), int(rw["aff"]), int(rw["fam"]), "" if here else "   （不在这儿）"]
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		b.position = Vector2(10, y)
+		b.size = Vector2(330, 28)
+		b.disabled = not here
+		b.focus_mode = Control.FOCUS_NONE
+		_style_btn(b, 14)
+		b.pressed.connect(_rel_go.bind(String(rw["id"])))
+		_rel_panel.add_child(b)
+		var bar := ColorRect.new()                # 好感条：中线为 0，绿右红左
+		var w := clampf(absf(rw["aff"]) / 100.0, 0.0, 1.0) * 60.0
+		bar.color = Color(0.49, 0.80, 0.42, 0.85) if rw["aff"] >= 0 else Color(0.92, 0.38, 0.32, 0.85)
+		bar.position = Vector2(270 + (0.0 if rw["aff"] >= 0 else -w), 22)
+		bar.size = Vector2(maxf(w, 1.0), 3)
+		bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		b.add_child(bar)
+		y += 31.0
+	var foot := _mk_label(_rel_panel, 12, Vector2(14, y + 2), Vector2(320, 18), MUTED)
+	foot.text = "点一个人：走过去并打开互动菜单 · R 关闭"
+	_rel_panel.position = Vector2(8, 186)
+	_rel_panel.size = Vector2(350, y + 26)
+
+func _rel_go(tid: String) -> void:
+	_toggle_rel()
+	var me := Sim.get_agent(pid)
+	var tgt := Sim.get_agent(tid)
+	if tgt.is_empty():
+		return
+	if Sim._socially_reachable(me, tgt):
+		_open_agent_menu(tid)
+	else:
+		_walk_to(tgt["pos"], {"kind": "talk", "id": tid})
 
 func _refresh_inter() -> void:
 	_inter = Sim.life_interactions()
@@ -547,9 +697,10 @@ func _unhandled_input(e: InputEvent) -> void:
 				KEY_4, KEY_KP_4: _set_speed(FF_SPEED)
 				KEY_F: _set_free_will(not free_will)
 				KEY_C: begin_select()
+				KEY_R: _toggle_rel()
 				KEY_EQUAL, KEY_KP_ADD: _zoom = clampf(_zoom * 1.15, ZOOM_MIN, ZOOM_MAX)
 				KEY_MINUS, KEY_KP_SUBTRACT: _zoom = clampf(_zoom / 1.15, ZOOM_MIN, ZOOM_MAX)
-				KEY_G, KEY_B, KEY_Y, KEY_T, KEY_P, KEY_M, KEY_L, KEY_HOME, KEY_I, KEY_PAGEUP, KEY_PAGEDOWN, KEY_PERIOD, KEY_COMMA, KEY_BRACKETLEFT, KEY_BRACKETRIGHT, KEY_R, KEY_N: pass   # 观察者/M1 键位在生活模式里静音
+				KEY_G, KEY_B, KEY_Y, KEY_T, KEY_P, KEY_M, KEY_L, KEY_HOME, KEY_I, KEY_PAGEUP, KEY_PAGEDOWN, KEY_PERIOD, KEY_COMMA, KEY_BRACKETLEFT, KEY_BRACKETRIGHT, KEY_N: pass   # 观察者/M1 键位在生活模式里静音
 				_: used = false
 		if used:
 			get_viewport().set_input_as_handled()
@@ -583,6 +734,11 @@ func _select_input(e: InputEvent) -> void:
 		KEY_UP, KEY_W: _select_card(_sel_idx - 6)
 		KEY_DOWN, KEY_S: _select_card(_sel_idx + 6)
 		KEY_ENTER, KEY_KP_ENTER, KEY_SPACE, KEY_E: start_life(String(_sel_ids[_sel_idx]))
+		KEY_TAB:
+			var ni := (_asp_idx + 1) % ASPIRATIONS.size()
+			if String(ASPIRATIONS[ni]["id"]) == "craft" and Sim._job_of(String(_sel_ids[_sel_idx])).is_empty():
+				ni = (ni + 1) % ASPIRATIONS.size()
+			_pick_asp(ni)
 		KEY_ESCAPE:
 			if pid != "" and not Sim.get_agent(pid).is_empty():
 				start_life(pid)
@@ -997,10 +1153,10 @@ func _build_hud() -> void:
 	_will_btn.pressed.connect(func(): _set_free_will(not free_will))
 	card.add_child(_will_btn)
 	var keys := _mk_label(_hud, 13, Vector2(10, DESIGN.y - 26), Vector2(880, 20), MUTED)
-	keys.text = "WASD/点地 走动 · E 互动 · 点物件/居民 开菜单 · Tab 换目标 · Q 放下 · 空格 暂停 · 1-3 速度 · 滚轮 缩放 · F 自主 · C 换人"
+	keys.text = "WASD/点地 走动 · E 互动 · 点物件/居民 开菜单 · Tab 换目标 · R 人际 · Q 放下 · 空格 暂停 · 1-3 速度 · F 自主 · C 换人 · F5/F8 存读"
 	_wants_panel = Panel.new()
 	_wants_panel.position = Vector2(8, 48)
-	_wants_panel.size = Vector2(318, 108)
+	_wants_panel.size = Vector2(340, 130)
 	_wants_panel.add_theme_stylebox_override("panel", _style(INK, GOLD, 7, 5))
 	_wants_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hud.add_child(_wants_panel)
@@ -1009,7 +1165,7 @@ func _build_hud() -> void:
 	_wants_l.add_theme_font_override("normal_font", _fnt)
 	_wants_l.add_theme_font_size_override("normal_font_size", 15)
 	_wants_l.position = Vector2(12, 8)
-	_wants_l.size = Vector2(298, 96)
+	_wants_l.size = Vector2(320, 118)
 	_wants_l.scroll_active = false
 	_wants_l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_wants_panel.add_child(_wants_l)
@@ -1204,8 +1360,43 @@ func _on_action_done(action: String, target: String, wage: int) -> void:
 			"work":
 				if wage > 0: _complete(w)
 
+## 志向进度（只读 Sim 快照）。
+func _asp_progress() -> int:
+	var me := Sim.get_agent(pid)
+	if me.is_empty() or _asp.is_empty():
+		return 0
+	var rels: Dictionary = me.get("relationships", {})
+	match String(_asp["id"]):
+		"friends":
+			var n := 0
+			for oid in rels:
+				var r: Dictionary = rels[oid]
+				if float(r.get("familiarity", 0.0)) >= 8.0 and float(r.get("affinity", 0.0)) >= 25.0:
+					n += 1
+			return n
+		"wealth":
+			return Sim._coin_of(pid)
+		"craft":
+			var jb: Dictionary = Sim._job_of(pid)
+			return (Sim._skill_level(me, Sim._job_action(jb)) - _asp_base) if not jb.is_empty() else 0
+		"popular":
+			var n2 := 0
+			for b in Sim.agents:
+				if String(b["id"]) == pid:
+					continue
+				if float((b.get("relationships", {}) as Dictionary).get(pid, {}).get("standing", 0.0)) >= 1.0:
+					n2 += 1
+			return n2
+	return 0
+
 ## 周期检查（钱/需求阈值类）：_refresh_hud 每 0.1s 调一次
 func _check_state_wants(st: Dictionary) -> void:
+	if not _asp_done and not _asp.is_empty() and _asp_progress() >= int(_asp["goal"]):
+		_asp_done = true
+		_score += ASP_PTS
+		_show_toast("志向达成：%s！满足感 +%d" % [String(_asp["name"]), ASP_PTS], 5.0)
+		main.call("_push", "[color=#ffd166]★ %s 实现了志向「%s」：%s[/color]" % [Sim._name(Sim.get_agent(pid)), String(_asp["name"]), String(_asp["desc"])])
+		_refresh_wants()
 	for w in _wants:
 		if bool(w["done"]):
 			continue
@@ -1229,6 +1420,9 @@ func _refresh_wants() -> void:
 	if _wants_l == null:
 		return
 	var s := "[color=#cda35c]今天的愿望[/color]   [color=#a8a393]满足感 %d[/color]" % _score
+	if not _asp.is_empty():
+		s += ("\n[color=#ffd166]★ 志向「%s」已实现[/color]" % String(_asp["name"])) if _asp_done else \
+			("\n[color=#ffd166]志向「%s」[/color] [color=#a8a393]%s %d/%d[/color]" % [String(_asp["name"]), String(_asp["desc"]), mini(_asp_progress(), int(_asp["goal"])), int(_asp["goal"])])
 	for w in _wants:
 		var prog := ""
 		if String(w["type"]) == "social" and int(w["count"]) > 1:

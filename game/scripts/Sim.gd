@@ -230,7 +230,8 @@ var lod_player_r := 12             # 玩家 avatar(sim 实体，非相机)曼哈
 var _player_pos := Vector2i(-1, -1) # 玩家 avatar(sim 实体，非相机)位置，每 tick 由 _compute_lod_cohort 刷新；(-1,-1)=无玩家(bench)
 var controlled_id := ""             # 生活模式（docs/190）：被玩家附身的【现有居民】id；""=无附身 → 全仿真逐字节不变
 signal life_action_done(action: String, target: String, wage: int)   # 被附身者做完一件物件动作（View 的「愿望」用；信号不进 digest）
-var _tone_bonus := 0.0              # 生活模式「说法」语气对本次接受判定的加项；只在 _commit_social 里对带 tone 的单子非零
+var loaded_meta := {}               # 最近一次读档的 meta（save_game 的第二个参数原样读回）；纯 View 数据，不进 digest
+var _tone_bonus := 0.0             # 生活模式「说法」语气对本次接受判定的加项；只在 _commit_social 里对带 tone 的单子非零
 const LOD_NEAR_RADIUS := 8        # 兼容旧引用（默认值）
 const LOD_FAR_MULT := 3           # far agent 的决策周期 = decide_period × 此（降频）
 
@@ -2108,7 +2109,8 @@ const SAVE_MAGIC := "LTSAVE"
 const SAVE_SCHEMA_LEGACY := 1
 const SAVE_SCHEMA := 2
 const SAVE_RUNTIME_HANDLES := ["backend", "ext", "decision_sink"]
-const SAVE_LOAD_DENY := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected"]
+const SAVE_LOAD_DENY := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected",
+	"controlled_id", "_tone_bonus", "loaded_meta"]   # docs/190 生活模式：附身/语气/档头都是 View 或瞬时态，不改存档形状（旧档照读）
 const SAVE_CURRENT_BLOB_KEYS := ["magic", "schema", "game_version", "saved_tick", "saved_day", "seed", "meta", "active_commit_ids", "state"]
 
 ## The current-schema contract is the exact field set emitted by save_game, derived from the same
@@ -2292,6 +2294,7 @@ func load_game(path: String) -> bool:
 	f.close()
 	if not (blob is Dictionary) or blob.get("magic") != SAVE_MAGIC or int(blob.get("schema", -1)) != sch:
 		return false
+	loaded_meta = (blob.get("meta") as Dictionary).duplicate(true) if blob.get("meta") is Dictionary else {}   # View 自带的档头（生活模式状态等），不进仿真
 	if sch == SAVE_SCHEMA:
 		var shape_error := _validate_current_save_shape(blob)
 		if shape_error != "":

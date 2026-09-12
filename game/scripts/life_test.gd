@@ -220,6 +220,13 @@ func _ready() -> void:
 		var pr := Sim.life_portal(hop["from_pos"])
 		_ck("穿门成功", bool(pr.get("ok", false)) and String(ben["space"]) == String(hop["to_space"]), str(pr.get("reason", "")))
 
+	# ── 7b) 存档 meta 读回（生活模式状态随档走）──
+	var sp_path := "user://life_test_meta.sav"
+	var saved := Sim.save_game(sp_path, {"name": "t", "life": {"pid": "ben", "score": 123}})
+	var loaded := Sim.load_game(sp_path)
+	_ck("存读档带回生活模式 meta", saved and loaded and int((Sim.loaded_meta.get("life", {}) as Dictionary).get("score", -1)) == 123, "saved=%s loaded=%s meta=%s" % [saved, loaded, str(Sim.loaded_meta)])
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(sp_path))
+
 	# ── 8) 解除 / 重开 ──
 	Sim.possess("")
 	_ck("解除附身", Sim.controlled_id == "" and Sim.life_status().is_empty())
