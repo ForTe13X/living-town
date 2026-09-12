@@ -57,9 +57,10 @@ def load_consts():
     txt = open(SIM, encoding="utf-8", errors="replace").read()
     # ⚠ 行尾有注释（`const SURVIVAL_GATE := 36.0     # 任一需求 < 此 → …`），所以不能用 `\s*$` 收尾
     #   —— n_curve 的 `_grep_const` 正是这么写的，拿它去读这一行会读不到。我先撞了一次。
-    m = re.search(r"^\s*const\s+SURVIVAL_GATE\s*:=\s*([0-9.]+)\s*(?:#.*)?$", txt, re.M)
+    # Phase-D 把它从 const 改成了 var（闭环 A/B 要能换档），两种写法都认。
+    m = re.search(r"^\s*(?:const|var)\s+SURVIVAL_GATE\s*:=\s*([0-9.]+)\s*(?:#.*)?$", txt, re.M)
     if not m:
-        raise SystemExit("读不到 game/scripts/Sim.gd 的 const SURVIVAL_GATE —— "
+        raise SystemExit("读不到 game/scripts/Sim.gd 的 SURVIVAL_GATE —— "
                          "「最长 social<GATE 段」这个量的定义没了，拒绝用默认值继续")
     c["SURVIVAL_GATE"] = float(m.group(1))
     c["_src_gate"] = "game/scripts/Sim.gd:%d" % (txt.count("\n", 0, m.start()) + 1)

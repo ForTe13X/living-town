@@ -210,9 +210,14 @@ func _grievances(ag: Dictionary) -> Array:
 		elif aid == b and st == "confronted": role = "offender"
 		else: continue
 		var other := b if role == "aggrieved" else a
+		# Phase D P1 修复：age 按角色取起点。aggrieved=从 triggered 起（憋着没说开的时长）；offender=从 confronted 起
+		# （被当面挑明后拖着没回应的时长）。旧代码两者都从 triggered 算 → 冒犯方"对峙至今"被夸大成"心结存在至今"。
+		var ref_tick := int(c.get("triggered", _S.tick_no))
+		if role == "offender" and int(c.get("confronted", 0)) > 0:
+			ref_tick = int(c["confronted"])
 		out.append({"role": role, "other": _S._name(_S.get_agent(other)), "other_id": other,
 			"severity": int(round(float(c.get("severity", 0.0)))), "status": st,
-			"age": _S.tick_no - int(c.get("triggered", _S.tick_no)),
+			"age": _S.tick_no - ref_tick,
 			"escalations": int(c.get("escalations", 0))})
 	return out
 
@@ -223,7 +228,9 @@ func _grievance_lines(gs: Array) -> Array:
 		var other := String(g["other"]); var sev := int(g["severity"]); var age := int(g["age"])
 		var esc := ("，已激化 %d 次" % int(g["escalations"])) if int(g["escalations"]) > 0 else ""
 		if String(g["role"]) == "aggrieved":
-			out.append("你觉得受了委屈——是 %s 冒犯了你，怨气 %d（超过 22 才算难释怀），一直憋着还没当面说开（约 %d tick%s）" % [other, sev, age, esc])
+			# Phase D 中性化：去掉"（超过 22 才算难释怀）"的判据暗示——那会诱导 judge 觉得低怨气不值得挑破(defer-prime)。
+			# 只客观陈述怨气值与憋着的时长，让 judge 凭人设自己判断该不该当面说开。
+			out.append("你觉得受了委屈——是 %s 冒犯了你，怨气值 %d，一直憋在心里还没当面说开（约 %d tick%s）" % [other, sev, age, esc])
 		else:
 			out.append("%s 已经当面把话挑明了，这事你也知道自己不占理，可你还没回应或道歉（对峙至今约 %d tick%s）" % [other, age, esc])
 	return out

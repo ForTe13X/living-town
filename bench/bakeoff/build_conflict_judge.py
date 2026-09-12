@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-# Clean blind judge — set the knob direction on OPEN-GRIEVANCE cases.
-# The engine engages (logic always confronts, 100%); the LLM defers (only 37% confront). Which is more
-# in-character? We judge the STRUCTURAL choice — confront(X) vs defer(=best non-conflict action) — over
-# the same salient context, blind. No dependence on the noisy LLM pick. Mirror-flip cancels position bias;
-# a few A=A controls calibrate the judge's tie rate. Output feeds the judge Workflow.
+# Clean blind judge — set the knob direction on OPEN-GRIEVANCE (aggrieved) cases.
+# Phase D 语义契约版：judge 评的是同一心结下的【结构化选择】——confront(X) vs a FIRST-CLASS defer
+# ("consciously let the grudge with X lie"). defer 不再是"最高分非冲突动作(睡觉/吃饭/寒暄)"——那测的是
+# 日常动作 base rate、不是"对质 vs 明确延期"。两项以对称的结构化意图描述呈现(无差异化台词)→ 评的是选择、
+# 非文采。Mirror-flip 抵消位置偏置；A=A control 校准 tie 率。Output feeds the judge Workflow。
 # Usage: python build_conflict_judge.py <packet_v1.jsonl> <out.json> [N=72]
 import json, sys, os
 from collections import defaultdict
@@ -37,14 +37,14 @@ def confront_id(r,tg):
             oi=r["id_map"].get(c["id"])
             if oi is not None and r["cands"][oi].get("partner")==tg["other_id"]: return c["id"]
     return None
-def defer_id(r):
-    # best NON-aggression candidate by logic score (maintenance or a benign/conciliatory social)
-    best=None; bs=-1e9
-    for c in r["case"][K_CAND]:
-        if c["action"] in AGGRESSION: continue
-        oi=r["id_map"].get(c["id"]); sc=r["cands"][oi].get("score",0.0) if oi is not None else 0.0
-        if sc>bs: bs=sc; best=c["id"]
-    return best
+def response_options(tg):
+    # Phase D 语义契约：defer 是【针对同一心结的一等 ResponseIntent】——"consciously let the grudge lie"，
+    # 不再冒充成"最高分日常动作(睡觉/吃饭/寒暄)"。两项都以【结构化意图描述】呈现(不给差异化台词)，
+    # 让 judge 评的是"这个人设面对这桩心结会不会当面挑破"这个【选择】，而非台词文采——消除旧 confront-vs-maintenance 混淆。
+    other=tg["other"]
+    confront=("径直去找%s，把心里这桩怨气【当面说开、把话挑明】——宁可把关系闹僵，也要把这口气讲清楚。"%other)
+    defer=("把和%s的这点过节【先按下不表】——不当面挑破、维持面上的平和，自己把怨气消化掉（真到日后过不去，再找机会说）。"%other)
+    return confront,defer
 
 # optional 4th arg = a previous mapping.json whose case keys to EXCLUDE (for a disjoint held-out sample)
 exclude_keys=set()
@@ -61,31 +61,43 @@ for l in open(DATA,encoding="utf-8"):
     if key(d) in exclude_keys: continue
     tg=target_griev(d)
     if tg and tg["role"]=="aggrieved": rows.append(d)
+# Phase D 事件窗口去重：同一心结(seed,agent,对象)在同一 status 阶段会横跨很多 tick → 近似重复。每个
+# (episode × 阶段) 只留最早一例 → 案例相互独立（后续按 seed cluster-bootstrap 才不虚增有效样本）。
+seen_ep={}; dedup=[]
+for r in sorted(rows, key=lambda r:(r["seed"], r["agent"], r["tick"])):
+    tg=target_griev(r); ek=(r["seed"], r["agent"], tg["other_id"], tg["status"])
+    if ek in seen_ep: continue
+    seen_ep[ek]=1; dedup.append(r)
+rows=dedup
+# Phase D：按【人设】分层（不再叠 status → 桶数从 ~36 降到 ~12，每桶 per≥3 → 桶内按数值 seed 等距抽 → 铺满 seed；
+# 旧的 status×persona 桶太多 → per=1 → 每桶只取字典序最小 seed(1) → 全挤在 seed 1）。status 仍在样本里、事后可分层报。
 buck=defaultdict(list)
-for r in sorted(rows,key=key):
-    tg=target_griev(r); buck[(tg["status"],r["persona"])].append(r)
+for r in sorted(rows,key=lambda r:(r["seed"],r["tick"])):
+    buck[r["persona"]].append(r)
 per=max(1,N//max(1,len(buck))); sample=[]
 for k in sorted(buck):
     a=buck[k]; sample+=a[::max(1,len(a)//per)][:per]
-sample=sorted(sample,key=key)[:N]
+# Phase D：按【数值 seed】排序后【等距抽样】到 N，让样本铺满所有 seed（旧 sorted(key)[:N] 是字符串序+截断→
+# 只覆盖少数低 seed，cluster-bootstrap 虚。now spans the full seed range → 有效 by-seed CI）。
+_s=sorted(sample,key=lambda r:(r["seed"],r["tick"])); sample=_s[::max(1,len(_s)//N)][:N]
 
 tasks=[]; controls=0
 for idx,r in enumerate(sample):
-    tg=target_griev(r); cfi=confront_id(r,tg); dfi=defer_id(r)
-    if not cfi or not dfi: continue
-    conf=mean_of(r["case"],cfi); defr=mean_of(r["case"],dfi)
+    tg=target_griev(r); cfi=confront_id(r,tg)
+    if not cfi: continue                       # 只在"当面对质"确为合法候选的局里比（否则 confront/defer 对照无意义）
+    confront,defer=response_options(tg)
     ctx=context_text(r["case"])
     for orient in (0,1):
-        if orient==0: A,B,As,Bs=conf,defr,"confront","defer"
-        else:         A,B,As,Bs=defr,conf,"defer","confront"
+        if orient==0: A,B,As,Bs=confront,defer,"confront","defer"
+        else:         A,B,As,Bs=defer,confront,"defer","confront"
         tasks.append({"tid":"%s#%d"%(key(r),orient),"key":key(r),"seed":r["seed"],"orient":orient,
             "A_text":A,"B_text":B,"A_src":As,"B_src":Bs,
             "status":tg["status"],"severity":tg["severity"],"persona":r["persona"],"packet":ctx})
-    # A=A control on ~1/9 of cases (both = defer) → judge should say 平
+    # A=A control on ~1/9 of cases (both = defer) → judge should say 平（校准 tie 率）
     if idx%9==4:
         controls+=1
         tasks.append({"tid":"%s#ctl"%key(r),"key":key(r),"seed":r["seed"],"orient":9,
-            "A_text":defr,"B_text":defr,"A_src":"defer","B_src":"defer",
+            "A_text":defer,"B_text":defer,"A_src":"defer","B_src":"defer",
             "status":tg["status"],"severity":tg["severity"],"persona":r["persona"],"packet":ctx})
 
 json.dump({"tasks":tasks,"n_cases":len(sample),"n_tasks":len(tasks),"n_controls":controls,
