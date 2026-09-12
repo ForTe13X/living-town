@@ -111,7 +111,7 @@ var BLUNT_TRAITS := ["耿直"]    # 直性子/认死理 → 会当面把话说�
 const DRAMA_DIRECTOR := true
 const DRAMA_ERUPT_AFTER := 1200   # ~5 天(TICKS_PER_DAY=240)没说开 → 导演安排对质（远长于 LINGER_AFTER=350）
 const DRAMA_ERUPT_FLOOR := 480    # 最早也要 ~2 天，避免刚结怨就爆
-var DRAMA_FORGIVE_FADE := true    # Phase-D 调参：夜间把"怨气已衰到触发线下"的未爆小怨归档成 faded 终态（宽恕落地）。
+var DRAMA_FORGIVE_FADE := false   # 默认关（开了会移动金标/故事验收，需单独一棒重烘）。Phase-D 调参：夜间把"怨气已衰到触发线下"的未爆小怨归档成 faded 终态（宽恕落地）。
                                   # 诊断实测：severe 完成率已 0.88(导演够勤)、低完成全是小怨该淡着(保#15)、但 30% 悬空其实气早消了只是没标终态
                                   # → 这条纯重标签把完成率抬到更诚实的值、且不引爆任何怨(不碰#15)。const→var 供 A/B。
 const DRAMA_ERUPT_SEV := 9        # 只有够重(>=此)或被反复冒犯(escalated)的心结才值一场戏；其余小怨就让它淡着——
