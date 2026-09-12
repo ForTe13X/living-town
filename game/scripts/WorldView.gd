@@ -3800,8 +3800,13 @@ func _build_seaside(w: int, h: int) -> void:
 				kind = "boat"
 			elif d == 1 and hp < 8:
 				kind = "castle"
+			if d == 2 and y == (h * 3) / 4:
+				kind = "lifeguard"                       # docs/183：南滩正中一座救生椅（每镇一座）
 			if kind != "":
 				_beach_props.append({"cell": Vector2i(x, y), "kind": kind})
+		if y == 3 and _ocean_x0[y] < w - 2:
+			# docs/183：北滩外的礁上灯塔 —— 落在海格上（本就阻挡水），离岸两格，读作一座小岛
+			_beach_props.append({"cell": Vector2i(_ocean_x0[y] + 2, y), "kind": "lighthouse"})
 	# 花岗岩台地（docs/182）：东松林岬 = 离海 ≤8 格的树格，且南邻也是树（南沿内收一行 ⇒ 两行崖壁都落在树格上）。
 	var bx0 := w; var by0 := h; var bx1 := -1; var by1 := -1
 	for tc in _tree_cells:
@@ -4351,19 +4356,49 @@ func _draw_building_shadows() -> void:
 		draw_rect(Rect2(br.end.x + s, br.position.y + s * 1.8, s * 0.6, br.size.y - s * 0.4), Color(col, col.a * 0.45), true)
 		draw_rect(Rect2(br.position.x + s * 1.8, br.end.y + s, br.size.x - s * 0.4, s * 0.6), Color(col, col.a * 0.45), true)
 
+var _prop_foot := {}           # 道具名 -> 精灵里 alpha bbox 的底行（像素）
+
+## docs/183：PixelLab 道具精灵（game/assets/art/props/*.png，1× 原生尺寸，底边中点对格底中点）。
+## 有精灵就画精灵、没有就走下面的程序化几何（逐像素回到 docs/180 的样子）。
+func _prop_sprite(name: String, base: Vector2, flip := false) -> bool:
+	var tex := Art.tex("res://assets/art/props/%s.png" % name)
+	if tex == null:
+		return false
+	var sz := Vector2(tex.get_width(), tex.get_height())
+	if not _prop_foot.has(name):                 # 精灵底下常有透明留白：用 alpha bbox 的底行对地，不用画布底边
+		var img := tex.get_image()
+		if img != null and img.is_compressed():
+			img = img.duplicate()
+			img.decompress()
+		_prop_foot[name] = float(img.get_used_rect().end.y) if img != null else sz.y
+	var foot: float = _prop_foot[name]
+	var dst := Rect2(base.x + T * 0.5 - sz.x * 0.5, base.y + T * 0.94 - foot, sz.x, sz.y)
+	# 东南落影：一张径向软影压在脚下（西北光，与树/楼同向）
+	draw_texture_rect(_light_texture(), Rect2(dst.position.x + sz.x * 0.25, base.y + T * 0.62, sz.x * 0.95, T * 0.42), false, Color(0.05, 0.05, 0.02, 0.32))
+	if flip:
+		draw_texture_rect(tex, Rect2(dst.position.x + sz.x, dst.position.y, -sz.x, sz.y), false)
+	else:
+		draw_texture_rect(tex, dst, false)
+	return true
+
 func _draw_beach_props() -> void:
 	for bp in _beach_props:
 		var cell: Vector2i = bp["cell"]
 		var base := Vector2(cell.x * T, cell.y * T)
-		if not _vis.intersects(Rect2(base - Vector2(T, T), Vector2(T * 3, T * 3))):
+		if not _vis.intersects(Rect2(base - Vector2(T, T * 3), Vector2(T * 3, T * 5))):
 			continue
 		var v := _hash_mix(cell.x, cell.y, 157) % 3
 		match String(bp["kind"]):
-			"cabin": _beach_cabin(base, v)
-			"parasol": _beach_parasol(base, v)
+			"cabin":
+				if not _prop_sprite("tent", base, v == 1): _beach_cabin(base, v)
+			"parasol":
+				if not _prop_sprite("parasol", base, v == 2): _beach_parasol(base, v)
 			"towel": _beach_towel(base, v)
-			"boat": _beach_rowboat(base)
+			"boat":
+				if not _prop_sprite("rowboat", base): _beach_rowboat(base)
 			"castle": _beach_castle(base)
+			"lifeguard": _prop_sprite("lifeguard", base)
+			"lighthouse": _prop_sprite("lighthouse", base)
 
 ## 条纹沙滩帐篷（tente de plage）：比格子高，底对齐；竖条纹 + 尖顶 + 门帘 + 顶上小旗；右侧背阴。
 func _beach_cabin(base: Vector2, v: int) -> void:
