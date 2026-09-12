@@ -5,6 +5,7 @@ extends Node2D
 var _view: Node2D
 var _probe: Node                      # ProbeController：拥有 Camera2D + 观察状态（纯 View，不写 Sim）
 var _locked_ortho_c1: Node2D          # optional C1 projection; no Sim authority or input ownership
+var _life: Node                       # LifeMode（docs/190）：开局选人 + 附身过日子；null = 观察者/M1 模式
 var _sg: RefCounted                   # SpaceGraph：Space/Floor/Portal 合同（纯数据查询；兼容期 town/outdoor 兜底）
 var _modulate: CanvasModulate
 var _status: RichTextLabel
@@ -385,6 +386,18 @@ func _ready() -> void:
 	var _lod_agg_arg := false              # --lod-agg：仅【测量/眼验】用，启用观察无关 aggregate LOD（CLI-only，绝不进 boot/面板出货路径；默认 off=逐字节不变）
 	var _locked_ortho_c1_arg := false      # --locked-ortho-c1：可删除的 C1 纯 View 适配器，默认绝不实例化
 	var args := OS.get_cmdline_user_args()
+	# 生活模式（docs/190）：桌面上【不带任何参数】的正式启动 = 开局选人；--life 显式开、--life-as <id> 跳过选人直接附身。
+	# 带参数的 dev/CI/出图路径一律不进（它们都带参数）⇒ 所有既有门逐字节不变。手机端还没有摇杆，暂不默认。
+	var life_on := args.is_empty() and not OS.has_feature("android")
+	var life_as := ""
+	for i in args.size():
+		if args[i] == "--life":
+			life_on = true
+		elif args[i] == "--life-as" and i + 1 < args.size():
+			life_on = true
+			life_as = args[i + 1]
+		elif args[i] == "--no-life":
+			life_on = false
 	for i in args.size():
 		if args[i] == "--backend" and i + 1 < args.size():
 			backend = args[i + 1]
@@ -482,7 +495,7 @@ func _ready() -> void:
 	# 默认必须是关：开着会调 Sim.add_player() 从而合法地移动 digest（docs/41 §3），
 	# 而 tools/probe_digest_test.sh 之类的容器跑用的是全新的 user://，读到的就是这个默认值。
 	if not ("--player" in args) and not ("--clean-player" in args) and not ("--player-demo" in args) and not ("--player-pos" in args):
-		_player_mode = bool(_scfg.get_value("sim", "player", false))
+		_player_mode = bool(_scfg.get_value("sim", "player", false)) and not life_on   # 生活模式优先于记住的 M1「新居民」开关
 	AIBackend.slm_model_override = String(_scfg.get_value("slm", "model_path", ""))   # 上次在设置里手选的 gguf
 	# 观察台档位（纯视图偏好，不进仿真）。默认【名片档】——研究用法（钉住卷宗刷时间轴）按一次就回来，
 	# 而且会被记住；出图/CI 走全新的 user:// ⇒ 恒为默认档，截图可复现。
@@ -593,6 +606,16 @@ func _ready() -> void:
 		_build_clean_player_hud()
 	if _locked_ortho_c1 != null:
 		_build_c1_hud()
+	if life_on and not _player_mode and _locked_ortho_c1 == null:
+		_life = preload("res://scripts/LifeMode.gd").new()
+		add_child(_life)
+		_life.setup(self)
+		if life_as != "" and not Sim.get_agent(life_as).is_empty():
+			_life.start_life(life_as)
+			if "--life-menu" in args:
+				_life.call_deferred("debug_open_menu")   # 出图：互动菜单开着的那一帧
+		else:
+			_life.begin_select()
 	Sim.ticked.connect(_on_tick)
 	Sim.social_event.connect(_on_social)
 	Sim.day_changed.connect(func(d): _push("[color=#ffe08a]——— 第 %d 天 ———[/color]" % d))

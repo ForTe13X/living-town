@@ -368,6 +368,7 @@ var _prev_pos := {}      # id -> Vector2i（推断朝向/行走）
 #   不靠"指数收敛到浮点精度以下"这种概率性论证。
 const LERP_FRACTION := 0.60    # 在一格【实际耗时】的 60% 内走完 → 跟得上 x8 加速，也不拖影
 const SNAP_PX := 0.05          # 收敛阈值：小于它直接吸附到精确格心
+const CTL_STEP := 0.13         # 生活模式被附身者的 WASD 步频（秒/格），LifeMode.MOVE_STEP 同值
 const TELEPORT_TILES := 3.0    # 超过它视为瞬移（换 Space / 时间轴跳转 / 读档 / 换 N）→ 直接吸附，不横穿全镇滑行
 var _render_pos := {}          # id -> Vector2（纯渲染坐标）
 var _moving := {}              # id -> bool（是否仍在追格心；行走帧靠它）
@@ -5194,8 +5195,10 @@ func _process(delta: float) -> void:
 			_lights.queue_redraw()
 	# 一格实际占多少实时秒：tick_interval / speed（x8 加速时只有 0.01s）。
 	# 下限 0.008 防除零/抖动，上限 0.16 防 --speed 0 时把收敛拖成"永远在爬"。
-	var step := clampf(Sim.tick_interval / maxf(Sim.speed, 0.25), 0.008, 0.16)
+	# 上限 0.16 只在默认 tick(0.08s) 下生效；生活模式把 tick 放慢到 0.5s（docs/190），此时按真实步长插值，否则人会"滑一下停半拍"。
+	var step := clampf(Sim.tick_interval / maxf(Sim.speed, 0.25), 0.008, maxf(0.16, Sim.tick_interval / maxf(Sim.speed, 0.25)))
 	var k := clampf(delta / maxf(step * LERP_FRACTION, 0.001), 0.0, 1.0)
+	var k_ctl := clampf(delta / (CTL_STEP * LERP_FRACTION), 0.0, 1.0)   # 被附身者由 WASD 驱动，步频与 tick 无关
 	var tele := TELEPORT_TILES * T
 	var dirty := false
 	var alive := {}
@@ -5223,7 +5226,7 @@ func _process(delta: float) -> void:
 		if cur.distance_to(target) > tele:
 			cur = target
 		else:
-			cur = cur.lerp(target, k)
+			cur = cur.lerp(target, k_ctl if (Sim.controlled_id != "" and id == Sim.controlled_id) else k)
 		var moving := cur.distance_to(target) > SNAP_PX
 		if not moving:
 			cur = target        # ★硬吸附：冻结 tick 下渲染坐标 ≡ 格心，--shot 前后 bbox 必须是 None

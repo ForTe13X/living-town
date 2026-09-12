@@ -1121,6 +1121,141 @@ func chat(agent: Dictionary, player_text: String, ctx: Dictionary, cb: Callable)
 		return
 	cb.call(_canned_reply(agent, player_text))      # logic/无模型 → 罐头兜底
 
+# ── 生活模式「说法」（docs/190）：走近居民按 E → 几种开口方式（动词 × 语气 × 情绪 × 台词）让玩家挑 ──
+## 分工照旧：【引擎】圈定此刻合法的动词集（Sim.life_verb_options），【模型】只负责把它说成几种不同的样子。
+## 模型挑了集合外的动词 / 输出坏了 / 超时 / logic 档 ⇒ 用下面的规则地板（立即可用、确定、零 RNG）。
+## 返回项：{verb, tone, emotion, line, src:"rule"|"ai"}。台词只进气泡/记忆的 say；事务裁决仍按动词走。
+const APPROACH_MAX := 4
+const APPROACH_TPL := {
+	"greet": {"热情": "嘿，%s！今天气色不错嘛！", "随和": "%s，忙着呢？", "腼腆": "那个……%s，你好。", "调侃": "哟，这不是%s吗，稀客稀客。"},
+	"give": {"热情": "%s，这个给你，别客气！", "关切": "%s，最近辛苦了，一点心意。", "腼腆": "%s……这个，送你的。"},
+	"gossip": {"神秘": "%s，过来点，我听说了件事……", "兴奋": "%s你知道吗？可不得了！"},
+	"invite": {"热情": "%s，改天一起在这儿坐坐？", "随和": "回头有空碰个面吧，%s。"},
+	"confront": {"直率": "%s，那件事我们得说清楚。", "克制": "%s，我心里有点不舒服，想聊聊。"},
+	"apologize": {"诚恳": "%s，那件事是我不对。", "腼腆": "%s……之前的事，对不起。"},
+}
+
+## 规则地板：按【说话人】性格与心情、双方关系挑语气，确定性（同输入同输出）。
+func approach_floor(actor: Dictionary, target: Dictionary, legal: Array) -> Array:
+	var traits: Array = (actor.get("persona", {}) as Dictionary).get("traits", [])
+	var rel := _rel_hint(actor, String(target.get("id", "")))
+	var mood: String = _mood(actor)[0]
+	var tname := String((target.get("persona", {}) as Dictionary).get("name", "你"))
+	var pref: Array = []                                    # 语气偏好序：性格 > 关系
+	if "热情" in traits or "豁达" in traits: pref.append("热情")
+	if "内向" in traits or "敏感" in traits or "寡言" in traits: pref.append("腼腆")
+	if "爱八卦" in traits or "好奇" in traits: pref.append_array(["兴奋", "神秘"])
+	if rel == "老友" or rel == "熟人": pref.append_array(["调侃", "随和"])
+	if rel == "有过节": pref.append_array(["克制", "诚恳", "直率"])
+	pref.append_array(["随和", "关切", "直率", "诚恳", "热情", "神秘"])
+	var out: Array = []
+	for v in legal:
+		var tpl: Dictionary = APPROACH_TPL.get(String(v), {})
+		var tone := ""
+		for t in pref:
+			if tpl.has(t):
+				tone = t
+				break
+		if tone == "" and not tpl.is_empty():
+			tone = String(tpl.keys()[0])
+		if tone != "":
+			out.append({"verb": String(v), "tone": tone, "emotion": mood, "line": String(tpl[tone]) % tname, "src": "rule"})
+	# 同一动词再给第二种语气（greet 最常用）：凑满 APPROACH_MAX，让「怎么说」真的有得选
+	for v in legal:
+		if out.size() >= APPROACH_MAX:
+			break
+		var tpl2: Dictionary = APPROACH_TPL.get(String(v), {})
+		for t in tpl2:
+			var dup := false
+			for a in out:
+				if String(a["verb"]) == String(v) and String(a["tone"]) == String(t):
+					dup = true
+			if not dup:
+				out.append({"verb": String(v), "tone": String(t), "emotion": mood, "line": String(tpl2[t]) % tname, "src": "rule"})
+				break
+	return out.slice(0, APPROACH_MAX)
+
+## 异步：先由调用方显示 approach_floor，模型回来后 cb.call(新列表)；模型不可用/失败 ⇒ 不回调（地板即终稿）。
+func suggest_approaches(actor: Dictionary, target: Dictionary, legal: Array, ctx: Dictionary, cb: Callable) -> void:
+	if legal.is_empty() or backend == "logic" or backend == "random" or _slm_circuit_open:
+		return
+	if backend == "mock" or mock:
+		var m := approach_floor(actor, target, legal)
+		for a in m:
+			a["src"] = "ai"
+		cb.call(m)
+		return
+	var p: Dictionary = actor.get("persona", {})
+	var tp: Dictionary = target.get("persona", {})
+	var mm := _mood(actor)
+	var mem := ""
+	if actor.get("memory") != null:
+		var ms: Array = actor["memory"].retrieve([String(target.get("id", ""))], int(ctx.get("tick", 0)), 3)
+		if not ms.is_empty():
+			mem = "你近期记得：" + "；".join(ms) + "。"
+	var verbs: Array = []
+	for v in legal:
+		verbs.append(String(ACTION_ZH.get(String(v), String(v))))
+	var sys := "你在为像素小镇居民%s（%s，性格:%s，口吻:%s）构思走近%s时的开口方式。只从这些动作里选：%s。给出%d种【明显不同】的说法，每行一种，格式严格为：动作|语气|情绪|台词。台词第一人称、不超过24字、用%s的口吻。只输出这几行。%s" % [
+		p.get("name", ""), p.get("bio", ""), "·".join(p.get("traits", [])), p.get("style", ""), tp.get("name", ""),
+		"、".join(verbs), APPROACH_MAX - 1, p.get("name", ""), (" /no_think" if no_think else "")]
+	var user := "此刻是%s，你%s。你和%s的关系：%s（对方性格:%s，对方%s）。%s" % [
+		_phase_zh(float(ctx.get("tod", 0.0))), String(mm[0]), tp.get("name", ""), _rel_hint(actor, String(target.get("id", ""))),
+		"·".join(tp.get("traits", [])), String(_mood(target)[0]), mem]
+	var done := func(raw: String):
+		var parsed := parse_approaches(raw, legal)
+		if not parsed.is_empty():
+			cb.call(parsed)
+	if backend == "llm":
+		_gen_http_lines(sys, user, done)
+	elif backend == "slm" and ClassDB.class_exists("NobodyWhoModel"):
+		if not _slm_submit(sys, user, {"mode": "cb", "cb": done, "cap": 240, "fallback": ""}):
+			return
+
+## 解析「动作|语气|情绪|台词」行；动作必须落在合法集里（中文名或英文 id 皆可），其余行丢弃。
+func parse_approaches(raw: String, legal: Array) -> Array:
+	var zh2v := {}
+	for v in legal:
+		zh2v[String(ACTION_ZH.get(String(v), String(v)))] = String(v)
+		zh2v[String(v)] = String(v)
+	var out: Array = []
+	for ln in raw.split("\n", false):
+		var parts := ln.strip_edges().trim_prefix("-").strip_edges().split("|")
+		if parts.size() < 4:
+			continue
+		var vk := parts[0].strip_edges()
+		for pre in ["1.", "2.", "3.", "4.", "1、", "2、", "3、", "4、"]:
+			vk = vk.trim_prefix(pre).strip_edges()
+		if not zh2v.has(vk):
+			continue
+		var line := "|".join(parts.slice(3)).strip_edges().trim_prefix("“").trim_suffix("”").trim_prefix("\"").trim_suffix("\"")
+		if line == "":
+			continue
+		out.append({"verb": zh2v[vk], "tone": parts[1].strip_edges().substr(0, 6), "emotion": parts[2].strip_edges().substr(0, 8),
+			"line": line.substr(0, 40), "src": "ai"})
+		if out.size() >= APPROACH_MAX:
+			break
+	return out
+
+## 与 _gen_http 同路，但不截 60 字（多行输出）。
+func _gen_http_lines(sys: String, user: String, cb: Callable) -> void:
+	var http := HTTPRequest.new()
+	add_child(http)
+	http.timeout = 20.0
+	http.request_completed.connect(func(_r, code, _h, body):
+		var out := ""
+		if code == 200:
+			var j: Variant = JSON.parse_string(body.get_string_from_utf8())
+			if j is Dictionary and j.has("choices") and (j["choices"] as Array).size() > 0:
+				out = String(j["choices"][0].get("message", {}).get("content", "")).strip_edges()
+		http.queue_free()
+		cb.call(out))
+	var reqbody := {"model": model, "max_tokens": 200, "temperature": 0.9,
+		"messages": [{"role": "system", "content": sys}, {"role": "user", "content": user}]}
+	if http.request(endpoint, ["Content-Type: application/json", "Authorization: Bearer " + api_key], HTTPClient.METHOD_POST, JSON.stringify(reqbody)) != OK:
+		http.queue_free()
+		cb.call("")
+
 func _canned_reply(agent: Dictionary, _player_text: String) -> String:
 	var p: Dictionary = agent.get("persona", {})
 	var traits: Array = p.get("traits", [])
