@@ -2,9 +2,7 @@ name: CI
 
 on:
   push:
-    # integration/batons 是产品累计分支；它此前没有 push 触发器，导致 live product tip
-    # 可以长期保持 0 checks / 0 runs，而评审 PR 的 synthetic merge green 也无法替代它。
-    branches: [master, integration/batons]
+    branches: [master]
   pull_request:
 
 # Cancel superseded runs on the same ref
