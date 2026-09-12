@@ -1,0 +1,137 @@
+{
+  "actions": {
+    "attest_build_provenance": "43d14bc2b83dec42d39ecae14e916627a18bb661",
+    "checkout": "11d5960a326750d5838078e36cf38b85af677262",
+    "upload_artifact": "ea165f8d65b6e75b540449e92b4886f43607fa02"
+  },
+  "attestation_bootstrap_image": {
+    "platform": "linux/amd64",
+    "reference": "docker.io/library/python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c"
+  },
+  "authority": {
+    "evidence_only": true,
+    "does_not_authorize": [
+      "canon",
+      "collision",
+      "navigation",
+      "pixels",
+      "portals",
+      "replay",
+      "save",
+      "simulation",
+      "view"
+    ]
+  },
+  "capture_contract": {
+    "audio": "Dummy",
+    "display": "x11/Xvfb",
+    "draw_skip_for_bare": "interior_furniture",
+    "frames": 8,
+    "renderer": "opengl3",
+    "seed": 3,
+    "slots": [
+      "cafe_1f_normal",
+      "cafe_1f_bare",
+      "cafe_2f_normal",
+      "cafe_2f_bare"
+    ],
+    "space": "cafe",
+    "tick": 600,
+    "viewports": [
+      "1280x768",
+      "320x192"
+    ]
+  },
+  "container_contract": {
+    "cap_drop": "ALL",
+    "candidate_mount": "read-only",
+    "network_default": "none",
+    "no_new_privileges": true,
+    "platform": "linux/amd64",
+    "read_only_root": true,
+    "scratch_mount": "task-owned-read-write",
+    "trusted_mount": "read-only"
+  },
+  "debian_snapshot": {
+    "debian": "https://snapshot.debian.org/archive/debian/20260801T000000Z",
+    "security": "https://snapshot.debian.org/archive/debian-security/20260801T000000Z",
+    "timestamp": "20260801T000000Z"
+  },
+  "godot": {
+    "archive_filename": "Godot_v4.6.2-stable_linux.x86_64.zip",
+    "archive_sha256": "30e6b6d141f0cd5bebd629ad1d0ef1324e60091bb20662d026b402ba58c59937",
+    "binary_sha256": "5a806b2b385279d9607094d33e946ed828e9606df4cb46d258ca27468dc5c1c9",
+    "url": "https://github.com/godotengine/godot/releases/download/4.6.2-stable/Godot_v4.6.2-stable_linux.x86_64.zip"
+  },
+  "gh_cli": {
+    "archive_filename": "gh_2.98.0_linux_amd64.tar.gz",
+    "archive_sha256": "3b8ac6b30336802fc1a858d7c084e11cdf24ac1a761ca90b68022d7d729208de",
+    "archive_top_level": "gh_2.98.0_linux_amd64",
+    "url": "https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_linux_amd64.tar.gz"
+  },
+  "host_tools": {
+    "gh": "2.98.0"
+  },
+  "limits": {
+    "artifact_retention_days": 90,
+    "hosted_timeout_minutes": 35,
+    "max_evidence_frames": 12,
+    "max_png_decompressed_bytes": 8388608,
+    "max_protected_payload_bytes": 251658240,
+    "max_qualification_payload_bytes": 251658240,
+    "max_runtime_archive_bytes": 230686720,
+    "max_validation_archive_bytes": 262144000,
+    "max_validation_delta_archive_bytes": 41943040,
+    "max_total_artifact_bytes": 262144000
+  },
+  "oci_toolchain": {
+    "archive_contract": {
+      "format": "posix",
+      "group": 0,
+      "mtime": 0,
+      "numeric_owner": true,
+      "owner": 0,
+      "sort": "name",
+      "strip_pax_times": true
+    },
+    "platform": "linux/amd64",
+    "podman_image": "quay.io/podman/stable@sha256:b0173238dceedf46a10d2c3a7bf9b217a85dce19706d2d9c80b01345839ae779",
+    "skopeo_image": "quay.io/skopeo/stable@sha256:4a16d57b37617a04b3d643079a477a2848efe892dffcdf0ce56df4262b65f810",
+    "versions": {
+      "podman": "5.8.4",
+      "python": "3.14.6",
+      "sha256sum": "sha256sum (GNU coreutils) 9.10",
+      "skopeo": "1.22.2",
+      "tar": "tar (GNU tar) 1.35"
+    }
+  },
+  "pillow": {
+    "filename": "pillow-11.3.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "106064daa23a745510dabce1d84f29137a37224831d88eb4ce94bb187b1d7e5f",
+    "url": "https://files.pythonhosted.org/packages/f2/2f/d7675ecae6c43e9f12aa8d58b6012683b20b6edfbdac7abcb4e6af7a3784/pillow-11.3.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl"
+  },
+  "python_image": {
+    "amd64_manifest_digest": "sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c",
+    "build_reference": "docker.io/library/python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c",
+    "index_digest": "sha256:0bee7276f83efd4a1ee05bbbf4281d95ed28e079220a9457f25a93e3f1e3c31b",
+    "index_reference": "docker.io/library/python@sha256:0bee7276f83efd4a1ee05bbbf4281d95ed28e079220a9457f25a93e3f1e3c31b",
+    "platform": "linux/amd64",
+    "tag": "3.11.16-slim-bookworm"
+  },
+  "validation_image": {
+    "reference": "docker.io/library/python@sha256:2fc9207f64226cb05ac317cee0bab6fa55a9ea311ce5a086baddd4b4a83c2d3c",
+    "platform": "linux/amd64"
+  },
+  "recipe_schema": "living-town.cafe-runtime-recipe.v1",
+  "schema": "living-town.cafe-runtime-lock.v1",
+  "versions": {
+    "godot": "4.6.2.stable.official.71f334935",
+    "pillow": "11.3.0",
+    "python": "3.11.16"
+  },
+  "workflow": {
+    "path": ".github/workflows/trusted-cafe-attestation.yml",
+    "ref": "ForTe13X/living-town/.github/workflows/trusted-cafe-attestation.yml@refs/heads/master",
+    "repository": "ForTe13X/living-town"
+  }
+}
