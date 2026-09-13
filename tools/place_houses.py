@@ -18,8 +18,8 @@ ROW = 5
 WEIGHT_PEN = {"villa": 45, "townhouse": 15, "bakery": 30, "creperie": 30}   # 别让最高最宽的别墅/店铺吃满每一行
 # docs/189：可重复的民居/小店（每种封顶 MAX_EACH 栋，同一行相邻两栋不用同一张）
 SPRITES = ["cottage", "whitehouse", "townhouse", "villa", "terrace",
-           "longere", "ochre", "halftimber", "belleepoque", "bakery", "creperie"]
-MAX_EACH = {"bakery": 2, "creperie": 2, "belleepoque": 3}
+           "longere", "ochre", "halftimber", "belleepoque", "bakery", "creperie", "warehouse", "netshed"]
+MAX_EACH = {"bakery": 2, "creperie": 2, "belleepoque": 3, "warehouse": 2, "netshed": 2}
 MAX_DEFAULT = 7
 # docs/189：全镇只一座的设施 —— 先于民居落位，各按自己的"最合适的地方"打分挑位
 #   score(x, y, w, h) 越小越好；W/H 在 main 里绑定
@@ -30,7 +30,25 @@ UNIQUES = [
     ("netshed",   lambda x, y, w, h, W, H: (W - x) + abs(y - 30) * 0.2),                   # 最靠海的一块地
     ("bakery",    lambda x, y, w, h, W, H: abs(x + w / 2 - 22) + abs(y + h - 23)),         # 住宅区边上、去广场的路口
     ("creperie",  lambda x, y, w, h, W, H: (W - x) * 0.6 + abs(y - 16) * 0.5),             # 北滩后面、海堤步道边
+    # docs/192：大体量设施（尺度层级：设施 > 民居）——市场挨着广场、大酒店在北滩后、罐头厂在工坊边的工业区
+    ("halles",    lambda x, y, w, h, W, H: abs(x + w / 2 - 31) + abs(y + h - 21) * 1.2),
+    ("hotel",     lambda x, y, w, h, W, H: (W - x) * 0.8 + abs(y + h - 14) * 0.6),
+    ("cannery",   lambda x, y, w, h, W, H: abs(x + w / 2 - 46) + abs(y + h - 38)),
 ]
+# docs/192：分区——商业（广场/咖啡馆/杂货铺一带）、工业（工坊/滩头一带）、其余住宅。每区只从自己的池子里挑房型。
+DISTRICTS = [("commercial", (36, 17), 12.0), ("industrial", (44, 36), 9.0)]
+ZONE_POOL = {
+    "commercial":  ["ochre", "townhouse", "belleepoque", "terrace", "bakery", "creperie"],
+    "industrial":  ["warehouse", "netshed", "longere", "terrace"],
+    "residential": ["cottage", "whitehouse", "townhouse", "villa", "terrace", "longere", "halftimber", "belleepoque"],
+}
+
+
+def zone_of(x, y):
+    for name, (cx, cy), r in DISTRICTS:
+        if (x - cx) ** 2 + (y - cy) ** 2 <= r * r:
+            return name
+    return "residential"
 
 
 def bbox_cells(name):
@@ -45,7 +63,7 @@ def h32(x, y, s):
     return v ^ (v >> 15)
 
 
-NO_GARDEN = {"chapel", "windmill", "bandstand", "netshed", "bakery", "creperie"}
+NO_GARDEN = {"chapel", "windmill", "bandstand", "netshed", "bakery", "creperie", "halles", "hotel", "cannery", "warehouse"}
 GARDEN_PROPS = [("veg", 2), ("laundry", 2), ("apple", 1), ("hydrangea", 1), ("barrow", 1)]
 
 
@@ -265,6 +283,8 @@ def main():
         prev = None
         for x in range(W):
             order = sorted(SPRITES, key=lambda s: h32(x, b, SPRITES.index(s) + 7) % 100 + WEIGHT_PEN.get(s, 0))
+            zp = ZONE_POOL[zone_of(x + 1, b)]
+            order = [s for s in order if s in zp]
             for s in order:
                 if s == prev or count.get(s, 0) >= MAX_EACH.get(s, MAX_DEFAULT):
                     continue                              # 同一行相邻不重样；每种封顶
