@@ -6954,9 +6954,19 @@ func _build_interior_grids() -> void:
 				var fp: Array = _as_arr((fu as Dictionary).get("pos", [0, 0]))
 				if fp.size() < 2:
 					continue
-				var fi := int(fp[1]) * w + int(fp[0])
-				if not portal_cells.has(fi):
-					blocked[fi] = true
+				# docs/193：多格家具（床 1×2、餐桌 2×2、浴缸 2×1）按 size 挡满占地；pos 是前左格，占地向上（向后墙）长。
+				var fsz: Array = _as_arr((fu as Dictionary).get("size", [1, 1]))
+				var fw := int(fsz[0]) if fsz.size() >= 2 else 1
+				var fh := int(fsz[1]) if fsz.size() >= 2 else 1
+				for fx in range(fw):
+					for fy in range(fh):
+						var cx := int(fp[0]) + fx
+						var cy := int(fp[1]) - fy
+						if cx < 0 or cy < 0 or cx >= w or cy >= h:
+							continue
+						var fi := cy * w + cx
+						if not portal_cells.has(fi):
+							blocked[fi] = true
 			if not _nav_grids.has(space):
 				_nav_grids[space] = {}
 			_nav_grids[space][fl] = {"w": w, "h": h, "blocked": blocked}
