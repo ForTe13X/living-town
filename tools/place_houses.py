@@ -101,6 +101,99 @@ def plan_gardens(lots, bad, W, H):
     return out
 
 
+def build_paths(m):
+    """复刻 WorldView._build_paths：门→广场的 L 形连街 + 无门 plaza 区→广场；外加所有 plaza 区格。只用来避让。"""
+    W = m["width"]
+    blocked = {tuple(c) for k in ("walls", "water", "trees") for c in m[k]}
+    areas = m["areas"]
+    paved = set()
+    for a in areas.values():
+        if a.get("type") == "plaza":
+            x, y, w, h = a["rect"]
+            paved |= {(xx, yy) for yy in range(y, y + h) for xx in range(x, x + w)}
+    if "plaza" not in areas:
+        return paved
+    px0, py0, pw, ph = areas["plaza"]["rect"]
+    px1, py1 = px0 + pw - 1, py0 + ph - 1
+    clamp = lambda v, a, b: max(a, min(b, v))
+
+    def leg(cx, cy):
+        gx, gy = clamp(cx, px0, px1), clamp(cy, py0, py1)
+        while cy != gy:
+            if (cx, cy) not in blocked: paved.add((cx, cy))
+            cy += 1 if gy > cy else -1
+        while cx != gx:
+            if (cx, cy) not in blocked: paved.add((cx, cy))
+            cx += 1 if gx > cx else -1
+        if (cx, cy) not in blocked: paved.add((cx, cy))
+
+    out = {"S": (0, 1), "N": (0, -1), "W": (-1, 0), "E": (1, 0)}
+    for d in m.get("doors", []):
+        ox, oy = out.get(d.get("face", "S"), (0, 1))
+        leg(d["pos"][0] + ox, d["pos"][1] + oy)
+    for k, a in areas.items():
+        if k != "plaza" and a.get("type") == "plaza":
+            x, y, w, h = a["rect"]
+            leg(x + w // 2, y + h // 2)
+    return paved
+
+
+def plan_terraces(blocked, W, H):
+    """docs/191：花岗岩台地（高差）。只落在 heat==0 的格上，且台地之下【两行崖壁 + 一行留白】也必须没人站过。
+    ① 北缘台地带：逐列数"从 y=0 往下连续空闲几行"k，台地深 = k-2（封顶 4、不足 2 则不抬），相邻列落差 ≤1，短于 3 列的段不要；
+    ② 草甸小丘：在剩下的大块空地上按 hash 次序挑 4-6 宽 × 2-3 深的矩形（外扩 1 格 + 下方崖壁两行都空闲），最多 4 座。
+    返回 (台地格集合, 崖壁/台沿禁建格集合)。"""
+    free = lambda x, y: 0 <= x < W and 0 <= y < H and (x, y) not in blocked
+    depth = []
+    for x in range(W):
+        k = 0
+        while k < 7 and free(x, k):
+            k += 1
+        depth.append(min(5, k - 2) if k >= 6 else 0)     # 台地至少 4 深：浅于此只剩一圈岩沿，读作"一条面包"而不是一级台地（第一版眼验）
+    for _ in range(4):                                   # 相邻列落差 ≤ 1
+        for x in range(W):
+            nb = [depth[x]] + [depth[x + d] + 1 for d in (-1, 1) if 0 <= x + d < W]
+            depth[x] = min(nb)
+    x = 0
+    while x < W:                                         # 去掉短于 3 列的段（< 2 深的也归零）
+        if depth[x] < 2:
+            depth[x] = 0; x += 1; continue
+        e = x
+        while e < W and depth[e] >= 2:
+            e += 1
+        if e - x < 5:
+            for i in range(x, e): depth[i] = 0
+        x = e
+    terr = {(x, y) for x in range(W) for y in range(depth[x])}
+    used = set(terr)
+    for (x, y) in list(terr):
+        for dy in (1, 2, 3):
+            used.add((x, y + dy))
+    knolls = 0
+    cands = sorted(((x, y) for y in range(4, H - 5) for x in range(1, W - 7)), key=lambda c: h32(c[0], c[1], 191))
+    for (x, y) in cands:
+        if knolls >= 4:
+            break
+        kw = 5 + h32(x, y, 193) % 4                     # 5-8 宽 × 4-5 深：顶面要露得出一片草（岩只在沿上）
+        kh = 4 + h32(x, y, 197) % 2
+        box = [(xx, yy) for yy in range(y - 1, y + kh + 3) for xx in range(x - 1, x + kw + 1)]
+        if all(free(*c) and c not in used for c in box):
+            cells = {(xx, yy) for yy in range(y, y + kh) for xx in range(x, x + kw)}
+            terr |= cells
+            used |= set(box)
+            knolls += 1
+    no_build = set()
+    for (x, y) in terr:
+        ring = any((x + dx, y + dy) not in terr for dx in (-1, 0, 1) for dy in (-1, 0, 1))
+        if ring:
+            no_build.add((x, y))
+        if (x, y + 1) not in terr:                       # 台地南沿：本行下半 + 下一行上半是崖壁，再下一行是崖脚影
+            for dx in (-1, 0, 1):
+                for dy in (0, 1, 2):
+                    no_build.add((x + dx, y + dy))
+    return terr, no_build
+
+
 def main():
     heat = json.load(open(sys.argv[1]))
     out = sys.argv[sys.argv.index("--out") + 1] if "--out" in sys.argv else f"{ROOT}game/assets/art/houses/lots.json"
@@ -134,6 +227,10 @@ def main():
         for dy in (-1, 0, 1):
             for dx in (-1, 0, 1):
                 grown.add((x + dx, y + dy))
+    # docs/191：台地先定（避让石街/广场），崖壁与台沿不许建房/园子；台地内部可以建房
+    terr, no_build = plan_terraces(bad | build_paths(m), W, H)
+    grown |= no_build
+    bad = bad | no_build
     size = {s: bbox_cells(s) for s in SPRITES + [u[0] for u in UNIQUES]}
     taken = set()
     lots = []
@@ -183,7 +280,8 @@ def main():
                 break
     gardens = plan_gardens(lots, bad, W, H)
     json.dump({"_doc": "docs/186/188 布景民居 + 园子落点（tools/place_houses.py 生成，勿手改）",
-               "lots": lots, "gardens": gardens}, open(out, "w", newline="\n"), indent=1)
+               "lots": lots, "gardens": gardens, "terraces": sorted([x, y] for x, y in terr)},
+              open(out, "w", newline="\n"), indent=1)
     print(f"{len(lots)} lots, {len(gardens)} gardens -> {out}")
     g = [["#" if (x, y) in grown else "." for x in range(W)] for y in range(H)]
     for L in lots:
