@@ -388,7 +388,7 @@ func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
 	# 生活模式（docs/190）：桌面上【不带任何参数】的正式启动 = 开局选人；--life 显式开、--life-as <id> 跳过选人直接附身。
 	# 带参数的 dev/CI/出图路径一律不进（它们都带参数）⇒ 所有既有门逐字节不变。手机端还没有摇杆，暂不默认。
-	var life_on := args.is_empty() and not OS.has_feature("android")
+	var life_on := args.is_empty()                    # 产品启动（桌面双击 / 手机点图标）= 生活模式；docs/190 第六批起手机也默认进（有摇杆了）
 	var life_as := ""
 	for i in args.size():
 		if args[i] == "--life":

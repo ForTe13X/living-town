@@ -36,6 +36,64 @@ class Marker extends Node2D:
 	func _draw() -> void:
 		lm._draw_marker(self)
 
+## 触屏虚拟摇杆（docs/190 第六批）：左下角一块区域，按下即以按下点为圆心（浮动摇杆，拇指落哪都行），拖动给方向。
+## 同时认 ScreenTouch/ScreenDrag（真触屏，多指时只跟第一根）与鼠标（桌面 --touch 眼验）。只产出 dir，不碰 Sim。
+class Joystick extends Control:
+	const R := 86.0
+	var dir := Vector2.ZERO
+	var _center := Vector2.ZERO
+	var _knob := Vector2.ZERO
+	var _idx := -1
+	var _held := false
+	func _ready() -> void:
+		mouse_filter = Control.MOUSE_FILTER_STOP
+	func _home() -> Vector2:
+		return Vector2(R + 30.0, size.y - R - 30.0)
+	func _press(p: Vector2) -> void:
+		_held = true
+		_center = p if p.distance_to(_home()) > R * 0.6 else _home()
+		_drag(p)
+	func _drag(p: Vector2) -> void:
+		var v := p - _center
+		if v.length() > R:
+			v = v.normalized() * R
+		_knob = v
+		dir = v / R
+		queue_redraw()
+	func _release() -> void:
+		_held = false
+		_idx = -1
+		dir = Vector2.ZERO
+		_knob = Vector2.ZERO
+		queue_redraw()
+	func _gui_input(e: InputEvent) -> void:
+		if e is InputEventScreenTouch:
+			if e.pressed and _idx == -1:
+				_idx = e.index
+				_press(e.position)
+			elif not e.pressed and e.index == _idx:
+				_release()
+			accept_event()
+		elif e is InputEventScreenDrag:
+			if e.index == _idx:
+				_drag(e.position)
+			accept_event()
+		elif e is InputEventMouseButton and e.button_index == MOUSE_BUTTON_LEFT:
+			if e.pressed:
+				_press(e.position)
+			else:
+				_release()
+			accept_event()
+		elif e is InputEventMouseMotion and _held and _idx == -1:
+			_drag(e.position)
+			accept_event()
+	func _draw() -> void:
+		var c := _center if _held else _home()
+		draw_circle(c, R, Color(0.075, 0.085, 0.11, 0.55))
+		draw_arc(c, R, 0.0, TAU, 48, Color(0.80, 0.64, 0.36, 0.75), 2.0)
+		draw_circle(c + _knob, R * 0.42, Color(0.95, 0.87, 0.66, 0.85 if _held else 0.55))
+		draw_arc(c + _knob, R * 0.42, 0.0, TAU, 32, Color(0.55, 0.44, 0.26, 0.9), 2.0)
+
 var main: Node2D
 var pid := ""
 var active := false
@@ -117,10 +175,19 @@ var _asp_btns: Array = []
 # 人际面板（R）
 var _rel_panel: Panel
 var _rel_open := false
+# 触屏（手机 / --touch）：摇杆 + 大按钮 + 大号菜单行
+var touch := false
+var _joy: Joystick
+var _touch_bar: Control
+const OPT_H_TOUCH := 54.0
+const OPT_FS_TOUCH := 19
 
 func setup(m: Node2D) -> void:
 	main = m
 	_fnt = Art.font()
+	touch = OS.has_feature("android") or OS.has_feature("ios") or "--touch" in OS.get_cmdline_user_args()
+	if touch:
+		get_tree().quit_on_go_back = false        # 安卓返回键：先关菜单/面板，不直接退出（见 _notification）
 	_layer = CanvasLayer.new()
 	_layer.layer = 25
 	add_child(_layer)
@@ -250,7 +317,8 @@ func _build_select() -> void:
 	go.pressed.connect(func(): start_life(String(_sel_ids[_sel_idx])))
 	_sel.add_child(go)
 	var keys := _mk_label(_sel, 13, Vector2(0, 738), Vector2(DESIGN.x, 20), MUTED)
-	keys.text = "方向键/鼠标 挑人 · Tab 换志向 · Enter 或双击 开始" + (" · Esc 回到原来的人生" if pid != "" and Sim.get_agent(pid).size() > 0 else "")
+	keys.text = ("点一个人挑选 · 点志向切换 · 点「开始这段人生」" + (" · 返回键回到原来的人生" if pid != "" and Sim.get_agent(pid).size() > 0 else "")) if touch else \
+		("方向键/鼠标 挑人 · Tab 换志向 · Enter 或双击 开始" + (" · Esc 回到原来的人生" if pid != "" and Sim.get_agent(pid).size() > 0 else ""))
 	keys.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
 func _on_card_input(e: InputEvent, i: int) -> void:
@@ -330,7 +398,7 @@ func start_life(id: String) -> void:
 		_asp_base = 0
 	_roll_wants()
 	_refresh_hud()
-	_show_toast("你现在是 %s。WASD 或点地面走动，走近东西或人按 E。" % Sim._name(ag), 4.0)
+	_show_toast(("你现在是 %s。左下摇杆或点地面走动，走近东西或人点「互动」。" if touch else "你现在是 %s。WASD 或点地面走动，走近东西或人按 E。") % Sim._name(ag), 4.0)
 	main.call("_push", "[color=#ffd166]——— 你成为了 %s ———[/color]" % Sim._name(ag))
 
 ## 出图/眼验用（--life-menu）：立刻按一次 E。定格 tick 下 _process 还没刷过身边列表，这里先刷一次。
@@ -360,11 +428,31 @@ func _after_reset() -> void:
 	_close_modal()
 
 ## Main 的观察者 chrome（观察台/时间轴/聊天框）在生活模式里让位：时间轴回放不含玩家指令，拖它会"改写"你的人生。
+## 触屏上左下角的纪事也让给摇杆（手机横屏放不下两样）；纪事里的新事仍经 toast 冒出来。
 func _set_main_chrome(on: bool) -> void:
-	for n in ["_obs", "_obs_pan", "_obs_card", "_obs_btn", "_scrub_pan", "_scrub_card", "_scrub_track", "_scrub_fill", "_scrub_handle", "_scrub_hint", "_chat_in"]:
+	var names := ["_obs", "_obs_pan", "_obs_card", "_obs_btn", "_scrub_pan", "_scrub_card", "_scrub_track", "_scrub_fill", "_scrub_handle", "_scrub_hint", "_chat_in"]
+	if touch:
+		names.append_array(["_log_pan", "_log_card", "_logbox"])
+	for n in names:
 		var c: Variant = main.get(n)
 		if c is CanvasItem:
 			(c as CanvasItem).visible = on and n != "_chat_in"
+
+## 安卓返回键：关掉最上层的东西；什么都没开 → 打开「自己」菜单（再按一次关掉），不退出游戏。
+func _notification(what: int) -> void:
+	if what != NOTIFICATION_WM_GO_BACK_REQUEST or not touch:
+		return
+	if _chat_box != null and _chat_box.visible:
+		_close_chat()
+	elif _modal_open:
+		_close_modal()
+	elif _rel_open:
+		_toggle_rel()
+	elif selecting:
+		if pid != "" and not Sim.get_agent(pid).is_empty():
+			start_life(pid)
+	elif active:
+		_open_modal({})
 
 # ── 帧循环 ───────────────────────────────────────────────────────────────────
 func _process(delta: float) -> void:
@@ -428,6 +516,11 @@ func _poll_move(delta: float) -> void:
 		return                                    # 打字时 WASD 是字，不是方向
 	var dx := int(Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT)) - int(Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT))
 	var dy := int(Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN)) - int(Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP))
+	if _joy != null and _joy.dir.length() > 0.35:  # 摇杆：8 向量化（轴分量超过 0.38×模长才算那一轴）
+		var jd := _joy.dir
+		var jl := jd.length()
+		dx = (1 if jd.x > 0.0 else -1) if absf(jd.x) > 0.38 * jl else 0
+		dy = (1 if jd.y > 0.0 else -1) if absf(jd.y) > 0.38 * jl else 0
 	if dx == 0 and dy == 0:
 		if _walk_on:
 			_walk_tick()
@@ -562,7 +655,7 @@ func _toggle_rel() -> void:
 	var y := 40.0
 	if rows.is_empty():
 		var nl := _mk_label(_rel_panel, 14, Vector2(14, y), Vector2(320, 22), MUTED)
-		nl.text = "还谁都不熟。走近别人按 E 打个招呼吧。"
+		nl.text = "还谁都不熟。走近别人%s打个招呼吧。" % _act()
 		y += 28.0
 	for rw in rows:
 		var o2 := Sim.get_agent(String(rw["id"]))
@@ -659,7 +752,7 @@ func _set_free_will(on: bool) -> void:
 	free_will = on
 	Sim.possess("" if on else pid)
 	_will_btn.text = "自主：开" if on else "自主：关"
-	_show_toast("让 %s 自己过一会儿（按方向键收回）" % Sim._name(Sim.get_agent(pid)) if on else "收回控制")
+	_show_toast("让 %s 自己过一会儿（%s收回）" % [Sim._name(Sim.get_agent(pid)), "推摇杆" if touch else "按方向键"] if on else "收回控制")
 
 # ── 输入 ─────────────────────────────────────────────────────────────────────
 func _unhandled_input(e: InputEvent) -> void:
@@ -792,6 +885,8 @@ func _open_modal(entry: Dictionary) -> void:
 	_modal_open = true
 	_modal_entry = entry
 	_prompt.visible = false
+	_toast.visible = false                        # toast 在菜单之上一层：开菜单时收起，免得压住标题
+	_toast_t = 0.0
 	if String(entry.get("kind", "")) == "agent":
 		_request_approaches(String(entry["id"]))
 	_rebuild_modal()
@@ -801,6 +896,9 @@ func _close_modal() -> void:
 		return
 	_modal_open = false
 	_modal.visible = false
+	if _touch_bar != null:
+		_touch_bar.visible = active
+		_joy.visible = active
 	_approach_token += 1                          # 迟到的模型回包作废
 	_ai_pending = false
 	Sim.running = _modal_was_running
@@ -841,7 +939,7 @@ func _rebuild_modal() -> void:
 	var e := _modal_entry
 	var kind := String(e.get("kind", "self"))
 	var y := 14.0
-	var w := 520.0
+	var w := 640.0 if touch else 520.0
 	var title := _mk_label(_modal, 22, Vector2(18, y), Vector2(w - 36, 30), PARCH)
 	var sub := _mk_label(_modal, 14, Vector2(18, y + 32), Vector2(w - 36, 20), MUTED)
 	y += 60.0
@@ -891,18 +989,26 @@ func _rebuild_modal() -> void:
 		_:
 			var st := Sim.life_status()
 			title.text = String(st.get("name", "你自己"))
-			sub.text = "身边没有能互动的东西 · 走近物件或居民再按 E" if _inter.is_empty() else "自己"
+			sub.text = ("身边没有能互动的东西 · 走近物件或居民再%s" % _act()) if _inter.is_empty() else "自己"
 			var d: Dictionary = st.get("doing", {})
 			var cancel_txt := ("放下手头的事（%s）" % String(d.get("action", ""))) if not d.is_empty() else "放下手头的事"
 			y = _mk_opt(cancel_txt, not d.is_empty() and String(d.get("kind", "")) != "social", _self_cancel, y, w)
 			y = _mk_opt("让 TA 自己过一会儿（自主）" if not free_will else "收回控制", true, _self_will, y, w)
 			y = _mk_opt("换一个人生", true, _self_switch, y, w)
 	var foot := _mk_label(_modal, 13, Vector2(18, y + 6.0), Vector2(w - 36, 18), MUTED)
-	foot.text = "数字键选择 · Esc/E 关闭 · 菜单打开时世界暂停"
+	foot.text = "点一项选择 · 点空白处或返回键关闭 · 菜单打开时世界暂停" if touch else "数字键选择 · Esc/E 关闭 · 菜单打开时世界暂停"
 	y += 30.0
+	if touch and y > DESIGN.y - 16.0:             # 触屏大行放不下：整体缩到屏内（字仍比桌面大）
+		_modal.scale = Vector2.ONE * ((DESIGN.y - 16.0) / y)
+	else:
+		_modal.scale = Vector2.ONE
 	_modal.size = Vector2(w, y)
-	_modal.position = Vector2((DESIGN.x - w) * 0.5, clampf(DESIGN.y * 0.46 - y * 0.5, 44.0, DESIGN.y - y - 8.0))
+	var sh := y * _modal.scale.y
+	_modal.position = Vector2((DESIGN.x - w * _modal.scale.x) * 0.5, clampf(DESIGN.y * 0.46 - sh * 0.5, 8.0 if touch else 44.0, DESIGN.y - sh - 8.0))
 	_modal.visible = true
+	if _touch_bar != null:
+		_touch_bar.visible = false
+		_joy.visible = false
 
 func _self_cancel() -> void:
 	_close_modal()
@@ -945,12 +1051,12 @@ func _mk_opt(text: String, enabled: bool, fn: Callable, y: float, w: float) -> f
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	b.clip_text = true
 	b.position = Vector2(14, y)
-	b.size = Vector2(w - 28, 30)
+	b.size = Vector2(w - 28, OPT_H_TOUCH if touch else 30.0)
 	b.disabled = not enabled
-	_style_btn(b, 15)
+	_style_btn(b, OPT_FS_TOUCH if touch else 15)
 	b.pressed.connect(func(): _pick(idx))
 	_modal.add_child(b)
-	return y + 33.0
+	return y + (OPT_H_TOUCH + 4.0 if touch else 33.0)
 
 func _pick(i: int) -> void:
 	if i < 0 or i >= _modal_opts.size():
@@ -1018,7 +1124,7 @@ func _open_chat(tid: String) -> void:
 		_chat_box.max_length = 40
 		_chat_box.text_submitted.connect(_on_chat_submit)
 		_layer.add_child(_chat_box)
-	_chat_box.placeholder_text = "对%s说…（Enter 发送 · Esc 取消）" % Sim._name(Sim.get_agent(tid))
+	_chat_box.placeholder_text = ("对%s说…（输入后点键盘上的发送）" if touch else "对%s说…（Enter 发送 · Esc 取消）") % Sim._name(Sim.get_agent(tid))
 	_chat_box.text = ""
 	_chat_box.visible = true
 	_chat_box.grab_focus()
@@ -1164,6 +1270,9 @@ func _build_hud() -> void:
 	card.add_child(_will_btn)
 	var keys := _mk_label(_hud, 13, Vector2(10, DESIGN.y - 26), Vector2(880, 20), MUTED)
 	keys.text = "WASD/点地 走动 · E 互动 · 点物件/居民 开菜单 · Tab 换目标 · R 人际 · Q 放下 · 空格 暂停 · 1-3 速度 · F 自主 · C 换人 · F5/F8 存读"
+	keys.visible = not touch
+	if touch:
+		_build_touch()
 	_wants_panel = Panel.new()
 	_wants_panel.position = Vector2(8, 48)
 	_wants_panel.size = Vector2(340, 130)
@@ -1185,6 +1294,37 @@ func _build_hud() -> void:
 	ps.content_margin_left = 8; ps.content_margin_right = 8
 	_prompt.add_theme_stylebox_override("normal", ps)
 	_prompt.visible = false
+
+## 触屏控件：左下浮动摇杆 + 底部一排大按钮（互动 / 我 / 人际 / 放下 / 缩放）。按钮与键盘走同一批函数。
+## 尺寸按实机算：设计分辨率 1280×768 在 2688×1216（520dpi）上 ≈0.49dp/设计像素 ⇒ 大按钮 ≈ 40dp。
+func _build_touch() -> void:
+	_joy = Joystick.new()
+	_joy.position = Vector2(0, DESIGN.y - 300.0)
+	_joy.size = Vector2(300, 300)
+	_hud.add_child(_joy)
+	_touch_bar = Control.new()
+	_touch_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_touch_bar.size = DESIGN
+	_hud.add_child(_touch_bar)
+	var specs := [
+		["互动", Vector2(700, 668), Vector2(186, 88), func(): _open_modal(_focused()), 24],
+		["我", Vector2(314, 676), Vector2(88, 80), func(): _open_modal({}), 20],
+		["人际", Vector2(410, 676), Vector2(88, 80), _toggle_rel, 20],
+		["放下", Vector2(506, 676), Vector2(88, 80), func(): _show_toast("放下了手头的事" if Sim.life_cancel() else "现在没在做什么"), 20],
+		["+", Vector2(612, 676), Vector2(40, 38), func(): _zoom = clampf(_zoom * 1.2, ZOOM_MIN, ZOOM_MAX), 22],
+		["-", Vector2(612, 718), Vector2(40, 38), func(): _zoom = clampf(_zoom / 1.2, ZOOM_MIN, ZOOM_MAX), 22],
+	]
+	for s in specs:
+		var b := Button.new()
+		b.text = String(s[0])
+		b.position = s[1]
+		b.size = s[2]
+		b.focus_mode = Control.FOCUS_NONE
+		_style_btn(b, int(s[4]))
+		if String(s[0]) == "互动":
+			b.add_theme_stylebox_override("normal", _style(INK_HI, GOLD, 8, 4))
+		b.pressed.connect(s[3])
+		_touch_bar.add_child(b)
 
 func _refresh_hud() -> void:
 	var st := Sim.life_status()
@@ -1208,7 +1348,7 @@ func _refresh_hud() -> void:
 	elif int(st.get("talking", 0)) > 0 and (d.is_empty() or String(d.get("kind", "")) != "social"):
 		txt = "有人在跟你说话"
 	elif d.is_empty():
-		txt = "空闲 — 走近东西或人按 E"
+		txt = "空闲 — 走近东西或人%s" % _act()
 	else:
 		txt = _doing_text(d)
 		if String(d.get("phase", "")) == "use" and int(d.get("total", 0)) > 0:
@@ -1266,7 +1406,8 @@ func _place_prompt(ag: Dictionary) -> void:
 	var vp: Vector2 = main.call("_vp")
 	var sp: Vector2 = (wpos - pb.cam.position) * pb.cam.zoom + vp * 0.5
 	var verb := "说话" if String(e["kind"]) == "agent" else ("进门" if String(e["kind"]) == "portal" else "使用")
-	_prompt.text = "E  %s · %s%s" % [verb, String(e["label"]), ("  (Tab %d)" % _inter.size()) if _inter.size() > 1 else ""]
+	_prompt.text = ("%s · %s（点「互动」）" % [verb, String(e["label"])]) if touch else \
+		("E  %s · %s%s" % [verb, String(e["label"]), ("  (Tab %d)" % _inter.size()) if _inter.size() > 1 else ""])
 	_prompt.size = Vector2(maxf(120.0, _fnt.get_string_size(_prompt.text, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x + 22.0), 26)
 	_prompt.position = Vector2(clampf(sp.x - _prompt.size.x * 0.5, 4.0, DESIGN.x - _prompt.size.x - 4.0), clampf(sp.y - 34.0, 44.0, DESIGN.y - 60.0))
 	_prompt.visible = true
@@ -1454,6 +1595,10 @@ func _refresh_wants() -> void:
 	_wants_l.text = s
 
 # ── 小工具 ───────────────────────────────────────────────────────────────────
+## 「打开互动菜单」这个动作在当前设备上怎么说。
+func _act() -> String:
+	return "点「互动」" if touch else "按 E"
+
 func _show_toast(text: String, secs := 2.4) -> void:
 	_toast.text = text
 	_toast.visible = true
