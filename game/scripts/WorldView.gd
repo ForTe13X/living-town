@@ -3132,8 +3132,14 @@ func _draw_outer_town(c: CanvasItem, map: Rect2, bands: Array, w: int, h: int, s
 			top.append(p)
 			bot.append(p + Vector2(0, _west_face_h(xx)))
 			xx += stepx
-		var face := PackedVector2Array(top)
-		for i in range(bot.size() - 1, -1, -1):
+		# 崖面只取面高 > 0 的那段：贴镇边 _west_face_h 收到 0 ⇒ top/bot 重合成零宽，多边形自贴 ⇒ 引擎 triangulation failed
+		var face := PackedVector2Array()
+		var face_n := 0
+		for i in top.size():
+			if bot[i].y - top[i].y > 0.5:
+				face.append(top[i])
+				face_n = i + 1
+		for i in range(face_n - 1, -1, -1):
 			face.append(bot[i])
 		var sh := PackedVector2Array()                                                # 崖脚落影：崖底往南一条渐隐带
 		for p in bot:
