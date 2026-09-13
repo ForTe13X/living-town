@@ -379,28 +379,43 @@ const DIR8_ROW := {
 	Vector2i(0, -1): 4, Vector2i(-1, -1): 5, Vector2i(-1, 0): 6, Vector2i(-1, 1): 7,
 }
 var _dir8 := {}                # id -> 行（0=朝南）
-# docs/193 §一：朝向按【最近 FACE_WINDOW 步的合位移】取 8 向，而不是按单步。
+# docs/193 §一：朝向 = 【朝着要去的地方】，而不是朝着上一步。
 # Sim 的路径是 4 连通的（_step_toward 先走 x 再走 y；A* 出来的斜线是 E,S,E,S 的阶梯），
 # 旧版逐步取向 ⇒ 斜着走的人每一格在"朝东/朝南"之间来回翻身，看起来就是"脸朝错方向走路"。
-# 合位移下阶梯恒为 (2,2) ⇒ 稳定朝东南；拐角处 (3,1)→(2,2)→(1,3) 逐步转过去。
-const FACE_WINDOW := 4
-var _steps := {}               # id -> Array[Vector2i]（最近几步的单位位移）
+# 现在：有目标（去用某件家具 / 找某个人说话）且目标在同一平面 ⇒ 取【目标 − 当前格】的 8 向（走阶梯时它恒为东南，不翻）；
+# 没有目标（闲逛 / 跨平面行程走向门口）才退回上一步的方向。
+# ★ 这是一个【无记忆】的函数（只读本 tick 的 Sim 状态 + 这一步）——第一版用"最近 4 步合位移"，那份记忆会跨过
+#   读档/时间轴回放留在 View 里，回放到同一 tick 画出来的朝向与现场不同（SpaceShot 的 replay 像素门抓到的）。
 var _plane_of := {}            # id -> "space|floor"（换平面时不把跨坐标系的差分当成一步）
 
-func _face_step(id: String, d: Vector2i) -> void:
-	var hist: Array = _steps.get(id, [])
-	hist.append(d)
-	if hist.size() > FACE_WINDOW:
-		hist.pop_front()
-	_steps[id] = hist
-	var sum := Vector2.ZERO
-	for s in hist:
-		sum += Vector2(s)
-	if sum.length_squared() < 0.01:          # 原地来回（让路）：保留上一次的朝向
+func _goal_cell(ag: Dictionary) -> Variant:
+	var opt = ag.get("option")
+	if not (opt is Dictionary):
+		return null
+	var space := String(ag.get("space", "town")); var floor := String(ag.get("floor", "outdoor"))
+	match String(opt.get("kind", "")):
+		"object":
+			var objs = Sim.world.get("objects", {})
+			if objs is Dictionary and (objs as Dictionary).has(String(opt.get("target", ""))):
+				var o: Dictionary = objs[String(opt["target"])]
+				if String(o.get("space", "town")) == space and String(o.get("floor", "outdoor")) == floor:
+					var op = o.get("pos")
+					return op if op is Vector2i else Vector2i(int(op[0]), int(op[1]))
+		"social":
+			var partner: Dictionary = Sim.get_agent(String(opt.get("partner", "")))
+			if not partner.is_empty() and String(partner.get("space", "town")) == space 					and String(partner.get("floor", "outdoor")) == floor:
+				return partner["pos"]
+	return null
+
+func _face_step(id: String, d: Vector2i, ag: Dictionary = {}) -> void:
+	var dv := d
+	var goal = _goal_cell(ag) if not ag.is_empty() else null
+	if goal != null:
+		var g: Vector2i = goal - Vector2i(ag["pos"])
+		if g != Vector2i.ZERO:
+			dv = Vector2i(signi(g.x), signi(g.y))
+	if dv == Vector2i.ZERO:
 		return
-	var oct := wrapi(int(roundf(sum.angle() / (PI / 4.0))), 0, 8)   # 0=东，顺时针（y 朝下）
-	var dv := [Vector2i(1, 0), Vector2i(1, 1), Vector2i(0, 1), Vector2i(-1, 1),
-		Vector2i(-1, 0), Vector2i(-1, -1), Vector2i(0, -1), Vector2i(1, -1)][oct] as Vector2i
 	_dir8[id] = DIR8_ROW[dv]
 	# Puny 4 向表（玩家/无 8 向表者）：行 1=朝下走、行 2=侧面（朝右，朝左翻转）、行 3=朝上走。
 	# 旧版把横向也映射到行 1（正面走），于是横着走的人脸冲镜头。
@@ -2025,6 +2040,12 @@ func _is_object(x: int, y: int) -> bool:
 	return false
 
 func _on_social(e: Dictionary) -> void:
+	# docs/193：时间轴跳转/回放（Sim.replaying）期间重放出来的社交事件不生成气泡/表情。
+	# 气泡是"现场看见的"一闪而过的东西，不是时间轴状态：启动 warmup 的那次跳转发生在 View 接上信号之前，
+	# 于是现场从来没有那几秒的气泡；而读档后的 goto_tick 会把同一段重放出来、多出一批气泡 ⇒
+	# 同一 tick 两种画面（SpaceShot clean-player 的 replay 像素门抓到的；本分支的 sim 轨迹恰好在那个窗口里有人说话）。
+	if Sim.replaying:
+		return
 	var key := _emote_key(e)
 	var t := Art.emote_tex(key)
 	if t != null:
@@ -2193,7 +2214,7 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 		if String((fr as Dictionary).get("slot", "")) == "wall":
 			var wp: Array = (fr as Dictionary).get("pos", [0, 0])
 			walls[Vector2i(int(wp[0]), int(wp[1]))] = true
-	_draw_interior_floor(b, wc, hc, shell)
+	_draw_interior_floor(b, wc, hc, shell, sid == "cafe")
 	_draw_interior_backwall(b, wc, shell, door_gap, role)
 	# 地面家具先按行（前左格的 y）排序：后排先画、前排压上，高柜/床头才会正确地挡住后面的墙与物件。
 	var pieces: Array = []
@@ -2363,10 +2384,17 @@ const TOWN_FURN := {"bed": "bed_single", "stove": "stove", "bath": "bathtub", "d
 func _wallpaper(role: String) -> Array:
 	return WALLPAPER.get(role, WALLPAPER["living"])
 
-func _draw_interior_floor(b: Rect2, wc: int, hc: int, shell: Dictionary) -> void:
+func _draw_interior_floor(b: Rect2, wc: int, hc: int, shell: Dictionary, legacy := false) -> void:
 	var base: Color = shell["floor"]
 	var line: Color = shell["floor_line"]
 	draw_rect(b, base, true)
+	if legacy:
+		# 阿丽的咖啡馆保留 AM1 的平铺地板：assert_cafe_interior_density 用"家具 vs 无家具"的差分量家具轮廓，
+		# 逐板明暗的新地板会在家具与地板同色处打出空洞，把桌子判成"碎的"。
+		for gy in range(hc):
+			if gy % 2 == 0:
+				draw_rect(Rect2(b.position.x, b.position.y + gy * T, b.size.x, 3), Color(line, 0.4), true)
+		return
 	if shell["slab"]:
 		var tsz := T * 0.5                            # 半格方砖，逐块确定性明暗
 		for gy in range(hc * 2):
@@ -6255,15 +6283,14 @@ func _process(delta: float) -> void:
 		var prev: Vector2i = _prev_pos.get(id, gp)
 		var plane := "%s|%s" % [String(ag.get("space", "town")), String(ag.get("floor", "outdoor"))]
 		if plane != String(_plane_of.get(id, plane)):
-			prev = gp                       # 换 Space/Floor：坐标系变了，差分无意义 ⇒ 不转身、清掉步伐记忆
-			_steps.erase(id)
+			prev = gp                       # 换 Space/Floor：坐标系变了，差分无意义 ⇒ 不转身
 			_prev_pos[id] = gp
 		_plane_of[id] = plane
 		if gp != prev:
 			var d := gp - prev
 			_prev_pos[id] = gp
 			if maxi(absi(d.x), absi(d.y)) <= 2:     # 瞬移（读档/时间轴跳转/传送）不算一步，不转身
-				_face_step(id, Vector2i(signi(d.x), signi(d.y)))
+				_face_step(id, Vector2i(signi(d.x), signi(d.y)), ag)
 		var cur: Vector2 = _render_pos.get(id, target)
 		if cur.distance_to(target) > tele:
 			cur = target
@@ -6281,7 +6308,7 @@ func _process(delta: float) -> void:
 			if not alive.has(id):
 				_render_pos.erase(id); _moving.erase(id); _walk_row.erase(id)
 				_prev_pos.erase(id); _facing_left.erase(id)
-				_steps.erase(id); _plane_of.erase(id); _dir8.erase(id)
+				_plane_of.erase(id); _dir8.erase(id)
 				dirty = true
 	if dirty:
 		queue_redraw()
@@ -6524,7 +6551,9 @@ func _draw_agent(ag: Dictionary) -> void:
 		var cell := float(Art.CHAR8_CELL)
 		var nwalk := maxi(1, int(sheet.get_width() / Art.CHAR8_CELL) - 1)
 		var aid8 := String(ag["id"])
-		var pose := {} if bool(_moving.get(aid8, false)) else _use_pose(ag)
+		# 姿势只读 Sim 状态（phase=="use" 时人本来就站定了），不读插值进度 _moving：
+		# 后者是渲染时钟的残余，读档/回放到同一 tick 时与现场不同 ⇒ 同一 tick 两种画法（SpaceShot replay 像素门）。
+		var pose := _use_pose(ag)
 		var pk := String(pose.get("kind", ""))
 		if pk == "lie" or pk == "soak" or pk == "sit_on":
 			center = pose["at"]

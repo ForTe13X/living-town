@@ -3554,6 +3554,19 @@ func agent_candidates(ag: Dictionary) -> Array:
 ##   (A) 顾客进店：镇上【常客】(cafe_regular)在营业时段、fun 偏低且无紧急事 → 去咖啡馆喝咖啡（进店后自然社交）。
 ##   (B) 离家在外(顾客在店/阿丽在镇)或 café 居民 → 本平面无满足的偏紧 need 承诺行程去有满足者的平面。
 ## 普通镇上居民(home=town、非常客/未进店) → 恒返 [] → town 逐字节不变。确定：对象/portal 文件序、无 RNG。
+## docs/193 §六：公共场所（spaces.json 里 public_venue=true 的 Space）。懒建一次；缺字段 ⇒ 空 ⇒ A2 整块不跑。
+const VENUE_URGE := 45.0          # need 掉到 55 以下才考虑为它出门
+const VENUE_VISIT_BONUS := 0.0    # 不加"出门走走"的分：与镇上对象纯按收益−路程竞争（4.0 时 N=12 #40 8/12）
+var _venue_cache: Variant = null
+func _venue_spaces() -> Dictionary:
+	if _venue_cache == null:
+		var vs := {}
+		for sid in _authored_spaces:
+			if _authored_spaces[sid] is Dictionary and bool((_authored_spaces[sid] as Dictionary).get("public_venue", false)):
+				vs[String(sid)] = true
+		_venue_cache = vs
+	return _venue_cache
+
 func _journey_candidates(ag: Dictionary) -> Array:
 	if ag.get("is_player", false):
 		return []
@@ -3569,6 +3582,21 @@ func _journey_candidates(ag: Dictionary) -> Array:
 		var vc := _best_satisfier_journey(ag, "fun", aspace, afloor, home_space, true)
 		if not vc.is_empty():
 			out.append(vc)
+	# (A2) docs/193 §六：出门去【公共场所】——面包房/可丽饼店/礼拜堂/市场/酒店/澡堂/图书馆（spaces.json public_venue）。
+	# 旧设计里镇上居民只会拐进咖啡馆（A），别的楼里的家具只有本来就在楼里的人用 ⇒ 实测 N=12/24 各 60 天，
+	# 五座新设施与澡堂/图书馆室内的家具被用了【0 次】。这里给镇上居民一条与 A 同形的行程候选：
+	# 只在不紧急时（min_need ≥ SURVIVAL_GATE）、只为已经偏低的 need（≤ 100-VENUE_URGE）、只认 public_venue 的对象，
+	# 与镇上对象同一套打分（urgency×amount/60 − 路程×penalty）再加一点"出门走走"的加成 ⇒ 与就近的镇上对象公平竞争。
+	if aspace == "town" and not _venue_spaces().is_empty() and _min_need(ag) >= SURVIVAL_GATE:
+		# 只为 hunger/hygiene 出门（吃点心、泡澡）。第一版也为 fun 出门（赏画/弹琴/静坐）⇒ 工位广告（也是 fun）被抢走，
+		# 上工次数下滑、镇库断链：N=12 的 #40 从 12/12 掉到 2/12。fun 类家具仍会被【已经在楼里】的人顺手用上。
+		for nid in ["hunger", "hygiene"]:
+			if 100.0 - float(ag["needs"].get(nid, 100.0)) < VENUE_URGE:
+				continue
+			var vj := _best_satisfier_journey(ag, nid, aspace, afloor, home_space, false, _venue_spaces())
+			if not vj.is_empty():
+				vj["score"] = float(vj.get("score", 0.0)) + VENUE_VISIT_BONUS
+				out.append(vj)
 	# (B) 离家在外 或 café 居民 → 为本平面无满足的偏紧 need 承诺行程。普通镇上居民(都在 town)不进此块。
 	if aspace != "town" or home_space != "town":
 		var covered := {}
@@ -3592,7 +3620,7 @@ func _journey_candidates(ag: Dictionary) -> Array:
 
 ## 锁定他平面满足 nid 的【最优对象】→ 一条 journey 候选。家绑定：【居民】的 energy/fun 只回家 Space(顾客 home=town 不受限)。
 ## is_visit=进店行程：只认咖啡馆对象、路程惩罚减半+进店加成(值得为一杯咖啡跑一趟，压过就近的镇上游戏机)。带 ag 走权限门(owner 楼梯)。
-func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor: String, home_space: String, is_visit: bool) -> Dictionary:
+func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor: String, home_space: String, is_visit: bool, only_spaces: Dictionary = {}) -> Dictionary:
 	var urg := 100.0 - float(ag["needs"].get(nid, 100.0))
 	var best_score := -1.0e18
 	var best: Dictionary = {}
@@ -3602,6 +3630,8 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 		if os == aspace and of == afloor:
 			continue
 		if is_visit and os != "cafe":
+			continue
+		if not only_spaces.is_empty() and not only_spaces.has(os):
 			continue
 		if not _staff_ok(ag, o):                                # 顾客的进店行程不冲吧台(员工专属)→ 锁定公共桌"喝咖啡"
 			continue

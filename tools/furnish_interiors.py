@@ -19,7 +19,8 @@ from collections import deque
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "game", "data")
-WALKABLE = {"stairs", "rug", "window"}   # must match Sim._build_interior_grids WALKABLE_SLOTS
+WALKABLE = {"stairs", "rug", "window"}
+PUBLIC_VENUES = {"wash", "library"}   # must match Sim._build_interior_grids WALKABLE_SLOTS
 
 
 def ad(action, need, amount, duration):
@@ -182,6 +183,8 @@ def main():
         print(f"{sid:8s} {size[0]}x{size[1]} door={door} pieces={len(furn)} walkable={n}")
         interiors[sid] = {"1f": {"label": label, "floor": floor, "furniture": furn}}
         spaces["spaces"][sid]["bounds"] = [0, 0, size[0], size[1]]
+        if sid in PUBLIC_VENUES:                         # docs/193 §六：镇上居民会为 need 出门来这里（Sim A2 行程）
+            spaces["spaces"][sid]["public_venue"] = True
         for p in spaces["portals"]:
             if p.get("kind") == "door" and p["to"]["space"] == sid:
                 p["to"]["pos"] = list(door)

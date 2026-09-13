@@ -75,7 +75,8 @@
    "floors": [
     "1f"
    ],
-   "default_floor": "1f"
+   "default_floor": "1f",
+   "public_venue": true
   },
   "work": {
    "_gen": true,
@@ -135,7 +136,8 @@
    "floors": [
     "1f"
    ],
-   "default_floor": "1f"
+   "default_floor": "1f",
+   "public_venue": true
   },
   "port_warehouse": {
    "_why": "P1-i East Ocean 玩家纵切：东港门口可进入的真实货仓。首片只承载玩家导航、库存/待卸货可视化与往返，不给 NPC 新增 advertises，避免把展示空间误当经济候选源。",
@@ -154,6 +156,7 @@
   },
   "bakery": {
    "_facility": true,
+   "public_venue": true,
    "kind": "interior",
    "label": "面包房",
    "bounds": [
@@ -169,6 +172,7 @@
   },
   "creperie": {
    "_facility": true,
+   "public_venue": true,
    "kind": "interior",
    "label": "可丽饼店",
    "bounds": [
@@ -184,6 +188,7 @@
   },
   "chapel": {
    "_facility": true,
+   "public_venue": true,
    "kind": "interior",
    "label": "礼拜堂",
    "bounds": [
@@ -199,6 +204,7 @@
   },
   "halles": {
    "_facility": true,
+   "public_venue": true,
    "kind": "interior",
    "label": "室内市场",
    "bounds": [
@@ -214,6 +220,7 @@
   },
   "hotel": {
    "_facility": true,
+   "public_venue": true,
    "kind": "interior",
    "label": "海滨大酒店",
    "bounds": [

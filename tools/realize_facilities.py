@@ -79,7 +79,7 @@ def main():
             continue
         door_in = (w // 2, h - 1)
         n = validate(sid, (w, h), door_in, furn)
-        spaces["spaces"][sid] = {"_facility": True, "kind": "interior", "label": label, "bounds": [0, 0, w, h],
+        spaces["spaces"][sid] = {"_facility": True, "public_venue": True, "kind": "interior", "label": label, "bounds": [0, 0, w, h],
                                  "floors": ["1f"], "default_floor": "1f"}
         spaces["portals"].append({"_facility": True, "id": f"p_{sid}_door", "kind": "door",
                                   "from": {"space": "town", "floor": "outdoor", "pos": doors[sid]},
