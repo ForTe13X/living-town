@@ -2773,6 +2773,26 @@ func _room_in_world(saved_world: Dictionary, pos: Vector2i) -> String:
 ## Ordered authored solid props remain ordinary map data for rendering, while this pure projection
 ## is the shared collision source for live nav and prepared-save validation. Malformed records yield
 ## no cells here; map audit and the exact receiver-owned save comparison reject them upstream.
+## docs/193 §五/§六：镇上的 PixelLab 房子/设施不再是"只落在没人站过的格上"的布景——
+## tools/place_houses.py --solid 把它们的占地写进 map.json solid_lots，_build_nav 把这些格挡进 town 导航网；
+## 能进的设施留一格门（door），门格走 portal 进室内。与 dock 的 solid_props 分开：那一份是 P1-u 的精确合同（p1u_port_nav_test）。
+func _solid_lot_cells_in_world(source_world: Dictionary) -> Array:
+	var out: Array = []
+	for raw_lot in source_world.get("solid_lots", []):
+		if not (raw_lot is Dictionary):
+			continue
+		var lp := _as_arr((raw_lot as Dictionary).get("pos", []))
+		var lf := _as_arr((raw_lot as Dictionary).get("footprint", []))
+		var ld := _as_arr((raw_lot as Dictionary).get("door", []))
+		if lp.size() != 2 or lf.size() != 2:
+			continue
+		for y in range(int(lp[1]), int(lp[1]) + int(lf[1])):
+			for x in range(int(lp[0]), int(lp[0]) + int(lf[0])):
+				if ld.size() == 2 and x == int(ld[0]) and y == int(ld[1]):
+					continue
+				out.append(Vector2i(x, y))
+	return out
+
 func _solid_prop_cells_in_world(source_world: Dictionary) -> Array:
 	var out: Array = []
 	var areas = source_world.get("areas", {})
@@ -3190,6 +3210,15 @@ func _advance_agent(ag: Dictionary) -> void:
 		var cands := agent_candidates(ag)
 		if cands.is_empty():
 			return
+		# docs/193：候选与下面的「承诺 pre-empt」用同一把尺。危机中（min_need < PREEMPT_CRISIS）
+		# 不再把"不急的事"（其 need ≥ SURVIVAL_GATE）交给决策——否则它会被选中、下一 tick 又被 pre-empt 中止、
+		# 再被选中……（实测：室内有了餐桌之后，饿到 0 的人在两张床之间每 tick 选"睡觉"又被打断，53 天没走出家门）。
+		# 只在还剩【救急】候选时收窄；一个都没有就保持原集合（让行程/兜底去处理）。
+		if _min_need(ag) < PREEMPT_CRISIS:
+			var urgent := cands.filter(func(c): return not (c is Dictionary and (c as Dictionary).has("need") \
+					and float(ag["needs"].get(String(c["need"]), 0.0)) >= SURVIVAL_GATE))
+			if not urgent.is_empty():
+				cands = urgent
 		# S4 确定性回放：按记录的 pick 复现（含还原异步思考延迟的时机），绕过模型 → 即便模型非确定也可复现。
 		if _replay_active:
 			var aid := String(ag["id"])
@@ -6904,7 +6933,7 @@ func _build_nav() -> void:
 	var H := int(world.get("height", GRID.y))
 	for b in world.get("blockers", []):            # 64×48 显式阻挡层(墙/水/树)，缺则空
 		_blocked[int(b[1]) * W + int(b[0])] = true
-	for raw_cell in _solid_prop_cells_in_world(world): # 可见实体道具与 View 共读 map.json authored footprint
+	for raw_cell in _solid_prop_cells_in_world(world) + _solid_lot_cells_in_world(world): # 可见实体道具（dock）+ 镇上房子（docs/193）与 View 共读 map.json authored footprint
 		var cell: Vector2i = raw_cell
 		if cell.x >= 0 and cell.y >= 0 and cell.x < W and cell.y < H:
 			_blocked[cell.y * W + cell.x] = true

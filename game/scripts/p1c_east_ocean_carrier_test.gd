@@ -61,8 +61,9 @@ func _ready() -> void:
 	var expected_population := [
 		["home", Vector2i(22, 16)], ["cafe", Vector2i(41, 16)],
 		["wash", Vector2i(22, 31)], ["work", Vector2i(41, 31)],
-		["home2", Vector2i(12, 6)], ["shop", Vector2i(52, 8)],
-		["library", Vector2i(12, 41)], ["plaza", Vector2i(32, 24)],
+		# docs/193 §五：民居/杂货铺/图书馆从地图三角挪到中央街区旁，三个质心有意改冻（与 audit_map.py 同步）
+		["home2", Vector2i(14, 16)], ["shop", Vector2i(50, 16)],
+		["library", Vector2i(14, 32)], ["plaza", Vector2i(32, 24)],
 		["north_pier", Vector2i(32, 8)],
 	]
 	ck(population_projection(S) == expected_population,
@@ -97,9 +98,9 @@ func _ready() -> void:
 	var first_six := clone_projection(Scale, 12, 18)
 	var expected_first_six := [
 		["npc_12", Vector2i(40, 31), Vector2i(40, 31)],
-		["npc_13", Vector2i(12, 6), Vector2i(12, 6)],
-		["npc_14", Vector2i(53, 8), Vector2i(53, 8)],
-		["npc_15", Vector2i(11, 42), Vector2i(11, 42)],
+		["npc_13", Vector2i(14, 16), Vector2i(14, 16)],   # docs/193 §五：随三栋建筑的新质心移动
+		["npc_14", Vector2i(51, 16), Vector2i(51, 16)],
+		["npc_15", Vector2i(13, 33), Vector2i(13, 33)],
 		["npc_16", Vector2i(32, 25), Vector2i(32, 25)],
 		["npc_17", Vector2i(33, 9), Vector2i(33, 9)],
 	]

@@ -151,6 +151,81 @@
     "1f"
    ],
    "default_floor": "1f"
+  },
+  "bakery": {
+   "_facility": true,
+   "kind": "interior",
+   "label": "面包房",
+   "bounds": [
+    0,
+    0,
+    8,
+    6
+   ],
+   "floors": [
+    "1f"
+   ],
+   "default_floor": "1f"
+  },
+  "creperie": {
+   "_facility": true,
+   "kind": "interior",
+   "label": "可丽饼店",
+   "bounds": [
+    0,
+    0,
+    8,
+    6
+   ],
+   "floors": [
+    "1f"
+   ],
+   "default_floor": "1f"
+  },
+  "chapel": {
+   "_facility": true,
+   "kind": "interior",
+   "label": "礼拜堂",
+   "bounds": [
+    0,
+    0,
+    7,
+    8
+   ],
+   "floors": [
+    "1f"
+   ],
+   "default_floor": "1f"
+  },
+  "halles": {
+   "_facility": true,
+   "kind": "interior",
+   "label": "室内市场",
+   "bounds": [
+    0,
+    0,
+    10,
+    7
+   ],
+   "floors": [
+    "1f"
+   ],
+   "default_floor": "1f"
+  },
+  "hotel": {
+   "_facility": true,
+   "kind": "interior",
+   "label": "海滨大酒店",
+   "bounds": [
+    0,
+    0,
+    10,
+    7
+   ],
+   "floors": [
+    "1f"
+   ],
+   "default_floor": "1f"
   }
  },
  "portals": [
@@ -328,8 +403,8 @@
     "space": "town",
     "floor": "outdoor",
     "pos": [
-     12,
-     8
+     14,
+     18
     ]
    },
    "to": {
@@ -352,8 +427,8 @@
     "space": "town",
     "floor": "outdoor",
     "pos": [
-     52,
-     10
+     50,
+     18
     ]
    },
    "to": {
@@ -376,8 +451,8 @@
     "space": "town",
     "floor": "outdoor",
     "pos": [
-     12,
-     38
+     14,
+     34
     ]
    },
    "to": {
@@ -385,7 +460,7 @@
     "floor": "1f",
     "pos": [
      4,
-     0
+     6
     ]
    },
    "bidirectional": true,
@@ -409,6 +484,126 @@
     "pos": [
      8,
      3
+    ]
+   },
+   "bidirectional": true,
+   "access": "public",
+   "traversal_cost": 1
+  },
+  {
+   "_facility": true,
+   "id": "p_bakery_door",
+   "kind": "door",
+   "from": {
+    "space": "town",
+    "floor": "outdoor",
+    "pos": [
+     11,
+     23
+    ]
+   },
+   "to": {
+    "space": "bakery",
+    "floor": "1f",
+    "pos": [
+     4,
+     5
+    ]
+   },
+   "bidirectional": true,
+   "access": "public",
+   "traversal_cost": 1
+  },
+  {
+   "_facility": true,
+   "id": "p_creperie_door",
+   "kind": "door",
+   "from": {
+    "space": "town",
+    "floor": "outdoor",
+    "pos": [
+     51,
+     8
+    ]
+   },
+   "to": {
+    "space": "creperie",
+    "floor": "1f",
+    "pos": [
+     4,
+     5
+    ]
+   },
+   "bidirectional": true,
+   "access": "public",
+   "traversal_cost": 1
+  },
+  {
+   "_facility": true,
+   "id": "p_chapel_door",
+   "kind": "door",
+   "from": {
+    "space": "town",
+    "floor": "outdoor",
+    "pos": [
+     29,
+     18
+    ]
+   },
+   "to": {
+    "space": "chapel",
+    "floor": "1f",
+    "pos": [
+     3,
+     7
+    ]
+   },
+   "bidirectional": true,
+   "access": "public",
+   "traversal_cost": 1
+  },
+  {
+   "_facility": true,
+   "id": "p_halles_door",
+   "kind": "door",
+   "from": {
+    "space": "town",
+    "floor": "outdoor",
+    "pos": [
+     24,
+     8
+    ]
+   },
+   "to": {
+    "space": "halles",
+    "floor": "1f",
+    "pos": [
+     5,
+     6
+    ]
+   },
+   "bidirectional": true,
+   "access": "public",
+   "traversal_cost": 1
+  },
+  {
+   "_facility": true,
+   "id": "p_hotel_door",
+   "kind": "door",
+   "from": {
+    "space": "town",
+    "floor": "outdoor",
+    "pos": [
+     50,
+     3
+    ]
+   },
+   "to": {
+    "space": "hotel",
+    "floor": "1f",
+    "pos": [
+     5,
+     6
     ]
    },
    "bidirectional": true,

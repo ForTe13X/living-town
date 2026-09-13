@@ -23,6 +23,8 @@ func _initialize() -> void:
 			for t in range(days * S.TICKS_PER_DAY):
 				S.tick()
 				for ag in S.agents:
+					if String(ag.get("space", "town")) != "town":
+						continue      # docs/193：室内居民的 pos 是室内局部格，混进来会把地图西北角记成"最繁忙"
 					var k := "%d,%d" % [int(ag["pos"].x), int(ag["pos"].y)]
 					heat[k] = int(heat.get(k, 0)) + 1
 			S.queue_free()

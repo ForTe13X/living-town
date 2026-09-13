@@ -99,8 +99,11 @@ def _wall_samples(img, w_tiles, h_tiles, skip_cells):
         for gy in range(1, h_tiles - 1):
             if (gx, gy) in skip_cells:
                 continue
-            x0, x1 = sx(gx * T + 0.20 * T), sx(gx * T + 0.80 * T)
-            y0, y1 = sy(gy * T + 0.35 * T), sy(gy * T + 0.80 * T)
+            # docs/193 §二：侧墙不再是整格砖块，只剩贴外沿 0.30 格厚的墙顶（WorldView.IWALL_THIN）——
+            # 采样挪到那条墙顶的中段（左墙 0.06-0.24、右墙 0.76-0.94），格内其余部分现在是地板。
+            fx0, fx1 = (0.06, 0.24) if gx == 0 else (0.76, 0.94)
+            x0, x1 = sx(gx * T + fx0 * T), sx(gx * T + fx1 * T)
+            y0, y1 = sy(gy * T + 0.10 * T), sy(gy * T + 0.90 * T)
             for yy in range(int(math.ceil(y0)), int(math.floor(y1))):
                 for xx in range(int(math.ceil(x0)), int(math.floor(x1))):
                     if 0 <= xx < W and 0 <= yy < H:

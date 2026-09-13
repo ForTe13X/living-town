@@ -123,7 +123,7 @@
       {
        "action": "赏画",
        "need": "fun",
-       "amount": 16,
+       "amount": 30,
        "duration": 10
       }
      ]
@@ -256,15 +256,6 @@
      "pos": [
       5,
       0
-     ],
-     "label": "风景画",
-     "advertises": [
-      {
-       "action": "赏画",
-       "need": "fun",
-       "amount": 16,
-       "duration": 10
-      }
      ]
     },
     {
@@ -382,15 +373,6 @@
      "pos": [
       8,
       1
-     ],
-     "label": "洗脸台",
-     "advertises": [
-      {
-       "action": "洗漱",
-       "need": "hygiene",
-       "amount": 18,
-       "duration": 6
-      }
      ]
     },
     {
@@ -418,15 +400,6 @@
      "size": [
       2,
       1
-     ],
-     "label": "浴缸",
-     "advertises": [
-      {
-       "action": "泡澡",
-       "need": "hygiene",
-       "amount": 60,
-       "duration": 16
-      }
      ]
     },
     {
@@ -452,15 +425,6 @@
      "size": [
       2,
       2
-     ],
-     "label": "餐桌",
-     "advertises": [
-      {
-       "action": "吃饭",
-       "need": "hunger",
-       "amount": 40,
-       "duration": 16
-      }
      ]
     },
     {
@@ -555,7 +519,7 @@
       {
        "action": "赏画",
        "need": "fun",
-       "amount": 16,
+       "amount": 30,
        "duration": 10
       }
      ]
@@ -798,15 +762,6 @@
      "pos": [
       4,
       0
-     ],
-     "label": "海景画",
-     "advertises": [
-      {
-       "action": "赏画",
-       "need": "fun",
-       "amount": 16,
-       "duration": 10
-      }
      ]
     },
     {
@@ -878,15 +833,6 @@
      "pos": [
       7,
       2
-     ],
-     "label": "洗脸台",
-     "advertises": [
-      {
-       "action": "洗漱",
-       "need": "hygiene",
-       "amount": 18,
-       "duration": 6
-      }
      ]
     },
     {
@@ -915,15 +861,6 @@
      "pos": [
       4,
       3
-     ],
-     "label": "小餐桌",
-     "advertises": [
-      {
-       "action": "吃饭",
-       "need": "hunger",
-       "amount": 40,
-       "duration": 16
-      }
      ]
     },
     {
@@ -1185,6 +1122,566 @@
      "pos": [
       4,
       4
+     ]
+    }
+   ]
+  }
+ },
+ "bakery": {
+  "1f": {
+   "label": "一层",
+   "floor": "wood",
+   "furniture": [
+    {
+     "slot": "window",
+     "pos": [
+      1,
+      0
+     ]
+    },
+    {
+     "slot": "painting_parasol",
+     "pos": [
+      5,
+      0
+     ],
+     "label": "风景画",
+     "advertises": [
+      {
+       "action": "赏画",
+       "need": "fun",
+       "amount": 30,
+       "duration": 10
+      }
+     ]
+    },
+    {
+     "slot": "counter",
+     "pos": [
+      2,
+      1
+     ],
+     "size": [
+      2,
+      1
+     ]
+    },
+    {
+     "slot": "plant",
+     "pos": [
+      6,
+      1
+     ]
+    },
+    {
+     "slot": "bistro",
+     "pos": [
+      2,
+      3
+     ],
+     "label": "小圆桌",
+     "advertises": [
+      {
+       "action": "吃饭",
+       "need": "hunger",
+       "amount": 30,
+       "duration": 12
+      }
+     ]
+    },
+    {
+     "slot": "bistro",
+     "pos": [
+      5,
+      3
+     ],
+     "label": "小圆桌",
+     "advertises": [
+      {
+       "action": "吃饭",
+       "need": "hunger",
+       "amount": 30,
+       "duration": 12
+      }
+     ]
+    },
+    {
+     "slot": "menu",
+     "pos": [
+      1,
+      4
+     ]
+    }
+   ]
+  }
+ },
+ "creperie": {
+  "1f": {
+   "label": "一层",
+   "floor": "wood",
+   "furniture": [
+    {
+     "slot": "painting_sea",
+     "pos": [
+      2,
+      0
+     ],
+     "label": "海景画",
+     "advertises": [
+      {
+       "action": "赏画",
+       "need": "fun",
+       "amount": 30,
+       "duration": 10
+      }
+     ]
+    },
+    {
+     "slot": "window",
+     "pos": [
+      6,
+      0
+     ]
+    },
+    {
+     "slot": "plant",
+     "pos": [
+      1,
+      1
+     ]
+    },
+    {
+     "slot": "sink",
+     "pos": [
+      5,
+      1
+     ]
+    },
+    {
+     "slot": "stove",
+     "pos": [
+      6,
+      1
+     ]
+    },
+    {
+     "slot": "bistro",
+     "pos": [
+      2,
+      3
+     ],
+     "label": "小圆桌",
+     "advertises": [
+      {
+       "action": "吃饭",
+       "need": "hunger",
+       "amount": 30,
+       "duration": 12
+      }
+     ]
+    },
+    {
+     "slot": "bistro",
+     "pos": [
+      5,
+      3
+     ],
+     "label": "小圆桌",
+     "advertises": [
+      {
+       "action": "吃饭",
+       "need": "hunger",
+       "amount": 30,
+       "duration": 12
+      }
+     ]
+    },
+    {
+     "slot": "menu",
+     "pos": [
+      1,
+      4
+     ]
+    }
+   ]
+  }
+ },
+ "chapel": {
+  "1f": {
+   "label": "一层",
+   "floor": "stone",
+   "furniture": [
+    {
+     "slot": "stained_glass",
+     "pos": [
+      1,
+      0
+     ]
+    },
+    {
+     "slot": "stained_glass",
+     "pos": [
+      5,
+      0
+     ]
+    },
+    {
+     "slot": "plant",
+     "pos": [
+      1,
+      1
+     ]
+    },
+    {
+     "slot": "altar",
+     "pos": [
+      2,
+      1
+     ],
+     "size": [
+      2,
+      1
+     ],
+     "label": "祭台",
+     "advertises": [
+      {
+       "action": "祈祷",
+       "need": "fun",
+       "amount": 20,
+       "duration": 12
+      }
+     ]
+    },
+    {
+     "slot": "plant",
+     "pos": [
+      5,
+      1
+     ]
+    },
+    {
+     "slot": "pew",
+     "pos": [
+      1,
+      3
+     ],
+     "size": [
+      2,
+      1
+     ],
+     "label": "长椅",
+     "advertises": [
+      {
+       "action": "静坐",
+       "need": "fun",
+       "amount": 22,
+       "duration": 14
+      }
+     ]
+    },
+    {
+     "slot": "pew",
+     "pos": [
+      4,
+      3
+     ],
+     "size": [
+      2,
+      1
+     ],
+     "label": "长椅",
+     "advertises": [
+      {
+       "action": "静坐",
+       "need": "fun",
+       "amount": 22,
+       "duration": 14
+      }
+     ]
+    },
+    {
+     "slot": "pew",
+     "pos": [
+      1,
+      5
+     ],
+     "size": [
+      2,
+      1
+     ]
+    },
+    {
+     "slot": "pew",
+     "pos": [
+      4,
+      5
+     ],
+     "size": [
+      2,
+      1
+     ]
+    }
+   ]
+  }
+ },
+ "halles": {
+  "1f": {
+   "label": "一层",
+   "floor": "stone",
+   "furniture": [
+    {
+     "slot": "window",
+     "pos": [
+      2,
+      0
+     ]
+    },
+    {
+     "slot": "window",
+     "pos": [
+      7,
+      0
+     ]
+    },
+    {
+     "slot": "grocery",
+     "pos": [
+      4,
+      1
+     ]
+    },
+    {
+     "slot": "grocery",
+     "pos": [
+      5,
+      1
+     ]
+    },
+    {
+     "slot": "market_stall",
+     "pos": [
+      1,
+      2
+     ],
+     "size": [
+      2,
+      1
+     ],
+     "label": "摊位",
+     "advertises": [
+      {
+       "action": "逛集",
+       "need": "fun",
+       "amount": 20,
+       "duration": 12
+      }
+     ]
+    },
+    {
+     "slot": "market_stall",
+     "pos": [
+      7,
+      2
+     ],
+     "size": [
+      2,
+      1
+     ],
+     "label": "摊位",
+     "advertises": [
+      {
+       "action": "逛集",
+       "need": "fun",
+       "amount": 20,
+       "duration": 12
+      }
+     ]
+    },
+    {
+     "slot": "market_stall",
+     "pos": [
+      1,
+      4
+     ],
+     "size": [
+      2,
+      1
+     ]
+    },
+    {
+     "slot": "market_stall",
+     "pos": [
+      7,
+      4
+     ],
+     "size": [
+      2,
+      1
+     ]
+    },
+    {
+     "slot": "sacks",
+     "pos": [
+      1,
+      5
+     ]
+    },
+    {
+     "slot": "crate",
+     "pos": [
+      8,
+      5
+     ]
+    }
+   ]
+  }
+ },
+ "hotel": {
+  "1f": {
+   "label": "一层",
+   "floor": "wood",
+   "furniture": [
+    {
+     "slot": "window",
+     "pos": [
+      1,
+      0
+     ]
+    },
+    {
+     "slot": "painting_sea",
+     "pos": [
+      3,
+      0
+     ],
+     "label": "海景画",
+     "advertises": [
+      {
+       "action": "赏画",
+       "need": "fun",
+       "amount": 30,
+       "duration": 10
+      }
+     ]
+    },
+    {
+     "slot": "window",
+     "pos": [
+      8,
+      0
+     ]
+    },
+    {
+     "slot": "plant",
+     "pos": [
+      4,
+      1
+     ]
+    },
+    {
+     "slot": "bookshelf",
+     "pos": [
+      5,
+      1
+     ]
+    },
+    {
+     "slot": "piano",
+     "pos": [
+      7,
+      1
+     ],
+     "size": [
+      2,
+      1
+     ],
+     "label": "钢琴",
+     "advertises": [
+      {
+       "action": "弹琴",
+       "need": "fun",
+       "amount": 32,
+       "duration": 18
+      }
+     ]
+    },
+    {
+     "slot": "rug",
+     "pos": [
+      3,
+      3
+     ],
+     "size": [
+      2,
+      1
+     ]
+    },
+    {
+     "slot": "sofa",
+     "pos": [
+      1,
+      4
+     ],
+     "size": [
+      2,
+      1
+     ],
+     "label": "沙发",
+     "advertises": [
+      {
+       "action": "歇着",
+       "need": "fun",
+       "amount": 28,
+       "duration": 18
+      }
+     ]
+    },
+    {
+     "slot": "armchair",
+     "pos": [
+      4,
+      4
+     ]
+    },
+    {
+     "slot": "sofa",
+     "pos": [
+      6,
+      4
+     ],
+     "size": [
+      2,
+      1
+     ],
+     "label": "沙发",
+     "advertises": [
+      {
+       "action": "歇着",
+       "need": "fun",
+       "amount": 28,
+       "duration": 18
+      }
+     ]
+    },
+    {
+     "slot": "lamp",
+     "pos": [
+      8,
+      4
+     ]
+    },
+    {
+     "slot": "plant",
+     "pos": [
+      1,
+      5
+     ]
+    },
+    {
+     "slot": "plant",
+     "pos": [
+      8,
+      5
      ]
     }
    ]

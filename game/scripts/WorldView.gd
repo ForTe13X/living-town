@@ -2250,7 +2250,7 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 const POSE_BY_SLOT := {
 	"bed": "lie", "bed_double": "lie",
 	"bathtub": "soak", "bath": "soak",
-	"toilet": "sit_on", "sofa": "sit_on", "armchair": "sit_on", "bench": "sit_on",
+	"toilet": "sit_on", "sofa": "sit_on", "armchair": "sit_on", "bench": "sit_on", "pew": "sit_on",
 	"dining": "sit_at", "bistro": "sit_at", "table": "sit_at", "desk": "sit_at", "counter": "sit_at", "barstool": "sit_at",
 }
 var _furn_at := {}               # "space|floor|x|y" -> 室内家具条目（带 size/slot），懒建
@@ -2347,7 +2347,10 @@ const WALLPAPER := {
 	"study": [Color("#8fa487"), Color("#7a906f")],      # 鼠尾草绿
 	"workshop": [Color("#cfc6b6"), Color("#b3a891")],   # 刷白石灰
 	"store": [Color("#e8d9a8"), Color("#d4c088")],      # 淡黄
+	"chapel": [Color("#d3cdc2"), Color("#9c958a")],     # 刷白花岗岩
 }
+# docs/193 §六：设施室内的用途按 space id 直接给（它们的家具清单与咖啡区/起居间同型，按清单推会推错）
+const FACILITY_ROLE := {"bakery": "cafe", "creperie": "cafe", "chapel": "chapel", "halles": "store", "hotel": "living"}
 var _furn_foot := {}             # 精灵名 -> alpha bbox（对地用底行，挂墙用中心）
 const TOWN_FURN := {"bed": "bed_single", "stove": "stove", "bath": "bathtub", "desk": "workbench"}
 
@@ -2506,7 +2509,8 @@ func _furn_name(slot: String, fw: int, role: String, on_wall: bool) -> String:
 		"sink": return "kitchen_counter"
 		"grocery": return "grocery_shelf"
 		"lamp": return "floor_lamp"
-		"painting_sea", "painting_parasol": return slot
+		"painting_sea", "painting_parasol", "stained_glass": return slot
+		"pew", "altar", "market_stall": return slot
 		"window": return "window_curtain" if on_wall else ""
 		"rug": return "rug_persian" if fw >= 2 else ""
 		"desk": return "writing_desk" if role == "study" or role == "living" else ""
@@ -2714,6 +2718,8 @@ func _interior_wall(shell: Dictionary, x: float, y: float, is_door: bool) -> voi
 func _furniture_role(sid: String, content: Dictionary) -> String:
 	if sid == "port_warehouse":
 		return "store"
+	if FACILITY_ROLE.has(sid):
+		return String(FACILITY_ROLE[sid])
 	var slots := {}
 	for fr in content.get("furniture", []):
 		var s := String((fr as Dictionary).get("slot", ""))

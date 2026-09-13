@@ -28,11 +28,15 @@ def ad(action, need, amount, duration):
 
 SLEEP = ad("睡觉", "energy", 62, 40)
 EAT = ad("吃饭", "hunger", 40, 16)
-REST = ad("歇着", "fun", 28, 18)
+# docs/193 §七：家里只保留【床 + 沙发（接替旧模板桌子的「歇着」）+ 马桶】三样能用的东西，其余家具只是摆设。
+# 实测：把吃/洗/赏画/闲话家常都搬进家里（且数值与外面同一量级）后，居民不再出门——
+# 上工归零、镇库全线断链（S0 #40 0/12：produce=40 consume=130），fun/social 触底（#01 11/12 红）。
+# 出门的理由必须留在外面：吃在咖啡馆/面包房/可丽饼店的小圆桌上，泡澡在澡堂，看画在澡堂/酒店/咖啡馆/面包房。
+REST = ad("歇着", "fun", 28, 18)       # = 旧模板里住宅桌子的那条（沙发接替它），数值不动
 TOILET = ad("如厕", "hygiene", 22, 6)
 WASH = ad("洗漱", "hygiene", 18, 6)
 BATHE = ad("泡澡", "hygiene", 60, 16)
-ART = ad("赏画", "fun", 16, 10)
+ART = ad("赏画", "fun", 30, 10)
 READ = ad("读书", "fun", 30, 20)
 
 
@@ -55,25 +59,25 @@ def walls(*cells):
 LAYOUTS = {
     # 住宅区：合住的一栋——西卧室（两张单人床）、东北浴室（隔墙+门洞）、东南厨房餐厅、西南起居角
     "home": ("一层", "wood", (12, 9), (5, 8), [
-        f("window", 2, 0), f("painting_parasol", 5, 0, label="风景画", adv=ART), f("window", 9, 0),
+        f("window", 2, 0), f("painting_parasol", 5, 0), f("window", 9, 0),
         f("bed", 1, 2, (1, 2), "床", SLEEP), f("plant", 2, 1), f("bed", 3, 2, (1, 2), "床", SLEEP),
         f("dresser", 4, 1), f("wardrobe", 6, 1),
         *walls((7, 1), (7, 2), (7, 3), (7, 4), (9, 4), (10, 4)),
-        f("basin", 8, 1, label="洗脸台", adv=WASH), f("toilet", 10, 1, label="马桶", adv=TOILET),
-        f("bathtub", 9, 3, (2, 1), "浴缸", BATHE),
+        f("basin", 8, 1), f("toilet", 10, 1, label="马桶", adv=TOILET),
+        f("bathtub", 9, 3, (2, 1)),
         f("stove", 10, 5), f("sink", 10, 6),
-        f("dining", 8, 7, (2, 2), "餐桌", EAT), f("plant", 10, 7),
+        f("dining", 8, 7, (2, 2)), f("plant", 10, 7),
         f("sofa", 1, 5, (2, 1), "沙发", REST), f("armchair", 4, 5), f("bookshelf", 6, 5),
         f("rug", 2, 6, (2, 1)), f("lamp", 1, 7), f("plant", 6, 7),
     ]),
     # 民居：一人一户的小屋——双人床、衣柜、角落卫生间、炉灶、小餐桌、扶手椅
     "home2": ("一层", "wood", (9, 7), (4, 6), [
-        f("window", 2, 0), f("painting_sea", 4, 0, label="海景画", adv=ART),
+        f("window", 2, 0), f("painting_sea", 4, 0),
         f("bed_double", 1, 2, (2, 2), "床", SLEEP), f("dresser", 3, 1),
         *walls((5, 1), (5, 2), (5, 3)),
-        f("toilet", 7, 1, label="马桶", adv=TOILET), f("basin", 7, 2, label="洗脸台", adv=WASH),
+        f("toilet", 7, 1, label="马桶", adv=TOILET), f("basin", 7, 2),
         f("lamp", 2, 3),
-        f("stove", 1, 5), f("sink", 2, 5), f("bistro", 4, 3, label="小餐桌", adv=EAT),
+        f("stove", 1, 5), f("sink", 2, 5), f("bistro", 4, 3),
         f("armchair", 6, 5, label="扶手椅", adv=REST), f("plant", 7, 5),
     ]),
     # 澡堂：西侧两只浴缸、北墙一排洗脸台、东墙两格厕位（隔板），墙上一幅海景
@@ -95,7 +99,7 @@ LAYOUTS = {
         f("counter", 1, 2), f("grocery", 4, 1), f("grocery", 5, 1), f("grocery", 6, 1), f("grocery", 7, 1),
         f("sacks", 1, 4), f("crate", 2, 4), f("plant", 7, 5),
     ]),
-    "library": ("一层", "stone", (9, 7), (4, 0), [
+    "library": ("一层", "stone", (9, 7), (4, 6), [   # docs/193 §五：挪到澡堂西邻后街门朝南
         f("painting_parasol", 6, 0),
         f("bookshelf", 1, 1), f("bookshelf", 2, 1, label="书架", adv=READ), f("bookshelf", 6, 1), f("bookshelf", 7, 1),
         f("desk", 2, 4), f("rug", 4, 3), f("desk", 6, 4), f("plant", 3, 1),
