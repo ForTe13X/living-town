@@ -776,6 +776,7 @@ func _invalidate_world_caches() -> void:
 	_sea_built = false
 	_houses_built = false
 	_road_built = false
+	_outer_built = false
 	_grass_var = PackedByteArray()
 	_verge_ground = Color(0, 0, 0, 0)
 	_slot_probe_n = -1                    # H3：换世界 ⇒ 下一次 _redraw_all 重新体检精灵槽
@@ -1526,17 +1527,17 @@ func _draw_roads(w: int) -> void:
 		_build_roads(w)
 	var veg := _season_veg()
 	var layers := [[T * 1.00, S_CURB.lerp(P_FOLIAGE_D * veg, 0.45)], [T * 0.86, P_STREET], [T * 0.34, S_STREET_HI.lerp(P_STREET, 0.5)]]
-	for L in layers:
-		var wd: float = L[0]; var col: Color = L[1]
+	for li in layers.size():
+		var wd: float = layers[li][0]; var col: Color = layers[li][1]
 		for e in _road_edges:
 			var a: Vector2 = e[0]; var b: Vector2 = e[1]
 			if not _vis.intersects(Rect2(a, Vector2.ZERO).expand(b).grow(T)):
 				continue
-			draw_line(a, b, col, wd)
+			draw_line(a, b, _district_road_col(li, col, (a + b) * 0.5), wd)
 		for idx in _road_nodes:
 			var p: Vector2 = _road_nodes[idx]
 			if _vis.has_point(p) or _vis.grow(T).has_point(p):
-				draw_circle(p, wd * 0.5, col)
+				draw_circle(p, wd * 0.5, _district_road_col(li, col, p))
 	# 路面颗粒：沿每条边按长度撒碎石 / 鹅卵石（明暗两档），路沿压草簇
 	for e in _road_edges:
 		var a: Vector2 = e[0]; var b: Vector2 = e[1]
@@ -1564,6 +1565,32 @@ func _draw_roads(w: int) -> void:
 			var q := a + dvec * (float(hv / 7 % 100) / 100.0) + nrm * side * T * (0.40 + float(hv / 700 % 10) / 100.0)
 			draw_circle(q, T * 0.09, P_FOLIAGE_M * veg)
 			draw_circle(q + Vector2(T * 0.08, T * 0.02), T * 0.07, P_FOLIAGE_D * veg)
+
+## ── docs/192 分区 ─────────────────────────────────────────────────────────────
+## 与 tools/place_houses.py 的 DISTRICTS 同一份定义（格坐标圆心 + 半径）：商业（广场/咖啡馆/杂货铺一带）、工业（工坊/滩头一带），其余住宅。
+## 路面随区换材质、边界 2 格内渐变：商业=浅色石铺、住宅=土路、工业=灰碎石 ⇒ 不看招牌也读得出"这是哪一片"。
+const DISTRICT_DEFS := [["commercial", Vector2(36, 17), 12.0], ["industrial", Vector2(44, 36), 9.0]]
+
+func _district_w(p: Vector2, name: String) -> float:
+	for d in DISTRICT_DEFS:
+		if String(d[0]) == name:
+			return clampf((float(d[2]) - (p / float(T)).distance_to(d[1])) / 2.0 + 0.5, 0.0, 1.0)
+	return 0.0
+
+func _district_road_col(layer: int, base: Color, p: Vector2) -> Color:
+	var res := base
+	var com := base
+	var ind := base
+	match layer:
+		1:
+			res = P_STREET.lerp(P_PLAZA_LINE, 0.45)                 # 住宅：土路
+			com = S_STREET_HI.lerp(G_PLAZA_WARM, 0.55)             # 商业：浅色石铺（与广场同族）
+			ind = P_STONE.darkened(0.18)                           # 工业：灰碎石
+		2:
+			res = P_PLAZA_LINE.lightened(0.12)
+			com = G_PLAZA_HI
+			ind = P_STONE.darkened(0.05)
+	return res.lerp(com, _district_w(p, "commercial")).lerp(ind, _district_w(p, "industrial"))
 
 ## ── docs/189 外墙砌体 ─────────────────────────────────────────────────────────
 ## 旧画法：每格 = 一块平涂主色 + 顶 22% 一条亮带 + 底 14% 一条暗带 ⇒ 掀顶拉近看，外墙是一圈"带条纹的色块"，
@@ -2887,6 +2914,277 @@ func _draw_town_verge(c: CanvasItem, map: Rect2, bands: Array, w: int, h: int) -
 						_verge_seg(c, e, bands, da, da + 0.75 + float(hd / 11 % 5) * 0.18, dd, dd + 0.22, Color(0, 0, 0, 0.20))
 			i += 2
 
+# ══ docs/192 界外小镇 ════════════════════════════════════════════════════════
+# 可玩的 64×48 只是镇子的一角：西面是一级级往北抬上去的花岗岩台地（上城）——每级崖沿后一条等高线街、
+# 一排面朝南的房子，蛇行盘山路斜切过每级崖面；高处是教堂、市政厅、大酒店。
+# （只做西侧：相机边界只比地图宽 96px，界外纵深只在整镇取景的西侧 letterbox 里看得到；北/南/东只有两格余量，东面是海。）
+# · 视觉层级：界外一律按离镇距离压暗/压灰（大气透视），可玩区永远是画面里最亮、最饱和的那一块；
+#   地标（教堂/市政厅/酒店）体量大一档 ⇒ 尺度层级 = 地标 > 大楼 > 民居。
+# · 路是 Catmull-Rom 曲线：北坡的路沿等高线之字形上山、在台地崖面处切过（坡道），西街随地形缓弯。
+# · 纯画、只在界外层（静态缓存，只随相机/季节/天气重画 ⇒ VOIDGATE 不受影响）；布局只读 _hash_mix，与相机无关。
+const OUTER_TILES := 18.0      # 界外小镇的纵深（格）；再往外仍是 docs/44 的暗林
+const OUTER_FACE := 0.9        # 台地崖面高（格）
+var _outer_built := false
+var _outer_items: Array = []   # [{n, foot}]，按 foot.y 排（下方的压上方的）
+var _outer_roads: Array = []   # [PackedVector2Array]
+var _outer_used := {}          # 精灵名 -> Rect2i（alpha bbox）
+var _outer_xe := 0.0           # 界外小镇的东界（西坡止于镇西 3 格）
+var _outer_streets: Array = [] # [PackedVector2Array] 等高线街（不参与房子避让）
+const WEST_TIERS := 8          # 西坡台地级数（每 6 格一级）
+
+func _outer_used_rect(n: String) -> Rect2i:
+	if not _outer_used.has(n):
+		var tex := Art.tex("res://assets/art/houses/%s.png" % n)
+		var r := Rect2i()
+		if tex != null:
+			var img := tex.get_image()
+			if img != null and img.is_compressed():
+				img = img.duplicate()
+				img.decompress()
+			r = img.get_used_rect() if img != null else Rect2i(0, 0, tex.get_width(), tex.get_height())
+		_outer_used[n] = r
+	return _outer_used[n]
+
+func _catmull(pts: Array, step: float) -> PackedVector2Array:
+	var out := PackedVector2Array()
+	for i in range(pts.size() - 1):
+		var p0: Vector2 = pts[maxi(i - 1, 0)]; var p1: Vector2 = pts[i]
+		var p2: Vector2 = pts[i + 1]; var p3: Vector2 = pts[mini(i + 2, pts.size() - 1)]
+		var n := maxi(2, int(p1.distance_to(p2) / step))
+		for s in n:
+			var t := float(s) / float(n)
+			var t2 := t * t; var t3 := t2 * t
+			out.append(0.5 * ((2.0 * p1) + (p2 - p0) * t + (2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3) * t2 + (3.0 * p1 - p0 - 3.0 * p2 + p3) * t3))
+	out.append(pts[pts.size() - 1])
+	return out
+
+func _near_road(p: Vector2, r: float) -> bool:
+	for pl in _outer_roads:
+		for q in pl:
+			if q.distance_squared_to(p) < r * r:
+				return true
+	return false
+
+func _outer_has(n: String) -> bool:
+	for it in _outer_items:
+		if String(it["n"]) == n:
+			return true
+	return false
+
+func _outer_try(n: String, foot: Vector2, keep_out: Rect2) -> bool:
+	var u := _outer_used_rect(n)
+	if u.size.x <= 0:
+		return false
+	var box := Rect2(foot.x - float(u.size.x) * 0.5, foot.y - float(u.size.y), float(u.size.x), float(u.size.y))
+	if box.intersects(keep_out) or box.end.x > _outer_xe:
+		return false
+	if _near_road(foot + Vector2(0, -T * 0.25), float(u.size.x) * 0.5 + T * 0.10) or _near_road(box.get_center(), float(u.size.x) * 0.40):
+		return false
+	for it in _outer_items:                                   # 不与已落的房子重叠
+		if (it["box"] as Rect2).grow(-T * 0.10).intersects(box):
+			return false
+	_outer_items.append({"n": n, "foot": foot, "box": box})
+	return true
+
+## 沿一条"横向"曲线 fy(x) 从西往东排一行；marks = [[名, 期望 x 格]] 地标，走到那附近时换成地标。
+func _outer_row(fy: Callable, x0: float, x1: float, pool: Array, marks: Array, salt: int, keep_out: Rect2) -> void:
+	var x := x0
+	while x < x1:
+		var n: String = pool[_hash_mix(int(x / 8.0), salt, 401) % pool.size()]
+		for m in marks:
+			if absf(x - float(m[1]) * T) < T * 3.0 and not _outer_has(String(m[0])):
+				n = String(m[0])
+		var u := _outer_used_rect(n)
+		var wd := float(maxi(u.size.x, 24))
+		var cx := x + wd * 0.5
+		if _outer_try(n, Vector2(cx, float(fy.call(cx))), keep_out):
+			x += wd + T * (0.30 + 0.22 * float(_hash_mix(int(x), salt, 409) % 5))
+		else:
+			x += T * 0.5
+
+## 沿一条"竖向"弯街的一侧（side=-1 西 / +1 东）从北往南排。
+func _outer_col(road: PackedVector2Array, side: float, y0: float, y1: float, pool: Array, salt: int, keep_out: Rect2) -> void:
+	var y := y0
+	var k := 0
+	while y < y1:
+		var n: String = pool[_hash_mix(k, salt, 411) % pool.size()]
+		var u := _outer_used_rect(n)
+		var ht := float(maxi(u.size.y, 24)); var wd := float(maxi(u.size.x, 24))
+		var fy := y + ht
+		var rx := road[0].x
+		var bd := 1e18
+		for q in road:
+			var dd := absf(q.y - (fy - ht * 0.4))
+			if dd < bd:
+				bd = dd
+				rx = q.x
+		if _outer_try(n, Vector2(rx + side * (wd * 0.5 + T * 0.62), fy), keep_out):
+			y = fy + T * (0.45 + 0.30 * float(_hash_mix(k, salt, 413) % 3))
+		else:
+			y += T * 0.5
+		k += 1
+
+func _build_outer_town(w: int, h: int, sea_x: float) -> void:
+	_outer_built = true
+	_outer_items.clear()
+	_outer_roads.clear()
+	_outer_streets.clear()
+	var Wp := float(w) * T; var Hp := float(h) * T
+	_outer_xe = -3.0 * T                                                           # 房子/街只到镇西 3 格；台地顶面画到 -0.5 格（逐顶点融进地面环）# 只在西侧（相机只在西侧 letterbox 看得到界外纵深）
+	var keep_out := Rect2(0, 0, Wp, Hp).grow(2.6 * T)
+	# ── 盘山路：从镇西口蛇行上坡，斜切过每一级崖面（坡道）──
+	_outer_roads.append(_catmull([Vector2(-1.8 * T, 22.5 * T), Vector2(-6.0 * T, 22.2 * T), Vector2(-11.5 * T, 19.6 * T),
+		Vector2(-7.0 * T, 14.8 * T), Vector2(-13.5 * T, 9.6 * T), Vector2(-8.5 * T, 3.8 * T), Vector2(-14.0 * T, -2.5 * T)], T * 0.5))
+	_outer_roads.append(_catmull([Vector2(-6.0 * T, 22.2 * T), Vector2(-11.0 * T, 27.0 * T), Vector2(-6.5 * T, 33.0 * T),
+		Vector2(-12.0 * T, 39.0 * T), Vector2(-8.0 * T, Hp + 3.0 * T)], T * 0.5))    # 下坡去南
+	# ── 等高线街：每级台地崖沿后面一条（房子在街北、面朝南看海）──
+	for j in WEST_TIERS:
+		var pts := PackedVector2Array()
+		var xx := -26.0 * T
+		while xx <= _outer_xe:
+			pts.append(Vector2(xx, _west_y(j, xx) - 0.45 * T))
+			xx += T * 0.5
+		_outer_streets.append(pts)
+	# ── 每级一排房子；地标放在高处（北）：顶级教堂、次级市政厅 ──
+	var pool := ["cottage", "whitehouse", "townhouse", "terrace", "longere", "ochre", "halftimber", "belleepoque", "villa"]
+	for j in WEST_TIERS:
+		var jj := j
+		var marks := []
+		if j == 1: marks = [["church", -12.0]]
+		elif j == 2: marks = [["mairie", -16.0]]
+		elif j == 4: marks = [["hotel", -14.0]]
+		_outer_row(func(x): return _west_y(jj, x) - 0.95 * T, -26.0 * T, _outer_xe, pool, marks, 440 + j, keep_out)
+	_outer_items.sort_custom(func(a, b): return (a["foot"] as Vector2).y < (b["foot"] as Vector2).y)
+
+## 西坡第 j 级台地的崖沿（南面崖面顶线）。越往北越高：北边每一级都比南边那级高一台。
+func _west_y(j: int, x: float) -> float:
+	return (float(j) * 6.0 + 3.0) * T + 0.9 * T * sin(x / (5.5 * T) + float(j) * 1.3) + 0.25 * T * sin(x / (2.3 * T) + float(j))
+
+## 崖面高随离镇远近收口：贴镇边（x→-3 格）收到 0，读作"山坡在镇边落平"。
+func _west_face_h(x: float) -> float:
+	return OUTER_FACE * T * clampf((-x - 3.0 * T) / (2.5 * T), 0.0, 1.0)
+
+## 大气透视：离镇越远越暗越灰（可玩区永远是最亮最饱和的那块）
+func _outer_fade(p: Vector2, w: int, h: int) -> Color:
+	var d := _rect_dist(Rect2(0, 0, float(w) * T, float(h) * T), p) / T
+	var t := clampf((d - 1.0) / 11.0, 0.0, 1.0)            # 离镇 1 格起压、12 格压满：界外永远比可玩区暗一档以上（视觉层级）
+	return Color(0.86, 0.88, 0.90).lerp(Color(0.34, 0.40, 0.44), t)
+
+func _outer_ground(g: Color, dt: float) -> Color:
+	return g.darkened(0.14).lerp(VOID_BASE, pow(clampf(dt / OUTER_TILES, 0.0, 1.0), 1.5))
+
+func _draw_outer_town(c: CanvasItem, map: Rect2, bands: Array, w: int, h: int, sea_x: float) -> void:
+	if not _outer_built:
+		_build_outer_town(w, h, sea_x)
+	var g := _verge_ground_col()
+	# 只画在海岸线以西（东界外是 docs/180 的海与沙滩延长线）
+	var clip := Rect2(-1e6, -1e6, (sea_x - 3.0 * T) + 1e6, 2e6)
+	var cb: Array = []
+	for b in bands:
+		var s := (b as Rect2).intersection(clip)
+		if s.size.x > 0.0 and s.size.y > 0.0:
+			cb.append(s)
+	if cb.is_empty():
+		return
+	# ① 地面：由镇边往外一圈圈压暗（取代 verge 的"三格内压到黑"——那道黑圈正是"镇子是一座孤岛"的读法）
+	#   ★ 两段：3 格以外粗环；贴边 3 格内按 docs/44 verge 的做法【逐像素一档】从草色渐变过去。
+	#   第一版整段都用粗环（每环 ~5px 一种平涂色）⇒ POND 门的"池周草色众数"取样环伸出地图上沿 1 格，
+	#   一圈平涂色的像素数压过了有纹理的真草 ⇒ 草众数被换掉、夜帧 0 条剖线（docker 实跑抓到）。逐像素渐变不会成为众数。
+	var near := VERGE_TILES * float(T)
+	var steps := clampi(int((OUTER_TILES - VERGE_TILES) * float(T) * _zoom / 5.0), 10, 60)
+	for k in range(steps, 0, -1):
+		var d := near + float(k) / float(steps) * (OUTER_TILES * float(T) - near)
+		_verge_ring(c, map, cb, d, _outer_ground(g, d / float(T)))
+	var fine := clampi(int(near * _zoom), 24, 96)
+	var edge_to := _outer_ground(g, VERGE_TILES)
+	for k in range(fine, 0, -1):
+		var t := float(k) / float(fine)
+		_verge_ring(c, map, cb, t * near, g.lerp(edge_to, t))
+	# ② 西坡台地：顶面由北（高）往南（低）一级比一级暗 ⇒ 读作"往北抬上去的山坡"；再画每级南崖面
+	var x0 := -27.0 * T
+	var x1 := -0.5 * T
+	var stepx := T * 0.5
+	for j in range(WEST_TIERS - 1, -1, -1):
+		var poly := PackedVector2Array()
+		var xx := x0
+		while xx <= x1:
+			poly.append(Vector2(xx, _west_y(j, xx)))
+			xx += stepx
+		xx = x1
+		while xx >= x0:
+			poly.append(Vector2(xx, (_west_y(j - 1, xx) + _west_face_h(xx)) if j > 0 else -4.0 * T))
+			xx -= stepx
+		var hi := float(WEST_TIERS - j) / float(WEST_TIERS)                          # 越北越高越亮
+		var cols := PackedColorArray()                                                # 逐顶点：贴镇边处与地面环同色（无接缝），往西才显出台地的明暗
+		for p in poly:
+			var ramp := clampf((-p.x - 1.0 * T) / (5.0 * T), 0.0, 1.0)
+			var base := _outer_ground(g, -p.x / T)
+			cols.append(base.lightened((0.02 + 0.10 * hi) * ramp))
+		c.draw_polygon(poly, cols)
+	for j in WEST_TIERS:
+		var fade := _outer_fade(Vector2(-12.0 * T, _west_y(j, -12.0 * T)), w, h)
+		var rock := X_GRANITE * fade
+		var top := PackedVector2Array()
+		var bot := PackedVector2Array()
+		var xx := x0
+		while xx <= x1:
+			var p := Vector2(xx, _west_y(j, xx))
+			top.append(p)
+			bot.append(p + Vector2(0, _west_face_h(xx)))
+			xx += stepx
+		# 崖面只取面高 > 0 的那段：贴镇边 _west_face_h 收到 0 ⇒ top/bot 重合成零宽，多边形自贴 ⇒ 引擎 triangulation failed
+		var face := PackedVector2Array()
+		var face_n := 0
+		for i in top.size():
+			if bot[i].y - top[i].y > 0.5:
+				face.append(top[i])
+				face_n = i + 1
+		for i in range(face_n - 1, -1, -1):
+			face.append(bot[i])
+		var sh := PackedVector2Array()                                                # 崖脚落影：崖底往南一条渐隐带
+		for p in bot:
+			sh.append(p)
+		for i in range(bot.size() - 1, -1, -1):
+			sh.append(bot[i] + Vector2(T * 0.25, T * 0.55))
+		c.draw_colored_polygon(sh, Color(0, 0, 0, 0.22))
+		c.draw_colored_polygon(face, rock.darkened(0.12))
+		for f in [0.30, 0.55, 0.78]:                                                  # 层理
+			var line := PackedVector2Array()
+			for i in top.size():
+				line.append(top[i].lerp(bot[i], f) + Vector2(0, sin(top[i].x / 37.0) * 1.5))
+			c.draw_polyline(line, rock.darkened(0.40), 2.0)
+		c.draw_polyline(top, P_FOLIAGE_D * fade, 5.0)                                 # 崖顶草唇
+		c.draw_polyline(bot, rock.darkened(0.50), 2.0)                                # 崖脚
+	# 等高线街（在崖沿后面；不参与房子避让——房子本来就沿着它排）
+	for layer in [[T * 0.80, S_CURB.lerp(P_FOLIAGE_D, 0.45)], [T * 0.62, P_STREET]]:
+		for pl in _outer_streets:
+			var cols := PackedColorArray()
+			for p in pl:
+				cols.append((layer[1] as Color) * _outer_fade(p, w, h))
+			c.draw_polyline_colors(pl, cols, float(layer[0]))
+	# ③ 路：三层（路肩 / 路面 / 踩踏带），逐点按距离压暗
+	for layer in [[T * 1.00, S_CURB.lerp(P_FOLIAGE_D, 0.45)], [T * 0.86, P_STREET], [T * 0.30, S_STREET_HI.lerp(P_STREET, 0.5)]]:
+		for pl in _outer_roads:
+			var cols := PackedColorArray()
+			for p in pl:
+				cols.append((layer[1] as Color) * _outer_fade(p, w, h))
+			c.draw_polyline_colors(pl, cols, float(layer[0]))
+	# ④ 房子（按 foot.y 排好：下方压上方），落影 + 大气透视
+	var stex := _light_texture()
+	for it in _outer_items:
+		var box: Rect2 = it["box"]
+		if not _vis.intersects(box.grow(T)):
+			continue
+		var n := String(it["n"])
+		var tex := Art.tex("res://assets/art/houses/%s.png" % n)
+		if tex == null:
+			continue
+		var u := _outer_used_rect(n)
+		var foot: Vector2 = it["foot"]
+		var mod := _outer_fade(foot, w, h)
+		c.draw_texture_rect(stex, Rect2(box.position.x + box.size.x * 0.28, foot.y - T * 0.30, box.size.x * 0.95, T * 0.55), false, Color(0, 0, 0, 0.30))
+		c.draw_texture_rect_region(tex, box, Rect2(u.position, u.size), mod)
+
 # ══ 界外虚空：独立的【静态】子层 ═══════════════════════════════════════════════
 # ★ 为什么要把它搬出 `_draw()`（这是 D7 的头条改动，理由全部是量出来的）：
 #   真机 NX789J / N=12 / 白天 / 开局取景（`go_home` fit，zoom 0.229）实测三点：
@@ -3144,6 +3442,7 @@ func _draw_town_backdrop(c: CanvasItem, w: int, h: int) -> void:
 	#   它是"地面继续往外走"的那一层，林子应当长在它外面，而不是压在它上面。
 	_draw_town_verge(c, map, bands, w, h)
 	var sea_x := _draw_void_sea(c, map, bands, w, h)   # docs/180：东界之外是开阔海，不是林子
+	_draw_outer_town(c, map, bands, w, h, sea_x)       # docs/192：界外是镇子的其余部分（北坡上城 / 西区住宅 / 南区码头），不是一圈黑林
 	# 镇子漏进林子的光：贴着地图外缘最亮、向外 8 圈熄灭。旧稿在这里放过一条【矩形青色岸带】，
 	# 眼验读作"给地图加了个装饰边框"——硬边框是原型感的来源，换成柔性光晕就消失了。
 	for k in range(8 if _ap("bd:spill") else 0, 0, -1):
@@ -3180,7 +3479,7 @@ func _draw_town_backdrop(c: CanvasItem, w: int, h: int) -> void:
 					#   ⚠️ 判据必须是【整个圆】在第一层之外，不是圆心：树冠半径最大 1.08 格，
 					#   只查圆心时实测仍有树冠伸到 1.47 格处，在 outband 上打出 81.1 的单点尖峰
 					#   （比没做这一棒之前还差）——这是本棒第二个被数值抓到、肉眼看不出的回归。
-					if dist - r < VERGE_TILES * float(T) * 0.80:
+					if dist - r < OUTER_TILES * float(T) * 0.85:   # docs/192：界外小镇范围内不长暗林（原阈值 VERGE_TILES×0.80）
 						continue
 					var lit := clampf(1.0 - dist / fade_px, 0.0, 1.0)
 					if hsh / 9409 % 100 >= int(26.0 + 52.0 * lit):
