@@ -37,6 +37,16 @@
 `hotel`（256×224）、`church`（160×256）、`halles`（224×160）、`mairie`（192×192）、`warehouse`（224×160）、`cannery`（224×224）。
 hotel / church / cannery 出图带不透明底色，用四角洪泛填充去底（容差 24）。
 
+## 验收回执（本机，干净 worktree）
+
+- `tools/ci.sh` 第 5 步 22 个 headless 场景：**22/22 exit 0、0 条 `SCRIPT ERROR`**（4d033ee）。
+- docker 视觉门 `LT_VISUAL=require bash tools/visual_gate.sh`：**第一次跑 POND 门红**——
+  界外地面第一版整段用粗环（每环约 5px 平涂一色），POND 门的"池周草色众数"取样环伸出地图上沿约 1 格，
+  平涂像素压过了有纹理的真草 ⇒ 草众数从 (50,66,43) 变成 (41,56,27)、夜帧 0 条完整剖线。
+  修法（b79b5a3）：贴边 3 格内恢复 docs/44 verge 的逐像素渐变，粗环只用在 3 格以外。
+  重跑：rc=0，DAYNIGHT / SEASON / PRECIP / POND / ROUNDTRIP×3 / FLOOR ROUNDTRIP 全 PASS；POND 的草众数与剖线数回到 docs/191 的同值（昼 60 条 / 夜 55 条）。
+- 互补锚 ledger 已在修复后重烘，`gate_complement_guard.py` rc=0。
+
 ## 零金标
 
 只画、不写：可走性一格不动，不读 RNG；界外层只读相机/季节/天气。
