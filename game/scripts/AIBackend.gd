@@ -20,6 +20,32 @@ var api_key := "lm-studio"
 var mock := false                               # true → 强制走确定性 mock（不联网）
 var no_think := true                            # 追加 /no_think 关推理模型(Qwen3)的思考——否则烧 token 返回空（实测）
 var debug_llm := false                           # true → 在 _fire_http 完成回调打印 LLM 返回（诊断用）
+const LocalLlamaScript := preload("res://scripts/LocalLlama.gd")
+## local ── 端上 llama.cpp 子进程服务（docs/191）。传输/解析与 llm 同路（OpenAI 兼容 HTTP），差别只在：
+##   端点指向本机子进程；决策请求带 GBNF（只许合法编号字母，1 个 token）；所有请求 cache_prompt（前缀 KV 复用）。
+var local_llama: Node = null
+
+## HTTP 传输档（llm=外部服务，local=端上子进程）。
+func _is_http() -> bool:
+	return backend == "llm" or backend == "local"
+
+func _http_ep() -> String:
+	return local_llama.endpoint() if backend == "local" and local_llama != null else endpoint
+
+## local 档真机延迟埋点（手机上 print 进不了 logcat → 落 user://local_llama.log，前 200 行）。
+func _ldiag(kind: String, t0: int, code: int, out: String) -> void:
+	if backend == "local" and local_llama != null:
+		local_llama.diag("%s lat=%dms code=%d out=%s" % [kind, Time.get_ticks_msec() - t0, code, out.strip_edges().replace("\n", "⏎").substr(0, 60)])
+
+## local 档专属请求字段：前缀 KV 复用；决策给 GBNF 把输出钉成【一个合法编号字母】→ decode 恰 1 token、零解析失败。
+func _local_body(body: Dictionary, n_cands: int = 0) -> Dictionary:
+	if backend != "local":
+		return body
+	body["cache_prompt"] = true
+	if n_cands > 0:
+		body["grammar"] = "root ::= [A-%s]" % char(65 + clampi(n_cands, 1, LLM_PICK_CAP) - 1)
+		body["max_tokens"] = 1
+	return body
 ## bench 埋点。calls/waits 是【诚实分母】的原料，别只看 fired（详见 decision_stats 的长注释与 docs/35）。
 ## shadow_* / delta_* 是【真影响力】的原料：landed 只是上界，覆写率 Δ/C 才是模型真的改了什么（docs/36）。
 var stats := {"fired": 0, "landed": 0, "bad_parse": 0, "timeout": 0, "calls": 0, "waits": 0,
@@ -101,6 +127,9 @@ func _ready() -> void:
 	# 桌面(独显不与渲染抢)保持 GPU。覆盖优先级：本行=安卓默认 → 随后 Main 调 _load_user_settings 读 [slm] use_gpu（用户显式设了才盖）。
 	if OS.has_feature("android"):
 		slm_use_gpu = false
+	local_llama = LocalLlamaScript.new()          # 端上 llama.cpp 服务管理（懒起：只有选了 local 档才 spawn）
+	local_llama.name = "LocalLlama"
+	add_child(local_llama)
 	# 订阅世界重置 → 取消所有在飞请求。deferred 确保 Sim 自动加载已就绪（autoload 顺序无关）。
 	call_deferred("_connect_world_reset")
 func _connect_world_reset() -> void:
@@ -227,7 +256,9 @@ func _decide_interval() -> int:
 ## AIBackend.backend/backend_requested，不经本表 ⇒ --backend random 照常可跑。
 func available_backends() -> Array:
 	var out := ["logic"]
-	if ClassDB.class_exists("NobodyWhoModel"):     # 嵌入式 SLM 需 NobodyWho GDExtension 已加载（手机上主力）
+	if local_llama != null and local_llama.available():   # 端上 llama.cpp 服务（docs/191，手机上主力；APK 带 libllamad.so 才有）
+		out.append("local")
+	if ClassDB.class_exists("NobodyWhoModel"):     # 嵌入式 SLM 需 NobodyWho GDExtension 已加载（旧路，保留作 A/B 与兜底）
 		out.append("slm")
 	out.append("mock")
 	if not OS.has_feature("android"):              # llm=HTTP→LM Studio；手机默认 127.0.0.1 不可达，不进手机轮换（免误选空转 3000 次）
@@ -261,6 +292,8 @@ func _load_user_settings() -> void:
 	if cfg.load("user://settings.cfg") != OK:      # 缺文件/损坏 → 保持默认 logic
 		return
 	var m := String(cfg.get_value("backend", "mode", ""))
+	if local_llama != null:
+		local_llama.diag("settings mode=%s available=%s" % [m, str(available_backends())])
 	if m != "" and m in available_backends():
 		backend = m
 		backend_requested = m
@@ -429,6 +462,20 @@ func _resolve_model_path() -> String:
 			return p
 	return ProjectSettings.globalize_path("user://model.gguf")
 
+## local 档的模型路径：子进程以应用 uid 运行，读不了公共 Documents（真机实测 Permission denied——
+## 而 Godot 的 FileAccess 却判它"存在"，于是旧解析会把服务喂到一个它打不开的文件上、秒退）。
+## ⇒ 手选 override 在 user:// 下才用；否则先找 user://model.gguf，再退回通用解析（桌面不受影响）。
+func _local_model_path() -> String:
+	if not OS.has_feature("android"):
+		return _resolve_model_path()
+	var priv := ProjectSettings.globalize_path("user://")
+	if slm_model_override != "" and slm_model_override.begins_with(priv) and FileAccess.file_exists(slm_model_override):
+		return slm_model_override
+	var p := ProjectSettings.globalize_path("user://model.gguf")
+	if FileAccess.file_exists(p):
+		return p
+	return _resolve_model_path()
+
 ## 桌面兜底扫描：list_models() 的结果【排序后】取第一个真实存在的 gguf。
 ## 排序是刻意的——DirAccess 的枚举序是文件系统序，不排序会让"同一台机器同样的目录"在不同时刻选中不同模型。
 func _scan_local_gguf() -> String:
@@ -508,6 +555,10 @@ func _reset_slm_circuit(reason: String) -> void:
 func set_model_path(path: String) -> void:
 	slm_model_override = path
 	_reset_slm_circuit("换权重文件 → " + path.get_file())
+	if local_llama != null and local_llama.model_path != "":
+		local_llama.stop()                        # local 档：杀旧服务；下一发（或探测）按新权重重起
+		if backend == "local":
+			local_llama.ensure_started(_local_model_path())
 	var cfg := ConfigFile.new()
 	cfg.load("user://settings.cfg")
 	cfg.set_value("slm", "model_path", path)
@@ -563,10 +614,25 @@ func probe_capability(be: String, agent: Dictionary, candidates: Array, ctx: Dic
 		tier = "instant"
 		cb.call({"tier": tier, "p50_ms": 0, "deadline_ms": deadline_ms, "backend": backend})
 		return
+	if local_llama != null:
+		local_llama.diag("probe be=%s" % be)
+	if be == "local":                             # 先把端上服务起来（spawn + mmap 模型 + /health 就绪）；起不来 → 留 logic
+		var saved := backend
+		backend = "local"                         # _http_ep/_local_body 按 backend 取值：探测期间临时指向 local
+		var up: bool = await local_llama.ensure_started(_local_model_path())
+		backend = saved
+		if not up:
+			tier = "demoted_logic"
+			print("[算力探测] be=local 服务未就绪 → 留 logic")
+			cb.call({"tier": tier, "p50_ms": 0, "deadline_ms": deadline_ms, "backend": backend})
+			return
 	var warm := 0
 	for i in 2:                                   # 第1发付冷载(含模型 mmap)，取第2发为暖延迟
 		var t0 := Time.get_ticks_msec()
+		var saved_be := backend
+		if be == "local": backend = "local"       # 同上：探测发走 local 端点 + GBNF
 		await _probe_once(be, agent, candidates, ctx)
+		backend = saved_be
 		warm = Time.get_ticks_msec() - t0
 		if warm >= PROBE_TIMEOUT_MS - 1000:       # 该发超时(含 Adreno 挂死)→ 判不可用即刻收手：别复用挂死 worker 跑第2发
 			warm = PROBE_TIMEOUT_MS               #   （其迟包会触发第2发的 handler → 误判为"快"→错误启用 slm，评审 C3-d）
@@ -583,6 +649,8 @@ func probe_capability(be: String, agent: Dictionary, candidates: Array, ctx: Dic
 		backend = be
 		backend_requested = be
 	print("[算力探测] be=%s tier=%s p50=%dms deadline=%dms → backend=%s" % [be, tier, p50_ms, deadline_ms, backend])
+	if local_llama != null:
+		local_llama.diag("probe result be=%s tier=%s p50=%dms backend=%s" % [be, tier, p50_ms, backend])
 	# 探针结果落一个可 adb-pull 的文件（真机 logcat 收不到 Godot print、UI 日志又被社交事件刷掉）→ 严格延迟对拍可靠读数。
 	var ppath := "user://probe_result.txt"
 	if OS.has_feature("android"):
@@ -628,9 +696,9 @@ func _probe_once(be: String, agent: Dictionary, candidates: Array, ctx: Dictiona
 	# llm：HTTPRequest 直连
 	var http := HTTPRequest.new()
 	add_child(http)
-	var body := {"model": model, "max_tokens": DECIDE_MAX_TOKENS, "temperature": 0.6,
-		"messages": [{"role": "system", "content": sys}, {"role": "user", "content": usr}]}
-	var err := http.request(endpoint, ["Content-Type: application/json", "Authorization: Bearer " + api_key], HTTPClient.METHOD_POST, JSON.stringify(body))
+	var body := _local_body({"model": model, "max_tokens": DECIDE_MAX_TOKENS, "temperature": 0.6,
+		"messages": [{"role": "system", "content": sys}, {"role": "user", "content": usr}]}, _cap_for_llm(candidates).size())
+	var err := http.request(_http_ep(), ["Content-Type: application/json", "Authorization: Bearer " + api_key], HTTPClient.METHOD_POST, JSON.stringify(body))
 	if err != OK:
 		http.queue_free(); return ""
 	var res = await http.request_completed
@@ -1060,17 +1128,21 @@ func _mock_raw(agent: Dictionary, candidates: Array) -> String:
 
 ## llm：OpenAI 兼容 chat-completions（异步 HTTPRequest）。完成回调把 content 存入 pending.raw。
 func _fire_http(id: String, agent: Dictionary, candidates: Array, ctx: Dictionary) -> void:
+	if backend == "local" and not local_llama.up:
+		local_llama.ensure_started(_local_model_path())   # 服务死了/被系统杀了 → 后台重起；本发照发（连不上=空串=logic 兜底）
 	var http := HTTPRequest.new()
 	add_child(http)
 	_pending[id]["http"] = http
 	var ep := world_epoch
 	var rq := int(_pending[id]["req_id"])
+	var t0 := Time.get_ticks_msec()
 	http.request_completed.connect(func(_r, code, _h, body):
 		var raw := ""
 		if code == 200:
 			var j: Variant = JSON.parse_string(body.get_string_from_utf8())
 			if j is Dictionary and j.has("choices") and (j["choices"] as Array).size() > 0:
 				raw = String(j["choices"][0].get("message", {}).get("content", ""))
+		_ldiag("decide n=%d" % candidates.size(), t0, code, raw)
 		if debug_llm:
 			print("[llm] code=%d raw=%s" % [code, raw.strip_edges().substr(0, 50)])
 		if _match(id, ep, rq):                                 # 仅同一 (epoch,req_id) 才写回 → 迟到/跨局回包作废(P1-2/3)
@@ -1088,8 +1160,9 @@ func _fire_http(id: String, agent: Dictionary, candidates: Array, ctx: Dictionar
 			{"role": "user", "content": build_prompt(agent, candidates, ctx)},
 		],
 	}
+	body = _local_body(body, candidates.size())
 	var headers := ["Content-Type: application/json", "Authorization: Bearer " + api_key]
-	var err := http.request(endpoint, headers, HTTPClient.METHOD_POST, JSON.stringify(body))
+	var err := http.request(_http_ep(), headers, HTTPClient.METHOD_POST, JSON.stringify(body))
 	if err != OK:
 		if _match(id, ep, rq):
 			_pending[id]["has"] = true                         # 立即就绪空串 → 解析失败 → 兜底
@@ -1113,13 +1186,153 @@ func chat(agent: Dictionary, player_text: String, ctx: Dictionary, cb: Callable)
 	if backend == "mock" or mock:
 		cb.call(_canned_reply(agent, player_text))
 		return
-	if backend == "llm":
+	if _is_http():
 		_chat_http(agent, player_text, ctx, cb)
 		return
 	if backend == "slm" and ClassDB.class_exists("NobodyWhoModel"):
 		_chat_slm(agent, player_text, ctx, cb)
 		return
 	cb.call(_canned_reply(agent, player_text))      # logic/无模型 → 罐头兜底
+
+# ── 生活模式「说法」（docs/190）：走近居民按 E → 几种开口方式（动词 × 语气 × 情绪 × 台词）让玩家挑 ──
+## 分工照旧：【引擎】圈定此刻合法的动词集（Sim.life_verb_options），【模型】只负责把它说成几种不同的样子。
+## 模型挑了集合外的动词 / 输出坏了 / 超时 / logic 档 ⇒ 用下面的规则地板（立即可用、确定、零 RNG）。
+## 返回项：{verb, tone, emotion, line, src:"rule"|"ai"}。台词只进气泡/记忆的 say；事务裁决仍按动词走。
+const APPROACH_MAX := 4
+const APPROACH_TPL := {
+	"greet": {"热情": "嘿，%s！今天气色不错嘛！", "随和": "%s，忙着呢？", "腼腆": "那个……%s，你好。", "调侃": "哟，这不是%s吗，稀客稀客。"},
+	"give": {"热情": "%s，这个给你，别客气！", "关切": "%s，最近辛苦了，一点心意。", "腼腆": "%s……这个，送你的。"},
+	"gossip": {"神秘": "%s，过来点，我听说了件事……", "兴奋": "%s你知道吗？可不得了！"},
+	"invite": {"热情": "%s，改天一起在这儿坐坐？", "随和": "回头有空碰个面吧，%s。"},
+	"confront": {"直率": "%s，那件事我们得说清楚。", "克制": "%s，我心里有点不舒服，想聊聊。"},
+	"apologize": {"诚恳": "%s，那件事是我不对。", "腼腆": "%s……之前的事，对不起。"},
+}
+
+## 规则地板：按【说话人】性格与心情、双方关系挑语气，确定性（同输入同输出）。
+func approach_floor(actor: Dictionary, target: Dictionary, legal: Array) -> Array:
+	var traits: Array = (actor.get("persona", {}) as Dictionary).get("traits", [])
+	var rel := _rel_hint(actor, String(target.get("id", "")))
+	var mood: String = _mood(actor)[0]
+	var tname := String((target.get("persona", {}) as Dictionary).get("name", "你"))
+	var pref: Array = []                                    # 语气偏好序：性格 > 关系
+	if "热情" in traits or "豁达" in traits: pref.append("热情")
+	if "内向" in traits or "敏感" in traits or "寡言" in traits: pref.append("腼腆")
+	if "爱八卦" in traits or "好奇" in traits: pref.append_array(["兴奋", "神秘"])
+	if rel == "老友" or rel == "熟人": pref.append_array(["调侃", "随和"])
+	if rel == "有过节": pref.append_array(["克制", "诚恳", "直率"])
+	pref.append_array(["随和", "关切", "直率", "诚恳", "热情", "神秘"])
+	var out: Array = []
+	for v in legal:
+		var tpl: Dictionary = APPROACH_TPL.get(String(v), {})
+		var tone := ""
+		for t in pref:
+			if tpl.has(t):
+				tone = t
+				break
+		if tone == "" and not tpl.is_empty():
+			tone = String(tpl.keys()[0])
+		if tone != "":
+			out.append({"verb": String(v), "tone": tone, "emotion": mood, "line": String(tpl[tone]) % tname, "src": "rule"})
+	# 同一动词再给第二种语气（greet 最常用）：凑满 APPROACH_MAX，让「怎么说」真的有得选
+	for v in legal:
+		if out.size() >= APPROACH_MAX:
+			break
+		var tpl2: Dictionary = APPROACH_TPL.get(String(v), {})
+		for t in tpl2:
+			var dup := false
+			for a in out:
+				if String(a["verb"]) == String(v) and String(a["tone"]) == String(t):
+					dup = true
+			if not dup:
+				out.append({"verb": String(v), "tone": String(t), "emotion": mood, "line": String(tpl2[t]) % tname, "src": "rule"})
+				break
+	return out.slice(0, APPROACH_MAX)
+
+## 异步：先由调用方显示 approach_floor，模型回来后 cb.call(新列表)；模型不可用/失败 ⇒ 不回调（地板即终稿）。
+func suggest_approaches(actor: Dictionary, target: Dictionary, legal: Array, ctx: Dictionary, cb: Callable) -> void:
+	if legal.is_empty() or backend == "logic" or backend == "random" or _slm_circuit_open:
+		return
+	if backend == "mock" or mock:
+		var m := approach_floor(actor, target, legal)
+		for a in m:
+			a["src"] = "ai"
+		cb.call(m)
+		return
+	var p: Dictionary = actor.get("persona", {})
+	var tp: Dictionary = target.get("persona", {})
+	var mm := _mood(actor)
+	var mem := ""
+	if actor.get("memory") != null:
+		var ms: Array = actor["memory"].retrieve([String(target.get("id", ""))], int(ctx.get("tick", 0)), 3)
+		if not ms.is_empty():
+			mem = "你近期记得：" + "；".join(ms) + "。"
+	var verbs: Array = []
+	for v in legal:
+		verbs.append(String(ACTION_ZH.get(String(v), String(v))))
+	var sys := "你在为像素小镇居民%s（%s，性格:%s，口吻:%s）构思走近%s时的开口方式。只从这些动作里选：%s。给出%d种【明显不同】的说法，每行一种，格式严格为：动作|语气|情绪|台词。台词第一人称、不超过24字、用%s的口吻。只输出这几行。%s" % [
+		p.get("name", ""), p.get("bio", ""), "·".join(p.get("traits", [])), p.get("style", ""), tp.get("name", ""),
+		"、".join(verbs), APPROACH_MAX - 1, p.get("name", ""), (" /no_think" if no_think else "")]
+	var user := "此刻是%s，你%s。你和%s的关系：%s（对方性格:%s，对方%s）。%s" % [
+		_phase_zh(float(ctx.get("tod", 0.0))), String(mm[0]), tp.get("name", ""), _rel_hint(actor, String(target.get("id", ""))),
+		"·".join(tp.get("traits", [])), String(_mood(target)[0]), mem]
+	var done := func(raw: String):
+		var parsed := parse_approaches(raw, legal)
+		if not parsed.is_empty():
+			cb.call(parsed)
+	if _is_http():
+		_gen_http_lines(sys, user, done)
+	elif backend == "slm" and ClassDB.class_exists("NobodyWhoModel"):
+		if not _slm_submit(sys, user, {"mode": "cb", "cb": done, "cap": 240, "fallback": ""}):
+			return
+
+## 解析「动作|语气|情绪|台词」行；动作必须落在合法集里（中文名或英文 id 皆可），其余行丢弃。
+func parse_approaches(raw: String, legal: Array) -> Array:
+	var zh2v := {}
+	for v in legal:
+		zh2v[String(ACTION_ZH.get(String(v), String(v)))] = String(v)
+		zh2v[String(v)] = String(v)
+	var out: Array = []
+	for ln in raw.split("\n", false):
+		var parts := ln.strip_edges().trim_prefix("-").strip_edges().split("|")
+		if parts.size() < 4:
+			continue
+		var vk := parts[0].strip_edges()
+		for pre in ["1.", "2.", "3.", "4.", "1、", "2、", "3、", "4、"]:
+			vk = vk.trim_prefix(pre).strip_edges()
+		if not zh2v.has(vk):
+			continue
+		var line := "|".join(parts.slice(3)).strip_edges().trim_prefix("“").trim_suffix("”").trim_prefix("\"").trim_suffix("\"")
+		if line == "":
+			continue
+		# 小模型（端上 0.5B 实测）会把格式说明原样抄回来：「打招呼|语气|情绪|台词。」——那是模板回声，不是说法。
+		if parts[1].strip_edges() == "语气" or parts[2].strip_edges() == "情绪" or line.trim_suffix("。") == "台词":
+			continue
+		out.append({"verb": zh2v[vk], "tone": parts[1].strip_edges().substr(0, 6), "emotion": parts[2].strip_edges().substr(0, 8),
+			"line": line.substr(0, 40), "src": "ai"})
+		if out.size() >= APPROACH_MAX:
+			break
+	return out
+
+## 与 _gen_http 同路，但不截 60 字（多行输出）。
+func _gen_http_lines(sys: String, user: String, cb: Callable) -> void:
+	var http := HTTPRequest.new()
+	add_child(http)
+	http.timeout = 20.0
+	var t0 := Time.get_ticks_msec()
+	http.request_completed.connect(func(_r, code, _h, body):
+		var out := ""
+		if code == 200:
+			var j: Variant = JSON.parse_string(body.get_string_from_utf8())
+			if j is Dictionary and j.has("choices") and (j["choices"] as Array).size() > 0:
+				out = String(j["choices"][0].get("message", {}).get("content", "")).strip_edges()
+		_ldiag("approaches", t0, code, out)
+		http.queue_free()
+		cb.call(out))
+	var reqbody := _local_body({"model": model, "max_tokens": 200, "temperature": 0.9,
+		"messages": [{"role": "system", "content": sys}, {"role": "user", "content": user}]})
+	if http.request(_http_ep(), ["Content-Type: application/json", "Authorization: Bearer " + api_key], HTTPClient.METHOD_POST, JSON.stringify(reqbody)) != OK:
+		http.queue_free()
+		cb.call("")
 
 func _canned_reply(agent: Dictionary, _player_text: String) -> String:
 	var p: Dictionary = agent.get("persona", {})
@@ -1167,7 +1380,7 @@ func reflect(agent: Dictionary, floor_insight: String, recent: Array, cb: Callab
 	var user := "最近：" + "；".join(recent) + "。（心里大概是：" + floor_insight + "）"
 	if backend == "mock" or mock:
 		cb.call("（夜里想着）" + floor_insight)         # 确定性 mock：验证 plumbing
-	elif backend == "llm":
+	elif _is_http():
 		_gen_http(sys, user, cb)
 	elif backend == "slm" and ClassDB.class_exists("NobodyWhoModel"):
 		_gen_slm(sys, user, cb)
@@ -1184,9 +1397,9 @@ func _gen_http(sys: String, user: String, cb: Callable) -> void:
 				out = String(j["choices"][0].get("message", {}).get("content", "")).strip_edges()
 		http.queue_free()
 		cb.call(out.substr(0, 60)))
-	var reqbody := {"model": model, "max_tokens": MAX_TOKENS, "temperature": 0.85,
-		"messages": [{"role": "system", "content": sys}, {"role": "user", "content": user}]}
-	if http.request(endpoint, ["Content-Type: application/json", "Authorization: Bearer " + api_key], HTTPClient.METHOD_POST, JSON.stringify(reqbody)) != OK:
+	var reqbody := _local_body({"model": model, "max_tokens": MAX_TOKENS, "temperature": 0.85,
+		"messages": [{"role": "system", "content": sys}, {"role": "user", "content": user}]})
+	if http.request(_http_ep(), ["Content-Type: application/json", "Authorization: Bearer " + api_key], HTTPClient.METHOD_POST, JSON.stringify(reqbody)) != OK:
 		http.queue_free()
 		cb.call("")
 
@@ -1201,6 +1414,7 @@ func _gen_slm(sys: String, user: String, cb: Callable) -> void:
 func _chat_http(agent: Dictionary, player_text: String, ctx: Dictionary, cb: Callable) -> void:
 	var http := HTTPRequest.new()
 	add_child(http)
+	var t0 := Time.get_ticks_msec()
 	http.request_completed.connect(func(_r, code, _h, body):
 		var reply := _canned_reply(agent, player_text)
 		if code == 200:
@@ -1209,6 +1423,7 @@ func _chat_http(agent: Dictionary, player_text: String, ctx: Dictionary, cb: Cal
 				var c := String(j["choices"][0].get("message", {}).get("content", "")).strip_edges()
 				if c != "":
 					reply = c.substr(0, 80)
+		_ldiag("chat", t0, code, reply)
 		http.queue_free()
 		cb.call(reply)
 	)
@@ -1222,9 +1437,9 @@ func _chat_http(agent: Dictionary, player_text: String, ctx: Dictionary, cb: Cal
 	var sit := "此刻是%s，你%s。" % [_phase_zh(float(ctx.get("tod", 0.0))), String(mm[0])]
 	var sys := "你在扮演像素小镇居民 %s（%s，性格:%s，口吻:%s）。%s%s%s 用第一人称、你的口吻，贴合当下心情对玩家自然回 1-2 句，只输出台词本身、别复述设定。%s" % [
 		p.get("name", ""), p.get("bio", ""), "·".join(p.get("traits", [])), p.get("style", ""), sit, mem, _secret_guard(agent), (" /no_think" if no_think else "")]
-	var reqbody := {"model": model, "max_tokens": MAX_TOKENS, "temperature": 0.8,
-		"messages": [{"role": "system", "content": sys}, {"role": "user", "content": player_text}]}
-	var err := http.request(endpoint, ["Content-Type: application/json", "Authorization: Bearer " + api_key], HTTPClient.METHOD_POST, JSON.stringify(reqbody))
+	var reqbody := _local_body({"model": model, "max_tokens": MAX_TOKENS, "temperature": 0.8,
+		"messages": [{"role": "system", "content": sys}, {"role": "user", "content": player_text}]})
+	var err := http.request(_http_ep(), ["Content-Type: application/json", "Authorization: Bearer " + api_key], HTTPClient.METHOD_POST, JSON.stringify(reqbody))
 	if err != OK:
 		http.queue_free()
 		cb.call(_canned_reply(agent, player_text))

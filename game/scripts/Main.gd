@@ -5,6 +5,7 @@ extends Node2D
 var _view: Node2D
 var _probe: Node                      # ProbeController：拥有 Camera2D + 观察状态（纯 View，不写 Sim）
 var _locked_ortho_c1: Node2D          # optional C1 projection; no Sim authority or input ownership
+var _life: Node                       # LifeMode（docs/190）：开局选人 + 附身过日子；null = 观察者/M1 模式
 var _sg: RefCounted                   # SpaceGraph：Space/Floor/Portal 合同（纯数据查询；兼容期 town/outdoor 兜底）
 var _modulate: CanvasModulate
 var _status: RichTextLabel
@@ -385,6 +386,18 @@ func _ready() -> void:
 	var _lod_agg_arg := false              # --lod-agg：仅【测量/眼验】用，启用观察无关 aggregate LOD（CLI-only，绝不进 boot/面板出货路径；默认 off=逐字节不变）
 	var _locked_ortho_c1_arg := false      # --locked-ortho-c1：可删除的 C1 纯 View 适配器，默认绝不实例化
 	var args := OS.get_cmdline_user_args()
+	# 生活模式（docs/190）：桌面上【不带任何参数】的正式启动 = 开局选人；--life 显式开、--life-as <id> 跳过选人直接附身。
+	# 带参数的 dev/CI/出图路径一律不进（它们都带参数）⇒ 所有既有门逐字节不变。手机端还没有摇杆，暂不默认。
+	var life_on := args.is_empty()                    # 产品启动（桌面双击 / 手机点图标）= 生活模式；docs/190 第六批起手机也默认进（有摇杆了）
+	var life_as := ""
+	for i in args.size():
+		if args[i] == "--life":
+			life_on = true
+		elif args[i] == "--life-as" and i + 1 < args.size():
+			life_on = true
+			life_as = args[i + 1]
+		elif args[i] == "--no-life":
+			life_on = false
 	for i in args.size():
 		if args[i] == "--backend" and i + 1 < args.size():
 			backend = args[i + 1]
@@ -482,7 +495,7 @@ func _ready() -> void:
 	# 默认必须是关：开着会调 Sim.add_player() 从而合法地移动 digest（docs/41 §3），
 	# 而 tools/probe_digest_test.sh 之类的容器跑用的是全新的 user://，读到的就是这个默认值。
 	if not ("--player" in args) and not ("--clean-player" in args) and not ("--player-demo" in args) and not ("--player-pos" in args):
-		_player_mode = bool(_scfg.get_value("sim", "player", false))
+		_player_mode = bool(_scfg.get_value("sim", "player", false)) and not life_on   # 生活模式优先于记住的 M1「新居民」开关
 	AIBackend.slm_model_override = String(_scfg.get_value("slm", "model_path", ""))   # 上次在设置里手选的 gguf
 	# 观察台档位（纯视图偏好，不进仿真）。默认【名片档】——研究用法（钉住卷宗刷时间轴）按一次就回来，
 	# 而且会被记住；出图/CI 走全新的 user:// ⇒ 恒为默认档，截图可复现。
@@ -593,6 +606,16 @@ func _ready() -> void:
 		_build_clean_player_hud()
 	if _locked_ortho_c1 != null:
 		_build_c1_hud()
+	if life_on and not _player_mode and _locked_ortho_c1 == null:
+		_life = preload("res://scripts/LifeMode.gd").new()
+		add_child(_life)
+		_life.setup(self)
+		if life_as != "" and not Sim.get_agent(life_as).is_empty():
+			_life.start_life(life_as)
+			if "--life-menu" in args:
+				_life.call_deferred("debug_open_menu")   # 出图：互动菜单开着的那一帧
+		else:
+			_life.begin_select()
 	Sim.ticked.connect(_on_tick)
 	Sim.social_event.connect(_on_social)
 	Sim.day_changed.connect(func(d): _push("[color=#ffe08a]——— 第 %d 天 ———[/color]" % d))
@@ -608,7 +631,7 @@ func _ready() -> void:
 		_push("[color=#9ad0ff]端上模型 %s\n%s[/color]" % [("已就位" if ms["exists"] else "未找到 → 用 logic 地板（把 gguf 放进 Documents 后重开）"), ms["path"]])
 	# 端上模型：首帧/HUD 已建好，才【异步】探测——真机 1.9GB 模型 load+2 暖发要 ~85s，绝不能挡首帧(否则黑屏)。
 	# 探测期间镇子跑 logic 地板(活着)；够快切 slm/llm，太慢/坏留 logic。（headless CI 不经窗口路 → 逐字节不变。）
-	if backend == "slm" or backend == "llm":
+	if backend == "slm" or backend == "llm" or backend == "local":
 		_probe_and_activate(backend)        # 不 await：后台跑，首帧已可见
 	if _shot_path != "":                    # dev 出图：等 1.5s 让世界渲染+纹理加载，再存一帧退出
 		Sim.auto_run = false                # 定格：冻结在 warmup tick，等待期间不再推进（tick-precise 眼验，防漂）
@@ -1872,7 +1895,7 @@ func _on_toggle_backend() -> void:
 	var i := avail.find(AIBackend.backend_requested)
 	var nxt := String(avail[(i + 1) % avail.size()]) if i >= 0 else "logic"
 	AIBackend.request_backend(nxt)               # 记录意图 + 存 user://settings.cfg；下次启动也记住
-	if nxt == "slm" or nxt == "llm":
+	if nxt == "slm" or nxt == "llm" or nxt == "local":
 		_push("[color=#9ad0ff]后端 → %s（探测端上模型中…够快启用，太慢留 logic）[/color]" % nxt)
 		_probe_and_activate(nxt)                 # 异步：镇子跑地板探测，够快才启用（不再静默 100% 超时冻镇）
 	else:
@@ -3295,7 +3318,10 @@ func _unhandled_input(e: InputEvent) -> void:
 const QUICKSAVE := "user://quicksave.dat"
 
 func _quick_save() -> void:
-	var ok: bool = Sim.save_game(QUICKSAVE, {"name": "quicksave", "day": Sim.day})
+	var meta := {"name": "quicksave", "day": Sim.day}
+	if _life != null and _life.active:
+		meta["life"] = _life.save_state()                 # 生活模式：你是谁、满足感、愿望、志向（View 状态随档走）
+	var ok: bool = Sim.save_game(QUICKSAVE, meta)
 	_push("[color=#9ad0ff]存档%s（第 %d 天 · tick %d）[/color]" % [("成功" if ok else "失败"), Sim.day, Sim.tick_no])
 
 func _quick_load() -> void:
@@ -3324,6 +3350,8 @@ func _after_load() -> void:
 	# Keep the rendered panel coupled to the final reconciled plane/selection.
 	_update_obs()
 	_rebuild_feed()   # 读档=换世界：播报同样按新 event_log 重建
+	if _life != null:
+		_life.load_state(Sim.loaded_meta.get("life", {}) if Sim.loaded_meta.get("life") is Dictionary else {})
 
 func _vp() -> Vector2:
 	return get_viewport_rect().size

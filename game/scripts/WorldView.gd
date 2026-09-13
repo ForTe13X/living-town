@@ -368,6 +368,7 @@ var _prev_pos := {}      # id -> Vector2i（推断朝向/行走）
 #   不靠"指数收敛到浮点精度以下"这种概率性论证。
 const LERP_FRACTION := 0.60    # 在一格【实际耗时】的 60% 内走完 → 跟得上 x8 加速，也不拖影
 const SNAP_PX := 0.05          # 收敛阈值：小于它直接吸附到精确格心
+const CTL_STEP := 0.13         # 生活模式被附身者的 WASD 步频（秒/格），LifeMode.MOVE_STEP 同值
 const TELEPORT_TILES := 3.0    # 超过它视为瞬移（换 Space / 时间轴跳转 / 读档 / 换 N）→ 直接吸附，不横穿全镇滑行
 var _render_pos := {}          # id -> Vector2（纯渲染坐标）
 var _moving := {}              # id -> bool（是否仍在追格心；行走帧靠它）
@@ -2156,9 +2157,15 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 	_draw_interior_night(b, content, sid, fid)
 	# P3 Tier-B：画【此刻真在这层】的居民（阿丽在自家咖啡馆睡觉/看摊）。Space bounds 从原点起 → _draw_agent 用
 	# ag.pos*T 的室内局部坐标即落在本层画面里。纯 View、只读 ag 平面字段。
+	var _ctl_in: Dictionary = {}
 	for ag in Sim.agents:
 		if String(ag.get("space", "town")) == sid and String(ag.get("floor", "outdoor")) == fid:
+			if Sim.controlled_id != "" and String(ag["id"]) == Sim.controlled_id:
+				_ctl_in = ag    # 生活模式：被附身者最后画（同上）
+				continue
 			_draw_agent(ag)
+	if not _ctl_in.is_empty():
+		_draw_agent(_ctl_in)
 	# 楼层标签
 	draw_string(Art.font(), b.position + Vector2(T + 8, 22), "%s · %s" % [sg.label_of(sid), content.get("label", fid)],
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 15, D_WOOD_LINE)
@@ -4044,12 +4051,18 @@ func _draw_body() -> void:
 		_draw_relationship_lines()
 	if _ap("talklinks"):
 		_draw_talking_links()
+	var _ctl: Dictionary = {}
 	for ag in _ac("agents", Sim.agents):
 		if String(ag.get("space", "town")) != "town":
 			continue            # P3 Tier-B：非-town 平面的居民(在咖啡馆室内的阿丽)不画在镇上——否则会用室内格坐标在镇上"鬼影"
 		if _agent_under_roof(ag):
 			continue            # docs/180：盖着屋顶的楼里的人不画（否则读作"人走在屋顶上"）；拉近掀顶即现
+		if Sim.controlled_id != "" and String(ag["id"]) == Sim.controlled_id:
+			_ctl = ag           # 生活模式（docs/190）：被附身者最后画，与人同格时不被遮住
+			continue
 		_draw_agent(ag)
+	if not _ctl.is_empty():
+		_draw_agent(_ctl)
 	if _ap("water"):
 		_draw_gulls()               # docs/180：海鸥（按 tick 盘旋，确定性）
 
@@ -5816,8 +5829,10 @@ func _process(delta: float) -> void:
 			_lights.queue_redraw()
 	# 一格实际占多少实时秒：tick_interval / speed（x8 加速时只有 0.01s）。
 	# 下限 0.008 防除零/抖动，上限 0.16 防 --speed 0 时把收敛拖成"永远在爬"。
-	var step := clampf(Sim.tick_interval / maxf(Sim.speed, 0.25), 0.008, 0.16)
+	# 上限 0.16 只在默认 tick(0.08s) 下生效；生活模式把 tick 放慢到 0.5s（docs/190），此时按真实步长插值，否则人会"滑一下停半拍"。
+	var step := clampf(Sim.tick_interval / maxf(Sim.speed, 0.25), 0.008, maxf(0.16, Sim.tick_interval / maxf(Sim.speed, 0.25)))
 	var k := clampf(delta / maxf(step * LERP_FRACTION, 0.001), 0.0, 1.0)
+	var k_ctl := clampf(delta / (CTL_STEP * LERP_FRACTION), 0.0, 1.0)   # 被附身者由 WASD 驱动，步频与 tick 无关
 	var tele := TELEPORT_TILES * T
 	var dirty := false
 	var alive := {}
@@ -5845,7 +5860,7 @@ func _process(delta: float) -> void:
 		if cur.distance_to(target) > tele:
 			cur = target
 		else:
-			cur = cur.lerp(target, k)
+			cur = cur.lerp(target, k_ctl if (Sim.controlled_id != "" and id == Sim.controlled_id) else k)
 		var moving := cur.distance_to(target) > SNAP_PX
 		if not moving:
 			cur = target        # ★硬吸附：冻结 tick 下渲染坐标 ≡ 格心，--shot 前后 bbox 必须是 None
@@ -6059,6 +6074,32 @@ func _action_label(opt: Dictionary) -> String:
 		return ""
 	return Sim._verb(act) if String(opt.get("kind", "")) == "social" else act
 
+## 生活模式（docs/190）：同一格上的几个人名牌按序往上叠（被附身者 0 = 最贴头顶），不再叠成一团字。
+## 只在有人被附身时生效 ⇒ 观察者模式与所有既有出图逐像素不变。每帧建一次表。
+var _stack_frame := -1
+var _stack_of := {}
+func _label_stack(ag: Dictionary) -> int:
+	if Sim.controlled_id == "":
+		return 0
+	var fr := Engine.get_process_frames()
+	if fr != _stack_frame:
+		_stack_frame = fr
+		_stack_of = {}
+		var seen := {}
+		var order: Array = [Sim.get_agent(Sim.controlled_id)]
+		for a in Sim.agents:
+			if String(a["id"]) != Sim.controlled_id:
+				order.append(a)
+		for a in order:
+			if (a as Dictionary).is_empty():
+				continue
+			var p: Vector2i = a["pos"]
+			var k := "%s|%s|%d|%d" % [String(a.get("space", "town")), String(a.get("floor", "outdoor")), p.x, p.y]
+			var n := int(seen.get(k, 0))
+			seen[k] = n + 1
+			_stack_of[String(a["id"])] = n
+	return int(_stack_of.get(String(ag["id"]), 0))
+
 func _draw_agent(ag: Dictionary) -> void:
 	var center := _rpos(ag)                   # 绘制坐标（插值后）；本函数不做裁剪判定
 	var feet := center.y + T * 0.30          # 落脚线：影子 / 派系环 / 精灵底边都对齐它
@@ -6134,7 +6175,7 @@ func _draw_agent(ag: Dictionary) -> void:
 		_draw_urgent_need(Vector2(center.x, feet + T * 0.20), ag)
 	# 头顶 emote（社交事件触发，短暂显示）：20px 源 × 2 整数倍。
 	# **恒显、不参与稀释**：它本身就是"此刻有事发生"的信号，且是 D4 录屏抽帧要抓的东西之一。
-	var name_y := head - T * 0.12            # 名字基线：紧贴头顶上方
+	var name_y := head - T * 0.12 - float(_label_stack(ag)) * 17.0   # 名字基线：紧贴头顶上方（生活模式下同格的人名牌往上叠）
 	var em = _emote.get(aid)
 	if em != null and Sim.tick_no < int(em["until"]):
 		var et: Texture2D = em["tex"]
@@ -6143,7 +6184,7 @@ func _draw_agent(ag: Dictionary) -> void:
 	# 旧版把两个标记按固定像素偏移丢在名字外面，人挨着站时标记落在【邻居的名字】旁边，读不出是谁在闹。
 	var has_cf := _in_conflict(aid)
 	var has_mt := _has_meet(aid)
-	if detail > 0.0:
+	if detail > 0.0 and _label_stack(ag) < 3:     # 生活模式：同格最多叠 3 层名牌，再多就不画（观察者模式恒 0）
 		var nm := str(ag.get("persona", {}).get("name", aid))
 		var fnt := Art.font()
 		var nsz := fnt.get_string_size(nm, HORIZONTAL_ALIGNMENT_LEFT, -1, 14)

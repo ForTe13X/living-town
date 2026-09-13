@@ -228,6 +228,10 @@ var far_drift_enabled := false     # 远端 liveness 漂移：独立【实验】
 var lod_rotate_span := 31          # 无状态轮转周期(素数，【不整除】TICKS_PER_DAY=240 → 夜间反思/结算不被固定相位偏置)：每 id 每 span tick 保证一满帧
 var lod_player_r := 12             # 玩家 avatar(sim 实体，非相机)曼哈顿半径内的 agent 强制满帧
 var _player_pos := Vector2i(-1, -1) # 玩家 avatar(sim 实体，非相机)位置，每 tick 由 _compute_lod_cohort 刷新；(-1,-1)=无玩家(bench)
+var controlled_id := ""             # 生活模式（docs/190）：被玩家附身的【现有居民】id；""=无附身 → 全仿真逐字节不变
+signal life_action_done(action: String, target: String, wage: int)   # 被附身者做完一件物件动作（View 的「愿望」用；信号不进 digest）
+var loaded_meta := {}               # 最近一次读档的 meta（save_game 的第二个参数原样读回）；纯 View 数据，不进 digest
+var _tone_bonus := 0.0             # 生活模式「说法」语气对本次接受判定的加项；只在 _commit_social 里对带 tone 的单子非零
 const LOD_NEAR_RADIUS := 8        # 兼容旧引用（默认值）
 const LOD_FAR_MULT := 3           # far agent 的决策周期 = decide_period × 此（降频）
 
@@ -969,6 +973,7 @@ func start_new(p_seed: int = 12345) -> void:
 	_near_set = {}         # 评审 P1：LOD 近端集 per-run 清（否则复用实例 restart/goto 会带旧 near id → 回放不一致）
 	_day_anchor = Vector2i(-1, -1)   # 远端漂移锚点 per-run 清（防复用实例带旧值；map 固定时值不变，清了也确定）
 	_player_pos = Vector2i(-1, -1)   # cohort 玩家位缓存 per-run 清（每 tick 重建，此为复用实例卫生）
+	controlled_id = ""               # 生活模式附身 per-run 清；View 在 world_reset 后按需重新 possess()
 	_replay_ptr = {}
 	_player_trace_reset()
 	for aid in _replay_ticks:
@@ -1408,6 +1413,407 @@ func player_move(dir: Vector2i) -> void:
 	result = {"moved": true, "reason": ""}
 	_player_trace_commit("move", payload, _player_trace_receipt(result))
 
+# ── 生活模式（docs/190）：玩家从开局挑一位【现有居民】附身过日子 ─────────────────────
+## 与 M1「新居民 player」的区别：附身的是镇上本来就有的人——他的家、工作、钱、关系、需求衰减全部照旧，
+## 只是【决策权】从 _logic_decide 移交给玩家：option 为空时引擎不再替他挑事（_advance_agent 的同一道门），
+## 玩家经 life_* 这组动词下单，单子走的是引擎自己的 _apply_object / _apply_social / _try_traverse_portal，
+## 所以收费、工资、库存、社交裁决（对方可以拒绝你）、Portal 权限一条都没有第二套。
+## ★零扰动：controlled_id=="" 时下面每个钩子都短路 ⇒ 金标/CI 跑逐字节不变。
+## ⚠ 玩家指令【不进 player_trace】：生活模式是纯游玩路径，时间轴回放会退回引擎自己的决策（View 侧隐藏了时间轴）。
+const LIFE_REACH := 2               # 「走近按 E」的交互半径（曼哈顿格）；与 _socially_reachable 的贴身臂同尺
+const LIFE_VERBS := ["greet", "give", "gossip", "invite", "confront", "apologize"]
+
+func _is_controlled(ag: Dictionary) -> bool:
+	return controlled_id != "" and String(ag.get("id", "")) == controlled_id
+
+## 附身 / 解除（id==""）。M1 player 与联营角色(affiliate)不可附身。返回是否成功。
+func possess(id: String) -> bool:
+	if id == "":
+		controlled_id = ""
+		return true
+	var ag: Dictionary = _agent_by_id.get(id, {})
+	if ag.is_empty() or ag.get("is_player", false) or ag.get("affiliate", false):
+		return false
+	controlled_id = id
+	emit_signal("agent_changed", id)
+	return true
+
+func controlled() -> Dictionary:
+	return _agent_by_id.get(controlled_id, {}) if controlled_id != "" else {}
+
+## 走一格。走动会打断正在做的事（Sims 式：走开就是不干了）；别人拉你说话时也可以走开。
+## 返回 "" = 已移动；否则原因。
+func life_move(dir: Vector2i) -> String:
+	var ag := controlled()
+	if ag.is_empty():
+		return "未附身"
+	var opt = ag.get("option")
+	if int(ag["talking"]) > 0 and opt is Dictionary and String(opt.get("kind", "")) == "social":
+		return "正在交谈中"
+	var np: Vector2i = ag["pos"] + dir
+	if not _cell_walkable(_grid_for(String(ag.get("space", "town")), String(ag.get("floor", "outdoor"))), np):
+		return "blocked"
+	ag["option"] = null
+	ag["talking"] = 0
+	_move_agent(ag, np)
+	emit_signal("agent_changed", controlled_id)
+	return ""
+
+## 取消当前行动（社交进行中不可取消——对方也被绑着）。
+func life_cancel() -> bool:
+	var ag := controlled()
+	if ag.is_empty() or ag.get("option") == null:
+		return false
+	if String((ag["option"] as Dictionary).get("kind", "")) == "social":
+		return false
+	ag["option"] = null
+	emit_signal("agent_changed", controlled_id)
+	return true
+
+## 一个对象的广告位 → 玩家可见的动作列表（带不可用原因）。复用候选枚举的同几道门：员工专属 / 工位专属+市集时段 / 家绑定。
+func _life_object_actions(ag: Dictionary, o: Dictionary) -> Array:
+	var out: Array = []
+	var staff_ok := _staff_ok(ag, o)
+	for adv in _as_arr(o.get("advertises", [])):
+		if not (adv is Dictionary) or int(adv.get("amount", 0)) <= 0:
+			continue
+		var action := String(adv.get("action", ""))
+		var need_id := String(adv.get("need", ""))
+		var why := ""
+		if not staff_ok:
+			why = "店员专用"
+		elif not _adv_open(ag, adv):
+			why = "不是你的活" if String(adv.get("job", "")) != "" else "现在不开"
+		elif need_id in _home_needs(ag) and String(ag.get("home_space", "town")) != "town" \
+				and String(ag.get("space", "town")) != String(ag.get("home_space", "town")):
+			why = "只在自己家里"
+		elif not (ag["needs"] as Dictionary).has(need_id):
+			why = "用不了"
+		var price := int(economy.get("prices", {}).get(action, 0)) if _econ_on() else 0
+		out.append({"action": action, "need": need_id, "amount": int(adv.get("amount", 0)),
+			"duration": int(adv.get("duration", 0)), "price": price,
+			"wage": _wage_for(ag, action) if _econ_on() else 0, "ok": why == "", "why": why})
+	return out
+
+## 「按 E」：身边（同平面、曼哈顿 ≤ radius）能交互的一切，按距离、再按 id 排序（确定）。
+## 每项：{kind: object|agent|portal, id, label, pos, dist, actions:[…]}。只读，不写 Sim。
+func life_interactions(radius := LIFE_REACH) -> Array:
+	var ag := controlled()
+	if ag.is_empty():
+		return []
+	var sp := String(ag.get("space", "town")); var fl := String(ag.get("floor", "outdoor"))
+	var here: Vector2i = ag["pos"]
+	var out: Array = []
+	for id in world.get("objects", {}):
+		var o: Dictionary = world["objects"][id]
+		if String(o.get("space", "town")) != sp or String(o.get("floor", "outdoor")) != fl:
+			continue
+		var d := _manh(here, o["pos"])
+		if d > radius:
+			continue
+		var acts := _life_object_actions(ag, o)
+		if acts.is_empty():
+			continue
+		out.append({"kind": "object", "id": String(id), "label": String(o.get("type", id)), "pos": o["pos"], "dist": d, "actions": acts})
+	for other in agents:
+		if _is_controlled(other) or other.get("affiliate", false) or not _same_plane(ag, other):
+			continue
+		var d := _manh(here, other["pos"])
+		if d > radius:
+			continue
+		var acts: Array = []
+		for v in LIFE_VERBS:
+			acts.append({"action": v})
+		out.append({"kind": "agent", "id": String(other["id"]), "label": _name(other), "pos": other["pos"], "dist": d,
+			"busy": int(other["talking"]) > 0, "actions": acts})
+	for hop in _portals_from(sp, fl, ag):
+		var pp: Vector2i = hop["from_pos"]
+		var d := _manh(here, pp)
+		if d > 1:
+			continue                                   # 门要贴身（与 M1 player 的 portal 邻接合同同尺）
+		var to_label := String(_spaces.get(String(hop["to_space"]), {}).get("label", String(hop["to_space"])))
+		out.append({"kind": "portal", "id": String(hop.get("portal_id", "")), "label": to_label, "pos": pp, "dist": d,
+			"to_space": String(hop["to_space"]), "to_floor": String(hop["to_floor"]), "stairs": String(hop.get("kind", "")) == "stairs",
+			"actions": [{"action": "enter"}]})
+	out.sort_custom(func(a, b): return int(a["dist"]) < int(b["dist"]) if int(a["dist"]) != int(b["dist"]) else String(a["id"]) < String(b["id"]))
+	return out
+
+## 用一件东西：下一张 object 单（引擎自己走过去、用、收费/发薪）。同平面任意距离都行——走路交给导航。
+func life_use(obj_id: String, action: String) -> String:
+	var ag := controlled()
+	if ag.is_empty():
+		return "未附身"
+	var o: Dictionary = world.get("objects", {}).get(obj_id, {})
+	if o.is_empty() or String(o.get("space", "town")) != String(ag.get("space", "town")) \
+			or String(o.get("floor", "outdoor")) != String(ag.get("floor", "outdoor")):
+		return "够不着"
+	var opt = ag.get("option")
+	if int(ag["talking"]) > 0 or (opt is Dictionary and String(opt.get("kind", "")) == "social"):
+		return "正在交谈中"
+	for a in _life_object_actions(ag, o):
+		if String(a["action"]) != action:
+			continue
+		if not bool(a["ok"]):
+			return String(a["why"])
+		var intent := {"kind": "object", "action": action, "target": obj_id, "need": String(a["need"]),
+			"amount": int(a["amount"]), "dur_total": maxi(1, int(a["duration"])), "say": ""}
+		for c in _object_candidates(ag):                 # 卸货等 cargo 单要引擎签发的 manifest 字段 → 借候选里那一份
+			if c is Dictionary and String(c.get("target", "")) == obj_id and String(c.get("action", "")) == action:
+				intent = (c as Dictionary).duplicate(true)
+				break
+		ag["option"] = null
+		_apply_object(ag, intent)
+		if ag.get("option") == null or String((ag["option"] as Dictionary).get("target", "")) != obj_id:
+			ag["option"] = null
+			return "现在做不了"
+		return ""
+	return "没有这个动作"
+
+## 对身边的居民做社交动词（与 M1 player_act 同一份前置校验与 SocialTransaction；对方可以拒绝）。
+## say：玩家在「说法」里挑中的那句台词（可空 = 引擎默认台词）；tone：那句话的语气（可空 = 不加减）。
+func life_social(action: String, target_id: String, say := "", tone := "") -> String:
+	var ag := controlled()
+	if ag.is_empty():
+		return "未附身"
+	if not (action in LIFE_VERBS):
+		return "未知动作"
+	var opt = ag.get("option")
+	var prev = opt
+	if opt is Dictionary and String(opt.get("kind", "")) != "social":
+		ag["option"] = null                               # 放下手头的事去搭话
+	var r := _player_act_untraced(action, target_id, controlled_id, say, tone)
+	if r != "" and prev is Dictionary and ag.get("option") == null:
+		ag["option"] = prev                               # 没开成口 → 手头的事照旧
+	return r
+
+## ── 语气项（docs/190 §二）：把「怎么说」折成接受判定里的一个数，确定、零 RNG ──
+## 模型给的语气是自由文本 → 先按关键字归到 9 类；归不进去的 = 0（不加不减）。
+const TONE_KEYS := [["调侃", ["调侃", "逗", "玩笑", "打趣", "揶揄"]], ["神秘", ["神秘", "悄悄", "压低"]], ["兴奋", ["兴奋", "激动", "惊"]],
+	["热情", ["热情", "热络", "开朗", "爽朗", "活泼"]], ["腼腆", ["腼腆", "害羞", "羞", "拘谨", "怯"]], ["关切", ["关切", "关心", "温柔", "体贴", "温和"]],
+	["诚恳", ["诚恳", "真诚", "郑重", "愧"]], ["克制", ["克制", "平静", "冷静", "委婉"]], ["直率", ["直率", "直接", "坦率", "干脆", "严肃"]], ["随和", ["随和", "轻松", "随意", "自然"]]]
+
+func _tone_class(tone: String) -> String:
+	for kv in TONE_KEYS:
+		for k in kv[1]:
+			if tone.find(String(k)) >= 0:
+				return String(kv[0])
+	return ""
+
+## 语气 × 对方性格 × 交情 → 加项（约 −12..+12；greet 的判定式量级是 need×0.4+affinity，故一句话能翻"差一点"的那些，翻不了坏关系）。
+func _tone_term(actor: Dictionary, target: Dictionary, tone: String) -> float:
+	var tc := _tone_class(tone)
+	if tc == "":
+		return 0.0
+	var tr: Array = (target.get("persona", {}) as Dictionary).get("traits", [])
+	var r: Dictionary = (target.get("relationships", {}) as Dictionary).get(String(actor.get("id", "")), {})
+	var fam := float(r.get("familiarity", 0.0))
+	var aff := float(r.get("affinity", 0.0))
+	var low := 100.0
+	for nid in target.get("needs", {}):
+		low = minf(low, float(target["needs"][nid]))
+	var has := func(names: Array) -> bool:
+		for n in names:
+			if n in tr:
+				return true
+		return false
+	var v := 0.0
+	match tc:
+		"热情":
+			v = 8.0 if has.call(["热情", "豁达", "好奇", "爱八卦", "豪爽", "开朗"]) else 2.0
+			if has.call(["内向", "敏感", "寡言"]): v -= 8.0
+		"腼腆":
+			v = 6.0 if has.call(["温柔", "内向", "敏感", "细心"]) else 0.0
+			if has.call(["急躁", "莽撞", "豪爽"]): v -= 4.0
+		"调侃":
+			v = 8.0 if (fam >= 8.0 and aff >= 0.0) else -8.0     # 熟人才开得起玩笑
+			if has.call(["敏感", "严谨", "固执"]): v -= 6.0
+		"关切":
+			v = 3.0 + (6.0 if low < 45.0 else 0.0)                # 对方正难受时，一句关心最值钱
+		"神秘", "兴奋":
+			v = 8.0 if has.call(["爱八卦", "好奇"]) else 0.0
+			if has.call(["严谨", "寡言", "务实"]): v -= 6.0
+		"直率":
+			v = 5.0 if has.call(["务实", "豪爽", "耿直", "急躁"]) else 0.0
+			if has.call(["敏感", "内向"]): v -= 6.0
+		"克制":
+			v = 5.0 if aff < 0.0 else 1.0
+		"诚恳":
+			v = 4.0 + (4.0 if aff < 0.0 else 0.0)
+		"随和":
+			v = 2.0
+	return v
+
+## 菜单用：你【看得出】这句话会不会说到对方心坎上吗？只有熟人（familiarity≥8）才给提示，陌生人你猜不到。
+func life_tone_hint(target_id: String, tone: String) -> int:
+	var ag := controlled()
+	var tgt: Dictionary = _agent_by_id.get(target_id, {})
+	if ag.is_empty() or tgt.is_empty():
+		return 0
+	if float((ag.get("relationships", {}) as Dictionary).get(target_id, {}).get("familiarity", 0.0)) < 8.0:   # 只读：不用 _rel（它会建空账）
+		return 0
+	var v := _tone_term(ag, tgt, tone)
+	return 1 if v >= 5.0 else (-1 if v <= -4.0 else 0)
+
+## 朝某格走一步（A*，同平面）。返回 "" = 迈了一步；"arrived" = 已在 stop_dist 之内；"blocked" = 走不动。
+## 生活模式的「点地走路 / 远处下单先走过去」由 View 按步频调用它——与 WASD 同速，不受 tick 快慢影响。
+func life_step_toward(dest: Vector2i, stop_dist := 0) -> String:
+	var ag := controlled()
+	if ag.is_empty():
+		return "blocked"
+	if _manh(ag["pos"], dest) <= stop_dist:
+		return "arrived"
+	var opt = ag.get("option")
+	if int(ag["talking"]) > 0 and opt is Dictionary and String(opt.get("kind", "")) == "social":
+		return "blocked"
+	var nxt := _nav_step(ag, dest)
+	if nxt == ag["pos"] or (nxt != dest and not _cell_walkable(_grid_for(String(ag.get("space", "town")), String(ag.get("floor", "outdoor"))), nxt)):
+		return "blocked"
+	if nxt == dest and not _cell_walkable(_grid_for(String(ag.get("space", "town")), String(ag.get("floor", "outdoor"))), nxt):
+		return "arrived"                                  # 终点是家具格：贴到旁边就算到
+	ag["option"] = null
+	ag["talking"] = 0
+	_move_agent(ag, nxt)
+	emit_signal("agent_changed", controlled_id)
+	return ""
+
+## 对某位居民此刻哪些动词【开得了口】（纯读，与 _player_act_untraced 的前置校验逐条同源）。给「说法」生成器圈定合法集。
+## ignore_reach：只看关系/物品/冲突这些"内容门"，不看距离（View 会先走过去再开口）。
+func life_verb_options(target_id: String, ignore_reach := false) -> Array:
+	var ag := controlled()
+	var tgt: Dictionary = _agent_by_id.get(target_id, {})
+	var out: Array = []
+	if ag.is_empty() or tgt.is_empty():
+		return out
+	var reach := ""
+	if not _same_plane(ag, tgt): reach = "对方不在同一空间"
+	elif not _socially_reachable(ag, tgt) and not ignore_reach: reach = "太远了，走近点"
+	elif int(tgt["talking"]) > 0 and String(tgt.get("talk_with", "")) != controlled_id: reach = "%s 正忙着呢" % _name(tgt)
+	for v in LIFE_VERBS:
+		var why := reach
+		if why == "":
+			match v:
+				"give": if int(ag["inventory"].get("gift", 0)) <= 0: why = "没有礼物了"
+				"gossip": if _unspread_belief(ag, tgt) == "": why = "没有对方不知道的传闻"
+				"invite": if _has_active_meet(controlled_id, target_id): why = "已经约过了"
+				"confront": if _find_conflict(controlled_id, target_id, ["simmering", "escalated", "lingering"]).is_empty(): why = "你们之间没有疙瘩"
+				"apologize": if _find_conflict(target_id, controlled_id, ["confronted"]).is_empty(): why = "对方没跟你挑明"
+		out.append({"action": v, "ok": why == "", "why": why})
+	return out
+
+## 穿门/上下楼：贴身即可（先迈到门格上再走引擎唯一的 Portal 入口，权限照验）。
+func life_portal(portal_pos: Vector2i) -> Dictionary:
+	var ag := controlled()
+	if ag.is_empty():
+		return _portal_denied_receipt("unknown_agent")
+	var sp := String(ag.get("space", "town")); var fl := String(ag.get("floor", "outdoor"))
+	if _manh(ag["pos"], portal_pos) > 1:
+		return _portal_denied_receipt("source_not_adjacent", sp, fl, portal_pos)
+	var back: Vector2i = ag["pos"]
+	if back != portal_pos:
+		if not _cell_walkable(_grid_for(sp, fl), portal_pos):
+			return _portal_denied_receipt("source_endpoint_invalid", sp, fl, portal_pos)
+		_move_agent(ag, portal_pos)
+	var r := _try_traverse_portal(controlled_id, sp, fl, portal_pos)
+	if not bool(r.get("ok", false)) and back != portal_pos:
+		_move_agent(ag, back)                               # 被拒 → 退回原格（失败不留痕）
+	else:
+		ag["option"] = null
+	emit_signal("agent_changed", controlled_id)
+	return r
+
+## 自由对话落账（生活模式版的 player_chat_commit）：双方各记一条记忆（进语音 grounding），不改需求/好感——
+## 聊了什么由模型生成、不可复现，所以它只能写"记忆"这种不进裁决的东西。距离门与 M1 同尺（同平面、曼哈顿≤2）。
+func life_chat_commit(target_id: String, prompt: String, reply: String) -> Dictionary:
+	var ag := controlled()
+	var target: Dictionary = _agent_by_id.get(target_id, {})
+	if ag.is_empty():
+		return {"ok": false, "reason": "未附身"}
+	if target.is_empty() or target_id == controlled_id:
+		return {"ok": false, "reason": "target_missing"}
+	if not _same_plane(ag, target) or _manh(ag["pos"], target["pos"]) > 2:
+		return {"ok": false, "reason": "target_distance"}
+	if ag.get("memory") != null:
+		ag["memory"].add("跟%s说『%s』，%s答『%s』" % [_name(target), prompt.substr(0, 18), _name(target), reply.substr(0, 18)], 4, tick_no, [target_id, "chat"])
+	if target.get("memory") != null:
+		target["memory"].add("%s跟我说『%s』，我答『%s』" % [_name(ag), prompt.substr(0, 18), reply.substr(0, 18)], 5, tick_no, [controlled_id, "chat"])
+	return {"ok": true, "reason": ""}
+
+## ── 心情（Sims 的 moodlet）：需求 + 最近 MOOD_WINDOW tick 里发生在你身上的社交事，折成一个 −10..+10 的分 ──
+## 纯读 event_log / needs，确定。只被 HUD 与 _commit_social（被附身者发起时）读取。
+const MOOD_WINDOW := 80              # 8 个游戏小时
+func life_mood() -> Dictionary:
+	var ag := controlled()
+	if ag.is_empty():
+		return {"score": 0, "label": "", "parts": []}
+	var parts: Array = []
+	var sum := 0
+	var total := 0.0
+	for n in needs_def:
+		var nid := String(n["id"])
+		var v := float(ag["needs"].get(nid, 100.0))
+		total += v
+		if v < 25.0:
+			parts.append({"text": "%s告急" % String(n.get("label", nid)), "v": -3})
+	if total / float(maxi(1, needs_def.size())) >= 75.0:
+		parts.append({"text": "精神饱满", "v": 2})
+	var pos_social := 0
+	var seen := {}
+	for i in range(event_log.size() - 1, -1, -1):
+		var e: Dictionary = event_log[i]
+		if int(e.get("tick", 0)) < tick_no - MOOD_WINDOW:
+			break
+		var a := String(e.get("actor", "")); var t := String(e.get("target", ""))
+		if a != controlled_id and t != controlled_id:
+			continue
+		var other := t if a == controlled_id else a
+		var typ := String(e.get("type", ""))
+		var ok := bool(e.get("accepted", false))
+		var key := "%s|%s|%s" % [typ, other, str(ok)]
+		if seen.has(key):
+			continue                                  # 同一件事只算一次（别让连续招呼刷分）
+		seen[key] = true
+		var on := _name(_agent_by_id.get(other, {}))
+		match typ:
+			"greet", "give", "gossip", "invite", "discuss", "confide", "aid":
+				if ok and pos_social < 3:
+					pos_social += 1
+					parts.append({"text": "和%s聊得来" % on, "v": 1})
+				elif not ok and a == controlled_id:
+					parts.append({"text": "被%s婉拒" % on, "v": -2})
+			"confront":
+				if t == controlled_id:
+					parts.append({"text": "被%s当面理论" % on, "v": -3})
+			"apologize":
+				if ok and t == controlled_id:
+					parts.append({"text": "%s道了歉" % on, "v": 2})
+			"meet":
+				parts.append({"text": ("和%s赴约" % on) if ok else ("和%s的约黄了" % on), "v": 2 if ok else -2})
+	for p in parts:
+		sum += int(p["v"])
+	sum = clampi(sum, -10, 10)
+	var label := "春风得意" if sum >= 6 else ("心情不错" if sum >= 2 else ("平常" if sum > -2 else ("有点低落" if sum > -6 else "心情很糟")))
+	return {"score": sum, "label": label, "parts": parts}
+
+## HUD 用的一张快照（只读）。
+func life_status() -> Dictionary:
+	var ag := controlled()
+	if ag.is_empty():
+		return {}
+	var opt = ag.get("option")
+	var doing := {}
+	if opt is Dictionary:
+		var o: Dictionary = opt
+		var kind := String(o.get("kind", "object"))
+		var tgt := String(o.get("target", o.get("partner", "")))
+		var tlabel := String(world.get("objects", {}).get(tgt, {}).get("type", "")) if kind != "social" else _name(_agent_by_id.get(tgt, {}))
+		doing = {"kind": kind, "action": String(o.get("action", "")), "target": tgt, "target_label": tlabel,
+			"phase": String(o.get("phase", "")), "remaining": int(o.get("remaining", 0)), "total": int(o.get("dur_total", o.get("remaining", 0)))}
+	var job := _job_of(controlled_id)
+	return {"id": controlled_id, "name": _name(ag), "needs": (ag["needs"] as Dictionary).duplicate(),
+		"coin": _coin_of(controlled_id), "job": String(job.get("title", "")), "in_shift": (not job.is_empty()) and _in_shift(job),
+		"space": String(ag.get("space", "town")), "floor": String(ag.get("floor", "outdoor")), "area": _area_label(ag["pos"]),
+		"talking": int(ag["talking"]), "doing": doing}
+
 ## 玩家社交动作：验证前提 → _apply_social 发起 → tick 推进 → _commit_social 裁决（NPC 可拒绝玩家！）。
 ## 返回 "" = 已发起；非空 = 不可行原因（HUD 显示）。
 func player_act(action: String, target_id: String) -> String:
@@ -1421,12 +1827,13 @@ func player_act(action: String, target_id: String) -> String:
 		return "玩家指令回放不匹配"
 	return result
 
-func _player_act_untraced(action: String, target_id: String) -> String:
-	var pl: Dictionary = _agent_by_id.get("player", {})
+## actor_id：默认 "player"（M1 新居民）；生活模式（docs/190）传被附身居民的 id，走同一份前置校验与同一条事务。
+func _player_act_untraced(action: String, target_id: String, actor_id := "player", say_override := "", tone := "") -> String:
+	var pl: Dictionary = _agent_by_id.get(actor_id, {})
 	if pl.is_empty():
 		return "玩家未入镇"
 	var tgt: Dictionary = _agent_by_id.get(target_id, {})
-	if tgt.is_empty() or tgt.get("is_player", false):
+	if tgt.is_empty() or tgt.get("is_player", false) or target_id == actor_id:
 		return "先点选一位居民"
 	# P1-t：space+floor 是第一层权限；area 只是同平面的感知缓存，坐标也只在同平面内有意义。
 	# 邻近判定继续保留旧合同：同一【非空】区域，或曼哈顿距离≤2。执行/推进/提交三层复用同一谓词，
@@ -1454,21 +1861,26 @@ func _player_act_untraced(action: String, target_id: String) -> String:
 				return "没有对方不知道的传闻（先从别人那儿打听）"
 			say = "跟你说个事……"
 		"invite":
-			if _has_active_meet("player", target_id):
+			if _has_active_meet(actor_id, target_id):
 				return "和%s已有未赴的约（先赴约或等它过期）" % _name(tgt)   # 防同对叠约刷好感（对抗审查#7）
 			say = "%s，回头在这儿碰个面？" % _name(tgt)
 		"confront":
 			# 玩家是委屈方(a=player)时当面理论 → 走 _resolve_confront 状态机（对方接茬→confronted→对方会来道歉）（对抗审查#5）
-			if _find_conflict("player", target_id, ["simmering", "escalated", "lingering"]).is_empty():
+			if _find_conflict(actor_id, target_id, ["simmering", "escalated", "lingering"]).is_empty():
 				return "你和%s之间没有要理论的疙瘩" % _name(tgt)
 			say = "%s，那件事我们得说道说道。" % _name(tgt)
 		"apologize":
-			if _find_conflict(target_id, "player", ["confronted"]).is_empty():
+			if _find_conflict(target_id, actor_id, ["confronted"]).is_empty():
 				return "对方还没跟你把话挑明（无待道歉的冲突）"
 			say = "那件事……是我不对。"
 		_:
 			return "未知动作"
-	_apply_social(pl, {"kind": "social", "action": action, "partner": target_id, "subject": subject, "say": say})
+	if say_override != "":
+		say = say_override.substr(0, 80)            # 生活模式：玩家挑的「说法」换台词；语气另作接受判定的加项（见 _tone_term）
+	var intent := {"kind": "social", "action": action, "partner": target_id, "subject": subject, "say": say}
+	if tone != "":
+		intent["tone"] = tone
+	_apply_social(pl, intent)
 	if pl.get("option") == null:
 		return "现在开不了口（对方刚走开？）"
 	return ""
@@ -1753,7 +2165,8 @@ const SAVE_MAGIC := "LTSAVE"
 const SAVE_SCHEMA_LEGACY := 1
 const SAVE_SCHEMA := 2
 const SAVE_RUNTIME_HANDLES := ["backend", "ext", "decision_sink"]
-const SAVE_LOAD_DENY := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected"]
+const SAVE_LOAD_DENY := ["_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected",
+	"controlled_id", "_tone_bonus", "loaded_meta"]   # docs/190 生活模式：附身/语气/档头都是 View 或瞬时态，不改存档形状（旧档照读）
 const SAVE_CURRENT_BLOB_KEYS := ["magic", "schema", "game_version", "saved_tick", "saved_day", "seed", "meta", "active_commit_ids", "state"]
 
 ## The current-schema contract is the exact field set emitted by save_game, derived from the same
@@ -1937,6 +2350,7 @@ func load_game(path: String) -> bool:
 	f.close()
 	if not (blob is Dictionary) or blob.get("magic") != SAVE_MAGIC or int(blob.get("schema", -1)) != sch:
 		return false
+	loaded_meta = (blob.get("meta") as Dictionary).duplicate(true) if blob.get("meta") is Dictionary else {}   # View 自带的档头（生活模式状态等），不进仿真
 	if sch == SAVE_SCHEMA:
 		var shape_error := _validate_current_save_shape(blob)
 		if shape_error != "":
@@ -2729,7 +3143,7 @@ func _phase_pref(need_id: String, tod: float) -> float:
 
 func _decay_needs(ag: Dictionary) -> void:
 	if ag.get("is_player", false):
-		return                      # M1：玩家需求不衰减（生存玩法留待后续）
+		return                      # M1：玩家需求不衰减（生存玩法留待后续）；生活模式附身的居民【照常衰减】——那正是玩法
 	for n in needs_def:
 		var id: String = n["id"]
 		ag["needs"][id] = max(0.0, float(ag["needs"][id]) - float(n["decay"]))
@@ -2739,7 +3153,7 @@ func _advance_agent(ag: Dictionary) -> void:
 		ag["talking"] = int(ag["talking"]) - 1
 	# L3 激进 LOD：远端(离焦点远)agent 完全不跑 option/候选枚举/寻路/社交，只做廉价统计维持 → 单 agent 成本≈0，可冲上百。
 	# 玩家豁免：远离焦点的玩家不得被降级(会吞掉进行中的社交)；bench 无玩家 → 零回归。
-	if lod_aggregate and _is_far(ag) and not ag.get("is_player", false):
+	if lod_aggregate and _is_far(ag) and not ag.get("is_player", false) and not _is_controlled(ag):
 		ag["option"] = null
 		_far_maintain(ag)
 		return
@@ -2751,10 +3165,11 @@ func _advance_agent(ag: Dictionary) -> void:
 				ag["needs"][nid] = minf(100.0, float(ag["needs"][nid]) + AGG_RELIEF)
 	var opt = ag["option"]
 	if opt == null:
-		if ag.get("is_player", false):
+		if ag.get("is_player", false) or _is_controlled(ag):
 			return                  # 玩家不自动决策（由输入驱动 player_act/player_move）；进行中的 option 仍正常推进
 		# 玩家专属礼遇：正在和玩家说话 → 站住听完，不中途走开（NPC-NPC 保持原语义；bench 无玩家 → 恒 false 零回归）
-		if int(ag["talking"]) > 0 and String(ag.get("talk_with", "")) == "player":
+		if int(ag["talking"]) > 0 and (String(ag.get("talk_with", "")) == "player" \
+				or (controlled_id != "" and String(ag.get("talk_with", "")) == controlled_id)):
 			return
 		# L2 决策切片 + L3 LOD：每 agent 仅在自己的相位 tick 做重决策；far(远离焦点)agent 用更大周期降频（确定可复现）
 		var period := decide_period
@@ -2809,7 +3224,7 @@ func _advance_agent(ag: Dictionary) -> void:
 	# P3 承诺 pre-empt：正办一件【不急】的事(当前 option 的 need 还舒适≥SURVIVAL_GATE)，却有【另一】需求跌破危机线
 	# → 中止改救急 → 下 tick 重新决策(会挑最紧的)。只打断"不急的承诺"、绝不打断"正在救急的行程"→ 既有决策黏性(消 livelock)
 	# 又不会饿穿(守 #01)。仅对带 need 的 option(object/journey)；无 need 的(social/attend)不受影响。
-	if opt is Dictionary and opt.has("need") and not ag.get("is_player", false):
+	if opt is Dictionary and opt.has("need") and not ag.get("is_player", false) and not _is_controlled(ag):
 		var onid := String(opt["need"])
 		if ag["needs"].has(onid) and float(ag["needs"][onid]) >= SURVIVAL_GATE and _min_need(ag) < PREEMPT_CRISIS:
 			ag["option"] = null
@@ -2980,6 +3395,9 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 							ag["memory"].add("上工%s，挣了%d个钱" % [String(jb.get("title", "")), wage], 4, tick_no, ["job", "coin"])
 					else:
 						econ_stats["wages_skipped"] += 1
+			if _is_controlled(ag):
+				emit_signal("life_action_done", String(opt["action"]), String(opt["target"]),
+					_wage_for(ag, String(opt["action"])) if _econ_on() else 0)
 			ag["option"] = null
 		emit_signal("agent_changed", ag["id"])
 
@@ -3908,10 +4326,12 @@ func _apply_social(ag: Dictionary, intent: Dictionary) -> void:
 		"kind": "social", "action": action, "partner": pid,
 		"subject": str(intent.get("subject", "")), "remaining": CONVERSE_TICKS,
 	}
+	if intent.has("tone"):
+		ag["option"]["tone"] = str(intent["tone"])      # 生活模式：语气随单子走到 _commit_social
 	ag["talking"] = CONVERSE_TICKS
 	# 把对方也绑进这次对话；玩家做被动方时 +1 补齐相位差（talking 先于 option 推进一拍归零，
 	# 否则玩家可在最后一 tick 走出区域无成本作废 NPC 的事务——对抗审查#8；bench 无玩家零回归）
-	var bind := CONVERSE_TICKS + (1 if partner.get("is_player", false) else 0)
+	var bind := CONVERSE_TICKS + (1 if partner.get("is_player", false) or _is_controlled(partner) else 0)
 	partner["talking"] = max(int(partner["talking"]), bind)
 	partner["talk_with"] = String(ag["id"])   # 记录谈话对象（玩家专属"站住听完"门用，见 _advance_agent；NPC-NPC 语义不变）
 	ag["last_say"] = str(intent.get("say", ""))
@@ -3945,7 +4365,13 @@ func _commit_social(ag: Dictionary, opt: Dictionary) -> void:
 		if ext != null:
 			ext.execute(self, ag, opt)
 		return
+	# 生活模式「说法」：玩家挑的语气按对方性格/交情折成接受判定的一个加项（docs/190 §二）。只有 life_social 的单子带 tone ⇒ 默认恒 0。
+	var tone_v := _tone_term(ag, target, String(opt["tone"])) if opt.has("tone") else 0.0
+	if _is_controlled(ag):
+		tone_v += clampf(float(life_mood()["score"]) * 0.4, -3.0, 3.0)   # 心情好的人更招人喜欢（只对被附身者；默认路径不达）
+	_tone_bonus = tone_v
 	var accepted := _acceptance_rule(ag, target, action, subject)
+	_tone_bonus = 0.0
 	var ra := _rel(ag, target["id"])
 	var rt := _rel(target, ag["id"])
 
@@ -4073,6 +4499,8 @@ func _commit_social(ag: Dictionary, opt: Dictionary) -> void:
 	# S3a 同派系日常社交额外亲和（小量，防锁死；仅日常类，不与 aid/endorse 叠算）
 	if String(ag["faction"]) != "" and String(ag["faction"]) == String(target["faction"]) and action in ["greet", "give", "gossip", "discuss"]:
 		aff_a += FACTION_INGROUP_AFF; aff_t += FACTION_INGROUP_AFF
+	if tone_v != 0.0:
+		aff_t += clampf(tone_v * 0.25, -2.0, 3.0)   # 说到心坎上 → 对方多记一分好；说岔了 → 接受了也打点折
 	ra["affinity"] = clampf(float(ra["affinity"]) + aff_a, -100.0, 100.0)
 	rt["affinity"] = clampf(float(rt["affinity"]) + aff_t, -100.0, 100.0)
 	ra["familiarity"] = float(ra["familiarity"]) + 1.0
@@ -5931,6 +6359,8 @@ func _acceptance_margin(actor: Dictionary, target: Dictionary, action: String, s
 	var extra := 0.0
 	if ext != null:
 		extra = float(ext.accept_delta(self, actor, target, action, subject))
+	if _tone_bonus != 0.0:
+		extra += _tone_bonus                                  # 生活模式语气项；默认 0 ⇒ 这一行不执行，逐字节不变
 	var sum := 0.0            # 判定式左端；硬短路(爱八卦)时不参与
 	var thr := 0.0            # 阈值 _w(...)
 	var hard := false        # 性格硬规则直接 accept（爱八卦收八卦/秘密来者不拒）
