@@ -55,6 +55,9 @@ var _sel_detail: RichTextLabel
 var _hud: Control
 var _portrait: TextureRect
 var _name_l: Label
+var _mood_l: Label
+var _mood_panel: Panel
+var _mood_parts_l: Label
 var _sub_l: Label
 var _doing_l: Label
 var _doing_fill: ColorRect
@@ -1097,6 +1100,13 @@ func _build_hud() -> void:
 	_portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card.add_child(_portrait)
 	_name_l = _mk_label(card, 21, Vector2(88, 8), Vector2(cw - 96, 28), PARCH)
+	_mood_l = _mk_label(card, 15, Vector2(cw - 170, 12), Vector2(158, 22), PARCH)
+	_mood_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_mood_panel = Panel.new()
+	_mood_panel.add_theme_stylebox_override("panel", _style(INK, GOLD_DIM, 6, 3))
+	_mood_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hud.add_child(_mood_panel)
+	_mood_parts_l = _mk_label(_mood_panel, 14, Vector2(10, 6), Vector2(cw - 20, 100), PARCH)
 	_sub_l = _mk_label(card, 13, Vector2(88, 36), Vector2(cw - 96, 18), MUTED)
 	_doing_l = _mk_label(card, 14, Vector2(88, 56), Vector2(cw - 96, 20), PARCH)
 	_doing_l.clip_text = true
@@ -1210,6 +1220,19 @@ func _refresh_hud() -> void:
 	_check_state_wants(st)
 	if _wants_day != Sim.day:
 		_roll_wants()
+	var md := Sim.life_mood()
+	var ms := int(md["score"])
+	_mood_l.text = "%s %+d" % [String(md["label"]), ms]
+	_mood_l.add_theme_color_override("font_color", Color(0.55, 0.88, 0.50) if ms >= 2 else (PARCH if ms > -2 else BAD))
+	var lines: Array = []
+	for p in (md["parts"] as Array).slice(0, 4):
+		lines.append("%s %+d" % [String(p["text"]), int(p["v"])])
+	_mood_panel.visible = not lines.is_empty()
+	if not lines.is_empty():                      # 心情小条贴在人物卡正上方
+		_mood_parts_l.text = "   ".join(lines.slice(0, 2)) + ("\n" + "   ".join(lines.slice(2, 4)) if lines.size() > 2 else "")
+		var h := 30.0 if lines.size() <= 2 else 50.0
+		_mood_panel.size = Vector2(372, h)
+		_mood_panel.position = Vector2(DESIGN.x - 380.0, DESIGN.y - 258.0 - h - 6.0)
 	_sync_speed_btns()
 
 func _doing_text(d: Dictionary) -> String:

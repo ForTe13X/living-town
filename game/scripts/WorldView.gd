@@ -5562,7 +5562,7 @@ func _draw_agent(ag: Dictionary) -> void:
 	# 旧版把两个标记按固定像素偏移丢在名字外面，人挨着站时标记落在【邻居的名字】旁边，读不出是谁在闹。
 	var has_cf := _in_conflict(aid)
 	var has_mt := _has_meet(aid)
-	if detail > 0.0:
+	if detail > 0.0 and _label_stack(ag) < 3:     # 生活模式：同格最多叠 3 层名牌，再多就不画（观察者模式恒 0）
 		var nm := str(ag.get("persona", {}).get("name", aid))
 		var fnt := Art.font()
 		var nsz := fnt.get_string_size(nm, HORIZONTAL_ALIGNMENT_LEFT, -1, 14)

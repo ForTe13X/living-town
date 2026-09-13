@@ -139,6 +139,13 @@ func _ready() -> void:
 			ev_ok = true
 	_ck("事务落账（事件）", ev_ok)
 	_ck("理论无疙瘩时被拒", Sim.life_social("confront", "aria") != "")
+	var mood := Sim.life_mood()
+	var has_social := false
+	for p in mood["parts"]:
+		if String(p["text"]).find("阿丽") >= 0:
+			has_social = true
+	_ck("心情记得刚才的社交", has_social and int(mood["score"]) >= -10 and int(mood["score"]) <= 10 and String(mood["label"]) != "", str(mood))
+	_ck("心情确定（同状态同结果）", str(Sim.life_mood()) == str(mood))
 
 	# ── 6) 模型说法解析：只收合法动词 ──
 	var parsed := AIBackend.parse_approaches("1. 打招呼|热情|开心|今天海风真舒服！\n送礼|温柔|害羞|给你\n乱写一行\ngreet|随和|平静|嗨", ["greet"])

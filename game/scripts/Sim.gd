@@ -1738,6 +1738,62 @@ func life_chat_commit(target_id: String, prompt: String, reply: String) -> Dicti
 		target["memory"].add("%s跟我说『%s』，我答『%s』" % [_name(ag), prompt.substr(0, 18), reply.substr(0, 18)], 5, tick_no, [controlled_id, "chat"])
 	return {"ok": true, "reason": ""}
 
+## ── 心情（Sims 的 moodlet）：需求 + 最近 MOOD_WINDOW tick 里发生在你身上的社交事，折成一个 −10..+10 的分 ──
+## 纯读 event_log / needs，确定。只被 HUD 与 _commit_social（被附身者发起时）读取。
+const MOOD_WINDOW := 80              # 8 个游戏小时
+func life_mood() -> Dictionary:
+	var ag := controlled()
+	if ag.is_empty():
+		return {"score": 0, "label": "", "parts": []}
+	var parts: Array = []
+	var sum := 0
+	var total := 0.0
+	for n in needs_def:
+		var nid := String(n["id"])
+		var v := float(ag["needs"].get(nid, 100.0))
+		total += v
+		if v < 25.0:
+			parts.append({"text": "%s告急" % String(n.get("label", nid)), "v": -3})
+	if total / float(maxi(1, needs_def.size())) >= 75.0:
+		parts.append({"text": "精神饱满", "v": 2})
+	var pos_social := 0
+	var seen := {}
+	for i in range(event_log.size() - 1, -1, -1):
+		var e: Dictionary = event_log[i]
+		if int(e.get("tick", 0)) < tick_no - MOOD_WINDOW:
+			break
+		var a := String(e.get("actor", "")); var t := String(e.get("target", ""))
+		if a != controlled_id and t != controlled_id:
+			continue
+		var other := t if a == controlled_id else a
+		var typ := String(e.get("type", ""))
+		var ok := bool(e.get("accepted", false))
+		var key := "%s|%s|%s" % [typ, other, str(ok)]
+		if seen.has(key):
+			continue                                  # 同一件事只算一次（别让连续招呼刷分）
+		seen[key] = true
+		var on := _name(_agent_by_id.get(other, {}))
+		match typ:
+			"greet", "give", "gossip", "invite", "discuss", "confide", "aid":
+				if ok and pos_social < 3:
+					pos_social += 1
+					parts.append({"text": "和%s聊得来" % on, "v": 1})
+				elif not ok and a == controlled_id:
+					parts.append({"text": "被%s婉拒" % on, "v": -2})
+			"confront":
+				if t == controlled_id:
+					parts.append({"text": "被%s当面理论" % on, "v": -3})
+			"apologize":
+				if ok and t == controlled_id:
+					parts.append({"text": "%s道了歉" % on, "v": 2})
+			"meet":
+				parts.append({"text": ("和%s赴约" % on) if ok else ("和%s的约黄了" % on), "v": 2 if ok else -2})
+	for p in parts:
+		sum += int(p["v"])
+	sum = clampi(sum, -10, 10)
+	var label := "春风得意" if sum >= 6 else ("心情不错" if sum >= 2 else ("平常" if sum > -2 else ("有点低落" if sum > -6 else "心情很糟")))
+	return {"score": sum, "label": label, "parts": parts}
+
 ## HUD 用的一张快照（只读）。
 func life_status() -> Dictionary:
 	var ag := controlled()
@@ -4311,6 +4367,8 @@ func _commit_social(ag: Dictionary, opt: Dictionary) -> void:
 		return
 	# 生活模式「说法」：玩家挑的语气按对方性格/交情折成接受判定的一个加项（docs/190 §二）。只有 life_social 的单子带 tone ⇒ 默认恒 0。
 	var tone_v := _tone_term(ag, target, String(opt["tone"])) if opt.has("tone") else 0.0
+	if _is_controlled(ag):
+		tone_v += clampf(float(life_mood()["score"]) * 0.4, -3.0, 3.0)   # 心情好的人更招人喜欢（只对被附身者；默认路径不达）
 	_tone_bonus = tone_v
 	var accepted := _acceptance_rule(ag, target, action, subject)
 	_tone_bonus = 0.0
