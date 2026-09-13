@@ -3087,10 +3087,19 @@ func _draw_outer_town(c: CanvasItem, map: Rect2, bands: Array, w: int, h: int, s
 	if cb.is_empty():
 		return
 	# ① 地面：由镇边往外一圈圈压暗（取代 verge 的"三格内压到黑"——那道黑圈正是"镇子是一座孤岛"的读法）
-	var steps := clampi(int(OUTER_TILES * float(T) * _zoom / 5.0), 12, 72)
+	#   ★ 两段：3 格以外粗环；贴边 3 格内按 docs/44 verge 的做法【逐像素一档】从草色渐变过去。
+	#   第一版整段都用粗环（每环 ~5px 一种平涂色）⇒ POND 门的"池周草色众数"取样环伸出地图上沿 1 格，
+	#   一圈平涂色的像素数压过了有纹理的真草 ⇒ 草众数被换掉、夜帧 0 条剖线（docker 实跑抓到）。逐像素渐变不会成为众数。
+	var near := VERGE_TILES * float(T)
+	var steps := clampi(int((OUTER_TILES - VERGE_TILES) * float(T) * _zoom / 5.0), 10, 60)
 	for k in range(steps, 0, -1):
-		var d := float(k) / float(steps) * OUTER_TILES * float(T)
+		var d := near + float(k) / float(steps) * (OUTER_TILES * float(T) - near)
 		_verge_ring(c, map, cb, d, _outer_ground(g, d / float(T)))
+	var fine := clampi(int(near * _zoom), 24, 96)
+	var edge_to := _outer_ground(g, VERGE_TILES)
+	for k in range(fine, 0, -1):
+		var t := float(k) / float(fine)
+		_verge_ring(c, map, cb, t * near, g.lerp(edge_to, t))
 	# ② 西坡台地：顶面由北（高）往南（低）一级比一级暗 ⇒ 读作"往北抬上去的山坡"；再画每级南崖面
 	var x0 := -27.0 * T
 	var x1 := -0.5 * T
