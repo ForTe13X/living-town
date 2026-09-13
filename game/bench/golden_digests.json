@@ -6,120 +6,120 @@
     "godot": "4.6.2-stable (official).71f334935",
     "liveness_observed": {
       "aid": {
-        "count": 122,
-        "seeds": 12
+        "count": 122.0,
+        "seeds": 12.0
       },
       "apologize": {
-        "count": 621,
-        "seeds": 12
+        "count": 621.0,
+        "seeds": 12.0
       },
       "betray": {
-        "count": 1,
-        "seeds": 1
+        "count": 1.0,
+        "seeds": 1.0
       },
       "confide": {
-        "count": 84,
-        "seeds": 12
+        "count": 84.0,
+        "seeds": 12.0
       },
       "conflict": {
-        "count": 1354,
-        "seeds": 12
+        "count": 1354.0,
+        "seeds": 12.0
       },
       "confront": {
-        "count": 643,
-        "seeds": 12
+        "count": 643.0,
+        "seeds": 12.0
       },
       "consume": {
-        "count": 4131,
-        "seeds": 12
+        "count": 4131.0,
+        "seeds": 12.0
       },
       "discuss": {
-        "count": 1134,
-        "seeds": 12
+        "count": 1134.0,
+        "seeds": 12.0
       },
       "election": {
-        "count": 48,
-        "seeds": 12
+        "count": 48.0,
+        "seeds": 12.0
       },
       "endorse": {
-        "count": 245,
-        "seeds": 12
+        "count": 245.0,
+        "seeds": 12.0
       },
       "export": {
-        "count": 46,
-        "seeds": 12
+        "count": 46.0,
+        "seeds": 12.0
       },
       "festival_despawn": {
-        "count": 80,
-        "seeds": 12
+        "count": 80.0,
+        "seeds": 12.0
       },
       "festival_spawn": {
-        "count": 80,
-        "seeds": 12
+        "count": 80.0,
+        "seeds": 12.0
       },
       "give": {
-        "count": 468,
-        "seeds": 12
+        "count": 468.0,
+        "seeds": 12.0
       },
       "gossip": {
-        "count": 547,
-        "seeds": 12
+        "count": 547.0,
+        "seeds": 12.0
       },
       "gossip_rep": {
-        "count": 8020,
-        "seeds": 12
+        "count": 8020.0,
+        "seeds": 12.0
       },
       "greet": {
-        "count": 6623,
-        "seeds": 12
+        "count": 6623.0,
+        "seeds": 12.0
       },
       "import": {
-        "count": 165,
-        "seeds": 12
+        "count": 165.0,
+        "seeds": 12.0
       },
       "invite": {
-        "count": 1074,
-        "seeds": 12
+        "count": 1074.0,
+        "seeds": 12.0
       },
       "leak": {
-        "count": 5,
-        "seeds": 1
+        "count": 5.0,
+        "seeds": 1.0
       },
       "meet": {
-        "count": 1074,
-        "seeds": 12
+        "count": 1074.0,
+        "seeds": 12.0
       },
       "pact_dissolved": {
-        "count": 7,
-        "seeds": 4
+        "count": 7.0,
+        "seeds": 4.0
       },
       "pact_formed": {
-        "count": 59,
-        "seeds": 12
+        "count": 59.0,
+        "seeds": 12.0
       },
       "pay": {
-        "count": 14062,
-        "seeds": 12
+        "count": 14062.0,
+        "seeds": 12.0
       },
       "produce": {
-        "count": 1475,
-        "seeds": 12
+        "count": 1475.0,
+        "seeds": 12.0
       },
       "rally_oust": {
-        "count": 268,
-        "seeds": 12
+        "count": 268.0,
+        "seeds": 12.0
       },
       "shortage": {
-        "count": 880,
-        "seeds": 12
+        "count": 880.0,
+        "seeds": 12.0
       },
       "spoil": {
-        "count": 1784,
-        "seeds": 12
+        "count": 1784.0,
+        "seeds": 12.0
       },
       "world_other": {
-        "count": 432,
-        "seeds": 12
+        "count": 432.0,
+        "seeds": 12.0
       }
     },
     "note": "跨进程金标：红线#1『逐字节可回放』的机检锚。只在【有意的行为变更】后重烘，且重烘必须与该变更同一个 commit、并在 commit message 里写明为什么摘要该动。CI 意外变红时，正确反应是查代码，不是重烘。摘要以【字符串】存：event_digest 可达 2^63，JSON number 会丢精度。",
@@ -144,7 +144,8 @@
       "2026-08-08 E2a（AS4）import 付费 external_coin+#45：钱跨镇边界第一片——import 到货后经 transfer('town','external', applied×price_per/price_den) 把货款搬进 external_coin（收进 #34 守恒集）。三锚全动且可归因：每个 import 日新增一条 town→external 的 pay 事件进 event_digest（modelpath C 段/scenarios 必移）+ town_coin/external_coin 状态进批量 digest/chain ⇒ seeds 12/12 全动、scenarios 16/16 全动、modelpath random_full 网格移。price_per=3/price_den=4（0.75 钱/件，AS4 标定，纠 docs/154『盈亏平衡≈0.8』的理由：town 有饭钱盈余、真实 N=12 盈亏平衡≈1.3）。硬 #45（import 付费溯源 external==Σprice_per×applied）+ #35 补 external 非负臂。off 门：删 economy/price_per 回 E1 免费到货逐字节（金标 12/12 一致实测）。BLOCKER-1：start_new 加 external_coin=0 per-run 重置，goto_tick 回放一致实测（禁用则 econ_total0 被残值污染 204→260、#34 反盖绿）。",
       "2026-08-08 E-export（AS5）货出→钱进（车道 E 第三片，移金标，§0.8 双路收敛 SOUND_WITH_FIXES/docs/158）：export lane 把镇里过剩的【豆子】经 _stock_move(豆子,−sold_qty,'export') 出港，同时经 transfer('external','town',revenue,'export*<qty>') 把货款【先收】进 town_coin（external 是 E2a 已进 #34 守恒集的外部账户）。三锚全动且可归因：每个出港日新增【一条 external→town pay(export) + 一条 export 货事件】进 event_digest（modelpath C 段/scenarios 移）+ town_coin/external_coin/豆子库存状态进批量 digest/chain ⇒ seeds 段【12/12 全动】(seed1 事件 3436→3448=+12 export 事件)、scenarios 段 8/16 动（export 是 surplus-gated，20 天短局里只在豆子累到 floor 以上且 external 付得起的 seed 触发，其余惰性=不动)、modelpath random_full 网格移。标定：good=豆子（F4 物理库存 surplus 探针 as5_surplus_probe，排反馈耦合货整洁+供给紧货口粮/屋瓦/柴薪），floor=36（贴近最坏多日净耗 39、held-out 13-30 #40 全绿不饿镇），price=1/2=0.5 钱/件（<import 0.75 保闭环 external≥0；F4 §六 goal② 结构性赤字镇 seed 18 仍跳工资：import-only town_min=0/跳10 → export 后 town_min=0/跳1，未被喂平），batch=6/every=3，F5 显式限 N=12（prod_pool_num≠den 惰性 ⇒ CI 4a N=16 零风险）。硬门：新 #46 出口贸易原子性绑定（F7 命门，一次成功 export=恰一条 external→town pay(export)+恰一条同 sold_qty 货事件，严格 pay,stock 交替+逐对 qty 相等+货/港合法）入 HARD_IDS（两份同步）；#45 泛化双向对账 external==Σimport−Σexport（F6 guard 重构：export 项在 import lane 空时也算）；#38 白名单+export（−号臂）；社交排除集+export（F3 #2-only）；#35 external≥0 臂复用。负对照矩阵 as5_negctl_probe 9 态全中：★F1 ship-for-free（出货不收钱）现役 #34/#38 全绿=外审说的漏洞，被 #46+#45 抓；F2 跨边抵消 #45 被净额骗过绿、#46 抓；收 N 发 k #46+#45 抓。off 门 2 轴实证：轴①删 logistics.json ⇒ 与 pre-export 树(ce33072)逐字节一致(seeds 1-4)；轴② export 无 price_per ⇒ 与无 export lane 逐字节一致(惰性非免费出港)。goto_tick 先收后出回放逐字节一致(digest+event_digest，as4_replay_probe 6/6)。held-out 13-30 硬 #34/#35/#45/#46 各 18/18、#40 18/18、饿穿 0。",
       "2026-08-09 E3b（闲聊-attach treat 链，移金标，docs/164）：coco 由 spare 零工转【糕点师】，在广场 counter_pastry[31,23]（type 摊位复用 counter 槽 ⇒ 零 WorldView 改动、别名预算不变）产【糕点】（produce.糕点师 无 inputs、照抄咖啡师形状），消费【挂在既有 闲聊(social) 动作】上（consume.闲聊={糕点,1}）而非新加 town 平面动作——这正是 E3a（docs/153）实测证伪的稀释源：新 town 动作加 60-80 决策槽/seed、系统性压核心产出约 0.03。本片零新决策槽：闲聊本就 ~150-200 次/seed 被选中，而『缺货绝不阻断动作』红线保证其选中频率不随糕点库存变（有糕点照吃、没糕点照闲聊+写 shortage）。三锚全动且可归因：①做点心 job-gated 广告给 coco 加一个候选 ⇒ modelpath 候选规模 max_n 42→46、C 段 random_full 4/4 seed 全移；②糕点 produce/consume/spoil 事件进 event_digest ⇒ scenarios 16/16、seeds 12/12 全移；③town_stock[糕点] 轨迹进批量 digest/chain。★核心验收锚（留出 seeds 13-30、N=12、backend=null）：口粮/柴薪/屋瓦 满足率 median Δrate=+0.041/−0.001/+0.006（口粮 12/18 上、柴薪 9/9 平、屋瓦 10/18 上）——与 E3a 全三货系统性 −0.028~−0.036（66-78% 下）方向相反；NULL 对照（coco=糕点师但删 consume.闲聊、糕点成死货）证 consume.闲聊 本身零稀释（柴薪 −0.028/屋瓦 −0.018 的残余来自 coco 转产者这一不可避免项，非 treat）。off-gate：删本片键 ⇒ S0 金标 12/12 逐字节回 pre-E3b。#40 12/12、硬 12/12、det 3/3。标定 batch6/W48/cap20/spoil1/start12/闲聊 amount1。HARD_IDS 未动（additive 无新不变量）。",
-      "2026-08-10 修 standing 漂移翻号 bug（Codex 外审 P0-2）：S1 名声每 3 天向 0 漂移的旧实现 `x - signf(x)` 对 |x|<1 会【翻号】（−0.2→+0.8，接受规则 STANDING_K=6 放大成约 6 分 acceptance 摆动，非可忽略噪声），把慢淡化写成永久跨零振荡。改用 `_standing_drift = move_toward(x,0,1)`（向 0 至多 1、不跨零，纯 abs/sign/min、无 libm ⇒ 逐字节可复现）。加 Harness/S0 性质自检（9 向量：不翻号/绝对值不增/零保持零；旧实现在此【必红】，已实测）。这是行为 bug 修复、长期轨迹改变是【预期】（非任意重烘——性质测试是正当性凭据）。三锚（golden seeds+scenarios / modelpath / ledger）全重烘。"
+      "2026-08-10 修 standing 漂移翻号 bug（Codex 外审 P0-2）：S1 名声每 3 天向 0 漂移的旧实现 `x - signf(x)` 对 |x|<1 会【翻号】（−0.2→+0.8，接受规则 STANDING_K=6 放大成约 6 分 acceptance 摆动，非可忽略噪声），把慢淡化写成永久跨零振荡。改用 `_standing_drift = move_toward(x,0,1)`（向 0 至多 1、不跨零，纯 abs/sign/min、无 libm ⇒ 逐字节可复现）。加 Harness/S0 性质自检（9 向量：不翻号/绝对值不增/零保持零；旧实现在此【必红】，已实测）。这是行为 bug 修复、长期轨迹改变是【预期】（非任意重烘——性质测试是正当性凭据）。三锚（golden seeds+scenarios / modelpath / ledger）全重烘。",
+      "2026-09-13 docs/193（用户批准的有意移动）：室内按规划重排 + 新家具广告位（马桶/澡堂浴缸与洗脸台/赏画/静坐/祈祷/逛集/弹琴/读书/吃点心）、民居/杂货铺/图书馆挪到中央街区旁、镇上 41 栋房子占地挡进导航（map.json solid_lots）、5 座能进的设施；另修一条潜伏 livelock（危机中候选与承诺 pre-empt 同尺，Sim 决策入口）。S0 12/12 硬+软全绿、det 3/3；DetGate 四轨 16/16；ModelPathGate C 段随之移动。"
     ],
     "scenarios_baked_by": "godot --headless --path game --script res://bench/DetGate.gd -- --seeds 1-4 --days 20 --bake-golden game/bench/golden_digests.json",
     "scenarios_godot": "4.6.2-stable (official).71f334935",
@@ -153,122 +154,122 @@
   "scenarios": {
     "betray": {
       "1": {
-        "chain": "2199710291",
+        "chain": "3073668191",
         "days": 20,
-        "digest": "3579814442",
-        "event_digest": "6871594384237677988",
-        "events": 1210
+        "digest": "885863532",
+        "event_digest": "5832869904304955080",
+        "events": 1193
       },
       "2": {
-        "chain": "3903788347",
+        "chain": "1529103676",
         "days": 20,
-        "digest": "927723162",
-        "event_digest": "8565675846610702403",
-        "events": 1194
+        "digest": "1303516543",
+        "event_digest": "500121909442222172",
+        "events": 1097
       },
       "3": {
-        "chain": "768819226",
+        "chain": "634566921",
         "days": 20,
-        "digest": "972382576",
-        "event_digest": "1968747416735118205",
-        "events": 1173
+        "digest": "1813744330",
+        "event_digest": "2110109533952437679",
+        "events": 1112
       },
       "4": {
-        "chain": "1504167083",
+        "chain": "1221401208",
         "days": 20,
-        "digest": "3939726652",
-        "event_digest": "5388247358775774362",
-        "events": 1131
+        "digest": "2382667431",
+        "event_digest": "6703536634312788519",
+        "events": 1171
       }
     },
     "default": {
       "1": {
-        "chain": "1718097942",
+        "chain": "2233294649",
         "days": 20,
-        "digest": "2496579722",
-        "event_digest": "6002631813157396957",
-        "events": 1241
+        "digest": "3296687873",
+        "event_digest": "5096307299415052267",
+        "events": 1307
       },
       "2": {
-        "chain": "4222751430",
+        "chain": "1536973024",
         "days": 20,
-        "digest": "2630821491",
-        "event_digest": "1054265839457315777",
-        "events": 1214
+        "digest": "1365195572",
+        "event_digest": "7980663975799812608",
+        "events": 1269
       },
       "3": {
-        "chain": "3125312651",
+        "chain": "2026238807",
         "days": 20,
-        "digest": "2517509932",
-        "event_digest": "5525203387515614173",
-        "events": 1272
+        "digest": "1365798633",
+        "event_digest": "6074745816227852348",
+        "events": 1239
       },
       "4": {
-        "chain": "737677896",
+        "chain": "4234204821",
         "days": 20,
-        "digest": "2971036093",
-        "event_digest": "2646400663065531017",
-        "events": 1276
+        "digest": "3483996518",
+        "event_digest": "2622055327728393484",
+        "events": 1308
       }
     },
     "faction": {
       "1": {
-        "chain": "264955772",
+        "chain": "3614749906",
         "days": 20,
-        "digest": "1113828086",
-        "event_digest": "7560667418562479338",
-        "events": 1098
+        "digest": "1452900959",
+        "event_digest": "4865813800415509752",
+        "events": 1130
       },
       "2": {
-        "chain": "3285634673",
+        "chain": "1311102894",
         "days": 20,
-        "digest": "1775338888",
-        "event_digest": "603991319470143700",
-        "events": 1097
+        "digest": "1551844691",
+        "event_digest": "4119977179052877080",
+        "events": 1085
       },
       "3": {
-        "chain": "2339108987",
+        "chain": "2179307442",
         "days": 20,
-        "digest": "2864688981",
-        "event_digest": "8326441204186570191",
-        "events": 1082
+        "digest": "3733492018",
+        "event_digest": "3688221160040145134",
+        "events": 1088
       },
       "4": {
-        "chain": "2149501367",
+        "chain": "1832627199",
         "days": 20,
-        "digest": "1375093804",
-        "event_digest": "1374126711311215662",
-        "events": 1086
+        "digest": "3596566835",
+        "event_digest": "3684540404491433946",
+        "events": 1048
       }
     },
     "freerider": {
       "1": {
-        "chain": "1925561256",
+        "chain": "2809653438",
         "days": 20,
-        "digest": "1256638081",
-        "event_digest": "114599670575197407",
-        "events": 1147
+        "digest": "1929703049",
+        "event_digest": "1299907081010667767",
+        "events": 1200
       },
       "2": {
-        "chain": "1694389161",
+        "chain": "1011436445",
         "days": 20,
-        "digest": "2393114900",
-        "event_digest": "3745301423854640145",
-        "events": 1141
+        "digest": "3395089764",
+        "event_digest": "8279373527048549002",
+        "events": 1213
       },
       "3": {
-        "chain": "3681064244",
+        "chain": "1681177341",
         "days": 20,
-        "digest": "2852073230",
-        "event_digest": "8566024086411969758",
-        "events": 1106
+        "digest": "241510828",
+        "event_digest": "6022090250689052010",
+        "events": 1165
       },
       "4": {
-        "chain": "4159692978",
+        "chain": "4586278",
         "days": 20,
-        "digest": "968899749",
-        "event_digest": "8782942479070269616",
-        "events": 1115
+        "digest": "1436840880",
+        "event_digest": "8347029216161053964",
+        "events": 1152
       }
     }
   },
