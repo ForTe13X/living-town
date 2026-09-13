@@ -2,27 +2,67 @@
  "_doc": "docs/186/188 \u5e03\u666f\u6c11\u5c45 + \u56ed\u5b50\u843d\u70b9\uff08tools/place_houses.py \u751f\u6210\uff0c\u52ff\u624b\u6539\uff09",
  "lots": [
   {
-   "sprite": "whitehouse",
+   "sprite": "chapel",
+   "x": 30,
+   "y": 30,
+   "w": 3,
+   "h": 4,
+   "flip": false
+  },
+  {
+   "sprite": "bandstand",
+   "x": 31,
+   "y": 36,
+   "w": 2,
+   "h": 3,
+   "flip": false
+  },
+  {
+   "sprite": "windmill",
    "x": 0,
-   "y": 6,
+   "y": 5,
    "w": 3,
-   "h": 3,
+   "h": 4,
    "flip": true
   },
   {
-   "sprite": "whitehouse",
-   "x": 19,
-   "y": 6,
-   "w": 3,
-   "h": 3,
-   "flip": true
-  },
-  {
-   "sprite": "cottage",
-   "x": 23,
-   "y": 7,
+   "sprite": "netshed",
+   "x": 50,
+   "y": 32,
    "w": 3,
    "h": 2,
+   "flip": true
+  },
+  {
+   "sprite": "bakery",
+   "x": 13,
+   "y": 16,
+   "w": 3,
+   "h": 3,
+   "flip": false
+  },
+  {
+   "sprite": "creperie",
+   "x": 50,
+   "y": 16,
+   "w": 3,
+   "h": 3,
+   "flip": true
+  },
+  {
+   "sprite": "belleepoque",
+   "x": 19,
+   "y": 5,
+   "w": 3,
+   "h": 4,
+   "flip": false
+  },
+  {
+   "sprite": "halftimber",
+   "x": 23,
+   "y": 6,
+   "w": 2,
+   "h": 3,
    "flip": false
   },
   {
@@ -42,34 +82,34 @@
    "flip": true
   },
   {
-   "sprite": "cottage",
+   "sprite": "belleepoque",
    "x": 0,
-   "y": 12,
+   "y": 10,
    "w": 3,
-   "h": 2,
+   "h": 4,
+   "flip": true
+  },
+  {
+   "sprite": "longere",
+   "x": 4,
+   "y": 11,
+   "w": 4,
+   "h": 3,
+   "flip": true
+  },
+  {
+   "sprite": "ochre",
+   "x": 9,
+   "y": 11,
+   "w": 2,
+   "h": 3,
    "flip": false
   },
   {
-   "sprite": "townhouse",
-   "x": 4,
+   "sprite": "whitehouse",
+   "x": 12,
    "y": 11,
-   "w": 2,
-   "h": 3,
-   "flip": true
-  },
-  {
-   "sprite": "townhouse",
-   "x": 7,
-   "y": 11,
-   "w": 2,
-   "h": 3,
-   "flip": true
-  },
-  {
-   "sprite": "terrace",
-   "x": 10,
-   "y": 11,
-   "w": 4,
+   "w": 3,
    "h": 3,
    "flip": true
   },
@@ -82,23 +122,7 @@
    "flip": false
   },
   {
-   "sprite": "cottage",
-   "x": 13,
-   "y": 17,
-   "w": 3,
-   "h": 2,
-   "flip": true
-  },
-  {
-   "sprite": "whitehouse",
-   "x": 48,
-   "y": 16,
-   "w": 3,
-   "h": 3,
-   "flip": false
-  },
-  {
-   "sprite": "townhouse",
+   "sprite": "halftimber",
    "x": 9,
    "y": 21,
    "w": 2,
@@ -114,31 +138,15 @@
    "flip": true
   },
   {
-   "sprite": "cottage",
-   "x": 18,
-   "y": 22,
-   "w": 3,
-   "h": 2,
+   "sprite": "townhouse",
+   "x": 48,
+   "y": 21,
+   "w": 2,
+   "h": 3,
    "flip": true
   },
   {
-   "sprite": "cottage",
-   "x": 43,
-   "y": 22,
-   "w": 3,
-   "h": 2,
-   "flip": false
-  },
-  {
-   "sprite": "cottage",
-   "x": 47,
-   "y": 22,
-   "w": 3,
-   "h": 2,
-   "flip": false
-  },
-  {
-   "sprite": "townhouse",
+   "sprite": "ochre",
    "x": 51,
    "y": 21,
    "w": 2,
@@ -146,7 +154,7 @@
    "flip": false
   },
   {
-   "sprite": "townhouse",
+   "sprite": "ochre",
    "x": 9,
    "y": 26,
    "w": 2,
@@ -154,7 +162,7 @@
    "flip": false
   },
   {
-   "sprite": "townhouse",
+   "sprite": "halftimber",
    "x": 14,
    "y": 26,
    "w": 2,
@@ -162,7 +170,7 @@
    "flip": false
   },
   {
-   "sprite": "townhouse",
+   "sprite": "ochre",
    "x": 48,
    "y": 26,
    "w": 2,
@@ -170,7 +178,7 @@
    "flip": false
   },
   {
-   "sprite": "townhouse",
+   "sprite": "halftimber",
    "x": 51,
    "y": 26,
    "w": 2,
@@ -186,50 +194,18 @@
    "flip": true
   },
   {
-   "sprite": "cottage",
-   "x": 4,
-   "y": 32,
-   "w": 3,
-   "h": 2,
+   "sprite": "ochre",
+   "x": 9,
+   "y": 31,
+   "w": 2,
+   "h": 3,
    "flip": false
-  },
-  {
-   "sprite": "cottage",
-   "x": 8,
-   "y": 32,
-   "w": 3,
-   "h": 2,
-   "flip": true
   },
   {
    "sprite": "townhouse",
    "x": 14,
    "y": 31,
    "w": 2,
-   "h": 3,
-   "flip": true
-  },
-  {
-   "sprite": "whitehouse",
-   "x": 29,
-   "y": 31,
-   "w": 3,
-   "h": 3,
-   "flip": true
-  },
-  {
-   "sprite": "townhouse",
-   "x": 33,
-   "y": 31,
-   "w": 2,
-   "h": 3,
-   "flip": true
-  },
-  {
-   "sprite": "terrace",
-   "x": 48,
-   "y": 31,
-   "w": 4,
    "h": 3,
    "flip": true
   },
@@ -250,92 +226,28 @@
    "flip": false
   },
   {
-   "sprite": "cottage",
-   "x": 18,
-   "y": 37,
-   "w": 3,
-   "h": 2,
-   "flip": true
-  },
-  {
-   "sprite": "cottage",
-   "x": 22,
-   "y": 37,
-   "w": 3,
-   "h": 2,
-   "flip": true
-  },
-  {
-   "sprite": "cottage",
-   "x": 26,
-   "y": 37,
-   "w": 3,
-   "h": 2,
-   "flip": true
-  },
-  {
-   "sprite": "cottage",
-   "x": 30,
-   "y": 37,
-   "w": 3,
-   "h": 2,
-   "flip": true
-  },
-  {
-   "sprite": "cottage",
-   "x": 34,
-   "y": 37,
-   "w": 3,
-   "h": 2,
+   "sprite": "terrace",
+   "x": 48,
+   "y": 36,
+   "w": 4,
+   "h": 3,
    "flip": false
   },
   {
-   "sprite": "cottage",
-   "x": 38,
-   "y": 37,
-   "w": 3,
-   "h": 2,
-   "flip": false
-  },
-  {
-   "sprite": "cottage",
-   "x": 42,
-   "y": 37,
-   "w": 3,
-   "h": 2,
-   "flip": true
-  },
-  {
-   "sprite": "cottage",
-   "x": 46,
-   "y": 37,
-   "w": 3,
-   "h": 2,
-   "flip": false
-  },
-  {
-   "sprite": "cottage",
-   "x": 50,
-   "y": 37,
-   "w": 3,
-   "h": 2,
-   "flip": false
-  },
-  {
-   "sprite": "cottage",
+   "sprite": "halftimber",
    "x": 0,
-   "y": 42,
-   "w": 3,
-   "h": 2,
-   "flip": false
-  },
-  {
-   "sprite": "townhouse",
-   "x": 4,
    "y": 41,
    "w": 2,
    "h": 3,
-   "flip": false
+   "flip": true
+  },
+  {
+   "sprite": "longere",
+   "x": 3,
+   "y": 41,
+   "w": 4,
+   "h": 3,
+   "flip": true
   },
   {
    "sprite": "whitehouse",
@@ -346,11 +258,19 @@
    "flip": true
   },
   {
-   "sprite": "cottage",
+   "sprite": "ochre",
    "x": 22,
-   "y": 42,
-   "w": 3,
-   "h": 2,
+   "y": 41,
+   "w": 2,
+   "h": 3,
+   "flip": true
+  },
+  {
+   "sprite": "halftimber",
+   "x": 25,
+   "y": 41,
+   "w": 2,
+   "h": 3,
    "flip": false
   },
   {
@@ -378,31 +298,19 @@
    "flip": false
   },
   {
-   "sprite": "cottage",
+   "sprite": "ochre",
    "x": 50,
-   "y": 42,
-   "w": 3,
-   "h": 2,
-   "flip": true
+   "y": 41,
+   "w": 2,
+   "h": 3,
+   "flip": false
   }
  ],
  "gardens": [
   {
-   "house": 0,
-   "x0": 0,
-   "y0": 6,
-   "x1": 4,
-   "y1": 9,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": false,
-   "props": []
-  },
-  {
-   "house": 1,
+   "house": 6,
    "x0": 18,
-   "y0": 4,
+   "y0": 3,
    "x1": 23,
    "y1": 9,
    "back": 2,
@@ -411,31 +319,42 @@
    "wall": false,
    "props": [
     {
-     "kind": "veg",
+     "kind": "barrow",
      "x": 19,
-     "y": 5
+     "y": 4
+    },
+    {
+     "kind": "apple",
+     "x": 20,
+     "y": 4
     },
     {
      "kind": "hydrangea",
      "x": 21,
-     "y": 5
+     "y": 4
     }
    ]
   },
   {
-   "house": 2,
+   "house": 7,
    "x0": 23,
-   "y0": 7,
-   "x1": 27,
+   "y0": 6,
+   "x1": 26,
    "y1": 9,
    "back": 0,
    "left": false,
    "right": true,
    "wall": false,
-   "props": []
+   "props": [
+    {
+     "kind": "hydrangea",
+     "x": 25,
+     "y": 8
+    }
+   ]
   },
   {
-   "house": 3,
+   "house": 8,
    "x0": 37,
    "y0": 5,
    "x1": 43,
@@ -468,7 +387,7 @@
    ]
   },
   {
-   "house": 4,
+   "house": 9,
    "x0": 43,
    "y0": 6,
    "x1": 47,
@@ -480,45 +399,63 @@
    "props": []
   },
   {
-   "house": 5,
+   "house": 10,
    "x0": 0,
-   "y0": 12,
+   "y0": 10,
    "x1": 4,
    "y1": 14,
    "back": 0,
    "left": false,
    "right": true,
-   "wall": true,
-   "props": []
-  },
-  {
-   "house": 6,
-   "x0": 3,
-   "y0": 10,
-   "x1": 7,
-   "y1": 14,
-   "back": 1,
-   "left": false,
-   "right": true,
    "wall": false,
    "props": [
     {
-     "kind": "veg",
-     "x": 4,
-     "y": 10
-    },
-    {
      "kind": "hydrangea",
-     "x": 6,
+     "x": 3,
      "y": 13
     }
    ]
   },
   {
-   "house": 7,
-   "x0": 7,
+   "house": 11,
+   "x0": 4,
    "y0": 11,
-   "x1": 10,
+   "x1": 9,
+   "y1": 14,
+   "back": 0,
+   "left": false,
+   "right": true,
+   "wall": false,
+   "props": []
+  },
+  {
+   "house": 12,
+   "x0": 8,
+   "y0": 10,
+   "x1": 12,
+   "y1": 14,
+   "back": 1,
+   "left": false,
+   "right": true,
+   "wall": true,
+   "props": [
+    {
+     "kind": "apple",
+     "x": 9,
+     "y": 10
+    },
+    {
+     "kind": "barrow",
+     "x": 10,
+     "y": 10
+    }
+   ]
+  },
+  {
+   "house": 13,
+   "x0": 12,
+   "y0": 11,
+   "x1": 16,
    "y1": 14,
    "back": 0,
    "left": false,
@@ -527,36 +464,13 @@
    "props": [
     {
      "kind": "hydrangea",
-     "x": 9,
+     "x": 15,
      "y": 13
     }
    ]
   },
   {
-   "house": 8,
-   "x0": 9,
-   "y0": 10,
-   "x1": 15,
-   "y1": 14,
-   "back": 1,
-   "left": false,
-   "right": true,
-   "wall": false,
-   "props": [
-    {
-     "kind": "barrow",
-     "x": 10,
-     "y": 10
-    },
-    {
-     "kind": "apple",
-     "x": 11,
-     "y": 10
-    }
-   ]
-  },
-  {
-   "house": 9,
+   "house": 14,
    "x0": 8,
    "y0": 15,
    "x1": 13,
@@ -579,47 +493,7 @@
    ]
   },
   {
-   "house": 10,
-   "x0": 13,
-   "y0": 17,
-   "x1": 17,
-   "y1": 19,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": false,
-   "props": []
-  },
-  {
-   "house": 11,
-   "x0": 47,
-   "y0": 14,
-   "x1": 52,
-   "y1": 19,
-   "back": 2,
-   "left": true,
-   "right": true,
-   "wall": false,
-   "props": [
-    {
-     "kind": "hydrangea",
-     "x": 48,
-     "y": 15
-    },
-    {
-     "kind": "veg",
-     "x": 49,
-     "y": 15
-    },
-    {
-     "kind": "hydrangea",
-     "x": 47,
-     "y": 18
-    }
-   ]
-  },
-  {
-   "house": 12,
+   "house": 15,
    "x0": 8,
    "y0": 20,
    "x1": 12,
@@ -642,7 +516,7 @@
    ]
   },
   {
-   "house": 13,
+   "house": 16,
    "x0": 13,
    "y0": 21,
    "x1": 18,
@@ -670,59 +544,35 @@
    ]
   },
   {
-   "house": 14,
-   "x0": 18,
-   "y0": 22,
-   "x1": 22,
-   "y1": 24,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": false,
-   "props": []
-  },
-  {
-   "house": 15,
-   "x0": 42,
-   "y0": 21,
-   "x1": 47,
+   "house": 17,
+   "x0": 47,
+   "y0": 20,
+   "x1": 51,
    "y1": 24,
    "back": 1,
    "left": true,
    "right": true,
-   "wall": false,
+   "wall": true,
    "props": [
     {
      "kind": "hydrangea",
-     "x": 45,
-     "y": 21
+     "x": 47,
+     "y": 23
     },
     {
      "kind": "hydrangea",
-     "x": 42,
+     "x": 50,
      "y": 23
     }
    ]
   },
   {
-   "house": 16,
-   "x0": 47,
-   "y0": 22,
-   "x1": 51,
-   "y1": 24,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": false,
-   "props": []
-  },
-  {
-   "house": 17,
-   "x0": 50,
-   "y0": 20,
+   "house": 18,
+   "x0": 51,
+   "y0": 21,
    "x1": 54,
    "y1": 24,
-   "back": 1,
+   "back": 0,
    "left": false,
    "right": true,
    "wall": true,
@@ -735,7 +585,7 @@
    ]
   },
   {
-   "house": 18,
+   "house": 19,
    "x0": 8,
    "y0": 25,
    "x1": 12,
@@ -763,7 +613,7 @@
    ]
   },
   {
-   "house": 19,
+   "house": 20,
    "x0": 13,
    "y0": 25,
    "x1": 17,
@@ -791,7 +641,7 @@
    ]
   },
   {
-   "house": 20,
+   "house": 21,
    "x0": 47,
    "y0": 25,
    "x1": 51,
@@ -814,7 +664,7 @@
    ]
   },
   {
-   "house": 21,
+   "house": 22,
    "x0": 51,
    "y0": 26,
    "x1": 54,
@@ -832,7 +682,7 @@
    ]
   },
   {
-   "house": 22,
+   "house": 23,
    "x0": 0,
    "y0": 32,
    "x1": 4,
@@ -850,39 +700,26 @@
    ]
   },
   {
-   "house": 23,
-   "x0": 3,
-   "y0": 31,
-   "x1": 8,
-   "y1": 34,
-   "back": 1,
-   "left": false,
-   "right": true,
-   "wall": true,
-   "props": [
-    {
-     "kind": "barrow",
-     "x": 4,
-     "y": 31
-    },
-    {
-     "kind": "apple",
-     "x": 5,
-     "y": 31
-    }
-   ]
-  },
-  {
    "house": 24,
    "x0": 8,
-   "y0": 32,
+   "y0": 30,
    "x1": 12,
    "y1": 34,
-   "back": 0,
-   "left": false,
+   "back": 1,
+   "left": true,
    "right": true,
    "wall": false,
    "props": [
+    {
+     "kind": "hydrangea",
+     "x": 9,
+     "y": 30
+    },
+    {
+     "kind": "barrow",
+     "x": 10,
+     "y": 30
+    },
     {
      "kind": "hydrangea",
      "x": 11,
@@ -920,64 +757,6 @@
   },
   {
    "house": 26,
-   "x0": 28,
-   "y0": 29,
-   "x1": 33,
-   "y1": 34,
-   "back": 2,
-   "left": true,
-   "right": true,
-   "wall": false,
-   "props": [
-    {
-     "kind": "hydrangea",
-     "x": 32,
-     "y": 33
-    }
-   ]
-  },
-  {
-   "house": 27,
-   "x0": 33,
-   "y0": 31,
-   "x1": 36,
-   "y1": 34,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": true,
-   "props": []
-  },
-  {
-   "house": 28,
-   "x0": 47,
-   "y0": 30,
-   "x1": 53,
-   "y1": 34,
-   "back": 1,
-   "left": true,
-   "right": true,
-   "wall": false,
-   "props": [
-    {
-     "kind": "laundry",
-     "x": 48,
-     "y": 30
-    },
-    {
-     "kind": "veg",
-     "x": 50,
-     "y": 30
-    },
-    {
-     "kind": "hydrangea",
-     "x": 47,
-     "y": 33
-    }
-   ]
-  },
-  {
-   "house": 29,
    "x0": 0,
    "y0": 36,
    "x1": 3,
@@ -989,7 +768,7 @@
    "props": []
   },
   {
-   "house": 30,
+   "house": 27,
    "x0": 3,
    "y0": 37,
    "x1": 7,
@@ -1007,10 +786,10 @@
    ]
   },
   {
-   "house": 31,
-   "x0": 17,
-   "y0": 36,
-   "x1": 22,
+   "house": 28,
+   "x0": 47,
+   "y0": 35,
+   "x1": 53,
    "y1": 39,
    "back": 1,
    "left": true,
@@ -1018,200 +797,32 @@
    "wall": false,
    "props": [
     {
-     "kind": "laundry",
-     "x": 18,
-     "y": 36
-    },
-    {
-     "kind": "hydrangea",
-     "x": 20,
-     "y": 36
-    },
-    {
-     "kind": "hydrangea",
-     "x": 17,
-     "y": 38
-    },
-    {
-     "kind": "hydrangea",
-     "x": 21,
-     "y": 38
-    }
-   ]
-  },
-  {
-   "house": 32,
-   "x0": 22,
-   "y0": 37,
-   "x1": 26,
-   "y1": 39,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": true,
-   "props": []
-  },
-  {
-   "house": 33,
-   "x0": 25,
-   "y0": 36,
-   "x1": 30,
-   "y1": 39,
-   "back": 1,
-   "left": false,
-   "right": true,
-   "wall": false,
-   "props": [
-    {
      "kind": "apple",
-     "x": 26,
-     "y": 36
-    },
-    {
-     "kind": "apple",
-     "x": 27,
-     "y": 36
-    },
-    {
-     "kind": "barrow",
-     "x": 28,
-     "y": 36
-    }
-   ]
-  },
-  {
-   "house": 34,
-   "x0": 30,
-   "y0": 37,
-   "x1": 34,
-   "y1": 39,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": false,
-   "props": [
-    {
-     "kind": "hydrangea",
-     "x": 33,
-     "y": 38
-    }
-   ]
-  },
-  {
-   "house": 35,
-   "x0": 33,
-   "y0": 36,
-   "x1": 38,
-   "y1": 39,
-   "back": 1,
-   "left": false,
-   "right": true,
-   "wall": false,
-   "props": [
-    {
-     "kind": "barrow",
-     "x": 34,
-     "y": 36
-    },
-    {
-     "kind": "hydrangea",
-     "x": 35,
-     "y": 36
-    },
-    {
-     "kind": "apple",
-     "x": 36,
-     "y": 36
-    }
-   ]
-  },
-  {
-   "house": 36,
-   "x0": 38,
-   "y0": 37,
-   "x1": 42,
-   "y1": 39,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": false,
-   "props": [
-    {
-     "kind": "hydrangea",
-     "x": 41,
-     "y": 38
-    }
-   ]
-  },
-  {
-   "house": 37,
-   "x0": 41,
-   "y0": 36,
-   "x1": 46,
-   "y1": 39,
-   "back": 1,
-   "left": false,
-   "right": true,
-   "wall": true,
-   "props": [
-    {
-     "kind": "hydrangea",
-     "x": 42,
-     "y": 36
-    },
-    {
-     "kind": "hydrangea",
-     "x": 45,
-     "y": 38
-    }
-   ]
-  },
-  {
-   "house": 38,
-   "x0": 46,
-   "y0": 37,
-   "x1": 50,
-   "y1": 39,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": false,
-   "props": [
-    {
-     "kind": "hydrangea",
-     "x": 49,
-     "y": 38
-    }
-   ]
-  },
-  {
-   "house": 39,
-   "x0": 49,
-   "y0": 35,
-   "x1": 54,
-   "y1": 39,
-   "back": 2,
-   "left": false,
-   "right": true,
-   "wall": true,
-   "props": [
-    {
-     "kind": "laundry",
      "x": 50,
-     "y": 36
+     "y": 35
     },
     {
      "kind": "hydrangea",
-     "x": 53,
+     "x": 51,
+     "y": 35
+    },
+    {
+     "kind": "hydrangea",
+     "x": 47,
+     "y": 38
+    },
+    {
+     "kind": "hydrangea",
+     "x": 52,
      "y": 38
     }
    ]
   },
   {
-   "house": 40,
+   "house": 29,
    "x0": 0,
-   "y0": 42,
-   "x1": 4,
+   "y0": 41,
+   "x1": 3,
    "y1": 44,
    "back": 0,
    "left": false,
@@ -1220,16 +831,21 @@
    "props": []
   },
   {
-   "house": 41,
-   "x0": 3,
+   "house": 30,
+   "x0": 2,
    "y0": 40,
-   "x1": 7,
+   "x1": 8,
    "y1": 44,
    "back": 1,
    "left": false,
    "right": true,
    "wall": false,
    "props": [
+    {
+     "kind": "hydrangea",
+     "x": 3,
+     "y": 40
+    },
     {
      "kind": "barrow",
      "x": 4,
@@ -1242,18 +858,18 @@
     },
     {
      "kind": "hydrangea",
-     "x": 6,
+     "x": 7,
      "y": 43
     }
    ]
   },
   {
-   "house": 42,
+   "house": 31,
    "x0": 17,
-   "y0": 40,
+   "y0": 39,
    "x1": 22,
    "y1": 44,
-   "back": 1,
+   "back": 2,
    "left": true,
    "right": true,
    "wall": false,
@@ -1281,30 +897,42 @@
    ]
   },
   {
-   "house": 43,
+   "house": 32,
    "x0": 22,
-   "y0": 42,
-   "x1": 26,
+   "y0": 41,
+   "x1": 25,
    "y1": 44,
    "back": 0,
+   "left": false,
+   "right": true,
+   "wall": false,
+   "props": []
+  },
+  {
+   "house": 33,
+   "x0": 24,
+   "y0": 39,
+   "x1": 28,
+   "y1": 44,
+   "back": 2,
    "left": false,
    "right": true,
    "wall": false,
    "props": [
     {
      "kind": "hydrangea",
-     "x": 25,
+     "x": 27,
      "y": 43
     }
    ]
   },
   {
-   "house": 44,
+   "house": 34,
    "x0": 36,
-   "y0": 40,
+   "y0": 39,
    "x1": 42,
    "y1": 44,
-   "back": 1,
+   "back": 2,
    "left": true,
    "right": true,
    "wall": true,
@@ -1317,7 +945,7 @@
    ]
   },
   {
-   "house": 45,
+   "house": 35,
    "x0": 42,
    "y0": 41,
    "x1": 46,
@@ -1335,7 +963,7 @@
    ]
   },
   {
-   "house": 46,
+   "house": 36,
    "x0": 46,
    "y0": 42,
    "x1": 50,
@@ -1347,25 +975,25 @@
    "props": []
   },
   {
-   "house": 47,
+   "house": 37,
    "x0": 49,
    "y0": 40,
-   "x1": 54,
+   "x1": 53,
    "y1": 44,
-   "back": 2,
+   "back": 1,
    "left": false,
    "right": true,
-   "wall": false,
+   "wall": true,
    "props": [
     {
-     "kind": "apple",
+     "kind": "barrow",
      "x": 50,
-     "y": 41
+     "y": 40
     },
     {
      "kind": "hydrangea",
-     "x": 53,
-     "y": 43
+     "x": 51,
+     "y": 40
     }
    ]
   }

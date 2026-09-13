@@ -765,6 +765,7 @@ func _invalidate_world_caches() -> void:
 	_decor_built = false
 	_sea_built = false
 	_houses_built = false
+	_road_built = false
 	_grass_var = PackedByteArray()
 	_verge_ground = Color(0, 0, 0, 0)
 	_slot_probe_n = -1                    # H3：换世界 ⇒ 下一次 _redraw_all 重新体检精灵槽
@@ -1469,6 +1470,231 @@ func _draw_sign(typ: String, pal: Dictionary, cx: float, cy: float, night: bool 
 			draw_rect(Rect2(cx - T * 0.14, cy - T * 0.04, T * 0.28, T * 0.14), X_WOOD_MID, true)   # 墙身
 			draw_rect(Rect2(cx - T * 0.04, cy + T * 0.00, T * 0.08, T * 0.10), X_GLOW_DEEP, true)  # 暖门
 			draw_rect(Rect2(cx + T * 0.06, cy - T * 0.44, T * 0.09, T * 0.16), X_WOOD_MID, true)   # 烟囱
+
+## ── docs/189 有机路网 ─────────────────────────────────────────────────────────
+## 旧画法：_path_set 每格一块方石板 + 四边路缘石 ⇒ 路是 L 形直角的方格带（用户："太正交、太直、不自然"）。
+## 新画法（_path_set 与可走性一格不动，只改怎么画）：
+##   · 路格 = 图的节点，四邻路格/广场格 = 边；节点位置按 hash 微摆 ±0.12 格；
+##   · L 形拐角节点往弯内侧拉 0.34 格 ⇒ 直角变成弧；
+##   · 画三层粗线 + 节点圆：暗色路肩 → 暖石路面 → 中间一道略亮的车辙/人踩带；
+##   · 路面散碎石/鹅卵石颗粒（hash），路沿随机压几簇草 ⇒ 边缘不是一条直线。
+var _road_nodes := {}          # idx -> Vector2（微摆后的节点世界坐标）
+var _road_edges: Array = []    # [[Vector2, Vector2]]
+var _road_built := false
+
+func _build_roads(w: int) -> void:
+	_road_built = true
+	_road_nodes.clear(); _road_edges.clear()
+	var dirs := [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1)]
+	for idx in _path_set:
+		var c := Vector2i(idx % w, idx / w)
+		var nb: Array = []
+		for dv in dirs:
+			var n: Vector2i = c + dv
+			if _is_paved(n.x, n.y):
+				nb.append(dv)
+		var p := Vector2(c.x * T + T * 0.5, c.y * T + T * 0.5)
+		var hv := _hash_mix(c.x, c.y, 331)
+		p += Vector2(float(hv % 25 - 12), float(hv / 25 % 25 - 12)) * (T * 0.12 / 12.0)
+		if nb.size() == 2 and Vector2(nb[0]).dot(Vector2(nb[1])) == 0.0:   # L 形拐角：往弯内侧拉 ⇒ 圆弧
+			p += Vector2((nb[0] as Vector2i) + (nb[1] as Vector2i)) * T * 0.34
+		_road_nodes[idx] = p
+	for idx in _path_set:
+		var c := Vector2i(idx % w, idx / w)
+		for dv in [Vector2i(1, 0), Vector2i(0, 1)]:                     # 每条边只记一次
+			var n: Vector2i = c + dv
+			var nidx := n.y * w + n.x
+			if _path_set.has(nidx):
+				_road_edges.append([_road_nodes[idx], _road_nodes[nidx]])
+		for dv in dirs:                                                  # 伸进广场/码头：画到广场格心（广场地板随后压上）
+			var n: Vector2i = c + dv
+			if _plaza_cells.has(n.y * w + n.x):
+				_road_edges.append([_road_nodes[idx], Vector2(n.x * T + T * 0.5, n.y * T + T * 0.5)])
+
+func _draw_roads(w: int) -> void:
+	if not _road_built:
+		_build_roads(w)
+	var veg := _season_veg()
+	var layers := [[T * 1.00, S_CURB.lerp(P_FOLIAGE_D * veg, 0.45)], [T * 0.86, P_STREET], [T * 0.34, S_STREET_HI.lerp(P_STREET, 0.5)]]
+	for L in layers:
+		var wd: float = L[0]; var col: Color = L[1]
+		for e in _road_edges:
+			var a: Vector2 = e[0]; var b: Vector2 = e[1]
+			if not _vis.intersects(Rect2(a, Vector2.ZERO).expand(b).grow(T)):
+				continue
+			draw_line(a, b, col, wd)
+		for idx in _road_nodes:
+			var p: Vector2 = _road_nodes[idx]
+			if _vis.has_point(p) or _vis.grow(T).has_point(p):
+				draw_circle(p, wd * 0.5, col)
+	# 路面颗粒：沿每条边按长度撒碎石 / 鹅卵石（明暗两档），路沿压草簇
+	for e in _road_edges:
+		var a: Vector2 = e[0]; var b: Vector2 = e[1]
+		if not _vis.intersects(Rect2(a, Vector2.ZERO).expand(b).grow(T)):
+			continue
+		var dvec := b - a
+		var ln := dvec.length()
+		if ln < 1.0:
+			continue
+		var nrm := Vector2(-dvec.y, dvec.x) / ln
+		var n := int(ln / (T * 0.16))
+		for k in n:
+			var hv := _hash_mix(int(a.x) + k * 7, int(a.y) + k * 13, 337)
+			var t := (float(k) + float(hv % 100) / 100.0) / float(n)
+			var off := (float(hv / 100 % 100) / 100.0 - 0.5) * T * 0.74
+			var q := a + dvec * t + nrm * off
+			var sz := 2.0 + float(hv / 10000 % 3)
+			var sc := S_STREET_LO if hv % 3 == 0 else (S_STREET_HI if hv % 3 == 1 else S_STREET_SEAM)
+			draw_rect(Rect2(q, Vector2(sz * 1.6, sz)), Color(sc, 0.75), true)
+		for k in int(ln / (T * 0.55)):                                   # 草侵路沿：两侧随机几簇
+			var hv := _hash_mix(int(b.x) + k * 5, int(b.y) + k * 11, 347)
+			if hv % 3 != 0:
+				continue
+			var side := 1.0 if hv % 2 == 0 else -1.0
+			var q := a + dvec * (float(hv / 7 % 100) / 100.0) + nrm * side * T * (0.40 + float(hv / 700 % 10) / 100.0)
+			draw_circle(q, T * 0.09, P_FOLIAGE_M * veg)
+			draw_circle(q + Vector2(T * 0.08, T * 0.02), T * 0.07, P_FOLIAGE_D * veg)
+
+## ── docs/189 外墙砌体 ─────────────────────────────────────────────────────────
+## 旧画法：每格 = 一块平涂主色 + 顶 22% 一条亮带 + 底 14% 一条暗带 ⇒ 掀顶拉近看，外墙是一圈"带条纹的色块"，
+##   格与格之间每 48px 断一次，读不出材质、也读不出墙有多厚。
+## 新画法（仍以 BLD_PAL 的 face/top/foot 为底色 ⇒ 四类一眼可分的锚不动，只在同一色族里加纹理）：
+##   · 墙顶压顶（coping）：从上面看得见的那一截墙厚——一排压顶石 + 受光外沿 + 朝屋内那侧的一线落影；
+##   · 立面按类型砌：住宅=白灰泥罩面露出花岗岩勒脚与角石；商业=暖色小砖；公共=规整大块琢石；工坊=毛石乱砌；
+##   · 砌块按【世界坐标】排错缝 ⇒ 跨格连续，不再每格一断；块的明暗只读 _hash_mix（确定性）；
+##   · 转角格压一列长短交替的浅色角石（quoin），读作"墙在这里转过去"。
+const WALL_CAP := 0.30          # 压顶（从上看见的墙厚）占格高
+
+func _wall_at(x: int, y: int, w: int) -> bool:
+	return x >= 0 and x < w and _wall_set.has(y * w + x)
+
+func _draw_wall_cell(sx: int, sy: int, typ: String, pal: Dictionary, w: int) -> void:
+	var x0 := float(sx) * T; var y0 := float(sy) * T
+	var face: Color = pal["face"]; var top: Color = pal["top"]; var foot: Color = pal["foot"]
+	var l := _wall_at(sx - 1, sy, w); var r := _wall_at(sx + 1, sy, w)
+	var u := _wall_at(sx, sy - 1, w); var d := _wall_at(sx, sy + 1, w)
+	var vertical := (u or d) and not (l or r)          # 东西两侧的竖墙：从上面看主要是墙顶
+	if vertical:
+		# 竖墙（东西两侧）：俯视里看见的是【墙顶】—— 用同一种材质砌满（顶面受光 ⇒ 用 top 色族），
+		#   朝屋内那侧压一条内侧立面落影，朝外那侧一线受光棱 ⇒ 读作一堵有厚度的石墙，而不是一块浅色平板。
+		var inner_east := _wall_type.has(sy * w + sx) and _in_area(sx + 1, sy)
+		var tbase := face.lerp(top, 0.55)
+		match typ:
+			"residential":
+				# 墙顶是石头不是灰泥：暖色花岗岩琢石（与立面勒脚同族）⇒ 俯视读作一堵厚石墙
+				_wall_courses(x0, y0, T, tbase.lerp(X_GRANITE, 0.35), tbase.lerp(X_GRANITE, 0.35).darkened(0.28), T * 0.25, T * 0.36, sx, sy)
+			"commercial":
+				_wall_courses(x0, y0, T, tbase, tbase.darkened(0.30), T * 0.11, T * 0.24, sx, sy)
+			"public":
+				_wall_courses(x0, y0, T, tbase, tbase.darkened(0.26), T * 0.23, T * 0.50, sx, sy)
+			_:
+				_wall_rubble(x0, y0, T, tbase, sx, sy)
+		var sh := Rect2(x0 + T * 0.80, y0, T * 0.20, T) if inner_east else Rect2(x0, y0, T * 0.20, T)
+		draw_rect(sh, Color(0, 0, 0, 0.26), true)                                                  # 朝屋内那侧：内立面落影
+		var lit := Rect2(x0, y0, 2.0, T) if inner_east else Rect2(x0 + T - 2.0, y0, 2.0, T)
+		draw_rect(lit, top.lightened(0.26), true)                                                  # 朝外那侧：受光棱
+		if not u:
+			draw_rect(Rect2(x0, y0, T, 2.0), top.lightened(0.26), true)
+		return
+	# 横墙（含转角）：上 WALL_CAP 是墙顶压顶石，下面是立面
+	var cap := T * WALL_CAP
+	var fy := y0 + cap
+	var fh := T - cap
+	# ① 立面底色 + 按类型砌
+	draw_rect(Rect2(x0, fy, T, fh), face, true)
+	match typ:
+		"residential":
+			_wall_courses(x0, fy, fh * 0.62, face.lightened(0.20), face.lightened(0.14), 0.0, 0.0, sx, sy)  # 白灰泥罩面（几乎无缝，只有微弱色斑）
+			_wall_courses(x0, fy + fh * 0.62, fh * 0.38, X_GRANITE, X_GRANITE.darkened(0.30), T * 0.17, T * 0.34, sx, sy)  # 花岗岩勒脚
+		"commercial":
+			_wall_courses(x0, fy, fh, face, face.darkened(0.30), T * 0.11, T * 0.24, sx, sy)          # 暖色小砖
+		"public":
+			_wall_courses(x0, fy, fh, face, face.darkened(0.26), T * 0.23, T * 0.50, sx, sy)          # 规整大块琢石
+		_:
+			_wall_rubble(x0, fy, fh, face, sx, sy)                                                    # 毛石乱砌
+	draw_rect(Rect2(x0, y0 + T - T * 0.08, T, T * 0.08), foot, true)                              # 墙脚泛潮暗带
+	# ② 墙顶压顶石：一排石块 + 受光外沿（北）+ 朝屋内那侧（南沿）一线落影
+	draw_rect(Rect2(x0, y0, T, cap), top, true)
+	var cx := x0 - fposmod(x0 * 0.37, T * 0.42)
+	var ck := 0
+	while cx < x0 + T:
+		var sx0 := maxf(cx, x0); var sx1 := minf(cx + T * 0.42, x0 + T)
+		if _hash_mix(int(cx / 8.0), sy, 287) % 3 == 0:
+			draw_rect(Rect2(sx0, y0 + 2.0, sx1 - sx0, cap - 4.0), top.lightened(0.08), true)
+		draw_rect(Rect2(cx, y0 + 1.0, 1.0, cap - 2.0), top.darkened(0.22), true)                  # 压顶石接缝
+		cx += T * 0.42
+		ck += 1
+	draw_rect(Rect2(x0, y0, T, 2.0), top.lightened(0.26), true)                                   # 受光外沿
+	draw_rect(Rect2(x0, y0 + cap - 2.0, T, 2.0), top.darkened(0.30), true)                        # 压顶下沿
+	draw_rect(Rect2(x0, y0 + cap, T, T * 0.06), Color(0, 0, 0, 0.18), true)                       # 压顶挑檐在立面上的落影
+	# ③ 转角：长短交替的浅色角石（quoin）
+	if (l != r) and (u or d):
+		var qx := x0 if not l else x0 + T - T * 0.30
+		var qy := fy
+		var qk := 0
+		while qy < y0 + T - T * 0.08:
+			var qh := T * 0.16
+			var qw := T * (0.30 if qk % 2 == 0 else 0.20)
+			var qxx := qx if not l else x0 + T - qw
+			draw_rect(Rect2(qxx, qy + 1.0, qw, qh - 2.0), X_GRANITE.lightened(0.18), true)
+			draw_rect(Rect2(qxx, qy + qh - 2.0, qw, 1.0), X_GRANITE.darkened(0.25), true)
+			qy += qh
+			qk += 1
+
+## 规整砌筑：course_h 行高、block_w 块宽（0 = 罩面，只画色斑）。块位按世界 x 错缝 ⇒ 跨格连续。
+func _wall_courses(x0: float, y0: float, h: float, base: Color, mortar: Color, course_h: float, block_w: float, sx: int, sy: int) -> void:
+	if course_h <= 0.0:
+		draw_rect(Rect2(x0, y0, T, h), base, true)
+		for k in 3:                                               # 灰泥的微弱色斑
+			var hv := _hash_mix(sx * 3 + k, sy, 293)
+			if hv % 2 == 0:
+				draw_rect(Rect2(x0 + float(hv % 36), y0 + float(hv / 36 % 10) / 10.0 * h, T * 0.28, h * 0.22), Color(mortar.darkened(0.10), 0.35), true)
+		return
+	var yy := y0
+	var row := 0
+	while yy < y0 + h - 0.5:
+		var e := minf(yy + course_h, y0 + h)
+		draw_rect(Rect2(x0, e - 1.0, T, 1.0), mortar, true)                              # 水平灰缝
+		var off := block_w * 0.5 if (sy * 13 + row) % 2 == 1 else 0.0
+		var bx := x0 - fposmod(x0 + off, block_w)
+		while bx < x0 + T:
+			var hv := _hash_mix(int((bx + off) / 4.0), sy * 11 + row, 297) % 5
+			var b0 := maxf(bx, x0); var b1 := minf(bx + block_w - 1.0, x0 + T)
+			if b1 > b0:
+				if hv == 0:
+					draw_rect(Rect2(b0, yy, b1 - b0, e - yy - 1.0), base.lightened(0.09), true)
+				elif hv == 1:
+					draw_rect(Rect2(b0, yy, b1 - b0, e - yy - 1.0), base.darkened(0.08), true)
+				draw_rect(Rect2(b0, yy, b1 - b0, 1.0), Color(1, 1, 1, 0.10), true)           # 块上沿受光
+			if bx + block_w - 1.0 >= x0 and bx + block_w - 1.0 < x0 + T:
+				draw_rect(Rect2(bx + block_w - 1.0, yy, 1.0, e - yy), mortar, true)         # 竖向灰缝
+			bx += block_w
+		yy = e
+		row += 1
+
+## 毛石乱砌：大小不一的块，逐块 hash 定尺寸与明暗。
+func _wall_rubble(x0: float, y0: float, h: float, base: Color, sx: int, sy: int) -> void:
+	var mortar := base.darkened(0.34)
+	draw_rect(Rect2(x0, y0, T, h), mortar, true)
+	var yy := y0
+	var row := 0
+	while yy < y0 + h - 0.5:
+		var ch := T * (0.14 + 0.05 * float(_hash_mix(sx, sy * 5 + row, 301) % 3))
+		var e := minf(yy + ch, y0 + h)
+		var bx := x0 - float(_hash_mix(sx, row, 303) % 10)
+		var k := 0
+		while bx < x0 + T:
+			var bw := T * (0.20 + 0.07 * float(_hash_mix(sx * 9 + k, sy * 5 + row, 307) % 4))
+			var hv := _hash_mix(sx * 9 + k, sy * 5 + row, 311) % 4
+			var c := base if hv < 2 else (base.lightened(0.10) if hv == 2 else base.darkened(0.10))
+			var b0 := maxf(bx + 1.0, x0); var b1 := minf(bx + bw - 1.0, x0 + T)
+			if b1 > b0:
+				draw_rect(Rect2(b0, yy + 1.0, b1 - b0, e - yy - 2.0), c, true)
+				draw_rect(Rect2(b0, yy + 1.0, b1 - b0, 1.0), c.lightened(0.14), true)
+			bx += bw
+			k += 1
+		yy = e
+		row += 1
 
 ## P3 打磨：外墙细节——沿上/下墙等距开窗（跳过转角与门口），住宅/工坊再加一根冒烟的烟囱。
 ## 夜里窗透暖光（tod 判昼夜）→ 一眼看出"屋里有人住"。纯渲染、无 RNG（位置由 rect 等距推出）。
@@ -3317,39 +3543,8 @@ func _draw_body() -> void:
 	# ⇒ Sim 读 blockers、读不到这一层，**零金标**。石街(P_STREET) 与广场(P_PLAZA) 同暖族 ⇒ 读作一体的连街，不再是孤岛间的土径。
 	if not _paths_built:
 		_build_paths()
-	if dirt != null:
-		# ① dirt 打底：保住 3x 像素颗粒（纯色路面在像素游戏里读作"没画完"，同草地那条注释）。合批一趟。
-		for idx in _ac("paths", _path_set):
-			draw_texture_rect(dirt, Rect2((idx % w) * T, (idx / w) * T, T, T), false)
-		# ② 石板铺面：每格盖一层暖石底 + 4 块 hash 明暗鹅卵石（颗粒）+ 石缝十字。逐格确定性、每格互不相交。
-		#   **确定性**：明暗档只读本格 `_hash(rx,ry,45)`（无 RNG/Time）⇒ `--shot` 逐像素可复现（红旗#4）。
-		for idx in _ac("paths", _path_set):
-			var rx: int = idx % w; var ry: int = idx / w
-			var rr := Rect2(rx * T, ry * T, T, T)
-			# AV3(161)：整格暖石底再抖一档（_hash(rx,ry,46)，确定性、无 RNG/Time）——多数格保持 P_STREET、
-			#   少数微亮/微沉，让石街从"一条匀色带"变成"铺过的鹅卵石路"（与广场/工坊石同一套暖石 jitter 语言）。
-			var pv := _hash(rx, ry, 46) % 5
-			var pbase: Color = P_STREET
-			if pv == 0: pbase = P_STREET.lightened(0.06)
-			elif pv == 1: pbase = P_STREET.darkened(0.07)
-			elif pv == 2: pbase = S_STREET_LO
-			draw_rect(rr, Color(pbase.r, pbase.g, pbase.b, 0.90), true)                           # 暖石底（透一点土颗粒；整格 jitter）
-			for sj in range(2):
-				for si in range(2):
-					var hv := _hash(rx * 2 + si, ry * 2 + sj, 45) % 3
-					var sc: Color = P_STREET if hv == 0 else (S_STREET_HI if hv == 1 else S_STREET_LO)
-					draw_rect(Rect2(rx * T + si * T * 0.5 + 1.0, ry * T + sj * T * 0.5 + 1.0, T * 0.5 - 2.0, T * 0.5 - 2.0), Color(sc.r, sc.g, sc.b, 0.55), true)
-			draw_rect(Rect2(rx * T, ry * T + T * 0.5 - 0.5, T, 1.0), Color(S_STREET_SEAM.r, S_STREET_SEAM.g, S_STREET_SEAM.b, 0.5), true)   # 横缝
-			draw_rect(Rect2(rx * T + T * 0.5 - 0.5, ry * T, 1.0, T), Color(S_STREET_SEAM.r, S_STREET_SEAM.g, S_STREET_SEAM.b, 0.5), true)   # 竖缝
-		# ③ 路缘石：每条街格【朝非铺装的那一侧】压一条暗石边 → 读作"砌出来的街"，不是踩出来的土径。
-		#   路网全在地图内部（x12-52 / y9-37，实测），邻格 ±1 不越界 ⇒ `_is_paved` 无绕行下标之虞。
-		for idx in _ac("paths", _path_set):
-			var cxx: int = idx % w; var cyy: int = idx / w
-			var bx := cxx * T; var by := cyy * T
-			if not _is_paved(cxx, cyy - 1): draw_rect(Rect2(bx, by, T, T * 0.10), S_CURB, true)                  # 上缘
-			if not _is_paved(cxx, cyy + 1): draw_rect(Rect2(bx, by + T * 0.90, T, T * 0.10), S_CURB, true)       # 下缘
-			if not _is_paved(cxx - 1, cyy): draw_rect(Rect2(bx, by, T * 0.10, T), S_CURB, true)                  # 左缘
-			if not _is_paved(cxx + 1, cyy): draw_rect(Rect2(bx + T * 0.90, by, T * 0.10, T), S_CURB, true)       # 右缘
+	if _ap("paths"):
+		_draw_roads(w)             # docs/189：有机路网（圆角 + 路心微摆 + 碎石路面 + 草侵路沿），取代下面的方格铺法
 
 	# 区域【真地板】：每个 district 按 type 铺木/石/铺装地板（旧版只有广场有地板，其余七个区只有一层
 	# 0.10 alpha 的淡色罩 —— 那层淡到什么也读不出来，于是墙里全是草，房子读作"围了圈墙的院子"）。
@@ -3375,11 +3570,10 @@ func _draw_body() -> void:
 	for idx in _ac("walls", _wall_set):
 		var sx: int = idx % w
 		var sy: int = idx / w
-		var pal: Dictionary = BLD_PAL.get(String(_wall_type.get(idx, "workshop")), BLD_PAL["workshop"])
+		var wtyp := String(_wall_type.get(idx, "workshop"))
+		var pal: Dictionary = BLD_PAL.get(wtyp, BLD_PAL["workshop"])
 		draw_rect(Rect2(sx * T + 2, sy * T + T * 0.55, T, T * 0.5), Color(0, 0, 0, 0.22), true)      # 落地阴影
-		draw_rect(Rect2(sx * T, sy * T, T, T), pal["face"], true)                                     # 墙主面
-		draw_rect(Rect2(sx * T, sy * T, T, T * 0.22), pal["top"], true)                               # 顶棱高光
-		draw_rect(Rect2(sx * T, sy * T + T * 0.86, T, T * 0.14), pal["foot"], true)                   # 墙脚暗边
+		_draw_wall_cell(sx, sy, wtyp, pal, w)                                                         # docs/189：分材质砌体
 	# 屋檐 + 招牌：每栋（非广场）沿顶墙内侧铺一条屋檐色带 + 门上方挂类型招牌图标 → 类型一眼可辨。
 	if _ap("facades"):
 		_draw_facades()            # P3 打磨：开窗（夜透暖光）+ 住宅/工坊烟囱——先画在墙面上
