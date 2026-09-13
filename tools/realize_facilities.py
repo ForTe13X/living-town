@@ -4,7 +4,7 @@
 # tools/place_houses.py --solid leaves a door cell in the first bakery / crêperie / chapel / covered market /
 # grand hotel it places (lots.json "door"). This script gives each of those an interior Space, a street-door
 # portal from that town cell, and a furnished floor whose pieces advertise real actions:
-#   面包房/可丽饼店：小圆桌「吃饭」   礼拜堂：长椅「静坐」、祭台「祈祷」   市场：摊位「逛集」
+#   面包房/可丽饼店：小圆桌「吃点心」   礼拜堂：长椅「静坐」、祭台「祈祷」   市场：摊位「逛集」
 #   大酒店：钢琴「弹琴」、沙发「歇着」   以及各处墙上的画「赏画」。
 # Idempotent: previously generated facility spaces/portals (marked "_facility") are replaced.
 # Usage: python tools/realize_facilities.py [--check]
@@ -17,7 +17,9 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 D = os.path.join(ROOT, "game", "data")
 LOTS = os.path.join(ROOT, "game", "assets", "art", "houses", "lots.json")
 
-EAT = ad("吃饭", "hunger", 30, 12)       # same action name as the café: prices/stock/meal metrics treat it alike
+# 「吃点心」而不是「吃饭」：production.consume 里没有它 ⇒ 不从镇库口粮出账。第一版用「吃饭」，
+# N=16 的 #40 口粮满足率掉到 0.31（想要 1435）——多两处吃饭的地方，口粮需求被放大，而产能一格没加。
+EAT = ad("吃点心", "hunger", 30, 12)
 PEW = ad("静坐", "fun", 22, 14)
 PRAY = ad("祈祷", "fun", 20, 12)
 STALL = ad("逛集", "fun", 20, 12)

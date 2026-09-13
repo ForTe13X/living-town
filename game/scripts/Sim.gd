@@ -2477,9 +2477,17 @@ func _migrate_schema1_solid_props(state: Dictionary) -> String:
 		if String(ag.get("id", "")) == "tao" and ag.get("home") == Vector2i(58, 8):
 			ag["home"] = Vector2i(59, 7)
 		if String(ag.get("space", "town")) != "town" or String(ag.get("floor", "outdoor")) != "outdoor":
+			# docs/193：室内平面按【当前】家具布局建网——旧档里站在如今是床/隔墙的格上的人，挪到最近的可走格
+			var ig := _grid_for(String(ag.get("space", "town")), String(ag.get("floor", "outdoor")))
+			var ipos: Vector2i = ag.get("pos", Vector2i.ZERO)
+			if not ig.is_empty() and not _cell_walkable(ig, ipos):
+				var ic := _nearest_walkable_in_grid(ig, ipos)
+				if ic.x < 0:
+					return "schema 1 agent %s cannot be evacuated from re-furnished interior" % String(ag.get("id", ""))
+				ag["pos"] = ic
 			continue
 		var pos: Vector2i = ag.get("pos", Vector2i.ZERO)
-		if not (pos in solid_cells):
+		if not (pos in solid_cells) and not (pos in _solid_lot_cells_in_world(world)):
 			continue
 		var replacement := Vector2i(59, 7) if String(ag.get("id", "")) == "tao" else _nearest_legacy_town_cell(saved_world, pos)
 		if replacement.x < 0:
@@ -2505,6 +2513,21 @@ func _nearest_legacy_town_cell(saved_world: Dictionary, start: Vector2i) -> Vect
 		for direction in [Vector2i(0, 1), Vector2i(-1, 0), Vector2i(1, 0), Vector2i(0, -1)]:
 			var next: Vector2i = cell + direction
 			if next.x >= 0 and next.y >= 0 and next.x < width and next.y < height and not seen.has(next):
+				seen[next] = true; q.append(next)
+	return Vector2i(-1, -1)
+
+## docs/193：室内平面上的 BFS 最近可走格（行优先的四邻序 ⇒ 确定）。找不到返回 (-1,-1)。
+func _nearest_walkable_in_grid(grid: Dictionary, start: Vector2i) -> Vector2i:
+	var W := int(grid.get("w", 0)); var H := int(grid.get("h", 0))
+	var q: Array = [start]
+	var seen := {start: true}
+	while not q.is_empty():
+		var cell: Vector2i = q.pop_front()
+		if _cell_walkable(grid, cell):
+			return cell
+		for direction in [Vector2i(0, 1), Vector2i(-1, 0), Vector2i(1, 0), Vector2i(0, -1)]:
+			var next: Vector2i = cell + direction
+			if next.x >= 0 and next.y >= 0 and next.x < W and next.y < H and not seen.has(next):
 				seen[next] = true; q.append(next)
 	return Vector2i(-1, -1)
 

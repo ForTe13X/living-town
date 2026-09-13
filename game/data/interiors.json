@@ -1182,7 +1182,7 @@
      "label": "小圆桌",
      "advertises": [
       {
-       "action": "吃饭",
+       "action": "吃点心",
        "need": "hunger",
        "amount": 30,
        "duration": 12
@@ -1198,7 +1198,7 @@
      "label": "小圆桌",
      "advertises": [
       {
-       "action": "吃饭",
+       "action": "吃点心",
        "need": "hunger",
        "amount": 30,
        "duration": 12
@@ -1273,7 +1273,7 @@
      "label": "小圆桌",
      "advertises": [
       {
-       "action": "吃饭",
+       "action": "吃点心",
        "need": "hunger",
        "amount": 30,
        "duration": 12
@@ -1289,7 +1289,7 @@
      "label": "小圆桌",
      "advertises": [
       {
-       "action": "吃饭",
+       "action": "吃点心",
        "need": "hunger",
        "amount": 30,
        "duration": 12

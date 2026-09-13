@@ -2198,7 +2198,13 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 	# 地面家具先按行（前左格的 y）排序：后排先画、前排压上，高柜/床头才会正确地挡住后面的墙与物件。
 	var pieces: Array = []
 	for fr in _ac("interior_furniture", content.get("furniture", [])):
-		pieces.append(fr)
+		if int((fr as Dictionary).get("pos", [0, 0])[1]) != 0:
+			pieces.append(fr)
+	# 挂在后墙上的（画/窗/彩色玻璃，pos.y==0）属于【墙】而不是家具：不受 interior_furniture 绘制闸门控制，
+	# 否则 AM1 的 cafe 密度门（家具 vs 无家具的差分）会把墙上的画算成"溢出格子的家具"。
+	for fr in content.get("furniture", []):
+		if int((fr as Dictionary).get("pos", [0, 0])[1]) == 0:
+			pieces.append(fr)
 	pieces.sort_custom(func(a, c): return int((a as Dictionary).get("pos", [0, 0])[1]) < int((c as Dictionary).get("pos", [0, 0])[1]))
 	# 平铺类（地毯）先画、挂墙类其次，立体家具最后
 	for pass_i in 3:
@@ -2212,7 +2218,7 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 			var furniture_base := Vector2(ox + int(fp[0]) * T, oy + int(fp[1]) * T)
 			if slot == "wall":
 				_draw_partition(furniture_base, Vector2i(int(fp[0]), int(fp[1])), walls, shell)
-			elif not _draw_furn_sprite(fd, furniture_base, role):
+			elif not _draw_furn_sprite(fd, furniture_base, role, sid):
 				_draw_interior_furniture(slot, furniture_base, role, sid, fid)
 	_draw_interior_sidewalls(b, wc, hc, shell, door_gap)
 	for fr in pieces:
@@ -2513,7 +2519,7 @@ func _furn_name(slot: String, fw: int, role: String, on_wall: bool) -> String:
 		"pew", "altar", "market_stall": return slot
 		"window": return "window_curtain" if on_wall else ""
 		"rug": return "rug_persian" if fw >= 2 else ""
-		"desk": return "writing_desk" if role == "study" or role == "living" else ""
+		"desk": return "writing_desk" if role == "study" else ""   # 阿丽 2F 的书桌是 AM1 的私人地标（assert_cafe_interior_density 要求单格轮廓），保留程序化
 		"shelf":
 			if role == "study":
 				return "bookshelf"
@@ -2529,11 +2535,13 @@ func _furn_bbox(name: String, tex: Texture2D) -> Rect2:
 		_furn_foot[name] = Rect2(img.get_used_rect()) if img != null else Rect2(Vector2.ZERO, tex.get_size())
 	return _furn_foot[name]
 
-func _draw_furn_sprite(fd: Dictionary, base: Vector2, role: String) -> bool:
+func _draw_furn_sprite(fd: Dictionary, base: Vector2, role: String, sid := "") -> bool:
 	var fp: Array = fd.get("pos", [0, 0])
 	var fs: Array = fd.get("size", [1, 1])
 	var fw := int(fs[0]); var fh := int(fs[1])
 	var on_wall := int(fp[1]) == 0
+	if sid == "cafe" and not on_wall:
+		return false          # 阿丽的咖啡馆地面家具保持 AM1 手工精修的程序化轮廓（assert_cafe_interior_density：家具不许溢出格子）
 	var name := _furn_name(String(fd.get("slot", "")), fw, role, on_wall)
 	if name == "":
 		return false
