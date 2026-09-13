@@ -59,6 +59,7 @@
 | [21 决策↔语音解耦](21-decision-voice-decouple.md) | 决策=选号(≈0 decode)、语音=生成——拆开后桌面快 2.4-2.8×；含"手机是 prefill-bound"的反直觉更正 |
 | [22 端上决策加速](22-npu-decision-path.md) | 两层决策栈（蒸馏 ranker + NPU-LLM）的穷举式探索与红线对账 |
 | [23 端上混合推理构想](23-hybrid-inference-vision.md) | CPU/GPU/NPU 混合推理——**vision only，未建** |
+| [**191 端上推理换道：`local` 档**](191-on-device-llama-local-backend.md) | APK 自带 llama.cpp 服务（i8mm Q4_0 + fa + 前缀缓存 + GBNF）；真机决策 3–28 s → **0.7 s 暖 / 1.1–3.5 s 在飞**；四个真机才暴露的坑 |
 | [24 Theory Engine 设计](24-theory-engine-design.md) | structural micro-social model v1 规格。⚠️ **离线 Python 原型，尚未接入游戏循环** |
 | [25 Theory Engine 四类 opportunity](25-theory-engine-four-opportunity-synthesis.md) | 从"蒸馏教师决策"转向"离线发现规则、确定性执行" |
 

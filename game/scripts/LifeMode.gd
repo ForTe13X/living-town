@@ -1098,7 +1098,7 @@ func _say_now(tid: String, ap: Dictionary) -> void:
 	var said := String(Sim.get_agent(pid).get("last_say", line))
 	if v != null and said != "":
 		v.show_say(pid, said, 24)
-	if line != "" and AIBackend.backend in ["llm", "slm", "mock"]:
+	if line != "" and AIBackend.backend in ["llm", "local", "slm", "mock"]:
 		var tgt := Sim.get_agent(tid)
 		AIBackend.chat(tgt, line, {"tick": Sim.tick_no, "day": Sim.day, "tod": Sim.time_of_day()}, func(reply: String):
 			if reply != "" and active and v != null and not Sim.get_agent(tid).is_empty():

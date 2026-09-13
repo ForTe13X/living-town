@@ -631,7 +631,7 @@ func _ready() -> void:
 		_push("[color=#9ad0ff]端上模型 %s\n%s[/color]" % [("已就位" if ms["exists"] else "未找到 → 用 logic 地板（把 gguf 放进 Documents 后重开）"), ms["path"]])
 	# 端上模型：首帧/HUD 已建好，才【异步】探测——真机 1.9GB 模型 load+2 暖发要 ~85s，绝不能挡首帧(否则黑屏)。
 	# 探测期间镇子跑 logic 地板(活着)；够快切 slm/llm，太慢/坏留 logic。（headless CI 不经窗口路 → 逐字节不变。）
-	if backend == "slm" or backend == "llm":
+	if backend == "slm" or backend == "llm" or backend == "local":
 		_probe_and_activate(backend)        # 不 await：后台跑，首帧已可见
 	if _shot_path != "":                    # dev 出图：等 1.5s 让世界渲染+纹理加载，再存一帧退出
 		Sim.auto_run = false                # 定格：冻结在 warmup tick，等待期间不再推进（tick-precise 眼验，防漂）
@@ -1895,7 +1895,7 @@ func _on_toggle_backend() -> void:
 	var i := avail.find(AIBackend.backend_requested)
 	var nxt := String(avail[(i + 1) % avail.size()]) if i >= 0 else "logic"
 	AIBackend.request_backend(nxt)               # 记录意图 + 存 user://settings.cfg；下次启动也记住
-	if nxt == "slm" or nxt == "llm":
+	if nxt == "slm" or nxt == "llm" or nxt == "local":
 		_push("[color=#9ad0ff]后端 → %s（探测端上模型中…够快启用，太慢留 logic）[/color]" % nxt)
 		_probe_and_activate(nxt)                 # 异步：镇子跑地板探测，够快才启用（不再静默 100% 超时冻镇）
 	else:
