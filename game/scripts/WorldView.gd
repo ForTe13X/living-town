@@ -527,6 +527,16 @@ var _rocks: Array = []                # [{p:Vector2, r:float}]：岬角礁石（
 var _meadow: Array = []               # [{rect:Rect2, col:Color}]：低频草甸色斑
 var _plateau := {}                    # docs/182：花岗岩台地格（东松林岬，树格的子集）
 var _cliff_face := {}                 # idx -> true：画崖壁的格（不再画松树精灵；本就是树格 ⇒ 本就不可走）
+var _terrace := {}                    # docs/191：北缘台地带 + 草甸小丘的台地格（_plateau 的子集；顶面留草）
+var _lots_cache: Variant = null
+
+## lots.json（docs/186/188/191 共用的离线生成物）一次读入缓存。缺文件 = {}。
+func _lots_data() -> Dictionary:
+	if _lots_cache == null:
+		var s := FileAccess.get_file_as_string("res://assets/art/houses/lots.json")
+		var d = JSON.parse_string(s) if s != "" else null
+		_lots_cache = d if d is Dictionary else {}
+	return _lots_cache
 var _cliff_box := Rect2i()            # 台地 ±2 的格范围（绘制裁剪）
 var _prom_x := {}                     # docs/185 海堤步道：行 y -> 步道格 x（沙滩背后第一列草格）
 var _prom_lamps: Array = []           # 步道路灯的世界坐标（夜灯层用）
@@ -3478,6 +3488,9 @@ func _draw_body() -> void:
 				for tx in range(tx0, tx1):
 					if int(_grass_var[grow + tx]) == gi:
 						draw_texture_rect(gt, Rect2(tx * T, ty * T, T, T), false, veg)
+		if _ap("grass"):
+			_ensure_seaside(w, h)
+			_draw_terrace_tops(w)     # docs/191：台地顶面受光（房子/园子之前画，否则会把台地上的房子也染一层）
 		# docs/180 的低频草甸色斑（_draw_meadow_tones）**已撤**：视觉门 DAYNIGHT/SEASON 取"HUD-free 横带的世界主色"
 		#   作草地基色，而 45% 覆盖、α≈0.12 的软色斑把草地打散成上百档近色 ⇒ 主色退位给界外平涂底色 (11,18,9)，
 		#   两道门同时红（docker 实跑 2026-09-12）。门守的是"季节/昼夜看得出来"，不该为了一层装饰去改门的量法。
@@ -3600,7 +3613,7 @@ func _draw_body() -> void:
 		var c: Vector2i = it["cell"]
 		if not _vis.has_point(Vector2(c.x * T, c.y * T)):
 			continue                       # 视口外的花草石不画（布局仍由 _build_decor 一次性确定，与相机无关）
-		if _beach.has(c.y * w + c.x) or int(_prom_x.get(c.y, -1)) == c.x or _house_cells.has(c.y * w + c.x):
+		if _beach.has(c.y * w + c.x) or int(_prom_x.get(c.y, -1)) == c.x or _house_cells.has(c.y * w + c.x) or _cliff_face.has(c.y * w + c.x):
 			continue                       # docs/180/185/186：沙滩、海堤步道、布景民居底下不长花草（布局不变，只是这几格不画）
 		var dw := float(dtex.get_width()) * (float(T) / 16.0)
 		var dh := float(dtex.get_height()) * (float(T) / 16.0)
@@ -3971,7 +3984,7 @@ func _build_seaside(w: int, h: int) -> void:
 	_ocean_x0 = PackedInt32Array()
 	_ocean_x0.resize(h)
 	_beach.clear(); _beach_props.clear(); _rocks.clear(); _meadow.clear()
-	_plateau.clear(); _cliff_face.clear(); _prom_x.clear(); _prom_lamps.clear()
+	_plateau.clear(); _cliff_face.clear(); _terrace.clear(); _prom_x.clear(); _prom_lamps.clear()
 	for y in h:
 		var x := w - 1
 		while x >= 0 and _water_set.has(y * w + x):
@@ -4044,6 +4057,31 @@ func _build_seaside(w: int, h: int) -> void:
 			continue
 		_plateau[ty * w + tx] = true
 		bx0 = mini(bx0, tx); by0 = mini(by0, ty); bx1 = maxi(bx1, tx); by1 = maxi(by1, ty)
+	# docs/191：北缘台地带 + 草甸小丘（lots.json 的 terraces，place_houses.py 离线落在"没人站过"的格上）。
+	#   运行时再防一道：台地格、或它下面两行（崖壁）碰到石街/广场/区 ⇒ 这一格不抬（迭代到稳定，缺口自然变成坡角瓦）。
+	var terr := {}
+	for c in _lots_data().get("terraces", []):
+		terr[int(c[1]) * w + int(c[0])] = Vector2i(int(c[0]), int(c[1]))
+	var changed := true
+	while changed:
+		changed = false
+		for idx in terr.keys():
+			var tc: Vector2i = terr[idx]
+			for dy in [0, 1, 2]:
+				var q := Vector2i(tc.x, tc.y + dy)
+				if dy > 0 and terr.has(q.y * w + q.x):
+					break
+				if q.y < h and (_path_set.has(q.y * w + q.x) or _plaza_cells.has(q.y * w + q.x) or _in_area(q.x, q.y)):
+					terr.erase(idx)
+					changed = true
+					break
+	# 台地不进 _plateau（那套 Wang 崖瓦四面都画岩沿，小丘读作"围了一圈土的畜栏"——第二版眼验），
+	#   改由 _draw_terrace_tops / _draw_terrace_faces 程序化画：南面一整格高的花岗岩崖面、东西两侧斜面、顶面受光。
+	for idx in terr:
+		_terrace[idx] = true
+	for idx in terr:
+		if not terr.has(idx + w):
+			_cliff_face[idx + w] = true            # 崖面落在台地南沿下一行（离线已保证没人站过）⇒ 花草/街具不散上去
 	if bx1 >= 0:
 		_cliff_box = Rect2i(maxi(0, bx0 - 2), maxi(0, by0 - 2), mini(w, bx1 + 3) - maxi(0, bx0 - 2), mini(h, by1 + 3) - maxi(0, by0 - 2))
 		for y in range(_cliff_box.position.y, _cliff_box.end.y):
@@ -4178,6 +4216,7 @@ func _cliff_corners(x: int, y: int, w: int) -> Array:
 func _draw_wang_cliff(w: int) -> void:
 	var cs := _wang_set("cliff")
 	if cs.is_empty() or _plateau.is_empty():
+		_draw_terrace_faces(w)         # docs/191：台地崖面不依赖东岬瓦集
 		return
 	var ts := float(cs["tile"])
 	for y in range(_cliff_box.position.y, _cliff_box.end.y):
@@ -4197,6 +4236,96 @@ func _draw_wang_cliff(w: int) -> void:
 			if xy == null:
 				continue
 			draw_texture_rect_region(cs["tex"], r, Rect2(float(xy[0]), float(xy[1]), ts, ts))
+	_draw_terrace_faces(w)
+
+## docs/191 台地顶面：高处先见天光 ⇒ 一层暖受光；北沿一条由暗到透明的坡（地面从北往上抬）。
+## 在草地 pass 里画（房子/园子之前），否则会把台地上的房子也染一层。
+func _draw_terrace_tops(w: int) -> void:
+	for idx in _terrace:
+		var x: int = idx % w; var y: int = idx / w
+		var r := Rect2(x * T, y * T, T, T)
+		if not _vis.intersects(r):
+			continue
+		draw_rect(r, Color(1.0, 0.96, 0.74, 0.19), true)
+		if not _terrace.has(idx - w):                                   # 北沿：远侧的台沿 —— 一线亮草 + 一道细岩棱（坡面背向镜头，看不见）
+			draw_rect(Rect2(r.position.x, r.position.y, T, T * 0.08), Color(1.0, 1.0, 0.85, 0.22), true)
+			draw_rect(Rect2(r.position.x, r.position.y - 3.0, T, 3.0), X_GRANITE.darkened(0.20), true)
+
+## docs/191 台地崖面（程序化，西北光）：
+##   南沿下一行画一整格高的花岗岩崖面（层理横纹 + 竖向裂隙 + 苔痕 + 顶上草唇 + 崖脚乱石），再往南落一块软影；
+##   东侧一条背光斜面、西侧一线受光棱。纯画、只读 _terrace（lots.json 离线落在没人站过的格上）。
+func _draw_terrace_faces(w: int) -> void:
+	if _terrace.is_empty():
+		return
+	var stex := _light_texture()
+	var veg := _season_veg()
+	var rock := X_GRANITE
+	for idx in _terrace:
+		var x: int = idx % w; var y: int = idx / w
+		var top := Rect2(x * T, y * T, T, T)
+		if not _vis.intersects(top.grow(T * 2.0)):
+			continue
+		var e_open := not _terrace.has(idx + 1)
+		var w_open := not _terrace.has(idx - 1)
+		if e_open:                                                     # 东侧背光岩坡：落在台地外一侧（台地外的那一列本就没人站过）+ 往东落影
+			draw_texture_rect(stex, Rect2(top.end.x - T * 0.05, top.position.y + T * 0.20, T * 0.95, T * 1.05), false, Color(0.02, 0.05, 0.03, 0.30))
+			var ex0 := top.end.x
+			draw_rect(Rect2(ex0, top.position.y + T * 0.06, T * 0.36, T * 0.94), rock.darkened(0.30), true)
+			draw_rect(Rect2(ex0 + T * 0.24, top.position.y + T * 0.06, T * 0.12, T * 0.94), rock.darkened(0.44), true)
+			for j in 3:
+				var hv := _hash_mix(x, y * 3 + j, 379)
+				draw_rect(Rect2(ex0 + 2.0, top.position.y + T * (0.12 + 0.30 * float(j)), T * 0.30, 2.0), rock.darkened(0.48), true)
+				if hv % 2 == 0:
+					draw_rect(Rect2(ex0 + 3.0, top.position.y + T * (0.20 + 0.30 * float(j)), T * 0.10, T * 0.08), rock.darkened(0.16), true)
+			draw_rect(Rect2(ex0, top.position.y + T * 0.06, 2.0, T * 0.94), P_FOLIAGE_D * veg, true)   # 坡顶草唇
+		if w_open:                                                     # 西侧受光岩坡（朝光，窄而亮）
+			draw_rect(Rect2(top.position.x - T * 0.16, top.position.y + T * 0.06, T * 0.16, T * 0.94), rock.lightened(0.08), true)
+			draw_rect(Rect2(top.position.x - T * 0.16, top.position.y + T * 0.06, 2.0, T * 0.94), rock.lightened(0.26), true)
+			draw_rect(Rect2(top.position.x - 2.0, top.position.y + T * 0.06, 2.0, T * 0.94), P_FOLIAGE_M * veg, true)
+		if _terrace.has(idx + w):
+			continue
+		# —— 南崖面：占下一行上 0.88 格 ——
+		var fx0 := top.position.x + (T * 0.06 if w_open else 0.0)
+		var fx1 := top.end.x - (T * 0.06 if e_open else 0.0)
+		var fy0 := top.end.y
+		var fh := T * 0.88
+		draw_texture_rect(stex, Rect2(fx0 + T * 0.10, fy0 + fh - T * 0.30, fx1 - fx0 + T * 0.45, T * 0.80), false, Color(0.02, 0.05, 0.03, 0.42))   # 崖脚落影
+		draw_rect(Rect2(fx0, fy0, fx1 - fx0, fh), rock.darkened(0.10), true)
+		var sy := fy0 + T * 0.14
+		var k := 0
+		while sy < fy0 + fh - T * 0.08:                                # 层理：一层层错开的岩板，上亮下暗
+			var hv := _hash_mix(x, y * 9 + k, 353)
+			var lh := T * (0.14 + 0.05 * float(hv % 3))
+			var c := rock.lightened(0.06) if hv % 3 == 0 else (rock.darkened(0.04) if hv % 3 == 1 else rock.darkened(0.16))
+			draw_rect(Rect2(fx0, sy, fx1 - fx0, lh - 2.0), c, true)
+			draw_rect(Rect2(fx0, sy + lh - 2.0, fx1 - fx0, 2.0), rock.darkened(0.42), true)
+			sy += lh
+			k += 1
+		for j in 2:                                                    # 竖向裂隙
+			var hv := _hash_mix(x * 3 + j, y, 359)
+			var cx := fx0 + float(hv % 100) / 100.0 * (fx1 - fx0)
+			draw_line(Vector2(cx, fy0 + T * 0.18), Vector2(cx + float(hv / 100 % 7) - 3.0, fy0 + fh - T * 0.10), rock.darkened(0.48), 1.5)
+		if e_open:                                                     # 崖面东端转过去的暗面
+			draw_rect(Rect2(fx1 - T * 0.14, fy0, T * 0.14, fh), rock.darkened(0.38), true)
+		draw_rect(Rect2(fx0, fy0 + fh - T * 0.08, fx1 - fx0, T * 0.08), rock.darkened(0.45), true)   # 崖脚暗线
+		# 顶上草唇：一排圆草簇垂过崖沿
+		for j in 4:
+			var hv := _hash_mix(x * 5 + j, y, 367)
+			var gx := fx0 + (float(j) + 0.5) / 4.0 * (fx1 - fx0)
+			draw_circle(Vector2(gx, fy0 + T * 0.02), T * (0.10 + 0.03 * float(hv % 3)), P_FOLIAGE_D * veg)
+			draw_circle(Vector2(gx - T * 0.03, fy0 - T * 0.02), T * 0.07, P_FOLIAGE_M * veg)
+			if hv % 4 == 0:                                            # 苔痕顺着崖面往下挂
+				draw_rect(Rect2(gx - 1.5, fy0 + T * 0.08, 3.0, T * (0.16 + 0.06 * float(hv / 4 % 3))), Color(P_FOLIAGE_D * veg, 0.75), true)
+		# 崖脚乱石
+		for j in 2:
+			var hv := _hash_mix(x * 7 + j, y, 373)
+			if hv % 3 == 0:
+				continue
+			var bp := Vector2(fx0 + float(hv % 100) / 100.0 * (fx1 - fx0), fy0 + fh + T * 0.02)
+			var br := T * (0.08 + 0.03 * float(hv / 100 % 3))
+			draw_circle(bp + Vector2(2, 2), br, Color(0, 0, 0, 0.25))
+			draw_circle(bp, br, rock.darkened(0.06))
+			draw_circle(bp - Vector2(br * 0.3, br * 0.3), br * 0.5, rock.lightened(0.14))
 
 func _wang_set(name: String) -> Dictionary:
 	if _wang.has(name):
