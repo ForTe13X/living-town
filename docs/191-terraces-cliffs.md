@@ -27,6 +27,18 @@
 - **东侧**：一条背光岩坡（两档暗 + 横纹）+ 往东的软影；**西侧**：一条窄而亮的受光岩坡。
 - 崖面格并入 `_cliff_face` ⇒ 野花草不散上去。
 
+## 验收回执（本机，7891c27 干净 worktree）
+
+- `tools/ci.sh` 第 5 步 22 个 headless 场景：**22/22 exit 0、0 条 `SCRIPT ERROR`**。
+- docker 视觉门 `LT_VISUAL=require bash tools/visual_gate.sh`（`gamecraft-runner:4.6.2`）：rc=0，0 条 FAIL/SKIP；
+  DAYNIGHT / SEASON / PRECIP / ROUNDTRIP×3 / FLOOR ROUNDTRIP 全 PASS。（第一次跑因 Docker Desktop 未启动而无法运行，启动后重跑。）
+- 互补锚 ledger 已重烘（acf6f84），`gate_complement_guard.py` rc=0。
+
+## 眼验结论（据实）
+
+近景读得出"一级台地 + 花岗岩崖"；整镇俯瞰里台地更像"浅一档的草坪 + 一道石边"，高差感仍弱。
+要更强的高差需要更大的台地或多级台阶，而本图空地被"没人站过"的规则切得很碎——下一步可考虑界外（北缘外）画一整条山坡。
+
 ## 零金标
 
 只画、不写：`blockers[]`、可走性一格不动，不读 RNG；布局只读 `lots.json`、`_hash_mix`。
