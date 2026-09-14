@@ -755,12 +755,21 @@ func _compile_interiors() -> void:
 	if _interiors_data.is_empty():
 		return
 	var objs: Array = world.get("objects", [])
+	for d in _interior_object_defs(_interiors_data):
+		objs.append(d)
+	world["objects"] = objs
+
+## 室内家具 → world 候选对象定义（带 advertises 的才算；id = <space><floor>_<slot>[_N]，著者序去重 ⇒ 确定）。
+## _compile_interiors（开局）与 schema-1 迁移（docs/193）共用同一个编译器，两边不会各自漂。
+func _interior_object_defs(data: Dictionary = {}) -> Array:
+	var src: Dictionary = data if not data.is_empty() else _authored_interiors_data
+	var out: Array = []
 	var used := {}                                      # id 去重：同层同 slot 多件家具（如两张床）用 _N 后缀，避免 dict 覆盖
-	for space in _interiors_data:
-		if String(space).begins_with("_") or not (_interiors_data[space] is Dictionary):
+	for space in src:
+		if String(space).begins_with("_") or not (src[space] is Dictionary):
 			continue
-		for floor in (_interiors_data[space] as Dictionary):
-			var content = _interiors_data[space][floor]
+		for floor in (src[space] as Dictionary):
+			var content = src[space][floor]
 			if not (content is Dictionary):
 				continue
 			for fu in _as_arr((content as Dictionary).get("furniture", [])):
@@ -779,13 +788,13 @@ func _compile_interiors() -> void:
 					oid = "%s_%d" % [oid, int(used[oid])]
 				else:
 					used[oid] = 0
-				objs.append({
+				out.append({
 					"id": oid, "type": String((fu as Dictionary).get("label", slot)),
 					"pos": [int(pos[0]), int(pos[1])],
 					"space": String(space), "floor": String(floor), "area": String(space) + ":" + String(floor),
 					"staff": bool((fu as Dictionary).get("staff", false)),   # P3：员工专属对象(吧台)——只有该店主人用；顾客用公共桌
 					"advertises": adv.duplicate(true)})
-	world["objects"] = objs
+	return out
 
 ## ── F1 分工的空间落点（docs/48 §一-F1）───────────────────────────────────────────
 ## ★为什么新岗位与新工位都写在 production.json，而不是写进 jobs.json / map.json：
@@ -2469,6 +2478,19 @@ func _migrate_schema1_solid_props(state: Dictionary) -> String:
 	if not (areas is Dictionary) or not ((areas as Dictionary).get("dock") is Dictionary):
 		return "schema 1 dock authority is missing"
 	((areas as Dictionary)["dock"] as Dictionary)["solid_props"] = _authored_solid_props.duplicate(true)
+	# docs/193：室内按规划重排过（住宅区 9×7→12×9、家具换位）。旧档里编译出来的室内家具对象还在【旧坐标】上，
+	# 在新布局里可能被新家具围死 ⇒ A* 找不到路、回落直线步进穿墙（实测：save_migration 里 ben 去旧床，沿外墙环走到 (1,8)，重存被拒）。
+	# ⇒ 室内对象按【当前】interiors 重新编译（town 对象原样保留，它们不随本次室内重排移动）。
+	var objs = (saved_world as Dictionary).get("objects")
+	if objs is Dictionary:
+		for oid in (objs as Dictionary).keys():
+			var od = (objs as Dictionary)[oid]
+			if od is Dictionary and String((od as Dictionary).get("space", "town")) != "town":
+				(objs as Dictionary).erase(oid)
+		for d in _interior_object_defs():
+			var nd: Dictionary = d
+			nd["pos"] = Vector2i(int(nd["pos"][0]), int(nd["pos"][1]))
+			(objs as Dictionary)[String(nd["id"])] = nd
 	var solid_cells := _solid_prop_cells_in_world(saved_world)
 	for raw_agent in state.get("agents", []):
 		if not (raw_agent is Dictionary):
