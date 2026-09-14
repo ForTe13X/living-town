@@ -153,4 +153,27 @@ S0 N=12 的 #40 从 12/12 掉到 **2/12**。⇒ 收窄为只为 hunger/hygiene �
 
 ## 验收回执
 
-TBD（S0 金标重烘、ci.sh 第 5 步场景、docker 视觉门、互补锚 ledger）。
+本机，干净 worktree（`art/interiors-life`），逐项实跑：
+
+- **S0**（seeds 1-12 × 60 天，det 3）：重烘后比对 **PASS**——硬不变量 12/12、软通过率 ≥11/12、金标 12/12、det 3/3。
+- **4a 宏观池 N=16**（seeds 1-12 × 60 天）：**PASS**（软 #40 ≥11/12；出货树同一配置也是 11/12）。
+- **4b LOD**：PASS。**4c DetGate** 四轨：重烘后 16/16 PASS。**4d BackendGate**：PASS。**4e ModelPathGate**：锚重烘后 PASS。
+  **4f VoiceGate**：新动作（如厕/洗漱/泡澡/赏画/静坐/祈祷/逛集/弹琴/读书/闲话家常/吃点心）给 24 个人格各补两句后 PASS。**4g #43**、**4h state_projection**：PASS。
+- **第 5 步 25 个场景**：全部 exit 0。改动过的测试：`p1c_east_ocean_carrier_test`（扩容锚质心 + N24 克隆落点随三栋建筑移动）、
+  `p1u_port_nav_test`（房子占地与 dock 的 solid_props 分成两个函数后原样通过）；`save_migration_test` 靠迁移修正通过
+  （新 Sim 变量 `_venue_cache` 进 `SAVE_LOAD_DENY`；schema-1 迁移只挪【读档校验会拒】的人，并按【当前】interiors 重新编译室内家具对象——
+  旧档里的室内对象还在旧坐标上，新布局下会被新家具围死，A* 失败后回落直线步进穿墙；`_compile_interiors` 与迁移共用 `_interior_object_defs`）。
+- **1b audit_map**：PASS（可达性计入 `solid_lots` 占地；扩容 anchor 质心改冻）。**lint_data / lint_links**：PASS。
+- **docker 视觉门** `LT_VISUAL=require bash tools/visual_gate.sh`：rc=0——DAYNIGHT / ROUNDTRIP×3 / POND / INTSHELL（采样挪到 0.30 格墙顶）/
+  FURNROLE / TREESTAND / SEASON / PRECIP / CAFE2F / CAFEDENSITY / FLOOR ROUNDTRIP 全 PASS。
+- 互补锚 ledger：已在最终树上重烘（`GODOT=<exe> python tools/gate_fixture_audit.py --run --bake-ledger`），`gate_complement_guard.py` rc=0。
+
+## 花费
+
+PixelLab：本批 **34 generations**（家具 29 件 + 浴缸重画 1 + 礼拜堂/市场 4 件；余额 4003 → 约 3969）。
+
+## 没做 / 下一刀（据实）
+
+- 礼拜堂、市场、酒店的 fun 类家具只有已经在楼里的人会用；要让它们成为日常去处，需要与工位吸引力一起标定（fun 行程会抢工位，见 §六）。
+- 旧的 schema-2 存档：若存档里有人落在如今的房子占地 / 新家具格上，读档校验按原规则处理（房子占地不在校验里 ⇒ 不拒档，但那个人第一步会走出来）。
+- 切顶俯视（镇上）的小房间仍用程序化小杂物；精灵家具只替换了床/灶/浴池/工作台四类对象。
