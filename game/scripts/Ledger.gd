@@ -11,12 +11,13 @@ extends RefCounted
 ## 分类由 transfer 的 reason 前缀决定（Sim.gd 里恰好六个调用点，reason 前缀一一对应）：
 ##   price:<动作> 居民→镇库（吃饭等收费）· buy:<动作> 居民→摊贩 · wage:<动作> 镇库→居民
 ##   rent 房客→房东 · import*<件> 镇库→大他者 · export*<件> 大他者→镇库
-const CATS := ["meal", "vendor", "wage", "rent", "import", "export", "other"]
+##   docs/196：bill:<项> 居民→镇库（水电/炭火/欠费）· bonus:<项> 镇库→居民（全勤奖）
+const CATS := ["meal", "vendor", "wage", "rent", "bill", "bonus", "import", "export", "other"]
 const CAT_NAME := {"meal": "饭钱", "vendor": "摊贩", "wage": "工资", "rent": "房租",
-	"import": "进口", "export": "出口", "other": "其它"}
+	"bill": "账单", "bonus": "奖金", "import": "进口", "export": "出口", "other": "其它"}
 ## 镇库视角：哪些类是进账、哪些是出账（摊贩与房租是居民之间的钱，不经镇库）。
-const TOWN_IN := ["meal", "export"]
-const TOWN_OUT := ["wage", "import"]
+const TOWN_IN := ["meal", "bill", "export"]
+const TOWN_OUT := ["wage", "bonus", "import"]
 
 var cursor := 0          # 已折叠到 event_log 的哪个下标（不含）
 var _tail := ""          # 最后一条已折叠事件的指纹：id:tick:type —— 回放后同一下标换了内容就对不上
@@ -31,7 +32,7 @@ static func category(note: String) -> String:
 	var head := note.split("*")[0].split(":")[0]
 	if head == "price": return "meal"
 	if head == "buy": return "vendor"
-	if head in ["wage", "rent", "import", "export"]: return head
+	if head in ["wage", "rent", "bill", "bonus", "import", "export"]: return head
 	return "other"
 
 static func _fp(e: Dictionary) -> String:
@@ -176,6 +177,15 @@ func panel_text(S, name_of: Callable) -> String:
 	out.append(" 净  今天 %s · 累计 %s" % [_signed(_town_net(today)), _signed(tot)])
 	out.append(hd + "── 居民之间 ──[/color]")
 	out.append(" 摊贩 %d 笔 %d 币 · 房租 %d 笔 %d 币" % [_n("vendor"), _amt("vendor"), _n("rent"), _amt("rent")])
+	var owe_n := 0
+	var owe_sum := 0
+	for ag in S.agents:
+		var ow := int(ag.get("arrears", 0))
+		if ow > 0:
+			owe_n += 1
+			owe_sum += ow
+	if owe_n > 0:
+		out.append(" 欠水电费 %d 人，共 %d 币" % [owe_n, owe_sum])
 	out.append(hd + "── 大他者（外部世界）──[/color]")
 	out.append(" 进口付款 %d · 出口收入 %d · 净头寸 %d" % [_amt("import"), _amt("export"), int(S.external_coin)])
 	out.append(hd + "── 近 7 天镇库净额 ──[/color]")

@@ -53,12 +53,12 @@ func _run(seed: int, n: int, days: int, deep: bool) -> void:
 	# 逐 seed：镇内三类每天都有；进出口按 manifest/地板节奏走，8 天里某些 seed 一笔出口都没有（豆子没过出口地板）
 	#   是经济本身的样子，不是账本的错 ⇒ 这两类记进全体并集，在 _ready 末尾要求至少一个 seed 见过。
 	var dead := PackedStringArray()
-	for c in ["meal", "wage", "rent", "import", "export"]:
+	for c in ["meal", "wage", "rent", "bill", "import", "export"]:
 		if int((full.flows.get(c, {}) as Dictionary).get("n", 0)) == 0:
-			if c in ["meal", "wage", "rent"]: dead.append(c)
+			if c in ["meal", "wage", "rent", "bill"]: dead.append(c)
 		else:
 			_seen[c] = true
-	ck(dead.is_empty(), "%s LC 饭钱/工资/房租都有（缺：%s）" % [tag, ",".join(dead)])
+	ck(dead.is_empty(), "%s LC 饭钱/工资/房租/账单都有（缺：%s）" % [tag, ",".join(dead)])
 	var txt: String = full.panel_text(S, func(id): return id)
 	ck(txt.contains("核对 ✓") and txt.contains("镇库"), "%s 面板正文含核对 ✓" % tag)
 	if not deep:
@@ -115,7 +115,8 @@ func _ready() -> void:
 	ck(LedgerScript.category("price:吃饭") == "meal" and LedgerScript.category("buy:买饭") == "vendor"
 		and LedgerScript.category("wage:做活") == "wage" and LedgerScript.category("rent") == "rent"
 		and LedgerScript.category("import*4") == "import" and LedgerScript.category("export*6") == "export"
-		and LedgerScript.category("gift") == "other", "分类：六种 reason 前缀各归其类")
+		and LedgerScript.category("bill:水电") == "bill" and LedgerScript.category("bonus:全勤") == "bonus"
+		and LedgerScript.category("gift") == "other", "分类：八种 reason 前缀各归其类（含 docs/196 账单/奖金）")
 	for k in seeds.size():
 		_run(int(seeds[k]), 12, days, k == 0)
 	_run(int(seeds[0]), 16, days, false)

@@ -1184,6 +1184,11 @@ func _make_agent(adef: Dictionary, personas: Dictionary) -> Dictionary:
 	ag["room"] = _room_at(ag["pos"])   # docs/16：与 area 同址缓存（缺 rooms→""）
 	if not economy.is_empty():
 		ag["inventory"]["coin"] = int(economy.get("start_coin", 10))   # Wave 1b：经济开启才有钱（缺文件零扰动）
+	# docs/196 P1a 家计：欠费与出勤记录只在对应数据段存在时才长出来（缺段 ⇒ agent 形状与今天逐键相同）。
+	if _bills_on():
+		ag["arrears"] = 0
+	if _att_on() and not _job_of(String(adef["id"])).is_empty():
+		ag["work"] = {"done": 0, "streak": 0, "absent": 0, "rep": 0}
 	return ag
 
 func get_agent(id: String) -> Dictionary:
@@ -3429,6 +3434,10 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 							_trade_fallout(ag, payee, twits, String(opt["action"]), tc)
 					else:
 						econ_stats["meals_free"] += 1      # 付不起照吃（meals_free）——商贩路同样继承这条红线
+						_hardship_scale(ag, opt, "unpaid", price)  # docs/196：照吃、照补满，饭钱记进欠费（赊账）
+				# docs/196：欠着水电费 ⇒ 热水停了，这次洗澡只补一部分。只打折、不阻断。
+				if _bills_on() and int(ag.get("arrears", 0)) > 0:
+					_hardship_scale(ag, opt, "arrears")
 		else:
 			_move_agent(ag, _nav_step(ag, target_obj["pos"]))
 		emit_signal("agent_changed", ag["id"])
@@ -3484,6 +3493,8 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 							ag["memory"].add("上工%s，挣了%d个钱" % [String(jb.get("title", "")), wage], 4, tick_no, ["job", "coin"])
 					else:
 						econ_stats["wages_skipped"] += 1
+			if _att_on():
+				_att_mark(ag, String(opt["action"]))   # docs/196：本职在班完成 ⇒ 今天算出勤
 			if _is_controlled(ag):
 				emit_signal("life_action_done", String(opt["action"]), String(opt["target"]),
 					_wage_for(ag, String(opt["action"])) if _econ_on() else 0)
@@ -3531,6 +3542,9 @@ func _nightly() -> void:
 				var lld := String(td.get("landlord", ""))
 				if tnt != lld and _agent_by_id.has(tnt) and _agent_by_id.has(lld):
 					transfer(tnt, lld, rent, "rent")     # 房客→房东；付不起(coin<rent)则 transfer 返 false 自动跳过
+	# docs/196 P1a 家计：账单/欠费 + 出勤结算。排在房租之后、阶层 gossip 之前（同房租的理由：当晚被看见的财富已含这些流动）。
+	if _econ_on():
+		_household_nightly()
 	# Wave 2a+ 阶层 gossip：财富被同区邻居目击 → firsthand belief(via=seen) → 走既有 gossip 管线传播(S1 原样复用)。
 	if _econ_on() and economy.has("wealth_gossip"):
 		_observe_wealth()
@@ -4074,6 +4088,13 @@ func _object_candidates(ag: Dictionary) -> Array:
 			if _econ_on() and _wage_for(ag, action) > 0 \
 					and _coin_of(String(ag["id"])) < int(economy.get("poor_line", 6)):
 				score += float(economy.get("work_urgency", 8.0))
+			# docs/196：欠着账 ⇒ 零工（非本职）的有薪动作再加一截（同一条钱动机环；只加不减、不读满足度/名声）。
+			#   只拉零工：本职的拉力已由 work_pull/stock_pull 按 #40 标定过；拉本职实测让柴薪/屋瓦全年零缺货（#40 上限臂红）。
+			#   且只在【没有岗位或不在班】时拉：在班的面点师/渔夫被零工拉走 ⇒ 口粮断供（实测 N=16 #40 5/12，口粮满足率 0.31）。
+			if _bills_on() and int(ag.get("arrears", 0)) > 0 and _wage_for(ag, action) > 0 \
+					and _job_action(_job_of(String(ag["id"]))) != action \
+					and (_job_of(String(ag["id"])).is_empty() or not _in_shift(_job_of(String(ag["id"])))):
+				score += float((economy["bills"] as Dictionary).get("arrears_work_urgency", 0.0))
 			var cand := {
 				"kind": "object", "action": action, "target": id, "need": need_id,
 				"amount": amount, "dur_total": duration,
@@ -5645,6 +5666,116 @@ func _observe_wealth() -> void:
 # ── Wave 1b 经济·Ledger 原语（docs/15 §3 原语#5）────────────────────────────
 func _econ_on() -> bool:
 	return not economy.is_empty()
+
+# ── docs/196 P1a 家计：账单 / 欠费 / 困顿 / 出勤（economy.json 的 bills / hardship / attendance 三段；缺段即关）──
+## 三条纪律（docs/194 §三 + docs/175 核心规则）：
+##   ① 钱只经 transfer 流动（reason=bill:* / bonus:*）⇒ #34 守恒、P0 账本核对都不用改；
+##   ② 困顿不挨饿：没钱/欠费只让【这一次补给】打折，从不阻断动作、从不改 need 上限；
+##   ③ 欠费、出勤、work.rep 都不进 _acceptance_margin，也不进任何候选打分。
+func _bills_on() -> bool:
+	return _econ_on() and economy.get("bills", {}) is Dictionary and not (economy.get("bills", {}) as Dictionary).is_empty()
+
+func _att_on() -> bool:
+	return _econ_on() and economy.get("attendance", {}) is Dictionary and not (economy.get("attendance", {}) as Dictionary).is_empty()
+
+## 欠费封顶（缺键 = 不封顶）。欠费只是记账、不是负 coin ⇒ 与 #34/#35 无关；封顶只为让"欠着"是一种状态而不是无底洞。
+func _arrears_cap() -> int:
+	return int((economy.get("bills", {}) as Dictionary).get("arrears_cap", 1 << 30))
+
+## 付账单的人 = 核心居民。外来 affiliate（码头工）与玩家的开销不在本镇家计里。
+func _pays_bills(ag: Dictionary) -> bool:
+	return not bool(ag.get("affiliate", false)) and not bool(ag.get("is_player", false))
+
+## 困顿：把这一次 option 的补给量按百分比打折，下限 min_amount。只在 travel→use 那一刻调用一次。
+func _hardship_scale(ag: Dictionary, opt: Dictionary, kind: String, price: int = 0) -> void:
+	var hs: Dictionary = economy.get("hardship", {}) if economy.get("hardship", {}) is Dictionary else {}
+	if hs.is_empty():
+		return
+	if kind == "unpaid":
+		# 付不起饭钱：这顿照吃、照补满（不碰任何 need），饭钱记进欠费（赊账，封顶 arrears_cap）。
+		if bool(hs.get("unpaid_to_arrears", false)) and _bills_on() and price > 0:
+			var was := int(ag.get("arrears", 0))
+			ag["arrears"] = mini(_arrears_cap(), was + price)
+			if was == 0 and int(ag["arrears"]) > 0:
+				ag["memory"].add("兜里没钱，这顿饭先赊着", 4, tick_no, ["bill", "coin"])
+		return
+	var ap: Dictionary = hs.get("arrears_pct", {}) if hs.get("arrears_pct", {}) is Dictionary else {}
+	var pct := int(ap.get(String(opt.get("action", "")), 100))
+	if pct >= 100:
+		return
+	var a0 := int(opt.get("amount", 0))
+	opt["amount"] = maxi(mini(a0, int(hs.get("min_amount", 30))), a0 * pct / 100)
+	if kind == "arrears":
+		ag["memory"].add("欠着水电钱，热水停了，只能将就着%s" % String(opt.get("action", "")), 3, tick_no, ["bill", "coin"])
+
+## 出勤：本职动作在班内完成一次 ⇒ 今天算出勤（口径同 _produce_for / _wage_for 的"本职在班"）。
+func _att_mark(ag: Dictionary, action: String) -> void:
+	var w = ag.get("work")
+	if not (w is Dictionary):
+		return
+	var jb := _job_of(String(ag["id"]))
+	if jb.is_empty() or _job_action(jb) != action or not _in_shift(jb):
+		return
+	w["done"] = int(w.get("done", 0)) + 1
+
+## 夜结：先还旧欠，再付今晚的账单（冬季加炭火）；再结算出勤、发全勤奖。按 agents 序、项按书写序 ⇒ 确定。
+func _household_nightly() -> void:
+	if _bills_on():
+		var bills: Dictionary = economy["bills"]
+		var items: Dictionary = bills.get("items", {}) if bills.get("items", {}) is Dictionary else {}
+		var winter: Dictionary = bills.get("winter", {}) if bills.get("winter", {}) is Dictionary else {}
+		var is_winter := season_today != "" and season_today == String(bills.get("winter_season", "冬"))
+		var bill_night := day % maxi(1, int(bills.get("every_days", 1))) == 0   # 收账夜（还旧欠每夜都可以）
+		for ag in agents:
+			if not _pays_bills(ag):
+				continue
+			var aid := String(ag["id"])
+			var owe := int(ag.get("arrears", 0))
+			if owe > 0:
+				var back := mini(owe, _coin_of(aid))
+				if back > 0 and transfer(aid, "town", back, "bill:欠费"):
+					ag["arrears"] = owe - back
+					if int(ag["arrears"]) == 0:
+						ag["memory"].add("把欠的水电钱都还清了，热水又来了", 4, tick_no, ["bill", "coin"])
+			if not bill_night:
+				continue
+			var due := {}
+			for k in items:
+				due[k] = int(items[k])
+			if is_winter:
+				for k in winter:
+					due[k] = int(due.get(k, 0)) + int(winter[k])
+			for k in due:
+				var amt := int(due[k])
+				if amt <= 0:
+					continue
+				if not transfer(aid, "town", amt, "bill:" + String(k)):
+					var was := int(ag.get("arrears", 0))
+					ag["arrears"] = mini(_arrears_cap(), was + amt)
+					if was == 0:
+						ag["memory"].add("交不起%s钱，只好先欠着" % String(k), 5, tick_no, ["bill", "coin"])
+	if _att_on():
+		var att: Dictionary = economy["attendance"]
+		var need_streak := maxi(1, int(att.get("bonus_streak", 5)))
+		var bonus := int(att.get("bonus", 0))
+		for ag in agents:
+			var w = ag.get("work")
+			if not (w is Dictionary):
+				continue
+			var aid := String(ag["id"])
+			if int(w.get("done", 0)) > 0:
+				w["streak"] = int(w.get("streak", 0)) + 1
+				w["rep"] = mini(10, int(w.get("rep", 0)) + 1)
+				if int(w["streak"]) >= need_streak:
+					w["streak"] = 0
+					if bonus > 0 and transfer("town", aid, bonus, "bonus:全勤"):
+						ag["memory"].add("连着%d天都按时上工，镇上发了%d个钱的全勤奖" % [need_streak, bonus], 5, tick_no, ["job", "coin"])
+			else:
+				w["streak"] = 0
+				w["absent"] = int(w.get("absent", 0)) + 1
+				w["rep"] = maxi(-10, int(w.get("rep", 0)) - 2)
+				ag["memory"].add("今天一趟工都没上", 3, tick_no, ["job"])
+			w["done"] = 0
 
 ## 金钱增减的【唯一通道】：整数、不足即拒、写 event_log 溯源（type=pay，note=reason）。
 ## from/to = agent id 或 "town"（镇库）。守恒由"只此一门"结构保证 → 硬不变量 #34 可机检。
