@@ -45,7 +45,8 @@ func _ready() -> void:
 	var tao: Dictionary = S.get_agent("tao")
 	var dr: Array = dock.get("rect", [])
 	var nr: Array = north_pier.get("rect", [])
-	ck(dr.size() == 4 and int(dr[0]) == 56 and int(dr[1]) == 7 and int(dr[2]) == 4 and int(dr[3]) == 2
+	# docs/199：dock 向南延到 5 格高，容下第二泊位节点 port_dock2 [59,11]；北端锚点与首泊位 berth [60,8] 不变。
+	ck(dr.size() == 4 and int(dr[0]) == 56 and int(dr[1]) == 7 and int(dr[2]) == 4 and int(dr[3]) == 5
 		and dock.get("facing") == "east" and v2(dock.get("berth", [])) == Vector2i(60, 8)
 		and dock.get("route_id") == "east_ocean",
 		"East Ocean dock rect/facing/berth/route 物理锚闭合（dock=%s）" % str(dock))

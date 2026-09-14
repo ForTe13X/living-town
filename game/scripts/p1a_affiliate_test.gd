@@ -17,8 +17,11 @@ func _ready() -> void:
 	S.backend = null
 	S.start_new(1)
 
-	ck(S.core_population == 12 and S.agents.size() == 13,
-		"12 核心居民 + 1 affiliate（实得 %d + %d）" % [S.core_population, S.agents.size() - S.core_population])
+	# docs/199：affiliate 数从 agents.json 读（阿涛之外有了第二码头工大勇），不写死 1。
+	var authored = JSON.parse_string(FileAccess.get_file_as_string("res://data/agents.json"))
+	var n_aff: int = (authored.get("affiliates", []) as Array).size() if authored is Dictionary else -1
+	ck(S.core_population == 12 and S.agents.size() == 12 + n_aff and n_aff >= 1,
+		"12 核心居民 + %d affiliate（实得 %d + %d）" % [n_aff, S.core_population, S.agents.size() - S.core_population])
 	ck(S.prod_pool_num == S.prod_pool_den and is_equal_approx(S.work_pull_mult, 1.0),
 		"affiliate append-after-pool，不放大产能且不关闭 N=12 export")
 	var tao: Dictionary = S.get_agent("tao")
@@ -51,7 +54,7 @@ func _ready() -> void:
 	ck(social > 0, "affiliate 参与真实社交，而非被 #03 排除（%d 次）" % social)
 	ck(tao["needs"] != need0 and (tao["needs"] as Dictionary).values().all(func(v): return float(v) > 0.5),
 		"affiliate needs 会衰减/补给且未饿穿")
-	ck(not S.election_log.is_empty() and int(S.election_log[-1].get("voters", 0)) == 13,
+	ck(not S.election_log.is_empty() and int(S.election_log[-1].get("voters", 0)) == 12 + n_aff,
 		"affiliate 进入选举计票（选民=%d）" % int(S.election_log[-1].get("voters", 0) if not S.election_log.is_empty() else 0))
 
 	print("p1a_affiliate_test: %s (%d fail)" % [("PASS ✅" if _fails == 0 else "FAIL ❌"), _fails])
