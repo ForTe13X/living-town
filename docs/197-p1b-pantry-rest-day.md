@@ -42,6 +42,16 @@
 
 金标（S0 含逐 tick 链、DetGate 四轨、ModelPath 锚）按用户批准的"有意移动"重烘，`rebake_history` 各补一条；全套 CI 回执见 PR。
 
+### 两道被 sim 行为移动的夹具（第一轮全套 CI 红在这里）
+
+- **`player_touch_test`「完整卷宗未丢任何一块」**：阿丽的完整卷宗在 P1a 上就已经零余量——"知道的事"只挤进了标题、正文是"…还有 2 行没排下"；
+  P1b 让她多了一条近期记忆，标题也被挤出面板。病根不在 P1b：`Main._obs_fit_lines` 截断时**整块小节会静默消失**。
+  修法是 View 侧的：截断提示里写出被挤掉的小节名（"…还有 3 行没排下：知道的事"）——读者知道面板下面还有什么，断言也恢复判别力。
+- **视觉门 floor-roundtrip「lacks an accepted authoritative cafe guest invite」**：SpaceShot 找阿丽发邀请的搜索窗只有 64 tick；
+  seed 3 第 3 天正午她在二楼床上睡到窗外。邀请是夹具的前置、不是这道门断言的东西 ⇒ 搜索窗放宽到一天（240 tick）。
+  （本机 Windows 带窗口复跑时后面还会红一条 `clean player … contract`：`native_framebuffer` 等 19 项——P1a 上本机复跑逐项相同，
+  是 Windows 高分屏窗口 1663px ≠ 1280 的环境差，不是回归；容器里的视觉门不受影响。）
+
 ## 四、没做 / 留给后面
 
 - **作息表**：194 §二·2 写的 `schedules.json`（按职业的相位日程）没做——今天的 rhythm 节律偏好 + 岗位班次 + 休息日已经是一张作息表；

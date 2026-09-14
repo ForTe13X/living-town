@@ -257,6 +257,8 @@ func _ready() -> void:
 		if not (k in t_full):
 			lost.append(k)
 	_ck("完整卷宗未丢任何一块", lost.is_empty(), "缺失=%s" % str(lost))
+	if not lost.is_empty():
+		print("  ·  (诊断) 卷宗 %d 行：%s" % [fl.size(), " ⏎ ".join(fl)])
 	_ck("名片档指出详情在哪", ("详情" in t_brief) and ("需求" in t_brief))
 	# 两档都必须【真的装得下】自己的正文（同 2.5 节的纪律：用 get_content_height() 量，不用行数估）。
 	# 卷宗档尤其要量：C8 把正文下移了一个标题行(30px)，若不量，被裁掉的正是信念长尾的最后一两条。
