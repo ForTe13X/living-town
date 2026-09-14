@@ -2563,7 +2563,16 @@ func _obs_fit_lines(L: Array, width: float, budget_px: float) -> Array:
 		# 实测：只留 1 行时最坏余量 +9.0px（半行），留 2 行后 +27.0px。半行的余量守不住一次估偏。
 		if used + h > budget_px - OBS_LINE_H * 2.0:
 			var kept: Array = L.slice(0, i)
-			kept.append("[color=#9aa0b5]…还有 %d 行没排下[/color]" % (L.size() - i))
+			# docs/197：把被整块挤掉的【小节名】写进这句提示（小节标题统一用 #cfd3e0）。
+			#   否则一个恰好卡在面板下沿的小节（实测"知道的事"）会整块静默消失——多一条记忆就能把它挤没，
+			#   而读者从面板上看不出"这个人其实知道些事"。
+			var hidden := []
+			for j in range(i, L.size()):
+				var s := String(L[j])
+				if s.begins_with("[color=#cfd3e0]"):
+					hidden.append(s.trim_prefix("[color=#cfd3e0]").get_slice("[/color]", 0))
+			var tail := ("：%s" % "、".join(hidden)) if not hidden.is_empty() else ""
+			kept.append("[color=#9aa0b5]…还有 %d 行没排下%s[/color]" % [L.size() - i, tail])
 			return kept
 		used += h
 	return L

@@ -85,7 +85,8 @@
     "赶集":   { "good": "口粮", "amount": 1 },
     "玩耍":   { "good": "整洁", "amount": 1 },
     "社交":   { "good": "整洁", "amount": 1 },
-    "闲聊":   { "good": "糕点", "amount": 1 }
+    "闲聊":   { "good": "糕点", "amount": 1 },
+    "采买":   { "good": "口粮", "amount": 3 }
   },
   "scarcity_markup": 1,
   "shortage_standing": -0.5,
@@ -159,7 +160,13 @@
       "advertises": [ { "action": "劈柴", "job": "杂役", "need": "fun", "amount": 42, "duration": 28 } ] },
     { "id": "counter_pastry", "type": "摊位", "area": "plaza", "pos": [31, 23],
       "_why": "E3b（docs/164）：糕点师（coco，原 spare 零工）在广场支个点心摊。★与 E3a（docs/153）的唯一差别、也是整个 pivot 的心脏：本工位【只】广告 `做点心`(job=糕点师)——一条【职位专属】、只有 coco 枚举得到的产出动作；它【不】广告任何 town 平面消费动作（E3a 的 `吃点心` 就是那条被全镇选中 60-80 次/seed、系统性稀释核心产出的新决策槽）。消费改挂在【既有】的 `闲聊` 上（consume.闲聊），不新增任何决策选项 ⇒ 结构上不稀释核心。type『摊位』复用 OBJ_SLOT_BY_TYPE 现有项（counter_stall 同 type）⇒ 零 WorldView 改动、别名预算不变。pos[31,23]：广场 rect[28,21,8,6] 内、避开 bench_1[30,23]/arcade_1[33,24]/counter_stall[32,22]/节日灯笼锚[31,24]。免费消费（不进 vendor 键）⇒ 硬 #34 全程不动。",
-      "advertises": [ { "action": "做点心", "job": "糕点师", "need": "fun", "amount": 52, "duration": 24 } ] }
+      "advertises": [ { "action": "做点心", "job": "糕点师", "need": "fun", "amount": 52, "duration": 24 } ] },
+    { "id": "stove_home", "type": "灶台", "area": "home", "pos": [21, 17],
+      "_why": "docs/197 家当：住宅区里自家的灶，吃自家食橱的一份（家常饭）。pantry=eat ⇒ 只在食橱有货时出候选（Sim._adv_open）；不收钱、不扣镇库（货在采买时已从镇库扣过）。type 复用『灶台』⇒ 零 WorldView 改动。(21,17) 不挡住宅区南墙唯一通路 (22,19)。",
+      "advertises": [ { "action": "家常饭", "need": "hunger", "amount": 55, "duration": 18, "pantry": "eat" } ] },
+    { "id": "counter_grocery", "type": "摊位", "area": "plaza", "pos": [34, 22],
+      "_why": "docs/197 家当：集市上的粮摊（起初放杂货铺 (50,15)：离住宅区 25 格，诊断里出候选 1244 次、一次没赢 ⇒ 挪到广场集市，离家约 10 格）。pantry=buy ⇒ 只在买得起（prices.采买）且食橱放得下时出候选；用时经 consume.采买 从镇库扣 3 份口粮进食橱，顺手在铺子里吃一口（hunger 40）。type 复用『摊位』⇒ 零 WorldView 改动。★hunger 12 时实测 seeds 1-3 × 60 天【一次都没人来买】：打分 = 缺口×amount/60，12 的广告位加上食橱空的 +4 也只有 ~14，敌不过灶台吃饭的 ~46；引擎没有'为下一顿做打算'的规划层，所以采买本身得是一口能吃的。",
+      "advertises": [ { "action": "采买", "need": "hunger", "amount": 40, "duration": 10, "pantry": "buy" } ] }
   ],
   "vendor": {
     "_why": "全镇唯一一条【货与钱同时在人之间易手】的通道：镇库的口粮经 _stock_take 出账，钱经 transfer 进【现任商贩本人】的口袋而不是镇库。守恒仍然只靠 transfer 这一道门 ⇒ 硬 #34 一个字节都不用改。price 3 高于灶台的 2 —— 摊子要赚这一个钱，那就是分化的来源。",

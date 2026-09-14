@@ -476,7 +476,10 @@ func _walk_player_to(target: Vector2i) -> bool:
 ## issue the real invite action. No relationship, capability or event is injected.
 func _invite_player_from_current_plane() -> bool:
 	if Sim._cafe_guest_capability_valid(): return true
-	for _attempt in range(64):
+	# 搜索窗 64 → 240 tick（一整天）：这是夹具的【前置】，不是本门断言的东西。64 tick 绑死在"阿丽此刻恰好在一楼/镇上"
+	# 这件 sim 行为上——docs/197 让居民在家吃饭后，seed 3 第 3 天正午阿丽在二楼床上睡到 64 tick 之外，
+	# 门就红成"lacks an accepted authoritative cafe guest invite"。放宽到一天：只要这一天里她下过楼就能邀请。
+	for _attempt in range(240):
 		var pl: Dictionary = Sim.get_agent("player")
 		var aria: Dictionary = Sim.get_agent("aria")
 		if pl.is_empty() or aria.is_empty(): return false

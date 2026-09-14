@@ -634,6 +634,7 @@ func _load_data() -> void:
 	# K1：留一份未换尺度的原样。start_new 每次从它重算 production（人口在那时才知道，且 goto_tick 会反复重开）。
 	_production_raw = production
 	_merge_prod_jobs()                              # F1：production.jobs 里的新岗位(商贩/环卫工)并进岗位表；缺该键=今天的六个岗位
+	_tag_job_holders()                              # docs/197：岗位记上持有人（休息日按人错开）；缺 rest_day=不打标
 	# P3 Tier-B：Space/Floor/Portal 合同 + 室内内容（缺 spaces.json → 空 → 全 town/outdoor → 逐字节不变）。
 	var _sp := _read_json("res://data/spaces.json")
 	_spaces = _sp.get("spaces", {})
@@ -812,6 +813,15 @@ func _merge_prod_jobs() -> void:
 	for aid in add:                                     # JSON 字典保序 → 遍历序确定 → _holder_of_title 稳定
 		if not tbl.has(String(aid)) and add[aid] is Dictionary:
 			tbl[String(aid)] = (add[aid] as Dictionary).duplicate(true)
+
+## docs/197 休息日：给每条岗位记上持有人 id，让 _in_shift(job) 不改签名就能按人错开休息日（它有 ~8 个调用点）。
+## 缺 economy.rest_day ⇒ 不打标 ⇒ 岗位字典与今天逐键相同。
+func _tag_job_holders() -> void:
+	if not _rest_on() or jobs.is_empty() or not (jobs.get("jobs", {}) is Dictionary):
+		return
+	for aid in jobs["jobs"]:
+		if jobs["jobs"][aid] is Dictionary:
+			(jobs["jobs"][aid] as Dictionary)["_holder"] = String(aid)
 
 ## production.json 的 worksites 段 → town 平面上的工位对象（工作台/面案/清扫车/摊位）。
 ## 确定性：authored 顺序、id 来自数据、无 RNG/Time/计数器。缺该键 → 一个对象都不加 → 地图逐格原样。
@@ -1189,6 +1199,8 @@ func _make_agent(adef: Dictionary, personas: Dictionary) -> Dictionary:
 		ag["arrears"] = 0
 	if _att_on() and not _job_of(String(adef["id"])).is_empty():
 		ag["work"] = {"done": 0, "streak": 0, "absent": 0, "rep": 0}
+	if _pantry_on():
+		ag["pantry"] = 0                 # docs/197：自家食橱里的口粮份数（开局空，要出门买）
 	return ag
 
 func get_agent(id: String) -> Dictionary:
@@ -3384,6 +3396,12 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 					ag["option"] = null            # 途中 cargo/货位/余额变化：不偷换另一单，下 tick 重选
 					return
 			opt["phase"] = "use"
+			# docs/197 家当：买之前再验一次买得起（候选签发后钱可能变了）——买不起就不拿货，下 tick 重选。
+			var pantry_act := _pantry_act(String(opt["action"]))
+			if pantry_act == "buy" and _econ_on() \
+					and _coin_of(String(ag["id"])) < int(economy.get("prices", {}).get(String(opt["action"]), 0)):
+				ag["option"] = null
+				return
 			# Wave E 扣货点：消耗类动作(吃饭/洗澡/喝咖啡/歇着)开用时扣一件镇库存。
 			# ★缺货【不阻断】：这里既不 return 也不清 option，need 照在 use 分支补满 ——
 			#   与 meals_free 同一条设计红线：缺货绝不成为新的饿死通道(硬不变量 #01)。
@@ -3408,6 +3426,8 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 					if vid != "" and vid != String(ag["id"]) and _agent_by_id.has(vid):
 						price = int(vend.get("price", 0))
 						payee = vid
+				if pantry_act == "buy" and short:
+					price = 0                                          # docs/197：货架上没货 ⇒ 没买到、不收钱（缺货后果照走 _shortage_fallout）
 				if price > 0 and short:
 					price += int(production.get("scarcity_markup", 0))   # 缺货溢价：仍走 transfer 唯一通道 → #34 不受影响
 				if price > 0:
@@ -3435,6 +3455,12 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 					else:
 						econ_stats["meals_free"] += 1      # 付不起照吃（meals_free）——商贩路同样继承这条红线
 						_hardship_scale(ag, opt, "unpaid", price)  # docs/196：照吃、照补满，饭钱记进欠费（赊账）
+				# docs/197 家当：买到了 ⇒ 口粮进食橱；在家吃 ⇒ 食橱少一份（候选只在有货时存在）。
+				if pantry_act == "buy" and not short:
+					var pcap := int((economy["pantry"] as Dictionary).get("cap", 6))
+					ag["pantry"] = mini(pcap, int(ag.get("pantry", 0)) + int((economy["pantry"] as Dictionary).get("buy_qty", 1)))
+				elif pantry_act == "eat":
+					ag["pantry"] = maxi(0, int(ag.get("pantry", 0)) - 1)
 				# docs/196：欠着水电费 ⇒ 热水停了，这次洗澡只补一部分。只打折、不阻断。
 				if _bills_on() and int(ag.get("arrears", 0)) > 0:
 					_hardship_scale(ag, opt, "arrears")
@@ -3727,6 +3753,20 @@ func _adv_open(ag: Dictionary, adv: Dictionary) -> bool:
 	if manifest_node != "":
 		if not _unload_worker_eligible(String(ag["id"])) or _first_unloadable_manifest(manifest_node) == "":
 			return false                       # 非班次/无可提交 cargo ⇒ 卸货机会不存在（不是做完再假发工资）
+	# docs/197 家当：pantry=eat 只在自家食橱有货时开；pantry=buy 只在买得起且食橱放得下时开（不能白拿货）。
+	var pk := String(adv.get("pantry", ""))
+	if pk != "":
+		if not _pantry_on() or not _pays_bills(ag):
+			return false                       # 外来 affiliate / 玩家没有本镇的食橱
+		var pc: Dictionary = economy["pantry"]
+		var have := int(ag.get("pantry", 0))
+		if pk == "eat" and have <= 0:
+			return false
+		if pk == "buy":
+			if have + int(pc.get("buy_qty", 1)) > int(pc.get("cap", 6)):
+				return false
+			if _coin_of(String(ag["id"])) < int(economy.get("prices", {}).get(String(adv.get("action", "")), 0)):
+				return false
 	return _market_open(String(adv.get("action", "")))
 
 ## 只有【开始一单】必须在班；已经由 _apply_object 在班验证过的同一单可跨班次做完。
@@ -4095,6 +4135,9 @@ func _object_candidates(ag: Dictionary) -> Array:
 					and _job_action(_job_of(String(ag["id"]))) != action \
 					and (_job_of(String(ag["id"])).is_empty() or not _in_shift(_job_of(String(ag["id"])))):
 				score += float((economy["bills"] as Dictionary).get("arrears_work_urgency", 0.0))
+			# docs/197：食橱空 ⇒ 去货架采买多一截拉力（"家里没粮了"）。只加不减；候选只在买得起时存在（_adv_open）。
+			if String(adv.get("pantry", "")) == "buy" and int(ag.get("pantry", 0)) <= 0:
+				score += float((economy["pantry"] as Dictionary).get("empty_urgency", 0.0))
 			var cand := {
 				"kind": "object", "action": action, "target": id, "need": need_id,
 				"amount": amount, "dur_total": duration,
@@ -5501,6 +5544,8 @@ func _job_of(id: String) -> Dictionary:
 
 ## 是否在自己的班次相位内。空 shift=全天；rhythm 缺失(_phase_of 返 "")=视为在班（优雅降级）。
 func _in_shift(job: Dictionary) -> bool:
+	if job.has("_holder") and _rest_on() and _rest_day(String(job["_holder"]), day):
+		return false                         # docs/197：今天轮到这个人休息（按人错开，不是全镇停工）
 	var sh: Array = job.get("shift", [])
 	if sh.is_empty():
 		return true
@@ -5682,6 +5727,32 @@ func _att_on() -> bool:
 func _arrears_cap() -> int:
 	return int((economy.get("bills", {}) as Dictionary).get("arrears_cap", 1 << 30))
 
+## docs/197 家当 / 休息日的数据门（缺段即关）。
+func _pantry_on() -> bool:
+	return _econ_on() and economy.get("pantry", {}) is Dictionary and not (economy.get("pantry", {}) as Dictionary).is_empty()
+
+func _rest_on() -> bool:
+	return _econ_on() and economy.get("rest_day", {}) is Dictionary and int((economy.get("rest_day", {}) as Dictionary).get("every", 0)) > 1
+
+## 某人某天是不是休息日：(day + fnv1a32(id)) % every == 0 ⇒ 按人错开、纯函数、无 RNG。
+func _rest_day(aid: String, d: int) -> bool:
+	var rd: Dictionary = economy["rest_day"]
+	var every := int(rd.get("every", 7))
+	if every <= 1 or String(_job_of(aid).get("title", "")) in _as_arr(rd.get("exempt_titles", [])):
+		return false                     # 豁免的岗位（口粮产者）不轮休
+	return (d + fnv1a32(aid)) % every == 0
+
+## 动作在家当里的角色："buy"（采买）/"eat"（家常饭）/""。
+func _pantry_act(action: String) -> String:
+	if not _pantry_on():
+		return ""
+	var pc: Dictionary = economy["pantry"]
+	if action == String(pc.get("buy_action", "")):
+		return "buy"
+	if action == String(pc.get("eat_action", "")):
+		return "eat"
+	return ""
+
 ## 付账单的人 = 核心居民。外来 affiliate（码头工）与玩家的开销不在本镇家计里。
 func _pays_bills(ag: Dictionary) -> bool:
 	return not bool(ag.get("affiliate", false)) and not bool(ag.get("is_player", false))
@@ -5763,6 +5834,9 @@ func _household_nightly() -> void:
 			if not (w is Dictionary):
 				continue
 			var aid := String(ag["id"])
+			if _rest_on() and _rest_day(aid, day - 1):   # docs/197：刚过去的那天是他的休息日 ⇒ 不记缺勤、不断连胜
+				w["done"] = 0
+				continue
 			if int(w.get("done", 0)) > 0:
 				w["streak"] = int(w.get("streak", 0)) + 1
 				w["rep"] = mini(10, int(w.get("rep", 0)) + 1)
