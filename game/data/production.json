@@ -74,7 +74,7 @@
     "教书先生": { "good": "话本", "amount": 6 },
     "环卫工": { "good": "整洁", "amount": 16 },
     "泥瓦匠": { "good": "屋瓦", "amount": 30, "inputs": { "柴薪": 3 } },
-    "糕点师": { "good": "糕点", "amount": 6 }
+    "糕点师": { "good": "糕点", "amount": 8 }
   },
   "consume": {
     "吃饭":   { "good": "口粮", "amount": 1 },

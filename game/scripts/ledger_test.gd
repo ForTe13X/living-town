@@ -120,6 +120,11 @@ func _ready() -> void:
 	for k in seeds.size():
 		_run(int(seeds[k]), 12, days, k == 0)
 	_run(int(seeds[0]), 16, days, false)
+	# docs/198：出口要豆子过地板 + 此前真付过进口款；master 上 N=12 首笔出口也在第 14-20 天，
+	#   8 天窗口只靠 N=16 那一跑凑巧第 5 天出了一笔。P2 供养之后那一跑 30 天内都不出口 ⇒ 补一跑够长的
+	#   （seed 2 × 24 天，P2 实测首笔出口第 20 天），让 LC 的出口臂测的是账本、而不是某个 seed 的运气。
+	if not _seen.has("export"):
+		_run(2, 12, 24, false)
 	ck(_seen.has("import") and _seen.has("export"), "LC 进口与出口在全体 run 里都出现过（%s）" % ",".join(PackedStringArray(_seen.keys())))
 	print("ledger_test: %s (%d fail)" % ["PASS ✅" if _fails == 0 else "FAIL ❌", _fails])
 	get_tree().quit(0 if _fails == 0 else 1)

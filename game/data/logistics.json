@@ -38,6 +38,18 @@
       "price_den": 4,
       "_why": "每 3 天从 East Ocean 逻辑 route 到港一张 4 件柴薪 manifest；good 必须在 production.goods，node 必须是声明节点。arrival 不喂 #44 provider，只有真实卸货生成的 import 事件才算。",
       "_price_why": "价格仍为 3/4，但按整单 4 件一次结算为 3 钱，避免拆单整数地板变成免费货。余额不足时 manifest 留港、广告关闭，不丢 cargo；economy off 或无正价时保留 E1 免费 commit。旧 AS4 直接注入的 town_coin/held-out 数字标 legacy calibration，需按 manifest 路重测。"
+    },
+    {
+      "good": "口粮",
+      "route_id": "east_ocean",
+      "batch": 36,
+      "every_days": 1,
+      "node": "port_dock",
+      "price_per": 0,
+      "supply_floor": 40,
+      "scale_floor": true,
+      "_why": "docs/198 P2a 大他者供养：口粮是生存货，由大他者无条件托底——不要钱（price_per=0 ⇒ 免费 commit，#45 不计价），只在镇库 + 港口待卸口粮低于 supply_floor 时当晚发一船。仍走 CargoManifest：码头工卸了才入库；供养单在卸货序里排在付费原料前面（Sim._first_unloadable_manifest）。",
+      "_batch_why": "码头只有一个码头工、60 天约 15 次卸货——船位才是瓶颈，不是货。12 件/船时供养挤掉柴薪卸货却补不上口粮（N=16 口粮缺货 560→840）；24 件起才压下去；36 件/地板 40 在 seeds 1-30 × N=12 与 1-12 × N=16 的 #40 网格上最好（docs/198 §二）。地板随 production pool 缩放（scale_floor），批量不缩放（固定船吞吐，同柴薪 lane）。"
     }
   ],
   "_export_doc": "车道 E-export 首片（docs/157/158，§0.8 双路收敛=SOUND_WITH_FIXES）：货出→钱进。import 的镜像、方向相反——把镇里【过剩】的一种货经 _stock_move(good,−sold_qty,'export') 从 town_stock 出港，同时经唯一钱通道 transfer('external','town',revenue,'export') 把货款【先收】进 town_coin（收款方 external 是 E2a 已进 #34 守恒集的外部账户）。★闭环有界（docs/157 §二）：external 从 0 起、只被 import 贷入 / export 借出 ⇒ external=Σimport−Σexport≥0（transfer from<amt 守卫 + #35 外部非负臂）⇒ 累计 export 收入 ≤ 累计 import 支出，镇对外净头寸恒 ≤0、export 至多【收回】此前 import 付出的钱、不能把镇灌富。★off 门 2 轴与 import 【不对称】(docs/157 §六，蓄意)：轴①删 logistics.json ⇒ export 每挂点第一行短路 ⇒ 逐字节回今天；轴② economy off 或 export lane 无 price_per ⇒ export 【惰性】(NOT 免费出港——无补偿的 stock 损耗无 E1 先例)。",

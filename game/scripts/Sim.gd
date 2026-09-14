@@ -3332,7 +3332,8 @@ func _advance_agent(ag: Dictionary) -> void:
 	# 又不会饿穿(守 #01)。仅对带 need 的 option(object/journey)；无 need 的(social/attend)不受影响。
 	if opt is Dictionary and opt.has("need") and not ag.get("is_player", false) and not _is_controlled(ag):
 		var onid := String(opt["need"])
-		if ag["needs"].has(onid) and float(ag["needs"][onid]) >= SURVIVAL_GATE and _min_need(ag) < PREEMPT_CRISIS:
+		if ag["needs"].has(onid) and float(ag["needs"][onid]) >= SURVIVAL_GATE and _min_need(ag) < PREEMPT_CRISIS \
+				and _has_rescue_candidate(ag):
 			ag["option"] = null
 			return
 	match String(opt.get("kind", "object")):
@@ -3340,6 +3341,16 @@ func _advance_agent(ag: Dictionary) -> void:
 		"attend": _advance_attend(ag, opt)
 		"journey": _advance_journey(ag, opt)
 		_: _advance_object(ag, opt)
+
+## docs/198：pre-empt 与决策收窄用【同一把尺】——此刻有没有救急候选（need 缺或该 need < SURVIVAL_GATE）。
+## 没有就不打断：打断后决策会回落到原集合、重挑同一件不急的事、下一 tick 又被打断（实测 N=16 seed 5：
+## evy 夜里在家门口 social 见底，每 tick 选"出门吃饭"又被中止，80 tick 没迈出门，social 触底 → 硬 #01）。
+func _has_rescue_candidate(ag: Dictionary) -> bool:
+	for c in agent_candidates(ag):
+		if not (c is Dictionary and (c as Dictionary).has("need") \
+				and float(ag["needs"].get(String(c["need"]), 0.0)) >= SURVIVAL_GATE):
+			return true
+	return false
 
 ## P3 Tier-B 承诺行程：一路走到【目标对象所在平面】(可跨多个 portal)，到那个平面即把 option 交回普通 object 逻辑
 ## (走到对象交互格→用它)。中途【不重挑】——承诺执行到底，只被 _advance_agent 的危机 pre-empt 打断。这就是消除
@@ -6369,7 +6380,23 @@ func _logi_import() -> void:
 		var every := int(ld.get("every_days", 0))
 		if every <= 0 or day % every != 0:
 			continue
+		if int(ld.get("supply_floor", 0)) > 0 and not _supply_short(ld):
+			continue
 		_arrive_import_manifest(ld, lane_index)
+
+## docs/198 P2a 大他者供养：带 supply_floor 的 lane 只在【镇库 + 港口待卸的同货】低于地板时发船。
+## 纯 f(镇库, live cargo, data)，日界读、无 RNG；地板随 production pool 缩放（与 export scale_floor 同一条 ceil）。
+func _supply_short(lane: Dictionary) -> bool:
+	var good := String(lane.get("good", ""))
+	var floor := int(lane.get("supply_floor", 0))
+	if prod_pool_num > prod_pool_den and bool(lane.get("scale_floor", false)):
+		floor = _scaled_export_floor(floor)
+	var pending := 0
+	for raw_id in cargo_manifest_order:
+		var rec: Dictionary = cargo_manifests.get(String(raw_id), {})
+		if String(rec.get("good", "")) == good and String(rec.get("state", "")) == "ready":
+			pending += int(rec.get("remaining_qty", 0))
+	return _stock_of(good) + pending < floor
 
 ## P1-b CargoManifest 到港 seam：只增 cargo 权威态 + world receipt，不碰镇库与钱。
 ## id = route × day × lane 著者序，纯 f(data,day)，不读 RNG/Time/事件计数器；重复调用同日幂等。
@@ -6429,7 +6456,9 @@ func _arrive_import_manifest(lane: Dictionary, lane_index: int) -> String:
 
 ## 只返回【此刻可整单提交】的最早 manifest。首片刻意不拆单：3/4 的价格若拆成四笔 1 件，
 ## 每笔整数地板都会变 0，形成免费货；整单也让 cargo_delta == stock_delta 可直接审计。
+## docs/198：大他者供养单（supply lane）先卸——生存货不排在付费原料的积压后面；同类内仍按到港序。
 func _first_unloadable_manifest(node: String) -> String:
+	var first_other := ""
 	for raw_id in cargo_manifest_order:
 		var manifest_id := String(raw_id)
 		if not cargo_manifests.has(manifest_id):
@@ -6451,10 +6480,19 @@ func _first_unloadable_manifest(node: String) -> String:
 			var cost := qty * pnum / pden if pden > 0 else 0
 			if pden <= 0 or cost <= 0 or town_coin < cost:
 				continue
-		return manifest_id
-	return ""
+		if _manifest_is_supply(rec):
+			return manifest_id
+		if first_other == "":
+			first_other = manifest_id
+	return first_other
 
-## 给玩家/HUD/测试的只读港口状态；严格按 manifest arrival order 看最早 ready 单，不把 UI 变成第二权威。
+## docs/198：这单是否出自带 supply_floor 的大他者供养 lane（按 authored lane_index 查，不信 record 自报）。
+func _manifest_is_supply(rec: Dictionary) -> bool:
+	var lanes := _as_arr(logistics.get("import_lanes", []))
+	var i := int(rec.get("lane_index", -1))
+	return i >= 0 and i < lanes.size() and lanes[i] is Dictionary and int((lanes[i] as Dictionary).get("supply_floor", 0)) > 0
+
+## 给玩家/HUD/测试的只读港口状态；按 manifest arrival order 看最早 ready 单（docs/198：供养单优先，与卸货同序），不把 UI 变成第二权威。
 ## state: empty / ready / working / blocked_capacity / blocked_funds / invalid。
 func cargo_status_for_node(node: String, indexed: bool = false) -> Dictionary:
 	var out := {"state": "empty", "node": node, "manifest_id": "", "good": "", "qty": 0, "cost": 0,
@@ -6476,7 +6514,7 @@ func cargo_status_for_node(node: String, indexed: bool = false) -> Dictionary:
 			continue
 		out["ready_count"] = int(out["ready_count"]) + 1
 		out["ready_qty"] = int(out["ready_qty"]) + qty
-		if first.is_empty():
+		if first.is_empty() or (_manifest_is_supply(rec) and not _manifest_is_supply(first)):
 			first = rec
 	if first.is_empty():
 		return out
