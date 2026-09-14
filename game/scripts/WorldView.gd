@@ -4688,7 +4688,8 @@ static func carrier_projections_for(sim, logistics_data: Dictionary, manifests: 
 			var qty := int(rd.get("remaining_qty", 0))
 			if String(rd.get("state", "")) != "ready" or qty <= 0:
 				continue
-			if first.is_empty():
+			# docs/198：船上标的"下一单"与港口状态同序——供养单优先，同类内按到港序。
+			if first.is_empty() or (sim._manifest_is_supply(rd) and not sim._manifest_is_supply(first)):
 				first = rd
 			ready_count += 1
 			ready_qty += qty
