@@ -6,35 +6,31 @@
     "godot": "4.6.2-stable (official).71f334935",
     "liveness_observed": {
       "aid": {
-        "count": 88.0,
+        "count": 116.0,
         "seeds": 12.0
       },
       "apologize": {
-        "count": 638.0,
+        "count": 550.0,
         "seeds": 12.0
       },
-      "betray": {
-        "count": 1.0,
-        "seeds": 1.0
-      },
       "confide": {
-        "count": 85.0,
+        "count": 86.0,
         "seeds": 12.0
       },
       "conflict": {
-        "count": 1360.0,
+        "count": 1279.0,
         "seeds": 12.0
       },
       "confront": {
-        "count": 680.0,
+        "count": 609.0,
         "seeds": 12.0
       },
       "consume": {
-        "count": 4165.0,
+        "count": 4189.0,
         "seeds": 12.0
       },
       "discuss": {
-        "count": 1215.0,
+        "count": 1237.0,
         "seeds": 12.0
       },
       "election": {
@@ -42,11 +38,11 @@
         "seeds": 12.0
       },
       "endorse": {
-        "count": 218.0,
+        "count": 216.0,
         "seeds": 12.0
       },
       "export": {
-        "count": 48.0,
+        "count": 56.0,
         "seeds": 12.0
       },
       "festival_despawn": {
@@ -62,59 +58,59 @@
         "seeds": 12.0
       },
       "gossip": {
-        "count": 594.0,
+        "count": 643.0,
         "seeds": 12.0
       },
       "gossip_rep": {
-        "count": 7495.0,
+        "count": 7059.0,
         "seeds": 12.0
       },
       "greet": {
-        "count": 6645.0,
+        "count": 6829.0,
         "seeds": 12.0
       },
       "import": {
-        "count": 174.0,
+        "count": 163.0,
         "seeds": 12.0
       },
       "invite": {
-        "count": 1161.0,
+        "count": 991.0,
         "seeds": 12.0
-      },
-      "leak": {
-        "count": 1.0,
-        "seeds": 1.0
       },
       "meet": {
-        "count": 1161.0,
+        "count": 991.0,
         "seeds": 12.0
       },
+      "pact_dissolved": {
+        "count": 5.0,
+        "seeds": 4.0
+      },
       "pact_formed": {
-        "count": 48.0,
+        "count": 58.0,
         "seeds": 12.0
       },
       "pay": {
-        "count": 14205.0,
+        "count": 16339.0,
         "seeds": 12.0
       },
       "produce": {
-        "count": 1532.0,
+        "count": 1612.0,
         "seeds": 12.0
       },
       "rally_oust": {
-        "count": 358.0,
+        "count": 270.0,
         "seeds": 12.0
       },
       "shortage": {
-        "count": 747.0,
+        "count": 734.0,
         "seeds": 12.0
       },
       "spoil": {
-        "count": 1851.0,
+        "count": 1872.0,
         "seeds": 12.0
       },
       "world_other": {
-        "count": 438.0,
+        "count": 433.0,
         "seeds": 12.0
       }
     },
@@ -141,7 +137,8 @@
       "2026-08-08 E-export（AS5）货出→钱进（车道 E 第三片，移金标，§0.8 双路收敛 SOUND_WITH_FIXES/docs/158）：export lane 把镇里过剩的【豆子】经 _stock_move(豆子,−sold_qty,'export') 出港，同时经 transfer('external','town',revenue,'export*<qty>') 把货款【先收】进 town_coin（external 是 E2a 已进 #34 守恒集的外部账户）。三锚全动且可归因：每个出港日新增【一条 external→town pay(export) + 一条 export 货事件】进 event_digest（modelpath C 段/scenarios 移）+ town_coin/external_coin/豆子库存状态进批量 digest/chain ⇒ seeds 段【12/12 全动】(seed1 事件 3436→3448=+12 export 事件)、scenarios 段 8/16 动（export 是 surplus-gated，20 天短局里只在豆子累到 floor 以上且 external 付得起的 seed 触发，其余惰性=不动)、modelpath random_full 网格移。标定：good=豆子（F4 物理库存 surplus 探针 as5_surplus_probe，排反馈耦合货整洁+供给紧货口粮/屋瓦/柴薪），floor=36（贴近最坏多日净耗 39、held-out 13-30 #40 全绿不饿镇），price=1/2=0.5 钱/件（<import 0.75 保闭环 external≥0；F4 §六 goal② 结构性赤字镇 seed 18 仍跳工资：import-only town_min=0/跳10 → export 后 town_min=0/跳1，未被喂平），batch=6/every=3，F5 显式限 N=12（prod_pool_num≠den 惰性 ⇒ CI 4a N=16 零风险）。硬门：新 #46 出口贸易原子性绑定（F7 命门，一次成功 export=恰一条 external→town pay(export)+恰一条同 sold_qty 货事件，严格 pay,stock 交替+逐对 qty 相等+货/港合法）入 HARD_IDS（两份同步）；#45 泛化双向对账 external==Σimport−Σexport（F6 guard 重构：export 项在 import lane 空时也算）；#38 白名单+export（−号臂）；社交排除集+export（F3 #2-only）；#35 external≥0 臂复用。负对照矩阵 as5_negctl_probe 9 态全中：★F1 ship-for-free（出货不收钱）现役 #34/#38 全绿=外审说的漏洞，被 #46+#45 抓；F2 跨边抵消 #45 被净额骗过绿、#46 抓；收 N 发 k #46+#45 抓。off 门 2 轴实证：轴①删 logistics.json ⇒ 与 pre-export 树(ce33072)逐字节一致(seeds 1-4)；轴② export 无 price_per ⇒ 与无 export lane 逐字节一致(惰性非免费出港)。goto_tick 先收后出回放逐字节一致(digest+event_digest，as4_replay_probe 6/6)。held-out 13-30 硬 #34/#35/#45/#46 各 18/18、#40 18/18、饿穿 0。",
       "2026-08-09 E3b（闲聊-attach treat 链，移金标，docs/164）：coco 由 spare 零工转【糕点师】，在广场 counter_pastry[31,23]（type 摊位复用 counter 槽 ⇒ 零 WorldView 改动、别名预算不变）产【糕点】（produce.糕点师 无 inputs、照抄咖啡师形状），消费【挂在既有 闲聊(social) 动作】上（consume.闲聊={糕点,1}）而非新加 town 平面动作——这正是 E3a（docs/153）实测证伪的稀释源：新 town 动作加 60-80 决策槽/seed、系统性压核心产出约 0.03。本片零新决策槽：闲聊本就 ~150-200 次/seed 被选中，而『缺货绝不阻断动作』红线保证其选中频率不随糕点库存变（有糕点照吃、没糕点照闲聊+写 shortage）。三锚全动且可归因：①做点心 job-gated 广告给 coco 加一个候选 ⇒ modelpath 候选规模 max_n 42→46、C 段 random_full 4/4 seed 全移；②糕点 produce/consume/spoil 事件进 event_digest ⇒ scenarios 16/16、seeds 12/12 全移；③town_stock[糕点] 轨迹进批量 digest/chain。★核心验收锚（留出 seeds 13-30、N=12、backend=null）：口粮/柴薪/屋瓦 满足率 median Δrate=+0.041/−0.001/+0.006（口粮 12/18 上、柴薪 9/9 平、屋瓦 10/18 上）——与 E3a 全三货系统性 −0.028~−0.036（66-78% 下）方向相反；NULL 对照（coco=糕点师但删 consume.闲聊、糕点成死货）证 consume.闲聊 本身零稀释（柴薪 −0.028/屋瓦 −0.018 的残余来自 coco 转产者这一不可避免项，非 treat）。off-gate：删本片键 ⇒ S0 金标 12/12 逐字节回 pre-E3b。#40 12/12、硬 12/12、det 3/3。标定 batch6/W48/cap20/spoil1/start12/闲聊 amount1。HARD_IDS 未动（additive 无新不变量）。",
       "2026-08-10 修 standing 漂移翻号 bug（Codex 外审 P0-2）：S1 名声每 3 天向 0 漂移的旧实现 `x - signf(x)` 对 |x|<1 会【翻号】（−0.2→+0.8，接受规则 STANDING_K=6 放大成约 6 分 acceptance 摆动，非可忽略噪声），把慢淡化写成永久跨零振荡。改用 `_standing_drift = move_toward(x,0,1)`（向 0 至多 1、不跨零，纯 abs/sign/min、无 libm ⇒ 逐字节可复现）。加 Harness/S0 性质自检（9 向量：不翻号/绝对值不增/零保持零；旧实现在此【必红】，已实测）。这是行为 bug 修复、长期轨迹改变是【预期】（非任意重烘——性质测试是正当性凭据）。三锚（golden seeds+scenarios / modelpath / ledger）全重烘。",
-      "2026-09-13 docs/193（用户批准的有意移动）：室内按规划重排 + 新家具广告位（马桶/澡堂浴缸与洗脸台/赏画/静坐/祈祷/逛集/弹琴/读书/吃点心）、民居/杂货铺/图书馆挪到中央街区旁、镇上 41 栋房子占地挡进导航（map.json solid_lots）、5 座能进的设施 + 镇上居民为 hunger/hygiene 去公共场所的行程（Sim A2）、九条工位广告 +4（#40 N=12/N=16 回到 ≥11/12）；另修一条潜伏 livelock（危机中候选与承诺 pre-empt 同尺，Sim 决策入口）。S0 12/12 硬+软全绿、det 3/3；DetGate 四轨 16/16；ModelPathGate C 段随之移动。"
+      "2026-09-13 docs/193（用户批准的有意移动）：室内按规划重排 + 新家具广告位（马桶/澡堂浴缸与洗脸台/赏画/静坐/祈祷/逛集/弹琴/读书/吃点心）、民居/杂货铺/图书馆挪到中央街区旁、镇上 41 栋房子占地挡进导航（map.json solid_lots）、5 座能进的设施 + 镇上居民为 hunger/hygiene 去公共场所的行程（Sim A2）、九条工位广告 +4（#40 N=12/N=16 回到 ≥11/12）；另修一条潜伏 livelock（危机中候选与承诺 pre-empt 同尺，Sim 决策入口）。S0 12/12 硬+软全绿、det 3/3；DetGate 四轨 16/16；ModelPathGate C 段随之移动。",
+      "2026-09-14 docs/196（用户批准的有意移动）：P1a 家计——每 2 夜水电账单（冬季加炭火）+ 欠费（封顶 20）、欠费时洗澡只补 60%（凉水澡）、出勤记录与连续 5 天全勤奖 2 币；付不起饭钱照吃不加代价（赊账开关默认关）、欠账零工拉力默认 0。S0 N=12 硬 12/12 · #40 12/12、det 3/3；4a N=16 硬 12/12 · #40 12/12；DetGate 四轨 16/16；ModelPathGate C 段随之移动。"
     ],
     "scenarios_baked_by": "godot --headless --path game --script res://bench/DetGate.gd -- --seeds 1-4 --days 20 --bake-golden game/bench/golden_digests.json",
     "scenarios_godot": "4.6.2-stable (official).71f334935",
@@ -150,221 +147,221 @@
   "scenarios": {
     "betray": {
       "1": {
-        "chain": "2802512972",
+        "chain": "3242715962",
         "days": 20,
-        "digest": "3997582697",
-        "event_digest": "2093838816413163420",
-        "events": 1156
+        "digest": "2802814540",
+        "event_digest": "4133516251751592088",
+        "events": 1147
       },
       "2": {
-        "chain": "242408857",
+        "chain": "1770436576",
         "days": 20,
-        "digest": "2667968432",
-        "event_digest": "6040371697821793455",
-        "events": 1058
+        "digest": "1087913255",
+        "event_digest": "581685084580434588",
+        "events": 1214
       },
       "3": {
-        "chain": "796119967",
+        "chain": "1916020891",
         "days": 20,
-        "digest": "2539206048",
-        "event_digest": "8559990736043195982",
-        "events": 1096
+        "digest": "2344593927",
+        "event_digest": "6621918073701995817",
+        "events": 1181
       },
       "4": {
-        "chain": "1116623881",
+        "chain": "2349619162",
         "days": 20,
-        "digest": "1111189739",
-        "event_digest": "8067421311883205687",
-        "events": 1147
+        "digest": "1987950680",
+        "event_digest": "3670273253013747993",
+        "events": 1163
       }
     },
     "default": {
       "1": {
-        "chain": "4000609685",
+        "chain": "2658442084",
         "days": 20,
-        "digest": "2886053011",
-        "event_digest": "1205249314343868805",
-        "events": 1178
+        "digest": "94250143",
+        "event_digest": "2020566346485096394",
+        "events": 1282
       },
       "2": {
-        "chain": "940548658",
+        "chain": "2588112881",
         "days": 20,
-        "digest": "452101234",
-        "event_digest": "4445813460251979528",
-        "events": 1201
+        "digest": "1646529913",
+        "event_digest": "3571556871592255936",
+        "events": 1284
       },
       "3": {
-        "chain": "2651589535",
+        "chain": "1040333646",
         "days": 20,
-        "digest": "949493289",
-        "event_digest": "5596444026035476475",
-        "events": 1185
+        "digest": "3195213723",
+        "event_digest": "2000066832696490465",
+        "events": 1265
       },
       "4": {
-        "chain": "3963319188",
+        "chain": "2333837767",
         "days": 20,
-        "digest": "2410518175",
-        "event_digest": "5124541677640156283",
+        "digest": "4140949987",
+        "event_digest": "6783452802055276480",
         "events": 1279
       }
     },
     "faction": {
       "1": {
-        "chain": "2295449541",
+        "chain": "1596568962",
         "days": 20,
-        "digest": "2248467220",
-        "event_digest": "3504338335198965136",
-        "events": 1132
+        "digest": "534932217",
+        "event_digest": "8098019170089420991",
+        "events": 1169
       },
       "2": {
-        "chain": "4089110249",
+        "chain": "2451396912",
         "days": 20,
-        "digest": "899275283",
-        "event_digest": "2429594894189312621",
-        "events": 1055
+        "digest": "2346499634",
+        "event_digest": "7969702600454023399",
+        "events": 1119
       },
       "3": {
-        "chain": "861056015",
+        "chain": "1794172121",
         "days": 20,
-        "digest": "4122706206",
-        "event_digest": "852816770775924018",
-        "events": 1063
+        "digest": "1192354161",
+        "event_digest": "8520320154557839850",
+        "events": 1118
       },
       "4": {
-        "chain": "770942514",
+        "chain": "502133639",
         "days": 20,
-        "digest": "3584454360",
-        "event_digest": "2631273107782707046",
-        "events": 1005
+        "digest": "125314448",
+        "event_digest": "7390651268713721830",
+        "events": 1035
       }
     },
     "freerider": {
       "1": {
-        "chain": "1352767725",
+        "chain": "4285472286",
         "days": 20,
-        "digest": "792890449",
-        "event_digest": "7408343537900912309",
-        "events": 1108
+        "digest": "3766394249",
+        "event_digest": "3241207944677304094",
+        "events": 1194
       },
       "2": {
-        "chain": "2938917841",
+        "chain": "2797716055",
         "days": 20,
-        "digest": "4182772773",
-        "event_digest": "8877543119047519569",
-        "events": 1071
+        "digest": "1431174745",
+        "event_digest": "6849627617875146271",
+        "events": 1145
       },
       "3": {
-        "chain": "3630312190",
+        "chain": "3909934452",
         "days": 20,
-        "digest": "2562503308",
-        "event_digest": "367047617018716519",
-        "events": 1120
+        "digest": "215372308",
+        "event_digest": "7052181661635859120",
+        "events": 1168
       },
       "4": {
-        "chain": "4233935703",
+        "chain": "1097092837",
         "days": 20,
-        "digest": "700789487",
-        "event_digest": "1566739828791825793",
-        "events": 1103
+        "digest": "4262318352",
+        "event_digest": "2698019469732366509",
+        "events": 1063
       }
     }
   },
   "seeds": {
     "1": {
-      "chain": "1179409296",
-      "chain_ck": "e23c44e,159ab483,c927c5fe,7db7f1f7,5881454d,2d00aed2,a2518eb9,a0bb1580,3d03ceb1,71e4c46e,834567b3,87aa6e80,4ad04e0a,1fed3530,e73fa8eb,2b38a4b9,38af625c,801fe01d,bfaedd81,ee747595,391042c2,ca828649,bbca29f,29c44e27,4ecfd30,fdc203a0,2b769a4d,f85be996,68e96df6,2855e85d,95206210,73d7e265,e59493ad,47f600d,72fcc268,cf523055,68889b39,ffaefb7b,8ef4d310,1f961c18,e3e06473,ba0ca1a3,757bf501,8877e812,4757182,2020a652,98a97434,f41bcb03,c94068d,53fa2404,937e82c0,b9fb0175,2efc75bf,1dba9262,a6f31e58,5531a435,4db66d8e,180a3495,a48c1717,464c5b90",
+      "chain": "2893031830",
+      "chain_ck": "e741278a,24010aec,c659ae62,568429b7,e446d90f,e2be49d0,d157a6f1,45b9c7e7,7f57b79,91aa2c85,9fdcbe54,22d2fe86,e081bcfc,d293baaf,e9b15bf6,fd6aebf7,ce43783e,3862693a,87174e51,9e749b64,bef94a54,b335e1d7,1724c5ea,ae68c5da,9dadd441,4c2f64ff,ca6d0b1c,d69894b1,5c6e7b59,13a88c3f,4f3b6a88,928eb225,face165,350b2285,aa05b33c,a4101eac,3006fcad,be8afe2e,ab1f1fa4,92e78699,c109be4f,fc9de3ad,74d5ea1d,c22ed56b,bab43bc2,fa37cf7f,810a4b8b,27bba8f5,b58f2c0a,197e4705,87ffa308,f6e63405,b09c75df,f7edc0fa,428ae152,26c9b319,d7376857,5d4188cc,9c39dfc3,ac702996",
       "days": 60,
-      "digest": "2400751947",
-      "event_digest": "5676324352567476810",
-      "events": 3596
+      "digest": "3081049492",
+      "event_digest": "2415602426597403260",
+      "events": 4026
     },
     "10": {
-      "chain": "341227016",
-      "chain_ck": "eaed879f,65974a53,712d8d18,a2d9579c,6d1fbde5,dee08d1,a3eb5576,9ef507ed,e7341d5c,940c2c89,9dc5499b,5c41d96c,88a7f500,fe7f729d,8e832ce0,b0c3ea9d,6d376ea1,3e159554,2e92cf45,5300a05d,aae97f8,12142668,f1dc4aaa,63fc46f1,664b0d10,38a66311,7da892aa,470bd929,c98a1e1c,e2eaa233,3574046e,60fb1666,64cc28bf,cb540ac5,c8c07d7e,e1ded9bf,8d468180,9c6bc02,f6d851f2,353f5b96,b70bbf09,dd450e4e,6a693e51,f79e8e8e,c6075323,b652613b,9e0cc0f2,a90fb43e,f3c560fd,c00d8a9,e3ce4df2,1e8fd3d9,1b367a58,3af3e05e,74bf467c,780acfdc,a5c9cd65,f84d643,8ef7ca3e,1456b608",
+      "chain": "3099201649",
+      "chain_ck": "7deeda23,ab621fa9,4fd44837,15925d96,68a7d0d,e1c6a1ab,f487c1c9,5c1e6bce,fdf93f19,67d19360,e542f6ca,9914beb,dc13e00c,5b940a5d,63e911a8,38e6df31,4234ff31,9fd5f780,1acbd662,5cb579c5,b580fea1,6363762d,2b76d11d,a188a33,e9434370,b813dcaa,ba582771,93ab639,894570bd,32f96196,c0e7231d,cd064d96,387df408,f057356c,360c8360,a98d2ae6,900e9b4c,6da8b074,a5ebb80,b9f1965f,b4bd08d2,1bffe952,4aacf46f,6216d33d,cfde6db2,45066a5c,97d9d263,29b31185,32c3621a,975e3526,5a4e6b0,f1e3ed01,1065c79b,5021d094,24def141,287e4706,15608117,8773ca0c,907f5ca9,b8ba1071",
       "days": 60,
-      "digest": "4232126427",
-      "event_digest": "6049490190876145093",
-      "events": 3838
+      "digest": "2845625365",
+      "event_digest": "3201058490164442957",
+      "events": 4016
     },
     "11": {
-      "chain": "4085420939",
-      "chain_ck": "6659867c,bde7c6d2,baec459f,2b755a52,709ae0de,752bb9a2,255c589c,c3815875,dcbee9e0,f9f43a24,27d620ec,64b9a445,c1323f56,3b9a3322,529bfd9b,1c7d6823,2972a0cb,10b309be,8e851129,37aafd6f,30cf7cbc,4d5fb763,cd1eab96,f3c784a1,a1c997e5,a1cd7bad,4398ff9f,ebfbc8b0,5ff26354,6edc24c4,b0196005,2ba381b,47c82094,eee35f9f,f5a3bd47,1d4aada5,134c7b4,42f80d08,e8c329e1,e206db65,4fca3cf2,f4ab75e9,3eebaf56,50b80f09,1d330661,d6ed313b,d0965441,1e096f74,1c9b340,a3f57b3e,176b83ed,74b7dc5a,5e6db722,519789f5,8fa2d026,45e8c7e,32382810,45e68f3b,979e8464,f382938b",
+      "chain": "39586444",
+      "chain_ck": "90f30a68,910fdc35,282c207d,d488bedf,f4bbcb27,495c4d1e,4c05ac4c,30b526f3,a9de1029,2ed676ed,a1dab594,37aeb8be,59eeba24,80eccd19,1c1b4b12,9598e935,8d3d45bb,2b0286ba,87f37fa9,9ff9e6e,faf9bc3c,faac2caa,86b54025,a422688f,99b494f7,c691be06,8497de14,2d90d6c9,153dcba6,b5cd4273,34b04bc1,cc64f06e,a3345b54,f24a3a05,a85c82ed,a65cdc4,9ff11bfb,f43045a6,d4410060,89664fdf,a20d761a,e8d63a6c,45e9873a,4e03ab08,a52eb887,d805fa59,b158a891,641c861,ae7c82fd,7f54ebb2,40f84e87,4ea38836,1884f4c4,fa1a213,b295e8ef,39d571b5,8a52f182,dc33c7f4,21468dd2,25c0a8c",
       "days": 60,
-      "digest": "1366773580",
-      "event_digest": "3578188888731930437",
-      "events": 3731
+      "digest": "2278379454",
+      "event_digest": "3329511564806722352",
+      "events": 3847
     },
     "12": {
-      "chain": "3827423867",
-      "chain_ck": "1f90886e,99bf5d88,b6509af0,cef828c3,d27d8a4b,70a6bfd4,1515654a,3d764be5,142aa1ef,835dd8a3,a008fa9a,27a97cea,fd537bc6,1515cbc4,fa27b2a0,389090c5,5455a364,43fbb585,905dbb05,cefd9806,7abd291a,db80ddf2,d4bd2852,bdbae165,94245a74,ba51a22e,8c98c951,4be2bfd4,b6316100,35c42206,929e9e3f,5dafa6ed,f4baddb9,ab93b55e,a091f0d3,c536eef,20e65ec3,17bac93d,4d35ea5f,6d63e69f,9d69858d,e8dd63ad,2474705e,f21320ca,b42f9a17,59041e6f,c8ec14f3,a7237add,6136f5b3,f0bdd2e9,bd0d15bc,cd84dc55,14dafbaa,634aeb0,92621127,9c685c29,2c191cb9,9c10d172,e1fa3986,e421da7b",
+      "chain": "2014298751",
+      "chain_ck": "7fd75741,bcfb1dbc,cd84f1f7,70fe3d14,88509719,91b7424,d58cf147,f176b140,c2a2afc4,220671ca,8bdbbde2,67df6fcf,b5bae747,f58136f1,b8c57dc3,af21a89b,a403bf13,47d6d5c6,1db8c0b8,154afbbd,4ac2d120,ada40a48,9d36fa0b,55e7e07b,4438b147,6c5c6d27,fe24188d,fc89aeec,8b07be3a,9ac84bcd,d5a96955,87655bd9,bde31faf,166ecc5f,c2df6dc6,2f158f0e,c8ee2ca3,b8db2985,adcde43b,c7299d5b,14412e28,d1d02d36,3aed3f93,34ef68d3,ef76ba46,bb62c74c,95e6bd5d,e377979b,e8377d30,7d68226a,cda83037,bbc9d2a2,fd2b6306,c9700e6e,a5b53a94,4c05f4ee,5ced6171,aa360d63,5241601c,780fc27f",
       "days": 60,
-      "digest": "988840387",
-      "event_digest": "6958084476773091891",
+      "digest": "3907316172",
+      "event_digest": "4810224476508093370",
       "events": 3915
     },
     "2": {
-      "chain": "2789347485",
-      "chain_ck": "1f5b45af,4ad8c792,f7310bdf,7b8227d0,4c402db1,d3e553f4,3e26a846,ed831aea,5098cb52,63b9dfd6,839d851,1bcfe80e,38b150c6,cc419a39,8f785d8f,faf1b45f,4f83c278,444825d0,22209f2f,380fa232,ee85c8eb,974dff6,8c67e93a,5cbec103,6697f48a,6e470565,543dff7a,ca382327,44dad0c3,5f73e106,536d20e7,fdfc5013,c37cf6c7,d0d39af7,495a5a40,d3d1d106,7116f568,f059d31f,c685f2a9,6b527655,9cae92d,cb8909d9,bd42b1fb,f668a847,aa85890c,b2c34675,27e946b1,c5cb900e,ba47faa7,8dfade16,de8e0c6f,c0ecd700,a930438e,68be4342,2f294d4b,a276bb57,4fe510a1,9c216a2b,df102d9,a642109d",
+      "chain": "2538389113",
+      "chain_ck": "652b9816,41095361,807e85bb,3c172ca2,76a5337e,d8077e9f,ef4a46d7,67bce78,8454ade5,8410d271,febf761c,359c4f11,d8b244f5,988a9e14,68072133,686c1510,8573a8ad,731fec0a,352c427,9a4377f1,9e4295de,c77c3fbe,39217832,ac2ad45,899cf6b0,ccbd80aa,91d652a5,5c46184,d13566b3,ce0756ea,c6448c0b,2a170a29,b39f4931,74adf8b0,bb157683,fa69c910,c1e9dd73,3df604a9,56e98543,33c7eb3a,73dbef6,b9ff9728,61e9a5d9,99d3e4b,49b773d6,92085837,44c19ec7,a8f1025d,1131bcb9,86413fde,f7725d1b,a8149153,697930f9,8d81b8da,7d18e7af,aef6f13a,351a2a58,424431d5,71b5bcb6,974cbe79",
       "days": 60,
-      "digest": "1519135625",
-      "event_digest": "1779006663512900317",
-      "events": 3826
+      "digest": "1087418170",
+      "event_digest": "6969246885474023368",
+      "events": 4047
     },
     "3": {
-      "chain": "1743290080",
-      "chain_ck": "f02a5504,e7a266bb,896be36a,ace0c02,c9cf8e9b,d6287,9549c198,371284e2,5860c80e,6899b8d8,bbf0892b,9f920b4d,e4a6f77b,8b1e657d,21e1e6c8,8f38dc51,b025e1d0,728ae4cd,db1935b5,9e0c0b9f,b3748a9e,94f8114d,6b20ff43,2c2fa8a8,75acffa9,7b12d372,f63a0f24,be2c497f,ace6487d,bb1a424f,ac41001b,c170f324,ff1b58c,3474e354,9e2c019c,fc1ef1c1,b871b019,73139804,d12847a6,e2e4ecec,2fff80d5,a97a8e4e,9a040e4d,9d37559f,96976dab,9ede55ed,26751a11,5adb02a9,894cf764,2eee52bb,1c811190,6a0a1ce3,d3112b63,24cd6189,f3992934,52498d1a,a98aba67,4737892d,c78bb95f,67e87ee0",
+      "chain": "1038951082",
+      "chain_ck": "7085f35f,3b10cb2d,269df379,2cd8e24c,7acbaa1,32d88182,8a51d137,3215a876,cf800472,4cea7d77,f7a1b66d,91e6c70f,4162eaab,15ad7b3,f762d047,e915e60f,bfd858d3,c3601690,3d13b299,3e023b4e,8b108c41,4c898a4b,85f44a3a,5c1f9846,e94640d0,bf08a8c3,6be74e8b,6fe8028c,3b2f2985,52b88672,204da680,55d7aad3,8caf223f,8f00641f,412db41a,de3452d3,6e08dd2e,809bec58,80d5118d,1b7bb518,f368a84f,f4e104f9,8f4a97c2,ddc83de5,61298e01,9753ab38,d576553e,312a4f74,60204244,e1a5de63,8ee03204,f1c62548,ff48cc74,3f38ee95,3ba03746,11dd91a5,267d6eff,25529180,218aec6f,3ded22aa",
       "days": 60,
-      "digest": "480135677",
-      "event_digest": "1437911627918887705",
-      "events": 3938
+      "digest": "4075954319",
+      "event_digest": "3218672874800185256",
+      "events": 3890
     },
     "4": {
-      "chain": "1121945228",
-      "chain_ck": "10548225,df9c7c7b,783ba101,24c0c388,26404843,fc3f0e7,8a250f6,9cbd9799,3b02385d,1d7870f5,4223c45f,238f66da,b509c91d,2972d47a,e868c9a2,255cec20,7c5cef91,f4997a22,2dbd7646,ec3b7394,ced85264,fc0d78af,d8e6c8a,4a41f8cd,7d1b625e,cc4f9623,524a948b,9b0e5708,31e15668,d089e607,b110d0a9,23281f16,f055ba64,d2d05468,8aa6da43,c16a2f35,d66ef3e2,9aad627f,e599742a,f7d14f10,b834528c,ab0cefab,b9334e9b,9b60a791,ba073f9b,a7e80842,e085cd75,9e679746,bc5d8415,23af5052,f2b20299,c5a8f34c,5b721f22,173fa75f,121e4b8f,cb8f13fa,268af4e8,cf23f216,c7a4abbc,42df868c",
+      "chain": "2000366495",
+      "chain_ck": "182dc746,aaf7f0ab,d41cc66a,eafa5df6,2a2feee,db56a2d6,1838b848,1a6212aa,43fcfadd,c63660d9,d6197823,1db876b2,a8715ddf,f5b8c0e7,133fabe6,a1ad0172,2cb67289,12ba0ac0,fbef9cfa,8b1b89c7,fb9257bb,39700d65,1947fdbc,9bbbb06a,81713e5c,5f7fff4f,eabeb130,c7d57c20,e5addee6,9879d538,9ceaa94e,9861122f,46b85b34,5403b316,38e044a2,175c04b,bcb9007,9acad297,1649183c,f57ee147,9dab7493,452b0e3d,31a9875,804d45a6,cac8c3a1,4d8d78ea,ed6112c0,51ba23a7,255462f1,f646e571,fff00a8,f9215301,11ead5b4,bc4207a5,79c68c9,7adc8df5,cc5f15f7,38ffbecb,58fa91ab,773b2b9f",
       "days": 60,
-      "digest": "3924706895",
-      "event_digest": "2885631351151623788",
-      "events": 3864
+      "digest": "4255839750",
+      "event_digest": "7761517199671320515",
+      "events": 3799
     },
     "5": {
-      "chain": "3294908771",
-      "chain_ck": "6fef07db,767484f0,1b64e47a,1d0eab9f,237b454c,e2ecec12,241398bb,3bc32c5b,a64ed02c,7d3bcc33,e08535ee,626be423,d85160fe,d62adf2b,8f0984a,aca9dfd3,bc9edec0,4eb2e84b,b1af8851,b2b63034,7cd34314,78475567,c9a39260,acc96dc2,7ec2303a,39d4a3c6,4bd5a51d,a9cabe3c,66bc7392,43688dee,8730e653,44109523,b7c199e0,a36f65d6,8cb956cc,5839fd9,739afc08,3bcebbb4,d056fefc,7a3eacfa,f79ff435,e3e175dc,bc555636,5a14120f,df2f8ce9,27736f9f,9fe3d6d,8880adf4,895a8cda,16d3fce5,d6d5a02f,cd7f977b,7273f352,35cd1f27,e674f9ee,93731279,e29ad9ab,97df414f,69cbad3b,c4645163",
+      "chain": "1921883508",
+      "chain_ck": "df29973c,7288c4bc,bfca1ff4,d413c04d,18efe9ff,f940f60f,32df1ddb,8b65a805,8aab0da7,17051ca3,679838ef,738de232,45d33c7f,77d89a12,b700dd48,afd39c36,6c366c11,ed67be1f,10f8b044,b230774b,302c861e,ffb5712b,cc87f5f7,2949ba83,76eb494d,d4d38349,5a377f51,31fe17c,81a2bed6,e21e0fb3,177a628c,f3da1f34,19be0816,f89797f,6dee3667,85bee960,f3a68f9c,2e982354,253808d0,bca1d19d,c2082e8d,c6186952,c60b60f4,88a2067c,f7cca26e,c7047cc0,d43c6fd6,488fd10,a9ef76b,6b3a501d,e406f6fa,b8a8f99,da425d1c,f9279366,57b1b60b,934d849f,65ac8edb,19ca2ddc,af511b85,728d9d74",
       "days": 60,
-      "digest": "113212716",
-      "event_digest": "7750025863246792486",
-      "events": 3772
+      "digest": "3646853848",
+      "event_digest": "3889110100670140976",
+      "events": 3856
     },
     "6": {
-      "chain": "377954234",
-      "chain_ck": "138fbc2,ed2a4b8a,d4378979,81ce3b6d,82abcdc5,c80fb41f,8d67db45,c42b0b6b,43af7b66,1ade52b8,df6c1758,3660d1a0,8c3f4d8c,f7ef1a5e,482a9ec4,1194849f,5eade028,2df8b41a,4ed4f86d,d2cecde8,d0614514,e562fb28,acf918cd,95cdb18a,4e211493,8042eadd,728ce507,82652c9b,f2285675,bc7119d1,42f5b191,b16a35a0,342504c4,6f27ea0,fa3038a1,473dd605,527f1b0e,f222a167,a806ae09,9ea2a264,136aac50,12bcb90,75c6bef0,67d78aec,7ac4181b,290c9271,8f78e2a8,aafbd599,a2fb8a5d,58afb841,d6862677,3fa56344,2579501e,594cd2f4,45081a81,3112b35d,388fb661,6f660dd7,9dd3dec9,16871fba",
+      "chain": "2054370835",
+      "chain_ck": "4fc930ab,ec62eec5,1417391f,5af5179a,76ff56df,6bfef2e6,914e911b,5c14deda,5ef1e19a,8bc236fe,576dce90,2a8b90a2,6884baa9,b542355e,7ddd494d,5baa9766,14667c49,114b82d3,52a10bef,52fafebb,2a07c36,8376e17f,a629e09e,62675678,ee35cedf,5b6f90a4,318578ab,a7a86c87,a739c831,506faf2c,fc3410c1,41ae0f16,34a75f69,e4efbfc5,4055a126,af6c7c16,85017591,344dfd60,98e36cf,82a27673,20a8c4a1,cefb5f18,7e0d6614,23033a5f,48d990c0,42a3b072,aaf371a7,5b8b50de,9ff0d581,f8f9a6ae,36dd4f9c,9ecee17a,5d2a1452,ee75bb6f,6d5918bd,10b08a97,2b04e93b,9c805ead,5348f056,7a733613",
       "days": 60,
-      "digest": "1703862799",
-      "event_digest": "6983105101154245709",
-      "events": 3910
+      "digest": "1133094126",
+      "event_digest": "3211559772053239777",
+      "events": 3924
     },
     "7": {
-      "chain": "2577072162",
-      "chain_ck": "6a659cad,aea46670,27e78512,f46b23c,3ec4e9d2,c133c20a,950c8d0d,9ade6a02,65817dde,4ee2ca0e,ac238f,11b8d9d3,fcec9f8b,8cc3e6e0,76d68e8,ec7c3405,e5f1ea43,5b1baeee,35966dd1,8f47c208,6fc0f386,b0875f22,48758066,f4821c02,81283c59,4541b76a,6392a447,9fcd4b78,df2546f1,ae85a829,5e2b96c1,44a2d1e1,c9055826,7c92d259,993be5f2,a05199ea,b49fb032,c92b835e,715ce1cf,98518f8,d2f3877f,cc1aed10,3676bdb9,7ac82617,93353df5,dbbd92d4,f5d13566,9605ff56,79d6093e,a2fb8d37,cde1314f,ccbbbd40,6a00f4ad,cf27aede,92dfb19d,2e446577,1fe0f29e,4a7d5da6,56d1c710,999b0022",
+      "chain": "846123260",
+      "chain_ck": "3a5d64e9,c4028949,83baa13a,d9c7241b,8173557e,3eaba712,6c00510,3f1a815b,3af8879e,73b90d48,db144400,a6f26cad,198b6167,8501b157,fdafc593,4447bfd1,94d318e9,2f48e505,9f390157,d215f26e,698b7f7f,7788d1ef,f121b421,245181a4,d25c1356,274ac1a1,752079b9,fc52783c,f14b445f,57a12ac3,8dbe0297,7806e0cb,27c118e3,560f9fbe,8d92376,45557a03,d35107ca,6289b68c,3feb2af0,5589496f,88256f11,2a7ccb85,eef5264b,fad6213a,93622a5b,fc0ae855,4b9de98d,d0585fe7,a06948c5,44a65a8,de911748,cedbc477,e1cb5e18,307747ee,8d5a63d,19217cc8,43e5b74c,71f3f9e4,1160f509,326ed0fc",
       "days": 60,
-      "digest": "2748360039",
-      "event_digest": "4916897719984270929",
-      "events": 3724
+      "digest": "952735290",
+      "event_digest": "1385495155225476511",
+      "events": 3767
     },
     "8": {
-      "chain": "1638776772",
-      "chain_ck": "b323818d,3d4158fc,739abb01,ced1667,e5429241,5cca9ad6,6f66c7e7,1d30d212,8e5614d1,419eed3b,a28e57fd,a7993d5c,94923b19,d1f73300,2d89c808,785b65fc,42004ec1,f43c38f1,78a815f4,40359738,7444f83c,9f394908,cccf8076,99671526,7c410c26,36e5ddcc,26a2496e,cb0f5640,d45470e1,5675e50f,e35d6c0c,70c1c47a,d6cd8ebf,d4826685,c4810e4c,dbdde99c,3820644c,aca5d90c,47c64ae6,b60a32b4,350cd286,f23fa586,af06cccc,6cb8bfde,ae858f57,1b9dfe47,ece10c4e,f375c228,b812f50,2a3f29a4,eaa56bc9,6bd00380,b5f0a1b1,3f35cd74,cadf98ab,b2408219,8c9dee6c,a0e9dbaa,d5d3589a,61adbfc4",
+      "chain": "4032917853",
+      "chain_ck": "b45381a1,d75552d4,e4f270a9,2a37ef1e,b7b4ed88,8ef083f8,7593ca06,e83a4eb,9840b102,81ae9a19,a1b01d2c,34ea705d,1c927875,1e6d14b4,911c4b9,391a2c43,7e46e7fa,6edf8fce,7286daa3,2e44e985,711f6eb4,19c34f22,bd00070b,6dd2bae5,d3fa4b45,c4ef1325,ee54a6af,854eb0c6,2cc63e68,b0f20e08,2c37ead4,cf6493ef,547131fc,71b83437,e876e23f,795f5686,297b45a8,1d7d64f5,2821daf3,3bc0104c,c361a320,dcf0358a,82660cd,9caa2b41,439327cc,a46961f4,e12f6c86,3a84f8c8,b05fc1d4,d8e4a712,540b30c6,9d30d726,8b348c7f,e71533e4,24209171,b3e533ea,b6ddbfc3,517abe6e,6328fa75,f061715d",
       "days": 60,
-      "digest": "2466965632",
-      "event_digest": "3393646119301451473",
-      "events": 3783
+      "digest": "1977298436",
+      "event_digest": "7328070712935073299",
+      "events": 4021
     },
     "9": {
-      "chain": "487391515",
-      "chain_ck": "c40f2a46,26457d32,d75a4f8f,b728b76c,2f48d6cd,6c293808,fb246ddf,98a2351e,1fb1badb,9af1021b,36e4fdff,49a51377,7966c10b,a7b8f742,db8f9331,4913a81b,69edab91,af74c62c,207b5c70,93ad5c14,4edd3d9b,bfc913e3,dbac4ec8,9fea4a33,cd62e253,b00d6512,4d191c8e,2341c6d9,6c6f59ec,52a53da8,5dd38d03,124e7872,1d09ab15,e43a5ffd,a5a0284e,327b2829,1b10eb64,95491083,f2c9d597,5ca1044d,7fd10a8a,59e01071,17d12074,1e90ce4,8584a0ce,11caa4e,3ee500ed,37c240f,46265b0e,e810fb60,4cbc5c94,805cfafc,88ee25ee,bd11ed40,80f91165,83794faa,953f743a,b573ac05,1f17bc34,1d0d011b",
+      "chain": "2996920954",
+      "chain_ck": "7a7f003f,7b3bf171,e69bf772,a7fa87fc,ffa8693d,fc87d4e3,59f4241e,9d89ffbe,1d7bf777,41a01371,10f52d10,4ebe657,ed84f967,83784177,41b949bd,13d6fab9,5a0c5c5f,1f26f460,122406,5148baba,822a7dc5,8c47b61d,77310486,fac0cc66,7f74b94c,5f5b2fab,510e79f7,9f28c045,e2617f6d,66d5d34d,c706298c,9bf7663a,47445d85,a98fdfcb,c0383c38,67944e15,8f0002e8,6652b06,fe31c405,2e9701fb,a282c442,3ac5e687,694e6110,efbd2bb9,a221230d,8f1ecd94,7fec168e,6db05cc1,24e32c6c,ab8b4c79,c6fc9159,aa0f0ffc,493acda3,51e41d9f,2e6028ea,adea4deb,dfaf49a9,77ceb365,3de646d0,b2a1627a",
       "days": 60,
-      "digest": "4189360869",
-      "event_digest": "6993214567156108890",
-      "events": 3687
+      "digest": "3696175089",
+      "event_digest": "3583767846883185580",
+      "events": 3905
     }
   }
 }
