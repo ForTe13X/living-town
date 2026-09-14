@@ -3,8 +3,8 @@
     "note": "互补性锚：哪些夹具是哪条不变量【唯一】的活输入来源。由 tools/gate_fixture_audit.py --run --bake-ledger 烘，由 tools/gate_complement_guard.py 每次 CI 现读一遍。期望值不写在守卫里，只写在这里——守卫那一侧没有任何冻结字面量。",
     "baked_by": "GODOT=… python tools/gate_fixture_audit.py --run --bake-ledger",
     "baked_at": "2026-09-14",
-    "baked_commit": "d3ac42f4b8dc7a3aa7933876a15c7d5ca628b905",
-    "baked_game_tree": "4b734794a896f5256fea165b8018632fb59cc14e",
+    "baked_commit": "f0ee1da1e1df4e15d87f78bc440b4197791cff02",
+    "baked_game_tree": "e4a129a60bc7320e82b5d4fd5a236acc77c7248b",
     "hard_ids_at_bake": [
       1,
       6,
@@ -91,7 +91,9 @@
       "2026-09-13 · 烘于 commit fa5c146 · 7 个夹具 × 38 条 C/G 不变量 · 烘锚时处处空转的：（无）",
       "2026-09-13 · 烘于 commit a272a64 · 7 个夹具 × 38 条 C/G 不变量 · 烘锚时处处空转的：（无）",
       "2026-09-13 · 烘于 commit 81876df · 7 个夹具 × 38 条 C/G 不变量 · 烘锚时处处空转的：（无）",
-      "2026-09-14 · 烘于 commit d3ac42f · 7 个夹具 × 38 条 C/G 不变量 · 烘锚时处处空转的：（无）"
+      "2026-09-14 · 烘于 commit 7b7de7e · 7 个夹具 × 38 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-09-14 · 烘于 commit 7b7de7e · 7 个夹具 × 38 条 C/G 不变量 · 烘锚时处处空转的：（无）",
+      "2026-09-14 · 烘于 commit f0ee1da · 7 个夹具 × 38 条 C/G 不变量 · 烘锚时处处空转的：（无）"
     ]
   },
   "fixtures": {
@@ -307,7 +309,8 @@
     ],
     "10": [
       "S0",
-      "POOL16"
+      "POOL16",
+      "BG30"
     ],
     "12": [
       "S0",
@@ -350,18 +353,12 @@
       "BG30"
     ],
     "22": [
-      "S0",
-      "POOL16",
       "DET_betray"
     ],
     "23": [
-      "S0",
-      "POOL16",
       "DET_betray"
     ],
     "24": [
-      "S0",
-      "POOL16",
       "DET_betray"
     ],
     "25": [
@@ -400,20 +397,24 @@
       "POOL16"
     ],
     "30": [
+      "S0",
       "POOL16",
       "DET_freerider"
     ],
     "31": [
       "S0",
       "POOL16",
-      "DET_freerider"
+      "DET_freerider",
+      "BG30"
     ],
     "32": [
       "S0",
       "POOL16",
-      "DET_freerider"
+      "DET_freerider",
+      "BG30"
     ],
     "33": [
+      "S0",
       "POOL16",
       "DET_freerider"
     ],
@@ -477,7 +478,8 @@
     ],
     "41": [
       "S0",
-      "POOL16"
+      "POOL16",
+      "DET_freerider"
     ],
     "43": [
       "S0",

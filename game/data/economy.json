@@ -6,5 +6,28 @@
   "wages":  { "做活": 3 },
   "poor_line": 6,
   "work_urgency": 8.0,
-  "wealth_gossip": { "rich_line": 6 }
+  "wealth_gossip": { "rich_line": 6 },
+  "bills": {
+    "_doc": "docs/196 P1a 家计·账单：每夜每位核心居民（非外来 affiliate、非玩家）向镇库付固定开销，经 transfer（reason=bill:<项>）⇒ #34 不动。付不起不阻断任何事，只记欠费 arrears（先还旧欠再付新账）。冬季多一项炭火。删本段 ⇒ 无账单、无欠费字段。",
+    "items": { "水电": 1 },
+    "winter": { "炭火": 1 },
+    "winter_season": "冬",
+    "every_days": 2,
+    "arrears_cap": 20,
+    "_every_why": "每 2 夜收一次。每夜收（1 币/人/夜）实测 seeds 1-3 × 60 天：12 人里 8-9 人欠费、平均欠 30 币，付不起的饭从 1369 顿涨到 2456 顿，做活反而从 459 次掉到 403 次、镇库从 74 堆到 162-190 —— 钱只是从居民兜里搬进了镇库，没有变成上工的动机。",
+    "arrears_work_urgency": 0.0,
+    "_urgency_why": "欠着账 ⇒ 零工（不在班时）再加这么多分。机制保留、默认 0：6.0 时 N=16 #40 10/12（seed 5 柴薪断供 ⇒ 屋瓦产不出，满足率 0.46）；设 0 后 N=12 12/12、N=16 见 docs/196 §四。欠账本身的动机仍在：既有 poor_line 的 work_urgency 对穷人一直开着。另一个被否掉的替代：柴薪进口 4→8/3 天 ⇒ N=16 仍红 seed 5、6。"
+  },
+  "hardship": {
+    "_doc": "docs/196 P1a 困顿不挨饿（用户 2026-09-13 定）：没钱的后果只落在【这一次补给打折】上，从不阻断动作、从不改 need 上限。unpaid_pct=付不起饭钱时这顿饭的补给百分比；arrears_pct=欠着水电费时这些动作的补给百分比（凉水澡）。打折后不低于 min_amount ⇒ 结构上不是饿穿通道。删本段 ⇒ 不打折（回到 meals_free 原样）。",
+    "unpaid_to_arrears": false,
+    "_unpaid_why": "付不起饭钱 ⇒ 照吃、照补满、不另加代价（= master 的 meals_free）；困顿只从【欠账单】来。unpaid_to_arrears=true 时饭钱记进欠费（赊账，封顶 bills.arrears_cap），机制保留、默认关——实测 N=16 seeds 1-3：口粮缺货 707（P0 600）尚可，但 16 人里 13-14 人常年欠到封顶、零工 845→1400 ⇒ 困顿变成人人都有，不再分化（根因是镇库只进不出，P4 财政环的事）。更早的两个负结果：①这顿只补 75-80% ⇒ 打折的饭要多吃几顿，seed 9 口粮缺货 187→375，#40 丢一个 seed；②改成扣 fun −8 ⇒ N=16 上面点师在班时去玩耍而不烤点（烤点的 fun 只有 20，是全部工位里最低的），口粮缺货 600→1039，#40 5/12。",
+    "arrears_pct": { "洗澡": 60 },
+    "min_amount": 30
+  },
+  "attendance": {
+    "_doc": "docs/196 P1a 出勤记录：岗位持有人当天在班内完成过至少一次本职 ⇒ 出勤；否则记一次缺勤。连续 bonus_streak 天出勤 ⇒ 镇库发 bonus 全勤奖（reason=bonus:全勤）。work.rep 只进语音/HUD，不进任何决策（docs/175 核心规则）。删本段 ⇒ 无出勤字段。",
+    "bonus_streak": 5,
+    "bonus": 2
+  }
 }
