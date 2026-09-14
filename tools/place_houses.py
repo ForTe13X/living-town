@@ -9,7 +9,7 @@
   - 离海岸线 ≥ 6 格（沙滩/步道/码头留给海滨层）。
   - 行优先扫描、按 hash 挑精灵、放下即占位 ⇒ 同一份 heat 逐字节同一份 lots。
 """
-import json, sys, math
+import json, os, sys, math
 from PIL import Image
 
 ROOT = __file__.rsplit("tools", 1)[0]
@@ -311,5 +311,180 @@ def main():
     print("\n".join("".join(r) for r in g))
 
 
+# ── docs/193 §五/§六：--solid 密排模式 ─────────────────────────────────────────────────────────
+# 用户：「建筑群与街区要更靠近」「布景建筑要落实、能用」。旧规则（只落在 heat==0 的格上）让房子只能躲在
+# 没人走的角落里，于是镇子读作几栋楼散在一大片草坪上。--solid 下：
+#   · 房子/设施的占地写进 map.json solid_lots ⇒ Sim 导航挡格（Sim._solid_prop_cells_in_world），人绕着走，
+#     不再需要"没人站过"——只避开【最繁忙的那三成】格（行人主干道），其余草坪都可以盖房。
+#   · 硬避让不变：墙/水/树/区 rect 外扩 1、海岸 6 格、石街、门外两格、居民家/出生格、对象与地标周边、崖壁。
+#   · 每放一栋都做一次全镇 BFS：不许切出孤岛（任何原本可走的格都必须仍能从广场走到）。
+#   · 能进的设施（面包房/可丽饼店/礼拜堂/市场/大酒店，各取第一栋）在屋底中格留门，门格不挡，走 portal 进室内。
+ENTERABLE = ["bakery", "creperie", "chapel", "halles", "hotel"]
+BUSY_PCT = 0.70
+
+
+def main_solid():
+    heat = json.load(open(sys.argv[1]))
+    out = sys.argv[sys.argv.index("--out") + 1] if "--out" in sys.argv else f"{ROOT}game/assets/art/houses/lots.json"
+    mp = f"{ROOT}game/data/map.json"
+    m = json.load(open(mp, encoding="utf-8"))
+    agents = json.load(open(f"{ROOT}game/data/agents.json", encoding="utf-8"))["agents"]
+    spaces = json.load(open(f"{ROOT}game/data/spaces.json", encoding="utf-8"))
+    W, H = m["width"], m["height"]
+    layers = {tuple(c) for k in ("walls", "water", "trees", "blockers") for c in m[k]}
+    for a in m["areas"].values():                          # dock 的实体道具也挡
+        for sp in a.get("solid_props", []):
+            layers |= {(sp["pos"][0] + i, sp["pos"][1] + j) for i in range(sp["footprint"][0]) for j in range(sp["footprint"][1])}
+    hard = set(layers)
+    for a in m["areas"].values():                          # 区 rect 本身；外扩一格由下面的 grown 统一给（= 一条巷）
+        x, y, w, h = a["rect"]
+        hard |= {(xx, yy) for yy in range(y, y + h) for xx in range(x, x + w)}
+    ocean = {}
+    for y in range(H):
+        x = W - 1
+        while x >= 0 and [x, y] in m["water"]:
+            x -= 1
+        ocean[y] = x + 1
+        hard |= {(xx, y) for xx in range(max(0, ocean[y] - 6), W)}
+    paths = build_paths(m)
+    hard |= paths
+    outd = {"S": (0, 1), "N": (0, -1), "W": (-1, 0), "E": (1, 0)}
+    for d in m["doors"]:
+        ox, oy = outd[d.get("face", "S")]
+        hard |= {(d["pos"][0] + ox * k, d["pos"][1] + oy * k) for k in (0, 1, 2)}
+    for p in spaces["portals"]:
+        if p["from"]["space"] == "town":
+            hard.add(tuple(p["from"]["pos"]))
+    for ag in agents:
+        for k in ("home", "spawn"):
+            if ag.get(k):
+                hard.add(tuple(ag[k]))
+    for o in m["objects"] + m.get("landmarks", []):
+        ox, oy = o["pos"]
+        hard.add((ox, oy))
+    # 老规则的"没人站过"集合只留给园子与台地（它们仍是纯 View、人可以踩过去的东西）
+    strict = set(layers) | {tuple(map(int, k.split(","))) for k, n in heat.items() if n > 0}
+    for a in m["areas"].values():
+        x, y, w, h = a["rect"]
+        strict |= {(xx, yy) for yy in range(y - 1, y + h + 1) for xx in range(x - 1, x + w + 1)}
+    for y in range(H):
+        strict |= {(xx, y) for xx in range(max(0, ocean[y] - 6), W)}
+    # 台地沿用上一版 lots.json 的（docs/191 已眼验过的那一片）；只有没有时才重新规划
+    prev = json.load(open(out, encoding="utf-8")) if os.path.exists(out) else {}
+    if prev.get("terraces"):
+        terr = {tuple(c) for c in prev["terraces"]}
+        no_build = set()
+        for (x, y) in terr:
+            if any((x + dx, y + dy) not in terr for dx in (-1, 0, 1) for dy in (-1, 0, 1)):
+                no_build.add((x, y))
+            if (x, y + 1) not in terr:
+                no_build |= {(x + dx, y + dy) for dx in (-1, 0, 1) for dy in (0, 1, 2)}
+    else:
+        terr, no_build = plan_terraces(strict | paths, W, H)
+    grown = set()
+    for (x, y) in hard | no_build:
+        for dy in (-1, 0, 1):
+            for dx in (-1, 0, 1):
+                grown.add((x + dx, y + dy))
+    vals = sorted(n for n in heat.values() if n > 0)
+    thr = vals[int(len(vals) * BUSY_PCT)] if vals else 0
+    busy = {tuple(map(int, k.split(","))) for k, n in heat.items() if n > thr}
+    bad = grown | busy
+    walk0 = {(x, y) for y in range(H) for x in range(W) if (x, y) not in layers}
+    px, py, pw, ph = m["areas"]["plaza"]["rect"]
+    start = (px + pw // 2, py + ph // 2)
+    solid = set()
+
+    def connected(extra):
+        todo = walk0 - (solid | extra)
+        seen, q = {start}, [start]
+        while q:
+            cx, cy = q.pop()
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                n = (cx + dx, cy + dy)
+                if n in todo and n not in seen:
+                    seen.add(n); q.append(n)
+        return len(seen) == len(todo)
+
+    size = {s: bbox_cells(s) for s in SPRITES + [u[0] for u in UNIQUES]}
+    taken, lots, count, entered = set(), [], {}, set()
+
+    def try_take(s, x, y, cw, ch, facility=False):
+        if x < 0 or y < 0 or x + cw > W or y + ch > H:
+            return False
+        cells = {(xx, yy) for yy in range(y, y + ch) for xx in range(x, x + cw)}
+        if any(c in bad or c in taken for c in cells):
+            return False
+        door = None
+        if facility and s in ENTERABLE and s not in entered:
+            door = (x + cw // 2, y + ch - 1)
+            front = (door[0], door[1] + 1)
+            if front in grown or front in taken or front not in walk0:
+                door = None
+        block = cells - ({door} if door else set())
+        if not connected(block):
+            return False
+        solid.update(block)
+        L = {"sprite": s, "x": x, "y": y, "w": cw, "h": ch,
+             "flip": h32(x, y, 3) % 2 == 1 and s not in ("bakery", "chapel") and door is None}
+        if door:
+            L["door"] = list(door)
+            entered.add(s)
+        lots.append(L)
+        count[s] = count.get(s, 0) + 1
+        for yy in range(y - 1, y + ch + 1):
+            for xx in range(x - 1, x + cw + 1):
+                taken.add((xx, yy))
+        if door:                                       # 门前两格也得留着
+            taken.add((door[0], door[1] + 1)); taken.add((door[0], door[1] + 2))
+        return True
+
+    for name, score in UNIQUES:
+        cw, ch = size[name]
+        cands = []
+        for b in range(ROW - 2, H, ROW):
+            y = b - ch + 1
+            for x in range(0, W - cw + 1):
+                cands.append((score(x, y, cw, ch, W, H), x, y))
+        for _, x, y in sorted(cands):
+            if try_take(name, x, y, cw, ch, facility=True):
+                break
+    for b in range(ROW - 2, H, ROW):
+        prev = None
+        for x in range(W):
+            order = sorted(SPRITES, key=lambda s: h32(x, b, SPRITES.index(s) + 7) % 100 + WEIGHT_PEN.get(s, 0))
+            order = [s for s in order if s in ZONE_POOL[zone_of(x + 1, b)]]
+            for s in order:
+                if s == prev or count.get(s, 0) >= MAX_EACH.get(s, MAX_DEFAULT) + 3:
+                    continue
+                cw, ch = size[s]
+                if try_take(s, x, b - ch + 1, cw, ch):
+                    prev = s
+                    break
+    gardens = plan_gardens(lots, strict | solid, W, H)
+    json.dump({"_doc": "docs/186/188/193 镇上房子/设施 + 园子落点（tools/place_houses.py --solid 生成，勿手改）",
+               "lots": lots, "gardens": gardens, "terraces": sorted([x, y] for x, y in terr)},
+              open(out, "w", newline="\n"), indent=1)
+    m["solid_lots"] = [dict({"id": "lot_%02d_%s" % (i, L["sprite"]), "sprite": L["sprite"], "pos": [L["x"], L["y"]],
+                             "footprint": [L["w"], L["h"]]}, **({"door": L["door"]} if "door" in L else {}))
+                       for i, L in enumerate(lots)]
+    with open(mp, "w", encoding="utf-8", newline="\n") as fh:
+        json.dump(m, fh, ensure_ascii=False, indent=1)
+        fh.write("\n")
+    print(f"{len(lots)} solid lots ({sum(1 for L in lots if 'door' in L)} enterable), busy>{thr}, {len(gardens)} gardens")
+    g = [["#" if (x, y) in layers else ("," if (x, y) in busy else ".") for x in range(W)] for y in range(H)]
+    for L in lots:
+        for yy in range(L["y"], L["y"] + L["h"]):
+            for xx in range(L["x"], L["x"] + L["w"]):
+                g[yy][xx] = L["sprite"][0].upper()
+        if "door" in L:
+            g[L["door"][1]][L["door"][0]] = "D"
+    print("\n".join("".join(r) for r in g))
+    if "--debug" in sys.argv:                          # 为什么这里没盖房：h=硬避让 n=崖壁 g=外扩 b=繁忙 t=间距
+        dg = [["h" if (x, y) in hard else ("n" if (x, y) in no_build else ("g" if (x, y) in grown else
+               ("b" if (x, y) in busy else ("t" if (x, y) in taken else ".")))) for x in range(W)] for y in range(H)]
+        print("\n".join("".join(r) for r in dg))
+
+
 if __name__ == "__main__":
-    main()
+    main_solid() if "--solid" in sys.argv else main()

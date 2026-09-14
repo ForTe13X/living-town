@@ -167,10 +167,12 @@ def main():
         if not (isinstance(r, list) and len(r) == 4):
             fails.append("area '%s' rect 非法，人口 anchor fail-closed" % aid); continue
         population_projection.append((str(aid), [int(r[0]) + int(r[2]) // 2, int(r[1]) + int(r[3]) // 2]))
+    # docs/193 §五：home2/shop/library 从地图三角挪到中央街区旁（用户要求"建筑群更靠近"），
+    # 三个质心有意改冻：(12,6)→(14,16)、(52,8)→(50,16)、(12,41)→(14,32)。扩容克隆的落点随之移动 = 金标已重烘。
     frozen_population_projection = [
         ("home", [22, 16]), ("cafe", [41, 16]), ("wash", [22, 31]),
-        ("work", [41, 31]), ("home2", [12, 6]), ("shop", [52, 8]),
-        ("library", [12, 41]), ("plaza", [32, 24]), ("north_pier", [32, 8]),
+        ("work", [41, 31]), ("home2", [14, 16]), ("shop", [50, 16]),
+        ("library", [14, 32]), ("plaza", [32, 24]), ("north_pier", [32, 8]),
     ]
     if population_projection != frozen_population_projection:
         fails.append("扩容 anchor ID/顺序/质心必须逐项冻结；got=%r" % population_projection)
@@ -244,9 +246,15 @@ def main():
     # 可走集 = 非 blockers 且非家具格（家具运行期阻挡）。★工位【必须】算进来：
     # Sim._build_nav 对 world.objects 一视同仁地标 blocked，工位来自哪个 json 文件它并不知道。
     # 只查 map.json 的家具 = 在一张比运行期【更宽松】的图上做可达性证明，那种绿是假的。
+    # docs/193：镇上房子/设施的占地（map.json solid_lots，门格除外）运行期同样挡格（Sim._solid_prop_cells_in_world）
+    lot_cells = set()
+    for L in m.get("solid_lots", []):
+        door = tuple(L["door"]) if L.get("door") else None
+        lot_cells |= {(L["pos"][0] + i, L["pos"][1] + j) for i in range(L["footprint"][0])
+                      for j in range(L["footprint"][1])} - {door}
     walk = set((x, y) for x in range(W) for y in range(H)
                if (x, y) not in blk and (x, y) not in objcells and (x, y) not in wscells
-               and (x, y) not in solid_cells)
+               and (x, y) not in solid_cells and (x, y) not in lot_cells)
     # ③ 可达性种子 = 第一个居民 home
     seed = tuple(ag["agents"][0]["home"])
     if seed not in walk:

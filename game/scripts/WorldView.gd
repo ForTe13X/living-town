@@ -379,6 +379,53 @@ const DIR8_ROW := {
 	Vector2i(0, -1): 4, Vector2i(-1, -1): 5, Vector2i(-1, 0): 6, Vector2i(-1, 1): 7,
 }
 var _dir8 := {}                # id -> 行（0=朝南）
+# docs/193 §一：朝向 = 【朝着要去的地方】，而不是朝着上一步。
+# Sim 的路径是 4 连通的（_step_toward 先走 x 再走 y；A* 出来的斜线是 E,S,E,S 的阶梯），
+# 旧版逐步取向 ⇒ 斜着走的人每一格在"朝东/朝南"之间来回翻身，看起来就是"脸朝错方向走路"。
+# 现在：有目标（去用某件家具 / 找某个人说话）且目标在同一平面 ⇒ 取【目标 − 当前格】的 8 向（走阶梯时它恒为东南，不翻）；
+# 没有目标（闲逛 / 跨平面行程走向门口）才退回上一步的方向。
+# ★ 这是一个【无记忆】的函数（只读本 tick 的 Sim 状态 + 这一步）——第一版用"最近 4 步合位移"，那份记忆会跨过
+#   读档/时间轴回放留在 View 里，回放到同一 tick 画出来的朝向与现场不同（SpaceShot 的 replay 像素门抓到的）。
+var _plane_of := {}            # id -> "space|floor"（换平面时不把跨坐标系的差分当成一步）
+
+func _goal_cell(ag: Dictionary) -> Variant:
+	var opt = ag.get("option")
+	if not (opt is Dictionary):
+		return null
+	var space := String(ag.get("space", "town")); var floor := String(ag.get("floor", "outdoor"))
+	match String(opt.get("kind", "")):
+		"object":
+			var objs = Sim.world.get("objects", {})
+			if objs is Dictionary and (objs as Dictionary).has(String(opt.get("target", ""))):
+				var o: Dictionary = objs[String(opt["target"])]
+				if String(o.get("space", "town")) == space and String(o.get("floor", "outdoor")) == floor:
+					var op = o.get("pos")
+					return op if op is Vector2i else Vector2i(int(op[0]), int(op[1]))
+		"social":
+			var partner: Dictionary = Sim.get_agent(String(opt.get("partner", "")))
+			if not partner.is_empty() and String(partner.get("space", "town")) == space 					and String(partner.get("floor", "outdoor")) == floor:
+				return partner["pos"]
+	return null
+
+func _face_step(id: String, d: Vector2i, ag: Dictionary = {}) -> void:
+	var dv := d
+	var goal = _goal_cell(ag) if not ag.is_empty() else null
+	if goal != null:
+		var g: Vector2i = goal - Vector2i(ag["pos"])
+		if g != Vector2i.ZERO:
+			dv = Vector2i(signi(g.x), signi(g.y))
+	if dv == Vector2i.ZERO:
+		return
+	_dir8[id] = DIR8_ROW[dv]
+	# Puny 4 向表（玩家/无 8 向表者）：行 1=朝下走、行 2=侧面（朝右，朝左翻转）、行 3=朝上走。
+	# 旧版把横向也映射到行 1（正面走），于是横着走的人脸冲镜头。
+	if dv.x != 0 and dv.y >= 0:
+		_walk_row[id] = 2
+		_facing_left[id] = dv.x < 0
+	elif dv.y < 0:
+		_walk_row[id] = 3
+	else:
+		_walk_row[id] = 1
 var _char8_by_name := {}       # persona 显示名 -> persona key（克隆 npc_* 只带 persona 字典，没有 key）
 
 ## 这个居民有没有 8 向表：先按 id（具名居民 id == persona key），再按 persona 名找（克隆）。
@@ -1613,26 +1660,7 @@ func _draw_wall_cell(sx: int, sy: int, typ: String, pal: Dictionary, w: int) -> 
 	var u := _wall_at(sx, sy - 1, w); var d := _wall_at(sx, sy + 1, w)
 	var vertical := (u or d) and not (l or r)          # 东西两侧的竖墙：从上面看主要是墙顶
 	if vertical:
-		# 竖墙（东西两侧）：俯视里看见的是【墙顶】—— 用同一种材质砌满（顶面受光 ⇒ 用 top 色族），
-		#   朝屋内那侧压一条内侧立面落影，朝外那侧一线受光棱 ⇒ 读作一堵有厚度的石墙，而不是一块浅色平板。
-		var inner_east := _wall_type.has(sy * w + sx) and _in_area(sx + 1, sy)
-		var tbase := face.lerp(top, 0.55)
-		match typ:
-			"residential":
-				# 墙顶是石头不是灰泥：暖色花岗岩琢石（与立面勒脚同族）⇒ 俯视读作一堵厚石墙
-				_wall_courses(x0, y0, T, tbase.lerp(X_GRANITE, 0.35), tbase.lerp(X_GRANITE, 0.35).darkened(0.28), T * 0.25, T * 0.36, sx, sy)
-			"commercial":
-				_wall_courses(x0, y0, T, tbase, tbase.darkened(0.30), T * 0.11, T * 0.24, sx, sy)
-			"public":
-				_wall_courses(x0, y0, T, tbase, tbase.darkened(0.26), T * 0.23, T * 0.50, sx, sy)
-			_:
-				_wall_rubble(x0, y0, T, tbase, sx, sy)
-		var sh := Rect2(x0 + T * 0.80, y0, T * 0.20, T) if inner_east else Rect2(x0, y0, T * 0.20, T)
-		draw_rect(sh, Color(0, 0, 0, 0.26), true)                                                  # 朝屋内那侧：内立面落影
-		var lit := Rect2(x0, y0, 2.0, T) if inner_east else Rect2(x0 + T - 2.0, y0, 2.0, T)
-		draw_rect(lit, top.lightened(0.26), true)                                                  # 朝外那侧：受光棱
-		if not u:
-			draw_rect(Rect2(x0, y0, T, 2.0), top.lightened(0.26), true)
+		_draw_wall_thin_v(sx, sy, typ, pal, w, u, d)
 		return
 	# 横墙（含转角）：上 WALL_CAP 是墙顶压顶石，下面是立面
 	var cap := T * WALL_CAP
@@ -1678,6 +1706,61 @@ func _draw_wall_cell(sx: int, sy: int, typ: String, pal: Dictionary, w: int) -> 
 			draw_rect(Rect2(qxx, qy + qh - 2.0, qw, 1.0), X_GRANITE.darkened(0.25), true)
 			qy += qh
 			qk += 1
+
+## docs/193 §二：竖墙（东西两侧）不再是【一整格】的石块。
+## 旧版把 1 格宽的墙格整格砌满 ⇒ 切顶俯视时每栋楼两侧是两条 48px 宽的实心石条，读作"豆腐块"。
+## 真实的墙厚约 0.3 格：墙体只占靠【屋外】那一侧的 WALL_THIN，其余露出下面已铺好的室内地板；
+## 两侧都是室内（隔墙）时居中。朝屋内一侧落一道渐变阴影，墙顶一线受光棱 ⇒ 仍读得出厚度。
+const WALL_THIN := 0.34
+func _draw_wall_thin_v(sx: int, sy: int, typ: String, pal: Dictionary, w: int, u: bool, d: bool) -> void:
+	var x0 := float(sx) * T; var y0 := float(sy) * T
+	var face: Color = pal["face"]; var top: Color = pal["top"]
+	var in_l := _in_area(sx - 1, sy) and not _wall_at(sx - 1, sy, w)
+	var in_r := _in_area(sx + 1, sy) and not _wall_at(sx + 1, sy, w)
+	var wt := T * WALL_THIN
+	var wx := x0 + (T - wt) * 0.5                     # 隔墙：居中
+	if in_r and not in_l:
+		wx = x0                                       # 西墙：贴屋外（西）
+	elif in_l and not in_r:
+		wx = x0 + T - wt                              # 东墙：贴屋外（东）
+	var tbase := face.lerp(top, 0.55)
+	if typ == "residential":
+		tbase = tbase.lerp(X_GRANITE, 0.35)
+	var mortar := tbase.darkened(0.28)
+	# 朝屋内一侧的地板落影（三档渐变，西北光 ⇒ 东墙的影更重）
+	var shade := 0.30 if wx > x0 else 0.20
+	for k in 3:
+		var sw := T * 0.07 * float(k + 1)
+		var r := Rect2(wx + wt, y0, sw, T) if wx <= x0 + 0.5 else Rect2(wx - sw, y0, sw, T)
+		if wx > x0 + 0.5 and wx < x0 + T - wt - 0.5:
+			r = Rect2(wx + wt, y0, sw, T)
+		draw_rect(r, Color(0, 0, 0, shade / 3.0), true)
+	# 墙顶：琢石压顶，按世界 y 错缝
+	draw_rect(Rect2(wx, y0, wt, T), tbase, true)
+	var by := y0 - fposmod(y0, T * 0.34)
+	var row := 0
+	while by < y0 + T:
+		var b0 := maxf(by, y0); var b1 := minf(by + T * 0.34, y0 + T)
+		var hv := _hash_mix(sx, int(by / 4.0), 331) % 4
+		if hv == 0:
+			draw_rect(Rect2(wx + 1.0, b0, wt - 2.0, b1 - b0 - 1.0), tbase.lightened(0.08), true)
+		elif hv == 1:
+			draw_rect(Rect2(wx + 1.0, b0, wt - 2.0, b1 - b0 - 1.0), tbase.darkened(0.07), true)
+		if b1 - 1.0 >= y0:
+			draw_rect(Rect2(wx, b1 - 1.0, wt, 1.0), mortar, true)
+		if int(by / (T * 0.34)) % 2 == 0:
+			draw_rect(Rect2(wx + wt * 0.5, b0, 1.0, b1 - b0), mortar, true)
+		by += T * 0.34
+		row += 1
+	draw_rect(Rect2(wx, y0, 2.0, T), top.lightened(0.26), true)            # 西沿受光棱
+	draw_rect(Rect2(wx + wt - 1.5, y0, 1.5, T), tbase.darkened(0.40), true) # 东沿暗棱
+	if not u:
+		draw_rect(Rect2(wx, y0, wt, 2.0), top.lightened(0.26), true)
+	if not d:
+		draw_rect(Rect2(wx, y0 + T - 3.0, wt, 3.0), tbase.darkened(0.35), true)
+
+func _wall_is_vertical(sx: int, sy: int, w: int) -> bool:
+	return (_wall_at(sx, sy - 1, w) or _wall_at(sx, sy + 1, w)) and not (_wall_at(sx - 1, sy, w) or _wall_at(sx + 1, sy, w))
 
 ## 规整砌筑：course_h 行高、block_w 块宽（0 = 罩面，只画色斑）。块位按世界 x 错缝 ⇒ 跨格连续。
 func _wall_courses(x0: float, y0: float, h: float, base: Color, mortar: Color, course_h: float, block_w: float, sx: int, sy: int) -> void:
@@ -1957,6 +2040,12 @@ func _is_object(x: int, y: int) -> bool:
 	return false
 
 func _on_social(e: Dictionary) -> void:
+	# docs/193：时间轴跳转/回放（Sim.replaying）期间重放出来的社交事件不生成气泡/表情。
+	# 气泡是"现场看见的"一闪而过的东西，不是时间轴状态：启动 warmup 的那次跳转发生在 View 接上信号之前，
+	# 于是现场从来没有那几秒的气泡；而读档后的 goto_tick 会把同一段重放出来、多出一批气泡 ⇒
+	# 同一 tick 两种画面（SpaceShot clean-player 的 replay 像素门抓到的；本分支的 sim 轨迹恰好在那个窗口里有人说话）。
+	if Sim.replaying:
+		return
 	var key := _emote_key(e)
 	var t := Art.emote_tex(key)
 	if t != null:
@@ -2117,37 +2206,45 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 				door_gap[int(ep[1]) * wc + int(ep[0])] = true
 	# ★ R2：外壳（地板+墙）改由【这栋楼自己的类型】决定，而不是一份写死的住宅配方。见 _interior_shell()。
 	var shell := _interior_shell(sid, String(content.get("floor", "wood")))
-	# 地板：mode 仍来自 interiors.json 的 floor 字段（authored 几何），颜色来自本楼类型的 FLOOR_PAL
-	if shell["slab"]:
-		draw_rect(b, shell["floor"], true)
-		for gy in range(hc):
-			for gx in range(wc):
-				if (gx + gy) % 2 == 0:
-					draw_rect(Rect2(ox + gx * T, oy + gy * T, T, T), Color(shell["checker"], 0.55), true)   # 交错石板
-		for gy in range(hc):
-			draw_rect(Rect2(ox, oy + gy * T, b.size.x, 2), Color(shell["floor_line"], 0.45), true)          # 横缝
-	else:
-		draw_rect(b, shell["floor"], true)
-		for gy in range(hc):
-			if gy % 2 == 0:
-				draw_rect(Rect2(ox, oy + gy * T, b.size.x, 3), Color(shell["floor_line"], 0.4), true)
-	# 外墙（边框），门口那格留缺、画成门
-	for gx in range(wc):
-		_interior_wall(shell, ox + gx * T, oy, door_gap.has(gx))                          # 上墙
-		_interior_wall(shell, ox + gx * T, oy + (hc - 1) * T, door_gap.has((hc - 1) * wc + gx))  # 下墙
-	for gy in range(hc):
-		_interior_wall(shell, ox, oy + gy * T, door_gap.has(gy * wc))                      # 左墙
-		_interior_wall(shell, ox + (wc - 1) * T, oy + gy * T, door_gap.has(gy * wc + wc - 1))  # 右墙
-	# 家具（按 slot 程序化）。★ S3：同一个 slot 在不同用途的房间里画成不同的东西 —— 见 _furniture_role()。
-	# role 每层只算一次（它只依赖本层的 authored 家具清单 + areas[].type，与逐件家具无关）。
 	var role := _furniture_role(sid, content)
-	# `_ac("interior_furniture", …)` = 零重排的绘制闸门（出货 `_askip==""` ⇒ 原样返回集合 ⇒ 逐字节不变）。
-	# AM1 的 2F 像素门用 `--draw-skip interior_furniture` 拍一张【无家具】的 2F 作【真渲染负对照】：
-	# 家具被跳掉 ⇒ 只剩地板/墙 ⇒ assert_cafe_2f 的"非空/可分"必红（= 这道门有牙，见 tools/assert_cafe_2f.py）。
+	# docs/193 §二：室内外壳重做——后墙是一面【有高度】的墙（墙纸 + 护墙板 + 踢脚线，往上长出 bounds 约一格），
+	# 两侧与前墙只剩 0.3 格厚的墙顶，其余是地板。旧版四圈都是整格实心砖块 = 用户说的"豆腐块"。
+	var walls := {}                                   # 隔墙格（furniture slot=="wall"）
+	for fr in content.get("furniture", []):
+		if String((fr as Dictionary).get("slot", "")) == "wall":
+			var wp: Array = (fr as Dictionary).get("pos", [0, 0])
+			walls[Vector2i(int(wp[0]), int(wp[1]))] = true
+	_draw_interior_floor(b, wc, hc, shell, sid == "cafe")
+	_draw_interior_backwall(b, wc, shell, door_gap, role)
+	# 地面家具先按行（前左格的 y）排序：后排先画、前排压上，高柜/床头才会正确地挡住后面的墙与物件。
+	var pieces: Array = []
 	for fr in _ac("interior_furniture", content.get("furniture", [])):
+		if int((fr as Dictionary).get("pos", [0, 0])[1]) != 0:
+			pieces.append(fr)
+	# 挂在后墙上的（画/窗/彩色玻璃，pos.y==0）属于【墙】而不是家具：不受 interior_furniture 绘制闸门控制，
+	# 否则 AM1 的 cafe 密度门（家具 vs 无家具的差分）会把墙上的画算成"溢出格子的家具"。
+	for fr in content.get("furniture", []):
+		if int((fr as Dictionary).get("pos", [0, 0])[1]) == 0:
+			pieces.append(fr)
+	pieces.sort_custom(func(a, c): return int((a as Dictionary).get("pos", [0, 0])[1]) < int((c as Dictionary).get("pos", [0, 0])[1]))
+	# 平铺类（地毯）先画、挂墙类其次，立体家具最后
+	for pass_i in 3:
+		for fr in pieces:
+			var fd: Dictionary = fr
+			var slot := String(fd.get("slot", ""))
+			var kind := 0 if slot == "rug" else (1 if int(fd.get("pos", [0, 0])[1]) == 0 else 2)
+			if kind != pass_i:
+				continue
+			var fp: Array = fd.get("pos", [0, 0])
+			var furniture_base := Vector2(ox + int(fp[0]) * T, oy + int(fp[1]) * T)
+			if slot == "wall":
+				_draw_partition(furniture_base, Vector2i(int(fp[0]), int(fp[1])), walls, shell)
+			elif not _draw_furn_sprite(fd, furniture_base, role, sid):
+				_draw_interior_furniture(slot, furniture_base, role, sid, fid)
+	_draw_interior_sidewalls(b, wc, hc, shell, door_gap)
+	for fr in pieces:
 		var fp: Array = (fr as Dictionary).get("pos", [0, 0])
 		var furniture_base := Vector2(ox + int(fp[0]) * T, oy + int(fp[1]) * T)
-		_draw_interior_furniture(String((fr as Dictionary).get("slot", "")), furniture_base, role, sid, fid)
 		if bool((fr as Dictionary).get("cargo_observatory", false)):
 			draw_rect(Rect2(furniture_base + Vector2(4, 4), Vector2(T - 8, T - 8)), Color(X_GLOW, 0.72), false, 2.0)
 			draw_string(Art.font(), furniture_base + Vector2(-T * 0.20, -5), "点柜台 · 查回执", HORIZONTAL_ALIGNMENT_LEFT, T * 1.45, 12, X_GOLD)
@@ -2167,8 +2264,340 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 	if not _ctl_in.is_empty():
 		_draw_agent(_ctl_in)
 	# 楼层标签
-	draw_string(Art.font(), b.position + Vector2(T + 8, 22), "%s · %s" % [sg.label_of(sid), content.get("label", fid)],
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 15, D_WOOD_LINE)
+	# docs/193：标签挪到前墙之下的屋外暗处（原位置现在是护墙板，字压在木纹上读不出；檐口之上又被 HUD 顶栏盖住）
+	draw_string(Art.font(), Vector2(b.position.x + T * 0.4, b.end.y - T * 0.30), "%s · %s" % [sg.label_of(sid), content.get("label", fid)],
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 15, X_PARCHMENT)
+
+## ── docs/193 §四：用家具的样子 ──────────────────────────────────────────────────────────
+## 居民在【用】一件家具（option.kind=="object" 且 phase=="use"）时不再原地站桩：
+##   躺（床：只露头枕在枕头上，身子在被子里）、泡（浴缸：露头肩 + 水线 + 热气）、
+##   坐上去（马桶/沙发/扶手椅/长椅：人移到座位上，腿被座面挡住）、坐在桌边（餐桌/小圆桌/书桌/吧台：原格坐低、面朝桌）、
+##   面朝它（画/书架/窗/灶/水槽/洗脸台/工作台/游戏机：转身面对，轻微起伏）。
+## 纯 View：只读 option 与对象/家具数据，不改 Sim。
+const POSE_BY_SLOT := {
+	"bed": "lie", "bed_double": "lie",
+	"bathtub": "soak", "bath": "soak",
+	"toilet": "sit_on", "sofa": "sit_on", "armchair": "sit_on", "bench": "sit_on", "pew": "sit_on",
+	"dining": "sit_at", "bistro": "sit_at", "table": "sit_at", "desk": "sit_at", "counter": "sit_at", "barstool": "sit_at",
+}
+var _furn_at := {}               # "space|floor|x|y" -> 室内家具条目（带 size/slot），懒建
+
+func _furn_lookup(space: String, floor: String, p: Vector2i) -> Dictionary:
+	if _furn_at.is_empty():
+		if not _interiors_loaded:
+			_load_interiors()
+		_furn_at["__built"] = {}
+		for sid in _interiors:
+			if not (_interiors[sid] is Dictionary):
+				continue
+			for fl in _interiors[sid]:
+				var c = _interiors[sid][fl]
+				if c is Dictionary:
+					for fr in (c as Dictionary).get("furniture", []):
+						var fp: Array = (fr as Dictionary).get("pos", [0, 0])
+						_furn_at["%s|%s|%d|%d" % [sid, fl, int(fp[0]), int(fp[1])]] = fr
+	return _furn_at.get("%s|%s|%d|%d" % [space, floor, p.x, p.y], {})
+
+func _use_pose(ag: Dictionary) -> Dictionary:
+	var opt = ag.get("option")
+	if not (opt is Dictionary) or String(opt.get("kind", "")) != "object" or String(opt.get("phase", "")) != "use":
+		return {}
+	var objs = Sim.world.get("objects", {})
+	if not (objs is Dictionary) or not (objs as Dictionary).has(String(opt.get("target", ""))):
+		return {}
+	var o: Dictionary = objs[String(opt["target"])]
+	var op: Vector2i = o.get("pos", Vector2i.ZERO) if o.get("pos") is Vector2i else Vector2i(int(o["pos"][0]), int(o["pos"][1]))
+	var slot := ""
+	var fw := 1; var fh := 1
+	var space := String(o.get("space", "town"))
+	if space == "town":
+		slot = _obj_slot(String(opt["target"]), o)
+	else:
+		var fr := _furn_lookup(space, String(o.get("floor", "1f")), op)
+		slot = String(fr.get("slot", ""))
+		var fs: Array = fr.get("size", [1, 1])
+		fw = int(fs[0]); fh = int(fs[1])
+	var kind := String(POSE_BY_SLOT.get(slot, "face"))
+	var fc := Vector2((float(op.x) + float(fw) * 0.5) * T, (float(op.y - fh + 1) + float(fh) * 0.5) * T)   # 占地中心
+	var d: Vector2i = op - Vector2i(ag["pos"])
+	var row := int(DIR8_ROW.get(Vector2i(signi(d.x), signi(d.y)), 0)) if d != Vector2i.ZERO else 0
+	match kind:
+		"lie":
+			return {"kind": kind, "at": Vector2(fc.x, float(op.y - fh + 1) * T + T * 0.46), "row": 0, "slot": slot}
+		"soak":
+			return {"kind": kind, "at": fc + Vector2(0, -T * 0.10), "row": 0, "slot": slot}
+		"sit_on":
+			return {"kind": kind, "at": fc + Vector2(0, -T * 0.22), "row": 0, "slot": slot}
+	return {"kind": kind, "row": row, "slot": slot}
+
+## 画一个姿势；返回头顶 y（名牌/气泡挂点）。
+func _draw_pose(sheet: Texture2D, c8: String, pose: Dictionary, center: Vector2, feet: float, row8: int) -> float:
+	var cell := float(Art.CHAR8_CELL)
+	var fy := float(Art.char_sheet_feet(c8))
+	var top8 := feet - fy
+	var kind := String(pose["kind"])
+	match kind:
+		"lie", "soak":
+			# 只取南向静止帧的头肩（上 ~42%），被子/水面盖住其余
+			var keep := cell * (0.40 if kind == "lie" else 0.46)
+			var dst := Rect2(center.x - cell * 0.5, center.y - keep * 0.62, cell, keep)
+			draw_texture_rect_region(sheet, dst, Rect2(0, 0, cell, keep))
+			if kind == "soak":
+				draw_rect(Rect2(dst.position.x + cell * 0.18, dst.end.y - 4, cell * 0.64, 4), Color(P_WATER_LIT, 0.85), true)   # 水线
+				var t := float(Sim.tick_no % 24) / 24.0
+				for k in 3:                              # 热气：三缕往上飘、渐淡
+					var ph := fposmod(t + float(k) / 3.0, 1.0)
+					draw_circle(Vector2(center.x - 10 + k * 10, dst.position.y - ph * 18.0), 3.0 + ph * 3.0, Color(X_COLD_WHITE, 0.45 * (1.0 - ph)))
+			else:
+				draw_string(Art.font(), Vector2(center.x + cell * 0.22, dst.position.y - 2 - float(Sim.tick_no % 32) * 0.3), "z", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(X_COLD_WHITE, 0.8))
+			return dst.position.y
+		"sit_on", "sit_at":
+			# 坐：腿（下 ~28%）被座面/桌沿挡掉，人整体下沉 6px
+			var cut := cell * 0.28
+			var sink := 6.0
+			var srcr := Rect2(0, row8 * cell, cell, fy - cut)
+			draw_texture_rect_region(sheet, Rect2(center.x - cell * 0.5, top8 + sink, cell, fy - cut), srcr)
+			return top8 + sink + cell * 0.10
+	# face：转身面对家具，静止帧 + 每 12 tick 一次 1px 起伏（手上在干活）
+	var bob := 1.0 if (Sim.tick_no / 6) % 2 == 0 else 0.0
+	draw_texture_rect_region(sheet, Rect2(center.x - cell * 0.5, top8 + bob, cell, cell), Rect2(0, row8 * cell, cell, cell))
+	return top8 + cell * 0.10
+
+## ── docs/193 §二/§三：室内外壳 + PixelLab 家具精灵 ────────────────────────────────────────
+const BACKWALL_RISE := 0.85      # 后墙往 bounds 上方长出的高度（格）：墙有了高度，才读作"站在屋里看后墙"
+const IWALL_THIN := 0.30         # 侧墙/前墙/隔墙的墙顶厚（格）
+# 墙纸（按房间用途）：侯麦《四季》的室内——奶油灰泥、淡蓝条纹、鼠尾草绿、白瓷砖，都是褪了色的夏天
+const WALLPAPER := {
+	"living": [Color("#e6d8bd"), Color("#b9c8cf")],     # 奶油底 + 淡蓝细条纹
+	"cafe": [Color("#d9b77e"), Color("#c49a5a")],       # 赭黄
+	"bath": [Color("#dfe7e6"), Color("#8fb3c0")],       # 白瓷砖 + 蓝腰线
+	"study": [Color("#8fa487"), Color("#7a906f")],      # 鼠尾草绿
+	"workshop": [Color("#cfc6b6"), Color("#b3a891")],   # 刷白石灰
+	"store": [Color("#e8d9a8"), Color("#d4c088")],      # 淡黄
+	"chapel": [Color("#d3cdc2"), Color("#9c958a")],     # 刷白花岗岩
+}
+# docs/193 §六：设施室内的用途按 space id 直接给（它们的家具清单与咖啡区/起居间同型，按清单推会推错）
+const FACILITY_ROLE := {"bakery": "cafe", "creperie": "cafe", "chapel": "chapel", "halles": "store", "hotel": "living"}
+var _furn_foot := {}             # 精灵名 -> alpha bbox（对地用底行，挂墙用中心）
+const TOWN_FURN := {"bed": "bed_single", "stove": "stove", "bath": "bathtub", "desk": "workbench"}
+
+func _wallpaper(role: String) -> Array:
+	return WALLPAPER.get(role, WALLPAPER["living"])
+
+func _draw_interior_floor(b: Rect2, wc: int, hc: int, shell: Dictionary, legacy := false) -> void:
+	var base: Color = shell["floor"]
+	var line: Color = shell["floor_line"]
+	draw_rect(b, base, true)
+	if legacy:
+		# 阿丽的咖啡馆保留 AM1 的平铺地板：assert_cafe_interior_density 用"家具 vs 无家具"的差分量家具轮廓，
+		# 逐板明暗的新地板会在家具与地板同色处打出空洞，把桌子判成"碎的"。
+		for gy in range(hc):
+			if gy % 2 == 0:
+				draw_rect(Rect2(b.position.x, b.position.y + gy * T, b.size.x, 3), Color(line, 0.4), true)
+		return
+	if shell["slab"]:
+		var tsz := T * 0.5                            # 半格方砖，逐块确定性明暗
+		for gy in range(hc * 2):
+			for gx in range(wc * 2):
+				var hv := _hash_mix(gx, gy, 401) % 5
+				var c := base.lightened(0.07) if hv == 0 else (base.darkened(0.06) if hv == 1 else base)
+				if (gx + gy) % 2 == 0:
+					c = c.lightened(0.04)
+				draw_rect(Rect2(b.position.x + gx * tsz + 1, b.position.y + gy * tsz + 1, tsz - 1, tsz - 1), c, true)
+		return
+	# 木地板：1/4 格宽的长条板，板长 1.5-3 格错缝，逐板明暗；板间一线暗缝
+	var ph := T * 0.25
+	for r in range(hc * 4):
+		var y := b.position.y + r * ph
+		var x := b.position.x - float(_hash_mix(r, 7, 403) % 3) * T * 0.5
+		var k := 0
+		while x < b.end.x:
+			var ln := T * (1.5 + 0.5 * float(_hash_mix(r, k, 405) % 4))
+			var hv := _hash_mix(r, k, 407) % 6
+			var c := base.lightened(0.06) if hv == 0 else (base.darkened(0.07) if hv == 1 else (base.darkened(0.03) if hv == 2 else base))
+			var x0 := maxf(x, b.position.x); var x1 := minf(x + ln, b.end.x)
+			draw_rect(Rect2(x0, y, x1 - x0, ph - 1), c, true)
+			draw_rect(Rect2(x0, y, x1 - x0, 1), Color(1, 1, 1, 0.06), true)
+			if x + ln < b.end.x:
+				draw_rect(Rect2(x + ln - 1, y, 1, ph - 1), Color(line, 0.55), true)
+			x += ln
+			k += 1
+		draw_rect(Rect2(b.position.x, y + ph - 1, b.size.x, 1), Color(line, 0.45), true)
+
+func _draw_interior_backwall(b: Rect2, wc: int, shell: Dictionary, door_gap: Dictionary, role: String) -> void:
+	var wp := _wallpaper(role)
+	var paper: Color = wp[0]; var accent: Color = wp[1]
+	var top := b.position.y - T * BACKWALL_RISE
+	var face := Rect2(b.position.x, top, b.size.x, b.position.y + T - top)
+	draw_rect(face, paper, true)
+	var wain := face.size.y * 0.38                   # 护墙板 / 瓷砖腰线高度
+	var wy := face.end.y - wain
+	if role == "bath":
+		var tsz := T * 0.25                           # 白瓷砖满铺 + 一条蓝腰线
+		var yy := top
+		while yy < face.end.y - 0.5:
+			draw_rect(Rect2(face.position.x, yy, face.size.x, 1), Color(accent, 0.45), true)
+			yy += tsz
+		var xx := face.position.x
+		while xx < face.end.x:
+			draw_rect(Rect2(xx, top, 1, face.size.y), Color(accent, 0.30), true)
+			xx += tsz
+		draw_rect(Rect2(face.position.x, wy - 4, face.size.x, 5), accent, true)
+	else:
+		if role == "living":                         # 墙纸细条纹
+			var sx := face.position.x + 6.0
+			while sx < face.end.x:
+				draw_rect(Rect2(sx, top, 2, wy - top), Color(accent, 0.55), true)
+				sx += 12.0
+		# 护墙板：木色竖板 + 顶线
+		var wood: Color = X_WOOD_MID.lerp(shell["wall"], 0.35) if role != "workshop" else shell["wall"]
+		draw_rect(Rect2(face.position.x, wy, face.size.x, wain), wood, true)
+		var px := face.position.x
+		while px < face.end.x:
+			draw_rect(Rect2(px + 3, wy + 5, T * 0.5 - 6, wain - 12), wood.lightened(0.08), true)
+			draw_rect(Rect2(px + 3, wy + wain - 7, T * 0.5 - 6, 1), wood.darkened(0.25), true)
+			px += T * 0.5
+		draw_rect(Rect2(face.position.x, wy, face.size.x, 3), wood.lightened(0.20), true)
+		draw_rect(Rect2(face.position.x, wy + 3, face.size.x, 1), wood.darkened(0.30), true)
+	# 檐口（天花板线）+ 踢脚线 + 墙根落在地板上的影
+	draw_rect(Rect2(face.position.x, top, face.size.x, 5), shell["wall_foot"], true)
+	draw_rect(Rect2(face.position.x, top + 5, face.size.x, 2), Color(0, 0, 0, 0.18), true)
+	draw_rect(Rect2(face.position.x, face.end.y - 4, face.size.x, 4), D_WOOD_LINE, true)
+	for k in 3:
+		draw_rect(Rect2(face.position.x, face.end.y + k * 3, face.size.x, 3), Color(0, 0, 0, 0.16 - 0.05 * k), true)
+	# 后墙上的门：门洞 + 门框 + 门外的天光
+	for gx in range(wc):
+		if not door_gap.has(gx):
+			continue
+		var dx := b.position.x + gx * T
+		var dr := Rect2(dx + T * 0.12, face.end.y - T * 1.25, T * 0.76, T * 1.25)
+		draw_rect(dr.grow(3), D_WOOD_LINE, true)
+		draw_rect(dr, Color("#cfe3e6"), true)             # 门外：海边的白天光
+		draw_rect(Rect2(dr.position.x, dr.end.y - T * 0.30, dr.size.x, T * 0.30), P_GRASS.darkened(0.1), true)
+		draw_rect(Rect2(dr.position.x - 3, dr.position.y - 5, dr.size.x + 6, 4), X_WOOD_MID, true)
+
+func _draw_interior_sidewalls(b: Rect2, wc: int, hc: int, shell: Dictionary, door_gap: Dictionary) -> void:
+	var top := b.position.y - T * BACKWALL_RISE
+	var th := T * IWALL_THIN
+	var cap: Color = shell["wall_top"]
+	var edge: Color = shell["wall_foot"]
+	# 前墙：底行只剩上沿一道墙顶，其下是屋外（暗）；门那格画门槛 + 门垫
+	var fy := b.end.y - T
+	for gx in range(wc):
+		var cx := b.position.x + gx * T
+		draw_rect(Rect2(cx, fy + th, T, T - th), D_BACKDROP, true)
+		if door_gap.has((hc - 1) * wc + gx):
+			draw_rect(Rect2(cx + T * 0.10, fy, T * 0.80, T * 0.55), shell["floor"].darkened(0.10), true)
+			draw_rect(Rect2(cx + T * 0.18, fy + 4, T * 0.64, T * 0.30), D_RUG_RED, true)          # 门垫
+			draw_rect(Rect2(cx + T * 0.10, fy + T * 0.55 - 3, T * 0.80, 3), D_WOOD_LINE, true)    # 门槛
+			continue
+		draw_rect(Rect2(cx, fy, T, th), cap, true)
+		draw_rect(Rect2(cx, fy, T, 2), cap.lightened(0.25), true)
+		draw_rect(Rect2(cx, fy + th - 2, T, 2), edge, true)
+	# 侧墙：贴外沿的一道墙顶，从后墙檐口一直到前墙
+	for side in 2:
+		var x := b.position.x if side == 0 else b.end.x - th
+		draw_rect(Rect2(x, top, th, b.end.y - T + th - top), cap, true)
+		draw_rect(Rect2(x + (th - 2 if side == 0 else 0), top, 2, b.end.y - T + th - top), edge, true)
+		var sh := Rect2(x + th, b.position.y + T, T * 0.16, b.size.y - T * 2) if side == 0 else Rect2(x - T * 0.16, b.position.y + T, T * 0.16, b.size.y - T * 2)
+		draw_rect(sh, Color(0, 0, 0, 0.14 if side == 0 else 0.22), true)
+		for gy in range(hc):                          # 侧墙上的门（货仓的东门）：留缺口
+			if door_gap.has(gy * wc + (0 if side == 0 else wc - 1)):
+				draw_rect(Rect2(x, b.position.y + gy * T + 4, th, T - 8), shell["floor"].darkened(0.10), true)
+	draw_rect(Rect2(b.position.x, top, b.size.x, b.end.y - T + th - top), Color(0, 0, 0, 0.45), false, 2.0)
+
+## 隔墙格：竖向（上下有墙）画成居中的一道薄墙顶；横向画成一小段有立面的墙（与后墙同一种墙纸）。
+func _draw_partition(base: Vector2, c: Vector2i, walls: Dictionary, shell: Dictionary) -> void:
+	var th := T * IWALL_THIN
+	var cap: Color = shell["wall_top"]
+	var horiz := walls.has(c + Vector2i(1, 0)) or walls.has(c + Vector2i(-1, 0))
+	var vert := walls.has(c + Vector2i(0, 1)) or walls.has(c + Vector2i(0, -1))
+	if vert or not horiz:
+		var x := base.x + (T - th) * 0.5
+		var y0 := base.y - (T * 0.55 if not walls.has(c + Vector2i(0, -1)) and c.y == 1 else 0.0)
+		draw_rect(Rect2(x + th, base.y, T * 0.14, T), Color(0, 0, 0, 0.18), true)
+		draw_rect(Rect2(x, y0, th, base.y + T - y0), cap, true)
+		draw_rect(Rect2(x, y0, 2, base.y + T - y0), cap.lightened(0.22), true)
+		draw_rect(Rect2(x + th - 2, y0, 2, base.y + T - y0), shell["wall_foot"], true)
+	if horiz:
+		var face := Rect2(base.x, base.y + th, T, T * 0.62)
+		draw_rect(face, _wallpaper("living")[0].lerp(shell["wall"], 0.25), true)
+		draw_rect(Rect2(face.position.x, face.end.y - 4, T, 4), D_WOOD_LINE, true)
+		draw_rect(Rect2(base.x, base.y, T, th), cap, true)
+		draw_rect(Rect2(base.x, base.y, T, 2), cap.lightened(0.22), true)
+		draw_rect(Rect2(base.x, face.end.y, T, 5), Color(0, 0, 0, 0.16), true)
+
+## slot → PixelLab 家具精灵名（assets/art/furn/）。"" = 没有精灵，走旧的程序化画法。
+func _furn_name(slot: String, fw: int, role: String, on_wall: bool) -> String:
+	match slot:
+		"bed": return "bed_double" if fw >= 2 else "bed_single"
+		"bed_double", "wardrobe", "dresser", "sofa", "armchair", "bookshelf", "plant", "piano", "workbench", "toilet", "stove", "bathtub":
+			return slot
+		"bath": return "bathtub"
+		"basin": return "washbasin"
+		"dining": return "dining_table"
+		"bistro": return "bistro_table"
+		"table": return "bistro_table" if role == "cafe" else ""
+		"counter": return "cafe_counter" if fw >= 2 else ""
+		"coffee": return "_none" if role == "cafe" else ""     # 咖啡区：咖啡机已画在 2 格吧台精灵里
+		"sink": return "kitchen_counter"
+		"grocery": return "grocery_shelf"
+		"lamp": return "floor_lamp"
+		"painting_sea", "painting_parasol", "stained_glass": return slot
+		"pew", "altar", "market_stall": return slot
+		"window": return "window_curtain" if on_wall else ""
+		"rug": return "rug_persian" if fw >= 2 else ""
+		"desk": return "writing_desk" if role == "study" else ""   # 阿丽 2F 的书桌是 AM1 的私人地标（assert_cafe_interior_density 要求单格轮廓），保留程序化
+		"shelf":
+			if role == "study":
+				return "bookshelf"
+			return "grocery_shelf" if role == "store" else ""
+	return ""
+
+func _furn_bbox(name: String, tex: Texture2D) -> Rect2:
+	if not _furn_foot.has(name):
+		var img := tex.get_image()
+		if img != null and img.is_compressed():
+			img = img.duplicate()
+			img.decompress()
+		_furn_foot[name] = Rect2(img.get_used_rect()) if img != null else Rect2(Vector2.ZERO, tex.get_size())
+	return _furn_foot[name]
+
+func _draw_furn_sprite(fd: Dictionary, base: Vector2, role: String, sid := "") -> bool:
+	var fp: Array = fd.get("pos", [0, 0])
+	var fs: Array = fd.get("size", [1, 1])
+	var fw := int(fs[0]); var fh := int(fs[1])
+	var on_wall := int(fp[1]) == 0
+	if sid == "cafe" and not on_wall:
+		return false          # 阿丽的咖啡馆地面家具保持 AM1 手工精修的程序化轮廓（assert_cafe_interior_density：家具不许溢出格子）
+	var name := _furn_name(String(fd.get("slot", "")), fw, role, on_wall)
+	if name == "":
+		return false
+	if name == "_none":
+		return true
+	return _draw_furn_at(name, Rect2(base.x, base.y - float(fh - 1) * T, float(fw) * T, float(fh) * T), on_wall)
+
+## 画一件家具精灵到占地 foot（世界像素）。town 平面的对象（床/灶/浴池/工作台）也走这里。
+func _draw_furn_at(name: String, foot: Rect2, on_wall := false) -> bool:
+	var tex := Art.tex("res://assets/art/furn/%s.png" % name)
+	if tex == null:
+		return false
+	var bb := _furn_bbox(name, tex)
+	var sz := tex.get_size()
+	var base := Vector2(foot.position.x, foot.end.y - T)
+	var dst: Rect2
+	if on_wall:                                        # 挂墙：画在后墙立面上（墙面中线略偏上）
+		var cy := base.y + T * 0.05 - T * BACKWALL_RISE * 0.5
+		dst = Rect2(foot.get_center().x - sz.x * 0.5, cy - (bb.position.y + bb.size.y * 0.5), sz.x, sz.y)
+		draw_rect(Rect2(dst.position.x + bb.position.x + 3, dst.position.y + bb.end.y, bb.size.x - 4, 3), Color(0, 0, 0, 0.18), true)
+	elif name == "rug_persian":                        # 平铺：居中贴地
+		dst = Rect2(foot.get_center() - sz * 0.5, sz)
+	else:                                              # 立体家具：alpha 底行压占地底边，水平居中；脚下一片软影
+		dst = Rect2(foot.get_center().x - sz.x * 0.5, foot.end.y - 3.0 - bb.end.y, sz.x, sz.y)
+		var sw := bb.size.x * 0.95
+		draw_texture_rect(_light_texture(), Rect2(dst.position.x + bb.position.x + bb.size.x * 0.5 - sw * 0.5 + 4, foot.end.y - T * 0.34, sw, T * 0.40), false, Color(0.05, 0.04, 0.02, 0.34))
+	draw_texture_rect(tex, dst, false)
+	return true
 
 ## P1-i 东海货仓账簿：室内不是静态布景，直接读同一份 town_stock + CargoManifest 查询投影。
 ## 纯 View、无缓存/无 RNG；`warehouse_status` 负对照可只关这块，证明视觉确实来自权威状态。
@@ -2325,13 +2754,15 @@ func _interior_wall(shell: Dictionary, x: float, y: float, is_door: bool) -> voi
 func _furniture_role(sid: String, content: Dictionary) -> String:
 	if sid == "port_warehouse":
 		return "store"
+	if FACILITY_ROLE.has(sid):
+		return String(FACILITY_ROLE[sid])
 	var slots := {}
 	for fr in content.get("furniture", []):
 		var s := String((fr as Dictionary).get("slot", ""))
 		slots[s] = int(slots.get(s, 0)) + 1
 	var areas: Dictionary = Sim.world.get("areas", {}) if Sim.world.get("areas", {}) is Dictionary else {}
 	var a: Dictionary = areas.get(sid, {}) if areas.get(sid, {}) is Dictionary else {}
-	if slots.has("bath"):
+	if slots.has("bath") or slots.has("bathtub") and not slots.has("bed"):   # docs/193：新布局的浴缸 slot 叫 bathtub；住宅里有浴缸仍是起居
 		return "bath"
 	if String(a.get("type", "")) == "workshop":
 		return "workshop"
@@ -2339,7 +2770,7 @@ func _furniture_role(sid: String, content: Dictionary) -> String:
 		return "store"
 	if slots.has("counter") or slots.has("coffee"):
 		return "cafe"
-	if int(slots.get("shelf", 0)) >= 2 and slots.has("desk") and not slots.has("bed"):
+	if int(slots.get("shelf", 0)) + int(slots.get("bookshelf", 0)) >= 2 and slots.has("desk") and not slots.has("bed"):
 		return "study"
 	return "living"
 
@@ -3891,7 +4322,8 @@ func _draw_body() -> void:
 		var sy: int = idx / w
 		var wtyp := String(_wall_type.get(idx, "workshop"))
 		var pal: Dictionary = BLD_PAL.get(wtyp, BLD_PAL["workshop"])
-		draw_rect(Rect2(sx * T + 2, sy * T + T * 0.55, T, T * 0.5), Color(0, 0, 0, 0.22), true)      # 落地阴影
+		if not _wall_is_vertical(sx, sy, w):     # docs/193：竖墙只剩 0.34 格厚，整格的落地影会把室内地板压黑
+			draw_rect(Rect2(sx * T + 2, sy * T + T * 0.55, T, T * 0.5), Color(0, 0, 0, 0.22), true)      # 落地阴影
 		_draw_wall_cell(sx, sy, wtyp, pal, w)                                                         # docs/189：分材质砌体
 	# 屋檐 + 招牌：每栋（非广场）沿顶墙内侧铺一条屋檐色带 + 门上方挂类型招牌图标 → 类型一眼可辨。
 	if _ap("facades"):
@@ -3996,6 +4428,10 @@ func _draw_body() -> void:
 		var p: Vector2i = o["pos"]
 		var slot := _obj_slot(String(id), o)
 		var base := Vector2(p.x * T, p.y * T)
+		# docs/193：切顶俯视里的床/灶/浴池/工作台换成与室内同一套 PixelLab 家具精灵（缺图回落旧画法）
+		var tf := String(TOWN_FURN.get(slot, ""))
+		if tf != "" and _draw_furn_at(tf, Rect2(base, Vector2(T, T))):
+			continue
 		match slot:
 			"bed": _draw_bed(base)
 			"stove": _draw_stove(base)
@@ -5845,17 +6281,16 @@ func _process(delta: float) -> void:
 		# 差分会在移动后的第一帧就归零 → 人一边滑行一边播 idle。
 		var gp: Vector2i = ag["pos"]
 		var prev: Vector2i = _prev_pos.get(id, gp)
+		var plane := "%s|%s" % [String(ag.get("space", "town")), String(ag.get("floor", "outdoor"))]
+		if plane != String(_plane_of.get(id, plane)):
+			prev = gp                       # 换 Space/Floor：坐标系变了，差分无意义 ⇒ 不转身
+			_prev_pos[id] = gp
+		_plane_of[id] = plane
 		if gp != prev:
 			var d := gp - prev
-			_dir8[id] = DIR8_ROW.get(Vector2i(signi(d.x), signi(d.y)), int(_dir8.get(id, 0)))   # docs/181：8 向朝向
-			if absi(d.x) >= absi(d.y) and d.x != 0:
-				_walk_row[id] = 1
-				_facing_left[id] = d.x < 0
-			elif d.y < 0:
-				_walk_row[id] = 3
-			else:
-				_walk_row[id] = 1
 			_prev_pos[id] = gp
+			if maxi(absi(d.x), absi(d.y)) <= 2:     # 瞬移（读档/时间轴跳转/传送）不算一步，不转身
+				_face_step(id, Vector2i(signi(d.x), signi(d.y)), ag)
 		var cur: Vector2 = _render_pos.get(id, target)
 		if cur.distance_to(target) > tele:
 			cur = target
@@ -5873,6 +6308,7 @@ func _process(delta: float) -> void:
 			if not alive.has(id):
 				_render_pos.erase(id); _moving.erase(id); _walk_row.erase(id)
 				_prev_pos.erase(id); _facing_left.erase(id)
+				_plane_of.erase(id); _dir8.erase(id)
 				dirty = true
 	if dirty:
 		queue_redraw()
@@ -6115,15 +6551,26 @@ func _draw_agent(ag: Dictionary) -> void:
 		var cell := float(Art.CHAR8_CELL)
 		var nwalk := maxi(1, int(sheet.get_width() / Art.CHAR8_CELL) - 1)
 		var aid8 := String(ag["id"])
-		draw_set_transform(Vector2(center.x, feet), 0.0, Vector2(1.0, 0.40))
-		for si in 3:
-			draw_circle(Vector2.ZERO, T * 0.17 * (1.0 + float(2 - si) * 0.34), Color(0, 0, 0, 0.08 + float(si) * 0.030))
-		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		# 姿势只读 Sim 状态（phase=="use" 时人本来就站定了），不读插值进度 _moving：
+		# 后者是渲染时钟的残余，读档/回放到同一 tick 时与现场不同 ⇒ 同一 tick 两种画法（SpaceShot replay 像素门）。
+		var pose := _use_pose(ag)
+		var pk := String(pose.get("kind", ""))
+		if pk == "lie" or pk == "soak" or pk == "sit_on":
+			center = pose["at"]
+			feet = center.y + T * 0.30
+		if pk != "lie" and pk != "soak":
+			draw_set_transform(Vector2(center.x, feet), 0.0, Vector2(1.0, 0.40))
+			for si in 3:
+				draw_circle(Vector2.ZERO, T * 0.17 * (1.0 + float(2 - si) * 0.34), Color(0, 0, 0, 0.08 + float(si) * 0.030))
+			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		var col8 := 1 + (Sim.tick_no % nwalk) if bool(_moving.get(aid8, false)) else 0
-		var row8 := int(_dir8.get(aid8, 0))
+		var row8 := int(pose.get("row", _dir8.get(aid8, 0)))
 		var top8 := feet - float(Art.char_sheet_feet(c8))
 		head = top8 + cell * 0.10
-		draw_texture_rect_region(sheet, Rect2(center.x - cell * 0.5, top8, cell, cell), Rect2(col8 * cell, row8 * cell, cell, cell))
+		if pk == "":
+			draw_texture_rect_region(sheet, Rect2(center.x - cell * 0.5, top8, cell, cell), Rect2(col8 * cell, row8 * cell, cell, cell))
+		else:
+			head = _draw_pose(sheet, c8, pose, center, feet, row8)
 	elif spr != null:
 		# 软阴影 + 按移动选行走帧（cols0-3 循环，左向水平翻转）。整数 2x 缩放，且把源帧里人物的【脚】压在落脚线上
 		var fr := _agent_frame(ag)

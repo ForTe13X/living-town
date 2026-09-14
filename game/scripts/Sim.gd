@@ -755,12 +755,21 @@ func _compile_interiors() -> void:
 	if _interiors_data.is_empty():
 		return
 	var objs: Array = world.get("objects", [])
+	for d in _interior_object_defs(_interiors_data):
+		objs.append(d)
+	world["objects"] = objs
+
+## 室内家具 → world 候选对象定义（带 advertises 的才算；id = <space><floor>_<slot>[_N]，著者序去重 ⇒ 确定）。
+## _compile_interiors（开局）与 schema-1 迁移（docs/193）共用同一个编译器，两边不会各自漂。
+func _interior_object_defs(data: Dictionary = {}) -> Array:
+	var src: Dictionary = data if not data.is_empty() else _authored_interiors_data
+	var out: Array = []
 	var used := {}                                      # id 去重：同层同 slot 多件家具（如两张床）用 _N 后缀，避免 dict 覆盖
-	for space in _interiors_data:
-		if String(space).begins_with("_") or not (_interiors_data[space] is Dictionary):
+	for space in src:
+		if String(space).begins_with("_") or not (src[space] is Dictionary):
 			continue
-		for floor in (_interiors_data[space] as Dictionary):
-			var content = _interiors_data[space][floor]
+		for floor in (src[space] as Dictionary):
+			var content = src[space][floor]
 			if not (content is Dictionary):
 				continue
 			for fu in _as_arr((content as Dictionary).get("furniture", [])):
@@ -779,13 +788,13 @@ func _compile_interiors() -> void:
 					oid = "%s_%d" % [oid, int(used[oid])]
 				else:
 					used[oid] = 0
-				objs.append({
+				out.append({
 					"id": oid, "type": String((fu as Dictionary).get("label", slot)),
 					"pos": [int(pos[0]), int(pos[1])],
 					"space": String(space), "floor": String(floor), "area": String(space) + ":" + String(floor),
 					"staff": bool((fu as Dictionary).get("staff", false)),   # P3：员工专属对象(吧台)——只有该店主人用；顾客用公共桌
 					"advertises": adv.duplicate(true)})
-	world["objects"] = objs
+	return out
 
 ## ── F1 分工的空间落点（docs/48 §一-F1）───────────────────────────────────────────
 ## ★为什么新岗位与新工位都写在 production.json，而不是写进 jobs.json / map.json：
@@ -2171,7 +2180,7 @@ const SAVE_MAGIC := "LTSAVE"
 const SAVE_SCHEMA_LEGACY := 1
 const SAVE_SCHEMA := 2
 const SAVE_RUNTIME_HANDLES := ["backend", "ext", "decision_sink"]
-const SAVE_LOAD_DENY := ["desire_cfg", "_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected",
+const SAVE_LOAD_DENY := ["desire_cfg", "_venue_cache", "_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected",
 	"controlled_id", "_tone_bonus", "loaded_meta"]   # docs/190 生活模式：附身/语气/档头都是 View 或瞬时态，不改存档形状（旧档照读）
 const SAVE_CURRENT_BLOB_KEYS := ["magic", "schema", "game_version", "saved_tick", "saved_day", "seed", "meta", "active_commit_ids", "state"]
 
@@ -2469,6 +2478,19 @@ func _migrate_schema1_solid_props(state: Dictionary) -> String:
 	if not (areas is Dictionary) or not ((areas as Dictionary).get("dock") is Dictionary):
 		return "schema 1 dock authority is missing"
 	((areas as Dictionary)["dock"] as Dictionary)["solid_props"] = _authored_solid_props.duplicate(true)
+	# docs/193：室内按规划重排过（住宅区 9×7→12×9、家具换位）。旧档里编译出来的室内家具对象还在【旧坐标】上，
+	# 在新布局里可能被新家具围死 ⇒ A* 找不到路、回落直线步进穿墙（实测：save_migration 里 ben 去旧床，沿外墙环走到 (1,8)，重存被拒）。
+	# ⇒ 室内对象按【当前】interiors 重新编译（town 对象原样保留，它们不随本次室内重排移动）。
+	var objs = (saved_world as Dictionary).get("objects")
+	if objs is Dictionary:
+		for oid in (objs as Dictionary).keys():
+			var od = (objs as Dictionary)[oid]
+			if od is Dictionary and String((od as Dictionary).get("space", "town")) != "town":
+				(objs as Dictionary).erase(oid)
+		for d in _interior_object_defs():
+			var nd: Dictionary = d
+			nd["pos"] = Vector2i(int(nd["pos"][0]), int(nd["pos"][1]))
+			(objs as Dictionary)[String(nd["id"])] = nd
 	var solid_cells := _solid_prop_cells_in_world(saved_world)
 	for raw_agent in state.get("agents", []):
 		if not (raw_agent is Dictionary):
@@ -2477,6 +2499,16 @@ func _migrate_schema1_solid_props(state: Dictionary) -> String:
 		if String(ag.get("id", "")) == "tao" and ag.get("home") == Vector2i(58, 8):
 			ag["home"] = Vector2i(59, 7)
 		if String(ag.get("space", "town")) != "town" or String(ag.get("floor", "outdoor")) != "outdoor":
+			# docs/193：室内 bounds 变了（住宅区 9×7→12×9 等）——旧档里落在如今的外墙环/界外的人，挪到最近的合法格。
+			# 判据与读档校验【同一个】（_position_walkable_in_state：界内、非外墙环；家具格本来就是合法的交互终点），
+			# 不用导航网：站在自己床上的人（cafe 2F 的阿丽）是合法的，挪她会白白改掉 chain。
+			var isp := String(ag.get("space", "town")); var ifl := String(ag.get("floor", "outdoor"))
+			var ipos: Vector2i = ag.get("pos", Vector2i.ZERO)
+			if not _position_walkable_in_state(saved_world, isp, ifl, ipos):
+				var ic := _nearest_legal_interior_cell(saved_world, isp, ifl, ipos)
+				if ic.x < 0:
+					return "schema 1 agent %s cannot be evacuated from a resized interior" % String(ag.get("id", ""))
+				ag["pos"] = ic
 			continue
 		var pos: Vector2i = ag.get("pos", Vector2i.ZERO)
 		if not (pos in solid_cells):
@@ -2505,6 +2537,25 @@ func _nearest_legacy_town_cell(saved_world: Dictionary, start: Vector2i) -> Vect
 		for direction in [Vector2i(0, 1), Vector2i(-1, 0), Vector2i(1, 0), Vector2i(0, -1)]:
 			var next: Vector2i = cell + direction
 			if next.x >= 0 and next.y >= 0 and next.x < width and next.y < height and not seen.has(next):
+				seen[next] = true; q.append(next)
+	return Vector2i(-1, -1)
+
+## docs/193：室内平面上按读档校验的判据找最近的合法格（BFS，四邻固定序 ⇒ 确定）。找不到返回 (-1,-1)。
+func _nearest_legal_interior_cell(saved_world: Dictionary, space: String, floor: String, start: Vector2i) -> Vector2i:
+	var b := _as_arr((_authored_spaces.get(space, {}) as Dictionary).get("bounds", [])) if _authored_spaces.get(space) is Dictionary else []
+	if b.size() != 4:
+		return Vector2i(-1, -1)
+	var W := int(b[2]); var H := int(b[3])
+	var c0 := Vector2i(clampi(start.x, 0, W - 1), clampi(start.y, 0, H - 1))
+	var q: Array = [c0]
+	var seen := {c0: true}
+	while not q.is_empty():
+		var cell: Vector2i = q.pop_front()
+		if _position_walkable_in_state(saved_world, space, floor, cell):
+			return cell
+		for direction in [Vector2i(0, 1), Vector2i(-1, 0), Vector2i(1, 0), Vector2i(0, -1)]:
+			var next: Vector2i = cell + direction
+			if next.x >= 0 and next.y >= 0 and next.x < W and next.y < H and not seen.has(next):
 				seen[next] = true; q.append(next)
 	return Vector2i(-1, -1)
 
@@ -2773,6 +2824,26 @@ func _room_in_world(saved_world: Dictionary, pos: Vector2i) -> String:
 ## Ordered authored solid props remain ordinary map data for rendering, while this pure projection
 ## is the shared collision source for live nav and prepared-save validation. Malformed records yield
 ## no cells here; map audit and the exact receiver-owned save comparison reject them upstream.
+## docs/193 §五/§六：镇上的 PixelLab 房子/设施不再是"只落在没人站过的格上"的布景——
+## tools/place_houses.py --solid 把它们的占地写进 map.json solid_lots，_build_nav 把这些格挡进 town 导航网；
+## 能进的设施留一格门（door），门格走 portal 进室内。与 dock 的 solid_props 分开：那一份是 P1-u 的精确合同（p1u_port_nav_test）。
+func _solid_lot_cells_in_world(source_world: Dictionary) -> Array:
+	var out: Array = []
+	for raw_lot in source_world.get("solid_lots", []):
+		if not (raw_lot is Dictionary):
+			continue
+		var lp := _as_arr((raw_lot as Dictionary).get("pos", []))
+		var lf := _as_arr((raw_lot as Dictionary).get("footprint", []))
+		var ld := _as_arr((raw_lot as Dictionary).get("door", []))
+		if lp.size() != 2 or lf.size() != 2:
+			continue
+		for y in range(int(lp[1]), int(lp[1]) + int(lf[1])):
+			for x in range(int(lp[0]), int(lp[0]) + int(lf[0])):
+				if ld.size() == 2 and x == int(ld[0]) and y == int(ld[1]):
+					continue
+				out.append(Vector2i(x, y))
+	return out
+
 func _solid_prop_cells_in_world(source_world: Dictionary) -> Array:
 	var out: Array = []
 	var areas = source_world.get("areas", {})
@@ -3190,6 +3261,15 @@ func _advance_agent(ag: Dictionary) -> void:
 		var cands := agent_candidates(ag)
 		if cands.is_empty():
 			return
+		# docs/193：候选与下面的「承诺 pre-empt」用同一把尺。危机中（min_need < PREEMPT_CRISIS）
+		# 不再把"不急的事"（其 need ≥ SURVIVAL_GATE）交给决策——否则它会被选中、下一 tick 又被 pre-empt 中止、
+		# 再被选中……（实测：室内有了餐桌之后，饿到 0 的人在两张床之间每 tick 选"睡觉"又被打断，53 天没走出家门）。
+		# 只在还剩【救急】候选时收窄；一个都没有就保持原集合（让行程/兜底去处理）。
+		if _min_need(ag) < PREEMPT_CRISIS:
+			var urgent := cands.filter(func(c): return not (c is Dictionary and (c as Dictionary).has("need") \
+					and float(ag["needs"].get(String(c["need"]), 0.0)) >= SURVIVAL_GATE))
+			if not urgent.is_empty():
+				cands = urgent
 		# S4 确定性回放：按记录的 pick 复现（含还原异步思考延迟的时机），绕过模型 → 即便模型非确定也可复现。
 		if _replay_active:
 			var aid := String(ag["id"])
@@ -3502,6 +3582,19 @@ func agent_candidates(ag: Dictionary) -> Array:
 ##   (A) 顾客进店：镇上【常客】(cafe_regular)在营业时段、fun 偏低且无紧急事 → 去咖啡馆喝咖啡（进店后自然社交）。
 ##   (B) 离家在外(顾客在店/阿丽在镇)或 café 居民 → 本平面无满足的偏紧 need 承诺行程去有满足者的平面。
 ## 普通镇上居民(home=town、非常客/未进店) → 恒返 [] → town 逐字节不变。确定：对象/portal 文件序、无 RNG。
+## docs/193 §六：公共场所（spaces.json 里 public_venue=true 的 Space）。懒建一次；缺字段 ⇒ 空 ⇒ A2 整块不跑。
+const VENUE_URGE := 45.0          # need 掉到 55 以下才考虑为它出门
+const VENUE_VISIT_BONUS := 0.0    # 不加"出门走走"的分：与镇上对象纯按收益−路程竞争（4.0 时 N=12 #40 8/12）
+var _venue_cache: Variant = null
+func _venue_spaces() -> Dictionary:
+	if _venue_cache == null:
+		var vs := {}
+		for sid in _authored_spaces:
+			if _authored_spaces[sid] is Dictionary and bool((_authored_spaces[sid] as Dictionary).get("public_venue", false)):
+				vs[String(sid)] = true
+		_venue_cache = vs
+	return _venue_cache
+
 func _journey_candidates(ag: Dictionary) -> Array:
 	if ag.get("is_player", false):
 		return []
@@ -3517,6 +3610,21 @@ func _journey_candidates(ag: Dictionary) -> Array:
 		var vc := _best_satisfier_journey(ag, "fun", aspace, afloor, home_space, true)
 		if not vc.is_empty():
 			out.append(vc)
+	# (A2) docs/193 §六：出门去【公共场所】——面包房/可丽饼店/礼拜堂/市场/酒店/澡堂/图书馆（spaces.json public_venue）。
+	# 旧设计里镇上居民只会拐进咖啡馆（A），别的楼里的家具只有本来就在楼里的人用 ⇒ 实测 N=12/24 各 60 天，
+	# 五座新设施与澡堂/图书馆室内的家具被用了【0 次】。这里给镇上居民一条与 A 同形的行程候选：
+	# 只在不紧急时（min_need ≥ SURVIVAL_GATE）、只为已经偏低的 need（≤ 100-VENUE_URGE）、只认 public_venue 的对象，
+	# 与镇上对象同一套打分（urgency×amount/60 − 路程×penalty）再加一点"出门走走"的加成 ⇒ 与就近的镇上对象公平竞争。
+	if aspace == "town" and not _venue_spaces().is_empty() and _min_need(ag) >= SURVIVAL_GATE:
+		# 只为 hunger/hygiene 出门（吃点心、泡澡）。第一版也为 fun 出门（赏画/弹琴/静坐）⇒ 工位广告（也是 fun）被抢走，
+		# 上工次数下滑、镇库断链：N=12 的 #40 从 12/12 掉到 2/12。fun 类家具仍会被【已经在楼里】的人顺手用上。
+		for nid in ["hunger", "hygiene"]:
+			if 100.0 - float(ag["needs"].get(nid, 100.0)) < VENUE_URGE:
+				continue
+			var vj := _best_satisfier_journey(ag, nid, aspace, afloor, home_space, false, _venue_spaces())
+			if not vj.is_empty():
+				vj["score"] = float(vj.get("score", 0.0)) + VENUE_VISIT_BONUS
+				out.append(vj)
 	# (B) 离家在外 或 café 居民 → 为本平面无满足的偏紧 need 承诺行程。普通镇上居民(都在 town)不进此块。
 	if aspace != "town" or home_space != "town":
 		var covered := {}
@@ -3540,7 +3648,7 @@ func _journey_candidates(ag: Dictionary) -> Array:
 
 ## 锁定他平面满足 nid 的【最优对象】→ 一条 journey 候选。家绑定：【居民】的 energy/fun 只回家 Space(顾客 home=town 不受限)。
 ## is_visit=进店行程：只认咖啡馆对象、路程惩罚减半+进店加成(值得为一杯咖啡跑一趟，压过就近的镇上游戏机)。带 ag 走权限门(owner 楼梯)。
-func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor: String, home_space: String, is_visit: bool) -> Dictionary:
+func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor: String, home_space: String, is_visit: bool, only_spaces: Dictionary = {}) -> Dictionary:
 	var urg := 100.0 - float(ag["needs"].get(nid, 100.0))
 	var best_score := -1.0e18
 	var best: Dictionary = {}
@@ -3550,6 +3658,8 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 		if os == aspace and of == afloor:
 			continue
 		if is_visit and os != "cafe":
+			continue
+		if not only_spaces.is_empty() and not only_spaces.has(os):
 			continue
 		if not _staff_ok(ag, o):                                # 顾客的进店行程不冲吧台(员工专属)→ 锁定公共桌"喝咖啡"
 			continue
@@ -6904,7 +7014,7 @@ func _build_nav() -> void:
 	var H := int(world.get("height", GRID.y))
 	for b in world.get("blockers", []):            # 64×48 显式阻挡层(墙/水/树)，缺则空
 		_blocked[int(b[1]) * W + int(b[0])] = true
-	for raw_cell in _solid_prop_cells_in_world(world): # 可见实体道具与 View 共读 map.json authored footprint
+	for raw_cell in _solid_prop_cells_in_world(world) + _solid_lot_cells_in_world(world): # 可见实体道具（dock）+ 镇上房子（docs/193）与 View 共读 map.json authored footprint
 		var cell: Vector2i = raw_cell
 		if cell.x >= 0 and cell.y >= 0 and cell.x < W and cell.y < H:
 			_blocked[cell.y * W + cell.x] = true
@@ -6954,9 +7064,19 @@ func _build_interior_grids() -> void:
 				var fp: Array = _as_arr((fu as Dictionary).get("pos", [0, 0]))
 				if fp.size() < 2:
 					continue
-				var fi := int(fp[1]) * w + int(fp[0])
-				if not portal_cells.has(fi):
-					blocked[fi] = true
+				# docs/193：多格家具（床 1×2、餐桌 2×2、浴缸 2×1）按 size 挡满占地；pos 是前左格，占地向上（向后墙）长。
+				var fsz: Array = _as_arr((fu as Dictionary).get("size", [1, 1]))
+				var fw := int(fsz[0]) if fsz.size() >= 2 else 1
+				var fh := int(fsz[1]) if fsz.size() >= 2 else 1
+				for fx in range(fw):
+					for fy in range(fh):
+						var cx := int(fp[0]) + fx
+						var cy := int(fp[1]) - fy
+						if cx < 0 or cy < 0 or cx >= w or cy >= h:
+							continue
+						var fi := cy * w + cx
+						if not portal_cells.has(fi):
+							blocked[fi] = true
 			if not _nav_grids.has(space):
 				_nav_grids[space] = {}
 			_nav_grids[space][fl] = {"w": w, "h": h, "blocked": blocked}

@@ -21,13 +21,13 @@
    {"id": "work_store",  "rect": [42, 30, 3, 3], "type": "storeroom", "furnish": "", "enclosed": true, "owner": "ben"}
   ]},
   {"id": "home2", "rooms": [
-   {"id": "home2_room",  "rect": [10, 5, 4, 2],  "type": "bedroom",   "furnish": "", "enclosed": true, "owner": ""}
+   {"id": "home2_room",  "rect": [12, 15, 4, 2],  "type": "bedroom",   "furnish": "", "enclosed": true, "owner": ""}
   ]},
   {"id": "shop", "rooms": [
-   {"id": "shop_front",  "rect": [50, 6, 5, 3],  "type": "shopfloor", "furnish": "", "enclosed": true, "owner": ""}
+   {"id": "shop_front",  "rect": [48, 14, 5, 3],  "type": "shopfloor", "furnish": "", "enclosed": true, "owner": ""}
   ]},
   {"id": "library", "rooms": [
-   {"id": "lib_read",    "rect": [10, 40, 5, 3], "type": "quietroom", "furnish": "", "enclosed": true, "owner": ""}
+   {"id": "lib_read",    "rect": [12, 30, 5, 3], "type": "quietroom", "furnish": "", "enclosed": true, "owner": ""}
   ]}
  ]
 }
