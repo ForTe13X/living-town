@@ -44,6 +44,13 @@ var _story_pan: TextureRect            # 展开档面板（默认隐藏；K 键 
 var _story_box: RichTextLabel
 var _story_open := false
 var _story_rev := -1                   # 已排进面板的 Story.rev（脏标记缓存；见 _sync_story_panel）
+# 镇账本（docs/195 · P0）：event_log 里 pay 事件的纯折叠（Ledger.gd）。U 键开合；与纪事/故事同槽互斥。
+var _ledger: RefCounted                # Ledger.gd 实例
+var _ledger_pan: TextureRect
+var _ledger_box: RichTextLabel
+var _ledger_open := false
+var _ledger_arg := false               # --ledger：启动即打开账本（出图眼验用，docs/195）
+var _ledger_key := ""                  # 已排进面板的 (Ledger.rev, 天) —— 两者都没变就不重排
 # 相机/观察状态已全部搬进 ProbeController（P0-b）：Main 只做装配 + HUD/时间轴输入仲裁。
 
 # ── 观察台 / 回放 ──────────────────────────────────────────────────────────
@@ -448,6 +455,8 @@ func _ready() -> void:
 			var _sa := args[i + 1].split(",")
 			if _sa.size() == 3:
 				_shot_at = Vector3(float(_sa[0]), float(_sa[1]), float(_sa[2]))
+		elif args[i] == "--ledger":
+			_ledger_arg = true                # 启动即打开镇账本（docs/195 出图眼验）
 		elif args[i] == "--shot-fit":
 			_shot_fit = true                  # 出图整镇入画（缩放到整图-HUD 余量）；缺省保留跟随相机（角色特写眼验）
 		elif args[i] == "--dbg-nav":
@@ -759,7 +768,7 @@ func _build_hud() -> void:
 	#      这句话在 README 与 docs 里都在，HUD 这一行的职责是列键位。
 	#   ② 字号**不写死**：`_fit_hint_fs` 从 SCRUB_HINT_FS 往下退到装得进 700px 的第一档。
 	#      于是下一个往这行加字的人会自动掉到 13 或 12，而不是静默丢掉半行——**把冻结字面量换成量具**。
-	_scrub_hint.text = "[color=#9aa0b5]时间轴：拖动回放 · 空格暂停 · , . 单步 · [ ] 跳天 · Tab 切角色 · [color=#ffd166]Home 回全镇[/color] · L 跟随 · [color=#ffd166]V 详情[/color] · [color=#ffd166]J 纪事[/color] · O 设置 · F5/F8 存读档 · 点居民查看[/color]"
+	_scrub_hint.text = "[color=#9aa0b5]时间轴：拖动回放 · 空格暂停 · , . 单步 · [ ] 跳天 · Tab 切角色 · [color=#ffd166]Home 回全镇[/color] · L 跟随 · [color=#ffd166]V 详情[/color] · [color=#ffd166]J 纪事[/color] · O 设置 · F5/F8 存读档 · [color=#ffd166]U 账本[/color][/color]"
 	_scrub_hint.add_theme_font_size_override("normal_font_size", _fit_hint_fs(fnt, _scrub_hint.text))
 
 	# 玩家 → NPC 对话输入框（**玩家模式下**选中居民后出现；Enter 发送）。M2：经 AIBackend.chat → LLM/mock/罐头。
@@ -857,6 +866,23 @@ func _build_hud() -> void:
 	_story_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_story_pan.add_child(_story_box)
 	_sync_story_panel()
+
+	# 镇账本（docs/195 · P0；默认隐藏；U 键）。与纪事/故事同槽互斥，同一个 _mk_scrim（理由见上面故事面板）。
+	_ledger = preload("res://scripts/Ledger.gd").new()
+	_ledger_pan = _mk_scrim(layer, Vector2(STORY_X, STORY_Y), STORY_SZ + Vector2(STORY_FEATH, STORY_FEATH),
+		0.0, STORY_FEATH / (STORY_SZ.x + STORY_FEATH), 0.0, STORY_FEATH / (STORY_SZ.y + STORY_FEATH))
+	_ledger_pan.visible = false
+	_ledger_box = RichTextLabel.new()
+	_ledger_box.bbcode_enabled = true
+	_ledger_box.scroll_active = false
+	_ledger_box.add_theme_font_override("normal_font", fnt)
+	_ledger_box.add_theme_font_size_override("normal_font_size", 14)
+	_ledger_box.position = Vector2(10, 6)
+	_ledger_box.size = STORY_SZ - Vector2(20, 12)
+	_ledger_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_ledger_pan.add_child(_ledger_box)
+	if _ledger_arg:
+		_toggle_ledger()
 
 	# dev 性能 overlay（默认隐藏；F3 或设置面板里开）。label 挂在 panel 下 → 一起显隐。
 	# ★位置从 (10,42) 挪到 纪事/故事面板的右边：那一块被元层面板占了，两个都开会叠在一起。
@@ -966,6 +992,7 @@ func _hide_clean_player_diagnostics() -> void:
 	for node in [_status_pan, _status, _gear_btn, _log_pan, _logbox, _obs_pan, _obs,
 		_scrub_pan, _scrub_track, _scrub_fill, _scrub_handle, _scrub_hint, _obs_btn,
 		_backend_btn, _settings_panel, _goals_pan, _goals_box, _story_pan, _story_box,
+		_ledger_pan, _ledger_box,
 		_act_pan, _chat_in, _log_card, _obs_card, _scrub_card, _act_card, _status_line]:
 		if node != null:
 			node.visible = false
@@ -1531,6 +1558,7 @@ func _toggle_goals() -> void:
 		_goals_pan.visible = _goals_open
 	if _goals_open:
 		_close_story()                         # 同槽互斥（见 STORY_X 处的注释）
+		_close_ledger()
 		_sync_goals_panel()
 
 # ── 小镇故事（因果弧）──────────────────────────────────────────────────────
@@ -1563,6 +1591,7 @@ func _toggle_story() -> void:
 		_story_pan.visible = _story_open
 	if _story_open:
 		_close_goals()                         # 同槽互斥
+		_close_ledger()
 		_story_rev = -1                        # 关着的时候不重排 ⇒ 再打开时缓存必然是旧的，强制重排一次
 		_sync_story_panel()
 
@@ -1575,6 +1604,35 @@ func _close_goals() -> void:
 	_goals_open = false
 	if _goals_pan != null:
 		_goals_pan.visible = false
+
+# ── 镇账本（docs/195 · P0）─────────────────────────────────────────────────
+## 只在面板开着时折叠：关着不花一点算力，打开那一刻一次追平（Ledger.sync 是增量的，回放/读档会自己重折）。
+## ★单向：Main → Ledger，Ledger 从不回写 Sim。
+func _sync_ledger() -> void:
+	if not _ledger_open or _ledger == null or _ledger_box == null:
+		return
+	_ledger.sync(Sim.event_log, Sim.TICKS_PER_DAY)
+	var key := "%d:%d" % [int(_ledger.rev), Sim.tick_no / Sim.TICKS_PER_DAY]
+	if key == _ledger_key:
+		return
+	_ledger_key = key
+	_ledger_box.text = _ledger.panel_text(Sim, _story_name)
+
+## 开关（U 键；纯视图，不碰 Sim）。
+func _toggle_ledger() -> void:
+	_ledger_open = not _ledger_open
+	if _ledger_pan != null:
+		_ledger_pan.visible = _ledger_open
+	if _ledger_open:
+		_close_goals()                         # 同槽互斥
+		_close_story()
+		_ledger_key = ""                       # 强制重排一次
+		_sync_ledger()
+
+func _close_ledger() -> void:
+	_ledger_open = false
+	if _ledger_pan != null:
+		_ledger_pan.visible = false
 
 ## Story.gd 不认识 Sim（它连 autoload 都不依赖），名字由这里供给。
 ## 查不到就退回 id —— 但 Sim._name 对空 dict 已经返回 "?"，所以实际上永远走不到 id 那条路。
@@ -1668,6 +1726,7 @@ func _on_tick(_t: int) -> void:
 	_max_tick = maxi(_max_tick, Sim.tick_no)
 	_sync_goals()
 	_sync_story()
+	_sync_ledger()
 	_update_status()
 	_update_scrubber()
 	_update_obs()
@@ -3240,6 +3299,7 @@ func _unhandled_input(e: InputEvent) -> void:
 			KEY_V: if not _clean_player_presentation: _toggle_obs()
 			KEY_J: if not _clean_player_presentation: _toggle_goals()
 			KEY_K: if not _clean_player_presentation: _toggle_story()
+			KEY_U: if not _clean_player_presentation: _toggle_ledger()     # docs/195 镇账本
 			KEY_F5: _quick_save()                                # R0-2：快速存档
 			KEY_F8: _quick_load()                                # R0-2：快速读档
 			KEY_F9: _write_digest()                             # dev：把当前 digest 写盘（--digest-out）
