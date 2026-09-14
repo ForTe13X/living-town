@@ -120,9 +120,17 @@ func _ready() -> void:
 			print("[SPACESHOT] ❌ 未支持的 corrupt manifest field=%s" % _corrupt_manifest)
 			get_tree().quit(1)
 			return
-		corrupt_rec["price_per"] = int(corrupt_rec.get("price_per", 0)) + 1
+		# docs/198：供养 lane 之后港口常有两张待卸单。P1-c 的合同是"坏单跳过、给下一张好单画船"，
+		#   所以只坏第一张时船照画（那是对的）。本臂要拍的是【整个港口都不可信】这一格 ⇒ 每一张待卸单都坏掉。
+		var corrupted := 0
+		for raw_id in Sim.cargo_manifest_order:
+			var rec: Dictionary = Sim.cargo_manifests.get(String(raw_id), {})
+			if not rec.is_empty():
+				rec["price_per"] = int(rec.get("price_per", 0)) + 1
+				corrupted += 1
 		_meta["corrupt_manifest_field"] = _corrupt_manifest
 		_meta["corrupt_manifest_id"] = corrupt_id
+		_meta["corrupt_manifest_count"] = corrupted
 		# The product HUD is event-driven.  The bench mutation bypasses that event on purpose, so
 		# normalize it before the "before" frame; otherwise the roundtrip would compare stale-ready
 		# text against the correctly refreshed invalid text after returning from the warehouse.

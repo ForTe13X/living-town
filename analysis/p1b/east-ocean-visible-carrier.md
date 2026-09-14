@@ -11,7 +11,7 @@ Purpose: make the existing P1-b CargoManifest causally visible at the user-selec
 ## Contract and reusable seams
 
 - Input: authored `logistics.carriers[]`, `Sim.cargo_manifests`, and `Sim.cargo_manifest_order`.
-- Pure output: `WorldView.carrier_projections_for(...)` returns at most one projection per authored route/node, bound to the earliest ready manifest; backlog is represented by bounded `ready_count/ready_qty` metadata.
+- Pure output: `WorldView.carrier_projections_for(...)` returns at most one projection per authored route/node, bound to the earliest ready manifest (docs/198: supply-lane manifests first, matching `cargo_status_for_node` and the unload order); backlog is represented by bounded `ready_count/ready_qty` metadata.
 - No output-side mutation: no world object, event, RNG/clock, nav blocker, save field, digest, or chain field is created. Removing only `carriers[]` hides the ship while leaving manifests/events/chain unchanged.
 - Physical interface: ocean `x60..63`, freight dock `[56,7,4,2]`, Tao home+spawn/port/berth `[58,8]/[59,8]/[60,8]`; fishing is a separate `north_pier=[30,7,4,2] / bench=[31,7]` with no logistics reference.
 - Scale interface: `population_anchor=true` on north_pier and `false` on the East freight dock preserves the historical nine authored clone anchors, their order and centroids. `_area_at()` still sees both areas; the flag only governs N>12 bootstrap placement.

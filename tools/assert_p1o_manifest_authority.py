@@ -40,8 +40,10 @@ def main() -> int:
     for key in shared:
         if vm.get(key) != cm.get(key):
             failures.append(f"fixture drift {key}: {vm.get(key)!r} != {cm.get(key)!r}")
-    if (vm.get("cargo_state"), vm.get("cargo_good"), vm.get("cargo_qty"), vm.get("carrier_count")) != ("ready", "柴薪", 4, 1):
-        failures.append("valid arm is not ready/柴薪x4/carrier1")
+    # docs/198: seed 3 tick 600 now has the Other's ration ship (口粮x36, day 2) ahead of the firewood
+    # ship (柴薪x4, day 3); supply unloads first, so the dock status and carrier both show the rations.
+    if (vm.get("cargo_state"), vm.get("cargo_good"), vm.get("cargo_qty"), vm.get("carrier_count")) != ("ready", "口粮", 36, 1):
+        failures.append("valid arm is not ready/口粮x36/carrier1")
     if (cm.get("cargo_state"), cm.get("cargo_good"), cm.get("cargo_qty"), cm.get("carrier_count")) != ("invalid", "", 0, 0):
         failures.append("corrupt arm leaks trusted cargo fields or carrier")
     if cm.get("corrupt_manifest_field") != "price_per":

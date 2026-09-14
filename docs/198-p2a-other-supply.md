@@ -11,6 +11,8 @@
 | `Sim._supply_short` | 上面那条日界判断：纯 f(镇库, live cargo, data)，无 RNG。 |
 | `Sim._first_unloadable_manifest` / `cargo_status_for_node` | **供养单先卸**：码头工在可卸单里先挑供养 lane 的单，同类内仍按到港序；港口 HUD 的"下一单"同序。 |
 | `Sim._has_rescue_candidate` | 修一个 master 上就有的死循环（§三）。 |
+| `WorldView.carrier_projections_for` | 泊位船上标的"下一单"与港口状态、卸货同序（供养优先）。纯 View、零金标。 |
+| 视觉门 P1-o 夹具 | seed 3 · tick 600 的港口现在有两张待卸单：大他者口粮船（第 2 天、36 件）排在柴薪船（第 3 天、4 件）前面。① `assert_p1o_manifest_authority.py` 有效臂期望从「柴薪×4」改成「口粮×36」；② `SpaceShot` 坏单臂从"坏第一张"改成"每一张待卸单都坏"——P1-c 的合同（`p1c_east_ocean_carrier_test`）明写"坏的首单跳过、船跳到下一张好单"，只坏一张时船照画是对的；本臂要拍的是整个港口都不可信那一格。判据不变。 |
 | `production.json` | 糕点师每场 6 → **8** 件（§二·3）。 |
 | `ledger_test` | LC 出口臂补一跑够长的（§二·4）。 |
 
