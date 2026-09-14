@@ -5664,7 +5664,9 @@ func transfer(from_id: String, to_id: String, amt: int, reason: String, witnesse
 	_set_coin(from_id, from_coin - amt)
 	_set_coin(to_id, _coin_of(to_id) + amt)
 	var ev := _log_event("pay", from_id, to_id, "", true, witnesses, reason, txid)
-	var _e = ev   # 事件仅作账本溯源（不 emit social_event——经济事务非社交）
+	# docs/195：金额记进事件 ⇒ 账本（Ledger.gd）是 event_log 的纯折叠。amt 不进 Inv.digest / chain_step /
+	#   event_digest 的字段串 ⇒ 金标逐字节不变；存档是整条 event_log 原样写出 ⇒ 读档后仍可折叠核对。
+	ev["amt"] = amt
 	return true
 
 func _coin_of(id: String) -> int:
