@@ -1,6 +1,6 @@
 # 195 · P0 镇账本：钱的流水是 event_log 的纯折叠（零 sim 金标）
 
-> 触发：用户 2026-09-13 审过 194 服务业小镇设计稿（docs/194@docs/194-town-economy-design，PR #55，未合入本树）后说"open the PR, then start P0"。
+> 触发：用户 2026-09-13 审过 [194 服务业小镇设计稿](194-town-economy-and-society-design.md) 后说"open the PR, then start P0"。
 > 本片 = 194 §四 的 **P0 账本视图**：之后每一相（家计、进口转向、服务业、镇公所、银行……）的效果都能在这张表上直接看见。
 
 ![ledger](media/195_ledger.png)
@@ -23,7 +23,7 @@
 2. **`game/scripts/Ledger.gd`**：纯折叠，增量 `sync(event_log)`；按 reason 前缀分类
    （Sim.gd 里恰好六个 `transfer` 调用点：`price:` 饭钱、`buy:` 摊贩、`wage:` 工资、`rent`、`import*`、`export*`）。
    回放（goto_tick）或读档让 event_log 变短/换了内容 ⇒ 尾事件指纹对不上 ⇒ 自动从头重折。
-3. **核对**（`Ledger.verify`，docs/194@docs/194-town-economy-design §三"账本 = event_log 的纯折叠"）：每个账户
+3. **核对**（`Ledger.verify`，docs/194 §三"账本 = event_log 的纯折叠"）：每个账户
    `现余额 − 折叠净流入 == 开局额`（开局额只由数据决定：居民 `economy.start_coin`、镇库 `town_start`、大他者 0）；
    每条 pay 都带 amt；有流水的账户都在账户表里。**绕过 transfer 改钱 ⇒ 必红。**
 4. **Main 只在面板开着时折叠**（关着零开销；打开那一刻一次追平），且只在 `Ledger.rev` 或"天"变了时重排文字。
