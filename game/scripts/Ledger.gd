@@ -12,11 +12,12 @@ extends RefCounted
 ##   price:<动作> 居民→镇库（吃饭等收费）· buy:<动作> 居民→摊贩 · wage:<动作> 镇库→居民
 ##   rent 房客→房东 · import*<件> 镇库→大他者 · export*<件> 大他者→镇库
 ##   docs/196：bill:<项> 居民→镇库（水电/炭火/欠费）· bonus:<项> 镇库→居民（全勤奖）
-const CATS := ["meal", "vendor", "wage", "rent", "bill", "bonus", "import", "export", "other"]
-const CAT_NAME := {"meal": "饭钱", "vendor": "摊贩", "wage": "工资", "rent": "房租",
+##   docs/197：price:采买 居民→镇库（杂货铺买口粮进食橱）单列为 grocery
+const CATS := ["meal", "grocery", "vendor", "wage", "rent", "bill", "bonus", "import", "export", "other"]
+const CAT_NAME := {"meal": "饭钱", "grocery": "采买", "vendor": "摊贩", "wage": "工资", "rent": "房租",
 	"bill": "账单", "bonus": "奖金", "import": "进口", "export": "出口", "other": "其它"}
 ## 镇库视角：哪些类是进账、哪些是出账（摊贩与房租是居民之间的钱，不经镇库）。
-const TOWN_IN := ["meal", "bill", "export"]
+const TOWN_IN := ["meal", "grocery", "bill", "export"]
 const TOWN_OUT := ["wage", "bonus", "import"]
 
 var cursor := 0          # 已折叠到 event_log 的哪个下标（不含）
@@ -30,6 +31,7 @@ var rev := 0             # 脏标记：折进了新的 pay 就 +1（Main 据此�
 
 static func category(note: String) -> String:
 	var head := note.split("*")[0].split(":")[0]
+	if note == "price:采买": return "grocery"
 	if head == "price": return "meal"
 	if head == "buy": return "vendor"
 	if head in ["wage", "rent", "bill", "bonus", "import", "export"]: return head
