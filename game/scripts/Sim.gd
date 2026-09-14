@@ -2171,7 +2171,7 @@ const SAVE_MAGIC := "LTSAVE"
 const SAVE_SCHEMA_LEGACY := 1
 const SAVE_SCHEMA := 2
 const SAVE_RUNTIME_HANDLES := ["backend", "ext", "decision_sink"]
-const SAVE_LOAD_DENY := ["desire_cfg", "_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected",
+const SAVE_LOAD_DENY := ["desire_cfg", "_venue_cache", "_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected",
 	"controlled_id", "_tone_bonus", "loaded_meta"]   # docs/190 生活模式：附身/语气/档头都是 View 或瞬时态，不改存档形状（旧档照读）
 const SAVE_CURRENT_BLOB_KEYS := ["magic", "schema", "game_version", "saved_tick", "saved_day", "seed", "meta", "active_commit_ids", "state"]
 
@@ -2477,17 +2477,19 @@ func _migrate_schema1_solid_props(state: Dictionary) -> String:
 		if String(ag.get("id", "")) == "tao" and ag.get("home") == Vector2i(58, 8):
 			ag["home"] = Vector2i(59, 7)
 		if String(ag.get("space", "town")) != "town" or String(ag.get("floor", "outdoor")) != "outdoor":
-			# docs/193：室内平面按【当前】家具布局建网——旧档里站在如今是床/隔墙的格上的人，挪到最近的可走格
-			var ig := _grid_for(String(ag.get("space", "town")), String(ag.get("floor", "outdoor")))
+			# docs/193：室内 bounds 变了（住宅区 9×7→12×9 等）——旧档里落在如今的外墙环/界外的人，挪到最近的合法格。
+			# 判据与读档校验【同一个】（_position_walkable_in_state：界内、非外墙环；家具格本来就是合法的交互终点），
+			# 不用导航网：站在自己床上的人（cafe 2F 的阿丽）是合法的，挪她会白白改掉 chain。
+			var isp := String(ag.get("space", "town")); var ifl := String(ag.get("floor", "outdoor"))
 			var ipos: Vector2i = ag.get("pos", Vector2i.ZERO)
-			if not ig.is_empty() and not _cell_walkable(ig, ipos):
-				var ic := _nearest_walkable_in_grid(ig, ipos)
+			if not _position_walkable_in_state(saved_world, isp, ifl, ipos):
+				var ic := _nearest_legal_interior_cell(saved_world, isp, ifl, ipos)
 				if ic.x < 0:
-					return "schema 1 agent %s cannot be evacuated from re-furnished interior" % String(ag.get("id", ""))
+					return "schema 1 agent %s cannot be evacuated from a resized interior" % String(ag.get("id", ""))
 				ag["pos"] = ic
 			continue
 		var pos: Vector2i = ag.get("pos", Vector2i.ZERO)
-		if not (pos in solid_cells) and not (pos in _solid_lot_cells_in_world(world)):
+		if not (pos in solid_cells):
 			continue
 		var replacement := Vector2i(59, 7) if String(ag.get("id", "")) == "tao" else _nearest_legacy_town_cell(saved_world, pos)
 		if replacement.x < 0:
@@ -2516,14 +2518,18 @@ func _nearest_legacy_town_cell(saved_world: Dictionary, start: Vector2i) -> Vect
 				seen[next] = true; q.append(next)
 	return Vector2i(-1, -1)
 
-## docs/193：室内平面上的 BFS 最近可走格（行优先的四邻序 ⇒ 确定）。找不到返回 (-1,-1)。
-func _nearest_walkable_in_grid(grid: Dictionary, start: Vector2i) -> Vector2i:
-	var W := int(grid.get("w", 0)); var H := int(grid.get("h", 0))
-	var q: Array = [start]
-	var seen := {start: true}
+## docs/193：室内平面上按读档校验的判据找最近的合法格（BFS，四邻固定序 ⇒ 确定）。找不到返回 (-1,-1)。
+func _nearest_legal_interior_cell(saved_world: Dictionary, space: String, floor: String, start: Vector2i) -> Vector2i:
+	var b := _as_arr((_authored_spaces.get(space, {}) as Dictionary).get("bounds", [])) if _authored_spaces.get(space) is Dictionary else []
+	if b.size() != 4:
+		return Vector2i(-1, -1)
+	var W := int(b[2]); var H := int(b[3])
+	var c0 := Vector2i(clampi(start.x, 0, W - 1), clampi(start.y, 0, H - 1))
+	var q: Array = [c0]
+	var seen := {c0: true}
 	while not q.is_empty():
 		var cell: Vector2i = q.pop_front()
-		if _cell_walkable(grid, cell):
+		if _position_walkable_in_state(saved_world, space, floor, cell):
 			return cell
 		for direction in [Vector2i(0, 1), Vector2i(-1, 0), Vector2i(1, 0), Vector2i(0, -1)]:
 			var next: Vector2i = cell + direction
