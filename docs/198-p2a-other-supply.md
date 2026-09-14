@@ -9,7 +9,7 @@
 |---|---|
 | `logistics.json` 新 import lane | `口粮` · east_ocean · `price_per: 0`（不要钱 ⇒ 免费 commit，#45 不计价）· `supply_floor: 40` · 每晚检查：**镇库口粮 + 港口待卸口粮 < 地板**才发一船 36 件。地板随 production pool 缩放（`scale_floor`），批量不缩放（固定船吞吐，同柴薪 lane）。 |
 | `Sim._supply_short` | 上面那条日界判断：纯 f(镇库, live cargo, data)，无 RNG。 |
-| `Sim._first_unloadable_manifest` / `cargo_status_for_node` | **供养单先卸**：码头工在可卸单里先挑供养 lane 的单，同类内仍按到港序；港口 HUD 的"下一单"同序。 |
+| `Sim._first_unloadable_manifest` / `cargo_status_for_node` | **供养单先卸**：码头工在可卸单里先挑供养 lane 的单，同类内仍按到港序；港口 HUD 的"下一单"同序。第一版把整条积压逐张做权威核验（每张扫一遍 event_log），GitHub CI 的 S0/4a 步慢了 29%/44%、整个 job 撞上 35 分钟上限；改成先用廉价条件定位最早可卸供养单、只对它做权威核验（前面排着的付费单这回不卸，不逐张核验——与 P1-c 泊位船"坏单跳过"同一取向，提交时还会再核），选中的单逐字相同（金标不动），N=16 seed 1 × 60 天 33s = master 33s。 |
 | `Sim._has_rescue_candidate` | 修一个 master 上就有的死循环（§三）。 |
 | `WorldView.carrier_projections_for` | 泊位船上标的"下一单"与港口状态、卸货同序（供养优先）。纯 View、零金标。 |
 | 视觉门 P1-o 夹具 | seed 3 · tick 600 的港口现在有两张待卸单：大他者口粮船（第 2 天、36 件）排在柴薪船（第 3 天、4 件）前面。① `assert_p1o_manifest_authority.py` 有效臂期望从「柴薪×4」改成「口粮×36」；② `SpaceShot` 坏单臂从"坏第一张"改成"每一张待卸单都坏"——P1-c 的合同（`p1c_east_ocean_carrier_test`）明写"坏的首单跳过、船跳到下一张好单"，只坏一张时船照画是对的；本臂要拍的是整个港口都不可信那一格。判据不变。 |

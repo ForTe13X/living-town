@@ -6457,34 +6457,48 @@ func _arrive_import_manifest(lane: Dictionary, lane_index: int) -> String:
 ## 只返回【此刻可整单提交】的最早 manifest。首片刻意不拆单：3/4 的价格若拆成四笔 1 件，
 ## 每笔整数地板都会变 0，形成免费货；整单也让 cargo_delta == stock_delta 可直接审计。
 ## docs/198：大他者供养单（supply lane）先卸——生存货不排在付费原料的积压后面；同类内仍按到港序。
+##   先用廉价条件找最早一张【可卸的供养单】；找到了就只对它做权威核验（坏了且属本节点 ⇒ fail-closed 返回 ""）。
+##   前面排着的付费单这回不卸，不逐张核验——否则整条积压（10-20 单）每张都要扫一遍 event_log，实测 N=16 一局慢 45%；
+##   与 P1-c 的泊位船"坏单跳过、看下一张好单"同一个取向，真正提交时 _commit_manifest_unload 还会再核一遍。
+##   没有可卸供养单 ⇒ 与 P2 之前逐字相同（返回最早可卸单）。
 func _first_unloadable_manifest(node: String) -> String:
-	var first_other := ""
+	var target := ""
+	for raw_id in cargo_manifest_order:
+		var rec0: Dictionary = cargo_manifests.get(String(raw_id), {})
+		if not rec0.is_empty() and _manifest_is_supply(rec0) and _manifest_unloadable_now(rec0, node):
+			target = String(raw_id)
+			break
 	for raw_id in cargo_manifest_order:
 		var manifest_id := String(raw_id)
 		if not cargo_manifests.has(manifest_id):
 			continue
+		if target != "" and manifest_id != target:
+			continue                           # 供养单在后面等着先卸：前面的单这回不卸，也不必逐张核验
 		var rec: Dictionary = cargo_manifests[manifest_id]
 		var authored_error := _manifest_authority_error(manifest_id, rec, logistics, day, event_log)
 		if authored_error != "":
 			if _manifest_targets_node(rec, node):
 				return ""
 			continue
-		var qty := int(rec.get("remaining_qty", 0))
-		if String(rec.get("state", "")) != "ready" or String(rec.get("node", "")) != node or qty <= 0:
+		if not _manifest_unloadable_now(rec, node):
 			continue
-		if _import_fit(String(rec.get("good", "")), qty) != qty:
-			continue
-		var pnum := int(rec.get("price_per", 0))
-		var pden := int(rec.get("price_den", 1))
-		if _econ_on() and pnum > 0:
-			var cost := qty * pnum / pden if pden > 0 else 0
-			if pden <= 0 or cost <= 0 or town_coin < cost:
-				continue
-		if _manifest_is_supply(rec):
-			return manifest_id
-		if first_other == "":
-			first_other = manifest_id
-	return first_other
+		return manifest_id
+	return ""
+
+## 货位、状态、余额这些【此刻】的条件（不含权威核验）：整单放得下、付得起才算可卸。
+func _manifest_unloadable_now(rec: Dictionary, node: String) -> bool:
+	var qty := int(rec.get("remaining_qty", 0))
+	if String(rec.get("state", "")) != "ready" or String(rec.get("node", "")) != node or qty <= 0:
+		return false
+	if _import_fit(String(rec.get("good", "")), qty) != qty:
+		return false
+	var pnum := int(rec.get("price_per", 0))
+	var pden := int(rec.get("price_den", 1))
+	if _econ_on() and pnum > 0:
+		var cost := qty * pnum / pden if pden > 0 else 0
+		if pden <= 0 or cost <= 0 or town_coin < cost:
+			return false
+	return true
 
 ## docs/198：这单是否出自带 supply_floor 的大他者供养 lane（按 authored lane_index 查，不信 record 自报）。
 func _manifest_is_supply(rec: Dictionary) -> bool:
