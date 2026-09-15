@@ -3683,6 +3683,13 @@ func _journey_candidates(ag: Dictionary) -> Array:
 			if not vj.is_empty():
 				vj["score"] = float(vj.get("score", 0.0)) + VENUE_VISIT_BONUS
 				out.append(vj)
+		# (A2b) docs/201 P3b：为 fun 出门，但【只认有人看店的收费店】（逛店）。A2 把 fun 摘掉是因为免费的赏画/弹琴
+		#   抢走了工位的 fun；收费店不一样——要花钱（luxury 买不起就不开）、店主不在店里就不开，是一笔真实的取舍。
+		#   没有 luxury 卖家的数据 ⇒ vendor_only 找不到任何广告 ⇒ 空 ⇒ 不多出候选。
+		if 100.0 - float(ag["needs"].get("fun", 100.0)) >= VENUE_URGE:
+			var fj := _best_satisfier_journey(ag, "fun", aspace, afloor, home_space, false, _venue_spaces(), "", true)
+			if not fj.is_empty():
+				out.append(fj)
 	# (A3) docs/200 P3：本职工位在【楼里】（餐馆厨师的灶在面包房）⇒ 在班、人在镇上时给一条去上工的行程候选。
 	#   A2 不为 fun 出门，是怕把工位的 fun 抢走；这里正相反，只认【本人职位】的工位广告（job_only）。
 	#   本职工位都在镇上的岗位 ⇒ 不在 _indoor_job_titles 里 ⇒ 一条指令都不多跑。
@@ -3705,8 +3712,16 @@ func _journey_candidates(ag: Dictionary) -> Array:
 						var n := String(adv.get("need", ""))
 						if not (n in _home_needs(ag) and aspace != home_space):   # 镇上的床/游戏机不算覆盖【居民】的 energy/fun
 							covered[n] = true
+		# docs/201：social 原本整个跳过（楼里有人就能聊，不必为它出门）。可楼里只剩自己时就没有任何出路——
+		#   实测 ben 一个人留在小馆里，没有候选、干站着，social 从 6 掉到 0（#01 硬红）。
+		#   ⇒ 同平面没有别人时，social 也算"本平面无满足"，照常发一条回镇上的行程。
+		var alone := true
+		for other in agents:
+			if other != ag and String(other.get("space", "town")) == aspace and String(other.get("floor", "outdoor")) == afloor:
+				alone = false
+				break
 		for nid in ag["needs"]:
-			if nid == "social" or covered.has(nid):
+			if covered.has(nid) or (nid == "social" and not alone):
 				continue
 			if 100.0 - float(ag["needs"][nid]) <= JOURNEY_URGENT:
 				continue
@@ -3717,7 +3732,7 @@ func _journey_candidates(ag: Dictionary) -> Array:
 
 ## 锁定他平面满足 nid 的【最优对象】→ 一条 journey 候选。家绑定：【居民】的 energy/fun 只回家 Space(顾客 home=town 不受限)。
 ## is_visit=进店行程：只认咖啡馆对象、路程惩罚减半+进店加成(值得为一杯咖啡跑一趟，压过就近的镇上游戏机)。带 ag 走权限门(owner 楼梯)。
-func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor: String, home_space: String, is_visit: bool, only_spaces: Dictionary = {}, job_only: String = "") -> Dictionary:
+func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor: String, home_space: String, is_visit: bool, only_spaces: Dictionary = {}, job_only: String = "", vendor_only: bool = false) -> Dictionary:
 	var urg := 100.0 - float(ag["needs"].get(nid, 100.0))
 	var best_score := -1.0e18
 	var best: Dictionary = {}
@@ -3742,6 +3757,8 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 				continue                                        # F1：跨平面行程也要过工位专属/市集时段两道门（否则会承诺跑一趟去一个关着的摊）
 			if job_only != "" and String(adv.get("job", "")) != job_only:
 				continue                                        # docs/200 A3：上工行程只认本人职位的工位
+			if vendor_only and not bool(_vendor_for(String(adv.get("action", ""))).get("luxury", false)):
+				continue                                        # docs/201 A2b：为 fun 出门只认收费店
 			if String(adv.get("need", "")) == nid and int(adv.get("amount", 0)) > amt:
 				amt = int(adv.get("amount", 0)); dur = int(adv.get("duration", 0)); act = String(adv.get("action", ""))
 		if amt <= 0:
@@ -3798,6 +3815,11 @@ func _adv_open(ag: Dictionary, adv: Dictionary) -> bool:
 				return false
 			if _coin_of(String(ag["id"])) < int(economy.get("prices", {}).get(String(adv.get("action", "")), 0)):
 				return false
+	# docs/201：luxury 卖家（理发/逛店）⇒ 兜里的钱不够这一单就不开——它们不是生存动作，不走"付不起照吃"。
+	if _econ_on():
+		var lux := _vendor_for(String(adv.get("action", "")))
+		if bool(lux.get("luxury", false)) and _coin_of(String(ag["id"])) < int(lux.get("price", 0)):
+			return false
 	return _market_open(String(adv.get("action", "")))
 
 ## 只有【开始一单】必须在班；已经由 _apply_object 在班验证过的同一单可跨班次做完。

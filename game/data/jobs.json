@@ -3,10 +3,10 @@
   "jobs": {
     "aria": { "title": "咖啡师", "action": "看摊", "wage": 4, "shift": ["dawn", "day"] },
     "ben":  { "title": "木匠",   "action": "做活", "wage": 5, "shift": ["day", "dusk"] },
-    "dan":  { "title": "杂役",   "action": "做活", "wage": 3, "shift": ["dawn", "day"] },
+    "dan":  { "title": "理发师", "action": "剃头", "wage": 3, "shift": ["day", "dusk"] },
     "lin":  { "title": "厨师",   "action": "掌勺", "wage": 4, "shift": ["day", "dusk"] },
     "hai":  { "title": "渔夫",   "action": "做活", "wage": 4, "shift": ["dawn", "day"] },
-    "shu":  { "title": "教书先生", "action": "做活", "wage": 4, "shift": ["day", "dusk"] },
+    "shu":  { "title": "店主",   "action": "看店", "wage": 3, "shift": ["day", "dusk"] },
     "tao":  { "title": "码头工", "action": "卸货", "wage": 4, "shift": ["dawn", "day"], "affiliate": true },
     "yong": { "title": "码头工", "action": "卸货", "wage": 4, "shift": ["day", "dusk"], "affiliate": true }
   },
