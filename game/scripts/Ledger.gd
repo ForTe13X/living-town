@@ -15,8 +15,9 @@ extends RefCounted
 ##   docs/197：price:采买 居民→镇库（杂货铺买口粮进食橱）单列为 grocery
 ##   docs/200：buy:下馆子 居民→厨师（餐馆一顿饭）单列为 restaurant，不混进集市摊贩
 ##   docs/201：buy:理发 居民→理发师、buy:逛店 居民→店主，各自单列
-const CATS := ["meal", "grocery", "vendor", "restaurant", "barber", "boutique", "wage", "rent", "bill", "bonus", "import", "export", "other"]
-const CAT_NAME := {"meal": "饭钱", "grocery": "采买", "vendor": "摊贩", "restaurant": "餐馆", "barber": "理发", "boutique": "小店", "wage": "工资", "rent": "房租",
+##   docs/203：buy:下午茶、buy:游船 居民→酒店掌柜，合成一类 hotel
+const CATS := ["meal", "grocery", "vendor", "restaurant", "barber", "boutique", "hotel", "wage", "rent", "bill", "bonus", "import", "export", "other"]
+const CAT_NAME := {"meal": "饭钱", "grocery": "采买", "vendor": "摊贩", "restaurant": "餐馆", "barber": "理发", "boutique": "小店", "hotel": "酒店", "wage": "工资", "rent": "房租",
 	"bill": "账单", "bonus": "奖金", "import": "进口", "export": "出口", "other": "其它"}
 ## 镇库视角：哪些类是进账、哪些是出账（摊贩与房租是居民之间的钱，不经镇库）。
 const TOWN_IN := ["meal", "grocery", "bill", "export"]
@@ -37,6 +38,7 @@ static func category(note: String) -> String:
 	if note == "buy:下馆子": return "restaurant"
 	if note == "buy:理发": return "barber"
 	if note == "buy:逛店": return "boutique"
+	if note == "buy:下午茶" or note == "buy:游船": return "hotel"
 	if head == "price": return "meal"
 	if head == "buy": return "vendor"
 	if head in ["wage", "rent", "bill", "bonus", "import", "export"]: return head
@@ -185,7 +187,8 @@ func panel_text(S, name_of: Callable) -> String:
 	out.append(hd + "── 居民之间 ──[/color]")
 	out.append(" 摊贩 %d 笔 %d 币 · 餐馆 %d 笔 %d 币 · 房租 %d 笔 %d 币" % [_n("vendor"), _amt("vendor"),
 		_n("restaurant"), _amt("restaurant"), _n("rent"), _amt("rent")])
-	out.append(" 理发 %d 笔 %d 币 · 小店 %d 笔 %d 币" % [_n("barber"), _amt("barber"), _n("boutique"), _amt("boutique")])
+	out.append(" 理发 %d 笔 %d 币 · 小店 %d 笔 %d 币 · 酒店 %d 笔 %d 币" % [_n("barber"), _amt("barber"), _n("boutique"), _amt("boutique"),
+		_n("hotel"), _amt("hotel")])
 	var owe_n := 0
 	var owe_sum := 0
 	for ag in S.agents:

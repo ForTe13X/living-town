@@ -1713,6 +1713,59 @@
       8,
       5
      ]
+    },
+    {
+     "slot": "counter",
+     "pos": [
+      1,
+      1
+     ],
+     "size": [
+      2,
+      1
+     ],
+     "label": "前台",
+     "advertises": [
+      {
+       "action": "打理",
+       "job": "酒店掌柜",
+       "need": "fun",
+       "amount": 70,
+       "duration": 24
+      }
+     ]
+    },
+    {
+     "slot": "bistro",
+     "pos": [
+      1,
+      3
+     ],
+     "label": "茶座",
+     "advertises": [
+      {
+       "action": "下午茶",
+       "need": "fun",
+       "amount": 60,
+       "duration": 20
+      }
+     ]
+    },
+    {
+     "slot": "bistro",
+     "pos": [
+      6,
+      3
+     ],
+     "label": "茶座",
+     "advertises": [
+      {
+       "action": "下午茶",
+       "need": "fun",
+       "amount": 60,
+       "duration": 20
+      }
+     ]
     }
    ]
   }
