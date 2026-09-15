@@ -11,9 +11,10 @@
 | `map.json` dock 区 | `[56,7,4,2]` → `[56,7,4,5]`：栈桥向南延三格，容下第二泊位节点。北端锚、首泊位 berth `[60,8]`、solid_props 都不变（存档只核 solid_props ⇒ 旧档照读）。 |
 | `logistics.json` | 新节点 `port_dock2`（码头，`[59,11]`，广告 `卸货` / job 码头工 / manifest_node port_dock2）+ 第二艘 carrier（berth `[60,11]`）；**大他者口粮供养 lane 改在 port_dock2 卸**，柴薪付费单留在 port_dock——两条队列不再抢同一个船位。 |
 | 第二码头工：大勇（`yong`） | `agents.json` 第二个 affiliate（与阿涛同为附属成员、不进核心产出池），home/spawn `[59,10]`；`jobs.json` 码头工、班次 **day+dusk**（阿涛 dawn+day，错开）；不是咖啡馆常客。人设与精灵早就有（personas.json「撑船的后生」、`chars/yong.png` 8 向表）⇒ **零 PixelLab 生成**；`voicebank.json` 补 `卸货`/`喝咖啡` 两句。两个码头工谁在班都能卸任一泊位（岗位按 title，节点按 manifest_node）。 |
-| 渔夫改打海鲜 | `production.json` 新货 `海鲜`（cap 40、每天坏 1、blame 渔夫）；`produce.渔夫` 口粮 85 → **海鲜 26**；`consume.赶集` 口粮 → **海鲜**（集市摊从卖热食改卖海鲜，E3b 糕点的纪律：挂既有动作、不新增决策槽）。 |
+| 渔夫改打海鲜 | `production.json` 新货 `海鲜`（cap 40、每天坏 1、blame 渔夫）；`produce.渔夫` 口粮 85 → **海鲜 32**（批量见 §二·2b）；`consume.赶集` 口粮 → **海鲜**（集市摊从卖热食改卖海鲜，E3b 糕点的纪律：挂既有动作、不新增决策槽）。 |
 | 轮休豁免 | `economy.rest_day.exempt_titles` 去掉渔夫（它不再产口粮）；面点师仍豁免（本地唯一口粮产者）。 |
-| 测试夹具 | `p1a_affiliate_test` 的 affiliate 数与选民数改从 agents.json 读（不写死 1）；`p1c` 的 dock 物理锚改成新矩形。 |
+| 测试夹具 | `p1a_affiliate_test` / `p1d_scale_export_test` 的 affiliate 数与选民数改从 agents.json 读（不写死 1）；`p1c` 的 dock 物理锚改成新矩形。 |
+| CI 里写死"一个泊位"的三道检查 | `tools/audit_map.py`：dock 矩形 `[56,7,4,5]`；节点从"唯一 port_dock"改成两个声明节点各冻结在自己泊位西邻格（[59,8]/[59,11]）；import lane 闭合到任一声明节点；carrier 每个闭合到声明节点 + 该节点自己的泊位、节点不重复。`assert_east_ocean_carrier.py`：像素裁剪框下沿 245 → 265，罩住两个泊位。`assert_p1o_manifest_authority.py`：seed 3 · tick 600 口粮船在第二泊位、港口状态读 port_dock ⇒ 有效臂期望「柴薪×4、两艘船」；坏单臂判据不变。 |
 
 ## 二、量出来的
 
@@ -81,7 +82,14 @@ P2a 在 200/260/400 tick 都 drift=0，所以不是测试头注里那条"~200 ti
 
 ## 三、验收回执
 
-（待 #40 网格与全套 CI。）
+| 本机 | P2a（master） | **P2b** |
+|---|---|---|
+| S0 N=12 seeds 1-12：硬 / #40 | 12/12 · 11/12 | **12/12 · 12/12** |
+| 4a N=16 seeds 1-12：硬 / #40 | 12/12 · 12/12 | **12/12 · 11/12**（seed 5） |
+| 留出 N=12 seeds 13-30：#40 | 18/18 | **14/18**（13、14、15、24） |
+
+- 两道 CI 门都过；留出种子退了 4 格，原因见 §二·2b（海鲜是新进判决的特产、供给卡在渔夫一个人的场次上）。
+- 金标（S0 含逐 tick 链、DetGate 四轨、ModelPath 锚）按 194 §五「P2 · 移」重烘，`rebake_history` 各补一条；全套 CI 回执见 PR。
 
 ## 四、没做 / 留给后面
 
