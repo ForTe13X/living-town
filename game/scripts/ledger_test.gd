@@ -123,6 +123,9 @@ func _ready() -> void:
 		"分类：docs/201 理发、小店各自单列")
 	ck(LedgerScript.category("buy:下午茶") == "hotel" and LedgerScript.category("buy:游船") == "hotel",
 		"分类：docs/203 下午茶、游船都记在酒店")
+	ck(LedgerScript.category("subsidy*12") == "subsidy" and LedgerScript.category("tax*3") == "tax"
+		and "subsidy" in LedgerScript.TOWN_IN and "tax" in LedgerScript.TOWN_OUT,
+		"分类：docs/204 补贴进镇库、税出镇库")
 	for k in seeds.size():
 		_run(int(seeds[k]), 12, days, k == 0)
 	_run(int(seeds[0]), 16, days, false)

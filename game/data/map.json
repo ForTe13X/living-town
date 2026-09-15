@@ -4959,15 +4959,19 @@
    ]
   },
   {
-   "id": "lot_01_bandstand",
-   "sprite": "bandstand",
+   "id": "lot_01_mairie",
+   "sprite": "mairie",
    "pos": [
     31,
-    31
+    28
    ],
    "footprint": [
-    2,
-    3
+    3,
+    4
+   ],
+   "door": [
+    32,
+    31
    ]
   },
   {
