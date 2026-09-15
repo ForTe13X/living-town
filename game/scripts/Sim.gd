@@ -2197,7 +2197,7 @@ const SAVE_MAGIC := "LTSAVE"
 const SAVE_SCHEMA_LEGACY := 1
 const SAVE_SCHEMA := 2
 const SAVE_RUNTIME_HANDLES := ["backend", "ext", "decision_sink"]
-const SAVE_LOAD_DENY := ["desire_cfg", "_venue_cache", "_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected",
+const SAVE_LOAD_DENY := ["desire_cfg", "_venue_cache", "_indoor_job_cache", "_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected",
 	"controlled_id", "_tone_bonus", "loaded_meta"]   # docs/190 生活模式：附身/语气/档头都是 View 或瞬时态，不改存档形状（旧档照读）
 const SAVE_CURRENT_BLOB_KEYS := ["magic", "schema", "game_version", "saved_tick", "saved_day", "seed", "meta", "active_commit_ids", "state"]
 
@@ -3435,8 +3435,8 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 				#   本棒新的是【货与钱同时易手】——镇库的货经 _stock_take 出账、钱进的是个人口袋。
 				#   买家恰好就是商贩本人时跳过收款（自己卖给自己不是交易，只会在账本上留一条净零的 pay）。
 				var payee := "town"
-				var vend: Dictionary = production.get("vendor", {}) if _prod_on() and production.get("vendor", {}) is Dictionary else {}
-				if not vend.is_empty() and String(vend.get("action", "")) == String(opt["action"]):
+				var vend := _vendor_for(String(opt["action"]))   # docs/200：商贩 + production.vendors（餐馆厨师）同一条通道
+				if not vend.is_empty():
 					var vid := _holder_of_title(String(vend.get("title", "")))
 					if vid != "" and vid != String(ag["id"]) and _agent_by_id.has(vid):
 						price = int(vend.get("price", 0))
@@ -3457,7 +3457,10 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 					#   本就跳过商贩（那边 seers 循环里的 continue；引符号不引行号）⇒ 本过滤是
 					#   纯观测变更：只动 pay 事件的 witnesses 成员
 					#   ⇒ 只动 Inv.digest，event_digest/chain 不动（M1 实测 12/12 vs 0/12）。
-					var tc: Dictionary = _trade_credit() if payee != "town" else {}
+					# docs/200：口碑配置取【这一个卖家自己的】trade_credit（餐馆没有 ⇒ {} ⇒ witnesses 仍是 []，#43 ③臂不外溢）。
+					var tc: Dictionary = {}
+					if payee != "town" and vend.get("trade_credit", {}) is Dictionary:
+						tc = vend.get("trade_credit", {})
 					var twits: Array = []
 					if not tc.is_empty():
 						for tw in _nearby_agents(ag):
@@ -3680,6 +3683,17 @@ func _journey_candidates(ag: Dictionary) -> Array:
 			if not vj.is_empty():
 				vj["score"] = float(vj.get("score", 0.0)) + VENUE_VISIT_BONUS
 				out.append(vj)
+	# (A3) docs/200 P3：本职工位在【楼里】（餐馆厨师的灶在面包房）⇒ 在班、人在镇上时给一条去上工的行程候选。
+	#   A2 不为 fun 出门，是怕把工位的 fun 抢走；这里正相反，只认【本人职位】的工位广告（job_only）。
+	#   本职工位都在镇上的岗位 ⇒ 不在 _indoor_job_titles 里 ⇒ 一条指令都不多跑。
+	if aspace == "town" and _min_need(ag) >= SURVIVAL_GATE and not _indoor_job_titles().is_empty():
+		var jb := _job_of(String(ag["id"]))
+		var jt := String(jb.get("title", ""))
+		if jt != "" and _indoor_job_titles().has(jt) and _in_shift(jb) \
+				and 100.0 - float(ag["needs"].get("fun", 100.0)) > 5.0:
+			var wj := _best_satisfier_journey(ag, "fun", aspace, afloor, home_space, false, {}, jt)
+			if not wj.is_empty():
+				out.append(wj)
 	# (B) 离家在外 或 café 居民 → 为本平面无满足的偏紧 need 承诺行程。普通镇上居民(都在 town)不进此块。
 	if aspace != "town" or home_space != "town":
 		var covered := {}
@@ -3703,7 +3717,7 @@ func _journey_candidates(ag: Dictionary) -> Array:
 
 ## 锁定他平面满足 nid 的【最优对象】→ 一条 journey 候选。家绑定：【居民】的 energy/fun 只回家 Space(顾客 home=town 不受限)。
 ## is_visit=进店行程：只认咖啡馆对象、路程惩罚减半+进店加成(值得为一杯咖啡跑一趟，压过就近的镇上游戏机)。带 ag 走权限门(owner 楼梯)。
-func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor: String, home_space: String, is_visit: bool, only_spaces: Dictionary = {}) -> Dictionary:
+func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor: String, home_space: String, is_visit: bool, only_spaces: Dictionary = {}, job_only: String = "") -> Dictionary:
 	var urg := 100.0 - float(ag["needs"].get(nid, 100.0))
 	var best_score := -1.0e18
 	var best: Dictionary = {}
@@ -3726,6 +3740,8 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 				continue
 			if not _adv_open(ag, adv):
 				continue                                        # F1：跨平面行程也要过工位专属/市集时段两道门（否则会承诺跑一趟去一个关着的摊）
+			if job_only != "" and String(adv.get("job", "")) != job_only:
+				continue                                        # docs/200 A3：上工行程只认本人职位的工位
 			if String(adv.get("need", "")) == nid and int(adv.get("amount", 0)) > amt:
 				amt = int(adv.get("amount", 0)); dur = int(adv.get("duration", 0)); act = String(adv.get("action", ""))
 		if amt <= 0:
@@ -3822,13 +3838,45 @@ func _manifest_node_for_action(target_obj: Dictionary, action: String) -> String
 func _market_open(action: String) -> bool:
 	if not _prod_on():
 		return true
-	var vend: Dictionary = production.get("vendor", {}) if production.get("vendor", {}) is Dictionary else {}
-	if vend.is_empty() or String(vend.get("action", "")) != action:
+	var vend := _vendor_for(action)
+	if vend.is_empty():
 		return true
 	var vid := _holder_of_title(String(vend.get("title", "")))
 	if vid == "" or not _agent_by_id.has(vid):
 		return false                                    # 镇上没有商贩 → 没有市集（不是"永远开着"）
-	return _in_shift(_job_of(vid))
+	if not _in_shift(_job_of(vid)):
+		return false
+	# docs/200 餐馆：venue 键 ⇒ 卖家得【人在店里】才开（集市摊没有这个键 ⇒ 仍然只看在班，逐字节不变）。
+	var venue := String(vend.get("venue", ""))
+	return venue == "" or String((_agent_by_id[vid] as Dictionary).get("space", "town")) == venue
+
+## docs/200 P3：按动作找卖家定义——production.vendor（商贩，F1 起就在）或 production.vendors 列表里的一项（餐馆厨师…）。
+## 都没有 ⇒ {}（该动作收钱进镇库，与今天一样）。只读数据、无 RNG。
+func _vendor_for(action: String) -> Dictionary:
+	if not _prod_on():
+		return {}
+	var vend = production.get("vendor", {})
+	if vend is Dictionary and String((vend as Dictionary).get("action", "")) == action:
+		return vend
+	for v in _as_arr(production.get("vendors", [])):
+		if v is Dictionary and String((v as Dictionary).get("action", "")) == action:
+			return v
+	return {}
+
+## docs/200 P3：哪些职位的本职工位在【室内】（带 job 门的室内家具广告）。懒建一次；空 ⇒ A3 整块不跑。
+var _indoor_job_cache: Variant = null
+func _indoor_job_titles() -> Dictionary:
+	if _indoor_job_cache == null:
+		var ts := {}
+		for id in world.get("objects", {}):
+			var o: Dictionary = world["objects"][id]
+			if String(o.get("space", "town")) == "town":
+				continue
+			for adv in _as_arr(o.get("advertises", [])):
+				if adv is Dictionary and String((adv as Dictionary).get("job", "")) != "":
+					ts[String((adv as Dictionary).get("job", ""))] = true
+		_indoor_job_cache = ts
+	return _indoor_job_cache
 
 ## ── L2：工位广告的【人口感知】吸引力（docs/58 §二）────────────────────────────
 ##
@@ -6274,16 +6322,6 @@ func _craft_fallout(worker: Dictionary, seen: Array, title: String, good: String
 		if st != 0.0:
 			_adjust_standing(s, String(worker["id"]), st)
 		s["memory"].add(memo % [_name(worker), _area_label(worker["pos"])], 2, tick_no, [String(worker["id"]), "observe", "craft"])
-
-## ★AA3 买卖口碑的数据门（docs/106）。缺 `production.vendor.trade_credit` → 返回 `{}` →
-## `_advance_object` 的 vendor 分支里那两行整段短路 → 引擎逐字节回到 AA3 之前。
-## 回滚成本 = 删一个 JSON 键（照抄 `craft_credit` / `stock_pull` 的形状）。
-func _trade_credit() -> Dictionary:
-	var vend: Dictionary = production.get("vendor", {}) if production.get("vendor", {}) is Dictionary else {}
-	if vend.is_empty():
-		return {}
-	var rec = vend.get("trade_credit", {})
-	return rec if rec is Dictionary else {}
 
 ## ★AA3 买卖口碑：**手艺的社会痕迹挂在【产出】那一侧，而商贩的产出在【消费】那一侧。**
 ##

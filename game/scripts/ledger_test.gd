@@ -117,6 +117,8 @@ func _ready() -> void:
 		and LedgerScript.category("import*4") == "import" and LedgerScript.category("export*6") == "export"
 		and LedgerScript.category("bill:水电") == "bill" and LedgerScript.category("bonus:全勤") == "bonus"
 		and LedgerScript.category("gift") == "other", "分类：八种 reason 前缀各归其类（含 docs/196 账单/奖金）")
+	ck(LedgerScript.category("buy:下馆子") == "restaurant" and LedgerScript.category("buy:赶集") == "vendor",
+		"分类：docs/200 餐馆一顿饭单列 restaurant，集市摊仍是 vendor")
 	for k in seeds.size():
 		_run(int(seeds[k]), 12, days, k == 0)
 	_run(int(seeds[0]), 16, days, false)
