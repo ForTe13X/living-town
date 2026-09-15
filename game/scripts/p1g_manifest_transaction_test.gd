@@ -11,12 +11,21 @@ func ck(ok: bool, msg: String) -> void:
 		_fails += 1
 	print(("  OK   " if ok else "  FAIL ") + msg)
 
+## docs/201：本文件测的是 manifest 事务合同，不是柴薪 lane 的调参（P3b 起每船 8 件）。
+## 把内存里的 lane 钉回原来那张 4 件 / 3/4 钱的整单；下面"4 件 / *4 / 付 3 钱"的断言与手写 fixture 记录都针对它。
+func _pin_contract_lane(S) -> void:
+	var lane: Dictionary = S.logistics["import_lanes"][0]
+	lane["batch"] = 4
+	lane["price_per"] = 3
+	lane["price_den"] = 4
+
 func _fixture():
 	var S = SimScript.new()
 	add_child(S)
 	S.auto_run = false
 	S.backend = null
 	S.start_new(1)
+	_pin_contract_lane(S)
 	S.tick_no = int(S.TICKS_PER_DAY * 0.25)
 	S.day = 3
 	S._stock_move("柴薪", -4, "consume", "town", "p1g_fixture")
@@ -357,6 +366,7 @@ func _ready() -> void:
 	Long.auto_run = false
 	Long.backend = null
 	Long.start_new(1)
+	_pin_contract_lane(Long)
 	Long.tick_no = int(Long.TICKS_PER_DAY * 0.25)
 	for d in range(3, 34, 3):
 		Long.day = d

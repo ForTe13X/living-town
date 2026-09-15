@@ -34,9 +34,18 @@ func _restore_settings() -> void:
 	elif FileAccess.file_exists(CFG):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(CFG))
 
+## docs/201：本测试看的是观测室投影与 cargo 合同，不是柴薪 lane 的调参（P3b 起每船 8 件）。
+## 把内存里的 lane 钉回原来那张 4 件 / 3/4 钱的整单，下面"柴薪×4"等断言都针对它。
+func _pin_contract_lane() -> void:
+	var lane: Dictionary = Sim.logistics["import_lanes"][0]
+	lane["batch"] = 4
+	lane["price_per"] = 3
+	lane["price_den"] = 4
+
 func _fixture(economy_on: bool = true) -> String:
 	Sim.backend = null
 	Sim.start_new(1)
+	_pin_contract_lane()
 	Sim.auto_run = false
 	Sim.running = false
 	Sim.tick_no = int(Sim.TICKS_PER_DAY * 0.25)
@@ -77,6 +86,7 @@ func _ready() -> void:
 
 	# 1) 空/ready/invalid：当前泊位完全复用 cargo authority，坏单不泄露业务字段。
 	Sim.start_new(1)
+	_pin_contract_lane()
 	var empty: Dictionary = Sim.warehouse_observatory_projection("port_dock")
 	ck(String(empty.get("mode", "")) == "read_only"
 		and String((empty.get("cargo", {}) as Dictionary).get("state", "")) == "empty"
