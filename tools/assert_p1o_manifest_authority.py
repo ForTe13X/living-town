@@ -43,9 +43,9 @@ def main() -> int:
     # docs/199: seed 3 tick 600 has the Other's ration ship (口粮x36) waiting at the second berth
     # port_dock2 and the firewood ship (柴薪x4) at port_dock. The warehouse status reads port_dock,
     # so it shows the firewood again; both berths draw a ship.
-    # docs/201: the firewood lane now ships 8 per manifest (was 4), so the valid arm reads 柴薪x8.
-    if (vm.get("cargo_state"), vm.get("cargo_good"), vm.get("cargo_qty"), vm.get("carrier_count")) != ("ready", "柴薪", 8, 2):
-        failures.append("valid arm is not ready/柴薪x8/carrier2")
+    # docs/201/202: the firewood lane ships 12 per manifest (4 -> 8 -> 12), so the valid arm reads 柴薪x12.
+    if (vm.get("cargo_state"), vm.get("cargo_good"), vm.get("cargo_qty"), vm.get("carrier_count")) != ("ready", "柴薪", 12, 2):
+        failures.append("valid arm is not ready/柴薪x12/carrier2")
     if (cm.get("cargo_state"), cm.get("cargo_good"), cm.get("cargo_qty"), cm.get("carrier_count")) != ("invalid", "", 0, 0):
         failures.append("corrupt arm leaks trusted cargo fields or carrier")
     if cm.get("corrupt_manifest_field") != "price_per":

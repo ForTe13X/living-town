@@ -46,6 +46,8 @@ const SOCIAL_FULL := 88.0       # social 高于此不再主动发起社交
 const GIFT_START := 3           # 每个 NPC 初始礼物数（give 破冰用）
 const MEET_HORIZON := 40        # invite 创建的 meet 承诺：deadline = now + 此
 const ATTEND_WINDOW := 16       # 离 deadline ≤ 此 → 引擎给「赴约」加权
+const VENUE_MEET_HORIZON := 90  # docs/202：约到餐馆/节日上 ⇒ 路远，deadline 放宽
+const VENUE_ATTEND_WINDOW := 48 # docs/202：同上，更早开始赶路
 const NEED_CRISIS := 15.0       # 任一需求 < 此 → 放弃赴约（真危机才爽约 → broken）
 var SURVIVAL_GATE := 36.0       # 任一需求 < 此 → 本 tick 不社交，先去吃/睡（留赶路缓冲，防大 N 饿穿）。
                                 # Phase-D：const→var（配置项，非 event 态→不进 digest；默认不变），供闭环 A/B 换档。
@@ -3390,9 +3392,31 @@ func _advance_attend(ag: Dictionary, opt: Dictionary) -> void:
 	if c.is_empty() or String(c["status"]) != "active" or tick_no >= int(c["deadline"]) or _min_need(ag) < NEED_CRISIS:
 		ag["option"] = null
 		return
-	if String(ag.get("area", "")) != String(c["area"]):
-		_move_agent(ag, _nav_step(ag, _area_centroid(String(c["area"]))))  # 未到则前往；到了守在该区等对方
+	if String(ag.get("area", "")) == String(c["area"]):
+		return                                            # 到了：守在这里等对方
+	# docs/202：约的地方与自己不在同一平面 ⇒ 与 journey 同一套过门：先走到本层的 portal 口，再穿过去。
+	#   约在楼里：area = "space:floor"（如 "bakery:1f"）；约在镇上的区（如节日的 plaza）而人回了家 ⇒ 先出门回 town。
+	#   原来只会在本平面朝区中心走：约好后一方回了家，就在屋里干站到爽约（实测爽约的多半是这样）。
+	var carea := String(c["area"])
+	var sep := carea.find(":")
+	var dsp := carea.substr(0, sep) if sep > 0 else "town"
+	var dfl := carea.substr(sep + 1) if sep > 0 else "outdoor"
+	if String(ag.get("space", "town")) != dsp or String(ag.get("floor", "outdoor")) != dfl:
+		var hop := _route_next_hop(String(ag.get("space", "town")), String(ag.get("floor", "outdoor")), dsp, dfl, ag)
+		if hop.is_empty():
+			ag["option"] = null                           # 不可达 ⇒ 放弃（到点算爽约）
+			return
+		if ag["pos"] == hop["from_pos"]:
+			var crossed := _try_traverse_portal(String(ag.get("id", "")), String(ag.get("space", "town")),
+				String(ag.get("floor", "outdoor")), ag["pos"], String(hop.get("to_space", "")), String(hop.get("to_floor", "")))
+			if not bool(crossed.get("ok", false)):
+				ag["option"] = null
+		else:
+			_move_agent(ag, _nav_step(ag, hop["from_pos"]))
 		emit_signal("agent_changed", ag["id"])
+		return
+	_move_agent(ag, _nav_step(ag, _area_centroid(carea)))  # 未到则前往；到了守在该区等对方
+	emit_signal("agent_changed", ag["id"])
 
 func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 	var target_obj: Dictionary = world["objects"].get(opt["target"], {})
@@ -3708,7 +3732,9 @@ func _journey_candidates(ag: Dictionary) -> Array:
 			var o: Dictionary = world["objects"][id]
 			if String(o.get("space", "town")) == aspace and String(o.get("floor", "outdoor")) == afloor:
 				for adv in _as_arr(o.get("advertises", [])):
-					if adv is Dictionary:
+					# docs/202：关着的广告位不算覆盖——餐馆打烊后桌子还在，可已经吃不上饭；原来把它算成"本平面有吃的"，
+					#   人留在关门的馆子里干站、饿到触底才走（实测 yong seed 24，#01 硬红）。
+					if adv is Dictionary and _adv_open(ag, adv) and _staff_ok(ag, o):
 						var n := String(adv.get("need", ""))
 						if not (n in _home_needs(ag) and aspace != home_space):   # 镇上的床/游戏机不算覆盖【居民】的 energy/fun
 							covered[n] = true
@@ -3720,8 +3746,11 @@ func _journey_candidates(ag: Dictionary) -> Array:
 			if other != ag and String(other.get("space", "town")) == aspace and String(other.get("floor", "outdoor")) == afloor:
 				alone = false
 				break
+		# docs/202：social 自己告急时（min_need < SURVIVAL_GATE），_social_candidates 整个关掉——楼里有人也聊不上。
+		#   实测 dan 在小馆里、coco 就在旁边，social 从 11 掉到 0（N=16 seed 10，#01 硬红）。⇒ 这时也放一条出门找人的行程。
+		var soc_crisis := _min_need(ag) < SURVIVAL_GATE
 		for nid in ag["needs"]:
-			if covered.has(nid) or (nid == "social" and not alone):
+			if covered.has(nid) or (nid == "social" and not alone and not soc_crisis):
 				continue
 			if 100.0 - float(ag["needs"][nid]) <= JOURNEY_URGENT:
 				continue
@@ -4394,6 +4423,20 @@ func _partner_low_need(o: Dictionary) -> String:
 			lv = float(o["needs"][nid]); lid = nid
 	return lid
 
+## docs/202 约到一个地方去（纯 f(状态, commit id)，无 RNG）：
+##   今天有节日、邀约人在镇上 ⇒ 约在节日对象所在的区（"晚上一起去灯会"）；
+##   否则 "" ⇒ 照旧约在当下这个区。只在节日天拉去一个地方：约会本来 42-96 次/seed，全拉走会挤掉上工。
+func _invite_venue(ag: Dictionary) -> String:
+	# 节日约只从镇上发：约的是 town 平面的一个区，而 _advance_attend 的同平面走法在楼里走不过去。
+	# 约餐馆可以从任何地方发：目标是 "space:floor"，赴约走 portal 路由。
+	if festival_active != "" and String(ag.get("space", "town")) == "town":
+		for oid in _fest_objects:
+			var fo: Dictionary = world.get("objects", {}).get(String(oid), {})
+			if not fo.is_empty() and String(fo.get("area", "")) != "":
+				return String(fo["area"])
+	# （试过"每 3 张约里挑一张约去餐馆"：每 seed 只发出 2-6 张、大半爽约，N=12 #40 门 12/12 → 10/12，撤回，见 docs/202 §二。）
+	return ""
+
 ## attend —— 手头有临近 deadline 的 meet 承诺 → 引擎给「去赴约」加权（越近越急）。
 func _attend_candidates(ag: Dictionary) -> Array:
 	var out: Array = []
@@ -4402,9 +4445,13 @@ func _attend_candidates(ag: Dictionary) -> Array:
 			continue
 		if c["a"] != ag["id"] and c["b"] != ag["id"]:
 			continue
-		if int(c["deadline"]) - tick_no > ATTEND_WINDOW:
+		# docs/202：约在楼里 / 节日上的约路更远 ⇒ 更早开始赶路（窗口与 horizon 一起放大，closeness 仍在 0..1）。
+		var far := String(c["area"]).find(":") > 0 or int(c["deadline"]) - int(c["created"]) > MEET_HORIZON
+		var win := VENUE_ATTEND_WINDOW if far else ATTEND_WINDOW
+		var hzn := VENUE_MEET_HORIZON if far else MEET_HORIZON
+		if int(c["deadline"]) - tick_no > win:
 			continue
-		var closeness := 1.0 - float(int(c["deadline"]) - tick_no) / float(MEET_HORIZON)
+		var closeness := 1.0 - float(int(c["deadline"]) - tick_no) / float(hzn)
 		var other_id := String(c["b"]) if String(c["a"]) == String(ag["id"]) else String(c["a"])
 		var patt := PACT_ATTEND_BONUS if _active_pact(ag, other_id) else 0.0  # S3b：优先赴盟友的约
 		out.append({"kind": "attend", "area": c["area"], "commit": c["id"], "score": 25.0 + closeness * 40.0 + patt, "say": ""})
@@ -4683,8 +4730,14 @@ func _commit_social(ag: Dictionary, opt: Dictionary) -> void:
 			var area := String(ag.get("area", ""))
 			if area == "":
 				area = "plaza"
+			# docs/202：约到一个【地方】去——节日当天约去节日所在的区，餐馆开着时约一顿饭（见 _invite_venue）。
+			var horizon := MEET_HORIZON
+			var venue := _invite_venue(ag)
+			if venue != "":
+				area = venue
+				horizon = VENUE_MEET_HORIZON
 			var _cmt := {"id": _next_commit_id, "type": "meet", "a": ag["id"], "b": target["id"],
-				"area": area, "created": tick_no, "deadline": tick_no + MEET_HORIZON, "status": "active"}
+				"area": area, "created": tick_no, "deadline": tick_no + horizon, "status": "active"}
 			commitments.append(_cmt)            # 全量历史（不变量/账本用）
 			_active_commitments.append(_cmt)    # 活跃工作集（同一 dict 引用；每 tick 只扫这个，见 _resolve_commitments）
 			_next_commit_id += 1
