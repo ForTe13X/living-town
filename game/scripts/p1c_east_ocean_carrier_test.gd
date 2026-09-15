@@ -31,12 +31,21 @@ func clone_projection(S, first: int, last_exclusive: int) -> Array:
 		out.append([String(ag.get("id", "")), ag.get("home"), ag.get("pos")])
 	return out
 
+## docs/201：本测试看的是货船投影与 manifest 权威的合同，不是柴薪 lane 的调参（P3b 起每船 8 件）。
+## 把内存里的 lane 钉回原来那张 4 件 / 3/4 钱的整单，下面"4 件 / 3 单 12 件"的断言都针对它。
+func _pin_contract_lane(sim) -> void:
+	var lane: Dictionary = sim.logistics["import_lanes"][0]
+	lane["batch"] = 4
+	lane["price_per"] = 3
+	lane["price_den"] = 4
+
 func _ready() -> void:
 	var S = SimScript.new()
 	add_child(S)
 	S.auto_run = false
 	S.backend = null
 	S.start_new(1)
+	_pin_contract_lane(S)
 
 	var dock: Dictionary = S.world.get("areas", {}).get("dock", {})
 	var north_pier: Dictionary = S.world.get("areas", {}).get("north_pier", {})
@@ -138,6 +147,7 @@ func _ready() -> void:
 	U.auto_run = false
 	U.backend = null
 	U.start_new(1)
+	_pin_contract_lane(U)
 	U.day = 3
 	U._logi_import()
 	var unload_id := "manifest_east_ocean_3_0"
