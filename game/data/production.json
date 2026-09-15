@@ -58,7 +58,8 @@
       "shortage_standing": -0.25
     },
     "糕点": {
-      "label": "糕点", "cap": 20, "spoil_per_day": 1, "blame": "糕点师",
+      "label": "糕点", "cap": 50, "spoil_per_day": 1, "blame": "酒店掌柜",
+      "_p3d_why": "docs/203 P3d：糕点师 coco 转酒店掌柜，点心改在酒店后厨做（produce.酒店掌柜）。她在楼里上班、场次比广场摊少，每场 8 件、cap 20 时满足率只剩 0.40（N=12 #40 失败 27/30）——而且大批量一出锅就撞 cap 白丢（每场 16 件时到手数与 8 件一样）。⇒ 每场 20 件 + cap 50（docs/203 §二·2）。",
       "_why": "E3b（docs/164）：闲聊-attach treat 链。糕点【不接】任何生存 need——它挂在【既有】的 `闲聊`(social) 动作上（consume.闲聊），当 treat 顺带被吃掉。★为什么挂既有动作而不是新加一条『吃点心』：E3a（docs/153）实测新加 town 平面动作会新增 60-80 决策槽/seed、系统性稀释核心产出约 0.03；而『缺货绝不阻断动作』红线保证 `闲聊` 的选中频率【不随糕点库存变】（有糕点照吃、没糕点照闲聊+写 shortage）⇒ 不新增决策槽 ⇒ 结构上不稀释核心。需求=既有闲聊频率（自然 ≥20、随人口涨）。",
       "shortage_memo": "想%s配块%s，柜上却空了（没人做）",
       "shortage_claim": "镇上的%s老是断，%s该多做些吧",
@@ -80,7 +81,7 @@
     "咖啡师": { "good": "豆子", "amount": 36 },
     "环卫工": { "good": "整洁", "amount": 16 },
     "泥瓦匠": { "good": "屋瓦", "amount": 30, "inputs": { "柴薪": 3 } },
-    "糕点师": { "good": "糕点", "amount": 8 }
+    "酒店掌柜": { "good": "糕点", "amount": 20 }
   },
   "consume": {
     "吃饭":   { "good": "口粮", "amount": 1 },
@@ -116,8 +117,7 @@
     "_why": "F1 新增的两个岗位。写在这里而不是 jobs.json，是为了让『摘掉本文件 ⇒ 逐字节回到今天』这条对照成立。Sim._merge_prod_jobs 只补不覆盖：jobs.json 已给该居民派了活就不动它。商贩的 wage 只有 2 是刻意的——他的钱主要来自卖货（人→人的 transfer），镇库工资只留一点点，好让 economy.poor_line 的『穷了就去上工』那条动机环对他仍然有效。",
     "mei": { "title": "商贩",   "action": "摆摊", "wage": 2, "shift": ["day"] },
     "tie": { "title": "环卫工", "action": "清扫", "wage": 3, "shift": ["dawn", "day"] },
-    "evy": { "title": "泥瓦匠", "action": "修屋", "wage": 3, "shift": ["day", "dusk"] },
-    "coco": { "title": "糕点师", "action": "做点心", "wage": 3, "shift": ["dawn", "day"] }
+    "evy": { "title": "泥瓦匠", "action": "修屋", "wage": 3, "shift": ["day", "dusk"] }
   },
   "job_action": {
     "_why": "把既有岗位的动作从共用的『做活/看摊』改成各自的动词。desk_1 的『做活』与 counter_1 的『看摊』原样留着——它们现在是【零工】：谁都能去、拿 economy.wages 的零工价、一件货也不产。",
@@ -144,9 +144,12 @@
     { "id": "bench_brickpile", "type": "砖垛", "area": "home", "pos": [25, 17],
       "_why": "G3：泥瓦匠在住宅区修屋。★这是第一个落在【住宅区】的工位——F1/F5 的七个全在工坊/咖啡馆/广场/澡堂/滩头，而这个工种的活儿就在屋顶上，料堆理应堆在自家门口。选 (25,17) 不选 (22,19)：住宅区南墙 y=19 只有 x=22 一格通路，工位是阻挡格，堆在那一格会把整个住宅区从全图切下来（tools/audit_map.py 的 ④'' 已实测会红，见 G3 回执的负对照③）。id 前缀 bench 命中 obj/bench.png（沿用 F5 立的规矩：柴垛也是 bench_）。",
       "advertises": [ { "action": "修屋", "job": "泥瓦匠", "need": "fun", "amount": 50, "duration": 28 } ] },
-    { "id": "counter_pastry", "type": "摊位", "area": "plaza", "pos": [31, 23],
-      "_why": "E3b（docs/164）：糕点师（coco，原 spare 零工）在广场支个点心摊。★与 E3a（docs/153）的唯一差别、也是整个 pivot 的心脏：本工位【只】广告 `做点心`(job=糕点师)——一条【职位专属】、只有 coco 枚举得到的产出动作；它【不】广告任何 town 平面消费动作（E3a 的 `吃点心` 就是那条被全镇选中 60-80 次/seed、系统性稀释核心产出的新决策槽）。消费改挂在【既有】的 `闲聊` 上（consume.闲聊），不新增任何决策选项 ⇒ 结构上不稀释核心。type『摊位』复用 OBJ_SLOT_BY_TYPE 现有项（counter_stall 同 type）⇒ 零 WorldView 改动、别名预算不变。pos[31,23]：广场 rect[28,21,8,6] 内、避开 bench_1[30,23]/arcade_1[33,24]/counter_stall[32,22]/节日灯笼锚[31,24]。免费消费（不进 vendor 键）⇒ 硬 #34 全程不动。",
-      "advertises": [ { "action": "做点心", "job": "糕点师", "need": "fun", "amount": 52, "duration": 24 } ] },
+    { "id": "bench_bathing", "type": "渔台", "area": "north_pier", "pos": [33, 8],
+      "_why": "docs/203 P3d 海水浴：北塘渔埠边的下水处，免费、不收钱、不耗货（不进 consume）。挂 hygiene：与澡堂、理发分担洗澡——少洗一回澡就少烧一份柴（实测澡堂 458-514 → 385-465 次/seed）。放渔埠不放东北海岸：海岸那头 [59,3] 离住宅区 ~40 格，60 天只有 10-21 次；渔埠这里 63-80 次（docs/203 §二·1）。户外：阴雨、入冬按 weather/lifecycle 的乘子压下去。(33,8) 在 north_pier rect[30,7,4,2] 内、避开 bench_pier[31,7]。",
+      "advertises": [ { "action": "海水浴", "need": "hygiene", "amount": 50, "duration": 16 } ] },
+    { "id": "bench_boat", "type": "渔台", "area": "north_pier", "pos": [30, 8],
+      "_why": "docs/203 P3d 游船：酒店掌柜在渔埠发船，收费（production.vendors 的 游船，luxury），掌柜在班才开。与海水浴同一个理由放渔埠：东北海岸 5-10 次/seed，渔埠 20-26 次。",
+      "advertises": [ { "action": "游船", "need": "fun", "amount": 60, "duration": 24 } ] },
     { "id": "stove_home", "type": "灶台", "area": "home", "pos": [21, 17],
       "_why": "docs/197 家当：住宅区里自家的灶，吃自家食橱的一份（家常饭）。pantry=eat ⇒ 只在食橱有货时出候选（Sim._adv_open）；不收钱、不扣镇库（货在采买时已从镇库扣过）。type 复用『灶台』⇒ 零 WorldView 改动。(21,17) 不挡住宅区南墙唯一通路 (22,19)。",
       "advertises": [ { "action": "家常饭", "need": "hunger", "amount": 55, "duration": 18, "pantry": "eat" } ] },
@@ -171,7 +174,11 @@
     { "title": "理发师", "action": "理发", "price": 4, "luxury": true,
       "_why": "docs/201 P3b 理发：室内市场一角的理发椅，杂役 dan 转理发师。理发是 hygiene（打理门面），与澡堂分担——少洗一回澡就少烧一份柴。luxury ⇒ 兜里不够就不去（不是生存动作，不走 meals_free）。不设 venue（与餐馆不同）：理发师在班就开门——实测要求他人在店里时，60 天里店只开 2% 的时刻、一个客人都没有（docs/201 §二·3）。" },
     { "title": "店主", "action": "逛店", "price": 3, "luxury": true,
-      "_why": "docs/201 P3b 精品店：室内市场另一侧卖进口货的小店，教书先生 shu 转店主：小店是间书店，看店一场进一批书（produce.店主 = 话本 6，与原来授课同量）——话本走港口进口实测卸不下来（docs/201 §二·2）。逛店是 fun，店主在班就开（同理发，不设 venue）；luxury ⇒ 买不起就不逛。" }
+      "_why": "docs/201 P3b 精品店：室内市场另一侧卖进口货的小店，教书先生 shu 转店主：小店是间书店，看店一场进一批书（produce.店主 = 话本 6，与原来授课同量）——话本走港口进口实测卸不下来（docs/201 §二·2）。逛店是 fun，店主在班就开（同理发，不设 venue）；luxury ⇒ 买不起就不逛。" },
+    { "title": "酒店掌柜", "action": "下午茶", "price": 4, "luxury": true,
+      "_why": "docs/203 P3d 酒店：糕点师 coco 转酒店掌柜，海滨大酒店一层的茶座卖下午茶（fun）。走 A2b 的收费店行程（luxury ⇒ 买不起就不去），掌柜在班就开（同理发，不设 venue）。酒店在镇北 [50,3]、离家远，实测只有 1-6 次/seed——它主要是给 P8 的游客准备的。" },
+    { "title": "酒店掌柜", "action": "游船", "price": 3, "luxury": true,
+      "_why": "docs/203 P3d：酒店在北塘渔埠办的游船（town 平面工位 bench_boat）。同一个掌柜卖两样东西，掌柜在班两样都开。" }
   ],
   "cleanliness": {
     "_why": "整洁度进效用乘子：镇上越脏，广场上的活动越不吸引人。只压不抬（≤1.0）、且与天气/季节共用 mods_ok 生存门 —— 任一需求告急时整个关掉 ⇒ 结构上不可能变成新的饿穿通道。areas 只列广场：环卫工扫的是广场，压住吃饭睡觉那些跟他无关的对象是假的。带 job 的工位广告位一律不打折，否则越脏越没人去扫，环卫会变成负反馈自锁。",

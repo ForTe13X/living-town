@@ -7,6 +7,7 @@
     "lin":  { "title": "厨师",   "action": "掌勺", "wage": 4, "shift": ["day", "dusk"] },
     "hai":  { "title": "渔夫",   "action": "做活", "wage": 4, "shift": ["dawn", "day"] },
     "shu":  { "title": "店主",   "action": "看店", "wage": 3, "shift": ["day", "dusk"] },
+    "coco": { "title": "酒店掌柜", "action": "打理", "wage": 3, "shift": ["day", "dusk"] },
     "tao":  { "title": "码头工", "action": "卸货", "wage": 4, "shift": ["dawn", "day"], "affiliate": true },
     "yong": { "title": "码头工", "action": "卸货", "wage": 4, "shift": ["day", "dusk"], "affiliate": true }
   },
