@@ -19,7 +19,9 @@ jobs:
     # 正式方案是拆成并行 required jobs（见 docs/113 §四·2），这只是过渡。
     # docs/199 35→45：同一树上 runner 墙钟 23.5-31 分钟（master #59 push vs P2a PR），P2b 多一个 agent
     # 本机 story_test +11%（104→115s）⇒ PR run 在 desire_test 之后被 35 分钟取消（此前各门全过）。
-    timeout-minutes: 45
+    # docs/202 45→55：P3b 的 PR run 已经 40m6s（离 45 只剩 5 分钟），P3c 每周多两场广场活动、仿真更忙；
+    #   在它撞线之前放宽，免得又是"各门全过、被平台取消"。
+    timeout-minutes: 55
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 

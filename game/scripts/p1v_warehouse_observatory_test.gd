@@ -3,7 +3,10 @@ extends Node
 
 const Inv = preload("res://bench/Invariants.gd")
 const CFG := "user://settings.cfg"
-const P1V_EXPECTED_QUERY_OPS := 91
+## docs/202：91 → 73。原来的 91 里有一截是 Sim._cargo_index_valid 的 bug——receipts 的值是单个下标（int），
+## 被当数组迭代成 range(下标)，开销随回执在 event_log 里的位置涨（P3c 开局多一条节日 spawn 就变成 100、撞破预算 96）。
+## 修后回执只验它自己那一行：P3b 树与 P3c 树都实测 73，不再随回执位置变。
+const P1V_EXPECTED_QUERY_OPS := 73
 
 var _fails := 0
 var _main: Node2D
@@ -168,7 +171,7 @@ func _ready() -> void:
 		and query_ops_after == P1V_EXPECTED_QUERY_OPS
 		and query_ops_after <= Sim.OBSERVATORY_QUERY_OP_BUDGET
 		and not Sim.observatory_projection_query_budget_failed,
-		"E=5000 无关历史下 projection 总查询工作保持有界（含 ledger/index/tx dereference）")
+		"E=5000 无关历史下 projection 总查询工作保持有界（含 ledger/index/tx dereference；实测 %d 次）" % query_ops_after)
 	var event_count_before_mutation := Sim.event_log.size()
 	Sim.observatory_projection_query_budget_override = P1V_EXPECTED_QUERY_OPS
 	Sim.observatory_projection_test_extra_tx_row_deref = true
