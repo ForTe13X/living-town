@@ -17,7 +17,9 @@ jobs:
     # （Codex 2026-08-06 §二实测两次 PR run 都 cancelled@15m，唯一红因是预算不是断言）。
     # 提高只放宽上限、不弱化任何门，反而让更多门跑到完成 ⇒ 解锁候选 PR 的 exact-head 收据。
     # 正式方案是拆成并行 required jobs（见 docs/113 §四·2），这只是过渡。
-    timeout-minutes: 35
+    # docs/199 35→45：同一树上 runner 墙钟 23.5-31 分钟（master #59 push vs P2a PR），P2b 多一个 agent
+    # 本机 story_test +11%（104→115s）⇒ PR run 在 desire_test 之后被 35 分钟取消（此前各门全过）。
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 

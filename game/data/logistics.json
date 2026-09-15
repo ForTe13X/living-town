@@ -15,6 +15,16 @@
         { "action": "卸货", "need": "fun", "amount": 46, "duration": 28, "job": "码头工", "manifest_node": "port_dock" }
       ],
       "_why": "P1-a/P1-c 功能码头：有 advertises 的 node 由 Sim._compile_ports 编译进 world.objects；坐标 [59,8] 是 East Ocean dock 最东陆格，正东邻 berth[60,8] 水格，与 Tao home/spawn[58,8] 分格。bench_pier 已独立到 north_pier，不再与货运节点竞争同一活动区。它继续作为硬 #44/#46 的贸易来源节点。"
+    },
+    {
+      "id": "port_dock2",
+      "type": "码头",
+      "area": "dock",
+      "pos": [59, 11],
+      "advertises": [
+        { "action": "卸货", "need": "fun", "amount": 46, "duration": 28, "job": "码头工", "manifest_node": "port_dock2" }
+      ],
+      "_why": "docs/199 P2b 第二泊位：dock 区向南延到 [56,7,4,5]，[59,11] 是新泊位 berth[60,11] 正西的陆格。大他者供养单改在这里卸（口粮 lane 的 node），柴薪付费单留在 port_dock——两条队列不再抢同一个船位。两个码头工（阿涛、大勇）谁在班都能卸任一泊位。"
     }
   ],
   "carriers": [
@@ -25,6 +35,14 @@
       "berth": [60, 8],
       "facing": "west",
       "_why": "P1-c 纯 View carrier 声明。WorldView 只在同 route/node 存在 ready manifest 时画一艘有界泊位船；多单 backlog 用计数徽记，不复制 cargo 状态、不写 spawn/despawn 事件、不进 world.objects/nav/save/chain。删 carriers 只关闭可见投影，不改变 CargoManifest 权威逻辑。"
+    },
+    {
+      "route_id": "east_ocean",
+      "node": "port_dock2",
+      "type": "货船",
+      "berth": [60, 11],
+      "facing": "west",
+      "_why": "docs/199 第二泊位的纯 View 货船（大他者供养船）。"
     }
   ],
   "import_lanes": [
@@ -44,7 +62,7 @@
       "route_id": "east_ocean",
       "batch": 36,
       "every_days": 1,
-      "node": "port_dock",
+      "node": "port_dock2",
       "price_per": 0,
       "supply_floor": 40,
       "scale_floor": true,

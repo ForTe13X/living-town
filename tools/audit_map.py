@@ -119,10 +119,11 @@ def main():
     areas = m.get("areas", {})
     dock = areas.get("dock", {})
     north_pier = areas.get("north_pier", {})
-    if (not isinstance(dock, dict) or dock.get("rect") != [56, 7, 4, 2]
+    # docs/199：dock 向南延到 5 格高，容下第二泊位节点 port_dock2 [59,11]；北端锚与首泊位不变。
+    if (not isinstance(dock, dict) or dock.get("rect") != [56, 7, 4, 5]
             or dock.get("facing") != "east" or dock.get("berth") != [60, 8]
             or dock.get("route_id") != "east_ocean" or dock.get("population_anchor") is not False):
-        fails.append("dock 物理锚必须是 rect[56,7,4,2]/east/berth[60,8]/east_ocean/population_anchor=false")
+        fails.append("dock 物理锚必须是 rect[56,7,4,5]/east/berth[60,8]/east_ocean/population_anchor=false")
     expected_solid_props = [
         {"id": "port_boathouse", "kind": "boathouse", "pos": [56, 7], "footprint": [1, 2]},
         {"id": "port_crate", "kind": "crate", "pos": [57, 7], "footprint": [1, 1]},
@@ -176,21 +177,28 @@ def main():
     ]
     if population_projection != frozen_population_projection:
         fails.append("扩容 anchor ID/顺序/质心必须逐项冻结；got=%r" % population_projection)
-    nodes = [n for n in lo.get("nodes", []) if isinstance(n, dict) and n.get("id") == "port_dock"]
-    if len(nodes) != 1 or nodes[0].get("pos") != [59, 8] or nodes[0].get("area") != "dock":
-        fails.append("port_dock 必须唯一落在 East Ocean 西邻陆格 [59,8] / area=dock")
+    # docs/199：East Ocean 有两个泊位节点，各自冻结在自己泊位正西的陆格上。
+    expected_nodes = {"port_dock": ([59, 8], [60, 8]), "port_dock2": ([59, 11], [60, 11])}
+    nodes = {n.get("id"): n for n in lo.get("nodes", []) if isinstance(n, dict) and n.get("id") in expected_nodes}
+    for nid, (npos, _berth) in expected_nodes.items():
+        n = nodes.get(nid)
+        if not isinstance(n, dict) or n.get("pos") != npos or n.get("area") != "dock":
+            fails.append("%s 必须唯一落在 East Ocean 西邻陆格 %s / area=dock" % (nid, npos))
     lanes = [q for q in lo.get("import_lanes", []) if isinstance(q, dict)]
-    if not lanes or any(q.get("route_id") != "east_ocean" or q.get("node") != "port_dock" for q in lanes):
-        fails.append("所有 import lane 必须闭合到 east_ocean/port_dock")
-    # carriers=[] 是合法 View off-gate；只有声明存在时才校验 projection 记录本身。
+    if not lanes or any(q.get("route_id") != "east_ocean" or q.get("node") not in expected_nodes for q in lanes):
+        fails.append("所有 import lane 必须闭合到 east_ocean 的声明泊位节点 %s" % sorted(expected_nodes))
+    # carriers=[] 是合法 View off-gate；只有声明存在时才校验 projection 记录本身：
+    # 每个 carrier 闭合到一个声明节点、落在该节点自己的泊位，节点不重复。
     if carriers:
-        if len(carriers) != 1 or not isinstance(carriers[0], dict):
-            fails.append("首片只允许一个 authored carrier projection")
-        else:
-            c = carriers[0]
-            if (c.get("route_id") != "east_ocean" or c.get("node") != "port_dock"
-                    or c.get("berth") != [60, 8] or c.get("facing") != "west"):
-                fails.append("carrier 必须闭合到 east_ocean/port_dock/berth[60,8]/west")
+        seen_nodes = set()
+        for c in carriers:
+            if not isinstance(c, dict):
+                fails.append("carrier 记录必须是 dict"); continue
+            nid = c.get("node")
+            if (c.get("route_id") != "east_ocean" or nid not in expected_nodes or nid in seen_nodes
+                    or c.get("berth") != expected_nodes[nid][1] or c.get("facing") != "west"):
+                fails.append("carrier 必须闭合到 east_ocean/声明节点/该节点泊位/west（got node=%r berth=%r）" % (nid, c.get("berth")))
+            seen_nodes.add(nid)
     tao = [a for a in ag.get("affiliates", []) if isinstance(a, dict) and a.get("id") == "tao"]
     if len(tao) != 1 or tao[0].get("home") != [59, 7] or tao[0].get("spawn") != [59, 7]:
         fails.append("Tao home/spawn 必须冻结在 East Ocean dock 开放交互邻格[59,7]")

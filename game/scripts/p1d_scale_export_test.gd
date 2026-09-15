@@ -47,8 +47,11 @@ func scale_case(core: int, expected_floor: int, expected_odd_floor: int) -> void
 	var batch := int(lane.get("batch", 0))
 	var every := int(lane.get("every_days", 0))
 	var floor := int(lane.get("floor", 0))
-	ck(S.agents.size() == core + 1 and S.prod_pool_num == core and S.prod_pool_den == 12,
-		"core=%d/total=%d 使用 production pool 而非 affiliate 总数" % [core, core + 1])
+	# docs/199：affiliate 数从 agents.json 读（阿涛之外有了第二码头工大勇），不写死 1。
+	var authored = JSON.parse_string(FileAccess.get_file_as_string("res://data/agents.json"))
+	var n_aff: int = (authored.get("affiliates", []) as Array).size() if authored is Dictionary else -1
+	ck(n_aff >= 1 and S.agents.size() == core + n_aff and S.prod_pool_num == core and S.prod_pool_den == 12,
+		"core=%d/total=%d 使用 production pool 而非 affiliate 总数" % [core, core + n_aff])
 	ck(bool(lane.get("scale_floor", false)) and S._scaled_export_floor(floor) == expected_floor,
 		"core=%d effective floor=%d" % [core, expected_floor])
 	ck(S._scaled_export_floor(35) == expected_odd_floor,

@@ -3321,8 +3321,12 @@ func _advance_agent(ag: Dictionary) -> void:
 				if _cand_key(floored) != _cand_key(intent):   # 复用既有的候选身份串（P1-1 重验用的同一把尺）
 					ext_veto += 1
 				intent = floored
-			elif record_decisions:
-				_record_decision(ag, cands, intent) # S4：模型落地决策记入 trace
+			# S4：【落地的】决策一律记入 trace——含上面两条引擎兜底（后端返空/超时/在飞满额 ⇒ _logic_decide；
+			#   生存否决 ⇒ floored）。docs/199 之前只记模型原样落地那一支：兜底那一 tick 没有记录，回放时该 agent
+			#   找不到这一 tick 的记录、会等到下一条 ⇒ 时间线分叉。实测第二个码头工让两个 affiliate 同 tick
+			#   撞满 MAX_INFLIGHT=2、双双兜底，s4_replay_test 在 t105 起漂（drift=5）。只影响 record_decisions 档。
+			if record_decisions:
+				_record_decision(ag, cands, intent)
 		else:
 			intent = _logic_decide(ag, cands)
 		agent_apply(ag, intent)

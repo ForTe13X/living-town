@@ -16,7 +16,7 @@ from assert_daynight import _png_rgb_rows
 
 
 REFERENCE_SIZE = (1280, 768)
-REFERENCE_CROP = (930, 180, 1000, 245)  # tolerant box around berth [60, 8]
+REFERENCE_CROP = (930, 180, 1000, 265)  # tolerant box around both berths [60, 8] and [60, 11] (docs/199)
 MIN_CHANGED = 100
 MAX_CHANGED = 3000
 
