@@ -13,8 +13,9 @@ extends RefCounted
 ##   rent 房客→房东 · import*<件> 镇库→大他者 · export*<件> 大他者→镇库
 ##   docs/196：bill:<项> 居民→镇库（水电/炭火/欠费）· bonus:<项> 镇库→居民（全勤奖）
 ##   docs/197：price:采买 居民→镇库（杂货铺买口粮进食橱）单列为 grocery
-const CATS := ["meal", "grocery", "vendor", "wage", "rent", "bill", "bonus", "import", "export", "other"]
-const CAT_NAME := {"meal": "饭钱", "grocery": "采买", "vendor": "摊贩", "wage": "工资", "rent": "房租",
+##   docs/200：buy:下馆子 居民→厨师（餐馆一顿饭）单列为 restaurant，不混进集市摊贩
+const CATS := ["meal", "grocery", "vendor", "restaurant", "wage", "rent", "bill", "bonus", "import", "export", "other"]
+const CAT_NAME := {"meal": "饭钱", "grocery": "采买", "vendor": "摊贩", "restaurant": "餐馆", "wage": "工资", "rent": "房租",
 	"bill": "账单", "bonus": "奖金", "import": "进口", "export": "出口", "other": "其它"}
 ## 镇库视角：哪些类是进账、哪些是出账（摊贩与房租是居民之间的钱，不经镇库）。
 const TOWN_IN := ["meal", "grocery", "bill", "export"]
@@ -32,6 +33,7 @@ var rev := 0             # 脏标记：折进了新的 pay 就 +1（Main 据此�
 static func category(note: String) -> String:
 	var head := note.split("*")[0].split(":")[0]
 	if note == "price:采买": return "grocery"
+	if note == "buy:下馆子": return "restaurant"
 	if head == "price": return "meal"
 	if head == "buy": return "vendor"
 	if head in ["wage", "rent", "bill", "bonus", "import", "export"]: return head
@@ -178,7 +180,8 @@ func panel_text(S, name_of: Callable) -> String:
 	for c in TOWN_OUT: tot -= _amt(c)
 	out.append(" 净  今天 %s · 累计 %s" % [_signed(_town_net(today)), _signed(tot)])
 	out.append(hd + "── 居民之间 ──[/color]")
-	out.append(" 摊贩 %d 笔 %d 币 · 房租 %d 笔 %d 币" % [_n("vendor"), _amt("vendor"), _n("rent"), _amt("rent")])
+	out.append(" 摊贩 %d 笔 %d 币 · 餐馆 %d 笔 %d 币 · 房租 %d 笔 %d 币" % [_n("vendor"), _amt("vendor"),
+		_n("restaurant"), _amt("restaurant"), _n("rent"), _amt("rent")])
 	var owe_n := 0
 	var owe_sum := 0
 	for ag in S.agents:
