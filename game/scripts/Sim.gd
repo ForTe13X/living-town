@@ -2750,7 +2750,13 @@ func _cargo_index_valid() -> bool:
 		var groups: Dictionary = _cargo_event_index.get(bucket, {})
 		for key in groups:
 			_projection_query_op()
-			for raw_i in groups[key]:
+			# docs/202：receipts 的值是【单个】event 下标（int），arrivals/tx 才是数组。原来一律 `for raw_i in groups[key]`，
+			#   GDScript 对 int 迭代的是 range(int) ⇒ 验的是第 0..下标-1 行（不是回执那一行），开销随回执在 log 里的位置涨——
+			#   正违反上一行"只随 cargo 行数、不随无关历史"的承诺（P3c 开局多一条节日 spawn，p1v 的查询预算 91 → 100 撞破 96）。
+			var rows = groups[key]
+			if not (rows is Array):
+				rows = [rows]
+			for raw_i in rows:
 				_projection_query_op(2)
 				var j := int(raw_i)
 				if j < 0 or j >= event_log.size() or not (event_log[j] is Dictionary): return false

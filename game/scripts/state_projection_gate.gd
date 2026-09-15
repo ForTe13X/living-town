@@ -171,6 +171,10 @@ func _apply_named(S, ag, pid, name) -> void:
 				for k in S.town_stock: S.town_stock[k] = int(S.town_stock[k]) + 20
 		"某 agent 换平面(space/floor/area)":
 			ag["space"] = "cafe"; ag["floor"] = "2f"; ag["area"] = "cafe:2f"
+			# docs/202：位置显式放到她自己 authored 的 cafe:2f 落点（agents.json spatial_address [2,2]，构造上可走）。
+			#   原来沿用该 agent 此刻的 pos——轨迹一变（P3c 周历），坐标可能落在 2f 的不可走格上 ⇒ save 拒存，
+			#   多出一条未声明的运行期错误。本臂要证的是"换平面投影必变"，应当是一个【合法】的换平面状态。
+			ag["pos"] = Vector2i(2, 2)
 		"某 agent attitude=0.9":
 			for t in ag["attitudes"]: ag["attitudes"][t] = 0.9
 			if (ag["attitudes"] as Dictionary).is_empty(): ag["attitudes"]["__probe__"] = 0.9
@@ -269,6 +273,10 @@ func _probe(S, container, field) -> String:
 		return "skip"
 	var mv := _mutate_value(old)
 	if not mv[0]: return "skip"
+	# docs/202：agent.pos 的泛型扰动 +(1,1) 落在哪种格上取决于她此刻站在哪（轨迹一变就从"越界"变成"不可走"），
+	#   而 ci.sh 的 exact-once 集合要的就是那一条"越界"拒存 ⇒ pos 一律推到地图外，与轨迹无关。
+	if String(field) == "pos" and old is Vector2i:
+		mv = [true, (old as Vector2i) + Vector2i(1000, 1000)]
 	_cset(container, field, mv[1])
 	var h1 := _ph(S)
 	_cset(container, field, old)   # 还原（dict/array 改的是副本，old 原样）
