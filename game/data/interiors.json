@@ -1477,13 +1477,13 @@
       2,
       1
      ],
-     "label": "摊位",
+     "label": "理发椅",
      "advertises": [
       {
-       "action": "逛集",
-       "need": "fun",
-       "amount": 20,
-       "duration": 12
+       "action": "理发",
+       "need": "hygiene",
+       "amount": 70,
+       "duration": 16
       }
      ]
     },
@@ -1497,12 +1497,12 @@
       2,
       1
      ],
-     "label": "摊位",
+     "label": "货架",
      "advertises": [
       {
-       "action": "逛集",
+       "action": "逛店",
        "need": "fun",
-       "amount": 20,
+       "amount": 60,
        "duration": 12
       }
      ]
@@ -1516,6 +1516,16 @@
      "size": [
       2,
       1
+     ],
+     "label": "剃刀台",
+     "advertises": [
+      {
+       "action": "剃头",
+       "job": "理发师",
+       "need": "fun",
+       "amount": 70,
+       "duration": 24
+      }
      ]
     },
     {
@@ -1527,6 +1537,16 @@
      "size": [
       2,
       1
+     ],
+     "label": "柜台",
+     "advertises": [
+      {
+       "action": "看店",
+       "job": "店主",
+       "need": "fun",
+       "amount": 70,
+       "duration": 24
+      }
      ]
     },
     {

@@ -61,6 +61,15 @@ func _probe_blocked_use(S, worker: Dictionary, manifest_id: String, label: Strin
 func _events_since(S, start: int) -> Array:
 	return S.event_log.slice(start)
 
+## docs/201：本文件测的是 CargoManifest 的【合同】（整单、原子提交、存读档），不是柴薪 lane 的调参。
+## 出货 lane 的批量会随经济调参变（P3b 起每船 8 件）；这里把本测试用的 lane 钉回原来那张 4 件 / 3/4 钱的整单，
+## 下面每一条"4 件 / 付 3 钱 / import*4"的断言都针对这张钉住的 lane。只改内存里的 lane（logistics 只在 _load_data 读一次）。
+func _pin_contract_lane(S) -> void:
+	var lane: Dictionary = S.logistics["import_lanes"][0]
+	lane["batch"] = 4
+	lane["price_per"] = 3
+	lane["price_den"] = 4
+
 ## P1-b/P1-c shipped while SAVE_SCHEMA was still 1. Rewriting only the envelope version creates
 ## the real transitional shape: cargo/order/core and an engine-authorized mid-use option all exist.
 func _rewrite_as_schema1(path: String) -> bool:
@@ -127,6 +136,7 @@ func _canonical_case() -> String:
 	S.auto_run = false
 	S.backend = null
 	S.start_new(1)
+	_pin_contract_lane(S)
 	S.tick_no = int(S.TICKS_PER_DAY * 0.25)  # dawn：码头工在班，合同测试不被班次短路
 	S.day = 3
 	S._logi_import()
@@ -150,6 +160,7 @@ func _ready() -> void:
 	S.auto_run = false
 	S.backend = null
 	S.start_new(1)
+	_pin_contract_lane(S)
 	S.tick_no = int(S.TICKS_PER_DAY * 0.25)  # dawn：同时让负例证明“有资格但无货”仍为零
 	var tao: Dictionary = S.get_agent("tao")
 	var adv := _unload_adv(S)

@@ -49,11 +49,12 @@
     {
       "good": "柴薪",
       "route_id": "east_ocean",
-      "batch": 4,
+      "batch": 8,
       "every_days": 3,
       "node": "port_dock",
-      "price_per": 3,
-      "price_den": 4,
+      "price_per": 6,
+      "price_den": 8,
+      "_p3b_why": "docs/201：杂役 dan 转理发师、不再劈柴 ⇒ 每船 4 → 8 件（单价不变，3/4 钱一件，整单 6 钱）。4 件时 N=12 #40 门 10/12；8 件与 12 件都过门，8 件 N=16 12/12 且留出更好（docs/201 §二·5）。",
       "_why": "每 3 天从 East Ocean 逻辑 route 到港一张 4 件柴薪 manifest；good 必须在 production.goods，node 必须是声明节点。arrival 不喂 #44 provider，只有真实卸货生成的 import 事件才算。",
       "_price_why": "价格仍为 3/4，但按整单 4 件一次结算为 3 钱，避免拆单整数地板变成免费货。余额不足时 manifest 留港、广告关闭，不丢 cargo；economy off 或无正价时保留 E1 免费 commit。旧 AS4 直接注入的 town_coin/held-out 数字标 legacy calibration，需按 manifest 路重测。"
     },
