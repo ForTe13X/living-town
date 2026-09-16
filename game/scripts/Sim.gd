@@ -3204,6 +3204,7 @@ func tick() -> void:
 		if desire_on:
 			_desire_tick(ag)                 # docs/187：紧跟 decay、先于决策 ⇒ 生存门读的是本 tick 衰减后的 need
 		_advance_agent(ag)
+	_mark_post_seen()                   # docs/208：卖家离店片刻店照开（缺 venue_grace 键 ⇒ 空转）
 	_resolve_commitments()              # 解算到场/爽约
 	_sweep_conflicts()                  # 久未对质的冲突 → lingering
 	if tick_no % TICKS_PER_DAY == 0:
@@ -3319,14 +3320,14 @@ func _advance_agent(ag: Dictionary) -> void:
 			if intent.get("_wait", false):
 				return                              # M2：思考中，本 tick 不落地（保持 option==null 下 tick 再问）
 			if intent.is_empty():
-				intent = _logic_decide(ag, cands)   # 放弃/超时/脏输出 → 引擎兜底
+				intent = _backend_floor(ag, cands)  # 放弃/超时/脏输出 → 引擎兜底
 			elif not (_survival_ok(ag, intent) and _horizon_ok(ag, intent)):
 				# P2-3 生存否决：危机中挑了不救急的 → 引擎收回决定权（见 _survival_ok）。
 				# ⚠ 计数只记【真的换了】的那些：backend.decide() 在很多档位下返回的本来就是
 				#   Sim._logic_decide 的结果（worker 忙 / 节流 / 预算门 / 过载），那些也会走到这里，
 				#   而重算一次是【同一个纯函数同一份输入】→ 逐字节同一个 intent，什么也没改变。
 				#   把那些也计进来会让"引擎驳回了后端多少次"虚高一个量级（实测 K=2 档 1499 vs 真实 205）。
-				var floored := _logic_decide(ag, cands)
+				var floored := _backend_floor(ag, cands)
 				if _cand_key(floored) != _cand_key(intent):   # 复用既有的候选身份串（P1-1 重验用的同一把尺）
 					ext_veto += 1
 				intent = floored
@@ -3665,7 +3666,41 @@ func agent_candidates(ag: Dictionary) -> Array:
 		out.append_array(ext.candidates(self, ag))   # 注册的 CandidateProvider 追加（排在内建之后，不改内建枚举序 → 回放安全）
 	if cand_permute == 3:
 		out = _permute_cands(out, _aid(ag))          # 仅测试用（默认 off）：连枚举出口都打乱，验证顺序无关
-	return out
+	return _discipline(ag, out)
+
+## docs/208 P4c-2 在班守岗（用户 2026-09-16：「on-site and disciplinary work should be mandatory」
+## 「there must be a hard rule and discipline for work」）。是【规矩】不是【加分】：加分在跟需求的 urgency 抢分，
+## 实测抬不动（docs/207 §二·4 ④）；规矩直接把不该出现的选项拿掉。
+## economy.work_discipline 缺键 / false ⇒ 原样返回 ⇒ 逐字节回到今天。
+## 形状（docs/207 §二·4 ⑥、§二·5 量出来的）：jobs.json 里 on_site 的差事，在班时候选收窄到
+##   【本职动作 + 照顾自己（吃/睡/洗）】——拿掉的是消遣，不是活路。
+## ⚠ 第一版只留本职 ⇒ #40 1/12、8 个 seed 硬 #01：人被钉在岗上，need 掉破生存门时已离饭很远（docs/206 同一条死法）。
+## ⚠ 排好的饭点表（用户 2026-09-16「scheduled lunch time or rest interval」）最好 5/12：休息是钟表窗口，饿有自己的节奏。
+## 两个逃生口：任一 need 跌破 SURVIVAL_GATE ⇒ 规矩当场失效；收窄后一个不剩 ⇒ 退回全集（不许 livelock，docs/198）。
+func _discipline(ag: Dictionary, cands: Array) -> Array:
+	if cands.is_empty() or not bool(economy.get("work_discipline", false)):
+		return cands
+	if ag.get("is_player", false) or _is_controlled(ag) or _min_need(ag) < SURVIVAL_GATE:
+		return cands
+	var jb := _job_of(String(ag.get("id", "")))
+	if jb.is_empty() or not bool(jb.get("on_site", false)) or not _in_shift(jb):
+		return cands
+	var act := _job_action(jb)
+	var care: Array = _as_arr(economy.get("discipline_keep_needs", ["hunger", "energy", "hygiene"]))
+	# discipline_care_below：照顾自己也要【真的需要】才许离岗（缺键 = 101 ⇒ 任何程度都许，docs/207 那一档）。
+	# ⚠ 没有这道线时实测（seed 1 day 2，跑堂 fei）：hunger 64 就去咖啡馆吃 50 tick、hygiene 72 去洗 53 tick ⇒ 一个班没了；
+	#   30 天 26 个班日里 12 天一次没进过店。离岗得由【需求】触发（docs/207 §二·5），而不是由【有这个选项】触发。
+	var care_below := float(economy.get("discipline_care_below", 101.0))
+	var needs: Dictionary = ag.get("needs", {})
+	var kept: Array = []
+	for c in cands:
+		if not (c is Dictionary):
+			continue
+		var cd: Dictionary = c
+		var nid := String(cd.get("need", ""))
+		if String(cd.get("action", "")) == act or (nid in care and float(needs.get(nid, 100.0)) < care_below):
+			kept.append(c)
+	return kept if not kept.is_empty() else cands
 
 ## P3 Tier-B 决策规划：跨平面【承诺式行程 journey】元候选。两类，都产出带完整对象参数的 journey 候选(选中→agent_apply
 ## 建 journey option→_advance_journey 承诺执行：跨 portal→到对象所在平面→交回普通对象逻辑用它，中途不重挑，只危机打断)：
@@ -3913,7 +3948,38 @@ func _market_open(action: String) -> bool:
 		return false
 	# docs/200 餐馆：venue 键 ⇒ 卖家得【人在店里】才开（集市摊没有这个键 ⇒ 仍然只看在班，逐字节不变）。
 	var venue := String(vend.get("venue", ""))
-	return venue == "" or String((_agent_by_id[vid] as Dictionary).get("space", "town")) == venue
+	if venue == "" or String((_agent_by_id[vid] as Dictionary).get("space", "town")) == venue:
+		return true
+	# docs/208 P4c-2（用户 2026-09-16「if cook only absent for a short period of time keep it operational,
+	# whole day leave make it close」）：venue_grace=N ⇒ 卖家【今天在班时到过店里】、且离开不超过 N tick，店照开；
+	# 今天一次没来（轮休、旷工）⇒ 关。到店时刻记在 work.post_seen（_mark_post_seen）。缺键 / 0 ⇒ 与今天一样只认人在店里。
+	# ⚠ 第一版读出勤账 work.done>0，实测几乎不动（下馆子 12-16% → 12-16%）：done 只在【一整趟本职在班内干完】才 +1，
+	#   跑堂 30 天里 26 个班日只有 12 天干完过一趟 ⇒ 它量的是"干完"，不是"来了"。
+	# 为什么需要：docs/207 §二·2 —— 人在店里的上限 ≈ 在班 45% × 在岗 43% ≈ 19%，实测 4-13%。
+	var grace := int(vend.get("venue_grace", 0))
+	if grace <= 0:
+		return false
+	var w = (_agent_by_id[vid] as Dictionary).get("work")
+	if not (w is Dictionary) or not (w as Dictionary).has("post_seen"):
+		return false
+	var seen := int((w as Dictionary)["post_seen"])
+	return seen >= tick_no - tick_no % TICKS_PER_DAY and tick_no - seen <= grace
+
+## docs/208：给带 venue_grace 的卖家记【最后一次人在店里且在班】的 tick（写进 work.post_seen，随存档走）。
+## 放在全体 agent 推进之后 ⇒ 本 tick 的决策读的都是上一 tick 的值，与 agents 顺序无关。缺键 ⇒ 一行不跑。
+func _mark_post_seen() -> void:
+	if not _prod_on():
+		return
+	for v in _as_arr(production.get("vendors", [])):
+		if not (v is Dictionary) or int((v as Dictionary).get("venue_grace", 0)) <= 0:
+			continue
+		var vid := _holder_of_title(String((v as Dictionary).get("title", "")))
+		if vid == "" or not _agent_by_id.has(vid):
+			continue
+		var g: Dictionary = _agent_by_id[vid]
+		if g.get("work") is Dictionary and _in_shift(_job_of(vid)) \
+				and String(g.get("space", "town")) == String((v as Dictionary).get("venue", "")):
+			(g["work"] as Dictionary)["post_seen"] = tick_no
 
 ## docs/200 P3：按动作找卖家定义——production.vendor（商贩，F1 起就在）或 production.vendors 列表里的一项（餐馆厨师…）。
 ## 都没有 ⇒ {}（该动作收钱进镇库，与今天一样）。只读数据、无 RNG。
@@ -4487,6 +4553,31 @@ func agent_apply(ag: Dictionary, intent: Dictionary) -> void:
 			"remaining": int(intent.get("dur_total", 1)), "phase": "travel"}
 		_: _apply_object(ag, intent)
 
+## docs/208：外部后端路径上的引擎兜底。危机中（任一 need 跌破否决线）兜底只从【最先饿穿的那条 need】
+## 的候选里挑——"最先"按 余量/衰减 算（剩几 tick 触底），不是按数值最低：fun 26 比 hunger 28 低，
+## 但 hunger 以 0.28/tick 掉、fun 只 0.16，前者 100 tick 触底、后者 162 tick。
+## 实测（BackendGate random@K=2 seed 4）：aria fun 26 / hunger 28 时兜底按"最低"挑了去集市逛店（跨平面 ~40 格），
+## 逛完 hunger 11.5 才被 pre-empt 抢回，走回灶台的路上触底。后端的否决（_survival_ok/_horizon_ok）
+## 管不到这里——K>0 时后端交回来的本来就常常是 _logic_decide 的结果，重算一遍还是它。
+## 不在危机中 / 该 need 一个候选都没有 ⇒ 原样 _logic_decide。只在 backend != null 分支被调用 ⇒ 金标路逐字节不变。
+func _backend_floor(ag: Dictionary, cands: Array) -> Dictionary:
+	if _min_need(ag) >= survival_veto_line:
+		return _logic_decide(ag, cands)
+	var first := ""
+	var first_t := INF
+	for k in ag["needs"]:
+		var dcy := _need_decay(String(k))
+		if dcy <= 0.0:
+			continue
+		var t_left := float(ag["needs"][k]) / dcy
+		if t_left < first_t:
+			first_t = t_left; first = String(k)
+	var sub: Array = []
+	for c in cands:
+		if c is Dictionary and String((c as Dictionary).get("need", "")) == first:
+			sub.append(c)
+	return _logic_decide(ag, sub if not sub.is_empty() else cands)
+
 ## P2-3 生存边界：外部 backend 挑的这个 intent，在【需求危机中】可不可以被采纳。
 ## 与下面的 _object_intent_ok 是一对：那条守【合法】（字段齐全、不除零、need 存在），这条守【活得下去】。
 ##
@@ -4543,7 +4634,8 @@ func _survival_ok(ag: Dictionary, intent: Dictionary) -> bool:
 ## ★ 零扰动同 _survival_ok：只在 backend != null 的分支里被调用 ⇒ 金标路逐字节不变。
 func _horizon_ok(ag: Dictionary, intent: Dictionary) -> bool:
 	var dur := int(intent.get("dur_total", 0))
-	if dur <= 0 or String(intent.get("kind", "object")) != "object":
+	var kind := String(intent.get("kind", "object"))
+	if dur <= 0 or not (kind == "object" or kind == "journey"):
 		return true
 	var tgt := String(intent.get("target", ""))
 	if not world["objects"].has(tgt):
@@ -4566,6 +4658,18 @@ func _horizon_ok(ag: Dictionary, intent: Dictionary) -> bool:
 	#     上仍然承重，在 object 上则被本判据吸收。宁可把这件事写清楚，也不留一个注释声称还活着的死档。
 	var budget := (mn - survival_veto_line) / decay      # 还有多少 tick 跌破生存线（危机中为负 = 一律驳回）
 	var o: Dictionary = world["objects"][tgt]
+	if kind == "journey":
+		# docs/208：跨平面 journey 原先一律放行（上面注释那句"没有同平面曼哈顿距离可言"）。实测那是
+		# BackendGate 硬 #01 的一条通道（seed 1 random(full)，dan 饥饿 15 时被后端签进"回家睡 40 tick"，
+		# 醒来走回灶台时已触底 23 tick）——与 docs/206 追的 coco 同一种死法，只是入口在后端这一侧。
+		# 成本取【下界】：到本平面 portal 口 + 过 portal 成本×3（与 _best_satisfier_journey 打分用的同一个估算）
+		# + dur_total，目标平面里那一段不计 ⇒ 只驳回【连下界都付不起】的行程，不会误伤。
+		# 仍只在 backend != null 分支被调用 ⇒ 金标路逐字节不变。
+		var hop := _route_next_hop(String(ag.get("space", "town")), String(ag.get("floor", "outdoor")),
+			String(intent.get("dest_space", o.get("space", "town"))), String(intent.get("dest_floor", "")), ag)
+		if hop.is_empty():
+			return true
+		return float(_manh(ag["pos"], hop["from_pos"]) + int(hop.get("cost", 1)) * 3 + dur) <= budget
 	var cost := float(absi(ag["pos"].x - o["pos"].x) + absi(ag["pos"].y - o["pos"].y) + dur)
 	return cost <= budget
 
