@@ -151,9 +151,10 @@
     { "id": "bench_boat", "type": "渔台", "area": "north_pier", "pos": [30, 8],
       "_why": "docs/203 P3d 游船：酒店掌柜在渔埠发船，收费（production.vendors 的 游船，luxury），掌柜在班才开。与海水浴同一个理由放渔埠：东北海岸 5-10 次/seed，渔埠 20-26 次。",
       "advertises": [ { "action": "游船", "need": "fun", "amount": 60, "duration": 24 } ] },
-    { "id": "stove_home", "type": "灶台", "area": "home", "pos": [21, 17],
+    { "_p4b_why": "docs/206 P4b：家常饭 55 → 60。为什么不是配平、是【定规矩】：stove_home[21,17] 与 cafe 的 stove_1[39,15] 原来 amount/duration 逐字相同（55/18），于是【谁赢由 world.objects 的次序定】—— map.json 的 stove_1 先入表、`score > best_score` 取严格大于 ⇒ 它恒赢。而 _best_satisfier_journey 估跨平面路程时只算到【本层门口】（docs/204 §二·3 的老 bug），人在屋里时两口灶【同距】⇒ coco 每顿饭都从家门口走 20 多格去咖啡馆，路过 3 格外那张摆着她自己口粮的桌子。逐 tick 实证（BackendGate random@K=2 seed 5，硬 #01 42 tick）：她 hunger 19.5、食橱里有 2 份口粮时，仍承诺了 40 tick 的行程回家【睡觉】，到家时 hunger 0.4，睡过去，醒来再横穿全镇。★立的规矩是：**自家食橱那一顿该压过花钱下馆子那一顿——它不要钱、而且是自己的**，所以它的 amount 必须严格大于。60 而不是 56：两档都实测过（§二），56 把 #40 打到 11/12、60 保持 12/12。★只在【屋里】改变选择：屋外路程本来就估得准，真的更近的那口灶照样赢 ⇒ 爆炸半径限于估值出错的那一格。★代价（实测）：付费的『吃饭』减少、『采买』上升，镇库大致持平，但进口支出上升（§二·3）。回滚 = 把这一个数改回 55。",
+      "id": "stove_home", "type": "灶台", "area": "home", "pos": [21, 17],
       "_why": "docs/197 家当：住宅区里自家的灶，吃自家食橱的一份（家常饭）。pantry=eat ⇒ 只在食橱有货时出候选（Sim._adv_open）；不收钱、不扣镇库（货在采买时已从镇库扣过）。type 复用『灶台』⇒ 零 WorldView 改动。(21,17) 不挡住宅区南墙唯一通路 (22,19)。",
-      "advertises": [ { "action": "家常饭", "need": "hunger", "amount": 55, "duration": 18, "pantry": "eat" } ] },
+      "advertises": [ { "action": "家常饭", "need": "hunger", "amount": 60, "duration": 18, "pantry": "eat" } ] },
     { "id": "counter_grocery", "type": "摊位", "area": "plaza", "pos": [34, 22],
       "_why": "docs/197 家当：集市上的粮摊（起初放杂货铺 (50,15)：离住宅区 25 格，诊断里出候选 1244 次、一次没赢 ⇒ 挪到广场集市，离家约 10 格）。pantry=buy ⇒ 只在买得起（prices.采买）且食橱放得下时出候选；用时经 consume.采买 从镇库扣 3 份口粮进食橱，顺手在铺子里吃一口（hunger 40）。type 复用『摊位』⇒ 零 WorldView 改动。★hunger 12 时实测 seeds 1-3 × 60 天【一次都没人来买】：打分 = 缺口×amount/60，12 的广告位加上食橱空的 +4 也只有 ~14，敌不过灶台吃饭的 ~46；引擎没有'为下一顿做打算'的规划层，所以采买本身得是一口能吃的。",
       "advertises": [ { "action": "采买", "need": "hunger", "amount": 40, "duration": 10, "pantry": "buy" } ] }
