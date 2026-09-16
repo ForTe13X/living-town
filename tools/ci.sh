@@ -147,6 +147,26 @@ scan_contract_self_test(){
   return 0
 }
 
+# ── CI_LANE：把这条流水线切成几段【并行的 required job】（docs/205；docs/113 §四·2 的正式方案）──
+# 为什么：GHA 上核心 job 单跑 42m26s（PR #65 实测），而它是一条完全串行的链——最贵的三块
+#   （step 4+4a 849s、4b-4h 729s、step 5 的 story_test 一个场景 633s）彼此毫无依赖。
+#   过去两片只能一次次抬 timeout-minutes（35 → 55 → 65），那是在给上限让路，不是在缩短反馈。
+# 怎么切：每一块挂一个 lane 名，`CI_LANE="s0 pool"` 只跑点名的那几条。**默认 all ⇒ 本机
+#   `bash tools/ci.sh` 与改动之前逐步同义**（本机回执不受影响，仍是一次跑完全部）。
+# 谁保证没有一道门被悄悄漏掉：`tools/assert_ci_lanes.py`（第 1c 步）把本文件声明的 lane 全集
+#   与 .github/workflows/ci.yml 里各 job 的 CI_LANE 逐字对账——少一条、多一条、拼错一条都红。
+CI_LANES_ALL="lint s0 pool gates backend scenes story visual"
+CI_LANE="${CI_LANE:-all}"
+[ "$CI_LANE" = "all" ] && CI_LANE="$CI_LANES_ALL"
+for _lane in $CI_LANE; do
+  case " $CI_LANES_ALL " in
+    *" $_lane "*) ;;
+    *) echo "  ❌ FAIL: 未知的 CI_LANE='$_lane'（合法：$CI_LANES_ALL）" >&2; exit 2 ;;
+  esac
+done
+lane(){ case " $CI_LANE " in *" $1 "*) return 0 ;; *) return 1 ;; esac; }
+echo "### CI_LANE=$CI_LANE"
+if lane lint; then
 step "0-pre. runtime-error scanner contract self-test"
 scan_contract_self_test && ok "runtime scanner exact-set / duplicate / missing / unexpected controls" \
                         || bad "runtime scanner contract self-test"
@@ -187,6 +207,12 @@ step "1. data lint (json parse + foreign keys + 必需数据文件在位)"
 
 step "1b. map audit (town-world 导航自洽：typed-layers 一致 + 全可达 + 每家具有交互格 + ≥2 路线)"
 "$PY" tools/audit_map.py && ok "audit_map" || bad "audit_map"
+
+step "1c. CI lane 对账门 (ci.sh 声明的 lane 全集 == workflow 里各 job 点到的 lane)"
+# 拆并行最大的风险不是慢，是【一道门不再被任何 job 点到、却没人发现】。判据与五条负对照
+# 写在 tools/assert_ci_lanes.py 抬头。它不跑 godot、不读产品数据，只对两份文本做逐字对账。
+"$PY" tools/assert_ci_lanes.py --self-test >"$LT_LOG/lanes_selftest.log" 2>&1   && ok "lane 对账 负对照（拼错/空名/漏挂/重挂/汇总漏 needs 五条都会红）"   || { tail -8 "$LT_LOG/lanes_selftest.log"; bad "lane 对账 负对照失败 —— 这道门没牙"; }
+"$PY" tools/assert_ci_lanes.py && ok "lane 对账（ci.sh ↔ ci.yml 逐条对上）"                               || bad "lane 对账（有 lane 漏挂 / 多挂 / 名字对不上，见上）"
 
 step "2. link lint (markdown relative links)"
 "$PY" tools/lint_links.py && ok "lint_links" || bad "lint_links"
@@ -409,6 +435,8 @@ if grep -qiE 'SCRIPT ERROR|Parse Error|Failed to load script' "$LT_LOG/import.lo
   grep -iE 'SCRIPT ERROR|Parse Error|Failed to load script' "$LT_LOG/import.log" | head; bad "godot parse"
 else ok "import/parse clean"; fi
 
+fi
+if lane s0; then
 step "4. S0 gate (invariants + determinism + 金标; seeds=$CI_SEEDS days=$CI_DAYS det=$CI_DET)"
 # --golden：跨进程/跨提交/跨引擎版本锚（红线#1）。没有它，CI 只证明「同一二进制同一进程内跑两次一样」。
 "$GODOT" --headless --path game --script res://bench/Harness.gd -- \
@@ -417,6 +445,8 @@ step "4. S0 gate (invariants + determinism + 金标; seeds=$CI_SEEDS days=$CI_DA
 [ "${PIPESTATUS[0]}" -eq 0 ] && ok "S0 gate" || bad "S0 gate"
 scan "S0 gate" "$LT_LOG/s0.log"
 
+fi
+if lane pool; then
 # ── 4a. 宏观池尺度门 ──────────────────────────────────────────────────────────
 # 由来：K1（merge `ed599e8`）把产出侧改成宏观池 `production = _pool_rescale(_production_raw, agents.size())`，
 # 并在自己的回执里点名留下这一条。出货阵容 **N=12 == scale.base_population=12 ⇒ 倍率恰为 1 ⇒
@@ -576,6 +606,8 @@ if [ "$POOL_PRE_OK" -eq 1 ]; then
   scan "宏观池尺度门" "$LT_LOG/s0_pool.log"
 fi
 
+fi
+if lane gates; then
 step "4b. LOD 观察无关红线 (V2 相机路径无关 + V3 确定性/存读/fresh-restart)"
 # 永久门：aggregate LOD 的 cohort 必须【只由 committed sim 态】选、绝不读相机 lod_focus。
 # 若日后有人把 cohort 从相机取回，V2(5 个 lod_focus→同 digest) 立即变红（Main.gd:159 红线机器化）。
@@ -591,6 +623,8 @@ step "4c. DetGate 场景确定性门 (default / faction / betray / freerider)"
 [ "${PIPESTATUS[0]}" -eq 0 ] && ok "DetGate scenario determinism" || bad "DetGate scenario determinism"
 scan "DetGate" "$LT_LOG/detgate.log"
 
+fi
+if lane backend; then
 step "4d. BackendGate 外部后端门 (硬不变量含#01 / 同seed两跑一致 / 闭集封闭)"
 # 为什么必须单独有这一步：上面每一道门（金标 / LOD / DetGate）都恒 Sim.backend=null（红线#2 的零模型地板）
 # ⇒ AIBackend.decide() 从不被调用 ⇒ 硬不变量 #01 只在【引擎自己挑】的路径上验过。
@@ -634,6 +668,8 @@ step "4d. BackendGate 外部后端门 (硬不变量含#01 / 同seed两跑一致 
 [ "${PIPESTATUS[0]}" -eq 0 ] && ok "BackendGate 外部后端门（硬不变量/两跑一致/闭集封闭）" || bad "BackendGate 外部后端门（硬不变量/两跑一致/闭集封闭）"
 scan "BackendGate" "$LT_LOG/backendgate.log"
 
+fi
+if lane gates; then
 step "4e. ModelPathGate 出货 prompt 编码门 (闭集编号字母表 / 示例编号 / 裁剪保序)"
 # 为什么和 4d 分开：4d 守的是【落地之后】的世界（硬不变量 #01、两跑一致），
 # 4e 守的是【问出去之前】那一份 prompt 的编码性质——docs/42 量到的三条病都活在这里：
@@ -705,6 +741,8 @@ grep -q 'state_projection_gate: PASS' "$LT_LOG/state_projection.log" \
 # still fatal. Apply the same exact-set contract as P1-g instead of leaving step 4h unscanned.
 scan_state_projection_runtime_contract "state_projection 门" "$LT_LOG/state_projection.log"
 
+fi
+if lane scenes || lane story; then
 step "5. unit / integration scenes"
 # player_touch_test：C3 的 31 条 + C8 的 13 条断言（触屏按钮路径 ≡ 按键路径、7 个动词可分辨、
 #   观察台两档"卡片是详情的逐行前缀"）。它在 2026-07-26 Wave C 里写好后【一直没进 CI】——
@@ -764,7 +802,21 @@ echo "  ℹ  story_test 夹具 = seeds $CI_STORY_SEEDS × $CI_STORY_DAYS 天 · 
 #   不得讲成"做成了"。AE1 owns 只有 Main.gd + 这个新测试，【不许碰 ci.sh】（那是 AE2 的行），
 #   所以它加了门却没接线——协调者在此接线（"一道没接线的门不是门"，V3 的树丛门当年同样是这样补上的）。
 #   接线前已按本 for 循环的口径实跑过一次：res://scenes/event_prose_test.tscn ⇒ EXIT=0、GATE PASS、无 GBK 编码坑。
-for scene in m2_test reqlife_test player_agency_test player_touch_test life_test player_replay_test cafe_guest_access_test p1t_social_plane_test p1a_affiliate_test p1b_cargo_manifest_test p1c_east_ocean_carrier_test p1d_scale_export_test p1g_manifest_transaction_test p1u_port_nav_test p1v_warehouse_observatory_test s4_replay_test space_test c1_locked_ortho_test save_load_test save_migration_test goals_test story_test event_prose_test desire_test ledger_test; do
+# ── lane 切分（docs/205）：本列表是【单一真源】，story lane 拿走 CI_SCENES_STORY 点名的那几个，
+#   scenes lane 拿走其余的，两条 lane 的并集按构造恰好等于 CI_SCENES_ALL —— 想漏掉一个场景，
+#   只能从 CI_SCENES_ALL 里删它（那是一次看得见的改动），而不是让它从某条 lane 里静静掉出去。
+#   story_test 独占一条 lane 的理由是代价：GHA 上它一个场景 633s，是整条流水线最贵的单块
+#   （seeds 1-12 × 40 天，天数的由来见上面那段 ★），其余 24 个场景加起来只有 325s。
+CI_SCENES_ALL="m2_test reqlife_test player_agency_test player_touch_test life_test player_replay_test cafe_guest_access_test p1t_social_plane_test p1a_affiliate_test p1b_cargo_manifest_test p1c_east_ocean_carrier_test p1d_scale_export_test p1g_manifest_transaction_test p1u_port_nav_test p1v_warehouse_observatory_test s4_replay_test space_test c1_locked_ortho_test save_load_test save_migration_test goals_test story_test event_prose_test desire_test ledger_test"
+CI_SCENES_STORY="story_test"
+CI_SCENES=""
+for scene in $CI_SCENES_ALL; do
+  case " $CI_SCENES_STORY " in
+    *" $scene "*) lane story  && CI_SCENES="$CI_SCENES $scene" ;;
+    *)            lane scenes && CI_SCENES="$CI_SCENES $scene" ;;
+  esac
+done
+for scene in $CI_SCENES; do
   SCENE_T0=$SECONDS
   "$GODOT" --headless --path game "res://scenes/$scene.tscn" >"$LT_LOG/$scene.log" 2>&1
   code=$?
@@ -788,6 +840,8 @@ for scene in m2_test reqlife_test player_agency_test player_touch_test life_test
   esac
 done
 
+fi
+if lane visual; then
 step "6. 视觉门：昼夜 + 界外层重画 + 空间往返 + 岸线 + 室内外壳 + 家具语义（无渲染环境时自动 SKIP，不假红）"
 # 为什么是这一条先进 CI：docs/41 §6 盲区④——`--shot` 曾经【永远渲不出昼夜】，
 # 于是【这个项目所有视觉判断用的尺子】是坏的（"偏亮/偏暗"的结论全部不可信）。C3 用 Main.gd:271 一行修好了它，
@@ -826,8 +880,12 @@ case "$VRC" in
   *)  bad "视觉门 (exit $VRC)" ;;
 esac
 
+fi
 step_done
 echo
 echo "  ⏱  全程 ${SECONDS}s（**现算的**，不是抄的；机器忙闲会让它上下浮动，别把单次读成基准）"
+# lane 名跟着判决一起印：拆成并行 job 之后，一句"CI 绿了"必须能回答【绿的是哪几条 lane】，
+# 否则一个只跑了 lint 的 job 与一个跑完全部的 job 在日志里长得一模一样。
+echo "  ▸ 本次跑的 lane：$CI_LANE（全集 $CI_LANES_ALL）"
 [ $FAIL -eq 0 ] && echo "=== CI PASS ✅ ===" || echo "=== CI FAIL ❌ ==="
 exit $FAIL

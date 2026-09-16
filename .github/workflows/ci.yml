@@ -11,71 +11,159 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ci:
+  # ── docs/205：核心 job 拆成七条并行 lane ──────────────────────────────────────
+  # 由来：PR #65 实测核心 job 42m26s，一条完全串行的链，而 timeout-minutes 已经被抬过三次
+  # （35 → 55 → 65）。抬上限不缩短反馈，只是给它让路。docs/113 §四·2 一直写着正式方案是
+  # 拆成并行 required job —— 本次做的就是它。
+  #
+  # 每个 job 只跑 `CI_LANE` 点名的那几段，判据一条都没动（跑的是同一份 tools/ci.sh）。
+  # lane 的划分按【代价】切在天然缝上（PR #65 那一跑的实测墙钟）：
+  #   story 633s · s0 404s · pool 445s · gates 448s · scenes 325s · backend 281s · lint 9s
+  # ⇒ 关键路径 = 最贵的那条 lane（story，一个场景 633s，seeds 1-12 × 40 天，天数由来见 ci.sh 第 5 步）
+  #   ≈ 11 分钟，而不是 42 分钟。总计费分钟几乎不变（七份 setup 各约 18s，实测 PR #65）。
+  #
+  # 谁保证没有一道门被悄悄漏掉：ci.sh 第 1c 步的 tools/assert_ci_lanes.py，把 ci.sh 的
+  # CI_LANES_ALL 与下面各 job 的 CI_LANE 逐字对账（少一条/多一条/拼错/重挂/汇总漏 needs 都红）。
+  # 分支保护里的 required context 仍然只有 `ci` 与 `visual_canary`：下面的 `ci` 变成汇总 job，
+  # needs 七条 lane，任何一条红它就红 ⇒ 不必改 branch protection（enforce_admins 开着）。
+  #
+  # timeout-minutes 按实测的约 2 倍给：够未来几片长肉，又还能抓住真的挂死。
+
+  lint:
+    # 静态门（0-pre..3：版权红线 / data lint / map audit / lane 对账 / 三道美术门 / 可重算门 /
+    # 互补性守卫 / import parse smoke）+ 第 6 步视觉门（GHA 上按 visual_gate.sh 的显式判断 SKIP，
+    # 真正的视觉观测在下面独立的 visual_canary lane 里跑）。
     runs-on: ubuntu-latest
-    # 短期把 15→35：本地全量 CI ~17-26 分钟，15 分钟每次都在 story_test 处被平台取消
-    # （Codex 2026-08-06 §二实测两次 PR run 都 cancelled@15m，唯一红因是预算不是断言）。
-    # 提高只放宽上限、不弱化任何门，反而让更多门跑到完成 ⇒ 解锁候选 PR 的 exact-head 收据。
-    # 正式方案是拆成并行 required jobs（见 docs/113 §四·2），这只是过渡。
-    # docs/199 35→45：同一树上 runner 墙钟 23.5-31 分钟（master #59 push vs P2a PR），P2b 多一个 agent
-    # 本机 story_test +11%（104→115s）⇒ PR run 在 desire_test 之后被 35 分钟取消（此前各门全过）。
-    # docs/202 45→55：P3b 的 PR run 已经 40m6s（离 45 只剩 5 分钟），P3c 每周多两场广场活动、仿真更忙；
-    #   在它撞线之前放宽，免得又是"各门全过、被平台取消"。
-    # docs/204 55→65：P3d 的 PR run 42m31s（离 55 只剩 12 分钟），P4a 多一栋可进的镇公所与每夜财政结算；
-    #   同一条理由再放宽一次。拆并行 job（docs/113 §四·2）仍是正式方案。
-    timeout-minutes: 65
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-
-      # push 事件的 GITHUB_SHA 是刚推到该 ref 的 tip；pull_request 则是 GitHub 的 merge ref。
-      # checkout 默认取事件 ref/SHA。把两者逐位对账并打印单行回执，避免以后把旧 base 的
-      # synthetic-merge green 误写成当前 integration/batons exact-tip green。
-      - name: Verify checked-out event SHA
-        shell: bash
-        run: |
-          set -euo pipefail
-          actual_sha="$(git rev-parse HEAD)"
-          if [[ "$actual_sha" != "$GITHUB_SHA" ]]; then
-            echo "checkout SHA mismatch: actual=$actual_sha event=$GITHUB_SHA" >&2
-            exit 1
-          fi
-          printf 'CI_SOURCE event=%s ref=%s sha=%s\n' \
-            "$GITHUB_EVENT_NAME" "$GITHUB_REF" "$actual_sha"
-
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
-        with:
-          python-version: "3.11"
-
-      # tools/ci.sh 第 2b 步（art gate）当场重建十张出货角色表再逐字节比对，重建管线依赖 Pillow。
-      # 不装它 ⇒ art_gate.py 直接退出、这道门在 GHA 上【每一个 PR 都红】而与改动无关 —— 正是
-      # tools/visual_gate.sh 抬头②说的"没有任何 commit 却会自己变色的门"。
-      # （G1 声明的越界：.github/ 不在本棒的所有权表里。回滚 = 删掉本步。）
-      - name: Install Pillow (art gate 的重建管线依赖)
-        run: python -m pip install --disable-pip-version-check "pillow>=10,<12"
-
-      - name: Install Godot 4.6.2 (headless)
-        run: |
-          set -e
-          GV=4.6.2-stable
-          curl -fLo godot.zip "https://github.com/godotengine/godot/releases/download/${GV}/Godot_v${GV}_linux.x86_64.zip"
-          unzip -q godot.zip
-          sudo mv "Godot_v${GV}_linux.x86_64" /usr/local/bin/godot
-          sudo chmod +x /usr/local/bin/godot
-          godot --version
-
-      - name: Import project (headless)
-        run: godot --headless --path game --import || true
-
-      - name: CI gate (lints + S0 + test scenes)
+      - uses: ./.github/actions/lt-setup
+      - name: CI lanes (lint + visual)
         env:
           GODOT: godot
           PYTHON: python3
+          CI_LANE: "lint visual"
         run: bash tools/ci.sh
+
+  s0:
+    # 第 4 步 S0 门：硬/软不变量 + 确定性 + 跨进程金标（seeds 1-12 × 60 天）。
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: ./.github/actions/lt-setup
+      - name: CI lane (s0)
+        env:
+          GODOT: godot
+          PYTHON: python3
+          CI_LANE: "s0"
+        run: bash tools/ci.sh
+
+  pool:
+    # 第 4a 步宏观池尺度门：同一套 S0 判据首次跑在池倍率 ≠ 1 的配置上（N=16）。
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: ./.github/actions/lt-setup
+      - name: CI lane (pool)
+        env:
+          GODOT: godot
+          PYTHON: python3
+          CI_LANE: "pool"
+        run: bash tools/ci.sh
+
+  gates:
+    # 第 4b/4c/4e/4f/4g/4h 步：LOD 观察无关 / DetGate / ModelPathGate / VoiceGate /
+    # #43 观察侧抗回归 / state_projection。都是 backend=null 的零模型地板上的门。
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: ./.github/actions/lt-setup
+      - name: CI lane (gates)
+        env:
+          GODOT: godot
+          PYTHON: python3
+          CI_LANE: "gates"
+        run: bash tools/ci.sh
+
+  backend:
+    # 第 4d 步 BackendGate 单独一条 lane：它是唯一一道【模型真的在挑动作】的门
+    # （上面每一道都恒 backend=null），硬不变量 #01 只在这条路上验过 —— 它值一个自己的名字，
+    # 而不是混在 gates 里按代价被切来切去。
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: ./.github/actions/lt-setup
+      - name: CI lane (backend)
+        env:
+          GODOT: godot
+          PYTHON: python3
+          CI_LANE: "backend"
+        run: bash tools/ci.sh
+
+  scenes:
+    # 第 5 步的 24 个 unit / integration 场景（story_test 除外，见下）。
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: ./.github/actions/lt-setup
+      - name: CI lane (scenes)
+        env:
+          GODOT: godot
+          PYTHON: python3
+          CI_LANE: "scenes"
+        run: bash tools/ci.sh
+
+  story:
+    # 只跑 story_test 一个场景。它 633s，是整条流水线最贵的单块，也因此是拆并行之后
+    # 关键路径的下界 —— 想再快就得改它自己的网格（seeds/天数的代价曲线在 ci.sh 第 5 步 ★ 段里）。
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: ./.github/actions/lt-setup
+      - name: CI lane (story)
+        env:
+          GODOT: godot
+          PYTHON: python3
+          CI_LANE: "story"
+        run: bash tools/ci.sh
+
+  ci:
+    # 汇总 job = 分支保护里那个 required context。它自己不跑任何门，只把七条 lane 的判决
+    # 收成一个。`needs` 的完整性由 tools/assert_ci_lanes.py 第⑤条守着（漏一个 ⇒ 那条 lane
+    # 红了也拦不住合并，而 required check 依旧显示绿 —— 这正是拆并行最贵的那种失败）。
+    # ⚠ if: always() 是必须的：默认 needs 有失败就跳过本 job，而【跳过的 required check
+    #    在 GitHub 那里算作通过】。这里改成永远运行、再显式读各 lane 的 result。
+    needs: [lint, s0, pool, gates, backend, scenes, story]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Collect lane verdicts
+        shell: bash
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          set -euo pipefail
+          echo "$RESULTS" | jq -r 'to_entries[] | "  \(.key) \(.value.result)"'
+          failed="$(echo "$RESULTS" | jq -r 'to_entries[] | select(.value.result != "success") | .key' | paste -sd' ' -)"
+          if [[ -n "$failed" ]]; then
+            echo "=== CI FAIL ❌ === lane 未通过：$failed"
+            exit 1
+          fi
+          echo "=== CI PASS ✅ === 七条 lane 全绿"
 
   visual_canary:
     # This observation lane is deliberately separate from the required core
-    # job: the full visual collection must not consume the core 35-minute
-    # budget or reclassify the four intentionally stale product anchors.
+    # jobs: the full visual collection must not consume a core lane's budget
+    # or reclassify the four intentionally stale product anchors.
+    # docs/205 拆并行之后它是唯一一个【自带渲染运行时】的 job（ubuntu-24.04 + Xvfb + mesa），
+    # 所以它保留自己那份 setup，没有收进 .github/actions/lt-setup。
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
