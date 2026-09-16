@@ -1,0 +1,58 @@
+name: "Living Town CI setup"
+description: >
+  Exact-SHA receipt + Python/Pillow + headless Godot 4.6.2 + project import.
+  ⚠ **不含 checkout**：本仓库内的 composite action 要先 checkout 出来才存在（GHA 找不到
+  action.yml 会直接失败）⇒ 每个 job 必须自己先 `uses: actions/checkout@…`，再 uses 本 action。
+  docs/205 拆并行之后有七个 lane job 要做【逐字相同】的准备工作。把它抄七遍 =
+  七份会各自漂移的副本（本仓库已经栽过两次"同一份文件里两处相反的说法"），所以收进
+  一个 composite action：改一处，七个 job 一起变。GHA 的 workflow 不支持 YAML 锚点，
+  composite action 是这里唯一的 DRY 手段。
+inputs:
+  receipt:
+    description: "打在回执行首的标签（CI_SOURCE / VISUAL_SOURCE …）"
+    required: false
+    default: CI_SOURCE
+runs:
+  using: composite
+  steps:
+    # push 事件的 GITHUB_SHA 是刚推到该 ref 的 tip；pull_request 则是 GitHub 的 merge ref。
+    # checkout 默认取事件 ref/SHA。把两者逐位对账并打印单行回执，避免以后把旧 base 的
+    # synthetic-merge green 误写成当前 integration/batons exact-tip green。
+    # ⚠ 拆并行之后这条回执更要紧：七个 job 各自 checkout，必须逐个证明它们看的是同一个 SHA。
+    - name: Verify checked-out event SHA
+      shell: bash
+      run: |
+        set -euo pipefail
+        actual_sha="$(git rev-parse HEAD)"
+        if [[ "$actual_sha" != "$GITHUB_SHA" ]]; then
+          echo "checkout SHA mismatch: actual=$actual_sha event=$GITHUB_SHA" >&2
+          exit 1
+        fi
+        printf '%s event=%s ref=%s sha=%s job=%s\n' \
+          '${{ inputs.receipt }}' "$GITHUB_EVENT_NAME" "$GITHUB_REF" "$actual_sha" "$GITHUB_JOB"
+
+    - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      with:
+        python-version: "3.11"
+
+    # tools/ci.sh 第 2b 步（art gate）当场重建十张出货角色表再逐字节比对，重建管线依赖 Pillow。
+    # 不装它 ⇒ art_gate.py 直接退出、这道门在 GHA 上【每一个 PR 都红】而与改动无关 —— 正是
+    # tools/visual_gate.sh 抬头②说的"没有任何 commit 却会自己变色的门"。
+    - name: Install Pillow (art gate 的重建管线依赖)
+      shell: bash
+      run: python -m pip install --disable-pip-version-check "pillow>=10,<12"
+
+    - name: Install Godot 4.6.2 (headless)
+      shell: bash
+      run: |
+        set -e
+        GV=4.6.2-stable
+        curl -fLo godot.zip "https://github.com/godotengine/godot/releases/download/${GV}/Godot_v${GV}_linux.x86_64.zip"
+        unzip -q godot.zip
+        sudo mv "Godot_v${GV}_linux.x86_64" /usr/local/bin/godot
+        sudo chmod +x /usr/local/bin/godot
+        godot --version
+
+    - name: Import project (headless)
+      shell: bash
+      run: godot --headless --path game --import || true
