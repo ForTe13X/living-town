@@ -1815,16 +1815,7 @@
       2,
       1
      ],
-     "label": "办事窗口",
-     "advertises": [
-      {
-       "action": "领救济",
-       "need": "hunger",
-       "amount": 40,
-       "duration": 10,
-       "pantry": "relief"
-      }
-     ]
+     "label": "办事窗口"
     },
     {
      "slot": "bookshelf",
