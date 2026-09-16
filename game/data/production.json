@@ -94,7 +94,8 @@
     "社交":   { "good": "整洁", "amount": 1 },
     "闲聊":   { "good": "糕点", "amount": 1 },
     "采买":   { "good": "口粮", "amount": 3 },
-    "下馆子": { "good": "口粮", "amount": 1 }
+    "下馆子": { "good": "口粮", "amount": 1 },
+    "领救济": { "good": "口粮", "amount": 3 }
   },
   "scarcity_markup": 1,
   "shortage_standing": -0.5,

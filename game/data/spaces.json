@@ -233,6 +233,22 @@
     "1f"
    ],
    "default_floor": "1f"
+  },
+  "mairie": {
+   "_facility": true,
+   "public_venue": true,
+   "kind": "interior",
+   "label": "镇公所",
+   "bounds": [
+    0,
+    0,
+    10,
+    7
+   ],
+   "floors": [
+    "1f"
+   ],
+   "default_floor": "1f"
   }
  },
  "portals": [
@@ -607,6 +623,30 @@
    },
    "to": {
     "space": "hotel",
+    "floor": "1f",
+    "pos": [
+     5,
+     6
+    ]
+   },
+   "bidirectional": true,
+   "access": "public",
+   "traversal_cost": 1
+  },
+  {
+   "_facility": true,
+   "id": "p_mairie_door",
+   "kind": "door",
+   "from": {
+    "space": "town",
+    "floor": "outdoor",
+    "pos": [
+     32,
+     31
+    ]
+   },
+   "to": {
+    "space": "mairie",
     "floor": "1f",
     "pos": [
      5,

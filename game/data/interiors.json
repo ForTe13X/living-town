@@ -1769,5 +1769,115 @@
     }
    ]
   }
+ },
+ "mairie": {
+  "1f": {
+   "label": "一层",
+   "floor": "stone",
+   "furniture": [
+    {
+     "slot": "window",
+     "pos": [
+      2,
+      0
+     ]
+    },
+    {
+     "slot": "painting_sea",
+     "pos": [
+      5,
+      0
+     ],
+     "label": "海港旧照",
+     "advertises": [
+      {
+       "action": "赏画",
+       "need": "fun",
+       "amount": 30,
+       "duration": 10
+      }
+     ]
+    },
+    {
+     "slot": "window",
+     "pos": [
+      7,
+      0
+     ]
+    },
+    {
+     "slot": "counter",
+     "pos": [
+      1,
+      1
+     ],
+     "size": [
+      2,
+      1
+     ],
+     "label": "办事窗口"
+    },
+    {
+     "slot": "bookshelf",
+     "pos": [
+      7,
+      1
+     ]
+    },
+    {
+     "slot": "bookshelf",
+     "pos": [
+      6,
+      1
+     ]
+    },
+    {
+     "slot": "desk",
+     "pos": [
+      8,
+      1
+     ],
+     "label": "镇长桌"
+    },
+    {
+     "slot": "pew",
+     "pos": [
+      1,
+      3
+     ],
+     "size": [
+      2,
+      1
+     ],
+     "label": "议事长椅"
+    },
+    {
+     "slot": "pew",
+     "pos": [
+      6,
+      3
+     ],
+     "size": [
+      2,
+      1
+     ],
+     "label": "议事长椅"
+    },
+    {
+     "slot": "plant",
+     "pos": [
+      1,
+      5
+     ]
+    },
+    {
+     "slot": "plant",
+     "pos": [
+      8,
+      5
+     ]
+    }
+   ]
+  }
  }
 }

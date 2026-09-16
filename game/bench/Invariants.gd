@@ -1269,6 +1269,8 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 	var ext_expected := 0
 	var imp_expected := 0
 	var exp_expected := 0
+	var tax_sum := 0            # docs/204：town→external 的税（note 额）
+	var sub_sum := 0            # docs/204：external→town 的补贴（note 额）
 	if econ_on and logi_on2:
 		# 分别建 import / export 的按货价表（只收声明了合法 price_per 的付费 lane）。
 		var imp_price := {}
@@ -1309,6 +1311,10 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 				exp_expected += _amt_of(String(e.get("note", ""))) * int(pr2[0]) / int(pr2[1])
 		ext_expected = imp_expected - exp_expected
 		# 付费良构性：两向各一条（收付款方写反 / 错 reason ⇒ 红）。
+		# ★docs/204 P4a 财政：再各多一种合法 reason——town→external 的 tax、external→town 的 subsidy。
+		#   它们不对应任何货，额就写在 note 里（"tax*<amt>" / "subsidy*<amt>"）⇒ 应值按 note 额累加，并与 pay 的实额逐笔对上；
+		#   再加构造性平衡（194 §六）：累计税 ≤ 累计补贴 + fiscal.tax_slack。缺 economy.fiscal ⇒ 两种 reason 仍按旧口径判红。
+		var fisc: Dictionary = S.economy.get("fiscal", {}) if S.economy.get("fiscal", {}) is Dictionary else {}
 		if not imp_price.is_empty() or not exp_price.is_empty():
 			for e in log:
 				if String(e["type"]) != "pay":
@@ -1316,19 +1322,30 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 				var pa := String(e["actor"])
 				var pt := String(e.get("target", ""))
 				var pn2 := String(e.get("note", "")).split("*")[0]   # reason 前缀（export pay note="export*<qty>"）
-				if pt == "external":                          # 到 external 的付费（import）：必来自 town、reason=="import"
+				if pt == "external":                          # 到 external 的付费（import / tax）：必来自 town
 					if pa != "town":
 						pay45_bad.append("#%d →external from=%s 非 town" % [int(e["id"]), pa])
+					elif pn2 == "tax" and not fisc.is_empty():
+						tax_sum += _amt_of(String(e.get("note", "")))
+						if _amt_of(String(e.get("note", ""))) != int(e.get("amt", -1)):
+							pay45_bad.append("#%d tax note 额≠实付" % int(e["id"]))
 					elif pn2 != "import":
 						pay45_bad.append("#%d →external reason=%s 非 import" % [int(e["id"]), pn2])
-				elif pa == "external":                        # 自 external 的付费（export）：必到 town、reason=="export"
+				elif pa == "external":                        # 自 external 的付费（export / subsidy）：必到 town
 					if pt != "town":
 						pay45_bad.append("#%d external→ target=%s 非 town" % [int(e["id"]), pt])
+					elif pn2 == "subsidy" and not fisc.is_empty():
+						sub_sum += _amt_of(String(e.get("note", "")))
+						if _amt_of(String(e.get("note", ""))) != int(e.get("amt", -1)):
+							pay45_bad.append("#%d subsidy note 额≠实付" % int(e["id"]))
 					elif pn2 != "export":
 						pay45_bad.append("#%d external→ reason=%s 非 export" % [int(e["id"]), pn2])
+		ext_expected += tax_sum - sub_sum
+		if not fisc.is_empty() and tax_sum > sub_sum + int(fisc.get("tax_slack", 0)):
+			pay45_bad.append("累计税 %d > 累计补贴 %d + 余量 %d" % [tax_sum, sub_sum, int(fisc.get("tax_slack", 0))])
 	R.append(_chk(45, "钱跨镇边界溯源", pay45_bad.is_empty() and int(S.external_coin) == ext_expected,
 		("异常付费=%d: %s" % [pay45_bad.size(), "; ".join(pay45_bad.slice(0, 3))]) if not pay45_bad.is_empty()
-		else ("external=%d 应值=%d (=进%d−出%d，应相等)" % [int(S.external_coin), ext_expected, imp_expected, exp_expected])))
+		else ("external=%d 应值=%d (=进%d−出%d+税%d−补贴%d，应相等)" % [int(S.external_coin), ext_expected, imp_expected, exp_expected, tax_sum, sub_sum])))
 	# 46) E-export 贸易原子性绑定 + 出港溯源（F7 命门 + F6 货侧合法，docs/158 §三/§四；#38-trade 首片最小绑定钉，非完整 escrow=P4）：
 	#     外审逼出的命门——即便 F1 符号修对，若 pay(export) 与 stock(export) 不【一一对应、数量相等】，#34/#38/#45
 	#     只各自证"钱账自洽""货账自洽"，证不出"这笔钱买的就是这批货"（收 N 发 k / 收钱不发货 / 发货不收钱 = 假成功）。

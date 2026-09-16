@@ -16,12 +16,13 @@ extends RefCounted
 ##   docs/200：buy:下馆子 居民→厨师（餐馆一顿饭）单列为 restaurant，不混进集市摊贩
 ##   docs/201：buy:理发 居民→理发师、buy:逛店 居民→店主，各自单列
 ##   docs/203：buy:下午茶、buy:游船 居民→酒店掌柜，合成一类 hotel
-const CATS := ["meal", "grocery", "vendor", "restaurant", "barber", "boutique", "hotel", "wage", "rent", "bill", "bonus", "import", "export", "other"]
+##   docs/204：subsidy*<额> 大他者→镇库（补贴）· tax*<额> 镇库→大他者（税）
+const CATS := ["meal", "grocery", "vendor", "restaurant", "barber", "boutique", "hotel", "wage", "rent", "bill", "bonus", "import", "export", "subsidy", "tax", "other"]
 const CAT_NAME := {"meal": "饭钱", "grocery": "采买", "vendor": "摊贩", "restaurant": "餐馆", "barber": "理发", "boutique": "小店", "hotel": "酒店", "wage": "工资", "rent": "房租",
-	"bill": "账单", "bonus": "奖金", "import": "进口", "export": "出口", "other": "其它"}
+	"bill": "账单", "bonus": "奖金", "import": "进口", "export": "出口", "subsidy": "补贴", "tax": "税", "other": "其它"}
 ## 镇库视角：哪些类是进账、哪些是出账（摊贩与房租是居民之间的钱，不经镇库）。
-const TOWN_IN := ["meal", "grocery", "bill", "export"]
-const TOWN_OUT := ["wage", "bonus", "import"]
+const TOWN_IN := ["meal", "grocery", "bill", "export", "subsidy"]
+const TOWN_OUT := ["wage", "bonus", "import", "tax"]
 
 var cursor := 0          # 已折叠到 event_log 的哪个下标（不含）
 var _tail := ""          # 最后一条已折叠事件的指纹：id:tick:type —— 回放后同一下标换了内容就对不上
@@ -41,7 +42,7 @@ static func category(note: String) -> String:
 	if note == "buy:下午茶" or note == "buy:游船": return "hotel"
 	if head == "price": return "meal"
 	if head == "buy": return "vendor"
-	if head in ["wage", "rent", "bill", "bonus", "import", "export"]: return head
+	if head in ["wage", "rent", "bill", "bonus", "import", "export", "subsidy", "tax"]: return head
 	return "other"
 
 static func _fp(e: Dictionary) -> String:

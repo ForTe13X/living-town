@@ -21,7 +21,9 @@ jobs:
     # 本机 story_test +11%（104→115s）⇒ PR run 在 desire_test 之后被 35 分钟取消（此前各门全过）。
     # docs/202 45→55：P3b 的 PR run 已经 40m6s（离 45 只剩 5 分钟），P3c 每周多两场广场活动、仿真更忙；
     #   在它撞线之前放宽，免得又是"各门全过、被平台取消"。
-    timeout-minutes: 55
+    # docs/204 55→65：P3d 的 PR run 42m31s（离 55 只剩 12 分钟），P4a 多一栋可进的镇公所与每夜财政结算；
+    #   同一条理由再放宽一次。拆并行 job（docs/113 §四·2）仍是正式方案。
+    timeout-minutes: 65
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 

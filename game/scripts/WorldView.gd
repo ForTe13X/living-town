@@ -2377,7 +2377,7 @@ const WALLPAPER := {
 	"chapel": [Color("#d3cdc2"), Color("#9c958a")],     # 刷白花岗岩
 }
 # docs/193 §六：设施室内的用途按 space id 直接给（它们的家具清单与咖啡区/起居间同型，按清单推会推错）
-const FACILITY_ROLE := {"bakery": "cafe", "creperie": "cafe", "chapel": "chapel", "halles": "store", "hotel": "living"}
+const FACILITY_ROLE := {"bakery": "cafe", "creperie": "cafe", "chapel": "chapel", "halles": "store", "hotel": "living", "mairie": "study"}
 var _furn_foot := {}             # 精灵名 -> alpha bbox（对地用底行，挂墙用中心）
 const TOWN_FURN := {"bed": "bed_single", "stove": "stove", "bath": "bathtub", "desk": "workbench"}
 

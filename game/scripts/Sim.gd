@@ -1043,6 +1043,7 @@ func start_new(p_seed: int = 12345) -> void:
 				"source": oid, "via": "seed", "tick": 0, "secret": true, "owner": oid, "confidedBy": {}}
 	# Wave 1b 经济：镇库注资 + 记录开局货币总量（守恒硬不变量基准）。缺 economy.json → 全为 0 零扰动。
 	town_coin = int(economy.get("town_start", 0)) if not economy.is_empty() else 0
+	_fisc_cache = {}                       # docs/204：财政累计是 event_log 的折叠，每局从空重扫
 	# ★E2a BLOCKER-1（docs/154 §二.1）：external_coin 必须【per-run 重置】——镜像上一行 town_coin。
 	#   goto_tick(:1146) 反复调 start_new 重演；import 付费让 external_coin 局末非零，若不清零，
 	#   第二遍的残值会在下一行 econ_total0 = money_total() 里被计入基准 ⇒ 整局 money_total 位移、
@@ -2199,7 +2200,7 @@ const SAVE_MAGIC := "LTSAVE"
 const SAVE_SCHEMA_LEGACY := 1
 const SAVE_SCHEMA := 2
 const SAVE_RUNTIME_HANDLES := ["backend", "ext", "decision_sink"]
-const SAVE_LOAD_DENY := ["desire_cfg", "_venue_cache", "_indoor_job_cache", "_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected",
+const SAVE_LOAD_DENY := ["desire_cfg", "_venue_cache", "_indoor_job_cache", "_fisc_cache","_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected",
 	"controlled_id", "_tone_bonus", "loaded_meta"]   # docs/190 生活模式：附身/语气/档头都是 View 或瞬时态，不改存档形状（旧档照读）
 const SAVE_CURRENT_BLOB_KEYS := ["magic", "schema", "game_version", "saved_tick", "saved_day", "seed", "meta", "active_commit_ids", "state"]
 
@@ -3504,7 +3505,7 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 						econ_stats["meals_free"] += 1      # 付不起照吃（meals_free）——商贩路同样继承这条红线
 						_hardship_scale(ag, opt, "unpaid", price)  # docs/196：照吃、照补满，饭钱记进欠费（赊账）
 				# docs/197 家当：买到了 ⇒ 口粮进食橱；在家吃 ⇒ 食橱少一份（候选只在有货时存在）。
-				if pantry_act == "buy" and not short:
+				if (pantry_act == "buy" or pantry_act == "relief") and not short:   # docs/204：领到的救济同样进食橱
 					var pcap := int((economy["pantry"] as Dictionary).get("cap", 6))
 					ag["pantry"] = mini(pcap, int(ag.get("pantry", 0)) + int((economy["pantry"] as Dictionary).get("buy_qty", 1)))
 				elif pantry_act == "eat":
@@ -3619,6 +3620,7 @@ func _nightly() -> void:
 	# docs/196 P1a 家计：账单/欠费 + 出勤结算。排在房租之后、阶层 gossip 之前（同房租的理由：当晚被看见的财富已含这些流动）。
 	if _econ_on():
 		_household_nightly()
+		_fiscal_nightly()          # docs/204：账单收完之后，按今天的营收交税、镇库见底时大他者补贴
 	# Wave 2a+ 阶层 gossip：财富被同区邻居目击 → firsthand belief(via=seen) → 走既有 gossip 管线传播(S1 原样复用)。
 	if _econ_on() and economy.has("wealth_gossip"):
 		_observe_wealth()
@@ -3845,6 +3847,12 @@ func _adv_open(ag: Dictionary, adv: Dictionary) -> bool:
 		var have := int(ag.get("pantry", 0))
 		if pk == "eat" and have <= 0:
 			return false
+		# docs/204：救济窗口只对兜里少于 relief_line 的人开，且食橱放得下（不收钱，货从镇库出）。
+		if pk == "relief":
+			if have + int(pc.get("buy_qty", 1)) > int(pc.get("cap", 6)):
+				return false
+			if _coin_of(String(ag["id"])) >= int(pc.get("relief_line", 0)):
+				return false
 		if pk == "buy":
 			if have + int(pc.get("buy_qty", 1)) > int(pc.get("cap", 6)):
 				return false
@@ -4256,7 +4264,7 @@ func _object_candidates(ag: Dictionary) -> Array:
 					and (_job_of(String(ag["id"])).is_empty() or not _in_shift(_job_of(String(ag["id"])))):
 				score += float((economy["bills"] as Dictionary).get("arrears_work_urgency", 0.0))
 			# docs/197：食橱空 ⇒ 去货架采买多一截拉力（"家里没粮了"）。只加不减；候选只在买得起时存在（_adv_open）。
-			if String(adv.get("pantry", "")) == "buy" and int(ag.get("pantry", 0)) <= 0:
+			if String(adv.get("pantry", "")) in ["buy", "relief"] and int(ag.get("pantry", 0)) <= 0:
 				score += float((economy["pantry"] as Dictionary).get("empty_urgency", 0.0))
 			var cand := {
 				"kind": "object", "action": action, "target": id, "need": need_id,
@@ -5895,6 +5903,8 @@ func _pantry_act(action: String) -> String:
 		return "buy"
 	if action == String(pc.get("eat_action", "")):
 		return "eat"
+	if String(pc.get("relief_action", "")) != "" and action == String(pc.get("relief_action", "")):
+		return "relief"                  # docs/204：镇公所窗口领救济口粮
 	return ""
 
 ## 付账单的人 = 核心居民。外来 affiliate（码头工）与玩家的开销不在本镇家计里。
@@ -5994,6 +6004,64 @@ func _household_nightly() -> void:
 				w["rep"] = maxi(-10, int(w.get("rep", 0)) - 2)
 				ag["memory"].add("今天一趟工都没上", 3, tick_no, ["job"])
 			w["done"] = 0
+
+## docs/204 P4a 财政：夜结的税与补贴（economy.fiscal；缺段 ⇒ 第一行短路 = 今天）。两条都走 transfer（#34 不动），
+## 都进 #45 的 external 对账（reason 带额："tax*<额>" / "subsidy*<额>"）。
+##   · 税：上一天（tick 在最近 TICKS_PER_DAY 内）居民付给镇库的钱（price:/bill:）× tax_pct%，
+##     不把镇库压到 subsidy_floor 以下，且累计税 ≤ 累计补贴 + tax_slack（194 §六 构造性平衡）。
+##   · 补贴：镇库低于 subsidy_floor ⇒ 大他者补到地板，每夜至多 subsidy_max、至多它账上现有的钱
+##     （大他者的钱来自镇上付的进口款 ⇒ 不凭空铸币，#35 external≥0 由 transfer 的"不足即拒"保证）。
+## 累计税/补贴缓存在 _fisc_cache：它是 event_log 的纯折叠（带尾事件指纹，日志换了就从头重扫），
+## 所以进 SAVE_LOAD_DENY、不改存档形状；读档/跳转后结果与一口气跑下来逐字节相同。
+var _fisc_cache := {}
+
+func _fisc_fp(i: int) -> String:
+	var e: Dictionary = event_log[i]
+	return "%s:%s:%s" % [str(e.get("id", "")), str(e.get("tick", "")), String(e.get("note", ""))]
+
+func _fiscal_nightly() -> void:
+	var fc = economy.get("fiscal", {})
+	if not (fc is Dictionary) or (fc as Dictionary).is_empty():
+		return
+	var n := int(_fisc_cache.get("n", 0))
+	if n > event_log.size() or (n > 0 and _fisc_fp(n - 1) != String(_fisc_cache.get("fp", ""))):
+		n = 0
+		_fisc_cache = {}
+	var tax_sum := int(_fisc_cache.get("tax", 0))
+	var sub_sum := int(_fisc_cache.get("sub", 0))
+	for i in range(n, event_log.size()):
+		var ev: Dictionary = event_log[i]
+		if String(ev.get("type", "")) != "pay":
+			continue
+		var head := String(ev.get("note", "")).split("*")[0]
+		if head == "tax":
+			tax_sum += int(ev.get("amt", 0))
+		elif head == "subsidy":
+			sub_sum += int(ev.get("amt", 0))
+	_fisc_cache = {"n": event_log.size(), "tax": tax_sum, "sub": sub_sum,
+		"fp": _fisc_fp(event_log.size() - 1) if not event_log.is_empty() else ""}
+	# 税基：最近一天里居民付给镇库的钱（从日志尾往回扫，扫到一天前为止）
+	var base := 0
+	var t0 := tick_no - TICKS_PER_DAY
+	var j := event_log.size() - 1
+	while j >= 0 and int((event_log[j] as Dictionary).get("tick", 0)) > t0:
+		var ev2: Dictionary = event_log[j]
+		j -= 1
+		if String(ev2.get("type", "")) != "pay" or String(ev2.get("target", "")) != "town":
+			continue
+		var note := String(ev2.get("note", ""))
+		if note.begins_with("price:") or note.begins_with("bill:"):
+			base += int(ev2.get("amt", 0))
+	var floor_ := int(fc.get("subsidy_floor", 0))
+	var tax := base * int(fc.get("tax_pct", 0)) / 100
+	tax = mini(tax, sub_sum + int(fc.get("tax_slack", 0)) - tax_sum)
+	tax = mini(tax, town_coin - floor_)
+	if tax > 0:
+		transfer("town", "external", tax, "tax*%d" % tax)
+	if town_coin < floor_:
+		var sub := mini(mini(floor_ - town_coin, int(fc.get("subsidy_max", 0))), external_coin)
+		if sub > 0:
+			transfer("external", "town", sub, "subsidy*%d" % sub)
 
 ## 金钱增减的【唯一通道】：整数、不足即拒、写 event_log 溯源（type=pay，note=reason）。
 ## from/to = agent id 或 "town"（镇库）。守恒由"只此一门"结构保证 → 硬不变量 #34 可机检。
