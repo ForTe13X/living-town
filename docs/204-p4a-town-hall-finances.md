@@ -15,7 +15,7 @@
 | #45 | 钱跨镇边界溯源多两种合法 reason：town→external 的 `tax*<额>`、external→town 的 `subsidy*<额>`；external 应值 = 进 − 出 + 税 − 补贴，逐笔核 note 额 = 实付；再硬查累计税 ≤ 累计补贴 + tax_slack。 |
 | 账本 | 补贴（进镇库）、税（出镇库）两类（Ledger.gd + ledger_test）。 |
 | 缓存 | 累计税/补贴缓存在 `_fisc_cache`：event_log 的纯折叠（带尾事件指纹，换了日志就重扫），进 SAVE_LOAD_DENY、每局 start_new 清空 ⇒ 不改存档形状，读档/跳转与一口气跑下来相同。 |
-| 台词 | 每个人格补 `领救济`。 |
+| 台词 | 每个人格补 `领救济`（救济撤回了，台词留着等 P4b）；另补 shu 的 `歇着`——本机 CI 的 VoiceGate 红在这一对上：她从来没被 offer 过这个动作，P4a 的轨迹一变就被 offer 了 6 次。 |
 
 ## 二、量出来的
 
