@@ -73,7 +73,7 @@
       {
        "action": "吃饭",
        "need": "hunger",
-       "amount": 55,
+       "amount": 50,
        "duration": 18,
        "seated": true,
        "seats": 1,
@@ -81,6 +81,10 @@
         "comfort": 3,
         "k": 0.1,
         "floor": 0.6
+       },
+       "also": {
+        "need": "fun",
+        "amount": 3
        }
       }
      ]
@@ -106,7 +110,7 @@
       {
        "action": "吃饭",
        "need": "hunger",
-       "amount": 55,
+       "amount": 50,
        "duration": 18,
        "seated": true,
        "seats": 2,
@@ -114,6 +118,10 @@
         "comfort": 3,
         "k": 0.1,
         "floor": 0.6
+       },
+       "also": {
+        "need": "fun",
+        "amount": 3
        }
       }
      ]
@@ -129,7 +137,7 @@
       {
        "action": "吃饭",
        "need": "hunger",
-       "amount": 55,
+       "amount": 50,
        "duration": 18,
        "seated": true,
        "seats": 1,
@@ -137,6 +145,10 @@
         "comfort": 3,
         "k": 0.1,
         "floor": 0.6
+       },
+       "also": {
+        "need": "fun",
+        "amount": 3
        }
       }
      ]
@@ -1244,11 +1256,11 @@
       {
        "action": "下馆子",
        "need": "hunger",
-       "amount": 70,
+       "amount": 80,
        "duration": 20,
        "also": {
         "need": "fun",
-        "amount": 8
+        "amount": 12
        },
        "company": true,
        "seats": 6,
@@ -1272,11 +1284,11 @@
       {
        "action": "下馆子",
        "need": "hunger",
-       "amount": 70,
+       "amount": 80,
        "duration": 20,
        "also": {
         "need": "fun",
-        "amount": 8
+        "amount": 12
        },
        "company": true,
        "seats": 6,
@@ -1376,11 +1388,11 @@
       {
        "action": "吃点心",
        "need": "hunger",
-       "amount": 30,
+       "amount": 20,
        "duration": 12,
        "also": {
         "need": "fun",
-        "amount": 2
+        "amount": 20
        },
        "company": true,
        "seats": 2,
@@ -1404,11 +1416,11 @@
       {
        "action": "吃点心",
        "need": "hunger",
-       "amount": 30,
+       "amount": 20,
        "duration": 12,
        "also": {
         "need": "fun",
-        "amount": 2
+        "amount": 20
        },
        "company": true,
        "seats": 2,
