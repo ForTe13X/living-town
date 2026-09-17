@@ -171,7 +171,7 @@
     }
   },
   "vendors": [
-    { "title": "厨师", "action": "下馆子", "price": 5, "venue": "bakery",
+    { "title": "跑堂", "action": "下馆子", "price": 5, "venue": "bakery", "venue_grace": 60,
       "_why": "docs/200 P3 餐馆：面包房那栋楼改作小馆，厨师（lin）掌勺，桌上的『下馆子』是一顿正餐（hunger 70）。与商贩同一条人→人的货款通道（Sim._vendor_for），钱进厨师口袋；食材是镇库一份口粮（consume.下馆子）。只在厨师在班【且人在馆里】时开（venue）——不像集市摊可以无人售货。不设 trade_credit：#43 的'只有买卖留痕'臂只认商贩那一条。" },
     { "title": "理发师", "action": "理发", "price": 4, "luxury": true,
       "_why": "docs/201 P3b 理发：室内市场一角的理发椅，杂役 dan 转理发师。理发是 hygiene（打理门面），与澡堂分担——少洗一回澡就少烧一份柴。luxury ⇒ 兜里不够就不去（不是生存动作，不走 meals_free）。不设 venue（与餐馆不同）：理发师在班就开门——实测要求他人在店里时，60 天里店只开 2% 的时刻、一个客人都没有（docs/201 §二·3）。" },

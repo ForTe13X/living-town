@@ -1221,6 +1221,23 @@
       1,
       4
      ]
+    },
+    {
+     "slot": "counter",
+     "pos": [
+      5,
+      1
+     ],
+     "label": "堂口",
+     "advertises": [
+      {
+       "action": "上菜",
+       "need": "fun",
+       "amount": 50,
+       "duration": 24,
+       "job": "跑堂"
+      }
+     ]
     }
    ]
   }

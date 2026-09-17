@@ -1,15 +1,17 @@
 {
   "_doc": "Wave 2a 职业（docs/15 §3）。缺此文件=无职业(引擎逐字节不变)。holder 在班次相位做本职动作拿职位工资(差异化→贫富分化)，其余人做同动作拿 economy.wages 零工价。extra_advertises=职业自带工位(随本文件门控注入 map，OFF 时地图原样)。shift 相位名对应 rhythm.json phases。",
   "jobs": {
-    "aria": { "title": "咖啡师", "action": "看摊", "wage": 4, "shift": ["dawn", "day"] },
-    "ben":  { "title": "木匠",   "action": "做活", "wage": 5, "shift": ["day", "dusk"] },
-    "dan":  { "title": "理发师", "action": "剃头", "wage": 3, "shift": ["day", "dusk"] },
-    "lin":  { "title": "厨师",   "action": "掌勺", "wage": 4, "shift": ["day", "dusk"] },
-    "hai":  { "title": "渔夫",   "action": "做活", "wage": 4, "shift": ["dawn", "day"] },
-    "shu":  { "title": "店主",   "action": "看店", "wage": 3, "shift": ["day", "dusk"] },
-    "coco": { "title": "酒店掌柜", "action": "打理", "wage": 3, "shift": ["day", "dusk"] },
-    "tao":  { "title": "码头工", "action": "卸货", "wage": 4, "shift": ["dawn", "day"], "affiliate": true },
-    "yong": { "title": "码头工", "action": "卸货", "wage": 4, "shift": ["day", "dusk"], "affiliate": true }
+    "aria": { "title": "咖啡师", "action": "看摊", "wage": 4, "shift": ["dawn", "day"], "on_site": true },
+    "ben":  { "title": "木匠",   "action": "做活", "wage": 5, "shift": ["day", "dusk"], "on_site": false },
+    "dan":  { "title": "理发师", "action": "剃头", "wage": 3, "shift": ["day", "dusk"], "on_site": true },
+    "lin":  { "title": "厨师",   "action": "掌勺", "wage": 4, "shift": ["day", "dusk"], "on_site": true },
+    "hai":  { "title": "渔夫",   "action": "做活", "wage": 4, "shift": ["dawn", "day"], "on_site": false },
+    "shu":  { "title": "店主",   "action": "看店", "wage": 3, "shift": ["day", "dusk"], "on_site": true },
+    "coco": { "title": "酒店掌柜", "action": "打理", "wage": 3, "shift": ["day", "dusk"], "on_site": true },
+    "tao":  { "title": "码头工", "action": "卸货", "wage": 4, "shift": ["dawn", "day"], "affiliate": true, "on_site": true },
+    "yong": { "title": "码头工", "action": "卸货", "wage": 4, "shift": ["day", "dusk"], "affiliate": true, "on_site": true },
+    "fei":  { "title": "跑堂",   "action": "上菜", "wage": 3, "shift": ["day", "dusk"], "on_site": true },
+    "qin":  { "title": "泥瓦匠", "action": "修屋", "wage": 3, "shift": ["day"], "on_site": false }
   },
   "extra_advertises": [
     { "object": "counter_1", "action": "看摊", "need": "fun", "amount": 20, "duration": 24 }

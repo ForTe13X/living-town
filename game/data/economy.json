@@ -25,6 +25,7 @@
     "arrears_pct": { "洗澡": 60 },
     "min_amount": 30
   },
+  "work_discipline": true,
   "attendance": {
     "_doc": "docs/196 P1a 出勤记录：岗位持有人当天在班内完成过至少一次本职 ⇒ 出勤；否则记一次缺勤。连续 bonus_streak 天出勤 ⇒ 镇库发 bonus 全勤奖（reason=bonus:全勤）。work.rep 只进语音/HUD，不进任何决策（docs/175 核心规则）。删本段 ⇒ 无出勤字段。",
     "bonus_streak": 5,
