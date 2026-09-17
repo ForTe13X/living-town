@@ -32,36 +32,37 @@
       "2026-09-16 P4c-2（docs/208）· 在班守岗 + 离店片刻店照开 ⇒ 世界轨迹【蓄意】移动（用户 2026-09-16「on-site work should be mandatory」「add more labors」「if cook only absent for a short period of time keep it operational, whole day leave make it close」）。★改的是什么：economy.work_discipline + jobs.on_site（在班只剩本职 + 吃/睡/洗）；招 fei 当跑堂（接手下馆子的 vendor、面包房一层加『堂口』）与半职泥瓦匠 qin（只上 day）；vendors[下馆子].venue_grace=60（Sim._mark_post_seen 记 work.post_seen）。另有两处【只在 backend≠null 分支】的修复（_horizon_ok 判跨平面 journey、_backend_floor 危机中救最先触底的 need）——它们不动金标路（修复前后 S0 chain/digest/event_digest 12/12 逐字相同），只移动 ModelPathGate 的 random_full 锚。★新代码 + master 数据 ⇒ 金标 12/12 逐字节一致（数据门控机检过）。★三道 #40：N=12 1-12 12/12（零假设臂 12/12）、N=16 1-12 12/12（零假设臂 11/12）、留出 13-30 18/18（master 12/12 · 11/12 · 16/18）。★BackendGate seeds 1-12：红 2/5 tick（master）→ 0/0；seeds 13-24（没追过）：2/31 → 0/0。餐馆营业（seed 1-3 × 30 天）4.3·0.7·1.4% → 10.0·12.0·10.8%。",
       "2026-09-16 P4c-3（docs/209）· 分层饭食 ⇒ 世界轨迹【蓄意】移动（用户 2026-09-16「test the tiered restaurant model」）。★改的是什么：广告位新增 also{need,amount}（副需求，随饭逐 tick 进账）与 company/seats（同桌熟人加分、座位封顶）；下馆子 fun +8 / 6 座、吃点心 fun +2 / 3 座、家常饭 energy −8（下厨）；utility.company_pull 5 / company_friend_line 8 / company_stranger_w 0.25。咖啡馆故意不设 company（T2/T5 实测羊群，N=16 低至 6/12）。新代码 + master 数据 ⇒ 金标 12/12 逐字节一致。★三道 #40：N=12 12/12、N=16 11/12、留出 13-30 18/18（零假设臂 12/12 · 11/12 · 17/18）；BackendGate seeds 1-12 0 红。下馆子 diner·tick（seeds 1-6 × 30 天）零假设臂 5616 → 6535，同桌有熟人 104 → 229；逐 seed 4 升 2 降。",
       "2026-09-17 P4c-4（docs/210）· 座位/排队/拥挤 + 干粮 + 饥饿本能 + 供给重标定 ⇒ 世界轨迹【蓄意】移动（用户 2026-09-16 的一串设计）。★引擎：seated/seats 硬上限、先来先坐（opt.queued_at）、queue_tolerance、seat_full_penalty、crowd 只压 fun、economy.snacks（买干粮 揣身上、饿了当场吃）、economy.hunger_instinct（真实步行距离挑最近的正经饭）；全部缺键即关，新代码 + master 数据金标 12/12 一致。★重标定：木匠 on_site（柴薪瓶颈是他不上工，不是批量）；屋瓦 30→22、整洁 16→14、糕点 20→26、豆子 36→24、话本 6→1。★#40：N=12 11/12、N=16 12/12、留出 18/18（零假设臂 11/12 · 11/12 · 17/18）；BackendGate seeds 1-24 0 红。",
-      "2026-09-17 P4c-5（docs/211）· 饭食拉开 ⇒ 世界轨迹【蓄意】移动（用户「foods' utility gain should be saliently differentiated」「creperie … more fun but less hunger」）。★菜单（饱/乐/价）：家常饭 60/−8 精力/0 · 咖啡馆 50/+3/2 · 馆子 80/+12/5 · 可丽饼 20/+20/3。★渔夫 on_site（海鲜瓶颈是他不上工）；屋瓦 22→20、豆子 24→8。★引擎：饥饿本能选座感知（满座多算 seat_detour 格、近处有空座时满座不留）；饿到 PREEMPT_CRISIS 以下不排队、站着吃。★#40：N=12 12/12、N=16 11/12、留出 18/18（零假设臂同）；BackendGate seeds 1-24 0 红。"
+      "2026-09-17 P4c-5（docs/211）· 饭食拉开 ⇒ 世界轨迹【蓄意】移动（用户「foods' utility gain should be saliently differentiated」「creperie … more fun but less hunger」）。★菜单（饱/乐/价）：家常饭 60/−8 精力/0 · 咖啡馆 50/+3/2 · 馆子 80/+12/5 · 可丽饼 20/+20/3。★渔夫 on_site（海鲜瓶颈是他不上工）；屋瓦 22→20、豆子 24→8。★引擎：饥饿本能选座感知（满座多算 seat_detour 格、近处有空座时满座不留）；饿到 PREEMPT_CRISIS 以下不排队、站着吃。★#40：N=12 12/12、N=16 11/12、留出 18/18（零假设臂同）；BackendGate seeds 1-24 0 红。",
+      "2026-09-17 P4c-6（docs/212）· 可丽饼店搬进商业中心 ⇒ 世界轨迹【蓄意】移动（用户「make the crêperie reachable, center commercial area」）。★改的是什么：可丽饼店 [50,6] → [34,16]、门 [51,8] → [35,18]，与装饰赭石楼对调（map.json solid_lots、spaces.json p_creperie_door、assets/art/houses/lots.json 三处）；吃点心 改为 fun 30 + hunger 20（甜点是消遣不是正餐），economy.treats 让为 fun 出门认它（买得起时）。★#40：N=12 12/12、N=16 12/12、留出 18/18（零假设臂 12/12 · 12/12 · 16/18）；BackendGate seeds 1-24 0 红。"
     ]
   },
   "random_full": {
     "days8_n12": {
       "1": {
-        "digest": "3080298788",
-        "event_digest": "3362490947204387838",
-        "landed": 745
+        "digest": "3448323268",
+        "event_digest": "6979398560731876566",
+        "landed": 738
       },
       "2": {
-        "digest": "1457082589",
-        "event_digest": "417894952634135790",
-        "landed": 735
+        "digest": "4126864977",
+        "event_digest": "1956193056164507417",
+        "landed": 737
       },
       "3": {
-        "digest": "1707911891",
-        "event_digest": "6210300775532116390",
-        "landed": 718
+        "digest": "3123250609",
+        "event_digest": "2103334317020169711",
+        "landed": 750
       },
       "4": {
-        "digest": "4231504466",
-        "event_digest": "3160313781493916216",
-        "landed": 731
+        "digest": "326717863",
+        "event_digest": "1663395813661969656",
+        "landed": 770
       },
       "_scale": {
-        "max_n": 43,
-        "n_dec": 2929,
-        "over_cap": 69,
-        "over_old": 7
+        "max_n": 44,
+        "n_dec": 2995,
+        "over_cap": 102,
+        "over_old": 10
       }
     }
   }

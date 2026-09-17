@@ -18,6 +18,8 @@
     "arrears_work_urgency": 0.0,
     "_urgency_why": "欠着账 ⇒ 零工（不在班时）再加这么多分。机制保留、默认 0：6.0 时 N=16 #40 10/12（seed 5 柴薪断供 ⇒ 屋瓦产不出，满足率 0.46）；设 0 后 N=12 12/12、N=16 见 docs/196 §四。欠账本身的动机仍在：既有 poor_line 的 work_urgency 对穷人一直开着。另一个被否掉的替代：柴薪进口 4→8/3 天 ⇒ N=16 仍红 seed 5、6。"
   },
+  "treats": ["吃点心"],
+  "_treats_why": "docs/212 甜点（用户「creperie's product provide more fun but less hunger」）：吃点心主需求改为 fun 30、副需求 hunger +20 ⇒ 它不再跟正经饭比饱（也就不进饥饿本能）；为 fun 出门时与收费卖家同等对待，但只在兜里够 3 钱时算。删本键 ⇒ 为 fun 出门不认它。",
   "snacks": {
     "_doc": "docs/210 干粮（用户 2026-09-16「market could sell some package and convenient food, like can, snacks, delis, bread etc for a favorable price, and resident could carry them as an outlet for food」）：集市粮摊上 买干粮 2 钱得 buy_qty 份（经 consume 扣镇库一份口粮、经 transfer 付钱 ⇒ #34/#38 不改），身上最多揣 cap 份；hunger 跌破 eat_line 时当场吃一份、补 amount（边走边吃，不建 option）。empty_urgency=身上没干粮时去买的额外拉力——没有它一次都没人买（同一个摊上采买 40、任何一顿饭 55-70 的 amount 都压过它）。删本段 ⇒ 无干粮。",
     "buy_action": "买干粮",
