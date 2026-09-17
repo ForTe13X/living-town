@@ -4844,7 +4844,7 @@
     {
      "action": "吃饭",
      "need": "hunger",
-     "amount": 55,
+     "amount": 50,
      "duration": 18,
      "seated": true,
      "seats": 2,
@@ -4852,6 +4852,10 @@
       "comfort": 3,
       "k": 0.1,
       "floor": 0.6
+     },
+     "also": {
+      "need": "fun",
+      "amount": 3
      }
     }
    ]

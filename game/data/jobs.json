@@ -5,7 +5,7 @@
     "ben":  { "title": "木匠",   "action": "做活", "wage": 5, "shift": ["day", "dusk"], "on_site": true },
     "dan":  { "title": "理发师", "action": "剃头", "wage": 3, "shift": ["day", "dusk"], "on_site": true },
     "lin":  { "title": "厨师",   "action": "掌勺", "wage": 4, "shift": ["day", "dusk"], "on_site": true },
-    "hai":  { "title": "渔夫",   "action": "做活", "wage": 4, "shift": ["dawn", "day"], "on_site": false },
+    "hai":  { "title": "渔夫",   "action": "做活", "wage": 4, "shift": ["dawn", "day"], "on_site": true },
     "shu":  { "title": "店主",   "action": "看店", "wage": 3, "shift": ["day", "dusk"], "on_site": true },
     "coco": { "title": "酒店掌柜", "action": "打理", "wage": 3, "shift": ["day", "dusk"], "on_site": true },
     "tao":  { "title": "码头工", "action": "卸货", "wage": 4, "shift": ["dawn", "day"], "affiliate": true, "on_site": true },

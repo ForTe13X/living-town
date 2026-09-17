@@ -3455,10 +3455,15 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 			#   先来先坐：座位先让给排得更早的人（同 tick 到的按 agents 序），新来的不能插队（coco N=16 day 1 在灶台边
 			#   等了 30 tick 饿穿，就是因为每空出一个座都被刚到的人抢走）。
 			var seat_adv := _adv_for_action(target_obj, String(opt.get("action", "")))
-			if not _seat_free(target_obj, seat_adv, String(ag["id"]), opt):
+			# docs/211：已经饿到 PREEMPT_CRISIS 以下的人不再排队——站在柜台边吃（外带），不占座。
+			#   排队是体面，不是饿死人的理由：试过"近处有空座就换过去"，实测随机后端会在满座灶台与空座之间来回挑，
+			#   排队时间每轮清零（BackendGate seed 1 触底 13 tick、N=16 seed 9 硬 #01）。只有这一条能让【排队】结构上
+			#   不再是饿穿通道；其余人（不饿到这一步的）照旧满座不开吃。
+			if _min_need(ag) >= PREEMPT_CRISIS and not _seat_free(target_obj, seat_adv, String(ag["id"]), opt):
 				if not opt.has("queued_at"):
 					opt["queued_at"] = tick_no
-				elif tick_no - int(opt["queued_at"]) > int(seat_adv.get("queue_tolerance", _w("queue_tolerance", 1000000.0))) 						and _min_need(ag) >= SURVIVAL_GATE:
+				elif tick_no - int(opt["queued_at"]) > int(seat_adv.get("queue_tolerance", _w("queue_tolerance", 1000000.0))) \
+						and _min_need(ag) >= SURVIVAL_GATE:
 					ag["option"] = null
 				emit_signal("agent_changed", ag["id"])
 				return
@@ -3888,7 +3893,7 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 			# 若仍按门口估、仍按 amount 比，最近的那口灶根本进不了候选，后面的本能过滤也就无从挑起。
 			# 实测（BackendGate K=2 seed 1）：酒店掌柜 coco hunger 22 从酒店出门，先是门口估（全镇的饭一样近），
 			# 改成真实距离后又被 amount 压住（馆子 70 × 急迫 > 咖啡馆 55，多走 35 格只扣 14 分）——两次都去了 58 格外的餐馆，触底。
-			d = int(_walk_cost(ag, {"target": String(id)}))
+			d = int(_walk_cost(ag, {"target": String(id), "action": act}) + _full_seat_cost({"target": String(id), "action": act}))
 		var pen: float = _w("obj_dist_penalty", 0.4) * (0.5 if is_visit else 1.0)
 		var score := urg * (float(amt) / 60.0) - float(d) * pen + (CAFE_VISIT_BONUS if is_visit else 0.0) + _company_pull(o, best_adv, String(ag["id"]))   # docs/209
 		if instinct:
@@ -6108,15 +6113,33 @@ func _hunger_instinct(ag: Dictionary, cands: Array) -> Array:
 	var costs: Array = []
 	var best := INF
 	for c in kept:
-		var w := _walk_cost(ag, c)
+		var w := _walk_cost(ag, c) + _full_seat_cost(c)
 		costs.append(w)
 		best = minf(best, w)
 	var slack := float(hi.get("slack", 10.0))
 	var near: Array = []
+	var near_free: Array = []
 	for i in kept.size():
 		if float(costs[i]) <= best + slack:
 			near.append(kept[i])
-	return near
+			if _full_seat_cost(kept[i]) <= 0.0:
+				near_free.append(kept[i])
+	# docs/211：近处有空座 ⇒ 满座的那几张不留。否则"满座多算 seat_detour 格"仍可能落在 slack 以内，
+	# 随机后端照样挑回满座的灶台——实测（BackendGate random(full) seed 6）铁牛在灶台边【离开—重选同一张—又到】
+	# 每 3 tick 一轮，排队时间每轮清零，触底 5 tick。
+	return near_free if not near_free.is_empty() else near
+
+## docs/211：饥饿本能里，满座的桌子按【多走 seat_detour 格】计（缺键 ⇒ 0 ⇒ 与 docs/210 一致）。
+func _full_seat_cost(c: Dictionary) -> float:
+	var det := _w("seat_detour", 0.0)
+	if det <= 0.0:
+		return 0.0
+	var tgt := String(c.get("target", ""))
+	if not world["objects"].has(tgt):
+		return 0.0
+	var o: Dictionary = world["objects"][tgt]
+	var adv := _adv_for_action(o, String(c.get("action", "")))
+	return 0.0 if _seat_free(o, adv, "") else det
 
 ## docs/210：到一个候选的【真实步行距离】估计——逐跳走 portal（到本层门口 + 过门成本×3 + 下一层从门到下一个门…），
 ## 最后加上目标平面里从门到对象的那一段。只给饥饿本能用（见上）。目标不明 ⇒ 按 0（不因估不出而被排除）。
