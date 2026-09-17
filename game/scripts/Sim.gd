@@ -3801,7 +3801,9 @@ func _journey_candidates(ag: Dictionary) -> Array:
 		# (A2b) docs/201 P3b：为 fun 出门，但【只认有人看店的收费店】（逛店）。A2 把 fun 摘掉是因为免费的赏画/弹琴
 		#   抢走了工位的 fun；收费店不一样——要花钱（luxury 买不起就不开）、店主不在店里就不开，是一笔真实的取舍。
 		#   没有 luxury 卖家的数据 ⇒ vendor_only 找不到任何广告 ⇒ 空 ⇒ 不多出候选。
-		if 100.0 - float(ag["needs"].get("fun", 100.0)) >= VENUE_URGE:
+		# docs/213：馋了也算一条出门的理由——平时要 fun 掉到 55 以下才为它出门（VENUE_URGE 45），
+		#   而这镇上乐子大半来自上工、fun 常年 ~80 ⇒ 不开这道口子，甜点铺永远等不到人（docs/212 §二·3）。
+		if 100.0 - float(ag["needs"].get("fun", 100.0)) >= VENUE_URGE or _craving_on(ag):
 			var fj := _best_satisfier_journey(ag, "fun", aspace, afloor, home_space, false, _venue_spaces(), "", true)
 			if not fj.is_empty():
 				out.append(fj)
@@ -3899,6 +3901,8 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 		var score := urg * (float(amt) / 60.0) - float(d) * pen + (CAFE_VISIT_BONUS if is_visit else 0.0) + _company_pull(o, best_adv, String(ag["id"]))   # docs/209
 		if instinct:
 			score = -float(d)                                    # docs/210：本能 = 最近的一口正经饭
+		else:
+			score += _craving_pull(ag, act)                       # docs/213：馋了才值得专门跑一趟
 		if not _seat_free(o, best_adv, String(ag["id"])):
 			score -= _w("seat_full_penalty", 0.0)                # docs/210：满座扣分、不排除
 		if score > best_score:
@@ -4409,6 +4413,7 @@ func _object_candidates(ag: Dictionary) -> Array:
 				score += float((economy["pantry"] as Dictionary).get("empty_urgency", 0.0))
 			# docs/210：身上没干粮 ⇒ 买干粮多一截拉力。没有它实测【一次都没人买】：同一个摊上采买(40)与任何一顿饭(55-70)
 			#   的 amount 都压过买干粮(15)，而揣干粮的价值（将来走到半路不挨饿）不在 amount 里。
+			score += _craving_pull(ag, action)      # docs/213：今天下午想吃点甜的
 			if String(adv.get("pantry", "")) == "snack" and int(ag.get("snacks", 0)) <= 0:
 				score += float((economy["snacks"] as Dictionary).get("empty_urgency", 0.0))
 			var cand := {
@@ -6063,6 +6068,36 @@ func _arrears_cap() -> int:
 	return int((economy.get("bills", {}) as Dictionary).get("arrears_cap", 1 << 30))
 
 ## docs/197 家当 / 休息日的数据门（缺段即关）。
+## docs/213 嘴馋（用户 2026-09-17「add dessert cravings」）：economy.cravings =
+##   {actions:[…], window:[lo,hi] 一天里的时段（0-1）, every_days:N, pull:分数}。
+##   哪天馋按 (day + fnv1a32(id)) % every_days == 0 错开——不是全镇同一天想吃甜的，也不抽 RNG。
+##   只在【时段窗口内】给分，且只加不减 ⇒ 不威胁生存打分；缺 cravings 键 ⇒ 恒 0.0 ⇒ 逐字节回到今天。
+## ★为什么需要它（docs/212 §二·3 量出来的）：店搬到镇中心、甜点改成消遣之后仍然一个月只有几次客
+##   —— 全镇平均 fun 常年 ~80（乐子大半来自上工），几乎没人闲到"为了乐子出门"。位置不是瓶颈，【想吃】才是。
+func _craving_pull(ag: Dictionary, action: String) -> float:
+	if action == "" or not _craving_on(ag):
+		return 0.0
+	var cfg: Dictionary = economy["cravings"]
+	if not (action in _as_arr(cfg.get("actions", []))):
+		return 0.0
+	return float(cfg.get("pull", 0.0))
+
+## 这个人此刻馋不馋（与具体哪件甜点无关）：时段窗口内 + 今天轮到他。缺 cravings ⇒ false。
+func _craving_on(ag: Dictionary) -> bool:
+	if not _econ_on() or ag.get("is_player", false):
+		return false
+	var cv = economy.get("cravings")
+	if not (cv is Dictionary):
+		return false
+	var cfg: Dictionary = cv
+	var win: Array = _as_arr(cfg.get("window", []))
+	if win.size() == 2:
+		var tod := time_of_day()
+		if tod < float(win[0]) or tod >= float(win[1]):
+			return false
+	var every := int(cfg.get("every_days", 1))
+	return every <= 1 or (day + int(fnv1a32(String(ag.get("id", ""))))) % every == 0
+
 ## docs/212 甜点（用户 2026-09-16「creperie's product provide more fun and enjoyment but less hunger」）：
 ## economy.treats 里的动作是【收钱的消遣】——价钱写在 economy.prices（没有卖家岗位），为 fun 出门时与 luxury 卖家同等对待，
 ## 但只在兜里的钱够这一份时才算（甜点不是生存动作，不走"付不起照吃"）。缺 treats 键 ⇒ 恒 false ⇒ 与今天一样。
