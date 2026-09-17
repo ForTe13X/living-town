@@ -1387,11 +1387,11 @@
      "advertises": [
       {
        "action": "吃点心",
-       "need": "hunger",
-       "amount": 20,
+       "need": "fun",
+       "amount": 30,
        "duration": 12,
        "also": {
-        "need": "fun",
+        "need": "hunger",
         "amount": 20
        },
        "company": true,
@@ -1415,11 +1415,11 @@
      "advertises": [
       {
        "action": "吃点心",
-       "need": "hunger",
-       "amount": 20,
+       "need": "fun",
+       "amount": 30,
        "duration": 12,
        "also": {
-        "need": "fun",
+        "need": "hunger",
         "amount": 20
        },
        "company": true,

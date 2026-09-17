@@ -5029,16 +5029,16 @@
    "id": "lot_05_creperie",
    "sprite": "creperie",
    "pos": [
-    50,
-    6
+    34,
+    16
    ],
    "footprint": [
     3,
     3
    ],
    "door": [
-    51,
-    8
+    35,
+    18
    ]
   },
   {
@@ -5293,8 +5293,8 @@
    "id": "lot_26_ochre",
    "sprite": "ochre",
    "pos": [
-    34,
-    16
+    50,
+    6
    ],
    "footprint": [
     2,

@@ -3877,8 +3877,9 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 				continue                                        # F1：跨平面行程也要过工位专属/市集时段两道门（否则会承诺跑一趟去一个关着的摊）
 			if job_only != "" and String(adv.get("job", "")) != job_only:
 				continue                                        # docs/200 A3：上工行程只认本人职位的工位
-			if vendor_only and not bool(_vendor_for(String(adv.get("action", ""))).get("luxury", false)):
-				continue                                        # docs/201 A2b：为 fun 出门只认收费店
+			if vendor_only and not bool(_vendor_for(String(adv.get("action", ""))).get("luxury", false)) \
+					and not _treat_affordable(ag, String(adv.get("action", ""))):
+				continue                                        # docs/201 A2b：为 fun 出门只认收费店（docs/212：也认 economy.treats 里买得起的甜点）
 			if String(adv.get("need", "")) == nid and int(adv.get("amount", 0)) > amt:
 				amt = int(adv.get("amount", 0)); dur = int(adv.get("duration", 0)); act = String(adv.get("action", "")); best_adv = adv
 		if amt <= 0:
@@ -6062,6 +6063,14 @@ func _arrears_cap() -> int:
 	return int((economy.get("bills", {}) as Dictionary).get("arrears_cap", 1 << 30))
 
 ## docs/197 家当 / 休息日的数据门（缺段即关）。
+## docs/212 甜点（用户 2026-09-16「creperie's product provide more fun and enjoyment but less hunger」）：
+## economy.treats 里的动作是【收钱的消遣】——价钱写在 economy.prices（没有卖家岗位），为 fun 出门时与 luxury 卖家同等对待，
+## 但只在兜里的钱够这一份时才算（甜点不是生存动作，不走"付不起照吃"）。缺 treats 键 ⇒ 恒 false ⇒ 与今天一样。
+func _treat_affordable(ag: Dictionary, action: String) -> bool:
+	if not _econ_on() or not (action in _as_arr(economy.get("treats", []))):
+		return false
+	return _coin_of(String(ag["id"])) >= int(economy.get("prices", {}).get(action, 0))
+
 func _snack_on() -> bool:
 	return _econ_on() and economy.get("snacks", {}) is Dictionary and not (economy.get("snacks", {}) as Dictionary).is_empty()
 
