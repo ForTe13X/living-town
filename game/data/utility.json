@@ -13,6 +13,10 @@
 
   "_score": "候选打分权重（越高越优先发起/前往）。",
   "obj_dist_penalty": 0.4,
+  "_company": "docs/209 分层饭食（用户 2026-09-16「residents most likely gain fun with friends and more familiar acquaintance than strangers」）：广告位带 company:true 时，同桌每个熟人（familiarity ≥ company_friend_line）加 company_pull 分、生人只算 company_stranger_w 个人，上限是该广告位的 seats（馆子 6、可丽饼店 3）。咖啡馆【不】设 company：它是全镇最常去的地方，给它加『有人一起』会自我强化（实测 N=16 #40 6/12，与 docs/207 按区人口打分的羊群同一种塌法）。删这三个键 ⇒ 恒 0。",
+  "company_pull": 5.0,
+  "company_friend_line": 8.0,
+  "company_stranger_w": 0.25,
 
   "_obj_survival_pull": "Y1(2026-08-02) 生存线以下把人推向【物件】那条社交出路（docs/96）。机制与三道门写在 Sim._survival_pull 抬头。缺键/为 0 ⇒ score+0.0 ⇒ 逐字节回到 2026-08-02 之前（已用 N=40 seeds 1-12 的 12/12 digest 验过）。★判据一律用【连续余量】对着【零假设臂】判，不看红绿：X1 实测把与社交毫无关系的 obj_dist_penalty 0.400→0.401 同样能把两颗硬红都消掉（2/60 的红基准率下，'红没了'对任何足够大的扰动都成立）。",
   "_obj_survival_pull_dose": "剂量-响应（N=40，seeds 1-12 + 49-60 共 24 局 × 60 天，backend=null；每档与【零假设臂 obj_dist_penalty=0.401】逐 seed 配对，报『最长 social<GATE 连续段 变好/变坏』与 social 全局地板中位）：0(基线) → 15/9 · 16.52 ·· 0.5 → 17/7 · 17.00 ·· 0.75 → 17/5 · 18.30 ·· **1.0 → 18/6 · 17.92** ·· 1.25 → 16/5 · 17.95 ·· 1.5 → 19/5 · 18.40 ·· 2.0 → 20/4 · 19.12 ·· 3.0 → 18/6 · 20.07 ·· 10.0 → 20/2 · 21.15。**收益侧单调、没有内点顶点** ⇒ 顶点由代价侧定：k≤1.5 时 N=12 seeds 1-12 逐字节不动（含逐 tick 链）、活性 25 类一类不动；k=2.0 起 seed 12 移动、aid +16.2%。而 N=12 上这一族问题本来就不存在（0/12 红、地板最小 22.35）⇒ 取平台 [0.5,1.5] 的中间值 1.0，不取边缘。零假设臂本身对基线是 10 好/14 坏——同量级的语义为零扰动在这条曲线上略偏【坏】。",
