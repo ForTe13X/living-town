@@ -30,35 +30,36 @@
       "2026-09-15 docs/204（194 §五 P4「移」，用户选定 镇公所 + 财政、不设新岗位）：P4a 广场南边的镇公所（原音乐亭的地，办事窗口/议事长椅/镇长桌，本片不设岗位）；夜结补贴（镇库低于 40 时大他者补到地板、每夜至多 20、至多它账上的钱）与税（上一天营收 10%，累计税 ≤ 累计补贴 + 20，#45 硬查）。救济窗口做了又撤回（docs/204 §二·3，连同它顶出的跨平面路程估值老 bug 一起挪到 P4b）；产出一个数都没动。S0 N=12 硬 12/12 · #40 12/12（留出 13-30 16/18）；4a N=16 硬 12/12 · #40 11/12；BackendGate 8/8；DetGate 四轨 16/16；ModelPathGate C 段随之移动。",
       "2026-09-16 P4b（docs/206）· 家门口那顿饭：production.stove_home 的 `家常饭` amount 55 → 60 ⇒ 世界轨迹【蓄意】移动（194 §五「P4 · 移」）。★改的是什么：出货树上只有 game/data/production.json 一个数（外加一条 `_p4b_why` 注释键）；Sim.gd 与 game/bench/ 的判据【一个字节没动】。★为什么必须动：stove_home[21,17] 与 cafe 的 stove_1[39,15] 原来 amount/duration 逐字相同（55/18）⇒ 连 amount 都不分胜负，只剩 `world.objects` 的入表次序（map.json 的 stove_1 先入表、打分取严格大于 ⇒ 恒赢）；而 _best_satisfier_journey 估跨平面路程时只算到【本层门口】（docs/204 §二·3 记下的老 bug）⇒ 人在屋里时两口灶同距 ⇒ 饿着的人路过 3 格外自家那张摆着自己口粮的桌子，横穿全镇去 20 多格外那口。逐 tick 实证：BackendGate random@K=2 seed 5，coco 在 hunger 19.5、食橱有 2 份口粮时承诺 40 tick 行程回家【睡觉】，到家 hunger 0.4，睡过去，硬 #01 饿穿 42 tick。★立的规矩：自家食橱那一顿严格压过花钱下馆子那一顿（不要钱、而且是自己的）。只在【屋里】改变选择——屋外路程本来就估得准，真的更近的灶照样赢。★剂量 60 而不是 56：两档都实测（docs/206 §二·2），56 把 N=12 门打到 11/12、60 保持 12/12。★三道 #40 门与 master【逐格同分】：N=12 1-12 12/12、留出 13-30 16/18、N=16 1-12 11/12，红的 seed 换了人（13-30 上 15/27 → 18/22；N=16 上 5 → 12）⇒ 轨迹真的动了，但供给没被推向任何一边。★BackendGate 一律按 seeds 1-12 × 两臂 = 24 局报【饿穿 need·tick 合计】而不只看红绿（docs/96 的纪律），并与零假设臂 obj_dist_penalty 0.400→0.401 同跑：master 1 红 / 42 tick（全在 seed 5）→ 出货档 2 红 / 5 tick（都在 seed 10，4 tick + 1 tick），本片追清楚的那处塌方归零。⚠️【诚实边界】零假设臂在这一格是 0 红 ⇒ **不能说它修好了 #01**，只能说把唯一一处机制被逐 tick 追清楚的 42 tick 塌方换成了两处几 tick 的小坑。⚠️ 另一条【记下但没动】：CI 的 CI_BG_SEEDS 默认 1-4，看不见 master 在 seed 5 上的这处硬 #01（用户 2026-09-16 定：先记下、暂不加宽，理由见 docs/206 §五）。★两版引擎改法（整条路估值 / pre-empt 余量）做完实测【全部撤回】，结构性发现写在 docs/206 §三：那条坏估值是【承重】的——人肯走远路去上工去买东西正因为它把远路算便宜了，改准之后 #40 掉到 9/12。★回滚 = 把这一个数改回 55。",
       "2026-09-16 P4c-2（docs/208）· 在班守岗 + 离店片刻店照开 ⇒ 世界轨迹【蓄意】移动（用户 2026-09-16「on-site work should be mandatory」「add more labors」「if cook only absent for a short period of time keep it operational, whole day leave make it close」）。★改的是什么：economy.work_discipline + jobs.on_site（在班只剩本职 + 吃/睡/洗）；招 fei 当跑堂（接手下馆子的 vendor、面包房一层加『堂口』）与半职泥瓦匠 qin（只上 day）；vendors[下馆子].venue_grace=60（Sim._mark_post_seen 记 work.post_seen）。另有两处【只在 backend≠null 分支】的修复（_horizon_ok 判跨平面 journey、_backend_floor 危机中救最先触底的 need）——它们不动金标路（修复前后 S0 chain/digest/event_digest 12/12 逐字相同），只移动 ModelPathGate 的 random_full 锚。★新代码 + master 数据 ⇒ 金标 12/12 逐字节一致（数据门控机检过）。★三道 #40：N=12 1-12 12/12（零假设臂 12/12）、N=16 1-12 12/12（零假设臂 11/12）、留出 13-30 18/18（master 12/12 · 11/12 · 16/18）。★BackendGate seeds 1-12：红 2/5 tick（master）→ 0/0；seeds 13-24（没追过）：2/31 → 0/0。餐馆营业（seed 1-3 × 30 天）4.3·0.7·1.4% → 10.0·12.0·10.8%。",
-      "2026-09-16 P4c-3（docs/209）· 分层饭食 ⇒ 世界轨迹【蓄意】移动（用户 2026-09-16「test the tiered restaurant model」）。★改的是什么：广告位新增 also{need,amount}（副需求，随饭逐 tick 进账）与 company/seats（同桌熟人加分、座位封顶）；下馆子 fun +8 / 6 座、吃点心 fun +2 / 3 座、家常饭 energy −8（下厨）；utility.company_pull 5 / company_friend_line 8 / company_stranger_w 0.25。咖啡馆故意不设 company（T2/T5 实测羊群，N=16 低至 6/12）。新代码 + master 数据 ⇒ 金标 12/12 逐字节一致。★三道 #40：N=12 12/12、N=16 11/12、留出 13-30 18/18（零假设臂 12/12 · 11/12 · 17/18）；BackendGate seeds 1-12 0 红。下馆子 diner·tick（seeds 1-6 × 30 天）零假设臂 5616 → 6535，同桌有熟人 104 → 229；逐 seed 4 升 2 降。"
+      "2026-09-16 P4c-3（docs/209）· 分层饭食 ⇒ 世界轨迹【蓄意】移动（用户 2026-09-16「test the tiered restaurant model」）。★改的是什么：广告位新增 also{need,amount}（副需求，随饭逐 tick 进账）与 company/seats（同桌熟人加分、座位封顶）；下馆子 fun +8 / 6 座、吃点心 fun +2 / 3 座、家常饭 energy −8（下厨）；utility.company_pull 5 / company_friend_line 8 / company_stranger_w 0.25。咖啡馆故意不设 company（T2/T5 实测羊群，N=16 低至 6/12）。新代码 + master 数据 ⇒ 金标 12/12 逐字节一致。★三道 #40：N=12 12/12、N=16 11/12、留出 13-30 18/18（零假设臂 12/12 · 11/12 · 17/18）；BackendGate seeds 1-12 0 红。下馆子 diner·tick（seeds 1-6 × 30 天）零假设臂 5616 → 6535，同桌有熟人 104 → 229；逐 seed 4 升 2 降。",
+      "2026-09-17 P4c-4（docs/210）· 座位/排队/拥挤 + 干粮 + 饥饿本能 + 供给重标定 ⇒ 世界轨迹【蓄意】移动（用户 2026-09-16 的一串设计）。★引擎：seated/seats 硬上限、先来先坐（opt.queued_at）、queue_tolerance、seat_full_penalty、crowd 只压 fun、economy.snacks（买干粮 揣身上、饿了当场吃）、economy.hunger_instinct（真实步行距离挑最近的正经饭）；全部缺键即关，新代码 + master 数据金标 12/12 一致。★重标定：木匠 on_site（柴薪瓶颈是他不上工，不是批量）；屋瓦 30→22、整洁 16→14、糕点 20→26、豆子 36→24、话本 6→1。★#40：N=12 11/12、N=16 12/12、留出 18/18（零假设臂 11/12 · 11/12 · 17/18）；BackendGate seeds 1-24 0 红。"
     ]
   },
   "random_full": {
     "days8_n12": {
       "1": {
-        "digest": "3374179732",
-        "event_digest": "8217726580098337424",
-        "landed": 722
+        "digest": "3041979141",
+        "event_digest": "6861515610737965923",
+        "landed": 747
       },
       "2": {
-        "digest": "1213659142",
-        "event_digest": "4820353102627035450",
-        "landed": 734
+        "digest": "1437910553",
+        "event_digest": "4582464926655539879",
+        "landed": 703
       },
       "3": {
-        "digest": "3636073877",
-        "event_digest": "9044926666165138023",
-        "landed": 709
+        "digest": "669849508",
+        "event_digest": "2363437888234852204",
+        "landed": 732
       },
       "4": {
-        "digest": "937525927",
-        "event_digest": "2692759300841539237",
-        "landed": 750
+        "digest": "2087657458",
+        "event_digest": "5659977149510614851",
+        "landed": 725
       },
       "_scale": {
-        "max_n": 47,
-        "n_dec": 2915,
-        "over_cap": 90,
+        "max_n": 45,
+        "n_dec": 2907,
+        "over_cap": 104,
         "over_old": 7
       }
     }
