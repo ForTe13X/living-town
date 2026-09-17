@@ -1044,6 +1044,8 @@ func start_new(p_seed: int = 12345) -> void:
 	# Wave 1b 经济：镇库注资 + 记录开局货币总量（守恒硬不变量基准）。缺 economy.json → 全为 0 零扰动。
 	town_coin = int(economy.get("town_start", 0)) if not economy.is_empty() else 0
 	_fisc_cache = {}                       # docs/204：财政累计是 event_log 的折叠，每局从空重扫
+	_diners_by_target = {}                 # docs/209：同桌名单是当前 tick 的纯函数，每局从空重建
+	_diners_tick = -1
 	# ★E2a BLOCKER-1（docs/154 §二.1）：external_coin 必须【per-run 重置】——镜像上一行 town_coin。
 	#   goto_tick(:1146) 反复调 start_new 重演；import 付费让 external_coin 局末非零，若不清零，
 	#   第二遍的残值会在下一行 econ_total0 = money_total() 里被计入基准 ⇒ 整局 money_total 位移、
@@ -2200,7 +2202,7 @@ const SAVE_MAGIC := "LTSAVE"
 const SAVE_SCHEMA_LEGACY := 1
 const SAVE_SCHEMA := 2
 const SAVE_RUNTIME_HANDLES := ["backend", "ext", "decision_sink"]
-const SAVE_LOAD_DENY := ["desire_cfg", "_venue_cache", "_indoor_job_cache", "_fisc_cache","_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected",
+const SAVE_LOAD_DENY := ["desire_cfg", "_venue_cache", "_indoor_job_cache", "_fisc_cache", "_diners_by_target", "_diners_tick", "_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected",
 	"controlled_id", "_tone_bonus", "loaded_meta"]   # docs/190 生活模式：附身/语气/档头都是 View 或瞬时态，不改存档形状（旧档照读）
 const SAVE_CURRENT_BLOB_KEYS := ["magic", "schema", "game_version", "saved_tick", "saved_day", "seed", "meta", "active_commit_ids", "state"]
 
@@ -3529,6 +3531,14 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 		var per := float(opt["amount"]) / float(opt["dur_total"])
 		var nid: String = opt["need"]
 		ag["needs"][nid] = clamp(float(ag["needs"][nid]) + per, 0.0, 100.0)
+		# docs/209 分层饭食（用户 2026-09-16）：广告位可带副需求 also{need,amount}，与主需求同速率逐 tick 进账。
+		# 馆子 fun 多、咖啡馆少、家常饭 energy 记负数（下厨费力气）。不进打分 urgency、不进 _adv_open 的门：
+		# 它是做完这件事的附带所得，不是选它的理由。缺 also 键 ⇒ 整段短路。
+		var also: Dictionary = _adv_also(target_obj, String(opt.get("action", "")))
+		if not also.is_empty():
+			var a_nid := String(also.get("need", ""))
+			if a_nid != "" and ag["needs"].has(a_nid):
+				ag["needs"][a_nid] = clamp(float(ag["needs"][a_nid]) + float(also.get("amount", 0)) / float(opt["dur_total"]), 0.0, 100.0)
 		opt["remaining"] = int(opt["remaining"]) - 1
 		if int(opt["remaining"]) <= 0:
 			# P1-b：完成卸货前再次走 exact commit。强制 option、旧存档或未来多工人竞争都不能绕过这道门。
@@ -3821,7 +3831,7 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 			continue
 		if nid in _home_needs(ag) and home_space != "town" and os != home_space:   # 居民的 energy/fun 只回家 Space
 			continue
-		var amt := 0; var dur := 0; var act := ""
+		var amt := 0; var dur := 0; var act := ""; var best_adv: Dictionary = {}   # docs/209：供 _company_pull
 		for adv in _as_arr(o.get("advertises", [])):
 			if not (adv is Dictionary):
 				continue
@@ -3832,7 +3842,7 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 			if vendor_only and not bool(_vendor_for(String(adv.get("action", ""))).get("luxury", false)):
 				continue                                        # docs/201 A2b：为 fun 出门只认收费店
 			if String(adv.get("need", "")) == nid and int(adv.get("amount", 0)) > amt:
-				amt = int(adv.get("amount", 0)); dur = int(adv.get("duration", 0)); act = String(adv.get("action", ""))
+				amt = int(adv.get("amount", 0)); dur = int(adv.get("duration", 0)); act = String(adv.get("action", "")); best_adv = adv
 		if amt <= 0:
 			continue
 		var hop := _route_next_hop(aspace, afloor, os, of, ag)
@@ -3840,7 +3850,7 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 			continue
 		var d := _manh(ag["pos"], hop["from_pos"]) + int(hop.get("cost", 1)) * 3   # 估路程：到本层 portal 口 + 过 portal 成本
 		var pen: float = _w("obj_dist_penalty", 0.4) * (0.5 if is_visit else 1.0)
-		var score := urg * (float(amt) / 60.0) - float(d) * pen + (CAFE_VISIT_BONUS if is_visit else 0.0)
+		var score := urg * (float(amt) / 60.0) - float(d) * pen + (CAFE_VISIT_BONUS if is_visit else 0.0) + _company_pull(o, best_adv, String(ag["id"]))   # docs/209
 		if score > best_score:
 			best_score = score
 			best = {"kind": "journey", "action": act, "target": String(id), "need": nid,
@@ -4315,7 +4325,7 @@ func _object_candidates(ag: Dictionary) -> Array:
 					if wp_applied:
 						spf /= work_pull_mult      # 除法是正确舍入的 ⇒ 逐位可复现（同 _stock_pull_mult 抬头）
 					benefit *= spf
-			var score := benefit - float(dist) * _w("obj_dist_penalty", 0.4) + _survival_pull(need_id, cur, min_need)
+			var score := benefit - float(dist) * _w("obj_dist_penalty", 0.4) + _survival_pull(need_id, cur, min_need) + _company_pull(o, adv, String(ag["id"]))   # docs/209：跟熟人一起吃
 			# Wave 1b 经济动机环：穷(coin<poor_line)时有薪动作加分 → 缺钱→去做活→挣了付饭钱(闭环)。
 			# 确定性、数据门控；只加分不减分 → 生存(urgency 主导)不受威胁；economy.json 缺失恒不触发。
 			# Wave 2a：工资经 _wage_for（本职在班=职位工资>零工价 → 班次时间自然被工作吸引；jobs 缺失≡旧查表）。
@@ -7477,6 +7487,69 @@ func _socially_reachable(a: Dictionary, b: Dictionary) -> bool:
 
 ## 同区其他 agent（用缓存 area，去掉 _area_at 的 areas 内循环；遍历仍按 agents 固定序 → 字节一致）。
 ## P3：先按平面(space,floor)门，再按 area——楼上楼下/店内店外互不"在场"。town 全同平面 → 与旧版一致。
+## docs/209：这件对象上这个动作的副需求 also{need,amount}。现查对象、不挂在 option 上——option 的形状被闭集/#46/存档
+## schema 三处盯着；照抄 _manifest_node_for_action "按 (对象, 动作) 现查广告位"的先例。缺键 ⇒ {}。
+func _adv_also(o: Dictionary, action: String) -> Dictionary:
+	if o.is_empty() or action == "":
+		return {}
+	for adv in _as_arr(o.get("advertises", [])):
+		if adv is Dictionary and String((adv as Dictionary).get("action", "")) == action:
+			var a = (adv as Dictionary).get("also")
+			return a if a is Dictionary else {}
+	return {}
+
+## docs/209：一条广告此刻值多少"有人一起吃"的分（用户 2026-09-16）：
+##   ① 熟人比生人值钱：familiarity ≥ company_friend_line 算 1 人，以下只算 company_stranger_w。这也是防羊群的主力——
+##      docs/207 第一版按【区人口】给分，把集市和馆子全吸干了（赶集 19 → 0）。
+##   ② 座位是店的属性：广告位上的 seats（咖啡馆挤、馆子摆得开席），缺键回落 company_cap。
+##   ③ utility.company_pull 缺键 / 为 0 ⇒ 恒 0.0 ⇒ 逐字节回到今天。
+func _company_pull(o: Dictionary, adv: Dictionary, self_id: String) -> float:
+	var k := _w("company_pull", 0.0)
+	if k <= 0.0 or not bool(adv.get("company", false)):
+		return 0.0
+	var seats := float(adv.get("seats", _w("company_cap", 3.0)))
+	if seats <= 0.0:
+		return 0.0
+	return k * minf(_diners_weight(String(o.get("id", "")), self_id), seats)
+
+## 同桌的人按熟识度折算之后值多少"个人"。只读 relationships。
+## ⚠ 性能：打分是每人 × 每候选跑的；docs/207 第一版直接遍历全部 agents，S0 一局跑不完 ⇒ target → 食客名单按 tick 缓存
+##   （进 SAVE_LOAD_DENY、start_new 清空），热路径上只剩这张桌子的食客数（常见 0-2）。
+var _diners_tick := -1
+var _diners_by_target := {}
+func _diners_weight(target_id: String, self_id: String) -> float:
+	if target_id == "":
+		return 0.0
+	if _diners_tick != tick_no:
+		_diners_by_target = {}
+		_diners_tick = tick_no
+		for o in agents:
+			var op = o.get("option")
+			if not (op is Dictionary):
+				continue
+			var tg := String((op as Dictionary).get("target", ""))
+			if tg == "":
+				continue
+			if not _diners_by_target.has(tg):
+				_diners_by_target[tg] = []
+			(_diners_by_target[tg] as Array).append(String(o["id"]))
+	var lst: Array = _diners_by_target.get(target_id, [])
+	if lst.is_empty():
+		return 0.0
+	var me := get_agent(self_id)
+	if me.is_empty():
+		return 0.0
+	var rel: Dictionary = me.get("relationships", {}) if me.get("relationships") is Dictionary else {}
+	var line := _w("company_friend_line", 8.0)
+	var sw := _w("company_stranger_w", 0.25)
+	var total := 0.0
+	for oid in lst:
+		if String(oid) == self_id:
+			continue
+		var fam := float((rel.get(String(oid), {}) as Dictionary).get("familiarity", 0.0))
+		total += 1.0 if fam >= line else sw
+	return total
+
 func _nearby_agents(ag: Dictionary) -> Array:
 	var my_area := String(ag.get("area", ""))
 	var out: Array = []

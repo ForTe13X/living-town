@@ -1195,7 +1195,13 @@
        "action": "下馆子",
        "need": "hunger",
        "amount": 70,
-       "duration": 20
+       "duration": 20,
+       "also": {
+        "need": "fun",
+        "amount": 8
+       },
+       "company": true,
+       "seats": 6
       }
      ]
     },
@@ -1211,7 +1217,13 @@
        "action": "下馆子",
        "need": "hunger",
        "amount": 70,
-       "duration": 20
+       "duration": 20,
+       "also": {
+        "need": "fun",
+        "amount": 8
+       },
+       "company": true,
+       "seats": 6
       }
      ]
     },
@@ -1303,7 +1315,13 @@
        "action": "吃点心",
        "need": "hunger",
        "amount": 30,
-       "duration": 12
+       "duration": 12,
+       "also": {
+        "need": "fun",
+        "amount": 2
+       },
+       "company": true,
+       "seats": 3
       }
      ]
     },
@@ -1319,7 +1337,13 @@
        "action": "吃点心",
        "need": "hunger",
        "amount": 30,
-       "duration": 12
+       "duration": 12,
+       "also": {
+        "need": "fun",
+        "amount": 2
+       },
+       "company": true,
+       "seats": 3
       }
      ]
     },
