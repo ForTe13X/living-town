@@ -1206,6 +1206,8 @@ func _make_agent(adef: Dictionary, personas: Dictionary) -> Dictionary:
 		ag["work"] = {"done": 0, "streak": 0, "absent": 0, "rep": 0}
 	if _pantry_on():
 		ag["pantry"] = 0                 # docs/197：自家食橱里的口粮份数（开局空，要出门买）
+	if _snack_on():
+		ag["snacks"] = int((economy["snacks"] as Dictionary).get("start", 0))   # docs/210：身上揣着的干粮份数（缺 economy.snacks ⇒ 不长这个键）
 	return ag
 
 func get_agent(id: String) -> Dictionary:
@@ -3201,10 +3203,13 @@ func tick() -> void:
 	elif lod and lod_near_cap > 0:
 		_compute_near_set()                          # 保守档 camera near_cap（bench-only）
 	var desire_on := _desire_on()
+	var snack_on := _snack_on()
 	for ag in agents:
 		_decay_needs(ag)
 		if desire_on:
 			_desire_tick(ag)                 # docs/187：紧跟 decay、先于决策 ⇒ 生存门读的是本 tick 衰减后的 need
+		if snack_on:
+			_snack_eat(ag)                   # docs/210：饿到线下、身上有干粮 ⇒ 边走边吃（先于决策）
 		_advance_agent(ag)
 	_mark_post_seen()                   # docs/208：卖家离店片刻店照开（缺 venue_grace 键 ⇒ 空转）
 	_resolve_commitments()              # 解算到场/爽约
@@ -3439,6 +3444,25 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 		# use、绝不迈上家具格。那个邻格由 A* 走到=保证可达(gen_town 审计每个家具≥1 可达邻格)→ 无饿穿零风险，
 		# 且比旧"踩上家具"早一格到达(需求更早满足、更安全)。同区邻格 → area 门控(社交/赴约)不变。
 		if _manh(ag["pos"], target_obj["pos"]) <= 1:
+			# docs/210（用户 2026-09-16「if cafe or restaurant were full, customer should wait, the meal certainly not be started
+			# without a table」）：到了桌边发现满座 ⇒ 站着等，不开吃；座位一空就坐下。等待不写新状态，每 tick 现数。
+			# ⚠ 第一版在 need < PREEMPT_CRISIS 时【不等了、去别处】并把满座桌从候选里拿掉：实测是饿死人的路——
+			#   yong 在灶台边 hunger 12.4 放弃，重选时没有饭可选，挑了去游船，回来已触底（N=16 6 个 seed 硬 #01）。
+			#   座位最多一顿饭（≤20 tick）就空，【站在饭旁边等】永远比【走开找下一顿】近。
+			#   用户 2026-09-16 又补一条「waiting in queue is not infinite, if passing a tolerance threshold customer would leave」：
+			#   排队从 opt.queued_at 起算，超过 queue_tolerance tick 就走（下 tick 重选；满座扣分会把他推向别处）。
+			#   ⚠ 例外：任一 need 已跌破 SURVIVAL_GATE ⇒ 不走——饭就在眼前，走开找下一顿正是上面那条死法。
+			#   先来先坐：座位先让给排得更早的人（同 tick 到的按 agents 序），新来的不能插队（coco N=16 day 1 在灶台边
+			#   等了 30 tick 饿穿，就是因为每空出一个座都被刚到的人抢走）。
+			var seat_adv := _adv_for_action(target_obj, String(opt.get("action", "")))
+			if not _seat_free(target_obj, seat_adv, String(ag["id"]), opt):
+				if not opt.has("queued_at"):
+					opt["queued_at"] = tick_no
+				elif tick_no - int(opt["queued_at"]) > int(seat_adv.get("queue_tolerance", _w("queue_tolerance", 1000000.0))) 						and _min_need(ag) >= SURVIVAL_GATE:
+					ag["option"] = null
+				emit_signal("agent_changed", ag["id"])
+				return
+			opt.erase("queued_at")
 			var manifest_node := String(opt.get("manifest_node", _manifest_node_for_action(target_obj, String(opt.get("action", "")))))
 			if manifest_node != "":
 				if not _cargo_option_eligible(ag, opt, manifest_node):
@@ -3447,7 +3471,7 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 			opt["phase"] = "use"
 			# docs/197 家当：买之前再验一次买得起（候选签发后钱可能变了）——买不起就不拿货，下 tick 重选。
 			var pantry_act := _pantry_act(String(opt["action"]))
-			if pantry_act == "buy" and _econ_on() \
+			if (pantry_act == "buy" or pantry_act == "snack") and _econ_on() \
 					and _coin_of(String(ag["id"])) < int(economy.get("prices", {}).get(String(opt["action"]), 0)):
 				ag["option"] = null
 				return
@@ -3508,7 +3532,10 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 						econ_stats["meals_free"] += 1      # 付不起照吃（meals_free）——商贩路同样继承这条红线
 						_hardship_scale(ag, opt, "unpaid", price)  # docs/196：照吃、照补满，饭钱记进欠费（赊账）
 				# docs/197 家当：买到了 ⇒ 口粮进食橱；在家吃 ⇒ 食橱少一份（候选只在有货时存在）。
-				if (pantry_act == "buy" or pantry_act == "relief") and not short:   # docs/204：领到的救济同样进食橱
+				if pantry_act == "snack" and not short:
+					var scf: Dictionary = economy["snacks"]
+					ag["snacks"] = mini(int(scf.get("cap", 3)), int(ag.get("snacks", 0)) + int(scf.get("buy_qty", 1)))
+				elif (pantry_act == "buy" or pantry_act == "relief") and not short:   # docs/204：领到的救济同样进食橱
 					var pcap := int((economy["pantry"] as Dictionary).get("cap", 6))
 					ag["pantry"] = mini(pcap, int(ag.get("pantry", 0)) + int((economy["pantry"] as Dictionary).get("buy_qty", 1)))
 				elif pantry_act == "eat":
@@ -3530,6 +3557,9 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 				return
 		var per := float(opt["amount"]) / float(opt["dur_total"])
 		var nid: String = opt["need"]
+		var crowd_m := _crowd_mult(target_obj, _adv_for_action(target_obj, String(opt.get("action", ""))))   # docs/210
+		if nid == "fun" and per > 0.0:
+			per *= crowd_m
 		ag["needs"][nid] = clamp(float(ag["needs"][nid]) + per, 0.0, 100.0)
 		# docs/209 分层饭食（用户 2026-09-16）：广告位可带副需求 also{need,amount}，与主需求同速率逐 tick 进账。
 		# 馆子 fun 多、咖啡馆少、家常饭 energy 记负数（下厨费力气）。不进打分 urgency、不进 _adv_open 的门：
@@ -3538,7 +3568,10 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 		if not also.is_empty():
 			var a_nid := String(also.get("need", ""))
 			if a_nid != "" and ag["needs"].has(a_nid):
-				ag["needs"][a_nid] = clamp(float(ag["needs"][a_nid]) + float(also.get("amount", 0)) / float(opt["dur_total"]), 0.0, 100.0)
+				var a_per := float(also.get("amount", 0)) / float(opt["dur_total"])
+				if a_nid == "fun" and a_per > 0.0:
+					a_per *= crowd_m
+				ag["needs"][a_nid] = clamp(float(ag["needs"][a_nid]) + a_per, 0.0, 100.0)
 		opt["remaining"] = int(opt["remaining"]) - 1
 		if int(opt["remaining"]) <= 0:
 			# P1-b：完成卸货前再次走 exact commit。强制 option、旧存档或未来多工人竞争都不能绕过这道门。
@@ -3676,7 +3709,7 @@ func agent_candidates(ag: Dictionary) -> Array:
 		out.append_array(ext.candidates(self, ag))   # 注册的 CandidateProvider 追加（排在内建之后，不改内建枚举序 → 回放安全）
 	if cand_permute == 3:
 		out = _permute_cands(out, _aid(ag))          # 仅测试用（默认 off）：连枚举出口都打乱，验证顺序无关
-	return _discipline(ag, out)
+	return _hunger_instinct(ag, _discipline(ag, out))
 
 ## docs/208 P4c-2 在班守岗（用户 2026-09-16：「on-site and disciplinary work should be mandatory」
 ## 「there must be a hard rule and discipline for work」）。是【规矩】不是【加分】：加分在跟需求的 urgency 抢分，
@@ -3849,8 +3882,19 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 		if hop.is_empty():
 			continue
 		var d := _manh(ag["pos"], hop["from_pos"]) + int(hop.get("cost", 1)) * 3   # 估路程：到本层 portal 口 + 过 portal 成本
+		var instinct := nid == "hunger" and _instinct_active(ag)
+		if instinct:
+			# docs/210：饿到本能线下，跨平面找饭按【真实步行距离】挑【最近的】——这里每个 need 只出一条最好的行程，
+			# 若仍按门口估、仍按 amount 比，最近的那口灶根本进不了候选，后面的本能过滤也就无从挑起。
+			# 实测（BackendGate K=2 seed 1）：酒店掌柜 coco hunger 22 从酒店出门，先是门口估（全镇的饭一样近），
+			# 改成真实距离后又被 amount 压住（馆子 70 × 急迫 > 咖啡馆 55，多走 35 格只扣 14 分）——两次都去了 58 格外的餐馆，触底。
+			d = int(_walk_cost(ag, {"target": String(id)}))
 		var pen: float = _w("obj_dist_penalty", 0.4) * (0.5 if is_visit else 1.0)
 		var score := urg * (float(amt) / 60.0) - float(d) * pen + (CAFE_VISIT_BONUS if is_visit else 0.0) + _company_pull(o, best_adv, String(ag["id"]))   # docs/209
+		if instinct:
+			score = -float(d)                                    # docs/210：本能 = 最近的一口正经饭
+		if not _seat_free(o, best_adv, String(ag["id"])):
+			score -= _w("seat_full_penalty", 0.0)                # docs/210：满座扣分、不排除
 		if score > best_score:
 			best_score = score
 			best = {"kind": "journey", "action": act, "target": String(id), "need": nid,
@@ -3885,6 +3929,17 @@ func _adv_open(ag: Dictionary, adv: Dictionary) -> bool:
 			return false                       # 非班次/无可提交 cargo ⇒ 卸货机会不存在（不是做完再假发工资）
 	# docs/197 家当：pantry=eat 只在自家食橱有货时开；pantry=buy 只在买得起且食橱放得下时开（不能白拿货）。
 	var pk := String(adv.get("pantry", ""))
+	# docs/210 干粮（用户 2026-09-16「market could sell some package and convenient food … resident could carry them」）：
+	# pantry=snack 只在揣得下、买得起时开。与食橱是两本账（ag.snacks / ag.pantry）。
+	if pk == "snack":
+		if not _snack_on() or not _pays_bills(ag):
+			return false
+		var sc: Dictionary = economy["snacks"]
+		if int(ag.get("snacks", 0)) + int(sc.get("buy_qty", 1)) > int(sc.get("cap", 3)):
+			return false
+		if _coin_of(String(ag["id"])) < int(economy.get("prices", {}).get(String(adv.get("action", "")), 0)):
+			return false
+		pk = ""
 	if pk != "":
 		if not _pantry_on() or not _pays_bills(ag):
 			return false                       # 外来 affiliate / 玩家没有本镇的食橱
@@ -4264,6 +4319,8 @@ func _object_candidates(ag: Dictionary) -> Array:
 				continue
 			var dist := absi(ag["pos"].x - o["pos"].x) + absi(ag["pos"].y - o["pos"].y)
 			var benefit := urgency * (float(amount) / 60.0)
+			if need_id == "fun":
+				benefit *= _crowd_mult(o, adv)          # docs/210：挤的地方玩得没那么开心（只压 fun，不压吃饱睡足）
 			if rhythm_on:
 				benefit *= _phase_pref(need_id, tod)      # 只缩放收益项、不动距离惩罚；生存路径不乘(上门控)
 			if wx_on:
@@ -4326,6 +4383,8 @@ func _object_candidates(ag: Dictionary) -> Array:
 						spf /= work_pull_mult      # 除法是正确舍入的 ⇒ 逐位可复现（同 _stock_pull_mult 抬头）
 					benefit *= spf
 			var score := benefit - float(dist) * _w("obj_dist_penalty", 0.4) + _survival_pull(need_id, cur, min_need) + _company_pull(o, adv, String(ag["id"]))   # docs/209：跟熟人一起吃
+			if not _seat_free(o, adv, String(ag["id"])):
+				score -= _w("seat_full_penalty", 0.0)   # docs/210：满座照样能选（饿的人宁可去等），只是要等 ⇒ 扣分
 			# Wave 1b 经济动机环：穷(coin<poor_line)时有薪动作加分 → 缺钱→去做活→挣了付饭钱(闭环)。
 			# 确定性、数据门控；只加分不减分 → 生存(urgency 主导)不受威胁；economy.json 缺失恒不触发。
 			# Wave 2a：工资经 _wage_for（本职在班=职位工资>零工价 → 班次时间自然被工作吸引；jobs 缺失≡旧查表）。
@@ -4342,6 +4401,10 @@ func _object_candidates(ag: Dictionary) -> Array:
 			# docs/197：食橱空 ⇒ 去货架采买多一截拉力（"家里没粮了"）。只加不减；候选只在买得起时存在（_adv_open）。
 			if String(adv.get("pantry", "")) in ["buy", "relief"] and int(ag.get("pantry", 0)) <= 0:
 				score += float((economy["pantry"] as Dictionary).get("empty_urgency", 0.0))
+			# docs/210：身上没干粮 ⇒ 买干粮多一截拉力。没有它实测【一次都没人买】：同一个摊上采买(40)与任何一顿饭(55-70)
+			#   的 amount 都压过买干粮(15)，而揣干粮的价值（将来走到半路不挨饿）不在 amount 里。
+			if String(adv.get("pantry", "")) == "snack" and int(ag.get("snacks", 0)) <= 0:
+				score += float((economy["snacks"] as Dictionary).get("empty_urgency", 0.0))
 			var cand := {
 				"kind": "object", "action": action, "target": id, "need": need_id,
 				"amount": amount, "dur_total": duration,
@@ -5994,6 +6057,91 @@ func _arrears_cap() -> int:
 	return int((economy.get("bills", {}) as Dictionary).get("arrears_cap", 1 << 30))
 
 ## docs/197 家当 / 休息日的数据门（缺段即关）。
+func _snack_on() -> bool:
+	return _econ_on() and economy.get("snacks", {}) is Dictionary and not (economy.get("snacks", {}) as Dictionary).is_empty()
+
+## docs/210 干粮：hunger 跌破 eat_line、身上有干粮、此刻不是正坐着吃一顿 ⇒ 当场吃一份（amount 一次到账）。
+## 不走候选、不建 option：边走边啃一口面包不是一个"去哪儿"的决定，也就不需要新的候选种类
+## （那会牵动闭集/后端/ModelPathGate 的编码）。玩家与附身角色不自动吃。钱货在【买】的时候已经走过 transfer/consume。
+func _snack_eat(ag: Dictionary) -> void:
+	var n := int(ag.get("snacks", 0))
+	if n <= 0 or ag.get("is_player", false) or _is_controlled(ag):
+		return
+	var sc: Dictionary = economy["snacks"]
+	if float(ag["needs"].get("hunger", 100.0)) >= float(sc.get("eat_line", 25.0)):
+		return
+	var op = ag.get("option")
+	if op is Dictionary and String((op as Dictionary).get("need", "")) == "hunger" and String((op as Dictionary).get("phase", "")) == "use":
+		return
+	ag["snacks"] = n - 1
+	ag["needs"]["hunger"] = clampf(float(ag["needs"]["hunger"]) + float(sc.get("amount", 30)), 0.0, 100.0)
+	ag["memory"].add("饿了，掏出揣着的%s垫了垫" % String(sc.get("label", "干粮")), 2, tick_no, ["food"])
+
+## docs/210 饥饿本能（用户 2026-09-16「if hunger below a certain threshold, the resident would have compulsive instinct to find
+## food within his close and available outlets, but not raw ingredients, at least decent food」）：
+## hunger < economy.hunger_instinct.line ⇒ 候选只剩【能直接吃的】hunger 候选（桌上的饭、自家食橱、买干粮），
+## 拿掉买生粮（pantry=buy）与领救济；一个不剩 ⇒ 退回全集。离得近的由打分里的距离惩罚挑。缺键 ⇒ 原样。
+func _instinct_active(ag: Dictionary) -> bool:
+	var hi = economy.get("hunger_instinct")
+	if not (hi is Dictionary) or ag.get("is_player", false) or _is_controlled(ag):
+		return false
+	return float(ag["needs"].get("hunger", 100.0)) < float((hi as Dictionary).get("line", 0.0))
+
+func _hunger_instinct(ag: Dictionary, cands: Array) -> Array:
+	if cands.is_empty() or not _instinct_active(ag):
+		return cands
+	var hi: Dictionary = economy["hunger_instinct"]
+	var kept: Array = []
+	for c in cands:
+		if not (c is Dictionary) or String((c as Dictionary).get("need", "")) != "hunger":
+			continue
+		var pa := _pantry_act(String((c as Dictionary).get("action", "")))
+		if pa == "buy" or pa == "relief":
+			continue
+		kept.append(c)
+	if kept.is_empty():
+		return cands
+	# 「close outlets」：按【真实步行距离】只留最近的那几处（最近 + slack 格以内）。
+	# ⚠ 不能交给打分里的距离惩罚：跨平面 journey 的打分只估到【本层门口】（docs/204/206 那条老 bug，它在平时是承重的，不能全局修），
+	#   人在屋里时全镇的饭都一样"近"。实测（BackendGate K=2 seed 1）：酒店掌柜 coco hunger 18 从酒店出发去 58 格外的餐馆，
+	#   到桌边触底；最近的咖啡馆灶台只有 23 格。本能只在饿的时候、只在饭之间比远近 ⇒ 平时的通勤打分一个字节不动。
+	var costs: Array = []
+	var best := INF
+	for c in kept:
+		var w := _walk_cost(ag, c)
+		costs.append(w)
+		best = minf(best, w)
+	var slack := float(hi.get("slack", 10.0))
+	var near: Array = []
+	for i in kept.size():
+		if float(costs[i]) <= best + slack:
+			near.append(kept[i])
+	return near
+
+## docs/210：到一个候选的【真实步行距离】估计——逐跳走 portal（到本层门口 + 过门成本×3 + 下一层从门到下一个门…），
+## 最后加上目标平面里从门到对象的那一段。只给饥饿本能用（见上）。目标不明 ⇒ 按 0（不因估不出而被排除）。
+func _walk_cost(ag: Dictionary, c: Dictionary) -> float:
+	var tgt := String(c.get("target", ""))
+	if not world["objects"].has(tgt):
+		return 0.0
+	var o: Dictionary = world["objects"][tgt]
+	var sp := String(ag.get("space", "town"))
+	var fl := String(ag.get("floor", "outdoor"))
+	var pos: Vector2i = ag["pos"]
+	var to_s := String(o.get("space", "town"))
+	var to_f := String(o.get("floor", "outdoor"))
+	var cost := 0.0
+	for _i in 8:
+		if sp == to_s and fl == to_f:
+			break
+		var hop := _route_next_hop(sp, fl, to_s, to_f, ag)
+		if hop.is_empty():
+			return INF
+		cost += float(_manh(pos, hop["from_pos"]) + int(hop.get("cost", 1)) * 3)
+		pos = hop["to_pos"]
+		sp = String(hop["to_space"]); fl = String(hop["to_floor"])
+	return cost + float(_manh(pos, o["pos"]))
+
 func _pantry_on() -> bool:
 	return _econ_on() and economy.get("pantry", {}) is Dictionary and not (economy.get("pantry", {}) as Dictionary).is_empty()
 
@@ -6010,6 +6158,8 @@ func _rest_day(aid: String, d: int) -> bool:
 
 ## 动作在家当里的角色："buy"（采买）/"eat"（家常饭）/""。
 func _pantry_act(action: String) -> String:
+	if _snack_on() and action == String((economy["snacks"] as Dictionary).get("buy_action", "")):
+		return "snack"                   # docs/210：买干粮（揣身上，不进食橱）
 	if not _pantry_on():
 		return ""
 	var pc: Dictionary = economy["pantry"]
@@ -7511,6 +7661,65 @@ func _company_pull(o: Dictionary, adv: Dictionary, self_id: String) -> float:
 	if seats <= 0.0:
 		return 0.0
 	return k * minf(_diners_weight(String(o.get("id", "")), self_id), seats)
+
+## docs/210：按 (对象, 动作) 现查广告位（同 _adv_also 的先例）。没有 ⇒ {}。
+func _adv_for_action(o: Dictionary, action: String) -> Dictionary:
+	if o.is_empty() or action == "":
+		return {}
+	for adv in _as_arr(o.get("advertises", [])):
+		if adv is Dictionary and String((adv as Dictionary).get("action", "")) == action:
+			return adv
+	return {}
+
+## docs/210 座位（用户 2026-09-16「cafe only small tables for one or two, restaurant's table at least 4 seats」）：
+## 广告位带 seated:true 时 seats 是【硬上限】——正在这张桌上吃（phase=use）的人数到了 seats 就满座。
+## 缺 seated 键 ⇒ 恒 true（seats 仍只是 _company_pull 的封顶，与 docs/209 一致）。现数、不缓存：人数 ≤16，而同 tick 里
+## 前面的人刚坐下、后面的人必须看得见（缓存会让同一 tick 多坐一个人）。
+## my_opt：到桌边的那个人自己的 option（带 queued_at 时只数【排在他前面】的人）；候选打分时不传 ⇒ 所有排队的人都算在前面。
+func _seat_free(o: Dictionary, adv: Dictionary, self_id: String, my_opt: Dictionary = {}) -> bool:
+	if not bool(adv.get("seated", false)):
+		return true
+	var seats := int(adv.get("seats", 0))
+	if seats <= 0:
+		return true
+	var oid := String(o.get("id", ""))
+	var my_q := int(my_opt.get("queued_at", -1))
+	var n := 0
+	var before_me := true
+	for g in agents:
+		if String(g["id"]) == self_id:
+			before_me = false
+			continue
+		var op = g.get("option")
+		if not (op is Dictionary) or String((op as Dictionary).get("target", "")) != oid:
+			continue
+		if String((op as Dictionary).get("phase", "")) == "use":
+			n += 1
+		elif (op as Dictionary).has("queued_at"):
+			var q := int((op as Dictionary)["queued_at"])
+			if my_q < 0 or q < my_q or (q == my_q and before_me):
+				n += 1                      # 排在我前面的人
+	return n < seats
+
+## docs/210 拥挤（用户 2026-09-16「if a facility is crowded, the utility could diminish a bit, less enjoyment」）：
+## 广告位带 crowd{comfort,k,floor}：同一处（室内 = 同 space/floor；镇上 = 同 area）的人数超过 comfort 之后，
+## 每多一人 fun 打 k 的折，最低 floor。只压 fun（吃饱、睡足不打折 ⇒ 不是新的饿穿通道）。缺 crowd ⇒ 1.0。
+func _crowd_mult(o: Dictionary, adv: Dictionary) -> float:
+	var cfg = adv.get("crowd")
+	if not (cfg is Dictionary):
+		return 1.0
+	var sp := String(o.get("space", "town"))
+	var fl := String(o.get("floor", "outdoor"))
+	var ar := String(o.get("area", ""))
+	var n := 0
+	for g in agents:
+		if sp != "town":
+			if String(g.get("space", "town")) == sp and String(g.get("floor", "outdoor")) == fl:
+				n += 1
+		elif String(g.get("space", "town")) == "town" and String(g.get("area", "")) == ar:
+			n += 1
+	var extra := maxi(0, n - int((cfg as Dictionary).get("comfort", 4)))
+	return clampf(1.0 - float((cfg as Dictionary).get("k", 0.1)) * float(extra), float((cfg as Dictionary).get("floor", 0.5)), 1.0)
 
 ## 同桌的人按熟识度折算之后值多少"个人"。只读 relationships。
 ## ⚠ 性能：打分是每人 × 每候选跑的；docs/207 第一版直接遍历全部 agents，S0 一局跑不完 ⇒ target → 食客名单按 tick 缓存

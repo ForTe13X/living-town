@@ -2,7 +2,7 @@
   "_doc": "Wave 1b 经济最小闭环（docs/15 §3）。缺此文件=经济关闭(引擎逐字节不变)。钱只造分化/戏剧不造饿死：付不起照吃(meals_free)。闭环：吃饭付费入镇库 → 做活镇库发薪。守恒=硬不变量#34(transfer 唯一通道)。",
   "start_coin": 12,
   "town_start": 60,
-  "prices": { "吃饭": 2, "采买": 4 },
+  "prices": { "吃饭": 2, "采买": 4, "买干粮": 2 },
   "wages":  { "做活": 3 },
   "poor_line": 6,
   "work_urgency": 8.0,
@@ -17,6 +17,21 @@
     "_every_why": "每 2 夜收一次。每夜收（1 币/人/夜）实测 seeds 1-3 × 60 天：12 人里 8-9 人欠费、平均欠 30 币，付不起的饭从 1369 顿涨到 2456 顿，做活反而从 459 次掉到 403 次、镇库从 74 堆到 162-190 —— 钱只是从居民兜里搬进了镇库，没有变成上工的动机。",
     "arrears_work_urgency": 0.0,
     "_urgency_why": "欠着账 ⇒ 零工（不在班时）再加这么多分。机制保留、默认 0：6.0 时 N=16 #40 10/12（seed 5 柴薪断供 ⇒ 屋瓦产不出，满足率 0.46）；设 0 后 N=12 12/12、N=16 见 docs/196 §四。欠账本身的动机仍在：既有 poor_line 的 work_urgency 对穷人一直开着。另一个被否掉的替代：柴薪进口 4→8/3 天 ⇒ N=16 仍红 seed 5、6。"
+  },
+  "snacks": {
+    "_doc": "docs/210 干粮（用户 2026-09-16「market could sell some package and convenient food, like can, snacks, delis, bread etc for a favorable price, and resident could carry them as an outlet for food」）：集市粮摊上 买干粮 2 钱得 buy_qty 份（经 consume 扣镇库一份口粮、经 transfer 付钱 ⇒ #34/#38 不改），身上最多揣 cap 份；hunger 跌破 eat_line 时当场吃一份、补 amount（边走边吃，不建 option）。empty_urgency=身上没干粮时去买的额外拉力——没有它一次都没人买（同一个摊上采买 40、任何一顿饭 55-70 的 amount 都压过它）。删本段 ⇒ 无干粮。",
+    "buy_action": "买干粮",
+    "start": 2,
+    "buy_qty": 2,
+    "cap": 3,
+    "eat_line": 25,
+    "amount": 30,
+    "label": "干粮",
+    "empty_urgency": 15.0
+  },
+  "hunger_instinct": {
+    "_doc": "docs/210 饥饿本能（用户 2026-09-16「if hunger below a certain threshold, the resident would have compulsive instinct to find food within his close and available outlets, but not raw ingredients at least decent food」）：hunger < line ⇒ 候选只剩能直接吃的饭（桌上的饭、自家食橱、买干粮），拿掉买生粮与领救济；一个不剩 ⇒ 退回全集。删本段 ⇒ 无本能。",
+    "line": 30
   },
   "hardship": {
     "_doc": "docs/196 P1a 困顿不挨饿（用户 2026-09-13 定）：没钱的后果只落在【这一次补给打折】上，从不阻断动作、从不改 need 上限。unpaid_pct=付不起饭钱时这顿饭的补给百分比；arrears_pct=欠着水电费时这些动作的补给百分比（凉水澡）。打折后不低于 min_amount ⇒ 结构上不是饿穿通道。删本段 ⇒ 不打折（回到 meals_free 原样）。",
