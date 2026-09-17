@@ -67,6 +67,22 @@
      "pos": [
       2,
       4
+     ],
+     "label": "吧凳",
+     "advertises": [
+      {
+       "action": "吃饭",
+       "need": "hunger",
+       "amount": 55,
+       "duration": 18,
+       "seated": true,
+       "seats": 1,
+       "crowd": {
+        "comfort": 3,
+        "k": 0.1,
+        "floor": 0.6
+       }
+      }
      ]
     },
     {
@@ -80,7 +96,25 @@
        "action": "喝咖啡",
        "need": "fun",
        "amount": 32,
-       "duration": 16
+       "duration": 16,
+       "crowd": {
+        "comfort": 3,
+        "k": 0.1,
+        "floor": 0.6
+       }
+      },
+      {
+       "action": "吃饭",
+       "need": "hunger",
+       "amount": 55,
+       "duration": 18,
+       "seated": true,
+       "seats": 2,
+       "crowd": {
+        "comfort": 3,
+        "k": 0.1,
+        "floor": 0.6
+       }
       }
      ]
     },
@@ -89,6 +123,22 @@
      "pos": [
       5,
       4
+     ],
+     "label": "吧凳",
+     "advertises": [
+      {
+       "action": "吃饭",
+       "need": "hunger",
+       "amount": 55,
+       "duration": 18,
+       "seated": true,
+       "seats": 1,
+       "crowd": {
+        "comfort": 3,
+        "k": 0.1,
+        "floor": 0.6
+       }
+      }
      ]
     },
     {
@@ -1201,7 +1251,13 @@
         "amount": 8
        },
        "company": true,
-       "seats": 6
+       "seats": 6,
+       "seated": true,
+       "crowd": {
+        "comfort": 8,
+        "k": 0.05,
+        "floor": 0.7
+       }
       }
      ]
     },
@@ -1223,7 +1279,13 @@
         "amount": 8
        },
        "company": true,
-       "seats": 6
+       "seats": 6,
+       "seated": true,
+       "crowd": {
+        "comfort": 8,
+        "k": 0.05,
+        "floor": 0.7
+       }
       }
      ]
     },
@@ -1321,7 +1383,13 @@
         "amount": 2
        },
        "company": true,
-       "seats": 3
+       "seats": 2,
+       "seated": true,
+       "crowd": {
+        "comfort": 3,
+        "k": 0.1,
+        "floor": 0.6
+       }
       }
      ]
     },
@@ -1343,7 +1411,13 @@
         "amount": 2
        },
        "company": true,
-       "seats": 3
+       "seats": 2,
+       "seated": true,
+       "crowd": {
+        "comfort": 3,
+        "k": 0.1,
+        "floor": 0.6
+       }
       }
      ]
     },
