@@ -19,6 +19,13 @@
     "_urgency_why": "欠着账 ⇒ 零工（不在班时）再加这么多分。机制保留、默认 0：6.0 时 N=16 #40 10/12（seed 5 柴薪断供 ⇒ 屋瓦产不出，满足率 0.46）；设 0 后 N=12 12/12、N=16 见 docs/196 §四。欠账本身的动机仍在：既有 poor_line 的 work_urgency 对穷人一直开着。另一个被否掉的替代：柴薪进口 4→8/3 天 ⇒ N=16 仍红 seed 5、6。"
   },
   "treats": ["吃点心"],
+  "cravings": {
+    "_doc": "docs/213 嘴馋（用户 2026-09-17「add dessert cravings」）：隔天下午（时段 0.55-0.80）轮到的人想吃点甜的 ⇒ ①为 fun 出门的门槛对他这一刻打开（平时要 fun ≤ 55，而全镇 fun 常年 ~80 ⇒ 不开这道口子甜点铺永远没人）；②甜点的候选加 pull 分。哪天轮到谁按 (day + fnv1a32(id)) % every_days 错开——不是全镇同一天馋，也不抽 RNG。缺本段 ⇒ 不馋（= docs/212 的树）。剂量：pull 8 几乎不动、20 起量（吃点心 diner·tick 132·0·33 → 264·308·275）、30 更多但 N=16 掉一个 seed；every_days 2 比 3 稳。",
+    "actions": ["吃点心"],
+    "window": [0.55, 0.8],
+    "every_days": 2,
+    "pull": 20.0
+  },
   "_treats_why": "docs/212 甜点（用户「creperie's product provide more fun but less hunger」）：吃点心主需求改为 fun 30、副需求 hunger +20 ⇒ 它不再跟正经饭比饱（也就不进饥饿本能）；为 fun 出门时与收费卖家同等对待，但只在兜里够 3 钱时算。删本键 ⇒ 为 fun 出门不认它。",
   "snacks": {
     "_doc": "docs/210 干粮（用户 2026-09-16「market could sell some package and convenient food, like can, snacks, delis, bread etc for a favorable price, and resident could carry them as an outlet for food」）：集市粮摊上 买干粮 2 钱得 buy_qty 份（经 consume 扣镇库一份口粮、经 transfer 付钱 ⇒ #34/#38 不改），身上最多揣 cap 份；hunger 跌破 eat_line 时当场吃一份、补 amount（边走边吃，不建 option）。empty_urgency=身上没干粮时去买的额外拉力——没有它一次都没人买（同一个摊上采买 40、任何一顿饭 55-70 的 amount 都压过它）。删本段 ⇒ 无干粮。",
