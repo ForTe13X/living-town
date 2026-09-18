@@ -879,6 +879,16 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 			review_counts[term_start] = int(review_counts.get(term_start, 0)) + 1
 		for i in S.mayor_log.size():
 			var mr: Dictionary = S.mayor_log[i]; var term_start := int(mr.get("term_start", -1))
+			var expected_review_used := 0
+			var mayor_cfg: Dictionary = S.elections.get("mayor", {}) if S.elections.get("mayor", {}) is Dictionary else {}
+			var preview_cfg = mayor_cfg.get("review_preview", {})
+			var review_enabled := preview_cfg is Dictionary and not (preview_cfg as Dictionary).is_empty()
+			if i > 0 and review_enabled:
+				var previous: Dictionary = S.mayor_log[i - 1]
+				if (mr.get("candidates", []) as Array).has(String(previous.get("winner", ""))):
+					expected_review_used = int(previous.get("review_event_id", -1))
+			if int(mr.get("review_event_id_used", 0)) != expected_review_used:
+				elec_ok = false
 			if i < S.mayor_log.size() - 1:
 				var every := int(term_every.get(term_start, 7)); var due := (int(mr.get("term_end", term_start - 1)) - term_start) / every + 1
 				var delta := int(mr.get("town_coin_end", 0)) - int(mr.get("town_coin_start", 0))

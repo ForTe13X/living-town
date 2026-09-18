@@ -2625,12 +2625,12 @@ func _panel_text(brief: bool = false) -> String:
 		L.append("")
 		L.append("[color=#9aa0b5]关系 · 冲突 · 记忆 · 观点 · 信念\n→ 点右上「详情」（或 V）[/color]")
 		return "\n".join(_obs_fit_lines(L, OBS_CARD.x - 16.0, OBS_CARD.y - OBS_PAD * 2.0))
-	# P4c-3：只解释上届政绩若进入选票会怎样影响这个人；明确标注“未计票”，避免把预览冒充现行规则。
+	# P4c-4：上届镇长再次参选时，这两项会叠加到所选居民对他的 standing 底分。
 	var last_review: Dictionary = Sim.latest_mayor_review()
 	var review_score: Dictionary = Sim.mayor_review_score(ag, last_review)
 	if not review_score.is_empty():
 		var review_color := "#7ed957" if int(review_score.get("total", 0)) >= 0 else "#e85a5a"
-		L.append("[color=#cfd3e0]上届政绩预评[/color] %s [color=%s]%+d[/color] [color=#9aa0b5]（未计票）[/color]" % [
+		L.append("[color=#cfd3e0]上届政绩评价[/color] %s [color=%s]%+d[/color] [color=#9aa0b5]（连任票）[/color]" % [
 			Sim._name(Sim.get_agent(String(last_review.get("winner", "")))), review_color, int(review_score.get("total", 0))])
 		L.append("出勤 %+d · 财政 %+d" % [int(review_score.get("attendance", 0)), int(review_score.get("treasury", 0))])
 	# 关系 top3

@@ -6100,7 +6100,7 @@ func latest_mayor_review() -> Dictionary:
 			return review.duplicate(true)
 	return {}
 
-## 只读解释器：同一份政绩因选民性格产生不同权重。分数尚不接入 _mayor_vote。
+## 纯评分器：同一份政绩因选民性格产生不同权重。P4c-4 只把它加给再次参选的上届镇长。
 ## 出勤以 50% 为中点；财政在 ±treasury_scale 内线性计分、区间外封顶。全程无 RNG、无状态写入。
 func mayor_review_score(voter: Dictionary, review: Dictionary) -> Dictionary:
 	var mayor_cfg: Dictionary = elections.get("mayor", {}) if elections.get("mayor", {}) is Dictionary else {}
@@ -6136,13 +6136,18 @@ func mayor_review_score(voter: Dictionary, review: Dictionary) -> Dictionary:
 		"treasury_focus": treasury_focus
 	}
 
-## 单张选票优先读已有 standing；完全同分才用 stable hash 破平，避免数组第一位暗中成为永久镇长。
-func _mayor_vote(voter: Dictionary, candidates: Array) -> String:
+## 单张选票以已有 standing 为底分；上届镇长再次参选时叠加这位选民的政绩分。
+## 完全同分才用 stable hash 破平，避免数组第一位暗中成为永久镇长。
+func _mayor_vote(voter: Dictionary, candidates: Array, incumbent_review: Dictionary = {}) -> String:
 	var best := ""; var best_score := -INF; var best_tie := -1.0
 	var rels: Dictionary = voter.get("relationships", {}) if voter.get("relationships", {}) is Dictionary else {}
+	var reviewed_id := String(incumbent_review.get("winner", ""))
+	var review_score: Dictionary = mayor_review_score(voter, incumbent_review)
 	for raw_id in candidates:
 		var cid := String(raw_id)
 		var standing := float((rels.get(cid, {}) as Dictionary).get("standing", 0.0))
+		if cid == reviewed_id and not review_score.is_empty():
+			standing += float(review_score.get("total", 0))
 		var tie := _hash01("mayor:%d:%d:%s:%s" % [seed_base, day, String(voter["id"]), cid])
 		if standing > best_score + 0.000001 or (is_equal_approx(standing, best_score) and tie > best_tie):
 			best = cid; best_score = standing; best_tie = tie
@@ -6159,11 +6164,15 @@ func _update_mayor_election() -> void:
 	var candidates := _mayor_candidates(cfg)
 	if candidates.size() < 2:
 		return
+	# 上一届必须在本届投票前冻结，否则同一天的选民只能看见一份尚不存在的成绩单。
+	if not mayor_log.is_empty():
+		_finalize_mayor_term(cfg)
+	var incumbent_review := latest_mayor_review()
 	var ballots := {}; var voters := 0
 	for voter in agents:
 		if bool(voter.get("is_player", false)):
 			continue
-		var choice := _mayor_vote(voter, candidates)
+		var choice := _mayor_vote(voter, candidates, incumbent_review)
 		if choice == "":
 			continue
 		ballots[choice] = int(ballots.get(choice, 0)) + 1
@@ -6174,11 +6183,12 @@ func _update_mayor_election() -> void:
 		if votes > high or (votes == high and cid < winner):
 			winner = cid; high = votes
 	var term_end := day + term_days - 1
-	if not mayor_log.is_empty():
-		_finalize_mayor_term(cfg)
+	var preview_cfg = cfg.get("review_preview", {})
+	var review_enabled := preview_cfg is Dictionary and not (preview_cfg as Dictionary).is_empty()
+	var review_used := int(incumbent_review.get("review_event_id", 0)) if review_enabled and candidates.has(String(incumbent_review.get("winner", ""))) else 0
 	var res := {"day": day, "candidates": candidates.duplicate(), "ballots": ballots.duplicate(), "voters": voters,
 		"abstain": 0, "winner": winner, "term_start": day, "term_end": term_end,
-		"duties_done": 0, "town_coin_start": town_coin}
+		"duties_done": 0, "town_coin_start": town_coin, "review_event_id_used": review_used}
 	mayor_log.append(res)
 	mayor_state = {"mayor": winner, "term_start": day, "term_end": term_end, "candidates": candidates.duplicate(),
 		"duties_done": 0, "last_duty_day": -1, "last_duty_period": -1, "town_coin_start": town_coin}
@@ -6186,7 +6196,7 @@ func _update_mayor_election() -> void:
 	emit_signal("social_event", ev)
 	for ag in agents:
 		if not bool(ag.get("is_player", false)):
-			ag["memory"].add("镇长选举结果：%s 当选（我投 %s；任期至第%d日）" % [winner, _mayor_vote(ag, candidates), term_end], 7, tick_no, [winner, "mayor", "election"])
+			ag["memory"].add("镇长选举结果：%s 当选（我投 %s；任期至第%d日）" % [winner, _mayor_vote(ag, candidates, incumbent_review), term_end], 7, tick_no, [winner, "mayor", "election"])
 
 ## 换届前把上一任的只读政绩结成一张可追溯成绩单。它只折叠已发生的公务和镇库差额，不改选票或政策。
 func _finalize_mayor_term(cfg: Dictionary) -> void:

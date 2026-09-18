@@ -166,7 +166,8 @@
       "2026-09-18 P4c-8（docs/215）· 可丽饼店的钱改进【跑堂】的口袋（用户「ship S3」）⇒ 世界轨迹【蓄意】移动。★production.vendors 新一项 跑堂/吃点心/price 3/luxury，不设 venue。★【故意不给酒店掌柜】：她是全镇唯一的糕点产者，再给一份收入会弱化「穷了就去上工」的动机环 ⇒ 实测 N=16 seed 5 糕点产量 306→116、满足率 0.875→0.459、断供 8→33 天，#40 12/12→10/12；跑堂不产任何货，少上班不动仓库。★判据：N=12 12/12、N=16 11/12（丢的那颗在零假设噪声内：它自己的零假设臂 12/12）、留出 13-30 18/18（master 17/18）。⚠ 代价：店跟着跑堂的班开关 ⇒ 吃点心 diner·tick 726→550（−24%）。⚠ 本次烘的一个坑：`--bake-golden` / `--bake-anchor` 【不带路径时不烘】，只打印一个和【真不符】一模一样的 FAIL——DetGate 因此被漏烘一轮（验证时报「金标 0/16 可比」才暴露）。",
       "2026-09-18 P4b（docs/218）· 镇长直选与任期是有意的世界状态变更：每 28 日按既有镇内名声选三名候选，每位居民以 standing 投票，同分走稳定哈希；记录候选、票箱、当选人与任期，并新增 election 事件/HUD，不开放任何财政或救济旋钮。S0 1-12×60：硬 12/12、#37 12/12、#40 12/12、det 3/3；DetGate 四场景 16/16；ModelPath random(full) 1-4×8 全绿。",
       "2026-09-18 P4c（docs/219）· 当选镇长进入每周镇公所公务：只有现任能枚举镇长桌“办公”，跨平面行程在无生存危机时规划，七天周期内幂等；完成后写 civic_duty 并同步 mayor_state/mayor_log，HUD 显示出勤与任内镇库变化。初始 duty_pull=28 令 held-out #26 仅 16/18，按负对照降至 8 后恢复 18/18；最终 N=12 硬 12/12、#40 12/12、公务覆盖 8/12、det 3/3，N=16 硬 12/12、#40 11/12、公务覆盖 8/12，held-out 13-30 硬 18/18、#26/#40 18/18、公务覆盖 15/18。Harness 新增公务 60 天活性与半数 seed 法定覆盖；DetGate 16/16；ModelPath days8 在选举前故摘要不动、重烘后失败 0。",
-      "2026-09-19 P4c-2（docs/220）· 换届成绩单是纯观测治理片：第 56 日新选举前，把上一任 mayor_log 冻结为 duties_due/attendance_pct/town_coin_end/treasury_delta，并写一条与 review_event_id 双向绑定的 mayor_review 事件；Main 大事栏显示办公 done/due、任内镇库 delta。不改投票、关系、需求、钱或政策。#37 逐字段反算成绩单并要求每个已结束任期恰好一条 review，Harness 在 60 天门控 mayor_review。N=12 硬 12/12、#40 12/12、review 12/12、det 3/3；N=16 硬 12/12、#40 11/12、review 12/12；held-out 13-30 硬/软 18/18、#40 18/18、review 18/18。只从 day56 起多一条事件并移动主 S0 锚；DetGate days20 与 ModelPath days8 在换届前，摘要不动。"
+      "2026-09-19 P4c-2（docs/220）· 换届成绩单是纯观测治理片：第 56 日新选举前，把上一任 mayor_log 冻结为 duties_due/attendance_pct/town_coin_end/treasury_delta，并写一条与 review_event_id 双向绑定的 mayor_review 事件；Main 大事栏显示办公 done/due、任内镇库 delta。不改投票、关系、需求、钱或政策。#37 逐字段反算成绩单并要求每个已结束任期恰好一条 review，Harness 在 60 天门控 mayor_review。N=12 硬 12/12、#40 12/12、review 12/12、det 3/3；N=16 硬 12/12、#40 11/12、review 12/12；held-out 13-30 硬/软 18/18、#40 18/18、review 18/18。只从 day56 起多一条事件并移动主 S0 锚；DetGate days20 与 ModelPath days8 在换届前，摘要不动。",
+      "2026-09-19 P4c-4（docs/222）· 政绩进入连任选票是有意的世界状态变更：换届先冻结上一任成绩单；若前任仍在三人候选中，每位选民把 docs/221 已公开的性格化出勤/财政总分叠加到对该前任的 standing，其他候选不继承政绩；新任期以 review_event_id_used 绑定所用成绩单，#37 逐届核对来源。S0 N=12 硬 12/12、#40 12/12、det 3/3；只有 seed 7 在 day55-56 检查点后移动。N=16 硬 12/12、#40 11/12；held-out 13-30 硬/软 18/18、#40 18/18。DetGate days20 与 ModelPath days8 早于首届镇长选举，锚应保持不动。"
     ],
     "scenarios_baked_by": "godot --headless --path game --script res://bench/DetGate.gd -- --seeds 1-4 --days 20 --bake-golden game/bench/golden_digests.json",
     "scenarios_godot": "4.6.2-stable (official).71f334935",
@@ -368,11 +369,11 @@
       "events": 3716
     },
     "7": {
-      "chain": "2341123731",
-      "chain_ck": "3e791eee,b49fe585,3cb88838,87e7d258,41e4cf44,9613ffb2,aad09564,5d8cca09,5bf7ea74,824093dd,7ef3fc4a,a5b05f4d,4aba32f6,d7f5d231,5634928c,69d5224d,30e4e5fb,20d57ea0,7a9fe925,bd7e2003,d2ae6a9f,f72086d5,84b68c8a,961c0b35,e9bceab4,16e0848b,90d50ef5,7bf6a4ea,492a4448,ba614ef5,298ae27b,c58bd102,7b46c2d,c5a1064b,571c0fb,7d66e3a1,73cd3823,936d2e9d,4bcfcc2d,2f0d75d0,11a75b3d,fead0c84,1e5b2aae,5065f64a,d942bd19,d65208fb,f77dec87,e28bfb4f,b09b9cea,dbce17b9,eea51c56,b0776725,8eed9441,3630513e,796725b9,6d6de168,6c372ec7,e553631e,eda78f9e,8b8ab693",
+      "chain": "1199926937",
+      "chain_ck": "3e791eee,b49fe585,3cb88838,87e7d258,41e4cf44,9613ffb2,aad09564,5d8cca09,5bf7ea74,824093dd,7ef3fc4a,a5b05f4d,4aba32f6,d7f5d231,5634928c,69d5224d,30e4e5fb,20d57ea0,7a9fe925,bd7e2003,d2ae6a9f,f72086d5,84b68c8a,961c0b35,e9bceab4,16e0848b,90d50ef5,7bf6a4ea,492a4448,ba614ef5,298ae27b,c58bd102,7b46c2d,c5a1064b,571c0fb,7d66e3a1,73cd3823,936d2e9d,4bcfcc2d,2f0d75d0,11a75b3d,fead0c84,1e5b2aae,5065f64a,d942bd19,d65208fb,f77dec87,e28bfb4f,b09b9cea,dbce17b9,eea51c56,b0776725,8eed9441,3630513e,b76dc67f,78fadba2,98425e5d,52daeeb8,ca01af08,47856e99",
       "days": 60,
-      "digest": "2891825195",
-      "event_digest": "3734370962749509670",
+      "digest": "161520569",
+      "event_digest": "3302159366765619328",
       "events": 3749
     },
     "8": {

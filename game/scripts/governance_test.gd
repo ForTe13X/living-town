@@ -41,6 +41,7 @@ func _ready() -> void:
 	ck(candidates.size() == 3 and candidates.has(String(first.get("winner", ""))), "winner belongs to the three visible candidates")
 	ck(votes == int(first.get("voters", -1)) and int(first.get("voters", -1)) == S.agents.size(), "every resident contributes exactly one ballot")
 	ck(int(first.get("term_start", -1)) == 28 and int(first.get("term_end", -1)) == 55 and S.mayor_state.get("mayor", "") == first.get("winner", ""), "state exposes the elected 28-day term")
+	ck(int(first.get("review_event_id_used", -1)) == 0, "first election has no predecessor performance to apply")
 	ck(_mayor_invariant(S), "governance invariant accepts a real election")
 
 	# A replay from the same seed must reproduce candidate ordering, ballots, winner, and active term byte-for-byte.
@@ -76,9 +77,12 @@ func _ready() -> void:
 	ck(int(reviewed.get("duties_due", 0)) == 4 and int(reviewed.get("attendance_pct", -1)) == 25, "outgoing term freezes attendance against all four weekly periods")
 	ck(int(reviewed.get("town_coin_end", -1)) == S.town_coin and int(reviewed.get("treasury_delta", 1)) == int(reviewed.get("town_coin_end", 0)) - int(reviewed.get("town_coin_start", 0)), "outgoing term freezes its treasury result")
 	ck(review_events.size() == 1 and int((review_events[0] as Dictionary).get("id", -2)) == int(reviewed.get("review_event_id", -1)), "one visible review is linked to the finalized term")
+	var second: Dictionary = S.mayor_log[1]
+	var expected_used := int(reviewed.get("review_event_id", -1)) if (second.get("candidates", []) as Array).has(String(reviewed.get("winner", ""))) else 0
+	ck(int(second.get("review_event_id_used", -2)) == expected_used, "reelection records the exact performance review used by its ballots")
 	ck(_mayor_invariant(S), "governance invariant accepts consecutive terms")
 
-	# P4c-3 is an explanation-only counterfactual: traits alter component weights, while the real ballot remains standing-only.
+	# P4c-3's scorer remains pure: traits alter component weights, and merely asking for a preview cannot change a ballot.
 	var sample_review := {"attendance_pct": 25, "treasury_delta": 10}
 	var diligent := {"id": "preview_diligent", "persona": {"traits": ["勤快"]}, "relationships": {}}
 	var fiscal := {"id": "preview_fiscal", "persona": {"traits": ["务实"]}, "relationships": {}}
@@ -99,6 +103,12 @@ func _ready() -> void:
 	S.latest_mayor_review(); S.mayor_review_score(diligent, reviewed)
 	var ballot_after: String = S._mayor_vote(diligent, candidates)
 	ck(ballot_before == ballot_after and state_before == [S.mayor_log, S.mayor_state, S.event_log], "preview changes neither ballots nor governance state")
+	var reelection_voter := {"id": "preview_reelection", "persona": {"traits": []}, "relationships": {"inc": {"standing": 0}, "other": {"standing": 1}}}
+	var positive_review := {"winner": "inc", "attendance_pct": 100, "treasury_delta": 20}
+	var negative_review := {"winner": "inc", "attendance_pct": 0, "treasury_delta": -20}
+	ck(S._mayor_vote(reelection_voter, ["inc", "other"]) == "other", "standing alone prefers the better-known challenger")
+	ck(S._mayor_vote(reelection_voter, ["inc", "other"], positive_review) == "inc", "positive performance can win an incumbent a reelection ballot")
+	ck(S._mayor_vote(reelection_voter, ["inc", "other"], negative_review) == "other", "negative performance cannot leak onto the challenger")
 
 	print("governance_test: %s (%d fail)" % [("PASS" if fails == 0 else "FAIL"), fails])
 	get_tree().quit(1 if fails > 0 else 0)
