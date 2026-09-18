@@ -78,5 +78,27 @@ func _ready() -> void:
 	ck(review_events.size() == 1 and int((review_events[0] as Dictionary).get("id", -2)) == int(reviewed.get("review_event_id", -1)), "one visible review is linked to the finalized term")
 	ck(_mayor_invariant(S), "governance invariant accepts consecutive terms")
 
+	# P4c-3 is an explanation-only counterfactual: traits alter component weights, while the real ballot remains standing-only.
+	var sample_review := {"attendance_pct": 25, "treasury_delta": 10}
+	var diligent := {"id": "preview_diligent", "persona": {"traits": ["勤快"]}, "relationships": {}}
+	var fiscal := {"id": "preview_fiscal", "persona": {"traits": ["务实"]}, "relationships": {}}
+	var diligent_score: Dictionary = S.mayor_review_score(diligent, sample_review)
+	var fiscal_score: Dictionary = S.mayor_review_score(fiscal, sample_review)
+	ck(int(diligent_score.get("attendance", 99)) == -4 and int(diligent_score.get("treasury", 99)) == 2 and int(diligent_score.get("total", 99)) == -2, "diligent voters give extra weight to attendance")
+	ck(int(fiscal_score.get("attendance", 99)) == -3 and int(fiscal_score.get("treasury", 99)) == 3 and int(fiscal_score.get("total", 99)) == 0, "pragmatic voters give extra weight to treasury performance")
+	ck(S.mayor_review_score(diligent, sample_review) == diligent_score, "review preview is deterministic")
+	var review_copy: Dictionary = S.latest_mayor_review()
+	review_copy["attendance_pct"] = -1
+	ck(int((S.mayor_log[0] as Dictionary).get("attendance_pct", -1)) == 25, "latest review is a defensive copy")
+	var preview_cfg: Dictionary = (S.elections["mayor"] as Dictionary)["review_preview"].duplicate(true)
+	(S.elections["mayor"] as Dictionary).erase("review_preview")
+	ck(S.mayor_review_score(diligent, sample_review).is_empty(), "missing preview config closes the explanation path")
+	(S.elections["mayor"] as Dictionary)["review_preview"] = preview_cfg
+	var state_before := [S.mayor_log.duplicate(true), S.mayor_state.duplicate(true), S.event_log.duplicate(true)]
+	var ballot_before: String = S._mayor_vote(diligent, candidates)
+	S.latest_mayor_review(); S.mayor_review_score(diligent, reviewed)
+	var ballot_after: String = S._mayor_vote(diligent, candidates)
+	ck(ballot_before == ballot_after and state_before == [S.mayor_log, S.mayor_state, S.event_log], "preview changes neither ballots nor governance state")
+
 	print("governance_test: %s (%d fail)" % [("PASS" if fails == 0 else "FAIL"), fails])
 	get_tree().quit(1 if fails > 0 else 0)

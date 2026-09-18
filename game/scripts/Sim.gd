@@ -6092,6 +6092,50 @@ func _mayor_candidates(cfg: Dictionary) -> Array:
 		out.append(String((row as Dictionary)["id"]))
 	return out
 
+## P4c-3：取最近一张已经冻结的换届成绩单。返回副本，观察台不能借引用改写任期账本。
+func latest_mayor_review() -> Dictionary:
+	for i in range(mayor_log.size() - 1, -1, -1):
+		var review: Dictionary = mayor_log[i]
+		if review.has("review_event_id"):
+			return review.duplicate(true)
+	return {}
+
+## 只读解释器：同一份政绩因选民性格产生不同权重。分数尚不接入 _mayor_vote。
+## 出勤以 50% 为中点；财政在 ±treasury_scale 内线性计分、区间外封顶。全程无 RNG、无状态写入。
+func mayor_review_score(voter: Dictionary, review: Dictionary) -> Dictionary:
+	var mayor_cfg: Dictionary = elections.get("mayor", {}) if elections.get("mayor", {}) is Dictionary else {}
+	var cfg: Dictionary = mayor_cfg.get("review_preview", {}) if mayor_cfg.get("review_preview", {}) is Dictionary else {}
+	if cfg.is_empty() or review.is_empty():
+		return {}
+	var traits: Array = _as_arr((voter.get("persona", {}) as Dictionary).get("traits", [])) if voter.get("persona", {}) is Dictionary else []
+	var attendance_focus := false
+	for persona_trait in _as_arr(cfg.get("attendance_traits", [])):
+		if persona_trait in traits:
+			attendance_focus = true
+			break
+	var treasury_focus := false
+	for persona_trait in _as_arr(cfg.get("treasury_traits", [])):
+		if persona_trait in traits:
+			treasury_focus = true
+			break
+	var bonus := maxi(0, int(cfg.get("trait_bonus", 0)))
+	var attendance_weight := maxi(0, int(cfg.get("attendance_weight", 0))) + (bonus if attendance_focus else 0)
+	var treasury_weight := maxi(0, int(cfg.get("treasury_weight", 0))) + (bonus if treasury_focus else 0)
+	var attendance_pct := clampi(int(review.get("attendance_pct", 0)), 0, 100)
+	var treasury_scale := maxi(1, int(cfg.get("treasury_scale", 1)))
+	var treasury_delta := int(review.get("treasury_delta", 0))
+	var attendance_score := roundi(float(attendance_pct - 50) * float(attendance_weight) / 50.0)
+	var treasury_score := roundi(clampf(float(treasury_delta) / float(treasury_scale), -1.0, 1.0) * float(treasury_weight))
+	return {
+		"attendance": attendance_score,
+		"treasury": treasury_score,
+		"total": attendance_score + treasury_score,
+		"attendance_weight": attendance_weight,
+		"treasury_weight": treasury_weight,
+		"attendance_focus": attendance_focus,
+		"treasury_focus": treasury_focus
+	}
+
 ## 单张选票优先读已有 standing；完全同分才用 stable hash 破平，避免数组第一位暗中成为永久镇长。
 func _mayor_vote(voter: Dictionary, candidates: Array) -> String:
 	var best := ""; var best_score := -INF; var best_tie := -1.0

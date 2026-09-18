@@ -5,13 +5,21 @@
   "offset": 0,
   "abstain_below": 0.15,
   "mayor": {
-    "_note": "P4b 镇长直选：每 28 日从当日既有镇内名声最高的三名居民中选一人；逐票按选民对候选人的 standing，同分以稳定哈希打破。P4c 让现任每周可到镇公所办公，并记录出勤与镇库变化；仍不开放政策旋钮。",
+    "_note": "P4b 镇长直选：每 28 日从当日既有镇内名声最高的三名居民中选一人；逐票按选民对候选人的 standing，同分以稳定哈希打破。P4c 让现任每周可到镇公所办公，并记录出勤与镇库变化。review_preview 只解释不同性格会怎样看上届政绩，尚不进入选票。",
     "term_days": 28,
     "offset": 0,
     "candidate_count": 3,
     "duty_every_days": 7,
     "duty_phase": "day",
-    "duty_pull": 8
+    "duty_pull": 8,
+    "review_preview": {
+      "attendance_weight": 6,
+      "treasury_weight": 4,
+      "treasury_scale": 20,
+      "trait_bonus": 2,
+      "attendance_traits": ["勤快", "严谨", "细致"],
+      "treasury_traits": ["务实", "多疑", "寡言"]
+    }
   },
   "on_pass": {
     "object": {"type": "扩建咖啡馆", "pos": [22, 2], "advertises": [{"action": "庆祝", "need": "fun", "amount": 35, "duration": 18}]}
