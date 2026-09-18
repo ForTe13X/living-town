@@ -21,3 +21,5 @@
 - `lint_data.py`、`lint_links.py` 与 `git diff --check`：通过。
 
 这是有意的世界轨迹变更：只有实际发生连任评价的 seed 7 在换届后移动，其他默认 seed 与全部短周期锚保持原值。
+
+[223](223-p4c5-ballot-impact-receipt.md) 随后补上了反事实票箱与改投回执，让玩家能看见这条规则究竟改变了几张票；它不再改变投票结果。

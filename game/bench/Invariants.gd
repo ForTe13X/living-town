@@ -806,10 +806,12 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 		var eligible := 0
 		for ag in S.agents:
 			if not bool(ag.get("is_player", false)): eligible += 1
-		var topic_events := 0; var mayor_events := 0
+		var topic_events := 0; var mayor_events := 0; var mayor_event_rows := []
 		for e in log:
 			if String(e["type"]) == "election":
-				if String(e.get("note", "")) == "mayor_term": mayor_events += 1
+				if String(e.get("note", "")) == "mayor_term":
+					mayor_events += 1
+					mayor_event_rows.append(e)
 				else: topic_events += 1
 		for r in S.election_log:
 			var rd: Dictionary = r
@@ -889,6 +891,28 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 					expected_review_used = int(previous.get("review_event_id", -1))
 			if int(mr.get("review_event_id_used", 0)) != expected_review_used:
 				elec_ok = false
+			if i >= mayor_event_rows.size():
+				elec_ok = false
+			else:
+				var mev: Dictionary = mayor_event_rows[i]
+				var baseline: Dictionary = mev.get("baseline_ballots", {}) if mev.get("baseline_ballots", {}) is Dictionary else {}
+				var baseline_votes := 0; var baseline_ok := true
+				for raw_id in baseline:
+					if not (mr.get("candidates", []) as Array).has(String(raw_id)) or int(baseline[raw_id]) < 0:
+						baseline_ok = false
+					baseline_votes += int(baseline[raw_id])
+				var swings := int(mev.get("performance_swings", -1))
+				var gained := int(mev.get("incumbent_gained", -1)); var lost := int(mev.get("incumbent_lost", -1))
+				var incumbent := String(mev.get("incumbent", ""))
+				var actual_ballots: Dictionary = mr.get("ballots", {})
+				if String(mev.get("actor", "")) != "town" or String(mev.get("target", "")) != String(mr.get("winner", "")) \
+						or String(mev.get("subject", "")) != "mayor" or int(mev.get("review_event_id_used", -1)) != expected_review_used \
+						or not baseline_ok or baseline_votes != eligible or swings < 0 or gained < 0 or lost < 0 or swings != gained + lost:
+					elec_ok = false
+				elif expected_review_used == 0:
+					if incumbent != "" or swings != 0 or baseline != actual_ballots: elec_ok = false
+				elif incumbent == "" or int(actual_ballots.get(incumbent, 0)) != int(baseline.get(incumbent, 0)) + gained - lost:
+					elec_ok = false
 			if i < S.mayor_log.size() - 1:
 				var every := int(term_every.get(term_start, 7)); var due := (int(mr.get("term_end", term_start - 1)) - term_start) / every + 1
 				var delta := int(mr.get("town_coin_end", 0)) - int(mr.get("town_coin_start", 0))

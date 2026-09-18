@@ -6168,14 +6168,22 @@ func _update_mayor_election() -> void:
 	if not mayor_log.is_empty():
 		_finalize_mayor_term(cfg)
 	var incumbent_review := latest_mayor_review()
-	var ballots := {}; var voters := 0
+	var ballots := {}; var baseline_ballots := {}; var voters := 0
+	var performance_swings := 0; var incumbent_gained := 0; var incumbent_lost := 0
+	var reviewed_id := String(incumbent_review.get("winner", ""))
 	for voter in agents:
 		if bool(voter.get("is_player", false)):
 			continue
+		var baseline_choice := _mayor_vote(voter, candidates)
 		var choice := _mayor_vote(voter, candidates, incumbent_review)
 		if choice == "":
 			continue
+		baseline_ballots[baseline_choice] = int(baseline_ballots.get(baseline_choice, 0)) + 1
 		ballots[choice] = int(ballots.get(choice, 0)) + 1
+		if choice != baseline_choice:
+			performance_swings += 1
+			if choice == reviewed_id: incumbent_gained += 1
+			elif baseline_choice == reviewed_id: incumbent_lost += 1
 		voters += 1
 	var winner := String(candidates[0]); var high := int(ballots.get(winner, 0))
 	for raw_id in candidates:
@@ -6193,6 +6201,13 @@ func _update_mayor_election() -> void:
 	mayor_state = {"mayor": winner, "term_start": day, "term_end": term_end, "candidates": candidates.duplicate(),
 		"duties_done": 0, "last_duty_day": -1, "last_duty_period": -1, "town_coin_start": town_coin}
 	var ev := _log_event("election", "town", winner, "mayor", true, [], "mayor_term")
+	# 反事实票箱只做审计/呈现：同一时刻不用政绩重算一遍，记录有多少票真的因此改投。
+	ev["review_event_id_used"] = review_used
+	ev["incumbent"] = reviewed_id if review_used > 0 else ""
+	ev["baseline_ballots"] = baseline_ballots.duplicate()
+	ev["performance_swings"] = performance_swings
+	ev["incumbent_gained"] = incumbent_gained
+	ev["incumbent_lost"] = incumbent_lost
 	emit_signal("social_event", ev)
 	for ag in agents:
 		if not bool(ag.get("is_player", false)):

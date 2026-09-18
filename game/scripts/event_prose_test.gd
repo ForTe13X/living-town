@@ -103,6 +103,15 @@ func _ready() -> void:
 		if t == "gossip_rep" or t == "endorse":
 			_check_type(main, t, a1, a2, "___no_such_subject___")
 
+	# P4c-5：没有改投时保留短句；有改投时必须把总数与前任得失票都说出来。
+	var mayor_plain: String = main._event_prose({"type": "election", "actor": "town", "target": a2,
+		"subject": "mayor", "accepted": true, "note": "mayor_term", "performance_swings": 0})
+	var mayor_swing: String = main._event_prose({"type": "election", "actor": "town", "target": a2,
+		"subject": "mayor", "accepted": true, "note": "mayor_term", "performance_swings": 5,
+		"incumbent_gained": 4, "incumbent_lost": 1})
+	_expect(not mayor_plain.contains("改投"), "镇长票：零改投保持短句")
+	_expect(mayor_swing.contains("改投 5 票") and mayor_swing.contains("+4/−1"), "镇长票：播报改投总数与前任得失")
+
 	if census:
 		_run_census(main, seed, days)
 

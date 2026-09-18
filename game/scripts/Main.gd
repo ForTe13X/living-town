@@ -3168,6 +3168,10 @@ func _event_prose(e: Dictionary) -> String:
 				], e)
 		"election":
 			if String(e.get("note", "")) == "mayor_term":
+				var swings := int(e.get("performance_swings", 0))
+				if swings > 0:
+					return "[color=#ffe08a]镇长选举：%s 当选 · 政绩改投 %d 票（前任 +%d/−%d）[/color]" % [
+						B, swings, int(e.get("incumbent_gained", 0)), int(e.get("incumbent_lost", 0))]
 				return "[color=#ffe08a]镇长选举：%s 当选[/color]" % B
 			# actor="town"、target=议题 id（TOPICS）、accepted=是否通过。
 			var topic := String(TOPIC_LABEL.get(String(e.get("target", "")), "镇上的议题"))

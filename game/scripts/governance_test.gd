@@ -80,6 +80,13 @@ func _ready() -> void:
 	var second: Dictionary = S.mayor_log[1]
 	var expected_used := int(reviewed.get("review_event_id", -1)) if (second.get("candidates", []) as Array).has(String(reviewed.get("winner", ""))) else 0
 	ck(int(second.get("review_event_id_used", -2)) == expected_used, "reelection records the exact performance review used by its ballots")
+	var mayor_events: Array = S.event_log.filter(func(e): return String(e.get("type", "")) == "election" and String(e.get("note", "")) == "mayor_term")
+	var second_event: Dictionary = mayor_events[1] if mayor_events.size() > 1 else {}
+	var swing_n := int(second_event.get("performance_swings", -1)); var gained_n := int(second_event.get("incumbent_gained", -1)); var lost_n := int(second_event.get("incumbent_lost", -1))
+	var baseline_votes := 0
+	for cid in (second_event.get("baseline_ballots", {}) as Dictionary): baseline_votes += int((second_event["baseline_ballots"] as Dictionary)[cid])
+	ck(swing_n == gained_n + lost_n and baseline_votes == int(second.get("voters", -1)), "election event exposes a complete counterfactual ballot receipt")
+	ck(int(second_event.get("review_event_id_used", -2)) == expected_used, "visible ballot receipt binds the same performance review as the term record")
 	ck(_mayor_invariant(S), "governance invariant accepts consecutive terms")
 
 	# P4c-3's scorer remains pure: traits alter component weights, and merely asking for a preview cannot change a ballot.
