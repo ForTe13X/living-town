@@ -391,7 +391,7 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 	var log: Array = S.event_log
 	var accepted: Array = []
 	for e in log:
-		if bool(e["accepted"]) and not (String(e["type"]) in ["pay", "world", "election", "produce", "consume", "spoil", "shortage", "import", "export"]):
+		if bool(e["accepted"]) and not (String(e["type"]) in ["pay", "world", "election", "civic_duty", "mayor_review", "produce", "consume", "spoil", "shortage", "import", "export"]):
 			accepted.append(e)   # 经济(pay)/世界变更(world)/治理(election)/产出账本(produce/consume/spoil/shortage)/进口(import)/出口(export)
 			                     # 事件不算社交参与——否则 inv2/3 被稀释成空门。
 			                     # ★Wave E 必须补这四个：produce/consume 的 actor 是干活/吃饭的人，
@@ -798,26 +798,100 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 			elif String(e.get("note", "")) == "despawn": dsp_ev += 1
 	var fest_ok: bool = (fest_now == 0 or String(S.festival_active) != "") and (sp_ev - dsp_ev == fest_now)
 	R.append(_chk(36, "节日对象配对无残留", fest_ok, "现存=%d 活动=%s spawn=%d despawn=%d" % [fest_now, String(S.festival_active), sp_ev, dsp_ev]))
-	# #37 选举计票自洽（Wave 3a 硬不变量，docs/15「计票=快照纯函数=硬不变量」）：每场选举 票数守恒(yea+nay+abstain=选民数)
-	#   + 结果与票数一致(pass=yea>nay) + election 事件数=选举场次。elections 关→election_log 空→恒真(off 门不引约束)。
+	# #37 治理计票自洽：议题票与镇长票都守票数、结果与事件一一对应。镇长候选/任期也必须良构，
+	#   不然一份看似正常的 mayor_state 会成为没有选举来源的政策授权。
 	var elec_ok := true
 	var elec_detail := "无选举"
-	if not S.election_log.is_empty():
+	if not S.election_log.is_empty() or not S.mayor_log.is_empty():
 		var eligible := 0
 		for ag in S.agents:
 			if not bool(ag.get("is_player", false)): eligible += 1
-		var elec_events := 0
+		var topic_events := 0; var mayor_events := 0
 		for e in log:
-			if String(e["type"]) == "election": elec_events += 1
+			if String(e["type"]) == "election":
+				if String(e.get("note", "")) == "mayor_term": mayor_events += 1
+				else: topic_events += 1
 		for r in S.election_log:
 			var rd: Dictionary = r
 			var sumv := int(rd["yea"]) + int(rd["nay"]) + int(rd["abstain"])
 			if sumv != int(rd["voters"]) or sumv != eligible or bool(rd["pass"]) != (int(rd["yea"]) > int(rd["nay"])):
 				elec_ok = false; break
-		if elec_ok and elec_events != S.election_log.size():
+		var duty_counts := {}; var duty_periods := {}; var term_winners := {}; var term_ends := {}; var term_every := {}; var term_records := {}
+		for r in S.mayor_log:
+			var mr: Dictionary = r
+			var candidates: Array = mr.get("candidates", [])
+			var ballots: Dictionary = mr.get("ballots", {})
+			var seen := {}; var votes := 0
+			for raw_id in candidates:
+				var cid := String(raw_id)
+				if cid == "" or seen.has(cid): elec_ok = false; break
+				seen[cid] = true
+			for raw_id in ballots:
+				var cid := String(raw_id)
+				if not seen.has(cid) or int(ballots[raw_id]) < 0: elec_ok = false; break
+				votes += int(ballots[raw_id])
+			if not elec_ok or candidates.size() < 2 or not seen.has(String(mr.get("winner", ""))) \
+					or votes != int(mr.get("voters", -1)) or int(mr.get("voters", -1)) != eligible \
+					or int(mr.get("term_end", -1)) < int(mr.get("term_start", 0)):
+				elec_ok = false; break
+			var term_start := int(mr.get("term_start", -1))
+			term_winners[term_start] = String(mr.get("winner", ""))
+			term_ends[term_start] = int(mr.get("term_end", -1))
+			term_records[term_start] = mr
+			duty_counts[term_start] = 0
+			duty_periods[term_start] = {}
+			var mayor_cfg: Dictionary = S.elections.get("mayor", {}) if S.elections.get("mayor", {}) is Dictionary else {}
+			term_every[term_start] = maxi(1, int(mayor_cfg.get("duty_every_days", 7)))
+		if elec_ok and (topic_events != S.election_log.size() or mayor_events != S.mayor_log.size()):
 			elec_ok = false
-		elec_detail = "%d 场 选民=%d 事件=%d" % [S.election_log.size(), eligible, elec_events]
-	R.append(_chk(37, "选举计票自洽", elec_ok, elec_detail))
+		for e in log:
+			if String(e.get("type", "")) != "civic_duty": continue
+			var note := String(e.get("note", "")); var term_start := -1
+			if note.begins_with("term:") and note.substr(5).is_valid_int(): term_start = int(note.substr(5))
+			if not term_winners.has(term_start) or String(e.get("actor", "")) != String(term_winners.get(term_start, "")) \
+					or String(e.get("target", "")) != "mairie" or String(e.get("subject", "")) != "mayor":
+				elec_ok = false; continue
+			var duty_day := int(e.get("tick", 0)) / int(S.TICKS_PER_DAY) + 1
+			var period := (duty_day - term_start) / int(term_every[term_start])
+			var seen_periods: Dictionary = duty_periods[term_start]
+			if duty_day < term_start or duty_day > int(term_ends.get(term_start, -1)) or period < 0 or seen_periods.has(period): elec_ok = false
+			seen_periods[period] = true
+			duty_counts[term_start] = int(duty_counts[term_start]) + 1
+		for r in S.mayor_log:
+			var mr: Dictionary = r; var term_start := int(mr.get("term_start", -1))
+			if int(mr.get("duties_done", -1)) != int(duty_counts.get(term_start, -2)):
+				elec_ok = false
+		var review_counts := {}
+		for e in log:
+			if String(e.get("type", "")) != "mayor_review": continue
+			var term_start := int(e.get("term_start", -1))
+			if not term_records.has(term_start): elec_ok = false; continue
+			var mr: Dictionary = term_records[term_start]
+			var done := int(mr.get("duties_done", -1)); var due := int(mr.get("duties_due", -1))
+			var delta := int(mr.get("treasury_delta", 0)); var attendance := int(mr.get("attendance_pct", -1))
+			var expected_note := "term:%d;duties:%d/%d;treasury:%+d" % [term_start, done, due, delta]
+			if String(e.get("actor", "")) != String(mr.get("winner", "")) or String(e.get("target", "")) != "mairie" \
+					or String(e.get("subject", "")) != "mayor" or String(e.get("note", "")) != expected_note \
+					or int(e.get("duties_done", -2)) != done or int(e.get("duties_due", -2)) != due \
+					or int(e.get("attendance_pct", -2)) != attendance or int(e.get("treasury_delta", delta - 1)) != delta \
+					or int(e.get("id", -1)) != int(mr.get("review_event_id", -2)):
+				elec_ok = false
+			review_counts[term_start] = int(review_counts.get(term_start, 0)) + 1
+		for i in S.mayor_log.size():
+			var mr: Dictionary = S.mayor_log[i]; var term_start := int(mr.get("term_start", -1))
+			if i < S.mayor_log.size() - 1:
+				var every := int(term_every.get(term_start, 7)); var due := (int(mr.get("term_end", term_start - 1)) - term_start) / every + 1
+				var delta := int(mr.get("town_coin_end", 0)) - int(mr.get("town_coin_start", 0))
+				var done := int(mr.get("duties_done", 0)); var attendance := 100 if due <= 0 else mini(100, done * 100 / due)
+				if int(review_counts.get(term_start, 0)) != 1 or int(mr.get("duties_due", -1)) != due \
+						or int(mr.get("treasury_delta", delta - 1)) != delta or int(mr.get("attendance_pct", -1)) != attendance:
+					elec_ok = false
+			elif int(review_counts.get(term_start, 0)) != 0:
+				elec_ok = false
+		if not S.mayor_state.is_empty() and int(S.mayor_state.get("duties_done", -1)) != int(duty_counts.get(int(S.mayor_state.get("term_start", -1)), -2)):
+			elec_ok = false
+		elec_detail = "议题%d场/镇长%d届 选民=%d 事件=%d+%d" % [S.election_log.size(), S.mayor_log.size(), eligible, topic_events, mayor_events]
+	R.append(_chk(37, "治理计票自洽", elec_ok, elec_detail))
 
 	# ── Wave E 劳动产出闭环 (38-40，production.json 缺失时恒过=零扰动；docs/47 §二-E1) ──
 	# 结构照抄 #34/#35：库存增减只有 Sim._stock_move / _stock_take 一个通道，于是"账本能独立重算出现存量"

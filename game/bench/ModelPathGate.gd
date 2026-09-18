@@ -53,6 +53,11 @@ func _ready() -> void:
 	var anchor_path := ANCHOR_DEFAULT
 	var bake_path := ""
 	var args := OS.get_cmdline_user_args()
+	var path_error := preload("res://bench/BenchArgs.gd").path_error(args, ["--anchor", "--bake-anchor"])
+	if path_error != "":
+		print("ModelPathGate CLI: FAIL: " + path_error)
+		get_tree().quit(2)
+		return
 	for i in args.size():
 		if args[i] == "--seeds" and i + 1 < args.size(): seeds_spec = args[i + 1]
 		elif args[i] == "--days" and i + 1 < args.size(): days = int(args[i + 1])

@@ -299,7 +299,7 @@ var _sy := SCRUB_Y
 ## 事件显著度（纯视图评分——**不**调 Sim._impt：那个吃 agent 字典、属于仿真侧，视图不该碰）。
 ## >= SALIENT_MIN 进置顶「大事」区，其余只落「近况」尾巴。
 const SALIENCE := {
-	"betray": 100, "pact": 88, "election": 86, "conflict": 80, "rally_oust": 76,
+	"betray": 100, "pact": 88, "election": 86, "mayor_review": 84, "conflict": 80, "rally_oust": 76,
 	"leak": 74, "confront": 70, "apologize": 66, "mediate": 64, "aid": 62,
 	"meet": 58, "confide": 56,
 	"endorse": 44, "gossip_rep": 40, "discuss": 34, "gossip": 30, "invite": 28, "give": 20, "greet": 10,
@@ -2264,6 +2264,9 @@ func _update_status() -> void:
 	if not Sim.last_election.is_empty():
 		var le: Dictionary = Sim.last_election
 		etxt = "  ·  选举 %s %s %d:%d" % [String(TOPIC_LABEL.get(String(le["topic"]), le["topic"])), ("通过" if bool(le["pass"]) else "否决"), int(le["yea"]), int(le["nay"])]
+	if not Sim.mayor_state.is_empty():
+		var perf: Dictionary = Sim.mayor_performance()
+		etxt += "  ·  镇长 %s（至第%d日 · 办公%d/%d · 镇库%+d）" % [_nm(String(Sim.mayor_state.get("mayor", ""))), int(Sim.mayor_state.get("term_end", 0)), int(perf.get("duties_done", 0)), int(perf.get("duties_due", 0)), int(perf.get("treasury_delta", 0))]
 	var meets_active := 0
 	for c in Sim.commitments:
 		if String(c["status"]) == "active":
@@ -3156,6 +3159,8 @@ func _event_prose(e: Dictionary) -> String:
 					"[color=#39d4c8]%s 和 %s 拉手结成了互助的盟约[/color]" % [A, B],
 				], e)
 		"election":
+			if String(e.get("note", "")) == "mayor_term":
+				return "[color=#ffe08a]镇长选举：%s 当选[/color]" % B
 			# actor="town"、target=议题 id（TOPICS）、accepted=是否通过。
 			var topic := String(TOPIC_LABEL.get(String(e.get("target", "")), "镇上的议题"))
 			return _pick([
@@ -3165,6 +3170,10 @@ func _event_prose(e: Dictionary) -> String:
 					"[color=#9aa0b5]全镇表决：%s —— 否决[/color]" % topic,
 					"[color=#9aa0b5]全镇表决：%s —— 未获通过[/color]" % topic,
 				], e)
+		"civic_duty":
+			return "[color=#9fe3b1]%s 在镇公所完成了本周公务[/color]" % A
+		"mayor_review":
+			return "[color=#ffe08a]上届镇长 %s：办公 %d/%d，任内镇库 %+d[/color]" % [A, int(e.get("duties_done", 0)), int(e.get("duties_due", 0)), int(e.get("treasury_delta", 0))]
 		"world":
 			return ("[color=#ffe08a]镇上多了点新东西[/color]") if note == "spawn" else ("[color=#9aa0b5]镇上的临时布置撤了[/color]")
 		"cafe_guest_grant":

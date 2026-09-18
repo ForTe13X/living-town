@@ -301,9 +301,12 @@ var econ_total0 := 0            # 开局货币总量（金钱守恒硬不变量�
 # ── Wave 3c 住房产权（docs/15 标注低优先；接 buildings.json rooms.owner）：每夜房客→房东经 Ledger 转租金 ──
 var housing := {}               # {rent:int, tenancies:[{tenant:id, landlord:id}]}；缺文件→无租金=逐字节不变
 # ── Wave 3a 治理/选举（docs/15 §3.3「收获期」）：S2 attitude 即选票，快照纯函数计票；缺文件→零扰动 ──
-var elections := {}             # {topic, every_days, offset, abstain_below}
-var election_log: Array = []    # 每次选举结果 {day,topic,yea,nay,abstain,pass,voters}（soak + 硬不变量#37 用）
-var last_election := {}         # 最近一次结果（观察台/HUD）
+var elections := {}             # {topic,every_days,offset,abstain_below,mayor:{term_days,candidate_count}}
+var election_log: Array = []    # 每次议题表决 {day,topic,yea,nay,abstain,pass,voters}
+var last_election := {}         # 最近一次议题结果（观察台/HUD）
+# P4b：先只存可见、可回放的候选名单、逐人选票与任期。政策旋钮留到下一片，不能反向伪造选举事实。
+var mayor_log: Array = []       # 任期账本；结束后追加 duties_due/attendance_pct/town_coin_end/treasury_delta/review_event_id
+var mayor_state := {}           # 当前任 {mayor,term_start,term_end,candidates,duties_done,last_duty_day,last_duty_period,town_coin_start}
 var econ_stats := {"meals_paid": 0, "meals_free": 0, "wages_paid": 0, "wages_skipped": 0}  # 诊断计数
 # ── Wave E 劳动产出（docs/47 §二-E1）：data/production.json 驱动；缺文件→_prod_on()=false→全部短路=逐字节不变 ──
 ## ★红线继承：economy.json 的 `_doc` 写死了"钱只造分化与戏剧、不造饿死（付不起照吃 meals_free）"。
@@ -1091,7 +1094,7 @@ func start_new(p_seed: int = 12345) -> void:
 		for g in production.get("goods", {}):
 			town_stock[String(g)] = int(production.get("start_stock", {}).get(String(g), 0))
 	stock_total0 = town_stock.duplicate(true)
-	election_log.clear(); last_election = {}   # Wave 3a：per-run 重置（goto_tick 反复 start_new）
+	election_log.clear(); last_election = {}; mayor_log.clear(); mayor_state = {}   # 治理状态 per-run 重置
 	weather_today = _weather_of_day(day)   # Wave 1c：开局天气（日界在 tick() 重算）
 	season_today = _season_of_day(day)     # Wave 3b：开局当季（日界在 tick() 重算；纯 f(day)）
 	# Wave 2b/3a：world 只在 _load_data 载一次 → start_new(含 goto_tick 重演)必须清上一局残留的动态对象再重开。
@@ -3222,6 +3225,7 @@ func tick() -> void:
 		_update_lifecycle(_prev_season)        # Wave 3b：换季/生日里程碑（喂 voice grounding）
 		_update_festival()                     # Wave 2b：昨日节日清场 → 今日按 日取模+天气 开节（确定）
 		_update_election()                     # Wave 3a：到期把话题付诸投票（S2 attitude 即选票，快照纯函数计票）
+		_update_mayor_election()               # P4b：候选、逐人选票与任期；尚不改任何政策
 		if ext != null:
 			ext.seed_day(self, scenario, day)  # 周更编剧：schedule 里 day==当天的补丁到点确定性注入（无 schedule→零扰动）
 		_nightly()
@@ -3590,6 +3594,7 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 					ag["option"] = null
 					emit_signal("agent_changed", ag["id"])
 					return
+			_complete_mayor_duty(ag, opt)
 			ag["memory"].add("在%s%s了" % [target_obj.get("area", ""), opt["action"]], 3, tick_no, [opt["need"], opt["target"]])
 			# Wave E 产出点：本职在班干完一活 → 往镇库存交一批货（口径与 _wage_for 的"本职在班"同一条）。
 			# 先交货再领钱。这一行就是"劳动不再只是钱包数字"的落点：它写的是世界状态(town_stock)，不是 agent 的钱。
@@ -3818,6 +3823,13 @@ func _journey_candidates(ag: Dictionary) -> Array:
 			var wj := _best_satisfier_journey(ag, "fun", aspace, afloor, home_space, false, {}, jt)
 			if not wj.is_empty():
 				out.append(wj)
+	# (A4) 当选镇长的每周公务：任期内、未完成本周期值班、且当前无生存危机时，明确规划去镇公所。
+	# 只认 mayor_duty 广告，避免镇公所里的普通 fun 家具冒充公务目的地。
+	if not mayor_state.is_empty() and String(ag.get("id", "")) == String(mayor_state.get("mayor", "")) \
+			and _min_need(ag) >= SURVIVAL_GATE:
+		var duty_journey := _best_satisfier_journey(ag, "fun", aspace, afloor, home_space, false, {"mairie": true}, "", false, true)
+		if not duty_journey.is_empty():
+			out.append(duty_journey)
 	# (B) 离家在外 或 café 居民 → 为本平面无满足的偏紧 need 承诺行程。普通镇上居民(都在 town)不进此块。
 	if aspace != "town" or home_space != "town":
 		var covered := {}
@@ -3854,7 +3866,7 @@ func _journey_candidates(ag: Dictionary) -> Array:
 
 ## 锁定他平面满足 nid 的【最优对象】→ 一条 journey 候选。家绑定：【居民】的 energy/fun 只回家 Space(顾客 home=town 不受限)。
 ## is_visit=进店行程：只认咖啡馆对象、路程惩罚减半+进店加成(值得为一杯咖啡跑一趟，压过就近的镇上游戏机)。带 ag 走权限门(owner 楼梯)。
-func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor: String, home_space: String, is_visit: bool, only_spaces: Dictionary = {}, job_only: String = "", vendor_only: bool = false) -> Dictionary:
+func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor: String, home_space: String, is_visit: bool, only_spaces: Dictionary = {}, job_only: String = "", vendor_only: bool = false, mayor_duty_only: bool = false) -> Dictionary:
 	var urg := 100.0 - float(ag["needs"].get(nid, 100.0))
 	var best_score := -1.0e18
 	var best: Dictionary = {}
@@ -3869,11 +3881,14 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 			continue
 		if not _staff_ok(ag, o):                                # 顾客的进店行程不冲吧台(员工专属)→ 锁定公共桌"喝咖啡"
 			continue
-		if nid in _home_needs(ag) and home_space != "town" and os != home_space:   # 居民的 energy/fun 只回家 Space
+		if nid in _home_needs(ag) and home_space != "town" and os != home_space \
+				and not _mayor_duty_at_object_open(ag, o):             # 当选镇长的值班是明确的公务例外
 			continue
 		var amt := 0; var dur := 0; var act := ""; var best_adv: Dictionary = {}   # docs/209：供 _company_pull
 		for adv in _as_arr(o.get("advertises", [])):
 			if not (adv is Dictionary):
+				continue
+			if mayor_duty_only and not bool((adv as Dictionary).get("mayor_duty", false)):
 				continue
 			if not _adv_open(ag, adv):
 				continue                                        # F1：跨平面行程也要过工位专属/市集时段两道门（否则会承诺跑一趟去一个关着的摊）
@@ -3903,6 +3918,9 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 			score = -float(d)                                    # docs/210：本能 = 最近的一口正经饭
 		else:
 			score += _craving_pull(ag, act)                       # docs/213：馋了才值得专门跑一趟
+			if bool(best_adv.get("mayor_duty", false)):
+				var mayor_cfg: Dictionary = elections.get("mayor", {}) if elections.get("mayor", {}) is Dictionary else {}
+				score += float(mayor_cfg.get("duty_pull", 0))
 		if not _seat_free(o, best_adv, String(ag["id"])):
 			score -= _w("seat_full_penalty", 0.0)                # docs/210：满座扣分、不排除
 		if score > best_score:
@@ -3924,12 +3942,35 @@ func _home_needs(ag: Dictionary) -> Array:
 func _staff_ok(ag: Dictionary, o: Dictionary) -> bool:
 	return not bool(o.get("staff", false)) or String(ag.get("home_space", "town")) == String(o.get("space", "town"))
 
+## 家绑定的 fun 通常不允许跨 Space；镇长值班广告是唯一由公职授权的例外。
+func _mayor_duty_at_object_open(ag: Dictionary, o: Dictionary) -> bool:
+	for adv in _as_arr(o.get("advertises", [])):
+		if adv is Dictionary and bool((adv as Dictionary).get("mayor_duty", false)) and _adv_open(ag, adv):
+			return true
+	return false
+
 ## F1：一条【广告位】此刻对这个人开不开。两道门，都写在 advertise 一级（不是对象一级）——
 ## 摊位同一件家具上既有对内的"摆摊"(只有商贩)又有对外的"赶集"(全镇)，对象一级的门表达不了这件事。
 ##   ① 工位专属：带 job 的广告位只有该职位的【现任持有人】枚举得到（结构照抄 _staff_ok）。
 ##   ② 市集时段：见 _market_open。
 ## 两者都缺 → 恒真 → 所有旧广告位逐字节不变。
 func _adv_open(ag: Dictionary, adv: Dictionary) -> bool:
+	if bool(adv.get("mayor_duty", false)):
+		if mayor_state.is_empty() or String(ag.get("id", "")) != String(mayor_state.get("mayor", "")):
+			return false
+		if day < int(mayor_state.get("term_start", 0)) or day > int(mayor_state.get("term_end", -1)):
+			return false
+		var mayor_cfg: Dictionary = elections.get("mayor", {}) if elections.get("mayor", {}) is Dictionary else {}
+		var every := maxi(1, int(mayor_cfg.get("duty_every_days", 7)))
+		var duty_period := (day - int(mayor_state.get("term_start", day))) / every
+		var last_period := int(mayor_state.get("last_duty_period", -1))
+		if last_period < 0 and int(mayor_state.get("last_duty_day", -1)) >= int(mayor_state.get("term_start", day)):
+			last_period = (int(mayor_state.get("last_duty_day", -1)) - int(mayor_state.get("term_start", day))) / every
+		if duty_period == last_period:
+			return false
+		var duty_phase := String(mayor_cfg.get("duty_phase", "day"))
+		if duty_phase != "" and _phase_of(time_of_day()) != duty_phase:
+			return false
 	var t := String(adv.get("job", ""))
 	if t != "" and String(_job_of(String(ag["id"])).get("title", "")) != t:
 		return false
@@ -4319,7 +4360,8 @@ func _object_candidates(ag: Dictionary) -> Array:
 			# → 在镇上 energy/fun"无满足"→ _journey_candidates 发起【回咖啡馆】的承诺行程。按 SPACE 判(非 floor：否则
 			# 楼上床/楼下吧台互相排除)。town 居民 home=town → 恒 false → 逐字节不变。
 			if need_id in _home_needs(ag) and String(ag.get("home_space", "town")) != "town" \
-					and String(ag.get("space", "town")) != String(ag.get("home_space", "town")):
+					and String(ag.get("space", "town")) != String(ag.get("home_space", "town")) \
+					and not bool(adv.get("mayor_duty", false)):
 				continue
 			var action := String(adv.get("action", ""))
 			var duration := int(adv.get("duration", 0))
@@ -4414,6 +4456,9 @@ func _object_candidates(ag: Dictionary) -> Array:
 			# docs/210：身上没干粮 ⇒ 买干粮多一截拉力。没有它实测【一次都没人买】：同一个摊上采买(40)与任何一顿饭(55-70)
 			#   的 amount 都压过买干粮(15)，而揣干粮的价值（将来走到半路不挨饿）不在 amount 里。
 			score += _craving_pull(ag, action)      # docs/213：今天下午想吃点甜的
+			if bool(adv.get("mayor_duty", false)):
+				var mayor_cfg: Dictionary = elections.get("mayor", {}) if elections.get("mayor", {}) is Dictionary else {}
+				score += float(mayor_cfg.get("duty_pull", 0))
 			if String(adv.get("pantry", "")) == "snack" and int(ag.get("snacks", 0)) <= 0:
 				score += float((economy["snacks"] as Dictionary).get("empty_urgency", 0.0))
 			var cand := {
@@ -6025,6 +6070,141 @@ func _update_election() -> void:
 		var stance := "弃权" if absf(mine) < abstain_below else ("投了赞成" if mine > 0.0 else "投了反对")
 		ag["memory"].add("镇上就『%s』表决，%s（%d赞成/%d反对/%d弃权）——我%s" % [
 			topic, verdict, int(res["yea"]), int(res["nay"]), int(res["abstain"]), stance], 6, tick_no, [topic, "election", "civic"])
+
+## P4b 候选按选举日既有的镇内名声取前 N 名。只读 relationship 折叠；同分按 id，绝不创建关系或消耗 RNG。
+func _mayor_candidates(cfg: Dictionary) -> Array:
+	var wanted := maxi(2, int(cfg.get("candidate_count", 3)))
+	var scored: Array = []
+	for ag in agents:
+		if bool(ag.get("is_player", false)):
+			continue
+		var aid := String(ag.get("id", ""))
+		if aid != "":
+			var image := _town_image_stats(aid)
+			scored.append({"id": aid, "score": float(image.get("mean", 0.0))})
+	scored.sort_custom(func(a, b):
+		var sa := float((a as Dictionary)["score"]); var sb := float((b as Dictionary)["score"])
+		return String((a as Dictionary)["id"]) < String((b as Dictionary)["id"]) if is_equal_approx(sa, sb) else sa > sb)
+	var out: Array = []
+	for row in scored:
+		if out.size() >= wanted:
+			break
+		out.append(String((row as Dictionary)["id"]))
+	return out
+
+## 单张选票优先读已有 standing；完全同分才用 stable hash 破平，避免数组第一位暗中成为永久镇长。
+func _mayor_vote(voter: Dictionary, candidates: Array) -> String:
+	var best := ""; var best_score := -INF; var best_tie := -1.0
+	var rels: Dictionary = voter.get("relationships", {}) if voter.get("relationships", {}) is Dictionary else {}
+	for raw_id in candidates:
+		var cid := String(raw_id)
+		var standing := float((rels.get(cid, {}) as Dictionary).get("standing", 0.0))
+		var tie := _hash01("mayor:%d:%d:%s:%s" % [seed_base, day, String(voter["id"]), cid])
+		if standing > best_score + 0.000001 or (is_equal_approx(standing, best_score) and tie > best_tie):
+			best = cid; best_score = standing; best_tie = tie
+	return best
+
+## P4b 镇长直选：每 term_days 天选一人。选举本身不写 relationship 或钱；P4c 只据此授权镇公所公务。
+func _update_mayor_election() -> void:
+	if elections.is_empty() or not (elections.get("mayor", null) is Dictionary):
+		return
+	var cfg: Dictionary = elections["mayor"]
+	var term_days := maxi(1, int(cfg.get("term_days", 28)))
+	if day % term_days != int(cfg.get("offset", 0)):
+		return
+	var candidates := _mayor_candidates(cfg)
+	if candidates.size() < 2:
+		return
+	var ballots := {}; var voters := 0
+	for voter in agents:
+		if bool(voter.get("is_player", false)):
+			continue
+		var choice := _mayor_vote(voter, candidates)
+		if choice == "":
+			continue
+		ballots[choice] = int(ballots.get(choice, 0)) + 1
+		voters += 1
+	var winner := String(candidates[0]); var high := int(ballots.get(winner, 0))
+	for raw_id in candidates:
+		var cid := String(raw_id); var votes := int(ballots.get(cid, 0))
+		if votes > high or (votes == high and cid < winner):
+			winner = cid; high = votes
+	var term_end := day + term_days - 1
+	if not mayor_log.is_empty():
+		_finalize_mayor_term(cfg)
+	var res := {"day": day, "candidates": candidates.duplicate(), "ballots": ballots.duplicate(), "voters": voters,
+		"abstain": 0, "winner": winner, "term_start": day, "term_end": term_end,
+		"duties_done": 0, "town_coin_start": town_coin}
+	mayor_log.append(res)
+	mayor_state = {"mayor": winner, "term_start": day, "term_end": term_end, "candidates": candidates.duplicate(),
+		"duties_done": 0, "last_duty_day": -1, "last_duty_period": -1, "town_coin_start": town_coin}
+	var ev := _log_event("election", "town", winner, "mayor", true, [], "mayor_term")
+	emit_signal("social_event", ev)
+	for ag in agents:
+		if not bool(ag.get("is_player", false)):
+			ag["memory"].add("镇长选举结果：%s 当选（我投 %s；任期至第%d日）" % [winner, _mayor_vote(ag, candidates), term_end], 7, tick_no, [winner, "mayor", "election"])
+
+## 换届前把上一任的只读政绩结成一张可追溯成绩单。它只折叠已发生的公务和镇库差额，不改选票或政策。
+func _finalize_mayor_term(cfg: Dictionary) -> void:
+	var prev: Dictionary = mayor_log[mayor_log.size() - 1]
+	if prev.has("review_event_id"):
+		return
+	var every := maxi(1, int(cfg.get("duty_every_days", 7)))
+	var term_start := int(prev.get("term_start", day))
+	var term_end := int(prev.get("term_end", term_start - 1))
+	var due := 0 if term_end < term_start else (term_end - term_start) / every + 1
+	var done := int(prev.get("duties_done", 0))
+	var delta := town_coin - int(prev.get("town_coin_start", town_coin))
+	var attendance := 100 if due <= 0 else mini(100, done * 100 / due)
+	prev["town_coin_end"] = town_coin
+	prev["duties_due"] = due
+	prev["attendance_pct"] = attendance
+	prev["treasury_delta"] = delta
+	var note := "term:%d;duties:%d/%d;treasury:%+d" % [term_start, done, due, delta]
+	var ev := _log_event("mayor_review", String(prev.get("winner", "")), "mairie", "mayor", true, [], note)
+	ev["term_start"] = term_start
+	ev["duties_done"] = done
+	ev["duties_due"] = due
+	ev["attendance_pct"] = attendance
+	ev["treasury_delta"] = delta
+	prev["review_event_id"] = int(ev["id"])
+	emit_signal("social_event", ev)
+
+## 镇长在镇公所完成一次真实办公动作后才记出勤。广告门保证每个值班日最多一次；这里仍幂等防旧 option 重放。
+func _complete_mayor_duty(ag: Dictionary, opt: Dictionary) -> void:
+	var mayor_cfg: Dictionary = elections.get("mayor", {}) if elections.get("mayor", {}) is Dictionary else {}
+	var every := maxi(1, int(mayor_cfg.get("duty_every_days", 7)))
+	var duty_period := (day - int(mayor_state.get("term_start", day))) / every if not mayor_state.is_empty() else -1
+	if String(opt.get("action", "")) != "办公" or mayor_state.is_empty() \
+			or String(ag.get("id", "")) != String(mayor_state.get("mayor", "")) \
+			or day < int(mayor_state.get("term_start", 0)) or day > int(mayor_state.get("term_end", -1)) \
+			or duty_period == int(mayor_state.get("last_duty_period", -1)):
+		return
+	mayor_state["duties_done"] = int(mayor_state.get("duties_done", 0)) + 1
+	mayor_state["last_duty_day"] = day
+	mayor_state["last_duty_period"] = duty_period
+	if not mayor_log.is_empty():
+		var active_record: Dictionary = mayor_log[mayor_log.size() - 1]
+		if int(active_record.get("term_start", -1)) == int(mayor_state.get("term_start", -2)):
+			active_record["duties_done"] = int(mayor_state["duties_done"])
+	var ev := _log_event("civic_duty", String(ag["id"]), "mairie", "mayor", true, [], "term:%d" % int(mayor_state.get("term_start", 0)))
+	emit_signal("social_event", ev)
+	ag["memory"].add("在镇公所完成了本周公务", 6, tick_no, ["mayor", "mairie", "duty"])
+
+## 纯投影：给 HUD/观察台读，绝不回写仿真。
+func mayor_performance() -> Dictionary:
+	if mayor_state.is_empty():
+		return {}
+	var cfg: Dictionary = elections.get("mayor", {}) if elections.get("mayor", {}) is Dictionary else {}
+	var every := maxi(1, int(cfg.get("duty_every_days", 7)))
+	var elapsed_end := mini(day, int(mayor_state.get("term_end", day)))
+	var due := 0
+	if elapsed_end >= int(mayor_state.get("term_start", day)):
+		due = (elapsed_end - int(mayor_state.get("term_start", day))) / every + 1
+	var done := int(mayor_state.get("duties_done", 0))
+	return {"mayor": String(mayor_state.get("mayor", "")), "duties_done": done, "duties_due": due,
+		"attendance_pct": 100 if due <= 0 else mini(100, done * 100 / due),
+		"treasury_delta": town_coin - int(mayor_state.get("town_coin_start", town_coin))}
 
 ## Wave 2a+ 阶层 gossip：每夜同区邻居目击贫富 → 生成一手 belief（via=seen，inv6 豁免溯源）。
 ## 之后由既有 gossip 机制自然传播（_unspread_belief 会挑中它）——"财富传闻"零新管线。确定（定序遍历，无 RNG）。

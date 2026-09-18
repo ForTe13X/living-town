@@ -1964,7 +1964,16 @@
       8,
       1
      ],
-     "label": "镇长桌"
+     "label": "镇长桌",
+     "advertises": [
+      {
+       "action": "办公",
+       "need": "fun",
+       "amount": 18,
+       "duration": 8,
+       "mayor_duty": true
+      }
+     ]
     },
     {
      "slot": "pew",
