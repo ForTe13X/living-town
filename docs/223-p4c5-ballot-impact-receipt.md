@@ -20,3 +20,5 @@
 - `lint_data.py`、`lint_links.py` 与 `git diff --check`：通过。
 
 本片只增加事件上的审计字段与播报投影，不改变真实投票结果；主 S0 摘要逐字节不动，无需重烘。
+
+[224](224-p4c6-pixellab-civic-furniture.md) 随后重做镇公所的房间分区、公共材质与细节，并用四张 PixelLab 专属资产让这条治理链在室内有明确的视觉落点。

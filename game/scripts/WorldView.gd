@@ -2214,7 +2214,7 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 		if String((fr as Dictionary).get("slot", "")) == "wall":
 			var wp: Array = (fr as Dictionary).get("pos", [0, 0])
 			walls[Vector2i(int(wp[0]), int(wp[1]))] = true
-	_draw_interior_floor(b, wc, hc, shell, sid == "cafe")
+	_draw_interior_floor(b, wc, hc, shell, sid == "cafe", sid)
 	_draw_interior_backwall(b, wc, shell, door_gap, role)
 	# 地面家具先按行（前左格的 y）排序：后排先画、前排压上，高柜/床头才会正确地挡住后面的墙与物件。
 	var pieces: Array = []
@@ -2238,9 +2238,20 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 			var fp: Array = fd.get("pos", [0, 0])
 			var furniture_base := Vector2(ox + int(fp[0]) * T, oy + int(fp[1]) * T)
 			if slot == "wall":
-				_draw_partition(furniture_base, Vector2i(int(fp[0]), int(fp[1])), walls, shell)
+				_draw_partition(furniture_base, Vector2i(int(fp[0]), int(fp[1])), walls, shell, role)
 			elif not _draw_furn_sprite(fd, furniture_base, role, sid):
 				_draw_interior_furniture(slot, furniture_base, role, sid, fid)
+	if sid == "mairie":
+		# 办事/档案室开口留在 (3,2)：黄铜门牌把“开放缺口”读成门，而不是漏画了一块墙。
+		var plaque := Rect2(Vector2(ox + T * 2.10, oy + T * 2.43), Vector2(T * 0.72, T * 0.20))
+		draw_rect(plaque, X_GOLD.darkened(0.22), true)
+		draw_rect(plaque, X_GOLD.lightened(0.18), false, 1.0)
+		draw_string(Art.font(), plaque.position + Vector2(5, 10), "办事处", HORIZONTAL_ALIGNMENT_LEFT, plaque.size.x - 8, 9, D_WOOD_LINE)
+		# 门厅地面徽章落在中轴线上，只作细节，不占格、不参与导航。
+		var seal := Vector2(ox + T * 5.0, oy + T * 4.75)
+		draw_circle(seal, T * 0.27, Color("#718897"))
+		draw_circle(seal, T * 0.20, shell["floor"])
+		draw_circle(seal, T * 0.12, X_GOLD.darkened(0.10))
 	_draw_interior_sidewalls(b, wc, hc, shell, door_gap)
 	for fr in pieces:
 		var fp: Array = (fr as Dictionary).get("pos", [0, 0])
@@ -2372,19 +2383,20 @@ const WALLPAPER := {
 	"cafe": [Color("#d9b77e"), Color("#c49a5a")],       # 赭黄
 	"bath": [Color("#dfe7e6"), Color("#8fb3c0")],       # 白瓷砖 + 蓝腰线
 	"study": [Color("#8fa487"), Color("#7a906f")],      # 鼠尾草绿
+	"civic": [Color("#d8ddd8"), Color("#718897")],      # 镇公所：浅灰泥 + 海蓝灰护墙板
 	"workshop": [Color("#cfc6b6"), Color("#b3a891")],   # 刷白石灰
 	"store": [Color("#e8d9a8"), Color("#d4c088")],      # 淡黄
 	"chapel": [Color("#d3cdc2"), Color("#9c958a")],     # 刷白花岗岩
 }
 # docs/193 §六：设施室内的用途按 space id 直接给（它们的家具清单与咖啡区/起居间同型，按清单推会推错）
-const FACILITY_ROLE := {"bakery": "cafe", "creperie": "cafe", "chapel": "chapel", "halles": "store", "hotel": "living", "mairie": "study"}
+const FACILITY_ROLE := {"bakery": "cafe", "creperie": "cafe", "chapel": "chapel", "halles": "store", "hotel": "living", "mairie": "civic"}
 var _furn_foot := {}             # 精灵名 -> alpha bbox（对地用底行，挂墙用中心）
 const TOWN_FURN := {"bed": "bed_single", "stove": "stove", "bath": "bathtub", "desk": "workbench"}
 
 func _wallpaper(role: String) -> Array:
 	return WALLPAPER.get(role, WALLPAPER["living"])
 
-func _draw_interior_floor(b: Rect2, wc: int, hc: int, shell: Dictionary, legacy := false) -> void:
+func _draw_interior_floor(b: Rect2, wc: int, hc: int, shell: Dictionary, legacy := false, sid := "") -> void:
 	var base: Color = shell["floor"]
 	var line: Color = shell["floor_line"]
 	draw_rect(b, base, true)
@@ -2404,6 +2416,17 @@ func _draw_interior_floor(b: Rect2, wc: int, hc: int, shell: Dictionary, legacy 
 				if (gx + gy) % 2 == 0:
 					c = c.lightened(0.04)
 				draw_rect(Rect2(b.position.x + gx * tsz + 1, b.position.y + gy * tsz + 1, tsz - 1, tsz - 1), c, true)
+		if sid == "mairie":
+			# 镇公所平面分区：中轴蓝灰石带从门厅引向议事区；后场两块细边分别框出办事窗口与镇长办公室。
+			var civic_line := Color("#718897")
+			var aisle := Rect2(b.position + Vector2(T * 4.55, T * 2.55), Vector2(T * 0.90, T * 3.45))
+			draw_rect(aisle, Color(civic_line, 0.23), true)
+			draw_rect(aisle, Color(civic_line, 0.68), false, 2.0)
+			for yy in range(3, 6):
+				draw_rect(Rect2(b.position + Vector2(T * 4.62, T * (float(yy) + 0.05)), Vector2(T * 0.76, 2)), Color(1, 1, 1, 0.14), true)
+			for zone in [Rect2(b.position + Vector2(T * 0.75, T * 0.75), Vector2(T * 3.35, T * 1.75)),
+					Rect2(b.position + Vector2(T * 5.45, T * 0.75), Vector2(T * 3.80, T * 1.75))]:
+				draw_rect(zone, Color(civic_line, 0.54), false, 2.0)
 		return
 	# 木地板：1/4 格宽的长条板，板长 1.5-3 格错缝，逐板明暗；板间一线暗缝
 	var ph := T * 0.25
@@ -2507,7 +2530,7 @@ func _draw_interior_sidewalls(b: Rect2, wc: int, hc: int, shell: Dictionary, doo
 	draw_rect(Rect2(b.position.x, top, b.size.x, b.end.y - T + th - top), Color(0, 0, 0, 0.45), false, 2.0)
 
 ## 隔墙格：竖向（上下有墙）画成居中的一道薄墙顶；横向画成一小段有立面的墙（与后墙同一种墙纸）。
-func _draw_partition(base: Vector2, c: Vector2i, walls: Dictionary, shell: Dictionary) -> void:
+func _draw_partition(base: Vector2, c: Vector2i, walls: Dictionary, shell: Dictionary, role := "living") -> void:
 	var th := T * IWALL_THIN
 	var cap: Color = shell["wall_top"]
 	var horiz := walls.has(c + Vector2i(1, 0)) or walls.has(c + Vector2i(-1, 0))
@@ -2521,33 +2544,44 @@ func _draw_partition(base: Vector2, c: Vector2i, walls: Dictionary, shell: Dicti
 		draw_rect(Rect2(x + th - 2, y0, 2, base.y + T - y0), shell["wall_foot"], true)
 	if horiz:
 		var face := Rect2(base.x, base.y + th, T, T * 0.62)
-		draw_rect(face, _wallpaper("living")[0].lerp(shell["wall"], 0.25), true)
+		var wp := _wallpaper(role)
+		draw_rect(face, (wp[0] as Color).lerp(shell["wall"], 0.20), true)
+		if role == "civic":
+			var panel := Rect2(face.position.x, face.position.y + face.size.y * 0.58, T, face.size.y * 0.42)
+			draw_rect(panel, Color(wp[1], 0.78), true)
+			draw_rect(Rect2(panel.position.x + 5, panel.position.y + 4, panel.size.x - 10, panel.size.y - 8), Color(wp[0], 0.20), false, 1.0)
 		draw_rect(Rect2(face.position.x, face.end.y - 4, T, 4), D_WOOD_LINE, true)
 		draw_rect(Rect2(base.x, base.y, T, th), cap, true)
 		draw_rect(Rect2(base.x, base.y, T, 2), cap.lightened(0.22), true)
 		draw_rect(Rect2(base.x, face.end.y, T, 5), Color(0, 0, 0, 0.16), true)
 
 ## slot → PixelLab 家具精灵名（assets/art/furn/）。"" = 没有精灵，走旧的程序化画法。
-func _furn_name(slot: String, fw: int, role: String, on_wall: bool) -> String:
+func _furn_name(slot: String, fw: int, role: String, on_wall: bool, sid := "") -> String:
 	match slot:
 		"bed": return "bed_double" if fw >= 2 else "bed_single"
-		"bed_double", "wardrobe", "dresser", "sofa", "armchair", "bookshelf", "plant", "piano", "workbench", "toilet", "stove", "bathtub":
+		"bed_double", "wardrobe", "dresser", "sofa", "armchair", "plant", "piano", "workbench", "toilet", "stove", "bathtub":
 			return slot
+		"bookshelf": return "civic_archive" if sid == "mairie" else slot
 		"bath": return "bathtub"
 		"basin": return "washbasin"
 		"dining": return "dining_table"
 		"bistro": return "bistro_table"
 		"table": return "bistro_table" if role == "cafe" else ""
-		"counter": return "cafe_counter" if fw >= 2 else ""
+		"counter":
+			if sid == "mairie" and fw >= 2: return "civic_counter"
+			return "cafe_counter" if fw >= 2 else ""
 		"coffee": return "_none" if role == "cafe" else ""     # 咖啡区：咖啡机已画在 2 格吧台精灵里
 		"sink": return "kitchen_counter"
 		"grocery": return "grocery_shelf"
 		"lamp": return "floor_lamp"
-		"painting_sea", "painting_parasol", "stained_glass": return slot
+		"painting_sea": return "civic_town_map" if sid == "mairie" else slot
+		"painting_parasol", "stained_glass": return slot
 		"pew", "altar", "market_stall": return slot
 		"window": return "window_curtain" if on_wall else ""
 		"rug": return "rug_persian" if fw >= 2 else ""
-		"desk": return "writing_desk" if role == "study" else ""   # 阿丽 2F 的书桌是 AM1 的私人地标（assert_cafe_interior_density 要求单格轮廓），保留程序化
+		"desk":
+			if sid == "mairie": return "mayor_desk"
+			return "writing_desk" if role == "study" else ""   # 阿丽 2F 的书桌是 AM1 的私人地标（assert_cafe_interior_density 要求单格轮廓），保留程序化
 		"shelf":
 			if role == "study":
 				return "bookshelf"
@@ -2570,7 +2604,7 @@ func _draw_furn_sprite(fd: Dictionary, base: Vector2, role: String, sid := "") -
 	var on_wall := int(fp[1]) == 0
 	if sid == "cafe" and not on_wall:
 		return false          # 阿丽的咖啡馆地面家具保持 AM1 手工精修的程序化轮廓（assert_cafe_interior_density：家具不许溢出格子）
-	var name := _furn_name(String(fd.get("slot", "")), fw, role, on_wall)
+	var name := _furn_name(String(fd.get("slot", "")), fw, role, on_wall, sid)
 	if name == "":
 		return false
 	if name == "_none":
@@ -2697,6 +2731,8 @@ func _interior_shell(sid: String, floor_mode: String) -> Dictionary:
 	var areas: Dictionary = Sim.world.get("areas", {}) if Sim.world.get("areas", {}) is Dictionary else {}
 	var a: Dictionary = areas.get(sid, {}) if areas.get(sid, {}) is Dictionary else {}
 	var typ := String(a.get("type", "residential"))
+	if sid == "mairie":
+		typ = "public"      # 镇公所没有 outdoor area 键；显式继承公共建筑外壳，避免静默退成住宅木地板。
 	# 认不出的 type 退回住宅（= 改前行为），与 BLD_PAL 认不出退回 workshop 的口径不同：
 	# 这里退回"改前长什么样"，让未知建筑至少不比今天差。
 	if not BLD_PAL.has(typ) or not FLOOR_PAL.has(typ):
