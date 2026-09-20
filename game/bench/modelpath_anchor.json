@@ -39,36 +39,37 @@
       "2026-09-18 P4c-8（docs/215）· 可丽饼店的钱改进【跑堂】的口袋（用户「ship S3」）⇒ 世界轨迹【蓄意】移动。★production.vendors 新一项 跑堂/吃点心/price 3/luxury，不设 venue。★【故意不给酒店掌柜】：她是全镇唯一的糕点产者，再给一份收入会弱化「穷了就去上工」的动机环 ⇒ 实测 N=16 seed 5 糕点产量 306→116、满足率 0.875→0.459、断供 8→33 天，#40 12/12→10/12；跑堂不产任何货，少上班不动仓库。★判据：N=12 12/12、N=16 11/12（丢的那颗在零假设噪声内：它自己的零假设臂 12/12）、留出 13-30 18/18（master 17/18）。⚠ 代价：店跟着跑堂的班开关 ⇒ 吃点心 diner·tick 726→550（−24%）。⚠ 本次烘的一个坑：`--bake-golden` / `--bake-anchor` 【不带路径时不烘】，只打印一个和【真不符】一模一样的 FAIL——DetGate 因此被漏烘一轮（验证时报「金标 0/16 可比」才暴露）。",
       "2026-09-18 P4b（docs/218）· 镇长直选与任期是有意的世界状态变更：每 28 日按既有镇内名声选三名候选，每位居民以 standing 投票，同分走稳定哈希；记录候选、票箱、当选人与任期，并新增 election 事件/HUD，不开放任何财政或救济旋钮。S0 1-12×60：硬 12/12、#37 12/12、#40 12/12、det 3/3；DetGate 四场景 16/16；ModelPath random(full) 1-4×8 全绿。",
       "2026-09-18 P4c（docs/219）· 当选镇长进入每周镇公所公务：只有现任能枚举镇长桌“办公”，跨平面行程在无生存危机时规划，七天周期内幂等；完成后写 civic_duty 并同步 mayor_state/mayor_log，HUD 显示出勤与任内镇库变化。初始 duty_pull=28 令 held-out #26 仅 16/18，按负对照降至 8 后恢复 18/18；最终 N=12 硬 12/12、#40 12/12、公务覆盖 8/12、det 3/3，N=16 硬 12/12、#40 11/12、公务覆盖 8/12，held-out 13-30 硬 18/18、#26/#40 18/18、公务覆盖 15/18。Harness 新增公务 60 天活性与半数 seed 法定覆盖；DetGate 16/16；ModelPath days8 在选举前故摘要不动、重烘后失败 0。",
-      "2026-09-19 P5a（docs/229）· 合作银行从第一夜开始改变 wallet liquidity 和 pay receipt 轨迹，因此 random(full) 世界锚 4/4 有意移动；A/B prompt 编码与熔断契约未动，ModelPathGate 失败 0。"
+      "2026-09-19 P5a（docs/229）· 合作银行从第一夜开始改变 wallet liquidity 和 pay receipt 轨迹，因此 random(full) 世界锚 4/4 有意移动；A/B prompt 编码与熔断契约未动，ModelPathGate 失败 0。",
+      "2026-09-20 coastal blueprint: deliberate changes to solid lots, traversable arcades, legal routes, room cutouts and furniture reachability. S0 seeds 1-12 x 60 days: hard checks 12/12, soft threshold passed, repeatability 1/1. Scenario hard checks and repeatability 16/16. Old hashes diverge from day one as expected; thresholds are unchanged. See docs/249-gameplay-tour.md."
     ]
   },
   "random_full": {
     "days8_n12": {
       "1": {
-        "digest": "759091493",
-        "event_digest": "4303915872052771118",
-        "landed": 725
+        "digest": "4246410325",
+        "event_digest": "9204382740770989780",
+        "landed": 696
       },
       "2": {
-        "digest": "1930988802",
-        "event_digest": "8964574354273839043",
-        "landed": 735
+        "digest": "965317435",
+        "event_digest": "7044286928851936569",
+        "landed": 726
       },
       "3": {
-        "digest": "1662604439",
-        "event_digest": "2266387665598707633",
-        "landed": 719
+        "digest": "1154192952",
+        "event_digest": "9010209201118527795",
+        "landed": 708
       },
       "4": {
-        "digest": "693230417",
-        "event_digest": "9119081233384362932",
-        "landed": 757
+        "digest": "2640773957",
+        "event_digest": "8569348864006470317",
+        "landed": 711
       },
       "_scale": {
-        "max_n": 42,
-        "n_dec": 2936,
-        "over_cap": 79,
-        "over_old": 8
+        "max_n": 58,
+        "n_dec": 2841,
+        "over_cap": 126,
+        "over_old": 11
       }
     }
   }

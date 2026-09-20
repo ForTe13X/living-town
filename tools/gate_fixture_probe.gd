@@ -84,8 +84,11 @@ func _initialize() -> void:
 func _live(S, starved: int) -> Dictionary:
 	var log: Array = S.event_log
 	var ty := {}
+	var bank_events := 0
 	for e in log:
 		var k := String(e["type"])
+		if k == "pay" and String(e.get("note", "")).get_slice("*", 0) in ["bank_deposit", "bank_withdraw", "bank_loan", "bank_repay"]:
+			bank_events += 1
 		ty[k] = int(ty.get(k, 0)) + 1
 		if k == "pact":
 			var nk := "pact/" + String(e.get("note", ""))
@@ -157,6 +160,7 @@ func _live(S, starved: int) -> Dictionary:
 	var export_pairs := int(export_scan["pairs"])
 	var export_related := int(export_scan["related"])
 	return {
+		"bank_events": bank_events,
 		"tag_seed": [S.agents.size(), S.tick_no],
 		"scenario": String(S.scenario), "n_agents": S.agents.size(), "core_population": S.core_population,
 		"starved": starved, "events": log.size(), "types": ty,
