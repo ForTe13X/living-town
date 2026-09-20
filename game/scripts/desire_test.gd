@@ -21,8 +21,8 @@ const OBS_CFG := {"enabled": true, "gain": 0.15, "mimetic_cap": 5.0}
 const ON_CFG := {"enabled": true, "gain": 0.15, "mimetic_cap": 5.0, "bonus_k": 8.0}
 ## 步骤 4：ON_CFG 故意【不带】rho/r_max ⇒ 上面 D1'/D3/SL 仍逐字节复现步骤 3。S4_CFG 另开一臂：
 ##   D4  逐 tick：每人 rebuffs < r_max，且当前 target ∉ recent（放弃/满足后不回锅）；
-##       活性：全程至少一次"满足"或"放弃"真的发生（否则一个从不释放对象的实现也能过）。
-##       满足不再换对象（§七·九）⇒ 活性口径 = 满足（同对象强度下跌）或 放弃（对象变更）至少发生一次。
+##       自然轨迹报告满足/放弃次数；定向事件夹具必须逐条验证满足、阈值前保留和阈值后释放。
+##       这样一个从不释放对象的实现仍然必红，不依赖短窗口里恰好发生足够的目击和相遇。
 ##   CR  拥挤项（单元级）：同一份手搭证据，缺 crowd_k ⇒ 被 4 个不同的人示好的 X 胜（外中介）；
 ##       crowd_k=0.5 ⇒ 被 1 个人反复示好的 Y 胜（内中介）。证明拥挤项真的翻转了选择，且缺键时不起作用。
 ##   MS  最少证据（单元级）：seen < min_seen ⇒ 不选；达到 ⇒ 选。
@@ -276,8 +276,26 @@ func _ready() -> void:
 					sats += 1                                      # 满足：强度只会因满足而同对象下跌
 			prev[aid] = [tg4, in4]
 	ck(d4_bad.is_empty(), "D4 无执念、无回锅、recent≤K (违例=%s)" % str(d4_bad.slice(0, 5)))
-	ck(sats + releases > 0, "D4 活性：满足 %d 次 / 放弃 %d 次" % [sats, releases])
+	print("  D4 natural observation: satisfied=%d released=%d; branch coverage is asserted below" % [sats, releases])
 	_free(Q)
+	# Directed outcomes also exercise both branches independently of encounter luck.
+	var V = _new_sim(S4_CFG)
+	V.start_new(1)
+	var va: Dictionary = V.agents[0]
+	var vt := String(V.agents[1]["id"])
+	var vd: Dictionary = V._desire_state(va)
+	vd.merge({"kind": "person", "target": vt, "intensity": 80.0, "rebuffs": 1}, true)
+	var ve := {"type": "give", "actor": String(va.id), "target": vt, "accepted": true, "witnesses": []}
+	V._desire_witness(ve)
+	ck(is_equal_approx(float(vd.intensity), 80.0 * (1.0 - float(S4_CFG.rho))) and int(vd.rebuffs) == 0 and String(vd.target) == vt,
+		"D4 accepted event reduces intensity, clears rebuffs, and retains target")
+	ve.accepted = false
+	for i in range(r_max - 1): V._desire_witness(ve)
+	ck(String(vd.target) == vt, "D4 target retained below rejection threshold")
+	V._desire_witness(ve)
+	ck(String(vd.target) == "" and vt in vd.recent and int(vd.rebuffs) == 0,
+		"D4 rejection threshold releases target and records recent history")
+	_free(V)
 
 	# ── SL：存档往返 ──
 	print("SL save/load")

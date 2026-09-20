@@ -113,9 +113,12 @@ def main():
     trees = set((int(x), int(y)) for x, y in m.get("trees", []))
     if not ocean.issubset(water) or trees & ocean:
         fails.append("East Ocean 必须精确占 x60..63×y0..47，且树不得与海域重叠")
-    if len(water) != 272 or len(trees) != 130 or len(blk) != 569:
-        fails.append("East Ocean typed 数量漂移：water=%d(需272) trees=%d(需130) blockers=%d(需569)"
-                     % (len(water), len(trees), len(blk)))
+    # Landscape reconstruction deliberately changes tree/pond counts. Protect
+    # geometry and access instead of pinning the previous art layout's totals.
+    if water & trees or trees & set(map(tuple, m.get("walls", []))):
+        fails.append("Landscape typed layers overlap")
+    if not any(x < 60 and y < 7 for x, y in water) or not any(x < 60 and y > 41 for x, y in water):
+        fails.append("North and south landscape ponds must remain present")
     areas = m.get("areas", {})
     dock = areas.get("dock", {})
     north_pier = areas.get("north_pier", {})
@@ -258,8 +261,20 @@ def main():
     lot_cells = set()
     for L in m.get("solid_lots", []):
         door = tuple(L["door"]) if L.get("door") else None
+        opens = set()
+        for raw_open in L.get("open_cells", []):
+            if not (isinstance(raw_open, list) and len(raw_open) == 2
+                    and all(isinstance(v, int) for v in raw_open)):
+                fails.append("solid lot %s open_cells contains malformed cell %r" % (L.get("id", "?"), raw_open))
+                continue
+            oc = tuple(raw_open)
+            if not (int(L["pos"][0]) <= oc[0] < int(L["pos"][0]) + int(L["footprint"][0])
+                    and int(L["pos"][1]) <= oc[1] < int(L["pos"][1]) + int(L["footprint"][1])):
+                fails.append("solid lot %s open cell %r falls outside its footprint" % (L.get("id", "?"), raw_open))
+                continue
+            opens.add(oc)
         lot_cells |= {(L["pos"][0] + i, L["pos"][1] + j) for i in range(L["footprint"][0])
-                      for j in range(L["footprint"][1])} - {door}
+                      for j in range(L["footprint"][1])} - {door} - opens
     walk = set((x, y) for x in range(W) for y in range(H)
                if (x, y) not in blk and (x, y) not in objcells and (x, y) not in wscells
                and (x, y) not in solid_cells and (x, y) not in lot_cells)

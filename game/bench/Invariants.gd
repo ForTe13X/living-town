@@ -4,9 +4,9 @@ class_name BenchInvariants
 ## 只用它的【静态】哈希（fnv1a32/mix32）——不实例化、不持有状态。
 const SimScript = preload("res://scripts/Sim.gd")
 ## bench/Invariants.gd — 把「确定性社交底座」的机检不变量抽成单一真相源（语义照搬 sim_soak.gd / sim_social_port.mjs）。
-## 条数：**46**（V1 加了 #41、Z1 加了 #42、AA3 加了 #43、E1 加了 #44 进口溯源、E2a 加了 #45 import 付费溯源、
-##   E-export 加了 #46 出口贸易原子性绑定）。
-##   数法：`grep -o "_chk([0-9][0-9]*" game/bench/Invariants.gd | sort -u | wc -l` → **46**（已现跑核过）。
+## 条数：**47**（V1 加了 #41、Z1 加了 #42、AA3 加了 #43、E1 加了 #44 进口溯源、E2a 加了 #45 import 付费溯源、
+##   E-export 加了 #46 出口贸易原子性绑定、P5a 加了 #47 合作银行足额准备金）。
+##   数法：`grep -o "_chk([0-9][0-9]*" game/bench/Invariants.gd | sort -u | wc -l` → **47**（已现跑核过）。
 ##   ⚠ 原文写的是「`grep -c` 即得」——**那个配方自己是错的，off-by-one**：本行注释里就含有
 ##   `R.append(_chk(` 这个字面串，`grep -c` 会把**这一行文档**也数进去（HEAD 上 `grep -c`=41 而 id 只有 40）。
 ##   一条"怎么数"的说明把自己数了进去，这正是它想防的那种过期方式的另一个版本。
@@ -391,7 +391,7 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 	var log: Array = S.event_log
 	var accepted: Array = []
 	for e in log:
-		if bool(e["accepted"]) and not (String(e["type"]) in ["pay", "world", "election", "produce", "consume", "spoil", "shortage", "import", "export"]):
+		if bool(e["accepted"]) and not (String(e["type"]) in ["pay", "world", "election", "civic_duty", "mayor_review", "produce", "consume", "spoil", "shortage", "import", "export"]):
 			accepted.append(e)   # 经济(pay)/世界变更(world)/治理(election)/产出账本(produce/consume/spoil/shortage)/进口(import)/出口(export)
 			                     # 事件不算社交参与——否则 inv2/3 被稀释成空门。
 			                     # ★Wave E 必须补这四个：produce/consume 的 actor 是干活/吃饭的人，
@@ -782,8 +782,8 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 	# 35) 货币非负：transfer 不足即拒 → 任何人不可能透支
 	#     ★E2a：补 external_coin 非负臂（对称 town_coin）。import 首片 external 从 0 单调增暂不可达负，
 	#     零成本、防 export/选项 B 未来某棒让 external 透支凭空铸币（docs/154 §三）。
-	R.append(_chk(35, "货币非负", neg_coin == 0 and S.town_coin >= 0 and S.external_coin >= 0,
-		"负余额agent=%d 镇库=%d 外部=%d" % [neg_coin, int(S.town_coin), int(S.external_coin)]))
+	R.append(_chk(35, "货币非负", neg_coin == 0 and S.town_coin >= 0 and S.external_coin >= 0 and S.bank_coin >= 0,
+		"负余额agent=%d 镇库=%d 外部=%d 银行=%d" % [neg_coin, int(S.town_coin), int(S.external_coin), int(S.bank_coin)]))
 
 	# ── Wave 2b 节日 (36，festivals.json 缺失时恒过) ──
 	# 36) 节日无残留且账实相符：fest_ 对象只在节日进行中存在；spawn-despawn 事件差 == 现存 fest 对象数
@@ -798,26 +798,141 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 			elif String(e.get("note", "")) == "despawn": dsp_ev += 1
 	var fest_ok: bool = (fest_now == 0 or String(S.festival_active) != "") and (sp_ev - dsp_ev == fest_now)
 	R.append(_chk(36, "节日对象配对无残留", fest_ok, "现存=%d 活动=%s spawn=%d despawn=%d" % [fest_now, String(S.festival_active), sp_ev, dsp_ev]))
-	# #37 选举计票自洽（Wave 3a 硬不变量，docs/15「计票=快照纯函数=硬不变量」）：每场选举 票数守恒(yea+nay+abstain=选民数)
-	#   + 结果与票数一致(pass=yea>nay) + election 事件数=选举场次。elections 关→election_log 空→恒真(off 门不引约束)。
+	# #37 治理计票自洽：议题票与镇长票都守票数、结果与事件一一对应。镇长候选/任期也必须良构，
+	#   不然一份看似正常的 mayor_state 会成为没有选举来源的政策授权。
 	var elec_ok := true
 	var elec_detail := "无选举"
-	if not S.election_log.is_empty():
+	if not S.election_log.is_empty() or not S.mayor_log.is_empty():
 		var eligible := 0
 		for ag in S.agents:
 			if not bool(ag.get("is_player", false)): eligible += 1
-		var elec_events := 0
+		var topic_events := 0; var mayor_events := 0; var mayor_event_rows := []
 		for e in log:
-			if String(e["type"]) == "election": elec_events += 1
+			if String(e["type"]) == "election":
+				if String(e.get("note", "")) == "mayor_term":
+					mayor_events += 1
+					mayor_event_rows.append(e)
+				else: topic_events += 1
 		for r in S.election_log:
 			var rd: Dictionary = r
 			var sumv := int(rd["yea"]) + int(rd["nay"]) + int(rd["abstain"])
 			if sumv != int(rd["voters"]) or sumv != eligible or bool(rd["pass"]) != (int(rd["yea"]) > int(rd["nay"])):
 				elec_ok = false; break
-		if elec_ok and elec_events != S.election_log.size():
+		var duty_counts := {}; var duty_periods := {}; var term_winners := {}; var term_ends := {}; var term_every := {}; var term_records := {}
+		for r in S.mayor_log:
+			var mr: Dictionary = r
+			var candidates: Array = mr.get("candidates", [])
+			var ballots: Dictionary = mr.get("ballots", {})
+			var seen := {}; var votes := 0
+			for raw_id in candidates:
+				var cid := String(raw_id)
+				if cid == "" or seen.has(cid): elec_ok = false; break
+				seen[cid] = true
+			for raw_id in ballots:
+				var cid := String(raw_id)
+				if not seen.has(cid) or int(ballots[raw_id]) < 0: elec_ok = false; break
+				votes += int(ballots[raw_id])
+			if not elec_ok or candidates.size() < 2 or not seen.has(String(mr.get("winner", ""))) \
+					or votes != int(mr.get("voters", -1)) or int(mr.get("voters", -1)) != eligible \
+					or int(mr.get("term_end", -1)) < int(mr.get("term_start", 0)):
+				elec_ok = false; break
+			var mayor_cfg: Dictionary = S.elections.get("mayor", {}) if S.elections.get("mayor", {}) is Dictionary else {}
+			if mr.get("platform", {}) != S._mayor_platform_for(String(mr.get("winner", "")), mayor_cfg):
+				elec_ok = false; break
+			var term_start := int(mr.get("term_start", -1))
+			term_winners[term_start] = String(mr.get("winner", ""))
+			term_ends[term_start] = int(mr.get("term_end", -1))
+			term_records[term_start] = mr
+			duty_counts[term_start] = 0
+			duty_periods[term_start] = {}
+			term_every[term_start] = maxi(1, int(mayor_cfg.get("duty_every_days", 7)))
+		if elec_ok and (topic_events != S.election_log.size() or mayor_events != S.mayor_log.size()):
 			elec_ok = false
-		elec_detail = "%d 场 选民=%d 事件=%d" % [S.election_log.size(), eligible, elec_events]
-	R.append(_chk(37, "选举计票自洽", elec_ok, elec_detail))
+		for e in log:
+			if String(e.get("type", "")) != "civic_duty": continue
+			var note := String(e.get("note", "")); var term_start := -1
+			if note.begins_with("term:") and note.substr(5).is_valid_int(): term_start = int(note.substr(5))
+			if not term_winners.has(term_start) or String(e.get("actor", "")) != String(term_winners.get(term_start, "")) \
+					or String(e.get("target", "")) != "mairie" or String(e.get("subject", "")) != "mayor":
+				elec_ok = false; continue
+			var duty_day := int(e.get("tick", 0)) / int(S.TICKS_PER_DAY) + 1
+			var period := (duty_day - term_start) / int(term_every[term_start])
+			var seen_periods: Dictionary = duty_periods[term_start]
+			if duty_day < term_start or duty_day > int(term_ends.get(term_start, -1)) or period < 0 or seen_periods.has(period): elec_ok = false
+			seen_periods[period] = true
+			duty_counts[term_start] = int(duty_counts[term_start]) + 1
+		for r in S.mayor_log:
+			var mr: Dictionary = r; var term_start := int(mr.get("term_start", -1))
+			if int(mr.get("duties_done", -1)) != int(duty_counts.get(term_start, -2)):
+				elec_ok = false
+		var review_counts := {}
+		for e in log:
+			if String(e.get("type", "")) != "mayor_review": continue
+			var term_start := int(e.get("term_start", -1))
+			if not term_records.has(term_start): elec_ok = false; continue
+			var mr: Dictionary = term_records[term_start]
+			var done := int(mr.get("duties_done", -1)); var due := int(mr.get("duties_due", -1))
+			var delta := int(mr.get("treasury_delta", 0)); var attendance := int(mr.get("attendance_pct", -1))
+			var expected_note := "term:%d;duties:%d/%d;treasury:%+d" % [term_start, done, due, delta]
+			if String(e.get("actor", "")) != String(mr.get("winner", "")) or String(e.get("target", "")) != "mairie" \
+					or String(e.get("subject", "")) != "mayor" or String(e.get("note", "")) != expected_note \
+					or int(e.get("duties_done", -2)) != done or int(e.get("duties_due", -2)) != due \
+					or int(e.get("attendance_pct", -2)) != attendance or int(e.get("treasury_delta", delta - 1)) != delta \
+					or int(e.get("id", -1)) != int(mr.get("review_event_id", -2)):
+				elec_ok = false
+			review_counts[term_start] = int(review_counts.get(term_start, 0)) + 1
+		for i in S.mayor_log.size():
+			var mr: Dictionary = S.mayor_log[i]; var term_start := int(mr.get("term_start", -1))
+			var expected_review_used := 0
+			var mayor_cfg: Dictionary = S.elections.get("mayor", {}) if S.elections.get("mayor", {}) is Dictionary else {}
+			var preview_cfg = mayor_cfg.get("review_preview", {})
+			var review_enabled := preview_cfg is Dictionary and not (preview_cfg as Dictionary).is_empty()
+			if i > 0 and review_enabled:
+				var previous: Dictionary = S.mayor_log[i - 1]
+				if (mr.get("candidates", []) as Array).has(String(previous.get("winner", ""))):
+					expected_review_used = int(previous.get("review_event_id", -1))
+			if int(mr.get("review_event_id_used", 0)) != expected_review_used:
+				elec_ok = false
+			if i >= mayor_event_rows.size():
+				elec_ok = false
+			else:
+				var mev: Dictionary = mayor_event_rows[i]
+				var baseline: Dictionary = mev.get("baseline_ballots", {}) if mev.get("baseline_ballots", {}) is Dictionary else {}
+				var baseline_votes := 0; var baseline_ok := true
+				for raw_id in baseline:
+					if not (mr.get("candidates", []) as Array).has(String(raw_id)) or int(baseline[raw_id]) < 0:
+						baseline_ok = false
+					baseline_votes += int(baseline[raw_id])
+				var swings := int(mev.get("performance_swings", -1))
+				var gained := int(mev.get("incumbent_gained", -1)); var lost := int(mev.get("incumbent_lost", -1))
+				var incumbent := String(mev.get("incumbent", ""))
+				var actual_ballots: Dictionary = mr.get("ballots", {})
+				if String(mev.get("actor", "")) != "town" or String(mev.get("target", "")) != String(mr.get("winner", "")) \
+						or String(mev.get("subject", "")) != "mayor" or int(mev.get("review_event_id_used", -1)) != expected_review_used \
+						or mev.get("platform", {}) != mr.get("platform", {}) \
+						or not baseline_ok or baseline_votes != eligible or swings < 0 or gained < 0 or lost < 0 or swings != gained + lost:
+					elec_ok = false
+				elif expected_review_used == 0:
+					if incumbent != "" or swings != 0 or baseline != actual_ballots: elec_ok = false
+				elif incumbent == "" or int(actual_ballots.get(incumbent, 0)) != int(baseline.get(incumbent, 0)) + gained - lost:
+					elec_ok = false
+			if i < S.mayor_log.size() - 1:
+				var every := int(term_every.get(term_start, 7)); var due := (int(mr.get("term_end", term_start - 1)) - term_start) / every + 1
+				var delta := int(mr.get("town_coin_end", 0)) - int(mr.get("town_coin_start", 0))
+				var done := int(mr.get("duties_done", 0)); var attendance := 100 if due <= 0 else mini(100, done * 100 / due)
+				if int(review_counts.get(term_start, 0)) != 1 or int(mr.get("duties_due", -1)) != due \
+						or int(mr.get("treasury_delta", delta - 1)) != delta or int(mr.get("attendance_pct", -1)) != attendance:
+					elec_ok = false
+			elif int(review_counts.get(term_start, 0)) != 0:
+				elec_ok = false
+		if not S.mayor_state.is_empty():
+			var active_start := int(S.mayor_state.get("term_start", -1))
+			if int(S.mayor_state.get("duties_done", -1)) != int(duty_counts.get(active_start, -2)) \
+					or not term_records.has(active_start) \
+					or S.mayor_state.get("platform", {}) != (term_records[active_start] as Dictionary).get("platform", {}):
+				elec_ok = false
+		elec_detail = "议题%d场/镇长%d届 选民=%d 事件=%d+%d" % [S.election_log.size(), S.mayor_log.size(), eligible, topic_events, mayor_events]
+	R.append(_chk(37, "治理计票自洽", elec_ok, elec_detail))
 
 	# ── Wave E 劳动产出闭环 (38-40，production.json 缺失时恒过=零扰动；docs/47 §二-E1) ──
 	# 结构照抄 #34/#35：库存增减只有 Sim._stock_move / _stock_take 一个通道，于是"账本能独立重算出现存量"
@@ -1396,6 +1511,58 @@ static func check_all(S, starved: int, starve_by_need: Dictionary = {}, starve_s
 		("异常=%d: %s" % [exp_bad.size(), "; ".join(exp_bad.slice(0, 3))]) if not exp_bad.is_empty()
 		else ("export 钱货一一绑定同量" if logi_on2 else "物流系统关闭(缺 logistics.json)")))
 
+	# 47) P5a full-reserve bank: event receipts reconstruct cash, deposits and loan receivables.
+	# Deposits are liabilities, not minted money; every loan must leave cash reserves >= all deposits.
+	var bank_bad: Array = []
+	if not S.banking.is_empty():
+		var deposits_fold := {}
+		var loans_fold := {}
+		var bank_expected := int(S.banking.get("opening_capital", 0))
+		for e in log:
+			if String(e.get("type", "")) != "pay":
+				continue
+			var note := String(e.get("note", ""))
+			var head := note.split("*")[0]
+			if not head in ["bank_deposit", "bank_withdraw", "bank_loan", "bank_repay"]:
+				continue
+			var amt := int(e.get("amt", 0))
+			var actor := String(e.get("actor", "")); var target := String(e.get("target", ""))
+			if amt <= 0 or _amt_of(note) != amt:
+				bank_bad.append("#%d bank amount/note mismatch" % int(e.get("id", -1)))
+				continue
+			if head == "bank_deposit":
+				if target != "bank": bank_bad.append("#%d deposit target=%s" % [int(e.get("id", -1)), target])
+				deposits_fold[actor] = int(deposits_fold.get(actor, 0)) + amt; bank_expected += amt
+			elif head == "bank_withdraw":
+				if actor != "bank": bank_bad.append("#%d withdraw actor=%s" % [int(e.get("id", -1)), actor])
+				deposits_fold[target] = int(deposits_fold.get(target, 0)) - amt; bank_expected -= amt
+			elif head == "bank_loan":
+				if actor != "bank": bank_bad.append("#%d loan actor=%s" % [int(e.get("id", -1)), actor])
+				loans_fold[target] = int(loans_fold.get(target, 0)) + amt; bank_expected -= amt
+			elif head == "bank_repay":
+				if target != "bank": bank_bad.append("#%d repay target=%s" % [int(e.get("id", -1)), target])
+				loans_fold[actor] = int(loans_fold.get(actor, 0)) - amt; bank_expected += amt
+		for aid in S.bank_deposits:
+			if int(S.bank_deposits[aid]) != int(deposits_fold.get(aid, 0)) or int(S.bank_deposits[aid]) < 0:
+				bank_bad.append("deposit %s state=%d ledger=%d" % [aid, int(S.bank_deposits[aid]), int(deposits_fold.get(aid, 0))])
+		for aid in deposits_fold:
+			if int(deposits_fold[aid]) != int(S.bank_deposits.get(aid, 0)):
+				bank_bad.append("deposit ledger account missing %s" % aid)
+		for aid in S.bank_loans:
+			var rec: Dictionary = S.bank_loans[aid] if S.bank_loans[aid] is Dictionary else {}
+			if int(rec.get("outstanding", -1)) != int(loans_fold.get(aid, 0)) or int(rec.get("outstanding", -1)) < 0:
+				bank_bad.append("loan %s state=%d ledger=%d" % [aid, int(rec.get("outstanding", -1)), int(loans_fold.get(aid, 0))])
+		for aid in loans_fold:
+			if int(loans_fold[aid]) != int((S.bank_loans.get(aid, {}) as Dictionary).get("outstanding", 0)):
+				bank_bad.append("loan ledger account missing %s" % aid)
+		if int(S.bank_coin) != bank_expected:
+			bank_bad.append("bank cash=%d ledger=%d" % [int(S.bank_coin), bank_expected])
+		if int(S.bank_coin) < int(S.bank_deposit_total()):
+			bank_bad.append("reserve=%d deposits=%d" % [int(S.bank_coin), int(S.bank_deposit_total())])
+	R.append(_chk(47, "合作银行足额准备金", bank_bad.is_empty(),
+		("异常=%d: %s" % [bank_bad.size(), "; ".join(bank_bad.slice(0, 3))]) if not bank_bad.is_empty()
+		else ("reserve=%d deposits=%d lendable=%d" % [int(S.bank_coin), int(S.bank_deposit_total()), int(S.bank_available_capital())] if not S.banking.is_empty() else "银行系统关闭")))
+
 	# ── 41) V1 手艺的社会痕迹（docs/84）───────────────────────────────────────────
 	# 守的是什么：**一门开了 `craft_credit` 的手艺，必须在【别人身上】留下痕迹；而没开的手艺不许留。**
 	# 这条判据的名字里每一个词都有代码在查（docs/41 §2 第四个盲区，「合取式最容易只落一半」）：
@@ -1754,9 +1921,10 @@ static func _chk(id: int, name: String, ok: bool, detail: String) -> Dictionary:
 ##   external_coin == Σ import 事件的 price_per×applied），任何 LOD/规模/场景下都必须为真；缺 economy/price_per ⇒
 ##   无 import 付费 ⇒ external==应付==0 ⇒ 恒过（off 门兜住短 horizon / 随机后端 / 定向场景，同 #34 之于 economy）。
 ## E-export：#46 入硬档（F7 命门，docs/158 §三外审升格）。理由与 #38/#44/#45 同一条——它查的是**结构**
+## P5a：#47 入硬档。它逐笔重建银行现金、存款负债和贷款应收，并守住 100% 准备金边界。
 ##   （出港的每一批货有没有对应的一条 external→town pay 同量绑定、货/港合不合法），任何 LOD/规模/场景下都必须为真；
 ##   缺 logistics.json / 无 export 事件 ⇒ 恒过（off 门兜住短 horizon / 随机后端 / 定向场景，同 #44/#45 之于 logistics）。
-const HARD_IDS := [1, 6, 7, 9, 10, 12, 13, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45, 46]
+const HARD_IDS := [1, 6, 7, 9, 10, 12, 13, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45, 46, 47]
 
 ## #41 的豁免线：一局里该职位的 produce 事件少于这么多次就跳过它。
 ## 5 是量出来的下界，不是拍的：N=12 × 60 天 × 12 seed，环卫工的 produce 事件是 19..31 条

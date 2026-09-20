@@ -291,6 +291,12 @@ var _buildings_compiled := false # 阶段2 室内编译只跑一次（防重入�
 # ── Wave 1b 经济（docs/15 §3）：data/economy.json 驱动；缺文件→_econ_on()=false→全部短路=逐字节不变 ──
 var economy := {}               # {start_coin, town_start, prices:{action:int}, wages:{action:int}}
 var town_coin := 0              # 镇库（吃饭收费流入、做活工资流出 → 闭环）
+## P5a：合作银行把存款准备金作为守恒集里的真实账户；存款是负债，不是第二份钱。
+## 贷款只能动用 bank_coin - deposits 的合作社资本，绝不挪用存款准备金。
+var banking := {}
+var bank_coin := 0
+var bank_deposits := {}         # account id -> demand-deposit balance
+var bank_loans := {}            # account id -> {principal,outstanding,issued_day,loans_issued}
 # ── 车道 E2a 钱跨镇边界（docs/151/154）：external_coin = 「外部世界」这一档账户，进 #34 守恒集 ──
 #   import 付费 = transfer("town","external",cost)：钱不再凭空消失/出现，而是搬进这个常驻账户
 #   （对称 Sim.gd:996 玩家带钱入镇 econ_total0+=玩家coin 的"钱不凭空出现"哲学）。
@@ -301,9 +307,12 @@ var econ_total0 := 0            # 开局货币总量（金钱守恒硬不变量�
 # ── Wave 3c 住房产权（docs/15 标注低优先；接 buildings.json rooms.owner）：每夜房客→房东经 Ledger 转租金 ──
 var housing := {}               # {rent:int, tenancies:[{tenant:id, landlord:id}]}；缺文件→无租金=逐字节不变
 # ── Wave 3a 治理/选举（docs/15 §3.3「收获期」）：S2 attitude 即选票，快照纯函数计票；缺文件→零扰动 ──
-var elections := {}             # {topic, every_days, offset, abstain_below}
-var election_log: Array = []    # 每次选举结果 {day,topic,yea,nay,abstain,pass,voters}（soak + 硬不变量#37 用）
-var last_election := {}         # 最近一次结果（观察台/HUD）
+var elections := {}             # {topic,every_days,offset,abstain_below,mayor:{term_days,candidate_count}}
+var election_log: Array = []    # 每次议题表决 {day,topic,yea,nay,abstain,pass,voters}
+var last_election := {}         # 最近一次议题结果（观察台/HUD）
+# P4b：先只存可见、可回放的候选名单、逐人选票与任期。政策旋钮留到下一片，不能反向伪造选举事实。
+var mayor_log: Array = []       # 任期账本；结束后追加 duties_due/attendance_pct/town_coin_end/treasury_delta/review_event_id
+var mayor_state := {}           # 当前任 {mayor,term_start,term_end,candidates,duties_done,last_duty_day,last_duty_period,town_coin_start}
 var econ_stats := {"meals_paid": 0, "meals_free": 0, "wages_paid": 0, "wages_skipped": 0}  # 诊断计数
 # ── Wave E 劳动产出（docs/47 §二-E1）：data/production.json 驱动；缺文件→_prod_on()=false→全部短路=逐字节不变 ──
 ## ★红线继承：economy.json 的 `_doc` 写死了"钱只造分化与戏剧、不造饿死（付不起照吃 meals_free）"。
@@ -611,6 +620,8 @@ func _load_data() -> void:
 	rhythm = _read_json("res://data/rhythm.json")   # 昼夜节律偏好表（缺文件→空→_phase_pref 恒返 1.0=零扰动）
 	utility = _read_json("res://data/utility.json") # 行为效用/接受权重（缺文件/缺键→_w 返代码默认=零扰动）
 	economy = _read_json("res://data/economy.json") # Wave 1b 经济（缺文件→_econ_on()=false 全短路=零扰动）
+	if FileAccess.file_exists("res://data/banking.json"):
+		banking = _read_json("res://data/banking.json")
 	weather = _read_json("res://data/weather.json") # Wave 1c 天气（缺文件→weather_today=""=零扰动）
 	jobs = _read_json("res://data/jobs.json")       # Wave 2a 职业（缺文件→_wage_for 退化=零扰动）
 	skills = _read_json("res://data/skills.json")   # Wave 2c 技能（缺文件→_skill_level=0=零扰动）
@@ -1043,6 +1054,9 @@ func start_new(p_seed: int = 12345) -> void:
 				"source": oid, "via": "seed", "tick": 0, "secret": true, "owner": oid, "confidedBy": {}}
 	# Wave 1b 经济：镇库注资 + 记录开局货币总量（守恒硬不变量基准）。缺 economy.json → 全为 0 零扰动。
 	town_coin = int(economy.get("town_start", 0)) if not economy.is_empty() else 0
+	bank_coin = int(banking.get("opening_capital", 0)) if not banking.is_empty() else 0
+	bank_deposits = {}
+	bank_loans = {}
 	_fisc_cache = {}                       # docs/204：财政累计是 event_log 的折叠，每局从空重扫
 	_diners_by_target = {}                 # docs/209：同桌名单是当前 tick 的纯函数，每局从空重建
 	_diners_tick = -1
@@ -1091,7 +1105,7 @@ func start_new(p_seed: int = 12345) -> void:
 		for g in production.get("goods", {}):
 			town_stock[String(g)] = int(production.get("start_stock", {}).get(String(g), 0))
 	stock_total0 = town_stock.duplicate(true)
-	election_log.clear(); last_election = {}   # Wave 3a：per-run 重置（goto_tick 反复 start_new）
+	election_log.clear(); last_election = {}; mayor_log.clear(); mayor_state = {}   # 治理状态 per-run 重置
 	weather_today = _weather_of_day(day)   # Wave 1c：开局天气（日界在 tick() 重算）
 	season_today = _season_of_day(day)     # Wave 3b：开局当季（日界在 tick() 重算；纯 f(day)）
 	# Wave 2b/3a：world 只在 _load_data 载一次 → start_new(含 goto_tick 重演)必须清上一局残留的动态对象再重开。
@@ -1565,6 +1579,14 @@ func life_interactions(radius := LIFE_REACH) -> Array:
 			acts.append({"action": v})
 		out.append({"kind": "agent", "id": String(other["id"]), "label": _name(other), "pos": other["pos"], "dist": d,
 			"busy": int(other["talking"]) > 0, "actions": acts})
+	# P4c-7：镇务公示板是只读 UI 入口，不带 advertises，因而绝不会进入 NPC 候选、
+	# 改需求或写事件。生活模式仍把这个 authored 家具标记暴露为一个可聚焦目标。
+	var civic_cell := civic_observatory_cell()
+	if sp == "mairie" and fl == "1f" and civic_cell.x >= 0:
+		var civic_d := _manh(here, civic_cell)
+		if civic_d <= radius:
+			out.append({"kind": "civic", "id": "civic_observatory", "label": "镇务公示板",
+				"pos": civic_cell, "dist": civic_d, "actions": []})
 	for hop in _portals_from(sp, fl, ag):
 		var pp: Vector2i = hop["from_pos"]
 		var d := _manh(here, pp)
@@ -2865,11 +2887,18 @@ func _solid_lot_cells_in_world(source_world: Dictionary) -> Array:
 		var lp := _as_arr((raw_lot as Dictionary).get("pos", []))
 		var lf := _as_arr((raw_lot as Dictionary).get("footprint", []))
 		var ld := _as_arr((raw_lot as Dictionary).get("door", []))
+		var open_cells := {}
+		for raw_open in (raw_lot as Dictionary).get("open_cells", []):
+			var oc := _as_arr(raw_open)
+			if oc.size() == 2:
+				open_cells[Vector2i(int(oc[0]), int(oc[1]))] = true
 		if lp.size() != 2 or lf.size() != 2:
 			continue
 		for y in range(int(lp[1]), int(lp[1]) + int(lf[1])):
 			for x in range(int(lp[0]), int(lp[0]) + int(lf[0])):
 				if ld.size() == 2 and x == int(ld[0]) and y == int(ld[1]):
+					continue
+				if open_cells.has(Vector2i(x, y)):
 					continue
 				out.append(Vector2i(x, y))
 	return out
@@ -3222,6 +3251,7 @@ func tick() -> void:
 		_update_lifecycle(_prev_season)        # Wave 3b：换季/生日里程碑（喂 voice grounding）
 		_update_festival()                     # Wave 2b：昨日节日清场 → 今日按 日取模+天气 开节（确定）
 		_update_election()                     # Wave 3a：到期把话题付诸投票（S2 attitude 即选票，快照纯函数计票）
+		_update_mayor_election()               # P4b：候选、逐人选票与任期；尚不改任何政策
 		if ext != null:
 			ext.seed_day(self, scenario, day)  # 周更编剧：schedule 里 day==当天的补丁到点确定性注入（无 schedule→零扰动）
 		_nightly()
@@ -3590,6 +3620,7 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 					ag["option"] = null
 					emit_signal("agent_changed", ag["id"])
 					return
+			_complete_mayor_duty(ag, opt)
 			ag["memory"].add("在%s%s了" % [target_obj.get("area", ""), opt["action"]], 3, tick_no, [opt["need"], opt["target"]])
 			# Wave E 产出点：本职在班干完一活 → 往镇库存交一批货（口径与 _wage_for 的"本职在班"同一条）。
 			# 先交货再领钱。这一行就是"劳动不再只是钱包数字"的落点：它写的是世界状态(town_stock)，不是 agent 的钱。
@@ -3670,6 +3701,7 @@ func _nightly() -> void:
 	if _econ_on():
 		_household_nightly()
 		_fiscal_nightly()          # docs/204：账单收完之后，按今天的营收交税、镇库见底时大他者补贴
+		_bank_nightly()            # P5a：还贷→储蓄→一笔有准备金边界的创业贷款
 	# Wave 2a+ 阶层 gossip：财富被同区邻居目击 → firsthand belief(via=seen) → 走既有 gossip 管线传播(S1 原样复用)。
 	if _econ_on() and economy.has("wealth_gossip"):
 		_observe_wealth()
@@ -3818,6 +3850,13 @@ func _journey_candidates(ag: Dictionary) -> Array:
 			var wj := _best_satisfier_journey(ag, "fun", aspace, afloor, home_space, false, {}, jt)
 			if not wj.is_empty():
 				out.append(wj)
+	# (A4) 当选镇长的每周公务：任期内、未完成本周期值班、且当前无生存危机时，明确规划去镇公所。
+	# 只认 mayor_duty 广告，避免镇公所里的普通 fun 家具冒充公务目的地。
+	if not mayor_state.is_empty() and String(ag.get("id", "")) == String(mayor_state.get("mayor", "")) \
+			and _min_need(ag) >= SURVIVAL_GATE:
+		var duty_journey := _best_satisfier_journey(ag, "fun", aspace, afloor, home_space, false, {"mairie": true}, "", false, true)
+		if not duty_journey.is_empty():
+			out.append(duty_journey)
 	# (B) 离家在外 或 café 居民 → 为本平面无满足的偏紧 need 承诺行程。普通镇上居民(都在 town)不进此块。
 	if aspace != "town" or home_space != "town":
 		var covered := {}
@@ -3854,7 +3893,7 @@ func _journey_candidates(ag: Dictionary) -> Array:
 
 ## 锁定他平面满足 nid 的【最优对象】→ 一条 journey 候选。家绑定：【居民】的 energy/fun 只回家 Space(顾客 home=town 不受限)。
 ## is_visit=进店行程：只认咖啡馆对象、路程惩罚减半+进店加成(值得为一杯咖啡跑一趟，压过就近的镇上游戏机)。带 ag 走权限门(owner 楼梯)。
-func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor: String, home_space: String, is_visit: bool, only_spaces: Dictionary = {}, job_only: String = "", vendor_only: bool = false) -> Dictionary:
+func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor: String, home_space: String, is_visit: bool, only_spaces: Dictionary = {}, job_only: String = "", vendor_only: bool = false, mayor_duty_only: bool = false) -> Dictionary:
 	var urg := 100.0 - float(ag["needs"].get(nid, 100.0))
 	var best_score := -1.0e18
 	var best: Dictionary = {}
@@ -3869,11 +3908,14 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 			continue
 		if not _staff_ok(ag, o):                                # 顾客的进店行程不冲吧台(员工专属)→ 锁定公共桌"喝咖啡"
 			continue
-		if nid in _home_needs(ag) and home_space != "town" and os != home_space:   # 居民的 energy/fun 只回家 Space
+		if nid in _home_needs(ag) and home_space != "town" and os != home_space \
+				and not _mayor_duty_at_object_open(ag, o):             # 当选镇长的值班是明确的公务例外
 			continue
 		var amt := 0; var dur := 0; var act := ""; var best_adv: Dictionary = {}   # docs/209：供 _company_pull
 		for adv in _as_arr(o.get("advertises", [])):
 			if not (adv is Dictionary):
+				continue
+			if mayor_duty_only and not bool((adv as Dictionary).get("mayor_duty", false)):
 				continue
 			if not _adv_open(ag, adv):
 				continue                                        # F1：跨平面行程也要过工位专属/市集时段两道门（否则会承诺跑一趟去一个关着的摊）
@@ -3903,6 +3945,9 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 			score = -float(d)                                    # docs/210：本能 = 最近的一口正经饭
 		else:
 			score += _craving_pull(ag, act)                       # docs/213：馋了才值得专门跑一趟
+			if bool(best_adv.get("mayor_duty", false)):
+				var mayor_cfg: Dictionary = elections.get("mayor", {}) if elections.get("mayor", {}) is Dictionary else {}
+				score += float(mayor_cfg.get("duty_pull", 0))
 		if not _seat_free(o, best_adv, String(ag["id"])):
 			score -= _w("seat_full_penalty", 0.0)                # docs/210：满座扣分、不排除
 		if score > best_score:
@@ -3924,12 +3969,35 @@ func _home_needs(ag: Dictionary) -> Array:
 func _staff_ok(ag: Dictionary, o: Dictionary) -> bool:
 	return not bool(o.get("staff", false)) or String(ag.get("home_space", "town")) == String(o.get("space", "town"))
 
+## 家绑定的 fun 通常不允许跨 Space；镇长值班广告是唯一由公职授权的例外。
+func _mayor_duty_at_object_open(ag: Dictionary, o: Dictionary) -> bool:
+	for adv in _as_arr(o.get("advertises", [])):
+		if adv is Dictionary and bool((adv as Dictionary).get("mayor_duty", false)) and _adv_open(ag, adv):
+			return true
+	return false
+
 ## F1：一条【广告位】此刻对这个人开不开。两道门，都写在 advertise 一级（不是对象一级）——
 ## 摊位同一件家具上既有对内的"摆摊"(只有商贩)又有对外的"赶集"(全镇)，对象一级的门表达不了这件事。
 ##   ① 工位专属：带 job 的广告位只有该职位的【现任持有人】枚举得到（结构照抄 _staff_ok）。
 ##   ② 市集时段：见 _market_open。
 ## 两者都缺 → 恒真 → 所有旧广告位逐字节不变。
 func _adv_open(ag: Dictionary, adv: Dictionary) -> bool:
+	if bool(adv.get("mayor_duty", false)):
+		if mayor_state.is_empty() or String(ag.get("id", "")) != String(mayor_state.get("mayor", "")):
+			return false
+		if day < int(mayor_state.get("term_start", 0)) or day > int(mayor_state.get("term_end", -1)):
+			return false
+		var mayor_cfg: Dictionary = elections.get("mayor", {}) if elections.get("mayor", {}) is Dictionary else {}
+		var every := maxi(1, int(mayor_cfg.get("duty_every_days", 7)))
+		var duty_period := (day - int(mayor_state.get("term_start", day))) / every
+		var last_period := int(mayor_state.get("last_duty_period", -1))
+		if last_period < 0 and int(mayor_state.get("last_duty_day", -1)) >= int(mayor_state.get("term_start", day)):
+			last_period = (int(mayor_state.get("last_duty_day", -1)) - int(mayor_state.get("term_start", day))) / every
+		if duty_period == last_period:
+			return false
+		var duty_phase := String(mayor_cfg.get("duty_phase", "day"))
+		if duty_phase != "" and _phase_of(time_of_day()) != duty_phase:
+			return false
 	var t := String(adv.get("job", ""))
 	if t != "" and String(_job_of(String(ag["id"])).get("title", "")) != t:
 		return false
@@ -4319,7 +4387,8 @@ func _object_candidates(ag: Dictionary) -> Array:
 			# → 在镇上 energy/fun"无满足"→ _journey_candidates 发起【回咖啡馆】的承诺行程。按 SPACE 判(非 floor：否则
 			# 楼上床/楼下吧台互相排除)。town 居民 home=town → 恒 false → 逐字节不变。
 			if need_id in _home_needs(ag) and String(ag.get("home_space", "town")) != "town" \
-					and String(ag.get("space", "town")) != String(ag.get("home_space", "town")):
+					and String(ag.get("space", "town")) != String(ag.get("home_space", "town")) \
+					and not bool(adv.get("mayor_duty", false)):
 				continue
 			var action := String(adv.get("action", ""))
 			var duration := int(adv.get("duration", 0))
@@ -4414,6 +4483,9 @@ func _object_candidates(ag: Dictionary) -> Array:
 			# docs/210：身上没干粮 ⇒ 买干粮多一截拉力。没有它实测【一次都没人买】：同一个摊上采买(40)与任何一顿饭(55-70)
 			#   的 amount 都压过买干粮(15)，而揣干粮的价值（将来走到半路不挨饿）不在 amount 里。
 			score += _craving_pull(ag, action)      # docs/213：今天下午想吃点甜的
+			if bool(adv.get("mayor_duty", false)):
+				var mayor_cfg: Dictionary = elections.get("mayor", {}) if elections.get("mayor", {}) is Dictionary else {}
+				score += float(mayor_cfg.get("duty_pull", 0))
 			if String(adv.get("pantry", "")) == "snack" and int(ag.get("snacks", 0)) <= 0:
 				score += float((economy["snacks"] as Dictionary).get("empty_urgency", 0.0))
 			var cand := {
@@ -6026,6 +6098,392 @@ func _update_election() -> void:
 		ag["memory"].add("镇上就『%s』表决，%s（%d赞成/%d反对/%d弃权）——我%s" % [
 			topic, verdict, int(res["yea"]), int(res["nay"]), int(res["abstain"]), stance], 6, tick_no, [topic, "election", "civic"])
 
+## P4b 候选按选举日既有的镇内名声取前 N 名。只读 relationship 折叠；同分按 id，绝不创建关系或消耗 RNG。
+func _mayor_candidates(cfg: Dictionary) -> Array:
+	var wanted := maxi(2, int(cfg.get("candidate_count", 3)))
+	var scored: Array = []
+	for ag in agents:
+		if bool(ag.get("is_player", false)):
+			continue
+		var aid := String(ag.get("id", ""))
+		if aid != "":
+			var image := _town_image_stats(aid)
+			scored.append({"id": aid, "score": float(image.get("mean", 0.0))})
+	scored.sort_custom(func(a, b):
+		var sa := float((a as Dictionary)["score"]); var sb := float((b as Dictionary)["score"])
+		return String((a as Dictionary)["id"]) < String((b as Dictionary)["id"]) if is_equal_approx(sa, sb) else sa > sb)
+	var out: Array = []
+	for row in scored:
+		if out.size() >= wanted:
+			break
+		out.append(String((row as Dictionary)["id"]))
+	return out
+
+## P4d：当选者把性格带进一份真实、但被硬边界约束的财政政纲。按配置顺序取第一个
+## trait 命中项，空 traits 是 fallback。返回副本，任期内冻结，不随 persona/data 热改漂移。
+func _mayor_platform_for(mayor_id: String, cfg: Dictionary) -> Dictionary:
+	var raw_platforms = cfg.get("platforms", [])
+	if not (raw_platforms is Array):
+		return {}
+	var mayor: Dictionary = get_agent(mayor_id)
+	var traits: Array = _as_arr((mayor.get("persona", {}) as Dictionary).get("traits", [])) if mayor.get("persona", {}) is Dictionary else []
+	var fallback := {}
+	for raw in raw_platforms:
+		if not (raw is Dictionary):
+			continue
+		var platform: Dictionary = raw
+		var wanted: Array = _as_arr(platform.get("traits", []))
+		if wanted.is_empty():
+			fallback = platform
+			continue
+		for persona_trait in wanted:
+			if persona_trait in traits:
+				return platform.duplicate(true)
+	return fallback.duplicate(true)
+
+## 当前有效财政政策。选举前与缺平台时就是 economy.fiscal；任期政策只允许覆盖这两个
+## 已有旋钮，tax_slack/subsidy_max 等构造性上限仍由基础财政合同控制。
+func fiscal_policy() -> Dictionary:
+	var base = economy.get("fiscal", {})
+	if not (base is Dictionary) or (base as Dictionary).is_empty():
+		return {}
+	var out: Dictionary = (base as Dictionary).duplicate(true)
+	out["source"] = "base"
+	var platform = mayor_state.get("platform", {})
+	if platform is Dictionary and not (platform as Dictionary).is_empty():
+		for key in ["subsidy_floor", "tax_pct"]:
+			if (platform as Dictionary).has(key):
+				out[key] = int((platform as Dictionary)[key])
+		out["source"] = "mayor"
+		out["platform_id"] = String((platform as Dictionary).get("id", ""))
+		out["platform_label"] = String((platform as Dictionary).get("label", ""))
+	return out
+
+## P4c-3：取最近一张已经冻结的换届成绩单。返回副本，观察台不能借引用改写任期账本。
+func latest_mayor_review() -> Dictionary:
+	for i in range(mayor_log.size() - 1, -1, -1):
+		var review: Dictionary = mayor_log[i]
+		if review.has("review_event_id"):
+			return review.duplicate(true)
+	return {}
+
+## 纯评分器：同一份政绩因选民性格产生不同权重。P4c-4 只把它加给再次参选的上届镇长。
+## 出勤以 50% 为中点；财政在 ±treasury_scale 内线性计分、区间外封顶。全程无 RNG、无状态写入。
+func mayor_review_score(voter: Dictionary, review: Dictionary) -> Dictionary:
+	var mayor_cfg: Dictionary = elections.get("mayor", {}) if elections.get("mayor", {}) is Dictionary else {}
+	var cfg: Dictionary = mayor_cfg.get("review_preview", {}) if mayor_cfg.get("review_preview", {}) is Dictionary else {}
+	if cfg.is_empty() or review.is_empty():
+		return {}
+	var traits: Array = _as_arr((voter.get("persona", {}) as Dictionary).get("traits", [])) if voter.get("persona", {}) is Dictionary else []
+	var attendance_focus := false
+	for persona_trait in _as_arr(cfg.get("attendance_traits", [])):
+		if persona_trait in traits:
+			attendance_focus = true
+			break
+	var treasury_focus := false
+	for persona_trait in _as_arr(cfg.get("treasury_traits", [])):
+		if persona_trait in traits:
+			treasury_focus = true
+			break
+	var bonus := maxi(0, int(cfg.get("trait_bonus", 0)))
+	var attendance_weight := maxi(0, int(cfg.get("attendance_weight", 0))) + (bonus if attendance_focus else 0)
+	var treasury_weight := maxi(0, int(cfg.get("treasury_weight", 0))) + (bonus if treasury_focus else 0)
+	var attendance_pct := clampi(int(review.get("attendance_pct", 0)), 0, 100)
+	var treasury_scale := maxi(1, int(cfg.get("treasury_scale", 1)))
+	var treasury_delta := int(review.get("treasury_delta", 0))
+	var attendance_score := roundi(float(attendance_pct - 50) * float(attendance_weight) / 50.0)
+	var treasury_score := roundi(clampf(float(treasury_delta) / float(treasury_scale), -1.0, 1.0) * float(treasury_weight))
+	return {
+		"attendance": attendance_score,
+		"treasury": treasury_score,
+		"total": attendance_score + treasury_score,
+		"attendance_weight": attendance_weight,
+		"treasury_weight": treasury_weight,
+		"attendance_focus": attendance_focus,
+		"treasury_focus": treasury_focus
+	}
+
+## 单张选票以已有 standing 为底分；上届镇长再次参选时叠加这位选民的政绩分。
+## 完全同分才用 stable hash 破平，避免数组第一位暗中成为永久镇长。
+func _mayor_vote(voter: Dictionary, candidates: Array, incumbent_review: Dictionary = {}) -> String:
+	var best := ""; var best_score := -INF; var best_tie := -1.0
+	var rels: Dictionary = voter.get("relationships", {}) if voter.get("relationships", {}) is Dictionary else {}
+	var reviewed_id := String(incumbent_review.get("winner", ""))
+	var review_score: Dictionary = mayor_review_score(voter, incumbent_review)
+	for raw_id in candidates:
+		var cid := String(raw_id)
+		var standing := float((rels.get(cid, {}) as Dictionary).get("standing", 0.0))
+		if cid == reviewed_id and not review_score.is_empty():
+			standing += float(review_score.get("total", 0))
+		var tie := _hash01("mayor:%d:%d:%s:%s" % [seed_base, day, String(voter["id"]), cid])
+		if standing > best_score + 0.000001 or (is_equal_approx(standing, best_score) and tie > best_tie):
+			best = cid; best_score = standing; best_tie = tie
+	return best
+
+## P4b 镇长直选：每 term_days 天选一人。选举本身不写 relationship 或钱；P4c 只据此授权镇公所公务。
+func _update_mayor_election() -> void:
+	if elections.is_empty() or not (elections.get("mayor", null) is Dictionary):
+		return
+	var cfg: Dictionary = elections["mayor"]
+	var term_days := maxi(1, int(cfg.get("term_days", 28)))
+	if day % term_days != int(cfg.get("offset", 0)):
+		return
+	var candidates := _mayor_candidates(cfg)
+	if candidates.size() < 2:
+		return
+	# 上一届必须在本届投票前冻结，否则同一天的选民只能看见一份尚不存在的成绩单。
+	if not mayor_log.is_empty():
+		_finalize_mayor_term(cfg)
+	var incumbent_review := latest_mayor_review()
+	var ballots := {}; var baseline_ballots := {}; var voters := 0
+	var performance_swings := 0; var incumbent_gained := 0; var incumbent_lost := 0
+	var reviewed_id := String(incumbent_review.get("winner", ""))
+	for voter in agents:
+		if bool(voter.get("is_player", false)):
+			continue
+		var baseline_choice := _mayor_vote(voter, candidates)
+		var choice := _mayor_vote(voter, candidates, incumbent_review)
+		if choice == "":
+			continue
+		baseline_ballots[baseline_choice] = int(baseline_ballots.get(baseline_choice, 0)) + 1
+		ballots[choice] = int(ballots.get(choice, 0)) + 1
+		if choice != baseline_choice:
+			performance_swings += 1
+			if choice == reviewed_id: incumbent_gained += 1
+			elif baseline_choice == reviewed_id: incumbent_lost += 1
+		voters += 1
+	var winner := String(candidates[0]); var high := int(ballots.get(winner, 0))
+	for raw_id in candidates:
+		var cid := String(raw_id); var votes := int(ballots.get(cid, 0))
+		if votes > high or (votes == high and cid < winner):
+			winner = cid; high = votes
+	var term_end := day + term_days - 1
+	var platform := _mayor_platform_for(winner, cfg)
+	var preview_cfg = cfg.get("review_preview", {})
+	var review_enabled := preview_cfg is Dictionary and not (preview_cfg as Dictionary).is_empty()
+	var review_used := int(incumbent_review.get("review_event_id", 0)) if review_enabled and candidates.has(String(incumbent_review.get("winner", ""))) else 0
+	var res := {"day": day, "candidates": candidates.duplicate(), "ballots": ballots.duplicate(), "voters": voters,
+		"abstain": 0, "winner": winner, "term_start": day, "term_end": term_end,
+		"duties_done": 0, "town_coin_start": town_coin, "review_event_id_used": review_used,
+		"platform": platform.duplicate(true)}
+	mayor_log.append(res)
+	mayor_state = {"mayor": winner, "term_start": day, "term_end": term_end, "candidates": candidates.duplicate(),
+		"duties_done": 0, "last_duty_day": -1, "last_duty_period": -1, "town_coin_start": town_coin,
+		"platform": platform.duplicate(true)}
+	var ev := _log_event("election", "town", winner, "mayor", true, [], "mayor_term")
+	ev["platform"] = platform.duplicate(true)
+	# 反事实票箱只做审计/呈现：同一时刻不用政绩重算一遍，记录有多少票真的因此改投。
+	ev["review_event_id_used"] = review_used
+	ev["incumbent"] = reviewed_id if review_used > 0 else ""
+	ev["baseline_ballots"] = baseline_ballots.duplicate()
+	ev["performance_swings"] = performance_swings
+	ev["incumbent_gained"] = incumbent_gained
+	ev["incumbent_lost"] = incumbent_lost
+	emit_signal("social_event", ev)
+	for ag in agents:
+		if not bool(ag.get("is_player", false)):
+			ag["memory"].add("镇长选举结果：%s 当选（我投 %s；任期至第%d日）" % [winner, _mayor_vote(ag, candidates, incumbent_review), term_end], 7, tick_no, [winner, "mayor", "election"])
+
+## 换届前把上一任的只读政绩结成一张可追溯成绩单。它只折叠已发生的公务和镇库差额，不改选票或政策。
+func _finalize_mayor_term(cfg: Dictionary) -> void:
+	var prev: Dictionary = mayor_log[mayor_log.size() - 1]
+	if prev.has("review_event_id"):
+		return
+	var every := maxi(1, int(cfg.get("duty_every_days", 7)))
+	var term_start := int(prev.get("term_start", day))
+	var term_end := int(prev.get("term_end", term_start - 1))
+	var due := 0 if term_end < term_start else (term_end - term_start) / every + 1
+	var done := int(prev.get("duties_done", 0))
+	var delta := town_coin - int(prev.get("town_coin_start", town_coin))
+	var attendance := 100 if due <= 0 else mini(100, done * 100 / due)
+	prev["town_coin_end"] = town_coin
+	prev["duties_due"] = due
+	prev["attendance_pct"] = attendance
+	prev["treasury_delta"] = delta
+	var note := "term:%d;duties:%d/%d;treasury:%+d" % [term_start, done, due, delta]
+	var ev := _log_event("mayor_review", String(prev.get("winner", "")), "mairie", "mayor", true, [], note)
+	ev["term_start"] = term_start
+	ev["duties_done"] = done
+	ev["duties_due"] = due
+	ev["attendance_pct"] = attendance
+	ev["treasury_delta"] = delta
+	prev["review_event_id"] = int(ev["id"])
+	emit_signal("social_event", ev)
+
+## 镇长在镇公所完成一次真实办公动作后才记出勤。广告门保证每个值班日最多一次；这里仍幂等防旧 option 重放。
+func _complete_mayor_duty(ag: Dictionary, opt: Dictionary) -> void:
+	var mayor_cfg: Dictionary = elections.get("mayor", {}) if elections.get("mayor", {}) is Dictionary else {}
+	var every := maxi(1, int(mayor_cfg.get("duty_every_days", 7)))
+	var duty_period := (day - int(mayor_state.get("term_start", day))) / every if not mayor_state.is_empty() else -1
+	if String(opt.get("action", "")) != "办公" or mayor_state.is_empty() \
+			or String(ag.get("id", "")) != String(mayor_state.get("mayor", "")) \
+			or day < int(mayor_state.get("term_start", 0)) or day > int(mayor_state.get("term_end", -1)) \
+			or duty_period == int(mayor_state.get("last_duty_period", -1)):
+		return
+	mayor_state["duties_done"] = int(mayor_state.get("duties_done", 0)) + 1
+	mayor_state["last_duty_day"] = day
+	mayor_state["last_duty_period"] = duty_period
+	if not mayor_log.is_empty():
+		var active_record: Dictionary = mayor_log[mayor_log.size() - 1]
+		if int(active_record.get("term_start", -1)) == int(mayor_state.get("term_start", -2)):
+			active_record["duties_done"] = int(mayor_state["duties_done"])
+	var ev := _log_event("civic_duty", String(ag["id"]), "mairie", "mayor", true, [], "term:%d" % int(mayor_state.get("term_start", 0)))
+	emit_signal("social_event", ev)
+	ag["memory"].add("在镇公所完成了本周公务", 6, tick_no, ["mayor", "mairie", "duty"])
+
+## 纯投影：给 HUD/观察台读，绝不回写仿真。
+func mayor_performance() -> Dictionary:
+	if mayor_state.is_empty():
+		return {}
+	var cfg: Dictionary = elections.get("mayor", {}) if elections.get("mayor", {}) is Dictionary else {}
+	var every := maxi(1, int(cfg.get("duty_every_days", 7)))
+	var elapsed_end := mini(day, int(mayor_state.get("term_end", day)))
+	var due := 0
+	if elapsed_end >= int(mayor_state.get("term_start", day)):
+		due = (elapsed_end - int(mayor_state.get("term_start", day))) / every + 1
+	var done := int(mayor_state.get("duties_done", 0))
+	return {"mayor": String(mayor_state.get("mayor", "")), "duties_done": done, "duties_due": due,
+		"attendance_pct": 100 if due <= 0 else mini(100, done * 100 / due),
+		"treasury_delta": town_coin - int(mayor_state.get("town_coin_start", town_coin))}
+
+## P4c-7：公示板的唯一只读投影。它只复制现任、成绩单与最近一届选举回执；
+## 不生成候选、不写账本、不抽 RNG，也不把 View 自己拼出来的数冒充 Sim 权威。
+func civic_observatory_projection() -> Dictionary:
+	var latest_election := {}
+	var current_record := {}
+	if not mayor_log.is_empty():
+		var candidate_record = mayor_log[mayor_log.size() - 1]
+		if candidate_record is Dictionary and int((candidate_record as Dictionary).get("term_start", -1)) == int(mayor_state.get("term_start", -2)):
+			current_record = (candidate_record as Dictionary).duplicate(true)
+	for i in range(event_log.size() - 1, -1, -1):
+		var raw = event_log[i]
+		if raw is Dictionary and String((raw as Dictionary).get("type", "")) == "election" \
+				and String((raw as Dictionary).get("note", "")) == "mayor_term":
+			latest_election = (raw as Dictionary).duplicate(true)
+			break
+	return {
+		"mode": "read_only",
+		"current": mayor_state.duplicate(true),
+		"current_record": current_record,
+		"performance": mayor_performance().duplicate(true),
+		"fiscal_policy": fiscal_policy(),
+		"last_review": latest_mayor_review(),
+		"last_election": latest_election,
+	}
+
+## 公示板坐标来自 interiors.json 的 authored marker；View/LifeMode 不各抄一份 [5,0]。
+func civic_observatory_cell() -> Vector2i:
+	var floor_data = (_interiors_data.get("mairie", {}) as Dictionary).get("1f", {})
+	if not (floor_data is Dictionary):
+		return Vector2i(-1, -1)
+	for raw in (floor_data as Dictionary).get("furniture", []):
+		if not (raw is Dictionary) or not bool((raw as Dictionary).get("civic_observatory", false)):
+			continue
+		var pos: Array = (raw as Dictionary).get("pos", [])
+		if pos.size() == 2:
+			return Vector2i(int(pos[0]), int(pos[1]))
+	return Vector2i(-1, -1)
+
+## P5a bank counter and read model. The authored marker is the only interaction anchor;
+## UI code never copies its interior coordinates.
+func bank_counter_cell() -> Vector2i:
+	var floor_data = (_interiors_data.get("halles", {}) as Dictionary).get("1f", {})
+	if not (floor_data is Dictionary):
+		return Vector2i(-1, -1)
+	for raw in (floor_data as Dictionary).get("furniture", []):
+		if raw is Dictionary and bool((raw as Dictionary).get("bank_counter", false)):
+			var pos: Array = (raw as Dictionary).get("pos", [])
+			if pos.size() == 2:
+				return Vector2i(int(pos[0]), int(pos[1]))
+	return Vector2i(-1, -1)
+
+func bank_deposit_total() -> int:
+	var total := 0
+	for aid in bank_deposits:
+		total += int(bank_deposits[aid])
+	return total
+
+func bank_available_capital() -> int:
+	return maxi(0, bank_coin - bank_deposit_total())
+
+func bank_projection(account_id := "") -> Dictionary:
+	var loan: Dictionary = bank_loans.get(account_id, {}).duplicate(true) if bank_loans.get(account_id, {}) is Dictionary else {}
+	return {
+		"mode": "transactional", "label": String(banking.get("label", "合作银行")),
+		"account_id": account_id, "wallet": _coin_of(account_id),
+		"deposit": int(bank_deposits.get(account_id, 0)), "loan": loan,
+		"reserve": bank_coin, "deposit_total": bank_deposit_total(),
+		"available_capital": bank_available_capital(),
+	}
+
+func bank_deposit(account_id: String, amount: int) -> bool:
+	if banking.is_empty() or amount <= 0 or not _agent_by_id.has(account_id):
+		return false
+	var room := int(banking.get("account_cap", 0)) - int(bank_deposits.get(account_id, 0))
+	var moved := mini(amount, room)
+	if moved <= 0 or not transfer(account_id, "bank", moved, "bank_deposit*%d" % moved):
+		return false
+	bank_deposits[account_id] = int(bank_deposits.get(account_id, 0)) + moved
+	return true
+
+func bank_withdraw(account_id: String, amount: int) -> bool:
+	if banking.is_empty() or amount <= 0 or not _agent_by_id.has(account_id):
+		return false
+	var moved := mini(amount, int(bank_deposits.get(account_id, 0)))
+	if moved <= 0 or not transfer("bank", account_id, moved, "bank_withdraw*%d" % moved):
+		return false
+	bank_deposits[account_id] = int(bank_deposits.get(account_id, 0)) - moved
+	return true
+
+func bank_request_loan(account_id: String, manual := false) -> bool:
+	if banking.is_empty() or not _agent_by_id.has(account_id):
+		return false
+	var lc: Dictionary = banking.get("loan", {}) if banking.get("loan", {}) is Dictionary else {}
+	var allowed := manual and bool(lc.get("manual_player", false)) and account_id == "player"
+	if not allowed:
+		allowed = account_id in (lc.get("business_borrowers", []) as Array)
+	var old: Dictionary = bank_loans.get(account_id, {}) if bank_loans.get(account_id, {}) is Dictionary else {}
+	var principal := int(lc.get("principal", 0))
+	if not allowed or principal <= 0 or int(old.get("outstanding", 0)) > 0 \
+			or int(old.get("loans_issued", 0)) >= int(lc.get("max_loans_per_account", 1)) \
+			or bank_available_capital() < principal:
+		return false
+	if not transfer("bank", account_id, principal, "bank_loan*%d" % principal):
+		return false
+	bank_loans[account_id] = {"principal": principal, "outstanding": principal, "issued_day": day,
+		"loans_issued": int(old.get("loans_issued", 0)) + 1}
+	return true
+
+func _bank_repay(account_id: String) -> bool:
+	var loan: Dictionary = bank_loans.get(account_id, {}) if bank_loans.get(account_id, {}) is Dictionary else {}
+	var outstanding := int(loan.get("outstanding", 0))
+	var lc: Dictionary = banking.get("loan", {}) if banking.get("loan", {}) is Dictionary else {}
+	var amount := mini(int(lc.get("installment", 0)), mini(outstanding, _coin_of(account_id) - int(lc.get("repay_buffer", 0))))
+	if amount <= 0 or not transfer(account_id, "bank", amount, "bank_repay*%d" % amount):
+		return false
+	loan["outstanding"] = outstanding - amount
+	bank_loans[account_id] = loan
+	return true
+
+func _bank_nightly() -> void:
+	if banking.is_empty():
+		return
+	var ids: Array = _agent_by_id.keys()
+	ids.sort()
+	for aid_raw in ids:
+		var aid := String(aid_raw)
+		if aid == "player":
+			continue
+		_bank_repay(aid)
+		var above := int(banking.get("auto_deposit_above", 0))
+		if above > 0 and _coin_of(aid) > above:
+			bank_deposit(aid, mini(int(banking.get("auto_deposit_amount", 0)), _coin_of(aid) - above))
+	var lc: Dictionary = banking.get("loan", {}) if banking.get("loan", {}) is Dictionary else {}
+	for aid_raw in (lc.get("business_borrowers", []) as Array):
+		var aid := String(aid_raw)
+		if _coin_of(aid) <= int(lc.get("trigger_coin", -1)):
+			bank_request_loan(aid)
+
 ## Wave 2a+ 阶层 gossip：每夜同区邻居目击贫富 → 生成一手 belief（via=seen，inv6 豁免溯源）。
 ## 之后由既有 gossip 机制自然传播（_unspread_belief 会挑中它）——"财富传闻"零新管线。确定（定序遍历，无 RNG）。
 func _observe_wealth() -> void:
@@ -6036,7 +6494,8 @@ func _observe_wealth() -> void:
 		for B in _nearby_agents(A):
 			if B.get("is_player", false):
 				continue                     # 玩家钱冻结(M1)，传闻无意义
-			var c := int(B["inventory"].get("coin", 0))
+			# Bank deposits remain the resident's wealth even though they are not spendable wallet cash.
+			var c := int(B["inventory"].get("coin", 0)) + int(bank_deposits.get(String(B["id"]), 0))
 			var bid := ""
 			var claim := ""
 			if c >= rich:
@@ -6351,7 +6810,7 @@ func _fisc_fp(i: int) -> String:
 	return "%s:%s:%s" % [str(e.get("id", "")), str(e.get("tick", "")), String(e.get("note", ""))]
 
 func _fiscal_nightly() -> void:
-	var fc = economy.get("fiscal", {})
+	var fc = fiscal_policy()
 	if not (fc is Dictionary) or (fc as Dictionary).is_empty():
 		return
 	var n := int(_fisc_cache.get("n", 0))
@@ -6420,6 +6879,8 @@ func transfer(from_id: String, to_id: String, amt: int, reason: String, witnesse
 func _coin_of(id: String) -> int:
 	if id == "town":
 		return town_coin
+	if id == "bank":
+		return bank_coin
 	if id == "external":                    # E2a：外部世界账户（照抄 "town" 分支）
 		return external_coin
 	var ag: Dictionary = _agent_by_id.get(id, {})
@@ -6429,6 +6890,9 @@ func _set_coin(id: String, v: int) -> void:
 	if id == "town":
 		town_coin = v
 		return
+	if id == "bank":
+		bank_coin = v
+		return
 	if id == "external":                    # E2a：外部世界账户（照抄 "town" 分支）
 		external_coin = v
 		return
@@ -6436,9 +6900,9 @@ func _set_coin(id: String, v: int) -> void:
 	if not ag.is_empty():
 		ag["inventory"]["coin"] = v
 
-## 全镇货币总量（守恒不变量用）。★E2a：external_coin 收进守恒集（+一项，判据形状不变，docs/151 §一.3）。
+## 全镇货币总量（守恒不变量用）。external 与 P5a bank cash 都是账户；deposit liability 不重复相加。
 func money_total() -> int:
-	var s := town_coin + external_coin
+	var s := town_coin + external_coin + bank_coin
 	for ag in agents:
 		s += int(ag["inventory"].get("coin", 0))
 	return s
@@ -7935,7 +8399,7 @@ func _build_nav() -> void:
 ## 每个非-town (space,floor) 建导航网：spaces.json bounds 外墙边框(门口那格放行) + interiors 家具挡格
 ## (楼梯/装饰 slot 可踩、portal 格必放行)。纯 f(数据)，无 RNG/Time。缺 spaces/interiors → 无非-town 网。
 func _build_interior_grids() -> void:
-	const WALKABLE_SLOTS := ["stairs", "rug", "window"]
+	const WALKABLE_SLOTS := ["stairs", "rug", "window", "doorway", "archway"]
 	for space in _authored_spaces:
 		if String(space) == "town" or not (_authored_spaces[space] is Dictionary):
 			continue
@@ -7961,6 +8425,11 @@ func _build_interior_grids() -> void:
 						if not portal_cells.has(idx):
 							blocked[idx] = true
 			var content: Dictionary = (_authored_interiors_data.get(space, {}) as Dictionary).get(fl, {}) if _authored_interiors_data.get(space, {}) is Dictionary else {}
+			# Authored recesses belong to the same collision grid as room furniture.
+			for cut: Array in content.get("cutouts", []):
+				for cy in range(int(cut[1]), int(cut[1] + cut[3])):
+					for cx in range(int(cut[0]), int(cut[0] + cut[2])):
+						if not portal_cells.has(cy * w + cx): blocked[cy * w + cx] = true
 			for fu in _as_arr(content.get("furniture", [])):
 				if not (fu is Dictionary) or String((fu as Dictionary).get("slot", "")) in WALKABLE_SLOTS:
 					continue

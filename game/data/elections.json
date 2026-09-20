@@ -4,6 +4,49 @@
   "every_days": 14,
   "offset": 0,
   "abstain_below": 0.15,
+  "mayor": {
+    "_note": "P4b 镇长直选：每 28 日从当日既有镇内名声最高的三名居民中选一人。逐票以 standing 为底分；若上届镇长再次成为候选，再叠加选民按性格计算的上届出勤与财政评价。P4c 让现任每周可到镇公所办公，并记录出勤与镇库变化。",
+    "term_days": 28,
+    "offset": 0,
+    "candidate_count": 3,
+    "duty_every_days": 7,
+    "duty_phase": "day",
+    "duty_pull": 8,
+    "platforms": [
+      {
+        "id": "public_care",
+        "label": "公共照护",
+        "summary": "多留镇库安全垫，少向大他者上缴",
+        "traits": ["热情", "温柔", "好奇", "浪漫", "豪爽"],
+        "subsidy_floor": 45,
+        "tax_pct": 8
+      },
+      {
+        "id": "balanced_books",
+        "label": "稳健账目",
+        "summary": "压低补贴地板，提高财政回补",
+        "traits": ["务实", "寡言", "严谨", "细致", "多疑"],
+        "subsidy_floor": 35,
+        "tax_pct": 12
+      },
+      {
+        "id": "steady_course",
+        "label": "守成施政",
+        "summary": "维持现行财政尺度",
+        "traits": [],
+        "subsidy_floor": 40,
+        "tax_pct": 10
+      }
+    ],
+    "review_preview": {
+      "attendance_weight": 6,
+      "treasury_weight": 4,
+      "treasury_scale": 20,
+      "trait_bonus": 2,
+      "attendance_traits": ["勤快", "严谨", "细致"],
+      "treasury_traits": ["务实", "多疑", "寡言"]
+    }
+  },
   "on_pass": {
     "object": {"type": "扩建咖啡馆", "pos": [22, 2], "advertises": [{"action": "庆祝", "need": "fun", "amount": 35, "duration": 18}]}
   }

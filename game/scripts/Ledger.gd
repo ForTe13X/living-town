@@ -104,6 +104,8 @@ static func fold(log: Array, ticks_per_day: int) -> RefCounted:
 
 ## 账户的开局额：只由数据决定（Sim._make_agent 给每个 agent 发 economy.start_coin；镇库 town_start；大他者 0）。
 static func expected_opening(S, id: String) -> int:
+	if id == "bank":
+		return int(S.banking.get("opening_capital", 0)) if not S.banking.is_empty() else 0
 	if S.economy.is_empty():
 		return 0
 	if id == "town":
@@ -113,7 +115,7 @@ static func expected_opening(S, id: String) -> int:
 	return int(S.economy.get("start_coin", 10))
 
 static func _accounts(S) -> Array:
-	var ids := ["town", "external"]
+	var ids := ["town", "external", "bank"]
 	for ag in S.agents:
 		ids.append(String(ag["id"]))
 	return ids
@@ -172,6 +174,8 @@ func panel_text(S, name_of: Callable) -> String:
 		res_n += 1
 		rich.append([c, String(ag["id"])])
 	out.append("镇库 %d 币 · 大他者 %d 币 · 居民 %d 币（%d 人）" % [int(S.town_coin), int(S.external_coin), res_total, res_n])
+	if not S.banking.is_empty():
+		out.append("合作银行现金 %d 币 · 居民存款 %d 币" % [int(S.bank_coin), int(S.bank_deposit_total())])
 	out.append(hd + "── 镇库收支（今天 / 累计）──[/color]")
 	var inl := PackedStringArray()
 	for c in TOWN_IN:
