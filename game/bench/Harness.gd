@@ -71,6 +71,7 @@ const LIVENESS_GATED := {
 	"greet": 20, "give": 20, "gossip": 20, "gossip_rep": 20, "discuss": 20,
 	"conflict": 20, "confront": 20, "apologize": 20, "endorse": 20, "rally_oust": 20,
 	"pay": 20, "election": 20, "festival_spawn": 20,
+	"bank_deposit": 20,
 	"invite": 30, "meet": 30,
 	"confide": 60, "civic_duty": 60, "mayor_review": 60,
 }
@@ -461,6 +462,8 @@ static func live_key(e: Dictionary) -> String:
 		if String(e.get("target", "")).begins_with("fest_"):
 			return "festival_spawn" if note == "spawn" else "festival_despawn"
 		return "world_other"
+	if t == "pay" and note.begins_with("bank_"):
+		return note.split("*")[0]
 	return t
 
 # ── 金标读写 ────────────────────────────────────────────────────────────────

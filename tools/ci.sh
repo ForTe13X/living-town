@@ -207,6 +207,8 @@ step "1. data lint (json parse + foreign keys + 必需数据文件在位)"
 
 step "1b. map audit (town-world 导航自洽：typed-layers 一致 + 全可达 + 每家具有交互格 + ≥2 路线)"
 "$PY" tools/audit_map.py && ok "audit_map" || bad "audit_map"
+"$PY" tools/audit_coastal_plan.py && ok "coastal circulation" || bad "coastal circulation"
+"$PY" tools/audit_neighborhoods.py && ok "interior reachability and facings" || bad "interior reachability and facings"
 
 step "1c. CI lane 对账门 (ci.sh 声明的 lane 全集 == workflow 里各 job 点到的 lane)"
 # 拆并行最大的风险不是慢，是【一道门不再被任何 job 点到、却没人发现】。判据与五条负对照
@@ -815,7 +817,7 @@ echo "  ℹ  story_test 夹具 = seeds $CI_STORY_SEEDS × $CI_STORY_DAYS 天 · 
 #   只能从 CI_SCENES_ALL 里删它（那是一次看得见的改动），而不是让它从某条 lane 里静静掉出去。
 #   story_test 独占一条 lane 的理由是代价：GHA 上它一个场景 633s，是整条流水线最贵的单块
 #   （seeds 1-12 × 40 天，天数的由来见上面那段 ★），其余 24 个场景加起来只有 325s。
-CI_SCENES_ALL="m2_test reqlife_test player_agency_test player_touch_test life_test player_replay_test cafe_guest_access_test p1t_social_plane_test p1a_affiliate_test p1b_cargo_manifest_test p1c_east_ocean_carrier_test p1d_scale_export_test p1g_manifest_transaction_test p1u_port_nav_test p1v_warehouse_observatory_test s4_replay_test space_test c1_locked_ortho_test save_load_test save_migration_test goals_test story_test event_prose_test desire_test governance_test ledger_test"
+CI_SCENES_ALL="m2_test reqlife_test player_agency_test player_touch_test life_test player_replay_test cafe_guest_access_test p1t_social_plane_test p1a_affiliate_test p1b_cargo_manifest_test p1c_east_ocean_carrier_test p1d_scale_export_test p1g_manifest_transaction_test p1u_port_nav_test p1v_warehouse_observatory_test s4_replay_test space_test c1_locked_ortho_test save_load_test save_migration_test goals_test story_test event_prose_test desire_test governance_test ledger_test banking_test coastal_camera_test exterior_visual_test"
 CI_SCENES_STORY="story_test"
 CI_SCENES=""
 for scene in $CI_SCENES_ALL; do

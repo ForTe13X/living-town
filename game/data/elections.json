@@ -12,6 +12,32 @@
     "duty_every_days": 7,
     "duty_phase": "day",
     "duty_pull": 8,
+    "platforms": [
+      {
+        "id": "public_care",
+        "label": "公共照护",
+        "summary": "多留镇库安全垫，少向大他者上缴",
+        "traits": ["热情", "温柔", "好奇", "浪漫", "豪爽"],
+        "subsidy_floor": 45,
+        "tax_pct": 8
+      },
+      {
+        "id": "balanced_books",
+        "label": "稳健账目",
+        "summary": "压低补贴地板，提高财政回补",
+        "traits": ["务实", "寡言", "严谨", "细致", "多疑"],
+        "subsidy_floor": 35,
+        "tax_pct": 12
+      },
+      {
+        "id": "steady_course",
+        "label": "守成施政",
+        "summary": "维持现行财政尺度",
+        "traits": [],
+        "subsidy_floor": 40,
+        "tax_pct": 10
+      }
+    ],
     "review_preview": {
       "attendance_weight": 6,
       "treasury_weight": 4,

@@ -79,6 +79,12 @@
 | [222 P4c-4 政绩进入连任选票](222-p4c4-performance-vote.md) | 换届先结上届成绩单；若前任再次参选，每位居民把同一套可见政绩分叠加到其 standing 底分，任期账本绑定所用 review 事件。 |
 | [223 P4c-5 政绩改投回执](223-p4c5-ballot-impact-receipt.md) | 真实票箱与 standing-only 反事实票箱逐人对照；大事栏显示政绩造成的改投数，#37 核对票数守恒与 review 来源。 |
 | [224 P4c-6 镇公所室内设计与 PixelLab 资产](224-p4c6-pixellab-civic-furniture.md) | 镇公所分成办事区、中央公共轴与档案镇长办公区；公共材质、真实隔墙和四张 PixelLab 专属资产共同建立功能可读性。 |
+| [225 P4c-7 镇务公示板与治理 HUD](225-p4c7-civic-notice-board.md) | PixelLab 公示板成为普通观察与生活模式的共同交互锚；只读治理卡集中现任、任期、出勤、镇库、票箱、成绩单和改投回执，不进入 NPC 候选或改变仿真。 |
+| [226 P4c-7 影响复核与因果监测](226-p4c7-impact-and-causal-monitor.md) | 金标、留出 seed 与历史 N=40 病例复核新公示板的仿真影响；修正 S5 把“trust 是必要门”误判成“trust 必须创造机会”的统一 ACE 门，并输出逐 seed 回执。 |
+| [228 P4d 镇长政纲与跨相位路线](228-p4d-mayoral-platforms-and-roadmap.md) | 选举首次产生真实财政政纲并在公示板公开；给 P0–P9 做整体进度账，排序 P5 银行、P4 公共工程、P6 特产视觉线与 P7 规模门。 |
+| [229 P5a 合作银行与影响回执](229-p5a-cooperative-bank-and-impact-receipt.md) | PixelLab 银行柜台、玩家存取款与创业金卡片、居民自动储蓄和小额商业贷款；硬不变量 #47 独立重建准备金、存款负债与贷款应收。 |
+| [230 自适应室内、室内市场构图与陆路入口](230-adaptive-interiors-and-land-entrance.md) | 大型公共室内按用途近取景并可拖动浏览；Halles 扩为 16×12 的分区构图，PixelLab 公共道具套件补足层次；镇西高速式岔路收束成一条接主街的双向陆路。 |
+| [227 Investment opportunity receipt](227-investment-opportunity-receipt.md) | English receipt separates exposure, eligibility, choice, commit, acceptance, and routing; exact all-agent denominators show sparse Aria→Ben is allocation competition and reveal 103 post-choice social dropouts for the next trace slice. |
 | [44 美术方向与目标调色板](44-art-direction.md) | 角色收向「现代日常小镇居民」；40 色目标 `.gpl`；**实测代码里有 134 个硬编码色值 ⇒ 这是一次收敛重构，不是写一个文件** |
 
 ## 架构与 LLM 集成
@@ -220,6 +226,8 @@
 
 ## 素材、背景与参考
 
+Latest visual-development receipt: [243 · Terrain transition compositions](243-terrain-transition-compositions.md) — reusable PixelLab retaining walls, ramp, planted corner, and exposed rock now articulate the important elevation changes while the deterministic contour remains the connective system. Previous proportion/façade pass: [242](242-building-proportion-facades-irregular-terrain.md); previous street-corner pass: [241](241-street-corner-activity.md).
+
 | 文档 | 内容 |
 |---|---|
 | [09 美术资产与版权](09-美术资产与版权.md) | CC0 素材来源、三级美术回退、版权红线 |
@@ -238,3 +246,5 @@
 ## 媒体
 
 演示视频与截图在 [`media/`](media/)。README 只链当前构建的片子；更早的片子仍留在目录里作为历史。
+
+- [249 · 实机游玩演示与录制](249-gameplay-tour.md)

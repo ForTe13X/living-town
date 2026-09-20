@@ -228,7 +228,7 @@
 ## 三、不变量契约（在 175 §二之上）
 
 - **#34 守恒集** 扩：town_coin + 所有居民与业主 coin + 大他者账户 + **银行账户** + **所有在镇外来者钱包**。外来者离开时钱包清零回大他者。
-- **银行全额准备**（硬检查）：贷款余额 ≤ 存款余额 + 资本金；存款/贷款余额可从 event_log 折叠重算。
+- **银行全额准备**（硬检查）：银行现金 ≥ 全部存款负债；贷款只来自存款以上的合作社资本。现金、存款与贷款应收均可从 event_log 折叠重算。
 - **产权唯一**（硬检查）：每项产权任一时刻恰有一个产权人；产权人 == `deed` 事件折叠结果。
 - **#35 非负** 覆盖外来者钱包；欠账是负债字段、不是负 coin。
 - **#01/#40 生存 floor 不变**：家当空、欠账、没钱都不许让 hunger 补不上。新增硬检查：**任何降级补给的上限 ≥ SURVIVAL_GATE + 10**。
@@ -251,6 +251,16 @@
 | **P7 N=40 地基** | 修 docs/92 社交自锁；具名 24→40（全带岗）；~15 栋开室内；CI 加 N=40 一格 | 移 | 先把大 N 修绿，再往里放外来者 |
 | **P8 铁路 + 外来者** | 南站 + 东南货场；游客/外来工/通勤者/投资人轻量实体；度假业主与别墅（选票、雇佣、短租）；季节到达表 | 移 | 需要服务可买、税可收、银行可存贷、镇可容 |
 | **P9 文化与娱乐** | 剧场/电影院、舞厅、读书会、别墅家宴；季节调子；欲望 v0 默认开的评估 | 移 | 需要业主与游客（偶遇、客源） |
+
+### 2026-09-19 current execution status
+
+P0–P3 are operational. P4 now has the town hall and fiscal loop, mayoral elections and terms, authenticated
+weekly duty, term reviews, performance-sensitive reelection, a PixelLab civic interior/notice board, and
+personality-aligned fiscal platforms that actually govern the existing tax/subsidy loop. Council approval,
+one visible civic project, and the wider duty list remain. P5a is now operational as a full-reserve cooperative
+bank vertical slice: a PixelLab teller counter, player finance card, demand deposits, bounded startup loans,
+and hard receipt invariant #47. P5 deeds/leases, employer payroll, and dividends remain; P6 still has foundations
+only. See [229](229-p5a-cooperative-bank-and-impact-receipt.md) for the current impact receipt and next candidates.
 
 每相共同验收：S0 12/12 + det、N=12/16（P5 起加 N=40）#40 ≥11/12、DetGate、ModelPath、VoiceGate、25 场景、docker 视觉门、complement 账本、账本折叠硬检查；再加**逐动作使用计数**（193 的教训：先量居民真的用了没有，再说机制成立）。
 

@@ -576,6 +576,7 @@ var _meadow: Array = []               # [{rect:Rect2, col:Color}]：低频草甸
 var _plateau := {}                    # docs/182：花岗岩台地格（东松林岬，树格的子集）
 var _cliff_face := {}                 # idx -> true：画崖壁的格（不再画松树精灵；本就是树格 ⇒ 本就不可走）
 var _terrace := {}                    # docs/191：北缘台地带 + 草甸小丘的台地格（_plateau 的子集；顶面留草）
+var _coastal_plan = preload("res://scripts/CoastalPlan.gd").new()
 var _lots_cache: Variant = null
 
 ## lots.json（docs/186/188/191 共用的离线生成物）一次读入缓存。缺文件 = {}。
@@ -968,7 +969,7 @@ func _build_decor() -> void:
 		for x in range(w):
 			if _in_area(x, y) or _is_object(x, y) or _is_blocked(x, y) or _path_set.has(y * w + x) or _street_prop_cells.has(y * w + x):
 				continue                      # 区域/家具/阻挡/土路/街具格 上都不散装饰（路面保持干净）
-			if _hash(x, y, 7) % 100 >= 22:   # ~22% 密度
+			if _hash(x, y, 7) % 100 >= 7:   # Quiet ground between authored planting and street edges.
 				continue
 			var r := _hash(x, y, 13) % total_w
 			for pi in pool.size():
@@ -1265,60 +1266,15 @@ func _build_paths() -> void:
 	_paths_built = true
 	_path_set.clear()
 	_plaza_cells.clear()
-	var areas: Dictionary = Sim.world.get("areas", {})
-	# AP1(140)：所有 type=="plaza" 的区（广场 + 码头）都记成"已铺装"格 —— 石街的路缘石判邻、
-	# verge 街具判"贴着铺装"都读它。**只读 areas[*].rect/type（Sim 也读的面），不写、不改** ⇒ 零金标。
-	var wd0: int = int(Sim.world.get("width", 24))
-	for aid0 in areas:
-		var a0: Dictionary = areas[aid0]
-		if String(a0.get("type", "")) != "plaza":
-			continue
-		var r0: Array = a0.get("rect", [0, 0, 0, 0])
-		var ax0 := int(r0[0]); var ay0 := int(r0[1]); var aw0 := int(r0[2]); var ah0 := int(r0[3])
-		for yy0 in range(ay0, ay0 + ah0):
-			for xx0 in range(ax0, ax0 + aw0):
-				_plaza_cells[yy0 * wd0 + xx0] = true
-	if not areas.has("plaza"):
-		return
-	var pr: Array = (areas["plaza"] as Dictionary).get("rect", [0, 0, 0, 0])
-	var px0 := int(pr[0]); var py0 := int(pr[1])
-	var px1 := px0 + int(pr[2]) - 1; var py1 := py0 + int(pr[3]) - 1
-	var wd: int = int(Sim.world.get("width", 24))
-	var outdir := {"S": Vector2i(0, 1), "N": Vector2i(0, -1), "W": Vector2i(-1, 0), "E": Vector2i(1, 0)}
-	for d in Sim.world.get("doors", []):
-		var dp: Array = (d as Dictionary).get("pos", [0, 0])
-		var od: Vector2i = outdir.get(String((d as Dictionary).get("face", "S")), Vector2i(0, 1))
-		var cur := Vector2i(int(dp[0]), int(dp[1])) + od           # 门外第一格（不铺在门格本身）
-		var gx: int = clampi(cur.x, px0, px1)                      # 广场最近的 x/y 带
-		var gy: int = clampi(cur.y, py0, py1)
-		while cur.y != gy:                                         # 竖腿：先离开建筑
-			if not _is_blocked(cur.x, cur.y): _path_set[cur.y * wd + cur.x] = true
-			cur.y += signi(gy - cur.y)
-		while cur.x != gx:                                         # 横腿：再拐向广场
-			if not _is_blocked(cur.x, cur.y): _path_set[cur.x + cur.y * wd] = true
-			cur.x += signi(gx - cur.x)
-		if not _is_blocked(cur.x, cur.y): _path_set[cur.y * wd + cur.x] = true
-	# AP2(141) 码头连街：dock 这类【无门】的 plaza-type 区，本身已铺装(_plaza_cells)、却没有任何 door 路连过去，
-	#   在整镇俯瞰里读作【孤岛】。给每个非主广场的 plaza-type 区补一条 View-only 连缀石街到主广场：
-	#   与 door 路【同构】——只写 `_path_set`（Sim 不读它 ⇒ 零金标）、逐格 `_is_blocked` 跳过挡格，
-	#   连缀格全落在已 walkable 的空地上（实测 dock→plaza 的 x32 / y9-20 走廊 0 挡格，见 docs/141 §连街网）。
-	for aid2 in areas:
-		if String(aid2) == "plaza":
-			continue                                               # 主广场是连接【目标】，不给自己连
-		var a2: Dictionary = areas[aid2]
-		if String(a2.get("type", "")) != "plaza":
-			continue
-		var r2: Array = a2.get("rect", [0, 0, 0, 0])
-		var cc := Vector2i(int(r2[0]) + int(r2[2]) / 2, int(r2[1]) + int(r2[3]) / 2)  # 区中心格（在 _plaza_cells 内）
-		var tgx: int = clampi(cc.x, px0, px1)                      # 广场最近的 x/y 带（同 door 路的 clamp）
-		var tgy: int = clampi(cc.y, py0, py1)
-		while cc.y != tgy:                                         # 竖腿：从区中心朝广场推进（穿 y9-20 空地）
-			if not _is_blocked(cc.x, cc.y): _path_set[cc.y * wd + cc.x] = true
-			cc.y += signi(tgy - cc.y)
-		while cc.x != tgx:                                         # 横腿：再对齐到广场带
-			if not _is_blocked(cc.x, cc.y): _path_set[cc.x + cc.y * wd] = true
-			cc.x += signi(tgx - cc.x)
-		if not _is_blocked(cc.x, cc.y): _path_set[cc.y * wd + cc.x] = true
+	var width := int(Sim.world.get("width", 64))
+	for cell: Vector2i in _coastal_plan.surface_cells:
+		_path_set[cell.y * width + cell.x] = true
+	for area in Sim.world.get("areas", {}).values():
+		if String(area.get("type", "")) != "plaza": continue
+		var r: Array = area.rect
+		for y in range(int(r[1]), int(r[1]) + int(r[3])):
+			for x in range(int(r[0]), int(r[0]) + int(r[2])):
+				_plaza_cells[y * width + x] = true
 
 func _is_blocked(x: int, y: int) -> bool:
 	if not _terrain_built:
@@ -1540,10 +1496,34 @@ func _draw_sign(typ: String, pal: Dictionary, cx: float, cy: float, night: bool 
 var _road_nodes := {}          # idx -> Vector2（微摆后的节点世界坐标）
 var _road_edges: Array = []    # [[Vector2, Vector2]]
 var _road_built := false
+var _urban_plan_loaded := false
+var _district_defs: Array = []
+var _main_streets: Array = []
+
+## Slice 236: district identity and street hierarchy are presentation data
+## beside the authored house lots, never simulation authority.
+func _ensure_urban_plan() -> void:
+	if _urban_plan_loaded:
+		return
+	_urban_plan_loaded = true
+	_district_defs.clear(); _main_streets.clear()
+	var path := "res://assets/art/houses/lots.json"
+	if not FileAccess.file_exists(path):
+		return
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
+	if not (data is Dictionary):
+		return
+	for d in (data as Dictionary).get("districts", []):
+		if d is Dictionary:
+			_district_defs.append(d)
+	for s in (data as Dictionary).get("main_streets", []):
+		if s is Dictionary:
+			_main_streets.append(s)
 
 func _build_roads(w: int) -> void:
 	_road_built = true
 	_road_nodes.clear(); _road_edges.clear()
+	_ensure_urban_plan()
 	var dirs := [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1)]
 	for idx in _path_set:
 		var c := Vector2i(idx % w, idx / w)
@@ -1574,7 +1554,7 @@ func _draw_roads(w: int) -> void:
 	if not _road_built:
 		_build_roads(w)
 	var veg := _season_veg()
-	var layers := [[T * 1.00, S_CURB.lerp(P_FOLIAGE_D * veg, 0.45)], [T * 0.86, P_STREET], [T * 0.34, S_STREET_HI.lerp(P_STREET, 0.5)]]
+	var layers := [[T * 0.74, S_CURB.lerp(P_FOLIAGE_D * veg, 0.45)], [T * 0.62, P_STREET], [T * 0.24, S_STREET_HI.lerp(P_STREET, 0.5)]]
 	for li in layers.size():
 		var wd: float = layers[li][0]; var col: Color = layers[li][1]
 		for e in _road_edges:
@@ -1613,17 +1593,96 @@ func _draw_roads(w: int) -> void:
 			var q := a + dvec * (float(hv / 7 % 100) / 100.0) + nrm * side * T * (0.40 + float(hv / 700 % 10) / 100.0)
 			draw_circle(q, T * 0.09, P_FOLIAGE_M * veg)
 			draw_circle(q + Vector2(T * 0.08, T * 0.02), T * 0.07, P_FOLIAGE_D * veg)
+	# Draw dominant routes last so local paths cannot erase their gutters.
+	_draw_main_streets()
 
-## ── docs/192 分区 ─────────────────────────────────────────────────────────────
-## 与 tools/place_houses.py 的 DISTRICTS 同一份定义（格坐标圆心 + 半径）：商业（广场/咖啡馆/杂货铺一带）、工业（工坊/滩头一带），其余住宅。
-## 路面随区换材质、边界 2 格内渐变：商业=浅色石铺、住宅=土路、工业=灰碎石 ⇒ 不看招牌也读得出"这是哪一片"。
-const DISTRICT_DEFS := [["commercial", Vector2(36, 17), 12.0], ["industrial", Vector2(44, 36), 9.0]]
+## Slice 236 main streets: narrow, pale and slightly irregular rather than a
+## highway grid. They sit under buildings and preserve the navigation graph;
+## the existing door paths become smaller lanes feeding them.
+func _draw_urban_ground() -> void:
+	# Irregular shared courts are a ground material, never new obstacles.
+	for court in _lots_data().get("courts", []):
+		var pts := PackedVector2Array()
+		for q in court.get("points", []):
+			pts.append(Vector2(float(q[0]), float(q[1])) * T)
+		if pts.size() < 3:
+			continue
+		var col := Color(String(court.get("color", "#a69b80")))
+		draw_colored_polygon(pts, col)
+		var edge := PackedVector2Array(pts)
+		edge.append(pts[0])
+		draw_polyline(edge, Color(col.darkened(0.18), 0.45), T * 0.05)
+		var bounds := Rect2(pts[0], Vector2.ZERO)
+		for p in pts: bounds = bounds.expand(p)
+		for y in range(int(bounds.position.y / T), int(ceil(bounds.end.y / T))):
+			for x in range(int(bounds.position.x / T), int(ceil(bounds.end.x / T))):
+				var p := Vector2(x + 0.5, y + 0.5) * T
+				if _vis.has_point(p) and Geometry2D.is_point_in_polygon(p, pts):
+					var h := _hash_mix(x, y, 389)
+					draw_rect(Rect2(p, Vector2(T * 0.20, T * 0.04)), Color(col.lightened(0.15) if h % 2 else col.darkened(0.13), 0.55), true)
+
+	for center in [Vector2(29, 20.5), Vector2(35, 20.5), Vector2(29, 26.5), Vector2(35, 26.5), Vector2(29, 33.5), Vector2(35, 33.5)]:
+		var p: Vector2 = center * T
+		draw_circle(p, T * 0.58, Color("#b5b3a3"))
+		draw_circle(p, T * 0.38, Color("#ded6c2"))
+		draw_circle(p, T * 0.12, Color("#b1b19e"))
+
+func _draw_main_streets() -> void:
+	for street in _main_streets:
+		var raw: Array = (street as Dictionary).get("points", [])
+		if raw.size() < 2:
+			continue
+		var pts := PackedVector2Array()
+		for q in raw:
+			pts.append(Vector2(float(q[0]) * T + T * 0.5, float(q[1]) * T + T * 0.5))
+		var material := String((street as Dictionary).get("material", "coastal_asphalt"))
+		var mul := clampf(float((street as Dictionary).get("width", 1.0)), 0.8, 1.5)
+		var shoulder := Color("#877f70")
+		var surface := Color("#b5ad9c")
+		var wear := Color("#c8c0ad")
+		if material == "market_stone":
+			shoulder = Color("#968b79"); surface = Color("#c5b99f"); wear = Color("#d8ccb0")
+		elif material == "harbor_sett":
+			shoulder = Color("#6f7475"); surface = Color("#969999"); wear = Color("#adb0ad")
+		for i in range(pts.size() - 1):
+			var a := pts[i]; var b := pts[i + 1]
+			if not _vis.intersects(Rect2(a, Vector2.ZERO).expand(b).grow(T * 2.0)):
+				continue
+			var dv := b - a
+			var ln := dv.length()
+			if ln < 1.0:
+				continue
+			var nrm := Vector2(-dv.y, dv.x) / ln
+			draw_line(a, b, shoulder, T * 1.24 * mul)
+			draw_line(a, b, surface, T * 1.06 * mul)
+			# Granite gutters and sun-faded wear; deliberately no highway centre line.
+			for side in [-1.0, 1.0]:
+				draw_line(a + nrm * side * T * 0.48 * mul, b + nrm * side * T * 0.48 * mul, shoulder.lightened(0.18), T * 0.06)
+			draw_line(a, b, Color(wear, 0.42), T * 0.22 * mul)
+			var patches := maxi(1, int(ln / (T * 1.8)))
+			for k in patches:
+				var hv := _hash_mix(int(a.x / T) + k * 17, int(a.y / T) + i * 23, 367)
+				var t := (float(k) + 0.35 + float(hv % 30) / 100.0) / float(patches)
+				var p := a + dv * clampf(t, 0.08, 0.92) + nrm * (float(hv / 31 % 21) - 10.0) / 10.0 * T * 0.30
+				draw_rect(Rect2(p - Vector2(T * 0.16, T * 0.05), Vector2(T * 0.32, T * 0.10)), Color(shoulder, 0.28), true)
+
+## ── docs/192 / Slice 236 districts ────────────────────────────────────────────
+## Explicit rectangles replace the old two radial guesses. Roads feather over
+## two tiles at district edges so the town reads as quarters, not colored disks.
 
 func _district_w(p: Vector2, name: String) -> float:
-	for d in DISTRICT_DEFS:
-		if String(d[0]) == name:
-			return clampf((float(d[2]) - (p / float(T)).distance_to(d[1])) / 2.0 + 0.5, 0.0, 1.0)
-	return 0.0
+	_ensure_urban_plan()
+	var q := p / float(T)
+	var best := 0.0
+	for d in _district_defs:
+		if String((d as Dictionary).get("kind", "residential")) != name:
+			continue
+		var r: Array = (d as Dictionary).get("rect", [0, 0, 0, 0])
+		var x0 := float(r[0]); var y0 := float(r[1]); var x1 := x0 + float(r[2]); var y1 := y0 + float(r[3])
+		var dx := maxf(maxf(x0 - q.x, 0.0), q.x - x1)
+		var dy := maxf(maxf(y0 - q.y, 0.0), q.y - y1)
+		best = maxf(best, clampf(1.0 - Vector2(dx, dy).length() / 2.0, 0.0, 1.0))
+	return best
 
 func _district_road_col(layer: int, base: Color, p: Vector2) -> Color:
 	var res := base
@@ -1925,6 +1984,11 @@ func _draw_area_floors(dirt: Texture2D) -> void:
 		var a: Dictionary = Sim.world["areas"][aid]
 		var r: Array = a.get("rect", [0, 0, 0, 0])
 		var x0 := int(r[0]); var y0 := int(r[1]); var bw := int(r[2]); var bh := int(r[3])
+		# The civic room is allowed to breathe at town scale.  Its visual paving grows
+		# one tile into the four approaches, joining the surrounding façades into a
+		# street block; Sim keeps the original rect and therefore the same routes.
+		if String(aid) == "plaza":
+			x0 -= 1; y0 -= 1; bw += 2; bh += 2
 		if bw <= 0 or bh <= 0:
 			continue
 		var rect := Rect2(x0 * T, y0 * T, bw * T, bh * T)
@@ -2192,6 +2256,26 @@ func _draw_space_placeholder() -> void:
 		draw_string(Art.font(), c + Vector2(12, 4), "%s→%s/%s" % [pt["kind"], to.get("space", ""), to.get("floor", "")],
 			HORIZONTAL_ALIGNMENT_LEFT, -1, 11, X_GOLD)
 
+func _draw_interior_room_zones(b: Rect2, content: Dictionary) -> void:
+	# Authored room purpose is presentation metadata: it adds subtle material zoning
+	# and stable labels without creating a second navigation or interaction model.
+	for raw in content.get("rooms", []):
+		if not (raw is Dictionary):
+			continue
+		var room: Dictionary = raw
+		var rr: Array = room.get("rect", [])
+		if rr.size() < 4:
+			continue
+		var r := Rect2(b.position + Vector2(float(rr[0]), float(rr[1])) * T,
+			Vector2(float(rr[2]), float(rr[3])) * T)
+		var tone := Color(String(room.get("tone", "#8b7b68")), 0.105)
+		draw_rect(r.grow(-3.0), tone, true)
+		draw_rect(r.grow(-3.0), Color(tone, 0.30), false, 1.0)
+		var label := String(room.get("label", ""))
+		if label != "":
+			draw_string(Art.font(), r.position + Vector2(7, 16), label,
+				HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 14, 11, Color(X_PARCHMENT, 0.72))
+
 ## 画一层真室内：木地板 + 外墙(门口留缺) + 家具(程序化) + 门/上下楼提示 + 楼层标签。纯 View、只读数据。
 func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary) -> void:
 	var wc := int(b.size.x / T); var hc := int(b.size.y / T)
@@ -2215,6 +2299,7 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 			var wp: Array = (fr as Dictionary).get("pos", [0, 0])
 			walls[Vector2i(int(wp[0]), int(wp[1]))] = true
 	_draw_interior_floor(b, wc, hc, shell, sid == "cafe", sid)
+	_draw_interior_room_zones(b, content)
 	_draw_interior_backwall(b, wc, shell, door_gap, role)
 	# 地面家具先按行（前左格的 y）排序：后排先画、前排压上，高柜/床头才会正确地挡住后面的墙与物件。
 	var pieces: Array = []
@@ -2253,6 +2338,22 @@ func _draw_interior(sg, sid: String, fid: String, b: Rect2, content: Dictionary)
 		draw_circle(seal, T * 0.20, shell["floor"])
 		draw_circle(seal, T * 0.12, X_GOLD.darkened(0.10))
 	_draw_interior_sidewalls(b, wc, hc, shell, door_gap)
+	# Cutaway silhouettes use the exact recess rectangles blocked by Sim.
+	for cut: Array in content.get("cutouts", []):
+		var recess := Rect2(b.position + Vector2(float(cut[0]), float(cut[1])) * T, Vector2(float(cut[2]), float(cut[3])) * T)
+		var mask := recess
+		if int(cut[1]) == 0:
+			mask.position.y -= T
+			mask.size.y += T
+		draw_rect(mask.grow(1), D_BACKDROP)
+		if recess.position.x > b.position.x:
+			draw_line(recess.position, Vector2(recess.position.x, recess.end.y), shell["wall"], 8)
+		if recess.end.x < b.end.x:
+			draw_line(Vector2(recess.end.x, recess.position.y), recess.end, shell["wall"], 8)
+		if recess.position.y > b.position.y:
+			draw_line(recess.position, Vector2(recess.end.x, recess.position.y), shell["wall"], 8)
+		if recess.end.y < b.end.y:
+			draw_line(Vector2(recess.position.x, recess.end.y), recess.end, shell["wall"], 8)
 	for fr in pieces:
 		var fp: Array = (fr as Dictionary).get("pos", [0, 0])
 		var furniture_base := Vector2(ox + int(fp[0]) * T, oy + int(fp[1]) * T)
@@ -2574,7 +2675,16 @@ func _furn_name(slot: String, fw: int, role: String, on_wall: bool, sid := "") -
 		"sink": return "kitchen_counter"
 		"grocery": return "grocery_shelf"
 		"lamp": return "floor_lamp"
-		"painting_sea": return "civic_town_map" if sid == "mairie" else slot
+		"civic_board": return "civic_notice_board"
+		"bank_counter": return "bank_counter_ledger"
+		"bank_chair": return "bank_waiting_chair"
+		"public_planter": return "public_hydrangea_planter"
+		"public_lantern": return "public_floor_lantern"
+		"public_fountain": return "public_stone_fountain"
+		"market_basket": return "market_oyster_basket"
+		"market_parcel": return "market_parcel_trolley"
+		"large_sofa_group", "large_dining_table", "large_market_display", "large_library_wall": return slot
+		"painting_sea": return "_none" if sid == "mairie" else slot
 		"painting_parasol", "stained_glass": return slot
 		"pew", "altar", "market_stall": return slot
 		"window": return "window_curtain" if on_wall else ""
@@ -2604,32 +2714,47 @@ func _draw_furn_sprite(fd: Dictionary, base: Vector2, role: String, sid := "") -
 	var on_wall := int(fp[1]) == 0
 	if sid == "cafe" and not on_wall:
 		return false          # 阿丽的咖啡馆地面家具保持 AM1 手工精修的程序化轮廓（assert_cafe_interior_density：家具不许溢出格子）
-	var name := _furn_name(String(fd.get("slot", "")), fw, role, on_wall, sid)
+	# `art` changes presentation without changing the semantic slot, interactions,
+	# or blocking footprint compiled by Sim.  It lets large PixelLab compositions
+	# replace clusters of tiny props without hard-coding room-specific exceptions.
+	var name := String(fd.get("art", ""))
+	if name == "":
+		name = _furn_name(String(fd.get("slot", "")), fw, role, on_wall, sid)
 	if name == "":
 		return false
 	if name == "_none":
 		return true
-	return _draw_furn_at(name, Rect2(base.x, base.y - float(fh - 1) * T, float(fw) * T, float(fh) * T), on_wall)
+	# Direction is authored alongside placement rather than inferred from screen position.
+	# Multi-view PixelLab furniture follows <asset>_<north|south|east|west...>.png;
+	# single-view legacy furniture keeps its base sprite until its directional set exists.
+	var facing := String(fd.get("facing", "")).strip_edges().to_lower().replace("-", "_")
+	if facing != "":
+		var directional_name := "%s_%s" % [name, facing]
+		if Art.tex("res://assets/art/furn/%s.png" % directional_name) != null:
+			name = directional_name
+	var art_scale := clampf(float(fd.get("art_scale", 1.0)), 0.35, 1.5)
+	return _draw_furn_at(name, Rect2(base.x, base.y - float(fh - 1) * T, float(fw) * T, float(fh) * T), on_wall, art_scale)
 
 ## 画一件家具精灵到占地 foot（世界像素）。town 平面的对象（床/灶/浴池/工作台）也走这里。
-func _draw_furn_at(name: String, foot: Rect2, on_wall := false) -> bool:
+func _draw_furn_at(name: String, foot: Rect2, on_wall := false, art_scale := 1.0) -> bool:
 	var tex := Art.tex("res://assets/art/furn/%s.png" % name)
 	if tex == null:
 		return false
 	var bb := _furn_bbox(name, tex)
-	var sz := tex.get_size()
+	var sz := tex.get_size() * art_scale
+	var draw_bb := Rect2(bb.position * art_scale, bb.size * art_scale)
 	var base := Vector2(foot.position.x, foot.end.y - T)
 	var dst: Rect2
 	if on_wall:                                        # 挂墙：画在后墙立面上（墙面中线略偏上）
 		var cy := base.y + T * 0.05 - T * BACKWALL_RISE * 0.5
-		dst = Rect2(foot.get_center().x - sz.x * 0.5, cy - (bb.position.y + bb.size.y * 0.5), sz.x, sz.y)
-		draw_rect(Rect2(dst.position.x + bb.position.x + 3, dst.position.y + bb.end.y, bb.size.x - 4, 3), Color(0, 0, 0, 0.18), true)
+		dst = Rect2(foot.get_center().x - sz.x * 0.5, cy - (draw_bb.position.y + draw_bb.size.y * 0.5), sz.x, sz.y)
+		draw_rect(Rect2(dst.position.x + draw_bb.position.x + 3, dst.position.y + draw_bb.end.y, draw_bb.size.x - 4, 3), Color(0, 0, 0, 0.18), true)
 	elif name == "rug_persian":                        # 平铺：居中贴地
 		dst = Rect2(foot.get_center() - sz * 0.5, sz)
 	else:                                              # 立体家具：alpha 底行压占地底边，水平居中；脚下一片软影
-		dst = Rect2(foot.get_center().x - sz.x * 0.5, foot.end.y - 3.0 - bb.end.y, sz.x, sz.y)
-		var sw := bb.size.x * 0.95
-		draw_texture_rect(_light_texture(), Rect2(dst.position.x + bb.position.x + bb.size.x * 0.5 - sw * 0.5 + 4, foot.end.y - T * 0.34, sw, T * 0.40), false, Color(0.05, 0.04, 0.02, 0.34))
+		dst = Rect2(foot.get_center().x - sz.x * 0.5, foot.end.y - 3.0 - draw_bb.end.y, sz.x, sz.y)
+		var sw := draw_bb.size.x * 0.95
+		draw_texture_rect(_light_texture(), Rect2(dst.position.x + draw_bb.position.x + draw_bb.size.x * 0.5 - sw * 0.5 + 4, foot.end.y - T * 0.34, sw, T * 0.40), false, Color(0.05, 0.04, 0.02, 0.34))
 	draw_texture_rect(tex, dst, false)
 	return true
 
@@ -2693,7 +2818,7 @@ func _draw_interior_night(b: Rect2, content: Dictionary, sid: String, fid: Strin
 		return                                        # 白昼无人：日间室内保持原样
 	draw_rect(b, Color(X_GLOW_DEEP, lit), true)         # 暖底光：偏橙、被夜蓝乘过后仍咬得住暖调
 	var ox := b.position.x; var oy := b.position.y
-	var light_slots := {"bed": true, "table": true, "counter": true, "coffee": true, "desk": true, "stove": true}
+	var light_slots := {"bed": true, "table": true, "counter": true, "coffee": true, "desk": true, "stove": true, "public_lantern": true}
 	for fr in content.get("furniture", []):
 		var slot := String((fr as Dictionary).get("slot", ""))
 		if not light_slots.has(slot):
@@ -3403,8 +3528,8 @@ var _outer_items: Array = []   # [{n, foot}]，按 foot.y 排（下方的压上�
 var _outer_roads: Array = []   # [PackedVector2Array]
 var _outer_used := {}          # 精灵名 -> Rect2i（alpha bbox）
 var _outer_xe := 0.0           # 界外小镇的东界（西坡止于镇西 3 格）
-var _outer_streets: Array = [] # [PackedVector2Array] 等高线街（不参与房子避让）
-const WEST_TIERS := 8          # 西坡台地级数（每 6 格一级）
+var _outer_streets: Array = [] # kept for cache/schema compatibility; the boundary now has one road only
+const WEST_TIERS := 4          # four broad mountain shelves, not eight road-like terraces
 
 func _outer_used_rect(n: String) -> Rect2i:
 	if not _outer_used.has(n):
@@ -3460,6 +3585,14 @@ func _outer_try(n: String, foot: Vector2, keep_out: Rect2) -> bool:
 	_outer_items.append({"n": n, "foot": foot, "box": box})
 	return true
 
+func _outer_landscape(n: String, foot: Vector2, scale := 1.0) -> void:
+	var u := _outer_used_rect(n)
+	if u.size.x <= 0:
+		return
+	var sz := Vector2(u.size) * clampf(scale, 0.75, 2.0)
+	var box := Rect2(foot.x - sz.x * 0.5, foot.y - sz.y, sz.x, sz.y)
+	_outer_items.append({"n": n, "foot": foot, "box": box})
+
 ## 沿一条"横向"曲线 fy(x) 从西往东排一行；marks = [[名, 期望 x 格]] 地标，走到那附近时换成地标。
 func _outer_row(fy: Callable, x0: float, x1: float, pool: Array, marks: Array, salt: int, keep_out: Rect2) -> void:
 	var x := x0
@@ -3506,33 +3639,38 @@ func _build_outer_town(w: int, h: int, sea_x: float) -> void:
 	var Wp := float(w) * T; var Hp := float(h) * T
 	_outer_xe = -3.0 * T                                                           # 房子/街只到镇西 3 格；台地顶面画到 -0.5 格（逐顶点融进地面环）# 只在西侧（相机只在西侧 letterbox 看得到界外纵深）
 	var keep_out := Rect2(0, 0, Wp, Hp).grow(2.6 * T)
-	# ── 盘山路：从镇西口蛇行上坡，斜切过每一级崖面（坡道）──
-	_outer_roads.append(_catmull([Vector2(-1.8 * T, 22.5 * T), Vector2(-6.0 * T, 22.2 * T), Vector2(-11.5 * T, 19.6 * T),
-		Vector2(-7.0 * T, 14.8 * T), Vector2(-13.5 * T, 9.6 * T), Vector2(-8.5 * T, 3.8 * T), Vector2(-14.0 * T, -2.5 * T)], T * 0.5))
-	_outer_roads.append(_catmull([Vector2(-6.0 * T, 22.2 * T), Vector2(-11.0 * T, 27.0 * T), Vector2(-6.5 * T, 33.0 * T),
-		Vector2(-12.0 * T, 39.0 * T), Vector2(-8.0 * T, Hp + 3.0 * T)], T * 0.5))    # 下坡去南
-	# ── 等高线街：每级台地崖沿后面一条（房子在街北、面朝南看海）──
-	for j in WEST_TIERS:
-		var pts := PackedVector2Array()
-		var xx := -26.0 * T
-		while xx <= _outer_xe:
-			pts.append(Vector2(xx, _west_y(j, xx) - 0.45 * T))
-			xx += T * 0.5
-		_outer_streets.append(pts)
-	# ── 每级一排房子；地标放在高处（北）：顶级教堂、次级市政厅 ──
-	var pool := ["cottage", "whitehouse", "townhouse", "terrace", "longere", "ochre", "halftimber", "belleepoque", "villa"]
-	for j in WEST_TIERS:
-		var jj := j
-		var marks := []
-		if j == 1: marks = [["church", -12.0]]
-		elif j == 2: marks = [["mairie", -16.0]]
-		elif j == 4: marks = [["hotel", -14.0]]
-		_outer_row(func(x): return _west_y(jj, x) - 0.95 * T, -26.0 * T, _outer_xe, pool, marks, 440 + j, keep_out)
+	# Land entrance: one calm two-way road joins the playable main street at the
+	# west edge. The former forked switchback read like a highway interchange and
+	# competed with the town silhouette despite there being no vehicle system.
+	_outer_roads.append(_catmull([Vector2(-24.0 * T, 19.8 * T), Vector2(-18.0 * T, 20.3 * T),
+		Vector2(-12.0 * T, 21.1 * T), Vector2(-6.0 * T, 22.0 * T), Vector2(0.5 * T, 22.5 * T)], T * 0.42))
+	# PixelLab landscape clusters replace the former eight streets and rows of houses.
+	# The west road corridor deliberately stays open around y=22.5.
+	for spec in [["boundary_mountain_ridge", 6.0, 1.45], ["boundary_woodland_grove", 13.0, 1.20],
+		["boundary_granite_outcrop", 19.0, 1.10], ["boundary_mountain_ridge", 30.0, 1.35],
+		["boundary_wooded_hill", 38.0, 1.35], ["boundary_woodland_grove", 47.0, 1.25]]:
+		_outer_landscape(String(spec[0]), Vector2(-1.4 * T, float(spec[1]) * T), float(spec[2]))
+	# A close, irregular crown rather than four isolated icons: ridges supply the
+	# horizon, groves break their repeated silhouettes, and the corners overlap.
+	var north_x := 2.0
+	var north_i := 0
+	while north_x <= 58.0:
+		var north_name := "boundary_mountain_ridge" if north_i % 3 != 1 else "boundary_woodland_grove"
+		_outer_landscape(north_name, Vector2(north_x * T, 2.2 * T), 1.18 if north_i % 2 == 0 else 1.02)
+		north_x += 5.6
+		north_i += 1
+	var south_x := 3.0
+	var south_i := 0
+	while south_x <= 57.0:
+		var south_name := "boundary_wooded_hill" if south_i % 3 != 1 else "boundary_woodland_grove"
+		_outer_landscape(south_name, Vector2(south_x * T, float(h) * T + T * 1.2), 1.10)
+		south_x += 7.0
+		south_i += 1
 	_outer_items.sort_custom(func(a, b): return (a["foot"] as Vector2).y < (b["foot"] as Vector2).y)
 
 ## 西坡第 j 级台地的崖沿（南面崖面顶线）。越往北越高：北边每一级都比南边那级高一台。
 func _west_y(j: int, x: float) -> float:
-	return (float(j) * 6.0 + 3.0) * T + 0.9 * T * sin(x / (5.5 * T) + float(j) * 1.3) + 0.25 * T * sin(x / (2.3 * T) + float(j))
+	return (float(j) * 12.0 + 3.0) * T + 0.9 * T * sin(x / (5.5 * T) + float(j) * 1.3) + 0.25 * T * sin(x / (2.3 * T) + float(j))
 
 ## 崖面高随离镇远近收口：贴镇边（x→-3 格）收到 0，读作"山坡在镇边落平"。
 func _west_face_h(x: float) -> float:
@@ -3574,75 +3712,22 @@ func _draw_outer_town(c: CanvasItem, map: Rect2, bands: Array, w: int, h: int, s
 	for k in range(fine, 0, -1):
 		var t := float(k) / float(fine)
 		_verge_ring(c, map, cb, t * near, g.lerp(edge_to, t))
-	# ② 西坡台地：顶面由北（高）往南（低）一级比一级暗 ⇒ 读作"往北抬上去的山坡"；再画每级南崖面
-	var x0 := -27.0 * T
-	var x1 := -0.5 * T
-	var stepx := T * 0.5
-	for j in range(WEST_TIERS - 1, -1, -1):
-		var poly := PackedVector2Array()
-		var xx := x0
-		while xx <= x1:
-			poly.append(Vector2(xx, _west_y(j, xx)))
-			xx += stepx
-		xx = x1
-		while xx >= x0:
-			poly.append(Vector2(xx, (_west_y(j - 1, xx) + _west_face_h(xx)) if j > 0 else -4.0 * T))
-			xx -= stepx
-		var hi := float(WEST_TIERS - j) / float(WEST_TIERS)                          # 越北越高越亮
-		var cols := PackedColorArray()                                                # 逐顶点：贴镇边处与地面环同色（无接缝），往西才显出台地的明暗
-		for p in poly:
-			var ramp := clampf((-p.x - 1.0 * T) / (5.0 * T), 0.0, 1.0)
-			var base := _outer_ground(g, -p.x / T)
-			cols.append(base.lightened((0.02 + 0.10 * hi) * ramp))
-		c.draw_polygon(poly, cols)
-	for j in WEST_TIERS:
-		var fade := _outer_fade(Vector2(-12.0 * T, _west_y(j, -12.0 * T)), w, h)
-		var rock := X_GRANITE * fade
-		var top := PackedVector2Array()
-		var bot := PackedVector2Array()
-		var xx := x0
-		while xx <= x1:
-			var p := Vector2(xx, _west_y(j, xx))
-			top.append(p)
-			bot.append(p + Vector2(0, _west_face_h(xx)))
-			xx += stepx
-		# 崖面只取面高 > 0 的那段：贴镇边 _west_face_h 收到 0 ⇒ top/bot 重合成零宽，多边形自贴 ⇒ 引擎 triangulation failed
-		var face := PackedVector2Array()
-		var face_n := 0
-		for i in top.size():
-			if bot[i].y - top[i].y > 0.5:
-				face.append(top[i])
-				face_n = i + 1
-		for i in range(face_n - 1, -1, -1):
-			face.append(bot[i])
-		var sh := PackedVector2Array()                                                # 崖脚落影：崖底往南一条渐隐带
-		for p in bot:
-			sh.append(p)
-		for i in range(bot.size() - 1, -1, -1):
-			sh.append(bot[i] + Vector2(T * 0.25, T * 0.55))
-		c.draw_colored_polygon(sh, Color(0, 0, 0, 0.22))
-		c.draw_colored_polygon(face, rock.darkened(0.12))
-		for f in [0.30, 0.55, 0.78]:                                                  # 层理
-			var line := PackedVector2Array()
-			for i in top.size():
-				line.append(top[i].lerp(bot[i], f) + Vector2(0, sin(top[i].x / 37.0) * 1.5))
-			c.draw_polyline(line, rock.darkened(0.40), 2.0)
-		c.draw_polyline(top, P_FOLIAGE_D * fade, 5.0)                                 # 崖顶草唇
-		c.draw_polyline(bot, rock.darkened(0.50), 2.0)                                # 崖脚
-	# 等高线街（在崖沿后面；不参与房子避让——房子本来就沿着它排）
-	for layer in [[T * 0.80, S_CURB.lerp(P_FOLIAGE_D, 0.45)], [T * 0.62, P_STREET]]:
-		for pl in _outer_streets:
-			var cols := PackedColorArray()
-			for p in pl:
-				cols.append((layer[1] as Color) * _outer_fade(p, w, h))
-			c.draw_polyline_colors(pl, cols, float(layer[0]))
-	# ③ 路：三层（路肩 / 路面 / 踩踏带），逐点按距离压暗
-	for layer in [[T * 1.00, S_CURB.lerp(P_FOLIAGE_D, 0.45)], [T * 0.86, P_STREET], [T * 0.30, S_STREET_HI.lerp(P_STREET, 0.5)]]:
+	# ② The former west terrace faces were decorative, but at town scale their
+	# horizontal strata read as three additional roads.  Elevation is now carried
+	# by the PixelLab ridge/grove silhouettes; the transport diagram stays singular.
+	# ③ 镇西唯一陆路：宽路肩 + 双向路面；没有平行街、坡路或岔路。
+	for layer in [[T * 1.62, S_CURB.lerp(P_FOLIAGE_D, 0.45)], [T * 1.34, P_STONE.darkened(0.24)]]:
 		for pl in _outer_roads:
 			var cols := PackedColorArray()
 			for p in pl:
 				cols.append((layer[1] as Color) * _outer_fade(p, w, h))
 			c.draw_polyline_colors(pl, cols, float(layer[0]))
+	for pl in _outer_roads:
+		for i in range(0, pl.size() - 1, 3):
+			var p0: Vector2 = pl[i]
+			var p1: Vector2 = pl[mini(i + 1, pl.size() - 1)]
+			var mid := (p0 + p1) * 0.5
+			c.draw_line(p0, p1, Color(S_STREET_HI, 0.70) * _outer_fade(mid, w, h), 2.2)
 	# ④ 房子（按 foot.y 排好：下方压上方），落影 + 大气透视
 	var stex := _light_texture()
 	for it in _outer_items:
@@ -4205,6 +4290,9 @@ func _draw_night_lights(c: Node2D) -> void:
 	_refresh_view_metrics()                      # 光层与本节点共用变换，读同一个 _vis 做裁剪
 	if _zoom < LIGHT_ZOOM_MIN:
 		return
+	for lamp: Vector2 in _coastal_plan.lamps:
+		if _vis.grow(80).has_point(lamp):
+			_glow(c, lamp - Vector2(0, 29), 66.0, Color("#ffd39a"), 0.28 * night)
 	for L in _collect_lights():
 		var p: Vector2 = L["p"]
 		var rad: float = L["r"]
@@ -4273,6 +4361,7 @@ func _draw_body() -> void:
 			draw_texture_rect(grass, Rect2(0, 0, w * T, h * T), true, veg)
 		else:
 			draw_rect(Rect2(0, 0, w * T, h * T), GRASS_FALLBACK * veg, true)   # D6：原为 Art.ground（深蓝灰），而这是【缺草地切片时的地面】—— 用同文件的草色兜底才对，且让 Art.gd 不再持有任何色值
+	_coastal_plan.draw_meadow(self, _vis, Vector2(w, h) * T, veg)
 	var dirt := Art.terrain_tex("dirt")
 	# 水面（map.json water 层）：铺在草地之上、区域/建筑之下，作为地形读。深蓝底 + 浅蓝格纹岸边微光，
 	# 用确定性 _hash 做静态涟漪（不抽 RNG、不进 digest）。
@@ -4330,12 +4419,14 @@ func _draw_body() -> void:
 	if not _paths_built:
 		_build_paths()
 	if _ap("paths"):
-		_draw_roads(w)             # docs/189：有机路网（圆角 + 路心微摆 + 碎石路面 + 草侵路沿），取代下面的方格铺法
+		_coastal_plan.draw_surfaces(self, _vis)
+		# _draw_roads(w)             # docs/189：有机路网（圆角 + 路心微摆 + 碎石路面 + 草侵路沿），取代下面的方格铺法
 
 	# 区域【真地板】：每个 district 按 type 铺木/石/铺装地板（旧版只有广场有地板，其余七个区只有一层
 	# 0.10 alpha 的淡色罩 —— 那层淡到什么也读不出来，于是墙里全是草，房子读作"围了圈墙的院子"）。
 	if _ap("areafloor"):
 		_draw_area_floors(dirt)
+		_coastal_plan.draw_surfaces(self, _vis)
 	# 室内房间 → 画成【真·建筑】（docs/16 / docs/19 §9）：外墙有厚度 + 落地阴影 + 屋檐、南墙开门、北墙开窗、
 	# 室内按房型铺材质地板，有人时透暖光。参照 Stardew / Stoneshard / ZeroSievert 的"切顶俯视"读法：
 	# 建筑必须有体积，人才有比例——旧版把 6x4 的房间画成一块半透明色块 + 文字标签，读作"色区"而非"房子"。
@@ -4354,6 +4445,7 @@ func _draw_body() -> void:
 	if _ap("walls"):
 		_draw_building_shadows()   # docs/180：统一西北日照 ⇒ 每栋楼向东南落一块投影，建筑才"立"在地上
 	for idx in _ac("walls", _wall_set):
+		if _wall_type.has(idx): continue # PixelLab block contains its own exterior walls.
 		var sx: int = idx % w
 		var sy: int = idx / w
 		var wtyp := String(_wall_type.get(idx, "workshop"))
@@ -4363,9 +4455,9 @@ func _draw_body() -> void:
 		_draw_wall_cell(sx, sy, wtyp, pal, w)                                                         # docs/189：分材质砌体
 	# 屋檐 + 招牌：每栋（非广场）沿顶墙内侧铺一条屋檐色带 + 门上方挂类型招牌图标 → 类型一眼可辨。
 	if _ap("facades"):
-		_draw_facades()            # P3 打磨：开窗（夜透暖光）+ 住宅/工坊烟囱——先画在墙面上
+		pass # _draw_facades()            # P3 打磨：开窗（夜透暖光）+ 住宅/工坊烟囱——先画在墙面上
 	if _ap("dressing"):
-		_draw_building_dressing(w) # 再压屋檐/招牌（自然遮住顶墙窗上沿，像真的屋檐）
+		pass # _draw_building_dressing(w) # 再压屋檐/招牌（自然遮住顶墙窗上沿，像真的屋檐）
 	if _ap("arealabels"):
 		_draw_area_labels()        # 区名画在墙【之后】（旧版画在顶墙格上，被墙盖掉，等于没画）
 	# AP-port(163)：给滩头 dock 画真·港口身份（栈桥/系缆桩/货箱/渔船/船屋 + 交通路牌）。
@@ -4387,7 +4479,7 @@ func _draw_body() -> void:
 		var c: Vector2i = it["cell"]
 		if not _vis.has_point(Vector2(c.x * T, c.y * T)):
 			continue                       # 视口外的花草石不画（布局仍由 _build_decor 一次性确定，与相机无关）
-		if _beach.has(c.y * w + c.x) or int(_prom_x.get(c.y, -1)) == c.x or _house_cells.has(c.y * w + c.x) or _cliff_face.has(c.y * w + c.x):
+		if _path_set.has(c.y * w + c.x) or _beach.has(c.y * w + c.x) or int(_prom_x.get(c.y, -1)) == c.x or _house_cells.has(c.y * w + c.x) or _cliff_face.has(c.y * w + c.x):
 			continue                       # docs/180/185/186：沙滩、海堤步道、布景民居底下不长花草（布局不变，只是这几格不画）
 		var dw := float(dtex.get_width()) * (float(T) / 16.0)
 		var dh := float(dtex.get_height()) * (float(T) / 16.0)
@@ -4409,40 +4501,9 @@ func _draw_body() -> void:
 
 	# authored 阻挡树（map.json trees 层）：这些是【会挡路】的真树（与上面可踩的程序化花草区分开）。
 	# 用 tree_big 切图底对齐画；缺切图则程序化画树冠+树干。占满格 → 玩家一眼读出"这里过不去"。
-	var ttex := Art.decor_tex("tree_big")
 	if _ap("trees"):
-		_draw_wang_cliff(w)       # docs/182：东松林岬抬成花岗岩台地（崖壁两行落在树格上，那两行不再画树）
-		# docs/180：树冠投影（西北光 ⇒ 影子落在树脚东南）。一张径向衰减贴图 × 黑色 modulate ⇒ 130 棵合成一批。
-		var stex := _light_texture()
-		for st in _tree_draw:
-			var sc: Vector2i = st["cell"]
-			if _cliff_face.has(sc.y * w + sc.x):
-				continue
-			var so: Vector2 = st["off"]
-			var srr := Rect2(sc.x * T - T * 0.05 + so.x, sc.y * T + T * 0.50, T * 1.45, T * 0.80)
-			if _vis.intersects(srr):
-				draw_texture_rect(stex, srr, false, Color(0.02, 0.06, 0.04, 0.34))
-	# ★ V3 林相：画法从 `_tree_draw` 取（偏移/镜像/明暗档 + 行优先次序，见 _build_tree_styles）。
-	#   `_ac("trees", …)` 的 pass 名不变 ⇒ D7 的逐 pass draw-call 审计仍然对得上同一行。
-	for st in _ac("trees", _tree_draw):
-		var tc: Vector2i = st["cell"]
-		if _cliff_face.has(tc.y * w + tc.x):
-			continue                   # docs/182：崖壁格（仍是阻挡格）不画松树
-		if ttex != null:
-			var tdw := float(ttex.get_width()) * (float(T) / 16.0)
-			var tdh := float(ttex.get_height()) * (float(T) / 16.0)
-			var toff: Vector2 = st["off"]
-			var dst := Rect2(tc.x * T + (T - tdw) * 0.5 + toff.x, (tc.y + 1) * T - tdh + toff.y, tdw, tdh)
-			# 明暗档走 modulate（进顶点色，**不**换纹理 ⇒ 156 棵仍然合成一批；见 _tree_style 下面那段"为什么没有镜像"）
-			draw_texture_rect_region(ttex, dst, Rect2(0, 0, ttex.get_width(), ttex.get_height()), veg * (st["tone"] as Color))
-		else:
-			# ★ 缺切图的程序化回退**蓄意不吃 V3 的分化**：它只在 `tree_big.png` 不存在时可达，
-			#   而那张图今天由 asset_gate 的 GATED 表守着 ⇒ 这条分支在出货树上跑不到。
-			#   给一条跑不到的路加分化，等于给它加一份没人验过的行为（docs/41 §2.5 第三个盲区的形状）。
-			var cx: float = tc.x * T + T * 0.5
-			draw_rect(Rect2(tc.x * T + T * 0.30, tc.y * T + T * 0.55, T * 0.40, T * 0.45), X_WOOD_MID, true)  # 树干
-			draw_circle(Vector2(cx, tc.y * T + T * 0.42), T * 0.42, P_FOLIAGE_D * veg)                          # 树冠
-			draw_circle(Vector2(cx - T * 0.18, tc.y * T + T * 0.30), T * 0.24, P_FOLIAGE_M * veg)                # 高光叶
+		_draw_wang_cliff(w)
+		_coastal_plan.draw_landscape(self, _vis, Sim.world.get("trees", []), veg)
 
 	if _ap("towndoors"):
 		_draw_town_doors()         # P3 UX：给能进的建筑画醒目木门 + 招牌（点门进店）
@@ -4473,6 +4534,7 @@ func _draw_body() -> void:
 			"stove": _draw_stove(base)
 			"dock": _draw_dock(base)
 			"fest": _draw_festival(base)   # Wave 2b：节日机会地形（灯笼，暖光）
+			"cliff_overlook": _draw_landmark_sprite("cliff_overlook", p, 0.94)
 			_:
 				var otex: Texture2D = Art.object_tex(slot) if slot != "" else null
 				if otex != null:
@@ -4633,11 +4695,38 @@ func _draw_plaza_seatring(rect: Rect2) -> void:
 		draw_circle(p - Vector2(0, T * 0.05), T * 0.15, S_PLANTER.lightened(0.18))                   # 座面受光
 		draw_arc(p, T * 0.19, 0.0, TAU, 16, S_PLANTER.darkened(0.30), 1.0, false)                    # 描边
 
+func _draw_landmark_sprite(name: String, cell: Vector2i, scale := 1.0) -> void:
+	var tex := Art.tex("res://assets/art/props/%s.png" % name)
+	if tex == null:
+		return
+	var img := tex.get_image()
+	if img != null and img.is_compressed():
+		img = img.duplicate()
+		img.decompress()
+	var used := img.get_used_rect() if img != null else Rect2i(0, 0, tex.get_width(), tex.get_height())
+	var ds := Vector2(used.size) * scale
+	var foot := Vector2((float(cell.x) + 0.5) * T, (float(cell.y) + 1.0) * T)
+	var dst := Rect2(foot.x - ds.x * 0.5, foot.y - ds.y, ds.x, ds.y)
+	draw_texture_rect(_light_texture(), Rect2(dst.position.x + ds.x * 0.08, foot.y - T * 0.30, ds.x * 0.92, T * 0.48), false, Color(0.02, 0.03, 0.02, 0.26))
+	draw_texture_rect_region(tex, dst, Rect2(used.position, used.size))
+
 func _draw_landmarks() -> void:
 	for lm in Sim.world.get("landmarks", []):
 		var lp: Array = lm.get("pos", [0, 0])
 		var bx := int(lp[0]) * T; var by := int(lp[1]) * T
 		match String(lm.get("type", "")):
+			"cliff_stairs":
+				_draw_landmark_sprite("cliff_grand_stairs", Vector2i(int(lp[0]), int(lp[1])), 1.24)
+			"cliff_switchback_stairs":
+				_draw_landmark_sprite("cliff_switchback_stairs", Vector2i(int(lp[0]), int(lp[1])), 1.08)
+			"cliff_arch_passage":
+				_draw_landmark_sprite("cliff_arch_passage", Vector2i(int(lp[0]), int(lp[1])), 0.92)
+			"upper_lane_planter":
+				_draw_furn_at("public_hydrangea_planter", Rect2(bx, by, T, T), false, 0.88)
+			"upper_lane_lantern":
+				_draw_furn_at("public_floor_lantern", Rect2(bx, by, T, T), false, 0.84)
+			"cliff_overlook":
+				_draw_landmark_sprite("cliff_overlook", Vector2i(int(lp[0]), int(lp[1])), 0.94)
 			"well":
 				# AP2(141) 有分量的圆石水井（双坡木顶 + 摇柄横梁 + 吊桶 + 井水反光）。向上伸出本格（顶棚 overhang，
 				#   同建筑画法）；纯 draw，**永不进 blockers**（进了=挡广场中央生存路 ⇒ #01 破，docs/139 ②）。
@@ -4683,7 +4772,7 @@ func _draw_landmarks() -> void:
 	if _areas.has("plaza"):
 		var _pr: Array = (_areas["plaza"] as Dictionary).get("rect", [0, 0, 0, 0])
 		if int(_pr[2]) > 0 and int(_pr[3]) > 0:
-			_draw_plaza_seatring(Rect2(int(_pr[0]) * T, int(_pr[1]) * T, int(_pr[2]) * T, int(_pr[3]) * T))
+			_draw_plaza_seatring(Rect2((int(_pr[0]) - 1) * T, (int(_pr[1]) - 1) * T, (int(_pr[2]) + 2) * T, (int(_pr[3]) + 2) * T))
 
 ## ══════════════════════════════════════════════════════════════════════════════
 ## AP-port（docs/163）· 滩头 dock 的【港口身份】—— 纯 View、零金标、POND 安全
@@ -4746,7 +4835,7 @@ static func carrier_projections_for(sim, logistics_data: Dictionary, manifests: 
 #   沙滩/道具/海鸥全是 View。池塘（北/南池）一像素不碰 ⇒ POND 门零扰动（海 = 贴东界的那段连续水）。
 # ★确定性：布局只读 `_hash`；浪/泡沫/海鸥只读 `Sim.tick_no` ⇒ 冻结 tick 的 --shot 逐像素可复现。
 #   界外海（_draw_void_sea）**不读 tick**——界外层是静态缓存层（D7 / VOIDGATE），这里守住那条性质。
-const BEACH_DEPTH := 3
+const BEACH_DEPTH := 5
 
 func _ensure_seaside(w: int, h: int) -> void:
 	if not _sea_built:
@@ -5033,8 +5122,19 @@ func _draw_terrace_tops(w: int) -> void:
 			continue
 		draw_rect(r, Color(1.0, 0.96, 0.74, 0.19), true)
 		if not _terrace.has(idx - w):                                   # 北沿：远侧的台沿 —— 一线亮草 + 一道细岩棱（坡面背向镜头，看不见）
-			draw_rect(Rect2(r.position.x, r.position.y, T, T * 0.08), Color(1.0, 1.0, 0.85, 0.22), true)
-			draw_rect(Rect2(r.position.x, r.position.y - 3.0, T, 3.0), X_GRANITE.darkened(0.20), true)
+			# Slice 242: the plateau mask stays grid-exact for navigation, while its
+			# visible rim receives deterministic sub-tile drift. Adjacent cells share
+			# endpoint samples, so the contour is irregular without gaps or RNG.
+			var n0 := (float(_hash_mix(x, y, 421) % 101) / 100.0 - 0.5) * T * 0.14
+			var n1 := (float(_hash_mix(x + 1, y, 421) % 101) / 100.0 - 0.5) * T * 0.14
+			var rim := PackedVector2Array([
+				Vector2(r.position.x, r.position.y + n0),
+				Vector2(r.end.x, r.position.y + n1),
+				Vector2(r.end.x, r.position.y + T * 0.08 + n1),
+				Vector2(r.position.x, r.position.y + T * 0.08 + n0),
+			])
+			draw_colored_polygon(rim, Color(1.0, 1.0, 0.85, 0.22))
+			draw_line(rim[0] - Vector2(0, 3), rim[1] - Vector2(0, 3), X_GRANITE.darkened(0.20), 3.0)
 
 ## docs/191 台地崖面（程序化，西北光）：
 ##   南沿下一行画一整格高的花岗岩崖面（层理横纹 + 竖向裂隙 + 苔痕 + 顶上草唇 + 崖脚乱石），再往南落一块软影；
@@ -5070,10 +5170,12 @@ func _draw_terrace_faces(w: int) -> void:
 		if _terrace.has(idx + w):
 			continue
 		# —— 南崖面：占下一行上 0.88 格 ——
-		var fx0 := top.position.x + (T * 0.06 if w_open else 0.0)
-		var fx1 := top.end.x - (T * 0.06 if e_open else 0.0)
-		var fy0 := top.end.y
-		var fh := T * 0.88
+		var edge_jitter := (float(_hash_mix(x, y, 423) % 101) / 100.0 - 0.5) * T * 0.10
+		var foot_jitter := float(_hash_mix(x, y, 427) % 101) / 100.0
+		var fx0 := top.position.x + (T * 0.06 if w_open else 0.0) + edge_jitter * 0.35
+		var fx1 := top.end.x - (T * 0.06 if e_open else 0.0) + edge_jitter * 0.25
+		var fy0 := top.end.y + edge_jitter
+		var fh := T * (0.76 + foot_jitter * 0.18)
 		draw_texture_rect(stex, Rect2(fx0 + T * 0.10, fy0 + fh - T * 0.30, fx1 - fx0 + T * 0.45, T * 0.80), false, Color(0.02, 0.05, 0.03, 0.42))   # 崖脚落影
 		draw_rect(Rect2(fx0, fy0, fx1 - fx0, fh), rock.darkened(0.10), true)
 		var sy := fy0 + T * 0.14
@@ -5111,6 +5213,37 @@ func _draw_terrace_faces(w: int) -> void:
 			draw_circle(bp + Vector2(2, 2), br, Color(0, 0, 0, 0.25))
 			draw_circle(bp, br, rock.darkened(0.06))
 			draw_circle(bp - Vector2(br * 0.3, br * 0.3), br * 0.5, rock.lightened(0.14))
+	_draw_terrain_details()
+
+## Slice 243: authored transition pieces sit on top of the procedural connective
+## cliff. The JSON layer is reusable and presentation-only: pieces neither add
+## blockers nor impersonate portals, while their footprints make composition
+## reviewable without another coordinate-specific drawing function.
+func _draw_terrain_details() -> void:
+	for raw in _lots_data().get("terrain_details", []):
+		if not (raw is Dictionary):
+			continue
+		var detail: Dictionary = raw
+		var name := String(detail.get("sprite", ""))
+		var tex := Art.tex("res://assets/art/houses/%s.png" % name)
+		if tex == null:
+			continue
+		var used := _outer_used_rect(name)
+		if used.size.x <= 0 or used.size.y <= 0:
+			continue
+		var x := int(detail.get("x", 0)); var y := int(detail.get("y", 0))
+		var fw := int(detail.get("w", 2)); var fh := int(detail.get("h", 2))
+		var scale := clampf(float(detail.get("scale", 1.0)), 0.60, 1.25)
+		var ds := Vector2(used.size) * scale
+		var foot := Vector2((float(x) + float(fw) * 0.5) * T, float(y + fh) * T)
+		var dst := Rect2(foot.x - ds.x * 0.5, foot.y - ds.y, ds.x, ds.y)
+		if not _vis.intersects(dst.grow(T)):
+			continue
+		draw_texture_rect(_light_texture(), Rect2(dst.position.x + ds.x * 0.10, foot.y - T * 0.24, ds.x * 0.92, T * 0.38), false, Color(0.02, 0.04, 0.02, 0.24))
+		if bool(detail.get("flip", false)):
+			_draw_mirrored(tex, dst, Rect2(used.position, used.size), Color.WHITE)
+		else:
+			draw_texture_rect_region(tex, dst, Rect2(used.position, used.size), Color.WHITE)
 
 func _wang_set(name: String) -> Dictionary:
 	if _wang.has(name):
@@ -5379,19 +5512,22 @@ func _fill_rect(r: Rect2, col: Color) -> void:
 	if r.size.x > 0.0 and r.size.y > 0.0:
 		draw_rect(r, col, true)
 
-# ── docs/180 · 坡屋顶 + 缩放掀顶 ─────────────────────────────────────────────────────────
-# 全镇俯瞰（zoom ≤ ROOF_ZOOM_LO）：每栋楼盖上真屋顶（板岩/陶瓦、屋脊、老虎窗、花岗岩烟囱）⇒ 读作"一个镇子"，
-# 而不是一格格围墙院子；拉近（≥ ROOF_ZOOM_HI）：屋顶淡出，回到切顶视图看屋里的人与家具。
-# 选中者所在的那栋永远掀顶（找人不被屋顶挡）。纯 View：只读 zoom / 选中 / areas，Sim 读不到 ⇒ 零金标。
-# 南墙那一行不盖：它就是 3/4 俯视里看得见的正立面（窗、门、招牌都在上面）。
-const ROOF_ZOOM_LO := 0.62    # 淡变带要窄：带里的半透明屋顶读作"X 光片"，只该是一掠而过的过渡
-const ROOF_ZOOM_HI := 0.80
+# Town exteriors stay roofed at all camera scales. Interiors are entered through
+# the existing door/Space interaction, so zoom has no destructive cutaway state.
+const FUNCTIONAL_FACADE := {
+	"residential": "functional_residential_facade",
+	"commercial": "functional_commercial_facade",
+	"public": "functional_public_facade",
+	"workshop": "functional_workshop_facade",
+}
 var _roof_a := 0.0             # 本帧全局屋顶不透明度（f(zoom)）
 var _roof_open := {}           # aid -> true：本帧掀顶（选中者在楼里）
 var _roof_seen := -1.0         # _process 上一次看到的屋顶透明度（变了就重画）
 
 func _roof_alpha() -> float:
-	return clampf((ROOF_ZOOM_HI - _zoom) / (ROOF_ZOOM_HI - ROOF_ZOOM_LO), 0.0, 1.0)
+	# Town is an exterior at every zoom. Door interaction already opens a
+	# separate interior Space; zoom alone must never strip the whole town.
+	return 1.0
 
 func _roof_areas() -> Array:
 	var out: Array = []
@@ -5423,14 +5559,48 @@ func _draw_roofs() -> void:
 	_roof_open.clear()
 	if _roof_a <= 0.0:
 		return
-	var sel := Sim.get_agent(_selected_id()) if _selected_id() != "" else {}
 	for b in _roof_areas():
-		if not sel.is_empty() and String(sel.get("space", "town")) == "town":
-			var sp: Vector2i = sel["pos"]
-			if sp.x >= int(b["x"]) and sp.x < int(b["x"]) + int(b["w"]) and sp.y >= int(b["y"]) and sp.y < int(b["y"]) + int(b["h"]):
-				_roof_open[b["id"]] = true
-				continue
 		_draw_roof(b, _roof_a)
+	# PixelLab street fronts turn broad simulation footprints into attached
+	# attached bays. Indoor plans are drawn by the separate Space renderer;
+	# the door/label pass below is still drawn last.
+	# Coastal blocks include their own continuous stucco street fronts.
+
+func _draw_functional_facades(a: float) -> void:
+	for b in _roof_areas():
+		if _roof_open.has(b["id"]):
+			continue
+		var typ := String(b["typ"])
+		var name := String(FUNCTIONAL_FACADE.get(typ, ""))
+		if name == "":
+			continue
+		var tex := Art.tex("res://assets/art/houses/%s.png" % name)
+		if tex == null:
+			continue
+		var used := _outer_used_rect(name)
+		if used.size.x <= 0 or used.size.y <= 0:
+			continue
+		var x0 := int(b["x"]); var y0 := int(b["y"])
+		var bw := int(b["w"]); var bh := int(b["h"])
+		var bays := clampi(int(round(float(bw) / 3.0)), 1, 3)
+		var frontage_w := float(bw) * T
+		var bay_w := frontage_w / float(bays)
+		var scale := minf((bay_w + T * 0.04) / float(used.size.x), T * 2.35 / float(used.size.y))
+		var ds := Vector2(used.size) * scale
+		var foot_y := float(y0 + bh) * T + T * 0.03
+		if not _vis.intersects(Rect2(float(x0) * T, foot_y - ds.y, frontage_w, ds.y + T)):
+			continue
+		for i in bays:
+			var cx := float(x0) * T + (float(i) + 0.5) * bay_w
+			var dst := Rect2(cx - ds.x * 0.5, foot_y - ds.y, ds.x, ds.y)
+			draw_texture_rect(_light_texture(), Rect2(dst.position.x + T * 0.10, foot_y - T * 0.26, ds.x, T * 0.34), false, Color(0.02, 0.03, 0.02, 0.25 * a))
+			var mod := Color(0.96, 0.96, 0.94, a) if i % 2 == 1 else Color(1, 1, 1, a)
+			if i % 2 == 1:
+				draw_set_transform(Vector2(dst.end.x, dst.position.y), 0.0, Vector2(-1.0, 1.0))
+				draw_texture_rect_region(tex, Rect2(Vector2.ZERO, dst.size), Rect2(used.position, used.size), mod)
+				draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+			else:
+				draw_texture_rect_region(tex, dst, Rect2(used.position, used.size), mod)
 
 func _roof_base(typ: String, v: int) -> Color:
 	match typ:
@@ -5439,74 +5609,14 @@ func _roof_base(typ: String, v: int) -> Color:
 		"workshop": return _roof_variant(P_WRK_ROOF.lightened(0.08), v)
 	return _roof_variant(P_COM_ROOF.darkened(0.08), v)          # 商业：陶瓦，镇上唯一的暖顶 ⇒ 店铺一眼可找
 
-func _draw_roof(b: Dictionary, a: float) -> void:
-	var x0: int = b["x"]; var y0: int = b["y"]; var bw: int = b["w"]; var bh: int = b["h"]
-	var typ: String = b["typ"]
-	var L := float(x0) * T - T * 0.16
-	var R := float(x0 + bw) * T + T * 0.16
-	var top := float(y0) * T - T * 0.40
-	var bot := float(y0 + bh - 1) * T + T * 0.08
-	if not _vis.intersects(Rect2(L, top - T, R - L, bot - top + T * 2.0)):
-		return
-	var v := _bld_variant(x0, y0)
-	var base := _roof_base(typ, v)
-	# 体块：宽楼拆成【主屋 + 矮一截的侧翼】两段屋顶（屋脊高低错开 + 主屋山墙投影压在侧翼上），
-	#   否则 9×7 的楼盖成一整块板，读作"一片屋顶色的色块"而不是房子。哪一侧是侧翼按 _hash 定（确定性）。
-	var ridge := 0.0
-	if bw >= 7:
-		var wing_left := _hash_mix(x0, y0, 227) % 2 == 0
-		var split := float(x0 + (bw * 2) / 5 if wing_left else x0 + (bw * 3) / 5) * T
-		var wtop := top + T * 0.42
-		var wbase := base.darkened(0.05)
-		if wing_left:
-			_roof_section(L, split, wtop, bot, wbase, typ, x0 * 7 + 1, y0, a)
-			ridge = _roof_section(split - T * 0.04, R, top, bot, base, typ, x0 * 7, y0, a)
-			draw_rect(Rect2(split - T * 0.04 - T * 0.30, wtop, T * 0.30, bot - wtop), Color(0, 0, 0, 0.20 * a), true)   # 主屋山墙投影（光从西北 ⇒ 落在西侧侧翼上的是背光面…取弱）
-		else:
-			_roof_section(split, R, wtop, bot, wbase, typ, x0 * 7 + 1, y0, a)
-			ridge = _roof_section(L, split + T * 0.04, top, bot, base, typ, x0 * 7, y0, a)
-			draw_rect(Rect2(split + T * 0.04, wtop, T * 0.34, bot - wtop), Color(0, 0, 0, 0.26 * a), true)   # 主屋山墙投影落在东侧侧翼
-	else:
-		ridge = _roof_section(L, R, top, bot, base, typ, x0 * 7, y0, a)
-	# 苔/地衣斑（板岩老屋顶的质感）
-	if typ != "commercial":
-		for k in bw:
-			var hm := _hash_mix(x0 + k, y0, 223)
-			if hm % 3 != 0:
-				continue
-			var mp := Vector2(L + (float(k) + float(hm / 3 % 80) / 100.0) * T, top + (bot - top) * (0.15 + float(hm / 240 % 75) / 100.0))
-			draw_rect(Rect2(mp, Vector2(T * 0.14, T * 0.07)), Color(P_GRASS_AUT.lerp(P_FOLIAGE_M, 0.4), 0.45 * a), true)
-	# 老虎窗（lucarne）：南坡上一排，白框 + 小山墙帽 —— 布列塔尼民居最认得出的一笔
-	if typ == "residential" or typ == "public":
-		var n := maxi(1, bw / 4)
-		for i in n:
-			var cx := L + (R - L) * (float(i) + 0.5) / float(n)
-			var dy := ridge + (bot - ridge) * 0.26
-			var dwid := T * 0.72
-			var dh := T * 0.62
-			draw_rect(Rect2(cx - dwid * 0.5 + 4.0, dy + 4.0, dwid, dh), Color(0, 0, 0, 0.24 * a), true)
-			draw_rect(Rect2(cx - dwid * 0.5, dy, dwid, dh), Color(X_COLD_WHITE, a), true)                # 白灰泥老虎窗脸
-			draw_rect(Rect2(cx + dwid * 0.18, dy, dwid * 0.32, dh), Color(0, 0, 0, 0.10 * a), true)      # 东侧背光
-			draw_rect(Rect2(cx - dwid * 0.30, dy + T * 0.16, dwid * 0.60, dh - T * 0.24), Color(P_WATER_DEEP if _night_amt() < 0.5 else X_GLOW, a), true)
-			draw_line(Vector2(cx, dy + T * 0.16), Vector2(cx, dy + dh - T * 0.08), Color(X_COLD_WHITE, a), 2.0)
-			draw_line(Vector2(cx - dwid * 0.30, dy + T * 0.34), Vector2(cx + dwid * 0.30, dy + T * 0.34), Color(X_COLD_WHITE, a), 1.5)
-			draw_colored_polygon(PackedVector2Array([Vector2(cx - dwid * 0.64, dy + 2.0), Vector2(cx, dy - T * 0.34), Vector2(cx + dwid * 0.64, dy + 2.0)]), Color(base.darkened(0.12), a))
-			draw_colored_polygon(PackedVector2Array([Vector2(cx, dy - T * 0.34), Vector2(cx + dwid * 0.64, dy + 2.0), Vector2(cx, dy + 2.0)]), Color(0, 0, 0, 0.18 * a))
-	# 花岗岩山墙烟囱：两端骑在屋脊上（布列塔尼石屋的招牌轮廓），住宅/工坊冒炊烟
-	if typ != "commercial":
-		for ex in [L + T * 0.55, R - T * 0.95]:
-			var cy := ridge - T * 0.46
-			draw_rect(Rect2(ex + 4.0, cy + 5.0, T * 0.40, T * 0.52), Color(0, 0, 0, 0.25 * a), true)
-			draw_rect(Rect2(ex, cy, T * 0.40, T * 0.52), Color(X_GRANITE, a), true)
-			draw_rect(Rect2(ex, cy, T * 0.14, T * 0.52), Color(X_GRANITE.lightened(0.18), a), true)
-			draw_rect(Rect2(ex - T * 0.04, cy - T * 0.05, T * 0.48, T * 0.10), Color(X_GRANITE.darkened(0.30), a), true)
-			draw_rect(Rect2(ex + T * 0.08, cy - T * 0.10, T * 0.10, T * 0.06), Color(P_COM_ROOF.darkened(0.2), a), true)   # 陶土烟囱管
-			draw_rect(Rect2(ex + T * 0.22, cy - T * 0.10, T * 0.10, T * 0.06), Color(P_COM_ROOF.darkened(0.2), a), true)
-		if typ == "residential" or typ == "workshop":
-			_chimney_smoke(R - T * 0.95 + T * 0.20, ridge - T * 0.58, x0, y0, a)
-	else:
-		_draw_awning(Rect2(float(x0) * T - T * 0.12, bot + T * 0.02, float(bw) * T + T * 0.24, T * 0.34),
-			BLD_PAL["commercial"], bw, v)
+func _draw_roof(b: Dictionary, _a: float) -> void:
+	var r := Rect2(float(b.x) * T, float(b.y) * T, float(b.w) * T, float(b.h) * T)
+	if not _vis.intersects(r.grow(T)): return
+	_coastal_plan.draw_pad(self, r)
+	var assets := {"library": "library", "wash": "bathhouse_north", "work": "workshop_north", "home": "terrace_south", "home2": "block", "cafe": "market", "shop": "shop"}
+	var asset := String(assets.get(String(b.id), "block"))
+	var facing := String(Sim.world.areas[String(b.id)].get("facing", "south"))
+	_coastal_plan.building(self, asset, r, facing)
 
 ## 一段坡屋顶：北坡（受光）/ 南坡 + 叠瓦 + 屋脊 + 封檐板 + 南檐落影。返回屋脊 y。
 func _roof_section(L: float, R: float, top: float, bot: float, base: Color, typ: String, sx: int, sy: int, a: float) -> float:
@@ -5625,6 +5735,7 @@ var _house_cells := {}         # idx -> true：民居占的格（花草/街具�
 var _houses_built := false
 var _house_lanes: Array = []   # [Rect2]：屋前碎石小巷（世界坐标）
 var _gardens: Array = []       # docs/188：[{cells:Array[Vector2i], hedges:Array[{r:Rect2, v:bool}], wall:bool, props:Array}]
+var _street_details: Array = [] # Slice 241: data-authored PixelLab corner compositions; visual only, never blockers
 const GARDEN_PROP_W := {"veg": 2, "laundry": 2}   # 其余一格
 
 ## docs/188 园子：lots.json 的 gardens（place_houses.py 离线落在"没人站过"的格上）。
@@ -5759,7 +5870,7 @@ func _ensure_houses() -> void:
 	if _houses_built:
 		return
 	_houses_built = true
-	_houses.clear(); _house_cells.clear()
+	_houses.clear(); _house_cells.clear(); _street_details.clear()
 	var path := "res://assets/art/houses/lots.json"
 	if not FileAccess.file_exists(path):
 		return
@@ -5781,19 +5892,53 @@ func _ensure_houses() -> void:
 		var used: Rect2i = img.get_used_rect() if img != null else Rect2i(0, 0, tex.get_width(), tex.get_height())
 		var lx := int(L["x"]); var ly := int(L["y"]); var lw := int(L["w"]); var lh := int(L["h"])
 		var flip := bool(L.get("flip", false))
-		# 精灵 alpha bbox：水平居中在地块上，底边落在地块最后一行格的 94% 处（同道具对地）
-		var bx := float(lx) * T + (float(lw) * T - float(used.size.x)) * 0.5
-		var by := float(ly + lh) * T - T * 0.06 - float(used.size.y)
-		_houses.append({"sprite": nm, "tex": tex, "used": used, "x": lx, "y": ly, "flip": flip,
-			"rect": Rect2(bx, by, used.size.x, used.size.y)})
+		# Decorative façades are slightly proud of their navigation footprints so
+		# adjacent lots read as continuous street walls.  Door-bearing facilities
+		# remain 1:1 unless explicitly authored; landmark alignment stays exact.
+		var bays := clampi(int(L.get("bays", 1)), 1, 4)
+		var bay_w := float(lw) * T / float(bays)
+		var landmark := bool(L.get("landmark", false))
+		var max_h := (float(lh) + (0.6 if landmark else 0.08)) * T
+		var fit_scale := minf((bay_w + T * 0.02) / maxf(1.0, used.size.x), max_h / maxf(1.0, used.size.y))
+		var scale := fit_scale if bays > 1 else minf(float(L.get("scale", 1.0)), fit_scale)
+		var draw_size := Vector2(used.size) * scale
+		for bay in bays:
+			var bx := float(lx) * T + float(bay) * bay_w + (bay_w - draw_size.x) * 0.5
+			var by := float(ly + lh) * T - T * 0.06 - draw_size.y
+			_houses.append({"sprite": nm, "tex": tex, "used": used, "x": lx, "y": ly, "flip": flip,
+				"rect": Rect2(bx, by, draw_size.x, draw_size.y), "bay": bay,
+				"facing": String(L.get("facing", "south")), "architecture": String(L.get("architecture", "")), "coastal_asset": String(L.get("coastal_asset", "block")),
+				"lot_rect": Rect2(float(lx) * T + bay * bay_w, float(ly) * T, bay_w, float(lh) * T)})
 		for yy in range(ly, ly + lh):
 			for xx in range(lx, lx + lw):
 				_house_cells[yy * w + xx] = true
+	for D in (data as Dictionary).get("street_details", []):
+		if not (D is Dictionary):
+			continue
+		var nm := String((D as Dictionary).get("sprite", ""))
+		var tex := Art.tex("res://assets/art/props/%s.png" % nm)
+		if tex == null:
+			continue
+		var img := tex.get_image()
+		if img != null and img.is_compressed():
+			img = img.duplicate(); img.decompress()
+		var used := img.get_used_rect() if img != null else Rect2i(0, 0, tex.get_width(), tex.get_height())
+		var dx := int((D as Dictionary).get("x", 0)); var dy := int((D as Dictionary).get("y", 0))
+		var dw := int((D as Dictionary).get("w", 2)); var dh := int((D as Dictionary).get("h", 2))
+		var scale := minf(float((D as Dictionary).get("scale", 1.0)), minf(float(dw) * T / maxf(1.0, used.size.x), float(dh) * T / maxf(1.0, used.size.y)))
+		var draw_size := Vector2(used.size) * scale
+		var bx := float(dx) * T + (float(dw) * T - draw_size.x) * 0.5
+		var by := float(dy + dh) * T - T * 0.06 - draw_size.y
+		_street_details.append({"sprite": nm, "tex": tex, "used": used,
+			"flip": bool((D as Dictionary).get("flip", false)), "rect": Rect2(bx, by, draw_size.x, draw_size.y)})
 	_houses.sort_custom(func(a, b): return (a["rect"] as Rect2).end.y < (b["rect"] as Rect2).end.y)
+	_street_details.sort_custom(func(a, b): return (a["rect"] as Rect2).end.y < (b["rect"] as Rect2).end.y)
 	# 小巷：按底边行分组，同一行 x 区间相邻（间隔 ≤ 1 格）的并成一段
 	_house_lanes.clear()
 	var rows := {}
 	for hs in _houses:
+		if String(hs.get("facing", "south")) in ["east", "north"]:
+			continue # These fronts already join their authored promenade / north sidewalk.
 		var hr: Rect2 = hs["rect"]
 		var ry := int(round(hr.end.y))
 		if not rows.has(ry):
@@ -5835,19 +5980,22 @@ func _draw_houses() -> void:
 		draw_rect(Rect2(lr.position.x, lr.position.y, lr.size.x, 2.0), Color(G_STONE_LINE, 0.45), true)
 		draw_rect(Rect2(lr.position.x, lr.end.y - 2.0, lr.size.x, 2.0), Color(G_STONE_LINE, 0.45), true)
 	_draw_gardens()
-	var occupied: Array = []
-	for ag in Sim.agents:
-		if String(ag.get("space", "town")) == "town":
-			occupied.append(_rpos(ag))
+	_draw_street_details()
 	for hs in _houses:
 		var r: Rect2 = hs["rect"]
 		if not _vis.intersects(r.grow(T)):
 			continue
+		if String(hs.get("architecture", "")) != "":
+			var lot_rect: Rect2 = hs.lot_rect
+			_coastal_plan.building(self, String(hs.coastal_asset), lot_rect, String(hs.facing))
+			continue
+		# A passer-by behind an eave should not dissolve an entire street block.
 		var a := 1.0
-		for p in occupied:
-			if r.has_point(p):
-				a = 0.30
-				break
+		var apron := Rect2(r.position.x - T * 0.06, r.end.y - T * 0.18, r.size.x + T * 0.12, T * 0.32)
+		if String(hs.get("facing", "south")) == "east":
+			apron = Rect2(r.end.x - T * 0.16, r.position.y + r.size.y * 0.48, T * 0.36, r.size.y * 0.52)
+		draw_rect(apron, Color(G_STONE_WARM, 0.65), true)
+		draw_line(Vector2(apron.position.x, apron.end.y), apron.end, Color(G_STONE_LINE, 0.5), 2.0)
 		# 西北光 ⇒ 东南软影：墙脚一条贴地影 + 东侧一块斜落影
 		draw_texture_rect(stex, Rect2(r.position.x + r.size.x * 0.10, r.end.y - T * 0.30, r.size.x * 1.05, T * 0.62), false, Color(0.03, 0.06, 0.03, 0.40 * a))
 		draw_texture_rect(stex, Rect2(r.end.x - r.size.x * 0.25, r.position.y + r.size.y * 0.35, r.size.x * 0.50, r.size.y * 0.70), false, Color(0.03, 0.06, 0.03, 0.26 * a))
@@ -5857,7 +6005,23 @@ func _draw_houses() -> void:
 		if bool(hs["flip"]):
 			_draw_mirrored(tex, r, src, Color(1, 1, 1, a))
 		else:
-			draw_texture_rect_region(tex, r, src, Color(1, 1, 1, a))
+			var tone := Color(0.96, 0.97, 0.94, a) if int(hs.get("bay", 0)) % 2 else Color(1, 1, 1, a)
+			draw_texture_rect_region(tex, r, src, tone)
+
+func _draw_street_details() -> void:
+	var stex := _light_texture()
+	for detail in _street_details:
+		var r: Rect2 = detail["rect"]
+		if not _vis.intersects(r.grow(T)):
+			continue
+		draw_texture_rect(stex, Rect2(r.position.x + r.size.x * 0.18, r.end.y - T * 0.25,
+			r.size.x * 0.92, T * 0.42), false, Color(0.03, 0.05, 0.03, 0.28))
+		var tex: Texture2D = detail["tex"]
+		var used: Rect2i = detail["used"]
+		if bool(detail["flip"]):
+			_draw_mirrored(tex, r, Rect2(used.position, used.size), Color.WHITE)
+		else:
+			draw_texture_rect_region(tex, r, Rect2(used.position, used.size), Color.WHITE)
 
 func _draw_beach_props() -> void:
 	for bp in _beach_props:
@@ -6993,6 +7157,7 @@ const OBJ_SLOT_BY_TYPE := {
 	"工作台": "desk",
 	"长椅": "bench",
 	"游戏机": "arcade",
+	"观景台": "cliff_overlook",
 	# ── 借用：F1/F5/G3 的工位。这七行不是新决定，是把 F5「改 ID 去命中贴图」那次绕行
 	#    从 ID 字符串里**搬到明面上**——同一份错配，区别只在于现在它是一行可以被 review 的表项。
 	"面案": "counter",     # 借用（面案 ≠ 吧台）
@@ -7014,7 +7179,7 @@ const OBJ_SLOT_BY_TYPE := {
 const OBJ_SLOT_BY_ID_PREFIX := {"fest": "fest"}
 
 ## 程序化画出来的槽（没有对应 png，但**有**渲染器）。改这里要同步改 _draw() 里的 match。
-const OBJ_SLOT_PROCEDURAL := {"bed": true, "stove": true, "dock": true, "fest": true}
+const OBJ_SLOT_PROCEDURAL := {"bed": true, "stove": true, "dock": true, "fest": true, "cliff_overlook": true}
 
 # ══ H3-b · 别名预算（aliasing budget）——H1 真机眼验之后补的第二条判据 ═══════════════
 #

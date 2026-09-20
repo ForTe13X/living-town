@@ -42,6 +42,12 @@ func _ready() -> void:
 	ck(votes == int(first.get("voters", -1)) and int(first.get("voters", -1)) == S.agents.size(), "every resident contributes exactly one ballot")
 	ck(int(first.get("term_start", -1)) == 28 and int(first.get("term_end", -1)) == 55 and S.mayor_state.get("mayor", "") == first.get("winner", ""), "state exposes the elected 28-day term")
 	ck(int(first.get("review_event_id_used", -1)) == 0, "first election has no predecessor performance to apply")
+	var first_platform: Dictionary = first.get("platform", {})
+	ck(not first_platform.is_empty() and first_platform == S.mayor_state.get("platform", {}), "winner takes office with one frozen personality-aligned platform")
+	var active_fiscal: Dictionary = S.fiscal_policy()
+	ck(String(active_fiscal.get("source", "")) == "mayor" and String(active_fiscal.get("platform_id", "")) == String(first_platform.get("id", "")) \
+		and int(active_fiscal.get("tax_pct", -1)) == int(first_platform.get("tax_pct", -2)) \
+		and int(active_fiscal.get("subsidy_floor", -1)) == int(first_platform.get("subsidy_floor", -2)), "elected platform controls the existing bounded fiscal loop")
 	ck(_mayor_invariant(S), "governance invariant accepts a real election")
 
 	# A replay from the same seed must reproduce candidate ordering, ballots, winner, and active term byte-for-byte.
@@ -88,6 +94,28 @@ func _ready() -> void:
 	ck(swing_n == gained_n + lost_n and baseline_votes == int(second.get("voters", -1)), "election event exposes a complete counterfactual ballot receipt")
 	ck(int(second_event.get("review_event_id_used", -2)) == expected_used, "visible ballot receipt binds the same performance review as the term record")
 	ck(_mayor_invariant(S), "governance invariant accepts consecutive terms")
+
+	# P4c-7's town-hall board is an authored, read-only projection of those same records.
+	ck(S.civic_observatory_cell() == Vector2i(5, 0), "civic board interaction anchor comes from interiors.json")
+	var legacy_picture: Dictionary = S.world.get("objects", {}).get("mairie1f_painting_sea", {})
+	var legacy_actions: Array = legacy_picture.get("advertises", [])
+	ck(not legacy_picture.is_empty() and String(legacy_picture.get("type", "")) == "海港旧照" and legacy_actions.size() == 1 \
+		and String((legacy_actions[0] as Dictionary).get("action", "")) == "赏画", "civic art pass preserves the existing town-hall object id and fun action")
+	var civic_before := [S.mayor_log.duplicate(true), S.mayor_state.duplicate(true), S.event_log.duplicate(true), S.town_coin]
+	var civic: Dictionary = S.civic_observatory_projection()
+	ck(String(civic.get("mode", "")) == "read_only" and civic.get("current", {}) == S.mayor_state, "civic board exposes the active term as a read-only projection")
+	ck(civic.get("current_record", {}) == second, "civic board exposes the current candidates and ballot box from the term record")
+	ck(civic.get("performance", {}) == S.mayor_performance() and civic.get("last_review", {}) == reviewed \
+		and civic.get("fiscal_policy", {}) == S.fiscal_policy(), "civic board reuses governance performance, policy, and review sources")
+	ck(int((civic.get("last_election", {}) as Dictionary).get("id", -1)) == int(second_event.get("id", -2)), "civic board exposes the latest authenticated mayoral election receipt")
+	(civic["current"] as Dictionary)["mayor"] = "forged"
+	(civic["last_election"] as Dictionary)["performance_swings"] = 999
+	ck(civic_before == [S.mayor_log, S.mayor_state, S.event_log, S.town_coin], "reading or mutating a civic projection cannot change governance state")
+	var board_reader: Dictionary = S.agents[0]
+	board_reader["space"] = "mairie"; board_reader["floor"] = "1f"; board_reader["pos"] = Vector2i(5, 1)
+	S.possess(String(board_reader["id"]))
+	var civic_targets: Array = S.life_interactions().filter(func(e): return String(e.get("kind", "")) == "civic")
+	ck(civic_targets.size() == 1 and String((civic_targets[0] as Dictionary).get("label", "")) == "镇务公示板", "life mode exposes the board as one nearby view-only target")
 
 	# P4c-3's scorer remains pure: traits alter component weights, and merely asking for a preview cannot change a ballot.
 	var sample_review := {"attendance_pct": 25, "treasury_delta": 10}

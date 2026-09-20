@@ -96,15 +96,16 @@
   "home2": {
    "_gen": true,
    "kind": "interior",
-   "label": "民居",
+   "label": "可可的临海宅",
    "bounds": [
     0,
     0,
-    9,
-    7
+    11,
+    8
    ],
    "floors": [
-    "1f"
+    "1f",
+    "2f"
    ],
    "default_floor": "1f"
   },
@@ -210,9 +211,21 @@
    "bounds": [
     0,
     0,
-    10,
-    7
+    16,
+    12
    ],
+	"camera": {
+	 "mode": "explore",
+	 "entry_zoom": 1.55,
+	 "entry_anchor": [
+	  8,
+	  7
+	 ],
+	 "hud_pad": [
+	  280,
+	  220
+	 ]
+	},
    "floors": [
     "1f"
    ],
@@ -230,7 +243,8 @@
     7
    ],
    "floors": [
-    "1f"
+    "1f",
+    "2f"
    ],
    "default_floor": "1f"
   },
@@ -434,13 +448,36 @@
     "space": "home2",
     "floor": "1f",
     "pos": [
-     4,
-     6
+     5,
+     7
     ]
    },
    "bidirectional": true,
    "access": "public",
    "traversal_cost": 1
+  },
+  {
+   "id": "p_home2_stairs",
+   "kind": "stairs",
+   "from": {
+    "space": "home2",
+    "floor": "1f",
+    "pos": [
+     9,
+     6
+    ]
+   },
+   "to": {
+    "space": "home2",
+    "floor": "2f",
+    "pos": [
+     9,
+     6
+    ]
+   },
+   "bidirectional": true,
+   "access": "public",
+   "traversal_cost": 2
   },
   {
    "_gen": true,
@@ -601,8 +638,8 @@
     "space": "halles",
     "floor": "1f",
     "pos": [
-     5,
-     6
+     8,
+     11
     ]
    },
    "bidirectional": true,
@@ -632,6 +669,30 @@
    "bidirectional": true,
    "access": "public",
    "traversal_cost": 1
+  },
+  {
+   "_facility": true,
+   "id": "p_hotel_stairs",
+   "kind": "stairs",
+   "from": {
+    "space": "hotel",
+    "floor": "1f",
+    "pos": [
+     9,
+     5
+    ]
+   },
+   "to": {
+    "space": "hotel",
+    "floor": "2f",
+    "pos": [
+     9,
+     5
+    ]
+   },
+   "bidirectional": true,
+   "access": "public",
+   "traversal_cost": 2
   },
   {
    "_facility": true,

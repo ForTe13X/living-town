@@ -39,3 +39,5 @@
 - `asset_gate.py`、`lint_data.py`、`lint_links.py` 与 `git diff --check` 通过。
 
 本机启动仍会报告缺少 NobodyWho GDExtension 动态库；资源导入、脚本解析、零模型截图和测试随后正常完成。
+
+[225](225-p4c7-civic-notice-board.md) 随后把后墙地图升级为可互动的镇务公示板，并用一张只读治理卡片集中展示现任、出勤、镇库、票箱、上届成绩单与政绩改投。
