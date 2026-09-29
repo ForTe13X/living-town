@@ -1,0 +1,4062 @@
+{
+	"affordances": [
+		{
+			"access_policy": "authorized",
+			"action": "sleep",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					1.0,
+					1.0
+				],
+				"room_id": "sleeping",
+				"space_id": "coastal_s1/B01/sleeping"
+			},
+			"approach": [
+				1.0,
+				1.0
+			],
+			"building_id": "B01",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "sleep_default_duration/1",
+			"facing": "south",
+			"id": "B01.sleep.01",
+			"route": {
+				"path_q": [
+					[
+						216.0,
+						456.0
+					],
+					[
+						216.0,
+						408.0
+					],
+					[
+						216.0,
+						360.0
+					],
+					[
+						216.0,
+						312.0
+					],
+					[
+						216.0,
+						264.0
+					],
+					[
+						216.0,
+						216.0
+					],
+					[
+						216.0,
+						168.0
+					],
+					[
+						216.0,
+						120.0
+					],
+					[
+						216.0,
+						72.0
+					],
+					[
+						168.0,
+						72.0
+					],
+					[
+						120.0,
+						72.0
+					],
+					[
+						72.0,
+						72.0
+					]
+				],
+				"portal_path": [
+					"B01.common_sleep"
+				],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"common",
+					"sleeping"
+				]
+			},
+			"runtime_binding": "existing_action:睡觉"
+		},
+		{
+			"access_policy": "authorized",
+			"action": "sleep",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					2.0,
+					1.0
+				],
+				"room_id": "sleeping",
+				"space_id": "coastal_s1/B01/sleeping"
+			},
+			"approach": [
+				2.0,
+				1.0
+			],
+			"building_id": "B01",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "sleep_default_duration/1",
+			"facing": "south",
+			"id": "B01.sleep.02",
+			"route": {
+				"path_q": [
+					[
+						216.0,
+						456.0
+					],
+					[
+						216.0,
+						408.0
+					],
+					[
+						216.0,
+						360.0
+					],
+					[
+						216.0,
+						312.0
+					],
+					[
+						216.0,
+						264.0
+					],
+					[
+						216.0,
+						216.0
+					],
+					[
+						216.0,
+						168.0
+					],
+					[
+						216.0,
+						120.0
+					],
+					[
+						216.0,
+						72.0
+					],
+					[
+						168.0,
+						72.0
+					],
+					[
+						120.0,
+						72.0
+					]
+				],
+				"portal_path": [
+					"B01.common_sleep"
+				],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"common",
+					"sleeping"
+				]
+			},
+			"runtime_binding": "existing_action:睡觉"
+		},
+		{
+			"access_policy": "authorized",
+			"action": "sleep",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					1.0,
+					1.0
+				],
+				"room_id": "sleeping",
+				"space_id": "coastal_s1/B02/sleeping"
+			},
+			"approach": [
+				1.0,
+				1.0
+			],
+			"building_id": "B02",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "sleep_default_duration/1",
+			"facing": "south",
+			"id": "B02.sleep.01",
+			"route": {
+				"path_q": [
+					[
+						168.0,
+						552.0
+					],
+					[
+						168.0,
+						504.0
+					],
+					[
+						168.0,
+						456.0
+					],
+					[
+						168.0,
+						408.0
+					],
+					[
+						168.0,
+						360.0
+					],
+					[
+						120.0,
+						360.0
+					],
+					[
+						72.0,
+						360.0
+					]
+				],
+				"portal_path": [],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"sleeping"
+				]
+			},
+			"runtime_binding": "existing_action:睡觉"
+		},
+		{
+			"access_policy": "authorized",
+			"action": "sleep",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					2.0,
+					1.0
+				],
+				"room_id": "sleeping",
+				"space_id": "coastal_s1/B02/sleeping"
+			},
+			"approach": [
+				2.0,
+				1.0
+			],
+			"building_id": "B02",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "sleep_default_duration/1",
+			"facing": "south",
+			"id": "B02.sleep.02",
+			"route": {
+				"path_q": [
+					[
+						168.0,
+						552.0
+					],
+					[
+						168.0,
+						504.0
+					],
+					[
+						168.0,
+						456.0
+					],
+					[
+						168.0,
+						408.0
+					],
+					[
+						168.0,
+						360.0
+					],
+					[
+						120.0,
+						360.0
+					]
+				],
+				"portal_path": [],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"sleeping"
+				]
+			},
+			"runtime_binding": "existing_action:睡觉"
+		},
+		{
+			"access_policy": "authorized",
+			"action": "sleep",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					1.0,
+					1.0
+				],
+				"room_id": "sleeping",
+				"space_id": "coastal_s1/B03/sleeping"
+			},
+			"approach": [
+				1.0,
+				1.0
+			],
+			"building_id": "B03",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "sleep_default_duration/1",
+			"facing": "south",
+			"id": "B03.sleep.01",
+			"route": {
+				"path_q": [
+					[
+						216.0,
+						552.0
+					],
+					[
+						216.0,
+						504.0
+					],
+					[
+						216.0,
+						456.0
+					],
+					[
+						216.0,
+						408.0
+					],
+					[
+						216.0,
+						360.0
+					],
+					[
+						216.0,
+						312.0
+					],
+					[
+						168.0,
+						312.0
+					],
+					[
+						168.0,
+						264.0
+					],
+					[
+						168.0,
+						216.0
+					],
+					[
+						168.0,
+						168.0
+					],
+					[
+						168.0,
+						120.0
+					],
+					[
+						168.0,
+						72.0
+					],
+					[
+						120.0,
+						72.0
+					],
+					[
+						72.0,
+						72.0
+					]
+				],
+				"portal_path": [
+					"B03.common_sleep"
+				],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"common",
+					"sleeping"
+				]
+			},
+			"runtime_binding": "existing_action:睡觉"
+		},
+		{
+			"access_policy": "authorized",
+			"action": "sleep",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					2.0,
+					1.0
+				],
+				"room_id": "sleeping",
+				"space_id": "coastal_s1/B03/sleeping"
+			},
+			"approach": [
+				2.0,
+				1.0
+			],
+			"building_id": "B03",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "sleep_default_duration/1",
+			"facing": "south",
+			"id": "B03.sleep.02",
+			"route": {
+				"path_q": [
+					[
+						216.0,
+						552.0
+					],
+					[
+						216.0,
+						504.0
+					],
+					[
+						216.0,
+						456.0
+					],
+					[
+						216.0,
+						408.0
+					],
+					[
+						216.0,
+						360.0
+					],
+					[
+						216.0,
+						312.0
+					],
+					[
+						168.0,
+						312.0
+					],
+					[
+						168.0,
+						264.0
+					],
+					[
+						168.0,
+						216.0
+					],
+					[
+						168.0,
+						168.0
+					],
+					[
+						168.0,
+						120.0
+					],
+					[
+						168.0,
+						72.0
+					],
+					[
+						120.0,
+						72.0
+					]
+				],
+				"portal_path": [
+					"B03.common_sleep"
+				],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"common",
+					"sleeping"
+				]
+			},
+			"runtime_binding": "existing_action:睡觉"
+		},
+		{
+			"access_policy": "authorized",
+			"action": "sleep",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					1.0,
+					1.0
+				],
+				"room_id": "sleeping",
+				"space_id": "coastal_s1/B04/sleeping"
+			},
+			"approach": [
+				1.0,
+				1.0
+			],
+			"building_id": "B04",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "sleep_default_duration/1",
+			"facing": "south",
+			"id": "B04.sleep.01",
+			"route": {
+				"path_q": [
+					[
+						408.0,
+						552.0
+					],
+					[
+						408.0,
+						504.0
+					],
+					[
+						408.0,
+						456.0
+					],
+					[
+						408.0,
+						408.0
+					],
+					[
+						408.0,
+						360.0
+					],
+					[
+						360.0,
+						360.0
+					],
+					[
+						312.0,
+						360.0
+					]
+				],
+				"portal_path": [],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"sleeping"
+				]
+			},
+			"runtime_binding": "existing_action:睡觉"
+		},
+		{
+			"access_policy": "authorized",
+			"action": "sleep",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					2.0,
+					1.0
+				],
+				"room_id": "sleeping",
+				"space_id": "coastal_s1/B04/sleeping"
+			},
+			"approach": [
+				2.0,
+				1.0
+			],
+			"building_id": "B04",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "sleep_default_duration/1",
+			"facing": "south",
+			"id": "B04.sleep.02",
+			"route": {
+				"path_q": [
+					[
+						408.0,
+						552.0
+					],
+					[
+						408.0,
+						504.0
+					],
+					[
+						408.0,
+						456.0
+					],
+					[
+						408.0,
+						408.0
+					],
+					[
+						408.0,
+						360.0
+					],
+					[
+						360.0,
+						360.0
+					]
+				],
+				"portal_path": [],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"sleeping"
+				]
+			},
+			"runtime_binding": "existing_action:睡觉"
+		},
+		{
+			"access_policy": "public",
+			"action": "seat",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					1.0,
+					1.0
+				],
+				"room_id": "public_hall",
+				"space_id": "coastal_s1/B05/public_hall"
+			},
+			"approach": [
+				1.0,
+				1.0
+			],
+			"building_id": "B05",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "seat_default_duration/1",
+			"facing": "south",
+			"id": "B05.seat.01",
+			"route": {
+				"path_q": [
+					[
+						552.0,
+						168.0
+					],
+					[
+						552.0,
+						120.0
+					],
+					[
+						552.0,
+						72.0
+					],
+					[
+						504.0,
+						72.0
+					],
+					[
+						456.0,
+						72.0
+					],
+					[
+						408.0,
+						72.0
+					],
+					[
+						360.0,
+						72.0
+					],
+					[
+						312.0,
+						72.0
+					],
+					[
+						264.0,
+						72.0
+					],
+					[
+						216.0,
+						72.0
+					],
+					[
+						168.0,
+						72.0
+					],
+					[
+						120.0,
+						72.0
+					],
+					[
+						72.0,
+						72.0
+					]
+				],
+				"portal_path": [],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"public_hall"
+				]
+			},
+			"runtime_binding": "existing_action:歇着"
+		},
+		{
+			"access_policy": "public",
+			"action": "seat",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					2.0,
+					1.0
+				],
+				"room_id": "public_hall",
+				"space_id": "coastal_s1/B05/public_hall"
+			},
+			"approach": [
+				2.0,
+				1.0
+			],
+			"building_id": "B05",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "seat_default_duration/1",
+			"facing": "south",
+			"id": "B05.seat.02",
+			"route": {
+				"path_q": [
+					[
+						552.0,
+						168.0
+					],
+					[
+						552.0,
+						120.0
+					],
+					[
+						552.0,
+						72.0
+					],
+					[
+						504.0,
+						72.0
+					],
+					[
+						456.0,
+						72.0
+					],
+					[
+						408.0,
+						72.0
+					],
+					[
+						360.0,
+						72.0
+					],
+					[
+						312.0,
+						72.0
+					],
+					[
+						264.0,
+						72.0
+					],
+					[
+						216.0,
+						72.0
+					],
+					[
+						168.0,
+						72.0
+					],
+					[
+						120.0,
+						72.0
+					]
+				],
+				"portal_path": [],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"public_hall"
+				]
+			},
+			"runtime_binding": "existing_action:歇着"
+		},
+		{
+			"access_policy": "public",
+			"action": "seat",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					3.0,
+					1.0
+				],
+				"room_id": "public_hall",
+				"space_id": "coastal_s1/B05/public_hall"
+			},
+			"approach": [
+				3.0,
+				1.0
+			],
+			"building_id": "B05",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "seat_default_duration/1",
+			"facing": "south",
+			"id": "B05.seat.03",
+			"route": {
+				"path_q": [
+					[
+						552.0,
+						168.0
+					],
+					[
+						552.0,
+						120.0
+					],
+					[
+						552.0,
+						72.0
+					],
+					[
+						504.0,
+						72.0
+					],
+					[
+						456.0,
+						72.0
+					],
+					[
+						408.0,
+						72.0
+					],
+					[
+						360.0,
+						72.0
+					],
+					[
+						312.0,
+						72.0
+					],
+					[
+						264.0,
+						72.0
+					],
+					[
+						216.0,
+						72.0
+					],
+					[
+						168.0,
+						72.0
+					]
+				],
+				"portal_path": [],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"public_hall"
+				]
+			},
+			"runtime_binding": "existing_action:歇着"
+		},
+		{
+			"access_policy": "public",
+			"action": "seat",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					4.0,
+					1.0
+				],
+				"room_id": "public_hall",
+				"space_id": "coastal_s1/B05/public_hall"
+			},
+			"approach": [
+				4.0,
+				1.0
+			],
+			"building_id": "B05",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "seat_default_duration/1",
+			"facing": "south",
+			"id": "B05.seat.04",
+			"route": {
+				"path_q": [
+					[
+						552.0,
+						168.0
+					],
+					[
+						552.0,
+						120.0
+					],
+					[
+						552.0,
+						72.0
+					],
+					[
+						504.0,
+						72.0
+					],
+					[
+						456.0,
+						72.0
+					],
+					[
+						408.0,
+						72.0
+					],
+					[
+						360.0,
+						72.0
+					],
+					[
+						312.0,
+						72.0
+					],
+					[
+						264.0,
+						72.0
+					],
+					[
+						216.0,
+						72.0
+					]
+				],
+				"portal_path": [],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"public_hall"
+				]
+			},
+			"runtime_binding": "existing_action:歇着"
+		},
+		{
+			"access_policy": "public",
+			"action": "seat",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					5.0,
+					1.0
+				],
+				"room_id": "public_hall",
+				"space_id": "coastal_s1/B05/public_hall"
+			},
+			"approach": [
+				5.0,
+				1.0
+			],
+			"building_id": "B05",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "seat_default_duration/1",
+			"facing": "south",
+			"id": "B05.seat.05",
+			"route": {
+				"path_q": [
+					[
+						552.0,
+						168.0
+					],
+					[
+						552.0,
+						120.0
+					],
+					[
+						552.0,
+						72.0
+					],
+					[
+						504.0,
+						72.0
+					],
+					[
+						456.0,
+						72.0
+					],
+					[
+						408.0,
+						72.0
+					],
+					[
+						360.0,
+						72.0
+					],
+					[
+						312.0,
+						72.0
+					],
+					[
+						264.0,
+						72.0
+					]
+				],
+				"portal_path": [],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"public_hall"
+				]
+			},
+			"runtime_binding": "existing_action:歇着"
+		},
+		{
+			"access_policy": "public",
+			"action": "seat",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					6.0,
+					1.0
+				],
+				"room_id": "public_hall",
+				"space_id": "coastal_s1/B05/public_hall"
+			},
+			"approach": [
+				6.0,
+				1.0
+			],
+			"building_id": "B05",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "seat_default_duration/1",
+			"facing": "south",
+			"id": "B05.seat.06",
+			"route": {
+				"path_q": [
+					[
+						552.0,
+						168.0
+					],
+					[
+						552.0,
+						120.0
+					],
+					[
+						552.0,
+						72.0
+					],
+					[
+						504.0,
+						72.0
+					],
+					[
+						456.0,
+						72.0
+					],
+					[
+						408.0,
+						72.0
+					],
+					[
+						360.0,
+						72.0
+					],
+					[
+						312.0,
+						72.0
+					]
+				],
+				"portal_path": [],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"public_hall"
+				]
+			},
+			"runtime_binding": "existing_action:歇着"
+		},
+		{
+			"access_policy": "public",
+			"action": "queue",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					1.0,
+					1.0
+				],
+				"room_id": "shopfront",
+				"space_id": "coastal_s1/B06/shopfront"
+			},
+			"approach": [
+				1.0,
+				1.0
+			],
+			"building_id": "B06",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "queue_default_duration/1",
+			"facing": "south",
+			"id": "B06.queue.01",
+			"route": {
+				"path_q": [
+					[
+						552.0,
+						216.0
+					],
+					[
+						504.0,
+						216.0
+					],
+					[
+						456.0,
+						216.0
+					],
+					[
+						456.0,
+						264.0
+					],
+					[
+						408.0,
+						264.0
+					],
+					[
+						360.0,
+						264.0
+					],
+					[
+						312.0,
+						264.0
+					],
+					[
+						312.0,
+						216.0
+					],
+					[
+						312.0,
+						168.0
+					],
+					[
+						312.0,
+						120.0
+					],
+					[
+						312.0,
+						72.0
+					],
+					[
+						264.0,
+						72.0
+					],
+					[
+						216.0,
+						72.0
+					],
+					[
+						168.0,
+						72.0
+					],
+					[
+						120.0,
+						72.0
+					],
+					[
+						72.0,
+						72.0
+					]
+				],
+				"portal_path": [
+					"B06.staff_storage",
+					"B06.shop_staff"
+				],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"storage",
+					"staff",
+					"shopfront"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		},
+		{
+			"access_policy": "public",
+			"action": "queue",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					2.0,
+					1.0
+				],
+				"room_id": "shopfront",
+				"space_id": "coastal_s1/B06/shopfront"
+			},
+			"approach": [
+				2.0,
+				1.0
+			],
+			"building_id": "B06",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "queue_default_duration/1",
+			"facing": "south",
+			"id": "B06.queue.02",
+			"route": {
+				"path_q": [
+					[
+						552.0,
+						216.0
+					],
+					[
+						504.0,
+						216.0
+					],
+					[
+						456.0,
+						216.0
+					],
+					[
+						456.0,
+						264.0
+					],
+					[
+						408.0,
+						264.0
+					],
+					[
+						360.0,
+						264.0
+					],
+					[
+						312.0,
+						264.0
+					],
+					[
+						312.0,
+						216.0
+					],
+					[
+						312.0,
+						168.0
+					],
+					[
+						312.0,
+						120.0
+					],
+					[
+						312.0,
+						72.0
+					],
+					[
+						264.0,
+						72.0
+					],
+					[
+						216.0,
+						72.0
+					],
+					[
+						168.0,
+						72.0
+					],
+					[
+						120.0,
+						72.0
+					]
+				],
+				"portal_path": [
+					"B06.staff_storage",
+					"B06.shop_staff"
+				],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"storage",
+					"staff",
+					"shopfront"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		},
+		{
+			"access_policy": "public",
+			"action": "queue",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					3.0,
+					1.0
+				],
+				"room_id": "shopfront",
+				"space_id": "coastal_s1/B06/shopfront"
+			},
+			"approach": [
+				3.0,
+				1.0
+			],
+			"building_id": "B06",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "queue_default_duration/1",
+			"facing": "south",
+			"id": "B06.queue.03",
+			"route": {
+				"path_q": [
+					[
+						552.0,
+						216.0
+					],
+					[
+						504.0,
+						216.0
+					],
+					[
+						456.0,
+						216.0
+					],
+					[
+						456.0,
+						264.0
+					],
+					[
+						408.0,
+						264.0
+					],
+					[
+						360.0,
+						264.0
+					],
+					[
+						312.0,
+						264.0
+					],
+					[
+						312.0,
+						216.0
+					],
+					[
+						312.0,
+						168.0
+					],
+					[
+						312.0,
+						120.0
+					],
+					[
+						312.0,
+						72.0
+					],
+					[
+						264.0,
+						72.0
+					],
+					[
+						216.0,
+						72.0
+					],
+					[
+						168.0,
+						72.0
+					]
+				],
+				"portal_path": [
+					"B06.staff_storage",
+					"B06.shop_staff"
+				],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"storage",
+					"staff",
+					"shopfront"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		},
+		{
+			"access_policy": "public",
+			"action": "activity",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					1.0,
+					1.0
+				],
+				"room_id": "reading",
+				"space_id": "coastal_s1/B07/reading"
+			},
+			"approach": [
+				1.0,
+				1.0
+			],
+			"building_id": "B07",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "activity_default_duration/1",
+			"facing": "south",
+			"id": "B07.activity.01",
+			"route": {
+				"path_q": [
+					[
+						312.0,
+						552.0
+					],
+					[
+						312.0,
+						504.0
+					],
+					[
+						312.0,
+						456.0
+					],
+					[
+						312.0,
+						408.0
+					],
+					[
+						312.0,
+						360.0
+					],
+					[
+						312.0,
+						312.0
+					],
+					[
+						264.0,
+						312.0
+					],
+					[
+						264.0,
+						264.0
+					],
+					[
+						264.0,
+						216.0
+					],
+					[
+						264.0,
+						168.0
+					],
+					[
+						264.0,
+						120.0
+					],
+					[
+						264.0,
+						72.0
+					],
+					[
+						216.0,
+						72.0
+					],
+					[
+						168.0,
+						72.0
+					],
+					[
+						120.0,
+						72.0
+					],
+					[
+						72.0,
+						72.0
+					]
+				],
+				"portal_path": [
+					"B07.common_reading"
+				],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"common",
+					"reading"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		},
+		{
+			"access_policy": "public",
+			"action": "activity",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					2.0,
+					1.0
+				],
+				"room_id": "reading",
+				"space_id": "coastal_s1/B07/reading"
+			},
+			"approach": [
+				2.0,
+				1.0
+			],
+			"building_id": "B07",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "activity_default_duration/1",
+			"facing": "south",
+			"id": "B07.activity.02",
+			"route": {
+				"path_q": [
+					[
+						312.0,
+						552.0
+					],
+					[
+						312.0,
+						504.0
+					],
+					[
+						312.0,
+						456.0
+					],
+					[
+						312.0,
+						408.0
+					],
+					[
+						312.0,
+						360.0
+					],
+					[
+						312.0,
+						312.0
+					],
+					[
+						264.0,
+						312.0
+					],
+					[
+						264.0,
+						264.0
+					],
+					[
+						264.0,
+						216.0
+					],
+					[
+						264.0,
+						168.0
+					],
+					[
+						264.0,
+						120.0
+					],
+					[
+						264.0,
+						72.0
+					],
+					[
+						216.0,
+						72.0
+					],
+					[
+						168.0,
+						72.0
+					],
+					[
+						120.0,
+						72.0
+					]
+				],
+				"portal_path": [
+					"B07.common_reading"
+				],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"common",
+					"reading"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		},
+		{
+			"access_policy": "public",
+			"action": "activity",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					3.0,
+					1.0
+				],
+				"room_id": "reading",
+				"space_id": "coastal_s1/B07/reading"
+			},
+			"approach": [
+				3.0,
+				1.0
+			],
+			"building_id": "B07",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "activity_default_duration/1",
+			"facing": "south",
+			"id": "B07.activity.03",
+			"route": {
+				"path_q": [
+					[
+						312.0,
+						552.0
+					],
+					[
+						312.0,
+						504.0
+					],
+					[
+						312.0,
+						456.0
+					],
+					[
+						312.0,
+						408.0
+					],
+					[
+						312.0,
+						360.0
+					],
+					[
+						312.0,
+						312.0
+					],
+					[
+						264.0,
+						312.0
+					],
+					[
+						264.0,
+						264.0
+					],
+					[
+						264.0,
+						216.0
+					],
+					[
+						264.0,
+						168.0
+					],
+					[
+						264.0,
+						120.0
+					],
+					[
+						264.0,
+						72.0
+					],
+					[
+						216.0,
+						72.0
+					],
+					[
+						168.0,
+						72.0
+					]
+				],
+				"portal_path": [
+					"B07.common_reading"
+				],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"common",
+					"reading"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		},
+		{
+			"access_policy": "public",
+			"action": "activity",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					4.0,
+					1.0
+				],
+				"room_id": "reading",
+				"space_id": "coastal_s1/B07/reading"
+			},
+			"approach": [
+				4.0,
+				1.0
+			],
+			"building_id": "B07",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "activity_default_duration/1",
+			"facing": "south",
+			"id": "B07.activity.04",
+			"route": {
+				"path_q": [
+					[
+						312.0,
+						552.0
+					],
+					[
+						312.0,
+						504.0
+					],
+					[
+						312.0,
+						456.0
+					],
+					[
+						312.0,
+						408.0
+					],
+					[
+						312.0,
+						360.0
+					],
+					[
+						312.0,
+						312.0
+					],
+					[
+						264.0,
+						312.0
+					],
+					[
+						264.0,
+						264.0
+					],
+					[
+						264.0,
+						216.0
+					],
+					[
+						264.0,
+						168.0
+					],
+					[
+						264.0,
+						120.0
+					],
+					[
+						264.0,
+						72.0
+					],
+					[
+						216.0,
+						72.0
+					]
+				],
+				"portal_path": [
+					"B07.common_reading"
+				],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"common",
+					"reading"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		},
+		{
+			"access_policy": "public",
+			"action": "activity",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					5.0,
+					1.0
+				],
+				"room_id": "reading",
+				"space_id": "coastal_s1/B07/reading"
+			},
+			"approach": [
+				5.0,
+				1.0
+			],
+			"building_id": "B07",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "activity_default_duration/1",
+			"facing": "south",
+			"id": "B07.activity.05",
+			"route": {
+				"path_q": [
+					[
+						312.0,
+						552.0
+					],
+					[
+						312.0,
+						504.0
+					],
+					[
+						312.0,
+						456.0
+					],
+					[
+						312.0,
+						408.0
+					],
+					[
+						312.0,
+						360.0
+					],
+					[
+						312.0,
+						312.0
+					],
+					[
+						264.0,
+						312.0
+					],
+					[
+						264.0,
+						264.0
+					],
+					[
+						264.0,
+						216.0
+					],
+					[
+						264.0,
+						168.0
+					],
+					[
+						264.0,
+						120.0
+					],
+					[
+						264.0,
+						72.0
+					]
+				],
+				"portal_path": [
+					"B07.common_reading"
+				],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"common",
+					"reading"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		},
+		{
+			"access_policy": "public",
+			"action": "activity",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					6.0,
+					1.0
+				],
+				"room_id": "reading",
+				"space_id": "coastal_s1/B07/reading"
+			},
+			"approach": [
+				6.0,
+				1.0
+			],
+			"building_id": "B07",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "activity_default_duration/1",
+			"facing": "south",
+			"id": "B07.activity.06",
+			"route": {
+				"path_q": [
+					[
+						312.0,
+						552.0
+					],
+					[
+						312.0,
+						504.0
+					],
+					[
+						312.0,
+						456.0
+					],
+					[
+						312.0,
+						408.0
+					],
+					[
+						312.0,
+						360.0
+					],
+					[
+						312.0,
+						312.0
+					],
+					[
+						264.0,
+						312.0
+					],
+					[
+						264.0,
+						264.0
+					],
+					[
+						264.0,
+						216.0
+					],
+					[
+						264.0,
+						168.0
+					],
+					[
+						264.0,
+						120.0
+					],
+					[
+						264.0,
+						72.0
+					],
+					[
+						312.0,
+						72.0
+					]
+				],
+				"portal_path": [
+					"B07.common_reading"
+				],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"common",
+					"reading"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		},
+		{
+			"access_policy": "public",
+			"action": "bath",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					1.0,
+					1.0
+				],
+				"room_id": "bath",
+				"space_id": "coastal_s1/B08/bath"
+			},
+			"approach": [
+				1.0,
+				1.0
+			],
+			"building_id": "B08",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "bath_default_duration/1",
+			"facing": "south",
+			"id": "B08.bath.01",
+			"route": {
+				"path_q": [
+					[
+						360.0,
+						744.0
+					],
+					[
+						360.0,
+						696.0
+					],
+					[
+						360.0,
+						648.0
+					],
+					[
+						360.0,
+						600.0
+					],
+					[
+						360.0,
+						552.0
+					],
+					[
+						360.0,
+						504.0
+					],
+					[
+						360.0,
+						456.0
+					],
+					[
+						360.0,
+						408.0
+					],
+					[
+						360.0,
+						360.0
+					],
+					[
+						360.0,
+						312.0
+					],
+					[
+						360.0,
+						264.0
+					],
+					[
+						360.0,
+						216.0
+					],
+					[
+						312.0,
+						216.0
+					],
+					[
+						264.0,
+						216.0
+					],
+					[
+						216.0,
+						216.0
+					],
+					[
+						168.0,
+						216.0
+					],
+					[
+						120.0,
+						216.0
+					],
+					[
+						120.0,
+						264.0
+					],
+					[
+						120.0,
+						312.0
+					],
+					[
+						120.0,
+						360.0
+					],
+					[
+						72.0,
+						360.0
+					],
+					[
+						72.0,
+						408.0
+					]
+				],
+				"portal_path": [
+					"B08.court_threshold",
+					"B08.court_changing",
+					"B08.changing_bath"
+				],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"threshold",
+					"court",
+					"changing",
+					"bath"
+				]
+			},
+			"runtime_binding": "existing_action:泡澡"
+		},
+		{
+			"access_policy": "public",
+			"action": "bath",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					2.0,
+					1.0
+				],
+				"room_id": "bath",
+				"space_id": "coastal_s1/B08/bath"
+			},
+			"approach": [
+				2.0,
+				1.0
+			],
+			"building_id": "B08",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "bath_default_duration/1",
+			"facing": "south",
+			"id": "B08.bath.02",
+			"route": {
+				"path_q": [
+					[
+						360.0,
+						744.0
+					],
+					[
+						360.0,
+						696.0
+					],
+					[
+						360.0,
+						648.0
+					],
+					[
+						360.0,
+						600.0
+					],
+					[
+						360.0,
+						552.0
+					],
+					[
+						360.0,
+						504.0
+					],
+					[
+						360.0,
+						456.0
+					],
+					[
+						360.0,
+						408.0
+					],
+					[
+						360.0,
+						360.0
+					],
+					[
+						360.0,
+						312.0
+					],
+					[
+						360.0,
+						264.0
+					],
+					[
+						360.0,
+						216.0
+					],
+					[
+						312.0,
+						216.0
+					],
+					[
+						264.0,
+						216.0
+					],
+					[
+						216.0,
+						216.0
+					],
+					[
+						168.0,
+						216.0
+					],
+					[
+						120.0,
+						216.0
+					],
+					[
+						120.0,
+						264.0
+					],
+					[
+						120.0,
+						312.0
+					],
+					[
+						120.0,
+						360.0
+					],
+					[
+						120.0,
+						408.0
+					]
+				],
+				"portal_path": [
+					"B08.court_threshold",
+					"B08.court_changing",
+					"B08.changing_bath"
+				],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"threshold",
+					"court",
+					"changing",
+					"bath"
+				]
+			},
+			"runtime_binding": "existing_action:泡澡"
+		},
+		{
+			"access_policy": "public",
+			"action": "bath",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					3.0,
+					1.0
+				],
+				"room_id": "bath",
+				"space_id": "coastal_s1/B08/bath"
+			},
+			"approach": [
+				3.0,
+				1.0
+			],
+			"building_id": "B08",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "bath_default_duration/1",
+			"facing": "south",
+			"id": "B08.bath.03",
+			"route": {
+				"path_q": [
+					[
+						360.0,
+						744.0
+					],
+					[
+						360.0,
+						696.0
+					],
+					[
+						360.0,
+						648.0
+					],
+					[
+						360.0,
+						600.0
+					],
+					[
+						360.0,
+						552.0
+					],
+					[
+						360.0,
+						504.0
+					],
+					[
+						360.0,
+						456.0
+					],
+					[
+						360.0,
+						408.0
+					],
+					[
+						360.0,
+						360.0
+					],
+					[
+						360.0,
+						312.0
+					],
+					[
+						360.0,
+						264.0
+					],
+					[
+						360.0,
+						216.0
+					],
+					[
+						312.0,
+						216.0
+					],
+					[
+						264.0,
+						216.0
+					],
+					[
+						216.0,
+						216.0
+					],
+					[
+						168.0,
+						216.0
+					],
+					[
+						120.0,
+						216.0
+					],
+					[
+						120.0,
+						264.0
+					],
+					[
+						120.0,
+						312.0
+					],
+					[
+						120.0,
+						360.0
+					],
+					[
+						168.0,
+						360.0
+					],
+					[
+						168.0,
+						408.0
+					]
+				],
+				"portal_path": [
+					"B08.court_threshold",
+					"B08.court_changing",
+					"B08.changing_bath"
+				],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"threshold",
+					"court",
+					"changing",
+					"bath"
+				]
+			},
+			"runtime_binding": "existing_action:泡澡"
+		},
+		{
+			"access_policy": "public",
+			"action": "bath",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					1.0,
+					2.0
+				],
+				"room_id": "bath",
+				"space_id": "coastal_s1/B08/bath"
+			},
+			"approach": [
+				1.0,
+				2.0
+			],
+			"building_id": "B08",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "bath_default_duration/1",
+			"facing": "south",
+			"id": "B08.bath.04",
+			"route": {
+				"path_q": [
+					[
+						360.0,
+						744.0
+					],
+					[
+						360.0,
+						696.0
+					],
+					[
+						360.0,
+						648.0
+					],
+					[
+						360.0,
+						600.0
+					],
+					[
+						360.0,
+						552.0
+					],
+					[
+						360.0,
+						504.0
+					],
+					[
+						360.0,
+						456.0
+					],
+					[
+						360.0,
+						408.0
+					],
+					[
+						360.0,
+						360.0
+					],
+					[
+						360.0,
+						312.0
+					],
+					[
+						360.0,
+						264.0
+					],
+					[
+						360.0,
+						216.0
+					],
+					[
+						312.0,
+						216.0
+					],
+					[
+						264.0,
+						216.0
+					],
+					[
+						216.0,
+						216.0
+					],
+					[
+						168.0,
+						216.0
+					],
+					[
+						120.0,
+						216.0
+					],
+					[
+						120.0,
+						264.0
+					],
+					[
+						120.0,
+						312.0
+					],
+					[
+						120.0,
+						360.0
+					],
+					[
+						72.0,
+						360.0
+					],
+					[
+						72.0,
+						408.0
+					],
+					[
+						72.0,
+						456.0
+					]
+				],
+				"portal_path": [
+					"B08.court_threshold",
+					"B08.court_changing",
+					"B08.changing_bath"
+				],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"threshold",
+					"court",
+					"changing",
+					"bath"
+				]
+			},
+			"runtime_binding": "existing_action:泡澡"
+		},
+		{
+			"access_policy": "public",
+			"action": "work",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					1.0,
+					1.0
+				],
+				"room_id": "repair_bay",
+				"space_id": "coastal_s1/B09/repair_bay"
+			},
+			"approach": [
+				1.0,
+				1.0
+			],
+			"building_id": "B09",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "work_default_duration/1",
+			"facing": "south",
+			"id": "B09.work.01",
+			"route": {
+				"path_q": [
+					[
+						312.0,
+						600.0
+					],
+					[
+						312.0,
+						552.0
+					],
+					[
+						312.0,
+						504.0
+					],
+					[
+						312.0,
+						456.0
+					],
+					[
+						312.0,
+						408.0
+					],
+					[
+						312.0,
+						360.0
+					],
+					[
+						312.0,
+						312.0
+					],
+					[
+						312.0,
+						264.0
+					],
+					[
+						312.0,
+						216.0
+					],
+					[
+						312.0,
+						168.0
+					],
+					[
+						312.0,
+						120.0
+					],
+					[
+						312.0,
+						72.0
+					]
+				],
+				"portal_path": [],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"repair_bay"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		},
+		{
+			"access_policy": "public",
+			"action": "work",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					2.0,
+					1.0
+				],
+				"room_id": "repair_bay",
+				"space_id": "coastal_s1/B09/repair_bay"
+			},
+			"approach": [
+				2.0,
+				1.0
+			],
+			"building_id": "B09",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "work_default_duration/1",
+			"facing": "south",
+			"id": "B09.work.02",
+			"route": {
+				"path_q": [
+					[
+						312.0,
+						600.0
+					],
+					[
+						312.0,
+						552.0
+					],
+					[
+						312.0,
+						504.0
+					],
+					[
+						312.0,
+						456.0
+					],
+					[
+						312.0,
+						408.0
+					],
+					[
+						312.0,
+						360.0
+					],
+					[
+						312.0,
+						312.0
+					],
+					[
+						312.0,
+						264.0
+					],
+					[
+						312.0,
+						216.0
+					],
+					[
+						312.0,
+						168.0
+					],
+					[
+						312.0,
+						120.0
+					],
+					[
+						312.0,
+						72.0
+					],
+					[
+						360.0,
+						72.0
+					]
+				],
+				"portal_path": [],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"repair_bay"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		},
+		{
+			"access_policy": "public",
+			"action": "work",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					1.0,
+					1.0
+				],
+				"room_id": "receiving",
+				"space_id": "coastal_s1/B10/receiving"
+			},
+			"approach": [
+				1.0,
+				1.0
+			],
+			"building_id": "B10",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "work_default_duration/1",
+			"facing": "south",
+			"id": "B10.work.01",
+			"route": {
+				"path_q": [
+					[
+						264.0,
+						744.0
+					],
+					[
+						264.0,
+						696.0
+					],
+					[
+						264.0,
+						648.0
+					],
+					[
+						264.0,
+						600.0
+					],
+					[
+						264.0,
+						552.0
+					],
+					[
+						216.0,
+						552.0
+					],
+					[
+						168.0,
+						552.0
+					],
+					[
+						120.0,
+						552.0
+					],
+					[
+						72.0,
+						552.0
+					]
+				],
+				"portal_path": [],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"receiving"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		},
+		{
+			"access_policy": "public",
+			"action": "queue",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					1.0,
+					1.0
+				],
+				"room_id": "counter",
+				"space_id": "coastal_s1/B11/counter"
+			},
+			"approach": [
+				1.0,
+				1.0
+			],
+			"building_id": "B11",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "queue_default_duration/1",
+			"facing": "south",
+			"id": "B11.queue.01",
+			"route": {
+				"path_q": [
+					[
+						216.0,
+						216.0
+					],
+					[
+						216.0,
+						168.0
+					],
+					[
+						216.0,
+						120.0
+					],
+					[
+						216.0,
+						72.0
+					],
+					[
+						168.0,
+						72.0
+					],
+					[
+						120.0,
+						72.0
+					],
+					[
+						72.0,
+						72.0
+					]
+				],
+				"portal_path": [],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"counter"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		},
+		{
+			"access_policy": "public",
+			"action": "queue",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					2.0,
+					1.0
+				],
+				"room_id": "counter",
+				"space_id": "coastal_s1/B11/counter"
+			},
+			"approach": [
+				2.0,
+				1.0
+			],
+			"building_id": "B11",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "queue_default_duration/1",
+			"facing": "south",
+			"id": "B11.queue.02",
+			"route": {
+				"path_q": [
+					[
+						216.0,
+						216.0
+					],
+					[
+						216.0,
+						168.0
+					],
+					[
+						216.0,
+						120.0
+					],
+					[
+						216.0,
+						72.0
+					],
+					[
+						168.0,
+						72.0
+					],
+					[
+						120.0,
+						72.0
+					]
+				],
+				"portal_path": [],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"counter"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		},
+		{
+			"access_policy": "public",
+			"action": "rest",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					1.0,
+					1.0
+				],
+				"room_id": "open_shared",
+				"space_id": "coastal_s1/B12/open_shared"
+			},
+			"approach": [
+				1.0,
+				1.0
+			],
+			"building_id": "B12",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "rest_default_duration/1",
+			"facing": "south",
+			"id": "B12.rest.01",
+			"route": {
+				"path_q": [
+					[
+						216.0,
+						552.0
+					],
+					[
+						216.0,
+						504.0
+					],
+					[
+						216.0,
+						456.0
+					],
+					[
+						216.0,
+						408.0
+					],
+					[
+						216.0,
+						360.0
+					],
+					[
+						216.0,
+						312.0
+					],
+					[
+						216.0,
+						264.0
+					],
+					[
+						216.0,
+						216.0
+					],
+					[
+						216.0,
+						168.0
+					],
+					[
+						216.0,
+						120.0
+					],
+					[
+						216.0,
+						72.0
+					],
+					[
+						168.0,
+						72.0
+					],
+					[
+						120.0,
+						72.0
+					],
+					[
+						72.0,
+						72.0
+					]
+				],
+				"portal_path": [],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"open_shared"
+				]
+			},
+			"runtime_binding": "existing_action:歇着"
+		},
+		{
+			"access_policy": "public",
+			"action": "rest",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					2.0,
+					1.0
+				],
+				"room_id": "open_shared",
+				"space_id": "coastal_s1/B12/open_shared"
+			},
+			"approach": [
+				2.0,
+				1.0
+			],
+			"building_id": "B12",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "rest_default_duration/1",
+			"facing": "south",
+			"id": "B12.rest.02",
+			"route": {
+				"path_q": [
+					[
+						216.0,
+						552.0
+					],
+					[
+						216.0,
+						504.0
+					],
+					[
+						216.0,
+						456.0
+					],
+					[
+						216.0,
+						408.0
+					],
+					[
+						216.0,
+						360.0
+					],
+					[
+						216.0,
+						312.0
+					],
+					[
+						216.0,
+						264.0
+					],
+					[
+						216.0,
+						216.0
+					],
+					[
+						216.0,
+						168.0
+					],
+					[
+						216.0,
+						120.0
+					],
+					[
+						216.0,
+						72.0
+					],
+					[
+						168.0,
+						72.0
+					],
+					[
+						120.0,
+						72.0
+					]
+				],
+				"portal_path": [],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"open_shared"
+				]
+			},
+			"runtime_binding": "existing_action:歇着"
+		},
+		{
+			"access_policy": "public",
+			"action": "rest",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					3.0,
+					1.0
+				],
+				"room_id": "open_shared",
+				"space_id": "coastal_s1/B12/open_shared"
+			},
+			"approach": [
+				3.0,
+				1.0
+			],
+			"building_id": "B12",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "rest_default_duration/1",
+			"facing": "south",
+			"id": "B12.rest.03",
+			"route": {
+				"path_q": [
+					[
+						216.0,
+						552.0
+					],
+					[
+						216.0,
+						504.0
+					],
+					[
+						216.0,
+						456.0
+					],
+					[
+						216.0,
+						408.0
+					],
+					[
+						216.0,
+						360.0
+					],
+					[
+						216.0,
+						312.0
+					],
+					[
+						216.0,
+						264.0
+					],
+					[
+						216.0,
+						216.0
+					],
+					[
+						216.0,
+						168.0
+					],
+					[
+						216.0,
+						120.0
+					],
+					[
+						216.0,
+						72.0
+					],
+					[
+						168.0,
+						72.0
+					]
+				],
+				"portal_path": [],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"open_shared"
+				]
+			},
+			"runtime_binding": "existing_action:歇着"
+		},
+		{
+			"access_policy": "public",
+			"action": "rest",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					4.0,
+					1.0
+				],
+				"room_id": "open_shared",
+				"space_id": "coastal_s1/B12/open_shared"
+			},
+			"approach": [
+				4.0,
+				1.0
+			],
+			"building_id": "B12",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "rest_default_duration/1",
+			"facing": "south",
+			"id": "B12.rest.04",
+			"route": {
+				"path_q": [
+					[
+						216.0,
+						552.0
+					],
+					[
+						216.0,
+						504.0
+					],
+					[
+						216.0,
+						456.0
+					],
+					[
+						216.0,
+						408.0
+					],
+					[
+						216.0,
+						360.0
+					],
+					[
+						216.0,
+						312.0
+					],
+					[
+						216.0,
+						264.0
+					],
+					[
+						216.0,
+						216.0
+					],
+					[
+						216.0,
+						168.0
+					],
+					[
+						216.0,
+						120.0
+					],
+					[
+						216.0,
+						72.0
+					]
+				],
+				"portal_path": [],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"open_shared"
+				]
+			},
+			"runtime_binding": "existing_action:歇着"
+		},
+		{
+			"access_policy": "public",
+			"action": "activity",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					1.0,
+					1.0
+				],
+				"room_id": "meeting",
+				"space_id": "coastal_s1/B13/meeting"
+			},
+			"approach": [
+				1.0,
+				1.0
+			],
+			"building_id": "B13",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "activity_default_duration/1",
+			"facing": "south",
+			"id": "B13.activity.01",
+			"route": {
+				"path_q": [
+					[
+						216.0,
+						552.0
+					],
+					[
+						216.0,
+						504.0
+					],
+					[
+						216.0,
+						456.0
+					],
+					[
+						216.0,
+						408.0
+					],
+					[
+						216.0,
+						360.0
+					],
+					[
+						216.0,
+						312.0
+					],
+					[
+						216.0,
+						264.0
+					],
+					[
+						264.0,
+						264.0
+					],
+					[
+						264.0,
+						216.0
+					],
+					[
+						264.0,
+						168.0
+					],
+					[
+						264.0,
+						120.0
+					],
+					[
+						264.0,
+						72.0
+					],
+					[
+						216.0,
+						72.0
+					],
+					[
+						168.0,
+						72.0
+					],
+					[
+						120.0,
+						72.0
+					],
+					[
+						72.0,
+						72.0
+					]
+				],
+				"portal_path": [
+					"B13.common_meeting"
+				],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"common",
+					"meeting"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		},
+		{
+			"access_policy": "public",
+			"action": "activity",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					2.0,
+					1.0
+				],
+				"room_id": "meeting",
+				"space_id": "coastal_s1/B13/meeting"
+			},
+			"approach": [
+				2.0,
+				1.0
+			],
+			"building_id": "B13",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "activity_default_duration/1",
+			"facing": "south",
+			"id": "B13.activity.02",
+			"route": {
+				"path_q": [
+					[
+						216.0,
+						552.0
+					],
+					[
+						216.0,
+						504.0
+					],
+					[
+						216.0,
+						456.0
+					],
+					[
+						216.0,
+						408.0
+					],
+					[
+						216.0,
+						360.0
+					],
+					[
+						216.0,
+						312.0
+					],
+					[
+						216.0,
+						264.0
+					],
+					[
+						264.0,
+						264.0
+					],
+					[
+						264.0,
+						216.0
+					],
+					[
+						264.0,
+						168.0
+					],
+					[
+						264.0,
+						120.0
+					],
+					[
+						264.0,
+						72.0
+					],
+					[
+						216.0,
+						72.0
+					],
+					[
+						168.0,
+						72.0
+					],
+					[
+						120.0,
+						72.0
+					]
+				],
+				"portal_path": [
+					"B13.common_meeting"
+				],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"common",
+					"meeting"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		},
+		{
+			"access_policy": "public",
+			"action": "activity",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					3.0,
+					1.0
+				],
+				"room_id": "meeting",
+				"space_id": "coastal_s1/B13/meeting"
+			},
+			"approach": [
+				3.0,
+				1.0
+			],
+			"building_id": "B13",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "activity_default_duration/1",
+			"facing": "south",
+			"id": "B13.activity.03",
+			"route": {
+				"path_q": [
+					[
+						216.0,
+						552.0
+					],
+					[
+						216.0,
+						504.0
+					],
+					[
+						216.0,
+						456.0
+					],
+					[
+						216.0,
+						408.0
+					],
+					[
+						216.0,
+						360.0
+					],
+					[
+						216.0,
+						312.0
+					],
+					[
+						216.0,
+						264.0
+					],
+					[
+						264.0,
+						264.0
+					],
+					[
+						264.0,
+						216.0
+					],
+					[
+						264.0,
+						168.0
+					],
+					[
+						264.0,
+						120.0
+					],
+					[
+						264.0,
+						72.0
+					],
+					[
+						216.0,
+						72.0
+					],
+					[
+						168.0,
+						72.0
+					]
+				],
+				"portal_path": [
+					"B13.common_meeting"
+				],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"common",
+					"meeting"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		},
+		{
+			"access_policy": "public",
+			"action": "activity",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					4.0,
+					1.0
+				],
+				"room_id": "meeting",
+				"space_id": "coastal_s1/B13/meeting"
+			},
+			"approach": [
+				4.0,
+				1.0
+			],
+			"building_id": "B13",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "activity_default_duration/1",
+			"facing": "south",
+			"id": "B13.activity.04",
+			"route": {
+				"path_q": [
+					[
+						216.0,
+						552.0
+					],
+					[
+						216.0,
+						504.0
+					],
+					[
+						216.0,
+						456.0
+					],
+					[
+						216.0,
+						408.0
+					],
+					[
+						216.0,
+						360.0
+					],
+					[
+						216.0,
+						312.0
+					],
+					[
+						216.0,
+						264.0
+					],
+					[
+						264.0,
+						264.0
+					],
+					[
+						264.0,
+						216.0
+					],
+					[
+						264.0,
+						168.0
+					],
+					[
+						264.0,
+						120.0
+					],
+					[
+						264.0,
+						72.0
+					],
+					[
+						216.0,
+						72.0
+					]
+				],
+				"portal_path": [
+					"B13.common_meeting"
+				],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"common",
+					"meeting"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		},
+		{
+			"access_policy": "public",
+			"action": "activity",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					5.0,
+					1.0
+				],
+				"room_id": "meeting",
+				"space_id": "coastal_s1/B13/meeting"
+			},
+			"approach": [
+				5.0,
+				1.0
+			],
+			"building_id": "B13",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "activity_default_duration/1",
+			"facing": "south",
+			"id": "B13.activity.05",
+			"route": {
+				"path_q": [
+					[
+						216.0,
+						552.0
+					],
+					[
+						216.0,
+						504.0
+					],
+					[
+						216.0,
+						456.0
+					],
+					[
+						216.0,
+						408.0
+					],
+					[
+						216.0,
+						360.0
+					],
+					[
+						216.0,
+						312.0
+					],
+					[
+						216.0,
+						264.0
+					],
+					[
+						264.0,
+						264.0
+					],
+					[
+						264.0,
+						216.0
+					],
+					[
+						264.0,
+						168.0
+					],
+					[
+						264.0,
+						120.0
+					],
+					[
+						264.0,
+						72.0
+					]
+				],
+				"portal_path": [
+					"B13.common_meeting"
+				],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"common",
+					"meeting"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		},
+		{
+			"access_policy": "public",
+			"action": "activity",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					1.0,
+					2.0
+				],
+				"room_id": "meeting",
+				"space_id": "coastal_s1/B13/meeting"
+			},
+			"approach": [
+				1.0,
+				2.0
+			],
+			"building_id": "B13",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "activity_default_duration/1",
+			"facing": "south",
+			"id": "B13.activity.06",
+			"route": {
+				"path_q": [
+					[
+						216.0,
+						552.0
+					],
+					[
+						216.0,
+						504.0
+					],
+					[
+						216.0,
+						456.0
+					],
+					[
+						216.0,
+						408.0
+					],
+					[
+						216.0,
+						360.0
+					],
+					[
+						216.0,
+						312.0
+					],
+					[
+						216.0,
+						264.0
+					],
+					[
+						264.0,
+						264.0
+					],
+					[
+						264.0,
+						216.0
+					],
+					[
+						264.0,
+						168.0
+					],
+					[
+						264.0,
+						120.0
+					],
+					[
+						216.0,
+						120.0
+					],
+					[
+						168.0,
+						120.0
+					],
+					[
+						120.0,
+						120.0
+					],
+					[
+						72.0,
+						120.0
+					]
+				],
+				"portal_path": [
+					"B13.common_meeting"
+				],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"common",
+					"meeting"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		},
+		{
+			"access_policy": "public",
+			"action": "queue",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					1.0,
+					1.0
+				],
+				"room_id": "market_apron",
+				"space_id": "coastal_s1/B14/market_apron"
+			},
+			"approach": [
+				1.0,
+				1.0
+			],
+			"building_id": "B14",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "queue_default_duration/1",
+			"facing": "south",
+			"id": "B14.queue.01",
+			"route": {
+				"path_q": [
+					[
+						216.0,
+						216.0
+					],
+					[
+						216.0,
+						168.0
+					],
+					[
+						216.0,
+						120.0
+					],
+					[
+						216.0,
+						72.0
+					],
+					[
+						168.0,
+						72.0
+					],
+					[
+						120.0,
+						72.0
+					],
+					[
+						72.0,
+						72.0
+					]
+				],
+				"portal_path": [],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"market_apron"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		},
+		{
+			"access_policy": "public",
+			"action": "queue",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					2.0,
+					1.0
+				],
+				"room_id": "market_apron",
+				"space_id": "coastal_s1/B14/market_apron"
+			},
+			"approach": [
+				2.0,
+				1.0
+			],
+			"building_id": "B14",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "queue_default_duration/1",
+			"facing": "south",
+			"id": "B14.queue.02",
+			"route": {
+				"path_q": [
+					[
+						216.0,
+						216.0
+					],
+					[
+						216.0,
+						168.0
+					],
+					[
+						216.0,
+						120.0
+					],
+					[
+						216.0,
+						72.0
+					],
+					[
+						168.0,
+						72.0
+					],
+					[
+						120.0,
+						72.0
+					]
+				],
+				"portal_path": [],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"market_apron"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		},
+		{
+			"access_policy": "public",
+			"action": "queue",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					3.0,
+					1.0
+				],
+				"room_id": "market_apron",
+				"space_id": "coastal_s1/B14/market_apron"
+			},
+			"approach": [
+				3.0,
+				1.0
+			],
+			"building_id": "B14",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "queue_default_duration/1",
+			"facing": "south",
+			"id": "B14.queue.03",
+			"route": {
+				"path_q": [
+					[
+						216.0,
+						216.0
+					],
+					[
+						216.0,
+						168.0
+					],
+					[
+						216.0,
+						120.0
+					],
+					[
+						216.0,
+						72.0
+					],
+					[
+						168.0,
+						72.0
+					]
+				],
+				"portal_path": [],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"market_apron"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		},
+		{
+			"access_policy": "public",
+			"action": "queue",
+			"address": {
+				"floor_id": "ground",
+				"position": [
+					4.0,
+					1.0
+				],
+				"room_id": "market_apron",
+				"space_id": "coastal_s1/B14/market_apron"
+			},
+			"approach": [
+				4.0,
+				1.0
+			],
+			"building_id": "B14",
+			"capacity": 1.0,
+			"clearance_q": [
+				48.0,
+				48.0
+			],
+			"duration_policy": "queue_default_duration/1",
+			"facing": "south",
+			"id": "B14.queue.04",
+			"route": {
+				"path_q": [
+					[
+						216.0,
+						216.0
+					],
+					[
+						216.0,
+						168.0
+					],
+					[
+						216.0,
+						120.0
+					],
+					[
+						216.0,
+						72.0
+					]
+				],
+				"portal_path": [],
+				"provisional_actor_radius_q": 20.0,
+				"room_path": [
+					"market_apron"
+				]
+			},
+			"runtime_binding": "unbound: no existing action mapping"
+		}
+	],
+	"home_anchors": [
+		{
+			"building_id": "B01",
+			"entry_portal_id": "coastal_s1/B01/entry",
+			"floor_id": "ground",
+			"home_space_id": "coastal_s1/B01",
+			"position": [
+				4.0,
+				4.0
+			],
+			"space_id": "coastal_s1/B01/common"
+		},
+		{
+			"building_id": "B02",
+			"entry_portal_id": "coastal_s1/B02/entry",
+			"floor_id": "ground",
+			"home_space_id": "coastal_s1/B02",
+			"position": [
+				3.0,
+				5.0
+			],
+			"space_id": "coastal_s1/B02/sleeping"
+		},
+		{
+			"building_id": "B03",
+			"entry_portal_id": "coastal_s1/B03/entry",
+			"floor_id": "ground",
+			"home_space_id": "coastal_s1/B03",
+			"position": [
+				4.0,
+				5.0
+			],
+			"space_id": "coastal_s1/B03/common"
+		},
+		{
+			"building_id": "B04",
+			"entry_portal_id": "coastal_s1/B04/entry",
+			"floor_id": "ground",
+			"home_space_id": "coastal_s1/B04",
+			"position": [
+				3.0,
+				5.0
+			],
+			"space_id": "coastal_s1/B04/sleeping"
+		}
+	],
+	"runtime_binding": {
+		"bound_count": 22,
+		"unbound_ids": [
+			"B06.queue.01",
+			"B06.queue.02",
+			"B06.queue.03",
+			"B07.activity.01",
+			"B07.activity.02",
+			"B07.activity.03",
+			"B07.activity.04",
+			"B07.activity.05",
+			"B07.activity.06",
+			"B09.work.01",
+			"B09.work.02",
+			"B10.work.01",
+			"B11.queue.01",
+			"B11.queue.02",
+			"B13.activity.01",
+			"B13.activity.02",
+			"B13.activity.03",
+			"B13.activity.04",
+			"B13.activity.05",
+			"B13.activity.06",
+			"B14.queue.01",
+			"B14.queue.02",
+			"B14.queue.03",
+			"B14.queue.04"
+		]
+	}
+}

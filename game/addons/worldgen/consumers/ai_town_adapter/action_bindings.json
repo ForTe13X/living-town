@@ -1,0 +1,17 @@
+{
+  "schema": "worldgen.aitown-action-bindings/1",
+  "bindings": {
+    "bathe": { "action": "泡澡" },
+    "buy_food": { "action": "吃饭" },
+    "read": { "action": "读书" },
+    "rest": { "action": "歇着" },
+    "sleep": { "action": "睡觉" },
+    "work": { "action_from_staff_job": true }
+  },
+  "staff_titles_by_building": {
+    "bathhouse": [],
+    "cafe": ["咖啡师"],
+    "library": [],
+    "workshop": ["木匠"]
+  }
+}

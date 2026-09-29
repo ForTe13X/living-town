@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://living-town.invalid/worldgen/recipe.schema.json",
+  "title": "worldgen.recipe/1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "source_revision", "coordinate_frame", "capabilities", "stages", "outputs"],
+  "properties": {
+    "schema": {"const": "worldgen.recipe/1"},
+    "id": {"type": "string", "minLength": 1},
+    "source_revision": {"type": "integer", "minimum": 0},
+    "coordinate_frame": {"type": "object"},
+    "capabilities": {"type": "object"},
+    "stages": {"type": "array", "minItems": 1, "maxItems": 256, "items": {"type": "object", "additionalProperties": false, "required": ["id", "operator", "inputs", "parameters"], "properties": {"id": {"type": "string", "pattern": "^[A-Za-z0-9_-]+$"}, "operator": {"type": "string", "minLength": 1}, "inputs": {"type": "object", "additionalProperties": {"type": "string"}}, "parameters": {"type": "object"}, "operation_budget": {"type": "integer", "minimum": 1}}}},
+    "outputs": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string"}}
+  }
+}

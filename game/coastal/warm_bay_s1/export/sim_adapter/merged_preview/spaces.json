@@ -1,0 +1,2408 @@
+{
+	"portals": [
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					3.0,
+					3.0
+				],
+				"space": "town"
+			},
+			"id": "p_loft_door",
+			"kind": "door",
+			"to": {
+				"floor": "1f",
+				"pos": [
+					3.0,
+					4.0
+				],
+				"space": "test_loft"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "owner",
+			"bidirectional": true,
+			"from": {
+				"floor": "1f",
+				"pos": [
+					1.0,
+					1.0
+				],
+				"space": "test_loft"
+			},
+			"id": "p_loft_stairs",
+			"kind": "stairs",
+			"owner_space": "test_loft",
+			"to": {
+				"floor": "2f",
+				"pos": [
+					1.0,
+					1.0
+				],
+				"space": "test_loft"
+			},
+			"traversal_cost": 2.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					41.0,
+					19.0
+				],
+				"space": "town"
+			},
+			"id": "p_cafe_door",
+			"kind": "door",
+			"to": {
+				"floor": "1f",
+				"pos": [
+					4.0,
+					5.0
+				],
+				"space": "cafe"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "owner",
+			"bidirectional": true,
+			"from": {
+				"floor": "1f",
+				"pos": [
+					1.0,
+					1.0
+				],
+				"space": "cafe"
+			},
+			"id": "p_cafe_stairs",
+			"kind": "stairs",
+			"owner_space": "cafe",
+			"to": {
+				"floor": "2f",
+				"pos": [
+					1.0,
+					1.0
+				],
+				"space": "cafe"
+			},
+			"traversal_cost": 2.0
+		},
+		{
+			"_gen": true,
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					22.0,
+					19.0
+				],
+				"space": "town"
+			},
+			"id": "p_home_door",
+			"kind": "door",
+			"to": {
+				"floor": "1f",
+				"pos": [
+					5.0,
+					8.0
+				],
+				"space": "home"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"_gen": true,
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					22.0,
+					28.0
+				],
+				"space": "town"
+			},
+			"id": "p_wash_door",
+			"kind": "door",
+			"to": {
+				"floor": "1f",
+				"pos": [
+					5.0,
+					0.0
+				],
+				"space": "wash"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"_gen": true,
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					41.0,
+					28.0
+				],
+				"space": "town"
+			},
+			"id": "p_work_door",
+			"kind": "door",
+			"to": {
+				"floor": "1f",
+				"pos": [
+					4.0,
+					0.0
+				],
+				"space": "work"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"_gen": true,
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					14.0,
+					18.0
+				],
+				"space": "town"
+			},
+			"id": "p_home2_door",
+			"kind": "door",
+			"to": {
+				"floor": "1f",
+				"pos": [
+					4.0,
+					6.0
+				],
+				"space": "home2"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"_gen": true,
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					50.0,
+					18.0
+				],
+				"space": "town"
+			},
+			"id": "p_shop_door",
+			"kind": "door",
+			"to": {
+				"floor": "1f",
+				"pos": [
+					4.0,
+					6.0
+				],
+				"space": "shop"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"_gen": true,
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					14.0,
+					34.0
+				],
+				"space": "town"
+			},
+			"id": "p_library_door",
+			"kind": "door",
+			"to": {
+				"floor": "1f",
+				"pos": [
+					4.0,
+					6.0
+				],
+				"space": "library"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					57.0,
+					8.0
+				],
+				"space": "town"
+			},
+			"id": "p_port_warehouse_door",
+			"kind": "door",
+			"to": {
+				"floor": "1f",
+				"pos": [
+					8.0,
+					3.0
+				],
+				"space": "port_warehouse"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"_facility": true,
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					11.0,
+					23.0
+				],
+				"space": "town"
+			},
+			"id": "p_bakery_door",
+			"kind": "door",
+			"to": {
+				"floor": "1f",
+				"pos": [
+					4.0,
+					5.0
+				],
+				"space": "bakery"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"_facility": true,
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					35.0,
+					18.0
+				],
+				"space": "town"
+			},
+			"id": "p_creperie_door",
+			"kind": "door",
+			"to": {
+				"floor": "1f",
+				"pos": [
+					4.0,
+					5.0
+				],
+				"space": "creperie"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"_facility": true,
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					29.0,
+					18.0
+				],
+				"space": "town"
+			},
+			"id": "p_chapel_door",
+			"kind": "door",
+			"to": {
+				"floor": "1f",
+				"pos": [
+					3.0,
+					7.0
+				],
+				"space": "chapel"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"_facility": true,
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					24.0,
+					8.0
+				],
+				"space": "town"
+			},
+			"id": "p_halles_door",
+			"kind": "door",
+			"to": {
+				"floor": "1f",
+				"pos": [
+					5.0,
+					6.0
+				],
+				"space": "halles"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"_facility": true,
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					50.0,
+					3.0
+				],
+				"space": "town"
+			},
+			"id": "p_hotel_door",
+			"kind": "door",
+			"to": {
+				"floor": "1f",
+				"pos": [
+					5.0,
+					6.0
+				],
+				"space": "hotel"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"_facility": true,
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					32.0,
+					31.0
+				],
+				"space": "town"
+			},
+			"id": "p_mairie_door",
+			"kind": "door",
+			"to": {
+				"floor": "1f",
+				"pos": [
+					5.0,
+					6.0
+				],
+				"space": "mairie"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "owner",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					11.0,
+					18.0
+				],
+				"space": "coastal_s1"
+			},
+			"id": "coastal_s1/B01/entry",
+			"kind": "door",
+			"owner_space": "coastal_s1/B01",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					4.0,
+					4.0
+				],
+				"space": "coastal_s1/B01/common"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "owner",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					4.0,
+					0.0
+				],
+				"space": "coastal_s1/B01/common"
+			},
+			"id": "coastal_s1/B01.common_sleep",
+			"kind": "door",
+			"owner_space": "coastal_s1/B01",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					4.0,
+					4.0
+				],
+				"space": "coastal_s1/B01/sleeping"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "owner",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					4.0,
+					2.0
+				],
+				"space": "coastal_s1/B01/sleeping"
+			},
+			"id": "coastal_s1/B01.sleep_service",
+			"kind": "door",
+			"owner_space": "coastal_s1/B01",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					0.0,
+					2.0
+				],
+				"space": "coastal_s1/B01/service"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "owner",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					37.0,
+					19.0
+				],
+				"space": "coastal_s1"
+			},
+			"id": "coastal_s1/B02/entry",
+			"kind": "door",
+			"owner_space": "coastal_s1/B02",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					3.0,
+					5.0
+				],
+				"space": "coastal_s1/B02/sleeping"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "owner",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					3.0,
+					5.0
+				],
+				"space": "coastal_s1/B02/common"
+			},
+			"id": "coastal_s1/B02.common_sleep",
+			"kind": "door",
+			"owner_space": "coastal_s1/B02",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					3.0,
+					0.0
+				],
+				"space": "coastal_s1/B02/sleeping"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "owner",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					5.0,
+					3.0
+				],
+				"space": "coastal_s1/B02/common"
+			},
+			"id": "coastal_s1/B02.common_service",
+			"kind": "door",
+			"owner_space": "coastal_s1/B02",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					0.0,
+					3.0
+				],
+				"space": "coastal_s1/B02/service"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "owner",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					10.0,
+					78.0
+				],
+				"space": "coastal_s1"
+			},
+			"id": "coastal_s1/B03/entry",
+			"kind": "door",
+			"owner_space": "coastal_s1/B03",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					4.0,
+					5.0
+				],
+				"space": "coastal_s1/B03/common"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "owner",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					3.0,
+					0.0
+				],
+				"space": "coastal_s1/B03/common"
+			},
+			"id": "coastal_s1/B03.common_sleep",
+			"kind": "door",
+			"owner_space": "coastal_s1/B03",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					3.0,
+					5.0
+				],
+				"space": "coastal_s1/B03/sleeping"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "owner",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					4.0,
+					3.0
+				],
+				"space": "coastal_s1/B03/sleeping"
+			},
+			"id": "coastal_s1/B03.sleep_service",
+			"kind": "door",
+			"owner_space": "coastal_s1/B03",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					0.0,
+					3.0
+				],
+				"space": "coastal_s1/B03/service"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "owner",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					42.0,
+					85.0
+				],
+				"space": "coastal_s1"
+			},
+			"id": "coastal_s1/B04/entry",
+			"kind": "door",
+			"owner_space": "coastal_s1/B04",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					3.0,
+					5.0
+				],
+				"space": "coastal_s1/B04/sleeping"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "owner",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					6.0,
+					3.0
+				],
+				"space": "coastal_s1/B04/common"
+			},
+			"id": "coastal_s1/B04.common_service",
+			"kind": "door",
+			"owner_space": "coastal_s1/B04",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					0.0,
+					3.0
+				],
+				"space": "coastal_s1/B04/service"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "owner",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					6.0,
+					5.0
+				],
+				"space": "coastal_s1/B04/common"
+			},
+			"id": "coastal_s1/B04.common_sleep",
+			"kind": "door",
+			"owner_space": "coastal_s1/B04",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					1.0,
+					0.0
+				],
+				"space": "coastal_s1/B04/sleeping"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					77.0,
+					68.0
+				],
+				"space": "coastal_s1"
+			},
+			"id": "coastal_s1/B05/entry",
+			"kind": "door",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					11.0,
+					3.0
+				],
+				"space": "coastal_s1/B05/public_hall"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					3.0,
+					7.0
+				],
+				"space": "coastal_s1/B05/public_hall"
+			},
+			"id": "coastal_s1/B05.hall_prep",
+			"kind": "door",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					3.0,
+					0.0
+				],
+				"space": "coastal_s1/B05/prep"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					3.0,
+					3.0
+				],
+				"space": "coastal_s1/B05/prep"
+			},
+			"id": "coastal_s1/B05.prep_storage",
+			"kind": "door",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					3.0,
+					0.0
+				],
+				"space": "coastal_s1/B05/storage"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					77.0,
+					43.0
+				],
+				"space": "coastal_s1"
+			},
+			"id": "coastal_s1/B06/entry",
+			"kind": "door",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					2.0,
+					4.0
+				],
+				"space": "coastal_s1/B06/storage"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					6.0,
+					5.0
+				],
+				"space": "coastal_s1/B06/shopfront"
+			},
+			"id": "coastal_s1/B06.shop_staff",
+			"kind": "door",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					0.0,
+					5.0
+				],
+				"space": "coastal_s1/B06/staff"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					1.0,
+					5.0
+				],
+				"space": "coastal_s1/B06/staff"
+			},
+			"id": "coastal_s1/B06.staff_storage",
+			"kind": "door",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					0.0,
+					5.0
+				],
+				"space": "coastal_s1/B06/storage"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					39.0,
+					47.0
+				],
+				"space": "coastal_s1"
+			},
+			"id": "coastal_s1/B07/entry",
+			"kind": "door",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					6.0,
+					5.0
+				],
+				"space": "coastal_s1/B07/common"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					5.0,
+					0.0
+				],
+				"space": "coastal_s1/B07/common"
+			},
+			"id": "coastal_s1/B07.common_reading",
+			"kind": "door",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					5.0,
+					5.0
+				],
+				"space": "coastal_s1/B07/reading"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					9.0,
+					3.0
+				],
+				"space": "coastal_s1/B07/reading"
+			},
+			"id": "coastal_s1/B07.reading_storage",
+			"kind": "door",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					0.0,
+					3.0
+				],
+				"space": "coastal_s1/B07/storage"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					40.0,
+					119.0
+				],
+				"space": "coastal_s1"
+			},
+			"id": "coastal_s1/B08/entry",
+			"kind": "door",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					2.0,
+					4.0
+				],
+				"space": "coastal_s1/B08/threshold"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "owner",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					0.0,
+					4.0
+				],
+				"space": "coastal_s1/B08/court"
+			},
+			"id": "coastal_s1/B08.court_changing",
+			"kind": "door",
+			"owner_space": "coastal_s1/B08",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					4.0,
+					4.0
+				],
+				"space": "coastal_s1/B08/changing"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "owner",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					2.0,
+					6.0
+				],
+				"space": "coastal_s1/B08/changing"
+			},
+			"id": "coastal_s1/B08.changing_bath",
+			"kind": "door",
+			"owner_space": "coastal_s1/B08",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					2.0,
+					0.0
+				],
+				"space": "coastal_s1/B08/bath"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "owner",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					4.0,
+					4.0
+				],
+				"space": "coastal_s1/B08/court"
+			},
+			"id": "coastal_s1/B08.court_plant",
+			"kind": "door",
+			"owner_space": "coastal_s1/B08",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					0.0,
+					4.0
+				],
+				"space": "coastal_s1/B08/plant"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "owner",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					2.0,
+					10.0
+				],
+				"space": "coastal_s1/B08/court"
+			},
+			"id": "coastal_s1/B08.court_threshold",
+			"kind": "door",
+			"owner_space": "coastal_s1/B08",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					2.0,
+					0.0
+				],
+				"space": "coastal_s1/B08/threshold"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "owner",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					0.0,
+					2.0
+				],
+				"space": "coastal_s1/B08/threshold"
+			},
+			"id": "coastal_s1/B08.threshold_changing",
+			"kind": "door",
+			"owner_space": "coastal_s1/B08",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					4.0,
+					2.0
+				],
+				"space": "coastal_s1/B08/entry_side"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "owner",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					4.0,
+					2.0
+				],
+				"space": "coastal_s1/B08/threshold"
+			},
+			"id": "coastal_s1/B08.threshold_plant",
+			"kind": "door",
+			"owner_space": "coastal_s1/B08",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					0.0,
+					2.0
+				],
+				"space": "coastal_s1/B08/plant_side"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					71.0,
+					20.0
+				],
+				"space": "coastal_s1"
+			},
+			"id": "coastal_s1/B09/entry",
+			"kind": "door",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					1.0,
+					12.0
+				],
+				"space": "coastal_s1/B09/repair_bay"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					4.0,
+					6.0
+				],
+				"space": "coastal_s1/B09/desk"
+			},
+			"id": "coastal_s1/B09.desk_bay",
+			"kind": "door",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					0.0,
+					6.0
+				],
+				"space": "coastal_s1/B09/repair_bay"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					5.0,
+					6.0
+				],
+				"space": "coastal_s1/B09/repair_bay"
+			},
+			"id": "coastal_s1/B09.bay_storage",
+			"kind": "door",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					0.0,
+					6.0
+				],
+				"space": "coastal_s1/B09/storage"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					70.0,
+					119.0
+				],
+				"space": "coastal_s1"
+			},
+			"id": "coastal_s1/B10/entry",
+			"kind": "door",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					5.0,
+					5.0
+				],
+				"space": "coastal_s1/B10/receiving"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					6.0,
+					0.0
+				],
+				"space": "coastal_s1/B10/receiving"
+			},
+			"id": "coastal_s1/B10.receiving_storage",
+			"kind": "door",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					6.0,
+					9.0
+				],
+				"space": "coastal_s1/B10/storage"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					70.0,
+					32.0
+				],
+				"space": "coastal_s1"
+			},
+			"id": "coastal_s1/B11/entry",
+			"kind": "door",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					4.0,
+					4.0
+				],
+				"space": "coastal_s1/B11/counter"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					4.0,
+					2.0
+				],
+				"space": "coastal_s1/B11/counter"
+			},
+			"id": "coastal_s1/B11.counter_store",
+			"kind": "door",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					0.0,
+					2.0
+				],
+				"space": "coastal_s1/B11/secure_store"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					10.0,
+					116.0
+				],
+				"space": "coastal_s1"
+			},
+			"id": "coastal_s1/B12/entry",
+			"kind": "door",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					4.0,
+					11.0
+				],
+				"space": "coastal_s1/B12/open_shared"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					10.0,
+					47.0
+				],
+				"space": "coastal_s1"
+			},
+			"id": "coastal_s1/B13/entry",
+			"kind": "door",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					4.0,
+					6.0
+				],
+				"space": "coastal_s1/B13/common"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					5.0,
+					0.0
+				],
+				"space": "coastal_s1/B13/common"
+			},
+			"id": "coastal_s1/B13.common_meeting",
+			"kind": "door",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					5.0,
+					4.0
+				],
+				"space": "coastal_s1/B13/meeting"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "ground",
+				"pos": [
+					6.0,
+					2.0
+				],
+				"space": "coastal_s1/B13/meeting"
+			},
+			"id": "coastal_s1/B13.meeting_storage",
+			"kind": "door",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					0.0,
+					2.0
+				],
+				"space": "coastal_s1/B13/storage"
+			},
+			"traversal_cost": 1.0
+		},
+		{
+			"access": "public",
+			"bidirectional": true,
+			"from": {
+				"floor": "outdoor",
+				"pos": [
+					70.0,
+					91.0
+				],
+				"space": "coastal_s1"
+			},
+			"id": "coastal_s1/B14/entry",
+			"kind": "door",
+			"to": {
+				"floor": "ground",
+				"pos": [
+					4.0,
+					4.0
+				],
+				"space": "coastal_s1/B14/market_apron"
+			},
+			"traversal_cost": 1.0
+		}
+	],
+	"spaces": {
+		"bakery": {
+			"_facility": true,
+			"bounds": [
+				0.0,
+				0.0,
+				8.0,
+				6.0
+			],
+			"default_floor": "1f",
+			"floors": [
+				"1f"
+			],
+			"kind": "interior",
+			"label": "面包房",
+			"public_venue": true
+		},
+		"cafe": {
+			"_why": "P3 竖切片：阿丽的咖啡馆真室内。1F 公共咖啡区(吧台/咖啡机/甜点柜/吧凳/卡座/菜单牌)、2F 阿丽私人居所(床/衣柜/床头柜/书桌/梳妆镜/相片墙)。街门 portal 接 town/outdoor 的咖啡馆门(41,19)，楼梯 portal 接 1F→2F(owner 权限=私人上层)。内容在 interiors.json、渲染走非-town active-space 路径。Tier-B(★AM1 订正——旧注误写『Tier-A：居民不进、digest 逐字节不变』，与实况矛盾)：带 spatial_address 的居民【真住】非-town 平面并按 portal 跨平面走动——阿丽(aria) spatial_address={cafe,2f,[2,2]} 就住 2F，journey 在镇↔店之间跨平面(_journey_candidates→_route_next_hop→_move_agent)。金标口径：带 advertises 的室内家具经 _compile_interiors 进 world 候选、家具格经 _build_interior_grids 进各平面导航网 ⇒ 动它们/其位置=移金标；纯装饰家具(无 advertises)重排=AM1 实测 golden 12/12 逐字节不变。",
+			"bounds": [
+				0.0,
+				0.0,
+				8.0,
+				6.0
+			],
+			"default_floor": "1f",
+			"floors": [
+				"1f",
+				"2f"
+			],
+			"kind": "interior",
+			"label": "阿丽的咖啡馆"
+		},
+		"chapel": {
+			"_facility": true,
+			"bounds": [
+				0.0,
+				0.0,
+				7.0,
+				8.0
+			],
+			"default_floor": "1f",
+			"floors": [
+				"1f"
+			],
+			"kind": "interior",
+			"label": "礼拜堂",
+			"public_venue": true
+		},
+		"coastal_s1": {
+			"bounds": [
+				0.0,
+				0.0,
+				128.0,
+				128.0
+			],
+			"default_floor": "outdoor",
+			"floors": [
+				"outdoor"
+			],
+			"kind": "outdoor",
+			"label": "Warm Bay — S1 neighborhood"
+		},
+		"coastal_s1/B01": {
+			"bounds": [
+				0.0,
+				0.0,
+				8.0,
+				10.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"kind": "interior",
+			"label": "B01 access domain"
+		},
+		"coastal_s1/B01/common": {
+			"bounds": [
+				0.0,
+				0.0,
+				8.0,
+				5.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B01",
+			"kind": "interior",
+			"label": "B01 · common"
+		},
+		"coastal_s1/B01/service": {
+			"bounds": [
+				0.0,
+				0.0,
+				3.0,
+				5.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B01",
+			"kind": "interior",
+			"label": "B01 · service"
+		},
+		"coastal_s1/B01/sleeping": {
+			"bounds": [
+				0.0,
+				0.0,
+				5.0,
+				5.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B01",
+			"kind": "interior",
+			"label": "B01 · sleeping"
+		},
+		"coastal_s1/B02": {
+			"bounds": [
+				0.0,
+				0.0,
+				11.0,
+				12.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"kind": "interior",
+			"label": "B02 access domain"
+		},
+		"coastal_s1/B02/common": {
+			"bounds": [
+				0.0,
+				0.0,
+				6.0,
+				6.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B02",
+			"kind": "interior",
+			"label": "B02 · common"
+		},
+		"coastal_s1/B02/service": {
+			"bounds": [
+				0.0,
+				0.0,
+				5.0,
+				6.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B02",
+			"kind": "interior",
+			"label": "B02 · service"
+		},
+		"coastal_s1/B02/sleeping": {
+			"bounds": [
+				0.0,
+				0.0,
+				6.0,
+				6.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B02",
+			"kind": "interior",
+			"label": "B02 · sleeping"
+		},
+		"coastal_s1/B03": {
+			"bounds": [
+				0.0,
+				0.0,
+				9.0,
+				12.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"kind": "interior",
+			"label": "B03 access domain"
+		},
+		"coastal_s1/B03/common": {
+			"bounds": [
+				0.0,
+				0.0,
+				9.0,
+				6.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B03",
+			"kind": "interior",
+			"label": "B03 · common"
+		},
+		"coastal_s1/B03/service": {
+			"bounds": [
+				0.0,
+				0.0,
+				4.0,
+				6.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B03",
+			"kind": "interior",
+			"label": "B03 · service"
+		},
+		"coastal_s1/B03/sleeping": {
+			"bounds": [
+				0.0,
+				0.0,
+				5.0,
+				6.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B03",
+			"kind": "interior",
+			"label": "B03 · sleeping"
+		},
+		"coastal_s1/B04": {
+			"bounds": [
+				0.0,
+				0.0,
+				11.0,
+				12.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"kind": "interior",
+			"label": "B04 access domain"
+		},
+		"coastal_s1/B04/common": {
+			"bounds": [
+				0.0,
+				0.0,
+				7.0,
+				6.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B04",
+			"kind": "interior",
+			"label": "B04 · common"
+		},
+		"coastal_s1/B04/service": {
+			"bounds": [
+				0.0,
+				0.0,
+				4.0,
+				6.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B04",
+			"kind": "interior",
+			"label": "B04 · service"
+		},
+		"coastal_s1/B04/sleeping": {
+			"bounds": [
+				0.0,
+				0.0,
+				6.0,
+				6.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B04",
+			"kind": "interior",
+			"label": "B04 · sleeping"
+		},
+		"coastal_s1/B05": {
+			"bounds": [
+				0.0,
+				0.0,
+				12.0,
+				16.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"kind": "interior",
+			"label": "B05 access domain"
+		},
+		"coastal_s1/B05/prep": {
+			"bounds": [
+				0.0,
+				0.0,
+				6.0,
+				4.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B05",
+			"kind": "interior",
+			"label": "B05 · prep"
+		},
+		"coastal_s1/B05/public_hall": {
+			"bounds": [
+				0.0,
+				0.0,
+				12.0,
+				8.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B05",
+			"kind": "interior",
+			"label": "B05 · public_hall"
+		},
+		"coastal_s1/B05/storage": {
+			"bounds": [
+				0.0,
+				0.0,
+				6.0,
+				4.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B05",
+			"kind": "interior",
+			"label": "B05 · storage"
+		},
+		"coastal_s1/B06": {
+			"bounds": [
+				0.0,
+				0.0,
+				12.0,
+				10.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"kind": "interior",
+			"label": "B06 access domain"
+		},
+		"coastal_s1/B06/shopfront": {
+			"bounds": [
+				0.0,
+				0.0,
+				7.0,
+				10.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B06",
+			"kind": "interior",
+			"label": "B06 · shopfront"
+		},
+		"coastal_s1/B06/staff": {
+			"bounds": [
+				0.0,
+				0.0,
+				2.0,
+				10.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B06",
+			"kind": "interior",
+			"label": "B06 · staff"
+		},
+		"coastal_s1/B06/storage": {
+			"bounds": [
+				0.0,
+				0.0,
+				3.0,
+				10.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B06",
+			"kind": "interior",
+			"label": "B06 · storage"
+		},
+		"coastal_s1/B07": {
+			"bounds": [
+				0.0,
+				0.0,
+				14.0,
+				12.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"kind": "interior",
+			"label": "B07 access domain"
+		},
+		"coastal_s1/B07/common": {
+			"bounds": [
+				0.0,
+				0.0,
+				14.0,
+				6.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B07",
+			"kind": "interior",
+			"label": "B07 · common"
+		},
+		"coastal_s1/B07/reading": {
+			"bounds": [
+				0.0,
+				0.0,
+				10.0,
+				6.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B07",
+			"kind": "interior",
+			"label": "B07 · reading"
+		},
+		"coastal_s1/B07/storage": {
+			"bounds": [
+				0.0,
+				0.0,
+				4.0,
+				6.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B07",
+			"kind": "interior",
+			"label": "B07 · storage"
+		},
+		"coastal_s1/B08": {
+			"bounds": [
+				0.0,
+				0.0,
+				15.0,
+				16.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"kind": "interior",
+			"label": "B08 access domain"
+		},
+		"coastal_s1/B08/bath": {
+			"bounds": [
+				0.0,
+				0.0,
+				5.0,
+				4.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B08",
+			"kind": "interior",
+			"label": "B08 · bath"
+		},
+		"coastal_s1/B08/changing": {
+			"bounds": [
+				0.0,
+				0.0,
+				5.0,
+				7.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B08",
+			"kind": "interior",
+			"label": "B08 · changing"
+		},
+		"coastal_s1/B08/court": {
+			"bounds": [
+				0.0,
+				0.0,
+				5.0,
+				11.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B08",
+			"kind": "interior",
+			"label": "B08 · court"
+		},
+		"coastal_s1/B08/entry_side": {
+			"bounds": [
+				0.0,
+				0.0,
+				5.0,
+				5.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B08",
+			"kind": "interior",
+			"label": "B08 · changing"
+		},
+		"coastal_s1/B08/plant": {
+			"bounds": [
+				0.0,
+				0.0,
+				5.0,
+				11.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B08",
+			"kind": "interior",
+			"label": "B08 · plant"
+		},
+		"coastal_s1/B08/plant_side": {
+			"bounds": [
+				0.0,
+				0.0,
+				5.0,
+				5.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B08",
+			"kind": "interior",
+			"label": "B08 · plant"
+		},
+		"coastal_s1/B08/threshold": {
+			"bounds": [
+				0.0,
+				0.0,
+				5.0,
+				5.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B08",
+			"kind": "interior",
+			"label": "B08 · threshold"
+		},
+		"coastal_s1/B09": {
+			"bounds": [
+				0.0,
+				0.0,
+				14.0,
+				13.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"kind": "interior",
+			"label": "B09 access domain"
+		},
+		"coastal_s1/B09/desk": {
+			"bounds": [
+				0.0,
+				0.0,
+				5.0,
+				13.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B09",
+			"kind": "interior",
+			"label": "B09 · desk"
+		},
+		"coastal_s1/B09/repair_bay": {
+			"bounds": [
+				0.0,
+				0.0,
+				6.0,
+				13.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B09",
+			"kind": "interior",
+			"label": "B09 · repair_bay"
+		},
+		"coastal_s1/B09/storage": {
+			"bounds": [
+				0.0,
+				0.0,
+				3.0,
+				13.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B09",
+			"kind": "interior",
+			"label": "B09 · storage"
+		},
+		"coastal_s1/B10": {
+			"bounds": [
+				0.0,
+				0.0,
+				13.0,
+				16.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"kind": "interior",
+			"label": "B10 access domain"
+		},
+		"coastal_s1/B10/receiving": {
+			"bounds": [
+				0.0,
+				0.0,
+				13.0,
+				6.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B10",
+			"kind": "interior",
+			"label": "B10 · receiving"
+		},
+		"coastal_s1/B10/storage": {
+			"bounds": [
+				0.0,
+				0.0,
+				13.0,
+				10.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B10",
+			"kind": "interior",
+			"label": "B10 · storage"
+		},
+		"coastal_s1/B11": {
+			"bounds": [
+				0.0,
+				0.0,
+				9.0,
+				5.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"kind": "interior",
+			"label": "B11 access domain"
+		},
+		"coastal_s1/B11/counter": {
+			"bounds": [
+				0.0,
+				0.0,
+				5.0,
+				5.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B11",
+			"kind": "interior",
+			"label": "B11 · counter"
+		},
+		"coastal_s1/B11/secure_store": {
+			"bounds": [
+				0.0,
+				0.0,
+				4.0,
+				5.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B11",
+			"kind": "interior",
+			"label": "B11 · secure_store"
+		},
+		"coastal_s1/B12": {
+			"bounds": [
+				0.0,
+				0.0,
+				10.0,
+				12.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"kind": "interior",
+			"label": "B12 access domain"
+		},
+		"coastal_s1/B12/open_shared": {
+			"bounds": [
+				0.0,
+				0.0,
+				10.0,
+				12.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B12",
+			"kind": "interior",
+			"label": "B12 · open_shared"
+		},
+		"coastal_s1/B13": {
+			"bounds": [
+				0.0,
+				0.0,
+				10.0,
+				12.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"kind": "interior",
+			"label": "B13 access domain"
+		},
+		"coastal_s1/B13/common": {
+			"bounds": [
+				0.0,
+				0.0,
+				10.0,
+				7.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B13",
+			"kind": "interior",
+			"label": "B13 · common"
+		},
+		"coastal_s1/B13/meeting": {
+			"bounds": [
+				0.0,
+				0.0,
+				7.0,
+				5.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B13",
+			"kind": "interior",
+			"label": "B13 · meeting"
+		},
+		"coastal_s1/B13/storage": {
+			"bounds": [
+				0.0,
+				0.0,
+				3.0,
+				5.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B13",
+			"kind": "interior",
+			"label": "B13 · storage"
+		},
+		"coastal_s1/B14": {
+			"bounds": [
+				0.0,
+				0.0,
+				10.0,
+				5.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"kind": "interior",
+			"label": "B14 access domain"
+		},
+		"coastal_s1/B14/market_apron": {
+			"bounds": [
+				0.0,
+				0.0,
+				10.0,
+				5.0
+			],
+			"default_floor": "ground",
+			"floors": [
+				"ground"
+			],
+			"home_space": "coastal_s1/B14",
+			"kind": "interior",
+			"label": "B14 · market_apron"
+		},
+		"creperie": {
+			"_facility": true,
+			"bounds": [
+				0.0,
+				0.0,
+				8.0,
+				6.0
+			],
+			"default_floor": "1f",
+			"floors": [
+				"1f"
+			],
+			"kind": "interior",
+			"label": "可丽饼店",
+			"public_venue": true
+		},
+		"halles": {
+			"_facility": true,
+			"bounds": [
+				0.0,
+				0.0,
+				10.0,
+				7.0
+			],
+			"default_floor": "1f",
+			"floors": [
+				"1f"
+			],
+			"kind": "interior",
+			"label": "室内市场",
+			"public_venue": true
+		},
+		"home": {
+			"_gen": true,
+			"bounds": [
+				0.0,
+				0.0,
+				12.0,
+				9.0
+			],
+			"default_floor": "1f",
+			"floors": [
+				"1f"
+			],
+			"kind": "interior",
+			"label": "住宅区"
+		},
+		"home2": {
+			"_gen": true,
+			"bounds": [
+				0.0,
+				0.0,
+				9.0,
+				7.0
+			],
+			"default_floor": "1f",
+			"floors": [
+				"1f"
+			],
+			"kind": "interior",
+			"label": "民居"
+		},
+		"hotel": {
+			"_facility": true,
+			"bounds": [
+				0.0,
+				0.0,
+				10.0,
+				7.0
+			],
+			"default_floor": "1f",
+			"floors": [
+				"1f"
+			],
+			"kind": "interior",
+			"label": "海滨大酒店",
+			"public_venue": true
+		},
+		"library": {
+			"_gen": true,
+			"bounds": [
+				0.0,
+				0.0,
+				9.0,
+				7.0
+			],
+			"default_floor": "1f",
+			"floors": [
+				"1f"
+			],
+			"kind": "interior",
+			"label": "图书馆",
+			"public_venue": true
+		},
+		"mairie": {
+			"_facility": true,
+			"bounds": [
+				0.0,
+				0.0,
+				10.0,
+				7.0
+			],
+			"default_floor": "1f",
+			"floors": [
+				"1f"
+			],
+			"kind": "interior",
+			"label": "镇公所",
+			"public_venue": true
+		},
+		"port_warehouse": {
+			"_why": "P1-i East Ocean 玩家纵切：东港门口可进入的真实货仓。首片只承载玩家导航、库存/待卸货可视化与往返，不给 NPC 新增 advertises，避免把展示空间误当经济候选源。",
+			"bounds": [
+				0.0,
+				0.0,
+				9.0,
+				6.0
+			],
+			"default_floor": "1f",
+			"floors": [
+				"1f"
+			],
+			"kind": "interior",
+			"label": "东海货仓"
+		},
+		"shop": {
+			"_gen": true,
+			"bounds": [
+				0.0,
+				0.0,
+				9.0,
+				7.0
+			],
+			"default_floor": "1f",
+			"floors": [
+				"1f"
+			],
+			"kind": "interior",
+			"label": "杂货铺"
+		},
+		"test_loft": {
+			"_why": "P1 Gate 用的最小测试 Space：只为验证『Probe 能切 Space/Floor + 返回栈 + 校验器』，不含内容、不参与 Sim。P3 的真建筑（阿丽咖啡馆 1F/2F）按同一合同长出来。",
+			"bounds": [
+				0.0,
+				0.0,
+				6.0,
+				5.0
+			],
+			"default_floor": "1f",
+			"floors": [
+				"1f",
+				"2f"
+			],
+			"kind": "interior",
+			"label": "测试阁楼"
+		},
+		"town": {
+			"bounds": [
+				0.0,
+				0.0,
+				64.0,
+				48.0
+			],
+			"default_floor": "outdoor",
+			"floors": [
+				"outdoor"
+			],
+			"kind": "outdoor",
+			"label": "小镇"
+		},
+		"wash": {
+			"_gen": true,
+			"bounds": [
+				0.0,
+				0.0,
+				11.0,
+				8.0
+			],
+			"default_floor": "1f",
+			"floors": [
+				"1f"
+			],
+			"kind": "interior",
+			"label": "澡堂",
+			"public_venue": true
+		},
+		"work": {
+			"_gen": true,
+			"bounds": [
+				0.0,
+				0.0,
+				10.0,
+				7.0
+			],
+			"default_floor": "1f",
+			"floors": [
+				"1f"
+			],
+			"kind": "interior",
+			"label": "工坊"
+		}
+	}
+}

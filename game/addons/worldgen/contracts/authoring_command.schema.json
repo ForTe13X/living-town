@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://living-town.invalid/worldgen/authoring_command.schema.json",
+  "title": "worldgen.authoring_command/1",
+  "oneOf": [
+    {"$ref": "#/$defs/inspect"},
+    {"$ref": "#/$defs/validate"},
+    {"$ref": "#/$defs/propose"},
+    {"$ref": "#/$defs/repair"},
+    {"$ref": "#/$defs/publish_request"}
+  ],
+  "$defs": {
+    "common": {
+      "type": "object",
+      "properties": {
+        "schema": {"const": "worldgen.authoring_command/1"},
+        "request_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$"},
+        "command": {"type": "string"}
+      },
+      "required": ["schema", "request_id", "command"]
+    },
+    "world_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$"},
+    "digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "value"],
+      "properties": {
+        "path": {"type": "string", "pattern": "^stages/[A-Za-z0-9][A-Za-z0-9_.-]{0,63}/parameters/[A-Za-z0-9_]{1,64}$"},
+        "value": {}
+      }
+    },
+    "repair_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "scope_id", "base_revision", "extent", "boundary", "placements", "dirty_ids", "candidate_assignments", "operation_budget"],
+      "properties": {
+        "schema": {"const": "worldgen.local_repair_request/1"},
+        "scope_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$"},
+        "base_revision": {"type": "integer", "minimum": 0},
+        "extent": {"$ref": "#/$defs/rect"},
+        "boundary": {"$ref": "#/$defs/rect"},
+        "boundary_interfaces": {"type": "object"},
+        "placements": {"type": "array", "maxItems": 4096, "items": {"$ref": "#/$defs/placement"}},
+        "dirty_ids": {"type": "array", "minItems": 1, "maxItems": 256, "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$"}},
+        "hard_pins": {"type": "array", "maxItems": 4096, "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$"}},
+        "protected_ids": {"type": "array", "maxItems": 4096, "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$"}},
+        "candidate_assignments": {"type": "object", "maxProperties": 256, "additionalProperties": {"type": "array", "maxItems": 256, "items": {"$ref": "#/$defs/rect"}}},
+        "operation_budget": {"type": "integer", "minimum": 1, "maximum": 250000}
+      }
+    },
+    "rect": {"type": "array", "prefixItems": [{"type": "integer"}, {"type": "integer"}, {"type": "integer", "minimum": 1}, {"type": "integer", "minimum": 1}], "minItems": 4, "maxItems": 4},
+    "placement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "box"],
+      "properties": {"id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$"}, "box": {"$ref": "#/$defs/rect"}}
+    },
+    "inspect": {
+      "allOf": [{"$ref": "#/$defs/common"}, {"type": "object", "additionalProperties": false, "required": ["world_id"], "properties": {"schema": {"const": "worldgen.authoring_command/1"}, "request_id": {"$ref": "#/$defs/common/properties/request_id"}, "command": {"const": "inspect"}, "world_id": {"$ref": "#/$defs/world_id"}}}]
+    },
+    "validate": {
+      "allOf": [{"$ref": "#/$defs/common"}, {"type": "object", "additionalProperties": false, "required": ["candidate_sha256"], "properties": {"schema": {"const": "worldgen.authoring_command/1"}, "request_id": {"$ref": "#/$defs/common/properties/request_id"}, "command": {"const": "validate"}, "candidate_sha256": {"$ref": "#/$defs/digest"}}}]
+    },
+    "propose": {
+      "allOf": [{"$ref": "#/$defs/common"}, {"type": "object", "additionalProperties": false, "required": ["world_id", "base_recipe_sha256", "base_package_sha256", "base_revision", "patch_id", "declared_class", "changes"], "properties": {"schema": {"const": "worldgen.authoring_command/1"}, "request_id": {"$ref": "#/$defs/common/properties/request_id"}, "command": {"const": "propose"}, "world_id": {"$ref": "#/$defs/world_id"}, "base_recipe_sha256": {"$ref": "#/$defs/digest"}, "base_package_sha256": {"$ref": "#/$defs/digest"}, "base_revision": {"type": "integer", "minimum": 0}, "patch_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$"}, "declared_class": {"enum": ["visual", "semantic"]}, "changes": {"type": "array", "minItems": 1, "maxItems": 64, "items": {"$ref": "#/$defs/change"}}}}]
+    },
+    "repair": {
+      "allOf": [{"$ref": "#/$defs/common"}, {"type": "object", "additionalProperties": false, "required": ["repair_request"], "properties": {"schema": {"const": "worldgen.authoring_command/1"}, "request_id": {"$ref": "#/$defs/common/properties/request_id"}, "command": {"const": "repair"}, "repair_request": {"$ref": "#/$defs/repair_request"}}}]
+    },
+    "publish_request": {
+      "allOf": [{"$ref": "#/$defs/common"}, {"type": "object", "additionalProperties": false, "required": ["world_id", "candidate_sha256", "expected_revision"], "properties": {"schema": {"const": "worldgen.authoring_command/1"}, "request_id": {"$ref": "#/$defs/common/properties/request_id"}, "command": {"const": "publish-request"}, "world_id": {"$ref": "#/$defs/world_id"}, "candidate_sha256": {"$ref": "#/$defs/digest"}, "expected_revision": {"type": "integer", "minimum": 0}}}]
+    }
+  }
+}
