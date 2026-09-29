@@ -197,6 +197,36 @@
       0
      ]
     }
+   ],
+   "rooms": [
+    {
+     "label": "Coffee bar",
+     "rect": [
+      1,
+      1,
+      6,
+      2
+     ],
+     "tone": "#b69266"
+    },
+    {
+     "label": "Window salon",
+     "rect": [
+      1,
+      3,
+      5,
+      2
+     ],
+     "tone": "#9eac82"
+    }
+   ],
+   "cutouts": [
+    [
+     6,
+     4,
+     2,
+     2
+    ]
    ]
   },
   "2f": {
@@ -297,8 +327,47 @@
       5,
       0
      ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      4,
+      2
+     ],
+     "neighborhood_partition": true
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      4,
+      4
+     ],
+     "neighborhood_partition": true
     }
-   ]
+   ],
+   "rooms": [
+    {
+     "label": "Bedroom",
+     "rect": [
+      1,
+      1,
+      3,
+      4
+     ],
+     "tone": "#ada082"
+    },
+    {
+     "label": "Study",
+     "rect": [
+      5,
+      1,
+      2,
+      4
+     ],
+     "tone": "#87a5a0"
+    }
+   ],
+   "cutouts": []
   }
  },
  "home": {
@@ -480,6 +549,7 @@
     },
     {
      "slot": "dining",
+     "art": "large_dining_table",
      "pos": [
       8,
       7
@@ -554,8 +624,91 @@
       6,
       7
      ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      1,
+      4
+     ],
+     "neighborhood_partition": true
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      2,
+      4
+     ],
+     "neighborhood_partition": true
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      4,
+      4
+     ],
+     "neighborhood_partition": true
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      5,
+      4
+     ],
+     "neighborhood_partition": true
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      6,
+      4
+     ],
+     "neighborhood_partition": true
     }
-   ]
+   ],
+   "rooms": [
+    {
+     "label": "Sleeping wing",
+     "rect": [
+      1,
+      1,
+      6,
+      3
+     ],
+     "tone": "#a3a78b"
+    },
+    {
+     "label": "Living room",
+     "rect": [
+      1,
+      4,
+      6,
+      4
+     ],
+     "tone": "#c5a27f"
+    },
+    {
+     "label": "Kitchen",
+     "rect": [
+      8,
+      5,
+      3,
+      3
+     ],
+     "tone": "#b9b29a"
+    },
+    {
+     "label": "Bathroom",
+     "rect": [
+      8,
+      1,
+      3,
+      3
+     ],
+     "tone": "#83a5ab"
+    }
+   ],
+   "cutouts": []
   }
  },
  "wash": {
@@ -636,7 +789,7 @@
     {
      "slot": "plant",
      "pos": [
-      1,
+      3,
       6
      ]
     },
@@ -735,7 +888,87 @@
       9,
       6
      ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      3,
+      2
+     ],
+     "neighborhood_partition": true
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      3,
+      4
+     ],
+     "neighborhood_partition": true
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      3,
+      5
+     ],
+     "neighborhood_partition": true
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      7,
+      3
+     ],
+     "neighborhood_partition": true
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      7,
+      5
+     ],
+     "neighborhood_partition": true
     }
+   ],
+   "rooms": [
+    {
+     "label": "Bathing gallery",
+     "rect": [
+      1,
+      1,
+      3,
+      5
+     ],
+     "tone": "#7caeb0"
+    },
+    {
+     "label": "Changing hall",
+     "rect": [
+      4,
+      1,
+      3,
+      6
+     ],
+     "tone": "#bbb397"
+    },
+    {
+     "label": "Private washrooms",
+     "rect": [
+      8,
+      2,
+      2,
+      4
+     ],
+     "tone": "#7caeb0"
+    }
+   ],
+   "cutouts": [
+    [
+     0,
+     6,
+     3,
+     2
+    ]
    ]
   }
  },
@@ -801,16 +1034,116 @@
      "slot": "plant",
      "pos": [
       8,
-      5
+      3
      ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      6,
+      1
+     ],
+     "neighborhood_partition": true
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      6,
+      2
+     ],
+     "neighborhood_partition": true
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      6,
+      4
+     ],
+     "neighborhood_partition": true
     }
+   ],
+   "rooms": [
+    {
+     "label": "Craft hall",
+     "rect": [
+      1,
+      1,
+      5,
+      5
+     ],
+     "tone": "#b8a087"
+    },
+    {
+     "label": "Tool store",
+     "rect": [
+      7,
+      1,
+      2,
+      3
+     ],
+     "tone": "#8b9c9c"
+    }
+   ],
+   "cutouts": [
+    [
+     7,
+     4,
+     3,
+     3
+    ]
    ]
   }
  },
  "home2": {
   "1f": {
-   "label": "一层",
+   "label": "一层 · 会客、餐厨与旅店布草间",
    "floor": "wood",
+   "rooms": [
+    {
+     "id": "salon",
+     "label": "会客厅 · 旅店账房",
+     "rect": [
+      1,
+      1,
+      4,
+      6
+     ],
+     "tone": "#9d7664"
+    },
+    {
+     "id": "kitchen",
+     "label": "厨房 · 餐厅",
+     "rect": [
+      6,
+      1,
+      4,
+      3
+     ],
+     "tone": "#6f8d89"
+    },
+    {
+     "id": "atelier",
+     "label": "可可的旅店布草间",
+     "rect": [
+      6,
+      4,
+      4,
+      3
+     ],
+     "tone": "#8c7181"
+    },
+    {
+     "id": "hall",
+     "label": "门厅",
+     "rect": [
+      5,
+      1,
+      1,
+      6
+     ],
+     "tone": "#a48667"
+    }
+   ],
    "furniture": [
     {
      "slot": "window",
@@ -822,21 +1155,361 @@
     {
      "slot": "painting_sea",
      "pos": [
-      4,
+      7,
       0
      ]
     },
     {
-     "slot": "bed_double",
+     "slot": "window",
+     "pos": [
+      9,
+      0
+     ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      5,
+      1
+     ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      5,
+      2
+     ]
+    },
+    {
+     "slot": "archway",
+     "art": "room_archway",
+     "art_scale": 0.62,
+     "pos": [
+      5,
+      3
+     ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      5,
+      4
+     ]
+    },
+    {
+     "slot": "doorway",
+     "art": "room_doorway",
+     "art_scale": 0.62,
+     "pos": [
+      5,
+      5
+     ]
+    },
+    {
+     "slot": "archway",
+     "art": "room_archway",
+     "art_scale": 0.62,
+     "pos": [
+      5,
+      6
+     ]
+    },
+    {
+     "slot": "bookshelf",
+     "art": "coco_hotel_library",
+     "art_scale": 1.08,
      "pos": [
       1,
+      3
+     ],
+     "size": [
+      3,
+      2
+     ]
+    },
+    {
+     "slot": "sofa",
+     "art": "large_sofa_group",
+     "pos": [
+      1,
+      6
+     ],
+     "size": [
+      2,
+      1
+     ],
+     "label": "沙发",
+     "advertises": [
+      {
+       "action": "歇着",
+       "need": "fun",
+       "amount": 28,
+       "duration": 18
+      }
+     ]
+    },
+    {
+     "slot": "lamp",
+     "pos": [
+      1,
+      4
+     ]
+    },
+    {
+     "slot": "dresser",
+     "pos": [
+      4,
+      5
+     ]
+    },
+    {
+     "slot": "rug",
+     "pos": [
+      3,
+      6
+     ]
+    },
+    {
+     "slot": "stove",
+     "pos": [
+      6,
+      1
+     ]
+    },
+    {
+     "slot": "sink",
+     "pos": [
+      7,
+      1
+     ]
+    },
+    {
+     "slot": "shelf",
+     "pos": [
+      9,
+      1
+     ]
+    },
+    {
+     "slot": "dining",
+     "art": "large_dining_table",
+     "pos": [
+      7,
       2
      ],
      "size": [
       2,
       2
+     ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      6,
+      4
+     ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      7,
+      4
+     ]
+    },
+    {
+     "slot": "doorway",
+     "art": "room_doorway",
+     "art_scale": 0.62,
+     "pos": [
+      8,
+      4
+     ]
+    },
+    {
+     "slot": "doorway",
+     "art": "room_doorway",
+     "art_scale": 0.62,
+     "pos": [
+      9,
+      4
+     ]
+    },
+    {
+     "slot": "sewing",
+     "art": "coco_linen_atelier",
+     "art_scale": 1.08,
+     "pos": [
+      6,
+      6
      ],
-     "label": "床",
+     "size": [
+      2,
+      1
+     ]
+    },
+    {
+     "slot": "stairs",
+     "art": "residential_stairs",
+     "pos": [
+      9,
+      6
+     ],
+     "label": "上楼"
+    }
+   ]
+  },
+  "2f": {
+   "label": "二层 · 可可的卧室与客房",
+   "floor": "wood",
+   "rooms": [
+    {
+     "id": "guest_room",
+     "label": "客房 · 阅读间",
+     "rect": [
+      1,
+      1,
+      4,
+      6
+     ],
+     "tone": "#887394"
+    },
+    {
+     "id": "coco_room",
+     "label": "可可的卧室",
+     "rect": [
+      6,
+      1,
+      4,
+      3
+     ],
+     "tone": "#9b7182"
+    },
+    {
+     "id": "bathroom",
+     "label": "共用浴室",
+     "rect": [
+      6,
+      4,
+      2,
+      3
+     ],
+     "tone": "#6c91a0"
+    },
+    {
+     "id": "landing",
+     "label": "楼梯厅",
+     "rect": [
+      8,
+      4,
+      2,
+      3
+     ],
+     "tone": "#a48667"
+    }
+   ],
+   "furniture": [
+    {
+     "slot": "window",
+     "pos": [
+      2,
+      0
+     ]
+    },
+    {
+     "slot": "painting_parasol",
+     "pos": [
+      7,
+      0
+     ]
+    },
+    {
+     "slot": "window",
+     "pos": [
+      9,
+      0
+     ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      5,
+      1
+     ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      5,
+      2
+     ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      5,
+      3
+     ]
+    },
+    {
+     "slot": "doorway",
+     "art": "room_doorway",
+     "art_scale": 0.62,
+     "pos": [
+      5,
+      4
+     ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      5,
+      5
+     ]
+    },
+    {
+     "slot": "archway",
+     "art": "room_archway",
+     "art_scale": 0.62,
+     "pos": [
+      5,
+      6
+     ]
+    },
+    {
+     "slot": "bed",
+     "art": "coco_guest_bedroom",
+     "art_scale": 1.08,
+     "pos": [
+      1,
+      2
+     ],
+     "size": [
+      3,
+      2
+     ],
+     "label": "客房床",
+     "advertises": [
+      {
+       "action": "睡觉",
+       "need": "energy",
+       "amount": 62,
+       "duration": 40
+      }
+     ]
+    },
+    {
+     "slot": "bed",
+     "art": "coco_bedroom_suite",
+     "art_scale": 1.08,
+     "pos": [
+      6,
+      2
+     ],
+     "size": [
+      3,
+      2
+     ],
+     "label": "可可的床",
      "advertises": [
       {
        "action": "睡觉",
@@ -849,36 +1522,91 @@
     {
      "slot": "dresser",
      "pos": [
+      1,
+      5
+     ]
+    },
+    {
+     "slot": "desk",
+     "pos": [
       3,
+      5
+     ]
+    },
+    {
+     "slot": "wardrobe",
+     "pos": [
+      1,
+      6
+     ]
+    },
+    {
+     "slot": "armchair",
+     "pos": [
+      2,
+      6
+     ]
+    },
+    {
+     "slot": "rug",
+     "pos": [
+      3,
+      6
+     ]
+    },
+    {
+     "slot": "plant",
+     "pos": [
+      4,
       1
      ]
     },
     {
-     "slot": "wall",
+     "slot": "doorway",
+     "art": "room_doorway",
+     "art_scale": 0.62,
      "pos": [
-      5,
-      1
+      6,
+      4
+     ]
+    },
+    {
+     "slot": "doorway",
+     "art": "room_doorway",
+     "art_scale": 0.62,
+     "pos": [
+      7,
+      4
+     ]
+    },
+    {
+     "slot": "doorway",
+     "art": "room_doorway",
+     "art_scale": 0.62,
+     "pos": [
+      8,
+      4
      ]
     },
     {
      "slot": "wall",
      "pos": [
-      5,
-      2
+      9,
+      4
      ]
     },
     {
-     "slot": "wall",
+     "slot": "basin",
      "pos": [
-      5,
-      3
+      6,
+      5
      ]
     },
     {
      "slot": "toilet",
      "pos": [
-      7,
-      1
+      6,
+      6
      ],
      "label": "马桶",
      "advertises": [
@@ -891,61 +1619,30 @@
      ]
     },
     {
-     "slot": "basin",
+     "slot": "bathtub",
      "pos": [
       7,
-      2
-     ]
-    },
-    {
-     "slot": "lamp",
-     "pos": [
-      2,
-      3
-     ]
-    },
-    {
-     "slot": "stove",
-     "pos": [
-      1,
-      5
-     ]
-    },
-    {
-     "slot": "sink",
-     "pos": [
-      2,
-      5
-     ]
-    },
-    {
-     "slot": "bistro",
-     "pos": [
-      4,
-      3
-     ]
-    },
-    {
-     "slot": "armchair",
-     "pos": [
-      6,
-      5
+      6
      ],
-     "label": "扶手椅",
-     "advertises": [
-      {
-       "action": "歇着",
-       "need": "fun",
-       "amount": 28,
-       "duration": 18
-      }
+     "size": [
+      1,
+      1
      ]
     },
     {
-     "slot": "plant",
+     "slot": "stairs",
+     "art": "residential_landing",
      "pos": [
-      7,
-      5
+      9,
+      6
+     ],
+     "label": "下楼"
+    },
+    {
+     "slot": "rug",
+     "pos": [
+      8,
+      6
      ]
     }
    ]
@@ -972,6 +1669,7 @@
     },
     {
      "slot": "grocery",
+     "art": "large_market_display",
      "pos": [
       4,
       1
@@ -979,6 +1677,7 @@
     },
     {
      "slot": "grocery",
+     "art": "_none",
      "pos": [
       5,
       1
@@ -986,6 +1685,7 @@
     },
     {
      "slot": "grocery",
+     "art": "_none",
      "pos": [
       6,
       1
@@ -993,6 +1693,7 @@
     },
     {
      "slot": "grocery",
+     "art": "large_market_display",
      "pos": [
       7,
       1
@@ -1002,14 +1703,25 @@
      "slot": "sacks",
      "pos": [
       1,
-      4
+      5
      ]
     },
     {
      "slot": "crate",
      "pos": [
       2,
-      4
+      5
+     ]
+    },
+    {
+     "slot": "large_market_display",
+     "pos": [
+      3,
+      3
+     ],
+     "size": [
+      3,
+      2
      ]
     },
     {
@@ -1019,7 +1731,40 @@
       5
      ]
     }
-   ]
+   ],
+   "rooms": [
+    {
+     "label": "Produce aisle",
+     "rect": [
+      3,
+      1,
+      5,
+      4
+     ],
+     "tone": "#b0ae83"
+    },
+    {
+     "label": "Counter",
+     "rect": [
+      1,
+      1,
+      2,
+      2
+     ],
+     "tone": "#ad997b"
+    },
+    {
+     "label": "Stockroom",
+     "rect": [
+      1,
+      4,
+      2,
+      2
+     ],
+     "tone": "#949b8a"
+    }
+   ],
+   "cutouts": []
   }
  },
  "library": {
@@ -1036,13 +1781,15 @@
     },
     {
      "slot": "bookshelf",
+     "art": "_none",
      "pos": [
       1,
-      1
+      2
      ]
     },
     {
      "slot": "bookshelf",
+     "art": "large_library_wall",
      "pos": [
       2,
       1
@@ -1059,6 +1806,7 @@
     },
     {
      "slot": "bookshelf",
+     "art": "_none",
      "pos": [
       6,
       1
@@ -1066,9 +1814,10 @@
     },
     {
      "slot": "bookshelf",
+     "art": "large_library_wall",
      "pos": [
       7,
-      1
+      2
      ]
     },
     {
@@ -1112,7 +1861,69 @@
       7,
       5
      ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      3,
+      3
+     ],
+     "neighborhood_partition": true
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      5,
+      3
+     ],
+     "neighborhood_partition": true
     }
+   ],
+   "rooms": [
+    {
+     "label": "Reading rotunda",
+     "rect": [
+      2,
+      1,
+      5,
+      4
+     ],
+     "tone": "#86a7b1"
+    },
+    {
+     "label": "West stacks",
+     "rect": [
+      1,
+      2,
+      2,
+      3
+     ],
+     "tone": "#af926a"
+    },
+    {
+     "label": "Quiet wing",
+     "rect": [
+      6,
+      2,
+      2,
+      3
+     ],
+     "tone": "#af926a"
+    }
+   ],
+   "cutouts": [
+    [
+     0,
+     0,
+     2,
+     2
+    ],
+    [
+     7,
+     0,
+     2,
+     2
+    ]
    ]
   }
  },
@@ -1569,41 +2380,96 @@
     {
      "slot": "window",
      "pos": [
-      2,
+      3,
       0
      ]
     },
     {
      "slot": "window",
      "pos": [
-      7,
+      12,
       0
      ]
     },
     {
      "slot": "grocery",
      "pos": [
-      4,
+      6,
       1
      ]
     },
     {
      "slot": "grocery",
      "pos": [
-      5,
+      7,
       1
      ]
     },
     {
-     "slot": "market_stall",
+     "slot": "grocery",
      "pos": [
-      1,
+      8,
+      1
+     ]
+    },
+    {
+     "slot": "grocery",
+     "pos": [
+      9,
+      1
+     ]
+    },
+    {
+     "slot": "bank_counter",
+     "pos": [
+      7,
       2
      ],
      "size": [
       2,
       1
      ],
+     "label": "潮汐合作银行",
+     "bank_counter": true
+    },
+    {
+     "slot": "rug",
+     "pos": [
+      7,
+      3
+     ],
+     "size": [
+      2,
+      2
+     ]
+    },
+    {
+     "slot": "bank_chair",
+     "pos": [
+      6,
+      4
+     ],
+     "facing": "north"
+    },
+    {
+     "slot": "bank_chair",
+     "pos": [
+      9,
+      4
+     ],
+     "facing": "north"
+    },
+    {
+     "slot": "market_stall",
+     "pos": [
+      2,
+      3
+     ],
+     "size": [
+      2,
+      1
+     ],
+     "facing": "south",
      "label": "理发椅",
      "advertises": [
       {
@@ -1617,13 +2483,14 @@
     {
      "slot": "market_stall",
      "pos": [
-      7,
-      2
+      12,
+      3
      ],
      "size": [
       2,
       1
      ],
+     "facing": "south",
      "label": "货架",
      "advertises": [
       {
@@ -1637,13 +2504,14 @@
     {
      "slot": "market_stall",
      "pos": [
-      1,
-      4
+      2,
+      7
      ],
      "size": [
       2,
       1
      ],
+     "facing": "north",
      "label": "剃刀台",
      "advertises": [
       {
@@ -1658,13 +2526,14 @@
     {
      "slot": "market_stall",
      "pos": [
-      7,
-      4
+      12,
+      7
      ],
      "size": [
       2,
       1
      ],
+     "facing": "north",
      "label": "柜台",
      "advertises": [
       {
@@ -1677,17 +2546,139 @@
      ]
     },
     {
-     "slot": "sacks",
+     "slot": "public_fountain",
+     "pos": [
+      7,
+      5
+     ],
+     "size": [
+      2,
+      2
+     ]
+    },
+    {
+     "slot": "rug",
+     "pos": [
+      7,
+      9
+     ],
+     "size": [
+      2,
+      2
+     ]
+    },
+    {
+     "slot": "bank_chair",
+     "pos": [
+      6,
+      8
+     ],
+     "facing": "north"
+    },
+    {
+     "slot": "bank_chair",
+     "pos": [
+      9,
+      8
+     ],
+     "facing": "north"
+    },
+    {
+     "slot": "bistro",
+     "pos": [
+      6,
+      7
+     ]
+    },
+    {
+     "slot": "bistro",
+     "pos": [
+      9,
+      7
+     ]
+    },
+    {
+     "slot": "public_planter",
+     "pos": [
+      4,
+      2
+     ]
+    },
+    {
+     "slot": "public_planter",
+     "pos": [
+      11,
+      2
+     ]
+    },
+    {
+     "slot": "public_planter",
+     "pos": [
+      4,
+      8
+     ]
+    },
+    {
+     "slot": "public_planter",
+     "pos": [
+      11,
+      8
+     ]
+    },
+    {
+     "slot": "public_lantern",
+     "pos": [
+      5,
+      3
+     ]
+    },
+    {
+     "slot": "public_lantern",
+     "pos": [
+      10,
+      3
+     ]
+    },
+    {
+     "slot": "public_lantern",
+     "pos": [
+      5,
+      8
+     ]
+    },
+    {
+     "slot": "public_lantern",
+     "pos": [
+      10,
+      8
+     ]
+    },
+    {
+     "slot": "market_parcel",
      "pos": [
       1,
       5
      ]
     },
     {
-     "slot": "crate",
+     "slot": "market_parcel",
      "pos": [
-      8,
+      14,
       5
+     ]
+    },
+    {
+     "slot": "market_basket",
+     "pos": [
+      2,
+      10
+     ]
+    },
+    {
+     "slot": "market_basket",
+     "pos": [
+      13,
+      10
      ]
     }
    ]
@@ -1775,6 +2766,7 @@
     },
     {
      "slot": "sofa",
+     "art": "large_sofa_group",
      "pos": [
       1,
       4
@@ -1893,6 +2885,201 @@
        "duration": 20
       }
      ]
+    },
+    {
+     "slot": "stairs",
+     "pos": [
+      9,
+      5
+     ],
+     "label": "客房层"
+    }
+   ]
+  },
+  "2f": {
+   "label": "二层 · 客房",
+   "floor": "wood",
+   "furniture": [
+    {
+     "slot": "window",
+     "pos": [
+      1,
+      0
+     ]
+    },
+    {
+     "slot": "window",
+     "pos": [
+      4,
+      0
+     ]
+    },
+    {
+     "slot": "window",
+     "pos": [
+      7,
+      0
+     ]
+    },
+    {
+     "slot": "bed",
+     "pos": [
+      1,
+      1
+     ],
+     "size": [
+      1,
+      2
+     ],
+     "label": "海景客床"
+    },
+    {
+     "slot": "dresser",
+     "pos": [
+      2,
+      1
+     ]
+    },
+    {
+     "slot": "bed",
+     "pos": [
+      4,
+      1
+     ],
+     "size": [
+      1,
+      2
+     ],
+     "label": "海景客床"
+    },
+    {
+     "slot": "dresser",
+     "pos": [
+      5,
+      1
+     ]
+    },
+    {
+     "slot": "bed",
+     "pos": [
+      7,
+      1
+     ],
+     "size": [
+      1,
+      2
+     ],
+     "label": "海景客床"
+    },
+    {
+     "slot": "dresser",
+     "pos": [
+      8,
+      1
+     ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      3,
+      1
+     ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      3,
+      2
+     ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      6,
+      1
+     ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      6,
+      2
+     ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      1,
+      3
+     ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      3,
+      3
+     ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      4,
+      3
+     ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      6,
+      3
+     ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      7,
+      3
+     ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      9,
+      3
+     ]
+    },
+    {
+     "slot": "rug",
+     "pos": [
+      3,
+      4
+     ],
+     "size": [
+      3,
+      1
+     ]
+    },
+    {
+     "slot": "armchair",
+     "pos": [
+      2,
+      5
+     ]
+    },
+    {
+     "slot": "plant",
+     "pos": [
+      6,
+      5
+     ]
+    },
+    {
+     "slot": "stairs",
+     "pos": [
+      9,
+      5
+     ],
+     "label": "回大堂"
     }
    ]
   }
@@ -1924,6 +3111,15 @@
        "duration": 10
       }
      ]
+    },
+    {
+     "slot": "civic_board",
+     "pos": [
+      5,
+      0
+     ],
+     "label": "镇务公示板",
+     "civic_observatory": true
     },
     {
      "slot": "window",
@@ -1964,7 +3160,44 @@
       8,
       1
      ],
-     "label": "镇长桌"
+     "label": "镇长桌",
+     "advertises": [
+      {
+       "action": "办公",
+       "need": "fun",
+       "amount": 18,
+       "duration": 8,
+       "mayor_duty": true
+      }
+     ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      1,
+      2
+     ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      2,
+      2
+     ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      4,
+      1
+     ]
+    },
+    {
+     "slot": "wall",
+     "pos": [
+      4,
+      2
+     ]
     },
     {
      "slot": "pew",

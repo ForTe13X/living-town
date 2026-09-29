@@ -104,6 +104,15 @@ func _ready() -> void:
 	Sim.running = false
 	Sim.backend = null
 
+	# P4c-7：公示卡是可读 HUD，不是第二套治理状态；打开暂停，关闭精确恢复。
+	Sim.running = true
+	_main._open_civic_panel()
+	_ck("镇务公示卡打开即暂停且有首届提示", _main._civic_panel.visible and not Sim.running \
+		and _main._civic_body.text.find("第 28 天") >= 0 and _main._civic_duty_fill.size.x == 0.0)
+	_main._close_civic_panel()
+	_ck("镇务公示卡收起恢复原运行态", not _main._civic_panel.visible and Sim.running)
+	Sim.running = false
+
 	# ── 0) 默认关：digest 零扰动 + 动作条不可见 ──
 	_ck("默认不入玩家模式", not _main._player_mode and Sim.get_agent("player").is_empty(),
 		"agents=%d" % Sim.agents.size())
@@ -118,6 +127,21 @@ func _ready() -> void:
 	_ck("开关 → 玩家入镇", _main._player_mode and not Sim.get_agent("player").is_empty(),
 		"agents=%d btn='%s'" % [Sim.agents.size(), _main._player_btn.text])
 	_ck("开关 → 动作条现身", _main._act_pan.visible and _main._act_btns[0].visible)
+	# P5a：银行卡三枚按钮走 canonical Sim transfer paths；开合沿用阅读卡的暂停契约。
+	Sim.running = true; _main._open_bank_panel()
+	_ck("合作银行卡打开即暂停且显示足额准备金", _main._bank_panel.visible and not Sim.running \
+		and _main._bank_body.text.find("现金准备金") >= 0 and _main._bank_body.text.find("可贷合作资本") >= 0)
+	var wallet0 := Sim._coin_of("player")
+	_main._bank_deposit_one()
+	_ck("银行存入按钮走真实账户", Sim._coin_of("player") == wallet0 - 1 and int(Sim.bank_deposits.get("player", 0)) == 1)
+	_main._bank_withdraw_one()
+	_ck("银行取出按钮精确回转", Sim._coin_of("player") == wallet0 and int(Sim.bank_deposits.get("player", 0)) == 0)
+	_main._bank_request_player_loan()
+	_ck("创业金按钮产生一笔受限贷款", int((Sim.bank_loans.get("player", {}) as Dictionary).get("outstanding", 0)) == 6 \
+		and _main._bank_body.text.find("待还创业金") >= 0)
+	_main._close_bank_panel()
+	_ck("合作银行卡收起恢复原运行态", not _main._bank_panel.visible and Sim.running)
+	Sim.running = false
 
 	# ── 2) A/B/C 三层：逐动词 ──
 	var digests := {}

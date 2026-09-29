@@ -1,0 +1,87 @@
+{
+  "chapters": [
+    {
+      "frame": 0,
+      "seconds": 0.0,
+      "title": "01 / SCRIPTED PLAY · Ben · movement and character-follow camera"
+    },
+    {
+      "frame": 57,
+      "seconds": 5.7,
+      "title": "02 / PLAY · market street → cafe · legal entrance and interaction menu"
+    },
+    {
+      "frame": 148,
+      "seconds": 14.8,
+      "title": "03 / PLAY · terrace passage → residence · public staircase"
+    },
+    {
+      "frame": 325,
+      "seconds": 32.5,
+      "title": "04 / PLAY · relationships and personal needs"
+    },
+    {
+      "frame": 360,
+      "seconds": 36.0,
+      "title": "05 / OBSERVER INSPECTION · library · room layout and furniture"
+    },
+    {
+      "frame": 390,
+      "seconds": 39.0,
+      "title": "05 / OBSERVER INSPECTION · wash · room layout and furniture"
+    },
+    {
+      "frame": 420,
+      "seconds": 42.0,
+      "title": "05 / OBSERVER INSPECTION · work · room layout and furniture"
+    },
+    {
+      "frame": 450,
+      "seconds": 45.0,
+      "title": "05 / OBSERVER INSPECTION · hotel · room layout and furniture"
+    },
+    {
+      "frame": 480,
+      "seconds": 48.0,
+      "title": "05 / OBSERVER INSPECTION · port_warehouse · room layout and furniture"
+    },
+    {
+      "frame": 510,
+      "seconds": 51.0,
+      "title": "05 / OBSERVER INSPECTION · mairie · room layout and furniture"
+    },
+    {
+      "frame": 540,
+      "seconds": 54.0,
+      "title": "06 / OBSERVER · civic policies and impact receipts"
+    },
+    {
+      "frame": 585,
+      "seconds": 58.5,
+      "title": "07 / OBSERVER · cooperative bank and impact receipts"
+    },
+    {
+      "frame": 630,
+      "seconds": 63.0,
+      "title": "08 / OBSERVER · persistent story and transaction ledger"
+    },
+    {
+      "frame": 690,
+      "seconds": 69.0,
+      "title": "09 / OBSERVER · garden belts and street-facing terraces"
+    },
+    {
+      "frame": 730,
+      "seconds": 73.0,
+      "title": "09 / OBSERVER · coastal promenade"
+    },
+    {
+      "frame": 770,
+      "seconds": 77.0,
+      "title": "09 / OBSERVER · town overview"
+    }
+  ],
+  "failures": 0,
+  "fps": 10,
+  "frames": 810
+}

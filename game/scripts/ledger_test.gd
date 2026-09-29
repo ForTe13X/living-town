@@ -71,6 +71,10 @@ func _run(seed: int, n: int, days: int, deep: bool) -> void:
 	ck(not full.verify(S).is_empty(), "%s LN① 直接改 %s 的 coin ⇒ 核对变红" % [tag, String(victim["id"])])
 	victim["inventory"]["coin"] = int(victim["inventory"]["coin"]) - 1
 	ck(full.verify(S).is_empty(), "%s LN① 改回后核对复绿" % tag)
+	S.bank_coin += 1
+	ck(not full.verify(S).is_empty(), "%s bank cash changed outside transfer is detected" % tag)
+	S.bank_coin -= 1
+	ck(full.verify(S).is_empty(), "%s restored bank cash reconciles" % tag)
 	# LN ② 抹掉一条 amt ⇒ 红（在副本上做，不碰 S.event_log）
 	var log2: Array = S.event_log.duplicate(true)
 	for e in log2:

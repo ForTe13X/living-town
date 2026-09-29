@@ -71,8 +71,9 @@ const LIVENESS_GATED := {
 	"greet": 20, "give": 20, "gossip": 20, "gossip_rep": 20, "discuss": 20,
 	"conflict": 20, "confront": 20, "apologize": 20, "endorse": 20, "rally_oust": 20,
 	"pay": 20, "election": 20, "festival_spawn": 20,
+	"bank_deposit": 20,
 	"invite": 30, "meet": 30,
-	"confide": 60,
+	"confide": 60, "civic_duty": 60, "mayor_review": 60,
 }
 
 ## 套件级活性的**第二种形状：法定覆盖（quorum）**。
@@ -95,6 +96,7 @@ const LIVENESS_GATED := {
 ##   ⇒ **这道门刻意不去守一个连"是不是真的"都没立住的数**。它守的是"整条通道死掉"，那一格有过真实先例。
 const LIVENESS_QUORUM := {
 	"aid": {"days": 60, "frac": 0.5},
+	"civic_duty": {"days": 60, "frac": 0.5},
 }
 ## quorum 判据的最小网格：单 seed / 极小网格上「覆盖率」没有意义（docs/41 §5：n 很小时读作"分辨不出"）。
 const QUORUM_MIN_SEEDS := 4
@@ -121,6 +123,12 @@ func _init() -> void:
 	var golden_path := ""
 	var bake_path := ""
 	var args := OS.get_cmdline_user_args()
+	var path_error := preload("res://bench/BenchArgs.gd").path_error(args,
+		["--golden", "--bake-golden", "--shadow-dump", "--chain-dump", "--chain-ref"])
+	if path_error != "":
+		print("Harness CLI: FAIL: " + path_error)
+		quit(2)
+		return
 	var population_error := ""
 	for i in args.size():
 		if args[i] == "--seeds" and i + 1 < args.size():
@@ -454,6 +462,8 @@ static func live_key(e: Dictionary) -> String:
 		if String(e.get("target", "")).begins_with("fest_"):
 			return "festival_spawn" if note == "spawn" else "festival_despawn"
 		return "world_other"
+	if t == "pay" and note.begins_with("bank_"):
+		return note.split("*")[0]
 	return t
 
 # ── 金标读写 ────────────────────────────────────────────────────────────────

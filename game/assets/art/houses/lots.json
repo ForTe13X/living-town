@@ -1,5 +1,501 @@
 {
- "_doc": "docs/186/188/193 \u9547\u4e0a\u623f\u5b50/\u8bbe\u65bd + \u56ed\u5b50\u843d\u70b9\uff08tools/place_houses.py --solid \u751f\u6210\uff0c\u52ff\u624b\u6539\uff09",
+ "_doc": "docs/186/188/193 镇上房子/设施 + 园子落点（tools/place_houses.py --solid 生成，勿手改）",
+ "districts": [
+  {
+   "id": "upper_town",
+   "label": "Upper Town",
+   "kind": "residential",
+   "rect": [
+    0,
+    0,
+    27,
+    15
+   ]
+  },
+  {
+   "id": "market_quarter",
+   "label": "Market Quarter",
+   "kind": "commercial",
+   "rect": [
+    27,
+    7,
+    29,
+    21
+   ]
+  },
+  {
+   "id": "garden_quarter",
+   "label": "Garden Quarter",
+   "kind": "residential",
+   "rect": [
+    8,
+    27,
+    29,
+    20
+   ]
+  },
+  {
+   "id": "harbor_works",
+   "label": "Harbor Works",
+   "kind": "industrial",
+   "rect": [
+    37,
+    26,
+    23,
+    13
+   ]
+  },
+  {
+   "id": "beach_civic",
+   "label": "Beach Civic Life",
+   "kind": "leisure",
+   "rect": [
+    47,
+    39,
+    13,
+    9
+   ]
+  }
+ ],
+ "main_streets": [
+  {
+   "id": "western_arrival",
+   "material": "asphalt",
+   "width": 2.0,
+   "points": [
+    [
+     0,
+     25
+    ],
+    [
+     7,
+     25
+    ],
+    [
+     8.5,
+     27
+    ],
+    [
+     8.5,
+     33
+    ],
+    [
+     7,
+     35
+    ],
+    [
+     7,
+     39
+    ],
+    [
+     10,
+     40
+    ]
+   ]
+  },
+  {
+   "id": "garden_boulevard",
+   "material": "asphalt",
+   "width": 1.8,
+   "points": [
+    [
+     10,
+     40
+    ],
+    [
+     26,
+     40
+    ],
+    [
+     36,
+     40
+    ],
+    [
+     44,
+     40
+    ],
+    [
+     53,
+     39
+    ],
+    [
+     55,
+     36
+    ]
+   ]
+  },
+  {
+   "id": "coastal_boulevard",
+   "material": "asphalt",
+   "width": 1.8,
+   "points": [
+    [
+     55,
+     36
+    ],
+    [
+     55,
+     30
+    ],
+    [
+     54.5,
+     25
+    ],
+    [
+     55,
+     20
+    ],
+    [
+     55,
+     13
+    ],
+    [
+     54,
+     10
+    ],
+    [
+     45,
+     10
+    ],
+    [
+     36,
+     10
+    ],
+    [
+     27,
+     10
+    ],
+    [
+     20,
+     10
+    ]
+   ]
+  },
+  {
+   "id": "civic_spine",
+   "material": "paving",
+   "width": 2.5,
+   "points": [
+    [
+     32,
+     8
+    ],
+    [
+     32,
+     17
+    ],
+    [
+     32,
+     20
+    ],
+    [
+     31,
+     23
+    ],
+    [
+     32,
+     26
+    ],
+    [
+     35,
+     27
+    ],
+    [
+     35,
+     33
+    ],
+    [
+     36,
+     34
+    ],
+    [
+     37,
+     40
+    ]
+   ]
+  },
+  {
+   "id": "market_walk",
+   "material": "paving",
+   "width": 1.6,
+   "points": [
+    [
+     9,
+     20
+    ],
+    [
+     14,
+     20
+    ],
+    [
+     21,
+     21
+    ],
+    [
+     28,
+     21
+    ],
+    [
+     36,
+     21
+    ],
+    [
+     44,
+     20
+    ],
+    [
+     54,
+     20
+    ]
+   ]
+  },
+  {
+   "id": "cross_town_passage",
+   "material": "paving",
+   "width": 1.7,
+   "points": [
+    [
+     5,
+     25
+    ],
+    [
+     15,
+     25
+    ],
+    [
+     24,
+     25
+    ],
+    [
+     28,
+     25
+    ],
+    [
+     36,
+     25
+    ],
+    [
+     44,
+     25
+    ],
+    [
+     51,
+     24
+    ],
+    [
+     55,
+     24
+    ],
+    [
+     58,
+     24
+    ]
+   ]
+  },
+  {
+   "id": "southern_mews",
+   "material": "paving",
+   "width": 1.2,
+   "points": [
+    [
+     9,
+     35
+    ],
+    [
+     19,
+     35
+    ],
+    [
+     27,
+     35
+    ],
+    [
+     31,
+     34
+    ],
+    [
+     36,
+     35
+    ],
+    [
+     45,
+     35
+    ],
+    [
+     46,
+     39
+    ]
+   ]
+  },
+  {
+   "id": "upper_mews",
+   "material": "paving",
+   "width": 1.3,
+   "points": [
+    [
+     3,
+     5
+    ],
+    [
+     10,
+     4
+    ],
+    [
+     20,
+     4
+    ],
+    [
+     27,
+     5
+    ],
+    [
+     27,
+     9
+    ],
+    [
+     32,
+     9
+    ],
+    [
+     36,
+     9
+    ],
+    [
+     36,
+     4
+    ],
+    [
+     45,
+     4
+    ],
+    [
+     53,
+     5
+    ],
+    [
+     55,
+     10
+    ]
+   ]
+  },
+  {
+   "id": "west_park_trail",
+   "material": "gravel",
+   "width": 1.0,
+   "points": [
+    [
+     7,
+     14
+    ],
+    [
+     5,
+     16
+    ],
+    [
+     4,
+     20
+    ],
+    [
+     5,
+     23
+    ],
+    [
+     5,
+     27
+    ],
+    [
+     4,
+     30
+    ],
+    [
+     5,
+     34
+    ],
+    [
+     7,
+     35
+    ]
+   ]
+  },
+  {
+   "id": "seaside_garden_walk",
+   "material": "paving",
+   "width": 1.25,
+   "points": [
+    [
+     58,
+     13
+    ],
+    [
+     57,
+     17
+    ],
+    [
+     58,
+     21
+    ],
+    [
+     58,
+     27
+    ],
+    [
+     57,
+     31
+    ],
+    [
+     58,
+     35
+    ],
+    [
+     58,
+     39
+    ],
+    [
+     59,
+     40
+    ],
+    [
+     59,
+     47
+    ]
+   ]
+  },
+  {
+   "id": "south_lake_walk",
+   "material": "gravel",
+   "width": 1.0,
+   "points": [
+    [
+     26,
+     40
+    ],
+    [
+     27,
+     43
+    ],
+    [
+     26,
+     46
+    ],
+    [
+     30,
+     47
+    ],
+    [
+     35,
+     47
+    ],
+    [
+     38,
+     44
+    ],
+    [
+     37,
+     40
+    ]
+   ]
+  }
+ ],
  "lots": [
   {
    "sprite": "chapel",
@@ -11,10 +507,14 @@
    "door": [
     29,
     18
-   ]
+   ],
+   "landmark": true,
+   "architecture": "blueprint",
+   "coastal_asset": "house:chapel",
+   "facing": "south"
   },
   {
-   "sprite": "mairie",
+   "sprite": "district_civic_facade",
    "x": 31,
    "y": 28,
    "w": 3,
@@ -23,7 +523,10 @@
    "door": [
     32,
     31
-   ]
+   ],
+   "landmark": true,
+   "architecture": "arcade",
+   "coastal_asset": "civic"
   },
   {
    "sprite": "windmill",
@@ -51,10 +554,13 @@
    "door": [
     11,
     23
-   ]
+   ],
+   "architecture": "blueprint",
+   "coastal_asset": "house:bakery",
+   "facing": "south"
   },
   {
-   "sprite": "creperie",
+   "sprite": "plaza_mixed_block",
    "x": 34,
    "y": 16,
    "w": 3,
@@ -63,7 +569,10 @@
    "door": [
     35,
     18
-   ]
+   ],
+   "architecture": "blueprint",
+   "coastal_asset": "house:plaza_mixed_block",
+   "facing": "south"
   },
   {
    "sprite": "halles",
@@ -72,10 +581,14 @@
    "w": 5,
    "h": 3,
    "flip": false,
+   "scale": 1.08,
    "door": [
     24,
     8
-   ]
+   ],
+   "landmark": true,
+   "architecture": "arcade",
+   "coastal_asset": "market"
   },
   {
    "sprite": "hotel",
@@ -84,18 +597,26 @@
    "w": 5,
    "h": 4,
    "flip": false,
+   "scale": 1.06,
    "door": [
     50,
     3
-   ]
+   ],
+   "landmark": true,
+   "architecture": "blueprint",
+   "coastal_asset": "house:hotel",
+   "facing": "south"
   },
   {
-   "sprite": "cannery",
+   "sprite": "district_industrial_facade",
    "x": 47,
    "y": 35,
    "w": 4,
    "h": 4,
-   "flip": false
+   "flip": false,
+   "architecture": "stucco",
+   "coastal_asset": "workshop_south",
+   "facing": "south"
   },
   {
    "sprite": "townhouse",
@@ -103,31 +624,22 @@
    "y": 1,
    "w": 2,
    "h": 3,
-   "flip": true
+   "flip": false,
+   "architecture": "stucco",
+   "facing": "south",
+   "coastal_asset": "terrace_south"
   },
   {
-   "sprite": "belleepoque",
+   "sprite": "rohmer_spring_cottage",
    "x": 9,
    "y": 0,
    "w": 3,
    "h": 4,
-   "flip": true
-  },
-  {
-   "sprite": "longere",
-   "x": 13,
-   "y": 1,
-   "w": 4,
-   "h": 3,
-   "flip": true
-  },
-  {
-   "sprite": "halftimber",
-   "x": 18,
-   "y": 1,
-   "w": 2,
-   "h": 3,
-   "flip": false
+   "flip": false,
+   "scale": 1.1,
+   "architecture": "stucco",
+   "facing": "south",
+   "coastal_asset": "terrace_south"
   },
   {
    "sprite": "cottage",
@@ -135,7 +647,10 @@
    "y": 2,
    "w": 3,
    "h": 2,
-   "flip": true
+   "flip": false,
+   "architecture": "stucco",
+   "facing": "south",
+   "coastal_asset": "terrace_south"
   },
   {
    "sprite": "halftimber",
@@ -143,39 +658,34 @@
    "y": 1,
    "w": 2,
    "h": 3,
-   "flip": true
+   "flip": false,
+   "architecture": "stucco",
+   "facing": "south",
+   "coastal_asset": "terrace_south"
   },
   {
-   "sprite": "terrace",
-   "x": 37,
-   "y": 1,
-   "w": 4,
-   "h": 3,
-   "flip": true
-  },
-  {
-   "sprite": "longere",
-   "x": 42,
-   "y": 1,
-   "w": 4,
-   "h": 3,
-   "flip": false
-  },
-  {
-   "sprite": "longere",
+   "sprite": "paris_corner_block",
    "x": 8,
    "y": 6,
    "w": 4,
    "h": 3,
-   "flip": false
+   "flip": false,
+   "scale": 1.14,
+   "architecture": "stucco",
+   "facing": "north",
+   "coastal_asset": "terrace_north"
   },
   {
-   "sprite": "terrace",
+   "sprite": "attached_slate_house",
    "x": 13,
    "y": 6,
    "w": 4,
    "h": 3,
-   "flip": false
+   "flip": false,
+   "bays": 1,
+   "architecture": "stucco",
+   "facing": "north",
+   "coastal_asset": "terrace_north"
   },
   {
    "sprite": "belleepoque",
@@ -183,15 +693,21 @@
    "y": 5,
    "w": 3,
    "h": 4,
-   "flip": false
+   "flip": false,
+   "architecture": "stucco",
+   "facing": "south",
+   "coastal_asset": "terrace_south"
   },
   {
-   "sprite": "ochre",
+   "sprite": "district_commercial_facade",
    "x": 37,
    "y": 6,
    "w": 2,
    "h": 3,
-   "flip": true
+   "flip": false,
+   "architecture": "stucco",
+   "facing": "north",
+   "coastal_asset": "terrace_north"
   },
   {
    "sprite": "belleepoque",
@@ -199,7 +715,10 @@
    "y": 5,
    "w": 3,
    "h": 4,
-   "flip": false
+   "flip": false,
+   "architecture": "stucco",
+   "facing": "south",
+   "coastal_asset": "terrace_south"
   },
   {
    "sprite": "halftimber",
@@ -207,7 +726,10 @@
    "y": 6,
    "w": 2,
    "h": 3,
-   "flip": true
+   "flip": false,
+   "architecture": "stucco",
+   "facing": "north",
+   "coastal_asset": "terrace_north"
   },
   {
    "sprite": "townhouse",
@@ -215,39 +737,57 @@
    "y": 6,
    "w": 2,
    "h": 3,
-   "flip": true
+   "flip": false,
+   "architecture": "stucco",
+   "facing": "north",
+   "coastal_asset": "terrace_north"
   },
   {
-   "sprite": "ochre",
+   "sprite": "plaza_townhouse_pair",
    "x": 28,
    "y": 11,
    "w": 2,
    "h": 3,
-   "flip": true
+   "flip": false,
+   "scale": 0.92,
+   "architecture": "stucco",
+   "facing": "south",
+   "coastal_asset": "terrace_south"
   },
   {
-   "sprite": "townhouse",
+   "sprite": "plaza_corner_block",
    "x": 34,
    "y": 11,
    "w": 2,
    "h": 3,
-   "flip": true
+   "flip": false,
+   "scale": 0.94,
+   "architecture": "stucco",
+   "facing": "south",
+   "coastal_asset": "terrace_south"
   },
   {
-   "sprite": "ochre",
+   "sprite": "district_commercial_facade",
    "x": 50,
    "y": 6,
    "w": 2,
    "h": 3,
-   "flip": true
+   "flip": false,
+   "architecture": "stucco",
+   "facing": "north",
+   "coastal_asset": "terrace_north"
   },
   {
-   "sprite": "terrace",
+   "sprite": "cliff_row",
    "x": 47,
    "y": 26,
    "w": 4,
    "h": 3,
-   "flip": false
+   "flip": false,
+   "scale": 1.2,
+   "architecture": "stucco",
+   "facing": "south",
+   "coastal_asset": "terrace_south"
   },
   {
    "sprite": "cottage",
@@ -255,31 +795,46 @@
    "y": 32,
    "w": 3,
    "h": 2,
-   "flip": true
+   "flip": false,
+   "architecture": "stucco",
+   "facing": "south",
+   "coastal_asset": "terrace_south"
   },
   {
-   "sprite": "halftimber",
+   "sprite": "plaza_arcade_frontage",
    "x": 28,
    "y": 31,
    "w": 2,
    "h": 3,
-   "flip": true
+   "flip": false,
+   "scale": 0.92,
+   "architecture": "stucco",
+   "facing": "south",
+   "coastal_asset": "terrace_south"
   },
   {
-   "sprite": "townhouse",
+   "sprite": "plaza_townhouse_pair",
    "x": 34,
    "y": 31,
    "w": 2,
    "h": 3,
-   "flip": false
+   "flip": false,
+   "scale": 0.92,
+   "architecture": "stucco",
+   "facing": "south",
+   "coastal_asset": "terrace_south"
   },
   {
-   "sprite": "longere",
+   "sprite": "attached_slate_house",
    "x": 8,
    "y": 36,
    "w": 4,
    "h": 3,
-   "flip": false
+   "flip": false,
+   "bays": 1,
+   "architecture": "stucco",
+   "facing": "south",
+   "coastal_asset": "terrace_south"
   },
   {
    "sprite": "cottage",
@@ -287,23 +842,10 @@
    "y": 37,
    "w": 3,
    "h": 2,
-   "flip": false
-  },
-  {
-   "sprite": "terrace",
-   "x": 20,
-   "y": 36,
-   "w": 4,
-   "h": 3,
-   "flip": true
-  },
-  {
-   "sprite": "halftimber",
-   "x": 25,
-   "y": 36,
-   "w": 2,
-   "h": 3,
-   "flip": false
+   "flip": false,
+   "architecture": "stucco",
+   "facing": "south",
+   "coastal_asset": "terrace_south"
   },
   {
    "sprite": "belleepoque",
@@ -311,622 +853,312 @@
    "y": 35,
    "w": 3,
    "h": 4,
-   "flip": false
+   "flip": false,
+   "architecture": "stucco",
+   "facing": "south",
+   "coastal_asset": "terrace_south"
   },
   {
-   "sprite": "longere",
+   "sprite": "attached_slate_house",
    "x": 32,
    "y": 36,
    "w": 4,
    "h": 3,
-   "flip": false
+   "flip": false,
+   "bays": 1,
+   "architecture": "stucco",
+   "facing": "south",
+   "coastal_asset": "terrace_south"
   },
   {
-   "sprite": "longere",
-   "x": 9,
-   "y": 41,
-   "w": 4,
-   "h": 3,
-   "flip": true
-  },
-  {
-   "sprite": "halftimber",
-   "x": 14,
-   "y": 41,
-   "w": 2,
-   "h": 3,
-   "flip": true
-  },
-  {
-   "sprite": "whitehouse",
-   "x": 17,
-   "y": 41,
-   "w": 3,
-   "h": 3,
-   "flip": true
-  },
-  {
-   "sprite": "terrace",
+   "sprite": "attached_slate_house",
    "x": 21,
    "y": 41,
    "w": 4,
    "h": 3,
-   "flip": true
+   "flip": false,
+   "bays": 1,
+   "architecture": "stucco",
+   "facing": "north",
+   "coastal_asset": "terrace_north"
+  },
+  {
+   "sprite": "cliff_villas",
+   "x": 2,
+   "y": 9,
+   "w": 5,
+   "h": 3,
+   "flip": false,
+   "scale": 1.14,
+   "architecture": "stucco",
+   "facing": "south",
+   "coastal_asset": "terrace_south"
+  },
+  {
+   "sprite": "infill_market_block",
+   "x": 14,
+   "y": 21,
+   "w": 4,
+   "h": 3,
+   "flip": false,
+   "scale": 1.28,
+   "open_cells": [
+    [
+     17,
+     23
+    ],
+    [
+     17,
+     22
+    ]
+   ],
+   "architecture": "blueprint",
+   "coastal_asset": "house:infill_market_block",
+   "facing": "south"
+  },
+  {
+   "sprite": "infill_residential_courtyard",
+   "x": 38,
+   "y": 21,
+   "w": 4,
+   "h": 3,
+   "flip": false,
+   "scale": 1.24,
+   "open_cells": [
+    [
+     40,
+     23
+    ],
+    [
+     40,
+     22
+    ]
+   ],
+   "architecture": "blueprint",
+   "coastal_asset": "house:infill_residential_courtyard",
+   "facing": "south"
+  },
+  {
+   "sprite": "infill_garden_row",
+   "x": 40,
+   "y": 36,
+   "w": 4,
+   "h": 3,
+   "flip": false,
+   "scale": 1.24,
+   "open_cells": [
+    [
+     42,
+     38
+    ],
+    [
+     42,
+     37
+    ]
+   ],
+   "architecture": "blueprint",
+   "coastal_asset": "house:infill_garden_row",
+   "facing": "south"
+  },
+  {
+   "sprite": "infill_harbor_workshops",
+   "x": 52,
+   "y": 35,
+   "w": 3,
+   "h": 4,
+   "flip": false,
+   "scale": 1.22,
+   "architecture": "stucco",
+   "coastal_asset": "workshop_south",
+   "facing": "south"
+  },
+  {
+   "sprite": "coast_pavilion_east",
+   "x": 52,
+   "y": 41,
+   "w": 4,
+   "h": 3,
+   "flip": false,
+   "scale": 1.45,
+   "door": [
+    55,
+    43
+   ],
+   "facing": "east",
+   "architecture": "blueprint",
+   "coastal_asset": "house:coast_pavilion_east"
+  },
+  {
+   "sprite": "roofed_beach_cabins",
+   "x": 56,
+   "y": 41,
+   "w": 3,
+   "h": 3,
+   "flip": false,
+   "scale": 1.08,
+   "door": [
+    58,
+    43
+   ]
+  },
+  {
+   "sprite": "beach_social_pergola",
+   "x": 52,
+   "y": 45,
+   "w": 3,
+   "h": 2,
+   "flip": false,
+   "scale": 1.06
+  },
+  {
+   "sprite": "beach_deckchair_cluster",
+   "x": 56,
+   "y": 45,
+   "w": 3,
+   "h": 2,
+   "flip": false,
+   "scale": 1.06
+  },
+  {
+   "sprite": "attached_slate_house",
+   "x": 13,
+   "y": 1,
+   "w": 7,
+   "h": 3,
+   "architecture": "terrace",
+   "facing": "south",
+   "row_id": "terrace_0",
+   "coastal_asset": "terrace_south"
+  },
+  {
+   "sprite": "attached_slate_house",
+   "x": 37,
+   "y": 1,
+   "w": 9,
+   "h": 3,
+   "architecture": "terrace",
+   "facing": "south",
+   "row_id": "terrace_1",
+   "coastal_asset": "terrace_south"
+  },
+  {
+   "sprite": "attached_slate_house",
+   "x": 20,
+   "y": 36,
+   "w": 7,
+   "h": 3,
+   "architecture": "terrace",
+   "facing": "south",
+   "row_id": "terrace_2",
+   "coastal_asset": "terrace_south"
+  },
+  {
+   "sprite": "attached_slate_house",
+   "x": 9,
+   "y": 41,
+   "w": 11,
+   "h": 3,
+   "architecture": "terrace",
+   "facing": "north",
+   "row_id": "terrace_3",
+   "coastal_asset": "terrace_north"
   }
  ],
- "gardens": [
+ "street_details": [
   {
-   "house": 9,
-   "x0": 0,
-   "y0": 1,
-   "x1": 3,
-   "y1": 4,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": true,
-   "props": [
-    {
-     "kind": "hydrangea",
-     "x": 2,
-     "y": 3
-    }
-   ]
+   "sprite": "corner_market_display",
+   "x": 26,
+   "y": 19,
+   "w": 3,
+   "h": 2,
+   "flip": false,
+   "scale": 0.94
   },
   {
-   "house": 10,
-   "x0": 8,
-   "y0": 0,
-   "x1": 13,
-   "y1": 4,
-   "back": 0,
-   "left": true,
-   "right": true,
-   "wall": false,
-   "props": [
-    {
-     "kind": "hydrangea",
-     "x": 8,
-     "y": 3
-    },
-    {
-     "kind": "hydrangea",
-     "x": 12,
-     "y": 3
-    }
-   ]
+   "sprite": "corner_cafe_terrace",
+   "x": 36,
+   "y": 19,
+   "w": 3,
+   "h": 2,
+   "flip": false,
+   "scale": 0.92
   },
   {
-   "house": 11,
-   "x0": 13,
-   "y0": 1,
-   "x1": 18,
-   "y1": 4,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": false,
-   "props": [
-    {
-     "kind": "hydrangea",
-     "x": 17,
-     "y": 3
-    }
-   ]
+   "sprite": "corner_delivery_cluster",
+   "x": 44,
+   "y": 38,
+   "w": 3,
+   "h": 2,
+   "flip": false,
+   "scale": 0.92
   },
   {
-   "house": 12,
-   "x0": 17,
-   "y0": 0,
-   "x1": 21,
-   "y1": 4,
-   "back": 1,
-   "left": false,
-   "right": true,
-   "wall": false,
-   "props": [
-    {
-     "kind": "hydrangea",
-     "x": 18,
-     "y": 0
-    },
-    {
-     "kind": "barrow",
-     "x": 19,
-     "y": 0
-    }
-   ]
-  },
-  {
-   "house": 13,
-   "x0": 21,
-   "y0": 2,
-   "x1": 25,
-   "y1": 4,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": true,
-   "props": [
-    {
-     "kind": "hydrangea",
-     "x": 24,
-     "y": 3
-    }
-   ]
-  },
-  {
-   "house": 14,
-   "x0": 24,
-   "y0": 0,
-   "x1": 28,
-   "y1": 4,
-   "back": 1,
-   "left": false,
-   "right": true,
-   "wall": false,
-   "props": [
-    {
-     "kind": "hydrangea",
-     "x": 27,
-     "y": 3
-    }
-   ]
-  },
-  {
-   "house": 15,
-   "x0": 36,
-   "y0": 0,
-   "x1": 42,
-   "y1": 4,
-   "back": 1,
-   "left": true,
-   "right": true,
-   "wall": false,
-   "props": [
-    {
-     "kind": "apple",
-     "x": 38,
-     "y": 0
-    },
-    {
-     "kind": "hydrangea",
-     "x": 40,
-     "y": 0
-    },
-    {
-     "kind": "hydrangea",
-     "x": 36,
-     "y": 3
-    }
-   ]
-  },
-  {
-   "house": 16,
-   "x0": 42,
-   "y0": 1,
-   "x1": 47,
-   "y1": 4,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": true,
-   "props": [
-    {
-     "kind": "hydrangea",
-     "x": 46,
-     "y": 3
-    }
-   ]
-  },
-  {
-   "house": 17,
-   "x0": 7,
-   "y0": 5,
-   "x1": 13,
-   "y1": 9,
-   "back": 1,
-   "left": true,
-   "right": true,
-   "wall": false,
-   "props": [
-    {
-     "kind": "hydrangea",
-     "x": 8,
-     "y": 5
-    },
-    {
-     "kind": "hydrangea",
-     "x": 9,
-     "y": 5
-    },
-    {
-     "kind": "barrow",
-     "x": 10,
-     "y": 5
-    },
-    {
-     "kind": "barrow",
-     "x": 11,
-     "y": 5
-    }
-   ]
-  },
-  {
-   "house": 18,
-   "x0": 13,
-   "y0": 6,
-   "x1": 18,
-   "y1": 9,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": false,
-   "props": []
-  },
-  {
-   "house": 19,
-   "x0": 18,
-   "y0": 5,
-   "x1": 22,
-   "y1": 9,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": false,
-   "props": []
-  },
-  {
-   "house": 20,
-   "x0": 36,
-   "y0": 5,
-   "x1": 40,
-   "y1": 9,
-   "back": 1,
-   "left": false,
-   "right": false,
-   "wall": true,
-   "props": [
-    {
-     "kind": "barrow",
-     "x": 37,
-     "y": 5
-    },
-    {
-     "kind": "barrow",
-     "x": 38,
-     "y": 5
-    }
-   ]
-  },
-  {
-   "house": 22,
-   "x0": 43,
-   "y0": 5,
-   "x1": 47,
-   "y1": 9,
-   "back": 1,
-   "left": false,
-   "right": false,
-   "wall": true,
-   "props": [
-    {
-     "kind": "hydrangea",
-     "x": 45,
-     "y": 5
-    }
-   ]
-  },
-  {
-   "house": 24,
-   "x0": 28,
-   "y0": 11,
-   "x1": 31,
-   "y1": 14,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": false,
-   "props": []
-  },
-  {
-   "house": 25,
-   "x0": 33,
-   "y0": 10,
-   "x1": 37,
-   "y1": 14,
-   "back": 1,
-   "left": true,
-   "right": false,
-   "wall": false,
-   "props": [
-    {
-     "kind": "barrow",
-     "x": 34,
-     "y": 10
-    },
-    {
-     "kind": "hydrangea",
-     "x": 35,
-     "y": 10
-    }
-   ]
-  },
-  {
-   "house": 27,
-   "x0": 46,
-   "y0": 24,
-   "x1": 52,
-   "y1": 29,
-   "back": 2,
-   "left": false,
-   "right": true,
-   "wall": false,
-   "props": [
-    {
-     "kind": "laundry",
-     "x": 47,
-     "y": 25
-    },
-    {
-     "kind": "laundry",
-     "x": 49,
-     "y": 25
-    },
-    {
-     "kind": "hydrangea",
-     "x": 51,
-     "y": 28
-    }
-   ]
-  },
-  {
-   "house": 28,
-   "x0": 0,
-   "y0": 32,
-   "x1": 4,
-   "y1": 34,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": true,
-   "props": [
-    {
-     "kind": "hydrangea",
-     "x": 3,
-     "y": 33
-    }
-   ]
-  },
-  {
-   "house": 29,
-   "x0": 28,
-   "y0": 31,
-   "x1": 31,
-   "y1": 34,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": false,
-   "props": [
-    {
-     "kind": "hydrangea",
-     "x": 30,
-     "y": 33
-    }
-   ]
-  },
-  {
-   "house": 30,
-   "x0": 33,
-   "y0": 31,
-   "x1": 36,
-   "y1": 34,
-   "back": 0,
-   "left": true,
-   "right": false,
-   "wall": false,
-   "props": [
-    {
-     "kind": "hydrangea",
-     "x": 33,
-     "y": 33
-    }
-   ]
-  },
-  {
-   "house": 31,
-   "x0": 7,
-   "y0": 36,
-   "x1": 13,
-   "y1": 39,
-   "back": 0,
-   "left": true,
-   "right": true,
-   "wall": false,
-   "props": [
-    {
-     "kind": "hydrangea",
-     "x": 7,
-     "y": 38
-    }
-   ]
-  },
-  {
-   "house": 32,
-   "x0": 15,
-   "y0": 36,
-   "x1": 20,
-   "y1": 39,
-   "back": 1,
-   "left": true,
-   "right": true,
-   "wall": false,
-   "props": [
-    {
-     "kind": "barrow",
-     "x": 16,
-     "y": 36
-    },
-    {
-     "kind": "apple",
-     "x": 17,
-     "y": 36
-    },
-    {
-     "kind": "hydrangea",
-     "x": 18,
-     "y": 36
-    }
-   ]
-  },
-  {
-   "house": 33,
-   "x0": 20,
-   "y0": 36,
-   "x1": 25,
-   "y1": 39,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": false,
-   "props": [
-    {
-     "kind": "hydrangea",
-     "x": 24,
-     "y": 38
-    }
-   ]
-  },
-  {
-   "house": 34,
-   "x0": 25,
-   "y0": 36,
-   "x1": 28,
-   "y1": 39,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": true,
-   "props": [
-    {
-     "kind": "hydrangea",
-     "x": 27,
-     "y": 38
-    }
-   ]
-  },
-  {
-   "house": 35,
-   "x0": 28,
-   "y0": 35,
-   "x1": 32,
-   "y1": 39,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": false,
-   "props": []
-  },
-  {
-   "house": 36,
-   "x0": 32,
-   "y0": 36,
-   "x1": 37,
-   "y1": 39,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": true,
-   "props": [
-    {
-     "kind": "hydrangea",
-     "x": 36,
-     "y": 38
-    }
-   ]
-  },
-  {
-   "house": 37,
-   "x0": 8,
-   "y0": 40,
-   "x1": 14,
-   "y1": 44,
-   "back": 1,
-   "left": true,
-   "right": true,
-   "wall": true,
-   "props": [
-    {
-     "kind": "laundry",
-     "x": 9,
-     "y": 40
-    },
-    {
-     "kind": "laundry",
-     "x": 11,
-     "y": 40
-    },
-    {
-     "kind": "hydrangea",
-     "x": 8,
-     "y": 43
-    },
-    {
-     "kind": "hydrangea",
-     "x": 13,
-     "y": 43
-    }
-   ]
-  },
-  {
-   "house": 38,
-   "x0": 14,
-   "y0": 41,
-   "x1": 17,
-   "y1": 44,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": false,
-   "props": []
-  },
-  {
-   "house": 39,
-   "x0": 16,
-   "y0": 40,
-   "x1": 21,
-   "y1": 44,
-   "back": 1,
-   "left": false,
-   "right": true,
-   "wall": false,
-   "props": [
-    {
-     "kind": "barrow",
-     "x": 17,
-     "y": 40
-    },
-    {
-     "kind": "veg",
-     "x": 18,
-     "y": 40
-    }
-   ]
-  },
-  {
-   "house": 40,
-   "x0": 21,
-   "y0": 41,
-   "x1": 26,
-   "y1": 44,
-   "back": 0,
-   "left": false,
-   "right": true,
-   "wall": false,
-   "props": []
+   "sprite": "corner_flower_bench",
+   "x": 26,
+   "y": 38,
+   "w": 3,
+   "h": 2,
+   "flip": false,
+   "scale": 0.92
   }
  ],
+ "terrain_details": [
+  {
+   "sprite": "terrain_retaining_wall",
+   "x": 1,
+   "y": 12,
+   "w": 3,
+   "h": 2,
+   "flip": false,
+   "scale": 0.9
+  },
+  {
+   "sprite": "terrain_rock_corner",
+   "x": 5,
+   "y": 12,
+   "w": 2,
+   "h": 2,
+   "flip": true,
+   "scale": 0.82
+  },
+  {
+   "sprite": "terrain_retaining_wall",
+   "x": 2,
+   "y": 40,
+   "w": 3,
+   "h": 2,
+   "flip": true,
+   "scale": 0.9
+  },
+  {
+   "sprite": "terrain_cliff_face",
+   "x": 5,
+   "y": 40,
+   "w": 2,
+   "h": 2,
+   "flip": false,
+   "scale": 0.82
+  },
+  {
+   "sprite": "terrain_ramp_cut",
+   "x": 39,
+   "y": 42,
+   "w": 3,
+   "h": 2,
+   "flip": false,
+   "scale": 0.92
+  },
+  {
+   "sprite": "terrain_retaining_wall",
+   "x": 47,
+   "y": 44,
+   "w": 3,
+   "h": 2,
+   "flip": false,
+   "scale": 0.88
+  }
+ ],
+ "gardens": [],
  "terraces": [
   [
    1,
@@ -1324,5 +1556,6 @@
    51,
    44
   ]
- ]
+ ],
+ "courts": []
 }

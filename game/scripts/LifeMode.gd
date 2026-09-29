@@ -22,10 +22,12 @@ const SPEEDS := [1.0, 2.0, 4.0]
 const FF_SPEED := 8.0               # 睡觉等长动作的自动快进档
 const FF_MIN_DUR := 30              # dur_total ≥ 它的动作在"使用中"时自动快进
 const MOVE_STEP := 0.13             # 秒/格（与 WorldView.CTL_STEP 同值）
-const ZOOM_DEFAULT := 2.0
-const ZOOM_MIN := 1.1
+const ZOOM_DEFAULT := 1.35
+const ZOOM_MIN := 0.85
 const ZOOM_MAX := 3.2
-const CAM_LERP := 9.0
+const CAM_LERP := 8.0
+var _camera_last_target := Vector2.ZERO
+var _camera_look := Vector2.ZERO
 const NEED_ORDER := ["hunger", "energy", "social", "fun", "hygiene"]
 const NEED_ZH := {"hunger": "饱腹", "energy": "精力", "social": "社交", "fun": "趣味", "hygiene": "卫生"}
 const VERB_ZH := {"greet": "打招呼", "give": "送礼", "gossip": "说八卦", "invite": "约见", "confront": "理论", "apologize": "道歉"}
@@ -385,6 +387,8 @@ func start_life(id: String) -> void:
 	_sync_space(ag)
 	var pb: Node = main.get("_probe")
 	pb.cam.position = _agent_px(ag)
+	_camera_last_target = _agent_px(ag)
+	_camera_look = Vector2.ZERO
 	pb.cam.zoom = Vector2(_zoom, _zoom)
 	_walk_stop()
 	_score = 0
@@ -489,6 +493,8 @@ func _sync_space(ag: Dictionary) -> void:
 		pb.set_space(sp, fl, main.get("_sg").bounds_px(sp))
 		pb._history.clear()
 		pb.cam.position = _agent_px(ag)
+		_camera_last_target = _agent_px(ag)
+		_camera_look = Vector2.ZERO
 		if sp != "town":                          # 室内比视口小：取消边界，镜头才能把人放在正中
 			pb.cam.limit_left = -100000; pb.cam.limit_top = -100000
 			pb.cam.limit_right = 100000; pb.cam.limit_bottom = 100000
@@ -506,8 +512,15 @@ func _camera(delta: float, ag: Dictionary) -> void:
 	pb.mode = 0
 	pb.follow_id = ""
 	pb.demo_cam = false
-	var k := clampf(CAM_LERP * delta, 0.0, 1.0)
-	pb.cam.position = pb.cam.position.lerp(_agent_px(ag) + Vector2(0, -12), k)
+	var target := _agent_px(ag)
+	var velocity := (target - _camera_last_target) / maxf(delta, 0.001)
+	_camera_last_target = target
+	var k := 1.0 - exp(-CAM_LERP * delta)
+	_camera_look = _camera_look.lerp((velocity * 0.12).limit_length(24.0), k)
+	if bool(main.get("_reduced_motion")):
+		k = 1.0
+		_camera_look = Vector2.ZERO
+	pb.cam.position = pb.cam.position.lerp(target + _camera_look + Vector2(0, -12), k)
 	pb.cam.zoom = pb.cam.zoom.lerp(Vector2(_zoom, _zoom), k)
 
 func _poll_move(delta: float) -> void:
@@ -852,7 +865,9 @@ func _tap(screen: Vector2) -> void:
 	for e in all:
 		var p: Vector2i = e["pos"]
 		var d := Vector2(p.x * 48 + 24, p.y * 48 + 24).distance_to(w)
-		var r := 34.0 if String(e["kind"]) == "agent" else 30.0
+		# 挂墙公示板的视觉中心在 y=0 格上方；交互锚仍是 authored 家具格，
+		# 但命中半径要包住整张 96x64 精灵，不能逼玩家去点墙脚。
+		var r := 68.0 if String(e["kind"]) == "civic" else (34.0 if String(e["kind"]) == "agent" else 30.0)
 		if d <= r and d < bestd:
 			bestd = d
 			best = e
@@ -946,6 +961,52 @@ func _rebuild_modal() -> void:
 	var n_near := _inter.size()
 	var tab_hint := ("   Tab 换目标 (%d)" % n_near) if n_near > 1 else ""
 	match kind:
+		"civic":
+			var projection: Dictionary = Sim.civic_observatory_projection()
+			var current: Dictionary = projection.get("current", {})
+			var current_record: Dictionary = projection.get("current_record", {})
+			var perf: Dictionary = projection.get("performance", {})
+			var review: Dictionary = projection.get("last_review", {})
+			var election: Dictionary = projection.get("last_election", {})
+			title.text = "镇务公示板"
+			sub.text = "只读公示 · 查看不会改变选票、镇库或居民日程" + tab_hint
+			y = _mk_header("本届镇务", y, w)
+			if current.is_empty():
+				var first_vote := _mk_label(_modal, 15, Vector2(28, y), Vector2(w - 52, 23), PARCH)
+				first_vote.text = "第 28 天举行首届镇长选举"
+				y += 27.0
+			else:
+				var incumbent := _mk_label(_modal, 16, Vector2(28, y), Vector2(w - 52, 24), PARCH)
+				incumbent.text = "%s · 任期第 %d—%d 天" % [Sim._name(Sim.get_agent(String(current.get("mayor", "")))),
+					int(current.get("term_start", 0)), int(current.get("term_end", 0))]
+				y += 27.0
+				var duty := _mk_label(_modal, 15, Vector2(28, y), Vector2(w - 52, 23), MUTED)
+				duty.text = "办公 %d/%d · 出勤 %d%% · 任内镇库 %+d" % [int(perf.get("duties_done", 0)), int(perf.get("duties_due", 0)),
+					int(perf.get("attendance_pct", 0)), int(perf.get("treasury_delta", 0))]
+				y += 28.0
+				var ballot_bits: Array[String] = []
+				var ballots: Dictionary = current_record.get("ballots", {})
+				for cid in current_record.get("candidates", []):
+					ballot_bits.append("%s %d票" % [Sim._name(Sim.get_agent(String(cid))), int(ballots.get(String(cid), 0))])
+				if not ballot_bits.is_empty():
+					var ballot_l := _mk_label(_modal, 14, Vector2(28, y), Vector2(w - 52, 23), MUTED)
+					ballot_l.text = "本届票箱：" + " · ".join(ballot_bits)
+					y += 27.0
+			y = _mk_header("上届成绩单", y + 3.0, w)
+			if review.is_empty():
+				var no_review := _mk_label(_modal, 14, Vector2(28, y), Vector2(w - 52, 22), MUTED)
+				no_review.text = "首届换届后公布出勤与镇库结算"
+				y += 26.0
+			else:
+				var review_l := _mk_label(_modal, 15, Vector2(28, y), Vector2(w - 52, 44), PARCH)
+				review_l.text = "%s · 办公 %d/%d（%d%%）\n任内镇库 %+d" % [Sim._name(Sim.get_agent(String(review.get("winner", "")))),
+					int(review.get("duties_done", 0)), int(review.get("duties_due", 0)), int(review.get("attendance_pct", 0)), int(review.get("treasury_delta", 0))]
+				y += 48.0
+			var swings := int(election.get("performance_swings", 0))
+			var vote_l := _mk_label(_modal, 14, Vector2(28, y), Vector2(w - 52, 22), MUTED)
+			vote_l.text = "最近选举：政绩改投 %d 票（前任 +%d/-%d）" % [swings, int(election.get("incumbent_gained", 0)), int(election.get("incumbent_lost", 0))]
+			y += 29.0
+			y = _mk_opt("收起公示", true, _close_modal, y, w)
 		"object":
 			title.text = String(e["label"])
 			sub.text = ("就在身边" if int(e["dist"]) <= 1 else "离你 %d 步 · 选了会自己走过去" % int(e["dist"])) + tab_hint
@@ -1405,7 +1466,7 @@ func _place_prompt(ag: Dictionary) -> void:
 	var wpos := Vector2(p.x * 48 + 24, p.y * 48 - 20)
 	var vp: Vector2 = main.call("_vp")
 	var sp: Vector2 = (wpos - pb.cam.position) * pb.cam.zoom + vp * 0.5
-	var verb := "说话" if String(e["kind"]) == "agent" else ("进门" if String(e["kind"]) == "portal" else "使用")
+	var verb := "查看" if String(e["kind"]) == "civic" else ("说话" if String(e["kind"]) == "agent" else ("进门" if String(e["kind"]) == "portal" else "使用"))
 	_prompt.text = ("%s · %s（点「互动」）" % [verb, String(e["label"])]) if touch else \
 		("E  %s · %s%s" % [verb, String(e["label"]), ("  (Tab %d)" % _inter.size()) if _inter.size() > 1 else ""])
 	_prompt.size = Vector2(maxf(120.0, _fnt.get_string_size(_prompt.text, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x + 22.0), 26)

@@ -59,6 +59,12 @@ func default_floor(sid: String) -> String:
 func label_of(sid: String) -> String:
 	return String((spaces.get(sid, {}) as Dictionary).get("label", sid))
 
+## Optional presentation policy for an addressable plane. This remains pure view data:
+## it never enters Sim navigation, saves, digests, or resident decision-making.
+func camera_policy(sid: String) -> Dictionary:
+	var raw = (spaces.get(sid, {}) as Dictionary).get("camera", {})
+	return (raw as Dictionary).duplicate(true) if raw is Dictionary else {}
+
 ## Space 的世界像素边界。缺 space（或没加载）→ 回落 Sim.GRID 全图（兼容期行为不变）。
 func bounds_px(sid: String) -> Rect2:
 	var sp: Dictionary = spaces.get(sid, {})

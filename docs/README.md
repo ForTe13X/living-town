@@ -70,6 +70,21 @@
 | [213 P4c-7 嘴馋](213-p4c7-dessert-cravings.md) | `economy.cravings`：隔天下午轮到的人想吃点甜的（按 (day+fnv1a32(id))%every 错开、不抽 RNG）。两半缺一不可——①把"为 fun 出门"的门槛对他打开（平时要 fun ≤ 55，而全镇 fun 常年 ~80），②甜点候选加分。剂量：8 不动 · 20 起量 · 30 掉一个 seed；每两天比每三天稳。吃点心 diner·tick 132·0·33 → 143·308·275（约 20 次/月），三道门 12/12 · 12/12 · 17/18、BackendGate 零红。顺手修了 CI scenes 的红：211 把豆子压到 8 之后，ledger_test 那 8 天的短跑里一次出港都没有 ⇒ 豆子回到 16。 |
 | [214 两条负结果：抬渔获、开出口车道](214-two-negatives-catch-and-exports.md) | ⭐ 先扫人口：今天 master 上 N=12/16/24/40 硬不变量**全绿**——[89](89-wave-w-w2-n40-red.md) 那颗“#01 在 N=40 上是红的”**今天不红了**（没哪一棒冲它去，208/210 顺手修掉）⇒ 194 相位序里“P7 先修绿大 N 再放外来者”不成立；且 N=40 的 28 个 npc **不进岗位表 = 只吃不产**⇒ **游客的负载形状已经在跑了**。然后两个点子各自被量死：①**渔获 32→48** 在 N=40 买到一颗 seed，却在没调过的留出 13-30 上 17/18→**16/18**（且零假设臂自己就能抬一颗红）；②**出口余量**——探针先把“哪种货可出”几乎全否（糕点本就紧 0.43、柴薪净耗 159>cap 80、屋瓦只剩 2），只剩话本可行；而开了车道后 **缺货日一格没动**（书店两个月才做 38-48 本），把产量翻三倍反而让话本 **13/18 → 18/18 全年不缺**。⭐ 顺路纠正一处混淆：**“全年不缺” ≠ “库存堆着”**——留出 18 个 seed 上每种货都碰过 0 库存，**这镇子没有可卖的余量**。`game/` 一个字节没改、零金标。 |
 | [215 P4c-8 可丽饼店的柜台](215-p4c8-creperie-seller.md) | 甜点钱从镇库改进【跑堂】的口袋。⭐ 【故意不给酒店掌柜】——最自然的人选（糕点本就是她做的、她已卖两样）被实测否掉：再给一份收入会弱化「穷了就去上工」的动机环，而她是全镇唯一的糕点产者⇒ N=16 seed 5 糕点产量 306→116、满足率 0.875→0.459、断供 8→33 天，#40 12/12→10/12。与渔夫同一个形状（一岗一货、无第二供给源）⇒ **卖家要挑不产货的人**。跑堂：N=12 12/12、N=16 11/12（零假设臂 12/12 ⇒ 在噪声内）、留出 **18/18**（master 17/18，但零假设臂同为 18/18 ⇒ 不记在机制头上）。⚠ 代价：店跟着班开关 ⇒ 吃点心 726→550（−24%）。⚠ 烘锚坑：`--bake-golden`/`--bake-anchor` 不带路径时【不烘】且报一个和真不符一样的 FAIL。 |
+| [216 基准路径参数](216-benchmark-path-arguments.md) | `--bake-golden` / `--bake-anchor` 缺路径时旧解析器会静默改成普通运行；三个 gate 现已 fail-closed，27 个非法 CLI 组合与 29 个正向解析对照进 CI。 |
+| [217 P4c 当前基线复核](217-current-p4c-baseline-audit.md) | 旧的「seed 24 糕点 0.43」在当前 `f204276` 树不复现：held-out 13-30 为 18/18，seed 24 糕点 0.771。下一片不应盲调糕点。 |
+| [218 P4b 镇长选举与任期](218-p4b-mayoral-terms.md) | 每 28 天从三位声誉候选人直选镇长；逐票、任期、事件和 HUD 都可见，#37 分别核对议题票与镇长票。政策旋钮仍关闭。 |
+| [219 P4c 镇长公务与政绩](219-p4c-mayor-duty.md) | 当选镇长会规划行程到镇公所完成每周公务；任期记录保留出勤，HUD 显示出勤与镇库变化，#37 与 60 天活性门防止公务被伪造或悄悄失活。 |
+| [220 P4c-2 换届成绩单](220-p4c2-term-review.md) | 新选举前冻结上一任出勤率与镇库变化，写入可追溯的 mayor_review 大事；#37 逐字段反算并要求每个结束任期恰好一张成绩单。 |
+| [221 P4c-3 选民政绩预评](221-p4c3-voter-review-preview.md) | 完整观察台按所选居民性格拆出上届政绩的出勤分、财政分与合计分；明确标注尚未计票，真实选举轨迹不变。 |
+| [222 P4c-4 政绩进入连任选票](222-p4c4-performance-vote.md) | 换届先结上届成绩单；若前任再次参选，每位居民把同一套可见政绩分叠加到其 standing 底分，任期账本绑定所用 review 事件。 |
+| [223 P4c-5 政绩改投回执](223-p4c5-ballot-impact-receipt.md) | 真实票箱与 standing-only 反事实票箱逐人对照；大事栏显示政绩造成的改投数，#37 核对票数守恒与 review 来源。 |
+| [224 P4c-6 镇公所室内设计与 PixelLab 资产](224-p4c6-pixellab-civic-furniture.md) | 镇公所分成办事区、中央公共轴与档案镇长办公区；公共材质、真实隔墙和四张 PixelLab 专属资产共同建立功能可读性。 |
+| [225 P4c-7 镇务公示板与治理 HUD](225-p4c7-civic-notice-board.md) | PixelLab 公示板成为普通观察与生活模式的共同交互锚；只读治理卡集中现任、任期、出勤、镇库、票箱、成绩单和改投回执，不进入 NPC 候选或改变仿真。 |
+| [226 P4c-7 影响复核与因果监测](226-p4c7-impact-and-causal-monitor.md) | 金标、留出 seed 与历史 N=40 病例复核新公示板的仿真影响；修正 S5 把“trust 是必要门”误判成“trust 必须创造机会”的统一 ACE 门，并输出逐 seed 回执。 |
+| [228 P4d 镇长政纲与跨相位路线](228-p4d-mayoral-platforms-and-roadmap.md) | 选举首次产生真实财政政纲并在公示板公开；给 P0–P9 做整体进度账，排序 P5 银行、P4 公共工程、P6 特产视觉线与 P7 规模门。 |
+| [229 P5a 合作银行与影响回执](229-p5a-cooperative-bank-and-impact-receipt.md) | PixelLab 银行柜台、玩家存取款与创业金卡片、居民自动储蓄和小额商业贷款；硬不变量 #47 独立重建准备金、存款负债与贷款应收。 |
+| [230 自适应室内、室内市场构图与陆路入口](230-adaptive-interiors-and-land-entrance.md) | 大型公共室内按用途近取景并可拖动浏览；Halles 扩为 16×12 的分区构图，PixelLab 公共道具套件补足层次；镇西高速式岔路收束成一条接主街的双向陆路。 |
+| [227 Investment opportunity receipt](227-investment-opportunity-receipt.md) | English receipt separates exposure, eligibility, choice, commit, acceptance, and routing; exact all-agent denominators show sparse Aria→Ben is allocation competition and reveal 103 post-choice social dropouts for the next trace slice. |
 | [44 美术方向与目标调色板](44-art-direction.md) | 角色收向「现代日常小镇居民」；40 色目标 `.gpl`；**实测代码里有 134 个硬编码色值 ⇒ 这是一次收敛重构，不是写一个文件** |
 
 ## 架构与 LLM 集成
@@ -211,6 +226,8 @@
 
 ## 素材、背景与参考
 
+Latest visual-development receipt: [243 · Terrain transition compositions](243-terrain-transition-compositions.md) — reusable PixelLab retaining walls, ramp, planted corner, and exposed rock now articulate the important elevation changes while the deterministic contour remains the connective system. Previous proportion/façade pass: [242](242-building-proportion-facades-irregular-terrain.md); previous street-corner pass: [241](241-street-corner-activity.md).
+
 | 文档 | 内容 |
 |---|---|
 | [09 美术资产与版权](09-美术资产与版权.md) | CC0 素材来源、三级美术回退、版权红线 |
@@ -229,3 +246,5 @@
 ## 媒体
 
 演示视频与截图在 [`media/`](media/)。README 只链当前构建的片子；更早的片子仍留在目录里作为历史。
+
+- [249 · 实机游玩演示与录制](249-gameplay-tour.md)

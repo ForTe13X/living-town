@@ -79,6 +79,8 @@
      - **开放(xi)→观点迁移 ACE=0.75**：FJ 易感度是观点是否随大流的强因。
      - **trust→投资 ACE=0.62（PN 5/5、PS 0/3）**：高 trust 是投资的**必要非充分**条件——拦截 trust 全挡投资，但单加 trust 不够（还需机会/礼物）。
      - 系统指标基线：PI≈0.24、cascade≈2.75、Gini≈0.075（换后端/改机制后这些应稳定，作回归参照）。
+     - **2026-09-19 当前树更正**：固定 pair 的自然投资支持已降到 2/8，统一 `ACE≥0.30` 会把“机会稀疏”误报成 trust 门失效；
+       S5 现按这里本来写明的“必要非充分”语义守 `support≥2 且 PN=1.00`，并逐 seed 打印回执。现状、边界和复跑数据见 [226](226-p4c7-impact-and-causal-monitor.md)，英文机会漏斗见 [227](227-investment-opportunity-receipt.md)。
    - **S5 后端矩阵 ✅ 已实现（2026-06-28）**：`bench/BackendBench.gd`+`scenes/backend_bench.tscn`（scene 模式，autoload 可用）+ AIBackend 加合法率埋点 `stats{fired,landed,bad_parse,timeout}`。跑选定后端×seed 网格，量**合法率/截止线命中率 + PI/cascade/Gini + 采样真台词**。logic/mock 容器跑、slm 本机原生 `--gpu` 跑。实测矩阵：
 
      | 后端 | 网格 | 合法率 | 截止线命中 | PI | cascade | Gini |
