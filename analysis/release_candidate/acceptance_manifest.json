@@ -1,0 +1,58 @@
+{
+  "schema": "living-town.release-candidate-acceptance/1",
+  "as_of": "2026-10-03",
+  "candidate": "RC-B",
+  "status": "unaccepted",
+  "validated_source_commit": "27ae83f5b109dd1486af92c0480997f7182863b6",
+  "game_tree": "7867aca92820754954f6874f46e5565c24e541a2",
+  "source_capture": {
+    "commit": "2deb1cde370c608ec0c898aca69e8a2e2f188491",
+    "same_game_tree": true,
+    "session_receipt": "D:/Documents/Dev/living-town-rcb-hint-exact-2deb1cd/session/journey.json",
+    "session_checks_passed": "53/53",
+    "session_viewport_inputs": 291,
+    "session_rendered_frames": 16,
+    "fresh_process_resume_receipt": "D:/Documents/Dev/living-town-rcb-hint-exact-2deb1cd/resume/journey.json",
+    "resume_checks_passed": "9/9",
+    "resume_viewport_inputs": 6,
+    "resume_rendered_frames": 3,
+    "host_os_input_covered": false,
+    "visual_review": "observational screenshot review only"
+  },
+  "fixture_coverage": {
+    "ledger": "tools/gate_complement_ledger.json",
+    "baked_game_tree": "7867aca92820754954f6874f46e5565c24e541a2",
+    "fixture_groups": 7,
+    "invariants": 39,
+    "commands_passed": "9/9",
+    "globally_dead_invariants": 0,
+    "guard": "pass"
+  },
+  "desktop_package": {
+    "directory": "D:/Documents/Dev/living-town-desktop-rcb-hint-27ae83f",
+    "stage_manifest": "D:/Documents/Dev/living-town-desktop-rcb-hint-27ae83f/manifest.json",
+    "staged_files": 818,
+    "source_clean": true,
+    "untracked_runtime_inputs": 0,
+    "export_receipt": "D:/Documents/Dev/living-town-desktop-rcb-hint-27ae83f/export_receipt.json",
+    "export_result": "PASS",
+    "runtime_receipt": "D:/Documents/Dev/living-town-desktop-rcb-hint-27ae83f/runtime_receipt.json",
+    "runtime_result": "PASS",
+    "headless_cases_passed": "7/7",
+    "executable_sha256": "026ee3f1748d31521f3a62ecaf7f9c0d6137bdcec56b8b353640e2677e99b9fe",
+    "backend_scope": "logic; no bundled native model"
+  },
+  "hosted": {
+    "pull_request": "https://github.com/ForTe13X/living-town/pull/78",
+    "last_observed_ci_head": "4a7093a23995ef87c0609c6e21f9a654f30d90e6",
+    "current_head_ci": "pending",
+    "independent_visual_policy_review": "pending"
+  },
+  "open_acceptance": [
+    "physical host keyboard and mouse input",
+    "10-15 minute human novice walkthrough",
+    "full independent visual and policy review",
+    "current-head hosted CI",
+    "optional native-model qualification if required"
+  ]
+}

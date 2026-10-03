@@ -1,0 +1,13 @@
+# Living Town current candidate status
+
+**2026-10-03 · RC-B local candidate · unaccepted.** The validated source is clean commit `27ae83f5b109dd1486af92c0480997f7182863b6` on `codex/lt20-rcb-integration`; its `game/` tree is `7867aca92820754954f6874f46e5565c24e541a2`. This record itself is documentation and does not change that game tree. The packaged Windows logic build is `D:/Documents/Dev/living-town-desktop-rcb-hint-27ae83f/LivingTown.exe` (SHA-256 `026ee3f1748d31521f3a62ecaf7f9c0d6137bdcec56b8b353640e2677e99b9fe`). It contains no bundled native model.
+
+## Local evidence
+
+- **Godot in-game capture:** `D:/Documents/Dev/living-town-rcb-hint-exact-2deb1cd/session/journey.json` passes 53/53 checkpoints using 291 synthetic events delivered to the Godot viewport, with 16 rendered PNGs. It covers resident selection, town and room movement, café purchase, social action, bank deposit and account-card input isolation, and F5 save. The separate fresh-process `resume/journey.json` passes 9/9 checkpoints using 6 synthetic events and 3 PNGs, including F8 restore and withdrawal. Capture commit `2deb1cd` and packaged source `27ae83f` have the same `game/` tree. The `04_cafe_arrival.png` prompt was visually inspected as an **observational** check. A prior-tree `813c3fb` capture also passed 53/53 when a greeting was legitimately rejected and affinity fell by 3.
+- **Fixture coverage:** `tools/gate_complement_ledger.json` was rebaked for this exact game tree; all nine fixture commands returned zero, across seven fixture groups and 39 invariants, with no globally dead invariant. `tools/gate_complement_guard.py` passed.
+- **Desktop package:** `D:/Documents/Dev/living-town-desktop-rcb-hint-27ae83f/manifest.json` records 818 staged files, clean source, and zero untracked runtime inputs. `export_receipt.json` reports `PASS`. `runtime_receipt.json` reports all seven packaged headless cases passing: startup, journey, save-resume, resume-write, resume-read, save-denied, and resume-recover. The save-resume malformed-location warning and save-denied write warning are expected negative-case observations; saved bytes were preserved in the denied-write case.
+
+## Open acceptance work
+
+PR [#78](https://github.com/ForTe13X/living-town/pull/78) remains draft. Its last observed hosted CI result applies to older head `4a7093a`, so current-head hosted CI and independent visual/policy review remain pending. The local PNG review does not establish full visual acceptance. The scripted viewport route does not cover physical host keyboard/mouse input or a 10–15 minute human novice walkthrough. Native-model qualification, if required, is a separate scope. See `analysis/release_candidate/acceptance_manifest.json` for the compact provenance and gate record.
