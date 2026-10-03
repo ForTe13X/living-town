@@ -100,8 +100,8 @@ func _run() -> void:
 		_finish()
 		return
 	await _save_checkpoint("03_town_arrival")
-	var social_ok := await _run_social_leg()
-	if not social_ok:
+	var social_resolved := await _run_social_leg()
+	if not social_resolved:
 		_finish()
 		return
 	var post_social_option = Sim.get_agent(pid).get("option")
@@ -338,15 +338,22 @@ func _run_social_leg() -> bool:
 		if String(event.get("actor", "")) == pid and String(event.get("target", "")) == social_id \
 				and String(event.get("type", "")) == social_action:
 			social_receipts.append(event)
-	var accepted := not social_receipts.is_empty() and bool(social_receipts[-1].get("accepted", false))
+	var resolved := social_started and social_receipts.size() == 1 \
+		and typeof(social_receipts[0].get("accepted")) == TYPE_BOOL
+	var accepted := resolved and bool(social_receipts[0]["accepted"])
 	var relation_after := _affinity(pid, social_id)
-	_check("social action resolves to an accepted event receipt", social_started and accepted,
+	var relationship: Dictionary = Sim.get_agent(pid).get("relationships", {}).get(social_id, {})
+	var receipt_id := int(social_receipts[0].get("id", -1)) if resolved else -1
+	var relationship_event_id := int(relationship.get("last_pos" if accepted else "last_neg", -1))
+	_check("social action resolves to one typed event receipt", resolved,
 		"action=%s target=%s same_area=%s started=%s final_option=%s receipts=%s" % [social_action, social_id,
 		str(social_target.get("same_area", false)), str(social_started), str(Sim.get_agent(pid).get("option")), JSON.stringify(social_receipts)])
-	_check("social outcome matches the relationship readout", not social_receipts.is_empty() and relation_after >= relation_before,
-		"affinity %.1f -> %.1f" % [relation_before, relation_after])
+	_check("social outcome matches the relationship readout", resolved and relationship_event_id == receipt_id
+		and (relation_after > relation_before if accepted else relation_after < relation_before),
+		"accepted=%s event=%d relationship_event=%d affinity %.1f -> %.1f" % [
+			str(accepted), receipt_id, relationship_event_id, relation_before, relation_after])
 	await _save_checkpoint("08_social_receipt")
-	return accepted
+	return resolved
 
 const SOCIAL_LABELS := {"greet": "打招呼", "give": "送礼", "gossip": "说八卦", "invite": "约见",
 	"confront": "理论", "apologize": "道歉", "discuss": "讨论", "confide": "倾诉",
