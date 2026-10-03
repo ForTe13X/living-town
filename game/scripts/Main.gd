@@ -2568,6 +2568,7 @@ func _update_status() -> void:
 		if s == "simmering" or s == "escalated" or s == "confronted" or s == "lingering":
 			conf_active += 1
 	var ptxt := ""
+	var warehouse_status := _player_in_warehouse_observatory()
 	if _player_mode:
 		var pl: Dictionary = Sim.get_agent("player")
 		if not pl.is_empty():
@@ -2576,7 +2577,7 @@ func _update_status() -> void:
 				if String(c["status"]) == "active" and (String(c["a"]) == "player" or String(c["b"]) == "player"):
 					var other := String(c["b"]) if String(c["a"]) == "player" else String(c["a"])
 					pmeets.append("和%s约在%s(剩%dt)" % [Sim._name(Sim.get_agent(other)), Sim._area_label_id(String(c["area"])), int(c["deadline"]) - Sim.tick_no])
-			if _player_in_warehouse_observatory():
+			if warehouse_status:
 				ptxt = "\n[color=#80e1ff]你：东海货仓 · 货运观测室（只读）  点右侧柜台查泊位/回执  卸货由码头工执行[/color]"
 			else:
 				var vkeys := []
@@ -2596,8 +2597,11 @@ func _update_status() -> void:
 	if not Sim.mayor_state.is_empty():
 		civic_brief += "  ·  镇长%s" % _nm(String(Sim.mayor_state.get("mayor", "")))
 	var full := core + etxt + tail + counts
-	var player_lines: Array[String] = [ptxt]
-	if _player_mode and ptxt != "":
+	# Keep the warehouse identity in the visible row even when the full
+	# instruction belongs in the tooltip rather than the narrow status bar.
+	var visible_ptxt := "\n[color=#80e1ff]你：东海货仓 · 货运观测室（只读） · 点柜台查回执[/color]" if warehouse_status else ptxt
+	var player_lines: Array[String] = [visible_ptxt]
+	if _player_mode and ptxt != "" and not warehouse_status:
 		player_lines.append("\n[color=#ffd700]你：WASD移动  点居民交互  动作见下方  C聊天  R归还访客证[/color]")
 	# RichTextLabel wraps silently and clips at 28/52 px. Check its actual layout,
 	# retaining the most useful details that fit the current viewport. The complete

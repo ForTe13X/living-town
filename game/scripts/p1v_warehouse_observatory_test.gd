@@ -199,6 +199,7 @@ func _ready() -> void:
 	var pl: Dictionary = Sim.add_player(Vector2i(57, 8))
 	_main._player_mode = true
 	_main._selected_id = "player"
+	_main._relayout_hud()
 	_main._probe.go_home()
 	ck(_main._portal_click(Vector2(57 * 48 + 24, 8 * 48 + 24))
 		and String(pl.get("space", "")) == "port_warehouse" and String(pl.get("floor", "")) == "1f",
@@ -207,8 +208,11 @@ func _ready() -> void:
 	ck(not _main._act_pan.visible and _main._act_btns.all(func(b): return not (b as Button).visible),
 		"观测室隐藏七个社交按钮，不暗示货仓操作")
 	ck("东海货仓 · 货运观测室" in String(_main._obs.text)
-		and "货运观测室（只读）" in String(_main._status.text) and not _main._chat_in.visible,
-		"实际观察台/顶栏按真实 plane 显示里程碑，仓内自聊输入框收起")
+		and "货运观测室（只读）" in String(_main._status.text)
+		and _main._status.get_content_height() <= _main._status.size.y
+		and not _main._chat_in.visible,
+		"实际观察台/顶栏按真实 plane 显示里程碑且不裁切，仓内自聊输入框收起（content=%d box=%.1f）" % [
+			_main._status.get_content_height(), _main._status.size.y])
 	var before_chat := _snapshot()
 	var c_event := InputEventKey.new()
 	c_event.keycode = KEY_C
