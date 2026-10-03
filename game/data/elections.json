@@ -11,7 +11,7 @@
     "candidate_count": 3,
     "duty_every_days": 7,
     "duty_phase": "day",
-    "duty_pull": 8,
+    "duty_pull": 9,
     "platforms": [
       {
         "id": "public_care",

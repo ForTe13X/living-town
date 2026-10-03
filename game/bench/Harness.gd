@@ -32,6 +32,7 @@ extends SceneTree
 
 const SimScript = preload("res://scripts/Sim.gd")
 const Inv = preload("res://bench/Invariants.gd")
+const CivicProjectScript = preload("res://scripts/CivicProject.gd")
 
 const GOLDEN_DEFAULT := "res://bench/golden_digests.json"
 
@@ -114,6 +115,7 @@ var _population_target := 0 # 所选口径的正整数目标；total 会经 Sim.
 var _permute := 0           # --permute N：仅测试，打乱候选数组（置换不变性机检）；0=off 逐字节不变
 var _chain_dump := ""       # --chain-dump <path>：逐 tick 前缀链全量写出（每 seed 一行）
 var _chain_ref := ""        # --chain-ref <path>：与一份 dump 比对，报精确到 tick 的首个分叉
+var _civic_incidence := false # --civic-incidence：只打印项目事件计数，不改 S0 判据
 
 func _init() -> void:
 	var seeds := _parse_seeds("1-12")
@@ -150,6 +152,8 @@ func _init() -> void:
 				_population_target = int(args[i + 1])
 		elif args[i] == "--shadow":
 			_shadow = true
+		elif args[i] == "--civic-incidence":
+			_civic_incidence = true
 		elif args[i] == "--shadow-dump" and i + 1 < args.size():
 			_shadow = true; _shadow_dump = args[i + 1]
 		elif args[i] == "--golden" and i + 1 < args.size():
@@ -268,6 +272,50 @@ func _init() -> void:
 			s0["population"] = {"mode": _population_mode, "requested": _population_target,
 				"core": int(S.core_population), "total": S.agents.size()}
 		print("[S0] " + JSON.stringify(s0))
+		if _civic_incidence:
+			var project_counts := {"proposal": 0, "vote": 0, "approved": 0, "rejected": 0,
+				"unfunded": 0, "payment": 0, "start": 0, "complete": 0}
+			for raw_event in S.event_log:
+				var e: Dictionary = raw_event
+				if String(e.get("subject", "")) == CivicProjectScript.PROJECT_ID:
+					match String(e.get("type", "")):
+						"civic_proposal": project_counts["proposal"] += 1
+						"civic_vote": project_counts["vote"] += 1
+						"civic_decision": project_counts["approved" if bool(e.get("accepted", false)) else "rejected"] += 1
+						"civic_unfunded": project_counts["unfunded"] += 1
+						"civic_start": project_counts["start"] += 1
+						"civic_complete": project_counts["complete"] += 1
+				if String(e.get("type", "")) == "pay" \
+						and String(e.get("note", "")) == CivicProjectScript.PAY_PREFIX + "5":
+					project_counts["payment"] += 1
+			var project_fold: Dictionary = CivicProjectScript.fold(S.event_log)
+			var project_attempts := []
+			for proposal_id in (project_fold.get("attempts", {}) as Dictionary):
+				var project_attempt: Dictionary = (project_fold["attempts"] as Dictionary)[proposal_id]
+				project_attempts.append({"id": proposal_id, "status": project_attempt.get("status", "")})
+			project_attempts.sort_custom(func(a, b): return String(a["id"]) < String(b["id"]))
+			var project_reviews := []
+			for raw_term in S.mayor_log:
+				var term: Dictionary = raw_term
+				if not term.has("review_event_id"):
+					continue
+				var raw_review := term.duplicate(true)
+				raw_review.erase("civic_capital_spend")
+				var changed_scores := 0
+				for voter in S.agents:
+					if bool(voter.get("is_player", false)):
+						continue
+					if S.mayor_review_score(voter, raw_review) != S.mayor_review_score(voter, term):
+						changed_scores += 1
+				project_reviews.append({"term_start": int(term.get("term_start", -1)),
+					"raw_treasury_delta": int(term.get("treasury_delta", 0)),
+					"civic_capital_spend": int(term.get("civic_capital_spend", 0)),
+					"scored_treasury_delta": int(term.get("treasury_delta", 0)) + int(term.get("civic_capital_spend", 0)),
+					"voters_with_score_change": changed_scores})
+			print("[CIVIC] " + JSON.stringify({"seed": sd, "days": days, "digest": s0["digest"],
+				"event_digest": s0["event_digest"], "counts": project_counts,
+				"attempts": project_attempts, "reviews": project_reviews,
+				"authority_error": CivicProjectScript.authority_error(S.event_log, S.mayor_log, S.economy)}))
 		if _shadow_dump != "":
 			_dump_shadow(sd, S.shadow_trace)   # 只在主循环 dump 一次（det 复跑不再重复）
 		if _chain_dump != "":

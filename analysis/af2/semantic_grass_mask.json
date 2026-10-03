@@ -1,0 +1,33 @@
+{
+  "schema": "living-town.season-surface-mask/1",
+  "semantic_id": "grass",
+  "projection": "main_shot_fit",
+  "design_viewport": [1280, 768],
+  "hud_free_rect": [60, 60, 960, 420],
+  "home_pad": [120, 240],
+  "sample_cell_inset": 0.18,
+  "map_layers_to_exclude": [
+    "water",
+    "trees",
+    "blockers",
+    "walls",
+    "doors",
+    "landmarks",
+    "objects"
+  ],
+  "coastal_layers_to_exclude": [
+    "surfaces",
+    "tree_belt",
+    "planting",
+    "flowerbeds"
+  ],
+  "exclude_area_rects": true,
+  "exclude_solid_lots": true,
+  "occlusion_margins": {
+    "solid_lots": 2,
+    "roofed_areas": 1
+  },
+  "min_grass_cells": 120,
+  "min_sample_pixels": 5000,
+  "statistic": "per_channel_median"
+}

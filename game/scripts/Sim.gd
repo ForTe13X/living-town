@@ -11,6 +11,7 @@ extends Node
 
 ## preload 而非依赖 class_name 全局（未在编辑器导入的项目无全局类缓存，headless 下全局类名不可用）。
 const MemoryStreamScript := preload("res://scripts/Memory.gd")
+const CivicProjectScript := preload("res://scripts/CivicProject.gd")
 const CoastalOverlayImporter := preload("res://scripts/CoastalOverlayBundleImporter.gd")
 const WorldPackageAitownAdapter := preload("res://addons/worldgen/consumers/ai_town_adapter/space_queries.gd")
 const WorldPackageAitownMigrations := preload("res://addons/worldgen/consumers/ai_town_adapter/migrations.gd")
@@ -35,6 +36,7 @@ const NAV_DIRS := [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, 
 const HOME_NEEDS := ["energy", "fun"]
 const JOURNEY_URGENT := 30.0    # 偏紧(need<70)才发起跨平面行程（本地已无满足者时）
 const PREEMPT_CRISIS := 12.0    # 承诺行程执行中，若【另一】需求跌破此危机线且当前行程目标本身不急 → 中止改救急（守 #01）
+const HUNGER_JOURNEY_PREEMPT := 20.0 # LT-14：远途找饭需要比 12 更早的路程缓冲；只抢占尚不急的非饥饿行程。
 const STARVE_NEED := 0.5        # 硬不变量 #01「无饿穿」的判据线：need ≤ 此值的 agent-tick 必须为 0。
                                 # 与 Harness._run_once:599 / DetGate._run:176 / Invariants.check_all 的那个 0.5 是同一条线，
                                 # 此前只以字面量散在三处。引擎自己从不拿它做决策 ⇒ 提取为常量对 logic 路零影响。
@@ -318,6 +320,8 @@ var last_election := {}         # 最近一次议题结果（观察台/HUD）
 # P4b：先只存可见、可回放的候选名单、逐人选票与任期。政策旋钮留到下一片，不能反向伪造选举事实。
 var mayor_log: Array = []       # 任期账本；结束后追加 duties_due/attendance_pct/town_coin_end/treasury_delta/review_event_id
 var mayor_state := {}           # 当前任 {mayor,term_start,term_end,candidates,duties_done,last_duty_day,last_duty_period,town_coin_start}
+var _civic_fold_cache := {}     # event_log 的派生视图；不入档，读档与重开后按需重折
+var _civic_fold_size := -1
 var econ_stats := {"meals_paid": 0, "meals_free": 0, "wages_paid": 0, "wages_skipped": 0}  # 诊断计数
 # ── Wave E 劳动产出（docs/47 §二-E1）：data/production.json 驱动；缺文件→_prod_on()=false→全部短路=逐字节不变 ──
 ## ★红线继承：economy.json 的 `_doc` 写死了"钱只造分化与戏剧、不造饿死（付不起照吃 meals_free）"。
@@ -419,9 +423,10 @@ var _replay_active := false
 var _replay_ticks := {}         # agent_id -> [sorted 记录决策 tick]（按序+按 tick 还原异步时机）
 var _replay_ptr := {}           # agent_id -> 当前回放指针
 
-# PlayerTraceV1 is authoritative Sim state.  Main emits public inputs; receipts are
+# PlayerTraceV2 is authoritative Sim state.  Main emits public inputs; receipts are
 # deterministic witnesses recomputed by those same public boundaries during replay.
-const PLAYER_TRACE_VERSION := 1
+const PLAYER_TRACE_VERSION := 2
+const PLAYER_TRACE_LEGACY_VERSION := 1
 const PLAYER_TRACE_MAX_ENTRIES := 4096
 const PLAYER_TRACE_MAX_ENTRIES_PER_TICK := 64
 const PLAYER_TRACE_MAX_PAYLOAD_BYTES := 4096
@@ -1105,6 +1110,8 @@ func start_new(p_seed: int = 12345) -> void:
 	agents.clear()
 	_agent_by_id.clear()
 	event_log.clear()
+	_civic_fold_cache = {}
+	_civic_fold_size = -1
 	cafe_guest_capability = {}
 	_cargo_event_index = {"event_size": 0, "arrivals": {}, "receipts": {}, "tx": {}}
 	observatory_projection_event_reads = 0
@@ -1404,7 +1411,7 @@ func _player_trace_receipt(result: Variant) -> Dictionary:
 func _player_trace_entry_seal(entry_without_seal: Dictionary) -> int:
 	return fnv1a32(_player_trace_canonical(entry_without_seal))
 
-func _player_trace_payload_error(kind: String, payload: Dictionary) -> String:
+func _player_trace_payload_error(kind: String, payload: Dictionary, trace_version := PLAYER_TRACE_VERSION) -> String:
 	if _player_trace_bytes(payload) > PLAYER_TRACE_MAX_PAYLOAD_BYTES:
 		return "payload_too_large"
 	match kind:
@@ -1429,13 +1436,22 @@ func _player_trace_payload_error(kind: String, payload: Dictionary) -> String:
 					or not (payload.get("prompt") is String) or not (payload.get("reply") is String): return "chat_payload"
 			if String(payload.get("prompt", "")).to_utf8_buffer().size() > PLAYER_TRACE_MAX_CHAT_BYTES \
 					or String(payload.get("reply", "")).to_utf8_buffer().size() > PLAYER_TRACE_MAX_CHAT_BYTES: return "chat_too_large"
+		"bank_action":
+			if trace_version < PLAYER_TRACE_VERSION: return "bank_action_version"
+			if payload.keys().size() != 3 or not (payload.get("action") is String) \
+					or not (payload.get("account_id") is String) or not (payload.get("amount") is int): return "bank_action_payload"
+			var bank_action := String(payload.get("action", ""))
+			var bank_amount := int(payload.get("amount", -1))
+			if bank_action not in ["deposit", "withdraw", "loan"]: return "bank_action_kind"
+			if String(payload.get("account_id", "")) == "": return "bank_account"
+			if (bank_action == "loan" and bank_amount != 0) or (bank_action != "loan" and bank_amount <= 0): return "bank_amount"
 		_: return "unknown_kind"
 	return ""
 
 func _player_trace_preflight(kind: String, payload: Dictionary) -> String:
 	if _player_trace_replay_active:
 		return ""
-	var err := _player_trace_payload_error(kind, payload)
+	var err := _player_trace_payload_error(kind, payload, int(player_trace.get("version", PLAYER_TRACE_VERSION)))
 	if err != "": return err
 	if not player_trace_available:
 		return "" # old saves remain playable, but explicitly cannot replay their missing history
@@ -1465,7 +1481,8 @@ func _player_trace_commit(kind: String, payload: Dictionary, receipt: Dictionary
 	var order := 0
 	if not entries.is_empty() and int((entries[-1] as Dictionary).get("tick", -1)) == tick_no:
 		order = int((entries[-1] as Dictionary).get("order", -1)) + 1
-	var entry := {"version": PLAYER_TRACE_VERSION, "seq": seq, "tick": tick_no, "order": order,
+	var trace_version := int(player_trace.get("version", PLAYER_TRACE_VERSION))
+	var entry := {"version": trace_version, "seq": seq, "tick": tick_no, "order": order,
 		"actor": "player", "kind": kind, "payload": payload.duplicate(true), "receipt": receipt.duplicate(true)}
 	entry["seal"] = _player_trace_entry_seal(entry)
 	entries.append(entry)
@@ -1477,7 +1494,8 @@ func _player_trace_commit(kind: String, payload: Dictionary, receipt: Dictionary
 	return true
 
 func _player_trace_validate(trace: Dictionary, bind_session := true) -> String:
-	if int(trace.get("version", -1)) != PLAYER_TRACE_VERSION: return "trace_version"
+	var trace_version := int(trace.get("version", -1))
+	if trace_version not in [PLAYER_TRACE_LEGACY_VERSION, PLAYER_TRACE_VERSION]: return "trace_version"
 	if not (trace.get("session") is Dictionary) or not (trace.get("entries") is Array): return "trace_shape"
 	var entries: Array = trace.get("entries", [])
 	if entries.size() > PLAYER_TRACE_MAX_ENTRIES or int(trace.get("next_seq", -1)) != entries.size(): return "trace_count"
@@ -1492,7 +1510,7 @@ func _player_trace_validate(trace: Dictionary, bind_session := true) -> String:
 	for i in range(entries.size()):
 		if not (entries[i] is Dictionary): return "entry_shape"
 		var entry: Dictionary = entries[i]
-		if int(entry.get("version", -1)) != PLAYER_TRACE_VERSION or int(entry.get("seq", -1)) != i \
+		if int(entry.get("version", -1)) != trace_version or int(entry.get("seq", -1)) != i \
 				or String(entry.get("actor", "")) != "player" or not (entry.get("payload") is Dictionary) \
 				or not (entry.get("receipt") is Dictionary): return "entry_identity"
 		var et := int(entry.get("tick", -1)); var eo := int(entry.get("order", -1))
@@ -1500,12 +1518,26 @@ func _player_trace_validate(trace: Dictionary, bind_session := true) -> String:
 		tick_count = tick_count + 1 if et == prior_tick else 1
 		if tick_count > PLAYER_TRACE_MAX_ENTRIES_PER_TICK: return "entry_tick_budget"
 		var kind := String(entry.get("kind", "")); var payload: Dictionary = entry.get("payload", {})
-		var payload_error := _player_trace_payload_error(kind, payload)
+		var payload_error := _player_trace_payload_error(kind, payload, trace_version)
 		if payload_error != "": return payload_error
 		var unsigned := entry.duplicate(true); var seal := int(unsigned.get("seal", -1)); unsigned.erase("seal")
 		if seal != _player_trace_entry_seal(unsigned): return "entry_seal"
 		prior_tick = et; prior_order = eo
 	return ""
+
+## Upgrade the compatible V1 envelope in memory after load. Entry identity/order
+## remain unchanged; only the declared trace version and its integrity seals move.
+func _player_trace_upgrade_legacy(trace: Dictionary) -> Dictionary:
+	if int(trace.get("version", -1)) != PLAYER_TRACE_LEGACY_VERSION:
+		return trace.duplicate(true)
+	var upgraded := trace.duplicate(true)
+	upgraded["version"] = PLAYER_TRACE_VERSION
+	for i in (upgraded.get("entries", []) as Array).size():
+		var entry: Dictionary = (upgraded["entries"] as Array)[i]
+		entry["version"] = PLAYER_TRACE_VERSION
+		entry.erase("seal")
+		entry["seal"] = _player_trace_entry_seal(entry)
+	return upgraded
 
 func get_player_trace() -> Dictionary:
 	return player_trace.duplicate(true) if player_trace_available else {}
@@ -1529,7 +1561,7 @@ func _player_trace_rebuild_index() -> void:
 		bucket.append(int(entry.get("seq", -1))); _player_trace_tick_index[et] = bucket
 
 func player_trace_status() -> Dictionary:
-	return {"available": player_trace_available, "version": PLAYER_TRACE_VERSION,
+	return {"available": player_trace_available, "version": int(player_trace.get("version", PLAYER_TRACE_VERSION)),
 		"entries": (player_trace.get("entries", []) as Array).size() if player_trace_available else 0,
 		"max_entries": PLAYER_TRACE_MAX_ENTRIES, "max_entries_per_tick": PLAYER_TRACE_MAX_ENTRIES_PER_TICK,
 		"max_payload_bytes": PLAYER_TRACE_MAX_PAYLOAD_BYTES,
@@ -1651,9 +1683,15 @@ func _life_object_actions(ag: Dictionary, o: Dictionary) -> Array:
 			continue
 		var action := String(adv.get("action", ""))
 		var need_id := String(adv.get("need", ""))
+		var price := int(economy.get("prices", {}).get(action, 0)) if _econ_on() else 0
+		var affordable := price <= _coin_of(String(ag.get("id", "")))
+		var pantry_mode := _pantry_act(action) if _econ_on() else ""
 		var why := ""
 		if not staff_ok:
 			why = "店员专用"
+		# Pantry/snack purchases cannot proceed without funds; explain this before the generic closed/unavailable reason.
+		elif _econ_on() and price > 0 and not affordable and pantry_mode in ["buy", "snack"]:
+			why = "钱不够"
 		elif not _adv_open(ag, adv):
 			why = "不是你的活" if String(adv.get("job", "")) != "" else "现在不开"
 		elif need_id in _home_needs(ag) and String(ag.get("home_space", "town")) != "town" \
@@ -1661,10 +1699,10 @@ func _life_object_actions(ag: Dictionary, o: Dictionary) -> Array:
 			why = "只在自己家里"
 		elif not (ag["needs"] as Dictionary).has(need_id):
 			why = "用不了"
-		var price := int(economy.get("prices", {}).get(action, 0)) if _econ_on() else 0
 		out.append({"action": action, "need": need_id, "amount": int(adv.get("amount", 0)),
 			"duration": int(adv.get("duration", 0)), "price": price,
-			"wage": _wage_for(ag, action) if _econ_on() else 0, "ok": why == "", "why": why})
+			"wage": _wage_for(ag, action) if _econ_on() else 0, "ok": why == "", "why": why,
+			"affordable": affordable})
 	return out
 
 ## 「按 E」：身边（同平面、曼哈顿 ≤ radius）能交互的一切，按距离、再按 id 排序（确定）。
@@ -2210,6 +2248,7 @@ func _player_trace_replay_boundary(boundary_tick: int) -> bool:
 			"portal": player_portal_intent(payload)
 			"cafe_guest_pass": player_cafe_guest_pass(String(payload.get("action", "")))
 			"chat_reply": player_chat_commit(String(payload.get("target_id", "")), String(payload.get("prompt", "")), String(payload.get("reply", "")))
+			"bank_action": player_bank_action(String(payload.get("action", "")), String(payload.get("account_id", "")), int(payload.get("amount", 0)))
 			_:
 				player_trace_last_error = "trace_kind"
 				return false
@@ -2345,7 +2384,7 @@ const SAVE_MAGIC := "LTSAVE"
 const SAVE_SCHEMA_LEGACY := 1
 const SAVE_SCHEMA := 2
 const SAVE_RUNTIME_HANDLES := ["backend", "ext", "decision_sink"]
-const SAVE_LOAD_DENY := ["desire_cfg", "_venue_cache", "_indoor_job_cache", "_fisc_cache", "_diners_by_target", "_diners_tick", "_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_agent_definitions", "_authored_interiors_data", "_authored_world_package_ref", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected",
+const SAVE_LOAD_DENY := ["desire_cfg", "_venue_cache", "_indoor_job_cache", "_fisc_cache", "_diners_by_target", "_diners_tick", "_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_agent_definitions", "_authored_interiors_data", "_authored_world_package_ref", "_authored_solid_props", "_civic_fold_cache", "_civic_fold_size", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected",
 	"controlled_id", "_tone_bonus", "loaded_meta"]   # docs/190 生活模式：附身/语气/档头都是 View 或瞬时态，不改存档形状（旧档照读）
 const SAVE_CURRENT_BLOB_KEYS := ["magic", "schema", "game_version", "saved_tick", "saved_day", "seed", "meta", "active_commit_ids", "state"]
 
@@ -2601,7 +2640,7 @@ func load_game(path: String) -> bool:
 		player_trace_available = false
 		_player_trace_tick_index = {}
 	else:
-		player_trace = loaded_trace
+		player_trace = _player_trace_upgrade_legacy(loaded_trace)
 		player_trace_available = true
 		_player_trace_rebuild_index()
 	player_trace_last_error = ""
@@ -3255,6 +3294,15 @@ func _validate_loaded_state(state: Dictionary, sch: int) -> String:
 	for key in ["agents", "world", "production", "logistics", "tick_no", "day", "seed_base", "event_log", "event_digest", "town_stock", "town_coin", "external_coin", "econ_total0", "commitments", "cargo_manifests", "cargo_manifest_order", "core_population"]:
 		if not state.has(key):
 			return "missing required state key: %s" % key
+	if not (state["event_log"] is Array):
+		return "event_log is not an Array"
+	var civic_fold: Dictionary = CivicProjectScript.fold(state["event_log"])
+	if not bool(civic_fold.get("ok", false)):
+		return "civic project event authority: %s" % String(civic_fold.get("error", "invalid"))
+	if state.get("mayor_log") is Array and state.get("economy") is Dictionary:
+		var civic_authority_error := CivicProjectScript.authority_error(state["event_log"], state["mayor_log"], state["economy"])
+		if civic_authority_error != "":
+			return "civic project term/treasury authority: %s" % civic_authority_error
 	if not (state["agents"] is Array) or (state["agents"] as Array).is_empty():
 		return "agents must be a non-empty Array"
 	if typeof(state["core_population"]) != TYPE_INT:
@@ -3358,6 +3406,8 @@ func _scan_objects(v, path: String, out: Array) -> void:
 ## 反序列化后：agents[] 与 _agent_by_id / _active_commitments 已成【各自独立副本】——
 ## 必须重建成【同一引用】，否则经其一改状态不动另一处 → 续跑立刻漂（这就是全套硬门要抓的头号 bug）。
 func _rebuild_after_load(active_commit_ids: Array = []) -> void:
+	_civic_fold_cache = {}
+	_civic_fold_size = -1
 	for ag in agents:                                # 记忆：从 items 数据重建 MemoryStream 对象
 		var m = ag.get("memory")
 		if m is Dictionary and (m as Dictionary).has("__mem_items__"):
@@ -3385,6 +3435,7 @@ func _rebuild_after_load(active_commit_ids: Array = []) -> void:
 # ── 主循环 ───────────────────────────────────────────────────────────────
 func tick() -> void:
 	tick_no += 1
+	_civic_project_tick()
 	if lod_aggregate:
 		_compute_lod_cohort()                        # 观察无关 cohort（salient ∪ 轮转，不读相机）
 	elif lod and lod_near_cap > 0:
@@ -3508,9 +3559,14 @@ func _advance_agent(ag: Dictionary) -> void:
 				return                              # 否则：下一条记录决策在未来 → 本 tick 等待(还原思考延迟)
 			agent_apply(ag, _logic_decide(ag, cands))   # 无更多记录 → 引擎兜底
 			return
-		# 注入了后端(窗口/M2)则走它；否则内置确定性 logic（soak/headless 永远兜底）。
+		# Scrub without an authored decision trace must reproduce the deterministic
+		# logic baseline even when Main attached AIBackend after initial warmup.
+		# Routing logic through the backend branch below would apply external
+		# survival/horizon vetoes a second time and split the replay history.
 		var intent: Dictionary
-		if backend != null and backend.has_method("decide"):
+		if replaying:
+			intent = _logic_decide(ag, cands)
+		elif backend != null and backend.has_method("decide"):
 			intent = backend.decide(ag, cands, _context(ag))
 			if intent.get("_wait", false):
 				return                              # M2：思考中，本 tick 不落地（保持 option==null 下 tick 再问）
@@ -3537,11 +3593,17 @@ func _advance_agent(ag: Dictionary) -> void:
 		agent_apply(ag, intent)
 		return
 	# P3 承诺 pre-empt：正办一件【不急】的事(当前 option 的 need 还舒适≥SURVIVAL_GATE)，却有【另一】需求跌破危机线
-	# → 中止改救急 → 下 tick 重新决策(会挑最紧的)。只打断"不急的承诺"、绝不打断"正在救急的行程"→ 既有决策黏性(消 livelock)
+	# → 中止改救急 → 下 tick 重新决策(会挑最紧的)。LT-14 仅把非饥饿远途的饥饿线提前到 20，给找饭留行程缓冲。
+	# 只打断"不急的承诺"、绝不打断"正在救急的行程"→ 既有决策黏性(消 livelock)
 	# 又不会饿穿(守 #01)。仅对带 need 的 option(object/journey)；无 need 的(social/attend)不受影响。
 	if opt is Dictionary and opt.has("need") and not ag.get("is_player", false) and not _is_controlled(ag):
 		var onid := String(opt["need"])
-		if ag["needs"].has(onid) and float(ag["needs"][onid]) >= SURVIVAL_GATE and _min_need(ag) < PREEMPT_CRISIS \
+		# A journey keeps dest_space when it becomes a local object commitment.
+		# Keep the same hunger interruption through travel and use at that destination.
+		var early_food: bool = (String(opt.get("kind", "")) == "journey" or opt.has("dest_space")) and onid != "hunger" \
+				and float(ag["needs"].get("hunger", 100.0)) < HUNGER_JOURNEY_PREEMPT
+		if ag["needs"].has(onid) and float(ag["needs"][onid]) >= SURVIVAL_GATE \
+				and (_min_need(ag) < PREEMPT_CRISIS or early_food) \
 				and _has_rescue_candidate(ag):
 			ag["option"] = null
 			return
@@ -3915,6 +3977,16 @@ func agent_candidates(ag: Dictionary) -> Array:
 ## ⚠ 第一版只留本职 ⇒ #40 1/12、8 个 seed 硬 #01：人被钉在岗上，need 掉破生存门时已离饭很远（docs/206 同一条死法）。
 ## ⚠ 排好的饭点表（用户 2026-09-16「scheduled lunch time or rest interval」）最好 5/12：休息是钟表窗口，饿有自己的节奏。
 ## 两个逃生口：任一 need 跌破 SURVIVAL_GATE ⇒ 规矩当场失效；收窄后一个不剩 ⇒ 退回全集（不许 livelock，docs/198）。
+func _eligible_civic_work(ag: Dictionary, candidate: Dictionary) -> bool:
+	if String(candidate.get("kind", "")) not in ["object", "journey"]:
+		return false
+	var target := String(candidate.get("target", ""))
+	var obj: Dictionary = world.get("objects", {}).get(target, {})
+	for adv in _as_arr(obj.get("advertises", [])):
+		if adv is Dictionary and bool(adv.get("mayor_duty", false)) and String(adv.get("action", "")) == String(candidate.get("action", "")) and _adv_open(ag, adv):
+			return true
+	return false
+
 func _discipline(ag: Dictionary, cands: Array) -> Array:
 	if cands.is_empty() or not bool(economy.get("work_discipline", false)):
 		return cands
@@ -3936,7 +4008,7 @@ func _discipline(ag: Dictionary, cands: Array) -> Array:
 			continue
 		var cd: Dictionary = c
 		var nid := String(cd.get("need", ""))
-		if String(cd.get("action", "")) == act or (nid in care and float(needs.get(nid, 100.0)) < care_below):
+		if String(cd.get("action", "")) == act or _eligible_civic_work(ag, cd) or (nid in care and float(needs.get(nid, 100.0)) < care_below):
 			kept.append(c)
 	return kept if not kept.is_empty() else cands
 
@@ -4084,6 +4156,9 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 			if vendor_only and not bool(_vendor_for(String(adv.get("action", ""))).get("luxury", false)) \
 					and not _treat_affordable(ag, String(adv.get("action", ""))):
 				continue                                        # docs/201 A2b：为 fun 出门只认收费店（docs/212：也认 economy.treats 里买得起的甜点）
+			# Apply the existing edible-food policy before selecting the sole hunger journey.
+			if nid == "hunger" and _instinct_active(ag) and _pantry_act(String(adv.get("action", ""))) in ["buy", "relief"]:
+				continue
 			if String(adv.get("need", "")) == nid and int(adv.get("amount", 0)) > amt:
 				amt = int(adv.get("amount", 0)); dur = int(adv.get("duration", 0)); act = String(adv.get("action", "")); best_adv = adv
 		if amt <= 0:
@@ -4101,6 +4176,15 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 			d = int(_walk_cost(ag, {"target": String(id), "action": act}) + _full_seat_cost({"target": String(id), "action": act}))
 		var pen: float = _w("obj_dist_penalty", 0.4) * (0.5 if is_visit else 1.0)
 		var score := urg * (float(amt) / 60.0) - float(d) * pen + (CAFE_VISIT_BONUS if is_visit else 0.0) + _company_pull(o, best_adv, String(ag["id"]))   # docs/209
+		# LT-14: a social outlet in another space must compete with nearby sleep when social is itself the lowest crisis need.
+		# Only the score changes; target eligibility, travel commitment, and the default (missing key = 0) remain unchanged.
+		if nid == "social" and float(ag["needs"].get(nid, 100.0)) <= _min_need(ag):
+			score += maxf(0.0, SURVIVAL_GATE - float(ag["needs"][nid])) * _w("journey_social_survival_pull", 0.0)
+		# During a social crisis, restore the travel buffer before another long noncritical trip.
+		# Hunger below its journey-preempt line keeps priority.
+		if nid == "social" and float(ag["needs"][nid]) < PREEMPT_CRISIS \
+				and float(ag["needs"].get("hunger", 100.0)) >= HUNGER_JOURNEY_PREEMPT:
+			score += SURVIVAL_GATE - float(ag["needs"][nid])
 		if instinct:
 			score = -float(d)                                    # docs/210：本能 = 最近的一口正经饭
 		else:
@@ -4658,7 +4742,39 @@ func _object_candidates(ag: Dictionary) -> Array:
 				cand["manifest_node"] = manifest_node
 				cand["manifest_id"] = _first_unloadable_manifest(manifest_node)
 			out.append(cand)
-	return out
+	return _shift_fit_work(ag, out)
+
+## Only choose fisher/sanitation work that can finish inside the current shift.
+## Preserve every candidate's score and ordering; this is an eligibility check.
+func _shift_fit_work(ag: Dictionary, candidates: Array) -> Array:
+	var job: Dictionary = _job_of(String(ag.get("id", "")))
+	var title := String(job.get("title", ""))
+	var carpenter_low := false
+	if title == "木匠" and work_pull_mult > 1.0 and _in_shift(job):
+		var raw: Dictionary = production.get("produce", {}).get("木匠", {})
+		var good := String(raw.get("good", ""))
+		var gd: Dictionary = production.get("goods", {}).get(good, {})
+		var cap := int(gd.get("cap", 0))
+		carpenter_low = cap > 0 and _stock_of(good) * 4 <= cap
+	if (title not in ["渔夫", "环卫工"] and not carpenter_low) or not _in_shift(job):
+		return candidates
+	var shifts: Array = job.get("shift", [])
+	if shifts.is_empty() or _phase_of(time_of_day()) == "":
+		return candidates
+	var remaining := TICKS_PER_DAY
+	for ahead in range(1, TICKS_PER_DAY + 1):
+		var phase := _phase_of(fmod(time_of_day() + float(ahead) / TICKS_PER_DAY, 1.0))
+		if phase not in shifts:
+			remaining = ahead
+			break
+	var kept: Array = []
+	for candidate in candidates:
+		if String(candidate.get("action", "")) == _job_action(job):
+			var cost := _walk_cost(ag, candidate) + float(candidate.get("dur_total", 0))
+			if cost >= remaining:
+				continue
+		kept.append(candidate)
+	return kept
 
 ## 社交候选：对每个【同区可感知】的其他 agent 枚举 greet/give/gossip。
 func _social_candidates(ag: Dictionary) -> Array:
@@ -6350,7 +6466,10 @@ func mayor_review_score(voter: Dictionary, review: Dictionary) -> Dictionary:
 	var treasury_weight := maxi(0, int(cfg.get("treasury_weight", 0))) + (bonus if treasury_focus else 0)
 	var attendance_pct := clampi(int(review.get("attendance_pct", 0)), 0, 100)
 	var treasury_scale := maxi(1, int(cfg.get("treasury_scale", 1)))
-	var treasury_delta := int(review.get("treasury_delta", 0))
+	# The raw treasury delta remains the accounting result shown on the board.
+	# Approved civic capital spending is recorded separately and does not lower
+	# the incumbent's fiscal-performance vote score.
+	var treasury_delta := int(review.get("treasury_delta", 0)) + maxi(0, int(review.get("civic_capital_spend", 0)))
 	var attendance_score := roundi(float(attendance_pct - 50) * float(attendance_weight) / 50.0)
 	var treasury_score := roundi(clampf(float(treasury_delta) / float(treasury_scale), -1.0, 1.0) * float(treasury_weight))
 	return {
@@ -6444,6 +6563,154 @@ func _update_mayor_election() -> void:
 		if not bool(ag.get("is_player", false)):
 			ag["memory"].add("镇长选举结果：%s 当选（我投 %s；任期至第%d日）" % [winner, _mayor_vote(ag, candidates, incumbent_review), term_end], 7, tick_no, [winner, "mayor", "election"])
 
+## A single authored public-space project. The event fold is the authority;
+## this cache is only a performance view and is never written to a save.
+func _civic_fold() -> Dictionary:
+	var relevant := _civic_fold_size < 0 or _civic_fold_size > event_log.size()
+	if not relevant and _civic_fold_size < event_log.size():
+		for i in range(_civic_fold_size, event_log.size()):
+			var e: Dictionary = event_log[i]
+			var kind := String(e.get("type", ""))
+			if kind.begins_with("civic_") or (kind == "pay" and String(e.get("note", "")).begins_with("civic_project:")):
+				relevant = true
+				break
+	if relevant:
+		_civic_fold_cache = CivicProjectScript.fold(event_log)
+	_civic_fold_size = event_log.size()
+	return _civic_fold_cache
+
+func civic_project_state() -> Dictionary:
+	var folded := _civic_fold()
+	return (folded.get("state", {}) as Dictionary).duplicate(true) if bool(folded.get("ok", false)) else {}
+
+func _civic_start_paid(state: Dictionary) -> void:
+	var e := _log_event("civic_start", "town", "plaza", CivicProjectScript.PROJECT_ID, true, [], "underway")
+	e["proposal_id"] = String(state["proposal_id"])
+	e["pay_event_id"] = int(state["pay_event_id"])
+	e["due_tick"] = tick_no + 720
+
+func _civic_fund_approved(state: Dictionary) -> void:
+	var proposal_id := String(state["proposal_id"])
+	var current_floor := maxi(0, int(fiscal_policy().get("subsidy_floor", 0)))
+	var floor_required := maxi(int(state["reserve_snapshot"]), current_floor)
+	var cost := int(state["cost"])
+	var term_valid := int(mayor_state.get("term_start", -1)) == int(state["term_start"]) \
+		and String(mayor_state.get("mayor", "")) == String(state["mayor"])
+	if term_valid and town_coin >= cost and town_coin - cost >= floor_required \
+			and transfer("town", "external", cost, CivicProjectScript.PAY_PREFIX + str(cost), [], proposal_id):
+		var paid := state.duplicate(true)
+		paid["pay_event_id"] = int((event_log[-1] as Dictionary)["id"])
+		_civic_start_paid(paid)
+	else:
+		var e := _log_event("civic_unfunded", "town", "plaza", CivicProjectScript.PROJECT_ID, false, [],
+			"stale_term" if not term_valid else "insufficient_funds_or_transfer_refused")
+		e["proposal_id"] = proposal_id
+
+func _civic_project_tick() -> void:
+	# day starts at 1: the day-28 election lands after 27 day boundaries.
+	if tick_no <= 27 * TICKS_PER_DAY:
+		return
+	var folded := _civic_fold()
+	if not bool(folded.get("ok", false)):
+		push_error("civic project event authority: %s" % String(folded.get("error", "invalid")))
+		return
+	var state: Dictionary = folded.get("state", {})
+	if String(state.get("status", "")) == "proposed":
+		# Leave the proposal visible for one full simulation tick before the
+		# council votes. The frozen treasury/electorate snapshot remains authority.
+		if tick_no == int(state.get("proposal_tick", -2)) + 1:
+			_civic_vote_proposed(state)
+		return
+	if String(state.get("status", "")) == "underway":
+		if tick_no >= int(state.get("due_tick", 9223372036854775807)):
+			var e := _log_event("civic_complete", "town", "plaza", CivicProjectScript.PROJECT_ID, true, [], "complete")
+			e["proposal_id"] = String(state["proposal_id"])
+			e["pay_event_id"] = int(state["pay_event_id"])
+			e["start_event_id"] = int(state["start_event_id"])
+		return
+	if String(state.get("status", "")) == "funded":
+		_civic_start_paid(state)
+		return
+	if String(state.get("status", "")) == "approved":
+		_civic_fund_approved(state)
+		return
+	if String(state.get("status", "")) == "complete" or tick_no % TICKS_PER_DAY != 1:
+		return
+	var term_start := int(mayor_state.get("term_start", -1))
+	if term_start != day or term_start < 28 or mayor_log.is_empty():
+		return
+	var proposal_id := "%s:term:%d" % [CivicProjectScript.PROJECT_ID, term_start]
+	if (folded.get("attempts", {}) as Dictionary).has(proposal_id):
+		return
+	var election: Dictionary = mayor_log[-1]
+	var members: Array = (election.get("candidates", []) as Array).duplicate()
+	members.sort()
+	var mayor := String(mayor_state.get("mayor", ""))
+	if members.size() != 3 or mayor == "" or mayor not in members \
+			or int(election.get("term_start", -1)) != term_start:
+		return
+	for member in members:
+		if not _agent_by_id.has(String(member)):
+			return
+	var path := "res://data/civic_projects.json"
+	if not FileAccess.file_exists(path):
+		return
+	var document = JSON.parse_string(FileAccess.get_file_as_string(path))
+	if not (document is Dictionary) or String(document.get("schema", "")) != "living-town-civic-projects/1":
+		return
+	var projects = document.get("projects", [])
+	if not (projects is Array) or (projects as Array).size() != 1 or not (projects[0] is Dictionary):
+		return
+	var project: Dictionary = projects[0]
+	var finance = project.get("finance", {})
+	var construction = project.get("construction", {})
+	if String(project.get("id", "")) != CivicProjectScript.PROJECT_ID \
+			or not (finance is Dictionary) or not (construction is Dictionary) \
+			or int(finance.get("cost_coins", -1)) != 5 or String(finance.get("payee", "")) != "external" \
+			or int(construction.get("duration_ticks", -1)) != 720:
+		return
+	var cost := 5
+	var floor_snapshot := maxi(0, int(fiscal_policy().get("subsidy_floor", 0)))
+	var treasury_snapshot := town_coin
+	var proposed := _log_event("civic_proposal", mayor, "plaza", CivicProjectScript.PROJECT_ID, true, [], proposal_id)
+	proposed["proposal_id"] = proposal_id
+	proposed["term_start"] = term_start
+	proposed["term_end"] = int(mayor_state.get("term_end", -1))
+	proposed["mayor"] = mayor
+	proposed["council"] = members.duplicate()
+	proposed["cost"] = cost
+	proposed["payee"] = "external"
+	proposed["reserve_snapshot"] = floor_snapshot
+	proposed["treasury_snapshot"] = treasury_snapshot
+
+func _civic_vote_proposed(state: Dictionary) -> void:
+	var members: Array = (state.get("council", []) as Array).duplicate()
+	var mayor := String(state.get("mayor", ""))
+	var proposal_id := String(state.get("proposal_id", ""))
+	if members.size() != 3 or mayor == "" or mayor not in members \
+			or int(mayor_state.get("term_start", -1)) != int(state.get("term_start", -2)) \
+			or String(mayor_state.get("mayor", "")) != mayor:
+		return
+	var post_cost_margin := int(state.get("treasury_snapshot", 0)) - int(state.get("cost", 0)) \
+		- int(state.get("reserve_snapshot", 0))
+	var yes_count := 0
+	for member in members:
+		var yes := post_cost_margin >= (0 if String(member) == mayor else 2)
+		var vote := _log_event("civic_vote", String(member), proposal_id, CivicProjectScript.PROJECT_ID, true, [],
+			"yes" if yes else "no")
+		vote["proposal_id"] = proposal_id
+		if yes: yes_count += 1
+	var approved := yes_count >= 2
+	var decision := _log_event("civic_decision", mayor, proposal_id, CivicProjectScript.PROJECT_ID, approved, [],
+		"approved" if approved else "rejected")
+	decision["proposal_id"] = proposal_id
+	decision["yes"] = yes_count
+	decision["no"] = 3 - yes_count
+	if approved:
+		var decided: Dictionary = (_civic_fold().get("state", {}) as Dictionary)
+		if String(decided.get("status", "")) == "approved":
+			_civic_fund_approved(decided)
+
 ## 换届前把上一任的只读政绩结成一张可追溯成绩单。它只折叠已发生的公务和镇库差额，不改选票或政策。
 func _finalize_mayor_term(cfg: Dictionary) -> void:
 	var prev: Dictionary = mayor_log[mayor_log.size() - 1]
@@ -6455,11 +6722,23 @@ func _finalize_mayor_term(cfg: Dictionary) -> void:
 	var due := 0 if term_end < term_start else (term_end - term_start) / every + 1
 	var done := int(prev.get("duties_done", 0))
 	var delta := town_coin - int(prev.get("town_coin_start", town_coin))
+	var civic_capital_spend := 0
+	var civic_txid := "%s:term:%d" % [CivicProjectScript.PROJECT_ID, term_start]
+	for raw_event in event_log:
+		var payment: Dictionary = raw_event
+		if String(payment.get("type", "")) == "pay" \
+				and String(payment.get("txid", "")) == civic_txid \
+				and String(payment.get("note", "")) == CivicProjectScript.PAY_PREFIX + "5" \
+				and String(payment.get("actor", "")) == "town" \
+				and String(payment.get("target", "")) == "external":
+			civic_capital_spend += int(payment.get("amt", 0))
 	var attendance := 100 if due <= 0 else mini(100, done * 100 / due)
 	prev["town_coin_end"] = town_coin
 	prev["duties_due"] = due
 	prev["attendance_pct"] = attendance
 	prev["treasury_delta"] = delta
+	if civic_capital_spend > 0:
+		prev["civic_capital_spend"] = civic_capital_spend
 	var note := "term:%d;duties:%d/%d;treasury:%+d" % [term_start, done, due, delta]
 	var ev := _log_event("mayor_review", String(prev.get("winner", "")), "mairie", "mayor", true, [], note)
 	ev["term_start"] = term_start
@@ -6467,6 +6746,8 @@ func _finalize_mayor_term(cfg: Dictionary) -> void:
 	ev["duties_due"] = due
 	ev["attendance_pct"] = attendance
 	ev["treasury_delta"] = delta
+	if civic_capital_spend > 0:
+		ev["civic_capital_spend"] = civic_capital_spend
 	prev["review_event_id"] = int(ev["id"])
 	emit_signal("social_event", ev)
 
@@ -6613,6 +6894,64 @@ func bank_request_loan(account_id: String, manual := false) -> bool:
 	bank_loans[account_id] = {"principal": principal, "outstanding": principal, "issued_day": day,
 		"loans_issued": int(old.get("loans_issued", 0)) + 1}
 	return true
+
+## Player-facing bank command. The account identity is carried in PlayerTrace so
+## replay cannot silently redirect a pending request after the active resident changes.
+## Direct bank_* methods remain the domain API for autonomous/system transactions.
+func player_bank_action(action: String, account_id: String, amount: int = 0) -> Dictionary:
+	var payload := {"action": action, "account_id": account_id, "amount": amount}
+	var trace_error := _player_trace_preflight("bank_action", payload)
+	if trace_error != "":
+		player_trace_last_error = trace_error
+		return {"ok": false, "action": action, "account_id": account_id, "amount": amount, "reason": trace_error}
+	var result := {"ok": false, "action": action, "account_id": account_id, "amount": amount, "reason": "transaction_rejected"}
+	var transaction: Dictionary = {}
+	if account_id != _player_bank_active_account():
+		result["reason"] = "resident_changed"
+	else:
+		transaction = _capture_player_replay_transaction()
+		if transaction.is_empty():
+			result["reason"] = "transaction_snapshot"
+		else:
+			match action:
+				"deposit":
+					var room := int(banking.get("account_cap", 0)) - int(bank_deposits.get(account_id, 0))
+					if banking.is_empty():
+						result["reason"] = "bank_unavailable"
+					elif room <= 0:
+						result["reason"] = "deposit_limit"
+					elif _coin_of(account_id) < mini(amount, room):
+						result["reason"] = "insufficient_wallet"
+					else:
+						result["ok"] = bank_deposit(account_id, amount)
+				"withdraw":
+					if banking.is_empty():
+						result["reason"] = "bank_unavailable"
+					elif int(bank_deposits.get(account_id, 0)) <= 0:
+						result["reason"] = "no_deposit"
+					else:
+						result["ok"] = bank_withdraw(account_id, amount)
+				"loan":
+					result["ok"] = bank_request_loan(account_id, true)
+					if not bool(result["ok"]):
+						result["reason"] = "loan_unavailable"
+			if bool(result["ok"]):
+				result["reason"] = ""
+	var receipt := _player_trace_receipt(result)
+	receipt["bank"] = bank_projection(account_id)
+	if not _player_trace_commit("bank_action", payload, receipt):
+		var failure_error := player_trace_last_error
+		if not transaction.is_empty():
+			_restore_player_replay_transaction(transaction, failure_error)
+		return {"ok": false, "action": action, "account_id": account_id, "amount": amount, "reason": "trace_replay_mismatch"}
+	return result
+
+func _player_bank_active_account() -> String:
+	if _agent_by_id.has("player"):
+		return "player"
+	if controlled_id != "" and _agent_by_id.has(controlled_id):
+		return controlled_id
+	return ""
 
 func _bank_repay(account_id: String) -> bool:
 	var loan: Dictionary = bank_loans.get(account_id, {}) if bank_loans.get(account_id, {}) is Dictionary else {}
@@ -7023,18 +7362,25 @@ func _fiscal_nightly() -> void:
 ##   一个字节都没动过"。⚠ 它只在**商贩那条人→人的货款**上被真正传进来（`_advance_object` 的 vendor 分支），
 ##   工资 / 房租 / 镇库收费三条**照旧传空**——`#43` 的第③臂（不外溢）就是守这句话的。
 func transfer(from_id: String, to_id: String, amt: int, reason: String, witnesses: Array = [], txid: String = "") -> bool:
-	if amt <= 0:
+	# Reject unbound accounts before touching either balance. _coin_of() returns 0
+	# for unknown IDs, while _set_coin() silently ignores them: without this guard
+	# a valid payer could lose money to a nonexistent payee.
+	if amt <= 0 or from_id == to_id or not _coin_account_valid(from_id) or not _coin_account_valid(to_id):
 		return false
 	var from_coin := _coin_of(from_id)
-	if from_coin < amt:
+	var to_coin := _coin_of(to_id)
+	if from_coin < amt or to_coin < 0 or to_coin > 9223372036854775807 - amt:
 		return false
 	_set_coin(from_id, from_coin - amt)
-	_set_coin(to_id, _coin_of(to_id) + amt)
+	_set_coin(to_id, to_coin + amt)
 	var ev := _log_event("pay", from_id, to_id, "", true, witnesses, reason, txid)
 	# docs/195：金额记进事件 ⇒ 账本（Ledger.gd）是 event_log 的纯折叠。amt 不进 Inv.digest / chain_step /
 	#   event_digest 的字段串 ⇒ 金标逐字节不变；存档是整条 event_log 原样写出 ⇒ 读档后仍可折叠核对。
 	ev["amt"] = amt
 	return true
+
+func _coin_account_valid(id: String) -> bool:
+	return id in ["town", "bank", "external"] or _agent_by_id.has(id)
 
 func _coin_of(id: String) -> int:
 	if id == "town":
@@ -7151,6 +7497,12 @@ func _pool_rescale(raw: Dictionary, pop: int) -> Dictionary:
 					var v0 := int((pr["inputs"] as Dictionary)[ing])
 					# 原本要料的，换尺度后至少还要 1 ⇒ "货由货做成"这条链在宏观口径上不会被整除抹掉。
 					pr["inputs"][ing] = maxi(1, v0 * num / base) if v0 > 0 else v0
+	# LT-14 trial: a larger macro pool for one fixed fisher above core 24.
+	if pop > 24:
+		var fisher: Dictionary = (out.get("produce", {}) as Dictionary).get("渔夫", {})
+		if not fisher.is_empty() and fisher.has("amount"):
+			var amount := int(fisher["amount"])
+			fisher["amount"] = (amount * 11 + 9) / 10
 	return out
 
 func _stock_of(good: String) -> int:
@@ -8496,6 +8848,18 @@ func _logic_decide(ag: Dictionary, cands: Array) -> Dictionary:
 	best["say"] = _canned_say(ag, best)
 	if decision_sink.is_valid() and cands.size() >= 2:   # Phase-0 数据集钩子（off 默认；只读、不抽 RNG、不进 digest）
 		decision_sink.call(ag, cands, best_i)
+	# LT-14 trial: a hungry resident should not sign another journey
+	# while eligible food is available at a new decision boundary.
+	var needs: Dictionary = ag.get("needs", {})
+	var hunger := float(needs.get("hunger", 100.0))
+	if hunger < SURVIVAL_GATE and hunger <= _min_need(ag) \
+			and String(best.get("kind", "")) == "journey" and String(best.get("need", "")) != "hunger":
+		var food: Array = []
+		for candidate in cands:
+			if candidate is Dictionary and String(candidate.get("need", "")) == "hunger":
+				food.append(candidate)
+		if not food.is_empty():
+			return _logic_decide(ag, food)
 	return best
 
 func _canned_say(ag: Dictionary, intent: Dictionary) -> String:

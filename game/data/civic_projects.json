@@ -1,0 +1,66 @@
+{
+  "schema": "living-town-civic-projects/1",
+  "implementation_status": "LT-16/17 logic candidate plus LT-18 read-only plaza projection with one-tick visible planning phase and existing approved hydrangea art; final art review and full acceptance pending",
+  "projects": [
+    {
+      "id": "hydrangea_square_planters_v1",
+      "label": "广场绣球花圃",
+      "site": {
+        "space_id": "plaza",
+        "authored_rect": [28, 21, 8, 6]
+      },
+      "visible_benefit": "Two planted hydrangea displays and a public notice at the existing square; aesthetic only",
+      "mechanical_effects": {
+        "navigation": false,
+        "colliders": false,
+        "jobs": false,
+        "goods": false,
+        "service_utility": false,
+        "new_election_score_factor": false
+      },
+      "proposal": {
+        "term_source": "res://data/elections.json mayor term record",
+        "trigger": "first_tick_after_successful_mayor_election",
+        "first_eligible_term_start_day": 28,
+        "proposal_id_format": "hydrangea_square_planters_v1:term:<term_start_day>",
+        "one_attempt_per_term": true,
+        "no_new_attempt_after_paid_start_or_completion": true,
+        "council_source": "the term's mayor-election candidates and ballots",
+        "council_members": "the winner plus the other two candidates, in candidate ID order",
+        "required_member_count": 3,
+        "quorum": 3,
+        "yes_votes_required": 2,
+        "ballots_per_member": 1,
+        "vote_rule": {
+          "treasury_snapshot": "town_coin at proposal tick",
+          "reserve_snapshot": "fiscal_policy().subsidy_floor at proposal tick",
+          "mayor_yes_when_post_cost_margin_at_least": 0,
+          "other_member_yes_when_post_cost_margin_at_least": 2,
+          "no_abstentions_in_v1": true
+        },
+        "invalid_authority": "No proposal or payment when mayor, term, or any council member is missing",
+        "stale_term": "Reject authorization if term identity changes before payment; retain a paid project through later terms"
+      },
+      "finance": {
+        "cost_coins": 5,
+        "payer": "town",
+        "payee": "external",
+        "pay_reason": "civic_project:hydrangea_square_planters_v1*5",
+        "payment_api": "Sim.transfer",
+        "funding_recheck": "Before payment, town_coin - cost must be at least max(proposal reserve snapshot, current fiscal_policy().subsidy_floor)",
+        "post_approval_insufficient_funds": "Terminal unfunded result for this term; no partial payment or automatic later charge",
+        "receipt_cardinality": 1
+      },
+      "construction": {
+        "duration_ticks": 720,
+        "completion_clock": "Sim.tick_no",
+        "start_requires": "approved proposal and exactly one validated pay receipt",
+        "complete_requires": "underway state, matching payment receipt, and tick_no >= due_tick",
+        "term_rollover": "Continue already paid construction without another vote or charge"
+      },
+      "terminal_states": ["rejected", "unfunded", "complete"],
+      "runtime_states": ["proposed", "approved", "underway"],
+      "missing_config": "No proposal, payment, project events, visual changes, or change to baseline simulation"
+    }
+  ]
+}

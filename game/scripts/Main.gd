@@ -199,6 +199,8 @@ var _bank_panel: Panel                # P5a 合作银行：账户、准备金与
 var _bank_title: RichTextLabel
 var _bank_body: RichTextLabel
 var _bank_was_running := false
+var _bank_account_at_open := ""
+var _bank_feedback := ""
 var _civic_title: RichTextLabel
 var _civic_body: RichTextLabel
 var _civic_duty_fill: ColorRect
@@ -389,6 +391,8 @@ const STORY_FEATH := 40.0
 const STORY_LINES := 16
 
 func _ready() -> void:
+	if preload("res://scripts/DesktopAcceptance.gd").route(self):
+		return
 	var seed := 20260626
 	var backend := "logic"
 	var spd := 1.0
@@ -403,7 +407,7 @@ func _ready() -> void:
 	var _bank_panel_arg := false           # --bank-panel：启动即打开合作银行账户卡
 	var _lod_agg_arg := false              # --lod-agg：仅【测量/眼验】用，启用观察无关 aggregate LOD（CLI-only，绝不进 boot/面板出货路径；默认 off=逐字节不变）
 	var _locked_ortho_c1_arg := false      # --locked-ortho-c1：可删除的 C1 纯 View 适配器，默认绝不实例化
-	var args := OS.get_cmdline_user_args()
+	var args := preload("res://scripts/DesktopAcceptance.gd").game_args()
 	# 生活模式（docs/190）：桌面上【不带任何参数】的正式启动 = 开局选人；--life 显式开、--life-as <id> 跳过选人直接附身。
 	# 带参数的 dev/CI/出图路径一律不进（它们都带参数）⇒ 所有既有门逐字节不变。手机端还没有摇杆，暂不默认。
 	var life_on := args.is_empty()                    # 产品启动（桌面双击 / 手机点图标）= 生活模式；docs/190 第六批起手机也默认进（有摇杆了）
@@ -1079,6 +1083,9 @@ func _refresh_civic_panel() -> void:
 	var swings := int(election.get("performance_swings", 0))
 	lines.append("[color=#cda35c]最近选举[/color]  政绩改投 %d 票 · 前任 [color=#9be38a]+%d[/color] / [color=#f28a7f]-%d[/color]" % [swings,
 		int(election.get("incumbent_gained", 0)), int(election.get("incumbent_lost", 0))])
+	var project_receipt := preload("res://scripts/CivicPresentation.gd").receipt(Sim.civic_project_state())
+	if project_receipt != "":
+		lines.append("[color=#cda35c]广场项目[/color]  " + _esc(project_receipt))
 	_civic_body.text = "\n".join(lines)
 
 ## P5a: one reusable finance card backed entirely by Sim's bank projection and transaction API.
@@ -1112,11 +1119,11 @@ func _build_bank_panel(layer: CanvasLayer, fnt: Font) -> void:
 	_bank_body.add_theme_font_override("normal_font", fnt); _bank_body.add_theme_font_size_override("normal_font_size", 16)
 	_bank_body.position = Vector2(24, 108); _bank_body.size = Vector2(472, 154); _bank_body.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_bank_panel.add_child(_bank_body)
-	var actions := [["存入 1 枚", _bank_deposit_one], ["取出 1 枚", _bank_withdraw_one], ["申请创业金", _bank_request_player_loan]]
+	var actions := [["BankDepositButton", "存入 1 枚", _bank_deposit_one], ["BankWithdrawButton", "取出 1 枚", _bank_withdraw_one], ["BankLoanButton", "申请创业金", _bank_request_player_loan]]
 	for i in range(actions.size()):
-		var btn := Button.new(); btn.text = String(actions[i][0]); btn.position = Vector2(24 + i * 158, 276); btn.size = Vector2(144, 38)
+		var btn := Button.new(); btn.name = String(actions[i][0]); btn.text = String(actions[i][1]); btn.position = Vector2(24 + i * 158, 276); btn.size = Vector2(144, 38)
 		btn.focus_mode = Control.FOCUS_NONE; btn.add_theme_font_override("font", fnt); btn.add_theme_font_size_override("font_size", 14)
-		_style_btn(btn); btn.pressed.connect(actions[i][1]); _bank_panel.add_child(btn)
+		_style_btn(btn); btn.pressed.connect(actions[i][2]); _bank_panel.add_child(btn)
 	var foot := Label.new(); foot.text = "足额准备金 · 所有钱款进入同一可审计账本 · Esc / E 收起"
 	foot.position = Vector2(24, 320); foot.size = Vector2(472, 18); foot.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	foot.add_theme_font_override("font", fnt); foot.add_theme_font_size_override("font_size", 12); foot.add_theme_color_override("font_color", Color("#9fb7b4"))
@@ -1129,7 +1136,10 @@ func _bank_account_id() -> String:
 
 func _open_bank_panel() -> void:
 	if _bank_panel == null: return
-	if not _bank_panel.visible: _bank_was_running = Sim.running
+	if not _bank_panel.visible:
+		_bank_was_running = Sim.running
+		_bank_account_at_open = _bank_account_id()
+		_bank_feedback = ""
 	Sim.running = false; _refresh_bank_panel(); _bank_panel.visible = true; _update_status()
 
 func _close_bank_panel() -> void:
@@ -1137,19 +1147,39 @@ func _close_bank_panel() -> void:
 	_bank_panel.visible = false; Sim.running = _bank_was_running; _update_status()
 
 func _refresh_bank_panel() -> void:
-	var p: Dictionary = Sim.bank_projection(_bank_account_id())
+	var account_id := _bank_account_at_open if _bank_panel != null and _bank_panel.visible else _bank_account_id()
+	var p: Dictionary = Sim.bank_projection(account_id)
 	var loan: Dictionary = p.get("loan", {}) if p.get("loan", {}) is Dictionary else {}
 	_bank_title.text = "[font_size=22][color=#f0d797]%s[/color][/font_size]\n[color=#9fb7b4]集市柜台 · 第 %d 天[/color]" % [_esc(String(p.get("label", "合作银行"))), Sim.day]
 	_bank_body.text = "[color=#c8a866]你的账户[/color]\n钱袋  [color=#f0d797]%d[/color]    存款  [color=#8ee3d0]%d[/color]    待还创业金  [color=#f0b77d]%d[/color]\n\n[color=#c8a866]银行公开账簿[/color]\n现金准备金  %d    居民存款  %d    可贷合作资本  %d\n[color=#9fb7b4]存款逐枚留在准备金中；贷款不挪用居民存款。[/color]" % [int(p.get("wallet", 0)), int(p.get("deposit", 0)), int(loan.get("outstanding", 0)), int(p.get("reserve", 0)), int(p.get("deposit_total", 0)), int(p.get("available_capital", 0))]
+	if _bank_feedback != "":
+		_bank_body.text += "\n[color=#f0b77d]%s[/color]" % _esc(_bank_feedback)
 
 func _bank_deposit_one() -> void:
-	Sim.bank_deposit(_bank_account_id(), 1); _refresh_bank_panel(); _update_status()
+	_bank_submit("deposit", 1)
 
 func _bank_withdraw_one() -> void:
-	Sim.bank_withdraw(_bank_account_id(), 1); _refresh_bank_panel(); _update_status()
+	_bank_submit("withdraw", 1)
 
 func _bank_request_player_loan() -> void:
-	Sim.bank_request_loan(_bank_account_id(), true); _refresh_bank_panel(); _update_status()
+	_bank_submit("loan", 0)
+
+func _bank_submit(action: String, amount: int) -> void:
+	var result: Dictionary = Sim.player_bank_action(action, _bank_account_at_open, amount)
+	var reason := String(result.get("reason", "transaction_rejected"))
+	if bool(result.get("ok", false)):
+		_bank_feedback = "交易已记入账簿"
+	else:
+		_bank_feedback = {
+			"resident_changed": "账户已变化；请收起后重新打开银行卡",
+			"insufficient_wallet": "钱袋余额不足",
+			"deposit_limit": "存款已达上限",
+			"no_deposit": "当前没有可取出的存款",
+			"loan_unavailable": "当前暂不符合创业金条件",
+			"bank_unavailable": "银行暂不可用",
+			"bank_account": "没有可办理业务的居民账户",
+		}.get(reason, "交易未办理（%s）" % reason)
+	_refresh_bank_panel(); _update_status()
 
 ## Optional player-facing presentation for captures and small screens.  It is
 ## deliberately a second CanvasLayer: no canonical scene, save schema, input

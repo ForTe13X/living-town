@@ -28,6 +28,29 @@ func _parse_seeds(s: String) -> Array:
 func _same(a, b) -> bool:
 	return a.net == b.net and a.flows == b.flows and a.by_day == b.by_day and a.pays == b.pays and a.missing_amt == b.missing_amt
 
+func _transfer_refusal_controls() -> void:
+	var S = SimScript.new(); add_child(S)
+	S.start_new(1)
+	var town_before: int = S.town_coin
+	var external_before: int = S.external_coin
+	var log_before: int = S.event_log.size()
+	var total_before: int = S.money_total()
+	ck(not S.transfer("town", "missing_payee", 1, "civic_project:invalid"),
+		"unknown payment recipient is refused")
+	ck(not S.transfer("town", "town", 1, "civic_project:self"),
+		"self-payment is refused")
+	ck(S.town_coin == town_before and S.external_coin == external_before
+		and S.event_log.size() == log_before and S.money_total() == total_before,
+		"refused payment leaves accounts and event log unchanged")
+	S.external_coin = 9223372036854775807
+	var overflow_log_before: int = S.event_log.size()
+	ck(not S.transfer("town", "external", 1, "civic_project:overflow"),
+		"recipient overflow is refused")
+	ck(S.town_coin == town_before and S.external_coin == 9223372036854775807
+		and S.event_log.size() == overflow_log_before,
+		"overflow refusal leaves accounts and event log unchanged")
+	S.queue_free()
+
 func _run(seed: int, n: int, days: int, deep: bool) -> void:
 	var tag := "seed %d N=%d" % [seed, n]
 	var S = SimScript.new(); add_child(S)
@@ -115,6 +138,7 @@ func _ready() -> void:
 		if args[i] == "--seeds" and i + 1 < args.size(): seeds = _parse_seeds(args[i + 1])
 		elif args[i] == "--days" and i + 1 < args.size(): days = int(args[i + 1])
 	print("ledger_test: seeds %s × %d 天" % [str(seeds), days])
+	_transfer_refusal_controls()
 	# 分类单元：六个 transfer 调用点的 reason 前缀
 	ck(LedgerScript.category("price:吃饭") == "meal" and LedgerScript.category("buy:买饭") == "vendor"
 		and LedgerScript.category("wage:做活") == "wage" and LedgerScript.category("rent") == "rent"
@@ -130,6 +154,9 @@ func _ready() -> void:
 	ck(LedgerScript.category("subsidy*12") == "subsidy" and LedgerScript.category("tax*3") == "tax"
 		and "subsidy" in LedgerScript.TOWN_IN and "tax" in LedgerScript.TOWN_OUT,
 		"分类：docs/204 补贴进镇库、税出镇库")
+	ck(LedgerScript.category("civic_project:hydrangea_square_planters_v1*5") == "civic_project"
+		and "civic_project" in LedgerScript.TOWN_OUT,
+		"分类：LT-16 花圃付款是镇库支出")
 	for k in seeds.size():
 		_run(int(seeds[k]), 12, days, k == 0)
 	_run(int(seeds[0]), 16, days, false)
