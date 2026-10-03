@@ -90,6 +90,27 @@ class CafeBoundaryTests(unittest.TestCase):
         self.assertIn("E_OCCUPIED_AFFORDANCE_REMOVED", result["errors"])
         self.assertIn("E_TOPOLOGY_CHANGED", result["errors"])
 
+    def test_unhashable_portal_and_affordance_ids_reject_without_exception(self):
+        for group, occupied, expected in (
+            ("portals", ("p_cafe_door",), "E_PORTAL_ID"),
+            ("affordances", (self.reference["payload"]["topology"]["affordances"][0]["id"],),
+             "E_AFFORDANCE_ID"),
+        ):
+            for malformed in ([], {}):
+                with self.subTest(group=group, malformed=malformed):
+                    changed = copy.deepcopy(self.reference)
+                    changed["payload"]["topology"][group][0]["id"] = malformed
+                    changed["payload"]["compatibility"]["topology_sha256"] = boundary.digest(
+                        changed["payload"]["topology"])
+                    result = self.check_without_mutation(
+                        changed,
+                        occupied=occupied if group == "portals" else (),
+                        occupied_affordances=occupied if group == "affordances" else (),
+                    )
+                    self.assertFalse(result["ok"])
+                    self.assertIn(expected, result["errors"])
+                    self.assertIn("E_TOPOLOGY_CHANGED", result["errors"])
+
     def test_mismatched_units_rejected(self):
         changed = copy.deepcopy(self.reference)
         changed["coordinate_frame"]["q_per_cell"] = 32

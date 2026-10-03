@@ -59,6 +59,31 @@ def integer(value):
     return value
 
 
+def _logical_ids(records, label, errors):
+    if not isinstance(records, list):
+        errors.append("E_" + label + "_LIST")
+        return set()
+    result = set()
+    for record in records:
+        logical_id = record.get("id") if isinstance(record, dict) else None
+        if type(logical_id) is not str or not logical_id or logical_id in result:
+            errors.append("E_" + label + "_ID")
+            continue
+        result.add(logical_id)
+    return result
+
+
+def _check_occupied(occupied, available, label, errors):
+    if not isinstance(occupied, (tuple, list, set, frozenset)):
+        errors.append("E_OCCUPIED_" + label + "_INPUT")
+        return
+    for identity in occupied:
+        if type(identity) is not str or not identity:
+            errors.append("E_OCCUPIED_" + label + "_INPUT")
+        elif identity not in available:
+            errors.append("E_OCCUPIED_" + label + "_REMOVED")
+
+
 def _frontage(plan, ledger, door, town_bounds):
     """Freeze the authored market-walk segment and its cafe entrance link.
 
@@ -194,12 +219,10 @@ def check_compatible(package, reference, occupied_portals=(), occupied_affordanc
         errors.append("E_STATE_COMPATIBILITY")
     if not isinstance(payload["compatibility"], dict) or payload["compatibility"].get("topology_sha256") != digest(topology):
         errors.append("E_TOPOLOGY_HASH")
-    portal_ids = {p.get("id") for p in topology.get("portals", []) if isinstance(p, dict)} if isinstance(topology.get("portals"), list) else set()
-    if set(occupied_portals) - portal_ids:
-        errors.append("E_OCCUPIED_PORTAL_REMOVED")
-    affordance_ids = {a.get("id") for a in topology.get("affordances", []) if isinstance(a, dict)} if isinstance(topology.get("affordances"), list) else set()
-    if set(occupied_affordances) - affordance_ids:
-        errors.append("E_OCCUPIED_AFFORDANCE_REMOVED")
+    portal_ids = _logical_ids(topology.get("portals"), "PORTAL", errors)
+    _check_occupied(occupied_portals, portal_ids, "PORTAL", errors)
+    affordance_ids = _logical_ids(topology.get("affordances"), "AFFORDANCE", errors)
+    _check_occupied(occupied_affordances, affordance_ids, "AFFORDANCE", errors)
     for key in ("logical_scope", "producer_ref", "input_refs", "validation_ref"):
         if digest(package[key]) != digest(reference[key]):
             errors.append("E_PROVENANCE_" + key.upper())
