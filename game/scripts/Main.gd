@@ -196,6 +196,8 @@ var _act_card: Panel
 var _status_line: ColorRect           # 顶栏底边的一道金线
 var _civic_panel: Panel               # 镇公所公示板的只读 HUD 卡片
 var _bank_panel: Panel                # P5a 合作银行：账户、准备金与贷款交互卡
+var _bank_overlay: CanvasLayer
+var _bank_blocker: ColorRect
 var _bank_title: RichTextLabel
 var _bank_body: RichTextLabel
 var _bank_was_running := false
@@ -931,7 +933,7 @@ func _build_hud() -> void:
 	pperf.add_child(_perf)
 
 	_build_civic_panel(layer, fnt)
-	_build_bank_panel(layer, fnt)
+	_build_bank_panel(fnt)
 
 	# B15：按当前视口锚定一次；并接 size_changed —— 手机转屏/桌面拉窗口都会重排（这是唯一入口）。
 	_relayout_hud()
@@ -1090,14 +1092,24 @@ func _refresh_civic_panel() -> void:
 	_civic_body.text = "\n".join(lines)
 
 ## P5a: one reusable finance card backed entirely by Sim's bank projection and transaction API.
-func _build_bank_panel(layer: CanvasLayer, fnt: Font) -> void:
+func _build_bank_panel(fnt: Font) -> void:
+	# A real modal layer keeps the paused account card above LifeMode controls
+	# and catches clicks on the hidden timeline, settings, or town behind it.
+	_bank_overlay = CanvasLayer.new()
+	_bank_overlay.layer = 35
+	add_child(_bank_overlay)
+	_bank_blocker = ColorRect.new()
+	_bank_blocker.color = Color(0.0, 0.0, 0.0, 0.42)
+	_bank_blocker.mouse_filter = Control.MOUSE_FILTER_STOP
+	_bank_blocker.visible = false
+	_bank_overlay.add_child(_bank_blocker)
 	_bank_panel = Panel.new()
 	_bank_panel.name = "CooperativeBank"
 	_bank_panel.size = Vector2(520, 346)
 	_bank_panel.add_theme_stylebox_override("panel", _card_style(Color(0.04, 0.075, 0.078, 0.98), Color("#c8a866"), 8, 8))
 	_bank_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	_bank_panel.visible = false
-	layer.add_child(_bank_panel)
+	_bank_overlay.add_child(_bank_panel)
 	var art := TextureRect.new()
 	art.texture = Art.tex("res://assets/art/furn/bank_counter_ledger.png")
 	art.position = Vector2(18, 14); art.size = Vector2(104, 76)
@@ -1141,11 +1153,11 @@ func _open_bank_panel() -> void:
 		_bank_was_running = Sim.running
 		_bank_account_at_open = _bank_account_id()
 		_bank_feedback = ""
-	Sim.running = false; _refresh_bank_panel(); _bank_panel.visible = true; _update_status()
+	Sim.running = false; _refresh_bank_panel(); _bank_blocker.visible = true; _bank_panel.visible = true; _update_status()
 
 func _close_bank_panel() -> void:
 	if _bank_panel == null or not _bank_panel.visible: return
-	_bank_panel.visible = false; Sim.running = _bank_was_running; _update_status()
+	_bank_panel.visible = false; _bank_blocker.visible = false; Sim.running = _bank_was_running; _update_status()
 
 func _refresh_bank_panel() -> void:
 	var account_id := _bank_account_at_open if _bank_panel != null and _bank_panel.visible else _bank_account_id()
@@ -1742,6 +1754,8 @@ func _relayout_hud() -> void:
 		_civic_panel.position = Vector2((DESIGN.x + dx - _civic_panel.size.x) * 0.5, 112.0 + dy * 0.28)
 	if _bank_panel != null:
 		_bank_panel.position = Vector2((DESIGN.x + dx - _bank_panel.size.x) * 0.5, 102.0 + dy * 0.28)
+	if _bank_blocker != null:
+		_bank_blocker.size = vp
 	if _backend_btn != null:                   # 后端切换钮：跟右边
 		_backend_btn.position = Vector2(1140.0 + dx, 4.0)
 	if _obs_btn != null:                       # 观察台档位钮：跟右边（紧贴后端钮左侧）
@@ -2455,6 +2469,8 @@ func _apply_npc(delta: int) -> void:
 	                  # 与 _after_jump/_after_load/_toggle_player_mode 三处同一纪律。
 
 func _set_speed(v: float) -> void:
+	if _bank_panel != null and _bank_panel.visible:
+		return
 	if v <= 0.0:
 		Sim.running = false
 	else:
@@ -3609,13 +3625,14 @@ func _focus_agent(id: String) -> void:
 	_update_obs()
 
 func _unhandled_input(e: InputEvent) -> void:
+	if _bank_panel != null and _bank_panel.visible:
+		if e is InputEventKey and e.pressed and not e.echo and e.keycode in [KEY_ESCAPE, KEY_E]:
+			_close_bank_panel()
+		get_viewport().set_input_as_handled()
+		return
 	if e is InputEventKey and e.pressed and not e.echo:
 		if _civic_panel != null and _civic_panel.visible and e.keycode in [KEY_ESCAPE, KEY_E]:
 			_close_civic_panel()
-			get_viewport().set_input_as_handled()
-			return
-		if _bank_panel != null and _bank_panel.visible and e.keycode in [KEY_ESCAPE, KEY_E]:
-			_close_bank_panel()
 			get_viewport().set_input_as_handled()
 			return
 		match e.keycode:

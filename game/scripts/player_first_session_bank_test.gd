@@ -59,6 +59,27 @@ func _post_service_leg() -> void:
 	var after: Dictionary = Sim.bank_projection(pid)
 	var deposit_ok := false
 	if bank_open:
+		var bank_tick := Sim.tick_no
+		await _send_key(KEY_SPACE)
+		await _send_key(KEY_SPACE, false)
+		await _send_key(KEY_1)
+		await _send_key(KEY_1, false)
+		await _wait_frames(3)
+		_check("bank card keeps simulation paused against gameplay speed keys",
+			panel.visible and not Sim.running and Sim.tick_no == bank_tick)
+		var speed_button: Button = _life.get("_speed_btns")[2] as Button
+		await _click(speed_button)
+		await _wait_frames(2)
+		_check("bank card blocks the resident speed button",
+			panel.visible and not Sim.running and Sim.tick_no == bank_tick)
+		var bank_digest := Inv.digest(Sim)
+		await _click_screen(Vector2(700, 732)) # hidden observer timeline hitbox
+		await _click_screen(Vector2(26, 18)) # settings button
+		await _wait_frames(2)
+		var settings_panel: Control = _main.get("_settings_panel") as Control
+		_check("bank modal blocks hidden timeline and settings clicks",
+			panel.visible and not Sim.running and Sim.tick_no == bank_tick
+			and Inv.digest(Sim) == bank_digest and settings_panel != null and not settings_panel.visible)
 		_check("resident has at least one coin to deposit", int(before.get("wallet", 0)) >= 1, JSON.stringify(before))
 		await _save_checkpoint("11_bank_account_before_deposit")
 		var deposit: Button = panel.get_node_or_null("BankDepositButton") as Button
@@ -134,3 +155,16 @@ func _post_service_leg() -> void:
 		file.close()
 	_check("first process records a verifiable saved-state baseline", file != null)
 	await _save_checkpoint("13_paused_after_save")
+
+func _click_screen(point: Vector2) -> void:
+	for is_pressed: bool in [true, false]:
+		var event := InputEventMouseButton.new()
+		event.button_index = MOUSE_BUTTON_LEFT
+		event.position = point
+		event.global_position = point
+		event.pressed = is_pressed
+		event.button_mask = MOUSE_BUTTON_MASK_LEFT if is_pressed else 0
+		_inputs.append({"kind": "mouse_left", "position": [point.x, point.y], "pressed": is_pressed,
+			"target": "bank_modal_backdrop"})
+		get_viewport().push_input(event, true)
+		await get_tree().process_frame

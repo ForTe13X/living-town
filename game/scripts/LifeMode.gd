@@ -449,6 +449,9 @@ func _set_main_chrome(on: bool) -> void:
 func _notification(what: int) -> void:
 	if what != NOTIFICATION_WM_GO_BACK_REQUEST or not touch:
 		return
+	if _bank_card_open():
+		main.call("_close_bank_panel")
+		return
 	if _chat_box != null and _chat_box.visible:
 		_close_chat()
 	elif _modal_open:
@@ -471,6 +474,13 @@ func _process(delta: float) -> void:
 			_toast.visible = false
 	if not active:
 		return
+	var bank_open := _bank_card_open()
+	if _touch_bar != null:
+		_touch_bar.visible = not bank_open and not _modal_open
+		_joy.visible = not bank_open and not _modal_open
+	for speed_button: Button in _speed_btns:
+		speed_button.disabled = bank_open
+	_will_btn.disabled = bank_open
 	var ag := Sim.get_agent(pid)
 	if ag.is_empty():
 		active = false
@@ -755,6 +765,8 @@ func _auto_ff() -> void:
 	_sync_speed_btns()
 
 func _set_speed(s: float) -> void:
+	if _bank_card_open():
+		return
 	if s <= 0.0:
 		Sim.running = false
 	else:
@@ -765,16 +777,21 @@ func _set_speed(s: float) -> void:
 	main.call("_update_status")
 
 func _set_free_will(on: bool) -> void:
+	if _bank_card_open():
+		return
 	free_will = on
 	Sim.possess("" if on else pid)
 	_will_btn.text = "自主：开" if on else "自主：关"
 	_show_toast("让 %s 自己过一会儿（%s收回）" % [Sim._name(Sim.get_agent(pid)), "推摇杆" if touch else "按方向键"] if on else "收回控制")
 
 # ── 输入 ─────────────────────────────────────────────────────────────────────
+func _bank_card_open() -> bool:
+	var bank_panel: Panel = main.get("_bank_panel") as Panel
+	return bank_panel != null and bank_panel.visible
+
 func _unhandled_input(e: InputEvent) -> void:
 	# Main owns input while its bank account card is visible.
-	var bank_panel: Panel = main.get("_bank_panel") as Panel
-	if bank_panel != null and bank_panel.visible:
+	if _bank_card_open():
 		_move_keys.clear()
 		return
 	if e is InputEventKey and e.keycode in [KEY_W, KEY_A, KEY_S, KEY_D, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT]:
@@ -920,6 +937,10 @@ func _open_bank_from_life() -> void:
 		return
 	_close_modal()
 	_move_keys.clear()
+	if _joy != null:
+		_joy._release()
+	if _rel_open:
+		_toggle_rel()
 	main.call("_open_bank_panel")
 
 func _portal_hop_at_cell(cell: Vector2i, actor: Dictionary) -> Dictionary:
