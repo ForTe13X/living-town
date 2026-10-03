@@ -508,6 +508,11 @@ func _sync_space(ag: Dictionary) -> void:
 		pb.cam.position = _agent_px(ag)
 		_camera_last_target = _agent_px(ag)
 		_camera_look = Vector2.ZERO
+		# A portal can move the player to another plane between interaction polls.
+		# Drop the old target before its world position is projected onto this camera.
+		_focus_id = ""
+		_refresh_inter()
+		_inter_t = 0.1
 		if sp != "town":                          # 室内比视口小：取消边界，镜头才能把人放在正中
 			pb.cam.limit_left = -100000; pb.cam.limit_top = -100000
 			pb.cam.limit_right = 100000; pb.cam.limit_bottom = 100000
@@ -1576,11 +1581,14 @@ func _place_prompt(ag: Dictionary) -> void:
 	var wpos := Vector2(p.x * 48 + 24, p.y * 48 - 20)
 	var vp: Vector2 = main.call("_vp")
 	var sp: Vector2 = (wpos - pb.cam.position) * pb.cam.zoom + vp * 0.5
+	if not Rect2(Vector2.ZERO, vp).has_point(sp):
+		_prompt.visible = false
+		return
 	var verb := "查看" if String(e["kind"]) == "civic" else ("说话" if String(e["kind"]) == "agent" else ("进门" if String(e["kind"]) == "portal" else "使用"))
 	_prompt.text = ("%s · %s（点「互动」）" % [verb, String(e["label"])]) if touch else \
 		("E  %s · %s%s" % [verb, String(e["label"]), ("  (Tab %d)" % _inter.size()) if _inter.size() > 1 else ""])
 	_prompt.size = Vector2(maxf(120.0, _fnt.get_string_size(_prompt.text, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x + 22.0), 26)
-	_prompt.position = Vector2(clampf(sp.x - _prompt.size.x * 0.5, 4.0, DESIGN.x - _prompt.size.x - 4.0), clampf(sp.y - 34.0, 44.0, DESIGN.y - 60.0))
+	_prompt.position = Vector2(clampf(sp.x - _prompt.size.x * 0.5, 4.0, DESIGN.x - _prompt.size.x - 4.0), clampf(sp.y - 34.0, 44.0, 438.0))
 	_prompt.visible = true
 	var _unused := ag
 
