@@ -189,6 +189,7 @@ func _run() -> void:
 	if service_button == null or service_button.disabled:
 		_finish()
 		return
+	await _save_checkpoint("05_paid_service_menu")
 	var event_mark := Sim.event_log.size()
 	await _click(service_button)
 	await _save_checkpoint("05_paid_service_selected")
@@ -308,6 +309,7 @@ func _run_social_leg() -> bool:
 		"action=%s label=%s" % [social_action, action_label])
 	if social_button == null or social_button.disabled:
 		return false
+	await _save_checkpoint("07_social_menu")
 	var relation_before := _affinity(pid, social_id)
 	var social_event_mark := Sim.event_log.size()
 	await _click(social_button)
@@ -367,8 +369,6 @@ func _find_social_target(require_nearby := false) -> Dictionary:
 					and int(option_dictionary.get("remaining", 0)) >= 12
 				var remaining := int(option_dictionary.get("remaining", 0)) if stable_use else 0
 				var moving := option_value is Dictionary and not stable_use
-				if require_nearby and moving:
-					continue
 				var score := int(entry.get("dist", 999)) * 100 + (0 if same_area else 20) \
 					+ (50 if moving else 0) - mini(remaining, 20) * 3
 				if score < best_score:
@@ -386,7 +386,9 @@ func _approach_resident(target_id: String, max_steps: int) -> bool:
 		var target: Dictionary = Sim.get_agent(target_id)
 		if actor.is_empty() or target.is_empty() or not Sim._same_plane(actor, target):
 			return false
-		if Sim._socially_reachable(actor, target):
+		# The UI's nearby list uses the two-cell interaction radius. A shared
+		# area can allow a social action from farther away, so keep walking.
+		if Sim._manh(actor.get("pos", Vector2i(-99, -99)), target.get("pos", Vector2i(-99, -99))) <= 2:
 			return true
 		var from: Vector2i = actor.get("pos", Vector2i(-99, -99))
 		var goal: Vector2i = target.get("pos", Vector2i(-99, -99))
@@ -399,7 +401,7 @@ func _approach_resident(target_id: String, max_steps: int) -> bool:
 		if keycode == 0:
 			return false
 		await _send_key(keycode)
-		await get_tree().create_timer(0.18).timeout
+		await get_tree().create_timer(0.10).timeout
 		await _send_key(keycode, false)
 	return false
 
@@ -545,7 +547,7 @@ func _walk_by_controls(goal: Vector2i, max_steps: int) -> bool:
 		if keycode == 0:
 			return false
 		await _send_key(keycode)
-		await get_tree().create_timer(0.18).timeout
+		await get_tree().create_timer(0.10).timeout
 		await _send_key(keycode, false)
 		var moved := false
 		for _poll in 16:
