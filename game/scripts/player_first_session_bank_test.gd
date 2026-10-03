@@ -79,6 +79,32 @@ func _post_service_leg() -> void:
 		await _send_key(KEY_ESCAPE)
 		await _send_key(KEY_ESCAPE, false)
 		_check("Escape closes the bank account card", not panel.visible)
+		_life.call("_refresh_inter")
+		await _send_key(KEY_TAB)
+		await _send_key(KEY_TAB, false)
+		var focused: Dictionary = _life.call("_focused")
+		for _i in range(_life.get("_inter").size()):
+			if String(focused.get("kind", "")) == "bank":
+				break
+			await _send_key(KEY_TAB)
+			await _send_key(KEY_TAB, false)
+			focused = _life.call("_focused")
+		_check("Tab can focus the nearby bank counter", String(focused.get("kind", "")) == "bank",
+			JSON.stringify(focused))
+		if String(focused.get("kind", "")) == "bank":
+			await _send_key(KEY_E)
+			await _send_key(KEY_E, false)
+			var bank_menu := bool(_life.get("_modal_open")) \
+				and String((_life.get("_modal_entry") as Dictionary).get("kind", "")) == "bank"
+			_check("E opens the bank's nearby interaction menu", bank_menu)
+			if bank_menu:
+				var account_option: Button = _button_containing("查看账户与办理存取")
+				_check("bank menu offers its account action", account_option != null)
+				if account_option != null:
+					await _click(account_option)
+					_check("keyboard bank route opens the account card", panel.visible)
+					await _send_key(KEY_ESCAPE)
+					await _send_key(KEY_ESCAPE, false)
 	else:
 		await _save_checkpoint("11_bank_counter_unresponsive")
 	await _send_key(KEY_0)

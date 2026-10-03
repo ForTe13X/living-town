@@ -1736,6 +1736,16 @@ func life_interactions(radius := LIFE_REACH) -> Array:
 			acts.append({"action": v})
 		out.append({"kind": "agent", "id": String(other["id"]), "label": _name(other), "pos": other["pos"], "dist": d,
 			"busy": int(other["talking"]) > 0, "actions": acts})
+	# The account counter is authored furniture, not a simulated service job.
+	# Expose its anchor to LifeMode's click and nearby Tab/E paths without
+	# changing bank authority or copying an interior coordinate into the UI.
+	if sp == "halles" and fl == "1f":
+		var bank_cell := bank_counter_cell()
+		if bank_cell.x >= 0:
+			var bank_d := _manh(here, bank_cell)
+			if bank_d <= radius:
+				out.append({"kind": "bank", "id": "bank_counter", "label": "合作银行柜台",
+					"pos": bank_cell, "dist": bank_d, "actions": [{"action": "account"}]})
 	# P4c-7：镇务公示板是只读 UI 入口，不带 advertises，因而绝不会进入 NPC 候选、
 	# 改需求或写事件。生活模式仍把这个 authored 家具标记暴露为一个可聚焦目标。
 	var civic_cell := civic_observatory_cell()

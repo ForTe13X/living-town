@@ -772,6 +772,11 @@ func _set_free_will(on: bool) -> void:
 
 # ── 输入 ─────────────────────────────────────────────────────────────────────
 func _unhandled_input(e: InputEvent) -> void:
+	# Main owns input while its bank account card is visible.
+	var bank_panel: Panel = main.get("_bank_panel") as Panel
+	if bank_panel != null and bank_panel.visible:
+		_move_keys.clear()
+		return
 	if e is InputEventKey and e.keycode in [KEY_W, KEY_A, KEY_S, KEY_D, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT]:
 		if not e.pressed:
 			_move_keys.erase(e.keycode)
@@ -875,8 +880,11 @@ func _tap(screen: Vector2) -> void:
 		var d := Vector2(p.x * 48 + 24, p.y * 48 + 24).distance_to(w)
 		# 挂墙公示板的视觉中心在 y=0 格上方；交互锚仍是 authored 家具格，
 		# 但命中半径要包住整张 96x64 精灵，不能逼玩家去点墙脚。
-		var r := 68.0 if String(e["kind"]) == "civic" else (34.0 if String(e["kind"]) == "agent" else 30.0)
-		if d <= r and d < bestd:
+		var kind := String(e["kind"])
+		var r := 68.0 if kind == "civic" else (34.0 if kind == "agent" else 30.0)
+		# Match the full authored 96×80 counter art, including the overhang.
+		var hit := Rect2(Vector2(p.x * 48, p.y * 48 - 32), Vector2(96, 80)).has_point(w) if kind == "bank" else d <= r
+		if hit and d < bestd:
 			bestd = d
 			best = e
 	if best.is_empty():
@@ -896,7 +904,23 @@ func _tap(screen: Vector2) -> void:
 			_walk_to(cell)                         # 点地面：走过去（Sims 的点地走路）
 		return
 	_focus_id = String(best["id"])
-	_open_modal(best)
+	if String(best["kind"]) == "bank" and int(best["dist"]) <= Sim.LIFE_REACH:
+		_open_bank_from_life()
+	else:
+		_open_modal(best)
+
+func _open_bank_from_life() -> void:
+	var actor := Sim.get_agent(pid)
+	var counter := Sim.bank_counter_cell()
+	if not active or Sim.controlled_id != pid or actor.is_empty() or counter.x < 0 \
+			or String(actor.get("space", "")) != "halles" or String(actor.get("floor", "")) != "1f" \
+			or Sim._manh(actor["pos"], counter) > Sim.LIFE_REACH:
+		_close_modal()
+		_show_toast("走近合作银行柜台再查看账户")
+		return
+	_close_modal()
+	_move_keys.clear()
+	main.call("_open_bank_panel")
 
 func _portal_hop_at_cell(cell: Vector2i, actor: Dictionary) -> Dictionary:
 	if actor.is_empty():
@@ -983,6 +1007,11 @@ func _rebuild_modal() -> void:
 	var n_near := _inter.size()
 	var tab_hint := ("   Tab 换目标 (%d)" % n_near) if n_near > 1 else ""
 	match kind:
+		"bank":
+			title.text = "合作银行柜台"
+			var near := int(e.get("dist", 999)) <= Sim.LIFE_REACH
+			sub.text = ("可以查看账户与办理存取" if near else "请走近柜台再办理") + tab_hint
+			y = _mk_opt("查看账户与办理存取", near, _open_bank_from_life, y, w)
 		"civic":
 			var projection: Dictionary = Sim.civic_observatory_projection()
 			var current: Dictionary = projection.get("current", {})
@@ -1517,7 +1546,8 @@ func _sync_speed_btns() -> void:
 
 func _place_prompt(ag: Dictionary) -> void:
 	var e := _focused()
-	if _modal_open or e.is_empty():
+	var bank_panel: Panel = main.get("_bank_panel") as Panel
+	if _modal_open or e.is_empty() or (bank_panel != null and bank_panel.visible):
 		_prompt.visible = false
 		return
 	var pb: Node = main.get("_probe")
