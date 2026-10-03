@@ -29,6 +29,48 @@ func _expect_rejected(candidate: Dictionary, label: String) -> void:
 	_require(not query.walkable("cafe", "1f", Vector2i(3, 3)) and query.slot_by_id("cafe.dining_table").is_empty(),
 		label + " failed closed")
 
+func _same_unique_ids(expected: Array, actual: Array) -> bool:
+	if expected.size() != actual.size(): return false
+	var expected_set := {}
+	var actual_set := {}
+	for id: Variant in expected:
+		if typeof(id) != TYPE_STRING or String(id).is_empty() or expected_set.has(id): return false
+		expected_set[id] = true
+	for id: Variant in actual:
+		if typeof(id) != TYPE_STRING or String(id).is_empty() or actual_set.has(id): return false
+		actual_set[id] = true
+	return expected_set == actual_set
+
+## Compare the complete authored and compiled café sets, including IDs absent
+## from the frozen package. This is an observation gate, not an activation path.
+func _cafe_sets_match(topology: Dictionary, spaces: Dictionary, interiors: Dictionary,
+		nav_grids: Dictionary, portals: Array) -> bool:
+	var expected_floors := []
+	for plane: Dictionary in topology.get("planes", []):
+		if plane.get("space") == "cafe": expected_floors.append(plane.get("floor"))
+	var cafe_space: Variant = spaces.get("cafe")
+	var cafe_interior: Variant = interiors.get("cafe")
+	var cafe_grids: Variant = nav_grids.get("cafe")
+	if not cafe_space is Dictionary or not cafe_interior is Dictionary or not cafe_grids is Dictionary:
+		return false
+	var source_floors: Variant = cafe_space.get("floors")
+	if not source_floors is Array or not _same_unique_ids(expected_floors, source_floors) \
+			or not _same_unique_ids(expected_floors, cafe_interior.keys()) \
+			or not _same_unique_ids(expected_floors, cafe_grids.keys()): return false
+	var expected_portals := []
+	for portal: Dictionary in topology.get("portals", []):
+		expected_portals.append(portal.get("source_id"))
+	var actual_portals := []
+	for raw: Variant in portals:
+		if not raw is Dictionary: return false
+		var portal: Dictionary = raw
+		var from: Variant = portal.get("from")
+		var to: Variant = portal.get("to")
+		if not from is Dictionary or not to is Dictionary: return false
+		if from.get("space") == "cafe" or to.get("space") == "cafe":
+			actual_portals.append(portal.get("id"))
+	return _same_unique_ids(expected_portals, actual_portals)
+
 func _initialize() -> void:
 	var sim = SIM.new()
 	get_root().add_child(sim)
@@ -49,6 +91,27 @@ func _initialize() -> void:
 	_require(bool(query.configure(package).get("ok", false)), "frozen reference accepted: " + query.error)
 	if query.valid:
 		var topology: Dictionary = package["payload"]["topology"]
+		var source_spaces := _read_json("res://data/spaces.json")
+		var source_interiors := _read_json("res://data/interiors.json")
+		_require(_cafe_sets_match(topology, source_spaces.get("spaces", {}), source_interiors,
+			sim._nav_grids, source_spaces.get("portals", [])), "complete authored cafe floor and portal sets")
+		_require(_cafe_sets_match(topology, sim._authored_spaces, sim._authored_interiors_data,
+			sim._nav_grids, sim._authored_portals), "complete receiver cafe floor and portal sets")
+		var added_floor: Dictionary = source_spaces.duplicate(true)
+		added_floor["spaces"]["cafe"]["floors"].append("3f")
+		_require(not _cafe_sets_match(topology, added_floor["spaces"], source_interiors,
+			sim._nav_grids, source_spaces["portals"]), "added authored cafe floor rejected")
+		var added_interior: Dictionary = source_interiors.duplicate(true)
+		added_interior["cafe"]["3f"] = {"floor": "wood", "furniture": []}
+		_require(not _cafe_sets_match(topology, source_spaces["spaces"], added_interior,
+			sim._nav_grids, source_spaces["portals"]), "added cafe interior floor rejected")
+		var added_portal: Dictionary = source_spaces.duplicate(true)
+		var extra: Dictionary = added_portal["portals"][0].duplicate(true)
+		extra["id"] = "p_cafe_extra"
+		extra["to"]["space"] = "cafe"
+		added_portal["portals"].append(extra)
+		_require(not _cafe_sets_match(topology, added_portal["spaces"], source_interiors,
+			sim._nav_grids, added_portal["portals"]), "added authored cafe portal rejected")
 		for plane: Dictionary in topology["planes"]:
 			var bounds: Array = plane["bounds_q"]
 			var origin := _cell(bounds.slice(0, 2))
@@ -203,7 +266,7 @@ func _initialize() -> void:
 	_require(same_save, "save bytes unchanged")
 	print("LT22_FROZEN_QUERY " + JSON.stringify({"errors": errors, "cells": checked_cells,
 		"slots": 6, "portals": 2, "affordances": 8, "streets": 1,
-		"hostile_cases": 8, "save_bytes_identical": same_save,
+		"hostile_cases": 8, "stale_source_cases": 3, "save_bytes_identical": same_save,
 		"external_v5_qualified": false, "runtime_activation": false}))
 	sim.free()
 	quit(0 if errors.is_empty() else 1)

@@ -89,7 +89,10 @@ current `Sim` navigation, the complete café object and advertisement sets,
 six source/logical slots, two portal records and their native hop costs,
 eight advertisements with host records, and the street segment and
 entrance link with `coastal_plan.json`. It rejects eight hostile candidates
-and compares the native state/event digests and save bytes before and after.
+and compares the exact café floor and portal ID sets in both authored files
+and receiver-owned Sim snapshots. Three detached negative source cases add a
+space floor, an interior floor, or a portal; each fails the same set gate.
+The test compares native state/event digests and save bytes before and after.
 The Godot process does not activate the package.
 
 ## Remaining qualification
