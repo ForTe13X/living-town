@@ -214,6 +214,10 @@ func begin_select() -> void:
 		_leave_life()
 	selecting = true
 	_close_modal()
+	# Keep the first day and resident cards fixed while the player chooses.
+	# _close_modal() may restore the running state, so pause after it.
+	Sim.running = false
+	main.call("_update_status")
 	_hud.visible = false
 	_prompt.visible = false
 	if _sel != null:

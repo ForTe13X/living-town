@@ -3634,6 +3634,11 @@ func _unhandled_input(e: InputEvent) -> void:
 			_close_bank_panel()
 		get_viewport().set_input_as_handled()
 		return
+	# LifeMode owns the resident picker. Observer shortcuts can restart its paused
+	# clock; F8 stays available to restore a save from a fresh launch.
+	if _life != null and _life.selecting:
+		if not (e is InputEventKey and e.pressed and e.keycode == KEY_F8):
+			return
 	if e is InputEventKey and e.pressed and not e.echo:
 		if _civic_panel != null and _civic_panel.visible and e.keycode in [KEY_ESCAPE, KEY_E]:
 			_close_civic_panel()
