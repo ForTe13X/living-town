@@ -52,6 +52,18 @@ def project_config(text):
     return '\n'.join(lines) + '\n'
 
 
+def scene_script_paths(text):
+    """Use script paths in staged scenes because generated .gd.uid files are omitted."""
+    lines = []
+    for line in text.splitlines(keepends=True):
+        if line.startswith('[ext_resource') and 'type="Script"' in line and ' uid="uid://' in line:
+            if ' path="res://' not in line:
+                raise ValueError('Script UID without a resource path cannot be staged')
+            line = re.sub(r' uid="uid://[^"]+"', '', line)
+        lines.append(line)
+    return ''.join(lines)
+
+
 def input_files(game):
     return sorted(p for p in game.rglob('*') if p.is_file()
                   and not any(p.relative_to(game).as_posix().startswith(x) for x in OMIT)
@@ -99,6 +111,8 @@ def prepare(stage, allow_dirty=False):
         source[rel] = digest(data)
         if rel == 'project.godot':
             data = project_config(data.decode('utf-8')).encode('utf-8')
+        elif p.suffix in {'.tscn', '.tres'}:
+            data = scene_script_paths(data.decode('utf-8')).encode('utf-8')
         target = stage / 'game' / rel
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(data)
@@ -118,7 +132,8 @@ def prepare(stage, allow_dirty=False):
                 'acceptance': 'unaccepted_candidate',
                 'platform': 'Windows x86_64', 'backend_scope': 'logic, no bundled model',
                 'source_root': str(ROOT), 'omitted_prefixes': list(OMIT),
-                'transformations': ['remove editor plugins and MCP autoloads', 'desktop export preset'],
+                'transformations': ['remove editor plugins and MCP autoloads',
+                                    'use script paths instead of omitted generated UIDs', 'desktop export preset'],
                 'source_sha256': source, 'staged_sha256': staged}
     (stage / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
     verify(stage)

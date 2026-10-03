@@ -5,7 +5,7 @@ import subprocess
 import sys
 from unittest.mock import patch
 from pathlib import Path
-from tools.stage_desktop_logic import digest, input_files, project_config, verify
+from tools.stage_desktop_logic import digest, input_files, project_config, scene_script_paths, verify
 from tools import check_desktop_candidate
 
 
@@ -63,6 +63,19 @@ class DesktopStagingHostileTests(unittest.TestCase):
         selected = {p.relative_to(game).as_posix() for p in input_files(game)}
         self.assertIn('scripts/Main.gd', selected)
         self.assertNotIn('scripts/Main.gd.uid', selected)
+
+    def test_scene_script_uid_uses_path_when_sidecar_is_omitted(self):
+        scene = ('[gd_scene uid="uid://scene"]\n'
+                 '[ext_resource type="Script" uid="uid://generated" '
+                 'path="res://bench/BackendBench.gd" id="1"]\n'
+                 '[ext_resource type="Texture2D" uid="uid://texture" '
+                 'path="res://assets/pixel.png" id="2"]\n')
+        staged = scene_script_paths(scene)
+        self.assertIn('[ext_resource type="Script" path="res://bench/BackendBench.gd" id="1"]', staged)
+        self.assertIn('uid="uid://texture"', staged)
+        self.assertIn('uid="uid://scene"', staged)
+        with self.assertRaisesRegex(ValueError, 'without a resource path'):
+            scene_script_paths('[ext_resource type="Script" uid="uid://generated" id="1"]\n')
 
     def test_unknown_autoload_using_mcp_name_is_preserved_by_refusal(self):
         with self.assertRaisesRegex(ValueError, 'unexpected script'):
