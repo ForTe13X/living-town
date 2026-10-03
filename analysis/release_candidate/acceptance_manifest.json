@@ -39,6 +39,11 @@
     "runtime_receipt": "D:/Documents/Dev/living-town-desktop-rcb-hint-27ae83f/runtime_receipt.json",
     "runtime_result": "PASS",
     "headless_cases_passed": "7/7",
+    "rendered_journey_receipt": "D:/Documents/Dev/living-town-desktop-rcb-hint-27ae83f/rendered-journey/journey.json",
+    "rendered_journey_checks_passed": "30/30",
+    "rendered_journey_viewport_inputs": 147,
+    "rendered_journey_frames": 11,
+    "rendered_journey_host_os_input_covered": false,
     "executable_sha256": "026ee3f1748d31521f3a62ecaf7f9c0d6137bdcec56b8b353640e2677e99b9fe",
     "backend_scope": "logic; no bundled native model"
   },
