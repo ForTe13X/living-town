@@ -99,8 +99,12 @@ Open `out/coastal-2d-kit-review-v3/godot-project/project.godot` in Godot to insp
 
 ```python
 import runpy
-module = runpy.run_path(r"D:\Documents\Dev\living-town\tools\blender\export_scene_to_godot_review.py")
-result = module["export_active_scene"](r"D:\Documents\Dev\living-town\out\coastal-mansion-godot-review-v2")
+from pathlib import Path
+
+project_root = Path.cwd()
+module = runpy.run_path(str(project_root / "tools" / "blender" / "export_scene_to_godot_review.py"))
+export_active_scene = module.get("export_active_scene")
+result = export_active_scene(str(project_root / "out" / "coastal-mansion-godot-review-v2"))
 ```
 
 The current candidate is `out/coastal-mansion-godot-review-v2/`. It contains a GLB with 295 mesh objects, 5,364 source polygons and 11 materials, plus `project.godot`, `Review.tscn`, and the orbit-camera script. Godot 4.6.2 imported the GLB and loaded `Review.tscn` headlessly with exit code 0. Its manifest records that the source Blender scene was dirty; the saved-file hash does not cover the exported in-memory changes. This candidate is for scene review and further editing, not a modular overhead kit or approved runtime asset.
