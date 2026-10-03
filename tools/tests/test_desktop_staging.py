@@ -55,6 +55,15 @@ class DesktopStagingHostileTests(unittest.TestCase):
         (cache / 'required.ctex').write_bytes(b'compiled')
         verify(self.stage)
 
+    def test_generated_script_uids_are_not_staged_as_runtime_inputs(self):
+        game = self.stage / 'game'
+        (game / 'scripts').mkdir()
+        (game / 'scripts/Main.gd').write_text('extends Node\n')
+        (game / 'scripts/Main.gd.uid').write_text('uid://generated\n')
+        selected = {p.relative_to(game).as_posix() for p in input_files(game)}
+        self.assertIn('scripts/Main.gd', selected)
+        self.assertNotIn('scripts/Main.gd.uid', selected)
+
     def test_unknown_autoload_using_mcp_name_is_preserved_by_refusal(self):
         with self.assertRaisesRegex(ValueError, 'unexpected script'):
             project_config('[autoload]\nMCPScreenshot="*res://scripts/Important.gd"\n')

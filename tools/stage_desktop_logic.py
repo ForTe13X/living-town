@@ -56,7 +56,7 @@ def input_files(game):
     return sorted(p for p in game.rglob('*') if p.is_file()
                   and not any(p.relative_to(game).as_posix().startswith(x) for x in OMIT)
                   and not any(part.startswith('.') for part in p.relative_to(game).parts)
-                  and p.name != 'export_presets.cfg' and p.suffix != '.import')
+                  and p.name != 'export_presets.cfg' and p.suffix not in {'.uid', '.import'})
 
 
 def verify(stage):
