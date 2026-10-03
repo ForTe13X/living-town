@@ -713,6 +713,7 @@ func _build_hud() -> void:
 	layer.add_child(_status_line)
 
 	_status = _mk_label(layer, fnt, 17, Vector2(52, 6), Vector2(STATUS_W, STATUS_H1))   # 左留 ⚙ 设置钮，右留「详情」+ 后端切换钮
+	_status.mouse_filter = Control.MOUSE_FILTER_PASS   # 折叠的市政/统计详情可悬停查看；按钮仍在它上层
 
 	# 设置钮（左上角；点开 NPC 数量/速度/后端面板。O 键同款开关）
 	# 字形纪律：随包字体 Smiley Sans 是 CJK 显示体，无 emoji 覆盖 —— HUD 里一律用汉字/ASCII，否则真机上是豆腐块。
@@ -2568,8 +2569,33 @@ func _update_status() -> void:
 				var cargo_hint := _player_cargo_hint(pl)
 				ptxt = "\n[color=#ffd700]你：礼物×%d  WASD移动  选中居民后 %s R归还访客证 C聊天（或点下方动作条）%s[/color]%s" % [
 					int(pl["inventory"].get("gift", 0)), " ".join(vkeys), ("  约定：" + "；".join(pmeets)) if not pmeets.is_empty() else "", cargo_hint]
-	_status.text = "[color=#e6e9f2]小镇有灵 Living Town  ·  第 %d 天 %s %s%s%s  ·  %s  ·  %s  ·  NPC %d  ｜  事件 %d  约会 %d(活%d)  冲突 %d(活%d)[/color]%s" % [
-		Sim.day, clock, phase, wx, etxt, spd, btxt, Sim.agents.size(), Sim.event_log.size(), Sim.commitments.size(), meets_active, Sim.conflicts.size(), conf_active, ptxt]
+	var core := "小镇有灵 Living Town  ·  第 %d 天 %s %s%s" % [Sim.day, clock, phase, wx]
+	var tail := "  ·  %s  ·  %s  ·  NPC %d" % [spd, btxt, Sim.agents.size()]
+	var counts := "  ｜  事件 %d  约会 %d(活%d)  冲突 %d(活%d)" % [
+		Sim.event_log.size(), Sim.commitments.size(), meets_active, Sim.conflicts.size(), conf_active]
+	var civic_brief := ""
+	if not Sim.last_election.is_empty():
+		var last: Dictionary = Sim.last_election
+		civic_brief = "  ·  选举%s %d:%d" % ["通过" if bool(last["pass"]) else "否决", int(last["yea"]), int(last["nay"])]
+	if not Sim.mayor_state.is_empty():
+		civic_brief += "  ·  镇长%s" % _nm(String(Sim.mayor_state.get("mayor", "")))
+	var full := core + etxt + tail + counts
+	var player_lines: Array[String] = [ptxt]
+	if _player_mode and ptxt != "":
+		player_lines.append("\n[color=#ffd700]你：WASD移动  点居民交互  动作见下方  C聊天  R归还访客证[/color]")
+	# RichTextLabel wraps silently and clips at 28/52 px. Check its actual layout,
+	# retaining the most useful details that fit the current viewport. The complete
+	# line remains available on hover, including mayor duties and event counts.
+	_status.text = "[color=#e6e9f2]%s[/color]%s" % [full, ptxt]
+	_status.tooltip_text = _status.get_parsed_text()
+	var lines: Array[String] = [full, core + civic_brief + tail + counts,
+		core + tail + counts, core + tail, "第 %d 天 %s %s%s  ·  %s  ·  %s" % [Sim.day, clock, phase, wx, spd, btxt]]
+	for player_line in player_lines:
+		for line in lines:
+			_status.text = "[color=#e6e9f2]%s[/color]%s" % [line, player_line]
+			if _status.get_content_height() <= _status.size.y:
+				_refresh_clean_player_text()
+				return
 	_refresh_clean_player_text()
 
 ## 玩家站在真实 port_dock 三格内才显示；只读 Sim 的 manifest 投影，不制造“玩家能亲手卸货”的假按钮。
