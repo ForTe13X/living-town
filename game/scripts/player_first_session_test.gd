@@ -218,7 +218,13 @@ func _run() -> void:
 	_check("service outcome changes its advertised need", need_after > need_before,
 		"%s %.1f -> %.1f" % [String(paid["need"]), need_before, need_after])
 	await _save_checkpoint("06_paid_service_receipt")
+	await _post_service_leg()
 	_finish()
+
+## Supplemental capture scenes may continue after the paid service. The
+## canonical first-session scene keeps its established route and verdict.
+func _post_service_leg() -> void:
+	pass
 
 func _run_social_leg() -> bool:
 	var social_target := _find_social_target()
