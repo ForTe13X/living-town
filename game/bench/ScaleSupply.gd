@@ -17,9 +17,12 @@ extends SceneTree
 ## 用法：
 ##   godot --headless --path game -s res://bench/ScaleSupply.gd -- \
 ##       --agents 60 --seeds 1-12 --days 60 [--checkpoints 30,40,50,60] [--out <path.jsonl>]
-##   --agents 0 = 数据原样（12 人；agents.json 6 条 + personas 轮转到 12？见回执，实测是 12）
+##   --core-agents N and legacy --agents N both select core residents; affiliates append.
+##   --agents 0 = authored roster (currently 12 core + 2 affiliates); report actual n_agents.
+##   Conflicting population flags fail before simulation. --total-agents is unsupported.
 ##
-## ⚠ 本文件**只读** Sim，不写任何仿真状态；跑它不改金标、不进 ci.sh（docs/53 §三：接不接线是下一波的决定）。
+## ⚠ 直接运行本文件**只读** Sim，不写任何仿真状态；跑它不改金标、不进 ci.sh（docs/53 §三：接不接线是下一波的决定）。
+## _make_sim 只供隔离的 bench 子类替换仿真对象；本文件的默认实例仍是原 Sim。
 
 const SimScript = preload("res://scripts/Sim.gd")
 const Inv = preload("res://bench/Invariants.gd")
@@ -28,6 +31,7 @@ func _init() -> void:
 	var seeds := _parse_seeds("1-12")
 	var days := 60
 	var agents := 0
+	var population_arg_seen := false
 	var checkpoints: Array = []
 	var out_path := ""
 	var args := OS.get_cmdline_user_args()
@@ -36,8 +40,26 @@ func _init() -> void:
 			seeds = _parse_seeds(args[i + 1])
 		elif args[i] == "--days" and i + 1 < args.size():
 			days = int(args[i + 1])
-		elif args[i] == "--agents" and i + 1 < args.size():
-			agents = int(args[i + 1])
+		elif args[i] in ["--agents", "--core-agents"]:
+			if i + 1 >= args.size() or not String(args[i + 1]).is_valid_int():
+				print("SCALE_SUPPLY_FAIL population argument requires an integer")
+				quit(2)
+				return
+			var requested := int(args[i + 1])
+			if requested < 0 or (args[i] == "--core-agents" and requested == 0):
+				print("SCALE_SUPPLY_FAIL core population must be positive; legacy --agents 0 selects authored defaults")
+				quit(2)
+				return
+			if population_arg_seen and requested != agents:
+				print("SCALE_SUPPLY_FAIL conflicting population arguments")
+				quit(2)
+				return
+			agents = requested
+			population_arg_seen = true
+		elif args[i] == "--total-agents":
+			print("SCALE_SUPPLY_FAIL --total-agents is unsupported; use --core-agents or --agents")
+			quit(2)
+			return
 		elif args[i] == "--checkpoints" and i + 1 < args.size():
 			for c in String(args[i + 1]).split(","):
 				checkpoints.append(int(c))
@@ -64,8 +86,11 @@ func _init() -> void:
 	quit(0)
 
 ## 跑一局，返回一条机读记录。结构照抄 Harness._run_once（backend=null、auto_run=false、显式 _load_data）。
+func _make_sim():
+	return SimScript.new()
+
 func _run_once(seed: int, days: int, agents: int, checkpoints: Array) -> Dictionary:
-	var S = SimScript.new()
+	var S = _make_sim()
 	get_root().add_child(S)
 	S._load_data()
 	S.auto_run = false
@@ -79,6 +104,14 @@ func _run_once(seed: int, days: int, agents: int, checkpoints: Array) -> Diction
 	var starve_by_need: Dictionary = {}
 	var starve_by_ag: Dictionary = {}
 	var starve_first_tick := -1
+	# LT-14 severity observations. These do not feed decisions or invariant thresholds.
+	var min_need_value := 101.0
+	var min_need_observation: Dictionary = {}
+	var min_by_need: Dictionary = {}
+	var prior_agent_min: Dictionary = {}
+	var urgent_no_recovery_run: Dictionary = {}
+	var urgent_no_recovery_max := 0
+	var urgent_no_recovery_observation: Dictionary = {}
 	# 快照：day -> {ev_n, stock_day, attempts, work, stock, spoiled, short}
 	var snaps: Dictionary = {}
 	var cp: Dictionary = {}
@@ -98,8 +131,19 @@ func _run_once(seed: int, days: int, agents: int, checkpoints: Array) -> Diction
 				"stock": (S.town_stock as Dictionary).duplicate(true),
 			}
 		for ag in S.agents:
+			var agent_min := 101.0
+			var agent_min_id := ""
 			for nid in ag["needs"]:
-				if float(ag["needs"][nid]) <= 0.5:
+				var need_value := float(ag["needs"][nid])
+				if need_value < float(min_by_need.get(String(nid), 101.0)):
+					min_by_need[String(nid)] = need_value
+				if need_value < min_need_value:
+					min_need_value = need_value
+					min_need_observation = {"agent": String(ag["id"]), "need": String(nid), "tick": t}
+				if need_value < agent_min:
+					agent_min = need_value
+					agent_min_id = String(nid)
+				if need_value <= 0.5:
 					starved += 1
 					# 硬 #1 只给一个总数（"触底 need·tick=N"），分不出是谁的哪个需求。
 					# 大 N 上它偶发变红（本棒实测：6 个 N × 12 seed 里 3 例），而"缺货绝不阻断动作"是设计红线
@@ -109,12 +153,27 @@ func _run_once(seed: int, days: int, agents: int, checkpoints: Array) -> Diction
 					starve_by_ag[String(ag["id"])] = int(starve_by_ag.get(String(ag["id"]), 0)) + 1
 					if starve_first_tick < 0:
 						starve_first_tick = t
+			var agent_id := String(ag["id"])
+			var prior_min := float(prior_agent_min.get(agent_id, 101.0))
+			if agent_min < S.SURVIVAL_GATE:
+				var run := int(urgent_no_recovery_run.get(agent_id, 0)) + 1 if agent_min <= prior_min + 0.000001 else 1
+				urgent_no_recovery_run[agent_id] = run
+				if run > urgent_no_recovery_max:
+					urgent_no_recovery_max = run
+					urgent_no_recovery_observation = {"agent": agent_id, "need": agent_min_id, "end_tick": t}
+			else:
+				urgent_no_recovery_run[agent_id] = 0
+			prior_agent_min[agent_id] = agent_min
 
 	var rec: Dictionary = {
 		"agents_arg": agents, "n_agents": S.agents.size(), "seed": seed, "days": days,
 		"starved": starved, "events": S.event_log.size(),
 		"starve_by_need": starve_by_need, "starve_by_agent": starve_by_ag,
 		"starve_first_tick": starve_first_tick, "starve_first_day": (starve_first_tick / tpd) if starve_first_tick >= 0 else -1,
+		"min_need_value": min_need_value, "min_need_margin_above_hard_floor": min_need_value - float(S.STARVE_NEED),
+		"min_need_observation": min_need_observation, "min_by_need": min_by_need,
+		"urgent_need_nonrecovery_max_ticks": urgent_no_recovery_max,
+		"urgent_need_nonrecovery_observation": urgent_no_recovery_observation,
 		"digest": str(Inv.digest(S)),
 	}
 	# ── 门真正的判决（同一份 S）：拿 #40 的 ok/detail，作为探针自算 rate 的对照 ──

@@ -87,5 +87,53 @@ func _ready() -> void:
 	var before_forged_revoke := _authority_snapshot()
 	ck(not Sim.revoke_cafe_guest_capability(), "forged active receipt cannot revoke")
 	ck(_same_authority(before_forged_revoke, _authority_snapshot()), "forged revoke is rejected atomically")
+
+	# LT-05 hostile clearance control: obstruct the authored café exit endpoint
+	# only in this fixture's derived navigation grid. The public movement and
+	# portal APIs must both refuse it; restoring the cell must reopen the route.
+	Sim.cafe_guest_capability = revoked.duplicate(true)
+	var cafe_door := Vector2i(-1, -1)
+	for raw_portal in Sim._authored_portals:
+		if raw_portal is Dictionary and String((raw_portal as Dictionary).get("id", "")) == "p_cafe_door":
+			var to_side: Dictionary = (raw_portal as Dictionary).get("to", {})
+			var xy: Array = to_side.get("pos", [])
+			if xy.size() == 2:
+				cafe_door = Vector2i(int(xy[0]), int(xy[1]))
+			break
+	ck(cafe_door.x >= 0, "authored café doorway endpoint found")
+	if cafe_door.x >= 0:
+		var grid: Dictionary = Sim._grid_for("cafe", "1f")
+		var blocks: Dictionary = grid.get("blocked", {})
+		var doorway_index := cafe_door.y * int(grid.get("w", 0)) + cafe_door.x
+		ck(not blocks.has(doorway_index), "authored café doorway starts walkable")
+		var approach := Vector2i(-1, -1)
+		for dir in [Vector2i.UP, Vector2i.RIGHT, Vector2i.DOWN, Vector2i.LEFT]:
+			var candidate: Vector2i = cafe_door + dir
+			if Sim._cell_walkable(grid, candidate):
+				approach = candidate
+				break
+		ck(approach.x >= 0, "walkable adjacent café approach exists")
+		if approach.x >= 0 and not blocks.has(doorway_index):
+			pl = Sim.get_agent("player")
+			pl["talking"] = 0
+			Sim._move_agent(pl, approach)
+			var before_block := _authority_snapshot()
+			blocks[doorway_index] = true
+			Sim.player_move(cafe_door - approach)
+			var trace_entries: Array = Sim.get_player_trace().get("entries", [])
+			var last_move: Dictionary = trace_entries.back() if not trace_entries.is_empty() else {}
+			var move_receipt: Dictionary = last_move.get("receipt", {})
+			var move_result: Dictionary = move_receipt.get("result", {})
+			ck(String(last_move.get("kind", "")) == "move" and String(move_result.get("reason", "")) == "blocked"
+				and pl.get("pos") == approach, "blocked doorway refuses public player movement")
+			var denied_door := Sim.player_portal_intent({"source_space": "cafe", "source_floor": "1f", "portal_pos": cafe_door})
+			ck(not bool(denied_door.get("ok", false)) and String(denied_door.get("reason", "")) == "source_endpoint_invalid",
+				"blocked doorway refuses public portal transaction")
+			ck(_same_authority(before_block, _authority_snapshot()), "blocked doorway leaves player and chronicle authority unchanged")
+			blocks.erase(doorway_index)
+			ck(Sim._cell_walkable(grid, cafe_door), "fixture obstruction removed")
+			var reopened := Sim.player_portal_intent({"source_space": "cafe", "source_floor": "1f", "portal_pos": cafe_door})
+			ck(bool(reopened.get("ok", false)) and String(pl.get("space", "")) == "town"
+				and String(pl.get("floor", "")) == "outdoor", "same authored doorway traverses after obstruction clears")
 	print("CAFE_GUEST_ACCESS_TEST_FAILS=%d" % fails)
 	get_tree().quit(1 if fails > 0 else 0)

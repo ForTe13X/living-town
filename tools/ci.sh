@@ -117,7 +117,8 @@ scan_state_projection_runtime_contract(){
     'save_game REFUSED .* schema 1 cargo order is invalid' \
     'save_game REFUSED .* schema 1 cargo dictionary/order diverge' \
     'save_game REFUSED .* commitment id is invalid' \
-    'save_game REFUSED .* core_population [0-9]+ does not equal eligible core [0-9]+'
+    'save_game REFUSED .* core_population [0-9]+ does not equal eligible core [0-9]+' \
+    'save_game REFUSED .* civic project term/treasury authority: mayor term record is not a Dictionary'
 }
 
 scan_contract_self_test(){
@@ -430,6 +431,15 @@ step "2f. 互补性守卫 (某条不变量【唯一】的活输入来源还在�
 "$PY" tools/gate_complement_guard.py 2>&1 | tee "$LT_LOG/complement.log"
 [ "${PIPESTATUS[0]}" -eq 0 ] && ok "互补性守卫（单点依赖的夹具逐条现读现比）" \
   || bad "互补性守卫（有不变量失去了它【唯一】的活输入来源，见上）"
+"$PY" tools/assert_p1o_manifest_authority.py --self-test \
+  && ok "P1-o carrier authority self-test（one/two berth, removed/swapped ship, corrupt authority）" \
+  || bad "P1-o carrier authority self-test"
+"$PY" analysis/af2/assert_season.py --self-test \
+  && ok "season semantic grass-mask self-test (authored coverage, paving rejection, insufficient-coverage rejection)" \
+  || bad "season semantic grass-mask self-test"
+"$PY" tools/assert_tree_stand.py --self-test \
+  && ok "forest grove sampling self-test (sparse bounds, missing grove, repeated stamp, camera shift, clipped frame)" \
+  || bad "forest grove sampling self-test"
 
 step "3. godot import + parse smoke"
 "$GODOT" --headless --path game --import >"$LT_LOG/import.log" 2>&1 || true
@@ -817,7 +827,7 @@ echo "  ℹ  story_test 夹具 = seeds $CI_STORY_SEEDS × $CI_STORY_DAYS 天 · 
 #   只能从 CI_SCENES_ALL 里删它（那是一次看得见的改动），而不是让它从某条 lane 里静静掉出去。
 #   story_test 独占一条 lane 的理由是代价：GHA 上它一个场景 633s，是整条流水线最贵的单块
 #   （seeds 1-12 × 40 天，天数的由来见上面那段 ★），其余 24 个场景加起来只有 325s。
-CI_SCENES_ALL="m2_test reqlife_test player_agency_test player_touch_test life_test player_replay_test cafe_guest_access_test p1t_social_plane_test p1a_affiliate_test p1b_cargo_manifest_test p1c_east_ocean_carrier_test p1d_scale_export_test p1g_manifest_transaction_test p1u_port_nav_test p1v_warehouse_observatory_test s4_replay_test space_test c1_locked_ortho_test save_load_test save_migration_test goals_test story_test event_prose_test desire_test governance_test ledger_test banking_test coastal_camera_test exterior_visual_test"
+CI_SCENES_ALL="m2_test reqlife_test player_agency_test player_touch_test player_journey_test life_test life_adversarial_test player_replay_test cafe_guest_access_test p1t_social_plane_test p1a_affiliate_test p1b_cargo_manifest_test p1c_east_ocean_carrier_test p1d_scale_export_test p1g_manifest_transaction_test p1u_port_nav_test p1v_warehouse_observatory_test s4_replay_test space_test c1_locked_ortho_test save_load_test save_resume_test save_migration_test interaction_legibility_test goals_test story_test event_prose_test desire_test governance_test civic_project_test civic_player_journey_test ledger_test banking_test coastal_camera_test exterior_visual_test"
 CI_SCENES_STORY="story_test"
 CI_SCENES=""
 for scene in $CI_SCENES_ALL; do
@@ -828,7 +838,11 @@ for scene in $CI_SCENES_ALL; do
 done
 for scene in $CI_SCENES; do
   SCENE_T0=$SECONDS
-  "$GODOT" --headless --path game "res://scenes/$scene.tscn" >"$LT_LOG/$scene.log" 2>&1
+  if [ "$scene" = civic_player_journey_test ]; then
+    "$GODOT" --headless --path game "res://scenes/$scene.tscn" -- --seed 7 --agents 12 --backend logic --life-as ben --warmup-tick 7202 >"$LT_LOG/$scene.log" 2>&1
+  else
+    "$GODOT" --headless --path game "res://scenes/$scene.tscn" >"$LT_LOG/$scene.log" 2>&1
+  fi
   code=$?
   if [ $code -eq 0 ]; then ok "$scene ($((SECONDS-SCENE_T0))s)"; else tail -8 "$LT_LOG/$scene.log"; bad "$scene (exit $code, $((SECONDS-SCENE_T0))s)"; fi
   case "$scene" in
@@ -843,6 +857,16 @@ for scene in $CI_SCENES; do
       ;;
     cafe_guest_access_test)
       grep -q 'CAFE_GUEST_ACCESS_TEST_FAILS=0' "$LT_LOG/$scene.log" \
+        && ok "$scene terminal marker" || bad "$scene missing/failing terminal marker"
+      scan "$scene" "$LT_LOG/$scene.log"
+      ;;
+    civic_project_test)
+      grep -q '^civic_project_test: PASS (0 fail)$' "$LT_LOG/$scene.log" \
+        && ok "$scene terminal marker" || bad "$scene missing/failing terminal marker"
+      scan "$scene" "$LT_LOG/$scene.log"
+      ;;
+    civic_player_journey_test)
+      grep -q '^civic_player_journey_test: PASS (0 fail)$' "$LT_LOG/$scene.log" \
         && ok "$scene terminal marker" || bad "$scene missing/failing terminal marker"
       scan "$scene" "$LT_LOG/$scene.log"
       ;;

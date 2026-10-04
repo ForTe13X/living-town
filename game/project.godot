@@ -1,5 +1,10 @@
-; Godot 4 工程：小镇有灵 / Living Town（像素 LLM 生活模拟 · 骨架）
-; 复用《小鱼岛》范式：autoload headless 引擎 + 信号驱动 UI + 确定性种子 RNG + 可插拔 LLM 后端。
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
 
 config_version=5
 
@@ -21,21 +26,19 @@ Audio="*res://scripts/Audio.gd"
 window/size/viewport_width=1280
 window/size/viewport_height=768
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
 window/handheld/orientation="landscape"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/worldgen/plugin.cfg", "res://addons/godot_mcp/plugin.cfg")
+
+[godot_mcp_pro]
+
+require_connection_token=true
 
 [rendering]
 
-textures/vram_compression/import_etc2_astc=true
-
-; 界外虚空底色。Godot 的出厂默认是 Color(0.3,0.3,0.3) = #4d4d4d，而全镇视角下【过半】画面
-; 都不在地图矩形里 —— 小镇因此读作"灰色虚空里的一座孤岛"。这里换成深林底色，与
-; WorldView._draw_town_backdrop() 画的界外暗林同族；那一层只在 _vis 内绘制，
-; clear color 负责它够不到的地方（首帧、Sim.world 为空的早退分支、极端缩放）。
-environment/defaults/default_clear_color=Color(0.043137, 0.070588, 0.054902, 1)
-
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
-
-[editor_plugins]
-enabled=PackedStringArray("res://addons/worldgen/plugin.cfg")
+textures/vram_compression/import_etc2_astc=true
+environment/defaults/default_clear_color=Color(0.043137, 0.070588, 0.054902, 1)

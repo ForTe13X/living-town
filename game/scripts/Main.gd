@@ -196,9 +196,13 @@ var _act_card: Panel
 var _status_line: ColorRect           # 顶栏底边的一道金线
 var _civic_panel: Panel               # 镇公所公示板的只读 HUD 卡片
 var _bank_panel: Panel                # P5a 合作银行：账户、准备金与贷款交互卡
+var _bank_overlay: CanvasLayer
+var _bank_blocker: ColorRect
 var _bank_title: RichTextLabel
 var _bank_body: RichTextLabel
 var _bank_was_running := false
+var _bank_account_at_open := ""
+var _bank_feedback := ""
 var _civic_title: RichTextLabel
 var _civic_body: RichTextLabel
 var _civic_duty_fill: ColorRect
@@ -389,6 +393,8 @@ const STORY_FEATH := 40.0
 const STORY_LINES := 16
 
 func _ready() -> void:
+	if preload("res://scripts/DesktopAcceptance.gd").route(self):
+		return
 	var seed := 20260626
 	var backend := "logic"
 	var spd := 1.0
@@ -403,7 +409,7 @@ func _ready() -> void:
 	var _bank_panel_arg := false           # --bank-panel：启动即打开合作银行账户卡
 	var _lod_agg_arg := false              # --lod-agg：仅【测量/眼验】用，启用观察无关 aggregate LOD（CLI-only，绝不进 boot/面板出货路径；默认 off=逐字节不变）
 	var _locked_ortho_c1_arg := false      # --locked-ortho-c1：可删除的 C1 纯 View 适配器，默认绝不实例化
-	var args := OS.get_cmdline_user_args()
+	var args := preload("res://scripts/DesktopAcceptance.gd").game_args()
 	# 生活模式（docs/190）：桌面上【不带任何参数】的正式启动 = 开局选人；--life 显式开、--life-as <id> 跳过选人直接附身。
 	# 带参数的 dev/CI/出图路径一律不进（它们都带参数）⇒ 所有既有门逐字节不变。手机端还没有摇杆，暂不默认。
 	var life_on := args.is_empty()                    # 产品启动（桌面双击 / 手机点图标）= 生活模式；docs/190 第六批起手机也默认进（有摇杆了）
@@ -709,6 +715,7 @@ func _build_hud() -> void:
 	layer.add_child(_status_line)
 
 	_status = _mk_label(layer, fnt, 17, Vector2(52, 6), Vector2(STATUS_W, STATUS_H1))   # 左留 ⚙ 设置钮，右留「详情」+ 后端切换钮
+	_status.mouse_filter = Control.MOUSE_FILTER_PASS   # 折叠的市政/统计详情可悬停查看；按钮仍在它上层
 
 	# 设置钮（左上角；点开 NPC 数量/速度/后端面板。O 键同款开关）
 	# 字形纪律：随包字体 Smiley Sans 是 CJK 显示体，无 emoji 覆盖 —— HUD 里一律用汉字/ASCII，否则真机上是豆腐块。
@@ -926,7 +933,7 @@ func _build_hud() -> void:
 	pperf.add_child(_perf)
 
 	_build_civic_panel(layer, fnt)
-	_build_bank_panel(layer, fnt)
+	_build_bank_panel(fnt)
 
 	# B15：按当前视口锚定一次；并接 size_changed —— 手机转屏/桌面拉窗口都会重排（这是唯一入口）。
 	_relayout_hud()
@@ -1079,17 +1086,30 @@ func _refresh_civic_panel() -> void:
 	var swings := int(election.get("performance_swings", 0))
 	lines.append("[color=#cda35c]最近选举[/color]  政绩改投 %d 票 · 前任 [color=#9be38a]+%d[/color] / [color=#f28a7f]-%d[/color]" % [swings,
 		int(election.get("incumbent_gained", 0)), int(election.get("incumbent_lost", 0))])
+	var project_receipt := preload("res://scripts/CivicPresentation.gd").receipt(Sim.civic_project_state())
+	if project_receipt != "":
+		lines.append("[color=#cda35c]广场项目[/color]  " + _esc(project_receipt))
 	_civic_body.text = "\n".join(lines)
 
 ## P5a: one reusable finance card backed entirely by Sim's bank projection and transaction API.
-func _build_bank_panel(layer: CanvasLayer, fnt: Font) -> void:
+func _build_bank_panel(fnt: Font) -> void:
+	# A real modal layer keeps the paused account card above LifeMode controls
+	# and catches clicks on the hidden timeline, settings, or town behind it.
+	_bank_overlay = CanvasLayer.new()
+	_bank_overlay.layer = 35
+	add_child(_bank_overlay)
+	_bank_blocker = ColorRect.new()
+	_bank_blocker.color = Color(0.0, 0.0, 0.0, 0.42)
+	_bank_blocker.mouse_filter = Control.MOUSE_FILTER_STOP
+	_bank_blocker.visible = false
+	_bank_overlay.add_child(_bank_blocker)
 	_bank_panel = Panel.new()
 	_bank_panel.name = "CooperativeBank"
 	_bank_panel.size = Vector2(520, 346)
 	_bank_panel.add_theme_stylebox_override("panel", _card_style(Color(0.04, 0.075, 0.078, 0.98), Color("#c8a866"), 8, 8))
 	_bank_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	_bank_panel.visible = false
-	layer.add_child(_bank_panel)
+	_bank_overlay.add_child(_bank_panel)
 	var art := TextureRect.new()
 	art.texture = Art.tex("res://assets/art/furn/bank_counter_ledger.png")
 	art.position = Vector2(18, 14); art.size = Vector2(104, 76)
@@ -1112,11 +1132,11 @@ func _build_bank_panel(layer: CanvasLayer, fnt: Font) -> void:
 	_bank_body.add_theme_font_override("normal_font", fnt); _bank_body.add_theme_font_size_override("normal_font_size", 16)
 	_bank_body.position = Vector2(24, 108); _bank_body.size = Vector2(472, 154); _bank_body.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_bank_panel.add_child(_bank_body)
-	var actions := [["存入 1 枚", _bank_deposit_one], ["取出 1 枚", _bank_withdraw_one], ["申请创业金", _bank_request_player_loan]]
+	var actions := [["BankDepositButton", "存入 1 枚", _bank_deposit_one], ["BankWithdrawButton", "取出 1 枚", _bank_withdraw_one], ["BankLoanButton", "申请创业金", _bank_request_player_loan]]
 	for i in range(actions.size()):
-		var btn := Button.new(); btn.text = String(actions[i][0]); btn.position = Vector2(24 + i * 158, 276); btn.size = Vector2(144, 38)
+		var btn := Button.new(); btn.name = String(actions[i][0]); btn.text = String(actions[i][1]); btn.position = Vector2(24 + i * 158, 276); btn.size = Vector2(144, 38)
 		btn.focus_mode = Control.FOCUS_NONE; btn.add_theme_font_override("font", fnt); btn.add_theme_font_size_override("font_size", 14)
-		_style_btn(btn); btn.pressed.connect(actions[i][1]); _bank_panel.add_child(btn)
+		_style_btn(btn); btn.pressed.connect(actions[i][2]); _bank_panel.add_child(btn)
 	var foot := Label.new(); foot.text = "足额准备金 · 所有钱款进入同一可审计账本 · Esc / E 收起"
 	foot.position = Vector2(24, 320); foot.size = Vector2(472, 18); foot.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	foot.add_theme_font_override("font", fnt); foot.add_theme_font_size_override("font_size", 12); foot.add_theme_color_override("font_color", Color("#9fb7b4"))
@@ -1129,27 +1149,50 @@ func _bank_account_id() -> String:
 
 func _open_bank_panel() -> void:
 	if _bank_panel == null: return
-	if not _bank_panel.visible: _bank_was_running = Sim.running
-	Sim.running = false; _refresh_bank_panel(); _bank_panel.visible = true; _update_status()
+	if not _bank_panel.visible:
+		_bank_was_running = Sim.running
+		_bank_account_at_open = _bank_account_id()
+		_bank_feedback = ""
+	Sim.running = false; _refresh_bank_panel(); _bank_blocker.visible = true; _bank_panel.visible = true; _update_status()
 
 func _close_bank_panel() -> void:
 	if _bank_panel == null or not _bank_panel.visible: return
-	_bank_panel.visible = false; Sim.running = _bank_was_running; _update_status()
+	_bank_panel.visible = false; _bank_blocker.visible = false; Sim.running = _bank_was_running; _update_status()
 
 func _refresh_bank_panel() -> void:
-	var p: Dictionary = Sim.bank_projection(_bank_account_id())
+	var account_id := _bank_account_at_open if _bank_panel != null and _bank_panel.visible else _bank_account_id()
+	var p: Dictionary = Sim.bank_projection(account_id)
 	var loan: Dictionary = p.get("loan", {}) if p.get("loan", {}) is Dictionary else {}
 	_bank_title.text = "[font_size=22][color=#f0d797]%s[/color][/font_size]\n[color=#9fb7b4]集市柜台 · 第 %d 天[/color]" % [_esc(String(p.get("label", "合作银行"))), Sim.day]
 	_bank_body.text = "[color=#c8a866]你的账户[/color]\n钱袋  [color=#f0d797]%d[/color]    存款  [color=#8ee3d0]%d[/color]    待还创业金  [color=#f0b77d]%d[/color]\n\n[color=#c8a866]银行公开账簿[/color]\n现金准备金  %d    居民存款  %d    可贷合作资本  %d\n[color=#9fb7b4]存款逐枚留在准备金中；贷款不挪用居民存款。[/color]" % [int(p.get("wallet", 0)), int(p.get("deposit", 0)), int(loan.get("outstanding", 0)), int(p.get("reserve", 0)), int(p.get("deposit_total", 0)), int(p.get("available_capital", 0))]
+	if _bank_feedback != "":
+		_bank_body.text += "\n[color=#f0b77d]%s[/color]" % _esc(_bank_feedback)
 
 func _bank_deposit_one() -> void:
-	Sim.bank_deposit(_bank_account_id(), 1); _refresh_bank_panel(); _update_status()
+	_bank_submit("deposit", 1)
 
 func _bank_withdraw_one() -> void:
-	Sim.bank_withdraw(_bank_account_id(), 1); _refresh_bank_panel(); _update_status()
+	_bank_submit("withdraw", 1)
 
 func _bank_request_player_loan() -> void:
-	Sim.bank_request_loan(_bank_account_id(), true); _refresh_bank_panel(); _update_status()
+	_bank_submit("loan", 0)
+
+func _bank_submit(action: String, amount: int) -> void:
+	var result: Dictionary = Sim.player_bank_action(action, _bank_account_at_open, amount)
+	var reason := String(result.get("reason", "transaction_rejected"))
+	if bool(result.get("ok", false)):
+		_bank_feedback = "交易已记入账簿"
+	else:
+		_bank_feedback = {
+			"resident_changed": "账户已变化；请收起后重新打开银行卡",
+			"insufficient_wallet": "钱袋余额不足",
+			"deposit_limit": "存款已达上限",
+			"no_deposit": "当前没有可取出的存款",
+			"loan_unavailable": "当前暂不符合创业金条件",
+			"bank_unavailable": "银行暂不可用",
+			"bank_account": "没有可办理业务的居民账户",
+		}.get(reason, "交易未办理（%s）" % reason)
+	_refresh_bank_panel(); _update_status()
 
 ## Optional player-facing presentation for captures and small screens.  It is
 ## deliberately a second CanvasLayer: no canonical scene, save schema, input
@@ -1711,6 +1754,8 @@ func _relayout_hud() -> void:
 		_civic_panel.position = Vector2((DESIGN.x + dx - _civic_panel.size.x) * 0.5, 112.0 + dy * 0.28)
 	if _bank_panel != null:
 		_bank_panel.position = Vector2((DESIGN.x + dx - _bank_panel.size.x) * 0.5, 102.0 + dy * 0.28)
+	if _bank_blocker != null:
+		_bank_blocker.size = vp
 	if _backend_btn != null:                   # 后端切换钮：跟右边
 		_backend_btn.position = Vector2(1140.0 + dx, 4.0)
 	if _obs_btn != null:                       # 观察台档位钮：跟右边（紧贴后端钮左侧）
@@ -2424,6 +2469,8 @@ func _apply_npc(delta: int) -> void:
 	                  # 与 _after_jump/_after_load/_toggle_player_mode 三处同一纪律。
 
 func _set_speed(v: float) -> void:
+	if _bank_panel != null and _bank_panel.visible:
+		return
 	if v <= 0.0:
 		Sim.running = false
 	else:
@@ -2521,6 +2568,7 @@ func _update_status() -> void:
 		if s == "simmering" or s == "escalated" or s == "confronted" or s == "lingering":
 			conf_active += 1
 	var ptxt := ""
+	var warehouse_status := _player_in_warehouse_observatory()
 	if _player_mode:
 		var pl: Dictionary = Sim.get_agent("player")
 		if not pl.is_empty():
@@ -2529,7 +2577,7 @@ func _update_status() -> void:
 				if String(c["status"]) == "active" and (String(c["a"]) == "player" or String(c["b"]) == "player"):
 					var other := String(c["b"]) if String(c["a"]) == "player" else String(c["a"])
 					pmeets.append("和%s约在%s(剩%dt)" % [Sim._name(Sim.get_agent(other)), Sim._area_label_id(String(c["area"])), int(c["deadline"]) - Sim.tick_no])
-			if _player_in_warehouse_observatory():
+			if warehouse_status:
 				ptxt = "\n[color=#80e1ff]你：东海货仓 · 货运观测室（只读）  点右侧柜台查泊位/回执  卸货由码头工执行[/color]"
 			else:
 				var vkeys := []
@@ -2538,8 +2586,36 @@ func _update_status() -> void:
 				var cargo_hint := _player_cargo_hint(pl)
 				ptxt = "\n[color=#ffd700]你：礼物×%d  WASD移动  选中居民后 %s R归还访客证 C聊天（或点下方动作条）%s[/color]%s" % [
 					int(pl["inventory"].get("gift", 0)), " ".join(vkeys), ("  约定：" + "；".join(pmeets)) if not pmeets.is_empty() else "", cargo_hint]
-	_status.text = "[color=#e6e9f2]小镇有灵 Living Town  ·  第 %d 天 %s %s%s%s  ·  %s  ·  %s  ·  NPC %d  ｜  事件 %d  约会 %d(活%d)  冲突 %d(活%d)[/color]%s" % [
-		Sim.day, clock, phase, wx, etxt, spd, btxt, Sim.agents.size(), Sim.event_log.size(), Sim.commitments.size(), meets_active, Sim.conflicts.size(), conf_active, ptxt]
+	var core := "小镇有灵 Living Town  ·  第 %d 天 %s %s%s" % [Sim.day, clock, phase, wx]
+	var tail := "  ·  %s  ·  %s  ·  NPC %d" % [spd, btxt, Sim.agents.size()]
+	var counts := "  ｜  事件 %d  约会 %d(活%d)  冲突 %d(活%d)" % [
+		Sim.event_log.size(), Sim.commitments.size(), meets_active, Sim.conflicts.size(), conf_active]
+	var civic_brief := ""
+	if not Sim.last_election.is_empty():
+		var last: Dictionary = Sim.last_election
+		civic_brief = "  ·  选举%s %d:%d" % ["通过" if bool(last["pass"]) else "否决", int(last["yea"]), int(last["nay"])]
+	if not Sim.mayor_state.is_empty():
+		civic_brief += "  ·  镇长%s" % _nm(String(Sim.mayor_state.get("mayor", "")))
+	var full := core + etxt + tail + counts
+	# Keep the warehouse identity in the visible row even when the full
+	# instruction belongs in the tooltip rather than the narrow status bar.
+	var visible_ptxt := "\n[color=#80e1ff]你：东海货仓 · 货运观测室（只读） · 点柜台查回执[/color]" if warehouse_status else ptxt
+	var player_lines: Array[String] = [visible_ptxt]
+	if _player_mode and ptxt != "" and not warehouse_status:
+		player_lines.append("\n[color=#ffd700]你：WASD移动  点居民交互  动作见下方  C聊天  R归还访客证[/color]")
+	# RichTextLabel wraps silently and clips at 28/52 px. Check its actual layout,
+	# retaining the most useful details that fit the current viewport. The complete
+	# line remains available on hover, including mayor duties and event counts.
+	_status.text = "[color=#e6e9f2]%s[/color]%s" % [full, ptxt]
+	_status.tooltip_text = _status.get_parsed_text()
+	var lines: Array[String] = [full, core + civic_brief + tail + counts,
+		core + tail + counts, core + tail, "第 %d 天 %s %s%s  ·  %s  ·  %s" % [Sim.day, clock, phase, wx, spd, btxt]]
+	for player_line in player_lines:
+		for line in lines:
+			_status.text = "[color=#e6e9f2]%s[/color]%s" % [line, player_line]
+			if _status.get_content_height() <= _status.size.y:
+				_refresh_clean_player_text()
+				return
 	_refresh_clean_player_text()
 
 ## 玩家站在真实 port_dock 三格内才显示；只读 Sim 的 manifest 投影，不制造“玩家能亲手卸货”的假按钮。
@@ -3553,13 +3629,14 @@ func _focus_agent(id: String) -> void:
 	_update_obs()
 
 func _unhandled_input(e: InputEvent) -> void:
+	if _bank_panel != null and _bank_panel.visible:
+		if e is InputEventKey and e.pressed and not e.echo and e.keycode in [KEY_ESCAPE, KEY_E]:
+			_close_bank_panel()
+		get_viewport().set_input_as_handled()
+		return
 	if e is InputEventKey and e.pressed and not e.echo:
 		if _civic_panel != null and _civic_panel.visible and e.keycode in [KEY_ESCAPE, KEY_E]:
 			_close_civic_panel()
-			get_viewport().set_input_as_handled()
-			return
-		if _bank_panel != null and _bank_panel.visible and e.keycode in [KEY_ESCAPE, KEY_E]:
-			_close_bank_panel()
 			get_viewport().set_input_as_handled()
 			return
 		match e.keycode:

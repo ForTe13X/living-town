@@ -1,0 +1,67 @@
+{
+  "schema": "living-town.release-candidate-acceptance/1",
+  "as_of": "2026-10-03",
+  "candidate": "RC-B",
+  "status": "unaccepted",
+  "validated_source_commit": "1c88d8bc91036dcd49e0545748fb41f24a19688b",
+  "game_tree": "a921c31d0a216f84144fd65aa29f9932c1dcbe49",
+  "source_capture": {
+    "commit": "166b8ee43c41ebff7dfdfb70dc51f11c19dea395",
+    "same_game_tree": true,
+    "session_receipt": "D:/Documents/Dev/living-town-rcb-warehouse-exact-166b8ee/session/journey.json",
+    "session_checks_passed": "53/53",
+    "session_viewport_inputs": 291,
+    "session_rendered_frames": 16,
+    "fresh_process_resume_receipt": "D:/Documents/Dev/living-town-rcb-warehouse-exact-166b8ee/resume/journey.json",
+    "resume_checks_passed": "9/9",
+    "resume_viewport_inputs": 6,
+    "resume_rendered_frames": 3,
+    "host_os_input_covered": false,
+    "visual_review": "observational screenshot review only",
+    "warehouse_scene_receipt": "D:/Documents/Dev/living-town-rcb-warehouse-exact-166b8ee/p1v/20261003T120520869Z_c3dbf0409a94459c94a77febc85829de/receipt.json",
+    "warehouse_status_content_px": 42,
+    "warehouse_status_box_px": 52
+  },
+  "fixture_coverage": {
+    "ledger": "tools/gate_complement_ledger.json",
+    "baked_game_tree": "a921c31d0a216f84144fd65aa29f9932c1dcbe49",
+    "fixture_groups": 7,
+    "invariants": 39,
+    "commands_passed": "9/9",
+    "globally_dead_invariants": 0,
+    "guard": "pass"
+  },
+  "desktop_package": {
+    "directory": "D:/Documents/Dev/living-town-desktop-rcb-warehouse-1c88d8b",
+    "stage_manifest": "D:/Documents/Dev/living-town-desktop-rcb-warehouse-1c88d8b/manifest.json",
+    "staged_files": 818,
+    "source_clean": true,
+    "untracked_runtime_inputs": 0,
+    "export_receipt": "D:/Documents/Dev/living-town-desktop-rcb-warehouse-1c88d8b/export_receipt.json",
+    "export_result": "PASS",
+    "runtime_receipt": "D:/Documents/Dev/living-town-desktop-rcb-warehouse-1c88d8b/runtime_receipt.json",
+    "runtime_result": "PASS",
+    "headless_cases_passed": "7/7",
+    "rendered_journey_receipt": "D:/Documents/Dev/living-town-desktop-rcb-warehouse-1c88d8b/rendered-journey/journey.json",
+    "rendered_journey_checks_passed": "30/30",
+    "rendered_journey_viewport_inputs": 147,
+    "rendered_journey_frames": 11,
+    "rendered_journey_host_os_input_covered": false,
+    "executable_sha256": "3d4f96f69bc937e72dfed4fe181d2a689d282cdcc3152402bfd3003613aa72bb",
+    "backend_scope": "logic; no bundled native model"
+  },
+  "hosted": {
+    "pull_request": "https://github.com/ForTe13X/living-town/pull/78",
+    "last_observed_ci_head": "1c0034fe1354e7005ae12d8b8264d7a7b7d623d1",
+    "last_observed_ci_result": "failure: warehouse status scene; all other required lanes and visual canary passed",
+    "current_head_ci": "pending",
+    "independent_visual_policy_review": "pending"
+  },
+  "open_acceptance": [
+    "physical host keyboard and mouse input",
+    "10-15 minute human novice walkthrough",
+    "full independent visual and policy review",
+    "current-head hosted CI",
+    "optional native-model qualification if required"
+  ]
+}

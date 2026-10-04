@@ -223,4 +223,4 @@ static func _blocked_records(blocked: Dictionary, width: int, height: int) -> Ar
 	var furniture: Array = []
 	for cell: Vector2i in cells:
 		furniture.append({"slot": "wall", "pos": [cell.x, cell.y], "size": [1, 1]})
-	return furniture\n
+	return furniture

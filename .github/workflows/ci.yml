@@ -150,6 +150,9 @@ jobs:
           RESULTS: ${{ toJSON(needs) }}
         run: |
           set -euo pipefail
+          printf '%s\n' "$RESULTS" | jq --arg source_head "$GITHUB_SHA" \
+            '{source_head: $source_head, required_ci: with_entries(.value = .value.result)}' \
+            >"$RUNNER_TEMP/ci-lane-results.json"
           echo "$RESULTS" | jq -r 'to_entries[] | "  \(.key) \(.value.result)"'
           failed="$(echo "$RESULTS" | jq -r 'to_entries[] | select(.value.result != "success") | .key' | paste -sd' ' -)"
           if [[ -n "$failed" ]]; then
@@ -157,6 +160,15 @@ jobs:
             exit 1
           fi
           echo "=== CI PASS ✅ === 七条 lane 全绿"
+
+      - name: Upload required lane verdicts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ci-lane-results-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/ci-lane-results.json
+          if-no-files-found: warn
+          retention-days: 14
 
   visual_canary:
     # This observation lane is deliberately separate from the required core
@@ -281,15 +293,21 @@ jobs:
           LT_VISUAL_NEG_SOURCE: ${{ github.workspace }}/game
           LT_VISUAL_NEG_WORK: ${{ runner.temp }}/visual-negative-game
           LT_VISUAL_NEG_OUT: ${{ runner.temp }}/visual-negative-evidence
+          LT_VISUAL_POS_OUT: ${{ runner.temp }}/visual-gate
         run: |
           set -euo pipefail
-          if [[ "${{ steps.visual.outputs.verdict }}" != pass ]]; then
-            mkdir -p "$LT_VISUAL_NEG_OUT"
-            printf 'VISUAL_NEGATIVE verdict=not_run positive_verdict=%s\n' \
-              "${{ steps.visual.outputs.verdict }}" \
+          set +e
+          python3 tools/visual_daynight_prereq.py "$LT_VISUAL_POS_OUT" "$LT_VISUAL_NEG_OUT" 4
+          prereq_rc=$?
+          set -e
+          if [[ "$prereq_rc" -eq 77 ]]; then
+            reason="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["verdict"])' "$LT_VISUAL_NEG_OUT/daynight-prereq.json")"
+            printf 'VISUAL_NEGATIVE verdict=not_run prerequisite=%s positive_verdict=%s\n' \
+              "$reason" "${{ steps.visual.outputs.verdict }}" \
               | tee "$LT_VISUAL_NEG_OUT/negative-verdict.txt"
             exit 0
           fi
+          if [[ "$prereq_rc" -ne 0 ]]; then exit "$prereq_rc"; fi
           bash tools/visual_canary_negative.sh
           # The injector records a before/after source hash; this live Git tooth
           # also proves that the checked-out product tree was never the target.

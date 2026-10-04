@@ -484,6 +484,7 @@ if [ "${1:-}" = "--shoot" ]; then
   OUT="${2:-/out}"
   GAME="${VG_GAME:-/game}"
   GBIN="${GODOT:-godot}"
+  PY="${PYTHON:-python3}"
   DISP="${VG_DISPLAY:-:94}"
   export LIBGL_ALWAYS_SOFTWARE=1 LP_NUM_THREADS=1 GODOT_SILENCE_ROOT_WARNING=1
   # AK1：硬化的拍帧封装（rc + 无致命日志标记 + 图非空，三者结合；理由见 tools/vg_shoot.sh 抬头）。
@@ -491,6 +492,7 @@ if [ "${1:-}" = "--shoot" ]; then
   export VG_GODOT_LOG=/tmp/vg-godot.log
   . "$(dirname "$0")/vg_shoot.sh"
   Xvfb "$DISP" -screen 0 ${W}x${H}x24 -nolisten tcp >/tmp/vg-xvfb.log 2>&1 & XV=$!
+  trap 'kill "$XV" 2>/dev/null || true; wait "$XV" 2>/dev/null || true' EXIT
   sleep 1.5
   export DISPLAY="$DISP"
   rc=0
@@ -501,6 +503,16 @@ if [ "${1:-}" = "--shoot" ]; then
       --resolution ${W}x${H} --single-window -- \
       --backend logic --shot "$OUT/vg_${nm}.png" --seed "$SEED" --warmup-tick "$tk" --shot-fit \
       || rc=1
+  done
+  # LT-04: isolate the tree render layer with the exact same seed/tick/camera.
+  # These paired captures let the checker account for UI/layer occlusion without
+  # attributing unrelated terrain or buildings to the authored groves.
+  for pair in "night $NIGHT_TICK" "noon $NOON_TICK"; do
+    nm="${pair%% *}"; tk="${pair##* }"
+    vg_shoot "$OUT/vg_${nm}_no_trees.png" --path "$GAME" --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy \
+      --resolution ${W}x${H} --single-window -- \
+      --backend logic --shot "$OUT/vg_${nm}_no_trees.png" --seed "$SEED" --warmup-tick "$tk" --shot-fit --draw-skip trees \
+      || { [ "$rc" -eq 0 ] && rc=11; }
   done
   # P1-c：同 seed / 同 tick 的货船 ON/OFF 负对照。货船是 CargoManifest 的纯 View 投影，
   # 因此两帧除了 East Ocean 泊位里的 carrier 像素外必须相同；无 cargo 或永久装饰船都会判红。
@@ -551,15 +563,29 @@ if [ "${1:-}" = "--shoot" ]; then
   # P1-i：真实 player 从东港门走进货仓并返回；另拍 status OFF 作为像素负对照。
   # 独立目录避免覆盖上面的 legacy cafe 三帧；两次共享 seed/tick 与 pinned framebuffer。
   mkdir -p "$OUT/warehouse" "$OUT/warehouse_off" "$OUT/warehouse_corrupt"
-  if RT_OWN_XVFB=0 RT_GAME="$GAME" RT_SPACE=port_warehouse RT_PLAYER_POS=57,8 GODOT="$GBIN" \
+  # At the current LT-14 source, seed 3 / tick 600 has a legitimate unloading
+  # worker (state=working). Tick 580 retains the authored ready/firewood/12
+  # presentation contract for all three matched warehouse arms.
+  if RT_OWN_XVFB=0 RT_GAME="$GAME" RT_SPACE=port_warehouse RT_PLAYER_POS=57,8 LT_RT_TICK=580 GODOT="$GBIN" \
        bash "$(dirname "$0")/space_roundtrip.sh" --shoot "$OUT/warehouse" >>/tmp/vg-godot.log 2>&1 \
-     && RT_OWN_XVFB=0 RT_GAME="$GAME" RT_SPACE=port_warehouse RT_PLAYER_POS=57,8 RT_DRAW_SKIP=warehouse_status GODOT="$GBIN" \
+     && RT_OWN_XVFB=0 RT_GAME="$GAME" RT_SPACE=port_warehouse RT_PLAYER_POS=57,8 LT_RT_TICK=580 RT_DRAW_SKIP=warehouse_status GODOT="$GBIN" \
        bash "$(dirname "$0")/space_roundtrip.sh" --shoot "$OUT/warehouse_off" >>/tmp/vg-godot.log 2>&1 \
-     && RT_OWN_XVFB=0 RT_GAME="$GAME" RT_SPACE=port_warehouse RT_PLAYER_POS=57,8 RT_CORRUPT_MANIFEST=price_per GODOT="$GBIN" \
+     && RT_OWN_XVFB=0 RT_GAME="$GAME" RT_SPACE=port_warehouse RT_PLAYER_POS=57,8 LT_RT_TICK=580 RT_CORRUPT_MANIFEST=price_per GODOT="$GBIN" \
        bash "$(dirname "$0")/space_roundtrip.sh" --shoot "$OUT/warehouse_corrupt" >>/tmp/vg-godot.log 2>&1; then
     echo "  p1i/p1o-warehouse 采集 ok  (player 往返 + status ON/OFF + corrupt authority)"
   else
     echo "  p1i-warehouse 采集 FAIL (见上面的 [SPACESHOT] 行)"; [ "$rc" -eq 0 ] && rc=11
+  fi
+  # LT-02: deterministic two-berth mechanics fixture. At seed 3 / tick 580 / agents=16,
+  # both authored nodes have validated ready manifests in the promoted LT-14 source.
+  # Keep it separate from the natural agents=12 arm, whose expected set is derived per capture.
+  mkdir -p "$OUT/warehouse_two_berth"
+  if RT_OWN_XVFB=0 RT_GAME="$GAME" RT_SPACE=port_warehouse RT_PLAYER_POS=57,8 LT_RT_TICK=580 RT_AGENTS=16 GODOT="$GBIN" \
+       bash "$(dirname "$0")/space_roundtrip.sh" --shoot "$OUT/warehouse_two_berth" >>/tmp/vg-godot.log 2>&1; then
+    "$PY" tools/assert_p1o_manifest_authority.py --check-projections "$OUT/warehouse_two_berth" --require-count 2 \
+      || { echo "  two-berth carrier assertion FAIL"; [ "$rc" -eq 0 ] && rc=11; }
+  else
+    echo "  two-berth capture FAIL (见上面的 [SPACESHOT] 行)"; [ "$rc" -eq 0 ] && rc=11
   fi
   # ── R2 的室内外壳采集（同一个 Xvfb）────────────────────────────────────────
   # 判据在 tools/assert_interior_shell.py（宿主侧跑），本步只负责拍。
@@ -647,7 +673,9 @@ if [ "${1:-}" = "--shoot" ]; then
       --backend logic --shot "$OUT/precip/s${s}_rain_off.png"   --seed "$s" --warmup-tick "$rtk"         --shot-fit --draw-skip rain \
       || { [ "$rc" -eq 0 ] && rc=6; }
   done
-  kill $XV 2>/dev/null
+  kill "$XV" 2>/dev/null || true
+  wait "$XV" 2>/dev/null || true
+  trap - EXIT
   [ $rc -ne 0 ] && tail -25 /tmp/vg-godot.log
   exit $rc
 fi
@@ -716,6 +744,11 @@ if [ "$PICK" = docker ]; then
   SHOT_RC=$?
 else
   TOL=4                      # 未 pin 的光栅器：容忍 1 个 LSB 级的漂移，判别力不受影响（见抬头）
+  # Godot's user://settings.cfg can override the fixture population/player mode.
+  # Give every native capture in this invocation one fresh profile so local CI
+  # and developer preferences cannot change HUD occlusion or world evidence.
+  export XDG_DATA_HOME="${LT_VISUAL_USER_DATA:-${OUT%/}.user-data.$$}"
+  mkdir -p "$XDG_DATA_HOME"
   VG_GAME="$GAME" GODOT="$GODOT" bash "$0" --shoot "$OUT"
   SHOT_RC=$?
 fi
@@ -822,22 +855,23 @@ IRC=$?
 # 连地板都不看，家具更不在它眼里。吃的是上面已经拍好的 vg_int_*.png，**不额外渲一帧**。
 "$PY" tools/assert_furniture_role.py "$OUT" --game "$GAME"
 FRC=$?
-# 树丛点阵门（V3 / 编号 86）。守第七条性质：**外景里唯一 100% 别名的那一层不许退回格子**
-# （改前 156 棵树 = 1 种画法，逐格周期性残差 P = 0.180/0.133；改后 25.8/28.2）。
-# ⚠️ V3 的接线说明写的是"再拍一帧整镇图"，**但那一帧已经拍过了**：
-#   `vg_noon.png` / `vg_night.png` 本来就是 `--shot-fit` 的整镇入画帧（上面 pond.py 吃的就是它们）
-#   ⇒ 复用，不额外渲——理由与 S3 让家具门吃 `vg_int_*.png` 是同一条。
-# **昼夜两帧都判**：V3 在 72 次读数上标定过，**夜间是约束档**（改前上界 4.470 出现在夜里），
-#   而 `visual_gate.sh` 的 fixture 写死正午 ⇒ 只判正午会把它标定得最紧的那一档漏掉。
-"$PY" tools/assert_tree_stand.py --frame "$OUT/vg_noon.png"  --map "$GAME/data/map.json"; TRC=$?
-"$PY" tools/assert_tree_stand.py --frame "$OUT/vg_night.png" --map "$GAME/data/map.json"; TRC2=$?
+# LT-04 forest sampling: every authored grove gets either periodicity or visible-coverage evidence.
+# Day and night are paired against same-seed/tick/camera --draw-skip trees captures.
+"$PY" tools/assert_tree_stand.py --frame "$OUT/vg_noon.png" --tree-free-frame "$OUT/vg_noon_no_trees.png" \
+  --map "$GAME/data/map.json" --policy analysis/af2/forest_sample_policy.json \
+  --overlay-dir "$OUT/forest/noon" --report-json "$OUT/forest/noon/grove-coverage-ledger.json"; TRC=$?
+"$PY" tools/assert_tree_stand.py --frame "$OUT/vg_night.png" --tree-free-frame "$OUT/vg_night_no_trees.png" \
+  --map "$GAME/data/map.json" --policy analysis/af2/forest_sample_policy.json \
+  --overlay-dir "$OUT/forest/night" --report-json "$OUT/forest/night/grove-coverage-ledger.json"; TRC2=$?
 [ $TRC -eq 0 ] && TRC=$TRC2
 # 季节可分门（AF2 / 编号122，AK1 接线）。守第八条性质：**四季地面主色两两分得开**。
 # 同样**不短路**：吃上面 season/ 里 8 帧晴天四季（noon+night 都判——夜是约束档，春↔夏夜里最紧 4.30；
 # 只判正午会漏掉那一档）。判据在 analysis/af2/assert_season.py【原地引用】（它按 analysis/af2/ 上溯 import tools/）。
 "$PY" analysis/af2/assert_season.py \
   --noon  "$OUT/season/spring_noon.png"  "$OUT/season/summer_noon.png"  "$OUT/season/autumn_noon.png"  "$OUT/season/winter_noon.png" \
-  --night "$OUT/season/spring_night.png" "$OUT/season/summer_night.png" "$OUT/season/autumn_night.png" "$OUT/season/winter_night.png"
+  --night "$OUT/season/spring_night.png" "$OUT/season/summer_night.png" "$OUT/season/autumn_night.png" "$OUT/season/winter_night.png" \
+  --mask-fixture analysis/af2/semantic_grass_mask.json --map "$GAME/data/map.json" --coastal "$GAME/data/coastal_plan.json" \
+  --overlay-dir "$OUT/season/mask-overlays" --report-json "$OUT/season/season-samples.json"
 SEARC=$?
 # 降水可见门（AI1 / 编号129，AK1 接线）。守第九条性质：**冬天真有落雪、雨真有雨丝**（on vs off coverage）。
 # 同样**不短路**：吃上面 precip/ 里 12 帧（冬雪 on/off + 非冬雨 on/off × 3 seed）。判据在 analysis/ai1/assert_precip.py。

@@ -154,6 +154,7 @@ var _walk_on := false
 var _walk_dest := Vector2i.ZERO
 var _walk_goal: Dictionary = {}     # {kind: none|use|say|portal, …}；到了就执行
 var _walk_steps := 0
+var _move_keys: Dictionary = {}
 const WALK_MAX_STEPS := 160
 # 每日愿望（Sims 的 wants）：纯 View 状态，从 Sim 信号与快照判定完成，不写 Sim
 var _wants: Array = []              # [{type, text, pts, done, …}]
@@ -364,6 +365,7 @@ func start_life(id: String) -> void:
 		_show_toast("没法附身到这个人")
 		return
 	pid = id
+	_move_keys.clear()
 	selecting = false
 	active = true
 	free_will = false
@@ -414,6 +416,7 @@ func debug_open_menu() -> void:
 
 func _leave_life() -> void:
 	active = false
+	_move_keys.clear()
 	Sim.possess("")
 	_close_modal()
 	if _ff:
@@ -446,6 +449,9 @@ func _set_main_chrome(on: bool) -> void:
 func _notification(what: int) -> void:
 	if what != NOTIFICATION_WM_GO_BACK_REQUEST or not touch:
 		return
+	if _bank_card_open():
+		main.call("_close_bank_panel")
+		return
 	if _chat_box != null and _chat_box.visible:
 		_close_chat()
 	elif _modal_open:
@@ -468,6 +474,13 @@ func _process(delta: float) -> void:
 			_toast.visible = false
 	if not active:
 		return
+	var bank_open := _bank_card_open()
+	if _touch_bar != null:
+		_touch_bar.visible = not bank_open and not _modal_open
+		_joy.visible = not bank_open and not _modal_open
+	for speed_button: Button in _speed_btns:
+		speed_button.disabled = bank_open
+	_will_btn.disabled = bank_open
 	var ag := Sim.get_agent(pid)
 	if ag.is_empty():
 		active = false
@@ -495,6 +508,11 @@ func _sync_space(ag: Dictionary) -> void:
 		pb.cam.position = _agent_px(ag)
 		_camera_last_target = _agent_px(ag)
 		_camera_look = Vector2.ZERO
+		# A portal can move the player to another plane between interaction polls.
+		# Drop the old target before its world position is projected onto this camera.
+		_focus_id = ""
+		_refresh_inter()
+		_inter_t = 0.1
 		if sp != "town":                          # 室内比视口小：取消边界，镜头才能把人放在正中
 			pb.cam.limit_left = -100000; pb.cam.limit_top = -100000
 			pb.cam.limit_right = 100000; pb.cam.limit_bottom = 100000
@@ -527,8 +545,8 @@ func _poll_move(delta: float) -> void:
 	_move_cd -= delta
 	if _modal_open or not Sim.running or (_chat_box != null and _chat_box.visible):
 		return                                    # 打字时 WASD 是字，不是方向
-	var dx := int(Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT)) - int(Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT))
-	var dy := int(Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN)) - int(Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP))
+	var dx := int(_move_keys.has(KEY_D) or _move_keys.has(KEY_RIGHT)) - int(_move_keys.has(KEY_A) or _move_keys.has(KEY_LEFT))
+	var dy := int(_move_keys.has(KEY_S) or _move_keys.has(KEY_DOWN)) - int(_move_keys.has(KEY_W) or _move_keys.has(KEY_UP))
 	if _joy != null and _joy.dir.length() > 0.35:  # 摇杆：8 向量化（轴分量超过 0.38×模长才算那一轴）
 		var jd := _joy.dir
 		var jl := jd.length()
@@ -752,6 +770,8 @@ func _auto_ff() -> void:
 	_sync_speed_btns()
 
 func _set_speed(s: float) -> void:
+	if _bank_card_open():
+		return
 	if s <= 0.0:
 		Sim.running = false
 	else:
@@ -762,13 +782,28 @@ func _set_speed(s: float) -> void:
 	main.call("_update_status")
 
 func _set_free_will(on: bool) -> void:
+	if _bank_card_open():
+		return
 	free_will = on
 	Sim.possess("" if on else pid)
 	_will_btn.text = "自主：开" if on else "自主：关"
 	_show_toast("让 %s 自己过一会儿（%s收回）" % [Sim._name(Sim.get_agent(pid)), "推摇杆" if touch else "按方向键"] if on else "收回控制")
 
 # ── 输入 ─────────────────────────────────────────────────────────────────────
+func _bank_card_open() -> bool:
+	var bank_panel: Panel = main.get("_bank_panel") as Panel
+	return bank_panel != null and bank_panel.visible
+
 func _unhandled_input(e: InputEvent) -> void:
+	# Main owns input while its bank account card is visible.
+	if _bank_card_open():
+		_move_keys.clear()
+		return
+	if e is InputEventKey and e.keycode in [KEY_W, KEY_A, KEY_S, KEY_D, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT]:
+		if not e.pressed:
+			_move_keys.erase(e.keycode)
+		elif active and not selecting and not _modal_open and (_chat_box == null or not _chat_box.visible):
+			_move_keys[e.keycode] = true
 	if selecting:
 		_select_input(e)
 		return
@@ -867,8 +902,11 @@ func _tap(screen: Vector2) -> void:
 		var d := Vector2(p.x * 48 + 24, p.y * 48 + 24).distance_to(w)
 		# 挂墙公示板的视觉中心在 y=0 格上方；交互锚仍是 authored 家具格，
 		# 但命中半径要包住整张 96x64 精灵，不能逼玩家去点墙脚。
-		var r := 68.0 if String(e["kind"]) == "civic" else (34.0 if String(e["kind"]) == "agent" else 30.0)
-		if d <= r and d < bestd:
+		var kind := String(e["kind"])
+		var r := 68.0 if kind == "civic" else (34.0 if kind == "agent" else 30.0)
+		# Match the full authored 96×80 counter art, including the overhang.
+		var hit := Rect2(Vector2(p.x * 48, p.y * 48 - 32), Vector2(96, 80)).has_point(w) if kind == "bank" else d <= r
+		if hit and d < bestd:
 			bestd = d
 			best = e
 	if best.is_empty():
@@ -876,14 +914,47 @@ func _tap(screen: Vector2) -> void:
 		if me.get("pos", Vector2i(-99, -99)) == cell:
 			_open_modal({})                        # 点自己 → 自己的菜单
 		else:
-			for e in Sim.life_interactions(999):   # 点到远处的门：走过去再进
-				if String(e["kind"]) == "portal" and e["pos"] == cell:
-					_walk_to(cell, {"kind": "portal", "pos": cell})
-					return
+			var actor := Sim.get_agent(pid)
+			var hop := _portal_hop_at_cell(cell, actor)
+			if not hop.is_empty():                 # 点到远处的真实入口：先走到门口再用权限校验
+				_walk_to(hop["from_pos"], {"kind": "portal", "pos": hop["from_pos"]})
+				return
+			var grid: Dictionary = Sim._grid_for(String(actor.get("space", "town")), String(actor.get("floor", "outdoor")))
+			if not Sim._cell_walkable(grid, cell):
+				_show_toast("这里没有入口或互动目标；请点门口、居民或物件")
+				return
 			_walk_to(cell)                         # 点地面：走过去（Sims 的点地走路）
 		return
 	_focus_id = String(best["id"])
-	_open_modal(best)
+	if String(best["kind"]) == "bank" and int(best["dist"]) <= Sim.LIFE_REACH:
+		_open_bank_from_life()
+	else:
+		_open_modal(best)
+
+func _open_bank_from_life() -> void:
+	var actor := Sim.get_agent(pid)
+	var counter := Sim.bank_counter_cell()
+	if not active or Sim.controlled_id != pid or actor.is_empty() or counter.x < 0 \
+			or String(actor.get("space", "")) != "halles" or String(actor.get("floor", "")) != "1f" \
+			or Sim._manh(actor["pos"], counter) > Sim.LIFE_REACH:
+		_close_modal()
+		_show_toast("走近合作银行柜台再查看账户")
+		return
+	_close_modal()
+	_move_keys.clear()
+	if _joy != null:
+		_joy._release()
+	if _rel_open:
+		_toggle_rel()
+	main.call("_open_bank_panel")
+
+func _portal_hop_at_cell(cell: Vector2i, actor: Dictionary) -> Dictionary:
+	if actor.is_empty():
+		return {}
+	for hop: Dictionary in Sim._portals_from(String(actor.get("space", "town")), String(actor.get("floor", "outdoor")), actor):
+		if hop.get("from_pos", Vector2i(-99, -99)) == cell:
+			return hop
+	return {}
 
 # ── 互动菜单 ─────────────────────────────────────────────────────────────────
 func _build_modal() -> void:
@@ -894,6 +965,7 @@ func _build_modal() -> void:
 	_layer.add_child(_modal)
 
 func _open_modal(entry: Dictionary) -> void:
+	_move_keys.clear()
 	if not _modal_open:
 		_modal_was_running = Sim.running
 		Sim.running = false                       # 菜单打开时世界暂停（Sims 同款：想清楚再动）
@@ -961,6 +1033,11 @@ func _rebuild_modal() -> void:
 	var n_near := _inter.size()
 	var tab_hint := ("   Tab 换目标 (%d)" % n_near) if n_near > 1 else ""
 	match kind:
+		"bank":
+			title.text = "合作银行柜台"
+			var near := int(e.get("dist", 999)) <= Sim.LIFE_REACH
+			sub.text = ("可以查看账户与办理存取" if near else "请走近柜台再办理") + tab_hint
+			y = _mk_opt("查看账户与办理存取", near, _open_bank_from_life, y, w)
 		"civic":
 			var projection: Dictionary = Sim.civic_observatory_projection()
 			var current: Dictionary = projection.get("current", {})
@@ -1002,14 +1079,25 @@ func _rebuild_modal() -> void:
 				review_l.text = "%s · 办公 %d/%d（%d%%）\n任内镇库 %+d" % [Sim._name(Sim.get_agent(String(review.get("winner", "")))),
 					int(review.get("duties_done", 0)), int(review.get("duties_due", 0)), int(review.get("attendance_pct", 0)), int(review.get("treasury_delta", 0))]
 				y += 48.0
+				var civic_spend := int(review.get("civic_capital_spend", 0))
+				if civic_spend > 0:
+					var civic_note := _mk_label(_modal, 14, Vector2(28, y), Vector2(w - 52, 22), MUTED)
+					civic_note.text = "其中花圃投资 %d（不计连任财政评分）" % civic_spend
+					y += 26.0
 			var swings := int(election.get("performance_swings", 0))
 			var vote_l := _mk_label(_modal, 14, Vector2(28, y), Vector2(w - 52, 22), MUTED)
 			vote_l.text = "最近选举：政绩改投 %d 票（前任 +%d/-%d）" % [swings, int(election.get("incumbent_gained", 0)), int(election.get("incumbent_lost", 0))]
 			y += 29.0
+			var project_receipt := preload("res://scripts/CivicPresentation.gd").receipt(Sim.civic_project_state())
+			if project_receipt != "":
+				var project_l := _mk_label(_modal, 14, Vector2(28, y), Vector2(w - 52, 23), PARCH)
+				project_l.text = project_receipt
+				y += 27.0
 			y = _mk_opt("收起公示", true, _close_modal, y, w)
 		"object":
 			title.text = String(e["label"])
-			sub.text = ("就在身边" if int(e["dist"]) <= 1 else "离你 %d 步 · 选了会自己走过去" % int(e["dist"])) + tab_hint
+			var distance_hint := "就在身边" if int(e["dist"]) <= 1 else "离你 %d 步 · 选了会自己走过去" % int(e["dist"])
+			sub.text = "%s · 钱袋 %d 币%s" % [distance_hint, Sim._coin_of(pid), tab_hint]
 			for a in e["actions"]:
 				var ad: Dictionary = a
 				var extra := ""
@@ -1017,7 +1105,9 @@ func _rebuild_modal() -> void:
 				if int(ad.get("wage", 0)) > 0: extra += " · 挣 %d 币" % int(ad["wage"])
 				var txt := "%s    %s +%d · %s%s" % [String(ad["action"]), String(NEED_ZH.get(String(ad["need"]), ad["need"])), int(ad["amount"]), _dur_text(int(ad["duration"])), extra]
 				if not bool(ad["ok"]):
-					txt += "   （%s）" % String(ad["why"])
+					txt += "   （不可用：%s）" % String(ad["why"])
+				elif int(ad.get("price", 0)) > 0 and not bool(ad.get("affordable", true)):
+					txt += "   （余额不足；此项仍可使用）"
 				y = _mk_opt(txt, bool(ad["ok"]), _do_use.bind(String(e["id"]), String(ad["action"])), y, w)
 		"agent":
 			var tgt := Sim.get_agent(String(e["id"]))
@@ -1044,8 +1134,8 @@ func _rebuild_modal() -> void:
 				y = _mk_opt(txt, bool(vd["ok"]), _do_say.bind(String(e["id"]), {"verb": String(vd["action"]), "line": ""}), y, w)
 		"portal":
 			var to_floor := String(e.get("to_floor", ""))
-			title.text = ("上下楼" if bool(e.get("stairs", false)) else "门") + " → " + String(e["label"])
-			sub.text = ("%s 层" % to_floor if to_floor != "outdoor" else "室外") + tab_hint
+			title.text = ("楼梯入口" if bool(e.get("stairs", false)) else "可通行门口") + " → " + String(e["label"])
+			sub.text = ("目的地：%s 层" % to_floor if to_floor != "outdoor" else "目的地：室外") + tab_hint
 			y = _mk_opt("走进去" if String(e.get("to_space", "")) != "town" else "出门", true, _do_portal.bind(e["pos"]), y, w)
 		_:
 			var st := Sim.life_status()
@@ -1111,6 +1201,7 @@ func _mk_opt(text: String, enabled: bool, fn: Callable, y: float, w: float) -> f
 	b.text = ("%d  " % (idx + 1) if idx < 9 else "    ") + text
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	b.clip_text = true
+	b.tooltip_text = text                  # 紧凑按钮仍保留完整本地化原因/说明
 	b.position = Vector2(14, y)
 	b.size = Vector2(w - 28, OPT_H_TOUCH if touch else 30.0)
 	b.disabled = not enabled
@@ -1138,7 +1229,29 @@ func _do_use(oid: String, action: String) -> void:
 
 func _use_now(oid: String, action: String) -> void:
 	var r := Sim.life_use(oid, action)
-	_show_toast(r if r != "" else action)
+	if r != "":
+		_show_toast("未能开始：%s" % r)
+		return
+	var offer := _life_action_offer(oid, action)
+	var detail := ""
+	if not offer.is_empty():
+		var need := String(NEED_ZH.get(String(offer.get("need", "")), String(offer.get("need", ""))))
+		detail = " · %s +%d" % [need, int(offer.get("amount", 0))]
+		if int(offer.get("price", 0)) > 0:
+			detail += " · 标价 %d 币" % int(offer.get("price", 0))
+	var active_option: Variant = Sim.get_agent(pid).get("option")
+	var queued := active_option is Dictionary and (active_option as Dictionary).has("queued_at")
+	_show_toast("%s：%s%s" % ["已排队" if queued else "已安排", action, detail])
+
+func _life_action_offer(oid: String, action: String) -> Dictionary:
+	var agent := Sim.get_agent(pid)
+	var obj: Dictionary = Sim.world.get("objects", {}).get(oid, {})
+	if agent.is_empty() or obj.is_empty():
+		return {}
+	for offer: Dictionary in Sim._life_object_actions(agent, obj):
+		if String(offer.get("action", "")) == action:
+			return offer
+	return {}
 
 func _do_say(tid: String, ap: Dictionary) -> void:
 	_close_modal()
@@ -1171,6 +1284,7 @@ var _chat_box: LineEdit
 var _chat_tid := ""
 
 func _open_chat(tid: String) -> void:
+	_move_keys.clear()
 	_close_modal()
 	_chat_tid = tid
 	if _chat_box == null:
@@ -1458,7 +1572,8 @@ func _sync_speed_btns() -> void:
 
 func _place_prompt(ag: Dictionary) -> void:
 	var e := _focused()
-	if _modal_open or e.is_empty():
+	var bank_panel: Panel = main.get("_bank_panel") as Panel
+	if _modal_open or e.is_empty() or (bank_panel != null and bank_panel.visible):
 		_prompt.visible = false
 		return
 	var pb: Node = main.get("_probe")
@@ -1466,11 +1581,14 @@ func _place_prompt(ag: Dictionary) -> void:
 	var wpos := Vector2(p.x * 48 + 24, p.y * 48 - 20)
 	var vp: Vector2 = main.call("_vp")
 	var sp: Vector2 = (wpos - pb.cam.position) * pb.cam.zoom + vp * 0.5
+	if not Rect2(Vector2.ZERO, vp).has_point(sp):
+		_prompt.visible = false
+		return
 	var verb := "查看" if String(e["kind"]) == "civic" else ("说话" if String(e["kind"]) == "agent" else ("进门" if String(e["kind"]) == "portal" else "使用"))
 	_prompt.text = ("%s · %s（点「互动」）" % [verb, String(e["label"])]) if touch else \
 		("E  %s · %s%s" % [verb, String(e["label"]), ("  (Tab %d)" % _inter.size()) if _inter.size() > 1 else ""])
 	_prompt.size = Vector2(maxf(120.0, _fnt.get_string_size(_prompt.text, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x + 22.0), 26)
-	_prompt.position = Vector2(clampf(sp.x - _prompt.size.x * 0.5, 4.0, DESIGN.x - _prompt.size.x - 4.0), clampf(sp.y - 34.0, 44.0, DESIGN.y - 60.0))
+	_prompt.position = Vector2(clampf(sp.x - _prompt.size.x * 0.5, 4.0, DESIGN.x - _prompt.size.x - 4.0), clampf(sp.y - 34.0, 44.0, 438.0))
 	_prompt.visible = true
 	var _unused := ag
 
@@ -1575,9 +1693,17 @@ func _on_action_done(action: String, target: String, wage: int) -> void:
 	if not active:
 		return
 	var need := ""
+	var amount := 0
 	for adv in Sim.world.get("objects", {}).get(target, {}).get("advertises", []):
 		if adv is Dictionary and String(adv.get("action", "")) == action:
 			need = String(adv.get("need", ""))
+			amount = int(adv.get("amount", 0))
+	var effect := ""
+	if need != "":
+		effect = " · %s +%d" % [String(NEED_ZH.get(need, need)), amount]
+	if wage > 0:
+		effect += " · 收入 %d 币" % wage
+	_show_toast("完成：%s%s" % [action, effect])
 	for w in _wants:
 		match String(w["type"]):
 			"need_use":

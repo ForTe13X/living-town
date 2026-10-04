@@ -1,0 +1,29 @@
+{
+  "schema": "living-town.forest-sample-policy/1",
+  "projection": "main_shot_fit",
+  "design_viewport": [
+    1280,
+    768
+  ],
+  "home_pad": [
+    120,
+    240
+  ],
+  "tile_world": 48.0,
+  "tree_layer": "map.json:trees",
+  "tree_sprite": "game/assets/art/coastal/tree.png",
+  "sprite_world_width": 128.0,
+  "sprite_max_height": 146.0,
+  "expected_tree_cells": 122,
+  "expected_tree_cells_sha256": "55ddd8686a7110f73c788adfa8fd97f8935d30e0fb8762d52ad6cba08f8ed1bb",
+  "periodicity_min_tree_cells": 6,
+  "periodicity_min_samples": 2000,
+  "periodicity_min_p": 8.0,
+  "max_ground_fraction": 0.22,
+  "small_grove_min_visible_pixels": 300,
+  "grove_min_visible_pixels": 300,
+  "per_tree_min_diff_pixels": 120,
+  "per_tree_min_diff_fraction": 0.35,
+  "max_occluded_tree_cells": 18,
+  "diff_channel_threshold": 3
+}

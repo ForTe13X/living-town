@@ -5,6 +5,9 @@ extends Node2D
 
 const T := 48  # 与 Art.TILE 一致
 const EMOTE_TICKS := 24  # 头顶 emote 显示时长
+const CivicPresentation = preload("res://scripts/CivicPresentation.gd")
+## View-only comparison seam for same-tick LT-18 captures; defaults to production rendering.
+var civic_projection_enabled := true
 
 # ── 整数像素尺（TEXTURE_FILTER_NEAREST 下的"不融化"前提）────────────────────────
 # 地面/装饰一直是 T/16 = 3x 整数倍，可角色曾按 32→46(1.4375x)、物件 16→40(2.5x)、emote 20→26(1.3x) 画：
@@ -4711,6 +4714,7 @@ func _draw_landmark_sprite(name: String, cell: Vector2i, scale := 1.0) -> void:
 	draw_texture_rect_region(tex, dst, Rect2(used.position, used.size))
 
 func _draw_landmarks() -> void:
+	var civic_phase := CivicPresentation.phase(Sim.civic_project_state()) if civic_projection_enabled else ""
 	for lm in Sim.world.get("landmarks", []):
 		var lp: Array = lm.get("pos", [0, 0])
 		var bx := int(lp[0]) * T; var by := int(lp[1]) * T
@@ -4767,12 +4771,41 @@ func _draw_landmarks() -> void:
 				draw_rect(Rect2(ax + T * 0.70, by + T * 0.30, T * 0.13, T * 0.13), P_TEXT, true)       # 告示·小纸
 				draw_rect(Rect2(ax + T * 0.04, by - T * 0.12, T * 0.92, T * 0.13), P_COM_ROOF, true)   # 红披檐
 				draw_rect(Rect2(ax + T * 0.04, by - T * 0.12, T * 0.92, T * 0.04), P_COM_ROOF.lightened(0.15), true)  # 檐受光
+				if civic_phase != "":
+					var receipt_color := X_SIGNAL_POS if civic_phase == "complete" else (X_GOLD if civic_phase == "underway" else P_TEXT)
+					draw_rect(Rect2(ax + T * 0.40, by + T * 0.30, T * 0.22, T * 0.13), receipt_color, true)
 	# AP2(141) 座圈画在地标循环【之后】：读广场 rect（Sim 也读的面、只读不写 ⇒ 零金标），与徽章同一几何中心。
 	var _areas: Dictionary = Sim.world.get("areas", {})
 	if _areas.has("plaza"):
 		var _pr: Array = (_areas["plaza"] as Dictionary).get("rect", [0, 0, 0, 0])
 		if int(_pr[2]) > 0 and int(_pr[3]) > 0:
 			_draw_plaza_seatring(Rect2((int(_pr[0]) - 1) * T, (int(_pr[1]) - 1) * T, (int(_pr[2]) + 2) * T, (int(_pr[3]) + 2) * T))
+	_draw_civic_project(civic_phase)
+
+## LT-18: paint over the existing plaza. No world object, blocker, affordance or path is created.
+func _draw_civic_project(phase: String) -> void:
+	if phase == "":
+		return
+	var plaza: Dictionary = Sim.world.get("areas", {}).get("plaza", {})
+	var site: Array = plaza.get("rect", [])
+	if site.size() != 4 or int(site[0]) != 28 or int(site[1]) != 21 or int(site[2]) != 8 or int(site[3]) != 6:
+		return
+	for cell in [Vector2i(29, 22), Vector2i(35, 22)]:
+		var foot := Rect2(cell.x * T, cell.y * T, T, T)
+		if not _vis.intersects(foot):
+			continue
+		var bed := foot.grow(-T * 0.10)
+		if phase == "planned":
+			draw_rect(bed, X_PARCHMENT, false, 2.0)
+			draw_rect(Rect2(bed.position.x + 3, bed.position.y + 3, 3, 13), X_WOOD_MID, true)
+		elif phase == "underway":
+			draw_rect(bed, P_COM_FOOT, true)
+			draw_rect(bed, X_WOOD_MID, false, 3.0)
+			draw_line(bed.position + Vector2(5, 5), bed.end - Vector2(5, 5), X_PARCHMENT, 2.0)
+		else:
+			draw_rect(bed, S_PLANTER, true)
+			draw_rect(bed, P_STONE_LINE, false, 2.0)
+			_draw_furn_at("public_hydrangea_planter", foot, false, 1.0)
 
 ## ══════════════════════════════════════════════════════════════════════════════
 ## AP-port（docs/163）· 滩头 dock 的【港口身份】—— 纯 View、零金标、POND 安全
