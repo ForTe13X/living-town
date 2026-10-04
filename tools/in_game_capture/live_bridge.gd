@@ -111,6 +111,7 @@ func _run() -> void:
 		var receipt := {
 			"schema": RECEIPT_SCHEMA, "seq": expected, "accepted": true,
 			"action": String(command["action"]), "result": result,
+			"command_sha256": raw.sha256_text(),
 			"before_observation": expected - 1, "after_observation": expected,
 			"rendered_capture_ok": captured,
 		}

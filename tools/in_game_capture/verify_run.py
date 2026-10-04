@@ -5,10 +5,11 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import ntpath
 import re
 import struct
 import sys
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PureWindowsPath
 
 import source_copy
 
@@ -19,11 +20,69 @@ def require(condition: bool, message: str) -> None:
 
 
 def read_json(path: Path) -> dict:
-    return json.loads(path.read_text(encoding="utf-8"))
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    require(isinstance(payload, dict), f"Expected JSON object: {path}")
+    return payload
 
 
 def digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def original_windows_path(value: str, leaf: str) -> PureWindowsPath:
+    require(isinstance(value, str), f"Missing original {leaf} path")
+    path = PureWindowsPath(value)
+    require(path.is_absolute() and path.name.casefold() == leaf.casefold(),
+            f"Unexpected original {leaf} path: {value}")
+    return path
+
+
+def unique_argument(arguments: list, flag: str) -> str:
+    require(isinstance(arguments, list) and arguments.count(flag) == 1,
+            f"Expected one {flag} Godot argument")
+    position = arguments.index(flag)
+    require(position + 1 < len(arguments) and isinstance(arguments[position + 1], str),
+            f"Missing {flag} argument value")
+    return arguments[position + 1]
+
+
+def verify_supervisor_origin(receipt: dict, leg: Path, manifest: dict) -> None:
+    """Tie original run paths together while allowing the bundle to move later."""
+    project = original_windows_path(receipt.get("project_path"), "game")
+    arguments = receipt.get("arguments")
+    bridge = original_windows_path(unique_argument(arguments, "--bridge-dir"), leg.name)
+    script = original_windows_path(unique_argument(arguments, "--script"), "live_bridge.gd")
+    repo = PureWindowsPath(receipt.get("repo", ""))
+    require(ntpath.normcase(ntpath.normpath(str(project.parent))) ==
+            ntpath.normcase(ntpath.normpath(str(bridge.parent))),
+            "Supervisor project and bridge directory have different capture roots")
+    require(repo.is_absolute() and ntpath.normcase(ntpath.normpath(str(script))) ==
+            ntpath.normcase(ntpath.normpath(str(repo / "tools" / "in_game_capture" / "live_bridge.gd")))
+            and unique_argument(arguments, "--expected-user-dir-name") == manifest["user_dir_name"],
+            "Supervisor did not run the capture bridge and isolated user profile")
+    require(receipt.get("game_tree") == manifest["source_game_tree"]
+            and receipt.get("game_tree_after") == manifest["source_game_tree"]
+            and receipt.get("source_head_after") == manifest["instrumentation_commit"],
+            "Supervisor source tree or tool commit changed")
+
+
+def verify_supervisor_logs(receipt_path: Path, receipt: dict) -> None:
+    files = receipt.get("files")
+    require(isinstance(files, dict) and set(files) == {"godot", "stdout", "stderr"},
+            "Supervisor log inventory is incomplete")
+    for kind in ("godot", "stdout", "stderr"):
+        name = f"{kind}.log"
+        info = files[kind]
+        require(isinstance(info, dict), f"Missing supervisor {kind} log metadata")
+        original = original_windows_path(info.get("path"), name)
+        require(original.parent.name == receipt.get("run_id"),
+                f"Supervisor {kind} log belongs to another run")
+        local = receipt_path.parent / name
+        require(local.is_file() and local.stat().st_size == info.get("bytes")
+                and digest(local) == info.get("sha256"),
+                f"Supervisor {kind} log bytes differ from receipt")
+    require(receipt.get("injected_log") == files["godot"]["path"],
+            "Supervisor injected log differs from retained Godot log")
 
 
 def supervisor_receipt(leg: Path, manifest: dict) -> dict:
@@ -38,15 +97,16 @@ def supervisor_receipt(leg: Path, manifest: dict) -> dict:
             and receipt.get("external_project_copy") is True, "External copy was not disclosed")
     require(receipt.get("source_head") == manifest["instrumentation_commit"],
             "Capture tool commit differs from manifest")
+    verify_supervisor_origin(receipt, leg, manifest)
+    verify_supervisor_logs(receipts[0], receipt)
     return receipt
 
 
 def relative_png(leg: Path, value: str) -> Path:
-    path = PurePosixPath(value)
-    require(not path.is_absolute() and ".." not in path.parts and len(path.parts) == 2,
-            f"PNG path is not bundle-relative: {value}")
-    require(path.parts[0] == "observations" and path.suffix == ".png", "Unexpected PNG location")
-    return leg.joinpath(*path.parts)
+    target = source_copy.safe_relative_target(leg, value)
+    require(value.startswith("observations/") and len(value.split("/")) == 2
+            and target.suffix == ".png", "Unexpected PNG location")
+    return target
 
 
 def png_dimensions(path: Path) -> tuple[int, int]:
@@ -65,14 +125,40 @@ def save_proof(leg: Path, name: str) -> dict | None:
     require(proof.get("schema") == "living-town.capture-save-proof/1", "Wrong save proof schema")
     if proof.get("exists"):
         copy_name = proof.get("copy")
-        require(isinstance(copy_name, str) and Path(copy_name).name == copy_name,
-                "Save copy must be bundle-relative")
-        copy = leg / copy_name
+        require(copy_name == f"quicksave-{name}.dat", "Unexpected save copy name")
+        copy = source_copy.safe_relative_target(leg, copy_name)
         require(copy.is_file() and copy.stat().st_size == proof.get("bytes"), "Missing save copy")
         require(digest(copy) == proof.get("sha256"), "Save copy hash mismatch")
     else:
         require(proof.get("sha256") == "" and proof.get("copy") == "", "Invalid absent save proof")
     return proof
+
+
+def expected_result(command: dict) -> dict:
+    action = command.get("action")
+    if action == "key":
+        return {"code": command.get("code"), "route": "Input.parse_input_event"}
+    if action == "click":
+        return {"point": [command.get("x"), command.get("y")], "route": "Viewport.push_input"}
+    if action == "wait":
+        return {"duration_ms": command.get("duration_ms")}
+    if action == "quit":
+        return {"reason": "requested_quit"}
+    raise ValueError(f"Unknown processed command action: {action}")
+
+
+def verify_action_receipt(command_path: Path, command: dict, receipt: dict, seq: int) -> None:
+    require(command.get("schema") == "living-town.agent-command/1" and command.get("seq") == seq,
+            f"Invalid command {seq}")
+    require(receipt.get("schema") == "living-town.agent-receipt/1"
+            and receipt.get("seq") == seq and receipt.get("accepted") is True
+            and receipt.get("rendered_capture_ok") is True
+            and receipt.get("action") == command.get("action")
+            and receipt.get("before_observation") == seq - 1
+            and receipt.get("after_observation") == seq
+            and receipt.get("result") == expected_result(command)
+            and receipt.get("command_sha256") == digest(command_path),
+            f"Invalid action receipt {seq}")
 
 
 def verify_leg(root: Path, name: str, manifest: dict) -> dict:
@@ -111,15 +197,7 @@ def verify_leg(root: Path, name: str, manifest: dict) -> dict:
         receipt_path = leg / "receipts" / f"{seq:06d}.json"
         require(command_path.is_file() and receipt_path.is_file(), f"Missing action {name}/{seq}")
         command, action_receipt = read_json(command_path), read_json(receipt_path)
-        require(command.get("schema") == "living-town.agent-command/1" and command.get("seq") == seq,
-                f"Invalid command {name}/{seq}")
-        require(action_receipt.get("schema") == "living-town.agent-receipt/1"
-                and action_receipt.get("seq") == seq and action_receipt.get("accepted") is True
-                and action_receipt.get("rendered_capture_ok") is True
-                and action_receipt.get("action") == command.get("action")
-                and action_receipt.get("before_observation") == seq - 1
-                and action_receipt.get("after_observation") == seq,
-                f"Invalid action receipt {name}/{seq}")
+        verify_action_receipt(command_path, command, action_receipt, seq)
         actions.append(command)
     require(actions[-1].get("action") == "quit", f"{name} did not request quit")
     after_save = save_proof(leg, "after")

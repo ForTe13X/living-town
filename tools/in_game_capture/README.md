@@ -66,12 +66,22 @@ python -X utf8 .\tools\in_game_capture\verify_run.py $capture --require-resume
 ```
 
 The verifier resolves PNG and save paths **inside the bundle**, so moving the
-bundle does not break its hashes. It checks contiguous commands, receipts,
-rendered 1280×768 PNGs, source-copy proofs, supervisor source stability and
-process cleanup, and the saved resident, space, day, tick, and position restored
-by F8. Source-copy
+bundle does not break its hashes. It rejects Windows drive, UNC, reserved-name,
+and traversal components in bundle paths. Each accepted receipt hashes the exact
+processed command and records the action result. The verifier also checks the
+supervisor's original project/bridge path relationship and hashes the retained
+Godot, stdout, and stderr logs by their bundle-local names. It checks contiguous
+commands, receipts, rendered 1280×768 PNGs, source-copy proofs, supervisor
+source stability and process cleanup, and the saved resident, space, day, tick,
+and position restored by F8. Source-copy
 proofs are repeated before and after each leg. The supervisor labels the run
 `external_project_copy`; the Git blob proof supplies the product identity.
+
+Fast path and evidence-tampering checks run without Godot:
+
+```powershell
+python -X utf8 -m unittest discover -s tools/in_game_capture -p test_capture_safety.py
+```
 
 Do not launch a second Godot run in the same checkout while this one is active.
 The supervisor uses a checkout lock, timeout, and scoped process cleanup. A

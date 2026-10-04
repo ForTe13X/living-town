@@ -10,7 +10,30 @@ import subprocess
 import sys
 import tarfile
 import uuid
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PureWindowsPath
+
+
+WINDOWS_FORBIDDEN = set('<>:"\\|?*')
+
+
+def safe_relative_target(root: Path, name: str) -> Path:
+    """Resolve one canonical POSIX archive/bundle name safely on Windows too."""
+    if not isinstance(name, str) or not name or name.startswith("/"):
+        raise ValueError(f"Unsafe relative path: {name!r}")
+    parts = name.split("/")
+    for part in parts:
+        if (
+            part in {"", ".", ".."}
+            or part.endswith((" ", "."))
+            or any(char in WINDOWS_FORBIDDEN or ord(char) < 32 for char in part)
+            or PureWindowsPath(part).is_reserved()
+        ):
+            raise ValueError(f"Unsafe Windows path component: {name!r}")
+    base = root.resolve(strict=True)
+    target = base.joinpath(*parts)
+    if not target.resolve(strict=False).is_relative_to(base):
+        raise ValueError(f"Relative path escapes its root: {name!r}")
+    return target
 
 
 def git(repo: Path, *args: str) -> bytes:
@@ -46,7 +69,10 @@ def tracked_entries(repo: Path, source_commit: str) -> dict[str, dict[str, str]]
         path = raw_path.decode("utf-8")
         if kind != "blob" or mode not in {"100644", "100755"} or not path.startswith("game/"):
             raise ValueError(f"Unsupported game tree entry: {path} ({mode} {kind})")
-        entries[path.removeprefix("game/")] = {"mode": mode, "blob_oid": oid}
+        name = path.removeprefix("game/")
+        # Validate before the archive can create any directories or files.
+        safe_relative_target(repo, name)
+        entries[name] = {"mode": mode, "blob_oid": oid}
     if not entries or "project.godot" not in entries:
         raise ValueError("Pinned Git game tree is empty or lacks project.godot")
     return entries
@@ -121,10 +147,10 @@ def prepare(repo: Path, capture_root: Path, requested_commit: str, allow_crlf: b
             for member in archive:
                 if member.isdir():
                     continue
-                relative = PurePosixPath(member.name)
-                if not member.isfile() or relative.is_absolute() or ".." in relative.parts:
+                if not member.isfile():
                     raise ValueError(f"Unsafe or unsupported archive entry: {member.name}")
-                name = relative.as_posix()
+                name = member.name
+                target = safe_relative_target(game, name)
                 if name not in entries:
                     raise ValueError(f"Unexpected archive entry: {name}")
                 file = archive.extractfile(member)
@@ -145,8 +171,9 @@ def prepare(repo: Path, capture_root: Path, requested_commit: str, allow_crlf: b
                 if name == "project.godot":
                     project_source = data
                     data = patched_project(data, user_dir_name)
-                target = game.joinpath(*relative.parts)
                 target.parent.mkdir(parents=True, exist_ok=True)
+                if not target.resolve(strict=False).is_relative_to(game.resolve(strict=True)):
+                    raise ValueError(f"Archive target escaped game copy: {name}")
                 target.write_bytes(data)
                 extracted.add(name)
     finally:
@@ -186,6 +213,8 @@ def verify(capture_root: Path, phase: str) -> dict:
         raise ValueError("Unknown source manifest schema")
     game = capture_root / "game"
     entries = manifest["entries"]
+    for name in entries:
+        safe_relative_target(game, name)
     object_format = manifest["git_object_format"]
     actual = {
         path.relative_to(game).as_posix()
