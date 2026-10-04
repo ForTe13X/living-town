@@ -77,15 +77,19 @@ class CaptureReceiptTests(unittest.TestCase):
     def test_supervisor_project_and_bridge_share_original_copy(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             leg = Path(temporary) / "session"
-            manifest = {"user_dir_name": "LivingTownCapture_abc", "source_game_tree": "tree",
+            manifest = {"user_dir_name": "LivingTownCapture_abc", "source_game_tree": "product-tree",
                         "instrumentation_commit": "head"}
-            receipt = {"repo": r"C:\repo", "project_path": r"D:\capture\game", "game_tree": "tree",
-                       "game_tree_after": "tree", "source_head_after": "head",
+            receipt = {"repo": r"C:\repo", "project_path": r"D:\capture\game", "game_tree": "instrument-tree",
+                       "game_tree_after": "instrument-tree", "source_head_after": "head",
                        "arguments": ["--script", r"C:\repo\tools\in_game_capture\live_bridge.gd",
                                      "--", "--bridge-dir", r"D:\capture\session",
                                      "--expected-user-dir-name", "LivingTownCapture_abc"]}
             verify_run.verify_supervisor_origin(receipt, leg, manifest)
             receipt["project_path"] = r"D:\unrelated\game"
+            with self.assertRaises(ValueError):
+                verify_run.verify_supervisor_origin(receipt, leg, manifest)
+            receipt["project_path"] = r"D:\capture\game"
+            receipt["game_tree_after"] = "drifted-tree"
             with self.assertRaises(ValueError):
                 verify_run.verify_supervisor_origin(receipt, leg, manifest)
 

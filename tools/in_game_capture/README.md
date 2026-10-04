@@ -19,8 +19,10 @@ restored. The copy and output directory are retained for later verification.
 
 Run from a clean committed worktree. Set `$godot` to the Godot 4.6.2 console
 executable on this machine. Set `$sourceCommit` to the product commit being
-captured; it can be older than the capture-tool commit if the game tree is the
-same. The output path must be outside the source checkout.
+captured; its game tree can differ from the capture-tool commit. The supervisor
+proves the tool checkout stayed stable while the before/after Git blob proofs
+cover the pinned product copy. The output path must be outside the source
+checkout.
 
 ```powershell
 $godot = 'C:\path\to\Godot_v4.6.2-stable_win64_console.exe'

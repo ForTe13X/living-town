@@ -60,10 +60,13 @@ def verify_supervisor_origin(receipt: dict, leg: Path, manifest: dict) -> None:
             ntpath.normcase(ntpath.normpath(str(repo / "tools" / "in_game_capture" / "live_bridge.gd")))
             and unique_argument(arguments, "--expected-user-dir-name") == manifest["user_dir_name"],
             "Supervisor did not run the capture bridge and isolated user profile")
-    require(receipt.get("game_tree") == manifest["source_game_tree"]
-            and receipt.get("game_tree_after") == manifest["source_game_tree"]
+    # The supervisor guards the *instrumentation checkout*. A session can pin a
+    # newer product commit with a different game tree; source_copy.verify() and
+    # its before/after proofs guard those copied product bytes separately.
+    require(isinstance(receipt.get("game_tree"), str) and bool(receipt["game_tree"])
+            and receipt.get("game_tree_after") == receipt["game_tree"]
             and receipt.get("source_head_after") == manifest["instrumentation_commit"],
-            "Supervisor source tree or tool commit changed")
+            "Supervisor instrumentation tree or tool commit changed")
 
 
 def verify_supervisor_logs(receipt_path: Path, receipt: dict) -> None:
