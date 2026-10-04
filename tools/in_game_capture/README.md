@@ -34,8 +34,10 @@ $capture = Join-Path $env:TEMP ('living-town-capture-' + [guid]::NewGuid().ToStr
 The launcher prints `CAPTURE_ROOT` and `CAPTURE_COMMAND_DIR` before starting
 Godot. Leave it running. In a second PowerShell terminal, read
 `$capture\session\observations\000000.png` and `.json`; then choose one
-action at a time. Each accepted action produces a numbered receipt and the next
-rendered observation. Example:
+action at a time. Observations include the read-only controlled-resident status,
+recent canonical events, and event count/digest so a closed menu is not mistaken
+for a completed service or social action. Each accepted action produces a
+numbered receipt and the next rendered observation. Example:
 
 ```powershell
 & .\tools\in_game_capture\send-command.ps1 -RunDir (Join-Path $capture 'session') `

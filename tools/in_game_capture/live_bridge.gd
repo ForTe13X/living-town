@@ -251,6 +251,13 @@ func _capture_observation(seq: int) -> bool:
 			var entry: Dictionary = item
 			nearby.append({"kind": String(entry.get("kind", "")),
 				"id": String(entry.get("id", "")), "dist": int(entry.get("dist", -1))})
+	# Read-only gameplay witnesses help an agent distinguish a queued service or
+	# completed social event from a menu that merely closed. Never write Sim here.
+	var events: Array = sim.get("event_log")
+	var recent_events: Array = []
+	for i in range(maxi(0, events.size() - 12), events.size()):
+		if events[i] is Dictionary:
+			recent_events.append((events[i] as Dictionary).duplicate(true))
 	var size: Vector2 = root.get_visible_rect().size
 	var observation := {
 		"schema": OBSERVATION_SCHEMA, "seq": seq,
@@ -271,6 +278,9 @@ func _capture_observation(seq: int) -> bool:
 			"modal_open": bool(life.get("_modal_open")) if life != null else false},
 		"selection_cards": selected_cards, "modal_buttons": modal_buttons,
 		"nearby_interactions": nearby,
+		"controlled_status": sim.call("life_status"),
+		"event_count": events.size(), "event_digest": sim.get("event_digest"),
+		"recent_events": recent_events,
 	}
 	return _write_json(observations_dir.path_join(stem + ".json"), observation)
 
