@@ -840,6 +840,11 @@ for scene in $CI_SCENES; do
   SCENE_T0=$SECONDS
   if [ "$scene" = civic_player_journey_test ]; then
     "$GODOT" --headless --path game "res://scenes/$scene.tscn" -- --seed 7 --agents 12 --backend logic --life-as ben --warmup-tick 7202 >"$LT_LOG/$scene.log" 2>&1
+  elif [[ "$scene" = player_touch_test || "$scene" = p1v_warehouse_observatory_test || "$scene" = c1_locked_ortho_test ]]; then
+    # These scenes exercise Main's observer shortcuts directly. Use their
+    # observer mode explicitly; a no-argument desktop launch opens LifeMode's
+    # resident picker, which correctly owns input until a resident is chosen.
+    "$GODOT" --headless --path game "res://scenes/$scene.tscn" -- --no-life >"$LT_LOG/$scene.log" 2>&1
   else
     "$GODOT" --headless --path game "res://scenes/$scene.tscn" >"$LT_LOG/$scene.log" 2>&1
   fi

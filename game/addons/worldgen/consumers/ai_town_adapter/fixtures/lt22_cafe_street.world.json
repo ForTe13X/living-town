@@ -1,0 +1,619 @@
+{
+  "capabilities": {
+    "live_topology_swap": false,
+    "metric_height": false,
+    "profile": "lt22.cafe_street_snapshot/1",
+    "read_only": true
+  },
+  "coordinate_frame": {
+    "height": "floor_id_only",
+    "id": "plan_xz_q48/1",
+    "q_per_cell": 48,
+    "x_axis": "east",
+    "z_axis": "south"
+  },
+  "input_refs": {
+    "native_inventory_sha256": "aaf244875c781c56d6a47b4c7c2ed9825bb9cbb21e96201b80a21982ef3e6a2f"
+  },
+  "logical_scope": "living_town.cafe_street_reference",
+  "payload": {
+    "compatibility": {
+      "host_bindings_sha256": "65a8eb16e8a627e3bea88515b798b8450ba26ffc17161affcb1a2eae83eb4dd0",
+      "identity_ledger_sha256": "f38e2b0d82ff7eed5b62227feff36d4bf599dfba261458c2286e62ee00216710",
+      "topology_sha256": "508cebb8815419f4e0db4e6389825c49090a9bc103037b53595ce5b904ce7620"
+    },
+    "presentation": {
+      "digest_sha256": "5f1eeebfe8ca7710fc3032b93051bb7c0c703c7a6b6efd309c7d3080971d705d",
+      "pixels_per_cell": 48,
+      "profile": "reference"
+    },
+    "topology": {
+      "affordances": [
+        {
+          "host_binding_sha256": "3dfee226fd004d717de4762ddf19e3600333584dcbb5075b1f89a8d6931df0d0",
+          "id": "cafe.service_counter.tend_counter",
+          "seats": 0,
+          "slot_id": "cafe.service_counter"
+        },
+        {
+          "host_binding_sha256": "1e0cc73b30e294753e62d6a1f83c8e44a0e7ea009d9d87dac3e3a0e152695433",
+          "id": "cafe.service_counter.chat",
+          "seats": 0,
+          "slot_id": "cafe.service_counter"
+        },
+        {
+          "host_binding_sha256": "bae1fc89c8202b5f903fc0d3335df8c430bc9bba391bb726404da8a615b5a056",
+          "id": "cafe.dining_stool_west.eat",
+          "seats": 1,
+          "slot_id": "cafe.dining_stool_west"
+        },
+        {
+          "host_binding_sha256": "785c74d5e07205f1fb84e32d3b56ba4c7ffa207aa1b8f3d43385102122054d72",
+          "id": "cafe.dining_table.drink_coffee",
+          "seats": 0,
+          "slot_id": "cafe.dining_table"
+        },
+        {
+          "host_binding_sha256": "1772ce6e7dd01854121f96570891c163ec619d8d3d40cc400f8eb25fbf394140",
+          "id": "cafe.dining_table.eat",
+          "seats": 2,
+          "slot_id": "cafe.dining_table"
+        },
+        {
+          "host_binding_sha256": "bae1fc89c8202b5f903fc0d3335df8c430bc9bba391bb726404da8a615b5a056",
+          "id": "cafe.dining_stool_east.eat",
+          "seats": 1,
+          "slot_id": "cafe.dining_stool_east"
+        },
+        {
+          "host_binding_sha256": "2dca4052f712c47491026942aa745b0a1258d48adc759f80e872785c644f7440",
+          "id": "cafe.sea_painting.view_art",
+          "seats": 0,
+          "slot_id": "cafe.sea_painting"
+        },
+        {
+          "host_binding_sha256": "bb83cc62ac5412c5719bfc550571c855c361ce2c58efc7caaa4f2b5be972fcd4",
+          "id": "cafe.resident_bed.sleep",
+          "seats": 0,
+          "slot_id": "cafe.resident_bed"
+        }
+      ],
+      "planes": [
+        {
+          "blocked_cells_q": [
+            [
+              1776,
+              912
+            ],
+            [
+              1824,
+              912
+            ],
+            [
+              1872,
+              912
+            ],
+            [
+              1920,
+              912
+            ],
+            [
+              2016,
+              912
+            ],
+            [
+              2064,
+              912
+            ],
+            [
+              2112,
+              912
+            ],
+            [
+              2160,
+              912
+            ],
+            [
+              1824,
+              1008
+            ],
+            [
+              1872,
+              1008
+            ],
+            [
+              1920,
+              1008
+            ],
+            [
+              1968,
+              1008
+            ],
+            [
+              1776,
+              1056
+            ],
+            [
+              1824,
+              1056
+            ],
+            [
+              1872,
+              1056
+            ],
+            [
+              1968,
+              1056
+            ],
+            [
+              2016,
+              1056
+            ],
+            [
+              2160,
+              1056
+            ]
+          ],
+          "bounds_q": [
+            1776,
+            912,
+            432,
+            192
+          ],
+          "floor": "outdoor",
+          "space": "town"
+        },
+        {
+          "blocked_cells_q": [
+            [
+              0,
+              0
+            ],
+            [
+              48,
+              0
+            ],
+            [
+              96,
+              0
+            ],
+            [
+              144,
+              0
+            ],
+            [
+              192,
+              0
+            ],
+            [
+              240,
+              0
+            ],
+            [
+              288,
+              0
+            ],
+            [
+              336,
+              0
+            ],
+            [
+              0,
+              48
+            ],
+            [
+              192,
+              48
+            ],
+            [
+              240,
+              48
+            ],
+            [
+              288,
+              48
+            ],
+            [
+              336,
+              48
+            ],
+            [
+              0,
+              96
+            ],
+            [
+              336,
+              96
+            ],
+            [
+              0,
+              144
+            ],
+            [
+              96,
+              144
+            ],
+            [
+              240,
+              144
+            ],
+            [
+              336,
+              144
+            ],
+            [
+              0,
+              192
+            ],
+            [
+              48,
+              192
+            ],
+            [
+              96,
+              192
+            ],
+            [
+              240,
+              192
+            ],
+            [
+              288,
+              192
+            ],
+            [
+              336,
+              192
+            ],
+            [
+              0,
+              240
+            ],
+            [
+              48,
+              240
+            ],
+            [
+              96,
+              240
+            ],
+            [
+              144,
+              240
+            ],
+            [
+              240,
+              240
+            ],
+            [
+              288,
+              240
+            ],
+            [
+              336,
+              240
+            ]
+          ],
+          "bounds_q": [
+            0,
+            0,
+            384,
+            288
+          ],
+          "floor": "1f",
+          "space": "cafe"
+        },
+        {
+          "blocked_cells_q": [
+            [
+              0,
+              0
+            ],
+            [
+              48,
+              0
+            ],
+            [
+              96,
+              0
+            ],
+            [
+              144,
+              0
+            ],
+            [
+              192,
+              0
+            ],
+            [
+              240,
+              0
+            ],
+            [
+              288,
+              0
+            ],
+            [
+              336,
+              0
+            ],
+            [
+              0,
+              48
+            ],
+            [
+              288,
+              48
+            ],
+            [
+              336,
+              48
+            ],
+            [
+              0,
+              96
+            ],
+            [
+              96,
+              96
+            ],
+            [
+              192,
+              96
+            ],
+            [
+              240,
+              96
+            ],
+            [
+              336,
+              96
+            ],
+            [
+              0,
+              144
+            ],
+            [
+              336,
+              144
+            ],
+            [
+              0,
+              192
+            ],
+            [
+              192,
+              192
+            ],
+            [
+              288,
+              192
+            ],
+            [
+              336,
+              192
+            ],
+            [
+              0,
+              240
+            ],
+            [
+              48,
+              240
+            ],
+            [
+              96,
+              240
+            ],
+            [
+              144,
+              240
+            ],
+            [
+              192,
+              240
+            ],
+            [
+              240,
+              240
+            ],
+            [
+              288,
+              240
+            ],
+            [
+              336,
+              240
+            ]
+          ],
+          "bounds_q": [
+            0,
+            0,
+            384,
+            288
+          ],
+          "floor": "2f",
+          "space": "cafe"
+        }
+      ],
+      "portals": [
+        {
+          "access": "public",
+          "bidirectional": true,
+          "cost": 1,
+          "from": {
+            "floor": "outdoor",
+            "position_q": [
+              1968,
+              912
+            ],
+            "space": "town"
+          },
+          "id": "p_cafe_door",
+          "kind": "door",
+          "owner_space": "",
+          "source_id": "p_cafe_door",
+          "staff_titles": [],
+          "to": {
+            "floor": "1f",
+            "position_q": [
+              192,
+              240
+            ],
+            "space": "cafe"
+          }
+        },
+        {
+          "access": "owner",
+          "bidirectional": true,
+          "cost": 2,
+          "from": {
+            "floor": "1f",
+            "position_q": [
+              48,
+              48
+            ],
+            "space": "cafe"
+          },
+          "id": "p_cafe_stairs",
+          "kind": "stairs",
+          "owner_space": "cafe",
+          "source_id": "p_cafe_stairs",
+          "staff_titles": [],
+          "to": {
+            "floor": "2f",
+            "position_q": [
+              48,
+              48
+            ],
+            "space": "cafe"
+          }
+        }
+      ],
+      "slots": [
+        {
+          "floor": "1f",
+          "home_space": "cafe",
+          "id": "cafe.service_counter",
+          "position_q": [
+            192,
+            48
+          ],
+          "source_id": "cafe1f_counter",
+          "space": "cafe",
+          "staff_only": true
+        },
+        {
+          "floor": "1f",
+          "home_space": "cafe",
+          "id": "cafe.dining_stool_west",
+          "position_q": [
+            96,
+            192
+          ],
+          "source_id": "cafe1f_barstool",
+          "space": "cafe",
+          "staff_only": false
+        },
+        {
+          "floor": "1f",
+          "home_space": "cafe",
+          "id": "cafe.dining_table",
+          "position_q": [
+            240,
+            144
+          ],
+          "source_id": "cafe1f_table",
+          "space": "cafe",
+          "staff_only": false
+        },
+        {
+          "floor": "1f",
+          "home_space": "cafe",
+          "id": "cafe.dining_stool_east",
+          "position_q": [
+            240,
+            192
+          ],
+          "source_id": "cafe1f_barstool_1",
+          "space": "cafe",
+          "staff_only": false
+        },
+        {
+          "floor": "1f",
+          "home_space": "cafe",
+          "id": "cafe.sea_painting",
+          "position_q": [
+            144,
+            0
+          ],
+          "source_id": "cafe1f_painting_sea",
+          "space": "cafe",
+          "staff_only": false
+        },
+        {
+          "floor": "2f",
+          "home_space": "cafe",
+          "id": "cafe.resident_bed",
+          "position_q": [
+            96,
+            96
+          ],
+          "source_id": "cafe2f_bed",
+          "space": "cafe",
+          "staff_only": false
+        }
+      ],
+      "streets": [
+        {
+          "entrance_link_q": [
+            [
+              1968,
+              960
+            ],
+            [
+              1968,
+              912
+            ]
+          ],
+          "floor": "outdoor",
+          "id": "market_walk/cafe_frontage",
+          "path_q": [
+            [
+              1728,
+              1008
+            ],
+            [
+              2112,
+              960
+            ]
+          ],
+          "portal_id": "p_cafe_door",
+          "sample_bounds_q": [
+            1776,
+            912,
+            432,
+            192
+          ],
+          "segment_index": 4,
+          "source_id": "market_walk",
+          "space": "town",
+          "width_cells_ratio": [
+            8,
+            5
+          ]
+        }
+      ]
+    }
+  },
+  "producer_ref": {
+    "id": "living_town.boundary_snapshot",
+    "version": 1
+  },
+  "schema_id": "WorldPackage",
+  "schema_version": 1,
+  "validation_ref": {
+    "external_v5_conformance": false,
+    "native_inventory_save_parity": true
+  }
+}

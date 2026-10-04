@@ -16,7 +16,8 @@ var _world_root: Node2D
 var _query_summary := ""
 
 func _ready() -> void:
-	var result: Dictionary = LOADER.new().load_package("res://world.world.json")
+	var result: Dictionary = LOADER.new().load_package("res://world.world.json",
+		{"flat_ground": true, "portals": true, "presentation_profiles": ["code_only_2d"]})
 	if not result.get("ok", false):
 		push_error("WORLD_VIEWER: " + "; ".join(result.get("errors", [])))
 		return

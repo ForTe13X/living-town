@@ -38,6 +38,8 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: ./.github/actions/lt-setup
+      - name: In-game capture safety
+        run: python3 tools/in_game_capture/test_capture_safety.py
       - name: CI lanes (lint + visual)
         env:
           GODOT: godot
@@ -171,9 +173,8 @@ jobs:
           retention-days: 14
 
   visual_canary:
-    # This observation lane is deliberately separate from the required core
-    # jobs: the full visual collection must not consume a core lane's budget
-    # or reclassify the four intentionally stale product anchors.
+    # Keep the required visual collection separate from core jobs so it does
+    # not consume a core lane's budget or reclassify stale product anchors.
     # docs/205 拆并行之后它是唯一一个【自带渲染运行时】的 job（ubuntu-24.04 + Xvfb + mesa），
     # 所以它保留自己那份 setup，没有收进 .github/actions/lt-setup。
     runs-on: ubuntu-24.04
@@ -196,6 +197,9 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.11"
+
+      - name: Verify hosted visual verdict policy
+        run: python3 -m unittest discover -s tools/tests -p test_hosted_visual_required.py
 
       - name: Install Godot 4.6.2 and hosted visual runtime
         shell: bash
@@ -233,9 +237,8 @@ jobs:
         env:
           GODOT: godot
           PYTHON: python3
-          # First hosted observation: once capture starts, assertions remain
-          # hard; a renderer-start failure retains the explicit rc=77 signal.
-          LT_VISUAL: auto
+          # A06 is required: renderer startup and property failures must stay red.
+          LT_VISUAL: require
           LT_VISUAL_RUNNER: native
           LT_VISUAL_OUT: ${{ runner.temp }}/visual-gate
         run: |
@@ -280,9 +283,8 @@ jobs:
             echo "- PNG artifacts: $png_count"
             echo "- undeclared runtime errors: $runtime_errors"
           } >>"$GITHUB_STEP_SUMMARY"
-          # Observation only: infrastructure/setup/upload failures still make
-          # this job red, while the first product verdict is preserved in the
-          # summary and artifact instead of changing merge policy mid-batch.
+          # Preserve the product verdict before the A07 tooth and artifact upload.
+          # The final step enforces both verdicts and the reviewed raster runtime.
           exit 0
 
       - name: Exercise same-runtime visual negative tooth
@@ -335,3 +337,13 @@ jobs:
             ${{ runner.temp }}/visual-negative-evidence
           if-no-files-found: error
           retention-days: 14
+
+      - name: Enforce required hosted visual verdict
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          python3 tools/assert_hosted_visual_required.py \
+            --runtime "$RUNNER_TEMP/visual-runtime.txt" \
+            --positive "$RUNNER_TEMP/visual-verdict.txt" \
+            --negative "$RUNNER_TEMP/visual-negative-evidence/negative-verdict.txt" \
+            --policy analysis/p1z/hosted_visual_runtime_policy.json

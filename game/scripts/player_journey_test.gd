@@ -130,6 +130,22 @@ func _run() -> void:
 	if _life == null:
 		_finish()
 		return
+	_check("resident selection starts on a paused first day", not Sim.running and Sim.tick_no == 0 and Sim.day == 1,
+		"running=%s tick=%d day=%d" % [str(Sim.running), Sim.tick_no, Sim.day])
+	await get_tree().create_timer(0.25).timeout # Longer than the observer's 0.08-second tick interval.
+	_check("resident selection holds the first day while the player thinks", not Sim.running and Sim.tick_no == 0 and Sim.day == 1)
+	await _send_key(KEY_4)
+	await get_tree().create_timer(0.25).timeout
+	_check("observer speed shortcut cannot advance the resident picker", not Sim.running and Sim.tick_no == 0 and Sim.day == 1)
+	# Reproduce a bank card opened before selection (the --bank-panel CLI order).
+	Sim.running = true
+	_main.call("_open_bank_panel")
+	var bank_panel: Panel = _main.get("_bank_panel") as Panel
+	_check("preselection bank card opens", bank_panel != null and bank_panel.visible)
+	_life.begin_select()
+	await _wait_frames(2)
+	_check("resident selection closes earlier bank card and pauses", bank_panel != null and not bank_panel.visible
+		and not Sim.running and Sim.tick_no == 0 and Sim.day == 1)
 	var cards: Array = _life.get("_sel_cards")
 	var selected_before := String(_life.get("_sel_ids")[0])
 	var selected_after := String(_life.get("_sel_ids")[1])
@@ -142,6 +158,7 @@ func _run() -> void:
 	await _wait_frames(3)
 	_check("Enter starts the selected resident", bool(_life.get("active")) and String(_life.get("pid")) == selected_after,
 		"resident=%s active=%s controlled=%s" % [String(_life.get("pid")), str(_life.get("active")), Sim.controlled_id])
+	_check("starting a resident resumes the slower life clock", Sim.running and is_equal_approx(Sim.tick_interval, 0.5))
 	await _save_checkpoint("02_started")
 
 	# Keep the journey's controlled actor independent from autonomous dialogue
@@ -234,6 +251,14 @@ func _run() -> void:
 	await _wait_frames(2)
 	_check("Q cancels the service through the routed input path", Sim.get_agent(String(_life.get("pid"))).get("option") == null)
 	await _save_checkpoint("06_action_cancelled")
+	await _send_key(KEY_C)
+	var change_tick := Sim.tick_no
+	_check("changing residents pauses the world", bool(_life.get("selecting")) and not Sim.running)
+	await get_tree().create_timer(0.65).timeout # Longer than the life mode's 0.5-second tick interval.
+	_check("resident picker holds the current time", Sim.tick_no == change_tick and not Sim.running)
+	await _send_key(KEY_ESCAPE)
+	_check("leaving the picker resumes the previous resident", bool(_life.get("active")) and Sim.running
+		and String(_life.get("pid")) == selected_after)
 	_finish()
 
 func _finish() -> void:
