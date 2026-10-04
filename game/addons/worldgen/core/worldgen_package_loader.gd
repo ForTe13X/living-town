@@ -16,6 +16,13 @@ func load_package(path: String, required_capabilities: Dictionary = {}) -> Dicti
 	var package: Dictionary = parser.data
 	var available: Dictionary = package.get("capabilities", {})
 	for capability: String in required_capabilities:
-		if available.get(capability) != required_capabilities[capability]:
+		var requested: Variant = required_capabilities[capability]
+		var supplied: Variant = available.get(capability)
+		var satisfied: bool = supplied == requested
+		if requested is Array and supplied is Array:
+			satisfied = true
+			for item: Variant in requested:
+				if not supplied.has(item): satisfied = false; break
+		if not satisfied:
 			return {"ok": false, "errors": ["E_PACKAGE_CAPABILITY: required capability '%s' is not satisfied" % capability]}
 	return {"ok": true, "package": package.duplicate(true), "mutable_world_state": false}

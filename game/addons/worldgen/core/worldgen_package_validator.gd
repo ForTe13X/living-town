@@ -8,10 +8,14 @@ static func validate(package: Variant) -> Dictionary:
 	var errors: Array[String] = []
 	if not package is Dictionary or String(package.get("schema", "")) != "WorldPackage/1":
 		return {"ok": false, "errors": ["E_PACKAGE_SCHEMA: expected WorldPackage/1"]}
-	for field: String in ["world_id", "coordinate_frame", "capabilities", "semantic", "provenance", "digests"]:
+	var root_fields: Array[String] = ["schema", "world_id", "coordinate_frame", "capabilities",
+		"semantic", "presentation", "provenance", "digests"]
+	for field: String in root_fields:
 		if not package.has(field): errors.append("E_PACKAGE_FIELD: missing %s" % field)
-		if package.has(field) and typeof(package[field]) != TYPE_DICTIONARY and field != "world_id":
+		if package.has(field) and typeof(package[field]) != TYPE_DICTIONARY and field not in ["schema", "world_id"]:
 			errors.append("E_PACKAGE_TYPE: %s must be an object" % field)
+	for field: Variant in package.keys():
+		if not root_fields.has(field): errors.append("E_PACKAGE_FIELD: unknown %s" % String(field))
 	var semantic_value: Variant = package.get("semantic", {})
 	var digests_value: Variant = package.get("digests", {})
 	var semantic: Dictionary = semantic_value if semantic_value is Dictionary else {}
@@ -23,17 +27,27 @@ static func validate(package: Variant) -> Dictionary:
 	var frame_value: Variant = package.get("coordinate_frame", {})
 	var coordinate_frame: Dictionary = frame_value if frame_value is Dictionary else {}
 	if not frame_value is Dictionary: errors.append("E_PACKAGE_TYPE: coordinate_frame must be an object")
-	if String(coordinate_frame.get("id", "")) != "plan_xz_q48/1" or int(coordinate_frame.get("q_per_cell", 0)) != 48:
+	var frame_id: Variant = coordinate_frame.get("id")
+	var q_per_cell: Variant = coordinate_frame.get("q_per_cell")
+	var pixels_per_cell: Variant = coordinate_frame.get("pixels_per_cell")
+	if typeof(frame_id) != TYPE_STRING or frame_id != "plan_xz_q48/1" \
+			or (typeof(q_per_cell) != TYPE_INT and typeof(q_per_cell) != TYPE_FLOAT) \
+			or q_per_cell != 48:
 		errors.append("E_PACKAGE_COORDINATE: unsupported or missing coordinate frame")
+	var valid_pixels := false
+	if typeof(pixels_per_cell) == TYPE_INT or typeof(pixels_per_cell) == TYPE_FLOAT:
+		valid_pixels = float(pixels_per_cell) >= 1.0 and float(pixels_per_cell) == floorf(float(pixels_per_cell))
+	if not valid_pixels:
+		errors.append("E_PACKAGE_COORDINATE: pixels_per_cell must be a positive integer")
 	if String(semantic.get("kind", "")).is_empty(): errors.append("E_PACKAGE_SEMANTIC: semantic.kind is required")
 	if typeof(digests.get("semantic_sha256", "")) != TYPE_STRING or typeof(digests.get("presentation_sha256", "")) != TYPE_STRING:
 		errors.append("E_PACKAGE_DIGESTS: semantic and presentation SHA-256 values are required")
-	if not semantic.is_empty() and String(digests.get("semantic_sha256", "")) != CANONICAL.sha256(semantic):
+	if semantic_value is Dictionary and String(digests.get("semantic_sha256", "")) != CANONICAL.sha256(semantic):
 		errors.append("E_PACKAGE_SEMANTIC_HASH: semantic digest mismatch")
 	var presentation_value: Variant = package.get("presentation", {})
 	var presentation: Dictionary = presentation_value if presentation_value is Dictionary else {}
 	if not presentation_value is Dictionary: errors.append("E_PACKAGE_TYPE: presentation must be an object")
-	if not presentation.is_empty() and String(digests.get("presentation_sha256", "")) != CANONICAL.sha256(presentation):
+	if presentation_value is Dictionary and String(digests.get("presentation_sha256", "")) != CANONICAL.sha256(presentation):
 		errors.append("E_PACKAGE_PRESENTATION_HASH: presentation digest mismatch")
 	var value_errors := CANONICAL.validate_value(semantic)
 	errors.append_array(value_errors)
@@ -41,6 +55,8 @@ static func validate(package: Variant) -> Dictionary:
 		"inland_neighborhood": errors.append_array(_validate_inland(semantic))
 		"standalone_interior": errors.append_array(_validate_interior(semantic))
 		"coastal_neighborhood": errors.append_array(_validate_coastal(semantic))
+		"": pass # Already reported as a missing semantic.kind above.
+		_: errors.append("E_PACKAGE_SEMANTIC_KIND: unsupported semantic.kind")
 	return {"ok": errors.is_empty(), "errors": errors}
 
 ## Independent package-level coastal oracle. Recomputes bounds, segment voids,
@@ -191,7 +207,9 @@ static func _validate_coastal(semantic: Dictionary) -> Array[String]:
 		var segment_ids := {}; var covered_area := 0
 		for segment: Variant in segments:
 			if not segment is Dictionary: errors.append("E_COAST_ORACLE_SEGMENT: %s has malformed segment" % id); continue
-			var segment_id := String(segment.get("id", "")); var rect: Array = segment.get("rect", [])
+			var segment_id := String(segment.get("id", "")); var rect_value: Variant = segment.get("rect", [])
+			if not rect_value is Array: errors.append("E_COAST_ORACLE_SEGMENT: %s/%s rectangle must be an array" % [id, segment_id]); continue
+			var rect: Array = rect_value
 			if segment_id.is_empty() or segment_ids.has(segment_id) or rect.size() != 4: errors.append("E_COAST_ORACLE_SEGMENT: %s has invalid segment id/rectangle" % id); continue
 			segment_ids[segment_id] = true
 			var sx := int(rect[0]); var sy := int(rect[1]); var sw := int(rect[2]); var sh := int(rect[3])
@@ -243,13 +261,21 @@ static func _coastal_cell_is_void(x: int, y: int, building_id: String, occupied:
 ## Recompute geometry and connectivity from package facts instead of trusting operator flags.
 static func _validate_inland(semantic: Dictionary) -> Array[String]:
 	var errors: Array[String] = []
-	var extent: Array = semantic.get("extent_cells", [])
+	var extent_value: Variant = semantic.get("extent_cells", [])
+	if not extent_value is Array: return ["E_INLAND_ORACLE_EXTENT: extent_cells must be an array"]
+	var extent: Array = extent_value
 	if extent.size() != 2: return ["E_INLAND_ORACLE_EXTENT: extent_cells must contain width and height"]
 	var width := int(extent[0]); var height := int(extent[1])
 	var buildings_by_id := {}
 	var occupied: Array[Array] = []
-	for building: Dictionary in semantic.get("buildings", []):
-		var id := String(building.get("id", "")); var box: Array = building.get("box", [])
+	var buildings_value: Variant = semantic.get("buildings", [])
+	if not buildings_value is Array: return ["E_INLAND_ORACLE_BUILDING: buildings must be an array"]
+	for building_value: Variant in buildings_value:
+		if not building_value is Dictionary: errors.append("E_INLAND_ORACLE_BUILDING: building entry must be an object"); continue
+		var building: Dictionary = building_value
+		var id := String(building.get("id", "")); var box_value: Variant = building.get("box", [])
+		if not box_value is Array: errors.append("E_INLAND_ORACLE_BOX: building %s rectangle must be an array" % id); continue
+		var box: Array = box_value
 		if id.is_empty() or buildings_by_id.has(id): errors.append("E_INLAND_ORACLE_ID: empty or duplicate building id %s" % id); continue
 		if box.size() != 4: errors.append("E_INLAND_ORACLE_BOX: building %s has no rectangle" % id); continue
 		var x := int(box[0]); var y := int(box[1]); var w := int(box[2]); var h := int(box[3])
@@ -258,8 +284,14 @@ static func _validate_inland(semantic: Dictionary) -> Array[String]:
 			if _rect_overlap([x, y, w, h], previous): errors.append("E_INLAND_ORACLE_OVERLAP: buildings %s and %s overlap" % [id, previous[4]])
 		occupied.append([x, y, w, h, id]); buildings_by_id[id] = building
 	var parcels_by_id := {}
-	for parcel: Dictionary in semantic.get("parcels", []):
-		var id := String(parcel.get("id", "")); var rect: Array = parcel.get("bounds", [])
+	var parcels_value: Variant = semantic.get("parcels", [])
+	if not parcels_value is Array: return ["E_INLAND_ORACLE_PARCEL: parcels must be an array"]
+	for parcel_value: Variant in parcels_value:
+		if not parcel_value is Dictionary: errors.append("E_INLAND_ORACLE_PARCEL: parcel entry must be an object"); continue
+		var parcel: Dictionary = parcel_value
+		var id := String(parcel.get("id", "")); var rect_value: Variant = parcel.get("bounds", [])
+		if not rect_value is Array: errors.append("E_INLAND_ORACLE_PARCEL: parcel %s bounds must be an array" % id); continue
+		var rect: Array = rect_value
 		if id.is_empty() or parcels_by_id.has(id) or rect.size() != 4: errors.append("E_INLAND_ORACLE_PARCEL: invalid or duplicate parcel %s" % id); continue
 		parcels_by_id[id] = rect
 	for id: String in buildings_by_id:
@@ -269,16 +301,33 @@ static func _validate_inland(semantic: Dictionary) -> Array[String]:
 		var rect: Array = parcels_by_id[parcel_id]
 		if box.size() == 4 and (int(box[0]) < int(rect[0]) or int(box[1]) < int(rect[1]) or int(box[0]) + int(box[2]) > int(rect[0]) + int(rect[2]) or int(box[1]) + int(box[3]) > int(rect[1]) + int(rect[3])):
 			errors.append("E_INLAND_ORACLE_PARCEL_BOUNDS: building %s leaves parcel %s" % [id, parcel_id])
-	var graph: Dictionary = semantic.get("street_graph", {})
+	var graph_value: Variant = semantic.get("street_graph")
+	var graph: Dictionary = graph_value if graph_value is Dictionary else {}
+	var node_records: Variant = graph.get("nodes")
+	var edge_records: Variant = graph.get("edges")
+	if not node_records is Array or not edge_records is Array or node_records.is_empty() or edge_records.is_empty():
+		errors.append("E_INLAND_ORACLE_GRAPH: street graph needs nodes and edges")
+	if not node_records is Array: node_records = []
+	if not edge_records is Array: edge_records = []
 	var nodes := {}
-	for node: Dictionary in graph.get("nodes", []):
-		var id := String(node.get("id", "")); var at: Array = node.get("at", [])
+	for node_value: Variant in node_records:
+		if not node_value is Dictionary:
+			errors.append("E_INLAND_ORACLE_NODE: road node must be an object")
+			continue
+		var node: Dictionary = node_value
+		var id := String(node.get("id", "")); var at_value: Variant = node.get("at", [])
+		if not at_value is Array: errors.append("E_INLAND_ORACLE_NODE: road node %s coordinates must be an array" % id); continue
+		var at: Array = at_value
 		if id.is_empty() or nodes.has(id) or at.size() != 2: errors.append("E_INLAND_ORACLE_NODE: invalid road node %s" % id); continue
 		if int(at[0]) < 0 or int(at[0]) > width or int(at[1]) < 0 or int(at[1]) > height: errors.append("E_INLAND_ORACLE_NODE_BOUNDS: road node %s leaves map" % id)
 		nodes[id] = at
 	var adjacency := {}
 	for id: String in nodes: adjacency[id] = []
-	for edge: Dictionary in graph.get("edges", []):
+	for edge_value: Variant in edge_records:
+		if not edge_value is Dictionary:
+			errors.append("E_INLAND_ORACLE_EDGE: road edge must be an object")
+			continue
+		var edge: Dictionary = edge_value
 		var from_id := String(edge.get("from", "")); var to_id := String(edge.get("to", ""))
 		if not nodes.has(from_id) or not nodes.has(to_id): errors.append("E_INLAND_ORACLE_EDGE: edge has unknown endpoint"); continue
 		adjacency[from_id].append(to_id); adjacency[to_id].append(from_id)
@@ -295,9 +344,14 @@ static func _validate_inland(semantic: Dictionary) -> Array[String]:
 static func _validate_inland_programs(semantic: Dictionary, buildings_by_id: Dictionary) -> Array[String]:
 	var errors: Array[String] = []
 	var rooms_by_id := {}; var rooms_by_building := {}; var room_area_by_building := {}
-	for raw_room: Variant in semantic.get("rooms", []):
+	var rooms_value: Variant = semantic.get("rooms", [])
+	if not rooms_value is Array: errors.append("E_INLAND_PROGRAM_ROOM: rooms must be an array"); rooms_value = []
+	for raw_room: Variant in rooms_value:
 		if not raw_room is Dictionary: errors.append("E_INLAND_PROGRAM_ROOM: room entry is not an object"); continue
-		var room: Dictionary = raw_room; var id := String(room.get("id", "")); var building_id := String(room.get("building_id", "")); var rect: Array = room.get("bounds", [])
+		var room: Dictionary = raw_room; var id := String(room.get("id", "")); var building_id := String(room.get("building_id", ""))
+		var rect_value: Variant = room.get("bounds", [])
+		if not rect_value is Array: errors.append("E_INLAND_PROGRAM_ROOM: room %s bounds must be an array" % id); continue
+		var rect: Array = rect_value
 		if id.is_empty() or rooms_by_id.has(id) or not buildings_by_id.has(building_id) or rect.size() != 4:
 			errors.append("E_INLAND_PROGRAM_ROOM: invalid or duplicate room %s" % id); continue
 		var building_box: Array = buildings_by_id[building_id].get("box", [])
@@ -315,13 +369,20 @@ static func _validate_inland_programs(semantic: Dictionary, buildings_by_id: Dic
 		var box: Array = buildings_by_id[building_id].get("box", [])
 		if not rooms_by_building.has(building_id) or int(room_area_by_building.get(building_id, 0)) != int(box[2]) * int(box[3]):
 			errors.append("E_INLAND_PROGRAM_COVERAGE: rooms do not cover building %s exactly" % building_id)
-	var profiles: Dictionary = semantic.get("access_profiles", {})
+	var profiles_value: Variant = semantic.get("access_profiles", {})
+	if not profiles_value is Dictionary: errors.append("E_INLAND_PROGRAM_PROFILE: access_profiles must be an object")
+	var profiles: Dictionary = profiles_value if profiles_value is Dictionary else {}
 	var portals_by_id := {}; var building_portals := {}
-	for raw_portal: Variant in semantic.get("portals", []):
+	var portals_value: Variant = semantic.get("portals", [])
+	if not portals_value is Array: errors.append("E_INLAND_PROGRAM_PORTAL: portals must be an array"); portals_value = []
+	for raw_portal: Variant in portals_value:
 		if not raw_portal is Dictionary: errors.append("E_INLAND_PROGRAM_PORTAL: portal entry is not an object"); continue
 		var portal: Dictionary = raw_portal; var id := String(portal.get("id", "")); var building_id := String(portal.get("building_id", ""))
 		var from_room := String(portal.get("from_room", "")); var to_room := String(portal.get("to_room", ""))
-		var from: Array = portal.get("from", []); var to: Array = portal.get("to", [])
+		var from_value: Variant = portal.get("from", []); var to_value: Variant = portal.get("to", [])
+		if not from_value is Array or not to_value is Array:
+			errors.append("E_INLAND_PROGRAM_PORTAL: portal %s endpoints must be arrays" % id); continue
+		var from: Array = from_value; var to: Array = to_value
 		var access := String(portal.get("access", ""))
 		if id.is_empty() or portals_by_id.has(id) or not buildings_by_id.has(building_id) or from.size() != 2 or to.size() != 2:
 			errors.append("E_INLAND_PROGRAM_PORTAL: invalid or duplicate portal %s" % id); continue
@@ -342,10 +403,15 @@ static func _validate_inland_programs(semantic: Dictionary, buildings_by_id: Dic
 			var room_access := String(rooms_by_id[room_id].get("access", ""))
 			if allowed.has(room_access) and not reached.get(room_id, false): errors.append("E_INLAND_PROGRAM_UNREACHABLE: profile %s cannot reach %s" % [profile, room_id])
 	var affordance_ids := {}
-	for raw_slot: Variant in semantic.get("affordances", []):
+	var affordances_value: Variant = semantic.get("affordances", [])
+	if not affordances_value is Array: errors.append("E_INLAND_PROGRAM_AFFORDANCE: affordances must be an array"); affordances_value = []
+	for raw_slot: Variant in affordances_value:
 		if not raw_slot is Dictionary: errors.append("E_INLAND_PROGRAM_AFFORDANCE: slot entry is not an object"); continue
 		var slot: Dictionary = raw_slot; var id := String(slot.get("id", "")); var room_id := String(slot.get("room_id", ""))
-		var position: Array = slot.get("position", []); var approach: Array = slot.get("approach", []); var route: Array = slot.get("route", [])
+		var position_value: Variant = slot.get("position", []); var approach_value: Variant = slot.get("approach", []); var route_value: Variant = slot.get("route", [])
+		if not position_value is Array or not approach_value is Array or not route_value is Array:
+			errors.append("E_INLAND_PROGRAM_AFFORDANCE: slot %s position, approach and route must be arrays" % id); continue
+		var position: Array = position_value; var approach: Array = approach_value; var route: Array = route_value
 		if id.is_empty() or affordance_ids.has(id) or not rooms_by_id.has(room_id): errors.append("E_INLAND_PROGRAM_AFFORDANCE: invalid or duplicate slot %s" % id); continue
 		var room: Dictionary = rooms_by_id[room_id]; var access := String(slot.get("access", "")); var capacity := int(slot.get("capacity", 0))
 		if access not in ["public", "staff", "owner"] or capacity < 1 or String(slot.get("action_type", "")).is_empty(): errors.append("E_INLAND_PROGRAM_AFFORDANCE_FIELDS: slot %s has invalid action/access/capacity" % id)
@@ -353,11 +419,16 @@ static func _validate_inland_programs(semantic: Dictionary, buildings_by_id: Dic
 		if position.size() != 2 or approach.size() != 2 or not _point_in_room(position, room) or not _point_in_room(approach, room): errors.append("E_INLAND_PROGRAM_AFFORDANCE_BOUNDS: slot %s leaves its room" % id)
 		elif absi(int(position[0]) - int(approach[0])) + absi(int(position[1]) - int(approach[1])) != 1: errors.append("E_INLAND_PROGRAM_AFFORDANCE_APPROACH: slot %s approach is not adjacent" % id)
 		if route.size() < 2: errors.append("E_INLAND_PROGRAM_ROUTE: slot %s has no declared room route" % id)
-		for point: Array in route:
-			if point.size() != 2 or not _point_in_room(point, room): errors.append("E_INLAND_PROGRAM_ROUTE_BOUNDS: route for %s leaves its room" % id); break
-		for index in range(route.size() - 1):
-			var a: Array = route[index]; var b: Array = route[index + 1]
-			if a.size() == 2 and b.size() == 2 and int(a[0]) != int(b[0]) and int(a[1]) != int(b[1]): errors.append("E_INLAND_PROGRAM_ROUTE_SHAPE: route for %s is not orthogonal" % id)
+		var route_points_valid := true
+		for point_value: Variant in route:
+			if not point_value is Array or point_value.size() != 2 or not _point_in_room(point_value, room):
+				errors.append("E_INLAND_PROGRAM_ROUTE_BOUNDS: route for %s leaves its room" % id)
+				route_points_valid = false
+				break
+		if route_points_valid:
+			for index in range(route.size() - 1):
+				var a: Array = route[index]; var b: Array = route[index + 1]
+				if int(a[0]) != int(b[0]) and int(a[1]) != int(b[1]): errors.append("E_INLAND_PROGRAM_ROUTE_SHAPE: route for %s is not orthogonal" % id)
 		var profile := "public" if access == "public" else access
 		if not _inland_room_reachability(profile, building_portals.values()).get(room_id, false): errors.append("E_INLAND_PROGRAM_AFFORDANCE_UNREACHABLE: slot %s is unreachable for %s" % [id, profile])
 		affordance_ids[id] = true
@@ -384,12 +455,20 @@ static func _point_in_room(point: Array, room: Dictionary) -> bool:
 
 static func _validate_interior(semantic: Dictionary) -> Array[String]:
 	var errors: Array[String] = []
-	var extent: Array = semantic.get("extent_cells", [])
+	var extent_value: Variant = semantic.get("extent_cells", [])
+	if not extent_value is Array: return ["E_INTERIOR_ORACLE_EXTENT: extent_cells must be an array"]
+	var extent: Array = extent_value
 	if extent.size() != 2: return ["E_INTERIOR_ORACLE_EXTENT: extent_cells must contain width and depth"]
 	var width := int(extent[0]); var depth := int(extent[1]); var room_by_id := {}; var room_area := 0
 	var room_rects: Array[Array] = []
-	for room: Dictionary in semantic.get("rooms", []):
-		var id := String(room.get("id", "")); var rect: Array = room.get("bounds", [])
+	var rooms_value: Variant = semantic.get("rooms", [])
+	if not rooms_value is Array: errors.append("E_INTERIOR_ORACLE_ROOM: rooms must be an array"); rooms_value = []
+	for room_value: Variant in rooms_value:
+		if not room_value is Dictionary: errors.append("E_INTERIOR_ORACLE_ROOM: room entry must be an object"); continue
+		var room: Dictionary = room_value
+		var id := String(room.get("id", "")); var rect_value: Variant = room.get("bounds", [])
+		if not rect_value is Array: errors.append("E_INTERIOR_ORACLE_ROOM: room %s bounds must be an array" % id); continue
+		var rect: Array = rect_value
 		if id.is_empty() or room_by_id.has(id) or rect.size() != 4: errors.append("E_INTERIOR_ORACLE_ROOM: invalid or duplicate room %s" % id); continue
 		var x := int(rect[0]); var y := int(rect[1]); var w := int(rect[2]); var h := int(rect[3])
 		if w <= 0 or h <= 0 or x < 0 or y < 0 or x + w > width or y + h > depth: errors.append("E_INTERIOR_ORACLE_ROOM_BOUNDS: room %s leaves envelope" % id)
@@ -397,31 +476,59 @@ static func _validate_interior(semantic: Dictionary) -> Array[String]:
 			if _rect_overlap([x, y, w, h], previous): errors.append("E_INTERIOR_ORACLE_ROOM_OVERLAP: rooms overlap")
 		room_rects.append([x, y, w, h]); room_area += w * h; room_by_id[id] = room
 	if room_area != width * depth: errors.append("E_INTERIOR_ORACLE_ROOM_COVERAGE: rooms do not cover the envelope exactly")
+	var portals_value: Variant = semantic.get("portals", [])
+	if not portals_value is Array: errors.append("E_INTERIOR_ORACLE_PORTAL: portals must be an array"); portals_value = []
+	var portals: Array = []
+	for portal_value: Variant in portals_value:
+		if not portal_value is Dictionary: errors.append("E_INTERIOR_ORACLE_PORTAL: portal entry must be an object"); continue
+		portals.append(portal_value)
+	var routes_value: Variant = semantic.get("room_routes", {})
+	if not routes_value is Dictionary: errors.append("E_INTERIOR_ORACLE_ACCESS: room_routes must be an object"); routes_value = {}
+	var room_routes: Dictionary = routes_value
 	for profile: String in ["public", "staff"]:
-		var reached := _independent_room_reachability("exterior", profile, semantic.get("portals", []))
-		var declared: Dictionary = semantic.get("room_routes", {}).get(profile, {})
+		var reached := _independent_room_reachability("exterior", profile, portals)
+		var declared_value: Variant = room_routes.get(profile, {})
+		if not declared_value is Dictionary: errors.append("E_INTERIOR_ORACLE_ACCESS: %s room routes must be an object" % profile); declared_value = {}
+		var declared: Dictionary = declared_value
 		if reached.keys().size() != declared.keys().size(): errors.append("E_INTERIOR_ORACLE_ACCESS: %s route declaration differs from portal graph" % profile)
 		for room_id: String in reached:
 			if not declared.has(room_id): errors.append("E_INTERIOR_ORACLE_ACCESS: %s cannot reach declared room %s" % [profile, room_id])
-	for slot: Dictionary in semantic.get("affordances", []):
-		var room_id := String(slot.get("room_id", "")); var access := String(slot.get("access", "")); var route: Array = slot.get("route", [])
+	var affordances_value: Variant = semantic.get("affordances", [])
+	if not affordances_value is Array: errors.append("E_INTERIOR_ORACLE_SLOT: affordances must be an array"); affordances_value = []
+	for slot_value: Variant in affordances_value:
+		if not slot_value is Dictionary: errors.append("E_INTERIOR_ORACLE_SLOT: affordance entry must be an object"); continue
+		var slot: Dictionary = slot_value
+		var room_id := String(slot.get("room_id", "")); var access := String(slot.get("access", "")); var route_value: Variant = slot.get("route", [])
+		if not route_value is Array: errors.append("E_INTERIOR_ORACLE_ROUTE: slot %s route must be an array" % String(slot.get("id", ""))); continue
+		var route: Array = route_value
 		if not room_by_id.has(room_id): errors.append("E_INTERIOR_ORACLE_SLOT_ROOM: slot references missing room %s" % room_id); continue
 		if access == "public" and String(room_by_id[room_id].get("access", "")) != "public": errors.append("E_INTERIOR_ORACLE_ACCESS: public slot is placed in restricted room %s" % room_id)
 		var rect: Array = room_by_id[room_id].get("bounds", [])
 		if route.size() < 2: errors.append("E_INTERIOR_ORACLE_ROUTE: slot %s has no route" % String(slot.get("id", ""))); continue
-		for point: Array in route:
-			if point.size() != 2 or int(point[0]) < int(rect[0]) or int(point[0]) >= int(rect[0]) + int(rect[2]) or int(point[1]) < int(rect[1]) or int(point[1]) >= int(rect[1]) + int(rect[3]):
-				errors.append("E_INTERIOR_ORACLE_ROUTE_BOUNDS: route leaves room %s" % room_id); break
-		for index in range(route.size() - 1):
-			var a: Array = route[index]; var b: Array = route[index + 1]
-			if int(a[0]) != int(b[0]) and int(a[1]) != int(b[1]): errors.append("E_INTERIOR_ORACLE_ROUTE_SHAPE: route segment is not Manhattan aligned")
+		var route_points_valid := true
+		for point_value: Variant in route:
+			if not point_value is Array or point_value.size() != 2:
+				errors.append("E_INTERIOR_ORACLE_ROUTE_BOUNDS: route has a malformed point for room %s" % room_id)
+				route_points_valid = false
+				break
+			var point: Array = point_value
+			if int(point[0]) < int(rect[0]) or int(point[0]) >= int(rect[0]) + int(rect[2]) or int(point[1]) < int(rect[1]) or int(point[1]) >= int(rect[1]) + int(rect[3]):
+				errors.append("E_INTERIOR_ORACLE_ROUTE_BOUNDS: route leaves room %s" % room_id)
+				route_points_valid = false
+				break
+		if route_points_valid:
+			for index in range(route.size() - 1):
+				var a: Array = route[index]; var b: Array = route[index + 1]
+				if int(a[0]) != int(b[0]) and int(a[1]) != int(b[1]): errors.append("E_INTERIOR_ORACLE_ROUTE_SHAPE: route segment is not Manhattan aligned")
 	return errors
 
 static func _independent_room_reachability(start_room: String, profile: String, portals: Array) -> Dictionary:
 	var reached := {start_room: true}; var queue: Array[String] = [start_room]
 	while not queue.is_empty():
 		var current := queue.pop_front()
-		for portal: Dictionary in portals:
+		for portal_value: Variant in portals:
+			if not portal_value is Dictionary: continue
+			var portal: Dictionary = portal_value
 			var access := String(portal.get("access", ""))
 			if access != "public" and access != profile: continue
 			var next := ""

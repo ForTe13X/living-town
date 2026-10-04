@@ -1,0 +1,65 @@
+{
+  "navigation_sha256": "a74333282962189a3884c94e9b3d53010984a8a1c9b87f0b4c3acca88185931c",
+  "objects": {
+    "cafe1f_barstool": {
+      "bindings": {
+        "\u5403\u996d": "cafe.dining_stool_west.eat"
+      },
+      "logical_id": "cafe.dining_stool_west",
+      "source_sha256": "0d54b1db6e97a527857e787ef2d3777c2077149fdb0b70772225c0ed7f4ba53c"
+    },
+    "cafe1f_barstool_1": {
+      "bindings": {
+        "\u5403\u996d": "cafe.dining_stool_east.eat"
+      },
+      "logical_id": "cafe.dining_stool_east",
+      "source_sha256": "ac72f659f485a87bda62ef73ba4a8bf674313c2193fd42fe172772d3ac15e682"
+    },
+    "cafe1f_counter": {
+      "bindings": {
+        "\u770b\u644a": "cafe.service_counter.tend_counter",
+        "\u95f2\u804a": "cafe.service_counter.chat"
+      },
+      "logical_id": "cafe.service_counter",
+      "source_sha256": "09fba3b8531f7e5ffdfc1a0af8bf32d759d772eb0e6e1e2f56efcf0f5e0425cd"
+    },
+    "cafe1f_painting_sea": {
+      "bindings": {
+        "\u8d4f\u753b": "cafe.sea_painting.view_art"
+      },
+      "logical_id": "cafe.sea_painting",
+      "source_sha256": "0c9797c9a03c9768e7a325f46cee68331d6efe8342adab808c2a974431f25fa7"
+    },
+    "cafe1f_table": {
+      "bindings": {
+        "\u5403\u996d": "cafe.dining_table.eat",
+        "\u559d\u5496\u5561": "cafe.dining_table.drink_coffee"
+      },
+      "logical_id": "cafe.dining_table",
+      "source_sha256": "d858f35a5205196f0142c7f93064e3b7f515a97a88d11e7fb09d22781503c814"
+    },
+    "cafe2f_bed": {
+      "bindings": {
+        "\u7761\u89c9": "cafe.resident_bed.sleep"
+      },
+      "logical_id": "cafe.resident_bed",
+      "source_sha256": "0f131855220ffe774d5ee7bd870c3793730b58530404b8669214c24b8f755b0b"
+    }
+  },
+  "portals": {
+    "p_cafe_door": "p_cafe_door",
+    "p_cafe_stairs": "p_cafe_stairs"
+  },
+  "portals_sha256": "bc4599e4d463ac87183ca6855fef0a07d7031e4447a332701f563b0a44605241",
+  "profile": "lt22.cafe_street_snapshot/1",
+  "revision": 1,
+  "streets": {
+    "market_walk": {
+      "logical_id": "market_walk/cafe_frontage",
+      "segment_index": 4,
+      "source_geometry_sha256": "33cfc364a9bc3b5569fb2cccab13dc962386830b461efc11efd09962c5f2da94",
+      "source_link_sha256": "6bbbd1702132db55033deaa4f9f1a7c48e3e3fb57c7a59a3887b22d8da722cea"
+    }
+  },
+  "tombstones": []
+}

@@ -1,0 +1,1042 @@
+{
+  "after_digest": "3027086648",
+  "before_digest": "3027086648",
+  "event_digest_unchanged": true,
+  "furniture": {
+    "1f": {
+      "cutouts": [
+        [
+          6.0,
+          4.0,
+          2.0,
+          2.0
+        ]
+      ],
+      "floor": "wood",
+      "furniture": [
+        {
+          "label": "上楼",
+          "pos": [
+            1.0,
+            1.0
+          ],
+          "slot": "stairs"
+        },
+        {
+          "pos": [
+            6.0,
+            1.0
+          ],
+          "slot": "shelf"
+        },
+        {
+          "advertises": [
+            {
+              "action": "看摊",
+              "amount": 30.0,
+              "duration": 24.0,
+              "need": "fun"
+            },
+            {
+              "action": "闲聊",
+              "amount": 40.0,
+              "duration": 20.0,
+              "need": "social"
+            }
+          ],
+          "label": "咖啡吧台",
+          "pos": [
+            4.0,
+            1.0
+          ],
+          "size": [
+            2.0,
+            1.0
+          ],
+          "slot": "counter",
+          "staff": true
+        },
+        {
+          "label": "咖啡机",
+          "pos": [
+            5.0,
+            1.0
+          ],
+          "slot": "coffee"
+        },
+        {
+          "pos": [
+            2.0,
+            3.0
+          ],
+          "slot": "pastry"
+        },
+        {
+          "advertises": [
+            {
+              "action": "吃饭",
+              "also": {
+                "amount": 3.0,
+                "need": "fun"
+              },
+              "amount": 50.0,
+              "crowd": {
+                "comfort": 3.0,
+                "floor": 0.6,
+                "k": 0.1
+              },
+              "duration": 18.0,
+              "need": "hunger",
+              "seated": true,
+              "seats": 1.0
+            }
+          ],
+          "label": "吧凳",
+          "pos": [
+            2.0,
+            4.0
+          ],
+          "slot": "barstool"
+        },
+        {
+          "advertises": [
+            {
+              "action": "喝咖啡",
+              "amount": 32.0,
+              "crowd": {
+                "comfort": 3.0,
+                "floor": 0.6,
+                "k": 0.1
+              },
+              "duration": 16.0,
+              "need": "fun"
+            },
+            {
+              "action": "吃饭",
+              "also": {
+                "amount": 3.0,
+                "need": "fun"
+              },
+              "amount": 50.0,
+              "crowd": {
+                "comfort": 3.0,
+                "floor": 0.6,
+                "k": 0.1
+              },
+              "duration": 18.0,
+              "need": "hunger",
+              "seated": true,
+              "seats": 2.0
+            }
+          ],
+          "pos": [
+            5.0,
+            3.0
+          ],
+          "slot": "table"
+        },
+        {
+          "advertises": [
+            {
+              "action": "吃饭",
+              "also": {
+                "amount": 3.0,
+                "need": "fun"
+              },
+              "amount": 50.0,
+              "crowd": {
+                "comfort": 3.0,
+                "floor": 0.6,
+                "k": 0.1
+              },
+              "duration": 18.0,
+              "need": "hunger",
+              "seated": true,
+              "seats": 1.0
+            }
+          ],
+          "label": "吧凳",
+          "pos": [
+            5.0,
+            4.0
+          ],
+          "slot": "barstool"
+        },
+        {
+          "pos": [
+            1.0,
+            4.0
+          ],
+          "slot": "menu"
+        },
+        {
+          "pos": [
+            3.0,
+            2.0
+          ],
+          "slot": "rug"
+        },
+        {
+          "pos": [
+            4.0,
+            4.0
+          ],
+          "slot": "rug"
+        },
+        {
+          "advertises": [
+            {
+              "action": "赏画",
+              "amount": 30.0,
+              "duration": 10.0,
+              "need": "fun"
+            }
+          ],
+          "label": "海景画",
+          "pos": [
+            3.0,
+            0.0
+          ],
+          "slot": "painting_sea"
+        },
+        {
+          "pos": [
+            6.0,
+            0.0
+          ],
+          "slot": "window"
+        }
+      ],
+      "label": "一层 · 咖啡区",
+      "rooms": [
+        {
+          "label": "Coffee bar",
+          "rect": [
+            1.0,
+            1.0,
+            6.0,
+            2.0
+          ],
+          "tone": "#b69266"
+        },
+        {
+          "label": "Window salon",
+          "rect": [
+            1.0,
+            3.0,
+            5.0,
+            2.0
+          ],
+          "tone": "#9eac82"
+        }
+      ]
+    },
+    "2f": {
+      "cutouts": [],
+      "floor": "wood",
+      "furniture": [
+        {
+          "label": "下楼",
+          "pos": [
+            1.0,
+            1.0
+          ],
+          "slot": "stairs"
+        },
+        {
+          "pos": [
+            6.0,
+            1.0
+          ],
+          "slot": "wardrobe"
+        },
+        {
+          "advertises": [
+            {
+              "action": "睡觉",
+              "amount": 62.0,
+              "duration": 40.0,
+              "need": "energy"
+            }
+          ],
+          "label": "床",
+          "pos": [
+            2.0,
+            2.0
+          ],
+          "slot": "bed"
+        },
+        {
+          "label": "书桌",
+          "pos": [
+            5.0,
+            2.0
+          ],
+          "slot": "desk"
+        },
+        {
+          "pos": [
+            6.0,
+            4.0
+          ],
+          "slot": "vanity"
+        },
+        {
+          "pos": [
+            3.0,
+            3.0
+          ],
+          "slot": "rug"
+        },
+        {
+          "pos": [
+            7.0,
+            3.0
+          ],
+          "slot": "window"
+        },
+        {
+          "pos": [
+            2.0,
+            3.0
+          ],
+          "slot": "rug"
+        },
+        {
+          "pos": [
+            0.0,
+            2.0
+          ],
+          "slot": "picture"
+        },
+        {
+          "pos": [
+            0.0,
+            3.0
+          ],
+          "slot": "picture"
+        },
+        {
+          "pos": [
+            4.0,
+            0.0
+          ],
+          "slot": "window"
+        },
+        {
+          "pos": [
+            5.0,
+            0.0
+          ],
+          "slot": "painting_parasol"
+        },
+        {
+          "neighborhood_partition": true,
+          "pos": [
+            4.0,
+            2.0
+          ],
+          "slot": "wall"
+        },
+        {
+          "neighborhood_partition": true,
+          "pos": [
+            4.0,
+            4.0
+          ],
+          "slot": "wall"
+        }
+      ],
+      "label": "二层 · 阿丽的居所",
+      "rooms": [
+        {
+          "label": "Bedroom",
+          "rect": [
+            1.0,
+            1.0,
+            3.0,
+            4.0
+          ],
+          "tone": "#ada082"
+        },
+        {
+          "label": "Study",
+          "rect": [
+            5.0,
+            1.0,
+            2.0,
+            4.0
+          ],
+          "tone": "#87a5a0"
+        }
+      ]
+    }
+  },
+  "native_version": {
+    "build": "official",
+    "hash": "71f334935c000924d403448e698df4441130df18",
+    "hex": 263682,
+    "major": 4,
+    "minor": 6,
+    "patch": 2,
+    "status": "stable",
+    "string": "4.6.2-stable (official)",
+    "timestamp": 0
+  },
+  "navigation": [
+    {
+      "blocked_cells": [
+        [
+          37,
+          19
+        ],
+        [
+          38,
+          19
+        ],
+        [
+          39,
+          19
+        ],
+        [
+          40,
+          19
+        ],
+        [
+          42,
+          19
+        ],
+        [
+          43,
+          19
+        ],
+        [
+          44,
+          19
+        ],
+        [
+          45,
+          19
+        ],
+        [
+          38,
+          21
+        ],
+        [
+          39,
+          21
+        ],
+        [
+          40,
+          21
+        ],
+        [
+          41,
+          21
+        ],
+        [
+          37,
+          22
+        ],
+        [
+          38,
+          22
+        ],
+        [
+          39,
+          22
+        ],
+        [
+          41,
+          22
+        ],
+        [
+          42,
+          22
+        ],
+        [
+          45,
+          22
+        ]
+      ],
+      "bounds_cells": [
+        37,
+        19,
+        9,
+        4
+      ],
+      "floor": "outdoor",
+      "space": "town"
+    },
+    {
+      "blocked_cells": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          6,
+          1
+        ],
+        [
+          7,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          7,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          7,
+          3
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          6,
+          4
+        ],
+        [
+          7,
+          4
+        ],
+        [
+          0,
+          5
+        ],
+        [
+          1,
+          5
+        ],
+        [
+          2,
+          5
+        ],
+        [
+          3,
+          5
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          5
+        ]
+      ],
+      "bounds_cells": [
+        0,
+        0,
+        8,
+        6
+      ],
+      "floor": "1f",
+      "space": "cafe"
+    },
+    {
+      "blocked_cells": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          6,
+          1
+        ],
+        [
+          7,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          7,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          7,
+          3
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          6,
+          4
+        ],
+        [
+          7,
+          4
+        ],
+        [
+          0,
+          5
+        ],
+        [
+          1,
+          5
+        ],
+        [
+          2,
+          5
+        ],
+        [
+          3,
+          5
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          5
+        ]
+      ],
+      "bounds_cells": [
+        0,
+        0,
+        8,
+        6
+      ],
+      "floor": "2f",
+      "space": "cafe"
+    }
+  ],
+  "objects": [
+    {
+      "advertises": [
+        {
+          "action": "看摊",
+          "amount": 30.0,
+          "duration": 24.0,
+          "need": "fun"
+        },
+        {
+          "action": "闲聊",
+          "amount": 40.0,
+          "duration": 20.0,
+          "need": "social"
+        }
+      ],
+      "area": "cafe:1f",
+      "floor": "1f",
+      "home_space": "cafe",
+      "id": "cafe1f_counter",
+      "pos": [
+        4,
+        1
+      ],
+      "runtime_field_names": [
+        "id",
+        "type",
+        "pos",
+        "space",
+        "floor",
+        "area",
+        "home_space",
+        "staff",
+        "advertises"
+      ],
+      "space": "cafe",
+      "staff": true,
+      "type": "咖啡吧台"
+    },
+    {
+      "advertises": [
+        {
+          "action": "吃饭",
+          "also": {
+            "amount": 3.0,
+            "need": "fun"
+          },
+          "amount": 50.0,
+          "crowd": {
+            "comfort": 3.0,
+            "floor": 0.6,
+            "k": 0.1
+          },
+          "duration": 18.0,
+          "need": "hunger",
+          "seated": true,
+          "seats": 1.0
+        }
+      ],
+      "area": "cafe:1f",
+      "floor": "1f",
+      "home_space": "cafe",
+      "id": "cafe1f_barstool",
+      "pos": [
+        2,
+        4
+      ],
+      "runtime_field_names": [
+        "id",
+        "type",
+        "pos",
+        "space",
+        "floor",
+        "area",
+        "home_space",
+        "staff",
+        "advertises"
+      ],
+      "space": "cafe",
+      "staff": false,
+      "type": "吧凳"
+    },
+    {
+      "advertises": [
+        {
+          "action": "喝咖啡",
+          "amount": 32.0,
+          "crowd": {
+            "comfort": 3.0,
+            "floor": 0.6,
+            "k": 0.1
+          },
+          "duration": 16.0,
+          "need": "fun"
+        },
+        {
+          "action": "吃饭",
+          "also": {
+            "amount": 3.0,
+            "need": "fun"
+          },
+          "amount": 50.0,
+          "crowd": {
+            "comfort": 3.0,
+            "floor": 0.6,
+            "k": 0.1
+          },
+          "duration": 18.0,
+          "need": "hunger",
+          "seated": true,
+          "seats": 2.0
+        }
+      ],
+      "area": "cafe:1f",
+      "floor": "1f",
+      "home_space": "cafe",
+      "id": "cafe1f_table",
+      "pos": [
+        5,
+        3
+      ],
+      "runtime_field_names": [
+        "id",
+        "type",
+        "pos",
+        "space",
+        "floor",
+        "area",
+        "home_space",
+        "staff",
+        "advertises"
+      ],
+      "space": "cafe",
+      "staff": false,
+      "type": "table"
+    },
+    {
+      "advertises": [
+        {
+          "action": "吃饭",
+          "also": {
+            "amount": 3.0,
+            "need": "fun"
+          },
+          "amount": 50.0,
+          "crowd": {
+            "comfort": 3.0,
+            "floor": 0.6,
+            "k": 0.1
+          },
+          "duration": 18.0,
+          "need": "hunger",
+          "seated": true,
+          "seats": 1.0
+        }
+      ],
+      "area": "cafe:1f",
+      "floor": "1f",
+      "home_space": "cafe",
+      "id": "cafe1f_barstool_1",
+      "pos": [
+        5,
+        4
+      ],
+      "runtime_field_names": [
+        "id",
+        "type",
+        "pos",
+        "space",
+        "floor",
+        "area",
+        "home_space",
+        "staff",
+        "advertises"
+      ],
+      "space": "cafe",
+      "staff": false,
+      "type": "吧凳"
+    },
+    {
+      "advertises": [
+        {
+          "action": "赏画",
+          "amount": 30.0,
+          "duration": 10.0,
+          "need": "fun"
+        }
+      ],
+      "area": "cafe:1f",
+      "floor": "1f",
+      "home_space": "cafe",
+      "id": "cafe1f_painting_sea",
+      "pos": [
+        3,
+        0
+      ],
+      "runtime_field_names": [
+        "id",
+        "type",
+        "pos",
+        "space",
+        "floor",
+        "area",
+        "home_space",
+        "staff",
+        "advertises"
+      ],
+      "space": "cafe",
+      "staff": false,
+      "type": "海景画"
+    },
+    {
+      "advertises": [
+        {
+          "action": "睡觉",
+          "amount": 62.0,
+          "duration": 40.0,
+          "need": "energy"
+        }
+      ],
+      "area": "cafe:2f",
+      "floor": "2f",
+      "home_space": "cafe",
+      "id": "cafe2f_bed",
+      "pos": [
+        2,
+        2
+      ],
+      "runtime_field_names": [
+        "id",
+        "type",
+        "pos",
+        "space",
+        "floor",
+        "area",
+        "home_space",
+        "staff",
+        "advertises"
+      ],
+      "space": "cafe",
+      "staff": false,
+      "type": "床"
+    }
+  ],
+  "portals": [
+    {
+      "access": "public",
+      "bidirectional": true,
+      "from": {
+        "floor": "outdoor",
+        "pos": [
+          41.0,
+          19.0
+        ],
+        "space": "town"
+      },
+      "id": "p_cafe_door",
+      "kind": "door",
+      "to": {
+        "floor": "1f",
+        "pos": [
+          4.0,
+          5.0
+        ],
+        "space": "cafe"
+      },
+      "traversal_cost": 1.0
+    },
+    {
+      "access": "owner",
+      "bidirectional": true,
+      "from": {
+        "floor": "1f",
+        "pos": [
+          1.0,
+          1.0
+        ],
+        "space": "cafe"
+      },
+      "id": "p_cafe_stairs",
+      "kind": "stairs",
+      "owner_space": "cafe",
+      "to": {
+        "floor": "2f",
+        "pos": [
+          1.0,
+          1.0
+        ],
+        "space": "cafe"
+      },
+      "traversal_cost": 2.0
+    }
+  ],
+  "save_bytes_identical": true,
+  "scope": "cafe 1f/2f and adjoining town rectangle [37,19,9,4]",
+  "seed": 1,
+  "tick": 0,
+  "v5_qualified": false
+}
