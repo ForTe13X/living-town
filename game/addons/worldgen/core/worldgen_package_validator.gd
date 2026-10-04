@@ -8,10 +8,14 @@ static func validate(package: Variant) -> Dictionary:
 	var errors: Array[String] = []
 	if not package is Dictionary or String(package.get("schema", "")) != "WorldPackage/1":
 		return {"ok": false, "errors": ["E_PACKAGE_SCHEMA: expected WorldPackage/1"]}
-	for field: String in ["world_id", "coordinate_frame", "capabilities", "semantic", "provenance", "digests"]:
+	var root_fields: Array[String] = ["schema", "world_id", "coordinate_frame", "capabilities",
+		"semantic", "presentation", "provenance", "digests"]
+	for field: String in root_fields:
 		if not package.has(field): errors.append("E_PACKAGE_FIELD: missing %s" % field)
-		if package.has(field) and typeof(package[field]) != TYPE_DICTIONARY and field != "world_id":
+		if package.has(field) and typeof(package[field]) != TYPE_DICTIONARY and field not in ["schema", "world_id"]:
 			errors.append("E_PACKAGE_TYPE: %s must be an object" % field)
+	for field: Variant in package.keys():
+		if not root_fields.has(field): errors.append("E_PACKAGE_FIELD: unknown %s" % String(field))
 	var semantic_value: Variant = package.get("semantic", {})
 	var digests_value: Variant = package.get("digests", {})
 	var semantic: Dictionary = semantic_value if semantic_value is Dictionary else {}
@@ -28,12 +32,12 @@ static func validate(package: Variant) -> Dictionary:
 	if String(semantic.get("kind", "")).is_empty(): errors.append("E_PACKAGE_SEMANTIC: semantic.kind is required")
 	if typeof(digests.get("semantic_sha256", "")) != TYPE_STRING or typeof(digests.get("presentation_sha256", "")) != TYPE_STRING:
 		errors.append("E_PACKAGE_DIGESTS: semantic and presentation SHA-256 values are required")
-	if not semantic.is_empty() and String(digests.get("semantic_sha256", "")) != CANONICAL.sha256(semantic):
+	if semantic_value is Dictionary and String(digests.get("semantic_sha256", "")) != CANONICAL.sha256(semantic):
 		errors.append("E_PACKAGE_SEMANTIC_HASH: semantic digest mismatch")
 	var presentation_value: Variant = package.get("presentation", {})
 	var presentation: Dictionary = presentation_value if presentation_value is Dictionary else {}
 	if not presentation_value is Dictionary: errors.append("E_PACKAGE_TYPE: presentation must be an object")
-	if not presentation.is_empty() and String(digests.get("presentation_sha256", "")) != CANONICAL.sha256(presentation):
+	if presentation_value is Dictionary and String(digests.get("presentation_sha256", "")) != CANONICAL.sha256(presentation):
 		errors.append("E_PACKAGE_PRESENTATION_HASH: presentation digest mismatch")
 	var value_errors := CANONICAL.validate_value(semantic)
 	errors.append_array(value_errors)
@@ -41,6 +45,8 @@ static func validate(package: Variant) -> Dictionary:
 		"inland_neighborhood": errors.append_array(_validate_inland(semantic))
 		"standalone_interior": errors.append_array(_validate_interior(semantic))
 		"coastal_neighborhood": errors.append_array(_validate_coastal(semantic))
+		"": pass # Already reported as a missing semantic.kind above.
+		_: errors.append("E_PACKAGE_SEMANTIC_KIND: unsupported semantic.kind")
 	return {"ok": errors.is_empty(), "errors": errors}
 
 ## Independent package-level coastal oracle. Recomputes bounds, segment voids,
@@ -269,16 +275,31 @@ static func _validate_inland(semantic: Dictionary) -> Array[String]:
 		var rect: Array = parcels_by_id[parcel_id]
 		if box.size() == 4 and (int(box[0]) < int(rect[0]) or int(box[1]) < int(rect[1]) or int(box[0]) + int(box[2]) > int(rect[0]) + int(rect[2]) or int(box[1]) + int(box[3]) > int(rect[1]) + int(rect[3])):
 			errors.append("E_INLAND_ORACLE_PARCEL_BOUNDS: building %s leaves parcel %s" % [id, parcel_id])
-	var graph: Dictionary = semantic.get("street_graph", {})
+	var graph_value: Variant = semantic.get("street_graph")
+	var graph: Dictionary = graph_value if graph_value is Dictionary else {}
+	var node_records: Variant = graph.get("nodes")
+	var edge_records: Variant = graph.get("edges")
+	if not node_records is Array or not edge_records is Array or node_records.is_empty() or edge_records.is_empty():
+		errors.append("E_INLAND_ORACLE_GRAPH: street graph needs nodes and edges")
+	if not node_records is Array: node_records = []
+	if not edge_records is Array: edge_records = []
 	var nodes := {}
-	for node: Dictionary in graph.get("nodes", []):
+	for node_value: Variant in node_records:
+		if not node_value is Dictionary:
+			errors.append("E_INLAND_ORACLE_NODE: road node must be an object")
+			continue
+		var node: Dictionary = node_value
 		var id := String(node.get("id", "")); var at: Array = node.get("at", [])
 		if id.is_empty() or nodes.has(id) or at.size() != 2: errors.append("E_INLAND_ORACLE_NODE: invalid road node %s" % id); continue
 		if int(at[0]) < 0 or int(at[0]) > width or int(at[1]) < 0 or int(at[1]) > height: errors.append("E_INLAND_ORACLE_NODE_BOUNDS: road node %s leaves map" % id)
 		nodes[id] = at
 	var adjacency := {}
 	for id: String in nodes: adjacency[id] = []
-	for edge: Dictionary in graph.get("edges", []):
+	for edge_value: Variant in edge_records:
+		if not edge_value is Dictionary:
+			errors.append("E_INLAND_ORACLE_EDGE: road edge must be an object")
+			continue
+		var edge: Dictionary = edge_value
 		var from_id := String(edge.get("from", "")); var to_id := String(edge.get("to", ""))
 		if not nodes.has(from_id) or not nodes.has(to_id): errors.append("E_INLAND_ORACLE_EDGE: edge has unknown endpoint"); continue
 		adjacency[from_id].append(to_id); adjacency[to_id].append(from_id)

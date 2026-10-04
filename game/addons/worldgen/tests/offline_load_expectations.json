@@ -1,0 +1,247 @@
+{
+  "schema": "worldgen.offline-consumer-expectations/1",
+  "source_commit": "be5c289cc4acd1cf9ebbdf25380ee433272b871d",
+  "worlds": {
+    "inland_neighborhood_s0": {
+      "buildings": [
+        "bathhouse",
+        "cafe",
+        "home_a",
+        "home_b",
+        "library",
+        "workshop"
+      ],
+      "package_sha256": "51d270f930ecee185cdc81624b051c5e663fff5befa412493ca2db8f630d5ca8",
+      "kind": "inland_neighborhood",
+      "presentation_sha256": "5da278f3977c9a06fca7391a3fccce651a810511901b480978622dd4a7e8f152",
+      "profiles": {
+        "owner": {
+          "affordances": [
+            "bathhouse/bath",
+            "cafe/counter",
+            "home_a/rest",
+            "home_a/sleep",
+            "home_b/rest",
+            "home_b/sleep",
+            "library/reading_table"
+          ],
+          "portals": [
+            "bathhouse/door/public-bathing",
+            "bathhouse/entry",
+            "cafe/entry",
+            "home_a/door/common-sleeping",
+            "home_a/entry",
+            "home_b/door/common-sleeping",
+            "home_b/entry",
+            "library/door/public-reading",
+            "library/entry"
+          ],
+          "rooms": [
+            "bathhouse/bathing",
+            "bathhouse/public",
+            "cafe/public",
+            "home_a/common",
+            "home_a/sleeping",
+            "home_b/common",
+            "home_b/sleeping",
+            "library/public",
+            "library/reading"
+          ]
+        },
+        "public": {
+          "affordances": [
+            "bathhouse/bath",
+            "cafe/counter",
+            "home_a/rest",
+            "home_b/rest",
+            "library/reading_table"
+          ],
+          "portals": [
+            "bathhouse/door/public-bathing",
+            "bathhouse/entry",
+            "cafe/entry",
+            "home_a/entry",
+            "home_b/entry",
+            "library/door/public-reading",
+            "library/entry"
+          ],
+          "rooms": [
+            "bathhouse/bathing",
+            "bathhouse/public",
+            "cafe/public",
+            "home_a/common",
+            "home_b/common",
+            "library/public",
+            "library/reading"
+          ]
+        },
+        "staff": {
+          "affordances": [
+            "bathhouse/bath",
+            "bathhouse/service_station",
+            "cafe/counter",
+            "cafe/workstation",
+            "home_a/rest",
+            "home_b/rest",
+            "library/reading_table",
+            "workshop/workbench"
+          ],
+          "portals": [
+            "bathhouse/door/bathing-service",
+            "bathhouse/door/public-bathing",
+            "bathhouse/entry",
+            "cafe/door/prep-storage",
+            "cafe/door/public-prep",
+            "cafe/entry",
+            "home_a/entry",
+            "home_b/entry",
+            "library/door/public-reading",
+            "library/entry",
+            "workshop/door/work-storage",
+            "workshop/entry"
+          ],
+          "rooms": [
+            "bathhouse/bathing",
+            "bathhouse/public",
+            "bathhouse/service",
+            "cafe/prep",
+            "cafe/public",
+            "cafe/storage",
+            "home_a/common",
+            "home_b/common",
+            "library/public",
+            "library/reading",
+            "workshop/storage",
+            "workshop/work"
+          ]
+        }
+      },
+      "roads": [
+        "street/entry/bathhouse",
+        "street/entry/cafe",
+        "street/entry/home_a",
+        "street/entry/home_b",
+        "street/entry/library",
+        "street/entry/workshop",
+        "street/main/00",
+        "street/main/01",
+        "street/main/02",
+        "street/main/03"
+      ],
+      "semantic_sha256": "8403f6add04d0cbaaf29380d6bd01779225959dd6a7302e28c566eb6c6592524"
+    },
+    "standalone_cafe_s0": {
+      "buildings": [],
+      "package_sha256": "5a3ee23e2b7d6a77dad6d5c3324d2845ebf6302fbc12b677ef909b966e97c3e9",
+      "kind": "standalone_interior",
+      "presentation_sha256": "aa40b7ba9db16d95aa93ac4d71efe38666ccce59595787aea217968b665aca17",
+      "profiles": {
+        "owner": {
+          "affordances": [],
+          "portals": [],
+          "rooms": []
+        },
+        "public": {
+          "affordances": [
+            "cafe_s0/counter",
+            "cafe_s0/seat_01",
+            "cafe_s0/seat_02",
+            "cafe_s0/seat_03",
+            "cafe_s0/seat_04"
+          ],
+          "portals": [
+            "cafe_s0/entry"
+          ],
+          "rooms": [
+            "public"
+          ]
+        },
+        "staff": {
+          "affordances": [
+            "cafe_s0/counter",
+            "cafe_s0/seat_01",
+            "cafe_s0/seat_02",
+            "cafe_s0/seat_03",
+            "cafe_s0/seat_04",
+            "cafe_s0/staff_01"
+          ],
+          "portals": [
+            "cafe_s0/entry",
+            "cafe_s0/prep_to_storage",
+            "cafe_s0/public_to_prep",
+            "cafe_s0/staff_entry"
+          ],
+          "rooms": [
+            "prep",
+            "public",
+            "storage"
+          ]
+        }
+      },
+      "roads": [],
+      "semantic_sha256": "ac9106184941b05c826204adf9d02dd681375c59e96ce80db91bb7f9c88c6fa1"
+    },
+    "warm_bay_s1": {
+      "buildings": [
+        "B01",
+        "B02",
+        "B03",
+        "B04",
+        "B05",
+        "B06",
+        "B07",
+        "B08",
+        "B09",
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14"
+      ],
+      "package_sha256": "9fc12d10430003fdf8cbf75914178aa9988ecef3dbf3174557eb1f0c086e80b3",
+      "kind": "coastal_neighborhood",
+      "presentation_sha256": "9083c12c854c2fffd9e475f2ea207e15c9f7aec6c8f512eab995b355d2510788",
+      "profiles": {
+        "owner": {
+          "affordances": [],
+          "portals": [],
+          "rooms": []
+        },
+        "public": {
+          "affordances": [],
+          "portals": [],
+          "rooms": []
+        },
+        "staff": {
+          "affordances": [],
+          "portals": [],
+          "rooms": []
+        }
+      },
+      "roads": [
+        "H01",
+        "H02",
+        "H03",
+        "H04",
+        "H05",
+        "H06",
+        "H07",
+        "H08",
+        "H09",
+        "H10",
+        "H11",
+        "H12",
+        "P112_A112",
+        "P56_A56",
+        "V01",
+        "V02",
+        "V04",
+        "V05",
+        "V07",
+        "V08",
+        "V09"
+      ],
+      "semantic_sha256": "f6c6619317bf972f29ada3d79e7756a899d3f2b4c8c2e54f74e72ab88a405db9"
+    }
+  }
+}
