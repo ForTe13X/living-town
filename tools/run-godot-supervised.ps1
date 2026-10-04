@@ -10,6 +10,8 @@
   -AllowDirtyCandidate is explicit; candidate receipts bind the full worktree fingerprint.
   Standard `*_test: FAIL` / `... GATE: FAIL` verdicts also fail closed because Windows
   Godot can return process exit 0 after `get_tree().quit(1)`.
+  -ProjectPath can supervise an isolated project copy. Such receipts are labeled
+  external_project_copy; callers must independently prove the copy's source blobs.
 
 .EXAMPLE
   & .\tools\run-godot-supervised.ps1 -TimeoutSec 180 -GodotArgs @(
@@ -21,6 +23,7 @@ param(
   [string]$Godot = '',
   [ValidateRange(1, 86400)][int]$TimeoutSec = 300,
   [string]$ReceiptRoot = '',
+  [string]$ProjectPath = '',
   [switch]$AllowDirtyCandidate,
   [Parameter(ValueFromRemainingArguments = $true)][string[]]$GodotArgs = @()
 )
@@ -160,7 +163,16 @@ function Get-WorktreeEvidence([string]$RepoRoot) {
 }
 
 $repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
-$gamePath = (Resolve-Path -LiteralPath (Join-Path $repoRoot 'game')).Path
+$defaultGamePath = (Resolve-Path -LiteralPath (Join-Path $repoRoot 'game')).Path
+$gamePath = if ([string]::IsNullOrWhiteSpace($ProjectPath)) {
+  $defaultGamePath
+} else {
+  (Resolve-Path -LiteralPath $ProjectPath).Path
+}
+if (-not (Test-Path -LiteralPath (Join-Path $gamePath 'project.godot') -PathType Leaf)) {
+  throw "Godot project.godot is missing from $gamePath"
+}
+$externalProjectCopy = -not [string]::Equals($gamePath, $defaultGamePath, [StringComparison]::OrdinalIgnoreCase)
 $godotExe = Resolve-GodotExecutable $Godot
 if ([string]::IsNullOrWhiteSpace($ReceiptRoot)) {
   $ReceiptRoot = Join-Path $env:TEMP 'living-town-godot-runs'
@@ -205,7 +217,9 @@ $gameTree = (Invoke-GitCapture $repoRoot @('rev-parse', 'HEAD:game') | Select-Ob
 $branch = (Invoke-GitCapture $repoRoot @('branch', '--show-current') | Select-Object -First 1)
 $worktreeBefore = Get-WorktreeEvidence $repoRoot
 $statusBefore = @($worktreeBefore.status)
-$sourceIdentity = if ($statusBefore.Count -eq 0) { 'exact_commit' } elseif ($AllowDirtyCandidate) { 'dirty_candidate' } else { 'rejected_dirty' }
+$sourceIdentity = if ($statusBefore.Count -eq 0) {
+  if ($externalProjectCopy) { 'external_project_copy' } else { 'exact_commit' }
+} elseif ($AllowDirtyCandidate) { 'dirty_candidate' } else { 'rejected_dirty' }
 $sourceStable = $false
 
 try {
@@ -336,6 +350,7 @@ finally {
     untracked_blob_sha1_after = $worktreeAfter.untracked_blob_sha1
     godot_executable = $godotExe
     project_path = $gamePath
+    external_project_copy = $externalProjectCopy
     arguments = @($GodotArgs)
     injected_log = $godotLog
     timeout_seconds = $TimeoutSec
