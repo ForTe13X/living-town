@@ -38,6 +38,8 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: ./.github/actions/lt-setup
+      - name: In-game capture safety
+        run: python3 tools/in_game_capture/test_capture_safety.py
       - name: CI lanes (lint + visual)
         env:
           GODOT: godot
