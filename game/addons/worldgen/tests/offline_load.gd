@@ -110,6 +110,21 @@ func _run_hostile_cases(package: Dictionary) -> void:
 	unknown_kind["semantic"]["kind"] = "unreviewed_kind"
 	unknown_kind["digests"]["semantic_sha256"] = CANONICAL.sha256(unknown_kind["semantic"])
 	_expect_error(VALIDATOR.validate(unknown_kind), "E_PACKAGE_SEMANTIC_KIND", "unknown semantic kind")
+	var string_q: Dictionary = package.duplicate(true)
+	string_q["coordinate_frame"]["q_per_cell"] = "48"
+	_expect_error(VALIDATOR.validate(string_q), "E_PACKAGE_COORDINATE", "string q_per_cell")
+	var missing_pixels: Dictionary = package.duplicate(true)
+	missing_pixels["coordinate_frame"].erase("pixels_per_cell")
+	_expect_error(VALIDATOR.validate(missing_pixels), "E_PACKAGE_COORDINATE", "missing pixels_per_cell")
+	var zero_pixels: Dictionary = package.duplicate(true)
+	zero_pixels["coordinate_frame"]["pixels_per_cell"] = 0
+	_expect_error(VALIDATOR.validate(zero_pixels), "E_PACKAGE_COORDINATE", "zero pixels_per_cell")
+	var string_pixels: Dictionary = package.duplicate(true)
+	string_pixels["coordinate_frame"]["pixels_per_cell"] = "48"
+	_expect_error(VALIDATOR.validate(string_pixels), "E_PACKAGE_COORDINATE", "string pixels_per_cell")
+	var fractional_pixels: Dictionary = package.duplicate(true)
+	fractional_pixels["coordinate_frame"]["pixels_per_cell"] = 48.5
+	_expect_error(VALIDATOR.validate(fractional_pixels), "E_PACKAGE_COORDINATE", "fractional pixels_per_cell")
 	var missing_topology: Dictionary = package.duplicate(true)
 	var prefix := ""
 	match String(package["semantic"]["kind"]):
@@ -132,6 +147,47 @@ func _run_hostile_cases(package: Dictionary) -> void:
 			var error_prefix := "E_INLAND_ORACLE_NODE" if group == "nodes" else "E_INLAND_ORACLE_EDGE"
 			_expect_error(VALIDATOR.validate(malformed_graph), error_prefix,
 				"non-object road %s" % group)
+		for group: String in ["buildings", "parcels"]:
+			var malformed_record: Dictionary = package.duplicate(true)
+			malformed_record["semantic"][group][0] = null
+			_expect_semantic_error(malformed_record,
+				"E_INLAND_ORACLE_BUILDING" if group == "buildings" else "E_INLAND_ORACLE_PARCEL",
+				"non-object inland %s" % group)
+		var malformed_box: Dictionary = package.duplicate(true)
+		malformed_box["semantic"]["buildings"][0]["box"] = null
+		_expect_semantic_error(malformed_box, "E_INLAND_ORACLE_BOX", "non-array inland building box")
+	if String(package["semantic"]["kind"]) == "standalone_interior":
+		var malformed_room: Dictionary = package.duplicate(true)
+		malformed_room["semantic"]["rooms"][0] = null
+		_expect_semantic_error(malformed_room, "E_INTERIOR_ORACLE_ROOM", "non-object interior room")
+		var malformed_bounds: Dictionary = package.duplicate(true)
+		malformed_bounds["semantic"]["rooms"][0]["bounds"] = null
+		_expect_semantic_error(malformed_bounds, "E_INTERIOR_ORACLE_ROOM", "non-array interior room bounds")
+		var malformed_portal: Dictionary = package.duplicate(true)
+		malformed_portal["semantic"]["portals"][0] = null
+		_expect_semantic_error(malformed_portal, "E_INTERIOR_ORACLE_PORTAL", "non-object interior portal")
+		var malformed_slot: Dictionary = package.duplicate(true)
+		malformed_slot["semantic"]["affordances"][0] = null
+		_expect_semantic_error(malformed_slot, "E_INTERIOR_ORACLE_SLOT", "non-object interior affordance")
+		for malformed_point: Variant in [null, []]:
+			var malformed_route: Dictionary = package.duplicate(true)
+			malformed_route["semantic"]["affordances"][0]["route"][0] = malformed_point
+			_expect_semantic_error(malformed_route, "E_INTERIOR_ORACLE_ROUTE_BOUNDS",
+				"malformed interior route point")
+		var malformed_routes: Dictionary = package.duplicate(true)
+		malformed_routes["semantic"]["room_routes"] = null
+		_expect_semantic_error(malformed_routes, "E_INTERIOR_ORACLE_ACCESS", "non-object room_routes")
+		var malformed_profile: Dictionary = package.duplicate(true)
+		malformed_profile["semantic"]["room_routes"]["public"] = null
+		_expect_semantic_error(malformed_profile, "E_INTERIOR_ORACLE_ACCESS", "non-object public room routes")
+	if String(package["semantic"]["kind"]) == "coastal_neighborhood":
+		var malformed_segment: Dictionary = package.duplicate(true)
+		malformed_segment["semantic"]["topology"]["buildings"][0]["segments"][0]["rect"] = null
+		_expect_semantic_error(malformed_segment, "E_COAST_ORACLE_SEGMENT", "non-array coastal segment rectangle")
+
+func _expect_semantic_error(mutated: Dictionary, prefix: String, label: String) -> void:
+	mutated["digests"]["semantic_sha256"] = CANONICAL.sha256(mutated["semantic"])
+	_expect_error(VALIDATOR.validate(mutated), prefix, label)
 
 func _expect_error(result: Dictionary, prefix: String, label: String) -> void:
 	var matched := false
