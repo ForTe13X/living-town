@@ -213,6 +213,9 @@ func begin_select() -> void:
 	if active:
 		_leave_life()
 	selecting = true
+	# A CLI-opened bank card may have captured the old running state before
+	# selection began. Close it now so it cannot resume the clock behind cards.
+	main.call("_close_bank_panel")
 	_close_modal()
 	# Keep the first day and resident cards fixed while the player chooses.
 	# _close_modal() may restore the running state, so pause after it.

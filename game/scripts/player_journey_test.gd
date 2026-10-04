@@ -137,6 +137,15 @@ func _run() -> void:
 	await _send_key(KEY_4)
 	await get_tree().create_timer(0.25).timeout
 	_check("observer speed shortcut cannot advance the resident picker", not Sim.running and Sim.tick_no == 0 and Sim.day == 1)
+	# Reproduce a bank card opened before selection (the --bank-panel CLI order).
+	Sim.running = true
+	_main.call("_open_bank_panel")
+	var bank_panel: Panel = _main.get("_bank_panel") as Panel
+	_check("preselection bank card opens", bank_panel != null and bank_panel.visible)
+	_life.begin_select()
+	await _wait_frames(2)
+	_check("resident selection closes earlier bank card and pauses", bank_panel != null and not bank_panel.visible
+		and not Sim.running and Sim.tick_no == 0 and Sim.day == 1)
 	var cards: Array = _life.get("_sel_cards")
 	var selected_before := String(_life.get("_sel_ids")[0])
 	var selected_after := String(_life.get("_sel_ids")[1])
