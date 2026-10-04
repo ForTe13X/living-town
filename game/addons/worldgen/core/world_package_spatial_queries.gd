@@ -93,12 +93,15 @@ func query_buildings(program := "") -> Array[Dictionary]:
 	return result
 
 func query_roads() -> Array[Dictionary]:
-	if not is_configured(): return []
+	var result: Array[Dictionary] = []
+	if not is_configured(): return result
 	var graph: Dictionary = _semantic.get("street_graph", {})
-	if not graph.is_empty(): return graph.get("edges", []).duplicate(true)
-	if String(_semantic.get("kind", "")) == "coastal_neighborhood":
-		return _semantic.get("topology", {}).get("roads", []).duplicate(true)
-	return []
+	var candidates: Array = graph.get("edges", [])
+	if graph.is_empty() and String(_semantic.get("kind", "")) == "coastal_neighborhood":
+		candidates = _semantic.get("topology", {}).get("roads", [])
+	for raw: Variant in candidates:
+		if raw is Dictionary: result.append(raw.duplicate(true))
+	return result
 
 func _can_access(room_id: String, access: String, access_profile: String) -> bool:
 	if access_profile == "": return false

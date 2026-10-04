@@ -70,6 +70,8 @@ def main():
     tests_dir = output / "tests"
     tests_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy2(source_game / "addons" / "worldgen" / "tests" / "worldgen_package_validator_test.gd", tests_dir / "worldgen_package_validator_test.gd")
+    shutil.copy2(source_game / "addons" / "worldgen" / "tests" / "offline_load.gd", tests_dir / "offline_load.gd")
+    shutil.copy2(source_game / "addons" / "worldgen" / "tests" / "offline_load_expectations.json", tests_dir / "offline_load_expectations.json")
     shutil.copy2(source_game / "addons" / "worldgen" / "templates" / "minimal_viewer.gd", output / "minimal_viewer.gd")
     shutil.copy2(source_game / "addons" / "worldgen" / "templates" / "minimal_viewer.tscn", output / "minimal_viewer.tscn")
     shutil.copy2(source_game / "addons" / "worldgen" / "templates" / "proxy_3d_viewer.gd", output / "proxy_3d_viewer.gd")
@@ -94,7 +96,7 @@ window/size/viewport_height=640
 [rendering]
 renderer/rendering_method="gl_compatibility"
 ''', encoding="utf-8")
-    export_manifest = {"schema": "worldgen.godot-export/1", "world_id": package["world_id"], "source_package": source_package, "semantic_sha256": package["digests"]["semantic_sha256"], "presentation_sha256": package["digests"]["presentation_sha256"], "private_game_dependency": False, "authoring_tools_required_at_runtime": False}
+    export_manifest = {"schema": "worldgen.godot-export/1", "world_id": package["world_id"], "source_package": source_package, "semantic_sha256": package["digests"]["semantic_sha256"], "presentation_sha256": package["digests"]["presentation_sha256"], "private_game_dependency": False, "authoring_tools_required_at_runtime": False, "offline_gate": "tests/offline_load.gd", "external_v5_qualified": False}
     if not args.package:
         export_manifest["catalog_revision"] = selected["revision"]
         export_manifest["catalog_build_id"] = selected["build_id"]
@@ -113,6 +115,7 @@ This folder is a standalone Godot 4 project generated from `WorldPackage/1`.
 - `minimal_viewer.tscn` previews the semantic layout as native Godot 2D nodes.
 - `addons/worldgen/core/world_package_scene_builder.gd` builds IDs, roads, parcels, segmented building footprints/collisions, rooms, portals, and affordance markers from package data. Coastal L/U footprints keep their authored voids, and crossing roads retain their intermediate route points.
 - `addons/worldgen/core/world_package_spatial_queries.gd` exposes detached read-only room, portal, affordance, building, and road queries for a host game adapter. Its access profile is package policy only; the host game still decides legal actions and owns reservations and state changes.
+- `tests/offline_load.gd` is a renderer-free gate for the three pinned local builds. In a code-only export without `--blender-preview-dir`, run it with `godot --headless --path . --script res://tests/offline_load.gd`. It checks exact package and query identities, capability refusal, topology corruption, and the absence of private game and optional proxy dependencies. It does not establish external v5 conformance or actor traversal.
 
 Example host-side setup:
 
