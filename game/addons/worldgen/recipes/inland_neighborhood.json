@@ -1,0 +1,33 @@
+{
+  "schema": "worldgen.recipe/1",
+  "id": "inland_neighborhood_s0",
+  "source_revision": 2,
+  "coordinate_frame": {"id": "plan_xz_q48/1", "q_per_cell": 48, "pixels_per_cell": 48},
+  "capabilities": {"flat_ground": true, "portals": true, "presentation_profiles": ["code_only_2d"]},
+  "stages": [{"id": "layout", "operator": "worldgen.inland_layout/1", "inputs": {}, "parameters": {
+    "extent_cells": [64,48], "main_road_y": 24, "road_width_cells": 4, "edge_margin_cells": 2,
+    "side_setback_cells": 2, "front_setback_cells": 2, "back_setback_cells": 2,
+    "style_ref": "inland_village/1", "district_ref": "inland_residential/1", "visual_seed": 1729,
+    "buildings": [
+      {"id":"home_a","program":"home","size_cells":[8,8],"rooms_required":[
+        {"id":"common","role":"common","access":"public"},{"id":"sleeping","role":"sleeping","access":"owner"}],
+        "affordances_required":[{"id":"rest","action_type":"rest","room_id":"common","capacity":1,"access":"public"},{"id":"sleep","action_type":"sleep","room_id":"sleeping","capacity":1,"access":"owner"}]},
+      {"id":"home_b","program":"home","size_cells":[8,8],"rooms_required":[
+        {"id":"common","role":"common","access":"public"},{"id":"sleeping","role":"sleeping","access":"owner"}],
+        "affordances_required":[{"id":"rest","action_type":"rest","room_id":"common","capacity":1,"access":"public"},{"id":"sleep","action_type":"sleep","room_id":"sleeping","capacity":1,"access":"owner"}]},
+      {"id":"cafe","program":"cafe","size_cells":[10,8],"rooms_required":[
+        {"id":"public","role":"public_hall","access":"public"},{"id":"prep","role":"prep","access":"staff"},{"id":"storage","role":"storage","access":"staff"}],
+        "affordances_required":[{"id":"counter","action_type":"buy_food","room_id":"public","capacity":1,"access":"public"},{"id":"workstation","action_type":"work","room_id":"prep","capacity":1,"access":"staff"}]},
+      {"id":"bathhouse","program":"bathhouse","size_cells":[10,8],"rooms_required":[
+        {"id":"public","role":"public_hall","access":"public"},{"id":"bathing","role":"bathing","access":"public"},{"id":"service","role":"service","access":"staff"}],
+        "affordances_required":[{"id":"bath","action_type":"bathe","room_id":"bathing","capacity":2,"access":"public"},{"id":"service_station","action_type":"work","room_id":"service","capacity":1,"access":"staff"}]},
+      {"id":"library","program":"library","size_cells":[8,8],"rooms_required":[
+        {"id":"public","role":"public_hall","access":"public"},{"id":"reading","role":"reading","access":"public"}],
+        "affordances_required":[{"id":"reading_table","action_type":"read","room_id":"reading","capacity":2,"access":"public"}]},
+      {"id":"workshop","program":"workshop","size_cells":[10,8],"rooms_required":[
+        {"id":"work","role":"workshop","access":"staff"},{"id":"storage","role":"storage","access":"staff"}],
+        "affordances_required":[{"id":"workbench","action_type":"work","room_id":"work","capacity":2,"access":"staff"}]}
+    ]
+  }}],
+  "outputs": {"semantic": "layout.semantic", "presentation": "layout.presentation"}
+}

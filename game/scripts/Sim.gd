@@ -11,6 +11,9 @@ extends Node
 
 ## preload 而非依赖 class_name 全局（未在编辑器导入的项目无全局类缓存，headless 下全局类名不可用）。
 const MemoryStreamScript := preload("res://scripts/Memory.gd")
+const CoastalOverlayImporter := preload("res://scripts/CoastalOverlayBundleImporter.gd")
+const WorldPackageAitownAdapter := preload("res://addons/worldgen/consumers/ai_town_adapter/space_queries.gd")
+const WorldPackageAitownMigrations := preload("res://addons/worldgen/consumers/ai_town_adapter/migrations.gd")
 
 signal ticked(tick_no: int)
 signal agent_changed(agent_id: String)
@@ -258,13 +261,15 @@ var _interiors_data := {}       # interiors.json：space -> floor -> {label,floo
 var _authored_spaces := {}      # receiver-owned portal authority; never restored from a save
 var _authored_portals := []     # exact current data/spaces.json graph; traversal reads only this copy
 var _authored_agent_homes := {} # agent id -> {space,floor}, rebuilt from data/agents.json
+var _authored_agent_definitions := {} # data/agents.json plus opt-in validated authoring overlay; configuration only
 var _authored_interiors_data := {} # current interior collision source; never restored from a save
+var _authored_world_package_ref := {} # immutable package identity; receiver-owned save compatibility reference
 var _authored_solid_props := [] # map.json draw/nav authority; current-schema saves must match exactly
 var _nav_grids := {}            # space -> floor -> {w,h,blocked}：每平面独立导航网（town 复用 _blocked 引用）
 var rhythm := {}                # 昼夜节律偏好表 data/rhythm.json：{phases:{name:[lo,hi)}, prefs:{need:{phase:factor}}, default}
 var utility := {}               # 效用/接受权重表 data/utility.json（docs/14 §1 步骤4）：行为调参数据化，缺键→代码默认(逐字节不变)
 var desire_cfg := {}            # 欲望 v0 data/desire.json（docs/187）：缺文件/enabled≠true → 全短路=逐字节不变。
-                                # 进 SAVE_LOAD_DENY：它是【配置】，由 _load_data 重读；若入档，新增这一个 var 就会改 schema-2 形状、旧档全拒。
+                                # 进 SAVE_LOAD_DENY：它是配置，由 _load_data 重读，不改变 schema-2 存档形状。
                                 # 每人的欲望态住在 agent["desire"] 里（随 agents 深拷贝入档），不另设 script var。
 # ── Wave 1c 天气（docs/15 §3 挂点#3 最小版）：weather(day)=纯哈希查权重表——不消耗 RNG 流、不存历史，goto_tick 天然复现 ──
 var weather := {}               # data/weather.json：{types:{名:{w:权重}}, mults:{天气:{动作:乘子≤1}}}；缺文件→恒晴=零扰动
@@ -613,6 +618,7 @@ func _read_json(path: String) -> Dictionary:
 	return data if data is Dictionary else {}
 
 func _load_data() -> void:
+	_authored_world_package_ref = {}
 	needs_def = _read_json("res://data/needs.json").get("needs", [])
 	world = _read_json("res://data/map.json")
 	_authored_solid_props = _as_arr((world.get("areas", {}).get("dock", {}) as Dictionary).get("solid_props", [])).duplicate(true)
@@ -652,18 +658,79 @@ func _load_data() -> void:
 	var _sp := _read_json("res://data/spaces.json")
 	_spaces = _sp.get("spaces", {})
 	_portals = _sp.get("portals", [])
+	var authored_agents := _read_json("res://data/agents.json")
+	_interiors_data = _read_json("res://data/interiors.json")
+	var activation_path := "res://coastal/warm_bay_s1/export/sim_adapter/activation.json"
+	if FileAccess.file_exists(activation_path):
+		var activation := _read_json(activation_path)
+		if bool(activation.get("enabled", false)):
+			var merged: Dictionary = CoastalOverlayImporter.load_and_merge("res://coastal/warm_bay_s1/export/sim_adapter", {"spaces": _spaces, "portals": _portals}, _interiors_data)
+			if not bool(merged.get("ok", false)):
+				for error: String in merged.get("errors", []): push_error("COAST_ACTIVATION: " + error)
+				return
+			var assignment_error := _apply_coastal_assignments(authored_agents, activation, merged)
+			if not assignment_error.is_empty():
+				push_error("COAST_ACTIVATION: " + assignment_error)
+				return
+			_spaces = merged["spaces"]
+			_portals = merged["portals"]
+			_interiors_data = merged["interiors"]
+	# WorldPackage integration is opt-in and compiles detached topology before Sim takes its
+	# receiver-owned snapshots. The package supplies geometry only; existing Sim actions retain
+	# authority over movement, needs, reservations, money, memories, and save/replay state.
+	var worldgen_activation_path := "res://worldgen_activation.json"
+	if FileAccess.file_exists(worldgen_activation_path):
+		var worldgen_activation: Dictionary = _read_json(worldgen_activation_path)
+		if worldgen_activation.has("enabled") and typeof(worldgen_activation["enabled"]) != TYPE_BOOL:
+			push_error("WORLDGEN_ACTIVATION: enabled must be a boolean")
+			return
+		if bool(worldgen_activation.get("enabled", false)):
+			if String(worldgen_activation.get("schema", "")) != "worldgen.aitown-activation/1":
+				push_error("WORLDGEN_ACTIVATION: unsupported activation schema")
+				return
+			var package_path := "res://addons/worldgen/builds/inland_neighborhood.world.json"
+			var bindings_path := "res://addons/worldgen/consumers/ai_town_adapter/action_bindings.json"
+			var worldgen_package: Dictionary = _read_json(package_path)
+			if String(worldgen_activation.get("world_id", "")) != String(worldgen_package.get("world_id", "")) \
+					or String(worldgen_activation.get("semantic_sha256", "")) != String(worldgen_package.get("digests", {}).get("semantic_sha256", "")):
+				push_error("WORLDGEN_ACTIVATION: package identity or semantic digest does not match the reviewed activation")
+				return
+			var host_bindings: Dictionary = _read_json(bindings_path)
+			var base_map: Dictionary = _read_json("res://data/map.json")
+			var host_jobs: Dictionary = _read_json("res://data/jobs.json").get("jobs", {})
+			var adapter: RefCounted = WorldPackageAitownAdapter.new()
+			var merged_worldgen: Dictionary = adapter.merge_package(worldgen_package,
+				{"spaces": _spaces, "portals": _portals}, _interiors_data,
+				host_bindings.get("bindings", {}), host_bindings.get("staff_titles_by_building", {}),
+				base_map.get("objects", []), host_jobs)
+			if not bool(merged_worldgen.get("ok", false)):
+				for error: String in merged_worldgen.get("errors", []): push_error("WORLDGEN_ACTIVATION: " + error)
+				return
+			var resident_candidate: Dictionary = adapter.prepare_resident_assignments(authored_agents,
+				worldgen_activation.get("resident_assignments", []), merged_worldgen.get("home_anchors", []),
+				int(worldgen_activation.get("capacity_per_home", 4)))
+			if not bool(resident_candidate.get("ok", false)):
+				for error: String in resident_candidate.get("errors", []): push_error("WORLDGEN_ACTIVATION: " + error)
+				return
+			_spaces = merged_worldgen["spaces"]["spaces"]
+			_portals = merged_worldgen["spaces"]["portals"]
+			_interiors_data = merged_worldgen["interiors"]
+			_authored_world_package_ref = {"world_id": String(worldgen_package["world_id"]),
+				"semantic_sha256": String(worldgen_package["digests"]["semantic_sha256"])}
+			authored_agents = resident_candidate["agent_document"]
+	_authored_agent_definitions = authored_agents.duplicate(true)
 	_authored_spaces = (_spaces as Dictionary).duplicate(true)
 	_authored_portals = (_portals as Array).duplicate(true)
 	_authored_agent_homes = {}
-	var authored_agents := _read_json("res://data/agents.json")
 	for raw_def in _as_arr(authored_agents.get("agents", [])) + _as_arr(authored_agents.get("affiliates", [])):
 		if not (raw_def is Dictionary):
 			continue
 		var adef: Dictionary = raw_def
 		var sa: Dictionary = adef.get("spatial_address", {}) if adef.get("spatial_address", {}) is Dictionary else {}
 		_authored_agent_homes[String(adef.get("id", ""))] = {
-			"space": String(sa.get("space_id", "town")), "floor": String(sa.get("floor_id", "outdoor"))}
-	_interiors_data = _read_json("res://data/interiors.json")
+			"space": String(sa.get("space_id", "town")), "floor": String(sa.get("floor_id", "outdoor")),
+			"home_space": String(adef.get("home_space_id", sa.get("space_id", "town"))),
+			"home_floor": String(adef.get("home_floor_id", sa.get("floor_id", "outdoor")))}
 	_authored_interiors_data = (_interiors_data as Dictionary).duplicate(true)
 	_compile_interiors()                            # 把带 advertises 的室内家具编译成 world 对象(标平面)，须在数组→字典之前
 	_compile_worksites()                            # F1：production.worksites → town 平面的工位对象，同样须在数组→字典之前
@@ -765,6 +832,54 @@ func _compile_buildings() -> void:
 ## 纯装饰家具(无 advertises)不进 world（只 WorldView 渲染）。确定性：authored 顺序、id=space+floor+slot、无 RNG/Time。
 ## 非-town 平面 → _object_candidates 按平面门只对该层居民可见、_build_nav 只进该层网（绝不进 town _blocked）。
 ## 缺 interiors.json / 无 advertises → 不加对象 → 全 town → 逐字节不变。须在 objects 数组→字典【之前】调。
+func _apply_coastal_assignments(agent_data: Dictionary, activation: Dictionary, merged: Dictionary) -> String:
+	if String(activation.get("schema", "")) != "living-town.coastal-activation/1":
+		return "E_ACTIVATION_SCHEMA: expected living-town.coastal-activation/1"
+	var assignments: Variant = activation.get("resident_assignments", [])
+	if not assignments is Array or assignments.is_empty():
+		return "E_ACTIVATION_ASSIGNMENTS: resident_assignments must be a non-empty array"
+	var definitions := {}
+	for section: String in ["agents", "affiliates"]:
+		for index in range(_as_arr(agent_data.get(section, [])).size()):
+			var definition: Dictionary = agent_data[section][index]
+			var id := String(definition.get("id", ""))
+			if id.is_empty() or definitions.has(id): return "E_ACTIVATION_AGENT_ID: duplicate or empty authored id %s" % id
+			definitions[id] = {"section": section, "index": index}
+	var anchors := {}
+	for anchor: Dictionary in merged.get("home_anchors", []): anchors[String(anchor.get("building_id", ""))] = anchor
+	var planned: Array = []
+	var assigned_agents := {}
+	var occupants_by_home := {}
+	var max_per_home := int(activation.get("max_residents_per_home", 2))
+	if max_per_home < 1: return "E_ACTIVATION_CAPACITY: max_residents_per_home must be positive"
+	for raw_assignment: Variant in assignments:
+		if not raw_assignment is Dictionary: return "E_ACTIVATION_ASSIGNMENT: entries must be objects"
+		var assignment: Dictionary = raw_assignment
+		var agent_id := String(assignment.get("agent_id", "")); var building_id := String(assignment.get("building_id", ""))
+		if not definitions.has(agent_id): return "E_ACTIVATION_AGENT: unknown resident %s" % agent_id
+		if assigned_agents.has(agent_id): return "E_ACTIVATION_AGENT: resident %s assigned more than once" % agent_id
+		if not anchors.has(building_id): return "E_ACTIVATION_HOME: unknown residential building %s" % building_id
+		occupants_by_home[building_id] = int(occupants_by_home.get(building_id, 0)) + 1
+		if occupants_by_home[building_id] > max_per_home: return "E_ACTIVATION_CAPACITY: %s exceeds declared home capacity" % building_id
+		var anchor: Dictionary = anchors[building_id]
+		var space_id := String(anchor.get("space_id", "")); var floor_id := String(anchor.get("floor_id", ""))
+		var position: Array = anchor.get("position", [])
+		if position.size() != 2 or not merged.get("spaces", {}).has(space_id): return "E_ACTIVATION_ANCHOR: %s has no valid room start address" % building_id
+		var agent_ref: Dictionary = definitions[agent_id]
+		planned.append({"agent_id": agent_id, "section": agent_ref["section"], "index": agent_ref["index"],
+			"spatial_address": {"space_id": space_id, "floor_id": floor_id, "position": position.duplicate()},
+			"home_space_id": String(anchor.get("home_space_id", "")), "home_floor_id": floor_id})
+		assigned_agents[agent_id] = true
+	for item: Dictionary in planned:
+		var section: String = item["section"]; var index: int = item["index"]
+		var definition: Dictionary = agent_data[section][index]
+		definition["spatial_address"] = item["spatial_address"]
+		definition["home_space_id"] = item["home_space_id"]
+		definition["home_floor_id"] = item["home_floor_id"]
+		if not definition.has("home_needs") or _as_arr(definition.get("home_needs", [])).is_empty(): definition["home_needs"] = ["energy"]
+	return ""
+
+
 func _compile_interiors() -> void:
 	if _interiors_data.is_empty():
 		return
@@ -802,10 +917,12 @@ func _interior_object_defs(data: Dictionary = {}) -> Array:
 					oid = "%s_%d" % [oid, int(used[oid])]
 				else:
 					used[oid] = 0
+				var authored_space: Dictionary = _authored_spaces.get(String(space), {})
 				out.append({
 					"id": oid, "type": String((fu as Dictionary).get("label", slot)),
 					"pos": [int(pos[0]), int(pos[1])],
 					"space": String(space), "floor": String(floor), "area": String(space) + ":" + String(floor),
+					"home_space": String(authored_space.get("home_space", String(space))),
 					"staff": bool((fu as Dictionary).get("staff", false)),   # P3：员工专属对象(吧台)——只有该店主人用；顾客用公共桌
 					"advertises": adv.duplicate(true)})
 	return out
@@ -1017,7 +1134,7 @@ func start_new(p_seed: int = 12345) -> void:
 	for aid in _replay_ticks:
 		_replay_ptr[aid] = 0
 	var personas := _read_json("res://data/personas.json")
-	var adata: Array = _read_json("res://data/agents.json").get("agents", [])
+	var adata: Array = _authored_agent_definitions.get("agents", _read_json("res://data/agents.json").get("agents", []))
 	var defs := adata.duplicate(true)
 	# 扩 N：克隆扩容到 spawn_count（确定性：persona 轮转、按区心生成、id 唯一→天生立场各异）
 	# AQ1(doc 142)：克隆 persona 改从【扩后全池】personas.keys() 轮转（原 12 + 追加 12），
@@ -1171,6 +1288,8 @@ func _make_agent(adef: Dictionary, personas: Dictionary) -> Dictionary:
 	var sa: Dictionary = adef.get("spatial_address", {}) if adef.get("spatial_address", {}) is Dictionary else {}
 	var a_space := String(sa.get("space_id", "town"))
 	var a_floor := String(sa.get("floor_id", "outdoor"))
+	var a_home_space := String(adef.get("home_space_id", a_space))
+	var a_home_floor := String(adef.get("home_floor_id", a_floor))
 	var a_pos: Vector2i = _v2i(sa["position"]) if sa.has("position") else Vector2i(int(adef["spawn"][0]), int(adef["spawn"][1]))
 	var ag := {
 		"id": adef["id"],
@@ -1179,7 +1298,7 @@ func _make_agent(adef: Dictionary, personas: Dictionary) -> Dictionary:
 		"pos": a_pos,
 		"home": Vector2i(int(adef["home"][0]), int(adef["home"][1])),
 		"space": a_space, "floor": a_floor,
-		"home_space": a_space, "home_floor": a_floor,     # 家=起始平面（阿丽=cafe/2f）→ 回家 traverse 目标
+		"home_space": a_home_space, "home_floor": a_home_floor, # dwelling domain may span several room spaces; old agents default to their start space
 		"cafe_regular": bool(adef.get("cafe_regular", false)),   # P3：咖啡馆常客(营业时段进店喝咖啡+社交)；缺=false=不进店
 		"home_needs": _as_arr(adef.get("home_needs", [])),       # P3 Tier-C：家绑定 need（缺=用全局 HOME_NEEDS）
 		"needs": {},
@@ -1538,7 +1657,7 @@ func _life_object_actions(ag: Dictionary, o: Dictionary) -> Array:
 		elif not _adv_open(ag, adv):
 			why = "不是你的活" if String(adv.get("job", "")) != "" else "现在不开"
 		elif need_id in _home_needs(ag) and String(ag.get("home_space", "town")) != "town" \
-				and String(ag.get("space", "town")) != String(ag.get("home_space", "town")):
+				and String(o.get("home_space", o.get("space", "town"))) != String(ag.get("home_space", "town")):
 			why = "只在自己家里"
 		elif not (ag["needs"] as Dictionary).has(need_id):
 			why = "用不了"
@@ -2226,13 +2345,13 @@ const SAVE_MAGIC := "LTSAVE"
 const SAVE_SCHEMA_LEGACY := 1
 const SAVE_SCHEMA := 2
 const SAVE_RUNTIME_HANDLES := ["backend", "ext", "decision_sink"]
-const SAVE_LOAD_DENY := ["desire_cfg", "_venue_cache", "_indoor_job_cache", "_fisc_cache", "_diners_by_target", "_diners_tick", "_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected",
+const SAVE_LOAD_DENY := ["desire_cfg", "_venue_cache", "_indoor_job_cache", "_fisc_cache", "_diners_by_target", "_diners_tick", "_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_agent_definitions", "_authored_interiors_data", "_authored_world_package_ref", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected",
 	"controlled_id", "_tone_bonus", "loaded_meta"]   # docs/190 生活模式：附身/语气/档头都是 View 或瞬时态，不改存档形状（旧档照读）
 const SAVE_CURRENT_BLOB_KEYS := ["magic", "schema", "game_version", "saved_tick", "saved_day", "seed", "meta", "active_commit_ids", "state"]
 
 ## The current-schema contract is the exact field set emitted by save_game, derived from the same
 ## reflection/exclusion policy instead of a second hand-maintained allowlist. This is intentionally
-## fail-closed: adding a new authoritative script var changes the schema-2 shape, so an older
+## fail-closed: adding a new authoritative script var changes the schema-2 state shape, so an older
 ## schema-2 payload is rejected instead of inheriting that field from the live quickload receiver.
 func _current_save_state_keys() -> Dictionary:
 	var keys := {}
@@ -2249,13 +2368,16 @@ func _current_save_state_keys() -> Dictionary:
 	return keys
 
 func save_game(path: String, meta := {}) -> bool:
+	if not meta is Dictionary:
+		push_error("save_game REFUSED — meta must be a Dictionary")
+		return false
 	# 派生引用结构【不入档】：它们只是 agents[]/commitments[] 的别名视图，存了也只能得到孤儿副本；
 	# 读档后由 _rebuild_after_load 从真源重建（_active_commitments 靠下面存的 id 列表还原成员资格）。
 	var state := {}
 	for key in _current_save_state_keys():
 		state[key] = get(key)
 	# Configuration snapshots are retained for schema compatibility, but the writer always emits
-	# the current authored copies.  A migrated legacy live world may keep its old world/logistics;
+	# the current authored copies. A migrated legacy live world may keep its old world/logistics;
 	# it cannot persist a forged portal/access/collision contract into a new schema-2 file.
 	state["_spaces"] = _authored_spaces.duplicate(true)
 	state["_portals"] = _authored_portals.duplicate(true)
@@ -2278,10 +2400,14 @@ func save_game(path: String, meta := {}) -> bool:
 	var active_ids := []                            # 活跃承诺的成员资格（id）——重建工作集用
 	for c in _active_commitments:
 		active_ids.append(int(c.get("id", -1)))
+	var save_meta: Dictionary = meta.duplicate(true)
+	save_meta.erase("_world_package_ref") # reserved receiver-authored field; callers cannot forge topology provenance
+	if not _authored_world_package_ref.is_empty():
+		save_meta["_world_package_ref"] = _authored_world_package_ref.duplicate(true)
 	var blob := {
 		"magic": SAVE_MAGIC, "schema": SAVE_SCHEMA,
 		"game_version": String(ProjectSettings.get_setting("application/config/version", "dev")),
-		"saved_tick": tick_no, "saved_day": day, "seed": seed_base, "meta": meta,
+		"saved_tick": tick_no, "saved_day": day, "seed": seed_base, "meta": save_meta,
 		"active_commit_ids": active_ids, "state": state,
 	}
 	if player_trace_available and _agent_by_id.has("player"):
@@ -2325,7 +2451,7 @@ func peek_save(path: String) -> Dictionary:
 	f.close()
 	if not (blob is Dictionary) or blob.get("magic") != SAVE_MAGIC or int(blob.get("schema", -1)) != sch or not (blob.get("state") is Dictionary):
 		return {}
-	if sch == SAVE_SCHEMA and _validate_current_save_shape(blob) != "":
+	if sch >= SAVE_SCHEMA and _validate_save_shape(blob, sch) != "":
 		return {}
 	blob.erase("state")                             # 只回头信息
 	blob.erase("player_trace")                      # trace 可很大；列表视图只返回 O(1) 头信息
@@ -2333,23 +2459,38 @@ func peek_save(path: String) -> Dictionary:
 	return blob
 
 func _validate_current_save_shape(blob: Dictionary) -> String:
-	for key in SAVE_CURRENT_BLOB_KEYS:
+	return _validate_save_shape(blob, SAVE_SCHEMA)
+
+func _validate_save_shape(blob: Dictionary, schema_version: int) -> String:
+	for key: String in SAVE_CURRENT_BLOB_KEYS:
 		if not blob.has(key):
-			return "schema %d missing current envelope key: %s" % [SAVE_SCHEMA, key]
+			return "schema %d missing envelope key: %s" % [schema_version, key]
 	var expected_size := SAVE_CURRENT_BLOB_KEYS.size() + (1 if blob.has("player_trace") else 0)
 	if blob.size() != expected_size:
-		return "schema %d envelope contains unknown keys" % SAVE_SCHEMA
+		return "schema %d envelope contains unknown keys" % schema_version
 	for typed_key in ["schema", "saved_tick", "saved_day", "seed"]:
 		if typeof(blob.get(typed_key)) != TYPE_INT:
-			return "schema %d envelope %s is not an int" % [SAVE_SCHEMA, typed_key]
+			return "schema %d envelope %s is not an int" % [schema_version, typed_key]
 	if typeof(blob.get("magic")) != TYPE_STRING or typeof(blob.get("game_version")) != TYPE_STRING \
 		or not (blob.get("meta") is Dictionary):
-		return "schema %d envelope string/meta types are invalid" % SAVE_SCHEMA
+		return "schema %d envelope string/meta types are invalid" % schema_version
+	var meta: Dictionary = blob["meta"]
+	if meta.has("_world_package_ref"):
+		var package_ref: Variant = meta["_world_package_ref"]
+		if not package_ref is Dictionary: return "meta._world_package_ref is not a Dictionary"
+		if not package_ref.is_empty():
+			if package_ref.size() != 2 or typeof(package_ref.get("world_id")) != TYPE_STRING \
+					or typeof(package_ref.get("semantic_sha256")) != TYPE_STRING:
+				return "meta._world_package_ref must contain world_id and semantic_sha256"
+			var digest := String(package_ref.get("semantic_sha256", ""))
+			if String(package_ref.get("world_id", "")).is_empty() or digest.length() != 64 \
+					or digest.to_lower() != digest or not digest.is_valid_hex_number():
+				return "meta._world_package_ref identity is invalid"
 	var raw_state = blob.get("state")
 	if not (raw_state is Dictionary):
 		return "state is not a Dictionary"
 	var state: Dictionary = raw_state
-	var state_error := _validate_loaded_state(state, SAVE_SCHEMA)
+	var state_error := _validate_loaded_state(state, schema_version)
 	if state_error != "":
 		return state_error
 	if blob.has("player_trace"):
@@ -2358,7 +2499,7 @@ func _validate_current_save_shape(blob: Dictionary) -> String:
 		if trace_error != "": return trace_error
 	for pair in [["saved_tick", "tick_no"], ["saved_day", "day"], ["seed", "seed_base"]]:
 		if typeof(blob.get(pair[0])) != TYPE_INT or int(blob.get(pair[0])) != int(state.get(pair[1], -1)):
-			return "schema %d envelope %s does not match state %s" % [SAVE_SCHEMA, pair[0], pair[1]]
+			return "schema %d envelope %s does not match state %s" % [schema_version, pair[0], pair[1]]
 	var active_ids = blob.get("active_commit_ids")
 	if not (active_ids is Array) or not (active_ids as Array).all(func(v): return typeof(v) == TYPE_INT):
 		return "active_commit_ids is not an int Array"
@@ -2411,9 +2552,11 @@ func load_game(path: String) -> bool:
 	f.close()
 	if not (blob is Dictionary) or blob.get("magic") != SAVE_MAGIC or int(blob.get("schema", -1)) != sch:
 		return false
-	loaded_meta = (blob.get("meta") as Dictionary).duplicate(true) if blob.get("meta") is Dictionary else {}   # View 自带的档头（生活模式状态等），不进仿真
-	if sch == SAVE_SCHEMA:
-		var shape_error := _validate_current_save_shape(blob)
+	# Keep view metadata staged with the candidate state. A rejected quickload must not
+	# leave the receiver showing header data from a save whose simulation state was refused.
+	var pending_loaded_meta: Dictionary = (blob.get("meta") as Dictionary).duplicate(true) if blob.get("meta") is Dictionary else {}
+	if sch >= SAVE_SCHEMA:
+		var shape_error := _validate_save_shape(blob, sch)
 		if shape_error != "":
 			push_warning("load_game: %s" % shape_error)
 			return false
@@ -2425,6 +2568,20 @@ func load_game(path: String) -> bool:
 		push_warning("load_game: %s" % String(prepared.get("error", "invalid save state")))
 		return false
 	var state: Dictionary = prepared["state"]
+	var save_meta: Dictionary = blob.get("meta", {})
+	var saved_ref_value: Variant = save_meta.get("_world_package_ref", {})
+	if not saved_ref_value is Dictionary:
+		push_warning("load_game: meta._world_package_ref is invalid")
+		return false
+	var saved_package_ref: Dictionary = saved_ref_value
+	var package_migration: RefCounted = WorldPackageAitownMigrations.new()
+	var package_check: Dictionary = package_migration.validate_save_reference(sch, saved_package_ref, state,
+		_authored_world_package_ref, _authored_spaces, _authored_portals, _authored_interiors_data)
+	if not bool(package_check.get("ok", false)):
+		push_warning("load_game: %s" % ";".join(package_check.get("errors", [])))
+		return false
+	if not package_check.get("world_package_ref", {}).is_empty():
+		pending_loaded_meta["_world_package_ref"] = package_check["world_package_ref"].duplicate(true)
 	var invalid := _validate_loaded_state(state, sch)
 	if invalid != "":
 		push_warning("load_game: %s" % invalid)
@@ -2437,6 +2594,7 @@ func load_game(path: String) -> bool:
 	# 到这里才触碰 live Sim。上面的迁移/验证全在 deep copy 上完成，因此任何拒绝都保持接收实例原样。
 	for k in state:
 		set(k, state[k])
+	loaded_meta = pending_loaded_meta
 	_rebuild_after_load(active_ids)
 	if loaded_trace.is_empty():
 		player_trace = {}
@@ -2460,7 +2618,7 @@ func _prepare_loaded_state(blob: Dictionary, sch: int) -> Dictionary:
 	if not (raw_state is Dictionary):
 		return {"ok": false, "error": "state is not a Dictionary"}
 	var state: Dictionary = (raw_state as Dictionary).duplicate(true)
-	if sch == SAVE_SCHEMA:
+	if sch >= SAVE_SCHEMA:
 		return {"ok": true, "state": state}
 	if sch != SAVE_SCHEMA_LEGACY:
 		return {"ok": false, "error": "no migration path for schema %d" % sch}
@@ -3017,10 +3175,10 @@ func _validate_agent_spatial_authority(state: Dictionary) -> String:
 		if home.is_empty():
 			return "agent %s has no authored home authority" % aid
 		if typeof(ag.get("home_space")) != TYPE_STRING \
-				or String(ag.get("home_space", "")) != String(home.get("space", "")):
+				or String(ag.get("home_space", "")) != String(home.get("home_space", home.get("space", ""))):
 			return "agent %s home_space authority diverges from authored identity" % aid
 		if typeof(ag.get("home_floor")) != TYPE_STRING \
-				or String(ag.get("home_floor", "")) != String(home.get("floor", "")):
+				or String(ag.get("home_floor", "")) != String(home.get("home_floor", home.get("floor", ""))):
 			return "agent %s home_floor authority diverges from authored identity" % aid
 		for key in ["space", "floor", "area", "room"]:
 			if typeof(ag.get(key)) != TYPE_STRING:
@@ -3084,7 +3242,7 @@ func _validate_loaded_state(state: Dictionary, sch: int) -> String:
 			return "state key %s has type %d, expected %d" % [key, typeof(incoming), typeof(live)]
 		if typeof(live) == TYPE_NIL and typeof(incoming) != TYPE_NIL:
 			return "runtime handle %s is not null" % key
-	if sch == SAVE_SCHEMA:
+	if sch >= SAVE_SCHEMA:
 		var expected := _current_save_state_keys()
 		for key in expected:
 			if not state.has(key):
@@ -3116,7 +3274,7 @@ func _validate_loaded_state(state: Dictionary, sch: int) -> String:
 			eligible_core += 1
 	if core <= 0 or core != eligible_core:
 		return "core_population %d does not equal eligible core %d" % [core, eligible_core]
-	if sch == SAVE_SCHEMA:
+	if sch >= SAVE_SCHEMA:
 		var spatial_error := _validate_agent_spatial_authority(state)
 		if spatial_error != "":
 			return spatial_error
@@ -3868,7 +4026,8 @@ func _journey_candidates(ag: Dictionary) -> Array:
 					#   人留在关门的馆子里干站、饿到触底才走（实测 yong seed 24，#01 硬红）。
 					if adv is Dictionary and _adv_open(ag, adv) and _staff_ok(ag, o):
 						var n := String(adv.get("need", ""))
-						if not (n in _home_needs(ag) and aspace != home_space):   # 镇上的床/游戏机不算覆盖【居民】的 energy/fun
+						var object_home_space := String(o.get("home_space", o.get("space", "town")))
+						if not (n in _home_needs(ag) and object_home_space != home_space): # home-bound actions must belong to this dwelling
 							covered[n] = true
 		# docs/201：social 原本整个跳过（楼里有人就能聊，不必为它出门）。可楼里只剩自己时就没有任何出路——
 		#   实测 ben 一个人留在小馆里，没有候选、干站着，social 从 6 掉到 0（#01 硬红）。
@@ -3908,8 +4067,9 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 			continue
 		if not _staff_ok(ag, o):                                # 顾客的进店行程不冲吧台(员工专属)→ 锁定公共桌"喝咖啡"
 			continue
-		if nid in _home_needs(ag) and home_space != "town" and os != home_space \
-				and not _mayor_duty_at_object_open(ag, o):             # 当选镇长的值班是明确的公务例外
+		if nid in _home_needs(ag) and home_space != "town" \
+				and String(o.get("home_space", os)) != home_space \
+				and not _mayor_duty_at_object_open(ag, o): # mayor duty is the explicit public-service exception
 			continue
 		var amt := 0; var dur := 0; var act := ""; var best_adv: Dictionary = {}   # docs/209：供 _company_pull
 		for adv in _as_arr(o.get("advertises", [])):
@@ -3967,7 +4127,7 @@ func _home_needs(ag: Dictionary) -> Array:
 ## 员工专属对象门：staff 对象(阿丽的吧台)只有该店主人(home_space==对象 Space)能用；顾客/外人不枚举它。
 ## 非 staff 对象恒真 → town 全员 + 所有旧对象逐字节不变。
 func _staff_ok(ag: Dictionary, o: Dictionary) -> bool:
-	return not bool(o.get("staff", false)) or String(ag.get("home_space", "town")) == String(o.get("space", "town"))
+	return not bool(o.get("staff", false)) or String(ag.get("home_space", "town")) == String(o.get("home_space", o.get("space", "town")))
 
 ## 家绑定的 fun 通常不允许跨 Space；镇长值班广告是唯一由公职授权的例外。
 func _mayor_duty_at_object_open(ag: Dictionary, o: Dictionary) -> bool:
@@ -4387,7 +4547,7 @@ func _object_candidates(ag: Dictionary) -> Array:
 			# → 在镇上 energy/fun"无满足"→ _journey_candidates 发起【回咖啡馆】的承诺行程。按 SPACE 判(非 floor：否则
 			# 楼上床/楼下吧台互相排除)。town 居民 home=town → 恒 false → 逐字节不变。
 			if need_id in _home_needs(ag) and String(ag.get("home_space", "town")) != "town" \
-					and String(ag.get("space", "town")) != String(ag.get("home_space", "town")) \
+					and String(o.get("home_space", o.get("space", "town"))) != String(ag.get("home_space", "town")) \
 					and not bool(adv.get("mayor_duty", false)):
 				continue
 			var action := String(adv.get("action", ""))
@@ -8466,7 +8626,7 @@ func _v2i(a) -> Vector2i:
 	return Vector2i(int(arr[0]), int(arr[1])) if arr.size() >= 2 else Vector2i.ZERO
 
 ## 从 (space,floor) 出发能走的 portal（含双向反向边）：[{from_pos(本层格),to_space,to_floor,to_pos,cost}]。spaces.json 顺序=确定序。
-## access="owner" 的 portal（如咖啡馆私人楼梯）只有【该室内的主人】(home_space==该 Space)能走 → 顾客进不了阿丽的 2F 私宅。
+## access="owner" 的 portal（如咖啡馆私人楼梯）只有该主人的 home_space 能走；access="staff" 必须匹配显式 job title 列表。
 ## ag 缺省(空)=不设访问门(渲染/校验用)；带 ag 走访问门(导航/决策用)。
 func _portals_from(space: String, floor: String, ag: Dictionary = {}) -> Array:
 	var out: Array = []
@@ -8476,13 +8636,19 @@ func _portals_from(space: String, floor: String, ag: Dictionary = {}) -> Array:
 		var fr: Dictionary = p.get("from", {})
 		var to: Dictionary = p.get("to", {})
 		var access := String(p.get("access", ""))
-		if access != "public" and access != "owner":
+		if access != "public" and access != "owner" and access != "staff":
 			continue                              # 未知/缺 access 永不默认 public
 		if access == "owner" and not ag.is_empty():
 			var authored_home: Dictionary = _authored_agent_homes.get(String(ag.get("id", "")), {})
 			var guest_cafe := String(p.get("id", "")) == "p_cafe_stairs" and String(ag.get("id", "")) == "player" and _cafe_guest_capability_valid()
-			if not guest_cafe and (String(p.get("owner_space", "")) == "" or String(authored_home.get("space", "")) != String(p.get("owner_space", ""))):
+			var authored_home_space := String(authored_home.get("home_space", authored_home.get("space", "")))
+			if not guest_cafe and (String(p.get("owner_space", "")) == "" or authored_home_space != String(p.get("owner_space", ""))):
 				continue                    # 非主人 → 私有 portal(楼梯)走不了
+		if access == "staff" and not ag.is_empty():
+			var staff_titles: Array = p.get("staff_titles", [])
+			var job_title := String(_job_of(String(ag.get("id", ""))).get("title", ""))
+			if job_title == "" or not staff_titles.has(job_title):
+				continue                    # 未配置/不匹配的 staff portal fail-closed
 		if String(fr.get("space", "")) == space and String(fr.get("floor", "")) == floor:
 			out.append({"portal_id": String(p.get("id", "")), "kind": String(p.get("kind", "")), "access": String(p.get("access", "public")),
 				"from_pos": _v2i(fr.get("pos")), "to_space": String(to.get("space", "")), "to_floor": String(to.get("floor", "")),

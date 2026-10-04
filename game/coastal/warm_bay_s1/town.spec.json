@@ -1,0 +1,3191 @@
+{
+  "schema": "living-town.coastal/1",
+  "id": "warm_bay_S1",
+  "title": "Warm Bay — S1 neighborhood",
+  "generator_version": "coast-compiler/1",
+  "seed": 240927,
+  "extent_cells": [
+    128,
+    128
+  ],
+  "pixels_per_cell": 48,
+  "resident_preview_count": 8,
+  "profiles": {
+    "physical_geo_ref": "sandy_bay/1",
+    "architecture_style_ref": "warm_modern/1",
+    "lighting_climate_ref": "late_afternoon_clear/1",
+    "water_policy_ref": "F0_frozen_walkability/1",
+    "water_mode": "decorative_frozen_envelope"
+  },
+  "shoreline": {
+    "sea_side": "east",
+    "control_spacing_cells": 32,
+    "bands": [
+      {
+        "z": 0,
+        "dune_edge_x": 94
+      },
+      {
+        "z": 32,
+        "dune_edge_x": 96
+      },
+      {
+        "z": 64,
+        "dune_edge_x": 94
+      },
+      {
+        "z": 96,
+        "dune_edge_x": 97
+      },
+      {
+        "z": 128,
+        "dune_edge_x": 95
+      }
+    ],
+    "offsets_cells": {
+      "dune_toe": 7,
+      "high_water": 16,
+      "outer_intertidal": 22
+    },
+    "walkable_bands": [
+      "inland",
+      "dry_beach_path"
+    ],
+    "crossing_ids": [
+      "P56_A56",
+      "P112_A112"
+    ]
+  },
+  "district_styles": [
+    {
+      "id": "D1_sheltered_living",
+      "palette": "limewash_sage_terracotta",
+      "roof_family": "slate_and_clay",
+      "exposure": "sheltered"
+    },
+    {
+      "id": "D2_civic_frontage",
+      "palette": "chalk_stone_sea_blue",
+      "roof_family": "low_pitch_mix",
+      "exposure": "mixed"
+    },
+    {
+      "id": "D3_working_yards",
+      "palette": "weathered_plaster_oak",
+      "roof_family": "standing_seam",
+      "exposure": "sheltered"
+    },
+    {
+      "id": "D4_beach_approach",
+      "palette": "sand_oak_sage",
+      "roof_family": "light_canopy",
+      "exposure": "exposed"
+    }
+  ],
+  "road_nodes": [
+    {
+      "id": "R01",
+      "at": [
+        4,
+        24
+      ]
+    },
+    {
+      "id": "R02",
+      "at": [
+        28,
+        24
+      ]
+    },
+    {
+      "id": "R03",
+      "at": [
+        56,
+        24
+      ]
+    },
+    {
+      "id": "R04",
+      "at": [
+        84,
+        24
+      ]
+    },
+    {
+      "id": "R05",
+      "at": [
+        4,
+        60
+      ]
+    },
+    {
+      "id": "R06",
+      "at": [
+        28,
+        60
+      ]
+    },
+    {
+      "id": "R07",
+      "at": [
+        56,
+        60
+      ]
+    },
+    {
+      "id": "R08",
+      "at": [
+        84,
+        60
+      ]
+    },
+    {
+      "id": "R09",
+      "at": [
+        4,
+        96
+      ]
+    },
+    {
+      "id": "R10",
+      "at": [
+        28,
+        96
+      ]
+    },
+    {
+      "id": "R11",
+      "at": [
+        56,
+        96
+      ]
+    },
+    {
+      "id": "R12",
+      "at": [
+        84,
+        96
+      ]
+    },
+    {
+      "id": "R13",
+      "at": [
+        4,
+        124
+      ]
+    },
+    {
+      "id": "R14",
+      "at": [
+        28,
+        124
+      ]
+    },
+    {
+      "id": "R15",
+      "at": [
+        56,
+        124
+      ]
+    },
+    {
+      "id": "R16",
+      "at": [
+        84,
+        124
+      ]
+    },
+    {
+      "id": "A56",
+      "at": [
+        103,
+        60
+      ]
+    },
+    {
+      "id": "A112",
+      "at": [
+        103,
+        112
+      ]
+    }
+  ],
+  "roads": [
+    {
+      "id": "H01",
+      "from": "R01",
+      "to": "R02",
+      "class": "main",
+      "width_cells": 6
+    },
+    {
+      "id": "H02",
+      "from": "R02",
+      "to": "R03",
+      "class": "main",
+      "width_cells": 6
+    },
+    {
+      "id": "H03",
+      "from": "R03",
+      "to": "R04",
+      "class": "main",
+      "width_cells": 6
+    },
+    {
+      "id": "H04",
+      "from": "R05",
+      "to": "R06",
+      "class": "main",
+      "width_cells": 6
+    },
+    {
+      "id": "H05",
+      "from": "R06",
+      "to": "R07",
+      "class": "main",
+      "width_cells": 6
+    },
+    {
+      "id": "H06",
+      "from": "R07",
+      "to": "R08",
+      "class": "main",
+      "width_cells": 6
+    },
+    {
+      "id": "H07",
+      "from": "R09",
+      "to": "R10",
+      "class": "main",
+      "width_cells": 6
+    },
+    {
+      "id": "H08",
+      "from": "R10",
+      "to": "R11",
+      "class": "main",
+      "width_cells": 6
+    },
+    {
+      "id": "H09",
+      "from": "R11",
+      "to": "R12",
+      "class": "main",
+      "width_cells": 6
+    },
+    {
+      "id": "H10",
+      "from": "R13",
+      "to": "R14",
+      "class": "local",
+      "width_cells": 4
+    },
+    {
+      "id": "H11",
+      "from": "R14",
+      "to": "R15",
+      "class": "local",
+      "width_cells": 4
+    },
+    {
+      "id": "H12",
+      "from": "R15",
+      "to": "R16",
+      "class": "local",
+      "width_cells": 4
+    },
+    {
+      "id": "V01",
+      "from": "R01",
+      "to": "R05",
+      "class": "local",
+      "width_cells": 4
+    },
+    {
+      "id": "V02",
+      "from": "R02",
+      "to": "R06",
+      "class": "local",
+      "width_cells": 4
+    },
+    {
+      "id": "V04",
+      "from": "R04",
+      "to": "R08",
+      "class": "promenade",
+      "width_cells": 3
+    },
+    {
+      "id": "V05",
+      "from": "R06",
+      "to": "R10",
+      "class": "local",
+      "width_cells": 4
+    },
+    {
+      "id": "V07",
+      "from": "R08",
+      "to": "R12",
+      "class": "promenade",
+      "width_cells": 3
+    },
+    {
+      "id": "V08",
+      "from": "R09",
+      "to": "R13",
+      "class": "local",
+      "width_cells": 4
+    },
+    {
+      "id": "V09",
+      "from": "R12",
+      "to": "R16",
+      "class": "promenade",
+      "width_cells": 3
+    },
+    {
+      "id": "P56_A56",
+      "from": "R08",
+      "to": "A56",
+      "class": "beach_crossing",
+      "width_cells": 2,
+      "crossing_id": "P56_A56",
+      "via": [
+        [
+          84,
+          60
+        ],
+        [
+          92,
+          60
+        ],
+        [
+          103,
+          60
+        ]
+      ]
+    },
+    {
+      "id": "P112_A112",
+      "from": "R12",
+      "to": "A112",
+      "class": "beach_crossing",
+      "width_cells": 2,
+      "crossing_id": "P112_A112",
+      "via": [
+        [
+          84,
+          96
+        ],
+        [
+          84,
+          112
+        ],
+        [
+          92,
+          112
+        ],
+        [
+          103,
+          112
+        ]
+      ]
+    }
+  ],
+  "buildings": [
+    {
+      "id": "B01",
+      "type": "veranda_home",
+      "shape": "rectangle",
+      "district": "D1_sheltered_living",
+      "box": [
+        7,
+        9,
+        8,
+        10
+      ],
+      "segments": [
+        {
+          "id": "main",
+          "rect": [
+            7,
+            9,
+            8,
+            10
+          ]
+        }
+      ],
+      "entry": {
+        "at": [
+          11,
+          18
+        ],
+        "facing": "south",
+        "road": "H01",
+        "access_path": [
+          [
+            11.5,
+            19.0
+          ],
+          [
+            11.5,
+            24.0
+          ]
+        ],
+        "access_width_cells": 1.5
+      },
+      "rooms": [
+        "common",
+        "sleeping",
+        "service"
+      ],
+      "slots": {
+        "sleep": 2
+      },
+      "appearance": {
+        "family": "D1_sheltered_living",
+        "segments": [
+          {
+            "id": "main",
+            "module_id": "roof/limewash_clay",
+            "rotation": 0
+          }
+        ]
+      },
+      "interior": {
+        "entry_room": "common",
+        "rooms": [
+          {
+            "id": "common",
+            "role": "common",
+            "bounds_q": [
+              0,
+              240,
+              384,
+              240
+            ],
+            "access_policy": "public"
+          },
+          {
+            "id": "sleeping",
+            "role": "sleeping",
+            "bounds_q": [
+              0,
+              0,
+              240,
+              240
+            ],
+            "access_policy": "authorized"
+          },
+          {
+            "id": "service",
+            "role": "service",
+            "bounds_q": [
+              240,
+              0,
+              144,
+              240
+            ],
+            "access_policy": "authorized"
+          }
+        ],
+        "doors": [
+          {
+            "id": "B01.common_sleep",
+            "from_room": "common",
+            "to_room": "sleeping",
+            "at_q": [
+              192,
+              240
+            ],
+            "clear_width_q": 48,
+            "access_policy": "resident_or_staff"
+          },
+          {
+            "id": "B01.sleep_service",
+            "from_room": "sleeping",
+            "to_room": "service",
+            "at_q": [
+              240,
+              96
+            ],
+            "clear_width_q": 48,
+            "access_policy": "resident_or_staff"
+          }
+        ],
+        "slots": [
+          {
+            "id": "B01.sleep.01",
+            "action": "sleep",
+            "room": "sleeping",
+            "at_q": [
+              72,
+              72
+            ],
+            "approach_q": [
+              72,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "authorized",
+            "duration_policy": "sleep_default_duration/1"
+          },
+          {
+            "id": "B01.sleep.02",
+            "action": "sleep",
+            "room": "sleeping",
+            "at_q": [
+              120,
+              72
+            ],
+            "approach_q": [
+              120,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "authorized",
+            "duration_policy": "sleep_default_duration/1"
+          }
+        ],
+        "entry_clear_width_q": 48,
+        "entry_at_q": [
+          216,
+          456
+        ]
+      }
+    },
+    {
+      "id": "B02",
+      "type": "courtyard_home",
+      "shape": "L",
+      "district": "D1_sheltered_living",
+      "box": [
+        34,
+        8,
+        11,
+        12
+      ],
+      "segments": [
+        {
+          "id": "main",
+          "rect": [
+            34,
+            8,
+            11,
+            6
+          ]
+        },
+        {
+          "id": "sleep_wing",
+          "rect": [
+            34,
+            14,
+            6,
+            6
+          ]
+        }
+      ],
+      "entry": {
+        "at": [
+          37,
+          19
+        ],
+        "facing": "south",
+        "road": "H02",
+        "access_path": [
+          [
+            37.5,
+            20.0
+          ],
+          [
+            37.5,
+            24.0
+          ]
+        ],
+        "access_width_cells": 1.5
+      },
+      "rooms": [
+        "common",
+        "sleeping",
+        "service"
+      ],
+      "slots": {
+        "sleep": 2
+      },
+      "appearance": {
+        "family": "D1_sheltered_living",
+        "segments": [
+          {
+            "id": "main",
+            "module_id": "roof/limewash_clay",
+            "rotation": 0
+          },
+          {
+            "id": "sleep_wing",
+            "module_id": "roof/limewash_clay",
+            "rotation": 0
+          }
+        ]
+      },
+      "interior": {
+        "entry_room": "sleeping",
+        "rooms": [
+          {
+            "id": "common",
+            "role": "common",
+            "bounds_q": [
+              0,
+              0,
+              288,
+              288
+            ],
+            "access_policy": "public"
+          },
+          {
+            "id": "service",
+            "role": "service",
+            "bounds_q": [
+              288,
+              0,
+              240,
+              288
+            ],
+            "access_policy": "authorized"
+          },
+          {
+            "id": "sleeping",
+            "role": "sleeping",
+            "bounds_q": [
+              0,
+              288,
+              288,
+              288
+            ],
+            "access_policy": "authorized"
+          }
+        ],
+        "doors": [
+          {
+            "id": "B02.common_sleep",
+            "from_room": "common",
+            "to_room": "sleeping",
+            "at_q": [
+              144,
+              288
+            ],
+            "clear_width_q": 48,
+            "access_policy": "resident_or_staff"
+          },
+          {
+            "id": "B02.common_service",
+            "from_room": "common",
+            "to_room": "service",
+            "at_q": [
+              288,
+              144
+            ],
+            "clear_width_q": 48,
+            "access_policy": "resident_or_staff"
+          }
+        ],
+        "slots": [
+          {
+            "id": "B02.sleep.01",
+            "action": "sleep",
+            "room": "sleeping",
+            "at_q": [
+              72,
+              360
+            ],
+            "approach_q": [
+              72,
+              360
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "authorized",
+            "duration_policy": "sleep_default_duration/1"
+          },
+          {
+            "id": "B02.sleep.02",
+            "action": "sleep",
+            "room": "sleeping",
+            "at_q": [
+              120,
+              360
+            ],
+            "approach_q": [
+              120,
+              360
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "authorized",
+            "duration_policy": "sleep_default_duration/1"
+          }
+        ],
+        "entry_clear_width_q": 48,
+        "entry_at_q": [
+          168,
+          552
+        ]
+      }
+    },
+    {
+      "id": "B03",
+      "type": "veranda_home",
+      "shape": "rectangle",
+      "district": "D1_sheltered_living",
+      "box": [
+        6,
+        67,
+        9,
+        12
+      ],
+      "segments": [
+        {
+          "id": "main",
+          "rect": [
+            6,
+            67,
+            9,
+            12
+          ]
+        }
+      ],
+      "entry": {
+        "at": [
+          10,
+          78
+        ],
+        "facing": "south",
+        "road": "H04",
+        "access_path": [
+          [
+            10.5,
+            79.0
+          ],
+          [
+            10.5,
+            60.0
+          ]
+        ],
+        "access_width_cells": 1.5
+      },
+      "rooms": [
+        "common",
+        "sleeping",
+        "service"
+      ],
+      "slots": {
+        "sleep": 2
+      },
+      "appearance": {
+        "family": "D1_sheltered_living",
+        "segments": [
+          {
+            "id": "main",
+            "module_id": "roof/limewash_clay",
+            "rotation": 0
+          }
+        ]
+      },
+      "interior": {
+        "entry_room": "common",
+        "rooms": [
+          {
+            "id": "common",
+            "role": "common",
+            "bounds_q": [
+              0,
+              288,
+              432,
+              288
+            ],
+            "access_policy": "public"
+          },
+          {
+            "id": "sleeping",
+            "role": "sleeping",
+            "bounds_q": [
+              0,
+              0,
+              240,
+              288
+            ],
+            "access_policy": "authorized"
+          },
+          {
+            "id": "service",
+            "role": "service",
+            "bounds_q": [
+              240,
+              0,
+              192,
+              288
+            ],
+            "access_policy": "authorized"
+          }
+        ],
+        "doors": [
+          {
+            "id": "B03.common_sleep",
+            "from_room": "common",
+            "to_room": "sleeping",
+            "at_q": [
+              144,
+              288
+            ],
+            "clear_width_q": 48,
+            "access_policy": "resident_or_staff"
+          },
+          {
+            "id": "B03.sleep_service",
+            "from_room": "sleeping",
+            "to_room": "service",
+            "at_q": [
+              240,
+              144
+            ],
+            "clear_width_q": 48,
+            "access_policy": "resident_or_staff"
+          }
+        ],
+        "slots": [
+          {
+            "id": "B03.sleep.01",
+            "action": "sleep",
+            "room": "sleeping",
+            "at_q": [
+              72,
+              72
+            ],
+            "approach_q": [
+              72,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "authorized",
+            "duration_policy": "sleep_default_duration/1"
+          },
+          {
+            "id": "B03.sleep.02",
+            "action": "sleep",
+            "room": "sleeping",
+            "at_q": [
+              120,
+              72
+            ],
+            "approach_q": [
+              120,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "authorized",
+            "duration_policy": "sleep_default_duration/1"
+          }
+        ],
+        "entry_clear_width_q": 48,
+        "entry_at_q": [
+          216,
+          552
+        ]
+      }
+    },
+    {
+      "id": "B04",
+      "type": "courtyard_home",
+      "shape": "L",
+      "district": "D1_sheltered_living",
+      "box": [
+        34,
+        74,
+        11,
+        12
+      ],
+      "segments": [
+        {
+          "id": "main",
+          "rect": [
+            34,
+            74,
+            11,
+            6
+          ]
+        },
+        {
+          "id": "sleep_wing",
+          "rect": [
+            39,
+            80,
+            6,
+            6
+          ]
+        }
+      ],
+      "entry": {
+        "at": [
+          42,
+          85
+        ],
+        "facing": "south",
+        "road": "H08",
+        "access_path": [
+          [
+            42.5,
+            86.0
+          ],
+          [
+            42.5,
+            96.0
+          ]
+        ],
+        "access_width_cells": 1.5
+      },
+      "rooms": [
+        "common",
+        "sleeping",
+        "service"
+      ],
+      "slots": {
+        "sleep": 2
+      },
+      "appearance": {
+        "family": "D1_sheltered_living",
+        "segments": [
+          {
+            "id": "main",
+            "module_id": "roof/limewash_clay",
+            "rotation": 0
+          },
+          {
+            "id": "sleep_wing",
+            "module_id": "roof/limewash_clay",
+            "rotation": 0
+          }
+        ]
+      },
+      "interior": {
+        "entry_room": "sleeping",
+        "rooms": [
+          {
+            "id": "common",
+            "role": "common",
+            "bounds_q": [
+              0,
+              0,
+              336,
+              288
+            ],
+            "access_policy": "public"
+          },
+          {
+            "id": "service",
+            "role": "service",
+            "bounds_q": [
+              336,
+              0,
+              192,
+              288
+            ],
+            "access_policy": "authorized"
+          },
+          {
+            "id": "sleeping",
+            "role": "sleeping",
+            "bounds_q": [
+              240,
+              288,
+              288,
+              288
+            ],
+            "access_policy": "authorized"
+          }
+        ],
+        "doors": [
+          {
+            "id": "B04.common_service",
+            "from_room": "common",
+            "to_room": "service",
+            "at_q": [
+              336,
+              144
+            ],
+            "clear_width_q": 48,
+            "access_policy": "resident_or_staff"
+          },
+          {
+            "id": "B04.common_sleep",
+            "from_room": "common",
+            "to_room": "sleeping",
+            "at_q": [
+              288,
+              288
+            ],
+            "clear_width_q": 48,
+            "access_policy": "resident_or_staff"
+          }
+        ],
+        "slots": [
+          {
+            "id": "B04.sleep.01",
+            "action": "sleep",
+            "room": "sleeping",
+            "at_q": [
+              312,
+              360
+            ],
+            "approach_q": [
+              312,
+              360
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "authorized",
+            "duration_policy": "sleep_default_duration/1"
+          },
+          {
+            "id": "B04.sleep.02",
+            "action": "sleep",
+            "room": "sleeping",
+            "at_q": [
+              360,
+              360
+            ],
+            "approach_q": [
+              360,
+              360
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "authorized",
+            "duration_policy": "sleep_default_duration/1"
+          }
+        ],
+        "entry_clear_width_q": 48,
+        "entry_at_q": [
+          408,
+          552
+        ]
+      }
+    },
+    {
+      "id": "B05",
+      "type": "promenade_cafe",
+      "shape": "L",
+      "district": "D2_civic_frontage",
+      "box": [
+        66,
+        65,
+        12,
+        16
+      ],
+      "segments": [
+        {
+          "id": "main",
+          "rect": [
+            66,
+            65,
+            12,
+            8
+          ]
+        },
+        {
+          "id": "service_wing",
+          "rect": [
+            66,
+            73,
+            6,
+            8
+          ]
+        }
+      ],
+      "entry": {
+        "at": [
+          77,
+          68
+        ],
+        "facing": "east",
+        "road": "V07",
+        "access_path": [
+          [
+            78.0,
+            68.5
+          ],
+          [
+            84.0,
+            68.5
+          ]
+        ],
+        "access_width_cells": 1.5
+      },
+      "rooms": [
+        "public_hall",
+        "prep",
+        "storage"
+      ],
+      "slots": {
+        "seat": 6
+      },
+      "appearance": {
+        "family": "D2_civic_frontage",
+        "segments": [
+          {
+            "id": "main",
+            "module_id": "roof/civic_slate",
+            "rotation": 0
+          },
+          {
+            "id": "service_wing",
+            "module_id": "roof/civic_slate",
+            "rotation": 0
+          }
+        ]
+      },
+      "interior": {
+        "entry_room": "public_hall",
+        "rooms": [
+          {
+            "id": "public_hall",
+            "role": "public_hall",
+            "bounds_q": [
+              0,
+              0,
+              576,
+              384
+            ],
+            "access_policy": "public"
+          },
+          {
+            "id": "prep",
+            "role": "prep",
+            "bounds_q": [
+              0,
+              384,
+              288,
+              192
+            ],
+            "access_policy": "public"
+          },
+          {
+            "id": "storage",
+            "role": "storage",
+            "bounds_q": [
+              0,
+              576,
+              288,
+              192
+            ],
+            "access_policy": "authorized"
+          }
+        ],
+        "doors": [
+          {
+            "id": "B05.hall_prep",
+            "from_room": "public_hall",
+            "to_room": "prep",
+            "at_q": [
+              144,
+              384
+            ],
+            "clear_width_q": 48,
+            "access_policy": "public"
+          },
+          {
+            "id": "B05.prep_storage",
+            "from_room": "prep",
+            "to_room": "storage",
+            "at_q": [
+              144,
+              576
+            ],
+            "clear_width_q": 48,
+            "access_policy": "public"
+          }
+        ],
+        "slots": [
+          {
+            "id": "B05.seat.01",
+            "action": "seat",
+            "room": "public_hall",
+            "at_q": [
+              72,
+              72
+            ],
+            "approach_q": [
+              72,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "seat_default_duration/1"
+          },
+          {
+            "id": "B05.seat.02",
+            "action": "seat",
+            "room": "public_hall",
+            "at_q": [
+              120,
+              72
+            ],
+            "approach_q": [
+              120,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "seat_default_duration/1"
+          },
+          {
+            "id": "B05.seat.03",
+            "action": "seat",
+            "room": "public_hall",
+            "at_q": [
+              168,
+              72
+            ],
+            "approach_q": [
+              168,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "seat_default_duration/1"
+          },
+          {
+            "id": "B05.seat.04",
+            "action": "seat",
+            "room": "public_hall",
+            "at_q": [
+              216,
+              72
+            ],
+            "approach_q": [
+              216,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "seat_default_duration/1"
+          },
+          {
+            "id": "B05.seat.05",
+            "action": "seat",
+            "room": "public_hall",
+            "at_q": [
+              264,
+              72
+            ],
+            "approach_q": [
+              264,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "seat_default_duration/1"
+          },
+          {
+            "id": "B05.seat.06",
+            "action": "seat",
+            "room": "public_hall",
+            "at_q": [
+              312,
+              72
+            ],
+            "approach_q": [
+              312,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "seat_default_duration/1"
+          }
+        ],
+        "entry_clear_width_q": 48,
+        "entry_at_q": [
+          552,
+          168
+        ]
+      }
+    },
+    {
+      "id": "B06",
+      "type": "grocery",
+      "shape": "row",
+      "district": "D2_civic_frontage",
+      "box": [
+        66,
+        39,
+        12,
+        10
+      ],
+      "segments": [
+        {
+          "id": "main",
+          "rect": [
+            66,
+            39,
+            12,
+            10
+          ]
+        }
+      ],
+      "entry": {
+        "at": [
+          77,
+          43
+        ],
+        "facing": "east",
+        "road": "V04",
+        "access_path": [
+          [
+            78.0,
+            43.5
+          ],
+          [
+            84.0,
+            43.5
+          ]
+        ],
+        "access_width_cells": 1.5
+      },
+      "rooms": [
+        "shopfront",
+        "staff",
+        "storage"
+      ],
+      "slots": {
+        "queue": 3
+      },
+      "appearance": {
+        "family": "D2_civic_frontage",
+        "segments": [
+          {
+            "id": "main",
+            "module_id": "roof/civic_slate",
+            "rotation": 0
+          }
+        ]
+      },
+      "interior": {
+        "entry_room": "storage",
+        "rooms": [
+          {
+            "id": "shopfront",
+            "role": "shopfront",
+            "bounds_q": [
+              0,
+              0,
+              336,
+              480
+            ],
+            "access_policy": "public"
+          },
+          {
+            "id": "staff",
+            "role": "staff",
+            "bounds_q": [
+              336,
+              0,
+              96,
+              480
+            ],
+            "access_policy": "authorized"
+          },
+          {
+            "id": "storage",
+            "role": "storage",
+            "bounds_q": [
+              432,
+              0,
+              144,
+              480
+            ],
+            "access_policy": "authorized"
+          }
+        ],
+        "doors": [
+          {
+            "id": "B06.shop_staff",
+            "from_room": "shopfront",
+            "to_room": "staff",
+            "at_q": [
+              336,
+              240
+            ],
+            "clear_width_q": 48,
+            "access_policy": "public"
+          },
+          {
+            "id": "B06.staff_storage",
+            "from_room": "staff",
+            "to_room": "storage",
+            "at_q": [
+              432,
+              240
+            ],
+            "clear_width_q": 48,
+            "access_policy": "public"
+          }
+        ],
+        "slots": [
+          {
+            "id": "B06.queue.01",
+            "action": "queue",
+            "room": "shopfront",
+            "at_q": [
+              72,
+              72
+            ],
+            "approach_q": [
+              72,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "queue_default_duration/1"
+          },
+          {
+            "id": "B06.queue.02",
+            "action": "queue",
+            "room": "shopfront",
+            "at_q": [
+              120,
+              72
+            ],
+            "approach_q": [
+              120,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "queue_default_duration/1"
+          },
+          {
+            "id": "B06.queue.03",
+            "action": "queue",
+            "room": "shopfront",
+            "at_q": [
+              168,
+              72
+            ],
+            "approach_q": [
+              168,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "queue_default_duration/1"
+          }
+        ],
+        "entry_clear_width_q": 48,
+        "entry_at_q": [
+          552,
+          216
+        ]
+      }
+    },
+    {
+      "id": "B07",
+      "type": "library",
+      "shape": "rectangle",
+      "district": "D2_civic_frontage",
+      "box": [
+        33,
+        36,
+        14,
+        12
+      ],
+      "segments": [
+        {
+          "id": "main",
+          "rect": [
+            33,
+            36,
+            14,
+            12
+          ]
+        }
+      ],
+      "entry": {
+        "at": [
+          39,
+          47
+        ],
+        "facing": "south",
+        "road": "H05",
+        "access_path": [
+          [
+            39.5,
+            48.0
+          ],
+          [
+            39.5,
+            60.0
+          ]
+        ],
+        "access_width_cells": 1.5
+      },
+      "rooms": [
+        "common",
+        "reading",
+        "storage"
+      ],
+      "slots": {
+        "activity": 6
+      },
+      "appearance": {
+        "family": "D2_civic_frontage",
+        "segments": [
+          {
+            "id": "main",
+            "module_id": "roof/civic_slate",
+            "rotation": 0
+          }
+        ]
+      },
+      "interior": {
+        "entry_room": "common",
+        "rooms": [
+          {
+            "id": "common",
+            "role": "common",
+            "bounds_q": [
+              0,
+              288,
+              672,
+              288
+            ],
+            "access_policy": "public"
+          },
+          {
+            "id": "reading",
+            "role": "reading",
+            "bounds_q": [
+              0,
+              0,
+              480,
+              288
+            ],
+            "access_policy": "public"
+          },
+          {
+            "id": "storage",
+            "role": "storage",
+            "bounds_q": [
+              480,
+              0,
+              192,
+              288
+            ],
+            "access_policy": "authorized"
+          }
+        ],
+        "doors": [
+          {
+            "id": "B07.common_reading",
+            "from_room": "common",
+            "to_room": "reading",
+            "at_q": [
+              240,
+              288
+            ],
+            "clear_width_q": 48,
+            "access_policy": "public"
+          },
+          {
+            "id": "B07.reading_storage",
+            "from_room": "reading",
+            "to_room": "storage",
+            "at_q": [
+              480,
+              144
+            ],
+            "clear_width_q": 48,
+            "access_policy": "public"
+          }
+        ],
+        "slots": [
+          {
+            "id": "B07.activity.01",
+            "action": "activity",
+            "room": "reading",
+            "at_q": [
+              72,
+              72
+            ],
+            "approach_q": [
+              72,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "activity_default_duration/1"
+          },
+          {
+            "id": "B07.activity.02",
+            "action": "activity",
+            "room": "reading",
+            "at_q": [
+              120,
+              72
+            ],
+            "approach_q": [
+              120,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "activity_default_duration/1"
+          },
+          {
+            "id": "B07.activity.03",
+            "action": "activity",
+            "room": "reading",
+            "at_q": [
+              168,
+              72
+            ],
+            "approach_q": [
+              168,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "activity_default_duration/1"
+          },
+          {
+            "id": "B07.activity.04",
+            "action": "activity",
+            "room": "reading",
+            "at_q": [
+              216,
+              72
+            ],
+            "approach_q": [
+              216,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "activity_default_duration/1"
+          },
+          {
+            "id": "B07.activity.05",
+            "action": "activity",
+            "room": "reading",
+            "at_q": [
+              264,
+              72
+            ],
+            "approach_q": [
+              264,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "activity_default_duration/1"
+          },
+          {
+            "id": "B07.activity.06",
+            "action": "activity",
+            "room": "reading",
+            "at_q": [
+              312,
+              72
+            ],
+            "approach_q": [
+              312,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "activity_default_duration/1"
+          }
+        ],
+        "entry_clear_width_q": 48,
+        "entry_at_q": [
+          312,
+          552
+        ]
+      }
+    },
+    {
+      "id": "B08",
+      "type": "bathhouse",
+      "shape": "U",
+      "district": "D4_beach_approach",
+      "box": [
+        33,
+        104,
+        15,
+        16
+      ],
+      "segments": [
+        {
+          "id": "main",
+          "rect": [
+            33,
+            115,
+            15,
+            5
+          ]
+        },
+        {
+          "id": "left_wing",
+          "rect": [
+            33,
+            104,
+            5,
+            11
+          ]
+        },
+        {
+          "id": "right_wing",
+          "rect": [
+            43,
+            104,
+            5,
+            11
+          ]
+        }
+      ],
+      "entry": {
+        "at": [
+          40,
+          119
+        ],
+        "facing": "south",
+        "road": "H11",
+        "access_path": [
+          [
+            40.5,
+            120.0
+          ],
+          [
+            40.5,
+            124.0
+          ]
+        ],
+        "access_width_cells": 1.5
+      },
+      "rooms": [
+        "changing",
+        "bath",
+        "plant",
+        "court"
+      ],
+      "slots": {
+        "bath": 4
+      },
+      "readiness": "design_only_until_courtyard_gate",
+      "appearance": {
+        "family": "D4_beach_approach",
+        "segments": [
+          {
+            "id": "main",
+            "module_id": "roof/beach_canopy",
+            "rotation": 0
+          },
+          {
+            "id": "left_wing",
+            "module_id": "roof/beach_canopy",
+            "rotation": 0
+          },
+          {
+            "id": "right_wing",
+            "module_id": "roof/beach_canopy",
+            "rotation": 0
+          }
+        ]
+      },
+      "interior": {
+        "entry_room": "threshold",
+        "rooms": [
+          {
+            "id": "changing",
+            "role": "changing",
+            "bounds_q": [
+              0,
+              0,
+              240,
+              336
+            ],
+            "access_policy": "public"
+          },
+          {
+            "id": "bath",
+            "role": "bath",
+            "bounds_q": [
+              0,
+              336,
+              240,
+              192
+            ],
+            "access_policy": "public"
+          },
+          {
+            "id": "court",
+            "role": "court",
+            "bounds_q": [
+              240,
+              0,
+              240,
+              528
+            ],
+            "access_policy": "public",
+            "kind": "court"
+          },
+          {
+            "id": "plant",
+            "role": "plant",
+            "bounds_q": [
+              480,
+              0,
+              240,
+              528
+            ],
+            "access_policy": "authorized"
+          },
+          {
+            "id": "threshold",
+            "role": "threshold",
+            "bounds_q": [
+              240,
+              528,
+              240,
+              240
+            ],
+            "access_policy": "public"
+          },
+          {
+            "id": "entry_side",
+            "role": "changing",
+            "bounds_q": [
+              0,
+              528,
+              240,
+              240
+            ],
+            "access_policy": "public"
+          },
+          {
+            "id": "plant_side",
+            "role": "plant",
+            "bounds_q": [
+              480,
+              528,
+              240,
+              240
+            ],
+            "access_policy": "authorized"
+          }
+        ],
+        "doors": [
+          {
+            "id": "B08.court_changing",
+            "from_room": "court",
+            "to_room": "changing",
+            "at_q": [
+              240,
+              192
+            ],
+            "clear_width_q": 48,
+            "access_policy": "resident_or_staff"
+          },
+          {
+            "id": "B08.changing_bath",
+            "from_room": "changing",
+            "to_room": "bath",
+            "at_q": [
+              96,
+              336
+            ],
+            "clear_width_q": 48,
+            "access_policy": "resident_or_staff"
+          },
+          {
+            "id": "B08.court_plant",
+            "from_room": "court",
+            "to_room": "plant",
+            "at_q": [
+              480,
+              192
+            ],
+            "clear_width_q": 48,
+            "access_policy": "resident_or_staff"
+          },
+          {
+            "id": "B08.court_threshold",
+            "from_room": "court",
+            "to_room": "threshold",
+            "at_q": [
+              336,
+              528
+            ],
+            "clear_width_q": 48,
+            "access_policy": "resident_or_staff"
+          },
+          {
+            "id": "B08.threshold_changing",
+            "from_room": "threshold",
+            "to_room": "entry_side",
+            "at_q": [
+              240,
+              624
+            ],
+            "clear_width_q": 48,
+            "access_policy": "resident_or_staff"
+          },
+          {
+            "id": "B08.threshold_plant",
+            "from_room": "threshold",
+            "to_room": "plant_side",
+            "at_q": [
+              480,
+              624
+            ],
+            "clear_width_q": 48,
+            "access_policy": "resident_or_staff"
+          }
+        ],
+        "slots": [
+          {
+            "id": "B08.bath.01",
+            "action": "bath",
+            "room": "bath",
+            "at_q": [
+              72,
+              408
+            ],
+            "approach_q": [
+              72,
+              408
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "bath_default_duration/1"
+          },
+          {
+            "id": "B08.bath.02",
+            "action": "bath",
+            "room": "bath",
+            "at_q": [
+              120,
+              408
+            ],
+            "approach_q": [
+              120,
+              408
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "bath_default_duration/1"
+          },
+          {
+            "id": "B08.bath.03",
+            "action": "bath",
+            "room": "bath",
+            "at_q": [
+              168,
+              408
+            ],
+            "approach_q": [
+              168,
+              408
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "bath_default_duration/1"
+          },
+          {
+            "id": "B08.bath.04",
+            "action": "bath",
+            "room": "bath",
+            "at_q": [
+              72,
+              456
+            ],
+            "approach_q": [
+              72,
+              456
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "bath_default_duration/1"
+          }
+        ],
+        "entry_clear_width_q": 48,
+        "entry_at_q": [
+          360,
+          744
+        ]
+      }
+    },
+    {
+      "id": "B09",
+      "type": "repair_workshop",
+      "shape": "bar",
+      "district": "D3_working_yards",
+      "box": [
+        65,
+        8,
+        14,
+        13
+      ],
+      "segments": [
+        {
+          "id": "main",
+          "rect": [
+            65,
+            8,
+            14,
+            13
+          ]
+        }
+      ],
+      "entry": {
+        "at": [
+          71,
+          20
+        ],
+        "facing": "south",
+        "road": "H03",
+        "access_path": [
+          [
+            71.5,
+            21.0
+          ],
+          [
+            71.5,
+            24.0
+          ]
+        ],
+        "access_width_cells": 1.5
+      },
+      "rooms": [
+        "desk",
+        "repair_bay",
+        "storage"
+      ],
+      "slots": {
+        "work": 2
+      },
+      "appearance": {
+        "family": "D3_working_yards",
+        "segments": [
+          {
+            "id": "main",
+            "module_id": "roof/workshop_seam",
+            "rotation": 0
+          }
+        ]
+      },
+      "interior": {
+        "entry_room": "repair_bay",
+        "rooms": [
+          {
+            "id": "desk",
+            "role": "desk",
+            "bounds_q": [
+              0,
+              0,
+              240,
+              624
+            ],
+            "access_policy": "public"
+          },
+          {
+            "id": "repair_bay",
+            "role": "repair_bay",
+            "bounds_q": [
+              240,
+              0,
+              288,
+              624
+            ],
+            "access_policy": "public"
+          },
+          {
+            "id": "storage",
+            "role": "storage",
+            "bounds_q": [
+              528,
+              0,
+              144,
+              624
+            ],
+            "access_policy": "authorized"
+          }
+        ],
+        "doors": [
+          {
+            "id": "B09.desk_bay",
+            "from_room": "desk",
+            "to_room": "repair_bay",
+            "at_q": [
+              240,
+              288
+            ],
+            "clear_width_q": 48,
+            "access_policy": "public"
+          },
+          {
+            "id": "B09.bay_storage",
+            "from_room": "repair_bay",
+            "to_room": "storage",
+            "at_q": [
+              528,
+              288
+            ],
+            "clear_width_q": 48,
+            "access_policy": "public"
+          }
+        ],
+        "slots": [
+          {
+            "id": "B09.work.01",
+            "action": "work",
+            "room": "repair_bay",
+            "at_q": [
+              312,
+              72
+            ],
+            "approach_q": [
+              312,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "work_default_duration/1"
+          },
+          {
+            "id": "B09.work.02",
+            "action": "work",
+            "room": "repair_bay",
+            "at_q": [
+              360,
+              72
+            ],
+            "approach_q": [
+              360,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "work_default_duration/1"
+          }
+        ],
+        "entry_clear_width_q": 48,
+        "entry_at_q": [
+          312,
+          600
+        ]
+      }
+    },
+    {
+      "id": "B10",
+      "type": "storehouse",
+      "shape": "bar",
+      "district": "D3_working_yards",
+      "box": [
+        65,
+        104,
+        13,
+        16
+      ],
+      "segments": [
+        {
+          "id": "main",
+          "rect": [
+            65,
+            104,
+            13,
+            16
+          ]
+        }
+      ],
+      "entry": {
+        "at": [
+          70,
+          119
+        ],
+        "facing": "south",
+        "road": "H12",
+        "access_path": [
+          [
+            70.5,
+            120.0
+          ],
+          [
+            70.5,
+            124.0
+          ]
+        ],
+        "access_width_cells": 1.5
+      },
+      "rooms": [
+        "receiving",
+        "storage"
+      ],
+      "slots": {
+        "work": 1
+      },
+      "appearance": {
+        "family": "D3_working_yards",
+        "segments": [
+          {
+            "id": "main",
+            "module_id": "roof/workshop_seam",
+            "rotation": 0
+          }
+        ]
+      },
+      "interior": {
+        "entry_room": "receiving",
+        "rooms": [
+          {
+            "id": "receiving",
+            "role": "receiving",
+            "bounds_q": [
+              0,
+              480,
+              624,
+              288
+            ],
+            "access_policy": "public"
+          },
+          {
+            "id": "storage",
+            "role": "storage",
+            "bounds_q": [
+              0,
+              0,
+              624,
+              480
+            ],
+            "access_policy": "authorized"
+          }
+        ],
+        "doors": [
+          {
+            "id": "B10.receiving_storage",
+            "from_room": "receiving",
+            "to_room": "storage",
+            "at_q": [
+              288,
+              480
+            ],
+            "clear_width_q": 48,
+            "access_policy": "public"
+          }
+        ],
+        "slots": [
+          {
+            "id": "B10.work.01",
+            "action": "work",
+            "room": "receiving",
+            "at_q": [
+              72,
+              552
+            ],
+            "approach_q": [
+              72,
+              552
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "work_default_duration/1"
+          }
+        ],
+        "entry_clear_width_q": 48,
+        "entry_at_q": [
+          264,
+          744
+        ]
+      }
+    },
+    {
+      "id": "B11",
+      "type": "beach_kiosk",
+      "shape": "shallow_bar",
+      "district": "D4_beach_approach",
+      "box": [
+        66,
+        28,
+        9,
+        5
+      ],
+      "segments": [
+        {
+          "id": "main",
+          "rect": [
+            66,
+            28,
+            9,
+            5
+          ]
+        }
+      ],
+      "entry": {
+        "at": [
+          70,
+          32
+        ],
+        "facing": "south",
+        "road": "H03",
+        "access_path": [
+          [
+            70.5,
+            33.0
+          ],
+          [
+            70.5,
+            24.0
+          ]
+        ],
+        "access_width_cells": 1.5
+      },
+      "rooms": [
+        "counter",
+        "secure_store"
+      ],
+      "slots": {
+        "queue": 2
+      },
+      "appearance": {
+        "family": "D4_beach_approach",
+        "segments": [
+          {
+            "id": "main",
+            "module_id": "roof/beach_canopy",
+            "rotation": 0
+          }
+        ]
+      },
+      "interior": {
+        "entry_room": "counter",
+        "rooms": [
+          {
+            "id": "counter",
+            "role": "counter",
+            "bounds_q": [
+              0,
+              0,
+              240,
+              240
+            ],
+            "access_policy": "public"
+          },
+          {
+            "id": "secure_store",
+            "role": "secure_store",
+            "bounds_q": [
+              240,
+              0,
+              192,
+              240
+            ],
+            "access_policy": "authorized"
+          }
+        ],
+        "doors": [
+          {
+            "id": "B11.counter_store",
+            "from_room": "counter",
+            "to_room": "secure_store",
+            "at_q": [
+              240,
+              96
+            ],
+            "clear_width_q": 48,
+            "access_policy": "public"
+          }
+        ],
+        "slots": [
+          {
+            "id": "B11.queue.01",
+            "action": "queue",
+            "room": "counter",
+            "at_q": [
+              72,
+              72
+            ],
+            "approach_q": [
+              72,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "queue_default_duration/1"
+          },
+          {
+            "id": "B11.queue.02",
+            "action": "queue",
+            "room": "counter",
+            "at_q": [
+              120,
+              72
+            ],
+            "approach_q": [
+              120,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "queue_default_duration/1"
+          }
+        ],
+        "entry_clear_width_q": 48,
+        "entry_at_q": [
+          216,
+          216
+        ]
+      }
+    },
+    {
+      "id": "B12",
+      "type": "garden_pavilion",
+      "shape": "open",
+      "district": "D1_sheltered_living",
+      "box": [
+        6,
+        105,
+        10,
+        12
+      ],
+      "segments": [
+        {
+          "id": "roof",
+          "rect": [
+            6,
+            105,
+            10,
+            12
+          ]
+        }
+      ],
+      "entry": {
+        "at": [
+          10,
+          116
+        ],
+        "facing": "south",
+        "road": "H10",
+        "access_path": [
+          [
+            10.5,
+            117.0
+          ],
+          [
+            10.5,
+            124.0
+          ]
+        ],
+        "access_width_cells": 1.5
+      },
+      "rooms": [
+        "open_shared"
+      ],
+      "slots": {
+        "rest": 4
+      },
+      "appearance": {
+        "family": "D1_sheltered_living",
+        "segments": [
+          {
+            "id": "roof",
+            "module_id": "roof/limewash_clay",
+            "rotation": 0
+          }
+        ]
+      },
+      "interior": {
+        "entry_room": "open_shared",
+        "rooms": [
+          {
+            "id": "open_shared",
+            "role": "open_shared",
+            "bounds_q": [
+              0,
+              0,
+              480,
+              576
+            ],
+            "access_policy": "public"
+          }
+        ],
+        "doors": [],
+        "slots": [
+          {
+            "id": "B12.rest.01",
+            "action": "rest",
+            "room": "open_shared",
+            "at_q": [
+              72,
+              72
+            ],
+            "approach_q": [
+              72,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "rest_default_duration/1"
+          },
+          {
+            "id": "B12.rest.02",
+            "action": "rest",
+            "room": "open_shared",
+            "at_q": [
+              120,
+              72
+            ],
+            "approach_q": [
+              120,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "rest_default_duration/1"
+          },
+          {
+            "id": "B12.rest.03",
+            "action": "rest",
+            "room": "open_shared",
+            "at_q": [
+              168,
+              72
+            ],
+            "approach_q": [
+              168,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "rest_default_duration/1"
+          },
+          {
+            "id": "B12.rest.04",
+            "action": "rest",
+            "room": "open_shared",
+            "at_q": [
+              216,
+              72
+            ],
+            "approach_q": [
+              216,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "rest_default_duration/1"
+          }
+        ],
+        "entry_clear_width_q": 48,
+        "entry_at_q": [
+          216,
+          552
+        ]
+      }
+    },
+    {
+      "id": "B13",
+      "type": "community_room",
+      "shape": "rectangle",
+      "district": "D2_civic_frontage",
+      "box": [
+        6,
+        36,
+        10,
+        12
+      ],
+      "segments": [
+        {
+          "id": "main",
+          "rect": [
+            6,
+            36,
+            10,
+            12
+          ]
+        }
+      ],
+      "entry": {
+        "at": [
+          10,
+          47
+        ],
+        "facing": "south",
+        "road": "H04",
+        "access_path": [
+          [
+            10.5,
+            48.0
+          ],
+          [
+            10.5,
+            60.0
+          ]
+        ],
+        "access_width_cells": 1.5
+      },
+      "rooms": [
+        "common",
+        "meeting",
+        "storage"
+      ],
+      "slots": {
+        "activity": 6
+      },
+      "appearance": {
+        "family": "D2_civic_frontage",
+        "segments": [
+          {
+            "id": "main",
+            "module_id": "roof/civic_slate",
+            "rotation": 0
+          }
+        ]
+      },
+      "interior": {
+        "entry_room": "common",
+        "rooms": [
+          {
+            "id": "common",
+            "role": "common",
+            "bounds_q": [
+              0,
+              240,
+              480,
+              336
+            ],
+            "access_policy": "public"
+          },
+          {
+            "id": "meeting",
+            "role": "meeting",
+            "bounds_q": [
+              0,
+              0,
+              336,
+              240
+            ],
+            "access_policy": "public"
+          },
+          {
+            "id": "storage",
+            "role": "storage",
+            "bounds_q": [
+              336,
+              0,
+              144,
+              240
+            ],
+            "access_policy": "authorized"
+          }
+        ],
+        "doors": [
+          {
+            "id": "B13.common_meeting",
+            "from_room": "common",
+            "to_room": "meeting",
+            "at_q": [
+              240,
+              240
+            ],
+            "clear_width_q": 48,
+            "access_policy": "public"
+          },
+          {
+            "id": "B13.meeting_storage",
+            "from_room": "meeting",
+            "to_room": "storage",
+            "at_q": [
+              336,
+              96
+            ],
+            "clear_width_q": 48,
+            "access_policy": "public"
+          }
+        ],
+        "slots": [
+          {
+            "id": "B13.activity.01",
+            "action": "activity",
+            "room": "meeting",
+            "at_q": [
+              72,
+              72
+            ],
+            "approach_q": [
+              72,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "activity_default_duration/1"
+          },
+          {
+            "id": "B13.activity.02",
+            "action": "activity",
+            "room": "meeting",
+            "at_q": [
+              120,
+              72
+            ],
+            "approach_q": [
+              120,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "activity_default_duration/1"
+          },
+          {
+            "id": "B13.activity.03",
+            "action": "activity",
+            "room": "meeting",
+            "at_q": [
+              168,
+              72
+            ],
+            "approach_q": [
+              168,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "activity_default_duration/1"
+          },
+          {
+            "id": "B13.activity.04",
+            "action": "activity",
+            "room": "meeting",
+            "at_q": [
+              216,
+              72
+            ],
+            "approach_q": [
+              216,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "activity_default_duration/1"
+          },
+          {
+            "id": "B13.activity.05",
+            "action": "activity",
+            "room": "meeting",
+            "at_q": [
+              264,
+              72
+            ],
+            "approach_q": [
+              264,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "activity_default_duration/1"
+          },
+          {
+            "id": "B13.activity.06",
+            "action": "activity",
+            "room": "meeting",
+            "at_q": [
+              72,
+              120
+            ],
+            "approach_q": [
+              72,
+              120
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "activity_default_duration/1"
+          }
+        ],
+        "entry_clear_width_q": 48,
+        "entry_at_q": [
+          216,
+          552
+        ]
+      }
+    },
+    {
+      "id": "B14",
+      "type": "market_canopy",
+      "shape": "open",
+      "district": "D2_civic_frontage",
+      "box": [
+        66,
+        87,
+        10,
+        5
+      ],
+      "segments": [
+        {
+          "id": "roof",
+          "rect": [
+            66,
+            87,
+            10,
+            5
+          ]
+        }
+      ],
+      "entry": {
+        "at": [
+          70,
+          91
+        ],
+        "facing": "south",
+        "road": "H09",
+        "access_path": [
+          [
+            70.5,
+            92.0
+          ],
+          [
+            70.5,
+            96.0
+          ]
+        ],
+        "access_width_cells": 1.5
+      },
+      "rooms": [
+        "market_apron"
+      ],
+      "slots": {
+        "queue": 4
+      },
+      "appearance": {
+        "family": "D2_civic_frontage",
+        "segments": [
+          {
+            "id": "roof",
+            "module_id": "roof/civic_slate",
+            "rotation": 0
+          }
+        ]
+      },
+      "interior": {
+        "entry_room": "market_apron",
+        "rooms": [
+          {
+            "id": "market_apron",
+            "role": "market_apron",
+            "bounds_q": [
+              0,
+              0,
+              480,
+              240
+            ],
+            "access_policy": "public"
+          }
+        ],
+        "doors": [],
+        "slots": [
+          {
+            "id": "B14.queue.01",
+            "action": "queue",
+            "room": "market_apron",
+            "at_q": [
+              72,
+              72
+            ],
+            "approach_q": [
+              72,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "queue_default_duration/1"
+          },
+          {
+            "id": "B14.queue.02",
+            "action": "queue",
+            "room": "market_apron",
+            "at_q": [
+              120,
+              72
+            ],
+            "approach_q": [
+              120,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "queue_default_duration/1"
+          },
+          {
+            "id": "B14.queue.03",
+            "action": "queue",
+            "room": "market_apron",
+            "at_q": [
+              168,
+              72
+            ],
+            "approach_q": [
+              168,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "queue_default_duration/1"
+          },
+          {
+            "id": "B14.queue.04",
+            "action": "queue",
+            "room": "market_apron",
+            "at_q": [
+              216,
+              72
+            ],
+            "approach_q": [
+              216,
+              72
+            ],
+            "facing": "south",
+            "capacity": 1,
+            "clearance_q": [
+              48,
+              48
+            ],
+            "access_policy": "public",
+            "duration_policy": "queue_default_duration/1"
+          }
+        ],
+        "entry_clear_width_q": 48,
+        "entry_at_q": [
+          216,
+          216
+        ]
+      }
+    }
+  ]
+}

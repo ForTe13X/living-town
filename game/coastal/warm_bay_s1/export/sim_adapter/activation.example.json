@@ -1,0 +1,15 @@
+{
+  "schema": "living-town.coastal-activation/1",
+  "enabled": false,
+  "max_residents_per_home": 2,
+  "resident_assignments": [
+    {"agent_id": "aria", "building_id": "B01"},
+    {"agent_id": "ben", "building_id": "B01"},
+    {"agent_id": "coco", "building_id": "B02"},
+    {"agent_id": "dan", "building_id": "B02"},
+    {"agent_id": "evy", "building_id": "B03"},
+    {"agent_id": "lin", "building_id": "B03"},
+    {"agent_id": "hai", "building_id": "B04"},
+    {"agent_id": "tie", "building_id": "B04"}
+  ]
+}

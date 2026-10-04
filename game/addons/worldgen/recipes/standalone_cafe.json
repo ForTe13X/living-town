@@ -1,0 +1,12 @@
+{
+  "schema": "worldgen.recipe/1",
+  "id": "standalone_cafe_s0",
+  "source_revision": 1,
+  "coordinate_frame": {"id": "plan_xz_q48/1", "q_per_cell": 48, "pixels_per_cell": 48},
+  "capabilities": {"flat_ground": true, "portals": true, "presentation_profiles": ["code_only_2d"]},
+  "stages": [{"id": "cafe_program", "operator": "worldgen.interior_program/1", "inputs": {}, "parameters": {
+    "building_id":"cafe_s0", "extent_cells":[12,16], "seat_count":4, "staff_station_count":1,
+    "style_ref":"promenade_cafe/1", "roof_profile":"flat_parapet/1"
+  }}],
+  "outputs": {"semantic": "cafe_program.semantic", "presentation": "cafe_program.presentation"}
+}
