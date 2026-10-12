@@ -535,7 +535,7 @@ func run_route() -> void:
 		await click(view.canonical_to_screen(Vector2(chosen) * 48 + Vector2(24, 24)))
 		await close_menu()
 		await wait_walk(at(267))
-		ck("actual_screen_input_street_walk", Sim.get_agent("aria")["pos"] != origin, {"start": str(origin), "end": str(Sim.get_agent("aria")["pos"])})
+		ck("actual_screen_input_street_walk", chosen != origin and Sim.get_agent("aria")["pos"] == chosen, {"start": str(origin), "requested": str(chosen), "end": str(Sim.get_agent("aria")["pos"])})
 	await close_menu()
 	await key(KEY_0)
 	await wait_to(chapter_time(5))
@@ -603,17 +603,19 @@ func run_route() -> void:
 	await wait_to(chapter_time(10))
 	start_chapter(10, true)
 	inspection(true)
+	set_camera("town", "outdoor", town_point(7, -2), 45)
 	if not preview:
 		# Show the real following morning after the social/save chapter, using
 		# normal speed controls. The camera never changes canonical actor state.
 		var morning_tick: int = int(Sim.tick_no / Sim.TICKS_PER_DAY) * Sim.TICKS_PER_DAY + 90
 		if morning_tick <= Sim.tick_no:
 			morning_tick += Sim.TICKS_PER_DAY
-		await key(KEY_3)
+		await key(KEY_4)
 		while Sim.tick_no < morning_tick and seconds() < at(578):
 			await wait_frames(1)
 		await key(KEY_0)
-		report["closing_real_clock_wait"] = {"target_tick": morning_tick, "actual_tick": Sim.tick_no, "public_speed_keys": [3, 0]}
+		report["closing_real_clock_wait"] = {"target_tick": morning_tick, "actual_tick": Sim.tick_no, "public_speed_keys": [4, 0]}
+		ck("closing_morning_reached_through_actual_clock_wait", Sim.tick_no >= morning_tick, report["closing_real_clock_wait"])
 	await glide("town", "outdoor", town_point(7, -2), town_point(1, 4), 45, 148, at(590))
 	await capture("14_final_whole_town")
 	report["director_mutation_policy"] = {"agent_nav_room_and_Sim_assignments": false, "input_commands": report["input_events"].size(), "social_events_observed": social_events.size(), "fixture_completions_observed": action_events.size(), "inspection_changes_actor_address": false}

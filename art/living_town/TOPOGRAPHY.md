@@ -1,5 +1,7 @@
 # Living Town — authored topography and surface elevation
 
+Public source plans and selected original diagrams are included here. Archived local evidence and supplied film/image references stay in the local authoring delivery. Current interactive proof is documented in [the game bridge](../../docs/town_bridge/README.md); public Blender/GLB files and the narrated walkthrough are in [the release](https://github.com/ForTe13X/living-town/releases/tag/town3d-walkthrough-2026-10-12).
+
 The revised model uses one deterministic elevation authority, [terrain_profile.py](tools/terrain_profile.py), around the frozen 49-building and 86-route masterplan. This is a coherent fictional Breton coastal site; it is not a reconstruction of surveyed terrain.
 
 ![Topography and drainage plan](concept/05_topography_and_drainage.png)
@@ -32,6 +34,6 @@ The user explicitly requested a pond with properly graded banks. The frozen [lan
 
 The complete sampled bank, including submerged slopes, reaches **31.3725%**, below **33.3333% (1:3)**. Measurements use a 0.10m grid with 0.025m central differences. The outer bank remains 6.530m from the nearest parcel and 2.000m from existing route edges, preserving all 49 level pads and 88 original route profiles. Public road grades and threshold-step requirements remain unchanged. New park/pocket walks conform to this same authority.
 
-The regenerated 0.50m contour map includes the recessed pond. `pond_spec`, `pond_radius`, `pond_ground_height` and `beach_height` expose the same portable surface rules to Blender and vegetation. Pond reeds use the basin surface; beach plants use the real beach profile. Tree roots remain on inland dry land. [Landscape siting and canopy evidence](evidence/LANDSCAPE_SITE_PLAN.md) distinguishes local canopy envelopes from background woodland and records five new walks.
+The regenerated 0.50m contour map includes the recessed pond. `pond_spec`, `pond_radius`, `pond_ground_height` and `beach_height` expose the same portable surface rules to Blender and vegetation. Pond reeds use the basin surface; beach plants use the real beach profile. Tree roots remain on inland dry land. Landscape siting and canopy evidence (`evidence/LANDSCAPE_SITE_PLAN.md`, archived local evidence) distinguishes local canopy envelopes from background woodland and records five new walks.
 
 The revision is a fictional lined landscape feature. It does not add an unverified natural spring, tidal connection or civil drainage claim. Final town renders, native audit and flythrough must bind both the current terrain and landscape plan hashes.

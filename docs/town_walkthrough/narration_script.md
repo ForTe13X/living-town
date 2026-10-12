@@ -154,9 +154,9 @@ The art remains portable. Blender sources and engine-neutral exports keep named 
 
 **09:22–09:39 · 11a**
 
-The editable runtime passed thirty-six logical checks and twenty-seven visual checks. Legacy regression scenes also passed. The Windows package separately passed normal launch and screen-render checks, rather than the full interaction suite.
+The editable runtime passed thirty-six logical checks and twenty-eight visual checks. Legacy regression scenes also passed. The Windows package separately passed normal launch and screen-render checks, rather than the full interaction suite.
 
-*Capture note: Slow whole-town closing view. Distinguish source-runtime gameplay evidence from exported native boot/render proof; do not claim 27 exported interaction checks.*
+*Capture note: Slow whole-town closing view. Distinguish source-runtime gameplay evidence from exported native boot/render proof; do not claim 28 exported interaction checks.*
 
 **09:42–09:59 · 11b**
 
@@ -176,7 +176,7 @@ Generate each paragraph separately so the chapter route stays stable. Keep a nat
 
 - Authoring inventory: 49 buildings, 89 floors, 561 logical room/circulation zones, 223 activity rooms, 753 furnishing assemblies, 40 stair flights, and 52 specifically planned local landscape trees. Background woodland is separate.
 - Gameplay scope: Only explicitly mapped functional objects belong to the existing simulation; the exact total follows the current compiled profile. Decoration alone does not create an economic or needs action. Shared fixture aliases retain the engine’s original identities.
-- Current merged editable-runtime evidence: 36 logical checks and 27 visual interaction checks. The current CI regression target is 35 legacy scenes; completion must come from the fresh report. The older 11 selected regressions are historical evidence.
+- Current merged editable-runtime evidence: 36 logical checks and 28 visual interaction checks. The current CI regression target is 35 legacy scenes; completion must come from the fresh report. The older 11 selected regressions are historical evidence.
 - Packaged Windows evidence: normal Main entry, actual GPU boot/render capture, and binary hash bindings. It does not repeat the full source-runtime interaction suite.
 - Outdoor movement uses authored grid/profile blockers and terrain heights. No claim of a general imported collision system, navmesh, streaming, LODs, building-code certification, natural hydrology, finished balance, or broad hardware performance.
 - Engine-neutral art sources/exports and their licenses remain separately delivered. The current bridge consumes the optimized staged model, not the optional high-detail town export.

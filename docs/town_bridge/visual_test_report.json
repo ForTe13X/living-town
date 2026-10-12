@@ -24,7 +24,7 @@
 					"furnishing_count": 753,
 					"last_error": "",
 					"load_method": "imported PackedScene",
-					"load_msec": 1548,
+					"load_msec": 1551,
 					"loaded": true,
 					"materials": {
 						"alpha_blend_materials": 1,
@@ -223,16 +223,16 @@
 		},
 		{
 			"detail": {
-				"luminance_stddev": 0.155529288019722,
-				"mean_luminance": 0.219098090156474
+				"luminance_stddev": 0.155522229637474,
+				"mean_luminance": 0.219103714951065
 			},
 			"name": "actual_main_framebuffer_02_fixture_menu",
 			"passed": true
 		},
 		{
 			"detail": {
-				"luminance_stddev": 0.157001937354399,
-				"mean_luminance": 0.241182386672693
+				"luminance_stddev": 0.156328930968632,
+				"mean_luminance": 0.239641672246509
 			},
 			"name": "actual_main_framebuffer_03_character_walking",
 			"passed": true
@@ -291,7 +291,7 @@
 					"max_query_hz": 5,
 					"normal_depth_preserved": true,
 					"occluder": "",
-					"ray_count": 98
+					"ray_count": 99
 				}
 			},
 			"name": "unblocked_controlled_resident_hides_occlusion_ghost",
@@ -299,8 +299,8 @@
 		},
 		{
 			"detail": {
-				"luminance_stddev": 0.190134036786034,
-				"mean_luminance": 0.282820180780689
+				"luminance_stddev": 0.190132945694553,
+				"mean_luminance": 0.282821049244689
 			},
 			"name": "actual_main_framebuffer_04_fixture_use_complete",
 			"passed": true
@@ -319,7 +319,7 @@
 			"detail": {
 				"actual_geometry_ray": {
 					"blocked": true,
-					"distance": 97.5639877319336,
+					"distance": 97.5640029907227,
 					"occluder": "Front_AwningBlue"
 				},
 				"view_state": {
@@ -328,7 +328,7 @@
 					"max_query_hz": 5,
 					"normal_depth_preserved": true,
 					"occluder": "Front_AwningBlue",
-					"ray_count": 113
+					"ray_count": 115
 				}
 			},
 			"name": "roof_occluded_controlled_resident_has_actual_los_and_visible_ghost",
@@ -357,8 +357,32 @@
 		},
 		{
 			"detail": {
-				"luminance_stddev": 0.210333746580731,
-				"mean_luminance": 0.306906360673211
+				"actual_ground_picks": [
+					{
+						"cell_error": 0.0,
+						"expected": "(6648.0, 5592.0)",
+						"picked": "(6648.0, 5592.0)"
+					},
+					{
+						"cell_error": 0.0000101725260416667,
+						"expected": "(6744.0, 5688.0)",
+						"picked": "(6744.0, 5688.0)"
+					},
+					{
+						"cell_error": 0.0000101725260416667,
+						"expected": "(6936.0, 5832.0)",
+						"picked": "(6936.0, 5832.0)"
+					}
+				],
+				"anchor_error_px": 0.0
+			},
+			"name": "null_mesh_outdoor_anchor_preserves_projection_and_ground_picking",
+			"passed": true
+		},
+		{
+			"detail": {
+				"luminance_stddev": 0.210060745884949,
+				"mean_luminance": 0.306297295114694
 			},
 			"name": "actual_main_framebuffer_05_town_exterior",
 			"passed": true
@@ -396,9 +420,9 @@
 			"kind": "mouse_click",
 			"screen": [
 				423.301086425781,
-				291.221282958984
+				291.202667236328
 			],
-			"tick": 16
+			"tick": 15
 		},
 		{
 			"keycode": 49,
@@ -408,7 +432,7 @@
 		{
 			"kind": "mouse_click",
 			"screen": [
-				630.470642089844,
+				630.470520019531,
 				520.278747558594
 			],
 			"tick": 44
@@ -420,7 +444,7 @@
 	"screenshots": [
 		{
 			"controlled": "aria",
-			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\bridge_checks\\visual/01_owner_upper.png",
+			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\null_anchor_visual/01_owner_upper.png",
 			"floor": "2f",
 			"model_source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
 			"sha256": "dabfc2a0926065b26220680197187aa35736f79c04060eb303ccd8fbacb7701d",
@@ -433,10 +457,10 @@
 		},
 		{
 			"controlled": "aria",
-			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\bridge_checks\\visual/02_fixture_menu.png",
+			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\null_anchor_visual/02_fixture_menu.png",
 			"floor": "1f",
 			"model_source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
-			"sha256": "78a597aaba5c3ca97f4a2be7076e9a8028d0a81f88145f70a2a00f8e62723de0",
+			"sha256": "7b062124500fff3fada55e7523ba7616d322b47dd9fd9b648e7cd2f8ab2a79f6",
 			"size": [
 				1280,
 				768
@@ -446,23 +470,23 @@
 		},
 		{
 			"controlled": "aria",
-			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\bridge_checks\\visual/03_character_walking.png",
+			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\null_anchor_visual/03_character_walking.png",
 			"floor": "1f",
 			"model_source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
-			"sha256": "c9def00a17a10025f7fc3079f3e2698077465994eeec8cb7b50516675aacd087",
+			"sha256": "d98e7b72e8e91cdddf2428b170362444209fad817f2cccc56246edffa9a9c7ab",
 			"size": [
 				1280,
 				768
 			],
 			"space": "cafe",
-			"tick": 17
+			"tick": 16
 		},
 		{
 			"controlled": "aria",
-			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\bridge_checks\\visual/04_fixture_use_complete.png",
+			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\null_anchor_visual/04_fixture_use_complete.png",
 			"floor": "1f",
 			"model_source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
-			"sha256": "ee5ea91dfd31075cf88b048c5db00614ad728fd737bf64dd89f51c08228350eb",
+			"sha256": "6ad87e84dcdfe8cbeb74b9d90eb2e7ea20131b8cfb0c6cc701e383a08993fb00",
 			"size": [
 				1280,
 				768
@@ -472,10 +496,10 @@
 		},
 		{
 			"controlled": "aria",
-			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\bridge_checks\\visual/05_town_exterior.png",
+			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\null_anchor_visual/05_town_exterior.png",
 			"floor": "outdoor",
 			"model_source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
-			"sha256": "59676482a92e1664c4d3108eb45e87e193d40c791084137c0f38882a014e5f19",
+			"sha256": "deda892cf135d94d6353d9f9677c9e5551fd1b55d115c3917524f154dabb08f6",
 			"size": [
 				1280,
 				768

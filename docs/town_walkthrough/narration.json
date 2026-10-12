@@ -211,8 +211,8 @@
       "end": 579,
       "chapter": 11,
       "title": "What the delivery proves",
-      "text": "The editable runtime passed thirty-six logical checks and twenty-seven visual checks. Legacy regression scenes also passed. The Windows package separately passed normal launch and screen-render checks, rather than the full interaction suite.",
-      "notes": "Slow whole-town closing view. Distinguish source-runtime gameplay evidence from exported native boot/render proof; do not claim 27 exported interaction checks."
+      "text": "The editable runtime passed thirty-six logical checks and twenty-eight visual checks. Legacy regression scenes also passed. The Windows package separately passed normal launch and screen-render checks, rather than the full interaction suite.",
+      "notes": "Slow whole-town closing view. Distinguish source-runtime gameplay evidence from exported native boot/render proof; do not claim 28 exported interaction checks."
     },
     {
       "id": "11b",
