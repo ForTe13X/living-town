@@ -1,0 +1,5895 @@
+{
+  "schema": "living_town.game_assets.v1",
+  "status": "PASS",
+  "evidence_label": "final",
+  "exporter_sha256": "e4d4cac6fa79c74cec252f78223a533e7c47773e1ee6729a23fe4e4d4eac92d1",
+  "output_flush": "Each completed GLB and final manifest flushed with os.fsync before consumer handoff",
+  "source_blend": "living_town_complete.blend",
+  "source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
+  "source_manifest_sha256": "09e1a479de52cbfc5636f257a7383562215d30761fbd20c878fadbe4b8c67e85",
+  "blender_version": "5.2.2 LTS",
+  "units": "metres",
+  "coordinate_system": "glTF 2.0 right-handed +Y up; Blender(X,Y,Z) -> glTF(X,Z,-Y)",
+  "source_masterplan_sha256": "b7e5522f62f4a390faa95502537fbbac14856cb278bccb695fbd5cabe186377f",
+  "source_terrain_plan_sha256": "69fc114cc289b33fc8e1d33e57daf77dd65e94d0340715c6a1974cd4d99fe349",
+  "source_interior_plan_sha256": "a857d40e536ce84b3ed468a5815c54311f92f46ebbb1e1f7541ce76a498d08b4",
+  "source_interior_module_sha256": "a467e4dc23bd2388e7e924a04a1b478bf0d0b7fc4deeb0616184de69b8c49025",
+  "source_landscape_plan_sha256": "68b8f4d2a9269b1fa8e9dde530bc83bd41b871effaf4d224ffd12ab953f6d4b1",
+  "source_landscape_details_sha256": "284459e0383e5d4adf0e3c9ddc637bc29cf375152c8724856546d0596e25e5d8",
+  "portable_binding_fields": [
+    "interior_module_sha256",
+    "interior_plan_sha256",
+    "landscape_details_sha256",
+    "landscape_plan_sha256",
+    "masterplan_sha256"
+  ],
+  "interior_inventory": {
+    "floor_count": 89,
+    "room_count": 561,
+    "furnishing_count": 753
+  },
+  "layout_inventory": {
+    "route_count": 86,
+    "authored_public_street_count": 17
+  },
+  "landscape_pond": {
+    "center_gltf_metres": [
+      26,
+      -0.12,
+      42
+    ],
+    "water_level_y_metres": -0.12,
+    "bed_level_y_metres": -0.92,
+    "maximum_depth_metres": 0.8,
+    "water_radii_metres": [
+      5,
+      3
+    ],
+    "water_mesh_prefix": "Atlantic_Terrain_PondWater",
+    "bed_mesh_prefixes": [
+      "Atlantic_Terrain_Grass",
+      "Atlantic_Terrain_Dirt"
+    ],
+    "verification_scope": "Visual mesh level/depth only; no physics or hydrology authority"
+  },
+  "source_world_bounds_gltf_metres": {
+    "min": [
+      -500.0,
+      -1.7341386079788208,
+      -1100.0
+    ],
+    "max": [
+      1600.0,
+      18.075927734375,
+      1100.0
+    ],
+    "size": [
+      2100.0,
+      19.81006622314453,
+      2200.0
+    ]
+  },
+  "source_building_bounds_gltf_metres": {
+    "min": [
+      -59.29999923706055,
+      0.10000023245811462,
+      -52.42499923706055
+    ],
+    "max": [
+      53.42499923706055,
+      15.88582992553711,
+      44.62453842163086
+    ],
+    "size": [
+      112.7249984741211,
+      15.785829544067383,
+      97.0495376586914
+    ]
+  },
+  "town": {
+    "file": "living_town_game.glb",
+    "sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c",
+    "bytes": 203666604,
+    "nodes": 9062,
+    "meshes": 8015,
+    "materials": 48,
+    "embedded_images": 28,
+    "triangles": 2112945,
+    "vertex_color_primitives": 1,
+    "normal_mapped_materials": 26,
+    "alpha_blend_materials": 1,
+    "extensions_used": [
+      "KHR_materials_emissive_strength"
+    ],
+    "extensions_required": [],
+    "animations": 0,
+    "animation_channels": 0,
+    "tangent_primitives": 8015,
+    "self_contained": true
+  },
+  "building_count": 49,
+  "buildings": [
+    {
+      "id": "Main_cafe",
+      "kind": "cafe",
+      "district": "D02",
+      "source_ref": "program_inventory.map.areas.cafe",
+      "footprint_metres": [
+        10,
+        9
+      ],
+      "placement_blender_xyz": [
+        11.5,
+        0,
+        0.355028092457153
+      ],
+      "yaw_blender_degrees": -90,
+      "placement_gltf_xyz": [
+        11.5,
+        0.355028092457153,
+        0
+      ],
+      "roles": {
+        "Shell": "Buildings/Main_cafe/Main_cafe__Shell",
+        "Interior": "Buildings/Main_cafe/Main_cafe__Interior",
+        "Roof": "Buildings/Main_cafe/Main_cafe__Roof",
+        "FrontCover": "Buildings/Main_cafe/Main_cafe__FrontCover",
+        "UpperCover": "Buildings/Main_cafe/Main_cafe__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 7,
+        "Interior": 96,
+        "Roof": 10,
+        "FrontCover": 20,
+        "UpperCover": 83
+      },
+      "nested_collection_nodes": [
+        "Main_cafe__Interior_L01",
+        "Main_cafe__L01_Hall",
+        "Main_cafe__L01_Stairwell",
+        "Main_cafe__L01_Lower_Landing",
+        "Main_cafe__L01_Upper_Landing",
+        "Main_cafe__L01_Owner_Bed_Living",
+        "Main_cafe__L01_Owner_Kitchen",
+        "Main_cafe__L01_Owner_Bathroom",
+        "Main_cafe__Interior_L00",
+        "Main_cafe__L00_Hall",
+        "Main_cafe__L00_Stairwell",
+        "Main_cafe__L00_Lower_Landing",
+        "Main_cafe__L00_Upper_Landing",
+        "Main_cafe__L00_Public_Room",
+        "Main_cafe__L00_Service_Room",
+        "Main_cafe__L00_Staff_WC"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 216,
+        "triangles": 33054
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 7,
+          "triangles": 612
+        },
+        "Interior": {
+          "mesh_nodes": 96,
+          "triangles": 10700
+        },
+        "Roof": {
+          "mesh_nodes": 10,
+          "triangles": 970
+        },
+        "FrontCover": {
+          "mesh_nodes": 20,
+          "triangles": 16756
+        },
+        "UpperCover": {
+          "mesh_nodes": 83,
+          "triangles": 4016
+        }
+      },
+      "standalone": {
+        "file": "buildings/Main_cafe.glb",
+        "sha256": "68c52690bcb72e005b180ea8bc646088c00551e5bb40afbaa0b30582e462d702",
+        "bytes": 8583720,
+        "nodes": 240,
+        "meshes": 216,
+        "materials": 25,
+        "embedded_images": 18,
+        "triangles": 33054,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 12,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 216,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -5.28000020980835,
+            -0.17011341452598572,
+            -4.924999237060547
+          ],
+          "max": [
+            5.28000020980835,
+            10.470000267028809,
+            6.175000190734863
+          ],
+          "size": [
+            10.5600004196167,
+            10.640113830566406,
+            11.09999942779541
+          ]
+        }
+      }
+    },
+    {
+      "id": "Main_shop",
+      "kind": "shop",
+      "district": "D02",
+      "source_ref": "program_inventory.map.areas.shop",
+      "footprint_metres": [
+        6,
+        9
+      ],
+      "placement_blender_xyz": [
+        11.5,
+        8,
+        0.35844910209293407
+      ],
+      "yaw_blender_degrees": -90,
+      "placement_gltf_xyz": [
+        11.5,
+        0.35844910209293407,
+        -8
+      ],
+      "roles": {
+        "Shell": "Buildings/Main_shop/Main_shop__Shell",
+        "Interior": "Buildings/Main_shop/Main_shop__Interior",
+        "Roof": "Buildings/Main_shop/Main_shop__Roof",
+        "FrontCover": "Buildings/Main_shop/Main_shop__FrontCover",
+        "UpperCover": "Buildings/Main_shop/Main_shop__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 14,
+        "Interior": 65,
+        "Roof": 11,
+        "FrontCover": 12,
+        "UpperCover": 90
+      },
+      "nested_collection_nodes": [
+        "Main_shop__Interior_L01",
+        "Main_shop__L01_Hall",
+        "Main_shop__L01_Stairwell",
+        "Main_shop__L01_Lower_Landing",
+        "Main_shop__L01_Upper_Landing",
+        "Main_shop__L01_Owner_Bed_Living",
+        "Main_shop__L01_Owner_Kitchen",
+        "Main_shop__L01_Owner_Bathroom",
+        "Main_shop__Interior_L00",
+        "Main_shop__L00_Hall",
+        "Main_shop__L00_Stairwell",
+        "Main_shop__L00_Lower_Landing",
+        "Main_shop__L00_Upper_Landing",
+        "Main_shop__L00_Public_Room",
+        "Main_shop__L00_Service_Room",
+        "Main_shop__L00_Staff_WC"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 192,
+        "triangles": 20794
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 14,
+          "triangles": 1812
+        },
+        "Interior": {
+          "mesh_nodes": 65,
+          "triangles": 4256
+        },
+        "Roof": {
+          "mesh_nodes": 11,
+          "triangles": 970
+        },
+        "FrontCover": {
+          "mesh_nodes": 12,
+          "triangles": 8552
+        },
+        "UpperCover": {
+          "mesh_nodes": 90,
+          "triangles": 5204
+        }
+      },
+      "standalone": {
+        "file": "buildings/Main_shop.glb",
+        "sha256": "53fd2259ebc9f556d86200662003d796c6df46844b5ed9f615c8c7f57171e918",
+        "bytes": 7552152,
+        "nodes": 216,
+        "meshes": 192,
+        "materials": 23,
+        "embedded_images": 18,
+        "triangles": 20794,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 13,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 192,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.4250001907348633,
+            -0.17171145975589752,
+            -4.924999237060547
+          ],
+          "max": [
+            3.2800002098083496,
+            10.470000267028809,
+            6.1750006675720215
+          ],
+          "size": [
+            6.705000400543213,
+            10.641712188720703,
+            11.100000381469727
+          ]
+        }
+      }
+    },
+    {
+      "id": "Main_home",
+      "kind": "home",
+      "district": "D01",
+      "source_ref": "program_inventory.map.areas.home",
+      "footprint_metres": [
+        6,
+        7
+      ],
+      "placement_blender_xyz": [
+        -49,
+        17.5,
+        2.988668330666799
+      ],
+      "yaw_blender_degrees": 0,
+      "placement_gltf_xyz": [
+        -49,
+        2.988668330666799,
+        -17.5
+      ],
+      "roles": {
+        "Shell": "Buildings/Main_home/Main_home__Shell",
+        "Interior": "Buildings/Main_home/Main_home__Interior",
+        "Roof": "Buildings/Main_home/Main_home__Roof",
+        "FrontCover": "Buildings/Main_home/Main_home__FrontCover",
+        "UpperCover": "Buildings/Main_home/Main_home__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 12,
+        "Interior": 55,
+        "Roof": 10,
+        "FrontCover": 12,
+        "UpperCover": 64
+      },
+      "nested_collection_nodes": [
+        "Main_home__Interior_L01",
+        "Main_home__L01_Hall",
+        "Main_home__L01_Stairwell",
+        "Main_home__L01_Lower_Landing",
+        "Main_home__L01_Upper_Landing",
+        "Main_home__L01_Front_Room",
+        "Main_home__L01_Rear_Room",
+        "Main_home__Interior_L00",
+        "Main_home__L00_Hall",
+        "Main_home__L00_Stairwell",
+        "Main_home__L00_Lower_Landing",
+        "Main_home__L00_Upper_Landing",
+        "Main_home__L00_Front_Room",
+        "Main_home__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 153,
+        "triangles": 11338
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 12,
+          "triangles": 1344
+        },
+        "Interior": {
+          "mesh_nodes": 55,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 10,
+          "triangles": 874
+        },
+        "FrontCover": {
+          "mesh_nodes": 12,
+          "triangles": 2724
+        },
+        "UpperCover": {
+          "mesh_nodes": 64,
+          "triangles": 3296
+        }
+      },
+      "standalone": {
+        "file": "buildings/Main_home.glb",
+        "sha256": "89fb1117ef52018954129b477c3cd55032a61aea3ffc6cd050da16ad505a7962",
+        "bytes": 6746944,
+        "nodes": 175,
+        "meshes": 153,
+        "materials": 22,
+        "embedded_images": 18,
+        "triangles": 11338,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 13,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 153,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.424999237060547,
+            -0.44547295570373535,
+            -3.924999237060547
+          ],
+          "max": [
+            3.279998779296875,
+            9.710000038146973,
+            5.175000190734863
+          ],
+          "size": [
+            6.704998016357422,
+            10.155472755432129,
+            9.09999942779541
+          ]
+        }
+      }
+    },
+    {
+      "id": "Main_home2",
+      "kind": "home2",
+      "district": "D01",
+      "source_ref": "program_inventory.map.areas.home2",
+      "footprint_metres": [
+        6.5,
+        7
+      ],
+      "placement_blender_xyz": [
+        -42.75,
+        19,
+        2.7204197438623603
+      ],
+      "yaw_blender_degrees": 0,
+      "placement_gltf_xyz": [
+        -42.75,
+        2.7204197438623603,
+        -19
+      ],
+      "roles": {
+        "Shell": "Buildings/Main_home2/Main_home2__Shell",
+        "Interior": "Buildings/Main_home2/Main_home2__Interior",
+        "Roof": "Buildings/Main_home2/Main_home2__Roof",
+        "FrontCover": "Buildings/Main_home2/Main_home2__FrontCover",
+        "UpperCover": "Buildings/Main_home2/Main_home2__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 7,
+        "Interior": 77,
+        "Roof": 8,
+        "FrontCover": 8,
+        "UpperCover": 0
+      },
+      "nested_collection_nodes": [
+        "Main_home2__Interior_L00",
+        "Main_home2__L00_Living_Kitchen",
+        "Main_home2__L00_Bedroom",
+        "Main_home2__L00_Bathroom",
+        "Main_home2__L00_Rear_Hall"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 100,
+        "triangles": 5238
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 7,
+          "triangles": 432
+        },
+        "Interior": {
+          "mesh_nodes": 77,
+          "triangles": 3328
+        },
+        "Roof": {
+          "mesh_nodes": 8,
+          "triangles": 558
+        },
+        "FrontCover": {
+          "mesh_nodes": 8,
+          "triangles": 920
+        },
+        "UpperCover": {
+          "mesh_nodes": 0,
+          "triangles": 0
+        }
+      },
+      "standalone": {
+        "file": "buildings/Main_home2.glb",
+        "sha256": "1fed47551409516adbba7b32fbb5b876c45d93311d84bada3144654c5c8d8fab",
+        "bytes": 6079128,
+        "nodes": 113,
+        "meshes": 100,
+        "materials": 20,
+        "embedded_images": 18,
+        "triangles": 5238,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 11,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 100,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.529998779296875,
+            -0.4702439308166504,
+            -3.924999237060547
+          ],
+          "max": [
+            3.529998779296875,
+            6.859999656677246,
+            4.342499732971191
+          ],
+          "size": [
+            7.05999755859375,
+            7.3302435874938965,
+            8.267498970031738
+          ]
+        }
+      }
+    },
+    {
+      "id": "Main_library",
+      "kind": "library",
+      "district": "D02",
+      "source_ref": "program_inventory.map.areas.library",
+      "footprint_metres": [
+        10,
+        8
+      ],
+      "placement_blender_xyz": [
+        -18,
+        11,
+        1.008357113690718
+      ],
+      "yaw_blender_degrees": 0,
+      "placement_gltf_xyz": [
+        -18,
+        1.008357113690718,
+        -11
+      ],
+      "roles": {
+        "Shell": "Buildings/Main_library/Main_library__Shell",
+        "Interior": "Buildings/Main_library/Main_library__Interior",
+        "Roof": "Buildings/Main_library/Main_library__Roof",
+        "FrontCover": "Buildings/Main_library/Main_library__FrontCover",
+        "UpperCover": "Buildings/Main_library/Main_library__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 17,
+        "Interior": 123,
+        "Roof": 10,
+        "FrontCover": 16,
+        "UpperCover": 129
+      },
+      "nested_collection_nodes": [
+        "Main_library__Interior_L01",
+        "Main_library__L01_Hall",
+        "Main_library__L01_Stairwell",
+        "Main_library__L01_Lower_Landing",
+        "Main_library__L01_Upper_Landing",
+        "Main_library__L01_Front_Left",
+        "Main_library__L01_Front_Right",
+        "Main_library__L01_Rear_Left",
+        "Main_library__L01_Rear_Right",
+        "Main_library__L01_Cross_Hall",
+        "Main_library__Interior_L00",
+        "Main_library__L00_Hall",
+        "Main_library__L00_Stairwell",
+        "Main_library__L00_Lower_Landing",
+        "Main_library__L00_Upper_Landing",
+        "Main_library__L00_Front_Left",
+        "Main_library__L00_Front_Right",
+        "Main_library__L00_Rear_Left",
+        "Main_library__L00_Rear_Right",
+        "Main_library__L00_Cross_Hall"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 295,
+        "triangles": 34390
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 17,
+          "triangles": 2436
+        },
+        "Interior": {
+          "mesh_nodes": 123,
+          "triangles": 7036
+        },
+        "Roof": {
+          "mesh_nodes": 10,
+          "triangles": 922
+        },
+        "FrontCover": {
+          "mesh_nodes": 16,
+          "triangles": 16088
+        },
+        "UpperCover": {
+          "mesh_nodes": 129,
+          "triangles": 7908
+        }
+      },
+      "standalone": {
+        "file": "buildings/Main_library.glb",
+        "sha256": "2859596326c0962f8202bcf1b350abb497d9394ceb41205932940d839d2011c6",
+        "bytes": 8814388,
+        "nodes": 323,
+        "meshes": 295,
+        "materials": 24,
+        "embedded_images": 18,
+        "triangles": 34390,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 11,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 295,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -5.424999237060547,
+            -0.48848241567611694,
+            -4.425000190734863
+          ],
+          "max": [
+            5.425000190734863,
+            10.09000015258789,
+            4.84250020980835
+          ],
+          "size": [
+            10.84999942779541,
+            10.578482627868652,
+            9.267499923706055
+          ]
+        }
+      }
+    },
+    {
+      "id": "Main_wash",
+      "kind": "wash",
+      "district": "D02",
+      "source_ref": "program_inventory.map.areas.wash",
+      "footprint_metres": [
+        10,
+        8
+      ],
+      "placement_blender_xyz": [
+        -1,
+        28,
+        1.0182618815524385
+      ],
+      "yaw_blender_degrees": 5,
+      "placement_gltf_xyz": [
+        -1,
+        1.0182618815524385,
+        -28
+      ],
+      "roles": {
+        "Shell": "Buildings/Main_wash/Main_wash__Shell",
+        "Interior": "Buildings/Main_wash/Main_wash__Interior",
+        "Roof": "Buildings/Main_wash/Main_wash__Roof",
+        "FrontCover": "Buildings/Main_wash/Main_wash__FrontCover",
+        "UpperCover": "Buildings/Main_wash/Main_wash__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 16,
+        "Interior": 109,
+        "Roof": 7,
+        "FrontCover": 11,
+        "UpperCover": 0
+      },
+      "nested_collection_nodes": [
+        "Main_wash__Interior_L00",
+        "Main_wash__L00_Front_Left",
+        "Main_wash__L00_Front_Right",
+        "Main_wash__L00_Rear_Left",
+        "Main_wash__L00_Rear_Right",
+        "Main_wash__L00_Cross_Hall",
+        "Main_wash__L00_Entry_Spine"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 143,
+        "triangles": 18434
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 16,
+          "triangles": 2436
+        },
+        "Interior": {
+          "mesh_nodes": 109,
+          "triangles": 4844
+        },
+        "Roof": {
+          "mesh_nodes": 7,
+          "triangles": 606
+        },
+        "FrontCover": {
+          "mesh_nodes": 11,
+          "triangles": 10548
+        },
+        "UpperCover": {
+          "mesh_nodes": 0,
+          "triangles": 0
+        }
+      },
+      "standalone": {
+        "file": "buildings/Main_wash.glb",
+        "sha256": "680d084605370cbf34c9a4df7e80e82ac32d63c72908154f9a3f663fecfa9a5c",
+        "bytes": 7200476,
+        "nodes": 158,
+        "meshes": 143,
+        "materials": 21,
+        "embedded_images": 18,
+        "triangles": 18434,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 11,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 143,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -5.4250006675720215,
+            -0.31920140981674194,
+            -4.42500114440918
+          ],
+          "max": [
+            5.425000190734863,
+            7.239999771118164,
+            4.842500686645508
+          ],
+          "size": [
+            10.850000381469727,
+            7.559201240539551,
+            9.267501831054688
+          ]
+        }
+      }
+    },
+    {
+      "id": "Main_work",
+      "kind": "work",
+      "district": "D06",
+      "source_ref": "program_inventory.map.areas.work",
+      "footprint_metres": [
+        12,
+        8
+      ],
+      "placement_blender_xyz": [
+        13,
+        32,
+        1.0580285132135552
+      ],
+      "yaw_blender_degrees": -4,
+      "placement_gltf_xyz": [
+        13,
+        1.0580285132135552,
+        -32
+      ],
+      "roles": {
+        "Shell": "Buildings/Main_work/Main_work__Shell",
+        "Interior": "Buildings/Main_work/Main_work__Interior",
+        "Roof": "Buildings/Main_work/Main_work__Roof",
+        "FrontCover": "Buildings/Main_work/Main_work__FrontCover",
+        "UpperCover": "Buildings/Main_work/Main_work__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 13,
+        "Interior": 101,
+        "Roof": 8,
+        "FrontCover": 11,
+        "UpperCover": 0
+      },
+      "nested_collection_nodes": [
+        "Main_work__Interior_L00",
+        "Main_work__L00_Front_Left",
+        "Main_work__L00_Front_Right",
+        "Main_work__L00_Rear_Left",
+        "Main_work__L00_Rear_Right",
+        "Main_work__L00_Cross_Hall",
+        "Main_work__L00_Entry_Spine"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 133,
+        "triangles": 19358
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 13,
+          "triangles": 1560
+        },
+        "Interior": {
+          "mesh_nodes": 101,
+          "triangles": 5352
+        },
+        "Roof": {
+          "mesh_nodes": 8,
+          "triangles": 606
+        },
+        "FrontCover": {
+          "mesh_nodes": 11,
+          "triangles": 11840
+        },
+        "UpperCover": {
+          "mesh_nodes": 0,
+          "triangles": 0
+        }
+      },
+      "standalone": {
+        "file": "buildings/Main_work.glb",
+        "sha256": "121a422d478a1938a007269a1f17401b57754e9f88a0d7cdbf58ab2608b980e2",
+        "bytes": 7266764,
+        "nodes": 148,
+        "meshes": 133,
+        "materials": 21,
+        "embedded_images": 18,
+        "triangles": 19358,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 12,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 133,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -6.424999713897705,
+            -0.33369189500808716,
+            -4.4250030517578125
+          ],
+          "max": [
+            6.424999237060547,
+            8.1899995803833,
+            4.842500686645508
+          ],
+          "size": [
+            12.849998474121094,
+            8.523691177368164,
+            9.26750373840332
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_00_chapel",
+      "kind": "chapel",
+      "district": "D01",
+      "source_ref": "program_inventory.map.solid_lots.lot_00_chapel",
+      "footprint_metres": [
+        8,
+        14
+      ],
+      "placement_blender_xyz": [
+        -23,
+        29,
+        1.985830376542871
+      ],
+      "yaw_blender_degrees": 0,
+      "placement_gltf_xyz": [
+        -23,
+        1.985830376542871,
+        -29
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_00_chapel/lot_00_chapel__Shell",
+        "Interior": "Buildings/lot_00_chapel/lot_00_chapel__Interior",
+        "Roof": "Buildings/lot_00_chapel/lot_00_chapel__Roof",
+        "FrontCover": "Buildings/lot_00_chapel/lot_00_chapel__FrontCover",
+        "UpperCover": "Buildings/lot_00_chapel/lot_00_chapel__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 18,
+        "Interior": 47,
+        "Roof": 11,
+        "FrontCover": 10,
+        "UpperCover": 38
+      },
+      "nested_collection_nodes": [
+        "lot_00_chapel__Interior_L01",
+        "lot_00_chapel__L01_Hall",
+        "lot_00_chapel__L01_Stairwell",
+        "lot_00_chapel__L01_Lower_Landing",
+        "lot_00_chapel__L01_Upper_Landing",
+        "lot_00_chapel__L01_Choir_Gallery",
+        "lot_00_chapel__Interior_L00",
+        "lot_00_chapel__L00_Hall",
+        "lot_00_chapel__L00_Stairwell",
+        "lot_00_chapel__L00_Lower_Landing",
+        "lot_00_chapel__L00_Upper_Landing",
+        "lot_00_chapel__L00_Nave",
+        "lot_00_chapel__L00_Vestry"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 124,
+        "triangles": 16698
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 18,
+          "triangles": 4212
+        },
+        "Interior": {
+          "mesh_nodes": 47,
+          "triangles": 3000
+        },
+        "Roof": {
+          "mesh_nodes": 11,
+          "triangles": 1190
+        },
+        "FrontCover": {
+          "mesh_nodes": 10,
+          "triangles": 3044
+        },
+        "UpperCover": {
+          "mesh_nodes": 38,
+          "triangles": 5252
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_00_chapel.glb",
+        "sha256": "2622014b1ac3f8ec8d7e20fa3c8b4c0672dac5d0e4c02d0cf4b4637951278a31",
+        "bytes": 7228344,
+        "nodes": 145,
+        "meshes": 124,
+        "materials": 20,
+        "embedded_images": 18,
+        "triangles": 16698,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 11,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 124,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -4.680000305175781,
+            -0.666387677192688,
+            -7.424999237060547
+          ],
+          "max": [
+            4.680000305175781,
+            13.899999618530273,
+            8.122499465942383
+          ],
+          "size": [
+            9.360000610351562,
+            14.566387176513672,
+            15.54749870300293
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_01_mairie",
+      "kind": "mairie",
+      "district": "D02",
+      "source_ref": "program_inventory.map.solid_lots.lot_01_mairie",
+      "footprint_metres": [
+        10,
+        8
+      ],
+      "placement_blender_xyz": [
+        -3.3,
+        12.9,
+        0.5055445405251977
+      ],
+      "yaw_blender_degrees": -7,
+      "placement_gltf_xyz": [
+        -3.3,
+        0.5055445405251977,
+        -12.9
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_01_mairie/lot_01_mairie__Shell",
+        "Interior": "Buildings/lot_01_mairie/lot_01_mairie__Interior",
+        "Roof": "Buildings/lot_01_mairie/lot_01_mairie__Roof",
+        "FrontCover": "Buildings/lot_01_mairie/lot_01_mairie__FrontCover",
+        "UpperCover": "Buildings/lot_01_mairie/lot_01_mairie__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 16,
+        "Interior": 111,
+        "Roof": 10,
+        "FrontCover": 11,
+        "UpperCover": 262
+      },
+      "nested_collection_nodes": [
+        "lot_01_mairie__Interior_L01",
+        "lot_01_mairie__L01_Hall",
+        "lot_01_mairie__L01_Stairwell",
+        "lot_01_mairie__L01_Lower_Landing",
+        "lot_01_mairie__L01_Upper_Landing",
+        "lot_01_mairie__L01_Front_Left",
+        "lot_01_mairie__L01_Front_Right",
+        "lot_01_mairie__L01_Rear_Left",
+        "lot_01_mairie__L01_Rear_Right",
+        "lot_01_mairie__L01_Cross_Hall",
+        "lot_01_mairie__Interior_L02",
+        "lot_01_mairie__L02_Hall",
+        "lot_01_mairie__L02_Stairwell",
+        "lot_01_mairie__L02_Lower_Landing",
+        "lot_01_mairie__L02_Upper_Landing",
+        "lot_01_mairie__L02_Front_Left",
+        "lot_01_mairie__L02_Front_Right",
+        "lot_01_mairie__L02_Rear_Left",
+        "lot_01_mairie__L02_Rear_Right",
+        "lot_01_mairie__L02_Cross_Hall",
+        "lot_01_mairie__Interior_L00",
+        "lot_01_mairie__L00_Hall",
+        "lot_01_mairie__L00_Stairwell",
+        "lot_01_mairie__L00_Lower_Landing",
+        "lot_01_mairie__L00_Upper_Landing",
+        "lot_01_mairie__L00_Front_Left",
+        "lot_01_mairie__L00_Front_Right",
+        "lot_01_mairie__L00_Rear_Left",
+        "lot_01_mairie__L00_Rear_Right",
+        "lot_01_mairie__L00_Cross_Hall"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 410,
+        "triangles": 34342
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 16,
+          "triangles": 2436
+        },
+        "Interior": {
+          "mesh_nodes": 111,
+          "triangles": 5808
+        },
+        "Roof": {
+          "mesh_nodes": 10,
+          "triangles": 922
+        },
+        "FrontCover": {
+          "mesh_nodes": 11,
+          "triangles": 8424
+        },
+        "UpperCover": {
+          "mesh_nodes": 262,
+          "triangles": 16752
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_01_mairie.glb",
+        "sha256": "3cdd25aeb8edde13589ae569a0ed6c9414d09a22c3228de56e718fb901ab9ffe",
+        "bytes": 9210368,
+        "nodes": 448,
+        "meshes": 410,
+        "materials": 21,
+        "embedded_images": 18,
+        "triangles": 34342,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 11,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 410,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -5.425000190734863,
+            -0.24139469861984253,
+            -4.425002098083496
+          ],
+          "max": [
+            5.425000190734863,
+            12.9399995803833,
+            4.851999282836914
+          ],
+          "size": [
+            10.850000381469727,
+            13.181394577026367,
+            9.27700138092041
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_02_windmill",
+      "kind": "windmill",
+      "district": "D05",
+      "source_ref": "program_inventory.map.solid_lots.lot_02_windmill",
+      "footprint_metres": [
+        5,
+        6
+      ],
+      "placement_blender_xyz": [
+        -56,
+        35,
+        4.012739922508389
+      ],
+      "yaw_blender_degrees": 0,
+      "placement_gltf_xyz": [
+        -56,
+        4.012739922508389,
+        -35
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_02_windmill/lot_02_windmill__Shell",
+        "Interior": "Buildings/lot_02_windmill/lot_02_windmill__Interior",
+        "Roof": "Buildings/lot_02_windmill/lot_02_windmill__Roof",
+        "FrontCover": "Buildings/lot_02_windmill/lot_02_windmill__FrontCover",
+        "UpperCover": "Buildings/lot_02_windmill/lot_02_windmill__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 19,
+        "Interior": 42,
+        "Roof": 12,
+        "FrontCover": 9,
+        "UpperCover": 57
+      },
+      "nested_collection_nodes": [
+        "lot_02_windmill__Interior_L01",
+        "lot_02_windmill__L01_Hall",
+        "lot_02_windmill__L01_Stairwell",
+        "lot_02_windmill__L01_Lower_Landing",
+        "lot_02_windmill__L01_Upper_Landing",
+        "lot_02_windmill__L01_Front_Room",
+        "lot_02_windmill__L01_Rear_Room",
+        "lot_02_windmill__Interior_L00",
+        "lot_02_windmill__L00_Hall",
+        "lot_02_windmill__L00_Stairwell",
+        "lot_02_windmill__L00_Lower_Landing",
+        "lot_02_windmill__L00_Upper_Landing",
+        "lot_02_windmill__L00_Front_Room",
+        "lot_02_windmill__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 139,
+        "triangles": 12194
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 19,
+          "triangles": 2124
+        },
+        "Interior": {
+          "mesh_nodes": 42,
+          "triangles": 2996
+        },
+        "Roof": {
+          "mesh_nodes": 12,
+          "triangles": 1402
+        },
+        "FrontCover": {
+          "mesh_nodes": 9,
+          "triangles": 1160
+        },
+        "UpperCover": {
+          "mesh_nodes": 57,
+          "triangles": 4512
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_02_windmill.glb",
+        "sha256": "01a87ca9c6c007185ee715a2db1a48f8413c8082bc68b2838dc2a33e4613acd4",
+        "bytes": 6793708,
+        "nodes": 161,
+        "meshes": 139,
+        "materials": 19,
+        "embedded_images": 18,
+        "triangles": 12194,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 11,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 139,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.299999237060547,
+            -0.3818016052246094,
+            -3.424999237060547
+          ],
+          "max": [
+            3.299999237060547,
+            9.329999923706055,
+            3.842500686645508
+          ],
+          "size": [
+            6.599998474121094,
+            9.711801528930664,
+            7.267499923706055
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_03_netshed",
+      "kind": "netshed",
+      "district": "D06",
+      "source_ref": "program_inventory.map.solid_lots.lot_03_netshed",
+      "footprint_metres": [
+        6,
+        4
+      ],
+      "placement_blender_xyz": [
+        50,
+        44,
+        1.615
+      ],
+      "yaw_blender_degrees": 0,
+      "placement_gltf_xyz": [
+        50,
+        1.615,
+        -44
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_03_netshed/lot_03_netshed__Shell",
+        "Interior": "Buildings/lot_03_netshed/lot_03_netshed__Interior",
+        "Roof": "Buildings/lot_03_netshed/lot_03_netshed__Roof",
+        "FrontCover": "Buildings/lot_03_netshed/lot_03_netshed__FrontCover",
+        "UpperCover": "Buildings/lot_03_netshed/lot_03_netshed__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 17,
+        "Interior": 56,
+        "Roof": 4,
+        "FrontCover": 12,
+        "UpperCover": 0
+      },
+      "nested_collection_nodes": [
+        "lot_03_netshed__Interior_L00",
+        "lot_03_netshed__L00_Net_Work",
+        "lot_03_netshed__L00_Net_Store",
+        "lot_03_netshed__L00_Tool_Store"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 89,
+        "triangles": 20218
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 17,
+          "triangles": 1368
+        },
+        "Interior": {
+          "mesh_nodes": 56,
+          "triangles": 3436
+        },
+        "Roof": {
+          "mesh_nodes": 4,
+          "triangles": 258
+        },
+        "FrontCover": {
+          "mesh_nodes": 12,
+          "triangles": 15156
+        },
+        "UpperCover": {
+          "mesh_nodes": 0,
+          "triangles": 0
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_03_netshed.glb",
+        "sha256": "ead7c8894ad05f0a7f8c491424b3e56f794510c2cc571dc42ab8e72273600154",
+        "bytes": 6566544,
+        "nodes": 101,
+        "meshes": 89,
+        "materials": 16,
+        "embedded_images": 15,
+        "triangles": 20218,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 8,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 89,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.424999237060547,
+            -0.4849964380264282,
+            -2.424999237060547
+          ],
+          "max": [
+            3.424999237060547,
+            5.430595397949219,
+            2.5625
+          ],
+          "size": [
+            6.849998474121094,
+            5.915591716766357,
+            4.987499237060547
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_04_bakery",
+      "kind": "bakery",
+      "district": "D02",
+      "source_ref": "program_inventory.map.solid_lots.lot_04_bakery",
+      "footprint_metres": [
+        8,
+        9
+      ],
+      "placement_blender_xyz": [
+        -17.5,
+        -2,
+        0.9045
+      ],
+      "yaw_blender_degrees": 90,
+      "placement_gltf_xyz": [
+        -17.5,
+        0.9045,
+        2
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_04_bakery/lot_04_bakery__Shell",
+        "Interior": "Buildings/lot_04_bakery/lot_04_bakery__Interior",
+        "Roof": "Buildings/lot_04_bakery/lot_04_bakery__Roof",
+        "FrontCover": "Buildings/lot_04_bakery/lot_04_bakery__FrontCover",
+        "UpperCover": "Buildings/lot_04_bakery/lot_04_bakery__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 21,
+        "Interior": 76,
+        "Roof": 11,
+        "FrontCover": 18,
+        "UpperCover": 95
+      },
+      "nested_collection_nodes": [
+        "lot_04_bakery__Interior_L01",
+        "lot_04_bakery__L01_Hall",
+        "lot_04_bakery__L01_Stairwell",
+        "lot_04_bakery__L01_Lower_Landing",
+        "lot_04_bakery__L01_Upper_Landing",
+        "lot_04_bakery__L01_Owner_Bed_Living",
+        "lot_04_bakery__L01_Owner_Kitchen",
+        "lot_04_bakery__L01_Owner_Bathroom",
+        "lot_04_bakery__Interior_L00",
+        "lot_04_bakery__L00_Hall",
+        "lot_04_bakery__L00_Stairwell",
+        "lot_04_bakery__L00_Lower_Landing",
+        "lot_04_bakery__L00_Upper_Landing",
+        "lot_04_bakery__L00_Public_Room",
+        "lot_04_bakery__L00_Service_Room",
+        "lot_04_bakery__L00_Staff_WC"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 221,
+        "triangles": 32226
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 21,
+          "triangles": 3192
+        },
+        "Interior": {
+          "mesh_nodes": 76,
+          "triangles": 7880
+        },
+        "Roof": {
+          "mesh_nodes": 11,
+          "triangles": 970
+        },
+        "FrontCover": {
+          "mesh_nodes": 18,
+          "triangles": 13600
+        },
+        "UpperCover": {
+          "mesh_nodes": 95,
+          "triangles": 6584
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_04_bakery.glb",
+        "sha256": "180bc943b2749a41bc51368cdf471942cd1c30bb8bce520df12e08b92f0f9614",
+        "bytes": 8605060,
+        "nodes": 245,
+        "meshes": 221,
+        "materials": 26,
+        "embedded_images": 18,
+        "triangles": 32226,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 13,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 221,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -4.425000190734863,
+            -0.4233059287071228,
+            -4.924999237060547
+          ],
+          "max": [
+            4.425000190734863,
+            10.470000267028809,
+            6.175000190734863
+          ],
+          "size": [
+            8.850000381469727,
+            10.893305778503418,
+            11.09999942779541
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_05_creperie",
+      "kind": "creperie",
+      "district": "D02",
+      "source_ref": "program_inventory.map.solid_lots.lot_05_creperie",
+      "footprint_metres": [
+        6,
+        9
+      ],
+      "placement_blender_xyz": [
+        11.5,
+        -8,
+        0.35311637272022045
+      ],
+      "yaw_blender_degrees": -90,
+      "placement_gltf_xyz": [
+        11.5,
+        0.35311637272022045,
+        8
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_05_creperie/lot_05_creperie__Shell",
+        "Interior": "Buildings/lot_05_creperie/lot_05_creperie__Interior",
+        "Roof": "Buildings/lot_05_creperie/lot_05_creperie__Roof",
+        "FrontCover": "Buildings/lot_05_creperie/lot_05_creperie__FrontCover",
+        "UpperCover": "Buildings/lot_05_creperie/lot_05_creperie__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 14,
+        "Interior": 78,
+        "Roof": 10,
+        "FrontCover": 19,
+        "UpperCover": 90
+      },
+      "nested_collection_nodes": [
+        "lot_05_creperie__Interior_L01",
+        "lot_05_creperie__L01_Hall",
+        "lot_05_creperie__L01_Stairwell",
+        "lot_05_creperie__L01_Lower_Landing",
+        "lot_05_creperie__L01_Upper_Landing",
+        "lot_05_creperie__L01_Owner_Bed_Living",
+        "lot_05_creperie__L01_Owner_Kitchen",
+        "lot_05_creperie__L01_Owner_Bathroom",
+        "lot_05_creperie__Interior_L00",
+        "lot_05_creperie__L00_Hall",
+        "lot_05_creperie__L00_Stairwell",
+        "lot_05_creperie__L00_Lower_Landing",
+        "lot_05_creperie__L00_Upper_Landing",
+        "lot_05_creperie__L00_Public_Room",
+        "lot_05_creperie__L00_Service_Room",
+        "lot_05_creperie__L00_Staff_WC"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 211,
+        "triangles": 27146
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 14,
+          "triangles": 1812
+        },
+        "Interior": {
+          "mesh_nodes": 78,
+          "triangles": 7048
+        },
+        "Roof": {
+          "mesh_nodes": 10,
+          "triangles": 970
+        },
+        "FrontCover": {
+          "mesh_nodes": 19,
+          "triangles": 12112
+        },
+        "UpperCover": {
+          "mesh_nodes": 90,
+          "triangles": 5204
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_05_creperie.glb",
+        "sha256": "ed5cf571935118f50a9bbf799d4d3d9bcc14ffe41d86375538da653a20630217",
+        "bytes": 8095648,
+        "nodes": 235,
+        "meshes": 211,
+        "materials": 27,
+        "embedded_images": 18,
+        "triangles": 27146,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 13,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 211,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.2799997329711914,
+            -0.16872116923332214,
+            -4.924999237060547
+          ],
+          "max": [
+            3.4250006675720215,
+            10.470000267028809,
+            6.175000190734863
+          ],
+          "size": [
+            6.705000400543213,
+            10.638721466064453,
+            11.09999942779541
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_06_halles",
+      "kind": "halles",
+      "district": "D02",
+      "source_ref": "program_inventory.map.solid_lots.lot_06_halles",
+      "footprint_metres": [
+        13,
+        7
+      ],
+      "placement_blender_xyz": [
+        -3,
+        -16,
+        0.41145803985930207
+      ],
+      "yaw_blender_degrees": 180,
+      "placement_gltf_xyz": [
+        -3,
+        0.41145803985930207,
+        16
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_06_halles/lot_06_halles__Shell",
+        "Interior": "Buildings/lot_06_halles/lot_06_halles__Interior",
+        "Roof": "Buildings/lot_06_halles/lot_06_halles__Roof",
+        "FrontCover": "Buildings/lot_06_halles/lot_06_halles__FrontCover",
+        "UpperCover": "Buildings/lot_06_halles/lot_06_halles__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 3,
+        "Interior": 41,
+        "Roof": 3,
+        "FrontCover": 2,
+        "UpperCover": 0
+      },
+      "nested_collection_nodes": [
+        "lot_06_halles__Interior_L00",
+        "lot_06_halles__L00_Market_Aisle"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 49,
+        "triangles": 10492
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 3,
+          "triangles": 492
+        },
+        "Interior": {
+          "mesh_nodes": 41,
+          "triangles": 4000
+        },
+        "Roof": {
+          "mesh_nodes": 3,
+          "triangles": 352
+        },
+        "FrontCover": {
+          "mesh_nodes": 2,
+          "triangles": 5648
+        },
+        "UpperCover": {
+          "mesh_nodes": 0,
+          "triangles": 0
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_06_halles.glb",
+        "sha256": "f601aa194180298c28d486e35ca722728bdc379678152d5403e6995c23e21aeb",
+        "bytes": 6154792,
+        "nodes": 59,
+        "meshes": 49,
+        "materials": 16,
+        "embedded_images": 15,
+        "triangles": 10492,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 9,
+        "alpha_blend_materials": 0,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 49,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -6.78000020980835,
+            -0.17702418565750122,
+            -3.7950000762939453
+          ],
+          "max": [
+            6.780001163482666,
+            5.0605950355529785,
+            4.064999580383301
+          ],
+          "size": [
+            13.560001373291016,
+            5.237619400024414,
+            7.859999656677246
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_07_hotel",
+      "kind": "hotel",
+      "district": "D03",
+      "source_ref": "program_inventory.map.solid_lots.lot_07_hotel",
+      "footprint_metres": [
+        14,
+        11
+      ],
+      "placement_blender_xyz": [
+        30,
+        30,
+        1.1553805922287441
+      ],
+      "yaw_blender_degrees": 90,
+      "placement_gltf_xyz": [
+        30,
+        1.1553805922287441,
+        -30
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_07_hotel/lot_07_hotel__Shell",
+        "Interior": "Buildings/lot_07_hotel/lot_07_hotel__Interior",
+        "Roof": "Buildings/lot_07_hotel/lot_07_hotel__Roof",
+        "FrontCover": "Buildings/lot_07_hotel/lot_07_hotel__FrontCover",
+        "UpperCover": "Buildings/lot_07_hotel/lot_07_hotel__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 21,
+        "Interior": 110,
+        "Roof": 11,
+        "FrontCover": 18,
+        "UpperCover": 397
+      },
+      "nested_collection_nodes": [
+        "lot_07_hotel__Interior_L01",
+        "lot_07_hotel__L01_Hall",
+        "lot_07_hotel__L01_Stairwell",
+        "lot_07_hotel__L01_Lower_Landing",
+        "lot_07_hotel__L01_Upper_Landing",
+        "lot_07_hotel__L01_Front_Left",
+        "lot_07_hotel__L01_Front_Right",
+        "lot_07_hotel__L01_Rear_Left",
+        "lot_07_hotel__L01_Rear_Right",
+        "lot_07_hotel__L01_Cross_Hall",
+        "lot_07_hotel__L01_Front_Left_Ensuite",
+        "lot_07_hotel__L01_Front_Left_Suite_Entry",
+        "lot_07_hotel__L01_Front_Right_Ensuite",
+        "lot_07_hotel__L01_Front_Right_Suite_Entry",
+        "lot_07_hotel__L01_Rear_Left_Ensuite",
+        "lot_07_hotel__L01_Rear_Left_Suite_Entry",
+        "lot_07_hotel__L01_Rear_Right_Ensuite",
+        "lot_07_hotel__L01_Rear_Right_Suite_Entry",
+        "lot_07_hotel__Interior_L02",
+        "lot_07_hotel__L02_Hall",
+        "lot_07_hotel__L02_Stairwell",
+        "lot_07_hotel__L02_Lower_Landing",
+        "lot_07_hotel__L02_Upper_Landing",
+        "lot_07_hotel__L02_Front_Left",
+        "lot_07_hotel__L02_Front_Right",
+        "lot_07_hotel__L02_Rear_Left",
+        "lot_07_hotel__L02_Rear_Right",
+        "lot_07_hotel__L02_Cross_Hall",
+        "lot_07_hotel__L02_Front_Left_Ensuite",
+        "lot_07_hotel__L02_Front_Left_Suite_Entry",
+        "lot_07_hotel__L02_Front_Right_Ensuite",
+        "lot_07_hotel__L02_Front_Right_Suite_Entry",
+        "lot_07_hotel__L02_Rear_Left_Ensuite",
+        "lot_07_hotel__L02_Rear_Left_Suite_Entry",
+        "lot_07_hotel__L02_Rear_Right_Ensuite",
+        "lot_07_hotel__L02_Rear_Right_Suite_Entry",
+        "lot_07_hotel__Interior_L00",
+        "lot_07_hotel__L00_Hall",
+        "lot_07_hotel__L00_Stairwell",
+        "lot_07_hotel__L00_Lower_Landing",
+        "lot_07_hotel__L00_Upper_Landing",
+        "lot_07_hotel__L00_Front_Left",
+        "lot_07_hotel__L00_Front_Right",
+        "lot_07_hotel__L00_Rear_Left",
+        "lot_07_hotel__L00_Rear_Right",
+        "lot_07_hotel__L00_Cross_Hall"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 557,
+        "triangles": 57782
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 21,
+          "triangles": 3552
+        },
+        "Interior": {
+          "mesh_nodes": 110,
+          "triangles": 9580
+        },
+        "Roof": {
+          "mesh_nodes": 11,
+          "triangles": 1182
+        },
+        "FrontCover": {
+          "mesh_nodes": 18,
+          "triangles": 19712
+        },
+        "UpperCover": {
+          "mesh_nodes": 397,
+          "triangles": 23756
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_07_hotel.glb",
+        "sha256": "54a16caf483e3a4caa0885c86051deda640e3c7ffacc694340cd4d5b7a471f3d",
+        "bytes": 11550480,
+        "nodes": 611,
+        "meshes": 557,
+        "materials": 26,
+        "embedded_images": 18,
+        "triangles": 57782,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 13,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 557,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -7.424999237060547,
+            -0.6641151905059814,
+            -5.924999237060547
+          ],
+          "max": [
+            7.42500114440918,
+            12.899999618530273,
+            7.17500114440918
+          ],
+          "size": [
+            14.850000381469727,
+            13.564114570617676,
+            13.100000381469727
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_08_cannery",
+      "kind": "cannery",
+      "district": "D06",
+      "source_ref": "program_inventory.map.solid_lots.lot_08_cannery",
+      "footprint_metres": [
+        12,
+        10
+      ],
+      "placement_blender_xyz": [
+        22,
+        47,
+        1.5367876479372837
+      ],
+      "yaw_blender_degrees": 0,
+      "placement_gltf_xyz": [
+        22,
+        1.5367876479372837,
+        -47
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_08_cannery/lot_08_cannery__Shell",
+        "Interior": "Buildings/lot_08_cannery/lot_08_cannery__Interior",
+        "Roof": "Buildings/lot_08_cannery/lot_08_cannery__Roof",
+        "FrontCover": "Buildings/lot_08_cannery/lot_08_cannery__FrontCover",
+        "UpperCover": "Buildings/lot_08_cannery/lot_08_cannery__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 13,
+        "Interior": 102,
+        "Roof": 8,
+        "FrontCover": 12,
+        "UpperCover": 0
+      },
+      "nested_collection_nodes": [
+        "lot_08_cannery__Interior_L00",
+        "lot_08_cannery__L00_Front_Left",
+        "lot_08_cannery__L00_Front_Right",
+        "lot_08_cannery__L00_Rear_Left",
+        "lot_08_cannery__L00_Rear_Right",
+        "lot_08_cannery__L00_Cross_Hall",
+        "lot_08_cannery__L00_Entry_Spine"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 135,
+        "triangles": 19086
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 13,
+          "triangles": 1920
+        },
+        "Interior": {
+          "mesh_nodes": 102,
+          "triangles": 5724
+        },
+        "Roof": {
+          "mesh_nodes": 8,
+          "triangles": 678
+        },
+        "FrontCover": {
+          "mesh_nodes": 12,
+          "triangles": 10764
+        },
+        "UpperCover": {
+          "mesh_nodes": 0,
+          "triangles": 0
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_08_cannery.glb",
+        "sha256": "1b85737db835bc7bfc6d9f306f2ccaad1c8fc8df0caae26aef99aac168dff245",
+        "bytes": 7281692,
+        "nodes": 150,
+        "meshes": 135,
+        "materials": 21,
+        "embedded_images": 18,
+        "triangles": 19086,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 11,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 135,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -6.425000190734863,
+            -0.34992170333862305,
+            -5.424999237060547
+          ],
+          "max": [
+            6.424999237060547,
+            8.850000381469727,
+            6.122501373291016
+          ],
+          "size": [
+            12.84999942779541,
+            9.199922561645508,
+            11.547500610351562
+          ]
+        }
+      }
+    },
+    {
+      "id": "Port_Warehouse_Exterior",
+      "kind": "netshed",
+      "district": "D06",
+      "source_ref": "program_inventory.spaces.port_warehouse / proposed_exterior",
+      "footprint_metres": [
+        10,
+        10
+      ],
+      "placement_blender_xyz": [
+        39,
+        47,
+        1.615
+      ],
+      "yaw_blender_degrees": 0,
+      "placement_gltf_xyz": [
+        39,
+        1.615,
+        -47
+      ],
+      "roles": {
+        "Shell": "Buildings/Port_Warehouse_Exterior/Port_Warehouse_Exterior__Shell",
+        "Interior": "Buildings/Port_Warehouse_Exterior/Port_Warehouse_Exterior__Interior",
+        "Roof": "Buildings/Port_Warehouse_Exterior/Port_Warehouse_Exterior__Roof",
+        "FrontCover": "Buildings/Port_Warehouse_Exterior/Port_Warehouse_Exterior__FrontCover",
+        "UpperCover": "Buildings/Port_Warehouse_Exterior/Port_Warehouse_Exterior__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 21,
+        "Interior": 98,
+        "Roof": 4,
+        "FrontCover": 11,
+        "UpperCover": 0
+      },
+      "nested_collection_nodes": [
+        "Port_Warehouse_Exterior__Interior_L00",
+        "Port_Warehouse_Exterior__L00_Front_Left",
+        "Port_Warehouse_Exterior__L00_Front_Right",
+        "Port_Warehouse_Exterior__L00_Rear_Left",
+        "Port_Warehouse_Exterior__L00_Rear_Right",
+        "Port_Warehouse_Exterior__L00_Cross_Hall",
+        "Port_Warehouse_Exterior__L00_Entry_Spine"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 134,
+        "triangles": 24766
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 21,
+          "triangles": 3372
+        },
+        "Interior": {
+          "mesh_nodes": 98,
+          "triangles": 5716
+        },
+        "Roof": {
+          "mesh_nodes": 4,
+          "triangles": 522
+        },
+        "FrontCover": {
+          "mesh_nodes": 11,
+          "triangles": 15156
+        },
+        "UpperCover": {
+          "mesh_nodes": 0,
+          "triangles": 0
+        }
+      },
+      "standalone": {
+        "file": "buildings/Port_Warehouse_Exterior.glb",
+        "sha256": "53661907254455f1fbd32848a2d00a4e8f1ebbef6ecb8abebdac07d0f14ea910",
+        "bytes": 7676792,
+        "nodes": 149,
+        "meshes": 134,
+        "materials": 18,
+        "embedded_images": 18,
+        "triangles": 24766,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 10,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 134,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -5.424999237060547,
+            -0.48496735095977783,
+            -5.424999237060547
+          ],
+          "max": [
+            5.424999237060547,
+            7.610595703125,
+            5.5625
+          ],
+          "size": [
+            10.849998474121094,
+            8.095562934875488,
+            10.987499237060547
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_09_townhouse",
+      "kind": "townhouse",
+      "district": "D01",
+      "source_ref": "program_inventory.map.solid_lots.lot_09_townhouse",
+      "footprint_metres": [
+        6.4257295305669375,
+        7
+      ],
+      "placement_blender_xyz": [
+        -46.45,
+        -13.06,
+        2.523543477202709
+      ],
+      "yaw_blender_degrees": 20.973493421320804,
+      "placement_gltf_xyz": [
+        -46.45,
+        2.523543477202709,
+        13.06
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_09_townhouse/lot_09_townhouse__Shell",
+        "Interior": "Buildings/lot_09_townhouse/lot_09_townhouse__Interior",
+        "Roof": "Buildings/lot_09_townhouse/lot_09_townhouse__Roof",
+        "FrontCover": "Buildings/lot_09_townhouse/lot_09_townhouse__FrontCover",
+        "UpperCover": "Buildings/lot_09_townhouse/lot_09_townhouse__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 12,
+        "Interior": 55,
+        "Roof": 10,
+        "FrontCover": 10,
+        "UpperCover": 64
+      },
+      "nested_collection_nodes": [
+        "lot_09_townhouse__Interior_L01",
+        "lot_09_townhouse__L01_Hall",
+        "lot_09_townhouse__L01_Stairwell",
+        "lot_09_townhouse__L01_Lower_Landing",
+        "lot_09_townhouse__L01_Upper_Landing",
+        "lot_09_townhouse__L01_Front_Room",
+        "lot_09_townhouse__L01_Rear_Room",
+        "lot_09_townhouse__Interior_L00",
+        "lot_09_townhouse__L00_Hall",
+        "lot_09_townhouse__L00_Stairwell",
+        "lot_09_townhouse__L00_Lower_Landing",
+        "lot_09_townhouse__L00_Upper_Landing",
+        "lot_09_townhouse__L00_Front_Room",
+        "lot_09_townhouse__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 151,
+        "triangles": 10890
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 12,
+          "triangles": 1344
+        },
+        "Interior": {
+          "mesh_nodes": 55,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 10,
+          "triangles": 874
+        },
+        "FrontCover": {
+          "mesh_nodes": 10,
+          "triangles": 2276
+        },
+        "UpperCover": {
+          "mesh_nodes": 64,
+          "triangles": 3296
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_09_townhouse.glb",
+        "sha256": "c56a7a258e73461229f505c4a09ac7b20fbe2985752d6dc353a3be47e7832f99",
+        "bytes": 6725732,
+        "nodes": 173,
+        "meshes": 151,
+        "materials": 20,
+        "embedded_images": 18,
+        "triangles": 10890,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 11,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 151,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.637866973876953,
+            -0.3862431049346924,
+            -3.9250011444091797
+          ],
+          "max": [
+            3.4928665161132812,
+            9.709999084472656,
+            4.342502593994141
+          ],
+          "size": [
+            7.130733489990234,
+            10.09624195098877,
+            8.26750373840332
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_12_halftimber",
+      "kind": "halftimber",
+      "district": "D01",
+      "source_ref": "program_inventory.map.solid_lots.lot_12_halftimber",
+      "footprint_metres": [
+        6.4257295305669375,
+        7
+      ],
+      "placement_blender_xyz": [
+        -40.45,
+        -10.76,
+        2.196772207105743
+      ],
+      "yaw_blender_degrees": 20.973493421320804,
+      "placement_gltf_xyz": [
+        -40.45,
+        2.196772207105743,
+        10.76
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_12_halftimber/lot_12_halftimber__Shell",
+        "Interior": "Buildings/lot_12_halftimber/lot_12_halftimber__Interior",
+        "Roof": "Buildings/lot_12_halftimber/lot_12_halftimber__Roof",
+        "FrontCover": "Buildings/lot_12_halftimber/lot_12_halftimber__FrontCover",
+        "UpperCover": "Buildings/lot_12_halftimber/lot_12_halftimber__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 7,
+        "Interior": 54,
+        "Roof": 11,
+        "FrontCover": 12,
+        "UpperCover": 124
+      },
+      "nested_collection_nodes": [
+        "lot_12_halftimber__Interior_L01",
+        "lot_12_halftimber__L01_Hall",
+        "lot_12_halftimber__L01_Stairwell",
+        "lot_12_halftimber__L01_Lower_Landing",
+        "lot_12_halftimber__L01_Upper_Landing",
+        "lot_12_halftimber__L01_Front_Room",
+        "lot_12_halftimber__L01_Rear_Room",
+        "lot_12_halftimber__Interior_L02",
+        "lot_12_halftimber__L02_Hall",
+        "lot_12_halftimber__L02_Stairwell",
+        "lot_12_halftimber__L02_Lower_Landing",
+        "lot_12_halftimber__L02_Upper_Landing",
+        "lot_12_halftimber__L02_Front_Room",
+        "lot_12_halftimber__L02_Rear_Room",
+        "lot_12_halftimber__Interior_L00",
+        "lot_12_halftimber__L00_Hall",
+        "lot_12_halftimber__L00_Stairwell",
+        "lot_12_halftimber__L00_Lower_Landing",
+        "lot_12_halftimber__L00_Upper_Landing",
+        "lot_12_halftimber__L00_Front_Room",
+        "lot_12_halftimber__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 208,
+        "triangles": 13934
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 7,
+          "triangles": 432
+        },
+        "Interior": {
+          "mesh_nodes": 54,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 11,
+          "triangles": 874
+        },
+        "FrontCover": {
+          "mesh_nodes": 12,
+          "triangles": 3548
+        },
+        "UpperCover": {
+          "mesh_nodes": 124,
+          "triangles": 5980
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_12_halftimber.glb",
+        "sha256": "230457064e6da1385ad858b387e8ef8bed2e797da304cecdf51279464e4c6a38",
+        "bytes": 7086888,
+        "nodes": 237,
+        "meshes": 208,
+        "materials": 23,
+        "embedded_images": 18,
+        "triangles": 13934,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 13,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 208,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.492870330810547,
+            -0.3872079849243164,
+            -3.9250011444091797
+          ],
+          "max": [
+            3.4928665161132812,
+            12.560001373291016,
+            4.342500686645508
+          ],
+          "size": [
+            6.985736846923828,
+            12.947209358215332,
+            8.267501831054688
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_14_halftimber",
+      "kind": "halftimber",
+      "district": "D01",
+      "source_ref": "program_inventory.map.solid_lots.lot_14_halftimber",
+      "footprint_metres": [
+        6.4257295305669375,
+        7
+      ],
+      "placement_blender_xyz": [
+        -34.45,
+        -8.46,
+        1.8707418919133687
+      ],
+      "yaw_blender_degrees": 20.973493421320804,
+      "placement_gltf_xyz": [
+        -34.45,
+        1.8707418919133687,
+        8.46
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_14_halftimber/lot_14_halftimber__Shell",
+        "Interior": "Buildings/lot_14_halftimber/lot_14_halftimber__Interior",
+        "Roof": "Buildings/lot_14_halftimber/lot_14_halftimber__Roof",
+        "FrontCover": "Buildings/lot_14_halftimber/lot_14_halftimber__FrontCover",
+        "UpperCover": "Buildings/lot_14_halftimber/lot_14_halftimber__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 7,
+        "Interior": 55,
+        "Roof": 11,
+        "FrontCover": 13,
+        "UpperCover": 59
+      },
+      "nested_collection_nodes": [
+        "lot_14_halftimber__Interior_L01",
+        "lot_14_halftimber__L01_Hall",
+        "lot_14_halftimber__L01_Stairwell",
+        "lot_14_halftimber__L01_Lower_Landing",
+        "lot_14_halftimber__L01_Upper_Landing",
+        "lot_14_halftimber__L01_Front_Room",
+        "lot_14_halftimber__L01_Rear_Room",
+        "lot_14_halftimber__Interior_L00",
+        "lot_14_halftimber__L00_Hall",
+        "lot_14_halftimber__L00_Stairwell",
+        "lot_14_halftimber__L00_Lower_Landing",
+        "lot_14_halftimber__L00_Upper_Landing",
+        "lot_14_halftimber__L00_Front_Room",
+        "lot_14_halftimber__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 145,
+        "triangles": 9802
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 7,
+          "triangles": 432
+        },
+        "Interior": {
+          "mesh_nodes": 55,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 11,
+          "triangles": 1030
+        },
+        "FrontCover": {
+          "mesh_nodes": 13,
+          "triangles": 2856
+        },
+        "UpperCover": {
+          "mesh_nodes": 59,
+          "triangles": 2384
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_14_halftimber.glb",
+        "sha256": "0ad0fd8170f9a3d1dca10095cf1eb4a877db9348921a0ca5c359aa688f2f9d65",
+        "bytes": 6606792,
+        "nodes": 167,
+        "meshes": 145,
+        "materials": 23,
+        "embedded_images": 18,
+        "triangles": 9802,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 14,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 145,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.4928665161132812,
+            -0.3884683847427368,
+            -3.9250006675720215
+          ],
+          "max": [
+            3.4928665161132812,
+            9.710000038146973,
+            5.1750006675720215
+          ],
+          "size": [
+            6.9857330322265625,
+            10.098468780517578,
+            9.100001335144043
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_15_terrace",
+      "kind": "terrace",
+      "district": "D01",
+      "source_ref": "program_inventory.map.solid_lots.lot_15_terrace",
+      "footprint_metres": [
+        6.4257295305669375,
+        7
+      ],
+      "placement_blender_xyz": [
+        -28.45,
+        -6.16,
+        1.5450986697792521
+      ],
+      "yaw_blender_degrees": 20.973493421320804,
+      "placement_gltf_xyz": [
+        -28.45,
+        1.5450986697792521,
+        6.16
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_15_terrace/lot_15_terrace__Shell",
+        "Interior": "Buildings/lot_15_terrace/lot_15_terrace__Interior",
+        "Roof": "Buildings/lot_15_terrace/lot_15_terrace__Roof",
+        "FrontCover": "Buildings/lot_15_terrace/lot_15_terrace__FrontCover",
+        "UpperCover": "Buildings/lot_15_terrace/lot_15_terrace__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 12,
+        "Interior": 55,
+        "Roof": 11,
+        "FrontCover": 10,
+        "UpperCover": 64
+      },
+      "nested_collection_nodes": [
+        "lot_15_terrace__Interior_L01",
+        "lot_15_terrace__L01_Hall",
+        "lot_15_terrace__L01_Stairwell",
+        "lot_15_terrace__L01_Lower_Landing",
+        "lot_15_terrace__L01_Upper_Landing",
+        "lot_15_terrace__L01_Front_Room",
+        "lot_15_terrace__L01_Rear_Room",
+        "lot_15_terrace__Interior_L00",
+        "lot_15_terrace__L00_Hall",
+        "lot_15_terrace__L00_Stairwell",
+        "lot_15_terrace__L00_Lower_Landing",
+        "lot_15_terrace__L00_Upper_Landing",
+        "lot_15_terrace__L00_Front_Room",
+        "lot_15_terrace__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 152,
+        "triangles": 10890
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 12,
+          "triangles": 1344
+        },
+        "Interior": {
+          "mesh_nodes": 55,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 11,
+          "triangles": 874
+        },
+        "FrontCover": {
+          "mesh_nodes": 10,
+          "triangles": 2276
+        },
+        "UpperCover": {
+          "mesh_nodes": 64,
+          "triangles": 3296
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_15_terrace.glb",
+        "sha256": "6f278e2ce4e155fd301948782b708bf7e722567e1c692b0f4cb7f8f9ab32230e",
+        "bytes": 6712236,
+        "nodes": 174,
+        "meshes": 152,
+        "materials": 21,
+        "embedded_images": 18,
+        "triangles": 10890,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 12,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 152,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.4928646087646484,
+            -0.40530669689178467,
+            -3.924999713897705
+          ],
+          "max": [
+            3.6378650665283203,
+            9.710000038146973,
+            4.342501163482666
+          ],
+          "size": [
+            7.130729675292969,
+            10.115306854248047,
+            8.267500877380371
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_18_terrace",
+      "kind": "terrace",
+      "district": "D01",
+      "source_ref": "program_inventory.map.solid_lots.lot_18_terrace",
+      "footprint_metres": [
+        6.4257295305669375,
+        7.5
+      ],
+      "placement_blender_xyz": [
+        -42.5,
+        -25.5,
+        2.2987252807659555
+      ],
+      "yaw_blender_degrees": 200.9734934213208,
+      "placement_gltf_xyz": [
+        -42.5,
+        2.2987252807659555,
+        25.5
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_18_terrace/lot_18_terrace__Shell",
+        "Interior": "Buildings/lot_18_terrace/lot_18_terrace__Interior",
+        "Roof": "Buildings/lot_18_terrace/lot_18_terrace__Roof",
+        "FrontCover": "Buildings/lot_18_terrace/lot_18_terrace__FrontCover",
+        "UpperCover": "Buildings/lot_18_terrace/lot_18_terrace__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 12,
+        "Interior": 54,
+        "Roof": 12,
+        "FrontCover": 9,
+        "UpperCover": 64
+      },
+      "nested_collection_nodes": [
+        "lot_18_terrace__Interior_L01",
+        "lot_18_terrace__L01_Hall",
+        "lot_18_terrace__L01_Stairwell",
+        "lot_18_terrace__L01_Lower_Landing",
+        "lot_18_terrace__L01_Upper_Landing",
+        "lot_18_terrace__L01_Front_Room",
+        "lot_18_terrace__L01_Rear_Room",
+        "lot_18_terrace__Interior_L00",
+        "lot_18_terrace__L00_Hall",
+        "lot_18_terrace__L00_Stairwell",
+        "lot_18_terrace__L00_Lower_Landing",
+        "lot_18_terrace__L00_Upper_Landing",
+        "lot_18_terrace__L00_Front_Room",
+        "lot_18_terrace__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 151,
+        "triangles": 11034
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 12,
+          "triangles": 1344
+        },
+        "Interior": {
+          "mesh_nodes": 54,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 12,
+          "triangles": 1054
+        },
+        "FrontCover": {
+          "mesh_nodes": 9,
+          "triangles": 2240
+        },
+        "UpperCover": {
+          "mesh_nodes": 64,
+          "triangles": 3296
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_18_terrace.glb",
+        "sha256": "9f49bf19c7da005e5b6c5cffd3586dc3399d69dc775b989b18612126d59271e8",
+        "bytes": 6741744,
+        "nodes": 173,
+        "meshes": 151,
+        "materials": 20,
+        "embedded_images": 18,
+        "triangles": 11034,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 11,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 151,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.4928665161132812,
+            -0.38931286334991455,
+            -4.175000190734863
+          ],
+          "max": [
+            3.637866973876953,
+            9.899999618530273,
+            4.3125
+          ],
+          "size": [
+            7.130733489990234,
+            10.289312362670898,
+            8.487500190734863
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_20_ochre",
+      "kind": "ochre",
+      "district": "D01",
+      "source_ref": "program_inventory.map.solid_lots.lot_20_ochre",
+      "footprint_metres": [
+        6.4257295305669375,
+        7.5
+      ],
+      "placement_blender_xyz": [
+        -36.5,
+        -23.2,
+        1.9691498735825812
+      ],
+      "yaw_blender_degrees": 200.9734934213208,
+      "placement_gltf_xyz": [
+        -36.5,
+        1.9691498735825812,
+        23.2
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_20_ochre/lot_20_ochre__Shell",
+        "Interior": "Buildings/lot_20_ochre/lot_20_ochre__Interior",
+        "Roof": "Buildings/lot_20_ochre/lot_20_ochre__Roof",
+        "FrontCover": "Buildings/lot_20_ochre/lot_20_ochre__FrontCover",
+        "UpperCover": "Buildings/lot_20_ochre/lot_20_ochre__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 7,
+        "Interior": 54,
+        "Roof": 11,
+        "FrontCover": 11,
+        "UpperCover": 58
+      },
+      "nested_collection_nodes": [
+        "lot_20_ochre__Interior_L01",
+        "lot_20_ochre__L01_Hall",
+        "lot_20_ochre__L01_Stairwell",
+        "lot_20_ochre__L01_Lower_Landing",
+        "lot_20_ochre__L01_Upper_Landing",
+        "lot_20_ochre__L01_Front_Room",
+        "lot_20_ochre__L01_Rear_Room",
+        "lot_20_ochre__Interior_L00",
+        "lot_20_ochre__L00_Hall",
+        "lot_20_ochre__L00_Stairwell",
+        "lot_20_ochre__L00_Lower_Landing",
+        "lot_20_ochre__L00_Upper_Landing",
+        "lot_20_ochre__L00_Front_Room",
+        "lot_20_ochre__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 141,
+        "triangles": 9706
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 7,
+          "triangles": 432
+        },
+        "Interior": {
+          "mesh_nodes": 54,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 11,
+          "triangles": 1054
+        },
+        "FrontCover": {
+          "mesh_nodes": 11,
+          "triangles": 2736
+        },
+        "UpperCover": {
+          "mesh_nodes": 58,
+          "triangles": 2384
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_20_ochre.glb",
+        "sha256": "96b6756cf6b10be044c9221ee0f3a937173041454a3a5b37181c23d347c2f77b",
+        "bytes": 6600840,
+        "nodes": 163,
+        "meshes": 141,
+        "materials": 22,
+        "embedded_images": 18,
+        "triangles": 9706,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 13,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 141,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.4928627014160156,
+            -0.38949501514434814,
+            -4.1749982833862305
+          ],
+          "max": [
+            3.492870330810547,
+            9.899999618530273,
+            5.4250030517578125
+          ],
+          "size": [
+            6.9857330322265625,
+            10.289494514465332,
+            9.600001335144043
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_22_halftimber",
+      "kind": "halftimber",
+      "district": "D01",
+      "source_ref": "program_inventory.map.solid_lots.lot_22_halftimber",
+      "footprint_metres": [
+        6.4257295305669375,
+        7.5
+      ],
+      "placement_blender_xyz": [
+        -30.5,
+        -20.9,
+        1.6397006500265354
+      ],
+      "yaw_blender_degrees": 200.9734934213208,
+      "placement_gltf_xyz": [
+        -30.5,
+        1.6397006500265354,
+        20.9
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_22_halftimber/lot_22_halftimber__Shell",
+        "Interior": "Buildings/lot_22_halftimber/lot_22_halftimber__Interior",
+        "Roof": "Buildings/lot_22_halftimber/lot_22_halftimber__Roof",
+        "FrontCover": "Buildings/lot_22_halftimber/lot_22_halftimber__FrontCover",
+        "UpperCover": "Buildings/lot_22_halftimber/lot_22_halftimber__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 7,
+        "Interior": 55,
+        "Roof": 11,
+        "FrontCover": 10,
+        "UpperCover": 58
+      },
+      "nested_collection_nodes": [
+        "lot_22_halftimber__Interior_L01",
+        "lot_22_halftimber__L01_Hall",
+        "lot_22_halftimber__L01_Stairwell",
+        "lot_22_halftimber__L01_Lower_Landing",
+        "lot_22_halftimber__L01_Upper_Landing",
+        "lot_22_halftimber__L01_Front_Room",
+        "lot_22_halftimber__L01_Rear_Room",
+        "lot_22_halftimber__Interior_L00",
+        "lot_22_halftimber__L00_Hall",
+        "lot_22_halftimber__L00_Stairwell",
+        "lot_22_halftimber__L00_Lower_Landing",
+        "lot_22_halftimber__L00_Upper_Landing",
+        "lot_22_halftimber__L00_Front_Room",
+        "lot_22_halftimber__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 141,
+        "triangles": 9138
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 7,
+          "triangles": 432
+        },
+        "Interior": {
+          "mesh_nodes": 55,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 11,
+          "triangles": 898
+        },
+        "FrontCover": {
+          "mesh_nodes": 10,
+          "triangles": 2324
+        },
+        "UpperCover": {
+          "mesh_nodes": 58,
+          "triangles": 2384
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_22_halftimber.glb",
+        "sha256": "287c2ac45f06ad063c29b0e3a7424c6647604ad8e90017068e19ce8ef19468b9",
+        "bytes": 6544148,
+        "nodes": 163,
+        "meshes": 141,
+        "materials": 22,
+        "embedded_images": 18,
+        "triangles": 9138,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 13,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 141,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.4928665161132812,
+            -0.3971050977706909,
+            -4.175002098083496
+          ],
+          "max": [
+            3.4928665161132812,
+            9.899999618530273,
+            4.312500953674316
+          ],
+          "size": [
+            6.9857330322265625,
+            10.297104835510254,
+            8.487503051757812
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_23_townhouse",
+      "kind": "townhouse",
+      "district": "D01",
+      "source_ref": "program_inventory.map.solid_lots.lot_23_townhouse",
+      "footprint_metres": [
+        6.4257295305669375,
+        7.5
+      ],
+      "placement_blender_xyz": [
+        -24.5,
+        -18.6,
+        1.2963531632346408
+      ],
+      "yaw_blender_degrees": 200.9734934213208,
+      "placement_gltf_xyz": [
+        -24.5,
+        1.2963531632346408,
+        18.6
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_23_townhouse/lot_23_townhouse__Shell",
+        "Interior": "Buildings/lot_23_townhouse/lot_23_townhouse__Interior",
+        "Roof": "Buildings/lot_23_townhouse/lot_23_townhouse__Roof",
+        "FrontCover": "Buildings/lot_23_townhouse/lot_23_townhouse__FrontCover",
+        "UpperCover": "Buildings/lot_23_townhouse/lot_23_townhouse__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 7,
+        "Interior": 55,
+        "Roof": 10,
+        "FrontCover": 9,
+        "UpperCover": 59
+      },
+      "nested_collection_nodes": [
+        "lot_23_townhouse__Interior_L01",
+        "lot_23_townhouse__L01_Hall",
+        "lot_23_townhouse__L01_Stairwell",
+        "lot_23_townhouse__L01_Lower_Landing",
+        "lot_23_townhouse__L01_Upper_Landing",
+        "lot_23_townhouse__L01_Front_Room",
+        "lot_23_townhouse__L01_Rear_Room",
+        "lot_23_townhouse__Interior_L00",
+        "lot_23_townhouse__L00_Hall",
+        "lot_23_townhouse__L00_Stairwell",
+        "lot_23_townhouse__L00_Lower_Landing",
+        "lot_23_townhouse__L00_Upper_Landing",
+        "lot_23_townhouse__L00_Front_Room",
+        "lot_23_townhouse__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 140,
+        "triangles": 9054
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 7,
+          "triangles": 432
+        },
+        "Interior": {
+          "mesh_nodes": 55,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 10,
+          "triangles": 898
+        },
+        "FrontCover": {
+          "mesh_nodes": 9,
+          "triangles": 2240
+        },
+        "UpperCover": {
+          "mesh_nodes": 59,
+          "triangles": 2384
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_23_townhouse.glb",
+        "sha256": "eeda9d80df54c26491a89491e18697ef59b6f93c5018773c74a2f92d0e6aa47e",
+        "bytes": 6528524,
+        "nodes": 162,
+        "meshes": 140,
+        "materials": 20,
+        "embedded_images": 18,
+        "triangles": 9054,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 11,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 140,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.4928665161132812,
+            -0.407417356967926,
+            -4.175000190734863
+          ],
+          "max": [
+            3.4928627014160156,
+            9.899999618530273,
+            4.312500953674316
+          ],
+          "size": [
+            6.985729217529297,
+            10.307416915893555,
+            8.48750114440918
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_24_ochre",
+      "kind": "ochre",
+      "district": "D01",
+      "source_ref": "program_inventory.map.solid_lots.lot_24_ochre",
+      "footprint_metres": [
+        6.4257295305669375,
+        7.5
+      ],
+      "placement_blender_xyz": [
+        -18.5,
+        -16.3,
+        0.9429737543877748
+      ],
+      "yaw_blender_degrees": 200.9734934213208,
+      "placement_gltf_xyz": [
+        -18.5,
+        0.9429737543877748,
+        16.3
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_24_ochre/lot_24_ochre__Shell",
+        "Interior": "Buildings/lot_24_ochre/lot_24_ochre__Interior",
+        "Roof": "Buildings/lot_24_ochre/lot_24_ochre__Roof",
+        "FrontCover": "Buildings/lot_24_ochre/lot_24_ochre__FrontCover",
+        "UpperCover": "Buildings/lot_24_ochre/lot_24_ochre__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 12,
+        "Interior": 55,
+        "Roof": 11,
+        "FrontCover": 9,
+        "UpperCover": 63
+      },
+      "nested_collection_nodes": [
+        "lot_24_ochre__Interior_L01",
+        "lot_24_ochre__L01_Hall",
+        "lot_24_ochre__L01_Stairwell",
+        "lot_24_ochre__L01_Lower_Landing",
+        "lot_24_ochre__L01_Upper_Landing",
+        "lot_24_ochre__L01_Front_Room",
+        "lot_24_ochre__L01_Rear_Room",
+        "lot_24_ochre__Interior_L00",
+        "lot_24_ochre__L00_Hall",
+        "lot_24_ochre__L00_Stairwell",
+        "lot_24_ochre__L00_Lower_Landing",
+        "lot_24_ochre__L00_Upper_Landing",
+        "lot_24_ochre__L00_Front_Room",
+        "lot_24_ochre__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 150,
+        "triangles": 11034
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 12,
+          "triangles": 1344
+        },
+        "Interior": {
+          "mesh_nodes": 55,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 11,
+          "triangles": 1054
+        },
+        "FrontCover": {
+          "mesh_nodes": 9,
+          "triangles": 2240
+        },
+        "UpperCover": {
+          "mesh_nodes": 63,
+          "triangles": 3296
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_24_ochre.glb",
+        "sha256": "1155f116c1aa91f4d45f4818e6b9aeb26a5f92c5a39276ab8f9ea45f2ecfb203",
+        "bytes": 6730356,
+        "nodes": 172,
+        "meshes": 150,
+        "materials": 20,
+        "embedded_images": 18,
+        "triangles": 11034,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 11,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 150,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.6378650665283203,
+            -0.4077608585357666,
+            -4.1750030517578125
+          ],
+          "max": [
+            3.4928665161132812,
+            9.899999618530273,
+            4.312499523162842
+          ],
+          "size": [
+            7.130731582641602,
+            10.307760238647461,
+            8.487503051757812
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_25_townhouse",
+      "kind": "townhouse",
+      "district": "D01",
+      "source_ref": "program_inventory.map.solid_lots.lot_25_townhouse",
+      "footprint_metres": [
+        6.5,
+        7
+      ],
+      "placement_blender_xyz": [
+        -36.25,
+        19,
+        2.3707338822125723
+      ],
+      "yaw_blender_degrees": 0,
+      "placement_gltf_xyz": [
+        -36.25,
+        2.3707338822125723,
+        -19
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_25_townhouse/lot_25_townhouse__Shell",
+        "Interior": "Buildings/lot_25_townhouse/lot_25_townhouse__Interior",
+        "Roof": "Buildings/lot_25_townhouse/lot_25_townhouse__Roof",
+        "FrontCover": "Buildings/lot_25_townhouse/lot_25_townhouse__FrontCover",
+        "UpperCover": "Buildings/lot_25_townhouse/lot_25_townhouse__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 6,
+        "Interior": 77,
+        "Roof": 9,
+        "FrontCover": 9,
+        "UpperCover": 0
+      },
+      "nested_collection_nodes": [
+        "lot_25_townhouse__Interior_L00",
+        "lot_25_townhouse__L00_Living_Kitchen",
+        "lot_25_townhouse__L00_Bedroom",
+        "lot_25_townhouse__L00_Bathroom",
+        "lot_25_townhouse__L00_Rear_Hall"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 101,
+        "triangles": 5922
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 6,
+          "triangles": 420
+        },
+        "Interior": {
+          "mesh_nodes": 77,
+          "triangles": 3328
+        },
+        "Roof": {
+          "mesh_nodes": 9,
+          "triangles": 714
+        },
+        "FrontCover": {
+          "mesh_nodes": 9,
+          "triangles": 1460
+        },
+        "UpperCover": {
+          "mesh_nodes": 0,
+          "triangles": 0
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_25_townhouse.glb",
+        "sha256": "013a33aab8c6510c9269d4f512bb6086b2ff5740d266add8d160a2b282cf6d16",
+        "bytes": 6153488,
+        "nodes": 114,
+        "meshes": 101,
+        "materials": 19,
+        "embedded_images": 18,
+        "triangles": 5922,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 10,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 101,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.529998779296875,
+            -0.47527754306793213,
+            -3.924999237060547
+          ],
+          "max": [
+            3.529998779296875,
+            6.859999656677246,
+            4.622500419616699
+          ],
+          "size": [
+            7.05999755859375,
+            7.335277080535889,
+            8.547499656677246
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_26_ochre",
+      "kind": "ochre",
+      "district": "D01",
+      "source_ref": "program_inventory.map.solid_lots.lot_26_ochre",
+      "footprint_metres": [
+        6.5,
+        7
+      ],
+      "placement_blender_xyz": [
+        -29.75,
+        17.8,
+        1.9388249396135249
+      ],
+      "yaw_blender_degrees": 0,
+      "placement_gltf_xyz": [
+        -29.75,
+        1.9388249396135249,
+        -17.8
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_26_ochre/lot_26_ochre__Shell",
+        "Interior": "Buildings/lot_26_ochre/lot_26_ochre__Interior",
+        "Roof": "Buildings/lot_26_ochre/lot_26_ochre__Roof",
+        "FrontCover": "Buildings/lot_26_ochre/lot_26_ochre__FrontCover",
+        "UpperCover": "Buildings/lot_26_ochre/lot_26_ochre__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 12,
+        "Interior": 76,
+        "Roof": 8,
+        "FrontCover": 9,
+        "UpperCover": 0
+      },
+      "nested_collection_nodes": [
+        "lot_26_ochre__Interior_L00",
+        "lot_26_ochre__L00_Living_Kitchen",
+        "lot_26_ochre__L00_Bedroom",
+        "lot_26_ochre__L00_Bathroom",
+        "lot_26_ochre__L00_Rear_Hall"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 105,
+        "triangles": 6678
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 12,
+          "triangles": 1344
+        },
+        "Interior": {
+          "mesh_nodes": 76,
+          "triangles": 3328
+        },
+        "Roof": {
+          "mesh_nodes": 8,
+          "triangles": 558
+        },
+        "FrontCover": {
+          "mesh_nodes": 9,
+          "triangles": 1448
+        },
+        "UpperCover": {
+          "mesh_nodes": 0,
+          "triangles": 0
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_26_ochre.glb",
+        "sha256": "bbe5c82edc90e20ea790161534371d76b8c403c19552de40db0da081556bbcfc",
+        "bytes": 6232284,
+        "nodes": 118,
+        "meshes": 105,
+        "materials": 19,
+        "embedded_images": 18,
+        "triangles": 6678,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 10,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 105,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.529998779296875,
+            -0.4593247175216675,
+            -3.924999237060547
+          ],
+          "max": [
+            3.674999237060547,
+            6.8600006103515625,
+            4.342499732971191
+          ],
+          "size": [
+            7.204998016357422,
+            7.3193254470825195,
+            8.267498970031738
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_27_terrace",
+      "kind": "terrace",
+      "district": "D01",
+      "source_ref": "program_inventory.map.solid_lots.lot_27_terrace",
+      "footprint_metres": [
+        6.7,
+        7
+      ],
+      "placement_blender_xyz": [
+        -49.02314916742167,
+        6.439088676835233,
+        2.727770200085737
+      ],
+      "yaw_blender_degrees": 177.5,
+      "placement_gltf_xyz": [
+        -49.02314916742167,
+        2.727770200085737,
+        -6.439088676835233
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_27_terrace/lot_27_terrace__Shell",
+        "Interior": "Buildings/lot_27_terrace/lot_27_terrace__Interior",
+        "Roof": "Buildings/lot_27_terrace/lot_27_terrace__Roof",
+        "FrontCover": "Buildings/lot_27_terrace/lot_27_terrace__FrontCover",
+        "UpperCover": "Buildings/lot_27_terrace/lot_27_terrace__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 12,
+        "Interior": 55,
+        "Roof": 11,
+        "FrontCover": 9,
+        "UpperCover": 63
+      },
+      "nested_collection_nodes": [
+        "lot_27_terrace__Interior_L01",
+        "lot_27_terrace__L01_Hall",
+        "lot_27_terrace__L01_Stairwell",
+        "lot_27_terrace__L01_Lower_Landing",
+        "lot_27_terrace__L01_Upper_Landing",
+        "lot_27_terrace__L01_Front_Room",
+        "lot_27_terrace__L01_Rear_Room",
+        "lot_27_terrace__Interior_L00",
+        "lot_27_terrace__L00_Hall",
+        "lot_27_terrace__L00_Stairwell",
+        "lot_27_terrace__L00_Lower_Landing",
+        "lot_27_terrace__L00_Upper_Landing",
+        "lot_27_terrace__L00_Front_Room",
+        "lot_27_terrace__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 150,
+        "triangles": 11298
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 12,
+          "triangles": 1344
+        },
+        "Interior": {
+          "mesh_nodes": 55,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 11,
+          "triangles": 1030
+        },
+        "FrontCover": {
+          "mesh_nodes": 9,
+          "triangles": 2528
+        },
+        "UpperCover": {
+          "mesh_nodes": 63,
+          "triangles": 3296
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_27_terrace.glb",
+        "sha256": "dc7fe95ae6538c9b3b171210c0cbdc3f25770e56d204f7746e121f1303816210",
+        "bytes": 6750584,
+        "nodes": 172,
+        "meshes": 150,
+        "materials": 19,
+        "embedded_images": 18,
+        "triangles": 11298,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 10,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 150,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.6300048828125,
+            -0.34236741065979004,
+            -3.925001382827759
+          ],
+          "max": [
+            3.7749977111816406,
+            9.710000038146973,
+            4.062499046325684
+          ],
+          "size": [
+            7.405002593994141,
+            10.052367210388184,
+            7.987500190734863
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_29_halftimber",
+      "kind": "halftimber",
+      "district": "D01",
+      "source_ref": "program_inventory.map.solid_lots.lot_29_halftimber",
+      "footprint_metres": [
+        6.7,
+        7
+      ],
+      "placement_blender_xyz": [
+        -42.30771638914056,
+        6.646362892278411,
+        2.365984324327293
+      ],
+      "yaw_blender_degrees": 177.5,
+      "placement_gltf_xyz": [
+        -42.30771638914056,
+        2.365984324327293,
+        -6.646362892278411
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_29_halftimber/lot_29_halftimber__Shell",
+        "Interior": "Buildings/lot_29_halftimber/lot_29_halftimber__Interior",
+        "Roof": "Buildings/lot_29_halftimber/lot_29_halftimber__Roof",
+        "FrontCover": "Buildings/lot_29_halftimber/lot_29_halftimber__FrontCover",
+        "UpperCover": "Buildings/lot_29_halftimber/lot_29_halftimber__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 7,
+        "Interior": 54,
+        "Roof": 10,
+        "FrontCover": 10,
+        "UpperCover": 59
+      },
+      "nested_collection_nodes": [
+        "lot_29_halftimber__Interior_L01",
+        "lot_29_halftimber__L01_Hall",
+        "lot_29_halftimber__L01_Stairwell",
+        "lot_29_halftimber__L01_Lower_Landing",
+        "lot_29_halftimber__L01_Upper_Landing",
+        "lot_29_halftimber__L01_Front_Room",
+        "lot_29_halftimber__L01_Rear_Room",
+        "lot_29_halftimber__Interior_L00",
+        "lot_29_halftimber__L00_Hall",
+        "lot_29_halftimber__L00_Stairwell",
+        "lot_29_halftimber__L00_Lower_Landing",
+        "lot_29_halftimber__L00_Upper_Landing",
+        "lot_29_halftimber__L00_Front_Room",
+        "lot_29_halftimber__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 140,
+        "triangles": 9402
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 7,
+          "triangles": 432
+        },
+        "Interior": {
+          "mesh_nodes": 54,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 10,
+          "triangles": 874
+        },
+        "FrontCover": {
+          "mesh_nodes": 10,
+          "triangles": 2612
+        },
+        "UpperCover": {
+          "mesh_nodes": 59,
+          "triangles": 2384
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_29_halftimber.glb",
+        "sha256": "127dbd8da6e78efcd562bda6e9ac5e1da2701d6a801f9b2eeca9ac307494ae96",
+        "bytes": 6552404,
+        "nodes": 162,
+        "meshes": 140,
+        "materials": 21,
+        "embedded_images": 18,
+        "triangles": 9402,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 12,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 140,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.6300010681152344,
+            -0.34580492973327637,
+            -3.9250006675720215
+          ],
+          "max": [
+            3.6300010681152344,
+            9.710000991821289,
+            4.0625
+          ],
+          "size": [
+            7.260002136230469,
+            10.055806159973145,
+            7.9875006675720215
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_30_townhouse",
+      "kind": "townhouse",
+      "district": "D01",
+      "source_ref": "program_inventory.map.solid_lots.lot_30_townhouse",
+      "footprint_metres": [
+        6.7,
+        7
+      ],
+      "placement_blender_xyz": [
+        -35.59228361085945,
+        6.853637107721589,
+        2.000892385716829
+      ],
+      "yaw_blender_degrees": 177.5,
+      "placement_gltf_xyz": [
+        -35.59228361085945,
+        2.000892385716829,
+        -6.853637107721589
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_30_townhouse/lot_30_townhouse__Shell",
+        "Interior": "Buildings/lot_30_townhouse/lot_30_townhouse__Interior",
+        "Roof": "Buildings/lot_30_townhouse/lot_30_townhouse__Roof",
+        "FrontCover": "Buildings/lot_30_townhouse/lot_30_townhouse__FrontCover",
+        "UpperCover": "Buildings/lot_30_townhouse/lot_30_townhouse__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 7,
+        "Interior": 55,
+        "Roof": 11,
+        "FrontCover": 9,
+        "UpperCover": 59
+      },
+      "nested_collection_nodes": [
+        "lot_30_townhouse__Interior_L01",
+        "lot_30_townhouse__L01_Hall",
+        "lot_30_townhouse__L01_Stairwell",
+        "lot_30_townhouse__L01_Lower_Landing",
+        "lot_30_townhouse__L01_Upper_Landing",
+        "lot_30_townhouse__L01_Front_Room",
+        "lot_30_townhouse__L01_Rear_Room",
+        "lot_30_townhouse__Interior_L00",
+        "lot_30_townhouse__L00_Hall",
+        "lot_30_townhouse__L00_Stairwell",
+        "lot_30_townhouse__L00_Lower_Landing",
+        "lot_30_townhouse__L00_Upper_Landing",
+        "lot_30_townhouse__L00_Front_Room",
+        "lot_30_townhouse__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 141,
+        "triangles": 9474
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 7,
+          "triangles": 432
+        },
+        "Interior": {
+          "mesh_nodes": 55,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 11,
+          "triangles": 1030
+        },
+        "FrontCover": {
+          "mesh_nodes": 9,
+          "triangles": 2528
+        },
+        "UpperCover": {
+          "mesh_nodes": 59,
+          "triangles": 2384
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_30_townhouse.glb",
+        "sha256": "fa6c2e056c1a2706bcbca0b50a4e6290877c068c16d0982a1ba4ccb16a4b24c3",
+        "bytes": 6560764,
+        "nodes": 163,
+        "meshes": 141,
+        "materials": 20,
+        "embedded_images": 18,
+        "triangles": 9474,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 11,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 141,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.6300010681152344,
+            -0.3488246202468872,
+            -3.9250006675720215
+          ],
+          "max": [
+            3.6300010681152344,
+            9.710000038146973,
+            4.062500476837158
+          ],
+          "size": [
+            7.260002136230469,
+            10.05882453918457,
+            7.98750114440918
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_31_longere",
+      "kind": "longere",
+      "district": "D01",
+      "source_ref": "program_inventory.map.solid_lots.lot_31_longere",
+      "footprint_metres": [
+        6.7,
+        7
+      ],
+      "placement_blender_xyz": [
+        -28.876850832578327,
+        7.060911323164766,
+        1.6305427905285712
+      ],
+      "yaw_blender_degrees": 177.5,
+      "placement_gltf_xyz": [
+        -28.876850832578327,
+        1.6305427905285712,
+        -7.060911323164766
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_31_longere/lot_31_longere__Shell",
+        "Interior": "Buildings/lot_31_longere/lot_31_longere__Interior",
+        "Roof": "Buildings/lot_31_longere/lot_31_longere__Roof",
+        "FrontCover": "Buildings/lot_31_longere/lot_31_longere__FrontCover",
+        "UpperCover": "Buildings/lot_31_longere/lot_31_longere__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 12,
+        "Interior": 54,
+        "Roof": 11,
+        "FrontCover": 9,
+        "UpperCover": 63
+      },
+      "nested_collection_nodes": [
+        "lot_31_longere__Interior_L01",
+        "lot_31_longere__L01_Hall",
+        "lot_31_longere__L01_Stairwell",
+        "lot_31_longere__L01_Lower_Landing",
+        "lot_31_longere__L01_Upper_Landing",
+        "lot_31_longere__L01_Front_Room",
+        "lot_31_longere__L01_Rear_Room",
+        "lot_31_longere__Interior_L00",
+        "lot_31_longere__L00_Hall",
+        "lot_31_longere__L00_Stairwell",
+        "lot_31_longere__L00_Lower_Landing",
+        "lot_31_longere__L00_Upper_Landing",
+        "lot_31_longere__L00_Front_Room",
+        "lot_31_longere__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 149,
+        "triangles": 11142
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 12,
+          "triangles": 1344
+        },
+        "Interior": {
+          "mesh_nodes": 54,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 11,
+          "triangles": 874
+        },
+        "FrontCover": {
+          "mesh_nodes": 9,
+          "triangles": 2528
+        },
+        "UpperCover": {
+          "mesh_nodes": 63,
+          "triangles": 3296
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_31_longere.glb",
+        "sha256": "58bb0db3b5307c7f04f2a44525dbcea5a06fe6a51194944869a8a959a286c140",
+        "bytes": 6733628,
+        "nodes": 171,
+        "meshes": 149,
+        "materials": 20,
+        "embedded_images": 18,
+        "triangles": 11142,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 11,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 149,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.7749996185302734,
+            -0.36020421981811523,
+            -3.9250006675720215
+          ],
+          "max": [
+            3.6300048828125,
+            9.710000038146973,
+            4.062500953674316
+          ],
+          "size": [
+            7.405004501342773,
+            10.07020378112793,
+            7.987501621246338
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_33_terrace",
+      "kind": "terrace",
+      "district": "D01",
+      "source_ref": "program_inventory.map.solid_lots.lot_33_terrace",
+      "footprint_metres": [
+        7,
+        7
+      ],
+      "placement_blender_xyz": [
+        -6.973362886642219,
+        -39.28990980076639,
+        0.4291643535821074
+      ],
+      "yaw_blender_degrees": 175,
+      "placement_gltf_xyz": [
+        -6.973362886642219,
+        0.4291643535821074,
+        39.28990980076639
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_33_terrace/lot_33_terrace__Shell",
+        "Interior": "Buildings/lot_33_terrace/lot_33_terrace__Interior",
+        "Roof": "Buildings/lot_33_terrace/lot_33_terrace__Roof",
+        "FrontCover": "Buildings/lot_33_terrace/lot_33_terrace__FrontCover",
+        "UpperCover": "Buildings/lot_33_terrace/lot_33_terrace__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 12,
+        "Interior": 76,
+        "Roof": 8,
+        "FrontCover": 10,
+        "UpperCover": 0
+      },
+      "nested_collection_nodes": [
+        "lot_33_terrace__Interior_L00",
+        "lot_33_terrace__L00_Living_Kitchen",
+        "lot_33_terrace__L00_Bedroom",
+        "lot_33_terrace__L00_Bathroom",
+        "lot_33_terrace__L00_Rear_Hall"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 106,
+        "triangles": 6690
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 12,
+          "triangles": 1344
+        },
+        "Interior": {
+          "mesh_nodes": 76,
+          "triangles": 3328
+        },
+        "Roof": {
+          "mesh_nodes": 8,
+          "triangles": 558
+        },
+        "FrontCover": {
+          "mesh_nodes": 10,
+          "triangles": 1460
+        },
+        "UpperCover": {
+          "mesh_nodes": 0,
+          "triangles": 0
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_33_terrace.glb",
+        "sha256": "f6ae3bbc50d06abcf3dd8d9262992caf350244789c964f8dc566453910c7d10a",
+        "bytes": 6260064,
+        "nodes": 119,
+        "meshes": 106,
+        "materials": 19,
+        "embedded_images": 18,
+        "triangles": 6690,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 10,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 106,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.7800004482269287,
+            -0.16841480135917664,
+            -3.9250030517578125
+          ],
+          "max": [
+            3.924999475479126,
+            6.860000133514404,
+            4.0625
+          ],
+          "size": [
+            7.704999923706055,
+            7.028414726257324,
+            7.9875030517578125
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_34_halftimber",
+      "kind": "halftimber",
+      "district": "D01",
+      "source_ref": "program_inventory.map.solid_lots.lot_34_halftimber",
+      "footprint_metres": [
+        7,
+        7
+      ],
+      "placement_blender_xyz": [
+        0.0,
+        -39.9,
+        0.3980067052200407
+      ],
+      "yaw_blender_degrees": 175,
+      "placement_gltf_xyz": [
+        0.0,
+        0.3980067052200407,
+        39.9
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_34_halftimber/lot_34_halftimber__Shell",
+        "Interior": "Buildings/lot_34_halftimber/lot_34_halftimber__Interior",
+        "Roof": "Buildings/lot_34_halftimber/lot_34_halftimber__Roof",
+        "FrontCover": "Buildings/lot_34_halftimber/lot_34_halftimber__FrontCover",
+        "UpperCover": "Buildings/lot_34_halftimber/lot_34_halftimber__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 7,
+        "Interior": 75,
+        "Roof": 8,
+        "FrontCover": 11,
+        "UpperCover": 0
+      },
+      "nested_collection_nodes": [
+        "lot_34_halftimber__Interior_L00",
+        "lot_34_halftimber__L00_Living_Kitchen",
+        "lot_34_halftimber__L00_Bedroom",
+        "lot_34_halftimber__L00_Bathroom",
+        "lot_34_halftimber__L00_Rear_Hall"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 101,
+        "triangles": 5862
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 7,
+          "triangles": 432
+        },
+        "Interior": {
+          "mesh_nodes": 75,
+          "triangles": 3328
+        },
+        "Roof": {
+          "mesh_nodes": 8,
+          "triangles": 558
+        },
+        "FrontCover": {
+          "mesh_nodes": 11,
+          "triangles": 1544
+        },
+        "UpperCover": {
+          "mesh_nodes": 0,
+          "triangles": 0
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_34_halftimber.glb",
+        "sha256": "b48e6e1eee2edd504106efbc7206d7bfa49312c2f2ec9ad34a4e86733dc31861",
+        "bytes": 6173724,
+        "nodes": 114,
+        "meshes": 101,
+        "materials": 20,
+        "embedded_images": 18,
+        "triangles": 5862,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 11,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 101,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.7799999713897705,
+            -0.16516327857971191,
+            -3.924999237060547
+          ],
+          "max": [
+            3.7800004482269287,
+            6.860000133514404,
+            4.062503814697266
+          ],
+          "size": [
+            7.560000419616699,
+            7.025163650512695,
+            7.9875030517578125
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_36_longere",
+      "kind": "longere",
+      "district": "D01",
+      "source_ref": "program_inventory.map.solid_lots.lot_36_longere",
+      "footprint_metres": [
+        7,
+        7
+      ],
+      "placement_blender_xyz": [
+        6.973362886642219,
+        -40.51009019923361,
+        0.37010933080083713
+      ],
+      "yaw_blender_degrees": 175,
+      "placement_gltf_xyz": [
+        6.973362886642219,
+        0.37010933080083713,
+        40.51009019923361
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_36_longere/lot_36_longere__Shell",
+        "Interior": "Buildings/lot_36_longere/lot_36_longere__Interior",
+        "Roof": "Buildings/lot_36_longere/lot_36_longere__Roof",
+        "FrontCover": "Buildings/lot_36_longere/lot_36_longere__FrontCover",
+        "UpperCover": "Buildings/lot_36_longere/lot_36_longere__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 12,
+        "Interior": 75,
+        "Roof": 8,
+        "FrontCover": 10,
+        "UpperCover": 0
+      },
+      "nested_collection_nodes": [
+        "lot_36_longere__Interior_L00",
+        "lot_36_longere__L00_Living_Kitchen",
+        "lot_36_longere__L00_Bedroom",
+        "lot_36_longere__L00_Bathroom",
+        "lot_36_longere__L00_Rear_Hall"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 105,
+        "triangles": 6690
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 12,
+          "triangles": 1344
+        },
+        "Interior": {
+          "mesh_nodes": 75,
+          "triangles": 3328
+        },
+        "Roof": {
+          "mesh_nodes": 8,
+          "triangles": 558
+        },
+        "FrontCover": {
+          "mesh_nodes": 10,
+          "triangles": 1460
+        },
+        "UpperCover": {
+          "mesh_nodes": 0,
+          "triangles": 0
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_36_longere.glb",
+        "sha256": "0503ec975b5bc1363679b2603269aa7ee5835ce82c6557bed42be5d53410d97b",
+        "bytes": 6262192,
+        "nodes": 118,
+        "meshes": 105,
+        "materials": 19,
+        "embedded_images": 18,
+        "triangles": 6690,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 10,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 105,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.924999237060547,
+            -0.1651657223701477,
+            -3.9250030517578125
+          ],
+          "max": [
+            3.780000686645508,
+            6.859999656677246,
+            4.0625
+          ],
+          "size": [
+            7.704999923706055,
+            7.025165557861328,
+            7.9875030517578125
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_37_longere",
+      "kind": "longere",
+      "district": "D01",
+      "source_ref": "program_inventory.map.solid_lots.lot_37_longere",
+      "footprint_metres": [
+        8,
+        8
+      ],
+      "placement_blender_xyz": [
+        -8,
+        -26,
+        0.4440729418061882
+      ],
+      "yaw_blender_degrees": 0,
+      "placement_gltf_xyz": [
+        -8,
+        0.4440729418061882,
+        26
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_37_longere/lot_37_longere__Shell",
+        "Interior": "Buildings/lot_37_longere/lot_37_longere__Interior",
+        "Roof": "Buildings/lot_37_longere/lot_37_longere__Roof",
+        "FrontCover": "Buildings/lot_37_longere/lot_37_longere__FrontCover",
+        "UpperCover": "Buildings/lot_37_longere/lot_37_longere__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 12,
+        "Interior": 55,
+        "Roof": 10,
+        "FrontCover": 11,
+        "UpperCover": 64
+      },
+      "nested_collection_nodes": [
+        "lot_37_longere__Interior_L01",
+        "lot_37_longere__L01_Hall",
+        "lot_37_longere__L01_Stairwell",
+        "lot_37_longere__L01_Lower_Landing",
+        "lot_37_longere__L01_Upper_Landing",
+        "lot_37_longere__L01_Front_Room",
+        "lot_37_longere__L01_Rear_Room",
+        "lot_37_longere__Interior_L00",
+        "lot_37_longere__L00_Hall",
+        "lot_37_longere__L00_Stairwell",
+        "lot_37_longere__L00_Lower_Landing",
+        "lot_37_longere__L00_Upper_Landing",
+        "lot_37_longere__L00_Front_Room",
+        "lot_37_longere__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 152,
+        "triangles": 11370
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 12,
+          "triangles": 1344
+        },
+        "Interior": {
+          "mesh_nodes": 55,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 10,
+          "triangles": 922
+        },
+        "FrontCover": {
+          "mesh_nodes": 11,
+          "triangles": 2708
+        },
+        "UpperCover": {
+          "mesh_nodes": 64,
+          "triangles": 3296
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_37_longere.glb",
+        "sha256": "acad8a5dfc52f2bea1ca7fa72052595af5fe9e75ced81183d09ee45cd790f5b0",
+        "bytes": 6751588,
+        "nodes": 174,
+        "meshes": 152,
+        "materials": 21,
+        "embedded_images": 18,
+        "triangles": 11370,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 11,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 152,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -4.425000190734863,
+            -0.1799708604812622,
+            -4.424999237060547
+          ],
+          "max": [
+            4.28000020980835,
+            10.09000015258789,
+            4.5625
+          ],
+          "size": [
+            8.704999923706055,
+            10.269970893859863,
+            8.987499237060547
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_38_halftimber",
+      "kind": "halftimber",
+      "district": "D01",
+      "source_ref": "program_inventory.map.solid_lots.lot_38_halftimber",
+      "footprint_metres": [
+        8,
+        8
+      ],
+      "placement_blender_xyz": [
+        0,
+        -26,
+        0.3981709171528713
+      ],
+      "yaw_blender_degrees": 0,
+      "placement_gltf_xyz": [
+        0,
+        0.3981709171528713,
+        26
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_38_halftimber/lot_38_halftimber__Shell",
+        "Interior": "Buildings/lot_38_halftimber/lot_38_halftimber__Interior",
+        "Roof": "Buildings/lot_38_halftimber/lot_38_halftimber__Roof",
+        "FrontCover": "Buildings/lot_38_halftimber/lot_38_halftimber__FrontCover",
+        "UpperCover": "Buildings/lot_38_halftimber/lot_38_halftimber__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 6,
+        "Interior": 54,
+        "Roof": 10,
+        "FrontCover": 14,
+        "UpperCover": 58
+      },
+      "nested_collection_nodes": [
+        "lot_38_halftimber__Interior_L01",
+        "lot_38_halftimber__L01_Hall",
+        "lot_38_halftimber__L01_Stairwell",
+        "lot_38_halftimber__L01_Lower_Landing",
+        "lot_38_halftimber__L01_Upper_Landing",
+        "lot_38_halftimber__L01_Front_Room",
+        "lot_38_halftimber__L01_Rear_Room",
+        "lot_38_halftimber__Interior_L00",
+        "lot_38_halftimber__L00_Hall",
+        "lot_38_halftimber__L00_Stairwell",
+        "lot_38_halftimber__L00_Lower_Landing",
+        "lot_38_halftimber__L00_Upper_Landing",
+        "lot_38_halftimber__L00_Front_Room",
+        "lot_38_halftimber__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 142,
+        "triangles": 10222
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 6,
+          "triangles": 420
+        },
+        "Interior": {
+          "mesh_nodes": 54,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 10,
+          "triangles": 922
+        },
+        "FrontCover": {
+          "mesh_nodes": 14,
+          "triangles": 3408
+        },
+        "UpperCover": {
+          "mesh_nodes": 58,
+          "triangles": 2372
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_38_halftimber.glb",
+        "sha256": "40c5ebdbc6059744cc06d4576951433e8bff181840bace79039df39d7d53a068",
+        "bytes": 6629472,
+        "nodes": 164,
+        "meshes": 142,
+        "materials": 24,
+        "embedded_images": 18,
+        "triangles": 10222,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 14,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 142,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -4.28000020980835,
+            -0.16612191498279572,
+            -4.424999237060547
+          ],
+          "max": [
+            4.28000020980835,
+            10.09000015258789,
+            5.674999237060547
+          ],
+          "size": [
+            8.5600004196167,
+            10.256121635437012,
+            10.099998474121094
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_40_terrace",
+      "kind": "terrace",
+      "district": "D01",
+      "source_ref": "program_inventory.map.solid_lots.lot_40_terrace",
+      "footprint_metres": [
+        8,
+        8
+      ],
+      "placement_blender_xyz": [
+        8,
+        -26,
+        0.36607470367391004
+      ],
+      "yaw_blender_degrees": 0,
+      "placement_gltf_xyz": [
+        8,
+        0.36607470367391004,
+        26
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_40_terrace/lot_40_terrace__Shell",
+        "Interior": "Buildings/lot_40_terrace/lot_40_terrace__Interior",
+        "Roof": "Buildings/lot_40_terrace/lot_40_terrace__Roof",
+        "FrontCover": "Buildings/lot_40_terrace/lot_40_terrace__FrontCover",
+        "UpperCover": "Buildings/lot_40_terrace/lot_40_terrace__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 11,
+        "Interior": 54,
+        "Roof": 10,
+        "FrontCover": 11,
+        "UpperCover": 63
+      },
+      "nested_collection_nodes": [
+        "lot_40_terrace__Interior_L01",
+        "lot_40_terrace__L01_Hall",
+        "lot_40_terrace__L01_Stairwell",
+        "lot_40_terrace__L01_Lower_Landing",
+        "lot_40_terrace__L01_Upper_Landing",
+        "lot_40_terrace__L01_Front_Room",
+        "lot_40_terrace__L01_Rear_Room",
+        "lot_40_terrace__Interior_L00",
+        "lot_40_terrace__L00_Hall",
+        "lot_40_terrace__L00_Stairwell",
+        "lot_40_terrace__L00_Lower_Landing",
+        "lot_40_terrace__L00_Upper_Landing",
+        "lot_40_terrace__L00_Front_Room",
+        "lot_40_terrace__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 149,
+        "triangles": 11346
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 11,
+          "triangles": 1332
+        },
+        "Interior": {
+          "mesh_nodes": 54,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 10,
+          "triangles": 922
+        },
+        "FrontCover": {
+          "mesh_nodes": 11,
+          "triangles": 2708
+        },
+        "UpperCover": {
+          "mesh_nodes": 63,
+          "triangles": 3284
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_40_terrace.glb",
+        "sha256": "0d3466209db6a941bd28b5837ab0bacf503789c00d848178908982c71ade2906",
+        "bytes": 6744792,
+        "nodes": 171,
+        "meshes": 149,
+        "materials": 21,
+        "embedded_images": 18,
+        "triangles": 11346,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 11,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 149,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -4.28000020980835,
+            -0.1660553365945816,
+            -4.424999237060547
+          ],
+          "max": [
+            4.425000190734863,
+            10.09000015258789,
+            4.5625
+          ],
+          "size": [
+            8.704999923706055,
+            10.25605583190918,
+            8.987499237060547
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_10_belleepoque",
+      "kind": "belleepoque",
+      "district": "D03",
+      "source_ref": "program_inventory.map.solid_lots.lot_10_belleepoque",
+      "footprint_metres": [
+        6.7,
+        8
+      ],
+      "placement_blender_xyz": [
+        33,
+        -27.4,
+        0.26600114352885734
+      ],
+      "yaw_blender_degrees": 90,
+      "placement_gltf_xyz": [
+        33,
+        0.26600114352885734,
+        27.4
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_10_belleepoque/lot_10_belleepoque__Shell",
+        "Interior": "Buildings/lot_10_belleepoque/lot_10_belleepoque__Interior",
+        "Roof": "Buildings/lot_10_belleepoque/lot_10_belleepoque__Roof",
+        "FrontCover": "Buildings/lot_10_belleepoque/lot_10_belleepoque__FrontCover",
+        "UpperCover": "Buildings/lot_10_belleepoque/lot_10_belleepoque__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 12,
+        "Interior": 55,
+        "Roof": 10,
+        "FrontCover": 11,
+        "UpperCover": 63
+      },
+      "nested_collection_nodes": [
+        "lot_10_belleepoque__Interior_L01",
+        "lot_10_belleepoque__L01_Hall",
+        "lot_10_belleepoque__L01_Stairwell",
+        "lot_10_belleepoque__L01_Lower_Landing",
+        "lot_10_belleepoque__L01_Upper_Landing",
+        "lot_10_belleepoque__L01_Front_Room",
+        "lot_10_belleepoque__L01_Rear_Room",
+        "lot_10_belleepoque__Interior_L00",
+        "lot_10_belleepoque__L00_Hall",
+        "lot_10_belleepoque__L00_Stairwell",
+        "lot_10_belleepoque__L00_Lower_Landing",
+        "lot_10_belleepoque__L00_Upper_Landing",
+        "lot_10_belleepoque__L00_Front_Room",
+        "lot_10_belleepoque__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 151,
+        "triangles": 11702
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 12,
+          "triangles": 1344
+        },
+        "Interior": {
+          "mesh_nodes": 55,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 10,
+          "triangles": 774
+        },
+        "FrontCover": {
+          "mesh_nodes": 11,
+          "triangles": 3188
+        },
+        "UpperCover": {
+          "mesh_nodes": 63,
+          "triangles": 3296
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_10_belleepoque.glb",
+        "sha256": "a133ea065ad3c494a8a9c6ad1e724ef060c3837dc90bf2075ca7924edea6bb80",
+        "bytes": 6790428,
+        "nodes": 173,
+        "meshes": 151,
+        "materials": 21,
+        "embedded_images": 18,
+        "triangles": 11702,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 11,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 151,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.7749996185302734,
+            -0.16600090265274048,
+            -4.42500114440918
+          ],
+          "max": [
+            3.645000457763672,
+            10.09000015258789,
+            5.352001190185547
+          ],
+          "size": [
+            7.420000076293945,
+            10.256001472473145,
+            9.777002334594727
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_19_belleepoque",
+      "kind": "belleepoque",
+      "district": "D03",
+      "source_ref": "program_inventory.map.solid_lots.lot_19_belleepoque",
+      "footprint_metres": [
+        6.7,
+        8
+      ],
+      "placement_blender_xyz": [
+        33,
+        -20.7,
+        0.26600438360760603
+      ],
+      "yaw_blender_degrees": 90,
+      "placement_gltf_xyz": [
+        33,
+        0.26600438360760603,
+        20.7
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_19_belleepoque/lot_19_belleepoque__Shell",
+        "Interior": "Buildings/lot_19_belleepoque/lot_19_belleepoque__Interior",
+        "Roof": "Buildings/lot_19_belleepoque/lot_19_belleepoque__Roof",
+        "FrontCover": "Buildings/lot_19_belleepoque/lot_19_belleepoque__FrontCover",
+        "UpperCover": "Buildings/lot_19_belleepoque/lot_19_belleepoque__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 7,
+        "Interior": 55,
+        "Roof": 10,
+        "FrontCover": 11,
+        "UpperCover": 59
+      },
+      "nested_collection_nodes": [
+        "lot_19_belleepoque__Interior_L01",
+        "lot_19_belleepoque__L01_Hall",
+        "lot_19_belleepoque__L01_Stairwell",
+        "lot_19_belleepoque__L01_Lower_Landing",
+        "lot_19_belleepoque__L01_Upper_Landing",
+        "lot_19_belleepoque__L01_Front_Room",
+        "lot_19_belleepoque__L01_Rear_Room",
+        "lot_19_belleepoque__Interior_L00",
+        "lot_19_belleepoque__L00_Hall",
+        "lot_19_belleepoque__L00_Stairwell",
+        "lot_19_belleepoque__L00_Lower_Landing",
+        "lot_19_belleepoque__L00_Upper_Landing",
+        "lot_19_belleepoque__L00_Front_Room",
+        "lot_19_belleepoque__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 142,
+        "triangles": 9878
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 7,
+          "triangles": 432
+        },
+        "Interior": {
+          "mesh_nodes": 55,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 10,
+          "triangles": 774
+        },
+        "FrontCover": {
+          "mesh_nodes": 11,
+          "triangles": 3188
+        },
+        "UpperCover": {
+          "mesh_nodes": 59,
+          "triangles": 2384
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_19_belleepoque.glb",
+        "sha256": "6c6f9fd72bb18a656ac0414946b319e2f2f2619ee09a8a1328071220ca972aef",
+        "bytes": 6603140,
+        "nodes": 164,
+        "meshes": 142,
+        "materials": 22,
+        "embedded_images": 18,
+        "triangles": 9878,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 12,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 142,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.645000457763672,
+            -0.16600336134433746,
+            -4.424997329711914
+          ],
+          "max": [
+            3.645000457763672,
+            10.09000015258789,
+            5.352001190185547
+          ],
+          "size": [
+            7.290000915527344,
+            10.256003379821777,
+            9.776998519897461
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_21_belleepoque",
+      "kind": "belleepoque",
+      "district": "D03",
+      "source_ref": "program_inventory.map.solid_lots.lot_21_belleepoque",
+      "footprint_metres": [
+        6.7,
+        8
+      ],
+      "placement_blender_xyz": [
+        33,
+        -14,
+        0.2660141813349155
+      ],
+      "yaw_blender_degrees": 90,
+      "placement_gltf_xyz": [
+        33,
+        0.2660141813349155,
+        14
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_21_belleepoque/lot_21_belleepoque__Shell",
+        "Interior": "Buildings/lot_21_belleepoque/lot_21_belleepoque__Interior",
+        "Roof": "Buildings/lot_21_belleepoque/lot_21_belleepoque__Roof",
+        "FrontCover": "Buildings/lot_21_belleepoque/lot_21_belleepoque__FrontCover",
+        "UpperCover": "Buildings/lot_21_belleepoque/lot_21_belleepoque__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 7,
+        "Interior": 55,
+        "Roof": 10,
+        "FrontCover": 11,
+        "UpperCover": 59
+      },
+      "nested_collection_nodes": [
+        "lot_21_belleepoque__Interior_L01",
+        "lot_21_belleepoque__L01_Hall",
+        "lot_21_belleepoque__L01_Stairwell",
+        "lot_21_belleepoque__L01_Lower_Landing",
+        "lot_21_belleepoque__L01_Upper_Landing",
+        "lot_21_belleepoque__L01_Front_Room",
+        "lot_21_belleepoque__L01_Rear_Room",
+        "lot_21_belleepoque__Interior_L00",
+        "lot_21_belleepoque__L00_Hall",
+        "lot_21_belleepoque__L00_Stairwell",
+        "lot_21_belleepoque__L00_Lower_Landing",
+        "lot_21_belleepoque__L00_Upper_Landing",
+        "lot_21_belleepoque__L00_Front_Room",
+        "lot_21_belleepoque__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 142,
+        "triangles": 9878
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 7,
+          "triangles": 432
+        },
+        "Interior": {
+          "mesh_nodes": 55,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 10,
+          "triangles": 774
+        },
+        "FrontCover": {
+          "mesh_nodes": 11,
+          "triangles": 3188
+        },
+        "UpperCover": {
+          "mesh_nodes": 59,
+          "triangles": 2384
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_21_belleepoque.glb",
+        "sha256": "7e07e96579807ee75d2fc1321995c2596175a5dadc1916c94dd7c6de29da8812",
+        "bytes": 6597424,
+        "nodes": 164,
+        "meshes": 142,
+        "materials": 21,
+        "embedded_images": 18,
+        "triangles": 9878,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 11,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 142,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.6450014114379883,
+            -0.16601058840751648,
+            -4.424999237060547
+          ],
+          "max": [
+            3.645000457763672,
+            10.09000015258789,
+            5.352001190185547
+          ],
+          "size": [
+            7.29000186920166,
+            10.256011009216309,
+            9.777000427246094
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_35_belleepoque",
+      "kind": "belleepoque",
+      "district": "D03",
+      "source_ref": "program_inventory.map.solid_lots.lot_35_belleepoque",
+      "footprint_metres": [
+        6.7,
+        8
+      ],
+      "placement_blender_xyz": [
+        33,
+        -7.3,
+        0.2660387168765785
+      ],
+      "yaw_blender_degrees": 90,
+      "placement_gltf_xyz": [
+        33,
+        0.2660387168765785,
+        7.3
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_35_belleepoque/lot_35_belleepoque__Shell",
+        "Interior": "Buildings/lot_35_belleepoque/lot_35_belleepoque__Interior",
+        "Roof": "Buildings/lot_35_belleepoque/lot_35_belleepoque__Roof",
+        "FrontCover": "Buildings/lot_35_belleepoque/lot_35_belleepoque__FrontCover",
+        "UpperCover": "Buildings/lot_35_belleepoque/lot_35_belleepoque__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 12,
+        "Interior": 54,
+        "Roof": 11,
+        "FrontCover": 11,
+        "UpperCover": 64
+      },
+      "nested_collection_nodes": [
+        "lot_35_belleepoque__Interior_L01",
+        "lot_35_belleepoque__L01_Hall",
+        "lot_35_belleepoque__L01_Stairwell",
+        "lot_35_belleepoque__L01_Lower_Landing",
+        "lot_35_belleepoque__L01_Upper_Landing",
+        "lot_35_belleepoque__L01_Front_Room",
+        "lot_35_belleepoque__L01_Rear_Room",
+        "lot_35_belleepoque__Interior_L00",
+        "lot_35_belleepoque__L00_Hall",
+        "lot_35_belleepoque__L00_Stairwell",
+        "lot_35_belleepoque__L00_Lower_Landing",
+        "lot_35_belleepoque__L00_Upper_Landing",
+        "lot_35_belleepoque__L00_Front_Room",
+        "lot_35_belleepoque__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 152,
+        "triangles": 11954
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 12,
+          "triangles": 1344
+        },
+        "Interior": {
+          "mesh_nodes": 54,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 11,
+          "triangles": 1026
+        },
+        "FrontCover": {
+          "mesh_nodes": 11,
+          "triangles": 3188
+        },
+        "UpperCover": {
+          "mesh_nodes": 64,
+          "triangles": 3296
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_35_belleepoque.glb",
+        "sha256": "32e19a5861c27557190aeb6ee21b9d4b95d2e7ed65b8370ea65595ec569480d6",
+        "bytes": 6814396,
+        "nodes": 174,
+        "meshes": 152,
+        "materials": 21,
+        "embedded_images": 18,
+        "triangles": 11954,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 11,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 152,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.6449999809265137,
+            -0.16602802276611328,
+            -4.424999237060547
+          ],
+          "max": [
+            3.7750003337860107,
+            10.09000015258789,
+            5.352001190185547
+          ],
+          "size": [
+            7.420000076293945,
+            10.256028175354004,
+            9.777000427246094
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_13_cottage",
+      "kind": "cottage",
+      "district": "D03",
+      "source_ref": "program_inventory.map.solid_lots.lot_13_cottage",
+      "footprint_metres": [
+        6.7,
+        8
+      ],
+      "placement_blender_xyz": [
+        33,
+        2.2,
+        0.26612023368547005
+      ],
+      "yaw_blender_degrees": 90,
+      "placement_gltf_xyz": [
+        33,
+        0.26612023368547005,
+        -2.2
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_13_cottage/lot_13_cottage__Shell",
+        "Interior": "Buildings/lot_13_cottage/lot_13_cottage__Interior",
+        "Roof": "Buildings/lot_13_cottage/lot_13_cottage__Roof",
+        "FrontCover": "Buildings/lot_13_cottage/lot_13_cottage__FrontCover",
+        "UpperCover": "Buildings/lot_13_cottage/lot_13_cottage__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 12,
+        "Interior": 54,
+        "Roof": 12,
+        "FrontCover": 11,
+        "UpperCover": 64
+      },
+      "nested_collection_nodes": [
+        "lot_13_cottage__Interior_L01",
+        "lot_13_cottage__L01_Hall",
+        "lot_13_cottage__L01_Stairwell",
+        "lot_13_cottage__L01_Lower_Landing",
+        "lot_13_cottage__L01_Upper_Landing",
+        "lot_13_cottage__L01_Front_Room",
+        "lot_13_cottage__L01_Rear_Room",
+        "lot_13_cottage__Interior_L00",
+        "lot_13_cottage__L00_Hall",
+        "lot_13_cottage__L00_Stairwell",
+        "lot_13_cottage__L00_Lower_Landing",
+        "lot_13_cottage__L00_Upper_Landing",
+        "lot_13_cottage__L00_Front_Room",
+        "lot_13_cottage__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 153,
+        "triangles": 11370
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 12,
+          "triangles": 1344
+        },
+        "Interior": {
+          "mesh_nodes": 54,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 12,
+          "triangles": 1078
+        },
+        "FrontCover": {
+          "mesh_nodes": 11,
+          "triangles": 2552
+        },
+        "UpperCover": {
+          "mesh_nodes": 64,
+          "triangles": 3296
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_13_cottage.glb",
+        "sha256": "e9aa6062276a6283dc760dbd5326408022212326855405161a7d52e963e92cc9",
+        "bytes": 6758728,
+        "nodes": 175,
+        "meshes": 153,
+        "materials": 22,
+        "embedded_images": 18,
+        "triangles": 11370,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 12,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 153,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.7750000953674316,
+            -0.16608279943466187,
+            -4.424999237060547
+          ],
+          "max": [
+            3.629999876022339,
+            10.09000015258789,
+            4.5625
+          ],
+          "size": [
+            7.404999732971191,
+            10.256082534790039,
+            8.987499237060547
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_28_cottage",
+      "kind": "cottage",
+      "district": "D03",
+      "source_ref": "program_inventory.map.solid_lots.lot_28_cottage",
+      "footprint_metres": [
+        6.7,
+        8
+      ],
+      "placement_blender_xyz": [
+        33,
+        8.9,
+        0.26798964509114426
+      ],
+      "yaw_blender_degrees": 90,
+      "placement_gltf_xyz": [
+        33,
+        0.26798964509114426,
+        -8.9
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_28_cottage/lot_28_cottage__Shell",
+        "Interior": "Buildings/lot_28_cottage/lot_28_cottage__Interior",
+        "Roof": "Buildings/lot_28_cottage/lot_28_cottage__Roof",
+        "FrontCover": "Buildings/lot_28_cottage/lot_28_cottage__FrontCover",
+        "UpperCover": "Buildings/lot_28_cottage/lot_28_cottage__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 7,
+        "Interior": 55,
+        "Roof": 12,
+        "FrontCover": 11,
+        "UpperCover": 59
+      },
+      "nested_collection_nodes": [
+        "lot_28_cottage__Interior_L01",
+        "lot_28_cottage__L01_Hall",
+        "lot_28_cottage__L01_Stairwell",
+        "lot_28_cottage__L01_Lower_Landing",
+        "lot_28_cottage__L01_Upper_Landing",
+        "lot_28_cottage__L01_Front_Room",
+        "lot_28_cottage__L01_Rear_Room",
+        "lot_28_cottage__Interior_L00",
+        "lot_28_cottage__L00_Hall",
+        "lot_28_cottage__L00_Stairwell",
+        "lot_28_cottage__L00_Lower_Landing",
+        "lot_28_cottage__L00_Upper_Landing",
+        "lot_28_cottage__L00_Front_Room",
+        "lot_28_cottage__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 144,
+        "triangles": 9390
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 7,
+          "triangles": 432
+        },
+        "Interior": {
+          "mesh_nodes": 55,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 12,
+          "triangles": 922
+        },
+        "FrontCover": {
+          "mesh_nodes": 11,
+          "triangles": 2552
+        },
+        "UpperCover": {
+          "mesh_nodes": 59,
+          "triangles": 2384
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_28_cottage.glb",
+        "sha256": "cc5745af2ab1a4dab25e90adfe02865e15b22150518554ccee7f1523cb3aedf0",
+        "bytes": 6553956,
+        "nodes": 166,
+        "meshes": 144,
+        "materials": 23,
+        "embedded_images": 18,
+        "triangles": 9390,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 13,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 144,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.630000591278076,
+            -0.16791585087776184,
+            -4.424999237060547
+          ],
+          "max": [
+            3.630000114440918,
+            10.09000015258789,
+            4.5625
+          ],
+          "size": [
+            7.260000705718994,
+            10.257916450500488,
+            8.987499237060547
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_32_cottage",
+      "kind": "cottage",
+      "district": "D03",
+      "source_ref": "program_inventory.map.solid_lots.lot_32_cottage",
+      "footprint_metres": [
+        6.7,
+        8
+      ],
+      "placement_blender_xyz": [
+        33,
+        15.6,
+        0.39268286239992584
+      ],
+      "yaw_blender_degrees": 90,
+      "placement_gltf_xyz": [
+        33,
+        0.39268286239992584,
+        -15.6
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_32_cottage/lot_32_cottage__Shell",
+        "Interior": "Buildings/lot_32_cottage/lot_32_cottage__Interior",
+        "Roof": "Buildings/lot_32_cottage/lot_32_cottage__Roof",
+        "FrontCover": "Buildings/lot_32_cottage/lot_32_cottage__FrontCover",
+        "UpperCover": "Buildings/lot_32_cottage/lot_32_cottage__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 12,
+        "Interior": 54,
+        "Roof": 11,
+        "FrontCover": 11,
+        "UpperCover": 64
+      },
+      "nested_collection_nodes": [
+        "lot_32_cottage__Interior_L01",
+        "lot_32_cottage__L01_Hall",
+        "lot_32_cottage__L01_Stairwell",
+        "lot_32_cottage__L01_Lower_Landing",
+        "lot_32_cottage__L01_Upper_Landing",
+        "lot_32_cottage__L01_Front_Room",
+        "lot_32_cottage__L01_Rear_Room",
+        "lot_32_cottage__Interior_L00",
+        "lot_32_cottage__L00_Hall",
+        "lot_32_cottage__L00_Stairwell",
+        "lot_32_cottage__L00_Lower_Landing",
+        "lot_32_cottage__L00_Upper_Landing",
+        "lot_32_cottage__L00_Front_Room",
+        "lot_32_cottage__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 152,
+        "triangles": 11214
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 12,
+          "triangles": 1344
+        },
+        "Interior": {
+          "mesh_nodes": 54,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 11,
+          "triangles": 922
+        },
+        "FrontCover": {
+          "mesh_nodes": 11,
+          "triangles": 2552
+        },
+        "UpperCover": {
+          "mesh_nodes": 64,
+          "triangles": 3296
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_32_cottage.glb",
+        "sha256": "21293f44da293e367d48487bc08014a0855a1f086a76ad14b5f4b3550d6edec2",
+        "bytes": 6740688,
+        "nodes": 174,
+        "meshes": 152,
+        "materials": 22,
+        "embedded_images": 18,
+        "triangles": 11214,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 12,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 152,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.630000114440918,
+            -0.2530483603477478,
+            -4.42500114440918
+          ],
+          "max": [
+            3.774998664855957,
+            10.09000015258789,
+            4.5625
+          ],
+          "size": [
+            7.404998779296875,
+            10.343048095703125,
+            8.98750114440918
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_39_whitehouse",
+      "kind": "whitehouse",
+      "district": "D03",
+      "source_ref": "program_inventory.map.solid_lots.lot_39_whitehouse",
+      "footprint_metres": [
+        6.5,
+        8
+      ],
+      "placement_blender_xyz": [
+        22,
+        -25,
+        0.3100133179380863
+      ],
+      "yaw_blender_degrees": 90,
+      "placement_gltf_xyz": [
+        22,
+        0.3100133179380863,
+        25
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_39_whitehouse/lot_39_whitehouse__Shell",
+        "Interior": "Buildings/lot_39_whitehouse/lot_39_whitehouse__Interior",
+        "Roof": "Buildings/lot_39_whitehouse/lot_39_whitehouse__Roof",
+        "FrontCover": "Buildings/lot_39_whitehouse/lot_39_whitehouse__FrontCover",
+        "UpperCover": "Buildings/lot_39_whitehouse/lot_39_whitehouse__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 12,
+        "Interior": 54,
+        "Roof": 11,
+        "FrontCover": 14,
+        "UpperCover": 64
+      },
+      "nested_collection_nodes": [
+        "lot_39_whitehouse__Interior_L01",
+        "lot_39_whitehouse__L01_Hall",
+        "lot_39_whitehouse__L01_Stairwell",
+        "lot_39_whitehouse__L01_Lower_Landing",
+        "lot_39_whitehouse__L01_Upper_Landing",
+        "lot_39_whitehouse__L01_Front_Room",
+        "lot_39_whitehouse__L01_Rear_Room",
+        "lot_39_whitehouse__Interior_L00",
+        "lot_39_whitehouse__L00_Hall",
+        "lot_39_whitehouse__L00_Stairwell",
+        "lot_39_whitehouse__L00_Lower_Landing",
+        "lot_39_whitehouse__L00_Upper_Landing",
+        "lot_39_whitehouse__L00_Front_Room",
+        "lot_39_whitehouse__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 155,
+        "triangles": 11946
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 12,
+          "triangles": 1344
+        },
+        "Interior": {
+          "mesh_nodes": 54,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 11,
+          "triangles": 922
+        },
+        "FrontCover": {
+          "mesh_nodes": 14,
+          "triangles": 3284
+        },
+        "UpperCover": {
+          "mesh_nodes": 64,
+          "triangles": 3296
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_39_whitehouse.glb",
+        "sha256": "0904c1e37929ce3cc57931966bb1521c4b4bff46690e828d95a40a448304c18c",
+        "bytes": 6790924,
+        "nodes": 177,
+        "meshes": 155,
+        "materials": 24,
+        "embedded_images": 18,
+        "triangles": 11946,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 12,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 155,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.674999237060547,
+            -0.16600985825061798,
+            -4.424999237060547
+          ],
+          "max": [
+            3.530000686645508,
+            10.09000015258789,
+            4.5625
+          ],
+          "size": [
+            7.204999923706055,
+            10.256010055541992,
+            8.987499237060547
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_11_longere",
+      "kind": "longere",
+      "district": "D03",
+      "source_ref": "program_inventory.map.solid_lots.lot_11_longere",
+      "footprint_metres": [
+        6.5,
+        8
+      ],
+      "placement_blender_xyz": [
+        22,
+        -18.5,
+        0.3100463441543567
+      ],
+      "yaw_blender_degrees": 90,
+      "placement_gltf_xyz": [
+        22,
+        0.3100463441543567,
+        18.5
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_11_longere/lot_11_longere__Shell",
+        "Interior": "Buildings/lot_11_longere/lot_11_longere__Interior",
+        "Roof": "Buildings/lot_11_longere/lot_11_longere__Roof",
+        "FrontCover": "Buildings/lot_11_longere/lot_11_longere__FrontCover",
+        "UpperCover": "Buildings/lot_11_longere/lot_11_longere__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 7,
+        "Interior": 55,
+        "Roof": 10,
+        "FrontCover": 11,
+        "UpperCover": 59
+      },
+      "nested_collection_nodes": [
+        "lot_11_longere__Interior_L01",
+        "lot_11_longere__L01_Hall",
+        "lot_11_longere__L01_Stairwell",
+        "lot_11_longere__L01_Lower_Landing",
+        "lot_11_longere__L01_Upper_Landing",
+        "lot_11_longere__L01_Front_Room",
+        "lot_11_longere__L01_Rear_Room",
+        "lot_11_longere__Interior_L00",
+        "lot_11_longere__L00_Hall",
+        "lot_11_longere__L00_Stairwell",
+        "lot_11_longere__L00_Lower_Landing",
+        "lot_11_longere__L00_Upper_Landing",
+        "lot_11_longere__L00_Front_Room",
+        "lot_11_longere__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 142,
+        "triangles": 9390
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 7,
+          "triangles": 432
+        },
+        "Interior": {
+          "mesh_nodes": 55,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 10,
+          "triangles": 922
+        },
+        "FrontCover": {
+          "mesh_nodes": 11,
+          "triangles": 2552
+        },
+        "UpperCover": {
+          "mesh_nodes": 59,
+          "triangles": 2384
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_11_longere.glb",
+        "sha256": "917a771f23f611c77e42b65ceffef9f2cac0cfe7e566de70be2ade4ce174ccc3",
+        "bytes": 6546536,
+        "nodes": 164,
+        "meshes": 142,
+        "materials": 21,
+        "embedded_images": 18,
+        "triangles": 9390,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 11,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 142,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.530000686645508,
+            -0.1660333275794983,
+            -4.424999237060547
+          ],
+          "max": [
+            3.5299997329711914,
+            10.09000015258789,
+            4.5625
+          ],
+          "size": [
+            7.060000419616699,
+            10.256033897399902,
+            8.987499237060547
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_16_longere",
+      "kind": "longere",
+      "district": "D03",
+      "source_ref": "program_inventory.map.solid_lots.lot_16_longere",
+      "footprint_metres": [
+        6.5,
+        8
+      ],
+      "placement_blender_xyz": [
+        22,
+        -12,
+        0.31013747069122805
+      ],
+      "yaw_blender_degrees": 90,
+      "placement_gltf_xyz": [
+        22,
+        0.31013747069122805,
+        12
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_16_longere/lot_16_longere__Shell",
+        "Interior": "Buildings/lot_16_longere/lot_16_longere__Interior",
+        "Roof": "Buildings/lot_16_longere/lot_16_longere__Roof",
+        "FrontCover": "Buildings/lot_16_longere/lot_16_longere__FrontCover",
+        "UpperCover": "Buildings/lot_16_longere/lot_16_longere__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 12,
+        "Interior": 54,
+        "Roof": 12,
+        "FrontCover": 11,
+        "UpperCover": 64
+      },
+      "nested_collection_nodes": [
+        "lot_16_longere__Interior_L01",
+        "lot_16_longere__L01_Hall",
+        "lot_16_longere__L01_Stairwell",
+        "lot_16_longere__L01_Lower_Landing",
+        "lot_16_longere__L01_Upper_Landing",
+        "lot_16_longere__L01_Front_Room",
+        "lot_16_longere__L01_Rear_Room",
+        "lot_16_longere__Interior_L00",
+        "lot_16_longere__L00_Hall",
+        "lot_16_longere__L00_Stairwell",
+        "lot_16_longere__L00_Lower_Landing",
+        "lot_16_longere__L00_Upper_Landing",
+        "lot_16_longere__L00_Front_Room",
+        "lot_16_longere__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 153,
+        "triangles": 11370
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 12,
+          "triangles": 1344
+        },
+        "Interior": {
+          "mesh_nodes": 54,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 12,
+          "triangles": 1078
+        },
+        "FrontCover": {
+          "mesh_nodes": 11,
+          "triangles": 2552
+        },
+        "UpperCover": {
+          "mesh_nodes": 64,
+          "triangles": 3296
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_16_longere.glb",
+        "sha256": "fcc95928910c7e88577ab42050dfd15e739e6e32944d3a6c7927c92aa1ffb36c",
+        "bytes": 6748484,
+        "nodes": 175,
+        "meshes": 153,
+        "materials": 22,
+        "embedded_images": 18,
+        "triangles": 11370,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 12,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 153,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.5299997329711914,
+            -0.16609562933444977,
+            -4.424999237060547
+          ],
+          "max": [
+            3.6750001907348633,
+            10.09000015258789,
+            4.562501907348633
+          ],
+          "size": [
+            7.204999923706055,
+            10.256095886230469,
+            8.98750114440918
+          ]
+        }
+      }
+    },
+    {
+      "id": "lot_17_longere",
+      "kind": "longere",
+      "district": "D03",
+      "source_ref": "program_inventory.map.solid_lots.lot_17_longere",
+      "footprint_metres": [
+        6,
+        8
+      ],
+      "placement_blender_xyz": [
+        22,
+        14.5,
+        0.4046379711449149
+      ],
+      "yaw_blender_degrees": 90,
+      "placement_gltf_xyz": [
+        22,
+        0.4046379711449149,
+        -14.5
+      ],
+      "roles": {
+        "Shell": "Buildings/lot_17_longere/lot_17_longere__Shell",
+        "Interior": "Buildings/lot_17_longere/lot_17_longere__Interior",
+        "Roof": "Buildings/lot_17_longere/lot_17_longere__Roof",
+        "FrontCover": "Buildings/lot_17_longere/lot_17_longere__FrontCover",
+        "UpperCover": "Buildings/lot_17_longere/lot_17_longere__UpperCover"
+      },
+      "role_mesh_counts": {
+        "Shell": 17,
+        "Interior": 54,
+        "Roof": 11,
+        "FrontCover": 9,
+        "UpperCover": 69
+      },
+      "nested_collection_nodes": [
+        "lot_17_longere__Interior_L01",
+        "lot_17_longere__L01_Hall",
+        "lot_17_longere__L01_Stairwell",
+        "lot_17_longere__L01_Lower_Landing",
+        "lot_17_longere__L01_Upper_Landing",
+        "lot_17_longere__L01_Front_Room",
+        "lot_17_longere__L01_Rear_Room",
+        "lot_17_longere__Interior_L00",
+        "lot_17_longere__L00_Hall",
+        "lot_17_longere__L00_Stairwell",
+        "lot_17_longere__L00_Lower_Landing",
+        "lot_17_longere__L00_Upper_Landing",
+        "lot_17_longere__L00_Front_Room",
+        "lot_17_longere__L00_Rear_Room"
+      ],
+      "geometry_cost": {
+        "mesh_nodes": 160,
+        "triangles": 13014
+      },
+      "role_geometry_cost": {
+        "Shell": {
+          "mesh_nodes": 17,
+          "triangles": 2256
+        },
+        "Interior": {
+          "mesh_nodes": 54,
+          "triangles": 3100
+        },
+        "Roof": {
+          "mesh_nodes": 11,
+          "triangles": 922
+        },
+        "FrontCover": {
+          "mesh_nodes": 9,
+          "triangles": 2528
+        },
+        "UpperCover": {
+          "mesh_nodes": 69,
+          "triangles": 4208
+        }
+      },
+      "standalone": {
+        "file": "buildings/lot_17_longere.glb",
+        "sha256": "a1e0484a39983644a0190434d92aff6f909add9312b3fe5d8871334ed34c386e",
+        "bytes": 6914492,
+        "nodes": 182,
+        "meshes": 160,
+        "materials": 21,
+        "embedded_images": 18,
+        "triangles": 13014,
+        "vertex_color_primitives": 0,
+        "normal_mapped_materials": 12,
+        "alpha_blend_materials": 1,
+        "extensions_used": [
+          "KHR_materials_emissive_strength"
+        ],
+        "extensions_required": [],
+        "animations": 0,
+        "animation_channels": 0,
+        "tangent_primitives": 160,
+        "self_contained": true,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.4250001907348633,
+            -0.23289121687412262,
+            -4.424999237060547
+          ],
+          "max": [
+            3.424999237060547,
+            10.09000015258789,
+            4.5625
+          ],
+          "size": [
+            6.84999942779541,
+            10.322891235351562,
+            8.987499237060547
+          ]
+        }
+      }
+    }
+  ],
+  "expected_vertex_colored_meshes": 1,
+  "town_high_detail": {
+    "file": "living_town.glb",
+    "sha256": "2c97fa1d51c9e062f40b0bd5f7a53e0238cf913393a2c39a776d0960629d8ea3",
+    "bytes": 642459416,
+    "nodes": 9062,
+    "meshes": 8015,
+    "materials": 48,
+    "embedded_images": 28,
+    "triangles": 6267841,
+    "vertex_color_primitives": 1,
+    "normal_mapped_materials": 26,
+    "alpha_blend_materials": 1,
+    "extensions_used": [
+      "KHR_materials_emissive_strength"
+    ],
+    "extensions_required": [],
+    "animations": 0,
+    "animation_channels": 0,
+    "tangent_primitives": 8015,
+    "self_contained": true
+  },
+  "town_game": {
+    "file": "living_town_game.glb",
+    "sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c",
+    "bytes": 203666604,
+    "nodes": 9062,
+    "meshes": 8015,
+    "materials": 48,
+    "embedded_images": 28,
+    "triangles": 2112945,
+    "vertex_color_primitives": 1,
+    "normal_mapped_materials": 26,
+    "alpha_blend_materials": 1,
+    "extensions_used": [
+      "KHR_materials_emissive_strength"
+    ],
+    "extensions_required": [],
+    "animations": 0,
+    "animation_channels": 0,
+    "tangent_primitives": 8015,
+    "self_contained": true
+  },
+  "optimization": {
+    "mode": "both",
+    "game_triangle_budget": 3000000,
+    "game_budget_passed": true,
+    "disabled_bevel_modifiers": 7108,
+    "method": "Omit source BEVEL modifiers <=0.025 m in disposable export copy; preserve topology, UVs, colors, furniture and openings",
+    "triangle_reduction_percent": 66.29,
+    "byte_reduction_percent": 68.3,
+    "lod": "No automatic LODs; complete town and local-origin building prefabs supplied"
+  },
+  "export_performance": {
+    "unused_mesh_cleanup": "Unused high-detail mesh IDs retained until disposable CLI exit; export remains selected objects in active scene only",
+    "retained_unused_high_detail_meshes": 8015,
+    "stage_events": [
+      {
+        "stage": "source_preparation_started",
+        "utc": "2026-10-12T08:13:08+00:00",
+        "elapsed_seconds": 0.0
+      },
+      {
+        "stage": "clone_preparation_started",
+        "utc": "2026-10-12T08:13:09+00:00",
+        "elapsed_seconds": 0.295
+      },
+      {
+        "stage": "clone_preparation_completed",
+        "utc": "2026-10-12T08:13:49+00:00",
+        "elapsed_seconds": 40.523
+      },
+      {
+        "stage": "high_detail_write_started",
+        "utc": "2026-10-12T08:13:49+00:00",
+        "elapsed_seconds": 40.525
+      },
+      {
+        "stage": "high_detail_write_completed",
+        "utc": "2026-10-12T08:14:26+00:00",
+        "elapsed_seconds": 77.104
+      },
+      {
+        "stage": "optimized_mesh_preparation_started",
+        "utc": "2026-10-12T08:14:26+00:00",
+        "elapsed_seconds": 77.106
+      },
+      {
+        "stage": "optimized_mesh_references_replaced",
+        "utc": "2026-10-12T08:14:32+00:00",
+        "elapsed_seconds": 83.895
+      },
+      {
+        "stage": "optimized_mesh_preparation_completed",
+        "utc": "2026-10-12T08:14:46+00:00",
+        "elapsed_seconds": 98.035
+      },
+      {
+        "stage": "game_write_started",
+        "utc": "2026-10-12T08:14:46+00:00",
+        "elapsed_seconds": 98.037
+      },
+      {
+        "stage": "game_write_completed",
+        "utc": "2026-10-12T08:15:12+00:00",
+        "elapsed_seconds": 123.942
+      },
+      {
+        "stage": "prefabs_write_started",
+        "utc": "2026-10-12T08:15:53+00:00",
+        "elapsed_seconds": 164.834
+      },
+      {
+        "stage": "prefabs_write_completed",
+        "utc": "2026-10-12T08:18:46+00:00",
+        "elapsed_seconds": 337.85
+      },
+      {
+        "stage": "camera_write_started",
+        "utc": "2026-10-12T08:18:46+00:00",
+        "elapsed_seconds": 337.852
+      },
+      {
+        "stage": "camera_write_completed",
+        "utc": "2026-10-12T08:18:52+00:00",
+        "elapsed_seconds": 343.07
+      },
+      {
+        "stage": "assets_flushed",
+        "utc": "2026-10-12T08:18:52+00:00",
+        "elapsed_seconds": 343.071
+      }
+    ]
+  },
+  "geometry_cost_by_category": {
+    "Buildings": {
+      "mesh_nodes": 7867,
+      "triangles": 720240
+    },
+    "Environment": {
+      "mesh_nodes": 109,
+      "triangles": 1139139
+    },
+    "StreetLife": {
+      "mesh_nodes": 29,
+      "triangles": 23290
+    },
+    "Vegetation": {
+      "mesh_nodes": 10,
+      "triangles": 230276
+    }
+  },
+  "visibility_budget_note": "Counts are loaded asset triangles, not measured on-screen triangles. Floor/room/cover groups allow the consumer to cull locally; no runtime occlusion, streaming or performance claim.",
+  "camera_rig": {
+    "file": "cameras.glb",
+    "sha256": "ab4c181fedf0f8a885191025afa6df7b1c08249cd5417c4e35656579097d9366",
+    "bytes": 13388,
+    "nodes": 15,
+    "meshes": 0,
+    "materials": 0,
+    "embedded_images": 0,
+    "triangles": 0,
+    "vertex_color_primitives": 0,
+    "normal_mapped_materials": 0,
+    "alpha_blend_materials": 0,
+    "extensions_used": [],
+    "extensions_required": [],
+    "animations": 1,
+    "animation_channels": 2,
+    "tangent_primitives": 0,
+    "self_contained": true,
+    "camera_count": 14,
+    "frames_per_second": 24.0
+  },
+  "material_conversion_notes": [],
+  "collision": "Visual meshes only; no collision or navigation authority supplied",
+  "cutaway": "Toggle only selected building Roof/FrontCover/UpperCover nodes; Interior remains present",
+  "excluded": [
+    "Blender camera/light rig",
+    "optional contour overlay",
+    "Blender-only procedural sea bump"
+  ],
+  "portability": "Core metallic-roughness PBR; embedded PNG images; geometry signs; no engine scripts required"
+}

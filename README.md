@@ -53,6 +53,8 @@
 
 ![小镇有灵 · 主视觉](docs/media/cover.png)
 
+**3D 小镇桥接（2026-10-12）：** 已将 Blender 交付的 49 栋建筑、89 个楼层接入现有居民生活模式、需求、职业、社交与存读档。Windows 可运行 `./tools/run-town3d.ps1`；[运行方法与验证记录](docs/town_bridge/README.md)。原 2D 布局通过 `-Legacy` 保留。
+
 ## 当前状态
 
 下列**世界与社会系统**都已出货，且各自有 CI 门守着——点名不变量编号的由 [`game/bench/Invariants.gd`](game/bench/Invariants.gd) 守，其余由 [`tools/ci.sh`](tools/ci.sh) 的数据 lint / 地图审计 / **三道美术门**（步骤 2b·2c·2d）/ 台词门 / 9 个集成场景守。末三条（外壳、后端、推理延迟）是实测记录，不是不变量。

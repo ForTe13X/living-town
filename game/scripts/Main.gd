@@ -7,6 +7,7 @@ var _probe: Node                      # ProbeController：拥有 Camera2D + 观�
 var _locked_ortho_c1: Node2D          # optional C1 projection; no Sim authority or input ownership
 var _life: Node                       # LifeMode（docs/190）：开局选人 + 附身过日子；null = 观察者/M1 模式
 var _sg: RefCounted                   # SpaceGraph：Space/Floor/Portal 合同（纯数据查询；兼容期 town/outdoor 兜底）
+var _town3d := false
 var _modulate: CanvasModulate
 var _status: RichTextLabel
 var _logbox: RichTextLabel
@@ -393,9 +394,10 @@ func _ready() -> void:
 	var _lod_agg_arg := false              # --lod-agg：仅【测量/眼验】用，启用观察无关 aggregate LOD（CLI-only，绝不进 boot/面板出货路径；默认 off=逐字节不变）
 	var _locked_ortho_c1_arg := false      # --locked-ortho-c1：可删除的 C1 纯 View 适配器，默认绝不实例化
 	var args := OS.get_cmdline_user_args()
+	_town3d = ((args.is_empty() and get_parent() == get_tree().root) or args.has("--town3d")) and not args.has("--legacy-2d")
 	# 生活模式（docs/190）：桌面上【不带任何参数】的正式启动 = 开局选人；--life 显式开、--life-as <id> 跳过选人直接附身。
 	# 带参数的 dev/CI/出图路径一律不进（它们都带参数）⇒ 所有既有门逐字节不变。手机端还没有摇杆，暂不默认。
-	var life_on := args.is_empty()                    # 产品启动（桌面双击 / 手机点图标）= 生活模式；docs/190 第六批起手机也默认进（有摇杆了）
+	var life_on := args.is_empty() or args.has("--town3d")
 	var life_as := ""
 	for i in args.size():
 		if args[i] == "--life":
@@ -512,8 +514,19 @@ func _ready() -> void:
 
 	# L7：--scenario 指向 data/scenarios/<id>.json（含 70B 编剧产出）→ 注册数据驱动场景 provider（窗口里也能演）。
 	# 空/内建场景(faction/betray/freerider 无此文件)→ 不注册 → 回落内建 _seed_scenario；默认 ""→ Sim.ext 保持 null 逐字节不变。
+	if _town3d:
+		var profile := preload("res://scripts/TownWorldProfile.gd").new()
+		if not profile.load_profile() or not Sim.install_world_profile(profile):
+			push_error("Town startup failed: " + profile.error_message)
+			var failure := Label.new()
+			failure.text = "Town startup failed\n" + profile.error_message
+			failure.position = Vector2(30, 60)
+			add_child(failure)
+			set_process(false)
+			set_process_unhandled_input(false)
+			return
 	if Sim.scenario != "" and FileAccess.file_exists("res://data/scenarios/%s.json" % Sim.scenario):
-		var ext := preload("res://scripts/SimExtensions.gd").new()
+		var ext: Object = Sim.ext if Sim.ext != null else preload("res://scripts/SimExtensions.gd").new()
 		ext.register_scenario(preload("res://scripts/DataScenarioProvider.gd").new(Sim.scenario))
 		ext.freeze()
 		Sim.ext = ext
@@ -539,7 +552,7 @@ func _ready() -> void:
 		_demo_setup()                 # 舞台布置（首帧前，无可见跳变）+ 动作剧本
 	Sim.auto_run = true               # 镇子立刻跑（logic 地板）——slm/llm 探测改后台异步，不再挡首帧
 
-	_view = preload("res://scripts/WorldView.gd").new()
+	_view = load("res://scripts/WorldView3D.gd").new() if _town3d else preload("res://scripts/WorldView.gd").new()
 	_view.dbg_nav = _dbg_nav_arg and not _clean_player_presentation
 	if _clean_player_presentation:
 		_view.rel_mode = 0              # relationship/debug lines are diagnostic chrome, not player feedback
@@ -551,8 +564,8 @@ func _ready() -> void:
 	# 绝不喂 Sim.lod_focus。若"精细模拟哪块"取决于人眼在看哪，小镇历史就成了观察路径的函数 →
 	# 同存档不同看法回放出不同 event_log → digest 不可复现、回放红线破。渲染可以跟相机，仿真分级不行。
 	_sg = preload("res://scripts/SpaceGraph.gd").new()
-	_sg.load_from()                              # 缺 spaces.json → 空图 → bounds 回落 Sim.GRID（off 门）
-	_probe = preload("res://scripts/ProbeController.gd").new()
+	_sg.load_from("res://data/town3d/spaces.json" if _town3d else "res://data/spaces.json")
+	_probe = load("res://scripts/Probe3D.gd").new() if _town3d else preload("res://scripts/ProbeController.gd").new()
 	add_child(_probe)
 	_probe.setup(self, _space_bounds())          # 边界来自 active Space（兼容期=town；P1 起由 SpaceGraph 给）
 	# ★开局取景（docs/43 §1.1 / §三-C3-4）：setup() 只把相机放到 bounds 中心，zoom 保持 Camera2D 默认的 1.0。
@@ -3386,19 +3399,24 @@ func _unhandled_input(e: InputEvent) -> void:
 
 const QUICKSAVE := "user://quicksave.dat"
 
+func _quicksave_path() -> String:
+	return "user://town3d_quicksave.dat" if _town3d else QUICKSAVE
+
 func _quick_save() -> void:
 	var meta := {"name": "quicksave", "day": Sim.day}
+	if _town3d:
+		meta["world_profile"] = "town3d"
 	if _life != null and _life.active:
 		meta["life"] = _life.save_state()                 # 生活模式：你是谁、满足感、愿望、志向（View 状态随档走）
-	var ok: bool = Sim.save_game(QUICKSAVE, meta)
+	var ok: bool = Sim.save_game(_quicksave_path(), meta)
 	_push("[color=#9ad0ff]存档%s（第 %d 天 · tick %d）[/color]" % [("成功" if ok else "失败"), Sim.day, Sim.tick_no])
 
 func _quick_load() -> void:
-	if not FileAccess.file_exists(QUICKSAVE):
+	if not FileAccess.file_exists(_quicksave_path()):
 		if _locked_ortho_c1 == null:
 			_push("[color=#ff8c42]没有存档（先按 F5 / 设置里存一份）[/color]")
 		return
-	var ok: bool = Sim.load_game(QUICKSAVE)          # load 内部发 world_reset → AIBackend.cancel_all
+	var ok: bool = Sim.load_game(_quicksave_path())
 	if ok:
 		_after_load()
 	if ok or _locked_ortho_c1 == null:
@@ -3455,6 +3473,11 @@ func _fit_active_space(reset_town := true) -> void:
 	if mapsz.x <= 1.0 or mapsz.y <= 1.0:
 		return
 	var pad: Vector2 = _probe.HOME_PAD          # 顶部状态栏 + 底部聊天/时间轴 HUD 余量
+	if _town3d:
+		_probe.cam.zoom = Vector2.ONE * _probe.fit_zoom(_vp(), pad)
+		_probe.cam.position = b.get_center()
+		_view.sync_camera()
+		return
 	var fit: Vector2 = (_vp() - pad) / mapsz
 	_probe.cam.zoom = Vector2.ONE * minf(fit.x, fit.y)   # 刻意绕过 ZOOM_MIN 夹取：整图入画优先
 	_probe.cam.position = b.get_center()
@@ -3600,6 +3623,10 @@ func _on_probe_double_tap(world_pos: Vector2) -> void:
 		return
 	for rid in Sim.world.get("rooms", {}):
 		var rm: Dictionary = Sim.world["rooms"][rid]
+		if rm.has("space") and String(rm["space"]) != String(_probe.active_space):
+			continue
+		if rm.has("floor") and String(rm["floor"]) != String(_probe.active_floor):
+			continue
 		var r: Array = rm.get("rect", [0, 0, 0, 0])
 		var rect := Rect2(r[0] * 48, r[1] * 48, r[2] * 48, r[3] * 48)
 		if rect.has_point(world_pos):

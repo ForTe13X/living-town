@@ -9,6 +9,14 @@ config/name="小镇有灵 Living Town"
 run/main_scene="res://scenes/Main.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 
+[threading]
+
+worker_pool/max_threads=8
+
+[editor]
+
+import/use_multiple_threads=false
+
 [autoload]
 
 Art="*res://scripts/Art.gd"

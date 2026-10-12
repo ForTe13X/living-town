@@ -1,0 +1,568 @@
+{
+	"checks": [
+		{
+			"detail": null,
+			"name": "actual_main_uses_existing_life_mode_and_3d_view",
+			"passed": true
+		},
+		{
+			"detail": {
+				"active_plane": "cafe/2f",
+				"actor_count": 14,
+				"controlled_occlusion": {
+					"actor_id": "aria",
+					"blocked": false,
+					"max_query_hz": 5,
+					"normal_depth_preserved": true,
+					"occluder": "",
+					"ray_count": 5
+				},
+				"error": "",
+				"model": {
+					"building_count": 49,
+					"floor_count": 89,
+					"furnishing_count": 753,
+					"last_error": "",
+					"load_method": "imported PackedScene",
+					"load_msec": 1539,
+					"loaded": true,
+					"materials": {
+						"alpha_blend_materials": 1,
+						"normal_materials": 26,
+						"textured_materials": 24,
+						"unique_materials": 48
+					},
+					"mesh_count": 8159,
+					"navigation_authority": "Sim canonical grid and portals",
+					"node_count": 9207,
+					"opened_front_doors": [
+						"Main_cafe",
+						"Main_shop",
+						"Main_home",
+						"Main_home2",
+						"Main_library",
+						"Main_wash",
+						"Main_work",
+						"lot_00_chapel",
+						"lot_01_mairie",
+						"lot_02_windmill",
+						"lot_03_netshed",
+						"lot_04_bakery",
+						"lot_05_creperie",
+						"lot_07_hotel",
+						"lot_08_cannery",
+						"Port_Warehouse_Exterior",
+						"lot_09_townhouse",
+						"lot_12_halftimber",
+						"lot_14_halftimber",
+						"lot_15_terrace",
+						"lot_18_terrace",
+						"lot_20_ochre",
+						"lot_22_halftimber",
+						"lot_23_townhouse",
+						"lot_24_ochre",
+						"lot_25_townhouse",
+						"lot_26_ochre",
+						"lot_27_terrace",
+						"lot_29_halftimber",
+						"lot_30_townhouse",
+						"lot_31_longere",
+						"lot_33_terrace",
+						"lot_34_halftimber",
+						"lot_36_longere",
+						"lot_37_longere",
+						"lot_38_halftimber",
+						"lot_40_terrace",
+						"lot_10_belleepoque",
+						"lot_19_belleepoque",
+						"lot_21_belleepoque",
+						"lot_35_belleepoque",
+						"lot_13_cottage",
+						"lot_28_cottage",
+						"lot_32_cottage",
+						"lot_39_whitehouse",
+						"lot_11_longere",
+						"lot_16_longere",
+						"lot_17_longere"
+					],
+					"raw_source_sha256_verified": true,
+					"room_count": 561,
+					"runtime_door_mesh_pieces": 144,
+					"selected_building_id": "Main_cafe",
+					"selected_floor_index": 1,
+					"source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
+					"source_catalog_node_count": 9062,
+					"source_glb_sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c",
+					"source_verification": "raw GLB SHA256"
+				},
+				"projection_loaded": true
+			},
+			"name": "actual_game_loads_verified_49_building_model",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "existing_resident_possessed_without_new_actor",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "owner_starts_in_real_upper_home",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "upper_floor_reveal_preserves_active_rooms_and_neighbor",
+			"passed": true
+		},
+		{
+			"detail": {
+				"luminance_stddev": 0.140310289137853,
+				"mean_luminance": 0.193989727969835
+			},
+			"name": "actual_main_framebuffer_01_owner_upper",
+			"passed": true
+		},
+		{
+			"detail": {
+				"cell_error": 0.0000153775363287423
+			},
+			"name": "actual_camera_floor_ray_roundtrip_under_0_02_cell",
+			"passed": true
+		},
+		{
+			"detail": {
+				"pixel_size": 0.0369565226137638,
+				"texture": "res://assets/art/chars/aria.png"
+			},
+			"name": "retained_character_sheet_has_metric_3d_body",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": "(10.625, 3.610028, -3.125)",
+				"expected": "(10.625, 3.585028, -3.125)"
+			},
+			"name": "actor_feet_follow_projected_metric_floor",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "screen_input_owner_uses_actual_stair_portal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "ground_floor_reveal_hides_upper_floor_only_locally",
+			"passed": true
+		},
+		{
+			"detail": {
+				"hit_y": 0.747028112411499,
+				"projected_y": 0.735028088092804
+			},
+			"name": "selected_floor_height_meets_real_imported_floor",
+			"passed": true
+		},
+		{
+			"detail": {
+				"requested_binding": {
+					"approach_local_m": [
+						-0.125,
+						0.125
+					],
+					"cell": [
+						19.0,
+						17.0
+					],
+					"fixture_center_local_m": [
+						-1.81,
+						0.17
+					],
+					"fixture_footprint_m": [
+						-3.31,
+						-0.13,
+						-0.31,
+						0.47
+					],
+					"model_asset_id": "Main_cafe_L00_Public_Room_A00_cafe_counter",
+					"model_asset_kind": "cafe_counter",
+					"note": "Legacy action at a reachable standing cell adjacent to an actual compatible fixture.",
+					"plane": "cafe/1f"
+				},
+				"requested_id": "cafe1f_counter",
+				"same_imported_mesh_and_plane": true,
+				"selected_binding": {
+					"approach_local_m": [
+						-0.125,
+						0.375
+					],
+					"cell": [
+						19.0,
+						16.0
+					],
+					"fixture_center_local_m": [
+						-1.81,
+						0.17
+					],
+					"fixture_footprint_m": [
+						-3.31,
+						-0.13,
+						-0.31,
+						0.47
+					],
+					"model_asset_id": "Main_cafe_L00_Public_Room_A00_cafe_counter",
+					"model_asset_kind": "cafe_counter",
+					"note": "Legacy action at a reachable standing cell adjacent to an actual compatible fixture.",
+					"plane": "cafe/1f"
+				},
+				"selected_id": "counter_1"
+			},
+			"name": "actual_fixture_mesh_click_opens_existing_action_menu",
+			"passed": true
+		},
+		{
+			"detail": {
+				"luminance_stddev": 0.156039867374738,
+				"mean_luminance": 0.220834418868648
+			},
+			"name": "actual_main_framebuffer_02_fixture_menu",
+			"passed": true
+		},
+		{
+			"detail": {
+				"luminance_stddev": 0.154489806589236,
+				"mean_luminance": 0.237952312363075
+			},
+			"name": "actual_main_framebuffer_03_character_walking",
+			"passed": true
+		},
+		{
+			"detail": {
+				"core_object_intent": true,
+				"moved": true,
+				"selected_action": "闲聊",
+				"selected_target": "counter_1",
+				"sheet_walk_frames": true
+			},
+			"name": "mouse_menu_keyboard_action_moves_retained_sprite_over_frames",
+			"passed": true
+		},
+		{
+			"detail": {
+				"advertised_action": {
+					"action": "闲聊",
+					"amount": 42,
+					"duration": 20,
+					"need": "social",
+					"ok": true,
+					"price": 0,
+					"wage": 0,
+					"why": ""
+				},
+				"coin_change": 0,
+				"completion_events": [
+					{
+						"action": "闲聊",
+						"target": "counter_1",
+						"tick": 45,
+						"wage": 0
+					}
+				],
+				"largest_observed_use_need_step": 1.94999999999999,
+				"need": "social",
+				"need_change": 30.5500000000001,
+				"use_phase_observed": true
+			},
+			"name": "existing_fixture_action_executes_with_measurable_effect",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual_geometry_ray": {
+					"blocked": false,
+					"distance": 0,
+					"occluder": ""
+				},
+				"view_state": {
+					"actor_id": "aria",
+					"blocked": false,
+					"max_query_hz": 5,
+					"normal_depth_preserved": true,
+					"occluder": "",
+					"ray_count": 100
+				}
+			},
+			"name": "unblocked_controlled_resident_hides_occlusion_ghost",
+			"passed": true
+		},
+		{
+			"detail": {
+				"luminance_stddev": 0.182802260181139,
+				"mean_luminance": 0.27763906097973
+			},
+			"name": "actual_main_framebuffer_04_fixture_use_complete",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "screen_input_returns_resident_to_real_town",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "exterior_restore_reveals_cafe_and_neighbor_roofs",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual_geometry_ray": {
+					"blocked": true,
+					"distance": 97.5634155273438,
+					"occluder": "Front_AwningBlue"
+				},
+				"view_state": {
+					"actor_id": "aria",
+					"blocked": true,
+					"max_query_hz": 5,
+					"normal_depth_preserved": true,
+					"occluder": "Front_AwningBlue",
+					"ray_count": 118
+				}
+			},
+			"name": "roof_occluded_controlled_resident_has_actual_los_and_visible_ghost",
+			"passed": true
+		},
+		{
+			"detail": {
+				"normal_primary_depth": true,
+				"silhouette_frame_matches": true
+			},
+			"name": "only_matching_silhouette_bypasses_depth_with_primary_preserved",
+			"passed": true
+		},
+		{
+			"detail": {
+				"cell_error": 0.0000101725260416667,
+				"terrain_y": 0.420870006084442
+			},
+			"name": "actual_terrain_camera_ray_roundtrip_under_0_03_cell",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "outdoor_actor_grounded_on_terrain_profile",
+			"passed": true
+		},
+		{
+			"detail": {
+				"luminance_stddev": 0.208901290265699,
+				"mean_luminance": 0.304226340226046
+			},
+			"name": "actual_main_framebuffer_05_town_exterior",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "five_distinct_actual_game_frames_captured",
+			"passed": true
+		}
+	],
+	"direct_agent_writes": false,
+	"display_server": "Windows",
+	"engine_version": {
+		"build": "official",
+		"hash": "71f334935c000924d403448e698df4441130df18",
+		"hex": 263682,
+		"major": 4,
+		"minor": 6,
+		"patch": 2,
+		"status": "stable",
+		"string": "4.6.2-stable (official)",
+		"timestamp": 0
+	},
+	"failure_count": 0,
+	"input_events": [
+		{
+			"kind": "mouse_click",
+			"screen": [
+				1035.2939453125,
+				269.885009765625
+			],
+			"tick": 3
+		},
+		{
+			"kind": "mouse_click",
+			"screen": [
+				641.150695800781,
+				386.924530029297
+			],
+			"tick": 16
+		},
+		{
+			"keycode": 49,
+			"kind": "key",
+			"tick": 16
+		},
+		{
+			"kind": "mouse_click",
+			"screen": [
+				318.964569091797,
+				247.731201171875
+			],
+			"tick": 17
+		},
+		{
+			"keycode": 49,
+			"kind": "key",
+			"tick": 17
+		},
+		{
+			"kind": "mouse_click",
+			"screen": [
+				625.882202148438,
+				585.894470214844
+			],
+			"tick": 45
+		},
+		{
+			"kind": "mouse_click",
+			"screen": [
+				640.0,
+				387.880340576172
+			],
+			"tick": 51
+		},
+		{
+			"keycode": 49,
+			"kind": "key",
+			"tick": 51
+		}
+	],
+	"input_path": "Viewport mouse/key events -> existing LifeMode -> Sim life_* and portal transactions",
+	"projection_sha256": "b699c9711c02c0d9f8f2e62e65a9b0cb6b3ce4d38ddf039697247da5b85629ad",
+	"schema": "living_town.bridge.visual.v1",
+	"screenshots": [
+		{
+			"controlled": "aria",
+			"file": "C:/Users/yp/.codex/worktrees/114e/living-town/docs/town_bridge/captures/01_owner_upper.png",
+			"floor": "2f",
+			"model_source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
+			"sha256": "45d54f05104ae73a27ad58b3aaad0bebafd24141751738e5ea5dac35414a0bf1",
+			"size": [
+				1280,
+				768
+			],
+			"space": "cafe",
+			"tick": 3
+		},
+		{
+			"controlled": "aria",
+			"file": "C:/Users/yp/.codex/worktrees/114e/living-town/docs/town_bridge/captures/02_fixture_menu.png",
+			"floor": "1f",
+			"model_source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
+			"sha256": "cd1ca508264bb5f17bace411bd87e608b615e6f8106ed1bcfbfc086cba81909f",
+			"size": [
+				1280,
+				768
+			],
+			"space": "cafe",
+			"tick": 17
+		},
+		{
+			"controlled": "aria",
+			"file": "C:/Users/yp/.codex/worktrees/114e/living-town/docs/town_bridge/captures/03_character_walking.png",
+			"floor": "1f",
+			"model_source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
+			"sha256": "2ce8407ecdac2b9279e44feb230fac4a69f753a9835db283b3d54ec4f67d01fd",
+			"size": [
+				1280,
+				768
+			],
+			"space": "cafe",
+			"tick": 18
+		},
+		{
+			"controlled": "aria",
+			"file": "C:/Users/yp/.codex/worktrees/114e/living-town/docs/town_bridge/captures/04_fixture_use_complete.png",
+			"floor": "1f",
+			"model_source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
+			"sha256": "e486a9ea07cba3709d52dfbb704c213388a8c4de53b559aa615c75f463532cba",
+			"size": [
+				1280,
+				768
+			],
+			"space": "cafe",
+			"tick": 45
+		},
+		{
+			"controlled": "aria",
+			"file": "C:/Users/yp/.codex/worktrees/114e/living-town/docs/town_bridge/captures/05_town_exterior.png",
+			"floor": "outdoor",
+			"model_source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
+			"sha256": "053062b2938096d7d3929657033595d79f6b406f7d0b2bc58bed63228f2a1453",
+			"size": [
+				1280,
+				768
+			],
+			"space": "town",
+			"tick": 53
+		}
+	],
+	"selected_fixture_mesh_proof": {
+		"requested_binding": {
+			"approach_local_m": [
+				-0.125,
+				0.125
+			],
+			"cell": [
+				19.0,
+				17.0
+			],
+			"fixture_center_local_m": [
+				-1.81,
+				0.17
+			],
+			"fixture_footprint_m": [
+				-3.31,
+				-0.13,
+				-0.31,
+				0.47
+			],
+			"model_asset_id": "Main_cafe_L00_Public_Room_A00_cafe_counter",
+			"model_asset_kind": "cafe_counter",
+			"note": "Legacy action at a reachable standing cell adjacent to an actual compatible fixture.",
+			"plane": "cafe/1f"
+		},
+		"requested_id": "cafe1f_counter",
+		"same_imported_mesh_and_plane": true,
+		"selected_binding": {
+			"approach_local_m": [
+				-0.125,
+				0.375
+			],
+			"cell": [
+				19.0,
+				16.0
+			],
+			"fixture_center_local_m": [
+				-1.81,
+				0.17
+			],
+			"fixture_footprint_m": [
+				-3.31,
+				-0.13,
+				-0.31,
+				0.47
+			],
+			"model_asset_id": "Main_cafe_L00_Public_Room_A00_cafe_counter",
+			"model_asset_kind": "cafe_counter",
+			"note": "Legacy action at a reachable standing cell adjacent to an actual compatible fixture.",
+			"plane": "cafe/1f"
+		},
+		"selected_id": "counter_1"
+	},
+	"source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
+	"source_glb_sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c",
+	"status": "PASS"
+}

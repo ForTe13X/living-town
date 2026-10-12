@@ -112,10 +112,12 @@ func _ready() -> void:
 			doors_ok = false; bad = String(d.get("name", "?"))
 	ck(doors_ok and doors_n > 0, "镇上 %d 扇门都能进真 Space（无空壳）%s" % [doors_n, ("← 坏门:" + bad) if not doors_ok else ""])
 
-	# ── 兼容层：不带 spatial_address 的老 agent 一律 town/outdoor（Sim 一行没改）──
+	# Live actors carry their authoritative plane directly; older dictionaries still fall back.
 	var ag: Dictionary = Sim.agents[0]
 	var a0: Dictionary = sg.address_of(ag)
-	ck(String(a0["space_id"]) == "town" and String(a0["floor_id"]) == "outdoor", "老 agent → 兜底 town/outdoor")
+	ck(String(a0["space_id"]) == String(ag.get("space", "town")) and String(a0["floor_id"]) == String(ag.get("floor", "outdoor")), "live agent → actual space/floor")
+	var legacy: Dictionary = sg.address_of({"pos": Vector2i(3, 4)})
+	ck(legacy["space_id"] == "town" and legacy["floor_id"] == "outdoor", "legacy dictionary → town/outdoor")
 	ck(a0["position"] == ag["pos"], "兜底地址的 position == agent.pos")
 	var ag2 := {"pos": Vector2i(1, 1), "spatial_address": {"space_id": "test_loft", "floor_id": "2f", "position": Vector2i(2, 2)}}
 	var a1: Dictionary = sg.address_of(ag2)

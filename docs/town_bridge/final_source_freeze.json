@@ -1,0 +1,3083 @@
+{
+  "schema": "living_town.bridge.final_source_freeze.v1",
+  "status": "PASS",
+  "freeze_id": "town-bridge-final-2026-10-12",
+  "generated_utc": "2026-10-12T11:43:01.800181+00:00",
+  "base_git_head": "f204276b3a1841db870983f8ef040dc5df2b454b",
+  "profile_sha256": "6c3516fc10ce2b0622072e84a96750bd46965b46978e3a1be5284490a63c6202",
+  "projection_sha256": "b699c9711c02c0d9f8f2e62e65a9b0cb6b3ce4d38ddf039697247da5b85629ad",
+  "source_glb_sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c",
+  "file_count": 609,
+  "files": [
+    {
+      "file": "LICENSE",
+      "bytes": 1393,
+      "sha256": "b00b825c50272c31e447cabbc0cdc7695f26795cd8d4fd7341163240e414349b"
+    },
+    {
+      "file": "THIRD_PARTY_NOTICES.md",
+      "bytes": 3582,
+      "sha256": "f61b55df739e6333a87de9576b6f7583557d228e79ab2bce91543b5c27a82d96"
+    },
+    {
+      "file": "art/living_town/external_assets/fonts/LICENSE.md",
+      "bytes": 4491,
+      "sha256": "c21d7293d87b6d7ab1d0229a2f55b77f33a7613a6a4e66f6693d68d7d8d09464"
+    },
+    {
+      "file": "art/living_town/external_assets/fonts/PROVENANCE.json",
+      "bytes": 655,
+      "sha256": "2017efa3bbc5d7e85ccdec1ae5da6e9da6d6df31c6aaf9a0785dfe735bcada91"
+    },
+    {
+      "file": "docs/09-美术资产与版权.md",
+      "bytes": 9540,
+      "sha256": "b3221d1ddae42f22717ebc9ca0700f03406376006bdf3eb017cd5c147ce3281c"
+    },
+    {
+      "file": "docs/town_bridge/README.md",
+      "bytes": 5714,
+      "sha256": "9498b3f1c36fedc9ecb077b0227a7fbc4358896feae615fad193027e1bbd2900"
+    },
+    {
+      "file": "docs/town_bridge/actual_visual_test_review_report.json",
+      "bytes": 7552,
+      "sha256": "074d7cffde80702d7e032d4ee197a98630dde88923373caf3dfc1ec7b5e2f4b0"
+    },
+    {
+      "file": "docs/town_bridge/captures/01_owner_upper.png",
+      "bytes": 803162,
+      "sha256": "45d54f05104ae73a27ad58b3aaad0bebafd24141751738e5ea5dac35414a0bf1"
+    },
+    {
+      "file": "docs/town_bridge/captures/02_fixture_menu.png",
+      "bytes": 853318,
+      "sha256": "cd1ca508264bb5f17bace411bd87e608b615e6f8106ed1bcfbfc086cba81909f"
+    },
+    {
+      "file": "docs/town_bridge/captures/03_character_walking.png",
+      "bytes": 905129,
+      "sha256": "2ce8407ecdac2b9279e44feb230fac4a69f753a9835db283b3d54ec4f67d01fd"
+    },
+    {
+      "file": "docs/town_bridge/captures/04_fixture_use_complete.png",
+      "bytes": 962880,
+      "sha256": "e486a9ea07cba3709d52dfbb704c213388a8c4de53b559aa615c75f463532cba"
+    },
+    {
+      "file": "docs/town_bridge/captures/05_town_exterior.png",
+      "bytes": 1028200,
+      "sha256": "053062b2938096d7d3929657033595d79f6b406f7d0b2bc58bed63228f2a1453"
+    },
+    {
+      "file": "docs/town_bridge/captures/06_windows_exported_game.png",
+      "bytes": 799595,
+      "sha256": "95f43353add9d3265aff0671ac263c1ac029bd746445c3bf50ec48c953042dcf"
+    },
+    {
+      "file": "docs/town_bridge/licenses/GODOT_COPYRIGHT.txt",
+      "bytes": 99790,
+      "sha256": "dc043a7dbf69632560219e72fbc61ef9fa7338c7a773660acd81b51590b69104"
+    },
+    {
+      "file": "docs/town_bridge/licenses/GODOT_LICENSE.txt",
+      "bytes": 1149,
+      "sha256": "b0435e3b3e4e55238f05f4b306f30524a1b2e20147810d436eaa554fa6855c80"
+    },
+    {
+      "file": "docs/town_bridge/licenses/PROVENANCE.json",
+      "bytes": 675,
+      "sha256": "2666c16296b1fc72da2909ef60bd6f5486f03bb909fa4d487c463587e0d71ee7"
+    },
+    {
+      "file": "docs/town_bridge/logical_test_report.json",
+      "bytes": 4586,
+      "sha256": "5fe663e8391467c52fdb253a2e9e5f0a9056027ae56e3ae7e461f90aaf2d2b6f"
+    },
+    {
+      "file": "docs/town_bridge/optional_backend_test_report.json",
+      "bytes": 173,
+      "sha256": "343625634b58bfb5400cdb836cc2011051ee7c10b275ac3afe125f08c6a53402"
+    },
+    {
+      "file": "docs/town_bridge/profile_compile_report.json",
+      "bytes": 122481,
+      "sha256": "fa0502d1675e18f4bb7efeb94ad13b87fe67134552b3206894f711aa365ed6b3"
+    },
+    {
+      "file": "docs/town_bridge/regression_test_report.json",
+      "bytes": 1433,
+      "sha256": "e825c9a7a48c19241c801a5a41b362b1cbc80fafa6951833a44f0138fc568a89"
+    },
+    {
+      "file": "docs/town_bridge/visual_test_report.json",
+      "bytes": 13349,
+      "sha256": "6ed4f4aec324fc0ab7daf4bf8bb12a566c9602be84d63fe7105c8da406582257"
+    },
+    {
+      "file": "docs/town_bridge/windows_export_verification.json",
+      "bytes": 3396,
+      "sha256": "89bfc5b02544355046b523b002cf06d6e49cf1e64ba8d76d281bbebcfa4a2491"
+    },
+    {
+      "file": "game/assets/art/chars/aria.png",
+      "bytes": 70042,
+      "sha256": "ee08a31c70c75a5bc4375c0eab80e28bd799a37bf847975e024e047ecdc8f20b"
+    },
+    {
+      "file": "game/assets/art/chars/ben.png",
+      "bytes": 69278,
+      "sha256": "f544890de1c4808156b2ffea2d2784aafd546b86cf5f17aec3d4a44b52ec0cfc"
+    },
+    {
+      "file": "game/assets/art/chars/coco.png",
+      "bytes": 66204,
+      "sha256": "f1abe62e1169df9acb93bfe3e5bd368629afa3847459a1792c527617c56deefe"
+    },
+    {
+      "file": "game/assets/art/chars/dan.png",
+      "bytes": 51297,
+      "sha256": "4132d8c691a2b14190d404604f5e23398d6f09f0bee583ff0836e6a8d2714df7"
+    },
+    {
+      "file": "game/assets/art/chars/dou.png",
+      "bytes": 59217,
+      "sha256": "b6fff07233e31eafe8e4a64b10433583ef7e05c4bfbf4383b24b14a7eb230cb8"
+    },
+    {
+      "file": "game/assets/art/chars/evy.png",
+      "bytes": 59474,
+      "sha256": "7b18b0202e0b488e5f3bf270fd69dff740b42c67da919dca2d5240eebc0fa2c8"
+    },
+    {
+      "file": "game/assets/art/chars/fei.png",
+      "bytes": 53080,
+      "sha256": "8aa3266c95642eb6a2f8fc2598dd082cbb49939198f085c3d49519df7687fc71"
+    },
+    {
+      "file": "game/assets/art/chars/gui.png",
+      "bytes": 51877,
+      "sha256": "309208affa814aa754f4f7ee9a21c34c49b3118894b7621d1168ff4da3bf2c5d"
+    },
+    {
+      "file": "game/assets/art/chars/hai.png",
+      "bytes": 73182,
+      "sha256": "f2c96d9e5ea31e2d6fa307fddd5777b491482d5c02b31328b1a1e62fc17ff486"
+    },
+    {
+      "file": "game/assets/art/chars/hua.png",
+      "bytes": 105512,
+      "sha256": "51df3f60a6c01b3741f626218d839d5c91a3fba06d64f98f54ec321f9f77fea9"
+    },
+    {
+      "file": "game/assets/art/chars/huai.png",
+      "bytes": 58364,
+      "sha256": "3e6bd583f3c787d165e292b794d4bd7bd48a4235876094ce2baeca095ee0aa08"
+    },
+    {
+      "file": "game/assets/art/chars/lin.png",
+      "bytes": 76728,
+      "sha256": "dc0df39afbed218ba22c2538f82c0293467cc1ff702263020d0bc312a511de45"
+    },
+    {
+      "file": "game/assets/art/chars/liu.png",
+      "bytes": 72630,
+      "sha256": "6b7ab0c0a0b06c073565453ad1ab0a61ba10d66d79d76fb3142889376ae274a2"
+    },
+    {
+      "file": "game/assets/art/chars/mei.png",
+      "bytes": 47518,
+      "sha256": "61cb44035fca8bcb6c690809574789e8e6449fe5e34a97f25bdf6c4841050705"
+    },
+    {
+      "file": "game/assets/art/chars/mian.png",
+      "bytes": 67525,
+      "sha256": "89f16f5acd286c48d1bd7ce0c607a2e01f96b2f97fc2e785529812a71e9b17f8"
+    },
+    {
+      "file": "game/assets/art/chars/mo.png",
+      "bytes": 62126,
+      "sha256": "b0cee65ef4eea16afa320d864e9851473e97a176a8ae524cb0dcb45607ea8070"
+    },
+    {
+      "file": "game/assets/art/chars/qin.png",
+      "bytes": 62173,
+      "sha256": "782cb4e92a4ccb91d83fe120798487a6f3c7ab0a54aa58405a7adf99cd5dcc5b"
+    },
+    {
+      "file": "game/assets/art/chars/shi.png",
+      "bytes": 78393,
+      "sha256": "05adbddbe3bc6fb2352508e217369eb347d46821268d2890b5406bdb1be97b47"
+    },
+    {
+      "file": "game/assets/art/chars/shu.png",
+      "bytes": 59408,
+      "sha256": "761a205bd08a58ff690545c0230431916c2b5646944fada204b5a4953f9ee0f3"
+    },
+    {
+      "file": "game/assets/art/chars/tao.png",
+      "bytes": 71594,
+      "sha256": "cebee32810479be055242450d654ccf5fdc0b4d7162b90f49da90e1956e09e39"
+    },
+    {
+      "file": "game/assets/art/chars/tie.png",
+      "bytes": 68316,
+      "sha256": "35809996f2e2714b2b777039bc940d9f03c1d7183475d21635859f1cf64f6584"
+    },
+    {
+      "file": "game/assets/art/chars/yin.png",
+      "bytes": 55534,
+      "sha256": "31483e81a90e626f6ad30b0abd437ba0e6656668a6c09fa89ae5ead32838f7d8"
+    },
+    {
+      "file": "game/assets/art/chars/yong.png",
+      "bytes": 69794,
+      "sha256": "47cf96f11684108e2eafb572d94ca5058108b16dcfec0fabaab329002c578449"
+    },
+    {
+      "file": "game/assets/art/chars/yun.png",
+      "bytes": 94035,
+      "sha256": "e0371ca9376553c769179d235031f369e93bc5c6c42aec686db6cc74092008cc"
+    },
+    {
+      "file": "game/assets/art/decor/bush.png",
+      "bytes": 239,
+      "sha256": "acf36b095fff3f7ea395363ab8bacb3a483b203916163cbccda4e3f6059ccc49"
+    },
+    {
+      "file": "game/assets/art/decor/flower_red.png",
+      "bytes": 274,
+      "sha256": "4369cef6ef47087d4083e6cd7d0c0a22cbe715acb79cfa611a9fd9ae70d219e9"
+    },
+    {
+      "file": "game/assets/art/decor/flower_yellow.png",
+      "bytes": 276,
+      "sha256": "b0421ef5de0bbc1d46938f965d0e1dcd08fbd2a5bcf34cb41db3fcd30c77f42e"
+    },
+    {
+      "file": "game/assets/art/decor/mushroom.png",
+      "bytes": 142,
+      "sha256": "0a92421f457d6556692fa4827b32e9d8bebee338c64e52fb55d8eda6d017a13e"
+    },
+    {
+      "file": "game/assets/art/decor/rock.png",
+      "bytes": 153,
+      "sha256": "e36514ce562313048b313dcefdb0d625aa968cf23b61de741fa899b09d023294"
+    },
+    {
+      "file": "game/assets/art/decor/stump.png",
+      "bytes": 138,
+      "sha256": "77f41dd982b02e523f4d9132bcc3009c332d13b25358ba2e42e87646f418ea8f"
+    },
+    {
+      "file": "game/assets/art/decor/tree_big.png",
+      "bytes": 243,
+      "sha256": "5a276339f564fa8bd9dd5bfd1dc223823b4e88fa66ff624ad9ec2b0aa390888a"
+    },
+    {
+      "file": "game/assets/art/decor/tree_small.png",
+      "bytes": 247,
+      "sha256": "8d89ebcb49aadfae7608b10be8384da103fb3dd96b6ed98c75a46d46ab574273"
+    },
+    {
+      "file": "game/assets/art/emote/apologize_no.png",
+      "bytes": 139,
+      "sha256": "44cf62757906cc6038f955d14735d1a57d801dc5433a3785fa9916548a1e7386"
+    },
+    {
+      "file": "game/assets/art/emote/apologize_ok.png",
+      "bytes": 142,
+      "sha256": "38e410c788c5ecd8d953329acfb02a2a4c1f2e6a10d1bb5f44686e19eac4c437"
+    },
+    {
+      "file": "game/assets/art/emote/conflict.png",
+      "bytes": 160,
+      "sha256": "95a050b62e030d916377ac85edb991b5c5dd93c7b79f76a38f1bd40ec972abd0"
+    },
+    {
+      "file": "game/assets/art/emote/confront.png",
+      "bytes": 128,
+      "sha256": "cf9cd7d85dfb9eb8999674157e5a09ea0c7d97ced4a6faf2c80d06b5dd7fcc0c"
+    },
+    {
+      "file": "game/assets/art/emote/give.png",
+      "bytes": 137,
+      "sha256": "0807cbb8b784283889cc0dc91e35476efc5cbb58e588da2503e0ecc847785b7b"
+    },
+    {
+      "file": "game/assets/art/emote/gossip.png",
+      "bytes": 131,
+      "sha256": "85e7cf2455d4a0d00cdf25d22a77a91ec5784c2d39baf6b1a57e2e3b42e523a6"
+    },
+    {
+      "file": "game/assets/art/emote/greet.png",
+      "bytes": 140,
+      "sha256": "b298973583d91cdd05f308b11abf62c4d847eb3a1e790e6a995217f71dbef04a"
+    },
+    {
+      "file": "game/assets/art/emote/invite.png",
+      "bytes": 140,
+      "sha256": "7810d611bb399ba7e60c8c25cc8af7d6844e39e4592da2e3de2c54949a7bc726"
+    },
+    {
+      "file": "game/assets/art/emote/meet_broken.png",
+      "bytes": 138,
+      "sha256": "fcaf456c2f04feadcb728e3ec5a1d43d25e30e49d8808618e78be8759a88bb9a"
+    },
+    {
+      "file": "game/assets/art/emote/meet_fulfilled.png",
+      "bytes": 132,
+      "sha256": "4c313f1d475d0c618f0a85566a32c79d22e88b5a8009427a6534704aaadeb70d"
+    },
+    {
+      "file": "game/assets/art/furn/altar.png",
+      "bytes": 3179,
+      "sha256": "25b4de81e01c646e57b433a89f1833a694a38b249d2d952864cdda96772b1b2c"
+    },
+    {
+      "file": "game/assets/art/furn/armchair.png",
+      "bytes": 1864,
+      "sha256": "f048e1f5e6c0b19ef8a36f7e46a4700d82a1fb90302abfda6c0560bd563b8508"
+    },
+    {
+      "file": "game/assets/art/furn/bathtub.png",
+      "bytes": 3091,
+      "sha256": "bd690067dbc4dccd8167760b991599016a483e353bca036a52d28bdeab55bf72"
+    },
+    {
+      "file": "game/assets/art/furn/bed_double.png",
+      "bytes": 4592,
+      "sha256": "7ddc955a81a2785f8d0ce3db249ba83e51378531206abe82aed750c29bdd2ea2"
+    },
+    {
+      "file": "game/assets/art/furn/bed_single.png",
+      "bytes": 3677,
+      "sha256": "d8dcccf91a527e1c7d400af13b64117c88af6e083c7c935ce682cd366e7a2d43"
+    },
+    {
+      "file": "game/assets/art/furn/bistro_table.png",
+      "bytes": 3172,
+      "sha256": "a74f30a0aa21db0804453e42f8bfd0e7f5fd18d72a4f3df63013e231ee776d44"
+    },
+    {
+      "file": "game/assets/art/furn/bookshelf.png",
+      "bytes": 3966,
+      "sha256": "553586ac7fa671fb4b08b7621520df9969dfde692cfed7082a95f439345cb372"
+    },
+    {
+      "file": "game/assets/art/furn/cafe_counter.png",
+      "bytes": 3384,
+      "sha256": "feef63937f9de8d2fe0305efb4098e97480d03a79f38e80a38e2375bb3b8b2fb"
+    },
+    {
+      "file": "game/assets/art/furn/dining_table.png",
+      "bytes": 6540,
+      "sha256": "13ea2bb0c2ceef9044dc8396fd466a964b027f8b74ffdd384d279fa586d75859"
+    },
+    {
+      "file": "game/assets/art/furn/dresser.png",
+      "bytes": 1878,
+      "sha256": "7af52540658aeadcbf491f6082e48b9a07fe77bbd105c8fe4ccd407f87b843d8"
+    },
+    {
+      "file": "game/assets/art/furn/floor_lamp.png",
+      "bytes": 924,
+      "sha256": "b37fbd0e0e65a03432cb4fb200c4b4f47595acbf1eb382d43cb929b6f671467e"
+    },
+    {
+      "file": "game/assets/art/furn/grocery_shelf.png",
+      "bytes": 5882,
+      "sha256": "854ce35be4f6f27deff604bee867a854e00eb11addbd8007aae4a6aba9f59342"
+    },
+    {
+      "file": "game/assets/art/furn/kitchen_counter.png",
+      "bytes": 813,
+      "sha256": "ba7542b04a3989170748426335148b23b991cc01bcbf1820a56ec5583527051c"
+    },
+    {
+      "file": "game/assets/art/furn/market_stall.png",
+      "bytes": 6491,
+      "sha256": "f4e545a9a7b20e9f1a8d2428a01d3e79f7ba18453898b3ab85c8490772cccc06"
+    },
+    {
+      "file": "game/assets/art/furn/painting_parasol.png",
+      "bytes": 3013,
+      "sha256": "a1b2a7243858e6b3b3b61ecf811a636c553accc26ad15add2d902671d968a0b8"
+    },
+    {
+      "file": "game/assets/art/furn/painting_sea.png",
+      "bytes": 3681,
+      "sha256": "890c51254a95b59f3c268154a9236fef794c049a2189ab09faa9763848349258"
+    },
+    {
+      "file": "game/assets/art/furn/pew.png",
+      "bytes": 1222,
+      "sha256": "3f159b7186ae39810b5903bbe38cc8fca3045e2eec7dbf5481b0996bd944a227"
+    },
+    {
+      "file": "game/assets/art/furn/piano.png",
+      "bytes": 2218,
+      "sha256": "6b826022bddce23cd9fbd89464a2622714d506a407a190064127fcc36573b6d0"
+    },
+    {
+      "file": "game/assets/art/furn/plant.png",
+      "bytes": 2611,
+      "sha256": "28df990e9fe5478f608d49b8e2ae3818cc6f011d0dead1a608cc1c531871960b"
+    },
+    {
+      "file": "game/assets/art/furn/rug_persian.png",
+      "bytes": 3852,
+      "sha256": "2119e64c1933f2cfd2faaed99e45e6555430e150758986668e69cd9e4b882860"
+    },
+    {
+      "file": "game/assets/art/furn/sofa.png",
+      "bytes": 2340,
+      "sha256": "ebfee06182645de7055bafa0b8bff524dd59bfd7aa2ced6ae0cc667d3dd537bc"
+    },
+    {
+      "file": "game/assets/art/furn/stained_glass.png",
+      "bytes": 2738,
+      "sha256": "f558adf68b12b5ae2c32b75d13402ce715fdf0cc90d63c7f23913f5a359f217f"
+    },
+    {
+      "file": "game/assets/art/furn/stove.png",
+      "bytes": 1985,
+      "sha256": "b549163265d25460466d4c2495a6215523e7d3124f532e388162d044f8c84e99"
+    },
+    {
+      "file": "game/assets/art/furn/toilet.png",
+      "bytes": 988,
+      "sha256": "8b65f70f27c61a532930089e5acf16b2c8c2bd4531c54b33541cefbb0aa7942d"
+    },
+    {
+      "file": "game/assets/art/furn/wardrobe.png",
+      "bytes": 549,
+      "sha256": "2fc6e84c446facfe40f37d18bea34e01d7a715bc62c2672b4b604135c3eb9c7f"
+    },
+    {
+      "file": "game/assets/art/furn/washbasin.png",
+      "bytes": 1599,
+      "sha256": "0fde44fb4408ac3f8f2022536b5851878915d9fc3319f3a932884212e9f6e432"
+    },
+    {
+      "file": "game/assets/art/furn/window_curtain.png",
+      "bytes": 2082,
+      "sha256": "67942bb0fe40ed4fb78b21dfc2b6d7af81c5f3861a76366e83fb7b4eb69cfec5"
+    },
+    {
+      "file": "game/assets/art/furn/workbench.png",
+      "bytes": 4232,
+      "sha256": "fc4f67d5435879e0e53b3bd5a93cfb710e45a3ff3a2cdd4f76b1c9a7c2b7b5af"
+    },
+    {
+      "file": "game/assets/art/furn/writing_desk.png",
+      "bytes": 1857,
+      "sha256": "9c35dd4674fe9cb38172eaf9707f3072f053d58d30bd2167c5c89364a27e8200"
+    },
+    {
+      "file": "game/assets/art/gardens/apple.png",
+      "bytes": 5182,
+      "sha256": "f9751de90b4be71fe4e12409951531dd6b631283738f80f2aa12139ffeddddd0"
+    },
+    {
+      "file": "game/assets/art/gardens/barrow.png",
+      "bytes": 1948,
+      "sha256": "816765b713e5ef24566a9fc851bad056c50e0423107fe0240efe7f6af7e6f77c"
+    },
+    {
+      "file": "game/assets/art/gardens/hydrangea.png",
+      "bytes": 4236,
+      "sha256": "c17f418e974cb2941c27c3a41e68c3b910702c8ce44ea6c1e3ac7d9f48509b35"
+    },
+    {
+      "file": "game/assets/art/gardens/laundry.png",
+      "bytes": 1030,
+      "sha256": "c875493ab16a1a332f3a9c26cab10eec2fffd35e177d7a9b6f8d7a0d50619772"
+    },
+    {
+      "file": "game/assets/art/gardens/veg.png",
+      "bytes": 3001,
+      "sha256": "254e1d61a3d46f0793c61a77d20239980812bdfa219474151334e484171e5904"
+    },
+    {
+      "file": "game/assets/art/houses/bakery.png",
+      "bytes": 14256,
+      "sha256": "29bbd51bd2064ce94d60e9d6733b111737a9b1d4b4c8ef0a630d347976304eb0"
+    },
+    {
+      "file": "game/assets/art/houses/bandstand.png",
+      "bytes": 9136,
+      "sha256": "85a735763e77dfde5b8ceaece66e8541eb52f7ab588420646f9a95445c545c80"
+    },
+    {
+      "file": "game/assets/art/houses/belleepoque.png",
+      "bytes": 25764,
+      "sha256": "716433de70611346416f45cbbd54fa423dfed0191e795a8ec014e7e74f804d44"
+    },
+    {
+      "file": "game/assets/art/houses/cannery.png",
+      "bytes": 39686,
+      "sha256": "c7035288aeb56e2a472307b052b861dc32de073b676463c2f158413fff6fec8c"
+    },
+    {
+      "file": "game/assets/art/houses/chapel.png",
+      "bytes": 22132,
+      "sha256": "8c033c5e624cd9550857eb3f17efc5df81da050a9fbeb442b0d5163b78f2ea02"
+    },
+    {
+      "file": "game/assets/art/houses/church.png",
+      "bytes": 23375,
+      "sha256": "1992ad0aeb89941127a0df43ce66867eda0f0b652395057980a78f46fe1be684"
+    },
+    {
+      "file": "game/assets/art/houses/cottage.png",
+      "bytes": 7278,
+      "sha256": "f90de2a6d6abe8209dc7bb76e60e7abe0835e846e72c63fc6433d6938dbdaf78"
+    },
+    {
+      "file": "game/assets/art/houses/creperie.png",
+      "bytes": 22816,
+      "sha256": "87a8a564fa81d53d88675bca6e51c84818ac0dd57562410794b786181bacab33"
+    },
+    {
+      "file": "game/assets/art/houses/halftimber.png",
+      "bytes": 11218,
+      "sha256": "bc78e8ae22eebc47567c4fefa3e56613fbe630e21bd2aee0aa3767ed61711754"
+    },
+    {
+      "file": "game/assets/art/houses/halles.png",
+      "bytes": 31053,
+      "sha256": "58b25077c0dddf8cc9ea55028ab691b250b65868b4b19ca9f0cfd7ef6b3368f3"
+    },
+    {
+      "file": "game/assets/art/houses/hotel.png",
+      "bytes": 33446,
+      "sha256": "009606f927f3e30b8317c1a4cd523484e7d4fb10d630a3189124b28fe0c72099"
+    },
+    {
+      "file": "game/assets/art/houses/longere.png",
+      "bytes": 30205,
+      "sha256": "958a0c65a058fa6202a05532d6e0b9140ac7fb7b28a51d7fba613bd6f877bae4"
+    },
+    {
+      "file": "game/assets/art/houses/lots.json",
+      "bytes": 13701,
+      "sha256": "0b4cad6118df6ec6fb9a4a64290a80b1688affb59a760df4fdd7e86a8f69e2a8"
+    },
+    {
+      "file": "game/assets/art/houses/mairie.png",
+      "bytes": 25275,
+      "sha256": "f4c7746a540a87c8c6ebd7f1f71e83e85deea43a1eca722ab4b6e9571ec65363"
+    },
+    {
+      "file": "game/assets/art/houses/netshed.png",
+      "bytes": 10194,
+      "sha256": "673b65aaa97d49dcefd17fad990b61d6b084998f5e8e1027031f2af0fea7089f"
+    },
+    {
+      "file": "game/assets/art/houses/ochre.png",
+      "bytes": 5648,
+      "sha256": "1ec5eb80e879efd969a96e9721dbe8a2564d0906b7d9c01f8d8ca08750cc848a"
+    },
+    {
+      "file": "game/assets/art/houses/terrace.png",
+      "bytes": 21109,
+      "sha256": "0d4478aaae81b38db9d54881f41d6440df62347b9445336dc67b3e0d0e2209e6"
+    },
+    {
+      "file": "game/assets/art/houses/townhouse.png",
+      "bytes": 7524,
+      "sha256": "9c9795df541f5414278fa7fc7f8f99f5852a5fd1a0b7011b43a37219aec5dc61"
+    },
+    {
+      "file": "game/assets/art/houses/villa.png",
+      "bytes": 20122,
+      "sha256": "c175278b39987aeef7479f9d8b781e8712bdd95d9782d22ddc241126720cfaef"
+    },
+    {
+      "file": "game/assets/art/houses/warehouse.png",
+      "bytes": 37843,
+      "sha256": "ce63e9649029aee5749b87dbd9b13318c4b98872b2d04b6becb3ee42ab69a9c1"
+    },
+    {
+      "file": "game/assets/art/houses/whitehouse.png",
+      "bytes": 6280,
+      "sha256": "d9dbb5f0e7c2080dfa94d9f909c6dc22e2ef9726b64653786f8cbef78fceac12"
+    },
+    {
+      "file": "game/assets/art/houses/windmill.png",
+      "bytes": 25173,
+      "sha256": "3902afeab8095d5d0f249eb41e1e8fe3668d96ee8937e1092ef2d0b9e1924403"
+    },
+    {
+      "file": "game/assets/art/library/puny-characters/LICENSE.txt",
+      "bytes": 99,
+      "sha256": "0e7835d7a31c16e3ada713d2d9814a1eeca319599c493e31323964cbf4768486"
+    },
+    {
+      "file": "game/assets/art/library/puny-characters/Puny-Characters/Archer-Green.png",
+      "bytes": 26723,
+      "sha256": "2fe5178f77e431b7e3b6f3934459047ac86f29f2e23f44425eb60e4aac3a89e1"
+    },
+    {
+      "file": "game/assets/art/library/puny-characters/Puny-Characters/Archer-Purple.png",
+      "bytes": 27415,
+      "sha256": "788d53de100aceb025621ae4fc95a61a6cd08168205185871a6442ab7b131d26"
+    },
+    {
+      "file": "game/assets/art/library/puny-characters/Puny-Characters/Character-Base.png",
+      "bytes": 19255,
+      "sha256": "a542332ff1ed66ce28e7eea489f2e1e304d90671aa531fc9ccf0b00b9f2857ff"
+    },
+    {
+      "file": "game/assets/art/library/puny-characters/Puny-Characters/Environment/Dirt.png",
+      "bytes": 651,
+      "sha256": "3e8dbfd2dfdcf8afd0c44bfb1ccca483e40a39868ed228ddb7ecce0125626eed"
+    },
+    {
+      "file": "game/assets/art/library/puny-characters/Puny-Characters/Environment/Grass1.png",
+      "bytes": 581,
+      "sha256": "603695fbdca78abfc27c1ca87a9d22f5dc59b5b948540e2ecac69a5df321c7b6"
+    },
+    {
+      "file": "game/assets/art/library/puny-characters/Puny-Characters/Environment/Grass2.png",
+      "bytes": 581,
+      "sha256": "7df15de64237b1a7e881c782cab5f2ea452075d22e880b5bc6d517ceaee8cbc8"
+    },
+    {
+      "file": "game/assets/art/library/puny-characters/Puny-Characters/Environment/Tree.png",
+      "bytes": 812,
+      "sha256": "c86fde88ab3cbd47a2b97ddd4ac54b5d3b2e7c597e392c3db407731839f800c1"
+    },
+    {
+      "file": "game/assets/art/library/puny-characters/Puny-Characters/Mage-Cyan.png",
+      "bytes": 23811,
+      "sha256": "bd43df96cef751f76252723bfa5a6095d68e982cba59260aec7f4fbfedf7ec3f"
+    },
+    {
+      "file": "game/assets/art/library/puny-characters/Puny-Characters/Mage-Red.png",
+      "bytes": 24230,
+      "sha256": "8e0c055d87b303215205ac217617350708affd2ee6e033b696e7cb4c4ef4c590"
+    },
+    {
+      "file": "game/assets/art/library/puny-characters/Puny-Characters/Slime.png",
+      "bytes": 1895,
+      "sha256": "456578c6da103c18ac3ffd6bba475b8154a4d82910e0ad34ca699304883f87b0"
+    },
+    {
+      "file": "game/assets/art/library/puny-characters/Puny-Characters/Soldier-Blue.png",
+      "bytes": 25043,
+      "sha256": "ddcb515baaf2b5b7a4c569ba23d7490c3e5221bb5e97d760ce67ce9c261a543d"
+    },
+    {
+      "file": "game/assets/art/library/puny-characters/Puny-Characters/Soldier-Red.png",
+      "bytes": 24825,
+      "sha256": "b9a89aef6607463d9444b701c8b687e70b2499f9c44257da0d48d68e48f6faf4"
+    },
+    {
+      "file": "game/assets/art/library/puny-characters/Puny-Characters/Soldier-Yellow.png",
+      "bytes": 25193,
+      "sha256": "348ab99b4f54d1a22013d24191a0e1622324db7f78926b5bd465a17516187204"
+    },
+    {
+      "file": "game/assets/art/library/puny-characters/Puny-Characters/Warrior-Blue.png",
+      "bytes": 24494,
+      "sha256": "acc8db08577086f1520d74d0806a614833a1f7356ba8a560437fd4c59538cdbc"
+    },
+    {
+      "file": "game/assets/art/library/puny-characters/Puny-Characters/Warrior-Red.png",
+      "bytes": 24614,
+      "sha256": "c60c80dcad811b3ef0e0e8e1fa5f0d62e011b3e604f2bb2a78261f2dcae6c712"
+    },
+    {
+      "file": "game/assets/art/library/puny-emotes/LICENSE.txt",
+      "bytes": 121,
+      "sha256": "aff18ec5fa4fa78a840875c0340779a8dfba143c1d98f8db268f522477b98066"
+    },
+    {
+      "file": "game/assets/art/library/puny-emotes/emotes.png",
+      "bytes": 1995,
+      "sha256": "db58556e5bff1badd854ae43328a985c5cd5d11104e5ae331ae67c2fb6d7434b"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/LICENSE.txt",
+      "bytes": 91,
+      "sha256": "b221c1add35a4ef0860c541cac8685a30e654e06baf3d20f59c606ca4a60cb5b"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/almonds.png",
+      "bytes": 255,
+      "sha256": "1c2db49b9e4ac4037442db147b5546317e924ac022e7a6f7d2850f9b0cc3b397"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/apple_green.png",
+      "bytes": 237,
+      "sha256": "bfb30bea3e1dc1098f9f898380426311fcc97d0d34367b5d98f27f40d8d9cb72"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/apple_red.png",
+      "bytes": 237,
+      "sha256": "8389d5ce436aba2dcbfb94c3846678c2d478ecef09e72d720960658404758313"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/apple_yellow.png",
+      "bytes": 237,
+      "sha256": "5acc4d1e9dd505931fcdc392e1e25368f81b7334cc24ed8ad27ba8675da97705"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/asparagus.png",
+      "bytes": 267,
+      "sha256": "98a71b35a68bfdc165ca8f71837db199a5b53d9491f7b385999f49a0585142df"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/avocado_half.png",
+      "bytes": 204,
+      "sha256": "60e904cfcce95b36a6f91a3cf5c066dcb069980b285d3802beb2025d14ffb109"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/avocado_whole.png",
+      "bytes": 252,
+      "sha256": "32232532d6b4b24b3f4de3b80ce26f0e323294ccd02c9faec0a43d0dd772f457"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/bacon.png",
+      "bytes": 324,
+      "sha256": "85b84c21ca06a6463d667655cf96b51420c81f213f1400bac2c4c8b9154a3922"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/bagel.png",
+      "bytes": 255,
+      "sha256": "ded227c02e7fd1531a4fccfa92dc8c7f2198cf41c1cecb678666c85fa021d2dc"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/baguette.png",
+      "bytes": 264,
+      "sha256": "02ff3034a24b58f879b0f7197ea16c331fdec9f202786b37fbf1704bab01fede"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/banana.png",
+      "bytes": 249,
+      "sha256": "dd3b041321adcd188f796e54b2aee3fcd4cc2880d41fb1db4c12f98331fb25f9"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/beet.png",
+      "bytes": 318,
+      "sha256": "75e26cd381f017bd35d3bd8f388cf6868e8f74901b5e33f84f2a769d8263697f"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/bell_pepper_green.png",
+      "bytes": 267,
+      "sha256": "48e78e03ca70122b29105eca0fec22e68728a39e8423538777687a46405c9ec9"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/bell_pepper_red.png",
+      "bytes": 300,
+      "sha256": "c5b055eb12aeca973b8c0afb992578fe9660e5681536341d70790a15ea79c496"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/bell_pepper_yellow.png",
+      "bytes": 300,
+      "sha256": "0e0815c83864e70819adf0e4c98afb71f617da0180baefe3e595fbccfcc7bebe"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/blueberries.png",
+      "bytes": 288,
+      "sha256": "50f90bacd9cdb85bbf4d5ed9fd4d64cc5a59d58317a76762a804be1d77bb7a95"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/bread_loaf_brown.png",
+      "bytes": 276,
+      "sha256": "dda8e8527e698278f7097c8d40622770e5ea49907f969a7afc665a69020578a1"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/bread_loaf_white.png",
+      "bytes": 285,
+      "sha256": "0e3b37376fb305174938125a00ab3c104b31bf40d7b2dc85bd170195379e1a26"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/breadroll.png",
+      "bytes": 279,
+      "sha256": "3504b0bf4063f33e1499f3c19ce7a7fe9ac69efd50de653af03784a505dbb66e"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/breadstick.png",
+      "bytes": 240,
+      "sha256": "21f8647426e70ae47b68df8584142a3f52b03e4396cbb512573cc927a39e703a"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/broccoli.png",
+      "bytes": 339,
+      "sha256": "0fca5911ccb4e9c8ccafb6733451c7a0104514481f818aef5c87b4a1972be5ee"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/burger.png",
+      "bytes": 345,
+      "sha256": "d5d4bfa1a72a825bfc69dde777f775bc44d47f9ab5562911dce1a4a40bbe477c"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/burrito.png",
+      "bytes": 339,
+      "sha256": "68eec55871ef90546f3f9d5df2449ad52fd98af2f6b7f7739f7aea0da2ab6da3"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/butter.png",
+      "bytes": 240,
+      "sha256": "2441e6f76c70f06e5cebe79f8f201603dcbb043bcde54d7a0f92a96479ae0437"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/cabbage.png",
+      "bytes": 309,
+      "sha256": "ab8e298393346807c83c05bdc652f6a629583c69bd34d3a231b90c33d8fe8e35"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/cake_slice_chocolate.png",
+      "bytes": 276,
+      "sha256": "3648fdcab4931dad2e69a78e3095bc93f4a759c8628d0d5b0b13dd254422776e"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/cake_slice_plain.png",
+      "bytes": 279,
+      "sha256": "05c8b09fcb02bc7dbd48b475b98409caec3aefe305d956a058a1cf9de405de96"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/cake_whole_chocolate.png",
+      "bytes": 270,
+      "sha256": "0b1eeea471d975fc6dbf630d7c41f05732561a6926b0af4727408aa756cfd272"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/cake_whole_plain.png",
+      "bytes": 276,
+      "sha256": "9d1e3fb2efbb17902b6926e1a7d15ba8baf173c0676cd105db551a1bcf5520f2"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/candy_cane.png",
+      "bytes": 300,
+      "sha256": "d715cf00561e0974677937fa11924320d703f104802217241ba489ef9e604a12"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/candy_corn.png",
+      "bytes": 210,
+      "sha256": "2922a723eb88298673e0b8523860cc6e4c27886d90be00424507a7c2af2128bf"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/canned_food_1.png",
+      "bytes": 231,
+      "sha256": "dabe105f4fe2a052e1b77075e2156442f3101014488b268e49b38bb140453503"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/canned_food_2.png",
+      "bytes": 240,
+      "sha256": "d35406c16882ef4900efe23a16e2432bacd3b17ac8f133b2fca82ed0bc826ba6"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/canned_food_3.png",
+      "bytes": 225,
+      "sha256": "c3d9ade775950da163e4d613c3cbd06acf5c9d58d32606a5cf241c7dbaf28085"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/canned_food_4.png",
+      "bytes": 234,
+      "sha256": "70ac4583f37df8522f8fc44ff11c578c74db8a929739b4bfaa7f0b6a78fe8693"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/cantaloupe_slice.png",
+      "bytes": 249,
+      "sha256": "cd93974bee81c5480eaf1f5e0c81c0c6b0de2d206dffbf42d4e7ffa221d3bb9f"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/cantaloupe_whole.png",
+      "bytes": 303,
+      "sha256": "724d3ef8d050b0a874b33bc3988c5a3354038b2504a37251f8adca321374a248"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/carrot.png",
+      "bytes": 315,
+      "sha256": "783b5ed1c99ceb7fb1de85bff47ee4e04cb3891d736eba31502121e00dffda27"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/cauliflower.png",
+      "bytes": 351,
+      "sha256": "d3d2c867e16964f9eb51807dbd1c8265907d6fd84ae7657bec791413435c02be"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/celery.png",
+      "bytes": 324,
+      "sha256": "c011cf6a46c7793f72ca78e6cf1a122500a5c070d2f88adf96604310cb5f4b2c"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/cheese.png",
+      "bytes": 204,
+      "sha256": "6db35d64665d0364f4bed34d2985a291d5d1f8494d53b8ff17943d06f71e1b38"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/cheese_puffs.png",
+      "bytes": 288,
+      "sha256": "88308d98fd4e05b622c99be72cd35ddafdb37541e44cefe4da8380d9f7941733"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/cherries.png",
+      "bytes": 279,
+      "sha256": "bf4e982be9f7a9aa56e4d08d20077daf92ab1bcf7e0f4b36fa8307ff953697eb"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/chestnut.png",
+      "bytes": 237,
+      "sha256": "c590c49a09e91d32c939baf840afa883f602b6de76d4123fcade7c53196694c8"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/chicken_drumstick_cooked.png",
+      "bytes": 285,
+      "sha256": "eb15d8fec2c3eb821b707b04577137f6d3d6ec1d1134618d52178ffc01679d51"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/chicken_drumstick_raw.png",
+      "bytes": 276,
+      "sha256": "ac83e484dddd5b72e5a18b0132c5cd225dc0ac49eff7d89ed733b4d0b24c83dc"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/chicken_nuggets.png",
+      "bytes": 258,
+      "sha256": "48f20b1b0c221026e562e7157ba2c74182e5c6ed02b5ba67e8e24eef3da8a19d"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/chili_pepper_green.png",
+      "bytes": 231,
+      "sha256": "5eeeddbe1f7e78b8cffade9721d3141587bc30f39f09b4387b6b87e5317d2bf2"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/chili_pepper_red.png",
+      "bytes": 270,
+      "sha256": "ed8305719e857be9837e29f7bbcdd125c59a513e280f76d151bb07c3b64c9a4b"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/chocolate.png",
+      "bytes": 255,
+      "sha256": "f6f7fdac63a7d646da76d90f8c430e7dc7ef1c0015917b73796eaa77475e2c63"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/churro.png",
+      "bytes": 240,
+      "sha256": "2fa49a2267dcb028eb9e9888365a8c7883d87da1aed0b2b798188edad6404dc3"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/cinnamon.png",
+      "bytes": 255,
+      "sha256": "06da8f1a2feb55bd3df5b19798f6e909027fcd7c2c937973896f48bee6fe9534"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/coconut_half.png",
+      "bytes": 243,
+      "sha256": "c53309ed816daa60eafb4b480f9db37266d9e66b4fd9cb9d787057b3532aba03"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/coconut_whole.png",
+      "bytes": 252,
+      "sha256": "254622abbad7f8ef8d32c4ba45cb8d1f0236e43fafd4ec14816a0a1b927ac8f0"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/cookie.png",
+      "bytes": 270,
+      "sha256": "67bd3c6f030ce48a982abcdeb1b9b34c52789fc4d66a5c2c45891f04a2cacdb4"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/corn.png",
+      "bytes": 333,
+      "sha256": "319a74bf1762d3870cf87a28e52a8611bef076ffd205b7c2abbc88b47ded00fa"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/corn_maize_blue.png",
+      "bytes": 333,
+      "sha256": "2fdfd8f77965cd0260381d158fe38f7e6370a057fadbc01703c34dcb081aebbe"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/corn_maize_red.png",
+      "bytes": 330,
+      "sha256": "b7cbef01621fd7ddd7b123e446a094fb3030a826f3ab84562db3ceb704ae32c3"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/crab_legs.png",
+      "bytes": 240,
+      "sha256": "018ac9c81f8bbf4c5aedfc6575f7ffd8779dc2c166cf01fc5a25e689210c3d2e"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/cranberries.png",
+      "bytes": 264,
+      "sha256": "b17a8793f386e30efe0a2da72b5dc2ce09063f7bad2f7dff48c55536baec6798"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/croissant.png",
+      "bytes": 291,
+      "sha256": "9cc72fbacee6a5ad3662b4e467efdbf44304a2e0e8b476461fb4df919182bdea"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/cucumber.png",
+      "bytes": 270,
+      "sha256": "7f5e4845afd72104dda6f62997b4b689124d861d25a3c9f22a49ff517224ceb1"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/cupcake_chocolate.png",
+      "bytes": 264,
+      "sha256": "360cd6e9fbdabe61d44adfef96781530cb7a2e372e79c662cd068ee29946b897"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/cupcake_vanilla.png",
+      "bytes": 264,
+      "sha256": "ab459049463e8417104d01fadf2ea4b5c95aef4159695a559d58d1d5023c8e21"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/dango.png",
+      "bytes": 336,
+      "sha256": "83eec0e83b7cadd22b70591006fd3808fa15becbabba2238a4981761110b5782"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/doughnut_chocolate.png",
+      "bytes": 300,
+      "sha256": "884b0fdc3f745f71f3dc4896a3d3cbb0f18076fbf2609d114a214c4b9fdfcb57"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/doughnut_pink.png",
+      "bytes": 300,
+      "sha256": "a80d184262183d978e273dc6d4262ee874dfb53bc2e5ce2ec9ff19c3cc0fae54"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/doughnut_pink_sprinkles.png",
+      "bytes": 357,
+      "sha256": "8cf112b02e6307415b096cb9e657125873f3084a25f68b3733bb73890380503a"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/dumpling.png",
+      "bytes": 273,
+      "sha256": "4eee5400dbcbe6e29b10419a6686cedc00358cd3050e61c379553d95fb8b4c49"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/durian.png",
+      "bytes": 276,
+      "sha256": "9c2f0e86d945892787b38529821dc755a6cea5b7b0ae118f4da9d868dea42e8e"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/egg_fried.png",
+      "bytes": 273,
+      "sha256": "3fde4e9366ac535778e7ed7a375eb8976b42379602bcf2c9fd7b6e9e034c8f20"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/egg_whole_blue.png",
+      "bytes": 225,
+      "sha256": "08e9191b27f78dea1b909cf4f27abc78c1c4c6f41e614f6c734f03fc6cca56ee"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/egg_whole_brown.png",
+      "bytes": 225,
+      "sha256": "f59b469c64d6340cdad2c08df9c11556d2f7eeba78c7f29c2d7b66054bb8cbba"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/egg_whole_white.png",
+      "bytes": 225,
+      "sha256": "c146554aa170c4c645177ee957e04dd1a4cc21425de8aa057ae0db8c619d49fa"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/eggplant.png",
+      "bytes": 282,
+      "sha256": "abd7c19803348873d99cac983e1e6eb6d1637ed220b1f85189b2a6795fa35d2b"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/falafel.png",
+      "bytes": 315,
+      "sha256": "a31dcb93eb4fbe0326ef4f25a88dc08202d0073657b180d48d1b61c404ee5779"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/fig.png",
+      "bytes": 204,
+      "sha256": "6c5cf7357d95c36b683e88cd7f26be8b9aef5874df05d3630ecd8891da0f2e7d"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/fish_fillet.png",
+      "bytes": 300,
+      "sha256": "08386d7720d662bdb9c671f45c1f2c472ada0e8f275e45653ee88be548c7501d"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/fish_sticks.png",
+      "bytes": 297,
+      "sha256": "a422865d03441b574339ead229050acf99e7a31913ac8146e3647bacf209fb54"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/flan.png",
+      "bytes": 336,
+      "sha256": "01354d22afe9fd686733b638e52dd42c58cf56ff6eb91006e43e6c83e94aa514"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/flatbread.png",
+      "bytes": 255,
+      "sha256": "f6d9687ee91367c34b4e8c89edfce0e7633d57672570da278a3c458434cfc447"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/fortune_cookie.png",
+      "bytes": 234,
+      "sha256": "8e54514fd7409a5924dd4fe016ac3ed245dfb481eaa54ed81a66c733737fb625"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/french_fries.png",
+      "bytes": 252,
+      "sha256": "366626c9b772f9be6f77c045fdd9dcc8c3b77c4ec069aff69a952184cc96e2d1"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/fruitcake.png",
+      "bytes": 267,
+      "sha256": "41fff75fb5935b0129595495eda6cd17495f53612f0c424d5b014cabe2b41169"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/garbanzo_beans.png",
+      "bytes": 231,
+      "sha256": "c8a6168f88ef301d3c7c3d14dcb1fec7b53ea2980d194beb74dcc25646aefe65"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/garlic.png",
+      "bytes": 246,
+      "sha256": "b81b9e61181bed33181d37966aaff0eb85e546d5b686d8fb7c2cbe650b2bbd7f"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/ginger.png",
+      "bytes": 345,
+      "sha256": "71382eaa17c2705e9287b3c721a23c84892c6e4efa39c283341a05b7553390b1"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/gingerbread_man.png",
+      "bytes": 255,
+      "sha256": "2a7549ca40a4277db29685a8546d1152240cb6e86dc78df25bfd013ca44725b7"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/grapes_green.png",
+      "bytes": 303,
+      "sha256": "ad8450978dfeed6d1a41f46c3e36e0c8b172c0c0504acffccd361f8c7b6e79d0"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/grapes_purple.png",
+      "bytes": 318,
+      "sha256": "9e79de662fc57fdfd995e6c5e8a3f95ffbd1eacc97d67159f82a316059707540"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/gulab_jamun.png",
+      "bytes": 246,
+      "sha256": "6b3d1dea8aaed017c9d377143470e860f0db4c8ff30026dd25f1b6541360b3fe"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/ham.png",
+      "bytes": 285,
+      "sha256": "1fb099d1276ee564e0f7c9bd8ac06ff7c17c3490221acb1cb2caa5442e46c02c"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/honey_pot.png",
+      "bytes": 261,
+      "sha256": "48edc7f86320f1839348482ba4230dcd74178dfe77cad1b05bc9d4ae63e588f9"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/hotdog.png",
+      "bytes": 282,
+      "sha256": "16f512814c0d71884d6dc81c242acd6094c65f3f4ea5a273fe09c3ff2ea02765"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/icecream_chocolate.png",
+      "bytes": 258,
+      "sha256": "a5aaee5dd6ee7cca237c0e04d1818ca77f71ddca7d04f6e4f99d34a16a070b55"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/icecream_mint.png",
+      "bytes": 261,
+      "sha256": "c33c7437b8c34c98fb9a30fd3b111748023cec049778ec353e480a9c866feebd"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/icecream_vanilla.png",
+      "bytes": 261,
+      "sha256": "929de5008ffcd8ab70a17c9921f0f06bc833a7537d390ad78e194b68d634bd24"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/jalebi.png",
+      "bytes": 270,
+      "sha256": "87e24bc2e38d0b5184a0878e5852c736ea90484d4af66782d8dcc1d127aff5c6"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/jello.png",
+      "bytes": 306,
+      "sha256": "2003e798c044b93f7e2cfc68bbb125728431256fd3484a5f66e59f77cf979a41"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/kale.png",
+      "bytes": 270,
+      "sha256": "3056fe8d3118d8fe6924c3991545ef6d35a39ca2c7e394afaa26f896f2a12f9a"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/kiwi.png",
+      "bytes": 264,
+      "sha256": "bb2a2a0827d74b91a337e5938f7eecc446d0a7bf726f628d4a5dcfb0d560f4b7"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/lemon.png",
+      "bytes": 291,
+      "sha256": "81752598fdd301512c06db3cbc061c86bdbe26c99a139e35b33bcf90312ab28b"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/lemon_lime.png",
+      "bytes": 291,
+      "sha256": "61b85bf94e8925cd136176214ae74050f6ff56d99820c25ff9b8af9c482f749e"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/lettuce.png",
+      "bytes": 312,
+      "sha256": "2046f41aaf26ee0c752c8d563e192a6c509954aa0edfeba59ba64c76e4269e80"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/lollipop.png",
+      "bytes": 252,
+      "sha256": "5dcf8ce5eec02cd9b995bcca4b3f7e27881b0e4b705f2cb0a3b8967c1e992a83"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/lychee.png",
+      "bytes": 264,
+      "sha256": "9e8adcd7f1459d4102100fbfb980cc857707e07ec5a25d3d705b9c9b2cbe8944"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/macaroni.png",
+      "bytes": 237,
+      "sha256": "9ce46c1587724e4235ed5ded689d79d85b7ecdd8781e2497474330b96698b283"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/mango.png",
+      "bytes": 270,
+      "sha256": "4eee69e0ef180f680d4334e3be9b5c4f537ba37ca056860cefc39e2748ca63a4"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/mochi.png",
+      "bytes": 183,
+      "sha256": "665a77cc59bc14ba7f6917383f6ab0874724e0cfab665a979b1818e986953d43"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/moon_cake.png",
+      "bytes": 234,
+      "sha256": "b995cb84285340f2e0979824e13c4cdf234a18ae299817364c9e96315afd75f2"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/muffin_blueberry.png",
+      "bytes": 288,
+      "sha256": "2c706fb1913538d1a0bda637edd1303a57988eb606f1c48ae239c50655945619"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/muffin_plain.png",
+      "bytes": 252,
+      "sha256": "6e6ec313807bfe909625ee1e96334aa35e1a300e544b0235db291e7b59d6af72"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/mushroom.png",
+      "bytes": 201,
+      "sha256": "44b1a2d4437646b9dd3c39c5a136ad0d54ee24e3940a2a3e3e561312eedd73c7"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/narutomaki.png",
+      "bytes": 249,
+      "sha256": "695a218d8a305837b4ec83ace4497dbb709ae200cb481e57db877e245ee19a67"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/octopus.png",
+      "bytes": 294,
+      "sha256": "c40465c8d511854440df48c615d5c13882b70ff1e8c0513bd7a3f58efc15794a"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/olives_black.png",
+      "bytes": 261,
+      "sha256": "e7220c03bffe15aa8c973849e4f2dcd5a5d0e134919072c1f3544e48eaebc5db"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/olives_green.png",
+      "bytes": 282,
+      "sha256": "9b28a715962c2a77aba9a1dd2069999adc31c8ac1f60f183a91e9b8708cccf25"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/onion_brown.png",
+      "bytes": 222,
+      "sha256": "2adea9d6fa1c9df23b51d016356e24c5962c93286944a601593b5e5273629a3b"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/onion_purple.png",
+      "bytes": 222,
+      "sha256": "a0dd9d74c7c8ed1a91bae87cbded7b99ded28dfdb8440a50f4e29550f967ec43"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/onionrings.png",
+      "bytes": 282,
+      "sha256": "6ab8f644da7923108409d4dcb3c673fe21a671220076168914915e067a65184e"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/orange.png",
+      "bytes": 300,
+      "sha256": "91905fa411a9cb05fa469cd7b16deb9b85b1cea9bbf0d9064b2d428a3d0509ea"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/oyster.png",
+      "bytes": 261,
+      "sha256": "d840b62d6d058fd8d4bf759a149d39667e7e8ff0e50f9a0c9f43284f41f717df"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/pancakes.png",
+      "bytes": 279,
+      "sha256": "575508f861875c8916dc2a48f1721cc8834c35d47ca65f3ae9376458aa8a47a0"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/pea_pod.png",
+      "bytes": 273,
+      "sha256": "3436dfaa85eac15640f7b0bdc7342c6471474108a47762f53c12955b71f5068a"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/peach.png",
+      "bytes": 300,
+      "sha256": "c3340768526ccd523d8e16a51ab77de8c6948d4c3a8bf438bded6f6f96d665a6"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/peanut.png",
+      "bytes": 255,
+      "sha256": "647e9f2d446b256ed0c5fa2d7e42e92503ccca3986b3d3e12694e05de57f924c"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/pear.png",
+      "bytes": 240,
+      "sha256": "7aac3ac1a1caf4853699ae4ed5bcb2f203c5dffced6daa358ff771a7c6c39761"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/peppermint.png",
+      "bytes": 300,
+      "sha256": "f4d5c1a022d6569f39f64e26c77d82f93ddb0be66311381ed6d80946739e4209"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/persimmon.png",
+      "bytes": 306,
+      "sha256": "c667f08772a14d67c8b59953d4d878d35a253919899074ac0f1dc640bbdf43e1"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/pie_cherry_slice.png",
+      "bytes": 267,
+      "sha256": "f2d8570a5f1170ee4cbd4f3cc469e0829b8bd7f44e032bf43fc3ae0bef87cd8a"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/pie_cherry_whole.png",
+      "bytes": 291,
+      "sha256": "4e39d7844e9e1f6ed501dc81fef35dec646ff3937303a681a5b792ac46af7959"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/pie_pumpkin_slice.png",
+      "bytes": 243,
+      "sha256": "57dccdbbb5b3e064f5c1d28c80b97b443cab69f73879cf60e56153a894bee124"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/pie_pumpkin_whole.png",
+      "bytes": 291,
+      "sha256": "04d4850f0d3635e9ea8895f39ca6dbb9bc11e1f37a18aca9e98e2dc28ed8cb18"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/pineapple.png",
+      "bytes": 333,
+      "sha256": "1000c528c8a3f1e43c8596869cca553dced14bf9ef08c1243d457ab8d3b025c1"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/pistachios.png",
+      "bytes": 318,
+      "sha256": "efefbeab80feb2466bd9b1f65e0e43f0de291db3d8f84766e2d0f38e9d0ff67a"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/pizza_cheese_slice.png",
+      "bytes": 291,
+      "sha256": "d4d16189f7d3415de9c1b5dc7dcd3b8ac8776c4a8b06b09740c0458fbf0544d9"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/pizza_cheese_whole.png",
+      "bytes": 345,
+      "sha256": "b4e02e7d9418cba467ed0c01a9e82e0707fb9d64ca8b913275a03d29c5d96db0"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/pizza_pepperoni_slice.png",
+      "bytes": 321,
+      "sha256": "2b326d9090fffa50f5ee9264f8866abab612d689735a8427c252583c8013dd84"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/pizza_pepperoni_whole.png",
+      "bytes": 402,
+      "sha256": "6de0476aa7a75d801bf4a5c880328e881f68411489187f0fcc5d0bf989dbd5de"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/pizza_vegetable_slice.png",
+      "bytes": 339,
+      "sha256": "d3d15dcde3668c07c61a1206062f5d9a081e08b6a7132f8990d4ae460b25f1c2"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/pizza_vegetable_whole.png",
+      "bytes": 423,
+      "sha256": "3822fc6031baed435ec56c14cf85c9cc4c6e44881bfdeda0e5a747046badf8e8"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/plum.png",
+      "bytes": 300,
+      "sha256": "09328a1bacd3850f594d32e5a64b293e3b95793045085b8bbc5cc3bbf8c714d0"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/pomegranate.png",
+      "bytes": 300,
+      "sha256": "18f2503f3cca2d3c1912f80d53a22e12a32c02dc734ce2cd0b6af5e96db0b6f2"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/popcorn.png",
+      "bytes": 324,
+      "sha256": "970f98548eaf366219f65dce13e072131dffaf4221312b743198f11884895c7f"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/popsicle.png",
+      "bytes": 240,
+      "sha256": "a92d0eda07ad75a9f379e920564ac8e89426c4377c24d407f8bc654f7af0646c"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/potato.png",
+      "bytes": 282,
+      "sha256": "7a2a3e67db09dbce2361ebf0ffcacd0e403affd170aa6fbeb219a4ed4fce7fad"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/pretzel.png",
+      "bytes": 309,
+      "sha256": "3f6670278bc9fc65e1ce9a767980e710b39589a202011006fb88ad3869dc6fbb"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/pumpkin.png",
+      "bytes": 291,
+      "sha256": "bbc2ac866cdb744242e67faab35e388dead0c6c91965cacd49e98b695fbfde13"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/quiche.png",
+      "bytes": 330,
+      "sha256": "2c2b92bfc8dbf0c1c409e72dc9983ea3fdfbd1378cef226c741ef5dd1ddc7346"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/radish.png",
+      "bytes": 318,
+      "sha256": "0eee1cfeef1cb09cb1410cbf4b137f49fc366230f3a5b494935ca088cf05cdbf"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/raisins.png",
+      "bytes": 276,
+      "sha256": "b0125f4b4cca5f71837133334cee621ae63de4a4575de88d8dcc104f0cf98cf2"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/rice_ball.png",
+      "bytes": 243,
+      "sha256": "4685f74c0c7c8983a33253342a3d127a0a999e8e01b0e47b8e6a919803648b6f"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/rice_cracker.png",
+      "bytes": 213,
+      "sha256": "d6900ac562d9a49f57389060f4314c08c03dc08ff886ef2f6da934359ae1770a"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/rubus_blackberry.png",
+      "bytes": 279,
+      "sha256": "8d12bac8a7d7b769dd570778d99c1316767a10df5e8dbb2f975ba9a188c19e59"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/rubus_raspberry.png",
+      "bytes": 279,
+      "sha256": "77ed417f790ba19b5a12d3fe3413fa6649e3891e345b77fe7694d73bc6b47891"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/samosa.png",
+      "bytes": 225,
+      "sha256": "e41bfd47a3a07d5fe32eb632aa377d2c37001e2a3cedfdad3faad44cb6d85352"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/sandwich.png",
+      "bytes": 375,
+      "sha256": "62e6ec5109068e297bc01de75dc3510680c8e1d28bf07bf6c2ff6e4992260163"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/sausage.png",
+      "bytes": 228,
+      "sha256": "6a11fe824813832982e6ff103981330b081041fc559b38343fa84ade9feb2a80"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/scallions.png",
+      "bytes": 231,
+      "sha256": "8658e5d4d1dd46d440a2adac1606b5c7a1a7ebc8171ff75afa973ef7bc7498dd"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/shrimp.png",
+      "bytes": 267,
+      "sha256": "5ba0212fb40c08e3e649ed87954a6fb006811c84e6ee59c84d19ce14cfd0c4a2"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/shrimp_fried.png",
+      "bytes": 273,
+      "sha256": "6efa4efb37875375d4e6e53b98f9a00cad762b8062e8641f5cf3e7e1581546b5"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/soup_beet.png",
+      "bytes": 276,
+      "sha256": "1577925877a1913aa1eaeefe6a325b7674e692b2f3b564a5735107ff8d467bd8"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/soup_miso.png",
+      "bytes": 294,
+      "sha256": "6bd3ec7977128f12e62e5f1c1fee386c03f097fae22c804c935676f7d09c898c"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/soup_mushroom.png",
+      "bytes": 297,
+      "sha256": "cdbf0baebe9ef4c3ff4486df18170acba0d4e9cd2ef3ae00601bccbf87da7f41"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/soup_pea.png",
+      "bytes": 276,
+      "sha256": "0b6208e50b1d81b59229e956aa3d86af493a12db137e46161fcd4927f42bd09d"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/spinach.png",
+      "bytes": 279,
+      "sha256": "1675ae17ab1dda47eb8d70ae91f72558d4a4b2d79abf904ed2468232f4569a33"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/squash.png",
+      "bytes": 285,
+      "sha256": "85e3b97412f1323a9659eba96605c9ce20947217d9e5a9104b79437efbf4e8c1"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/steak_grilled.png",
+      "bytes": 258,
+      "sha256": "fc3c9f5bf88d196ef2f557b5035bc725462dd7861ed643e73406215d9b758316"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/steak_raw.png",
+      "bytes": 360,
+      "sha256": "f2b3eba0d7f3b6440badbee5f6a49e664b74795bdf04c55fa3c2b0c307ab6eb2"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/strawberry.png",
+      "bytes": 327,
+      "sha256": "eb9f4e63231040d99eb46fceee85a15d3b37d3b63df3e9d856a9c7cb08b3bb6e"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/stuffed_pita.png",
+      "bytes": 297,
+      "sha256": "51901bc763cf817be4c855293fc2f972020c4f543e96b2d84f67ad3fa10f0511"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/sushi_inari.png",
+      "bytes": 261,
+      "sha256": "527725f80ec2accb52a054fc51685854fb93ad08325bd46b7e3382ba0e366531"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/sushi_nigiri.png",
+      "bytes": 288,
+      "sha256": "e65fdb5ab9c50210933ec5eb9fd5ecc0e8ef0aeb8b10e7a65308613ad8391252"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/sushi_roll.png",
+      "bytes": 246,
+      "sha256": "c6fad3e38bd1ee0d0d7e2f27812af1ad6f73f4a6ada081f1d20284e5ad1b5659"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/taco.png",
+      "bytes": 339,
+      "sha256": "2b7c350a0991b22d63104082d317d5aa494ac08d3a2242843722efbab1fd4350"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/tamale.png",
+      "bytes": 279,
+      "sha256": "62eb6c0fdfd60e945408c84017dd10e1e03add0eae578a561e2fa61cb7e22dd4"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/taro.png",
+      "bytes": 279,
+      "sha256": "345d8075cb46000c1db80828e9a6472e282c86769f68f0bd7f9d62f778fa3736"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/tofu.png",
+      "bytes": 243,
+      "sha256": "16c8a98360a662bed8da108217c5b56c0cbfb7418be2b02cd78c64a551868412"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/tomato.png",
+      "bytes": 330,
+      "sha256": "321ff29fe4db94ab1cf6b91f7195b7deedbd6f5112960b2fabb81e19858a84b8"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/turnip.png",
+      "bytes": 327,
+      "sha256": "e1d98e2c276309982b348a2b9a156c9f3997685410e89c5bc68b9b9116cbefc3"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/ube.png",
+      "bytes": 249,
+      "sha256": "d42340d4694f90189b3d97f057f9a04c9f4228034b4fedbb7278d16398fc0cfe"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/umbrella_fruit.png",
+      "bytes": 261,
+      "sha256": "2bf8c442137ed8bc5e720e116a48c2961e8396368796c82801bc0ff608055eb5"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/unagi.png",
+      "bytes": 243,
+      "sha256": "8baac127d0702b548e45c8f9508f87724dc4cd78005e476606c6237b2ac914a0"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/vanilla.png",
+      "bytes": 303,
+      "sha256": "3074709ac434034580792486cb9e5f13b4155236f54998fe946b11e8ff5446dd"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/waffle.png",
+      "bytes": 264,
+      "sha256": "66de8fab059e93ab932efeefbe046b5cabe3ec8c8379f2fd074e111a9bd43800"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/watermelon_slice.png",
+      "bytes": 264,
+      "sha256": "38b2b0a6ce74d8aa424a6ef2df3d5b399979382498ec008b033341407656d1aa"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/watermelon_whole.png",
+      "bytes": 294,
+      "sha256": "f319ab559a12aee9a0748eda17ea91e8bd28eb29653b5773f6253069408e0883"
+    },
+    {
+      "file": "game/assets/art/library/puny-food/food/yam.png",
+      "bytes": 276,
+      "sha256": "26206fc3e4bb04a9501b427181f501975fd055da2104f4d34022debb012f1098"
+    },
+    {
+      "file": "game/assets/art/library/punyworld-overworld/LICENSE.txt",
+      "bytes": 147,
+      "sha256": "bed2311f8062fbf823ede5ccae44365e4e99812c04abc0b630667d4244ee8526"
+    },
+    {
+      "file": "game/assets/art/library/punyworld-overworld/punyworld-overworld-tileset.png",
+      "bytes": 100044,
+      "sha256": "14d285bde8dee96cb0113947c8cce4922b86bf1d033b19123112145c7cef3a38"
+    },
+    {
+      "file": "game/assets/art/obj/arcade.png",
+      "bytes": 158,
+      "sha256": "98644a8a4cbc70add95b42dfe24ec15316070bfe3b551a261661d90ca777790a"
+    },
+    {
+      "file": "game/assets/art/obj/bath.png",
+      "bytes": 163,
+      "sha256": "461b5e62e81179ad7d29f95a52ba2fdee4ff8a8502f9cd7217b569a85b76d52b"
+    },
+    {
+      "file": "game/assets/art/obj/bench.png",
+      "bytes": 160,
+      "sha256": "08d942aa3ca4e1a3b2eba88ada41d671b52dd0d0856976c0c5008fab4099a094"
+    },
+    {
+      "file": "game/assets/art/obj/counter.png",
+      "bytes": 223,
+      "sha256": "806149ccc369c34a216c7a233f5b5e89cbddf4b2561a6479488cf1149fe08025"
+    },
+    {
+      "file": "game/assets/art/obj/desk.png",
+      "bytes": 197,
+      "sha256": "a4befd82de7c80be067178764170774b981e2faa8f0482c52f2de527cd28f98b"
+    },
+    {
+      "file": "game/assets/art/palette.gpl",
+      "bytes": 3413,
+      "sha256": "491b56de0daa923160d0c201671672963d5aa95011d903f18e53a0c5c23af415"
+    },
+    {
+      "file": "game/assets/art/pro/Archer-Green.png",
+      "bytes": 21621,
+      "sha256": "df40f520998c41149696b8393533a79f7b48c7928060390e13c4c27a0cc9d13f"
+    },
+    {
+      "file": "game/assets/art/pro/Archer-Purple.png",
+      "bytes": 21059,
+      "sha256": "c23db4c5aee1bb423374311653ca1659ff6a7c4b44ba78971f5ed1e990c512b0"
+    },
+    {
+      "file": "game/assets/art/pro/Character-Base.png",
+      "bytes": 18800,
+      "sha256": "5ff61155ad80cef36f3247ed9b6c8af8a1581573f11bae9434e9938354517966"
+    },
+    {
+      "file": "game/assets/art/pro/Mage-Cyan.png",
+      "bytes": 20503,
+      "sha256": "268d5a52eb707aa7156bdd884b3f54e639835c839cc169e595261652517e4111"
+    },
+    {
+      "file": "game/assets/art/pro/Mage-Red.png",
+      "bytes": 20181,
+      "sha256": "2616d6645a83d19f049c4b39baaa3cf77c3723ad8e686dda9f47f24a89912a11"
+    },
+    {
+      "file": "game/assets/art/pro/README.md",
+      "bytes": 10666,
+      "sha256": "a64f1ed889510e34f6aa377bde1f98db29e87d522706e98207f37677e63cf417"
+    },
+    {
+      "file": "game/assets/art/pro/Soldier-Blue.png",
+      "bytes": 20433,
+      "sha256": "e212cd6c9b44c0008bf041d432ef59abdd1517f1a246e721a83e4eac18b0dbe5"
+    },
+    {
+      "file": "game/assets/art/pro/Soldier-Red.png",
+      "bytes": 21714,
+      "sha256": "b927c036b769c5a4b713b2151e25a3996874014280a7dfa44b1e6c1405bb59e0"
+    },
+    {
+      "file": "game/assets/art/pro/Soldier-Yellow.png",
+      "bytes": 20471,
+      "sha256": "721b9a56cd0c285b2dae9571dcc9f0ba7525a4417e90b9273b6ed946a6821721"
+    },
+    {
+      "file": "game/assets/art/pro/Warrior-Blue.png",
+      "bytes": 20034,
+      "sha256": "0f890c77307c707d9e35aeaca8102bccc7beaf85672480dc6e55d8fcb1788043"
+    },
+    {
+      "file": "game/assets/art/pro/Warrior-Red.png",
+      "bytes": 20570,
+      "sha256": "c503c2a49aaae8ec9e4be05863364c970d8a5419348a42d520a1b8de26df2921"
+    },
+    {
+      "file": "game/assets/art/props/lifeguard.png",
+      "bytes": 2541,
+      "sha256": "eeefe494c41392ac9c45375ca9d9974889bdb4f8d90824ad01805c607359dd09"
+    },
+    {
+      "file": "game/assets/art/props/lighthouse.png",
+      "bytes": 4128,
+      "sha256": "f11fe728a68468ae15415cd1c4da201fb935443ab196b2418060b3e41e510590"
+    },
+    {
+      "file": "game/assets/art/props/parasol.png",
+      "bytes": 1461,
+      "sha256": "ba35f423f6d39c9e8de66c6e925877b2753e3550404ca71cf011286c2cc2183c"
+    },
+    {
+      "file": "game/assets/art/props/rowboat.png",
+      "bytes": 2588,
+      "sha256": "1e158cd1dd12f5cb7e9de5de0e5157709dcdbc5fedd1ddf5978eb04caed62b86"
+    },
+    {
+      "file": "game/assets/art/props/tent.png",
+      "bytes": 2473,
+      "sha256": "ccecf29d9c86894223624169e803bd20bf6f564c77eb26a97457dad72adf8f7c"
+    },
+    {
+      "file": "game/assets/art/terrain/dirt.png",
+      "bytes": 419,
+      "sha256": "11e17c3d93854afe95235bf003fc7e1a7b767204129d463d2752e355ca8d9248"
+    },
+    {
+      "file": "game/assets/art/terrain/grass_a.png",
+      "bytes": 489,
+      "sha256": "728faafec87675bf8f5df97ad1d8c953fc77b461461b080bbfbf49606901aa97"
+    },
+    {
+      "file": "game/assets/art/terrain/grass_b.png",
+      "bytes": 468,
+      "sha256": "b49c4d9a414a5d81e4f50b13644e422330a5aafab25021d22f5c7187e324f8a3"
+    },
+    {
+      "file": "game/assets/art/terrain/grass_flowers.png",
+      "bytes": 446,
+      "sha256": "96e0174e7b83151f93f951d6e50ab7d177f3f2e6683148c3c076b64d4cb8fdfa"
+    },
+    {
+      "file": "game/assets/art/terrain/water.png",
+      "bytes": 485,
+      "sha256": "fada51f827775e8ff3dc4e621e66d49624633406d126c7581585b039414e3f8e"
+    },
+    {
+      "file": "game/assets/art/terrain/water_e.png",
+      "bytes": 690,
+      "sha256": "62e8d070f5adb643cd83d3c6db0eb165f52d82c84ecd5eabaffc2ea728d1bb48"
+    },
+    {
+      "file": "game/assets/art/terrain/water_n.png",
+      "bytes": 682,
+      "sha256": "01034a934049a8c7cfa65f24944cb48778957295cd0290853f8a13631110716d"
+    },
+    {
+      "file": "game/assets/art/terrain/water_ne.png",
+      "bytes": 751,
+      "sha256": "2e614aa04c57e2b7b44c0884ab42a20e149dba2746b8302c5abbe571c07cbaed"
+    },
+    {
+      "file": "game/assets/art/terrain/water_nw.png",
+      "bytes": 747,
+      "sha256": "aa7ac2015de00e0e5c76720d81f5e1113a91d22a9db403556897da14c7ff123e"
+    },
+    {
+      "file": "game/assets/art/terrain/water_s.png",
+      "bytes": 660,
+      "sha256": "22245c2bfce41cbca0168b9e34b431d438ec2db7022e31b836363c634a833efb"
+    },
+    {
+      "file": "game/assets/art/terrain/water_se.png",
+      "bytes": 749,
+      "sha256": "c9960d5af373d88f1fb407b4ee1f3dddcb0ed670ffeb36372b8c0c6da190358e"
+    },
+    {
+      "file": "game/assets/art/terrain/water_sw.png",
+      "bytes": 749,
+      "sha256": "1a218dbe9e275bc527e0e3bccffd42e50e7eb4560d287b9e6b21ede18d815517"
+    },
+    {
+      "file": "game/assets/art/terrain/water_w.png",
+      "bytes": 703,
+      "sha256": "b0188864177f5a0a09e7b0473c41ef2d2b5330f223566ae2293a6a9766c5fd82"
+    },
+    {
+      "file": "game/assets/art/wang/cliff.json",
+      "bytes": 2379,
+      "sha256": "0c355deb0384b64b1102b7e1b6426679aa1514e6187bc73f2475b76713a417b1"
+    },
+    {
+      "file": "game/assets/art/wang/cliff.png",
+      "bytes": 10251,
+      "sha256": "72a1a299839c001c514d6fef8e3d36e1320a98d3e8e3f7bc6200240dc3a0f417"
+    },
+    {
+      "file": "game/assets/art/wang/sandgrass.json",
+      "bytes": 828,
+      "sha256": "8c9231295496c3f2ba031d346483cfc65ae8bff85b9f2cfe729ad00e158f704f"
+    },
+    {
+      "file": "game/assets/art/wang/sandgrass.png",
+      "bytes": 2215,
+      "sha256": "f59bf330dc8b9ecc2666e0be68582a1cbefd3e731fb0954eec2a1f16fc892c03"
+    },
+    {
+      "file": "game/assets/art/wang/seasand.json",
+      "bytes": 812,
+      "sha256": "f2bbef0b47f2921f5f53f7529a9567861a9c7a6a14461d6d3116d1d5af4d3b7c"
+    },
+    {
+      "file": "game/assets/art/wang/seasand.png",
+      "bytes": 2611,
+      "sha256": "f34790b65a1980e761461ea6cc9b90cb9cd3b6ad09298f1c0a6aa43471289816"
+    },
+    {
+      "file": "game/assets/fonts/LICENSE-SmileySans.txt",
+      "bytes": 4422,
+      "sha256": "9401f4050f1b66c26b6ccdc8b0e14a3c1cc37aac122eda84386f25854a9bec72"
+    },
+    {
+      "file": "game/assets/fonts/smiley-sans.ttf",
+      "bytes": 2629764,
+      "sha256": "b447d7e781f08bc95c4c9f23ba71ed2b8ebb639aa7184485c71c4ca5afcd25c4"
+    },
+    {
+      "file": "game/assets/town3d/export_manifest.json",
+      "bytes": 174567,
+      "sha256": "ef251073f8547b8b34a56f10fc19d23d4e5d8db0b52f03d85960ac7c9d710d6e"
+    },
+    {
+      "file": "game/assets/town3d/interior_plan.json",
+      "bytes": 1308290,
+      "sha256": "a857d40e536ce84b3ed468a5815c54311f92f46ebbb1e1f7541ce76a498d08b4"
+    },
+    {
+      "file": "game/assets/town3d/landscape_plan.json",
+      "bytes": 53903,
+      "sha256": "68b8f4d2a9269b1fa8e9dde530bc83bd41b871effaf4d224ffd12ab953f6d4b1"
+    },
+    {
+      "file": "game/assets/town3d/living_town_game.glb",
+      "bytes": 203666604,
+      "sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c"
+    },
+    {
+      "file": "game/assets/town3d/masterplan.json",
+      "bytes": 109408,
+      "sha256": "b7e5522f62f4a390faa95502537fbbac14856cb278bccb695fbd5cabe186377f"
+    },
+    {
+      "file": "game/assets/town3d/node_catalog.json",
+      "bytes": 3589919,
+      "sha256": "30661387598b49aa9dc0a199d8878cdbef463e5cd58ceb68c95f6e38bc291309"
+    },
+    {
+      "file": "game/assets/town3d/stage_manifest.json",
+      "bytes": 2830,
+      "sha256": "2787a4895e0f6b5889fdaeb7c83bcccc04ec035544898615c33b5ba1efad2225"
+    },
+    {
+      "file": "game/assets/town3d/terrain_plan.json",
+      "bytes": 230180,
+      "sha256": "69fc114cc289b33fc8e1d33e57daf77dd65e94d0340715c6a1974cd4d99fe349"
+    },
+    {
+      "file": "game/bench/BackendBench.gd",
+      "bytes": 33959,
+      "sha256": "d6464c49ee4ded3c063800bb054b331ef30bb5d9c750544b314a67a1beb87563"
+    },
+    {
+      "file": "game/bench/BackendBench.tscn",
+      "bytes": 227,
+      "sha256": "1f0a80e1688b348458e336ab03b9c77da0d02589d8eba62b4420a470d9ee6200"
+    },
+    {
+      "file": "game/bench/BackendGate.gd",
+      "bytes": 23564,
+      "sha256": "0587cd150502b5a3ba882eda309f85e1a3fd98a321431036f69d345d1038157b"
+    },
+    {
+      "file": "game/bench/BackendGate.tscn",
+      "bytes": 200,
+      "sha256": "24a3bde362649c7528c2216cbdee7330ffb3e69d973f4e6a41bb915274691e18"
+    },
+    {
+      "file": "game/bench/CausalHarness.gd",
+      "bytes": 7018,
+      "sha256": "79b8f92b1dc76358d6887e8db6e7ff46fea4a8c21ac3d13b12d165e2d7698d58"
+    },
+    {
+      "file": "game/bench/DetGate.gd",
+      "bytes": 11984,
+      "sha256": "44ea4696a5f4e6570bcf8b97cc882ce8fa4caaf6a2e3d058cc14e76040569773"
+    },
+    {
+      "file": "game/bench/DistillDump.gd",
+      "bytes": 2157,
+      "sha256": "eea5fc7d66bafa5c6f08948db8d1587a103698c10d1d5fec3466343d9f2fea6e"
+    },
+    {
+      "file": "game/bench/EpistemicPromptProbe.gd",
+      "bytes": 18094,
+      "sha256": "0f4aac5eab3964b76727fa1bc1f9516d8fa446d21068daf5ef4423a9fa31d6c9"
+    },
+    {
+      "file": "game/bench/EpistemicPromptProbe.tscn",
+      "bytes": 223,
+      "sha256": "e30b57372685348794b7f986120d52b8bf59a7a3f0f5974109d33ecee336c024"
+    },
+    {
+      "file": "game/bench/Harness.gd",
+      "bytes": 46365,
+      "sha256": "536dc85f52555abd87a27acdf4f642ce788d589cb056c7d9e1f2d12747f07960"
+    },
+    {
+      "file": "game/bench/Invariants.gd",
+      "bytes": 134364,
+      "sha256": "341c6ed4b110b17b2b75d2da9389a8b7c8e8ccd866e0841eab93136d66025a33"
+    },
+    {
+      "file": "game/bench/LodAblation.gd",
+      "bytes": 13703,
+      "sha256": "b06ff2d6d6b1e308ed5bec5e3f290599b5a56ab22adc612699250188d6f6f232"
+    },
+    {
+      "file": "game/bench/Metrics.gd",
+      "bytes": 3995,
+      "sha256": "afff05216836eb35d82e0b1fd36718b4be28dd6a2c71a857511a0c21d46e5b10"
+    },
+    {
+      "file": "game/bench/ModelPathGate.gd",
+      "bytes": 22802,
+      "sha256": "474edc05a66d9d9bbbcfc46656e09ba454c52a197d9ef48e07890358fa474807"
+    },
+    {
+      "file": "game/bench/ModelPathGate.tscn",
+      "bytes": 204,
+      "sha256": "7653ea6e78cd988cd6589d1013940dbd65ff09a9fa3c4c74ae97176171cbc7e1"
+    },
+    {
+      "file": "game/bench/PickCtxDump.gd",
+      "bytes": 6948,
+      "sha256": "d95e1e36c04a17088726c2f72c35ac85d4f74aacda58a475c65ad2ac3d6e199c"
+    },
+    {
+      "file": "game/bench/PickCtxDump.tscn",
+      "bytes": 204,
+      "sha256": "0389cee23ec19539fa2dded0f0a59d76d77b4ab72d7d77d0c7626f5452267fcf"
+    },
+    {
+      "file": "game/bench/PrivacyCongestion.gd",
+      "bytes": 6856,
+      "sha256": "3152d1d2d159e4e610f32a9ab7019dfa65651b3b9063e56ffdd15afdd0369996"
+    },
+    {
+      "file": "game/bench/PrivacyProbe.gd",
+      "bytes": 7524,
+      "sha256": "afa8db6716732c7de5a155ca58c14de655d01b3340084a402f92b526c009e017"
+    },
+    {
+      "file": "game/bench/ScaleSupply.gd",
+      "bytes": 14465,
+      "sha256": "e4ec74c9381ce8293fa10cd219d280642692126b1d5dea011343486b18be30dd"
+    },
+    {
+      "file": "game/bench/SpaceShot.gd",
+      "bytes": 58526,
+      "sha256": "b312cd4216e8716e32c50c6a0e5ba69488b7f78102fb934821032cc57f00ebe2"
+    },
+    {
+      "file": "game/bench/SpaceShot.tscn",
+      "bytes": 197,
+      "sha256": "374c6b761cc650de0f3a5a61245890e31d6692badc4b2b2e51a9a00450425f82"
+    },
+    {
+      "file": "game/bench/StateProjection.gd",
+      "bytes": 10809,
+      "sha256": "420a9db8f22ac3426cfdfccb8b008a8d0e15ff7a84dc2d1f60be1407bffda198"
+    },
+    {
+      "file": "game/bench/SupervisorLogicFailure.gd",
+      "bytes": 279,
+      "sha256": "1063bf6a7e971bb7ab4002c5ed5e292a24f25e09c3764682c28e041201f4532a"
+    },
+    {
+      "file": "game/bench/VoiceGate.gd",
+      "bytes": 6609,
+      "sha256": "a924492b94fb3b9882851f30683f20c7de8cf577c35859e4ad7dbe4c64fca0eb"
+    },
+    {
+      "file": "game/bench/aa3_vendor_census.gd",
+      "bytes": 13954,
+      "sha256": "f0effb3e3d4a80314537ba505b3af48c2e42c68c1e090dff8381565cbe8ec3b1"
+    },
+    {
+      "file": "game/bench/aa3fix_census.gd",
+      "bytes": 6760,
+      "sha256": "40c7740960c1e50e577618c9a5e54294d50a6f177245d25428e20eee291abc56"
+    },
+    {
+      "file": "game/bench/ab_metrics.gd",
+      "bytes": 4834,
+      "sha256": "61ea68dd9c77761905358208809c5a69af16ce9eee2ad2049c768985e568ec6c"
+    },
+    {
+      "file": "game/bench/affinity_ledger.gd",
+      "bytes": 33871,
+      "sha256": "81c21519d59a4c83e29b463eec4a3338023726786e3367e473212abcb7bb6890"
+    },
+    {
+      "file": "game/bench/as4_econ_probe.gd",
+      "bytes": 6875,
+      "sha256": "9a08a7b91cd5053e86095853483b32f8e1c4e2e3bf2f809be2c15b1736ff2e7c"
+    },
+    {
+      "file": "game/bench/as4_negctl_probe.gd",
+      "bytes": 3825,
+      "sha256": "aa3251990e40f405b9013ecbcd5ea17dd1644f914b776f8c7d2bd29b7e2e5d0e"
+    },
+    {
+      "file": "game/bench/as4_replay_probe.gd",
+      "bytes": 4243,
+      "sha256": "9fedd86dc69799ce0979ea6df3febf97f54735d0d587ba3591bc6197c8d2e171"
+    },
+    {
+      "file": "game/bench/as5_export_probe.gd",
+      "bytes": 5607,
+      "sha256": "946e524801644460f518018e4c7dda91bfe9f1a527c6aa477ae526c194700d4a"
+    },
+    {
+      "file": "game/bench/as5_negctl_probe.gd",
+      "bytes": 6958,
+      "sha256": "553e02a7c08ac2987d1b0119b9a18aeb48474aa21ba544ee781173a58273da6b"
+    },
+    {
+      "file": "game/bench/as5_surplus_probe.gd",
+      "bytes": 7277,
+      "sha256": "3bbb6241967852d80ca530436ec1af504552fc6ed15b4112bc923bc9f192dcee"
+    },
+    {
+      "file": "game/bench/cohort_over_time.gd",
+      "bytes": 1664,
+      "sha256": "2700e74c634fb9feaef6706e147e00e6e849aca6e790a198c53ce9198b1ac646"
+    },
+    {
+      "file": "game/bench/count_confront.gd",
+      "bytes": 1383,
+      "sha256": "d8dee6b3ce1d08439577702c9c4a18df510fb37c38ff919ef62242480d257eb5"
+    },
+    {
+      "file": "game/bench/desire_ab.gd",
+      "bytes": 7195,
+      "sha256": "12ebb88e0385f3a5dedfe9cee51577b69782caf9f54bc581c22178b54a48c7fe"
+    },
+    {
+      "file": "game/bench/desire_pick_probe.gd",
+      "bytes": 2255,
+      "sha256": "0ffce8985c049b077c12e0f5fa2149c18d01456009191d02e283a52c4b7fce87"
+    },
+    {
+      "file": "game/bench/distill_contexts.jsonl",
+      "bytes": 131466,
+      "sha256": "7d3b87dbe78bd39ee293b555567691aee9ff994a39ca20ff7842752e792dcdde"
+    },
+    {
+      "file": "game/bench/distill_sft.jsonl",
+      "bytes": 15024,
+      "sha256": "9e665d94d647f5bc5f8ed1fceb848035acc38dbd91447f726468058d69aa845a"
+    },
+    {
+      "file": "game/bench/dump_decide_prompt.gd",
+      "bytes": 5808,
+      "sha256": "a2f1e2c5d8d1f01dceaf139e0ef72f13dfbe4320df82621f23862dcce9cfdcfb"
+    },
+    {
+      "file": "game/bench/e4a_multigood_selftest.gd",
+      "bytes": 7681,
+      "sha256": "7398c502f6bf614e2e2638b3a55047982bb94a505d38b242cf59dbd757cab9a2"
+    },
+    {
+      "file": "game/bench/e4d_multigood_selftest.gd",
+      "bytes": 10260,
+      "sha256": "6eb5b105d9388b584f8dd16f8e0999cd0b1aa781533ed3aa1974ed2a62273d16"
+    },
+    {
+      "file": "game/bench/far_drift_check.gd",
+      "bytes": 2194,
+      "sha256": "24d4ffee8c87a34ca1a4032e7a5806bc3109895b38b2bcef80e70adffe2eafd3"
+    },
+    {
+      "file": "game/bench/find_aria.gd",
+      "bytes": 2503,
+      "sha256": "44395807810ac988326bfe1297a624f5b4129400fa834dcbf0c6877302ec0b94"
+    },
+    {
+      "file": "game/bench/find_betray.gd",
+      "bytes": 800,
+      "sha256": "b45656dd8f0048ad5b64da8fda1f2b3093e4665b3310a780adf09f57dfd17f50"
+    },
+    {
+      "file": "game/bench/find_endorse.gd",
+      "bytes": 1148,
+      "sha256": "8ea288f185f615744c7507875de0c75235eb40e79d302a64747a7d5e45033175"
+    },
+    {
+      "file": "game/bench/find_patrons.gd",
+      "bytes": 2124,
+      "sha256": "08e7eaa050f652fe6b6f2788913b448942581263f654ab761a39393bfb1f8fa9"
+    },
+    {
+      "file": "game/bench/find_starve.gd",
+      "bytes": 3306,
+      "sha256": "0a41511442cf84e78c954c190ef1ea918eb311bffe0f0b6f012ee226fb5538d1"
+    },
+    {
+      "file": "game/bench/find_use.gd",
+      "bytes": 2245,
+      "sha256": "314e88be9469d3f8b1d8800d6380c5bb5bb1445ae7fbc98b18fb727e25b6ce05"
+    },
+    {
+      "file": "game/bench/golden_digests.json",
+      "bytes": 79883,
+      "sha256": "608d9d6a524ba6fe3f29a1696895b084ba4312223953784163a68675f55e3ebe"
+    },
+    {
+      "file": "game/bench/lod_cohort_probe.gd",
+      "bytes": 3561,
+      "sha256": "b90fe4577fd8b850129505dc5c90059475eb337f5bca0f8b0c60211dbee8fb20"
+    },
+    {
+      "file": "game/bench/lod_observation_probe.gd",
+      "bytes": 23807,
+      "sha256": "4445b0bd02c0606cc2c2557fd02883d2395f42c666ab31302a087b4815b00d26"
+    },
+    {
+      "file": "game/bench/lod_verify.gd",
+      "bytes": 4537,
+      "sha256": "35ba69a0ee23d0ae2e4445a5bbb70fc46779d409601a96350004011a9945bcba"
+    },
+    {
+      "file": "game/bench/log_decisions.gd",
+      "bytes": 22715,
+      "sha256": "3ae03e8a28163d9ca0eae3750fbced310fd333004afddaee746578d29fad2ae9"
+    },
+    {
+      "file": "game/bench/modelpath_anchor.json",
+      "bytes": 27718,
+      "sha256": "68f330ad5197e9a0279b3dba760d784db6352abf5a98906c7b4507fef0e3e653"
+    },
+    {
+      "file": "game/bench/nw_api.gd",
+      "bytes": 1158,
+      "sha256": "fcfb6703ab76ef58ff8b2b38997fbf0763bd7ff8bfeec0edc7b68657e661658b"
+    },
+    {
+      "file": "game/bench/p1_locality_probe.gd",
+      "bytes": 25580,
+      "sha256": "a10d39c3ea2a401c4f3680b9d8ccf7e1df7a1b8806ef35f66543d7b4664f551b"
+    },
+    {
+      "file": "game/bench/q1_faction_probe.gd",
+      "bytes": 12210,
+      "sha256": "7a802f890b933e68243e45e50363b5e80d2be662dbb727df7e0cee376edd8439"
+    },
+    {
+      "file": "game/bench/r1_workact_probe.gd",
+      "bytes": 4892,
+      "sha256": "5b9d2fcc7ab723077aa933046220ec48bef639512bc78bbaf327347d3db6f73c"
+    },
+    {
+      "file": "game/bench/scale_agg.gd",
+      "bytes": 2037,
+      "sha256": "45a9f445320e96ca173244161a68577ef69f0520917928f5cae73163c5875dc6"
+    },
+    {
+      "file": "game/bench/slm_lifecycle_soak.gd",
+      "bytes": 9126,
+      "sha256": "a44697be56c9bace3e907204ac310a4c86f5118f5dbe5c85a7985feabfc80275"
+    },
+    {
+      "file": "game/bench/slm_lifecycle_soak.tscn",
+      "bytes": 212,
+      "sha256": "37b3106f75ca4c8e27b383b4079fb01ae11555007026e298cdf559bef0915afc"
+    },
+    {
+      "file": "game/bench/slm_smoke.gd",
+      "bytes": 2354,
+      "sha256": "f000d3a3fc268436b2ab94136eb1bf92cb0cbb758516a5933ed8d9bc7c9c1827"
+    },
+    {
+      "file": "game/bench/t1_workfloor_probe.gd",
+      "bytes": 11094,
+      "sha256": "07597afe2ce9c91ef67916c905ac205abdcb85a402defc7e2e1ef45211a3c230"
+    },
+    {
+      "file": "game/bench/t_intnight.gd",
+      "bytes": 2428,
+      "sha256": "535e9dd8e9ed929d65626c8e0eb5c0ab5f6e661b602d4e5dea2f5c97af48efbc"
+    },
+    {
+      "file": "game/bench/test_guard.gd",
+      "bytes": 1931,
+      "sha256": "0ba02385867a24f4da50550083fb815b0fd4babda7b093350b8d248408388e03"
+    },
+    {
+      "file": "game/bench/total_cost.gd",
+      "bytes": 2067,
+      "sha256": "ec7023d11e0f6fde36855a528ced97e18eb86cd228ddd5d2fdc4a52ff061085a"
+    },
+    {
+      "file": "game/bench/v1_social_census.gd",
+      "bytes": 15245,
+      "sha256": "581f458ecfee409200611356dd93e7646f3b4c732abe14ac2f1301138add55ac"
+    },
+    {
+      "file": "game/bench/w1_aid_funnel.gd",
+      "bytes": 11793,
+      "sha256": "f356b737f8dd81b528703291293c42665b7108277f15e865b47cee978a8b90df"
+    },
+    {
+      "file": "game/bench/w1_aid_margin.gd",
+      "bytes": 6968,
+      "sha256": "7859b0707514f7f5ffa78cd421d436986defecb6858593abdf065f85f07b319b"
+    },
+    {
+      "file": "game/bench/w1_pact_clock.gd",
+      "bytes": 4098,
+      "sha256": "c41557f69c9e0da6e0be47f2f14828835abd25240516f2ec202673172be53fde"
+    },
+    {
+      "file": "game/bench/walk_heat.gd",
+      "bytes": 1414,
+      "sha256": "85b0c151493da19e9d35c182e6be01d024c304a13bd58e51be3bb3b0f2d7f54f"
+    },
+    {
+      "file": "game/bench/wiki_dump.gd",
+      "bytes": 15358,
+      "sha256": "957f8cc2eb49368de234fe47293ea5e306c363b983c7fe0b76a6fcf780eef3d7"
+    },
+    {
+      "file": "game/bench/x1_margin.gd",
+      "bytes": 5869,
+      "sha256": "8020da991bed0acbf23259b37366428405c5a6548a7c3d5671d976edce67eff5"
+    },
+    {
+      "file": "game/bench/x1_starve_trace.gd",
+      "bytes": 13759,
+      "sha256": "1ff1445ac488bf0a3a1d5cf1c287003d602d90a88f22a076ddf18cb4ef11b1f6"
+    },
+    {
+      "file": "game/data/agents.json",
+      "bytes": 4003,
+      "sha256": "98044c7c12d9ca06c691847e78e33e92785a4beee4126bc645de74dc5a135a49"
+    },
+    {
+      "file": "game/data/buildings.json",
+      "bytes": 3851,
+      "sha256": "60db5ba64ee7df41661171bf05006f4431f6cb679f0b7eff73fefea6f4f755ea"
+    },
+    {
+      "file": "game/data/economy.json",
+      "bytes": 9433,
+      "sha256": "42ce64a8a557a2187aee5d81b6d269b6e7e009c6b8e2a4fde9c7b8cbc0173ed2"
+    },
+    {
+      "file": "game/data/elections.json",
+      "bytes": 730,
+      "sha256": "cdd8e8faffab81633920e34e15f50c4112b9605cc53fd49e80eca54836cb7811"
+    },
+    {
+      "file": "game/data/festivals.json",
+      "bytes": 2516,
+      "sha256": "010623dd4ecc1f81fcc75287ef707f9a1fc34a8f14cae5cffbb34447bfc0da43"
+    },
+    {
+      "file": "game/data/goals.json",
+      "bytes": 6676,
+      "sha256": "45c09327b907960f20011249a954794d52d8964299e9f090bbdfa663c4386530"
+    },
+    {
+      "file": "game/data/housing.json",
+      "bytes": 762,
+      "sha256": "c9633d1033f042530f86680b1f6e43778ce56b7b0a1c691e0ec8d94d4f4dd040"
+    },
+    {
+      "file": "game/data/interior_templates.json",
+      "bytes": 3549,
+      "sha256": "aea831458fc31212fb3f0b5a7a6efe355fbb8bdf48e22e4026204cc06a39ff29"
+    },
+    {
+      "file": "game/data/interiors.json",
+      "bytes": 26546,
+      "sha256": "4526aaf9ff829c32c22de59dfefb1593a4edaf42d0b2d5324f7c93f337932976"
+    },
+    {
+      "file": "game/data/jobs.json",
+      "bytes": 1765,
+      "sha256": "3558f0781814c1e27e67899e9338c83822e938dcbc99c761f0f712d6dd40d248"
+    },
+    {
+      "file": "game/data/lifecycle.json",
+      "bytes": 1013,
+      "sha256": "0818d411f410393b1e2759a930ddbb35ffed77e26c2c79b507db17952a49468d"
+    },
+    {
+      "file": "game/data/logistics.json",
+      "bytes": 13809,
+      "sha256": "0910a4e937f9772296dfa41b777f6abb7abd2e3ff7dedc9e240900cfac244cd0"
+    },
+    {
+      "file": "game/data/map.json",
+      "bytes": 35424,
+      "sha256": "b6b6dd6a456448a5c45cb00b23f436bccaaaa8838d252cea49d9f8158c9350be"
+    },
+    {
+      "file": "game/data/needs.json",
+      "bytes": 370,
+      "sha256": "1c9093458b4392c8b1e0c39bb4b8bb3ce1c6aa8a1325f559ee7679791a90d410"
+    },
+    {
+      "file": "game/data/personas.json",
+      "bytes": 5722,
+      "sha256": "e82121ccfa83513ac93dbfec323c299b319a33cf3478877a867fb00450238633"
+    },
+    {
+      "file": "game/data/production.json",
+      "bytes": 60477,
+      "sha256": "79fd00621dd9cd834747e0ecb81e5bf828b31ebda2d272f99c75772290a12df9"
+    },
+    {
+      "file": "game/data/rhythm.json",
+      "bytes": 1000,
+      "sha256": "fc3818bdde90f3cf0e391bf88d33c6fc04ce48b66b5a571f36817d770b12262b"
+    },
+    {
+      "file": "game/data/room_templates.json",
+      "bytes": 1409,
+      "sha256": "cb4e4b14b801e6b7e63771db0c34cce32090f26bdf9b58e6c3aa67485399b1f0"
+    },
+    {
+      "file": "game/data/scenarios/director_70b.json",
+      "bytes": 1780,
+      "sha256": "a146da4e18d80681d59e310363b1d2e6d56f80cbf55f92a5c39a795ce6e4aa64"
+    },
+    {
+      "file": "game/data/scenarios/director_mock.json",
+      "bytes": 807,
+      "sha256": "2f41cb83f79cb5477c2ffab8161be05082745deaa45234a14fe07ad59cb88097"
+    },
+    {
+      "file": "game/data/scenarios/director_recurring.json",
+      "bytes": 930,
+      "sha256": "d8b541f6f83fe79928344cb4588ddebbc20d9bc867b1287856028a82d75e4d2f"
+    },
+    {
+      "file": "game/data/scenarios/director_recurring_70b.json",
+      "bytes": 971,
+      "sha256": "5d658183a449723e85b72cd12a8830a392a67b3b3b45362fcb2d4656563ae092"
+    },
+    {
+      "file": "game/data/scenarios/director_recurring_mock.json",
+      "bytes": 615,
+      "sha256": "58dd20339a46e59731336b5a80ee609369a8543bae7b5f8ec83ff6662a243b5d"
+    },
+    {
+      "file": "game/data/scenarios/rift.json",
+      "bytes": 628,
+      "sha256": "8e3bef223ffdf98d418477fd47b958e6589afdd6fc3ffd06779952ebe7d37972"
+    },
+    {
+      "file": "game/data/scenarios/vote_yes.json",
+      "bytes": 575,
+      "sha256": "e54a1760da387681ef32584baac4efed384eaa1c9761093eb9d22dbbbd195af5"
+    },
+    {
+      "file": "game/data/secrets.json",
+      "bytes": 1294,
+      "sha256": "de780d9d44fb348745666c799653be634418b3fdde0414d2673c39aa8dbe4032"
+    },
+    {
+      "file": "game/data/skills.json",
+      "bytes": 376,
+      "sha256": "49d7c82be72464d72302a27bef868e3564a3b162222334db010ee67652dcad1d"
+    },
+    {
+      "file": "game/data/spaces.json",
+      "bytes": 11031,
+      "sha256": "20576b1bcd6ee967726bc6ff1ccf24e7dfac02c6e27405996e2f2e5d5f23ecb3"
+    },
+    {
+      "file": "game/data/town3d/agents.json",
+      "bytes": 6131,
+      "sha256": "387f57ac806e39556b315a32d5c552e4b60e4f3aa26ce2fca487c2295e71c7a5"
+    },
+    {
+      "file": "game/data/town3d/buildings.json",
+      "bytes": 145,
+      "sha256": "e6979fbec7bb7088a23b3452353739a4e72246933aeb00457fca33018f1731a2"
+    },
+    {
+      "file": "game/data/town3d/elections.json",
+      "bytes": 871,
+      "sha256": "34631fad1213befae53ae02e8583ee23e0cd36cbf3b7c60b89a874ae8aa269df"
+    },
+    {
+      "file": "game/data/town3d/festivals.json",
+      "bytes": 2985,
+      "sha256": "c2d1439ab158c25ea79a9bc3adb36d95ddbfe9f72cf3eaa587d76a83c47b7a27"
+    },
+    {
+      "file": "game/data/town3d/housing.json",
+      "bytes": 937,
+      "sha256": "3f8f34445e1d23c85d864e4359143a4557395319719391d3616c934b6c999969"
+    },
+    {
+      "file": "game/data/town3d/interiors.json",
+      "bytes": 2060284,
+      "sha256": "42b9266be865fa467d0445ca70c04e5443454078809ad41744548e4ade9f69a5"
+    },
+    {
+      "file": "game/data/town3d/jobs.json",
+      "bytes": 2548,
+      "sha256": "b7c313a69b99851e8aa711b5e54c2fb836edee198b731c6043560b3d42855d07"
+    },
+    {
+      "file": "game/data/town3d/logistics.json",
+      "bytes": 14337,
+      "sha256": "c36417ed5bd02f240a51b011757c0369a563d1a7f95ecf157551cea04488db23"
+    },
+    {
+      "file": "game/data/town3d/map.json",
+      "bytes": 982454,
+      "sha256": "7107716f74c823387bb52c07eb9042b9c2b5a06cecb4c00b8cd47711cae72e63"
+    },
+    {
+      "file": "game/data/town3d/production.json",
+      "bytes": 63717,
+      "sha256": "69c8590aba0683f074b77e6c461f89f613892b3b3b5ac1e151b549c69f84214b"
+    },
+    {
+      "file": "game/data/town3d/profile.json",
+      "bytes": 4268,
+      "sha256": "6c3516fc10ce2b0622072e84a96750bd46965b46978e3a1be5284490a63c6202"
+    },
+    {
+      "file": "game/data/town3d/projection.json",
+      "bytes": 1130113,
+      "sha256": "b699c9711c02c0d9f8f2e62e65a9b0cb6b3ce4d38ddf039697247da5b85629ad"
+    },
+    {
+      "file": "game/data/town3d/spaces.json",
+      "bytes": 59490,
+      "sha256": "44afcec2abe0ea03adeff8401a6f7ecdb8a395987da76c81664e98b9d52cc857"
+    },
+    {
+      "file": "game/data/utility.json",
+      "bytes": 6397,
+      "sha256": "19292e93d523a10d9a905862a291f8609e133e7adebc34c8315da60cb3bfa7db"
+    },
+    {
+      "file": "game/data/voicebank.json",
+      "bytes": 90855,
+      "sha256": "baaf8c138adffbfab41766f5b6907abab476788f70fb9dc4a26e7ee1d27f41de"
+    },
+    {
+      "file": "game/data/weather.json",
+      "bytes": 636,
+      "sha256": "2e9ba6cec31f5780598d78ec5ab0f5d0d6296c0f8d44fdb34abee6d4e126789b"
+    },
+    {
+      "file": "game/export_presets.cfg",
+      "bytes": 2694,
+      "sha256": "b8bcdd4fc9f2f97ed4ff187ec64d26f85afbae0af9d195976f49b18862871bfb"
+    },
+    {
+      "file": "game/fixtures/save_schema1_d46cbb1.part1.b64",
+      "bytes": 29601,
+      "sha256": "cb96b6ae847132cb4ca5795e106f1d6dfb14f92ef5687af672b2b1b3029f07e3"
+    },
+    {
+      "file": "game/fixtures/save_schema1_d46cbb1.part2.b64",
+      "bytes": 29601,
+      "sha256": "d070b1980241e8753d392476a8ab5db0562644c7b580f2a53f548578cd0ddcdd"
+    },
+    {
+      "file": "game/fixtures/save_schema1_d46cbb1.part3.b64",
+      "bytes": 29601,
+      "sha256": "9e85d769db999981c3c657361d6548cdd57156cfd1cc969f812a698593da7a32"
+    },
+    {
+      "file": "game/fixtures/save_schema1_d46cbb1.part4.b64",
+      "bytes": 29601,
+      "sha256": "a97d501b50f93e8dcb5ced97c839200850191efb31843a372ef0fcd6761ab255"
+    },
+    {
+      "file": "game/fixtures/save_schema1_legacy_contract.json",
+      "bytes": 1735,
+      "sha256": "cb0d663cbe620237d8f25536abd3267e430029532da18f54b21b04f5e6ff3f2d"
+    },
+    {
+      "file": "game/project.godot",
+      "bytes": 1464,
+      "sha256": "025b444fed8083734238baaf5050a6f7edb426b03ad2945555743d5157f1ffcb"
+    },
+    {
+      "file": "game/scenes/Main.tscn",
+      "bytes": 194,
+      "sha256": "25b4a7ca6864454f9b5fdc20adf4f5b6a5d35956585b3491399882d76818cb7f"
+    },
+    {
+      "file": "game/scenes/backend_bench.tscn",
+      "bytes": 202,
+      "sha256": "214ced31f8d05233297d1b50ead258eccdd994c386ba5fcb4f5a657a6f5f580c"
+    },
+    {
+      "file": "game/scenes/c1_locked_ortho_test.tscn",
+      "bytes": 186,
+      "sha256": "97c2872ecfd24d9cc4bd5ecf24a15abb232de3b083ce07951a069b8bd2a89dc7"
+    },
+    {
+      "file": "game/scenes/cafe_guest_access_test.tscn",
+      "bytes": 190,
+      "sha256": "ce73db1399072f5fac3cb6bfd54b473c5729d2097a088d2867098465dbc91049"
+    },
+    {
+      "file": "game/scenes/desire_test.tscn",
+      "bytes": 176,
+      "sha256": "9574e4797d92ed3658125f16d5d45181087f64a3344e8e988065dedb9f5471ce"
+    },
+    {
+      "file": "game/scenes/distill_dump.tscn",
+      "bytes": 201,
+      "sha256": "fd5ea19fbafc120059989e93a9e56c27a9ce3d994b00a58293f2f3fe601cfd2b"
+    },
+    {
+      "file": "game/scenes/event_prose_test.tscn",
+      "bytes": 223,
+      "sha256": "dd244b488d04b6be952121654d065c23cfe93d437a9ac7974c4dde3b49a0ee36"
+    },
+    {
+      "file": "game/scenes/goals_test.tscn",
+      "bytes": 208,
+      "sha256": "d776c84b142fd13df0acd19dd3e8017dd880d6f194c932ecdb061e942fae437f"
+    },
+    {
+      "file": "game/scenes/ledger_test.tscn",
+      "bytes": 176,
+      "sha256": "ec7aad778e842823307cb07a31515bf0380023e0e34c31069b216801b10616ce"
+    },
+    {
+      "file": "game/scenes/life_test.tscn",
+      "bytes": 192,
+      "sha256": "6861607d7c779cc5344e01448962ccf8520501164798b599b6f0bd8b1cdb26d1"
+    },
+    {
+      "file": "game/scenes/llm_live_test.tscn",
+      "bytes": 207,
+      "sha256": "8baf14545aa2b0402c2cb5c159bc06005812a63848a02d45909433e40409aa31"
+    },
+    {
+      "file": "game/scenes/m2_test.tscn",
+      "bytes": 194,
+      "sha256": "b96e64d60aabb4f53f6b4edd5d22a1bdd550b840fe917d9ea2133cf97d3ed885"
+    },
+    {
+      "file": "game/scenes/nbw_introspect.tscn",
+      "bytes": 210,
+      "sha256": "78bab27e29e18e31c60d9004444977bfa20308068aca05f1d30f65f52c3d598d"
+    },
+    {
+      "file": "game/scenes/p1a_affiliate_test.tscn",
+      "bytes": 191,
+      "sha256": "f7ffd920cbf5942977a47e63fb2758cf903d127510ca59f88d2281958ca009cd"
+    },
+    {
+      "file": "game/scenes/p1b_cargo_manifest_test.tscn",
+      "bytes": 210,
+      "sha256": "43774e843b8ed20b535c6fae35565d0d3cffc756abb5890a70471e7c939dca03"
+    },
+    {
+      "file": "game/scenes/p1c_east_ocean_carrier_test.tscn",
+      "bytes": 215,
+      "sha256": "af65ae13e92ab96524f659c2bb049587d9335b6ae9484a366e58c18ab7adc68b"
+    },
+    {
+      "file": "game/scenes/p1d_scale_export_test.tscn",
+      "bytes": 214,
+      "sha256": "c61fa42ecc0a2b436dd31ae95fec2af019e5b5cdd337bb58436f587d7ac50b2f"
+    },
+    {
+      "file": "game/scenes/p1g_manifest_transaction_test.tscn",
+      "bytes": 204,
+      "sha256": "a7870b0cb19f71a4c4aa85741f1c9d881ccaee72ccc2ab80b378a654b56785c1"
+    },
+    {
+      "file": "game/scenes/p1t_social_plane_test.tscn",
+      "bytes": 188,
+      "sha256": "cf7d4d0b0ffdd507a31f9e9b9343c92636a49af95942695bc4e28994c7d9ecf6"
+    },
+    {
+      "file": "game/scenes/p1u_port_nav_test.tscn",
+      "bytes": 188,
+      "sha256": "edb2ca1bfec950464bcaeee0286c73f44dcfd39232a1e1f47ea119fa420d91d7"
+    },
+    {
+      "file": "game/scenes/p1v_warehouse_observatory_test.tscn",
+      "bytes": 230,
+      "sha256": "5e7893181bdceac5244205ba32595e28a22318e6afccbcfb46454ba261d366bd"
+    },
+    {
+      "file": "game/scenes/player_agency_test.tscn",
+      "bytes": 212,
+      "sha256": "6cd099457e3b3ff58cdb52aff3941294002d9570c337e640e1a1ba8c37730ef5"
+    },
+    {
+      "file": "game/scenes/player_replay_test.tscn",
+      "bytes": 183,
+      "sha256": "6185210b1086e1a6c465b6270db85eda9a19655233c707695015d753d234279a"
+    },
+    {
+      "file": "game/scenes/player_touch_test.tscn",
+      "bytes": 209,
+      "sha256": "b43f3590ede59cba672de774d8e52a4550bd510590c90255501d373a8b71a778"
+    },
+    {
+      "file": "game/scenes/prompt_preview.tscn",
+      "bytes": 206,
+      "sha256": "b88533de49d9b68c50b2ee0ed165729f457719c82ee253a1072dca8ed9a748d0"
+    },
+    {
+      "file": "game/scenes/reqlife_test.tscn",
+      "bytes": 207,
+      "sha256": "f878fec84c8d851831680bbc19ca384e6fee594233769087c87a823ca38a54fe"
+    },
+    {
+      "file": "game/scenes/s4_replay_test.tscn",
+      "bytes": 208,
+      "sha256": "47d451cceb394b97dd83bba64cd784b3c98a8dd3bfcd75da016c1527f9ff32ba"
+    },
+    {
+      "file": "game/scenes/save_load_test.tscn",
+      "bytes": 209,
+      "sha256": "9b410f30e2f1fab2feefe0fbab2e31905232fe30ee6d86546792a739eadf53c8"
+    },
+    {
+      "file": "game/scenes/save_migration_test.tscn",
+      "bytes": 185,
+      "sha256": "1a41b7bcdc6a0f27ac6856715a626cb8c98ab98af2fa349b4219b37182700894"
+    },
+    {
+      "file": "game/scenes/slm_backend_test.tscn",
+      "bytes": 215,
+      "sha256": "314822dd948e54d9cdb54543f12f65dc03099cecff671dd2ff76a2c53ea2cc10"
+    },
+    {
+      "file": "game/scenes/slm_cache_test.tscn",
+      "bytes": 204,
+      "sha256": "a7042ee39d91ec69b07b0769dc4d2e5ed4cbe1ed66fa3dd79587234fc1ff7168"
+    },
+    {
+      "file": "game/scenes/slm_live_test.tscn",
+      "bytes": 207,
+      "sha256": "c635fbbf1fc5a5502d57085aae81fbcf1541ec45bc7655eb081c06168610a6f0"
+    },
+    {
+      "file": "game/scenes/space_test.tscn",
+      "bytes": 201,
+      "sha256": "64f07b81f15b0b65611a1b85f1d0308387b5f23e983e17f1880043bd6faf9976"
+    },
+    {
+      "file": "game/scenes/state_projection_gate.tscn",
+      "bytes": 224,
+      "sha256": "2e19a01f755e2e4b784314b9999f87070a085fe7f9bb7ca1c728d2af6db264a1"
+    },
+    {
+      "file": "game/scenes/story_test.tscn",
+      "bytes": 208,
+      "sha256": "41073eafc8b0bf6aec59420025a470fc4be5491ff18aead54b00d02b29489da5"
+    },
+    {
+      "file": "game/scenes/town_bridge_test.tscn",
+      "bytes": 186,
+      "sha256": "2495ea302daf6c57936d9c4f6a5c8921eff35d74f763f96519adfbe9176c3c14"
+    },
+    {
+      "file": "game/scenes/town_bridge_visual_test.tscn",
+      "bytes": 192,
+      "sha256": "df74621e5a541e5145493af26951e6aa1debe636d1b04e0f79a7fcae680e3120"
+    },
+    {
+      "file": "game/scripts/AIBackend.gd",
+      "bytes": 102641,
+      "sha256": "c5113bddb32a8ee9b30d800bce0a165557a4e6f05bd85f4de73689e909727068"
+    },
+    {
+      "file": "game/scripts/Art.gd",
+      "bytes": 7313,
+      "sha256": "628058791c3621f1b9062e76aa405d954d1efc55230f747ba1d8daef07908552"
+    },
+    {
+      "file": "game/scripts/Audio.gd",
+      "bytes": 23105,
+      "sha256": "e1acaa79463a50d2c7551d99df05c09c415ea3ce995aa1eb3171f689341a3aa1"
+    },
+    {
+      "file": "game/scripts/DataScenarioProvider.gd",
+      "bytes": 4756,
+      "sha256": "63aba7c23a06c713fb423b9d39ece0baba328c50ddb3ea4a3e8a8d3d0d0cae39"
+    },
+    {
+      "file": "game/scripts/Director.gd",
+      "bytes": 4696,
+      "sha256": "a5a7a471d9b75e61375dbeab56c07c3efb66e941695a64cbabe824cbc5f0c2f7"
+    },
+    {
+      "file": "game/scripts/Goals.gd",
+      "bytes": 14840,
+      "sha256": "ac83d9fc7f5323f60b73852d6891e3c10a84a871e92cd8de9e5751fc57b68c4e"
+    },
+    {
+      "file": "game/scripts/Ledger.gd",
+      "bytes": 10163,
+      "sha256": "9af8620b87a5f7a8fe8d539328047d08e358ed1fb175b13570f9775ca71767b6"
+    },
+    {
+      "file": "game/scripts/LifeMode.gd",
+      "bytes": 67877,
+      "sha256": "b76b31f885aadb540f25953042625a269069f69dfa64163ad4a1d8977e5c94fe"
+    },
+    {
+      "file": "game/scripts/LocalLlama.gd",
+      "bytes": 7856,
+      "sha256": "840ff2691e2a9e2b6af05de8d8d7c4b122356b18e5b2d109fd6d7fe6f42fc9d2"
+    },
+    {
+      "file": "game/scripts/LockedOrthoC1.gd",
+      "bytes": 4657,
+      "sha256": "991214aaac67471a68a578cd4c7bc68424652f8288b16d9d74d732b5ce443baf"
+    },
+    {
+      "file": "game/scripts/Main.gd",
+      "bytes": 222117,
+      "sha256": "b40c9b198eac322a8a58c0da13bc1ed67f545fc683393f689178adcb4c81427c"
+    },
+    {
+      "file": "game/scripts/Memory.gd",
+      "bytes": 1627,
+      "sha256": "7bff123cca8eb681a8ffbb2f808b9d77aea0f3cb84831b9a0240fdc92911bab9"
+    },
+    {
+      "file": "game/scripts/Probe3D.gd",
+      "bytes": 3770,
+      "sha256": "60c5b5c2941effff5ab4aebfa409268566e88d637d4dc10ddd899083e27d68dd"
+    },
+    {
+      "file": "game/scripts/ProbeController.gd",
+      "bytes": 15719,
+      "sha256": "6014f51a892c7a8449b785600ee400262453a8e769b6cfb6d256af061bd0cad8"
+    },
+    {
+      "file": "game/scripts/Sim.gd",
+      "bytes": 535457,
+      "sha256": "35c424400ed6c1437d6b5b742e6710599c52ff032a2eb6cc62d6384a57dbc4d6"
+    },
+    {
+      "file": "game/scripts/SimExtensions.gd",
+      "bytes": 5021,
+      "sha256": "db3c1ebe4697914ed4d453b31901c0b6e545528da433577b20011770fc9fb26a"
+    },
+    {
+      "file": "game/scripts/SpaceGraph.gd",
+      "bytes": 8917,
+      "sha256": "55dd889317d221e6fc1d5f38b5f669bba7034a1ed58bcd506a142c9f6964aea0"
+    },
+    {
+      "file": "game/scripts/Story.gd",
+      "bytes": 80080,
+      "sha256": "99341f8da8ad227d606544209656d62c5a5c19875aea7bf4b41972d92617a2f6"
+    },
+    {
+      "file": "game/scripts/TownModel3D.gd",
+      "bytes": 18479,
+      "sha256": "f13125b39004bd8dbd60bad8cb03e6d5b9a248eb07ed4aa6e8695ff58f4ab233"
+    },
+    {
+      "file": "game/scripts/TownWorldProfile.gd",
+      "bytes": 4972,
+      "sha256": "fc807627a3786cafc0d247649dfdcd27c99ebe2086baddbcf8d26f1c092d55a2"
+    },
+    {
+      "file": "game/scripts/WorldView.gd",
+      "bytes": 471908,
+      "sha256": "ec900dc85a7fc09362fd5cbae5f3a9d0c669f3b3c81bb36a388ec7a697997b71"
+    },
+    {
+      "file": "game/scripts/WorldView3D.gd",
+      "bytes": 29184,
+      "sha256": "80073d29653fd81ff984c12f971ed543b9d45f2d55338c8f1cf3a231d82112f0"
+    },
+    {
+      "file": "game/scripts/c1_locked_ortho_test.gd",
+      "bytes": 33895,
+      "sha256": "d4427ccbda4c2f789ae170a9cf16718f9c9be91249868014372e81aaa9b171d1"
+    },
+    {
+      "file": "game/scripts/cafe_guest_access_test.gd",
+      "bytes": 6563,
+      "sha256": "be561831f4ab87bcd555615ca3d3effa9ad02792a179d94e1f444d6533a048ea"
+    },
+    {
+      "file": "game/scripts/desire_test.gd",
+      "bytes": 15883,
+      "sha256": "9fddeffd27d5b5b6caf7380b2b7c92e390f804c64f2160ae045c731834ec5a48"
+    },
+    {
+      "file": "game/scripts/event_prose_test.gd",
+      "bytes": 7041,
+      "sha256": "513d9f6693d534181d85c7fab67e46ed0d5916c535412203bfeaf4e0d78de6bf"
+    },
+    {
+      "file": "game/scripts/goals_test.gd",
+      "bytes": 19112,
+      "sha256": "e531eda5f57c075bd6922a33cc773f9a40fde86f68410f405551abc7802618a8"
+    },
+    {
+      "file": "game/scripts/ledger_test.gd",
+      "bytes": 7946,
+      "sha256": "2e28c6928644345a72f2eaf37bb56bfd4151ef6341a90050e16e4115e6326616"
+    },
+    {
+      "file": "game/scripts/life_test.gd",
+      "bytes": 11645,
+      "sha256": "b36e8f8190ad56aac6b3663d94a73c4a43235087db6efe919bb2e8495391d8fc"
+    },
+    {
+      "file": "game/scripts/llm_live_test.gd",
+      "bytes": 4916,
+      "sha256": "979bab0e8f9eb84021152f2db5b0a1e59c216064d9d17ea6fc6354689be350f1"
+    },
+    {
+      "file": "game/scripts/local_backend_test.gd",
+      "bytes": 3307,
+      "sha256": "bf8b45a46c7e29c0f7247aaca2fb35dba0316e99461bbb831b2ccce42cf770f5"
+    },
+    {
+      "file": "game/scripts/m2_test.gd",
+      "bytes": 3365,
+      "sha256": "70cd77cbb22724b52966f8173d3eaaece392ab136af810111acae124466b485a"
+    },
+    {
+      "file": "game/scripts/nbw_introspect.gd",
+      "bytes": 988,
+      "sha256": "1208aec23e78ebcab00b6fa51ae8d912e297135b5a3e11df0a860a8aa2a71547"
+    },
+    {
+      "file": "game/scripts/p1a_affiliate_test.gd",
+      "bytes": 3225,
+      "sha256": "28184d5e95f79fe50ff71009cc49fb5ab6fd38afe975674fe76ffd6e2f5159bd"
+    },
+    {
+      "file": "game/scripts/p1b_cargo_manifest_test.gd",
+      "bytes": 19736,
+      "sha256": "fcb6fa16e5b7ab58f25bdf2a6fba6c5748ce998e683ccc65a5867dc0d083849d"
+    },
+    {
+      "file": "game/scripts/p1c_east_ocean_carrier_test.gd",
+      "bytes": 11387,
+      "sha256": "920ae2ecf27b1d30692721a835ddf529feef8c30db2ec2bc10018e0de980e98a"
+    },
+    {
+      "file": "game/scripts/p1d_scale_export_test.gd",
+      "bytes": 7892,
+      "sha256": "ad511167ba39555c3d2ec05318ca52b706b2fbf0cbd3bd4bbdf31493c29baae2"
+    },
+    {
+      "file": "game/scripts/p1g_manifest_transaction_test.gd",
+      "bytes": 22695,
+      "sha256": "55d70e169d12d8bcbda1f4be369be93631d875ccfe7df5c34240d808163b9f0d"
+    },
+    {
+      "file": "game/scripts/p1t_social_plane_test.gd",
+      "bytes": 9774,
+      "sha256": "55e00f4d62ef40a9e7902512fa7e059775acd93af7f07ba6ff33dcec7bc930c1"
+    },
+    {
+      "file": "game/scripts/p1u_port_nav_test.gd",
+      "bytes": 6185,
+      "sha256": "3831ef98d1e81d645fe191f049e21627035414b81249f197d10086062f357c0b"
+    },
+    {
+      "file": "game/scripts/p1v_warehouse_observatory_test.gd",
+      "bytes": 20877,
+      "sha256": "3fd60652372de1f54c98b26842f3cf8000bbeda4eb781257685de171b22d00c4"
+    },
+    {
+      "file": "game/scripts/player_agency_test.gd",
+      "bytes": 17055,
+      "sha256": "0106cca33677b28b546d4d72e3bcf570cd2d1e9ae10e5b1197f592888ba6410e"
+    },
+    {
+      "file": "game/scripts/player_replay_test.gd",
+      "bytes": 20219,
+      "sha256": "ba9edb089ffb7a10ab67c19485ceccf7fe19eecaab231cce2ea473729dec090e"
+    },
+    {
+      "file": "game/scripts/player_touch_test.gd",
+      "bytes": 20024,
+      "sha256": "8413e3c3d581d3c43d0e9e6dae7c3ec9892a463ecb80bbb5f1a998565c827ea6"
+    },
+    {
+      "file": "game/scripts/prompt_preview.gd",
+      "bytes": 1236,
+      "sha256": "31435fd91c31a373b25826d0e4c7483caf89a55c3ca058ac0fd7e132d2cad306"
+    },
+    {
+      "file": "game/scripts/reqlife_test.gd",
+      "bytes": 4084,
+      "sha256": "f15c8c91b9d036c3a235b1facdf31910397edb98481883cf4e265f9bf57b89de"
+    },
+    {
+      "file": "game/scripts/s4_replay_test.gd",
+      "bytes": 2582,
+      "sha256": "c099cbef2b89b80a4e3d063668c9179d9be2c76edea5f0757fe200c277301179"
+    },
+    {
+      "file": "game/scripts/save_load_test.gd",
+      "bytes": 3625,
+      "sha256": "0155fd6741820781314bec70f50da7c563a288c7ec83c7f389bcfe7fd7b559a7"
+    },
+    {
+      "file": "game/scripts/save_migration_test.gd",
+      "bytes": 20854,
+      "sha256": "395e104fda67e49d34803775dbbe0a0d442184dd22313031f1427f4a9373c666"
+    },
+    {
+      "file": "game/scripts/scriptwriter.gd",
+      "bytes": 25522,
+      "sha256": "68e8a77970851382ada089f6fa355a2cba60e2e85a9909a230ba619055c2d41d"
+    },
+    {
+      "file": "game/scripts/sim_soak.gd",
+      "bytes": 15965,
+      "sha256": "7ac5a87965af995ee32d0efafa14d224b05120c7ce088d6506c12372fcef0328"
+    },
+    {
+      "file": "game/scripts/slm_backend_test.gd",
+      "bytes": 2422,
+      "sha256": "5dad71a88e67363f0656f38776b1acb964f4bac6a151ee0796dd435061885d3a"
+    },
+    {
+      "file": "game/scripts/slm_cache_test.gd",
+      "bytes": 2551,
+      "sha256": "dc1a1766ea123856c8d4472f5ecdb76c8be7061417ab3efb2e763b5b2d8ca177"
+    },
+    {
+      "file": "game/scripts/slm_live_test.gd",
+      "bytes": 5102,
+      "sha256": "da7d7b31195e98aa15765794791c2a0c84f3b88b98b289167b59580624ad55cf"
+    },
+    {
+      "file": "game/scripts/space_test.gd",
+      "bytes": 19788,
+      "sha256": "49aac820b473e9d5884c1e8bb7d62e77eafcf4601ce07cc6f4e773648e9ae041"
+    },
+    {
+      "file": "game/scripts/state_projection_gate.gd",
+      "bytes": 20829,
+      "sha256": "9dbd3b5755aecdc5990bd50785482c96e97a2f0d2282df67e9e8cfbe7bdddd93"
+    },
+    {
+      "file": "game/scripts/story_test.gd",
+      "bytes": 63334,
+      "sha256": "e400b50fe7a918f8a5e57b494f87fbf2a2be65a0a29556174dcee9c2425aba86"
+    },
+    {
+      "file": "game/scripts/town_bridge_test.gd",
+      "bytes": 18227,
+      "sha256": "334d94dcbc445659064f6fcbc22e550a104f7532ce4457be0aaa6f1056485ffe"
+    },
+    {
+      "file": "game/scripts/town_bridge_visual_test.gd",
+      "bytes": 18218,
+      "sha256": "e2711b37b273bba9dc66d99c61338e2961d66b662eb4f0bb5c598ab975d460fc"
+    },
+    {
+      "file": "tools/build_town_profile.py",
+      "bytes": 34731,
+      "sha256": "bf751edbe21ebef91caae8194013c7a148f5b34e7a254e5f9233cf25f74a7959"
+    },
+    {
+      "file": "tools/package_town_bridge.py",
+      "bytes": 20547,
+      "sha256": "d06d7c1c71bd6757c6fdc5574674a62c1fe95f94881ce91f884830c914a90671"
+    },
+    {
+      "file": "tools/prepare-godot-optional.ps1",
+      "bytes": 1563,
+      "sha256": "07c33ff741db379d0c9f782889251072d8db45f7c038f2b571fcd0ffe7b64cd4"
+    },
+    {
+      "file": "tools/run-town3d.ps1",
+      "bytes": 1365,
+      "sha256": "0524c5cb8c43f2e56c49e929ff40d6369e4d58bc6761163a1705c8e687733432"
+    },
+    {
+      "file": "tools/stage_town_assets.py",
+      "bytes": 8182,
+      "sha256": "66af6c23a08023687e00cc191b3f116de02d86f39dbb39c8ee3d82469b4ef0be"
+    }
+  ],
+  "native_export": [
+    {
+      "file": "LivingTown.exe",
+      "bytes": 104512512,
+      "sha256": "911cb7f49225cf9ec87342f84b3e64bbd69e31d82fbd9660cb16e402bb5be891"
+    },
+    {
+      "file": "LivingTown.pck",
+      "bytes": 90365644,
+      "sha256": "f89bbbbf78f189acc3de5b8a7c229f0ba463d105223694fd64d72ca7693e3b71"
+    }
+  ],
+  "self_hash": "Excluded from this inventory; bound by the external source-package manifest and verification report.",
+  "art_delivery": "Separate completed Blender delivery is unchanged.",
+  "verification_counts": {
+    "profile_compile": 16,
+    "logical": 28,
+    "actual_game_visual": 27,
+    "legacy_regressions": 11,
+    "native_boot_and_binding": 7
+  },
+  "limitations": [
+    "Source runtime interaction proof and native normal-entry render proof have different scopes.",
+    "Not a full-town population/FPS or every-backend certification."
+  ]
+}

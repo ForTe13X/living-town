@@ -1,0 +1,307 @@
+{
+  "schema": "living_town.walkthrough.route.v1",
+  "title": "Living Town: model, resident life and authoritative core",
+  "duration_seconds": 600,
+  "fps": 24,
+  "tour_frames": 14400,
+  "preview_duration_seconds": 90,
+  "preview_tour_frames": 2160,
+  "entry_scene": "res://scenes/town_walkthrough.tscn",
+  "engine_flags": [
+    "--fixed-fps",
+    "24",
+    "--write-movie",
+    "<absolute_capture.ogv>",
+    "--resolution",
+    "1280x768"
+  ],
+  "user_flags": [
+    "--town3d",
+    "--backend",
+    "logic",
+    "--agents",
+    "12",
+    "--no-player",
+    "--seed",
+    "7",
+    "--walkthrough-dir",
+    "<absolute_output_directory>"
+  ],
+  "preview_user_flag": "--walkthrough-preview",
+  "initial_mode": "Main creates normal LifeMode resident selector; do not pass --no-life or --life-as. The selector is presentation-hidden only for the establishing survey.",
+  "boot_prefix": "Report movie_boot_frames_to_trim from Engine.get_frames_drawn at the defined tour start. Trim that many captured boot frames before the600-second narration timeline. Verify actual output frame count independently.",
+  "camera_api": {
+    "owner": "Harness priority49, between LifeMode priority0 and WorldView3D priority50",
+    "controls": [
+      "Probe.active_space",
+      "Probe.active_floor",
+      "disabled Camera2D.position",
+      "disabled Camera2D.zoom",
+      "WorldView3D.sync_camera"
+    ],
+    "interpolation": "Smoothstep of integer tour frame/FPS, independent of OS wall clock and Sim tick rewinds",
+    "inspections": "Presentation only; LifeMode process/HUD temporarily paused, resident address unmodified; restore before real gameplay input.",
+    "orthographic_pitch_degrees": 56,
+    "coordinate_system": "Camera centers are canonical px through the existing projection; geography listed below is original Blender XY meters."
+  },
+  "camera_geography_m": {
+    "overview_from": [
+      -8,
+      4
+    ],
+    "overview_to": [
+      -8,
+      13
+    ],
+    "inland_from": [
+      -44,
+      18
+    ],
+    "inland_to": [
+      -22,
+      18
+    ],
+    "civic": [
+      8,
+      15
+    ],
+    "harbor": [
+      41,
+      43
+    ],
+    "park_approach": [
+      30,
+      -34
+    ],
+    "pond": [
+      26,
+      -42
+    ],
+    "coastal_paths": [
+      15,
+      -31
+    ]
+  },
+  "chapters": [
+    {
+      "index": 1,
+      "start_seconds": 0,
+      "end_seconds": 45,
+      "preview_start_seconds": 0,
+      "preview_end_seconds": 6,
+      "title": "Town and coast",
+      "mode": "architectural_inspection",
+      "actions": [
+        "Pause through existing KEY_0; hide only initial resident selection panel.",
+        "Smooth camera survey of whole current town, irregular frontages, coast and vegetation."
+      ],
+      "capture_labels": [
+        "01_town_overview"
+      ]
+    },
+    {
+      "index": 2,
+      "start_seconds": 45,
+      "end_seconds": 100,
+      "preview_start_seconds": 6,
+      "preview_end_seconds": 13,
+      "title": "Choose an existing resident",
+      "mode": "gameplay",
+      "actions": [
+        "Show original resident selector at45s.",
+        "At50s call the same public LifeMode.start_life(aria) used by its selection button.",
+        "Pause via KEY_0 while inspecting the actual upper home and live HUD."
+      ],
+      "capture_labels": [
+        "02_owner_upper_home"
+      ]
+    },
+    {
+      "index": 3,
+      "start_seconds": 100,
+      "end_seconds": 155,
+      "preview_start_seconds": 13,
+      "preview_end_seconds": 26,
+      "title": "Stairs, walking and needs",
+      "mode": "gameplay",
+      "actions": [
+        "Resume via KEY_1.",
+        "Actual screen click + numeric menu selection traverses p_cafe_stairs.",
+        "Full route only: click the actual cafe table, choose its real advertised meal, observe completion and need effect. Preview retains stairs and tests the later counter action."
+      ],
+      "capture_labels": [
+        "03_actual_stair_arrival",
+        "fixture_menu_cafe1f_table"
+      ]
+    },
+    {
+      "index": 4,
+      "start_seconds": 155,
+      "end_seconds": 215,
+      "preview_start_seconds": 26,
+      "preview_end_seconds": 43,
+      "title": "The actual cafe counter",
+      "mode": "gameplay",
+      "actions": [
+        "Click the imported counter mesh.",
+        "Accept a canonical alias only when nonempty model_asset_id and plane exactly match.",
+        "Show the original action menu, choose its first legal action by actual key event, observe real use/completion and advertised need or wage change.",
+        "Pause after completion for a readable resulting HUD."
+      ],
+      "capture_labels": [
+        "fixture_menu_cafe1f_counter",
+        "04_counter_action_complete"
+      ]
+    },
+    {
+      "index": 5,
+      "start_seconds": 215,
+      "end_seconds": 270,
+      "preview_start_seconds": 43,
+      "preview_end_seconds": 58,
+      "title": "Street, thresholds and visibility",
+      "mode": "gameplay",
+      "actions": [
+        "Resume and traverse p_cafe_door through actual mouse/key input.",
+        "Capture current controlled-resident occlusion state and visible silhouette at the threshold.",
+        "Full route only: choose a nearby actually reachable dry street cell and click it through LifeMode.",
+        "Pause through normal UI before architectural inspections."
+      ],
+      "capture_labels": [
+        "05_exterior_threshold_visibility"
+      ]
+    },
+    {
+      "index": 6,
+      "start_seconds": 270,
+      "end_seconds": 330,
+      "preview_start_seconds": 58,
+      "preview_end_seconds": 66,
+      "title": "Architectural inspection: rooms",
+      "mode": "architectural_inspection",
+      "actions": [
+        "Pause only LifeMode presentation processing and hide its resident HUD.",
+        "Read-only Probe active plane/center/zoom reveals library1f, home1f and hotel2f; no actor relocation or portal traversal is implied.",
+        "Local covers change only for the inspected building; native GLB remains unchanged."
+      ],
+      "capture_labels": [
+        "06_inspection_library",
+        "07_inspection_home",
+        "08_inspection_hotel"
+      ]
+    },
+    {
+      "index": 7,
+      "start_seconds": 330,
+      "end_seconds": 390,
+      "preview_start_seconds": 66,
+      "preview_end_seconds": 73,
+      "title": "Architectural inspection: streets",
+      "mode": "architectural_inspection",
+      "actions": [
+        "Camera glides from adjoining inland houses through central streets to working harbor.",
+        "Whole exterior covers restored when the Probe returns to town/outdoor.",
+        "Irregular streets, grounded terrain/pads and tree-lined routes are inspected as architecture."
+      ],
+      "capture_labels": [
+        "09_irregular_inland_streets",
+        "10_working_harbor"
+      ]
+    },
+    {
+      "index": 8,
+      "start_seconds": 390,
+      "end_seconds": 450,
+      "preview_start_seconds": 73,
+      "preview_end_seconds": 80,
+      "title": "Architectural inspection: pond",
+      "mode": "architectural_inspection",
+      "actions": [
+        "Camera approaches the actual park pond, then pulls toward planted coastal paths.",
+        "This is a view of authored pond/bank/planting geometry, not hydrology or resident swimming."
+      ],
+      "capture_labels": [
+        "11_pond_and_planting"
+      ]
+    },
+    {
+      "index": 9,
+      "start_seconds": 450,
+      "end_seconds": 505,
+      "preview_start_seconds": 80,
+      "preview_end_seconds": 84,
+      "title": "Resident agency and autonomous life",
+      "mode": "gameplay",
+      "actions": [
+        "Restore normal LifeMode presentation and real resident plane before any input.",
+        "Full route attempts a same-plane resident interaction through an actual sprite click and original legal menu option; response is not forced.",
+        "Enable autonomy with KEY_F and observe the existing core clock/resident decisions."
+      ],
+      "capture_labels": [
+        "resident_social_menu_if_available",
+        "12_autonomous_resident"
+      ]
+    },
+    {
+      "index": 10,
+      "start_seconds": 505,
+      "end_seconds": 560,
+      "preview_start_seconds": 84,
+      "preview_end_seconds": 88,
+      "title": "Save, resume and restore",
+      "mode": "gameplay",
+      "actions": [
+        "Disable autonomy with KEY_F before saving; close any menu.",
+        "Pause through KEY_0 and press F5 to invoke existing Main quicksave.",
+        "Resume actual simulation, pause again and press F8.",
+        "Observe synchronous world_reset with the saved tick/address/profile identity, then resume through KEY_1.",
+        "The quicksave is the actual town3d save namespace; caller should use an isolated recording user-data directory."
+      ],
+      "capture_labels": [
+        "13_save_restored_gameplay"
+      ]
+    },
+    {
+      "index": 11,
+      "start_seconds": 560,
+      "end_seconds": 600,
+      "preview_start_seconds": 88,
+      "preview_end_seconds": 90,
+      "title": "Town, scope and next steps",
+      "mode": "architectural_inspection",
+      "actions": [
+        "Pause via normal UI and glide from civic town to whole-town composition.",
+        "Finish at exactly600 tour seconds/14400 tour frames (preview90s/2160), excluding measured boot prefix.",
+        "Report actual outcomes/limits honestly; no direct agent/nav/room/Simstate writes or forced social results."
+      ],
+      "capture_labels": [
+        "14_final_whole_town"
+      ]
+    }
+  ],
+  "outputs": [
+    "walkthrough_report.json",
+    "walkthrough_cues.json",
+    "source-bound actual checkpoint PNGs"
+  ],
+  "source_bindings": {
+    "game/data/town3d/profile.json": "6c3516fc10ce2b0622072e84a96750bd46965b46978e3a1be5284490a63c6202",
+    "game/data/town3d/projection.json": "b699c9711c02c0d9f8f2e62e65a9b0cb6b3ce4d38ddf039697247da5b85629ad",
+    "game/assets/town3d/stage_manifest.json": "2787a4895e0f6b5889fdaeb7c83bcccc04ec035544898615c33b5ba1efad2225"
+  },
+  "allowed_core_entry": "Actual viewport input -> existing Main/LifeMode -> Sim transactions; public start_life selection only. Read-only Sim queries/signals supply QA evidence.",
+  "prohibited": [
+    "Direct agent placement or option/needs writes",
+    "Navigation/room/portal rewrites",
+    "Clock or Simstate assignments by the director",
+    "Synthetic social success",
+    "Treating architectural inspection as resident travel"
+  ],
+  "narration_notes": [
+    "No extra subtitle overlay is created by the harness. A small top chapter label identifies actual gameplay versus camera inspection.",
+    "Actions may complete before their chapter ends; report stores actual frame/tick outcomes.",
+    "Actual counter_1 and cafe1f_counter may share one counter mesh while advertising different actions; narrate the visible choice instead of promising fun.",
+    "MovieWriter full route includes a full-route-only meal and social attempt; preview prioritizes bounded essential traversal, counter and save/load coverage.",
+    "No performance/VRAM, streaming, universal collision, natural-hydrology or all-room-playthrough claim."
+  ]
+}

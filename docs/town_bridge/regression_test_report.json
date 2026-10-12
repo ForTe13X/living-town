@@ -1,0 +1,79 @@
+[
+  {
+    "passed": true,
+    "exit_code": 0,
+    "scene": "life_test",
+    "seconds": 1.242,
+    "errors": []
+  },
+  {
+    "passed": true,
+    "exit_code": 0,
+    "scene": "space_test",
+    "seconds": 0.962,
+    "errors": []
+  },
+  {
+    "passed": true,
+    "exit_code": 0,
+    "scene": "cafe_guest_access_test",
+    "seconds": 1.047,
+    "errors": []
+  },
+  {
+    "passed": true,
+    "exit_code": 0,
+    "scene": "p1t_social_plane_test",
+    "seconds": 0.862,
+    "errors": []
+  },
+  {
+    "passed": true,
+    "exit_code": 0,
+    "scene": "p1u_port_nav_test",
+    "seconds": 1.056,
+    "errors": []
+  },
+  {
+    "seconds": 2.09,
+    "passed": true,
+    "errors": [],
+    "exit_code": 0,
+    "scene": "p1v_warehouse_observatory_test"
+  },
+  {
+    "seconds": 11.533,
+    "passed": true,
+    "errors": [],
+    "exit_code": 0,
+    "scene": "player_agency_test"
+  },
+  {
+    "seconds": 14.385,
+    "passed": true,
+    "errors": [],
+    "exit_code": 0,
+    "scene": "player_touch_test"
+  },
+  {
+    "seconds": 8.934,
+    "passed": true,
+    "errors": [],
+    "exit_code": 0,
+    "scene": "player_replay_test"
+  },
+  {
+    "seconds": 1.603,
+    "passed": true,
+    "errors": [],
+    "exit_code": 0,
+    "scene": "save_load_test"
+  },
+  {
+    "seconds": 4.018,
+    "passed": true,
+    "errors": [],
+    "exit_code": 0,
+    "scene": "save_migration_test"
+  }
+]

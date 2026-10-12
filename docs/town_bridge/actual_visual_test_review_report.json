@@ -1,0 +1,226 @@
+{
+  "schema": "living_town.bridge.actual_visual_review.v1",
+  "status": "PASS",
+  "generated_utc": "2026-10-12T11:29:22.910499+00:00",
+  "scope": "Five refreshed actual Main/LifeMode GPU captures directly opened and visually reviewed, with source/image SHA verification. Includes real imported-geometry LOS and controlled-resident silhouette evidence. Bounded review, not an FPS or full-town collision certification.",
+  "source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
+  "source_glb_sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c",
+  "projection_sha256": "b699c9711c02c0d9f8f2e62e65a9b0cb6b3ce4d38ddf039697247da5b85629ad",
+  "logical_report_sha256": "5fe663e8391467c52fdb253a2e9e5f0a9056027ae56e3ae7e461f90aaf2d2b6f",
+  "logical_checks": 28,
+  "visual_report_sha256": "6ed4f4aec324fc0ab7daf4bf8bb12a566c9602be84d63fe7105c8da406582257",
+  "visual_checks": 27,
+  "reviewed_source_hashes": {
+    "game/scripts/town_bridge_visual_test.gd": "e2711b37b273bba9dc66d99c61338e2961d66b662eb4f0bb5c598ab975d460fc",
+    "game/scripts/WorldView3D.gd": "80073d29653fd81ff984c12f971ed543b9d45f2d55338c8f1cf3a231d82112f0",
+    "game/scripts/TownModel3D.gd": "f13125b39004bd8dbd60bad8cb03e6d5b9a248eb07ed4aa6e8695ff58f4ab233"
+  },
+  "selected_fixture_mesh_proof": {
+    "requested_binding": {
+      "approach_local_m": [
+        -0.125,
+        0.125
+      ],
+      "cell": [
+        19.0,
+        17.0
+      ],
+      "fixture_center_local_m": [
+        -1.81,
+        0.17
+      ],
+      "fixture_footprint_m": [
+        -3.31,
+        -0.13,
+        -0.31,
+        0.47
+      ],
+      "model_asset_id": "Main_cafe_L00_Public_Room_A00_cafe_counter",
+      "model_asset_kind": "cafe_counter",
+      "note": "Legacy action at a reachable standing cell adjacent to an actual compatible fixture.",
+      "plane": "cafe/1f"
+    },
+    "requested_id": "cafe1f_counter",
+    "same_imported_mesh_and_plane": true,
+    "selected_binding": {
+      "approach_local_m": [
+        -0.125,
+        0.375
+      ],
+      "cell": [
+        19.0,
+        16.0
+      ],
+      "fixture_center_local_m": [
+        -1.81,
+        0.17
+      ],
+      "fixture_footprint_m": [
+        -3.31,
+        -0.13,
+        -0.31,
+        0.47
+      ],
+      "model_asset_id": "Main_cafe_L00_Public_Room_A00_cafe_counter",
+      "model_asset_kind": "cafe_counter",
+      "note": "Legacy action at a reachable standing cell adjacent to an actual compatible fixture.",
+      "plane": "cafe/1f"
+    },
+    "selected_id": "counter_1"
+  },
+  "observed_action_and_occlusion_checks": [
+    {
+      "detail": {
+        "advertised_action": {
+          "action": "闲聊",
+          "amount": 42,
+          "duration": 20,
+          "need": "social",
+          "ok": true,
+          "price": 0,
+          "wage": 0,
+          "why": ""
+        },
+        "coin_change": 0,
+        "completion_events": [
+          {
+            "action": "闲聊",
+            "target": "counter_1",
+            "tick": 45,
+            "wage": 0
+          }
+        ],
+        "largest_observed_use_need_step": 1.94999999999999,
+        "need": "social",
+        "need_change": 30.5500000000001,
+        "use_phase_observed": true
+      },
+      "name": "existing_fixture_action_executes_with_measurable_effect",
+      "passed": true
+    },
+    {
+      "detail": {
+        "actual_geometry_ray": {
+          "blocked": false,
+          "distance": 0,
+          "occluder": ""
+        },
+        "view_state": {
+          "actor_id": "aria",
+          "blocked": false,
+          "max_query_hz": 5,
+          "normal_depth_preserved": true,
+          "occluder": "",
+          "ray_count": 100
+        }
+      },
+      "name": "unblocked_controlled_resident_hides_occlusion_ghost",
+      "passed": true
+    },
+    {
+      "detail": {
+        "actual_geometry_ray": {
+          "blocked": true,
+          "distance": 97.5634155273438,
+          "occluder": "Front_AwningBlue"
+        },
+        "view_state": {
+          "actor_id": "aria",
+          "blocked": true,
+          "max_query_hz": 5,
+          "normal_depth_preserved": true,
+          "occluder": "Front_AwningBlue",
+          "ray_count": 118
+        }
+      },
+      "name": "roof_occluded_controlled_resident_has_actual_los_and_visible_ghost",
+      "passed": true
+    },
+    {
+      "detail": {
+        "normal_primary_depth": true,
+        "silhouette_frame_matches": true
+      },
+      "name": "only_matching_silhouette_bypasses_depth_with_primary_preserved",
+      "passed": true
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "docs/town_bridge/captures/01_owner_upper.png",
+      "sha256": "45d54f05104ae73a27ad58b3aaad0bebafd24141751738e5ea5dac35414a0bf1",
+      "tick": 3,
+      "space": "cafe",
+      "floor": "2f",
+      "size": [
+        1280,
+        768
+      ],
+      "status": "PASS",
+      "actual_image_opened": true,
+      "observation": "Active upper-floor rooms and the retained resident are readable; neighboring roofs remain intact."
+    },
+    {
+      "file": "docs/town_bridge/captures/02_fixture_menu.png",
+      "sha256": "cd1ca508264bb5f17bace411bd87e608b615e6f8106ed1bcfbfc086cba81909f",
+      "tick": 17,
+      "space": "cafe",
+      "floor": "1f",
+      "size": [
+        1280,
+        768
+      ],
+      "status": "PASS",
+      "actual_image_opened": true,
+      "observation": "Actual imported cafe counter opens the existing menu. The selected counter_1 alias advertises social chat and shares the requested counter mesh and plane."
+    },
+    {
+      "file": "docs/town_bridge/captures/03_character_walking.png",
+      "sha256": "2ce8407ecdac2b9279e44feb230fac4a69f753a9835db283b3d54ec4f67d01fd",
+      "tick": 18,
+      "space": "cafe",
+      "floor": "1f",
+      "size": [
+        1280,
+        768
+      ],
+      "status": "PASS",
+      "actual_image_opened": true,
+      "observation": "Retained character visibly uses a walking atlas frame along the cafe circulation route; normal textured body remains visible."
+    },
+    {
+      "file": "docs/town_bridge/captures/04_fixture_use_complete.png",
+      "sha256": "e486a9ea07cba3709d52dfbb704c213388a8c4de53b559aa615c75f463532cba",
+      "tick": 45,
+      "space": "cafe",
+      "floor": "1f",
+      "size": [
+        1280,
+        768
+      ],
+      "status": "PASS",
+      "actual_image_opened": true,
+      "observation": "Resident reaches the actual counter and the HUD shows social at 100 after completing chat. Settled actual geometry LOS is clear and the ghost is hidden."
+    },
+    {
+      "file": "docs/town_bridge/captures/05_town_exterior.png",
+      "sha256": "053062b2938096d7d3929657033595d79f6b406f7d0b2bc58bed63228f2a1453",
+      "tick": 53,
+      "space": "town",
+      "floor": "outdoor",
+      "size": [
+        1280,
+        768
+      ],
+      "status": "PASS",
+      "actual_image_opened": true,
+      "observation": "Cafe and neighbor roofs are restored. A gold resident silhouette remains visible at the awning-obscured threshold under the entry prompt; actual LOS identifies Front_AwningBlue and the normal primary body remains depth tested."
+    }
+  ],
+  "limits": [
+    "Full town remains one optimized loaded asset; runtime performance/VRAM was not profiled.",
+    "The gold silhouette applies only to the controlled resident when actual model geometry blocks body LOS; other actors retain normal depth rendering.",
+    "Legacy outdoor interactions without a dedicated modeled prop retain their documented semantic activity anchors."
+  ],
+  "direct_agent_writes": false
+}

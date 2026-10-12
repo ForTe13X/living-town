@@ -1,0 +1,218 @@
+{
+	"checks": [
+		{
+			"detail": "",
+			"name": "profile_load_1",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "profile_install_before_start_1",
+			"passed": true
+		},
+		{
+			"detail": {
+				"building_spaces": 49,
+				"planes": 90
+			},
+			"name": "49_buildings_89_interior_planes_and_outdoor",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "projection_matches_frozen_model",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "profile_cannot_replace_live_run",
+			"passed": true
+		},
+		{
+			"detail": {
+				"duplicate": [],
+				"invalid": [],
+				"portals": 89
+			},
+			"name": "89_real_portals_have_178_unique_walkable_endpoints",
+			"passed": true
+		},
+		{
+			"detail": [],
+			"name": "each_plane_connects_its_real_door_and_stair_cells",
+			"passed": true
+		},
+		{
+			"detail": {
+				"broken": [],
+				"fixture_count": 64
+			},
+			"name": "every_functional_fixture_reachable_and_bound_to_real_model",
+			"passed": true
+		},
+		{
+			"detail": {
+				"activity_rooms": 223,
+				"unreachable": []
+			},
+			"name": "223_modeled_activity_rooms_have_actual_reachable_cells",
+			"passed": true
+		},
+		{
+			"detail": [],
+			"name": "existing_functional_object_ids_and_action_rules_preserved",
+			"passed": true
+		},
+		{
+			"detail": [],
+			"name": "original_portal_ids_owner_access_and_costs_preserved",
+			"passed": true
+		},
+		{
+			"detail": [],
+			"name": "residents_personas_and_jobs_retained",
+			"passed": true
+		},
+		{
+			"detail": {
+				"direct_agent_writes": false,
+				"observed": {
+					"action": "吃饭",
+					"after": 97.9999999999996,
+					"agent": "qin",
+					"before": 95.5022222222218,
+					"home": "test_loft",
+					"model_asset_id": "Main_cafe_L00_Public_Room_A02_cafe_table_set",
+					"need": "hunger",
+					"target": "stove_1",
+					"tick": 300
+				},
+				"seed": 7,
+				"ticks": 480
+			},
+			"name": "natural_home_to_street_to_cafe_fixture_use_changes_need",
+			"passed": true
+		},
+		{
+			"detail": {
+				"observed_actor_ticks": 155,
+				"violations": []
+			},
+			"name": "natural_social_activity_stays_on_same_canonical_plane",
+			"passed": true
+		},
+		{
+			"detail": "",
+			"name": "profile_load_3",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "profile_install_before_start_3",
+			"passed": true
+		},
+		{
+			"detail": {
+				"from_floor": "outdoor",
+				"from_pos": "(144, 116)",
+				"from_space": "town",
+				"kind": "door",
+				"ok": true,
+				"portal_id": "p_cafe_door",
+				"reason": "",
+				"to_floor": "1f",
+				"to_pos": "(19, 33)",
+				"to_space": "cafe"
+			},
+			"name": "player_walks_real_street_and_enters_public_cafe",
+			"passed": true
+		},
+		{
+			"detail": {
+				"from_floor": "1f",
+				"from_pos": "(35, 27)",
+				"from_space": "cafe",
+				"kind": "",
+				"ok": false,
+				"portal_id": "",
+				"reason": "portal_not_permitted",
+				"to_floor": "",
+				"to_pos": "(0, 0)",
+				"to_space": ""
+			},
+			"name": "private_cafe_stair_denial_is_atomic",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "profile_save_succeeds",
+			"passed": true
+		},
+		{
+			"detail": "",
+			"name": "profile_load_4",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "profile_install_before_start_4",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "same_profile_load_succeeds",
+			"passed": true
+		},
+		{
+			"detail": {
+				"first_drift": -1,
+				"left_chain": 1622236061,
+				"right_chain": 1622236061
+			},
+			"name": "save_load_then_48_future_ticks_are_deterministic",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "profile_rejects_tampered_nav_blockers_atomically",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "profile_rejects_tampered_map_width_atomically",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "legacy_control_save_succeeds",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "profile_rejects_legacy_archive_without_mutation",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "legacy_rejects_profile_archive_without_mutation",
+			"passed": true
+		}
+	],
+	"engine_version": {
+		"build": "official",
+		"hash": "71f334935c000924d403448e698df4441130df18",
+		"hex": 263682,
+		"major": 4,
+		"minor": 6,
+		"patch": 2,
+		"status": "stable",
+		"string": "4.6.2-stable (official)",
+		"timestamp": 0
+	},
+	"failure_count": 0,
+	"profile_sha256": "6c3516fc10ce2b0622072e84a96750bd46965b46978e3a1be5284490a63c6202",
+	"projection_sha256": "b699c9711c02c0d9f8f2e62e65a9b0cb6b3ce4d38ddf039697247da5b85629ad",
+	"schema": "living_town.bridge.logical.v1",
+	"source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
+	"status": "PASS"
+}

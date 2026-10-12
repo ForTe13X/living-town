@@ -1,0 +1,6 @@
+{
+  "engine_launched": false,
+  "user_authored_marker_preserved": true,
+  "installed_dll_removes_owned_marker": true,
+  "missing_dll_skips_only_own_extension": true
+}

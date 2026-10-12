@@ -35,8 +35,14 @@
 ## 运行时 / 引擎
 
 - **Godot Engine 4.6.2** — MIT。
+- Windows 3D 桥接发行包附带 Godot 4.6.2-stable 的 [MIT 全文](docs/town_bridge/licenses/GODOT_LICENSE.txt) 与 [第三方版权全文](docs/town_bridge/licenses/GODOT_COPYRIGHT.txt)。出处、原文校验和见 [来源记录](docs/town_bridge/licenses/PROVENANCE.json)。
 - **NobodyWho**（`game/addons/nobodywho/`，llama.cpp GDExtension，端上 SLM 可选皮肤）— 见插件自带授权；**默认后端为 `logic` 地板，无模型也完整可玩**（红线 2）。
 - 模型权重（`*.gguf`）**不入库**、不随包分发；由用户自行放置（见 `docs/18`）。
+
+## 3D 小镇美术交付
+
+- 建筑、地形、植物与家具由本项目程序化生成；原始来源与构建记录保存在独立 Blender 交付中，桥接包携带同一 GLB 的 SHA-256 绑定。
+- **Adobe Source Serif 4 Regular** — 未修改，SIL Open Font License 1.1，用于模型内招牌文字。字体 SHA-256：`e5a4ee6a3d87bb9024796be390c6771e2a0eb1883dae25effaf57ca01668e24b`；来源与许可见 `art/living_town/external_assets/fonts/PROVENANCE.json` 和同目录 `LICENSE.md`，发行包内保留副本。
 
 ## 历史遗留（已清除）
 
