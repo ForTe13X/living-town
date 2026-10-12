@@ -1,16 +1,16 @@
 {
   "schema": "living_town.bridge.actual_visual_review.v1",
   "status": "PASS",
-  "generated_utc": "2026-10-12T13:11:40.659400+00:00",
-  "scope": "Five current actual Main/LifeMode GPU PNGs independently opened with view_image. Canonical image hashes match the fresh runtime report; model/projection bindings verified. Bounded image review, not native executable interaction certification or performance profiling.",
+  "generated_utc": "2026-10-12T13:31:31.234732+00:00",
+  "scope": "All five fresh null-anchor-fix Main/LifeMode GPU PNGs independently reopened with view_image. Canonical and actual runtime-origin PNG hashes match the current28-check report; current WorldView3D source and fresh stable-source clean-log receipt reviewed. Bounded image review, not native executable interaction certification or performance profiling.",
   "source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
   "source_glb_sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c",
   "profile_sha256": "66c800130175677ec9c82ed44d7a1833dca634c602ffcc604e9aa258386d2c5e",
   "projection_sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a",
   "logical_report_sha256": "b7c1ecce9ab0644c25084834978304f102b124db290295b8a48b164412fec1cd",
   "logical_checks": 36,
-  "visual_report_sha256": "1f7dc91cdc499e3efd0fb5d9784bb440aa370a72b20374d72f2a56fe61cc04c2",
-  "visual_checks": 27,
+  "visual_report_sha256": "f5782bed4c1bdb82e4a17d9fd7095785dd6b6fa5089dd0624140fd6d39e87163",
+  "visual_checks": 28,
   "selected_fixture_mesh_proof": {
     "requested_binding": {
       "approach_local_m": [
@@ -136,8 +136,8 @@
     },
     {
       "detail": {
-        "luminance_stddev": 0.155529288019722,
-        "mean_luminance": 0.219098090156474
+        "luminance_stddev": 0.155522229637474,
+        "mean_luminance": 0.219103714951065
       },
       "name": "actual_main_framebuffer_02_fixture_menu",
       "passed": true
@@ -196,7 +196,7 @@
           "max_query_hz": 5,
           "normal_depth_preserved": true,
           "occluder": "",
-          "ray_count": 98
+          "ray_count": 99
         }
       },
       "name": "unblocked_controlled_resident_hides_occlusion_ghost",
@@ -204,8 +204,8 @@
     },
     {
       "detail": {
-        "luminance_stddev": 0.190134036786034,
-        "mean_luminance": 0.282820180780689
+        "luminance_stddev": 0.190132945694553,
+        "mean_luminance": 0.282821049244689
       },
       "name": "actual_main_framebuffer_04_fixture_use_complete",
       "passed": true
@@ -219,7 +219,7 @@
       "detail": {
         "actual_geometry_ray": {
           "blocked": true,
-          "distance": 97.5639877319336,
+          "distance": 97.5640029907227,
           "occluder": "Front_AwningBlue"
         },
         "view_state": {
@@ -228,7 +228,7 @@
           "max_query_hz": 5,
           "normal_depth_preserved": true,
           "occluder": "Front_AwningBlue",
-          "ray_count": 113
+          "ray_count": 115
         }
       },
       "name": "roof_occluded_controlled_resident_has_actual_los_and_visible_ghost",
@@ -249,12 +249,36 @@
       },
       "name": "actual_terrain_camera_ray_roundtrip_under_0_03_cell",
       "passed": true
+    },
+    {
+      "detail": {
+        "actual_ground_picks": [
+          {
+            "cell_error": 0.0,
+            "expected": "(6648.0, 5592.0)",
+            "picked": "(6648.0, 5592.0)"
+          },
+          {
+            "cell_error": 1.01725260416667e-05,
+            "expected": "(6744.0, 5688.0)",
+            "picked": "(6744.0, 5688.0)"
+          },
+          {
+            "cell_error": 1.01725260416667e-05,
+            "expected": "(6936.0, 5832.0)",
+            "picked": "(6936.0, 5832.0)"
+          }
+        ],
+        "anchor_error_px": 0.0
+      },
+      "name": "null_mesh_outdoor_anchor_preserves_projection_and_ground_picking",
+      "passed": true
     }
   ],
   "screenshots": [
     {
       "file": "docs/town_bridge/captures/01_owner_upper.png",
-      "runtime_origin_file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\bridge_checks\\visual/01_owner_upper.png",
+      "runtime_origin_file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\null_anchor_visual/01_owner_upper.png",
       "bytes": 919454,
       "sha256": "dabfc2a0926065b26220680197187aa35736f79c04060eb303ccd8fbacb7701d",
       "tick": 3,
@@ -271,9 +295,9 @@
     },
     {
       "file": "docs/town_bridge/captures/02_fixture_menu.png",
-      "runtime_origin_file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\bridge_checks\\visual/02_fixture_menu.png",
-      "bytes": 974887,
-      "sha256": "78a597aaba5c3ca97f4a2be7076e9a8028d0a81f88145f70a2a00f8e62723de0",
+      "runtime_origin_file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\null_anchor_visual/02_fixture_menu.png",
+      "bytes": 974899,
+      "sha256": "7b062124500fff3fada55e7523ba7616d322b47dd9fd9b648e7cd2f8ab2a79f6",
       "tick": 16,
       "space": "cafe",
       "floor": "1f",
@@ -288,10 +312,10 @@
     },
     {
       "file": "docs/town_bridge/captures/03_character_walking.png",
-      "runtime_origin_file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\bridge_checks\\visual/03_character_walking.png",
-      "bytes": 1045671,
-      "sha256": "c9def00a17a10025f7fc3079f3e2698077465994eeec8cb7b50516675aacd087",
-      "tick": 17,
+      "runtime_origin_file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\null_anchor_visual/03_character_walking.png",
+      "bytes": 1041117,
+      "sha256": "d98e7b72e8e91cdddf2428b170362444209fad817f2cccc56246edffa9a9c7ab",
+      "tick": 16,
       "space": "cafe",
       "floor": "1f",
       "size": [
@@ -305,9 +329,9 @@
     },
     {
       "file": "docs/town_bridge/captures/04_fixture_use_complete.png",
-      "runtime_origin_file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\bridge_checks\\visual/04_fixture_use_complete.png",
-      "bytes": 1104156,
-      "sha256": "ee5ea91dfd31075cf88b048c5db00614ad728fd737bf64dd89f51c08228350eb",
+      "runtime_origin_file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\null_anchor_visual/04_fixture_use_complete.png",
+      "bytes": 1104157,
+      "sha256": "6ad87e84dcdfe8cbeb74b9d90eb2e7ea20131b8cfb0c6cc701e383a08993fb00",
       "tick": 44,
       "space": "cafe",
       "floor": "1f",
@@ -322,9 +346,9 @@
     },
     {
       "file": "docs/town_bridge/captures/05_town_exterior.png",
-      "runtime_origin_file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\bridge_checks\\visual/05_town_exterior.png",
-      "bytes": 1150992,
-      "sha256": "59676482a92e1664c4d3108eb45e87e193d40c791084137c0f38882a014e5f19",
+      "runtime_origin_file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\null_anchor_visual/05_town_exterior.png",
+      "bytes": 1151070,
+      "sha256": "deda892cf135d94d6353d9f9677c9e5551fd1b55d115c3917524f154dabb08f6",
       "tick": 51,
       "space": "town",
       "floor": "outdoor",
@@ -344,8 +368,74 @@
     "These are source-game interaction-harness PNGs, not refreshed native EXE boot proof.",
     "Current full gameplay HUD is visible; dense plaza labels overlap and night-state frames are darker than the separate narrated architectural inspection.",
     "Motion, input and quantified action effects come from the bound runtime checks; still images alone establish only the pictured states.",
-    "The current capture records62 actors; no12-actor capture or full-town frame-rate/VRAM measurement is claimed.",
-    "The controlled-resident silhouette is an occlusion aid; other residents retain normal depth."
+    "The controlled-resident silhouette is an occlusion aid; other residents retain normal depth.",
+    "The capture HUD records62 actors; no12-actor capture or full-town frame-rate/VRAM measurement is claimed.",
+    "The runtime report has no individual source-file hash table. Current WorldView3D is separately SHA-bound here; its pre-capture mtime and the supervisor stable dirty-candidate fingerprint support the source review. The captured HEAD precedes its subsequent commit.",
+    "Null-anchor ground-pick accuracy is quantified by the fresh runtime check; the five gameplay PNGs do not by themselves show every outdoor semantic anchor."
   ],
-  "direct_agent_writes": false
+  "direct_agent_writes": false,
+  "supersedes_review_sha256": "4270bd10d9c557643990f8947d24a5533ccb738da3f3aa9e13d06a1bd231c7da",
+  "reviewed_source_hashes": {
+    "game/scripts/WorldView3D.gd": "c470cf9423086b08c60c18183632773dba467e6e99b50389b1a2347175e975fd"
+  },
+  "source_review": {
+    "file": "game/scripts/WorldView3D.gd",
+    "sha256": "c470cf9423086b08c60c18183632773dba467e6e99b50389b1a2347175e975fd",
+    "helper": "_binding_asset_id_3d",
+    "null_safe_caller_count": 3,
+    "null_string_conversion_removed": true,
+    "empty_asset_preserves_anchor_or_floor_ray_fallback": true,
+    "source_mtime_precedes_capture": true
+  },
+  "runtime_receipt": {
+    "path": "C:\\Users\\yp\\AppData\\Local\\Temp\\living-town-godot-runs\\20261012T132540731Z_74f5536361ba41908f77436c7cccabfd\\receipt.json",
+    "sha256": "a74d9b0744347a59f20bc761cb796aa3686d121232f01e91cc3198dcca0295c5",
+    "outcome": "pass",
+    "exit_code": 0,
+    "source_identity": "dirty_candidate",
+    "captured_head": "4c3df59b1b672c6f77084f7e287de049e548574a",
+    "captured_worktree_fingerprint": "18152947771ca93e9ef49d0751467343d1b67681fb8cf72ddb732c6a87b8e233",
+    "source_stable": true,
+    "cleanup_verified": true,
+    "started_utc": "2026-10-12T13:25:40.7491970Z",
+    "finished_utc": "2026-10-12T13:26:13.9886690Z",
+    "logs": {
+      "godot": {
+        "bytes": 1758,
+        "sha256": "6825409a404c9fa7b6f715cbd8b8a2fc5dc22371bfbdcf733cd62213dcc7aba2"
+      },
+      "stdout": {
+        "bytes": 1790,
+        "sha256": "640ca9be9f2a816a1b4b8822476ebef01f75d0fd128ebc8a59eeb0afe39a174b"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  "null_mesh_anchor_check": {
+    "detail": {
+      "actual_ground_picks": [
+        {
+          "cell_error": 0.0,
+          "expected": "(6648.0, 5592.0)",
+          "picked": "(6648.0, 5592.0)"
+        },
+        {
+          "cell_error": 1.01725260416667e-05,
+          "expected": "(6744.0, 5688.0)",
+          "picked": "(6744.0, 5688.0)"
+        },
+        {
+          "cell_error": 1.01725260416667e-05,
+          "expected": "(6936.0, 5832.0)",
+          "picked": "(6936.0, 5832.0)"
+        }
+      ],
+      "anchor_error_px": 0.0
+    },
+    "name": "null_mesh_outdoor_anchor_preserves_projection_and_ground_picking",
+    "passed": true
+  }
 }

@@ -41,6 +41,7 @@ REQUIRED_NOTICES = (
 )
 SOURCE_PROOF = (
     "docs/town_bridge/README.md",
+    "docs/town_walkthrough/ASSET_RELEASE.md",
     "docs/town_bridge/logical_test_report.json",
     "docs/town_bridge/visual_test_report.json",
     "docs/town_bridge/regression_test_report.json",

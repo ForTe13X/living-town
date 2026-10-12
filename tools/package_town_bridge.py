@@ -22,6 +22,7 @@ TOOLS = ("tools/fetch_town_assets.py", "tools/run-town3d.ps1", "tools/prepare-go
          "tools/build_town_profile.py", "tools/stage_town_assets.py",
          "tools/package_town_bridge.py")
 EXTRA = ("LICENSE", "THIRD_PARTY_NOTICES.md", "docs/09-美术资产与版权.md",
+         "docs/town_walkthrough/ASSET_RELEASE.md",
          "art/living_town/external_assets/fonts/LICENSE.md",
          "art/living_town/external_assets/fonts/PROVENANCE.json")
 SKIP_DIRS = {".godot", ".git", "models", "android", "__pycache__"}

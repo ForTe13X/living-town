@@ -315,6 +315,20 @@ func _ready() -> void:
 	recovered = view.screen_to_canonical(screen)
 	ck("actual_terrain_camera_ray_roundtrip_under_0_03_cell", recovered.distance_to(px) / 48.0 < 0.03, {"cell_error": recovered.distance_to(px) / 48.0, "terrain_y": world.y})
 	ck("outdoor_actor_grounded_on_terrain_profile", absf(sprite.position.y - world.y - 0.025) < 0.08)
+	var outdoor_binding: Dictionary = view.get("projection_3d").get("interaction_bindings", {}).get("bench_1", {})
+	var outdoor_object: Dictionary = Sim.world["objects"]["bench_1"]
+	var anchor: Vector2 = view.object_screen_position("bench_1")
+	var expected_anchor: Vector2 = view.canonical_to_screen(cell_center(outdoor_object["pos"]), "town", "outdoor", 0.6)
+	var ground_pick_ok: bool = false
+	var pick_samples: Array = []
+	for offset: Vector2i in [Vector2i(-6, 0), Vector2i(-4, 2), Vector2i(0, 5)]:
+		var ground_px: Vector2 = cell_center(me["pos"] + offset)
+		var ground_screen: Vector2 = view.canonical_to_screen(ground_px)
+		var picked: Vector2 = view.pick_to_canonical(ground_screen)
+		var error_cells: float = picked.distance_to(ground_px) / 48.0
+		pick_samples.append({"expected": str(ground_px), "picked": str(picked), "cell_error": error_cells})
+		ground_pick_ok = ground_pick_ok or error_cells < 0.03
+	ck("null_mesh_outdoor_anchor_preserves_projection_and_ground_picking", outdoor_binding.get("model_asset_id") == null and anchor.distance_to(expected_anchor) < 0.01 and ground_pick_ok, {"anchor_error_px": anchor.distance_to(expected_anchor), "actual_ground_picks": pick_samples})
 	await capture("05_town_exterior")
 	var hashes: Dictionary = {}
 	for shot: Dictionary in report["screenshots"]:

@@ -30,12 +30,35 @@ Checkout and artifact-upload failures also remain red.
 
 `hosted_visual_runtime_policy.json` records the image, Godot archive and
 binary, Python/Pillow, six apt packages, and Mesa GLX identity from reviewed
-run `37122904593`. The final checker requires every listed receipt line
+run `38254349222` (the original promotion above used `37122904593`). The final checker requires every listed receipt line
 exactly once. If GitHub updates the image or a package, CI fails with a
 distinct `runtime:` reason. A reviewer must compare a fresh complete
 positive/negative artifact and visual sample on the changed runtime before
 updating this file. Do not relabel runtime drift as a product regression or
 silently widen the accepted versions.
+
+The October 12 runtime refresh reviews [PR #84 run 38254349222](https://github.com/ForTe13X/living-town/actions/runs/38254349222),
+branch head `21dba7a4de883b97872e4b816901e45021bc62f3`, actual merge-event
+checkout `9ba945b3208ab463e6ffb9be12d46a8344e989d9`. Artifact
+`11750791291` has archive SHA-256
+`9c718ccd8f7e848de0e41d2ef493f8918d08f046543d5a3d0199a67459cb4cb8`.
+All 98 artifact-manifest entries match their recorded hashes. Its positive
+receipt passes with 75 PNGs and zero scanned runtime errors; the same-runtime
+negative catches precisely A1+A2, with successful capture and zero scanned
+runtime errors. The inline identical-floor negative also retains its expected
+B-only failure. Representative actual images were independently inspected.
+
+Only the exact runner image (`20261004.327.1`) and Python patch version
+(`3.11.17`) changed. Godot archive/binary, Pillow, all six apt package versions
+and Mesa identity remain identical. The job's two failures were these runtime
+identity mismatches; the image policy accepts the newly reviewed identities
+without changing verdict checks or widening a version range. Unit tests still
+reject an unreviewed runner, Python or Mesa identity.
+
+This evidence approves that raster runtime only. The run failed overall and
+used the earlier game tree; it is not final proof for the subsequent Town3D
+click fix. The current PR must pass a fresh full workflow after the policy
+refresh and final game/ledger changes.
 
 The hosted receipt's `runtime_errors=0` means no markers from the declared
 `SCRIPT ERROR`, signal, segmentation, fatal, or out-of-bounds scan. Import

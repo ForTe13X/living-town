@@ -292,7 +292,10 @@ func pick_to_canonical(screen: Vector2, space_id := "", floor_id := "") -> Vecto
 					break
 			if not valid_ui_marker:
 				continue
-		var box := _asset_screen_rect_3d(String(binding.get("model_asset_id", "")))
+		var asset_id := _binding_asset_id_3d(binding)
+		if asset_id.is_empty():
+			continue # Outdoor activity anchors intentionally have no mesh proxy.
+		var box := _asset_screen_rect_3d(asset_id)
 		if box.size == Vector2.ZERO or not box.grow(4).has_point(screen):
 			continue
 		var canonical := _v2_3d(binding.get("cell", [])) * 48 + Vector2(24,24)
@@ -304,7 +307,15 @@ func pick_to_canonical(screen: Vector2, space_id := "", floor_id := "") -> Vecto
 		return picked
 	return screen_to_canonical(screen, space_id, floor_id)
 
+func _binding_asset_id_3d(binding: Dictionary) -> String:
+	# JSON null denotes an authored activity anchor without a dedicated mesh.
+	# String(null) throws; preserve the canonical anchor and terrain-ray fallback.
+	var asset_id: Variant = binding.get("model_asset_id", "")
+	return asset_id if asset_id is String else ""
+
 func _asset_world_bounds_3d(asset_id: String) -> AABB:
+	if asset_id.is_empty():
+		return AABB()
 	if asset_id == "" or town_model_3d == null:
 		return AABB()
 	if _asset_bounds_3d.has(asset_id):
@@ -333,7 +344,7 @@ func _asset_screen_rect_3d(asset_id: String) -> Rect2:
 
 func object_screen_position(object_id: String) -> Vector2:
 	var binding: Dictionary = projection_3d.get("interaction_bindings", {}).get(object_id, {})
-	var bounds := _asset_world_bounds_3d(String(binding.get("model_asset_id", "")))
+	var bounds := _asset_world_bounds_3d(_binding_asset_id_3d(binding))
 	if bounds.size != Vector3.ZERO:
 		return camera_3d.unproject_position(bounds.get_center())
 	var object: Dictionary = Sim.world.get("objects", {}).get(object_id, {})
@@ -637,7 +648,7 @@ func _fixture_outline_3d(n: Node2D, entry: Dictionary) -> bool:
 	if String(entry.get("kind", "")) not in ["object", "bank", "civic"]:
 		return false
 	var binding: Dictionary = projection_3d.get("interaction_bindings", {}).get(String(entry.get("id", "")), {})
-	var bounds := _asset_world_bounds_3d(String(binding.get("model_asset_id", "")))
+	var bounds := _asset_world_bounds_3d(_binding_asset_id_3d(binding))
 	if bounds.size == Vector3.ZERO:
 		return false
 	var points := PackedVector2Array()

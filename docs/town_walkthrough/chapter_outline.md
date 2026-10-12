@@ -35,7 +35,7 @@ Before the defined tour begins, the harness establishes morning light through pu
 3. Show the counter menu, a reachable approach, and actual completion. A physical counter may expose either of its preserved functional aliases.
 4. Treat a social refusal or unavailable target as a real outcome. Log it; do not silently replace it with narrated success.
 5. Bind real save/load calls to recorded state evidence. If a save/load step fails, fix and recapture or revise the narration rather than keeping a success sentence.
-6. Final proof must bind route/action log, captured frames/video, TTS takes, measured word boundaries, and output hashes. The current 36 logical and 27 visual source-runtime checks remain separate from Windows boot proof. The current CI target is 35 legacy scenes; retain the old 11-scene subset as historical rather than promoting it to that full result.
+6. Final proof must bind route/action log, captured frames/video, TTS takes, measured word boundaries, and output hashes. The current 36 logical and 28 visual source-runtime checks remain separate from Windows boot proof. The current CI target is 35 legacy scenes; retain the old 11-scene subset as historical rather than promoting it to that full result.
 7. Inspect the encoded beginning, stair transition, counter interaction, doorway occlusion, all inspection sections, autonomy/social result, save/load, and ending. Check subtitle readability and HUD visibility as well as audio clipping and sync.
 
 ## Claims to retain

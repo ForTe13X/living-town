@@ -81,8 +81,11 @@ class HostedVisualRequiredTests(unittest.TestCase):
 
     def test_rolling_runtime_drift_fails_separately(self) -> None:
         receipt = self.runtime.read_text(encoding="utf-8")
+        required = json.loads(POLICY.read_text(encoding="utf-8"))["required_lines"]
         for before, after, prefix in (
-            ("version=20260927.320.1", "version=20261003.1", "RUNNER_IMAGE "),
+            (required["RUNNER_IMAGE "],
+             "RUNNER_IMAGE os=ubuntu24 version=unreviewed arch=X64", "RUNNER_IMAGE "),
+            (required["PYTHON "], "PYTHON version=unreviewed pillow=11.3.0", "PYTHON "),
             ("libgl1-mesa-dri=25.2.8-0ubuntu0.24.04.4",
              "libgl1-mesa-dri=25.2.9-0ubuntu0.24.04.4", "VISUAL_PACKAGE libgl1-mesa-dri="),
         ):
