@@ -1,0 +1,69 @@
+{
+  "source": {
+    "url": "https://github.com/ForTe13X/living-town/releases/download/town3d-walkthrough-2026-10-12/LivingTown_Walkthrough.mp4",
+    "sha256": "a1f97fdcc79e232784874c4ebd67c9b52a3ed98cc52982a9baf24872d10184d7",
+    "dimensions": [
+      1280,
+      864
+    ],
+    "duration_seconds": 600,
+    "fps": 24
+  },
+  "preview": {
+    "file": "town3d-walkthrough.gif",
+    "sha256": "a45eec70ad0118ca713311ad445d20138df551fa263c1da783398e7261e8ff79",
+    "bytes": 12265976,
+    "dimensions": [
+      640,
+      384
+    ],
+    "duration_seconds": 30.0,
+    "frames": 120,
+    "fps": 4,
+    "loop": "infinite",
+    "audio": false,
+    "crop": "Retain the full 1280 x 768 game viewport; remove only the lower 96-pixel narration matte.",
+    "palette": "256 colors; stats_mode=diff; dither=none; diff_mode=rectangle",
+    "source_windows_seconds": [
+      {
+        "start": 5,
+        "end_exclusive": 9,
+        "subject": "Coastal town"
+      },
+      {
+        "start": 72,
+        "end_exclusive": 76,
+        "subject": "Furnished home"
+      },
+      {
+        "start": 105,
+        "end_exclusive": 111,
+        "subject": "Gameplay: stairs and table"
+      },
+      {
+        "start": 174,
+        "end_exclusive": 178,
+        "subject": "Gameplay: cafe"
+      },
+      {
+        "start": 279,
+        "end_exclusive": 283,
+        "subject": "Library inspection"
+      },
+      {
+        "start": 382,
+        "end_exclusive": 386,
+        "subject": "Working harbor"
+      },
+      {
+        "start": 415,
+        "end_exclusive": 419,
+        "subject": "Pond and planting"
+      }
+    ],
+    "ffmpeg_montage_filter": "select=gte(t\\,5)*lt(t\\,9)+gte(t\\,72)*lt(t\\,76)+gte(t\\,105)*lt(t\\,111)+gte(t\\,174)*lt(t\\,178)+gte(t\\,279)*lt(t\\,283)+gte(t\\,382)*lt(t\\,386)+gte(t\\,415)*lt(t\\,419),setpts=N/(24*TB),fps=6,crop=1280:768:0:0",
+    "ffmpeg_palette_filter": "fps=4,scale=640:384:flags=neighbor,palettegen=max_colors=256:stats_mode=diff",
+    "ffmpeg_gif_filter": "[0:v]fps=4,scale=640:384:flags=neighbor[v];[v][1:v]paletteuse=dither=none:diff_mode=rectangle",
+    "verification": "FFmpeg full decode plus Pillow decoding of every frame, duration and loop checks."
+  }
+}
