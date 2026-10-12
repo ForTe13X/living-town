@@ -1,6 +1,6 @@
 # Walkthrough chapter and capture contract
 
-**Planned duration:** 10:00 exactly, 24 FPS, 14,400 frames. **Current status:** narration draft validated; route capture, measured audio, final subtitles, and finished-video QA remain pending. This is a recording plan, not evidence that the walkthrough has already run.
+**Delivered duration:** 10:00 exactly, 24 FPS, 14,400 decoded frames. The completed route passed 32 live checks and 13 encoded-media checks. All 22 Edge TTS takes fit their windows; eleven chapter frames and three active-caption frames passed separate visual inspection. [Final movie and evidence](README.md) bind the exact source and output. Human audio listening is not recorded.
 
 The chapter windows below match the capture agent’s proposed route. Chapters 6–8 are explicitly labelled architectural inspection. Those shots may change the probe, camera, and local model covers, but never set resident coordinates. Gameplay chapters use the public Main/LifeMode interaction path.
 
@@ -35,7 +35,7 @@ Before the defined tour begins, the harness establishes morning light through pu
 3. Show the counter menu, a reachable approach, and actual completion. A physical counter may expose either of its preserved functional aliases.
 4. Treat a social refusal or unavailable target as a real outcome. Log it; do not silently replace it with narrated success.
 5. Bind real save/load calls to recorded state evidence. If a save/load step fails, fix and recapture or revise the narration rather than keeping a success sentence.
-6. Final proof must bind route/action log, captured frames/video, TTS takes, measured word boundaries, and output hashes. The current 36 logical and 28 visual source-runtime checks remain separate from Windows boot proof. The current CI target is 35 legacy scenes; retain the old 11-scene subset as historical rather than promoting it to that full result.
+6. Final proof must bind route/action log, captured frames/video, TTS takes, measured word boundaries, and output hashes. The current 36 logical and 28 visual source-runtime checks remain separate from Windows boot proof. The fresh hosted report records 35 passing legacy scenes; retain the old 11-scene subset as historical evidence.
 7. Inspect the encoded beginning, stair transition, counter interaction, doorway occlusion, all inspection sections, autonomy/social result, save/load, and ending. Check subtitle readability and HUD visibility as well as audio clipping and sync.
 
 ## Claims to retain

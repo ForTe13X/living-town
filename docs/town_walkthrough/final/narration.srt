@@ -1,0 +1,483 @@
+1
+00:00:02,050 --> 00:00:03,643
+Welcome to Living Town.
+
+2
+00:00:04,325 --> 00:00:09,243
+This is the running game, connecting the
+coastal model to the existing life simulation.
+
+3
+00:00:09,925 --> 00:00:14,530
+Forty-nine buildings contain eighty-nine
+floors, linked by streets, courts,
+
+4
+00:00:14,550 --> 00:00:17,255
+homes, workshops, and a small harbor.
+
+5
+00:00:23,050 --> 00:00:26,505
+We will play as one resident,
+then inspect the architecture.
+
+6
+00:00:27,187 --> 00:00:31,843
+Pale walls, dark roofs, stone paving,
+and planted edges give this town its
+
+7
+00:00:31,862 --> 00:00:36,455
+coastal character. Camera-only
+inspection will be labelled clearly,
+
+8
+00:00:36,562 --> 00:00:38,955
+separate from the resident's actual movement.
+
+9
+00:00:50,050 --> 00:00:52,693
+We choose Aria through the existing life mode.
+
+10
+00:00:53,387 --> 00:00:57,793
+Her upper-floor rooms sit above the
+café, with a real route downstairs.
+
+11
+00:00:58,475 --> 00:01:03,055
+The portrait, name, job, money,
+wishes, and needs belong to the same
+
+12
+00:01:03,075 --> 00:01:07,230
+resident as before. Her
+identity and rules are retained.
+
+13
+00:01:14,050 --> 00:01:18,655
+The bars track hunger, energy,
+social contact, fun, and hygiene.
+
+14
+00:01:19,337 --> 00:01:21,043
+Watch them beside the clock.
+
+15
+00:01:21,725 --> 00:01:26,368
+Actions take time. Use the
+keyboard or a ground click to walk,
+
+16
+00:01:26,400 --> 00:01:28,305
+and E to interact nearby.
+
+17
+00:01:29,000 --> 00:01:32,143
+Zoom changes the view without changing Aria's state.
+
+18
+00:01:42,050 --> 00:01:46,505
+Walls, furnishings, and stair
+openings define where Aria can stand.
+
+19
+00:01:47,187 --> 00:01:51,655
+The interior grid is finer than the
+outdoor grid, allowing reachable approaches
+
+20
+00:01:51,675 --> 00:01:53,393
+beside beds and counters.
+
+21
+00:01:54,087 --> 00:01:56,805
+A click through a wall cannot create a shortcut.
+
+22
+00:01:57,487 --> 00:02:00,068
+Movement must find a legal route around it.
+
+23
+00:02:09,050 --> 00:02:13,068
+The stair transition has brought Aria
+downstairs through a legal opening.
+
+24
+00:02:13,762 --> 00:02:16,705
+Private stairs are not available to every resident.
+
+25
+00:02:17,387 --> 00:02:21,293
+At the café table, a meal uses
+the existing action system.
+
+26
+00:02:21,987 --> 00:02:25,305
+We watch for actual completion
+and its effect on her needs.
+
+27
+00:02:37,050 --> 00:02:39,205
+We click the visible café counter.
+
+28
+00:02:39,900 --> 00:02:44,493
+The furnishing resolves to an existing
+functional object and a reachable approach beside
+
+29
+00:02:44,512 --> 00:02:48,055
+it. Its menu offers permitted actions.
+
+30
+00:02:48,737 --> 00:02:51,618
+Aria walks into place and takes time to act.
+
+31
+00:02:52,300 --> 00:02:55,668
+The simulation records the
+result in her state and history.
+
+32
+00:03:06,050 --> 00:03:09,430
+The town has seven hundred and
+fifty-three furnishing assemblies.
+
+33
+00:03:10,112 --> 00:03:13,305
+Only mapped functional objects offer game actions.
+
+34
+00:03:13,987 --> 00:03:17,830
+Decorative shelves and pots do
+not automatically offer actions.
+
+35
+00:03:18,512 --> 00:03:23,355
+Social attempts retain the existing access
+checks and the other resident's response.
+
+36
+00:03:24,037 --> 00:03:27,180
+Jobs and wages retain their existing engine rules.
+
+37
+00:03:37,050 --> 00:03:39,555
+Aria leaves through the real café doorway.
+
+38
+00:03:40,250 --> 00:03:45,005
+Her original directional character sheets
+now appear inside a three-dimensional world.
+
+39
+00:03:45,687 --> 00:03:49,930
+The body keeps normal depth, so roofs
+and trees can pass in front of it.
+
+40
+00:03:50,625 --> 00:03:55,093
+Ground markers and interaction prompts
+remain attached to her actual position.
+
+41
+00:04:04,050 --> 00:04:08,980
+When geometry blocks the controlled resident,
+a gold silhouette keeps Aria readable.
+
+42
+00:04:09,675 --> 00:04:12,018
+It appears only during that obstruction.
+
+43
+00:04:12,700 --> 00:04:17,455
+The normal sprite still obeys depth, and
+the silhouette disappears in clear views.
+
+44
+00:04:18,150 --> 00:04:21,630
+The awning and roof remain in
+place as we walk toward the plaza.
+
+45
+00:04:32,050 --> 00:04:36,568
+This is architectural inspection:
+camera movement, not Aria's travel.
+
+46
+00:04:37,262 --> 00:04:42,080
+The town has five hundred and sixty-one
+logical zones, including circulation.
+
+47
+00:04:42,762 --> 00:04:45,480
+Two hundred and twenty-three are activity rooms.
+
+48
+00:04:46,162 --> 00:04:50,705
+Halls, landings, and stairs connect
+those rooms, giving each interior a
+
+49
+00:04:50,725 --> 00:04:54,805
+usable layout. Each group is named and inspectable.
+
+50
+00:05:01,050 --> 00:05:05,830
+Look for beds and storage, library shelves
+and tables, and enclosed bathrooms in
+
+51
+00:05:05,850 --> 00:05:08,843
+hotel suites, with bedroom privacy preserved.
+
+52
+00:05:09,525 --> 00:05:13,130
+Kitchens have sinks, hobs, and distinct refrigerators.
+
+53
+00:05:13,825 --> 00:05:18,305
+Room and floor groups let a cutaway expose
+one interior while neighboring roofs remain
+
+54
+00:05:18,325 --> 00:05:22,593
+intact. These authored dimensions
+do not establish building-code
+
+55
+00:05:22,612 --> 00:05:23,713
+approval.
+
+56
+00:05:32,050 --> 00:05:33,930
+We remain in inspection mode.
+
+57
+00:05:34,625 --> 00:05:39,193
+Residential rows turn, streets
+bend, and passages lead into courts.
+
+58
+00:05:39,875 --> 00:05:44,443
+The town has actual surface elevations
+and gently graded paths rather than a flat
+
+59
+00:05:44,462 --> 00:05:48,918
+board. Roads, plazas, and building pads meet entrance
+
+60
+00:05:48,937 --> 00:05:53,343
+thresholds. The harbor sits at
+the coastal edge of the same site.
+
+61
+00:06:01,050 --> 00:06:05,705
+This is a fictional engineered site,
+not a surveyed coast or hydraulic study.
+
+62
+00:06:06,387 --> 00:06:11,093
+Terrain heights ground residents, while authored
+blockers exclude building footprints and
+
+63
+00:06:11,112 --> 00:06:15,530
+water. The movement contract
+uses the game's spatial grid.
+
+64
+00:06:16,212 --> 00:06:20,568
+Another engine would still need its own
+decisions about physics, collision, and
+
+65
+00:06:20,587 --> 00:06:21,688
+navigation.
+
+66
+00:06:32,050 --> 00:06:36,705
+The park pond cuts into the terrain, with
+level water above a lower bed and graded
+
+67
+00:06:36,725 --> 00:06:41,043
+banks. A continuous shore, reeds, benches, and a
+
+68
+00:06:41,062 --> 00:06:43,205
+connected loop make the edge readable.
+
+69
+00:06:43,887 --> 00:06:46,055
+This is an authored ornamental pond.
+
+70
+00:06:46,737 --> 00:06:51,205
+Movement rules keep residents on accessible
+ground beside the water, with planted
+
+71
+00:06:51,225 --> 00:06:52,325
+edges.
+
+72
+00:07:01,050 --> 00:07:05,380
+Fifty-two planned landscape trees
+shape streets, courts, and the park.
+
+73
+00:07:06,062 --> 00:07:08,505
+Broad crowns and willows frame the pond.
+
+74
+00:07:09,187 --> 00:07:13,955
+Flower beds, garden islands, low
+planting, and coastal grasses add smaller
+
+75
+00:07:13,975 --> 00:07:18,505
+detail. Openings preserve doors, paths, and views.
+
+76
+00:07:19,187 --> 00:07:23,080
+The aim is shade and garden enclosure
+along useful walking routes.
+
+77
+00:07:23,762 --> 00:07:26,343
+Background woodland adds distant enclosure.
+
+78
+00:07:32,050 --> 00:07:34,630
+We return to Aria for a social attempt.
+
+79
+00:07:35,312 --> 00:07:37,730
+A visible neighbor must also be reachable.
+
+80
+00:07:38,412 --> 00:07:42,730
+Walls, floors, and access rules
+matter even when both people appear on
+
+81
+00:07:42,750 --> 00:07:47,143
+screen. Acceptance or refusal
+belongs to the running game.
+
+82
+00:07:47,825 --> 00:07:50,743
+Read the event and need changes to see the outcome.
+
+83
+00:07:59,050 --> 00:08:00,768
+Now we enable autonomy.
+
+84
+00:08:01,462 --> 00:08:06,343
+The existing decision system chooses
+available actions according to needs, jobs,
+
+85
+00:08:06,362 --> 00:08:08,543
+access, and circumstances.
+
+86
+00:08:09,225 --> 00:08:13,918
+The view follows the movement and activity;
+it does not create a second simulation.
+
+87
+00:08:14,600 --> 00:08:19,205
+This logic backend runs locally without
+a downloaded language model or required
+
+88
+00:08:19,225 --> 00:08:20,630
+generated dialogue.
+
+89
+00:08:27,050 --> 00:08:31,168
+We save with F five, let the game
+continue, and load with F eight.
+
+90
+00:08:31,862 --> 00:08:35,855
+Loading rebuilds the view from the
+saved simulation and resident state.
+
+91
+00:08:36,550 --> 00:08:39,880
+The three-dimensional profile
+uses a separate quicksave.
+
+92
+00:08:40,562 --> 00:08:45,218
+Incompatible spatial data is rejected
+instead of loading into a different layout.
+
+93
+00:08:54,050 --> 00:08:55,705
+The art remains portable.
+
+94
+00:08:56,400 --> 00:09:00,843
+Blender sources and engine-neutral
+exports keep named buildings, floors,
+
+95
+00:09:00,875 --> 00:09:03,830
+rooms, materials, and furnishing groups.
+
+96
+00:09:04,512 --> 00:09:07,305
+This bridge binds them to its spatial profile.
+
+97
+00:09:07,987 --> 00:09:12,630
+Frozen file hashes, license credits,
+and test evidence record the delivered
+
+98
+00:09:12,650 --> 00:09:16,155
+versions, leaving the town usable by other consumers.
+
+99
+00:09:22,050 --> 00:09:26,393
+The editable runtime passed thirty-six
+logical checks and twenty-eight visual
+
+100
+00:09:26,412 --> 00:09:30,368
+checks. Legacy regression scenes also passed.
+
+101
+00:09:31,050 --> 00:09:35,680
+The Windows package separately passed normal
+launch and screen-render checks, rather than
+
+102
+00:09:35,700 --> 00:09:37,355
+the full interaction suite.
+
+103
+00:09:42,050 --> 00:09:46,993
+This bridge connects places, retained
+residents, and observable consequences.
+
+104
+00:09:47,687 --> 00:09:51,618
+It does not establish finished
+balance or broad hardware performance.
+
+105
+00:09:52,312 --> 00:09:54,118
+The full town loads together.
+
+106
+00:09:54,800 --> 00:09:57,943
+Inspect movement, actions, and saved life.
+

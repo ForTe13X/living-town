@@ -10,6 +10,10 @@ Residents work, eat, make friends, and remember promises, rumors, and disputes. 
 
 [Watch the full MP4](docs/media/gameplay-tour.mp4) · [Recording and chapters](docs/249-gameplay-tour.md) · [Town blueprint](analysis/247/neighborhood-blueprint.png)
 
+**Blender 3D town:** explore the coastal terrain, 49 buildings, layered interiors, and existing residents.
+[Ten-minute narrated walkthrough and downloads](docs/town_walkthrough/README.md) · [Run guide and spatial contract](docs/town_bridge/README.md).
+The large model is a checksum-verified release download. On Windows, use `./tools/run-town3d.ps1`; use `-Legacy` for the original pixel map.
+
 ## Latest changes
 
 - Rebuilt coastal streets, courtyards, passages, tree belts, and gardens using detailed PixelLab assets.

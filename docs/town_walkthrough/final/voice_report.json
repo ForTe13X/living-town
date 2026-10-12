@@ -1,0 +1,5442 @@
+{
+  "schema": "living_town.walkthrough.voice.v1",
+  "status": "PASS",
+  "generated_utc": "2026-10-12T21:06:26.734891+00:00",
+  "narration": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\docs\\town_walkthrough\\narration.json",
+    "bytes": 16116,
+    "sha256": "12fb27ecfc3421288554243e858c7f9094af86a3f5bcd03bd6f8946520bcae66"
+  },
+  "route": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\docs\\town_walkthrough\\route_plan.json",
+    "bytes": 11307,
+    "sha256": "c92282e0e4167cf2a2edc1fc96f5bcc5a3a10beb13700072e201ab949fcf6fdb"
+  },
+  "builder": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\build_town_walkthrough.py",
+    "bytes": 45349,
+    "sha256": "2a9ae48e88b12eab5d898c7cb74bcf22779254e22f99ab71273fdf2b4d9c4778"
+  },
+  "voice": "en-US-AriaNeural",
+  "rate": "+0%",
+  "provenance": {
+    "edge_tts_version": "7.2.8",
+    "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+    "shim_applied": true,
+    "shim_scope": "process-local edge_tts.communicate.WSS_URL assignment only",
+    "upstream_reference": "https://github.com/rany2/edge-tts/pull/491",
+    "reference_reviewed_date": "2026-10-12",
+    "installed_library_sources_modified": false,
+    "proxy_environment_used": false
+  },
+  "segment_count": 22,
+  "caption_count": 106,
+  "duration_seconds": 600,
+  "sample_rate": 24000,
+  "channels": 1,
+  "sample_format": "s16le",
+  "takes": [
+    {
+      "id": "01a",
+      "start": 2,
+      "end": 21,
+      "duration_seconds": 15.936,
+      "cached": true,
+      "request_hash": "fe687957a79e747f5b2978807dca45c6390535b3059789d374b2234c531e7c71",
+      "request": {
+        "text": "Welcome to Living Town. This is the running game, connecting the coastal model to the existing life simulation. Forty-nine buildings contain eighty-nine floors, linked by streets, courts, homes, workshops, and a small harbor.",
+        "voice": "en-US-AriaNeural",
+        "rate": "+0%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\fe687957a79e747f5b2978807dca45c6390535b3059789d374b2234c531e7c71.mp3",
+        "bytes": 95616,
+        "sha256": "2e78ad375cc9ec9cc4eb0130864e4a2ccf34f4cd66ddcdefb7d18dc5953b111e"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\fe687957a79e747f5b2978807dca45c6390535b3059789d374b2234c531e7c71.words.json",
+        "bytes": 3121,
+        "sha256": "bc7ab81a4d19d8df2025be508c6843fa85a6074eb04cd1702a2194d48102fc31"
+      },
+      "words": [
+        {
+          "start": 2.05,
+          "end": 2.5124999999999997,
+          "text": "Welcome "
+        },
+        {
+          "start": 2.525,
+          "end": 2.6374999999999997,
+          "text": "to "
+        },
+        {
+          "start": 2.65,
+          "end": 2.975,
+          "text": "Living "
+        },
+        {
+          "start": 2.9875,
+          "end": 3.4625,
+          "text": "Town. "
+        },
+        {
+          "start": 4.325,
+          "end": 4.6125,
+          "text": "This "
+        },
+        {
+          "start": 4.625,
+          "end": 4.75,
+          "text": "is "
+        },
+        {
+          "start": 4.7625,
+          "end": 4.875,
+          "text": "the "
+        },
+        {
+          "start": 4.8875,
+          "end": 5.1625000000000005,
+          "text": "running "
+        },
+        {
+          "start": 5.175,
+          "end": 5.5625,
+          "text": "game, "
+        },
+        {
+          "start": 5.85,
+          "end": 6.3374999999999995,
+          "text": "connecting "
+        },
+        {
+          "start": 6.35,
+          "end": 6.449999999999999,
+          "text": "the "
+        },
+        {
+          "start": 6.4625,
+          "end": 6.8875,
+          "text": "coastal "
+        },
+        {
+          "start": 6.9,
+          "end": 7.2625,
+          "text": "model "
+        },
+        {
+          "start": 7.275,
+          "end": 7.3875,
+          "text": "to "
+        },
+        {
+          "start": 7.4,
+          "end": 7.4750000000000005,
+          "text": "the "
+        },
+        {
+          "start": 7.4875,
+          "end": 8.0,
+          "text": "existing "
+        },
+        {
+          "start": 8.0125,
+          "end": 8.25,
+          "text": "life "
+        },
+        {
+          "start": 8.2625,
+          "end": 9.0625,
+          "text": "simulation. "
+        },
+        {
+          "start": 9.925,
+          "end": 10.5625,
+          "text": "Forty-nine "
+        },
+        {
+          "start": 10.575,
+          "end": 11.049999999999999,
+          "text": "buildings "
+        },
+        {
+          "start": 11.0625,
+          "end": 11.5,
+          "text": "contain "
+        },
+        {
+          "start": 11.5125,
+          "end": 12.0125,
+          "text": "eighty-nine "
+        },
+        {
+          "start": 12.025,
+          "end": 12.512500000000001,
+          "text": "floors, "
+        },
+        {
+          "start": 12.7125,
+          "end": 13.012500000000001,
+          "text": "linked "
+        },
+        {
+          "start": 13.025,
+          "end": 13.175,
+          "text": "by "
+        },
+        {
+          "start": 13.1875,
+          "end": 13.7375,
+          "text": "streets, "
+        },
+        {
+          "start": 13.9,
+          "end": 14.387500000000001,
+          "text": "courts, "
+        },
+        {
+          "start": 14.55,
+          "end": 15.012500000000001,
+          "text": "homes, "
+        },
+        {
+          "start": 15.1875,
+          "end": 15.8875,
+          "text": "workshops, "
+        },
+        {
+          "start": 16.0125,
+          "end": 16.175,
+          "text": "and "
+        },
+        {
+          "start": 16.1875,
+          "end": 16.2375,
+          "text": "a "
+        },
+        {
+          "start": 16.25,
+          "end": 16.5875,
+          "text": "small "
+        },
+        {
+          "start": 16.6,
+          "end": 17.075000000000003,
+          "text": "harbor."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 382464
+    },
+    {
+      "id": "01b",
+      "start": 23,
+      "end": 43,
+      "duration_seconds": 16.656,
+      "cached": true,
+      "request_hash": "6dbcaffd8326a1917e1c8cb3070d4d33ef6a5ffcdf683cccaff54dda3f3bceb2",
+      "request": {
+        "text": "We will play as one resident, then inspect the architecture. Pale walls, dark roofs, stone paving, and planted edges give this town its coastal character. Camera-only inspection will be labelled clearly, separate from the resident's actual movement.",
+        "voice": "en-US-AriaNeural",
+        "rate": "+0%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\6dbcaffd8326a1917e1c8cb3070d4d33ef6a5ffcdf683cccaff54dda3f3bceb2.mp3",
+        "bytes": 99936,
+        "sha256": "b165133522d81c5f9d873fe879df4c02efc64624051fd80d5f8149a2ba8c025a"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\6dbcaffd8326a1917e1c8cb3070d4d33ef6a5ffcdf683cccaff54dda3f3bceb2.words.json",
+        "bytes": 3495,
+        "sha256": "ba27711bfe99c5c63e527a57c7c63712d972b22d0695e6b23f962962ee422318"
+      },
+      "words": [
+        {
+          "start": 23.05,
+          "end": 23.212500000000002,
+          "text": "We "
+        },
+        {
+          "start": 23.225,
+          "end": 23.35,
+          "text": "will "
+        },
+        {
+          "start": 23.3625,
+          "end": 23.6,
+          "text": "play "
+        },
+        {
+          "start": 23.6125,
+          "end": 23.7375,
+          "text": "as "
+        },
+        {
+          "start": 23.75,
+          "end": 24.0,
+          "text": "one "
+        },
+        {
+          "start": 24.0125,
+          "end": 24.474999999999998,
+          "text": "resident, "
+        },
+        {
+          "start": 24.7125,
+          "end": 24.9,
+          "text": "then "
+        },
+        {
+          "start": 24.9125,
+          "end": 25.387500000000003,
+          "text": "inspect "
+        },
+        {
+          "start": 25.4,
+          "end": 25.5,
+          "text": "the "
+        },
+        {
+          "start": 25.5125,
+          "end": 26.325,
+          "text": "architecture. "
+        },
+        {
+          "start": 27.1875,
+          "end": 27.5375,
+          "text": "Pale "
+        },
+        {
+          "start": 27.55,
+          "end": 27.975,
+          "text": "walls, "
+        },
+        {
+          "start": 28.15,
+          "end": 28.4625,
+          "text": "dark "
+        },
+        {
+          "start": 28.475,
+          "end": 28.8625,
+          "text": "roofs, "
+        },
+        {
+          "start": 29.05,
+          "end": 29.400000000000002,
+          "text": "stone "
+        },
+        {
+          "start": 29.4125,
+          "end": 29.875,
+          "text": "paving, "
+        },
+        {
+          "start": 30.05,
+          "end": 30.1625,
+          "text": "and "
+        },
+        {
+          "start": 30.175,
+          "end": 30.6,
+          "text": "planted "
+        },
+        {
+          "start": 30.6125,
+          "end": 30.9875,
+          "text": "edges "
+        },
+        {
+          "start": 31.0,
+          "end": 31.175,
+          "text": "give "
+        },
+        {
+          "start": 31.1875,
+          "end": 31.4,
+          "text": "this "
+        },
+        {
+          "start": 31.4125,
+          "end": 31.6875,
+          "text": "town "
+        },
+        {
+          "start": 31.7,
+          "end": 31.849999999999998,
+          "text": "its "
+        },
+        {
+          "start": 31.8625,
+          "end": 32.2625,
+          "text": "coastal "
+        },
+        {
+          "start": 32.275,
+          "end": 32.875,
+          "text": "character. "
+        },
+        {
+          "start": 33.7375,
+          "end": 34.449999999999996,
+          "text": "Camera-only "
+        },
+        {
+          "start": 34.4625,
+          "end": 35.0875,
+          "text": "inspection "
+        },
+        {
+          "start": 35.1,
+          "end": 35.2,
+          "text": "will "
+        },
+        {
+          "start": 35.2125,
+          "end": 35.3125,
+          "text": "be "
+        },
+        {
+          "start": 35.325,
+          "end": 35.75,
+          "text": "labelled "
+        },
+        {
+          "start": 35.7625,
+          "end": 36.275000000000006,
+          "text": "clearly, "
+        },
+        {
+          "start": 36.5625,
+          "end": 36.9875,
+          "text": "separate "
+        },
+        {
+          "start": 37.0,
+          "end": 37.15,
+          "text": "from "
+        },
+        {
+          "start": 37.1625,
+          "end": 37.25,
+          "text": "the "
+        },
+        {
+          "start": 37.2625,
+          "end": 37.737500000000004,
+          "text": "resident's "
+        },
+        {
+          "start": 37.75,
+          "end": 38.2125,
+          "text": "actual "
+        },
+        {
+          "start": 38.225,
+          "end": 38.775,
+          "text": "movement."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 399744
+    },
+    {
+      "id": "02a",
+      "start": 50,
+      "end": 73,
+      "duration_seconds": 17.928,
+      "cached": true,
+      "request_hash": "efaab99ca99a18b6ff3db22181f78f7ea9ae7b2b77ed1328997f5492091ea045",
+      "request": {
+        "text": "We choose Aria through the existing life mode. Her upper-floor rooms sit above the café, with a real route downstairs. The portrait, name, job, money, wishes, and needs belong to the same resident as before. Her identity and rules are retained.",
+        "voice": "en-US-AriaNeural",
+        "rate": "+0%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\efaab99ca99a18b6ff3db22181f78f7ea9ae7b2b77ed1328997f5492091ea045.mp3",
+        "bytes": 107568,
+        "sha256": "38ef5f0901e898ee6641210826cde583b7c5e25d9620809a5b63890249030085"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\efaab99ca99a18b6ff3db22181f78f7ea9ae7b2b77ed1328997f5492091ea045.words.json",
+        "bytes": 3841,
+        "sha256": "b7a5745b4de0830880e3cdff715962d734f7f0769da50253bbc1c115fa86b970"
+      },
+      "words": [
+        {
+          "start": 50.05,
+          "end": 50.25,
+          "text": "We "
+        },
+        {
+          "start": 50.2625,
+          "end": 50.587500000000006,
+          "text": "choose "
+        },
+        {
+          "start": 50.6,
+          "end": 50.987500000000004,
+          "text": "Aria "
+        },
+        {
+          "start": 51.0,
+          "end": 51.15,
+          "text": "through "
+        },
+        {
+          "start": 51.1625,
+          "end": 51.25,
+          "text": "the "
+        },
+        {
+          "start": 51.2625,
+          "end": 51.8125,
+          "text": "existing "
+        },
+        {
+          "start": 51.825,
+          "end": 52.087500000000006,
+          "text": "life "
+        },
+        {
+          "start": 52.1,
+          "end": 52.5125,
+          "text": "mode. "
+        },
+        {
+          "start": 53.3875,
+          "end": 53.6375,
+          "text": "Her "
+        },
+        {
+          "start": 53.65,
+          "end": 54.199999999999996,
+          "text": "upper-floor "
+        },
+        {
+          "start": 54.2125,
+          "end": 54.55,
+          "text": "rooms "
+        },
+        {
+          "start": 54.5625,
+          "end": 54.7375,
+          "text": "sit "
+        },
+        {
+          "start": 54.75,
+          "end": 55.025,
+          "text": "above "
+        },
+        {
+          "start": 55.0375,
+          "end": 55.125,
+          "text": "the "
+        },
+        {
+          "start": 55.1375,
+          "end": 55.6875,
+          "text": "café, "
+        },
+        {
+          "start": 55.95,
+          "end": 56.112500000000004,
+          "text": "with "
+        },
+        {
+          "start": 56.125,
+          "end": 56.1875,
+          "text": "a "
+        },
+        {
+          "start": 56.2,
+          "end": 56.5,
+          "text": "real "
+        },
+        {
+          "start": 56.5125,
+          "end": 56.7625,
+          "text": "route "
+        },
+        {
+          "start": 56.775,
+          "end": 57.6125,
+          "text": "downstairs. "
+        },
+        {
+          "start": 58.475,
+          "end": 58.6375,
+          "text": "The "
+        },
+        {
+          "start": 58.65,
+          "end": 59.137499999999996,
+          "text": "portrait, "
+        },
+        {
+          "start": 59.3,
+          "end": 59.7125,
+          "text": "name, "
+        },
+        {
+          "start": 59.9,
+          "end": 60.275,
+          "text": "job, "
+        },
+        {
+          "start": 60.4625,
+          "end": 60.8,
+          "text": "money, "
+        },
+        {
+          "start": 61.05,
+          "end": 61.5625,
+          "text": "wishes, "
+        },
+        {
+          "start": 61.7125,
+          "end": 61.875,
+          "text": "and "
+        },
+        {
+          "start": 61.8875,
+          "end": 62.150000000000006,
+          "text": "needs "
+        },
+        {
+          "start": 62.1625,
+          "end": 62.5375,
+          "text": "belong "
+        },
+        {
+          "start": 62.55,
+          "end": 62.625,
+          "text": "to "
+        },
+        {
+          "start": 62.6375,
+          "end": 62.737500000000004,
+          "text": "the "
+        },
+        {
+          "start": 62.75,
+          "end": 63.0625,
+          "text": "same "
+        },
+        {
+          "start": 63.075,
+          "end": 63.5125,
+          "text": "resident "
+        },
+        {
+          "start": 63.525,
+          "end": 63.65,
+          "text": "as "
+        },
+        {
+          "start": 63.6625,
+          "end": 64.1875,
+          "text": "before. "
+        },
+        {
+          "start": 65.0625,
+          "end": 65.275,
+          "text": "Her "
+        },
+        {
+          "start": 65.2875,
+          "end": 65.83749999999999,
+          "text": "identity "
+        },
+        {
+          "start": 65.85,
+          "end": 65.96249999999999,
+          "text": "and "
+        },
+        {
+          "start": 65.975,
+          "end": 66.3,
+          "text": "rules "
+        },
+        {
+          "start": 66.3125,
+          "end": 66.4125,
+          "text": "are "
+        },
+        {
+          "start": 66.425,
+          "end": 67.05,
+          "text": "retained."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 430272
+    },
+    {
+      "id": "02b",
+      "start": 74,
+      "end": 98,
+      "duration_seconds": 18.84,
+      "cached": true,
+      "request_hash": "4f030e06b8237c6102889e3ca5979d16fffb2c6af668442894500d86490c35ad",
+      "request": {
+        "text": "The bars track hunger, energy, social contact, fun, and hygiene. Watch them beside the clock. Actions take time. Use the keyboard or a ground click to walk, and E to interact nearby. Zoom changes the view without changing Aria's state.",
+        "voice": "en-US-AriaNeural",
+        "rate": "+0%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\4f030e06b8237c6102889e3ca5979d16fffb2c6af668442894500d86490c35ad.mp3",
+        "bytes": 113040,
+        "sha256": "e7aac941509061da2685d46f087672e377bfd94bc51087caa0bde28c627e3049"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\4f030e06b8237c6102889e3ca5979d16fffb2c6af668442894500d86490c35ad.words.json",
+        "bytes": 3748,
+        "sha256": "bcce4d829baaa82f9df07016b7e954f1fa63d8ea89bf255f3a9d03d7775fd062"
+      },
+      "words": [
+        {
+          "start": 74.05,
+          "end": 74.225,
+          "text": "The "
+        },
+        {
+          "start": 74.2375,
+          "end": 74.6,
+          "text": "bars "
+        },
+        {
+          "start": 74.6125,
+          "end": 74.9125,
+          "text": "track "
+        },
+        {
+          "start": 74.925,
+          "end": 75.3125,
+          "text": "hunger, "
+        },
+        {
+          "start": 75.5,
+          "end": 75.9375,
+          "text": "energy, "
+        },
+        {
+          "start": 76.1125,
+          "end": 76.4875,
+          "text": "social "
+        },
+        {
+          "start": 76.5,
+          "end": 77.0625,
+          "text": "contact, "
+        },
+        {
+          "start": 77.225,
+          "end": 77.5625,
+          "text": "fun, "
+        },
+        {
+          "start": 77.7375,
+          "end": 77.85,
+          "text": "and "
+        },
+        {
+          "start": 77.8625,
+          "end": 78.475,
+          "text": "hygiene. "
+        },
+        {
+          "start": 79.3375,
+          "end": 79.7,
+          "text": "Watch "
+        },
+        {
+          "start": 79.7125,
+          "end": 79.875,
+          "text": "them "
+        },
+        {
+          "start": 79.8875,
+          "end": 80.2625,
+          "text": "beside "
+        },
+        {
+          "start": 80.275,
+          "end": 80.35000000000001,
+          "text": "the "
+        },
+        {
+          "start": 80.3625,
+          "end": 80.8625,
+          "text": "clock. "
+        },
+        {
+          "start": 81.725,
+          "end": 82.26249999999999,
+          "text": "Actions "
+        },
+        {
+          "start": 82.275,
+          "end": 82.5125,
+          "text": "take "
+        },
+        {
+          "start": 82.525,
+          "end": 82.97500000000001,
+          "text": "time. "
+        },
+        {
+          "start": 83.8375,
+          "end": 84.1375,
+          "text": "Use "
+        },
+        {
+          "start": 84.15,
+          "end": 84.25,
+          "text": "the "
+        },
+        {
+          "start": 84.2625,
+          "end": 84.8,
+          "text": "keyboard "
+        },
+        {
+          "start": 84.8125,
+          "end": 84.9875,
+          "text": "or "
+        },
+        {
+          "start": 85.0,
+          "end": 85.05,
+          "text": "a "
+        },
+        {
+          "start": 85.0625,
+          "end": 85.4125,
+          "text": "ground "
+        },
+        {
+          "start": 85.425,
+          "end": 85.6875,
+          "text": "click "
+        },
+        {
+          "start": 85.7,
+          "end": 85.78750000000001,
+          "text": "to "
+        },
+        {
+          "start": 85.8,
+          "end": 86.1875,
+          "text": "walk, "
+        },
+        {
+          "start": 86.4,
+          "end": 86.55000000000001,
+          "text": "and "
+        },
+        {
+          "start": 86.5625,
+          "end": 86.7625,
+          "text": "E "
+        },
+        {
+          "start": 86.775,
+          "end": 86.91250000000001,
+          "text": "to "
+        },
+        {
+          "start": 86.925,
+          "end": 87.5,
+          "text": "interact "
+        },
+        {
+          "start": 87.5125,
+          "end": 88.125,
+          "text": "nearby. "
+        },
+        {
+          "start": 89.0,
+          "end": 89.3875,
+          "text": "Zoom "
+        },
+        {
+          "start": 89.4,
+          "end": 89.825,
+          "text": "changes "
+        },
+        {
+          "start": 89.8375,
+          "end": 89.9375,
+          "text": "the "
+        },
+        {
+          "start": 89.95,
+          "end": 90.2125,
+          "text": "view "
+        },
+        {
+          "start": 90.225,
+          "end": 90.6125,
+          "text": "without "
+        },
+        {
+          "start": 90.625,
+          "end": 91.1125,
+          "text": "changing "
+        },
+        {
+          "start": 91.125,
+          "end": 91.4875,
+          "text": "Aria's "
+        },
+        {
+          "start": 91.5,
+          "end": 91.9625,
+          "text": "state."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 452160
+    },
+    {
+      "id": "03a",
+      "start": 102,
+      "end": 126,
+      "duration_seconds": 18.768,
+      "cached": true,
+      "request_hash": "1a759fb6d11f3eaca6a8f82d7a703877bab8e792a5f869db87ac5545944bdf6c",
+      "request": {
+        "text": "Walls, furnishings, and stair openings define where Aria can stand. The interior grid is finer than the outdoor grid, allowing reachable approaches beside beds and counters. A click through a wall cannot create a shortcut. Movement must find a legal route around it.",
+        "voice": "en-US-AriaNeural",
+        "rate": "+0%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\1a759fb6d11f3eaca6a8f82d7a703877bab8e792a5f869db87ac5545944bdf6c.mp3",
+        "bytes": 112608,
+        "sha256": "20d39956c5ed073a348e3107d7bea112133d1648c8380e9b60f70c0b6fbf79db"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\1a759fb6d11f3eaca6a8f82d7a703877bab8e792a5f869db87ac5545944bdf6c.words.json",
+        "bytes": 4044,
+        "sha256": "9e66441053c9bb53abc3eb5b7b93fd8d4804574a037047a58c53975bc02bf14f"
+      },
+      "words": [
+        {
+          "start": 102.05,
+          "end": 102.5125,
+          "text": "Walls, "
+        },
+        {
+          "start": 102.6875,
+          "end": 103.3625,
+          "text": "furnishings, "
+        },
+        {
+          "start": 103.5,
+          "end": 103.675,
+          "text": "and "
+        },
+        {
+          "start": 103.6875,
+          "end": 104.0375,
+          "text": "stair "
+        },
+        {
+          "start": 104.05,
+          "end": 104.52499999999999,
+          "text": "openings "
+        },
+        {
+          "start": 104.5375,
+          "end": 105.01249999999999,
+          "text": "define "
+        },
+        {
+          "start": 105.025,
+          "end": 105.2125,
+          "text": "where "
+        },
+        {
+          "start": 105.225,
+          "end": 105.5625,
+          "text": "Aria "
+        },
+        {
+          "start": 105.575,
+          "end": 105.7625,
+          "text": "can "
+        },
+        {
+          "start": 105.775,
+          "end": 106.325,
+          "text": "stand. "
+        },
+        {
+          "start": 107.1875,
+          "end": 107.3375,
+          "text": "The "
+        },
+        {
+          "start": 107.35,
+          "end": 107.94999999999999,
+          "text": "interior "
+        },
+        {
+          "start": 107.9625,
+          "end": 108.28750000000001,
+          "text": "grid "
+        },
+        {
+          "start": 108.3,
+          "end": 108.45,
+          "text": "is "
+        },
+        {
+          "start": 108.4625,
+          "end": 108.85000000000001,
+          "text": "finer "
+        },
+        {
+          "start": 108.8625,
+          "end": 108.96249999999999,
+          "text": "than "
+        },
+        {
+          "start": 108.975,
+          "end": 109.07499999999999,
+          "text": "the "
+        },
+        {
+          "start": 109.0875,
+          "end": 109.53750000000001,
+          "text": "outdoor "
+        },
+        {
+          "start": 109.55,
+          "end": 109.9125,
+          "text": "grid, "
+        },
+        {
+          "start": 110.2625,
+          "end": 110.675,
+          "text": "allowing "
+        },
+        {
+          "start": 110.6875,
+          "end": 111.1,
+          "text": "reachable "
+        },
+        {
+          "start": 111.1125,
+          "end": 111.6625,
+          "text": "approaches "
+        },
+        {
+          "start": 111.675,
+          "end": 112.1125,
+          "text": "beside "
+        },
+        {
+          "start": 112.125,
+          "end": 112.4125,
+          "text": "beds "
+        },
+        {
+          "start": 112.425,
+          "end": 112.5375,
+          "text": "and "
+        },
+        {
+          "start": 112.55,
+          "end": 113.21249999999999,
+          "text": "counters. "
+        },
+        {
+          "start": 114.0875,
+          "end": 114.23750000000001,
+          "text": "A "
+        },
+        {
+          "start": 114.25,
+          "end": 114.55,
+          "text": "click "
+        },
+        {
+          "start": 114.5625,
+          "end": 114.725,
+          "text": "through "
+        },
+        {
+          "start": 114.7375,
+          "end": 114.8125,
+          "text": "a "
+        },
+        {
+          "start": 114.825,
+          "end": 115.125,
+          "text": "wall "
+        },
+        {
+          "start": 115.1375,
+          "end": 115.4875,
+          "text": "cannot "
+        },
+        {
+          "start": 115.5,
+          "end": 115.8375,
+          "text": "create "
+        },
+        {
+          "start": 115.85,
+          "end": 115.88749999999999,
+          "text": "a "
+        },
+        {
+          "start": 115.9,
+          "end": 116.625,
+          "text": "shortcut. "
+        },
+        {
+          "start": 117.4875,
+          "end": 118.0,
+          "text": "Movement "
+        },
+        {
+          "start": 118.0125,
+          "end": 118.3,
+          "text": "must "
+        },
+        {
+          "start": 118.3125,
+          "end": 118.5625,
+          "text": "find "
+        },
+        {
+          "start": 118.575,
+          "end": 118.625,
+          "text": "a "
+        },
+        {
+          "start": 118.6375,
+          "end": 118.9625,
+          "text": "legal "
+        },
+        {
+          "start": 118.975,
+          "end": 119.21249999999999,
+          "text": "route "
+        },
+        {
+          "start": 119.225,
+          "end": 119.5625,
+          "text": "around "
+        },
+        {
+          "start": 119.575,
+          "end": 119.8875,
+          "text": "it."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 450432
+    },
+    {
+      "id": "03b",
+      "start": 129,
+      "end": 153,
+      "duration_seconds": 16.992,
+      "cached": true,
+      "request_hash": "a6882f922da30ecb89827bb60ec0d975a16654cc0b06cb76a5ade2d9f7367b13",
+      "request": {
+        "text": "The stair transition has brought Aria downstairs through a legal opening. Private stairs are not available to every resident. At the café table, a meal uses the existing action system. We watch for actual completion and its effect on her needs.",
+        "voice": "en-US-AriaNeural",
+        "rate": "+0%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\a6882f922da30ecb89827bb60ec0d975a16654cc0b06cb76a5ade2d9f7367b13.mp3",
+        "bytes": 101952,
+        "sha256": "05b821ce98b13d255305b6bd9aad7ce7926092eefedbee8ab19916be47fe7592"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\a6882f922da30ecb89827bb60ec0d975a16654cc0b06cb76a5ade2d9f7367b13.words.json",
+        "bytes": 3844,
+        "sha256": "67c9cf784e7e84a643fceb66cb63b03e9ab4c0626030be7ac6eafc9d3d153592"
+      },
+      "words": [
+        {
+          "start": 129.05,
+          "end": 129.22500000000002,
+          "text": "The "
+        },
+        {
+          "start": 129.2375,
+          "end": 129.55,
+          "text": "stair "
+        },
+        {
+          "start": 129.5625,
+          "end": 130.2,
+          "text": "transition "
+        },
+        {
+          "start": 130.2125,
+          "end": 130.38750000000002,
+          "text": "has "
+        },
+        {
+          "start": 130.4,
+          "end": 130.75,
+          "text": "brought "
+        },
+        {
+          "start": 130.7625,
+          "end": 131.1,
+          "text": "Aria "
+        },
+        {
+          "start": 131.1125,
+          "end": 131.8,
+          "text": "downstairs "
+        },
+        {
+          "start": 131.8125,
+          "end": 131.975,
+          "text": "through "
+        },
+        {
+          "start": 131.9875,
+          "end": 132.03750000000002,
+          "text": "a "
+        },
+        {
+          "start": 132.05,
+          "end": 132.375,
+          "text": "legal "
+        },
+        {
+          "start": 132.3875,
+          "end": 132.8875,
+          "text": "opening. "
+        },
+        {
+          "start": 133.7625,
+          "end": 134.2,
+          "text": "Private "
+        },
+        {
+          "start": 134.2125,
+          "end": 134.63750000000002,
+          "text": "stairs "
+        },
+        {
+          "start": 134.65,
+          "end": 134.725,
+          "text": "are "
+        },
+        {
+          "start": 134.7375,
+          "end": 134.95000000000002,
+          "text": "not "
+        },
+        {
+          "start": 134.9625,
+          "end": 135.4625,
+          "text": "available "
+        },
+        {
+          "start": 135.475,
+          "end": 135.61249999999998,
+          "text": "to "
+        },
+        {
+          "start": 135.625,
+          "end": 135.925,
+          "text": "every "
+        },
+        {
+          "start": 135.9375,
+          "end": 136.525,
+          "text": "resident. "
+        },
+        {
+          "start": 137.3875,
+          "end": 137.575,
+          "text": "At "
+        },
+        {
+          "start": 137.5875,
+          "end": 137.675,
+          "text": "the "
+        },
+        {
+          "start": 137.6875,
+          "end": 138.1,
+          "text": "café "
+        },
+        {
+          "start": 138.1125,
+          "end": 138.55,
+          "text": "table, "
+        },
+        {
+          "start": 138.7875,
+          "end": 138.825,
+          "text": "a "
+        },
+        {
+          "start": 138.8375,
+          "end": 139.175,
+          "text": "meal "
+        },
+        {
+          "start": 139.1875,
+          "end": 139.55,
+          "text": "uses "
+        },
+        {
+          "start": 139.5625,
+          "end": 139.625,
+          "text": "the "
+        },
+        {
+          "start": 139.6375,
+          "end": 140.1875,
+          "text": "existing "
+        },
+        {
+          "start": 140.2,
+          "end": 140.58749999999998,
+          "text": "action "
+        },
+        {
+          "start": 140.6,
+          "end": 141.11249999999998,
+          "text": "system. "
+        },
+        {
+          "start": 141.9875,
+          "end": 142.175,
+          "text": "We "
+        },
+        {
+          "start": 142.1875,
+          "end": 142.5,
+          "text": "watch "
+        },
+        {
+          "start": 142.5125,
+          "end": 142.7,
+          "text": "for "
+        },
+        {
+          "start": 142.7125,
+          "end": 143.1,
+          "text": "actual "
+        },
+        {
+          "start": 143.1125,
+          "end": 143.775,
+          "text": "completion "
+        },
+        {
+          "start": 143.7875,
+          "end": 143.8875,
+          "text": "and "
+        },
+        {
+          "start": 143.9,
+          "end": 144.01250000000002,
+          "text": "its "
+        },
+        {
+          "start": 144.025,
+          "end": 144.38750000000002,
+          "text": "effect "
+        },
+        {
+          "start": 144.4,
+          "end": 144.5,
+          "text": "on "
+        },
+        {
+          "start": 144.5125,
+          "end": 144.625,
+          "text": "her "
+        },
+        {
+          "start": 144.6375,
+          "end": 145.125,
+          "text": "needs."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 407808
+    },
+    {
+      "id": "04a",
+      "start": 157,
+      "end": 183,
+      "duration_seconds": 19.368,
+      "cached": true,
+      "request_hash": "b4d151d125367311e6b9fedcda26ae61fb33cd75a75e81b5b2a56008cce3c401",
+      "request": {
+        "text": "We click the visible café counter. The furnishing resolves to an existing functional object and a reachable approach beside it. Its menu offers permitted actions. Aria walks into place and takes time to act. The simulation records the result in her state and history.",
+        "voice": "en-US-AriaNeural",
+        "rate": "+0%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\b4d151d125367311e6b9fedcda26ae61fb33cd75a75e81b5b2a56008cce3c401.mp3",
+        "bytes": 116208,
+        "sha256": "6003d2d52b015d6d904c01569ec86e781892127e7edf88a214615af4ddfd2991"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\b4d151d125367311e6b9fedcda26ae61fb33cd75a75e81b5b2a56008cce3c401.words.json",
+        "bytes": 4132,
+        "sha256": "782ad07413a2ca346aef218594222f88622a6f2973e3b9520e472f40c700828f"
+      },
+      "words": [
+        {
+          "start": 157.05,
+          "end": 157.22500000000002,
+          "text": "We "
+        },
+        {
+          "start": 157.2375,
+          "end": 157.53750000000002,
+          "text": "click "
+        },
+        {
+          "start": 157.55,
+          "end": 157.65,
+          "text": "the "
+        },
+        {
+          "start": 157.6625,
+          "end": 158.075,
+          "text": "visible "
+        },
+        {
+          "start": 158.0875,
+          "end": 158.475,
+          "text": "café "
+        },
+        {
+          "start": 158.4875,
+          "end": 159.025,
+          "text": "counter. "
+        },
+        {
+          "start": 159.9,
+          "end": 160.07500000000002,
+          "text": "The "
+        },
+        {
+          "start": 160.0875,
+          "end": 160.5875,
+          "text": "furnishing "
+        },
+        {
+          "start": 160.6,
+          "end": 161.1,
+          "text": "resolves "
+        },
+        {
+          "start": 161.1125,
+          "end": 161.22500000000002,
+          "text": "to "
+        },
+        {
+          "start": 161.2375,
+          "end": 161.32500000000002,
+          "text": "an "
+        },
+        {
+          "start": 161.3375,
+          "end": 161.875,
+          "text": "existing "
+        },
+        {
+          "start": 161.8875,
+          "end": 162.4125,
+          "text": "functional "
+        },
+        {
+          "start": 162.425,
+          "end": 163.0,
+          "text": "object "
+        },
+        {
+          "start": 163.0125,
+          "end": 163.1375,
+          "text": "and "
+        },
+        {
+          "start": 163.15,
+          "end": 163.1875,
+          "text": "a "
+        },
+        {
+          "start": 163.2,
+          "end": 163.6625,
+          "text": "reachable "
+        },
+        {
+          "start": 163.675,
+          "end": 164.1125,
+          "text": "approach "
+        },
+        {
+          "start": 164.125,
+          "end": 164.5,
+          "text": "beside "
+        },
+        {
+          "start": 164.5125,
+          "end": 164.8125,
+          "text": "it. "
+        },
+        {
+          "start": 165.6875,
+          "end": 165.925,
+          "text": "Its "
+        },
+        {
+          "start": 165.9375,
+          "end": 166.2875,
+          "text": "menu "
+        },
+        {
+          "start": 166.3,
+          "end": 166.7125,
+          "text": "offers "
+        },
+        {
+          "start": 166.725,
+          "end": 167.1625,
+          "text": "permitted "
+        },
+        {
+          "start": 167.175,
+          "end": 167.875,
+          "text": "actions. "
+        },
+        {
+          "start": 168.7375,
+          "end": 169.15,
+          "text": "Aria "
+        },
+        {
+          "start": 169.1625,
+          "end": 169.48749999999998,
+          "text": "walks "
+        },
+        {
+          "start": 169.5,
+          "end": 169.6625,
+          "text": "into "
+        },
+        {
+          "start": 169.675,
+          "end": 170.0625,
+          "text": "place "
+        },
+        {
+          "start": 170.075,
+          "end": 170.25,
+          "text": "and "
+        },
+        {
+          "start": 170.2625,
+          "end": 170.5625,
+          "text": "takes "
+        },
+        {
+          "start": 170.575,
+          "end": 170.83749999999998,
+          "text": "time "
+        },
+        {
+          "start": 170.85,
+          "end": 170.95,
+          "text": "to "
+        },
+        {
+          "start": 170.9625,
+          "end": 171.4375,
+          "text": "act. "
+        },
+        {
+          "start": 172.3,
+          "end": 172.47500000000002,
+          "text": "The "
+        },
+        {
+          "start": 172.4875,
+          "end": 173.22500000000002,
+          "text": "simulation "
+        },
+        {
+          "start": 173.2375,
+          "end": 173.6875,
+          "text": "records "
+        },
+        {
+          "start": 173.7,
+          "end": 173.79999999999998,
+          "text": "the "
+        },
+        {
+          "start": 173.8125,
+          "end": 174.225,
+          "text": "result "
+        },
+        {
+          "start": 174.2375,
+          "end": 174.32500000000002,
+          "text": "in "
+        },
+        {
+          "start": 174.3375,
+          "end": 174.475,
+          "text": "her "
+        },
+        {
+          "start": 174.4875,
+          "end": 174.8,
+          "text": "state "
+        },
+        {
+          "start": 174.8125,
+          "end": 174.9,
+          "text": "and "
+        },
+        {
+          "start": 174.9125,
+          "end": 175.48749999999998,
+          "text": "history."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 464832
+    },
+    {
+      "id": "04b",
+      "start": 186,
+      "end": 213,
+      "duration_seconds": 21.888,
+      "cached": true,
+      "request_hash": "2711e2f14ca648ab6903bfd82187e3a03e01a62d95eb0a4f0eb6c82db166294c",
+      "request": {
+        "text": "The town has seven hundred and fifty-three furnishing assemblies. Only mapped functional objects offer game actions. Decorative shelves and pots do not automatically offer actions. Social attempts retain the existing access checks and the other resident's response. Jobs and wages retain their existing engine rules.",
+        "voice": "en-US-AriaNeural",
+        "rate": "+0%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\2711e2f14ca648ab6903bfd82187e3a03e01a62d95eb0a4f0eb6c82db166294c.mp3",
+        "bytes": 131328,
+        "sha256": "f9367ab27d4fcd543401e4b12cb6e947f6f6e2031df1de648239b32afadfd335"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\2711e2f14ca648ab6903bfd82187e3a03e01a62d95eb0a4f0eb6c82db166294c.words.json",
+        "bytes": 4270,
+        "sha256": "9afe1d77b97281d7afdd03ed2cd0af5582dd4007a52afb48e6fc0e59a970fbea"
+      },
+      "words": [
+        {
+          "start": 186.05,
+          "end": 186.20000000000002,
+          "text": "The "
+        },
+        {
+          "start": 186.2125,
+          "end": 186.51250000000002,
+          "text": "town "
+        },
+        {
+          "start": 186.525,
+          "end": 186.6875,
+          "text": "has "
+        },
+        {
+          "start": 186.7,
+          "end": 187.0,
+          "text": "seven "
+        },
+        {
+          "start": 187.0125,
+          "end": 187.325,
+          "text": "hundred "
+        },
+        {
+          "start": 187.3375,
+          "end": 187.4,
+          "text": "and "
+        },
+        {
+          "start": 187.4125,
+          "end": 187.98749999999998,
+          "text": "fifty-three "
+        },
+        {
+          "start": 188.0,
+          "end": 188.5,
+          "text": "furnishing "
+        },
+        {
+          "start": 188.5125,
+          "end": 189.25,
+          "text": "assemblies. "
+        },
+        {
+          "start": 190.1125,
+          "end": 190.425,
+          "text": "Only "
+        },
+        {
+          "start": 190.4375,
+          "end": 190.7625,
+          "text": "mapped "
+        },
+        {
+          "start": 190.775,
+          "end": 191.3,
+          "text": "functional "
+        },
+        {
+          "start": 191.3125,
+          "end": 191.825,
+          "text": "objects "
+        },
+        {
+          "start": 191.8375,
+          "end": 192.20000000000002,
+          "text": "offer "
+        },
+        {
+          "start": 192.2125,
+          "end": 192.45000000000002,
+          "text": "game "
+        },
+        {
+          "start": 192.4625,
+          "end": 193.125,
+          "text": "actions. "
+        },
+        {
+          "start": 193.9875,
+          "end": 194.5,
+          "text": "Decorative "
+        },
+        {
+          "start": 194.5125,
+          "end": 194.95,
+          "text": "shelves "
+        },
+        {
+          "start": 194.9625,
+          "end": 195.1,
+          "text": "and "
+        },
+        {
+          "start": 195.1125,
+          "end": 195.4875,
+          "text": "pots "
+        },
+        {
+          "start": 195.5,
+          "end": 195.6125,
+          "text": "do "
+        },
+        {
+          "start": 195.625,
+          "end": 195.9125,
+          "text": "not "
+        },
+        {
+          "start": 195.925,
+          "end": 196.6125,
+          "text": "automatically "
+        },
+        {
+          "start": 196.625,
+          "end": 196.9875,
+          "text": "offer "
+        },
+        {
+          "start": 197.0,
+          "end": 197.65,
+          "text": "actions. "
+        },
+        {
+          "start": 198.5125,
+          "end": 199.0125,
+          "text": "Social "
+        },
+        {
+          "start": 199.025,
+          "end": 199.475,
+          "text": "attempts "
+        },
+        {
+          "start": 199.4875,
+          "end": 199.88750000000002,
+          "text": "retain "
+        },
+        {
+          "start": 199.9,
+          "end": 199.9625,
+          "text": "the "
+        },
+        {
+          "start": 199.975,
+          "end": 200.525,
+          "text": "existing "
+        },
+        {
+          "start": 200.5375,
+          "end": 200.98749999999998,
+          "text": "access "
+        },
+        {
+          "start": 201.0,
+          "end": 201.4,
+          "text": "checks "
+        },
+        {
+          "start": 201.4125,
+          "end": 201.6,
+          "text": "and "
+        },
+        {
+          "start": 201.6125,
+          "end": 201.70000000000002,
+          "text": "the "
+        },
+        {
+          "start": 201.7125,
+          "end": 202.01250000000002,
+          "text": "other "
+        },
+        {
+          "start": 202.025,
+          "end": 202.4625,
+          "text": "resident's "
+        },
+        {
+          "start": 202.475,
+          "end": 203.17499999999998,
+          "text": "response. "
+        },
+        {
+          "start": 204.0375,
+          "end": 204.4375,
+          "text": "Jobs "
+        },
+        {
+          "start": 204.45,
+          "end": 204.5625,
+          "text": "and "
+        },
+        {
+          "start": 204.575,
+          "end": 205.02499999999998,
+          "text": "wages "
+        },
+        {
+          "start": 205.0375,
+          "end": 205.42499999999998,
+          "text": "retain "
+        },
+        {
+          "start": 205.4375,
+          "end": 205.5875,
+          "text": "their "
+        },
+        {
+          "start": 205.6,
+          "end": 206.15,
+          "text": "existing "
+        },
+        {
+          "start": 206.1625,
+          "end": 206.48749999999998,
+          "text": "engine "
+        },
+        {
+          "start": 206.5,
+          "end": 207.0,
+          "text": "rules."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 525312
+    },
+    {
+      "id": "05a",
+      "start": 217,
+      "end": 241,
+      "duration_seconds": 18.792,
+      "cached": true,
+      "request_hash": "2cce916afad9349a6f41710415fbe4f07df343346ddbdab7894f0aaf35690718",
+      "request": {
+        "text": "Aria leaves through the real café doorway. Her original directional character sheets now appear inside a three-dimensional world. The body keeps normal depth, so roofs and trees can pass in front of it. Ground markers and interaction prompts remain attached to her actual position.",
+        "voice": "en-US-AriaNeural",
+        "rate": "+0%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\2cce916afad9349a6f41710415fbe4f07df343346ddbdab7894f0aaf35690718.mp3",
+        "bytes": 112752,
+        "sha256": "452002836a6dba471ed261e887be0e6bf2814daa13e74b4309d2f6f20d8531e9"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\2cce916afad9349a6f41710415fbe4f07df343346ddbdab7894f0aaf35690718.words.json",
+        "bytes": 4149,
+        "sha256": "a15bd1b019366de97a5ae436e93124e9026a04a429e8d70b2c969cb96dff16b3"
+      },
+      "words": [
+        {
+          "start": 217.05,
+          "end": 217.4625,
+          "text": "Aria "
+        },
+        {
+          "start": 217.475,
+          "end": 217.79999999999998,
+          "text": "leaves "
+        },
+        {
+          "start": 217.8125,
+          "end": 217.95,
+          "text": "through "
+        },
+        {
+          "start": 217.9625,
+          "end": 218.07500000000002,
+          "text": "the "
+        },
+        {
+          "start": 218.0875,
+          "end": 218.35,
+          "text": "real "
+        },
+        {
+          "start": 218.3625,
+          "end": 218.78750000000002,
+          "text": "café "
+        },
+        {
+          "start": 218.8,
+          "end": 219.375,
+          "text": "doorway. "
+        },
+        {
+          "start": 220.25,
+          "end": 220.4375,
+          "text": "Her "
+        },
+        {
+          "start": 220.45,
+          "end": 220.9375,
+          "text": "original "
+        },
+        {
+          "start": 220.95,
+          "end": 221.52499999999998,
+          "text": "directional "
+        },
+        {
+          "start": 221.5375,
+          "end": 221.98749999999998,
+          "text": "character "
+        },
+        {
+          "start": 222.0,
+          "end": 222.375,
+          "text": "sheets "
+        },
+        {
+          "start": 222.3875,
+          "end": 222.7,
+          "text": "now "
+        },
+        {
+          "start": 222.7125,
+          "end": 223.05,
+          "text": "appear "
+        },
+        {
+          "start": 223.0625,
+          "end": 223.5,
+          "text": "inside "
+        },
+        {
+          "start": 223.5125,
+          "end": 223.5625,
+          "text": "a "
+        },
+        {
+          "start": 223.575,
+          "end": 224.325,
+          "text": "three-dimensional "
+        },
+        {
+          "start": 224.3375,
+          "end": 224.82500000000002,
+          "text": "world. "
+        },
+        {
+          "start": 225.6875,
+          "end": 225.8625,
+          "text": "The "
+        },
+        {
+          "start": 225.875,
+          "end": 226.2,
+          "text": "body "
+        },
+        {
+          "start": 226.2125,
+          "end": 226.5,
+          "text": "keeps "
+        },
+        {
+          "start": 226.5125,
+          "end": 226.86249999999998,
+          "text": "normal "
+        },
+        {
+          "start": 226.875,
+          "end": 227.2125,
+          "text": "depth, "
+        },
+        {
+          "start": 227.4625,
+          "end": 227.675,
+          "text": "so "
+        },
+        {
+          "start": 227.6875,
+          "end": 227.975,
+          "text": "roofs "
+        },
+        {
+          "start": 227.9875,
+          "end": 228.0875,
+          "text": "and "
+        },
+        {
+          "start": 228.1,
+          "end": 228.475,
+          "text": "trees "
+        },
+        {
+          "start": 228.4875,
+          "end": 228.65,
+          "text": "can "
+        },
+        {
+          "start": 228.6625,
+          "end": 229.0,
+          "text": "pass "
+        },
+        {
+          "start": 229.0125,
+          "end": 229.125,
+          "text": "in "
+        },
+        {
+          "start": 229.1375,
+          "end": 229.35,
+          "text": "front "
+        },
+        {
+          "start": 229.3625,
+          "end": 229.4375,
+          "text": "of "
+        },
+        {
+          "start": 229.45,
+          "end": 229.75,
+          "text": "it. "
+        },
+        {
+          "start": 230.625,
+          "end": 231.0125,
+          "text": "Ground "
+        },
+        {
+          "start": 231.025,
+          "end": 231.4625,
+          "text": "markers "
+        },
+        {
+          "start": 231.475,
+          "end": 231.575,
+          "text": "and "
+        },
+        {
+          "start": 231.5875,
+          "end": 232.3,
+          "text": "interaction "
+        },
+        {
+          "start": 232.3125,
+          "end": 232.725,
+          "text": "prompts "
+        },
+        {
+          "start": 232.7375,
+          "end": 233.0875,
+          "text": "remain "
+        },
+        {
+          "start": 233.1,
+          "end": 233.575,
+          "text": "attached "
+        },
+        {
+          "start": 233.5875,
+          "end": 233.6875,
+          "text": "to "
+        },
+        {
+          "start": 233.7,
+          "end": 233.8875,
+          "text": "her "
+        },
+        {
+          "start": 233.9,
+          "end": 234.3125,
+          "text": "actual "
+        },
+        {
+          "start": 234.325,
+          "end": 234.9125,
+          "text": "position."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 451008
+    },
+    {
+      "id": "05b",
+      "start": 244,
+      "end": 268,
+      "duration_seconds": 18.336,
+      "cached": true,
+      "request_hash": "68ab64871b32afe49852a27da82317b37c91cdba84a6d2c8926241e788842127",
+      "request": {
+        "text": "When geometry blocks the controlled resident, a gold silhouette keeps Aria readable. It appears only during that obstruction. The normal sprite still obeys depth, and the silhouette disappears in clear views. The awning and roof remain in place as we walk toward the plaza.",
+        "voice": "en-US-AriaNeural",
+        "rate": "+0%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\68ab64871b32afe49852a27da82317b37c91cdba84a6d2c8926241e788842127.mp3",
+        "bytes": 110016,
+        "sha256": "b6b43c2c12b95046ffb3d1d9ded3a5ffa55292bc9493d32565554ab18f6cebc9"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\68ab64871b32afe49852a27da82317b37c91cdba84a6d2c8926241e788842127.words.json",
+        "bytes": 4138,
+        "sha256": "a9aa3bc00a25d529ffdfcce15272596579bb7a69cdf1dbf1e7d64a01caa3433e"
+      },
+      "words": [
+        {
+          "start": 244.05,
+          "end": 244.28750000000002,
+          "text": "When "
+        },
+        {
+          "start": 244.3,
+          "end": 244.91250000000002,
+          "text": "geometry "
+        },
+        {
+          "start": 244.925,
+          "end": 245.3,
+          "text": "blocks "
+        },
+        {
+          "start": 245.3125,
+          "end": 245.4,
+          "text": "the "
+        },
+        {
+          "start": 245.4125,
+          "end": 245.8375,
+          "text": "controlled "
+        },
+        {
+          "start": 245.85,
+          "end": 246.36249999999998,
+          "text": "resident, "
+        },
+        {
+          "start": 246.625,
+          "end": 246.675,
+          "text": "a "
+        },
+        {
+          "start": 246.6875,
+          "end": 246.9875,
+          "text": "gold "
+        },
+        {
+          "start": 247.0,
+          "end": 247.55,
+          "text": "silhouette "
+        },
+        {
+          "start": 247.5625,
+          "end": 247.8375,
+          "text": "keeps "
+        },
+        {
+          "start": 247.85,
+          "end": 248.25,
+          "text": "Aria "
+        },
+        {
+          "start": 248.2625,
+          "end": 248.79999999999998,
+          "text": "readable. "
+        },
+        {
+          "start": 249.675,
+          "end": 249.8375,
+          "text": "It "
+        },
+        {
+          "start": 249.85,
+          "end": 250.3125,
+          "text": "appears "
+        },
+        {
+          "start": 250.325,
+          "end": 250.6,
+          "text": "only "
+        },
+        {
+          "start": 250.6125,
+          "end": 250.9,
+          "text": "during "
+        },
+        {
+          "start": 250.9125,
+          "end": 251.0875,
+          "text": "that "
+        },
+        {
+          "start": 251.1,
+          "end": 251.8375,
+          "text": "obstruction. "
+        },
+        {
+          "start": 252.7,
+          "end": 252.875,
+          "text": "The "
+        },
+        {
+          "start": 252.8875,
+          "end": 253.25,
+          "text": "normal "
+        },
+        {
+          "start": 253.2625,
+          "end": 253.64999999999998,
+          "text": "sprite "
+        },
+        {
+          "start": 253.6625,
+          "end": 253.9625,
+          "text": "still "
+        },
+        {
+          "start": 253.975,
+          "end": 254.3125,
+          "text": "obeys "
+        },
+        {
+          "start": 254.325,
+          "end": 254.7,
+          "text": "depth, "
+        },
+        {
+          "start": 254.9,
+          "end": 255.0375,
+          "text": "and "
+        },
+        {
+          "start": 255.05,
+          "end": 255.13750000000002,
+          "text": "the "
+        },
+        {
+          "start": 255.15,
+          "end": 255.70000000000002,
+          "text": "silhouette "
+        },
+        {
+          "start": 255.7125,
+          "end": 256.3125,
+          "text": "disappears "
+        },
+        {
+          "start": 256.325,
+          "end": 256.45,
+          "text": "in "
+        },
+        {
+          "start": 256.4625,
+          "end": 256.73749999999995,
+          "text": "clear "
+        },
+        {
+          "start": 256.75,
+          "end": 257.275,
+          "text": "views. "
+        },
+        {
+          "start": 258.15,
+          "end": 258.3375,
+          "text": "The "
+        },
+        {
+          "start": 258.35,
+          "end": 258.70000000000005,
+          "text": "awning "
+        },
+        {
+          "start": 258.7125,
+          "end": 258.825,
+          "text": "and "
+        },
+        {
+          "start": 258.8375,
+          "end": 259.11249999999995,
+          "text": "roof "
+        },
+        {
+          "start": 259.125,
+          "end": 259.4375,
+          "text": "remain "
+        },
+        {
+          "start": 259.45,
+          "end": 259.55,
+          "text": "in "
+        },
+        {
+          "start": 259.5625,
+          "end": 259.95,
+          "text": "place "
+        },
+        {
+          "start": 259.9625,
+          "end": 260.075,
+          "text": "as "
+        },
+        {
+          "start": 260.0875,
+          "end": 260.2125,
+          "text": "we "
+        },
+        {
+          "start": 260.225,
+          "end": 260.55,
+          "text": "walk "
+        },
+        {
+          "start": 260.5625,
+          "end": 260.8,
+          "text": "toward "
+        },
+        {
+          "start": 260.8125,
+          "end": 260.875,
+          "text": "the "
+        },
+        {
+          "start": 260.8875,
+          "end": 261.45,
+          "text": "plaza."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 440064
+    },
+    {
+      "id": "06a",
+      "start": 272,
+      "end": 298,
+      "duration_seconds": 23.496,
+      "cached": true,
+      "request_hash": "2d3855d2a7b68c7e0652398577d977c001ee9e589b8c0308dc399cb340e5a0fd",
+      "request": {
+        "text": "This is architectural inspection: camera movement, not Aria's travel. The town has five hundred and sixty-one logical zones, including circulation. Two hundred and twenty-three are activity rooms. Halls, landings, and stairs connect those rooms, giving each interior a usable layout. Each group is named and inspectable.",
+        "voice": "en-US-AriaNeural",
+        "rate": "+0%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\2d3855d2a7b68c7e0652398577d977c001ee9e589b8c0308dc399cb340e5a0fd.mp3",
+        "bytes": 140976,
+        "sha256": "ba925e8fd8b64afe0280162c2c2f0a0a8ad3dd8db0a19f5dcf7e49f1270f7a8c"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\2d3855d2a7b68c7e0652398577d977c001ee9e589b8c0308dc399cb340e5a0fd.words.json",
+        "bytes": 4360,
+        "sha256": "a9f1acb33df3af5f14d6e83202b43b284efc03527294f4c94a96d9fdf42edaf2"
+      },
+      "words": [
+        {
+          "start": 272.05,
+          "end": 272.325,
+          "text": "This "
+        },
+        {
+          "start": 272.3375,
+          "end": 272.4625,
+          "text": "is "
+        },
+        {
+          "start": 272.475,
+          "end": 273.2375,
+          "text": "architectural "
+        },
+        {
+          "start": 273.25,
+          "end": 273.95,
+          "text": "inspection: "
+        },
+        {
+          "start": 274.1875,
+          "end": 274.5375,
+          "text": "camera "
+        },
+        {
+          "start": 274.55,
+          "end": 275.02500000000003,
+          "text": "movement, "
+        },
+        {
+          "start": 275.175,
+          "end": 275.5125,
+          "text": "not "
+        },
+        {
+          "start": 275.525,
+          "end": 275.8875,
+          "text": "Aria's "
+        },
+        {
+          "start": 275.9,
+          "end": 276.3875,
+          "text": "travel. "
+        },
+        {
+          "start": 277.2625,
+          "end": 277.41249999999997,
+          "text": "The "
+        },
+        {
+          "start": 277.425,
+          "end": 277.75,
+          "text": "town "
+        },
+        {
+          "start": 277.7625,
+          "end": 277.9625,
+          "text": "has "
+        },
+        {
+          "start": 277.975,
+          "end": 278.25,
+          "text": "five "
+        },
+        {
+          "start": 278.2625,
+          "end": 278.5625,
+          "text": "hundred "
+        },
+        {
+          "start": 278.575,
+          "end": 278.6375,
+          "text": "and "
+        },
+        {
+          "start": 278.65,
+          "end": 279.29999999999995,
+          "text": "sixty-one "
+        },
+        {
+          "start": 279.3125,
+          "end": 279.75,
+          "text": "logical "
+        },
+        {
+          "start": 279.7625,
+          "end": 280.2125,
+          "text": "zones, "
+        },
+        {
+          "start": 280.5125,
+          "end": 281.03749999999997,
+          "text": "including "
+        },
+        {
+          "start": 281.05,
+          "end": 281.90000000000003,
+          "text": "circulation. "
+        },
+        {
+          "start": 282.7625,
+          "end": 282.97499999999997,
+          "text": "Two "
+        },
+        {
+          "start": 282.9875,
+          "end": 283.3,
+          "text": "hundred "
+        },
+        {
+          "start": 283.3125,
+          "end": 283.4,
+          "text": "and "
+        },
+        {
+          "start": 283.4125,
+          "end": 284.0625,
+          "text": "twenty-three "
+        },
+        {
+          "start": 284.075,
+          "end": 284.2,
+          "text": "are "
+        },
+        {
+          "start": 284.2125,
+          "end": 284.75,
+          "text": "activity "
+        },
+        {
+          "start": 284.7625,
+          "end": 285.3,
+          "text": "rooms. "
+        },
+        {
+          "start": 286.1625,
+          "end": 286.58750000000003,
+          "text": "Halls, "
+        },
+        {
+          "start": 286.775,
+          "end": 287.34999999999997,
+          "text": "landings, "
+        },
+        {
+          "start": 287.4875,
+          "end": 287.6625,
+          "text": "and "
+        },
+        {
+          "start": 287.675,
+          "end": 288.0625,
+          "text": "stairs "
+        },
+        {
+          "start": 288.075,
+          "end": 288.4875,
+          "text": "connect "
+        },
+        {
+          "start": 288.5,
+          "end": 288.725,
+          "text": "those "
+        },
+        {
+          "start": 288.7375,
+          "end": 289.21250000000003,
+          "text": "rooms, "
+        },
+        {
+          "start": 289.525,
+          "end": 289.8875,
+          "text": "giving "
+        },
+        {
+          "start": 289.9,
+          "end": 290.09999999999997,
+          "text": "each "
+        },
+        {
+          "start": 290.1125,
+          "end": 290.6625,
+          "text": "interior "
+        },
+        {
+          "start": 290.675,
+          "end": 290.71250000000003,
+          "text": "a "
+        },
+        {
+          "start": 290.725,
+          "end": 291.1875,
+          "text": "usable "
+        },
+        {
+          "start": 291.2,
+          "end": 291.78749999999997,
+          "text": "layout. "
+        },
+        {
+          "start": 292.65,
+          "end": 292.95,
+          "text": "Each "
+        },
+        {
+          "start": 292.9625,
+          "end": 293.2625,
+          "text": "group "
+        },
+        {
+          "start": 293.275,
+          "end": 293.4,
+          "text": "is "
+        },
+        {
+          "start": 293.4125,
+          "end": 293.725,
+          "text": "named "
+        },
+        {
+          "start": 293.7375,
+          "end": 293.83750000000003,
+          "text": "and "
+        },
+        {
+          "start": 293.85,
+          "end": 294.625,
+          "text": "inspectable."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 563904
+    },
+    {
+      "id": "06b",
+      "start": 301,
+      "end": 328,
+      "duration_seconds": 23.016,
+      "cached": true,
+      "request_hash": "d9dc88bed93413e541d43e7d3a1342d3889d1ac035bb8b41ee4816c2201aa3f0",
+      "request": {
+        "text": "Look for beds and storage, library shelves and tables, and enclosed bathrooms in hotel suites, with bedroom privacy preserved. Kitchens have sinks, hobs, and distinct refrigerators. Room and floor groups let a cutaway expose one interior while neighboring roofs remain intact. These authored dimensions do not establish building-code approval.",
+        "voice": "en-US-AriaNeural",
+        "rate": "+0%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\d9dc88bed93413e541d43e7d3a1342d3889d1ac035bb8b41ee4816c2201aa3f0.mp3",
+        "bytes": 138096,
+        "sha256": "e68af143e2236e823f336817481db9f292b0f2d34323f1ec8fc20f5459dc5012"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\d9dc88bed93413e541d43e7d3a1342d3889d1ac035bb8b41ee4816c2201aa3f0.words.json",
+        "bytes": 4644,
+        "sha256": "2bba860884a0588225b2402f575f3b0eb0525279374b469b284419f939eadb0f"
+      },
+      "words": [
+        {
+          "start": 301.05,
+          "end": 301.33750000000003,
+          "text": "Look "
+        },
+        {
+          "start": 301.35,
+          "end": 301.5,
+          "text": "for "
+        },
+        {
+          "start": 301.5125,
+          "end": 301.78749999999997,
+          "text": "beds "
+        },
+        {
+          "start": 301.8,
+          "end": 301.925,
+          "text": "and "
+        },
+        {
+          "start": 301.9375,
+          "end": 302.475,
+          "text": "storage, "
+        },
+        {
+          "start": 302.6625,
+          "end": 303.15000000000003,
+          "text": "library "
+        },
+        {
+          "start": 303.1625,
+          "end": 303.6125,
+          "text": "shelves "
+        },
+        {
+          "start": 303.7,
+          "end": 303.78749999999997,
+          "text": "and "
+        },
+        {
+          "start": 303.8,
+          "end": 304.325,
+          "text": "tables, "
+        },
+        {
+          "start": 304.5125,
+          "end": 304.675,
+          "text": "and "
+        },
+        {
+          "start": 304.6875,
+          "end": 305.2125,
+          "text": "enclosed "
+        },
+        {
+          "start": 305.225,
+          "end": 305.7375,
+          "text": "bathrooms "
+        },
+        {
+          "start": 305.75,
+          "end": 305.8375,
+          "text": "in "
+        },
+        {
+          "start": 305.85,
+          "end": 306.27500000000003,
+          "text": "hotel "
+        },
+        {
+          "start": 306.2875,
+          "end": 306.75,
+          "text": "suites, "
+        },
+        {
+          "start": 306.925,
+          "end": 307.1,
+          "text": "with "
+        },
+        {
+          "start": 307.1125,
+          "end": 307.4875,
+          "text": "bedroom "
+        },
+        {
+          "start": 307.5,
+          "end": 307.9875,
+          "text": "privacy "
+        },
+        {
+          "start": 308.0,
+          "end": 308.6625,
+          "text": "preserved. "
+        },
+        {
+          "start": 309.525,
+          "end": 310.0125,
+          "text": "Kitchens "
+        },
+        {
+          "start": 310.025,
+          "end": 310.2125,
+          "text": "have "
+        },
+        {
+          "start": 310.225,
+          "end": 310.65000000000003,
+          "text": "sinks, "
+        },
+        {
+          "start": 310.8,
+          "end": 311.25,
+          "text": "hobs, "
+        },
+        {
+          "start": 311.4,
+          "end": 311.54999999999995,
+          "text": "and "
+        },
+        {
+          "start": 311.5625,
+          "end": 312.025,
+          "text": "distinct "
+        },
+        {
+          "start": 312.0375,
+          "end": 312.95000000000005,
+          "text": "refrigerators. "
+        },
+        {
+          "start": 313.825,
+          "end": 314.15,
+          "text": "Room "
+        },
+        {
+          "start": 314.1625,
+          "end": 314.26250000000005,
+          "text": "and "
+        },
+        {
+          "start": 314.275,
+          "end": 314.5875,
+          "text": "floor "
+        },
+        {
+          "start": 314.6,
+          "end": 314.9375,
+          "text": "groups "
+        },
+        {
+          "start": 314.95,
+          "end": 315.1125,
+          "text": "let "
+        },
+        {
+          "start": 315.125,
+          "end": 315.1875,
+          "text": "a "
+        },
+        {
+          "start": 315.2,
+          "end": 315.65,
+          "text": "cutaway "
+        },
+        {
+          "start": 315.6625,
+          "end": 316.15000000000003,
+          "text": "expose "
+        },
+        {
+          "start": 316.1625,
+          "end": 316.3625,
+          "text": "one "
+        },
+        {
+          "start": 316.375,
+          "end": 316.9625,
+          "text": "interior "
+        },
+        {
+          "start": 316.975,
+          "end": 317.1625,
+          "text": "while "
+        },
+        {
+          "start": 317.175,
+          "end": 317.625,
+          "text": "neighboring "
+        },
+        {
+          "start": 317.6375,
+          "end": 317.97499999999997,
+          "text": "roofs "
+        },
+        {
+          "start": 317.9875,
+          "end": 318.3125,
+          "text": "remain "
+        },
+        {
+          "start": 318.325,
+          "end": 318.925,
+          "text": "intact. "
+        },
+        {
+          "start": 319.7875,
+          "end": 320.125,
+          "text": "These "
+        },
+        {
+          "start": 320.1375,
+          "end": 320.4875,
+          "text": "authored "
+        },
+        {
+          "start": 320.5,
+          "end": 321.0875,
+          "text": "dimensions "
+        },
+        {
+          "start": 321.1,
+          "end": 321.21250000000003,
+          "text": "do "
+        },
+        {
+          "start": 321.225,
+          "end": 321.45000000000005,
+          "text": "not "
+        },
+        {
+          "start": 321.4625,
+          "end": 322.025,
+          "text": "establish "
+        },
+        {
+          "start": 322.0375,
+          "end": 322.6,
+          "text": "building-code "
+        },
+        {
+          "start": 322.6125,
+          "end": 323.15000000000003,
+          "text": "approval."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 552384
+    },
+    {
+      "id": "07a",
+      "start": 332,
+      "end": 358,
+      "duration_seconds": 22.032,
+      "cached": true,
+      "request_hash": "ea27cc0f6f568b5d5c7f7b52be993ee76bbb45ef028735ee147a487025120529",
+      "request": {
+        "text": "We remain in inspection mode. Residential rows turn, streets bend, and passages lead into courts. The town has actual surface elevations and gently graded paths rather than a flat board. Roads, plazas, and building pads meet entrance thresholds. The harbor sits at the coastal edge of the same site.",
+        "voice": "en-US-AriaNeural",
+        "rate": "+0%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\ea27cc0f6f568b5d5c7f7b52be993ee76bbb45ef028735ee147a487025120529.mp3",
+        "bytes": 132192,
+        "sha256": "b0b728dfd85ef24879dd291c0b02f273fe47fddb15b2886b66f563afba3a1513"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\ea27cc0f6f568b5d5c7f7b52be993ee76bbb45ef028735ee147a487025120529.words.json",
+        "bytes": 4601,
+        "sha256": "8773a84789a994594e6d08362b2f3f9aaec484a299781c95c7379d83e8317d6e"
+      },
+      "words": [
+        {
+          "start": 332.05,
+          "end": 332.25,
+          "text": "We "
+        },
+        {
+          "start": 332.2625,
+          "end": 332.6375,
+          "text": "remain "
+        },
+        {
+          "start": 332.65,
+          "end": 332.7625,
+          "text": "in "
+        },
+        {
+          "start": 332.775,
+          "end": 333.3375,
+          "text": "inspection "
+        },
+        {
+          "start": 333.35,
+          "end": 333.75,
+          "text": "mode. "
+        },
+        {
+          "start": 334.625,
+          "end": 335.35,
+          "text": "Residential "
+        },
+        {
+          "start": 335.3625,
+          "end": 335.6375,
+          "text": "rows "
+        },
+        {
+          "start": 335.65,
+          "end": 335.97499999999997,
+          "text": "turn, "
+        },
+        {
+          "start": 336.1625,
+          "end": 336.5625,
+          "text": "streets "
+        },
+        {
+          "start": 336.575,
+          "end": 336.9375,
+          "text": "bend, "
+        },
+        {
+          "start": 337.1,
+          "end": 337.26250000000005,
+          "text": "and "
+        },
+        {
+          "start": 337.275,
+          "end": 337.9,
+          "text": "passages "
+        },
+        {
+          "start": 337.9125,
+          "end": 338.1875,
+          "text": "lead "
+        },
+        {
+          "start": 338.2,
+          "end": 338.41249999999997,
+          "text": "into "
+        },
+        {
+          "start": 338.425,
+          "end": 339.0125,
+          "text": "courts. "
+        },
+        {
+          "start": 339.875,
+          "end": 340.0375,
+          "text": "The "
+        },
+        {
+          "start": 340.05,
+          "end": 340.35,
+          "text": "town "
+        },
+        {
+          "start": 340.3625,
+          "end": 340.5625,
+          "text": "has "
+        },
+        {
+          "start": 340.575,
+          "end": 341.0125,
+          "text": "actual "
+        },
+        {
+          "start": 341.025,
+          "end": 341.41249999999997,
+          "text": "surface "
+        },
+        {
+          "start": 341.425,
+          "end": 342.175,
+          "text": "elevations "
+        },
+        {
+          "start": 342.1875,
+          "end": 342.4125,
+          "text": "and "
+        },
+        {
+          "start": 342.425,
+          "end": 342.7625,
+          "text": "gently "
+        },
+        {
+          "start": 342.775,
+          "end": 343.125,
+          "text": "graded "
+        },
+        {
+          "start": 343.1375,
+          "end": 343.5875,
+          "text": "paths "
+        },
+        {
+          "start": 343.6,
+          "end": 343.925,
+          "text": "rather "
+        },
+        {
+          "start": 343.9375,
+          "end": 344.05,
+          "text": "than "
+        },
+        {
+          "start": 344.0625,
+          "end": 344.125,
+          "text": "a "
+        },
+        {
+          "start": 344.1375,
+          "end": 344.45,
+          "text": "flat "
+        },
+        {
+          "start": 344.4625,
+          "end": 344.9,
+          "text": "board. "
+        },
+        {
+          "start": 345.7625,
+          "end": 346.28749999999997,
+          "text": "Roads, "
+        },
+        {
+          "start": 346.4625,
+          "end": 347.04999999999995,
+          "text": "plazas, "
+        },
+        {
+          "start": 347.2,
+          "end": 347.375,
+          "text": "and "
+        },
+        {
+          "start": 347.3875,
+          "end": 347.775,
+          "text": "building "
+        },
+        {
+          "start": 347.7875,
+          "end": 348.20000000000005,
+          "text": "pads "
+        },
+        {
+          "start": 348.2125,
+          "end": 348.5,
+          "text": "meet "
+        },
+        {
+          "start": 348.5125,
+          "end": 348.925,
+          "text": "entrance "
+        },
+        {
+          "start": 348.9375,
+          "end": 349.625,
+          "text": "thresholds. "
+        },
+        {
+          "start": 350.4875,
+          "end": 350.6375,
+          "text": "The "
+        },
+        {
+          "start": 350.65,
+          "end": 351.04999999999995,
+          "text": "harbor "
+        },
+        {
+          "start": 351.0625,
+          "end": 351.325,
+          "text": "sits "
+        },
+        {
+          "start": 351.3375,
+          "end": 351.4,
+          "text": "at "
+        },
+        {
+          "start": 351.4125,
+          "end": 351.5,
+          "text": "the "
+        },
+        {
+          "start": 351.5125,
+          "end": 351.95,
+          "text": "coastal "
+        },
+        {
+          "start": 351.9625,
+          "end": 352.1875,
+          "text": "edge "
+        },
+        {
+          "start": 352.2,
+          "end": 352.275,
+          "text": "of "
+        },
+        {
+          "start": 352.2875,
+          "end": 352.375,
+          "text": "the "
+        },
+        {
+          "start": 352.3875,
+          "end": 352.66249999999997,
+          "text": "same "
+        },
+        {
+          "start": 352.675,
+          "end": 353.1625,
+          "text": "site."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 528768
+    },
+    {
+      "id": "07b",
+      "start": 361,
+      "end": 388,
+      "duration_seconds": 21.264,
+      "cached": true,
+      "request_hash": "49f7c05ecd7a1f596513eaf66046f2d068e72e2b9bda2cbfd18159b25a57d3fe",
+      "request": {
+        "text": "This is a fictional engineered site, not a surveyed coast or hydraulic study. Terrain heights ground residents, while authored blockers exclude building footprints and water. The movement contract uses the game's spatial grid. Another engine would still need its own decisions about physics, collision, and navigation.",
+        "voice": "en-US-AriaNeural",
+        "rate": "+0%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\49f7c05ecd7a1f596513eaf66046f2d068e72e2b9bda2cbfd18159b25a57d3fe.mp3",
+        "bytes": 127584,
+        "sha256": "aa982055c0790829fefcfa5ed23116dac434eac0dd72cb813fc21dea9659fca6"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\49f7c05ecd7a1f596513eaf66046f2d068e72e2b9bda2cbfd18159b25a57d3fe.words.json",
+        "bytes": 4357,
+        "sha256": "2cc09b408b1c9acab450f9bbac4750ef95b94678c091e09e2afdaf680fb4640a"
+      },
+      "words": [
+        {
+          "start": 361.05,
+          "end": 361.325,
+          "text": "This "
+        },
+        {
+          "start": 361.3375,
+          "end": 361.45,
+          "text": "is "
+        },
+        {
+          "start": 361.4625,
+          "end": 361.53749999999997,
+          "text": "a "
+        },
+        {
+          "start": 361.55,
+          "end": 362.05,
+          "text": "fictional "
+        },
+        {
+          "start": 362.0625,
+          "end": 362.6,
+          "text": "engineered "
+        },
+        {
+          "start": 362.6125,
+          "end": 362.96250000000003,
+          "text": "site, "
+        },
+        {
+          "start": 363.225,
+          "end": 363.45000000000005,
+          "text": "not "
+        },
+        {
+          "start": 363.4625,
+          "end": 363.5125,
+          "text": "a "
+        },
+        {
+          "start": 363.525,
+          "end": 363.95,
+          "text": "surveyed "
+        },
+        {
+          "start": 363.9625,
+          "end": 364.3875,
+          "text": "coast "
+        },
+        {
+          "start": 364.4,
+          "end": 364.5,
+          "text": "or "
+        },
+        {
+          "start": 364.5125,
+          "end": 365.05,
+          "text": "hydraulic "
+        },
+        {
+          "start": 365.0625,
+          "end": 365.525,
+          "text": "study. "
+        },
+        {
+          "start": 366.3875,
+          "end": 366.8125,
+          "text": "Terrain "
+        },
+        {
+          "start": 366.825,
+          "end": 367.15,
+          "text": "heights "
+        },
+        {
+          "start": 367.1625,
+          "end": 367.475,
+          "text": "ground "
+        },
+        {
+          "start": 367.4875,
+          "end": 368.075,
+          "text": "residents, "
+        },
+        {
+          "start": 368.3375,
+          "end": 368.575,
+          "text": "while "
+        },
+        {
+          "start": 368.5875,
+          "end": 368.95,
+          "text": "authored "
+        },
+        {
+          "start": 368.9625,
+          "end": 369.45,
+          "text": "blockers "
+        },
+        {
+          "start": 369.4625,
+          "end": 370.0125,
+          "text": "exclude "
+        },
+        {
+          "start": 370.025,
+          "end": 370.375,
+          "text": "building "
+        },
+        {
+          "start": 370.3875,
+          "end": 370.9375,
+          "text": "footprints "
+        },
+        {
+          "start": 370.95,
+          "end": 371.09999999999997,
+          "text": "and "
+        },
+        {
+          "start": 371.1125,
+          "end": 371.575,
+          "text": "water. "
+        },
+        {
+          "start": 372.4375,
+          "end": 372.6,
+          "text": "The "
+        },
+        {
+          "start": 372.6125,
+          "end": 373.02500000000003,
+          "text": "movement "
+        },
+        {
+          "start": 373.0375,
+          "end": 373.63750000000005,
+          "text": "contract "
+        },
+        {
+          "start": 373.65,
+          "end": 374.0,
+          "text": "uses "
+        },
+        {
+          "start": 374.0125,
+          "end": 374.1125,
+          "text": "the "
+        },
+        {
+          "start": 374.125,
+          "end": 374.475,
+          "text": "game's "
+        },
+        {
+          "start": 374.4875,
+          "end": 374.90000000000003,
+          "text": "spatial "
+        },
+        {
+          "start": 374.9125,
+          "end": 375.35,
+          "text": "grid. "
+        },
+        {
+          "start": 376.2125,
+          "end": 376.7,
+          "text": "Another "
+        },
+        {
+          "start": 376.7125,
+          "end": 377.0625,
+          "text": "engine "
+        },
+        {
+          "start": 377.075,
+          "end": 377.22499999999997,
+          "text": "would "
+        },
+        {
+          "start": 377.2375,
+          "end": 377.5375,
+          "text": "still "
+        },
+        {
+          "start": 377.55,
+          "end": 377.75,
+          "text": "need "
+        },
+        {
+          "start": 377.7625,
+          "end": 377.9,
+          "text": "its "
+        },
+        {
+          "start": 377.9125,
+          "end": 378.1125,
+          "text": "own "
+        },
+        {
+          "start": 378.125,
+          "end": 378.6625,
+          "text": "decisions "
+        },
+        {
+          "start": 378.675,
+          "end": 378.95,
+          "text": "about "
+        },
+        {
+          "start": 378.9625,
+          "end": 379.525,
+          "text": "physics, "
+        },
+        {
+          "start": 379.675,
+          "end": 380.2,
+          "text": "collision, "
+        },
+        {
+          "start": 380.4,
+          "end": 380.575,
+          "text": "and "
+        },
+        {
+          "start": 380.5875,
+          "end": 381.3875,
+          "text": "navigation."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 510336
+    },
+    {
+      "id": "08a",
+      "start": 392,
+      "end": 418,
+      "duration_seconds": 20.64,
+      "cached": true,
+      "request_hash": "006f11e71b0ff2af45f13cd97f4e22b4b119c2f1eb11142d2753cc6f0c271b8d",
+      "request": {
+        "text": "The park pond cuts into the terrain, with level water above a lower bed and graded banks. A continuous shore, reeds, benches, and a connected loop make the edge readable. This is an authored ornamental pond. Movement rules keep residents on accessible ground beside the water, with planted edges.",
+        "voice": "en-US-AriaNeural",
+        "rate": "+0%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\006f11e71b0ff2af45f13cd97f4e22b4b119c2f1eb11142d2753cc6f0c271b8d.mp3",
+        "bytes": 123840,
+        "sha256": "7261d047080a2476c0f2e6d69e3778df53ba9ff2809e35b91a75a256f7950d40"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\006f11e71b0ff2af45f13cd97f4e22b4b119c2f1eb11142d2753cc6f0c271b8d.words.json",
+        "bytes": 4508,
+        "sha256": "494ce5c1eab50680bb276b518b3816f756255fca0192ba4c1b9622b55addcb11"
+      },
+      "words": [
+        {
+          "start": 392.05,
+          "end": 392.55,
+          "text": "The park "
+        },
+        {
+          "start": 392.5625,
+          "end": 392.9125,
+          "text": "pond "
+        },
+        {
+          "start": 392.925,
+          "end": 393.21250000000003,
+          "text": "cuts "
+        },
+        {
+          "start": 393.225,
+          "end": 393.38750000000005,
+          "text": "into "
+        },
+        {
+          "start": 393.4,
+          "end": 393.5,
+          "text": "the "
+        },
+        {
+          "start": 393.5125,
+          "end": 393.97499999999997,
+          "text": "terrain, "
+        },
+        {
+          "start": 394.325,
+          "end": 394.47499999999997,
+          "text": "with "
+        },
+        {
+          "start": 394.4875,
+          "end": 394.8625,
+          "text": "level "
+        },
+        {
+          "start": 394.875,
+          "end": 395.2125,
+          "text": "water "
+        },
+        {
+          "start": 395.225,
+          "end": 395.4875,
+          "text": "above "
+        },
+        {
+          "start": 395.5,
+          "end": 395.55,
+          "text": "a "
+        },
+        {
+          "start": 395.5625,
+          "end": 395.925,
+          "text": "lower "
+        },
+        {
+          "start": 395.9375,
+          "end": 396.2125,
+          "text": "bed "
+        },
+        {
+          "start": 396.225,
+          "end": 396.33750000000003,
+          "text": "and "
+        },
+        {
+          "start": 396.35,
+          "end": 396.71250000000003,
+          "text": "graded "
+        },
+        {
+          "start": 396.725,
+          "end": 397.2875,
+          "text": "banks. "
+        },
+        {
+          "start": 398.15,
+          "end": 398.275,
+          "text": "A "
+        },
+        {
+          "start": 398.2875,
+          "end": 398.875,
+          "text": "continuous "
+        },
+        {
+          "start": 398.8875,
+          "end": 399.3,
+          "text": "shore, "
+        },
+        {
+          "start": 399.5,
+          "end": 399.925,
+          "text": "reeds, "
+        },
+        {
+          "start": 400.1,
+          "end": 400.65000000000003,
+          "text": "benches, "
+        },
+        {
+          "start": 400.825,
+          "end": 400.9875,
+          "text": "and "
+        },
+        {
+          "start": 401.0,
+          "end": 401.05,
+          "text": "a "
+        },
+        {
+          "start": 401.0625,
+          "end": 401.55,
+          "text": "connected "
+        },
+        {
+          "start": 401.5625,
+          "end": 401.8625,
+          "text": "loop "
+        },
+        {
+          "start": 401.875,
+          "end": 402.1,
+          "text": "make "
+        },
+        {
+          "start": 402.1125,
+          "end": 402.21250000000003,
+          "text": "the "
+        },
+        {
+          "start": 402.225,
+          "end": 402.5,
+          "text": "edge "
+        },
+        {
+          "start": 402.5125,
+          "end": 403.025,
+          "text": "readable. "
+        },
+        {
+          "start": 403.8875,
+          "end": 404.15,
+          "text": "This "
+        },
+        {
+          "start": 404.1625,
+          "end": 404.26250000000005,
+          "text": "is "
+        },
+        {
+          "start": 404.275,
+          "end": 404.42499999999995,
+          "text": "an "
+        },
+        {
+          "start": 404.4375,
+          "end": 404.85,
+          "text": "authored "
+        },
+        {
+          "start": 404.8625,
+          "end": 405.35,
+          "text": "ornamental "
+        },
+        {
+          "start": 405.3625,
+          "end": 405.875,
+          "text": "pond. "
+        },
+        {
+          "start": 406.7375,
+          "end": 407.2375,
+          "text": "Movement "
+        },
+        {
+          "start": 407.25,
+          "end": 407.5875,
+          "text": "rules "
+        },
+        {
+          "start": 407.6,
+          "end": 407.8625,
+          "text": "keep "
+        },
+        {
+          "start": 407.875,
+          "end": 408.3875,
+          "text": "residents "
+        },
+        {
+          "start": 408.4,
+          "end": 408.525,
+          "text": "on "
+        },
+        {
+          "start": 408.5375,
+          "end": 409.1,
+          "text": "accessible "
+        },
+        {
+          "start": 409.1125,
+          "end": 409.5125,
+          "text": "ground "
+        },
+        {
+          "start": 409.525,
+          "end": 409.9,
+          "text": "beside "
+        },
+        {
+          "start": 409.9125,
+          "end": 409.9875,
+          "text": "the "
+        },
+        {
+          "start": 410.0,
+          "end": 410.375,
+          "text": "water, "
+        },
+        {
+          "start": 410.625,
+          "end": 410.8,
+          "text": "with "
+        },
+        {
+          "start": 410.8125,
+          "end": 411.2125,
+          "text": "planted "
+        },
+        {
+          "start": 411.225,
+          "end": 411.77500000000003,
+          "text": "edges."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 495360
+    },
+    {
+      "id": "08b",
+      "start": 421,
+      "end": 448,
+      "duration_seconds": 26.04,
+      "cached": true,
+      "request_hash": "cf0fb0757cd2262fb7cc844812a9a41e2961b8857e0f2bc2d87f6756b7f3aa82",
+      "request": {
+        "text": "Fifty-two planned landscape trees shape streets, courts, and the park. Broad crowns and willows frame the pond. Flower beds, garden islands, low planting, and coastal grasses add smaller detail. Openings preserve doors, paths, and views. The aim is shade and garden enclosure along useful walking routes. Background woodland adds distant enclosure.",
+        "voice": "en-US-AriaNeural",
+        "rate": "+0%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\cf0fb0757cd2262fb7cc844812a9a41e2961b8857e0f2bc2d87f6756b7f3aa82.mp3",
+        "bytes": 156240,
+        "sha256": "a1600e9da8e9ab15cec531fb3482864b0947c7ded46eb1424c422e1993ce29d3"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\cf0fb0757cd2262fb7cc844812a9a41e2961b8857e0f2bc2d87f6756b7f3aa82.words.json",
+        "bytes": 4827,
+        "sha256": "430021861ad28fdaf20a3c81fe9eddcfcab1ee92e6d803a251d5330ad31d400e"
+      },
+      "words": [
+        {
+          "start": 421.05,
+          "end": 421.7,
+          "text": "Fifty-two "
+        },
+        {
+          "start": 421.7125,
+          "end": 422.075,
+          "text": "planned "
+        },
+        {
+          "start": 422.0875,
+          "end": 422.6375,
+          "text": "landscape "
+        },
+        {
+          "start": 422.65,
+          "end": 422.92499999999995,
+          "text": "trees "
+        },
+        {
+          "start": 422.9375,
+          "end": 423.2,
+          "text": "shape "
+        },
+        {
+          "start": 423.2125,
+          "end": 423.67499999999995,
+          "text": "streets, "
+        },
+        {
+          "start": 423.825,
+          "end": 424.2625,
+          "text": "courts, "
+        },
+        {
+          "start": 424.425,
+          "end": 424.6,
+          "text": "and "
+        },
+        {
+          "start": 424.6125,
+          "end": 424.7,
+          "text": "the "
+        },
+        {
+          "start": 424.7125,
+          "end": 425.2,
+          "text": "park. "
+        },
+        {
+          "start": 426.0625,
+          "end": 426.4125,
+          "text": "Broad "
+        },
+        {
+          "start": 426.425,
+          "end": 426.875,
+          "text": "crowns "
+        },
+        {
+          "start": 426.8875,
+          "end": 427.0,
+          "text": "and "
+        },
+        {
+          "start": 427.0125,
+          "end": 427.4,
+          "text": "willows "
+        },
+        {
+          "start": 427.4125,
+          "end": 427.6875,
+          "text": "frame "
+        },
+        {
+          "start": 427.7,
+          "end": 427.8,
+          "text": "the "
+        },
+        {
+          "start": 427.8125,
+          "end": 428.325,
+          "text": "pond. "
+        },
+        {
+          "start": 429.1875,
+          "end": 429.6375,
+          "text": "Flower "
+        },
+        {
+          "start": 429.65,
+          "end": 430.03749999999997,
+          "text": "beds, "
+        },
+        {
+          "start": 430.1875,
+          "end": 430.5375,
+          "text": "garden "
+        },
+        {
+          "start": 430.55,
+          "end": 431.0375,
+          "text": "islands, "
+        },
+        {
+          "start": 431.225,
+          "end": 431.4375,
+          "text": "low "
+        },
+        {
+          "start": 431.45,
+          "end": 432.0,
+          "text": "planting, "
+        },
+        {
+          "start": 432.175,
+          "end": 432.3125,
+          "text": "and "
+        },
+        {
+          "start": 432.325,
+          "end": 432.7375,
+          "text": "coastal "
+        },
+        {
+          "start": 432.75,
+          "end": 433.2625,
+          "text": "grasses "
+        },
+        {
+          "start": 433.275,
+          "end": 433.54999999999995,
+          "text": "add "
+        },
+        {
+          "start": 433.5625,
+          "end": 433.9625,
+          "text": "smaller "
+        },
+        {
+          "start": 433.975,
+          "end": 434.5375,
+          "text": "detail. "
+        },
+        {
+          "start": 435.4,
+          "end": 435.9375,
+          "text": "Openings "
+        },
+        {
+          "start": 435.95,
+          "end": 436.375,
+          "text": "preserve "
+        },
+        {
+          "start": 436.3875,
+          "end": 436.78749999999997,
+          "text": "doors, "
+        },
+        {
+          "start": 436.95,
+          "end": 437.45,
+          "text": "paths, "
+        },
+        {
+          "start": 437.6,
+          "end": 437.75,
+          "text": "and "
+        },
+        {
+          "start": 437.7625,
+          "end": 438.325,
+          "text": "views. "
+        },
+        {
+          "start": 439.1875,
+          "end": 439.375,
+          "text": "The "
+        },
+        {
+          "start": 439.3875,
+          "end": 439.675,
+          "text": "aim "
+        },
+        {
+          "start": 439.6875,
+          "end": 439.7875,
+          "text": "is "
+        },
+        {
+          "start": 439.8,
+          "end": 440.1125,
+          "text": "shade "
+        },
+        {
+          "start": 440.125,
+          "end": 440.2125,
+          "text": "and "
+        },
+        {
+          "start": 440.225,
+          "end": 440.6125,
+          "text": "garden "
+        },
+        {
+          "start": 440.625,
+          "end": 441.2375,
+          "text": "enclosure "
+        },
+        {
+          "start": 441.25,
+          "end": 441.55,
+          "text": "along "
+        },
+        {
+          "start": 441.5625,
+          "end": 441.9875,
+          "text": "useful "
+        },
+        {
+          "start": 442.0,
+          "end": 442.3625,
+          "text": "walking "
+        },
+        {
+          "start": 442.375,
+          "end": 442.9,
+          "text": "routes. "
+        },
+        {
+          "start": 443.7625,
+          "end": 444.3375,
+          "text": "Background "
+        },
+        {
+          "start": 444.35,
+          "end": 444.75,
+          "text": "woodland "
+        },
+        {
+          "start": 444.7625,
+          "end": 445.0625,
+          "text": "adds "
+        },
+        {
+          "start": 445.075,
+          "end": 445.4625,
+          "text": "distant "
+        },
+        {
+          "start": 445.475,
+          "end": 446.1625,
+          "text": "enclosure."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 624960
+    },
+    {
+      "id": "09a",
+      "start": 452,
+      "end": 476,
+      "duration_seconds": 19.44,
+      "cached": true,
+      "request_hash": "9d2c997e0d45fd8c56ccadc7c84637bbbd3ced593f98c04736166683bbbd6545",
+      "request": {
+        "text": "We return to Aria for a social attempt. A visible neighbor must also be reachable. Walls, floors, and access rules matter even when both people appear on screen. Acceptance or refusal belongs to the running game. Read the event and need changes to see the outcome.",
+        "voice": "en-US-AriaNeural",
+        "rate": "+0%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\9d2c997e0d45fd8c56ccadc7c84637bbbd3ced593f98c04736166683bbbd6545.mp3",
+        "bytes": 116640,
+        "sha256": "8643640efc157e3ee2a3ec2cd49d434064d354f180552737be23bab60df745b3"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\9d2c997e0d45fd8c56ccadc7c84637bbbd3ced593f98c04736166683bbbd6545.words.json",
+        "bytes": 4301,
+        "sha256": "c545179245c081dd89be4eec84126f1ca1653b68241c2b534cccb89530e1dd3a"
+      },
+      "words": [
+        {
+          "start": 452.05,
+          "end": 452.25,
+          "text": "We "
+        },
+        {
+          "start": 452.2625,
+          "end": 452.65,
+          "text": "return "
+        },
+        {
+          "start": 452.6625,
+          "end": 452.77500000000003,
+          "text": "to "
+        },
+        {
+          "start": 452.7875,
+          "end": 453.20000000000005,
+          "text": "Aria "
+        },
+        {
+          "start": 453.2125,
+          "end": 453.375,
+          "text": "for "
+        },
+        {
+          "start": 453.3875,
+          "end": 453.45,
+          "text": "a "
+        },
+        {
+          "start": 453.4625,
+          "end": 453.84999999999997,
+          "text": "social "
+        },
+        {
+          "start": 453.8625,
+          "end": 454.45,
+          "text": "attempt. "
+        },
+        {
+          "start": 455.3125,
+          "end": 455.45,
+          "text": "A "
+        },
+        {
+          "start": 455.4625,
+          "end": 455.875,
+          "text": "visible "
+        },
+        {
+          "start": 455.8875,
+          "end": 456.2375,
+          "text": "neighbor "
+        },
+        {
+          "start": 456.25,
+          "end": 456.5,
+          "text": "must "
+        },
+        {
+          "start": 456.5125,
+          "end": 456.84999999999997,
+          "text": "also "
+        },
+        {
+          "start": 456.8625,
+          "end": 457.0125,
+          "text": "be "
+        },
+        {
+          "start": 457.025,
+          "end": 457.54999999999995,
+          "text": "reachable. "
+        },
+        {
+          "start": 458.4125,
+          "end": 458.83750000000003,
+          "text": "Walls, "
+        },
+        {
+          "start": 459.025,
+          "end": 459.53749999999997,
+          "text": "floors, "
+        },
+        {
+          "start": 459.7,
+          "end": 459.9,
+          "text": "and "
+        },
+        {
+          "start": 459.9125,
+          "end": 460.375,
+          "text": "access "
+        },
+        {
+          "start": 460.3875,
+          "end": 460.7125,
+          "text": "rules "
+        },
+        {
+          "start": 460.725,
+          "end": 461.05,
+          "text": "matter "
+        },
+        {
+          "start": 461.0625,
+          "end": 461.375,
+          "text": "even "
+        },
+        {
+          "start": 461.3875,
+          "end": 461.5625,
+          "text": "when "
+        },
+        {
+          "start": 461.575,
+          "end": 461.84999999999997,
+          "text": "both "
+        },
+        {
+          "start": 461.8625,
+          "end": 462.21250000000003,
+          "text": "people "
+        },
+        {
+          "start": 462.225,
+          "end": 462.5625,
+          "text": "appear "
+        },
+        {
+          "start": 462.575,
+          "end": 462.7375,
+          "text": "on "
+        },
+        {
+          "start": 462.75,
+          "end": 463.2625,
+          "text": "screen. "
+        },
+        {
+          "start": 464.125,
+          "end": 464.85,
+          "text": "Acceptance "
+        },
+        {
+          "start": 464.8625,
+          "end": 465.0,
+          "text": "or "
+        },
+        {
+          "start": 465.0125,
+          "end": 465.5625,
+          "text": "refusal "
+        },
+        {
+          "start": 465.575,
+          "end": 466.025,
+          "text": "belongs "
+        },
+        {
+          "start": 466.0375,
+          "end": 466.125,
+          "text": "to "
+        },
+        {
+          "start": 466.1375,
+          "end": 466.25,
+          "text": "the "
+        },
+        {
+          "start": 466.2625,
+          "end": 466.525,
+          "text": "running "
+        },
+        {
+          "start": 466.5375,
+          "end": 466.96250000000003,
+          "text": "game. "
+        },
+        {
+          "start": 467.825,
+          "end": 468.1375,
+          "text": "Read "
+        },
+        {
+          "start": 468.15,
+          "end": 468.2125,
+          "text": "the "
+        },
+        {
+          "start": 468.225,
+          "end": 468.65000000000003,
+          "text": "event "
+        },
+        {
+          "start": 468.6625,
+          "end": 468.7875,
+          "text": "and "
+        },
+        {
+          "start": 468.8,
+          "end": 469.0375,
+          "text": "need "
+        },
+        {
+          "start": 469.05,
+          "end": 469.5125,
+          "text": "changes "
+        },
+        {
+          "start": 469.525,
+          "end": 469.61249999999995,
+          "text": "to "
+        },
+        {
+          "start": 469.625,
+          "end": 469.8125,
+          "text": "see "
+        },
+        {
+          "start": 469.825,
+          "end": 469.95,
+          "text": "the "
+        },
+        {
+          "start": 469.9625,
+          "end": 470.5625,
+          "text": "outcome."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 466560
+    },
+    {
+      "id": "09b",
+      "start": 479,
+      "end": 503,
+      "duration_seconds": 22.32,
+      "cached": true,
+      "request_hash": "272413a2aed66290b0f1577f04c767238d97fde6c9825d648500e99cab57ca26",
+      "request": {
+        "text": "Now we enable autonomy. The existing decision system chooses available actions according to needs, jobs, access, and circumstances. The view follows the movement and activity; it does not create a second simulation. This logic backend runs locally without a downloaded language model or required generated dialogue.",
+        "voice": "en-US-AriaNeural",
+        "rate": "+0%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\272413a2aed66290b0f1577f04c767238d97fde6c9825d648500e99cab57ca26.mp3",
+        "bytes": 133920,
+        "sha256": "197016e63a307896addf13da6319babe0ca2d722b58996081a0658562e9235b9"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\272413a2aed66290b0f1577f04c767238d97fde6c9825d648500e99cab57ca26.words.json",
+        "bytes": 4359,
+        "sha256": "e5f0397021143ad8c88679da4c81004ced39b541871b518b5ec9bd7e1c9518b6"
+      },
+      "words": [
+        {
+          "start": 479.05,
+          "end": 479.35,
+          "text": "Now "
+        },
+        {
+          "start": 479.3625,
+          "end": 479.5,
+          "text": "we "
+        },
+        {
+          "start": 479.5125,
+          "end": 479.925,
+          "text": "enable "
+        },
+        {
+          "start": 479.9375,
+          "end": 480.5875,
+          "text": "autonomy. "
+        },
+        {
+          "start": 481.4625,
+          "end": 481.61249999999995,
+          "text": "The "
+        },
+        {
+          "start": 481.625,
+          "end": 482.15,
+          "text": "existing "
+        },
+        {
+          "start": 482.1625,
+          "end": 482.625,
+          "text": "decision "
+        },
+        {
+          "start": 482.6375,
+          "end": 483.0875,
+          "text": "system "
+        },
+        {
+          "start": 483.1,
+          "end": 483.4875,
+          "text": "chooses "
+        },
+        {
+          "start": 483.5,
+          "end": 484.0375,
+          "text": "available "
+        },
+        {
+          "start": 484.05,
+          "end": 484.55,
+          "text": "actions "
+        },
+        {
+          "start": 484.5625,
+          "end": 484.9625,
+          "text": "according "
+        },
+        {
+          "start": 484.975,
+          "end": 485.07500000000005,
+          "text": "to "
+        },
+        {
+          "start": 485.0875,
+          "end": 485.47499999999997,
+          "text": "needs, "
+        },
+        {
+          "start": 485.65,
+          "end": 486.16249999999997,
+          "text": "jobs, "
+        },
+        {
+          "start": 486.3625,
+          "end": 486.925,
+          "text": "access, "
+        },
+        {
+          "start": 487.1125,
+          "end": 487.27500000000003,
+          "text": "and "
+        },
+        {
+          "start": 487.2875,
+          "end": 488.3625,
+          "text": "circumstances. "
+        },
+        {
+          "start": 489.225,
+          "end": 489.4125,
+          "text": "The "
+        },
+        {
+          "start": 489.425,
+          "end": 489.675,
+          "text": "view "
+        },
+        {
+          "start": 489.6875,
+          "end": 490.1,
+          "text": "follows "
+        },
+        {
+          "start": 490.1125,
+          "end": 490.2,
+          "text": "the "
+        },
+        {
+          "start": 490.2125,
+          "end": 490.6375,
+          "text": "movement "
+        },
+        {
+          "start": 490.65,
+          "end": 490.75,
+          "text": "and "
+        },
+        {
+          "start": 490.7625,
+          "end": 491.4,
+          "text": "activity; "
+        },
+        {
+          "start": 491.675,
+          "end": 491.7625,
+          "text": "it "
+        },
+        {
+          "start": 491.775,
+          "end": 491.9375,
+          "text": "does "
+        },
+        {
+          "start": 491.95,
+          "end": 492.175,
+          "text": "not "
+        },
+        {
+          "start": 492.1875,
+          "end": 492.525,
+          "text": "create "
+        },
+        {
+          "start": 492.5375,
+          "end": 492.58750000000003,
+          "text": "a "
+        },
+        {
+          "start": 492.6,
+          "end": 492.96250000000003,
+          "text": "second "
+        },
+        {
+          "start": 492.975,
+          "end": 493.7375,
+          "text": "simulation. "
+        },
+        {
+          "start": 494.6,
+          "end": 494.88750000000005,
+          "text": "This "
+        },
+        {
+          "start": 494.9,
+          "end": 495.3375,
+          "text": "logic "
+        },
+        {
+          "start": 495.35,
+          "end": 495.8625,
+          "text": "backend "
+        },
+        {
+          "start": 495.875,
+          "end": 496.2125,
+          "text": "runs "
+        },
+        {
+          "start": 496.225,
+          "end": 496.6625,
+          "text": "locally "
+        },
+        {
+          "start": 496.675,
+          "end": 497.05,
+          "text": "without "
+        },
+        {
+          "start": 497.0625,
+          "end": 497.1375,
+          "text": "a "
+        },
+        {
+          "start": 497.15,
+          "end": 497.6875,
+          "text": "downloaded "
+        },
+        {
+          "start": 497.7,
+          "end": 498.1125,
+          "text": "language "
+        },
+        {
+          "start": 498.125,
+          "end": 498.5625,
+          "text": "model "
+        },
+        {
+          "start": 498.575,
+          "end": 498.675,
+          "text": "or "
+        },
+        {
+          "start": 498.6875,
+          "end": 499.2125,
+          "text": "required "
+        },
+        {
+          "start": 499.225,
+          "end": 499.76250000000005,
+          "text": "generated "
+        },
+        {
+          "start": 499.775,
+          "end": 500.45,
+          "text": "dialogue."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 535680
+    },
+    {
+      "id": "10a",
+      "start": 507,
+      "end": 531,
+      "duration_seconds": 18.912,
+      "cached": true,
+      "request_hash": "25d7b0f7d79ee710b06e65d7a159378f8725abfed44b537ec9aaa7f614af7dc1",
+      "request": {
+        "text": "We save with F five, let the game continue, and load with F eight. Loading rebuilds the view from the saved simulation and resident state. The three-dimensional profile uses a separate quicksave. Incompatible spatial data is rejected instead of loading into a different layout.",
+        "voice": "en-US-AriaNeural",
+        "rate": "+0%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\25d7b0f7d79ee710b06e65d7a159378f8725abfed44b537ec9aaa7f614af7dc1.mp3",
+        "bytes": 113472,
+        "sha256": "5a4cef7202341f123148524e7c4ba17d25188dcbd19e727b617944176b298011"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\25d7b0f7d79ee710b06e65d7a159378f8725abfed44b537ec9aaa7f614af7dc1.words.json",
+        "bytes": 4135,
+        "sha256": "5655d3c55df588cf4d2617413ce5bf4ff4f386fe28f38d833fdf207d2a5cf762"
+      },
+      "words": [
+        {
+          "start": 507.05,
+          "end": 507.225,
+          "text": "We "
+        },
+        {
+          "start": 507.2375,
+          "end": 507.52500000000003,
+          "text": "save "
+        },
+        {
+          "start": 507.5375,
+          "end": 507.675,
+          "text": "with "
+        },
+        {
+          "start": 507.6875,
+          "end": 507.85,
+          "text": "F "
+        },
+        {
+          "start": 507.8625,
+          "end": 508.27500000000003,
+          "text": "five, "
+        },
+        {
+          "start": 508.5,
+          "end": 508.675,
+          "text": "let "
+        },
+        {
+          "start": 508.6875,
+          "end": 508.775,
+          "text": "the "
+        },
+        {
+          "start": 508.7875,
+          "end": 509.02500000000003,
+          "text": "game "
+        },
+        {
+          "start": 509.0375,
+          "end": 509.5625,
+          "text": "continue, "
+        },
+        {
+          "start": 509.75,
+          "end": 509.9375,
+          "text": "and "
+        },
+        {
+          "start": 509.95,
+          "end": 510.2,
+          "text": "load "
+        },
+        {
+          "start": 510.2125,
+          "end": 510.36249999999995,
+          "text": "with "
+        },
+        {
+          "start": 510.375,
+          "end": 510.5875,
+          "text": "F "
+        },
+        {
+          "start": 510.6,
+          "end": 510.9875,
+          "text": "eight. "
+        },
+        {
+          "start": 511.8625,
+          "end": 512.3375,
+          "text": "Loading "
+        },
+        {
+          "start": 512.35,
+          "end": 512.8375,
+          "text": "rebuilds "
+        },
+        {
+          "start": 512.85,
+          "end": 512.95,
+          "text": "the "
+        },
+        {
+          "start": 512.9625,
+          "end": 513.1999999999999,
+          "text": "view "
+        },
+        {
+          "start": 513.2125,
+          "end": 513.3625,
+          "text": "from "
+        },
+        {
+          "start": 513.375,
+          "end": 513.4625,
+          "text": "the "
+        },
+        {
+          "start": 513.475,
+          "end": 513.7875,
+          "text": "saved "
+        },
+        {
+          "start": 513.8,
+          "end": 514.5999999999999,
+          "text": "simulation "
+        },
+        {
+          "start": 514.6125,
+          "end": 514.7375,
+          "text": "and "
+        },
+        {
+          "start": 514.75,
+          "end": 515.175,
+          "text": "resident "
+        },
+        {
+          "start": 515.1875,
+          "end": 515.675,
+          "text": "state. "
+        },
+        {
+          "start": 516.55,
+          "end": 516.7249999999999,
+          "text": "The "
+        },
+        {
+          "start": 516.7375,
+          "end": 517.5,
+          "text": "three-dimensional "
+        },
+        {
+          "start": 517.5125,
+          "end": 518.0875000000001,
+          "text": "profile "
+        },
+        {
+          "start": 518.1,
+          "end": 518.4375,
+          "text": "uses "
+        },
+        {
+          "start": 518.45,
+          "end": 518.5250000000001,
+          "text": "a "
+        },
+        {
+          "start": 518.5375,
+          "end": 518.975,
+          "text": "separate "
+        },
+        {
+          "start": 518.9875,
+          "end": 519.6999999999999,
+          "text": "quicksave. "
+        },
+        {
+          "start": 520.5625,
+          "end": 521.3625,
+          "text": "Incompatible "
+        },
+        {
+          "start": 521.375,
+          "end": 521.7875,
+          "text": "spatial "
+        },
+        {
+          "start": 521.8,
+          "end": 522.1374999999999,
+          "text": "data "
+        },
+        {
+          "start": 522.15,
+          "end": 522.2875,
+          "text": "is "
+        },
+        {
+          "start": 522.3,
+          "end": 522.8375,
+          "text": "rejected "
+        },
+        {
+          "start": 522.85,
+          "end": 523.2375000000001,
+          "text": "instead "
+        },
+        {
+          "start": 523.25,
+          "end": 523.3375,
+          "text": "of "
+        },
+        {
+          "start": 523.35,
+          "end": 523.7375000000001,
+          "text": "loading "
+        },
+        {
+          "start": 523.75,
+          "end": 523.95,
+          "text": "into "
+        },
+        {
+          "start": 523.9625,
+          "end": 524.05,
+          "text": "a "
+        },
+        {
+          "start": 524.0625,
+          "end": 524.425,
+          "text": "different "
+        },
+        {
+          "start": 524.4375,
+          "end": 525.0375,
+          "text": "layout."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 453888
+    },
+    {
+      "id": "10b",
+      "start": 534,
+      "end": 558,
+      "duration_seconds": 22.848,
+      "cached": true,
+      "request_hash": "a32542362dbd2ba15e54e1448e793fec28ea2bd92bc600567a956a374f9c1c00",
+      "request": {
+        "text": "The art remains portable. Blender sources and engine-neutral exports keep named buildings, floors, rooms, materials, and furnishing groups. This bridge binds them to its spatial profile. Frozen file hashes, license credits, and test evidence record the delivered versions, leaving the town usable by other consumers.",
+        "voice": "en-US-AriaNeural",
+        "rate": "+0%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\a32542362dbd2ba15e54e1448e793fec28ea2bd92bc600567a956a374f9c1c00.mp3",
+        "bytes": 137088,
+        "sha256": "f0736aab149595582faf9fdc95698a676bd5767d92aa3e292f09c56777b0eafd"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\a32542362dbd2ba15e54e1448e793fec28ea2bd92bc600567a956a374f9c1c00.words.json",
+        "bytes": 4271,
+        "sha256": "b8770b41c2f223f2cc089173f74fab8771cec3197e4233031d47fe0b0eaa69a1"
+      },
+      "words": [
+        {
+          "start": 534.05,
+          "end": 534.2624999999999,
+          "text": "The "
+        },
+        {
+          "start": 534.275,
+          "end": 534.5375,
+          "text": "art "
+        },
+        {
+          "start": 534.55,
+          "end": 534.9375,
+          "text": "remains "
+        },
+        {
+          "start": 534.95,
+          "end": 535.5250000000001,
+          "text": "portable. "
+        },
+        {
+          "start": 536.4,
+          "end": 536.8249999999999,
+          "text": "Blender "
+        },
+        {
+          "start": 536.8375,
+          "end": 537.3125,
+          "text": "sources "
+        },
+        {
+          "start": 537.325,
+          "end": 537.5250000000001,
+          "text": "and "
+        },
+        {
+          "start": 537.5375,
+          "end": 538.225,
+          "text": "engine-neutral "
+        },
+        {
+          "start": 538.2375,
+          "end": 538.8249999999999,
+          "text": "exports "
+        },
+        {
+          "start": 538.8375,
+          "end": 539.0875,
+          "text": "keep "
+        },
+        {
+          "start": 539.1,
+          "end": 539.4250000000001,
+          "text": "named "
+        },
+        {
+          "start": 539.4375,
+          "end": 539.975,
+          "text": "buildings, "
+        },
+        {
+          "start": 540.15,
+          "end": 540.6625,
+          "text": "floors, "
+        },
+        {
+          "start": 540.875,
+          "end": 541.325,
+          "text": "rooms, "
+        },
+        {
+          "start": 541.475,
+          "end": 542.225,
+          "text": "materials, "
+        },
+        {
+          "start": 542.3875,
+          "end": 542.575,
+          "text": "and "
+        },
+        {
+          "start": 542.5875,
+          "end": 543.1,
+          "text": "furnishing "
+        },
+        {
+          "start": 543.1125,
+          "end": 543.65,
+          "text": "groups. "
+        },
+        {
+          "start": 544.5125,
+          "end": 544.7875,
+          "text": "This "
+        },
+        {
+          "start": 544.8,
+          "end": 545.15,
+          "text": "bridge "
+        },
+        {
+          "start": 545.1625,
+          "end": 545.4875000000001,
+          "text": "binds "
+        },
+        {
+          "start": 545.5,
+          "end": 545.6875,
+          "text": "them "
+        },
+        {
+          "start": 545.7,
+          "end": 545.8125,
+          "text": "to "
+        },
+        {
+          "start": 545.825,
+          "end": 546.0125,
+          "text": "its "
+        },
+        {
+          "start": 546.025,
+          "end": 546.4375,
+          "text": "spatial "
+        },
+        {
+          "start": 546.45,
+          "end": 547.125,
+          "text": "profile. "
+        },
+        {
+          "start": 547.9875,
+          "end": 548.4625,
+          "text": "Frozen "
+        },
+        {
+          "start": 548.475,
+          "end": 548.775,
+          "text": "file "
+        },
+        {
+          "start": 548.7875,
+          "end": 549.3000000000001,
+          "text": "hashes, "
+        },
+        {
+          "start": 549.5,
+          "end": 549.95,
+          "text": "license "
+        },
+        {
+          "start": 549.9625,
+          "end": 550.425,
+          "text": "credits, "
+        },
+        {
+          "start": 550.6625,
+          "end": 550.85,
+          "text": "and "
+        },
+        {
+          "start": 550.8625,
+          "end": 551.2249999999999,
+          "text": "test "
+        },
+        {
+          "start": 551.2375,
+          "end": 551.6624999999999,
+          "text": "evidence "
+        },
+        {
+          "start": 551.675,
+          "end": 552.1125,
+          "text": "record "
+        },
+        {
+          "start": 552.125,
+          "end": 552.2,
+          "text": "the "
+        },
+        {
+          "start": 552.2125,
+          "end": 552.6374999999999,
+          "text": "delivered "
+        },
+        {
+          "start": 552.65,
+          "end": 553.1999999999999,
+          "text": "versions, "
+        },
+        {
+          "start": 553.5625,
+          "end": 553.875,
+          "text": "leaving "
+        },
+        {
+          "start": 553.8875,
+          "end": 553.9875000000001,
+          "text": "the "
+        },
+        {
+          "start": 554.0,
+          "end": 554.3,
+          "text": "town "
+        },
+        {
+          "start": 554.3125,
+          "end": 554.7625,
+          "text": "usable "
+        },
+        {
+          "start": 554.775,
+          "end": 554.9625,
+          "text": "by "
+        },
+        {
+          "start": 554.975,
+          "end": 555.225,
+          "text": "other "
+        },
+        {
+          "start": 555.2375,
+          "end": 555.9749999999999,
+          "text": "consumers."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 548352
+    },
+    {
+      "id": "11a",
+      "start": 562,
+      "end": 579,
+      "duration_seconds": 16.056,
+      "cached": true,
+      "request_hash": "9045c8d27cf5aef10568004f94efcb34e7342dd903eb4c2099af616d9fbc8f95",
+      "request": {
+        "text": "The editable runtime passed thirty-six logical checks and twenty-eight visual checks. Legacy regression scenes also passed. The Windows package separately passed normal launch and screen-render checks, rather than the full interaction suite.",
+        "voice": "en-US-AriaNeural",
+        "rate": "+0%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\9045c8d27cf5aef10568004f94efcb34e7342dd903eb4c2099af616d9fbc8f95.mp3",
+        "bytes": 96336,
+        "sha256": "02ee0134f1934a91db836a47b5ec2becdd2fde87c1cc5129b48983ce76ff2f48"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\9045c8d27cf5aef10568004f94efcb34e7342dd903eb4c2099af616d9fbc8f95.words.json",
+        "bytes": 3059,
+        "sha256": "53dc8715c72f5939eb5cfad1ba60ce0af4a6987a9189872433d10cb249d910f0"
+      },
+      "words": [
+        {
+          "start": 562.05,
+          "end": 562.2249999999999,
+          "text": "The "
+        },
+        {
+          "start": 562.2375,
+          "end": 562.75,
+          "text": "editable "
+        },
+        {
+          "start": 562.7625,
+          "end": 563.2625,
+          "text": "runtime "
+        },
+        {
+          "start": 563.275,
+          "end": 563.6125,
+          "text": "passed "
+        },
+        {
+          "start": 563.625,
+          "end": 564.275,
+          "text": "thirty-six "
+        },
+        {
+          "start": 564.2875,
+          "end": 564.7875,
+          "text": "logical "
+        },
+        {
+          "start": 564.8,
+          "end": 565.2249999999999,
+          "text": "checks "
+        },
+        {
+          "start": 565.2375,
+          "end": 565.4875,
+          "text": "and "
+        },
+        {
+          "start": 565.5,
+          "end": 566.025,
+          "text": "twenty-eight "
+        },
+        {
+          "start": 566.0375,
+          "end": 566.4,
+          "text": "visual "
+        },
+        {
+          "start": 566.4125,
+          "end": 566.9625,
+          "text": "checks. "
+        },
+        {
+          "start": 567.8375,
+          "end": 568.375,
+          "text": "Legacy "
+        },
+        {
+          "start": 568.3875,
+          "end": 568.9375,
+          "text": "regression "
+        },
+        {
+          "start": 568.95,
+          "end": 569.2625,
+          "text": "scenes "
+        },
+        {
+          "start": 569.275,
+          "end": 569.6,
+          "text": "also "
+        },
+        {
+          "start": 569.6125,
+          "end": 570.1875,
+          "text": "passed. "
+        },
+        {
+          "start": 571.05,
+          "end": 571.2249999999999,
+          "text": "The "
+        },
+        {
+          "start": 571.2375,
+          "end": 571.6125,
+          "text": "Windows "
+        },
+        {
+          "start": 571.625,
+          "end": 572.125,
+          "text": "package "
+        },
+        {
+          "start": 572.1375,
+          "end": 572.6375,
+          "text": "separately "
+        },
+        {
+          "start": 572.65,
+          "end": 573.0375,
+          "text": "passed "
+        },
+        {
+          "start": 573.05,
+          "end": 573.3874999999999,
+          "text": "normal "
+        },
+        {
+          "start": 573.4,
+          "end": 573.75,
+          "text": "launch "
+        },
+        {
+          "start": 573.7625,
+          "end": 573.875,
+          "text": "and "
+        },
+        {
+          "start": 573.8875,
+          "end": 574.475,
+          "text": "screen-render "
+        },
+        {
+          "start": 574.4875,
+          "end": 574.9375,
+          "text": "checks, "
+        },
+        {
+          "start": 575.225,
+          "end": 575.5500000000001,
+          "text": "rather "
+        },
+        {
+          "start": 575.5625,
+          "end": 575.6875,
+          "text": "than "
+        },
+        {
+          "start": 575.7,
+          "end": 575.7875,
+          "text": "the "
+        },
+        {
+          "start": 575.8,
+          "end": 576.025,
+          "text": "full "
+        },
+        {
+          "start": 576.0375,
+          "end": 576.7,
+          "text": "interaction "
+        },
+        {
+          "start": 576.7125,
+          "end": 577.175,
+          "text": "suite."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 385344
+    },
+    {
+      "id": "11b",
+      "start": 582,
+      "end": 599,
+      "duration_seconds": 16.632,
+      "cached": true,
+      "request_hash": "7a79e3bc6930558dd57a413d559ef299666b7b115d1bd9ffe18d563d57472a41",
+      "request": {
+        "text": "This bridge connects places, retained residents, and observable consequences. It does not establish finished balance or broad hardware performance. The full town loads together. Inspect movement, actions, and saved life.",
+        "voice": "en-US-AriaNeural",
+        "rate": "+0%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\7a79e3bc6930558dd57a413d559ef299666b7b115d1bd9ffe18d563d57472a41.mp3",
+        "bytes": 99792,
+        "sha256": "6490e64a2266d33aee67224490ef98a1679a8f6ffecf71619b2a4d27f4e65fc0"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_cache\\7a79e3bc6930558dd57a413d559ef299666b7b115d1bd9ffe18d563d57472a41.words.json",
+        "bytes": 2860,
+        "sha256": "118033604faf8a17d5c8be915aef75db8289d178bef3d849e91f1fdd4dba2cd7"
+      },
+      "words": [
+        {
+          "start": 582.05,
+          "end": 582.3625,
+          "text": "This "
+        },
+        {
+          "start": 582.375,
+          "end": 582.725,
+          "text": "bridge "
+        },
+        {
+          "start": 582.7375,
+          "end": 583.125,
+          "text": "connects "
+        },
+        {
+          "start": 583.1375,
+          "end": 583.6625,
+          "text": "places, "
+        },
+        {
+          "start": 583.85,
+          "end": 584.2625,
+          "text": "retained "
+        },
+        {
+          "start": 584.275,
+          "end": 584.875,
+          "text": "residents, "
+        },
+        {
+          "start": 585.05,
+          "end": 585.2125,
+          "text": "and "
+        },
+        {
+          "start": 585.225,
+          "end": 585.7875,
+          "text": "observable "
+        },
+        {
+          "start": 585.8,
+          "end": 586.8125,
+          "text": "consequences. "
+        },
+        {
+          "start": 587.6875,
+          "end": 587.85,
+          "text": "It "
+        },
+        {
+          "start": 587.8625,
+          "end": 588.025,
+          "text": "does "
+        },
+        {
+          "start": 588.0375,
+          "end": 588.25,
+          "text": "not "
+        },
+        {
+          "start": 588.2625,
+          "end": 588.8625000000001,
+          "text": "establish "
+        },
+        {
+          "start": 588.875,
+          "end": 589.2625,
+          "text": "finished "
+        },
+        {
+          "start": 589.275,
+          "end": 589.775,
+          "text": "balance "
+        },
+        {
+          "start": 589.7875,
+          "end": 589.9250000000001,
+          "text": "or "
+        },
+        {
+          "start": 589.9375,
+          "end": 590.2125,
+          "text": "broad "
+        },
+        {
+          "start": 590.225,
+          "end": 590.65,
+          "text": "hardware "
+        },
+        {
+          "start": 590.6625,
+          "end": 591.4375,
+          "text": "performance. "
+        },
+        {
+          "start": 592.3125,
+          "end": 592.475,
+          "text": "The "
+        },
+        {
+          "start": 592.4875,
+          "end": 592.7375,
+          "text": "full "
+        },
+        {
+          "start": 592.75,
+          "end": 593.0625,
+          "text": "town "
+        },
+        {
+          "start": 593.075,
+          "end": 593.375,
+          "text": "loads "
+        },
+        {
+          "start": 593.3875,
+          "end": 593.9375,
+          "text": "together. "
+        },
+        {
+          "start": 594.8,
+          "end": 595.3625,
+          "text": "Inspect "
+        },
+        {
+          "start": 595.375,
+          "end": 595.8375,
+          "text": "movement, "
+        },
+        {
+          "start": 596.05,
+          "end": 596.5999999999999,
+          "text": "actions, "
+        },
+        {
+          "start": 596.75,
+          "end": 596.925,
+          "text": "and "
+        },
+        {
+          "start": 596.9375,
+          "end": 597.3,
+          "text": "saved "
+        },
+        {
+          "start": 597.3125,
+          "end": 597.7625,
+          "text": "life."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 399168
+    }
+  ],
+  "assets": {
+    "narration.wav": {
+      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\narration.wav",
+      "bytes": 28800044,
+      "sha256": "41243c210b72d93ff46d7e5aa81441c96ca1c414387101310d98de171f343a68"
+    },
+    "narration.ass": {
+      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\narration.ass",
+      "bytes": 12258,
+      "sha256": "fac0a4c068996b19da1e0b4b781a5da1f3f2a456e89f931f099c7410e33c604a"
+    },
+    "narration.srt": {
+      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\narration.srt",
+      "bytes": 10268,
+      "sha256": "776f1aa2df6b8d0cec7356f6e576ebe09ab1b05f7e7fbd57c9b20d131c791ae8"
+    },
+    "captions.json": {
+      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\captions.json",
+      "bytes": 21029,
+      "sha256": "ee721afcb2f4dc8d8270e0dec4df7c70bac3fdab2b914c7bb53d6a30f36fe1b5"
+    }
+  }
+}
