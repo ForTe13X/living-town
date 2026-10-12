@@ -536,10 +536,29 @@ def metadata_text(route: dict, narration: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
-def movie_timeline_trim(boot_frames: int, frame_count: int = FRAME_COUNT) -> str:
+def theora_repeat_timeline(packets: list[dict]) -> dict:
+    if not packets or int(packets[0].get("size", 0)) <= 0:
+        raise ValueError("Theora timeline must begin with an actual picture")
+    for index, packet in enumerate(packets):
+        if (packet.get("pts") != index or packet.get("duration") != 1 or
+                int(packet.get("size", -1)) < 0):
+            raise ValueError("Theora packet timeline is not contiguous at 24 FPS")
+    trailing = 0
+    for packet in reversed(packets):
+        if int(packet["size"]) != 0:
+            break
+        trailing += 1
+    return {"packet_count": len(packets), "repeat_packets": sum(int(p["size"]) == 0 for p in packets),
+            "trailing_repeat_packets": trailing, "contiguous_packet_pts_verified": True,
+            "repeat_semantics": "Zero-byte Theora packets repeat the previous picture; only the proven trailing repeat count is padded after FPS reconstruction."}
+
+
+def movie_timeline_trim(boot_frames: int, frame_count: int = FRAME_COUNT,
+                        trailing_repeats: int = 0) -> str:
     # Theora can omit repeated decoded pictures while preserving their PTS.
     # Restore MovieWriter's 24-FPS timeline before counting its boot frames.
-    return (f"fps=24:start_time=0,trim=start_frame={boot_frames}:"
+    tail = f",tpad=stop_mode=clone:stop={trailing_repeats}" if trailing_repeats else ""
+    return (f"fps=24:start_time=0{tail},trim=start_frame={boot_frames}:"
             f"end_frame={boot_frames + frame_count},setpts=PTS-STARTPTS")
 
 
@@ -559,6 +578,20 @@ def phase_compose(args: argparse.Namespace) -> dict:
     num, den = (int(x) for x in rate.split("/"))
     if den == 0 or abs(num / den - FPS) > 0.001 or media_duration(raw_info) + 0.05 < DURATION + offset / FPS:
         raise ValueError("Raw capture does not contain the reported 24-FPS boot prefix plus 600s route")
+    timeline = None
+    if video.get("codec_name") == "theora":
+        if video.get("time_base") != "1/24":
+            raise ValueError("Theora packet proof requires the MovieWriter 1/24 time base")
+        packet_result = subprocess.run([args.ffprobe, "-v", "error", "-select_streams", "v:0",
+            "-show_packets", "-show_entries", "packet=pts,duration,size", "-of", "json", str(args.raw)],
+            capture_output=True, text=True, encoding="utf-8", timeout=120, check=True)
+        packet_table = json.loads(packet_result.stdout)
+        timeline = theora_repeat_timeline(packet_table["packets"])
+        if timeline["packet_count"] < offset + FRAME_COUNT:
+            raise ValueError("Actual Theora packets do not cover the complete recorded route")
+        packet_path = args.outdir / "raw_video_packets.json"
+        write_json(packet_path, packet_table)
+        timeline["packet_table"] = binding(packet_path)
     normalized, loudness = normalized_narration(args)
     bed = args.outdir / "game_bed.wav"
     bed_stats = None
@@ -573,7 +606,7 @@ def phase_compose(args: argparse.Namespace) -> dict:
                    (bed_stats["peak_dbfs"] is not None and bed_stats["peak_dbfs"] > -55))
     metadata = args.outdir / "chapters.ffmetadata"
     metadata.write_text(metadata_text(route, narration), encoding="utf-8")
-    filters = (f"[0:v]{movie_timeline_trim(offset)},"
+    filters = (f"[0:v]{movie_timeline_trim(offset, trailing_repeats=timeline['trailing_repeat_packets'] if timeline else 0)},"
                "scale=1280:768:flags=lanczos,pad=1280:864:0:0:color=0x111722,"
                "subtitles=filename=narration.ass[v]")
     command = [args.ffmpeg, "-y", "-hide_banner", "-threads", "2", "-i", str(args.raw), "-i", str(normalized)]
@@ -599,6 +632,7 @@ def phase_compose(args: argparse.Namespace) -> dict:
               "source_glb_sha256": capture["source_glb_sha256"], "source_blend_sha256": capture.get("source_blend_sha256"),
               "projection_sha256": capture["projection_sha256"], "movie_boot_frames_to_trim": offset,
               "trim_seconds": offset / FPS, "target_frames": FRAME_COUNT, "target_seconds": DURATION,
+              "raw_video_timeline": timeline,
               "audio_mode": "narration_plus_actual_game_bed" if audible else "narration_only_raw_capture_silent_or_has_no_audio",
               "game_bed_stats": bed_stats, "game_bed_audibility_thresholds": {"rms_dbfs_above": -75, "or_peak_dbfs_above": -55},
               "invented_music_or_sounds": False, "loudness": loudness, "command": command,
