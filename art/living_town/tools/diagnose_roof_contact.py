@@ -121,7 +121,7 @@ def _legacy_main():
     depsgraph.update()
     manifest = json.loads((ROOT / 'town_manifest.json').read_text())
     target = (1023, 269)
-    
+
     def components(mesh):
         parent = list(range(len(mesh.vertices)))
         def find(i):
@@ -137,7 +137,7 @@ def _legacy_main():
         for i in range(len(parent)):
             groups.setdefault(find(i), []).append(i)
         return list(groups.values())
-    
+
     def projected_bounds(points):
         projected = [world_to_camera_view(scene, camera, p) for p in points]
         pixels = [(p.x * 1280, (1-p.y) * 720) for p in projected if p.z > 0]
@@ -145,7 +145,7 @@ def _legacy_main():
             return None
         return [min(p[0] for p in pixels), min(p[1] for p in pixels),
                 max(p[0] for p in pixels), max(p[1] for p in pixels)]
-    
+
     records = []
     for building in manifest['buildings']:
         collection = bpy.data.collections[building['roof_collection']]
@@ -209,7 +209,7 @@ def _legacy_main():
         json.dump(record,stream,indent=2);stream.flush();os.fsync(stream.fileno())
     temporary.replace(path)
     print('LT_ROOF_CONTACT_DIAGNOSIS',json.dumps({k:v for k,v in record.items() if k!='all_shafts'}),flush=True)
-    
+
 
 if __name__ == '__main__':
     scene = bpy.data.scenes['Living_Town_Summer']
