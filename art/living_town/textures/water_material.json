@@ -1,0 +1,11 @@
+{
+  "source": "tools/generate_materials.py",
+  "license": "Original procedural map",
+  "normal": "water_normal.png",
+  "normal_convention": "OpenGL tangent-space +Y",
+  "tile_size_metres": 4,
+  "resolution": [
+    512,
+    512
+  ]
+}

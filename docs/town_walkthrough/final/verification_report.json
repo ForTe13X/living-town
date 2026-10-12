@@ -1,0 +1,674 @@
+{
+  "schema": "living_town.walkthrough.verification.v1",
+  "generated_utc": "2026-10-12T21:10:13.872466+00:00",
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "duration_600_seconds",
+      "passed": true,
+      "details": 600.0
+    },
+    {
+      "name": "video_H264_yuv420p_1280x864",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "video_24_fps",
+      "passed": true,
+      "details": "24/1"
+    },
+    {
+      "name": "video_14400_decoded_frames",
+      "passed": true,
+      "details": "14400"
+    },
+    {
+      "name": "AAC_audio_present",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "eleven_chapters_cover_600_seconds",
+      "passed": true,
+      "details": [
+        {
+          "id": 0,
+          "time_base": "1/1000",
+          "start": 0,
+          "start_time": "0.000000",
+          "end": 45000,
+          "end_time": "45.000000",
+          "tags": {
+            "title": "A town you can enter"
+          }
+        },
+        {
+          "id": 1,
+          "time_base": "1/1000",
+          "start": 45000,
+          "start_time": "45.000000",
+          "end": 100000,
+          "end_time": "100.000000",
+          "tags": {
+            "title": "Meet Aria and read the HUD"
+          }
+        },
+        {
+          "id": 2,
+          "time_base": "1/1000",
+          "start": 100000,
+          "start_time": "100.000000",
+          "end": 155000,
+          "end_time": "155.000000",
+          "tags": {
+            "title": "Walk the rooms and take the stairs"
+          }
+        },
+        {
+          "id": 3,
+          "time_base": "1/1000",
+          "start": 155000,
+          "start_time": "155.000000",
+          "end": 215000,
+          "end_time": "215.000000",
+          "tags": {
+            "title": "Use a real café fixture"
+          }
+        },
+        {
+          "id": 4,
+          "time_base": "1/1000",
+          "start": 215000,
+          "start_time": "215.000000",
+          "end": 270000,
+          "end_time": "270.000000",
+          "tags": {
+            "title": "Step outside and keep the resident visible"
+          }
+        },
+        {
+          "id": 5,
+          "time_base": "1/1000",
+          "start": 270000,
+          "start_time": "270.000000",
+          "end": 330000,
+          "end_time": "330.000000",
+          "tags": {
+            "title": "Inspection: rooms and furnishing"
+          }
+        },
+        {
+          "id": 6,
+          "time_base": "1/1000",
+          "start": 330000,
+          "start_time": "330.000000",
+          "end": 390000,
+          "end_time": "390.000000",
+          "tags": {
+            "title": "Inspection: streets, elevations, and harbor"
+          }
+        },
+        {
+          "id": 7,
+          "time_base": "1/1000",
+          "start": 390000,
+          "start_time": "390.000000",
+          "end": 450000,
+          "end_time": "450.000000",
+          "tags": {
+            "title": "Inspection: pond and planted routes"
+          }
+        },
+        {
+          "id": 8,
+          "time_base": "1/1000",
+          "start": 450000,
+          "start_time": "450.000000",
+          "end": 505000,
+          "end_time": "505.000000",
+          "tags": {
+            "title": "Return to life and enable autonomy"
+          }
+        },
+        {
+          "id": 9,
+          "time_base": "1/1000",
+          "start": 505000,
+          "start_time": "505.000000",
+          "end": 560000,
+          "end_time": "560.000000",
+          "tags": {
+            "title": "Save, continue, and load"
+          }
+        },
+        {
+          "id": 10,
+          "time_base": "1/1000",
+          "start": 560000,
+          "start_time": "560.000000",
+          "end": 600000,
+          "end_time": "600.000000",
+          "tags": {
+            "title": "What the delivery proves"
+          }
+        }
+      ]
+    },
+    {
+      "name": "measured_caption_sidecars_valid",
+      "passed": true,
+      "details": 106
+    },
+    {
+      "name": "full_video_audio_decode_no_errors",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "decoded_audio_duration",
+      "passed": true,
+      "details": 600.0213333333334
+    },
+    {
+      "name": "decoded_audio_not_silent",
+      "passed": true,
+      "details": {
+        "samples": 14400512,
+        "duration_seconds": 600.0213333333334,
+        "sample_rate": 24000,
+        "peak_amplitude": 27851,
+        "peak_dbfs": -1.4121828334625561,
+        "rms_dbfs": -18.444201988640476,
+        "nonzero_samples": 14381773,
+        "full_scale_peak": false
+      }
+    },
+    {
+      "name": "decoded_audio_no_fullscale_peak",
+      "passed": true,
+      "details": 27851
+    },
+    {
+      "name": "current_source_bound_capture",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "actual_game_audio_or_honest_narration_only",
+      "passed": true,
+      "details": "narration_plus_actual_game_bed"
+    }
+  ],
+  "passed": 13,
+  "failed": 0,
+  "output": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\LivingTown_Walkthrough.mp4",
+    "bytes": 245232169,
+    "sha256": "a1f97fdcc79e232784874c4ebd67c9b52a3ed98cc52982a9baf24872d10184d7"
+  },
+  "composition_report": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\composition_report.json",
+    "bytes": 7727,
+    "sha256": "5c524861b5c334a81bb10fcab5fdcb6c1cd91dc8bdeda0b67e141855ee03222c"
+  },
+  "capture_report": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\walkthrough_report.json",
+    "bytes": 41907,
+    "sha256": "8084c954963f87f07cb5a432c7b1d73476efb58d60f31a469c7a29a9f710856c"
+  },
+  "voice_report": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_report.json",
+    "bytes": 139918,
+    "sha256": "9facf6b38bc84a6a2b2827309b0cdb5c10d5d18e671b1c4f72990ecbc1aca0ab"
+  },
+  "narration": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\docs\\town_walkthrough\\narration.json",
+    "bytes": 16116,
+    "sha256": "12fb27ecfc3421288554243e858c7f9094af86a3f5bcd03bd6f8946520bcae66"
+  },
+  "route": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\docs\\town_walkthrough\\route_plan.json",
+    "bytes": 11307,
+    "sha256": "c92282e0e4167cf2a2edc1fc96f5bcc5a3a10beb13700072e201ab949fcf6fdb"
+  },
+  "builder": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\build_town_walkthrough.py",
+    "bytes": 45349,
+    "sha256": "2a9ae48e88b12eab5d898c7cb74bcf22779254e22f99ab71273fdf2b4d9c4778"
+  },
+  "source_glb_sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c",
+  "source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
+  "projection_sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a",
+  "probe": {
+    "streams": [
+      {
+        "index": 0,
+        "codec_name": "h264",
+        "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+        "profile": "High",
+        "codec_type": "video",
+        "codec_tag_string": "avc1",
+        "codec_tag": "0x31637661",
+        "mime_codec_string": "avc1.640020",
+        "width": 1280,
+        "height": 864,
+        "coded_width": 1280,
+        "coded_height": 864,
+        "has_b_frames": 2,
+        "sample_aspect_ratio": "1:1",
+        "display_aspect_ratio": "40:27",
+        "pix_fmt": "yuv420p",
+        "level": 32,
+        "chroma_location": "left",
+        "field_order": "progressive",
+        "refs": 4,
+        "is_avc": "true",
+        "nal_length_size": "4",
+        "id": "0x1",
+        "r_frame_rate": "24/1",
+        "avg_frame_rate": "24/1",
+        "time_base": "1/12288",
+        "start_pts": 0,
+        "start_time": "0.000000",
+        "duration_ts": 7372800,
+        "duration": "600.000000",
+        "bit_rate": "3164057",
+        "bits_per_raw_sample": "8",
+        "nb_frames": "14400",
+        "nb_read_frames": "14400",
+        "extradata_size": 47,
+        "disposition": {
+          "default": 1,
+          "dub": 0,
+          "original": 0,
+          "comment": 0,
+          "lyrics": 0,
+          "karaoke": 0,
+          "forced": 0,
+          "hearing_impaired": 0,
+          "visual_impaired": 0,
+          "clean_effects": 0,
+          "attached_pic": 0,
+          "timed_thumbnails": 0,
+          "non_diegetic": 0,
+          "captions": 0,
+          "descriptions": 0,
+          "metadata": 0,
+          "dependent": 0,
+          "still_image": 0,
+          "multilayer": 0
+        },
+        "tags": {
+          "language": "und",
+          "handler_name": "VideoHandler",
+          "encoder": "Lavc62.28.102 libx264"
+        }
+      },
+      {
+        "index": 1,
+        "codec_name": "aac",
+        "codec_long_name": "AAC (Advanced Audio Coding)",
+        "profile": "LC",
+        "codec_type": "audio",
+        "codec_tag_string": "mp4a",
+        "codec_tag": "0x6134706d",
+        "mime_codec_string": "mp4a.40.2",
+        "sample_fmt": "fltp",
+        "sample_rate": "24000",
+        "channels": 1,
+        "channel_layout": "mono",
+        "bits_per_sample": 0,
+        "initial_padding": 0,
+        "id": "0x2",
+        "r_frame_rate": "0/0",
+        "avg_frame_rate": "0/0",
+        "time_base": "1/24000",
+        "start_pts": 0,
+        "start_time": "0.000000",
+        "duration_ts": 14400000,
+        "duration": "600.000000",
+        "bit_rate": "101347",
+        "nb_frames": "14064",
+        "nb_read_frames": "14063",
+        "extradata_size": 5,
+        "disposition": {
+          "default": 1,
+          "dub": 0,
+          "original": 0,
+          "comment": 0,
+          "lyrics": 0,
+          "karaoke": 0,
+          "forced": 0,
+          "hearing_impaired": 0,
+          "visual_impaired": 0,
+          "clean_effects": 0,
+          "attached_pic": 0,
+          "timed_thumbnails": 0,
+          "non_diegetic": 0,
+          "captions": 0,
+          "descriptions": 0,
+          "metadata": 0,
+          "dependent": 0,
+          "still_image": 0,
+          "multilayer": 0
+        },
+        "tags": {
+          "language": "und",
+          "handler_name": "SoundHandler"
+        }
+      },
+      {
+        "index": 2,
+        "codec_name": "bin_data",
+        "codec_long_name": "binary data",
+        "codec_type": "data",
+        "codec_tag_string": "text",
+        "codec_tag": "0x74786574",
+        "id": "0x3",
+        "r_frame_rate": "0/0",
+        "avg_frame_rate": "0/0",
+        "time_base": "1/1000",
+        "start_pts": 0,
+        "start_time": "0.000000",
+        "duration_ts": 600000,
+        "duration": "600.000000",
+        "bit_rate": "6",
+        "nb_frames": "11",
+        "extradata_size": 63,
+        "disposition": {
+          "default": 0,
+          "dub": 0,
+          "original": 0,
+          "comment": 0,
+          "lyrics": 0,
+          "karaoke": 0,
+          "forced": 0,
+          "hearing_impaired": 0,
+          "visual_impaired": 0,
+          "clean_effects": 0,
+          "attached_pic": 0,
+          "timed_thumbnails": 0,
+          "non_diegetic": 0,
+          "captions": 0,
+          "descriptions": 0,
+          "metadata": 0,
+          "dependent": 0,
+          "still_image": 0,
+          "multilayer": 0
+        },
+        "tags": {
+          "language": "eng",
+          "handler_name": "SubtitleHandler"
+        }
+      }
+    ],
+    "chapters": [
+      {
+        "id": 0,
+        "time_base": "1/1000",
+        "start": 0,
+        "start_time": "0.000000",
+        "end": 45000,
+        "end_time": "45.000000",
+        "tags": {
+          "title": "A town you can enter"
+        }
+      },
+      {
+        "id": 1,
+        "time_base": "1/1000",
+        "start": 45000,
+        "start_time": "45.000000",
+        "end": 100000,
+        "end_time": "100.000000",
+        "tags": {
+          "title": "Meet Aria and read the HUD"
+        }
+      },
+      {
+        "id": 2,
+        "time_base": "1/1000",
+        "start": 100000,
+        "start_time": "100.000000",
+        "end": 155000,
+        "end_time": "155.000000",
+        "tags": {
+          "title": "Walk the rooms and take the stairs"
+        }
+      },
+      {
+        "id": 3,
+        "time_base": "1/1000",
+        "start": 155000,
+        "start_time": "155.000000",
+        "end": 215000,
+        "end_time": "215.000000",
+        "tags": {
+          "title": "Use a real café fixture"
+        }
+      },
+      {
+        "id": 4,
+        "time_base": "1/1000",
+        "start": 215000,
+        "start_time": "215.000000",
+        "end": 270000,
+        "end_time": "270.000000",
+        "tags": {
+          "title": "Step outside and keep the resident visible"
+        }
+      },
+      {
+        "id": 5,
+        "time_base": "1/1000",
+        "start": 270000,
+        "start_time": "270.000000",
+        "end": 330000,
+        "end_time": "330.000000",
+        "tags": {
+          "title": "Inspection: rooms and furnishing"
+        }
+      },
+      {
+        "id": 6,
+        "time_base": "1/1000",
+        "start": 330000,
+        "start_time": "330.000000",
+        "end": 390000,
+        "end_time": "390.000000",
+        "tags": {
+          "title": "Inspection: streets, elevations, and harbor"
+        }
+      },
+      {
+        "id": 7,
+        "time_base": "1/1000",
+        "start": 390000,
+        "start_time": "390.000000",
+        "end": 450000,
+        "end_time": "450.000000",
+        "tags": {
+          "title": "Inspection: pond and planted routes"
+        }
+      },
+      {
+        "id": 8,
+        "time_base": "1/1000",
+        "start": 450000,
+        "start_time": "450.000000",
+        "end": 505000,
+        "end_time": "505.000000",
+        "tags": {
+          "title": "Return to life and enable autonomy"
+        }
+      },
+      {
+        "id": 9,
+        "time_base": "1/1000",
+        "start": 505000,
+        "start_time": "505.000000",
+        "end": 560000,
+        "end_time": "560.000000",
+        "tags": {
+          "title": "Save, continue, and load"
+        }
+      },
+      {
+        "id": 10,
+        "time_base": "1/1000",
+        "start": 560000,
+        "start_time": "560.000000",
+        "end": 600000,
+        "end_time": "600.000000",
+        "tags": {
+          "title": "What the delivery proves"
+        }
+      }
+    ],
+    "format": {
+      "filename": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\LivingTown_Walkthrough.mp4",
+      "nb_streams": 3,
+      "nb_programs": 0,
+      "nb_stream_groups": 0,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "format_long_name": "QuickTime / MOV",
+      "start_time": "0.000000",
+      "duration": "600.000000",
+      "size": "245232169",
+      "bit_rate": "3269762",
+      "probe_score": 100,
+      "tags": {
+        "major_brand": "isom",
+        "minor_version": "512",
+        "compatible_brands": "isomiso2avc1mp41",
+        "title": "Living Town: actual game walkthrough",
+        "encoder": "Lavf62.12.102",
+        "comment": "Actual Main/LifeMode recording; architectural inspection sections are explicitly labelled."
+      }
+    }
+  },
+  "decoded_audio": {
+    "samples": 14400512,
+    "duration_seconds": 600.0213333333334,
+    "sample_rate": 24000,
+    "peak_amplitude": 27851,
+    "peak_dbfs": -1.4121828334625561,
+    "rms_dbfs": -18.444201988640476,
+    "nonzero_samples": 14381773,
+    "full_scale_peak": false
+  },
+  "qa_images": {
+    "samples": [
+      {
+        "chapter": 1,
+        "seconds": 22.5,
+        "image": {
+          "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\chapter_01.png",
+          "bytes": 895601,
+          "sha256": "eb06fb51499bedd215fd934e2e9e3fab9fd5ec38f3c1772423355ab0f5ae422a"
+        }
+      },
+      {
+        "chapter": 2,
+        "seconds": 72.5,
+        "image": {
+          "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\chapter_02.png",
+          "bytes": 1067453,
+          "sha256": "cc2ba224bb7698aa3faeb5a9155d72081cf9992044fc139af3a7475cc544c7b3"
+        }
+      },
+      {
+        "chapter": 3,
+        "seconds": 127.5,
+        "image": {
+          "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\chapter_03.png",
+          "bytes": 1134035,
+          "sha256": "a4ca22cc719fea799fe3ad2bc2c2e9baae568ae7d46f212401dc37220e79be53"
+        }
+      },
+      {
+        "chapter": 4,
+        "seconds": 185.0,
+        "image": {
+          "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\chapter_04.png",
+          "bytes": 1101048,
+          "sha256": "26c5cfb6cf58fb2cdd0a3299f5ab070749035ca7efc9047fe3b2be31ccc618a1"
+        }
+      },
+      {
+        "chapter": 5,
+        "seconds": 242.5,
+        "image": {
+          "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\chapter_05.png",
+          "bytes": 1016967,
+          "sha256": "d3dba27baa0965911bc3be29a90d59e4560d7eb4f0bc58c0f88b3c5c69a43ff1"
+        }
+      },
+      {
+        "chapter": 6,
+        "seconds": 300.0,
+        "image": {
+          "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\chapter_06.png",
+          "bytes": 1024016,
+          "sha256": "41a5f7f740d2f933ed3d52533297ce85c8cc2420c8e5e3de115d03d93882a029"
+        }
+      },
+      {
+        "chapter": 7,
+        "seconds": 360.0,
+        "image": {
+          "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\chapter_07.png",
+          "bytes": 1290563,
+          "sha256": "1a1ee51c1a026b708f81d326ab96452953a81a6912f4126bac694366f85d2094"
+        }
+      },
+      {
+        "chapter": 8,
+        "seconds": 420.0,
+        "image": {
+          "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\chapter_08.png",
+          "bytes": 1023334,
+          "sha256": "37e077242aaf72656adb90a9e0df9cf5632231871d0d2c8e20d6de75ef5e8f61"
+        }
+      },
+      {
+        "chapter": 9,
+        "seconds": 477.5,
+        "image": {
+          "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\chapter_09.png",
+          "bytes": 926933,
+          "sha256": "fd9a1f26a8511fb227badd433bc809c9a4e79ab8bd500a0f916f6a969b465031"
+        }
+      },
+      {
+        "chapter": 10,
+        "seconds": 532.5,
+        "image": {
+          "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\chapter_10.png",
+          "bytes": 993000,
+          "sha256": "24d6c512ee6789e42f804ea0c6b7d768e67878abb0014aa80f5ab9dfdd8915ed"
+        }
+      },
+      {
+        "chapter": 11,
+        "seconds": 580.0,
+        "image": {
+          "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\chapter_11.png",
+          "bytes": 1238274,
+          "sha256": "cf5d4c937db6d2ffe4a3607a4ea2cde4e3029e6380ed08d25c176bf7b6ac31b6"
+        }
+      }
+    ],
+    "contact_sheet": {
+      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\contact_sheet.png",
+      "bytes": 1141755,
+      "sha256": "3edbdc6cf36d9cc7efea0da83d6a56c5db087048df4ff47c0c5cba6a9079ae3c"
+    },
+    "visually_reviewed": false,
+    "note": "Actual encoded MP4 frames for human inspection; generation does not constitute visual acceptance."
+  },
+  "visually_reviewed": false,
+  "listened_to_by_human": false,
+  "human_review_required": "Inspect actual chapter frames and playback, read captions against HUD, listen for clarity/sync, and reconcile actual gameplay outcomes. Technical PASS does not establish visual/audio acceptance."
+}

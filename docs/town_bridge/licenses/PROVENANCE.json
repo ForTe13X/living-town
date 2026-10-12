@@ -1,0 +1,20 @@
+{
+  "project": "Godot Engine",
+  "version": "4.6.2-stable",
+  "retrieved_utc": "2026-10-12T11:39:57.949317+00:00",
+  "modified": false,
+  "files": [
+    {
+      "file": "GODOT_LICENSE.txt",
+      "bytes": 1149,
+      "sha256": "b0435e3b3e4e55238f05f4b306f30524a1b2e20147810d436eaa554fa6855c80",
+      "source": "https://raw.githubusercontent.com/godotengine/godot/4.6.2-stable/LICENSE.txt"
+    },
+    {
+      "file": "GODOT_COPYRIGHT.txt",
+      "bytes": 99790,
+      "sha256": "dc043a7dbf69632560219e72fbc61ef9fa7338c7a773660acd81b51590b69104",
+      "source": "https://raw.githubusercontent.com/godotengine/godot/4.6.2-stable/COPYRIGHT.txt"
+    }
+  ]
+}

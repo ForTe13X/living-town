@@ -1,0 +1,2027 @@
+{
+  "schema": "living_town.landscape_siting.v1",
+  "authority": "Current user landscape image plus explicit request for a pond with properly graded banks. Authored composition; no copied reference mesh and no hydrology certification.",
+  "reference_image": "user_supplied_landscape_reference",
+  "coordinate_system": "Existing authored metre XY; terrain_profile supplies all contacts. Existing architecture and interiors frozen.",
+  "source_bindings": {
+    "masterplan_sha256": "b7e5522f62f4a390faa95502537fbbac14856cb278bccb695fbd5cabe186377f",
+    "baseline_terrain_profile_sha256": "4589711f3812b617ae11e15f1ec5cd28f0e396acc17627b339dac759adb147c7",
+    "interior_plan_sha256": "a857d40e536ce84b3ed468a5815c54311f92f46ebbb1e1f7541ce76a498d08b4",
+    "interior_module_sha256": "a467e4dc23bd2388e7e924a04a1b478bf0d0b7fc4deeb0616184de69b8c49025"
+  },
+  "paths": [
+    {
+      "id": "park_loop",
+      "points": [
+        [
+          17.0,
+          -35.9
+        ],
+        [
+          17.0,
+          -38.0
+        ],
+        [
+          17.5,
+          -46.5
+        ],
+        [
+          22.0,
+          -50.0
+        ],
+        [
+          31.0,
+          -50.0
+        ],
+        [
+          36.0,
+          -46.0
+        ],
+        [
+          36.5,
+          -38.0
+        ],
+        [
+          36.0,
+          -35.9
+        ],
+        [
+          17.0,
+          -35.9
+        ]
+      ],
+      "width_m": 1.5,
+      "surface": "warm crushed granite",
+      "role": "closed level-following public park walk",
+      "elevation_authority": "terrain_profile.design_height; conform only, no road/pad regrading",
+      "material": "Sand"
+    },
+    {
+      "id": "park_west_gate",
+      "points": [
+        [
+          17.0,
+          -35.9
+        ],
+        [
+          17.0,
+          -33.0
+        ]
+      ],
+      "width_m": 1.5,
+      "surface": "warm crushed granite",
+      "connects_to": "south_east",
+      "elevation_authority": "terrain_profile.design_height; conform only, no road/pad regrading",
+      "material": "Sand"
+    },
+    {
+      "id": "park_east_gate",
+      "points": [
+        [
+          36.0,
+          -35.9
+        ],
+        [
+          36.0,
+          -33.0
+        ]
+      ],
+      "width_m": 1.5,
+      "surface": "warm crushed granite",
+      "connects_to": "south_east",
+      "elevation_authority": "terrain_profile.design_height; conform only, no road/pad regrading",
+      "material": "Sand"
+    },
+    {
+      "id": "cafe_garden_walk",
+      "points": [
+        [
+          17.5,
+          0.0
+        ],
+        [
+          20.0,
+          0.0
+        ],
+        [
+          22.0,
+          2.0
+        ],
+        [
+          24.0,
+          4.0
+        ],
+        [
+          24.0,
+          10.5
+        ]
+      ],
+      "width_m": 1.2,
+      "surface": "gravel and irregular granite edging",
+      "connects_to": "cafe_rear_lane",
+      "elevation_authority": "terrain_profile.design_height; conform only, no road/pad regrading"
+    },
+    {
+      "id": "civic_pocket_walk",
+      "points": [
+        [
+          -10.5,
+          8.0
+        ],
+        [
+          -10.5,
+          10.3
+        ]
+      ],
+      "width_m": 1.2,
+      "surface": "fine gravel",
+      "connects_to": "civic_plaza",
+      "elevation_authority": "terrain_profile.design_height; conform only, no road/pad regrading"
+    }
+  ],
+  "street_trees": [
+    {
+      "id": "T001",
+      "xy": [
+        -8.2,
+        -5
+      ],
+      "crown_radius_m": 3.1,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "civic_courts"
+    },
+    {
+      "id": "T002",
+      "xy": [
+        -8.2,
+        5
+      ],
+      "crown_radius_m": 2.647,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "civic_courts"
+    },
+    {
+      "id": "T003",
+      "xy": [
+        0.5,
+        5
+      ],
+      "crown_radius_m": 2.64,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "civic_courts"
+    },
+    {
+      "id": "T004",
+      "xy": [
+        1,
+        -5
+      ],
+      "crown_radius_m": 3.1,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "civic_courts"
+    },
+    {
+      "id": "T005",
+      "xy": [
+        21,
+        6
+      ],
+      "crown_radius_m": 3.1,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "civic_courts"
+    },
+    {
+      "id": "T006",
+      "xy": [
+        23,
+        -4.5
+      ],
+      "crown_radius_m": 3.1,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "civic_courts"
+    },
+    {
+      "id": "T007",
+      "xy": [
+        -53.014,
+        -19.846
+      ],
+      "crown_radius_m": 2.8,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "main_west"
+    },
+    {
+      "id": "T008",
+      "xy": [
+        -22.657,
+        -7.761
+      ],
+      "crown_radius_m": 1.15,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "main_west"
+    },
+    {
+      "id": "T009",
+      "xy": [
+        -11.347,
+        16.104
+      ],
+      "crown_radius_m": 1.29,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "civicnorth"
+    },
+    {
+      "id": "T010",
+      "xy": [
+        -11.753,
+        21.796
+      ],
+      "crown_radius_m": 2.8,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "civicnorth"
+    },
+    {
+      "id": "T011",
+      "xy": [
+        -7.853,
+        22.471
+      ],
+      "crown_radius_m": 1.869,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "civicnorth"
+    },
+    {
+      "id": "T012",
+      "xy": [
+        4.947,
+        22.646
+      ],
+      "crown_radius_m": 1.494,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "civicnorth"
+    },
+    {
+      "id": "T013",
+      "xy": [
+        8.153,
+        17.229
+      ],
+      "crown_radius_m": 2.8,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "civicnorth"
+    },
+    {
+      "id": "T014",
+      "xy": [
+        7.847,
+        22.821
+      ],
+      "crown_radius_m": 2.8,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "civicnorth"
+    },
+    {
+      "id": "T015",
+      "xy": [
+        14.653,
+        17.604
+      ],
+      "crown_radius_m": 2.8,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "civicnorth"
+    },
+    {
+      "id": "T016",
+      "xy": [
+        -58.36,
+        17.017
+      ],
+      "crown_radius_m": 2.8,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "upperwest"
+    },
+    {
+      "id": "T017",
+      "xy": [
+        -49.349,
+        29.681
+      ],
+      "crown_radius_m": 2.8,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "upperwest"
+    },
+    {
+      "id": "T018",
+      "xy": [
+        -39.526,
+        27.569
+      ],
+      "crown_radius_m": 2.8,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "upperwest"
+    },
+    {
+      "id": "T019",
+      "xy": [
+        -42.974,
+        33.431
+      ],
+      "crown_radius_m": 2.8,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "upperwest"
+    },
+    {
+      "id": "T020",
+      "xy": [
+        -33.151,
+        31.319
+      ],
+      "crown_radius_m": 2.8,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "upperwest"
+    },
+    {
+      "id": "T021",
+      "xy": [
+        -36.599,
+        37.181
+      ],
+      "crown_radius_m": 2.8,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "upperwest"
+    },
+    {
+      "id": "T022",
+      "xy": [
+        -22.75,
+        41.4
+      ],
+      "crown_radius_m": 2.8,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "upperwest"
+    },
+    {
+      "id": "T023",
+      "xy": [
+        -13.6,
+        29.0
+      ],
+      "crown_radius_m": 2.8,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "upperwest"
+    },
+    {
+      "id": "T024",
+      "xy": [
+        -50.154,
+        -8.051
+      ],
+      "crown_radius_m": 2.143,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "westconnector"
+    },
+    {
+      "id": "T025",
+      "xy": [
+        -55.846,
+        -9.949
+      ],
+      "crown_radius_m": 2.8,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "westconnector"
+    },
+    {
+      "id": "T026",
+      "xy": [
+        -58.0,
+        6.0
+      ],
+      "crown_radius_m": 2.8,
+      "height_m": 6.5,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "full irregular clear-stem canopy",
+      "group": "westconnector"
+    },
+    {
+      "id": "T038",
+      "xy": [
+        15,
+        -49
+      ],
+      "crown_radius_m": 2.6,
+      "height_m": 7.1,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "broad irregular park canopy, clear stem",
+      "group": "park_and_pocket_clusters"
+    },
+    {
+      "id": "T039",
+      "xy": [
+        18,
+        -52
+      ],
+      "crown_radius_m": 3.2,
+      "height_m": 7.1,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "broad irregular park canopy, clear stem",
+      "group": "park_and_pocket_clusters"
+    },
+    {
+      "id": "T040",
+      "xy": [
+        23,
+        -52
+      ],
+      "crown_radius_m": 3.1,
+      "height_m": 7.1,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "broad irregular park canopy, clear stem",
+      "group": "park_and_pocket_clusters"
+    },
+    {
+      "id": "T041",
+      "xy": [
+        33.5,
+        -52
+      ],
+      "crown_radius_m": 3.2,
+      "height_m": 7.1,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "broad irregular park canopy, clear stem",
+      "group": "park_and_pocket_clusters"
+    },
+    {
+      "id": "T042",
+      "xy": [
+        37.8,
+        -49.5
+      ],
+      "crown_radius_m": 2.6,
+      "height_m": 7.1,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "broad irregular park canopy, clear stem",
+      "group": "park_and_pocket_clusters"
+    },
+    {
+      "id": "T043",
+      "xy": [
+        15,
+        -39
+      ],
+      "crown_radius_m": 2.2,
+      "height_m": 7.1,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "broad irregular park canopy, clear stem",
+      "group": "park_and_pocket_clusters"
+    },
+    {
+      "id": "T044",
+      "xy": [
+        -39,
+        25
+      ],
+      "crown_radius_m": 1.8,
+      "height_m": 6.1,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "informal broadleaf",
+      "group": "park_and_pocket_clusters"
+    },
+    {
+      "id": "T045",
+      "xy": [
+        -32,
+        28
+      ],
+      "crown_radius_m": 1.6,
+      "height_m": 6.1,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "informal broadleaf",
+      "group": "park_and_pocket_clusters"
+    },
+    {
+      "id": "T046",
+      "xy": [
+        -29,
+        30
+      ],
+      "crown_radius_m": 1.3,
+      "height_m": 6.1,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "informal broadleaf",
+      "group": "park_and_pocket_clusters"
+    },
+    {
+      "id": "T047",
+      "xy": [
+        -9.3,
+        22.3
+      ],
+      "crown_radius_m": 1.8,
+      "height_m": 6.1,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "informal broadleaf",
+      "group": "park_and_pocket_clusters"
+    },
+    {
+      "id": "T048",
+      "xy": [
+        -59,
+        29
+      ],
+      "crown_radius_m": 2,
+      "height_m": 6.1,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "informal broadleaf",
+      "group": "park_and_pocket_clusters"
+    },
+    {
+      "id": "T049",
+      "xy": [
+        -57,
+        42
+      ],
+      "crown_radius_m": 2.2,
+      "height_m": 6.1,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "informal broadleaf",
+      "group": "park_and_pocket_clusters"
+    },
+    {
+      "id": "T050",
+      "xy": [
+        -48,
+        -4
+      ],
+      "crown_radius_m": 1.8,
+      "height_m": 6.1,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "informal broadleaf",
+      "group": "park_and_pocket_clusters"
+    },
+    {
+      "id": "T051",
+      "xy": [
+        -40,
+        -1
+      ],
+      "crown_radius_m": 1.7,
+      "height_m": 6.1,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "informal broadleaf",
+      "group": "park_and_pocket_clusters"
+    },
+    {
+      "id": "T052",
+      "xy": [
+        -32,
+        0
+      ],
+      "crown_radius_m": 1.7,
+      "height_m": 6.1,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "informal broadleaf",
+      "group": "park_and_pocket_clusters"
+    },
+    {
+      "id": "T053",
+      "xy": [
+        -19,
+        -27
+      ],
+      "crown_radius_m": 1.8,
+      "height_m": 6.1,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "informal broadleaf",
+      "group": "park_and_pocket_clusters"
+    },
+    {
+      "id": "T054",
+      "xy": [
+        -17,
+        -40
+      ],
+      "crown_radius_m": 1.9,
+      "height_m": 6.1,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "informal broadleaf",
+      "group": "park_and_pocket_clusters"
+    },
+    {
+      "id": "T055",
+      "xy": [
+        22,
+        -47
+      ],
+      "crown_radius_m": 3.2,
+      "height_m": 7.2,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "park willow; trunk outside graded pond bank",
+      "group": "park_and_pocket_clusters",
+      "ground_authority": "design_height outside pond outer bank"
+    },
+    {
+      "id": "T056",
+      "xy": [
+        30,
+        -47
+      ],
+      "crown_radius_m": 3.2,
+      "height_m": 7.2,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "park willow; trunk outside graded pond bank",
+      "group": "park_and_pocket_clusters",
+      "ground_authority": "design_height outside pond outer bank"
+    },
+    {
+      "id": "T027",
+      "xy": [
+        34.995,
+        -37.8
+      ],
+      "crown_radius_m": 1.4,
+      "height_m": 5.8,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "narrow pruned salt-tolerant street tree",
+      "group": "seaside",
+      "ground_authority": "design_height on inland dry land"
+    },
+    {
+      "id": "T032",
+      "xy": [
+        40.945,
+        -5.4
+      ],
+      "crown_radius_m": 1.4,
+      "height_m": 5.8,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "narrow pruned salt-tolerant street tree",
+      "group": "seaside",
+      "ground_authority": "design_height on inland dry land"
+    },
+    {
+      "id": "T033",
+      "xy": [
+        41.412,
+        3.92
+      ],
+      "crown_radius_m": 1.4,
+      "height_m": 5.8,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "narrow pruned salt-tolerant street tree",
+      "group": "seaside",
+      "ground_authority": "design_height on inland dry land"
+    },
+    {
+      "id": "T034",
+      "xy": [
+        41.762,
+        10.93
+      ],
+      "crown_radius_m": 1.4,
+      "height_m": 5.8,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "narrow pruned salt-tolerant street tree",
+      "group": "seaside",
+      "ground_authority": "design_height on inland dry land"
+    },
+    {
+      "id": "T035",
+      "xy": [
+        42.112,
+        17.35
+      ],
+      "crown_radius_m": 1.4,
+      "height_m": 5.8,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "narrow pruned salt-tolerant street tree",
+      "group": "seaside",
+      "ground_authority": "design_height on inland dry land"
+    },
+    {
+      "id": "T036",
+      "xy": [
+        38.662,
+        23.87
+      ],
+      "crown_radius_m": 1.4,
+      "height_m": 5.8,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "narrow pruned salt-tolerant street tree",
+      "group": "seaside",
+      "ground_authority": "design_height on inland dry land"
+    },
+    {
+      "id": "T037",
+      "xy": [
+        39.295,
+        27.18
+      ],
+      "crown_radius_m": 1.4,
+      "height_m": 5.8,
+      "trunk_radius_m": 0.2,
+      "clear_stem_height_m": 2.5,
+      "form": "narrow pruned salt-tolerant street tree",
+      "group": "seaside",
+      "ground_authority": "design_height on inland dry land"
+    }
+  ],
+  "gardens": [
+    {
+      "id": "cafe_rear_court",
+      "polygon": [
+        [
+          18.8,
+          -6
+        ],
+        [
+          25.8,
+          -6
+        ],
+        [
+          25.8,
+          9.2
+        ],
+        [
+          18.8,
+          9.2
+        ]
+      ],
+      "palette": [
+        "hydrangea",
+        "ferns",
+        "pale gravel",
+        "climbing rose"
+      ],
+      "height_range_m": [
+        0.15,
+        1.1
+      ],
+      "role": "sheltered planted court around the new walk",
+      "placement_mask": "Individual plants must pass all parcel/route/new-walk/drain clearance tests; envelope is compositional, not permission to fill over a route.",
+      "plant_count": 72,
+      "layers": [
+        "low perennial flower drifts",
+        "fern/grass understory",
+        "irregular shrub/hedge edge"
+      ],
+      "maintenance": "Keep gates, steps, window access and drainage hardware open."
+    },
+    {
+      "id": "civic_reading_pocket",
+      "polygon": [
+        [
+          -12.4,
+          9
+        ],
+        [
+          -8.6,
+          9
+        ],
+        [
+          -8.6,
+          14
+        ],
+        [
+          -12.4,
+          14
+        ]
+      ],
+      "palette": [
+        "hydrangea",
+        "shade fern",
+        "low clipped hedge"
+      ],
+      "height_range_m": [
+        0.15,
+        0.85
+      ],
+      "role": "green pocket between library and mairie",
+      "placement_mask": "Individual plants must pass all parcel/route/new-walk/drain clearance tests; envelope is compositional, not permission to fill over a route.",
+      "plant_count": 24,
+      "layers": [
+        "low perennial flower drifts",
+        "fern/grass understory",
+        "irregular shrub/hedge edge"
+      ],
+      "maintenance": "Keep gates, steps, window access and drainage hardware open."
+    },
+    {
+      "id": "churchyard_edge",
+      "polygon": [
+        [
+          -30,
+          23
+        ],
+        [
+          -27.6,
+          23
+        ],
+        [
+          -27.6,
+          35
+        ],
+        [
+          -30,
+          35
+        ]
+      ],
+      "palette": [
+        "fern",
+        "foxglove",
+        "grass",
+        "low stone edging"
+      ],
+      "height_range_m": [
+        0.15,
+        0.9
+      ],
+      "role": "soften church wall without blocking door or steps",
+      "placement_mask": "Individual plants must pass all parcel/route/new-walk/drain clearance tests; envelope is compositional, not permission to fill over a route.",
+      "plant_count": 32,
+      "layers": [
+        "low perennial flower drifts",
+        "fern/grass understory",
+        "irregular shrub/hedge edge"
+      ],
+      "maintenance": "Keep gates, steps, window access and drainage hardware open."
+    }
+  ],
+  "park": {
+    "id": "southeast_coastal_park",
+    "polygon": [
+      [
+        14,
+        -53
+      ],
+      [
+        38.5,
+        -53
+      ],
+      [
+        38.5,
+        -35.5
+      ],
+      [
+        14,
+        -35.5
+      ]
+    ],
+    "pond": {
+      "id": "south_park_pond",
+      "center": [
+        26,
+        -42
+      ],
+      "water_radii_m": [
+        5,
+        3
+      ],
+      "outer_bank_radii_m": [
+        7,
+        5
+      ],
+      "bank_outer_width_m": 2,
+      "water_z_m": -0.12,
+      "bottom_z_m": -0.92,
+      "maximum_depth_m": 0.8,
+      "water_area_m2": 47.124,
+      "grading_footprint_m2": 109.956,
+      "authority": "Authored lined ornamental park pond; no natural-hydrology or drainage claim.",
+      "terrain_cutout_required": true,
+      "water_mesh_domain": "Only inside the water ellipse; bank terrain reaches exact water datum at the ellipse boundary. Remove/replace the original grass surface inside the entire outer bank ellipse.",
+      "underwater_profile": "q=sqrt((dx/5)^2+(dy/3)^2); z=-.92+.80*max(0,(q-.08)/.92) for q<=1. A tiny flat bottom inside q=.08, then a continuous sloped basin.",
+      "dry_bank_profile": "Along each ray, s=(radius-water_radius(theta))/(outer_radius(theta)-water_radius(theta)); z=waterZ+(existing_outer_z-waterZ)*(.4*s+1.8*s*s-1.2*s*s*s). Meet unchanged existing terrain at the outer ellipse; optionally round only within that envelope.",
+      "dry_bank_max_target_percent": 33.333333,
+      "underwater_slope_bound_percent": 28.9855,
+      "terrain_preservation": "All building pads and all existing 88 street/threshold profiles must remain unchanged; deformation support ends at the outer bank ellipse.",
+      "outer_bank_spot_levels": [
+        {
+          "point": [
+            33.0,
+            -42.0
+          ],
+          "existing_z_m": 0.26600003398698757,
+          "parcel_clearance_m": 11.250000000000002,
+          "existing_route_edge_clearance_m": 5.4
+        },
+        {
+          "point": [
+            30.949747468305834,
+            -38.46446609406726
+          ],
+          "existing_z_m": 0.27420113721729283,
+          "parcel_clearance_m": 7.714466094067264,
+          "existing_route_edge_clearance_m": 3.4644660940672622
+        },
+        {
+          "point": [
+            26.0,
+            -37.0
+          ],
+          "existing_z_m": 0.29400045000333835,
+          "parcel_clearance_m": 6.9327123119310246,
+          "existing_route_edge_clearance_m": 2.0
+        },
+        {
+          "point": [
+            21.05025253169417,
+            -38.46446609406726
+          ],
+          "existing_z_m": 0.3137996939184918,
+          "parcel_clearance_m": 10.214466094067262,
+          "existing_route_edge_clearance_m": 3.4644660940672622
+        },
+        {
+          "point": [
+            19.0,
+            -42.0
+          ],
+          "existing_z_m": 0.32200038287985694,
+          "parcel_clearance_m": 8.5,
+          "existing_route_edge_clearance_m": 7.0
+        },
+        {
+          "point": [
+            21.050252531694166,
+            -45.53553390593274
+          ],
+          "existing_z_m": 0.313799095499124,
+          "parcel_clearance_m": 10.97826464322055,
+          "existing_route_edge_clearance_m": 10.535533905932738
+        },
+        {
+          "point": [
+            26.0,
+            -47.0
+          ],
+          "existing_z_m": 0.29400003074660525,
+          "parcel_clearance_m": 16.140012391568973,
+          "existing_route_edge_clearance_m": 12.0
+        },
+        {
+          "point": [
+            30.94974746830583,
+            -45.53553390593274
+          ],
+          "existing_z_m": 0.2742010291772547,
+          "parcel_clearance_m": 14.78553390593274,
+          "existing_route_edge_clearance_m": 8.116330114165365
+        }
+      ],
+      "cut_depth_at_center_m": 1.2140001233079318,
+      "bed_z_m": -0.92
+    },
+    "benches": [
+      {
+        "id": "park_bench_west",
+        "center": [
+          15.5,
+          -42.5
+        ],
+        "yaw_degrees": -90,
+        "dimensions_m": [
+          1.8,
+          0.6,
+          0.9
+        ]
+      },
+      {
+        "id": "park_bench_south",
+        "center": [
+          27,
+          -52
+        ],
+        "yaw_degrees": 0,
+        "dimensions_m": [
+          1.8,
+          0.6,
+          0.9
+        ]
+      }
+    ],
+    "willows": [
+      "T038",
+      "T039",
+      "T040",
+      "T041",
+      "T042",
+      "T043",
+      "T055",
+      "T056"
+    ],
+    "reeds": [],
+    "purpose": "Shaded coastal park and pond foreground, connected to the south town street.",
+    "flowerbeds": [
+      {
+        "id": "pond_south_flower_drift",
+        "center": [
+          26,
+          -51.5
+        ],
+        "radii": [
+          3.8,
+          0.55
+        ],
+        "plant_count": 36,
+        "palette": [
+          "daisy",
+          "sea thrift",
+          "sedge"
+        ],
+        "max_height_m": 0.55,
+        "clip_to_clearance": true
+      },
+      {
+        "id": "park_west_fern_shrub",
+        "center": [
+          14.8,
+          -44
+        ],
+        "radii": [
+          0.5,
+          2.5
+        ],
+        "plant_count": 24,
+        "palette": [
+          "fern",
+          "hydrangea"
+        ],
+        "max_height_m": 1.1,
+        "clip_to_clearance": true
+      }
+    ]
+  },
+  "coastal_grass": {
+    "patches": [
+      {
+        "id": "D00",
+        "center": [
+          44.683,
+          -40
+        ],
+        "radii_m": [
+          0.9,
+          1.4
+        ],
+        "max_height_m": 0.7,
+        "palette": [
+          "marram grass",
+          "sea thrift",
+          "sparse sand sedge"
+        ],
+        "density": "irregular clumps with 35-55% visible sand",
+        "ground_authority": "surface_height beach profile; no dune mounding or changed coastline"
+      },
+      {
+        "id": "D01",
+        "center": [
+          44.301,
+          -29
+        ],
+        "radii_m": [
+          0.9,
+          1.4
+        ],
+        "max_height_m": 0.7,
+        "palette": [
+          "marram grass",
+          "sea thrift",
+          "sparse sand sedge"
+        ],
+        "density": "irregular clumps with 35-55% visible sand",
+        "ground_authority": "surface_height beach profile; no dune mounding or changed coastline"
+      },
+      {
+        "id": "D02",
+        "center": [
+          44.363,
+          -24
+        ],
+        "radii_m": [
+          0.9,
+          1.4
+        ],
+        "max_height_m": 0.7,
+        "palette": [
+          "marram grass",
+          "sea thrift",
+          "sparse sand sedge"
+        ],
+        "density": "irregular clumps with 35-55% visible sand",
+        "ground_authority": "surface_height beach profile; no dune mounding or changed coastline"
+      },
+      {
+        "id": "D03",
+        "center": [
+          44.628,
+          -18
+        ],
+        "radii_m": [
+          0.9,
+          1.4
+        ],
+        "max_height_m": 0.7,
+        "palette": [
+          "marram grass",
+          "sea thrift",
+          "sparse sand sedge"
+        ],
+        "density": "irregular clumps with 35-55% visible sand",
+        "ground_authority": "surface_height beach profile; no dune mounding or changed coastline"
+      },
+      {
+        "id": "D04",
+        "center": [
+          45.074,
+          -12
+        ],
+        "radii_m": [
+          0.9,
+          1.4
+        ],
+        "max_height_m": 0.7,
+        "palette": [
+          "marram grass",
+          "sea thrift",
+          "sparse sand sedge"
+        ],
+        "density": "irregular clumps with 35-55% visible sand",
+        "ground_authority": "surface_height beach profile; no dune mounding or changed coastline"
+      },
+      {
+        "id": "D05",
+        "center": [
+          45.549,
+          -7
+        ],
+        "radii_m": [
+          0.9,
+          1.4
+        ],
+        "max_height_m": 0.7,
+        "palette": [
+          "marram grass",
+          "sea thrift",
+          "sparse sand sedge"
+        ],
+        "density": "irregular clumps with 35-55% visible sand",
+        "ground_authority": "surface_height beach profile; no dune mounding or changed coastline"
+      },
+      {
+        "id": "D06",
+        "center": [
+          46.629,
+          3
+        ],
+        "radii_m": [
+          0.9,
+          1.4
+        ],
+        "max_height_m": 0.7,
+        "palette": [
+          "marram grass",
+          "sea thrift",
+          "sparse sand sedge"
+        ],
+        "density": "irregular clumps with 35-55% visible sand",
+        "ground_authority": "surface_height beach profile; no dune mounding or changed coastline"
+      },
+      {
+        "id": "D07",
+        "center": [
+          47.25,
+          9
+        ],
+        "radii_m": [
+          0.9,
+          1.4
+        ],
+        "max_height_m": 0.7,
+        "palette": [
+          "marram grass",
+          "sea thrift",
+          "sparse sand sedge"
+        ],
+        "density": "irregular clumps with 35-55% visible sand",
+        "ground_authority": "surface_height beach profile; no dune mounding or changed coastline"
+      },
+      {
+        "id": "D08",
+        "center": [
+          47.61,
+          13
+        ],
+        "radii_m": [
+          0.9,
+          1.4
+        ],
+        "max_height_m": 0.7,
+        "palette": [
+          "marram grass",
+          "sea thrift",
+          "sparse sand sedge"
+        ],
+        "density": "irregular clumps with 35-55% visible sand",
+        "ground_authority": "surface_height beach profile; no dune mounding or changed coastline"
+      },
+      {
+        "id": "D09",
+        "center": [
+          48.079,
+          23
+        ],
+        "radii_m": [
+          0.9,
+          1.4
+        ],
+        "max_height_m": 0.7,
+        "palette": [
+          "marram grass",
+          "sea thrift",
+          "sparse sand sedge"
+        ],
+        "density": "irregular clumps with 35-55% visible sand",
+        "ground_authority": "surface_height beach profile; no dune mounding or changed coastline"
+      },
+      {
+        "id": "D10",
+        "center": [
+          47.561,
+          28
+        ],
+        "radii_m": [
+          0.9,
+          1.4
+        ],
+        "max_height_m": 0.7,
+        "palette": [
+          "marram grass",
+          "sea thrift",
+          "sparse sand sedge"
+        ],
+        "density": "irregular clumps with 35-55% visible sand",
+        "ground_authority": "surface_height beach profile; no dune mounding or changed coastline"
+      }
+    ],
+    "access_gaps": [
+      {
+        "id": "south_beach_view",
+        "center_y": -34,
+        "clear_width_m": 2.4
+      },
+      {
+        "id": "central_beach_view",
+        "center_y": -2.5,
+        "clear_width_m": 2.4
+      },
+      {
+        "id": "north_beach_view",
+        "center_y": 18,
+        "clear_width_m": 2.4
+      }
+    ],
+    "layer_order_inland_to_sea": [
+      "small-crown promenade trees",
+      "low sheltered shrub islands",
+      "open marram/sedge clumps",
+      "bare damp sand"
+    ],
+    "gap_scope": "Keep open sight/access windows in planting; no claim that new accessible beach paths or drainage engineering are supplied."
+  },
+  "meadow_polygons": [
+    {
+      "id": "south_park_meadow",
+      "polygon": [
+        [
+          14,
+          -53
+        ],
+        [
+          38.5,
+          -53
+        ],
+        [
+          38.5,
+          -35.5
+        ],
+        [
+          14,
+          -35.5
+        ]
+      ],
+      "palette": [
+        "uneven short meadow",
+        "daisies",
+        "low coastal herb"
+      ],
+      "mask": "Exclude pond bank, water, all paths, tree wells and bench footprints."
+    },
+    {
+      "id": "inland_garden_verges",
+      "polygon": [
+        [
+          -53,
+          -7
+        ],
+        [
+          -27,
+          -7
+        ],
+        [
+          -27,
+          3
+        ],
+        [
+          -53,
+          3
+        ]
+      ],
+      "palette": [
+        "meadow",
+        "fern islands",
+        "hedge seams"
+      ],
+      "mask": "Exclude all parcels/routes; do not blanket existing roads or planting beds."
+    }
+  ],
+  "existing_scenery_policy": "Replace generic orchard/random lawn fillers with this hierarchy. Preserve existing architecture, garden walls/gates, thresholds, native drainage furniture and a few purposeful domestic vegetable beds; do not stack duplicate tree batches.",
+  "clearance_rules": {
+    "tree_ground_radius_m": 0.2,
+    "minimum_ground_obstacle_to_route_edge_m": 0.45,
+    "minimum_canopy_to_building_footprint_m": 0.35,
+    "crown_overlap": "Permitted within planting groups; tree trunk and low foliage must not block protected routes. Clear stems at least 2.5m.",
+    "new_path_building_clearance_m": 0.3,
+    "new_path_max_grade_percent": 8,
+    "pond_bank_target_max_grade_percent": 33.333333,
+    "drainage_hardware_keepout_radius_m": 0.7,
+    "tree_root_contact": "All trees are inland of the beach land edge and outside pond grading; use design_height. Beach grass uses beach_height."
+  },
+  "validation": {
+    "status": "PASS",
+    "frozen_building_count": 49,
+    "frozen_existing_route_count": 86,
+    "pond_outer_bank_min_parcel_clearance_m": 6.530372216611887,
+    "pond_outer_bank_min_existing_route_edge_clearance_m": 2.0,
+    "outer_bank_existing_z_range_m": [
+      0.26600003398698757,
+      0.32200038287985694
+    ],
+    "outer_bank_mean_grade_range_percent": [
+      19.30000169934938,
+      22.100019143992846
+    ],
+    "tree_count": 52,
+    "minimum_tree_crown_to_parcel_clearance_m": 0.35992928865257046,
+    "minimum_tree_trunk_center_to_existing_route_edge_m": 0.6626731120071807,
+    "minimum_tree_trunk_center_to_new_path_edge_m": 0.6677492476402711,
+    "new_paths": [
+      {
+        "id": "park_loop",
+        "minimum_parcel_edge_clearance_m": 4.4,
+        "authored_surface_max_grade_percent": 1.1379606558598017,
+        "samples": 255,
+        "pass": true
+      },
+      {
+        "id": "park_west_gate",
+        "minimum_parcel_edge_clearance_m": 4.1041219597369,
+        "authored_surface_max_grade_percent": 5.226219054343787,
+        "samples": 13,
+        "pass": true
+      },
+      {
+        "id": "park_east_gate",
+        "minimum_parcel_edge_clearance_m": 1.5000000000000013,
+        "authored_surface_max_grade_percent": 5.1339048456172245,
+        "samples": 13,
+        "pass": true
+      },
+      {
+        "id": "cafe_garden_walk",
+        "minimum_parcel_edge_clearance_m": 0.4,
+        "authored_surface_max_grade_percent": 2.0477578671983743,
+        "samples": 64,
+        "pass": true
+      },
+      {
+        "id": "civic_pocket_walk",
+        "minimum_parcel_edge_clearance_m": 1.1512251678519454,
+        "authored_surface_max_grade_percent": 5.849999999999987,
+        "samples": 11,
+        "pass": true
+      }
+    ],
+    "note": "Reconciled against installed irregular masterplan; root must regenerate shared terrain and run native/consumer audits.",
+    "minimum_tree_root_to_beach_land_edge_m": 0.46969425622457095,
+    "tree_siting_errors": [],
+    "minimum_tree_root_inland_of_beach_edge_m": 0.46969425622457095
+  },
+  "pond": {
+    "id": "south_park_pond",
+    "center": [
+      26,
+      -42
+    ],
+    "water_radii_m": [
+      5,
+      3
+    ],
+    "outer_bank_radii_m": [
+      7,
+      5
+    ],
+    "bank_outer_width_m": 2,
+    "water_z_m": -0.12,
+    "bottom_z_m": -0.92,
+    "maximum_depth_m": 0.8,
+    "water_area_m2": 47.124,
+    "grading_footprint_m2": 109.956,
+    "authority": "Authored lined ornamental park pond; no natural-hydrology or drainage claim.",
+    "terrain_cutout_required": true,
+    "water_mesh_domain": "Only inside the water ellipse; bank terrain reaches exact water datum at the ellipse boundary. Remove/replace the original grass surface inside the entire outer bank ellipse.",
+    "underwater_profile": "q=sqrt((dx/5)^2+(dy/3)^2); z=-.92+.80*max(0,(q-.08)/.92) for q<=1. A tiny flat bottom inside q=.08, then a continuous sloped basin.",
+    "dry_bank_profile": "Along each ray, s=(radius-water_radius(theta))/(outer_radius(theta)-water_radius(theta)); z=waterZ+(existing_outer_z-waterZ)*(.4*s+1.8*s*s-1.2*s*s*s). Meet unchanged existing terrain at the outer ellipse; optionally round only within that envelope.",
+    "dry_bank_max_target_percent": 33.333333,
+    "underwater_slope_bound_percent": 28.9855,
+    "terrain_preservation": "All building pads and all existing 88 street/threshold profiles must remain unchanged; deformation support ends at the outer bank ellipse.",
+    "outer_bank_spot_levels": [
+      {
+        "point": [
+          33.0,
+          -42.0
+        ],
+        "existing_z_m": 0.26600003398698757,
+        "parcel_clearance_m": 11.250000000000002,
+        "existing_route_edge_clearance_m": 5.4
+      },
+      {
+        "point": [
+          30.949747468305834,
+          -38.46446609406726
+        ],
+        "existing_z_m": 0.27420113721729283,
+        "parcel_clearance_m": 7.714466094067264,
+        "existing_route_edge_clearance_m": 3.4644660940672622
+      },
+      {
+        "point": [
+          26.0,
+          -37.0
+        ],
+        "existing_z_m": 0.29400045000333835,
+        "parcel_clearance_m": 6.9327123119310246,
+        "existing_route_edge_clearance_m": 2.0
+      },
+      {
+        "point": [
+          21.05025253169417,
+          -38.46446609406726
+        ],
+        "existing_z_m": 0.3137996939184918,
+        "parcel_clearance_m": 10.214466094067262,
+        "existing_route_edge_clearance_m": 3.4644660940672622
+      },
+      {
+        "point": [
+          19.0,
+          -42.0
+        ],
+        "existing_z_m": 0.32200038287985694,
+        "parcel_clearance_m": 8.5,
+        "existing_route_edge_clearance_m": 7.0
+      },
+      {
+        "point": [
+          21.050252531694166,
+          -45.53553390593274
+        ],
+        "existing_z_m": 0.313799095499124,
+        "parcel_clearance_m": 10.97826464322055,
+        "existing_route_edge_clearance_m": 10.535533905932738
+      },
+      {
+        "point": [
+          26.0,
+          -47.0
+        ],
+        "existing_z_m": 0.29400003074660525,
+        "parcel_clearance_m": 16.140012391568973,
+        "existing_route_edge_clearance_m": 12.0
+      },
+      {
+        "point": [
+          30.94974746830583,
+          -45.53553390593274
+        ],
+        "existing_z_m": 0.2742010291772547,
+        "parcel_clearance_m": 14.78553390593274,
+        "existing_route_edge_clearance_m": 8.116330114165365
+      }
+    ],
+    "cut_depth_at_center_m": 1.2140001233079318,
+    "bed_z_m": -0.92
+  },
+  "siting_adjustments": [
+    {
+      "id": "T027",
+      "action": "moved_to_validated_inland_verge",
+      "xy": [
+        37.895,
+        -37.0
+      ],
+      "crown_radius_m": 1.4
+    },
+    {
+      "id": "T032",
+      "action": "moved_to_validated_inland_verge",
+      "xy": [
+        39.145,
+        -4.9
+      ],
+      "crown_radius_m": 1.4
+    },
+    {
+      "id": "T033",
+      "action": "moved_to_validated_inland_verge",
+      "xy": [
+        39.512,
+        4.52
+      ],
+      "crown_radius_m": 1.4
+    },
+    {
+      "id": "T034",
+      "action": "moved_to_validated_inland_verge",
+      "xy": [
+        39.762,
+        10.93
+      ],
+      "crown_radius_m": 1.4
+    },
+    {
+      "id": "T035",
+      "action": "moved_to_validated_inland_verge",
+      "xy": [
+        40.012,
+        17.35
+      ],
+      "crown_radius_m": 1.4
+    },
+    {
+      "id": "T036",
+      "action": "moved_to_validated_inland_verge",
+      "xy": [
+        40.262,
+        23.77
+      ],
+      "crown_radius_m": 1.4
+    },
+    {
+      "id": "T037",
+      "action": "moved_to_validated_inland_verge",
+      "xy": [
+        40.395,
+        27.18
+      ],
+      "crown_radius_m": 1.4
+    },
+    {
+      "id": "T028",
+      "action": "removed",
+      "reason": "No inland tree location met parcel/path/frontage clearances."
+    },
+    {
+      "id": "T029",
+      "action": "removed",
+      "reason": "No inland tree location met parcel/path/frontage clearances."
+    },
+    {
+      "id": "T030",
+      "action": "removed",
+      "reason": "No inland tree location met parcel/path/frontage clearances."
+    },
+    {
+      "id": "T031",
+      "action": "removed",
+      "reason": "No inland tree location met parcel/path/frontage clearances."
+    },
+    {
+      "id": "T008",
+      "action": "crown_radius_reduced_to_1.15m",
+      "reason": "Conservative expanded-rectangle builder clearance at terrace corner."
+    },
+    {
+      "id": "T009",
+      "action": "crown_radius_reduced_to_1.29m",
+      "reason": "Conservative expanded-rectangle builder clearance at library corner."
+    }
+  ],
+  "coverage_assessment": {
+    "method": "0.25m area grid union of proposed crown discs, plus 0.5m route stations at center and +/-40% of width. Plan projection only; not solar shadow, ecological certification or final rendered canopy.",
+    "areas": {
+      "southeast_park": {
+        "sample_spacing_m": 0.25,
+        "sampled_area_m2": 428.75,
+        "canopy_projection_area_m2": 167.4375,
+        "canopy_projection_percent": 39.05
+      },
+      "civic_plaza": {
+        "sample_spacing_m": 0.25,
+        "sampled_area_m2": 320.0,
+        "canopy_projection_area_m2": 104.0,
+        "canopy_projection_percent": 32.5
+      },
+      "cafe_court": {
+        "sample_spacing_m": 0.25,
+        "sampled_area_m2": 106.75,
+        "canopy_projection_area_m2": 50.6875,
+        "canopy_projection_percent": 47.48
+      }
+    },
+    "routes": [
+      {
+        "id": "main_west",
+        "sample_spacing_m_at_most": 0.5,
+        "crosswalk_samples": 3,
+        "canopy_projection_percent": 3.22,
+        "longest_uncovered_run_m": 50.2,
+        "uncovered_run_basis": "centerline"
+      },
+      {
+        "id": "civicnorth",
+        "sample_spacing_m_at_most": 0.5,
+        "crosswalk_samples": 3,
+        "canopy_projection_percent": 15.13,
+        "longest_uncovered_run_m": 29.41,
+        "uncovered_run_basis": "centerline"
+      },
+      {
+        "id": "upperwest",
+        "sample_spacing_m_at_most": 0.5,
+        "crosswalk_samples": 3,
+        "canopy_projection_percent": 0.0,
+        "longest_uncovered_run_m": 37.06,
+        "uncovered_run_basis": "centerline"
+      },
+      {
+        "id": "westconnector",
+        "sample_spacing_m_at_most": 0.5,
+        "crosswalk_samples": 3,
+        "canopy_projection_percent": 9.91,
+        "longest_uncovered_run_m": 30.51,
+        "uncovered_run_basis": "centerline"
+      },
+      {
+        "id": "seaside",
+        "sample_spacing_m_at_most": 0.5,
+        "crosswalk_samples": 3,
+        "canopy_projection_percent": 6.06,
+        "longest_uncovered_run_m": 77.34,
+        "uncovered_run_basis": "centerline"
+      },
+      {
+        "id": "park_loop",
+        "sample_spacing_m_at_most": 0.5,
+        "crosswalk_samples": 3,
+        "canopy_projection_percent": 23.88,
+        "longest_uncovered_run_m": 33.11,
+        "uncovered_run_basis": "centerline"
+      },
+      {
+        "id": "park_west_gate",
+        "sample_spacing_m_at_most": 0.5,
+        "crosswalk_samples": 3,
+        "canopy_projection_percent": 0.0,
+        "longest_uncovered_run_m": 2.9,
+        "uncovered_run_basis": "centerline"
+      },
+      {
+        "id": "park_east_gate",
+        "sample_spacing_m_at_most": 0.5,
+        "crosswalk_samples": 3,
+        "canopy_projection_percent": 0.0,
+        "longest_uncovered_run_m": 2.9,
+        "uncovered_run_basis": "centerline"
+      },
+      {
+        "id": "cafe_garden_walk",
+        "sample_spacing_m_at_most": 0.5,
+        "crosswalk_samples": 3,
+        "canopy_projection_percent": 12.9,
+        "longest_uncovered_run_m": 9.66,
+        "uncovered_run_basis": "centerline"
+      },
+      {
+        "id": "civic_pocket_walk",
+        "sample_spacing_m_at_most": 0.5,
+        "crosswalk_samples": 3,
+        "canopy_projection_percent": 0.0,
+        "longest_uncovered_run_m": 2.3,
+        "uncovered_run_basis": "centerline"
+      }
+    ],
+    "distant_woodland": "No distant/background woodland is counted in park, plaza, court or route coverage.",
+    "gaps_and_intent": [
+      "Compact frontage lanes have long canopy gaps where parcel and entrance clearances take precedence; planted courts and pocket shade provide the local refuge.",
+      "The seaside avenue keeps open sea views and narrow crowns in constrained inland verges; no false promise of continuous promenade shade.",
+      "Broad park crowns and two pond-side willows overlap portions of the loop and seating; use layered meadow/flower/shrub structure for ground-level richness."
+    ],
+    "horticulture_layers": [
+      "Broad irregular park canopy and narrow street crowns",
+      "Hydrangea and clipped hedge seams in sheltered courts",
+      "Fern and perennial flower drifts with mixed seasonal colour",
+      "Meadow daisies/coastal herbs and sparse marram/sea thrift above bare sand"
+    ]
+  },
+  "planning_revision_siting": {
+    "masterplan_sha256": "b7e5522f62f4a390faa95502537fbbac14856cb278bccb695fbd5cabe186377f",
+    "tree_relocations": [
+      {
+        "id": "T008",
+        "previous_xy": [
+          -22.657,
+          -8.061
+        ],
+        "revised_xy": [
+          -22.657,
+          -7.761
+        ],
+        "distance_m": 0.3,
+        "reason": "Installed irregular route/parcel clearance",
+        "method": "Closest feasible 0.1m XY grid point within 8m, preserving established area canopy targets; no crown/height/ID change"
+      },
+      {
+        "id": "T010",
+        "previous_xy": [
+          -11.653,
+          21.396
+        ],
+        "revised_xy": [
+          -11.753,
+          21.796
+        ],
+        "distance_m": 0.4123,
+        "reason": "Installed irregular route/parcel clearance",
+        "method": "Closest feasible 0.1m XY grid point within 8m, preserving established area canopy targets; no crown/height/ID change"
+      },
+      {
+        "id": "T011",
+        "previous_xy": [
+          -5.153,
+          21.771
+        ],
+        "revised_xy": [
+          -7.853,
+          22.471
+        ],
+        "distance_m": 2.7893,
+        "reason": "Installed irregular route/parcel clearance",
+        "method": "Closest feasible 0.1m XY grid point within 8m, preserving established area canopy targets; no crown/height/ID change"
+      },
+      {
+        "id": "T012",
+        "previous_xy": [
+          1.347,
+          22.146
+        ],
+        "revised_xy": [
+          4.947,
+          22.646
+        ],
+        "distance_m": 3.6346,
+        "reason": "Installed irregular route/parcel clearance",
+        "method": "Closest feasible 0.1m XY grid point within 8m, preserving established area canopy targets; no crown/height/ID change"
+      },
+      {
+        "id": "T014",
+        "previous_xy": [
+          7.847,
+          22.521
+        ],
+        "revised_xy": [
+          7.847,
+          22.821
+        ],
+        "distance_m": 0.3,
+        "reason": "Installed irregular route/parcel clearance",
+        "method": "Closest feasible 0.1m XY grid point within 8m, preserving established area canopy targets; no crown/height/ID change"
+      },
+      {
+        "id": "T047",
+        "previous_xy": [
+          -9,
+          21.5
+        ],
+        "revised_xy": [
+          -9.3,
+          22.3
+        ],
+        "distance_m": 0.8544,
+        "reason": "Installed irregular route/parcel clearance",
+        "method": "Closest feasible 0.1m XY grid point within 8m, preserving established area canopy targets; no crown/height/ID change"
+      },
+      {
+        "id": "T027",
+        "previous_xy": [
+          37.895,
+          -37.0
+        ],
+        "revised_xy": [
+          34.995,
+          -37.8
+        ],
+        "distance_m": 3.0083,
+        "reason": "Installed irregular route/parcel clearance",
+        "method": "Closest feasible 0.1m XY grid point within 8m, preserving established area canopy targets; no crown/height/ID change"
+      },
+      {
+        "id": "T032",
+        "previous_xy": [
+          39.145,
+          -4.9
+        ],
+        "revised_xy": [
+          40.945,
+          -5.4
+        ],
+        "distance_m": 1.8682,
+        "reason": "Installed irregular route/parcel clearance",
+        "method": "Closest feasible 0.1m XY grid point within 8m, preserving established area canopy targets; no crown/height/ID change"
+      },
+      {
+        "id": "T033",
+        "previous_xy": [
+          39.512,
+          4.52
+        ],
+        "revised_xy": [
+          41.412,
+          3.92
+        ],
+        "distance_m": 1.9925,
+        "reason": "Installed irregular route/parcel clearance",
+        "method": "Closest feasible 0.1m XY grid point within 8m, preserving established area canopy targets; no crown/height/ID change"
+      },
+      {
+        "id": "T034",
+        "previous_xy": [
+          39.762,
+          10.93
+        ],
+        "revised_xy": [
+          41.762,
+          10.93
+        ],
+        "distance_m": 2.0,
+        "reason": "Installed irregular route/parcel clearance",
+        "method": "Closest feasible 0.1m XY grid point within 8m, preserving established area canopy targets; no crown/height/ID change"
+      },
+      {
+        "id": "T035",
+        "previous_xy": [
+          40.012,
+          17.35
+        ],
+        "revised_xy": [
+          42.112,
+          17.35
+        ],
+        "distance_m": 2.1,
+        "reason": "Installed irregular route/parcel clearance",
+        "method": "Closest feasible 0.1m XY grid point within 8m, preserving established area canopy targets; no crown/height/ID change"
+      },
+      {
+        "id": "T036",
+        "previous_xy": [
+          40.262,
+          23.77
+        ],
+        "revised_xy": [
+          38.662,
+          23.87
+        ],
+        "distance_m": 1.6031,
+        "reason": "Installed irregular route/parcel clearance",
+        "method": "Closest feasible 0.1m XY grid point within 8m, preserving established area canopy targets; no crown/height/ID change"
+      },
+      {
+        "id": "T037",
+        "previous_xy": [
+          40.395,
+          27.18
+        ],
+        "revised_xy": [
+          39.295,
+          27.18
+        ],
+        "distance_m": 1.1,
+        "reason": "Installed irregular route/parcel clearance",
+        "method": "Closest feasible 0.1m XY grid point within 8m, preserving established area canopy targets; no crown/height/ID change"
+      }
+    ],
+    "all_tree_ids_crowns_heights_retained": true,
+    "all_five_paths_and_plant_roles_retained": true,
+    "search": "Closest feasible 0.1m grid point within 8m retaining established area canopy targets; exact consumer parcel test and route/path/drain/pond/dry-land guards"
+  }
+}

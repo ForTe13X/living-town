@@ -1,0 +1,557 @@
+{
+  "schema": "living_town.bridge.actual_visual_review.v1",
+  "status": "PASS",
+  "generated_utc": "2026-10-12T13:31:31.234732+00:00",
+  "scope": "All five fresh null-anchor-fix Main/LifeMode GPU PNGs independently reopened with view_image. Canonical and actual runtime-origin PNG hashes match the current28-check report; current WorldView3D source and fresh stable-source clean-log receipt reviewed. Bounded image review, not native executable interaction certification or performance profiling.",
+  "source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
+  "source_glb_sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c",
+  "profile_sha256": "66c800130175677ec9c82ed44d7a1833dca634c602ffcc604e9aa258386d2c5e",
+  "projection_sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a",
+  "logical_report_sha256": "200fae54768f27934698cfd01570b051516794cb99a7b21dac48d86e54c54aca",
+  "logical_checks": 36,
+  "visual_report_sha256": "f5782bed4c1bdb82e4a17d9fd7095785dd6b6fa5089dd0624140fd6d39e87163",
+  "visual_checks": 28,
+  "selected_fixture_mesh_proof": {
+    "requested_binding": {
+      "approach_local_m": [
+        -0.125,
+        0.125
+      ],
+      "cell": [
+        19.0,
+        17.0
+      ],
+      "fixture_center_local_m": [
+        -1.81,
+        0.17
+      ],
+      "fixture_footprint_m": [
+        -3.31,
+        -0.13,
+        -0.31,
+        0.47
+      ],
+      "model_asset_id": "Main_cafe_L00_Public_Room_A00_cafe_counter",
+      "model_asset_kind": "cafe_counter",
+      "note": "Legacy action at a reachable standing cell adjacent to an actual compatible fixture.",
+      "plane": "cafe/1f"
+    },
+    "requested_id": "cafe1f_counter",
+    "same_imported_mesh_and_plane": true,
+    "selected_binding": {
+      "approach_local_m": [
+        -0.125,
+        0.375
+      ],
+      "cell": [
+        19.0,
+        16.0
+      ],
+      "fixture_center_local_m": [
+        -1.81,
+        0.17
+      ],
+      "fixture_footprint_m": [
+        -3.31,
+        -0.13,
+        -0.31,
+        0.47
+      ],
+      "model_asset_id": "Main_cafe_L00_Public_Room_A00_cafe_counter",
+      "model_asset_kind": "cafe_counter",
+      "note": "Legacy action at a reachable standing cell adjacent to an actual compatible fixture.",
+      "plane": "cafe/1f"
+    },
+    "selected_id": "counter_1"
+  },
+  "observed_action_and_occlusion_checks": [
+    {
+      "detail": {
+        "cell_error": 1.62963939753051e-05
+      },
+      "name": "actual_camera_floor_ray_roundtrip_under_0_02_cell",
+      "passed": true
+    },
+    {
+      "detail": null,
+      "name": "screen_input_owner_uses_actual_stair_portal",
+      "passed": true
+    },
+    {
+      "detail": {
+        "requested_binding": {
+          "approach_local_m": [
+            -0.125,
+            0.125
+          ],
+          "cell": [
+            19.0,
+            17.0
+          ],
+          "fixture_center_local_m": [
+            -1.81,
+            0.17
+          ],
+          "fixture_footprint_m": [
+            -3.31,
+            -0.13,
+            -0.31,
+            0.47
+          ],
+          "model_asset_id": "Main_cafe_L00_Public_Room_A00_cafe_counter",
+          "model_asset_kind": "cafe_counter",
+          "note": "Legacy action at a reachable standing cell adjacent to an actual compatible fixture.",
+          "plane": "cafe/1f"
+        },
+        "requested_id": "cafe1f_counter",
+        "same_imported_mesh_and_plane": true,
+        "selected_binding": {
+          "approach_local_m": [
+            -0.125,
+            0.375
+          ],
+          "cell": [
+            19.0,
+            16.0
+          ],
+          "fixture_center_local_m": [
+            -1.81,
+            0.17
+          ],
+          "fixture_footprint_m": [
+            -3.31,
+            -0.13,
+            -0.31,
+            0.47
+          ],
+          "model_asset_id": "Main_cafe_L00_Public_Room_A00_cafe_counter",
+          "model_asset_kind": "cafe_counter",
+          "note": "Legacy action at a reachable standing cell adjacent to an actual compatible fixture.",
+          "plane": "cafe/1f"
+        },
+        "selected_id": "counter_1"
+      },
+      "name": "actual_fixture_mesh_click_opens_existing_action_menu",
+      "passed": true
+    },
+    {
+      "detail": {
+        "luminance_stddev": 0.155522229637474,
+        "mean_luminance": 0.219103714951065
+      },
+      "name": "actual_main_framebuffer_02_fixture_menu",
+      "passed": true
+    },
+    {
+      "detail": {
+        "core_object_intent": true,
+        "moved": true,
+        "selected_action": "闲聊",
+        "selected_target": "counter_1",
+        "sheet_walk_frames": true
+      },
+      "name": "mouse_menu_keyboard_action_moves_retained_sprite_over_frames",
+      "passed": true
+    },
+    {
+      "detail": {
+        "advertised_action": {
+          "action": "闲聊",
+          "affordable": true,
+          "amount": 42,
+          "duration": 20,
+          "need": "social",
+          "ok": true,
+          "price": 0,
+          "wage": 0,
+          "why": ""
+        },
+        "coin_change": 0,
+        "completion_events": [
+          {
+            "action": "闲聊",
+            "target": "counter_1",
+            "tick": 44,
+            "wage": 0
+          }
+        ],
+        "largest_observed_use_need_step": 1.94999999999999,
+        "need": "social",
+        "need_change": 30.4000000000001,
+        "use_phase_observed": true
+      },
+      "name": "existing_fixture_action_executes_with_measurable_effect",
+      "passed": true
+    },
+    {
+      "detail": {
+        "actual_geometry_ray": {
+          "blocked": false,
+          "distance": 0,
+          "occluder": ""
+        },
+        "view_state": {
+          "actor_id": "aria",
+          "blocked": false,
+          "max_query_hz": 5,
+          "normal_depth_preserved": true,
+          "occluder": "",
+          "ray_count": 99
+        }
+      },
+      "name": "unblocked_controlled_resident_hides_occlusion_ghost",
+      "passed": true
+    },
+    {
+      "detail": {
+        "luminance_stddev": 0.190132945694553,
+        "mean_luminance": 0.282821049244689
+      },
+      "name": "actual_main_framebuffer_04_fixture_use_complete",
+      "passed": true
+    },
+    {
+      "detail": null,
+      "name": "screen_input_returns_resident_to_real_town",
+      "passed": true
+    },
+    {
+      "detail": {
+        "actual_geometry_ray": {
+          "blocked": true,
+          "distance": 97.5640029907227,
+          "occluder": "Front_AwningBlue"
+        },
+        "view_state": {
+          "actor_id": "aria",
+          "blocked": true,
+          "max_query_hz": 5,
+          "normal_depth_preserved": true,
+          "occluder": "Front_AwningBlue",
+          "ray_count": 115
+        }
+      },
+      "name": "roof_occluded_controlled_resident_has_actual_los_and_visible_ghost",
+      "passed": true
+    },
+    {
+      "detail": {
+        "normal_primary_depth": true,
+        "silhouette_frame_matches": true
+      },
+      "name": "only_matching_silhouette_bypasses_depth_with_primary_preserved",
+      "passed": true
+    },
+    {
+      "detail": {
+        "cell_error": 1.01725260416667e-05,
+        "terrain_y": 0.420870006084442
+      },
+      "name": "actual_terrain_camera_ray_roundtrip_under_0_03_cell",
+      "passed": true
+    },
+    {
+      "detail": {
+        "actual_ground_picks": [
+          {
+            "cell_error": 0.0,
+            "expected": "(6648.0, 5592.0)",
+            "picked": "(6648.0, 5592.0)"
+          },
+          {
+            "cell_error": 1.01725260416667e-05,
+            "expected": "(6744.0, 5688.0)",
+            "picked": "(6744.0, 5688.0)"
+          },
+          {
+            "cell_error": 1.01725260416667e-05,
+            "expected": "(6936.0, 5832.0)",
+            "picked": "(6936.0, 5832.0)"
+          }
+        ],
+        "anchor_error_px": 0.0
+      },
+      "name": "null_mesh_outdoor_anchor_preserves_projection_and_ground_picking",
+      "passed": true
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "docs/town_bridge/captures/01_owner_upper.png",
+      "runtime_origin_file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\null_anchor_visual/01_owner_upper.png",
+      "bytes": 919454,
+      "sha256": "dabfc2a0926065b26220680197187aa35736f79c04060eb303ccd8fbacb7701d",
+      "tick": 3,
+      "space": "cafe",
+      "floor": "2f",
+      "size": [
+        1280,
+        768
+      ],
+      "status": "PASS",
+      "actual_image_opened": true,
+      "image_matches_current_runtime_report": true,
+      "observation": "Actual upper cafe home is revealed locally: Aria, bed prompt, timber flooring, tiled service area and stair are readable; adjacent roofs remain present. Existing gameplay HUD covers part of the frame. This legible night-state capture is not an architectural presentation shot."
+    },
+    {
+      "file": "docs/town_bridge/captures/02_fixture_menu.png",
+      "runtime_origin_file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\null_anchor_visual/02_fixture_menu.png",
+      "bytes": 974899,
+      "sha256": "7b062124500fff3fada55e7523ba7616d322b47dd9fd9b648e7cd2f8ab2a79f6",
+      "tick": 16,
+      "space": "cafe",
+      "floor": "1f",
+      "size": [
+        1280,
+        768
+      ],
+      "status": "PASS",
+      "actual_image_opened": true,
+      "image_matches_current_runtime_report": true,
+      "observation": "Actual cafe floor and counter remain visible behind the existing Chinese menu. It offers chat/social +42 and reading/fun +20. Selected counter_1 is the recorded same-mesh alias of cafe1f_counter, not a different modeled fixture."
+    },
+    {
+      "file": "docs/town_bridge/captures/03_character_walking.png",
+      "runtime_origin_file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\null_anchor_visual/03_character_walking.png",
+      "bytes": 1041117,
+      "sha256": "d98e7b72e8e91cdddf2428b170362444209fad817f2cccc56246edffa9a9c7ab",
+      "tick": 16,
+      "space": "cafe",
+      "floor": "1f",
+      "size": [
+        1280,
+        768
+      ],
+      "status": "PASS",
+      "actual_image_opened": true,
+      "image_matches_current_runtime_report": true,
+      "observation": "The retained sprite is visible beside the actual stair and tiled circulation strip, with the HUD reading walk then chat. Compared with the menu image, position/pose and absence of menu are consistent with the recorded input action. A still alone cannot establish the whole trajectory or atlas animation."
+    },
+    {
+      "file": "docs/town_bridge/captures/04_fixture_use_complete.png",
+      "runtime_origin_file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\null_anchor_visual/04_fixture_use_complete.png",
+      "bytes": 1104157,
+      "sha256": "6ad87e84dcdfe8cbeb74b9d90eb2e7ea20131b8cfb0c6cc701e383a08993fb00",
+      "tick": 44,
+      "space": "cafe",
+      "floor": "1f",
+      "size": [
+        1280,
+        768
+      ],
+      "status": "PASS",
+      "actual_image_opened": true,
+      "image_matches_current_runtime_report": true,
+      "observation": "Aria is visibly at the modeled counter; the completion toast reads completed chat/social +42, and the existing needs panel shows social100. Tiled circulation, counter and adjacent roofs are coherent; the selected floor stays locally open."
+    },
+    {
+      "file": "docs/town_bridge/captures/05_town_exterior.png",
+      "runtime_origin_file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\null_anchor_visual/05_town_exterior.png",
+      "bytes": 1151070,
+      "sha256": "deda892cf135d94d6353d9f9677c9e5551fd1b55d115c3917524f154dabb08f6",
+      "tick": 51,
+      "space": "town",
+      "floor": "outdoor",
+      "size": [
+        1280,
+        768
+      ],
+      "status": "PASS",
+      "actual_image_opened": true,
+      "image_matches_current_runtime_report": true,
+      "observation": "Exterior roofs are restored and existing residents/social bubbles occupy the paved square. At Aria's awning-obscured entry threshold, a matching gold silhouette and selection ring remain visible under the entry prompt. Dense overlapping plaza NPC labels do not block this bounded entry/occlusion proof."
+    }
+  ],
+  "failure_count": 0,
+  "concrete_visual_blockers": [],
+  "limits": [
+    "These are source-game interaction-harness PNGs, not refreshed native EXE boot proof.",
+    "Current full gameplay HUD is visible; dense plaza labels overlap and night-state frames are darker than the separate narrated architectural inspection.",
+    "Motion, input and quantified action effects come from the bound runtime checks; still images alone establish only the pictured states.",
+    "The controlled-resident silhouette is an occlusion aid; other residents retain normal depth.",
+    "The capture HUD records62 actors; no12-actor capture or full-town frame-rate/VRAM measurement is claimed.",
+    "The runtime report has no individual source-file hash table. Current WorldView3D is separately SHA-bound here; its pre-capture mtime and the supervisor stable dirty-candidate fingerprint support the source review. The captured HEAD precedes its subsequent commit.",
+    "Null-anchor ground-pick accuracy is quantified by the fresh runtime check; the five gameplay PNGs do not by themselves show every outdoor semantic anchor."
+  ],
+  "direct_agent_writes": false,
+  "supersedes_review_sha256": "4270bd10d9c557643990f8947d24a5533ccb738da3f3aa9e13d06a1bd231c7da",
+  "reviewed_source_hashes": {
+    "game/scripts/WorldView3D.gd": "c470cf9423086b08c60c18183632773dba467e6e99b50389b1a2347175e975fd"
+  },
+  "source_review": {
+    "file": "game/scripts/WorldView3D.gd",
+    "sha256": "c470cf9423086b08c60c18183632773dba467e6e99b50389b1a2347175e975fd",
+    "helper": "_binding_asset_id_3d",
+    "null_safe_caller_count": 3,
+    "null_string_conversion_removed": true,
+    "empty_asset_preserves_anchor_or_floor_ray_fallback": true,
+    "source_mtime_precedes_capture": true
+  },
+  "runtime_receipt": {
+    "path": "C:\\Users\\yp\\AppData\\Local\\Temp\\living-town-godot-runs\\20261012T132540731Z_74f5536361ba41908f77436c7cccabfd\\receipt.json",
+    "sha256": "a74d9b0744347a59f20bc761cb796aa3686d121232f01e91cc3198dcca0295c5",
+    "outcome": "pass",
+    "exit_code": 0,
+    "source_identity": "dirty_candidate",
+    "captured_head": "4c3df59b1b672c6f77084f7e287de049e548574a",
+    "captured_worktree_fingerprint": "18152947771ca93e9ef49d0751467343d1b67681fb8cf72ddb732c6a87b8e233",
+    "source_stable": true,
+    "cleanup_verified": true,
+    "started_utc": "2026-10-12T13:25:40.7491970Z",
+    "finished_utc": "2026-10-12T13:26:13.9886690Z",
+    "logs": {
+      "godot": {
+        "bytes": 1758,
+        "sha256": "6825409a404c9fa7b6f715cbd8b8a2fc5dc22371bfbdcf733cd62213dcc7aba2"
+      },
+      "stdout": {
+        "bytes": 1790,
+        "sha256": "640ca9be9f2a816a1b4b8822476ebef01f75d0fd128ebc8a59eeb0afe39a174b"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  "null_mesh_anchor_check": {
+    "detail": {
+      "actual_ground_picks": [
+        {
+          "cell_error": 0.0,
+          "expected": "(6648.0, 5592.0)",
+          "picked": "(6648.0, 5592.0)"
+        },
+        {
+          "cell_error": 1.01725260416667e-05,
+          "expected": "(6744.0, 5688.0)",
+          "picked": "(6744.0, 5688.0)"
+        },
+        {
+          "cell_error": 1.01725260416667e-05,
+          "expected": "(6936.0, 5832.0)",
+          "picked": "(6936.0, 5832.0)"
+        }
+      ],
+      "anchor_error_px": 0.0
+    },
+    "name": "null_mesh_outdoor_anchor_preserves_projection_and_ground_picking",
+    "passed": true
+  },
+  "supplemental_revalidations": [
+    {
+      "schema": "living_town.bridge.visual_review_revalidation.v1",
+      "generated_utc": "2026-10-12T21:24:18.024665+00:00",
+      "reviewer_kind": "agent",
+      "reviewer": "/root/blender_connection",
+      "status": "PASS",
+      "reason": "The supervised logical suite was rerun after finalization detected its old WorldView3D hash. The new36-check logical report now records all6 current source hashes. This supplement refreshes the logical evidence binding while retaining the original five-image inspection history.",
+      "prior_review": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\review_history\\actual_visual_test_review_report.ec61cf6b28dbe936143552aac015e332e0a1e52beeb6ab7c3dfdf86390fe9d29.json",
+        "bytes": 15788,
+        "sha256": "ec61cf6b28dbe936143552aac015e332e0a1e52beeb6ab7c3dfdf86390fe9d29",
+        "original_image_inspection_generated_utc": "2026-10-12T13:31:31.234732+00:00",
+        "prior_logical_report_sha256": "b7c1ecce9ab0644c25084834978304f102b124db290295b8a48b164412fec1cd"
+      },
+      "logical_report": {
+        "file": "docs/town_bridge/logical_test_report.json",
+        "bytes": 6206,
+        "sha256": "200fae54768f27934698cfd01570b051516794cb99a7b21dac48d86e54c54aca",
+        "checks": 36,
+        "failures": 0,
+        "all_six_source_hashes_match_current_files": true,
+        "source_hashes": {
+          "game/scripts/Main.gd": {
+            "sha256": "2523ae2e5eef10840f4a04d7927d3e8e5ec27cff653e25c645ba1b148350f7c1",
+            "matches_current_file": true
+          },
+          "game/scripts/Sim.gd": {
+            "sha256": "37badd0b2c8f5f9bce91a3988fa34901a1e51b31f3a8757d63f320d63c884a41",
+            "matches_current_file": true
+          },
+          "game/scripts/SpaceGraph.gd": {
+            "sha256": "60fed06c94414336d11413fe89d6ee64aed525997f2315dc274b3b2d921de62a",
+            "matches_current_file": true
+          },
+          "game/scripts/TownWorldProfile.gd": {
+            "sha256": "c41adf7a0a72c780c1cf057c97c56d5f9fb165a4def24ca46b0f1ce10a5c68d5",
+            "matches_current_file": true
+          },
+          "game/scripts/WorldView3D.gd": {
+            "sha256": "c470cf9423086b08c60c18183632773dba467e6e99b50389b1a2347175e975fd",
+            "matches_current_file": true
+          },
+          "game/scripts/town_bridge_test.gd": {
+            "sha256": "c05184c128a37f1e2a21da8da868e97360c0d0a79a6b9e9b2d90059e0ff041a1",
+            "matches_current_file": true
+          }
+        }
+      },
+      "unchanged_visual_report": {
+        "file": "docs/town_bridge/visual_test_report.json",
+        "bytes": 13731,
+        "sha256": "f5782bed4c1bdb82e4a17d9fd7095785dd6b6fa5089dd0624140fd6d39e87163",
+        "checks": 28,
+        "failures": 0,
+        "new_gpu_capture_performed": false
+      },
+      "images": [
+        {
+          "file": "docs/town_bridge/captures/01_owner_upper.png",
+          "bytes": 919454,
+          "sha256": "dabfc2a0926065b26220680197187aa35736f79c04060eb303ccd8fbacb7701d",
+          "matches_original_inspection": true,
+          "matches_unchanged_visual_report": true,
+          "runtime_origin_sha256_matches": true,
+          "actually_reopened_at_supplemental_revalidation": true,
+          "recaptured": false
+        },
+        {
+          "file": "docs/town_bridge/captures/02_fixture_menu.png",
+          "bytes": 974899,
+          "sha256": "7b062124500fff3fada55e7523ba7616d322b47dd9fd9b648e7cd2f8ab2a79f6",
+          "matches_original_inspection": true,
+          "matches_unchanged_visual_report": true,
+          "runtime_origin_sha256_matches": true,
+          "actually_reopened_at_supplemental_revalidation": true,
+          "recaptured": false
+        },
+        {
+          "file": "docs/town_bridge/captures/03_character_walking.png",
+          "bytes": 1041117,
+          "sha256": "d98e7b72e8e91cdddf2428b170362444209fad817f2cccc56246edffa9a9c7ab",
+          "matches_original_inspection": true,
+          "matches_unchanged_visual_report": true,
+          "runtime_origin_sha256_matches": true,
+          "actually_reopened_at_supplemental_revalidation": true,
+          "recaptured": false
+        },
+        {
+          "file": "docs/town_bridge/captures/04_fixture_use_complete.png",
+          "bytes": 1104157,
+          "sha256": "6ad87e84dcdfe8cbeb74b9d90eb2e7ea20131b8cfb0c6cc701e383a08993fb00",
+          "matches_original_inspection": true,
+          "matches_unchanged_visual_report": true,
+          "runtime_origin_sha256_matches": true,
+          "actually_reopened_at_supplemental_revalidation": true,
+          "recaptured": false
+        },
+        {
+          "file": "docs/town_bridge/captures/05_town_exterior.png",
+          "bytes": 1151070,
+          "sha256": "deda892cf135d94d6353d9f9677c9e5551fd1b55d115c3917524f154dabb08f6",
+          "matches_original_inspection": true,
+          "matches_unchanged_visual_report": true,
+          "runtime_origin_sha256_matches": true,
+          "actually_reopened_at_supplemental_revalidation": true,
+          "recaptured": false
+        }
+      ],
+      "original_inspection_timestamp_preserved": true,
+      "actual_reopen_observation": "All five unchanged canonical PNGs were reopened with view_image. Upper-home/local cutaway and neighbor roofs, actual counter menu, visible walking sprite, completed social+42 action and exterior controlled-resident silhouette remain coherent. Existing night-state HUD/panel occlusion and dense plaza label overlap remain the documented limitations. No new concrete visual blocker found.",
+      "no_new_image_capture_claim": true,
+      "gameplay_or_movie_changed": false,
+      "heavy_processes_launched_by_reviewer": false
+    }
+  ]
+}

@@ -615,12 +615,33 @@ func _aid(ag: Dictionary) -> int:
 
 # ── 数据加载 ─────────────────────────────────────────────────────────────
 func _read_json(path: String) -> Dictionary:
+	if ext != null and ext.has_method("world_data_for"):
+		var authored: Variant = ext.world_data_for(path)
+		if authored is Dictionary:
+			return authored.duplicate(true)
 	if not FileAccess.file_exists(path):
 		push_error("缺数据文件: " + path)
 		return {}
 	var txt := FileAccess.get_file_as_string(path)
 	var data: Variant = JSON.parse_string(txt)
 	return data if data is Dictionary else {}
+
+## Install a detached authored spatial profile before any live run. Base data
+## and optional WorldPackage/coastal adapters keep their existing authority.
+func install_world_profile(provider: RefCounted) -> bool:
+	if auto_run or running or not agents.is_empty() or provider == null:
+		return false
+	if not provider.has_method("is_valid") or not provider.is_valid() or not provider.has_method("world_data_for"):
+		return false
+	ext = provider
+	_buildings_compiled = false
+	_jobs_injected = false
+	_venue_cache = null
+	_indoor_job_cache = null
+	_path_cache = {}
+	_load_data()
+	_build_nav()
+	return true
 
 func _load_data() -> void:
 	_authored_world_package_ref = {}
@@ -916,7 +937,7 @@ func _interior_object_defs(data: Dictionary = {}) -> Array:
 				if pos.size() < 2:
 					continue
 				var slot := String((fu as Dictionary).get("slot", "obj"))
-				var oid := "%s%s_%s" % [space, floor, slot]
+				var oid := String((fu as Dictionary).get("object_id", "%s%s_%s" % [space, floor, slot]))
 				if used.has(oid):                   # 同 id 已用 → 追加序号（authored 顺序 → 确定、可复现）
 					used[oid] = int(used[oid]) + 1
 					oid = "%s_%d" % [oid, int(used[oid])]
@@ -984,14 +1005,20 @@ func _compile_worksites() -> void:
 		if adv.is_empty():
 			continue                                    # 无广告位 = 不产候选 → 不必进 world（纯装饰留给视图层）
 		var apos := Vector2i(int(pos[0]), int(pos[1]))
-		var ar := _area_at(apos)
+		var work_space := String(wd.get("space", "town"))
+		var work_floor := String(wd.get("floor", "outdoor"))
+		var ar := _area_key(work_space, work_floor, apos)
 		if ar == "" or String(wd.get("area", ar)) != ar:
 			push_error("worksite %s 的格 %s 申报 area='%s' 实为 '%s'（空=不在任何区），跳过" % [
 				wid, str(apos), String(wd.get("area", "")), ar])
 			continue
 		used[wid] = true
-		objs.append({"id": wid, "type": String(wd.get("type", "")), "area": ar,
-			"pos": [apos.x, apos.y], "advertises": adv.duplicate(true)})
+		var compiled := {"id": wid, "type": String(wd.get("type", "")), "area": ar,
+			"pos": [apos.x, apos.y], "advertises": adv.duplicate(true)}
+		if wd.has("space") or wd.has("floor"):
+			compiled["space"] = work_space
+			compiled["floor"] = work_floor
+		objs.append(compiled)
 	world["objects"] = objs
 
 ## E1 数据门：缺 logistics.json → 恒 false → 进口/#44 每一处都在第一行短路 → 逐字节回到今天。
@@ -1336,7 +1363,7 @@ func _make_agent(adef: Dictionary, personas: Dictionary) -> Dictionary:
 		ag["attitude0"][t] = a0
 		ag["attitudes"][t] = a0
 	ag["area"] = _area_key(ag["space"], ag["floor"], ag["pos"])   # P3 Tier-B：平面感知 area（town 恒等旧值）
-	ag["room"] = _room_at(ag["pos"])   # docs/16：与 area 同址缓存（缺 rooms→""）
+	ag["room"] = _room_at(ag["pos"], ag["space"], ag["floor"])   # plane-scoped authored rooms
 	if not economy.is_empty():
 		ag["inventory"]["coin"] = int(economy.get("start_coin", 10))   # Wave 1b：经济开启才有钱（缺文件零扰动）
 	# docs/196 P1a 家计：欠费与出勤记录只在对应数据段存在时才长出来（缺段 ⇒ agent 形状与今天逐键相同）。
@@ -2453,6 +2480,9 @@ func save_game(path: String, meta := {}) -> bool:
 	save_meta.erase("_world_package_ref") # reserved receiver-authored field; callers cannot forge topology provenance
 	if not _authored_world_package_ref.is_empty():
 		save_meta["_world_package_ref"] = _authored_world_package_ref.duplicate(true)
+	save_meta.erase("world_profile")
+	if ext != null and ext.has_method("save_identity"):
+		save_meta["world_profile"] = ext.save_identity()
 	var blob := {
 		"magic": SAVE_MAGIC, "schema": SAVE_SCHEMA,
 		"game_version": String(ProjectSettings.get_setting("application/config/version", "dev")),
@@ -2604,6 +2634,11 @@ func load_game(path: String) -> bool:
 	# Keep view metadata staged with the candidate state. A rejected quickload must not
 	# leave the receiver showing header data from a save whose simulation state was refused.
 	var pending_loaded_meta: Dictionary = (blob.get("meta") as Dictionary).duplicate(true) if blob.get("meta") is Dictionary else {}
+	var saved_profile: Variant = pending_loaded_meta.get("world_profile", {})
+	var expected_profile: Dictionary = ext.save_identity() if ext != null and ext.has_method("save_identity") else {}
+	if not (saved_profile is Dictionary) or saved_profile != expected_profile:
+		push_warning("load_game: this archive belongs to a different authored world profile")
+		return false
 	if sch >= SAVE_SCHEMA:
 		var shape_error := _validate_save_shape(blob, sch)
 		if shape_error != "":
@@ -3069,10 +3104,14 @@ func _area_key_in_world(saved_world: Dictionary, space: String, floor: String, p
 			return String(raw_id)
 	return ""
 
-func _room_in_world(saved_world: Dictionary, pos: Vector2i) -> String:
+func _room_in_world(saved_world: Dictionary, pos: Vector2i, space: String = "town", floor: String = "outdoor") -> String:
 	for raw_id in saved_world.get("rooms", {}):
 		var raw_room = saved_world.get("rooms", {}).get(raw_id)
 		if not (raw_room is Dictionary):
+			continue
+		if raw_room.has("space") and String(raw_room["space"]) != space:
+			continue
+		if raw_room.has("floor") and String(raw_room["floor"]) != floor:
 			continue
 		var rect := _as_arr((raw_room as Dictionary).get("rect", []))
 		if rect.size() == 4 and pos.x >= int(rect[0]) and pos.x < int(rect[0]) + int(rect[2]) \
@@ -3148,6 +3187,8 @@ func _authored_portal_cell(space: String, floor: String, pos: Vector2i) -> bool:
 ## Pure walkability check for a prepared save.  Loading must never consult the receiver's live
 ## nav grid: doing so would make the same bytes pass or fail according to pre-load runtime state.
 func _position_walkable_in_state(saved_world: Dictionary, space: String, floor: String, pos: Vector2i) -> bool:
+	if ext != null and ext.has_method("position_allowed"):
+		return ext.position_allowed(space, floor, pos)
 	if space == "town" and floor == "outdoor":
 		var width := int(saved_world.get("width", 0))
 		var height := int(saved_world.get("height", 0))
@@ -3202,6 +3243,10 @@ func _validate_agent_spatial_authority(state: Dictionary) -> String:
 	var saved_world = state.get("world")
 	if not (saved_world is Dictionary):
 		return "world is not a Dictionary"
+	if ext != null and ext.has_method("validate_saved_world"):
+		var geometry_error := String(ext.validate_saved_world(saved_world))
+		if not geometry_error.is_empty():
+			return geometry_error
 	var saved_dock = (saved_world as Dictionary).get("areas", {}).get("dock", {})
 	if not (saved_dock is Dictionary) or (saved_dock as Dictionary).get("solid_props", []) != _authored_solid_props:
 		return "town solid-prop authority diverges from current authored data"
@@ -3262,7 +3307,7 @@ func _validate_agent_spatial_authority(state: Dictionary) -> String:
 		if not guest_plane and not _agent_reachable_plane(aid, String(home["space"]), String(home["floor"]), space, floor):
 			return "agent %s current plane is not authorized from authored home" % aid
 		var expected_area := _area_key_in_world(saved_world, space, floor, pos)
-		var expected_room := _room_in_world(saved_world, pos)
+		var expected_room := _room_in_world(saved_world, pos, space, floor)
 		if String(ag.get("area", "")) != expected_area:
 			return "agent %s area cache diverges from address" % aid
 		if String(ag.get("room", "")) != expected_room:
@@ -8609,8 +8654,13 @@ func _impt(self_ag: Dictionary, other: Dictionary, aff_delta: float, negative: b
 
 # ── 建筑/室内（docs/16 阶段1）：房间=独立 rooms dict 的矩形，_area_at 的孪生纯函数 ───────
 ## 返回 pos 所在房间 id（rooms 字典书写序=定序，首个命中；无则 ""）。rooms 是独立 dict，不与 areas 重叠 → 无插入序陷阱。
-func _room_at(pos: Vector2i) -> String:
+func _room_at(pos: Vector2i, space: String = "town", floor: String = "outdoor") -> String:
 	for id in world.get("rooms", {}):
+		var room: Dictionary = world["rooms"][id]
+		if room.has("space") and String(room["space"]) != space:
+			continue
+		if room.has("floor") and String(room["floor"]) != floor:
+			continue
 		var r: Array = world["rooms"][id].get("rect", [0, 0, 0, 0])
 		if pos.x >= int(r[0]) and pos.x < int(r[0]) + int(r[2]) and pos.y >= int(r[1]) and pos.y < int(r[1]) + int(r[3]):
 			return id
@@ -8668,7 +8718,7 @@ func _area_key(space: String, floor: String, pos: Vector2i) -> String:
 func _move_agent(ag: Dictionary, newpos: Vector2i) -> void:
 	ag["pos"] = newpos
 	ag["area"] = _area_key(String(ag.get("space", "town")), String(ag.get("floor", "outdoor")), newpos)  # P3：平面感知
-	ag["room"] = _room_at(newpos)   # docs/16：与 area 同址刷新（缺 rooms→""）
+	ag["room"] = _room_at(newpos, String(ag.get("space", "town")), String(ag.get("floor", "outdoor")))
 
 ## P3 Tier-B：同平面判定（space+floor）。town 居民彼此恒同平面 → 全员 town 时所有下游判定逐字节不变。
 func _same_plane(a: Dictionary, b: Dictionary) -> bool:
@@ -8913,6 +8963,12 @@ func _build_nav() -> void:
 	_nav_grids = {}
 	var W := int(world.get("width", GRID.x))
 	var H := int(world.get("height", GRID.y))
+	if world.has("nav_blockers"):
+		for cell in world["nav_blockers"]:
+			_blocked[int(cell[1]) * W + int(cell[0])] = true
+		_nav_grids["town"] = {"outdoor": {"w": W, "h": H, "blocked": _blocked}}
+		_build_interior_grids()
+		return
 	for b in world.get("blockers", []):            # 64×48 显式阻挡层(墙/水/树)，缺则空
 		_blocked[int(b[1]) * W + int(b[0])] = true
 	for raw_cell in _solid_prop_cells_in_world(world) + _solid_lot_cells_in_world(world): # 可见实体道具（dock）+ 镇上房子（docs/193）与 View 共读 map.json authored footprint
@@ -8943,6 +8999,15 @@ func _build_interior_grids() -> void:
 		var w := int(b[2]); var h := int(b[3])
 		for floor in _as_arr((_authored_spaces[space] as Dictionary).get("floors", [])):
 			var fl := String(floor)
+			var authored_content: Dictionary = (_authored_interiors_data.get(space, {}) as Dictionary).get(fl, {}) if _authored_interiors_data.get(space, {}) is Dictionary else {}
+			if authored_content.has("nav_blockers"):
+				var authored_blocked := {}
+				for cell in authored_content["nav_blockers"]:
+					authored_blocked[int(cell[1]) * w + int(cell[0])] = true
+				if not _nav_grids.has(space):
+					_nav_grids[space] = {}
+				_nav_grids[space][fl] = {"w": w, "h": h, "blocked": authored_blocked}
+				continue
 			var portal_cells := {}                 # portal 端点落在本层 → 必可走(门缺口+楼梯)
 			for p in _authored_portals:
 				for side in ["from", "to"]:

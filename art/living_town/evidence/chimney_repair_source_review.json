@@ -1,0 +1,102 @@
+{
+  "schema": "living_town.chimney_repair_source_review.v1",
+  "generated_utc": "2026-10-12T08:08:59.260109+00:00",
+  "status": "STATIC_PASS",
+  "source_bindings": {
+    "v4_builder_sha256": "1be43607f071df8459c78b6176effad64e680d88b4fab980cf2869fa883aaa1c",
+    "repaired_builder_sha256": "c204137dca2854eb3427c5a555d535148d0bbd177df965495f7b8bed12e13590",
+    "native_audit_module_sha256": "47ff2a47a9928f572e8cd0714e4bc5eec924c48d583f03e9981c95b145aef195",
+    "contact_helper_sha256": "85b25be5da56dd87ec45a115730d8b9b0289456eeb9fbdbda6c2fd62647de351"
+  },
+  "exact_v4_recovery": {
+    "status": "PASS",
+    "archival_path": "art/planning_revision/v4_chimney_checkpoint/tools/build_living_town.py",
+    "archival_sha256": "1be43607f071df8459c78b6176effad64e680d88b4fab980cf2869fa883aaa1c",
+    "method": "Reverse only added roof_surface_height helper, replaced chimney construction block and added manifest chimneys field; resulting CRLF bytes exactly match original V4 source freeze."
+  },
+  "geometry_delta": {
+    "shaft_count": 57,
+    "footprint_width_m": 0.68,
+    "nominal_minimum_embed_m": 0.1,
+    "changed": "Lower body feet and matching lower mortar courses; body separated into clean metadata-tagged mesh for actual-contact audit.",
+    "unchanged": [
+      "shaft center XY",
+      "shaft top Z",
+      "shaft footprint width/depth",
+      "existing mortar courses",
+      "cap coordinates/dimensions",
+      "pot coordinates/dimensions",
+      "all other builder source",
+      "all eight frozen planning/interior/terrain/landscape sources"
+    ],
+    "preserved_original_coordinate_expressions": true,
+    "random_calls_added": false
+  },
+  "source_triangle_validation": {
+    "status": "PASS",
+    "chimneys": 57,
+    "samples": 6897,
+    "method": "Extract current pure profile and original gable function via AST; compare 11x11 points per footprint to barycentric heights of original roof mesh triangles, including original mansard vertex/face statements.",
+    "max_profile_error_m": 3.552713678800501e-15,
+    "minimum_footprint_embed_m": 0.09999999999999787,
+    "maximum_lower_body_extension_m": 2.408941504178273,
+    "scope": "Static source construction proof; actual evaluated native mesh contact is independently required."
+  },
+  "unchanged_frozen_sources": [
+    {
+      "path": "masterplan.json",
+      "v4_sha256": "b7e5522f62f4a390faa95502537fbbac14856cb278bccb695fbd5cabe186377f",
+      "current_sha256": "b7e5522f62f4a390faa95502537fbbac14856cb278bccb695fbd5cabe186377f",
+      "same_bytes": true
+    },
+    {
+      "path": "terrain_plan.json",
+      "v4_sha256": "69fc114cc289b33fc8e1d33e57daf77dd65e94d0340715c6a1974cd4d99fe349",
+      "current_sha256": "69fc114cc289b33fc8e1d33e57daf77dd65e94d0340715c6a1974cd4d99fe349",
+      "same_bytes": true
+    },
+    {
+      "path": "landscape_plan.json",
+      "v4_sha256": "68b8f4d2a9269b1fa8e9dde530bc83bd41b871effaf4d224ffd12ab953f6d4b1",
+      "current_sha256": "68b8f4d2a9269b1fa8e9dde530bc83bd41b871effaf4d224ffd12ab953f6d4b1",
+      "same_bytes": true
+    },
+    {
+      "path": "interior_plan.json",
+      "v4_sha256": "a857d40e536ce84b3ed468a5815c54311f92f46ebbb1e1f7541ce76a498d08b4",
+      "current_sha256": "a857d40e536ce84b3ed468a5815c54311f92f46ebbb1e1f7541ce76a498d08b4",
+      "same_bytes": true
+    },
+    {
+      "path": "tools/terrain_profile.py",
+      "v4_sha256": "6f722d04566f11cc58b3dd93cace5b781d8b2092bb7e70169f1f08279febc3b8",
+      "current_sha256": "6f722d04566f11cc58b3dd93cace5b781d8b2092bb7e70169f1f08279febc3b8",
+      "same_bytes": true
+    },
+    {
+      "path": "tools/interior_design.py",
+      "v4_sha256": "a467e4dc23bd2388e7e924a04a1b478bf0d0b7fc4deeb0616184de69b8c49025",
+      "current_sha256": "a467e4dc23bd2388e7e924a04a1b478bf0d0b7fc4deeb0616184de69b8c49025",
+      "same_bytes": true
+    },
+    {
+      "path": "tools/refine_environment.py",
+      "v4_sha256": "881de701ec766a2e256549504a36410b84a976431b8900a99551a064bf9d1d2e",
+      "current_sha256": "881de701ec766a2e256549504a36410b84a976431b8900a99551a064bf9d1d2e",
+      "same_bytes": true
+    },
+    {
+      "path": "tools/landscape_details.py",
+      "v4_sha256": "284459e0383e5d4adf0e3c9ddc637bc29cf375152c8724856546d0596e25e5d8",
+      "current_sha256": "284459e0383e5d4adf0e3c9ddc637bc29cf375152c8724856546d0596e25e5d8",
+      "same_bytes": true
+    }
+  ],
+  "required_native_check": {
+    "id": "all57_chimney_bases_intersect_actual_roof_surfaces",
+    "chimney_count": 57,
+    "sample_count": 513,
+    "maximum_positive_gap_m": 0.02,
+    "method": "Fresh evaluated body-only upward BVH rays versus actual owner Slate/ClaySlate downward BVH rays; stored height metadata and cached reports are not proof."
+  }
+}

@@ -1,0 +1,4629 @@
+{
+  "schema": "living_town.profile_compile_report.v1",
+  "status": "PASS",
+  "checks": [
+    {
+      "id": "49_unique_building_spaces",
+      "pass": true,
+      "details": null
+    },
+    {
+      "id": "89_modeled_floor_planes",
+      "pass": true,
+      "details": null
+    },
+    {
+      "id": "561_plane_scoped_zones",
+      "pass": true,
+      "details": null
+    },
+    {
+      "id": "223_activity_rooms_reachable",
+      "pass": true,
+      "details": null
+    },
+    {
+      "id": "49_real_entrances_40_real_stairs",
+      "pass": true,
+      "details": null
+    },
+    {
+      "id": "all_current_original_portal_ids_and_access_preserved",
+      "pass": true,
+      "details": null
+    },
+    {
+      "id": "all_current_original_portal_rules_preserved",
+      "pass": true,
+      "details": null
+    },
+    {
+      "id": "portal_endpoints_are_physically_open",
+      "pass": true,
+      "details": null
+    },
+    {
+      "id": "12_residents_2_affiliates_preserved",
+      "pass": true,
+      "details": null
+    },
+    {
+      "id": "character_personas_and_metadata_preserved",
+      "pass": true,
+      "details": null
+    },
+    {
+      "id": "resident_homes_share_actual_bed_plane",
+      "pass": true,
+      "details": null
+    },
+    {
+      "id": "all_legacy_action_definitions_unchanged",
+      "pass": true,
+      "details": null
+    },
+    {
+      "id": "all_functional_approaches_reachable",
+      "pass": true,
+      "details": null
+    },
+    {
+      "id": "bank_and_civic_markers_preserve_flags_without_advertisements",
+      "pass": true,
+      "details": null
+    },
+    {
+      "id": "home2_original_beds_bind_distinct_actual_beds",
+      "pass": true,
+      "details": null
+    },
+    {
+      "id": "jobs_and_housing_unchanged",
+      "pass": true,
+      "details": null
+    },
+    {
+      "id": "festival_and_civic_action_values_preserved",
+      "pass": true,
+      "details": null
+    },
+    {
+      "id": "base_source_data_unchanged",
+      "pass": true,
+      "details": null
+    }
+  ],
+  "counts": {
+    "buildings": 49,
+    "interior_planes": 89,
+    "zones": 561,
+    "activity_rooms": 223,
+    "portal_count": 89,
+    "original_portal_ids": 19,
+    "entrances": 49,
+    "stairs": 40,
+    "functional_objects": 67,
+    "ui_markers": 2,
+    "legacy_interior_functional_objects": 46,
+    "resident_count": 12,
+    "affiliate_count": 2,
+    "outdoor_open_cells": 38569,
+    "outdoor_blocked_cells": 19319
+  },
+  "source_hashes": {
+    "game/data/map.json": "5a51c6d68b744a6f0f9f8df62647b6bda17c71d6768ed325bf2ec9ce6072699c",
+    "game/data/spaces.json": "5ecd091807116e46f57fb04404acf20d742f5616229ac891455a1736c675b027",
+    "game/data/interiors.json": "e937aa1e6d7273b8293ae15878f976b42c89a2acd4b35c546ee6065635b52fe6",
+    "game/data/agents.json": "98044c7c12d9ca06c691847e78e33e92785a4beee4126bc645de74dc5a135a49",
+    "game/data/buildings.json": "60db5ba64ee7df41661171bf05006f4431f6cb679f0b7eff73fefea6f4f755ea",
+    "game/data/jobs.json": "3558f0781814c1e27e67899e9338c83822e938dcbc99c761f0f712d6dd40d248",
+    "game/data/production.json": "79fd00621dd9cd834747e0ecb81e5bf828b31ebda2d272f99c75772290a12df9",
+    "game/data/logistics.json": "0910a4e937f9772296dfa41b777f6abb7abd2e3ff7dedc9e240900cfac244cd0",
+    "game/data/housing.json": "c9633d1033f042530f86680b1f6e43778ce56b7b0a1c691e0ec8d94d4f4dd040",
+    "game/data/festivals.json": "010623dd4ecc1f81fcc75287ef707f9a1fc34a8f14cae5cffbb34447bfc0da43",
+    "game/data/elections.json": "d93e818780bc58b6c9bdb12b779e174a783cc46bdf37e07359a244c846d791c6",
+    "art/living_town/masterplan.json": "b7e5522f62f4a390faa95502537fbbac14856cb278bccb695fbd5cabe186377f",
+    "art/living_town/interior_plan.json": "a857d40e536ce84b3ed468a5815c54311f92f46ebbb1e1f7541ce76a498d08b4",
+    "art/living_town/town_manifest.json": "09e1a479de52cbfc5636f257a7383562215d30761fbd20c878fadbe4b8c67e85",
+    "art/living_town/terrain_plan.json": "69fc114cc289b33fc8e1d33e57daf77dd65e94d0340715c6a1974cd4d99fe349",
+    "art/living_town/landscape_plan.json": "68b8f4d2a9269b1fa8e9dde530bc83bd41b871effaf4d224ffd12ab953f6d4b1",
+    "art/living_town/tools/terrain_profile.py": "6f722d04566f11cc58b3dd93cace5b781d8b2092bb7e70169f1f08279febc3b8",
+    "art/living_town/tools/interior_design.py": "a467e4dc23bd2388e7e924a04a1b478bf0d0b7fc4deeb0616184de69b8c49025",
+    "art/living_town/game_assets/export_manifest.json": "ef251073f8547b8b34a56f10fc19d23d4e5d8db0b52f03d85960ac7c9d710d6e",
+    "tools/build_town_profile.py": "e9db0ec8d62d618c10353828fbb91c7c5efc0690c19f62b36bd80be226268d52"
+  },
+  "output_hashes": {
+    "agents.json": "59791794086aabf1972d710737378325e503a7cb8dba83fcbea52658521fb3f7",
+    "buildings.json": "e6979fbec7bb7088a23b3452353739a4e72246933aeb00457fca33018f1731a2",
+    "elections.json": "8cd81159d25acdd2a92465cf0907f1b6581c329a7840a268e8f26885a8bcdef5",
+    "festivals.json": "c2d1439ab158c25ea79a9bc3adb36d95ddbfe9f72cf3eaa587d76a83c47b7a27",
+    "housing.json": "3f8f34445e1d23c85d864e4359143a4557395319719391d3616c934b6c999969",
+    "interiors.json": "f5c056363421846648fb77d01a2a893bebdda3f166ff58a3630865551c4b387e",
+    "jobs.json": "b7c313a69b99851e8aa711b5e54c2fb836edee198b731c6043560b3d42855d07",
+    "logistics.json": "c36417ed5bd02f240a51b011757c0369a563d1a7f95ecf157551cea04488db23",
+    "map.json": "330febe815bbe9d1324cbaa644e04b534973175e20ae7f72275ee1ed740fc5fb",
+    "production.json": "8311bd5eee192751be412a5d17d30ca896f918aa4402a9a714765e075fcf9cb2",
+    "profile.json": "66c800130175677ec9c82ed44d7a1833dca634c602ffcc604e9aa258386d2c5e",
+    "projection.json": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a",
+    "spaces.json": "192d1e9efca883ec9c7d2ed5b83fc78a1f5d255af2a0e64f0851001f10afdbd7"
+  },
+  "planes": [
+    {
+      "plane": "cafe/1f",
+      "open_cells": 806,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        19,
+        33
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "cafe/2f",
+      "open_cells": 851,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        35,
+        11
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "shop/1f",
+      "open_cells": 476,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        11,
+        33
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "shop/2f",
+      "open_cells": 376,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        20,
+        11
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "home/1f",
+      "open_cells": 308,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        11,
+        25
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "home/2f",
+      "open_cells": 289,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        20,
+        5
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_main_home2/1f",
+      "open_cells": 359,
+      "excluded_island_cells": 2,
+      "entry_cell": [
+        12,
+        25
+      ],
+      "initial_components": 2
+    },
+    {
+      "plane": "library/1f",
+      "open_cells": 744,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        19,
+        29
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "library/2f",
+      "open_cells": 732,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        35,
+        8
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "wash/1f",
+      "open_cells": 786,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        19,
+        29
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "work/1f",
+      "open_cells": 1020,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        23,
+        29
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "chapel/1f",
+      "open_cells": 1230,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        15,
+        53
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "chapel/2f",
+      "open_cells": 1356,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        28,
+        25
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "mairie/1f",
+      "open_cells": 734,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        19,
+        29
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "mairie/2f",
+      "open_cells": 734,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        35,
+        8
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "mairie/3f",
+      "open_cells": 721,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        35,
+        8
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_02_windmill/1f",
+      "open_cells": 202,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        9,
+        21
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_02_windmill/2f",
+      "open_cells": 199,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        16,
+        3
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_03_netshed/1f",
+      "open_cells": 174,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        11,
+        13
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "bakery/1f",
+      "open_cells": 690,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        15,
+        33
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "bakery/2f",
+      "open_cells": 611,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        28,
+        11
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "creperie/1f",
+      "open_cells": 414,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        11,
+        33
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "creperie/2f",
+      "open_cells": 376,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        20,
+        11
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "halles/1f",
+      "open_cells": 620,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        25,
+        25
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "hotel/1f",
+      "open_cells": 1648,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        27,
+        41
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "hotel/2f",
+      "open_cells": 1464,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        50,
+        16
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "hotel/3f",
+      "open_cells": 1464,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        50,
+        16
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_08_cannery/1f",
+      "open_cells": 1338,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        23,
+        37
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "port_warehouse/1f",
+      "open_cells": 1120,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        19,
+        37
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "test_loft/1f",
+      "open_cells": 352,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        12,
+        25
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "test_loft/2f",
+      "open_cells": 333,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        22,
+        5
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "home2/1f",
+      "open_cells": 352,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        12,
+        25
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "home2/2f",
+      "open_cells": 333,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        22,
+        5
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "home2/3f",
+      "open_cells": 336,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        22,
+        5
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_14_halftimber/1f",
+      "open_cells": 352,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        12,
+        25
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_14_halftimber/2f",
+      "open_cells": 333,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        22,
+        5
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_15_terrace/1f",
+      "open_cells": 352,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        12,
+        25
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_15_terrace/2f",
+      "open_cells": 333,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        22,
+        5
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_18_terrace/1f",
+      "open_cells": 398,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        12,
+        27
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_18_terrace/2f",
+      "open_cells": 382,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        22,
+        6
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_20_ochre/1f",
+      "open_cells": 398,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        12,
+        27
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_20_ochre/2f",
+      "open_cells": 382,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        22,
+        6
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_22_halftimber/1f",
+      "open_cells": 398,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        12,
+        27
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_22_halftimber/2f",
+      "open_cells": 382,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        22,
+        6
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_23_townhouse/1f",
+      "open_cells": 398,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        12,
+        27
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_23_townhouse/2f",
+      "open_cells": 382,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        22,
+        6
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_24_ochre/1f",
+      "open_cells": 398,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        12,
+        27
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_24_ochre/2f",
+      "open_cells": 382,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        22,
+        6
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_25_townhouse/1f",
+      "open_cells": 359,
+      "excluded_island_cells": 2,
+      "entry_cell": [
+        12,
+        25
+      ],
+      "initial_components": 2
+    },
+    {
+      "plane": "model_lot_26_ochre/1f",
+      "open_cells": 359,
+      "excluded_island_cells": 2,
+      "entry_cell": [
+        12,
+        25
+      ],
+      "initial_components": 2
+    },
+    {
+      "plane": "model_lot_27_terrace/1f",
+      "open_cells": 375,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        13,
+        25
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_27_terrace/2f",
+      "open_cells": 356,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        23,
+        5
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_29_halftimber/1f",
+      "open_cells": 375,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        13,
+        25
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_29_halftimber/2f",
+      "open_cells": 356,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        23,
+        5
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_30_townhouse/1f",
+      "open_cells": 375,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        13,
+        25
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_30_townhouse/2f",
+      "open_cells": 356,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        23,
+        5
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_31_longere/1f",
+      "open_cells": 375,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        13,
+        25
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_31_longere/2f",
+      "open_cells": 356,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        23,
+        5
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_33_terrace/1f",
+      "open_cells": 405,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        13,
+        25
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_34_halftimber/1f",
+      "open_cells": 405,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        13,
+        25
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_36_longere/1f",
+      "open_cells": 405,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        13,
+        25
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_37_longere/1f",
+      "open_cells": 598,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        15,
+        29
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_37_longere/2f",
+      "open_cells": 579,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        28,
+        8
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_38_halftimber/1f",
+      "open_cells": 598,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        15,
+        29
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_38_halftimber/2f",
+      "open_cells": 579,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        28,
+        8
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_40_terrace/1f",
+      "open_cells": 598,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        15,
+        29
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_40_terrace/2f",
+      "open_cells": 579,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        28,
+        8
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_10_belleepoque/1f",
+      "open_cells": 463,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        13,
+        29
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_10_belleepoque/2f",
+      "open_cells": 444,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        23,
+        8
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_19_belleepoque/1f",
+      "open_cells": 463,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        13,
+        29
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_19_belleepoque/2f",
+      "open_cells": 444,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        23,
+        8
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_21_belleepoque/1f",
+      "open_cells": 463,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        13,
+        29
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_21_belleepoque/2f",
+      "open_cells": 444,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        23,
+        8
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_35_belleepoque/1f",
+      "open_cells": 463,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        13,
+        29
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_35_belleepoque/2f",
+      "open_cells": 444,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        23,
+        8
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_13_cottage/1f",
+      "open_cells": 463,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        13,
+        29
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_13_cottage/2f",
+      "open_cells": 444,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        23,
+        8
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_28_cottage/1f",
+      "open_cells": 463,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        13,
+        29
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_28_cottage/2f",
+      "open_cells": 444,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        23,
+        8
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_32_cottage/1f",
+      "open_cells": 463,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        13,
+        29
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_32_cottage/2f",
+      "open_cells": 444,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        23,
+        8
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_39_whitehouse/1f",
+      "open_cells": 436,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        12,
+        29
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_39_whitehouse/2f",
+      "open_cells": 417,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        22,
+        8
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_11_longere/1f",
+      "open_cells": 436,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        12,
+        29
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_11_longere/2f",
+      "open_cells": 417,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        22,
+        8
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_16_longere/1f",
+      "open_cells": 436,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        12,
+        29
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_16_longere/2f",
+      "open_cells": 417,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        22,
+        8
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_17_longere/1f",
+      "open_cells": 384,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        11,
+        29
+      ],
+      "initial_components": 1
+    },
+    {
+      "plane": "model_lot_17_longere/2f",
+      "open_cells": 365,
+      "excluded_island_cells": 0,
+      "entry_cell": [
+        20,
+        8
+      ],
+      "initial_components": 1
+    }
+  ],
+  "activity_room_access": [
+    {
+      "id": "Main_cafe_L00_Hall",
+      "plane": "cafe/1f",
+      "activity_room": false,
+      "connected_open_cells": 115
+    },
+    {
+      "id": "Main_cafe_L00_Stairwell",
+      "plane": "cafe/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "Main_cafe_L00_Lower_Landing",
+      "plane": "cafe/1f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "Main_cafe_L00_Upper_Landing",
+      "plane": "cafe/1f",
+      "activity_room": false,
+      "connected_open_cells": 12
+    },
+    {
+      "id": "Main_cafe_L00_Public_Room",
+      "plane": "cafe/1f",
+      "activity_room": true,
+      "connected_open_cells": 315
+    },
+    {
+      "id": "Main_cafe_L00_Service_Room",
+      "plane": "cafe/1f",
+      "activity_room": true,
+      "connected_open_cells": 319
+    },
+    {
+      "id": "Main_cafe_L00_Staff_WC",
+      "plane": "cafe/1f",
+      "activity_room": true,
+      "connected_open_cells": 17
+    },
+    {
+      "id": "Main_cafe_L01_Hall",
+      "plane": "cafe/2f",
+      "activity_room": false,
+      "connected_open_cells": 122
+    },
+    {
+      "id": "Main_cafe_L01_Stairwell",
+      "plane": "cafe/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "Main_cafe_L01_Lower_Landing",
+      "plane": "cafe/2f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "Main_cafe_L01_Upper_Landing",
+      "plane": "cafe/2f",
+      "activity_room": false,
+      "connected_open_cells": 40
+    },
+    {
+      "id": "Main_cafe_L01_Owner_Bed_Living",
+      "plane": "cafe/2f",
+      "activity_room": true,
+      "connected_open_cells": 364
+    },
+    {
+      "id": "Main_cafe_L01_Owner_Kitchen",
+      "plane": "cafe/2f",
+      "activity_room": true,
+      "connected_open_cells": 144
+    },
+    {
+      "id": "Main_cafe_L01_Owner_Bathroom",
+      "plane": "cafe/2f",
+      "activity_room": true,
+      "connected_open_cells": 153
+    },
+    {
+      "id": "Main_shop_L00_Hall",
+      "plane": "shop/1f",
+      "activity_room": false,
+      "connected_open_cells": 115
+    },
+    {
+      "id": "Main_shop_L00_Stairwell",
+      "plane": "shop/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "Main_shop_L00_Lower_Landing",
+      "plane": "shop/1f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "Main_shop_L00_Upper_Landing",
+      "plane": "shop/1f",
+      "activity_room": false,
+      "connected_open_cells": 12
+    },
+    {
+      "id": "Main_shop_L00_Public_Room",
+      "plane": "shop/1f",
+      "activity_room": true,
+      "connected_open_cells": 172
+    },
+    {
+      "id": "Main_shop_L00_Service_Room",
+      "plane": "shop/1f",
+      "activity_room": true,
+      "connected_open_cells": 132
+    },
+    {
+      "id": "Main_shop_L00_Staff_WC",
+      "plane": "shop/1f",
+      "activity_room": true,
+      "connected_open_cells": 17
+    },
+    {
+      "id": "Main_shop_L01_Hall",
+      "plane": "shop/2f",
+      "activity_room": false,
+      "connected_open_cells": 122
+    },
+    {
+      "id": "Main_shop_L01_Stairwell",
+      "plane": "shop/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "Main_shop_L01_Lower_Landing",
+      "plane": "shop/2f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "Main_shop_L01_Upper_Landing",
+      "plane": "shop/2f",
+      "activity_room": false,
+      "connected_open_cells": 40
+    },
+    {
+      "id": "Main_shop_L01_Owner_Bed_Living",
+      "plane": "shop/2f",
+      "activity_room": true,
+      "connected_open_cells": 111
+    },
+    {
+      "id": "Main_shop_L01_Owner_Kitchen",
+      "plane": "shop/2f",
+      "activity_room": true,
+      "connected_open_cells": 34
+    },
+    {
+      "id": "Main_shop_L01_Owner_Bathroom",
+      "plane": "shop/2f",
+      "activity_room": true,
+      "connected_open_cells": 41
+    },
+    {
+      "id": "Main_home_L00_Hall",
+      "plane": "home/1f",
+      "activity_room": false,
+      "connected_open_cells": 87
+    },
+    {
+      "id": "Main_home_L00_Stairwell",
+      "plane": "home/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "Main_home_L00_Lower_Landing",
+      "plane": "home/1f",
+      "activity_room": false,
+      "connected_open_cells": 20
+    },
+    {
+      "id": "Main_home_L00_Upper_Landing",
+      "plane": "home/1f",
+      "activity_room": false,
+      "connected_open_cells": 16
+    },
+    {
+      "id": "Main_home_L00_Front_Room",
+      "plane": "home/1f",
+      "activity_room": true,
+      "connected_open_cells": 104
+    },
+    {
+      "id": "Main_home_L00_Rear_Room",
+      "plane": "home/1f",
+      "activity_room": true,
+      "connected_open_cells": 81
+    },
+    {
+      "id": "Main_home_L01_Hall",
+      "plane": "home/2f",
+      "activity_room": false,
+      "connected_open_cells": 87
+    },
+    {
+      "id": "Main_home_L01_Stairwell",
+      "plane": "home/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "Main_home_L01_Lower_Landing",
+      "plane": "home/2f",
+      "activity_room": false,
+      "connected_open_cells": 20
+    },
+    {
+      "id": "Main_home_L01_Upper_Landing",
+      "plane": "home/2f",
+      "activity_room": false,
+      "connected_open_cells": 16
+    },
+    {
+      "id": "Main_home_L01_Front_Room",
+      "plane": "home/2f",
+      "activity_room": true,
+      "connected_open_cells": 84
+    },
+    {
+      "id": "Main_home_L01_Rear_Room",
+      "plane": "home/2f",
+      "activity_room": true,
+      "connected_open_cells": 82
+    },
+    {
+      "id": "Main_home2_L00_Living_Kitchen",
+      "plane": "model_main_home2/1f",
+      "activity_room": true,
+      "connected_open_cells": 217
+    },
+    {
+      "id": "Main_home2_L00_Bedroom",
+      "plane": "model_main_home2/1f",
+      "activity_room": true,
+      "connected_open_cells": 43
+    },
+    {
+      "id": "Main_home2_L00_Bathroom",
+      "plane": "model_main_home2/1f",
+      "activity_room": true,
+      "connected_open_cells": 55
+    },
+    {
+      "id": "Main_home2_L00_Rear_Hall",
+      "plane": "model_main_home2/1f",
+      "activity_room": false,
+      "connected_open_cells": 44
+    },
+    {
+      "id": "Main_library_L00_Hall",
+      "plane": "library/1f",
+      "activity_room": false,
+      "connected_open_cells": 101
+    },
+    {
+      "id": "Main_library_L00_Stairwell",
+      "plane": "library/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "Main_library_L00_Lower_Landing",
+      "plane": "library/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "Main_library_L00_Upper_Landing",
+      "plane": "library/1f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "Main_library_L00_Front_Left",
+      "plane": "library/1f",
+      "activity_room": true,
+      "connected_open_cells": 118
+    },
+    {
+      "id": "Main_library_L00_Front_Right",
+      "plane": "library/1f",
+      "activity_room": true,
+      "connected_open_cells": 119
+    },
+    {
+      "id": "Main_library_L00_Rear_Left",
+      "plane": "library/1f",
+      "activity_room": true,
+      "connected_open_cells": 123
+    },
+    {
+      "id": "Main_library_L00_Rear_Right",
+      "plane": "library/1f",
+      "activity_room": true,
+      "connected_open_cells": 123
+    },
+    {
+      "id": "Main_library_L00_Cross_Hall",
+      "plane": "library/1f",
+      "activity_room": false,
+      "connected_open_cells": 108
+    },
+    {
+      "id": "Main_library_L01_Hall",
+      "plane": "library/2f",
+      "activity_room": false,
+      "connected_open_cells": 101
+    },
+    {
+      "id": "Main_library_L01_Stairwell",
+      "plane": "library/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "Main_library_L01_Lower_Landing",
+      "plane": "library/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "Main_library_L01_Upper_Landing",
+      "plane": "library/2f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "Main_library_L01_Front_Left",
+      "plane": "library/2f",
+      "activity_room": true,
+      "connected_open_cells": 118
+    },
+    {
+      "id": "Main_library_L01_Front_Right",
+      "plane": "library/2f",
+      "activity_room": true,
+      "connected_open_cells": 118
+    },
+    {
+      "id": "Main_library_L01_Rear_Left",
+      "plane": "library/2f",
+      "activity_room": true,
+      "connected_open_cells": 123
+    },
+    {
+      "id": "Main_library_L01_Rear_Right",
+      "plane": "library/2f",
+      "activity_room": true,
+      "connected_open_cells": 112
+    },
+    {
+      "id": "Main_library_L01_Cross_Hall",
+      "plane": "library/2f",
+      "activity_room": false,
+      "connected_open_cells": 108
+    },
+    {
+      "id": "Main_wash_L00_Front_Left",
+      "plane": "wash/1f",
+      "activity_room": true,
+      "connected_open_cells": 151
+    },
+    {
+      "id": "Main_wash_L00_Front_Right",
+      "plane": "wash/1f",
+      "activity_room": true,
+      "connected_open_cells": 144
+    },
+    {
+      "id": "Main_wash_L00_Rear_Left",
+      "plane": "wash/1f",
+      "activity_room": true,
+      "connected_open_cells": 143
+    },
+    {
+      "id": "Main_wash_L00_Rear_Right",
+      "plane": "wash/1f",
+      "activity_room": true,
+      "connected_open_cells": 156
+    },
+    {
+      "id": "Main_wash_L00_Cross_Hall",
+      "plane": "wash/1f",
+      "activity_room": false,
+      "connected_open_cells": 144
+    },
+    {
+      "id": "Main_wash_L00_Entry_Spine",
+      "plane": "wash/1f",
+      "activity_room": false,
+      "connected_open_cells": 48
+    },
+    {
+      "id": "Main_work_L00_Front_Left",
+      "plane": "work/1f",
+      "activity_room": true,
+      "connected_open_cells": 182
+    },
+    {
+      "id": "Main_work_L00_Front_Right",
+      "plane": "work/1f",
+      "activity_room": true,
+      "connected_open_cells": 195
+    },
+    {
+      "id": "Main_work_L00_Rear_Left",
+      "plane": "work/1f",
+      "activity_room": true,
+      "connected_open_cells": 219
+    },
+    {
+      "id": "Main_work_L00_Rear_Right",
+      "plane": "work/1f",
+      "activity_room": true,
+      "connected_open_cells": 200
+    },
+    {
+      "id": "Main_work_L00_Cross_Hall",
+      "plane": "work/1f",
+      "activity_room": false,
+      "connected_open_cells": 176
+    },
+    {
+      "id": "Main_work_L00_Entry_Spine",
+      "plane": "work/1f",
+      "activity_room": false,
+      "connected_open_cells": 48
+    },
+    {
+      "id": "lot_00_chapel_L00_Hall",
+      "plane": "chapel/1f",
+      "activity_room": false,
+      "connected_open_cells": 244
+    },
+    {
+      "id": "lot_00_chapel_L00_Stairwell",
+      "plane": "chapel/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_00_chapel_L00_Lower_Landing",
+      "plane": "chapel/1f",
+      "activity_room": false,
+      "connected_open_cells": 52
+    },
+    {
+      "id": "lot_00_chapel_L00_Upper_Landing",
+      "plane": "chapel/1f",
+      "activity_room": false,
+      "connected_open_cells": 100
+    },
+    {
+      "id": "lot_00_chapel_L00_Nave",
+      "plane": "chapel/1f",
+      "activity_room": true,
+      "connected_open_cells": 700
+    },
+    {
+      "id": "lot_00_chapel_L00_Vestry",
+      "plane": "chapel/1f",
+      "activity_room": true,
+      "connected_open_cells": 134
+    },
+    {
+      "id": "lot_00_chapel_L01_Hall",
+      "plane": "chapel/2f",
+      "activity_room": false,
+      "connected_open_cells": 140
+    },
+    {
+      "id": "lot_00_chapel_L01_Stairwell",
+      "plane": "chapel/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_00_chapel_L01_Lower_Landing",
+      "plane": "chapel/2f",
+      "activity_room": false,
+      "connected_open_cells": 52
+    },
+    {
+      "id": "lot_00_chapel_L01_Upper_Landing",
+      "plane": "chapel/2f",
+      "activity_room": false,
+      "connected_open_cells": 16
+    },
+    {
+      "id": "lot_00_chapel_L01_Choir_Gallery",
+      "plane": "chapel/2f",
+      "activity_room": true,
+      "connected_open_cells": 560
+    },
+    {
+      "id": "lot_01_mairie_L00_Hall",
+      "plane": "mairie/1f",
+      "activity_room": false,
+      "connected_open_cells": 101
+    },
+    {
+      "id": "lot_01_mairie_L00_Stairwell",
+      "plane": "mairie/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_01_mairie_L00_Lower_Landing",
+      "plane": "mairie/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_01_mairie_L00_Upper_Landing",
+      "plane": "mairie/1f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_01_mairie_L00_Front_Left",
+      "plane": "mairie/1f",
+      "activity_room": true,
+      "connected_open_cells": 119
+    },
+    {
+      "id": "lot_01_mairie_L00_Front_Right",
+      "plane": "mairie/1f",
+      "activity_room": true,
+      "connected_open_cells": 119
+    },
+    {
+      "id": "lot_01_mairie_L00_Rear_Left",
+      "plane": "mairie/1f",
+      "activity_room": true,
+      "connected_open_cells": 123
+    },
+    {
+      "id": "lot_01_mairie_L00_Rear_Right",
+      "plane": "mairie/1f",
+      "activity_room": true,
+      "connected_open_cells": 112
+    },
+    {
+      "id": "lot_01_mairie_L00_Cross_Hall",
+      "plane": "mairie/1f",
+      "activity_room": false,
+      "connected_open_cells": 108
+    },
+    {
+      "id": "lot_01_mairie_L01_Hall",
+      "plane": "mairie/2f",
+      "activity_room": false,
+      "connected_open_cells": 101
+    },
+    {
+      "id": "lot_01_mairie_L01_Stairwell",
+      "plane": "mairie/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_01_mairie_L01_Lower_Landing",
+      "plane": "mairie/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_01_mairie_L01_Upper_Landing",
+      "plane": "mairie/2f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_01_mairie_L01_Front_Left",
+      "plane": "mairie/2f",
+      "activity_room": true,
+      "connected_open_cells": 100
+    },
+    {
+      "id": "lot_01_mairie_L01_Front_Right",
+      "plane": "mairie/2f",
+      "activity_room": true,
+      "connected_open_cells": 125
+    },
+    {
+      "id": "lot_01_mairie_L01_Rear_Left",
+      "plane": "mairie/2f",
+      "activity_room": true,
+      "connected_open_cells": 123
+    },
+    {
+      "id": "lot_01_mairie_L01_Rear_Right",
+      "plane": "mairie/2f",
+      "activity_room": true,
+      "connected_open_cells": 125
+    },
+    {
+      "id": "lot_01_mairie_L01_Cross_Hall",
+      "plane": "mairie/2f",
+      "activity_room": false,
+      "connected_open_cells": 108
+    },
+    {
+      "id": "lot_01_mairie_L02_Hall",
+      "plane": "mairie/3f",
+      "activity_room": false,
+      "connected_open_cells": 101
+    },
+    {
+      "id": "lot_01_mairie_L02_Stairwell",
+      "plane": "mairie/3f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_01_mairie_L02_Lower_Landing",
+      "plane": "mairie/3f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_01_mairie_L02_Upper_Landing",
+      "plane": "mairie/3f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_01_mairie_L02_Front_Left",
+      "plane": "mairie/3f",
+      "activity_room": true,
+      "connected_open_cells": 125
+    },
+    {
+      "id": "lot_01_mairie_L02_Front_Right",
+      "plane": "mairie/3f",
+      "activity_room": true,
+      "connected_open_cells": 100
+    },
+    {
+      "id": "lot_01_mairie_L02_Rear_Left",
+      "plane": "mairie/3f",
+      "activity_room": true,
+      "connected_open_cells": 123
+    },
+    {
+      "id": "lot_01_mairie_L02_Rear_Right",
+      "plane": "mairie/3f",
+      "activity_room": true,
+      "connected_open_cells": 112
+    },
+    {
+      "id": "lot_01_mairie_L02_Cross_Hall",
+      "plane": "mairie/3f",
+      "activity_room": false,
+      "connected_open_cells": 108
+    },
+    {
+      "id": "lot_02_windmill_L00_Hall",
+      "plane": "model_lot_02_windmill/1f",
+      "activity_room": false,
+      "connected_open_cells": 76
+    },
+    {
+      "id": "lot_02_windmill_L00_Stairwell",
+      "plane": "model_lot_02_windmill/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_02_windmill_L00_Lower_Landing",
+      "plane": "model_lot_02_windmill/1f",
+      "activity_room": false,
+      "connected_open_cells": 16
+    },
+    {
+      "id": "lot_02_windmill_L00_Upper_Landing",
+      "plane": "model_lot_02_windmill/1f",
+      "activity_room": false,
+      "connected_open_cells": 12
+    },
+    {
+      "id": "lot_02_windmill_L00_Front_Room",
+      "plane": "model_lot_02_windmill/1f",
+      "activity_room": true,
+      "connected_open_cells": 50
+    },
+    {
+      "id": "lot_02_windmill_L00_Rear_Room",
+      "plane": "model_lot_02_windmill/1f",
+      "activity_room": true,
+      "connected_open_cells": 48
+    },
+    {
+      "id": "lot_02_windmill_L01_Hall",
+      "plane": "model_lot_02_windmill/2f",
+      "activity_room": false,
+      "connected_open_cells": 73
+    },
+    {
+      "id": "lot_02_windmill_L01_Stairwell",
+      "plane": "model_lot_02_windmill/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_02_windmill_L01_Lower_Landing",
+      "plane": "model_lot_02_windmill/2f",
+      "activity_room": false,
+      "connected_open_cells": 16
+    },
+    {
+      "id": "lot_02_windmill_L01_Upper_Landing",
+      "plane": "model_lot_02_windmill/2f",
+      "activity_room": false,
+      "connected_open_cells": 12
+    },
+    {
+      "id": "lot_02_windmill_L01_Front_Room",
+      "plane": "model_lot_02_windmill/2f",
+      "activity_room": true,
+      "connected_open_cells": 50
+    },
+    {
+      "id": "lot_02_windmill_L01_Rear_Room",
+      "plane": "model_lot_02_windmill/2f",
+      "activity_room": true,
+      "connected_open_cells": 48
+    },
+    {
+      "id": "lot_03_netshed_L00_Net_Work",
+      "plane": "model_lot_03_netshed/1f",
+      "activity_room": true,
+      "connected_open_cells": 90
+    },
+    {
+      "id": "lot_03_netshed_L00_Net_Store",
+      "plane": "model_lot_03_netshed/1f",
+      "activity_room": true,
+      "connected_open_cells": 42
+    },
+    {
+      "id": "lot_03_netshed_L00_Tool_Store",
+      "plane": "model_lot_03_netshed/1f",
+      "activity_room": true,
+      "connected_open_cells": 42
+    },
+    {
+      "id": "lot_04_bakery_L00_Hall",
+      "plane": "bakery/1f",
+      "activity_room": false,
+      "connected_open_cells": 115
+    },
+    {
+      "id": "lot_04_bakery_L00_Stairwell",
+      "plane": "bakery/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_04_bakery_L00_Lower_Landing",
+      "plane": "bakery/1f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_04_bakery_L00_Upper_Landing",
+      "plane": "bakery/1f",
+      "activity_room": false,
+      "connected_open_cells": 12
+    },
+    {
+      "id": "lot_04_bakery_L00_Public_Room",
+      "plane": "bakery/1f",
+      "activity_room": true,
+      "connected_open_cells": 308
+    },
+    {
+      "id": "lot_04_bakery_L00_Service_Room",
+      "plane": "bakery/1f",
+      "activity_room": true,
+      "connected_open_cells": 210
+    },
+    {
+      "id": "lot_04_bakery_L00_Staff_WC",
+      "plane": "bakery/1f",
+      "activity_room": true,
+      "connected_open_cells": 17
+    },
+    {
+      "id": "lot_04_bakery_L01_Hall",
+      "plane": "bakery/2f",
+      "activity_room": false,
+      "connected_open_cells": 122
+    },
+    {
+      "id": "lot_04_bakery_L01_Stairwell",
+      "plane": "bakery/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_04_bakery_L01_Lower_Landing",
+      "plane": "bakery/2f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_04_bakery_L01_Upper_Landing",
+      "plane": "bakery/2f",
+      "activity_room": false,
+      "connected_open_cells": 40
+    },
+    {
+      "id": "lot_04_bakery_L01_Owner_Bed_Living",
+      "plane": "bakery/2f",
+      "activity_room": true,
+      "connected_open_cells": 236
+    },
+    {
+      "id": "lot_04_bakery_L01_Owner_Kitchen",
+      "plane": "bakery/2f",
+      "activity_room": true,
+      "connected_open_cells": 88
+    },
+    {
+      "id": "lot_04_bakery_L01_Owner_Bathroom",
+      "plane": "bakery/2f",
+      "activity_room": true,
+      "connected_open_cells": 97
+    },
+    {
+      "id": "lot_05_creperie_L00_Hall",
+      "plane": "creperie/1f",
+      "activity_room": false,
+      "connected_open_cells": 115
+    },
+    {
+      "id": "lot_05_creperie_L00_Stairwell",
+      "plane": "creperie/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_05_creperie_L00_Lower_Landing",
+      "plane": "creperie/1f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_05_creperie_L00_Upper_Landing",
+      "plane": "creperie/1f",
+      "activity_room": false,
+      "connected_open_cells": 12
+    },
+    {
+      "id": "lot_05_creperie_L00_Public_Room",
+      "plane": "creperie/1f",
+      "activity_room": true,
+      "connected_open_cells": 126
+    },
+    {
+      "id": "lot_05_creperie_L00_Service_Room",
+      "plane": "creperie/1f",
+      "activity_room": true,
+      "connected_open_cells": 116
+    },
+    {
+      "id": "lot_05_creperie_L00_Staff_WC",
+      "plane": "creperie/1f",
+      "activity_room": true,
+      "connected_open_cells": 17
+    },
+    {
+      "id": "lot_05_creperie_L01_Hall",
+      "plane": "creperie/2f",
+      "activity_room": false,
+      "connected_open_cells": 122
+    },
+    {
+      "id": "lot_05_creperie_L01_Stairwell",
+      "plane": "creperie/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_05_creperie_L01_Lower_Landing",
+      "plane": "creperie/2f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_05_creperie_L01_Upper_Landing",
+      "plane": "creperie/2f",
+      "activity_room": false,
+      "connected_open_cells": 40
+    },
+    {
+      "id": "lot_05_creperie_L01_Owner_Bed_Living",
+      "plane": "creperie/2f",
+      "activity_room": true,
+      "connected_open_cells": 111
+    },
+    {
+      "id": "lot_05_creperie_L01_Owner_Kitchen",
+      "plane": "creperie/2f",
+      "activity_room": true,
+      "connected_open_cells": 34
+    },
+    {
+      "id": "lot_05_creperie_L01_Owner_Bathroom",
+      "plane": "creperie/2f",
+      "activity_room": true,
+      "connected_open_cells": 41
+    },
+    {
+      "id": "lot_06_halles_L00_Market_Aisle",
+      "plane": "halles/1f",
+      "activity_room": true,
+      "connected_open_cells": 620
+    },
+    {
+      "id": "lot_07_hotel_L00_Hall",
+      "plane": "hotel/1f",
+      "activity_room": false,
+      "connected_open_cells": 145
+    },
+    {
+      "id": "lot_07_hotel_L00_Stairwell",
+      "plane": "hotel/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_07_hotel_L00_Lower_Landing",
+      "plane": "hotel/1f",
+      "activity_room": false,
+      "connected_open_cells": 45
+    },
+    {
+      "id": "lot_07_hotel_L00_Upper_Landing",
+      "plane": "hotel/1f",
+      "activity_room": false,
+      "connected_open_cells": 80
+    },
+    {
+      "id": "lot_07_hotel_L00_Front_Left",
+      "plane": "hotel/1f",
+      "activity_room": true,
+      "connected_open_cells": 322
+    },
+    {
+      "id": "lot_07_hotel_L00_Front_Right",
+      "plane": "hotel/1f",
+      "activity_room": true,
+      "connected_open_cells": 226
+    },
+    {
+      "id": "lot_07_hotel_L00_Rear_Left",
+      "plane": "hotel/1f",
+      "activity_room": true,
+      "connected_open_cells": 302
+    },
+    {
+      "id": "lot_07_hotel_L00_Rear_Right",
+      "plane": "hotel/1f",
+      "activity_room": true,
+      "connected_open_cells": 320
+    },
+    {
+      "id": "lot_07_hotel_L00_Cross_Hall",
+      "plane": "hotel/1f",
+      "activity_room": false,
+      "connected_open_cells": 168
+    },
+    {
+      "id": "lot_07_hotel_L01_Hall",
+      "plane": "hotel/2f",
+      "activity_room": false,
+      "connected_open_cells": 145
+    },
+    {
+      "id": "lot_07_hotel_L01_Stairwell",
+      "plane": "hotel/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_07_hotel_L01_Lower_Landing",
+      "plane": "hotel/2f",
+      "activity_room": false,
+      "connected_open_cells": 45
+    },
+    {
+      "id": "lot_07_hotel_L01_Upper_Landing",
+      "plane": "hotel/2f",
+      "activity_room": false,
+      "connected_open_cells": 80
+    },
+    {
+      "id": "lot_07_hotel_L01_Front_Left",
+      "plane": "hotel/2f",
+      "activity_room": true,
+      "connected_open_cells": 172
+    },
+    {
+      "id": "lot_07_hotel_L01_Front_Right",
+      "plane": "hotel/2f",
+      "activity_room": true,
+      "connected_open_cells": 173
+    },
+    {
+      "id": "lot_07_hotel_L01_Rear_Left",
+      "plane": "hotel/2f",
+      "activity_room": true,
+      "connected_open_cells": 172
+    },
+    {
+      "id": "lot_07_hotel_L01_Rear_Right",
+      "plane": "hotel/2f",
+      "activity_room": true,
+      "connected_open_cells": 173
+    },
+    {
+      "id": "lot_07_hotel_L01_Cross_Hall",
+      "plane": "hotel/2f",
+      "activity_room": false,
+      "connected_open_cells": 168
+    },
+    {
+      "id": "lot_07_hotel_L01_Front_Left_Ensuite",
+      "plane": "hotel/2f",
+      "activity_room": true,
+      "connected_open_cells": 47
+    },
+    {
+      "id": "lot_07_hotel_L01_Front_Left_Suite_Entry",
+      "plane": "hotel/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_07_hotel_L01_Front_Right_Ensuite",
+      "plane": "hotel/2f",
+      "activity_room": true,
+      "connected_open_cells": 49
+    },
+    {
+      "id": "lot_07_hotel_L01_Front_Right_Suite_Entry",
+      "plane": "hotel/2f",
+      "activity_room": false,
+      "connected_open_cells": 27
+    },
+    {
+      "id": "lot_07_hotel_L01_Rear_Left_Ensuite",
+      "plane": "hotel/2f",
+      "activity_room": true,
+      "connected_open_cells": 48
+    },
+    {
+      "id": "lot_07_hotel_L01_Rear_Left_Suite_Entry",
+      "plane": "hotel/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_07_hotel_L01_Rear_Right_Ensuite",
+      "plane": "hotel/2f",
+      "activity_room": true,
+      "connected_open_cells": 50
+    },
+    {
+      "id": "lot_07_hotel_L01_Rear_Right_Suite_Entry",
+      "plane": "hotel/2f",
+      "activity_room": false,
+      "connected_open_cells": 27
+    },
+    {
+      "id": "lot_07_hotel_L02_Hall",
+      "plane": "hotel/3f",
+      "activity_room": false,
+      "connected_open_cells": 145
+    },
+    {
+      "id": "lot_07_hotel_L02_Stairwell",
+      "plane": "hotel/3f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_07_hotel_L02_Lower_Landing",
+      "plane": "hotel/3f",
+      "activity_room": false,
+      "connected_open_cells": 45
+    },
+    {
+      "id": "lot_07_hotel_L02_Upper_Landing",
+      "plane": "hotel/3f",
+      "activity_room": false,
+      "connected_open_cells": 80
+    },
+    {
+      "id": "lot_07_hotel_L02_Front_Left",
+      "plane": "hotel/3f",
+      "activity_room": true,
+      "connected_open_cells": 172
+    },
+    {
+      "id": "lot_07_hotel_L02_Front_Right",
+      "plane": "hotel/3f",
+      "activity_room": true,
+      "connected_open_cells": 173
+    },
+    {
+      "id": "lot_07_hotel_L02_Rear_Left",
+      "plane": "hotel/3f",
+      "activity_room": true,
+      "connected_open_cells": 172
+    },
+    {
+      "id": "lot_07_hotel_L02_Rear_Right",
+      "plane": "hotel/3f",
+      "activity_room": true,
+      "connected_open_cells": 173
+    },
+    {
+      "id": "lot_07_hotel_L02_Cross_Hall",
+      "plane": "hotel/3f",
+      "activity_room": false,
+      "connected_open_cells": 168
+    },
+    {
+      "id": "lot_07_hotel_L02_Front_Left_Ensuite",
+      "plane": "hotel/3f",
+      "activity_room": true,
+      "connected_open_cells": 47
+    },
+    {
+      "id": "lot_07_hotel_L02_Front_Left_Suite_Entry",
+      "plane": "hotel/3f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_07_hotel_L02_Front_Right_Ensuite",
+      "plane": "hotel/3f",
+      "activity_room": true,
+      "connected_open_cells": 49
+    },
+    {
+      "id": "lot_07_hotel_L02_Front_Right_Suite_Entry",
+      "plane": "hotel/3f",
+      "activity_room": false,
+      "connected_open_cells": 27
+    },
+    {
+      "id": "lot_07_hotel_L02_Rear_Left_Ensuite",
+      "plane": "hotel/3f",
+      "activity_room": true,
+      "connected_open_cells": 48
+    },
+    {
+      "id": "lot_07_hotel_L02_Rear_Left_Suite_Entry",
+      "plane": "hotel/3f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_07_hotel_L02_Rear_Right_Ensuite",
+      "plane": "hotel/3f",
+      "activity_room": true,
+      "connected_open_cells": 50
+    },
+    {
+      "id": "lot_07_hotel_L02_Rear_Right_Suite_Entry",
+      "plane": "hotel/3f",
+      "activity_room": false,
+      "connected_open_cells": 27
+    },
+    {
+      "id": "lot_08_cannery_L00_Front_Left",
+      "plane": "model_lot_08_cannery/1f",
+      "activity_room": true,
+      "connected_open_cells": 258
+    },
+    {
+      "id": "lot_08_cannery_L00_Front_Right",
+      "plane": "model_lot_08_cannery/1f",
+      "activity_room": true,
+      "connected_open_cells": 253
+    },
+    {
+      "id": "lot_08_cannery_L00_Rear_Left",
+      "plane": "model_lot_08_cannery/1f",
+      "activity_room": true,
+      "connected_open_cells": 303
+    },
+    {
+      "id": "lot_08_cannery_L00_Rear_Right",
+      "plane": "model_lot_08_cannery/1f",
+      "activity_room": true,
+      "connected_open_cells": 284
+    },
+    {
+      "id": "lot_08_cannery_L00_Cross_Hall",
+      "plane": "model_lot_08_cannery/1f",
+      "activity_room": false,
+      "connected_open_cells": 176
+    },
+    {
+      "id": "lot_08_cannery_L00_Entry_Spine",
+      "plane": "model_lot_08_cannery/1f",
+      "activity_room": false,
+      "connected_open_cells": 64
+    },
+    {
+      "id": "Port_Warehouse_Exterior_L00_Front_Left",
+      "plane": "port_warehouse/1f",
+      "activity_room": true,
+      "connected_open_cells": 215
+    },
+    {
+      "id": "Port_Warehouse_Exterior_L00_Front_Right",
+      "plane": "port_warehouse/1f",
+      "activity_room": true,
+      "connected_open_cells": 211
+    },
+    {
+      "id": "Port_Warehouse_Exterior_L00_Rear_Left",
+      "plane": "port_warehouse/1f",
+      "activity_room": true,
+      "connected_open_cells": 243
+    },
+    {
+      "id": "Port_Warehouse_Exterior_L00_Rear_Right",
+      "plane": "port_warehouse/1f",
+      "activity_room": true,
+      "connected_open_cells": 243
+    },
+    {
+      "id": "Port_Warehouse_Exterior_L00_Cross_Hall",
+      "plane": "port_warehouse/1f",
+      "activity_room": false,
+      "connected_open_cells": 144
+    },
+    {
+      "id": "Port_Warehouse_Exterior_L00_Entry_Spine",
+      "plane": "port_warehouse/1f",
+      "activity_room": false,
+      "connected_open_cells": 64
+    },
+    {
+      "id": "lot_09_townhouse_L00_Hall",
+      "plane": "test_loft/1f",
+      "activity_room": false,
+      "connected_open_cells": 87
+    },
+    {
+      "id": "lot_09_townhouse_L00_Stairwell",
+      "plane": "test_loft/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_09_townhouse_L00_Lower_Landing",
+      "plane": "test_loft/1f",
+      "activity_room": false,
+      "connected_open_cells": 20
+    },
+    {
+      "id": "lot_09_townhouse_L00_Upper_Landing",
+      "plane": "test_loft/1f",
+      "activity_room": false,
+      "connected_open_cells": 16
+    },
+    {
+      "id": "lot_09_townhouse_L00_Front_Room",
+      "plane": "test_loft/1f",
+      "activity_room": true,
+      "connected_open_cells": 128
+    },
+    {
+      "id": "lot_09_townhouse_L00_Rear_Room",
+      "plane": "test_loft/1f",
+      "activity_room": true,
+      "connected_open_cells": 101
+    },
+    {
+      "id": "lot_09_townhouse_L01_Hall",
+      "plane": "test_loft/2f",
+      "activity_room": false,
+      "connected_open_cells": 87
+    },
+    {
+      "id": "lot_09_townhouse_L01_Stairwell",
+      "plane": "test_loft/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_09_townhouse_L01_Lower_Landing",
+      "plane": "test_loft/2f",
+      "activity_room": false,
+      "connected_open_cells": 20
+    },
+    {
+      "id": "lot_09_townhouse_L01_Upper_Landing",
+      "plane": "test_loft/2f",
+      "activity_room": false,
+      "connected_open_cells": 16
+    },
+    {
+      "id": "lot_09_townhouse_L01_Front_Room",
+      "plane": "test_loft/2f",
+      "activity_room": true,
+      "connected_open_cells": 106
+    },
+    {
+      "id": "lot_09_townhouse_L01_Rear_Room",
+      "plane": "test_loft/2f",
+      "activity_room": true,
+      "connected_open_cells": 104
+    },
+    {
+      "id": "lot_12_halftimber_L00_Hall",
+      "plane": "home2/1f",
+      "activity_room": false,
+      "connected_open_cells": 87
+    },
+    {
+      "id": "lot_12_halftimber_L00_Stairwell",
+      "plane": "home2/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_12_halftimber_L00_Lower_Landing",
+      "plane": "home2/1f",
+      "activity_room": false,
+      "connected_open_cells": 20
+    },
+    {
+      "id": "lot_12_halftimber_L00_Upper_Landing",
+      "plane": "home2/1f",
+      "activity_room": false,
+      "connected_open_cells": 16
+    },
+    {
+      "id": "lot_12_halftimber_L00_Front_Room",
+      "plane": "home2/1f",
+      "activity_room": true,
+      "connected_open_cells": 128
+    },
+    {
+      "id": "lot_12_halftimber_L00_Rear_Room",
+      "plane": "home2/1f",
+      "activity_room": true,
+      "connected_open_cells": 101
+    },
+    {
+      "id": "lot_12_halftimber_L01_Hall",
+      "plane": "home2/2f",
+      "activity_room": false,
+      "connected_open_cells": 87
+    },
+    {
+      "id": "lot_12_halftimber_L01_Stairwell",
+      "plane": "home2/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_12_halftimber_L01_Lower_Landing",
+      "plane": "home2/2f",
+      "activity_room": false,
+      "connected_open_cells": 20
+    },
+    {
+      "id": "lot_12_halftimber_L01_Upper_Landing",
+      "plane": "home2/2f",
+      "activity_room": false,
+      "connected_open_cells": 16
+    },
+    {
+      "id": "lot_12_halftimber_L01_Front_Room",
+      "plane": "home2/2f",
+      "activity_room": true,
+      "connected_open_cells": 106
+    },
+    {
+      "id": "lot_12_halftimber_L01_Rear_Room",
+      "plane": "home2/2f",
+      "activity_room": true,
+      "connected_open_cells": 104
+    },
+    {
+      "id": "lot_12_halftimber_L02_Hall",
+      "plane": "home2/3f",
+      "activity_room": false,
+      "connected_open_cells": 87
+    },
+    {
+      "id": "lot_12_halftimber_L02_Stairwell",
+      "plane": "home2/3f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_12_halftimber_L02_Lower_Landing",
+      "plane": "home2/3f",
+      "activity_room": false,
+      "connected_open_cells": 20
+    },
+    {
+      "id": "lot_12_halftimber_L02_Upper_Landing",
+      "plane": "home2/3f",
+      "activity_room": false,
+      "connected_open_cells": 16
+    },
+    {
+      "id": "lot_12_halftimber_L02_Front_Room",
+      "plane": "home2/3f",
+      "activity_room": true,
+      "connected_open_cells": 101
+    },
+    {
+      "id": "lot_12_halftimber_L02_Rear_Room",
+      "plane": "home2/3f",
+      "activity_room": true,
+      "connected_open_cells": 112
+    },
+    {
+      "id": "lot_14_halftimber_L00_Hall",
+      "plane": "model_lot_14_halftimber/1f",
+      "activity_room": false,
+      "connected_open_cells": 87
+    },
+    {
+      "id": "lot_14_halftimber_L00_Stairwell",
+      "plane": "model_lot_14_halftimber/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_14_halftimber_L00_Lower_Landing",
+      "plane": "model_lot_14_halftimber/1f",
+      "activity_room": false,
+      "connected_open_cells": 20
+    },
+    {
+      "id": "lot_14_halftimber_L00_Upper_Landing",
+      "plane": "model_lot_14_halftimber/1f",
+      "activity_room": false,
+      "connected_open_cells": 16
+    },
+    {
+      "id": "lot_14_halftimber_L00_Front_Room",
+      "plane": "model_lot_14_halftimber/1f",
+      "activity_room": true,
+      "connected_open_cells": 128
+    },
+    {
+      "id": "lot_14_halftimber_L00_Rear_Room",
+      "plane": "model_lot_14_halftimber/1f",
+      "activity_room": true,
+      "connected_open_cells": 101
+    },
+    {
+      "id": "lot_14_halftimber_L01_Hall",
+      "plane": "model_lot_14_halftimber/2f",
+      "activity_room": false,
+      "connected_open_cells": 87
+    },
+    {
+      "id": "lot_14_halftimber_L01_Stairwell",
+      "plane": "model_lot_14_halftimber/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_14_halftimber_L01_Lower_Landing",
+      "plane": "model_lot_14_halftimber/2f",
+      "activity_room": false,
+      "connected_open_cells": 20
+    },
+    {
+      "id": "lot_14_halftimber_L01_Upper_Landing",
+      "plane": "model_lot_14_halftimber/2f",
+      "activity_room": false,
+      "connected_open_cells": 16
+    },
+    {
+      "id": "lot_14_halftimber_L01_Front_Room",
+      "plane": "model_lot_14_halftimber/2f",
+      "activity_room": true,
+      "connected_open_cells": 106
+    },
+    {
+      "id": "lot_14_halftimber_L01_Rear_Room",
+      "plane": "model_lot_14_halftimber/2f",
+      "activity_room": true,
+      "connected_open_cells": 104
+    },
+    {
+      "id": "lot_15_terrace_L00_Hall",
+      "plane": "model_lot_15_terrace/1f",
+      "activity_room": false,
+      "connected_open_cells": 87
+    },
+    {
+      "id": "lot_15_terrace_L00_Stairwell",
+      "plane": "model_lot_15_terrace/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_15_terrace_L00_Lower_Landing",
+      "plane": "model_lot_15_terrace/1f",
+      "activity_room": false,
+      "connected_open_cells": 20
+    },
+    {
+      "id": "lot_15_terrace_L00_Upper_Landing",
+      "plane": "model_lot_15_terrace/1f",
+      "activity_room": false,
+      "connected_open_cells": 16
+    },
+    {
+      "id": "lot_15_terrace_L00_Front_Room",
+      "plane": "model_lot_15_terrace/1f",
+      "activity_room": true,
+      "connected_open_cells": 128
+    },
+    {
+      "id": "lot_15_terrace_L00_Rear_Room",
+      "plane": "model_lot_15_terrace/1f",
+      "activity_room": true,
+      "connected_open_cells": 101
+    },
+    {
+      "id": "lot_15_terrace_L01_Hall",
+      "plane": "model_lot_15_terrace/2f",
+      "activity_room": false,
+      "connected_open_cells": 87
+    },
+    {
+      "id": "lot_15_terrace_L01_Stairwell",
+      "plane": "model_lot_15_terrace/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_15_terrace_L01_Lower_Landing",
+      "plane": "model_lot_15_terrace/2f",
+      "activity_room": false,
+      "connected_open_cells": 20
+    },
+    {
+      "id": "lot_15_terrace_L01_Upper_Landing",
+      "plane": "model_lot_15_terrace/2f",
+      "activity_room": false,
+      "connected_open_cells": 16
+    },
+    {
+      "id": "lot_15_terrace_L01_Front_Room",
+      "plane": "model_lot_15_terrace/2f",
+      "activity_room": true,
+      "connected_open_cells": 106
+    },
+    {
+      "id": "lot_15_terrace_L01_Rear_Room",
+      "plane": "model_lot_15_terrace/2f",
+      "activity_room": true,
+      "connected_open_cells": 104
+    },
+    {
+      "id": "lot_18_terrace_L00_Hall",
+      "plane": "model_lot_18_terrace/1f",
+      "activity_room": false,
+      "connected_open_cells": 95
+    },
+    {
+      "id": "lot_18_terrace_L00_Stairwell",
+      "plane": "model_lot_18_terrace/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_18_terrace_L00_Lower_Landing",
+      "plane": "model_lot_18_terrace/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_18_terrace_L00_Upper_Landing",
+      "plane": "model_lot_18_terrace/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_18_terrace_L00_Front_Room",
+      "plane": "model_lot_18_terrace/1f",
+      "activity_room": true,
+      "connected_open_cells": 141
+    },
+    {
+      "id": "lot_18_terrace_L00_Rear_Room",
+      "plane": "model_lot_18_terrace/1f",
+      "activity_room": true,
+      "connected_open_cells": 114
+    },
+    {
+      "id": "lot_18_terrace_L01_Hall",
+      "plane": "model_lot_18_terrace/2f",
+      "activity_room": false,
+      "connected_open_cells": 95
+    },
+    {
+      "id": "lot_18_terrace_L01_Stairwell",
+      "plane": "model_lot_18_terrace/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_18_terrace_L01_Lower_Landing",
+      "plane": "model_lot_18_terrace/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_18_terrace_L01_Upper_Landing",
+      "plane": "model_lot_18_terrace/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_18_terrace_L01_Front_Room",
+      "plane": "model_lot_18_terrace/2f",
+      "activity_room": true,
+      "connected_open_cells": 119
+    },
+    {
+      "id": "lot_18_terrace_L01_Rear_Room",
+      "plane": "model_lot_18_terrace/2f",
+      "activity_room": true,
+      "connected_open_cells": 120
+    },
+    {
+      "id": "lot_20_ochre_L00_Hall",
+      "plane": "model_lot_20_ochre/1f",
+      "activity_room": false,
+      "connected_open_cells": 95
+    },
+    {
+      "id": "lot_20_ochre_L00_Stairwell",
+      "plane": "model_lot_20_ochre/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_20_ochre_L00_Lower_Landing",
+      "plane": "model_lot_20_ochre/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_20_ochre_L00_Upper_Landing",
+      "plane": "model_lot_20_ochre/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_20_ochre_L00_Front_Room",
+      "plane": "model_lot_20_ochre/1f",
+      "activity_room": true,
+      "connected_open_cells": 141
+    },
+    {
+      "id": "lot_20_ochre_L00_Rear_Room",
+      "plane": "model_lot_20_ochre/1f",
+      "activity_room": true,
+      "connected_open_cells": 114
+    },
+    {
+      "id": "lot_20_ochre_L01_Hall",
+      "plane": "model_lot_20_ochre/2f",
+      "activity_room": false,
+      "connected_open_cells": 95
+    },
+    {
+      "id": "lot_20_ochre_L01_Stairwell",
+      "plane": "model_lot_20_ochre/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_20_ochre_L01_Lower_Landing",
+      "plane": "model_lot_20_ochre/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_20_ochre_L01_Upper_Landing",
+      "plane": "model_lot_20_ochre/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_20_ochre_L01_Front_Room",
+      "plane": "model_lot_20_ochre/2f",
+      "activity_room": true,
+      "connected_open_cells": 119
+    },
+    {
+      "id": "lot_20_ochre_L01_Rear_Room",
+      "plane": "model_lot_20_ochre/2f",
+      "activity_room": true,
+      "connected_open_cells": 120
+    },
+    {
+      "id": "lot_22_halftimber_L00_Hall",
+      "plane": "model_lot_22_halftimber/1f",
+      "activity_room": false,
+      "connected_open_cells": 95
+    },
+    {
+      "id": "lot_22_halftimber_L00_Stairwell",
+      "plane": "model_lot_22_halftimber/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_22_halftimber_L00_Lower_Landing",
+      "plane": "model_lot_22_halftimber/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_22_halftimber_L00_Upper_Landing",
+      "plane": "model_lot_22_halftimber/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_22_halftimber_L00_Front_Room",
+      "plane": "model_lot_22_halftimber/1f",
+      "activity_room": true,
+      "connected_open_cells": 141
+    },
+    {
+      "id": "lot_22_halftimber_L00_Rear_Room",
+      "plane": "model_lot_22_halftimber/1f",
+      "activity_room": true,
+      "connected_open_cells": 114
+    },
+    {
+      "id": "lot_22_halftimber_L01_Hall",
+      "plane": "model_lot_22_halftimber/2f",
+      "activity_room": false,
+      "connected_open_cells": 95
+    },
+    {
+      "id": "lot_22_halftimber_L01_Stairwell",
+      "plane": "model_lot_22_halftimber/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_22_halftimber_L01_Lower_Landing",
+      "plane": "model_lot_22_halftimber/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_22_halftimber_L01_Upper_Landing",
+      "plane": "model_lot_22_halftimber/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_22_halftimber_L01_Front_Room",
+      "plane": "model_lot_22_halftimber/2f",
+      "activity_room": true,
+      "connected_open_cells": 119
+    },
+    {
+      "id": "lot_22_halftimber_L01_Rear_Room",
+      "plane": "model_lot_22_halftimber/2f",
+      "activity_room": true,
+      "connected_open_cells": 120
+    },
+    {
+      "id": "lot_23_townhouse_L00_Hall",
+      "plane": "model_lot_23_townhouse/1f",
+      "activity_room": false,
+      "connected_open_cells": 95
+    },
+    {
+      "id": "lot_23_townhouse_L00_Stairwell",
+      "plane": "model_lot_23_townhouse/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_23_townhouse_L00_Lower_Landing",
+      "plane": "model_lot_23_townhouse/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_23_townhouse_L00_Upper_Landing",
+      "plane": "model_lot_23_townhouse/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_23_townhouse_L00_Front_Room",
+      "plane": "model_lot_23_townhouse/1f",
+      "activity_room": true,
+      "connected_open_cells": 141
+    },
+    {
+      "id": "lot_23_townhouse_L00_Rear_Room",
+      "plane": "model_lot_23_townhouse/1f",
+      "activity_room": true,
+      "connected_open_cells": 114
+    },
+    {
+      "id": "lot_23_townhouse_L01_Hall",
+      "plane": "model_lot_23_townhouse/2f",
+      "activity_room": false,
+      "connected_open_cells": 95
+    },
+    {
+      "id": "lot_23_townhouse_L01_Stairwell",
+      "plane": "model_lot_23_townhouse/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_23_townhouse_L01_Lower_Landing",
+      "plane": "model_lot_23_townhouse/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_23_townhouse_L01_Upper_Landing",
+      "plane": "model_lot_23_townhouse/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_23_townhouse_L01_Front_Room",
+      "plane": "model_lot_23_townhouse/2f",
+      "activity_room": true,
+      "connected_open_cells": 119
+    },
+    {
+      "id": "lot_23_townhouse_L01_Rear_Room",
+      "plane": "model_lot_23_townhouse/2f",
+      "activity_room": true,
+      "connected_open_cells": 120
+    },
+    {
+      "id": "lot_24_ochre_L00_Hall",
+      "plane": "model_lot_24_ochre/1f",
+      "activity_room": false,
+      "connected_open_cells": 95
+    },
+    {
+      "id": "lot_24_ochre_L00_Stairwell",
+      "plane": "model_lot_24_ochre/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_24_ochre_L00_Lower_Landing",
+      "plane": "model_lot_24_ochre/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_24_ochre_L00_Upper_Landing",
+      "plane": "model_lot_24_ochre/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_24_ochre_L00_Front_Room",
+      "plane": "model_lot_24_ochre/1f",
+      "activity_room": true,
+      "connected_open_cells": 141
+    },
+    {
+      "id": "lot_24_ochre_L00_Rear_Room",
+      "plane": "model_lot_24_ochre/1f",
+      "activity_room": true,
+      "connected_open_cells": 114
+    },
+    {
+      "id": "lot_24_ochre_L01_Hall",
+      "plane": "model_lot_24_ochre/2f",
+      "activity_room": false,
+      "connected_open_cells": 95
+    },
+    {
+      "id": "lot_24_ochre_L01_Stairwell",
+      "plane": "model_lot_24_ochre/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_24_ochre_L01_Lower_Landing",
+      "plane": "model_lot_24_ochre/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_24_ochre_L01_Upper_Landing",
+      "plane": "model_lot_24_ochre/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_24_ochre_L01_Front_Room",
+      "plane": "model_lot_24_ochre/2f",
+      "activity_room": true,
+      "connected_open_cells": 119
+    },
+    {
+      "id": "lot_24_ochre_L01_Rear_Room",
+      "plane": "model_lot_24_ochre/2f",
+      "activity_room": true,
+      "connected_open_cells": 120
+    },
+    {
+      "id": "lot_25_townhouse_L00_Living_Kitchen",
+      "plane": "model_lot_25_townhouse/1f",
+      "activity_room": true,
+      "connected_open_cells": 217
+    },
+    {
+      "id": "lot_25_townhouse_L00_Bedroom",
+      "plane": "model_lot_25_townhouse/1f",
+      "activity_room": true,
+      "connected_open_cells": 43
+    },
+    {
+      "id": "lot_25_townhouse_L00_Bathroom",
+      "plane": "model_lot_25_townhouse/1f",
+      "activity_room": true,
+      "connected_open_cells": 55
+    },
+    {
+      "id": "lot_25_townhouse_L00_Rear_Hall",
+      "plane": "model_lot_25_townhouse/1f",
+      "activity_room": false,
+      "connected_open_cells": 44
+    },
+    {
+      "id": "lot_26_ochre_L00_Living_Kitchen",
+      "plane": "model_lot_26_ochre/1f",
+      "activity_room": true,
+      "connected_open_cells": 217
+    },
+    {
+      "id": "lot_26_ochre_L00_Bedroom",
+      "plane": "model_lot_26_ochre/1f",
+      "activity_room": true,
+      "connected_open_cells": 43
+    },
+    {
+      "id": "lot_26_ochre_L00_Bathroom",
+      "plane": "model_lot_26_ochre/1f",
+      "activity_room": true,
+      "connected_open_cells": 55
+    },
+    {
+      "id": "lot_26_ochre_L00_Rear_Hall",
+      "plane": "model_lot_26_ochre/1f",
+      "activity_room": false,
+      "connected_open_cells": 44
+    },
+    {
+      "id": "lot_27_terrace_L00_Hall",
+      "plane": "model_lot_27_terrace/1f",
+      "activity_room": false,
+      "connected_open_cells": 87
+    },
+    {
+      "id": "lot_27_terrace_L00_Stairwell",
+      "plane": "model_lot_27_terrace/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_27_terrace_L00_Lower_Landing",
+      "plane": "model_lot_27_terrace/1f",
+      "activity_room": false,
+      "connected_open_cells": 20
+    },
+    {
+      "id": "lot_27_terrace_L00_Upper_Landing",
+      "plane": "model_lot_27_terrace/1f",
+      "activity_room": false,
+      "connected_open_cells": 16
+    },
+    {
+      "id": "lot_27_terrace_L00_Front_Room",
+      "plane": "model_lot_27_terrace/1f",
+      "activity_room": true,
+      "connected_open_cells": 140
+    },
+    {
+      "id": "lot_27_terrace_L00_Rear_Room",
+      "plane": "model_lot_27_terrace/1f",
+      "activity_room": true,
+      "connected_open_cells": 112
+    },
+    {
+      "id": "lot_27_terrace_L01_Hall",
+      "plane": "model_lot_27_terrace/2f",
+      "activity_room": false,
+      "connected_open_cells": 87
+    },
+    {
+      "id": "lot_27_terrace_L01_Stairwell",
+      "plane": "model_lot_27_terrace/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_27_terrace_L01_Lower_Landing",
+      "plane": "model_lot_27_terrace/2f",
+      "activity_room": false,
+      "connected_open_cells": 20
+    },
+    {
+      "id": "lot_27_terrace_L01_Upper_Landing",
+      "plane": "model_lot_27_terrace/2f",
+      "activity_room": false,
+      "connected_open_cells": 16
+    },
+    {
+      "id": "lot_27_terrace_L01_Front_Room",
+      "plane": "model_lot_27_terrace/2f",
+      "activity_room": true,
+      "connected_open_cells": 118
+    },
+    {
+      "id": "lot_27_terrace_L01_Rear_Room",
+      "plane": "model_lot_27_terrace/2f",
+      "activity_room": true,
+      "connected_open_cells": 115
+    },
+    {
+      "id": "lot_29_halftimber_L00_Hall",
+      "plane": "model_lot_29_halftimber/1f",
+      "activity_room": false,
+      "connected_open_cells": 87
+    },
+    {
+      "id": "lot_29_halftimber_L00_Stairwell",
+      "plane": "model_lot_29_halftimber/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_29_halftimber_L00_Lower_Landing",
+      "plane": "model_lot_29_halftimber/1f",
+      "activity_room": false,
+      "connected_open_cells": 20
+    },
+    {
+      "id": "lot_29_halftimber_L00_Upper_Landing",
+      "plane": "model_lot_29_halftimber/1f",
+      "activity_room": false,
+      "connected_open_cells": 16
+    },
+    {
+      "id": "lot_29_halftimber_L00_Front_Room",
+      "plane": "model_lot_29_halftimber/1f",
+      "activity_room": true,
+      "connected_open_cells": 140
+    },
+    {
+      "id": "lot_29_halftimber_L00_Rear_Room",
+      "plane": "model_lot_29_halftimber/1f",
+      "activity_room": true,
+      "connected_open_cells": 112
+    },
+    {
+      "id": "lot_29_halftimber_L01_Hall",
+      "plane": "model_lot_29_halftimber/2f",
+      "activity_room": false,
+      "connected_open_cells": 87
+    },
+    {
+      "id": "lot_29_halftimber_L01_Stairwell",
+      "plane": "model_lot_29_halftimber/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_29_halftimber_L01_Lower_Landing",
+      "plane": "model_lot_29_halftimber/2f",
+      "activity_room": false,
+      "connected_open_cells": 20
+    },
+    {
+      "id": "lot_29_halftimber_L01_Upper_Landing",
+      "plane": "model_lot_29_halftimber/2f",
+      "activity_room": false,
+      "connected_open_cells": 16
+    },
+    {
+      "id": "lot_29_halftimber_L01_Front_Room",
+      "plane": "model_lot_29_halftimber/2f",
+      "activity_room": true,
+      "connected_open_cells": 118
+    },
+    {
+      "id": "lot_29_halftimber_L01_Rear_Room",
+      "plane": "model_lot_29_halftimber/2f",
+      "activity_room": true,
+      "connected_open_cells": 115
+    },
+    {
+      "id": "lot_30_townhouse_L00_Hall",
+      "plane": "model_lot_30_townhouse/1f",
+      "activity_room": false,
+      "connected_open_cells": 87
+    },
+    {
+      "id": "lot_30_townhouse_L00_Stairwell",
+      "plane": "model_lot_30_townhouse/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_30_townhouse_L00_Lower_Landing",
+      "plane": "model_lot_30_townhouse/1f",
+      "activity_room": false,
+      "connected_open_cells": 20
+    },
+    {
+      "id": "lot_30_townhouse_L00_Upper_Landing",
+      "plane": "model_lot_30_townhouse/1f",
+      "activity_room": false,
+      "connected_open_cells": 16
+    },
+    {
+      "id": "lot_30_townhouse_L00_Front_Room",
+      "plane": "model_lot_30_townhouse/1f",
+      "activity_room": true,
+      "connected_open_cells": 140
+    },
+    {
+      "id": "lot_30_townhouse_L00_Rear_Room",
+      "plane": "model_lot_30_townhouse/1f",
+      "activity_room": true,
+      "connected_open_cells": 112
+    },
+    {
+      "id": "lot_30_townhouse_L01_Hall",
+      "plane": "model_lot_30_townhouse/2f",
+      "activity_room": false,
+      "connected_open_cells": 87
+    },
+    {
+      "id": "lot_30_townhouse_L01_Stairwell",
+      "plane": "model_lot_30_townhouse/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_30_townhouse_L01_Lower_Landing",
+      "plane": "model_lot_30_townhouse/2f",
+      "activity_room": false,
+      "connected_open_cells": 20
+    },
+    {
+      "id": "lot_30_townhouse_L01_Upper_Landing",
+      "plane": "model_lot_30_townhouse/2f",
+      "activity_room": false,
+      "connected_open_cells": 16
+    },
+    {
+      "id": "lot_30_townhouse_L01_Front_Room",
+      "plane": "model_lot_30_townhouse/2f",
+      "activity_room": true,
+      "connected_open_cells": 118
+    },
+    {
+      "id": "lot_30_townhouse_L01_Rear_Room",
+      "plane": "model_lot_30_townhouse/2f",
+      "activity_room": true,
+      "connected_open_cells": 115
+    },
+    {
+      "id": "lot_31_longere_L00_Hall",
+      "plane": "model_lot_31_longere/1f",
+      "activity_room": false,
+      "connected_open_cells": 87
+    },
+    {
+      "id": "lot_31_longere_L00_Stairwell",
+      "plane": "model_lot_31_longere/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_31_longere_L00_Lower_Landing",
+      "plane": "model_lot_31_longere/1f",
+      "activity_room": false,
+      "connected_open_cells": 20
+    },
+    {
+      "id": "lot_31_longere_L00_Upper_Landing",
+      "plane": "model_lot_31_longere/1f",
+      "activity_room": false,
+      "connected_open_cells": 16
+    },
+    {
+      "id": "lot_31_longere_L00_Front_Room",
+      "plane": "model_lot_31_longere/1f",
+      "activity_room": true,
+      "connected_open_cells": 140
+    },
+    {
+      "id": "lot_31_longere_L00_Rear_Room",
+      "plane": "model_lot_31_longere/1f",
+      "activity_room": true,
+      "connected_open_cells": 112
+    },
+    {
+      "id": "lot_31_longere_L01_Hall",
+      "plane": "model_lot_31_longere/2f",
+      "activity_room": false,
+      "connected_open_cells": 87
+    },
+    {
+      "id": "lot_31_longere_L01_Stairwell",
+      "plane": "model_lot_31_longere/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_31_longere_L01_Lower_Landing",
+      "plane": "model_lot_31_longere/2f",
+      "activity_room": false,
+      "connected_open_cells": 20
+    },
+    {
+      "id": "lot_31_longere_L01_Upper_Landing",
+      "plane": "model_lot_31_longere/2f",
+      "activity_room": false,
+      "connected_open_cells": 16
+    },
+    {
+      "id": "lot_31_longere_L01_Front_Room",
+      "plane": "model_lot_31_longere/2f",
+      "activity_room": true,
+      "connected_open_cells": 118
+    },
+    {
+      "id": "lot_31_longere_L01_Rear_Room",
+      "plane": "model_lot_31_longere/2f",
+      "activity_room": true,
+      "connected_open_cells": 115
+    },
+    {
+      "id": "lot_33_terrace_L00_Living_Kitchen",
+      "plane": "model_lot_33_terrace/1f",
+      "activity_room": true,
+      "connected_open_cells": 241
+    },
+    {
+      "id": "lot_33_terrace_L00_Bedroom",
+      "plane": "model_lot_33_terrace/1f",
+      "activity_room": true,
+      "connected_open_cells": 54
+    },
+    {
+      "id": "lot_33_terrace_L00_Bathroom",
+      "plane": "model_lot_33_terrace/1f",
+      "activity_room": true,
+      "connected_open_cells": 66
+    },
+    {
+      "id": "lot_33_terrace_L00_Rear_Hall",
+      "plane": "model_lot_33_terrace/1f",
+      "activity_room": false,
+      "connected_open_cells": 44
+    },
+    {
+      "id": "lot_34_halftimber_L00_Living_Kitchen",
+      "plane": "model_lot_34_halftimber/1f",
+      "activity_room": true,
+      "connected_open_cells": 241
+    },
+    {
+      "id": "lot_34_halftimber_L00_Bedroom",
+      "plane": "model_lot_34_halftimber/1f",
+      "activity_room": true,
+      "connected_open_cells": 54
+    },
+    {
+      "id": "lot_34_halftimber_L00_Bathroom",
+      "plane": "model_lot_34_halftimber/1f",
+      "activity_room": true,
+      "connected_open_cells": 66
+    },
+    {
+      "id": "lot_34_halftimber_L00_Rear_Hall",
+      "plane": "model_lot_34_halftimber/1f",
+      "activity_room": false,
+      "connected_open_cells": 44
+    },
+    {
+      "id": "lot_36_longere_L00_Living_Kitchen",
+      "plane": "model_lot_36_longere/1f",
+      "activity_room": true,
+      "connected_open_cells": 241
+    },
+    {
+      "id": "lot_36_longere_L00_Bedroom",
+      "plane": "model_lot_36_longere/1f",
+      "activity_room": true,
+      "connected_open_cells": 54
+    },
+    {
+      "id": "lot_36_longere_L00_Bathroom",
+      "plane": "model_lot_36_longere/1f",
+      "activity_room": true,
+      "connected_open_cells": 66
+    },
+    {
+      "id": "lot_36_longere_L00_Rear_Hall",
+      "plane": "model_lot_36_longere/1f",
+      "activity_room": false,
+      "connected_open_cells": 44
+    },
+    {
+      "id": "lot_37_longere_L00_Hall",
+      "plane": "model_lot_37_longere/1f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_37_longere_L00_Stairwell",
+      "plane": "model_lot_37_longere/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_37_longere_L00_Lower_Landing",
+      "plane": "model_lot_37_longere/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_37_longere_L00_Upper_Landing",
+      "plane": "model_lot_37_longere/1f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_37_longere_L00_Front_Room",
+      "plane": "model_lot_37_longere/1f",
+      "activity_room": true,
+      "connected_open_cells": 238
+    },
+    {
+      "id": "lot_37_longere_L00_Rear_Room",
+      "plane": "model_lot_37_longere/1f",
+      "activity_room": true,
+      "connected_open_cells": 205
+    },
+    {
+      "id": "lot_37_longere_L01_Hall",
+      "plane": "model_lot_37_longere/2f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_37_longere_L01_Stairwell",
+      "plane": "model_lot_37_longere/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_37_longere_L01_Lower_Landing",
+      "plane": "model_lot_37_longere/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_37_longere_L01_Upper_Landing",
+      "plane": "model_lot_37_longere/2f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_37_longere_L01_Front_Room",
+      "plane": "model_lot_37_longere/2f",
+      "activity_room": true,
+      "connected_open_cells": 216
+    },
+    {
+      "id": "lot_37_longere_L01_Rear_Room",
+      "plane": "model_lot_37_longere/2f",
+      "activity_room": true,
+      "connected_open_cells": 208
+    },
+    {
+      "id": "lot_38_halftimber_L00_Hall",
+      "plane": "model_lot_38_halftimber/1f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_38_halftimber_L00_Stairwell",
+      "plane": "model_lot_38_halftimber/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_38_halftimber_L00_Lower_Landing",
+      "plane": "model_lot_38_halftimber/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_38_halftimber_L00_Upper_Landing",
+      "plane": "model_lot_38_halftimber/1f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_38_halftimber_L00_Front_Room",
+      "plane": "model_lot_38_halftimber/1f",
+      "activity_room": true,
+      "connected_open_cells": 238
+    },
+    {
+      "id": "lot_38_halftimber_L00_Rear_Room",
+      "plane": "model_lot_38_halftimber/1f",
+      "activity_room": true,
+      "connected_open_cells": 205
+    },
+    {
+      "id": "lot_38_halftimber_L01_Hall",
+      "plane": "model_lot_38_halftimber/2f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_38_halftimber_L01_Stairwell",
+      "plane": "model_lot_38_halftimber/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_38_halftimber_L01_Lower_Landing",
+      "plane": "model_lot_38_halftimber/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_38_halftimber_L01_Upper_Landing",
+      "plane": "model_lot_38_halftimber/2f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_38_halftimber_L01_Front_Room",
+      "plane": "model_lot_38_halftimber/2f",
+      "activity_room": true,
+      "connected_open_cells": 216
+    },
+    {
+      "id": "lot_38_halftimber_L01_Rear_Room",
+      "plane": "model_lot_38_halftimber/2f",
+      "activity_room": true,
+      "connected_open_cells": 208
+    },
+    {
+      "id": "lot_40_terrace_L00_Hall",
+      "plane": "model_lot_40_terrace/1f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_40_terrace_L00_Stairwell",
+      "plane": "model_lot_40_terrace/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_40_terrace_L00_Lower_Landing",
+      "plane": "model_lot_40_terrace/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_40_terrace_L00_Upper_Landing",
+      "plane": "model_lot_40_terrace/1f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_40_terrace_L00_Front_Room",
+      "plane": "model_lot_40_terrace/1f",
+      "activity_room": true,
+      "connected_open_cells": 238
+    },
+    {
+      "id": "lot_40_terrace_L00_Rear_Room",
+      "plane": "model_lot_40_terrace/1f",
+      "activity_room": true,
+      "connected_open_cells": 205
+    },
+    {
+      "id": "lot_40_terrace_L01_Hall",
+      "plane": "model_lot_40_terrace/2f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_40_terrace_L01_Stairwell",
+      "plane": "model_lot_40_terrace/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_40_terrace_L01_Lower_Landing",
+      "plane": "model_lot_40_terrace/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_40_terrace_L01_Upper_Landing",
+      "plane": "model_lot_40_terrace/2f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_40_terrace_L01_Front_Room",
+      "plane": "model_lot_40_terrace/2f",
+      "activity_room": true,
+      "connected_open_cells": 216
+    },
+    {
+      "id": "lot_40_terrace_L01_Rear_Room",
+      "plane": "model_lot_40_terrace/2f",
+      "activity_room": true,
+      "connected_open_cells": 208
+    },
+    {
+      "id": "lot_10_belleepoque_L00_Hall",
+      "plane": "model_lot_10_belleepoque/1f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_10_belleepoque_L00_Stairwell",
+      "plane": "model_lot_10_belleepoque/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_10_belleepoque_L00_Lower_Landing",
+      "plane": "model_lot_10_belleepoque/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_10_belleepoque_L00_Upper_Landing",
+      "plane": "model_lot_10_belleepoque/1f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_10_belleepoque_L00_Front_Room",
+      "plane": "model_lot_10_belleepoque/1f",
+      "activity_room": true,
+      "connected_open_cells": 168
+    },
+    {
+      "id": "lot_10_belleepoque_L00_Rear_Room",
+      "plane": "model_lot_10_belleepoque/1f",
+      "activity_room": true,
+      "connected_open_cells": 140
+    },
+    {
+      "id": "lot_10_belleepoque_L01_Hall",
+      "plane": "model_lot_10_belleepoque/2f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_10_belleepoque_L01_Stairwell",
+      "plane": "model_lot_10_belleepoque/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_10_belleepoque_L01_Lower_Landing",
+      "plane": "model_lot_10_belleepoque/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_10_belleepoque_L01_Upper_Landing",
+      "plane": "model_lot_10_belleepoque/2f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_10_belleepoque_L01_Front_Room",
+      "plane": "model_lot_10_belleepoque/2f",
+      "activity_room": true,
+      "connected_open_cells": 146
+    },
+    {
+      "id": "lot_10_belleepoque_L01_Rear_Room",
+      "plane": "model_lot_10_belleepoque/2f",
+      "activity_room": true,
+      "connected_open_cells": 143
+    },
+    {
+      "id": "lot_19_belleepoque_L00_Hall",
+      "plane": "model_lot_19_belleepoque/1f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_19_belleepoque_L00_Stairwell",
+      "plane": "model_lot_19_belleepoque/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_19_belleepoque_L00_Lower_Landing",
+      "plane": "model_lot_19_belleepoque/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_19_belleepoque_L00_Upper_Landing",
+      "plane": "model_lot_19_belleepoque/1f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_19_belleepoque_L00_Front_Room",
+      "plane": "model_lot_19_belleepoque/1f",
+      "activity_room": true,
+      "connected_open_cells": 168
+    },
+    {
+      "id": "lot_19_belleepoque_L00_Rear_Room",
+      "plane": "model_lot_19_belleepoque/1f",
+      "activity_room": true,
+      "connected_open_cells": 140
+    },
+    {
+      "id": "lot_19_belleepoque_L01_Hall",
+      "plane": "model_lot_19_belleepoque/2f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_19_belleepoque_L01_Stairwell",
+      "plane": "model_lot_19_belleepoque/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_19_belleepoque_L01_Lower_Landing",
+      "plane": "model_lot_19_belleepoque/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_19_belleepoque_L01_Upper_Landing",
+      "plane": "model_lot_19_belleepoque/2f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_19_belleepoque_L01_Front_Room",
+      "plane": "model_lot_19_belleepoque/2f",
+      "activity_room": true,
+      "connected_open_cells": 146
+    },
+    {
+      "id": "lot_19_belleepoque_L01_Rear_Room",
+      "plane": "model_lot_19_belleepoque/2f",
+      "activity_room": true,
+      "connected_open_cells": 143
+    },
+    {
+      "id": "lot_21_belleepoque_L00_Hall",
+      "plane": "model_lot_21_belleepoque/1f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_21_belleepoque_L00_Stairwell",
+      "plane": "model_lot_21_belleepoque/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_21_belleepoque_L00_Lower_Landing",
+      "plane": "model_lot_21_belleepoque/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_21_belleepoque_L00_Upper_Landing",
+      "plane": "model_lot_21_belleepoque/1f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_21_belleepoque_L00_Front_Room",
+      "plane": "model_lot_21_belleepoque/1f",
+      "activity_room": true,
+      "connected_open_cells": 168
+    },
+    {
+      "id": "lot_21_belleepoque_L00_Rear_Room",
+      "plane": "model_lot_21_belleepoque/1f",
+      "activity_room": true,
+      "connected_open_cells": 140
+    },
+    {
+      "id": "lot_21_belleepoque_L01_Hall",
+      "plane": "model_lot_21_belleepoque/2f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_21_belleepoque_L01_Stairwell",
+      "plane": "model_lot_21_belleepoque/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_21_belleepoque_L01_Lower_Landing",
+      "plane": "model_lot_21_belleepoque/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_21_belleepoque_L01_Upper_Landing",
+      "plane": "model_lot_21_belleepoque/2f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_21_belleepoque_L01_Front_Room",
+      "plane": "model_lot_21_belleepoque/2f",
+      "activity_room": true,
+      "connected_open_cells": 146
+    },
+    {
+      "id": "lot_21_belleepoque_L01_Rear_Room",
+      "plane": "model_lot_21_belleepoque/2f",
+      "activity_room": true,
+      "connected_open_cells": 143
+    },
+    {
+      "id": "lot_35_belleepoque_L00_Hall",
+      "plane": "model_lot_35_belleepoque/1f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_35_belleepoque_L00_Stairwell",
+      "plane": "model_lot_35_belleepoque/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_35_belleepoque_L00_Lower_Landing",
+      "plane": "model_lot_35_belleepoque/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_35_belleepoque_L00_Upper_Landing",
+      "plane": "model_lot_35_belleepoque/1f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_35_belleepoque_L00_Front_Room",
+      "plane": "model_lot_35_belleepoque/1f",
+      "activity_room": true,
+      "connected_open_cells": 168
+    },
+    {
+      "id": "lot_35_belleepoque_L00_Rear_Room",
+      "plane": "model_lot_35_belleepoque/1f",
+      "activity_room": true,
+      "connected_open_cells": 140
+    },
+    {
+      "id": "lot_35_belleepoque_L01_Hall",
+      "plane": "model_lot_35_belleepoque/2f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_35_belleepoque_L01_Stairwell",
+      "plane": "model_lot_35_belleepoque/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_35_belleepoque_L01_Lower_Landing",
+      "plane": "model_lot_35_belleepoque/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_35_belleepoque_L01_Upper_Landing",
+      "plane": "model_lot_35_belleepoque/2f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_35_belleepoque_L01_Front_Room",
+      "plane": "model_lot_35_belleepoque/2f",
+      "activity_room": true,
+      "connected_open_cells": 146
+    },
+    {
+      "id": "lot_35_belleepoque_L01_Rear_Room",
+      "plane": "model_lot_35_belleepoque/2f",
+      "activity_room": true,
+      "connected_open_cells": 143
+    },
+    {
+      "id": "lot_13_cottage_L00_Hall",
+      "plane": "model_lot_13_cottage/1f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_13_cottage_L00_Stairwell",
+      "plane": "model_lot_13_cottage/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_13_cottage_L00_Lower_Landing",
+      "plane": "model_lot_13_cottage/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_13_cottage_L00_Upper_Landing",
+      "plane": "model_lot_13_cottage/1f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_13_cottage_L00_Front_Room",
+      "plane": "model_lot_13_cottage/1f",
+      "activity_room": true,
+      "connected_open_cells": 168
+    },
+    {
+      "id": "lot_13_cottage_L00_Rear_Room",
+      "plane": "model_lot_13_cottage/1f",
+      "activity_room": true,
+      "connected_open_cells": 140
+    },
+    {
+      "id": "lot_13_cottage_L01_Hall",
+      "plane": "model_lot_13_cottage/2f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_13_cottage_L01_Stairwell",
+      "plane": "model_lot_13_cottage/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_13_cottage_L01_Lower_Landing",
+      "plane": "model_lot_13_cottage/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_13_cottage_L01_Upper_Landing",
+      "plane": "model_lot_13_cottage/2f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_13_cottage_L01_Front_Room",
+      "plane": "model_lot_13_cottage/2f",
+      "activity_room": true,
+      "connected_open_cells": 146
+    },
+    {
+      "id": "lot_13_cottage_L01_Rear_Room",
+      "plane": "model_lot_13_cottage/2f",
+      "activity_room": true,
+      "connected_open_cells": 143
+    },
+    {
+      "id": "lot_28_cottage_L00_Hall",
+      "plane": "model_lot_28_cottage/1f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_28_cottage_L00_Stairwell",
+      "plane": "model_lot_28_cottage/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_28_cottage_L00_Lower_Landing",
+      "plane": "model_lot_28_cottage/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_28_cottage_L00_Upper_Landing",
+      "plane": "model_lot_28_cottage/1f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_28_cottage_L00_Front_Room",
+      "plane": "model_lot_28_cottage/1f",
+      "activity_room": true,
+      "connected_open_cells": 168
+    },
+    {
+      "id": "lot_28_cottage_L00_Rear_Room",
+      "plane": "model_lot_28_cottage/1f",
+      "activity_room": true,
+      "connected_open_cells": 140
+    },
+    {
+      "id": "lot_28_cottage_L01_Hall",
+      "plane": "model_lot_28_cottage/2f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_28_cottage_L01_Stairwell",
+      "plane": "model_lot_28_cottage/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_28_cottage_L01_Lower_Landing",
+      "plane": "model_lot_28_cottage/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_28_cottage_L01_Upper_Landing",
+      "plane": "model_lot_28_cottage/2f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_28_cottage_L01_Front_Room",
+      "plane": "model_lot_28_cottage/2f",
+      "activity_room": true,
+      "connected_open_cells": 146
+    },
+    {
+      "id": "lot_28_cottage_L01_Rear_Room",
+      "plane": "model_lot_28_cottage/2f",
+      "activity_room": true,
+      "connected_open_cells": 143
+    },
+    {
+      "id": "lot_32_cottage_L00_Hall",
+      "plane": "model_lot_32_cottage/1f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_32_cottage_L00_Stairwell",
+      "plane": "model_lot_32_cottage/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_32_cottage_L00_Lower_Landing",
+      "plane": "model_lot_32_cottage/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_32_cottage_L00_Upper_Landing",
+      "plane": "model_lot_32_cottage/1f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_32_cottage_L00_Front_Room",
+      "plane": "model_lot_32_cottage/1f",
+      "activity_room": true,
+      "connected_open_cells": 168
+    },
+    {
+      "id": "lot_32_cottage_L00_Rear_Room",
+      "plane": "model_lot_32_cottage/1f",
+      "activity_room": true,
+      "connected_open_cells": 140
+    },
+    {
+      "id": "lot_32_cottage_L01_Hall",
+      "plane": "model_lot_32_cottage/2f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_32_cottage_L01_Stairwell",
+      "plane": "model_lot_32_cottage/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_32_cottage_L01_Lower_Landing",
+      "plane": "model_lot_32_cottage/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_32_cottage_L01_Upper_Landing",
+      "plane": "model_lot_32_cottage/2f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_32_cottage_L01_Front_Room",
+      "plane": "model_lot_32_cottage/2f",
+      "activity_room": true,
+      "connected_open_cells": 146
+    },
+    {
+      "id": "lot_32_cottage_L01_Rear_Room",
+      "plane": "model_lot_32_cottage/2f",
+      "activity_room": true,
+      "connected_open_cells": 143
+    },
+    {
+      "id": "lot_39_whitehouse_L00_Hall",
+      "plane": "model_lot_39_whitehouse/1f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_39_whitehouse_L00_Stairwell",
+      "plane": "model_lot_39_whitehouse/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_39_whitehouse_L00_Lower_Landing",
+      "plane": "model_lot_39_whitehouse/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_39_whitehouse_L00_Upper_Landing",
+      "plane": "model_lot_39_whitehouse/1f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_39_whitehouse_L00_Front_Room",
+      "plane": "model_lot_39_whitehouse/1f",
+      "activity_room": true,
+      "connected_open_cells": 154
+    },
+    {
+      "id": "lot_39_whitehouse_L00_Rear_Room",
+      "plane": "model_lot_39_whitehouse/1f",
+      "activity_room": true,
+      "connected_open_cells": 127
+    },
+    {
+      "id": "lot_39_whitehouse_L01_Hall",
+      "plane": "model_lot_39_whitehouse/2f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_39_whitehouse_L01_Stairwell",
+      "plane": "model_lot_39_whitehouse/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_39_whitehouse_L01_Lower_Landing",
+      "plane": "model_lot_39_whitehouse/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_39_whitehouse_L01_Upper_Landing",
+      "plane": "model_lot_39_whitehouse/2f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_39_whitehouse_L01_Front_Room",
+      "plane": "model_lot_39_whitehouse/2f",
+      "activity_room": true,
+      "connected_open_cells": 132
+    },
+    {
+      "id": "lot_39_whitehouse_L01_Rear_Room",
+      "plane": "model_lot_39_whitehouse/2f",
+      "activity_room": true,
+      "connected_open_cells": 130
+    },
+    {
+      "id": "lot_11_longere_L00_Hall",
+      "plane": "model_lot_11_longere/1f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_11_longere_L00_Stairwell",
+      "plane": "model_lot_11_longere/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_11_longere_L00_Lower_Landing",
+      "plane": "model_lot_11_longere/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_11_longere_L00_Upper_Landing",
+      "plane": "model_lot_11_longere/1f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_11_longere_L00_Front_Room",
+      "plane": "model_lot_11_longere/1f",
+      "activity_room": true,
+      "connected_open_cells": 154
+    },
+    {
+      "id": "lot_11_longere_L00_Rear_Room",
+      "plane": "model_lot_11_longere/1f",
+      "activity_room": true,
+      "connected_open_cells": 127
+    },
+    {
+      "id": "lot_11_longere_L01_Hall",
+      "plane": "model_lot_11_longere/2f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_11_longere_L01_Stairwell",
+      "plane": "model_lot_11_longere/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_11_longere_L01_Lower_Landing",
+      "plane": "model_lot_11_longere/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_11_longere_L01_Upper_Landing",
+      "plane": "model_lot_11_longere/2f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_11_longere_L01_Front_Room",
+      "plane": "model_lot_11_longere/2f",
+      "activity_room": true,
+      "connected_open_cells": 132
+    },
+    {
+      "id": "lot_11_longere_L01_Rear_Room",
+      "plane": "model_lot_11_longere/2f",
+      "activity_room": true,
+      "connected_open_cells": 130
+    },
+    {
+      "id": "lot_16_longere_L00_Hall",
+      "plane": "model_lot_16_longere/1f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_16_longere_L00_Stairwell",
+      "plane": "model_lot_16_longere/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_16_longere_L00_Lower_Landing",
+      "plane": "model_lot_16_longere/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_16_longere_L00_Upper_Landing",
+      "plane": "model_lot_16_longere/1f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_16_longere_L00_Front_Room",
+      "plane": "model_lot_16_longere/1f",
+      "activity_room": true,
+      "connected_open_cells": 154
+    },
+    {
+      "id": "lot_16_longere_L00_Rear_Room",
+      "plane": "model_lot_16_longere/1f",
+      "activity_room": true,
+      "connected_open_cells": 127
+    },
+    {
+      "id": "lot_16_longere_L01_Hall",
+      "plane": "model_lot_16_longere/2f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_16_longere_L01_Stairwell",
+      "plane": "model_lot_16_longere/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_16_longere_L01_Lower_Landing",
+      "plane": "model_lot_16_longere/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_16_longere_L01_Upper_Landing",
+      "plane": "model_lot_16_longere/2f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_16_longere_L01_Front_Room",
+      "plane": "model_lot_16_longere/2f",
+      "activity_room": true,
+      "connected_open_cells": 132
+    },
+    {
+      "id": "lot_16_longere_L01_Rear_Room",
+      "plane": "model_lot_16_longere/2f",
+      "activity_room": true,
+      "connected_open_cells": 130
+    },
+    {
+      "id": "lot_17_longere_L00_Hall",
+      "plane": "model_lot_17_longere/1f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_17_longere_L00_Stairwell",
+      "plane": "model_lot_17_longere/1f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_17_longere_L00_Lower_Landing",
+      "plane": "model_lot_17_longere/1f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_17_longere_L00_Upper_Landing",
+      "plane": "model_lot_17_longere/1f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_17_longere_L00_Front_Room",
+      "plane": "model_lot_17_longere/1f",
+      "activity_room": true,
+      "connected_open_cells": 126
+    },
+    {
+      "id": "lot_17_longere_L00_Rear_Room",
+      "plane": "model_lot_17_longere/1f",
+      "activity_room": true,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_17_longere_L01_Hall",
+      "plane": "model_lot_17_longere/2f",
+      "activity_room": false,
+      "connected_open_cells": 103
+    },
+    {
+      "id": "lot_17_longere_L01_Stairwell",
+      "plane": "model_lot_17_longere/2f",
+      "activity_room": false,
+      "connected_open_cells": 0
+    },
+    {
+      "id": "lot_17_longere_L01_Lower_Landing",
+      "plane": "model_lot_17_longere/2f",
+      "activity_room": false,
+      "connected_open_cells": 24
+    },
+    {
+      "id": "lot_17_longere_L01_Upper_Landing",
+      "plane": "model_lot_17_longere/2f",
+      "activity_room": false,
+      "connected_open_cells": 28
+    },
+    {
+      "id": "lot_17_longere_L01_Front_Room",
+      "plane": "model_lot_17_longere/2f",
+      "activity_room": true,
+      "connected_open_cells": 106
+    },
+    {
+      "id": "lot_17_longere_L01_Rear_Room",
+      "plane": "model_lot_17_longere/2f",
+      "activity_room": true,
+      "connected_open_cells": 104
+    }
+  ],
+  "shared_residential_beds": {
+    "aria": "cafe2f_bed",
+    "ben": "home1f_bed",
+    "coco": "home22f_bed_1",
+    "dan": "home1f_bed_1",
+    "evy": "home22f_bed",
+    "fei": "bed_2",
+    "lin": "bed_2",
+    "hai": "home1f_bed",
+    "shu": "home22f_bed",
+    "mei": "home1f_bed_1",
+    "qin": "home1f_bed_1",
+    "tie": "home1f_bed"
+  },
+  "semantic_building_reassignments": {
+    "home2": {
+      "model_building_id": "lot_12_halftimber",
+      "reason": "Two distinct functional beds require the existing three-storey dwelling; Main_home2 remains a visitable model space."
+    }
+  },
+  "adaptations": [
+    {
+      "object_id": "cafe1f_painting_sea",
+      "plane": "cafe/1f",
+      "cell": [
+        13,
+        8
+      ],
+      "approach_local_m": [
+        -1.625,
+        2.375
+      ],
+      "model_asset_id": "Main_cafe_L00_Service_Room_A02_cupboard",
+      "model_asset_kind": "cupboard",
+      "note": "Preserved art-viewing action at a public room wall/decor surface; not a new decoration advertisement.",
+      "fixture_center_local_m": [
+        -1.2100000000000002,
+        2.375
+      ],
+      "fixture_footprint_m": [
+        -1.5350000000000001,
+        2.185,
+        -0.8850000000000002,
+        2.565
+      ]
+    },
+    {
+      "object_id": "wash1f_painting_sea",
+      "plane": "wash/1f",
+      "cell": [
+        13,
+        29
+      ],
+      "approach_local_m": [
+        -1.625,
+        -3.375
+      ],
+      "model_asset_id": "Main_wash_L00_Front_Left_A01_bookshelf",
+      "model_asset_kind": "bookshelf",
+      "note": "Preserved art-viewing action at a public room wall/decor surface; not a new decoration advertisement.",
+      "fixture_center_local_m": [
+        -1.09,
+        -3.4600000000000004
+      ],
+      "fixture_footprint_m": [
+        -1.4900000000000002,
+        -3.6100000000000003,
+        -0.6900000000000001,
+        -3.3100000000000005
+      ]
+    },
+    {
+      "object_id": "bakery1f_painting_parasol",
+      "plane": "bakery/1f",
+      "cell": [
+        9,
+        33
+      ],
+      "approach_local_m": [
+        -1.625,
+        -3.875
+      ],
+      "model_asset_id": "lot_04_bakery_L00_Public_Room_A03_bread_rack",
+      "model_asset_kind": "bread_rack",
+      "note": "Preserved art-viewing action at a public room wall/decor surface; not a new decoration advertisement.",
+      "fixture_center_local_m": [
+        -2.1500000000000004,
+        -3.89
+      ],
+      "fixture_footprint_m": [
+        -2.5500000000000003,
+        -4.13,
+        -1.7500000000000004,
+        -3.6500000000000004
+      ]
+    },
+    {
+      "object_id": "creperie1f_painting_sea",
+      "plane": "creperie/1f",
+      "cell": [
+        5,
+        8
+      ],
+      "approach_local_m": [
+        -1.625,
+        2.375
+      ],
+      "model_asset_id": "lot_05_creperie_L00_Service_Room_A02_cupboard",
+      "model_asset_kind": "cupboard",
+      "note": "Preserved art-viewing action at a public room wall/decor surface; not a new decoration advertisement.",
+      "fixture_center_local_m": [
+        -1.1700000000000002,
+        2.375
+      ],
+      "fixture_footprint_m": [
+        -1.495,
+        2.185,
+        -0.8450000000000002,
+        2.565
+      ]
+    },
+    {
+      "object_id": "hotel1f_painting_sea",
+      "plane": "hotel/1f",
+      "cell": [
+        20,
+        40
+      ],
+      "approach_local_m": [
+        -1.875,
+        -4.625
+      ],
+      "model_asset_id": "lot_07_hotel_L00_Front_Left_A01_bookshelf",
+      "model_asset_kind": "bookshelf",
+      "note": "Preserved art-viewing action at a public room wall/decor surface; not a new decoration advertisement.",
+      "fixture_center_local_m": [
+        -1.9000000000000001,
+        -4.96
+      ],
+      "fixture_footprint_m": [
+        -2.3000000000000003,
+        -5.11,
+        -1.5,
+        -4.81
+      ]
+    },
+    {
+      "object_id": "hotel1f_piano",
+      "plane": "hotel/1f",
+      "cell": [
+        40,
+        33
+      ],
+      "approach_local_m": [
+        3.125,
+        -2.875
+      ],
+      "model_asset_id": "lot_07_hotel_L00_Front_Right_A04_service_console",
+      "model_asset_kind": "service_console",
+      "note": "Preserved legacy music action at hotel lounge console; the delivered model has no dedicated piano assembly.",
+      "fixture_center_local_m": [
+        2.5549999999999997,
+        -2.9250000000000003
+      ],
+      "fixture_footprint_m": [
+        2.0799999999999996,
+        -3.1500000000000004,
+        3.03,
+        -2.7
+      ]
+    },
+    {
+      "object_id": "mairie1f_painting_sea",
+      "plane": "mairie/1f",
+      "cell": [
+        6,
+        24
+      ],
+      "approach_local_m": [
+        -3.375,
+        -2.125
+      ],
+      "model_asset_id": "lot_01_mairie_L00_Front_Left_A02_bookshelf",
+      "model_asset_kind": "bookshelf",
+      "note": "Preserved art-viewing action at a public room wall/decor surface; not a new decoration advertisement.",
+      "fixture_center_local_m": [
+        -2.955,
+        -2.125
+      ],
+      "fixture_footprint_m": [
+        -3.2800000000000002,
+        -2.275,
+        -2.63,
+        -1.975
+      ]
+    },
+    {
+      "object_id": "arcade_1",
+      "plane": "town/outdoor",
+      "cell": [
+        131,
+        121
+      ],
+      "approach_local_m": [
+        -0.25,
+        -2.75
+      ],
+      "model_asset_id": null,
+      "model_asset_kind": null,
+      "note": "Preserved play action at open square activity space; no dedicated arcade cabinet in supplied model."
+    }
+  ],
+  "limits": [
+    "Static compiler verifies geometry-aligned topology and legacy action data, not live Godot behavior or economic calibration.",
+    "Legacy play/music actions keep their identities at compatible activity surfaces; arcade and hotel piano have no dedicated supplied mesh.",
+    "Current functional sleep anchors remain shared between twelve residents; decorative beds do not gain advertisements.",
+    "Navigation samples interior shell, partitions, stairs and 753 furnishing proxies; decorative trim, roof objects and tree canopies are not pedestrian blockers.",
+    "Door leaf visual reveal/collision state is consumer presentation; explicit core portal remains sole plane transition authority."
+  ]
+}

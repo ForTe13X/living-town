@@ -1,0 +1,5387 @@
+{
+  "schema": "living_town.revised_masterplan.v2",
+  "title": "Living Town \u2014 Irregular Coastal Borough",
+  "layout_authority": "User planning-reference revision: irregular blocks, branching passages and topography-aware streets.",
+  "coordinate_system": "Metres, X east, Y north, ground Z supplied by terrain; yaw rotates local frontage south about Z.",
+  "program_source_head": "f204276",
+  "buildings": [
+    {
+      "id": "Main_cafe",
+      "kind": "cafe",
+      "center": [
+        11.5,
+        0
+      ],
+      "width": 10,
+      "depth": 9,
+      "floors": 2,
+      "yaw_degrees": -90,
+      "source_ref": "program_inventory.map.areas.cafe",
+      "typology": "mixed_use",
+      "district": "D02",
+      "footprint_polygon": [
+        [
+          7.0,
+          5.0
+        ],
+        [
+          7.0,
+          -5.0
+        ],
+        [
+          16.0,
+          -5.0
+        ],
+        [
+          16.0,
+          5.0
+        ]
+      ],
+      "front_threshold": [
+        7.0,
+        -2.755455298081545e-16
+      ],
+      "front_outward": [
+        -1.0,
+        -6.123233995736766e-17
+      ],
+      "interior_clear_span": [
+        9.4,
+        8.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "entrance_approach": [
+        5.5,
+        0.0
+      ]
+    },
+    {
+      "id": "Main_shop",
+      "kind": "shop",
+      "center": [
+        11.5,
+        8
+      ],
+      "width": 6,
+      "depth": 9,
+      "floors": 2,
+      "yaw_degrees": -90,
+      "source_ref": "program_inventory.map.areas.shop",
+      "typology": "shop_house",
+      "district": "D02",
+      "footprint_polygon": [
+        [
+          7.0,
+          11.0
+        ],
+        [
+          7.0,
+          5.0
+        ],
+        [
+          16.0,
+          5.0
+        ],
+        [
+          16.0,
+          11.0
+        ]
+      ],
+      "front_threshold": [
+        7.0,
+        8.0
+      ],
+      "front_outward": [
+        -1.0,
+        -6.123233995736766e-17
+      ],
+      "interior_clear_span": [
+        5.4,
+        8.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "entrance_approach": [
+        5.5,
+        8.0
+      ]
+    },
+    {
+      "id": "Main_home",
+      "kind": "home",
+      "center": [
+        -49,
+        17.5
+      ],
+      "width": 6,
+      "depth": 7,
+      "floors": 2,
+      "yaw_degrees": 0,
+      "source_ref": "program_inventory.map.areas.home",
+      "typology": "shop_house",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          -52.0,
+          14.0
+        ],
+        [
+          -46.0,
+          14.0
+        ],
+        [
+          -46.0,
+          21.0
+        ],
+        [
+          -52.0,
+          21.0
+        ]
+      ],
+      "front_threshold": [
+        -49.0,
+        14.0
+      ],
+      "front_outward": [
+        0.0,
+        -1.0
+      ],
+      "interior_clear_span": [
+        5.4,
+        6.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "entrance_approach": [
+        -49.0,
+        12.5
+      ]
+    },
+    {
+      "id": "Main_home2",
+      "kind": "home2",
+      "center": [
+        -42.75,
+        19
+      ],
+      "width": 6.5,
+      "depth": 7,
+      "floors": 1,
+      "yaw_degrees": 0,
+      "source_ref": "program_inventory.map.areas.home2",
+      "typology": "shop_house",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          -46.0,
+          15.5
+        ],
+        [
+          -39.5,
+          15.5
+        ],
+        [
+          -39.5,
+          22.5
+        ],
+        [
+          -46.0,
+          22.5
+        ]
+      ],
+      "front_threshold": [
+        -42.75,
+        15.5
+      ],
+      "front_outward": [
+        0.0,
+        -1.0
+      ],
+      "interior_clear_span": [
+        5.9,
+        6.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "entrance_approach": [
+        -43.0,
+        14.0
+      ]
+    },
+    {
+      "id": "Main_library",
+      "kind": "library",
+      "center": [
+        -18,
+        11
+      ],
+      "width": 10,
+      "depth": 8,
+      "floors": 2,
+      "yaw_degrees": 0,
+      "source_ref": "program_inventory.map.areas.library",
+      "typology": "civic",
+      "district": "D02",
+      "footprint_polygon": [
+        [
+          -23.0,
+          7.0
+        ],
+        [
+          -13.0,
+          7.0
+        ],
+        [
+          -13.0,
+          15.0
+        ],
+        [
+          -23.0,
+          15.0
+        ]
+      ],
+      "front_threshold": [
+        -18.0,
+        7.0
+      ],
+      "front_outward": [
+        0.0,
+        -1.0
+      ],
+      "interior_clear_span": [
+        9.4,
+        7.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "entrance_approach": [
+        -18.0,
+        5.5
+      ]
+    },
+    {
+      "id": "Main_wash",
+      "kind": "wash",
+      "center": [
+        -1,
+        28
+      ],
+      "width": 10,
+      "depth": 8,
+      "floors": 1,
+      "yaw_degrees": 5,
+      "source_ref": "program_inventory.map.areas.wash",
+      "typology": "civic",
+      "district": "D02",
+      "footprint_polygon": [
+        [
+          -5.632350519468095,
+          23.579442493894728
+        ],
+        [
+          4.32959646144936,
+          24.45099992137131
+        ],
+        [
+          3.632350519468095,
+          32.420557506105276
+        ],
+        [
+          -6.32959646144936,
+          31.54900007862869
+        ]
+      ],
+      "front_threshold": [
+        -0.6513770290093673,
+        24.01522120763302
+      ],
+      "front_outward": [
+        0.08715574274765817,
+        -0.9961946980917455
+      ],
+      "interior_clear_span": [
+        9.4,
+        7.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "entrance_approach": [
+        -0.5,
+        22.5
+      ]
+    },
+    {
+      "id": "Main_work",
+      "kind": "work",
+      "center": [
+        13,
+        32
+      ],
+      "width": 12,
+      "depth": 8,
+      "floors": 1,
+      "yaw_degrees": -4,
+      "source_ref": "program_inventory.map.areas.work",
+      "typology": "workshop",
+      "district": "D06",
+      "footprint_polygon": [
+        [
+          6.7355898034645545,
+          28.42828264142545
+        ],
+        [
+          18.706358406582442,
+          27.59120495649595
+        ],
+        [
+          19.264410196535447,
+          35.571717358574546
+        ],
+        [
+          7.293641593417556,
+          36.40879504350404
+        ]
+      ],
+      "front_threshold": [
+        12.7209741050235,
+        28.009743798960702
+      ],
+      "front_outward": [
+        -0.0697564737441253,
+        -0.9975640502598242
+      ],
+      "interior_clear_span": [
+        11.4,
+        7.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "entrance_approach": [
+        12.5,
+        26.5
+      ]
+    },
+    {
+      "id": "lot_00_chapel",
+      "kind": "chapel",
+      "center": [
+        -23,
+        29
+      ],
+      "width": 8,
+      "depth": 14,
+      "floors": 2,
+      "yaw_degrees": 0,
+      "source_ref": "program_inventory.map.solid_lots.lot_00_chapel",
+      "typology": "chapel",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          -27.0,
+          22.0
+        ],
+        [
+          -19.0,
+          22.0
+        ],
+        [
+          -19.0,
+          36.0
+        ],
+        [
+          -27.0,
+          36.0
+        ]
+      ],
+      "front_threshold": [
+        -23.0,
+        22.0
+      ],
+      "front_outward": [
+        0.0,
+        -1.0
+      ],
+      "interior_clear_span": [
+        7.4,
+        13.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "entrance_approach": [
+        -23.0,
+        20.5
+      ]
+    },
+    {
+      "id": "lot_01_mairie",
+      "kind": "mairie",
+      "center": [
+        -3.3,
+        12.9
+      ],
+      "width": 10,
+      "depth": 8,
+      "floors": 3,
+      "yaw_degrees": -7,
+      "source_ref": "program_inventory.map.solid_lots.lot_01_mairie",
+      "typology": "civic",
+      "district": "D02",
+      "footprint_polygon": [
+        [
+          -8.7502081318272,
+          9.539162110460449
+        ],
+        [
+          1.1752533845860202,
+          8.320468676408975
+        ],
+        [
+          2.1502081318272,
+          16.260837889539552
+        ],
+        [
+          -7.77525338458602,
+          17.479531323591026
+        ]
+      ],
+      "front_threshold": [
+        -3.7874773736205896,
+        8.929815393434712
+      ],
+      "front_outward": [
+        -0.12186934340514748,
+        -0.992546151641322
+      ],
+      "interior_clear_span": [
+        9.4,
+        7.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "entrance_approach": [
+        -4.0,
+        7.5
+      ]
+    },
+    {
+      "id": "lot_02_windmill",
+      "kind": "windmill",
+      "center": [
+        -56,
+        35
+      ],
+      "width": 5,
+      "depth": 6,
+      "floors": 2,
+      "yaw_degrees": 0,
+      "source_ref": "program_inventory.map.solid_lots.lot_02_windmill",
+      "typology": "windmill",
+      "district": "D05",
+      "footprint_polygon": [
+        [
+          -58.5,
+          32.0
+        ],
+        [
+          -53.5,
+          32.0
+        ],
+        [
+          -53.5,
+          38.0
+        ],
+        [
+          -58.5,
+          38.0
+        ]
+      ],
+      "front_threshold": [
+        -56.0,
+        32.0
+      ],
+      "front_outward": [
+        0.0,
+        -1.0
+      ],
+      "interior_clear_span": [
+        4.4,
+        5.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "entrance_approach": [
+        -56.0,
+        30.5
+      ]
+    },
+    {
+      "id": "lot_03_netshed",
+      "kind": "netshed",
+      "center": [
+        50,
+        44
+      ],
+      "width": 6,
+      "depth": 4,
+      "floors": 1,
+      "yaw_degrees": 0,
+      "source_ref": "program_inventory.map.solid_lots.lot_03_netshed",
+      "typology": "working_shed",
+      "district": "D06",
+      "footprint_polygon": [
+        [
+          47.0,
+          42.0
+        ],
+        [
+          53.0,
+          42.0
+        ],
+        [
+          53.0,
+          46.0
+        ],
+        [
+          47.0,
+          46.0
+        ]
+      ],
+      "front_threshold": [
+        50.0,
+        42.0
+      ],
+      "front_outward": [
+        0.0,
+        -1.0
+      ],
+      "interior_clear_span": [
+        5.4,
+        3.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "entrance_approach": [
+        50.0,
+        40.5
+      ]
+    },
+    {
+      "id": "lot_04_bakery",
+      "kind": "bakery",
+      "center": [
+        -17.5,
+        -2
+      ],
+      "width": 8,
+      "depth": 9,
+      "floors": 2,
+      "yaw_degrees": 90,
+      "source_ref": "program_inventory.map.solid_lots.lot_04_bakery",
+      "typology": "shop_house",
+      "district": "D02",
+      "footprint_polygon": [
+        [
+          -13.0,
+          -6.0
+        ],
+        [
+          -13.0,
+          1.9999999999999998
+        ],
+        [
+          -22.0,
+          2.0000000000000004
+        ],
+        [
+          -22.0,
+          -6.0
+        ]
+      ],
+      "front_threshold": [
+        -13.0,
+        -2.0000000000000004
+      ],
+      "front_outward": [
+        1.0,
+        -6.123233995736766e-17
+      ],
+      "interior_clear_span": [
+        7.4,
+        8.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "entrance_approach": [
+        -11.5,
+        -2.0
+      ]
+    },
+    {
+      "id": "lot_05_creperie",
+      "kind": "creperie",
+      "center": [
+        11.5,
+        -8
+      ],
+      "width": 6,
+      "depth": 9,
+      "floors": 2,
+      "yaw_degrees": -90,
+      "source_ref": "program_inventory.map.solid_lots.lot_05_creperie",
+      "typology": "shop_house",
+      "district": "D02",
+      "footprint_polygon": [
+        [
+          7.0,
+          -5.0
+        ],
+        [
+          7.0,
+          -11.0
+        ],
+        [
+          16.0,
+          -11.0
+        ],
+        [
+          16.0,
+          -5.0
+        ]
+      ],
+      "front_threshold": [
+        7.0,
+        -8.0
+      ],
+      "front_outward": [
+        -1.0,
+        -6.123233995736766e-17
+      ],
+      "interior_clear_span": [
+        5.4,
+        8.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "entrance_approach": [
+        5.5,
+        -8.0
+      ]
+    },
+    {
+      "id": "lot_06_halles",
+      "kind": "halles",
+      "center": [
+        -3,
+        -16
+      ],
+      "width": 13,
+      "depth": 7,
+      "floors": 1,
+      "yaw_degrees": 180,
+      "source_ref": "program_inventory.map.solid_lots.lot_06_halles",
+      "typology": "market_hall",
+      "district": "D02",
+      "footprint_polygon": [
+        [
+          3.5000000000000004,
+          -12.5
+        ],
+        [
+          -9.5,
+          -12.5
+        ],
+        [
+          -9.5,
+          -19.5
+        ],
+        [
+          3.4999999999999996,
+          -19.5
+        ]
+      ],
+      "front_threshold": [
+        -2.9999999999999996,
+        -12.5
+      ],
+      "front_outward": [
+        1.2246467991473532e-16,
+        1.0
+      ],
+      "interior_clear_span": [
+        12.4,
+        6.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "entrance_approach": [
+        -3.0,
+        -11.0
+      ]
+    },
+    {
+      "id": "lot_07_hotel",
+      "kind": "hotel",
+      "center": [
+        30,
+        30
+      ],
+      "width": 14,
+      "depth": 11,
+      "floors": 3,
+      "yaw_degrees": 90,
+      "source_ref": "program_inventory.map.solid_lots.lot_07_hotel",
+      "typology": "mansard_hotel",
+      "district": "D03",
+      "footprint_polygon": [
+        [
+          35.5,
+          23.0
+        ],
+        [
+          35.5,
+          37.0
+        ],
+        [
+          24.5,
+          37.0
+        ],
+        [
+          24.5,
+          23.0
+        ]
+      ],
+      "front_threshold": [
+        35.5,
+        30.0
+      ],
+      "front_outward": [
+        1.0,
+        -6.123233995736766e-17
+      ],
+      "interior_clear_span": [
+        13.4,
+        10.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "entrance_approach": [
+        37.0,
+        30.0
+      ]
+    },
+    {
+      "id": "lot_08_cannery",
+      "kind": "cannery",
+      "center": [
+        22,
+        47
+      ],
+      "width": 12,
+      "depth": 10,
+      "floors": 1,
+      "yaw_degrees": 0,
+      "source_ref": "program_inventory.map.solid_lots.lot_08_cannery",
+      "typology": "warehouse",
+      "district": "D06",
+      "footprint_polygon": [
+        [
+          16.0,
+          42.0
+        ],
+        [
+          28.0,
+          42.0
+        ],
+        [
+          28.0,
+          52.0
+        ],
+        [
+          16.0,
+          52.0
+        ]
+      ],
+      "front_threshold": [
+        22.0,
+        42.0
+      ],
+      "front_outward": [
+        0.0,
+        -1.0
+      ],
+      "interior_clear_span": [
+        11.4,
+        9.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "entrance_approach": [
+        22.0,
+        40.5
+      ]
+    },
+    {
+      "id": "Port_Warehouse_Exterior",
+      "kind": "netshed",
+      "center": [
+        39,
+        47
+      ],
+      "width": 10,
+      "depth": 10,
+      "floors": 1,
+      "yaw_degrees": 0,
+      "source_ref": "program_inventory.spaces.port_warehouse / proposed_exterior",
+      "typology": "warehouse",
+      "district": "D06",
+      "footprint_polygon": [
+        [
+          34.0,
+          42.0
+        ],
+        [
+          44.0,
+          42.0
+        ],
+        [
+          44.0,
+          52.0
+        ],
+        [
+          34.0,
+          52.0
+        ]
+      ],
+      "front_threshold": [
+        39.0,
+        42.0
+      ],
+      "front_outward": [
+        0.0,
+        -1.0
+      ],
+      "interior_clear_span": [
+        9.4,
+        9.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "entrance_approach": [
+        39.0,
+        40.5
+      ]
+    },
+    {
+      "id": "lot_09_townhouse",
+      "kind": "townhouse",
+      "center": [
+        -46.45,
+        -13.06
+      ],
+      "width": 6.4257295305669375,
+      "depth": 7,
+      "floors": 2,
+      "yaw_degrees": 20.973493421320804,
+      "source_ref": "program_inventory.map.solid_lots.lot_09_townhouse",
+      "typology": "shop_house",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          -48.19722395928642,
+          -17.478111410557176
+        ],
+        [
+          -42.19722395928642,
+          -15.178111410557173
+        ],
+        [
+          -44.70277604071359,
+          -8.641888589442827
+        ],
+        [
+          -50.70277604071359,
+          -10.941888589442827
+        ]
+      ],
+      "front_threshold": [
+        -45.19722395928642,
+        -16.328111410557174
+      ],
+      "front_outward": [
+        0.3579360116324523,
+        -0.9337461173020496
+      ],
+      "interior_clear_span": [
+        5.825729530566938,
+        6.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "A",
+      "entrance_approach": [
+        -44.5,
+        -17.5
+      ]
+    },
+    {
+      "id": "lot_12_halftimber",
+      "kind": "halftimber",
+      "center": [
+        -40.45,
+        -10.76
+      ],
+      "width": 6.4257295305669375,
+      "depth": 7,
+      "floors": 3,
+      "yaw_degrees": 20.973493421320804,
+      "source_ref": "program_inventory.map.solid_lots.lot_12_halftimber",
+      "typology": "shop_house",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          -42.19722395928642,
+          -15.178111410557173
+        ],
+        [
+          -36.19722395928642,
+          -12.878111410557173
+        ],
+        [
+          -38.70277604071359,
+          -6.341888589442826
+        ],
+        [
+          -44.70277604071359,
+          -8.641888589442827
+        ]
+      ],
+      "front_threshold": [
+        -39.19722395928642,
+        -14.028111410557173
+      ],
+      "front_outward": [
+        0.3579360116324523,
+        -0.9337461173020496
+      ],
+      "interior_clear_span": [
+        5.825729530566938,
+        6.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "A",
+      "entrance_approach": [
+        -38.5,
+        -15.0
+      ]
+    },
+    {
+      "id": "lot_14_halftimber",
+      "kind": "halftimber",
+      "center": [
+        -34.45,
+        -8.46
+      ],
+      "width": 6.4257295305669375,
+      "depth": 7,
+      "floors": 2,
+      "yaw_degrees": 20.973493421320804,
+      "source_ref": "program_inventory.map.solid_lots.lot_14_halftimber",
+      "typology": "shop_house",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          -36.19722395928642,
+          -12.878111410557175
+        ],
+        [
+          -30.19722395928642,
+          -10.578111410557174
+        ],
+        [
+          -32.70277604071359,
+          -4.041888589442827
+        ],
+        [
+          -38.70277604071359,
+          -6.341888589442828
+        ]
+      ],
+      "front_threshold": [
+        -33.19722395928642,
+        -11.728111410557174
+      ],
+      "front_outward": [
+        0.3579360116324523,
+        -0.9337461173020496
+      ],
+      "interior_clear_span": [
+        5.825729530566938,
+        6.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "A",
+      "entrance_approach": [
+        -32.5,
+        -13.0
+      ]
+    },
+    {
+      "id": "lot_15_terrace",
+      "kind": "terrace",
+      "center": [
+        -28.45,
+        -6.16
+      ],
+      "width": 6.4257295305669375,
+      "depth": 7,
+      "floors": 2,
+      "yaw_degrees": 20.973493421320804,
+      "source_ref": "program_inventory.map.solid_lots.lot_15_terrace",
+      "typology": "shop_house",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          -30.197223959286415,
+          -10.578111410557174
+        ],
+        [
+          -24.197223959286415,
+          -8.278111410557173
+        ],
+        [
+          -26.702776040713584,
+          -1.7418885894428264
+        ],
+        [
+          -32.70277604071358,
+          -4.041888589442827
+        ]
+      ],
+      "front_threshold": [
+        -27.197223959286415,
+        -9.428111410557173
+      ],
+      "front_outward": [
+        0.3579360116324523,
+        -0.9337461173020496
+      ],
+      "interior_clear_span": [
+        5.825729530566938,
+        6.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "A",
+      "entrance_approach": [
+        -26.5,
+        -10.5
+      ]
+    },
+    {
+      "id": "lot_18_terrace",
+      "kind": "terrace",
+      "center": [
+        -42.5,
+        -25.5
+      ],
+      "width": 6.4257295305669375,
+      "depth": 7.5,
+      "floors": 2,
+      "yaw_degrees": 200.9734934213208,
+      "source_ref": "program_inventory.map.solid_lots.lot_18_terrace",
+      "typology": "shop_house",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          -40.84226004362169,
+          -20.848452060117314
+        ],
+        [
+          -46.84226004362169,
+          -23.14845206011731
+        ],
+        [
+          -44.15773995637831,
+          -30.151547939882686
+        ],
+        [
+          -38.15773995637831,
+          -27.85154793988269
+        ]
+      ],
+      "front_threshold": [
+        -43.84226004362169,
+        -21.998452060117312
+      ],
+      "front_outward": [
+        -0.357936011632452,
+        0.9337461173020497
+      ],
+      "interior_clear_span": [
+        5.825729530566938,
+        6.9
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "B",
+      "entrance_approach": [
+        -44.5,
+        -21.0
+      ]
+    },
+    {
+      "id": "lot_20_ochre",
+      "kind": "ochre",
+      "center": [
+        -36.5,
+        -23.2
+      ],
+      "width": 6.4257295305669375,
+      "depth": 7.5,
+      "floors": 2,
+      "yaw_degrees": 200.9734934213208,
+      "source_ref": "program_inventory.map.solid_lots.lot_20_ochre",
+      "typology": "shop_house",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          -34.84226004362169,
+          -18.548452060117313
+        ],
+        [
+          -40.84226004362169,
+          -20.84845206011731
+        ],
+        [
+          -38.15773995637831,
+          -27.851547939882686
+        ],
+        [
+          -32.15773995637831,
+          -25.55154793988269
+        ]
+      ],
+      "front_threshold": [
+        -37.84226004362169,
+        -19.69845206011731
+      ],
+      "front_outward": [
+        -0.357936011632452,
+        0.9337461173020497
+      ],
+      "interior_clear_span": [
+        5.825729530566938,
+        6.9
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "B",
+      "entrance_approach": [
+        -38.5,
+        -18.5
+      ]
+    },
+    {
+      "id": "lot_22_halftimber",
+      "kind": "halftimber",
+      "center": [
+        -30.5,
+        -20.9
+      ],
+      "width": 6.4257295305669375,
+      "depth": 7.5,
+      "floors": 2,
+      "yaw_degrees": 200.9734934213208,
+      "source_ref": "program_inventory.map.solid_lots.lot_22_halftimber",
+      "typology": "shop_house",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          -28.842260043621696,
+          -16.248452060117312
+        ],
+        [
+          -34.84226004362169,
+          -18.54845206011731
+        ],
+        [
+          -32.15773995637831,
+          -25.551547939882685
+        ],
+        [
+          -26.157739956378304,
+          -23.251547939882688
+        ]
+      ],
+      "front_threshold": [
+        -31.842260043621696,
+        -17.39845206011731
+      ],
+      "front_outward": [
+        -0.357936011632452,
+        0.9337461173020497
+      ],
+      "interior_clear_span": [
+        5.825729530566938,
+        6.9
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "B",
+      "entrance_approach": [
+        -32.5,
+        -16.0
+      ]
+    },
+    {
+      "id": "lot_23_townhouse",
+      "kind": "townhouse",
+      "center": [
+        -24.5,
+        -18.6
+      ],
+      "width": 6.4257295305669375,
+      "depth": 7.5,
+      "floors": 2,
+      "yaw_degrees": 200.9734934213208,
+      "source_ref": "program_inventory.map.solid_lots.lot_23_townhouse",
+      "typology": "shop_house",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          -22.842260043621696,
+          -13.948452060117317
+        ],
+        [
+          -28.842260043621696,
+          -16.248452060117312
+        ],
+        [
+          -26.157739956378304,
+          -23.251547939882688
+        ],
+        [
+          -20.157739956378304,
+          -20.95154793988269
+        ]
+      ],
+      "front_threshold": [
+        -25.842260043621696,
+        -15.098452060117316
+      ],
+      "front_outward": [
+        -0.357936011632452,
+        0.9337461173020497
+      ],
+      "interior_clear_span": [
+        5.825729530566938,
+        6.9
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "B",
+      "entrance_approach": [
+        -26.5,
+        -14.0
+      ]
+    },
+    {
+      "id": "lot_24_ochre",
+      "kind": "ochre",
+      "center": [
+        -18.5,
+        -16.3
+      ],
+      "width": 6.4257295305669375,
+      "depth": 7.5,
+      "floors": 2,
+      "yaw_degrees": 200.9734934213208,
+      "source_ref": "program_inventory.map.solid_lots.lot_24_ochre",
+      "typology": "shop_house",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          -16.842260043621696,
+          -11.648452060117316
+        ],
+        [
+          -22.842260043621696,
+          -13.948452060117313
+        ],
+        [
+          -20.157739956378304,
+          -20.951547939882687
+        ],
+        [
+          -14.157739956378306,
+          -18.65154793988269
+        ]
+      ],
+      "front_threshold": [
+        -19.842260043621696,
+        -12.798452060117315
+      ],
+      "front_outward": [
+        -0.357936011632452,
+        0.9337461173020497
+      ],
+      "interior_clear_span": [
+        5.825729530566938,
+        6.9
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "B",
+      "entrance_approach": [
+        -20.5,
+        -11.5
+      ]
+    },
+    {
+      "id": "lot_25_townhouse",
+      "kind": "townhouse",
+      "center": [
+        -36.25,
+        19
+      ],
+      "width": 6.5,
+      "depth": 7,
+      "floors": 1,
+      "yaw_degrees": 0,
+      "source_ref": "program_inventory.map.solid_lots.lot_25_townhouse",
+      "typology": "terraced_home",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          -39.5,
+          15.5
+        ],
+        [
+          -33.0,
+          15.5
+        ],
+        [
+          -33.0,
+          22.5
+        ],
+        [
+          -39.5,
+          22.5
+        ]
+      ],
+      "front_threshold": [
+        -36.25,
+        15.5
+      ],
+      "front_outward": [
+        0.0,
+        -1.0
+      ],
+      "interior_clear_span": [
+        5.9,
+        6.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "C",
+      "entrance_approach": [
+        -36.0,
+        14.0
+      ]
+    },
+    {
+      "id": "lot_26_ochre",
+      "kind": "ochre",
+      "center": [
+        -29.75,
+        17.8
+      ],
+      "width": 6.5,
+      "depth": 7,
+      "floors": 1,
+      "yaw_degrees": 0,
+      "source_ref": "program_inventory.map.solid_lots.lot_26_ochre",
+      "typology": "terraced_home",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          -33.0,
+          14.3
+        ],
+        [
+          -26.5,
+          14.3
+        ],
+        [
+          -26.5,
+          21.3
+        ],
+        [
+          -33.0,
+          21.3
+        ]
+      ],
+      "front_threshold": [
+        -29.75,
+        14.3
+      ],
+      "front_outward": [
+        0.0,
+        -1.0
+      ],
+      "interior_clear_span": [
+        5.9,
+        6.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "C",
+      "entrance_approach": [
+        -30.0,
+        13.0
+      ]
+    },
+    {
+      "id": "lot_27_terrace",
+      "kind": "terrace",
+      "center": [
+        -49.02314916742167,
+        6.439088676835233
+      ],
+      "width": 6.7,
+      "depth": 7,
+      "floors": 2,
+      "yaw_degrees": 177.5,
+      "source_ref": "program_inventory.map.solid_lots.lot_27_terrace",
+      "typology": "terraced_home",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          -45.523669769343776,
+          9.78963250469786
+        ],
+        [
+          -52.21729285394222,
+          10.081882400045611
+        ],
+        [
+          -52.522628565499566,
+          3.0885448489726066
+        ],
+        [
+          -45.829005480901124,
+          2.796294953624855
+        ]
+      ],
+      "front_threshold": [
+        -48.870481311643,
+        9.935757452371735
+      ],
+      "front_outward": [
+        0.04361938736533607,
+        0.9990482215818578
+      ],
+      "interior_clear_span": [
+        6.1000000000000005,
+        6.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "D",
+      "entrance_approach": [
+        -49.0,
+        11.0
+      ]
+    },
+    {
+      "id": "lot_29_halftimber",
+      "kind": "halftimber",
+      "center": [
+        -42.30771638914056,
+        6.646362892278411
+      ],
+      "width": 6.7,
+      "depth": 7,
+      "floors": 2,
+      "yaw_degrees": 177.5,
+      "source_ref": "program_inventory.map.solid_lots.lot_29_halftimber",
+      "typology": "terraced_home",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          -38.808236991062664,
+          9.996906720141038
+        ],
+        [
+          -45.50186007566111,
+          10.289156615488789
+        ],
+        [
+          -45.807195787218454,
+          3.2958190644157845
+        ],
+        [
+          -39.11357270262001,
+          3.003569169068033
+        ]
+      ],
+      "front_threshold": [
+        -42.155048533361885,
+        10.143031667814913
+      ],
+      "front_outward": [
+        0.04361938736533607,
+        0.9990482215818578
+      ],
+      "interior_clear_span": [
+        6.1000000000000005,
+        6.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "D",
+      "entrance_approach": [
+        -42.0,
+        11.5
+      ]
+    },
+    {
+      "id": "lot_30_townhouse",
+      "kind": "townhouse",
+      "center": [
+        -35.59228361085945,
+        6.853637107721589
+      ],
+      "width": 6.7,
+      "depth": 7,
+      "floors": 2,
+      "yaw_degrees": 177.5,
+      "source_ref": "program_inventory.map.solid_lots.lot_30_townhouse",
+      "typology": "terraced_home",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          -32.09280421278155,
+          10.204180935584215
+        ],
+        [
+          -38.786427297379994,
+          10.496430830931967
+        ],
+        [
+          -39.09176300893734,
+          3.5030932798589625
+        ],
+        [
+          -32.3981399243389,
+          3.210843384511211
+        ]
+      ],
+      "front_threshold": [
+        -35.43961575508077,
+        10.350305883258091
+      ],
+      "front_outward": [
+        0.04361938736533607,
+        0.9990482215818578
+      ],
+      "interior_clear_span": [
+        6.1000000000000005,
+        6.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "D",
+      "entrance_approach": [
+        -35.5,
+        11.5
+      ]
+    },
+    {
+      "id": "lot_31_longere",
+      "kind": "longere",
+      "center": [
+        -28.876850832578327,
+        7.060911323164766
+      ],
+      "width": 6.7,
+      "depth": 7,
+      "floors": 2,
+      "yaw_degrees": 177.5,
+      "source_ref": "program_inventory.map.solid_lots.lot_31_longere",
+      "typology": "terraced_home",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          -25.377371434500425,
+          10.411455151027393
+        ],
+        [
+          -32.070994519098875,
+          10.703705046375145
+        ],
+        [
+          -32.37633023065622,
+          3.7103674953021395
+        ],
+        [
+          -25.68270714605778,
+          3.418117599954388
+        ]
+      ],
+      "front_threshold": [
+        -28.72418297679965,
+        10.55758009870127
+      ],
+      "front_outward": [
+        0.04361938736533607,
+        0.9990482215818578
+      ],
+      "interior_clear_span": [
+        6.1000000000000005,
+        6.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "D",
+      "entrance_approach": [
+        -28.5,
+        12.0
+      ]
+    },
+    {
+      "id": "lot_33_terrace",
+      "kind": "terrace",
+      "center": [
+        -6.973362886642219,
+        -39.28990980076639
+      ],
+      "width": 7,
+      "depth": 7,
+      "floors": 1,
+      "yaw_degrees": 175,
+      "source_ref": "program_inventory.map.solid_lots.lot_33_terrace",
+      "typology": "terraced_home",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          -3.181636343704306,
+          -36.10827345706208
+        ],
+        [
+          -10.154999230346524,
+          -35.49818325782847
+        ],
+        [
+          -10.765089429580131,
+          -42.47154614447069
+        ],
+        [
+          -3.791726542937913,
+          -43.081636343704304
+        ]
+      ],
+      "front_threshold": [
+        -6.6683177870254156,
+        -35.80322835744528
+      ],
+      "front_outward": [
+        0.0871557427476582,
+        0.9961946980917455
+      ],
+      "interior_clear_span": [
+        6.4,
+        6.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "G",
+      "entrance_approach": [
+        -6.5,
+        -34.5
+      ]
+    },
+    {
+      "id": "lot_34_halftimber",
+      "kind": "halftimber",
+      "center": [
+        0.0,
+        -39.9
+      ],
+      "width": 7,
+      "depth": 7,
+      "floors": 1,
+      "yaw_degrees": 175,
+      "source_ref": "program_inventory.map.solid_lots.lot_34_halftimber",
+      "typology": "terraced_home",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          3.791726542937913,
+          -36.71836365629569
+        ],
+        [
+          -3.181636343704306,
+          -36.10827345706208
+        ],
+        [
+          -3.791726542937913,
+          -43.081636343704304
+        ],
+        [
+          3.181636343704306,
+          -43.691726542937914
+        ]
+      ],
+      "front_threshold": [
+        0.3050450996168037,
+        -36.41331855667889
+      ],
+      "front_outward": [
+        0.0871557427476582,
+        0.9961946980917455
+      ],
+      "interior_clear_span": [
+        6.4,
+        6.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "G",
+      "entrance_approach": [
+        0.5,
+        -35.0
+      ]
+    },
+    {
+      "id": "lot_36_longere",
+      "kind": "longere",
+      "center": [
+        6.973362886642219,
+        -40.51009019923361
+      ],
+      "width": 7,
+      "depth": 7,
+      "floors": 1,
+      "yaw_degrees": 175,
+      "source_ref": "program_inventory.map.solid_lots.lot_36_longere",
+      "typology": "terraced_home",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          10.765089429580131,
+          -37.328453855529304
+        ],
+        [
+          3.791726542937913,
+          -36.71836365629569
+        ],
+        [
+          3.181636343704306,
+          -43.691726542937914
+        ],
+        [
+          10.154999230346524,
+          -44.301816742171525
+        ]
+      ],
+      "front_threshold": [
+        7.2784079862590225,
+        -37.0234087559125
+      ],
+      "front_outward": [
+        0.0871557427476582,
+        0.9961946980917455
+      ],
+      "interior_clear_span": [
+        6.4,
+        6.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "G",
+      "entrance_approach": [
+        7.5,
+        -35.5
+      ]
+    },
+    {
+      "id": "lot_37_longere",
+      "kind": "longere",
+      "center": [
+        -8,
+        -26
+      ],
+      "width": 8,
+      "depth": 8,
+      "floors": 2,
+      "yaw_degrees": 0,
+      "source_ref": "program_inventory.map.solid_lots.lot_37_longere",
+      "typology": "shop_house",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          -12.0,
+          -30.0
+        ],
+        [
+          -4.0,
+          -30.0
+        ],
+        [
+          -4.0,
+          -22.0
+        ],
+        [
+          -12.0,
+          -22.0
+        ]
+      ],
+      "front_threshold": [
+        -8.0,
+        -30.0
+      ],
+      "front_outward": [
+        0.0,
+        -1.0
+      ],
+      "interior_clear_span": [
+        7.4,
+        7.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "H",
+      "entrance_approach": [
+        -8.0,
+        -31.5
+      ]
+    },
+    {
+      "id": "lot_38_halftimber",
+      "kind": "halftimber",
+      "center": [
+        0,
+        -26
+      ],
+      "width": 8,
+      "depth": 8,
+      "floors": 2,
+      "yaw_degrees": 0,
+      "source_ref": "program_inventory.map.solid_lots.lot_38_halftimber",
+      "typology": "shop_house",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          -4.0,
+          -30.0
+        ],
+        [
+          4.0,
+          -30.0
+        ],
+        [
+          4.0,
+          -22.0
+        ],
+        [
+          -4.0,
+          -22.0
+        ]
+      ],
+      "front_threshold": [
+        0.0,
+        -30.0
+      ],
+      "front_outward": [
+        0.0,
+        -1.0
+      ],
+      "interior_clear_span": [
+        7.4,
+        7.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "H",
+      "entrance_approach": [
+        0.0,
+        -31.5
+      ]
+    },
+    {
+      "id": "lot_40_terrace",
+      "kind": "terrace",
+      "center": [
+        8,
+        -26
+      ],
+      "width": 8,
+      "depth": 8,
+      "floors": 2,
+      "yaw_degrees": 0,
+      "source_ref": "program_inventory.map.solid_lots.lot_40_terrace",
+      "typology": "shop_house",
+      "district": "D01",
+      "footprint_polygon": [
+        [
+          4.0,
+          -30.0
+        ],
+        [
+          12.0,
+          -30.0
+        ],
+        [
+          12.0,
+          -22.0
+        ],
+        [
+          4.0,
+          -22.0
+        ]
+      ],
+      "front_threshold": [
+        8.0,
+        -30.0
+      ],
+      "front_outward": [
+        0.0,
+        -1.0
+      ],
+      "interior_clear_span": [
+        7.4,
+        7.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "H",
+      "entrance_approach": [
+        8.0,
+        -31.5
+      ]
+    },
+    {
+      "id": "lot_10_belleepoque",
+      "kind": "belleepoque",
+      "center": [
+        33,
+        -27.4
+      ],
+      "width": 6.7,
+      "depth": 8,
+      "floors": 2,
+      "yaw_degrees": 90,
+      "source_ref": "program_inventory.map.solid_lots.lot_10_belleepoque",
+      "typology": "cross_gable_villa",
+      "district": "D03",
+      "footprint_polygon": [
+        [
+          37.0,
+          -30.75
+        ],
+        [
+          37.0,
+          -24.049999999999997
+        ],
+        [
+          29.0,
+          -24.049999999999997
+        ],
+        [
+          29.0,
+          -30.75
+        ]
+      ],
+      "front_threshold": [
+        37.0,
+        -27.4
+      ],
+      "front_outward": [
+        1.0,
+        -6.123233995736766e-17
+      ],
+      "interior_clear_span": [
+        6.1000000000000005,
+        7.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "E_south",
+      "entrance_approach": [
+        38.5,
+        -27.5
+      ]
+    },
+    {
+      "id": "lot_19_belleepoque",
+      "kind": "belleepoque",
+      "center": [
+        33,
+        -20.7
+      ],
+      "width": 6.7,
+      "depth": 8,
+      "floors": 2,
+      "yaw_degrees": 90,
+      "source_ref": "program_inventory.map.solid_lots.lot_19_belleepoque",
+      "typology": "cross_gable_villa",
+      "district": "D03",
+      "footprint_polygon": [
+        [
+          37.0,
+          -24.05
+        ],
+        [
+          37.0,
+          -17.349999999999998
+        ],
+        [
+          29.0,
+          -17.349999999999998
+        ],
+        [
+          29.0,
+          -24.05
+        ]
+      ],
+      "front_threshold": [
+        37.0,
+        -20.7
+      ],
+      "front_outward": [
+        1.0,
+        -6.123233995736766e-17
+      ],
+      "interior_clear_span": [
+        6.1000000000000005,
+        7.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "E_south",
+      "entrance_approach": [
+        38.5,
+        -20.5
+      ]
+    },
+    {
+      "id": "lot_21_belleepoque",
+      "kind": "belleepoque",
+      "center": [
+        33,
+        -14
+      ],
+      "width": 6.7,
+      "depth": 8,
+      "floors": 2,
+      "yaw_degrees": 90,
+      "source_ref": "program_inventory.map.solid_lots.lot_21_belleepoque",
+      "typology": "cross_gable_villa",
+      "district": "D03",
+      "footprint_polygon": [
+        [
+          37.0,
+          -17.35
+        ],
+        [
+          37.0,
+          -10.65
+        ],
+        [
+          29.0,
+          -10.65
+        ],
+        [
+          29.0,
+          -17.35
+        ]
+      ],
+      "front_threshold": [
+        37.0,
+        -14.0
+      ],
+      "front_outward": [
+        1.0,
+        -6.123233995736766e-17
+      ],
+      "interior_clear_span": [
+        6.1000000000000005,
+        7.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "E_south",
+      "entrance_approach": [
+        38.5,
+        -14.0
+      ]
+    },
+    {
+      "id": "lot_35_belleepoque",
+      "kind": "belleepoque",
+      "center": [
+        33,
+        -7.3
+      ],
+      "width": 6.7,
+      "depth": 8,
+      "floors": 2,
+      "yaw_degrees": 90,
+      "source_ref": "program_inventory.map.solid_lots.lot_35_belleepoque",
+      "typology": "cross_gable_villa",
+      "district": "D03",
+      "footprint_polygon": [
+        [
+          37.0,
+          -10.65
+        ],
+        [
+          37.0,
+          -3.95
+        ],
+        [
+          29.0,
+          -3.9499999999999993
+        ],
+        [
+          29.0,
+          -10.65
+        ]
+      ],
+      "front_threshold": [
+        37.0,
+        -7.3
+      ],
+      "front_outward": [
+        1.0,
+        -6.123233995736766e-17
+      ],
+      "interior_clear_span": [
+        6.1000000000000005,
+        7.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "E_south",
+      "entrance_approach": [
+        38.5,
+        -7.5
+      ]
+    },
+    {
+      "id": "lot_13_cottage",
+      "kind": "cottage",
+      "center": [
+        33,
+        2.2
+      ],
+      "width": 6.7,
+      "depth": 8,
+      "floors": 2,
+      "yaw_degrees": 90,
+      "source_ref": "program_inventory.map.solid_lots.lot_13_cottage",
+      "typology": "coastal_shop_house",
+      "district": "D03",
+      "footprint_polygon": [
+        [
+          37.0,
+          -1.1500000000000001
+        ],
+        [
+          37.0,
+          5.550000000000001
+        ],
+        [
+          29.0,
+          5.550000000000001
+        ],
+        [
+          29.0,
+          -1.1499999999999997
+        ]
+      ],
+      "front_threshold": [
+        37.0,
+        2.1999999999999997
+      ],
+      "front_outward": [
+        1.0,
+        -6.123233995736766e-17
+      ],
+      "interior_clear_span": [
+        6.1000000000000005,
+        7.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "E_north",
+      "entrance_approach": [
+        38.5,
+        2.0
+      ]
+    },
+    {
+      "id": "lot_28_cottage",
+      "kind": "cottage",
+      "center": [
+        33,
+        8.9
+      ],
+      "width": 6.7,
+      "depth": 8,
+      "floors": 2,
+      "yaw_degrees": 90,
+      "source_ref": "program_inventory.map.solid_lots.lot_28_cottage",
+      "typology": "coastal_shop_house",
+      "district": "D03",
+      "footprint_polygon": [
+        [
+          37.0,
+          5.550000000000001
+        ],
+        [
+          37.0,
+          12.25
+        ],
+        [
+          29.0,
+          12.25
+        ],
+        [
+          29.0,
+          5.550000000000001
+        ]
+      ],
+      "front_threshold": [
+        37.0,
+        8.9
+      ],
+      "front_outward": [
+        1.0,
+        -6.123233995736766e-17
+      ],
+      "interior_clear_span": [
+        6.1000000000000005,
+        7.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "E_north",
+      "entrance_approach": [
+        38.5,
+        9.0
+      ]
+    },
+    {
+      "id": "lot_32_cottage",
+      "kind": "cottage",
+      "center": [
+        33,
+        15.6
+      ],
+      "width": 6.7,
+      "depth": 8,
+      "floors": 2,
+      "yaw_degrees": 90,
+      "source_ref": "program_inventory.map.solid_lots.lot_32_cottage",
+      "typology": "coastal_shop_house",
+      "district": "D03",
+      "footprint_polygon": [
+        [
+          37.0,
+          12.25
+        ],
+        [
+          37.0,
+          18.95
+        ],
+        [
+          29.0,
+          18.95
+        ],
+        [
+          29.0,
+          12.25
+        ]
+      ],
+      "front_threshold": [
+        37.0,
+        15.6
+      ],
+      "front_outward": [
+        1.0,
+        -6.123233995736766e-17
+      ],
+      "interior_clear_span": [
+        6.1000000000000005,
+        7.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "E_north",
+      "entrance_approach": [
+        38.5,
+        15.5
+      ]
+    },
+    {
+      "id": "lot_39_whitehouse",
+      "kind": "whitehouse",
+      "center": [
+        22,
+        -25
+      ],
+      "width": 6.5,
+      "depth": 8,
+      "floors": 2,
+      "yaw_degrees": 90,
+      "source_ref": "program_inventory.map.solid_lots.lot_39_whitehouse",
+      "typology": "coastal_shop_house",
+      "district": "D03",
+      "footprint_polygon": [
+        [
+          26.0,
+          -28.25
+        ],
+        [
+          26.0,
+          -21.75
+        ],
+        [
+          18.0,
+          -21.75
+        ],
+        [
+          18.0,
+          -28.25
+        ]
+      ],
+      "front_threshold": [
+        26.0,
+        -25.0
+      ],
+      "front_outward": [
+        1.0,
+        -6.123233995736766e-17
+      ],
+      "interior_clear_span": [
+        5.9,
+        7.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "F_south",
+      "entrance_approach": [
+        27.5,
+        -25.0
+      ]
+    },
+    {
+      "id": "lot_11_longere",
+      "kind": "longere",
+      "center": [
+        22,
+        -18.5
+      ],
+      "width": 6.5,
+      "depth": 8,
+      "floors": 2,
+      "yaw_degrees": 90,
+      "source_ref": "program_inventory.map.solid_lots.lot_11_longere",
+      "typology": "coastal_shop_house",
+      "district": "D03",
+      "footprint_polygon": [
+        [
+          26.0,
+          -21.75
+        ],
+        [
+          26.0,
+          -15.25
+        ],
+        [
+          18.0,
+          -15.25
+        ],
+        [
+          18.0,
+          -21.75
+        ]
+      ],
+      "front_threshold": [
+        26.0,
+        -18.5
+      ],
+      "front_outward": [
+        1.0,
+        -6.123233995736766e-17
+      ],
+      "interior_clear_span": [
+        5.9,
+        7.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "F_south",
+      "entrance_approach": [
+        27.5,
+        -18.5
+      ]
+    },
+    {
+      "id": "lot_16_longere",
+      "kind": "longere",
+      "center": [
+        22,
+        -12
+      ],
+      "width": 6.5,
+      "depth": 8,
+      "floors": 2,
+      "yaw_degrees": 90,
+      "source_ref": "program_inventory.map.solid_lots.lot_16_longere",
+      "typology": "coastal_shop_house",
+      "district": "D03",
+      "footprint_polygon": [
+        [
+          26.0,
+          -15.25
+        ],
+        [
+          26.0,
+          -8.75
+        ],
+        [
+          18.0,
+          -8.75
+        ],
+        [
+          18.0,
+          -15.25
+        ]
+      ],
+      "front_threshold": [
+        26.0,
+        -12.0
+      ],
+      "front_outward": [
+        1.0,
+        -6.123233995736766e-17
+      ],
+      "interior_clear_span": [
+        5.9,
+        7.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "F_south",
+      "entrance_approach": [
+        27.5,
+        -12.0
+      ]
+    },
+    {
+      "id": "lot_17_longere",
+      "kind": "longere",
+      "center": [
+        22,
+        14.5
+      ],
+      "width": 6,
+      "depth": 8,
+      "floors": 2,
+      "yaw_degrees": 90,
+      "source_ref": "program_inventory.map.solid_lots.lot_17_longere",
+      "typology": "coastal_shop_house",
+      "district": "D03",
+      "footprint_polygon": [
+        [
+          26.0,
+          11.5
+        ],
+        [
+          26.0,
+          17.5
+        ],
+        [
+          18.0,
+          17.5
+        ],
+        [
+          18.0,
+          11.5
+        ]
+      ],
+      "front_threshold": [
+        26.0,
+        14.5
+      ],
+      "front_outward": [
+        1.0,
+        -6.123233995736766e-17
+      ],
+      "interior_clear_span": [
+        5.4,
+        7.4
+      ],
+      "program_authority": "New offline architectural proposal; existing runtime Space geometry is not embedded.",
+      "row_group": "F_north",
+      "entrance_approach": [
+        27.5,
+        14.5
+      ]
+    }
+  ],
+  "streets": [
+    {
+      "id": "main_west",
+      "points": [
+        [
+          -58.0,
+          -25.0
+        ],
+        [
+          -48.0,
+          -21.0
+        ],
+        [
+          -44.1,
+          -19.05
+        ],
+        [
+          -43.65793869481207,
+          -18.834727010554523
+        ],
+        [
+          -43.211754779248245,
+          -18.628908042218093
+        ],
+        [
+          -42.76144825330855,
+          -18.432543094990706
+        ],
+        [
+          -42.307019116992976,
+          -18.245632168872365
+        ],
+        [
+          -41.84846737030153,
+          -18.068175263863072
+        ],
+        [
+          -31.0,
+          -14.0
+        ],
+        [
+          -22.0,
+          -10.5
+        ],
+        [
+          -15.236503619981072,
+          -8.567572462851734
+        ],
+        [
+          -15.14256231678789,
+          -8.547646376225112
+        ],
+        [
+          -15.049941303193185,
+          -8.541926086626624
+        ],
+        [
+          -14.95864057919697,
+          -8.550411594056278
+        ],
+        [
+          -14.868660144799243,
+          -8.573102898514069
+        ],
+        [
+          -14.78,
+          -8.61
+        ],
+        [
+          -14.22,
+          -8.89
+        ],
+        [
+          -14.130961300899003,
+          -8.9296
+        ],
+        [
+          -14.039845203596006,
+          -8.9604
+        ],
+        [
+          -13.946651708091009,
+          -8.9824
+        ],
+        [
+          -13.851380814384015,
+          -8.9956
+        ],
+        [
+          -13.754032522475024,
+          -9.0
+        ],
+        [
+          -11.0,
+          -9.0
+        ]
+      ],
+      "width": 4.2,
+      "kind": "public_street",
+      "authored_waypoints": [
+        [
+          -58,
+          -25
+        ],
+        [
+          -48,
+          -21
+        ],
+        [
+          -43,
+          -18.5
+        ],
+        [
+          -31,
+          -14
+        ],
+        [
+          -22,
+          -10.5
+        ],
+        [
+          -14,
+          -9
+        ],
+        [
+          -11,
+          -9
+        ]
+      ],
+      "character": "Clearance-tested authored bends and rounded corners; no random street jitter."
+    },
+    {
+      "id": "south_east",
+      "points": [
+        [
+          -50.0,
+          -22.0
+        ],
+        [
+          -46.0,
+          -33.0
+        ],
+        [
+          -16.0,
+          -33.0
+        ],
+        [
+          -8.0,
+          -32.5
+        ],
+        [
+          0.0,
+          -32.5
+        ],
+        [
+          16.0,
+          -33.0
+        ],
+        [
+          38.5,
+          -33.0
+        ]
+      ],
+      "width": 4,
+      "kind": "public_street",
+      "authored_waypoints": [
+        [
+          -50,
+          -22
+        ],
+        [
+          -46,
+          -33
+        ],
+        [
+          -16,
+          -33
+        ],
+        [
+          -8,
+          -32.5
+        ],
+        [
+          0,
+          -32.5
+        ],
+        [
+          16,
+          -33
+        ],
+        [
+          38.5,
+          -33
+        ]
+      ],
+      "character": "Clearance-tested authored bends and rounded corners; no random street jitter."
+    },
+    {
+      "id": "civicnorth",
+      "points": [
+        [
+          -24.5,
+          18.0
+        ],
+        [
+          -16.34813406959889,
+          18.42904557528427
+        ],
+        [
+          -15.81018867997578,
+          18.46673158154367
+        ],
+        [
+          -15.274859766785562,
+          18.52302606054927
+        ],
+        [
+          -14.742147330028237,
+          18.59792901230108
+        ],
+        [
+          -14.212051369703804,
+          18.6914404367991
+        ],
+        [
+          -13.684571885812263,
+          18.803560334043325
+        ],
+        [
+          -9.815428114187737,
+          19.696439665956675
+        ],
+        [
+          -9.287873993080153,
+          19.805721386212273
+        ],
+        [
+          -8.757554121107585,
+          19.8907182797444
+        ],
+        [
+          -8.224468498270038,
+          19.951430346553067
+        ],
+        [
+          -7.688617124567509,
+          19.987857586638267
+        ],
+        [
+          -7.15,
+          20.0
+        ],
+        [
+          1.0,
+          20.0
+        ],
+        [
+          12.0,
+          20.5
+        ],
+        [
+          19.0,
+          21.0
+        ],
+        [
+          39.0,
+          21.0
+        ]
+      ],
+      "width": 3.6,
+      "kind": "public_street",
+      "authored_waypoints": [
+        [
+          -25,
+          18
+        ],
+        [
+          -15,
+          18.5
+        ],
+        [
+          1,
+          20
+        ],
+        [
+          12,
+          20.5
+        ],
+        [
+          19,
+          21
+        ],
+        [
+          39,
+          21
+        ]
+      ],
+      "character": "Clearance-tested authored bends and rounded corners; no random street jitter."
+    },
+    {
+      "id": "upperwest",
+      "points": [
+        [
+          -56.0,
+          11.5
+        ],
+        [
+          -46.0,
+          12.5
+        ],
+        [
+          -36.0,
+          12.5
+        ],
+        [
+          -25.0,
+          12.0
+        ],
+        [
+          -25.0,
+          18.0
+        ]
+      ],
+      "width": 2.5,
+      "kind": "public_street",
+      "authored_waypoints": [
+        [
+          -56,
+          11.5
+        ],
+        [
+          -46,
+          12.5
+        ],
+        [
+          -36,
+          12.5
+        ],
+        [
+          -25,
+          12
+        ],
+        [
+          -25,
+          18
+        ]
+      ],
+      "character": "Clearance-tested authored bends and rounded corners; no random street jitter."
+    },
+    {
+      "id": "westconnector",
+      "points": [
+        [
+          -51.0,
+          -15.0
+        ],
+        [
+          -53.32607472869074,
+          -8.021775813927782
+        ],
+        [
+          -53.38868782636209,
+          -7.8119365209137825
+        ],
+        [
+          -53.43738690232867,
+          -7.599839293014002
+        ],
+        [
+          -53.47217195659053,
+          -7.385484130228446
+        ],
+        [
+          -53.493042989147625,
+          -7.168871032557111
+        ],
+        [
+          -53.5,
+          -6.95
+        ],
+        [
+          -53.5,
+          -5.55
+        ],
+        [
+          -53.50361677772073,
+          -5.330299333675693
+        ],
+        [
+          -53.51446711088287,
+          -5.111197334702771
+        ],
+        [
+          -53.53255099948646,
+          -4.892694003081235
+        ],
+        [
+          -53.55786844353148,
+          -4.674789338811085
+        ],
+        [
+          -53.59041944301794,
+          -4.4574833418923205
+        ],
+        [
+          -54.78299333675693,
+          2.6979600205415704
+        ],
+        [
+          -54.86111573552445,
+          3.2194944131466054
+        ],
+        [
+          -54.921877601232495,
+          3.742465607394965
+        ],
+        [
+          -54.96527893388111,
+          4.266873603286651
+        ],
+        [
+          -54.99131973347028,
+          4.792718400821663
+        ],
+        [
+          -55.0,
+          5.32
+        ],
+        [
+          -55.0,
+          10.0
+        ],
+        [
+          -55.0,
+          15.0
+        ]
+      ],
+      "width": 2.5,
+      "kind": "public_street",
+      "authored_waypoints": [
+        [
+          -51,
+          -15
+        ],
+        [
+          -53.5,
+          -5
+        ],
+        [
+          -55,
+          4
+        ],
+        [
+          -55,
+          10
+        ],
+        [
+          -55,
+          15
+        ]
+      ],
+      "character": "Clearance-tested authored bends and rounded corners; no random street jitter."
+    },
+    {
+      "id": "seaside",
+      "points": [
+        [
+          38.0,
+          -42.0
+        ],
+        [
+          38.5,
+          -33.0
+        ],
+        [
+          38.5,
+          -24.0
+        ],
+        [
+          39.0,
+          -15.0
+        ],
+        [
+          39.0,
+          -7.0
+        ],
+        [
+          39.5,
+          3.0
+        ],
+        [
+          40.0,
+          13.0
+        ],
+        [
+          40.43869965775982,
+          22.651392470716097
+        ],
+        [
+          40.47273532056009,
+          23.189548355471043
+        ],
+        [
+          40.52580203516875,
+          23.72512998630875
+        ],
+        [
+          40.59789980158581,
+          24.258137363229224
+        ],
+        [
+          40.68902861981127,
+          24.788570486232466
+        ],
+        [
+          40.79918848984511,
+          25.31642935531847
+        ],
+        [
+          43.0,
+          35.0
+        ]
+      ],
+      "width": 2.4,
+      "kind": "public_street",
+      "authored_waypoints": [
+        [
+          38,
+          -42
+        ],
+        [
+          38.5,
+          -33
+        ],
+        [
+          38.6,
+          -24
+        ],
+        [
+          38.8,
+          -15
+        ],
+        [
+          39.2,
+          -7
+        ],
+        [
+          39.7,
+          3
+        ],
+        [
+          40.2,
+          13
+        ],
+        [
+          40.7,
+          24
+        ],
+        [
+          43,
+          35
+        ]
+      ],
+      "character": "Clearance-tested authored bends and rounded corners; no random street jitter."
+    },
+    {
+      "id": "southloop",
+      "points": [
+        [
+          -15.0,
+          -26.0
+        ],
+        [
+          -15.0,
+          -31.15
+        ],
+        [
+          -14.946000000000002,
+          -31.636000000000006
+        ],
+        [
+          -14.783999999999999,
+          -32.014
+        ],
+        [
+          -14.514000000000001,
+          -32.284000000000006
+        ],
+        [
+          -14.136000000000001,
+          -32.446
+        ],
+        [
+          -13.65,
+          -32.5
+        ],
+        [
+          8.0,
+          -32.5
+        ],
+        [
+          13.333207368222245,
+          -32.055566052648146
+        ],
+        [
+          13.57765271566224,
+          -32.00916227369482
+        ],
+        [
+          13.77755465256001,
+          -31.914403778953336
+        ],
+        [
+          13.932913178915559,
+          -31.771290568423705
+        ],
+        [
+          14.04372829472889,
+          -31.579822642105928
+        ],
+        [
+          14.11,
+          -31.34
+        ],
+        [
+          14.39,
+          -29.66
+        ],
+        [
+          14.430714206356964,
+          -29.39565904743294
+        ],
+        [
+          14.464856825427844,
+          -29.130636189731735
+        ],
+        [
+          14.49242785721265,
+          -28.8649314268964
+        ],
+        [
+          14.513427301711378,
+          -28.598544758926934
+        ],
+        [
+          14.527855158924028,
+          -28.331476185823334
+        ],
+        [
+          15.0,
+          -17.0
+        ]
+      ],
+      "width": 3.2,
+      "kind": "public_street",
+      "authored_waypoints": [
+        [
+          -15,
+          -26
+        ],
+        [
+          -15,
+          -32.5
+        ],
+        [
+          8,
+          -32.5
+        ],
+        [
+          14.5,
+          -29
+        ],
+        [
+          15,
+          -17
+        ]
+      ],
+      "character": "Clearance-tested authored bends and rounded corners; no random street jitter."
+    },
+    {
+      "id": "backlane",
+      "points": [
+        [
+          27.5,
+          -30.0
+        ],
+        [
+          27.5,
+          -20.0
+        ],
+        [
+          27.5,
+          -12.0
+        ],
+        [
+          27.5,
+          -3.0
+        ],
+        [
+          27.5,
+          10.0
+        ],
+        [
+          27.5,
+          18.5
+        ],
+        [
+          27.5,
+          20.45
+        ],
+        [
+          27.478000000000005,
+          20.648000000000003
+        ],
+        [
+          27.412000000000003,
+          20.802
+        ],
+        [
+          27.302,
+          20.912
+        ],
+        [
+          27.147999999999996,
+          20.978
+        ],
+        [
+          26.95,
+          21.0
+        ],
+        [
+          25.0,
+          21.0
+        ]
+      ],
+      "width": 2,
+      "kind": "public_street",
+      "authored_waypoints": [
+        [
+          27.5,
+          -30
+        ],
+        [
+          27.3,
+          -20
+        ],
+        [
+          27.5,
+          -12
+        ],
+        [
+          27.5,
+          -3
+        ],
+        [
+          27.5,
+          10
+        ],
+        [
+          27.5,
+          18.5
+        ],
+        [
+          27.5,
+          21
+        ],
+        [
+          25,
+          21
+        ]
+      ],
+      "character": "Clearance-tested authored bends and rounded corners; no random street jitter."
+    },
+    {
+      "id": "northwork",
+      "points": [
+        [
+          19.0,
+          21.0
+        ],
+        [
+          21.33076923076923,
+          26.593846153846155
+        ],
+        [
+          21.39169230769231,
+          26.757661538461544
+        ],
+        [
+          21.43907692307692,
+          26.92418461538462
+        ],
+        [
+          21.47292307692308,
+          27.093415384615387
+        ],
+        [
+          21.493230769230767,
+          27.265353846153847
+        ],
+        [
+          21.5,
+          27.44
+        ],
+        [
+          21.5,
+          29.0
+        ],
+        [
+          21.5,
+          35.546458381182056
+        ],
+        [
+          21.504400000000004,
+          35.72733336395652
+        ],
+        [
+          21.517599999999998,
+          35.90712501722554
+        ],
+        [
+          21.5396,
+          36.085833340989126
+        ],
+        [
+          21.5704,
+          36.26345833524728
+        ],
+        [
+          21.61,
+          36.44
+        ],
+        [
+          21.91563385122679,
+          37.66253540490716
+        ],
+        [
+          21.94160566478515,
+          37.79722265914059
+        ],
+        [
+          21.952028186441645,
+          37.93131274576658
+        ],
+        [
+          21.94690141619629,
+          38.06480566478515
+        ],
+        [
+          21.926225354049073,
+          38.19770141619629
+        ],
+        [
+          21.89,
+          38.33
+        ],
+        [
+          21.61,
+          39.17
+        ],
+        [
+          21.584314021704746,
+          39.28880000000001
+        ],
+        [
+          21.595256086818964,
+          39.3812
+        ],
+        [
+          21.642826195342668,
+          39.4472
+        ],
+        [
+          21.72702434727585,
+          39.486799999999995
+        ],
+        [
+          21.84785054261852,
+          39.5
+        ],
+        [
+          47.0,
+          39.5
+        ]
+      ],
+      "width": 4,
+      "kind": "public_street",
+      "authored_waypoints": [
+        [
+          19,
+          21
+        ],
+        [
+          21.5,
+          29
+        ],
+        [
+          21.5,
+          36.5
+        ],
+        [
+          21.5,
+          39.5
+        ],
+        [
+          47,
+          39.5
+        ]
+      ],
+      "character": "Clearance-tested authored bends and rounded corners; no random street jitter."
+    },
+    {
+      "id": "northservice",
+      "points": [
+        [
+          31.0,
+          39.5
+        ],
+        [
+          31.0,
+          46.0
+        ],
+        [
+          31.0,
+          54.0
+        ]
+      ],
+      "width": 4,
+      "kind": "public_street",
+      "authored_waypoints": [
+        [
+          31,
+          39.5
+        ],
+        [
+          31,
+          46
+        ],
+        [
+          31,
+          54
+        ]
+      ],
+      "character": "Clearance-tested authored bends and rounded corners; no random street jitter."
+    },
+    {
+      "id": "plaza_north",
+      "points": [
+        [
+          5.0,
+          0.0
+        ],
+        [
+          5.0,
+          8.0
+        ],
+        [
+          5.0,
+          15.0
+        ],
+        [
+          5.0,
+          20.0
+        ]
+      ],
+      "width": 2.5,
+      "kind": "public_street",
+      "authored_waypoints": [
+        [
+          5,
+          0
+        ],
+        [
+          5,
+          8
+        ],
+        [
+          5,
+          15
+        ],
+        [
+          5,
+          20
+        ]
+      ],
+      "character": "Clearance-tested authored bends and rounded corners; no random street jitter."
+    },
+    {
+      "id": "library_church",
+      "points": [
+        [
+          -25.0,
+          12.0
+        ],
+        [
+          -25.0,
+          20.0
+        ]
+      ],
+      "width": 2,
+      "kind": "public_street",
+      "authored_waypoints": [
+        [
+          -25,
+          12
+        ],
+        [
+          -25,
+          20
+        ]
+      ],
+      "character": "Clearance-tested authored bends and rounded corners; no random street jitter."
+    },
+    {
+      "id": "sea_opening",
+      "points": [
+        [
+          27.5,
+          -2.5
+        ],
+        [
+          33.0,
+          -2.5
+        ],
+        [
+          39.5,
+          -2.5
+        ]
+      ],
+      "width": 2,
+      "kind": "public_street",
+      "authored_waypoints": [
+        [
+          27.5,
+          -2.5
+        ],
+        [
+          33,
+          -2.5
+        ],
+        [
+          39.5,
+          -2.5
+        ]
+      ],
+      "character": "Clearance-tested authored bends and rounded corners; no random street jitter."
+    },
+    {
+      "id": "cafe_rear_lane",
+      "points": [
+        [
+          15.0,
+          -17.0
+        ],
+        [
+          16.56,
+          -16.22
+        ],
+        [
+          16.718400000000003,
+          -16.121122601798003
+        ],
+        [
+          16.8416,
+          -16.000490407192004
+        ],
+        [
+          16.9296,
+          -15.858103416182015
+        ],
+        [
+          16.982400000000002,
+          -15.69396162876803
+        ],
+        [
+          17.0,
+          -15.508065044950046
+        ],
+        [
+          17.0,
+          -5.5
+        ],
+        [
+          17.0,
+          5.0
+        ],
+        [
+          17.0,
+          9.29
+        ],
+        [
+          17.048400000000004,
+          9.725600000000002
+        ],
+        [
+          17.193600000000004,
+          10.0644
+        ],
+        [
+          17.4356,
+          10.3064
+        ],
+        [
+          17.7744,
+          10.4516
+        ],
+        [
+          18.21,
+          10.5
+        ],
+        [
+          25.0,
+          10.5
+        ]
+      ],
+      "width": 1.4,
+      "kind": "public_street",
+      "authored_waypoints": [
+        [
+          15,
+          -17
+        ],
+        [
+          17,
+          -16
+        ],
+        [
+          17,
+          -5.5
+        ],
+        [
+          17,
+          5
+        ],
+        [
+          17,
+          10.5
+        ],
+        [
+          25,
+          10.5
+        ]
+      ],
+      "character": "Clearance-tested authored bends and rounded corners; no random street jitter."
+    },
+    {
+      "id": "market_mews",
+      "points": [
+        [
+          -15.0,
+          -21.0
+        ],
+        [
+          -9.0,
+          -21.0
+        ],
+        [
+          -2.0,
+          -21.0
+        ],
+        [
+          5.0,
+          -21.0
+        ],
+        [
+          9.834723060887418,
+          -20.597106411592716
+        ],
+        [
+          10.289422758967948,
+          -20.531348103419344
+        ],
+        [
+          10.72130030191947,
+          -20.41175830817338
+        ],
+        [
+          11.130355689741986,
+          -20.238337025854833
+        ],
+        [
+          11.516588922435497,
+          -20.01108425646371
+        ],
+        [
+          11.88,
+          -19.73
+        ],
+        [
+          15.0,
+          -17.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "public_street",
+      "authored_waypoints": [
+        [
+          -15,
+          -21
+        ],
+        [
+          -9,
+          -21
+        ],
+        [
+          -2,
+          -21
+        ],
+        [
+          5,
+          -21
+        ],
+        [
+          11,
+          -20.5
+        ],
+        [
+          15,
+          -17
+        ]
+      ],
+      "character": "Clearance-tested authored bends and rounded corners; no random street jitter."
+    },
+    {
+      "id": "market_link",
+      "points": [
+        [
+          -11.0,
+          -9.0
+        ],
+        [
+          -11.0,
+          -19.592916762364116
+        ],
+        [
+          -11.035200000000003,
+          -19.928266727913037
+        ],
+        [
+          -11.1408,
+          -20.208650034451086
+        ],
+        [
+          -11.3168,
+          -20.43406668197826
+        ],
+        [
+          -11.5632,
+          -20.604516670494565
+        ],
+        [
+          -11.88,
+          -20.72
+        ],
+        [
+          -14.466421624920068,
+          -21.36660540623002
+        ],
+        [
+          -14.658509839948845,
+          -21.436627459987214
+        ],
+        [
+          -14.807911784971223,
+          -21.539977946242807
+        ],
+        [
+          -14.914627459987212,
+          -21.676656864996804
+        ],
+        [
+          -14.978656864996804,
+          -21.846664216249202
+        ],
+        [
+          -15.0,
+          -22.05
+        ],
+        [
+          -15.0,
+          -24.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "public_street",
+      "authored_waypoints": [
+        [
+          -11,
+          -9
+        ],
+        [
+          -11,
+          -20.5
+        ],
+        [
+          -15,
+          -24
+        ]
+      ],
+      "character": "Clearance-tested authored bends and rounded corners; no random street jitter."
+    },
+    {
+      "id": "garden_passage",
+      "points": [
+        [
+          -53.0,
+          -5.0
+        ],
+        [
+          -51.05,
+          -2.27
+        ],
+        [
+          -50.81706132506925,
+          -1.9782422187788513
+        ],
+        [
+          -50.558245300276965,
+          -1.7189688751154037
+        ],
+        [
+          -50.27355192562318,
+          -1.4921799690096587
+        ],
+        [
+          -49.96298120110788,
+          -1.2978755004616152
+        ],
+        [
+          -49.626533126731054,
+          -1.1360554694712734
+        ],
+        [
+          -45.746153846153845,
+          0.4807692307692307
+        ],
+        [
+          -45.24353846153846,
+          0.6676923076923078
+        ],
+        [
+          -44.732615384615386,
+          0.813076923076923
+        ],
+        [
+          -44.21338461538461,
+          0.9169230769230768
+        ],
+        [
+          -43.68584615384616,
+          0.9792307692307693
+        ],
+        [
+          -43.15,
+          1.0
+        ],
+        [
+          -36.35,
+          1.0
+        ],
+        [
+          -35.81073472811307,
+          1.0088775453144896
+        ],
+        [
+          -35.27293891245226,
+          1.0355101812579572
+        ],
+        [
+          -34.73661255301758,
+          1.0798979078304036
+        ],
+        [
+          -34.20175564980903,
+          1.1420407250318287
+        ],
+        [
+          -33.668368202826606,
+          1.2219386328622324
+        ],
+        [
+          -26.343117661640623,
+          2.442813723059896
+        ],
+        [
+          -26.206395303450005,
+          2.4590007827583342
+        ],
+        [
+          -26.070722358190622,
+          2.4618129403015625
+        ],
+        [
+          -25.9360988258625,
+          2.4512501956895836
+        ],
+        [
+          -25.802524706465626,
+          2.427312548922396
+        ],
+        [
+          -25.67,
+          2.39
+        ],
+        [
+          -24.83,
+          2.11
+        ],
+        [
+          -24.7112,
+          2.084314021704741
+        ],
+        [
+          -24.6188,
+          2.0952560868189636
+        ],
+        [
+          -24.552799999999998,
+          2.1428261953426677
+        ],
+        [
+          -24.513199999999998,
+          2.227024347275854
+        ],
+        [
+          -24.5,
+          2.347850542618522
+        ],
+        [
+          -24.5,
+          6.003907634804884
+        ],
+        [
+          -24.495600000000003,
+          6.402100886275127
+        ],
+        [
+          -24.4824,
+          6.799806748529758
+        ],
+        [
+          -24.4604,
+          7.197025221568781
+        ],
+        [
+          -24.4296,
+          7.593756305392196
+        ],
+        [
+          -24.39,
+          7.99
+        ],
+        [
+          -24.017179113807746,
+          11.34538797573028
+        ],
+        [
+          -24.015394632836962,
+          11.40544830446738
+        ],
+        [
+          -24.023784480970793,
+          11.4619396712629
+        ],
+        [
+          -24.04234865820924,
+          11.514862076116845
+        ],
+        [
+          -24.07108716455231,
+          11.564215519029212
+        ],
+        [
+          -24.11,
+          11.61
+        ],
+        [
+          -24.5,
+          12.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "public_street",
+      "authored_waypoints": [
+        [
+          -53,
+          -5
+        ],
+        [
+          -50.5,
+          -1.5
+        ],
+        [
+          -44.5,
+          1
+        ],
+        [
+          -35,
+          1
+        ],
+        [
+          -26,
+          3
+        ],
+        [
+          -24.5,
+          7
+        ],
+        [
+          -24.5,
+          12
+        ]
+      ],
+      "character": "Clearance-tested authored bends and rounded corners; no random street jitter."
+    },
+    {
+      "id": "network_link_0",
+      "points": [
+        [
+          -3.0,
+          0.0
+        ],
+        [
+          4.0,
+          0.0
+        ]
+      ],
+      "width": 2,
+      "kind": "pedestrian_link"
+    },
+    {
+      "id": "threshold_Main_cafe",
+      "points": [
+        [
+          5.5,
+          0.0
+        ],
+        [
+          7.0,
+          -2.755455298081545e-16
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "Main_cafe"
+    },
+    {
+      "id": "threshold_Main_shop",
+      "points": [
+        [
+          5.5,
+          8.0
+        ],
+        [
+          7.0,
+          8.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "Main_shop"
+    },
+    {
+      "id": "threshold_Main_home",
+      "points": [
+        [
+          -49.0,
+          12.5
+        ],
+        [
+          -49.0,
+          14.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "Main_home"
+    },
+    {
+      "id": "approach_Main_home2",
+      "points": [
+        [
+          -43.0,
+          14.0
+        ],
+        [
+          -43.0,
+          13.5
+        ]
+      ],
+      "width": 1.4,
+      "kind": "entrance_approach",
+      "building_id": "Main_home2"
+    },
+    {
+      "id": "threshold_Main_home2",
+      "points": [
+        [
+          -43.0,
+          14.0
+        ],
+        [
+          -42.75,
+          15.5
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "Main_home2"
+    },
+    {
+      "id": "approach_Main_library",
+      "points": [
+        [
+          -18.0,
+          5.5
+        ],
+        [
+          -24.0,
+          5.5
+        ]
+      ],
+      "width": 1.4,
+      "kind": "entrance_approach",
+      "building_id": "Main_library"
+    },
+    {
+      "id": "threshold_Main_library",
+      "points": [
+        [
+          -18.0,
+          5.5
+        ],
+        [
+          -18.0,
+          7.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "Main_library"
+    },
+    {
+      "id": "approach_Main_wash",
+      "points": [
+        [
+          -0.5,
+          22.5
+        ],
+        [
+          -0.5,
+          21.5
+        ]
+      ],
+      "width": 1.4,
+      "kind": "entrance_approach",
+      "building_id": "Main_wash"
+    },
+    {
+      "id": "threshold_Main_wash",
+      "points": [
+        [
+          -0.5,
+          22.5
+        ],
+        [
+          -0.6513770290093673,
+          24.01522120763302
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "Main_wash"
+    },
+    {
+      "id": "approach_Main_work",
+      "points": [
+        [
+          12.5,
+          26.5
+        ],
+        [
+          12.5,
+          22.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "entrance_approach",
+      "building_id": "Main_work"
+    },
+    {
+      "id": "threshold_Main_work",
+      "points": [
+        [
+          12.5,
+          26.5
+        ],
+        [
+          12.7209741050235,
+          28.009743798960702
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "Main_work"
+    },
+    {
+      "id": "approach_lot_00_chapel",
+      "points": [
+        [
+          -23.0,
+          20.5
+        ],
+        [
+          -23.0,
+          19.5
+        ]
+      ],
+      "width": 1.4,
+      "kind": "entrance_approach",
+      "building_id": "lot_00_chapel"
+    },
+    {
+      "id": "threshold_lot_00_chapel",
+      "points": [
+        [
+          -23.0,
+          20.5
+        ],
+        [
+          -23.0,
+          22.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_00_chapel"
+    },
+    {
+      "id": "approach_lot_01_mairie",
+      "points": [
+        [
+          -4.0,
+          7.5
+        ],
+        [
+          -3.5,
+          0.5
+        ]
+      ],
+      "width": 1.4,
+      "kind": "entrance_approach",
+      "building_id": "lot_01_mairie"
+    },
+    {
+      "id": "threshold_lot_01_mairie",
+      "points": [
+        [
+          -4.0,
+          7.5
+        ],
+        [
+          -3.7874773736205896,
+          8.929815393434712
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_01_mairie"
+    },
+    {
+      "id": "approach_lot_02_windmill",
+      "points": [
+        [
+          -56.0,
+          30.5
+        ],
+        [
+          -55.5,
+          16.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "entrance_approach",
+      "building_id": "lot_02_windmill"
+    },
+    {
+      "id": "threshold_lot_02_windmill",
+      "points": [
+        [
+          -56.0,
+          30.5
+        ],
+        [
+          -56.0,
+          32.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_02_windmill"
+    },
+    {
+      "id": "approach_lot_03_netshed",
+      "points": [
+        [
+          50.0,
+          40.5
+        ],
+        [
+          48.5,
+          40.5
+        ]
+      ],
+      "width": 1.4,
+      "kind": "entrance_approach",
+      "building_id": "lot_03_netshed"
+    },
+    {
+      "id": "threshold_lot_03_netshed",
+      "points": [
+        [
+          50.0,
+          40.5
+        ],
+        [
+          50.0,
+          42.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_03_netshed"
+    },
+    {
+      "id": "approach_lot_04_bakery",
+      "points": [
+        [
+          -11.5,
+          -2.0
+        ],
+        [
+          -11.5,
+          -7.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "entrance_approach",
+      "building_id": "lot_04_bakery"
+    },
+    {
+      "id": "threshold_lot_04_bakery",
+      "points": [
+        [
+          -11.5,
+          -2.0
+        ],
+        [
+          -13.0,
+          -2.0000000000000004
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_04_bakery"
+    },
+    {
+      "id": "approach_lot_05_creperie",
+      "points": [
+        [
+          5.5,
+          -8.0
+        ],
+        [
+          5.5,
+          -1.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "entrance_approach",
+      "building_id": "lot_05_creperie"
+    },
+    {
+      "id": "threshold_lot_05_creperie",
+      "points": [
+        [
+          5.5,
+          -8.0
+        ],
+        [
+          7.0,
+          -8.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_05_creperie"
+    },
+    {
+      "id": "approach_lot_06_halles",
+      "points": [
+        [
+          -3.0,
+          -11.0
+        ],
+        [
+          -9.0,
+          -9.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "entrance_approach",
+      "building_id": "lot_06_halles"
+    },
+    {
+      "id": "threshold_lot_06_halles",
+      "points": [
+        [
+          -3.0,
+          -11.0
+        ],
+        [
+          -2.9999999999999996,
+          -12.5
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_06_halles"
+    },
+    {
+      "id": "approach_lot_07_hotel",
+      "points": [
+        [
+          37.0,
+          30.0
+        ],
+        [
+          40.5,
+          28.5
+        ]
+      ],
+      "width": 1.4,
+      "kind": "entrance_approach",
+      "building_id": "lot_07_hotel"
+    },
+    {
+      "id": "threshold_lot_07_hotel",
+      "points": [
+        [
+          37.0,
+          30.0
+        ],
+        [
+          35.5,
+          30.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_07_hotel"
+    },
+    {
+      "id": "threshold_lot_08_cannery",
+      "points": [
+        [
+          22.0,
+          40.5
+        ],
+        [
+          22.0,
+          42.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_08_cannery"
+    },
+    {
+      "id": "threshold_Port_Warehouse_Exterior",
+      "points": [
+        [
+          39.0,
+          40.5
+        ],
+        [
+          39.0,
+          42.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "Port_Warehouse_Exterior"
+    },
+    {
+      "id": "threshold_lot_09_townhouse",
+      "points": [
+        [
+          -44.5,
+          -17.5
+        ],
+        [
+          -45.19722395928642,
+          -16.328111410557174
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_09_townhouse"
+    },
+    {
+      "id": "threshold_lot_12_halftimber",
+      "points": [
+        [
+          -38.5,
+          -15.0
+        ],
+        [
+          -39.19722395928642,
+          -14.028111410557173
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_12_halftimber"
+    },
+    {
+      "id": "threshold_lot_14_halftimber",
+      "points": [
+        [
+          -32.5,
+          -13.0
+        ],
+        [
+          -33.19722395928642,
+          -11.728111410557174
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_14_halftimber"
+    },
+    {
+      "id": "threshold_lot_15_terrace",
+      "points": [
+        [
+          -26.5,
+          -10.5
+        ],
+        [
+          -27.197223959286415,
+          -9.428111410557173
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_15_terrace"
+    },
+    {
+      "id": "threshold_lot_18_terrace",
+      "points": [
+        [
+          -44.5,
+          -21.0
+        ],
+        [
+          -43.84226004362169,
+          -21.998452060117312
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_18_terrace"
+    },
+    {
+      "id": "threshold_lot_20_ochre",
+      "points": [
+        [
+          -38.5,
+          -18.5
+        ],
+        [
+          -37.84226004362169,
+          -19.69845206011731
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_20_ochre"
+    },
+    {
+      "id": "threshold_lot_22_halftimber",
+      "points": [
+        [
+          -32.5,
+          -16.0
+        ],
+        [
+          -31.842260043621696,
+          -17.39845206011731
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_22_halftimber"
+    },
+    {
+      "id": "threshold_lot_23_townhouse",
+      "points": [
+        [
+          -26.5,
+          -14.0
+        ],
+        [
+          -25.842260043621696,
+          -15.098452060117316
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_23_townhouse"
+    },
+    {
+      "id": "threshold_lot_24_ochre",
+      "points": [
+        [
+          -20.5,
+          -11.5
+        ],
+        [
+          -19.842260043621696,
+          -12.798452060117315
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_24_ochre"
+    },
+    {
+      "id": "approach_lot_25_townhouse",
+      "points": [
+        [
+          -36.0,
+          14.0
+        ],
+        [
+          -36.0,
+          13.5
+        ]
+      ],
+      "width": 1.4,
+      "kind": "entrance_approach",
+      "building_id": "lot_25_townhouse"
+    },
+    {
+      "id": "threshold_lot_25_townhouse",
+      "points": [
+        [
+          -36.0,
+          14.0
+        ],
+        [
+          -36.25,
+          15.5
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_25_townhouse"
+    },
+    {
+      "id": "threshold_lot_26_ochre",
+      "points": [
+        [
+          -30.0,
+          13.0
+        ],
+        [
+          -29.75,
+          14.3
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_26_ochre"
+    },
+    {
+      "id": "approach_lot_27_terrace",
+      "points": [
+        [
+          -49.0,
+          11.0
+        ],
+        [
+          -49.5,
+          11.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "entrance_approach",
+      "building_id": "lot_27_terrace"
+    },
+    {
+      "id": "threshold_lot_27_terrace",
+      "points": [
+        [
+          -49.0,
+          11.0
+        ],
+        [
+          -48.870481311643,
+          9.935757452371735
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_27_terrace"
+    },
+    {
+      "id": "threshold_lot_29_halftimber",
+      "points": [
+        [
+          -42.0,
+          11.5
+        ],
+        [
+          -42.155048533361885,
+          10.143031667814913
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_29_halftimber"
+    },
+    {
+      "id": "threshold_lot_30_townhouse",
+      "points": [
+        [
+          -35.5,
+          11.5
+        ],
+        [
+          -35.43961575508077,
+          10.350305883258091
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_30_townhouse"
+    },
+    {
+      "id": "threshold_lot_31_longere",
+      "points": [
+        [
+          -28.5,
+          12.0
+        ],
+        [
+          -28.72418297679965,
+          10.55758009870127
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_31_longere"
+    },
+    {
+      "id": "approach_lot_33_terrace",
+      "points": [
+        [
+          -6.5,
+          -34.5
+        ],
+        [
+          -6.5,
+          -34.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "entrance_approach",
+      "building_id": "lot_33_terrace"
+    },
+    {
+      "id": "threshold_lot_33_terrace",
+      "points": [
+        [
+          -6.5,
+          -34.5
+        ],
+        [
+          -6.6683177870254156,
+          -35.80322835744528
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_33_terrace"
+    },
+    {
+      "id": "approach_lot_34_halftimber",
+      "points": [
+        [
+          0.5,
+          -35.0
+        ],
+        [
+          0.5,
+          -34.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "entrance_approach",
+      "building_id": "lot_34_halftimber"
+    },
+    {
+      "id": "threshold_lot_34_halftimber",
+      "points": [
+        [
+          0.5,
+          -35.0
+        ],
+        [
+          0.3050450996168037,
+          -36.41331855667889
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_34_halftimber"
+    },
+    {
+      "id": "approach_lot_36_longere",
+      "points": [
+        [
+          7.5,
+          -35.5
+        ],
+        [
+          7.5,
+          -34.5
+        ]
+      ],
+      "width": 1.4,
+      "kind": "entrance_approach",
+      "building_id": "lot_36_longere"
+    },
+    {
+      "id": "threshold_lot_36_longere",
+      "points": [
+        [
+          7.5,
+          -35.5
+        ],
+        [
+          7.2784079862590225,
+          -37.0234087559125
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_36_longere"
+    },
+    {
+      "id": "threshold_lot_37_longere",
+      "points": [
+        [
+          -8.0,
+          -31.5
+        ],
+        [
+          -8.0,
+          -30.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_37_longere"
+    },
+    {
+      "id": "threshold_lot_38_halftimber",
+      "points": [
+        [
+          0.0,
+          -31.5
+        ],
+        [
+          0.0,
+          -30.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_38_halftimber"
+    },
+    {
+      "id": "threshold_lot_40_terrace",
+      "points": [
+        [
+          8.0,
+          -31.5
+        ],
+        [
+          8.0,
+          -30.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_40_terrace"
+    },
+    {
+      "id": "threshold_lot_10_belleepoque",
+      "points": [
+        [
+          38.5,
+          -27.5
+        ],
+        [
+          37.0,
+          -27.4
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_10_belleepoque"
+    },
+    {
+      "id": "threshold_lot_19_belleepoque",
+      "points": [
+        [
+          38.5,
+          -20.5
+        ],
+        [
+          37.0,
+          -20.7
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_19_belleepoque"
+    },
+    {
+      "id": "threshold_lot_21_belleepoque",
+      "points": [
+        [
+          38.5,
+          -14.0
+        ],
+        [
+          37.0,
+          -14.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_21_belleepoque"
+    },
+    {
+      "id": "threshold_lot_35_belleepoque",
+      "points": [
+        [
+          38.5,
+          -7.5
+        ],
+        [
+          37.0,
+          -7.3
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_35_belleepoque"
+    },
+    {
+      "id": "threshold_lot_13_cottage",
+      "points": [
+        [
+          38.5,
+          2.0
+        ],
+        [
+          37.0,
+          2.1999999999999997
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_13_cottage"
+    },
+    {
+      "id": "approach_lot_28_cottage",
+      "points": [
+        [
+          38.5,
+          9.0
+        ],
+        [
+          39.0,
+          9.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "entrance_approach",
+      "building_id": "lot_28_cottage"
+    },
+    {
+      "id": "threshold_lot_28_cottage",
+      "points": [
+        [
+          38.5,
+          9.0
+        ],
+        [
+          37.0,
+          8.9
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_28_cottage"
+    },
+    {
+      "id": "approach_lot_32_cottage",
+      "points": [
+        [
+          38.5,
+          15.5
+        ],
+        [
+          39.0,
+          15.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "entrance_approach",
+      "building_id": "lot_32_cottage"
+    },
+    {
+      "id": "threshold_lot_32_cottage",
+      "points": [
+        [
+          38.5,
+          15.5
+        ],
+        [
+          37.0,
+          15.6
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_32_cottage"
+    },
+    {
+      "id": "threshold_lot_39_whitehouse",
+      "points": [
+        [
+          27.5,
+          -25.0
+        ],
+        [
+          26.0,
+          -25.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_39_whitehouse"
+    },
+    {
+      "id": "threshold_lot_11_longere",
+      "points": [
+        [
+          27.5,
+          -18.5
+        ],
+        [
+          26.0,
+          -18.5
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_11_longere"
+    },
+    {
+      "id": "threshold_lot_16_longere",
+      "points": [
+        [
+          27.5,
+          -12.0
+        ],
+        [
+          26.0,
+          -12.0
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_16_longere"
+    },
+    {
+      "id": "threshold_lot_17_longere",
+      "points": [
+        [
+          27.5,
+          14.5
+        ],
+        [
+          26.0,
+          14.5
+        ]
+      ],
+      "width": 1.4,
+      "kind": "threshold",
+      "threshold_owner": "lot_17_longere"
+    }
+  ],
+  "plaza": {
+    "polygon": [
+      [
+        -13,
+        -8
+      ],
+      [
+        7,
+        -8
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        -13,
+        8
+      ]
+    ],
+    "purpose": "Civic/social heart; actual cafe, mairie and bakery thresholds face the public space."
+  },
+  "courtyards": [
+    {
+      "id": "cafe_rear_garden",
+      "rect": [
+        17,
+        -7,
+        9.25,
+        18
+      ],
+      "classification": "Rear garden/court, not an invented through-building street."
+    }
+  ],
+  "districts": [
+    {
+      "id": "D01",
+      "role": "Inland adjoining homes and quiet lanes"
+    },
+    {
+      "id": "D02",
+      "role": "Central mixed-use frontage and civic plaza"
+    },
+    {
+      "id": "D03",
+      "role": "Coastal row and promenade"
+    },
+    {
+      "id": "D04",
+      "role": "Open sand and Atlantic shore"
+    },
+    {
+      "id": "D05",
+      "role": "Inland windmill/headland edge"
+    },
+    {
+      "id": "D06",
+      "role": "Separated north-east working harbor"
+    }
+  ],
+  "coast": {
+    "water_x": "49 + 2*sin(y*.055) - 7*exp(-((y-43)/10)^2)",
+    "beach_width": "7m belowY24, taper to1m byY35",
+    "harbor_quay_rect": [
+      31,
+      37,
+      35,
+      18
+    ],
+    "terrain_height": ".35 + max(0,-x-10)*.055 + max(0,y-12)*.035"
+  },
+  "adjustments": [
+    {
+      "scope": "library",
+      "change": "Move X -1m to clear civic plaza."
+    },
+    {
+      "scope": "home2 and row C",
+      "change": "Shift X at most0.45m and match6.5m widths for party-wall contact."
+    },
+    {
+      "scope": "rows A/B/D/G/H",
+      "change": "Fit frontage widths to actual row pitch; A/B use exact20.9735degree orientation."
+    },
+    {
+      "scope": "row E",
+      "change": "Widen to6.7m; lowerfour moveY-1.4m, upperthreeY+1.4m, creating2.8m sea-opening aperture."
+    },
+    {
+      "scope": "cannery/warehouse/netshed",
+      "change": "Move Y +1m so4m service street fits behind hotel."
+    }
+  ],
+  "street_waypoint_adjustments": [],
+  "validation": {
+    "building_count": 49,
+    "program_inventory_main": 7,
+    "program_inventory_lots": 41,
+    "extra_warehouse": 1,
+    "parcel_overlap_count": 0,
+    "street_collision_count": 0,
+    "street_collision_clearance_m": 0.2,
+    "thresholds": 49,
+    "all_entrances_connected": true,
+    "street_count": 86,
+    "smoothing": "Bounded quadratic corner fillets, accepted only after full-width parcel-clearance tests.",
+    "scope": "Architectural offline geometry; no runtime integration or game playtest claimed.",
+    "public_seed_routes": 17,
+    "authored_bends_preserved": true,
+    "promenade_dry_terrace_errors": []
+  },
+  "version": 3,
+  "planning_revision": {
+    "baseline_masterplan_sha256": "05a8beea03f23b44d67c2588fa4a0b7fd20b5c40c4c90abc82c765b2103df694",
+    "reference": "references/planning/user_irregular_town_layout.png",
+    "building_changes": [
+      {
+        "id": "lot_33_terrace",
+        "treatment": "Retain joined row geometry; rotate as one coherent block",
+        "rotation_delta_degrees": -5
+      },
+      {
+        "id": "lot_34_halftimber",
+        "treatment": "Retain joined row geometry; rotate as one coherent block",
+        "rotation_delta_degrees": -5
+      },
+      {
+        "id": "lot_36_longere",
+        "treatment": "Retain joined row geometry; rotate as one coherent block",
+        "rotation_delta_degrees": -5
+      },
+      {
+        "id": "lot_27_terrace",
+        "treatment": "Retain joined row geometry; rotate as one coherent block",
+        "rotation_delta_degrees": -2.5
+      },
+      {
+        "id": "lot_29_halftimber",
+        "treatment": "Retain joined row geometry; rotate as one coherent block",
+        "rotation_delta_degrees": -2.5
+      },
+      {
+        "id": "lot_30_townhouse",
+        "treatment": "Retain joined row geometry; rotate as one coherent block",
+        "rotation_delta_degrees": -2.5
+      },
+      {
+        "id": "lot_31_longere",
+        "treatment": "Retain joined row geometry; rotate as one coherent block",
+        "rotation_delta_degrees": -2.5
+      },
+      {
+        "id": "Main_wash",
+        "treatment": "Small civic pavilion angle"
+      },
+      {
+        "id": "Main_work",
+        "treatment": "Workshop follows a separate service-court alignment"
+      },
+      {
+        "id": "lot_01_mairie",
+        "treatment": "Angled civic frontage, set back from square edge"
+      }
+    ],
+    "dimensions_and_floor_counts_unchanged": true,
+    "new_passages": [
+      "market_mews",
+      "market_link",
+      "garden_passage"
+    ],
+    "street_method": "Preserve authored control points; clearance-tested rounded corners; avoid arbitrary jitter.",
+    "route_length_review": [
+      {
+        "id": "main_west",
+        "length_m": 50.197,
+        "control_length_m": 49.973,
+        "ratio": 1.0045
+      },
+      {
+        "id": "south_east",
+        "length_m": 96.228,
+        "control_length_m": 96.228,
+        "ratio": 1.0
+      },
+      {
+        "id": "civicnorth",
+        "length_m": 63.694,
+        "control_length_m": 64.112,
+        "ratio": 0.9935
+      },
+      {
+        "id": "upperwest",
+        "length_m": 37.061,
+        "control_length_m": 37.061,
+        "ratio": 1.0
+      },
+      {
+        "id": "westconnector",
+        "length_m": 30.512,
+        "control_length_m": 30.432,
+        "ratio": 1.0026
+      },
+      {
+        "id": "seaside",
+        "length_m": 77.337,
+        "control_length_m": 77.301,
+        "ratio": 1.0005
+      },
+      {
+        "id": "southloop",
+        "length_m": 49.866,
+        "control_length_m": 48.893,
+        "ratio": 1.0199
+      },
+      {
+        "id": "backlane",
+        "length_m": 53.289,
+        "control_length_m": 53.504,
+        "ratio": 0.996
+      },
+      {
+        "id": "northwork",
+        "length_m": 44.423,
+        "control_length_m": 44.382,
+        "ratio": 1.0009
+      },
+      {
+        "id": "northservice",
+        "length_m": 14.5,
+        "control_length_m": 14.5,
+        "ratio": 1.0
+      },
+      {
+        "id": "plaza_north",
+        "length_m": 20.0,
+        "control_length_m": 20.0,
+        "ratio": 1.0
+      },
+      {
+        "id": "library_church",
+        "length_m": 8.0,
+        "control_length_m": 8.0,
+        "ratio": 1.0
+      },
+      {
+        "id": "sea_opening",
+        "length_m": 12.0,
+        "control_length_m": 12.0,
+        "ratio": 1.0
+      },
+      {
+        "id": "cafe_rear_lane",
+        "length_m": 36.174,
+        "control_length_m": 36.736,
+        "ratio": 0.9847
+      },
+      {
+        "id": "market_mews",
+        "length_m": 31.257,
+        "control_length_m": 31.336,
+        "ratio": 0.9975
+      },
+      {
+        "id": "market_link",
+        "length_m": 17.714,
+        "control_length_m": 16.815,
+        "ratio": 1.0535
+      },
+      {
+        "id": "garden_passage",
+        "length_m": 40.928,
+        "control_length_m": 38.793,
+        "ratio": 1.0551
+      }
+    ],
+    "south_row_setback_m": 0.9,
+    "promenade": "2.4m public coastal walk, bounded to dry terrace; open sea views retained."
+  }
+}

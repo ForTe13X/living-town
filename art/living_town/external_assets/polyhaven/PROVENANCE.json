@@ -1,0 +1,25 @@
+{
+  "asset": "Kloofendal 48d Partly Cloudy (Pure Sky)",
+  "asset_id": "kloofendal_48d_partly_cloudy_puresky",
+  "file": "kloofendal_48d_partly_cloudy_puresky_2k.hdr",
+  "format": "Radiance HDR",
+  "resolution": "2048x1024 (2K equirectangular)",
+  "bytes": 5451493,
+  "sha256": "5244534e9cf5b606f2ff513aa00ddb161b0a4826ffd88a0d3bd03ac29247d198",
+  "md5_verified_against_official": "2eba3a4d7eeb23cbfbeca364c97e7980",
+  "source_url": "https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky",
+  "download_url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/kloofendal_48d_partly_cloudy_puresky_2k.hdr",
+  "metadata_url": "https://api.polyhaven.com/info/kloofendal_48d_partly_cloudy_puresky",
+  "file_metadata_url": "https://api.polyhaven.com/files/kloofendal_48d_partly_cloudy_puresky",
+  "authors": {
+    "Greg Zaal": "Original",
+    "Jarod Guest": "Sky edits"
+  },
+  "license": "CC0 1.0 Universal",
+  "license_url": "https://polyhaven.com/license",
+  "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "retrieved_utc": "2026-10-12T02:50:39.5845983Z",
+  "intended_use": "Offline Blender environment lighting; keep portable exported PBR materials independent of Blender world",
+  "modifications": "Original downloaded file, unmodified",
+  "notes": "Download verified against official byte count and MD5. No addon installed. Attribution retained for provenance although CC0 does not require it."
+}

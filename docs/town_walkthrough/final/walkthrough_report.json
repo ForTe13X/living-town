@@ -1,0 +1,1896 @@
+{
+	"camera_keyframes": [
+		{
+			"end_seconds": 36.0,
+			"floor": "outdoor",
+			"from_canonical_px": [
+				6432.0,
+				5376.0
+			],
+			"from_height_m": 148.0,
+			"presentation_only": true,
+			"space": "town",
+			"start_seconds": 0.0,
+			"to_canonical_px": [
+				6432.0,
+				4608.0
+			],
+			"to_height_m": 136.0
+		},
+		{
+			"end_seconds": 92.0,
+			"floor": "2f",
+			"from_canonical_px": [
+				936.0,
+				876.0
+			],
+			"from_height_m": 14.0,
+			"presentation_only": true,
+			"space": "cafe",
+			"start_seconds": 50.4583333333333,
+			"to_canonical_px": [
+				984.0,
+				852.0
+			],
+			"to_height_m": 12.0
+		},
+		{
+			"end_seconds": 286.0,
+			"floor": "1f",
+			"from_canonical_px": [
+				940.0,
+				768.0
+			],
+			"from_height_m": 17.0,
+			"presentation_only": true,
+			"space": "library",
+			"start_seconds": 270.0,
+			"to_canonical_px": [
+				980.0,
+				768.0
+			],
+			"to_height_m": 15.0
+		},
+		{
+			"end_seconds": 307.0,
+			"floor": "1f",
+			"from_canonical_px": [
+				560.0,
+				672.0
+			],
+			"from_height_m": 13.0,
+			"presentation_only": true,
+			"space": "home",
+			"start_seconds": 286.125,
+			"to_canonical_px": [
+				592.0,
+				672.0
+			],
+			"to_height_m": 11.0
+		},
+		{
+			"end_seconds": 327.0,
+			"floor": "2f",
+			"from_canonical_px": [
+				1326.0,
+				1056.0
+			],
+			"from_height_m": 18.0,
+			"presentation_only": true,
+			"space": "hotel",
+			"start_seconds": 307.125,
+			"to_canonical_px": [
+				1362.0,
+				1056.0
+			],
+			"to_height_m": 16.0
+		},
+		{
+			"end_seconds": 350.0,
+			"floor": "outdoor",
+			"from_canonical_px": [
+				2112.0,
+				3840.0
+			],
+			"from_height_m": 42.0,
+			"presentation_only": true,
+			"space": "town",
+			"start_seconds": 330.0,
+			"to_canonical_px": [
+				4224.0,
+				3840.0
+			],
+			"to_height_m": 36.0
+		},
+		{
+			"end_seconds": 366.0,
+			"floor": "outdoor",
+			"from_canonical_px": [
+				4224.0,
+				3840.0
+			],
+			"from_height_m": 36.0,
+			"presentation_only": true,
+			"space": "town",
+			"start_seconds": 350.125,
+			"to_canonical_px": [
+				7104.0,
+				4128.0
+			],
+			"to_height_m": 38.0
+		},
+		{
+			"end_seconds": 386.0,
+			"floor": "outdoor",
+			"from_canonical_px": [
+				7104.0,
+				4128.0
+			],
+			"from_height_m": 38.0,
+			"presentation_only": true,
+			"space": "town",
+			"start_seconds": 366.0,
+			"to_canonical_px": [
+				10272.0,
+				1440.0
+			],
+			"to_height_m": 35.0
+		},
+		{
+			"end_seconds": 419.0,
+			"floor": "outdoor",
+			"from_canonical_px": [
+				9216.0,
+				8832.0
+			],
+			"from_height_m": 32.0,
+			"presentation_only": true,
+			"space": "town",
+			"start_seconds": 390.0,
+			"to_canonical_px": [
+				8832.0,
+				9600.0
+			],
+			"to_height_m": 23.0
+		},
+		{
+			"end_seconds": 446.0,
+			"floor": "outdoor",
+			"from_canonical_px": [
+				8832.0,
+				9600.0
+			],
+			"from_height_m": 23.0,
+			"presentation_only": true,
+			"space": "town",
+			"start_seconds": 419.125,
+			"to_canonical_px": [
+				7776.0,
+				8544.0
+			],
+			"to_height_m": 35.0
+		},
+		{
+			"end_seconds": 590.0,
+			"floor": "outdoor",
+			"from_canonical_px": [
+				7008.0,
+				5760.0
+			],
+			"from_height_m": 45.0,
+			"presentation_only": true,
+			"space": "town",
+			"start_seconds": 574.041666666667,
+			"to_canonical_px": [
+				6432.0,
+				5184.0
+			],
+			"to_height_m": 148.0
+		}
+	],
+	"captures": [
+		{
+			"chapter": 1,
+			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2/01_town_overview.png",
+			"sha256": "733502263ea776016198118a1bbf288aa1d6d51691d5c36a9453f2eba1fd8f67",
+			"tick": 90,
+			"tour_frame": 867,
+			"tour_seconds": 36.125
+		},
+		{
+			"chapter": 2,
+			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2/02_owner_upper_home.png",
+			"sha256": "7961f7c9c7f08134fc46368a9530ff3df63e32d13b222bf284e98c8ce9d01d92",
+			"tick": 90,
+			"tour_frame": 2211,
+			"tour_seconds": 92.125
+		},
+		{
+			"chapter": 3,
+			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2/03_actual_stair_arrival.png",
+			"sha256": "c911d1415b31091c732a4d65be6c89d8208bc8e1910f1a70db49aaac2382b888",
+			"tick": 107,
+			"tour_frame": 2604,
+			"tour_seconds": 108.5
+		},
+		{
+			"chapter": 3,
+			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2/fixture_menu_cafe1f_table.png",
+			"sha256": "b730daf11602ae288aa5881622e3a001ae89327fa83778836d07e7f1360edb3f",
+			"tick": 107,
+			"tour_frame": 2609,
+			"tour_seconds": 108.708333333333
+		},
+		{
+			"chapter": 4,
+			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2/fixture_menu_cafe1f_counter.png",
+			"sha256": "521277b0c6e3a8bd855252722bc5112a55ccbd3c5bd5577865ce52cb1a81529a",
+			"tick": 135,
+			"tour_frame": 3729,
+			"tour_seconds": 155.375
+		},
+		{
+			"chapter": 4,
+			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2/04_counter_action_complete.png",
+			"sha256": "4741f86f30da26e991860808eeedff48a7da6fa10ed18ae216dd30fe1e43d666",
+			"tick": 162,
+			"tour_frame": 4247,
+			"tour_seconds": 176.958333333333
+		},
+		{
+			"chapter": 5,
+			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2/05_exterior_threshold_visibility.png",
+			"sha256": "224eb8a0aea5430f9d556c6437f6814bbfc94d47701166c042c032ff24ef5b15",
+			"tick": 169,
+			"tour_frame": 5244,
+			"tour_seconds": 218.5
+		},
+		{
+			"chapter": 6,
+			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2/06_inspection_library.png",
+			"sha256": "15e2e89f109fb421c1fc2c8cd855a475652577e532a42a6ac287176c46a1d7a2",
+			"tick": 171,
+			"tour_frame": 6867,
+			"tour_seconds": 286.125
+		},
+		{
+			"chapter": 6,
+			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2/07_inspection_home.png",
+			"sha256": "06912f71ca1613328bf2c81fbbe1889dd638f878d05dfd63c1da0cc448b83d7c",
+			"tick": 171,
+			"tour_frame": 7371,
+			"tour_seconds": 307.125
+		},
+		{
+			"chapter": 6,
+			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2/08_inspection_hotel.png",
+			"sha256": "39ce256e47b17de9600f5dbe04c34f930d7b4a31c0d56b973006f764f7611d5a",
+			"tick": 171,
+			"tour_frame": 7851,
+			"tour_seconds": 327.125
+		},
+		{
+			"chapter": 7,
+			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2/09_irregular_inland_streets.png",
+			"sha256": "c0f88b0d94fe7e87594788d9fb6585568f976ebf98809f58a89a9cf071bd1be8",
+			"tick": 171,
+			"tour_frame": 8403,
+			"tour_seconds": 350.125
+		},
+		{
+			"chapter": 7,
+			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2/10_working_harbor.png",
+			"sha256": "0dcb29a3bc57765ec9dc5aa25ccbd5a02604ccbe255ad238e7e089b3a39733d8",
+			"tick": 171,
+			"tour_frame": 9267,
+			"tour_seconds": 386.125
+		},
+		{
+			"chapter": 8,
+			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2/11_pond_and_planting.png",
+			"sha256": "3ec4731fa0a59290a2d98694a887d294efc90759536a3718d7aee02319c35843",
+			"tick": 171,
+			"tour_frame": 10059,
+			"tour_seconds": 419.125
+		},
+		{
+			"chapter": 9,
+			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2/resident_social_menu.png",
+			"sha256": "2b63c692a1ce701a10cc7870721bc6e54ad3ac9a40564056d1d5a73f410adea7",
+			"tick": 171,
+			"tour_frame": 10817,
+			"tour_seconds": 450.708333333333
+		},
+		{
+			"chapter": 9,
+			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2/12_autonomous_resident.png",
+			"sha256": "d5e2a6d373105c5b9e169aff597456c10b2f497afede865a3d9e6048cb0ea13a",
+			"tick": 262,
+			"tour_frame": 12003,
+			"tour_seconds": 500.125
+		},
+		{
+			"chapter": 10,
+			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2/13_save_restored_gameplay.png",
+			"sha256": "6e7b8f5c222d57af0101ee0bbee07b18f0243ccb51bc46aa52db30fb67080b49",
+			"tick": 275,
+			"tour_frame": 12788,
+			"tour_seconds": 532.833333333333
+		},
+		{
+			"chapter": 11,
+			"file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2/14_final_whole_town.png",
+			"sha256": "b31e88d876e380e562316a5da12683c147235c0cc7ae1f177aa465068dfa48fe",
+			"tick": 570,
+			"tour_frame": 14163,
+			"tour_seconds": 590.125
+		}
+	],
+	"chapters": [
+		{
+			"actual_start_seconds": 0.0,
+			"architectural_inspection": true,
+			"index": 1,
+			"planned_start_seconds": 0.0,
+			"title": "Town and coast",
+			"tour_frame": 0
+		},
+		{
+			"actual_start_seconds": 45.0,
+			"architectural_inspection": false,
+			"index": 2,
+			"planned_start_seconds": 45.0,
+			"title": "Choose an existing resident",
+			"tour_frame": 1080
+		},
+		{
+			"actual_start_seconds": 100.0,
+			"architectural_inspection": false,
+			"index": 3,
+			"planned_start_seconds": 100.0,
+			"title": "Stairs, walking and needs",
+			"tour_frame": 2400
+		},
+		{
+			"actual_start_seconds": 155.0,
+			"architectural_inspection": false,
+			"index": 4,
+			"planned_start_seconds": 155.0,
+			"title": "The actual cafe counter",
+			"tour_frame": 3720
+		},
+		{
+			"actual_start_seconds": 215.0,
+			"architectural_inspection": false,
+			"index": 5,
+			"planned_start_seconds": 215.0,
+			"title": "Street, thresholds and visibility",
+			"tour_frame": 5160
+		},
+		{
+			"actual_start_seconds": 270.0,
+			"architectural_inspection": true,
+			"index": 6,
+			"planned_start_seconds": 270.0,
+			"title": "Architectural inspection: rooms",
+			"tour_frame": 6480
+		},
+		{
+			"actual_start_seconds": 330.0,
+			"architectural_inspection": true,
+			"index": 7,
+			"planned_start_seconds": 330.0,
+			"title": "Architectural inspection: streets",
+			"tour_frame": 7920
+		},
+		{
+			"actual_start_seconds": 390.0,
+			"architectural_inspection": true,
+			"index": 8,
+			"planned_start_seconds": 390.0,
+			"title": "Architectural inspection: pond",
+			"tour_frame": 9360
+		},
+		{
+			"actual_start_seconds": 450.0,
+			"architectural_inspection": false,
+			"index": 9,
+			"planned_start_seconds": 450.0,
+			"title": "Resident agency and autonomous life",
+			"tour_frame": 10800
+		},
+		{
+			"actual_start_seconds": 505.0,
+			"architectural_inspection": false,
+			"index": 10,
+			"planned_start_seconds": 505.0,
+			"title": "Save, resume and restore",
+			"tour_frame": 12120
+		},
+		{
+			"actual_start_seconds": 560.0,
+			"architectural_inspection": true,
+			"index": 11,
+			"planned_start_seconds": 560.0,
+			"title": "Town, scope and next steps",
+			"tour_frame": 13440
+		}
+	],
+	"checks": [
+		{
+			"detail": {
+				"active_plane": "town/outdoor",
+				"actor_count": 14,
+				"controlled_occlusion": {
+					"blocked": false,
+					"ray_count": 0
+				},
+				"error": "",
+				"model": {
+					"building_count": 49,
+					"floor_count": 89,
+					"furnishing_count": 753,
+					"last_error": "",
+					"load_method": "imported PackedScene",
+					"load_msec": 1562,
+					"loaded": true,
+					"materials": {
+						"alpha_blend_materials": 1,
+						"normal_materials": 26,
+						"textured_materials": 24,
+						"unique_materials": 48
+					},
+					"mesh_count": 8159,
+					"navigation_authority": "Sim canonical grid and portals",
+					"node_count": 9207,
+					"opened_front_doors": [
+						"Main_cafe",
+						"Main_shop",
+						"Main_home",
+						"Main_home2",
+						"Main_library",
+						"Main_wash",
+						"Main_work",
+						"lot_00_chapel",
+						"lot_01_mairie",
+						"lot_02_windmill",
+						"lot_03_netshed",
+						"lot_04_bakery",
+						"lot_05_creperie",
+						"lot_07_hotel",
+						"lot_08_cannery",
+						"Port_Warehouse_Exterior",
+						"lot_09_townhouse",
+						"lot_12_halftimber",
+						"lot_14_halftimber",
+						"lot_15_terrace",
+						"lot_18_terrace",
+						"lot_20_ochre",
+						"lot_22_halftimber",
+						"lot_23_townhouse",
+						"lot_24_ochre",
+						"lot_25_townhouse",
+						"lot_26_ochre",
+						"lot_27_terrace",
+						"lot_29_halftimber",
+						"lot_30_townhouse",
+						"lot_31_longere",
+						"lot_33_terrace",
+						"lot_34_halftimber",
+						"lot_36_longere",
+						"lot_37_longere",
+						"lot_38_halftimber",
+						"lot_40_terrace",
+						"lot_10_belleepoque",
+						"lot_19_belleepoque",
+						"lot_21_belleepoque",
+						"lot_35_belleepoque",
+						"lot_13_cottage",
+						"lot_28_cottage",
+						"lot_32_cottage",
+						"lot_39_whitehouse",
+						"lot_11_longere",
+						"lot_16_longere",
+						"lot_17_longere"
+					],
+					"raw_source_sha256_verified": true,
+					"room_count": 561,
+					"runtime_door_mesh_pieces": 144,
+					"selected_building_id": "",
+					"selected_floor_index": -1,
+					"source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
+					"source_catalog_node_count": 9062,
+					"source_glb_sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c",
+					"source_verification": "raw GLB SHA256"
+				},
+				"projection_loaded": true
+			},
+			"name": "actual_Main_verified_town_loaded",
+			"passed": true,
+			"tour_frame": 0,
+			"tour_seconds": 0.0
+		},
+		{
+			"detail": "Windows",
+			"name": "real_framebuffer_driver",
+			"passed": true,
+			"tour_frame": 0,
+			"tour_seconds": 0.0
+		},
+		{
+			"detail": {
+				"pre_roll_frames": 267,
+				"tick": 90
+			},
+			"name": "morning_established_by_real_clock_wait_without_relocation",
+			"passed": true,
+			"tour_frame": 0,
+			"tour_seconds": 0.0
+		},
+		{
+			"detail": {
+				"size": [
+					1280,
+					768
+				]
+			},
+			"name": "actual_framebuffer_01_town_overview",
+			"passed": true,
+			"tour_frame": 867,
+			"tour_seconds": 36.125
+		},
+		{
+			"detail": null,
+			"name": "existing_Aria_selected_at_real_upper_home",
+			"passed": true,
+			"tour_frame": 1208,
+			"tour_seconds": 50.3333333333333
+		},
+		{
+			"detail": {
+				"size": [
+					1280,
+					768
+				]
+			},
+			"name": "actual_framebuffer_02_owner_upper_home",
+			"passed": true,
+			"tour_frame": 2211,
+			"tour_seconds": 92.125
+		},
+		{
+			"detail": null,
+			"name": "actual_input_stair_traversal",
+			"passed": true,
+			"tour_frame": 2601,
+			"tour_seconds": 108.375
+		},
+		{
+			"detail": {
+				"size": [
+					1280,
+					768
+				]
+			},
+			"name": "actual_framebuffer_03_actual_stair_arrival",
+			"passed": true,
+			"tour_frame": 2604,
+			"tour_seconds": 108.5
+		},
+		{
+			"detail": {
+				"requested_binding": {
+					"approach_local_m": [
+						-1.375,
+						-2.875
+					],
+					"cell": [
+						14.0,
+						29.0
+					],
+					"fixture_center_local_m": [
+						-1.615,
+						-3.63
+					],
+					"fixture_footprint_m": [
+						-2.29,
+						-4.13,
+						-0.940000000000001,
+						-3.13
+					],
+					"model_asset_id": "Main_cafe_L00_Public_Room_A02_cafe_table_set",
+					"model_asset_kind": "cafe_table_set",
+					"note": "Legacy action at a reachable standing cell adjacent to an actual compatible fixture.",
+					"plane": "cafe/1f"
+				},
+				"requested_id": "cafe1f_table",
+				"same_imported_mesh_and_plane": true,
+				"selected_binding": {
+					"approach_local_m": [
+						-1.625,
+						-2.875
+					],
+					"cell": [
+						13.0,
+						29.0
+					],
+					"fixture_center_local_m": [
+						-1.615,
+						-3.63
+					],
+					"fixture_footprint_m": [
+						-2.29,
+						-4.13,
+						-0.940000000000001,
+						-3.13
+					],
+					"model_asset_id": "Main_cafe_L00_Public_Room_A02_cafe_table_set",
+					"model_asset_kind": "cafe_table_set",
+					"note": "Legacy action at a reachable standing cell adjacent to an actual compatible fixture.",
+					"plane": "cafe/1f"
+				},
+				"selected_id": "cafe1f_barstool"
+			},
+			"name": "actual_mesh_menu_cafe1f_table",
+			"passed": true,
+			"tour_frame": 2606,
+			"tour_seconds": 108.583333333333
+		},
+		{
+			"detail": {
+				"size": [
+					1280,
+					768
+				]
+			},
+			"name": "actual_framebuffer_fixture_menu_cafe1f_table",
+			"passed": true,
+			"tour_frame": 2609,
+			"tour_seconds": 108.708333333333
+		},
+		{
+			"detail": {
+				"advertised_action": {
+					"action": "吃饭",
+					"affordable": true,
+					"amount": 50,
+					"duration": 18,
+					"need": "hunger",
+					"ok": true,
+					"price": 2,
+					"wage": 0,
+					"why": ""
+				},
+				"coin_change": -2,
+				"completion": {
+					"action": "吃饭",
+					"target": "cafe1f_barstool",
+					"tick": 135,
+					"tour_frame": 3030,
+					"wage": 0
+				},
+				"largest_observed_use_need_step": 2.49777777777778,
+				"need_after": 84.1999999999998,
+				"need_before": 42.0399999999999,
+				"selected_target": "cafe1f_barstool",
+				"use_phase_observed": true
+			},
+			"name": "real_fixture_action_cafe1f_table",
+			"passed": true,
+			"tour_frame": 3031,
+			"tour_seconds": 126.291666666667
+		},
+		{
+			"detail": {
+				"requested_binding": {
+					"approach_local_m": [
+						-0.125,
+						0.125
+					],
+					"cell": [
+						19.0,
+						17.0
+					],
+					"fixture_center_local_m": [
+						-1.81,
+						0.17
+					],
+					"fixture_footprint_m": [
+						-3.31,
+						-0.13,
+						-0.31,
+						0.47
+					],
+					"model_asset_id": "Main_cafe_L00_Public_Room_A00_cafe_counter",
+					"model_asset_kind": "cafe_counter",
+					"note": "Legacy action at a reachable standing cell adjacent to an actual compatible fixture.",
+					"plane": "cafe/1f"
+				},
+				"requested_id": "cafe1f_counter",
+				"same_imported_mesh_and_plane": true,
+				"selected_binding": {
+					"approach_local_m": [
+						-0.125,
+						0.375
+					],
+					"cell": [
+						19.0,
+						16.0
+					],
+					"fixture_center_local_m": [
+						-1.81,
+						0.17
+					],
+					"fixture_footprint_m": [
+						-3.31,
+						-0.13,
+						-0.31,
+						0.47
+					],
+					"model_asset_id": "Main_cafe_L00_Public_Room_A00_cafe_counter",
+					"model_asset_kind": "cafe_counter",
+					"note": "Legacy action at a reachable standing cell adjacent to an actual compatible fixture.",
+					"plane": "cafe/1f"
+				},
+				"selected_id": "counter_1"
+			},
+			"name": "actual_mesh_menu_cafe1f_counter",
+			"passed": true,
+			"tour_frame": 3726,
+			"tour_seconds": 155.25
+		},
+		{
+			"detail": {
+				"size": [
+					1280,
+					768
+				]
+			},
+			"name": "actual_framebuffer_fixture_menu_cafe1f_counter",
+			"passed": true,
+			"tour_frame": 3729,
+			"tour_seconds": 155.375
+		},
+		{
+			"detail": {
+				"advertised_action": {
+					"action": "闲聊",
+					"affordable": true,
+					"amount": 42,
+					"duration": 20,
+					"need": "social",
+					"ok": true,
+					"price": 0,
+					"wage": 0,
+					"why": ""
+				},
+				"coin_change": 0,
+				"completion": {
+					"action": "闲聊",
+					"target": "counter_1",
+					"tick": 162,
+					"tour_frame": 4240,
+					"wage": 0
+				},
+				"largest_observed_use_need_step": 1.95,
+				"need_after": 89.6999999999997,
+				"need_before": 51.7499999999998,
+				"selected_target": "counter_1",
+				"use_phase_observed": true
+			},
+			"name": "real_fixture_action_cafe1f_counter",
+			"passed": true,
+			"tour_frame": 4241,
+			"tour_seconds": 176.708333333333
+		},
+		{
+			"detail": {
+				"size": [
+					1280,
+					768
+				]
+			},
+			"name": "actual_framebuffer_04_counter_action_complete",
+			"passed": true,
+			"tour_frame": 4247,
+			"tour_seconds": 176.958333333333
+		},
+		{
+			"detail": null,
+			"name": "actual_input_exterior_door_traversal",
+			"passed": true,
+			"tour_frame": 5233,
+			"tour_seconds": 218.041666666667
+		},
+		{
+			"detail": {
+				"size": [
+					1280,
+					768
+				]
+			},
+			"name": "actual_framebuffer_05_exterior_threshold_visibility",
+			"passed": true,
+			"tour_frame": 5244,
+			"tour_seconds": 218.5
+		},
+		{
+			"detail": {
+				"end": "(138, 116)",
+				"requested": "(138, 116)",
+				"start": "(144, 116)"
+			},
+			"name": "actual_screen_input_street_walk",
+			"passed": true,
+			"tour_frame": 5269,
+			"tour_seconds": 219.541666666667
+		},
+		{
+			"detail": {
+				"size": [
+					1280,
+					768
+				]
+			},
+			"name": "actual_framebuffer_06_inspection_library",
+			"passed": true,
+			"tour_frame": 6867,
+			"tour_seconds": 286.125
+		},
+		{
+			"detail": {
+				"size": [
+					1280,
+					768
+				]
+			},
+			"name": "actual_framebuffer_07_inspection_home",
+			"passed": true,
+			"tour_frame": 7371,
+			"tour_seconds": 307.125
+		},
+		{
+			"detail": {
+				"size": [
+					1280,
+					768
+				]
+			},
+			"name": "actual_framebuffer_08_inspection_hotel",
+			"passed": true,
+			"tour_frame": 7851,
+			"tour_seconds": 327.125
+		},
+		{
+			"detail": {
+				"size": [
+					1280,
+					768
+				]
+			},
+			"name": "actual_framebuffer_09_irregular_inland_streets",
+			"passed": true,
+			"tour_frame": 8403,
+			"tour_seconds": 350.125
+		},
+		{
+			"detail": {
+				"size": [
+					1280,
+					768
+				]
+			},
+			"name": "actual_framebuffer_10_working_harbor",
+			"passed": true,
+			"tour_frame": 9267,
+			"tour_seconds": 386.125
+		},
+		{
+			"detail": {
+				"size": [
+					1280,
+					768
+				]
+			},
+			"name": "actual_framebuffer_11_pond_and_planting",
+			"passed": true,
+			"tour_frame": 10059,
+			"tour_seconds": 419.125
+		},
+		{
+			"detail": {
+				"size": [
+					1280,
+					768
+				]
+			},
+			"name": "actual_framebuffer_resident_social_menu",
+			"passed": true,
+			"tour_frame": 10817,
+			"tour_seconds": 450.708333333333
+		},
+		{
+			"detail": {
+				"after": {
+					"active_view_plane": "cafe/2f",
+					"coin": 13,
+					"controlled_id": "",
+					"day": 2,
+					"free_will": true,
+					"label": "autonomy_end",
+					"needs": {
+						"energy": 24.8399999999998,
+						"fun": 33.0800000000009,
+						"hunger": 48.6399999999997,
+						"hygiene": 43.1800000000001,
+						"social": 87.9999999999995
+					},
+					"option": {
+						"action": "睡觉",
+						"amount": 62,
+						"dest_floor": "2f",
+						"dest_space": "cafe",
+						"dur_total": 40,
+						"kind": "object",
+						"need": "energy",
+						"phase": "travel",
+						"remaining": 40,
+						"target": "cafe2f_bed"
+					},
+					"resident_plane": "cafe/2f",
+					"resident_position": "(8, 21)",
+					"social_events_observed": 1,
+					"tick": 262,
+					"tour_frame": 12000,
+					"tour_seconds": 500.0,
+					"world_running": true,
+					"world_speed": 1.0
+				},
+				"before": {
+					"active_view_plane": "town/outdoor",
+					"coin": 10,
+					"controlled_id": "",
+					"day": 1,
+					"free_will": true,
+					"label": "autonomy_start",
+					"needs": {
+						"energy": 41.0399999999997,
+						"fun": 47.4800000000005,
+						"hunger": 73.8399999999998,
+						"hygiene": 53.0800000000001,
+						"social": 88.1999999999996
+					},
+					"option": {
+						"action": "greet",
+						"kind": "social",
+						"partner": "evy",
+						"remaining": 10,
+						"subject": "",
+						"tone": "热情"
+					},
+					"resident_plane": "town/outdoor",
+					"resident_position": "(136, 116)",
+					"social_events_observed": 0,
+					"tick": 172,
+					"tour_frame": 10925,
+					"tour_seconds": 455.208333333333,
+					"world_running": true,
+					"world_speed": 1.0
+				}
+			},
+			"name": "existing_free_will_runs_live_core_clock",
+			"passed": true,
+			"tour_frame": 12000,
+			"tour_seconds": 500.0
+		},
+		{
+			"detail": {
+				"size": [
+					1280,
+					768
+				]
+			},
+			"name": "actual_framebuffer_12_autonomous_resident",
+			"passed": true,
+			"tour_frame": 12003,
+			"tour_seconds": 500.125
+		},
+		{
+			"detail": {
+				"file": "user://town3d_quicksave.dat",
+				"sha256": "4442dbea92510e76a60a50e86b2ee5f2e5f352b0c02d59b62221874652c0c8df"
+			},
+			"name": "actual_Main_F5_writes_profile_save",
+			"passed": true,
+			"tour_frame": 12129,
+			"tour_seconds": 505.375
+		},
+		{
+			"detail": {
+				"saved": {
+					"active_view_plane": "cafe/2f",
+					"coin": 13,
+					"controlled_id": "aria",
+					"day": 2,
+					"free_will": false,
+					"label": "before_F5",
+					"needs": {
+						"energy": 36.9899999999998,
+						"fun": 31.4800000000009,
+						"hunger": 45.8399999999996,
+						"hygiene": 42.0800000000002,
+						"social": 86.4999999999995
+					},
+					"option": {
+						"action": "睡觉",
+						"amount": 62,
+						"dest_floor": "2f",
+						"dest_space": "cafe",
+						"dur_total": 40,
+						"kind": "object",
+						"need": "energy",
+						"phase": "use",
+						"remaining": 31,
+						"target": "cafe2f_bed"
+					},
+					"resident_plane": "cafe/2f",
+					"resident_position": "(8, 21)",
+					"social_events_observed": 1,
+					"tick": 272,
+					"tour_frame": 12126,
+					"tour_seconds": 505.25,
+					"world_running": false,
+					"world_speed": 8.0
+				},
+				"world_reset": {
+					"floor": "2f",
+					"pos": "(8, 21)",
+					"profile": {
+						"id": "town3d",
+						"projection_sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a"
+					},
+					"space": "cafe",
+					"tick": 272,
+					"tour_frame": 12771
+				}
+			},
+			"name": "actual_Main_F8_restores_saved_profile_and_resident",
+			"passed": true,
+			"tour_frame": 12782,
+			"tour_seconds": 532.583333333333
+		},
+		{
+			"detail": {
+				"size": [
+					1280,
+					768
+				]
+			},
+			"name": "actual_framebuffer_13_save_restored_gameplay",
+			"passed": true,
+			"tour_frame": 12788,
+			"tour_seconds": 532.833333333333
+		},
+		{
+			"detail": {
+				"actual_tick": 570,
+				"public_speed_keys": [
+					4,
+					0
+				],
+				"target_tick": 570
+			},
+			"name": "closing_morning_reached_through_actual_clock_wait",
+			"passed": true,
+			"tour_frame": 13777,
+			"tour_seconds": 574.041666666667
+		},
+		{
+			"detail": {
+				"size": [
+					1280,
+					768
+				]
+			},
+			"name": "actual_framebuffer_14_final_whole_town",
+			"passed": true,
+			"tour_frame": 14163,
+			"tour_seconds": 590.125
+		}
+	],
+	"closing_real_clock_wait": {
+		"actual_tick": 570,
+		"public_speed_keys": [
+			4,
+			0
+		],
+		"target_tick": 570
+	},
+	"completed_actions": [
+		{
+			"action": "吃饭",
+			"target": "cafe1f_barstool",
+			"tick": 135,
+			"tour_frame": 3030,
+			"wage": 0
+		},
+		{
+			"action": "闲聊",
+			"target": "counter_1",
+			"tick": 162,
+			"tour_frame": 4240,
+			"wage": 0
+		},
+		{
+			"action": "睡觉",
+			"target": "cafe2f_bed",
+			"tick": 303,
+			"tour_frame": 12525,
+			"wage": 0
+		},
+		{
+			"action": "睡觉",
+			"target": "cafe2f_bed",
+			"tick": 303,
+			"tour_frame": 12829,
+			"wage": 0
+		}
+	],
+	"direct_agent_writes": false,
+	"director_mutation_policy": {
+		"agent_nav_room_and_Sim_assignments": false,
+		"fixture_completions_observed": 4,
+		"input_commands": 31,
+		"inspection_changes_actor_address": false,
+		"social_events_observed": 1
+	},
+	"display_server": "Windows",
+	"engine_version": {
+		"build": "official",
+		"hash": "71f334935c000924d403448e698df4441130df18",
+		"hex": 263682,
+		"major": 4,
+		"minor": 6,
+		"patch": 2,
+		"status": "stable",
+		"string": "4.6.2-stable (official)",
+		"timestamp": 0
+	},
+	"expected_tour_frames": 14400,
+	"expected_tour_seconds": 600.0,
+	"exterior_controlled_occlusion": {
+		"actor_id": "aria",
+		"blocked": true,
+		"max_query_hz": 5,
+		"normal_depth_preserved": true,
+		"occluder": "Front_AwningBlue",
+		"ray_count": 866
+	},
+	"failure_count": 0,
+	"fps": 24,
+	"harness_sha256": "5da35636355dcb1e590fa474765bd4892e3d3f96d2d3fe1607567131b4385138",
+	"input_events": [
+		{
+			"keycode": 51,
+			"kind": "key",
+			"tick": 0,
+			"tour_frame": 0
+		},
+		{
+			"keycode": 48,
+			"kind": "key",
+			"tick": 90,
+			"tour_frame": 0
+		},
+		{
+			"keycode": 48,
+			"kind": "key",
+			"tick": 90,
+			"tour_frame": 0
+		},
+		{
+			"keycode": 48,
+			"kind": "key",
+			"tick": 90,
+			"tour_frame": 1208
+		},
+		{
+			"keycode": 49,
+			"kind": "key",
+			"tick": 90,
+			"tour_frame": 2400
+		},
+		{
+			"kind": "mouse_click",
+			"screen": [
+				908.232971191406,
+				306.354370117188
+			],
+			"tick": 91,
+			"tour_frame": 2411
+		},
+		{
+			"kind": "mouse_click",
+			"screen": [
+				430.734039306641,
+				414.829559326172
+			],
+			"tick": 107,
+			"tour_frame": 2604
+		},
+		{
+			"keycode": 49,
+			"kind": "key",
+			"tick": 107,
+			"tour_frame": 2705
+		},
+		{
+			"keycode": 48,
+			"kind": "key",
+			"tick": 135,
+			"tour_frame": 3031
+		},
+		{
+			"keycode": 49,
+			"kind": "key",
+			"tick": 135,
+			"tour_frame": 3720
+		},
+		{
+			"kind": "mouse_click",
+			"screen": [
+				632.948181152344,
+				283.600463867188
+			],
+			"tick": 135,
+			"tour_frame": 3723
+		},
+		{
+			"keycode": 49,
+			"kind": "key",
+			"tick": 135,
+			"tour_frame": 3921
+		},
+		{
+			"keycode": 48,
+			"kind": "key",
+			"tick": 162,
+			"tour_frame": 4241
+		},
+		{
+			"keycode": 49,
+			"kind": "key",
+			"tick": 162,
+			"tour_frame": 5160
+		},
+		{
+			"kind": "mouse_click",
+			"screen": [
+				639.999938964844,
+				512.378662109375
+			],
+			"tick": 162,
+			"tour_frame": 5163
+		},
+		{
+			"kind": "mouse_click",
+			"screen": [
+				525.647033691406,
+				387.371856689453
+			],
+			"tick": 169,
+			"tour_frame": 5244
+		},
+		{
+			"keycode": 48,
+			"kind": "key",
+			"tick": 171,
+			"tour_frame": 5269
+		},
+		{
+			"keycode": 49,
+			"kind": "key",
+			"tick": 171,
+			"tour_frame": 10808
+		},
+		{
+			"kind": "mouse_click",
+			"screen": [
+				6.556396484375,
+				526.492797851563
+			],
+			"tick": 171,
+			"tour_frame": 10811
+		},
+		{
+			"keycode": 49,
+			"kind": "key",
+			"tick": 171,
+			"tour_frame": 10913
+		},
+		{
+			"keycode": 70,
+			"kind": "key",
+			"tick": 172,
+			"tour_frame": 10922
+		},
+		{
+			"keycode": 70,
+			"kind": "key",
+			"tick": 272,
+			"tour_frame": 12120
+		},
+		{
+			"keycode": 48,
+			"kind": "key",
+			"tick": 272,
+			"tour_frame": 12123
+		},
+		{
+			"keycode": 4194336,
+			"kind": "key",
+			"tick": 272,
+			"tour_frame": 12126
+		},
+		{
+			"keycode": 49,
+			"kind": "key",
+			"tick": 272,
+			"tour_frame": 12480
+		},
+		{
+			"keycode": 48,
+			"kind": "key",
+			"tick": 324,
+			"tour_frame": 12768
+		},
+		{
+			"keycode": 4194339,
+			"kind": "key",
+			"tick": 324,
+			"tour_frame": 12771
+		},
+		{
+			"keycode": 49,
+			"kind": "key",
+			"tick": 272,
+			"tour_frame": 12782
+		},
+		{
+			"keycode": 48,
+			"kind": "key",
+			"tick": 347,
+			"tour_frame": 13368
+		},
+		{
+			"keycode": 52,
+			"kind": "key",
+			"tick": 347,
+			"tour_frame": 13440
+		},
+		{
+			"keycode": 48,
+			"kind": "key",
+			"tick": 570,
+			"tour_frame": 13774
+		}
+	],
+	"input_path": "Viewport mouse/key events -> existing Main/LifeMode -> authoritative Sim transactions; one public LifeMode.start_life selection. Camera inspection changes presentation only.",
+	"limits": [
+		"Architectural inspection uses camera/cover state only; it is not resident traversal.",
+		"The route demonstrates selected rooms and paths, not every modeled room or all simulation outcomes.",
+		"Social responses and autonomous decisions are actual core outcomes; the director does not force them.",
+		"No FPS/VRAM/collision certification is implied by MovieWriter output."
+	],
+	"movie_boot_frames_to_trim": 307,
+	"movie_end_frames_drawn": 14706,
+	"pre_roll_setup": {
+		"actor_relocated": false,
+		"actual_tick": 90,
+		"public_calls": [
+			"LifeMode.start_life(aria)",
+			"speed key 3",
+			"pause key 0",
+			"LifeMode.begin_select()"
+		],
+		"purpose": "Morning light through actual waiting; boot frames are trimmed from the final movie.",
+		"real_clock_advanced": true
+	},
+	"preview": false,
+	"projection_sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a",
+	"route_complete": true,
+	"route_plan_sha256": "c92282e0e4167cf2a2edc1fc96f5bcc5a3a10beb13700072e201ab949fcf6fdb",
+	"schema": "living_town.walkthrough.v1",
+	"snapshots": [
+		{
+			"active_view_plane": "cafe/2f",
+			"coin": 12,
+			"controlled_id": "",
+			"day": 1,
+			"free_will": false,
+			"label": "Town and coast",
+			"needs": {
+				"energy": 55.7999999999997,
+				"fun": 57.6000000000003,
+				"hunger": 46.7999999999999,
+				"hygiene": 62.1000000000001,
+				"social": 58.4999999999998
+			},
+			"option": {
+
+			},
+			"resident_plane": "cafe/2f",
+			"resident_position": "(7, 21)",
+			"social_events_observed": 0,
+			"tick": 90,
+			"tour_frame": 0,
+			"tour_seconds": 0.0,
+			"world_running": false,
+			"world_speed": 4.0
+		},
+		{
+			"active_view_plane": "town/outdoor",
+			"coin": 12,
+			"controlled_id": "",
+			"day": 1,
+			"free_will": false,
+			"label": "Choose an existing resident",
+			"needs": {
+				"energy": 55.7999999999997,
+				"fun": 57.6000000000003,
+				"hunger": 46.7999999999999,
+				"hygiene": 62.1000000000001,
+				"social": 58.4999999999998
+			},
+			"option": {
+
+			},
+			"resident_plane": "cafe/2f",
+			"resident_position": "(7, 21)",
+			"social_events_observed": 0,
+			"tick": 90,
+			"tour_frame": 1080,
+			"tour_seconds": 45.0,
+			"world_running": false,
+			"world_speed": 4.0
+		},
+		{
+			"active_view_plane": "cafe/2f",
+			"coin": 12,
+			"controlled_id": "aria",
+			"day": 1,
+			"free_will": false,
+			"label": "Stairs, walking and needs",
+			"needs": {
+				"energy": 55.7999999999997,
+				"fun": 57.6000000000003,
+				"hunger": 46.7999999999999,
+				"hygiene": 62.1000000000001,
+				"social": 58.4999999999998
+			},
+			"option": {
+
+			},
+			"resident_plane": "cafe/2f",
+			"resident_position": "(7, 21)",
+			"social_events_observed": 0,
+			"tick": 90,
+			"tour_frame": 2400,
+			"tour_seconds": 100.0,
+			"world_running": false,
+			"world_speed": 1.0
+		},
+		{
+			"active_view_plane": "cafe/1f",
+			"coin": 10,
+			"controlled_id": "aria",
+			"day": 1,
+			"free_will": false,
+			"label": "after_cafe1f_table",
+			"needs": {
+				"energy": 47.6999999999997,
+				"fun": 53.4000000000004,
+				"hunger": 84.1999999999998,
+				"hygiene": 57.1500000000001,
+				"social": 51.7499999999998
+			},
+			"option": {
+
+			},
+			"resident_plane": "cafe/1f",
+			"resident_position": "(13, 28)",
+			"social_events_observed": 0,
+			"tick": 135,
+			"tour_frame": 3031,
+			"tour_seconds": 126.291666666667,
+			"world_running": true,
+			"world_speed": 1.0
+		},
+		{
+			"active_view_plane": "cafe/1f",
+			"coin": 10,
+			"controlled_id": "aria",
+			"day": 1,
+			"free_will": false,
+			"label": "The actual cafe counter",
+			"needs": {
+				"energy": 47.6999999999997,
+				"fun": 53.4000000000004,
+				"hunger": 84.1999999999998,
+				"hygiene": 57.1500000000001,
+				"social": 51.7499999999998
+			},
+			"option": {
+
+			},
+			"resident_plane": "cafe/1f",
+			"resident_position": "(13, 28)",
+			"social_events_observed": 0,
+			"tick": 135,
+			"tour_frame": 3720,
+			"tour_seconds": 155.0,
+			"world_running": false,
+			"world_speed": 1.0
+		},
+		{
+			"active_view_plane": "cafe/1f",
+			"coin": 10,
+			"controlled_id": "aria",
+			"day": 1,
+			"free_will": false,
+			"label": "after_cafe1f_counter",
+			"needs": {
+				"energy": 42.8399999999997,
+				"fun": 49.0800000000005,
+				"hunger": 76.6399999999998,
+				"hygiene": 54.1800000000001,
+				"social": 89.6999999999997
+			},
+			"option": {
+
+			},
+			"resident_plane": "cafe/1f",
+			"resident_position": "(19, 17)",
+			"social_events_observed": 0,
+			"tick": 162,
+			"tour_frame": 4241,
+			"tour_seconds": 176.708333333333,
+			"world_running": true,
+			"world_speed": 1.0
+		},
+		{
+			"active_view_plane": "cafe/1f",
+			"coin": 10,
+			"controlled_id": "aria",
+			"day": 1,
+			"free_will": false,
+			"label": "Street, thresholds and visibility",
+			"needs": {
+				"energy": 42.8399999999997,
+				"fun": 49.0800000000005,
+				"hunger": 76.6399999999998,
+				"hygiene": 54.1800000000001,
+				"social": 89.6999999999997
+			},
+			"option": {
+
+			},
+			"resident_plane": "cafe/1f",
+			"resident_position": "(19, 17)",
+			"social_events_observed": 0,
+			"tick": 162,
+			"tour_frame": 5160,
+			"tour_seconds": 215.0,
+			"world_running": false,
+			"world_speed": 1.0
+		},
+		{
+			"active_view_plane": "town/outdoor",
+			"coin": 10,
+			"controlled_id": "aria",
+			"day": 1,
+			"free_will": false,
+			"label": "Architectural inspection: rooms",
+			"needs": {
+				"energy": 41.2199999999997,
+				"fun": 47.6400000000005,
+				"hunger": 74.1199999999998,
+				"hygiene": 53.1900000000001,
+				"social": 88.3499999999996
+			},
+			"option": {
+
+			},
+			"resident_plane": "town/outdoor",
+			"resident_position": "(138, 116)",
+			"social_events_observed": 0,
+			"tick": 171,
+			"tour_frame": 6480,
+			"tour_seconds": 270.0,
+			"world_running": false,
+			"world_speed": 1.0
+		},
+		{
+			"active_view_plane": "hotel/2f",
+			"coin": 10,
+			"controlled_id": "aria",
+			"day": 1,
+			"free_will": false,
+			"label": "Architectural inspection: streets",
+			"needs": {
+				"energy": 41.2199999999997,
+				"fun": 47.6400000000005,
+				"hunger": 74.1199999999998,
+				"hygiene": 53.1900000000001,
+				"social": 88.3499999999996
+			},
+			"option": {
+
+			},
+			"resident_plane": "town/outdoor",
+			"resident_position": "(138, 116)",
+			"social_events_observed": 0,
+			"tick": 171,
+			"tour_frame": 7920,
+			"tour_seconds": 330.0,
+			"world_running": false,
+			"world_speed": 1.0
+		},
+		{
+			"active_view_plane": "town/outdoor",
+			"coin": 10,
+			"controlled_id": "aria",
+			"day": 1,
+			"free_will": false,
+			"label": "Architectural inspection: pond",
+			"needs": {
+				"energy": 41.2199999999997,
+				"fun": 47.6400000000005,
+				"hunger": 74.1199999999998,
+				"hygiene": 53.1900000000001,
+				"social": 88.3499999999996
+			},
+			"option": {
+
+			},
+			"resident_plane": "town/outdoor",
+			"resident_position": "(138, 116)",
+			"social_events_observed": 0,
+			"tick": 171,
+			"tour_frame": 9360,
+			"tour_seconds": 390.0,
+			"world_running": false,
+			"world_speed": 1.0
+		},
+		{
+			"active_view_plane": "town/outdoor",
+			"coin": 10,
+			"controlled_id": "aria",
+			"day": 1,
+			"free_will": false,
+			"label": "Resident agency and autonomous life",
+			"needs": {
+				"energy": 41.2199999999997,
+				"fun": 47.6400000000005,
+				"hunger": 74.1199999999998,
+				"hygiene": 53.1900000000001,
+				"social": 88.3499999999996
+			},
+			"option": {
+
+			},
+			"resident_plane": "town/outdoor",
+			"resident_position": "(138, 116)",
+			"social_events_observed": 0,
+			"tick": 171,
+			"tour_frame": 10800,
+			"tour_seconds": 450.0,
+			"world_running": false,
+			"world_speed": 1.0
+		},
+		{
+			"active_view_plane": "town/outdoor",
+			"coin": 10,
+			"controlled_id": "",
+			"day": 1,
+			"free_will": true,
+			"label": "autonomy_start",
+			"needs": {
+				"energy": 41.0399999999997,
+				"fun": 47.4800000000005,
+				"hunger": 73.8399999999998,
+				"hygiene": 53.0800000000001,
+				"social": 88.1999999999996
+			},
+			"option": {
+				"action": "greet",
+				"kind": "social",
+				"partner": "evy",
+				"remaining": 10,
+				"subject": "",
+				"tone": "热情"
+			},
+			"resident_plane": "town/outdoor",
+			"resident_position": "(136, 116)",
+			"social_events_observed": 0,
+			"tick": 172,
+			"tour_frame": 10925,
+			"tour_seconds": 455.208333333333,
+			"world_running": true,
+			"world_speed": 1.0
+		},
+		{
+			"active_view_plane": "cafe/2f",
+			"coin": 13,
+			"controlled_id": "",
+			"day": 2,
+			"free_will": true,
+			"label": "autonomy_end",
+			"needs": {
+				"energy": 24.8399999999998,
+				"fun": 33.0800000000009,
+				"hunger": 48.6399999999997,
+				"hygiene": 43.1800000000001,
+				"social": 87.9999999999995
+			},
+			"option": {
+				"action": "睡觉",
+				"amount": 62,
+				"dest_floor": "2f",
+				"dest_space": "cafe",
+				"dur_total": 40,
+				"kind": "object",
+				"need": "energy",
+				"phase": "travel",
+				"remaining": 40,
+				"target": "cafe2f_bed"
+			},
+			"resident_plane": "cafe/2f",
+			"resident_position": "(8, 21)",
+			"social_events_observed": 1,
+			"tick": 262,
+			"tour_frame": 12000,
+			"tour_seconds": 500.0,
+			"world_running": true,
+			"world_speed": 1.0
+		},
+		{
+			"active_view_plane": "cafe/2f",
+			"coin": 13,
+			"controlled_id": "",
+			"day": 2,
+			"free_will": true,
+			"label": "Save, resume and restore",
+			"needs": {
+				"energy": 36.9899999999998,
+				"fun": 31.4800000000009,
+				"hunger": 45.8399999999996,
+				"hygiene": 42.0800000000002,
+				"social": 86.4999999999995
+			},
+			"option": {
+				"action": "睡觉",
+				"amount": 62,
+				"dest_floor": "2f",
+				"dest_space": "cafe",
+				"dur_total": 40,
+				"kind": "object",
+				"need": "energy",
+				"phase": "use",
+				"remaining": 31,
+				"target": "cafe2f_bed"
+			},
+			"resident_plane": "cafe/2f",
+			"resident_position": "(8, 21)",
+			"social_events_observed": 1,
+			"tick": 272,
+			"tour_frame": 12120,
+			"tour_seconds": 505.0,
+			"world_running": true,
+			"world_speed": 1.0
+		},
+		{
+			"active_view_plane": "cafe/2f",
+			"coin": 13,
+			"controlled_id": "aria",
+			"day": 2,
+			"free_will": false,
+			"label": "before_F5",
+			"needs": {
+				"energy": 36.9899999999998,
+				"fun": 31.4800000000009,
+				"hunger": 45.8399999999996,
+				"hygiene": 42.0800000000002,
+				"social": 86.4999999999995
+			},
+			"option": {
+				"action": "睡觉",
+				"amount": 62,
+				"dest_floor": "2f",
+				"dest_space": "cafe",
+				"dur_total": 40,
+				"kind": "object",
+				"need": "energy",
+				"phase": "use",
+				"remaining": 31,
+				"target": "cafe2f_bed"
+			},
+			"resident_plane": "cafe/2f",
+			"resident_position": "(8, 21)",
+			"social_events_observed": 1,
+			"tick": 272,
+			"tour_frame": 12126,
+			"tour_seconds": 505.25,
+			"world_running": false,
+			"world_speed": 8.0
+		},
+		{
+			"active_view_plane": "cafe/2f",
+			"coin": 13,
+			"controlled_id": "aria",
+			"day": 2,
+			"free_will": false,
+			"label": "Town, scope and next steps",
+			"needs": {
+				"energy": 71.5399999999993,
+				"fun": 19.4800000000009,
+				"hunger": 24.8399999999996,
+				"hygiene": 33.8300000000002,
+				"social": 75.2499999999991
+			},
+			"option": {
+
+			},
+			"resident_plane": "cafe/2f",
+			"resident_position": "(8, 21)",
+			"social_events_observed": 1,
+			"tick": 347,
+			"tour_frame": 13440,
+			"tour_seconds": 560.0,
+			"world_running": false,
+			"world_speed": 1.0
+		}
+	],
+	"social_attempt": {
+		"choice": 0,
+		"menu_options": 10,
+		"result": "Actual LifeMode menu; core decides legality and response.",
+		"target": "evy",
+		"tour_frame": 10913
+	},
+	"social_events": [
+		{
+			"accepted": true,
+			"actor": "aria",
+			"id": 17,
+			"note": "",
+			"subject": "",
+			"target": "evy",
+			"tick": 182,
+			"tour_frame": 11039,
+			"type": "greet",
+			"witnesses": [
+				"shu"
+			]
+		}
+	],
+	"source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
+	"source_glb_sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c",
+	"status": "PASS",
+	"tour_frames_elapsed": 14400,
+	"tour_seconds_elapsed": 600.0,
+	"tour_start_engine_frame": 307,
+	"world_reset_events": [
+		{
+			"floor": "2f",
+			"pos": "(8, 21)",
+			"profile": {
+				"id": "town3d",
+				"projection_sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a"
+			},
+			"space": "cafe",
+			"tick": 272,
+			"tour_frame": 12771
+		}
+	]
+}

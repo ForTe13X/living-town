@@ -1,0 +1,68 @@
+{
+  "schema": "living_town.game_stage.v1",
+  "status": "PASS",
+  "source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
+  "source_export_manifest_sha256": "ef251073f8547b8b34a56f10fc19d23d4e5d8db0b52f03d85960ac7c9d710d6e",
+  "source_glb_sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c",
+  "source_bindings": {
+    "source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
+    "source_manifest_sha256": "09e1a479de52cbfc5636f257a7383562215d30761fbd20c878fadbe4b8c67e85",
+    "source_masterplan_sha256": "b7e5522f62f4a390faa95502537fbbac14856cb278bccb695fbd5cabe186377f",
+    "source_terrain_plan_sha256": "69fc114cc289b33fc8e1d33e57daf77dd65e94d0340715c6a1974cd4d99fe349",
+    "source_interior_plan_sha256": "a857d40e536ce84b3ed468a5815c54311f92f46ebbb1e1f7541ce76a498d08b4",
+    "source_interior_module_sha256": "a467e4dc23bd2388e7e924a04a1b478bf0d0b7fc4deeb0616184de69b8c49025",
+    "source_landscape_plan_sha256": "68b8f4d2a9269b1fa8e9dde530bc83bd41b871effaf4d224ffd12ab953f6d4b1",
+    "source_landscape_details_sha256": "284459e0383e5d4adf0e3c9ddc637bc29cf375152c8724856546d0596e25e5d8"
+  },
+  "files": [
+    {
+      "file": "living_town_game.glb",
+      "bytes": 203666604,
+      "sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c"
+    },
+    {
+      "file": "export_manifest.json",
+      "bytes": 174567,
+      "sha256": "ef251073f8547b8b34a56f10fc19d23d4e5d8db0b52f03d85960ac7c9d710d6e"
+    },
+    {
+      "file": "masterplan.json",
+      "bytes": 109408,
+      "sha256": "b7e5522f62f4a390faa95502537fbbac14856cb278bccb695fbd5cabe186377f"
+    },
+    {
+      "file": "terrain_plan.json",
+      "bytes": 230180,
+      "sha256": "69fc114cc289b33fc8e1d33e57daf77dd65e94d0340715c6a1974cd4d99fe349"
+    },
+    {
+      "file": "interior_plan.json",
+      "bytes": 1308290,
+      "sha256": "a857d40e536ce84b3ed468a5815c54311f92f46ebbb1e1f7541ce76a498d08b4"
+    },
+    {
+      "file": "landscape_plan.json",
+      "bytes": 53903,
+      "sha256": "68b8f4d2a9269b1fa8e9dde530bc83bd41b871effaf4d224ffd12ab953f6d4b1"
+    },
+    {
+      "file": "node_catalog.json",
+      "bytes": 3589919,
+      "sha256": "30661387598b49aa9dc0a199d8878cdbef463e5cd58ceb68c95f6e38bc291309"
+    }
+  ],
+  "node_count": 9062,
+  "front_door_specs": 48,
+  "inventory": {
+    "floor_count": 89,
+    "room_count": 561,
+    "furnishing_count": 753
+  },
+  "elapsed_seconds": 0.828,
+  "notes": [
+    "One optimized whole-town GLB; no duplicate high-detail scene or 49 prefabs",
+    "Frozen delivery unchanged; all staged bytes SHA256-verified and fsynced",
+    "Runtime visual geometry is not simulation, collision, or navigation authority",
+    "Metadata retains original Blender-local XY bounds; transform once at the adapter boundary"
+  ]
+}
