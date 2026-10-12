@@ -536,6 +536,13 @@ def metadata_text(route: dict, narration: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def movie_timeline_trim(boot_frames: int, frame_count: int = FRAME_COUNT) -> str:
+    # Theora can omit repeated decoded pictures while preserving their PTS.
+    # Restore MovieWriter's 24-FPS timeline before counting its boot frames.
+    return (f"fps=24:start_time=0,trim=start_frame={boot_frames}:"
+            f"end_frame={boot_frames + frame_count},setpts=PTS-STARTPTS")
+
+
 def phase_compose(args: argparse.Namespace) -> dict:
     narration, route, _ = load_plan(args)
     capture, offset = capture_contract(args)
@@ -566,8 +573,8 @@ def phase_compose(args: argparse.Namespace) -> dict:
                    (bed_stats["peak_dbfs"] is not None and bed_stats["peak_dbfs"] > -55))
     metadata = args.outdir / "chapters.ffmetadata"
     metadata.write_text(metadata_text(route, narration), encoding="utf-8")
-    filters = (f"[0:v]trim=start_frame={offset}:end_frame={offset + FRAME_COUNT},setpts=PTS-STARTPTS,"
-               "fps=24,scale=1280:768:flags=lanczos,pad=1280:864:0:0:color=0x111722,"
+    filters = (f"[0:v]{movie_timeline_trim(offset)},"
+               "scale=1280:768:flags=lanczos,pad=1280:864:0:0:color=0x111722,"
                "subtitles=filename=narration.ass[v]")
     command = [args.ffmpeg, "-y", "-hide_banner", "-threads", "2", "-i", str(args.raw), "-i", str(normalized)]
     if audible:
