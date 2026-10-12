@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/ui/coastal-ledger-panel-v1.png" id="1_tex"]
+
+[node name="CoastalLedgerPanel" type="NinePatchRect"]
+texture = ExtResource("1_tex")
+region_rect = Rect2(0, 0, 384, 216)
+patch_margin_left = 48
+patch_margin_top = 40
+patch_margin_right = 48
+patch_margin_bottom = 40

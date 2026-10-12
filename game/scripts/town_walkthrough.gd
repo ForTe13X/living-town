@@ -27,6 +27,7 @@ var camera_space: String = "town"
 var camera_floor: String = "outdoor"
 var camera_center: Vector2 = Vector2.ZERO
 var camera_zoom: float = 0.3
+var inspection_active: bool = false
 var chapter_card: Label
 var checks_failed: int = 0
 var chapter_index: int = -1
@@ -97,6 +98,9 @@ func start_chapter(index: int, architectural: bool = false) -> void:
 func _process(_delta: float) -> void:
 	if not tour_active or finishing:
 		return
+	# Camera studies retain their label while observer cards stay out of the model.
+	if inspection_active:
+		hide_observer_chrome()
 	if camera_override and probe != null and view != null:
 		# LifeMode has priority 0; this director is 49; the actual view is 50.
 		# Set only presentation state, leaving canonical actor address untouched.
@@ -306,13 +310,25 @@ func room_center(space_id: String, floor_id: String) -> Vector2:
 func inspection(on: bool) -> void:
 	# These are presentation nodes/controls only; no actor/clock/address mutation.
 	life.set_process(not on)
+	inspection_active = on
 	var hud: Control = life.get("_hud") as Control
 	if hud != null:
 		hud.visible = not on
 	if life.has_method("_set_main_chrome"):
-		life.call("_set_main_chrome", on)
+		life.call("_set_main_chrome", false)
+	hide_observer_chrome()
+	var prompt: Control = life.get("_prompt") as Control
+	if prompt != null and on:
+		prompt.hide()
 	if not on:
 		camera_override = false
+
+
+func hide_observer_chrome() -> void:
+	for property: String in ["_obs", "_obs_pan", "_obs_card", "_obs_btn", "_scrub_pan", "_scrub_card", "_scrub_track", "_scrub_fill", "_scrub_handle", "_scrub_hint", "_chat_in", "_log_pan", "_log_card", "_logbox", "_goals_pan", "_story_pan", "_ledger_pan"]:
+		var item: Variant = main.get(property)
+		if item is CanvasItem:
+			(item as CanvasItem).hide()
 
 
 func _on_action(action: String, target: String, wage: int) -> void:
@@ -400,10 +416,28 @@ func _ready() -> void:
 	if model == null or checks_failed > 0:
 		finish()
 		return
+	# A real pre-roll wait establishes morning light without editing the clock or
+	# an actor's address. Public possession keeps Aria idle in her original home.
+	# All other residents, needs and transactions advance through the live core.
+	var original_address: Dictionary = Sim.get_agent("aria").duplicate(true)
+	life.start_life("aria")
+	await wait_frames(3)
+	await key(KEY_3)
+	var pre_roll_frames: int = 0
+	while Sim.tick_no < 90 and pre_roll_frames < 3600:
+		await wait_frames(1)
+		pre_roll_frames += 1
+	await key(KEY_0)
+	var morning_address: Dictionary = Sim.get_agent("aria")
+	ck("morning_established_by_real_clock_wait_without_relocation", Sim.tick_no >= 90 and morning_address.get("pos") == original_address.get("pos") and morning_address.get("space") == original_address.get("space") and morning_address.get("floor") == original_address.get("floor"), {"tick": Sim.tick_no, "pre_roll_frames": pre_roll_frames})
+	report["pre_roll_setup"] = {"public_calls": ["LifeMode.start_life(aria)", "speed key 3", "pause key 0", "LifeMode.begin_select()"], "actual_tick": Sim.tick_no, "real_clock_advanced": true, "actor_relocated": false, "purpose": "Morning light through actual waiting; boot frames are trimmed from the final movie."}
+	life.begin_select()
+	await wait_frames(3)
 	# Hide only the initial selection panel during the architectural establishing shot.
 	var selection: Control = life.get("_sel") as Control
 	if selection != null:
 		selection.hide()
+	inspection(true)
 	await key(KEY_0) # Existing Main/LifeMode clock command, never a Sim assignment.
 	Sim.life_action_done.connect(_on_action)
 	Sim.social_event.connect(_on_social)
@@ -439,11 +473,12 @@ func _ready() -> void:
 
 func run_route() -> void:
 	start_chapter(0, true)
-	set_camera("town", "outdoor", town_point(-8, 4), 96)
-	await glide("town", "outdoor", town_point(-8, 4), town_point(-8, 13), 96, 82, at(36))
+	set_camera("town", "outdoor", town_point(1, 2), 148)
+	await glide("town", "outdoor", town_point(1, 2), town_point(1, 10), 148, 136, at(36))
 	await capture("01_town_overview")
 	await wait_to(chapter_time(1))
 	start_chapter(1)
+	inspection(false)
 	camera_override = false
 	var selection: Control = life.get("_sel") as Control
 	if selection != null:
@@ -466,9 +501,11 @@ func run_route() -> void:
 	await capture("03_actual_stair_arrival")
 	if descended and not preview:
 		await use_fixture("cafe1f_table", "吃饭", at(151), 4)
+		await key(KEY_0)
 	await close_menu()
 	await wait_to(chapter_time(3))
 	start_chapter(3)
+	await key(KEY_1)
 	if descended:
 		await use_fixture("cafe1f_counter", "", at(210), 0.5 if preview else 8.0)
 	await close_menu()
@@ -563,7 +600,18 @@ func run_route() -> void:
 	await wait_to(chapter_time(10))
 	start_chapter(10, true)
 	inspection(true)
-	await glide("town", "outdoor", town_point(7, -2), town_point(-8, 4), 45, 96, at(590))
+	if not preview:
+		# Show the real following morning after the social/save chapter, using
+		# normal speed controls. The camera never changes canonical actor state.
+		var morning_tick: int = int(Sim.tick_no / Sim.TICKS_PER_DAY) * Sim.TICKS_PER_DAY + 90
+		if morning_tick <= Sim.tick_no:
+			morning_tick += Sim.TICKS_PER_DAY
+		await key(KEY_3)
+		while Sim.tick_no < morning_tick and seconds() < at(578):
+			await wait_frames(1)
+		await key(KEY_0)
+		report["closing_real_clock_wait"] = {"target_tick": morning_tick, "actual_tick": Sim.tick_no, "public_speed_keys": [3, 0]}
+	await glide("town", "outdoor", town_point(7, -2), town_point(1, 4), 45, 148, at(590))
 	await capture("14_final_whole_town")
 	report["director_mutation_policy"] = {"agent_nav_room_and_Sim_assignments": false, "input_commands": report["input_events"].size(), "social_events_observed": social_events.size(), "fixture_completions_observed": action_events.size(), "inspection_changes_actor_address": false}
 	report["route_complete"] = true
@@ -597,4 +645,12 @@ func finish() -> void:
 		cues.store_string(JSON.stringify({"schema": "living_town.walkthrough.cues.v1", "fps": FPS, "movie_boot_frames_to_trim": report.get("movie_boot_frames_to_trim", 0), "chapters": report["chapters"], "captures": report["captures"]}, "\t") + "\n")
 		cues.close()
 	print("WALKTHROUGH ", report["status"], " frames=", frame_no, " checks=", report["checks"].size(), " failed=", checks_failed, " report=", path)
-	get_tree().quit(0 if report["status"] == "PASS" else 1)
+	call_deferred("quit_after_route_unwinds", 0 if report["status"] == "PASS" else 1)
+
+
+func quit_after_route_unwinds(exit_code: int) -> void:
+	# A scheduled frame-limit finish can run before run_route's final await wakes.
+	# Let that coroutine and _ready return before the tree releases their scripts.
+	await get_tree().process_frame
+	await get_tree().process_frame
+	get_tree().quit(exit_code)

@@ -1,0 +1,46 @@
+{
+	"activates_sim": false,
+	"base_interiors_sha256": "72dd86e8ca9c45b79567de9472f9fc89223332b261cb16f507cb5bd8902d9a4a",
+	"base_spaces_sha256": "4aa5f1dfc6299a2fe368128c5c4729ae85fdc0e366a44a3ccadf895e7a991776",
+	"outputs": {
+		"affordances.json": "a439cfae756f0617063e1f76621984244e4b3b279c4b5569ce370be839735e54",
+		"interiors.json": "89662e0871e15db29512c96c203cca56a2ba6b324897150cf6286be58ecf5b2d",
+		"spaces.json": "abe53502d015a40f97a3a0ed757841e3da312b0f8b38f75bdd5af1398cd12ed0"
+	},
+	"runtime_binding": {
+		"bound_count": 22,
+		"unbound_ids": [
+			"B06.queue.01",
+			"B06.queue.02",
+			"B06.queue.03",
+			"B07.activity.01",
+			"B07.activity.02",
+			"B07.activity.03",
+			"B07.activity.04",
+			"B07.activity.05",
+			"B07.activity.06",
+			"B09.work.01",
+			"B09.work.02",
+			"B10.work.01",
+			"B11.queue.01",
+			"B11.queue.02",
+			"B13.activity.01",
+			"B13.activity.02",
+			"B13.activity.03",
+			"B13.activity.04",
+			"B13.activity.05",
+			"B13.activity.06",
+			"B14.queue.01",
+			"B14.queue.02",
+			"B14.queue.03",
+			"B14.queue.04"
+		]
+	},
+	"schema": "living-town.coastal-merged-preview/1",
+	"source_overlay_artifacts": {
+		"affordances.overlay.json": "782206385682c80c7c5350ead76040c109a5854721db215d8b044fd3cab6d514",
+		"interiors.overlay.json": "eaf51aedc04a0411a617013255fd218aa08af99f07fe3001b563b0d8b06b83ad",
+		"spaces.overlay.json": "96bc313784886a0ef61e999cbfe099544fcca3a10bd909645c9274600666d8cb"
+	},
+	"source_town_id": "warm_bay_S1"
+}

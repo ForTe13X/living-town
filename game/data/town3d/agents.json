@@ -52,18 +52,18 @@
       "persona": "coco",
       "home": [
         7,
-        34
+        17
       ],
       "spawn": [
         7,
-        34
+        17
       ],
       "spatial_address": {
-        "space_id": "hotel",
-        "floor_id": "2f",
+        "space_id": "home2",
+        "floor_id": "3f",
         "position": [
           7,
-          34
+          17
         ]
       },
       "home_needs": [
@@ -99,18 +99,18 @@
       "persona": "evy",
       "home": [
         7,
-        5
+        17
       ],
       "spawn": [
         7,
-        5
+        17
       ],
       "spatial_address": {
         "space_id": "home2",
-        "floor_id": "1f",
+        "floor_id": "2f",
         "position": [
           7,
-          5
+          17
         ]
       },
       "home_needs": [
@@ -189,18 +189,18 @@
       "persona": "shu",
       "home": [
         7,
-        5
+        17
       ],
       "spawn": [
         7,
-        5
+        17
       ],
       "spatial_address": {
         "space_id": "home2",
-        "floor_id": "1f",
+        "floor_id": "2f",
         "position": [
           7,
-          5
+          17
         ]
       }
     },

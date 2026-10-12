@@ -91,6 +91,15 @@ LANDMARK_MIN_LARGEST_COMPONENT = 0.80
 # local silhouette box; ordinary background outside the sprite is ignored.
 LANDMARK_MAX_ENCLOSED_VOID = 0.20
 
+# Version 2 of the public landmark policy: the authored table is a top on legs,
+# and the barstool is a circular seat over a stem. Private furniture and the
+# counter/coffee machine retain the original solid-footprint bounds.
+PUBLIC_SILHOUETTE_POLICY_V2 = {
+    "table": {"min_bounding_fill": 0.42},
+    "barstool": {"min_coverage": 0.06, "min_bounding_fill": 0.25,
+                  "max_enclosed_void": 0.30},
+}
+
 
 def canonical(value):
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
@@ -124,6 +133,19 @@ def cell_rect(size, cell):
     if x1 <= x0 or y1 <= y0:
         raise ValueError("invalid semantic landmark geometry for viewport %r" % (size,))
     return x0, y0, x1, y1
+
+
+def zone_coverage(mask, size, cell, zone):
+    """Changed-pixel fraction in a normalized subregion of an authored cell."""
+    x0, y0, x1, y1 = cell_rect(size, cell)
+    width, height = x1 - x0, y1 - y0
+    left = x0 + round(width * zone[0]); top = y0 + round(height * zone[1])
+    right = x0 + round(width * zone[2]); bottom = y0 + round(height * zone[3])
+    if right <= left or bottom <= top:
+        raise ValueError("invalid landmark zone")
+    changed = sum(mask[y * size[0] + x]
+                  for y in range(top, bottom) for x in range(left, right))
+    return changed / ((right - left) * (bottom - top))
 
 
 def footprint(size):
@@ -362,20 +384,24 @@ def semantic_geometry(one, one_bare, two, two_bare):
     for floor, kind, present in (("1F", "public", True), ("1F", "private", False),
                                  ("2F", "private", True), ("2F", "public", False)):
         for name, cell, coverage, rows, cols, fill, aspect, row_median, col_median, body, void in observed[(floor, kind)]:
-            if present and coverage < LANDMARK_MIN_COVERAGE:
+            policy = PUBLIC_SILHOUETTE_POLICY_V2.get(name, {}) if kind == "public" else {}
+            min_coverage = policy.get("min_coverage", LANDMARK_MIN_COVERAGE)
+            min_fill = policy.get("min_bounding_fill", LANDMARK_MIN_BOUNDING_FILL)
+            max_void = policy.get("max_enclosed_void", LANDMARK_MAX_ENCLOSED_VOID)
+            if present and coverage < min_coverage:
                 failures.append(
                     "%s %s landmark %s at %s has changed coverage %.3f < %.3f" %
-                    (floor, kind, name, cell, coverage, LANDMARK_MIN_COVERAGE))
+                    (floor, kind, name, cell, coverage, min_coverage))
             if present and (rows < LANDMARK_MIN_AXIS_COVERAGE or cols < LANDMARK_MIN_AXIS_COVERAGE):
                 failures.append(
                     "%s %s landmark %s at %s lacks authored two-axis footprint "
                     "(rows %.3f, cols %.3f; each >= %.3f)" %
                     (floor, kind, name, cell, rows, cols, LANDMARK_MIN_AXIS_COVERAGE))
-            if present and fill < LANDMARK_MIN_BOUNDING_FILL:
+            if present and fill < min_fill:
                 failures.append(
                     "%s %s landmark %s at %s lacks compact authored footprint "
                     "(bounding fill %.3f < %.3f)" %
-                    (floor, kind, name, cell, fill, LANDMARK_MIN_BOUNDING_FILL))
+                    (floor, kind, name, cell, fill, min_fill))
             if present and aspect > LANDMARK_MAX_ASPECT:
                 failures.append(
                     "%s %s landmark %s at %s is a one-axis band, not furniture "
@@ -397,11 +423,18 @@ def semantic_geometry(one, one_bare, two, two_bare):
                     "%s %s landmark %s at %s is fragmented, not one authored silhouette "
                     "(largest body %.3f < %.3f)" %
                     (floor, kind, name, cell, body, LANDMARK_MIN_LARGEST_COMPONENT))
-            if present and void > LANDMARK_MAX_ENCLOSED_VOID:
+            if present and void > max_void:
                 failures.append(
                     "%s %s landmark %s at %s is hollow, not an authored furniture body "
                     "(enclosed void %.3f > %.3f)" %
-                    (floor, kind, name, cell, void, LANDMARK_MAX_ENCLOSED_VOID))
+                    (floor, kind, name, cell, void, max_void))
+            if present and kind == "public" and name == "barstool":
+                seat = zone_coverage(masks[floor], one.size, cell, (0.25, 0.20, 0.75, 0.48))
+                stem = zone_coverage(masks[floor], one.size, cell, (0.42, 0.50, 0.58, 0.88))
+                if seat < 0.12 or stem < 0.40:
+                    failures.append(
+                        "%s public barstool lacks seat-over-stem silhouette "
+                        "(seat %.3f >= 0.120, stem %.3f >= 0.400)" % (floor, seat, stem))
             if not present and coverage > LANDMARK_MAX_COVERAGE:
                 failures.append(
                     "%s received %s landmark geometry %s at %s (coverage %.3f > %.3f)" %
@@ -415,8 +448,8 @@ def semantic_geometry(one, one_bare, two, two_bare):
     return failures
 
 
-def check(out_dir):
-    size, images = verify_provenance(out_dir)
+def check_images(size, images):
+    """Apply the shared pixel contract after a capture source verifies provenance."""
     one, one_bare = images["vg_int_cafe.png"], images["vg_cafe1f_bare.png"]
     two, two_bare = images["vg_cafe2f.png"], images["vg_cafe2f_bare.png"]
     a_in, a_out, b_in, b_out = *assess(one, one_bare), *assess(two, two_bare)
@@ -433,6 +466,11 @@ def check(out_dir):
     if failures:
         print("[CAFEDENSITY] FAIL " + "; ".join(failures)); return 1
     print("[CAFEDENSITY] PASS command-bound density, footprint, and floor-semantic geometry are bounded"); return 0
+
+
+def check(out_dir):
+    size, images = verify_provenance(out_dir)
+    return check_images(size, images)
 
 
 def _fixture_receipt(out_dir, size):
@@ -523,6 +561,33 @@ def self_test():
             path = os.path.join(root, name)
             shutil.copytree(os.path.join(root, "%dx%d" % size), path)
             return path
+        # The scoped public-shape bounds must still reject a missing table and
+        # a ring substituted for the seat-over-stem barstool.
+        missing_table = clone("public-table-missing")
+        one_path = os.path.join(missing_table, "vg_int_cafe.png")
+        one = Image.open(one_path).convert("RGB")
+        bare = Image.open(os.path.join(missing_table, "vg_cafe1f_bare.png")).convert("RGB")
+        box = cell_rect(one.size, (5, 3))
+        one.paste(bare.crop(box), box); one.save(one_path)
+        with open(os.path.join(missing_table, RECEIPT_NAME), encoding="utf-8") as f: receipt = json.load(f)
+        refresh_row(receipt, "vg_int_cafe.png", one_path)
+        with open(os.path.join(missing_table, RECEIPT_NAME), "w", encoding="utf-8") as f: json.dump(receipt, f)
+        if not expect_reject("public table erased", missing_table, "landmark table"): return 1
+        ring_stool = clone("public-barstool-ring")
+        one_path = os.path.join(ring_stool, "vg_int_cafe.png")
+        one = Image.open(one_path).convert("RGB")
+        bare = Image.open(os.path.join(ring_stool, "vg_cafe1f_bare.png")).convert("RGB")
+        x0, y0, x1, y1 = cell_rect(one.size, (5, 4))
+        one.paste(bare.crop((x0, y0, x1, y1)), (x0, y0, x1, y1))
+        width, height = x1 - x0, y1 - y0
+        ImageDraw.Draw(one).ellipse((x0 + width // 5, y0 + height // 5,
+                                     x1 - width // 5 - 1, y1 - height // 5 - 1),
+                                    outline=(220, 110, 50), width=max(2, width // 8))
+        one.save(one_path)
+        with open(os.path.join(ring_stool, RECEIPT_NAME), encoding="utf-8") as f: receipt = json.load(f)
+        refresh_row(receipt, "vg_int_cafe.png", one_path)
+        with open(os.path.join(ring_stool, RECEIPT_NAME), "w", encoding="utf-8") as f: json.dump(receipt, f)
+        if not expect_reject("public barstool replaced by ring", ring_stool, "seat-over-stem"): return 1
         # REFUTE: color-inverted 1F normal/bare PNGs replace the 2F payloads while
         # the receipt retains a legitimate 2F transcript/session/mode/seed/tick and
         # recomputes every per-row hash.  Provenance must pass; semantic geometry must
@@ -536,6 +601,16 @@ def self_test():
             refresh_row(receipt, fn, os.path.join(palette, fn))
         with open(os.path.join(palette, RECEIPT_NAME), "w", encoding="utf-8") as f: json.dump(receipt, f)
         if not expect_reject("self-consistent palette-inverted 1F-as-2F", palette, "semantic geometry"): return 1
+        bedroom_cafe = clone("palette-2f-as-1f")
+        for source, target in (("vg_cafe2f.png", "vg_int_cafe.png"),
+                               ("vg_cafe2f_bare.png", "vg_cafe1f_bare.png")):
+            im = Image.open(os.path.join(bedroom_cafe, source)).convert("RGB")
+            im.point(lambda v: 255 - v).save(os.path.join(bedroom_cafe, target))
+        with open(os.path.join(bedroom_cafe, RECEIPT_NAME), encoding="utf-8") as f: receipt = json.load(f)
+        refresh_rows(receipt, bedroom_cafe, ("vg_int_cafe.png", "vg_cafe1f_bare.png"))
+        with open(os.path.join(bedroom_cafe, RECEIPT_NAME), "w", encoding="utf-8") as f: json.dump(receipt, f)
+        if not expect_reject("private bedroom reused as public café", bedroom_cafe,
+                             "1F public landmark counter"): return 1
         # REFUTE: each claimed private landmark contains an 11%-high horizontal
         # band, with sufficient unrelated changed pixels elsewhere in the valid
         # footprint.  Rebuild the receipt so this reaches semantic geometry;

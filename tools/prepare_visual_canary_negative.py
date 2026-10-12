@@ -11,7 +11,8 @@ Usage:
 
 The JSON receipt printed on stdout travels with the two negative framebuffer
 artifacts. Existing destinations and ambiguous source seams fail closed; this
-script never removes or overwrites a directory.
+script never removes or overwrites a directory. It compares every copied file,
+excluding only the rebuildable .godot cache, before and after the mutation.
 """
 
 from __future__ import annotations
@@ -33,6 +34,27 @@ EXPECTED_NEEDLE_COUNT = 4
 
 def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def tree_manifest(root: Path) -> dict[str, str]:
+    files: dict[str, str] = {}
+    for path in root.rglob("*"):
+        relative = path.relative_to(root)
+        if ".godot" in relative.parts:
+            continue
+        if path.is_file():
+            files[relative.as_posix()] = sha256(path.read_bytes())
+    return files
+
+
+def manifest_sha256(files: dict[str, str]) -> str:
+    digest = hashlib.sha256()
+    for name, content_hash in sorted(files.items()):
+        digest.update(name.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(content_hash.encode("ascii"))
+        digest.update(b"\n")
+    return digest.hexdigest()
 
 
 def fail(message: str) -> int:
@@ -72,7 +94,11 @@ def main(argv: list[str]) -> int:
     if target_at < 0 or goal_at < 0 or target_at > goal_at:
         return fail("could not bind the first-frame daylight assignment to the startup seam")
 
+    source_manifest_before = tree_manifest(source)
     shutil.copytree(source, dest, ignore=shutil.ignore_patterns(".godot"))
+    copied_manifest = tree_manifest(dest)
+    if copied_manifest != source_manifest_before:
+        return fail("isolated copy differs from the source before injection")
     dest_main = dest / "scripts" / "Main.gd"
     copied = dest_main.read_bytes()
     if copied != before:
@@ -81,10 +107,18 @@ def main(argv: list[str]) -> int:
     dest_main.write_bytes(after)
 
     source_after = source_main.read_bytes()
-    if source_after != before:
-        return fail("source Main.gd changed while preparing the negative tree")
+    source_manifest_after = tree_manifest(source)
+    if source_after != before or source_manifest_after != source_manifest_before:
+        return fail("source game tree changed while preparing the negative tree")
     if after.count(REPLACEMENT) != 1 or after.count(NEEDLE) != EXPECTED_NEEDLE_COUNT - 1:
         return fail("injected tree does not contain the exact one-line mutation")
+    negative_manifest = tree_manifest(dest)
+    changed_paths = sorted(
+        name for name in source_manifest_before.keys() | negative_manifest.keys()
+        if source_manifest_before.get(name) != negative_manifest.get(name)
+    )
+    if changed_paths != ["scripts/Main.gd"]:
+        return fail(f"isolated mutation changed unexpected files: {changed_paths}")
 
     receipt = {
         "schema": "p1y-hosted-visual-negative/v1",
@@ -95,7 +129,11 @@ def main(argv: list[str]) -> int:
         "source_main_sha256_before": sha256(before),
         "source_main_sha256_after": sha256(source_after),
         "negative_main_sha256": sha256(after),
-        "source_unchanged": source_after == before,
+        "source_tree_sha256_before": manifest_sha256(source_manifest_before),
+        "source_tree_sha256_after": manifest_sha256(source_manifest_after),
+        "copied_tree_sha256_before": manifest_sha256(copied_manifest),
+        "negative_changed_paths": changed_paths,
+        "source_unchanged": source_manifest_after == source_manifest_before,
         "omitted_rebuildable_paths": [".godot"],
     }
     print(json.dumps(receipt, ensure_ascii=False, sort_keys=True))

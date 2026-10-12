@@ -43,3 +43,6 @@ art/**/references/
 art/living_town/integration/
 art/interactive_delivery/*.exe
 art/interactive_delivery/*.pck
+
+# Local authoring archive, renders and supplied references; tracked authoring source stays tracked.
+art/

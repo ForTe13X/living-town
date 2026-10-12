@@ -1,0 +1,20 @@
+{
+	"affordance_count": 46,
+	"artifacts": {
+		"affordances.overlay.json": "782206385682c80c7c5350ead76040c109a5854721db215d8b044fd3cab6d514",
+		"interiors.overlay.json": "eaf51aedc04a0411a617013255fd218aa08af99f07fe3001b563b0d8b06b83ad",
+		"spaces.overlay.json": "96bc313784886a0ef61e999cbfe099544fcca3a10bd909645c9274600666d8cb"
+	},
+	"blocked_outdoor_cells": 4730,
+	"changes_live_sim": false,
+	"compiler": "coast-sim-overlay/1",
+	"effects_and_reservations_wired": false,
+	"home_anchor_count": 4,
+	"owner_access_mapping": "owner portals target the resident spatial_address space; staff policy still requires a Sim access extension",
+	"portal_count": 40,
+	"schema": "living-town.coastal-sim-overlay/1",
+	"source_sha256": "d1083a6c7e2c9932933ff58c8adca04741057f466a3fa69a535ee055716fed64",
+	"source_topology_sha256": "b21ee6ea386417a11684a8414ce588c321f2ba6910298faf821d675ff40db9a1",
+	"space_count": 55,
+	"town_id": "warm_bay_S1"
+}

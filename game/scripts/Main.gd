@@ -195,6 +195,19 @@ var _obs_card: Panel
 var _scrub_card: Panel
 var _act_card: Panel
 var _status_line: ColorRect           # 顶栏底边的一道金线
+var _civic_panel: Panel               # 镇公所公示板的只读 HUD 卡片
+var _bank_panel: Panel                # P5a 合作银行：账户、准备金与贷款交互卡
+var _bank_overlay: CanvasLayer
+var _bank_blocker: ColorRect
+var _bank_title: RichTextLabel
+var _bank_body: RichTextLabel
+var _bank_was_running := false
+var _bank_account_at_open := ""
+var _bank_feedback := ""
+var _civic_title: RichTextLabel
+var _civic_body: RichTextLabel
+var _civic_duty_fill: ColorRect
+var _civic_was_running := false
 var _act_btns: Array = []             # 7 个动词按钮（顺序 = PLAYER_VERBS）
 var _guest_pass_btn: Button              # 归还/撤销咖啡馆访客证（触屏与 R 键同一函数）
 var _player_btn: Button               # 设置面板里的「玩家模式」开关
@@ -300,7 +313,7 @@ var _sy := SCRUB_Y
 ## 事件显著度（纯视图评分——**不**调 Sim._impt：那个吃 agent 字典、属于仿真侧，视图不该碰）。
 ## >= SALIENT_MIN 进置顶「大事」区，其余只落「近况」尾巴。
 const SALIENCE := {
-	"betray": 100, "pact": 88, "election": 86, "conflict": 80, "rally_oust": 76,
+	"betray": 100, "pact": 88, "election": 86, "mayor_review": 84, "conflict": 80, "rally_oust": 76,
 	"leak": 74, "confront": 70, "apologize": 66, "mediate": 64, "aid": 62,
 	"meet": 58, "confide": 56,
 	"endorse": 44, "gossip_rep": 40, "discuss": 34, "gossip": 30, "invite": 28, "give": 20, "greet": 10,
@@ -381,6 +394,8 @@ const STORY_FEATH := 40.0
 const STORY_LINES := 16
 
 func _ready() -> void:
+	if preload("res://scripts/DesktopAcceptance.gd").route(self):
+		return
 	var seed := 20260626
 	var backend := "logic"
 	var spd := 1.0
@@ -391,9 +406,11 @@ func _ready() -> void:
 	var _probe_space_arg := ""             # --probe-space id：启动即把 Probe 切到该 Space（P3 咖啡馆室内眼验）
 	var _probe_floor_arg := ""             # --probe-floor id：配 --probe-space 指定楼层
 	var _obs_arg := false                  # --obs-full：启动即展开观察台完整卷宗（出图对照用；默认档是名片档）
+	var _civic_panel_arg := false          # --civic-panel：启动即打开镇务公示卡（视觉验收/截图）
+	var _bank_panel_arg := false           # --bank-panel：启动即打开合作银行账户卡
 	var _lod_agg_arg := false              # --lod-agg：仅【测量/眼验】用，启用观察无关 aggregate LOD（CLI-only，绝不进 boot/面板出货路径；默认 off=逐字节不变）
 	var _locked_ortho_c1_arg := false      # --locked-ortho-c1：可删除的 C1 纯 View 适配器，默认绝不实例化
-	var args := OS.get_cmdline_user_args()
+	var args := preload("res://scripts/DesktopAcceptance.gd").game_args()
 	_town3d = ((args.is_empty() and get_parent() == get_tree().root) or args.has("--town3d")) and not args.has("--legacy-2d")
 	# 生活模式（docs/190）：桌面上【不带任何参数】的正式启动 = 开局选人；--life 显式开、--life-as <id> 跳过选人直接附身。
 	# 带参数的 dev/CI/出图路径一律不进（它们都带参数）⇒ 所有既有门逐字节不变。手机端还没有摇杆，暂不默认。
@@ -469,6 +486,10 @@ func _ready() -> void:
 			_probe_floor_arg = args[i + 1]     # 配 --probe-space：指定楼层（1f/2f）
 		elif args[i] == "--obs-full":
 			_obs_arg = true                    # 出图/眼验：直接以【完整卷宗】档启动（否则出图只拍得到名片档，没法对照）
+		elif args[i] == "--civic-panel":
+			_civic_panel_arg = true            # 出图/眼验：从同一只读投影打开公示卡
+		elif args[i] == "--bank-panel":
+			_bank_panel_arg = true             # 出图/眼验：打开真实银行投影与交互卡
 		elif args[i] == "--goals":
 			_goals_open = true                 # 出图/眼验：启动即展开小镇纪事清单（默认是【收起】的，出图拍不到）
 		elif args[i] == "--story":
@@ -587,6 +608,7 @@ func _ready() -> void:
 	if _probe_space_arg != "" and _sg.has_space(_probe_space_arg):   # --probe-space：启动即进某 Space（P3 室内眼验）
 		var _pf: String = _probe_floor_arg if _probe_floor_arg != "" else _sg.default_floor(_probe_space_arg)
 		_probe.set_space(_probe_space_arg, _pf, _sg.bounds_px(_probe_space_arg))
+		_frame_active_space(false)
 	if _locked_ortho_c1 != null:
 		# C1 never permits a CLI/Probe inspection shortcut around player portals.
 		_probe.set_space("town", "outdoor", _sg.bounds_px("town"))
@@ -624,6 +646,10 @@ func _ready() -> void:
 		_goals_open = false                # 两块共用左上角槽位 ⇒ --story 与 --goals 同时给时以 --story 为准
 
 	_build_hud()
+	if _civic_panel_arg:
+		_open_civic_panel()
+	if _bank_panel_arg:
+		_open_bank_panel()
 	if _clean_player_presentation:
 		_build_clean_player_hud()
 	if _locked_ortho_c1 != null:
@@ -702,6 +728,7 @@ func _build_hud() -> void:
 	layer.add_child(_status_line)
 
 	_status = _mk_label(layer, fnt, 17, Vector2(52, 6), Vector2(STATUS_W, STATUS_H1))   # 左留 ⚙ 设置钮，右留「详情」+ 后端切换钮
+	_status.mouse_filter = Control.MOUSE_FILTER_PASS   # 折叠的市政/统计详情可悬停查看；按钮仍在它上层
 
 	# 设置钮（左上角；点开 NPC 数量/速度/后端面板。O 键同款开关）
 	# 字形纪律：随包字体 Smiley Sans 是 CJK 显示体，无 emoji 覆盖 —— HUD 里一律用汉字/ASCII，否则真机上是豆腐块。
@@ -918,11 +945,267 @@ func _build_hud() -> void:
 	_perf.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pperf.add_child(_perf)
 
+	_build_civic_panel(layer, fnt)
+	_build_bank_panel(fnt)
+
 	# B15：按当前视口锚定一次；并接 size_changed —— 手机转屏/桌面拉窗口都会重排（这是唯一入口）。
 	_relayout_hud()
 	var _vpn := get_viewport()
 	if _vpn != null:
 		_vpn.size_changed.connect(_relayout_hud)
+
+## P4c-7：墙上的 PixelLab 公示板与这张卡片是一套交互。卡片只消费
+## Sim.civic_observatory_projection()，不自行重算选票或写任何世界状态。
+func _build_civic_panel(layer: CanvasLayer, fnt: Font) -> void:
+	_civic_panel = Panel.new()
+	_civic_panel.name = "CivicObservatory"
+	_civic_panel.size = Vector2(520, 326)
+	_civic_panel.add_theme_stylebox_override("panel", _card_style(Color(0.055, 0.065, 0.085, 0.97), HUD_GOLD, 8, 8))
+	_civic_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_civic_panel.visible = false
+	layer.add_child(_civic_panel)
+
+	var board := TextureRect.new()
+	board.texture = Art.tex("res://assets/art/furn/civic_notice_board.png")
+	board.position = Vector2(18, 16)
+	board.size = Vector2(96, 64)
+	board.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	board.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	board.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	board.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_civic_panel.add_child(board)
+
+	_civic_title = RichTextLabel.new()
+	_civic_title.bbcode_enabled = true
+	_civic_title.scroll_active = false
+	_civic_title.add_theme_font_override("normal_font", fnt)
+	_civic_title.add_theme_font_size_override("normal_font_size", 15)
+	_civic_title.position = Vector2(128, 14)
+	_civic_title.size = Vector2(328, 66)
+	_civic_title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_civic_panel.add_child(_civic_title)
+
+	var close := Button.new()
+	close.text = "收起"
+	close.add_theme_font_override("font", fnt)
+	close.add_theme_font_size_override("font_size", 14)
+	close.position = Vector2(450, 14)
+	close.size = Vector2(54, 28)
+	close.focus_mode = Control.FOCUS_NONE
+	close.pressed.connect(_close_civic_panel)
+	_style_btn(close)
+	_civic_panel.add_child(close)
+
+	var line := ColorRect.new()
+	line.color = HUD_GOLD_DIM
+	line.position = Vector2(18, 88)
+	line.size = Vector2(484, 1)
+	line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_civic_panel.add_child(line)
+
+	_civic_body = RichTextLabel.new()
+	_civic_body.bbcode_enabled = true
+	_civic_body.scroll_active = false
+	_civic_body.add_theme_font_override("normal_font", fnt)
+	_civic_body.add_theme_font_size_override("normal_font_size", 15)
+	_civic_body.position = Vector2(22, 101)
+	_civic_body.size = Vector2(476, 184)
+	_civic_body.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_civic_panel.add_child(_civic_body)
+
+	var duty_bg := ColorRect.new()
+	duty_bg.color = Color(1, 1, 1, 0.10)
+	duty_bg.position = Vector2(22, 291)
+	duty_bg.size = Vector2(476, 9)
+	duty_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_civic_panel.add_child(duty_bg)
+	_civic_duty_fill = ColorRect.new()
+	_civic_duty_fill.color = Color("#5ad1c2")
+	_civic_duty_fill.position = duty_bg.position
+	_civic_duty_fill.size = Vector2(0, 9)
+	_civic_duty_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_civic_panel.add_child(_civic_duty_fill)
+
+	var foot := Label.new()
+	foot.text = "只读公示 · Esc / E 收起"
+	foot.add_theme_font_override("font", fnt)
+	foot.add_theme_font_size_override("font_size", 12)
+	foot.add_theme_color_override("font_color", Color("#9aa0b5"))
+	foot.position = Vector2(22, 303)
+	foot.size = Vector2(476, 18)
+	foot.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	foot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_civic_panel.add_child(foot)
+
+func _open_civic_panel() -> void:
+	if _civic_panel == null:
+		return
+	if not _civic_panel.visible:
+		_civic_was_running = Sim.running
+	Sim.running = false
+	_refresh_civic_panel()
+	_civic_panel.visible = true
+	_update_status()
+
+func _close_civic_panel() -> void:
+	if _civic_panel == null or not _civic_panel.visible:
+		return
+	_civic_panel.visible = false
+	Sim.running = _civic_was_running
+	_update_status()
+
+func _refresh_civic_panel() -> void:
+	var projection: Dictionary = Sim.civic_observatory_projection()
+	var current: Dictionary = projection.get("current", {})
+	var current_record: Dictionary = projection.get("current_record", {})
+	var perf: Dictionary = projection.get("performance", {})
+	var review: Dictionary = projection.get("last_review", {})
+	var election: Dictionary = projection.get("last_election", {})
+	_civic_title.text = "[font_size=22][color=#f2dca8]镇务公示[/color][/font_size]\n[color=#9aa0b5]镇公所公开记录 · 第 %d 天[/color]" % Sim.day
+	var lines: Array[String] = []
+	if current.is_empty():
+		lines.append("[color=#ffd166]首届镇长选举将在第 28 天举行[/color]")
+		lines.append("[color=#9aa0b5]届时公布候选、票箱与任期。[/color]")
+		_civic_duty_fill.size.x = 0.0
+	else:
+		var mayor_name := _esc(Sim._name(Sim.get_agent(String(current.get("mayor", "")))))
+		lines.append("[color=#cda35c]本届镇长[/color]  [font_size=19][color=#f2dca8]%s[/color][/font_size]")
+		lines[-1] = lines[-1] % mayor_name
+		lines.append("[color=#9aa0b5]任期：第 %d—%d 天[/color]")
+		lines[-1] = lines[-1] % [int(current.get("term_start", 0)), int(current.get("term_end", 0))]
+		var platform: Dictionary = current.get("platform", {}) if current.get("platform", {}) is Dictionary else {}
+		var fiscal: Dictionary = projection.get("fiscal_policy", {}) if projection.get("fiscal_policy", {}) is Dictionary else {}
+		if not platform.is_empty():
+			lines.append("[color=#cda35c]施政纲领[/color]  [color=#f2dca8]%s[/color] · 税率 %d%% · 镇库底线 %d")
+			lines[-1] = lines[-1] % [_esc(String(platform.get("label", ""))), int(fiscal.get("tax_pct", 0)), int(fiscal.get("subsidy_floor", 0))]
+		lines.append("[color=#80e1ff]办公 %d/%d · 出勤 %d%%[/color]    任内镇库 [color=%s]%+d[/color]")
+		var delta := int(perf.get("treasury_delta", 0))
+		lines[-1] = lines[-1] % [int(perf.get("duties_done", 0)), int(perf.get("duties_due", 0)), int(perf.get("attendance_pct", 0)), "#9be38a" if delta >= 0 else "#f28a7f", delta]
+		var due := int(perf.get("duties_due", 0))
+		_civic_duty_fill.size.x = 476.0 * clampf(float(perf.get("duties_done", 0)) / float(due), 0.0, 1.0) if due > 0 else 0.0
+		var ballot_bits: Array[String] = []
+		var ballots: Dictionary = current_record.get("ballots", {})
+		for cid in current_record.get("candidates", []):
+			ballot_bits.append("%s %d票" % [_esc(Sim._name(Sim.get_agent(String(cid)))), int(ballots.get(String(cid), 0))])
+		if not ballot_bits.is_empty():
+			lines.append("[color=#9aa0b5]本届票箱[/color]  " + " · ".join(ballot_bits))
+	lines.append("")
+	if review.is_empty():
+		lines.append("[color=#cda35c]上届成绩单[/color]  [color=#9aa0b5]首次换届后公布[/color]")
+	else:
+		var prev_name := _esc(Sim._name(Sim.get_agent(String(review.get("winner", "")))))
+		lines.append("[color=#cda35c]上届成绩单[/color]  %s · 办公 %d/%d（%d%%） · 镇库 %+d" % [prev_name,
+			int(review.get("duties_done", 0)), int(review.get("duties_due", 0)), int(review.get("attendance_pct", 0)), int(review.get("treasury_delta", 0))])
+	var swings := int(election.get("performance_swings", 0))
+	lines.append("[color=#cda35c]最近选举[/color]  政绩改投 %d 票 · 前任 [color=#9be38a]+%d[/color] / [color=#f28a7f]-%d[/color]" % [swings,
+		int(election.get("incumbent_gained", 0)), int(election.get("incumbent_lost", 0))])
+	var project_receipt := preload("res://scripts/CivicPresentation.gd").receipt(Sim.civic_project_state())
+	if project_receipt != "":
+		lines.append("[color=#cda35c]广场项目[/color]  " + _esc(project_receipt))
+	_civic_body.text = "\n".join(lines)
+
+## P5a: one reusable finance card backed entirely by Sim's bank projection and transaction API.
+func _build_bank_panel(fnt: Font) -> void:
+	# A real modal layer keeps the paused account card above LifeMode controls
+	# and catches clicks on the hidden timeline, settings, or town behind it.
+	_bank_overlay = CanvasLayer.new()
+	_bank_overlay.layer = 35
+	add_child(_bank_overlay)
+	_bank_blocker = ColorRect.new()
+	_bank_blocker.color = Color(0.0, 0.0, 0.0, 0.42)
+	_bank_blocker.mouse_filter = Control.MOUSE_FILTER_STOP
+	_bank_blocker.visible = false
+	_bank_overlay.add_child(_bank_blocker)
+	_bank_panel = Panel.new()
+	_bank_panel.name = "CooperativeBank"
+	_bank_panel.size = Vector2(520, 346)
+	_bank_panel.add_theme_stylebox_override("panel", _card_style(Color(0.04, 0.075, 0.078, 0.98), Color("#c8a866"), 8, 8))
+	_bank_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_bank_panel.visible = false
+	_bank_overlay.add_child(_bank_panel)
+	var art := TextureRect.new()
+	art.texture = Art.tex("res://assets/art/furn/bank_counter_ledger.png")
+	art.position = Vector2(18, 14); art.size = Vector2(104, 76)
+	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	art.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST; art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_bank_panel.add_child(art)
+	_bank_title = RichTextLabel.new()
+	_bank_title.bbcode_enabled = true; _bank_title.scroll_active = false
+	_bank_title.add_theme_font_override("normal_font", fnt); _bank_title.add_theme_font_size_override("normal_font_size", 15)
+	_bank_title.position = Vector2(132, 18); _bank_title.size = Vector2(306, 68); _bank_title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_bank_panel.add_child(_bank_title)
+	var close := Button.new()
+	close.text = "收起"; close.position = Vector2(450, 14); close.size = Vector2(54, 28); close.focus_mode = Control.FOCUS_NONE
+	close.add_theme_font_override("font", fnt); close.add_theme_font_size_override("font_size", 14); _style_btn(close)
+	close.pressed.connect(_close_bank_panel); _bank_panel.add_child(close)
+	var rule := ColorRect.new(); rule.color = Color("#8f7648"); rule.position = Vector2(18, 94); rule.size = Vector2(484, 1)
+	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE; _bank_panel.add_child(rule)
+	_bank_body = RichTextLabel.new()
+	_bank_body.bbcode_enabled = true; _bank_body.scroll_active = false
+	_bank_body.add_theme_font_override("normal_font", fnt); _bank_body.add_theme_font_size_override("normal_font_size", 16)
+	_bank_body.position = Vector2(24, 108); _bank_body.size = Vector2(472, 154); _bank_body.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_bank_panel.add_child(_bank_body)
+	var actions := [["BankDepositButton", "存入 1 枚", _bank_deposit_one], ["BankWithdrawButton", "取出 1 枚", _bank_withdraw_one], ["BankLoanButton", "申请创业金", _bank_request_player_loan]]
+	for i in range(actions.size()):
+		var btn := Button.new(); btn.name = String(actions[i][0]); btn.text = String(actions[i][1]); btn.position = Vector2(24 + i * 158, 276); btn.size = Vector2(144, 38)
+		btn.focus_mode = Control.FOCUS_NONE; btn.add_theme_font_override("font", fnt); btn.add_theme_font_size_override("font_size", 14)
+		_style_btn(btn); btn.pressed.connect(actions[i][2]); _bank_panel.add_child(btn)
+	var foot := Label.new(); foot.text = "足额准备金 · 所有钱款进入同一可审计账本 · Esc / E 收起"
+	foot.position = Vector2(24, 320); foot.size = Vector2(472, 18); foot.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	foot.add_theme_font_override("font", fnt); foot.add_theme_font_size_override("font_size", 12); foot.add_theme_color_override("font_color", Color("#9fb7b4"))
+	foot.mouse_filter = Control.MOUSE_FILTER_IGNORE; _bank_panel.add_child(foot)
+
+func _bank_account_id() -> String:
+	if Sim.get_agent("player").is_empty():
+		return String(Sim.controlled_id)
+	return "player"
+
+func _open_bank_panel() -> void:
+	if _bank_panel == null: return
+	if not _bank_panel.visible:
+		_bank_was_running = Sim.running
+		_bank_account_at_open = _bank_account_id()
+		_bank_feedback = ""
+	Sim.running = false; _refresh_bank_panel(); _bank_blocker.visible = true; _bank_panel.visible = true; _update_status()
+
+func _close_bank_panel() -> void:
+	if _bank_panel == null or not _bank_panel.visible: return
+	_bank_panel.visible = false; _bank_blocker.visible = false; Sim.running = _bank_was_running; _update_status()
+
+func _refresh_bank_panel() -> void:
+	var account_id := _bank_account_at_open if _bank_panel != null and _bank_panel.visible else _bank_account_id()
+	var p: Dictionary = Sim.bank_projection(account_id)
+	var loan: Dictionary = p.get("loan", {}) if p.get("loan", {}) is Dictionary else {}
+	_bank_title.text = "[font_size=22][color=#f0d797]%s[/color][/font_size]\n[color=#9fb7b4]集市柜台 · 第 %d 天[/color]" % [_esc(String(p.get("label", "合作银行"))), Sim.day]
+	_bank_body.text = "[color=#c8a866]你的账户[/color]\n钱袋  [color=#f0d797]%d[/color]    存款  [color=#8ee3d0]%d[/color]    待还创业金  [color=#f0b77d]%d[/color]\n\n[color=#c8a866]银行公开账簿[/color]\n现金准备金  %d    居民存款  %d    可贷合作资本  %d\n[color=#9fb7b4]存款逐枚留在准备金中；贷款不挪用居民存款。[/color]" % [int(p.get("wallet", 0)), int(p.get("deposit", 0)), int(loan.get("outstanding", 0)), int(p.get("reserve", 0)), int(p.get("deposit_total", 0)), int(p.get("available_capital", 0))]
+	if _bank_feedback != "":
+		_bank_body.text += "\n[color=#f0b77d]%s[/color]" % _esc(_bank_feedback)
+
+func _bank_deposit_one() -> void:
+	_bank_submit("deposit", 1)
+
+func _bank_withdraw_one() -> void:
+	_bank_submit("withdraw", 1)
+
+func _bank_request_player_loan() -> void:
+	_bank_submit("loan", 0)
+
+func _bank_submit(action: String, amount: int) -> void:
+	var result: Dictionary = Sim.player_bank_action(action, _bank_account_at_open, amount)
+	var reason := String(result.get("reason", "transaction_rejected"))
+	if bool(result.get("ok", false)):
+		_bank_feedback = "交易已记入账簿"
+	else:
+		_bank_feedback = {
+			"resident_changed": "账户已变化；请收起后重新打开银行卡",
+			"insufficient_wallet": "钱袋余额不足",
+			"deposit_limit": "存款已达上限",
+			"no_deposit": "当前没有可取出的存款",
+			"loan_unavailable": "当前暂不符合创业金条件",
+			"bank_unavailable": "银行暂不可用",
+			"bank_account": "没有可办理业务的居民账户",
+		}.get(reason, "交易未办理（%s）" % reason)
+	_refresh_bank_panel(); _update_status()
 
 ## Optional player-facing presentation for captures and small screens.  It is
 ## deliberately a second CanvasLayer: no canonical scene, save schema, input
@@ -1480,6 +1763,12 @@ func _relayout_hud() -> void:
 	if _status_line != null:
 		_status_line.position = Vector2(0.0, sh + 11.0)
 		_status_line.size = Vector2(DESIGN.x + dx, 1.0)
+	if _civic_panel != null:                  # 中央阅读卡：扩宽屏仍相对整个可见视口居中
+		_civic_panel.position = Vector2((DESIGN.x + dx - _civic_panel.size.x) * 0.5, 112.0 + dy * 0.28)
+	if _bank_panel != null:
+		_bank_panel.position = Vector2((DESIGN.x + dx - _bank_panel.size.x) * 0.5, 102.0 + dy * 0.28)
+	if _bank_blocker != null:
+		_bank_blocker.size = vp
 	if _backend_btn != null:                   # 后端切换钮：跟右边
 		_backend_btn.position = Vector2(1140.0 + dx, 4.0)
 	if _obs_btn != null:                       # 观察台档位钮：跟右边（紧贴后端钮左侧）
@@ -1776,7 +2065,7 @@ func _demo_cam_apply() -> void:
 	var cz := float(st["zoom"])
 	var cpos := Vector2(st["pos"])
 	if sp_id != "town":
-		_fit_active_space(false)
+		_frame_active_space(false)
 		cz = _probe.cam.zoom.x
 		cpos = _probe.cam.position
 	# 只在越过名牌门之后才选人：全景档（zoom≈0.229）名字/气泡根本不画，选了观察台会与画面对不上。
@@ -2193,6 +2482,8 @@ func _apply_npc(delta: int) -> void:
 	                  # 与 _after_jump/_after_load/_toggle_player_mode 三处同一纪律。
 
 func _set_speed(v: float) -> void:
+	if _bank_panel != null and _bank_panel.visible:
+		return
 	if v <= 0.0:
 		Sim.running = false
 	else:
@@ -2277,6 +2568,9 @@ func _update_status() -> void:
 	if not Sim.last_election.is_empty():
 		var le: Dictionary = Sim.last_election
 		etxt = "  ·  选举 %s %s %d:%d" % [String(TOPIC_LABEL.get(String(le["topic"]), le["topic"])), ("通过" if bool(le["pass"]) else "否决"), int(le["yea"]), int(le["nay"])]
+	if not Sim.mayor_state.is_empty():
+		var perf: Dictionary = Sim.mayor_performance()
+		etxt += "  ·  镇长 %s（至第%d日 · 办公%d/%d · 镇库%+d）" % [_nm(String(Sim.mayor_state.get("mayor", ""))), int(Sim.mayor_state.get("term_end", 0)), int(perf.get("duties_done", 0)), int(perf.get("duties_due", 0)), int(perf.get("treasury_delta", 0))]
 	var meets_active := 0
 	for c in Sim.commitments:
 		if String(c["status"]) == "active":
@@ -2287,6 +2581,7 @@ func _update_status() -> void:
 		if s == "simmering" or s == "escalated" or s == "confronted" or s == "lingering":
 			conf_active += 1
 	var ptxt := ""
+	var warehouse_status := _player_in_warehouse_observatory()
 	if _player_mode:
 		var pl: Dictionary = Sim.get_agent("player")
 		if not pl.is_empty():
@@ -2295,7 +2590,7 @@ func _update_status() -> void:
 				if String(c["status"]) == "active" and (String(c["a"]) == "player" or String(c["b"]) == "player"):
 					var other := String(c["b"]) if String(c["a"]) == "player" else String(c["a"])
 					pmeets.append("和%s约在%s(剩%dt)" % [Sim._name(Sim.get_agent(other)), Sim._area_label_id(String(c["area"])), int(c["deadline"]) - Sim.tick_no])
-			if _player_in_warehouse_observatory():
+			if warehouse_status:
 				ptxt = "\n[color=#80e1ff]你：东海货仓 · 货运观测室（只读）  点右侧柜台查泊位/回执  卸货由码头工执行[/color]"
 			else:
 				var vkeys := []
@@ -2304,8 +2599,36 @@ func _update_status() -> void:
 				var cargo_hint := _player_cargo_hint(pl)
 				ptxt = "\n[color=#ffd700]你：礼物×%d  WASD移动  选中居民后 %s R归还访客证 C聊天（或点下方动作条）%s[/color]%s" % [
 					int(pl["inventory"].get("gift", 0)), " ".join(vkeys), ("  约定：" + "；".join(pmeets)) if not pmeets.is_empty() else "", cargo_hint]
-	_status.text = "[color=#e6e9f2]小镇有灵 Living Town  ·  第 %d 天 %s %s%s%s  ·  %s  ·  %s  ·  NPC %d  ｜  事件 %d  约会 %d(活%d)  冲突 %d(活%d)[/color]%s" % [
-		Sim.day, clock, phase, wx, etxt, spd, btxt, Sim.agents.size(), Sim.event_log.size(), Sim.commitments.size(), meets_active, Sim.conflicts.size(), conf_active, ptxt]
+	var core := "小镇有灵 Living Town  ·  第 %d 天 %s %s%s" % [Sim.day, clock, phase, wx]
+	var tail := "  ·  %s  ·  %s  ·  NPC %d" % [spd, btxt, Sim.agents.size()]
+	var counts := "  ｜  事件 %d  约会 %d(活%d)  冲突 %d(活%d)" % [
+		Sim.event_log.size(), Sim.commitments.size(), meets_active, Sim.conflicts.size(), conf_active]
+	var civic_brief := ""
+	if not Sim.last_election.is_empty():
+		var last: Dictionary = Sim.last_election
+		civic_brief = "  ·  选举%s %d:%d" % ["通过" if bool(last["pass"]) else "否决", int(last["yea"]), int(last["nay"])]
+	if not Sim.mayor_state.is_empty():
+		civic_brief += "  ·  镇长%s" % _nm(String(Sim.mayor_state.get("mayor", "")))
+	var full := core + etxt + tail + counts
+	# Keep the warehouse identity in the visible row even when the full
+	# instruction belongs in the tooltip rather than the narrow status bar.
+	var visible_ptxt := "\n[color=#80e1ff]你：东海货仓 · 货运观测室（只读） · 点柜台查回执[/color]" if warehouse_status else ptxt
+	var player_lines: Array[String] = [visible_ptxt]
+	if _player_mode and ptxt != "" and not warehouse_status:
+		player_lines.append("\n[color=#ffd700]你：WASD移动  点居民交互  动作见下方  C聊天  R归还访客证[/color]")
+	# RichTextLabel wraps silently and clips at 28/52 px. Check its actual layout,
+	# retaining the most useful details that fit the current viewport. The complete
+	# line remains available on hover, including mayor duties and event counts.
+	_status.text = "[color=#e6e9f2]%s[/color]%s" % [full, ptxt]
+	_status.tooltip_text = _status.get_parsed_text()
+	var lines: Array[String] = [full, core + civic_brief + tail + counts,
+		core + tail + counts, core + tail, "第 %d 天 %s %s%s  ·  %s  ·  %s" % [Sim.day, clock, phase, wx, spd, btxt]]
+	for player_line in player_lines:
+		for line in lines:
+			_status.text = "[color=#e6e9f2]%s[/color]%s" % [line, player_line]
+			if _status.get_content_height() <= _status.size.y:
+				_refresh_clean_player_text()
+				return
 	_refresh_clean_player_text()
 
 ## 玩家站在真实 port_dock 三格内才显示；只读 Sim 的 manifest 投影，不制造“玩家能亲手卸货”的假按钮。
@@ -2635,6 +2958,14 @@ func _panel_text(brief: bool = false) -> String:
 		L.append("")
 		L.append("[color=#9aa0b5]关系 · 冲突 · 记忆 · 观点 · 信念\n→ 点右上「详情」（或 V）[/color]")
 		return "\n".join(_obs_fit_lines(L, OBS_CARD.x - 16.0, OBS_CARD.y - OBS_PAD * 2.0))
+	# P4c-4：上届镇长再次参选时，这两项会叠加到所选居民对他的 standing 底分。
+	var last_review: Dictionary = Sim.latest_mayor_review()
+	var review_score: Dictionary = Sim.mayor_review_score(ag, last_review)
+	if not review_score.is_empty():
+		var review_color := "#7ed957" if int(review_score.get("total", 0)) >= 0 else "#e85a5a"
+		L.append("[color=#cfd3e0]上届政绩评价[/color] %s [color=%s]%+d[/color] [color=#9aa0b5]（连任票）[/color]" % [
+			Sim._name(Sim.get_agent(String(last_review.get("winner", "")))), review_color, int(review_score.get("total", 0))])
+		L.append("出勤 %+d · 财政 %+d" % [int(review_score.get("attendance", 0)), int(review_score.get("treasury", 0))])
 	# 关系 top3
 	L.append("")
 	L.append("[color=#cfd3e0]关系[/color]")
@@ -3169,6 +3500,12 @@ func _event_prose(e: Dictionary) -> String:
 					"[color=#39d4c8]%s 和 %s 拉手结成了互助的盟约[/color]" % [A, B],
 				], e)
 		"election":
+			if String(e.get("note", "")) == "mayor_term":
+				var swings := int(e.get("performance_swings", 0))
+				if swings > 0:
+					return "[color=#ffe08a]镇长选举：%s 当选 · 政绩改投 %d 票（前任 +%d/−%d）[/color]" % [
+						B, swings, int(e.get("incumbent_gained", 0)), int(e.get("incumbent_lost", 0))]
+				return "[color=#ffe08a]镇长选举：%s 当选[/color]" % B
 			# actor="town"、target=议题 id（TOPICS）、accepted=是否通过。
 			var topic := String(TOPIC_LABEL.get(String(e.get("target", "")), "镇上的议题"))
 			return _pick([
@@ -3178,6 +3515,10 @@ func _event_prose(e: Dictionary) -> String:
 					"[color=#9aa0b5]全镇表决：%s —— 否决[/color]" % topic,
 					"[color=#9aa0b5]全镇表决：%s —— 未获通过[/color]" % topic,
 				], e)
+		"civic_duty":
+			return "[color=#9fe3b1]%s 在镇公所完成了本周公务[/color]" % A
+		"mayor_review":
+			return "[color=#ffe08a]上届镇长 %s：办公 %d/%d，任内镇库 %+d[/color]" % [A, int(e.get("duties_done", 0)), int(e.get("duties_due", 0)), int(e.get("treasury_delta", 0))]
 		"world":
 			return ("[color=#ffe08a]镇上多了点新东西[/color]") if note == "spawn" else ("[color=#9aa0b5]镇上的临时布置撤了[/color]")
 		"cafe_guest_grant":
@@ -3297,11 +3638,25 @@ func _focus_agent(id: String) -> void:
 		return
 	_selected_id = id
 	if _probe != null and _locked_ortho_c1 == null and not _reduced_motion:
-		_probe.focus_on(Vector2(int(ag["pos"].x) * 48 + 24, int(ag["pos"].y) * 48 + 24), id)
+		_probe.follow(id)
 	_update_obs()
 
 func _unhandled_input(e: InputEvent) -> void:
+	if _bank_panel != null and _bank_panel.visible:
+		if e is InputEventKey and e.pressed and not e.echo and e.keycode in [KEY_ESCAPE, KEY_E]:
+			_close_bank_panel()
+		get_viewport().set_input_as_handled()
+		return
+	# LifeMode owns the resident picker. Observer shortcuts can restart its paused
+	# clock; F8 stays available to restore a save from a fresh launch.
+	if _life != null and _life.selecting:
+		if not (e is InputEventKey and e.pressed and e.keycode == KEY_F8):
+			return
 	if e is InputEventKey and e.pressed and not e.echo:
+		if _civic_panel != null and _civic_panel.visible and e.keycode in [KEY_ESCAPE, KEY_E]:
+			_close_civic_panel()
+			get_viewport().set_input_as_handled()
+			return
 		match e.keycode:
 			KEY_SPACE: Sim.running = not Sim.running
 			KEY_0, KEY_KP_0: Sim.running = false
@@ -3482,6 +3837,35 @@ func _fit_active_space(reset_town := true) -> void:
 	_probe.cam.zoom = Vector2.ONE * minf(fit.x, fit.y)   # 刻意绕过 ZOOM_MIN 夹取：整图入画优先
 	_probe.cam.position = b.get_center()
 
+## Entry framing is authored per Space utility. Compact rooms still fit as one readable
+## composition; large public venues may open at a closer scale and rely on the Probe's
+## existing drag/pinch/wheel navigation. Camera policy is presentation-only.
+func _frame_active_space(reset_town := true) -> void:
+	if _probe == null:
+		return
+	if _town3d:
+		_fit_active_space(reset_town)
+		return
+	if reset_town and String(_probe.active_space) == "town":
+		_probe.go_home()
+		return
+	var sid := String(_probe.active_space)
+	var b := _space_bounds()
+	var policy: Dictionary = _sg.camera_policy(sid) if _sg != null else {}
+	if String(policy.get("mode", "fit")) != "explore":
+		_fit_active_space(false)
+		return
+	var pad_raw: Array = policy.get("hud_pad", [_probe.HOME_PAD.x, _probe.HOME_PAD.y])
+	var pad: Vector2 = Vector2(float(pad_raw[0]), float(pad_raw[1])) if pad_raw.size() >= 2 else Vector2(_probe.HOME_PAD)
+	var fit: float = minf(maxf(_vp().x - pad.x, 64.0) / b.size.x, maxf(_vp().y - pad.y, 64.0) / b.size.y)
+	var z: float = clampf(maxf(float(policy.get("entry_zoom", fit)), fit * 1.12), _probe.ZOOM_MIN.x, _probe.ZOOM_MAX.x)
+	var anchor_raw: Array = policy.get("entry_anchor", [])
+	var anchor: Vector2 = b.get_center()
+	if anchor_raw.size() >= 2:
+		anchor = b.position + Vector2((float(anchor_raw[0]) + 0.5) * 48.0, (float(anchor_raw[1]) + 0.5) * 48.0)
+	_probe.cam.zoom = Vector2.ONE * z
+	_probe.cam.position = anchor
+
 ## P1 Gate + P3：Probe 切 Space/Floor（inspect-only，绝不移动任何 Agent）。I=循环空间（town→咖啡馆→测试阁楼→…），PgUp/PgDn=换层。
 func _probe_toggle_space() -> void:
 	if _probe == null or _sg == null:
@@ -3492,6 +3876,7 @@ func _probe_toggle_space() -> void:
 	var i := ids.find(String(_probe.active_space))
 	var target := String(ids[(i + 1) % ids.size()])
 	_probe.set_space(target, _sg.default_floor(target), _sg.bounds_px(target))
+	_frame_active_space(false)
 	_push("[color=#9ad0ff]Probe → %s / %s（观察者切空间；居民没动）[/color]" % [_sg.label_of(target), _probe.active_floor])
 	_update_status()
 
@@ -3504,6 +3889,7 @@ func _probe_cycle_floor(dir: int) -> void:
 	var i := fl.find(String(_probe.active_floor))
 	var nf := String(fl[(maxi(i, 0) + dir + fl.size()) % fl.size()])
 	_probe.active_floor = nf                      # 同 Space 内换层：不动相机边界
+	_frame_active_space(false)
 	_push("[color=#9ad0ff]Probe → %s / %s 层[/color]" % [_sg.label_of(String(_probe.active_space)), nf])
 	_update_status()
 
@@ -3573,10 +3959,8 @@ func _portal_click(world_pos: Vector2) -> bool:
 					var pnow: Dictionary = Sim.get_agent("player")
 					var pc: Vector2i = pnow.get("pos", Vector2i.ZERO)
 					_probe.focus_on(Vector2(pc.x * 48 + 24, pc.y * 48 + 24), "player")
-			else:                                      # 进店/换层 → 缩放到室内刚好入画
-				var fit: Vector2 = (_vp() - Vector2(120.0, 200.0)) / b.size
-				_probe.cam.zoom = Vector2.ONE * clampf(minf(fit.x, fit.y), _probe.ZOOM_MIN.x, _probe.ZOOM_MAX.x)
-				_probe.cam.position = b.get_center()
+			else:                                      # 小室内整层入画；大公共空间按用途近取景并允许拖动浏览
+				_frame_active_space(false)
 			_selected_id = "player" if player_crossed else ""
 			var verb := "上下楼" if String(p.get("kind", "")) == "stairs" else ("进门" if os != "town" else "出门")
 			_push("[color=#9ad0ff]%s / %s 层（点%s）[/color]" % [_sg.label_of(os), of, verb])
@@ -3588,9 +3972,37 @@ func _portal_click(world_pos: Vector2) -> bool:
 func _on_probe_tap(world_pos: Vector2) -> void:
 	if _portal_click(world_pos):                       # 先看点没点门/楼梯；点了就穿，不再选人
 		return
+	if _civic_observatory_click(world_pos):            # 镇务公示板：只读治理卡片
+		return
+	if _bank_counter_click(world_pos):                 # P5a：合作银行账户与贷款
+		return
 	if _warehouse_observatory_click(world_pos):        # 观测柜台只读查询；不落 Sim 账、不选人
 		return
 	_select_at_world(world_pos)
+
+func _civic_observatory_click(world_pos: Vector2) -> bool:
+	if _probe == null or String(_probe.active_space) != "mairie" or String(_probe.active_floor) != "1f":
+		return false
+	var cell := Sim.civic_observatory_cell()
+	if cell.x < 0:
+		return false
+	# 96×64 挂墙精灵以 y=0 家具格为锚，视觉中心在格心上方；命中矩形覆盖
+	# 真实图像而不是只覆盖墙脚的 48×48 地格。
+	var anchor := Vector2(cell.x * 48 + 24, cell.y * 48 + 24)
+	if not Rect2(anchor + Vector2(-58, -82), Vector2(116, 112)).has_point(world_pos):
+		return false
+	_open_civic_panel()
+	return true
+
+func _bank_counter_click(world_pos: Vector2) -> bool:
+	if _probe == null or String(_probe.active_space) != "halles" or String(_probe.active_floor) != "1f":
+		return false
+	var cell := Vector2i(int(floor(world_pos.x / 48.0)), int(floor(world_pos.y / 48.0)))
+	var anchor := Sim.bank_counter_cell()
+	if anchor.x < 0 or not Rect2(Vector2(anchor.x * 48, anchor.y * 48 - 32), Vector2(96, 80)).has_point(world_pos):
+		return false
+	_open_bank_panel()
+	return true
 
 func _warehouse_observatory_click(world_pos: Vector2) -> bool:
 	if _probe == null or String(_probe.active_space) != "port_warehouse" or String(_probe.active_floor) != "1f":
@@ -3656,6 +4068,9 @@ func _select_at_world(w: Vector2) -> void:
 			best = String(a["id"])
 	if bestd <= 42.0:
 		_selected_id = best
+		if _probe != null and _locked_ortho_c1 == null and not _reduced_motion:
+			_demo_off()
+			_probe.follow(best)
 		_update_obs()
 
 ## One activation seam for the CLI product path and the composed C1 contract

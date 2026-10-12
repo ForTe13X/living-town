@@ -69,7 +69,7 @@ FIXTURES = [
 # Invariants.HARD_IDS 的副本。**每次运行都对着源码核一遍**（见 _check_hard_ids）——
 # 冻结字面量会过期，这是 S2 编号 73 §二·3 量出来的统一结论。
 HARD_IDS = [1, 6, 7, 9, 10, 12, 13, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33,
-            34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45, 46]
+            34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45, 46, 47]
 DIAG_IDS = [15]
 
 
@@ -270,6 +270,8 @@ SPEC = {
     # `export_pairs` 另行落盘作诊断，但不能单独当 provider：孤儿 pay/stock 会让 #46 红、pairs 却仍为 0。
     46: ("C", "真实 export 相关 pay/stock 事件数（=0 才是绑定判据空洞）",
          lambda L, D: L["export_related"]),
+    47: ("C", "Bank transfer events actually scanned by the reserve/account invariant",
+         lambda L, D: L["bank_events"]),
 }
 
 
@@ -710,6 +712,7 @@ def self_test():
                      "detail": "未启用(14<60天)" if iid == 40 else ""}))
             L = dict(base)
             L["types"] = {"betray": 0}
+            L["bank_events"] = 0
             L["import_events"] = import_events
             L["export_related"] = export_related
             L["export_pairs"] = export_pairs
@@ -747,6 +750,7 @@ def self_test():
         cbase["import_events"] = 3
         cbase["export_related"] = 4
         cbase["export_pairs"] = 2
+        cbase["bank_events"] = 3
         _full = {}
         for _tag in [f[0] for f in FIXTURES if f[6] != "none"]:
             _full[_tag] = {sd: {"live": dict(cbase), "detail": {}, "ok": {}, "hard": {}}
@@ -773,6 +777,8 @@ def self_test():
         _, hard_expr_err = _parse_id_const("const HARD_IDS := [1 + 2]\n", "HARD_IDS")
         _, hard_dup_err = _parse_id_const("const HARD_IDS := [1, 1]\n", "HARD_IDS")
         checks = [
+            ("bank enabled without transfers provides no transactional coverage", SPEC[47][2](s[1]["live"], {}) == 0),
+            ("bank transfers provide measured coverage", SPEC[47][2](dict(s[1]["live"], bank_events=3), {}) == 3),
             ("betray=0 ⇒ #22 前件必须是 0", SPEC[22][2](s[1]["live"], s[1]["detail"]) == 0),
             ("aid_accepted=0 ⇒ #29 样本守卫必须判空", SPEC[29][2](s[1]["live"], s[1]["detail"]) == 0),
             ("detail 写「未启用」⇒ #40 满足率臂必须判空", SPEC[40][2](s[1]["live"], s[1]["detail"]) == 0),

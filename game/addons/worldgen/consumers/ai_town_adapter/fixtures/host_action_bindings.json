@@ -1,0 +1,88 @@
+{
+  "cafe.dining_stool_east.eat": {
+    "action": "\u5403\u996d",
+    "also": {
+      "amount": 3.0,
+      "need": "fun"
+    },
+    "amount": 50.0,
+    "crowd": {
+      "comfort": 3.0,
+      "floor": 0.6,
+      "k": 0.1
+    },
+    "duration": 18.0,
+    "need": "hunger",
+    "seated": true,
+    "seats": 1.0
+  },
+  "cafe.dining_stool_west.eat": {
+    "action": "\u5403\u996d",
+    "also": {
+      "amount": 3.0,
+      "need": "fun"
+    },
+    "amount": 50.0,
+    "crowd": {
+      "comfort": 3.0,
+      "floor": 0.6,
+      "k": 0.1
+    },
+    "duration": 18.0,
+    "need": "hunger",
+    "seated": true,
+    "seats": 1.0
+  },
+  "cafe.dining_table.drink_coffee": {
+    "action": "\u559d\u5496\u5561",
+    "amount": 32.0,
+    "crowd": {
+      "comfort": 3.0,
+      "floor": 0.6,
+      "k": 0.1
+    },
+    "duration": 16.0,
+    "need": "fun"
+  },
+  "cafe.dining_table.eat": {
+    "action": "\u5403\u996d",
+    "also": {
+      "amount": 3.0,
+      "need": "fun"
+    },
+    "amount": 50.0,
+    "crowd": {
+      "comfort": 3.0,
+      "floor": 0.6,
+      "k": 0.1
+    },
+    "duration": 18.0,
+    "need": "hunger",
+    "seated": true,
+    "seats": 2.0
+  },
+  "cafe.resident_bed.sleep": {
+    "action": "\u7761\u89c9",
+    "amount": 62.0,
+    "duration": 40.0,
+    "need": "energy"
+  },
+  "cafe.sea_painting.view_art": {
+    "action": "\u8d4f\u753b",
+    "amount": 30.0,
+    "duration": 10.0,
+    "need": "fun"
+  },
+  "cafe.service_counter.chat": {
+    "action": "\u95f2\u804a",
+    "amount": 40.0,
+    "duration": 20.0,
+    "need": "social"
+  },
+  "cafe.service_counter.tend_counter": {
+    "action": "\u770b\u644a",
+    "amount": 30.0,
+    "duration": 24.0,
+    "need": "fun"
+  }
+}

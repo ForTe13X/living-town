@@ -1,0 +1,41 @@
+{
+  "schema": "worldgen.aitown-activation/1",
+  "enabled": false,
+  "world_id": "inland_neighborhood_s0",
+  "semantic_sha256": "8403f6add04d0cbaaf29380d6bd01779225959dd6a7302e28c566eb6c6592524",
+  "capacity_per_home": 4,
+  "resident_assignments": [
+    {
+      "agent_id": "aria",
+      "building_id": "home_a"
+    },
+    {
+      "agent_id": "ben",
+      "building_id": "home_a"
+    },
+    {
+      "agent_id": "coco",
+      "building_id": "home_a"
+    },
+    {
+      "agent_id": "dan",
+      "building_id": "home_a"
+    },
+    {
+      "agent_id": "evy",
+      "building_id": "home_b"
+    },
+    {
+      "agent_id": "fei",
+      "building_id": "home_b"
+    },
+    {
+      "agent_id": "lin",
+      "building_id": "home_b"
+    },
+    {
+      "agent_id": "hai",
+      "building_id": "home_b"
+    }
+  ]
+}

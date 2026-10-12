@@ -282,8 +282,16 @@ func pick_to_canonical(screen: Vector2, space_id := "", floor_id := "") -> Vecto
 	var active_key := String(pb.active_space) + "/" + String(pb.active_floor) if pb != null else ""
 	for object_id in bindings:
 		var binding: Dictionary = bindings[object_id]
-		if String(binding.get("plane", "")) != active_key or not Sim.world.get("objects", {}).has(object_id):
+		if String(binding.get("plane", "")) != active_key:
 			continue
+		if not Sim.world.get("objects", {}).has(object_id):
+			var valid_ui_marker := false
+			for entry: Dictionary in Sim.life_interactions(999):
+				if String(entry.get("id", "")) == String(object_id) and String(entry.get("kind", "")) in ["bank", "civic"]:
+					valid_ui_marker = true
+					break
+			if not valid_ui_marker:
+				continue
 		var box := _asset_screen_rect_3d(String(binding.get("model_asset_id", "")))
 		if box.size == Vector2.ZERO or not box.grow(4).has_point(screen):
 			continue
@@ -626,7 +634,7 @@ func _ground_ring_3d(n: Node2D, px: Vector2, radius_m: float, color: Color) -> v
 	n.draw_polyline(points, color, 2.0, true)
 
 func _fixture_outline_3d(n: Node2D, entry: Dictionary) -> bool:
-	if String(entry.get("kind", "")) != "object":
+	if String(entry.get("kind", "")) not in ["object", "bank", "civic"]:
 		return false
 	var binding: Dictionary = projection_3d.get("interaction_bindings", {}).get(String(entry.get("id", "")), {})
 	var bounds := _asset_world_bounds_3d(String(binding.get("model_asset_id", "")))

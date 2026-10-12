@@ -17,12 +17,12 @@ extends RefCounted
 ##   docs/201：buy:理发 居民→理发师、buy:逛店 居民→店主，各自单列
 ##   docs/203：buy:下午茶、buy:游船 居民→酒店掌柜，合成一类 hotel
 ##   docs/204：subsidy*<额> 大他者→镇库（补贴）· tax*<额> 镇库→大他者（税）
-const CATS := ["meal", "grocery", "vendor", "restaurant", "barber", "boutique", "hotel", "wage", "rent", "bill", "bonus", "import", "export", "subsidy", "tax", "other"]
+const CATS := ["meal", "grocery", "vendor", "restaurant", "barber", "boutique", "hotel", "wage", "rent", "bill", "bonus", "import", "export", "subsidy", "tax", "civic_project", "other"]
 const CAT_NAME := {"meal": "饭钱", "grocery": "采买", "vendor": "摊贩", "restaurant": "餐馆", "barber": "理发", "boutique": "小店", "hotel": "酒店", "wage": "工资", "rent": "房租",
-	"bill": "账单", "bonus": "奖金", "import": "进口", "export": "出口", "subsidy": "补贴", "tax": "税", "other": "其它"}
+	"bill": "账单", "bonus": "奖金", "import": "进口", "export": "出口", "subsidy": "补贴", "tax": "税", "civic_project": "广场花圃", "other": "其它"}
 ## 镇库视角：哪些类是进账、哪些是出账（摊贩与房租是居民之间的钱，不经镇库）。
 const TOWN_IN := ["meal", "grocery", "bill", "export", "subsidy"]
-const TOWN_OUT := ["wage", "bonus", "import", "tax"]
+const TOWN_OUT := ["wage", "bonus", "import", "tax", "civic_project"]
 
 var cursor := 0          # 已折叠到 event_log 的哪个下标（不含）
 var _tail := ""          # 最后一条已折叠事件的指纹：id:tick:type —— 回放后同一下标换了内容就对不上
@@ -42,7 +42,7 @@ static func category(note: String) -> String:
 	if note == "buy:下午茶" or note == "buy:游船": return "hotel"
 	if head == "price": return "meal"
 	if head == "buy": return "vendor"
-	if head in ["wage", "rent", "bill", "bonus", "import", "export", "subsidy", "tax"]: return head
+	if head in ["wage", "rent", "bill", "bonus", "import", "export", "subsidy", "tax", "civic_project"]: return head
 	return "other"
 
 static func _fp(e: Dictionary) -> String:
@@ -104,6 +104,8 @@ static func fold(log: Array, ticks_per_day: int) -> RefCounted:
 
 ## 账户的开局额：只由数据决定（Sim._make_agent 给每个 agent 发 economy.start_coin；镇库 town_start；大他者 0）。
 static func expected_opening(S, id: String) -> int:
+	if id == "bank":
+		return int(S.banking.get("opening_capital", 0)) if not S.banking.is_empty() else 0
 	if S.economy.is_empty():
 		return 0
 	if id == "town":
@@ -113,7 +115,7 @@ static func expected_opening(S, id: String) -> int:
 	return int(S.economy.get("start_coin", 10))
 
 static func _accounts(S) -> Array:
-	var ids := ["town", "external"]
+	var ids := ["town", "external", "bank"]
 	for ag in S.agents:
 		ids.append(String(ag["id"]))
 	return ids
@@ -172,6 +174,8 @@ func panel_text(S, name_of: Callable) -> String:
 		res_n += 1
 		rich.append([c, String(ag["id"])])
 	out.append("镇库 %d 币 · 大他者 %d 币 · 居民 %d 币（%d 人）" % [int(S.town_coin), int(S.external_coin), res_total, res_n])
+	if not S.banking.is_empty():
+		out.append("合作银行现金 %d 币 · 居民存款 %d 币" % [int(S.bank_coin), int(S.bank_deposit_total())])
 	out.append(hd + "── 镇库收支（今天 / 累计）──[/color]")
 	var inl := PackedStringArray()
 	for c in TOWN_IN:

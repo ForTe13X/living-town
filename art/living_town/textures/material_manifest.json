@@ -1,0 +1,193 @@
+{
+  "schema_version": 1,
+  "generator": "tools/generate_materials.py",
+  "seed": 20261011,
+  "license": "Original project-generated procedural textures; no external media used",
+  "normal_convention": "OpenGL tangent-space +Y",
+  "basecolor_color_space": "sRGB",
+  "roughness_color_space": "Non-Color",
+  "normal_color_space": "Non-Color",
+  "edge_policy": "Periodic U/V, opposite edge pixels match exactly",
+  "materials": {
+    "slate": {
+      "tile_size_metres": 2.4,
+      "palette_base_srgb": "#4f565b",
+      "description": "Weathered charcoal blue-grey split slate; 30 x 20 cm tiles",
+      "basecolor": "slate_basecolor.png",
+      "roughness": "slate_roughness.png",
+      "normal": "slate_normal.png",
+      "basecolor_resolution": [
+        1024,
+        1024
+      ],
+      "data_resolution": [
+        512,
+        512
+      ],
+      "height_range_metres_approx": 0.007,
+      "roughness_mean": 0.738,
+      "uv_hint": "Use physical world/object coordinates divided by tile_size_metres; repeat extension",
+      "normal_strength": 1.0
+    },
+    "lime_plaster": {
+      "tile_size_metres": 2.0,
+      "palette_base_srgb": "#e4decb",
+      "description": "Warm cream lime plaster with trowel marks and pores",
+      "basecolor": "lime_plaster_basecolor.png",
+      "roughness": "lime_plaster_roughness.png",
+      "normal": "lime_plaster_normal.png",
+      "basecolor_resolution": [
+        1024,
+        1024
+      ],
+      "data_resolution": [
+        512,
+        512
+      ],
+      "height_range_metres_approx": 0.002,
+      "roughness_mean": 0.9123,
+      "uv_hint": "Use physical world/object coordinates divided by tile_size_metres; repeat extension",
+      "normal_strength": 1.0
+    },
+    "granite": {
+      "tile_size_metres": 2.0,
+      "palette_base_srgb": "#999b91",
+      "description": "Grey sage granite masonry; 40 x 25 cm blocks",
+      "basecolor": "granite_basecolor.png",
+      "roughness": "granite_roughness.png",
+      "normal": "granite_normal.png",
+      "basecolor_resolution": [
+        1024,
+        1024
+      ],
+      "data_resolution": [
+        512,
+        512
+      ],
+      "height_range_metres_approx": 0.018,
+      "roughness_mean": 0.877,
+      "uv_hint": "Use physical world/object coordinates divided by tile_size_metres; repeat extension",
+      "normal_strength": 1.0
+    },
+    "cobbles": {
+      "tile_size_metres": 2.0,
+      "palette_base_srgb": "#aaa497",
+      "description": "Warm grey worn offset cobbles; approximately 22 x 17 cm",
+      "basecolor": "cobbles_basecolor.png",
+      "roughness": "cobbles_roughness.png",
+      "normal": "cobbles_normal.png",
+      "basecolor_resolution": [
+        1024,
+        1024
+      ],
+      "data_resolution": [
+        512,
+        512
+      ],
+      "height_range_metres_approx": 0.02,
+      "roughness_mean": 0.8336,
+      "uv_hint": "Use physical world/object coordinates divided by tile_size_metres; repeat extension",
+      "normal_strength": 1.0
+    },
+    "oak": {
+      "tile_size_metres": 2.0,
+      "palette_base_srgb": "#a58a65",
+      "description": "Warm weathered oak; 20 cm boards and staggered end joints",
+      "basecolor": "oak_basecolor.png",
+      "roughness": "oak_roughness.png",
+      "normal": "oak_normal.png",
+      "basecolor_resolution": [
+        1024,
+        1024
+      ],
+      "data_resolution": [
+        512,
+        512
+      ],
+      "height_range_metres_approx": 0.003,
+      "roughness_mean": 0.6372,
+      "uv_hint": "Use physical world/object coordinates divided by tile_size_metres; repeat extension",
+      "normal_strength": 1.0
+    },
+    "sand": {
+      "tile_size_metres": 3.0,
+      "palette_base_srgb": "#d5c5a2",
+      "description": "Pale dune sand with restrained ripples and fine aggregate",
+      "basecolor": "sand_basecolor.png",
+      "roughness": "sand_roughness.png",
+      "normal": "sand_normal.png",
+      "basecolor_resolution": [
+        1024,
+        1024
+      ],
+      "data_resolution": [
+        512,
+        512
+      ],
+      "height_range_metres_approx": 0.005,
+      "roughness_mean": 0.96,
+      "uv_hint": "Use physical world/object coordinates divided by tile_size_metres; repeat extension",
+      "normal_strength": 1.0
+    },
+    "grass": {
+      "tile_size_metres": 4.0,
+      "palette_base_srgb": "#84916b",
+      "description": "Sage coastal meadow with tufts and dry straw variation",
+      "basecolor": "grass_basecolor.png",
+      "roughness": "grass_roughness.png",
+      "normal": "grass_normal.png",
+      "basecolor_resolution": [
+        1024,
+        1024
+      ],
+      "data_resolution": [
+        512,
+        512
+      ],
+      "height_range_metres_approx": 0.008,
+      "roughness_mean": 0.91,
+      "uv_hint": "Use physical world/object coordinates divided by tile_size_metres; repeat extension",
+      "normal_strength": 1.0
+    },
+    "ceramic_tile": {
+      "tile_size_metres": 1.2,
+      "palette_base_srgb": "#e0d6bb",
+      "description": "Cream glazed 30 cm tiles with Brittany blue diamonds",
+      "basecolor": "ceramic_tile_basecolor.png",
+      "roughness": "ceramic_tile_roughness.png",
+      "normal": "ceramic_tile_normal.png",
+      "basecolor_resolution": [
+        1024,
+        1024
+      ],
+      "data_resolution": [
+        512,
+        512
+      ],
+      "height_range_metres_approx": 0.003,
+      "roughness_mean": 0.3691,
+      "uv_hint": "Use physical world/object coordinates divided by tile_size_metres; repeat extension",
+      "normal_strength": 1.0
+    },
+    "canvas": {
+      "tile_size_metres": 1.0,
+      "palette_base_srgb": "#d2ccb7",
+      "description": "Natural flax canvas with interlaced warp and weft",
+      "basecolor": "canvas_basecolor.png",
+      "roughness": "canvas_roughness.png",
+      "normal": "canvas_normal.png",
+      "basecolor_resolution": [
+        1024,
+        1024
+      ],
+      "data_resolution": [
+        512,
+        512
+      ],
+      "height_range_metres_approx": 0.0004,
+      "roughness_mean": 0.94,
+      "uv_hint": "Use physical world/object coordinates divided by tile_size_metres; repeat extension",
+      "normal_strength": 1.0
+    }
+  }
+}

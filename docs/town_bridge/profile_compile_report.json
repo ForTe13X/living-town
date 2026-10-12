@@ -28,12 +28,12 @@
       "details": null
     },
     {
-      "id": "17_original_portal_ids_and_access_preserved",
+      "id": "all_current_original_portal_ids_and_access_preserved",
       "pass": true,
       "details": null
     },
     {
-      "id": "17_original_portal_rules_preserved",
+      "id": "all_current_original_portal_rules_preserved",
       "pass": true,
       "details": null
     },
@@ -68,6 +68,16 @@
       "details": null
     },
     {
+      "id": "bank_and_civic_markers_preserve_flags_without_advertisements",
+      "pass": true,
+      "details": null
+    },
+    {
+      "id": "home2_original_beds_bind_distinct_actual_beds",
+      "pass": true,
+      "details": null
+    },
+    {
       "id": "jobs_and_housing_unchanged",
       "pass": true,
       "details": null
@@ -89,20 +99,21 @@
     "zones": 561,
     "activity_rooms": 223,
     "portal_count": 89,
-    "original_portal_ids": 17,
+    "original_portal_ids": 19,
     "entrances": 49,
     "stairs": 40,
-    "functional_objects": 63,
-    "legacy_interior_functional_objects": 44,
+    "functional_objects": 67,
+    "ui_markers": 2,
+    "legacy_interior_functional_objects": 46,
     "resident_count": 12,
     "affiliate_count": 2,
     "outdoor_open_cells": 38569,
     "outdoor_blocked_cells": 19319
   },
   "source_hashes": {
-    "game/data/map.json": "b6b6dd6a456448a5c45cb00b23f436bccaaaa8838d252cea49d9f8158c9350be",
-    "game/data/spaces.json": "20576b1bcd6ee967726bc6ff1ccf24e7dfac02c6e27405996e2f2e5d5f23ecb3",
-    "game/data/interiors.json": "4526aaf9ff829c32c22de59dfefb1593a4edaf42d0b2d5324f7c93f337932976",
+    "game/data/map.json": "5a51c6d68b744a6f0f9f8df62647b6bda17c71d6768ed325bf2ec9ce6072699c",
+    "game/data/spaces.json": "5ecd091807116e46f57fb04404acf20d742f5616229ac891455a1736c675b027",
+    "game/data/interiors.json": "e937aa1e6d7273b8293ae15878f976b42c89a2acd4b35c546ee6065635b52fe6",
     "game/data/agents.json": "98044c7c12d9ca06c691847e78e33e92785a4beee4126bc645de74dc5a135a49",
     "game/data/buildings.json": "60db5ba64ee7df41661171bf05006f4431f6cb679f0b7eff73fefea6f4f755ea",
     "game/data/jobs.json": "3558f0781814c1e27e67899e9338c83822e938dcbc99c761f0f712d6dd40d248",
@@ -110,7 +121,7 @@
     "game/data/logistics.json": "0910a4e937f9772296dfa41b777f6abb7abd2e3ff7dedc9e240900cfac244cd0",
     "game/data/housing.json": "c9633d1033f042530f86680b1f6e43778ce56b7b0a1c691e0ec8d94d4f4dd040",
     "game/data/festivals.json": "010623dd4ecc1f81fcc75287ef707f9a1fc34a8f14cae5cffbb34447bfc0da43",
-    "game/data/elections.json": "cdd8e8faffab81633920e34e15f50c4112b9605cc53fd49e80eca54836cb7811",
+    "game/data/elections.json": "d93e818780bc58b6c9bdb12b779e174a783cc46bdf37e07359a244c846d791c6",
     "art/living_town/masterplan.json": "b7e5522f62f4a390faa95502537fbbac14856cb278bccb695fbd5cabe186377f",
     "art/living_town/interior_plan.json": "a857d40e536ce84b3ed468a5815c54311f92f46ebbb1e1f7541ce76a498d08b4",
     "art/living_town/town_manifest.json": "09e1a479de52cbfc5636f257a7383562215d30761fbd20c878fadbe4b8c67e85",
@@ -119,22 +130,22 @@
     "art/living_town/tools/terrain_profile.py": "6f722d04566f11cc58b3dd93cace5b781d8b2092bb7e70169f1f08279febc3b8",
     "art/living_town/tools/interior_design.py": "a467e4dc23bd2388e7e924a04a1b478bf0d0b7fc4deeb0616184de69b8c49025",
     "art/living_town/game_assets/export_manifest.json": "ef251073f8547b8b34a56f10fc19d23d4e5d8db0b52f03d85960ac7c9d710d6e",
-    "tools/build_town_profile.py": "bf751edbe21ebef91caae8194013c7a148f5b34e7a254e5f9233cf25f74a7959"
+    "tools/build_town_profile.py": "e9db0ec8d62d618c10353828fbb91c7c5efc0690c19f62b36bd80be226268d52"
   },
   "output_hashes": {
-    "agents.json": "387f57ac806e39556b315a32d5c552e4b60e4f3aa26ce2fca487c2295e71c7a5",
+    "agents.json": "59791794086aabf1972d710737378325e503a7cb8dba83fcbea52658521fb3f7",
     "buildings.json": "e6979fbec7bb7088a23b3452353739a4e72246933aeb00457fca33018f1731a2",
-    "elections.json": "34631fad1213befae53ae02e8583ee23e0cd36cbf3b7c60b89a874ae8aa269df",
+    "elections.json": "8cd81159d25acdd2a92465cf0907f1b6581c329a7840a268e8f26885a8bcdef5",
     "festivals.json": "c2d1439ab158c25ea79a9bc3adb36d95ddbfe9f72cf3eaa587d76a83c47b7a27",
     "housing.json": "3f8f34445e1d23c85d864e4359143a4557395319719391d3616c934b6c999969",
-    "interiors.json": "42b9266be865fa467d0445ca70c04e5443454078809ad41744548e4ade9f69a5",
+    "interiors.json": "f5c056363421846648fb77d01a2a893bebdda3f166ff58a3630865551c4b387e",
     "jobs.json": "b7c313a69b99851e8aa711b5e54c2fb836edee198b731c6043560b3d42855d07",
     "logistics.json": "c36417ed5bd02f240a51b011757c0369a563d1a7f95ecf157551cea04488db23",
-    "map.json": "7107716f74c823387bb52c07eb9042b9c2b5a06cecb4c00b8cd47711cae72e63",
-    "production.json": "69c8590aba0683f074b77e6c461f89f613892b3b3b5ac1e151b549c69f84214b",
-    "profile.json": "6c3516fc10ce2b0622072e84a96750bd46965b46978e3a1be5284490a63c6202",
-    "projection.json": "b699c9711c02c0d9f8f2e62e65a9b0cb6b3ce4d38ddf039697247da5b85629ad",
-    "spaces.json": "44afcec2abe0ea03adeff8401a6f7ecdb8a395987da76c81664e98b9d52cc857"
+    "map.json": "330febe815bbe9d1324cbaa644e04b534973175e20ae7f72275ee1ed740fc5fb",
+    "production.json": "8311bd5eee192751be412a5d17d30ca896f918aa4402a9a714765e075fcf9cb2",
+    "profile.json": "66c800130175677ec9c82ed44d7a1833dca634c602ffcc604e9aa258386d2c5e",
+    "projection.json": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a",
+    "spaces.json": "192d1e9efca883ec9c7d2ed5b83fc78a1f5d255af2a0e64f0851001f10afdbd7"
   },
   "planes": [
     {
@@ -198,7 +209,7 @@
       "initial_components": 1
     },
     {
-      "plane": "home2/1f",
+      "plane": "model_main_home2/1f",
       "open_cells": 359,
       "excluded_island_cells": 2,
       "entry_cell": [
@@ -448,7 +459,7 @@
       "initial_components": 1
     },
     {
-      "plane": "model_lot_12_halftimber/1f",
+      "plane": "home2/1f",
       "open_cells": 352,
       "excluded_island_cells": 0,
       "entry_cell": [
@@ -458,7 +469,7 @@
       "initial_components": 1
     },
     {
-      "plane": "model_lot_12_halftimber/2f",
+      "plane": "home2/2f",
       "open_cells": 333,
       "excluded_island_cells": 0,
       "entry_cell": [
@@ -468,7 +479,7 @@
       "initial_components": 1
     },
     {
-      "plane": "model_lot_12_halftimber/3f",
+      "plane": "home2/3f",
       "open_cells": 336,
       "excluded_island_cells": 0,
       "entry_cell": [
@@ -1271,25 +1282,25 @@
     },
     {
       "id": "Main_home2_L00_Living_Kitchen",
-      "plane": "home2/1f",
+      "plane": "model_main_home2/1f",
       "activity_room": true,
       "connected_open_cells": 217
     },
     {
       "id": "Main_home2_L00_Bedroom",
-      "plane": "home2/1f",
+      "plane": "model_main_home2/1f",
       "activity_room": true,
       "connected_open_cells": 43
     },
     {
       "id": "Main_home2_L00_Bathroom",
-      "plane": "home2/1f",
+      "plane": "model_main_home2/1f",
       "activity_room": true,
       "connected_open_cells": 55
     },
     {
       "id": "Main_home2_L00_Rear_Hall",
-      "plane": "home2/1f",
+      "plane": "model_main_home2/1f",
       "activity_room": false,
       "connected_open_cells": 44
     },
@@ -2369,109 +2380,109 @@
     },
     {
       "id": "lot_12_halftimber_L00_Hall",
-      "plane": "model_lot_12_halftimber/1f",
+      "plane": "home2/1f",
       "activity_room": false,
       "connected_open_cells": 87
     },
     {
       "id": "lot_12_halftimber_L00_Stairwell",
-      "plane": "model_lot_12_halftimber/1f",
+      "plane": "home2/1f",
       "activity_room": false,
       "connected_open_cells": 0
     },
     {
       "id": "lot_12_halftimber_L00_Lower_Landing",
-      "plane": "model_lot_12_halftimber/1f",
+      "plane": "home2/1f",
       "activity_room": false,
       "connected_open_cells": 20
     },
     {
       "id": "lot_12_halftimber_L00_Upper_Landing",
-      "plane": "model_lot_12_halftimber/1f",
+      "plane": "home2/1f",
       "activity_room": false,
       "connected_open_cells": 16
     },
     {
       "id": "lot_12_halftimber_L00_Front_Room",
-      "plane": "model_lot_12_halftimber/1f",
+      "plane": "home2/1f",
       "activity_room": true,
       "connected_open_cells": 128
     },
     {
       "id": "lot_12_halftimber_L00_Rear_Room",
-      "plane": "model_lot_12_halftimber/1f",
+      "plane": "home2/1f",
       "activity_room": true,
       "connected_open_cells": 101
     },
     {
       "id": "lot_12_halftimber_L01_Hall",
-      "plane": "model_lot_12_halftimber/2f",
+      "plane": "home2/2f",
       "activity_room": false,
       "connected_open_cells": 87
     },
     {
       "id": "lot_12_halftimber_L01_Stairwell",
-      "plane": "model_lot_12_halftimber/2f",
+      "plane": "home2/2f",
       "activity_room": false,
       "connected_open_cells": 0
     },
     {
       "id": "lot_12_halftimber_L01_Lower_Landing",
-      "plane": "model_lot_12_halftimber/2f",
+      "plane": "home2/2f",
       "activity_room": false,
       "connected_open_cells": 20
     },
     {
       "id": "lot_12_halftimber_L01_Upper_Landing",
-      "plane": "model_lot_12_halftimber/2f",
+      "plane": "home2/2f",
       "activity_room": false,
       "connected_open_cells": 16
     },
     {
       "id": "lot_12_halftimber_L01_Front_Room",
-      "plane": "model_lot_12_halftimber/2f",
+      "plane": "home2/2f",
       "activity_room": true,
       "connected_open_cells": 106
     },
     {
       "id": "lot_12_halftimber_L01_Rear_Room",
-      "plane": "model_lot_12_halftimber/2f",
+      "plane": "home2/2f",
       "activity_room": true,
       "connected_open_cells": 104
     },
     {
       "id": "lot_12_halftimber_L02_Hall",
-      "plane": "model_lot_12_halftimber/3f",
+      "plane": "home2/3f",
       "activity_room": false,
       "connected_open_cells": 87
     },
     {
       "id": "lot_12_halftimber_L02_Stairwell",
-      "plane": "model_lot_12_halftimber/3f",
+      "plane": "home2/3f",
       "activity_room": false,
       "connected_open_cells": 0
     },
     {
       "id": "lot_12_halftimber_L02_Lower_Landing",
-      "plane": "model_lot_12_halftimber/3f",
+      "plane": "home2/3f",
       "activity_room": false,
       "connected_open_cells": 20
     },
     {
       "id": "lot_12_halftimber_L02_Upper_Landing",
-      "plane": "model_lot_12_halftimber/3f",
+      "plane": "home2/3f",
       "activity_room": false,
       "connected_open_cells": 16
     },
     {
       "id": "lot_12_halftimber_L02_Front_Room",
-      "plane": "model_lot_12_halftimber/3f",
+      "plane": "home2/3f",
       "activity_room": true,
       "connected_open_cells": 101
     },
     {
       "id": "lot_12_halftimber_L02_Rear_Room",
-      "plane": "model_lot_12_halftimber/3f",
+      "plane": "home2/3f",
       "activity_room": true,
       "connected_open_cells": 112
     },
@@ -4399,16 +4410,22 @@
   "shared_residential_beds": {
     "aria": "cafe2f_bed",
     "ben": "home1f_bed",
-    "coco": "bed_1",
+    "coco": "home22f_bed_1",
     "dan": "home1f_bed_1",
-    "evy": "home21f_bed_double",
+    "evy": "home22f_bed",
     "fei": "bed_2",
     "lin": "bed_2",
     "hai": "home1f_bed",
-    "shu": "home21f_bed_double",
+    "shu": "home22f_bed",
     "mei": "home1f_bed_1",
     "qin": "home1f_bed_1",
     "tie": "home1f_bed"
+  },
+  "semantic_building_reassignments": {
+    "home2": {
+      "model_building_id": "lot_12_halftimber",
+      "reason": "Two distinct functional beds require the existing three-storey dwelling; Main_home2 remains a visitable model space."
+    }
   },
   "adaptations": [
     {
@@ -4605,7 +4622,7 @@
   "limits": [
     "Static compiler verifies geometry-aligned topology and legacy action data, not live Godot behavior or economic calibration.",
     "Legacy play/music actions keep their identities at compatible activity surfaces; arcade and hotel piano have no dedicated supplied mesh.",
-    "Legacy six functional sleep anchors remain shared between twelve residents; decorative beds do not gain advertisements.",
+    "Current functional sleep anchors remain shared between twelve residents; decorative beds do not gain advertisements.",
     "Navigation samples interior shell, partitions, stairs and 753 furnishing proxies; decorative trim, roof objects and tree canopies are not pedestrian blockers.",
     "Door leaf visual reveal/collision state is consumer presentation; explicit core portal remains sole plane transition authority."
   ]

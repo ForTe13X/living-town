@@ -177,8 +177,10 @@ func focus_on(world_pos: Vector2, id := "") -> void:
 func follow(agent_id: String) -> void:
 	if agent_id == "":
 		return
+	if mode == Mode.FOLLOW and follow_id == agent_id: return
 	push_history()
 	mode = Mode.FOLLOW; follow_id = agent_id
+	cam.zoom = Vector2.ONE * 1.35
 
 ## 解除跟随：Probe【留在当前视点】，不把 Agent 拉回（analysis §10.1）。
 func unfollow() -> void:
@@ -299,5 +301,17 @@ func _process(delta: float) -> void:
 	if ag.is_empty():
 		unfollow()
 		return
+	var main := get_parent()
+	var sp := String(ag.get("space", "town"))
+	var fl := String(ag.get("floor", "outdoor"))
+	if sp != active_space or fl != active_floor:
+		var graph = main.get("_sg")
+		if graph != null:
+			set_space(sp, fl, graph.bounds_px(sp))
+			if sp != "town":
+				cam.limit_left = -100000; cam.limit_top = -100000
+				cam.limit_right = 100000; cam.limit_bottom = 100000
 	var t := Vector2(float(ag["pos"].x) * 48.0 + 24.0, float(ag["pos"].y) * 48.0 + 24.0)
-	cam.position = cam.position.lerp(t, clampf(FOLLOW_LERP * delta, 0.0, 1.0))
+	var view = main.get("_view")
+	if view != null: t = view._rpos(ag)
+	cam.position = cam.position.lerp(t + Vector2(0, -12), 1.0 - exp(-FOLLOW_LERP * delta))

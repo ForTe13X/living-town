@@ -105,8 +105,13 @@ confidence: N=4（4 个变异体，每一个都跑完并核过退出码）：
 退出码 0=PASS 1=FAIL 2=用法错
 """
 import argparse
+import itertools
+import json
 import os
+import statistics
 import sys
+from pathlib import Path
+from PIL import Image, ImageDraw
 
 # Windows 控制台默认 GBK，编不出 ✅/ΔE 的 → 会在判据全部算完之后炸在 print 上（V3 第一次接进 CI 的原样翻车）。
 try:
@@ -121,6 +126,242 @@ import assert_daynight as _ad   # noqa: E402
 from ciede2000 import de00      # noqa: E402
 
 BASE_W, BASE_H = 1280, 768
+TILE_WORLD = 48.0
+
+
+def _cell(value):
+    return (int(value[0]), int(value[1])) if isinstance(value, list) and len(value) >= 2 else None
+
+
+def _grass_cells(map_data, coastal_data, fixture):
+    """Build grass cells from canonical world layers; the fixture stores policy, not copied map data."""
+    if fixture.get("semantic_id") != "grass":
+        raise ValueError("semantic_id must be 'grass'; a paving/water mask is not a season sample")
+    map_layers = fixture.get("map_layers_to_exclude", [])
+    coastal_layers = fixture.get("coastal_layers_to_exclude", [])
+    allowed_map = {"water", "trees", "blockers", "walls", "doors", "landmarks", "objects"}
+    allowed_coastal = {"surfaces", "tree_belt", "planting", "flowerbeds"}
+    if set(map_layers) != allowed_map or set(coastal_layers) != allowed_coastal:
+        raise ValueError("grass-mask source layer inventory is incomplete or unknown")
+    width, height = int(map_data.get("width", 0)), int(map_data.get("height", 0))
+    if width <= 0 or height <= 0:
+        raise ValueError("map dimensions are invalid")
+    excluded = set()
+    solid_lot_cells = set()
+    roofed_area_cells = set()
+    counts = {}
+
+    def add(value):
+        xy = _cell(value)
+        if xy is not None and 0 <= xy[0] < width and 0 <= xy[1] < height:
+            excluded.add(xy)
+
+    for name in map_layers:
+        before = len(excluded)
+        values = map_data.get(name, [])
+        if isinstance(values, dict):
+            values = values.values()
+        for value in values:
+            if isinstance(value, dict):
+                add(value.get("pos", value.get("cell", [])))
+            else:
+                add(value)
+        counts["map." + name] = len(excluded) - before
+
+    if fixture.get("exclude_area_rects") is True:
+        before = len(excluded)
+        for area in map_data.get("areas", {}).values():
+            rect = area.get("rect", []) if isinstance(area, dict) else []
+            if len(rect) != 4:
+                raise ValueError("area rectangle is malformed")
+            x, y, w, h = map(int, rect)
+            for cy in range(y, y + h):
+                for cx in range(x, x + w):
+                    add([cx, cy])
+                    if (area.get("type") not in (None, "", "plaza") and w >= 3 and h >= 3
+                            and 0 <= cx < width and 0 <= cy < height):
+                        roofed_area_cells.add((cx, cy))
+        counts["map.areas"] = len(excluded) - before
+    if fixture.get("exclude_solid_lots") is True:
+        before = len(excluded)
+        for lot in map_data.get("solid_lots", []):
+            pos, footprint = lot.get("pos", []), lot.get("footprint", [])
+            if len(pos) != 2 or len(footprint) != 2:
+                raise ValueError("solid lot footprint is malformed")
+            x, y = map(int, pos); w, h = map(int, footprint)
+            for cy in range(y, y + h):
+                for cx in range(x, x + w):
+                    add([cx, cy])
+                    if 0 <= cx < width and 0 <= cy < height:
+                        solid_lot_cells.add((cx, cy))
+        counts["map.solid_lots"] = len(excluded) - before
+    for name in coastal_layers:
+        before = len(excluded)
+        values = coastal_data.get(name, {}) if name == "surfaces" else coastal_data.get(name, [])
+        if name == "surfaces":
+            if not isinstance(values, dict):
+                raise ValueError("coastal surfaces are malformed")
+            for cells in values.values():
+                for value in cells:
+                    add(value)
+        elif name == "flowerbeds":
+            for value in values:
+                add(value.get("pos", []) if isinstance(value, dict) else value)
+        else:
+            for value in values:
+                add(value)
+        counts["coastal." + name] = len(excluded) - before
+    margins = fixture.get("occlusion_margins", {})
+    if set(margins) != {"solid_lots", "roofed_areas"}:
+        raise ValueError("occlusion_margins must cover canonical solid_lots and roofed_areas")
+    for name, source_cells in (("solid_lots", solid_lot_cells), ("roofed_areas", roofed_area_cells)):
+        radius = int(margins[name])
+        if radius < 0 or radius > 2:
+            raise ValueError("occlusion margin for %s must be between 0 and 2" % name)
+        before = len(excluded)
+        for x, y in source_cells:
+            for dy in range(-radius, radius + 1):
+                for dx in range(-radius, radius + 1):
+                    if 0 <= x + dx < width and 0 <= y + dy < height:
+                        excluded.add((x + dx, y + dy))
+        counts["occlusion." + name] = len(excluded) - before
+    cells = [(x, y) for y in range(height) for x in range(width) if (x, y) not in excluded]
+    return width, height, cells, counts
+
+
+def _shot_fit_geometry(frame_size, map_w, map_h, fixture):
+    design = fixture.get("design_viewport", [])
+    pad = fixture.get("home_pad", [])
+    hud_free = fixture.get("hud_free_rect", [])
+    if design != [BASE_W, BASE_H] or len(pad) != 2 or len(hud_free) != 4:
+        raise ValueError("shot-fit design viewport or HUD padding drifted from the authored fixture")
+    fw, fh = frame_size
+    if fw % BASE_W != 0 or fh % BASE_H != 0 or fw / BASE_W != fh / BASE_H:
+        raise ValueError("frame dimensions are not an integer scale of the authored shot-fit viewport")
+    zoom = min((BASE_W - float(pad[0])) / (map_w * TILE_WORLD),
+               (BASE_H - float(pad[1])) / (map_h * TILE_WORLD))
+    scale = fw / BASE_W
+    tile = TILE_WORLD * zoom * scale
+    ox = (BASE_W * 0.5 - map_w * TILE_WORLD * 0.5 * zoom) * scale
+    oy = (BASE_H * 0.5 - map_h * TILE_WORLD * 0.5 * zoom) * scale
+    return {"projection": fixture.get("projection"), "tile_px": tile, "origin_px": [ox, oy],
+            "scale": scale, "map_size": [map_w, map_h], "frame_size": [fw, fh],
+            "hud_free_rect": [float(v) * scale for v in hud_free]}
+
+
+def _sample_rect(cx, cy, geometry, fixture):
+    inset = float(fixture.get("sample_cell_inset", 0.18))
+    tile = geometry["tile_px"]; ox, oy = geometry["origin_px"]
+    left, top, right, bottom = geometry["hud_free_rect"]
+    x0 = max(int(round(ox + cx * tile + inset * tile)), int(left))
+    x1 = min(int(round(ox + (cx + 1) * tile - inset * tile)), int(right))
+    y0 = max(int(round(oy + cy * tile + inset * tile)), int(top))
+    y1 = min(int(round(oy + (cy + 1) * tile - inset * tile)), int(bottom))
+    return (x0, y0, x1, y1) if x1 > x0 and y1 > y0 else None
+
+
+def _covered_cells(cells, geometry, fixture):
+    return sum(_sample_rect(cx, cy, geometry, fixture) is not None for cx, cy in cells)
+
+
+def _semantic_sample(path, cells, geometry, fixture, overlay_path=None):
+    im = Image.open(path).convert("RGB")
+    inset = float(fixture.get("sample_cell_inset", 0.18))
+    if not (0.0 <= inset < 0.5):
+        raise ValueError("sample_cell_inset must be between 0 and 0.5")
+    pixels = []
+    sampled_cells = 0
+    overlay = Image.new("RGBA", im.size, (0, 0, 0, 0)) if overlay_path else None
+    draw = ImageDraw.Draw(overlay) if overlay is not None else None
+    for cx, cy in cells:
+        rect = _sample_rect(cx, cy, geometry, fixture)
+        if rect is None:
+            continue
+        x0, y0, x1, y1 = rect
+        x0 = max(0, min(im.width, x0)); x1 = max(0, min(im.width, x1))
+        y0 = max(0, min(im.height, y0)); y1 = max(0, min(im.height, y1))
+        if x1 <= x0 or y1 <= y0:
+            continue
+        crop = im.crop((x0, y0, x1, y1))
+        pixels.extend(crop.get_flattened_data() if hasattr(crop, "get_flattened_data") else crop.getdata())
+        sampled_cells += 1
+        if draw is not None:
+            draw.rectangle((x0, y0, x1 - 1, y1 - 1), fill=(34, 230, 128, 78), outline=(250, 226, 86, 190))
+    if overlay is not None:
+        Image.alpha_composite(im.convert("RGBA"), overlay).save(overlay_path)
+    if not pixels:
+        raise ValueError("grass mask sampled no pixels in this frame")
+    color = tuple(int(statistics.median(px[channel] for px in pixels)) for channel in range(3))
+    return color, len(pixels), sampled_cells
+
+
+def _judge_semantic_set(tag, paths, labels, min_de, cells, geometry, fixture, overlay_dir=None):
+    if len(paths) != 4:
+        print("[SEASON] ❌ %s requires exactly 4 season frames, got %d" % (tag, len(paths)))
+        return 1, None, []
+    min_cells = int(fixture.get("min_grass_cells", 0))
+    min_pixels = int(fixture.get("min_sample_pixels", 0))
+    left, top, right, bottom = geometry["hud_free_rect"]
+    ox, oy = geometry["origin_px"]; tile = geometry["tile_px"]
+    inset = float(fixture.get("sample_cell_inset", 0.18))
+    covered_cells = _covered_cells(cells, geometry, fixture)
+    if covered_cells < min_cells:
+        print("[SEASON] ❌ HUD-free grass mask coverage inconclusive: %d cells < %d; viewport rect=(%.0f,%.0f)-(%.0f,%.0f)" %
+              (covered_cells, min_cells, left, top, right, bottom))
+        return 1, None, []
+    samples = []
+    for label, path in zip(labels, paths):
+        overlay = None
+        if overlay_dir:
+            os.makedirs(overlay_dir, exist_ok=True)
+            overlay = os.path.join(overlay_dir, Path(path).stem + ".grass-mask.png")
+        color, count, sample_cell_count = _semantic_sample(path, cells, geometry, fixture, overlay)
+        if count < min_pixels:
+            print("[SEASON] ❌ %s/%s grass coverage inconclusive: %d pixels < %d" % (tag, label, count, min_pixels))
+            return 1, None, []
+        print("[SEASON] %s/%s semantic=grass cells=%d pixels=%d median=%s" % (tag, label, sample_cell_count, count, color))
+        samples.append({"label": label, "path": str(path), "median_rgb": list(color), "sample_pixels": count,
+                        "grass_cells": sample_cell_count, "coverage_fraction": count / float(geometry["frame_size"][0] * geometry["frame_size"][1]),
+                        "overlay": overlay})
+    worst = (1e9, None)
+    for a, b in itertools.combinations(samples, 2):
+        delta = de00(tuple(a["median_rgb"]), tuple(b["median_rgb"]))
+        mark = "ok" if delta >= min_de else "❌越界"
+        print("    %s↔%s ΔE00=%6.2f %s" % (a["label"], b["label"], delta, mark))
+        if delta < worst[0]:
+            worst = (delta, (a["label"], b["label"]))
+    ok = worst[0] >= min_de
+    print("[SEASON] %s semantic-grass minimum ΔE00=%.2f (%s↔%s), threshold %.2f ⇒ %s" %
+          (tag, worst[0], worst[1][0], worst[1][1], min_de, "PASS" if ok else "FAIL"))
+    return (0 if ok else 1), worst[0], samples
+
+
+def _semantic_self_test(map_path, coastal_path, fixture_path):
+    root = Path(__file__).resolve().parents[2]
+    map_data = json.loads(Path(map_path or root / "game/data/map.json").read_text(encoding="utf-8"))
+    coastal_data = json.loads(Path(coastal_path or root / "game/data/coastal_plan.json").read_text(encoding="utf-8"))
+    fixture = json.loads(Path(fixture_path or Path(__file__).with_name("semantic_grass_mask.json")).read_text(encoding="utf-8"))
+    width, height, cells, _ = _grass_cells(map_data, coastal_data, fixture)
+    geometry = _shot_fit_geometry((BASE_W, BASE_H), width, height, fixture)
+    visible_cells = _covered_cells(cells, geometry, fixture)
+    if visible_cells < int(fixture.get("min_grass_cells", 0)):
+        print("[SEASON-SELFTEST] FAIL: HUD-free production grass mask is below its minimum coverage")
+        return 1
+    wrong_surface = dict(fixture, semantic_id="paving")
+    try:
+        _grass_cells(map_data, coastal_data, wrong_surface)
+        print("[SEASON-SELFTEST] FAIL: paving surface was accepted as grass")
+        return 1
+    except ValueError as exc:
+        if "semantic_id" not in str(exc):
+            print("[SEASON-SELFTEST] FAIL: wrong surface rejected for the wrong reason: %s" % exc)
+            return 1
+    too_small = dict(fixture, min_grass_cells=visible_cells + 1)
+    if _covered_cells(cells, geometry, too_small) >= int(too_small["min_grass_cells"]):
+        print("[SEASON-SELFTEST] FAIL: insufficient sample coverage was accepted")
+        return 1
+    print("[SEASON-SELFTEST] PASS: authored HUD-free grass mask coverage=%d cells; paving rejected; small mask marked inconclusive" % visible_cells)
+    return 0
 
 
 def judge_set(tag, paths, labels, min_de):
@@ -163,10 +404,62 @@ def main():
     ap.add_argument("--night", nargs="+", default=[], help="四帧：春夏秋冬 夜")
     ap.add_argument("--min-de", type=float, default=3.2)
     ap.add_argument("--labels", nargs=4, default=["春", "夏", "秋", "冬"])
+    ap.add_argument("--mask-fixture", help="semantic surface sampling policy JSON")
+    ap.add_argument("--map", help="canonical game/data/map.json")
+    ap.add_argument("--coastal", help="canonical game/data/coastal_plan.json")
+    ap.add_argument("--overlay-dir", help="write annotated semantic-mask overlays here")
+    ap.add_argument("--report-json", help="write per-frame sample counts, transforms and color values")
+    ap.add_argument("--self-test", action="store_true", help="validate production grass-mask coverage and reject a paving mask")
     a = ap.parse_args()
+    if a.self_test:
+        return _semantic_self_test(a.map, a.coastal, a.mask_fixture)
     if not a.noon and not a.night:
         print(__doc__)
         return 2
+    if a.mask_fixture:
+        try:
+            root = Path(__file__).resolve().parents[2]
+            fixture = json.loads(Path(a.mask_fixture).read_text(encoding="utf-8"))
+            map_data = json.loads(Path(a.map or root / "game/data/map.json").read_text(encoding="utf-8"))
+            coastal_data = json.loads(Path(a.coastal or root / "game/data/coastal_plan.json").read_text(encoding="utf-8"))
+            if fixture.get("projection") != "main_shot_fit":
+                raise ValueError("fixture projection must be main_shot_fit")
+            width, height, cells, layer_counts = _grass_cells(map_data, coastal_data, fixture)
+        except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
+            print("[SEASON] ❌ semantic grass mask invalid/inconclusive: %s" % exc)
+            return 1
+        if not cells:
+            print("[SEASON] ❌ semantic grass mask contains no eligible cells")
+            return 1
+        failures = 0
+        report = {"schema": "living-town.semantic-season-samples/1", "semantic_id": "grass",
+                  "projection": fixture["projection"], "mask_fixture": str(a.mask_fixture),
+                  "map_size": [width, height], "grass_cells": len(cells), "excluded_layer_counts": layer_counts,
+                  "minimum_delta_e00": a.min_de, "groups": {}}
+        for tag, paths in (("noon", a.noon), ("night", a.night)):
+            if not paths:
+                continue
+            geometries = []
+            for path in paths:
+                with Image.open(path) as im:
+                    geometries.append(_shot_fit_geometry(im.size, width, height, fixture))
+            if any(g != geometries[0] for g in geometries[1:]):
+                print("[SEASON] ❌ %s frames do not share the same shot-fit transform" % tag)
+                failures += 1
+                report["groups"][tag] = {"verdict": "invalid_transform"}
+                continue
+            overlay_dir = os.path.join(a.overlay_dir, tag) if a.overlay_dir else None
+            result, worst, samples = _judge_semantic_set(tag, paths, a.labels, a.min_de, cells,
+                                                         geometries[0], fixture, overlay_dir)
+            failures += result
+            report["groups"][tag] = {"verdict": "PASS" if result == 0 else "FAIL", "minimum_delta_e00": worst,
+                                     "geometry": geometries[0], "samples": samples}
+        if a.report_json:
+            out = Path(a.report_json)
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print("=== SEMANTIC GRASS SEASON GATE: %s ===" % ("PASS" if failures == 0 else "FAIL (%d)" % failures))
+        return 1 if failures else 0
     fails = 0
     if a.noon:
         f, _ = judge_set("昼", a.noon, a.labels, a.min_de)

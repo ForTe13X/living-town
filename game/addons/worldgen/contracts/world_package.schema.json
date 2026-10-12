@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://living-town.invalid/worldgen/world_package.schema.json",
+  "title": "WorldPackage/1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "world_id", "coordinate_frame", "capabilities", "semantic", "presentation", "provenance", "digests"],
+  "properties": {
+    "schema": {"const": "WorldPackage/1"},
+    "world_id": {"type": "string", "minLength": 1},
+    "coordinate_frame": {"type": "object", "required": ["id", "q_per_cell", "pixels_per_cell"], "properties": {"id": {"const": "plan_xz_q48/1"}, "q_per_cell": {"const": 48}, "pixels_per_cell": {"type": "integer", "minimum": 1}}, "additionalProperties": true},
+    "capabilities": {"type": "object"},
+    "semantic": {"type": "object", "required": ["kind"], "properties": {"kind": {"type": "string", "minLength": 1}}, "additionalProperties": true},
+    "presentation": {"type": "object"},
+    "provenance": {"type": "object"},
+    "digests": {"type": "object", "required": ["semantic_sha256", "presentation_sha256"], "properties": {"semantic_sha256": {"pattern": "^[a-f0-9]{64}$"}, "presentation_sha256": {"pattern": "^[a-f0-9]{64}$"}}, "additionalProperties": false}
+  }
+}

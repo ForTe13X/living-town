@@ -33,6 +33,11 @@ func _init() -> void:
 	var golden_path := GOLDEN_DEFAULT     # 有就比，没有就跳过（不误红）
 	var bake_path := ""
 	var args := OS.get_cmdline_user_args()
+	var path_error := preload("res://bench/BenchArgs.gd").path_error(args, ["--golden", "--bake-golden"])
+	if path_error != "":
+		print("DetGate CLI: FAIL: " + path_error)
+		quit(2)
+		return
 	for i in args.size():
 		if args[i] == "--seeds" and i + 1 < args.size():
 			seeds_spec = args[i + 1]; seeds = _parse_seeds(seeds_spec)

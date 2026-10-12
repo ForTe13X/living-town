@@ -1,0 +1,9 @@
+{
+  "schema": "worldgen.recipe/1",
+  "id": "warm_bay_s1",
+  "source_revision": 1,
+  "coordinate_frame": {"id": "plan_xz_q48/1", "q_per_cell": 48, "pixels_per_cell": 48},
+  "capabilities": {"flat_ground": true, "portals": true, "presentation_profiles": ["code_only_2d"]},
+  "stages": [{"id": "source", "operator": "worldgen.coastal_compile/1", "inputs": {}, "parameters": {"source_spec": "res://coastal/warm_bay_s1/town.spec.json"}}],
+  "outputs": {"semantic": "source.semantic", "presentation": "source.presentation"}
+}

@@ -28,7 +28,7 @@
     "<absolute_output_directory>"
   ],
   "preview_user_flag": "--walkthrough-preview",
-  "initial_mode": "Main creates normal LifeMode resident selector; do not pass --no-life or --life-as. The selector is presentation-hidden only for the establishing survey.",
+  "initial_mode": "Normal resident selector. Before the timed tour, public LifeMode.start_life(aria), speed key3, real waiting to tick90, pause key0 and LifeMode.begin_select() establish morning without relocating Aria. The pre-roll is included in the measured boot prefix and trimmed from delivery.",
   "boot_prefix": "Report movie_boot_frames_to_trim from Engine.get_frames_drawn at the defined tour start. Trim that many captured boot frames before the600-second narration timeline. Verify actual output frame count independently.",
   "camera_api": {
     "owner": "Harness priority49, between LifeMode priority0 and WorldView3D priority50",
@@ -40,18 +40,18 @@
       "WorldView3D.sync_camera"
     ],
     "interpolation": "Smoothstep of integer tour frame/FPS, independent of OS wall clock and Sim tick rewinds",
-    "inspections": "Presentation only; LifeMode process/HUD temporarily paused, resident address unmodified; restore before real gameplay input.",
+    "inspections": "Presentation only: pause LifeMode processing/HUD and hide observer cards; keep the chapter label. Restore before real input. No actor address or clock edits.",
     "orthographic_pitch_degrees": 56,
     "coordinate_system": "Camera centers are canonical px through the existing projection; geography listed below is original Blender XY meters."
   },
   "camera_geography_m": {
     "overview_from": [
-      -8,
-      4
+      1,
+      2
     ],
     "overview_to": [
-      -8,
-      13
+      1,
+      10
     ],
     "inland_from": [
       -44,
@@ -285,11 +285,11 @@
     "source-bound actual checkpoint PNGs"
   ],
   "source_bindings": {
-    "game/data/town3d/profile.json": "6c3516fc10ce2b0622072e84a96750bd46965b46978e3a1be5284490a63c6202",
-    "game/data/town3d/projection.json": "b699c9711c02c0d9f8f2e62e65a9b0cb6b3ce4d38ddf039697247da5b85629ad",
+    "game/data/town3d/profile.json": "66c800130175677ec9c82ed44d7a1833dca634c602ffcc604e9aa258386d2c5e",
+    "game/data/town3d/projection.json": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a",
     "game/assets/town3d/stage_manifest.json": "2787a4895e0f6b5889fdaeb7c83bcccc04ec035544898615c33b5ba1efad2225"
   },
-  "allowed_core_entry": "Actual viewport input -> existing Main/LifeMode -> Sim transactions; public start_life selection only. Read-only Sim queries/signals supply QA evidence.",
+  "allowed_core_entry": "Actual viewport input -> existing Main/LifeMode -> Sim transactions; public start_life selection only. Read-only Sim queries/signals supply QA evidence. Pre-roll uses public LifeMode.start_life(aria), speed keys, live waiting to tick90, and LifeMode.begin_select().",
   "prohibited": [
     "Direct agent placement or option/needs writes",
     "Navigation/room/portal rewrites",

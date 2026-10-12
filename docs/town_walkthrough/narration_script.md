@@ -1,10 +1,12 @@
 # Living Town: ten-minute walkthrough narration
 
-Script ready; recording and audio measurement pending. This document contains **1,307 spoken words** in 22 paragraphs across 11 chapters. Target voice: `en-US-AriaNeural`, normal rate (`+0%`). The recording route lasts 600 seconds at 24 frames per second.
+Script ready; recording and audio measurement pending. This document contains **945 spoken words** in 22 paragraphs across 11 chapters. Target voice: `en-US-AriaNeural`, normal rate (`+0%`). The recording route lasts 600 seconds at 24 frames per second.
 
-The paragraph windows below are editorial targets. They provide 525 seconds of speech windows and 75 seconds of opening, closing, and inter-paragraph space. At the target allocation, individual paragraphs require approximately 141–155 words per minute. These are word-budget calculations, not measured TTS performance. Root will generate and measure Edge TTS audio and derive subtitles from actual word boundaries.
+The paragraph windows below are editorial targets. They provide 524 seconds of speech windows and 76 seconds of opening, closing, and inter-paragraph space. At the target allocation, individual paragraphs require approximately 102–115 words per minute. These are word-budget calculations, not measured TTS performance. Root will generate and measure Edge TTS audio and derive subtitles from actual word boundaries.
 
 Use only the actual game capture for this walkthrough. At 04:30–07:30, display **INSPECTION — CAMERA ONLY**; moving the camera and opening a cutaway must not relocate a resident. The opening and closing observer views also stay visually distinct from controlled movement. Social outcomes must follow the recorded game; the script does not promise acceptance.
+
+An initial normal-rate Aria take measured 21.768 seconds against a 19-second window. This shorter revision uses the measured cadence as guidance; every revised take still requires actual duration validation. The route remains ten minutes, with more room to observe the game between spoken phrases.
 
 ## Spoken script
 
@@ -12,27 +14,27 @@ Use only the actual game capture for this walkthrough. At 04:30–07:30, display
 
 **00:02–00:21 · 01a**
 
-Welcome to Living Town. This is the actual game view, with the delivered coastal town connected to the existing life simulation. Forty-nine buildings contain eighty-nine floors. Streets, courtyards, workshops, homes, and a small harbor share one place, shaped around everyday movement and the spaces between buildings.
+Welcome to Living Town. This is the running game, connecting the coastal model to the existing life simulation. Forty-nine buildings contain eighty-nine floors, linked by streets, courts, homes, workshops, and a small harbor.
 
 *Capture note: Paused observer opening. Show the actual imported town in Main, not an offline Blender still. Avoid implying every building already has bespoke gameplay.*
 
 **00:23–00:43 · 01b**
 
-The view can move from a broad town plan to a resident's doorstep. Pale walls, dark roofs, stone paving, and planted edges give the settlement a clear coastal character. This tour will alternate between playing as one resident and inspecting the architecture. We will identify those inspection sections as they begin.
+We will play as one resident, then inspect the architecture. Pale walls, dark roofs, stone paving, and planted edges give this town its coastal character. Camera-only inspection will be labelled clearly, separate from the resident's actual movement.
 
 *Capture note: Slow observer camera only; simulation paused. Establish inspection/gameplay distinction before the first transition.*
 
 ### 02. Meet Aria and read the HUD
 
-**00:47–01:11 · 02a**
+**00:50–01:13 · 02a**
 
-We now take control of Aria through the existing life mode. Her upper-floor rooms sit above the café, with a bedroom, kitchen, bathroom, and a real route downstairs. The portrait, name, job, money, wishes, and needs belong to the same resident as before. The new town changes where her life is shown, while retaining her identity and rules.
+We choose Aria through the existing life mode. Her upper-floor rooms sit above the café, with a real route downstairs. The portrait, name, job, money, wishes, and needs belong to the same resident as before. Her identity and rules are retained.
 
-*Capture note: Use public start_life('aria'), not direct agent-state edits. Owner apartment above café; do not describe it as an unrelated house.*
+*Capture note: The selector appears at 45 seconds and public start_life('aria') runs at 50 seconds. Begin this paragraph at that genuine selection transition. Owner apartment above café; no direct agent-state edits.*
 
 **01:14–01:38 · 02b**
 
-The needs display tracks hunger, energy, social contact, fun, and hygiene. Watch it alongside the clock and the event history. Actions take time, and their results come from the simulation. Movement uses the keyboard or a ground click. Nearby people, furnishings, and doors offer interactions through the familiar menu and the E key. Zoom changes the view without changing Aria's state.
+The bars track hunger, energy, social contact, fun, and hygiene. Watch them beside the clock. Actions take time. Use the keyboard or a ground click to walk, and E to interact nearby. Zoom changes the view without changing Aria's state.
 
 *Capture note: Keep existing LifeMode HUD readable. Show needs, time, and an available prompt. Camera changes are view-only; no claim that camera motion advances time.*
 
@@ -40,41 +42,41 @@ The needs display tracks hunger, energy, social contact, fun, and hygiene. Watch
 
 **01:42–02:06 · 03a**
 
-Here, movement follows the room layout. Walls, furniture, and stair openings define where Aria can stand. The interior grid is finer than the outdoor grid, so a narrow room can have a reachable approach to its bed or counter. Clicking through a wall does not make a shortcut. The route must find a legal way around the obstruction.
+Walls, furnishings, and stair openings define where Aria can stand. The interior grid is finer than the outdoor grid, allowing reachable approaches beside beds and counters. A click through a wall cannot create a shortcut. Movement must find a legal route around it.
 
 *Capture note: Record real input and visible multi-frame walking. Indoor cells are 0.25m; outdoor cells 0.5m. Do not claim continuous physics navigation or a navmesh.*
 
 **02:09–02:33 · 03b**
 
-The stairs connect separate simulation floors at an authored opening. Aria approaches the stair, uses its transition, and arrives on the level below. That matters for access as well as appearance: a private stair is not automatically available to every resident. The character keeps the original walking animation and directional art, now positioned at the correct height in the three-dimensional rooms.
+The stair transition has brought Aria downstairs through a legal opening. Private stairs are not available to every resident. At the café table, a meal uses the existing action system. We watch for actual completion and its effect on her needs.
 
-*Capture note: Use the genuine café owner stair route. No teleporting or direct Sim writes. Permissions remain existing engine authority. Sprite height is 1.7m, grounded from the projection.*
+*Capture note: Past-tense recap of the actual stair transition just seen. The full route now shows the table meal; record its actual completion and need effect. Do not infer completion from a preview that skips this dwell.*
 
 ### 04. Use a real café fixture
 
 **02:37–03:03 · 04a**
 
-Downstairs, we choose the café counter itself. A click on the visible furnishing resolves to an existing functional object and a reachable place beside it. The menu offers the actions that the engine permits. Aria walks to the approach and spends time completing the selected action. Its effect appears in her state and event history, rather than being added by the renderer.
+We click the visible café counter. The furnishing resolves to an existing functional object and a reachable approach beside it. Its menu offers permitted actions. Aria walks into place and takes time to act. The simulation records the result in her state and history.
 
 *Capture note: Capture actual counter mesh pick, legal menu, walking approach, and completion. Counter aliases can share the physical fixture; do not insist on one alias label if another legal menu resolves.*
 
 **03:06–03:33 · 04b**
 
-The model contains seven hundred and fifty-three furnishing assemblies, but decoration and function are different layers. Sixty-three functional objects are mapped into this town. A shelf or flower pot does not gain an action just because it has geometry. Social interaction also keeps its existing checks: distance, access, and the other resident's response matter. The record lets us see what actually happened, including an unsuccessful attempt.
+The town has seven hundred and fifty-three furnishing assemblies. Only mapped functional objects offer game actions. Decorative shelves and pots do not automatically offer actions. Social attempts retain the existing access checks and the other resident's response. Jobs and wages retain their existing engine rules.
 
-*Capture note: Do not claim all 753 assemblies are interactive. Social footage must be an actual attempt; acceptance is not guaranteed. If no social event occurs here, show the interaction opportunity and retain the later attempt chapter.*
+*Capture note: Do not claim all 753 assemblies are interactive. Functional mapping count belongs to the current compiled profile; the compiler may add mapped civic fixtures, so this paragraph deliberately avoids an obsolete total. Social footage must be an actual attempt and acceptance is not guaranteed.*
 
 ### 05. Step outside and keep the resident visible
 
 **03:37–04:01 · 05a**
 
-We leave through the café's real doorway and step into the public street. The character remains a two-dimensional sprite, using the retained character sheets inside a three-dimensional world. Its body has normal depth, so a roof or tree can pass in front of it. The ground marker and doorway prompt stay tied to the resident's actual position and nearby opportunity.
+Aria leaves through the real café doorway. Her original directional character sheets now appear inside a three-dimensional world. The body keeps normal depth, so roofs and trees can pass in front of it. Ground markers and interaction prompts remain attached to her actual position.
 
 *Capture note: Use genuine exterior portal. Retain buildings and trees. Do not describe sprite art as new 3D character meshes.*
 
 **04:04–04:28 · 05b**
 
-When geometry blocks the camera's view of the controlled resident, a gold silhouette makes Aria readable. It appears only for that obstruction; the normal sprite still obeys depth. In a clear view, the silhouette disappears. This keeps the awning and roof in place while helping us follow a person through the street. We now walk toward the plaza with the same controls.
+When geometry blocks the controlled resident, a gold silhouette keeps Aria readable. It appears only during that obstruction. The normal sprite still obeys depth, and the silhouette disappears in clear views. The awning and roof remain in place as we walk toward the plaza.
 
 *Capture note: Show real blocked line of sight under the café awning and a clear view if available. The controlled-only ghost is model-geometry tested at 5 Hz; do not claim all NPCs become visible through buildings.*
 
@@ -82,13 +84,13 @@ When geometry blocks the camera's view of the controlled resident, a gold silhou
 
 **04:32–04:58 · 06a**
 
-This next section is architectural inspection. We move the camera and reveal selected floors; we are not moving Aria into these rooms. Across the town, five hundred and sixty-one logical zones include both rooms and circulation. Two hundred and twenty-three are activity rooms. Those distinctions help separate a bedroom or workroom from the hall, landing, and stair space that makes it usable.
+This is architectural inspection: camera movement, not Aria's travel. The town has five hundred and sixty-one logical zones, including circulation. Two hundred and twenty-three are activity rooms. Halls, landings, and stairs connect those rooms, giving each interior a usable layout. Each group is named and inspectable.
 
 *Capture note: Display INSPECTION — CAMERA ONLY throughout 270–330 seconds. Camera/probe and local cover changes only; preserve resident positions. Counts are final 561 zones / 223 activity rooms, superseding the earlier 549-zone plan.*
 
 **05:01–05:28 · 06b**
 
-Look for the practical pieces that explain each room: beds and storage in sleeping rooms, bookshelves and tables in the library, and separate enclosed bathrooms in the hotel suites. Kitchens have a sink, hob, and a distinct small refrigerator. Furnishings are grouped by room and floor, so a cutaway can expose one interior while neighboring buildings retain their roofs. These are authored layouts, not a claim of building-code approval.
+Look for beds and storage, library shelves and tables, and enclosed bathrooms in hotel suites, with bedroom privacy preserved. Kitchens have sinks, hobs, and distinct refrigerators. Room and floor groups let a cutaway expose one interior while neighboring roofs remain intact. These authored dimensions do not establish building-code approval.
 
 *Capture note: Inspect planned library/home/hotel cameras using actual imported geometry. Some asset detail may be small in the game view; do not replace this with offline stills without labeling them. Widths are nominal authored dimensions.*
 
@@ -96,13 +98,13 @@ Look for the practical pieces that explain each room: beds and storage in sleepi
 
 **05:32–05:58 · 07a**
 
-We remain in inspection mode as the camera follows the town's outdoor structure. Residential rows turn at different angles, streets bend, and small passages lead into courts. The buildings do not sit on one flat board. Roads, plazas, and building pads have authored elevations, while entrance thresholds connect the visible model to the movement grid. The harbor sits at the coastal edge of that same site.
+We remain in inspection mode. Residential rows turn, streets bend, and passages lead into courts. The town has actual surface elevations and gently graded paths rather than a flat board. Roads, plazas, and building pads meet entrance thresholds. The harbor sits at the coastal edge of the same site.
 
 *Capture note: Display INSPECTION — CAMERA ONLY. Show irregular layout and actual surface elevation. No claim of resident traversal along every camera movement.*
 
 **06:01–06:28 · 07b**
 
-These levels describe a fictional engineered site. They give the quay, streets, and planted ground a coherent relationship, but they are not a surveyed coast or a hydraulic study. Terrain heights ground residents, and authored blockers keep them out of building footprints and the pond. That movement contract is distinct from general physics. The model does not supply every collision or navigation feature that another game might need.
+This is a fictional engineered site, not a surveyed coast or hydraulic study. Terrain heights ground residents, while authored blockers exclude building footprints and water. The movement contract uses the game's spatial grid. Another engine would still need its own decisions about physics, collision, and navigation.
 
 *Capture note: Do not imply certified drainage, shoreline physics, imported GLB collisions, or a generated navmesh. Current bridge movement uses the canonical grid/profile.*
 
@@ -110,13 +112,13 @@ These levels describe a fictional engineered site. They give the quay, streets, 
 
 **06:32–06:58 · 08a**
 
-The park pond is a cut into the terrain, with a level water surface and graded banks around a lower bed. A continuous shore, reeds, benches, and a connected walking loop make its edge readable. This is an ornamental pond with authored geometry. The camera can show its shape, while the movement rules keep residents on accessible ground instead of allowing a path straight across the water.
+The park pond cuts into the terrain, with level water above a lower bed and graded banks. A continuous shore, reeds, benches, and a connected loop make the edge readable. This is an authored ornamental pond. Movement rules keep residents on accessible ground beside the water, with planted edges.
 
 *Capture note: Display INSPECTION — CAMERA ONLY. Pond water Z is -0.12 m and bed Z is -0.92 m, with a real basin and banks. Avoid unsupported natural hydrology, swimming, or wildlife claims.*
 
 **07:01–07:28 · 08b**
 
-Fifty-two placed landscape trees help shape streets, courts, and the park, with broader crowns and willows around the pond. Layered flower beds, low planting, garden islands, and coastal grasses add another scale of detail. Openings in the planting preserve doors, paths, and views. The aim is a town with shade and garden enclosure, where a walk has edges and destinations, rather than scattered props across an empty lawn.
+Fifty-two planned landscape trees shape streets, courts, and the park. Broad crowns and willows frame the pond. Flower beds, garden islands, low planting, and coastal grasses add smaller detail. Openings preserve doors, paths, and views. The aim is shade and garden enclosure along useful walking routes. Background woodland adds distant enclosure.
 
 *Capture note: The count of 52 refers to planned local landscape trees, not every background forest tree. Show actual connected canopy and horticulture; do not equate projected crown envelopes with measured opaque shade.*
 
@@ -124,27 +126,27 @@ Fifty-two placed landscape trees help shape streets, courts, and the park, with 
 
 **07:32–07:56 · 09a**
 
-We return to Aria and resume the life simulation. Turning on autonomy lets the existing decision system choose among available actions. Needs, jobs, access, and circumstances shape those choices. The three-dimensional view follows the resulting movement and activity; it does not create a second simulation. The logic backend runs locally without downloading a language model or requiring generated dialogue for an action.
+We return to Aria for a social attempt. A visible neighbor must also be reachable. Walls, floors, and access rules matter even when both people appear on screen. Acceptance or refusal belongs to the running game. Read the event and need changes to see the outcome.
 
-*Capture note: End INSPECTION label, restore controlled resident view, then enable autonomy through existing LifeMode input/public API. No direct writes to agent location, needs, money, or clock.*
+*Capture note: End INSPECTION label and restore normal resident view. Actual social attempt is at 450–473 seconds, before autonomy. Do not force another agent's state or promise success. If unavailable, record the real access/availability reason.*
 
 **07:59–08:23 · 09b**
 
-Watch a social attempt closely. A visible neighbor must also be reachable in the same valid space. Walls, floors, and access rules still matter when the camera can see both people. Acceptance or refusal belongs to the running game. Read the event and need changes together, and let the recorded result tell us whether this attempt became a completed interaction.
+Now we enable autonomy. The existing decision system chooses available actions according to needs, jobs, access, and circumstances. The view follows the movement and activity; it does not create a second simulation. This logic backend runs locally without a downloaded language model or required generated dialogue.
 
-*Capture note: Record actual social attempt and observed outcome. Do not force another agent's state or narrate a guaranteed success. If unavailable, note the real access/availability reason in the recording evidence.*
+*Capture note: Actual autonomy begins at about 473 seconds, after the social attempt. Enable it through existing LifeMode input/public API. No direct writes to resident position, needs, money, or the clock.*
 
 ### 10. Save, continue, and load
 
 **08:27–08:51 · 10a**
 
-Now we save with F five, let the game continue, and load with F eight. The save belongs to the existing simulation and life mode, including the controlled resident and her state. Loading rebuilds the view from that state. The three-dimensional profile uses its own quicksave file. Incompatible spatial data is rejected instead of loading into a different town layout.
+We save with F five, let the game continue, and load with F eight. Loading rebuilds the view from the saved simulation and resident state. The three-dimensional profile uses a separate quicksave. Incompatible spatial data is rejected instead of loading into a different layout.
 
 *Capture note: Capture real F5/F8 event dispatch and loaded-state evidence. Narration assumes this recorded step succeeds; if it fails, fix/re-record or revise truthfully. Separate user://town3d_quicksave.dat from the legacy save.*
 
 **08:54–09:18 · 10b**
 
-The art also has a portable life. Blender sources and engine-neutral exports retain named buildings, floors, rooms, materials, and furnishing groups. The game bridge binds those assets to its spatial profile. Frozen file hashes, license credits, and test evidence record which versions were delivered. The package remains inspectable and reproducible without making this engine the town's only possible consumer.
+The art remains portable. Blender sources and engine-neutral exports keep named buildings, floors, rooms, materials, and furnishing groups. This bridge binds them to its spatial profile. Frozen file hashes, license credits, and test evidence record the delivered versions, leaving the town usable by other consumers.
 
 *Capture note: Camera can slowly widen while the saved/loaded game remains visible. Engine-agnostic GLB exports are a separate art delivery; avoid implying the runtime loads the high-detail 642 MB GLB. Original maps plus the CC0 HDRI and OFL font are credited in accompanying docs.*
 
@@ -152,13 +154,13 @@ The art also has a portable life. Blender sources and engine-neutral exports ret
 
 **09:22–09:39 · 11a**
 
-The editable game passed twenty-eight logical checks, twenty-seven visual interaction checks, and eleven selected legacy regressions. The packaged Windows build separately passed a normal launch and actual rendered-screen check. That packaged boot check does not repeat the full interaction suite.
+The editable runtime passed thirty-six logical checks and twenty-seven visual checks. Legacy regression scenes also passed. The Windows package separately passed normal launch and screen-render checks, rather than the full interaction suite.
 
 *Capture note: Slow whole-town closing view. Distinguish source-runtime gameplay evidence from exported native boot/render proof; do not claim 27 exported interaction checks.*
 
 **09:42–09:59 · 11b**
 
-This playable bridge connects detailed places, retained residents, and observable consequences. It does not establish finished balance, unlimited population, or broad hardware performance. The full town loads together. You can inspect a resident moving, acting, and saving within the existing rules.
+This bridge connects places, retained residents, and observable consequences. It does not establish finished balance or broad hardware performance. The full town loads together. Inspect movement, actions, and saved life.
 
 *Capture note: No LOD, streaming, imported collision authority, or performance guarantee. End on the actual game view, not the concept image. Let the last spoken word finish before 600 seconds.*
 
@@ -173,8 +175,8 @@ Generate each paragraph separately so the chapter route stays stable. Keep a nat
 ## Evidence boundaries
 
 - Authoring inventory: 49 buildings, 89 floors, 561 logical room/circulation zones, 223 activity rooms, 753 furnishing assemblies, 40 stair flights, and 52 specifically planned local landscape trees. Background woodland is separate.
-- Gameplay scope: 63 functional objects mapped to the existing simulation. Decoration alone does not create an economic or needs action. Shared fixture aliases retain the engine’s original identities.
-- Existing editable-runtime evidence: 28 logical checks, 27 visual interaction checks, and 11 selected legacy regressions.
+- Gameplay scope: Only explicitly mapped functional objects belong to the existing simulation; the exact total follows the current compiled profile. Decoration alone does not create an economic or needs action. Shared fixture aliases retain the engine’s original identities.
+- Current merged editable-runtime evidence: 36 logical checks and 27 visual interaction checks. The current CI regression target is 35 legacy scenes; completion must come from the fresh report. The older 11 selected regressions are historical evidence.
 - Packaged Windows evidence: normal Main entry, actual GPU boot/render capture, and binary hash bindings. It does not repeat the full source-runtime interaction suite.
 - Outdoor movement uses authored grid/profile blockers and terrain heights. No claim of a general imported collision system, navmesh, streaming, LODs, building-code certification, natural hydrology, finished balance, or broad hardware performance.
 - Engine-neutral art sources/exports and their licenses remain separately delivered. The current bridge consumes the optimized staged model, not the optional high-detail town export.

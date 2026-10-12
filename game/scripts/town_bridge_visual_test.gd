@@ -12,6 +12,7 @@ var model: Node
 var report: Dictionary = {"schema": "living_town.bridge.visual.v1", "checks": [], "screenshots": [], "input_events": []}
 var failures: int = 0
 var output_dir: String = ""
+var report_path: String = ""
 
 
 func ck(label: String, passed: bool, detail: Variant = null) -> void:
@@ -159,6 +160,16 @@ func actual_body_los(sprite: Sprite3D) -> Dictionary:
 
 func _ready() -> void:
 	output_dir = ProjectSettings.globalize_path("res://").path_join("../docs/town_bridge/captures").simplify_path()
+	report_path = output_dir.get_base_dir().path_join("visual_test_report.json")
+	var args: PackedStringArray = OS.get_cmdline_user_args()
+	for index: int in range(args.size() - 1):
+		if args[index] == "--town-test-dir":
+			output_dir = args[index + 1]
+			if not output_dir.is_absolute_path():
+				push_error("--town-test-dir requires an absolute directory")
+				get_tree().quit(1)
+				return
+			report_path = output_dir.path_join("visual_test_report.json")
 	DirAccess.make_dir_recursive_absolute(output_dir)
 	if not OS.get_cmdline_user_args().has("--town3d"):
 		ck("explicit_actual_main_town3d_mode", false, "Pass -- --town3d --backend logic --life-as aria")
@@ -321,7 +332,7 @@ func finish() -> void:
 	report["failure_count"] = failures
 	report["engine_version"] = Engine.get_version_info()
 	report["display_server"] = DisplayServer.get_name()
-	var path: String = ProjectSettings.globalize_path("res://").path_join("../docs/town_bridge/visual_test_report.json").simplify_path()
+	var path: String = report_path
 	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
 	var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
 	if file != null:

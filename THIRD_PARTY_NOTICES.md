@@ -42,6 +42,7 @@
 ## 3D 小镇美术交付
 
 - 建筑、地形、植物与家具由本项目程序化生成；原始来源与构建记录保存在独立 Blender 交付中，桥接包携带同一 GLB 的 SHA-256 绑定。
+- **Kloofendal 48d Partly Cloudy (Pure Sky)** — Poly Haven, Greg Zaal / Jarod Guest，CC0 1.0。未修改的 2K HDRI 打包在 Blender 环境中；GLB 材质独立于该环境。来源与文件校验和见 `art/living_town/external_assets/polyhaven/PROVENANCE.json`。
 - **Adobe Source Serif 4 Regular** — 未修改，SIL Open Font License 1.1，用于模型内招牌文字。字体 SHA-256：`e5a4ee6a3d87bb9024796be390c6771e2a0eb1883dae25effaf57ca01668e24b`；来源与许可见 `art/living_town/external_assets/fonts/PROVENANCE.json` 和同目录 `LICENSE.md`，发行包内保留副本。
 
 ## 历史遗留（已清除）

@@ -186,7 +186,7 @@ GATED = {
     "decor/rock", "decor/stump", "decor/mushroom",
     "obj/bench", "obj/counter", "obj/desk",
     # J2 自绘的 3 张：配方在 tools/slice_all.py 的 SPRITES 里（字符画 → render_drawn() 纯函数重建）。
-    "obj/bath", "obj/arcade", "decor/tree_big",
+    "obj/bath", "obj/arcade",
     # emote 10 张：confront 是 CC0 切片（H1 眼验判 OK，像素未动）；其余 9 张是 I1 自绘，
     # 配方在 tools/slice_all.py 的 GLYPHS 里（字符画 → render_glyph() 纯函数重建）。
     "emote/confront",
@@ -200,6 +200,7 @@ DISTINCT_SET = sorted(k for k in GATED if k.startswith("emote/"))
 
 # ── 不上门的 1 张，写明理由。**这张表和上面那张必须并起来盖住整份配方**（自证④）──────────
 NOT_GATED = {
+    "decor/tree_big": "Retired by the coastal PixelLab tree belts; no renderer call remains. Coastal assets are checked by exterior_visual_test.",
     "decor/tree_small": "从不出现：不在 WorldView.DECOR_POOL 里（本门自证④每次重核）—— 该接线或删掉，不是该钉住",
     # building/{house,hut,shop} 曾经在这里，理由是「从不出现：Art.building_tex() 全仓零调用点」。
     # I2（2026-07-30）执行了这条注释自己开的第二条药方——**删掉**。它们现在归下面的 DELETED 管。

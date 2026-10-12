@@ -69,10 +69,9 @@
       "model_building_id": "Main_home",
       "public_venue": false
     },
-    "home2": {
-      "_gen": true,
+    "model_main_home2": {
       "kind": "interior",
-      "label": "民居",
+      "label": "Main_home2",
       "bounds": [
         0,
         0,
@@ -255,6 +254,18 @@
         52,
         28
       ],
+      "camera": {
+        "mode": "explore",
+        "entry_zoom": 1.55,
+        "entry_anchor": [
+          8,
+          7
+        ],
+        "hud_pad": [
+          280,
+          220
+        ]
+      },
       "floors": [
         "1f"
       ],
@@ -331,9 +342,10 @@
       "model_building_id": "lot_09_townhouse",
       "public_venue": false
     },
-    "model_lot_12_halftimber": {
+    "home2": {
+      "_gen": true,
       "kind": "interior",
-      "label": "lot_12_halftimber",
+      "label": "可可的临海宅",
       "bounds": [
         0,
         0,
@@ -998,9 +1010,10 @@
       "bidirectional": true
     },
     {
-      "_gen": true,
-      "id": "p_home2_door",
       "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_main_home2_door",
       "from": {
         "space": "town",
         "floor": "outdoor",
@@ -1010,16 +1023,14 @@
         ]
       },
       "to": {
-        "space": "home2",
+        "space": "model_main_home2",
         "floor": "1f",
         "pos": [
           12,
           25
         ]
       },
-      "bidirectional": true,
-      "access": "public",
-      "traversal_cost": 1
+      "bidirectional": true
     },
     {
       "_gen": true,
@@ -1445,10 +1456,9 @@
       "traversal_cost": 1
     },
     {
+      "_facility": true,
+      "id": "p_hotel_stairs",
       "kind": "stairs",
-      "access": "public",
-      "traversal_cost": 2,
-      "id": "p_model_lot_07_hotel_stairs_1_2",
       "from": {
         "space": "hotel",
         "floor": "1f",
@@ -1465,7 +1475,9 @@
           16
         ]
       },
-      "bidirectional": true
+      "bidirectional": true,
+      "access": "public",
+      "traversal_cost": 2
     },
     {
       "kind": "stairs",
@@ -1584,10 +1596,9 @@
       "traversal_cost": 2
     },
     {
+      "_gen": true,
+      "id": "p_home2_door",
       "kind": "door",
-      "access": "public",
-      "traversal_cost": 1,
-      "id": "p_model_lot_12_halftimber_door",
       "from": {
         "space": "town",
         "floor": "outdoor",
@@ -1597,22 +1608,22 @@
         ]
       },
       "to": {
-        "space": "model_lot_12_halftimber",
+        "space": "home2",
         "floor": "1f",
         "pos": [
           12,
           25
         ]
       },
-      "bidirectional": true
+      "bidirectional": true,
+      "access": "public",
+      "traversal_cost": 1
     },
     {
+      "id": "p_home2_stairs",
       "kind": "stairs",
-      "access": "public",
-      "traversal_cost": 2,
-      "id": "p_model_lot_12_halftimber_stairs_1_2",
       "from": {
-        "space": "model_lot_12_halftimber",
+        "space": "home2",
         "floor": "1f",
         "pos": [
           22,
@@ -1620,14 +1631,16 @@
         ]
       },
       "to": {
-        "space": "model_lot_12_halftimber",
+        "space": "home2",
         "floor": "2f",
         "pos": [
           22,
           5
         ]
       },
-      "bidirectional": true
+      "bidirectional": true,
+      "access": "public",
+      "traversal_cost": 2
     },
     {
       "kind": "stairs",
@@ -1635,7 +1648,7 @@
       "traversal_cost": 2,
       "id": "p_model_lot_12_halftimber_stairs_2_3",
       "from": {
-        "space": "model_lot_12_halftimber",
+        "space": "home2",
         "floor": "2f",
         "pos": [
           22,
@@ -1643,7 +1656,7 @@
         ]
       },
       "to": {
-        "space": "model_lot_12_halftimber",
+        "space": "home2",
         "floor": "3f",
         "pos": [
           22,

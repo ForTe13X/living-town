@@ -22,11 +22,26 @@ NOON_TICK=600
 TOL="${LT_VISUAL_NEG_TOL:-4}"
 
 mkdir -p "$OUT"
+# Match the positive arm's clean Godot user profile. Saved npc_count/player
+# preferences must not change the negative's rendered fixture.
+export XDG_DATA_HOME="${LT_VISUAL_NEG_USER_DATA:-${OUT%/}.user-data.$$}"
+mkdir -p "$XDG_DATA_HOME"
 "$PY" "$REPO/tools/prepare_visual_canary_negative.py" "$SOURCE" "$WORK" \
   | tee "$OUT/prepare-receipt.json"
 PREP_RC=${PIPESTATUS[0]}
 if [ "$PREP_RC" -ne 0 ]; then
   printf 'VISUAL_NEGATIVE verdict=setup_fail prepare_rc=%s\n' "$PREP_RC" \
+    | tee "$OUT/negative-verdict.txt"
+  exit 1
+fi
+
+# The isolated copy deliberately omits .godot. Import textures in that copy
+# before rendering; a cold game launch can otherwise emit PNGs with missing
+# resource errors and falsely look like a detector failure.
+"$GBIN" --headless --editor --path "$WORK" --import >"$OUT/import.log" 2>&1
+IMPORT_RC=$?
+if [ "$IMPORT_RC" -ne 0 ]; then
+  printf 'VISUAL_NEGATIVE verdict=setup_fail import_rc=%s\n' "$IMPORT_RC" \
     | tee "$OUT/negative-verdict.txt"
   exit 1
 fi

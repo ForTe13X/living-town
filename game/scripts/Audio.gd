@@ -407,6 +407,20 @@ const N := {
 	"B4": 493.88, "C5": 523.25, "D5": 587.33, "E5": 659.25, "G5": 783.99, "C6": 1046.50,
 }
 
+func _exit_tree() -> void:
+	# Release playback before engine shutdown. Godot 4.6.2's audio mixer needs
+	# a short drain interval after stop; clearing references alone still leaks
+	# WAV playback resources on the tested Windows native and Dummy drivers.
+	for child in get_children():
+		if child is AudioStreamPlayer:
+			child.stop()
+			child.stream = null
+	_bank.clear()
+	_voices.clear()
+	_bed_day = null
+	_bed_night = null
+	OS.delay_msec(100)
+
 func _build_bank() -> void:
 	# ── 两层环境底噪 ──
 	# 白昼：A 大三和弦的开放排列，明亮、有呼吸；夜晚：E 小、更低更暗、呼吸更慢。

@@ -139,8 +139,8 @@
         28
       ]
     },
-    "home2/1f": {
-      "space": "home2",
+    "model_main_home2/1f": {
+      "space": "model_main_home2",
       "floor": "1f",
       "building_id": "Main_home2",
       "level": 0,
@@ -689,8 +689,8 @@
         28
       ]
     },
-    "model_lot_12_halftimber/1f": {
-      "space": "model_lot_12_halftimber",
+    "home2/1f": {
+      "space": "home2",
       "floor": "1f",
       "building_id": "lot_12_halftimber",
       "level": 0,
@@ -711,8 +711,8 @@
         28
       ]
     },
-    "model_lot_12_halftimber/2f": {
-      "space": "model_lot_12_halftimber",
+    "home2/2f": {
+      "space": "home2",
       "floor": "2f",
       "building_id": "lot_12_halftimber",
       "level": 1,
@@ -733,8 +733,8 @@
         28
       ]
     },
-    "model_lot_12_halftimber/3f": {
-      "space": "model_lot_12_halftimber",
+    "home2/3f": {
+      "space": "home2",
       "floor": "3f",
       "building_id": "lot_12_halftimber",
       "level": 2,
@@ -59874,7 +59874,6 @@
   "building_spaces": {
     "Main_cafe": "cafe",
     "Main_home": "home",
-    "Main_home2": "home2",
     "Main_shop": "shop",
     "Main_library": "library",
     "Main_wash": "wash",
@@ -59887,10 +59886,11 @@
     "lot_06_halles": "halles",
     "lot_07_hotel": "hotel",
     "lot_09_townhouse": "test_loft",
+    "lot_12_halftimber": "home2",
+    "Main_home2": "model_main_home2",
     "lot_02_windmill": "model_lot_02_windmill",
     "lot_03_netshed": "model_lot_03_netshed",
     "lot_08_cannery": "model_lot_08_cannery",
-    "lot_12_halftimber": "model_lot_12_halftimber",
     "lot_14_halftimber": "model_lot_14_halftimber",
     "lot_15_terrace": "model_lot_15_terrace",
     "lot_18_terrace": "model_lot_18_terrace",
@@ -60007,7 +60007,7 @@
       "kind": "stairs",
       "model_building_id": "Main_home"
     },
-    "p_home2_door": {
+    "p_model_main_home2_door": {
       "from_world_m": [
         -42.75,
         14.75,
@@ -60273,7 +60273,7 @@
       "kind": "entrance",
       "model_building_id": "lot_07_hotel"
     },
-    "p_model_lot_07_hotel_stairs_1_2": {
+    "p_hotel_stairs": {
       "from_world_m": [
         32.875,
         35.625,
@@ -60357,7 +60357,7 @@
       "kind": "stairs",
       "model_building_id": "lot_09_townhouse"
     },
-    "p_model_lot_12_halftimber_door": {
+    "p_home2_door": {
       "from_world_m": [
         -39.25,
         -14.75,
@@ -60371,7 +60371,7 @@
       "kind": "entrance",
       "model_building_id": "lot_12_halftimber"
     },
-    "p_model_lot_12_halftimber_stairs_1_2": {
+    "p_home2_stairs": {
       "from_world_m": [
         -37.437064065457015,
         -11.880820433834312,
@@ -61579,76 +61579,100 @@
         3.6100000000000003
       ]
     },
-    "home21f_bed_double": {
+    "home21f_sofa": {
       "plane": "home2/1f",
       "cell": [
-        7,
-        5
+        8,
+        15
       ],
       "approach_local_m": [
-        -1.375,
-        2.125
+        -1.0878647652834688,
+        -0.375
       ],
-      "model_asset_id": "Main_home2_L00_Bedroom_A00_bed",
-      "model_asset_kind": "bed",
-      "note": "Legacy action at a reachable standing cell adjacent to an actual compatible fixture.",
-      "fixture_center_local_m": [
-        -2.1850000000000005,
-        2.1350000000000002
-      ],
-      "fixture_footprint_m": [
-        -2.8600000000000003,
-        1.1600000000000001,
-        -1.5100000000000005,
-        3.1100000000000003
-      ]
-    },
-    "home21f_toilet": {
-      "plane": "home2/1f",
-      "cell": [
-        23,
-        9
-      ],
-      "approach_local_m": [
-        2.625,
-        1.125
-      ],
-      "model_asset_id": "Main_home2_L00_Bathroom_A01_toilet",
-      "model_asset_kind": "toilet",
-      "note": "Legacy action at a reachable standing cell adjacent to an actual compatible fixture.",
-      "fixture_center_local_m": [
-        2.62,
-        0.61
-      ],
-      "fixture_footprint_m": [
-        2.38,
-        0.24,
-        2.8600000000000003,
-        0.98
-      ]
-    },
-    "home21f_armchair": {
-      "plane": "home2/1f",
-      "cell": [
-        18,
-        25
-      ],
-      "approach_local_m": [
-        1.375,
-        -2.875
-      ],
-      "model_asset_id": "Main_home2_L00_Living_Kitchen_A03_sofa",
+      "model_asset_id": "lot_12_halftimber_L00_Front_Room_A00_sofa",
       "model_asset_kind": "sofa",
       "note": "Legacy action at a reachable standing cell adjacent to an actual compatible fixture.",
       "fixture_center_local_m": [
-        2.1850000000000005,
-        -2.7600000000000002
+        -1.9978649999999998,
+        -0.36
       ],
       "fixture_footprint_m": [
-        1.5100000000000005,
-        -3.1100000000000003,
-        2.8600000000000003,
-        -2.41
+        -2.8228649999999997,
+        -0.73,
+        -1.1728649999999998,
+        0.010000000000000009
+      ]
+    },
+    "home22f_bed": {
+      "plane": "home2/2f",
+      "cell": [
+        7,
+        17
+      ],
+      "approach_local_m": [
+        -1.3378647652834688,
+        -0.875
+      ],
+      "model_asset_id": "lot_12_halftimber_L01_Front_Room_A00_bed",
+      "model_asset_kind": "bed",
+      "note": "Legacy action at a reachable standing cell adjacent to an actual compatible fixture.",
+      "fixture_center_local_m": [
+        -2.1478650000000004,
+        -0.965
+      ],
+      "fixture_footprint_m": [
+        -2.822865,
+        -1.94,
+        -1.4728650000000003,
+        0.010000000000000009
+      ]
+    },
+    "home22f_bed_1": {
+      "plane": "home2/3f",
+      "cell": [
+        7,
+        17
+      ],
+      "approach_local_m": [
+        -1.3378647652834688,
+        -0.875
+      ],
+      "model_asset_id": "lot_12_halftimber_L02_Front_Room_A00_bed",
+      "model_asset_kind": "bed",
+      "note": "Legacy action at a reachable standing cell adjacent to an actual compatible fixture.",
+      "fixture_center_local_m": [
+        -2.1478650000000004,
+        -0.965
+      ],
+      "fixture_footprint_m": [
+        -2.822865,
+        -1.94,
+        -1.4728650000000003,
+        0.010000000000000009
+      ]
+    },
+    "home22f_toilet": {
+      "plane": "home2/2f",
+      "cell": [
+        2,
+        9
+      ],
+      "approach_local_m": [
+        -2.5878647652834688,
+        1.125
+      ],
+      "model_asset_id": "lot_12_halftimber_L01_Rear_Room_A01_toilet",
+      "model_asset_kind": "toilet",
+      "note": "Legacy action at a reachable standing cell adjacent to an actual compatible fixture.",
+      "fixture_center_local_m": [
+        -2.582865,
+        0.5599999999999999
+      ],
+      "fixture_footprint_m": [
+        -2.822865,
+        0.18999999999999995,
+        -2.3428649999999998,
+        0.9299999999999999
       ]
     },
     "library1f_bookshelf": {
@@ -62227,6 +62251,82 @@
         -1.975
       ]
     },
+    "mairie1f_desk": {
+      "plane": "mairie/1f",
+      "cell": [
+        23,
+        29
+      ],
+      "approach_local_m": [
+        0.875,
+        -3.375
+      ],
+      "model_asset_id": "lot_01_mairie_L00_Front_Right_A00_writing_desk",
+      "model_asset_kind": "writing_desk",
+      "note": "Legacy action at a reachable standing cell adjacent to an actual compatible fixture.",
+      "fixture_center_local_m": [
+        1.6399999999999997,
+        -3.3200000000000003
+      ],
+      "fixture_footprint_m": [
+        1.0899999999999996,
+        -3.6100000000000003,
+        2.1899999999999995,
+        -3.0300000000000002
+      ]
+    },
+    "bank_counter": {
+      "plane": "halles/1f",
+      "cell": [
+        3,
+        22
+      ],
+      "approach_local_m": [
+        -5.625,
+        -2.125
+      ],
+      "model_asset_id": "lot_06_halles_L00_Market_Aisle_Booth_0",
+      "model_asset_kind": "market_stall",
+      "fixture_center_local_m": [
+        -4.4,
+        -1.9
+      ],
+      "fixture_footprint_m": [
+        -5.45,
+        -2.65,
+        -3.3500000000000005,
+        -1.15
+      ],
+      "anchor_only": true,
+      "marker_flag": "bank_counter",
+      "note": "Current cooperative-bank UI at an existing market counter; no new NPC advertisement."
+    },
+    "civic_observatory": {
+      "plane": "mairie/1f",
+      "cell": [
+        23,
+        28
+      ],
+      "approach_local_m": [
+        0.875,
+        -3.125
+      ],
+      "model_asset_id": "lot_01_mairie_L00_Front_Right_A00_writing_desk",
+      "model_asset_kind": "writing_desk",
+      "fixture_center_local_m": [
+        1.6399999999999997,
+        -3.3200000000000003
+      ],
+      "fixture_footprint_m": [
+        1.0899999999999996,
+        -3.6100000000000003,
+        2.1899999999999995,
+        -3.0300000000000002
+      ],
+      "anchor_only": true,
+      "marker_flag": "civic_observatory",
+      "note": "Read-only civic notice interface at the public reception surface; no new NPC advertisement."
+    },
     "bed_1": {
       "plane": "hotel/2f",
       "cell": [
@@ -62399,6 +62499,34 @@
       "model_asset_kind": null,
       "note": "Preserved play action at open square activity space; no dedicated arcade cabinet in supplied model."
     },
+    "cliff_overlook_1": {
+      "plane": "town/outdoor",
+      "cell": [
+        212,
+        91
+      ],
+      "approach_local_m": [
+        40.25,
+        12.25
+      ],
+      "model_asset_id": null,
+      "model_asset_kind": null,
+      "note": "Preserved sea-view action on the actual connected coastal promenade; no invented cliff mesh."
+    },
+    "upper_lane_bench_1": {
+      "plane": "town/outdoor",
+      "cell": [
+        41,
+        90
+      ],
+      "approach_local_m": [
+        -45.25,
+        12.75
+      ],
+      "model_asset_id": null,
+      "model_asset_kind": null,
+      "note": "Preserved street-view rest activity on the connected upper western lane."
+    },
     "desk_workbench": {
       "plane": "work/1f",
       "cell": [
@@ -62441,11 +62569,11 @@
       "plane": "halles/1f",
       "cell": [
         3,
-        22
+        20
       ],
       "approach_local_m": [
         -5.625,
-        -2.125
+        -1.625
       ],
       "model_asset_id": "lot_06_halles_L00_Market_Aisle_Booth_0",
       "model_asset_kind": "market_stall",
@@ -62595,9 +62723,9 @@
     }
   },
   "source_hashes": {
-    "game/data/map.json": "b6b6dd6a456448a5c45cb00b23f436bccaaaa8838d252cea49d9f8158c9350be",
-    "game/data/spaces.json": "20576b1bcd6ee967726bc6ff1ccf24e7dfac02c6e27405996e2f2e5d5f23ecb3",
-    "game/data/interiors.json": "4526aaf9ff829c32c22de59dfefb1593a4edaf42d0b2d5324f7c93f337932976",
+    "game/data/map.json": "5a51c6d68b744a6f0f9f8df62647b6bda17c71d6768ed325bf2ec9ce6072699c",
+    "game/data/spaces.json": "5ecd091807116e46f57fb04404acf20d742f5616229ac891455a1736c675b027",
+    "game/data/interiors.json": "e937aa1e6d7273b8293ae15878f976b42c89a2acd4b35c546ee6065635b52fe6",
     "game/data/agents.json": "98044c7c12d9ca06c691847e78e33e92785a4beee4126bc645de74dc5a135a49",
     "game/data/buildings.json": "60db5ba64ee7df41661171bf05006f4431f6cb679f0b7eff73fefea6f4f755ea",
     "game/data/jobs.json": "3558f0781814c1e27e67899e9338c83822e938dcbc99c761f0f712d6dd40d248",
@@ -62605,7 +62733,7 @@
     "game/data/logistics.json": "0910a4e937f9772296dfa41b777f6abb7abd2e3ff7dedc9e240900cfac244cd0",
     "game/data/housing.json": "c9633d1033f042530f86680b1f6e43778ce56b7b0a1c691e0ec8d94d4f4dd040",
     "game/data/festivals.json": "010623dd4ecc1f81fcc75287ef707f9a1fc34a8f14cae5cffbb34447bfc0da43",
-    "game/data/elections.json": "cdd8e8faffab81633920e34e15f50c4112b9605cc53fd49e80eca54836cb7811",
+    "game/data/elections.json": "d93e818780bc58b6c9bdb12b779e174a783cc46bdf37e07359a244c846d791c6",
     "art/living_town/masterplan.json": "b7e5522f62f4a390faa95502537fbbac14856cb278bccb695fbd5cabe186377f",
     "art/living_town/interior_plan.json": "a857d40e536ce84b3ed468a5815c54311f92f46ebbb1e1f7541ce76a498d08b4",
     "art/living_town/town_manifest.json": "09e1a479de52cbfc5636f257a7383562215d30761fbd20c878fadbe4b8c67e85",
@@ -62614,7 +62742,7 @@
     "art/living_town/tools/terrain_profile.py": "6f722d04566f11cc58b3dd93cace5b781d8b2092bb7e70169f1f08279febc3b8",
     "art/living_town/tools/interior_design.py": "a467e4dc23bd2388e7e924a04a1b478bf0d0b7fc4deeb0616184de69b8c49025",
     "art/living_town/game_assets/export_manifest.json": "ef251073f8547b8b34a56f10fc19d23d4e5d8db0b52f03d85960ac7c9d710d6e",
-    "tools/build_town_profile.py": "bf751edbe21ebef91caae8194013c7a148f5b34e7a254e5f9233cf25f74a7959"
+    "tools/build_town_profile.py": "e9db0ec8d62d618c10353828fbb91c7c5efc0690c19f62b36bd80be226268d52"
   },
   "model_source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
   "runtime_navigation": {

@@ -141,13 +141,20 @@ def compile_profile():
 
     # Each physical building has exactly one canonical Space. Existing Space IDs
     # survive; the old test loft is a real two-storey residential model now.
-    assigned = {'Main_cafe':'cafe','Main_home':'home','Main_home2':'home2',
+    assigned = {'Main_cafe':'cafe','Main_home':'home',
                 'Main_shop':'shop','Main_library':'library','Main_wash':'wash','Main_work':'work',
                 'Port_Warehouse_Exterior':'port_warehouse','lot_00_chapel':'chapel',
                 'lot_01_mairie':'mairie','lot_04_bakery':'bakery','lot_05_creperie':'creperie',
                 'lot_06_halles':'halles','lot_07_hotel':'hotel'}
     loft = next(b for b in master['buildings'] if b['id'] not in assigned and b['floors'] == 2 and b['kind'] not in ('windmill','cannery','netshed'))
     assigned[loft['id']] = 'test_loft'
+    # Current core home2 has two distinct functional beds upstairs. The named
+    # Main_home2 model is one storey, so map that semantic dwelling explicitly
+    # onto the existing three-storey house with two actual beds. No fake level
+    # or additional stair geometry is introduced.
+    home2_id = 'lot_12_halftimber'
+    assert home2_id not in assigned and modeled[home2_id]['floors'] == 3
+    assigned[home2_id] = 'home2'
     for bid in buildings:
         assigned.setdefault(bid, 'model_'+bid.lower())
     reverse = {v:k for k,v in assigned.items()}
@@ -162,7 +169,7 @@ def compile_profile():
     planes = projection['planes']; grids = {}; asset_lookup = {}; room_records = {}
     spaces_out = {'_note':'Optional model-aligned profile. Base spaces.json remains unchanged.',
                   'spaces':{},'portals':[]}
-    interiors_out = {'_note':'Only legacy functional advertisements are compiled; geometry is the delivered GLB.'}
+    interiors_out = {'_note':'Current core advertisements and bank/civic UI markers are compiled; geometry is the delivered GLB.'}
     connectivity = []; room_checks = []
     for bid,b in buildings.items():
         plan = modeled[bid]; space = assigned[bid]; w,d = plan['footprint_m']
@@ -375,6 +382,8 @@ def compile_profile():
             target_space='home' if oid=='home1f_bed' else 'test_loft';level=1
         elif space=='home' and slot=='sofa':target_space='test_loft'
         elif space=='home' and slot=='toilet':level=1
+        elif space=='home2' and floor=='2f':
+            level=2 if slot=='bed' and oid.endswith('_1') else 1
         elif space=='cafe' and floor=='2f':level=1
         elif slot=='counter':
             kinds=['cafe_counter','retail_counter','writing_desk']
@@ -393,6 +402,28 @@ def compile_profile():
             'pos':obj['pos'],'staff':obj.get('staff',False),'advertises':copy.deepcopy(fu['advertises']),
             'navigation_marker':True,'model_asset_id':bindings[oid]['model_asset_id']})
 
+    # These are read-only/transactional UI anchors, not NPC advertisements or
+    # world.objects entries. Keep the exact special marker flags that current
+    # Sim.bank_counter_cell/civic_observatory_cell queries.
+    ui_markers=[]
+    for space,flag,oid,kinds,note in [
+        ('halles','bank_counter','bank_counter',['market_stall'],
+         'Current cooperative-bank UI at an existing market counter; no new NPC advertisement.'),
+        ('mairie','civic_observatory','civic_observatory',['writing_desk','service_console'],
+         'Read-only civic notice interface at the public reception surface; no new NPC advertisement.')]:
+        original=next(fu for fu in base['interiors'][space]['1f']['furniture'] if fu.get(flag))
+        key,asset=select_asset(space,kinds,0,0)
+        pos=asset_position(key,asset)
+        marker=copy.deepcopy(original)
+        marker.update({'pos':list(pos),'navigation_marker':True,'model_asset_id':asset['id']})
+        marker.pop('size',None)  # nav is authoritative raster, not old tile art dimensions
+        interiors_out[space]['1f']['furniture'].append(marker)
+        bindings[oid]={'plane':key,'cell':list(pos),'approach_local_m':list(cell_xy(planes[key],pos)),
+            'model_asset_id':asset['id'],'model_asset_kind':asset['kind'],
+            'fixture_center_local_m':asset['center_m'],'fixture_footprint_m':asset['footprint_m'],
+            'anchor_only':True,'marker_flag':flag,'note':note}
+        ui_markers.append((space,flag,oid,original))
+
     map_objects=[]
     for obj in base['map']['objects']:
         oid=obj['id']
@@ -404,6 +435,8 @@ def compile_profile():
         elif oid=='desk_1':o=fixture_obj(obj,'work',['workbench'],0,0)
         elif oid=='bench_1':o=bind(obj,'town/outdoor',world=(-8,3),note='Public square social/sun interaction; preserved core action anchor.')
         elif oid=='arcade_1':o=bind(obj,'town/outdoor',world=(0,-3),note='Preserved play action at open square activity space; no dedicated arcade cabinet in supplied model.')
+        elif oid=='cliff_overlook_1':o=bind(obj,'town/outdoor',world=(40.5,12),note='Preserved sea-view action on the actual connected coastal promenade; no invented cliff mesh.')
+        elif oid=='upper_lane_bench_1':o=bind(obj,'town/outdoor',world=(-45,12.5),note='Preserved street-view rest activity on the connected upper western lane.')
         else:raise ValueError('Unmapped map object '+oid)
         map_objects.append(o)
 
@@ -427,6 +460,8 @@ def compile_profile():
     def area_rect(name,bounds,kind='plaza',**extra):
         areas[name]={'rect':rect_grid(town,bounds),'kind':kind,'type':kind,'label':base['map']['areas'].get(name,{}).get('label',name),**extra}
     area_rect('plaza',[-13,-8,7,8]);area_rect('dock',[31,37,66,55],population_anchor=False,route='east_ocean',facing='east')
+    area_rect('cliff_walk',[39,8,48,14],population_anchor=False)
+    area_rect('upper_lane',[-58,9,-18,16],population_anchor=False)
     area_rect('north_pier',[42,14,62,41],population_anchor=True)
     for oldname in ('home','home2','cafe','shop','library','wash','work'):
         b=buildings[reverse[oldname]];points=b['footprint_polygon'];xs=[p[0] for p in points];ys=[p[1] for p in points]
@@ -456,9 +491,9 @@ def compile_profile():
         elections['on_pass']['object']['pos']=list(nearest_open(town,labels,(2,2),1.,main))
 
     agents=copy.deepcopy(base['agents'])
-    bed_for={'aria':'cafe2f_bed','ben':'home1f_bed','coco':'bed_1','dan':'home1f_bed_1',
-             'evy':'home21f_bed_double','fei':'bed_2','lin':'bed_2','hai':'home1f_bed',
-             'shu':'home21f_bed_double','mei':'home1f_bed_1','qin':'home1f_bed_1','tie':'home1f_bed'}
+    bed_for={'aria':'cafe2f_bed','ben':'home1f_bed','coco':'home22f_bed_1','dan':'home1f_bed_1',
+             'evy':'home22f_bed','fei':'bed_2','lin':'bed_2','hai':'home1f_bed',
+             'shu':'home22f_bed','mei':'home1f_bed_1','qin':'home1f_bed_1','tie':'home1f_bed'}
     for a in agents['agents']:
         b=bindings[bed_for[a['id']]];sp,fl=b['plane'].split('/');pos=b['cell']
         a.update({'home':pos,'spawn':pos,'spatial_address':{'space_id':sp,'floor_id':fl,'position':pos}})
@@ -495,8 +530,8 @@ def compile_profile():
     check('561_plane_scoped_zones',len(room_records)==561)
     check('223_activity_rooms_reachable',sum(x['activity_room'] for x in room_checks)==223 and all(x['connected_open_cells'] for x in room_checks if x['activity_room']))
     check('49_real_entrances_40_real_stairs',len(spaces_out['portals'])==89 and sum(p['from']['space']=='town' for p in spaces_out['portals'])==49)
-    check('17_original_portal_ids_and_access_preserved',all(next(p for p in spaces_out['portals'] if p['id']==pid).get('access')==p0.get('access') for pid,p0 in old_portals.items()))
-    check('17_original_portal_rules_preserved',all(
+    check('all_current_original_portal_ids_and_access_preserved',all(next(p for p in spaces_out['portals'] if p['id']==pid).get('access')==p0.get('access') for pid,p0 in old_portals.items()))
+    check('all_current_original_portal_rules_preserved',all(
         {k:v for k,v in next(p for p in spaces_out['portals'] if p['id']==pid).items() if k not in ('from','to')} ==
         {k:v for k,v in p0.items() if k not in ('from','to')} for pid,p0 in old_portals.items()))
     check('portal_endpoints_are_physically_open',all(tuple(e['pos']) in grids[e['space']+'/'+e['floor']]['labels'] for p in spaces_out['portals'] for e in (p['from'],p['to'])))
@@ -508,6 +543,13 @@ def compile_profile():
     check('resident_homes_share_actual_bed_plane',all(agents['agents'][i]['spatial_address']['space_id']+'/'+agents['agents'][i]['spatial_address']['floor_id']==bindings[bed_for[a['id']]]['plane'] for i,a in enumerate(agents['agents'])))
     check('all_legacy_action_definitions_unchanged',all(all_defs[oid]['advertises']==fu['advertises'] for _,_,oid,fu in old_interior) and all(all_defs[o['id']]['advertises']==o['advertises'] for o in base['map']['objects']+base['production']['worksites']+base['logistics']['nodes']))
     check('all_functional_approaches_reachable',all(tuple(o['pos']) in grids[o['space']+'/'+o['floor']]['labels'] for o in all_defs.values()))
+    check('bank_and_civic_markers_preserve_flags_without_advertisements',all(
+        next(f for f in interiors_out[sp]['1f']['furniture'] if f.get(flag)).get('advertises',[])==original.get('advertises',[])==[]
+        and tuple(bindings[oid]['cell']) in grids[sp+'/1f']['labels'] and oid not in all_defs
+        for sp,flag,oid,original in ui_markers))
+    check('home2_original_beds_bind_distinct_actual_beds',
+        bindings['home22f_bed']['model_asset_id']!=bindings['home22f_bed_1']['model_asset_id']
+        and all(bindings[k]['model_asset_kind']=='bed' for k in ('home22f_bed','home22f_bed_1')))
     check('jobs_and_housing_unchanged',output['jobs']==base['jobs'] and output['housing']==base['housing'])
     check('festival_and_civic_action_values_preserved',all(
         [o['advertises'] for o in festivals['festivals'][name]['objects']] == [o['advertises'] for o in event['objects']]
@@ -526,15 +568,16 @@ def compile_profile():
     write(OUT/'profile.json',profile)
     report={'schema':'living_town.profile_compile_report.v1','status':'PASS','checks':checks,
         'counts':{'buildings':49,'interior_planes':89,'zones':561,'activity_rooms':223,'portal_count':89,
-                  'original_portal_ids':17,'entrances':49,'stairs':40,'functional_objects':len(all_defs),
+                  'original_portal_ids':len(old_portals),'entrances':49,'stairs':40,'functional_objects':len(all_defs),'ui_markers':len(ui_markers),
                   'legacy_interior_functional_objects':len(old_interior),'resident_count':12,'affiliate_count':2,
                   'outdoor_open_cells':len(labels),'outdoor_blocked_cells':len(blocked)},
         'source_hashes':source_hashes,'output_hashes':{p.name:sha(p) for p in sorted(OUT.glob('*.json'))},
         'planes':connectivity,'activity_room_access':room_checks,'shared_residential_beds':bed_for,
+        'semantic_building_reassignments':{'home2':{'model_building_id':home2_id,'reason':'Two distinct functional beds require the existing three-storey dwelling; Main_home2 remains a visitable model space.'}},
         'adaptations':[{ 'object_id':oid,**b} for oid,b in bindings.items() if any(s in b.get('note','') for s in ('no dedicated','has no dedicated','art-viewing'))],
         'limits':['Static compiler verifies geometry-aligned topology and legacy action data, not live Godot behavior or economic calibration.',
                   'Legacy play/music actions keep their identities at compatible activity surfaces; arcade and hotel piano have no dedicated supplied mesh.',
-                  'Legacy six functional sleep anchors remain shared between twelve residents; decorative beds do not gain advertisements.',
+                  'Current functional sleep anchors remain shared between twelve residents; decorative beds do not gain advertisements.',
                   'Navigation samples interior shell, partitions, stairs and 753 furnishing proxies; decorative trim, roof objects and tree canopies are not pedestrian blockers.',
                   'Door leaf visual reveal/collision state is consumer presentation; explicit core portal remains sole plane transition authority.']}
     write(REPORT,report)

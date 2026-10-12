@@ -11,6 +11,10 @@ extends Node
 
 ## preload 而非依赖 class_name 全局（未在编辑器导入的项目无全局类缓存，headless 下全局类名不可用）。
 const MemoryStreamScript := preload("res://scripts/Memory.gd")
+const CivicProjectScript := preload("res://scripts/CivicProject.gd")
+const CoastalOverlayImporter := preload("res://scripts/CoastalOverlayBundleImporter.gd")
+const WorldPackageAitownAdapter := preload("res://addons/worldgen/consumers/ai_town_adapter/space_queries.gd")
+const WorldPackageAitownMigrations := preload("res://addons/worldgen/consumers/ai_town_adapter/migrations.gd")
 
 signal ticked(tick_no: int)
 signal agent_changed(agent_id: String)
@@ -32,6 +36,7 @@ const NAV_DIRS := [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, 
 const HOME_NEEDS := ["energy", "fun"]
 const JOURNEY_URGENT := 30.0    # 偏紧(need<70)才发起跨平面行程（本地已无满足者时）
 const PREEMPT_CRISIS := 12.0    # 承诺行程执行中，若【另一】需求跌破此危机线且当前行程目标本身不急 → 中止改救急（守 #01）
+const HUNGER_JOURNEY_PREEMPT := 20.0 # LT-14：远途找饭需要比 12 更早的路程缓冲；只抢占尚不急的非饥饿行程。
 const STARVE_NEED := 0.5        # 硬不变量 #01「无饿穿」的判据线：need ≤ 此值的 agent-tick 必须为 0。
                                 # 与 Harness._run_once:599 / DetGate._run:176 / Invariants.check_all 的那个 0.5 是同一条线，
                                 # 此前只以字面量散在三处。引擎自己从不拿它做决策 ⇒ 提取为常量对 logic 路零影响。
@@ -258,13 +263,15 @@ var _interiors_data := {}       # interiors.json：space -> floor -> {label,floo
 var _authored_spaces := {}      # receiver-owned portal authority; never restored from a save
 var _authored_portals := []     # exact current data/spaces.json graph; traversal reads only this copy
 var _authored_agent_homes := {} # agent id -> {space,floor}, rebuilt from data/agents.json
+var _authored_agent_definitions := {} # data/agents.json plus opt-in validated authoring overlay; configuration only
 var _authored_interiors_data := {} # current interior collision source; never restored from a save
+var _authored_world_package_ref := {} # immutable package identity; receiver-owned save compatibility reference
 var _authored_solid_props := [] # map.json draw/nav authority; current-schema saves must match exactly
 var _nav_grids := {}            # space -> floor -> {w,h,blocked}：每平面独立导航网（town 复用 _blocked 引用）
 var rhythm := {}                # 昼夜节律偏好表 data/rhythm.json：{phases:{name:[lo,hi)}, prefs:{need:{phase:factor}}, default}
 var utility := {}               # 效用/接受权重表 data/utility.json（docs/14 §1 步骤4）：行为调参数据化，缺键→代码默认(逐字节不变)
 var desire_cfg := {}            # 欲望 v0 data/desire.json（docs/187）：缺文件/enabled≠true → 全短路=逐字节不变。
-                                # 进 SAVE_LOAD_DENY：它是【配置】，由 _load_data 重读；若入档，新增这一个 var 就会改 schema-2 形状、旧档全拒。
+                                # 进 SAVE_LOAD_DENY：它是配置，由 _load_data 重读，不改变 schema-2 存档形状。
                                 # 每人的欲望态住在 agent["desire"] 里（随 agents 深拷贝入档），不另设 script var。
 # ── Wave 1c 天气（docs/15 §3 挂点#3 最小版）：weather(day)=纯哈希查权重表——不消耗 RNG 流、不存历史，goto_tick 天然复现 ──
 var weather := {}               # data/weather.json：{types:{名:{w:权重}}, mults:{天气:{动作:乘子≤1}}}；缺文件→恒晴=零扰动
@@ -291,6 +298,12 @@ var _buildings_compiled := false # 阶段2 室内编译只跑一次（防重入�
 # ── Wave 1b 经济（docs/15 §3）：data/economy.json 驱动；缺文件→_econ_on()=false→全部短路=逐字节不变 ──
 var economy := {}               # {start_coin, town_start, prices:{action:int}, wages:{action:int}}
 var town_coin := 0              # 镇库（吃饭收费流入、做活工资流出 → 闭环）
+## P5a：合作银行把存款准备金作为守恒集里的真实账户；存款是负债，不是第二份钱。
+## 贷款只能动用 bank_coin - deposits 的合作社资本，绝不挪用存款准备金。
+var banking := {}
+var bank_coin := 0
+var bank_deposits := {}         # account id -> demand-deposit balance
+var bank_loans := {}            # account id -> {principal,outstanding,issued_day,loans_issued}
 # ── 车道 E2a 钱跨镇边界（docs/151/154）：external_coin = 「外部世界」这一档账户，进 #34 守恒集 ──
 #   import 付费 = transfer("town","external",cost)：钱不再凭空消失/出现，而是搬进这个常驻账户
 #   （对称 Sim.gd:996 玩家带钱入镇 econ_total0+=玩家coin 的"钱不凭空出现"哲学）。
@@ -301,9 +314,14 @@ var econ_total0 := 0            # 开局货币总量（金钱守恒硬不变量�
 # ── Wave 3c 住房产权（docs/15 标注低优先；接 buildings.json rooms.owner）：每夜房客→房东经 Ledger 转租金 ──
 var housing := {}               # {rent:int, tenancies:[{tenant:id, landlord:id}]}；缺文件→无租金=逐字节不变
 # ── Wave 3a 治理/选举（docs/15 §3.3「收获期」）：S2 attitude 即选票，快照纯函数计票；缺文件→零扰动 ──
-var elections := {}             # {topic, every_days, offset, abstain_below}
-var election_log: Array = []    # 每次选举结果 {day,topic,yea,nay,abstain,pass,voters}（soak + 硬不变量#37 用）
-var last_election := {}         # 最近一次结果（观察台/HUD）
+var elections := {}             # {topic,every_days,offset,abstain_below,mayor:{term_days,candidate_count}}
+var election_log: Array = []    # 每次议题表决 {day,topic,yea,nay,abstain,pass,voters}
+var last_election := {}         # 最近一次议题结果（观察台/HUD）
+# P4b：先只存可见、可回放的候选名单、逐人选票与任期。政策旋钮留到下一片，不能反向伪造选举事实。
+var mayor_log: Array = []       # 任期账本；结束后追加 duties_due/attendance_pct/town_coin_end/treasury_delta/review_event_id
+var mayor_state := {}           # 当前任 {mayor,term_start,term_end,candidates,duties_done,last_duty_day,last_duty_period,town_coin_start}
+var _civic_fold_cache := {}     # event_log 的派生视图；不入档，读档与重开后按需重折
+var _civic_fold_size := -1
 var econ_stats := {"meals_paid": 0, "meals_free": 0, "wages_paid": 0, "wages_skipped": 0}  # 诊断计数
 # ── Wave E 劳动产出（docs/47 §二-E1）：data/production.json 驱动；缺文件→_prod_on()=false→全部短路=逐字节不变 ──
 ## ★红线继承：economy.json 的 `_doc` 写死了"钱只造分化与戏剧、不造饿死（付不起照吃 meals_free）"。
@@ -405,9 +423,10 @@ var _replay_active := false
 var _replay_ticks := {}         # agent_id -> [sorted 记录决策 tick]（按序+按 tick 还原异步时机）
 var _replay_ptr := {}           # agent_id -> 当前回放指针
 
-# PlayerTraceV1 is authoritative Sim state.  Main emits public inputs; receipts are
+# PlayerTraceV2 is authoritative Sim state.  Main emits public inputs; receipts are
 # deterministic witnesses recomputed by those same public boundaries during replay.
-const PLAYER_TRACE_VERSION := 1
+const PLAYER_TRACE_VERSION := 2
+const PLAYER_TRACE_LEGACY_VERSION := 1
 const PLAYER_TRACE_MAX_ENTRIES := 4096
 const PLAYER_TRACE_MAX_ENTRIES_PER_TICK := 64
 const PLAYER_TRACE_MAX_PAYLOAD_BYTES := 4096
@@ -607,8 +626,8 @@ func _read_json(path: String) -> Dictionary:
 	var data: Variant = JSON.parse_string(txt)
 	return data if data is Dictionary else {}
 
-## Install an authored spatial profile only before a live run. The provider is a
-## runtime handle; saves retain authored spaces/portals through the existing contract.
+## Install a detached authored spatial profile before any live run. Base data
+## and optional WorldPackage/coastal adapters keep their existing authority.
 func install_world_profile(provider: RefCounted) -> bool:
 	if auto_run or running or not agents.is_empty() or provider == null:
 		return false
@@ -625,6 +644,7 @@ func install_world_profile(provider: RefCounted) -> bool:
 	return true
 
 func _load_data() -> void:
+	_authored_world_package_ref = {}
 	needs_def = _read_json("res://data/needs.json").get("needs", [])
 	world = _read_json("res://data/map.json")
 	_authored_solid_props = _as_arr((world.get("areas", {}).get("dock", {}) as Dictionary).get("solid_props", [])).duplicate(true)
@@ -632,6 +652,8 @@ func _load_data() -> void:
 	rhythm = _read_json("res://data/rhythm.json")   # 昼夜节律偏好表（缺文件→空→_phase_pref 恒返 1.0=零扰动）
 	utility = _read_json("res://data/utility.json") # 行为效用/接受权重（缺文件/缺键→_w 返代码默认=零扰动）
 	economy = _read_json("res://data/economy.json") # Wave 1b 经济（缺文件→_econ_on()=false 全短路=零扰动）
+	if FileAccess.file_exists("res://data/banking.json"):
+		banking = _read_json("res://data/banking.json")
 	weather = _read_json("res://data/weather.json") # Wave 1c 天气（缺文件→weather_today=""=零扰动）
 	jobs = _read_json("res://data/jobs.json")       # Wave 2a 职业（缺文件→_wage_for 退化=零扰动）
 	skills = _read_json("res://data/skills.json")   # Wave 2c 技能（缺文件→_skill_level=0=零扰动）
@@ -662,18 +684,79 @@ func _load_data() -> void:
 	var _sp := _read_json("res://data/spaces.json")
 	_spaces = _sp.get("spaces", {})
 	_portals = _sp.get("portals", [])
+	var authored_agents := _read_json("res://data/agents.json")
+	_interiors_data = _read_json("res://data/interiors.json")
+	var activation_path := "res://coastal/warm_bay_s1/export/sim_adapter/activation.json"
+	if FileAccess.file_exists(activation_path):
+		var activation := _read_json(activation_path)
+		if bool(activation.get("enabled", false)):
+			var merged: Dictionary = CoastalOverlayImporter.load_and_merge("res://coastal/warm_bay_s1/export/sim_adapter", {"spaces": _spaces, "portals": _portals}, _interiors_data)
+			if not bool(merged.get("ok", false)):
+				for error: String in merged.get("errors", []): push_error("COAST_ACTIVATION: " + error)
+				return
+			var assignment_error := _apply_coastal_assignments(authored_agents, activation, merged)
+			if not assignment_error.is_empty():
+				push_error("COAST_ACTIVATION: " + assignment_error)
+				return
+			_spaces = merged["spaces"]
+			_portals = merged["portals"]
+			_interiors_data = merged["interiors"]
+	# WorldPackage integration is opt-in and compiles detached topology before Sim takes its
+	# receiver-owned snapshots. The package supplies geometry only; existing Sim actions retain
+	# authority over movement, needs, reservations, money, memories, and save/replay state.
+	var worldgen_activation_path := "res://worldgen_activation.json"
+	if FileAccess.file_exists(worldgen_activation_path):
+		var worldgen_activation: Dictionary = _read_json(worldgen_activation_path)
+		if worldgen_activation.has("enabled") and typeof(worldgen_activation["enabled"]) != TYPE_BOOL:
+			push_error("WORLDGEN_ACTIVATION: enabled must be a boolean")
+			return
+		if bool(worldgen_activation.get("enabled", false)):
+			if String(worldgen_activation.get("schema", "")) != "worldgen.aitown-activation/1":
+				push_error("WORLDGEN_ACTIVATION: unsupported activation schema")
+				return
+			var package_path := "res://addons/worldgen/builds/inland_neighborhood.world.json"
+			var bindings_path := "res://addons/worldgen/consumers/ai_town_adapter/action_bindings.json"
+			var worldgen_package: Dictionary = _read_json(package_path)
+			if String(worldgen_activation.get("world_id", "")) != String(worldgen_package.get("world_id", "")) \
+					or String(worldgen_activation.get("semantic_sha256", "")) != String(worldgen_package.get("digests", {}).get("semantic_sha256", "")):
+				push_error("WORLDGEN_ACTIVATION: package identity or semantic digest does not match the reviewed activation")
+				return
+			var host_bindings: Dictionary = _read_json(bindings_path)
+			var base_map: Dictionary = _read_json("res://data/map.json")
+			var host_jobs: Dictionary = _read_json("res://data/jobs.json").get("jobs", {})
+			var adapter: RefCounted = WorldPackageAitownAdapter.new()
+			var merged_worldgen: Dictionary = adapter.merge_package(worldgen_package,
+				{"spaces": _spaces, "portals": _portals}, _interiors_data,
+				host_bindings.get("bindings", {}), host_bindings.get("staff_titles_by_building", {}),
+				base_map.get("objects", []), host_jobs)
+			if not bool(merged_worldgen.get("ok", false)):
+				for error: String in merged_worldgen.get("errors", []): push_error("WORLDGEN_ACTIVATION: " + error)
+				return
+			var resident_candidate: Dictionary = adapter.prepare_resident_assignments(authored_agents,
+				worldgen_activation.get("resident_assignments", []), merged_worldgen.get("home_anchors", []),
+				int(worldgen_activation.get("capacity_per_home", 4)))
+			if not bool(resident_candidate.get("ok", false)):
+				for error: String in resident_candidate.get("errors", []): push_error("WORLDGEN_ACTIVATION: " + error)
+				return
+			_spaces = merged_worldgen["spaces"]["spaces"]
+			_portals = merged_worldgen["spaces"]["portals"]
+			_interiors_data = merged_worldgen["interiors"]
+			_authored_world_package_ref = {"world_id": String(worldgen_package["world_id"]),
+				"semantic_sha256": String(worldgen_package["digests"]["semantic_sha256"])}
+			authored_agents = resident_candidate["agent_document"]
+	_authored_agent_definitions = authored_agents.duplicate(true)
 	_authored_spaces = (_spaces as Dictionary).duplicate(true)
 	_authored_portals = (_portals as Array).duplicate(true)
 	_authored_agent_homes = {}
-	var authored_agents := _read_json("res://data/agents.json")
 	for raw_def in _as_arr(authored_agents.get("agents", [])) + _as_arr(authored_agents.get("affiliates", [])):
 		if not (raw_def is Dictionary):
 			continue
 		var adef: Dictionary = raw_def
 		var sa: Dictionary = adef.get("spatial_address", {}) if adef.get("spatial_address", {}) is Dictionary else {}
 		_authored_agent_homes[String(adef.get("id", ""))] = {
-			"space": String(sa.get("space_id", "town")), "floor": String(sa.get("floor_id", "outdoor"))}
-	_interiors_data = _read_json("res://data/interiors.json")
+			"space": String(sa.get("space_id", "town")), "floor": String(sa.get("floor_id", "outdoor")),
+			"home_space": String(adef.get("home_space_id", sa.get("space_id", "town"))),
+			"home_floor": String(adef.get("home_floor_id", sa.get("floor_id", "outdoor")))}
 	_authored_interiors_data = (_interiors_data as Dictionary).duplicate(true)
 	_compile_interiors()                            # 把带 advertises 的室内家具编译成 world 对象(标平面)，须在数组→字典之前
 	_compile_worksites()                            # F1：production.worksites → town 平面的工位对象，同样须在数组→字典之前
@@ -775,6 +858,54 @@ func _compile_buildings() -> void:
 ## 纯装饰家具(无 advertises)不进 world（只 WorldView 渲染）。确定性：authored 顺序、id=space+floor+slot、无 RNG/Time。
 ## 非-town 平面 → _object_candidates 按平面门只对该层居民可见、_build_nav 只进该层网（绝不进 town _blocked）。
 ## 缺 interiors.json / 无 advertises → 不加对象 → 全 town → 逐字节不变。须在 objects 数组→字典【之前】调。
+func _apply_coastal_assignments(agent_data: Dictionary, activation: Dictionary, merged: Dictionary) -> String:
+	if String(activation.get("schema", "")) != "living-town.coastal-activation/1":
+		return "E_ACTIVATION_SCHEMA: expected living-town.coastal-activation/1"
+	var assignments: Variant = activation.get("resident_assignments", [])
+	if not assignments is Array or assignments.is_empty():
+		return "E_ACTIVATION_ASSIGNMENTS: resident_assignments must be a non-empty array"
+	var definitions := {}
+	for section: String in ["agents", "affiliates"]:
+		for index in range(_as_arr(agent_data.get(section, [])).size()):
+			var definition: Dictionary = agent_data[section][index]
+			var id := String(definition.get("id", ""))
+			if id.is_empty() or definitions.has(id): return "E_ACTIVATION_AGENT_ID: duplicate or empty authored id %s" % id
+			definitions[id] = {"section": section, "index": index}
+	var anchors := {}
+	for anchor: Dictionary in merged.get("home_anchors", []): anchors[String(anchor.get("building_id", ""))] = anchor
+	var planned: Array = []
+	var assigned_agents := {}
+	var occupants_by_home := {}
+	var max_per_home := int(activation.get("max_residents_per_home", 2))
+	if max_per_home < 1: return "E_ACTIVATION_CAPACITY: max_residents_per_home must be positive"
+	for raw_assignment: Variant in assignments:
+		if not raw_assignment is Dictionary: return "E_ACTIVATION_ASSIGNMENT: entries must be objects"
+		var assignment: Dictionary = raw_assignment
+		var agent_id := String(assignment.get("agent_id", "")); var building_id := String(assignment.get("building_id", ""))
+		if not definitions.has(agent_id): return "E_ACTIVATION_AGENT: unknown resident %s" % agent_id
+		if assigned_agents.has(agent_id): return "E_ACTIVATION_AGENT: resident %s assigned more than once" % agent_id
+		if not anchors.has(building_id): return "E_ACTIVATION_HOME: unknown residential building %s" % building_id
+		occupants_by_home[building_id] = int(occupants_by_home.get(building_id, 0)) + 1
+		if occupants_by_home[building_id] > max_per_home: return "E_ACTIVATION_CAPACITY: %s exceeds declared home capacity" % building_id
+		var anchor: Dictionary = anchors[building_id]
+		var space_id := String(anchor.get("space_id", "")); var floor_id := String(anchor.get("floor_id", ""))
+		var position: Array = anchor.get("position", [])
+		if position.size() != 2 or not merged.get("spaces", {}).has(space_id): return "E_ACTIVATION_ANCHOR: %s has no valid room start address" % building_id
+		var agent_ref: Dictionary = definitions[agent_id]
+		planned.append({"agent_id": agent_id, "section": agent_ref["section"], "index": agent_ref["index"],
+			"spatial_address": {"space_id": space_id, "floor_id": floor_id, "position": position.duplicate()},
+			"home_space_id": String(anchor.get("home_space_id", "")), "home_floor_id": floor_id})
+		assigned_agents[agent_id] = true
+	for item: Dictionary in planned:
+		var section: String = item["section"]; var index: int = item["index"]
+		var definition: Dictionary = agent_data[section][index]
+		definition["spatial_address"] = item["spatial_address"]
+		definition["home_space_id"] = item["home_space_id"]
+		definition["home_floor_id"] = item["home_floor_id"]
+		if not definition.has("home_needs") or _as_arr(definition.get("home_needs", [])).is_empty(): definition["home_needs"] = ["energy"]
+	return ""
+
+
 func _compile_interiors() -> void:
 	if _interiors_data.is_empty():
 		return
@@ -812,10 +943,12 @@ func _interior_object_defs(data: Dictionary = {}) -> Array:
 					oid = "%s_%d" % [oid, int(used[oid])]
 				else:
 					used[oid] = 0
+				var authored_space: Dictionary = _authored_spaces.get(String(space), {})
 				out.append({
 					"id": oid, "type": String((fu as Dictionary).get("label", slot)),
 					"pos": [int(pos[0]), int(pos[1])],
 					"space": String(space), "floor": String(floor), "area": String(space) + ":" + String(floor),
+					"home_space": String(authored_space.get("home_space", String(space))),
 					"staff": bool((fu as Dictionary).get("staff", false)),   # P3：员工专属对象(吧台)——只有该店主人用；顾客用公共桌
 					"advertises": adv.duplicate(true)})
 	return out
@@ -1004,6 +1137,8 @@ func start_new(p_seed: int = 12345) -> void:
 	agents.clear()
 	_agent_by_id.clear()
 	event_log.clear()
+	_civic_fold_cache = {}
+	_civic_fold_size = -1
 	cafe_guest_capability = {}
 	_cargo_event_index = {"event_size": 0, "arrivals": {}, "receipts": {}, "tx": {}}
 	observatory_projection_event_reads = 0
@@ -1033,7 +1168,7 @@ func start_new(p_seed: int = 12345) -> void:
 	for aid in _replay_ticks:
 		_replay_ptr[aid] = 0
 	var personas := _read_json("res://data/personas.json")
-	var adata: Array = _read_json("res://data/agents.json").get("agents", [])
+	var adata: Array = _authored_agent_definitions.get("agents", _read_json("res://data/agents.json").get("agents", []))
 	var defs := adata.duplicate(true)
 	# 扩 N：克隆扩容到 spawn_count（确定性：persona 轮转、按区心生成、id 唯一→天生立场各异）
 	# AQ1(doc 142)：克隆 persona 改从【扩后全池】personas.keys() 轮转（原 12 + 追加 12），
@@ -1070,6 +1205,9 @@ func start_new(p_seed: int = 12345) -> void:
 				"source": oid, "via": "seed", "tick": 0, "secret": true, "owner": oid, "confidedBy": {}}
 	# Wave 1b 经济：镇库注资 + 记录开局货币总量（守恒硬不变量基准）。缺 economy.json → 全为 0 零扰动。
 	town_coin = int(economy.get("town_start", 0)) if not economy.is_empty() else 0
+	bank_coin = int(banking.get("opening_capital", 0)) if not banking.is_empty() else 0
+	bank_deposits = {}
+	bank_loans = {}
 	_fisc_cache = {}                       # docs/204：财政累计是 event_log 的折叠，每局从空重扫
 	_diners_by_target = {}                 # docs/209：同桌名单是当前 tick 的纯函数，每局从空重建
 	_diners_tick = -1
@@ -1118,7 +1256,7 @@ func start_new(p_seed: int = 12345) -> void:
 		for g in production.get("goods", {}):
 			town_stock[String(g)] = int(production.get("start_stock", {}).get(String(g), 0))
 	stock_total0 = town_stock.duplicate(true)
-	election_log.clear(); last_election = {}   # Wave 3a：per-run 重置（goto_tick 反复 start_new）
+	election_log.clear(); last_election = {}; mayor_log.clear(); mayor_state = {}   # 治理状态 per-run 重置
 	weather_today = _weather_of_day(day)   # Wave 1c：开局天气（日界在 tick() 重算）
 	season_today = _season_of_day(day)     # Wave 3b：开局当季（日界在 tick() 重算；纯 f(day)）
 	# Wave 2b/3a：world 只在 _load_data 载一次 → start_new(含 goto_tick 重演)必须清上一局残留的动态对象再重开。
@@ -1184,6 +1322,8 @@ func _make_agent(adef: Dictionary, personas: Dictionary) -> Dictionary:
 	var sa: Dictionary = adef.get("spatial_address", {}) if adef.get("spatial_address", {}) is Dictionary else {}
 	var a_space := String(sa.get("space_id", "town"))
 	var a_floor := String(sa.get("floor_id", "outdoor"))
+	var a_home_space := String(adef.get("home_space_id", a_space))
+	var a_home_floor := String(adef.get("home_floor_id", a_floor))
 	var a_pos: Vector2i = _v2i(sa["position"]) if sa.has("position") else Vector2i(int(adef["spawn"][0]), int(adef["spawn"][1]))
 	var ag := {
 		"id": adef["id"],
@@ -1192,7 +1332,7 @@ func _make_agent(adef: Dictionary, personas: Dictionary) -> Dictionary:
 		"pos": a_pos,
 		"home": Vector2i(int(adef["home"][0]), int(adef["home"][1])),
 		"space": a_space, "floor": a_floor,
-		"home_space": a_space, "home_floor": a_floor,     # 家=起始平面（阿丽=cafe/2f）→ 回家 traverse 目标
+		"home_space": a_home_space, "home_floor": a_home_floor, # dwelling domain may span several room spaces; old agents default to their start space
 		"cafe_regular": bool(adef.get("cafe_regular", false)),   # P3：咖啡馆常客(营业时段进店喝咖啡+社交)；缺=false=不进店
 		"home_needs": _as_arr(adef.get("home_needs", [])),       # P3 Tier-C：家绑定 need（缺=用全局 HOME_NEEDS）
 		"needs": {},
@@ -1298,7 +1438,7 @@ func _player_trace_receipt(result: Variant) -> Dictionary:
 func _player_trace_entry_seal(entry_without_seal: Dictionary) -> int:
 	return fnv1a32(_player_trace_canonical(entry_without_seal))
 
-func _player_trace_payload_error(kind: String, payload: Dictionary) -> String:
+func _player_trace_payload_error(kind: String, payload: Dictionary, trace_version := PLAYER_TRACE_VERSION) -> String:
 	if _player_trace_bytes(payload) > PLAYER_TRACE_MAX_PAYLOAD_BYTES:
 		return "payload_too_large"
 	match kind:
@@ -1323,13 +1463,22 @@ func _player_trace_payload_error(kind: String, payload: Dictionary) -> String:
 					or not (payload.get("prompt") is String) or not (payload.get("reply") is String): return "chat_payload"
 			if String(payload.get("prompt", "")).to_utf8_buffer().size() > PLAYER_TRACE_MAX_CHAT_BYTES \
 					or String(payload.get("reply", "")).to_utf8_buffer().size() > PLAYER_TRACE_MAX_CHAT_BYTES: return "chat_too_large"
+		"bank_action":
+			if trace_version < PLAYER_TRACE_VERSION: return "bank_action_version"
+			if payload.keys().size() != 3 or not (payload.get("action") is String) \
+					or not (payload.get("account_id") is String) or not (payload.get("amount") is int): return "bank_action_payload"
+			var bank_action := String(payload.get("action", ""))
+			var bank_amount := int(payload.get("amount", -1))
+			if bank_action not in ["deposit", "withdraw", "loan"]: return "bank_action_kind"
+			if String(payload.get("account_id", "")) == "": return "bank_account"
+			if (bank_action == "loan" and bank_amount != 0) or (bank_action != "loan" and bank_amount <= 0): return "bank_amount"
 		_: return "unknown_kind"
 	return ""
 
 func _player_trace_preflight(kind: String, payload: Dictionary) -> String:
 	if _player_trace_replay_active:
 		return ""
-	var err := _player_trace_payload_error(kind, payload)
+	var err := _player_trace_payload_error(kind, payload, int(player_trace.get("version", PLAYER_TRACE_VERSION)))
 	if err != "": return err
 	if not player_trace_available:
 		return "" # old saves remain playable, but explicitly cannot replay their missing history
@@ -1359,7 +1508,8 @@ func _player_trace_commit(kind: String, payload: Dictionary, receipt: Dictionary
 	var order := 0
 	if not entries.is_empty() and int((entries[-1] as Dictionary).get("tick", -1)) == tick_no:
 		order = int((entries[-1] as Dictionary).get("order", -1)) + 1
-	var entry := {"version": PLAYER_TRACE_VERSION, "seq": seq, "tick": tick_no, "order": order,
+	var trace_version := int(player_trace.get("version", PLAYER_TRACE_VERSION))
+	var entry := {"version": trace_version, "seq": seq, "tick": tick_no, "order": order,
 		"actor": "player", "kind": kind, "payload": payload.duplicate(true), "receipt": receipt.duplicate(true)}
 	entry["seal"] = _player_trace_entry_seal(entry)
 	entries.append(entry)
@@ -1371,7 +1521,8 @@ func _player_trace_commit(kind: String, payload: Dictionary, receipt: Dictionary
 	return true
 
 func _player_trace_validate(trace: Dictionary, bind_session := true) -> String:
-	if int(trace.get("version", -1)) != PLAYER_TRACE_VERSION: return "trace_version"
+	var trace_version := int(trace.get("version", -1))
+	if trace_version not in [PLAYER_TRACE_LEGACY_VERSION, PLAYER_TRACE_VERSION]: return "trace_version"
 	if not (trace.get("session") is Dictionary) or not (trace.get("entries") is Array): return "trace_shape"
 	var entries: Array = trace.get("entries", [])
 	if entries.size() > PLAYER_TRACE_MAX_ENTRIES or int(trace.get("next_seq", -1)) != entries.size(): return "trace_count"
@@ -1386,7 +1537,7 @@ func _player_trace_validate(trace: Dictionary, bind_session := true) -> String:
 	for i in range(entries.size()):
 		if not (entries[i] is Dictionary): return "entry_shape"
 		var entry: Dictionary = entries[i]
-		if int(entry.get("version", -1)) != PLAYER_TRACE_VERSION or int(entry.get("seq", -1)) != i \
+		if int(entry.get("version", -1)) != trace_version or int(entry.get("seq", -1)) != i \
 				or String(entry.get("actor", "")) != "player" or not (entry.get("payload") is Dictionary) \
 				or not (entry.get("receipt") is Dictionary): return "entry_identity"
 		var et := int(entry.get("tick", -1)); var eo := int(entry.get("order", -1))
@@ -1394,12 +1545,26 @@ func _player_trace_validate(trace: Dictionary, bind_session := true) -> String:
 		tick_count = tick_count + 1 if et == prior_tick else 1
 		if tick_count > PLAYER_TRACE_MAX_ENTRIES_PER_TICK: return "entry_tick_budget"
 		var kind := String(entry.get("kind", "")); var payload: Dictionary = entry.get("payload", {})
-		var payload_error := _player_trace_payload_error(kind, payload)
+		var payload_error := _player_trace_payload_error(kind, payload, trace_version)
 		if payload_error != "": return payload_error
 		var unsigned := entry.duplicate(true); var seal := int(unsigned.get("seal", -1)); unsigned.erase("seal")
 		if seal != _player_trace_entry_seal(unsigned): return "entry_seal"
 		prior_tick = et; prior_order = eo
 	return ""
+
+## Upgrade the compatible V1 envelope in memory after load. Entry identity/order
+## remain unchanged; only the declared trace version and its integrity seals move.
+func _player_trace_upgrade_legacy(trace: Dictionary) -> Dictionary:
+	if int(trace.get("version", -1)) != PLAYER_TRACE_LEGACY_VERSION:
+		return trace.duplicate(true)
+	var upgraded := trace.duplicate(true)
+	upgraded["version"] = PLAYER_TRACE_VERSION
+	for i in (upgraded.get("entries", []) as Array).size():
+		var entry: Dictionary = (upgraded["entries"] as Array)[i]
+		entry["version"] = PLAYER_TRACE_VERSION
+		entry.erase("seal")
+		entry["seal"] = _player_trace_entry_seal(entry)
+	return upgraded
 
 func get_player_trace() -> Dictionary:
 	return player_trace.duplicate(true) if player_trace_available else {}
@@ -1423,7 +1588,7 @@ func _player_trace_rebuild_index() -> void:
 		bucket.append(int(entry.get("seq", -1))); _player_trace_tick_index[et] = bucket
 
 func player_trace_status() -> Dictionary:
-	return {"available": player_trace_available, "version": PLAYER_TRACE_VERSION,
+	return {"available": player_trace_available, "version": int(player_trace.get("version", PLAYER_TRACE_VERSION)),
 		"entries": (player_trace.get("entries", []) as Array).size() if player_trace_available else 0,
 		"max_entries": PLAYER_TRACE_MAX_ENTRIES, "max_entries_per_tick": PLAYER_TRACE_MAX_ENTRIES_PER_TICK,
 		"max_payload_bytes": PLAYER_TRACE_MAX_PAYLOAD_BYTES,
@@ -1545,20 +1710,26 @@ func _life_object_actions(ag: Dictionary, o: Dictionary) -> Array:
 			continue
 		var action := String(adv.get("action", ""))
 		var need_id := String(adv.get("need", ""))
+		var price := int(economy.get("prices", {}).get(action, 0)) if _econ_on() else 0
+		var affordable := price <= _coin_of(String(ag.get("id", "")))
+		var pantry_mode := _pantry_act(action) if _econ_on() else ""
 		var why := ""
 		if not staff_ok:
 			why = "店员专用"
+		# Pantry/snack purchases cannot proceed without funds; explain this before the generic closed/unavailable reason.
+		elif _econ_on() and price > 0 and not affordable and pantry_mode in ["buy", "snack"]:
+			why = "钱不够"
 		elif not _adv_open(ag, adv):
 			why = "不是你的活" if String(adv.get("job", "")) != "" else "现在不开"
 		elif need_id in _home_needs(ag) and String(ag.get("home_space", "town")) != "town" \
-				and String(ag.get("space", "town")) != String(ag.get("home_space", "town")):
+				and String(o.get("home_space", o.get("space", "town"))) != String(ag.get("home_space", "town")):
 			why = "只在自己家里"
 		elif not (ag["needs"] as Dictionary).has(need_id):
 			why = "用不了"
-		var price := int(economy.get("prices", {}).get(action, 0)) if _econ_on() else 0
 		out.append({"action": action, "need": need_id, "amount": int(adv.get("amount", 0)),
 			"duration": int(adv.get("duration", 0)), "price": price,
-			"wage": _wage_for(ag, action) if _econ_on() else 0, "ok": why == "", "why": why})
+			"wage": _wage_for(ag, action) if _econ_on() else 0, "ok": why == "", "why": why,
+			"affordable": affordable})
 	return out
 
 ## 「按 E」：身边（同平面、曼哈顿 ≤ radius）能交互的一切，按距离、再按 id 排序（确定）。
@@ -1592,6 +1763,24 @@ func life_interactions(radius := LIFE_REACH) -> Array:
 			acts.append({"action": v})
 		out.append({"kind": "agent", "id": String(other["id"]), "label": _name(other), "pos": other["pos"], "dist": d,
 			"busy": int(other["talking"]) > 0, "actions": acts})
+	# The account counter is authored furniture, not a simulated service job.
+	# Expose its anchor to LifeMode's click and nearby Tab/E paths without
+	# changing bank authority or copying an interior coordinate into the UI.
+	if sp == "halles" and fl == "1f":
+		var bank_cell := bank_counter_cell()
+		if bank_cell.x >= 0:
+			var bank_d := _manh(here, bank_cell)
+			if bank_d <= radius:
+				out.append({"kind": "bank", "id": "bank_counter", "label": "合作银行柜台",
+					"pos": bank_cell, "dist": bank_d, "actions": [{"action": "account"}]})
+	# P4c-7：镇务公示板是只读 UI 入口，不带 advertises，因而绝不会进入 NPC 候选、
+	# 改需求或写事件。生活模式仍把这个 authored 家具标记暴露为一个可聚焦目标。
+	var civic_cell := civic_observatory_cell()
+	if sp == "mairie" and fl == "1f" and civic_cell.x >= 0:
+		var civic_d := _manh(here, civic_cell)
+		if civic_d <= radius:
+			out.append({"kind": "civic", "id": "civic_observatory", "label": "镇务公示板",
+				"pos": civic_cell, "dist": civic_d, "actions": []})
 	for hop in _portals_from(sp, fl, ag):
 		var pp: Vector2i = hop["from_pos"]
 		var d := _manh(here, pp)
@@ -2096,6 +2285,7 @@ func _player_trace_replay_boundary(boundary_tick: int) -> bool:
 			"portal": player_portal_intent(payload)
 			"cafe_guest_pass": player_cafe_guest_pass(String(payload.get("action", "")))
 			"chat_reply": player_chat_commit(String(payload.get("target_id", "")), String(payload.get("prompt", "")), String(payload.get("reply", "")))
+			"bank_action": player_bank_action(String(payload.get("action", "")), String(payload.get("account_id", "")), int(payload.get("amount", 0)))
 			_:
 				player_trace_last_error = "trace_kind"
 				return false
@@ -2231,13 +2421,13 @@ const SAVE_MAGIC := "LTSAVE"
 const SAVE_SCHEMA_LEGACY := 1
 const SAVE_SCHEMA := 2
 const SAVE_RUNTIME_HANDLES := ["backend", "ext", "decision_sink"]
-const SAVE_LOAD_DENY := ["desire_cfg", "_venue_cache", "_indoor_job_cache", "_fisc_cache", "_diners_by_target", "_diners_tick", "_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_interiors_data", "_authored_solid_props", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected",
+const SAVE_LOAD_DENY := ["desire_cfg", "_venue_cache", "_indoor_job_cache", "_fisc_cache", "_diners_by_target", "_diners_tick", "_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_agent_definitions", "_authored_interiors_data", "_authored_world_package_ref", "_authored_solid_props", "_civic_fold_cache", "_civic_fold_size", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected",
 	"controlled_id", "_tone_bonus", "loaded_meta"]   # docs/190 生活模式：附身/语气/档头都是 View 或瞬时态，不改存档形状（旧档照读）
 const SAVE_CURRENT_BLOB_KEYS := ["magic", "schema", "game_version", "saved_tick", "saved_day", "seed", "meta", "active_commit_ids", "state"]
 
 ## The current-schema contract is the exact field set emitted by save_game, derived from the same
 ## reflection/exclusion policy instead of a second hand-maintained allowlist. This is intentionally
-## fail-closed: adding a new authoritative script var changes the schema-2 shape, so an older
+## fail-closed: adding a new authoritative script var changes the schema-2 state shape, so an older
 ## schema-2 payload is rejected instead of inheriting that field from the live quickload receiver.
 func _current_save_state_keys() -> Dictionary:
 	var keys := {}
@@ -2254,13 +2444,16 @@ func _current_save_state_keys() -> Dictionary:
 	return keys
 
 func save_game(path: String, meta := {}) -> bool:
+	if not meta is Dictionary:
+		push_error("save_game REFUSED — meta must be a Dictionary")
+		return false
 	# 派生引用结构【不入档】：它们只是 agents[]/commitments[] 的别名视图，存了也只能得到孤儿副本；
 	# 读档后由 _rebuild_after_load 从真源重建（_active_commitments 靠下面存的 id 列表还原成员资格）。
 	var state := {}
 	for key in _current_save_state_keys():
 		state[key] = get(key)
 	# Configuration snapshots are retained for schema compatibility, but the writer always emits
-	# the current authored copies.  A migrated legacy live world may keep its old world/logistics;
+	# the current authored copies. A migrated legacy live world may keep its old world/logistics;
 	# it cannot persist a forged portal/access/collision contract into a new schema-2 file.
 	state["_spaces"] = _authored_spaces.duplicate(true)
 	state["_portals"] = _authored_portals.duplicate(true)
@@ -2283,13 +2476,17 @@ func save_game(path: String, meta := {}) -> bool:
 	var active_ids := []                            # 活跃承诺的成员资格（id）——重建工作集用
 	for c in _active_commitments:
 		active_ids.append(int(c.get("id", -1)))
+	var save_meta: Dictionary = meta.duplicate(true)
+	save_meta.erase("_world_package_ref") # reserved receiver-authored field; callers cannot forge topology provenance
+	if not _authored_world_package_ref.is_empty():
+		save_meta["_world_package_ref"] = _authored_world_package_ref.duplicate(true)
+	save_meta.erase("world_profile")
 	if ext != null and ext.has_method("save_identity"):
-		meta = meta.duplicate(true)
-		meta["world_profile"] = ext.save_identity()
+		save_meta["world_profile"] = ext.save_identity()
 	var blob := {
 		"magic": SAVE_MAGIC, "schema": SAVE_SCHEMA,
 		"game_version": String(ProjectSettings.get_setting("application/config/version", "dev")),
-		"saved_tick": tick_no, "saved_day": day, "seed": seed_base, "meta": meta,
+		"saved_tick": tick_no, "saved_day": day, "seed": seed_base, "meta": save_meta,
 		"active_commit_ids": active_ids, "state": state,
 	}
 	if player_trace_available and _agent_by_id.has("player"):
@@ -2333,7 +2530,7 @@ func peek_save(path: String) -> Dictionary:
 	f.close()
 	if not (blob is Dictionary) or blob.get("magic") != SAVE_MAGIC or int(blob.get("schema", -1)) != sch or not (blob.get("state") is Dictionary):
 		return {}
-	if sch == SAVE_SCHEMA and _validate_current_save_shape(blob) != "":
+	if sch >= SAVE_SCHEMA and _validate_save_shape(blob, sch) != "":
 		return {}
 	blob.erase("state")                             # 只回头信息
 	blob.erase("player_trace")                      # trace 可很大；列表视图只返回 O(1) 头信息
@@ -2341,23 +2538,38 @@ func peek_save(path: String) -> Dictionary:
 	return blob
 
 func _validate_current_save_shape(blob: Dictionary) -> String:
-	for key in SAVE_CURRENT_BLOB_KEYS:
+	return _validate_save_shape(blob, SAVE_SCHEMA)
+
+func _validate_save_shape(blob: Dictionary, schema_version: int) -> String:
+	for key: String in SAVE_CURRENT_BLOB_KEYS:
 		if not blob.has(key):
-			return "schema %d missing current envelope key: %s" % [SAVE_SCHEMA, key]
+			return "schema %d missing envelope key: %s" % [schema_version, key]
 	var expected_size := SAVE_CURRENT_BLOB_KEYS.size() + (1 if blob.has("player_trace") else 0)
 	if blob.size() != expected_size:
-		return "schema %d envelope contains unknown keys" % SAVE_SCHEMA
+		return "schema %d envelope contains unknown keys" % schema_version
 	for typed_key in ["schema", "saved_tick", "saved_day", "seed"]:
 		if typeof(blob.get(typed_key)) != TYPE_INT:
-			return "schema %d envelope %s is not an int" % [SAVE_SCHEMA, typed_key]
+			return "schema %d envelope %s is not an int" % [schema_version, typed_key]
 	if typeof(blob.get("magic")) != TYPE_STRING or typeof(blob.get("game_version")) != TYPE_STRING \
 		or not (blob.get("meta") is Dictionary):
-		return "schema %d envelope string/meta types are invalid" % SAVE_SCHEMA
+		return "schema %d envelope string/meta types are invalid" % schema_version
+	var meta: Dictionary = blob["meta"]
+	if meta.has("_world_package_ref"):
+		var package_ref: Variant = meta["_world_package_ref"]
+		if not package_ref is Dictionary: return "meta._world_package_ref is not a Dictionary"
+		if not package_ref.is_empty():
+			if package_ref.size() != 2 or typeof(package_ref.get("world_id")) != TYPE_STRING \
+					or typeof(package_ref.get("semantic_sha256")) != TYPE_STRING:
+				return "meta._world_package_ref must contain world_id and semantic_sha256"
+			var digest := String(package_ref.get("semantic_sha256", ""))
+			if String(package_ref.get("world_id", "")).is_empty() or digest.length() != 64 \
+					or digest.to_lower() != digest or not digest.is_valid_hex_number():
+				return "meta._world_package_ref identity is invalid"
 	var raw_state = blob.get("state")
 	if not (raw_state is Dictionary):
 		return "state is not a Dictionary"
 	var state: Dictionary = raw_state
-	var state_error := _validate_loaded_state(state, SAVE_SCHEMA)
+	var state_error := _validate_loaded_state(state, schema_version)
 	if state_error != "":
 		return state_error
 	if blob.has("player_trace"):
@@ -2366,7 +2578,7 @@ func _validate_current_save_shape(blob: Dictionary) -> String:
 		if trace_error != "": return trace_error
 	for pair in [["saved_tick", "tick_no"], ["saved_day", "day"], ["seed", "seed_base"]]:
 		if typeof(blob.get(pair[0])) != TYPE_INT or int(blob.get(pair[0])) != int(state.get(pair[1], -1)):
-			return "schema %d envelope %s does not match state %s" % [SAVE_SCHEMA, pair[0], pair[1]]
+			return "schema %d envelope %s does not match state %s" % [schema_version, pair[0], pair[1]]
 	var active_ids = blob.get("active_commit_ids")
 	if not (active_ids is Array) or not (active_ids as Array).all(func(v): return typeof(v) == TYPE_INT):
 		return "active_commit_ids is not an int Array"
@@ -2419,15 +2631,16 @@ func load_game(path: String) -> bool:
 	f.close()
 	if not (blob is Dictionary) or blob.get("magic") != SAVE_MAGIC or int(blob.get("schema", -1)) != sch:
 		return false
-	var saved_meta: Dictionary = blob.get("meta", {}) if blob.get("meta") is Dictionary else {}
-	var saved_profile: Variant = saved_meta.get("world_profile", {})
+	# Keep view metadata staged with the candidate state. A rejected quickload must not
+	# leave the receiver showing header data from a save whose simulation state was refused.
+	var pending_loaded_meta: Dictionary = (blob.get("meta") as Dictionary).duplicate(true) if blob.get("meta") is Dictionary else {}
+	var saved_profile: Variant = pending_loaded_meta.get("world_profile", {})
 	var expected_profile: Dictionary = ext.save_identity() if ext != null and ext.has_method("save_identity") else {}
-	if (not expected_profile.is_empty() and saved_profile != expected_profile) or (expected_profile.is_empty() and saved_profile is Dictionary and not saved_profile.is_empty()):
+	if not (saved_profile is Dictionary) or saved_profile != expected_profile:
 		push_warning("load_game: this archive belongs to a different authored world profile")
 		return false
-	loaded_meta = (blob.get("meta") as Dictionary).duplicate(true) if blob.get("meta") is Dictionary else {}   # View 自带的档头（生活模式状态等），不进仿真
-	if sch == SAVE_SCHEMA:
-		var shape_error := _validate_current_save_shape(blob)
+	if sch >= SAVE_SCHEMA:
+		var shape_error := _validate_save_shape(blob, sch)
 		if shape_error != "":
 			push_warning("load_game: %s" % shape_error)
 			return false
@@ -2439,6 +2652,20 @@ func load_game(path: String) -> bool:
 		push_warning("load_game: %s" % String(prepared.get("error", "invalid save state")))
 		return false
 	var state: Dictionary = prepared["state"]
+	var save_meta: Dictionary = blob.get("meta", {})
+	var saved_ref_value: Variant = save_meta.get("_world_package_ref", {})
+	if not saved_ref_value is Dictionary:
+		push_warning("load_game: meta._world_package_ref is invalid")
+		return false
+	var saved_package_ref: Dictionary = saved_ref_value
+	var package_migration: RefCounted = WorldPackageAitownMigrations.new()
+	var package_check: Dictionary = package_migration.validate_save_reference(sch, saved_package_ref, state,
+		_authored_world_package_ref, _authored_spaces, _authored_portals, _authored_interiors_data)
+	if not bool(package_check.get("ok", false)):
+		push_warning("load_game: %s" % ";".join(package_check.get("errors", [])))
+		return false
+	if not package_check.get("world_package_ref", {}).is_empty():
+		pending_loaded_meta["_world_package_ref"] = package_check["world_package_ref"].duplicate(true)
 	var invalid := _validate_loaded_state(state, sch)
 	if invalid != "":
 		push_warning("load_game: %s" % invalid)
@@ -2451,13 +2678,14 @@ func load_game(path: String) -> bool:
 	# 到这里才触碰 live Sim。上面的迁移/验证全在 deep copy 上完成，因此任何拒绝都保持接收实例原样。
 	for k in state:
 		set(k, state[k])
+	loaded_meta = pending_loaded_meta
 	_rebuild_after_load(active_ids)
 	if loaded_trace.is_empty():
 		player_trace = {}
 		player_trace_available = false
 		_player_trace_tick_index = {}
 	else:
-		player_trace = loaded_trace
+		player_trace = _player_trace_upgrade_legacy(loaded_trace)
 		player_trace_available = true
 		_player_trace_rebuild_index()
 	player_trace_last_error = ""
@@ -2474,7 +2702,7 @@ func _prepare_loaded_state(blob: Dictionary, sch: int) -> Dictionary:
 	if not (raw_state is Dictionary):
 		return {"ok": false, "error": "state is not a Dictionary"}
 	var state: Dictionary = (raw_state as Dictionary).duplicate(true)
-	if sch == SAVE_SCHEMA:
+	if sch >= SAVE_SCHEMA:
 		return {"ok": true, "state": state}
 	if sch != SAVE_SCHEMA_LEGACY:
 		return {"ok": false, "error": "no migration path for schema %d" % sch}
@@ -2905,11 +3133,18 @@ func _solid_lot_cells_in_world(source_world: Dictionary) -> Array:
 		var lp := _as_arr((raw_lot as Dictionary).get("pos", []))
 		var lf := _as_arr((raw_lot as Dictionary).get("footprint", []))
 		var ld := _as_arr((raw_lot as Dictionary).get("door", []))
+		var open_cells := {}
+		for raw_open in (raw_lot as Dictionary).get("open_cells", []):
+			var oc := _as_arr(raw_open)
+			if oc.size() == 2:
+				open_cells[Vector2i(int(oc[0]), int(oc[1]))] = true
 		if lp.size() != 2 or lf.size() != 2:
 			continue
 		for y in range(int(lp[1]), int(lp[1]) + int(lf[1])):
 			for x in range(int(lp[0]), int(lp[0]) + int(lf[0])):
 				if ld.size() == 2 and x == int(ld[0]) and y == int(ld[1]):
+					continue
+				if open_cells.has(Vector2i(x, y)):
 					continue
 				out.append(Vector2i(x, y))
 	return out
@@ -3034,10 +3269,10 @@ func _validate_agent_spatial_authority(state: Dictionary) -> String:
 		if home.is_empty():
 			return "agent %s has no authored home authority" % aid
 		if typeof(ag.get("home_space")) != TYPE_STRING \
-				or String(ag.get("home_space", "")) != String(home.get("space", "")):
+				or String(ag.get("home_space", "")) != String(home.get("home_space", home.get("space", ""))):
 			return "agent %s home_space authority diverges from authored identity" % aid
 		if typeof(ag.get("home_floor")) != TYPE_STRING \
-				or String(ag.get("home_floor", "")) != String(home.get("floor", "")):
+				or String(ag.get("home_floor", "")) != String(home.get("home_floor", home.get("floor", ""))):
 			return "agent %s home_floor authority diverges from authored identity" % aid
 		for key in ["space", "floor", "area", "room"]:
 			if typeof(ag.get(key)) != TYPE_STRING:
@@ -3101,7 +3336,7 @@ func _validate_loaded_state(state: Dictionary, sch: int) -> String:
 			return "state key %s has type %d, expected %d" % [key, typeof(incoming), typeof(live)]
 		if typeof(live) == TYPE_NIL and typeof(incoming) != TYPE_NIL:
 			return "runtime handle %s is not null" % key
-	if sch == SAVE_SCHEMA:
+	if sch >= SAVE_SCHEMA:
 		var expected := _current_save_state_keys()
 		for key in expected:
 			if not state.has(key):
@@ -3114,6 +3349,15 @@ func _validate_loaded_state(state: Dictionary, sch: int) -> String:
 	for key in ["agents", "world", "production", "logistics", "tick_no", "day", "seed_base", "event_log", "event_digest", "town_stock", "town_coin", "external_coin", "econ_total0", "commitments", "cargo_manifests", "cargo_manifest_order", "core_population"]:
 		if not state.has(key):
 			return "missing required state key: %s" % key
+	if not (state["event_log"] is Array):
+		return "event_log is not an Array"
+	var civic_fold: Dictionary = CivicProjectScript.fold(state["event_log"])
+	if not bool(civic_fold.get("ok", false)):
+		return "civic project event authority: %s" % String(civic_fold.get("error", "invalid"))
+	if state.get("mayor_log") is Array and state.get("economy") is Dictionary:
+		var civic_authority_error := CivicProjectScript.authority_error(state["event_log"], state["mayor_log"], state["economy"])
+		if civic_authority_error != "":
+			return "civic project term/treasury authority: %s" % civic_authority_error
 	if not (state["agents"] is Array) or (state["agents"] as Array).is_empty():
 		return "agents must be a non-empty Array"
 	if typeof(state["core_population"]) != TYPE_INT:
@@ -3133,7 +3377,7 @@ func _validate_loaded_state(state: Dictionary, sch: int) -> String:
 			eligible_core += 1
 	if core <= 0 or core != eligible_core:
 		return "core_population %d does not equal eligible core %d" % [core, eligible_core]
-	if sch == SAVE_SCHEMA:
+	if sch >= SAVE_SCHEMA:
 		var spatial_error := _validate_agent_spatial_authority(state)
 		if spatial_error != "":
 			return spatial_error
@@ -3217,6 +3461,8 @@ func _scan_objects(v, path: String, out: Array) -> void:
 ## 反序列化后：agents[] 与 _agent_by_id / _active_commitments 已成【各自独立副本】——
 ## 必须重建成【同一引用】，否则经其一改状态不动另一处 → 续跑立刻漂（这就是全套硬门要抓的头号 bug）。
 func _rebuild_after_load(active_commit_ids: Array = []) -> void:
+	_civic_fold_cache = {}
+	_civic_fold_size = -1
 	for ag in agents:                                # 记忆：从 items 数据重建 MemoryStream 对象
 		var m = ag.get("memory")
 		if m is Dictionary and (m as Dictionary).has("__mem_items__"):
@@ -3244,6 +3490,7 @@ func _rebuild_after_load(active_commit_ids: Array = []) -> void:
 # ── 主循环 ───────────────────────────────────────────────────────────────
 func tick() -> void:
 	tick_no += 1
+	_civic_project_tick()
 	if lod_aggregate:
 		_compute_lod_cohort()                        # 观察无关 cohort（salient ∪ 轮转，不读相机）
 	elif lod and lod_near_cap > 0:
@@ -3268,6 +3515,7 @@ func tick() -> void:
 		_update_lifecycle(_prev_season)        # Wave 3b：换季/生日里程碑（喂 voice grounding）
 		_update_festival()                     # Wave 2b：昨日节日清场 → 今日按 日取模+天气 开节（确定）
 		_update_election()                     # Wave 3a：到期把话题付诸投票（S2 attitude 即选票，快照纯函数计票）
+		_update_mayor_election()               # P4b：候选、逐人选票与任期；尚不改任何政策
 		if ext != null:
 			ext.seed_day(self, scenario, day)  # 周更编剧：schedule 里 day==当天的补丁到点确定性注入（无 schedule→零扰动）
 		_nightly()
@@ -3366,9 +3614,14 @@ func _advance_agent(ag: Dictionary) -> void:
 				return                              # 否则：下一条记录决策在未来 → 本 tick 等待(还原思考延迟)
 			agent_apply(ag, _logic_decide(ag, cands))   # 无更多记录 → 引擎兜底
 			return
-		# 注入了后端(窗口/M2)则走它；否则内置确定性 logic（soak/headless 永远兜底）。
+		# Scrub without an authored decision trace must reproduce the deterministic
+		# logic baseline even when Main attached AIBackend after initial warmup.
+		# Routing logic through the backend branch below would apply external
+		# survival/horizon vetoes a second time and split the replay history.
 		var intent: Dictionary
-		if backend != null and backend.has_method("decide"):
+		if replaying:
+			intent = _logic_decide(ag, cands)
+		elif backend != null and backend.has_method("decide"):
 			intent = backend.decide(ag, cands, _context(ag))
 			if intent.get("_wait", false):
 				return                              # M2：思考中，本 tick 不落地（保持 option==null 下 tick 再问）
@@ -3395,11 +3648,17 @@ func _advance_agent(ag: Dictionary) -> void:
 		agent_apply(ag, intent)
 		return
 	# P3 承诺 pre-empt：正办一件【不急】的事(当前 option 的 need 还舒适≥SURVIVAL_GATE)，却有【另一】需求跌破危机线
-	# → 中止改救急 → 下 tick 重新决策(会挑最紧的)。只打断"不急的承诺"、绝不打断"正在救急的行程"→ 既有决策黏性(消 livelock)
+	# → 中止改救急 → 下 tick 重新决策(会挑最紧的)。LT-14 仅把非饥饿远途的饥饿线提前到 20，给找饭留行程缓冲。
+	# 只打断"不急的承诺"、绝不打断"正在救急的行程"→ 既有决策黏性(消 livelock)
 	# 又不会饿穿(守 #01)。仅对带 need 的 option(object/journey)；无 need 的(social/attend)不受影响。
 	if opt is Dictionary and opt.has("need") and not ag.get("is_player", false) and not _is_controlled(ag):
 		var onid := String(opt["need"])
-		if ag["needs"].has(onid) and float(ag["needs"][onid]) >= SURVIVAL_GATE and _min_need(ag) < PREEMPT_CRISIS \
+		# A journey keeps dest_space when it becomes a local object commitment.
+		# Keep the same hunger interruption through travel and use at that destination.
+		var early_food: bool = (String(opt.get("kind", "")) == "journey" or opt.has("dest_space")) and onid != "hunger" \
+				and float(ag["needs"].get("hunger", 100.0)) < HUNGER_JOURNEY_PREEMPT
+		if ag["needs"].has(onid) and float(ag["needs"][onid]) >= SURVIVAL_GATE \
+				and (_min_need(ag) < PREEMPT_CRISIS or early_food) \
 				and _has_rescue_candidate(ag):
 			ag["option"] = null
 			return
@@ -3636,6 +3895,7 @@ func _advance_object(ag: Dictionary, opt: Dictionary) -> void:
 					ag["option"] = null
 					emit_signal("agent_changed", ag["id"])
 					return
+			_complete_mayor_duty(ag, opt)
 			ag["memory"].add("在%s%s了" % [target_obj.get("area", ""), opt["action"]], 3, tick_no, [opt["need"], opt["target"]])
 			# Wave E 产出点：本职在班干完一活 → 往镇库存交一批货（口径与 _wage_for 的"本职在班"同一条）。
 			# 先交货再领钱。这一行就是"劳动不再只是钱包数字"的落点：它写的是世界状态(town_stock)，不是 agent 的钱。
@@ -3716,6 +3976,7 @@ func _nightly() -> void:
 	if _econ_on():
 		_household_nightly()
 		_fiscal_nightly()          # docs/204：账单收完之后，按今天的营收交税、镇库见底时大他者补贴
+		_bank_nightly()            # P5a：还贷→储蓄→一笔有准备金边界的创业贷款
 	# Wave 2a+ 阶层 gossip：财富被同区邻居目击 → firsthand belief(via=seen) → 走既有 gossip 管线传播(S1 原样复用)。
 	if _econ_on() and economy.has("wealth_gossip"):
 		_observe_wealth()
@@ -3771,6 +4032,16 @@ func agent_candidates(ag: Dictionary) -> Array:
 ## ⚠ 第一版只留本职 ⇒ #40 1/12、8 个 seed 硬 #01：人被钉在岗上，need 掉破生存门时已离饭很远（docs/206 同一条死法）。
 ## ⚠ 排好的饭点表（用户 2026-09-16「scheduled lunch time or rest interval」）最好 5/12：休息是钟表窗口，饿有自己的节奏。
 ## 两个逃生口：任一 need 跌破 SURVIVAL_GATE ⇒ 规矩当场失效；收窄后一个不剩 ⇒ 退回全集（不许 livelock，docs/198）。
+func _eligible_civic_work(ag: Dictionary, candidate: Dictionary) -> bool:
+	if String(candidate.get("kind", "")) not in ["object", "journey"]:
+		return false
+	var target := String(candidate.get("target", ""))
+	var obj: Dictionary = world.get("objects", {}).get(target, {})
+	for adv in _as_arr(obj.get("advertises", [])):
+		if adv is Dictionary and bool(adv.get("mayor_duty", false)) and String(adv.get("action", "")) == String(candidate.get("action", "")) and _adv_open(ag, adv):
+			return true
+	return false
+
 func _discipline(ag: Dictionary, cands: Array) -> Array:
 	if cands.is_empty() or not bool(economy.get("work_discipline", false)):
 		return cands
@@ -3792,7 +4063,7 @@ func _discipline(ag: Dictionary, cands: Array) -> Array:
 			continue
 		var cd: Dictionary = c
 		var nid := String(cd.get("need", ""))
-		if String(cd.get("action", "")) == act or (nid in care and float(needs.get(nid, 100.0)) < care_below):
+		if String(cd.get("action", "")) == act or _eligible_civic_work(ag, cd) or (nid in care and float(needs.get(nid, 100.0)) < care_below):
 			kept.append(c)
 	return kept if not kept.is_empty() else cands
 
@@ -3864,6 +4135,13 @@ func _journey_candidates(ag: Dictionary) -> Array:
 			var wj := _best_satisfier_journey(ag, "fun", aspace, afloor, home_space, false, {}, jt)
 			if not wj.is_empty():
 				out.append(wj)
+	# (A4) 当选镇长的每周公务：任期内、未完成本周期值班、且当前无生存危机时，明确规划去镇公所。
+	# 只认 mayor_duty 广告，避免镇公所里的普通 fun 家具冒充公务目的地。
+	if not mayor_state.is_empty() and String(ag.get("id", "")) == String(mayor_state.get("mayor", "")) \
+			and _min_need(ag) >= SURVIVAL_GATE:
+		var duty_journey := _best_satisfier_journey(ag, "fun", aspace, afloor, home_space, false, {"mairie": true}, "", false, true)
+		if not duty_journey.is_empty():
+			out.append(duty_journey)
 	# (B) 离家在外 或 café 居民 → 为本平面无满足的偏紧 need 承诺行程。普通镇上居民(都在 town)不进此块。
 	if aspace != "town" or home_space != "town":
 		var covered := {}
@@ -3875,7 +4153,8 @@ func _journey_candidates(ag: Dictionary) -> Array:
 					#   人留在关门的馆子里干站、饿到触底才走（实测 yong seed 24，#01 硬红）。
 					if adv is Dictionary and _adv_open(ag, adv) and _staff_ok(ag, o):
 						var n := String(adv.get("need", ""))
-						if not (n in _home_needs(ag) and aspace != home_space):   # 镇上的床/游戏机不算覆盖【居民】的 energy/fun
+						var object_home_space := String(o.get("home_space", o.get("space", "town")))
+						if not (n in _home_needs(ag) and object_home_space != home_space): # home-bound actions must belong to this dwelling
 							covered[n] = true
 		# docs/201：social 原本整个跳过（楼里有人就能聊，不必为它出门）。可楼里只剩自己时就没有任何出路——
 		#   实测 ben 一个人留在小馆里，没有候选、干站着，social 从 6 掉到 0（#01 硬红）。
@@ -3900,7 +4179,7 @@ func _journey_candidates(ag: Dictionary) -> Array:
 
 ## 锁定他平面满足 nid 的【最优对象】→ 一条 journey 候选。家绑定：【居民】的 energy/fun 只回家 Space(顾客 home=town 不受限)。
 ## is_visit=进店行程：只认咖啡馆对象、路程惩罚减半+进店加成(值得为一杯咖啡跑一趟，压过就近的镇上游戏机)。带 ag 走权限门(owner 楼梯)。
-func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor: String, home_space: String, is_visit: bool, only_spaces: Dictionary = {}, job_only: String = "", vendor_only: bool = false) -> Dictionary:
+func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor: String, home_space: String, is_visit: bool, only_spaces: Dictionary = {}, job_only: String = "", vendor_only: bool = false, mayor_duty_only: bool = false) -> Dictionary:
 	var urg := 100.0 - float(ag["needs"].get(nid, 100.0))
 	var best_score := -1.0e18
 	var best: Dictionary = {}
@@ -3915,11 +4194,15 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 			continue
 		if not _staff_ok(ag, o):                                # 顾客的进店行程不冲吧台(员工专属)→ 锁定公共桌"喝咖啡"
 			continue
-		if nid in _home_needs(ag) and home_space != "town" and os != home_space:   # 居民的 energy/fun 只回家 Space
+		if nid in _home_needs(ag) and home_space != "town" \
+				and String(o.get("home_space", os)) != home_space \
+				and not _mayor_duty_at_object_open(ag, o): # mayor duty is the explicit public-service exception
 			continue
 		var amt := 0; var dur := 0; var act := ""; var best_adv: Dictionary = {}   # docs/209：供 _company_pull
 		for adv in _as_arr(o.get("advertises", [])):
 			if not (adv is Dictionary):
+				continue
+			if mayor_duty_only and not bool((adv as Dictionary).get("mayor_duty", false)):
 				continue
 			if not _adv_open(ag, adv):
 				continue                                        # F1：跨平面行程也要过工位专属/市集时段两道门（否则会承诺跑一趟去一个关着的摊）
@@ -3928,6 +4211,9 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 			if vendor_only and not bool(_vendor_for(String(adv.get("action", ""))).get("luxury", false)) \
 					and not _treat_affordable(ag, String(adv.get("action", ""))):
 				continue                                        # docs/201 A2b：为 fun 出门只认收费店（docs/212：也认 economy.treats 里买得起的甜点）
+			# Apply the existing edible-food policy before selecting the sole hunger journey.
+			if nid == "hunger" and _instinct_active(ag) and _pantry_act(String(adv.get("action", ""))) in ["buy", "relief"]:
+				continue
 			if String(adv.get("need", "")) == nid and int(adv.get("amount", 0)) > amt:
 				amt = int(adv.get("amount", 0)); dur = int(adv.get("duration", 0)); act = String(adv.get("action", "")); best_adv = adv
 		if amt <= 0:
@@ -3945,10 +4231,22 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 			d = int(_walk_cost(ag, {"target": String(id), "action": act}) + _full_seat_cost({"target": String(id), "action": act}))
 		var pen: float = _w("obj_dist_penalty", 0.4) * (0.5 if is_visit else 1.0)
 		var score := urg * (float(amt) / 60.0) - float(d) * pen + (CAFE_VISIT_BONUS if is_visit else 0.0) + _company_pull(o, best_adv, String(ag["id"]))   # docs/209
+		# LT-14: a social outlet in another space must compete with nearby sleep when social is itself the lowest crisis need.
+		# Only the score changes; target eligibility, travel commitment, and the default (missing key = 0) remain unchanged.
+		if nid == "social" and float(ag["needs"].get(nid, 100.0)) <= _min_need(ag):
+			score += maxf(0.0, SURVIVAL_GATE - float(ag["needs"][nid])) * _w("journey_social_survival_pull", 0.0)
+		# During a social crisis, restore the travel buffer before another long noncritical trip.
+		# Hunger below its journey-preempt line keeps priority.
+		if nid == "social" and float(ag["needs"][nid]) < PREEMPT_CRISIS \
+				and float(ag["needs"].get("hunger", 100.0)) >= HUNGER_JOURNEY_PREEMPT:
+			score += SURVIVAL_GATE - float(ag["needs"][nid])
 		if instinct:
 			score = -float(d)                                    # docs/210：本能 = 最近的一口正经饭
 		else:
 			score += _craving_pull(ag, act)                       # docs/213：馋了才值得专门跑一趟
+			if bool(best_adv.get("mayor_duty", false)):
+				var mayor_cfg: Dictionary = elections.get("mayor", {}) if elections.get("mayor", {}) is Dictionary else {}
+				score += float(mayor_cfg.get("duty_pull", 0))
 		if not _seat_free(o, best_adv, String(ag["id"])):
 			score -= _w("seat_full_penalty", 0.0)                # docs/210：满座扣分、不排除
 		if score > best_score:
@@ -3968,7 +4266,14 @@ func _home_needs(ag: Dictionary) -> Array:
 ## 员工专属对象门：staff 对象(阿丽的吧台)只有该店主人(home_space==对象 Space)能用；顾客/外人不枚举它。
 ## 非 staff 对象恒真 → town 全员 + 所有旧对象逐字节不变。
 func _staff_ok(ag: Dictionary, o: Dictionary) -> bool:
-	return not bool(o.get("staff", false)) or String(ag.get("home_space", "town")) == String(o.get("space", "town"))
+	return not bool(o.get("staff", false)) or String(ag.get("home_space", "town")) == String(o.get("home_space", o.get("space", "town")))
+
+## 家绑定的 fun 通常不允许跨 Space；镇长值班广告是唯一由公职授权的例外。
+func _mayor_duty_at_object_open(ag: Dictionary, o: Dictionary) -> bool:
+	for adv in _as_arr(o.get("advertises", [])):
+		if adv is Dictionary and bool((adv as Dictionary).get("mayor_duty", false)) and _adv_open(ag, adv):
+			return true
+	return false
 
 ## F1：一条【广告位】此刻对这个人开不开。两道门，都写在 advertise 一级（不是对象一级）——
 ## 摊位同一件家具上既有对内的"摆摊"(只有商贩)又有对外的"赶集"(全镇)，对象一级的门表达不了这件事。
@@ -3976,6 +4281,22 @@ func _staff_ok(ag: Dictionary, o: Dictionary) -> bool:
 ##   ② 市集时段：见 _market_open。
 ## 两者都缺 → 恒真 → 所有旧广告位逐字节不变。
 func _adv_open(ag: Dictionary, adv: Dictionary) -> bool:
+	if bool(adv.get("mayor_duty", false)):
+		if mayor_state.is_empty() or String(ag.get("id", "")) != String(mayor_state.get("mayor", "")):
+			return false
+		if day < int(mayor_state.get("term_start", 0)) or day > int(mayor_state.get("term_end", -1)):
+			return false
+		var mayor_cfg: Dictionary = elections.get("mayor", {}) if elections.get("mayor", {}) is Dictionary else {}
+		var every := maxi(1, int(mayor_cfg.get("duty_every_days", 7)))
+		var duty_period := (day - int(mayor_state.get("term_start", day))) / every
+		var last_period := int(mayor_state.get("last_duty_period", -1))
+		if last_period < 0 and int(mayor_state.get("last_duty_day", -1)) >= int(mayor_state.get("term_start", day)):
+			last_period = (int(mayor_state.get("last_duty_day", -1)) - int(mayor_state.get("term_start", day))) / every
+		if duty_period == last_period:
+			return false
+		var duty_phase := String(mayor_cfg.get("duty_phase", "day"))
+		if duty_phase != "" and _phase_of(time_of_day()) != duty_phase:
+			return false
 	var t := String(adv.get("job", ""))
 	if t != "" and String(_job_of(String(ag["id"])).get("title", "")) != t:
 		return false
@@ -4365,7 +4686,8 @@ func _object_candidates(ag: Dictionary) -> Array:
 			# → 在镇上 energy/fun"无满足"→ _journey_candidates 发起【回咖啡馆】的承诺行程。按 SPACE 判(非 floor：否则
 			# 楼上床/楼下吧台互相排除)。town 居民 home=town → 恒 false → 逐字节不变。
 			if need_id in _home_needs(ag) and String(ag.get("home_space", "town")) != "town" \
-					and String(ag.get("space", "town")) != String(ag.get("home_space", "town")):
+					and String(o.get("home_space", o.get("space", "town"))) != String(ag.get("home_space", "town")) \
+					and not bool(adv.get("mayor_duty", false)):
 				continue
 			var action := String(adv.get("action", ""))
 			var duration := int(adv.get("duration", 0))
@@ -4460,6 +4782,9 @@ func _object_candidates(ag: Dictionary) -> Array:
 			# docs/210：身上没干粮 ⇒ 买干粮多一截拉力。没有它实测【一次都没人买】：同一个摊上采买(40)与任何一顿饭(55-70)
 			#   的 amount 都压过买干粮(15)，而揣干粮的价值（将来走到半路不挨饿）不在 amount 里。
 			score += _craving_pull(ag, action)      # docs/213：今天下午想吃点甜的
+			if bool(adv.get("mayor_duty", false)):
+				var mayor_cfg: Dictionary = elections.get("mayor", {}) if elections.get("mayor", {}) is Dictionary else {}
+				score += float(mayor_cfg.get("duty_pull", 0))
 			if String(adv.get("pantry", "")) == "snack" and int(ag.get("snacks", 0)) <= 0:
 				score += float((economy["snacks"] as Dictionary).get("empty_urgency", 0.0))
 			var cand := {
@@ -4472,7 +4797,39 @@ func _object_candidates(ag: Dictionary) -> Array:
 				cand["manifest_node"] = manifest_node
 				cand["manifest_id"] = _first_unloadable_manifest(manifest_node)
 			out.append(cand)
-	return out
+	return _shift_fit_work(ag, out)
+
+## Only choose fisher/sanitation work that can finish inside the current shift.
+## Preserve every candidate's score and ordering; this is an eligibility check.
+func _shift_fit_work(ag: Dictionary, candidates: Array) -> Array:
+	var job: Dictionary = _job_of(String(ag.get("id", "")))
+	var title := String(job.get("title", ""))
+	var carpenter_low := false
+	if title == "木匠" and work_pull_mult > 1.0 and _in_shift(job):
+		var raw: Dictionary = production.get("produce", {}).get("木匠", {})
+		var good := String(raw.get("good", ""))
+		var gd: Dictionary = production.get("goods", {}).get(good, {})
+		var cap := int(gd.get("cap", 0))
+		carpenter_low = cap > 0 and _stock_of(good) * 4 <= cap
+	if (title not in ["渔夫", "环卫工"] and not carpenter_low) or not _in_shift(job):
+		return candidates
+	var shifts: Array = job.get("shift", [])
+	if shifts.is_empty() or _phase_of(time_of_day()) == "":
+		return candidates
+	var remaining := TICKS_PER_DAY
+	for ahead in range(1, TICKS_PER_DAY + 1):
+		var phase := _phase_of(fmod(time_of_day() + float(ahead) / TICKS_PER_DAY, 1.0))
+		if phase not in shifts:
+			remaining = ahead
+			break
+	var kept: Array = []
+	for candidate in candidates:
+		if String(candidate.get("action", "")) == _job_action(job):
+			var cost := _walk_cost(ag, candidate) + float(candidate.get("dur_total", 0))
+			if cost >= remaining:
+				continue
+		kept.append(candidate)
+	return kept
 
 ## 社交候选：对每个【同区可感知】的其他 agent 枚举 greet/give/gossip。
 func _social_candidates(ag: Dictionary) -> Array:
@@ -6072,6 +6429,615 @@ func _update_election() -> void:
 		ag["memory"].add("镇上就『%s』表决，%s（%d赞成/%d反对/%d弃权）——我%s" % [
 			topic, verdict, int(res["yea"]), int(res["nay"]), int(res["abstain"]), stance], 6, tick_no, [topic, "election", "civic"])
 
+## P4b 候选按选举日既有的镇内名声取前 N 名。只读 relationship 折叠；同分按 id，绝不创建关系或消耗 RNG。
+func _mayor_candidates(cfg: Dictionary) -> Array:
+	var wanted := maxi(2, int(cfg.get("candidate_count", 3)))
+	var scored: Array = []
+	for ag in agents:
+		if bool(ag.get("is_player", false)):
+			continue
+		var aid := String(ag.get("id", ""))
+		if aid != "":
+			var image := _town_image_stats(aid)
+			scored.append({"id": aid, "score": float(image.get("mean", 0.0))})
+	scored.sort_custom(func(a, b):
+		var sa := float((a as Dictionary)["score"]); var sb := float((b as Dictionary)["score"])
+		return String((a as Dictionary)["id"]) < String((b as Dictionary)["id"]) if is_equal_approx(sa, sb) else sa > sb)
+	var out: Array = []
+	for row in scored:
+		if out.size() >= wanted:
+			break
+		out.append(String((row as Dictionary)["id"]))
+	return out
+
+## P4d：当选者把性格带进一份真实、但被硬边界约束的财政政纲。按配置顺序取第一个
+## trait 命中项，空 traits 是 fallback。返回副本，任期内冻结，不随 persona/data 热改漂移。
+func _mayor_platform_for(mayor_id: String, cfg: Dictionary) -> Dictionary:
+	var raw_platforms = cfg.get("platforms", [])
+	if not (raw_platforms is Array):
+		return {}
+	var mayor: Dictionary = get_agent(mayor_id)
+	var traits: Array = _as_arr((mayor.get("persona", {}) as Dictionary).get("traits", [])) if mayor.get("persona", {}) is Dictionary else []
+	var fallback := {}
+	for raw in raw_platforms:
+		if not (raw is Dictionary):
+			continue
+		var platform: Dictionary = raw
+		var wanted: Array = _as_arr(platform.get("traits", []))
+		if wanted.is_empty():
+			fallback = platform
+			continue
+		for persona_trait in wanted:
+			if persona_trait in traits:
+				return platform.duplicate(true)
+	return fallback.duplicate(true)
+
+## 当前有效财政政策。选举前与缺平台时就是 economy.fiscal；任期政策只允许覆盖这两个
+## 已有旋钮，tax_slack/subsidy_max 等构造性上限仍由基础财政合同控制。
+func fiscal_policy() -> Dictionary:
+	var base = economy.get("fiscal", {})
+	if not (base is Dictionary) or (base as Dictionary).is_empty():
+		return {}
+	var out: Dictionary = (base as Dictionary).duplicate(true)
+	out["source"] = "base"
+	var platform = mayor_state.get("platform", {})
+	if platform is Dictionary and not (platform as Dictionary).is_empty():
+		for key in ["subsidy_floor", "tax_pct"]:
+			if (platform as Dictionary).has(key):
+				out[key] = int((platform as Dictionary)[key])
+		out["source"] = "mayor"
+		out["platform_id"] = String((platform as Dictionary).get("id", ""))
+		out["platform_label"] = String((platform as Dictionary).get("label", ""))
+	return out
+
+## P4c-3：取最近一张已经冻结的换届成绩单。返回副本，观察台不能借引用改写任期账本。
+func latest_mayor_review() -> Dictionary:
+	for i in range(mayor_log.size() - 1, -1, -1):
+		var review: Dictionary = mayor_log[i]
+		if review.has("review_event_id"):
+			return review.duplicate(true)
+	return {}
+
+## 纯评分器：同一份政绩因选民性格产生不同权重。P4c-4 只把它加给再次参选的上届镇长。
+## 出勤以 50% 为中点；财政在 ±treasury_scale 内线性计分、区间外封顶。全程无 RNG、无状态写入。
+func mayor_review_score(voter: Dictionary, review: Dictionary) -> Dictionary:
+	var mayor_cfg: Dictionary = elections.get("mayor", {}) if elections.get("mayor", {}) is Dictionary else {}
+	var cfg: Dictionary = mayor_cfg.get("review_preview", {}) if mayor_cfg.get("review_preview", {}) is Dictionary else {}
+	if cfg.is_empty() or review.is_empty():
+		return {}
+	var traits: Array = _as_arr((voter.get("persona", {}) as Dictionary).get("traits", [])) if voter.get("persona", {}) is Dictionary else []
+	var attendance_focus := false
+	for persona_trait in _as_arr(cfg.get("attendance_traits", [])):
+		if persona_trait in traits:
+			attendance_focus = true
+			break
+	var treasury_focus := false
+	for persona_trait in _as_arr(cfg.get("treasury_traits", [])):
+		if persona_trait in traits:
+			treasury_focus = true
+			break
+	var bonus := maxi(0, int(cfg.get("trait_bonus", 0)))
+	var attendance_weight := maxi(0, int(cfg.get("attendance_weight", 0))) + (bonus if attendance_focus else 0)
+	var treasury_weight := maxi(0, int(cfg.get("treasury_weight", 0))) + (bonus if treasury_focus else 0)
+	var attendance_pct := clampi(int(review.get("attendance_pct", 0)), 0, 100)
+	var treasury_scale := maxi(1, int(cfg.get("treasury_scale", 1)))
+	# The raw treasury delta remains the accounting result shown on the board.
+	# Approved civic capital spending is recorded separately and does not lower
+	# the incumbent's fiscal-performance vote score.
+	var treasury_delta := int(review.get("treasury_delta", 0)) + maxi(0, int(review.get("civic_capital_spend", 0)))
+	var attendance_score := roundi(float(attendance_pct - 50) * float(attendance_weight) / 50.0)
+	var treasury_score := roundi(clampf(float(treasury_delta) / float(treasury_scale), -1.0, 1.0) * float(treasury_weight))
+	return {
+		"attendance": attendance_score,
+		"treasury": treasury_score,
+		"total": attendance_score + treasury_score,
+		"attendance_weight": attendance_weight,
+		"treasury_weight": treasury_weight,
+		"attendance_focus": attendance_focus,
+		"treasury_focus": treasury_focus
+	}
+
+## 单张选票以已有 standing 为底分；上届镇长再次参选时叠加这位选民的政绩分。
+## 完全同分才用 stable hash 破平，避免数组第一位暗中成为永久镇长。
+func _mayor_vote(voter: Dictionary, candidates: Array, incumbent_review: Dictionary = {}) -> String:
+	var best := ""; var best_score := -INF; var best_tie := -1.0
+	var rels: Dictionary = voter.get("relationships", {}) if voter.get("relationships", {}) is Dictionary else {}
+	var reviewed_id := String(incumbent_review.get("winner", ""))
+	var review_score: Dictionary = mayor_review_score(voter, incumbent_review)
+	for raw_id in candidates:
+		var cid := String(raw_id)
+		var standing := float((rels.get(cid, {}) as Dictionary).get("standing", 0.0))
+		if cid == reviewed_id and not review_score.is_empty():
+			standing += float(review_score.get("total", 0))
+		var tie := _hash01("mayor:%d:%d:%s:%s" % [seed_base, day, String(voter["id"]), cid])
+		if standing > best_score + 0.000001 or (is_equal_approx(standing, best_score) and tie > best_tie):
+			best = cid; best_score = standing; best_tie = tie
+	return best
+
+## P4b 镇长直选：每 term_days 天选一人。选举本身不写 relationship 或钱；P4c 只据此授权镇公所公务。
+func _update_mayor_election() -> void:
+	if elections.is_empty() or not (elections.get("mayor", null) is Dictionary):
+		return
+	var cfg: Dictionary = elections["mayor"]
+	var term_days := maxi(1, int(cfg.get("term_days", 28)))
+	if day % term_days != int(cfg.get("offset", 0)):
+		return
+	var candidates := _mayor_candidates(cfg)
+	if candidates.size() < 2:
+		return
+	# 上一届必须在本届投票前冻结，否则同一天的选民只能看见一份尚不存在的成绩单。
+	if not mayor_log.is_empty():
+		_finalize_mayor_term(cfg)
+	var incumbent_review := latest_mayor_review()
+	var ballots := {}; var baseline_ballots := {}; var voters := 0
+	var performance_swings := 0; var incumbent_gained := 0; var incumbent_lost := 0
+	var reviewed_id := String(incumbent_review.get("winner", ""))
+	for voter in agents:
+		if bool(voter.get("is_player", false)):
+			continue
+		var baseline_choice := _mayor_vote(voter, candidates)
+		var choice := _mayor_vote(voter, candidates, incumbent_review)
+		if choice == "":
+			continue
+		baseline_ballots[baseline_choice] = int(baseline_ballots.get(baseline_choice, 0)) + 1
+		ballots[choice] = int(ballots.get(choice, 0)) + 1
+		if choice != baseline_choice:
+			performance_swings += 1
+			if choice == reviewed_id: incumbent_gained += 1
+			elif baseline_choice == reviewed_id: incumbent_lost += 1
+		voters += 1
+	var winner := String(candidates[0]); var high := int(ballots.get(winner, 0))
+	for raw_id in candidates:
+		var cid := String(raw_id); var votes := int(ballots.get(cid, 0))
+		if votes > high or (votes == high and cid < winner):
+			winner = cid; high = votes
+	var term_end := day + term_days - 1
+	var platform := _mayor_platform_for(winner, cfg)
+	var preview_cfg = cfg.get("review_preview", {})
+	var review_enabled := preview_cfg is Dictionary and not (preview_cfg as Dictionary).is_empty()
+	var review_used := int(incumbent_review.get("review_event_id", 0)) if review_enabled and candidates.has(String(incumbent_review.get("winner", ""))) else 0
+	var res := {"day": day, "candidates": candidates.duplicate(), "ballots": ballots.duplicate(), "voters": voters,
+		"abstain": 0, "winner": winner, "term_start": day, "term_end": term_end,
+		"duties_done": 0, "town_coin_start": town_coin, "review_event_id_used": review_used,
+		"platform": platform.duplicate(true)}
+	mayor_log.append(res)
+	mayor_state = {"mayor": winner, "term_start": day, "term_end": term_end, "candidates": candidates.duplicate(),
+		"duties_done": 0, "last_duty_day": -1, "last_duty_period": -1, "town_coin_start": town_coin,
+		"platform": platform.duplicate(true)}
+	var ev := _log_event("election", "town", winner, "mayor", true, [], "mayor_term")
+	ev["platform"] = platform.duplicate(true)
+	# 反事实票箱只做审计/呈现：同一时刻不用政绩重算一遍，记录有多少票真的因此改投。
+	ev["review_event_id_used"] = review_used
+	ev["incumbent"] = reviewed_id if review_used > 0 else ""
+	ev["baseline_ballots"] = baseline_ballots.duplicate()
+	ev["performance_swings"] = performance_swings
+	ev["incumbent_gained"] = incumbent_gained
+	ev["incumbent_lost"] = incumbent_lost
+	emit_signal("social_event", ev)
+	for ag in agents:
+		if not bool(ag.get("is_player", false)):
+			ag["memory"].add("镇长选举结果：%s 当选（我投 %s；任期至第%d日）" % [winner, _mayor_vote(ag, candidates, incumbent_review), term_end], 7, tick_no, [winner, "mayor", "election"])
+
+## A single authored public-space project. The event fold is the authority;
+## this cache is only a performance view and is never written to a save.
+func _civic_fold() -> Dictionary:
+	var relevant := _civic_fold_size < 0 or _civic_fold_size > event_log.size()
+	if not relevant and _civic_fold_size < event_log.size():
+		for i in range(_civic_fold_size, event_log.size()):
+			var e: Dictionary = event_log[i]
+			var kind := String(e.get("type", ""))
+			if kind.begins_with("civic_") or (kind == "pay" and String(e.get("note", "")).begins_with("civic_project:")):
+				relevant = true
+				break
+	if relevant:
+		_civic_fold_cache = CivicProjectScript.fold(event_log)
+	_civic_fold_size = event_log.size()
+	return _civic_fold_cache
+
+func civic_project_state() -> Dictionary:
+	var folded := _civic_fold()
+	return (folded.get("state", {}) as Dictionary).duplicate(true) if bool(folded.get("ok", false)) else {}
+
+func _civic_start_paid(state: Dictionary) -> void:
+	var e := _log_event("civic_start", "town", "plaza", CivicProjectScript.PROJECT_ID, true, [], "underway")
+	e["proposal_id"] = String(state["proposal_id"])
+	e["pay_event_id"] = int(state["pay_event_id"])
+	e["due_tick"] = tick_no + 720
+
+func _civic_fund_approved(state: Dictionary) -> void:
+	var proposal_id := String(state["proposal_id"])
+	var current_floor := maxi(0, int(fiscal_policy().get("subsidy_floor", 0)))
+	var floor_required := maxi(int(state["reserve_snapshot"]), current_floor)
+	var cost := int(state["cost"])
+	var term_valid := int(mayor_state.get("term_start", -1)) == int(state["term_start"]) \
+		and String(mayor_state.get("mayor", "")) == String(state["mayor"])
+	if term_valid and town_coin >= cost and town_coin - cost >= floor_required \
+			and transfer("town", "external", cost, CivicProjectScript.PAY_PREFIX + str(cost), [], proposal_id):
+		var paid := state.duplicate(true)
+		paid["pay_event_id"] = int((event_log[-1] as Dictionary)["id"])
+		_civic_start_paid(paid)
+	else:
+		var e := _log_event("civic_unfunded", "town", "plaza", CivicProjectScript.PROJECT_ID, false, [],
+			"stale_term" if not term_valid else "insufficient_funds_or_transfer_refused")
+		e["proposal_id"] = proposal_id
+
+func _civic_project_tick() -> void:
+	# day starts at 1: the day-28 election lands after 27 day boundaries.
+	if tick_no <= 27 * TICKS_PER_DAY:
+		return
+	var folded := _civic_fold()
+	if not bool(folded.get("ok", false)):
+		push_error("civic project event authority: %s" % String(folded.get("error", "invalid")))
+		return
+	var state: Dictionary = folded.get("state", {})
+	if String(state.get("status", "")) == "proposed":
+		# Leave the proposal visible for one full simulation tick before the
+		# council votes. The frozen treasury/electorate snapshot remains authority.
+		if tick_no == int(state.get("proposal_tick", -2)) + 1:
+			_civic_vote_proposed(state)
+		return
+	if String(state.get("status", "")) == "underway":
+		if tick_no >= int(state.get("due_tick", 9223372036854775807)):
+			var e := _log_event("civic_complete", "town", "plaza", CivicProjectScript.PROJECT_ID, true, [], "complete")
+			e["proposal_id"] = String(state["proposal_id"])
+			e["pay_event_id"] = int(state["pay_event_id"])
+			e["start_event_id"] = int(state["start_event_id"])
+		return
+	if String(state.get("status", "")) == "funded":
+		_civic_start_paid(state)
+		return
+	if String(state.get("status", "")) == "approved":
+		_civic_fund_approved(state)
+		return
+	if String(state.get("status", "")) == "complete" or tick_no % TICKS_PER_DAY != 1:
+		return
+	var term_start := int(mayor_state.get("term_start", -1))
+	if term_start != day or term_start < 28 or mayor_log.is_empty():
+		return
+	var proposal_id := "%s:term:%d" % [CivicProjectScript.PROJECT_ID, term_start]
+	if (folded.get("attempts", {}) as Dictionary).has(proposal_id):
+		return
+	var election: Dictionary = mayor_log[-1]
+	var members: Array = (election.get("candidates", []) as Array).duplicate()
+	members.sort()
+	var mayor := String(mayor_state.get("mayor", ""))
+	if members.size() != 3 or mayor == "" or mayor not in members \
+			or int(election.get("term_start", -1)) != term_start:
+		return
+	for member in members:
+		if not _agent_by_id.has(String(member)):
+			return
+	var path := "res://data/civic_projects.json"
+	if not FileAccess.file_exists(path):
+		return
+	var document = JSON.parse_string(FileAccess.get_file_as_string(path))
+	if not (document is Dictionary) or String(document.get("schema", "")) != "living-town-civic-projects/1":
+		return
+	var projects = document.get("projects", [])
+	if not (projects is Array) or (projects as Array).size() != 1 or not (projects[0] is Dictionary):
+		return
+	var project: Dictionary = projects[0]
+	var finance = project.get("finance", {})
+	var construction = project.get("construction", {})
+	if String(project.get("id", "")) != CivicProjectScript.PROJECT_ID \
+			or not (finance is Dictionary) or not (construction is Dictionary) \
+			or int(finance.get("cost_coins", -1)) != 5 or String(finance.get("payee", "")) != "external" \
+			or int(construction.get("duration_ticks", -1)) != 720:
+		return
+	var cost := 5
+	var floor_snapshot := maxi(0, int(fiscal_policy().get("subsidy_floor", 0)))
+	var treasury_snapshot := town_coin
+	var proposed := _log_event("civic_proposal", mayor, "plaza", CivicProjectScript.PROJECT_ID, true, [], proposal_id)
+	proposed["proposal_id"] = proposal_id
+	proposed["term_start"] = term_start
+	proposed["term_end"] = int(mayor_state.get("term_end", -1))
+	proposed["mayor"] = mayor
+	proposed["council"] = members.duplicate()
+	proposed["cost"] = cost
+	proposed["payee"] = "external"
+	proposed["reserve_snapshot"] = floor_snapshot
+	proposed["treasury_snapshot"] = treasury_snapshot
+
+func _civic_vote_proposed(state: Dictionary) -> void:
+	var members: Array = (state.get("council", []) as Array).duplicate()
+	var mayor := String(state.get("mayor", ""))
+	var proposal_id := String(state.get("proposal_id", ""))
+	if members.size() != 3 or mayor == "" or mayor not in members \
+			or int(mayor_state.get("term_start", -1)) != int(state.get("term_start", -2)) \
+			or String(mayor_state.get("mayor", "")) != mayor:
+		return
+	var post_cost_margin := int(state.get("treasury_snapshot", 0)) - int(state.get("cost", 0)) \
+		- int(state.get("reserve_snapshot", 0))
+	var yes_count := 0
+	for member in members:
+		var yes := post_cost_margin >= (0 if String(member) == mayor else 2)
+		var vote := _log_event("civic_vote", String(member), proposal_id, CivicProjectScript.PROJECT_ID, true, [],
+			"yes" if yes else "no")
+		vote["proposal_id"] = proposal_id
+		if yes: yes_count += 1
+	var approved := yes_count >= 2
+	var decision := _log_event("civic_decision", mayor, proposal_id, CivicProjectScript.PROJECT_ID, approved, [],
+		"approved" if approved else "rejected")
+	decision["proposal_id"] = proposal_id
+	decision["yes"] = yes_count
+	decision["no"] = 3 - yes_count
+	if approved:
+		var decided: Dictionary = (_civic_fold().get("state", {}) as Dictionary)
+		if String(decided.get("status", "")) == "approved":
+			_civic_fund_approved(decided)
+
+## 换届前把上一任的只读政绩结成一张可追溯成绩单。它只折叠已发生的公务和镇库差额，不改选票或政策。
+func _finalize_mayor_term(cfg: Dictionary) -> void:
+	var prev: Dictionary = mayor_log[mayor_log.size() - 1]
+	if prev.has("review_event_id"):
+		return
+	var every := maxi(1, int(cfg.get("duty_every_days", 7)))
+	var term_start := int(prev.get("term_start", day))
+	var term_end := int(prev.get("term_end", term_start - 1))
+	var due := 0 if term_end < term_start else (term_end - term_start) / every + 1
+	var done := int(prev.get("duties_done", 0))
+	var delta := town_coin - int(prev.get("town_coin_start", town_coin))
+	var civic_capital_spend := 0
+	var civic_txid := "%s:term:%d" % [CivicProjectScript.PROJECT_ID, term_start]
+	for raw_event in event_log:
+		var payment: Dictionary = raw_event
+		if String(payment.get("type", "")) == "pay" \
+				and String(payment.get("txid", "")) == civic_txid \
+				and String(payment.get("note", "")) == CivicProjectScript.PAY_PREFIX + "5" \
+				and String(payment.get("actor", "")) == "town" \
+				and String(payment.get("target", "")) == "external":
+			civic_capital_spend += int(payment.get("amt", 0))
+	var attendance := 100 if due <= 0 else mini(100, done * 100 / due)
+	prev["town_coin_end"] = town_coin
+	prev["duties_due"] = due
+	prev["attendance_pct"] = attendance
+	prev["treasury_delta"] = delta
+	if civic_capital_spend > 0:
+		prev["civic_capital_spend"] = civic_capital_spend
+	var note := "term:%d;duties:%d/%d;treasury:%+d" % [term_start, done, due, delta]
+	var ev := _log_event("mayor_review", String(prev.get("winner", "")), "mairie", "mayor", true, [], note)
+	ev["term_start"] = term_start
+	ev["duties_done"] = done
+	ev["duties_due"] = due
+	ev["attendance_pct"] = attendance
+	ev["treasury_delta"] = delta
+	if civic_capital_spend > 0:
+		ev["civic_capital_spend"] = civic_capital_spend
+	prev["review_event_id"] = int(ev["id"])
+	emit_signal("social_event", ev)
+
+## 镇长在镇公所完成一次真实办公动作后才记出勤。广告门保证每个值班日最多一次；这里仍幂等防旧 option 重放。
+func _complete_mayor_duty(ag: Dictionary, opt: Dictionary) -> void:
+	var mayor_cfg: Dictionary = elections.get("mayor", {}) if elections.get("mayor", {}) is Dictionary else {}
+	var every := maxi(1, int(mayor_cfg.get("duty_every_days", 7)))
+	var duty_period := (day - int(mayor_state.get("term_start", day))) / every if not mayor_state.is_empty() else -1
+	if String(opt.get("action", "")) != "办公" or mayor_state.is_empty() \
+			or String(ag.get("id", "")) != String(mayor_state.get("mayor", "")) \
+			or day < int(mayor_state.get("term_start", 0)) or day > int(mayor_state.get("term_end", -1)) \
+			or duty_period == int(mayor_state.get("last_duty_period", -1)):
+		return
+	mayor_state["duties_done"] = int(mayor_state.get("duties_done", 0)) + 1
+	mayor_state["last_duty_day"] = day
+	mayor_state["last_duty_period"] = duty_period
+	if not mayor_log.is_empty():
+		var active_record: Dictionary = mayor_log[mayor_log.size() - 1]
+		if int(active_record.get("term_start", -1)) == int(mayor_state.get("term_start", -2)):
+			active_record["duties_done"] = int(mayor_state["duties_done"])
+	var ev := _log_event("civic_duty", String(ag["id"]), "mairie", "mayor", true, [], "term:%d" % int(mayor_state.get("term_start", 0)))
+	emit_signal("social_event", ev)
+	ag["memory"].add("在镇公所完成了本周公务", 6, tick_no, ["mayor", "mairie", "duty"])
+
+## 纯投影：给 HUD/观察台读，绝不回写仿真。
+func mayor_performance() -> Dictionary:
+	if mayor_state.is_empty():
+		return {}
+	var cfg: Dictionary = elections.get("mayor", {}) if elections.get("mayor", {}) is Dictionary else {}
+	var every := maxi(1, int(cfg.get("duty_every_days", 7)))
+	var elapsed_end := mini(day, int(mayor_state.get("term_end", day)))
+	var due := 0
+	if elapsed_end >= int(mayor_state.get("term_start", day)):
+		due = (elapsed_end - int(mayor_state.get("term_start", day))) / every + 1
+	var done := int(mayor_state.get("duties_done", 0))
+	return {"mayor": String(mayor_state.get("mayor", "")), "duties_done": done, "duties_due": due,
+		"attendance_pct": 100 if due <= 0 else mini(100, done * 100 / due),
+		"treasury_delta": town_coin - int(mayor_state.get("town_coin_start", town_coin))}
+
+## P4c-7：公示板的唯一只读投影。它只复制现任、成绩单与最近一届选举回执；
+## 不生成候选、不写账本、不抽 RNG，也不把 View 自己拼出来的数冒充 Sim 权威。
+func civic_observatory_projection() -> Dictionary:
+	var latest_election := {}
+	var current_record := {}
+	if not mayor_log.is_empty():
+		var candidate_record = mayor_log[mayor_log.size() - 1]
+		if candidate_record is Dictionary and int((candidate_record as Dictionary).get("term_start", -1)) == int(mayor_state.get("term_start", -2)):
+			current_record = (candidate_record as Dictionary).duplicate(true)
+	for i in range(event_log.size() - 1, -1, -1):
+		var raw = event_log[i]
+		if raw is Dictionary and String((raw as Dictionary).get("type", "")) == "election" \
+				and String((raw as Dictionary).get("note", "")) == "mayor_term":
+			latest_election = (raw as Dictionary).duplicate(true)
+			break
+	return {
+		"mode": "read_only",
+		"current": mayor_state.duplicate(true),
+		"current_record": current_record,
+		"performance": mayor_performance().duplicate(true),
+		"fiscal_policy": fiscal_policy(),
+		"last_review": latest_mayor_review(),
+		"last_election": latest_election,
+	}
+
+## 公示板坐标来自 interiors.json 的 authored marker；View/LifeMode 不各抄一份 [5,0]。
+func civic_observatory_cell() -> Vector2i:
+	var floor_data = (_interiors_data.get("mairie", {}) as Dictionary).get("1f", {})
+	if not (floor_data is Dictionary):
+		return Vector2i(-1, -1)
+	for raw in (floor_data as Dictionary).get("furniture", []):
+		if not (raw is Dictionary) or not bool((raw as Dictionary).get("civic_observatory", false)):
+			continue
+		var pos: Array = (raw as Dictionary).get("pos", [])
+		if pos.size() == 2:
+			return Vector2i(int(pos[0]), int(pos[1]))
+	return Vector2i(-1, -1)
+
+## P5a bank counter and read model. The authored marker is the only interaction anchor;
+## UI code never copies its interior coordinates.
+func bank_counter_cell() -> Vector2i:
+	var floor_data = (_interiors_data.get("halles", {}) as Dictionary).get("1f", {})
+	if not (floor_data is Dictionary):
+		return Vector2i(-1, -1)
+	for raw in (floor_data as Dictionary).get("furniture", []):
+		if raw is Dictionary and bool((raw as Dictionary).get("bank_counter", false)):
+			var pos: Array = (raw as Dictionary).get("pos", [])
+			if pos.size() == 2:
+				return Vector2i(int(pos[0]), int(pos[1]))
+	return Vector2i(-1, -1)
+
+func bank_deposit_total() -> int:
+	var total := 0
+	for aid in bank_deposits:
+		total += int(bank_deposits[aid])
+	return total
+
+func bank_available_capital() -> int:
+	return maxi(0, bank_coin - bank_deposit_total())
+
+func bank_projection(account_id := "") -> Dictionary:
+	var loan: Dictionary = bank_loans.get(account_id, {}).duplicate(true) if bank_loans.get(account_id, {}) is Dictionary else {}
+	return {
+		"mode": "transactional", "label": String(banking.get("label", "合作银行")),
+		"account_id": account_id, "wallet": _coin_of(account_id),
+		"deposit": int(bank_deposits.get(account_id, 0)), "loan": loan,
+		"reserve": bank_coin, "deposit_total": bank_deposit_total(),
+		"available_capital": bank_available_capital(),
+	}
+
+func bank_deposit(account_id: String, amount: int) -> bool:
+	if banking.is_empty() or amount <= 0 or not _agent_by_id.has(account_id):
+		return false
+	var room := int(banking.get("account_cap", 0)) - int(bank_deposits.get(account_id, 0))
+	var moved := mini(amount, room)
+	if moved <= 0 or not transfer(account_id, "bank", moved, "bank_deposit*%d" % moved):
+		return false
+	bank_deposits[account_id] = int(bank_deposits.get(account_id, 0)) + moved
+	return true
+
+func bank_withdraw(account_id: String, amount: int) -> bool:
+	if banking.is_empty() or amount <= 0 or not _agent_by_id.has(account_id):
+		return false
+	var moved := mini(amount, int(bank_deposits.get(account_id, 0)))
+	if moved <= 0 or not transfer("bank", account_id, moved, "bank_withdraw*%d" % moved):
+		return false
+	bank_deposits[account_id] = int(bank_deposits.get(account_id, 0)) - moved
+	return true
+
+func bank_request_loan(account_id: String, manual := false) -> bool:
+	if banking.is_empty() or not _agent_by_id.has(account_id):
+		return false
+	var lc: Dictionary = banking.get("loan", {}) if banking.get("loan", {}) is Dictionary else {}
+	var allowed := manual and bool(lc.get("manual_player", false)) and account_id == "player"
+	if not allowed:
+		allowed = account_id in (lc.get("business_borrowers", []) as Array)
+	var old: Dictionary = bank_loans.get(account_id, {}) if bank_loans.get(account_id, {}) is Dictionary else {}
+	var principal := int(lc.get("principal", 0))
+	if not allowed or principal <= 0 or int(old.get("outstanding", 0)) > 0 \
+			or int(old.get("loans_issued", 0)) >= int(lc.get("max_loans_per_account", 1)) \
+			or bank_available_capital() < principal:
+		return false
+	if not transfer("bank", account_id, principal, "bank_loan*%d" % principal):
+		return false
+	bank_loans[account_id] = {"principal": principal, "outstanding": principal, "issued_day": day,
+		"loans_issued": int(old.get("loans_issued", 0)) + 1}
+	return true
+
+## Player-facing bank command. The account identity is carried in PlayerTrace so
+## replay cannot silently redirect a pending request after the active resident changes.
+## Direct bank_* methods remain the domain API for autonomous/system transactions.
+func player_bank_action(action: String, account_id: String, amount: int = 0) -> Dictionary:
+	var payload := {"action": action, "account_id": account_id, "amount": amount}
+	var trace_error := _player_trace_preflight("bank_action", payload)
+	if trace_error != "":
+		player_trace_last_error = trace_error
+		return {"ok": false, "action": action, "account_id": account_id, "amount": amount, "reason": trace_error}
+	var result := {"ok": false, "action": action, "account_id": account_id, "amount": amount, "reason": "transaction_rejected"}
+	var transaction: Dictionary = {}
+	if account_id != _player_bank_active_account():
+		result["reason"] = "resident_changed"
+	else:
+		transaction = _capture_player_replay_transaction()
+		if transaction.is_empty():
+			result["reason"] = "transaction_snapshot"
+		else:
+			match action:
+				"deposit":
+					var room := int(banking.get("account_cap", 0)) - int(bank_deposits.get(account_id, 0))
+					if banking.is_empty():
+						result["reason"] = "bank_unavailable"
+					elif room <= 0:
+						result["reason"] = "deposit_limit"
+					elif _coin_of(account_id) < mini(amount, room):
+						result["reason"] = "insufficient_wallet"
+					else:
+						result["ok"] = bank_deposit(account_id, amount)
+				"withdraw":
+					if banking.is_empty():
+						result["reason"] = "bank_unavailable"
+					elif int(bank_deposits.get(account_id, 0)) <= 0:
+						result["reason"] = "no_deposit"
+					else:
+						result["ok"] = bank_withdraw(account_id, amount)
+				"loan":
+					result["ok"] = bank_request_loan(account_id, true)
+					if not bool(result["ok"]):
+						result["reason"] = "loan_unavailable"
+			if bool(result["ok"]):
+				result["reason"] = ""
+	var receipt := _player_trace_receipt(result)
+	receipt["bank"] = bank_projection(account_id)
+	if not _player_trace_commit("bank_action", payload, receipt):
+		var failure_error := player_trace_last_error
+		if not transaction.is_empty():
+			_restore_player_replay_transaction(transaction, failure_error)
+		return {"ok": false, "action": action, "account_id": account_id, "amount": amount, "reason": "trace_replay_mismatch"}
+	return result
+
+func _player_bank_active_account() -> String:
+	if _agent_by_id.has("player"):
+		return "player"
+	if controlled_id != "" and _agent_by_id.has(controlled_id):
+		return controlled_id
+	return ""
+
+func _bank_repay(account_id: String) -> bool:
+	var loan: Dictionary = bank_loans.get(account_id, {}) if bank_loans.get(account_id, {}) is Dictionary else {}
+	var outstanding := int(loan.get("outstanding", 0))
+	var lc: Dictionary = banking.get("loan", {}) if banking.get("loan", {}) is Dictionary else {}
+	var amount := mini(int(lc.get("installment", 0)), mini(outstanding, _coin_of(account_id) - int(lc.get("repay_buffer", 0))))
+	if amount <= 0 or not transfer(account_id, "bank", amount, "bank_repay*%d" % amount):
+		return false
+	loan["outstanding"] = outstanding - amount
+	bank_loans[account_id] = loan
+	return true
+
+func _bank_nightly() -> void:
+	if banking.is_empty():
+		return
+	var ids: Array = _agent_by_id.keys()
+	ids.sort()
+	for aid_raw in ids:
+		var aid := String(aid_raw)
+		if aid == "player":
+			continue
+		_bank_repay(aid)
+		var above := int(banking.get("auto_deposit_above", 0))
+		if above > 0 and _coin_of(aid) > above:
+			bank_deposit(aid, mini(int(banking.get("auto_deposit_amount", 0)), _coin_of(aid) - above))
+	var lc: Dictionary = banking.get("loan", {}) if banking.get("loan", {}) is Dictionary else {}
+	for aid_raw in (lc.get("business_borrowers", []) as Array):
+		var aid := String(aid_raw)
+		if _coin_of(aid) <= int(lc.get("trigger_coin", -1)):
+			bank_request_loan(aid)
+
 ## Wave 2a+ 阶层 gossip：每夜同区邻居目击贫富 → 生成一手 belief（via=seen，inv6 豁免溯源）。
 ## 之后由既有 gossip 机制自然传播（_unspread_belief 会挑中它）——"财富传闻"零新管线。确定（定序遍历，无 RNG）。
 func _observe_wealth() -> void:
@@ -6082,7 +7048,8 @@ func _observe_wealth() -> void:
 		for B in _nearby_agents(A):
 			if B.get("is_player", false):
 				continue                     # 玩家钱冻结(M1)，传闻无意义
-			var c := int(B["inventory"].get("coin", 0))
+			# Bank deposits remain the resident's wealth even though they are not spendable wallet cash.
+			var c := int(B["inventory"].get("coin", 0)) + int(bank_deposits.get(String(B["id"]), 0))
 			var bid := ""
 			var claim := ""
 			if c >= rich:
@@ -6397,7 +7364,7 @@ func _fisc_fp(i: int) -> String:
 	return "%s:%s:%s" % [str(e.get("id", "")), str(e.get("tick", "")), String(e.get("note", ""))]
 
 func _fiscal_nightly() -> void:
-	var fc = economy.get("fiscal", {})
+	var fc = fiscal_policy()
 	if not (fc is Dictionary) or (fc as Dictionary).is_empty():
 		return
 	var n := int(_fisc_cache.get("n", 0))
@@ -6450,22 +7417,31 @@ func _fiscal_nightly() -> void:
 ##   一个字节都没动过"。⚠ 它只在**商贩那条人→人的货款**上被真正传进来（`_advance_object` 的 vendor 分支），
 ##   工资 / 房租 / 镇库收费三条**照旧传空**——`#43` 的第③臂（不外溢）就是守这句话的。
 func transfer(from_id: String, to_id: String, amt: int, reason: String, witnesses: Array = [], txid: String = "") -> bool:
-	if amt <= 0:
+	# Reject unbound accounts before touching either balance. _coin_of() returns 0
+	# for unknown IDs, while _set_coin() silently ignores them: without this guard
+	# a valid payer could lose money to a nonexistent payee.
+	if amt <= 0 or from_id == to_id or not _coin_account_valid(from_id) or not _coin_account_valid(to_id):
 		return false
 	var from_coin := _coin_of(from_id)
-	if from_coin < amt:
+	var to_coin := _coin_of(to_id)
+	if from_coin < amt or to_coin < 0 or to_coin > 9223372036854775807 - amt:
 		return false
 	_set_coin(from_id, from_coin - amt)
-	_set_coin(to_id, _coin_of(to_id) + amt)
+	_set_coin(to_id, to_coin + amt)
 	var ev := _log_event("pay", from_id, to_id, "", true, witnesses, reason, txid)
 	# docs/195：金额记进事件 ⇒ 账本（Ledger.gd）是 event_log 的纯折叠。amt 不进 Inv.digest / chain_step /
 	#   event_digest 的字段串 ⇒ 金标逐字节不变；存档是整条 event_log 原样写出 ⇒ 读档后仍可折叠核对。
 	ev["amt"] = amt
 	return true
 
+func _coin_account_valid(id: String) -> bool:
+	return id in ["town", "bank", "external"] or _agent_by_id.has(id)
+
 func _coin_of(id: String) -> int:
 	if id == "town":
 		return town_coin
+	if id == "bank":
+		return bank_coin
 	if id == "external":                    # E2a：外部世界账户（照抄 "town" 分支）
 		return external_coin
 	var ag: Dictionary = _agent_by_id.get(id, {})
@@ -6475,6 +7451,9 @@ func _set_coin(id: String, v: int) -> void:
 	if id == "town":
 		town_coin = v
 		return
+	if id == "bank":
+		bank_coin = v
+		return
 	if id == "external":                    # E2a：外部世界账户（照抄 "town" 分支）
 		external_coin = v
 		return
@@ -6482,9 +7461,9 @@ func _set_coin(id: String, v: int) -> void:
 	if not ag.is_empty():
 		ag["inventory"]["coin"] = v
 
-## 全镇货币总量（守恒不变量用）。★E2a：external_coin 收进守恒集（+一项，判据形状不变，docs/151 §一.3）。
+## 全镇货币总量（守恒不变量用）。external 与 P5a bank cash 都是账户；deposit liability 不重复相加。
 func money_total() -> int:
-	var s := town_coin + external_coin
+	var s := town_coin + external_coin + bank_coin
 	for ag in agents:
 		s += int(ag["inventory"].get("coin", 0))
 	return s
@@ -6573,6 +7552,12 @@ func _pool_rescale(raw: Dictionary, pop: int) -> Dictionary:
 					var v0 := int((pr["inputs"] as Dictionary)[ing])
 					# 原本要料的，换尺度后至少还要 1 ⇒ "货由货做成"这条链在宏观口径上不会被整除抹掉。
 					pr["inputs"][ing] = maxi(1, v0 * num / base) if v0 > 0 else v0
+	# LT-14 trial: a larger macro pool for one fixed fisher above core 24.
+	if pop > 24:
+		var fisher: Dictionary = (out.get("produce", {}) as Dictionary).get("渔夫", {})
+		if not fisher.is_empty() and fisher.has("amount"):
+			var amount := int(fisher["amount"])
+			fisher["amount"] = (amount * 11 + 9) / 10
 	return out
 
 func _stock_of(good: String) -> int:
@@ -7923,6 +8908,18 @@ func _logic_decide(ag: Dictionary, cands: Array) -> Dictionary:
 	best["say"] = _canned_say(ag, best)
 	if decision_sink.is_valid() and cands.size() >= 2:   # Phase-0 数据集钩子（off 默认；只读、不抽 RNG、不进 digest）
 		decision_sink.call(ag, cands, best_i)
+	# LT-14 trial: a hungry resident should not sign another journey
+	# while eligible food is available at a new decision boundary.
+	var needs: Dictionary = ag.get("needs", {})
+	var hunger := float(needs.get("hunger", 100.0))
+	if hunger < SURVIVAL_GATE and hunger <= _min_need(ag) \
+			and String(best.get("kind", "")) == "journey" and String(best.get("need", "")) != "hunger":
+		var food: Array = []
+		for candidate in cands:
+			if candidate is Dictionary and String(candidate.get("need", "")) == "hunger":
+				food.append(candidate)
+		if not food.is_empty():
+			return _logic_decide(ag, food)
 	return best
 
 func _canned_say(ag: Dictionary, intent: Dictionary) -> String:
@@ -7992,7 +8989,7 @@ func _build_nav() -> void:
 ## 每个非-town (space,floor) 建导航网：spaces.json bounds 外墙边框(门口那格放行) + interiors 家具挡格
 ## (楼梯/装饰 slot 可踩、portal 格必放行)。纯 f(数据)，无 RNG/Time。缺 spaces/interiors → 无非-town 网。
 func _build_interior_grids() -> void:
-	const WALKABLE_SLOTS := ["stairs", "rug", "window"]
+	const WALKABLE_SLOTS := ["stairs", "rug", "window", "doorway", "archway"]
 	for space in _authored_spaces:
 		if String(space) == "town" or not (_authored_spaces[space] is Dictionary):
 			continue
@@ -8027,6 +9024,11 @@ func _build_interior_grids() -> void:
 						if not portal_cells.has(idx):
 							blocked[idx] = true
 			var content: Dictionary = (_authored_interiors_data.get(space, {}) as Dictionary).get(fl, {}) if _authored_interiors_data.get(space, {}) is Dictionary else {}
+			# Authored recesses belong to the same collision grid as room furniture.
+			for cut: Array in content.get("cutouts", []):
+				for cy in range(int(cut[1]), int(cut[1] + cut[3])):
+					for cx in range(int(cut[0]), int(cut[0] + cut[2])):
+						if not portal_cells.has(cy * w + cx): blocked[cy * w + cx] = true
 			for fu in _as_arr(content.get("furniture", [])):
 				if not (fu is Dictionary) or String((fu as Dictionary).get("slot", "")) in WALKABLE_SLOTS:
 					continue
@@ -8063,7 +9065,7 @@ func _v2i(a) -> Vector2i:
 	return Vector2i(int(arr[0]), int(arr[1])) if arr.size() >= 2 else Vector2i.ZERO
 
 ## 从 (space,floor) 出发能走的 portal（含双向反向边）：[{from_pos(本层格),to_space,to_floor,to_pos,cost}]。spaces.json 顺序=确定序。
-## access="owner" 的 portal（如咖啡馆私人楼梯）只有【该室内的主人】(home_space==该 Space)能走 → 顾客进不了阿丽的 2F 私宅。
+## access="owner" 的 portal（如咖啡馆私人楼梯）只有该主人的 home_space 能走；access="staff" 必须匹配显式 job title 列表。
 ## ag 缺省(空)=不设访问门(渲染/校验用)；带 ag 走访问门(导航/决策用)。
 func _portals_from(space: String, floor: String, ag: Dictionary = {}) -> Array:
 	var out: Array = []
@@ -8073,13 +9075,19 @@ func _portals_from(space: String, floor: String, ag: Dictionary = {}) -> Array:
 		var fr: Dictionary = p.get("from", {})
 		var to: Dictionary = p.get("to", {})
 		var access := String(p.get("access", ""))
-		if access != "public" and access != "owner":
+		if access != "public" and access != "owner" and access != "staff":
 			continue                              # 未知/缺 access 永不默认 public
 		if access == "owner" and not ag.is_empty():
 			var authored_home: Dictionary = _authored_agent_homes.get(String(ag.get("id", "")), {})
 			var guest_cafe := String(p.get("id", "")) == "p_cafe_stairs" and String(ag.get("id", "")) == "player" and _cafe_guest_capability_valid()
-			if not guest_cafe and (String(p.get("owner_space", "")) == "" or String(authored_home.get("space", "")) != String(p.get("owner_space", ""))):
+			var authored_home_space := String(authored_home.get("home_space", authored_home.get("space", "")))
+			if not guest_cafe and (String(p.get("owner_space", "")) == "" or authored_home_space != String(p.get("owner_space", ""))):
 				continue                    # 非主人 → 私有 portal(楼梯)走不了
+		if access == "staff" and not ag.is_empty():
+			var staff_titles: Array = p.get("staff_titles", [])
+			var job_title := String(_job_of(String(ag.get("id", ""))).get("title", ""))
+			if job_title == "" or not staff_titles.has(job_title):
+				continue                    # 未配置/不匹配的 staff portal fail-closed
 		if String(fr.get("space", "")) == space and String(fr.get("floor", "")) == floor:
 			out.append({"portal_id": String(p.get("id", "")), "kind": String(p.get("kind", "")), "access": String(p.get("access", "public")),
 				"from_pos": _v2i(fr.get("pos")), "to_space": String(to.get("space", "")), "to_floor": String(to.get("floor", "")),

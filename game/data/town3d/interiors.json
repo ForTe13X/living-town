@@ -1,5 +1,5 @@
 {
-  "_note": "Only legacy functional advertisements are compiled; geometry is the delivered GLB.",
+  "_note": "Current core advertisements and bank/civic UI markers are compiled; geometry is the delivered GLB.",
   "cafe": {
     "1f": {
       "furniture": [
@@ -11651,70 +11651,9 @@
       "cell_size_m": 0.25
     }
   },
-  "home2": {
+  "model_main_home2": {
     "1f": {
-      "furniture": [
-        {
-          "slot": "bed_double",
-          "object_id": "home21f_bed_double",
-          "label": "床",
-          "pos": [
-            7,
-            5
-          ],
-          "staff": false,
-          "advertises": [
-            {
-              "action": "睡觉",
-              "need": "energy",
-              "amount": 62,
-              "duration": 40
-            }
-          ],
-          "navigation_marker": true,
-          "model_asset_id": "Main_home2_L00_Bedroom_A00_bed"
-        },
-        {
-          "slot": "toilet",
-          "object_id": "home21f_toilet",
-          "label": "马桶",
-          "pos": [
-            23,
-            9
-          ],
-          "staff": false,
-          "advertises": [
-            {
-              "action": "如厕",
-              "need": "hygiene",
-              "amount": 22,
-              "duration": 6
-            }
-          ],
-          "navigation_marker": true,
-          "model_asset_id": "Main_home2_L00_Bathroom_A01_toilet"
-        },
-        {
-          "slot": "armchair",
-          "object_id": "home21f_armchair",
-          "label": "扶手椅",
-          "pos": [
-            18,
-            25
-          ],
-          "staff": false,
-          "advertises": [
-            {
-              "action": "歇着",
-              "need": "fun",
-              "amount": 28,
-              "duration": 18
-            }
-          ],
-          "navigation_marker": true,
-          "model_asset_id": "Main_home2_L00_Living_Kitchen_A03_sofa"
-        }
-      ],
+      "furniture": [],
       "nav_blockers": [
         [
           0,
@@ -25867,6 +25806,38 @@
           ],
           "navigation_marker": true,
           "model_asset_id": "lot_01_mairie_L00_Front_Left_A02_bookshelf"
+        },
+        {
+          "slot": "desk",
+          "object_id": "mairie1f_desk",
+          "label": "镇长桌",
+          "pos": [
+            23,
+            29
+          ],
+          "staff": false,
+          "advertises": [
+            {
+              "action": "办公",
+              "need": "fun",
+              "amount": 18,
+              "duration": 8,
+              "mayor_duty": true
+            }
+          ],
+          "navigation_marker": true,
+          "model_asset_id": "lot_01_mairie_L00_Front_Right_A00_writing_desk"
+        },
+        {
+          "slot": "civic_board",
+          "pos": [
+            23,
+            28
+          ],
+          "label": "镇务公示板",
+          "civic_observatory": true,
+          "navigation_marker": true,
+          "model_asset_id": "lot_01_mairie_L00_Front_Right_A00_writing_desk"
         }
       ],
       "nav_blockers": [
@@ -43696,6 +43667,17 @@
           ],
           "navigation_marker": true,
           "model_asset_id": "lot_06_halles_L00_Market_Aisle_Booth_3"
+        },
+        {
+          "slot": "bank_counter",
+          "pos": [
+            3,
+            22
+          ],
+          "label": "潮汐合作银行",
+          "bank_counter": true,
+          "navigation_marker": true,
+          "model_asset_id": "lot_06_halles_L00_Market_Aisle_Booth_0"
         }
       ],
       "nav_blockers": [
@@ -65893,9 +65875,30 @@
       "cell_size_m": 0.25
     }
   },
-  "model_lot_12_halftimber": {
+  "home2": {
     "1f": {
-      "furniture": [],
+      "furniture": [
+        {
+          "slot": "sofa",
+          "object_id": "home21f_sofa",
+          "label": "沙发",
+          "pos": [
+            8,
+            15
+          ],
+          "staff": false,
+          "advertises": [
+            {
+              "action": "歇着",
+              "need": "fun",
+              "amount": 28,
+              "duration": 18
+            }
+          ],
+          "navigation_marker": true,
+          "model_asset_id": "lot_12_halftimber_L00_Front_Room_A00_sofa"
+        }
+      ],
       "nav_blockers": [
         [
           0,
@@ -67407,7 +67410,48 @@
       "cell_size_m": 0.25
     },
     "2f": {
-      "furniture": [],
+      "furniture": [
+        {
+          "slot": "bed",
+          "object_id": "home22f_bed",
+          "label": "客房床",
+          "pos": [
+            7,
+            17
+          ],
+          "staff": false,
+          "advertises": [
+            {
+              "action": "睡觉",
+              "need": "energy",
+              "amount": 62,
+              "duration": 40
+            }
+          ],
+          "navigation_marker": true,
+          "model_asset_id": "lot_12_halftimber_L01_Front_Room_A00_bed"
+        },
+        {
+          "slot": "toilet",
+          "object_id": "home22f_toilet",
+          "label": "马桶",
+          "pos": [
+            2,
+            9
+          ],
+          "staff": false,
+          "advertises": [
+            {
+              "action": "如厕",
+              "need": "hygiene",
+              "amount": 22,
+              "duration": 6
+            }
+          ],
+          "navigation_marker": true,
+          "model_asset_id": "lot_12_halftimber_L01_Rear_Room_A01_toilet"
+        }
+      ],
       "nav_blockers": [
         [
           0,
@@ -68995,7 +69039,28 @@
       "cell_size_m": 0.25
     },
     "3f": {
-      "furniture": [],
+      "furniture": [
+        {
+          "slot": "bed",
+          "object_id": "home22f_bed_1",
+          "label": "可可的床",
+          "pos": [
+            7,
+            17
+          ],
+          "staff": false,
+          "advertises": [
+            {
+              "action": "睡觉",
+              "need": "energy",
+              "amount": 62,
+              "duration": 40
+            }
+          ],
+          "navigation_marker": true,
+          "model_asset_id": "lot_12_halftimber_L02_Front_Room_A00_bed"
+        }
+      ],
       "nav_blockers": [
         [
           0,

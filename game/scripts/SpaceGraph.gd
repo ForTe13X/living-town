@@ -59,6 +59,12 @@ func default_floor(sid: String) -> String:
 func label_of(sid: String) -> String:
 	return String((spaces.get(sid, {}) as Dictionary).get("label", sid))
 
+## Optional presentation policy for an addressable plane. This remains pure view data:
+## it never enters Sim navigation, saves, digests, or resident decision-making.
+func camera_policy(sid: String) -> Dictionary:
+	var raw = (spaces.get(sid, {}) as Dictionary).get("camera", {})
+	return (raw as Dictionary).duplicate(true) if raw is Dictionary else {}
+
 ## Space 的世界像素边界。缺 space（或没加载）→ 回落 Sim.GRID 全图（兼容期行为不变）。
 func bounds_px(sid: String) -> Rect2:
 	var sp: Dictionary = spaces.get(sid, {})
@@ -137,14 +143,16 @@ func validate() -> Array:
 		if seen.has(pid):
 			errs.append("portal id 重复: '%s'" % pid)
 		seen[pid] = true
-		if String(p.get("access", "")) not in ["public", "owner"]:
-			errs.append("portal '%s'.access 必须是 public|owner" % pid)
+		if String(p.get("access", "")) not in ["public", "owner", "staff"]:
+			errs.append("portal '%s'.access 必须是 public|owner|staff" % pid)
 		if String(p.get("access", "")) == "owner" and String(p.get("owner_space", "")) == "":
 			errs.append("portal '%s'.owner_space 不能为空" % pid)
 		elif String(p.get("access", "")) == "owner" and not has_space(String(p.get("owner_space", ""))):
 			errs.append("portal '%s'.owner_space 不是已知 space" % pid)
 		elif String(p.get("access", "")) == "public" and p.has("owner_space"):
 			errs.append("portal '%s' public 门不得声明 owner_space" % pid)
+		if String(p.get("access", "")) == "staff" and not (p.get("staff_titles", []) is Array):
+			errs.append("portal '%s' staff_titles 必须是 Array" % pid)
 		if typeof(p.get("bidirectional")) != TYPE_BOOL:
 			errs.append("portal '%s'.bidirectional 必须是 bool" % pid)
 		var traversal_cost = p.get("traversal_cost")

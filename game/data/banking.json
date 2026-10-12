@@ -1,0 +1,17 @@
+{
+  "_doc": "P5a cooperative bank vertical slice. Deposits are 100% reserved: deposit liabilities may never exceed bank coin. Loans are funded only from opening cooperative capital above those reserves. Every movement uses Sim.transfer and is authenticated by invariant #47.",
+  "label": "潮汐合作银行",
+  "opening_capital": 24,
+  "account_cap": 30,
+  "auto_deposit_above": 18,
+  "auto_deposit_amount": 2,
+  "loan": {
+    "principal": 6,
+    "trigger_coin": 5,
+    "installment": 1,
+    "repay_buffer": 8,
+    "max_loans_per_account": 1,
+    "business_borrowers": ["aria", "ben"],
+    "manual_player": true
+  }
+}

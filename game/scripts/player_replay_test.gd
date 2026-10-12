@@ -1,5 +1,5 @@
 extends Node
-## PlayerTraceV1 focused contract: public inputs are authority; receipts are
+## PlayerTraceV2 focused contract: public inputs are authority; receipts are
 ## recomputed witnesses; replay never calls private Sim methods or live AI.
 const Inv = preload("res://bench/Invariants.gd")
 
@@ -73,7 +73,7 @@ func _mutations_reject(trace: Dictionary) -> void:
 	_ck("payload tamper rejected", not Sim.set_player_trace_for_replay(payload_tampered))
 	var receipt_forged := trace.duplicate(true); receipt_forged["entries"][0]["receipt"]["event_digest"] = 42
 	_ck("forged receipt rejected", not Sim.set_player_trace_for_replay(receipt_forged))
-	var future := trace.duplicate(true); future["version"] = 2
+	var future := trace.duplicate(true); future["version"] = Sim.PLAYER_TRACE_VERSION + 1
 	_ck("future trace rejected", not Sim.set_player_trace_for_replay(future))
 	var wrong_session := trace.duplicate(true); wrong_session["session"]["seed"] = int(wrong_session["session"]["seed"]) + 1
 	_ck("wrong session fingerprint rejected", not Sim.set_player_trace_for_replay(wrong_session))
@@ -221,7 +221,7 @@ func _guest_access_revoke_trace() -> Dictionary:
 	return {}
 
 func _ready() -> void:
-	print("=== PlayerTraceV1 deterministic player intervention replay ===")
+	print("=== PlayerTraceV2 deterministic player intervention replay ===")
 
 	# No-player C0 remains byte-for-byte autonomous and produces no player trace entries.
 	Sim.backend = null; Sim.auto_run = false; Sim.start_new(20260825); _tickn(80)

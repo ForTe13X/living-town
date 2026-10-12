@@ -31,6 +31,30 @@
         30
       ]
     },
+    "cliff_walk": {
+      "rect": [
+        210,
+        88,
+        18,
+        12
+      ],
+      "kind": "plaza",
+      "type": "plaza",
+      "label": "岬顶步道",
+      "population_anchor": false
+    },
+    "upper_lane": {
+      "rect": [
+        16,
+        84,
+        80,
+        14
+      ],
+      "kind": "plaza",
+      "type": "plaza",
+      "label": "上城街",
+      "population_anchor": false
+    },
     "north_pier": {
       "rect": [
         216,
@@ -56,10 +80,10 @@
     },
     "home2": {
       "rect": [
-        36,
-        67,
-        21,
-        22
+        38,
+        124,
+        26,
+        27
       ],
       "kind": "residential",
       "type": "residential",
@@ -77593,6 +77617,46 @@
       "space": "town",
       "floor": "outdoor",
       "navigation_marker": true
+    },
+    {
+      "id": "cliff_overlook_1",
+      "type": "观景台",
+      "area": "cliff_walk",
+      "pos": [
+        212,
+        91
+      ],
+      "advertises": [
+        {
+          "action": "看海",
+          "need": "fun",
+          "amount": 36,
+          "duration": 18
+        }
+      ],
+      "space": "town",
+      "floor": "outdoor",
+      "navigation_marker": true
+    },
+    {
+      "id": "upper_lane_bench_1",
+      "type": "长椅",
+      "area": "upper_lane",
+      "pos": [
+        41,
+        90
+      ],
+      "advertises": [
+        {
+          "action": "坐看街景",
+          "need": "fun",
+          "amount": 32,
+          "duration": 16
+        }
+      ],
+      "space": "town",
+      "floor": "outdoor",
+      "navigation_marker": true
     }
   ],
   "solid_lots": [],
@@ -78445,7 +78509,7 @@
         24,
         14
       ],
-      "space": "home2",
+      "space": "model_main_home2",
       "floor": "1f",
       "enclosed": true,
       "type": "living kitchen and dining",
@@ -78466,7 +78530,7 @@
         10,
         13
       ],
-      "space": "home2",
+      "space": "model_main_home2",
       "floor": "1f",
       "enclosed": true,
       "type": "quiet bedroom",
@@ -78487,7 +78551,7 @@
         10,
         13
       ],
-      "space": "home2",
+      "space": "model_main_home2",
       "floor": "1f",
       "enclosed": true,
       "type": "bathroom laundry",
@@ -78508,7 +78572,7 @@
         6,
         13
       ],
-      "space": "home2",
+      "space": "model_main_home2",
       "floor": "1f",
       "enclosed": false,
       "type": "private-room access",
@@ -82288,7 +82352,7 @@
         5,
         26
       ],
-      "space": "model_lot_12_halftimber",
+      "space": "home2",
       "floor": "1f",
       "enclosed": false,
       "type": "clear circulation and stair access",
@@ -82309,7 +82373,7 @@
         6,
         15
       ],
-      "space": "model_lot_12_halftimber",
+      "space": "home2",
       "floor": "1f",
       "enclosed": false,
       "type": "protected vertical circulation",
@@ -82330,7 +82394,7 @@
         6,
         7
       ],
-      "space": "model_lot_12_halftimber",
+      "space": "home2",
       "floor": "1f",
       "enclosed": false,
       "type": "bottom stair landing",
@@ -82351,7 +82415,7 @@
         6,
         6
       ],
-      "space": "model_lot_12_halftimber",
+      "space": "home2",
       "floor": "1f",
       "enclosed": false,
       "type": "top stair landing",
@@ -82372,7 +82436,7 @@
         15,
         14
       ],
-      "space": "model_lot_12_halftimber",
+      "space": "home2",
       "floor": "1f",
       "enclosed": true,
       "type": "living room",
@@ -82393,7 +82457,7 @@
         15,
         13
       ],
-      "space": "model_lot_12_halftimber",
+      "space": "home2",
       "floor": "1f",
       "enclosed": true,
       "type": "kitchen dining",
@@ -82414,7 +82478,7 @@
         5,
         26
       ],
-      "space": "model_lot_12_halftimber",
+      "space": "home2",
       "floor": "2f",
       "enclosed": false,
       "type": "clear circulation and stair access",
@@ -82435,7 +82499,7 @@
         6,
         15
       ],
-      "space": "model_lot_12_halftimber",
+      "space": "home2",
       "floor": "2f",
       "enclosed": false,
       "type": "protected vertical circulation",
@@ -82456,7 +82520,7 @@
         6,
         7
       ],
-      "space": "model_lot_12_halftimber",
+      "space": "home2",
       "floor": "2f",
       "enclosed": false,
       "type": "bottom stair landing",
@@ -82477,7 +82541,7 @@
         6,
         6
       ],
-      "space": "model_lot_12_halftimber",
+      "space": "home2",
       "floor": "2f",
       "enclosed": false,
       "type": "top stair landing",
@@ -82498,7 +82562,7 @@
         15,
         14
       ],
-      "space": "model_lot_12_halftimber",
+      "space": "home2",
       "floor": "2f",
       "enclosed": true,
       "type": "bedroom",
@@ -82519,7 +82583,7 @@
         15,
         13
       ],
-      "space": "model_lot_12_halftimber",
+      "space": "home2",
       "floor": "2f",
       "enclosed": true,
       "type": "bathroom dressing",
@@ -82540,7 +82604,7 @@
         5,
         26
       ],
-      "space": "model_lot_12_halftimber",
+      "space": "home2",
       "floor": "3f",
       "enclosed": false,
       "type": "clear circulation and stair access",
@@ -82561,7 +82625,7 @@
         6,
         15
       ],
-      "space": "model_lot_12_halftimber",
+      "space": "home2",
       "floor": "3f",
       "enclosed": false,
       "type": "protected vertical circulation",
@@ -82582,7 +82646,7 @@
         6,
         7
       ],
-      "space": "model_lot_12_halftimber",
+      "space": "home2",
       "floor": "3f",
       "enclosed": false,
       "type": "bottom stair landing",
@@ -82603,7 +82667,7 @@
         6,
         6
       ],
-      "space": "model_lot_12_halftimber",
+      "space": "home2",
       "floor": "3f",
       "enclosed": false,
       "type": "top stair landing",
@@ -82624,7 +82688,7 @@
         15,
         14
       ],
-      "space": "model_lot_12_halftimber",
+      "space": "home2",
       "floor": "3f",
       "enclosed": true,
       "type": "artist study guest room",
@@ -82645,7 +82709,7 @@
         15,
         13
       ],
-      "space": "model_lot_12_halftimber",
+      "space": "home2",
       "floor": "3f",
       "enclosed": true,
       "type": "linen storage and sewing",

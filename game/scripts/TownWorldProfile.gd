@@ -20,6 +20,14 @@ func load_profile(path: String = "res://data/town3d/profile.json") -> bool:
 	if String(parsed.get("schema", "")) != "living_town.world_profile.v1":
 		error_message = "Unsupported town profile schema: " + path
 		return false
+	# Enabled procedural packages install a different authored topology. Retain
+	# those adapters, but refuse competing authorities for this frozen model.
+	for activation_path in ["res://worldgen_activation.json", "res://coastal/warm_bay_s1/export/sim_adapter/activation.json"]:
+		if FileAccess.file_exists(activation_path):
+			var activation: Variant = JSON.parse_string(FileAccess.get_file_as_string(activation_path))
+			if activation is Dictionary and bool(activation.get("enabled", false)):
+				error_message = "Disable the competing spatial activation before using Town3D: " + activation_path
+				return false
 	var paths: Variant = parsed.get("files", {})
 	if not (paths is Dictionary) or paths.is_empty():
 		error_message = "Town profile contains no spatial files"
@@ -88,6 +96,9 @@ func validate_saved_world(world: Dictionary) -> String:
 			return "Town profile authored geometry differs: " + key
 	for object_id in projection.get("interaction_bindings", {}):
 		var binding: Dictionary = projection["interaction_bindings"][object_id]
+		if bool(binding.get("anchor_only", false)):
+			# Bank/civic markers live in authored interiors, never world.objects.
+			continue
 		var object: Dictionary = world.get("objects", {}).get(object_id, {})
 		var plane := String(binding["plane"]).split("/")
 		var cell: Array = binding["cell"]

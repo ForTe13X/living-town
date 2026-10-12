@@ -188,7 +188,18 @@ func _ready() -> void:
 	_meta["cargo_good"] = String(cargo_status.get("good", ""))
 	_meta["cargo_qty"] = int(cargo_status.get("qty", 0))
 	var view = _main.get("_view")
-	_meta["carrier_count"] = int((view.call("_cargo_carrier_projections") as Array).size()) if view != null else -1
+	_meta["carrier_configs"] = (Sim.logistics.get("carriers", []) as Array).duplicate(true)
+	_meta["manifest_authority"] = _manifest_authority_inventory()
+	var carrier_projections: Array = view.call("_cargo_carrier_projections") if view != null else []
+	_meta["carrier_projections"] = []
+	for projection in carrier_projections:
+		if projection is Dictionary:
+			_meta["carrier_projections"].append({
+				"route_id": String(projection.get("route_id", "")),
+				"node": String(projection.get("node", "")),
+				"manifest_id": String(projection.get("manifest_id", "")),
+			})
+	_meta["carrier_count"] = carrier_projections.size() if view != null else -1
 	var cam0_pos: Vector2 = pb.cam.position
 	var cam0_zoom: Vector2 = pb.cam.zoom
 	# A physical portal click adds a visible system row.  Preserve the real
@@ -959,6 +970,31 @@ func _portal_world_pos(from_space: String, to_space: String):
 ##   `get_visible_rect().size` 返回的是基准 1280×768 视口，画布随后被整体拉伸。
 ##   照窗口尺寸套公式会把矩形放大 15%，于是产出一个**假的**"界内被改到了"。
 ##   这里用的是 `ProbeController.screen_to_world` 的**逆式**（同一份真源，不新造一套）。
+## Record the run's authoritative manifest inputs separately from the View output. The Python
+## assertion derives which nodes should have a carrier from these validated records and authored
+## carrier slots; it does not assume that a fixed number of ships should be present at this tick.
+func _manifest_authority_inventory() -> Array:
+	var inventory: Array = []
+	for raw_id in Sim.cargo_manifest_order:
+		var manifest_id := String(raw_id)
+		var raw_rec = Sim.cargo_manifests.get(manifest_id, {})
+		if not (raw_rec is Dictionary):
+			continue
+		var rec: Dictionary = raw_rec
+		var authority_error := Sim._manifest_authority_error(
+			manifest_id, rec, Sim.logistics, int(Sim.day), Sim.event_log)
+		inventory.append({
+			"id": manifest_id,
+			"route_id": String(rec.get("route_id", "")),
+			"node": String(rec.get("node", "")),
+			"good": String(rec.get("good", "")),
+			"state": String(rec.get("state", "")),
+			"remaining_qty": int(rec.get("remaining_qty", 0)),
+			"authority_valid": authority_error == "",
+			"supply": Sim._manifest_is_supply(rec),
+		})
+	return inventory
+
 func _snap(name: String, pb) -> void:
 	# ⚠ **不要**在这里 `await RenderingServer.frame_post_draw`：实测（2026-07-30）在 `--headless` 下
 	#   那个信号**永不发射** ⇒ 本场景会永远挂住 —— 正是 docs/41 §1 点名的"比红更坏"的那种形态

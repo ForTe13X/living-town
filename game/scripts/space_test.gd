@@ -77,6 +77,14 @@ func _ready() -> void:
 	# 未知 space 无 bounds → 回落 Sim.GRID（保守小兜底，与 town 的显式 bounds 现在不同了）
 	ck(sg.bounds_px("no_such").size == Vector2(Sim.GRID.x * 48, Sim.GRID.y * 48), "未知 space → 回落 Sim.GRID（off 门，不崩）")
 
+	# Slice 240: authored courtyard gates are real navigation openings, while
+	# their surrounding perimeter-block cells remain solid.
+	var town_nav: Dictionary = Sim._nav_grids["town"]["outdoor"]
+	for courtyard_cell in [Vector2i(17, 23), Vector2i(17, 22), Vector2i(40, 23), Vector2i(40, 22), Vector2i(42, 38), Vector2i(42, 37)]:
+		ck(Sim._cell_walkable(town_nav, courtyard_cell), "courtyard open cell %s is walkable" % str(courtyard_cell))
+	for shell_cell in [Vector2i(16, 22), Vector2i(39, 22), Vector2i(41, 37)]:
+		ck(not Sim._cell_walkable(town_nav, shell_cell), "courtyard shell cell %s remains solid" % str(shell_cell))
+
 	# ── Portal：双向边的反向查询也要能查到 ──
 	# P3：town/outdoor 现在有两扇门（测试阁楼 p_loft_door + 阿丽咖啡馆 p_cafe_door）——从"恰好 1 扇"放宽到"两扇都在"。
 	var pt_town: Array = sg.portals_from("town", "outdoor")

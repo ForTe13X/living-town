@@ -90,6 +90,47 @@ func walk_player(sim: Node, destination: Vector2i) -> bool:
 	return player["pos"] == destination
 
 
+func walk_controlled(sim: Node, destination: Vector2i) -> bool:
+	var actor: Dictionary = sim.controlled()
+	if actor.is_empty():
+		return false
+	var start: Vector2i = actor["pos"]
+	var space: String = str(actor.get("space", "town"))
+	var floor_id: String = str(actor.get("floor", "outdoor"))
+	var grid: Dictionary = sim._grid_for(space, floor_id)
+	var width: int = int(grid["w"])
+	var parents: Dictionary = flood(sim, space, floor_id, start)
+	if not parents.has(destination.y * width + destination.x):
+		return false
+	var path: Array[Vector2i] = []
+	var cursor: Vector2i = destination
+	while cursor != start:
+		path.push_front(cursor)
+		cursor = parents[cursor.y * width + cursor.x]
+	for next: Vector2i in path:
+		var before: Vector2i = actor["pos"]
+		if str(sim.life_move(next - before)) != "" or actor["pos"] != next:
+			return false
+	return actor["pos"] == destination
+
+
+func visit_controlled(sim: Node, space: String, floor_id: String, destination: Vector2i) -> bool:
+	for _hop_index in range(8):
+		var actor: Dictionary = sim.controlled()
+		if actor.is_empty():
+			return false
+		var from_space: String = str(actor.get("space", "town"))
+		var from_floor: String = str(actor.get("floor", "outdoor"))
+		if from_space == space and from_floor == floor_id:
+			return walk_controlled(sim, destination)
+		var hop: Dictionary = sim._route_next_hop(from_space, from_floor, space, floor_id, actor)
+		if hop.is_empty() or not walk_controlled(sim, cell(hop["from_pos"])):
+			return false
+		if not bool(sim.life_portal(cell(hop["from_pos"])).get("ok", false)):
+			return false
+	return false
+
+
 func agent_state(ag: Dictionary) -> Dictionary:
 	var result: Dictionary = ag.duplicate(true)
 	var memory: Variant = ag.get("memory")
@@ -154,6 +195,9 @@ func _ready() -> void:
 	report["source_blend_sha256"] = profile.get("model_source_blend_sha256", "")
 	report["projection_sha256"] = FileAccess.get_sha256("res://data/town3d/projection.json")
 	report["profile_sha256"] = FileAccess.get_sha256("res://data/town3d/profile.json")
+	report["source_hashes"] = {}
+	for script_path: String in ["Main.gd", "Sim.gd", "SpaceGraph.gd", "TownWorldProfile.gd", "WorldView3D.gd", "town_bridge_test.gd"]:
+		report["source_hashes"]["game/scripts/" + script_path] = FileAccess.get_sha256("res://scripts/" + script_path)
 	ck("49_buildings_89_interior_planes_and_outdoor", (projection.get("building_spaces", {}) as Dictionary).size() == 49 and planes.size() == 90, {"building_spaces": (projection.get("building_spaces", {}) as Dictionary).size(), "planes": planes.size()})
 	ck("projection_matches_frozen_model", projection.get("model_source_blend_sha256") == catalog.get("source_blend_sha256"))
 	ck("profile_cannot_replace_live_run", not sim.install_world_profile(ProfileScript.new()))
@@ -255,7 +299,56 @@ func _ready() -> void:
 		for field: String in ["kind", "access", "owner_space", "bidirectional", "traversal_cost"]:
 			if found.is_empty() or original.get(field) != found.get(field):
 				changed_portals.append(str(original["id"]) + ":" + field)
-	ck("original_portal_ids_owner_access_and_costs_preserved", changed_portals.is_empty(), changed_portals)
+	ck("19_current_original_portal_ids_owner_access_and_costs_preserved", legacy._portals.size() == 19 and changed_portals.is_empty(), {"original_count": legacy._portals.size(), "changes": changed_portals})
+	var ui_failures: Array = []
+	for marker_id: String in ["bank_counter", "civic_observatory"]:
+		var marker_binding: Dictionary = bindings.get(marker_id, {})
+		var marker_plane: PackedStringArray = String(marker_binding.get("plane", "/")).split("/")
+		var marker_cell: Vector2i = cell(marker_binding.get("cell", [-99, -99]))
+		var marker_grid: Dictionary = sim._grid_for(marker_plane[0], marker_plane[1])
+		if not bool(marker_binding.get("anchor_only", false)) or sim.world["objects"].has(marker_id) \
+				or not assets.has(String(marker_binding.get("model_asset_id", ""))) \
+				or not sim._cell_walkable(marker_grid, marker_cell) \
+				or not reachable.get(String(marker_binding.get("plane", "")), {}).has(marker_cell.y * int(marker_grid.get("w", 0)) + marker_cell.x):
+			ui_failures.append(marker_id)
+	ck("bank_civic_UI_markers_bind_real_reachable_fixtures_without_NPC_advertisements", ui_failures.is_empty(), ui_failures)
+	ck("home2_two_current_bed_IDs_bind_distinct_real_beds_and_real_floors", \
+		bindings.get("home22f_bed", {}).get("model_asset_id", "") != bindings.get("home22f_bed_1", {}).get("model_asset_id", "") \
+		and assets.has(String(bindings.get("home22f_bed", {}).get("model_asset_id", ""))) \
+		and assets.has(String(bindings.get("home22f_bed_1", {}).get("model_asset_id", ""))) \
+		and planes.has("home2/2f") and planes.has("home2/3f"))
+
+	# Reach the current bank through genuine authored portals/cells and execute
+	# the unchanged transaction API. Neither test rewrites an actor dictionary.
+	var bank_sim: Node = fresh()
+	bank_sim.start_new(7)
+	var bank_opened: bool = bool(bank_sim.possess("ben"))
+	if bank_opened:
+		bank_opened = visit_controlled(bank_sim, "halles", "1f", bank_sim.bank_counter_cell())
+	var bank_menu_found: bool = false
+	if bank_opened:
+		for entry: Dictionary in bank_sim.life_interactions(1):
+			bank_menu_found = bank_menu_found or entry.get("kind") == "bank"
+	var bank_total: int = int(bank_sim.money_total())
+	var wallet_before: int = int(bank_sim._coin_of("ben"))
+	var deposit_ok: bool = bank_menu_found and bool(bank_sim.player_bank_action("deposit", "ben", 1).get("ok", false))
+	var deposit_amount: int = int(bank_sim.bank_deposits.get("ben", 0))
+	var withdraw_ok: bool = deposit_ok and bool(bank_sim.player_bank_action("withdraw", "ben", 1).get("ok", false))
+	ck("real_halles_bank_entry_deposit_withdraw_preserves_money", withdraw_ok and deposit_amount == 1 \
+		and int(bank_sim._coin_of("ben")) == wallet_before and int(bank_sim.money_total()) == bank_total, \
+		{"entry": bank_opened, "bank_menu": bank_menu_found, "deposit": deposit_ok, "withdraw": withdraw_ok})
+	var civic_sim: Node = fresh()
+	civic_sim.start_new(7)
+	var civic_opened: bool = bool(civic_sim.possess("ben"))
+	if civic_opened:
+		civic_opened = visit_controlled(civic_sim, "mairie", "1f", civic_sim.civic_observatory_cell())
+	var civic_before: Dictionary = core_state(civic_sim)
+	var civic_menu_found: bool = false
+	if civic_opened:
+		for entry: Dictionary in civic_sim.life_interactions(1):
+			civic_menu_found = civic_menu_found or entry.get("kind") == "civic"
+	var civic_projection: Dictionary = civic_sim.civic_observatory_projection()
+	ck("real_mairie_civic_board_remains_read_only", civic_menu_found and civic_projection.get("mode") == "read_only" and core_state(civic_sim) == civic_before, {"entry": civic_opened, "civic_menu": civic_menu_found})
 	var jobs_changed: Array = []
 	for ag: Dictionary in legacy.agents:
 		var id: String = str(ag["id"])
@@ -348,10 +441,18 @@ func _ready() -> void:
 
 
 func finish() -> void:
+	var path: String = ProjectSettings.globalize_path("res://").path_join("../docs/town_bridge/logical_test_report.json").simplify_path()
+	var args: PackedStringArray = OS.get_cmdline_user_args()
+	for i in args.size():
+		if args[i] == "--town-test-report":
+			if i + 1 >= args.size() or not String(args[i + 1]).is_absolute_path():
+				push_error("--town-test-report requires an absolute output file path")
+				get_tree().quit(1)
+				return
+			path = String(args[i + 1]).simplify_path()
 	report["status"] = "PASS" if failures == 0 else "FAIL"
 	report["failure_count"] = failures
 	report["engine_version"] = Engine.get_version_info()
-	var path: String = ProjectSettings.globalize_path("res://").path_join("../docs/town_bridge/logical_test_report.json").simplify_path()
 	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
 	var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
 	if file != null:

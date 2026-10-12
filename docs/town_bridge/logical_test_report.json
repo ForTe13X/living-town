@@ -45,7 +45,7 @@
 		{
 			"detail": {
 				"broken": [],
-				"fixture_count": 64
+				"fixture_count": 68
 			},
 			"name": "every_functional_fixture_reachable_and_bound_to_real_model",
 			"passed": true
@@ -64,8 +64,59 @@
 			"passed": true
 		},
 		{
+			"detail": {
+				"changes": [],
+				"original_count": 19
+			},
+			"name": "19_current_original_portal_ids_owner_access_and_costs_preserved",
+			"passed": true
+		},
+		{
 			"detail": [],
-			"name": "original_portal_ids_owner_access_and_costs_preserved",
+			"name": "bank_civic_UI_markers_bind_real_reachable_fixtures_without_NPC_advertisements",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "home2_two_current_bed_IDs_bind_distinct_real_beds_and_real_floors",
+			"passed": true
+		},
+		{
+			"detail": "",
+			"name": "profile_load_3",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "profile_install_before_start_3",
+			"passed": true
+		},
+		{
+			"detail": {
+				"bank_menu": true,
+				"deposit": true,
+				"entry": true,
+				"withdraw": true
+			},
+			"name": "real_halles_bank_entry_deposit_withdraw_preserves_money",
+			"passed": true
+		},
+		{
+			"detail": "",
+			"name": "profile_load_4",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "profile_install_before_start_4",
+			"passed": true
+		},
+		{
+			"detail": {
+				"civic_menu": true,
+				"entry": true
+			},
+			"name": "real_mairie_civic_board_remains_read_only",
 			"passed": true
 		},
 		{
@@ -78,14 +129,14 @@
 				"direct_agent_writes": false,
 				"observed": {
 					"action": "吃饭",
-					"after": 97.9999999999996,
+					"after": 96.8799999999996,
 					"agent": "qin",
-					"before": 95.5022222222218,
+					"before": 94.3822222222218,
 					"home": "test_loft",
 					"model_asset_id": "Main_cafe_L00_Public_Room_A02_cafe_table_set",
 					"need": "hunger",
 					"target": "stove_1",
-					"tick": 300
+					"tick": 304
 				},
 				"seed": 7,
 				"ticks": 480
@@ -103,12 +154,12 @@
 		},
 		{
 			"detail": "",
-			"name": "profile_load_3",
+			"name": "profile_load_5",
 			"passed": true
 		},
 		{
 			"detail": null,
-			"name": "profile_install_before_start_3",
+			"name": "profile_install_before_start_5",
 			"passed": true
 		},
 		{
@@ -150,12 +201,12 @@
 		},
 		{
 			"detail": "",
-			"name": "profile_load_4",
+			"name": "profile_load_6",
 			"passed": true
 		},
 		{
 			"detail": null,
-			"name": "profile_install_before_start_4",
+			"name": "profile_install_before_start_6",
 			"passed": true
 		},
 		{
@@ -166,8 +217,8 @@
 		{
 			"detail": {
 				"first_drift": -1,
-				"left_chain": 1622236061,
-				"right_chain": 1622236061
+				"left_chain": 3897317878,
+				"right_chain": 3897317878
 			},
 			"name": "save_load_then_48_future_ticks_are_deterministic",
 			"passed": true
@@ -210,9 +261,17 @@
 		"timestamp": 0
 	},
 	"failure_count": 0,
-	"profile_sha256": "6c3516fc10ce2b0622072e84a96750bd46965b46978e3a1be5284490a63c6202",
-	"projection_sha256": "b699c9711c02c0d9f8f2e62e65a9b0cb6b3ce4d38ddf039697247da5b85629ad",
+	"profile_sha256": "66c800130175677ec9c82ed44d7a1833dca634c602ffcc604e9aa258386d2c5e",
+	"projection_sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a",
 	"schema": "living_town.bridge.logical.v1",
 	"source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
+	"source_hashes": {
+		"game/scripts/Main.gd": "2523ae2e5eef10840f4a04d7927d3e8e5ec27cff653e25c645ba1b148350f7c1",
+		"game/scripts/Sim.gd": "37badd0b2c8f5f9bce91a3988fa34901a1e51b31f3a8757d63f320d63c884a41",
+		"game/scripts/SpaceGraph.gd": "60fed06c94414336d11413fe89d6ee64aed525997f2315dc274b3b2d921de62a",
+		"game/scripts/TownWorldProfile.gd": "c41adf7a0a72c780c1cf057c97c56d5f9fb165a4def24ca46b0f1ce10a5c68d5",
+		"game/scripts/WorldView3D.gd": "de6ad2cc10abd8f60d5101657573496e127e785ba5950f816925e0094a7124d1",
+		"game/scripts/town_bridge_test.gd": "c05184c128a37f1e2a21da8da868e97360c0d0a79a6b9e9b2d90059e0ff041a1"
+	},
 	"status": "PASS"
 }

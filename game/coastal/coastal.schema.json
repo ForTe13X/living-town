@@ -1,0 +1,741 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://living-town.local/schema/coastal/1",
+  "title": "Living Town Coastal Environment Specification",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "title",
+    "generator_version",
+    "seed",
+    "extent_cells",
+    "pixels_per_cell",
+    "profiles",
+    "shoreline",
+    "district_styles",
+    "road_nodes",
+    "roads",
+    "buildings"
+  ],
+  "properties": {
+    "schema": {
+      "const": "living-town.coastal/1"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generator_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "seed": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4294967295
+    },
+    "extent_cells": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "integer",
+          "minimum": 1
+        },
+        {
+          "type": "integer",
+          "minimum": 1
+        }
+      ],
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "pixels_per_cell": {
+      "const": 48
+    },
+    "resident_preview_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "profiles": {
+      "$ref": "#/$defs/profiles"
+    },
+    "shoreline": {
+      "$ref": "#/$defs/shoreline"
+    },
+    "district_styles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/districtStyle"
+      }
+    },
+    "road_nodes": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "$ref": "#/$defs/roadNode"
+      }
+    },
+    "roads": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/road"
+      }
+    },
+    "buildings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/building"
+      }
+    }
+  },
+  "$defs": {
+    "profiles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "physical_geo_ref",
+        "architecture_style_ref",
+        "lighting_climate_ref",
+        "water_policy_ref",
+        "water_mode"
+      ],
+      "properties": {
+        "physical_geo_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "architecture_style_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lighting_climate_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "water_policy_ref": {
+          "const": "F0_frozen_walkability/1"
+        },
+        "water_mode": {
+          "const": "decorative_frozen_envelope"
+        }
+      }
+    },
+    "point": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "rect": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "integer",
+          "minimum": 1
+        },
+        {
+          "type": "integer",
+          "minimum": 1
+        }
+      ],
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "shoreline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sea_side",
+        "control_spacing_cells",
+        "bands",
+        "offsets_cells",
+        "walkable_bands",
+        "crossing_ids"
+      ],
+      "properties": {
+        "sea_side": {
+          "enum": [
+            "east",
+            "west",
+            "north",
+            "south"
+          ]
+        },
+        "control_spacing_cells": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "bands": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "z",
+              "dune_edge_x"
+            ],
+            "properties": {
+              "z": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "dune_edge_x": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          }
+        },
+        "offsets_cells": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "dune_toe",
+            "high_water",
+            "outer_intertidal"
+          ],
+          "properties": {
+            "dune_toe": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "high_water": {
+              "type": "integer",
+              "minimum": 2
+            },
+            "outer_intertidal": {
+              "type": "integer",
+              "minimum": 3
+            }
+          }
+        },
+        "walkable_bands": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "crossing_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "districtStyle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "palette",
+        "roof_family",
+        "exposure"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "palette": {
+          "type": "string",
+          "minLength": 1
+        },
+        "roof_family": {
+          "type": "string",
+          "minLength": 1
+        },
+        "exposure": {
+          "enum": [
+            "sheltered",
+            "mixed",
+            "exposed"
+          ]
+        }
+      }
+    },
+    "roadNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "at"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "at": {
+          "$ref": "#/$defs/point"
+        }
+      }
+    },
+    "road": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "from",
+        "to",
+        "class",
+        "width_cells"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "from": {
+          "type": "string",
+          "minLength": 1
+        },
+        "to": {
+          "type": "string",
+          "minLength": 1
+        },
+        "class": {
+          "enum": [
+            "main",
+            "local",
+            "promenade",
+            "beach_crossing"
+          ]
+        },
+        "width_cells": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "crossing_id": {
+          "type": "string"
+        },
+        "via": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "$ref": "#/$defs/point"
+          }
+        }
+      }
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "at",
+        "facing",
+        "road",
+        "access_path",
+        "access_width_cells"
+      ],
+      "properties": {
+        "at": {
+          "$ref": "#/$defs/point"
+        },
+        "facing": {
+          "enum": [
+            "north",
+            "south",
+            "east",
+            "west"
+          ]
+        },
+        "road": {
+          "type": "string",
+          "minLength": 1
+        },
+        "access_path": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "$ref": "#/$defs/point"
+          }
+        },
+        "access_width_cells": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "building": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "shape",
+        "district",
+        "box",
+        "segments",
+        "entry",
+        "rooms",
+        "slots",
+        "interior"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "shape": {
+          "enum": [
+            "rectangle",
+            "row",
+            "L",
+            "U",
+            "bar",
+            "shallow_bar",
+            "open"
+          ]
+        },
+        "district": {
+          "type": "string",
+          "minLength": 1
+        },
+        "box": {
+          "$ref": "#/$defs/rect"
+        },
+        "segments": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "rect"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "rect": {
+                "$ref": "#/$defs/rect"
+              }
+            }
+          }
+        },
+        "entry": {
+          "$ref": "#/$defs/entry"
+        },
+        "rooms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "slots": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "readiness": {
+          "type": "string"
+        },
+        "appearance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "family",
+            "segments"
+          ],
+          "properties": {
+            "family": {
+              "type": "string"
+            },
+            "segments": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id",
+                  "module_id",
+                  "rotation"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "module_id": {
+                    "type": "string"
+                  },
+                  "rotation": {
+                    "enum": [
+                      0,
+                      1,
+                      2,
+                      3
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "interior": {
+          "$ref": "#/$defs/interior"
+        }
+      }
+    },
+    "localRectQ": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "integer",
+          "minimum": 48
+        },
+        {
+          "type": "integer",
+          "minimum": 48
+        }
+      ],
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "pointQ": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "integer"
+        }
+      ],
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "interiorRoom": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "role",
+        "bounds_q",
+        "access_policy"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bounds_q": {
+          "$ref": "#/$defs/localRectQ"
+        },
+        "access_policy": {
+          "enum": [
+            "public",
+            "authorized"
+          ]
+        },
+        "kind": {
+          "const": "court"
+        }
+      }
+    },
+    "interiorDoor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "from_room",
+        "to_room",
+        "at_q",
+        "clear_width_q",
+        "access_policy"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "from_room": {
+          "type": "string",
+          "minLength": 1
+        },
+        "to_room": {
+          "type": "string",
+          "minLength": 1
+        },
+        "at_q": {
+          "$ref": "#/$defs/pointQ"
+        },
+        "clear_width_q": {
+          "type": "integer",
+          "minimum": 40
+        },
+        "access_policy": {
+          "enum": [
+            "public",
+            "resident_or_staff"
+          ]
+        }
+      }
+    },
+    "affordance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "action",
+        "room",
+        "at_q",
+        "approach_q",
+        "facing",
+        "capacity",
+        "clearance_q",
+        "access_policy",
+        "duration_policy"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "room": {
+          "type": "string",
+          "minLength": 1
+        },
+        "at_q": {
+          "$ref": "#/$defs/pointQ"
+        },
+        "approach_q": {
+          "$ref": "#/$defs/pointQ"
+        },
+        "facing": {
+          "enum": [
+            "north",
+            "south",
+            "east",
+            "west"
+          ]
+        },
+        "capacity": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "clearance_q": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "integer",
+              "minimum": 1
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "access_policy": {
+          "enum": [
+            "public",
+            "authorized"
+          ]
+        },
+        "duration_policy": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "interior": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entry_room",
+        "entry_at_q",
+        "entry_clear_width_q",
+        "rooms",
+        "doors",
+        "slots"
+      ],
+      "properties": {
+        "entry_room": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rooms": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/interiorRoom"
+          }
+        },
+        "doors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/interiorDoor"
+          }
+        },
+        "slots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/affordance"
+          }
+        },
+        "entry_clear_width_q": {
+          "type": "integer",
+          "minimum": 40
+        },
+        "entry_at_q": {
+          "$ref": "#/$defs/pointQ"
+        }
+      }
+    }
+  }
+}

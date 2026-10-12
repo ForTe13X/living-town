@@ -18,7 +18,7 @@ import zipfile
 
 CHUNK = 1024 * 1024
 TOP = "LivingTown_Interactive_Source"
-TOOLS = ("tools/run-town3d.ps1", "tools/prepare-godot-optional.ps1",
+TOOLS = ("tools/fetch_town_assets.py", "tools/run-town3d.ps1", "tools/prepare-godot-optional.ps1",
          "tools/build_town_profile.py", "tools/stage_town_assets.py",
          "tools/package_town_bridge.py")
 EXTRA = ("LICENSE", "THIRD_PARTY_NOTICES.md", "docs/09-美术资产与版权.md",
