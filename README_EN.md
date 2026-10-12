@@ -1,14 +1,16 @@
 # Living Town · 小镇有灵
 
-A pixel life simulation where you can become a resident or watch a town unfold.
+A life simulation where you can become a resident or watch a town unfold, with a Blender 3D coastal town and the original pixel map.
 
 Residents work, eat, make friends, and remember promises, rumors, and disputes. Choose someone to play, explore their neighborhood, or use the observer panels to follow relationships, trade, and civic decisions.
 
 [中文](README.md) · [Development notes](docs/README.md)
 
-![In-engine gameplay tour](docs/media/gameplay-tour.gif)
+[![In-engine 3D town walkthrough: coastal streets, interiors, harbor, and pond](docs/media/town3d-walkthrough.gif)](https://github.com/ForTe13X/living-town/releases/download/town3d-walkthrough-2026-10-12/LivingTown_Walkthrough.mp4)
 
-[Watch the full MP4](docs/media/gameplay-tour.mp4) · [Recording and chapters](docs/249-gameplay-tour.md) · [Town blueprint](analysis/247/neighborhood-blueprint.png)
+A 30-second silent GIF highlight reel. Click the preview for the full ten-minute recording with Edge TTS narration and subtitles.
+
+[Watch the full walkthrough (MP4)](https://github.com/ForTe13X/living-town/releases/download/town3d-walkthrough-2026-10-12/LivingTown_Walkthrough.mp4) · [Chapters, downloads, and recording evidence](docs/town_walkthrough/README.md) · [Original pixel tour archive](docs/249-gameplay-tour.md)
 
 **Blender 3D town:** explore the coastal terrain, 49 buildings, layered interiors, and existing residents.
 [Ten-minute narrated walkthrough and downloads](docs/town_walkthrough/README.md) · [Run guide and spatial contract](docs/town_bridge/README.md).
@@ -16,6 +18,7 @@ The large model is a checksum-verified release download. On Windows, use `./tool
 
 ## Latest changes
 
+- The Blender 3D coastal town now connects to resident life mode, with layered interiors, a harbor, graded pond banks, and planting, plus a ten-minute narrated in-engine walkthrough.
 - Rebuilt coastal streets, courtyards, passages, tree belts, and gardens using detailed PixelLab assets.
 - Distinct residential, commercial, civic, and workshop facades, with entrances aligned to the street.
 - Irregular room plans, partitions, accessible stairs, and a camera that follows the character indoors and outdoors.
@@ -28,7 +31,7 @@ The large model is a checksum-verified release download. On Windows, use `./tool
 - Explore the market, library, baths, workshop, homes, and waterfront.
 - Inspect resident states, stories, the transaction ledger, and civic policies.
 
-This is a playable prototype under active development. Some buildings are scenery. The recording uses the logic backend: player movement and doors are driven through real gameplay APIs, followed by explicitly labelled observer chapters. It is a feature tour, not proof of every mechanic or model response.
+This is a playable prototype under active development. Some buildings are scenery. The new recording uses the logic backend and existing Main/LifeMode inputs for movement, stairs, and fixture interactions. Labelled architectural inspection moves only the camera. The tour demonstrates selected actions and places; it does not establish every mechanic or model response.
 
 ## Play
 

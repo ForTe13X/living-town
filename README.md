@@ -1,14 +1,16 @@
 # 小镇有灵 · Living Town
 
-一个可以成为居民、也可以静静观察的像素生活模拟小镇。
+一个可以成为居民、也可以静静观察的生活模拟小镇，提供 Blender 3D 滨海街区与原像素地图。
 
 居民会工作、吃饭、交朋友，也会记住承诺、传闻和矛盾。你可以选择一位居民，走进咖啡馆和家里，参与他们的日常；也可以打开观察台，看看一件小事怎样影响关系、经济和公共生活。
 
 [English](README_EN.md) · [设计与开发记录](docs/README.md)
 
-![小镇实机演示](docs/media/gameplay-tour.gif)
+[![3D 小镇实机导览：滨海街区、室内、港口与池塘](docs/media/town3d-walkthrough.gif)](https://github.com/ForTe13X/living-town/releases/download/town3d-walkthrough-2026-10-12/LivingTown_Walkthrough.mp4)
 
-[播放完整演示（MP4）](docs/media/gameplay-tour.mp4) · [录制说明与章节](docs/249-gameplay-tour.md) · [地图蓝图](analysis/247/neighborhood-blueprint.png)
+30 秒无声 GIF 精选；点击预览观看带 Edge TTS 配音与字幕的十分钟完整录屏。
+
+[播放完整导览（MP4）](https://github.com/ForTe13X/living-town/releases/download/town3d-walkthrough-2026-10-12/LivingTown_Walkthrough.mp4) · [章节、下载与录制证据](docs/town_walkthrough/README.md) · [原像素版演示存档](docs/249-gameplay-tour.md)
 
 **Blender 3D 小镇**：新增可探索的滨海地形、49 栋建筑、分层室内与原有居民。
 [十分钟配音导览与下载](docs/town_walkthrough/README.md) · [运行与空间契约](docs/town_bridge/README.md)。
@@ -16,6 +18,7 @@
 
 ## 最近更新
 
+- Blender 3D 滨海小镇已接入居民生活模式，包含分层室内、港口、分级池岸与植被；新增十分钟配音实机导览。
 - 按滨海街区蓝图重建道路、庭院通道、树带和花园，加入更细致的 PixelLab 建筑与景观素材。
 - 区分连排住宅、商店、公共建筑和工坊的立面；修正建筑朝向，让入口与街道对应。
 - 增加不规则室内空间、房间分隔和可通行楼梯；相机平滑跟随角色进出建筑。
@@ -28,7 +31,7 @@
 - **观察变化**：查看居民状态、小镇故事、交易账本和公共政策。
 - **自由探索**：逛市场、图书馆、浴室、工坊、住宅和海边；昼夜与天气改变氛围。
 
-这是持续开发中的可玩原型。部分建筑用于街景展示，并非每一栋都能进入。演示采用 logic 后端，前半段通过真实移动和门口 API 驱动角色，后半段为标注清楚的观察视角；它不代表全部机制或模型表现都已验证。
+这是持续开发中的可玩原型。部分建筑用于街景展示，并非每一栋都能进入。新录屏采用 logic 后端，通过现有 Main/LifeMode 输入完成移动、楼梯和设施交互；标注清楚的建筑巡览只移动相机。它展示选定的行动与地点，不代表全部机制或模型表现都已验证。
 
 ## 开始游玩
 
