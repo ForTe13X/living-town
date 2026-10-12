@@ -9,6 +9,9 @@ game/.godot/
 # NobodyWho GDExtension binaries (~140MB) — install from upstream release (see README setup note)
 game/addons/nobodywho/*.dll
 game/addons/nobodywho/*.so
+game/addons/nobodywho/.gdignore
+# Embedded GLB textures are extracted automatically by Godot during import.
+game/assets/town3d/living_town_game_*.png
 
 # Android build toolchain + downloads + APK output (see docs/18)
 build/
@@ -29,3 +32,17 @@ __pycache__/
 # 【被跟踪路径】(analysis/repository-review-2026-07-12/、analysis/cross-disciplinary-.../)，
 # 整目录 ignore 会在那条分支合回来时静默吞掉 11 份评审文档。
 analysis/**/packet_*.jsonl
+# Large reproducible town assets are published as checksum-verified release files.
+game/assets/town3d/*.glb
+art/**/*.zip
+art/**/*.glb
+art/**/*.blend
+art/**/*.blend1
+art/**/checkpoints/
+art/**/references/
+art/living_town/integration/
+art/interactive_delivery/*.exe
+art/interactive_delivery/*.pck
+
+# Local authoring archive, renders and supplied references; tracked authoring source stays tracked.
+art/

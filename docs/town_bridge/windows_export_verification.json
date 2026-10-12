@@ -1,0 +1,104 @@
+{
+  "schema": "living_town.bridge.windows_export.v1",
+  "status": "PASS",
+  "generated_utc": "2026-10-12T11:39:57.949317+00:00",
+  "engine": "Godot 4.6.2-stable Windows x86_64 release",
+  "binaries": [
+    {
+      "file": "LivingTown.exe",
+      "bytes": 104512512,
+      "sha256": "911cb7f49225cf9ec87342f84b3e64bbd69e31d82fbd9660cb16e402bb5be891"
+    },
+    {
+      "file": "LivingTown.pck",
+      "bytes": 90365644,
+      "sha256": "f89bbbbf78f189acc3de5b8a7c229f0ba463d105223694fd64d72ca7693e3b71"
+    }
+  ],
+  "boot": {
+    "test": "normal product entry, actual GPU framebuffer",
+    "exit_code": 0,
+    "entry_scene": "Main",
+    "arguments": [
+      "--town3d",
+      "--backend",
+      "logic",
+      "--agents",
+      "12",
+      "--life-as",
+      "aria",
+      "--shot"
+    ],
+    "normal_product_entry": true,
+    "actual_gpu": true
+  },
+  "screenshots": [
+    {
+      "file": "docs/town_bridge/captures/06_windows_exported_game.png",
+      "bytes": 799595,
+      "sha256": "95f43353add9d3265aff0671ac263c1ac029bd746445c3bf50ec48c953042dcf",
+      "size": [
+        1280,
+        768
+      ],
+      "mean_rgb": [
+        47.30223795572917,
+        49.53787333170573,
+        42.79144388834636
+      ],
+      "stddev_rgb": [
+        37.06685389386601,
+        35.6175780648516,
+        26.466193001324974
+      ],
+      "review": "Root visually inspected the same normal-entry café/home render: room cutaway, retained actor, existing LifeMode HUD and furnishing prompt visible."
+    }
+  ],
+  "checks": [
+    {
+      "name": "release_export_exit_0",
+      "passed": true
+    },
+    {
+      "name": "normal_product_entry_exit_0",
+      "passed": true
+    },
+    {
+      "name": "real_gpu_framebuffer_1280x768",
+      "passed": true
+    },
+    {
+      "name": "source_profile_and_imported_model_loaded",
+      "passed": true
+    },
+    {
+      "name": "normal_entry_no_engine_or_script_errors",
+      "passed": true
+    },
+    {
+      "name": "exe_and_pck_sha256_bound",
+      "passed": true
+    },
+    {
+      "name": "source_interaction_evidence_distinguished_from_native_boot",
+      "passed": true
+    }
+  ],
+  "source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
+  "source_glb_sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c",
+  "profile_sha256": "6c3516fc10ce2b0622072e84a96750bd46965b46978e3a1be5284490a63c6202",
+  "projection_sha256": "b699c9711c02c0d9f8f2e62e65a9b0cb6b3ce4d38ddf039697247da5b85629ad",
+  "source_verification": "Imported PCK scene; externally hash-bound export. Raw GLB SHA-256 is verified in the editable source runtime, not inside PCK.",
+  "source_runtime_evidence": {
+    "logical_checks": 28,
+    "visual_checks": 27,
+    "legacy_regressions": 11,
+    "logical_report_sha256": "5fe663e8391467c52fdb253a2e9e5f0a9056027ae56e3ae7e461f90aaf2d2b6f",
+    "visual_report_sha256": "6ed4f4aec324fc0ab7daf4bf8bb12a566c9602be84d63fe7105c8da406582257"
+  },
+  "limitations": [
+    "Native proof is normal product launch/render, not the full interaction harness.",
+    "Stock release template rejects alternate command-line scene paths; unsupported probe failed before gameplay and was not counted as a passing interaction test.",
+    "No full-town population/FPS or every-backend certification."
+  ]
+}

@@ -89,14 +89,16 @@ func portals_from(sid: String, fid: String) -> Array:
 	return out
 
 # ── 兼容层（analysis §5.3）：不改 agent.pos，也不改 Sim ─────────────────────
-## agent → SpatialAddress。带 spatial_address 就用它；否则兜底 town/outdoor + agent.pos。
-## 这样"第一栋多层建筑"可以单独长出 spatial_address，而其余居民一行不动 → digest drift 可控。
+## Authored spatial_address takes precedence, then live space/floor, then the legacy outdoor fallback.
 func address_of(agent: Dictionary) -> Dictionary:
 	var sa: Variant = agent.get("spatial_address")
 	if sa is Dictionary and (sa as Dictionary).has("space_id"):
 		var d: Dictionary = sa
 		return {"space_id": String(d.get("space_id", "town")), "floor_id": String(d.get("floor_id", "outdoor")),
 			"position": d.get("position", agent.get("pos", Vector2i.ZERO)), "room_id": String(d.get("room_id", ""))}
+	if agent.has("space") or agent.has("floor"):
+		return {"space_id": String(agent.get("space", "town")), "floor_id": String(agent.get("floor", "outdoor")),
+			"position": agent.get("pos", Vector2i.ZERO), "room_id": String(agent.get("room", ""))}
 	return {"space_id": "town", "floor_id": "outdoor", "position": agent.get("pos", Vector2i.ZERO), "room_id": ""}
 
 ## JSON.parse_string may decode integral literals as either int or float depending on the

@@ -1,0 +1,2934 @@
+{
+  "_note": "Optional model-aligned profile. Base spaces.json remains unchanged.",
+  "spaces": {
+    "town": {
+      "kind": "outdoor",
+      "label": "Living Town",
+      "bounds": [
+        0,
+        0,
+        268,
+        216
+      ],
+      "floors": [
+        "outdoor"
+      ],
+      "default_floor": "outdoor"
+    },
+    "cafe": {
+      "_why": "P3 竖切片：阿丽的咖啡馆真室内。1F 公共咖啡区(吧台/咖啡机/甜点柜/吧凳/卡座/菜单牌)、2F 阿丽私人居所(床/衣柜/床头柜/书桌/梳妆镜/相片墙)。街门 portal 接 town/outdoor 的咖啡馆门(41,19)，楼梯 portal 接 1F→2F(owner 权限=私人上层)。内容在 interiors.json、渲染走非-town active-space 路径。Tier-B(★AM1 订正——旧注误写『Tier-A：居民不进、digest 逐字节不变』，与实况矛盾)：带 spatial_address 的居民【真住】非-town 平面并按 portal 跨平面走动——阿丽(aria) spatial_address={cafe,2f,[2,2]} 就住 2F，journey 在镇↔店之间跨平面(_journey_candidates→_route_next_hop→_move_agent)。金标口径：带 advertises 的室内家具经 _compile_interiors 进 world 候选、家具格经 _build_interior_grids 进各平面导航网 ⇒ 动它们/其位置=移金标；纯装饰家具(无 advertises)重排=AM1 实测 golden 12/12 逐字节不变。",
+      "kind": "interior",
+      "label": "阿丽的咖啡馆",
+      "bounds": [
+        0,
+        0,
+        40,
+        36
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Main_cafe",
+      "public_venue": false
+    },
+    "shop": {
+      "_gen": true,
+      "kind": "interior",
+      "label": "杂货铺",
+      "bounds": [
+        0,
+        0,
+        24,
+        36
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Main_shop",
+      "public_venue": false
+    },
+    "home": {
+      "_gen": true,
+      "kind": "interior",
+      "label": "住宅区",
+      "bounds": [
+        0,
+        0,
+        24,
+        28
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Main_home",
+      "public_venue": false
+    },
+    "model_main_home2": {
+      "kind": "interior",
+      "label": "Main_home2",
+      "bounds": [
+        0,
+        0,
+        26,
+        28
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Main_home2",
+      "public_venue": false
+    },
+    "library": {
+      "_gen": true,
+      "kind": "interior",
+      "label": "图书馆",
+      "bounds": [
+        0,
+        0,
+        40,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "public_venue": true,
+      "model_building_id": "Main_library"
+    },
+    "wash": {
+      "_gen": true,
+      "kind": "interior",
+      "label": "澡堂",
+      "bounds": [
+        0,
+        0,
+        40,
+        32
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "public_venue": true,
+      "model_building_id": "Main_wash"
+    },
+    "work": {
+      "_gen": true,
+      "kind": "interior",
+      "label": "工坊",
+      "bounds": [
+        0,
+        0,
+        48,
+        32
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Main_work",
+      "public_venue": false
+    },
+    "chapel": {
+      "_facility": true,
+      "public_venue": true,
+      "kind": "interior",
+      "label": "礼拜堂",
+      "bounds": [
+        0,
+        0,
+        32,
+        56
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_00_chapel"
+    },
+    "mairie": {
+      "_facility": true,
+      "public_venue": true,
+      "kind": "interior",
+      "label": "镇公所",
+      "bounds": [
+        0,
+        0,
+        40,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f",
+        "3f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_01_mairie"
+    },
+    "model_lot_02_windmill": {
+      "kind": "interior",
+      "label": "lot_02_windmill",
+      "bounds": [
+        0,
+        0,
+        20,
+        24
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_02_windmill",
+      "public_venue": false
+    },
+    "model_lot_03_netshed": {
+      "kind": "interior",
+      "label": "lot_03_netshed",
+      "bounds": [
+        0,
+        0,
+        24,
+        16
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_03_netshed",
+      "public_venue": false
+    },
+    "bakery": {
+      "_facility": true,
+      "public_venue": true,
+      "kind": "interior",
+      "label": "面包房",
+      "bounds": [
+        0,
+        0,
+        32,
+        36
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_04_bakery"
+    },
+    "creperie": {
+      "_facility": true,
+      "public_venue": true,
+      "kind": "interior",
+      "label": "可丽饼店",
+      "bounds": [
+        0,
+        0,
+        24,
+        36
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_05_creperie"
+    },
+    "halles": {
+      "_facility": true,
+      "public_venue": true,
+      "kind": "interior",
+      "label": "室内市场",
+      "bounds": [
+        0,
+        0,
+        52,
+        28
+      ],
+      "camera": {
+        "mode": "explore",
+        "entry_zoom": 1.55,
+        "entry_anchor": [
+          8,
+          7
+        ],
+        "hud_pad": [
+          280,
+          220
+        ]
+      },
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_06_halles"
+    },
+    "hotel": {
+      "_facility": true,
+      "public_venue": true,
+      "kind": "interior",
+      "label": "海滨大酒店",
+      "bounds": [
+        0,
+        0,
+        56,
+        44
+      ],
+      "floors": [
+        "1f",
+        "2f",
+        "3f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_07_hotel"
+    },
+    "model_lot_08_cannery": {
+      "kind": "interior",
+      "label": "lot_08_cannery",
+      "bounds": [
+        0,
+        0,
+        48,
+        40
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_08_cannery",
+      "public_venue": false
+    },
+    "port_warehouse": {
+      "_why": "P1-i East Ocean 玩家纵切：东港门口可进入的真实货仓。首片只承载玩家导航、库存/待卸货可视化与往返，不给 NPC 新增 advertises，避免把展示空间误当经济候选源。",
+      "kind": "interior",
+      "label": "东海货仓",
+      "bounds": [
+        0,
+        0,
+        40,
+        40
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Port_Warehouse_Exterior",
+      "public_venue": false
+    },
+    "test_loft": {
+      "_why": "P1 Gate 用的最小测试 Space：只为验证『Probe 能切 Space/Floor + 返回栈 + 校验器』，不含内容、不参与 Sim。P3 的真建筑（阿丽咖啡馆 1F/2F）按同一合同长出来。",
+      "kind": "interior",
+      "label": "测试阁楼",
+      "bounds": [
+        0,
+        0,
+        26,
+        28
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_09_townhouse",
+      "public_venue": false
+    },
+    "home2": {
+      "_gen": true,
+      "kind": "interior",
+      "label": "可可的临海宅",
+      "bounds": [
+        0,
+        0,
+        26,
+        28
+      ],
+      "floors": [
+        "1f",
+        "2f",
+        "3f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_12_halftimber",
+      "public_venue": false
+    },
+    "model_lot_14_halftimber": {
+      "kind": "interior",
+      "label": "lot_14_halftimber",
+      "bounds": [
+        0,
+        0,
+        26,
+        28
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_14_halftimber",
+      "public_venue": false
+    },
+    "model_lot_15_terrace": {
+      "kind": "interior",
+      "label": "lot_15_terrace",
+      "bounds": [
+        0,
+        0,
+        26,
+        28
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_15_terrace",
+      "public_venue": false
+    },
+    "model_lot_18_terrace": {
+      "kind": "interior",
+      "label": "lot_18_terrace",
+      "bounds": [
+        0,
+        0,
+        26,
+        30
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_18_terrace",
+      "public_venue": false
+    },
+    "model_lot_20_ochre": {
+      "kind": "interior",
+      "label": "lot_20_ochre",
+      "bounds": [
+        0,
+        0,
+        26,
+        30
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_20_ochre",
+      "public_venue": false
+    },
+    "model_lot_22_halftimber": {
+      "kind": "interior",
+      "label": "lot_22_halftimber",
+      "bounds": [
+        0,
+        0,
+        26,
+        30
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_22_halftimber",
+      "public_venue": false
+    },
+    "model_lot_23_townhouse": {
+      "kind": "interior",
+      "label": "lot_23_townhouse",
+      "bounds": [
+        0,
+        0,
+        26,
+        30
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_23_townhouse",
+      "public_venue": false
+    },
+    "model_lot_24_ochre": {
+      "kind": "interior",
+      "label": "lot_24_ochre",
+      "bounds": [
+        0,
+        0,
+        26,
+        30
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_24_ochre",
+      "public_venue": false
+    },
+    "model_lot_25_townhouse": {
+      "kind": "interior",
+      "label": "lot_25_townhouse",
+      "bounds": [
+        0,
+        0,
+        26,
+        28
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_25_townhouse",
+      "public_venue": false
+    },
+    "model_lot_26_ochre": {
+      "kind": "interior",
+      "label": "lot_26_ochre",
+      "bounds": [
+        0,
+        0,
+        26,
+        28
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_26_ochre",
+      "public_venue": false
+    },
+    "model_lot_27_terrace": {
+      "kind": "interior",
+      "label": "lot_27_terrace",
+      "bounds": [
+        0,
+        0,
+        27,
+        28
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_27_terrace",
+      "public_venue": false
+    },
+    "model_lot_29_halftimber": {
+      "kind": "interior",
+      "label": "lot_29_halftimber",
+      "bounds": [
+        0,
+        0,
+        27,
+        28
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_29_halftimber",
+      "public_venue": false
+    },
+    "model_lot_30_townhouse": {
+      "kind": "interior",
+      "label": "lot_30_townhouse",
+      "bounds": [
+        0,
+        0,
+        27,
+        28
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_30_townhouse",
+      "public_venue": false
+    },
+    "model_lot_31_longere": {
+      "kind": "interior",
+      "label": "lot_31_longere",
+      "bounds": [
+        0,
+        0,
+        27,
+        28
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_31_longere",
+      "public_venue": false
+    },
+    "model_lot_33_terrace": {
+      "kind": "interior",
+      "label": "lot_33_terrace",
+      "bounds": [
+        0,
+        0,
+        28,
+        28
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_33_terrace",
+      "public_venue": false
+    },
+    "model_lot_34_halftimber": {
+      "kind": "interior",
+      "label": "lot_34_halftimber",
+      "bounds": [
+        0,
+        0,
+        28,
+        28
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_34_halftimber",
+      "public_venue": false
+    },
+    "model_lot_36_longere": {
+      "kind": "interior",
+      "label": "lot_36_longere",
+      "bounds": [
+        0,
+        0,
+        28,
+        28
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_36_longere",
+      "public_venue": false
+    },
+    "model_lot_37_longere": {
+      "kind": "interior",
+      "label": "lot_37_longere",
+      "bounds": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_37_longere",
+      "public_venue": false
+    },
+    "model_lot_38_halftimber": {
+      "kind": "interior",
+      "label": "lot_38_halftimber",
+      "bounds": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_38_halftimber",
+      "public_venue": false
+    },
+    "model_lot_40_terrace": {
+      "kind": "interior",
+      "label": "lot_40_terrace",
+      "bounds": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_40_terrace",
+      "public_venue": false
+    },
+    "model_lot_10_belleepoque": {
+      "kind": "interior",
+      "label": "lot_10_belleepoque",
+      "bounds": [
+        0,
+        0,
+        27,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_10_belleepoque",
+      "public_venue": false
+    },
+    "model_lot_19_belleepoque": {
+      "kind": "interior",
+      "label": "lot_19_belleepoque",
+      "bounds": [
+        0,
+        0,
+        27,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_19_belleepoque",
+      "public_venue": false
+    },
+    "model_lot_21_belleepoque": {
+      "kind": "interior",
+      "label": "lot_21_belleepoque",
+      "bounds": [
+        0,
+        0,
+        27,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_21_belleepoque",
+      "public_venue": false
+    },
+    "model_lot_35_belleepoque": {
+      "kind": "interior",
+      "label": "lot_35_belleepoque",
+      "bounds": [
+        0,
+        0,
+        27,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_35_belleepoque",
+      "public_venue": false
+    },
+    "model_lot_13_cottage": {
+      "kind": "interior",
+      "label": "lot_13_cottage",
+      "bounds": [
+        0,
+        0,
+        27,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_13_cottage",
+      "public_venue": false
+    },
+    "model_lot_28_cottage": {
+      "kind": "interior",
+      "label": "lot_28_cottage",
+      "bounds": [
+        0,
+        0,
+        27,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_28_cottage",
+      "public_venue": false
+    },
+    "model_lot_32_cottage": {
+      "kind": "interior",
+      "label": "lot_32_cottage",
+      "bounds": [
+        0,
+        0,
+        27,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_32_cottage",
+      "public_venue": false
+    },
+    "model_lot_39_whitehouse": {
+      "kind": "interior",
+      "label": "lot_39_whitehouse",
+      "bounds": [
+        0,
+        0,
+        26,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_39_whitehouse",
+      "public_venue": false
+    },
+    "model_lot_11_longere": {
+      "kind": "interior",
+      "label": "lot_11_longere",
+      "bounds": [
+        0,
+        0,
+        26,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_11_longere",
+      "public_venue": false
+    },
+    "model_lot_16_longere": {
+      "kind": "interior",
+      "label": "lot_16_longere",
+      "bounds": [
+        0,
+        0,
+        26,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_16_longere",
+      "public_venue": false
+    },
+    "model_lot_17_longere": {
+      "kind": "interior",
+      "label": "lot_17_longere",
+      "bounds": [
+        0,
+        0,
+        24,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "lot_17_longere",
+      "public_venue": false
+    }
+  },
+  "portals": [
+    {
+      "id": "p_cafe_door",
+      "kind": "door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          144,
+          116
+        ]
+      },
+      "to": {
+        "space": "cafe",
+        "floor": "1f",
+        "pos": [
+          19,
+          33
+        ]
+      },
+      "bidirectional": true,
+      "access": "public",
+      "traversal_cost": 1
+    },
+    {
+      "id": "p_cafe_stairs",
+      "kind": "stairs",
+      "from": {
+        "space": "cafe",
+        "floor": "1f",
+        "pos": [
+          35,
+          27
+        ]
+      },
+      "to": {
+        "space": "cafe",
+        "floor": "2f",
+        "pos": [
+          35,
+          11
+        ]
+      },
+      "bidirectional": true,
+      "access": "owner",
+      "owner_space": "cafe",
+      "traversal_cost": 2
+    },
+    {
+      "_gen": true,
+      "id": "p_shop_door",
+      "kind": "door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          144,
+          99
+        ]
+      },
+      "to": {
+        "space": "shop",
+        "floor": "1f",
+        "pos": [
+          11,
+          33
+        ]
+      },
+      "bidirectional": true,
+      "access": "public",
+      "traversal_cost": 1
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_main_shop_stairs_1_2",
+      "from": {
+        "space": "shop",
+        "floor": "1f",
+        "pos": [
+          20,
+          27
+        ]
+      },
+      "to": {
+        "space": "shop",
+        "floor": "2f",
+        "pos": [
+          20,
+          11
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "_gen": true,
+      "id": "p_home_door",
+      "kind": "door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          33,
+          89
+        ]
+      },
+      "to": {
+        "space": "home",
+        "floor": "1f",
+        "pos": [
+          11,
+          25
+        ]
+      },
+      "bidirectional": true,
+      "access": "public",
+      "traversal_cost": 1
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_main_home_stairs_1_2",
+      "from": {
+        "space": "home",
+        "floor": "1f",
+        "pos": [
+          20,
+          22
+        ]
+      },
+      "to": {
+        "space": "home",
+        "floor": "2f",
+        "pos": [
+          20,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_main_home2_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          46,
+          86
+        ]
+      },
+      "to": {
+        "space": "model_main_home2",
+        "floor": "1f",
+        "pos": [
+          12,
+          25
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "_gen": true,
+      "id": "p_library_door",
+      "kind": "door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          95,
+          103
+        ]
+      },
+      "to": {
+        "space": "library",
+        "floor": "1f",
+        "pos": [
+          19,
+          29
+        ]
+      },
+      "bidirectional": true,
+      "access": "public",
+      "traversal_cost": 1
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_main_library_stairs_1_2",
+      "from": {
+        "space": "library",
+        "floor": "1f",
+        "pos": [
+          35,
+          24
+        ]
+      },
+      "to": {
+        "space": "library",
+        "floor": "2f",
+        "pos": [
+          35,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "_gen": true,
+      "id": "p_wash_door",
+      "kind": "door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          130,
+          69
+        ]
+      },
+      "to": {
+        "space": "wash",
+        "floor": "1f",
+        "pos": [
+          19,
+          29
+        ]
+      },
+      "bidirectional": true,
+      "access": "public",
+      "traversal_cost": 1
+    },
+    {
+      "_gen": true,
+      "id": "p_work_door",
+      "kind": "door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          157,
+          61
+        ]
+      },
+      "to": {
+        "space": "work",
+        "floor": "1f",
+        "pos": [
+          23,
+          29
+        ]
+      },
+      "bidirectional": true,
+      "access": "public",
+      "traversal_cost": 1
+    },
+    {
+      "_facility": true,
+      "id": "p_chapel_door",
+      "kind": "door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          85,
+          73
+        ]
+      },
+      "to": {
+        "space": "chapel",
+        "floor": "1f",
+        "pos": [
+          15,
+          53
+        ]
+      },
+      "bidirectional": true,
+      "access": "public",
+      "traversal_cost": 1
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_00_chapel_stairs_1_2",
+      "from": {
+        "space": "chapel",
+        "floor": "1f",
+        "pos": [
+          28,
+          42
+        ]
+      },
+      "to": {
+        "space": "chapel",
+        "floor": "2f",
+        "pos": [
+          28,
+          25
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "_facility": true,
+      "id": "p_mairie_door",
+      "kind": "door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          124,
+          99
+        ]
+      },
+      "to": {
+        "space": "mairie",
+        "floor": "1f",
+        "pos": [
+          19,
+          29
+        ]
+      },
+      "bidirectional": true,
+      "access": "public",
+      "traversal_cost": 1
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_01_mairie_stairs_1_2",
+      "from": {
+        "space": "mairie",
+        "floor": "1f",
+        "pos": [
+          35,
+          24
+        ]
+      },
+      "to": {
+        "space": "mairie",
+        "floor": "2f",
+        "pos": [
+          35,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_01_mairie_stairs_2_3",
+      "from": {
+        "space": "mairie",
+        "floor": "2f",
+        "pos": [
+          35,
+          24
+        ]
+      },
+      "to": {
+        "space": "mairie",
+        "floor": "3f",
+        "pos": [
+          35,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_02_windmill_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          19,
+          53
+        ]
+      },
+      "to": {
+        "space": "model_lot_02_windmill",
+        "floor": "1f",
+        "pos": [
+          9,
+          21
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_02_windmill_stairs_1_2",
+      "from": {
+        "space": "model_lot_02_windmill",
+        "floor": "1f",
+        "pos": [
+          16,
+          19
+        ]
+      },
+      "to": {
+        "space": "model_lot_02_windmill",
+        "floor": "2f",
+        "pos": [
+          16,
+          3
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_03_netshed_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          231,
+          33
+        ]
+      },
+      "to": {
+        "space": "model_lot_03_netshed",
+        "floor": "1f",
+        "pos": [
+          11,
+          13
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "_facility": true,
+      "id": "p_bakery_door",
+      "kind": "door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          107,
+          120
+        ]
+      },
+      "to": {
+        "space": "bakery",
+        "floor": "1f",
+        "pos": [
+          15,
+          33
+        ]
+      },
+      "bidirectional": true,
+      "access": "public",
+      "traversal_cost": 1
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_04_bakery_stairs_1_2",
+      "from": {
+        "space": "bakery",
+        "floor": "1f",
+        "pos": [
+          28,
+          27
+        ]
+      },
+      "to": {
+        "space": "bakery",
+        "floor": "2f",
+        "pos": [
+          28,
+          11
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "_facility": true,
+      "id": "p_creperie_door",
+      "kind": "door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          144,
+          131
+        ]
+      },
+      "to": {
+        "space": "creperie",
+        "floor": "1f",
+        "pos": [
+          11,
+          33
+        ]
+      },
+      "bidirectional": true,
+      "access": "public",
+      "traversal_cost": 1
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_05_creperie_stairs_1_2",
+      "from": {
+        "space": "creperie",
+        "floor": "1f",
+        "pos": [
+          20,
+          27
+        ]
+      },
+      "to": {
+        "space": "creperie",
+        "floor": "2f",
+        "pos": [
+          20,
+          11
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "_facility": true,
+      "id": "p_halles_door",
+      "kind": "door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          126,
+          139
+        ]
+      },
+      "to": {
+        "space": "halles",
+        "floor": "1f",
+        "pos": [
+          25,
+          25
+        ]
+      },
+      "bidirectional": true,
+      "access": "public",
+      "traversal_cost": 1
+    },
+    {
+      "_facility": true,
+      "id": "p_hotel_door",
+      "kind": "door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          204,
+          55
+        ]
+      },
+      "to": {
+        "space": "hotel",
+        "floor": "1f",
+        "pos": [
+          27,
+          41
+        ]
+      },
+      "bidirectional": true,
+      "access": "public",
+      "traversal_cost": 1
+    },
+    {
+      "_facility": true,
+      "id": "p_hotel_stairs",
+      "kind": "stairs",
+      "from": {
+        "space": "hotel",
+        "floor": "1f",
+        "pos": [
+          50,
+          33
+        ]
+      },
+      "to": {
+        "space": "hotel",
+        "floor": "2f",
+        "pos": [
+          50,
+          16
+        ]
+      },
+      "bidirectional": true,
+      "access": "public",
+      "traversal_cost": 2
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_07_hotel_stairs_2_3",
+      "from": {
+        "space": "hotel",
+        "floor": "2f",
+        "pos": [
+          50,
+          33
+        ]
+      },
+      "to": {
+        "space": "hotel",
+        "floor": "3f",
+        "pos": [
+          50,
+          16
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_08_cannery_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          175,
+          33
+        ]
+      },
+      "to": {
+        "space": "model_lot_08_cannery",
+        "floor": "1f",
+        "pos": [
+          23,
+          37
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "id": "p_port_warehouse_door",
+      "kind": "door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          209,
+          33
+        ]
+      },
+      "to": {
+        "space": "port_warehouse",
+        "floor": "1f",
+        "pos": [
+          19,
+          37
+        ]
+      },
+      "bidirectional": true,
+      "access": "public",
+      "traversal_cost": 1
+    },
+    {
+      "id": "p_loft_door",
+      "kind": "door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          41,
+          149
+        ]
+      },
+      "to": {
+        "space": "test_loft",
+        "floor": "1f",
+        "pos": [
+          12,
+          25
+        ]
+      },
+      "bidirectional": true,
+      "access": "public",
+      "traversal_cost": 1
+    },
+    {
+      "id": "p_loft_stairs",
+      "kind": "stairs",
+      "from": {
+        "space": "test_loft",
+        "floor": "1f",
+        "pos": [
+          22,
+          22
+        ]
+      },
+      "to": {
+        "space": "test_loft",
+        "floor": "2f",
+        "pos": [
+          22,
+          5
+        ]
+      },
+      "bidirectional": true,
+      "access": "owner",
+      "owner_space": "test_loft",
+      "traversal_cost": 2
+    },
+    {
+      "_gen": true,
+      "id": "p_home2_door",
+      "kind": "door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          53,
+          145
+        ]
+      },
+      "to": {
+        "space": "home2",
+        "floor": "1f",
+        "pos": [
+          12,
+          25
+        ]
+      },
+      "bidirectional": true,
+      "access": "public",
+      "traversal_cost": 1
+    },
+    {
+      "id": "p_home2_stairs",
+      "kind": "stairs",
+      "from": {
+        "space": "home2",
+        "floor": "1f",
+        "pos": [
+          22,
+          22
+        ]
+      },
+      "to": {
+        "space": "home2",
+        "floor": "2f",
+        "pos": [
+          22,
+          5
+        ]
+      },
+      "bidirectional": true,
+      "access": "public",
+      "traversal_cost": 2
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_12_halftimber_stairs_2_3",
+      "from": {
+        "space": "home2",
+        "floor": "2f",
+        "pos": [
+          22,
+          22
+        ]
+      },
+      "to": {
+        "space": "home2",
+        "floor": "3f",
+        "pos": [
+          22,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_14_halftimber_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          65,
+          140
+        ]
+      },
+      "to": {
+        "space": "model_lot_14_halftimber",
+        "floor": "1f",
+        "pos": [
+          12,
+          25
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_14_halftimber_stairs_1_2",
+      "from": {
+        "space": "model_lot_14_halftimber",
+        "floor": "1f",
+        "pos": [
+          22,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_lot_14_halftimber",
+        "floor": "2f",
+        "pos": [
+          22,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_15_terrace_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          77,
+          135
+        ]
+      },
+      "to": {
+        "space": "model_lot_15_terrace",
+        "floor": "1f",
+        "pos": [
+          12,
+          25
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_15_terrace_stairs_1_2",
+      "from": {
+        "space": "model_lot_15_terrace",
+        "floor": "1f",
+        "pos": [
+          22,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_lot_15_terrace",
+        "floor": "2f",
+        "pos": [
+          22,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_18_terrace_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          43,
+          159
+        ]
+      },
+      "to": {
+        "space": "model_lot_18_terrace",
+        "floor": "1f",
+        "pos": [
+          12,
+          27
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_18_terrace_stairs_1_2",
+      "from": {
+        "space": "model_lot_18_terrace",
+        "floor": "1f",
+        "pos": [
+          22,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_lot_18_terrace",
+        "floor": "2f",
+        "pos": [
+          22,
+          6
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_20_ochre_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          55,
+          154
+        ]
+      },
+      "to": {
+        "space": "model_lot_20_ochre",
+        "floor": "1f",
+        "pos": [
+          12,
+          27
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_20_ochre_stairs_1_2",
+      "from": {
+        "space": "model_lot_20_ochre",
+        "floor": "1f",
+        "pos": [
+          22,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_lot_20_ochre",
+        "floor": "2f",
+        "pos": [
+          22,
+          6
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_22_halftimber_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          67,
+          149
+        ]
+      },
+      "to": {
+        "space": "model_lot_22_halftimber",
+        "floor": "1f",
+        "pos": [
+          12,
+          27
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_22_halftimber_stairs_1_2",
+      "from": {
+        "space": "model_lot_22_halftimber",
+        "floor": "1f",
+        "pos": [
+          22,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_lot_22_halftimber",
+        "floor": "2f",
+        "pos": [
+          22,
+          6
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_23_townhouse_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          79,
+          145
+        ]
+      },
+      "to": {
+        "space": "model_lot_23_townhouse",
+        "floor": "1f",
+        "pos": [
+          12,
+          27
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_23_townhouse_stairs_1_2",
+      "from": {
+        "space": "model_lot_23_townhouse",
+        "floor": "1f",
+        "pos": [
+          22,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_lot_23_townhouse",
+        "floor": "2f",
+        "pos": [
+          22,
+          6
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_24_ochre_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          91,
+          140
+        ]
+      },
+      "to": {
+        "space": "model_lot_24_ochre",
+        "floor": "1f",
+        "pos": [
+          12,
+          27
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_24_ochre_stairs_1_2",
+      "from": {
+        "space": "model_lot_24_ochre",
+        "floor": "1f",
+        "pos": [
+          22,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_lot_24_ochre",
+        "floor": "2f",
+        "pos": [
+          22,
+          6
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_25_townhouse_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          59,
+          86
+        ]
+      },
+      "to": {
+        "space": "model_lot_25_townhouse",
+        "floor": "1f",
+        "pos": [
+          12,
+          25
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_26_ochre_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          72,
+          88
+        ]
+      },
+      "to": {
+        "space": "model_lot_26_ochre",
+        "floor": "1f",
+        "pos": [
+          12,
+          25
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_27_terrace_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          34,
+          95
+        ]
+      },
+      "to": {
+        "space": "model_lot_27_terrace",
+        "floor": "1f",
+        "pos": [
+          13,
+          25
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_27_terrace_stairs_1_2",
+      "from": {
+        "space": "model_lot_27_terrace",
+        "floor": "1f",
+        "pos": [
+          23,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_lot_27_terrace",
+        "floor": "2f",
+        "pos": [
+          23,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_29_halftimber_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          47,
+          94
+        ]
+      },
+      "to": {
+        "space": "model_lot_29_halftimber",
+        "floor": "1f",
+        "pos": [
+          13,
+          25
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_29_halftimber_stairs_1_2",
+      "from": {
+        "space": "model_lot_29_halftimber",
+        "floor": "1f",
+        "pos": [
+          23,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_lot_29_halftimber",
+        "floor": "2f",
+        "pos": [
+          23,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_30_townhouse_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          61,
+          94
+        ]
+      },
+      "to": {
+        "space": "model_lot_30_townhouse",
+        "floor": "1f",
+        "pos": [
+          13,
+          25
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_30_townhouse_stairs_1_2",
+      "from": {
+        "space": "model_lot_30_townhouse",
+        "floor": "1f",
+        "pos": [
+          23,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_lot_30_townhouse",
+        "floor": "2f",
+        "pos": [
+          23,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_31_longere_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          74,
+          93
+        ]
+      },
+      "to": {
+        "space": "model_lot_31_longere",
+        "floor": "1f",
+        "pos": [
+          13,
+          25
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_31_longere_stairs_1_2",
+      "from": {
+        "space": "model_lot_31_longere",
+        "floor": "1f",
+        "pos": [
+          23,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_lot_31_longere",
+        "floor": "2f",
+        "pos": [
+          23,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_33_terrace_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          118,
+          186
+        ]
+      },
+      "to": {
+        "space": "model_lot_33_terrace",
+        "floor": "1f",
+        "pos": [
+          13,
+          25
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_34_halftimber_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          132,
+          187
+        ]
+      },
+      "to": {
+        "space": "model_lot_34_halftimber",
+        "floor": "1f",
+        "pos": [
+          13,
+          25
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_36_longere_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          146,
+          189
+        ]
+      },
+      "to": {
+        "space": "model_lot_36_longere",
+        "floor": "1f",
+        "pos": [
+          13,
+          25
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_37_longere_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          115,
+          177
+        ]
+      },
+      "to": {
+        "space": "model_lot_37_longere",
+        "floor": "1f",
+        "pos": [
+          15,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_37_longere_stairs_1_2",
+      "from": {
+        "space": "model_lot_37_longere",
+        "floor": "1f",
+        "pos": [
+          28,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_lot_37_longere",
+        "floor": "2f",
+        "pos": [
+          28,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_38_halftimber_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          131,
+          177
+        ]
+      },
+      "to": {
+        "space": "model_lot_38_halftimber",
+        "floor": "1f",
+        "pos": [
+          15,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_38_halftimber_stairs_1_2",
+      "from": {
+        "space": "model_lot_38_halftimber",
+        "floor": "1f",
+        "pos": [
+          28,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_lot_38_halftimber",
+        "floor": "2f",
+        "pos": [
+          28,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_40_terrace_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          147,
+          177
+        ]
+      },
+      "to": {
+        "space": "model_lot_40_terrace",
+        "floor": "1f",
+        "pos": [
+          15,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_40_terrace_stairs_1_2",
+      "from": {
+        "space": "model_lot_40_terrace",
+        "floor": "1f",
+        "pos": [
+          28,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_lot_40_terrace",
+        "floor": "2f",
+        "pos": [
+          28,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_10_belleepoque_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          207,
+          170
+        ]
+      },
+      "to": {
+        "space": "model_lot_10_belleepoque",
+        "floor": "1f",
+        "pos": [
+          13,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_10_belleepoque_stairs_1_2",
+      "from": {
+        "space": "model_lot_10_belleepoque",
+        "floor": "1f",
+        "pos": [
+          23,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_lot_10_belleepoque",
+        "floor": "2f",
+        "pos": [
+          23,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_19_belleepoque_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          207,
+          157
+        ]
+      },
+      "to": {
+        "space": "model_lot_19_belleepoque",
+        "floor": "1f",
+        "pos": [
+          13,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_19_belleepoque_stairs_1_2",
+      "from": {
+        "space": "model_lot_19_belleepoque",
+        "floor": "1f",
+        "pos": [
+          23,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_lot_19_belleepoque",
+        "floor": "2f",
+        "pos": [
+          23,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_21_belleepoque_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          207,
+          143
+        ]
+      },
+      "to": {
+        "space": "model_lot_21_belleepoque",
+        "floor": "1f",
+        "pos": [
+          13,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_21_belleepoque_stairs_1_2",
+      "from": {
+        "space": "model_lot_21_belleepoque",
+        "floor": "1f",
+        "pos": [
+          23,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_lot_21_belleepoque",
+        "floor": "2f",
+        "pos": [
+          23,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_35_belleepoque_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          207,
+          130
+        ]
+      },
+      "to": {
+        "space": "model_lot_35_belleepoque",
+        "floor": "1f",
+        "pos": [
+          13,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_35_belleepoque_stairs_1_2",
+      "from": {
+        "space": "model_lot_35_belleepoque",
+        "floor": "1f",
+        "pos": [
+          23,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_lot_35_belleepoque",
+        "floor": "2f",
+        "pos": [
+          23,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_13_cottage_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          207,
+          111
+        ]
+      },
+      "to": {
+        "space": "model_lot_13_cottage",
+        "floor": "1f",
+        "pos": [
+          13,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_13_cottage_stairs_1_2",
+      "from": {
+        "space": "model_lot_13_cottage",
+        "floor": "1f",
+        "pos": [
+          23,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_lot_13_cottage",
+        "floor": "2f",
+        "pos": [
+          23,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_28_cottage_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          207,
+          98
+        ]
+      },
+      "to": {
+        "space": "model_lot_28_cottage",
+        "floor": "1f",
+        "pos": [
+          13,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_28_cottage_stairs_1_2",
+      "from": {
+        "space": "model_lot_28_cottage",
+        "floor": "1f",
+        "pos": [
+          23,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_lot_28_cottage",
+        "floor": "2f",
+        "pos": [
+          23,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_32_cottage_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          207,
+          84
+        ]
+      },
+      "to": {
+        "space": "model_lot_32_cottage",
+        "floor": "1f",
+        "pos": [
+          13,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_32_cottage_stairs_1_2",
+      "from": {
+        "space": "model_lot_32_cottage",
+        "floor": "1f",
+        "pos": [
+          23,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_lot_32_cottage",
+        "floor": "2f",
+        "pos": [
+          23,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_39_whitehouse_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          185,
+          165
+        ]
+      },
+      "to": {
+        "space": "model_lot_39_whitehouse",
+        "floor": "1f",
+        "pos": [
+          12,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_39_whitehouse_stairs_1_2",
+      "from": {
+        "space": "model_lot_39_whitehouse",
+        "floor": "1f",
+        "pos": [
+          22,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_lot_39_whitehouse",
+        "floor": "2f",
+        "pos": [
+          22,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_11_longere_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          185,
+          152
+        ]
+      },
+      "to": {
+        "space": "model_lot_11_longere",
+        "floor": "1f",
+        "pos": [
+          12,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_11_longere_stairs_1_2",
+      "from": {
+        "space": "model_lot_11_longere",
+        "floor": "1f",
+        "pos": [
+          22,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_lot_11_longere",
+        "floor": "2f",
+        "pos": [
+          22,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_16_longere_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          185,
+          139
+        ]
+      },
+      "to": {
+        "space": "model_lot_16_longere",
+        "floor": "1f",
+        "pos": [
+          12,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_16_longere_stairs_1_2",
+      "from": {
+        "space": "model_lot_16_longere",
+        "floor": "1f",
+        "pos": [
+          22,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_lot_16_longere",
+        "floor": "2f",
+        "pos": [
+          22,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_lot_17_longere_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          185,
+          86
+        ]
+      },
+      "to": {
+        "space": "model_lot_17_longere",
+        "floor": "1f",
+        "pos": [
+          11,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_lot_17_longere_stairs_1_2",
+      "from": {
+        "space": "model_lot_17_longere",
+        "floor": "1f",
+        "pos": [
+          20,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_lot_17_longere",
+        "floor": "2f",
+        "pos": [
+          20,
+          8
+        ]
+      },
+      "bidirectional": true
+    }
+  ]
+}

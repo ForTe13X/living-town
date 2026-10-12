@@ -1,0 +1,14 @@
+{
+  "schema": "living_town.presentation_camera_overrides.v1",
+  "source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
+  "scope": "Read-only final-render camera recipes. render_delivery.py applies these in memory and never saves the native scene. Geometry, planting and portable exports retain the frozen source.",
+  "shots": {
+    "07_material_detail": {
+      "camera": "07_Material_Closeup",
+      "location_m": [4.7, -1.1, 2.7],
+      "target_m": [7.02, -3.05, 1.55],
+      "lens_mm": 32,
+      "reason": "Place the material-detail camera in the clear facade-side strip, beyond the foreground civic tree crowns, to show the actual plaster/window/granite/paving junction."
+    }
+  }
+}

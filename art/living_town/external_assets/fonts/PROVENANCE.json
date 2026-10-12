@@ -1,0 +1,19 @@
+{
+  "project": "Adobe Source Serif 4",
+  "license": "SIL Open Font License 1.1",
+  "modified": false,
+  "files": [
+    {
+      "file": "SourceSerif4-Regular.ttf",
+      "source": "https://raw.githubusercontent.com/adobe-fonts/source-serif/release/TTF/SourceSerif4-Regular.ttf",
+      "sha256": "e5a4ee6a3d87bb9024796be390c6771e2a0eb1883dae25effaf57ca01668e24b",
+      "bytes": 261868
+    },
+    {
+      "file": "LICENSE.md",
+      "source": "https://raw.githubusercontent.com/adobe-fonts/source-serif/release/LICENSE.md",
+      "sha256": "c21d7293d87b6d7ab1d0229a2f55b77f33a7613a6a4e66f6693d68d7d8d09464",
+      "bytes": 4491
+    }
+  ]
+}
