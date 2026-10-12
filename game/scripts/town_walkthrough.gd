@@ -320,6 +320,9 @@ func inspection(on: bool) -> void:
 	var prompt: Control = life.get("_prompt") as Control
 	if prompt != null and on:
 		prompt.hide()
+	var toast: Control = life.get("_toast") as Control
+	if toast != null and on:
+		toast.hide()
 	if not on:
 		camera_override = false
 
