@@ -7,7 +7,7 @@
   "source_glb_sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c",
   "profile_sha256": "66c800130175677ec9c82ed44d7a1833dca634c602ffcc604e9aa258386d2c5e",
   "projection_sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a",
-  "logical_report_sha256": "b7c1ecce9ab0644c25084834978304f102b124db290295b8a48b164412fec1cd",
+  "logical_report_sha256": "200fae54768f27934698cfd01570b051516794cb99a7b21dac48d86e54c54aca",
   "logical_checks": 36,
   "visual_report_sha256": "f5782bed4c1bdb82e4a17d9fd7095785dd6b6fa5089dd0624140fd6d39e87163",
   "visual_checks": 28,
@@ -437,5 +437,121 @@
     },
     "name": "null_mesh_outdoor_anchor_preserves_projection_and_ground_picking",
     "passed": true
-  }
+  },
+  "supplemental_revalidations": [
+    {
+      "schema": "living_town.bridge.visual_review_revalidation.v1",
+      "generated_utc": "2026-10-12T21:24:18.024665+00:00",
+      "reviewer_kind": "agent",
+      "reviewer": "/root/blender_connection",
+      "status": "PASS",
+      "reason": "The supervised logical suite was rerun after finalization detected its old WorldView3D hash. The new36-check logical report now records all6 current source hashes. This supplement refreshes the logical evidence binding while retaining the original five-image inspection history.",
+      "prior_review": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\review_history\\actual_visual_test_review_report.ec61cf6b28dbe936143552aac015e332e0a1e52beeb6ab7c3dfdf86390fe9d29.json",
+        "bytes": 15788,
+        "sha256": "ec61cf6b28dbe936143552aac015e332e0a1e52beeb6ab7c3dfdf86390fe9d29",
+        "original_image_inspection_generated_utc": "2026-10-12T13:31:31.234732+00:00",
+        "prior_logical_report_sha256": "b7c1ecce9ab0644c25084834978304f102b124db290295b8a48b164412fec1cd"
+      },
+      "logical_report": {
+        "file": "docs/town_bridge/logical_test_report.json",
+        "bytes": 6206,
+        "sha256": "200fae54768f27934698cfd01570b051516794cb99a7b21dac48d86e54c54aca",
+        "checks": 36,
+        "failures": 0,
+        "all_six_source_hashes_match_current_files": true,
+        "source_hashes": {
+          "game/scripts/Main.gd": {
+            "sha256": "2523ae2e5eef10840f4a04d7927d3e8e5ec27cff653e25c645ba1b148350f7c1",
+            "matches_current_file": true
+          },
+          "game/scripts/Sim.gd": {
+            "sha256": "37badd0b2c8f5f9bce91a3988fa34901a1e51b31f3a8757d63f320d63c884a41",
+            "matches_current_file": true
+          },
+          "game/scripts/SpaceGraph.gd": {
+            "sha256": "60fed06c94414336d11413fe89d6ee64aed525997f2315dc274b3b2d921de62a",
+            "matches_current_file": true
+          },
+          "game/scripts/TownWorldProfile.gd": {
+            "sha256": "c41adf7a0a72c780c1cf057c97c56d5f9fb165a4def24ca46b0f1ce10a5c68d5",
+            "matches_current_file": true
+          },
+          "game/scripts/WorldView3D.gd": {
+            "sha256": "c470cf9423086b08c60c18183632773dba467e6e99b50389b1a2347175e975fd",
+            "matches_current_file": true
+          },
+          "game/scripts/town_bridge_test.gd": {
+            "sha256": "c05184c128a37f1e2a21da8da868e97360c0d0a79a6b9e9b2d90059e0ff041a1",
+            "matches_current_file": true
+          }
+        }
+      },
+      "unchanged_visual_report": {
+        "file": "docs/town_bridge/visual_test_report.json",
+        "bytes": 13731,
+        "sha256": "f5782bed4c1bdb82e4a17d9fd7095785dd6b6fa5089dd0624140fd6d39e87163",
+        "checks": 28,
+        "failures": 0,
+        "new_gpu_capture_performed": false
+      },
+      "images": [
+        {
+          "file": "docs/town_bridge/captures/01_owner_upper.png",
+          "bytes": 919454,
+          "sha256": "dabfc2a0926065b26220680197187aa35736f79c04060eb303ccd8fbacb7701d",
+          "matches_original_inspection": true,
+          "matches_unchanged_visual_report": true,
+          "runtime_origin_sha256_matches": true,
+          "actually_reopened_at_supplemental_revalidation": true,
+          "recaptured": false
+        },
+        {
+          "file": "docs/town_bridge/captures/02_fixture_menu.png",
+          "bytes": 974899,
+          "sha256": "7b062124500fff3fada55e7523ba7616d322b47dd9fd9b648e7cd2f8ab2a79f6",
+          "matches_original_inspection": true,
+          "matches_unchanged_visual_report": true,
+          "runtime_origin_sha256_matches": true,
+          "actually_reopened_at_supplemental_revalidation": true,
+          "recaptured": false
+        },
+        {
+          "file": "docs/town_bridge/captures/03_character_walking.png",
+          "bytes": 1041117,
+          "sha256": "d98e7b72e8e91cdddf2428b170362444209fad817f2cccc56246edffa9a9c7ab",
+          "matches_original_inspection": true,
+          "matches_unchanged_visual_report": true,
+          "runtime_origin_sha256_matches": true,
+          "actually_reopened_at_supplemental_revalidation": true,
+          "recaptured": false
+        },
+        {
+          "file": "docs/town_bridge/captures/04_fixture_use_complete.png",
+          "bytes": 1104157,
+          "sha256": "6ad87e84dcdfe8cbeb74b9d90eb2e7ea20131b8cfb0c6cc701e383a08993fb00",
+          "matches_original_inspection": true,
+          "matches_unchanged_visual_report": true,
+          "runtime_origin_sha256_matches": true,
+          "actually_reopened_at_supplemental_revalidation": true,
+          "recaptured": false
+        },
+        {
+          "file": "docs/town_bridge/captures/05_town_exterior.png",
+          "bytes": 1151070,
+          "sha256": "deda892cf135d94d6353d9f9677c9e5551fd1b55d115c3917524f154dabb08f6",
+          "matches_original_inspection": true,
+          "matches_unchanged_visual_report": true,
+          "runtime_origin_sha256_matches": true,
+          "actually_reopened_at_supplemental_revalidation": true,
+          "recaptured": false
+        }
+      ],
+      "original_inspection_timestamp_preserved": true,
+      "actual_reopen_observation": "All five unchanged canonical PNGs were reopened with view_image. Upper-home/local cutaway and neighbor roofs, actual counter menu, visible walking sprite, completed social+42 action and exterior controlled-resident silhouette remain coherent. Existing night-state HUD/panel occlusion and dense plaza label overlap remain the documented limitations. No new concrete visual blocker found.",
+      "no_new_image_capture_claim": true,
+      "gameplay_or_movie_changed": false,
+      "heavy_processes_launched_by_reviewer": false
+    }
+  ]
 }

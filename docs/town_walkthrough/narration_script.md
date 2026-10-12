@@ -1,12 +1,12 @@
 # Living Town: ten-minute walkthrough narration
 
-Script ready; recording and audio measurement pending. This document contains **945 spoken words** in 22 paragraphs across 11 chapters. Target voice: `en-US-AriaNeural`, normal rate (`+0%`). The recording route lasts 600 seconds at 24 frames per second.
+The delivered narration contains **945 spoken words** in 22 measured paragraphs across 11 chapters, using normal-rate `en-US-AriaNeural` (`+0%`). The actual game recording lasts 600 seconds at 24 frames per second. See [the final walkthrough evidence](README.md) for the exact movie, source bindings, technical results, and separate encoded-frame review. Human audio listening is not asserted.
 
-The paragraph windows below are editorial targets. They provide 524 seconds of speech windows and 76 seconds of opening, closing, and inter-paragraph space. At the target allocation, individual paragraphs require approximately 102–115 words per minute. These are word-budget calculations, not measured TTS performance. Root will generate and measure Edge TTS audio and derive subtitles from actual word boundaries.
+The paragraph windows below retain the editorial schedule: 524 seconds of speech windows and 76 seconds of opening, closing, and inter-paragraph space. All 22 current voice takes were generated and measured within those windows; the exact durations and cached audio hashes are in the final voice report. Subtitles use actual Edge TTS word boundaries. Technical audio measurements establish duration, decode integrity, RMS and peak; they do not establish human listening acceptance.
 
 Use only the actual game capture for this walkthrough. At 04:30–07:30, display **INSPECTION — CAMERA ONLY**; moving the camera and opening a cutaway must not relocate a resident. The opening and closing observer views also stay visually distinct from controlled movement. Social outcomes must follow the recorded game; the script does not promise acceptance.
 
-An initial normal-rate Aria take measured 21.768 seconds against a 19-second window. This shorter revision uses the measured cadence as guidance; every revised take still requires actual duration validation. The route remains ten minutes, with more room to observe the game between spoken phrases.
+An earlier, longer normal-rate Aria take measured 21.768 seconds against a 19-second window and was rejected. The current shorter revision passed measurement for every take while preserving the ten-minute route and real observation gaps.
 
 ## Spoken script
 
@@ -176,7 +176,7 @@ Generate each paragraph separately so the chapter route stays stable. Keep a nat
 
 - Authoring inventory: 49 buildings, 89 floors, 561 logical room/circulation zones, 223 activity rooms, 753 furnishing assemblies, 40 stair flights, and 52 specifically planned local landscape trees. Background woodland is separate.
 - Gameplay scope: Only explicitly mapped functional objects belong to the existing simulation; the exact total follows the current compiled profile. Decoration alone does not create an economic or needs action. Shared fixture aliases retain the engine’s original identities.
-- Current merged editable-runtime evidence: 36 logical checks and 28 visual interaction checks. The current CI regression target is 35 legacy scenes; completion must come from the fresh report. The older 11 selected regressions are historical evidence.
+- Current editable-runtime evidence: 36 logical checks and 28 visual interaction checks. The fresh hosted regression report records 35 passing legacy scenes. The older 11 selected regressions are historical evidence.
 - Packaged Windows evidence: normal Main entry, actual GPU boot/render capture, and binary hash bindings. It does not repeat the full source-runtime interaction suite.
 - Outdoor movement uses authored grid/profile blockers and terrain heights. No claim of a general imported collision system, navmesh, streaming, LODs, building-code certification, natural hydrology, finished balance, or broad hardware performance.
 - Engine-neutral art sources/exports and their licenses remain separately delivered. The current bridge consumes the optimized staged model, not the optional high-detail town export.

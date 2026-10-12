@@ -11,7 +11,7 @@
 [播放完整演示（MP4）](docs/media/gameplay-tour.mp4) · [录制说明与章节](docs/249-gameplay-tour.md) · [地图蓝图](analysis/247/neighborhood-blueprint.png)
 
 **Blender 3D 小镇**：新增可探索的滨海地形、49 栋建筑、分层室内与原有居民。
-[十分钟配音导览与下载](docs/town_walkthrough/RECORDING.md) · [运行与空间契约](docs/town_bridge/README.md)。
+[十分钟配音导览与下载](docs/town_walkthrough/README.md) · [运行与空间契约](docs/town_bridge/README.md)。
 3D 模型通过校验和验证的 Release 下载，未放入普通 Git 历史。Windows 使用 `./tools/run-town3d.ps1`；原像素地图使用 `./tools/run-town3d.ps1 -Legacy`。
 
 ## 最近更新

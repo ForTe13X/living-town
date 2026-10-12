@@ -1,0 +1,120 @@
+[Script Info]
+Title: Living Town actual-game walkthrough
+ScriptType: v4.00+
+PlayResX: 1280
+PlayResY: 864
+WrapStyle: 2
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Arial,25,&H00FFFFFF,&H00FFFFFF,&H00101720,&H00101720,0,0,0,0,100,100,0,0,1,2,0.7,2,48,48,18,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:02.05,0:00:03.65,Default,,0,0,0,,Welcome to Living Town.
+Dialogue: 0,0:00:04.32,0:00:09.25,Default,,0,0,0,,This is the running game, connecting the\Ncoastal model to the existing life simulation.
+Dialogue: 0,0:00:09.92,0:00:14.53,Default,,0,0,0,,Forty-nine buildings contain eighty-nine\Nfloors, linked by streets, courts,
+Dialogue: 0,0:00:14.55,0:00:17.26,Default,,0,0,0,,homes, workshops, and a small harbor.
+Dialogue: 0,0:00:23.05,0:00:26.51,Default,,0,0,0,,We will play as one resident,\Nthen inspect the architecture.
+Dialogue: 0,0:00:27.18,0:00:31.85,Default,,0,0,0,,Pale walls, dark roofs, stone paving,\Nand planted edges give this town its
+Dialogue: 0,0:00:31.86,0:00:36.46,Default,,0,0,0,,coastal character. Camera-only\Ninspection will be labelled clearly,
+Dialogue: 0,0:00:36.56,0:00:38.96,Default,,0,0,0,,separate from the resident's actual movement.
+Dialogue: 0,0:00:50.05,0:00:52.70,Default,,0,0,0,,We choose Aria through the existing life mode.
+Dialogue: 0,0:00:53.38,0:00:57.80,Default,,0,0,0,,Her upper-floor rooms sit above the\Ncafé, with a real route downstairs.
+Dialogue: 0,0:00:58.47,0:01:03.06,Default,,0,0,0,,The portrait, name, job, money,\Nwishes, and needs belong to the same
+Dialogue: 0,0:01:03.07,0:01:07.23,Default,,0,0,0,,resident as before. Her\Nidentity and rules are retained.
+Dialogue: 0,0:01:14.05,0:01:18.66,Default,,0,0,0,,The bars track hunger, energy,\Nsocial contact, fun, and hygiene.
+Dialogue: 0,0:01:19.33,0:01:21.05,Default,,0,0,0,,Watch them beside the clock.
+Dialogue: 0,0:01:21.72,0:01:26.37,Default,,0,0,0,,Actions take time. Use the\Nkeyboard or a ground click to walk,
+Dialogue: 0,0:01:26.40,0:01:28.31,Default,,0,0,0,,and E to interact nearby.
+Dialogue: 0,0:01:29.00,0:01:32.15,Default,,0,0,0,,Zoom changes the view without changing Aria's state.
+Dialogue: 0,0:01:42.05,0:01:46.51,Default,,0,0,0,,Walls, furnishings, and stair\Nopenings define where Aria can stand.
+Dialogue: 0,0:01:47.18,0:01:51.66,Default,,0,0,0,,The interior grid is finer than the\Noutdoor grid, allowing reachable approaches
+Dialogue: 0,0:01:51.67,0:01:53.40,Default,,0,0,0,,beside beds and counters.
+Dialogue: 0,0:01:54.08,0:01:56.81,Default,,0,0,0,,A click through a wall cannot create a shortcut.
+Dialogue: 0,0:01:57.48,0:02:00.07,Default,,0,0,0,,Movement must find a legal route around it.
+Dialogue: 0,0:02:09.05,0:02:13.07,Default,,0,0,0,,The stair transition has brought Aria\Ndownstairs through a legal opening.
+Dialogue: 0,0:02:13.76,0:02:16.71,Default,,0,0,0,,Private stairs are not available to every resident.
+Dialogue: 0,0:02:17.38,0:02:21.30,Default,,0,0,0,,At the café table, a meal uses\Nthe existing action system.
+Dialogue: 0,0:02:21.98,0:02:25.31,Default,,0,0,0,,We watch for actual completion\Nand its effect on her needs.
+Dialogue: 0,0:02:37.05,0:02:39.21,Default,,0,0,0,,We click the visible café counter.
+Dialogue: 0,0:02:39.90,0:02:44.50,Default,,0,0,0,,The furnishing resolves to an existing\Nfunctional object and a reachable approach beside
+Dialogue: 0,0:02:44.51,0:02:48.06,Default,,0,0,0,,it. Its menu offers permitted actions.
+Dialogue: 0,0:02:48.73,0:02:51.62,Default,,0,0,0,,Aria walks into place and takes time to act.
+Dialogue: 0,0:02:52.30,0:02:55.67,Default,,0,0,0,,The simulation records the\Nresult in her state and history.
+Dialogue: 0,0:03:06.05,0:03:09.43,Default,,0,0,0,,The town has seven hundred and\Nfifty-three furnishing assemblies.
+Dialogue: 0,0:03:10.11,0:03:13.31,Default,,0,0,0,,Only mapped functional objects offer game actions.
+Dialogue: 0,0:03:13.98,0:03:17.83,Default,,0,0,0,,Decorative shelves and pots do\Nnot automatically offer actions.
+Dialogue: 0,0:03:18.51,0:03:23.36,Default,,0,0,0,,Social attempts retain the existing access\Nchecks and the other resident's response.
+Dialogue: 0,0:03:24.03,0:03:27.18,Default,,0,0,0,,Jobs and wages retain their existing engine rules.
+Dialogue: 0,0:03:37.05,0:03:39.56,Default,,0,0,0,,Aria leaves through the real café doorway.
+Dialogue: 0,0:03:40.25,0:03:45.01,Default,,0,0,0,,Her original directional character sheets\Nnow appear inside a three-dimensional world.
+Dialogue: 0,0:03:45.68,0:03:49.93,Default,,0,0,0,,The body keeps normal depth, so roofs\Nand trees can pass in front of it.
+Dialogue: 0,0:03:50.62,0:03:55.10,Default,,0,0,0,,Ground markers and interaction prompts\Nremain attached to her actual position.
+Dialogue: 0,0:04:04.05,0:04:08.98,Default,,0,0,0,,When geometry blocks the controlled resident,\Na gold silhouette keeps Aria readable.
+Dialogue: 0,0:04:09.67,0:04:12.02,Default,,0,0,0,,It appears only during that obstruction.
+Dialogue: 0,0:04:12.70,0:04:17.46,Default,,0,0,0,,The normal sprite still obeys depth, and\Nthe silhouette disappears in clear views.
+Dialogue: 0,0:04:18.15,0:04:21.63,Default,,0,0,0,,The awning and roof remain in\Nplace as we walk toward the plaza.
+Dialogue: 0,0:04:32.05,0:04:36.57,Default,,0,0,0,,This is architectural inspection:\Ncamera movement, not Aria's travel.
+Dialogue: 0,0:04:37.26,0:04:42.08,Default,,0,0,0,,The town has five hundred and sixty-one\Nlogical zones, including circulation.
+Dialogue: 0,0:04:42.76,0:04:45.48,Default,,0,0,0,,Two hundred and twenty-three are activity rooms.
+Dialogue: 0,0:04:46.16,0:04:50.71,Default,,0,0,0,,Halls, landings, and stairs connect\Nthose rooms, giving each interior a
+Dialogue: 0,0:04:50.72,0:04:54.81,Default,,0,0,0,,usable layout. Each group is named and inspectable.
+Dialogue: 0,0:05:01.05,0:05:05.83,Default,,0,0,0,,Look for beds and storage, library shelves\Nand tables, and enclosed bathrooms in
+Dialogue: 0,0:05:05.85,0:05:08.85,Default,,0,0,0,,hotel suites, with bedroom privacy preserved.
+Dialogue: 0,0:05:09.52,0:05:13.13,Default,,0,0,0,,Kitchens have sinks, hobs, and distinct refrigerators.
+Dialogue: 0,0:05:13.82,0:05:18.31,Default,,0,0,0,,Room and floor groups let a cutaway expose\None interior while neighboring roofs remain
+Dialogue: 0,0:05:18.32,0:05:22.60,Default,,0,0,0,,intact. These authored dimensions\Ndo not establish building-code
+Dialogue: 0,0:05:22.61,0:05:23.72,Default,,0,0,0,,approval.
+Dialogue: 0,0:05:32.05,0:05:33.93,Default,,0,0,0,,We remain in inspection mode.
+Dialogue: 0,0:05:34.62,0:05:39.20,Default,,0,0,0,,Residential rows turn, streets\Nbend, and passages lead into courts.
+Dialogue: 0,0:05:39.87,0:05:44.45,Default,,0,0,0,,The town has actual surface elevations\Nand gently graded paths rather than a flat
+Dialogue: 0,0:05:44.46,0:05:48.92,Default,,0,0,0,,board. Roads, plazas, and building pads meet entrance
+Dialogue: 0,0:05:48.93,0:05:53.35,Default,,0,0,0,,thresholds. The harbor sits at\Nthe coastal edge of the same site.
+Dialogue: 0,0:06:01.05,0:06:05.71,Default,,0,0,0,,This is a fictional engineered site,\Nnot a surveyed coast or hydraulic study.
+Dialogue: 0,0:06:06.38,0:06:11.10,Default,,0,0,0,,Terrain heights ground residents, while authored\Nblockers exclude building footprints and
+Dialogue: 0,0:06:11.11,0:06:15.53,Default,,0,0,0,,water. The movement contract\Nuses the game's spatial grid.
+Dialogue: 0,0:06:16.21,0:06:20.57,Default,,0,0,0,,Another engine would still need its own\Ndecisions about physics, collision, and
+Dialogue: 0,0:06:20.58,0:06:21.69,Default,,0,0,0,,navigation.
+Dialogue: 0,0:06:32.05,0:06:36.71,Default,,0,0,0,,The park pond cuts into the terrain, with\Nlevel water above a lower bed and graded
+Dialogue: 0,0:06:36.72,0:06:41.05,Default,,0,0,0,,banks. A continuous shore, reeds, benches, and a
+Dialogue: 0,0:06:41.06,0:06:43.21,Default,,0,0,0,,connected loop make the edge readable.
+Dialogue: 0,0:06:43.88,0:06:46.06,Default,,0,0,0,,This is an authored ornamental pond.
+Dialogue: 0,0:06:46.73,0:06:51.21,Default,,0,0,0,,Movement rules keep residents on accessible\Nground beside the water, with planted
+Dialogue: 0,0:06:51.22,0:06:52.33,Default,,0,0,0,,edges.
+Dialogue: 0,0:07:01.05,0:07:05.38,Default,,0,0,0,,Fifty-two planned landscape trees\Nshape streets, courts, and the park.
+Dialogue: 0,0:07:06.06,0:07:08.51,Default,,0,0,0,,Broad crowns and willows frame the pond.
+Dialogue: 0,0:07:09.18,0:07:13.96,Default,,0,0,0,,Flower beds, garden islands, low\Nplanting, and coastal grasses add smaller
+Dialogue: 0,0:07:13.97,0:07:18.51,Default,,0,0,0,,detail. Openings preserve doors, paths, and views.
+Dialogue: 0,0:07:19.18,0:07:23.08,Default,,0,0,0,,The aim is shade and garden enclosure\Nalong useful walking routes.
+Dialogue: 0,0:07:23.76,0:07:26.35,Default,,0,0,0,,Background woodland adds distant enclosure.
+Dialogue: 0,0:07:32.05,0:07:34.63,Default,,0,0,0,,We return to Aria for a social attempt.
+Dialogue: 0,0:07:35.31,0:07:37.73,Default,,0,0,0,,A visible neighbor must also be reachable.
+Dialogue: 0,0:07:38.41,0:07:42.73,Default,,0,0,0,,Walls, floors, and access rules\Nmatter even when both people appear on
+Dialogue: 0,0:07:42.75,0:07:47.15,Default,,0,0,0,,screen. Acceptance or refusal\Nbelongs to the running game.
+Dialogue: 0,0:07:47.82,0:07:50.75,Default,,0,0,0,,Read the event and need changes to see the outcome.
+Dialogue: 0,0:07:59.05,0:08:00.77,Default,,0,0,0,,Now we enable autonomy.
+Dialogue: 0,0:08:01.46,0:08:06.35,Default,,0,0,0,,The existing decision system chooses\Navailable actions according to needs, jobs,
+Dialogue: 0,0:08:06.36,0:08:08.55,Default,,0,0,0,,access, and circumstances.
+Dialogue: 0,0:08:09.22,0:08:13.92,Default,,0,0,0,,The view follows the movement and activity;\Nit does not create a second simulation.
+Dialogue: 0,0:08:14.60,0:08:19.21,Default,,0,0,0,,This logic backend runs locally without\Na downloaded language model or required
+Dialogue: 0,0:08:19.22,0:08:20.63,Default,,0,0,0,,generated dialogue.
+Dialogue: 0,0:08:27.05,0:08:31.17,Default,,0,0,0,,We save with F five, let the game\Ncontinue, and load with F eight.
+Dialogue: 0,0:08:31.86,0:08:35.86,Default,,0,0,0,,Loading rebuilds the view from the\Nsaved simulation and resident state.
+Dialogue: 0,0:08:36.55,0:08:39.88,Default,,0,0,0,,The three-dimensional profile\Nuses a separate quicksave.
+Dialogue: 0,0:08:40.56,0:08:45.22,Default,,0,0,0,,Incompatible spatial data is rejected\Ninstead of loading into a different layout.
+Dialogue: 0,0:08:54.05,0:08:55.71,Default,,0,0,0,,The art remains portable.
+Dialogue: 0,0:08:56.40,0:09:00.85,Default,,0,0,0,,Blender sources and engine-neutral\Nexports keep named buildings, floors,
+Dialogue: 0,0:09:00.87,0:09:03.83,Default,,0,0,0,,rooms, materials, and furnishing groups.
+Dialogue: 0,0:09:04.51,0:09:07.31,Default,,0,0,0,,This bridge binds them to its spatial profile.
+Dialogue: 0,0:09:07.98,0:09:12.63,Default,,0,0,0,,Frozen file hashes, license credits,\Nand test evidence record the delivered
+Dialogue: 0,0:09:12.65,0:09:16.16,Default,,0,0,0,,versions, leaving the town usable by other consumers.
+Dialogue: 0,0:09:22.05,0:09:26.40,Default,,0,0,0,,The editable runtime passed thirty-six\Nlogical checks and twenty-eight visual
+Dialogue: 0,0:09:26.41,0:09:30.37,Default,,0,0,0,,checks. Legacy regression scenes also passed.
+Dialogue: 0,0:09:31.05,0:09:35.68,Default,,0,0,0,,The Windows package separately passed normal\Nlaunch and screen-render checks, rather than
+Dialogue: 0,0:09:35.70,0:09:37.36,Default,,0,0,0,,the full interaction suite.
+Dialogue: 0,0:09:42.05,0:09:47.00,Default,,0,0,0,,This bridge connects places, retained\Nresidents, and observable consequences.
+Dialogue: 0,0:09:47.68,0:09:51.62,Default,,0,0,0,,It does not establish finished\Nbalance or broad hardware performance.
+Dialogue: 0,0:09:52.31,0:09:54.12,Default,,0,0,0,,The full town loads together.
+Dialogue: 0,0:09:54.80,0:09:57.95,Default,,0,0,0,,Inspect movement, actions, and saved life.

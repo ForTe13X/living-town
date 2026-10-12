@@ -1,13 +1,13 @@
 {
   "schema": "living_town.bridge.final_source_freeze.v1",
   "status": "PASS",
-  "freeze_id": "town-bridge-final-2026-10-12",
-  "generated_utc": "2026-10-12T11:43:01.800181+00:00",
-  "base_git_head": "f204276b3a1841db870983f8ef040dc5df2b454b",
-  "profile_sha256": "6c3516fc10ce2b0622072e84a96750bd46965b46978e3a1be5284490a63c6202",
-  "projection_sha256": "b699c9711c02c0d9f8f2e62e65a9b0cb6b3ce4d38ddf039697247da5b85629ad",
+  "freeze_id": "town-walkthrough-final-2026-10-12",
+  "generated_utc": "2026-10-12T21:24:52.068377+00:00",
+  "base_git_head": "b63bfb1807824f8d57d550003887dc3e81e71950",
+  "profile_sha256": "66c800130175677ec9c82ed44d7a1833dca634c602ffcc604e9aa258386d2c5e",
+  "projection_sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a",
   "source_glb_sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c",
-  "file_count": 609,
+  "file_count": 890,
   "files": [
     {
       "file": "LICENSE",
@@ -16,8 +16,8 @@
     },
     {
       "file": "THIRD_PARTY_NOTICES.md",
-      "bytes": 3582,
-      "sha256": "f61b55df739e6333a87de9576b6f7583557d228e79ab2bce91543b5c27a82d96"
+      "bytes": 3853,
+      "sha256": "09135224fc96d430c332d1b6538cf34cd297a8c84a05a38f21903e273ea69955"
     },
     {
       "file": "art/living_town/external_assets/fonts/LICENSE.md",
@@ -36,43 +36,43 @@
     },
     {
       "file": "docs/town_bridge/README.md",
-      "bytes": 5714,
-      "sha256": "9498b3f1c36fedc9ecb077b0227a7fbc4358896feae615fad193027e1bbd2900"
+      "bytes": 7360,
+      "sha256": "756bcb5616ee24d872ab8abfe82ff814ef00d47ec915320410240f47743ce820"
     },
     {
       "file": "docs/town_bridge/actual_visual_test_review_report.json",
-      "bytes": 7552,
-      "sha256": "074d7cffde80702d7e032d4ee197a98630dde88923373caf3dfc1ec7b5e2f4b0"
+      "bytes": 21569,
+      "sha256": "17ff6fbba71f860dc90797bd76b6e3b0db32336094aac6545a94dbc67b822386"
     },
     {
       "file": "docs/town_bridge/captures/01_owner_upper.png",
-      "bytes": 803162,
-      "sha256": "45d54f05104ae73a27ad58b3aaad0bebafd24141751738e5ea5dac35414a0bf1"
+      "bytes": 919454,
+      "sha256": "dabfc2a0926065b26220680197187aa35736f79c04060eb303ccd8fbacb7701d"
     },
     {
       "file": "docs/town_bridge/captures/02_fixture_menu.png",
-      "bytes": 853318,
-      "sha256": "cd1ca508264bb5f17bace411bd87e608b615e6f8106ed1bcfbfc086cba81909f"
+      "bytes": 974899,
+      "sha256": "7b062124500fff3fada55e7523ba7616d322b47dd9fd9b648e7cd2f8ab2a79f6"
     },
     {
       "file": "docs/town_bridge/captures/03_character_walking.png",
-      "bytes": 905129,
-      "sha256": "2ce8407ecdac2b9279e44feb230fac4a69f753a9835db283b3d54ec4f67d01fd"
+      "bytes": 1041117,
+      "sha256": "d98e7b72e8e91cdddf2428b170362444209fad817f2cccc56246edffa9a9c7ab"
     },
     {
       "file": "docs/town_bridge/captures/04_fixture_use_complete.png",
-      "bytes": 962880,
-      "sha256": "e486a9ea07cba3709d52dfbb704c213388a8c4de53b559aa615c75f463532cba"
+      "bytes": 1104157,
+      "sha256": "6ad87e84dcdfe8cbeb74b9d90eb2e7ea20131b8cfb0c6cc701e383a08993fb00"
     },
     {
       "file": "docs/town_bridge/captures/05_town_exterior.png",
-      "bytes": 1028200,
-      "sha256": "053062b2938096d7d3929657033595d79f6b406f7d0b2bc58bed63228f2a1453"
+      "bytes": 1151070,
+      "sha256": "deda892cf135d94d6353d9f9677c9e5551fd1b55d115c3917524f154dabb08f6"
     },
     {
       "file": "docs/town_bridge/captures/06_windows_exported_game.png",
-      "bytes": 799595,
-      "sha256": "95f43353add9d3265aff0671ac263c1ac029bd746445c3bf50ec48c953042dcf"
+      "bytes": 917933,
+      "sha256": "450473fb5a9ad5c108dba5d42a606c0d6ce5830a5eba8845d5b020c6720f9528"
     },
     {
       "file": "docs/town_bridge/licenses/GODOT_COPYRIGHT.txt",
@@ -91,8 +91,8 @@
     },
     {
       "file": "docs/town_bridge/logical_test_report.json",
-      "bytes": 4586,
-      "sha256": "5fe663e8391467c52fdb253a2e9e5f0a9056027ae56e3ae7e461f90aaf2d2b6f"
+      "bytes": 6206,
+      "sha256": "200fae54768f27934698cfd01570b051516794cb99a7b21dac48d86e54c54aca"
     },
     {
       "file": "docs/town_bridge/optional_backend_test_report.json",
@@ -101,23 +101,388 @@
     },
     {
       "file": "docs/town_bridge/profile_compile_report.json",
-      "bytes": 122481,
-      "sha256": "fa0502d1675e18f4bb7efeb94ad13b87fe67134552b3206894f711aa365ed6b3"
+      "bytes": 122700,
+      "sha256": "340bb8a3369a0775d1e7d14a09058239afbef5870acef38c4414cfa3c5cdb89a"
     },
     {
       "file": "docs/town_bridge/regression_test_report.json",
-      "bytes": 1433,
-      "sha256": "e825c9a7a48c19241c801a5a41b362b1cbc80fafa6951833a44f0138fc568a89"
+      "bytes": 35001,
+      "sha256": "c0d0830df1cc484c939b4ea8d2b1672142e59c4d815dc17fe212a2ad1bc1501d"
     },
     {
       "file": "docs/town_bridge/visual_test_report.json",
-      "bytes": 13349,
-      "sha256": "6ed4f4aec324fc0ab7daf4bf8bb12a566c9602be84d63fe7105c8da406582257"
+      "bytes": 13731,
+      "sha256": "f5782bed4c1bdb82e4a17d9fd7095785dd6b6fa5089dd0624140fd6d39e87163"
     },
     {
       "file": "docs/town_bridge/windows_export_verification.json",
-      "bytes": 3396,
-      "sha256": "89bfc5b02544355046b523b002cf06d6e49cf1e64ba8d76d281bbebcfa4a2491"
+      "bytes": 14140,
+      "sha256": "e4556752a04c60999ff2ccd630c338ca6aa56787b71d15fee469659a47333c95"
+    },
+    {
+      "file": "docs/town_walkthrough/ASSET_RELEASE.md",
+      "bytes": 1906,
+      "sha256": "b364407cedd448e161f95c2bdc8142d9eb3508b1b579409380bb022f857c58de"
+    },
+    {
+      "file": "game/addons/coastal_authoring/coastal_authoring_plugin.gd",
+      "bytes": 9835,
+      "sha256": "7d567dfceb335d98d794a52dc2eb7a959ed978155f9d7191171b144cd37ad25c"
+    },
+    {
+      "file": "game/addons/coastal_authoring/plugin.cfg",
+      "bytes": 203,
+      "sha256": "8cdaf4e2d589a4a3362036dd84eccab69a4280b2db38e4b387f764bdc4ebf999"
+    },
+    {
+      "file": "game/addons/worldgen/adapters/coastal/coastal_world_operator.gd",
+      "bytes": 3179,
+      "sha256": "c855eb24400495a9ae570f8a19daaa4ca4a922834324750f9c1cd3999605ab64"
+    },
+    {
+      "file": "game/addons/worldgen/builds/coastal_neighborhood.world.json",
+      "bytes": 41391,
+      "sha256": "fcf32a5ff4e3b422f527f0c033bebee2f19717361861234234d6e77b64aef829"
+    },
+    {
+      "file": "game/addons/worldgen/builds/inland_neighborhood.world.json",
+      "bytes": 12090,
+      "sha256": "fa7e32a47069ac9d086d185a995ebd0e58b207587df3077561a0b9403bf525fa"
+    },
+    {
+      "file": "game/addons/worldgen/builds/objects/0b/0b72c3d488f97ee038bcff426d208a370affe957df2d6fc8b33c51c9bd480caf.json",
+      "bytes": 41584,
+      "sha256": "0b72c3d488f97ee038bcff426d208a370affe957df2d6fc8b33c51c9bd480caf"
+    },
+    {
+      "file": "game/addons/worldgen/builds/objects/10/10f2c38506c270db370fe2b7ca16634de84d35da38de0606040bce0d92894d05.json",
+      "bytes": 1312,
+      "sha256": "10f2c38506c270db370fe2b7ca16634de84d35da38de0606040bce0d92894d05"
+    },
+    {
+      "file": "game/addons/worldgen/builds/objects/16/16f358461499f019d826b0cb8833918caf8a5d025101b133e3ca144e52b7e37f.json",
+      "bytes": 41350,
+      "sha256": "16f358461499f019d826b0cb8833918caf8a5d025101b133e3ca144e52b7e37f"
+    },
+    {
+      "file": "game/addons/worldgen/builds/objects/1a/1a05613b7d2c03dd333c7669d587b1f5b7884433ade73ba5fb3bd3e355db872b.json",
+      "bytes": 5177,
+      "sha256": "1a05613b7d2c03dd333c7669d587b1f5b7884433ade73ba5fb3bd3e355db872b"
+    },
+    {
+      "file": "game/addons/worldgen/builds/objects/45/452bf8944687228e0501ace36b230cc64cd9d9addfc01285612b6ff84ec56878.json",
+      "bytes": 41582,
+      "sha256": "452bf8944687228e0501ace36b230cc64cd9d9addfc01285612b6ff84ec56878"
+    },
+    {
+      "file": "game/addons/worldgen/builds/objects/51/51d270f930ecee185cdc81624b051c5e663fff5befa412493ca2db8f630d5ca8.json",
+      "bytes": 12089,
+      "sha256": "51d270f930ecee185cdc81624b051c5e663fff5befa412493ca2db8f630d5ca8"
+    },
+    {
+      "file": "game/addons/worldgen/builds/objects/5a/5a3ee23e2b7d6a77dad6d5c3324d2845ebf6302fbc12b677ef909b966e97c3e9.json",
+      "bytes": 3544,
+      "sha256": "5a3ee23e2b7d6a77dad6d5c3324d2845ebf6302fbc12b677ef909b966e97c3e9"
+    },
+    {
+      "file": "game/addons/worldgen/builds/objects/8c/8c398536eb6bff943e03fbd129ce64b11a3ea48502b3a10dbe07a857e8e06744.json",
+      "bytes": 1277,
+      "sha256": "8c398536eb6bff943e03fbd129ce64b11a3ea48502b3a10dbe07a857e8e06744"
+    },
+    {
+      "file": "game/addons/worldgen/builds/objects/9f/9fc12d10430003fdf8cbf75914178aa9988ecef3dbf3174557eb1f0c086e80b3.json",
+      "bytes": 41390,
+      "sha256": "9fc12d10430003fdf8cbf75914178aa9988ecef3dbf3174557eb1f0c086e80b3"
+    },
+    {
+      "file": "game/addons/worldgen/builds/objects/ae/ae1ea5d8321ee0b160c8eddc5cd400e0df2d47224af425a08c4927d80f1904ec.json",
+      "bytes": 1281,
+      "sha256": "ae1ea5d8321ee0b160c8eddc5cd400e0df2d47224af425a08c4927d80f1904ec"
+    },
+    {
+      "file": "game/addons/worldgen/builds/objects/e4/e4d9e5f0c305a9b78bfde23777216057240472117be5140ba0cdde6ea03914d5.json",
+      "bytes": 12067,
+      "sha256": "e4d9e5f0c305a9b78bfde23777216057240472117be5140ba0cdde6ea03914d5"
+    },
+    {
+      "file": "game/addons/worldgen/builds/standalone_cafe.world.json",
+      "bytes": 3545,
+      "sha256": "5ef867f6f5d9bcc18b2d3a2e3bdaf5993bae58996a353c4b11316c328fd1c786"
+    },
+    {
+      "file": "game/addons/worldgen/consumers/ai_town_adapter/action_bindings.json",
+      "bytes": 436,
+      "sha256": "053707aa012ffdab583737969714d59097329f5ee45050079157425fd7e59a93"
+    },
+    {
+      "file": "game/addons/worldgen/consumers/ai_town_adapter/fixtures/host_action_bindings.json",
+      "bytes": 1674,
+      "sha256": "85cf59268e7df483287a8809dbb704846917ea7da04787330910af40bd698368"
+    },
+    {
+      "file": "game/addons/worldgen/consumers/ai_town_adapter/fixtures/identity_ledger.json",
+      "bytes": 2286,
+      "sha256": "43c51ea849160cbe790baebbf8ceda614599baf072a754c72c32a42b9bcabbd9"
+    },
+    {
+      "file": "game/addons/worldgen/consumers/ai_town_adapter/fixtures/lt22_cafe_street.world.json",
+      "bytes": 12830,
+      "sha256": "60dcb7f3eeb14c990c4fc1d4629d810c80c22c16a55d8ef741dedfa8d6f7efa7"
+    },
+    {
+      "file": "game/addons/worldgen/consumers/ai_town_adapter/fixtures/native_inventory.json",
+      "bytes": 17365,
+      "sha256": "d6b21f18986d2dbde9fc921ce49583df0d2b4c2f6cf7b72b585b4e0b33a9c769"
+    },
+    {
+      "file": "game/addons/worldgen/consumers/ai_town_adapter/frozen_cafe_street_queries.gd",
+      "bytes": 7757,
+      "sha256": "b036b53ecd122b4c6a2eed56e4ec3361fd7bdb5e8729939e991fd99cc2185f48"
+    },
+    {
+      "file": "game/addons/worldgen/consumers/ai_town_adapter/migrations.gd",
+      "bytes": 12337,
+      "sha256": "10b03cca419a24cf869eea37adc6443ef3f5ec307687e309d18caeb9c5b0b5f1"
+    },
+    {
+      "file": "game/addons/worldgen/consumers/ai_town_adapter/space_queries.gd",
+      "bytes": 19564,
+      "sha256": "a07d0923015b22ff14da0352902c298f11b9716e03dd60e9eb5b8e19f84d555d"
+    },
+    {
+      "file": "game/addons/worldgen/contracts/authoring_command.schema.json",
+      "bytes": 5436,
+      "sha256": "dc2b45ec3a423ffdc7e1d6f08889b47d9eaa88b762bd95272d4831a2a8bdb158"
+    },
+    {
+      "file": "game/addons/worldgen/contracts/recipe.schema.json",
+      "bytes": 1145,
+      "sha256": "c86c36faf88a53e4d6ac7cb9c234d9a467f95f1b0842780d716aaad3a7edccaf"
+    },
+    {
+      "file": "game/addons/worldgen/contracts/world_package.schema.json",
+      "bytes": 1233,
+      "sha256": "27d6d066b84d702df4937bdf54dfe26928fd216cd5d77aa334fd643fe8b73725"
+    },
+    {
+      "file": "game/addons/worldgen/contracts/worldgen_approval.schema.json",
+      "bytes": 742,
+      "sha256": "9d4ac6507db108b4a5526d21156c898fa34a505f31391cc19e518429ac2c50b0"
+    },
+    {
+      "file": "game/addons/worldgen/contracts/worldgen_validation.schema.json",
+      "bytes": 1157,
+      "sha256": "5c9b84db8481afad80b357137e37473fceb3f4ec9959c999d5295394fa78dbee"
+    },
+    {
+      "file": "game/addons/worldgen/core/build_cache.gd",
+      "bytes": 6496,
+      "sha256": "522eecd427602d28f4ae92a9e900283dc23a824ab37b92b0ab7f129384aa0d69"
+    },
+    {
+      "file": "game/addons/worldgen/core/dependency_index.gd",
+      "bytes": 2964,
+      "sha256": "8770d7c675286358d9cd729ab04d38d92228d515b19e56cccce3e6738dd61b39"
+    },
+    {
+      "file": "game/addons/worldgen/core/diff_classifier.gd",
+      "bytes": 3779,
+      "sha256": "d044f2bb19c834d8991e5cf2d9846fc2fc71384c61f73a76aaa4f7a03c9bc3b3"
+    },
+    {
+      "file": "game/addons/worldgen/core/edit_command.gd",
+      "bytes": 7427,
+      "sha256": "0d8dbfff85629087a9e56333939d66174a5289683d7f98dc834aaf1b05393b72"
+    },
+    {
+      "file": "game/addons/worldgen/core/world_package_scene_builder.gd",
+      "bytes": 14521,
+      "sha256": "228ec91bbe10b990682e94f8176866bc283ec0969bf09fc11ec5592c47bb2eb1"
+    },
+    {
+      "file": "game/addons/worldgen/core/world_package_spatial_queries.gd",
+      "bytes": 5222,
+      "sha256": "9284588483f6d6c03104d5689202495962ecd32c943d577cfbafe0fef485d2f9"
+    },
+    {
+      "file": "game/addons/worldgen/core/worldgen_artifact_store.gd",
+      "bytes": 2671,
+      "sha256": "dd7986210f029e1113c31c638c99dada8ca7b0c39eb8e1bba66df0cebc26cfee"
+    },
+    {
+      "file": "game/addons/worldgen/core/worldgen_authoring_command_cli.gd",
+      "bytes": 11789,
+      "sha256": "85b8b566b9da1da2fc3697bd4faf434e5420143ac6904abbb09067d1758d62c0"
+    },
+    {
+      "file": "game/addons/worldgen/core/worldgen_build_cli.gd",
+      "bytes": 2654,
+      "sha256": "4a3c7de39b11f4d5f6e5f5dab6eb3a643d005ec5410490e0e504ba0b02864534"
+    },
+    {
+      "file": "game/addons/worldgen/core/worldgen_build_service.gd",
+      "bytes": 3167,
+      "sha256": "3ad0d6d914007bf6a69d01a385b6ebcc65ef748e41756be8bd8fac0a00384b91"
+    },
+    {
+      "file": "game/addons/worldgen/core/worldgen_canonical.gd",
+      "bytes": 2551,
+      "sha256": "51c8c28e6fd38b0c6d52b0240b1db9877b2342adbf14eaebdae14edd66bd2a3b"
+    },
+    {
+      "file": "game/addons/worldgen/core/worldgen_operator_registry.gd",
+      "bytes": 2314,
+      "sha256": "ec5b469787478369d0049fd70e9c5a247a36f0d24b2d75b8ae1f912ea1f139cc"
+    },
+    {
+      "file": "game/addons/worldgen/core/worldgen_package_loader.gd",
+      "bytes": 1460,
+      "sha256": "cc41b66e23e9c1700be9f369b65661723d849b1c6a793ab7979840092a1636da"
+    },
+    {
+      "file": "game/addons/worldgen/core/worldgen_package_validator.gd",
+      "bytes": 40398,
+      "sha256": "9c738c4d63df480975371780472ed3359e6f7d86cf83e2cec3bd991a7e8eb5dd"
+    },
+    {
+      "file": "game/addons/worldgen/core/worldgen_recipe_compiler.gd",
+      "bytes": 4888,
+      "sha256": "4ce89579602ae5ae0f55b194a7251056122da2ef35d5484e159e2b2b644714e9"
+    },
+    {
+      "file": "game/addons/worldgen/core/worldgen_stage_executor.gd",
+      "bytes": 6862,
+      "sha256": "28db0a46157d8ffb2a14335fb27f0c1aec529de7d73941c66320f2c74e5c8870"
+    },
+    {
+      "file": "game/addons/worldgen/core/worldgen_validate_package_cli.gd",
+      "bytes": 1931,
+      "sha256": "7fa24eba15eed9103b36250295d71512f676f1afb67f54b811e6f022e612c325"
+    },
+    {
+      "file": "game/addons/worldgen/editor/semantic_edit_session.gd",
+      "bytes": 5489,
+      "sha256": "9238d1c415ed68829cdec61af18e2673307a764787eaef0e8869ea975d8245f4"
+    },
+    {
+      "file": "game/addons/worldgen/editor/undo_adapter.gd",
+      "bytes": 2747,
+      "sha256": "01c248561d984b7079310f25b2af78a3843e94892cd2caf2fa7b0fc155c5de6a"
+    },
+    {
+      "file": "game/addons/worldgen/editor/worldgen_build_job.gd",
+      "bytes": 359,
+      "sha256": "16c4de3b69fbebb2cce51f2e3a62f4716721099220dcbd62d31bfb6a0bc4efc2"
+    },
+    {
+      "file": "game/addons/worldgen/editor/worldgen_dock.gd",
+      "bytes": 18361,
+      "sha256": "967cb6d91c8ef42d818e6635ccfaa27e7f1a5dbe390b3e97dd0283609ad5a71d"
+    },
+    {
+      "file": "game/addons/worldgen/editor/worldgen_editor_plugin.gd",
+      "bytes": 781,
+      "sha256": "0839a79898d3140ebe61480a33357efe4e853fd7a472d4f9d2b264e09ac7f2a8"
+    },
+    {
+      "file": "game/addons/worldgen/operators/inland_layout_operator.gd",
+      "bytes": 17199,
+      "sha256": "97230077610ba2e99e17ebf8d1c25ab0138ae391e130a2c757510a5276bf7c58"
+    },
+    {
+      "file": "game/addons/worldgen/operators/interior_program_operator.gd",
+      "bytes": 8621,
+      "sha256": "9c52de20e0b1543b029922bfc27e2950ee10099b28492a4a67676b99a1471d3d"
+    },
+    {
+      "file": "game/addons/worldgen/operators/local_repair.gd",
+      "bytes": 11403,
+      "sha256": "dfc27c315a9b7b7038487e934cb8ccabd6ccf35229c71eb214e9e3b4888c6558"
+    },
+    {
+      "file": "game/addons/worldgen/plugin.cfg",
+      "bytes": 199,
+      "sha256": "bb2eca28ef0d8190fea23eb9e34ca964187bea63c6d3aef5192c364b67339e7c"
+    },
+    {
+      "file": "game/addons/worldgen/recipes/coastal_neighborhood.json",
+      "bytes": 520,
+      "sha256": "8f5e1ac8c2cf233cae23ffa40d7073028d51daab6f76b5d1d883c5da3d687dc1"
+    },
+    {
+      "file": "game/addons/worldgen/recipes/inland_neighborhood.json",
+      "bytes": 3131,
+      "sha256": "541a7f7fd3f4523b3c55575fd24465fe2c677404064612ce09b4f79ada3ee8c7"
+    },
+    {
+      "file": "game/addons/worldgen/recipes/standalone_cafe.json",
+      "bytes": 654,
+      "sha256": "373aec044099578474c3a9e46759b101f4acb49b927efe408b0981fd71c3c198"
+    },
+    {
+      "file": "game/addons/worldgen/templates/minimal_viewer.gd",
+      "bytes": 4437,
+      "sha256": "29050feff09a9a487158658d947995e86dd5287a41a75cb7077d29bcf24eb70a"
+    },
+    {
+      "file": "game/addons/worldgen/templates/minimal_viewer.tscn",
+      "bytes": 175,
+      "sha256": "a9a8645961b7d4457bd6a7372374ba093e8d232a5b09bb53e671c129797b350c"
+    },
+    {
+      "file": "game/addons/worldgen/templates/proxy_3d_viewer.gd",
+      "bytes": 3000,
+      "sha256": "4bdd7f94c8b8bc9e47856e23e9571d1308d63bf85182de89127fda7004369c17"
+    },
+    {
+      "file": "game/addons/worldgen/templates/proxy_3d_viewer.tscn",
+      "bytes": 179,
+      "sha256": "2714a482866d2eee5e3684d5d04e886f62ba6c25251ce454255da28fee71a601"
+    },
+    {
+      "file": "game/addons/worldgen/tests/frozen_cafe_street_queries_test.gd",
+      "bytes": 15963,
+      "sha256": "200a14cd40a63c9b5fbd936f63d48a16c5050d725b69f0641263fec98699431e"
+    },
+    {
+      "file": "game/addons/worldgen/tests/offline_load.gd",
+      "bytes": 12425,
+      "sha256": "1a319fdb74d027d0955345fb9e996a49a5ac6d2794c346de3ee0f949761c1a83"
+    },
+    {
+      "file": "game/addons/worldgen/tests/offline_load_expectations.json",
+      "bytes": 6499,
+      "sha256": "8f61cae0ab0d7a7a14b3a4f4f9033bbe9727469988a7d2e137b18cb8975e5804"
+    },
+    {
+      "file": "game/addons/worldgen/tests/worldgen_build_cache_test.gd",
+      "bytes": 7017,
+      "sha256": "6612e69a39a8b5e02f7632b9c054da2c2819fba1ec8fd77fcefab1cbf12ebc49"
+    },
+    {
+      "file": "game/addons/worldgen/tests/worldgen_build_job_test.gd",
+      "bytes": 1725,
+      "sha256": "681f89dcb0c859355634d6b958c35a50a7e64fac555cf8d6d42496e782effde7"
+    },
+    {
+      "file": "game/addons/worldgen/tests/worldgen_edit_command_test.gd",
+      "bytes": 5288,
+      "sha256": "ddc476850ed1dcc0f5c4d4abc855b0aeabdb39b0ff176fdb105b5c76f7ded24b"
+    },
+    {
+      "file": "game/addons/worldgen/tests/worldgen_local_repair_test.gd",
+      "bytes": 5571,
+      "sha256": "7ea3210074fb58fd04b68aa6fbefadad988dd381d7a31109e0034016efa4b8b8"
+    },
+    {
+      "file": "game/addons/worldgen/tests/worldgen_package_validator_test.gd",
+      "bytes": 4632,
+      "sha256": "437d9ae2e299d2b48ea22e5c6b3f7c2265692f03dfcfeb9e349229a5fae80d8a"
+    },
+    {
+      "file": "game/addons/worldgen/tests/worldgen_undo_adapter_test.gd",
+      "bytes": 3715,
+      "sha256": "ef46dea7e3881eeaf6cedb271a3a0df1fd109120b8439eee928f4b065e875a84"
     },
     {
       "file": "game/assets/art/chars/aria.png",
@@ -240,6 +605,116 @@
       "sha256": "e0371ca9376553c769179d235031f369e93bc5c6c42aec686db6cc74092008cc"
     },
     {
+      "file": "game/assets/art/coastal/README.md",
+      "bytes": 1760,
+      "sha256": "8841c7d11b0c1fd4be1e55680d33cf4ad90be17a5a1d0287e2135b2c3bfccdfd"
+    },
+    {
+      "file": "game/assets/art/coastal/asphalt.png",
+      "bytes": 74516,
+      "sha256": "5eedd762f74b0b63b01e13646617bd9960a5db7c8fa38daa02d5ced52c097f30"
+    },
+    {
+      "file": "game/assets/art/coastal/bathhouse_aligned.png",
+      "bytes": 31280,
+      "sha256": "161385a7049adc93c60fb0afd0cae4de717d2e0a61edb48f8eb1f02bcc954e53"
+    },
+    {
+      "file": "game/assets/art/coastal/bathhouse_north.png",
+      "bytes": 58013,
+      "sha256": "34c8ff3a33fc21cb39636f3a3cb41244e8b8c4afbaad5ec6d4f100d67a48ef01"
+    },
+    {
+      "file": "game/assets/art/coastal/block.png",
+      "bytes": 127051,
+      "sha256": "20dce25c7253a028dee5bbf5470bdefa47c2ed93b890efe27811df354bc14b0e"
+    },
+    {
+      "file": "game/assets/art/coastal/civic.png",
+      "bytes": 155799,
+      "sha256": "aca6a79f45a228168f57e2599222390528dbc1303dbb077c0fc9e3cce53c8eb9"
+    },
+    {
+      "file": "game/assets/art/coastal/flowerbeds.png",
+      "bytes": 117184,
+      "sha256": "723c331f7ea08ad485e57ea7436898f4730dc0e7ea1c63a35302e68f38325824"
+    },
+    {
+      "file": "game/assets/art/coastal/garden.png",
+      "bytes": 38728,
+      "sha256": "91b2753252a1468f09181dac8ba71926b742f0d1c5e96f790772d0f313427c08"
+    },
+    {
+      "file": "game/assets/art/coastal/library.png",
+      "bytes": 124262,
+      "sha256": "44597227b89961a6c6aaebf5be6b5314deb12177e619a478ac1def757e504c9f"
+    },
+    {
+      "file": "game/assets/art/coastal/library_aligned.png",
+      "bytes": 70357,
+      "sha256": "7265d1b762a10459c877fa389896edee2254a76241a0f5b026782a2dfa8ac0fb"
+    },
+    {
+      "file": "game/assets/art/coastal/market.png",
+      "bytes": 178332,
+      "sha256": "d463eb5dbdafc242b712ec4b40880084c661b1fa2da438daee13041fef821ffe"
+    },
+    {
+      "file": "game/assets/art/coastal/meadow.png",
+      "bytes": 71850,
+      "sha256": "8079678a636dfabe65dcd4cf8a6a021214ec4f67f06a32a806b7fd251127d87c"
+    },
+    {
+      "file": "game/assets/art/coastal/passage.png",
+      "bytes": 90956,
+      "sha256": "419b74c2fcf17942427f323a2e547e62f8229427576ba12f7fe76486db5fa1bb"
+    },
+    {
+      "file": "game/assets/art/coastal/paving.png",
+      "bytes": 19459,
+      "sha256": "40ee54ae6bc13fdc67264984cfc50f9a4cee0c3dbb0a10a460a28a8a6a42d67f"
+    },
+    {
+      "file": "game/assets/art/coastal/row_front_aligned.png",
+      "bytes": 78850,
+      "sha256": "8f8b1b863a73add6b9cf4dd2768c8f80b699121eb61474e8ecb42139d78ab600"
+    },
+    {
+      "file": "game/assets/art/coastal/row_rear_aligned.png",
+      "bytes": 103069,
+      "sha256": "41c9562a2f27e2a3bcfd74ce28df74e7af383c569f9957d7d1d9f7716693fe11"
+    },
+    {
+      "file": "game/assets/art/coastal/shop.png",
+      "bytes": 83732,
+      "sha256": "116f496eb0df54a42a54b2aa69db8ad33e50befb7b1776ff38a50bf7edec1488"
+    },
+    {
+      "file": "game/assets/art/coastal/shop_aligned.png",
+      "bytes": 38018,
+      "sha256": "1f329b61821cd8620ab22bbe68df2f934e2d1d6ad68d086ef65fc9d3c36b10cc"
+    },
+    {
+      "file": "game/assets/art/coastal/terrace_south.png",
+      "bytes": 70357,
+      "sha256": "55175a4d56c47c0a85ff309da3221f3c9ceaf4ec1001b0d3972b3e679115bd12"
+    },
+    {
+      "file": "game/assets/art/coastal/tree.png",
+      "bytes": 21695,
+      "sha256": "d6255c60bfe136023934387e6078311c50eb6658847b8df278e79ffda1699ae7"
+    },
+    {
+      "file": "game/assets/art/coastal/typologies.png",
+      "bytes": 130564,
+      "sha256": "ef55b5bbf42f2db25893acb20ba5150ba2fe2dba61bc2424acf71a5fbbff974e"
+    },
+    {
+      "file": "game/assets/art/coastal/workshop_north.png",
+      "bytes": 106408,
+      "sha256": "002e295e70a66cbe32c8fd2c9cebc1331f6688053eabddd64c32b821da7b59eb"
+    },
+    {
       "file": "game/assets/art/decor/bush.png",
       "bytes": 239,
       "sha256": "acf36b095fff3f7ea395363ab8bacb3a483b203916163cbccda4e3f6059ccc49"
@@ -340,6 +815,51 @@
       "sha256": "f048e1f5e6c0b19ef8a36f7e46a4700d82a1fb90302abfda6c0560bd563b8508"
     },
     {
+      "file": "game/assets/art/furn/bank_counter_ledger.png",
+      "bytes": 4404,
+      "sha256": "39eaada684d35963718bcb7385d89badeb9198e578082ca845b7426871274e6c"
+    },
+    {
+      "file": "game/assets/art/furn/bank_waiting_chair_east.png",
+      "bytes": 1733,
+      "sha256": "9b99d95563e02b87aa59d9aabc17bd1148890d8089645773f5dc1e71d6aaa9e4"
+    },
+    {
+      "file": "game/assets/art/furn/bank_waiting_chair_north.png",
+      "bytes": 1803,
+      "sha256": "6e77234ed02ed1c5153262974907618e2f66a886ac3398895aa877b35deb1c28"
+    },
+    {
+      "file": "game/assets/art/furn/bank_waiting_chair_north_east.png",
+      "bytes": 2801,
+      "sha256": "d30f6fba39f441dd32d4ed6c7406ebf726f4e2925be0bf41275a3f528449b1e1"
+    },
+    {
+      "file": "game/assets/art/furn/bank_waiting_chair_north_west.png",
+      "bytes": 2731,
+      "sha256": "8a61cc5bbf251596b42862b63270ba8d8712d0fbd90ef90392b6b0f1f5ad10d6"
+    },
+    {
+      "file": "game/assets/art/furn/bank_waiting_chair_south.png",
+      "bytes": 3611,
+      "sha256": "f46cdd5e4a103e093992b220ba69889f3bff23d99772592d7cfe883a4e5c3997"
+    },
+    {
+      "file": "game/assets/art/furn/bank_waiting_chair_south_east.png",
+      "bytes": 3018,
+      "sha256": "18662fd65d7423b398a1d541f162e0d97cad8a3b3dffd2709b2443d81d596dd1"
+    },
+    {
+      "file": "game/assets/art/furn/bank_waiting_chair_south_west.png",
+      "bytes": 2805,
+      "sha256": "638386ddcb0a89b73246227475db9a5123d29ad7dd4b89969fd45319c7ec8be6"
+    },
+    {
+      "file": "game/assets/art/furn/bank_waiting_chair_west.png",
+      "bytes": 1658,
+      "sha256": "128b71f39bd7256ac511822327c230d8c07413324167dfbb72f2ef8f1722b872"
+    },
+    {
       "file": "game/assets/art/furn/bathtub.png",
       "bytes": 3091,
       "sha256": "bd690067dbc4dccd8167760b991599016a483e353bca036a52d28bdeab55bf72"
@@ -370,6 +890,46 @@
       "sha256": "feef63937f9de8d2fe0305efb4098e97480d03a79f38e80a38e2375bb3b8b2fb"
     },
     {
+      "file": "game/assets/art/furn/civic_archive.png",
+      "bytes": 5105,
+      "sha256": "3008c77a4c963b031a22ac36de30c7166e0d33790fb099b0090f006bbcb1c899"
+    },
+    {
+      "file": "game/assets/art/furn/civic_counter.png",
+      "bytes": 3945,
+      "sha256": "aebfbaabe433aa97faa83eef06d60e8f586e3f557b9ee728fcf9e0ecc42f51c5"
+    },
+    {
+      "file": "game/assets/art/furn/civic_notice_board.png",
+      "bytes": 6032,
+      "sha256": "d5adeae459474ab039691f160ea7f8433be76e2f1dd3a5f499a28d9a04a6dd5b"
+    },
+    {
+      "file": "game/assets/art/furn/civic_town_map.png",
+      "bytes": 6875,
+      "sha256": "f10f0fad131e0719f95322d1d5e711beaf123b78893437612ccd1d3135530c31"
+    },
+    {
+      "file": "game/assets/art/furn/coco_bedroom_suite.png",
+      "bytes": 13011,
+      "sha256": "9a965a1ebab0939e5327d1afa224c147515ce3932702e2a7b5af2a3b0945952b"
+    },
+    {
+      "file": "game/assets/art/furn/coco_guest_bedroom.png",
+      "bytes": 7714,
+      "sha256": "c2bf1c61cfc95d91041eb42545355c3d90d23dfabf8297acde36a9bcc359b3c7"
+    },
+    {
+      "file": "game/assets/art/furn/coco_hotel_library.png",
+      "bytes": 16569,
+      "sha256": "612c4128d3260a5944712ed739888d0265a9d6b87e61a591867cdbffad5978f8"
+    },
+    {
+      "file": "game/assets/art/furn/coco_linen_atelier.png",
+      "bytes": 10768,
+      "sha256": "38c4dc16e189a6a39d34e0cdc260e2542a09cd0abe70b361223b8ec766cc499f"
+    },
+    {
       "file": "game/assets/art/furn/dining_table.png",
       "bytes": 6540,
       "sha256": "13ea2bb0c2ceef9044dc8396fd466a964b027f8b74ffdd384d279fa586d75859"
@@ -395,9 +955,84 @@
       "sha256": "ba7542b04a3989170748426335148b23b991cc01bcbf1820a56ec5583527051c"
     },
     {
+      "file": "game/assets/art/furn/large_dining_table.png",
+      "bytes": 12421,
+      "sha256": "81042ea3e74dabe885c80aaec2ac8593239421d8f7230d7a317cc1e4e1c5e914"
+    },
+    {
+      "file": "game/assets/art/furn/large_library_wall.png",
+      "bytes": 13009,
+      "sha256": "b5bab4825abe7d082f9158b6f8bc582ccd949f8a00bbfd52089d14e062b71b05"
+    },
+    {
+      "file": "game/assets/art/furn/large_market_display.png",
+      "bytes": 10885,
+      "sha256": "98dec19c5f12a47b966e9b80432e949207e457ddc1ee6b5baa07f91381be9667"
+    },
+    {
+      "file": "game/assets/art/furn/large_sofa_group.png",
+      "bytes": 13738,
+      "sha256": "2cd48a59aa232d3e9e78cc521432b3552e049181576435edd4bea68a11597187"
+    },
+    {
+      "file": "game/assets/art/furn/market_oyster_basket.png",
+      "bytes": 4189,
+      "sha256": "d43dee056a8cdb8167dc80035fdcaa7d582a980177be98a89d96f96b1f2ab6f7"
+    },
+    {
+      "file": "game/assets/art/furn/market_parcel_trolley.png",
+      "bytes": 3322,
+      "sha256": "85955a2fcd39e0e32ce071c11979470b670bc4ff23957ac99879f57efc8692bf"
+    },
+    {
       "file": "game/assets/art/furn/market_stall.png",
       "bytes": 6491,
       "sha256": "f4e545a9a7b20e9f1a8d2428a01d3e79f7ba18453898b3ab85c8490772cccc06"
+    },
+    {
+      "file": "game/assets/art/furn/market_stall_east.png",
+      "bytes": 2067,
+      "sha256": "c8cc96e95ee8ebb22f899fbb7606dbb688bf5a3d3f69a94b3ed3d1235e4df181"
+    },
+    {
+      "file": "game/assets/art/furn/market_stall_north.png",
+      "bytes": 1984,
+      "sha256": "f5353f060f86f799d480d5028a2f604f0ba4ab2eb62adc06504739bff561ecfb"
+    },
+    {
+      "file": "game/assets/art/furn/market_stall_north_east.png",
+      "bytes": 2619,
+      "sha256": "826b512591d7308fee793b612caa1517a29a5464c621a590aed1a33c1f309860"
+    },
+    {
+      "file": "game/assets/art/furn/market_stall_north_west.png",
+      "bytes": 2652,
+      "sha256": "bb1d46328bb24aedfcb9962b6b0b02e10314cc0d276dea3a9414a4f0637c5594"
+    },
+    {
+      "file": "game/assets/art/furn/market_stall_south.png",
+      "bytes": 2563,
+      "sha256": "23c6e2faa461baf152fc28475e878cb55a2819d75ca4a4f963cb56ca387d06d1"
+    },
+    {
+      "file": "game/assets/art/furn/market_stall_south_east.png",
+      "bytes": 2655,
+      "sha256": "7cc3af36d0e0abd89fa723387ca32871af90cd7fbc4d806ac859b4c0581c17ff"
+    },
+    {
+      "file": "game/assets/art/furn/market_stall_south_west.png",
+      "bytes": 2630,
+      "sha256": "6de69ac471b855d801bc2e0fe55514996878e58ae3e8901da62627b8aabcdd9d"
+    },
+    {
+      "file": "game/assets/art/furn/market_stall_west.png",
+      "bytes": 1860,
+      "sha256": "ebaf598f82d55555d41b6bf930eee347309107b74adaf218a4355a303a6486a6"
+    },
+    {
+      "file": "game/assets/art/furn/mayor_desk.png",
+      "bytes": 3127,
+      "sha256": "09e408f1d38f918315b407c132fbe16eed04de991418d78f36b4016a12be39b2"
     },
     {
       "file": "game/assets/art/furn/painting_parasol.png",
@@ -423,6 +1058,41 @@
       "file": "game/assets/art/furn/plant.png",
       "bytes": 2611,
       "sha256": "28df990e9fe5478f608d49b8e2ae3818cc6f011d0dead1a608cc1c531871960b"
+    },
+    {
+      "file": "game/assets/art/furn/public_floor_lantern.png",
+      "bytes": 1990,
+      "sha256": "1162d67cb9dcc0eb0ed4f6af630c138909d5e4bbc6f7962fa31d3fe9b6d542e2"
+    },
+    {
+      "file": "game/assets/art/furn/public_hydrangea_planter.png",
+      "bytes": 4616,
+      "sha256": "58def91e4034266167e88687ff70b6c445d1f30a9cfba46b31f723f16b9bca54"
+    },
+    {
+      "file": "game/assets/art/furn/public_stone_fountain.png",
+      "bytes": 2379,
+      "sha256": "ef8d719a9dd1af734127bf53800a5ab100ed7b194f6550d9fb65bd1abe508e38"
+    },
+    {
+      "file": "game/assets/art/furn/residential_landing.png",
+      "bytes": 10069,
+      "sha256": "0ef75d26f35ca568eff782cdffe17af2934e0a274f8331fc98cd8e1da6116bc0"
+    },
+    {
+      "file": "game/assets/art/furn/residential_stairs.png",
+      "bytes": 5244,
+      "sha256": "94f31c8d4ec06031e395c7aa324c64a662f8ff6f0b9090ee370fb54abb45ff2f"
+    },
+    {
+      "file": "game/assets/art/furn/room_archway.png",
+      "bytes": 2369,
+      "sha256": "8eb9158ed5627f2082547400b070362b525bda83585dded5b11800c10e647025"
+    },
+    {
+      "file": "game/assets/art/furn/room_doorway.png",
+      "bytes": 3567,
+      "sha256": "3b5a21f1982de3f230b7982f2a3cd5a39a5e031abed22edd6a7e62170534ab42"
     },
     {
       "file": "game/assets/art/furn/rug_persian.png",
@@ -500,6 +1170,11 @@
       "sha256": "254e1d61a3d46f0793c61a77d20239980812bdfa219474151334e484171e5904"
     },
     {
+      "file": "game/assets/art/houses/attached_slate_house.png",
+      "bytes": 2990,
+      "sha256": "8d47212f671860ea6095e1ef49392f70192f46ff25009ce21560d6f3a6c69bfd"
+    },
+    {
       "file": "game/assets/art/houses/bakery.png",
       "bytes": 14256,
       "sha256": "29bbd51bd2064ce94d60e9d6733b111737a9b1d4b4c8ef0a630d347976304eb0"
@@ -510,9 +1185,49 @@
       "sha256": "85a735763e77dfde5b8ceaece66e8541eb52f7ab588420646f9a95445c545c80"
     },
     {
+      "file": "game/assets/art/houses/beach_cafe_pavilion.png",
+      "bytes": 11813,
+      "sha256": "afb9510571f6cce658b89bf6d473bb649a167f1bc2b14480d791438be13df091"
+    },
+    {
+      "file": "game/assets/art/houses/beach_changing_cabins.png",
+      "bytes": 11286,
+      "sha256": "149e259b7e824cff83da64008884dc6e2096ae44ca15ea40037c11198d615507"
+    },
+    {
+      "file": "game/assets/art/houses/beach_deckchair_cluster.png",
+      "bytes": 14204,
+      "sha256": "934b3161418bd30580048536c2ef43f42898fd81dd1af9fcdb74eeb86aa467da"
+    },
+    {
+      "file": "game/assets/art/houses/beach_social_pergola.png",
+      "bytes": 13936,
+      "sha256": "b1a6a4ba3c9ff8bd6a68c79fc6cb41860490dfe14222682b302141bf80d0fd5d"
+    },
+    {
       "file": "game/assets/art/houses/belleepoque.png",
       "bytes": 25764,
       "sha256": "716433de70611346416f45cbbd54fa423dfed0191e795a8ec014e7e74f804d44"
+    },
+    {
+      "file": "game/assets/art/houses/boundary_granite_outcrop.png",
+      "bytes": 17730,
+      "sha256": "a1bea8b993fe322ae4320c800a7426a5721113c3bc180da44009c01766af5f3e"
+    },
+    {
+      "file": "game/assets/art/houses/boundary_mountain_ridge.png",
+      "bytes": 15960,
+      "sha256": "fe19843b097c9f2db4a8016dd861191c7b96e1c259739520a7b261110031de8d"
+    },
+    {
+      "file": "game/assets/art/houses/boundary_wooded_hill.png",
+      "bytes": 12164,
+      "sha256": "300e8a2f78e904283a3db5b12a81eb289affed632e864d28779829cea12d8ab6"
+    },
+    {
+      "file": "game/assets/art/houses/boundary_woodland_grove.png",
+      "bytes": 20240,
+      "sha256": "9f60c5b8680cf1698559c664d5dc62ff03f60c2feb160b5f3c68957f22808c7e"
     },
     {
       "file": "game/assets/art/houses/cannery.png",
@@ -530,14 +1245,74 @@
       "sha256": "1992ad0aeb89941127a0df43ce66867eda0f0b652395057980a78f46fe1be684"
     },
     {
+      "file": "game/assets/art/houses/cliff_row.png",
+      "bytes": 25123,
+      "sha256": "26f28b8db97583042924f910b1223134bf7de213887d92284027fadf90cf1e5e"
+    },
+    {
+      "file": "game/assets/art/houses/cliff_villas.png",
+      "bytes": 29544,
+      "sha256": "85ea0448fcff667fc4ecec5c45e73d82460b097a86cf18a312127665d3122740"
+    },
+    {
+      "file": "game/assets/art/houses/coast_pavilion_east.png",
+      "bytes": 5038,
+      "sha256": "95029032c58945be6ca86859fb3847a06a5480f4d06dfa6bdd8055c8273bf2c7"
+    },
+    {
       "file": "game/assets/art/houses/cottage.png",
       "bytes": 7278,
       "sha256": "f90de2a6d6abe8209dc7bb76e60e7abe0835e846e72c63fc6433d6938dbdaf78"
     },
     {
+      "file": "game/assets/art/houses/courtyard_garden.png",
+      "bytes": 8458,
+      "sha256": "abb10fd499b0fb64835f7744ca0e4083815e3711b15782a009a12302bdee31f0"
+    },
+    {
       "file": "game/assets/art/houses/creperie.png",
       "bytes": 22816,
       "sha256": "87a8a564fa81d53d88675bca6e51c84818ac0dd57562410794b786181bacab33"
+    },
+    {
+      "file": "game/assets/art/houses/district_civic_facade.png",
+      "bytes": 10117,
+      "sha256": "b877d1f6fa59317ea563c8cd3aa83179b47efad60bd59d26a650bb51c7100088"
+    },
+    {
+      "file": "game/assets/art/houses/district_commercial_facade.png",
+      "bytes": 13467,
+      "sha256": "13090624bc31bd86798bdeb87fb65467a75b4499b5cb48e34b47c094b980533f"
+    },
+    {
+      "file": "game/assets/art/houses/district_industrial_facade.png",
+      "bytes": 12906,
+      "sha256": "b50f493930cd238441f37f65ed42716fba1dc97bbc918b71d7c9547ed03defe2"
+    },
+    {
+      "file": "game/assets/art/houses/district_residential_facade.png",
+      "bytes": 14745,
+      "sha256": "1e33acf3f100740f926bc07c69a4acd1bde390fa372a70d835048039b2f49a4a"
+    },
+    {
+      "file": "game/assets/art/houses/functional_commercial_facade.png",
+      "bytes": 8875,
+      "sha256": "7d63050ae5fdfb6b8ca8656a128656c285464f05ed6696cccfb7c64bc828b664"
+    },
+    {
+      "file": "game/assets/art/houses/functional_public_facade.png",
+      "bytes": 9607,
+      "sha256": "c6ccb3d9a2ccb68182a17ea6e35e71b2b8615f8bdd6adac5fed583b6b4047789"
+    },
+    {
+      "file": "game/assets/art/houses/functional_residential_facade.png",
+      "bytes": 12440,
+      "sha256": "0220af7cba1f64b9233e0276873a385386857d0851f1f48fa88027e35a450e55"
+    },
+    {
+      "file": "game/assets/art/houses/functional_workshop_facade.png",
+      "bytes": 13087,
+      "sha256": "b16a112d44a1f48494bc90bf2843b2745a30a3abed948b8646b4a4da75a65aa4"
     },
     {
       "file": "game/assets/art/houses/halftimber.png",
@@ -555,14 +1330,34 @@
       "sha256": "009606f927f3e30b8317c1a4cd523484e7d4fb10d630a3189124b28fe0c72099"
     },
     {
+      "file": "game/assets/art/houses/infill_garden_row.png",
+      "bytes": 18319,
+      "sha256": "f22a2eea5853f20c10d5075688275df97c13920fb0090b9d5eecb5bea2b083d5"
+    },
+    {
+      "file": "game/assets/art/houses/infill_harbor_workshops.png",
+      "bytes": 17524,
+      "sha256": "6d93cc8853e3de02141fb5d998411fff51da5988643abb9c8b5f9966202c8cb8"
+    },
+    {
+      "file": "game/assets/art/houses/infill_market_block.png",
+      "bytes": 19492,
+      "sha256": "392c66c1158ea6a9dde3b47c246762943b458754a8dc05a956d4fa77be02dcd1"
+    },
+    {
+      "file": "game/assets/art/houses/infill_residential_courtyard.png",
+      "bytes": 19838,
+      "sha256": "3e83b999929c1695a0a030e464d35559b8acea68768ce864a01cc9c021567525"
+    },
+    {
       "file": "game/assets/art/houses/longere.png",
       "bytes": 30205,
       "sha256": "958a0c65a058fa6202a05532d6e0b9140ac7fb7b28a51d7fba613bd6f877bae4"
     },
     {
       "file": "game/assets/art/houses/lots.json",
-      "bytes": 13701,
-      "sha256": "0b4cad6118df6ec6fb9a4a64290a80b1688affb59a760df4fdd7e86a8f69e2a8"
+      "bytes": 17354,
+      "sha256": "95ff351d7f2a66caba67bc0a567a5d0b559d55fe1f4fe80db3d2863b30bdd3ba"
     },
     {
       "file": "game/assets/art/houses/mairie.png",
@@ -580,9 +1375,84 @@
       "sha256": "1ec5eb80e879efd969a96e9721dbe8a2564d0906b7d9c01f8d8ca08750cc848a"
     },
     {
+      "file": "game/assets/art/houses/paris_corner_block.png",
+      "bytes": 25313,
+      "sha256": "cce466a02dae2603fff59d72a4343b642acb92689f65f625391bdd70b91872a1"
+    },
+    {
+      "file": "game/assets/art/houses/paris_streetwall.png",
+      "bytes": 20243,
+      "sha256": "cdcd31fe14b7008bba779ab9576ee3eea0ce37ce8283e3aa14e4520efb56879f"
+    },
+    {
+      "file": "game/assets/art/houses/plaza_arcade_frontage.png",
+      "bytes": 20308,
+      "sha256": "b95535e03225b58c661b70697d9457af36a27c0e7969d2d00868492b6e62a7bf"
+    },
+    {
+      "file": "game/assets/art/houses/plaza_corner_block.png",
+      "bytes": 21352,
+      "sha256": "d7bb23dbab04ffe7447015366ababaed473474e2a008f00c92b52348fd00920b"
+    },
+    {
+      "file": "game/assets/art/houses/plaza_mixed_block.png",
+      "bytes": 17872,
+      "sha256": "34a0e3af72a910105162bb64aaadea678856ef272928299dfb62477836f999a2"
+    },
+    {
+      "file": "game/assets/art/houses/plaza_townhouse_pair.png",
+      "bytes": 13664,
+      "sha256": "290da86bfe156591fe35c4e7c9e47dbbeec43f4aa4e4c61be9b322fbddafbe4a"
+    },
+    {
+      "file": "game/assets/art/houses/rohmer_autumn_townhouse.png",
+      "bytes": 20560,
+      "sha256": "afde0c9269b28f2dd669973d98d8e010dd778e49a875552666551aec99eaff2d"
+    },
+    {
+      "file": "game/assets/art/houses/rohmer_spring_cottage.png",
+      "bytes": 17023,
+      "sha256": "9dac653ab0275fddbdf81d60d0d7834c1b0d9a58fec7b149d7c397af486c15eb"
+    },
+    {
+      "file": "game/assets/art/houses/rohmer_summer_shop.png",
+      "bytes": 15863,
+      "sha256": "b9a0a9381ee5e89aec55f0005b68eb9cab2d844b716505b01c032f27936f5d1b"
+    },
+    {
+      "file": "game/assets/art/houses/rohmer_winter_house.png",
+      "bytes": 17498,
+      "sha256": "ea305b0c4b98f410996a998655fa4bbe809290005075e2a488c1a73b70fea7e7"
+    },
+    {
+      "file": "game/assets/art/houses/roofed_beach_cabins.png",
+      "bytes": 1208,
+      "sha256": "c1c28a93045be7699b57d794c69284ee8c9e07d21b27ec7b52fbbe4b3e4924e7"
+    },
+    {
       "file": "game/assets/art/houses/terrace.png",
       "bytes": 21109,
       "sha256": "0d4478aaae81b38db9d54881f41d6440df62347b9445336dc67b3e0d0e2209e6"
+    },
+    {
+      "file": "game/assets/art/houses/terrain_cliff_face.png",
+      "bytes": 13017,
+      "sha256": "bd1cb027fee19f8a1009eab70ddf80fd0fbfd65e2cad9543a3b0d7e655e041d5"
+    },
+    {
+      "file": "game/assets/art/houses/terrain_ramp_cut.png",
+      "bytes": 15371,
+      "sha256": "3aa805929bfbbc3ebb30aae24e1715d7e74dd4551e236020e243ba629cdafa48"
+    },
+    {
+      "file": "game/assets/art/houses/terrain_retaining_wall.png",
+      "bytes": 12502,
+      "sha256": "6f724f7e661275dd35411ab3a50afff28f7afccc143d992490fb2db74888cf6a"
+    },
+    {
+      "file": "game/assets/art/houses/terrain_rock_corner.png",
+      "bytes": 13173,
+      "sha256": "7b882967995a6d9be6f5114a3fc5477fe21f3456061f7b332492fb0b543c8315"
     },
     {
       "file": "game/assets/art/houses/townhouse.png",
@@ -1740,6 +2610,46 @@
       "sha256": "c503c2a49aaae8ec9e4be05863364c970d8a5419348a42d520a1b8de26df2921"
     },
     {
+      "file": "game/assets/art/props/cliff_arch_passage.png",
+      "bytes": 16411,
+      "sha256": "d1457b68658099f337710cd08c06a9fb6417b0d66853fd33294a7ea6f648af89"
+    },
+    {
+      "file": "game/assets/art/props/cliff_grand_stairs.png",
+      "bytes": 13932,
+      "sha256": "47d047a2676a3eefeece1f5b1c603b86f88a6b9371cec82cf9869a99b06ad865"
+    },
+    {
+      "file": "game/assets/art/props/cliff_overlook.png",
+      "bytes": 12892,
+      "sha256": "35ce62b228fb775ed332ac1e8dae40d6ab3bae5408d0069df6d3a1f5433bc034"
+    },
+    {
+      "file": "game/assets/art/props/cliff_switchback_stairs.png",
+      "bytes": 15336,
+      "sha256": "624947e2e83ff608008e3c2b141fd79ba184c3f3cd1bb2539f0127d3aa728319"
+    },
+    {
+      "file": "game/assets/art/props/corner_cafe_terrace.png",
+      "bytes": 15680,
+      "sha256": "7c8c261a1fdda43278da6983f8ae18482de6cd51c3e773f8b462c4bc314c8448"
+    },
+    {
+      "file": "game/assets/art/props/corner_delivery_cluster.png",
+      "bytes": 14084,
+      "sha256": "cf79b49ebc797ba93d7d5d9a513eb9f39df4fa71bf8c396e018d4c2d8336ae6f"
+    },
+    {
+      "file": "game/assets/art/props/corner_flower_bench.png",
+      "bytes": 15265,
+      "sha256": "3e5e250e841ef14144f1a7ae67178fb81ff697cf40db2c244697f5915f6a5522"
+    },
+    {
+      "file": "game/assets/art/props/corner_market_display.png",
+      "bytes": 15836,
+      "sha256": "d428b742227296a9c6b4a4ac99ff8cda78abe271546594285cad79328034af4b"
+    },
+    {
       "file": "game/assets/art/props/lifeguard.png",
       "bytes": 2541,
       "sha256": "eeefe494c41392ac9c45375ca9d9974889bdb4f8d90824ad01805c607359dd09"
@@ -1910,14 +2820,19 @@
       "sha256": "69fc114cc289b33fc8e1d33e57daf77dd65e94d0340715c6a1974cd4d99fe349"
     },
     {
+      "file": "game/assets/ui/coastal-ledger-panel-v1.png",
+      "bytes": 9499,
+      "sha256": "7879db20bd73af369806c9935795bc04714a797be162a7e154955daff1d90d5b"
+    },
+    {
       "file": "game/bench/BackendBench.gd",
       "bytes": 33959,
       "sha256": "d6464c49ee4ded3c063800bb054b331ef30bb5d9c750544b314a67a1beb87563"
     },
     {
       "file": "game/bench/BackendBench.tscn",
-      "bytes": 227,
-      "sha256": "1f0a80e1688b348458e336ab03b9c77da0d02589d8eba62b4420a470d9ee6200"
+      "bytes": 228,
+      "sha256": "62287b4adfdfd4eea5b5e3958b789d838777f2f2c522720f572e83481287f577"
     },
     {
       "file": "game/bench/BackendGate.gd",
@@ -1930,14 +2845,34 @@
       "sha256": "24a3bde362649c7528c2216cbdee7330ffb3e69d973f4e6a41bb915274691e18"
     },
     {
+      "file": "game/bench/BenchArgs.gd",
+      "bytes": 522,
+      "sha256": "367f4a7b444b0c55c52de92ded2637bfeeae5a0f56ec1b8a2951bdf1c7901160"
+    },
+    {
+      "file": "game/bench/BenchArgsTest.gd",
+      "bytes": 853,
+      "sha256": "9e541fe3ee2b27fd7a1a89f3b3ffbfc66f87879b6eacb87e787fe9b3c0f5a692"
+    },
+    {
       "file": "game/bench/CausalHarness.gd",
-      "bytes": 7018,
-      "sha256": "79b8f92b1dc76358d6887e8db6e7ff46fea4a8c21ac3d13b12d165e2d7698d58"
+      "bytes": 27732,
+      "sha256": "fcf5cbfed652ab482b5a6fac505ca0ca432d4e0cb6503ef27d0a6baa3d8d7796"
+    },
+    {
+      "file": "game/bench/CivicReviewProbe.gd",
+      "bytes": 3526,
+      "sha256": "b8d7b45be110d57be6f6d57f5ed21da52e0c7c4d83f766a17abfc523facf4e2c"
+    },
+    {
+      "file": "game/bench/CivicTreasuryProbe.gd",
+      "bytes": 2156,
+      "sha256": "4be9a7e71c923ec47202b7e148df331d406985ffafa0abfa9868c1b18301d348"
     },
     {
       "file": "game/bench/DetGate.gd",
-      "bytes": 11984,
-      "sha256": "44ea4696a5f4e6570bcf8b97cc882ce8fa4caaf6a2e3d058cc14e76040569773"
+      "bytes": 12172,
+      "sha256": "cf497cb8a42f5c29da40caaacabe0b6b55ffe856166dde6b524c61d544a4a275"
     },
     {
       "file": "game/bench/DistillDump.gd",
@@ -1956,13 +2891,13 @@
     },
     {
       "file": "game/bench/Harness.gd",
-      "bytes": 46365,
-      "sha256": "536dc85f52555abd87a27acdf4f642ce788d589cb056c7d9e1f2d12747f07960"
+      "bytes": 49468,
+      "sha256": "99134160a2d445ab72d92b586bed21185632d56e16eb5336bbce335afbecbce7"
     },
     {
       "file": "game/bench/Invariants.gd",
-      "bytes": 134364,
-      "sha256": "341c6ed4b110b17b2b75d2da9389a8b7c8e8ccd866e0841eab93136d66025a33"
+      "bytes": 145733,
+      "sha256": "1dc30597bb73289e6c4db12b52ecd0ce290041f2fe12618848d0fa1f8567e6be"
     },
     {
       "file": "game/bench/LodAblation.gd",
@@ -1976,8 +2911,8 @@
     },
     {
       "file": "game/bench/ModelPathGate.gd",
-      "bytes": 22802,
-      "sha256": "474edc05a66d9d9bbbcfc46656e09ba454c52a197d9ef48e07890358fa474807"
+      "bytes": 23007,
+      "sha256": "4e8e92eda7f2cbb0b5f48bbd0fe26cbd59878dbf3fe9f84827334e007df7dd3f"
     },
     {
       "file": "game/bench/ModelPathGate.tscn",
@@ -2005,14 +2940,129 @@
       "sha256": "afa8db6716732c7de5a155ca58c14de655d01b3340084a402f92b526c009e017"
     },
     {
+      "file": "game/bench/ScaleCarpenterFitProbe.gd",
+      "bytes": 145,
+      "sha256": "50150eabf7eb6bfd98c4a319b6ac688fd0689649b12856484722e03caaf0121e"
+    },
+    {
+      "file": "game/bench/ScaleCarpenterFitSim.gd",
+      "bytes": 1160,
+      "sha256": "4f4249019aef4b0761f76b5e8436338b9d08a0e3fa8435f35f911ea1ab87978a"
+    },
+    {
+      "file": "game/bench/ScaleCarpenterScaledFitProbe.gd",
+      "bytes": 151,
+      "sha256": "3d25f4a5c408a1a908a8e9d73156785cdf71c839febf51c188f4d9e645cd0926"
+    },
+    {
+      "file": "game/bench/ScaleCarpenterScaledFitSim.gd",
+      "bytes": 1139,
+      "sha256": "a145047404842cd10e632364b93bee25016f1d1bf19bcb3a42b73709cd0660f8"
+    },
+    {
+      "file": "game/bench/ScaleCarpenterStockFitProbe.gd",
+      "bytes": 149,
+      "sha256": "6af512bccb0a771471abfc6654999fef55ea71a474220849b873db76805f500a"
+    },
+    {
+      "file": "game/bench/ScaleCarpenterStockFitSim.gd",
+      "bytes": 1429,
+      "sha256": "534ce8b4136230e7eeef924074248da97faf6261aabb8db696eee983fc4a2adb"
+    },
+    {
+      "file": "game/bench/ScaleChoiceProbe.gd",
+      "bytes": 3650,
+      "sha256": "ffe330649a5208a833d0d67f3fdcd940914a22b1bbeba664fdb9c290b8ae1b25"
+    },
+    {
+      "file": "game/bench/ScaleCivicFilterProbe.gd",
+      "bytes": 5859,
+      "sha256": "5d5beacb692b96cede4daa411cb133781ebccdf0a661b485b1d3ece1d63e6c70"
+    },
+    {
+      "file": "game/bench/ScaleFisherCarpenterAdaptiveProbe.gd",
+      "bytes": 155,
+      "sha256": "041a4a784850008a2fcf0f17ade95e85e7f21fc946b9749e9a8004fd365f7081"
+    },
+    {
+      "file": "game/bench/ScaleFisherCarpenterAdaptiveSim.gd",
+      "bytes": 1328,
+      "sha256": "1e9ee7ab69cd9f798d8a5449f359d56b1ffffb676bfa7b2e6b30d4142003d00d"
+    },
+    {
+      "file": "game/bench/ScaleFisherPoolChoiceSim.gd",
+      "bytes": 652,
+      "sha256": "4de27bf7c403de1fd1deee12867491a91fe6f70253204f5460505b77fde707c7"
+    },
+    {
+      "file": "game/bench/ScaleFisherPoolHungerGuardProbe.gd",
+      "bytes": 153,
+      "sha256": "8626f63e3b0df3f9b64e0bf9e9194930d2dfde2fa35ed0230a0720b73502d184"
+    },
+    {
+      "file": "game/bench/ScaleFisherPoolHungerGuardSim.gd",
+      "bytes": 979,
+      "sha256": "04b2b085e87343ca70c62c01b2093d74cfbd2e308a27c4d7d2ad748f0be301f5"
+    },
+    {
+      "file": "game/bench/ScaleFisherPoolProbe.gd",
+      "bytes": 142,
+      "sha256": "f7726b2fb02e36ae138732b582efe9f4c7af5e78fdcb7fbac015b3b0f98f5979"
+    },
+    {
+      "file": "game/bench/ScaleFisherPoolSim.gd",
+      "bytes": 703,
+      "sha256": "61886ee8eb6a968aab2f36c83105dd500434375a507961a3957168905aab2b43"
+    },
+    {
+      "file": "game/bench/ScaleNeedProbe.gd",
+      "bytes": 3238,
+      "sha256": "39e316a22dc94126b0827f415428820ffeeb93966aa15b846a79cf9c93365577"
+    },
+    {
+      "file": "game/bench/ScaleProbeSim.gd",
+      "bytes": 1436,
+      "sha256": "1305c1a8bf21fad2808c4c0334eceb62a66af9a56b7d49b3f079ef6d72b0bd83"
+    },
+    {
+      "file": "game/bench/ScaleRoster.gd",
+      "bytes": 2919,
+      "sha256": "d9c3a6673514aed2431605e286a31e49ccea64d13623a9ecad1cc2a2106b5812"
+    },
+    {
+      "file": "game/bench/ScaleShiftFitProbe.gd",
+      "bytes": 140,
+      "sha256": "f02d3d91920bb0664c628b11d8d4ef26aa1ef8cc722b8917f5dabf8563d63905"
+    },
+    {
+      "file": "game/bench/ScaleShiftFitSim.gd",
+      "bytes": 1201,
+      "sha256": "83011b71d41e9da44a5c84945ddc629542160878e6983a69955a8244517e0e04"
+    },
+    {
       "file": "game/bench/ScaleSupply.gd",
-      "bytes": 14465,
-      "sha256": "e4ec74c9381ce8293fa10cd219d280642692126b1d5dea011343486b18be30dd"
+      "bytes": 17187,
+      "sha256": "1877056f589af42d7a5c3046b878f2462b3015350f12f4044c9ae0674b2350a3"
+    },
+    {
+      "file": "game/bench/ScaleSupplyRescueProbe.gd",
+      "bytes": 531,
+      "sha256": "8c2446438d7bce8aac4b2c9b810ffc2d55d0b0f6a9b6b8367c4265045dedf5f0"
+    },
+    {
+      "file": "game/bench/ScaleSupplyRescueSim.gd",
+      "bytes": 1292,
+      "sha256": "8de8fef235a1ad07ac856066c8a6ce0d89813bc520b4f064e0e82afe669c8fec"
+    },
+    {
+      "file": "game/bench/ScaleWorkProbe.gd",
+      "bytes": 7060,
+      "sha256": "06abe9f636f38953827564ebe07bf76eb5315d41bd3953a38a14e7cdc365e025"
     },
     {
       "file": "game/bench/SpaceShot.gd",
-      "bytes": 58526,
-      "sha256": "b312cd4216e8716e32c50c6a0e5ba69488b7f78102fb934821032cc57f00ebe2"
+      "bytes": 60134,
+      "sha256": "cc2348a11a8dab4a68dbf55de476c897af340d6cc167a2abb21b5870fcc13bf2"
     },
     {
       "file": "game/bench/SpaceShot.tscn",
@@ -2083,6 +3133,11 @@
       "file": "game/bench/as5_surplus_probe.gd",
       "bytes": 7277,
       "sha256": "3bbb6241967852d80ca530436ec1af504552fc6ed15b4112bc923bc9f192dcee"
+    },
+    {
+      "file": "game/bench/banking_probe.gd",
+      "bytes": 2022,
+      "sha256": "0f8f8079982430fd305859e64cc92da084cac924df96137a2884b01b9744cb95"
     },
     {
       "file": "game/bench/cohort_over_time.gd",
@@ -2166,8 +3221,8 @@
     },
     {
       "file": "game/bench/golden_digests.json",
-      "bytes": 79883,
-      "sha256": "608d9d6a524ba6fe3f29a1696895b084ba4312223953784163a68675f55e3ebe"
+      "bytes": 85436,
+      "sha256": "6a77a4334efcc9b467b2b1b699dfc53bd263d5bfb429d50f674e457cb8a9d218"
     },
     {
       "file": "game/bench/lod_cohort_probe.gd",
@@ -2191,8 +3246,8 @@
     },
     {
       "file": "game/bench/modelpath_anchor.json",
-      "bytes": 27718,
-      "sha256": "68f330ad5197e9a0279b3dba760d784db6352abf5a98906c7b4507fef0e3e653"
+      "bytes": 30038,
+      "sha256": "44800bf7439812b3bfb7fb9833a7abf6a97d0c9a931ee7e0bc7ad943d19968b6"
     },
     {
       "file": "game/bench/nw_api.gd",
@@ -2226,8 +3281,8 @@
     },
     {
       "file": "game/bench/slm_lifecycle_soak.tscn",
-      "bytes": 212,
-      "sha256": "37b3106f75ca4c8e27b383b4079fb01ae11555007026e298cdf559bef0915afc"
+      "bytes": 187,
+      "sha256": "96b4364afd3d61368f8410db10f90f83bc18d237872ec1a76b0ac6d62aac7141"
     },
     {
       "file": "game/bench/slm_smoke.gd",
@@ -2295,14 +3350,89 @@
       "sha256": "1ff1445ac488bf0a3a1d5cf1c287003d602d90a88f22a076ddf18cb4ef11b1f6"
     },
     {
+      "file": "game/coastal/coastal.schema.json",
+      "bytes": 15285,
+      "sha256": "e972e5156a538daad1bb6620f16f9012ec9bb0ba0837f3f8c17368117d7466b7"
+    },
+    {
+      "file": "game/coastal/warm_bay_s1/export/package.json",
+      "bytes": 92211,
+      "sha256": "2947d153f5eb74253a056a914bfc3e88d117e3cb36e04c8cf72e0bdd8937fde3"
+    },
+    {
+      "file": "game/coastal/warm_bay_s1/export/sim_adapter/activation.example.json",
+      "bytes": 512,
+      "sha256": "7cf44aa58b8e342e8686cb7878cd7a5b209aa8b151333ae5ca1a4c852c8994c0"
+    },
+    {
+      "file": "game/coastal/warm_bay_s1/export/sim_adapter/affordances.overlay.json",
+      "bytes": 51685,
+      "sha256": "c2e8e99c9c35b1b2ff3e7adbddf26cf1b3cff537883d505d71ddb3698c394557"
+    },
+    {
+      "file": "game/coastal/warm_bay_s1/export/sim_adapter/interiors.overlay.json",
+      "bytes": 547024,
+      "sha256": "ab6b4ade5105be3cc5bceecfef3e9a743b1d7f5664f09b66f27ad57da3c939c9"
+    },
+    {
+      "file": "game/coastal/warm_bay_s1/export/sim_adapter/manifest.json",
+      "bytes": 930,
+      "sha256": "2496a8433740e9fe300183949eac384be2464f8e4bb419e578a79aff602364ab"
+    },
+    {
+      "file": "game/coastal/warm_bay_s1/export/sim_adapter/merged_preview/affordances.json",
+      "bytes": 55217,
+      "sha256": "51eed30d0bff0a624f794a4eb5485235ae318212e2b26f543005f8e63831793c"
+    },
+    {
+      "file": "game/coastal/warm_bay_s1/export/sim_adapter/merged_preview/interiors.json",
+      "bytes": 620142,
+      "sha256": "dd351c2bc52206411e8b8fd309aaa4bdb4a698c27d22548b794443741078cdfb"
+    },
+    {
+      "file": "game/coastal/warm_bay_s1/export/sim_adapter/merged_preview/manifest.json",
+      "bytes": 1457,
+      "sha256": "55d0e5ed2f7876187750e04716f3f42f687a2872fcae6c14e3200c59da0158f1"
+    },
+    {
+      "file": "game/coastal/warm_bay_s1/export/sim_adapter/merged_preview/spaces.json",
+      "bytes": 39059,
+      "sha256": "12a156a4d32f872e03b0b7116dd8f781896e7ea5c9936c5f31863e989f582f32"
+    },
+    {
+      "file": "game/coastal/warm_bay_s1/export/sim_adapter/spaces.overlay.json",
+      "bytes": 27627,
+      "sha256": "8ce06c41f36217daaf46fbdd05f387d7c8326635464eca24bc78a1056cc0fdd4"
+    },
+    {
+      "file": "game/coastal/warm_bay_s1/town.spec.json",
+      "bytes": 65969,
+      "sha256": "cc3588493b5fbbc900c79c7ee27f40ffcc0abaf2a82833ff17735c1ded8f0bf6"
+    },
+    {
       "file": "game/data/agents.json",
       "bytes": 4003,
       "sha256": "98044c7c12d9ca06c691847e78e33e92785a4beee4126bc645de74dc5a135a49"
     },
     {
+      "file": "game/data/banking.json",
+      "bytes": 619,
+      "sha256": "32e99861988da24e09495d4f5329999da127f5761755790696dfca35a224e5d7"
+    },
+    {
       "file": "game/data/buildings.json",
       "bytes": 3851,
       "sha256": "60db5ba64ee7df41661171bf05006f4431f6cb679f0b7eff73fefea6f4f755ea"
+    },
+    {
+      "file": "game/data/civic_projects.json",
+      "bytes": 3215,
+      "sha256": "9b3d9f6b2feda211c293bf9247116a47c321556937015a9b8a967b15e391c744"
+    },
+    {
+      "file": "game/data/coastal_plan.json",
+      "bytes": 39849,
+      "sha256": "84c01ec12bb24edef6b05fef9a962f737603a5b57579f123b996dc72597db785"
     },
     {
       "file": "game/data/economy.json",
@@ -2311,8 +3441,8 @@
     },
     {
       "file": "game/data/elections.json",
-      "bytes": 730,
-      "sha256": "cdd8e8faffab81633920e34e15f50c4112b9605cc53fd49e80eca54836cb7811"
+      "bytes": 2211,
+      "sha256": "d93e818780bc58b6c9bdb12b779e174a783cc46bdf37e07359a244c846d791c6"
     },
     {
       "file": "game/data/festivals.json",
@@ -2336,8 +3466,8 @@
     },
     {
       "file": "game/data/interiors.json",
-      "bytes": 26546,
-      "sha256": "4526aaf9ff829c32c22de59dfefb1593a4edaf42d0b2d5324f7c93f337932976"
+      "bytes": 41858,
+      "sha256": "e937aa1e6d7273b8293ae15878f976b42c89a2acd4b35c546ee6065635b52fe6"
     },
     {
       "file": "game/data/jobs.json",
@@ -2356,8 +3486,8 @@
     },
     {
       "file": "game/data/map.json",
-      "bytes": 35424,
-      "sha256": "b6b6dd6a456448a5c45cb00b23f436bccaaaa8838d252cea49d9f8158c9350be"
+      "bytes": 38530,
+      "sha256": "5a51c6d68b744a6f0f9f8df62647b6bda17c71d6768ed325bf2ec9ce6072699c"
     },
     {
       "file": "game/data/needs.json",
@@ -2431,13 +3561,13 @@
     },
     {
       "file": "game/data/spaces.json",
-      "bytes": 11031,
-      "sha256": "20576b1bcd6ee967726bc6ff1ccf24e7dfac02c6e27405996e2f2e5d5f23ecb3"
+      "bytes": 11848,
+      "sha256": "5ecd091807116e46f57fb04404acf20d742f5616229ac891455a1736c675b027"
     },
     {
       "file": "game/data/town3d/agents.json",
-      "bytes": 6131,
-      "sha256": "387f57ac806e39556b315a32d5c552e4b60e4f3aa26ce2fca487c2295e71c7a5"
+      "bytes": 6137,
+      "sha256": "59791794086aabf1972d710737378325e503a7cb8dba83fcbea52658521fb3f7"
     },
     {
       "file": "game/data/town3d/buildings.json",
@@ -2446,8 +3576,8 @@
     },
     {
       "file": "game/data/town3d/elections.json",
-      "bytes": 871,
-      "sha256": "34631fad1213befae53ae02e8583ee23e0cd36cbf3b7c60b89a874ae8aa269df"
+      "bytes": 2599,
+      "sha256": "8cd81159d25acdd2a92465cf0907f1b6581c329a7840a268e8f26885a8bcdef5"
     },
     {
       "file": "game/data/town3d/festivals.json",
@@ -2461,8 +3591,8 @@
     },
     {
       "file": "game/data/town3d/interiors.json",
-      "bytes": 2060284,
-      "sha256": "42b9266be865fa467d0445ca70c04e5443454078809ad41744548e4ade9f69a5"
+      "bytes": 2062022,
+      "sha256": "f5c056363421846648fb77d01a2a893bebdda3f166ff58a3630865551c4b387e"
     },
     {
       "file": "game/data/town3d/jobs.json",
@@ -2476,38 +3606,38 @@
     },
     {
       "file": "game/data/town3d/map.json",
-      "bytes": 982454,
-      "sha256": "7107716f74c823387bb52c07eb9042b9c2b5a06cecb4c00b8cd47711cae72e63"
+      "bytes": 983427,
+      "sha256": "330febe815bbe9d1324cbaa644e04b534973175e20ae7f72275ee1ed740fc5fb"
     },
     {
       "file": "game/data/town3d/production.json",
-      "bytes": 63717,
-      "sha256": "69c8590aba0683f074b77e6c461f89f613892b3b3b5ac1e151b549c69f84214b"
+      "bytes": 63723,
+      "sha256": "8311bd5eee192751be412a5d17d30ca896f918aa4402a9a714765e075fcf9cb2"
     },
     {
       "file": "game/data/town3d/profile.json",
       "bytes": 4268,
-      "sha256": "6c3516fc10ce2b0622072e84a96750bd46965b46978e3a1be5284490a63c6202"
+      "sha256": "66c800130175677ec9c82ed44d7a1833dca634c602ffcc604e9aa258386d2c5e"
     },
     {
       "file": "game/data/town3d/projection.json",
-      "bytes": 1130113,
-      "sha256": "b699c9711c02c0d9f8f2e62e65a9b0cb6b3ce4d38ddf039697247da5b85629ad"
+      "bytes": 1133444,
+      "sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a"
     },
     {
       "file": "game/data/town3d/spaces.json",
-      "bytes": 59490,
-      "sha256": "44afcec2abe0ea03adeff8401a6f7ecdb8a395987da76c81664e98b9d52cc857"
+      "bytes": 59605,
+      "sha256": "192d1e9efca883ec9c7d2ed5b83fc78a1f5d255af2a0e64f0851001f10afdbd7"
     },
     {
       "file": "game/data/utility.json",
-      "bytes": 6397,
-      "sha256": "19292e93d523a10d9a905862a291f8609e133e7adebc34c8315da60cb3bfa7db"
+      "bytes": 6653,
+      "sha256": "97ce6652e8e608a8bf4dbc462f98e187ff8a5c05319b674ce47596a2cb579f7d"
     },
     {
       "file": "game/data/voicebank.json",
-      "bytes": 90855,
-      "sha256": "baaf8c138adffbfab41766f5b6907abab476788f70fb9dc4a26e7ee1d27f41de"
+      "bytes": 95634,
+      "sha256": "bc9fdb21ce1a142125baacfac06940e627e158891da5dabe7787fb77b2625c42"
     },
     {
       "file": "game/data/weather.json",
@@ -2516,8 +3646,8 @@
     },
     {
       "file": "game/export_presets.cfg",
-      "bytes": 2694,
-      "sha256": "b8bcdd4fc9f2f97ed4ff187ec64d26f85afbae0af9d195976f49b18862871bfb"
+      "bytes": 2722,
+      "sha256": "a905e9ceae0d4059f5ee3c680eb2e7fb43a03187a97432c7678ec9f0938b435e"
     },
     {
       "file": "game/fixtures/save_schema1_d46cbb1.part1.b64",
@@ -2546,8 +3676,8 @@
     },
     {
       "file": "game/project.godot",
-      "bytes": 1464,
-      "sha256": "025b444fed8083734238baaf5050a6f7edb426b03ad2945555743d5157f1ffcb"
+      "bytes": 1197,
+      "sha256": "c4bc940834b707510e84bb92f993888afc80cd5174cc6a410c060a365d2c2ce6"
     },
     {
       "file": "game/scenes/Main.tscn",
@@ -2560,6 +3690,11 @@
       "sha256": "214ced31f8d05233297d1b50ead258eccdd994c386ba5fcb4f5a657a6f5f580c"
     },
     {
+      "file": "game/scenes/banking_test.tscn",
+      "bytes": 172,
+      "sha256": "f4e53d2568d41d315efdfca8526dcfd85ce587dd64b456a3bb4299f54ea3a6e0"
+    },
+    {
       "file": "game/scenes/c1_locked_ortho_test.tscn",
       "bytes": 186,
       "sha256": "97c2872ecfd24d9cc4bd5ecf24a15abb232de3b083ce07951a069b8bd2a89dc7"
@@ -2570,9 +3705,39 @@
       "sha256": "ce73db1399072f5fac3cb6bfd54b473c5729d2097a088d2867098465dbc91049"
     },
     {
+      "file": "game/scenes/civic_player_journey_test.tscn",
+      "bytes": 222,
+      "sha256": "181f075153a7cf85b5dfec99f9e1644e46433f22fb4a59bbcbf8640157027e51"
+    },
+    {
+      "file": "game/scenes/civic_project_test.tscn",
+      "bytes": 195,
+      "sha256": "d296c3da785c79b613b07262cbf3e2450d18df52acbf8cda6b19ff0cf5a7f404"
+    },
+    {
+      "file": "game/scenes/civic_projection_journey_test.tscn",
+      "bytes": 232,
+      "sha256": "79bbceb86d5ef8b7e81f4905365a6346f34131fe10042f4a467b5f75a83c65d8"
+    },
+    {
+      "file": "game/scenes/coastal_camera_test.tscn",
+      "bytes": 185,
+      "sha256": "20da8c5f326ad72ff680955a95fa73fa99b3e0074b91dfd1f9b51a36765116cc"
+    },
+    {
+      "file": "game/scenes/coastal_neighborhood_preview.tscn",
+      "bytes": 219,
+      "sha256": "22007e7feca0e41010fa3ddfad52532d2a60b9195fa23a6931e2a67611d49186"
+    },
+    {
       "file": "game/scenes/desire_test.tscn",
       "bytes": 176,
       "sha256": "9574e4797d92ed3658125f16d5d45181087f64a3344e8e988065dedb9f5471ce"
+    },
+    {
+      "file": "game/scenes/desktop_resume_test.tscn",
+      "bytes": 185,
+      "sha256": "b7f8a4111e1ddc63334b0538b20df9d3db5c1899537e3654dad38163bd1787d5"
     },
     {
       "file": "game/scenes/distill_dump.tscn",
@@ -2585,14 +3750,39 @@
       "sha256": "dd244b488d04b6be952121654d065c23cfe93d437a9ac7974c4dde3b49a0ee36"
     },
     {
+      "file": "game/scenes/exterior_visual_test.tscn",
+      "bytes": 187,
+      "sha256": "ff790017cf89a54b51c8ddc7953d48d4b3dbfedd96077dc03bda008d8d5f5258"
+    },
+    {
+      "file": "game/scenes/gameplay_tour.tscn",
+      "bytes": 174,
+      "sha256": "b4d8954d4de3965bca0d3b1ff0b0522326bb0504c61c4b4946dd89233a44bd19"
+    },
+    {
       "file": "game/scenes/goals_test.tscn",
       "bytes": 208,
       "sha256": "d776c84b142fd13df0acd19dd3e8017dd880d6f194c932ecdb061e942fae437f"
     },
     {
+      "file": "game/scenes/governance_test.tscn",
+      "bytes": 186,
+      "sha256": "1788b0efe8de4e169c7928afdc3a884d194197babd099f6a324b3336b7b5e9c2"
+    },
+    {
+      "file": "game/scenes/interaction_legibility_test.tscn",
+      "bytes": 207,
+      "sha256": "80033948483687d0140839d088b46a008304f4a7500ea1a53931b7caf4b371c0"
+    },
+    {
       "file": "game/scenes/ledger_test.tscn",
       "bytes": 176,
       "sha256": "ec7aad778e842823307cb07a31515bf0380023e0e34c31069b216801b10616ce"
+    },
+    {
+      "file": "game/scenes/life_adversarial_test.tscn",
+      "bytes": 189,
+      "sha256": "75cdf19661a2530b28302ba62ce3312268271121a8fca75008c858601fb396f1"
     },
     {
       "file": "game/scenes/life_test.tscn",
@@ -2660,6 +3850,26 @@
       "sha256": "6cd099457e3b3ff58cdb52aff3941294002d9570c337e640e1a1ba8c37730ef5"
     },
     {
+      "file": "game/scenes/player_first_session_bank_resume_test.tscn",
+      "bytes": 218,
+      "sha256": "d724f79687745fb632fbca8846c27fb9ab2cd70a0bb92bb7aff5b60d8051e4a6"
+    },
+    {
+      "file": "game/scenes/player_first_session_bank_test.tscn",
+      "bytes": 205,
+      "sha256": "537d1eae48ada019fe52d2d666db2fed6520ff6b0bbd186211d8fb8daa0ac8ea"
+    },
+    {
+      "file": "game/scenes/player_first_session_test.tscn",
+      "bytes": 196,
+      "sha256": "c1f14f3d9af4085d2562cad31c0f54cfce8469deb852552f80a524e70d9abeed"
+    },
+    {
+      "file": "game/scenes/player_journey_test.tscn",
+      "bytes": 185,
+      "sha256": "d44677c64b70bdcce910c26ffce9140eda51dd40c2673e6d5ed5a13969c38a8f"
+    },
+    {
       "file": "game/scenes/player_replay_test.tscn",
       "bytes": 183,
       "sha256": "6185210b1086e1a6c465b6270db85eda9a19655233c707695015d753d234279a"
@@ -2693,6 +3903,11 @@
       "file": "game/scenes/save_migration_test.tscn",
       "bytes": 185,
       "sha256": "1a41b7bcdc6a0f27ac6856715a626cb8c98ab98af2fa349b4219b37182700894"
+    },
+    {
+      "file": "game/scenes/save_resume_test.tscn",
+      "bytes": 193,
+      "sha256": "2af13b22a3fa5e5220b05de8d513fca4b28df2706ddd5e44f555639897a5dbae"
     },
     {
       "file": "game/scenes/slm_backend_test.tscn",
@@ -2735,6 +3950,16 @@
       "sha256": "df74621e5a541e5145493af26951e6aa1debe636d1b04e0f79a7fcae680e3120"
     },
     {
+      "file": "game/scenes/town_walkthrough.tscn",
+      "bytes": 180,
+      "sha256": "506f33b66939260ed87b588f76ccc492c26ae5c08f5f5b42b3d120c66ccd4259"
+    },
+    {
+      "file": "game/scenes/ui/CoastalLedgerPanel_9patch.tscn",
+      "bytes": 344,
+      "sha256": "fcc377341deebbd4b401c42a9646039638005221d2aadc99dc79335c2fcad121"
+    },
+    {
       "file": "game/scripts/AIBackend.gd",
       "bytes": 102641,
       "sha256": "c5113bddb32a8ee9b30d800bce0a165557a4e6f05bd85f4de73689e909727068"
@@ -2746,13 +3971,88 @@
     },
     {
       "file": "game/scripts/Audio.gd",
-      "bytes": 23105,
-      "sha256": "e1acaa79463a50d2c7551d99df05c09c415ea3ce995aa1eb3171f689341a3aa1"
+      "bytes": 23549,
+      "sha256": "08d20c89d20c966d3a344df91c754daab290cd9c67da29490f8ff9bf93028647"
+    },
+    {
+      "file": "game/scripts/CivicPresentation.gd",
+      "bytes": 1879,
+      "sha256": "d6c2f097b4cbc786403849aa5cabacd88fae0c4c7f77fd9ff257b17790a6e871"
+    },
+    {
+      "file": "game/scripts/CivicProject.gd",
+      "bytes": 12548,
+      "sha256": "427be350ab46b16f8ea2c50351a092e61d0aecada659072dfe3dbd31777e9a92"
+    },
+    {
+      "file": "game/scripts/CoastalArchitecture.gd",
+      "bytes": 6814,
+      "sha256": "047702b7ef06e1e83c1d22ba49a7657c2826160211cd544b5f2c6adbd0058efa"
+    },
+    {
+      "file": "game/scripts/CoastalBuildCLI.gd",
+      "bytes": 1943,
+      "sha256": "2550e4258f799092702a530e34dc091d8a11cdca5cead1f2785e5fafb013321f"
+    },
+    {
+      "file": "game/scripts/CoastalInteriorNavigation.gd",
+      "bytes": 8529,
+      "sha256": "9b840b586c56056addb1472260dc4b9474a489c94fa965cb1fa3f377b3db10c8"
+    },
+    {
+      "file": "game/scripts/CoastalModuleKitImporter.gd",
+      "bytes": 4520,
+      "sha256": "4a66bad7f8827734ae0c6ffd22f2279ea2b5694dae10b9bb82993e9852619c6f"
+    },
+    {
+      "file": "game/scripts/CoastalNeighborhoodPreview.gd",
+      "bytes": 19330,
+      "sha256": "5f103af0d3c530defd55957ffae1391983ef6c735fef28189e8b81a48901a8b7"
+    },
+    {
+      "file": "game/scripts/CoastalOverlayBundleImporter.gd",
+      "bytes": 10110,
+      "sha256": "9cdd99eb841059c5228c2b9d60806f3ea0f0687899e0b9db6c0551a4a07dda30"
+    },
+    {
+      "file": "game/scripts/CoastalOverlayMergeCLI.gd",
+      "bytes": 3560,
+      "sha256": "34207422e0f40dfd312794193303616733c0c4a839c65f3393fbb1b527dfb69b"
+    },
+    {
+      "file": "game/scripts/CoastalPackageCompiler.gd",
+      "bytes": 39821,
+      "sha256": "965eb8fd4238a93c69580a21f6e6f8730f593d34b741982449208c795a696452"
+    },
+    {
+      "file": "game/scripts/CoastalPlan.gd",
+      "bytes": 12230,
+      "sha256": "6b48d65e8aa0c391a3068ea39e237ac3eaa9b72308d2731f6ef1f3923de0f25e"
+    },
+    {
+      "file": "game/scripts/CoastalPreviewCaptureCLI.gd",
+      "bytes": 1862,
+      "sha256": "20abdb52835b8a17a2a9207588f6746dae0fe4ebadd1f85b3e0c5d090888fdbb"
+    },
+    {
+      "file": "game/scripts/CoastalSpaceGraphExporter.gd",
+      "bytes": 13345,
+      "sha256": "020b056d57cd835c066067bc2d0a4f718688cd2ce4fb8fe142fc7a77ce5b272a"
+    },
+    {
+      "file": "game/scripts/CoastalSpaceOverlayExportCLI.gd",
+      "bytes": 3039,
+      "sha256": "762d290d79d25d5f03dd81a6211674db537d064dabf44d33ffef93a6c10d7b7d"
     },
     {
       "file": "game/scripts/DataScenarioProvider.gd",
       "bytes": 4756,
       "sha256": "63aba7c23a06c713fb423b9d39ece0baba328c50ddb3ea4a3e8a8d3d0d0cae39"
+    },
+    {
+      "file": "game/scripts/DesktopAcceptance.gd",
+      "bytes": 1884,
+      "sha256": "a3ee809b8150abbfb28bf855ce8129be50b4da5eaec048ded4b9194ed5c67354"
     },
     {
       "file": "game/scripts/Director.gd",
@@ -2766,13 +4066,13 @@
     },
     {
       "file": "game/scripts/Ledger.gd",
-      "bytes": 10163,
-      "sha256": "9af8620b87a5f7a8fe8d539328047d08e358ed1fb175b13570f9775ca71767b6"
+      "bytes": 10503,
+      "sha256": "89eb72312f6ba621146860540988830bdc17510ab63b2816f5cad8da50cbdb1b"
     },
     {
       "file": "game/scripts/LifeMode.gd",
-      "bytes": 67877,
-      "sha256": "b76b31f885aadb540f25953042625a269069f69dfa64163ad4a1d8977e5c94fe"
+      "bytes": 77182,
+      "sha256": "4dfe74e1bdb31f9f12b54601999e21a749d1d61a82a0328243aefea097a02b53"
     },
     {
       "file": "game/scripts/LocalLlama.gd",
@@ -2786,8 +4086,8 @@
     },
     {
       "file": "game/scripts/Main.gd",
-      "bytes": 222117,
-      "sha256": "b40c9b198eac322a8a58c0da13bc1ed67f545fc683393f689178adcb4c81427c"
+      "bytes": 244531,
+      "sha256": "2523ae2e5eef10840f4a04d7927d3e8e5ec27cff653e25c645ba1b148350f7c1"
     },
     {
       "file": "game/scripts/Memory.gd",
@@ -2801,13 +4101,13 @@
     },
     {
       "file": "game/scripts/ProbeController.gd",
-      "bytes": 15719,
-      "sha256": "6014f51a892c7a8449b785600ee400262453a8e769b6cfb6d256af061bd0cad8"
+      "bytes": 16270,
+      "sha256": "c34f0bdcf92338d7e746f3fc33191f12ddf60fc72b152b36604361d2832ccae6"
     },
     {
       "file": "game/scripts/Sim.gd",
-      "bytes": 535457,
-      "sha256": "35c424400ed6c1437d6b5b742e6710599c52ff032a2eb6cc62d6384a57dbc4d6"
+      "bytes": 590718,
+      "sha256": "37badd0b2c8f5f9bce91a3988fa34901a1e51b31f3a8757d63f320d63c884a41"
     },
     {
       "file": "game/scripts/SimExtensions.gd",
@@ -2816,8 +4116,8 @@
     },
     {
       "file": "game/scripts/SpaceGraph.gd",
-      "bytes": 8917,
-      "sha256": "55dd889317d221e6fc1d5f38b5f669bba7034a1ed58bcd506a142c9f6964aea0"
+      "bytes": 9440,
+      "sha256": "60fed06c94414336d11413fe89d6ee64aed525997f2315dc274b3b2d921de62a"
     },
     {
       "file": "game/scripts/Story.gd",
@@ -2831,18 +4131,33 @@
     },
     {
       "file": "game/scripts/TownWorldProfile.gd",
-      "bytes": 4972,
-      "sha256": "fc807627a3786cafc0d247649dfdcd27c99ebe2086baddbcf8d26f1c092d55a2"
+      "bytes": 5715,
+      "sha256": "c41adf7a0a72c780c1cf057c97c56d5f9fb165a4def24ca46b0f1ce10a5c68d5"
+    },
+    {
+      "file": "game/scripts/WorldGenAitownAdapterCLI.gd",
+      "bytes": 4493,
+      "sha256": "68abda231f2af5258f25e75e92e8536f81b2a3453e656f43fcdfdaceaabd6320"
+    },
+    {
+      "file": "game/scripts/WorldGenSaveMigrationCLI.gd",
+      "bytes": 4458,
+      "sha256": "a712cc0d5e0b9e70739262b093e300755815a3cb6560b8f73e0665a1af536563"
     },
     {
       "file": "game/scripts/WorldView.gd",
-      "bytes": 471908,
-      "sha256": "ec900dc85a7fc09362fd5cbae5f3a9d0c669f3b3c81bb36a388ec7a697997b71"
+      "bytes": 481742,
+      "sha256": "22c215a1fcd174b90b6aaa07f2363a20c69b18ce782f6a786a3ea829e6e14931"
     },
     {
       "file": "game/scripts/WorldView3D.gd",
-      "bytes": 29184,
-      "sha256": "80073d29653fd81ff984c12f971ed543b9d45f2d55338c8f1cf3a231d82112f0"
+      "bytes": 29940,
+      "sha256": "c470cf9423086b08c60c18183632773dba467e6e99b50389b1a2347175e975fd"
+    },
+    {
+      "file": "game/scripts/banking_test.gd",
+      "bytes": 13102,
+      "sha256": "6dbdfb69313f24649b15f2ffc6bd588795832d765d381f845a1d63d995f6d671"
     },
     {
       "file": "game/scripts/c1_locked_ortho_test.gd",
@@ -2851,18 +4166,53 @@
     },
     {
       "file": "game/scripts/cafe_guest_access_test.gd",
-      "bytes": 6563,
-      "sha256": "be561831f4ab87bcd555615ca3d3effa9ad02792a179d94e1f444d6533a048ea"
+      "bytes": 9429,
+      "sha256": "ae72c6c2279300423981059786807573e1d35544095f727bf5927811cd82026f"
+    },
+    {
+      "file": "game/scripts/civic_player_journey_test.gd",
+      "bytes": 8939,
+      "sha256": "048117ecc244e98a0e5f4caa8eb000dedc6b2f3f6116abcc7e033baae3d4683c"
+    },
+    {
+      "file": "game/scripts/civic_project_test.gd",
+      "bytes": 19152,
+      "sha256": "95ff02a319f622fda5a162a6b07c68a5c374b8c195a2a62d8e3795ee5d315a52"
+    },
+    {
+      "file": "game/scripts/civic_projection_journey_test.gd",
+      "bytes": 7043,
+      "sha256": "53468829e9786c95276207fd2aae64a48cc694c329215cfc5e6c52adafb5b2df"
+    },
+    {
+      "file": "game/scripts/coastal_camera_test.gd",
+      "bytes": 4391,
+      "sha256": "bd8fec91a35313655afd34f99f03ea538b72b74215e3a6d84099fceff5eb00a0"
     },
     {
       "file": "game/scripts/desire_test.gd",
-      "bytes": 15883,
-      "sha256": "9fddeffd27d5b5b6caf7380b2b7c92e390f804c64f2160ae045c731834ec5a48"
+      "bytes": 16867,
+      "sha256": "09a4ec369999b2d209feb44cb40bca05c0307e2c56187cd99f4aafc72ea53038"
+    },
+    {
+      "file": "game/scripts/desktop_resume_test.gd",
+      "bytes": 2782,
+      "sha256": "c317f5aca31c4fb23a6d939f0901e094deee0d94053a87de469afe1a833be2e4"
     },
     {
       "file": "game/scripts/event_prose_test.gd",
-      "bytes": 7041,
-      "sha256": "513d9f6693d534181d85c7fab67e46ed0d5916c535412203bfeaf4e0d78de6bf"
+      "bytes": 7774,
+      "sha256": "3cdee11d6d6f0d3312c59aac30130d336c8e7546398d8efe460acda3ea950c13"
+    },
+    {
+      "file": "game/scripts/exterior_visual_test.gd",
+      "bytes": 5828,
+      "sha256": "06db7328b7ab542332b0f43911f414a60c8e1b9193a770d00a6c04ec59915716"
+    },
+    {
+      "file": "game/scripts/gameplay_tour.gd",
+      "bytes": 5267,
+      "sha256": "621e436d7434f5a56e1105e61899a0641c232c83e11df4e5a2cc7e058fa2147b"
     },
     {
       "file": "game/scripts/goals_test.gd",
@@ -2870,9 +4220,24 @@
       "sha256": "e531eda5f57c075bd6922a33cc773f9a40fde86f68410f405551abc7802618a8"
     },
     {
+      "file": "game/scripts/governance_test.gd",
+      "bytes": 11870,
+      "sha256": "3ace13d950fa8d1aadf0eb21139d3ef8141658297fbda9d7a7f18a5dac592573"
+    },
+    {
+      "file": "game/scripts/interaction_legibility_test.gd",
+      "bytes": 8669,
+      "sha256": "c9b9cf12704a35df35fa9d8db9cb633eac28fa32f6f3775902c6686726db8221"
+    },
+    {
       "file": "game/scripts/ledger_test.gd",
-      "bytes": 7946,
-      "sha256": "2e28c6928644345a72f2eaf37bb56bfd4151ef6341a90050e16e4115e6326616"
+      "bytes": 9437,
+      "sha256": "ef83e42fab85685f0e169ebf5d381a61ebcc2df7e534698e4a7ee4e884ce79c0"
+    },
+    {
+      "file": "game/scripts/life_adversarial_test.gd",
+      "bytes": 11213,
+      "sha256": "3f23b153b9c5229a9f299c8d6979142f43f818d7c5c4ff7060b6c01b0d16fbe6"
     },
     {
       "file": "game/scripts/life_test.gd",
@@ -2936,8 +4301,8 @@
     },
     {
       "file": "game/scripts/p1v_warehouse_observatory_test.gd",
-      "bytes": 20877,
-      "sha256": "3fd60652372de1f54c98b26842f3cf8000bbeda4eb781257685de171b22d00c4"
+      "bytes": 21069,
+      "sha256": "3e999cc5c5aadf4afb43c5970fd79cc2df0f35dc71a7e30a1ae7cd9b40b463ec"
     },
     {
       "file": "game/scripts/player_agency_test.gd",
@@ -2945,14 +4310,34 @@
       "sha256": "0106cca33677b28b546d4d72e3bcf570cd2d1e9ae10e5b1197f592888ba6410e"
     },
     {
+      "file": "game/scripts/player_first_session_bank_resume_test.gd",
+      "bytes": 4751,
+      "sha256": "1a85207fb3d6046ff5e1ebc0ea0da56f94974304ac879b8f951b8f45e3621f62"
+    },
+    {
+      "file": "game/scripts/player_first_session_bank_test.gd",
+      "bytes": 8214,
+      "sha256": "c0f6360fdb32ea8d200bd785737ca82594bdd54383ecbc9ed6cb519892a89b4c"
+    },
+    {
+      "file": "game/scripts/player_first_session_test.gd",
+      "bytes": 30177,
+      "sha256": "409aa87fb4637c6791f3134e42dc98e954b16b5b42ee180f5c4a6206612dc434"
+    },
+    {
+      "file": "game/scripts/player_journey_test.gd",
+      "bytes": 12376,
+      "sha256": "985824490ec68b09aa49809ce75dfdec7c96d9c433e6956ab1b279ad0e99ba12"
+    },
+    {
       "file": "game/scripts/player_replay_test.gd",
-      "bytes": 20219,
-      "sha256": "ba9edb089ffb7a10ab67c19485ceccf7fe19eecaab231cce2ea473729dec090e"
+      "bytes": 20246,
+      "sha256": "d79cd5d78a8163884c53d4a94b9cda2b59ccd3fb9532e984ddfc1fce025901ec"
     },
     {
       "file": "game/scripts/player_touch_test.gd",
-      "bytes": 20024,
-      "sha256": "8413e3c3d581d3c43d0e9e6dae7c3ec9892a463ecb80bbb5f1a998565c827ea6"
+      "bytes": 21613,
+      "sha256": "ebdf52f09e4e3e15f0ee24f0f9fb70a46b83642fbd49a6600d022843871a77a7"
     },
     {
       "file": "game/scripts/prompt_preview.gd",
@@ -2978,6 +4363,11 @@
       "file": "game/scripts/save_migration_test.gd",
       "bytes": 20854,
       "sha256": "395e104fda67e49d34803775dbbe0a0d442184dd22313031f1427f4a9373c666"
+    },
+    {
+      "file": "game/scripts/save_resume_test.gd",
+      "bytes": 11909,
+      "sha256": "7042b7cad1c9f7ee51b295ef144ed10103ee64324b71ce48c6247baff2451c63"
     },
     {
       "file": "game/scripts/scriptwriter.gd",
@@ -3006,8 +4396,8 @@
     },
     {
       "file": "game/scripts/space_test.gd",
-      "bytes": 19788,
-      "sha256": "49aac820b473e9d5884c1e8bb7d62e77eafcf4601ce07cc6f4e773648e9ae041"
+      "bytes": 20412,
+      "sha256": "6c4c8604bb5713f5a0f34adcaa5e290efc9d2be89b22f3654b05f05df79620eb"
     },
     {
       "file": "game/scripts/state_projection_gate.gd",
@@ -3021,23 +4411,38 @@
     },
     {
       "file": "game/scripts/town_bridge_test.gd",
-      "bytes": 18227,
-      "sha256": "334d94dcbc445659064f6fcbc22e550a104f7532ce4457be0aaa6f1056485ffe"
+      "bytes": 23904,
+      "sha256": "c05184c128a37f1e2a21da8da868e97360c0d0a79a6b9e9b2d90059e0ff041a1"
     },
     {
       "file": "game/scripts/town_bridge_visual_test.gd",
-      "bytes": 18218,
-      "sha256": "e2711b37b273bba9dc66d99c61338e2961d66b662eb4f0bb5c598ab975d460fc"
+      "bytes": 19788,
+      "sha256": "f53c26b46d863647a45f42fbf887376d97cbf9ad8bcb90328d93a6af1bebbe19"
+    },
+    {
+      "file": "game/scripts/town_walkthrough.gd",
+      "bytes": 31517,
+      "sha256": "5da35636355dcb1e590fa474765bd4892e3d3f96d2d3fe1607567131b4385138"
+    },
+    {
+      "file": "game/worldgen_activation.json",
+      "bytes": 800,
+      "sha256": "aace59124a3a868c16505500f163b85d8791b43af887bffea43a46cf16c99db3"
     },
     {
       "file": "tools/build_town_profile.py",
-      "bytes": 34731,
-      "sha256": "bf751edbe21ebef91caae8194013c7a148f5b34e7a254e5f9233cf25f74a7959"
+      "bytes": 38110,
+      "sha256": "e9db0ec8d62d618c10353828fbb91c7c5efc0690c19f62b36bd80be226268d52"
+    },
+    {
+      "file": "tools/fetch_town_assets.py",
+      "bytes": 10918,
+      "sha256": "ab599106c5653efa93d2ff7e8551aa1bd89c2733e7515a57d2b430c6cae60f8c"
     },
     {
       "file": "tools/package_town_bridge.py",
-      "bytes": 20547,
-      "sha256": "d06d7c1c71bd6757c6fdc5574674a62c1fe95f94881ce91f884830c914a90671"
+      "bytes": 20628,
+      "sha256": "53229bec7a5c6578c37de21039f57c634a8fc09c5068f38b7dfd0f44a1d0a3d7"
     },
     {
       "file": "tools/prepare-godot-optional.ps1",
@@ -3046,8 +4451,8 @@
     },
     {
       "file": "tools/run-town3d.ps1",
-      "bytes": 1365,
-      "sha256": "0524c5cb8c43f2e56c49e929ff40d6369e4d58bc6761163a1705c8e687733432"
+      "bytes": 2595,
+      "sha256": "2265179d3dbc561df0e64f8cdb94d1f3eb351140eea498dc5d381b6b0747e00d"
     },
     {
       "file": "tools/stage_town_assets.py",
@@ -3063,17 +4468,17 @@
     },
     {
       "file": "LivingTown.pck",
-      "bytes": 90365644,
-      "sha256": "f89bbbbf78f189acc3de5b8a7c229f0ba463d105223694fd64d72ca7693e3b71"
+      "bytes": 93993924,
+      "sha256": "38c52c3383499f4d318caeac56ed2a629f109c15b6ed6e190e1bc20f11685d7e"
     }
   ],
   "self_hash": "Excluded from this inventory; bound by the external source-package manifest and verification report.",
   "art_delivery": "Separate completed Blender delivery is unchanged.",
   "verification_counts": {
-    "profile_compile": 16,
-    "logical": 28,
-    "actual_game_visual": 27,
-    "legacy_regressions": 11,
+    "profile_compile": 18,
+    "logical": 36,
+    "actual_game_visual": 28,
+    "legacy_regressions": 35,
     "native_boot_and_binding": 7
   },
   "limitations": [

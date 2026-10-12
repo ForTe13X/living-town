@@ -270,7 +270,7 @@
 		"game/scripts/Sim.gd": "37badd0b2c8f5f9bce91a3988fa34901a1e51b31f3a8757d63f320d63c884a41",
 		"game/scripts/SpaceGraph.gd": "60fed06c94414336d11413fe89d6ee64aed525997f2315dc274b3b2d921de62a",
 		"game/scripts/TownWorldProfile.gd": "c41adf7a0a72c780c1cf057c97c56d5f9fb165a4def24ca46b0f1ce10a5c68d5",
-		"game/scripts/WorldView3D.gd": "de6ad2cc10abd8f60d5101657573496e127e785ba5950f816925e0094a7124d1",
+		"game/scripts/WorldView3D.gd": "c470cf9423086b08c60c18183632773dba467e6e99b50389b1a2347175e975fd",
 		"game/scripts/town_bridge_test.gd": "c05184c128a37f1e2a21da8da868e97360c0d0a79a6b9e9b2d90059e0ff041a1"
 	},
 	"status": "PASS"
