@@ -1,0 +1,170 @@
+{
+  "schema": "living_town.reserve_stair_land_negative_control.v1",
+  "status": "PASS",
+  "meaning": "The current audit rejected a known-bad historical saved native as expected; this is not final-model acceptance.",
+  "generated_utc": "2026-10-13T03:51:33.971156+00:00",
+  "negative_run_utc": "2026-10-13T03:49:57.663797+00:00",
+  "known_bad_native": {
+    "filename": "living_town_complete.blend",
+    "sha256": "9ea7bfbb4853862de88d577af613eecb576f0f0730b7d2464c73e98df17cef69",
+    "bytes": 101464204,
+    "exact_bytes_independently_verified_when_receipt_created": true,
+    "included_in_final_delivery": false,
+    "future_reproduction": "The bad native and full diagnostic reports are working history, not shipped payload. This compact receipt preserves their measured rejection and hashes. Rerunning the historical negative control requires recovering those exact bad native bytes."
+  },
+  "audit_module": {
+    "path": "tools/audit_reserve_scene.py",
+    "sha256": "5602a277897afb3665aeb1d2584313de5e13fd7b1d3140586e6110de869cba78",
+    "blender_version": "5.2.2 LTS",
+    "identity": "Current module actually executed for this negative run"
+  },
+  "gate": {
+    "id": "actual_stair_land_occlusion_and_walking_head_clearance_absent",
+    "observed_status": "FAIL",
+    "failure_count": 1950,
+    "additional_actual_trail_obstructions_vs_same_native_land_only_run": 40,
+    "stairs": [
+      {
+        "id": "Reserve_Ridge_Stone_Stair",
+        "walking_cells": 101,
+        "endpoint_approaches": 2,
+        "actual_walking_and_land_columns": 1920,
+        "within_cell_body_rays": 2667,
+        "actual_overhead_trail_columns": 1920,
+        "maximum_blocking_trail_height_above_walking_m": 0.6664352416992188,
+        "maximum_land_above_walking_m": 5.244655609130859,
+        "worst_land_control": {
+          "region": "landing",
+          "owner": "1",
+          "xy_m": [
+            -351.94544178554025,
+            143.39275610294698
+          ],
+          "walking_z_m": 35.40958023071289,
+          "land_z_m": 40.65423583984375
+        },
+        "walking_edge_inset_m": 0.05,
+        "land_penetration_tolerance_m": 0.02,
+        "head_band_m": 2.0,
+        "scope": "Saved land top must stay below actual walking plane plus tolerance, including edges; within-cell land body rays test .20,1.0,1.9m. Actual trail sheets strictly above the tolerance and below2m fail; approach self surfaces and overhead paths beyond2m are excluded."
+      },
+      {
+        "id": "Reserve_Ravine_Stone_Stair",
+        "walking_cells": 39,
+        "endpoint_approaches": 2,
+        "actual_walking_and_land_columns": 715,
+        "within_cell_body_rays": 1014,
+        "actual_overhead_trail_columns": 715,
+        "maximum_blocking_trail_height_above_walking_m": 0.07254219055175781,
+        "maximum_land_above_walking_m": 1.6010494232177734,
+        "worst_land_control": {
+          "region": "landing",
+          "owner": "1",
+          "xy_m": [
+            -248.0276993058899,
+            68.03296086588992
+          ],
+          "walking_z_m": 17.499048233032227,
+          "land_z_m": 19.10009765625
+        },
+        "walking_edge_inset_m": 0.05,
+        "land_penetration_tolerance_m": 0.02,
+        "head_band_m": 2.0,
+        "scope": "Saved land top must stay below actual walking plane plus tolerance, including edges; within-cell land body rays test .20,1.0,1.9m. Actual trail sheets strictly above the tolerance and below2m fail; approach self surfaces and overhead paths beyond2m are excluded."
+      }
+    ]
+  },
+  "full_diagnostic_report": {
+    "historical_path": "build/reserve_revision/bad14_stair_land_trail_negative.json",
+    "sha256": "f5bae145a11b3225cbcbf3214cd57fd2d84c3e6a761158d856840c464baf70c7",
+    "bytes": 153463,
+    "included_in_final_delivery": false,
+    "other_failed_checks": [
+      "saved_sources_bound_to_current_plans_and_modules"
+    ],
+    "note": "Concurrent planner/environment source revisions also made source bindings stale in this historical run. This gate independently measured saved stair, land and trail meshes without analytic terrain fallback."
+  },
+  "pure_fixture_proof": {
+    "historical_path": "build/reserve_revision/reserve_audit_stair_land_trail_clearance_qa.json",
+    "sha256": "f9016a7cf4cb55ea73463129194c86c57cc656dd858f66b713ec9ff4fe11fba8",
+    "bytes": 4874,
+    "status": "PASS",
+    "case_count": 12,
+    "audit_module_sha256": "5602a277897afb3665aeb1d2584313de5e13fd7b1d3140586e6110de869cba78",
+    "cases": [
+      {
+        "id": "clear_terrain_below_all_treads_landings_approaches",
+        "status": "PASS",
+        "observed_failure_count": 0
+      },
+      {
+        "id": "accept_10mm_explicit_surface_tolerance",
+        "status": "PASS",
+        "observed_failure_count": 0
+      },
+      {
+        "id": "reject_terrain_above_entire_two_metre_head_band_at_landing",
+        "status": "PASS",
+        "observed_failure_count": 127
+      },
+      {
+        "id": "reject_tread_edge_bank",
+        "status": "PASS",
+        "observed_failure_count": 3
+      },
+      {
+        "id": "reject_narrow_wall_between_vertical_station_controls",
+        "status": "PASS",
+        "observed_failure_count": 1
+      },
+      {
+        "id": "reject_buried_endpoint_approach",
+        "status": "PASS",
+        "observed_failure_count": 11
+      },
+      {
+        "id": "reject_missing_actual_stair_surface",
+        "status": "PASS",
+        "observed_failure_count": 190
+      },
+      {
+        "id": "reject_missing_supporting_land",
+        "status": "PASS",
+        "observed_failure_count": 240
+      },
+      {
+        "id": "reject_21mm_land_penetration",
+        "status": "PASS",
+        "observed_failure_count": 190
+      },
+      {
+        "id": "reject_actual_floating_path_680mm_over_tread",
+        "status": "PASS",
+        "observed_failure_count": 5
+      },
+      {
+        "id": "accept_path_above_two_metre_head_band",
+        "status": "PASS",
+        "observed_failure_count": 0
+      },
+      {
+        "id": "accept_endpoint_approach_own_surface_zero_height_difference",
+        "status": "PASS",
+        "observed_failure_count": 0
+      }
+    ]
+  },
+  "prior_land_only_negative_control": {
+    "negative_run_utc": "2026-10-13T03:43:15.331479+00:00",
+    "audit_module_sha256": "77ace8bf4ad1533a42e95e7bde02ba266d9d33879870d7f2be10d7d1f5ce69d2",
+    "failure_count": 1910,
+    "full_diagnostic_sha256": "68b46738e32e48bd98538cdc7b5afc0cee95d4f30bdb1e92dd696bdc1428f64c",
+    "nine_fixture_proof_sha256": "bfb339fef6880a6ff3462681767b5b9baba43e860ffdf0d4d0378ffc6bfc91a0",
+    "maximum_land_above_walking_m": {
+      "Reserve_Ridge_Stone_Stair": 5.244655609130859,
+      "Reserve_Ravine_Stone_Stair": 1.6010494232177734
+    }
+  },
+  "scene_mutations": "None: no operators, view-layer changes, visibility changes, selection, depsgraph evaluation, or save.",
+  "scope": "Historical actual-mesh negative control and pure fixture receipts only. The delivered native must separately pass this same current gate."
+}

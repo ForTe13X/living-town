@@ -1,0 +1,60 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "id": "revised_program_inventory_7_plus_41_plus_warehouse",
+      "status": "PASS",
+      "detail": {
+        "expected": 49,
+        "actual": 49,
+        "missing": [],
+        "unexpected": []
+      }
+    },
+    {
+      "id": "revised_parcels_no_positive_area_overlap",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "id": "new_room_envelopes_fit_parcels",
+      "status": "PASS",
+      "detail": {
+        "errors": [],
+        "scope": "Clear envelope spans only; actual furniture/partition meshes require native inspection."
+      }
+    },
+    {
+      "id": "49_yaw_aware_front_thresholds",
+      "status": "PASS",
+      "detail": []
+    },
+    {
+      "id": "revised_streets_clear_rotated_parcels",
+      "status": "PASS",
+      "detail": {
+        "collisions": [],
+        "clearance_m": 0.2,
+        "road_count": 86
+      }
+    },
+    {
+      "id": "rendered_street_ribbons_connect_all49_entrances",
+      "status": "PASS",
+      "detail": {
+        "connected_components": 1,
+        "threshold_owners": 49,
+        "method": "Geometric segment/ribbon intersection after final line simplification."
+      }
+    }
+  ],
+  "details": {
+    "current_layout_authority": {
+      "masterplan": "masterplan.json",
+      "building_count": 49,
+      "street_count": 86,
+      "old_source_anchors": "Legacy reference only; not an acceptance constraint for the redesigned town."
+    }
+  },
+  "masterplan_sha256": "b7e5522f62f4a390faa95502537fbbac14856cb278bccb695fbd5cabe186377f"
+}

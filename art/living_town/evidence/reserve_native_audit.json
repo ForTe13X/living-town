@@ -1,0 +1,3121 @@
+{
+  "schema": "living_town.reserve_native_audit.v1",
+  "generated_utc": "2026-10-13T03:55:07.979476+00:00",
+  "status": "PASS",
+  "blender_version": "5.2.2 LTS",
+  "source_blend": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\living_town_complete.blend",
+  "source_blend_sha256": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191",
+  "source_bindings": {
+    "masterplan_sha256": "b7e5522f62f4a390faa95502537fbbac14856cb278bccb695fbd5cabe186377f",
+    "terrain_plan_sha256": "69fc114cc289b33fc8e1d33e57daf77dd65e94d0340715c6a1974cd4d99fe349",
+    "landscape_plan_sha256": "68b8f4d2a9269b1fa8e9dde530bc83bd41b871effaf4d224ffd12ab953f6d4b1",
+    "terrain_profile_sha256": "6f722d04566f11cc58b3dd93cace5b781d8b2092bb7e70169f1f08279febc3b8",
+    "interior_plan_sha256": "665519089421f82d0869ff62f189f364426a064ece67912979f9709d752e5409",
+    "interior_module_sha256": "045228f452b1ace0c8363a13c56742758426d8b816bb1b00245d88d985f8dfe4",
+    "reserve_plan_sha256": "6841fdb5121e78372e9ccc80a990cb93b5acd7700db3f2661df2718b7e2980f7",
+    "reserve_plan_module_sha256": "178ce182db1e41820263462e873f1903e5488dbcf3deae0c81263f8cf3056e8a",
+    "reserve_environment_module_sha256": "520dbaef6f66dbef33dc83dda2d0d67c8dd6021f96f08f01c869ca5daae37030",
+    "reserve_amenities_module_sha256": "4187108afffea6843ab4ee62a67289f8d39a514c8714504d0f6ca01747f3b46b"
+  },
+  "audit_module_sha256": "5602a277897afb3665aeb1d2584313de5e13fd7b1d3140586e6110de869cba78",
+  "primitive_recipe_module_sha256": "41a59245afb3fc02789f1dfd2482c68c1b3282b029cd1087f177b8c3c699894d",
+  "measurements": {
+    "native_scene_meshes": 19319,
+    "mesh_bvhs": 3963,
+    "ray_queries": 46283
+  },
+  "checks": [
+    {
+      "id": "saved_sources_bound_to_current_plans_and_modules",
+      "status": "PASS",
+      "detail": {
+        "bindings": {
+          "masterplan_sha256": "b7e5522f62f4a390faa95502537fbbac14856cb278bccb695fbd5cabe186377f",
+          "terrain_plan_sha256": "69fc114cc289b33fc8e1d33e57daf77dd65e94d0340715c6a1974cd4d99fe349",
+          "landscape_plan_sha256": "68b8f4d2a9269b1fa8e9dde530bc83bd41b871effaf4d224ffd12ab953f6d4b1",
+          "terrain_profile_sha256": "6f722d04566f11cc58b3dd93cace5b781d8b2092bb7e70169f1f08279febc3b8",
+          "interior_plan_sha256": "665519089421f82d0869ff62f189f364426a064ece67912979f9709d752e5409",
+          "interior_module_sha256": "045228f452b1ace0c8363a13c56742758426d8b816bb1b00245d88d985f8dfe4",
+          "reserve_plan_sha256": "6841fdb5121e78372e9ccc80a990cb93b5acd7700db3f2661df2718b7e2980f7",
+          "reserve_plan_module_sha256": "178ce182db1e41820263462e873f1903e5488dbcf3deae0c81263f8cf3056e8a",
+          "reserve_environment_module_sha256": "520dbaef6f66dbef33dc83dda2d0d67c8dd6021f96f08f01c869ca5daae37030",
+          "reserve_amenities_module_sha256": "4187108afffea6843ab4ee62a67289f8d39a514c8714504d0f6ca01747f3b46b"
+        },
+        "failure_count": 0,
+        "failures": [],
+        "omitted_failure_examples": 0
+      }
+    },
+    {
+      "id": "one_active_continuous_land_mesh",
+      "status": "PASS",
+      "detail": {
+        "active_land": [
+          "Atlantic_Terrain_Grass"
+        ],
+        "polygons": 888324,
+        "archive_scene_objects": []
+      }
+    },
+    {
+      "id": "actual_saved_land_and_trail_triangle_quality",
+      "status": "PASS",
+      "detail": {
+        "objects": [
+          {
+            "owner": "Atlantic_Terrain_Grass",
+            "role": "terrain",
+            "triangles": 1724303,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 18,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.0,
+            "zero_xy_examples": [
+              {
+                "owner": "Atlantic_Terrain_Grass",
+                "polygon": 245422,
+                "vertices": [
+                  237018,
+                  237973,
+                  237975
+                ],
+                "centroid_m": [
+                  21.200000762939453,
+                  -73.53333282470703,
+                  0.30217907826105755
+                ],
+                "signed_xy_area_m2": 0.0,
+                "world_cross_product_m2": [
+                  -4.613639248418622e-09,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "owner": "Atlantic_Terrain_Grass",
+                "polygon": 245422,
+                "vertices": [
+                  237973,
+                  237974,
+                  237975
+                ],
+                "centroid_m": [
+                  21.200000762939453,
+                  -73.39999898274739,
+                  0.3017759323120117
+                ],
+                "signed_xy_area_m2": 0.0,
+                "world_cross_product_m2": [
+                  4.613639248418622e-09,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "owner": "Atlantic_Terrain_Grass",
+                "polygon": 249673,
+                "vertices": [
+                  241059,
+                  242117,
+                  242119
+                ],
+                "centroid_m": [
+                  24.200000762939453,
+                  -71.13333384195964,
+                  0.2846168478329976
+                ],
+                "signed_xy_area_m2": 0.0,
+                "world_cross_product_m2": [
+                  -1.914713720907457e-09,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "owner": "Atlantic_Terrain_Grass",
+                "polygon": 249673,
+                "vertices": [
+                  242117,
+                  242118,
+                  242119
+                ],
+                "centroid_m": [
+                  24.200000762939453,
+                  -71.0,
+                  0.28427277008692425
+                ],
+                "signed_xy_area_m2": 0.0,
+                "world_cross_product_m2": [
+                  5.960373528068885e-09,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "owner": "Atlantic_Terrain_Grass",
+                "polygon": 261527,
+                "vertices": [
+                  252333,
+                  253765,
+                  253767
+                ],
+                "centroid_m": [
+                  30.200000762939453,
+                  -66.33333333333333,
+                  0.2576935887336731
+                ],
+                "signed_xy_area_m2": 0.0,
+                "world_cross_product_m2": [
+                  2.9358488973230124e-09,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "owner": "Atlantic_Terrain_Grass",
+                "polygon": 261527,
+                "vertices": [
+                  253765,
+                  253766,
+                  253767
+                ],
+                "centroid_m": [
+                  30.200000762939453,
+                  -66.1999994913737,
+                  0.2574370503425598
+                ],
+                "signed_xy_area_m2": 0.0,
+                "world_cross_product_m2": [
+                  -2.9358488973230124e-09,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "owner": "Atlantic_Terrain_Grass",
+                "polygon": 308849,
+                "vertices": [
+                  299895,
+                  299897,
+                  299896
+                ],
+                "centroid_m": [
+                  -144.6499989827474,
+                  -44.400001525878906,
+                  6.810536543528239
+                ],
+                "signed_xy_area_m2": 0.0,
+                "world_cross_product_m2": [
+                  0.0,
+                  -4.303001333028078e-08,
+                  0.0
+                ]
+              },
+              {
+                "owner": "Atlantic_Terrain_Grass",
+                "polygon": 523804,
+                "vertices": [
+                  509901,
+                  511126,
+                  511128
+                ],
+                "centroid_m": [
+                  30.200000762939453,
+                  66.26666514078777,
+                  2.4868881702423096
+                ],
+                "signed_xy_area_m2": 0.0,
+                "world_cross_product_m2": [
+                  -1.1570591595955193e-07,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "owner": "Atlantic_Terrain_Grass",
+                "polygon": 523804,
+                "vertices": [
+                  511126,
+                  511127,
+                  511128
+                ],
+                "centroid_m": [
+                  30.200000762939453,
+                  66.39999898274739,
+                  2.4928320248921714
+                ],
+                "signed_xy_area_m2": 0.0,
+                "world_cross_product_m2": [
+                  1.1570591595955193e-07,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "owner": "Atlantic_Terrain_Grass",
+                "polygon": 527981,
+                "vertices": [
+                  514254,
+                  515168,
+                  515169
+                ],
+                "centroid_m": [
+                  27.799999237060547,
+                  68.1999994913737,
+                  2.7178263664245605
+                ],
+                "signed_xy_area_m2": 0.0,
+                "world_cross_product_m2": [
+                  -6.802292773500085e-08,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "owner": "Atlantic_Terrain_Grass",
+                "polygon": 535654,
+                "vertices": [
+                  521464,
+                  522598,
+                  522600
+                ],
+                "centroid_m": [
+                  29.600000381469727,
+                  71.66666666666667,
+                  2.7638041178385415
+                ],
+                "signed_xy_area_m2": 0.0,
+                "world_cross_product_m2": [
+                  2.734486770350486e-08,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "owner": "Atlantic_Terrain_Grass",
+                "polygon": 535654,
+                "vertices": [
+                  522598,
+                  522599,
+                  522600
+                ],
+                "centroid_m": [
+                  29.600000381469727,
+                  71.8000005086263,
+                  2.7697479724884033
+                ],
+                "signed_xy_area_m2": 0.0,
+                "world_cross_product_m2": [
+                  6.802292773500085e-08,
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "omitted_zero_xy_examples": 6
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Jogging_Belt_Dirt",
+            "role": "trail",
+            "triangles": 12620,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 9.14325937628746e-07,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Town_West_Gateway_Courtyard",
+            "role": "trail",
+            "triangles": 900,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.1339244842529297,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Hub_Spine_Courtyard",
+            "role": "trail",
+            "triangles": 262,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.5022438462474383,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Hub_Forecourt_Courtyard",
+            "role": "trail",
+            "triangles": 238,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.3111114501953125,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Hub_Forecourt_Link_Courtyard",
+            "role": "trail",
+            "triangles": 12,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.3333320617675781,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Camp_Access_Courtyard",
+            "role": "trail",
+            "triangles": 1168,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.02124339120928198,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Camp_Perimeter_Courtyard",
+            "role": "trail",
+            "triangles": 1524,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.15136310923844576,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Visitor_Reception_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 54,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.23610877990722656,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Convenience_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 54,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.23610877990722656,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Souvenir_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 54,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.23610877990722656,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Bathhouse_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 64,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.24831831455230713,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Public_Toilets_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 80,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.25312042236328125,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Food_Truck_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 28,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.2603145511238836,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Laundry_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 18,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.24999618530273438,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Maintenance_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 20,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.2624931335449219,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Refuse_Service_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 24,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.24999618530273438,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Trailer_N01_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 54,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.24444007873535156,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Trailer_N02_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 54,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.24444007873535156,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Trailer_N03_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 54,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.24444007873535156,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Trailer_N04_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 54,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.24444007873535156,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Trailer_N05_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 54,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.24444007873535156,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Trailer_N06_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 54,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.24444007873535156,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Trailer_S01_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 48,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.24374771118164062,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Trailer_S02_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 48,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.24374771118164062,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Trailer_S03_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 48,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.24374771118164062,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Trailer_S04_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 48,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.24374771118164062,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Trailer_S05_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 48,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.24374771118164062,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Trailer_S06_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 48,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.24374771118164062,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_West_Ridge_Trail_Courtyard",
+            "role": "trail",
+            "triangles": 3474,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.15461581898853183,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Fern_Bridge_West_Courtyard",
+            "role": "trail",
+            "triangles": 1160,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.25836068228818476,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Fern_Bridge_East_Courtyard",
+            "role": "trail",
+            "triangles": 1617,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 1.2296513887122273e-05,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Cleft_Bridge_West_Courtyard",
+            "role": "trail",
+            "triangles": 656,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.2764654941856861,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Cleft_Bridge_East_Courtyard",
+            "role": "trail",
+            "triangles": 2178,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.25146946078166366,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_South_Meadow_Trail_Courtyard",
+            "role": "trail",
+            "triangles": 1836,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.25484669173602015,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_North_Meadow_Link_Courtyard",
+            "role": "trail",
+            "triangles": 1746,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.24888761222246103,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Ridge_Stone_Stair_Lower_Link_Courtyard",
+            "role": "trail",
+            "triangles": 328,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.02400209242478013,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Ridge_Stone_Stair_Upper_Link_Courtyard",
+            "role": "trail",
+            "triangles": 152,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.0015377430245280266,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Ravine_Stone_Stair_Lower_Link_Courtyard",
+            "role": "trail",
+            "triangles": 339,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.003421400557272136,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Ravine_Stone_Stair_Upper_Link_Courtyard",
+            "role": "trail",
+            "triangles": 470,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.22330984560539946,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Tent_Pitch_1_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 18,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.19999898271635175,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Tent_Pitch_2_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 18,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.19999898271635175,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Tent_Pitch_3_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 18,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.19999898271635175,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          },
+          {
+            "owner": "Reserve_Trail_Reserve_Tent_Pitch_4_Approach_Courtyard",
+            "role": "trail",
+            "triangles": 18,
+            "nonfinite_vertices": 0,
+            "negative_xy_triangles": 0,
+            "zero_xy_triangles": 0,
+            "exactly_degenerate_3d_triangles": 0,
+            "minimum_signed_xy_area_m2": 0.19999898271635175,
+            "zero_xy_examples": [],
+            "omitted_zero_xy_examples": 0
+          }
+        ],
+        "triangles": 1756063,
+        "negative_xy_triangles": 0,
+        "zero_xy_triangles": 18,
+        "exactly_degenerate_3d_triangles": 0,
+        "projected_cross_product_tolerance_m2": 1e-10,
+        "zero_xy_policy": "Bounded diagnostics only unless the world-space cross product is exactly zero.",
+        "scope": "Actual saved world-space land and trail-top loop triangles; no repair or evaluated geometry.",
+        "failure_count": 0,
+        "failures": [],
+        "omitted_failure_examples": 0
+      }
+    },
+    {
+      "id": "actual_saved_same_route_coplanar_overlap_absent",
+      "status": "PASS",
+      "detail": {
+        "routes": [
+          {
+            "route": "Reserve_Bathhouse_Approach",
+            "eligible_faces": 32,
+            "bbox_candidate_pairs": 61,
+            "coplanar_candidate_pairs": 61,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Camp_Access",
+            "eligible_faces": 584,
+            "bbox_candidate_pairs": 1116,
+            "coplanar_candidate_pairs": 1056,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Camp_Perimeter",
+            "eligible_faces": 762,
+            "bbox_candidate_pairs": 420,
+            "coplanar_candidate_pairs": 420,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Cleft_Bridge_East",
+            "eligible_faces": 1089,
+            "bbox_candidate_pairs": 2474,
+            "coplanar_candidate_pairs": 2029,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Cleft_Bridge_West",
+            "eligible_faces": 328,
+            "bbox_candidate_pairs": 993,
+            "coplanar_candidate_pairs": 917,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Convenience_Approach",
+            "eligible_faces": 27,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Fern_Bridge_East",
+            "eligible_faces": 808,
+            "bbox_candidate_pairs": 1060,
+            "coplanar_candidate_pairs": 949,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Fern_Bridge_West",
+            "eligible_faces": 580,
+            "bbox_candidate_pairs": 1287,
+            "coplanar_candidate_pairs": 1254,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Food_Truck_Approach",
+            "eligible_faces": 14,
+            "bbox_candidate_pairs": 46,
+            "coplanar_candidate_pairs": 46,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Hub_Forecourt",
+            "eligible_faces": 119,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Hub_Forecourt_Link",
+            "eligible_faces": 6,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Hub_Spine",
+            "eligible_faces": 131,
+            "bbox_candidate_pairs": 422,
+            "coplanar_candidate_pairs": 422,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Jogging_Belt",
+            "eligible_faces": 6310,
+            "bbox_candidate_pairs": 22764,
+            "coplanar_candidate_pairs": 15215,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Laundry_Approach",
+            "eligible_faces": 9,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Maintenance_Approach",
+            "eligible_faces": 10,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_North_Meadow_Link",
+            "eligible_faces": 873,
+            "bbox_candidate_pairs": 2732,
+            "coplanar_candidate_pairs": 2495,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Public_Toilets_Approach",
+            "eligible_faces": 40,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Ravine_Stone_Stair_Lower_Link",
+            "eligible_faces": 169,
+            "bbox_candidate_pairs": 467,
+            "coplanar_candidate_pairs": 421,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Ravine_Stone_Stair_Upper_Link",
+            "eligible_faces": 235,
+            "bbox_candidate_pairs": 504,
+            "coplanar_candidate_pairs": 430,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Refuse_Service_Approach",
+            "eligible_faces": 12,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Ridge_Stone_Stair_Lower_Link",
+            "eligible_faces": 164,
+            "bbox_candidate_pairs": 169,
+            "coplanar_candidate_pairs": 158,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Ridge_Stone_Stair_Upper_Link",
+            "eligible_faces": 76,
+            "bbox_candidate_pairs": 223,
+            "coplanar_candidate_pairs": 183,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_South_Meadow_Trail",
+            "eligible_faces": 918,
+            "bbox_candidate_pairs": 1811,
+            "coplanar_candidate_pairs": 1615,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Souvenir_Approach",
+            "eligible_faces": 27,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Tent_Pitch_1_Approach",
+            "eligible_faces": 9,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Tent_Pitch_2_Approach",
+            "eligible_faces": 9,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Tent_Pitch_3_Approach",
+            "eligible_faces": 9,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Tent_Pitch_4_Approach",
+            "eligible_faces": 9,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Town_West_Gateway",
+            "eligible_faces": 450,
+            "bbox_candidate_pairs": 1095,
+            "coplanar_candidate_pairs": 904,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Trailer_N01_Approach",
+            "eligible_faces": 27,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Trailer_N02_Approach",
+            "eligible_faces": 27,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Trailer_N03_Approach",
+            "eligible_faces": 27,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Trailer_N04_Approach",
+            "eligible_faces": 27,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Trailer_N05_Approach",
+            "eligible_faces": 27,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Trailer_N06_Approach",
+            "eligible_faces": 27,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Trailer_S01_Approach",
+            "eligible_faces": 24,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Trailer_S02_Approach",
+            "eligible_faces": 24,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Trailer_S03_Approach",
+            "eligible_faces": 24,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Trailer_S04_Approach",
+            "eligible_faces": 24,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Trailer_S05_Approach",
+            "eligible_faces": 24,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Trailer_S06_Approach",
+            "eligible_faces": 24,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_Visitor_Reception_Approach",
+            "eligible_faces": 27,
+            "bbox_candidate_pairs": 0,
+            "coplanar_candidate_pairs": 0,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          },
+          {
+            "route": "Reserve_West_Ridge_Trail",
+            "eligible_faces": 1737,
+            "bbox_candidate_pairs": 2996,
+            "coplanar_candidate_pairs": 2805,
+            "positive_area_overlap_pairs": 0,
+            "sum_pairwise_overlap_area_m2": 0.0,
+            "maximum_overlap_area_m2": 0.0
+          }
+        ],
+        "eligible_faces": 15879,
+        "positive_area_overlap_pairs": 0,
+        "sum_pairwise_overlap_area_m2": 0.0,
+        "skipped_faces": {},
+        "area_acceptance_limit_m2": 1e-05,
+        "height_plane_tolerance_m": 0.0001,
+        "spatial_grid_cell_m": 4.0,
+        "scope": "Saved whole convex positive-XY planar faces, same route only; pairwise area is not union area.",
+        "failure_count": 0,
+        "failures": [],
+        "omitted_failure_examples": 0
+      }
+    },
+    {
+      "id": "frozen_core_terrain_and_49_building_poses",
+      "status": "PASS",
+      "detail": {
+        "surface_controls": 573,
+        "maximum_surface_difference_m": 0.023681640625,
+        "allowed_interpolation_difference_m": 0.05,
+        "buildings": 49,
+        "failure_count": 0,
+        "failures": [],
+        "omitted_failure_examples": 0
+      }
+    },
+    {
+      "id": "3500_linked_grounded_trees_and_preserved_clearings",
+      "status": "PASS",
+      "detail": {
+        "tree_assemblies": 3500,
+        "material_objects": 9928,
+        "species_labels": {
+          "rowan": 466,
+          "scots_pine": 264,
+          "sessile_oak": 1055,
+          "silver_birch": 793,
+          "beech": 305,
+          "holly": 99,
+          "maritime_pine": 307,
+          "alder": 141,
+          "willow": 70
+        },
+        "actual_mesh_species": {
+          "rowan": 466,
+          "pine": 264,
+          "oak": 1055,
+          "birch": 793,
+          "beech": 305,
+          "holly": 99,
+          "maritime_pine": 307,
+          "alder": 141,
+          "willow": 70
+        },
+        "lod_instances": {
+          "far": 1798,
+          "near": 1702
+        },
+        "zone_instances": {
+          "Reserve_West_Mixed_Wood": 1150,
+          "Reserve_North_Canopy": 1050,
+          "Reserve_South_Wood_Heath": 650,
+          "Reserve_Ravine_Wet_Wood": 350,
+          "Reserve_East_Ecotone": 300
+        },
+        "shared_mesh_datablocks": 46,
+        "species_geometry_mapping": {
+          "rowan": [
+            "rowan"
+          ],
+          "scots_pine": [
+            "pine"
+          ],
+          "sessile_oak": [
+            "oak"
+          ],
+          "silver_birch": [
+            "birch"
+          ],
+          "beech": [
+            "beech"
+          ],
+          "holly": [
+            "holly"
+          ],
+          "maritime_pine": [
+            "maritime_pine"
+          ],
+          "alder": [
+            "alder"
+          ],
+          "willow": [
+            "willow"
+          ]
+        },
+        "actual_mesh_shape_signatures": {
+          "rowan": [
+            "1a52e89005e48620eb0b872e8e21e337c969148397fdff6c77663d0071045c0f",
+            "7e18a0c7088d1bf02ae906fc44afd58db44586d7823ab418c06696755ae315dc"
+          ],
+          "pine": [
+            "1cae68a8b3e9cfb8ccde6c59f3eae329e85ad92a24aa24b98a4ec9229ca80c48"
+          ],
+          "oak": [
+            "1cc233ebc837a8fd4e724a4ad036f56a1fea0104631d7a0787709c7825fb4c85",
+            "e21cf8a114c710d259aadc1d33b37653b00ae1cd3d487daf297806663b017dd8"
+          ],
+          "birch": [
+            "b9f1d21b020df263747b887935235cb9c41787dc3769422994f0883924bc48b1",
+            "c0d0c15323de9472e569b5e5709467f9590d469df70b5ab05c21c1047a11e526"
+          ],
+          "beech": [
+            "3289978de37f5522e2004299546788219399c89ebeafa66a5ebe830e922a9e2e",
+            "aaf650c0ec814d7bec4920f6a645681ae1b6f0fb76951a25392b94f95f0dad5a"
+          ],
+          "holly": [
+            "45edc1450957a4c926c11738b6d64b9e66448e9710361cea0c63f58046c56760",
+            "cb3009fc20b2387753fb89b859ddd00ea46b236103437d762dca272299d4c21f"
+          ],
+          "maritime_pine": [
+            "06480fd2df307d7d66bce0e4dae39f5d52a399e247c709ae08d1a37f3d1e7c78",
+            "a38cdaa4b504dc118b2c37a03f2718c151b518708a7b9ab665395bc7f6d0358e"
+          ],
+          "alder": [
+            "4be23cb106bf77cfb55c3a5a3838103e2b00988f8b5cd64549b3b80ba52eca68",
+            "8e5aeb6c6daa4d05ce204f436cf0d6b0335a9c3cb729227b6794d7e5c6236f5e"
+          ],
+          "willow": [
+            "6a64c25a3baaee89d288c3e48635757031b33f143f2d1519afdb399f9c51324c",
+            "ef51a16a6a1bf32ee91a410b65d3ff41699e20256fe893ca31392ab49bcc5589"
+          ]
+        },
+        "root_contact_range_m": [
+          -0.0001678466796875,
+          0.0001678466796875
+        ],
+        "malformed": [],
+        "limits": "Species labels, prototype names, and actual coordinate/topology shape diversity are reported separately.",
+        "failure_count": 0,
+        "failures": [],
+        "omitted_failure_examples": 0
+      }
+    },
+    {
+      "id": "actual_trail_center_and_shoulder_contacts",
+      "status": "PASS",
+      "detail": {
+        "surface_rays": 2040,
+        "preserved_quay_paving_support_samples": 0,
+        "quay_fallback_domain_xyxy_m": [
+          31,
+          37,
+          66,
+          55
+        ],
+        "quay_fallback_policy": "Only absent land inside the preserved harbor aperture; actual saved paving mesh rays required.",
+        "contact_range_m": [
+          0.0190887451171875,
+          0.1074066162109375
+        ],
+        "allowed_surface_above_ground_m": [
+          -0.012,
+          0.12
+        ],
+        "expected_nominal_overlay_m": 0.045,
+        "failure_count": 0,
+        "failures": [],
+        "omitted_failure_examples": 0
+      }
+    },
+    {
+      "id": "actual_running_loop_and_ground_route_surface_grades",
+      "status": "PASS",
+      "detail": {
+        "running_loop": {
+          "id": "Reserve_Jogging_Belt",
+          "kind": "jogging_belt",
+          "declared_longitudinal_grade_limit": 0.075,
+          "maximum_native_surface_longitudinal_triangle_grade": 0.0750171002857675,
+          "maximum_native_surface_height_interval_grade": 0.0750541451840721,
+          "maximum_native_land_longitudinal_triangle_grade": 0.0970640156144589,
+          "maximum_native_surface_crossfall_grade": 5.7864619666445445e-06,
+          "maximum_longitudinal_station": {
+            "segment": 0,
+            "station_m": 1552.2623766883648,
+            "xy_m": [
+              -39.30224157627063,
+              261.1198848838191
+            ],
+            "native_object": "Reserve_Trail_Reserve_Jogging_Belt_Dirt",
+            "native_polygon": 5613,
+            "normal_world": [
+              0.023621482774615288,
+              -0.07097956538200378,
+              0.9971980452537537
+            ]
+          },
+          "sample_spacing_maximum_m": 1.0,
+          "surface_samples": 3519,
+          "height_intervals": 2634,
+          "numerical_grade_margin": 0.0005,
+          "surface_object_samples": {
+            "Reserve_Trail_Reserve_Jogging_Belt_Dirt": 3450,
+            "Connected_Streets_and_Pavements_Paving": 69
+          },
+          "unpaved_core_reuse_samples": 0,
+          "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+        },
+        "ground_routes": [
+          {
+            "id": "Reserve_Jogging_Belt",
+            "kind": "jogging_belt",
+            "declared_longitudinal_grade_limit": 0.075,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0750171002857675,
+            "maximum_native_surface_height_interval_grade": 0.0750541451840721,
+            "maximum_native_land_longitudinal_triangle_grade": 0.0970640156144589,
+            "maximum_native_surface_crossfall_grade": 5.7864619666445445e-06,
+            "maximum_longitudinal_station": {
+              "segment": 0,
+              "station_m": 1552.2623766883648,
+              "xy_m": [
+                -39.30224157627063,
+                261.1198848838191
+              ],
+              "native_object": "Reserve_Trail_Reserve_Jogging_Belt_Dirt",
+              "native_polygon": 5613,
+              "normal_world": [
+                0.023621482774615288,
+                -0.07097956538200378,
+                0.9971980452537537
+              ]
+            },
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 3519,
+            "height_intervals": 2634,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Jogging_Belt_Dirt": 3450,
+              "Connected_Streets_and_Pavements_Paving": 69
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Town_West_Gateway",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.08000177913626982,
+            "maximum_native_surface_height_interval_grade": 0.08003390857178569,
+            "maximum_native_land_longitudinal_triangle_grade": 0.08208624552633072,
+            "maximum_native_surface_crossfall_grade": 6.510267304749551e-07,
+            "maximum_longitudinal_station": {
+              "segment": 0,
+              "station_m": 39.46666436972449,
+              "xy_m": [
+                -95.41666666666667,
+                -23.541666666666668
+              ],
+              "native_object": "Reserve_Trail_Reserve_Town_West_Gateway_Courtyard",
+              "native_polygon": 120,
+              "normal_world": [
+                0.07599309831857681,
+                0.024179136380553246,
+                0.9968151450157166
+              ]
+            },
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 204,
+            "height_intervals": 152,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Town_West_Gateway_Courtyard": 204
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Hub_Spine",
+            "kind": "service_access",
+            "declared_longitudinal_grade_limit": 0.06,
+            "maximum_native_surface_longitudinal_triangle_grade": 1.7232297052205824e-06,
+            "maximum_native_surface_height_interval_grade": 5.048874976393954e-05,
+            "maximum_native_land_longitudinal_triangle_grade": 0.002075451423018006,
+            "maximum_native_surface_crossfall_grade": 5.302245246832554e-07,
+            "maximum_longitudinal_station": {
+              "segment": 0,
+              "station_m": 29.60912010287435,
+              "xy_m": [
+                -116.86666666666667,
+                -64.26666666666667
+              ],
+              "native_object": "Reserve_Trail_Reserve_Hub_Spine_Courtyard",
+              "native_polygon": 93,
+              "normal_world": [
+                -1.8029583088718937e-06,
+                0.0,
+                1.0
+              ]
+            },
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 60,
+            "height_intervals": 45,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Hub_Spine_Courtyard": 60
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Hub_Forecourt",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.06,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 0.0,
+            "maximum_native_land_longitudinal_triangle_grade": 0.01483434728820514,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 56,
+            "height_intervals": 42,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Hub_Forecourt_Courtyard": 56
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Hub_Forecourt_Link",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.06,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 0.0,
+            "maximum_native_land_longitudinal_triangle_grade": 0.021136917962502177,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 3,
+            "height_intervals": 2,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Hub_Forecourt_Link_Courtyard": 3
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Camp_Access",
+            "kind": "service_access",
+            "declared_longitudinal_grade_limit": 0.06,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.060002376004065515,
+            "maximum_native_surface_height_interval_grade": 0.06002617283880219,
+            "maximum_native_land_longitudinal_triangle_grade": 0.06243298684986511,
+            "maximum_native_surface_crossfall_grade": 5.086263172415784e-06,
+            "maximum_longitudinal_station": {
+              "segment": 0,
+              "station_m": 71.529215530384,
+              "xy_m": [
+                -125.49990561416436,
+                -136.87496696495754
+              ],
+              "native_object": "Reserve_Trail_Reserve_Camp_Access_Courtyard",
+              "native_polygon": 214,
+              "normal_world": [
+                0.05653215944766998,
+                0.019785968586802483,
+                0.9982047080993652
+              ]
+            },
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 256,
+            "height_intervals": 191,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Camp_Access_Courtyard": 256
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Camp_Perimeter",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 3.3291903409090995e-05,
+            "maximum_native_land_longitudinal_triangle_grade": 0.019458769654352517,
+            "maximum_native_surface_crossfall_grade": 4.238581368554151e-06,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 332,
+            "height_intervals": 248,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Camp_Perimeter_Courtyard": 332
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Visitor_Reception_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 3.2316189512641976e-05,
+            "maximum_native_land_longitudinal_triangle_grade": 0.011999561181360906,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 12,
+            "height_intervals": 9,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Visitor_Reception_Approach_Courtyard": 12
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Convenience_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 1.6158094756320988e-05,
+            "maximum_native_land_longitudinal_triangle_grade": 0.011999561181360906,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 12,
+            "height_intervals": 9,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Convenience_Approach_Courtyard": 12
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Souvenir_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 1.615809475632099e-05,
+            "maximum_native_land_longitudinal_triangle_grade": 0.011538223403624986,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 12,
+            "height_intervals": 9,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Souvenir_Approach_Courtyard": 12
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Bathhouse_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 1.728452037427936e-05,
+            "maximum_native_land_longitudinal_triangle_grade": 0.03362585522168967,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 16,
+            "height_intervals": 12,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Bathhouse_Approach_Courtyard": 16
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Public_Toilets_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 0.0,
+            "maximum_native_land_longitudinal_triangle_grade": 0.011999561181360906,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 20,
+            "height_intervals": 15,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Public_Toilets_Approach_Courtyard": 20
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Food_Truck_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 1.3947672009600909e-06,
+            "maximum_native_surface_height_interval_grade": 1.884316982617587e-05,
+            "maximum_native_land_longitudinal_triangle_grade": 0.00777866257062305,
+            "maximum_native_surface_crossfall_grade": 1.187436941357921e-06,
+            "maximum_longitudinal_station": {
+              "segment": 0,
+              "station_m": 3.2395129949491626,
+              "xy_m": [
+                -95.23333333333333,
+                -63.050000000000004
+              ],
+              "native_object": "Reserve_Trail_Reserve_Food_Truck_Approach_Courtyard",
+              "native_polygon": 9,
+              "normal_world": [
+                1.8317701915293583e-06,
+                0.0,
+                1.0
+              ]
+            },
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 8,
+            "height_intervals": 6,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Food_Truck_Approach_Courtyard": 8
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Laundry_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 0.0,
+            "maximum_native_land_longitudinal_triangle_grade": 0.0038839145587245484,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 4,
+            "height_intervals": 3,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Laundry_Approach_Courtyard": 4
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Maintenance_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.003476763352563894,
+            "maximum_native_surface_height_interval_grade": 0.003488121856783632,
+            "maximum_native_land_longitudinal_triangle_grade": 0.005415488574350453,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": {
+              "segment": 0,
+              "station_m": 0.0001,
+              "xy_m": [
+                -139.5001,
+                -113.0
+              ],
+              "native_object": "Reserve_Trail_Reserve_Maintenance_Approach_Courtyard",
+              "native_polygon": 0,
+              "normal_world": [
+                -0.00347674242220819,
+                0.0,
+                0.9999939799308777
+              ]
+            },
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 6,
+            "height_intervals": 4,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Maintenance_Approach_Courtyard": 6
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Refuse_Service_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.004627298383486809,
+            "maximum_native_surface_height_interval_grade": 0.0046391357885788576,
+            "maximum_native_land_longitudinal_triangle_grade": 0.01627034622150693,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": {
+              "segment": 0,
+              "station_m": 1.0,
+              "xy_m": [
+                -140.0,
+                -127.0
+              ],
+              "native_object": "Reserve_Trail_Reserve_Refuse_Service_Approach_Courtyard",
+              "native_polygon": 2,
+              "normal_world": [
+                -0.004627248737961054,
+                0.0,
+                0.9999892711639404
+              ]
+            },
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 6,
+            "height_intervals": 4,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Refuse_Service_Approach_Courtyard": 6
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Trailer_N01_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 1.560719364871822e-05,
+            "maximum_native_land_longitudinal_triangle_grade": 0.012001037433935416,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 12,
+            "height_intervals": 9,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Trailer_N01_Approach_Courtyard": 12
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Trailer_N02_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 3.121438729743644e-05,
+            "maximum_native_land_longitudinal_triangle_grade": 0.012001037433935416,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 12,
+            "height_intervals": 9,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Trailer_N02_Approach_Courtyard": 12
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Trailer_N03_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 1.560719364871823e-05,
+            "maximum_native_land_longitudinal_triangle_grade": 0.012001037433935416,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 12,
+            "height_intervals": 9,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Trailer_N03_Approach_Courtyard": 12
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Trailer_N04_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 1.560719364871822e-05,
+            "maximum_native_land_longitudinal_triangle_grade": 0.012001037433935416,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 12,
+            "height_intervals": 9,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Trailer_N04_Approach_Courtyard": 12
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Trailer_N05_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 1.560719364871822e-05,
+            "maximum_native_land_longitudinal_triangle_grade": 0.012001037433935416,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 12,
+            "height_intervals": 9,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Trailer_N05_Approach_Courtyard": 12
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Trailer_N06_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 1.560719364871823e-05,
+            "maximum_native_land_longitudinal_triangle_grade": 0.012001037433935416,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 12,
+            "height_intervals": 9,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Trailer_N06_Approach_Courtyard": 12
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Trailer_S01_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 0.0,
+            "maximum_native_land_longitudinal_triangle_grade": 0.012001037433935416,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 12,
+            "height_intervals": 9,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Trailer_S01_Approach_Courtyard": 12
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Trailer_S02_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 0.0,
+            "maximum_native_land_longitudinal_triangle_grade": 0.012001037433935416,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 12,
+            "height_intervals": 9,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Trailer_S02_Approach_Courtyard": 12
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Trailer_S03_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 0.0,
+            "maximum_native_land_longitudinal_triangle_grade": 0.012001037433935416,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 12,
+            "height_intervals": 9,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Trailer_S03_Approach_Courtyard": 12
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Trailer_S04_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 1.7608326802131056e-05,
+            "maximum_native_land_longitudinal_triangle_grade": 0.012001037433935416,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 12,
+            "height_intervals": 9,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Trailer_S04_Approach_Courtyard": 12
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Trailer_S05_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 1.7608326802131056e-05,
+            "maximum_native_land_longitudinal_triangle_grade": 0.012001037433935416,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 12,
+            "height_intervals": 9,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Trailer_S05_Approach_Courtyard": 12
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Trailer_S06_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 0.0,
+            "maximum_native_land_longitudinal_triangle_grade": 0.012001037433935416,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 12,
+            "height_intervals": 9,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Trailer_S06_Approach_Courtyard": 12
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_West_Ridge_Trail",
+            "kind": "scenic_trail",
+            "declared_longitudinal_grade_limit": 0.12,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.12001561573246458,
+            "maximum_native_surface_height_interval_grade": 0.12012370316851621,
+            "maximum_native_land_longitudinal_triangle_grade": 0.1225143583248496,
+            "maximum_native_surface_crossfall_grade": 9.835441496090849e-06,
+            "maximum_longitudinal_station": {
+              "segment": 0,
+              "station_m": 270.8867575549522,
+              "xy_m": [
+                -433.85714333333334,
+                115.47619
+              ],
+              "native_object": "Reserve_Trail_Reserve_West_Ridge_Trail_Courtyard",
+              "native_polygon": 824,
+              "normal_world": [
+                -0.03424150124192238,
+                -0.1141347661614418,
+                0.9928749799728394
+              ]
+            },
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 774,
+            "height_intervals": 580,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_West_Ridge_Trail_Courtyard": 774
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Fern_Bridge_West",
+            "kind": "scenic_trail",
+            "declared_longitudinal_grade_limit": 0.12,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.12001871066836901,
+            "maximum_native_surface_height_interval_grade": 0.12005923316964082,
+            "maximum_native_land_longitudinal_triangle_grade": 0.15276048307108736,
+            "maximum_native_surface_crossfall_grade": 5.712107118687747e-06,
+            "maximum_longitudinal_station": {
+              "segment": 0,
+              "station_m": 40.77210781730718,
+              "xy_m": [
+                -419.2063466666666,
+                25.47619
+              ],
+              "native_object": "Reserve_Trail_Reserve_Fern_Bridge_West_Courtyard",
+              "native_polygon": 122,
+              "normal_world": [
+                0.10461423546075821,
+                -0.05705971270799637,
+                0.9928746819496155
+              ]
+            },
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 264,
+            "height_intervals": 198,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Fern_Bridge_West_Courtyard": 264
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Fern_Bridge_East",
+            "kind": "scenic_trail",
+            "declared_longitudinal_grade_limit": 0.12,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.1200066287026476,
+            "maximum_native_surface_height_interval_grade": 0.12003728085354128,
+            "maximum_native_land_longitudinal_triangle_grade": 0.1578949594816176,
+            "maximum_native_surface_crossfall_grade": 2.1062944869098775e-06,
+            "maximum_longitudinal_station": {
+              "segment": 0,
+              "station_m": 27.514469047204795,
+              "xy_m": [
+                -217.8125,
+                40.770833333333336
+              ],
+              "native_object": "Reserve_Trail_Reserve_Fern_Bridge_East_Courtyard",
+              "native_polygon": 87,
+              "normal_world": [
+                0.11773555725812912,
+                -0.018315833061933517,
+                0.9928761124610901
+              ]
+            },
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 366,
+            "height_intervals": 274,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Fern_Bridge_East_Courtyard": 366
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Cleft_Bridge_West",
+            "kind": "scenic_trail",
+            "declared_longitudinal_grade_limit": 0.12,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.12001532148964297,
+            "maximum_native_surface_height_interval_grade": 0.12003676523091611,
+            "maximum_native_land_longitudinal_triangle_grade": 0.17108410962543386,
+            "maximum_native_surface_crossfall_grade": 0.11469333990628758,
+            "maximum_longitudinal_station": {
+              "segment": 0,
+              "station_m": 44.354345610273484,
+              "xy_m": [
+                -390.90899136057834,
+                161.81816356027724
+              ],
+              "native_object": "Reserve_Trail_Reserve_Cleft_Bridge_West_Courtyard",
+              "native_polygon": 128,
+              "normal_world": [
+                0.11753891408443451,
+                -0.019589819014072418,
+                0.9928750395774841
+              ]
+            },
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 164,
+            "height_intervals": 123,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Cleft_Bridge_West_Courtyard": 164
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Cleft_Bridge_East",
+            "kind": "scenic_trail",
+            "declared_longitudinal_grade_limit": 0.12,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.1200166592866856,
+            "maximum_native_surface_height_interval_grade": 0.12003531356871218,
+            "maximum_native_land_longitudinal_triangle_grade": 0.1859970071281058,
+            "maximum_native_surface_crossfall_grade": 1.2247231578583752e-05,
+            "maximum_longitudinal_station": {
+              "segment": 0,
+              "station_m": 252.00297213891665,
+              "xy_m": [
+                -200.0,
+                321.79476999999997
+              ],
+              "native_object": "Reserve_Trail_Reserve_Cleft_Bridge_East_Courtyard",
+              "native_polygon": 773,
+              "normal_world": [
+                0.0,
+                0.11916152387857437,
+                0.9928748607635498
+              ]
+            },
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 484,
+            "height_intervals": 363,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Cleft_Bridge_East_Courtyard": 484
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_South_Meadow_Trail",
+            "kind": "scenic_trail",
+            "declared_longitudinal_grade_limit": 0.12,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.12001635519159196,
+            "maximum_native_surface_height_interval_grade": 0.1200353927206632,
+            "maximum_native_land_longitudinal_triangle_grade": 0.12226968003969631,
+            "maximum_native_surface_crossfall_grade": 5.566610775618849e-06,
+            "maximum_longitudinal_station": {
+              "segment": 0,
+              "station_m": 289.78269296888345,
+              "xy_m": [
+                -350.5404898963198,
+                -232.29721345740222
+              ],
+              "native_object": "Reserve_Trail_Reserve_South_Meadow_Trail_Courtyard",
+              "native_polygon": 890,
+              "normal_world": [
+                -0.059706222265958786,
+                -0.10312402993440628,
+                0.9928749203681946
+              ]
+            },
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 408,
+            "height_intervals": 306,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_South_Meadow_Trail_Courtyard": 408
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_North_Meadow_Link",
+            "kind": "scenic_trail",
+            "declared_longitudinal_grade_limit": 0.12,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.12001985540465879,
+            "maximum_native_surface_height_interval_grade": 0.1200381223467699,
+            "maximum_native_land_longitudinal_triangle_grade": 0.16741107520884968,
+            "maximum_native_surface_crossfall_grade": 0.1137791881858596,
+            "maximum_longitudinal_station": {
+              "segment": 0,
+              "station_m": 63.78132728857386,
+              "xy_m": [
+                -151.8235886965598,
+                340.5881590388126
+              ],
+              "native_object": "Reserve_Trail_Reserve_North_Meadow_Link_Courtyard",
+              "native_polygon": 197,
+              "normal_world": [
+                0.06994666159152985,
+                0.09647632390260696,
+                0.9928745627403259
+              ]
+            },
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 388,
+            "height_intervals": 291,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_North_Meadow_Link_Courtyard": 388
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Ridge_Stone_Stair_Lower_Link",
+            "kind": "scenic_trail",
+            "declared_longitudinal_grade_limit": 0.12,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.12000803147587782,
+            "maximum_native_surface_height_interval_grade": 0.12002803658533777,
+            "maximum_native_land_longitudinal_triangle_grade": 0.18335920892791535,
+            "maximum_native_surface_crossfall_grade": 0.11801519129532397,
+            "maximum_longitudinal_station": {
+              "segment": 0,
+              "station_m": 9.233197197338201,
+              "xy_m": [
+                -340.22703,
+                145.36676
+              ],
+              "native_object": "Reserve_Trail_Reserve_Ridge_Stone_Stair_Lower_Link_Courtyard",
+              "native_polygon": 35,
+              "normal_world": [
+                0.02156815305352211,
+                -0.11718477308750153,
+                0.992875874042511
+              ]
+            },
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 74,
+            "height_intervals": 55,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Ridge_Stone_Stair_Lower_Link_Courtyard": 74
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Ridge_Stone_Stair_Upper_Link",
+            "kind": "scenic_trail",
+            "declared_longitudinal_grade_limit": 0.12,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.12001732919418048,
+            "maximum_native_surface_height_interval_grade": 0.12004139637056585,
+            "maximum_native_land_longitudinal_triangle_grade": 0.12203497122212294,
+            "maximum_native_surface_crossfall_grade": 0.09614289536080216,
+            "maximum_longitudinal_station": {
+              "segment": 0,
+              "station_m": 17.84015601051571,
+              "xy_m": [
+                -374.6666666666667,
+                156.66666666666669
+              ],
+              "native_object": "Reserve_Trail_Reserve_Ridge_Stone_Stair_Upper_Link_Courtyard",
+              "native_polygon": 57,
+              "normal_world": [
+                0.10105248540639877,
+                -0.06315077841281891,
+                0.992874801158905
+              ]
+            },
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 38,
+            "height_intervals": 28,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Ridge_Stone_Stair_Upper_Link_Courtyard": 38
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Ravine_Stone_Stair_Lower_Link",
+            "kind": "scenic_trail",
+            "declared_longitudinal_grade_limit": 0.12,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.12013869857415638,
+            "maximum_native_surface_height_interval_grade": 0.12002684361258077,
+            "maximum_native_land_longitudinal_triangle_grade": 0.14552269519903918,
+            "maximum_native_surface_crossfall_grade": 0.11777951340350323,
+            "maximum_longitudinal_station": {
+              "segment": 0,
+              "station_m": 54.83644118873177,
+              "xy_m": [
+                -242.50009063278014,
+                46.16662774246625
+              ],
+              "native_object": "Reserve_Trail_Reserve_Ravine_Stone_Stair_Lower_Link_Courtyard",
+              "native_polygon": 160,
+              "normal_world": [
+                0.1081400215625763,
+                0.05033579841256142,
+                0.9928605556488037
+              ]
+            },
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 86,
+            "height_intervals": 63,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Ravine_Stone_Stair_Lower_Link_Courtyard": 86
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Ravine_Stone_Stair_Upper_Link",
+            "kind": "scenic_trail",
+            "declared_longitudinal_grade_limit": 0.12,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.12000242535059188,
+            "maximum_native_surface_height_interval_grade": 0.12002080773716355,
+            "maximum_native_land_longitudinal_triangle_grade": 0.1216299723489474,
+            "maximum_native_surface_crossfall_grade": 2.732560781819284e-06,
+            "maximum_longitudinal_station": {
+              "segment": 0,
+              "station_m": 74.5866413847054,
+              "xy_m": [
+                -200.66666666666669,
+                39.86666666666667
+              ],
+              "native_object": "Reserve_Trail_Reserve_Ravine_Stone_Stair_Upper_Link_Courtyard",
+              "native_polygon": 228,
+              "normal_world": [
+                -0.04007288068532944,
+                0.11220657080411911,
+                0.9928765892982483
+              ]
+            },
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 104,
+            "height_intervals": 78,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Ravine_Stone_Stair_Upper_Link_Courtyard": 104
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Tent_Pitch_1_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 0.0,
+            "maximum_native_land_longitudinal_triangle_grade": 0.011997222461982612,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 4,
+            "height_intervals": 3,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Tent_Pitch_1_Approach_Courtyard": 4
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Tent_Pitch_2_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 0.0,
+            "maximum_native_land_longitudinal_triangle_grade": 0.011997222461982612,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 4,
+            "height_intervals": 3,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Tent_Pitch_2_Approach_Courtyard": 4
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Tent_Pitch_3_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 1.52603150940094e-05,
+            "maximum_native_land_longitudinal_triangle_grade": 0.011997222461982612,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 4,
+            "height_intervals": 3,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Tent_Pitch_3_Approach_Courtyard": 4
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          },
+          {
+            "id": "Reserve_Tent_Pitch_4_Approach",
+            "kind": "walking_trail",
+            "declared_longitudinal_grade_limit": 0.08,
+            "maximum_native_surface_longitudinal_triangle_grade": 0.0,
+            "maximum_native_surface_height_interval_grade": 0.0,
+            "maximum_native_land_longitudinal_triangle_grade": 0.011997222461982612,
+            "maximum_native_surface_crossfall_grade": 0.0,
+            "maximum_longitudinal_station": null,
+            "sample_spacing_maximum_m": 1.0,
+            "surface_samples": 4,
+            "height_intervals": 3,
+            "numerical_grade_margin": 0.0005,
+            "surface_object_samples": {
+              "Reserve_Trail_Reserve_Tent_Pitch_4_Approach_Courtyard": 4
+            },
+            "unpaved_core_reuse_samples": 0,
+            "crossfall_policy": "Measured for review; no authored acceptance limit currently exists."
+          }
+        ],
+        "method": "Actual saved BVH triangle normals and world-space height intervals at <=1m; authored point Z and analytic validation are not used.",
+        "numerical_grade_margin": 0.0005,
+        "failure_count": 0,
+        "failures": [],
+        "omitted_failure_examples": 0
+      }
+    },
+    {
+      "id": "actual_retaining_caps_guardrails_and_both_bank_contacts",
+      "status": "PASS",
+      "detail": {
+        "edges": [
+          {
+            "id": "Reserve_Hub_Camp_Step",
+            "actual_surface_controls": [
+              {
+                "station": 0.25,
+                "cap_z_m": 10.129011154174805,
+                "side_native_ground_z_m": [
+                  10.029006958007812,
+                  6.7863922119140625
+                ],
+                "guardrail_z_m": 11.25101089477539
+              },
+              {
+                "station": 0.75,
+                "cap_z_m": 10.129011154174805,
+                "side_native_ground_z_m": [
+                  10.029006958007812,
+                  6.7863922119140625
+                ],
+                "guardrail_z_m": 11.25101089477539
+              }
+            ]
+          }
+        ],
+        "bank_contact_tolerance_m": 0.2,
+        "failure_count": 0,
+        "failures": [],
+        "omitted_failure_examples": 0
+      }
+    },
+    {
+      "id": "actual_bridge_decks_landings_ravines_and_suspension",
+      "status": "PASS",
+      "detail": {
+        "bridges": [
+          {
+            "id": "Reserve_Fern_Ravine_Bridge",
+            "length_m": 40.0,
+            "width_m": 2.2,
+            "planks_sampled_at_three_stations": 160,
+            "midpoint_clearance_m": 13.443412780761719,
+            "landing_controls": [
+              {
+                "xy_m": [
+                  -285.6,
+                  44.34
+                ],
+                "deck_z_m": 19.106362,
+                "ground_z_m": 19.10498046875,
+                "difference_m": -0.0013815312500007337
+              },
+              {
+                "xy_m": [
+                  -285.6,
+                  45.0
+                ],
+                "deck_z_m": 19.106362,
+                "ground_z_m": 19.100814819335938,
+                "difference_m": -0.005547180664063234
+              },
+              {
+                "xy_m": [
+                  -285.6,
+                  45.66
+                ],
+                "deck_z_m": 19.106362,
+                "ground_z_m": 19.096893310546875,
+                "difference_m": -0.009468689453125734
+              },
+              {
+                "xy_m": [
+                  -244.4,
+                  44.34
+                ],
+                "deck_z_m": 19.106362,
+                "ground_z_m": 19.099655151367188,
+                "difference_m": -0.006706848632813234
+              },
+              {
+                "xy_m": [
+                  -244.4,
+                  45.0
+                ],
+                "deck_z_m": 19.106362,
+                "ground_z_m": 19.105270385742188,
+                "difference_m": -0.0010916142578132337
+              },
+              {
+                "xy_m": [
+                  -244.4,
+                  45.66
+                ],
+                "deck_z_m": 19.106362,
+                "ground_z_m": 19.10223388671875,
+                "difference_m": -0.004128113281250734
+              }
+            ],
+            "suspension_member_controls": 24
+          },
+          {
+            "id": "Reserve_Granite_Cleft_Bridge",
+            "length_m": 26.0,
+            "width_m": 1.8,
+            "planks_sampled_at_three_stations": 104,
+            "midpoint_clearance_m": 9.992149353027344,
+            "landing_controls": [
+              {
+                "xy_m": [
+                  -360.6,
+                  119.46
+                ],
+                "deck_z_m": 39.889793,
+                "ground_z_m": 39.90472412109375,
+                "difference_m": 0.014931121093752608
+              },
+              {
+                "xy_m": [
+                  -360.6,
+                  120.0
+                ],
+                "deck_z_m": 39.889793,
+                "ground_z_m": 39.945709228515625,
+                "difference_m": 0.05591622851562761
+              },
+              {
+                "xy_m": [
+                  -360.6,
+                  120.54
+                ],
+                "deck_z_m": 39.889793,
+                "ground_z_m": 39.98423767089844,
+                "difference_m": 0.09444467089844011
+              },
+              {
+                "xy_m": [
+                  -333.4,
+                  119.46
+                ],
+                "deck_z_m": 39.889793,
+                "ground_z_m": 39.880859375,
+                "difference_m": -0.008933624999997392
+              },
+              {
+                "xy_m": [
+                  -333.4,
+                  120.0
+                ],
+                "deck_z_m": 39.889793,
+                "ground_z_m": 39.883209228515625,
+                "difference_m": -0.006583771484372392
+              },
+              {
+                "xy_m": [
+                  -333.4,
+                  120.54
+                ],
+                "deck_z_m": 39.889793,
+                "ground_z_m": 39.885986328125,
+                "difference_m": -0.0038066718749973916
+              }
+            ],
+            "suspension_member_controls": 24
+          }
+        ],
+        "deck_height_tolerance_m": 0.002,
+        "landing_contact_tolerance_m": 0.15,
+        "failure_count": 0,
+        "failures": [],
+        "omitted_failure_examples": 0
+      }
+    },
+    {
+      "id": "actual_stone_stair_rises_treads_landings_and_handrails",
+      "status": "PASS",
+      "detail": {
+        "stairs": [
+          {
+            "id": "Reserve_Ridge_Stone_Stair",
+            "actual_treads_sampled": 92,
+            "actual_landings_sampled": 7,
+            "rise_range_m": [
+              0.16463088989257812,
+              0.1646347094726579
+            ],
+            "tread_plan_distance_m": [
+              0.31297568979190943,
+              0.3129757915892255
+            ],
+            "actual_scanned_flat_tread_length_m": [
+              0.29925968251262286,
+              0.3296234400780141
+            ],
+            "flat_tread_scan_resolution_m": 0.01,
+            "tread_surface_method": "3 longitudinal x3 lateral actual mesh ray controls per tread"
+          },
+          {
+            "id": "Reserve_Ravine_Stone_Stair",
+            "actual_treads_sampled": 35,
+            "actual_landings_sampled": 2,
+            "rise_range_m": [
+              0.1647510528564453,
+              0.1647531932373063
+            ],
+            "tread_plan_distance_m": [
+              0.3183466618091252,
+              0.31834677966025676
+            ],
+            "actual_scanned_flat_tread_length_m": [
+              0.299229238254008,
+              0.3292303194467239
+            ],
+            "flat_tread_scan_resolution_m": 0.01,
+            "tread_surface_method": "3 longitudinal x3 lateral actual mesh ray controls per tread"
+          }
+        ],
+        "height_tolerance_m": 0.002,
+        "failure_count": 0,
+        "failures": [],
+        "omitted_failure_examples": 0
+      }
+    },
+    {
+      "id": "actual_stair_land_occlusion_and_walking_head_clearance_absent",
+      "status": "PASS",
+      "detail": {
+        "stairs": [
+          {
+            "id": "Reserve_Ridge_Stone_Stair",
+            "walking_cells": 101,
+            "endpoint_approaches": 2,
+            "actual_walking_and_land_columns": 1920,
+            "within_cell_body_rays": 2667,
+            "actual_overhead_trail_columns": 1920,
+            "maximum_blocking_trail_height_above_walking_m": null,
+            "maximum_land_above_walking_m": -0.00775146484375,
+            "worst_land_control": {
+              "region": "tread",
+              "owner": "Reserve_Ridge_Stone_Stair_Flight8:7",
+              "xy_m": [
+                -379.987893165,
+                149.99681399
+              ],
+              "walking_z_m": 46.604644775390625,
+              "land_z_m": 46.596893310546875
+            },
+            "walking_edge_inset_m": 0.05,
+            "land_penetration_tolerance_m": 0.02,
+            "head_band_m": 2.0,
+            "scope": "Saved land top must stay below actual walking plane plus tolerance, including edges; within-cell land body rays test .20,1.0,1.9m. Actual trail sheets strictly above the tolerance and below2m fail; approach self surfaces and overhead paths beyond2m are excluded."
+          },
+          {
+            "id": "Reserve_Ravine_Stone_Stair",
+            "walking_cells": 39,
+            "endpoint_approaches": 2,
+            "actual_walking_and_land_columns": 715,
+            "within_cell_body_rays": 1014,
+            "actual_overhead_trail_columns": 715,
+            "maximum_blocking_trail_height_above_walking_m": null,
+            "maximum_land_above_walking_m": -0.0074310302734375,
+            "worst_land_control": {
+              "region": "tread",
+              "owner": "Reserve_Ravine_Stone_Stair_Flight3:10",
+              "xy_m": [
+                -245.00900420363635,
+                69.99099579636365
+              ],
+              "walking_z_m": 19.311325073242188,
+              "land_z_m": 19.30389404296875
+            },
+            "walking_edge_inset_m": 0.05,
+            "land_penetration_tolerance_m": 0.02,
+            "head_band_m": 2.0,
+            "scope": "Saved land top must stay below actual walking plane plus tolerance, including edges; within-cell land body rays test .20,1.0,1.9m. Actual trail sheets strictly above the tolerance and below2m fail; approach self surfaces and overhead paths beyond2m are excluded."
+          }
+        ],
+        "failure_count": 0,
+        "failures": [],
+        "omitted_failure_examples": 0
+      }
+    },
+    {
+      "id": "core_757_actual_furniture_mesh_poses_match_refined_plan",
+      "status": "PASS",
+      "detail": {
+        "assemblies": 757,
+        "actual_vertices_compared": 101724,
+        "maximum_world_vertex_error_m": 2.604642667800136e-06,
+        "tolerance_m": 0.00025,
+        "method": "Every saved vertex compared in order/material with source recipe at canonical world pose; no facing extras used.",
+        "failure_count": 0,
+        "failures": [],
+        "omitted_failure_examples": 0
+      }
+    },
+    {
+      "id": "core_room_and_fixture_ownership_preserved",
+      "status": "PASS",
+      "detail": {
+        "rooms": 561,
+        "native_assemblies": 757,
+        "failure_count": 0,
+        "failures": [],
+        "omitted_failure_examples": 0
+      }
+    },
+    {
+      "id": "core_actual_partition_holes_and_solid_spans",
+      "status": "PASS",
+      "detail": {
+        "aperture_rays": 250,
+        "solid_control_rays": 828,
+        "failure_count": 0,
+        "failures": [],
+        "omitted_failure_examples": 0
+      }
+    },
+    {
+      "id": "core_actual_furniture_front_and_door_body_clearance",
+      "status": "PASS",
+      "detail": {
+        "body_columns": 2216,
+        "body_band_above_floor_m": [
+          0.16,
+          1.7
+        ],
+        "limits": "Finite samples of reserved fronts/door apertures; plan BFS and runtime navigation audits remain required.",
+        "failure_count": 0,
+        "failures": [],
+        "omitted_failure_examples": 0
+      }
+    },
+    {
+      "id": "mesh_matched_core_compositions_orientation_and_density",
+      "status": "PASS",
+      "detail": {
+        "furnished_rooms": 222,
+        "wall_back_orientations": 522,
+        "activity_groups": 109,
+        "failure_count": 0,
+        "failures": [],
+        "method": "Canonical geometric composition measures plus every saved mesh vertex matched to that canonical pose."
+      }
+    },
+    {
+      "id": "frozen_47_game_bound_fixture_ids_exist_in_actual_meshes",
+      "status": "PASS",
+      "detail": {
+        "unique_fixture_ids": 47,
+        "functional_aliases": 69,
+        "missing": [],
+        "fixture_ids": [
+          "Main_cafe_L00_Public_Room_A00_cafe_counter",
+          "Main_cafe_L00_Public_Room_A02_cafe_table_set",
+          "Main_cafe_L00_Public_Room_A03_cafe_table_set",
+          "Main_cafe_L00_Service_Room_A02_cupboard",
+          "Main_cafe_L01_Owner_Bed_Living_A00_bed",
+          "Main_home_L00_Rear_Room_A00_kitchen_run",
+          "Main_home_L01_Front_Room_A00_bed",
+          "Main_home_L01_Rear_Room_A01_toilet",
+          "Main_library_L00_Front_Left_A01_bookshelf",
+          "Main_shop_L00_Public_Room_A00_retail_counter",
+          "Main_wash_L00_Front_Left_A01_bookshelf",
+          "Main_wash_L00_Rear_Left_A00_shower_screen",
+          "Main_wash_L00_Rear_Left_A02_toilet",
+          "Main_wash_L00_Rear_Left_A03_basin",
+          "Main_wash_L00_Rear_Right_A00_bathtub",
+          "Main_wash_L00_Rear_Right_A01_toilet",
+          "Main_wash_L00_Rear_Right_A02_basin",
+          "Main_work_L00_Front_Left_A00_workbench",
+          "lot_00_chapel_L00_Nave_A00_pew",
+          "lot_00_chapel_L00_Nave_A01_pew",
+          "lot_00_chapel_L00_Nave_A06_altar",
+          "lot_01_mairie_L00_Front_Left_A02_bookshelf",
+          "lot_01_mairie_L00_Front_Right_A00_writing_desk",
+          "lot_04_bakery_L00_Public_Room_A00_retail_counter",
+          "lot_04_bakery_L00_Public_Room_A03_bread_rack",
+          "lot_04_bakery_L00_Service_Room_A00_kitchen_run",
+          "lot_04_bakery_L01_Owner_Bed_Living_A00_bed",
+          "lot_05_creperie_L00_Public_Room_A01_cafe_table_set",
+          "lot_05_creperie_L00_Public_Room_A02_cafe_table_set",
+          "lot_05_creperie_L00_Service_Room_A02_cupboard",
+          "lot_06_halles_L00_Market_Aisle_Booth_0",
+          "lot_06_halles_L00_Market_Aisle_Booth_1",
+          "lot_06_halles_L00_Market_Aisle_Booth_2",
+          "lot_06_halles_L00_Market_Aisle_Booth_3",
+          "lot_07_hotel_L00_Front_Left_A00_writing_desk",
+          "lot_07_hotel_L00_Front_Left_A01_bookshelf",
+          "lot_07_hotel_L00_Front_Right_A00_banquette",
+          "lot_07_hotel_L00_Front_Right_A01_cafe_table_set",
+          "lot_07_hotel_L00_Front_Right_A02_cafe_table_set",
+          "lot_07_hotel_L00_Front_Right_A04_service_console",
+          "lot_07_hotel_L01_Front_Left_A00_bed",
+          "lot_09_townhouse_L00_Front_Room_A00_sofa",
+          "lot_09_townhouse_L01_Front_Room_A00_bed",
+          "lot_12_halftimber_L00_Front_Room_A00_sofa",
+          "lot_12_halftimber_L01_Front_Room_A00_bed",
+          "lot_12_halftimber_L01_Rear_Room_A01_toilet",
+          "lot_12_halftimber_L02_Front_Room_A00_bed"
+        ],
+        "projection_sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a"
+      }
+    },
+    {
+      "id": "21_reserve_amenities_actual_ownership_floors_and_entry_steps",
+      "status": "PASS",
+      "detail": {
+        "buildings": 21,
+        "kinds": {
+          "reception": 1,
+          "convenience_store": 1,
+          "souvenir_store": 1,
+          "bathhouse": 1,
+          "toilets": 1,
+          "food_truck": 1,
+          "laundry": 1,
+          "maintenance": 1,
+          "refuse": 1,
+          "trailer": 12
+        },
+        "rooms": 92,
+        "assemblies": 158,
+        "failure_count": 0,
+        "failures": [],
+        "omitted_failure_examples": 0
+      }
+    },
+    {
+      "id": "reserve_furnishing_actual_world_mesh_poses",
+      "status": "PASS",
+      "detail": {
+        "assemblies": 158,
+        "vertices_compared": 26902,
+        "tolerance_m": 0.00025,
+        "failure_count": 0,
+        "failures": [],
+        "omitted_failure_examples": 0
+      }
+    },
+    {
+      "id": "reserve_actual_partitions_and_entrance_holes",
+      "status": "PASS",
+      "detail": {
+        "partition_apertures": 48,
+        "solid_controls": 162,
+        "entrances": 21,
+        "failure_count": 0,
+        "failures": [],
+        "omitted_failure_examples": 0
+      }
+    },
+    {
+      "id": "reserve_actual_fixture_approaches_and_entry_body_clearance",
+      "status": "PASS",
+      "detail": {
+        "body_columns": 200,
+        "body_band_above_floor_m": [
+          0.16,
+          1.7
+        ],
+        "failure_count": 0,
+        "failures": [],
+        "omitted_failure_examples": 0
+      }
+    },
+    {
+      "id": "all21_actual_facade_attachments_owned_by_local_front_cover",
+      "status": "PASS",
+      "detail": {
+        "buildings": 21,
+        "facade_attachment_meshes": 82,
+        "ground_utility_meshes": 171,
+        "units": [
+          {
+            "building": "Reserve_Visitor_Reception",
+            "facade_attachment_meshes": 5,
+            "ground_utility_meshes": 7
+          },
+          {
+            "building": "Reserve_Convenience",
+            "facade_attachment_meshes": 5,
+            "ground_utility_meshes": 7
+          },
+          {
+            "building": "Reserve_Souvenir",
+            "facade_attachment_meshes": 5,
+            "ground_utility_meshes": 7
+          },
+          {
+            "building": "Reserve_Bathhouse",
+            "facade_attachment_meshes": 5,
+            "ground_utility_meshes": 7
+          },
+          {
+            "building": "Reserve_Public_Toilets",
+            "facade_attachment_meshes": 5,
+            "ground_utility_meshes": 7
+          },
+          {
+            "building": "Reserve_Food_Truck",
+            "facade_attachment_meshes": 6,
+            "ground_utility_meshes": 7
+          },
+          {
+            "building": "Reserve_Laundry",
+            "facade_attachment_meshes": 5,
+            "ground_utility_meshes": 7
+          },
+          {
+            "building": "Reserve_Maintenance",
+            "facade_attachment_meshes": 5,
+            "ground_utility_meshes": 7
+          },
+          {
+            "building": "Reserve_Refuse_Service",
+            "facade_attachment_meshes": 5,
+            "ground_utility_meshes": 7
+          },
+          {
+            "building": "Reserve_Trailer_N01",
+            "facade_attachment_meshes": 3,
+            "ground_utility_meshes": 9
+          },
+          {
+            "building": "Reserve_Trailer_N02",
+            "facade_attachment_meshes": 3,
+            "ground_utility_meshes": 9
+          },
+          {
+            "building": "Reserve_Trailer_N03",
+            "facade_attachment_meshes": 3,
+            "ground_utility_meshes": 9
+          },
+          {
+            "building": "Reserve_Trailer_N04",
+            "facade_attachment_meshes": 3,
+            "ground_utility_meshes": 9
+          },
+          {
+            "building": "Reserve_Trailer_N05",
+            "facade_attachment_meshes": 3,
+            "ground_utility_meshes": 9
+          },
+          {
+            "building": "Reserve_Trailer_N06",
+            "facade_attachment_meshes": 3,
+            "ground_utility_meshes": 9
+          },
+          {
+            "building": "Reserve_Trailer_S01",
+            "facade_attachment_meshes": 3,
+            "ground_utility_meshes": 9
+          },
+          {
+            "building": "Reserve_Trailer_S02",
+            "facade_attachment_meshes": 3,
+            "ground_utility_meshes": 9
+          },
+          {
+            "building": "Reserve_Trailer_S03",
+            "facade_attachment_meshes": 3,
+            "ground_utility_meshes": 9
+          },
+          {
+            "building": "Reserve_Trailer_S04",
+            "facade_attachment_meshes": 3,
+            "ground_utility_meshes": 9
+          },
+          {
+            "building": "Reserve_Trailer_S05",
+            "facade_attachment_meshes": 3,
+            "ground_utility_meshes": 9
+          },
+          {
+            "building": "Reserve_Trailer_S06",
+            "facade_attachment_meshes": 3,
+            "ground_utility_meshes": 9
+          }
+        ],
+        "orphan_attachment_meshes": 0,
+        "scope": "Actual saved mesh collection links, building collection children, object-parent ownership and ground utility presence.",
+        "failure_count": 0,
+        "failures": [],
+        "omitted_failure_examples": 0
+      }
+    }
+  ],
+  "failed_checks": [],
+  "scope": "Saved base meshes in world space: land/core controls, linked tree roots and clearings, trail shoulders, bridge decks/landings/suspension, stone stair treads/landings, core and reserve fixture vertex poses, room ownership, partition holes and finite body columns. Does not replace core native audit, collision/navigation/playtest, evaluated beauty render QA, or accessibility certification.",
+  "scene_mutations": "None: no operators, view-layer changes, visibility changes, selection, depsgraph evaluation, or save."
+}

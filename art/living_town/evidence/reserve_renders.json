@@ -1,0 +1,489 @@
+[
+  {
+    "id": "15_stone_stairs",
+    "image": "renders/reserve_v6/15_stone_stairs.png",
+    "source_blend_sha256": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191",
+    "render_module_sha256": "5c325bad10d69dc334ce6aacdef70877c5676d0c21ba6ea40ecea82a8153df88",
+    "reserve_plan_sha256": "6841fdb5121e78372e9ccc80a990cb93b5acd7700db3f2661df2718b7e2980f7",
+    "interior_plan_sha256": "665519089421f82d0869ff62f189f364426a064ece67912979f9709d752e5409",
+    "camera": "Review_15_stone_stairs",
+    "cutaway_building": null,
+    "samples": 32,
+    "camera_location_blender_m": [
+      -338.1317138671875,
+      138.98202514648438,
+      33.258384704589844
+    ],
+    "camera_rotation_euler_radians": [
+      1.792980670928955,
+      -4.2287503276838834e-08,
+      1.313472032546997
+    ],
+    "camera_type": "PERSP",
+    "camera_lens_mm": 28.0,
+    "camera_ortho_scale_m": 6.0,
+    "presentation_lights": [],
+    "resolution": [
+      1800,
+      1206
+    ],
+    "seconds": 85.391,
+    "sha256": "a5bd33f5637e5ab667afec7bb96ba7d1db7f26185d8ae3e87eb1fc984c84f3ee"
+  },
+  {
+    "id": "01_reserve_overview",
+    "image": "renders/reserve_v6/01_reserve_overview.png",
+    "source_blend_sha256": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191",
+    "render_module_sha256": "5c325bad10d69dc334ce6aacdef70877c5676d0c21ba6ea40ecea82a8153df88",
+    "reserve_plan_sha256": "6841fdb5121e78372e9ccc80a990cb93b5acd7700db3f2661df2718b7e2980f7",
+    "interior_plan_sha256": "665519089421f82d0869ff62f189f364426a064ece67912979f9709d752e5409",
+    "camera": "15_Reserve_Overview",
+    "cutaway_building": null,
+    "samples": 32,
+    "camera_location_blender_m": [
+      235.0,
+      -375.0,
+      235.0
+    ],
+    "camera_rotation_euler_radians": [
+      1.1582738161087036,
+      7.762157849811047e-08,
+      0.743755578994751
+    ],
+    "camera_type": "PERSP",
+    "camera_lens_mm": 45.0,
+    "camera_ortho_scale_m": 6.0,
+    "presentation_lights": [],
+    "resolution": [
+      1800,
+      1206
+    ],
+    "seconds": 62.033,
+    "sha256": "54a0657e581d9f3d472d7cd5229eca9a525b5513a8cf618ebf2c3329e05d05a1"
+  },
+  {
+    "id": "02_reserve_topography",
+    "image": "renders/reserve_v6/02_reserve_topography.png",
+    "source_blend_sha256": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191",
+    "render_module_sha256": "5c325bad10d69dc334ce6aacdef70877c5676d0c21ba6ea40ecea82a8153df88",
+    "reserve_plan_sha256": "6841fdb5121e78372e9ccc80a990cb93b5acd7700db3f2661df2718b7e2980f7",
+    "interior_plan_sha256": "665519089421f82d0869ff62f189f364426a064ece67912979f9709d752e5409",
+    "camera": "Review_02_Complete_Topography",
+    "cutaway_building": null,
+    "samples": 32,
+    "camera_location_blender_m": [
+      -267.0,
+      80.0,
+      1000.0
+    ],
+    "camera_rotation_euler_radians": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "camera_type": "ORTHO",
+    "camera_lens_mm": 45.0,
+    "camera_ortho_scale_m": 890.4000244140625,
+    "presentation_lights": [],
+    "resolution": [
+      1800,
+      1800
+    ],
+    "seconds": 74.97,
+    "sha256": "9378ededc58bf471945d5fafb6814b8114cf64d12011a0daa7d6a0c0d3dc63fd"
+  },
+  {
+    "id": "03_visitor_hub",
+    "image": "renders/reserve_v6/03_visitor_hub.png",
+    "source_blend_sha256": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191",
+    "render_module_sha256": "5c325bad10d69dc334ce6aacdef70877c5676d0c21ba6ea40ecea82a8153df88",
+    "reserve_plan_sha256": "6841fdb5121e78372e9ccc80a990cb93b5acd7700db3f2661df2718b7e2980f7",
+    "interior_plan_sha256": "665519089421f82d0869ff62f189f364426a064ece67912979f9709d752e5409",
+    "camera": "17_Reserve_Visitor_Hub",
+    "cutaway_building": null,
+    "samples": 32,
+    "camera_location_blender_m": [
+      -58.0,
+      -165.0,
+      69.0
+    ],
+    "camera_rotation_euler_radians": [
+      1.0673178434371948,
+      -5.178972628527845e-08,
+      0.6350266933441162
+    ],
+    "camera_type": "PERSP",
+    "camera_lens_mm": 45.0,
+    "camera_ortho_scale_m": 6.0,
+    "presentation_lights": [],
+    "resolution": [
+      1800,
+      1206
+    ],
+    "seconds": 68.722,
+    "sha256": "13192c066a4bca574bc3e609867d5cef0c6a243b59c9ad7a73151cce7f74cf30"
+  },
+  {
+    "id": "04_trailer_park",
+    "image": "renders/reserve_v6/04_trailer_park.png",
+    "source_blend_sha256": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191",
+    "render_module_sha256": "5c325bad10d69dc334ce6aacdef70877c5676d0c21ba6ea40ecea82a8153df88",
+    "reserve_plan_sha256": "6841fdb5121e78372e9ccc80a990cb93b5acd7700db3f2661df2718b7e2980f7",
+    "interior_plan_sha256": "665519089421f82d0869ff62f189f364426a064ece67912979f9709d752e5409",
+    "camera": "18_Reserve_Camp",
+    "cutaway_building": null,
+    "samples": 32,
+    "camera_location_blender_m": [
+      -114.0,
+      -189.0,
+      55.0
+    ],
+    "camera_rotation_euler_radians": [
+      1.0999854803085327,
+      -6.011704556385666e-08,
+      0.6699715256690979
+    ],
+    "camera_type": "PERSP",
+    "camera_lens_mm": 45.0,
+    "camera_ortho_scale_m": 6.0,
+    "presentation_lights": [],
+    "resolution": [
+      1800,
+      1206
+    ],
+    "seconds": 62.664,
+    "sha256": "b03145adade149f2dde2b68a15ee2611cb60a79c4c771d818ec9154d77cfbaa1"
+  },
+  {
+    "id": "05_cafe_composition",
+    "image": "renders/reserve_v6/05_cafe_composition.png",
+    "source_blend_sha256": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191",
+    "render_module_sha256": "5c325bad10d69dc334ce6aacdef70877c5676d0c21ba6ea40ecea82a8153df88",
+    "reserve_plan_sha256": "6841fdb5121e78372e9ccc80a990cb93b5acd7700db3f2661df2718b7e2980f7",
+    "interior_plan_sha256": "665519089421f82d0869ff62f189f364426a064ece67912979f9709d752e5409",
+    "camera": "03_Cafe_Section",
+    "cutaway_building": "Main_cafe",
+    "samples": 32,
+    "camera_location_blender_m": [
+      -8.0,
+      -12.0,
+      23.0
+    ],
+    "camera_rotation_euler_radians": [
+      0.8238518238067627,
+      -9.915533638604757e-08,
+      -1.019141435623169
+    ],
+    "camera_type": "ORTHO",
+    "camera_lens_mm": 45.0,
+    "camera_ortho_scale_m": 24.0,
+    "presentation_lights": [],
+    "resolution": [
+      1800,
+      1206
+    ],
+    "seconds": 85.857,
+    "sha256": "dfc09772e24af3f20f280aaffc35b48901c1a12f098e5f6a6d43ce06dd35809b"
+  },
+  {
+    "id": "06_home_composition",
+    "image": "renders/reserve_v6/06_home_composition.png",
+    "source_blend_sha256": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191",
+    "render_module_sha256": "5c325bad10d69dc334ce6aacdef70877c5676d0c21ba6ea40ecea82a8153df88",
+    "reserve_plan_sha256": "6841fdb5121e78372e9ccc80a990cb93b5acd7700db3f2661df2718b7e2980f7",
+    "interior_plan_sha256": "665519089421f82d0869ff62f189f364426a064ece67912979f9709d752e5409",
+    "camera": "09_Home_Section",
+    "cutaway_building": "Main_home",
+    "samples": 32,
+    "camera_location_blender_m": [
+      -61.0,
+      3.5,
+      18.98866844177246
+    ],
+    "camera_rotation_euler_radians": [
+      0.901077926158905,
+      -3.2761956703097894e-08,
+      -0.708626389503479
+    ],
+    "camera_type": "ORTHO",
+    "camera_lens_mm": 45.0,
+    "camera_ortho_scale_m": 18.0,
+    "presentation_lights": [],
+    "resolution": [
+      1800,
+      1206
+    ],
+    "seconds": 81.932,
+    "sha256": "4a365d8f5f55dee791586e9ba4b0006975e22127be77c4bdcce5b997103aa723"
+  },
+  {
+    "id": "07_trailer_family_interior",
+    "image": "renders/reserve_v6/07_trailer_family_interior.png",
+    "source_blend_sha256": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191",
+    "render_module_sha256": "5c325bad10d69dc334ce6aacdef70877c5676d0c21ba6ea40ecea82a8153df88",
+    "reserve_plan_sha256": "6841fdb5121e78372e9ccc80a990cb93b5acd7700db3f2661df2718b7e2980f7",
+    "interior_plan_sha256": "665519089421f82d0869ff62f189f364426a064ece67912979f9709d752e5409",
+    "camera": "Review_07_trailer_family_interior",
+    "cutaway_building": "Reserve_Trailer_N01",
+    "samples": 32,
+    "camera_location_blender_m": [
+      -202.0,
+      -104.0,
+      28.029010772705078
+    ],
+    "camera_rotation_euler_radians": [
+      0.0829978808760643,
+      -3.788533575743713e-08,
+      0.7853982448577881
+    ],
+    "camera_type": "PERSP",
+    "camera_lens_mm": 45.0,
+    "camera_ortho_scale_m": 6.0,
+    "presentation_lights": [],
+    "resolution": [
+      1800,
+      1206
+    ],
+    "seconds": 64.197,
+    "sha256": "9b21cf574ae1373cee90654c0f70f4881d1f7eaee39d0dd835bff6e6463fbe08"
+  },
+  {
+    "id": "08_trailer_twin_interior",
+    "image": "renders/reserve_v6/08_trailer_twin_interior.png",
+    "source_blend_sha256": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191",
+    "render_module_sha256": "5c325bad10d69dc334ce6aacdef70877c5676d0c21ba6ea40ecea82a8153df88",
+    "reserve_plan_sha256": "6841fdb5121e78372e9ccc80a990cb93b5acd7700db3f2661df2718b7e2980f7",
+    "interior_plan_sha256": "665519089421f82d0869ff62f189f364426a064ece67912979f9709d752e5409",
+    "camera": "Review_08_trailer_twin_interior",
+    "cutaway_building": "Reserve_Trailer_N02",
+    "samples": 32,
+    "camera_location_blender_m": [
+      -192.0,
+      -104.0,
+      28.029010772705078
+    ],
+    "camera_rotation_euler_radians": [
+      0.0829978808760643,
+      -3.788533575743713e-08,
+      0.7853982448577881
+    ],
+    "camera_type": "PERSP",
+    "camera_lens_mm": 45.0,
+    "camera_ortho_scale_m": 6.0,
+    "presentation_lights": [],
+    "resolution": [
+      1800,
+      1206
+    ],
+    "seconds": 64.348,
+    "sha256": "6319ced754595310718ac0dda899ee33516fd52e62934ad0b847f4feac2a2ae3"
+  },
+  {
+    "id": "09_convenience_interior",
+    "image": "renders/reserve_v6/09_convenience_interior.png",
+    "source_blend_sha256": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191",
+    "render_module_sha256": "5c325bad10d69dc334ce6aacdef70877c5676d0c21ba6ea40ecea82a8153df88",
+    "reserve_plan_sha256": "6841fdb5121e78372e9ccc80a990cb93b5acd7700db3f2661df2718b7e2980f7",
+    "interior_plan_sha256": "665519089421f82d0869ff62f189f364426a064ece67912979f9709d752e5409",
+    "camera": "Review_09_convenience_interior",
+    "cutaway_building": "Reserve_Convenience",
+    "samples": 32,
+    "camera_location_blender_m": [
+      -107.0,
+      -63.0,
+      18.786388397216797
+    ],
+    "camera_rotation_euler_radians": [
+      0.9629614949226379,
+      4.461654512510904e-08,
+      0.6055447459220886
+    ],
+    "camera_type": "PERSP",
+    "camera_lens_mm": 48.0,
+    "camera_ortho_scale_m": 6.0,
+    "presentation_lights": [],
+    "resolution": [
+      1800,
+      1206
+    ],
+    "seconds": 82.761,
+    "sha256": "03bf95446a432a1658d88e2928d547a8d409060b72e53b5d3f8bf1f31e9ae457"
+  },
+  {
+    "id": "10_souvenir_interior",
+    "image": "renders/reserve_v6/10_souvenir_interior.png",
+    "source_blend_sha256": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191",
+    "render_module_sha256": "5c325bad10d69dc334ce6aacdef70877c5676d0c21ba6ea40ecea82a8153df88",
+    "reserve_plan_sha256": "6841fdb5121e78372e9ccc80a990cb93b5acd7700db3f2661df2718b7e2980f7",
+    "interior_plan_sha256": "665519089421f82d0869ff62f189f364426a064ece67912979f9709d752e5409",
+    "camera": "Review_10_souvenir_interior",
+    "cutaway_building": "Reserve_Souvenir",
+    "samples": 32,
+    "camera_location_blender_m": [
+      -94.0,
+      -62.0,
+      16.786388397216797
+    ],
+    "camera_rotation_euler_radians": [
+      1.0128893852233887,
+      -5.645174994128865e-09,
+      0.5880025625228882
+    ],
+    "camera_type": "PERSP",
+    "camera_lens_mm": 48.0,
+    "camera_ortho_scale_m": 6.0,
+    "presentation_lights": [],
+    "resolution": [
+      1800,
+      1206
+    ],
+    "seconds": 78.388,
+    "sha256": "9c0746b402f4e0b0d6d4648c783bf3cfcecbdf9c03eb9bbecae52621c98de405"
+  },
+  {
+    "id": "11_bathhouse_interior",
+    "image": "renders/reserve_v6/11_bathhouse_interior.png",
+    "source_blend_sha256": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191",
+    "render_module_sha256": "5c325bad10d69dc334ce6aacdef70877c5676d0c21ba6ea40ecea82a8153df88",
+    "reserve_plan_sha256": "6841fdb5121e78372e9ccc80a990cb93b5acd7700db3f2661df2718b7e2980f7",
+    "interior_plan_sha256": "665519089421f82d0869ff62f189f364426a064ece67912979f9709d752e5409",
+    "camera": "Review_11_bathhouse_interior",
+    "cutaway_building": "Reserve_Bathhouse",
+    "samples": 32,
+    "camera_location_blender_m": [
+      -130.0,
+      -73.0,
+      30.786388397216797
+    ],
+    "camera_rotation_euler_radians": [
+      0.3579061031341553,
+      3.8561395854230796e-08,
+      2.1910459995269775
+    ],
+    "camera_type": "PERSP",
+    "camera_lens_mm": 48.0,
+    "camera_ortho_scale_m": 6.0,
+    "presentation_lights": [],
+    "resolution": [
+      1800,
+      1206
+    ],
+    "seconds": 84.458,
+    "sha256": "1d5ad3f346238e7c5145f4b288b41d56aa7722c10948fb823131bd728b1bbebd"
+  },
+  {
+    "id": "12_public_toilets",
+    "image": "renders/reserve_v6/12_public_toilets.png",
+    "source_blend_sha256": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191",
+    "render_module_sha256": "5c325bad10d69dc334ce6aacdef70877c5676d0c21ba6ea40ecea82a8153df88",
+    "reserve_plan_sha256": "6841fdb5121e78372e9ccc80a990cb93b5acd7700db3f2661df2718b7e2980f7",
+    "interior_plan_sha256": "665519089421f82d0869ff62f189f364426a064ece67912979f9709d752e5409",
+    "camera": "Review_12_public_toilets",
+    "cutaway_building": "Reserve_Public_Toilets",
+    "samples": 32,
+    "camera_location_blender_m": [
+      -114.0,
+      -74.0,
+      21.786388397216797
+    ],
+    "camera_rotation_euler_radians": [
+      0.34302398562431335,
+      -9.322521776766735e-08,
+      -2.498091697692871
+    ],
+    "camera_type": "PERSP",
+    "camera_lens_mm": 48.0,
+    "camera_ortho_scale_m": 6.0,
+    "presentation_lights": [],
+    "resolution": [
+      1800,
+      1206
+    ],
+    "seconds": 79.964,
+    "sha256": "7c3e8a101f3640415a39baa2f1c4da297af974d07a2ef2e87f2926f0bd11a759"
+  },
+  {
+    "id": "13_lunch_car",
+    "image": "renders/reserve_v6/13_lunch_car.png",
+    "source_blend_sha256": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191",
+    "render_module_sha256": "5c325bad10d69dc334ce6aacdef70877c5676d0c21ba6ea40ecea82a8153df88",
+    "reserve_plan_sha256": "6841fdb5121e78372e9ccc80a990cb93b5acd7700db3f2661df2718b7e2980f7",
+    "interior_plan_sha256": "665519089421f82d0869ff62f189f364426a064ece67912979f9709d752e5409",
+    "camera": "Review_13_lunch_car",
+    "cutaway_building": null,
+    "samples": 32,
+    "camera_location_blender_m": [
+      -88.0,
+      -60.0,
+      11.786389350891113
+    ],
+    "camera_rotation_euler_radians": [
+      1.2847743034362793,
+      -4.659600705281264e-08,
+      2.1995925903320312
+    ],
+    "camera_type": "PERSP",
+    "camera_lens_mm": 55.0,
+    "camera_ortho_scale_m": 6.0,
+    "presentation_lights": [
+      {
+        "name": "Review_Lunch_Car_Fill",
+        "type": "AREA",
+        "energy_w": 1200.0,
+        "size_m": 5.0,
+        "color": [
+          1.0,
+          0.9399999976158142,
+          0.8399999737739563
+        ],
+        "location_m": [
+          -91.0,
+          -68.0,
+          11.786389350891113
+        ],
+        "rotation_euler_radians": [
+          1.1273479461669922,
+          -8.066437118259273e-08,
+          1.5707963705062866
+        ]
+      }
+    ],
+    "resolution": [
+      1800,
+      1206
+    ],
+    "seconds": 75.772,
+    "sha256": "6cac422c7c23b0fbc3c542747805b336973fdd1f59ecc9b2b8cb99e32dc9d29f"
+  },
+  {
+    "id": "14_ravine_bridge",
+    "image": "renders/reserve_v6/14_ravine_bridge.png",
+    "source_blend_sha256": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191",
+    "render_module_sha256": "5c325bad10d69dc334ce6aacdef70877c5676d0c21ba6ea40ecea82a8153df88",
+    "reserve_plan_sha256": "6841fdb5121e78372e9ccc80a990cb93b5acd7700db3f2661df2718b7e2980f7",
+    "interior_plan_sha256": "665519089421f82d0869ff62f189f364426a064ece67912979f9709d752e5409",
+    "camera": "Review_14_ravine_bridge",
+    "cutaway_building": null,
+    "samples": 32,
+    "camera_location_blender_m": [
+      -229.0,
+      -1.0,
+      39.106361389160156
+    ],
+    "camera_rotation_euler_radians": [
+      1.2409141063690186,
+      2.029254275726089e-08,
+      0.6640461683273315
+    ],
+    "camera_type": "PERSP",
+    "camera_lens_mm": 42.0,
+    "camera_ortho_scale_m": 6.0,
+    "presentation_lights": [],
+    "resolution": [
+      1800,
+      1206
+    ],
+    "seconds": 77.04,
+    "sha256": "695c21051f1485dbc1e0e769bdccac3d9ebb0d400c7f9c7fadefc9facc563e64"
+  }
+]
