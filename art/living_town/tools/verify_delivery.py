@@ -73,6 +73,10 @@ def source_freeze_audit():
         'masterplan.json', 'terrain_plan.json', 'landscape_plan.json', 'interior_plan.json',
         'tools/build_living_town.py', 'tools/terrain_profile.py', 'tools/interior_design.py',
         'tools/refine_environment.py', 'tools/landscape_details.py'}
+    if freeze.get('schema')=='living_town.source_freeze.v6':
+        expected.update({'reserve_plan.json','tools/reserve_plan.py','tools/reserve_environment.py','tools/reserve_amenities.py',
+                         'tools/generate_reserve_materials.py','textures/natural_rock_material.json',
+                         'textures/natural_rock_basecolor.png','textures/natural_rock_roughness.png','textures/natural_rock_normal.png'})
     recorded = freeze.get('files', {})
     errors = []
     for relative, checksum in recorded.items():
@@ -81,7 +85,7 @@ def source_freeze_audit():
             errors.append({'file': relative, 'reason': 'missing or outside delivery'})
         elif sha(path) != checksum:
             errors.append({'file': relative, 'reason': 'current bytes differ from source freeze'})
-    check('all11_frozen_native_and_source_files_match_current_bytes',
+    check('frozen_native_and_source_files_match_current_bytes',
         set(recorded) == expected and not errors,
         {'expected_files': len(expected), 'recorded_files': len(recorded),
          'missing_records': sorted(expected - set(recorded)), 'errors': errors})

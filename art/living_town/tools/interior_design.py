@@ -381,6 +381,410 @@ def assign_assets(plan):
             # secondary cabinet cannot fit. Skipped extras are never squeezed.
             if not room['assets']:place('wall_tool_cabinet',min(.55,(x1-x0)-.2),.22,1.2)
             room['furnishing_count']=len(room['assets'])
+    refine_furniture_layout(plan)
+
+
+# Every front-facing recipe below has its back on local +Y and its usable
+# front on local -Y. Keep this convention shared by the planner and meshes.
+WALL_BACKED={'bed','sofa','banquette','bookshelf','grocery_shelf','storage_rack',
+    'bread_rack','tool_rack','cupboard','wardrobe','linen_cabinet','lockers',
+    'wall_tool_cabinet','writing_desk','kitchen_run','oven','cooker',
+    'coffee_machine','toilet','basin','shower_screen','workbench','organ','altar','service_console'}
+FRONT_CLEARANCE={'wardrobe':.58,'cupboard':.55,'linen_cabinet':.50,
+    'lockers':.50,'bookshelf':.50,'grocery_shelf':.55,'storage_rack':.50,
+    'bread_rack':.50,'tool_rack':.50,'wall_tool_cabinet':.45,
+    'kitchen_run':.80,'oven':.80,'cooker':.80,'coffee_machine':.80,
+    'toilet':.55,'basin':.50,'shower_screen':.50,'workbench':.65,
+    'organ':.55,'banquette':.40,'cafe_counter':.60}
+
+
+def rotated_xy(x,y,rotation):
+    """Exact cardinal rotation prevents tiny phantom footprint overlaps."""
+    return ((x,y),(-y,x),(-x,-y),(y,-x))[int(round(rotation/90))%4]
+
+
+def asset_footprint(asset,center=None,rotation=None):
+    x,y=center or asset['center_m'];w,d=asset['dimensions_m'][:2]
+    rotation=asset.get('rotation_degrees',0) if rotation is None else rotation
+    if int(round(rotation/90))%2:w,d=d,w
+    return [x-w/2,y-d/2,x+w/2,y+d/2]
+
+
+def local_rect(asset,left,bottom,right,top):
+    x,y=asset['center_m'];rot=asset.get('rotation_degrees',0)
+    corners=[rotated_xy(xx,yy,rot) for xx in(left,right) for yy in(bottom,top)]
+    return [x+min(p[0] for p in corners),y+min(p[1] for p in corners),
+        x+max(p[0] for p in corners),y+max(p[1] for p in corners)]
+
+
+def furniture_front(asset,depth):
+    w,d=asset['dimensions_m'][:2]
+    # The front band covers the usable middle, without requiring the same
+    # standing position at both ends of a long shared work surface.
+    half=min(w*.42,.38)
+    return local_rect(asset,-half,-d/2-depth,half,-d/2-.015)
+
+
+def furniture_groups(room):
+    """Preserve semantic IDs while connecting actual furnished activities."""
+    remaining=list(room['assets']);groups=[];relations=[]
+    def take(kind):
+        asset=next((q for q in remaining if q['kind']==kind),None)
+        if asset:remaining.remove(asset)
+        return asset
+    def add(label,members,wall=False):
+        groups.append({'label':label,'members':members,'wall':wall})
+    if room['purpose']=='chapel nave pews altar':
+        altar=take('altar');members=[(altar,0.,0.,0)]
+        for i,pew in enumerate([q for q in remaining if q['kind']=='pew']):
+            remaining.remove(pew);members.append((pew,0.,-1.25-i*1.10,180))
+            relations.append({'type':'pew_altar','source':pew['id'],'target':altar['id']})
+        add('chapel_ordered_rows',members,True)
+    sofa=take('sofa');coffee=take('coffee_table') if sofa else None
+    if sofa:
+        members=[(sofa,0.,0.,0)]
+        if coffee:
+            gap=.40;dy=-(sofa['dimensions_m'][1]+coffee['dimensions_m'][1])/2-gap
+            members.append((coffee,0.,dy,0))
+            relations.append({'type':'sofa_coffee_table','source':sofa['id'],'target':coffee['id'],
+                'edge_gap_m':gap})
+        add('living_group',members,True)
+    bed=take('bed');bedside=take('bedside') if bed else None
+    if bed:
+        members=[(bed,0.,0.,0)]
+        if bedside:
+            members.append((bedside,(bed['dimensions_m'][0]+bedside['dimensions_m'][0])/2+.10,
+                (bed['dimensions_m'][1]-bedside['dimensions_m'][1])/2,0))
+            relations.append({'type':'bed_bedside','source':bed['id'],'target':bedside['id']})
+        add('sleeping_group',members,True)
+    table=take('meeting_table')
+    if table:
+        members=[(table,0.,0.,0)]
+        for side in(-1,1):
+            seat=take('lounge_chair')
+            if seat:
+                dy=side*((table['dimensions_m'][1]+seat['dimensions_m'][1])/2+.12)
+                members.append((seat,0.,dy,180 if side==-1 else 0))
+                relations.append({'type':'seat_table','source':seat['id'],'target':table['id']})
+        add('meeting_group',members)
+    for table_kind in('writing_desk','reading_table'):
+        table=take(table_kind)
+        if not table:continue
+        seat=take('task_stool') or take('lounge_chair');members=[(table,0.,0.,0)]
+        if seat:
+            dy=-(table['dimensions_m'][1]+seat['dimensions_m'][1])/2-.12
+            members.append((seat,0.,dy,180))
+            relations.append({'type':'seat_table','source':seat['id'],'target':table['id']})
+        add('work_reading_group',members,table_kind=='writing_desk')
+    kitchen=take('kitchen_run')
+    if kitchen:
+        members=[(kitchen,0.,0.,0)];end=kitchen['dimensions_m'][0]/2
+        for kind in('oven','coffee_machine','cooker'):
+            machine=take(kind)
+            if machine:
+                xx=end+.12+machine['dimensions_m'][0]/2
+                # Align the cabinet backs, not the centres of unequal depths.
+                yy=(kitchen['dimensions_m'][1]-machine['dimensions_m'][1])/2
+                members.append((machine,xx,yy,0));end=xx+machine['dimensions_m'][0]/2
+                relations.append({'type':'kitchen_work_line','source':kitchen['id'],'target':machine['id']})
+        add('kitchen_work_line',members,True)
+    for asset in remaining:add(asset['kind'],[(asset,0.,0.,0)],asset['kind'] in WALL_BACKED)
+    # Large related arrangements are resolved before minor wall storage.
+    groups.sort(key=lambda g:(-len(g['members']),-sum(q['dimensions_m'][0]*q['dimensions_m'][1]
+        for q,_,_,_ in g['members']),g['label']))
+    return groups,relations
+
+
+def furniture_clearance_sets(members):
+    """Alternative usable clearances; bands may share circulation, not solids."""
+    reservations=[]
+    for asset in members:
+        kind=asset['kind'];w,d=asset['dimensions_m'][:2]
+        if kind in FRONT_CLEARANCE:reservations.append(furniture_front(asset,FRONT_CLEARANCE[kind]))
+        if kind=='sofa':reservations.append(furniture_front(asset,.34))
+        if kind=='bed':
+            reservations.append(furniture_front(asset,.52))
+            # The head end contains the bedside. One long side and the foot
+            # must remain usable; either handed layout is valid.
+        if kind in('lounge_chair','task_stool'):
+            # A connected desk chair faces the table; entry is from behind.
+            reservations.append(local_rect(asset,-min(w*.40,.25),d/2+.015,
+                min(w*.40,.25),d/2+.35))
+    beds=[q for q in members if q['kind']=='bed']
+    if beds:
+        bed=beds[0];w,d=bed['dimensions_m'][:2]
+        return [reservations+[local_rect(bed,-w/2-.50,-d/2,-w/2-.015,d*.12)],
+            reservations+[local_rect(bed,w/2+.015,-d/2,w/2+.50,d*.12)]]
+    return [reservations]
+
+
+def refine_furniture_layout(plan):
+    """Bounded deterministic composition search, with no inventory changes.
+
+    The original allocator remains the fixture-program/ID authority. This pass
+    places those same assets as activity groups and gives their physical fronts
+    room to work. Cardinal furniture follows building walls rather than adding
+    arbitrary chair yaw or dense unrelated objects to empty floor area.
+    """
+    binding_path=ROOT.parents[1]/'game/data/town3d/projection.json'
+    bound=set()
+    if binding_path.exists():
+        projection=json.loads(binding_path.read_text(encoding='utf-8'))
+        def bindings(value):
+            if isinstance(value,dict):
+                if value.get('model_asset_id'):bound.add(value['model_asset_id'])
+                for child in value.values():bindings(child)
+            elif isinstance(value,list):
+                for child in value:bindings(child)
+        bindings(projection)
+    for floor in plan['levels']:
+        for room in floor['rooms']:
+            if not room['assets'] or room['purpose']=='crossed public market aisles':continue
+            bounds=room['bounds_m'];a,b,c,e=bounds
+            omitted=[]
+            if room['purpose']=='cafe dining':
+                omitted=[q for q in room['assets'] if q['kind']=='service_console' and q['id'] not in bound]
+            elif room['purpose']=='breakfast lounge':
+                tables=[q for q in room['assets'] if q['kind']=='cafe_table_set']
+                omitted=[q for q in tables[2:] if q['id'] not in bound]
+            if omitted:
+                room['assets']=[q for q in room['assets'] if q not in omitted]
+                room['omitted_optional_assets']=[{'id':q['id'],'kind':q['kind'],
+                    'reason':'retain essential and game-bound fixtures while opening useful dining circulation'} for q in omitted]
+            if room['purpose']=='private owner kitchenette' and c-a<3.20:
+                # A compact single-person kitchen uses a genuine 1.10m work
+                # module, keeping its sink/hob/fridge recipe and semantic ID.
+                for asset in room['assets']:
+                    if asset['kind']=='kitchen_run':asset['dimensions_m'][0]=1.10
+                    if asset['kind']=='cupboard':asset['dimensions_m'][:2]=[.55,.32]
+            if room['purpose']=='cafe dining':
+                # The real two-chair bistro mesh is .68m deep. A .90m proxy
+                # retains a .11m buffer on both sides without inventing a full
+                # metre of solid furniture across the staff-door approach.
+                for asset in room['assets']:
+                    if asset['kind']=='cafe_table_set':asset['dimensions_m'][1]=.90
+            desks=[q for q in room['assets'] if q['kind']=='writing_desk']
+            if desks and not any(q['kind'] in('task_stool','lounge_chair') for q in room['assets']):
+                # Six archive work surfaces formerly had no usable seat at all.
+                # Add a small connected stool without renumbering any old ID.
+                desk=desks[0]
+                room['assets'].append({'id':desk['id']+'_Seat','kind':'task_stool',
+                    'center_m':[desk['center_m'][0],desk['center_m'][1]-.56],
+                    'dimensions_m':[.34,.34,.47],'rotation_degrees':180,
+                    'accent':desk['accent'],'collision_proxy':True})
+            # The old packer reserved an entire .96m room edge even where
+            # only one local doorway needed that width. Replace those generic
+            # strips with actual aperture approaches; retain entrance spines,
+            # custom reserves and every dedicated hall/stair zone unchanged.
+            blockers=[]
+            for reserve in room['circulation_keepouts']:
+                edge=room['access_edge'];generic=False
+                if room['door_gaps']:
+                    generic=(edge=='E' and all(abs(x-y)<.001 for x,y in zip(reserve,[c-.96,b,c,e]))) or (
+                        edge=='W' and all(abs(x-y)<.001 for x,y in zip(reserve,[a,b,a+.96,e]))) or (
+                        edge=='N' and all(abs(x-y)<.001 for x,y in zip(reserve,[a,e-.96,c,e]))) or (
+                        edge=='S' and all(abs(x-y)<.001 for x,y in zip(reserve,[a,b,c,b+.96])))
+                if not generic:blockers.append(list(reserve))
+            for reserve in floor['access_keepouts']:
+                if intersects(reserve,bounds) and reserve not in blockers:blockers.append(list(reserve))
+            # Actual door thresholds receive a local .90m approach in addition
+            # to the wider cross-hall/entry reserves authored by the room plan.
+            for door in room['door_gaps']:
+                co=door['coordinate_m'];mid=door['center_m'];half=door['width_m']/2
+                if door['axis']=='x':
+                    blockers.append([co if abs(co-a)<.001 else co-.90,mid-half,
+                        co+.90 if abs(co-a)<.001 else co,mid+half])
+                else:blockers.append([mid-half,co if abs(co-b)<.001 else co-.90,
+                    mid+half,co+.90 if abs(co-b)<.001 else co])
+            blockers=[[round(value,6) for value in rect] for rect in blockers]
+            groups,relations=furniture_groups(room)
+            salt=int(hashlib.sha256(room['id'].encode()).hexdigest()[:8],16)
+            def inside(rect,margin=.035):
+                return rect[0]>=a+margin-1e-7 and rect[1]>=b+margin-1e-7 and rect[2]<=c-margin+1e-7 and rect[3]<=e-margin+1e-7
+            def candidates(group):
+                choices=[];members=group['members']
+                for rotation in((0,180,90,270) if salt%2==0 else(180,0,270,90)):
+                    transformed=[]
+                    for asset,x,y,rot in members:
+                        xx,yy=rotated_xy(x,y,rotation)
+                        q={**asset,'center_m':[xx,yy],'rotation_degrees':(rot+rotation)%360}
+                        q['footprint_m']=asset_footprint(q);transformed.append(q)
+                    lo=min(q['footprint_m'][0] for q in transformed);hi=max(q['footprint_m'][2] for q in transformed)
+                    bottom=min(q['footprint_m'][1] for q in transformed);top=max(q['footprint_m'][3] for q in transformed)
+                    wall_gap=.04 if room['purpose']=='compact staff WC' else .07
+                    xs=[a+wall_gap-lo,c-wall_gap-hi,(a+c-lo-hi)/2]
+                    ys=[b+wall_gap-bottom,e-wall_gap-top,(b+e-bottom-top)/2]
+                    # A .16m perimeter search can use a narrow bay beside an
+                    # aperture while keeping the actual furniture back flush.
+                    xs+= [a+.07-lo+i*.16 for i in range(max(0,int((c-a-(hi-lo)-.14)/.16))+1)]
+                    ys+= [b+.07-bottom+i*.16 for i in range(max(0,int((e-b-(top-bottom)-.14)/.16))+1)]
+                    if group['wall']:
+                        anchor=transformed[0];w,d=anchor['dimensions_m'][:2]
+                        bx,by=rotated_xy(0,d/2,rotation)
+                        if rotation==0:offsets=[(xx,e-wall_gap-by-anchor['center_m'][1]) for xx in xs]
+                        elif rotation==180:offsets=[(xx,b+wall_gap-by-anchor['center_m'][1]) for xx in xs]
+                        elif rotation==90:offsets=[(a+wall_gap-bx-anchor['center_m'][0],yy) for yy in ys]
+                        else:offsets=[(c-wall_gap-bx-anchor['center_m'][0],yy) for yy in ys]
+                    else:offsets=[(xx,yy) for xx in xs[:3] for yy in ys[:3]]+[(xx,yy) for yy in ys for xx in xs]
+                    original=members[0][0]
+                    preferred=None
+                    if not group['wall'] and rotation==original.get('rotation_degrees',0):
+                        offsets.insert(0,(original['center_m'][0]-transformed[0]['center_m'][0],
+                            original['center_m'][1]-transformed[0]['center_m'][1]))
+                    if room['purpose']=='cafe dining':
+                        if original['kind']=='banquette' and rotation==180:
+                            preferred=(a+original['dimensions_m'][0]/2+.09,b+original['dimensions_m'][1]/2+.09)
+                        elif original['kind']=='cafe_table_set' and rotation==0:
+                            index=[q['id'] for q in room['assets'] if q['kind']=='cafe_table_set'].index(original['id'])
+                            preferred=[(c-.745,b+.52),(a+.745,b+1.65),(a+2.70,b+2.80),
+                                (c-.745,e-1.35)][index]
+                        if preferred is not None:offsets.insert(0,preferred)
+                    # The existing cafe service counter stays below its real
+                    # partition hatch, preserving the established serving side.
+                    if members[0][0]['kind']=='cafe_counter':
+                        if rotation!=0:continue
+                        q=members[0][0];offsets=[tuple(q['center_m'])]
+                    seen=set()
+                    for dx,dy in offsets:
+                        key=(round(dx,5),round(dy,5))
+                        if key in seen:continue
+                        seen.add(key);placed=[]
+                        for q in transformed:
+                            p={**q,'center_m':[round(q['center_m'][0]+dx,6),round(q['center_m'][1]+dy,6)]}
+                            p['footprint_m']=[round(v,6) for v in asset_footprint(p)];placed.append(p)
+                        rects=[q['footprint_m'] for q in placed]
+                        if any(not inside(r) or any(intersects(r,z,1e-6) for z in blockers) for r in rects):continue
+                        valid=[]
+                        for clear in furniture_clearance_sets(placed):
+                            if any(not inside(z,.015) or any(intersects(z,r,1e-6) for r in rects) for z in clear):continue
+                            valid.append(clear)
+                        if not valid:continue
+                        # Prefer a quiet perimeter and grouped centre with a
+                        # little stable handedness rather than random clutter.
+                        center=(sum(q['center_m'][0] for q in placed)/len(placed),sum(q['center_m'][1] for q in placed)/len(placed))
+                        score=min((center[0]-a)**2,(center[0]-c)**2)+min((center[1]-b)**2,(center[1]-e)**2)
+                        score+=((dx if salt%2 else -dx)+(dy if salt%3 else -dy))*.01
+                        if not group['wall']:
+                            score+=.80*((placed[0]['center_m'][0]-original['center_m'][0])**2+
+                                (placed[0]['center_m'][1]-original['center_m'][1])**2)
+                        if preferred and abs(dx-preferred[0])<1e-6 and abs(dy-preferred[1])<1e-6:score-=1000
+                        for clear in valid:choices.append((score,placed,clear))
+                choices.sort(key=lambda p:p[0])
+                # Include the best candidates from every cardinal orientation;
+                # otherwise a crowded perimeter can starve the rotated bay.
+                buckets={rotation:[] for rotation in(0,90,180,270)}
+                for choice in choices:buckets[choice[1][0]['rotation_degrees']].append(choice)
+                return sorted([q for bucket in buckets.values() for q in bucket[:48]],key=lambda p:p[0])
+            all_choices=[candidates(g) for g in groups];visits=0;answer=None
+            def solve(index,placed,clear):
+                nonlocal visits,answer
+                visits+=1
+                if visits>18000:return False
+                if index==len(groups):answer=(placed,clear);return True
+                for _,group_assets,reserves in all_choices[index]:
+                    rects=[q['footprint_m'] for q in group_assets]
+                    if any(intersects([r[0]-.065,r[1]-.065,r[2]+.065,r[3]+.065],p['footprint_m'],1e-6) for r in rects for p in placed):continue
+                    if any(intersects(r,z,1e-6) for r in rects for z in clear):continue
+                    if any(intersects(z,p['footprint_m'],1e-6) for z in reserves for p in placed):continue
+                    if solve(index+1,placed+group_assets,clear+reserves):return True
+                return False
+            solved=solve(0,[],[])
+            if solved:
+                mapped={q['id']:q for q in answer[0]}
+                room['assets']=[mapped[q['id']] for q in room['assets']]
+                room['furniture_clearances_m']=answer[1]
+                room['circulation_keepouts']=blockers
+            room['furnishing_count']=len(room['assets'])
+            room['furniture_composition']={'schema':'living_town.furniture_composition.v1',
+                'status':'PASS' if solved else 'UNRESOLVED','search_nodes':visits,
+                'candidate_counts':[len(q) for q in all_choices],'relationships':relations,
+                'inventory_preserved':not omitted,'omitted_optional_asset_ids':[q['id'] for q in omitted],
+                'policy':'wall-supported backs, activity groups, clear fronts and actual door approaches'}
+
+
+def audit_furniture_compositions(record):
+    """Measure physical orientation, linked activities and clear usable space.
+
+    Reconstruct the expected relationships from fixture kinds; declared PASS
+    labels or stored facing vectors cannot make backwards geometry pass.
+    Native mesh contact and visual refinement still need separate review.
+    """
+    failures=[];orientations=[];relationships=[];clearances=[];density=[]
+    for building in record['buildings']:
+        for floor in building['levels']:
+            for room in floor['rooms']:
+                assets=room['assets']
+                if not assets or room['purpose']=='crossed public market aisles':continue
+                a,b,c,e=room['bounds_m'];by_id={q['id']:q for q in assets}
+                if room.get('furniture_composition',{}).get('status')!='PASS':
+                    failures.append({'room':room['id'],'reason':'room composition search did not resolve'})
+                for asset in assets:
+                    rot=asset.get('rotation_degrees',0);kind=asset['kind']
+                    actual=asset_footprint(asset)
+                    if rot%90 or max(abs(x-y) for x,y in zip(actual,asset['footprint_m']))>.00001:
+                        failures.append({'asset':asset['id'],'reason':'rotation and footprint disagree'})
+                    if kind not in WALL_BACKED:continue
+                    x,y=asset['center_m'];back=rotated_xy(0,asset['dimensions_m'][1]/2,rot)
+                    distances={0:e-(y+back[1]),90:(x+back[0])-a,
+                        180:(y+back[1])-b,270:c-(x+back[0])}
+                    gap=distances[int(round(rot))%360];passed=.025<=gap<=.14
+                    orientations.append({'asset':asset['id'],'kind':kind,
+                        'rotation_degrees':rot,'back_to_wall_gap_m':round(gap,6),'pass':passed})
+                    if not passed:failures.append({'asset':asset['id'],'reason':'physical back is not supported by the facing wall','gap_m':gap})
+                _,expected=furniture_groups(room)
+                for relation in expected:
+                    source=by_id[relation['source']];target=by_id[relation['target']]
+                    dx=target['center_m'][0]-source['center_m'][0]
+                    dy=target['center_m'][1]-source['center_m'][1]
+                    side,forward=rotated_xy(dx,dy,-source.get('rotation_degrees',0))
+                    sw,sd=source['dimensions_m'][:2];tw,td=target['dimensions_m'][:2]
+                    typ=relation['type'];measure={};passed=True
+                    if typ in('sofa_coffee_table','seat_table'):
+                        gap=-forward-(sd+td)/2
+                        passed=abs(side)<.045 and forward<0 and (.34<=gap<=.56 if typ=='sofa_coffee_table' else .08<=gap<=.20)
+                        if typ=='seat_table':
+                            front=rotated_xy(0,-1,source.get('rotation_degrees',0));distance=math.hypot(dx,dy)
+                            dot=(front[0]*dx+front[1]*dy)/max(distance,.00001)
+                            passed=passed and dot>.995;measure['front_toward_table_dot']=dot
+                        measure.update({'lateral_offset_m':round(side,6),'edge_gap_m':round(gap,6)})
+                    elif typ=='kitchen_work_line':
+                        sr=source.get('rotation_degrees',0);tr=target.get('rotation_degrees',0)
+                        back_delta=forward+(td-sd)/2;gap=abs(side)-(sw+tw)/2
+                        passed=sr==tr and abs(back_delta)<.015 and .08<=gap<=.18
+                        measure.update({'back_alignment_error_m':round(abs(back_delta),6),'module_gap_m':round(gap,6)})
+                    elif typ=='bed_bedside':
+                        gap=abs(side)-(sw+tw)/2;head_error=abs(forward-(sd-td)/2)
+                        passed=.06<=gap<=.16 and head_error<.03
+                        measure.update({'bedside_gap_m':round(gap,6),'head_end_alignment_error_m':round(head_error,6)})
+                    elif typ=='pew_altar':
+                        passed=abs(side)<.04 and forward<-.50
+                        measure.update({'altar_in_front_m':round(-forward,6),'row_axis_offset_m':round(side,6)})
+                    relationships.append({**relation,**measure,'pass':passed})
+                    if not passed:failures.append({'room':room['id'],'reason':'misaligned '+typ,'source':source['id'],'target':target['id'],**measure})
+                valid=[]
+                for alternative in furniture_clearance_sets(assets):
+                    bad=[]
+                    for rect in alternative:
+                        if rect[0]<a+.014 or rect[1]<b+.014 or rect[2]>c-.014 or rect[3]>e-.014:
+                            bad.append({'clearance_m':rect,'reason':'usable front or bed access crosses wall'})
+                        hits=[q['id'] for q in assets if intersects(rect,q['footprint_m'],1e-6)]
+                        if hits:bad.append({'clearance_m':rect,'reason':'usable front or bed access blocked','assets':hits})
+                    valid.append((alternative,bad))
+                best=min(valid,key=lambda v:len(v[1]));passed=not best[1]
+                clearances.append({'room':room['id'],'reservation_count':len(best[0]),'pass':passed,'failures':best[1]})
+                if not passed:failures.append({'room':room['id'],'reason':'functional furniture clearance blocked','details':best[1]})
+                area=(c-a)*(e-b);covered=sum((q['footprint_m'][2]-q['footprint_m'][0])*(q['footprint_m'][3]-q['footprint_m'][1]) for q in assets)
+                ratio=covered/area;limit=.58 if any(k in room['purpose'] for k in('store','archive','stacks','storage','cafe dining')) else .48
+                passed=ratio<=limit
+                density.append({'room':room['id'],'solid_fixture_coverage_ratio':round(ratio,6),
+                    'maximum_ratio':limit,'free_floor_area_m2':round(area-covered,4),'pass':passed})
+                if not passed:failures.append({'room':room['id'],'reason':'excessive solid furniture density','ratio':ratio,'limit':limit})
+    return {'schema':'living_town.furniture_composition_audit.v1','status':'PASS' if not failures else 'FAIL',
+        'rooms_tested':len(density),'wall_back_orientations_tested':len(orientations),
+        'related_activity_groups_tested':len(relationships),'functional_clearance_rooms_tested':len(clearances),
+        'wall_back_orientations':orientations,'activity_relationships':relationships,
+        'functional_clearances':clearances,'furniture_density':density,'failures':failures,
+        'limits':'Measured plan proxies and mesh-recipe orientation convention, not accessibility certification or native visual acceptance.'}
 
 
 def build_interior(api,ident,interiorc,upper_cover_col,origin,angle,w,d,floors,kind,doorx):
@@ -674,6 +1078,8 @@ def build_asset(api,asset,parent,world,angle,ff,room_id,object_names):
         ob['interior_building_id']=room_id.split('_L')[0]
         ob['interior_asset_id']=asset['id'];ob['interior_room_id']=room_id;ob['asset_role']=typ
         ob['collision_proxy_local_xy']=asset['footprint_m'];ob['reusable_asset']=True
+        ob['furniture_rotation_degrees']=asset.get('rotation_degrees',0)
+        ob['furniture_front_building_xy']=rotated_xy(0,-1,asset.get('rotation_degrees',0))
         if asset.get('integrated_fixtures'):ob['integrated_fixtures']=json.dumps(asset['integrated_fixtures'])
         if asset.get('integrated_seating'):ob['integrated_seating']=asset['integrated_seating']
     object_names.extend(o.name for o in objects)
@@ -883,7 +1289,9 @@ def audit_plan(record):
                 a,bb,c,e=r['bounds_m'];tested+=1
                 if not any(a<xmin+q[0]*step<c and bb<ymin+q[1]*step<e for q in reached):
                     failures.append({'room':r['id'],'reason':'not reachable by .50m pedestrian from entrance/upper landing'})
-    return {'schema':'living_town.interior_planning_audit.v2','status':'PASS' if not failures else'FAIL',
+    composition=audit_furniture_compositions(record)
+    failures.extend(composition['failures'])
+    return {'schema':'living_town.interior_planning_audit.v3','status':'PASS' if not failures else'FAIL',
         'interior_plan_sha256':hashlib.sha256(json.dumps(record,indent=2).encode('utf-8')).hexdigest(),
         'interior_module_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         'building_count':len(record['buildings']),'floor_count':record['floor_count'],'room_zones_tested':tested,
@@ -892,6 +1300,7 @@ def audit_plan(record):
         'essential_fixture_coverage':essential,
         'entrance_threshold_checks':entrances,'sleeping_room_exterior_boundary_checks':sleeping_boundaries,
         'privacy_enclosure_rooms_tested':len(privacy),'privacy_enclosure_checks':privacy,
+        'furniture_composition':composition,
         'door_width_min_m':min(o['width_m'] for b in record['buildings'] for f in b['levels'] for p in f['partitions'] for o in p['openings'] if o['kind']=='door'),
         'limits':'Plan footprint, exact interior entrance-axis and partition-edge enclosure tests; exterior contact is not proof of a native window/daylight. Native doors, meshes and final visuals require separate evidence.','failures':failures}
 

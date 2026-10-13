@@ -1,0 +1,133 @@
+{
+  "schema": "living_town.reserve_consumer_runner.v1",
+  "status": "PASS",
+  "started_utc": "2026-10-13T04:43:55.938803+00:00",
+  "consumer": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot\\smoke.gd",
+    "bytes": 36985,
+    "sha256": "843fe1c7fe67d33b54b0295ca78903b80bb745ee2c9f020c41b6ede7e377e76f"
+  },
+  "project": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot\\project.godot",
+    "bytes": 662,
+    "sha256": "347ef33e4b89a2eb6a10b8fae98a66b56581b9f875daa2aab46b27db48a52ca1"
+  },
+  "export_manifest": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\game_assets_reserve\\export_manifest.json",
+    "bytes": 611343,
+    "sha256": "b79fd591d2e5e2eb7ba9be15c08ea4a392a837354fe3b7ebc81fc6ad57c418a0"
+  },
+  "native_manifest": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\town_manifest.json",
+    "bytes": 5763573,
+    "sha256": "0c4607a011f8194c1fb9ba7d0e13458fb2d6056daa7c03a09871782d59981bc5"
+  },
+  "stages": [
+    {
+      "name": "parser",
+      "command": [
+        "C:\\Users\\yp\\AppData\\Local\\Programs\\Godot\\4.6.2-stable\\Godot_v4.6.2-stable_win64_console.exe",
+        "--path",
+        "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot",
+        "--audio-driver",
+        "Dummy",
+        "--max-fps",
+        "30",
+        "--headless",
+        "--check-only",
+        "-s",
+        "res://smoke.gd"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.219,
+      "stdout": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot\\evidence\\parser.stdout.log",
+        "bytes": 75,
+        "sha256": "746bb3b08265d0fed9e1a569d570a8e1d6a910c38ebf0ba187918b819da7ab80"
+      },
+      "stderr": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot\\evidence\\parser.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "fatal_or_script_messages": []
+    },
+    {
+      "name": "logical",
+      "command": [
+        "C:\\Users\\yp\\AppData\\Local\\Programs\\Godot\\4.6.2-stable\\Godot_v4.6.2-stable_win64_console.exe",
+        "--path",
+        "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot",
+        "--audio-driver",
+        "Dummy",
+        "--max-fps",
+        "30",
+        "--headless",
+        "--",
+        "--asset-dir=C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\game_assets_reserve",
+        "--native-manifest=C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\town_manifest.json",
+        "--report=C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot\\evidence\\logical_report.json"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 12.172,
+      "stdout": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot\\evidence\\logical.stdout.log",
+        "bytes": 225,
+        "sha256": "59351e527fdad0346d46f45ebc6140f3a0071f451dd9b8df0487cad0d19fc641"
+      },
+      "stderr": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot\\evidence\\logical.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "fatal_or_script_messages": []
+    },
+    {
+      "name": "render",
+      "command": [
+        "C:\\Users\\yp\\AppData\\Local\\Programs\\Godot\\4.6.2-stable\\Godot_v4.6.2-stable_win64_console.exe",
+        "--path",
+        "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot",
+        "--audio-driver",
+        "Dummy",
+        "--max-fps",
+        "30",
+        "--rendering-method",
+        "gl_compatibility",
+        "--resolution",
+        "1440x1000",
+        "--",
+        "--asset-dir=C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\game_assets_reserve",
+        "--native-manifest=C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\town_manifest.json",
+        "--report=C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot\\evidence\\render_report.json",
+        "--capture=C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot\\evidence\\captures"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 18.547,
+      "stdout": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot\\evidence\\render.stdout.log",
+        "bytes": 363,
+        "sha256": "68254ca868d1b37a96fc63f656e14fcfe838c0e7486a3e931a949323a278ed02"
+      },
+      "stderr": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot\\evidence\\render.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "fatal_or_script_messages": []
+    }
+  ],
+  "execution_policy": "Serial processes; worker_pool/max_threads=6; imports single-threaded; max-fps30; no asset copies",
+  "logical_report": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot\\evidence\\logical_report.json",
+    "bytes": 22297,
+    "sha256": "0848edb481d56c414fc8b6eafa43bc01467af815cca6fe0f28103d2160b3c6f2"
+  },
+  "render_report": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot\\evidence\\render_report.json",
+    "bytes": 26094,
+    "sha256": "301dc3b6aa397b7b263c8065eb5071648ab33e7c7cd858cd636bcf67b6988520"
+  },
+  "actual_image_review": "PENDING: inspect all four actual PNGs separately",
+  "finished_utc": "2026-10-13T04:44:26.906058+00:00"
+}

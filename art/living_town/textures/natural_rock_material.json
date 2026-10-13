@@ -1,0 +1,74 @@
+{
+  "schema": "living_town.natural_rock_material.v1",
+  "name": "natural_rock",
+  "generator": "tools/generate_reserve_materials.py",
+  "generator_sha256": "c9d137599abfb0d31fa8bc3b99589e3b5eb28682dc0e670c61fa6ee973bd4bae",
+  "helper": "tools/generate_materials.py",
+  "helper_sha256": "fd4c5f2b4f28e2f0989deb7855edb41bd99411afb73a08357edcc9eeef75ff87",
+  "helper_seed": 20261011,
+  "recipe_noise_seeds": [
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120,
+    121,
+    122,
+    123,
+    124,
+    125,
+    126
+  ],
+  "license": "Original project-generated procedural material; no external media used",
+  "description": "Natural fractured warm/cool grey granite, mineral aggregate, weathered quartz veins, irregular crevices and restrained sage lichen; no masonry joints",
+  "tile_size_metres": 4.0,
+  "palette_base_srgb": "#85877e",
+  "basecolor": "natural_rock_basecolor.png",
+  "roughness": "natural_rock_roughness.png",
+  "normal": "natural_rock_normal.png",
+  "basecolor_color_space": "sRGB",
+  "roughness_color_space": "Non-Color",
+  "normal_color_space": "Non-Color",
+  "normal_convention": "OpenGL tangent-space +Y",
+  "normal_strength": 0.85,
+  "uv_hint": "MetricUV/4m; repeat; natural rock only, never replace the core Granite masonry material",
+  "roughness_mean": 0.8867,
+  "height_range_metres": 0.04287,
+  "lichen_mean_coverage": 0.05618,
+  "periodicity": "Opposite edge pixels exactly equal in all three maps; wrapped physical height gradients",
+  "edge_checks": "PASS",
+  "maps": {
+    "basecolor": {
+      "file": "natural_rock_basecolor.png",
+      "bytes": 1737359,
+      "sha256": "3e8e2fb59d215cc77c354f1509e0e25cdb2498ec0f25dc42662c470db9f700b8",
+      "resolution": [
+        1024,
+        1024
+      ]
+    },
+    "roughness": {
+      "file": "natural_rock_roughness.png",
+      "bytes": 156895,
+      "sha256": "4df76163063ff86a48404bf0b68403573d64d24b0b0b99c0c73fa491b2f6cc39",
+      "resolution": [
+        512,
+        512
+      ]
+    },
+    "normal": {
+      "file": "natural_rock_normal.png",
+      "bytes": 453158,
+      "sha256": "90b0a33874728f65365c375d37e0442951a155c299825f88457690fdae394b3f",
+      "resolution": [
+        512,
+        512
+      ]
+    }
+  }
+}

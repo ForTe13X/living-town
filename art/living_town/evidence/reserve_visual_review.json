@@ -1,0 +1,126 @@
+{
+  "schema": "living_town.reserve_visual_review.v1",
+  "generated_utc": "2026-10-13T04:45:45.722260+00:00",
+  "status": "PASS",
+  "visually_reviewed": true,
+  "reviewer_kind": "agent",
+  "source_blend_sha256": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191",
+  "export_manifest_sha256": "b79fd591d2e5e2eb7ba9be15c08ea4a392a837354fe3b7ebc81fc6ad57c418a0",
+  "scope": "Actual inspection of fifteen native renders and four real Godot GL captures. This is visual acceptance of these images, not physics, navigation or performance certification.",
+  "images": [
+    {
+      "path": "integration/reserve_godot/evidence/captures/01_reserve_overview.png",
+      "sha256": "ab8614146ec0c5cbd09d7f36f70086c3fc4dd8d7eb55f8c06c8a8ba8a7d5f4c3",
+      "status": "PASS",
+      "observations": "Actual Godot overview frames the whole wooded reserve, ravine cuts and connected outer running loop, with the distinct trailer court, visitor services and coastal town below. The imported land and water boundaries are visible. This is an orthographic consumer overview with engine lighting, not the native presentation camera."
+    },
+    {
+      "path": "integration/reserve_godot/evidence/captures/02_trailer_park.png",
+      "sha256": "76268469452379caf5fdbba13d1ced1978b5cca00ee7063e829bba01031c4b51",
+      "status": "PASS",
+      "observations": "Actual camp capture shows twelve separate trailers in two rows, connected paved approaches, decks and picnic tables, hook-up/path posts, tent platforms and neighboring service buildings. Roofs and exterior walls remain intact in this exterior view, with trees framing the campsite rather than blocking its aisles."
+    },
+    {
+      "path": "integration/reserve_godot/evidence/captures/03_trailer_local_cutaway.png",
+      "sha256": "ffff8cbefb24f19f89d6629d86d324745bc266b830cc35a22d7b3b85575936f9",
+      "status": "PASS",
+      "observations": "Actual local cutaway hides only the selected trailer roof and front cover, exposing its opposing dining benches/table, floor, partition openings and shower/wet-room fittings. Retained side walls partially obscure the galley and rear sleeping room from this oblique camera; the adjacent trailer keeps its roof and frontage. No detached facade sign or front attachment floats over the exposed interior."
+    },
+    {
+      "path": "integration/reserve_godot/evidence/captures/04_woodland_bridge.png",
+      "sha256": "dada00c0731bf074c88cc469498f06e69c9b0b6abfd70887c2f2b4be5408b81f",
+      "status": "PASS",
+      "observations": "Actual engine capture shows the timber deck, rails, suspension wires and end tower crossing a deep rocky wooded cleft, with paved approaches and a stone stair route visible on the right bank. Nearby tree canopies partly occlude the right landing and some deck; the remaining span and terrain depth remain readable, while the measured endpoint checks separately establish imported geometry bounds."
+    },
+    {
+      "path": "renders/reserve_v6/01_reserve_overview.png",
+      "sha256": "54a0657e581d9f3d472d7cd5229eca9a525b5513a8cf618ebf2c3329e05d05a1",
+      "status": "PASS",
+      "observations": "Wide native view shows the compact coastal town beside a much larger wooded reserve: varying tree forms, ridges, exposed ravine cuts, connected paths and deliberate meadow gaps. Trailer court and service hub are distinct from the town and forest; coast and quay remain readable."
+    },
+    {
+      "path": "renders/reserve_v6/02_reserve_topography.png",
+      "sha256": "9378ededc58bf471945d5fafb6814b8114cf64d12011a0daa7d6a0c0d3dc63fd",
+      "status": "PASS",
+      "observations": "Square orthographic image frames the full reserve bounds and complete outer jogging loop. Dense western/northern woodland, ravine openings, eastern meadow gaps, visitor hub, two trailer rows and preserved coastal town are readable without cropping the loop."
+    },
+    {
+      "path": "renders/reserve_v6/03_visitor_hub.png",
+      "sha256": "13192c066a4bca574bc3e609867d5cef0c6a243b59c9ad7a73151cce7f74cf30",
+      "status": "PASS",
+      "observations": "Close hub view shows connected gravel approaches, separate shop/service buildings, lunch-car awning, picnic tables, trail signs and shade planting. Graded banks remain visible beside the terrace and no broad black paving overlap patches appear."
+    },
+    {
+      "path": "renders/reserve_v6/04_trailer_park.png",
+      "sha256": "b03145adade149f2dde2b68a15ee2611cb60a79c4c771d818ec9154d77cfbaa1",
+      "status": "PASS",
+      "observations": "Campsite view shows twelve separately spaced trailers in two serviced rows, entry steps/decks, picnic furniture, hook-up bollards, path lighting, tent platforms and nearby utility buildings. Access aisles are readable and forested higher ground borders the court."
+    },
+    {
+      "path": "renders/reserve_v6/05_cafe_composition.png",
+      "sha256": "dfc09772e24af3f20f280aaffc35b48901c1a12f098e5f6a6d43ce06dd35809b",
+      "status": "PASS",
+      "observations": "Caf\u00e9 ground-floor cutaway shows chairs facing their small dining tables, a clear customer floor, a separate service counter and rear preparation room with wall-aligned kitchen/pantry fixtures. Exterior caf\u00e9 seating and neighboring roofs remain intact; the shot reviews the exposed ground floor."
+    },
+    {
+      "path": "renders/reserve_v6/06_home_composition.png",
+      "sha256": "4a365d8f5f55dee791586e9ba4b0006975e22127be77c4bdcce5b997103aa723",
+      "status": "PASS",
+      "observations": "Home cutaway exposes the rear wall-aligned kitchen, book storage, divided living area and separate stair/circulation hall. The sofa and surrounding clear floor are visible; the retained near exterior wall partly masks the coffee-table grouping, whose relative pose is covered by the native furniture checks."
+    },
+    {
+      "path": "renders/reserve_v6/07_trailer_family_interior.png",
+      "sha256": "9b21cf574ae1373cee90654c0f70f4881d1f7eaee39d0dd835bff6e6463fbe08",
+      "status": "PASS",
+      "observations": "N01 trailer cutaway shows a separate double-bed room, enclosed shower/WC wet room, wall-aligned galley, clear central aisle and opposing booth benches facing one dining table. Deck, picnic table and entry connection remain visible outside; roof/front cutaway removes attached facade details cleanly."
+    },
+    {
+      "path": "renders/reserve_v6/08_trailer_twin_interior.png",
+      "sha256": "6319ced754595310718ac0dda899ee33516fd52e62934ad0b847f4feac2a2ae3",
+      "status": "PASS",
+      "observations": "N02 correctly depicts two separate single beds with a shared central aisle, plus its partitioned wet room, galley, fridge/pantry and opposing dining booth. The twin variant is visibly distinct from N01's double-bed arrangement; the cutaway contains no floating fascia or attached-front artifacts."
+    },
+    {
+      "path": "renders/reserve_v6/09_convenience_interior.png",
+      "sha256": "03bf95446a432a1658d88e2928d547a8d409060b72e53b5d3f8bf1f31e9ae457",
+      "status": "PASS",
+      "observations": "Convenience-store cutaway shows a front checkout, stocked wall shelving, two shallow parallel gondolas with aisles on both sides, and partitioned rear storage/work areas. Entrances and partition doorways remain open; local front-cover removal leaves no floating fascia in the shop."
+    },
+    {
+      "path": "renders/reserve_v6/10_souvenir_interior.png",
+      "sha256": "9c0746b402f4e0b0d6d4648c783bf3cfcecbdf9c03eb9bbecae52621c98de405",
+      "status": "PASS",
+      "observations": "Souvenir-shop cutaway shows a checkout, merchandise wall shelf and separate display table, with clear customer space and two rear room openings leading to storage/work areas. Attached frontage hides with the front cover while the ground sign/planters remain outside."
+    },
+    {
+      "path": "renders/reserve_v6/11_bathhouse_interior.png",
+      "sha256": "1d5ad3f346238e7c5145f4b288b41d56aa7722c10948fb823131bd728b1bbebd",
+      "status": "PASS",
+      "observations": "Bathhouse overhead cutaway exposes two changing areas with benches/storage, separate circulation corridors, four partitioned shower cubicles, a larger wet room, WC and utility/storage areas. Curtains, shower heads, basin and toilet are visible, with clear door openings and no facade pieces floating over the interior."
+    },
+    {
+      "path": "renders/reserve_v6/12_public_toilets.png",
+      "sha256": "7c3e8a101f3640415a39baa2f1c4da297af974d07a2ef2e87f2926f0bd11a759",
+      "status": "PASS",
+      "observations": "Public-WC cutaway shows three separately partitioned toilet rooms including one larger cubicle, open doorways, a common wash/circulation area with two basins, and wall storage. Toilet fronts and the entry corridor remain clear; local cutaway has no orphan facade attachments."
+    },
+    {
+      "path": "renders/reserve_v6/13_lunch_car.png",
+      "sha256": "6cac422c7c23b0fbc3c542747805b336973fdd1f59ecc9b2b8cb99e32dc9d29f",
+      "status": "PASS",
+      "observations": "Lunch-car service view clearly shows the open hatch/awning, serving shelf, sandwich and hot-dog props, condiment bottles, preparation counter and separate staff entry. Wheels, steps, roof vents and exterior planters are visible. A recorded temporary soft fill reveals the hatch without changing the saved native lighting."
+    },
+    {
+      "path": "renders/reserve_v6/14_ravine_bridge.png",
+      "sha256": "695c21051f1485dbc1e0e769bdccac3d9ebb0d400c7f9c7fadefc9facc563e64",
+      "status": "PASS",
+      "observations": "Bridge view shows a continuous timber deck spanning the rocky ravine, rails, suspended cables/hangers, end towers and anchored backstays meeting the trail approaches. Dense woodland partly frames the right end while the span, ravine depth and separate bank landings remain readable."
+    },
+    {
+      "path": "renders/reserve_v6/15_stone_stairs.png",
+      "sha256": "a5bd33f5637e5ab667afec7bb96ba7d1db7f26185d8ae3e87eb1fc984c84f3ee",
+      "status": "PASS",
+      "observations": "Eye-level view shows the continuous stone stair and successive level landings climbing through the excavated wooded banks; both handrails remain visible and the former terrain wall is absent. Upper flights lie in canopy shadow but their tread sequence remains legible. The native land/trail clearance gate separately measures both stairs."
+    }
+  ]
+}

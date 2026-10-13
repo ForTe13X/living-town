@@ -67,7 +67,7 @@ def mat(name, color, tex=None, rough=.72, metal=0, emit=0):
         p.inputs['Emission Color'].default_value=rgba(color)
         p.inputs['Emission Strength'].default_value=emit
     if tex:
-        tile_sizes={'slate':2.4,'lime_plaster':2,'granite':2,'cobbles':2,'oak':2,'sand':3,'grass':4,'ceramic_tile':1.2,'canvas':1}
+        tile_sizes={'slate':2.4,'lime_plaster':2,'granite':2,'natural_rock':4,'cobbles':2,'oak':2,'sand':3,'grass':4,'ceramic_tile':1.2,'canvas':1}
         m['tile_size_metres']=tile_sizes[tex]
         ns=m.node_tree.nodes; lk=m.node_tree.links
         bc=TEX/(tex+'_basecolor.png')
@@ -1178,6 +1178,15 @@ def town():
     SCENE['landscape_plan_sha256']=hashlib.sha256((ROOT/'landscape_plan.json').read_bytes()).hexdigest()
     SCENE['landscape_details_sha256']=hashlib.sha256((ROOT/'tools/landscape_details.py').read_bytes()).hexdigest()
     SCENE['water_datum_z_m']=TERRAIN.WATER_Z;SCENE['quay_deck_z_m']=TERRAIN.QUAY_Z
+    if globals().get('LT_INCLUDE_RESERVE', (ROOT/'reserve_plan.json').exists()):
+        reserve_plan=json.loads((ROOT/'reserve_plan.json').read_text(encoding='utf-8'))
+        for module_name,relative_path in [('reserve_environment','tools/reserve_environment.py'),
+                                          ('reserve_amenities','tools/reserve_amenities.py')]:
+            reserve_spec=importlib.util.spec_from_file_location('living_town_'+module_name,ROOT/relative_path)
+            reserve_module=importlib.util.module_from_spec(reserve_spec);reserve_spec.loader.exec_module(reserve_module)
+            SCENE[module_name]=json.dumps(reserve_module.build(globals(),reserve_plan))
+            SCENE[module_name+'_module_sha256']=hashlib.sha256((ROOT/relative_path).read_bytes()).hexdigest()
+        SCENE['purpose']='Authored coastal town and wooded reserve with compositional interiors, portable engine-neutral geometry and explicit semantic room ownership.'
     for screen in bpy.data.screens:
         for ar in screen.areas:
             if ar.type=='VIEW_3D':
@@ -1202,6 +1211,13 @@ def manifest():
     SCENE['interior_module_sha256']=hashlib.sha256((ROOT/'tools/interior_design.py').read_bytes()).hexdigest()
     doc={'stage':STAGE,'source_head':'f204276','source_map_sha256':hashlib.sha256(source).hexdigest(),'cell_metres':S,'bounds_m':[115.2,86.4],'building_count':len(BUILDINGS),'buildings':BUILDINGS,'cameras':[o.name for o in SCENE.objects if o.type=='CAMERA'],'materials':list(MATS),'objects':len(SCENE.objects),'mesh_vertices':sum(len(o.data.vertices) for o in SCENE.objects if o.type=='MESH'),'note':'Authored engine-agnostic environment source. Game assets are exported separately to portable GLB and verified in an isolated Godot consumer; existing game source is unchanged.'}
     doc['interiors']=INTERIOR_RECORDS
+    if 'reserve_environment' in SCENE:
+        doc['reserve_environment']=json.loads(SCENE['reserve_environment'])
+        doc['reserve_amenities']=json.loads(SCENE['reserve_amenities'])
+        doc['reserve_plan_sha256']=SCENE['reserve_plan_sha256']
+        doc['reserve_plan_module_sha256']=SCENE['reserve_plan_module_sha256']
+        doc['reserve_environment_module_sha256']=hashlib.sha256((ROOT/'tools/reserve_environment.py').read_bytes()).hexdigest()
+        doc['reserve_amenities_module_sha256']=hashlib.sha256((ROOT/'tools/reserve_amenities.py').read_bytes()).hexdigest()
     doc['interior_plan_sha256']=SCENE['interior_plan_sha256'];doc['interior_module_sha256']=SCENE['interior_module_sha256']
     doc['interior_floor_count']=sum(b['floor_count'] for b in INTERIOR_RECORDS)
     doc['interior_room_count']=sum(b['room_count'] for b in INTERIOR_RECORDS)
