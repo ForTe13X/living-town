@@ -1,0 +1,972 @@
+{
+  "schema": "living_town.reserve_export_verification.v1",
+  "generated_utc": "2026-10-13T04:26:26.829241+00:00",
+  "status": "PASS",
+  "checks": [
+    {
+      "id": "current_source_and_export_bindings",
+      "status": "PASS",
+      "details": {
+        "source_blend": "living_town_complete.blend",
+        "reserve_binding_count": 4,
+        "planning_binding_count": 10
+      }
+    },
+    {
+      "id": "native_plan_and_program_inventory",
+      "status": "PASS",
+      "details": {
+        "buildings": 21,
+        "rooms": 92,
+        "furnishings": 158,
+        "native_geometry_report_status": "BUILT_REQUIRES_NATIVE_AND_RENDER_QA",
+        "native_visual_qa_claimed": false
+      }
+    },
+    {
+      "id": "complete_town:living_town_game.glb",
+      "status": "PASS",
+      "details": {
+        "file": "living_town_game.glb",
+        "sha256": "4af8b869bb465cabdb84301bdc84dffc74eeebe98ddc2caab54ab1e06e15acbb",
+        "bytes": 321050860,
+        "loaded_instance_triangles": 4976516,
+        "unique_mesh_triangles": 4176300,
+        "reserve_units": [
+          {
+            "id": "Reserve_Visitor_Reception",
+            "rooms": 3,
+            "furnishings": 6,
+            "mesh_nodes": 57,
+            "outdoor_picnic_assemblies": 0,
+            "local_bounds_gltf_metres": null
+          },
+          {
+            "id": "Reserve_Convenience",
+            "rooms": 3,
+            "furnishings": 6,
+            "mesh_nodes": 61,
+            "outdoor_picnic_assemblies": 0,
+            "local_bounds_gltf_metres": null
+          },
+          {
+            "id": "Reserve_Souvenir",
+            "rooms": 3,
+            "furnishings": 6,
+            "mesh_nodes": 60,
+            "outdoor_picnic_assemblies": 0,
+            "local_bounds_gltf_metres": null
+          },
+          {
+            "id": "Reserve_Bathhouse",
+            "rooms": 12,
+            "furnishings": 21,
+            "mesh_nodes": 108,
+            "outdoor_picnic_assemblies": 0,
+            "local_bounds_gltf_metres": null
+          },
+          {
+            "id": "Reserve_Public_Toilets",
+            "rooms": 4,
+            "furnishings": 6,
+            "mesh_nodes": 52,
+            "outdoor_picnic_assemblies": 0,
+            "local_bounds_gltf_metres": null
+          },
+          {
+            "id": "Reserve_Food_Truck",
+            "rooms": 2,
+            "furnishings": 4,
+            "mesh_nodes": 45,
+            "outdoor_picnic_assemblies": 0,
+            "local_bounds_gltf_metres": null
+          },
+          {
+            "id": "Reserve_Laundry",
+            "rooms": 2,
+            "furnishings": 10,
+            "mesh_nodes": 68,
+            "outdoor_picnic_assemblies": 0,
+            "local_bounds_gltf_metres": null
+          },
+          {
+            "id": "Reserve_Maintenance",
+            "rooms": 2,
+            "furnishings": 4,
+            "mesh_nodes": 46,
+            "outdoor_picnic_assemblies": 0,
+            "local_bounds_gltf_metres": null
+          },
+          {
+            "id": "Reserve_Refuse_Service",
+            "rooms": 1,
+            "furnishings": 5,
+            "mesh_nodes": 44,
+            "outdoor_picnic_assemblies": 0,
+            "local_bounds_gltf_metres": null
+          },
+          {
+            "id": "Reserve_Trailer_N01",
+            "rooms": 5,
+            "furnishings": 7,
+            "mesh_nodes": 63,
+            "outdoor_picnic_assemblies": 1,
+            "local_bounds_gltf_metres": null
+          },
+          {
+            "id": "Reserve_Trailer_N02",
+            "rooms": 5,
+            "furnishings": 8,
+            "mesh_nodes": 66,
+            "outdoor_picnic_assemblies": 1,
+            "local_bounds_gltf_metres": null
+          },
+          {
+            "id": "Reserve_Trailer_N03",
+            "rooms": 5,
+            "furnishings": 8,
+            "mesh_nodes": 67,
+            "outdoor_picnic_assemblies": 1,
+            "local_bounds_gltf_metres": null
+          },
+          {
+            "id": "Reserve_Trailer_N04",
+            "rooms": 5,
+            "furnishings": 7,
+            "mesh_nodes": 63,
+            "outdoor_picnic_assemblies": 1,
+            "local_bounds_gltf_metres": null
+          },
+          {
+            "id": "Reserve_Trailer_N05",
+            "rooms": 5,
+            "furnishings": 7,
+            "mesh_nodes": 63,
+            "outdoor_picnic_assemblies": 1,
+            "local_bounds_gltf_metres": null
+          },
+          {
+            "id": "Reserve_Trailer_N06",
+            "rooms": 5,
+            "furnishings": 8,
+            "mesh_nodes": 66,
+            "outdoor_picnic_assemblies": 1,
+            "local_bounds_gltf_metres": null
+          },
+          {
+            "id": "Reserve_Trailer_S01",
+            "rooms": 5,
+            "furnishings": 8,
+            "mesh_nodes": 67,
+            "outdoor_picnic_assemblies": 1,
+            "local_bounds_gltf_metres": null
+          },
+          {
+            "id": "Reserve_Trailer_S02",
+            "rooms": 5,
+            "furnishings": 7,
+            "mesh_nodes": 63,
+            "outdoor_picnic_assemblies": 1,
+            "local_bounds_gltf_metres": null
+          },
+          {
+            "id": "Reserve_Trailer_S03",
+            "rooms": 5,
+            "furnishings": 7,
+            "mesh_nodes": 63,
+            "outdoor_picnic_assemblies": 1,
+            "local_bounds_gltf_metres": null
+          },
+          {
+            "id": "Reserve_Trailer_S04",
+            "rooms": 5,
+            "furnishings": 8,
+            "mesh_nodes": 66,
+            "outdoor_picnic_assemblies": 1,
+            "local_bounds_gltf_metres": null
+          },
+          {
+            "id": "Reserve_Trailer_S05",
+            "rooms": 5,
+            "furnishings": 8,
+            "mesh_nodes": 67,
+            "outdoor_picnic_assemblies": 1,
+            "local_bounds_gltf_metres": null
+          },
+          {
+            "id": "Reserve_Trailer_S06",
+            "rooms": 5,
+            "furnishings": 7,
+            "mesh_nodes": 63,
+            "outdoor_picnic_assemblies": 1,
+            "local_bounds_gltf_metres": null
+          }
+        ],
+        "woodland": {
+          "tree_instances": 3500,
+          "tree_mesh_nodes": 9928,
+          "shared_meshes": 46,
+          "species": {
+            "rowan": 466,
+            "scots_pine": 264,
+            "sessile_oak": 1055,
+            "silver_birch": 793,
+            "beech": 305,
+            "holly": 99,
+            "maritime_pine": 307,
+            "alder": 141,
+            "willow": 70
+          },
+          "zones": {
+            "Reserve_West_Mixed_Wood": 1150,
+            "Reserve_North_Canopy": 1050,
+            "Reserve_South_Wood_Heath": 650,
+            "Reserve_Ravine_Wet_Wood": 350,
+            "Reserve_East_Ecotone": 300
+          },
+          "expanded_tree_triangles": 804288,
+          "unique_tree_mesh_triangles": 4072
+        },
+        "environment_geometry": {
+          "terrain": [
+            "terrain"
+          ],
+          "bridge": [
+            "Reserve_Fern_Ravine_Bridge",
+            "Reserve_Granite_Cleft_Bridge"
+          ],
+          "retaining_wall": [
+            "Reserve_Hub_Camp_Step"
+          ],
+          "stone_stairs": [
+            "Reserve_Ravine_Stone_Stair",
+            "Reserve_Ridge_Stone_Stair"
+          ],
+          "trail": [
+            "Reserve_Bathhouse_Approach",
+            "Reserve_Camp_Access",
+            "Reserve_Camp_Perimeter",
+            "Reserve_Cleft_Bridge_East",
+            "Reserve_Cleft_Bridge_West",
+            "Reserve_Convenience_Approach",
+            "Reserve_Fern_Bridge_East",
+            "Reserve_Fern_Bridge_West",
+            "Reserve_Food_Truck_Approach",
+            "Reserve_Hub_Forecourt",
+            "Reserve_Hub_Forecourt_Link",
+            "Reserve_Hub_Spine",
+            "Reserve_Jogging_Belt",
+            "Reserve_Laundry_Approach",
+            "Reserve_Maintenance_Approach",
+            "Reserve_North_Meadow_Link",
+            "Reserve_Public_Toilets_Approach",
+            "Reserve_Ravine_Stone_Stair_Lower_Link",
+            "Reserve_Ravine_Stone_Stair_Upper_Link",
+            "Reserve_Refuse_Service_Approach",
+            "Reserve_Ridge_Stone_Stair_Lower_Link",
+            "Reserve_Ridge_Stone_Stair_Upper_Link",
+            "Reserve_South_Meadow_Trail",
+            "Reserve_Souvenir_Approach",
+            "Reserve_Tent_Pitch_1_Approach",
+            "Reserve_Tent_Pitch_2_Approach",
+            "Reserve_Tent_Pitch_3_Approach",
+            "Reserve_Tent_Pitch_4_Approach",
+            "Reserve_Town_West_Gateway",
+            "Reserve_Trailer_N01_Approach",
+            "Reserve_Trailer_N02_Approach",
+            "Reserve_Trailer_N03_Approach",
+            "Reserve_Trailer_N04_Approach",
+            "Reserve_Trailer_N05_Approach",
+            "Reserve_Trailer_N06_Approach",
+            "Reserve_Trailer_S01_Approach",
+            "Reserve_Trailer_S02_Approach",
+            "Reserve_Trailer_S03_Approach",
+            "Reserve_Trailer_S04_Approach",
+            "Reserve_Trailer_S05_Approach",
+            "Reserve_Trailer_S06_Approach",
+            "Reserve_Visitor_Reception_Approach",
+            "Reserve_West_Ridge_Trail"
+          ]
+        }
+      }
+    },
+    {
+      "id": "local_origin_prefab:Reserve_Visitor_Reception",
+      "status": "PASS",
+      "details": {
+        "id": "Reserve_Visitor_Reception",
+        "rooms": 3,
+        "furnishings": 6,
+        "mesh_nodes": 57,
+        "outdoor_picnic_assemblies": 0,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -5.19500732421875,
+            0.0,
+            -3.6599998474121094
+          ],
+          "max": [
+            4.660003662109375,
+            3.6600003242492676,
+            4.191078186035156
+          ],
+          "size": [
+            9.855010986328125,
+            3.6600003242492676,
+            7.851078033447266
+          ]
+        },
+        "file": "reserve/Reserve_Visitor_Reception.glb",
+        "sha256": "6fe9bf6a300b69fc5443403df45e8c7f57435adb9d8fe2a8b0c631257f88978e",
+        "triangles": 8886
+      }
+    },
+    {
+      "id": "local_origin_prefab:Reserve_Convenience",
+      "status": "PASS",
+      "details": {
+        "id": "Reserve_Convenience",
+        "rooms": 3,
+        "furnishings": 6,
+        "mesh_nodes": 61,
+        "outdoor_picnic_assemblies": 0,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -5.694999694824219,
+            0.0,
+            -3.6599998474121094
+          ],
+          "max": [
+            5.160003662109375,
+            3.6600003242492676,
+            4.191078186035156
+          ],
+          "size": [
+            10.855003356933594,
+            3.6600003242492676,
+            7.851078033447266
+          ]
+        },
+        "file": "reserve/Reserve_Convenience.glb",
+        "sha256": "794bb61cc7351df5ced403861e77be23893351ae5bae972051a4dd91ee335952",
+        "triangles": 14762
+      }
+    },
+    {
+      "id": "local_origin_prefab:Reserve_Souvenir",
+      "status": "PASS",
+      "details": {
+        "id": "Reserve_Souvenir",
+        "rooms": 3,
+        "furnishings": 6,
+        "mesh_nodes": 60,
+        "outdoor_picnic_assemblies": 0,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -5.194999694824219,
+            0.0,
+            -3.6599998474121094
+          ],
+          "max": [
+            4.660003662109375,
+            3.6600003242492676,
+            4.191078186035156
+          ],
+          "size": [
+            9.855003356933594,
+            3.6600003242492676,
+            7.851078033447266
+          ]
+        },
+        "file": "reserve/Reserve_Souvenir.glb",
+        "sha256": "a66eaadef28646325ac1497676e67a0c04146076a2b942a488bf8a7eb1cd35e8",
+        "triangles": 13958
+      }
+    },
+    {
+      "id": "local_origin_prefab:Reserve_Bathhouse",
+      "status": "PASS",
+      "details": {
+        "id": "Reserve_Bathhouse",
+        "rooms": 12,
+        "furnishings": 21,
+        "mesh_nodes": 108,
+        "outdoor_picnic_assemblies": 0,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -7.694999694824219,
+            0.0,
+            -4.660003662109375
+          ],
+          "max": [
+            7.160003662109375,
+            3.6600003242492676,
+            5.191070556640625
+          ],
+          "size": [
+            14.855003356933594,
+            3.6600003242492676,
+            9.85107421875
+          ]
+        },
+        "file": "reserve/Reserve_Bathhouse.glb",
+        "sha256": "141e30f3388541d78acb8c87e853e8578d5ef5642a4e35423c6c9e3e61b9d9cf",
+        "triangles": 14538
+      }
+    },
+    {
+      "id": "local_origin_prefab:Reserve_Public_Toilets",
+      "status": "PASS",
+      "details": {
+        "id": "Reserve_Public_Toilets",
+        "rooms": 4,
+        "furnishings": 6,
+        "mesh_nodes": 52,
+        "outdoor_picnic_assemblies": 0,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -4.194999694824219,
+            0.0,
+            -2.660003662109375
+          ],
+          "max": [
+            3.660003662109375,
+            3.6600003242492676,
+            3.1910781860351562
+          ],
+          "size": [
+            7.855003356933594,
+            3.6600003242492676,
+            5.851081848144531
+          ]
+        },
+        "file": "reserve/Reserve_Public_Toilets.glb",
+        "sha256": "450145507e3b4f75a235a1e7039466abb56e11f09d79b00bb6d4a32f66edd3cf",
+        "triangles": 9662
+      }
+    },
+    {
+      "id": "local_origin_prefab:Reserve_Food_Truck",
+      "status": "PASS",
+      "details": {
+        "id": "Reserve_Food_Truck",
+        "rooms": 2,
+        "furnishings": 4,
+        "mesh_nodes": 45,
+        "outdoor_picnic_assemblies": 0,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.5800018310546875,
+            0.0,
+            -1.4000015258789062
+          ],
+          "max": [
+            4.025001525878906,
+            3.0925002098083496,
+            3.2249984741210938
+          ],
+          "size": [
+            7.605003356933594,
+            3.0925002098083496,
+            4.625
+          ]
+        },
+        "file": "reserve/Reserve_Food_Truck.glb",
+        "sha256": "7e97b9bf57a916d764420744071270481864b3a4655b348d5ec941220e50b47b",
+        "triangles": 16744
+      }
+    },
+    {
+      "id": "local_origin_prefab:Reserve_Laundry",
+      "status": "PASS",
+      "details": {
+        "id": "Reserve_Laundry",
+        "rooms": 2,
+        "furnishings": 10,
+        "mesh_nodes": 68,
+        "outdoor_picnic_assemblies": 0,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -4.694999694824219,
+            0.0,
+            -3.160003662109375
+          ],
+          "max": [
+            4.160003662109375,
+            3.6599998474121094,
+            3.691070556640625
+          ],
+          "size": [
+            8.855003356933594,
+            3.6599998474121094,
+            6.85107421875
+          ]
+        },
+        "file": "reserve/Reserve_Laundry.glb",
+        "sha256": "21624c3564d7c45bfa40ed8288dca73c9134c3fb33fbeec5db9181d9d59370f8",
+        "triangles": 6978
+      }
+    },
+    {
+      "id": "local_origin_prefab:Reserve_Maintenance",
+      "status": "PASS",
+      "details": {
+        "id": "Reserve_Maintenance",
+        "rooms": 2,
+        "furnishings": 4,
+        "mesh_nodes": 46,
+        "outdoor_picnic_assemblies": 0,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -4.194999694824219,
+            0.0,
+            -2.660003662109375
+          ],
+          "max": [
+            3.660003662109375,
+            3.6599998474121094,
+            3.191070556640625
+          ],
+          "size": [
+            7.855003356933594,
+            3.6599998474121094,
+            5.85107421875
+          ]
+        },
+        "file": "reserve/Reserve_Maintenance.glb",
+        "sha256": "a7a18c005ce622d5f2eec6828d9926bbeb125477bd2453cc49fc132f0f8de3a4",
+        "triangles": 8514
+      }
+    },
+    {
+      "id": "local_origin_prefab:Reserve_Refuse_Service",
+      "status": "PASS",
+      "details": {
+        "id": "Reserve_Refuse_Service",
+        "rooms": 1,
+        "furnishings": 5,
+        "mesh_nodes": 44,
+        "outdoor_picnic_assemblies": 0,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.6949996948242188,
+            0.0,
+            -2.160003662109375
+          ],
+          "max": [
+            3.1599960327148438,
+            3.6599998474121094,
+            2.691070556640625
+          ],
+          "size": [
+            6.8549957275390625,
+            3.6599998474121094,
+            4.85107421875
+          ]
+        },
+        "file": "reserve/Reserve_Refuse_Service.glb",
+        "sha256": "3d9a026140b8c5c45b389c6c670f9bbd02a872a1a398ac0c2cd2665e09a1c740",
+        "triangles": 10730
+      }
+    },
+    {
+      "id": "local_origin_prefab:Reserve_Trailer_N01",
+      "status": "PASS",
+      "details": {
+        "id": "Reserve_Trailer_N01",
+        "rooms": 5,
+        "furnishings": 7,
+        "mesh_nodes": 63,
+        "outdoor_picnic_assemblies": 1,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.524993896484375,
+            0.0,
+            -4.3899993896484375
+          ],
+          "max": [
+            2.594451904296875,
+            2.922499656677246,
+            5.010002136230469
+          ],
+          "size": [
+            6.11944580078125,
+            2.922499656677246,
+            9.400001525878906
+          ]
+        },
+        "file": "reserve/Reserve_Trailer_N01.glb",
+        "sha256": "baa78ad56121975ff50837ca99e6ca1bd708e3d085960d8daeb4dd5b06de7edc",
+        "triangles": 10980
+      }
+    },
+    {
+      "id": "local_origin_prefab:Reserve_Trailer_N02",
+      "status": "PASS",
+      "details": {
+        "id": "Reserve_Trailer_N02",
+        "rooms": 5,
+        "furnishings": 8,
+        "mesh_nodes": 66,
+        "outdoor_picnic_assemblies": 1,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.524993896484375,
+            0.0,
+            -4.3899993896484375
+          ],
+          "max": [
+            2.594451904296875,
+            2.922499656677246,
+            5.010002136230469
+          ],
+          "size": [
+            6.11944580078125,
+            2.922499656677246,
+            9.400001525878906
+          ]
+        },
+        "file": "reserve/Reserve_Trailer_N02.glb",
+        "sha256": "d66bc1539e2c547efdeeb48220a993034564ee158574d7627c1b1b1f1c4f9692",
+        "triangles": 11876
+      }
+    },
+    {
+      "id": "local_origin_prefab:Reserve_Trailer_N03",
+      "status": "PASS",
+      "details": {
+        "id": "Reserve_Trailer_N03",
+        "rooms": 5,
+        "furnishings": 8,
+        "mesh_nodes": 67,
+        "outdoor_picnic_assemblies": 1,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.524993896484375,
+            0.0,
+            -4.3899993896484375
+          ],
+          "max": [
+            2.594451904296875,
+            2.922499656677246,
+            5.010002136230469
+          ],
+          "size": [
+            6.11944580078125,
+            2.922499656677246,
+            9.400001525878906
+          ]
+        },
+        "file": "reserve/Reserve_Trailer_N03.glb",
+        "sha256": "3ccd9178f680d928c700e82b6506a8264c83db274ae03f28f72f92ad9c10c5f8",
+        "triangles": 12708
+      }
+    },
+    {
+      "id": "local_origin_prefab:Reserve_Trailer_N04",
+      "status": "PASS",
+      "details": {
+        "id": "Reserve_Trailer_N04",
+        "rooms": 5,
+        "furnishings": 7,
+        "mesh_nodes": 63,
+        "outdoor_picnic_assemblies": 1,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.524993896484375,
+            0.0,
+            -4.3899993896484375
+          ],
+          "max": [
+            2.594451904296875,
+            2.922499656677246,
+            5.010002136230469
+          ],
+          "size": [
+            6.11944580078125,
+            2.922499656677246,
+            9.400001525878906
+          ]
+        },
+        "file": "reserve/Reserve_Trailer_N04.glb",
+        "sha256": "0d876b92baf0cfd2e39598f02361ba6c1c3aac055214fd7ada565b7a7f7f6081",
+        "triangles": 10776
+      }
+    },
+    {
+      "id": "local_origin_prefab:Reserve_Trailer_N05",
+      "status": "PASS",
+      "details": {
+        "id": "Reserve_Trailer_N05",
+        "rooms": 5,
+        "furnishings": 7,
+        "mesh_nodes": 63,
+        "outdoor_picnic_assemblies": 1,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.524993896484375,
+            0.0,
+            -4.3899993896484375
+          ],
+          "max": [
+            2.594451904296875,
+            2.922499656677246,
+            5.010002136230469
+          ],
+          "size": [
+            6.11944580078125,
+            2.922499656677246,
+            9.400001525878906
+          ]
+        },
+        "file": "reserve/Reserve_Trailer_N05.glb",
+        "sha256": "869b5dfbd1bcb147c3cf834b383e94b32a66a228cf04e59faea75d805d363f69",
+        "triangles": 11632
+      }
+    },
+    {
+      "id": "local_origin_prefab:Reserve_Trailer_N06",
+      "status": "PASS",
+      "details": {
+        "id": "Reserve_Trailer_N06",
+        "rooms": 5,
+        "furnishings": 8,
+        "mesh_nodes": 66,
+        "outdoor_picnic_assemblies": 1,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.524993896484375,
+            0.0,
+            -4.3899993896484375
+          ],
+          "max": [
+            2.594451904296875,
+            2.922499656677246,
+            5.010002136230469
+          ],
+          "size": [
+            6.11944580078125,
+            2.922499656677246,
+            9.400001525878906
+          ]
+        },
+        "file": "reserve/Reserve_Trailer_N06.glb",
+        "sha256": "871527f90aa2407e0afb8bc0ed37cd8e7930c41b25bf42a24d5858464faa5cc9",
+        "triangles": 11960
+      }
+    },
+    {
+      "id": "local_origin_prefab:Reserve_Trailer_S01",
+      "status": "PASS",
+      "details": {
+        "id": "Reserve_Trailer_S01",
+        "rooms": 5,
+        "furnishings": 8,
+        "mesh_nodes": 67,
+        "outdoor_picnic_assemblies": 1,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.524993896484375,
+            0.0,
+            -4.3899993896484375
+          ],
+          "max": [
+            2.594451904296875,
+            2.922499656677246,
+            5.010002136230469
+          ],
+          "size": [
+            6.11944580078125,
+            2.922499656677246,
+            9.400001525878906
+          ]
+        },
+        "file": "reserve/Reserve_Trailer_S01.glb",
+        "sha256": "7d67a9e7a368214fa7372220abd1122aec326802213dd14897082271252893f3",
+        "triangles": 11184
+      }
+    },
+    {
+      "id": "local_origin_prefab:Reserve_Trailer_S02",
+      "status": "PASS",
+      "details": {
+        "id": "Reserve_Trailer_S02",
+        "rooms": 5,
+        "furnishings": 7,
+        "mesh_nodes": 63,
+        "outdoor_picnic_assemblies": 1,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.524993896484375,
+            0.0,
+            -4.3899993896484375
+          ],
+          "max": [
+            2.594451904296875,
+            2.922499656677246,
+            5.010002136230469
+          ],
+          "size": [
+            6.11944580078125,
+            2.922499656677246,
+            9.400001525878906
+          ]
+        },
+        "file": "reserve/Reserve_Trailer_S02.glb",
+        "sha256": "1ad90cc53568e1fa993334fef1efd7b7d032dc91b7fcdf8510e8b5fcc925a91a",
+        "triangles": 12356
+      }
+    },
+    {
+      "id": "local_origin_prefab:Reserve_Trailer_S03",
+      "status": "PASS",
+      "details": {
+        "id": "Reserve_Trailer_S03",
+        "rooms": 5,
+        "furnishings": 7,
+        "mesh_nodes": 63,
+        "outdoor_picnic_assemblies": 1,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.524993896484375,
+            0.0,
+            -4.3899993896484375
+          ],
+          "max": [
+            2.594451904296875,
+            2.922499656677246,
+            5.010002136230469
+          ],
+          "size": [
+            6.11944580078125,
+            2.922499656677246,
+            9.400001525878906
+          ]
+        },
+        "file": "reserve/Reserve_Trailer_S03.glb",
+        "sha256": "7a174946a0059e0dc0593dfb5456d8638db8c591d7c5bb3917b30ac2e1b24974",
+        "triangles": 11852
+      }
+    },
+    {
+      "id": "local_origin_prefab:Reserve_Trailer_S04",
+      "status": "PASS",
+      "details": {
+        "id": "Reserve_Trailer_S04",
+        "rooms": 5,
+        "furnishings": 8,
+        "mesh_nodes": 66,
+        "outdoor_picnic_assemblies": 1,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.524993896484375,
+            0.0,
+            -4.3899993896484375
+          ],
+          "max": [
+            2.594451904296875,
+            2.922499656677246,
+            5.010002136230469
+          ],
+          "size": [
+            6.11944580078125,
+            2.922499656677246,
+            9.400001525878906
+          ]
+        },
+        "file": "reserve/Reserve_Trailer_S04.glb",
+        "sha256": "cfe857a575ff571cc8ad9df62c54d556989360d299c4de4f82ea95481b5dc241",
+        "triangles": 11040
+      }
+    },
+    {
+      "id": "local_origin_prefab:Reserve_Trailer_S05",
+      "status": "PASS",
+      "details": {
+        "id": "Reserve_Trailer_S05",
+        "rooms": 5,
+        "furnishings": 8,
+        "mesh_nodes": 67,
+        "outdoor_picnic_assemblies": 1,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.524993896484375,
+            0.0,
+            -4.3899993896484375
+          ],
+          "max": [
+            2.594451904296875,
+            2.922499656677246,
+            5.010002136230469
+          ],
+          "size": [
+            6.11944580078125,
+            2.922499656677246,
+            9.400001525878906
+          ]
+        },
+        "file": "reserve/Reserve_Trailer_S05.glb",
+        "sha256": "fe44ba772a63413ef55cd6f91b42b3befa41f441e5e25aee63018baf9ec9cb24",
+        "triangles": 10476
+      }
+    },
+    {
+      "id": "local_origin_prefab:Reserve_Trailer_S06",
+      "status": "PASS",
+      "details": {
+        "id": "Reserve_Trailer_S06",
+        "rooms": 5,
+        "furnishings": 7,
+        "mesh_nodes": 63,
+        "outdoor_picnic_assemblies": 1,
+        "local_bounds_gltf_metres": {
+          "min": [
+            -3.524993896484375,
+            0.0,
+            -4.3899993896484375
+          ],
+          "max": [
+            2.594451904296875,
+            2.922499656677246,
+            5.010002136230469
+          ],
+          "size": [
+            6.11944580078125,
+            2.922499656677246,
+            9.400001525878906
+          ]
+        },
+        "file": "reserve/Reserve_Trailer_S06.glb",
+        "sha256": "e806027fc9c971f5ae3c6bcde846b3ec202e6ffd95a8a6961d6b6e7bff3e09b1",
+        "triangles": 10876
+      }
+    },
+    {
+      "id": "expanded_instance_game_triangle_budget",
+      "status": "PASS",
+      "details": {
+        "loaded_instance_triangles": 4976516,
+        "budget_triangles": 5000000,
+        "interpretation": "Loaded triangle cost, including every tree instance; not a measured runtime frame cost."
+      }
+    }
+  ],
+  "scope": "Independent GLB structure, resource containment, hashes, native semantic inventory, local prefab coordinates and loaded instance geometry cost. No engine import, visual, physics or runtime-performance claim.",
+  "source_blend_sha256": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191",
+  "export_manifest_sha256": "b79fd591d2e5e2eb7ba9be15c08ea4a392a837354fe3b7ebc81fc6ad57c418a0",
+  "source_manifest_sha256": "0c4607a011f8194c1fb9ba7d0e13458fb2d6056daa7c03a09871782d59981bc5",
+  "source_bindings": {
+    "masterplan_sha256": "b7e5522f62f4a390faa95502537fbbac14856cb278bccb695fbd5cabe186377f",
+    "terrain_plan_sha256": "69fc114cc289b33fc8e1d33e57daf77dd65e94d0340715c6a1974cd4d99fe349",
+    "interior_plan_sha256": "665519089421f82d0869ff62f189f364426a064ece67912979f9709d752e5409",
+    "interior_module_sha256": "045228f452b1ace0c8363a13c56742758426d8b816bb1b00245d88d985f8dfe4",
+    "landscape_plan_sha256": "68b8f4d2a9269b1fa8e9dde530bc83bd41b871effaf4d224ffd12ab953f6d4b1",
+    "landscape_details_sha256": "284459e0383e5d4adf0e3c9ddc637bc29cf375152c8724856546d0596e25e5d8",
+    "reserve_plan_sha256": "6841fdb5121e78372e9ccc80a990cb93b5acd7700db3f2661df2718b7e2980f7",
+    "reserve_plan_module_sha256": "178ce182db1e41820263462e873f1903e5488dbcf3deae0c81263f8cf3056e8a",
+    "reserve_environment_module_sha256": "520dbaef6f66dbef33dc83dda2d0d67c8dd6021f96f08f01c869ca5daae37030",
+    "reserve_amenities_module_sha256": "4187108afffea6843ab4ee62a67289f8d39a514c8714504d0f6ca01747f3b46b"
+  },
+  "passed": 25,
+  "failed": 0
+}

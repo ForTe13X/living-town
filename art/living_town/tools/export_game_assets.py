@@ -22,6 +22,9 @@ import bpy
 import bmesh
 from mathutils import Matrix, Vector
 
+_DESCENDANT_CHILDREN = None
+_DESCENDANT_MEMO = {}
+
 
 def sha(path):
     digest = hashlib.sha256()
@@ -86,7 +89,10 @@ def glb_summary(path):
         'file': Path(path).name, 'sha256': sha(path), 'bytes': Path(path).stat().st_size,
         'nodes': len(doc.get('nodes', [])), 'meshes': len(doc.get('meshes', [])),
         'materials': len(doc.get('materials', [])), 'embedded_images': len(images),
-        'triangles': sum(doc['accessors'][p['indices']]['count']//3 for p in primitives if 'indices' in p),
+        'triangles': sum(doc['accessors'][p['indices']]['count']//3
+                         for node in doc.get('nodes',[]) if 'mesh' in node
+                         for p in doc['meshes'][node['mesh']]['primitives'] if 'indices' in p),
+        'unique_mesh_triangles': sum(doc['accessors'][p['indices']]['count']//3 for p in primitives if 'indices' in p),
         'vertex_color_primitives': sum('COLOR_0' in p.get('attributes', {}) for p in primitives),
         'normal_mapped_materials': sum('normalTexture' in m for m in doc.get('materials', [])),
         'alpha_blend_materials': sum(m.get('alphaMode') == 'BLEND' for m in doc.get('materials', [])),
@@ -99,10 +105,71 @@ def glb_summary(path):
     }
 
 
+def snapshot_descendants(objects):
+    """Cache the completed geometry hierarchy before temporary prefab detaches.
+
+    Blender's Object.children scans the object database. Reading it at every
+    recursive visit makes large forests quadratic; one parent scan is enough.
+    Reparenting a prefab root does not change the descendants within that root.
+    Later camera exports use their own explicit object lists.
+    """
+    global _DESCENDANT_CHILDREN
+    objects = tuple(objects)
+    children = {ob: [] for ob in objects}
+    for ob in objects:
+        if ob.parent in children:
+            children[ob.parent].append(ob)
+    _DESCENDANT_CHILDREN = {ob: tuple(items) for ob, items in children.items()}
+    _DESCENDANT_MEMO.clear()
+
+
 def descendants(ob):
-    yield ob
-    for child in ob.children:
-        yield from descendants(child)
+    if _DESCENDANT_CHILDREN is None or ob not in _DESCENDANT_CHILDREN:
+        yield ob
+        for child in ob.children:
+            yield from descendants(child)
+        return
+    if ob not in _DESCENDANT_MEMO:
+        _DESCENDANT_MEMO[ob] = (ob,) + tuple(
+            item for child in _DESCENDANT_CHILDREN[ob] for item in descendants(child))
+    yield from _DESCENDANT_MEMO[ob]
+
+
+def remove_zero_area_tree_triangles(mesh, threshold_m2=1e-12):
+    """Clean only a copied tree mesh, keeping BMesh custom-data layers intact.
+
+    Pole rings in the authored ellipsoids contain coincident coordinates.
+    Triangulate first so the genuine polar triangle remains; delete only its
+    geometrically zero-area companion. No dissolve, merge, decimation or
+    position/normal/UV/color edits are performed.
+    """
+    before = sum(max(0, poly.loop_total-2) for poly in mesh.polygons)
+    editable = bmesh.new()
+    try:
+        editable.from_mesh(mesh)
+        polygons = [face for face in editable.faces if len(face.verts) > 3]
+        if polygons:
+            bmesh.ops.triangulate(editable, faces=polygons)
+        triangulated = len(editable.faces)
+        zero_area = [face for face in editable.faces if face.calc_area() <= threshold_m2]
+        largest_removed = max((face.calc_area() for face in zero_area), default=0.)
+        if zero_area:
+            bmesh.ops.delete(editable, geom=zero_area, context='FACES_ONLY')
+        after = len(editable.faces)
+        if any(len(face.verts) != 3 for face in editable.faces):
+            raise RuntimeError('Tree cleanup left a non-triangle face: '+mesh.name)
+        editable.to_mesh(mesh)
+    finally:
+        editable.free()
+    mesh.update()
+    return {'source_implied_triangles': before,
+            'triangulated_faces_before_deletion': triangulated,
+            'triangles_after': after,
+            'zero_area_triangle_faces_deleted': len(zero_area),
+            'triangulation_triangle_count_change': before-triangulated,
+            'triangle_count_reduction': before-after,
+            'maximum_deleted_area_m2': largest_removed,
+            'threshold_m2': threshold_m2}
 
 
 def bounds(objects):
@@ -196,6 +263,22 @@ def main():
         landscape_bindings[field] = native_hash
     if landscape_bindings and len(landscape_bindings) != 2:
         raise RuntimeError('Landscape plan and details bindings must both be present')
+    reserve_bindings = {}
+    for field, relative_path in (('reserve_plan_sha256', 'reserve_plan.json'),
+                                 ('reserve_plan_module_sha256', 'tools/reserve_plan.py'),
+                                 ('reserve_environment_module_sha256', 'tools/reserve_environment.py'),
+                                 ('reserve_amenities_module_sha256', 'tools/reserve_amenities.py')):
+        native_hash = source_scene.get(field)
+        declared_hash = source_manifest.get(field)
+        if native_hash is None and declared_hash is None:
+            continue
+        if not isinstance(native_hash, str) or len(native_hash) != 64 or declared_hash != native_hash:
+            raise RuntimeError('Native/manifest reserve binding mismatch: '+field)
+        if sha(source.parent/relative_path) != native_hash:
+            raise RuntimeError('Frozen native reserve source changed: '+relative_path)
+        reserve_bindings[field] = native_hash
+    if reserve_bindings and len(reserve_bindings) != 4:
+        raise RuntimeError('Reserve plan and both geometry module bindings must be present')
     pond_description = None
     if landscape_bindings:
         terrain_path = source.parent/'terrain_plan.json'
@@ -239,7 +322,7 @@ def main():
     collection = export_scene.collection
     root = empty('LivingTown', collection, asset_schema='living_town.glb.v1',
                  source_blend_sha256=source_sha, units='metres', evidence_label=opt.label,
-                 **planning_bindings, **landscape_bindings)
+                 **planning_bindings, **landscape_bindings, **reserve_bindings)
     architecture = empty('Buildings', collection, root, building_count=len(buildings))
     environment = empty('Environment', collection, root)
     props = empty('StreetLife', collection, root)
@@ -273,6 +356,8 @@ def main():
 
     copied_source = set()
     geometry_records = []
+    linked_reserve_meshes = {}
+    reserve_tree_cleanup = {}
     def evaluated_mesh(src, to_local):
         evaluated = src.evaluated_get(depsgraph)
         mesh = bpy.data.meshes.new_from_object(evaluated, preserve_all_data_layers=True, depsgraph=depsgraph)
@@ -294,6 +379,23 @@ def main():
     def clone_mesh(src, parent, to_local, name=None):
         if src.type not in ('MESH', 'CURVE', 'FONT', 'SURFACE'):
             return None
+        if src.type == 'MESH' and src.get('reserve_role') == 'tree' and not src.modifiers:
+            key=src.data.name
+            if key not in linked_reserve_meshes:
+                mesh=src.data.copy()
+                reserve_tree_cleanup[key]=dict(remove_zero_area_tree_triangles(mesh), instances=0)
+                for i,material in enumerate(list(mesh.materials)):
+                    mesh.materials[i]=portable_material(material)
+                linked_reserve_meshes[key]=mesh
+            reserve_tree_cleanup[key]['instances']+=1
+            obj=bpy.data.objects.new(name or src.name,linked_reserve_meshes[key])
+            collection.objects.link(obj);obj.parent=parent
+            obj.matrix_local=to_local @ src.matrix_world
+            for key in src.keys():
+                if key != '_RNA_UI':obj[key]=src[key]
+            obj['source_object']=src.name;obj['visual_only']=True
+            copied_source.add(src.name)
+            return obj
         mesh = evaluated_mesh(src, to_local)
         if mesh is None:
             return None
@@ -375,6 +477,43 @@ def main():
                                  'role_mesh_counts': {role: sum(ob.type == 'MESH' for ob in descendants(node)) for role, node in groups.items()},
                                  'nested_collection_nodes': [node.name for name, node in node_map.items() if name != src_coll.name and node not in groups.values()]})
         print('Prepared building '+ident, flush=True)
+    reserve_building_roots = {}
+    reserve_exports = []
+    if reserve_bindings:
+        reserve_root=empty('NaturalReserve',collection,root,
+            reserve_plan_sha256=source_scene['reserve_plan_sha256'],asset_schema='living_town.reserve.v1')
+        reserve_records={r['root_collection']:r for r in source_manifest['reserve_amenities']['buildings']}
+        def reserve_collection_tree(src_collection,parent,to_local=Matrix.Identity(4)):
+            record=reserve_records.get(src_collection.name)
+            node=empty(src_collection.name+'__Group',collection,parent,
+                source_collection=src_collection.name,reserve_role='collection')
+            for key in src_collection.keys():
+                if key!='_RNA_UI':
+                    node[key]=src_collection[key]
+            if record:
+                origin=record.get('center_m',record.get('center'))
+                # Amenity centers contain XY; floor/pad Z remains an explicit placement datum.
+                z=record.get('pad_level_m',0)
+                transform=Matrix.Translation(Vector((origin[0],origin[1],z))) @ Matrix.Rotation(math.radians(record.get('yaw_degrees',0)),4,'Z')
+                node.matrix_local=transform
+                node['reserve_building_id']=record['id']
+                node['reserve_role']='building'
+                to_local=transform.inverted()
+                reserve_building_roots[record['id']]=node
+                reserve_exports.append({'id':record['id'],'kind':record['kind'],
+                    'placement_blender_xyz':[origin[0],origin[1],z],
+                    'placement_gltf_xyz':[origin[0],z,-origin[1]],
+                    'yaw_blender_degrees':record.get('yaw_degrees',0),
+                    'room_count':record['room_count'],'furnishing_count':record['furnishing_count'],
+                    'roof_collection':record['roof_collection'],'front_cover_collection':record['front_cover_collection']})
+            for src in src_collection.objects:
+                if src.name not in copied_source:
+                    clone_mesh(src,node,to_local)
+            for child in src_collection.children:
+                reserve_collection_tree(child,node,to_local)
+        for reserve_collection in source_scene.collection.children:
+            if reserve_collection.name in ('06_Natural_Reserve','07_Reserve_Amenities'):
+                reserve_collection_tree(reserve_collection,reserve_root)
     for src_obj in source_scene.objects:
         if src_obj.name in copied_source or src_obj.name in review_objects or src_obj.type not in ('MESH', 'CURVE', 'FONT', 'SURFACE'):
             continue
@@ -390,6 +529,7 @@ def main():
         clone_mesh(src_obj, parent, Matrix.Identity(4))
     bpy.context.window.scene = export_scene
     export_scene.view_layers[0].update()
+    snapshot_descendants(export_scene.objects)
     world_bounds = bounds(export_scene.objects)
     arch_bounds = bounds(descendants(architecture))
     stage('clone_preparation_completed')
@@ -465,6 +605,8 @@ def main():
     if interior_inventory is not None and interior_metadata_inventory(gltf_doc) != interior_inventory:
         raise RuntimeError('GLB floor, logical-zone or furniture metadata inventory differs from frozen plan')
     category_cost = {ob.name: geometry_cost(descendants(ob)) for ob in (architecture, environment, props, vegetation)}
+    if reserve_bindings:
+        category_cost['NaturalReserve']=geometry_cost(descendants(reserve_root))
     for item in building_exports:
         br = building_roots[item['id']]
         item['geometry_cost'] = geometry_cost(descendants(br))
@@ -492,6 +634,22 @@ def main():
         br.matrix_local = original
         export_scene.view_layers[0].update()
     stage('prefabs_write_completed')
+    if opt.prefabs != 'none' and reserve_exports:
+        stage('reserve_prefabs_write_started')
+        reserve_prefab_dir=opt.out/'reserve'
+        reserve_prefab_dir.mkdir(exist_ok=True)
+        for item in reserve_exports:
+            br=reserve_building_roots[item['id']]
+            original=br.matrix_local.copy();original_parent=br.parent
+            br.parent=None;br.matrix_world=Matrix.Identity(4)
+            export_scene.view_layers[0].update()
+            record=export(reserve_prefab_dir/(item['id']+'.glb'),list(descendants(br)))
+            record['file']='reserve/'+item['id']+'.glb'
+            record['local_bounds_gltf_metres']=yup_bounds(bounds(descendants(br)))
+            item['standalone']=record
+            br.parent=original_parent;br.matrix_local=original
+            export_scene.view_layers[0].update()
+        stage('reserve_prefabs_write_completed')
     camera_record = None
     if opt.camera_rig:
         stage('camera_write_started')
@@ -530,7 +688,15 @@ def main():
               'source_interior_module_sha256': source_scene.get('interior_module_sha256'),
               'source_landscape_plan_sha256': landscape_bindings.get('landscape_plan_sha256'),
               'source_landscape_details_sha256': landscape_bindings.get('landscape_details_sha256'),
-              'portable_binding_fields': sorted(set(planning_bindings) | set(landscape_bindings)),
+              'source_reserve_plan_sha256': source_scene.get('reserve_plan_sha256'),
+              'source_reserve_plan_module_sha256': source_scene.get('reserve_plan_module_sha256'),
+              'source_reserve_environment_module_sha256': source_scene.get('reserve_environment_module_sha256'),
+              'source_reserve_amenities_module_sha256': source_scene.get('reserve_amenities_module_sha256'),
+              'reserve_environment': source_manifest.get('reserve_environment'),
+              'reserve_amenities': source_manifest.get('reserve_amenities'),
+              'linked_reserve_tree_meshes': len(linked_reserve_meshes),
+              'portable_binding_fields': sorted(set(planning_bindings) | set(landscape_bindings) | set(reserve_bindings)),
+              'reserve_building_count':len(reserve_exports),'reserve_buildings':reserve_exports,
               'interior_inventory': interior_inventory,
               'layout_inventory': layout_inventory,
               'landscape_pond': pond_description,
@@ -542,11 +708,25 @@ def main():
               'optimization': {'mode': opt.detail, 'game_triangle_budget': opt.triangle_budget,
                                'game_budget_passed': game_detail is None or game_detail['triangles'] <= opt.triangle_budget,
                                'disabled_bevel_modifiers': len(disabled_bevels),
-                               'method': 'Omit source BEVEL modifiers <=0.025 m in disposable export copy; preserve topology, UVs, colors, furniture and openings',
+                               'method': 'Omit source BEVEL modifiers <=0.025 m in disposable export copy; triangulate shared copied reserve-tree meshes and delete only faces with geometric area <=1e-12 m²; preserve positions, visible silhouettes, UV/color/material layers, furniture and openings',
+                               'reserve_tree_zero_area_cleanup': {
+                                   'scope': 'Copied shared tree prototypes only; native meshes, terrain, trails and all instance poses unchanged',
+                                   'area_threshold_m2': 1e-12,
+                                   'unique_meshes_processed': len(reserve_tree_cleanup),
+                                   'expanded_tree_mesh_nodes': sum(r['instances'] for r in reserve_tree_cleanup.values()),
+                                   'unique_source_implied_triangles': sum(r['source_implied_triangles'] for r in reserve_tree_cleanup.values()),
+                                   'unique_triangles_after': sum(r['triangles_after'] for r in reserve_tree_cleanup.values()),
+                                   'unique_zero_area_triangle_faces_deleted': sum(r['zero_area_triangle_faces_deleted'] for r in reserve_tree_cleanup.values()),
+                                   'expanded_zero_area_triangle_faces_deleted': sum(r['zero_area_triangle_faces_deleted']*r['instances'] for r in reserve_tree_cleanup.values()),
+                                   'unique_triangle_count_reduction': sum(r['triangle_count_reduction'] for r in reserve_tree_cleanup.values()),
+                                   'expanded_triangle_count_reduction': sum(r['triangle_count_reduction']*r['instances'] for r in reserve_tree_cleanup.values()),
+                                   'maximum_deleted_area_m2': max((r['maximum_deleted_area_m2'] for r in reserve_tree_cleanup.values()), default=0.),
+                                   'by_source_mesh': reserve_tree_cleanup},
                                'triangle_reduction_percent': round(100*(1-game_detail['triangles']/high_detail['triangles']), 2) if game_detail and high_detail else None,
                                'byte_reduction_percent': round(100*(1-game_detail['bytes']/high_detail['bytes']), 2) if game_detail and high_detail else None,
-                               'lod': 'No automatic LODs; complete town and local-origin building prefabs supplied'},
+                               'lod': 'Distance-selected authored near/far woodland meshes; shared forest meshes remain instanced. Core and reserve local-origin building prefabs supplied.'},
               'export_performance': {'unused_mesh_cleanup': 'Unused high-detail mesh IDs retained until disposable CLI exit; export remains selected objects in active scene only',
+                                     'descendant_traversal': 'One cached parent-to-children snapshot and memoized geometry subtrees; prefab root detach preserves internal descendants; camera rig uses explicit selection',
                                      'retained_unused_high_detail_meshes': retained_unused_mesh_count,
                                      'stage_events': stage_events},
               'geometry_cost_by_category': category_cost,

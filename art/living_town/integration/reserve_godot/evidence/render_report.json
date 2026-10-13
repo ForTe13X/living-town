@@ -1,0 +1,1032 @@
+{
+	"check_count": 66,
+	"checks": [
+		{
+			"detail": null,
+			"name": "export_manifest_complete",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "native_manifest_binding",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "native_and_export_amenity_reports_agree",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "full_glb_hash_matches_export",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "glb_2_document_readable",
+			"passed": true
+		},
+		{
+			"detail": {
+				"embedded_images": 31,
+				"materials": 49,
+				"required_extensions": []
+			},
+			"name": "full_town_self_contained_pbr",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "source_binding_interior_module_sha256",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "source_binding_interior_plan_sha256",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "source_binding_landscape_details_sha256",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "source_binding_landscape_plan_sha256",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "source_binding_masterplan_sha256",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "source_binding_reserve_amenities_module_sha256",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "source_binding_reserve_environment_module_sha256",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "source_binding_reserve_plan_module_sha256",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "source_binding_reserve_plan_sha256",
+			"passed": true
+		},
+		{
+			"detail": {
+				"buildings": 21,
+				"furnishings": 158,
+				"rooms": 92
+			},
+			"name": "native_reserve_inventory_is_explicit",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 21,
+				"native": 21
+			},
+			"name": "reserve_building_ids_match_native",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 92,
+				"native": 92
+			},
+			"name": "reserve_room_ids_match_native",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 158,
+				"native": 158
+			},
+			"name": "reserve_furnishing_ids_match_native",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "reserve_metadata_does_not_pollute_core_inventory",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "full_glb_creates_node3d_scene",
+			"passed": true
+		},
+		{
+			"detail": {
+				"error_count": 0,
+				"errors": [],
+				"mapped_mesh_nodes": 19353,
+				"mapped_nodes": 20646,
+				"maximum_mesh_world_transform_error": 0.000000298023223876953,
+				"method": "Explicit GLTFNode source-index metadata before generate_scene, preserved through runtime mesh conversion",
+				"sanitized_name_examples": [
+					{
+						"gltf_index": 1,
+						"scene_name": "Crafted_Accents_Granite_007",
+						"source_name": "Crafted_Accents_Granite.007"
+					},
+					{
+						"gltf_index": 2,
+						"scene_name": "Front_Brass_007",
+						"source_name": "Front_Brass.007"
+					},
+					{
+						"gltf_index": 3,
+						"scene_name": "Front_Burgundy_002",
+						"source_name": "Front_Burgundy.002"
+					},
+					{
+						"gltf_index": 4,
+						"scene_name": "Front_Glass_007",
+						"source_name": "Front_Glass.007"
+					},
+					{
+						"gltf_index": 5,
+						"scene_name": "Front_Granite_007",
+						"source_name": "Front_Granite.007"
+					},
+					{
+						"gltf_index": 6,
+						"scene_name": "Front_Iron_006",
+						"source_name": "Front_Iron.006"
+					},
+					{
+						"gltf_index": 7,
+						"scene_name": "Front_Linen_005",
+						"source_name": "Front_Linen.005"
+					},
+					{
+						"gltf_index": 8,
+						"scene_name": "Front_White_007",
+						"source_name": "Front_White.007"
+					},
+					{
+						"gltf_index": 9,
+						"scene_name": "Front_WindowWarm_002",
+						"source_name": "Front_WindowWarm.002"
+					},
+					{
+						"gltf_index": 10,
+						"scene_name": "Front_Zinc_007",
+						"source_name": "Front_Zinc.007"
+					},
+					{
+						"gltf_index": 12,
+						"scene_name": "Interior_Oak_004",
+						"source_name": "Interior_Oak.004"
+					},
+					{
+						"gltf_index": 13,
+						"scene_name": "L00_DoorLeaf_1_0_Brass_007",
+						"source_name": "L00_DoorLeaf_1_0_Brass.007"
+					}
+				],
+				"source_mesh_nodes": 19353,
+				"source_nodes": 20646,
+				"unique_actual_mesh_nodes": 19353
+			},
+			"name": "all_glb_mesh_indices_resolve_to_unique_actual_nodes",
+			"passed": true
+		},
+		{
+			"detail": {
+				"glb_mesh_instances": 19353,
+				"glb_unique_meshes": 9471,
+				"runtime_mesh_instances": 19353
+			},
+			"name": "all_glb_mesh_instances_present",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": {
+					"max": [
+						1600.0,
+						70.1576538085938,
+						1100.0
+					],
+					"min": [
+						-600.0,
+						-1.73413860797882,
+						-1100.0
+					],
+					"size": [
+						2200.0,
+						71.8917924165726,
+						2200.0
+					]
+				},
+				"tolerance_metres": 0.035
+			},
+			"name": "full_world_metres_and_bounds_preserved",
+			"passed": true
+		},
+		{
+			"detail": {
+				"all_base_material_3d": true,
+				"alpha_blend_materials": 1,
+				"consumer_rules": [
+					"COLOR_0 multiplies source albedo",
+					"Source alphaMode BLEND preserved"
+				],
+				"normal_materials": 27,
+				"textured_materials": 25,
+				"unique_materials": 49,
+				"vertex_color_surfaces": 2
+			},
+			"name": "runtime_portable_materials_present",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "runtime_pbr_normal_maps_present",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "runtime_alpha_blend_preserved",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "runtime_vertex_color_albedo_preserved",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "reserve_top_level_hierarchy_present",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "all_reserve_cover_and_interior_nodes_present",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "reserve_rooms_and_covers_owned_by_correct_building",
+			"passed": true
+		},
+		{
+			"detail": {
+				"maximum_transform_error": 0.000000405741189979381
+			},
+			"name": "all_reserve_metric_placements_and_yaws_preserved",
+			"passed": true
+		},
+		{
+			"detail": {
+				"maximum_height_error_metres": 0.000000418029785009821,
+				"missing_room_floor_surfaces": []
+			},
+			"name": "all_actual_room_floor_tops_match_finished_floor_datum",
+			"passed": true
+		},
+		{
+			"detail": {
+				"error_count": 0,
+				"errors": [],
+				"mapped_owner_mesh_components": 589,
+				"source_mesh_components": 589
+			},
+			"name": "actual_imported_furnishings_remain_under_owner_room_nodes",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "existing_town_buildings_remain_separate",
+			"passed": true
+		},
+		{
+			"detail": {
+				"imported_tree_groups": 3500,
+				"mesh_components": 9928,
+				"missing": [],
+				"native_tree_groups": 3500
+			},
+			"name": "all_native_tree_instances_imported",
+			"passed": true
+		},
+		{
+			"detail": {
+				"component_instances": 9928,
+				"glb_unique_tree_meshes": 46,
+				"runtime_unique_tree_meshes": 46,
+				"sharing_errors": []
+			},
+			"name": "woodland_mesh_resources_remain_shared",
+			"passed": true
+		},
+		{
+			"detail": {
+				"expected_components": 9928,
+				"mapped_components": 9928,
+				"maximum_transform_error": 0.000000298023223876953
+			},
+			"name": "actual_tree_world_transforms_preserved",
+			"passed": true
+		},
+		{
+			"detail": [],
+			"name": "bridge_geometry_contains_authored_endpoints",
+			"passed": true
+		},
+		{
+			"detail": {
+				"buildings_exercised": 21,
+				"process_frames": 42
+			},
+			"name": "multi_frame_all_amenity_local_covers_restore_and_preserve_neighbors",
+			"passed": true
+		},
+		{
+			"detail": [
+				"convenience_store",
+				"bathhouse",
+				"food_truck",
+				"trailer"
+			],
+			"name": "representative_prefab_kinds_listed",
+			"passed": true
+		},
+		{
+			"detail": {
+				"bytes": 5699764,
+				"path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\game_assets_reserve/reserve/Reserve_Trailer_N01.glb",
+				"sha256": "baa78ad56121975ff50837ca99e6ca1bd708e3d085960d8daeb4dd5b06de7edc"
+			},
+			"name": "prefab_trailer_file_hash",
+			"passed": true
+		},
+		{
+			"detail": {
+				"embedded_images": 15,
+				"materials": 19,
+				"required_extensions": []
+			},
+			"name": "prefab_trailer_self_contained_pbr",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "prefab_trailer_loads",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual_bounds": {
+					"max": [
+						2.59445190429688,
+						2.92249965667725,
+						5.01000213623047
+					],
+					"min": [
+						-3.52499389648438,
+						0.0,
+						-4.38999938964844
+					],
+					"size": [
+						6.11944580078125,
+						2.92249965667725,
+						9.40000152587891
+					]
+				},
+				"tolerance_metres": 0.025
+			},
+			"name": "prefab_trailer_local_origin_and_bounds",
+			"passed": true
+		},
+		{
+			"detail": {
+				"bytes": 6785180,
+				"path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\game_assets_reserve/reserve/Reserve_Convenience.glb",
+				"sha256": "794bb61cc7351df5ced403861e77be23893351ae5bae972051a4dd91ee335952"
+			},
+			"name": "prefab_convenience_store_file_hash",
+			"passed": true
+		},
+		{
+			"detail": {
+				"embedded_images": 18,
+				"materials": 20,
+				"required_extensions": []
+			},
+			"name": "prefab_convenience_store_self_contained_pbr",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "prefab_convenience_store_loads",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual_bounds": {
+					"max": [
+						5.16000366210938,
+						3.66000032424927,
+						4.19107818603516
+					],
+					"min": [
+						-5.69499969482422,
+						0.0,
+						-3.65999984741211
+					],
+					"size": [
+						10.8550033569336,
+						3.66000032424927,
+						7.85107803344727
+					]
+				},
+				"tolerance_metres": 0.025
+			},
+			"name": "prefab_convenience_store_local_origin_and_bounds",
+			"passed": true
+		},
+		{
+			"detail": {
+				"bytes": 6824584,
+				"path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\game_assets_reserve/reserve/Reserve_Bathhouse.glb",
+				"sha256": "141e30f3388541d78acb8c87e853e8578d5ef5642a4e35423c6c9e3e61b9d9cf"
+			},
+			"name": "prefab_bathhouse_file_hash",
+			"passed": true
+		},
+		{
+			"detail": {
+				"embedded_images": 18,
+				"materials": 19,
+				"required_extensions": []
+			},
+			"name": "prefab_bathhouse_self_contained_pbr",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "prefab_bathhouse_loads",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual_bounds": {
+					"max": [
+						7.16000366210938,
+						3.66000032424927,
+						5.19107055664063
+					],
+					"min": [
+						-7.69499969482422,
+						0.0,
+						-4.66000366210938
+					],
+					"size": [
+						14.8550033569336,
+						3.66000032424927,
+						9.85107421875
+					]
+				},
+				"tolerance_metres": 0.025
+			},
+			"name": "prefab_bathhouse_local_origin_and_bounds",
+			"passed": true
+		},
+		{
+			"detail": {
+				"bytes": 6036276,
+				"path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\game_assets_reserve/reserve/Reserve_Food_Truck.glb",
+				"sha256": "7e97b9bf57a916d764420744071270481864b3a4655b348d5ec941220e50b47b"
+			},
+			"name": "prefab_food_truck_file_hash",
+			"passed": true
+		},
+		{
+			"detail": {
+				"embedded_images": 15,
+				"materials": 19,
+				"required_extensions": []
+			},
+			"name": "prefab_food_truck_self_contained_pbr",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "prefab_food_truck_loads",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual_bounds": {
+					"max": [
+						4.02500152587891,
+						3.09250020980835,
+						3.22499847412109
+					],
+					"min": [
+						-3.58000183105469,
+						0.0,
+						-1.40000152587891
+					],
+					"size": [
+						7.60500335693359,
+						3.09250020980835,
+						4.625
+					]
+				},
+				"tolerance_metres": 0.025
+			},
+			"name": "prefab_food_truck_local_origin_and_bounds",
+			"passed": true
+		},
+		{
+			"detail": {
+				"luminance_stddev": 0.132549667510262,
+				"mean_luminance": 0.707676974474283
+			},
+			"name": "framebuffer_01_reserve_overview_not_blank",
+			"passed": true
+		},
+		{
+			"detail": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot\\evidence\\captures/01_reserve_overview.png",
+			"name": "capture_01_reserve_overview_written",
+			"passed": true
+		},
+		{
+			"detail": {
+				"luminance_stddev": 0.155187173570324,
+				"mean_luminance": 0.634225805561222
+			},
+			"name": "framebuffer_02_trailer_park_not_blank",
+			"passed": true
+		},
+		{
+			"detail": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot\\evidence\\captures/02_trailer_park.png",
+			"name": "capture_02_trailer_park_written",
+			"passed": true
+		},
+		{
+			"detail": {
+				"luminance_stddev": 0.144577791508421,
+				"mean_luminance": 0.671575704482483
+			},
+			"name": "framebuffer_03_trailer_local_cutaway_not_blank",
+			"passed": true
+		},
+		{
+			"detail": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot\\evidence\\captures/03_trailer_local_cutaway.png",
+			"name": "capture_03_trailer_local_cutaway_written",
+			"passed": true
+		},
+		{
+			"detail": {
+				"luminance_stddev": 0.185969407906248,
+				"mean_luminance": 0.470582582864497
+			},
+			"name": "framebuffer_04_woodland_bridge_not_blank",
+			"passed": true
+		},
+		{
+			"detail": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot\\evidence\\captures/04_woodland_bridge.png",
+			"name": "capture_04_woodland_bridge_written",
+			"passed": true
+		},
+		{
+			"detail": 4,
+			"name": "four_requested_capture_views_written",
+			"passed": true
+		}
+	],
+	"display_server": "Windows",
+	"elapsed_msec": 16649,
+	"engine_version": {
+		"build": "official",
+		"hash": "71f334935c000924d403448e698df4441130df18",
+		"hex": 263682,
+		"major": 4,
+		"minor": 6,
+		"patch": 2,
+		"status": "stable",
+		"string": "4.6.2-stable (official)",
+		"timestamp": 0
+	},
+	"failure_count": 0,
+	"generated_utc": "2026-10-13T04:44:25Z",
+	"images": [
+		{
+			"bytes": 1321116,
+			"camera_orthographic_size_m": 907.200012207031,
+			"camera_transform": "[X: (0.772726, 0.0, -0.634739), Y: (-0.370042, 0.812484, -0.450486), Z: (0.515716, 0.582983, 0.627828), O: (-37.0, 265.0, 200.0)]",
+			"name": "01_reserve_overview",
+			"path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot\\evidence\\captures/01_reserve_overview.png",
+			"sha256": "ab8614146ec0c5cbd09d7f36f70086c3fc4dd8d7eb55f8c06c8a8ba8a7d5f4c3"
+		},
+		{
+			"bytes": 2797014,
+			"camera_orthographic_size_m": 71.3124847412109,
+			"camera_transform": "[X: (0.907959, 0.0, -0.419058), Y: (-0.246277, 0.809084, -0.533601), Z: (0.339053, 0.587693, 0.734616), O: (-148.0, 63.49026, 180.5)]",
+			"name": "02_trailer_park",
+			"path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot\\evidence\\captures/02_trailer_park.png",
+			"sha256": "76268469452379caf5fdbba13d1ced1978b5cca00ee7063e829bba01031c4b51"
+		},
+		{
+			"bytes": 2188775,
+			"camera_orthographic_size_m": 12.5,
+			"camera_transform": "[X: (0.863779, 0.0, -0.503871), Y: (-0.267432, 0.847526, -0.458454), Z: (0.427044, 0.530754, 0.732075), O: (-196.0, 20.02901, 115.0)]",
+			"name": "03_trailer_local_cutaway",
+			"path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot\\evidence\\captures/03_trailer_local_cutaway.png",
+			"sha256": "ffff8cbefb24f19f89d6629d86d324745bc266b830cc35a22d7b3b85575936f9"
+		},
+		{
+			"bytes": 2378628,
+			"camera_orthographic_size_m": 54.0,
+			"camera_transform": "[X: (0.749838, 0.0, -0.661622), Y: (-0.301365, 0.890239, -0.341547), Z: (0.589001, 0.455494, 0.667535), O: (-235.0, 43.10636, -11.0)]",
+			"name": "04_woodland_bridge",
+			"path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\integration\\reserve_godot\\evidence\\captures/04_woodland_bridge.png",
+			"sha256": "dada00c0731bf074c88cc469498f06e69c9b0b6abfd70887c2f2b4be5408b81f"
+		}
+	],
+	"inputs": {
+		"capture_requested": true,
+		"consumer_script": {
+			"bytes": 36985,
+			"path": "res://smoke.gd",
+			"sha256": "843fe1c7fe67d33b54b0295ca78903b80bb745ee2c9f020c41b6ede7e377e76f"
+		},
+		"export_manifest": {
+			"bytes": 611343,
+			"path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\game_assets_reserve/export_manifest.json",
+			"sha256": "b79fd591d2e5e2eb7ba9be15c08ea4a392a837354fe3b7ebc81fc6ad57c418a0"
+		},
+		"glb": {
+			"bytes": 321050860,
+			"path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\game_assets_reserve/living_town_game.glb",
+			"sha256": "4af8b869bb465cabdb84301bdc84dffc74eeebe98ddc2caab54ab1e06e15acbb"
+		},
+		"native_manifest": {
+			"bytes": 5763573,
+			"path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\town_manifest.json",
+			"sha256": "0c4607a011f8194c1fb9ba7d0e13458fb2d6056daa7c03a09871782d59981bc5"
+		}
+	},
+	"limitations": [
+		"Visual mesh consumer only; no navigation or collision test",
+		"No measured frame-rate or streaming claim",
+		"Near/far trees are authored static mesh choices; no runtime LOD switch",
+		"Screenshots need separate actual-image review"
+	],
+	"materials": {
+		"all_base_material_3d": true,
+		"alpha_blend_materials": 1,
+		"consumer_rules": [
+			"COLOR_0 multiplies source albedo",
+			"Source alphaMode BLEND preserved"
+		],
+		"normal_materials": 27,
+		"textured_materials": 25,
+		"unique_materials": 49,
+		"vertex_color_surfaces": 2
+	},
+	"node_identity": {
+		"error_count": 0,
+		"errors": [],
+		"mapped_mesh_nodes": 19353,
+		"mapped_nodes": 20646,
+		"maximum_mesh_world_transform_error": 0.000000298023223876953,
+		"method": "Explicit GLTFNode source-index metadata before generate_scene, preserved through runtime mesh conversion",
+		"sanitized_name_examples": [
+			{
+				"gltf_index": 1,
+				"scene_name": "Crafted_Accents_Granite_007",
+				"source_name": "Crafted_Accents_Granite.007"
+			},
+			{
+				"gltf_index": 2,
+				"scene_name": "Front_Brass_007",
+				"source_name": "Front_Brass.007"
+			},
+			{
+				"gltf_index": 3,
+				"scene_name": "Front_Burgundy_002",
+				"source_name": "Front_Burgundy.002"
+			},
+			{
+				"gltf_index": 4,
+				"scene_name": "Front_Glass_007",
+				"source_name": "Front_Glass.007"
+			},
+			{
+				"gltf_index": 5,
+				"scene_name": "Front_Granite_007",
+				"source_name": "Front_Granite.007"
+			},
+			{
+				"gltf_index": 6,
+				"scene_name": "Front_Iron_006",
+				"source_name": "Front_Iron.006"
+			},
+			{
+				"gltf_index": 7,
+				"scene_name": "Front_Linen_005",
+				"source_name": "Front_Linen.005"
+			},
+			{
+				"gltf_index": 8,
+				"scene_name": "Front_White_007",
+				"source_name": "Front_White.007"
+			},
+			{
+				"gltf_index": 9,
+				"scene_name": "Front_WindowWarm_002",
+				"source_name": "Front_WindowWarm.002"
+			},
+			{
+				"gltf_index": 10,
+				"scene_name": "Front_Zinc_007",
+				"source_name": "Front_Zinc.007"
+			},
+			{
+				"gltf_index": 12,
+				"scene_name": "Interior_Oak_004",
+				"source_name": "Interior_Oak.004"
+			},
+			{
+				"gltf_index": 13,
+				"scene_name": "L00_DoorLeaf_1_0_Brass_007",
+				"source_name": "L00_DoorLeaf_1_0_Brass.007"
+			}
+		],
+		"source_mesh_nodes": 19353,
+		"source_nodes": 20646,
+		"unique_actual_mesh_nodes": 19353
+	},
+	"rendering_method": "gl_compatibility",
+	"representative_prefabs": {
+		"bathhouse": {
+			"front_cover_collection": "Reserve_Bathhouse_FrontCover",
+			"furnishing_count": 21.0,
+			"id": "Reserve_Bathhouse",
+			"kind": "bathhouse",
+			"placement_blender_xyz": [
+				-137.0,
+				-78.0,
+				6.786389
+			],
+			"placement_gltf_xyz": [
+				-137.0,
+				6.786389,
+				78.0
+			],
+			"roof_collection": "Reserve_Bathhouse_Roof",
+			"room_count": 12.0,
+			"standalone": {
+				"alpha_blend_materials": 1.0,
+				"animation_channels": 0.0,
+				"animations": 0.0,
+				"bytes": 6824584.0,
+				"embedded_images": 18.0,
+				"extensions_required": [],
+				"extensions_used": [
+					"KHR_materials_emissive_strength"
+				],
+				"file": "reserve/Reserve_Bathhouse.glb",
+				"local_bounds_gltf_metres": {
+					"max": [
+						7.16000366210938,
+						3.66000032424927,
+						5.19107055664063
+					],
+					"min": [
+						-7.69499969482422,
+						0.0,
+						-4.66000366210938
+					],
+					"size": [
+						14.8550033569336,
+						3.66000032424927,
+						9.85107421875
+					]
+				},
+				"materials": 19.0,
+				"meshes": 108.0,
+				"nodes": 127.0,
+				"normal_mapped_materials": 8.0,
+				"self_contained": true,
+				"sha256": "141e30f3388541d78acb8c87e853e8578d5ef5642a4e35423c6c9e3e61b9d9cf",
+				"tangent_primitives": 108.0,
+				"triangles": 14538.0,
+				"unique_mesh_triangles": 14538.0,
+				"vertex_color_primitives": 0.0
+			},
+			"yaw_blender_degrees": 90.0
+		},
+		"convenience_store": {
+			"front_cover_collection": "Reserve_Convenience_FrontCover",
+			"furnishing_count": 6.0,
+			"id": "Reserve_Convenience",
+			"kind": "convenience_store",
+			"placement_blender_xyz": [
+				-116.0,
+				-50.0,
+				6.786389
+			],
+			"placement_gltf_xyz": [
+				-116.0,
+				6.786389,
+				50.0
+			],
+			"roof_collection": "Reserve_Convenience_Roof",
+			"room_count": 3.0,
+			"standalone": {
+				"alpha_blend_materials": 1.0,
+				"animation_channels": 0.0,
+				"animations": 0.0,
+				"bytes": 6785180.0,
+				"embedded_images": 18.0,
+				"extensions_required": [],
+				"extensions_used": [
+					"KHR_materials_emissive_strength"
+				],
+				"file": "reserve/Reserve_Convenience.glb",
+				"local_bounds_gltf_metres": {
+					"max": [
+						5.16000366210938,
+						3.66000032424927,
+						4.19107818603516
+					],
+					"min": [
+						-5.69499969482422,
+						0.0,
+						-3.65999984741211
+					],
+					"size": [
+						10.8550033569336,
+						3.66000032424927,
+						7.85107803344727
+					]
+				},
+				"materials": 20.0,
+				"meshes": 61.0,
+				"nodes": 71.0,
+				"normal_mapped_materials": 10.0,
+				"self_contained": true,
+				"sha256": "794bb61cc7351df5ced403861e77be23893351ae5bae972051a4dd91ee335952",
+				"tangent_primitives": 61.0,
+				"triangles": 14762.0,
+				"unique_mesh_triangles": 14762.0,
+				"vertex_color_primitives": 0.0
+			},
+			"yaw_blender_degrees": 0.0
+		},
+		"food_truck": {
+			"front_cover_collection": "Reserve_Food_Truck_FrontCover",
+			"furnishing_count": 4.0,
+			"id": "Reserve_Food_Truck",
+			"kind": "food_truck",
+			"placement_blender_xyz": [
+				-99.0,
+				-68.0,
+				6.786389
+			],
+			"placement_gltf_xyz": [
+				-99.0,
+				6.786389,
+				68.0
+			],
+			"roof_collection": "Reserve_Food_Truck_Roof",
+			"room_count": 2.0,
+			"standalone": {
+				"alpha_blend_materials": 1.0,
+				"animation_channels": 0.0,
+				"animations": 0.0,
+				"bytes": 6036276.0,
+				"embedded_images": 15.0,
+				"extensions_required": [],
+				"extensions_used": [
+					"KHR_materials_emissive_strength"
+				],
+				"file": "reserve/Reserve_Food_Truck.glb",
+				"local_bounds_gltf_metres": {
+					"max": [
+						4.02500152587891,
+						3.09250020980835,
+						3.22499847412109
+					],
+					"min": [
+						-3.58000183105469,
+						0.0,
+						-1.40000152587891
+					],
+					"size": [
+						7.60500335693359,
+						3.09250020980835,
+						4.625
+					]
+				},
+				"materials": 19.0,
+				"meshes": 45.0,
+				"nodes": 54.0,
+				"normal_mapped_materials": 9.0,
+				"self_contained": true,
+				"sha256": "7e97b9bf57a916d764420744071270481864b3a4655b348d5ec941220e50b47b",
+				"tangent_primitives": 45.0,
+				"triangles": 16744.0,
+				"unique_mesh_triangles": 16744.0,
+				"vertex_color_primitives": 0.0
+			},
+			"yaw_blender_degrees": 90.0
+		},
+		"trailer": {
+			"front_cover_collection": "Reserve_Trailer_N01_FrontCover",
+			"furnishing_count": 7.0,
+			"id": "Reserve_Trailer_N01",
+			"kind": "trailer",
+			"placement_blender_xyz": [
+				-203.0,
+				-103.0,
+				10.029011
+			],
+			"placement_gltf_xyz": [
+				-203.0,
+				10.029011,
+				103.0
+			],
+			"roof_collection": "Reserve_Trailer_N01_Roof",
+			"room_count": 5.0,
+			"standalone": {
+				"alpha_blend_materials": 1.0,
+				"animation_channels": 0.0,
+				"animations": 0.0,
+				"bytes": 5699764.0,
+				"embedded_images": 15.0,
+				"extensions_required": [],
+				"extensions_used": [
+					"KHR_materials_emissive_strength"
+				],
+				"file": "reserve/Reserve_Trailer_N01.glb",
+				"local_bounds_gltf_metres": {
+					"max": [
+						2.59445190429688,
+						2.92249965667725,
+						5.01000213623047
+					],
+					"min": [
+						-3.52499389648438,
+						0.0,
+						-4.38999938964844
+					],
+					"size": [
+						6.11944580078125,
+						2.92249965667725,
+						9.40000152587891
+					]
+				},
+				"materials": 19.0,
+				"meshes": 63.0,
+				"nodes": 75.0,
+				"normal_mapped_materials": 8.0,
+				"self_contained": true,
+				"sha256": "baa78ad56121975ff50837ca99e6ca1bd708e3d085960d8daeb4dd5b06de7edc",
+				"tangent_primitives": 63.0,
+				"triangles": 10980.0,
+				"unique_mesh_triangles": 10980.0,
+				"vertex_color_primitives": 0.0
+			},
+			"yaw_blender_degrees": 0.0
+		}
+	},
+	"reserve_inventory": {
+		"buildings": 21,
+		"furnishings": 158,
+		"rooms": 92
+	},
+	"runtime_load_msec": 6881,
+	"schema": "living_town.reserve_consumer.v1",
+	"source_blend_sha256": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191",
+	"source_interior_module_sha256": "045228f452b1ace0c8363a13c56742758426d8b816bb1b00245d88d985f8dfe4",
+	"source_interior_plan_sha256": "665519089421f82d0869ff62f189f364426a064ece67912979f9709d752e5409",
+	"source_landscape_details_sha256": "284459e0383e5d4adf0e3c9ddc637bc29cf375152c8724856546d0596e25e5d8",
+	"source_landscape_plan_sha256": "68b8f4d2a9269b1fa8e9dde530bc83bd41b871effaf4d224ffd12ab953f6d4b1",
+	"source_masterplan_sha256": "b7e5522f62f4a390faa95502537fbbac14856cb278bccb695fbd5cabe186377f",
+	"source_reserve_amenities_module_sha256": "4187108afffea6843ab4ee62a67289f8d39a514c8714504d0f6ca01747f3b46b",
+	"source_reserve_environment_module_sha256": "520dbaef6f66dbef33dc83dda2d0d67c8dd6021f96f08f01c869ca5daae37030",
+	"source_reserve_plan_module_sha256": "178ce182db1e41820263462e873f1903e5488dbcf3deae0c81263f8cf3056e8a",
+	"source_reserve_plan_sha256": "6841fdb5121e78372e9ccc80a990cb93b5acd7700db3f2661df2718b7e2980f7",
+	"status": "PASS",
+	"visually_reviewed": false,
+	"woodland": {
+		"mesh_components": 9928,
+		"shared_mesh_resources": 46,
+		"tree_instances": 3500
+	}
+}

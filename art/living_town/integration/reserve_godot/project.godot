@@ -1,0 +1,24 @@
+; Independent consumer of the engine-agnostic reserve asset package.
+config_version=5
+
+[application]
+config/name="Living Town Reserve GLB Verification"
+run/main_scene="res://Main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+
+[display]
+window/size/viewport_width=1440
+window/size/viewport_height=1000
+window/size/window_width_override=1440
+window/size/window_height_override=1000
+
+[editor]
+import/use_multiple_threads=false
+
+[threading]
+worker_pool/max_threads=6
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.72, 0.80, 0.82, 1)
