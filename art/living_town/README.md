@@ -21,7 +21,7 @@ The accepted native SHA256 is `99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6
 
 Both stairs now have excavated continuous land and corrected endpoint approaches. The actual clearance gate passes 2,635 walking/land columns and 3,681 body rays with zero failures, including trail sheets in the 2 m head band. The [compact historical negative control](evidence/reserve_stair_land_negative_control.json) separately records the same audit rejecting the earlier faulty native with 1,950 failures; those bad model bytes are not delivered.
 
-- [living_town_complete.blend](living_town_complete.blend): native scene `Living_Town_Summer`; the filename is reused, so compare source checksums across editions.
+- `living_town_complete.blend` in the release ZIP: native scene `Living_Town_Summer`; the filename is reused, so compare source checksums across editions.
 - [town_manifest.json](town_manifest.json): core and separate reserve inventories with plan/module bindings.
 - [reserve_plan.json](reserve_plan.json): terrain, pads, routes, crossings, woodland and 21 amenity placements.
 - [interior_plan.json](interior_plan.json): room, fixture and furniture-composition planning.
@@ -44,4 +44,4 @@ The following images belong to the current 15-image final native batch, actually
 | [Bathhouse interior](renders/reserve_v6/11_bathhouse_interior.png) | Changing, wash and shower compartments with usable approaches |
 | [Ravine bridge](renders/reserve_v6/14_ravine_bridge.png) | Continuous deck, supported landings and terrain clearance |
 
-The [presentation board](PRESENTATION.html), [delivery guide](DELIVERY_GUIDE.md), [building study](living_town_building_study.blend) and their existing media document the earlier urban V5 delivery. Keep those showcase artifacts intact, but do not treat their earlier PASS counts or images as reserve-edition evidence. New source-bound records and reviewed reserve renders will identify the completed edition explicitly.
+The [earlier urban release](https://github.com/ForTe13X/living-town/releases/tag/town3d-walkthrough-2026-10-12) contains its presentation board, delivery guide and existing media. The separately labelled `living_town_building_study.blend` is also source in the reserve ZIP. Keep those showcase artifacts intact, but do not treat their earlier PASS counts or images as reserve-edition evidence. New source-bound records and reviewed reserve renders identify the completed edition explicitly.

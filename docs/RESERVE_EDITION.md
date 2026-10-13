@@ -21,7 +21,7 @@ The existing playable game remains on its previous urban 3D asset stage. This re
 
 ## Native source and planning
 
-Open [living_town_complete.blend](../art/living_town/living_town_complete.blend), scene `Living_Town_Summer`. The reserve uses the existing native filename; use checksums rather than the filename to distinguish revisions. The separate [building study](../art/living_town/living_town_building_study.blend) remains available, but its earlier images are not evidence for the enlarged reserve scene.
+Download and extract the [curated ZIP](https://github.com/ForTe13X/living-town/releases/download/town-reserve-2026-10-12/LivingTown_Reserve_Delivery.zip), then open `art/living_town/living_town_complete.blend`, scene `Living_Town_Summer`. The reserve uses the existing native filename; use checksums rather than the filename to distinguish revisions. The separate `art/living_town/living_town_building_study.blend` is also included, but its earlier images are not evidence for the enlarged reserve scene.
 
 The sources are [reserve_plan.json](../art/living_town/reserve_plan.json), [reserve_plan.py](../art/living_town/tools/reserve_plan.py), [reserve_environment.py](../art/living_town/tools/reserve_environment.py), [reserve_amenities.py](../art/living_town/tools/reserve_amenities.py) and the town [interior kit](../art/living_town/tools/interior_design.py). The canonical [interior_plan.json](../art/living_town/interior_plan.json) records the current room/fixture inventory. Counts in older delivery guides can describe an earlier source revision.
 
