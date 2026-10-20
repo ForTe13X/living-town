@@ -1,0 +1,303 @@
+{
+  "schema": "living_town.expansion_tour_composition.v1",
+  "status": "PASS",
+  "generated_utc": "2026-10-20T15:54:50.883393+00:00",
+  "builder": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\build_expansion_tour.py",
+    "bytes": 31972,
+    "sha256": "d0c6b469469600d65f6466b41d565887561d4b30d405e123834a80fd5a8f73b7"
+  },
+  "config": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\tour.json",
+    "bytes": 16586,
+    "sha256": "1abaa223fb536b59b2c6067a826b71e2ec82d6faeaba814d5f67172e778da577"
+  },
+  "raw": {
+    "path": "D:\\Dev\\2026-10-07\\LivingTown_Territory_v6_capture.avi",
+    "bytes": 1178809764,
+    "sha256": "fef9ffe17b1c0ad999e6b324d1607c690e160fa4aa7453c8f456848a9d40d573"
+  },
+  "capture_report": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\tour_report.json",
+    "bytes": 28464,
+    "sha256": "a9757fd2f193855d76c04ac557f89281db19a4eac8aa47387ef2ed1b54369c00"
+  },
+  "voice_report": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\voice_report.json",
+    "bytes": 86037,
+    "sha256": "e672f20ce5df078db6c037b53aba361967e30e007b17175b836d655a10f56095"
+  },
+  "timeline": {
+    "raw_probe": {
+      "streams": [
+        {
+          "index": 0,
+          "codec_name": "mjpeg",
+          "codec_long_name": "Motion JPEG",
+          "profile": "Baseline",
+          "codec_type": "video",
+          "codec_tag_string": "MJPG",
+          "codec_tag": "0x47504a4d",
+          "width": 1280,
+          "height": 800,
+          "coded_width": 1280,
+          "coded_height": 800,
+          "has_b_frames": 0,
+          "sample_aspect_ratio": "1:1",
+          "display_aspect_ratio": "8:5",
+          "pix_fmt": "yuvj420p",
+          "level": -99,
+          "color_range": "pc",
+          "color_space": "bt470bg",
+          "chroma_location": "center",
+          "refs": 1,
+          "r_frame_rate": "18/1",
+          "avg_frame_rate": "18/1",
+          "time_base": "1/18",
+          "start_pts": 0,
+          "start_time": "0.000000",
+          "duration_ts": 6492,
+          "duration": "360.666667",
+          "bit_rate": "24733042",
+          "bits_per_raw_sample": "8",
+          "nb_frames": "6492",
+          "nb_read_frames": "6492",
+          "disposition": {
+            "default": 0,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "non_diegetic": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0,
+            "multilayer": 0
+          }
+        },
+        {
+          "index": 1,
+          "codec_name": "pcm_s16le",
+          "codec_long_name": "PCM signed 16-bit little-endian",
+          "codec_type": "audio",
+          "codec_tag_string": "[1][0][0][0]",
+          "codec_tag": "0x0001",
+          "sample_fmt": "s16",
+          "sample_rate": "44100",
+          "channels": 2,
+          "bits_per_sample": 16,
+          "initial_padding": 0,
+          "r_frame_rate": "0/0",
+          "avg_frame_rate": "0/0",
+          "time_base": "1/44100",
+          "start_pts": 0,
+          "start_time": "0.000000",
+          "bit_rate": "1411200",
+          "nb_frames": "15905400",
+          "nb_read_frames": "19476",
+          "disposition": {
+            "default": 0,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "non_diegetic": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0,
+            "multilayer": 0
+          }
+        }
+      ],
+      "chapters": [],
+      "format": {
+        "filename": "D:\\Dev\\2026-10-07\\LivingTown_Territory_v6_capture.avi",
+        "nb_streams": 2,
+        "nb_programs": 0,
+        "nb_stream_groups": 0,
+        "format_name": "avi",
+        "format_long_name": "AVI (Audio Video Interleaved)",
+        "start_time": "0.000000",
+        "duration": "360.666667",
+        "size": "1178809764",
+        "bit_rate": "26147351",
+        "probe_score": 100
+      }
+    },
+    "source_timeline_frames": 6492,
+    "expected_route_frames": 6480,
+    "lead_in_frames_removed": 12,
+    "lead_in_seconds": 0.6666666666666666,
+    "viewer_warmup_engine_frames": 11,
+    "theora_packet_proof": null,
+    "filter": "fps=18:start_time=0,trim=start_frame=12:end_frame=6492,setpts=PTS-STARTPTS"
+  },
+  "loudness": {
+    "method": "separate two-pass measured loudnorm",
+    "analysis": {
+      "input_i": "-20.80",
+      "input_tp": "-2.01",
+      "input_lra": "3.40",
+      "input_thresh": "-31.09",
+      "output_i": "-16.54",
+      "output_tp": "-1.50",
+      "output_lra": "3.30",
+      "output_thresh": "-26.83",
+      "normalization_type": "dynamic",
+      "target_offset": "0.54"
+    },
+    "stats": {
+      "samples": 8640000,
+      "duration_seconds": 360.0,
+      "sample_rate": 24000,
+      "peak_amplitude": 27667,
+      "peak_dbfs": -1.4697572974237938,
+      "rms_dbfs": -17.998889376147957,
+      "nonzero_samples": 5921580,
+      "full_scale_peak": false
+    }
+  },
+  "output": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\expanded_town_architectural_tour.mp4",
+    "bytes": 300376404,
+    "sha256": "8b4933989628ea7c0f2db10f570ebc3bcd91d66f4d008b2f508ba89aa82bf0de"
+  },
+  "gif": {
+    "asset": {
+      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\expanded_town_tour.gif",
+      "bytes": 6969721,
+      "sha256": "d9327e68f594acfd36cc78ca51da722c2062bb75e157d95d95945dc51db7f00c"
+    },
+    "samples_from_actual_mp4_seconds": [
+      [
+        14,
+        18
+      ],
+      [
+        54,
+        58
+      ],
+      [
+        94,
+        98
+      ],
+      [
+        254,
+        258
+      ],
+      [
+        294,
+        298
+      ]
+    ],
+    "duration_seconds": 20,
+    "width": 640,
+    "fps": 6,
+    "palette_colors": 48
+  },
+  "command": [
+    "C:\\Users\\yp\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-8.1.2-full_build\\bin\\ffmpeg.exe",
+    "-y",
+    "-hide_banner",
+    "-threads",
+    "4",
+    "-i",
+    "D:\\Dev\\2026-10-07\\LivingTown_Territory_v6_capture.avi",
+    "-i",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\narration_normalized.wav",
+    "-f",
+    "ffmetadata",
+    "-i",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\chapters.ffmetadata",
+    "-filter_complex_threads",
+    "2",
+    "-filter_complex_script",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\composition_filters.txt",
+    "-map",
+    "[v]",
+    "-map",
+    "1:a:0",
+    "-map_metadata",
+    "2",
+    "-map_chapters",
+    "2",
+    "-frames:v",
+    "6480",
+    "-t",
+    "360",
+    "-c:v",
+    "libx264",
+    "-threads:v",
+    "6",
+    "-preset",
+    "fast",
+    "-crf",
+    "20",
+    "-pix_fmt",
+    "yuv420p",
+    "-color_range",
+    "tv",
+    "-c:a",
+    "aac",
+    "-b:a",
+    "160k",
+    "-ar",
+    "24000",
+    "-movflags",
+    "+faststart",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\expanded_town_architectural_tour.mp4"
+  ],
+  "audio_mode": "Measured Edge TTS narration only; no invented game audio or ambience",
+  "assets": {
+    "narration_normalized.wav": {
+      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\narration_normalized.wav",
+      "bytes": 17280078,
+      "sha256": "b7205d35760cb3f75a7e3affdf3a0935dc88fb94408b39cc4ef68399f8dd87ae"
+    },
+    "chapters.ffmetadata": {
+      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\chapters.ffmetadata",
+      "bytes": 1033,
+      "sha256": "30e46e6170695be0493709fbdce8c3814534610deb2a352fabc88d74a79704ef"
+    },
+    "composition_filters.txt": {
+      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\composition_filters.txt",
+      "bytes": 207,
+      "sha256": "d43862e23199a6fdf2d73b493bd06445cf54b59898fb7c52266f1185e50f28f5"
+    },
+    "narration.ass": {
+      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\narration.ass",
+      "bytes": 8108,
+      "sha256": "e343ede41d790810ce9b73193d131bddd08b54311e9e300911de657300fa81a2"
+    },
+    "narration.srt": {
+      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\narration.srt",
+      "bytes": 6617,
+      "sha256": "21792f04c309b2bdabd1858847c0b5c419eb2f21f3981c0eecee6554d28c8d8b"
+    },
+    "captions.json": {
+      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\captions.json",
+      "bytes": 14312,
+      "sha256": "fb5e1479b70bfe853200958df77528fef97abf718d8371d8e5d23aa0e68c68bf"
+    }
+  },
+  "human_listening_status": "PENDING",
+  "visual_acceptance_status": "PENDING actual-frame review"
+}

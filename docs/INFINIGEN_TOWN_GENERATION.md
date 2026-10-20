@@ -2,7 +2,9 @@
 
 Use one command to coordinate a staged town build: establish the terrain and circulation, solve rooms and furniture with inexpensive geometry, replace accepted arrangements with detailed factories, bake portable materials, then export and review the result. Infinigen offers useful methods for those stages. The town's Breton summer art direction, urban planning and game contracts remain project-specific.
 
-The first implementation is a **recipe compiler**. It reads the actual town and reserve plans, validates their current source bindings, computes world-space floor levels and furniture transforms, and assigns stable per-object seeds. It currently compiles 49 urban buildings, 21 reserve buildings, 89 urban floors, 561 room zones and 757 furnishing assemblies. These counts describe existing coverage, not visual fidelity. Full-town refinement adapters are the next integration step; the compiler does not render a new town or run Infinigen.
+There are now two executable paths. The original **recipe compiler** reads the town and reserve plans, validates source bindings, computes world-space floor levels and furniture transforms, and assigns stable per-object seeds. It compiles the existing 49 urban buildings, 21 reserve buildings, 89 urban floors, 561 room zones and 757 furnishing assemblies. Its `COMPILED_NOT_GENERATED` status remains accurate for that planning-only command.
+
+The newer **territory generator** plans and builds five additional districts in a fresh output folder, using a read-only packed baseline. It adds 81 buildings with 153 floors and 929 furnished room zones, terrain-aware streets/pads, fitted detailed furniture, portable PBR and shared planting. A separate isolated CPU worker actually runs a selected upstream Infinigen planter factory. See the [expanded territory edition](TERRITORY_EXPANSION.md) for the real build, exports, checks and recording. It is a project-specific town adapter, not execution of an upstream whole-town generator.
 
 ```powershell
 python tools/town_generation/compile_recipe.py --output build/town_generation/new_run
@@ -58,11 +60,13 @@ The proposed runtime starts with one heavy engine process at a time and six CPU 
 | `tools/asset_refinement/hero_furniture.py`, `hero_foliage.py`, `hero_pbr.py`, `hero_walls.py` | Detailed furniture, leaves/flowers and portable scan/context materials. Convert the vignette helpers into parameterized town factories. |
 | Native, GLB and Godot verification tools | Retain actual source/image/geometry checks, adding chunk, instance, LOD and performance evidence as those products exist. |
 
-The current reserve builder writes fixed authoring filenames and uses an order-sensitive global random stream. It needs explicit output-root and seed adapters before an automated runner can execute it safely in a new generation directory. The recipe compiler only reads those sources.
+The original reserve builder writes fixed authoring filenames and uses an order-sensitive global random stream. The recipe compiler only reads those sources. The territory adapter safely opens the frozen native instead of replaying that builder, then saves exclusively into a fresh output directory. It uses independent stable seeds for new parcels and preserves the recorded baseline and source hashes.
 
 Urban floor levels use the recorded pad base plus the interior's local floor offset. Reserve services retain their own pad and floor offsets. Historical baseline hashes in the landscape siting document are retained as historical evidence; current masterplan/interior/terrain/reserve bindings are validated separately.
 
 ## First integration block
+
+This was the earlier proposed core-refinement slice. The subsequent territory edition follows the user's request to expand scale and applies the new factories to five added districts. The retained core block and isolated café pilot remain available as separate reference stages.
 
 Start with the actual adjacent buildings `Main_cafe`, `Main_shop` and `lot_05_creperie`, then a reserve-edge slice containing planting and a furnished visitor facility. The café is 10 × 9 m; the adjoining shops are 6 × 9 m. All three face west, with thresholds at X=7 m and individual recorded terrain levels.
 

@@ -1,0 +1,120 @@
+{
+  "schema": "living_town.expansion_review_renders.v1",
+  "status": "PASS",
+  "native_sha256": "1d0434d87063165a5e9e04312a88d13426375b9a3f80d7ba288bfdd164f18a82",
+  "source_unchanged": true,
+  "views": [
+    {
+      "view": "overview",
+      "path": "expansion_overview.png",
+      "sha256": "a4994c7601e7c3ed85a9acdbb1929b7cfd5fd48015c58c4416d4b1a4842b189e",
+      "camera": {
+        "position": [
+          106.92535039999997,
+          -268.2919824,
+          253.44695367695488
+        ],
+        "target": [
+          -98.837474,
+          10.957564999999988,
+          9.53156439695492
+        ],
+        "ortho": 332.15998795999997
+      }
+    },
+    {
+      "view": "street",
+      "path": "expansion_street.png",
+      "sha256": "37d2c2162fe2b677e514f6803588e853936fbc8b507d24865af733ed3058108a",
+      "camera": {
+        "position": [
+          18.689270040202445,
+          125.41902704556772,
+          9.56881094595445
+        ],
+        "target": [
+          22.86127001483485,
+          121.31502701977979,
+          10.096561999999999
+        ],
+        "lens": 28,
+        "focus_building_id": "Expansion_D06_Harbor_Upper_Loop_R01",
+        "visibility": {
+          "pass": true,
+          "building_blockers": [],
+          "ground_block_samples": [],
+          "method": "Actual authored rotated footprints for original town, reserve services and all new buildings, with facade/awning margin; 19 height-authority samples along the view ray.",
+          "actual_foreground_mesh_blockers": [],
+          "actual_foreground_rays": 9
+        },
+        "candidate_attempts": [
+          {
+            "distance_m": 6,
+            "side_fraction": -0.1,
+            "pass": true
+          }
+        ]
+      }
+    },
+    {
+      "view": "interior",
+      "path": "expansion_interior.png",
+      "sha256": "959bf1c4a049e55ef5d7e032a428719893d2c86cc616e7ed0df893fe11b5f552",
+      "camera": {
+        "position": [
+          20.659270046136385,
+          126.37902703339077,
+          14.796562
+        ],
+        "target": [
+          26.06127,
+          118.915027,
+          7.996562
+        ],
+        "lens": 37
+      }
+    },
+    {
+      "view": "terrain",
+      "path": "expansion_terrain.png",
+      "sha256": "b331683047e6d1b5a77a7bf5a13d42e8d26f4afb8555c1d365e88df52296e6c5",
+      "camera": {
+        "position": [
+          -49.204799656265955,
+          83.68352294124604,
+          8.746360331200737
+        ],
+        "target": [
+          -50.861994487845095,
+          88.29977350747264,
+          6.265701999999999
+        ],
+        "lens": 35,
+        "focus_building_id": "Expansion_D08_Hillside_Lower_Loop_R01",
+        "visibility": {
+          "pass": true,
+          "building_blockers": [],
+          "ground_block_samples": [],
+          "method": "Actual authored rotated footprints for original town, reserve services and all new buildings, with facade/awning margin; 19 height-authority samples along the view ray.",
+          "actual_foreground_mesh_blockers": [],
+          "actual_foreground_rays": 9
+        },
+        "candidate_attempts": [
+          {
+            "distance_m": 5,
+            "side_fraction": -0.28,
+            "pass": true
+          }
+        ]
+      }
+    }
+  ],
+  "resolution": [
+    1400,
+    960
+  ],
+  "samples": 20,
+  "device": "CPU",
+  "threads": 6,
+  "scope": "Actual Cycles renders from the generated native. Quality acceptance is a separate visual review."
+}

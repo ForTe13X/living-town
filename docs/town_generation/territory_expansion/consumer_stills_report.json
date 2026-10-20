@@ -1,0 +1,1599 @@
+{
+	"captures": [
+		{
+			"chapter": {
+				"from": [
+					106.9253504,
+					-268.2919824,
+					253.446953676955
+				],
+				"id": "compound_overview",
+				"projection": "orthographic",
+				"size": 332.15998796,
+				"subtitle": "81 new buildings / five connected districts / retained coast and reserve",
+				"target": [
+					-98.837474,
+					10.957565,
+					9.53156439695492
+				],
+				"title": "A larger inhabited territory",
+				"to": [
+					76.9253504,
+					-253.2919824,
+					273.446953676955
+				]
+			},
+			"path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\stills_captures/01_compound_overview.png",
+			"sha256": "7113ca4b4e20299f5838f0c277728fd28d17ae488acb7be5794400ddba547d88"
+		},
+		{
+			"chapter": {
+				"from": [
+					36.1438967,
+					54.5798033,
+					56.6224336
+				],
+				"id": "D06",
+				"subtitle": "10 furnished buildings / irregular frontage and planted courts",
+				"target": [
+					-2.064181,
+					113.3614613,
+					9.6580243
+				],
+				"title": "Northern harbor quarter",
+				"to": [
+					21.4484822,
+					63.397052,
+					47.8051849
+				]
+			},
+			"path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\stills_captures/02_D06.png",
+			"sha256": "22685df05f245b7ff83409607ad910e7bd096006676d93e2290507ef47227156"
+		},
+		{
+			"chapter": {
+				"from": [
+					-100.131634081471,
+					-98.0726164764706,
+					84.4430418844118
+				],
+				"id": "D07",
+				"subtitle": "17 furnished buildings / irregular frontage and planted courts",
+				"target": [
+					-157.372991176471,
+					-10.0089901764706,
+					12.5889595294118
+				],
+				"title": "West market and workshop courts",
+				"to": [
+					-122.147540656471,
+					-84.8630725314706,
+					71.2334979394118
+				]
+			},
+			"path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\stills_captures/03_D07.png",
+			"sha256": "76f6cb4337b603fae8dca2de5a373ea43f1d1b460eee6f64a3baff278ac61d81"
+		},
+		{
+			"chapter": {
+				"from": [
+					-40.115582009913,
+					-9.05987773391304,
+					85.823488849913
+				],
+				"id": "D08",
+				"subtitle": "23 furnished buildings / irregular frontage and planted courts",
+				"target": [
+					-98.329044173913,
+					80.499294826087,
+					12.698192173913
+				],
+				"title": "Contour hillside neighborhood",
+				"to": [
+					-62.505375149913,
+					4.37399815008696,
+					72.389612965913
+				]
+			},
+			"path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\stills_captures/04_D08.png",
+			"sha256": "2b28e6e1c25053e24a8a5acc0cc838c243dc8a0238664ff2cd0d2b4abe51d25a"
+		},
+		{
+			"chapter": {
+				"from": [
+					8.35673367722222,
+					-162.321771922222,
+					56.9062007061111
+				],
+				"id": "D09",
+				"subtitle": "18 furnished buildings / irregular frontage and planted courts",
+				"target": [
+					-33.2573522777778,
+					-98.3001012222222,
+					5.48778061111111
+				],
+				"title": "Orchard and horticultural edge",
+				"to": [
+					-7.64868399777777,
+					-152.718521317222,
+					47.3029501011111
+				]
+			},
+			"path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\stills_captures/05_D09.png",
+			"sha256": "a557f1b0bc38785dfc3e720e00fac0343414374e3e02801be5d9fc125646845b"
+		},
+		{
+			"chapter": {
+				"from": [
+					-146.990589951846,
+					-24.0020946953846,
+					66.5252051872308
+				],
+				"id": "D10",
+				"subtitle": "13 furnished buildings / irregular frontage and planted courts",
+				"target": [
+					-187.703646153846,
+					38.6333763846154,
+					16.2850547692308
+				],
+				"title": "Forest trailhead village",
+				"to": [
+					-162.649457721846,
+					-14.6067740333846,
+					57.1298845252308
+				]
+			},
+			"path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\stills_captures/06_D10.png",
+			"sha256": "11af14c9cffd93111efa98e3de44e29412aa92055d891f19cc06061eb5fe5818"
+		},
+		{
+			"chapter": {
+				"fov_degrees": 43.7791135398094,
+				"from": [
+					18.6892700402024,
+					125.419027045568,
+					9.56881094595445
+				],
+				"id": "street_materials",
+				"subtitle": "Metric CC0 PBR maps and contextual limewash weathering",
+				"target": [
+					22.8612700148349,
+					121.31502701978,
+					10.096562
+				],
+				"title": "Street scale / plaster, slate and joinery",
+				"to": [
+					18.6892700402024,
+					125.419027045568,
+					10.0188109459544
+				]
+			},
+			"path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\stills_captures/07_street_materials.png",
+			"sha256": "89180546484521a15123ffc91ef92e094e62d8677914f40c5bd0778860181a88"
+		},
+		{
+			"chapter": {
+				"cutaway": {
+					"building_id": "Expansion_D06_Harbor_Upper_Loop_R01",
+					"expected_layer_counts": {
+						"front": 11.0,
+						"roof": 5.0,
+						"structure": 77.0,
+						"upper": 73.0
+					}
+				},
+				"fov_degrees": 33.824213663582,
+				"from": [
+					20.6592700461364,
+					126.379027033391,
+					14.796562
+				],
+				"id": "furnished_interior",
+				"subtitle": "Front cover and upper floors hidden for architectural inspection",
+				"target": [
+					26.06127,
+					118.915027,
+					7.996562
+				],
+				"title": "Rooms, furniture and circulation / local cutaway",
+				"to": [
+					19.9572700403508,
+					125.44302703773,
+					15.296562
+				]
+			},
+			"path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\stills_captures/08_furnished_interior.png",
+			"sha256": "98ba95999e0c3aead69662c695b31d5fe6651bb6aa2e7f7b02fc6ff26a37a9af"
+		},
+		{
+			"chapter": {
+				"fov_degrees": 35.6377778290456,
+				"from": [
+					-49.204799656266,
+					83.683522941246,
+					8.74636033120074
+				],
+				"id": "terrain_and_reserve",
+				"subtitle": "Graded streets, supported pads and retained natural relief",
+				"target": [
+					-50.8619944878451,
+					88.2997735074726,
+					6.265702
+				],
+				"title": "Terrain, foundations and the reserve edge",
+				"to": [
+					-49.204799656266,
+					83.683522941246,
+					9.44636033120074
+				]
+			},
+			"path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\stills_captures/09_terrain_and_reserve.png",
+			"sha256": "bd52e9e665d71613275d7f87be748c42c082a34625cbae410ee6ddb8fd4a31d4"
+		}
+	],
+	"checks": [
+		{
+			"detail": null,
+			"name": "real_render_driver",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_exists_living_town_game.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_sha_living_town_game.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "valid_glb_living_town_game.glb",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "gltf_import_living_town_game.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "scene_generated_living_town_game.glb",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 19353,
+				"expected": 19353
+			},
+			"name": "mesh_count_living_town_game.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370322491634025:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370322541965675:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370322441302375:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370322340639075:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370322390970725:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370322290307425:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370322189644125:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370322239975775:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370322139312475:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370322038649175:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370322088980825:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321988317525:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321887654225:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321937985875:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321837322575:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321736659275:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321786990925:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321686327625:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321585664325:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321635995975:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321535332675:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321434669375:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321485001025:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321384337725:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321334006075:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321233342775:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321283674425:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321183011125:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321082347825:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321132679475:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321032016175:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_exists_D06.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_sha_D06.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "valid_glb_D06.glb",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "gltf_import_D06.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "scene_generated_D06.glb",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 1404,
+				"expected": 1404
+			},
+			"name": "mesh_count_D06.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368760297958317:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368760348289963:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368760247626671:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368760146963379:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368760197295025:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368760096631733:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368759995968441:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368760046300087:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368759945636795:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368759844973503:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368759895305149:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368759794641857:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368759744310211:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368759693978565:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_exists_D07.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_sha_D07.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "valid_glb_D07.glb",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "gltf_import_D07.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "scene_generated_D07.glb",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 2411,
+				"expected": 2411
+			},
+			"name": "mesh_count_D07.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193815313156:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193865644802:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193764981510:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193664318218:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193714649864:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193613986572:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193513323280:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193563654926:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193462991634:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193362328342:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193412659988:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193311996696:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193261665050:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193211333404:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_exists_D08.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_sha_D08.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "valid_glb_D08.glb",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "gltf_import_D08.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "scene_generated_D08.glb",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 3033,
+				"expected": 3033
+			},
+			"name": "mesh_count_D08.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407651753739:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407702085389:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407601422089:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407500758789:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407551090439:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407450427139:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407349763839:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407400095489:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407299432189:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407198768889:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407249100539:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407148437239:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407098105589:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407047773939:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_exists_D09.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_sha_D09.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "valid_glb_D09.glb",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "gltf_import_D09.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "scene_generated_D09.glb",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 2252,
+				"expected": 2252
+			},
+			"name": "mesh_count_D09.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703981695486:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366704032027136:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703931363836:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703830700536:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703881032186:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703780368886:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703679705586:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703730037236:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703629373936:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703528710636:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703579042286:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703478378986:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703428047336:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703377715686:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_exists_D10.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_sha_D10.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "valid_glb_D10.glb",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "gltf_import_D10.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "scene_generated_D10.glb",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 1850,
+				"expected": 1850
+			},
+			"name": "mesh_count_D10.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366141139655903:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366141189987549:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366141089324257:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366140988660965:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366141038992611:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366140938329319:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366140837666027:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366140887997673:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366140787334381:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366140686671089:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366140737002735:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366140636339443:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366140586007797:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366140535676151:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_exists_expansion_public_realm.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_sha_expansion_public_realm.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "valid_glb_expansion_public_realm.glb",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "gltf_import_expansion_public_realm.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "scene_generated_expansion_public_realm.glb",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 2539,
+				"expected": 2539
+			},
+			"name": "mesh_count_expansion_public_realm.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846733062059:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846783393709:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846682730409:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846632398759:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846531735459:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846582067109:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846481403809:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846380740509:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846431072159:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846330408859:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846229745559:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846280077209:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846179413909:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_exists_replacement_terrain.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_sha_replacement_terrain.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "valid_glb_replacement_terrain.glb",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "gltf_import_replacement_terrain.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "scene_generated_replacement_terrain.glb",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 14,
+				"expected": 14
+			},
+			"name": "mesh_count_replacement_terrain.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365731054157950:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365731104489596:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365731003826304:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730903163012:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730953494658:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730852831366:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730752168074:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730802499720:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730701836428:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730601173136:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730651504782:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730550841490:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730450178198:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730500509844:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730399846552:color",
+			"passed": true
+		},
+		{
+			"detail": {
+				"found": 248,
+				"requested": 248
+			},
+			"name": "all_requested_baseline_clearings_found",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "framebuffer_0",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "capture_saved_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "framebuffer_1",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "capture_saved_1",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "framebuffer_2",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "capture_saved_2",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "framebuffer_3",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "capture_saved_3",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "framebuffer_4",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "capture_saved_4",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "framebuffer_5",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "capture_saved_5",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "framebuffer_6",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "capture_saved_6",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 11,
+				"expected": 11.0
+			},
+			"name": "native_cutaway_front",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 5,
+				"expected": 5.0
+			},
+			"name": "native_cutaway_roof",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 73,
+				"expected": 73.0
+			},
+			"name": "native_cutaway_upper",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 77,
+				"expected": 77.0
+			},
+			"name": "native_cutaway_structure",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "framebuffer_7",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "capture_saved_7",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "framebuffer_8",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "capture_saved_8",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "input_unchanged_living_town_game.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "input_unchanged_D06.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "input_unchanged_D07.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "input_unchanged_D08.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "input_unchanged_D09.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "input_unchanged_D10.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "input_unchanged_expansion_public_realm.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "input_unchanged_replacement_terrain.glb",
+			"passed": true
+		}
+	],
+	"config_sha256": "4149f67954932f1ef6003b2141949e566fb4e2843b792a3bddf9be38742efdc3",
+	"consumer_source_sha256": "4a9775ce30d63f0e99a6631932811a32717971bc848154196ec7e7c108cdad9c",
+	"cutaway_layers": {
+		"front": 11,
+		"roof": 5,
+		"structure": 77,
+		"upper": 73
+	},
+	"display_server": "Windows",
+	"engine_version": {
+		"build": "official",
+		"hash": "71f334935c000924d403448e698df4441130df18",
+		"hex": 263682,
+		"major": 4,
+		"minor": 6,
+		"patch": 2,
+		"status": "stable",
+		"string": "4.6.2-stable (official)",
+		"timestamp": 0
+	},
+	"failure_count": 0,
+	"hidden_baseline_nodes": [
+		"Bocage_Field_Walls_and_Hedges_Granite",
+		"Bocage_Field_Walls_and_Hedges_Stone",
+		"Layered_Street_and_Orchard_Planting_Leaf",
+		"Layered_Street_and_Orchard_Planting_LeafDark",
+		"Layered_Street_and_Orchard_Planting_LeafLight",
+		"Layered_Street_and_Orchard_Planting_Trunk",
+		"Atlantic_Terrain_Grass",
+		"Reserve_Ferns_Heather_and_Fallen_Wood_BloomCream",
+		"Reserve_Ferns_Heather_and_Fallen_Wood_BloomPink",
+		"Reserve_Ferns_Heather_and_Fallen_Wood_LeafDark",
+		"Reserve_Ferns_Heather_and_Fallen_Wood_LeafLight",
+		"Reserve_Ferns_Heather_and_Fallen_Wood_LeafSilver",
+		"Reserve_Ferns_Heather_and_Fallen_Wood_Trunk",
+		"Reserve_Granite_Outcrops_and_Talus_NaturalRock",
+		"Reserve_Tree_2979_willow_0",
+		"Reserve_Tree_2979_willow_1",
+		"Reserve_Tree_3208_birch_0",
+		"Reserve_Tree_3208_birch_1",
+		"Reserve_Tree_3208_birch_2",
+		"Reserve_Tree_3208_birch_3",
+		"Reserve_Tree_3208_birch_4",
+		"Reserve_Tree_3211_birch_0",
+		"Reserve_Tree_3211_birch_1",
+		"Reserve_Tree_3211_birch_2",
+		"Reserve_Tree_3211_birch_3",
+		"Reserve_Tree_3211_birch_4",
+		"Reserve_Tree_3214_oak_0",
+		"Reserve_Tree_3214_oak_1",
+		"Reserve_Tree_3214_oak_2",
+		"Reserve_Tree_3214_oak_3",
+		"Reserve_Tree_3217_birch_0",
+		"Reserve_Tree_3217_birch_1",
+		"Reserve_Tree_3217_birch_2",
+		"Reserve_Tree_3217_birch_3",
+		"Reserve_Tree_3217_birch_4",
+		"Reserve_Tree_3221_rowan_0",
+		"Reserve_Tree_3221_rowan_1",
+		"Reserve_Tree_3221_rowan_2",
+		"Reserve_Tree_3221_rowan_3",
+		"Reserve_Tree_3224_oak_0",
+		"Reserve_Tree_3224_oak_1",
+		"Reserve_Tree_3224_oak_2",
+		"Reserve_Tree_3224_oak_3",
+		"Reserve_Tree_3225_rowan_0",
+		"Reserve_Tree_3225_rowan_1",
+		"Reserve_Tree_3225_rowan_2",
+		"Reserve_Tree_3225_rowan_3",
+		"Reserve_Tree_3231_birch_0",
+		"Reserve_Tree_3231_birch_1",
+		"Reserve_Tree_3231_birch_2",
+		"Reserve_Tree_3231_birch_3",
+		"Reserve_Tree_3231_birch_4",
+		"Reserve_Tree_3238_oak_0",
+		"Reserve_Tree_3238_oak_1",
+		"Reserve_Tree_3238_oak_2",
+		"Reserve_Tree_3238_oak_3",
+		"Reserve_Tree_3239_maritime_pine_0",
+		"Reserve_Tree_3239_maritime_pine_1",
+		"Reserve_Tree_3239_maritime_pine_2",
+		"Reserve_Tree_3242_oak_0",
+		"Reserve_Tree_3242_oak_1",
+		"Reserve_Tree_3242_oak_2",
+		"Reserve_Tree_3242_oak_3",
+		"Reserve_Tree_3252_birch_0",
+		"Reserve_Tree_3252_birch_1",
+		"Reserve_Tree_3252_birch_2",
+		"Reserve_Tree_3252_birch_3",
+		"Reserve_Tree_3252_birch_4",
+		"Reserve_Tree_3263_oak_0",
+		"Reserve_Tree_3263_oak_1",
+		"Reserve_Tree_3263_oak_2",
+		"Reserve_Tree_3263_oak_3",
+		"Reserve_Tree_3264_birch_0",
+		"Reserve_Tree_3264_birch_1",
+		"Reserve_Tree_3264_birch_2",
+		"Reserve_Tree_3264_birch_3",
+		"Reserve_Tree_3264_birch_4",
+		"Reserve_Tree_3265_oak_0",
+		"Reserve_Tree_3265_oak_1",
+		"Reserve_Tree_3265_oak_2",
+		"Reserve_Tree_3265_oak_3",
+		"Reserve_Tree_3276_maritime_pine_0",
+		"Reserve_Tree_3276_maritime_pine_1",
+		"Reserve_Tree_3276_maritime_pine_2",
+		"Reserve_Tree_3285_oak_0",
+		"Reserve_Tree_3285_oak_1",
+		"Reserve_Tree_3285_oak_2",
+		"Reserve_Tree_3285_oak_3",
+		"Reserve_Tree_3286_rowan_0",
+		"Reserve_Tree_3286_rowan_1",
+		"Reserve_Tree_3286_rowan_2",
+		"Reserve_Tree_3286_rowan_3",
+		"Reserve_Tree_3288_birch_0",
+		"Reserve_Tree_3288_birch_1",
+		"Reserve_Tree_3288_birch_2",
+		"Reserve_Tree_3288_birch_3",
+		"Reserve_Tree_3288_birch_4",
+		"Reserve_Tree_3289_maritime_pine_0",
+		"Reserve_Tree_3289_maritime_pine_1",
+		"Reserve_Tree_3289_maritime_pine_2",
+		"Reserve_Tree_3290_rowan_0",
+		"Reserve_Tree_3290_rowan_1",
+		"Reserve_Tree_3290_rowan_2",
+		"Reserve_Tree_3290_rowan_3",
+		"Reserve_Tree_3292_oak_0",
+		"Reserve_Tree_3292_oak_1",
+		"Reserve_Tree_3292_oak_2",
+		"Reserve_Tree_3292_oak_3",
+		"Reserve_Tree_3296_maritime_pine_0",
+		"Reserve_Tree_3296_maritime_pine_1",
+		"Reserve_Tree_3296_maritime_pine_2",
+		"Reserve_Tree_3300_oak_0",
+		"Reserve_Tree_3300_oak_1",
+		"Reserve_Tree_3300_oak_2",
+		"Reserve_Tree_3300_oak_3",
+		"Reserve_Tree_3304_birch_0",
+		"Reserve_Tree_3304_birch_1",
+		"Reserve_Tree_3304_birch_2",
+		"Reserve_Tree_3304_birch_3",
+		"Reserve_Tree_3304_birch_4",
+		"Reserve_Tree_3311_birch_0",
+		"Reserve_Tree_3311_birch_1",
+		"Reserve_Tree_3311_birch_2",
+		"Reserve_Tree_3311_birch_3",
+		"Reserve_Tree_3311_birch_4",
+		"Reserve_Tree_3314_maritime_pine_0",
+		"Reserve_Tree_3314_maritime_pine_1",
+		"Reserve_Tree_3314_maritime_pine_2",
+		"Reserve_Tree_3317_oak_0",
+		"Reserve_Tree_3317_oak_1",
+		"Reserve_Tree_3317_oak_2",
+		"Reserve_Tree_3317_oak_3",
+		"Reserve_Tree_3326_oak_0",
+		"Reserve_Tree_3326_oak_1",
+		"Reserve_Tree_3326_oak_2",
+		"Reserve_Tree_3326_oak_3",
+		"Reserve_Tree_3337_rowan_0",
+		"Reserve_Tree_3337_rowan_1",
+		"Reserve_Tree_3337_rowan_2",
+		"Reserve_Tree_3337_rowan_3",
+		"Reserve_Tree_3338_maritime_pine_0",
+		"Reserve_Tree_3338_maritime_pine_1",
+		"Reserve_Tree_3338_maritime_pine_2",
+		"Reserve_Tree_3339_rowan_0",
+		"Reserve_Tree_3339_rowan_1",
+		"Reserve_Tree_3339_rowan_2",
+		"Reserve_Tree_3339_rowan_3",
+		"Reserve_Tree_3354_maritime_pine_0",
+		"Reserve_Tree_3354_maritime_pine_1",
+		"Reserve_Tree_3354_maritime_pine_2",
+		"Reserve_Tree_3358_oak_0",
+		"Reserve_Tree_3358_oak_1",
+		"Reserve_Tree_3358_oak_2",
+		"Reserve_Tree_3358_oak_3",
+		"Reserve_Tree_3359_birch_0",
+		"Reserve_Tree_3359_birch_1",
+		"Reserve_Tree_3359_birch_2",
+		"Reserve_Tree_3359_birch_3",
+		"Reserve_Tree_3359_birch_4",
+		"Reserve_Tree_3361_oak_0",
+		"Reserve_Tree_3361_oak_1",
+		"Reserve_Tree_3361_oak_2",
+		"Reserve_Tree_3361_oak_3",
+		"Reserve_Tree_3369_maritime_pine_0",
+		"Reserve_Tree_3369_maritime_pine_1",
+		"Reserve_Tree_3369_maritime_pine_2",
+		"Reserve_Tree_3370_maritime_pine_0",
+		"Reserve_Tree_3370_maritime_pine_1",
+		"Reserve_Tree_3370_maritime_pine_2",
+		"Reserve_Tree_3380_oak_0",
+		"Reserve_Tree_3380_oak_1",
+		"Reserve_Tree_3380_oak_2",
+		"Reserve_Tree_3380_oak_3",
+		"Reserve_Tree_3383_maritime_pine_0",
+		"Reserve_Tree_3383_maritime_pine_1",
+		"Reserve_Tree_3383_maritime_pine_2",
+		"Reserve_Tree_3392_oak_0",
+		"Reserve_Tree_3392_oak_1",
+		"Reserve_Tree_3392_oak_2",
+		"Reserve_Tree_3392_oak_3",
+		"Reserve_Tree_3393_rowan_0",
+		"Reserve_Tree_3393_rowan_1",
+		"Reserve_Tree_3393_rowan_2",
+		"Reserve_Tree_3393_rowan_3",
+		"Reserve_Tree_3403_rowan_0",
+		"Reserve_Tree_3403_rowan_1",
+		"Reserve_Tree_3403_rowan_2",
+		"Reserve_Tree_3403_rowan_3",
+		"Reserve_Tree_3409_oak_0",
+		"Reserve_Tree_3409_oak_1",
+		"Reserve_Tree_3409_oak_2",
+		"Reserve_Tree_3409_oak_3",
+		"Reserve_Tree_3413_birch_0",
+		"Reserve_Tree_3413_birch_1",
+		"Reserve_Tree_3413_birch_2",
+		"Reserve_Tree_3413_birch_3",
+		"Reserve_Tree_3413_birch_4",
+		"Reserve_Tree_3414_maritime_pine_0",
+		"Reserve_Tree_3414_maritime_pine_1",
+		"Reserve_Tree_3414_maritime_pine_2",
+		"Reserve_Tree_3416_rowan_0",
+		"Reserve_Tree_3416_rowan_1",
+		"Reserve_Tree_3416_rowan_2",
+		"Reserve_Tree_3416_rowan_3",
+		"Reserve_Tree_3418_rowan_0",
+		"Reserve_Tree_3418_rowan_1",
+		"Reserve_Tree_3418_rowan_2",
+		"Reserve_Tree_3418_rowan_3",
+		"Reserve_Tree_3424_birch_0",
+		"Reserve_Tree_3424_birch_1",
+		"Reserve_Tree_3424_birch_2",
+		"Reserve_Tree_3424_birch_3",
+		"Reserve_Tree_3424_birch_4",
+		"Reserve_Tree_3442_oak_0",
+		"Reserve_Tree_3442_oak_1",
+		"Reserve_Tree_3442_oak_2",
+		"Reserve_Tree_3442_oak_3",
+		"Reserve_Tree_3462_oak_0",
+		"Reserve_Tree_3462_oak_1",
+		"Reserve_Tree_3462_oak_2",
+		"Reserve_Tree_3462_oak_3",
+		"Reserve_Tree_3465_birch_0",
+		"Reserve_Tree_3465_birch_1",
+		"Reserve_Tree_3465_birch_2",
+		"Reserve_Tree_3465_birch_3",
+		"Reserve_Tree_3465_birch_4",
+		"Reserve_Tree_3473_maritime_pine_0",
+		"Reserve_Tree_3473_maritime_pine_1",
+		"Reserve_Tree_3473_maritime_pine_2",
+		"Reserve_Tree_3484_maritime_pine_0",
+		"Reserve_Tree_3484_maritime_pine_1",
+		"Reserve_Tree_3484_maritime_pine_2",
+		"Reserve_Tree_3488_maritime_pine_0",
+		"Reserve_Tree_3488_maritime_pine_1",
+		"Reserve_Tree_3488_maritime_pine_2",
+		"Reserve_Tree_3495_birch_0",
+		"Reserve_Tree_3495_birch_1",
+		"Reserve_Tree_3495_birch_2",
+		"Reserve_Tree_3495_birch_3",
+		"Reserve_Tree_3495_birch_4",
+		"Reserve_Tree_3496_oak_0",
+		"Reserve_Tree_3496_oak_1",
+		"Reserve_Tree_3496_oak_2",
+		"Reserve_Tree_3496_oak_3",
+		"Reserve_Tree_3498_rowan_0",
+		"Reserve_Tree_3498_rowan_1",
+		"Reserve_Tree_3498_rowan_2",
+		"Reserve_Tree_3498_rowan_3"
+	],
+	"imported_meshes": 32856,
+	"movie_mode": false,
+	"project_sha256": "e071b36328721a24d5c760f8e5f6aacc5c9d98e7d6bb9590b007a704d5673b7f",
+	"schema": "living_town.territory_consumer.v1",
+	"scope": "Runtime imports, explicit baseline clearing and actual framebuffer capture. MovieWriter is offline capture; no real-time performance, game physics or navigation claim.",
+	"script_sha256": "4a9775ce30d63f0e99a6631932811a32717971bc848154196ec7e7c108cdad9c",
+	"status": "PASS",
+	"tour_frames": 0
+}

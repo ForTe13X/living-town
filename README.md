@@ -16,9 +16,13 @@
 [十分钟配音导览与下载](docs/town_walkthrough/README.md) · [运行与空间契约](docs/town_bridge/README.md)。
 3D 模型通过校验和验证的 Release 下载，未放入普通 Git 历史。Windows 使用 `./tools/run-town3d.ps1`；原像素地图使用 `./tools/run-town3d.ps1 -Legacy`。
 
+[![复合城镇扩展：五个街区、室内与地形](docs/media/territory-expansion-tour.gif)](https://github.com/ForTe13X/living-town/releases/download/town-territory-2026-10-20/expanded_town_architectural_tour.mp4)
+
+新增六分钟资产导览：实际 Godot 导入画面、Edge TTS 配音与字幕；GIF 为 20 秒节选。此扩展是 Blender / glTF 资产版本，现有居民玩法仍使用原滨海街区。
+
 ## 最近更新
 
-- 新增借鉴 Infinigen 的全镇生成方案与确定性配方编译器，连接现有地形、49 栋城镇建筑与 21 栋保护区建筑；当前完成输入与生成配方编译，精细资产的全镇适配仍待实现。[方案、命令与阶段](docs/INFINIGEN_TOWN_GENERATION.md)。
+- 新增可实际生成的复合城镇扩展：五个相连街区、81 栋新建筑、153 层与 929 个带家具的房间分区；结合地形道路、细叶植被、CC0 PBR 与实际运行的 Infinigen 花盆工厂，输出 Blender 和分区 GLB。[规划、模型、导览与验证](docs/TERRITORY_EXPANSION.md)。
 
 - 新增按概念图重建的咖啡馆样区：重做家具与细叶植被，采用可追溯的 CC0 PBR 材质；三栋临街立面增加可见的石灰洗墙层次、窗台雨痕与浅表起伏，并适配 PixelArtistry 的 MIT 工作流；本机模型纹理试验中断，全镇迁移仍待完成。[样区、近景与验证](docs/CONCEPT_REFINEMENT_PILOT.md)。
 - Blender 美术源新增林地保护区与露营服务区：重新编排家具，加入带完整室内的拖车、商店、浴室、公厕、餐车，以及山径、桥梁和跑步环线。[保护区资产版本与验证](docs/RESERVE_EDITION.md)；现有实机导览仍展示已接入居民生活的滨海街区。

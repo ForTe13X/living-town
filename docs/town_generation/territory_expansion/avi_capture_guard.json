@@ -1,0 +1,57 @@
+{
+  "schema": "living_town.recorder_guard.v1",
+  "status": "PASS",
+  "command": [
+    "C:/Users/yp/AppData/Local/Programs/Godot/4.6.2-stable/Godot_v4.6.2-stable_win64.exe",
+    "--path",
+    "tools/town_generation/godot_viewer",
+    "--rendering-method",
+    "gl_compatibility",
+    "--fixed-fps",
+    "18",
+    "--disable-vsync",
+    "--windowed",
+    "--resolution",
+    "1280x800",
+    "--write-movie",
+    "D:/Dev/2026-10-07/LivingTown_Territory_v6_capture.avi",
+    "--",
+    "--config=C:/Users/yp/.codex/worktrees/114e/living-town/build/town_generation/territory_v6/inspection/tour.json",
+    "--movie"
+  ],
+  "pid": 1456,
+  "exit_code": 0,
+  "errors": [],
+  "elapsed_seconds": 829.953,
+  "config": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\tour.json",
+    "bytes": 16586,
+    "sha256": "1abaa223fb536b59b2c6067a826b71e2ec82d6faeaba814d5f67172e778da577"
+  },
+  "sources": {
+    "project": {
+      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\godot_viewer\\project.godot",
+      "bytes": 728,
+      "sha256": "e071b36328721a24d5c760f8e5f6aacc5c9d98e7d6bb9590b007a704d5673b7f"
+    },
+    "script": {
+      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\godot_viewer\\main.gd",
+      "bytes": 14132,
+      "sha256": "4a9775ce30d63f0e99a6631932811a32717971bc848154196ec7e7c108cdad9c"
+    }
+  },
+  "raw_path": "D:\\Dev\\2026-10-07\\LivingTown_Territory_v6_capture.avi",
+  "maximum_raw_bytes_observed": 1178809764,
+  "limits": {
+    "raw_bytes": 3900000000,
+    "disk_reserve_bytes": 2000000000,
+    "overall_seconds": 7200,
+    "post_pass_shutdown_seconds": 15.0
+  },
+  "scope": "Process/size/receipt guard only. Complete raw video timing and decoding require separate media verification.",
+  "consumer_report": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\tour_report.json",
+    "bytes": 28464,
+    "sha256": "a9757fd2f193855d76c04ac557f89281db19a4eac8aa47387ef2ed1b54369c00"
+  }
+}

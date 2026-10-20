@@ -1,0 +1,5231 @@
+{
+  "schema": "living_town.expansion_native_review.v1",
+  "status": "PASS",
+  "audit_source_sha256": "26a024b0fb1005e3513b2059e9b89a2eeace76301749f1587d0381c31118c38a",
+  "issues": [],
+  "native_sha256": "1d0434d87063165a5e9e04312a88d13426375b9a3f80d7ba288bfdd164f18a82",
+  "native_unchanged": true,
+  "objects": 32922,
+  "expansion_mesh_objects": 13489,
+  "expansion_unique_meshes": 11309,
+  "shared_mesh_references": 2180,
+  "building_ownership": {
+    "checked_objects": 10950,
+    "layer_counts": {
+      "front": 740,
+      "structure": 5647,
+      "roof": 405,
+      "upper": 4158
+    },
+    "failures": []
+  },
+  "packed_images": 55,
+  "unpacked_images": [],
+  "terrain_contact_tolerance_m": 0.15,
+  "pad_contacts": [
+    {
+      "id": "Expansion_D06_Harbor_Back_Loop_L04",
+      "max_actual_mesh_pad_error_m": 0.00018262792968748442,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D06_Harbor_Back_Loop_R03",
+      "max_actual_mesh_pad_error_m": 0.004411348632812562,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D06_Harbor_Back_Loop_R07",
+      "max_actual_mesh_pad_error_m": 2.2532226562788082e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D06_Harbor_Upper_Loop_L04",
+      "max_actual_mesh_pad_error_m": 0.00015597265625011403,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D06_Harbor_Upper_Loop_L07",
+      "max_actual_mesh_pad_error_m": 3.266894531250841e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D06_Harbor_Upper_Loop_R01",
+      "max_actual_mesh_pad_error_m": 1.9641601562092603e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D06_Harbor_Upper_Loop_R02",
+      "max_actual_mesh_pad_error_m": 6.139550781281145e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D06_Harbor_Upper_Loop_R03",
+      "max_actual_mesh_pad_error_m": 7.197460937469202e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D06_North_Harbor_Road_L07",
+      "max_actual_mesh_pad_error_m": 1.631640625010533e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D06_North_Harbor_Road_R04",
+      "max_actual_mesh_pad_error_m": 1.1870117187839924e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D07_West_Market_Street_L09",
+      "max_actual_mesh_pad_error_m": 8.607421875694854e-06,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D07_West_Market_Street_R02",
+      "max_actual_mesh_pad_error_m": 3.333105468783515e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D07_West_Market_Street_R06",
+      "max_actual_mesh_pad_error_m": 3.324414062433334e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D07_West_Market_Street_R09",
+      "max_actual_mesh_pad_error_m": 1.876660156163723e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D07_West_Workyard_Lane_L01",
+      "max_actual_mesh_pad_error_m": 1.1083984375659384e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D07_West_Workyard_Lane_L05",
+      "max_actual_mesh_pad_error_m": 3.8007812506180016e-06,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D07_West_Workyard_Lane_L06",
+      "max_actual_mesh_pad_error_m": 1.9267578128534524e-06,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D07_West_Workyard_Lane_R02",
+      "max_actual_mesh_pad_error_m": 1.1083984375659384e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D07_West_Workyard_Lane_R03",
+      "max_actual_mesh_pad_error_m": 7.323925781221874e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D07_West_Workyard_Lane_R04",
+      "max_actual_mesh_pad_error_m": 0.00011539648437519645,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D07_West_Workyard_Lane_R05",
+      "max_actual_mesh_pad_error_m": 3.0449218755279617e-06,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D07_West_Workyard_Lane_R06",
+      "max_actual_mesh_pad_error_m": 0.00010488476562464655,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D07_West_Workyard_Lane_R07",
+      "max_actual_mesh_pad_error_m": 1.7185546875353452e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D07_Workshop_Court_Loop_L03",
+      "max_actual_mesh_pad_error_m": 5.157617187467878e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D07_Workshop_Court_Loop_L05",
+      "max_actual_mesh_pad_error_m": 1.3385742187566052e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D07_Workshop_Court_Loop_R04",
+      "max_actual_mesh_pad_error_m": 0.00022102539062540671,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D07_Workshop_Court_Loop_R05",
+      "max_actual_mesh_pad_error_m": 0.00015534667968708504,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D08_Hillside_Contour_Road_L02",
+      "max_actual_mesh_pad_error_m": 0.0006979843749999048,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D08_Hillside_Contour_Road_L03",
+      "max_actual_mesh_pad_error_m": 0.00017892089843662973,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D08_Hillside_Contour_Road_L04",
+      "max_actual_mesh_pad_error_m": 0.0001622871093758249,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D08_Hillside_Contour_Road_L05",
+      "max_actual_mesh_pad_error_m": 0.00038130664062485664,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D08_Hillside_Contour_Road_L06",
+      "max_actual_mesh_pad_error_m": 0.00014450878906302478,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D08_Hillside_Contour_Road_L08",
+      "max_actual_mesh_pad_error_m": 1.6405273438380163e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D08_Hillside_Contour_Road_L09",
+      "max_actual_mesh_pad_error_m": 8.17089843785368e-06,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D08_Hillside_Contour_Road_L12",
+      "max_actual_mesh_pad_error_m": 1.8954101562940195e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D08_Hillside_Contour_Road_R08",
+      "max_actual_mesh_pad_error_m": 2.1806640617683115e-06,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D08_Hillside_Contour_Road_R09",
+      "max_actual_mesh_pad_error_m": 7.08789062464632e-06,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D08_Hillside_Contour_Road_R10",
+      "max_actual_mesh_pad_error_m": 7.08789062464632e-06,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D08_Hillside_Contour_Road_R11",
+      "max_actual_mesh_pad_error_m": 2.09277343756753e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D08_Hillside_Contour_Road_R12",
+      "max_actual_mesh_pad_error_m": 9.393554687875394e-06,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D08_Hillside_Lower_Loop_L02",
+      "max_actual_mesh_pad_error_m": 0.0007885830078127043,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D08_Hillside_Lower_Loop_L06",
+      "max_actual_mesh_pad_error_m": 3.5576171875106866e-06,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D08_Hillside_Lower_Loop_L08",
+      "max_actual_mesh_pad_error_m": 0.0003876250000001136,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D08_Hillside_Lower_Loop_R01",
+      "max_actual_mesh_pad_error_m": 0.00011037792968782156,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D08_Hillside_Lower_Loop_R03",
+      "max_actual_mesh_pad_error_m": 7.844726562566962e-06,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D08_Hillside_Lower_Loop_R05",
+      "max_actual_mesh_pad_error_m": 0.0005491386718752267,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D08_Hillside_Lower_Loop_R06",
+      "max_actual_mesh_pad_error_m": 0.0002995908203118347,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D08_Hillside_Market_Link_L03",
+      "max_actual_mesh_pad_error_m": 0.0001698828125000773,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D08_Hillside_Market_Link_L04",
+      "max_actual_mesh_pad_error_m": 6.362304687534959e-06,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D08_Hillside_Market_Link_R04",
+      "max_actual_mesh_pad_error_m": 0.00020726074218746504,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D09_Orchard_Cross_Lane_L00",
+      "max_actual_mesh_pad_error_m": 1.2038085937415843e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D09_Orchard_Cross_Lane_L01",
+      "max_actual_mesh_pad_error_m": 2.144238281243105e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D09_Orchard_Cross_Lane_L02",
+      "max_actual_mesh_pad_error_m": 2.1791015624827992e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D09_Orchard_Cross_Lane_L03",
+      "max_actual_mesh_pad_error_m": 1.589941406243689e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D09_Orchard_Lane_Loop_L06",
+      "max_actual_mesh_pad_error_m": 3.3410156250024414e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D09_Orchard_Lane_Loop_L08",
+      "max_actual_mesh_pad_error_m": 1.3773437499864372e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D09_Orchard_Lane_Loop_L10",
+      "max_actual_mesh_pad_error_m": 2.0152343749968438e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D09_Orchard_Lane_Loop_L15",
+      "max_actual_mesh_pad_error_m": 0.000203216796875072,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D09_Orchard_Lane_Loop_L17",
+      "max_actual_mesh_pad_error_m": 0.00017895019531266598,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D09_Orchard_Lane_Loop_R00",
+      "max_actual_mesh_pad_error_m": 0.0009480068359373206,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D09_Orchard_Lane_Loop_R04",
+      "max_actual_mesh_pad_error_m": 1.5898437499828333e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D09_Orchard_Lane_Loop_R05",
+      "max_actual_mesh_pad_error_m": 1.5898437499828333e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D09_Orchard_Lane_Loop_R06",
+      "max_actual_mesh_pad_error_m": 1.9222656249873182e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D09_Orchard_Lane_Loop_R07",
+      "max_actual_mesh_pad_error_m": 2.2590820312640147e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D09_Orchard_Lane_Loop_R08",
+      "max_actual_mesh_pad_error_m": 1.8980468750040558e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D09_Orchard_Lane_Loop_R09",
+      "max_actual_mesh_pad_error_m": 2.023339843748584e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D09_Orchard_Lane_Loop_R10",
+      "max_actual_mesh_pad_error_m": 2.0152343749968438e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D09_Orchard_Lane_Loop_R12",
+      "max_actual_mesh_pad_error_m": 0.00026923242187504304,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D10_Forest_Edge_Link_L00",
+      "max_actual_mesh_pad_error_m": 9.143652343723829e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D10_Forest_Edge_Link_L01",
+      "max_actual_mesh_pad_error_m": 0.00017221972656322748,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D10_Forest_Edge_Link_L02",
+      "max_actual_mesh_pad_error_m": 6.68066406248613e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D10_Forest_Edge_Link_L09",
+      "max_actual_mesh_pad_error_m": 5.33642578126603e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D10_Forest_Edge_Link_R00",
+      "max_actual_mesh_pad_error_m": 3.063378906276171e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D10_Forest_Edge_Link_R01",
+      "max_actual_mesh_pad_error_m": 1.9061523437002847e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D10_Forest_Edge_Link_R03",
+      "max_actual_mesh_pad_error_m": 6.143554687199071e-06,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D10_Forest_Edge_Link_R08",
+      "max_actual_mesh_pad_error_m": 4.985351562680762e-06,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D10_Forest_Edge_Link_R09",
+      "max_actual_mesh_pad_error_m": 0.0001716132812497051,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D10_Forest_Edge_Link_R10",
+      "max_actual_mesh_pad_error_m": 0.00015602246093671113,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D10_Trailhead_Village_Loop_L04",
+      "max_actual_mesh_pad_error_m": 2.569238281324715e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D10_Trailhead_Village_Loop_R00",
+      "max_actual_mesh_pad_error_m": 1.580664062572623e-05,
+      "ray_misses": 0
+    },
+    {
+      "id": "Expansion_D10_Trailhead_Village_Loop_R04",
+      "max_actual_mesh_pad_error_m": 9.51464843801375e-06,
+      "ray_misses": 0
+    }
+  ],
+  "road_contacts": [
+    {
+      "id": "North_Harbor_Road",
+      "max_actual_mesh_profile_error_m": 0.010154511718750037,
+      "ray_misses": 0
+    },
+    {
+      "id": "Harbor_Back_Loop",
+      "max_actual_mesh_profile_error_m": 0.022773603515624963,
+      "ray_misses": 0
+    },
+    {
+      "id": "Harbor_Cross_Mews",
+      "max_actual_mesh_profile_error_m": 0.01177320410156213,
+      "ray_misses": 0
+    },
+    {
+      "id": "Harbor_Upper_Loop",
+      "max_actual_mesh_profile_error_m": 0.015681033203124528,
+      "ray_misses": 0
+    },
+    {
+      "id": "Hillside_Contour_Road",
+      "max_actual_mesh_profile_error_m": 0.011930829101562068,
+      "ray_misses": 0
+    },
+    {
+      "id": "Hillside_Lower_Loop",
+      "max_actual_mesh_profile_error_m": 0.006378344726562624,
+      "ray_misses": 0
+    },
+    {
+      "id": "Hillside_Market_Link",
+      "max_actual_mesh_profile_error_m": 0.005499106445312485,
+      "ray_misses": 0
+    },
+    {
+      "id": "West_Market_Street",
+      "max_actual_mesh_profile_error_m": 0.028622536132812293,
+      "ray_misses": 0
+    },
+    {
+      "id": "Workshop_Court_Loop",
+      "max_actual_mesh_profile_error_m": 0.009496093750000156,
+      "ray_misses": 0
+    },
+    {
+      "id": "West_Workyard_Lane",
+      "max_actual_mesh_profile_error_m": 0.009439071289062184,
+      "ray_misses": 0
+    },
+    {
+      "id": "Trailhead_Village_Loop",
+      "max_actual_mesh_profile_error_m": 0.02513188964843671,
+      "ray_misses": 0
+    },
+    {
+      "id": "Forest_Edge_Link",
+      "max_actual_mesh_profile_error_m": 0.015777964843749714,
+      "ray_misses": 0
+    },
+    {
+      "id": "Orchard_Gateway",
+      "max_actual_mesh_profile_error_m": 0.016685782226562473,
+      "ray_misses": 0
+    },
+    {
+      "id": "Orchard_Lane_Loop",
+      "max_actual_mesh_profile_error_m": 0.007353925781250048,
+      "ray_misses": 0
+    },
+    {
+      "id": "Orchard_Cross_Lane",
+      "max_actual_mesh_profile_error_m": 0.0051166318359374685,
+      "ray_misses": 0
+    }
+  ],
+  "built_quay_contacts": [
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        31.0,
+        54.0
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        32.809646904999994,
+        51.88874136
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        32.68038641,
+        52.039545544999996
+      ],
+      "actual_z_m": 1.615020751953125
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        32.551125915,
+        52.190349735
+      ],
+      "actual_z_m": 1.615020751953125
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        32.426578045,
+        52.335655855
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        32.3619478,
+        52.41105795
+      ],
+      "actual_z_m": 1.615020751953125
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        32.29260493,
+        52.491958115
+      ],
+      "actual_z_m": 1.6150360107421875
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        32.163344435,
+        52.642762305
+      ],
+      "actual_z_m": 1.6150360107421875
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        32.034083945,
+        52.793566495
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        31.904823450000002,
+        52.944370684999996
+      ],
+      "actual_z_m": 1.614990234375
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        31.775562955,
+        53.095174875
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        31.646302465,
+        53.245979059999996
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        31.51704197,
+        53.396783245
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        31.387781475,
+        53.547587435
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        31.258520985,
+        53.698391625
+      ],
+      "actual_z_m": 1.614990234375
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        31.12926049,
+        53.849195815
+      ],
+      "actual_z_m": 1.615020751953125
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        31.03231512,
+        53.962298955
+      ],
+      "actual_z_m": 1.614990234375
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        33.6173415,
+        52.58105066
+      ],
+      "actual_z_m": 1.615020751953125
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        33.48808086,
+        52.73185472
+      ],
+      "actual_z_m": 1.614990234375
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        33.358820214999994,
+        52.88265878
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        33.2342722,
+        53.027964775
+      ],
+      "actual_z_m": 1.614990234375
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        33.16964188,
+        53.103366805
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        33.10029893,
+        53.1842669
+      ],
+      "actual_z_m": 1.614990234375
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        32.971038285000006,
+        53.335070959999996
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        32.841777640000004,
+        53.48587502
+      ],
+      "actual_z_m": 1.614990234375
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        32.712517,
+        53.63667908
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        32.583256355,
+        53.78748314
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        32.45399571,
+        53.9382872
+      ],
+      "actual_z_m": 1.614990234375
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        32.32473507,
+        54.089091260000004
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        32.195474425,
+        54.23989532
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        32.06621378,
+        54.39069938
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        31.93695314,
+        54.54150344
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        31.84000766,
+        54.654606485
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        31.77537734,
+        54.730008514999994
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        31.67843186,
+        54.84311156
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        31.549171219999998,
+        54.99391562
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        34.425034,
+        53.27335816
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        34.29577336,
+        53.42416222
+      ],
+      "actual_z_m": 1.614990234375
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        34.166512714999996,
+        53.57496628
+      ],
+      "actual_z_m": 1.614990234375
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        34.0419647,
+        53.720272275
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        33.97733438,
+        53.795674305000006
+      ],
+      "actual_z_m": 1.614990234375
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        33.907991429999996,
+        53.8765744
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        33.77873078499999,
+        54.02737846
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        33.64947014,
+        54.17818252
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        33.5202095,
+        54.32898658
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        33.390948855000005,
+        54.47979064
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        33.26168821,
+        54.6305947
+      ],
+      "actual_z_m": 1.615020751953125
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        33.132427570000004,
+        54.78139876
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        33.003166925,
+        54.93220282
+      ],
+      "actual_z_m": 1.615020751953125
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        35.232726,
+        53.96566616
+      ],
+      "actual_z_m": 1.614990234375
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        35.10346536,
+        54.11647022
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        34.974204715,
+        54.26727428
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        34.8496567,
+        54.412580274999996
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        34.78502638,
+        54.487982305
+      ],
+      "actual_z_m": 1.614990234375
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        34.71568343,
+        54.5688824
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        34.586422784999996,
+        54.71968646
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        34.45716214,
+        54.870490520000004
+      ],
+      "actual_z_m": 1.615020751953125
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        36.040418,
+        54.65797416
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        35.911157360000004,
+        54.80877822
+      ],
+      "actual_z_m": 1.6150054931640625
+    },
+    {
+      "surface": "Connected_Streets_and_Pavements_Paving",
+      "source_faces": [
+        1357
+      ],
+      "xy_m": [
+        35.781896715,
+        54.95958228
+      ],
+      "actual_z_m": 1.6150054931640625
+    }
+  ],
+  "retained_quay_junction": {
+    "maximum_transition_m": 0.03907346725463867,
+    "maximum_allowed_transition_m": 0.08,
+    "records": [
+      {
+        "road": "North_Harbor_Road",
+        "station": 0,
+        "xy_m": [
+          31.775562955,
+          53.095174875
+        ],
+        "retained_surface_above_new_paving_m": 0.002887248992919922
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 0,
+        "xy_m": [
+          31.646302465,
+          53.245979059999996
+        ],
+        "retained_surface_above_new_paving_m": 0.00862884521484375
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 0,
+        "xy_m": [
+          31.51704197,
+          53.396783245
+        ],
+        "retained_surface_above_new_paving_m": 0.017173051834106445
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 0,
+        "xy_m": [
+          31.387781475,
+          53.547587435
+        ],
+        "retained_surface_above_new_paving_m": 0.020854949951171875
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 0,
+        "xy_m": [
+          31.258520985,
+          53.698391625
+        ],
+        "retained_surface_above_new_paving_m": 0.0245513916015625
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 0,
+        "xy_m": [
+          31.12926049,
+          53.849195815
+        ],
+        "retained_surface_above_new_paving_m": 0.033075809478759766
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 0,
+        "xy_m": [
+          31.03231512,
+          53.962298955
+        ],
+        "retained_surface_above_new_paving_m": 0.03907346725463867
+      }
+    ],
+    "scope": "Actual retained street paving can form a shallow raised junction above the new approach; the flat built quay remains its separately measured support."
+  },
+  "actual_road_width_support": {
+    "tolerance_m": 0.15,
+    "support_meshes": 0,
+    "minimum_visible_paving_clearance_m": 0.01,
+    "closed_support_solids": 0,
+    "invalid_support_components": [],
+    "boundary_precision_tolerance_m": 0.0002,
+    "actual_nearest_boundary_contacts": [
+      {
+        "road": "North_Harbor_Road",
+        "station": 0,
+        "lateral_m": -0.794482755,
+        "distance_from_expected_m": 1.1920928955078125e-07
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 0,
+        "lateral_m": 2.0358620675,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 0,
+        "lateral_m": 2.582068965,
+        "distance_from_expected_m": 1.1920928955078125e-07
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 9,
+        "lateral_m": 2.7806896549999998,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 30,
+        "lateral_m": -1.3903448250000001,
+        "distance_from_expected_m": 2.384185791015625e-07
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 30,
+        "lateral_m": -0.993103445,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 30,
+        "lateral_m": -0.198620685,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 30,
+        "lateral_m": 0.5958620649999999,
+        "distance_from_expected_m": 2.384185791015625e-07
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 30,
+        "lateral_m": 0.794482755,
+        "distance_from_expected_m": 2.384185791015625e-07
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 36,
+        "lateral_m": -1.787586205,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 36,
+        "lateral_m": -0.993103445,
+        "distance_from_expected_m": 2.384185791015625e-07
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 42,
+        "lateral_m": 1.3903448250000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 51,
+        "lateral_m": -1.787586205,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 51,
+        "lateral_m": -1.3903448250000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 60,
+        "lateral_m": 1.787586205,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 63,
+        "lateral_m": 0.993103445,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 111,
+        "lateral_m": 2.0358620675,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 117,
+        "lateral_m": -0.04965517,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 132,
+        "lateral_m": 2.192068965,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 147,
+        "lateral_m": -0.794482755,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 147,
+        "lateral_m": -0.198620685,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 159,
+        "lateral_m": 2.383448275,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 183,
+        "lateral_m": 1.588965515,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 207,
+        "lateral_m": -0.993103445,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 219,
+        "lateral_m": -1.986206895,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 264,
+        "lateral_m": -0.5958620649999999,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 267,
+        "lateral_m": 0.04965517,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 274,
+        "lateral_m": -1.787586205,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 274,
+        "lateral_m": -0.198620685,
+        "distance_from_expected_m": 1.9073486328125e-06
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 274,
+        "lateral_m": -0.04965517,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 274,
+        "lateral_m": 0.397241375,
+        "distance_from_expected_m": 1.066240299940009e-06
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 274,
+        "lateral_m": 0.993103445,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 274,
+        "lateral_m": 1.1917241349999999,
+        "distance_from_expected_m": 4.76837158203125e-07
+      },
+      {
+        "road": "North_Harbor_Road",
+        "station": 274,
+        "lateral_m": 2.192068965,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Harbor_Back_Loop",
+        "station": 0,
+        "lateral_m": -1.89230769,
+        "distance_from_expected_m": 2.384185791015625e-07
+      },
+      {
+        "road": "Harbor_Back_Loop",
+        "station": 0,
+        "lateral_m": 0.09923077,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Back_Loop",
+        "station": 0,
+        "lateral_m": 2.08384615,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Back_Loop",
+        "station": 0,
+        "lateral_m": 2.2823076899999997,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Back_Loop",
+        "station": 186,
+        "lateral_m": -1.29,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Back_Loop",
+        "station": 186,
+        "lateral_m": 0.49615385,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Back_Loop",
+        "station": 189,
+        "lateral_m": 0.8930769199999999,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Back_Loop",
+        "station": 195,
+        "lateral_m": -2.2823076899999997,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Back_Loop",
+        "station": 198,
+        "lateral_m": -0.49615385,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Back_Loop",
+        "station": 198,
+        "lateral_m": 2.48076923,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Back_Loop",
+        "station": 201,
+        "lateral_m": 0.49615385,
+        "distance_from_expected_m": 4.76837158203125e-07
+      },
+      {
+        "road": "Harbor_Back_Loop",
+        "station": 201,
+        "lateral_m": 1.6869230800000001,
+        "distance_from_expected_m": 4.76837158203125e-07
+      },
+      {
+        "road": "Harbor_Back_Loop",
+        "station": 234,
+        "lateral_m": -0.29769230999999996,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Back_Loop",
+        "station": 279,
+        "lateral_m": -0.09923077,
+        "distance_from_expected_m": 1.966049969490843e-06
+      },
+      {
+        "road": "Harbor_Back_Loop",
+        "station": 279,
+        "lateral_m": 0.6946153850000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Cross_Mews",
+        "station": 0,
+        "lateral_m": -1.18857143,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Cross_Mews",
+        "station": 9,
+        "lateral_m": -1.78285714,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Cross_Mews",
+        "station": 9,
+        "lateral_m": 0.594285715,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Cross_Mews",
+        "station": 24,
+        "lateral_m": -1.5847619050000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Cross_Mews",
+        "station": 48,
+        "lateral_m": -0.594285715,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Cross_Mews",
+        "station": 72,
+        "lateral_m": 1.78285714,
+        "distance_from_expected_m": 4.76837158203125e-07
+      },
+      {
+        "road": "Harbor_Cross_Mews",
+        "station": 126,
+        "lateral_m": 0.04952381,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Cross_Mews",
+        "station": 138,
+        "lateral_m": 0.79238095,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Cross_Mews",
+        "station": 141,
+        "lateral_m": -1.78285714,
+        "distance_from_expected_m": 4.76837158203125e-07
+      },
+      {
+        "road": "Harbor_Cross_Mews",
+        "station": 141,
+        "lateral_m": 1.78285714,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Cross_Mews",
+        "station": 156,
+        "lateral_m": -1.9809523800000002,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Cross_Mews",
+        "station": 156,
+        "lateral_m": -1.5847619050000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Cross_Mews",
+        "station": 156,
+        "lateral_m": 0.19809524,
+        "distance_from_expected_m": 4.76837158203125e-07
+      },
+      {
+        "road": "Harbor_Cross_Mews",
+        "station": 156,
+        "lateral_m": 1.18857143,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Cross_Mews",
+        "station": 156,
+        "lateral_m": 1.78285714,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 0,
+        "lateral_m": -1.6925,
+        "distance_from_expected_m": 1.966049969490843e-06
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 0,
+        "lateral_m": -1.4875,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 0,
+        "lateral_m": -0.495833335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 0,
+        "lateral_m": -0.099166665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 0,
+        "lateral_m": 0.495833335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 81,
+        "lateral_m": 2.0825,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 90,
+        "lateral_m": 2.0825,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 96,
+        "lateral_m": -2.0825,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 96,
+        "lateral_m": -1.090833335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 96,
+        "lateral_m": -0.694166665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 102,
+        "lateral_m": -0.099166665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 108,
+        "lateral_m": -1.4875,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 123,
+        "lateral_m": 2.0825,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 126,
+        "lateral_m": -2.2808333349999996,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 129,
+        "lateral_m": 0.694166665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 144,
+        "lateral_m": -0.099166665,
+        "distance_from_expected_m": 3.725290298461914e-09
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 150,
+        "lateral_m": -0.2975,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 156,
+        "lateral_m": -1.6925,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 162,
+        "lateral_m": 0.495833335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 177,
+        "lateral_m": -0.8925,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 192,
+        "lateral_m": -1.4875,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 192,
+        "lateral_m": 0.2975,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 192,
+        "lateral_m": 1.090833335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 204,
+        "lateral_m": -0.2975,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 216,
+        "lateral_m": -0.495833335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 216,
+        "lateral_m": 0.8925,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 225,
+        "lateral_m": -1.289166665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 234,
+        "lateral_m": -1.289166665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 261,
+        "lateral_m": -0.8925,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 261,
+        "lateral_m": 0.495833335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 267,
+        "lateral_m": 2.2808333349999996,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 270,
+        "lateral_m": 1.4875,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 276,
+        "lateral_m": 1.090833335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 282,
+        "lateral_m": -1.090833335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 306,
+        "lateral_m": 0.694166665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 309,
+        "lateral_m": 1.884166665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 312,
+        "lateral_m": -0.495833335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 315,
+        "lateral_m": -2.0825,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 315,
+        "lateral_m": -0.099166665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 322,
+        "lateral_m": -2.2808333349999996,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 322,
+        "lateral_m": -0.495833335,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 322,
+        "lateral_m": 1.090833335,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Harbor_Upper_Loop",
+        "station": 322,
+        "lateral_m": 1.289166665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 0,
+        "lateral_m": -2.48076923,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 0,
+        "lateral_m": -2.2823076899999997,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 0,
+        "lateral_m": -2.08384615,
+        "distance_from_expected_m": 4.76837158203125e-07
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 0,
+        "lateral_m": 0.29769230999999996,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 0,
+        "lateral_m": 0.6946153850000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 18,
+        "lateral_m": -0.6946153850000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 18,
+        "lateral_m": 0.29769230999999996,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 24,
+        "lateral_m": 0.29769230999999996,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 30,
+        "lateral_m": -0.29769230999999996,
+        "distance_from_expected_m": 4.76837158203125e-07
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 36,
+        "lateral_m": -0.6946153850000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 39,
+        "lateral_m": -2.48076923,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 42,
+        "lateral_m": 0.8930769199999999,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 45,
+        "lateral_m": -2.2823076899999997,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 45,
+        "lateral_m": 1.6869230800000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 48,
+        "lateral_m": -0.6946153850000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 51,
+        "lateral_m": 0.49615385,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 51,
+        "lateral_m": 1.6869230800000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 54,
+        "lateral_m": -0.8930769199999999,
+        "distance_from_expected_m": 4.76837158203125e-07
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 54,
+        "lateral_m": -0.29769230999999996,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 54,
+        "lateral_m": 0.29769230999999996,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 57,
+        "lateral_m": 0.29769230999999996,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 78,
+        "lateral_m": 1.6869230800000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 90,
+        "lateral_m": -2.08384615,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 90,
+        "lateral_m": -1.6869230800000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 105,
+        "lateral_m": 0.8930769199999999,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 186,
+        "lateral_m": 2.2823076899999997,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 204,
+        "lateral_m": -2.08384615,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 204,
+        "lateral_m": 0.29769230999999996,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 204,
+        "lateral_m": 0.6946153850000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 213,
+        "lateral_m": -1.6869230800000001,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 228,
+        "lateral_m": 2.48076923,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 234,
+        "lateral_m": 2.08384615,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 243,
+        "lateral_m": 0.6946153850000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 252,
+        "lateral_m": -1.6869230800000001,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 252,
+        "lateral_m": 0.49615385,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 255,
+        "lateral_m": -1.09153846,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 261,
+        "lateral_m": 1.29,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 264,
+        "lateral_m": 1.6869230800000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 422,
+        "lateral_m": -2.2823076899999997,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 422,
+        "lateral_m": -1.89230769,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 422,
+        "lateral_m": -1.4884615399999999,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 422,
+        "lateral_m": -0.8930769199999999,
+        "distance_from_expected_m": 7.62939453125e-06
+      },
+      {
+        "road": "Hillside_Contour_Road",
+        "station": 422,
+        "lateral_m": -0.09923077,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Lower_Loop",
+        "station": 0,
+        "lateral_m": -0.2975,
+        "distance_from_expected_m": 1.9073486328125e-06
+      },
+      {
+        "road": "Hillside_Lower_Loop",
+        "station": 0,
+        "lateral_m": 0.694166665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Lower_Loop",
+        "station": 51,
+        "lateral_m": -1.884166665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Lower_Loop",
+        "station": 54,
+        "lateral_m": -0.495833335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Lower_Loop",
+        "station": 57,
+        "lateral_m": -0.8925,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Lower_Loop",
+        "station": 90,
+        "lateral_m": 1.884166665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Lower_Loop",
+        "station": 96,
+        "lateral_m": -2.2808333349999996,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Lower_Loop",
+        "station": 159,
+        "lateral_m": -0.694166665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Lower_Loop",
+        "station": 294,
+        "lateral_m": 2.2808333349999996,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Lower_Loop",
+        "station": 300,
+        "lateral_m": 0.8925,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Lower_Loop",
+        "station": 303,
+        "lateral_m": 0.8925,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Lower_Loop",
+        "station": 316,
+        "lateral_m": -2.0825,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Lower_Loop",
+        "station": 316,
+        "lateral_m": -1.090833335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Lower_Loop",
+        "station": 316,
+        "lateral_m": -0.099166665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Lower_Loop",
+        "station": 316,
+        "lateral_m": 0.2975,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Lower_Loop",
+        "station": 316,
+        "lateral_m": 0.8925,
+        "distance_from_expected_m": 7.62939453125e-06
+      },
+      {
+        "road": "Hillside_Lower_Loop",
+        "station": 316,
+        "lateral_m": 1.289166665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Market_Link",
+        "station": 0,
+        "lateral_m": 1.459615385,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Market_Link",
+        "station": 45,
+        "lateral_m": -2.238076925,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Market_Link",
+        "station": 54,
+        "lateral_m": 1.848846155,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Market_Link",
+        "station": 57,
+        "lateral_m": 0.681153845,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Market_Link",
+        "station": 72,
+        "lateral_m": 2.43269231,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Market_Link",
+        "station": 78,
+        "lateral_m": 0.87576923,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Market_Link",
+        "station": 93,
+        "lateral_m": -1.459615385,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Market_Link",
+        "station": 159,
+        "lateral_m": -0.87576923,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Market_Link",
+        "station": 189,
+        "lateral_m": -0.681153845,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Market_Link",
+        "station": 194,
+        "lateral_m": -2.238076925,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Market_Link",
+        "station": 194,
+        "lateral_m": -1.848846155,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Market_Link",
+        "station": 194,
+        "lateral_m": -1.65346154,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Hillside_Market_Link",
+        "station": 194,
+        "lateral_m": -0.29192307500000003,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Hillside_Market_Link",
+        "station": 194,
+        "lateral_m": 1.848846155,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 0,
+        "lateral_m": -2.582068965,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 0,
+        "lateral_m": -2.383448275,
+        "distance_from_expected_m": 3.814697265625e-06
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 0,
+        "lateral_m": -1.787586205,
+        "distance_from_expected_m": 2.384185791015625e-07
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 0,
+        "lateral_m": -0.5958620649999999,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 0,
+        "lateral_m": 0.397241375,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 3,
+        "lateral_m": -1.986206895,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 3,
+        "lateral_m": -0.5958620649999999,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 6,
+        "lateral_m": -0.04965517,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 15,
+        "lateral_m": 1.588965515,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 45,
+        "lateral_m": 1.1917241349999999,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 60,
+        "lateral_m": 0.993103445,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 117,
+        "lateral_m": -2.383448275,
+        "distance_from_expected_m": 4.76837158203125e-07
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 120,
+        "lateral_m": -0.04965517,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 150,
+        "lateral_m": -0.04965517,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 165,
+        "lateral_m": -2.383448275,
+        "distance_from_expected_m": 4.76837158203125e-07
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 168,
+        "lateral_m": 0.794482755,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 174,
+        "lateral_m": 2.582068965,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 189,
+        "lateral_m": 2.7806896549999998,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 228,
+        "lateral_m": 1.588965515,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 237,
+        "lateral_m": -0.5958620649999999,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 249,
+        "lateral_m": -1.986206895,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 264,
+        "lateral_m": -2.192068965,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 276,
+        "lateral_m": -1.588965515,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 291,
+        "lateral_m": -1.986206895,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 300,
+        "lateral_m": -0.397241375,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 306,
+        "lateral_m": -1.986206895,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 309,
+        "lateral_m": 1.588965515,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 318,
+        "lateral_m": 0.04965517,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 318,
+        "lateral_m": 2.383448275,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 327,
+        "lateral_m": 0.5958620649999999,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 330,
+        "lateral_m": -2.192068965,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 330,
+        "lateral_m": -1.588965515,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 342,
+        "lateral_m": -2.192068965,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 342,
+        "lateral_m": 0.397241375,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 348,
+        "lateral_m": -0.198620685,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 348,
+        "lateral_m": 0.993103445,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 351,
+        "lateral_m": -0.993103445,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Market_Street",
+        "station": 354,
+        "lateral_m": -0.198620685,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 0,
+        "lateral_m": -0.8426086925,
+        "distance_from_expected_m": 4.76837158203125e-07
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 0,
+        "lateral_m": -0.396521735,
+        "distance_from_expected_m": 1.9073486328125e-06
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 6,
+        "lateral_m": -1.982608695,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 6,
+        "lateral_m": -1.8339130424999999,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 9,
+        "lateral_m": -0.8426086925,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 12,
+        "lateral_m": 0.396521735,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 12,
+        "lateral_m": 0.9913043450000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 15,
+        "lateral_m": -0.7434782575,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 18,
+        "lateral_m": 0.9913043450000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 21,
+        "lateral_m": -0.9913043450000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 21,
+        "lateral_m": -0.198260865,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 33,
+        "lateral_m": 1.592608695,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 57,
+        "lateral_m": -0.9913043450000001,
+        "distance_from_expected_m": 4.76837158203125e-07
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 60,
+        "lateral_m": 0.049565215,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 63,
+        "lateral_m": 2.180869565,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 72,
+        "lateral_m": 1.592608695,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 72,
+        "lateral_m": 2.180869565,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 90,
+        "lateral_m": 1.387826085,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 102,
+        "lateral_m": 1.982608695,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 141,
+        "lateral_m": -0.7434782575,
+        "distance_from_expected_m": 4.76837158203125e-07
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 147,
+        "lateral_m": -0.9913043450000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 159,
+        "lateral_m": 1.982608695,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 186,
+        "lateral_m": -2.180869565,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 201,
+        "lateral_m": 1.982608695,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 210,
+        "lateral_m": -0.396521735,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 213,
+        "lateral_m": -0.8426086925,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 246,
+        "lateral_m": 0.594782605,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 249,
+        "lateral_m": -1.982608695,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 252,
+        "lateral_m": 0.198260865,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 258,
+        "lateral_m": 1.387826085,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 260,
+        "lateral_m": -1.8339130424999999,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 260,
+        "lateral_m": -0.9913043450000001,
+        "distance_from_expected_m": 2.86102294921875e-06
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 260,
+        "lateral_m": -0.198260865,
+        "distance_from_expected_m": 2.86102294921875e-06
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 260,
+        "lateral_m": 0.7930434749999999,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 260,
+        "lateral_m": 1.592608695,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Workshop_Court_Loop",
+        "station": 260,
+        "lateral_m": 2.180869565,
+        "distance_from_expected_m": 2.86102294921875e-06
+      },
+      {
+        "road": "West_Workyard_Lane",
+        "station": 0,
+        "lateral_m": 0.7930434749999999,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "West_Workyard_Lane",
+        "station": 0,
+        "lateral_m": 0.9913043450000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Workyard_Lane",
+        "station": 0,
+        "lateral_m": 1.189565215,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Workyard_Lane",
+        "station": 0,
+        "lateral_m": 1.784347825,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Workyard_Lane",
+        "station": 27,
+        "lateral_m": -0.9913043450000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Workyard_Lane",
+        "station": 57,
+        "lateral_m": 0.594782605,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Workyard_Lane",
+        "station": 123,
+        "lateral_m": 0.198260865,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Workyard_Lane",
+        "station": 126,
+        "lateral_m": 2.180869565,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Workyard_Lane",
+        "station": 144,
+        "lateral_m": -0.594782605,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Workyard_Lane",
+        "station": 168,
+        "lateral_m": 0.049565215,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Workyard_Lane",
+        "station": 177,
+        "lateral_m": -0.594782605,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Workyard_Lane",
+        "station": 183,
+        "lateral_m": -1.982608695,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Workyard_Lane",
+        "station": 210,
+        "lateral_m": 0.396521735,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "West_Workyard_Lane",
+        "station": 222,
+        "lateral_m": -0.7930434749999999,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Workyard_Lane",
+        "station": 225,
+        "lateral_m": -0.9913043450000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Workyard_Lane",
+        "station": 231,
+        "lateral_m": 1.387826085,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Workyard_Lane",
+        "station": 311,
+        "lateral_m": -1.784347825,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Workyard_Lane",
+        "station": 311,
+        "lateral_m": -0.9913043450000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "West_Workyard_Lane",
+        "station": 311,
+        "lateral_m": 0.198260865,
+        "distance_from_expected_m": 3.932099938981686e-06
+      },
+      {
+        "road": "West_Workyard_Lane",
+        "station": 311,
+        "lateral_m": 0.594782605,
+        "distance_from_expected_m": 3.337860107421875e-06
+      },
+      {
+        "road": "Trailhead_Village_Loop",
+        "station": 0,
+        "lateral_m": -2.2329166650000003,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Trailhead_Village_Loop",
+        "station": 0,
+        "lateral_m": -0.485416665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Trailhead_Village_Loop",
+        "station": 33,
+        "lateral_m": 0.29125,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Trailhead_Village_Loop",
+        "station": 117,
+        "lateral_m": 0.097083335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Trailhead_Village_Loop",
+        "station": 156,
+        "lateral_m": -0.87375,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Trailhead_Village_Loop",
+        "station": 165,
+        "lateral_m": 0.29125,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Trailhead_Village_Loop",
+        "station": 180,
+        "lateral_m": -1.067916665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Trailhead_Village_Loop",
+        "station": 222,
+        "lateral_m": 0.485416665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Trailhead_Village_Loop",
+        "station": 222,
+        "lateral_m": 1.067916665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Trailhead_Village_Loop",
+        "station": 234,
+        "lateral_m": 2.2329166650000003,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Trailhead_Village_Loop",
+        "station": 264,
+        "lateral_m": -0.679583335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Trailhead_Village_Loop",
+        "station": 345,
+        "lateral_m": -1.4545833350000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Trailhead_Village_Loop",
+        "station": 369,
+        "lateral_m": -1.4545833350000001,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 0,
+        "lateral_m": -0.485416665,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 75,
+        "lateral_m": -1.844583335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 78,
+        "lateral_m": -2.2329166650000003,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 93,
+        "lateral_m": -0.87375,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 105,
+        "lateral_m": -1.844583335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 105,
+        "lateral_m": 1.650416665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 159,
+        "lateral_m": 1.067916665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 174,
+        "lateral_m": -0.097083335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 186,
+        "lateral_m": -0.29125,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 186,
+        "lateral_m": 0.679583335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 195,
+        "lateral_m": -0.679583335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 204,
+        "lateral_m": -2.0387500000000003,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 210,
+        "lateral_m": -1.844583335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 213,
+        "lateral_m": 1.844583335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 222,
+        "lateral_m": -1.067916665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 222,
+        "lateral_m": 0.679583335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 231,
+        "lateral_m": -0.29125,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 237,
+        "lateral_m": -1.4545833350000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 237,
+        "lateral_m": 0.485416665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 237,
+        "lateral_m": 0.679583335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 237,
+        "lateral_m": 1.650416665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 240,
+        "lateral_m": -0.485416665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 243,
+        "lateral_m": -1.067916665,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 243,
+        "lateral_m": 0.29125,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 249,
+        "lateral_m": 0.29125,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 249,
+        "lateral_m": 0.485416665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 258,
+        "lateral_m": -1.262083335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 258,
+        "lateral_m": -0.87375,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 264,
+        "lateral_m": 2.0387500000000003,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 270,
+        "lateral_m": 0.485416665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 276,
+        "lateral_m": 1.650416665,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 288,
+        "lateral_m": -1.067916665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 315,
+        "lateral_m": -1.262083335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 327,
+        "lateral_m": -2.0387500000000003,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 327,
+        "lateral_m": -1.844583335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 327,
+        "lateral_m": -1.650416665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 327,
+        "lateral_m": 1.650416665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 330,
+        "lateral_m": 1.4545833350000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 330,
+        "lateral_m": 2.0387500000000003,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 342,
+        "lateral_m": 1.844583335,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 347,
+        "lateral_m": 1.067916665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Forest_Edge_Link",
+        "station": 347,
+        "lateral_m": 1.650416665,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 0,
+        "lateral_m": -2.2823076899999997,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 0,
+        "lateral_m": 0.49615385,
+        "distance_from_expected_m": 1.9073486328125e-06
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 0,
+        "lateral_m": 0.8930769199999999,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 0,
+        "lateral_m": 1.29,
+        "distance_from_expected_m": 2.384185791015625e-07
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 0,
+        "lateral_m": 2.48076923,
+        "distance_from_expected_m": 1.922192036699903e-06
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 3,
+        "lateral_m": 2.2823076899999997,
+        "distance_from_expected_m": 2.384185791015625e-07
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 6,
+        "lateral_m": -2.2823076899999997,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 15,
+        "lateral_m": 1.09153846,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 51,
+        "lateral_m": -0.6946153850000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 60,
+        "lateral_m": 0.8930769199999999,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 72,
+        "lateral_m": -2.08384615,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 72,
+        "lateral_m": -1.89230769,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 72,
+        "lateral_m": -1.4884615399999999,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 75,
+        "lateral_m": -1.4884615399999999,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 81,
+        "lateral_m": 0.6946153850000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 90,
+        "lateral_m": -0.6946153850000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 93,
+        "lateral_m": -1.6869230800000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 93,
+        "lateral_m": 1.29,
+        "distance_from_expected_m": 4.76837158203125e-07
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 96,
+        "lateral_m": -1.4884615399999999,
+        "distance_from_expected_m": 4.76837158203125e-07
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 96,
+        "lateral_m": -0.6946153850000001,
+        "distance_from_expected_m": 4.76837158203125e-07
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 108,
+        "lateral_m": 0.29769230999999996,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 111,
+        "lateral_m": 0.49615385,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 118,
+        "lateral_m": -2.48076923,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 118,
+        "lateral_m": -0.8930769199999999,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 118,
+        "lateral_m": -0.49615385,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 118,
+        "lateral_m": 0.6946153850000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 118,
+        "lateral_m": 0.8930769199999999,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 118,
+        "lateral_m": 1.29,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 118,
+        "lateral_m": 1.793076925,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Gateway",
+        "station": 118,
+        "lateral_m": 2.08384615,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 0,
+        "lateral_m": -1.982608695,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 0,
+        "lateral_m": -0.396521735,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 108,
+        "lateral_m": 0.198260865,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 117,
+        "lateral_m": -1.784347825,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 120,
+        "lateral_m": 0.049565215,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 204,
+        "lateral_m": -1.784347825,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 240,
+        "lateral_m": -0.049565215,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 246,
+        "lateral_m": 2.180869565,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 267,
+        "lateral_m": -0.049565215,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 333,
+        "lateral_m": -0.198260865,
+        "distance_from_expected_m": 5.960464477539063e-08
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 336,
+        "lateral_m": 0.396521735,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 348,
+        "lateral_m": 0.594782605,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 348,
+        "lateral_m": 1.387826085,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 351,
+        "lateral_m": -1.982608695,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 360,
+        "lateral_m": -1.189565215,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 363,
+        "lateral_m": -0.9913043450000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 375,
+        "lateral_m": 2.180869565,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 435,
+        "lateral_m": 0.9913043450000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 456,
+        "lateral_m": 0.594782605,
+        "distance_from_expected_m": 2.384185791015625e-07
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 456,
+        "lateral_m": 1.189565215,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 462,
+        "lateral_m": 0.9913043450000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 465,
+        "lateral_m": 0.396521735,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 480,
+        "lateral_m": 0.9913043450000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 489,
+        "lateral_m": 1.982608695,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 498,
+        "lateral_m": 0.198260865,
+        "distance_from_expected_m": 2.384185791015625e-07
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 510,
+        "lateral_m": 1.387826085,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 534,
+        "lateral_m": -1.982608695,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 546,
+        "lateral_m": -1.784347825,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 549,
+        "lateral_m": 0.396521735,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 592,
+        "lateral_m": -1.387826085,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 592,
+        "lateral_m": -0.594782605,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Lane_Loop",
+        "station": 592,
+        "lateral_m": -0.049565215,
+        "distance_from_expected_m": 7.62939453125e-06
+      },
+      {
+        "road": "Orchard_Cross_Lane",
+        "station": 0,
+        "lateral_m": -1.293,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Cross_Lane",
+        "station": 0,
+        "lateral_m": -0.495,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Cross_Lane",
+        "station": 3,
+        "lateral_m": -1.293,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Cross_Lane",
+        "station": 21,
+        "lateral_m": 1.293,
+        "distance_from_expected_m": 4.76837158203125e-07
+      },
+      {
+        "road": "Orchard_Cross_Lane",
+        "station": 45,
+        "lateral_m": -0.6930000000000001,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Cross_Lane",
+        "station": 54,
+        "lateral_m": 1.881,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Cross_Lane",
+        "station": 63,
+        "lateral_m": -1.293,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Cross_Lane",
+        "station": 63,
+        "lateral_m": -0.099,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Cross_Lane",
+        "station": 69,
+        "lateral_m": -0.891,
+        "distance_from_expected_m": 2.384185791015625e-07
+      },
+      {
+        "road": "Orchard_Cross_Lane",
+        "station": 114,
+        "lateral_m": -1.683,
+        "distance_from_expected_m": 2.384185791015625e-07
+      },
+      {
+        "road": "Orchard_Cross_Lane",
+        "station": 184,
+        "lateral_m": -1.194,
+        "distance_from_expected_m": 5.960464477539063e-08
+      },
+      {
+        "road": "Orchard_Cross_Lane",
+        "station": 184,
+        "lateral_m": 0.099,
+        "distance_from_expected_m": 5.960464477539063e-08
+      },
+      {
+        "road": "Orchard_Cross_Lane",
+        "station": 184,
+        "lateral_m": 0.29700000000000004,
+        "distance_from_expected_m": 1.4317526995497124e-06
+      },
+      {
+        "road": "Orchard_Cross_Lane",
+        "station": 184,
+        "lateral_m": 0.495,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Orchard_Cross_Lane",
+        "station": 184,
+        "lateral_m": 1.194,
+        "distance_from_expected_m": 1.4317526995497124e-06
+      },
+      {
+        "road": "Orchard_Cross_Lane",
+        "station": 184,
+        "lateral_m": 1.4849999999999999,
+        "distance_from_expected_m": 1.430511474609375e-06
+      },
+      {
+        "road": "Expansion_D06_Harbor_Back_Loop_R07_Approach",
+        "station": 0,
+        "lateral_m": 0.6,
+        "distance_from_expected_m": 1.966049969490843e-06
+      },
+      {
+        "road": "Expansion_D06_Harbor_Back_Loop_L04_Approach",
+        "station": 8,
+        "lateral_m": -0.05,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D06_Harbor_Upper_Loop_R03_Approach",
+        "station": 0,
+        "lateral_m": -0.05,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Expansion_D06_Harbor_Upper_Loop_R03_Approach",
+        "station": 0,
+        "lateral_m": 0.2,
+        "distance_from_expected_m": 1.9073486328125e-06
+      },
+      {
+        "road": "Expansion_D06_Harbor_Upper_Loop_R01_Approach",
+        "station": 0,
+        "lateral_m": 0.4,
+        "distance_from_expected_m": 1.9073486328125e-06
+      },
+      {
+        "road": "Expansion_D06_Harbor_Upper_Loop_L04_Approach",
+        "station": 0,
+        "lateral_m": -0.6,
+        "distance_from_expected_m": 1.7192608239479013e-06
+      },
+      {
+        "road": "Expansion_D06_Harbor_Upper_Loop_L04_Approach",
+        "station": 3,
+        "lateral_m": -0.2,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D06_North_Harbor_Road_R04_Approach",
+        "station": 0,
+        "lateral_m": 0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D06_North_Harbor_Road_R04_Approach",
+        "station": 16,
+        "lateral_m": -0.6,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D06_North_Harbor_Road_R04_Approach",
+        "station": 16,
+        "lateral_m": -0.4,
+        "distance_from_expected_m": 1.9073486328125e-06
+      },
+      {
+        "road": "Expansion_D06_North_Harbor_Road_R04_Approach",
+        "station": 16,
+        "lateral_m": -0.2,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D06_North_Harbor_Road_R04_Approach",
+        "station": 16,
+        "lateral_m": 0.6,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D06_Harbor_Back_Loop_R03_Approach",
+        "station": 0,
+        "lateral_m": -0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D06_Harbor_Back_Loop_R03_Approach",
+        "station": 0,
+        "lateral_m": -0.05,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D06_Harbor_Back_Loop_R03_Approach",
+        "station": 0,
+        "lateral_m": 0.05,
+        "distance_from_expected_m": 1.9073486328125e-06
+      },
+      {
+        "road": "Expansion_D06_Harbor_Back_Loop_R03_Approach",
+        "station": 3,
+        "lateral_m": 0.6,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D06_Harbor_Upper_Loop_L07_Approach",
+        "station": 0,
+        "lateral_m": -0.05,
+        "distance_from_expected_m": 3.814697265625e-06
+      },
+      {
+        "road": "Expansion_D06_Harbor_Upper_Loop_R02_Approach",
+        "station": 8,
+        "lateral_m": -0.05,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D06_North_Harbor_Road_L07_Approach",
+        "station": 0,
+        "lateral_m": -0.2,
+        "distance_from_expected_m": 1.430511474609375e-06
+      },
+      {
+        "road": "Expansion_D06_North_Harbor_Road_L07_Approach",
+        "station": 0,
+        "lateral_m": -0.05,
+        "distance_from_expected_m": 4.76837158203125e-07
+      },
+      {
+        "road": "Expansion_D06_North_Harbor_Road_L07_Approach",
+        "station": 8,
+        "lateral_m": -0.4,
+        "distance_from_expected_m": 1.430511474609375e-06
+      },
+      {
+        "road": "Expansion_D06_North_Harbor_Road_L07_Approach",
+        "station": 8,
+        "lateral_m": 0.2,
+        "distance_from_expected_m": 1.430511474609375e-06
+      },
+      {
+        "road": "Expansion_D07_Workshop_Court_Loop_L05_Approach",
+        "station": 0,
+        "lateral_m": -0.6,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D07_West_Workyard_Lane_L01_Approach",
+        "station": 0,
+        "lateral_m": 0.05,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Expansion_D07_West_Market_Street_R09_Approach",
+        "station": 0,
+        "lateral_m": 0.05,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Expansion_D07_West_Market_Street_R09_Approach",
+        "station": 8,
+        "lateral_m": -0.4,
+        "distance_from_expected_m": 1.9073486328125e-06
+      },
+      {
+        "road": "Expansion_D07_West_Workyard_Lane_R06_Approach",
+        "station": 0,
+        "lateral_m": -0.6,
+        "distance_from_expected_m": 3.814697265625e-06
+      },
+      {
+        "road": "Expansion_D07_West_Market_Street_R06_Approach",
+        "station": 0,
+        "lateral_m": -0.05,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D07_West_Market_Street_R06_Approach",
+        "station": 0,
+        "lateral_m": 0.6,
+        "distance_from_expected_m": 1.3486991523486091e-06
+      },
+      {
+        "road": "Expansion_D07_West_Workyard_Lane_L05_Approach",
+        "station": 3,
+        "lateral_m": 0.6,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D07_Workshop_Court_Loop_L03_Approach",
+        "station": 0,
+        "lateral_m": -0.2,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D07_West_Workyard_Lane_L06_Approach",
+        "station": 0,
+        "lateral_m": -0.6,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D07_Workshop_Court_Loop_R04_Approach",
+        "station": 0,
+        "lateral_m": -0.4,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Expansion_D07_Workshop_Court_Loop_R04_Approach",
+        "station": 0,
+        "lateral_m": 0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D07_Workshop_Court_Loop_R04_Approach",
+        "station": 6,
+        "lateral_m": -0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D07_West_Workyard_Lane_R07_Approach",
+        "station": 0,
+        "lateral_m": 0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D07_West_Market_Street_L09_Approach",
+        "station": 0,
+        "lateral_m": -0.4,
+        "distance_from_expected_m": 1.9073486328125e-06
+      },
+      {
+        "road": "Expansion_D07_West_Market_Street_L09_Approach",
+        "station": 0,
+        "lateral_m": 0.6,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Expansion_D07_West_Workyard_Lane_R02_Approach",
+        "station": 8,
+        "lateral_m": -0.4,
+        "distance_from_expected_m": 3.814697265625e-06
+      },
+      {
+        "road": "Expansion_D07_West_Market_Street_R02_Approach",
+        "station": 0,
+        "lateral_m": -0.6,
+        "distance_from_expected_m": 4.76837158203125e-07
+      },
+      {
+        "road": "Expansion_D07_West_Market_Street_R02_Approach",
+        "station": 16,
+        "lateral_m": -0.4,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Expansion_D07_West_Market_Street_R02_Approach",
+        "station": 16,
+        "lateral_m": -0.2,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D07_West_Market_Street_R02_Approach",
+        "station": 16,
+        "lateral_m": 0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_R09_Approach",
+        "station": 0,
+        "lateral_m": -0.6,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_R09_Approach",
+        "station": 0,
+        "lateral_m": 0.05,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Lower_Loop_R05_Approach",
+        "station": 0,
+        "lateral_m": -0.2,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Lower_Loop_R05_Approach",
+        "station": 0,
+        "lateral_m": 0.2,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Market_Link_L03_Approach",
+        "station": 0,
+        "lateral_m": 0.6,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Market_Link_L03_Approach",
+        "station": 16,
+        "lateral_m": -0.2,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Market_Link_L03_Approach",
+        "station": 16,
+        "lateral_m": 0.2,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_L08_Approach",
+        "station": 0,
+        "lateral_m": 0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_L08_Approach",
+        "station": 16,
+        "lateral_m": -0.6,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_L08_Approach",
+        "station": 16,
+        "lateral_m": 0.05,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_L08_Approach",
+        "station": 16,
+        "lateral_m": 0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Lower_Loop_R01_Approach",
+        "station": 0,
+        "lateral_m": 0.05,
+        "distance_from_expected_m": 4.76837158203125e-07
+      },
+      {
+        "road": "Expansion_D08_Hillside_Lower_Loop_R01_Approach",
+        "station": 0,
+        "lateral_m": 0.2,
+        "distance_from_expected_m": 3.814697265625e-06
+      },
+      {
+        "road": "Expansion_D08_Hillside_Lower_Loop_L06_Approach",
+        "station": 0,
+        "lateral_m": 0.4,
+        "distance_from_expected_m": 7.62939453125e-06
+      },
+      {
+        "road": "Expansion_D08_Hillside_Lower_Loop_L08_Approach",
+        "station": 0,
+        "lateral_m": 0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_L12_Approach",
+        "station": 0,
+        "lateral_m": -0.6,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_L12_Approach",
+        "station": 0,
+        "lateral_m": -0.2,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_L12_Approach",
+        "station": 0,
+        "lateral_m": -0.05,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_L12_Approach",
+        "station": 0,
+        "lateral_m": 0.2,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Lower_Loop_R06_Approach",
+        "station": 0,
+        "lateral_m": 0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_R10_Approach",
+        "station": 0,
+        "lateral_m": -0.2,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_R10_Approach",
+        "station": 0,
+        "lateral_m": 0.2,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_R10_Approach",
+        "station": 0,
+        "lateral_m": 0.4,
+        "distance_from_expected_m": 7.62939453125e-06
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_L09_Approach",
+        "station": 0,
+        "lateral_m": -0.2,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_L09_Approach",
+        "station": 0,
+        "lateral_m": -0.05,
+        "distance_from_expected_m": 7.62939453125e-06
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_L09_Approach",
+        "station": 16,
+        "lateral_m": 0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_R08_Approach",
+        "station": 0,
+        "lateral_m": 0.2,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_R08_Approach",
+        "station": 8,
+        "lateral_m": -0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Market_Link_R04_Approach",
+        "station": 0,
+        "lateral_m": 0.05,
+        "distance_from_expected_m": 2.132480599880018e-06
+      },
+      {
+        "road": "Expansion_D08_Hillside_Market_Link_R04_Approach",
+        "station": 0,
+        "lateral_m": 0.2,
+        "distance_from_expected_m": 2.132480599880018e-06
+      },
+      {
+        "road": "Expansion_D08_Hillside_Market_Link_R04_Approach",
+        "station": 0,
+        "lateral_m": 0.4,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Expansion_D08_Hillside_Market_Link_R04_Approach",
+        "station": 0,
+        "lateral_m": 0.6,
+        "distance_from_expected_m": 1.9073486328125e-06
+      },
+      {
+        "road": "Expansion_D08_Hillside_Market_Link_R04_Approach",
+        "station": 6,
+        "lateral_m": -0.2,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Expansion_D08_Hillside_Market_Link_R04_Approach",
+        "station": 16,
+        "lateral_m": -0.4,
+        "distance_from_expected_m": 1.9073486328125e-06
+      },
+      {
+        "road": "Expansion_D08_Hillside_Market_Link_R04_Approach",
+        "station": 16,
+        "lateral_m": 0.05,
+        "distance_from_expected_m": 1.9073486328125e-06
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_R11_Approach",
+        "station": 0,
+        "lateral_m": -0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Market_Link_L04_Approach",
+        "station": 0,
+        "lateral_m": -0.4,
+        "distance_from_expected_m": 1.9073486328125e-06
+      },
+      {
+        "road": "Expansion_D08_Hillside_Market_Link_L04_Approach",
+        "station": 0,
+        "lateral_m": 0.05,
+        "distance_from_expected_m": 2.132480599880018e-06
+      },
+      {
+        "road": "Expansion_D08_Hillside_Market_Link_L04_Approach",
+        "station": 0,
+        "lateral_m": 0.2,
+        "distance_from_expected_m": 1.9073486328125e-06
+      },
+      {
+        "road": "Expansion_D08_Hillside_Market_Link_L04_Approach",
+        "station": 8,
+        "lateral_m": 0.05,
+        "distance_from_expected_m": 1.9073486328125e-06
+      },
+      {
+        "road": "Expansion_D08_Hillside_Market_Link_L04_Approach",
+        "station": 8,
+        "lateral_m": 0.2,
+        "distance_from_expected_m": 1.9073486328125e-06
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_R12_Approach",
+        "station": 0,
+        "lateral_m": 0.2,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_R12_Approach",
+        "station": 16,
+        "lateral_m": -0.05,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_L06_Approach",
+        "station": 0,
+        "lateral_m": 0.2,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_L02_Approach",
+        "station": 0,
+        "lateral_m": -0.6,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D08_Hillside_Contour_Road_L02_Approach",
+        "station": 8,
+        "lateral_m": 0.2,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_L15_Approach",
+        "station": 0,
+        "lateral_m": -0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_L15_Approach",
+        "station": 0,
+        "lateral_m": 0.05,
+        "distance_from_expected_m": 2.384185791015625e-07
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_L15_Approach",
+        "station": 0,
+        "lateral_m": 0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_R12_Approach",
+        "station": 0,
+        "lateral_m": 0.6,
+        "distance_from_expected_m": 1.9073486328125e-06
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_R06_Approach",
+        "station": 0,
+        "lateral_m": -0.2,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_L17_Approach",
+        "station": 0,
+        "lateral_m": -0.6,
+        "distance_from_expected_m": 2.384185791015625e-07
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_L17_Approach",
+        "station": 0,
+        "lateral_m": 0.2,
+        "distance_from_expected_m": 7.62939453125e-06
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_L17_Approach",
+        "station": 8,
+        "lateral_m": 0.2,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_L17_Approach",
+        "station": 8,
+        "lateral_m": 0.4,
+        "distance_from_expected_m": 7.62939453125e-06
+      },
+      {
+        "road": "Expansion_D09_Orchard_Cross_Lane_L00_Approach",
+        "station": 0,
+        "lateral_m": -0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_L08_Approach",
+        "station": 0,
+        "lateral_m": 0.4,
+        "distance_from_expected_m": 1.922192036699903e-06
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_R08_Approach",
+        "station": 0,
+        "lateral_m": -0.4,
+        "distance_from_expected_m": 1.9110702922202824e-06
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_R07_Approach",
+        "station": 0,
+        "lateral_m": -0.4,
+        "distance_from_expected_m": 1.9073486328125e-06
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_R07_Approach",
+        "station": 0,
+        "lateral_m": 0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_R07_Approach",
+        "station": 0,
+        "lateral_m": 0.6,
+        "distance_from_expected_m": 1.9073486328125e-06
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_R07_Approach",
+        "station": 16,
+        "lateral_m": -0.05,
+        "distance_from_expected_m": 1.9073486328125e-06
+      },
+      {
+        "road": "Expansion_D09_Orchard_Cross_Lane_L03_Approach",
+        "station": 0,
+        "lateral_m": 0.2,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_R04_Approach",
+        "station": 0,
+        "lateral_m": 0.6,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_R04_Approach",
+        "station": 16,
+        "lateral_m": -0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_R04_Approach",
+        "station": 16,
+        "lateral_m": -0.05,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_L06_Approach",
+        "station": 0,
+        "lateral_m": 0.2,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_L06_Approach",
+        "station": 0,
+        "lateral_m": 0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_L06_Approach",
+        "station": 16,
+        "lateral_m": -0.05,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_R10_Approach",
+        "station": 0,
+        "lateral_m": -0.05,
+        "distance_from_expected_m": 4.805480091749757e-07
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_R10_Approach",
+        "station": 0,
+        "lateral_m": 0.05,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_R10_Approach",
+        "station": 16,
+        "lateral_m": -0.2,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_R05_Approach",
+        "station": 0,
+        "lateral_m": -0.4,
+        "distance_from_expected_m": 7.62939453125e-06
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_R05_Approach",
+        "station": 0,
+        "lateral_m": -0.05,
+        "distance_from_expected_m": 4.76837158203125e-07
+      },
+      {
+        "road": "Expansion_D09_Orchard_Lane_Loop_R05_Approach",
+        "station": 0,
+        "lateral_m": 0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D09_Orchard_Cross_Lane_L02_Approach",
+        "station": 0,
+        "lateral_m": -0.2,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D09_Orchard_Cross_Lane_L02_Approach",
+        "station": 0,
+        "lateral_m": -0.05,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D09_Orchard_Cross_Lane_L02_Approach",
+        "station": 0,
+        "lateral_m": 0.6,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D10_Trailhead_Village_Loop_R00_Approach",
+        "station": 0,
+        "lateral_m": 0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D10_Forest_Edge_Link_L01_Approach",
+        "station": 0,
+        "lateral_m": 0.05,
+        "distance_from_expected_m": 9.5367431640625e-07
+      },
+      {
+        "road": "Expansion_D10_Forest_Edge_Link_L00_Approach",
+        "station": 0,
+        "lateral_m": -0.6,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D10_Forest_Edge_Link_L00_Approach",
+        "station": 3,
+        "lateral_m": -0.6,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D10_Trailhead_Village_Loop_R04_Approach",
+        "station": 0,
+        "lateral_m": 0.05,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D10_Trailhead_Village_Loop_R04_Approach",
+        "station": 0,
+        "lateral_m": 0.2,
+        "distance_from_expected_m": 3.814697265625e-06
+      },
+      {
+        "road": "Expansion_D10_Trailhead_Village_Loop_R04_Approach",
+        "station": 0,
+        "lateral_m": 0.6,
+        "distance_from_expected_m": 3.814697265625e-06
+      },
+      {
+        "road": "Expansion_D10_Forest_Edge_Link_L02_Approach",
+        "station": 0,
+        "lateral_m": 0.05,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D10_Forest_Edge_Link_L02_Approach",
+        "station": 16,
+        "lateral_m": 0.05,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D10_Forest_Edge_Link_R09_Approach",
+        "station": 8,
+        "lateral_m": -0.6,
+        "distance_from_expected_m": 3.814697265625e-06
+      },
+      {
+        "road": "Expansion_D10_Forest_Edge_Link_R08_Approach",
+        "station": 0,
+        "lateral_m": -0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D10_Forest_Edge_Link_R08_Approach",
+        "station": 0,
+        "lateral_m": 0.05,
+        "distance_from_expected_m": 3.814697265625e-06
+      },
+      {
+        "road": "Expansion_D10_Forest_Edge_Link_L09_Approach",
+        "station": 0,
+        "lateral_m": -0.05,
+        "distance_from_expected_m": 1.9073486328125e-06
+      },
+      {
+        "road": "Expansion_D10_Forest_Edge_Link_R01_Approach",
+        "station": 0,
+        "lateral_m": -0.6,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D10_Forest_Edge_Link_R00_Approach",
+        "station": 16,
+        "lateral_m": -0.6,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D10_Forest_Edge_Link_R00_Approach",
+        "station": 16,
+        "lateral_m": -0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D10_Forest_Edge_Link_R00_Approach",
+        "station": 16,
+        "lateral_m": -0.2,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D10_Forest_Edge_Link_R00_Approach",
+        "station": 16,
+        "lateral_m": 0.2,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D10_Forest_Edge_Link_R00_Approach",
+        "station": 16,
+        "lateral_m": 0.4,
+        "distance_from_expected_m": 0.0
+      },
+      {
+        "road": "Expansion_D10_Forest_Edge_Link_R00_Approach",
+        "station": 16,
+        "lateral_m": 0.6,
+        "distance_from_expected_m": 0.0
+      }
+    ],
+    "roads": [
+      {
+        "id": "North_Harbor_Road",
+        "actual_ground_samples": 3069,
+        "maximum_deck_ground_gap_m": 0.06159576416015633,
+        "maximum_ground_above_deck_m": 0.021197471618652264,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Harbor_Back_Loop",
+        "actual_ground_samples": 2632,
+        "maximum_deck_ground_gap_m": 0.06606420516967759,
+        "maximum_ground_above_deck_m": 0.019668254852295064,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Harbor_Cross_Mews",
+        "actual_ground_samples": 1272,
+        "maximum_deck_ground_gap_m": 0.061403121948242045,
+        "maximum_ground_above_deck_m": 0.005665454864502095,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Harbor_Upper_Loop",
+        "actual_ground_samples": 2834,
+        "maximum_deck_ground_gap_m": 0.06689056396484361,
+        "maximum_ground_above_deck_m": 0.01901451110839858,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Hillside_Contour_Road",
+        "actual_ground_samples": 3976,
+        "maximum_deck_ground_gap_m": 0.06250795364379869,
+        "maximum_ground_above_deck_m": 0.016918334960937642,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Hillside_Lower_Loop",
+        "actual_ground_samples": 2782,
+        "maximum_deck_ground_gap_m": 0.06111892700195298,
+        "maximum_ground_above_deck_m": 0.011462841033935689,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Hillside_Market_Link",
+        "actual_ground_samples": 1848,
+        "maximum_deck_ground_gap_m": 0.04734737396240263,
+        "maximum_ground_above_deck_m": 0.007781181335449361,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "West_Market_Street",
+        "actual_ground_samples": 3808,
+        "maximum_deck_ground_gap_m": 0.06198677062988267,
+        "maximum_ground_above_deck_m": 0.01019207000732436,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Workshop_Court_Loop",
+        "actual_ground_samples": 2464,
+        "maximum_deck_ground_gap_m": 0.07170566558837876,
+        "maximum_ground_above_deck_m": 0.011785182952881001,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "West_Workyard_Lane",
+        "actual_ground_samples": 2730,
+        "maximum_deck_ground_gap_m": 0.0654848480224608,
+        "maximum_ground_above_deck_m": 0.020874176025390767,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Trailhead_Village_Loop",
+        "actual_ground_samples": 3562,
+        "maximum_deck_ground_gap_m": 0.05112442016601548,
+        "maximum_ground_above_deck_m": 0.020314865112304403,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Forest_Edge_Link",
+        "actual_ground_samples": 3042,
+        "maximum_deck_ground_gap_m": 0.047890014648437784,
+        "maximum_ground_above_deck_m": 0.018860015869140767,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Orchard_Gateway",
+        "actual_ground_samples": 1148,
+        "maximum_deck_ground_gap_m": 0.06320652008056626,
+        "maximum_ground_above_deck_m": 0.007857952117920064,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Orchard_Lane_Loop",
+        "actual_ground_samples": 5174,
+        "maximum_deck_ground_gap_m": 0.06616243362426744,
+        "maximum_ground_above_deck_m": 0.018317871093749716,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Orchard_Cross_Lane",
+        "actual_ground_samples": 1386,
+        "maximum_deck_ground_gap_m": 0.06453594207763658,
+        "maximum_ground_above_deck_m": 0.006158027648925923,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D06_Harbor_Back_Loop_R07_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.003617134094238139,
+        "maximum_ground_above_deck_m": 0.002612743377685689,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D06_Harbor_Back_Loop_L04_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.004750576019286967,
+        "maximum_ground_above_deck_m": 0.016036663055420064,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D06_Harbor_Upper_Loop_R03_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0022600555419920454,
+        "maximum_ground_above_deck_m": 0.0015164947509767046,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D06_Harbor_Upper_Loop_R01_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0025347137451170454,
+        "maximum_ground_above_deck_m": 0.00042787551879897023,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D06_Harbor_Upper_Loop_L04_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0036829376220701704,
+        "maximum_ground_above_deck_m": 0.0012628173828126421,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D06_North_Harbor_Road_R04_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.0035694503784178266,
+        "maximum_ground_above_deck_m": 0.0015131568908692827,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D06_Harbor_Back_Loop_R03_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0056441688537596235,
+        "maximum_ground_above_deck_m": 0.009699974060058736,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D06_Harbor_Upper_Loop_L07_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.002319183349609233,
+        "maximum_ground_above_deck_m": 0.0006295776367188921,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D06_Harbor_Upper_Loop_R02_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.002411212921142436,
+        "maximum_ground_above_deck_m": 0.0035997962951661577,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D06_North_Harbor_Road_L07_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0042861366271971235,
+        "maximum_ground_above_deck_m": 0.0018507575988770952,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D07_Workshop_Court_Loop_L05_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0026644134521482954,
+        "maximum_ground_above_deck_m": 0.012886199951172017,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D07_West_Workyard_Lane_R04_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.006252136230468608,
+        "maximum_ground_above_deck_m": 0.008442077636718892,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D07_Workshop_Court_Loop_R05_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.002616729736327983,
+        "maximum_ground_above_deck_m": 0.01233879089355483,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D07_West_Workyard_Lane_L01_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0018614196777342329,
+        "maximum_ground_above_deck_m": 0.0012799835205079546,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D07_West_Market_Street_R09_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0017221832275389204,
+        "maximum_ground_above_deck_m": 0.01188865661621108,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D07_West_Workyard_Lane_R03_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0021112823486326704,
+        "maximum_ground_above_deck_m": 0.004882965087890767,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D07_West_Workyard_Lane_R06_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.003311004638671733,
+        "maximum_ground_above_deck_m": 0.0011607742309571734,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D07_West_Market_Street_R06_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0018061065673826704,
+        "maximum_ground_above_deck_m": 0.004542503356933736,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D07_West_Workyard_Lane_L05_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.00465187072753892,
+        "maximum_ground_above_deck_m": 0.010371360778808736,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D07_West_Workyard_Lane_R05_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.006102409362792827,
+        "maximum_ground_above_deck_m": 0.011249694824218892,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D07_Workshop_Court_Loop_L03_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.00903114318847642,
+        "maximum_ground_above_deck_m": 0.011645469665527486,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D07_West_Workyard_Lane_L06_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0005567932128904829,
+        "maximum_ground_above_deck_m": 0.003025207519531392,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D07_Workshop_Court_Loop_R04_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.005637016296386577,
+        "maximum_ground_above_deck_m": 0.004665050506591939,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D07_West_Workyard_Lane_R07_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0025843048095701704,
+        "maximum_ground_above_deck_m": 0.0012389755249024859,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D07_West_Market_Street_L09_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.00567420959472642,
+        "maximum_ground_above_deck_m": 0.007855567932129048,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D07_West_Workyard_Lane_R02_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.002155151367187358,
+        "maximum_ground_above_deck_m": 0.0014325714111329546,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D07_West_Market_Street_R02_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.0021804237365721235,
+        "maximum_ground_above_deck_m": 0.0012833213806153765,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D08_Hillside_Lower_Loop_R03_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.003681030273437358,
+        "maximum_ground_above_deck_m": 0.011149082183838033,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D08_Hillside_Contour_Road_R09_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.0022486114501951704,
+        "maximum_ground_above_deck_m": 0.0004788970947267046,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D08_Hillside_Lower_Loop_R05_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.0027101898193357954,
+        "maximum_ground_above_deck_m": 0.00955406188964858,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D08_Hillside_Market_Link_L03_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.0028642082214354048,
+        "maximum_ground_above_deck_m": 0.000892314910888814,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D08_Hillside_Contour_Road_L08_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.0018804931640623579,
+        "maximum_ground_above_deck_m": 0.0009976959228517046,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D08_Hillside_Lower_Loop_R01_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0029543304443357954,
+        "maximum_ground_above_deck_m": 0.0018793678283692827,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D08_Hillside_Lower_Loop_L06_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.003558959960937358,
+        "maximum_ground_above_deck_m": 0.00882926940917983,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D08_Hillside_Lower_Loop_L08_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0032490158081053266,
+        "maximum_ground_above_deck_m": 0.006275329589843892,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D08_Hillside_Contour_Road_L12_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.002899017333984233,
+        "maximum_ground_above_deck_m": 0.0017282104492188921,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D08_Hillside_Lower_Loop_R06_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.004237976074218608,
+        "maximum_ground_above_deck_m": 0.002517852783203267,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D08_Hillside_Contour_Road_L03_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0017298126220701704,
+        "maximum_ground_above_deck_m": 0.0030347442626954546,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D08_Hillside_Lower_Loop_L02_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.0040229225158689985,
+        "maximum_ground_above_deck_m": 0.00804821014404311,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D08_Hillside_Contour_Road_R10_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0017193222045897016,
+        "maximum_ground_above_deck_m": 0.00024143218994154836,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D08_Hillside_Contour_Road_L09_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.0024631881713865766,
+        "maximum_ground_above_deck_m": 0.0004159545898438921,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D08_Hillside_Contour_Road_R08_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0017851257324217329,
+        "maximum_ground_above_deck_m": 0.0012361145019532671,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D08_Hillside_Contour_Road_L04_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.003955688476562358,
+        "maximum_ground_above_deck_m": 0.0017453765869142046,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D08_Hillside_Market_Link_R04_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.0020855331420897016,
+        "maximum_ground_above_deck_m": 0.0008851623535157671,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D08_Hillside_Contour_Road_L05_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.004260864257812358,
+        "maximum_ground_above_deck_m": 0.0027944183349610796,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D08_Hillside_Contour_Road_R11_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0019701385498045454,
+        "maximum_ground_above_deck_m": 0.008159790039062642,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D08_Hillside_Market_Link_L04_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.001979675292968608,
+        "maximum_ground_above_deck_m": 0.00035968780517592336,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D08_Hillside_Contour_Road_R12_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.0030039215087889204,
+        "maximum_ground_above_deck_m": 0.0010129547119142046,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D08_Hillside_Contour_Road_L06_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.002751197814941264,
+        "maximum_ground_above_deck_m": 0.0007802581787110796,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D08_Hillside_Contour_Road_L02_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.003368225097656108,
+        "maximum_ground_above_deck_m": 0.0036784744262696734,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D09_Orchard_Cross_Lane_L01_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0025351905822752485,
+        "maximum_ground_above_deck_m": 0.005012664794922017,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D09_Orchard_Lane_Loop_L15_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.00417264938354478,
+        "maximum_ground_above_deck_m": 0.0067800617218019,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D09_Orchard_Lane_Loop_R00_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0017636680603025923,
+        "maximum_ground_above_deck_m": 0.0014564132690431109,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D09_Orchard_Lane_Loop_R12_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0031217002868652033,
+        "maximum_ground_above_deck_m": 0.0010506248474121405,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D09_Orchard_Lane_Loop_R06_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.004926052093505717,
+        "maximum_ground_above_deck_m": 0.002458009719848775,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D09_Orchard_Lane_Loop_L17_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0046485328674314985,
+        "maximum_ground_above_deck_m": 0.0029431915283204546,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D09_Orchard_Cross_Lane_L00_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.004573192596435405,
+        "maximum_ground_above_deck_m": 0.006114635467529439,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D09_Orchard_Lane_Loop_L08_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.004155006408691264,
+        "maximum_ground_above_deck_m": 0.0023848152160645952,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D09_Orchard_Lane_Loop_R08_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.004112091064453205,
+        "maximum_ground_above_deck_m": 0.008439693450927654,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D09_Orchard_Lane_Loop_L10_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0017307662963866877,
+        "maximum_ground_above_deck_m": 0.0031534767150879217,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D09_Orchard_Lane_Loop_R09_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0025275611877441095,
+        "maximum_ground_above_deck_m": 0.005354557037353547,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D09_Orchard_Lane_Loop_R07_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.0031095409393309126,
+        "maximum_ground_above_deck_m": 0.00546017646789565,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D09_Orchard_Cross_Lane_L03_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.002755012512207111,
+        "maximum_ground_above_deck_m": 0.0012041664123534357,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D09_Orchard_Lane_Loop_R04_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.002365913391113139,
+        "maximum_ground_above_deck_m": 0.0018736457824708452,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D09_Orchard_Lane_Loop_L06_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.002235736846923686,
+        "maximum_ground_above_deck_m": 0.005087289810180806,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D09_Orchard_Lane_Loop_R10_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.001941528320312469,
+        "maximum_ground_above_deck_m": 0.00277629852294925,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D09_Orchard_Lane_Loop_R05_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0025247001647947798,
+        "maximum_ground_above_deck_m": 0.0014425849914552202,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D09_Orchard_Cross_Lane_L02_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.004155006408691264,
+        "maximum_ground_above_deck_m": 0.005302581787109517,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D10_Trailhead_Village_Loop_R00_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.002609100341796733,
+        "maximum_ground_above_deck_m": 0.0024320220947267046,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D10_Forest_Edge_Link_R03_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0020349884033201704,
+        "maximum_ground_above_deck_m": 0.0017148590087892046,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D10_Forest_Edge_Link_L01_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.006056632995605327,
+        "maximum_ground_above_deck_m": 0.0007993316650392046,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D10_Forest_Edge_Link_L00_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0023058319091795454,
+        "maximum_ground_above_deck_m": 0.0014545059204102984,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D10_Trailhead_Village_Loop_R04_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.005494918823242045,
+        "maximum_ground_above_deck_m": 0.004431877136230611,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D10_Forest_Edge_Link_L02_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.004794921874999858,
+        "maximum_ground_above_deck_m": 0.004775199890136861,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D10_Forest_Edge_Link_R09_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.004179801940917827,
+        "maximum_ground_above_deck_m": 0.01020256042480483,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D10_Forest_Edge_Link_R08_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.005177345275878764,
+        "maximum_ground_above_deck_m": 0.01249900817871108,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D10_Forest_Edge_Link_L09_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0034502410888670454,
+        "maximum_ground_above_deck_m": 0.004179153442382955,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D10_Forest_Edge_Link_R01_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.0032785797119139204,
+        "maximum_ground_above_deck_m": 0.002464447021484517,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D10_Trailhead_Village_Loop_L04_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.006027069091796733,
+        "maximum_ground_above_deck_m": 0.002914581298828267,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D10_Forest_Edge_Link_R10_Approach",
+        "actual_ground_samples": 32,
+        "maximum_deck_ground_gap_m": 0.003978576660156108,
+        "maximum_ground_above_deck_m": 0.006794128417968892,
+        "actual_bedding_supported_samples": 0
+      },
+      {
+        "id": "Expansion_D10_Forest_Edge_Link_R00_Approach",
+        "actual_ground_samples": 56,
+        "maximum_deck_ground_gap_m": 0.003216590881347514,
+        "maximum_ground_above_deck_m": 0.0024472808837892046,
+        "actual_bedding_supported_samples": 0
+      }
+    ],
+    "failures": []
+  },
+  "actual_doorway_sweeps": {
+    "buildings": 81,
+    "width_m": 0.5,
+    "heights_m": [
+      0.1,
+      0.9,
+      1.7
+    ],
+    "blocked": []
+  },
+  "scope": "Read-only native reopening, geometry/UV/material/packed-image checks and actual terrain BVH vertical contacts. Foundations, interiors, camera quality and engine behavior have separate evidence."
+}
