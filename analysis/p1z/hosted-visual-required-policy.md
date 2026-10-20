@@ -30,7 +30,7 @@ Checkout and artifact-upload failures also remain red.
 
 `hosted_visual_runtime_policy.json` records the image, Godot archive and
 binary, Python/Pillow, six apt packages, and Mesa GLX identity from reviewed
-run `38254349222` (the original promotion above used `37122904593`). The final checker requires every listed receipt line
+run `39399019945` (previous refresh `38254349222`; original promotion `37122904593`). The final checker requires every listed receipt line
 exactly once. If GitHub updates the image or a package, CI fails with a
 distinct `runtime:` reason. A reviewer must compare a fresh complete
 positive/negative artifact and visual sample on the changed runtime before
@@ -65,6 +65,33 @@ The hosted receipt's `runtime_errors=0` means no markers from the declared
 logs can still contain the optional NobodyWho GDExtension missing-library
 message; that noise is outside this visual gate and must be handled under
 the separate clean-export gate.
+
+## October 20 runtime refresh
+
+[PR #87 run 39399019945](https://github.com/ForTe13X/living-town/actions/runs/39399019945)
+reviews branch head `d7e3a2490b7ea8133d189f9353429211e41203ff` and
+actual merge-event checkout `09c92e95c51a82afbfca4e38c35886a58ef16fbf`.
+Artifact `12253533932` has archive SHA-256
+`0e3460cc065fe728ff9ae3f7a906f82f3ac3c9ffbed69482e19140b557395699`.
+All 98 recorded member hashes match (88 positive and 10 negative entries).
+The positive receipt is `pass rc=0 png_count=75 runtime_errors=0`; the
+same-runtime day/night negative retains precisely A1+A2 with successful
+capture and zero scanned runtime errors. The inline identical-floor negative
+retains its expected B-only failure at 0.0000. Independent review inspected
+representative day/night, winter, grove, cafe-floor and harbor/player PNGs.
+The [review receipt](hosted-runtime-review-2026-10-20.json) binds these findings.
+
+Only the exact runner image (`20261018.339.1`) and Xvfb package
+(`2:21.1.12-1ubuntu1.9`) changed. The other eleven required runtime identities,
+Godot hashes, visual goldens and verdict checks are unchanged. Replaying the
+actual checker passes with these two exact refreshed pins; a malformed
+negative with `a2=0` still fails. The existing policy unit suite also rejects
+unreviewed runtime identities and invalid positive/negative receipts.
+
+This requalifies the hosted raster runtime for the existing 2D game canary.
+It does not establish 3D cafe asset quality or replace the separate Blender,
+GLB and Godot pilot evidence. This reviewed run failed only its stale runtime
+pins; a fresh successful workflow is required after the refresh.
 
 ## Promotion boundary
 

@@ -1,0 +1,70 @@
+{
+  "schema": "living_town.hosted_runtime_refresh_audit.v1",
+  "source_run_id": 39399019945,
+  "artifact_id": 12253533932,
+  "artifact_archive_sha256": "0e3460cc065fe728ff9ae3f7a906f82f3ac3c9ffbed69482e19140b557395699",
+  "reviewed_pr_head": "d7e3a2490b7ea8133d189f9353429211e41203ff",
+  "reviewed_event_sha": "09c92e95c51a82afbfca4e38c35886a58ef16fbf",
+  "positive_manifest_verified_entries": 88,
+  "negative_manifest_verified_entries": 10,
+  "all_recorded_hashes_match": true,
+  "positive_verdict": "VISUAL_CANARY verdict=pass rc=0 png_count=75 runtime_errors=0",
+  "negative_verdict": "VISUAL_NEGATIVE verdict=caught_expected_daynight_fault shot_rc=0 assert_rc=1 a1=1 a2=1 gate=1 runtime_errors=0",
+  "inline_identical_floor_negative": "Expected B-only failure at 0.0000, with companion frames and metadata preserved.",
+  "required_runtime_lines": {
+    "RUNNER_IMAGE ": "RUNNER_IMAGE os=ubuntu24 version=20261018.339.1 arch=X64",
+    "GODOT_ARCHIVE ": "GODOT_ARCHIVE sha256=30e6b6d141f0cd5bebd629ad1d0ef1324e60091bb20662d026b402ba58c59937",
+    "GODOT_BINARY ": "GODOT_BINARY sha256=5a806b2b385279d9607094d33e946ed828e9606df4cb46d258ca27468dc5c1c9 version=4.6.2.stable.official.71f334935",
+    "PYTHON ": "PYTHON version=3.11.17 pillow=11.3.0",
+    "VISUAL_PACKAGE libgl1=": "VISUAL_PACKAGE libgl1=1.7.0-1build1",
+    "VISUAL_PACKAGE libgl1-mesa-dri=": "VISUAL_PACKAGE libgl1-mesa-dri=25.2.8-0ubuntu0.24.04.4",
+    "VISUAL_PACKAGE libglx-mesa0=": "VISUAL_PACKAGE libglx-mesa0=25.2.8-0ubuntu0.24.04.4",
+    "VISUAL_PACKAGE mesa-utils=": "VISUAL_PACKAGE mesa-utils=9.0.0-2",
+    "VISUAL_PACKAGE xauth=": "VISUAL_PACKAGE xauth=1:1.1.2-1build1",
+    "VISUAL_PACKAGE xvfb=": "VISUAL_PACKAGE xvfb=2:21.1.12-1ubuntu1.9",
+    "OpenGL vendor string: ": "OpenGL vendor string: Mesa",
+    "OpenGL renderer string: ": "OpenGL renderer string: llvmpipe (LLVM 20.1.2, 256 bits)",
+    "OpenGL version string: ": "OpenGL version string: 4.5 (Compatibility Profile) Mesa 25.2.8-0ubuntu0.24.04.4"
+  },
+  "policy_only_runtime_value_changes": [
+    "RUNNER_IMAGE ",
+    "VISUAL_PACKAGE xvfb="
+  ],
+  "source_files_edited": false,
+  "checker_validation": {
+    "old_policy": {
+      "rc": 1,
+      "stderr": "HOSTED_VISUAL_REQUIRED FAIL runtime: 'RUNNER_IMAGE ' expected exactly once as 'RUNNER_IMAGE os=ubuntu24 version=20261004.327.1 arch=X64'; found ['RUNNER_IMAGE os=ubuntu24 version=20261018.339.1 arch=X64']\nHOSTED_VISUAL_REQUIRED FAIL runtime: 'VISUAL_PACKAGE xvfb=' expected exactly once as 'VISUAL_PACKAGE xvfb=2:21.1.12-1ubuntu1.8'; found ['VISUAL_PACKAGE xvfb=2:21.1.12-1ubuntu1.9']\n"
+    },
+    "proposed_exact_policy": {
+      "rc": 0,
+      "stdout": "HOSTED_VISUAL_REQUIRED PASS positive=pass negative=caught_expected_daynight_fault runtime=reviewed\n"
+    },
+    "malformed_negative_a2_absent": {
+      "rc": 1,
+      "stderr": "HOSTED_VISUAL_REQUIRED FAIL negative: unexpected tooth receipt caught_expected_daynight_fault 0 1 1 0 1 0\n"
+    }
+  },
+  "representative_images_inspected": [
+    "visual-gate/vg_noon.png",
+    "visual-gate/vg_night.png",
+    "visual-gate/season/winter_night.png",
+    "visual-gate/forest/noon/grove-coverage.png",
+    "visual-gate/floor/rt_cafe_2f.png",
+    "visual-gate/vg_player_east_ocean.png"
+  ],
+  "scope": "Raster runtime requalification for the existing 2D game suite; no 3D pilot acceptance or final workflow success implied.",
+  "policy_path": "analysis/p1z/hosted_visual_runtime_policy.json",
+  "run_url": "https://github.com/ForTe13X/living-town/actions/runs/39399019945",
+  "representative_image_sha256": {
+    "visual-gate/vg_noon.png": "a0ebc5b099095a5fb7469b5d18c29482288f537eecdae27abb6067f19c6bebf6",
+    "visual-gate/vg_night.png": "874313786b34b25cbed3a479e4b68933370f67b5dde15ec6cb484c5ca2dbfb0e",
+    "visual-gate/season/winter_night.png": "7fe275a36687e6645033db061fbe17b698ebe4cc917c8dbc00e4d317f7ea8c09",
+    "visual-gate/forest/noon/grove-coverage.png": "096490ac35f3e0211bf6abf77da218316231d209450967b0e7fe55582235bfa9",
+    "visual-gate/floor/rt_cafe_2f.png": "9e37c6c26d50130412f15bed8bc636101430d63a830909ffa7b63a3ab19027cb",
+    "visual-gate/vg_player_east_ocean.png": "a6ac33040f89952ee94393e744105004c943feace2d14c25fa92313d95a805f1"
+  },
+  "root_additional_images_inspected": [
+    "visual-gate/floor/rt_cafe_1f.png"
+  ]
+}
