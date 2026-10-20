@@ -1,0 +1,1155 @@
+{
+  "schema": "living_town.territory_bundle.v1",
+  "release_tag": "town-territory-2026-10-20",
+  "seed": 20261020,
+  "building_count": 81,
+  "historical_source_path_map": {
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\chunks\\D06.glb": "generation/scene/chunks/D06.glb",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\chunks\\D07.glb": "generation/scene/chunks/D07.glb",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\chunks\\D08.glb": "generation/scene/chunks/D08.glb",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\chunks\\D09.glb": "generation/scene/chunks/D09.glb",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\chunks\\D10.glb": "generation/scene/chunks/D10.glb",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\chunks\\expansion_public_realm.glb": "generation/scene/chunks/expansion_public_realm.glb",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\chunks\\replacement_terrain.glb": "generation/scene/chunks/replacement_terrain.glb",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\territory_plan.json": "generation/territory_plan.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\territory_map.png": "generation/territory_map.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\generation_run.json": "generation/generation_run.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\offline_review.json": "generation/offline_review.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\expansion_manifest.json": "generation/scene/expansion_manifest.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\chunk_manifest.json": "generation/scene/chunk_manifest.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\interiors.json": "generation/scene/interiors.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\collision_proxies.json": "generation/scene/collision_proxies.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\interior_preflight.json": "generation/scene/interior_preflight.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\actual_interior_audit.json": "generation/scene/actual_interior_audit.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\native_review.json": "generation/scene/native_review.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\plaster_weather_basecolor.png": "generation/scene/plaster_weather_basecolor.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\expanded_town.blend": "generation/scene/expanded_town.blend",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\renders\\expansion_overview.png": "generation/scene/renders/expansion_overview.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\renders\\expansion_street.png": "generation/scene/renders/expansion_street.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\renders\\expansion_interior.png": "generation/scene/renders/expansion_interior.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\renders\\expansion_terrain.png": "generation/scene/renders/expansion_terrain.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\review\\render_manifest.json": "generation/scene/review/render_manifest.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\review\\expansion_overview.png": "generation/scene/review/expansion_overview.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\review\\expansion_street.png": "generation/scene/review/expansion_street.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\review\\expansion_interior.png": "generation/scene/review/expansion_interior.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\review\\expansion_terrain.png": "generation/scene/review/expansion_terrain.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\terrain_review\\render_manifest.json": "generation/scene/terrain_review/render_manifest.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\terrain_review\\expansion_overview.png": "generation/scene/terrain_review/expansion_overview.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\terrain_review\\expansion_street.png": "generation/scene/terrain_review/expansion_street.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\terrain_review\\expansion_terrain.png": "generation/scene/terrain_review/expansion_terrain.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\retaining_review_final\\render_manifest.json": "generation/scene/retaining_review_final/render_manifest.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\retaining_review_final\\expansion_overview.png": "generation/scene/retaining_review_final/expansion_overview.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\terrain_review_cameras.json": "generation/terrain_review_cameras.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\retaining_review_final_cameras.json": "generation/retaining_review_final_cameras.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\visual_review.json": "generation/visual_review.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\movie_visual_review.json": "generation/movie_visual_review.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\living_town_complete.blend": "art/living_town/living_town_complete.blend",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\game_assets_reserve\\living_town_game.glb": "baseline/living_town_game.glb",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\masterplan.json": "art/living_town/masterplan.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\landscape_plan.json": "art/living_town/landscape_plan.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\terrain_plan.json": "art/living_town/terrain_plan.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\reserve_plan.json": "art/living_town/reserve_plan.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\interior_plan.json": "art/living_town/interior_plan.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\street_plan.json": "art/living_town/street_plan.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\presentation_camera_overrides.json": "art/living_town/presentation_camera_overrides.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\reserve_plan.py": "art/living_town/tools/reserve_plan.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\terrain_profile.py": "art/living_town/tools/terrain_profile.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\audit_native_scene.py": "art/living_town/tools/audit_native_scene.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\audit_reserve_scene.py": "art/living_town/tools/audit_reserve_scene.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\build_living_town.py": "art/living_town/tools/build_living_town.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\build_reserve.py": "art/living_town/tools/build_reserve.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\diagnose_roof_contact.py": "art/living_town/tools/diagnose_roof_contact.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\export_game_assets.py": "art/living_town/tools/export_game_assets.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\finalize_flythrough.py": "art/living_town/tools/finalize_flythrough.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\freeze_source.py": "art/living_town/tools/freeze_source.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\generate_masterplan.py": "art/living_town/tools/generate_masterplan.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\generate_materials.py": "art/living_town/tools/generate_materials.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\generate_reserve_materials.py": "art/living_town/tools/generate_reserve_materials.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\interior_design.py": "art/living_town/tools/interior_design.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\landscape_details.py": "art/living_town/tools/landscape_details.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\package_delivery.py": "art/living_town/tools/package_delivery.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\plan_streets.py": "art/living_town/tools/plan_streets.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\refine_environment.py": "art/living_town/tools/refine_environment.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\render_delivery.py": "art/living_town/tools/render_delivery.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\render_flythrough.py": "art/living_town/tools/render_flythrough.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\render_program_details.py": "art/living_town/tools/render_program_details.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\render_reserve.py": "art/living_town/tools/render_reserve.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\reserve_amenities.py": "art/living_town/tools/reserve_amenities.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\reserve_environment.py": "art/living_town/tools/reserve_environment.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\revise_urban_plan.py": "art/living_town/tools/revise_urban_plan.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\verify_delivery.py": "art/living_town/tools/verify_delivery.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\tools\\verify_reserve_exports.py": "art/living_town/tools/verify_reserve_exports.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\architecture_details.py": "tools/town_generation/architecture_details.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\build_expansion_scene.py": "tools/town_generation/build_expansion_scene.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\build_expansion_tour.py": "tools/town_generation/build_expansion_tour.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\compile_recipe.py": "tools/town_generation/compile_recipe.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\generate_town.py": "tools/town_generation/generate_town.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\infinigen_worker.py": "tools/town_generation/infinigen_worker.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\inspect_expansion_native.py": "tools/town_generation/inspect_expansion_native.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\interior_adapter.py": "tools/town_generation/interior_adapter.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\package_expansion.py": "tools/town_generation/package_expansion.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\prepare_inspection.py": "tools/town_generation/prepare_inspection.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\preview_territory.py": "tools/town_generation/preview_territory.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\render_expansion.py": "tools/town_generation/render_expansion.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\territory.py": "tools/town_generation/territory.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\verify_expansion.py": "tools/town_generation/verify_expansion.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\breton_summer.json": "tools/town_generation/breton_summer.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\INFINIGEN_NOTICES.txt": "tools/town_generation/INFINIGEN_NOTICES.txt",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\godot_viewer\\project.godot": "tools/town_generation/godot_viewer/project.godot",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\godot_viewer\\Main.tscn": "tools/town_generation/godot_viewer/Main.tscn",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\godot_viewer\\main.gd": "tools/town_generation/godot_viewer/main.gd",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\asset_refinement\\hero_scene.py": "tools/asset_refinement/hero_scene.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\asset_refinement\\hero_furniture.py": "tools/asset_refinement/hero_furniture.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\asset_refinement\\hero_foliage.py": "tools/asset_refinement/hero_foliage.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\asset_refinement\\hero_pbr.py": "tools/asset_refinement/hero_pbr.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\asset_refinement\\hero_walls.py": "tools/asset_refinement/hero_walls.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\asset_refinement\\hero_surfaces.py": "tools/asset_refinement/hero_surfaces.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\asset_refinement\\materials.py": "tools/asset_refinement/materials.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\asset_refinement\\prepare_scans.py": "tools/asset_refinement/prepare_scans.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\asset_refinement\\component_licenses.json": "tools/asset_refinement/component_licenses.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\build_town_walkthrough.py": "tools/build_town_walkthrough.py",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\LICENSE": "LICENSE",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\external_assets\\polyhaven\\PROVENANCE.json": "art/living_town/external_assets/polyhaven/PROVENANCE.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\external_assets\\fonts\\PROVENANCE.json": "art/living_town/external_assets/fonts/PROVENANCE.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\external_assets\\fonts\\LICENSE.md": "art/living_town/external_assets/fonts/LICENSE.md",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\game\\data\\town3d\\projection.json": "game/data/town3d/projection.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\refinement_pilot\\scanned_pbr_v3\\library_manifest.json": "art/living_town/refinement_pilot/scanned_pbr_v3/library_manifest.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\refinement_pilot\\scanned_pbr_v3\\Granite002A\\basecolor.png": "art/living_town/refinement_pilot/scanned_pbr_v3/Granite002A/basecolor.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\refinement_pilot\\scanned_pbr_v3\\Granite002A\\roughness.png": "art/living_town/refinement_pilot/scanned_pbr_v3/Granite002A/roughness.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\refinement_pilot\\scanned_pbr_v3\\Granite002A\\normal.png": "art/living_town/refinement_pilot/scanned_pbr_v3/Granite002A/normal.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\refinement_pilot\\scanned_pbr_v3\\Granite002A\\SOURCE_PROVENANCE.json": "art/living_town/refinement_pilot/scanned_pbr_v3/Granite002A/SOURCE_PROVENANCE.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\refinement_pilot\\scanned_pbr_v3\\Granite002A\\cut_roughness.png": "art/living_town/refinement_pilot/scanned_pbr_v3/Granite002A/cut_roughness.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\refinement_pilot\\scanned_pbr_v3\\oak_veneer_01\\basecolor.png": "art/living_town/refinement_pilot/scanned_pbr_v3/oak_veneer_01/basecolor.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\refinement_pilot\\scanned_pbr_v3\\oak_veneer_01\\roughness.png": "art/living_town/refinement_pilot/scanned_pbr_v3/oak_veneer_01/roughness.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\refinement_pilot\\scanned_pbr_v3\\oak_veneer_01\\normal.png": "art/living_town/refinement_pilot/scanned_pbr_v3/oak_veneer_01/normal.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\refinement_pilot\\scanned_pbr_v3\\oak_veneer_01\\SOURCE_PROVENANCE.json": "art/living_town/refinement_pilot/scanned_pbr_v3/oak_veneer_01/SOURCE_PROVENANCE.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\refinement_pilot\\scanned_pbr_v3\\terrazzo_tiles\\basecolor.png": "art/living_town/refinement_pilot/scanned_pbr_v3/terrazzo_tiles/basecolor.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\refinement_pilot\\scanned_pbr_v3\\terrazzo_tiles\\roughness.png": "art/living_town/refinement_pilot/scanned_pbr_v3/terrazzo_tiles/roughness.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\refinement_pilot\\scanned_pbr_v3\\terrazzo_tiles\\normal.png": "art/living_town/refinement_pilot/scanned_pbr_v3/terrazzo_tiles/normal.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\refinement_pilot\\scanned_pbr_v3\\terrazzo_tiles\\SOURCE_PROVENANCE.json": "art/living_town/refinement_pilot/scanned_pbr_v3/terrazzo_tiles/SOURCE_PROVENANCE.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\refinement_pilot\\scanned_pbr_v3\\white_plaster_02\\basecolor.png": "art/living_town/refinement_pilot/scanned_pbr_v3/white_plaster_02/basecolor.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\refinement_pilot\\scanned_pbr_v3\\white_plaster_02\\roughness.png": "art/living_town/refinement_pilot/scanned_pbr_v3/white_plaster_02/roughness.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\refinement_pilot\\scanned_pbr_v3\\white_plaster_02\\normal.png": "art/living_town/refinement_pilot/scanned_pbr_v3/white_plaster_02/normal.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\refinement_pilot\\scanned_pbr_v3\\white_plaster_02\\SOURCE_PROVENANCE.json": "art/living_town/refinement_pilot/scanned_pbr_v3/white_plaster_02/SOURCE_PROVENANCE.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\licenses\\INFINIGEN_NOTICES.txt": "generation/scene/licenses/INFINIGEN_NOTICES.txt",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\infinigen_worker\\planter_20261020\\courtyard_planter.blend": "upstream/infinigen/courtyard_planter.blend",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\infinigen_worker\\planter_20261020\\courtyard_planter.glb": "upstream/infinigen/courtyard_planter.glb",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\infinigen_worker\\planter_20261020\\worker_result.json": "upstream/infinigen/worker_result.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\infinigen_worker\\planter_20261020\\environment_audit.json": "upstream/infinigen/environment_audit.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\infinigen_worker\\planter_20261020\\INFINIGEN_NOTICES.txt": "upstream/infinigen/INFINIGEN_NOTICES.txt",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\infinigen_worker\\planter_20261020\\textures\\terracotta_basecolor.png": "upstream/infinigen/textures/terracotta_basecolor.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\infinigen_worker\\planter_20261020\\textures\\terracotta_normal.png": "upstream/infinigen/textures/terracotta_normal.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\infinigen_worker\\planter_20261020\\textures\\terracotta_orm.png": "upstream/infinigen/textures/terracotta_orm.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\infinigen_worker\\planter_20261020\\textures\\leaf_basecolor.png": "upstream/infinigen/textures/leaf_basecolor.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\infinigen_worker\\planter_20261020\\textures\\leaf_normal.png": "upstream/infinigen/textures/leaf_normal.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\infinigen_worker\\planter_20261020\\textures\\leaf_orm.png": "upstream/infinigen/textures/leaf_orm.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\infinigen_worker\\planter_20261020\\textures\\soil_basecolor.png": "upstream/infinigen/textures/soil_basecolor.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\infinigen_worker\\planter_20261020\\textures\\soil_normal.png": "upstream/infinigen/textures/soil_normal.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\infinigen_worker\\planter_20261020\\textures\\soil_orm.png": "upstream/infinigen/textures/soil_orm.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\infinigen_worker\\planter_20261020\\courtyard_planter_preview.png": "upstream/infinigen/courtyard_planter_preview.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\tour.json": "inspection/original_inspection.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\tour_report.json": "inspection/consumer_report.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\stills.json": "inspection/still_inspection.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\stills_report.json": "inspection/still_consumer_report.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\stills_captures\\01_compound_overview.png": "inspection/still_captures/01_compound_overview.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\stills_captures\\02_D06.png": "inspection/still_captures/02_D06.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\stills_captures\\03_D07.png": "inspection/still_captures/03_D07.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\stills_captures\\04_D08.png": "inspection/still_captures/04_D08.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\stills_captures\\05_D09.png": "inspection/still_captures/05_D09.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\stills_captures\\06_D10.png": "inspection/still_captures/06_D10.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\stills_captures\\07_street_materials.png": "inspection/still_captures/07_street_materials.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\stills_captures\\08_furnished_interior.png": "inspection/still_captures/08_furnished_interior.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\stills_captures\\09_terrain_and_reserve.png": "inspection/still_captures/09_terrain_and_reserve.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\media_context.json": "media/media_context.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\narration_script.json": "media/narration_script.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\narration.wav": "media/narration.wav",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\narration_normalized.wav": "media/narration_normalized.wav",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\narration.ass": "media/narration.ass",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\narration.srt": "media/narration.srt",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\captions.json": "media/captions.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\voice_report.json": "media/voice_report.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\composition_report.json": "media/composition_report.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\verification_report.json": "media/verification_report.json",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\chapters.ffmetadata": "media/chapters.ffmetadata",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\composition_filters.txt": "media/composition_filters.txt",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\expanded_town_architectural_tour.mp4": "media/expanded_town_architectural_tour.mp4",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\expanded_town_tour.gif": "media/expanded_town_tour.gif",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_01.png": "media/qa_frames/frame_01.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_02.png": "media/qa_frames/frame_02.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_03.png": "media/qa_frames/frame_03.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_04.png": "media/qa_frames/frame_04.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_05.png": "media/qa_frames/frame_05.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_06.png": "media/qa_frames/frame_06.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_07.png": "media/qa_frames/frame_07.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_08.png": "media/qa_frames/frame_08.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_09.png": "media/qa_frames/frame_09.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_10.png": "media/qa_frames/frame_10.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_11.png": "media/qa_frames/frame_11.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_12.png": "media/qa_frames/frame_12.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_13.png": "media/qa_frames/frame_13.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_14.png": "media/qa_frames/frame_14.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_15.png": "media/qa_frames/frame_15.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_16.png": "media/qa_frames/frame_16.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_17.png": "media/qa_frames/frame_17.png",
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_18.png": "media/qa_frames/frame_18.png"
+  },
+  "historical_reports_unmodified": true,
+  "review_gates": {
+    "generation": "GENERATED_REQUIRES_REVIEW",
+    "offline": "PASS",
+    "native": "PASS",
+    "consumer": "PASS",
+    "media": "PASS",
+    "consumer_stills": "PASS"
+  },
+  "portable_inspection": "Run the README prepare_inspection command after extraction; historical absolute-path reports remain preserved evidence.",
+  "files": [
+    {
+      "path": "LICENSE",
+      "bytes": 1393,
+      "sha256": "b00b825c50272c31e447cabbc0cdc7695f26795cd8d4fd7341163240e414349b"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2596,
+      "sha256": "7aac4c9ca7da06f443ea46226a6a702d2c02240e85f91d9931a008f4f90d5492"
+    },
+    {
+      "path": "art/living_town/external_assets/fonts/LICENSE.md",
+      "bytes": 4491,
+      "sha256": "c21d7293d87b6d7ab1d0229a2f55b77f33a7613a6a4e66f6693d68d7d8d09464"
+    },
+    {
+      "path": "art/living_town/external_assets/fonts/PROVENANCE.json",
+      "bytes": 655,
+      "sha256": "2017efa3bbc5d7e85ccdec1ae5da6e9da6d6df31c6aaf9a0785dfe735bcada91"
+    },
+    {
+      "path": "art/living_town/external_assets/polyhaven/PROVENANCE.json",
+      "bytes": 1456,
+      "sha256": "c61f6dee43abcd725b87f39e4925daeec9b96db1bd75ff293a7cbaa3e140f097"
+    },
+    {
+      "path": "art/living_town/interior_plan.json",
+      "bytes": 1536005,
+      "sha256": "665519089421f82d0869ff62f189f364426a064ece67912979f9709d752e5409"
+    },
+    {
+      "path": "art/living_town/landscape_plan.json",
+      "bytes": 53903,
+      "sha256": "68b8f4d2a9269b1fa8e9dde530bc83bd41b871effaf4d224ffd12ab953f6d4b1"
+    },
+    {
+      "path": "art/living_town/living_town_complete.blend",
+      "bytes": 101688503,
+      "sha256": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191"
+    },
+    {
+      "path": "art/living_town/masterplan.json",
+      "bytes": 109408,
+      "sha256": "b7e5522f62f4a390faa95502537fbbac14856cb278bccb695fbd5cabe186377f"
+    },
+    {
+      "path": "art/living_town/presentation_camera_overrides.json",
+      "bytes": 724,
+      "sha256": "628f423ac41cc40969e2dcdc4f4d3dec5b90b97053d2eeb7593f71af1022d4eb"
+    },
+    {
+      "path": "art/living_town/refinement_pilot/scanned_pbr_v3/Granite002A/SOURCE_PROVENANCE.json",
+      "bytes": 4882,
+      "sha256": "8150c1efa522715d71687208e1d44b10d501f2af31a85bcaf723083dd2a425ba"
+    },
+    {
+      "path": "art/living_town/refinement_pilot/scanned_pbr_v3/Granite002A/basecolor.png",
+      "bytes": 8299644,
+      "sha256": "e4aba6eceb81d3b24c6ebbe0c06fafbd93bc4ba22d8294dcd6c2a7bfe0f338bb"
+    },
+    {
+      "path": "art/living_town/refinement_pilot/scanned_pbr_v3/Granite002A/cut_roughness.png",
+      "bytes": 1007944,
+      "sha256": "4c0b7a62c387da4265a5fe3ee3ff30b4b1720a2c5fc0154694c499eb43177e08"
+    },
+    {
+      "path": "art/living_town/refinement_pilot/scanned_pbr_v3/Granite002A/normal.png",
+      "bytes": 2255733,
+      "sha256": "db1329fb40d0b24a1fd32ab73345e32cb60683965bdac54f8898fcc8919f22c6"
+    },
+    {
+      "path": "art/living_town/refinement_pilot/scanned_pbr_v3/Granite002A/roughness.png",
+      "bytes": 1325522,
+      "sha256": "fdb3baf01218eacb42a814fedc3f2ed0451109d35ef47155841a6b224efc9e08"
+    },
+    {
+      "path": "art/living_town/refinement_pilot/scanned_pbr_v3/library_manifest.json",
+      "bytes": 10550,
+      "sha256": "bb367d05a1cb15df5bf9238f642dfd91cbc0ab58b6723fc4d1154c6b6ecf0f70"
+    },
+    {
+      "path": "art/living_town/refinement_pilot/scanned_pbr_v3/oak_veneer_01/SOURCE_PROVENANCE.json",
+      "bytes": 6546,
+      "sha256": "1e0f50930fa74ebbc403d5018b709a26531e47bce1125ee8fb57e439ffc5f686"
+    },
+    {
+      "path": "art/living_town/refinement_pilot/scanned_pbr_v3/oak_veneer_01/basecolor.png",
+      "bytes": 6112432,
+      "sha256": "6064b628e227bd124e87e303d52ad8856799aa20da5e587c768df094cf7da87d"
+    },
+    {
+      "path": "art/living_town/refinement_pilot/scanned_pbr_v3/oak_veneer_01/normal.png",
+      "bytes": 6037990,
+      "sha256": "5fb488f60f005cb34c23c9c493a37e685bbc54a1aa3c95345f77146b7d24c5ba"
+    },
+    {
+      "path": "art/living_town/refinement_pilot/scanned_pbr_v3/oak_veneer_01/roughness.png",
+      "bytes": 3310082,
+      "sha256": "fc155b78bfa5775d60cbf8a291e8d21447a94d88cd1ddb81f695efb2caf5c9be"
+    },
+    {
+      "path": "art/living_town/refinement_pilot/scanned_pbr_v3/terrazzo_tiles/SOURCE_PROVENANCE.json",
+      "bytes": 4391,
+      "sha256": "20b9c2dc1bed60c097a9d322963b55bb822c9e959025053f599ed4d9a1a0a250"
+    },
+    {
+      "path": "art/living_town/refinement_pilot/scanned_pbr_v3/terrazzo_tiles/basecolor.png",
+      "bytes": 9307214,
+      "sha256": "bf1db414fdf3498067af124add8b6417bb48291152e7ce8793291e5c5101297d"
+    },
+    {
+      "path": "art/living_town/refinement_pilot/scanned_pbr_v3/terrazzo_tiles/normal.png",
+      "bytes": 2535869,
+      "sha256": "91eada77f4c409f37062cb1c50777d88a2b77011a958fa9e5f96cb9c6e55c894"
+    },
+    {
+      "path": "art/living_town/refinement_pilot/scanned_pbr_v3/terrazzo_tiles/roughness.png",
+      "bytes": 2020676,
+      "sha256": "e539202add3c0ab0e1a9d1473f47453d82e404940e87ffd22fb90de09629b1ee"
+    },
+    {
+      "path": "art/living_town/refinement_pilot/scanned_pbr_v3/white_plaster_02/SOURCE_PROVENANCE.json",
+      "bytes": 6551,
+      "sha256": "93eb8c24f289de716409abece528cc0d5df874ea6c2bae8e790033e6ee481568"
+    },
+    {
+      "path": "art/living_town/refinement_pilot/scanned_pbr_v3/white_plaster_02/basecolor.png",
+      "bytes": 6409983,
+      "sha256": "dc6999674fa0a34708c6c4c076c150b5df1bb1392d54dcdc4f93056090f4b081"
+    },
+    {
+      "path": "art/living_town/refinement_pilot/scanned_pbr_v3/white_plaster_02/normal.png",
+      "bytes": 7942075,
+      "sha256": "47bc555fa18b55e437c2b5d72da0a2a5b4e88e82b05377de465ad64635c5bdcc"
+    },
+    {
+      "path": "art/living_town/refinement_pilot/scanned_pbr_v3/white_plaster_02/roughness.png",
+      "bytes": 2633057,
+      "sha256": "5a1f122e5ae0f238954b784c1bdaa0c6603544d3fe1733cd35d6f8fe5a38b38a"
+    },
+    {
+      "path": "art/living_town/reserve_plan.json",
+      "bytes": 557647,
+      "sha256": "6841fdb5121e78372e9ccc80a990cb93b5acd7700db3f2661df2718b7e2980f7"
+    },
+    {
+      "path": "art/living_town/street_plan.json",
+      "bytes": 58548,
+      "sha256": "5721df68676d0c17d02e1f9fe21fa27fa9cc05e7c396237bea6a6f78372109f0"
+    },
+    {
+      "path": "art/living_town/terrain_plan.json",
+      "bytes": 230180,
+      "sha256": "69fc114cc289b33fc8e1d33e57daf77dd65e94d0340715c6a1974cd4d99fe349"
+    },
+    {
+      "path": "art/living_town/tools/audit_native_scene.py",
+      "bytes": 26314,
+      "sha256": "47ff2a47a9928f572e8cd0714e4bc5eec924c48d583f03e9981c95b145aef195"
+    },
+    {
+      "path": "art/living_town/tools/audit_reserve_scene.py",
+      "bytes": 87020,
+      "sha256": "5602a277897afb3665aeb1d2584313de5e13fd7b1d3140586e6110de869cba78"
+    },
+    {
+      "path": "art/living_town/tools/build_living_town.py",
+      "bytes": 81309,
+      "sha256": "41a59245afb3fc02789f1dfd2482c68c1b3282b029cd1087f177b8c3c699894d"
+    },
+    {
+      "path": "art/living_town/tools/build_reserve.py",
+      "bytes": 624,
+      "sha256": "bf4490ecd0e58ac13d1323085ca0460107b95abde66bb0012b570521a6147c8c"
+    },
+    {
+      "path": "art/living_town/tools/diagnose_roof_contact.py",
+      "bytes": 12062,
+      "sha256": "88b8e1121b3da435b463a40adffeabcc29b0b9845fe290ae4f7a47ffc61bdcc0"
+    },
+    {
+      "path": "art/living_town/tools/export_game_assets.py",
+      "bytes": 43170,
+      "sha256": "9ad329ae0d9abdf76beaf7997a22947a83fc805db0b978d7715c41b24a1d5d40"
+    },
+    {
+      "path": "art/living_town/tools/finalize_flythrough.py",
+      "bytes": 3424,
+      "sha256": "103a202ccf6cb099f5b1841f8685c02de6f6fac206bb1b19b115211ca56417bd"
+    },
+    {
+      "path": "art/living_town/tools/freeze_source.py",
+      "bytes": 5126,
+      "sha256": "9523062a6039c4caac61e131bfabb1e3d60b9b67cd4c27181b9804d6cd8dec0e"
+    },
+    {
+      "path": "art/living_town/tools/generate_masterplan.py",
+      "bytes": 20508,
+      "sha256": "5c5752597397e1043602d7a218ce0bbfaca99c93b447ca21c12ca7b53d3f4689"
+    },
+    {
+      "path": "art/living_town/tools/generate_materials.py",
+      "bytes": 14228,
+      "sha256": "fd4c5f2b4f28e2f0989deb7855edb41bd99411afb73a08357edcc9eeef75ff87"
+    },
+    {
+      "path": "art/living_town/tools/generate_reserve_materials.py",
+      "bytes": 7636,
+      "sha256": "c9d137599abfb0d31fa8bc3b99589e3b5eb28682dc0e670c61fa6ee973bd4bae"
+    },
+    {
+      "path": "art/living_town/tools/interior_design.py",
+      "bytes": 90867,
+      "sha256": "045228f452b1ace0c8363a13c56742758426d8b816bb1b00245d88d985f8dfe4"
+    },
+    {
+      "path": "art/living_town/tools/landscape_details.py",
+      "bytes": 23395,
+      "sha256": "284459e0383e5d4adf0e3c9ddc637bc29cf375152c8724856546d0596e25e5d8"
+    },
+    {
+      "path": "art/living_town/tools/package_delivery.py",
+      "bytes": 6402,
+      "sha256": "c4ea955ca9158d89c5f539763d66e9cd47e81dbd55a825a99c5de24392ae575e"
+    },
+    {
+      "path": "art/living_town/tools/plan_streets.py",
+      "bytes": 10436,
+      "sha256": "bb305c87478be8878919ab8075c7f8660426a47abd97615fa27736eaca86344e"
+    },
+    {
+      "path": "art/living_town/tools/refine_environment.py",
+      "bytes": 8423,
+      "sha256": "881de701ec766a2e256549504a36410b84a976431b8900a99551a064bf9d1d2e"
+    },
+    {
+      "path": "art/living_town/tools/render_delivery.py",
+      "bytes": 6350,
+      "sha256": "70da91c5a31d559a1fa1b28db6f7f5c0020ad9235c03d2e19f1f6798f9c38a14"
+    },
+    {
+      "path": "art/living_town/tools/render_flythrough.py",
+      "bytes": 3824,
+      "sha256": "380280df3eaa83cd0c22d7c8693ccc252d209ec79a2526fa8649a5aaa5ef8b45"
+    },
+    {
+      "path": "art/living_town/tools/render_program_details.py",
+      "bytes": 4403,
+      "sha256": "1712206e1a24b7293c6b94ac192afad93baff630b248fcf450ad39270cb0aa77"
+    },
+    {
+      "path": "art/living_town/tools/render_reserve.py",
+      "bytes": 9181,
+      "sha256": "5c325bad10d69dc334ce6aacdef70877c5676d0c21ba6ea40ecea82a8153df88"
+    },
+    {
+      "path": "art/living_town/tools/reserve_amenities.py",
+      "bytes": 54773,
+      "sha256": "4187108afffea6843ab4ee62a67289f8d39a514c8714504d0f6ca01747f3b46b"
+    },
+    {
+      "path": "art/living_town/tools/reserve_environment.py",
+      "bytes": 47875,
+      "sha256": "520dbaef6f66dbef33dc83dda2d0d67c8dd6021f96f08f01c869ca5daae37030"
+    },
+    {
+      "path": "art/living_town/tools/reserve_plan.py",
+      "bytes": 61265,
+      "sha256": "178ce182db1e41820263462e873f1903e5488dbcf3deae0c81263f8cf3056e8a"
+    },
+    {
+      "path": "art/living_town/tools/revise_urban_plan.py",
+      "bytes": 7076,
+      "sha256": "24f621475f129c6ab1b59aae2ee221b9bafc6c9410e2eeca4cb2b7f4feead711"
+    },
+    {
+      "path": "art/living_town/tools/terrain_profile.py",
+      "bytes": 28473,
+      "sha256": "6f722d04566f11cc58b3dd93cace5b781d8b2092bb7e70169f1f08279febc3b8"
+    },
+    {
+      "path": "art/living_town/tools/verify_delivery.py",
+      "bytes": 63547,
+      "sha256": "3bd508590225c1a99cc4087ff2b1d7cc821041923f61b84e33606f84b6d5e5eb"
+    },
+    {
+      "path": "art/living_town/tools/verify_reserve_exports.py",
+      "bytes": 45115,
+      "sha256": "ec7472d254d9611c02e45e9ae52a2f00d719c487ec6a10ed041c702f48756556"
+    },
+    {
+      "path": "baseline/living_town_game.glb",
+      "bytes": 321050860,
+      "sha256": "4af8b869bb465cabdb84301bdc84dffc74eeebe98ddc2caab54ab1e06e15acbb"
+    },
+    {
+      "path": "game/data/town3d/projection.json",
+      "bytes": 1133444,
+      "sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a"
+    },
+    {
+      "path": "generation/generation_run.json",
+      "bytes": 3803,
+      "sha256": "6818121181b159e0fc02ce941385ff12f37e697e4f5fcb6cccbf8c0f9047a2f2"
+    },
+    {
+      "path": "generation/movie_visual_review.json",
+      "bytes": 11039,
+      "sha256": "a1cf6fea07c4c0db7e50ed41ead361fbdb8f16f9528f51e2a8074559fa6b5245"
+    },
+    {
+      "path": "generation/offline_review.json",
+      "bytes": 8727,
+      "sha256": "49d4be718dfba9ab85685e056d227aefd9c6be5388ad5ca599869d4e22316098"
+    },
+    {
+      "path": "generation/retaining_review_final_cameras.json",
+      "bytes": 717,
+      "sha256": "05f527d4734520c62d32eefa9be649e4ca0b67281a733dd7aab5fc63c0b5e680"
+    },
+    {
+      "path": "generation/scene/actual_interior_audit.json",
+      "bytes": 1353819,
+      "sha256": "e69c4c97278b04cbce588645c3037ab9a6345c8568ce8c2f6d19398418ea00ce"
+    },
+    {
+      "path": "generation/scene/chunk_manifest.json",
+      "bytes": 12102,
+      "sha256": "7ae7d3ff37068415bf30cf0c7adedcd6a0f1a87925b2f57278e54dd56fbc8c9c"
+    },
+    {
+      "path": "generation/scene/chunks/D06.glb",
+      "bytes": 95658984,
+      "sha256": "f2cb8864ca2d2a48088d089126f13789dd8840b0c0ea02d903fb1474636ac788"
+    },
+    {
+      "path": "generation/scene/chunks/D07.glb",
+      "bytes": 101160892,
+      "sha256": "c576f4c22c7f049e7d04d2655e72ac9a3b3a2a0fb06cb20c98b76ece8f9bae96"
+    },
+    {
+      "path": "generation/scene/chunks/D08.glb",
+      "bytes": 107634204,
+      "sha256": "043493539c92d8910f92b7ee8cd63b530e8bcf9c8ea88a6e3142a9325e7925ce"
+    },
+    {
+      "path": "generation/scene/chunks/D09.glb",
+      "bytes": 98304784,
+      "sha256": "fa3e019d8371706d4b4de1c33ce51b8f8e8e80405bf1d48e60fcb339e8bbee42"
+    },
+    {
+      "path": "generation/scene/chunks/D10.glb",
+      "bytes": 103782724,
+      "sha256": "6d2bc2b3be17e3d702748fac6981178bc524bd9ccce53c712ab762209ba3dd4e"
+    },
+    {
+      "path": "generation/scene/chunks/expansion_public_realm.glb",
+      "bytes": 83772640,
+      "sha256": "271886160fc34f33055f270ef884f617770c352f4642e530f04bf8dd7dfdd8e0"
+    },
+    {
+      "path": "generation/scene/chunks/replacement_terrain.glb",
+      "bytes": 182286956,
+      "sha256": "f023fbd2fc387b16852cdde7b9b835be087a3fda13644ef0564149ce21ae298e"
+    },
+    {
+      "path": "generation/scene/collision_proxies.json",
+      "bytes": 21655028,
+      "sha256": "721248d8a5be79697a389a8c204b06f8ee3b2eeb00570cb2ff7beeef9265e84c"
+    },
+    {
+      "path": "generation/scene/expanded_town.blend",
+      "bytes": 260908196,
+      "sha256": "1d0434d87063165a5e9e04312a88d13426375b9a3f80d7ba288bfdd164f18a82"
+    },
+    {
+      "path": "generation/scene/expansion_manifest.json",
+      "bytes": 1065803,
+      "sha256": "d92e4cc492da879c2977bd4b00d316b1d3987bf65a2dbfe1a74d75ed948462d5"
+    },
+    {
+      "path": "generation/scene/interior_preflight.json",
+      "bytes": 989971,
+      "sha256": "3155f6d8d7b85da05455ca192c28f6dcbde92981e4437ce7fc8703dd6d9380b4"
+    },
+    {
+      "path": "generation/scene/interiors.json",
+      "bytes": 8982670,
+      "sha256": "08f8d31790c082be773a280e64000d856dd831edb556c0c516f877ba0ad7256b"
+    },
+    {
+      "path": "generation/scene/licenses/INFINIGEN_NOTICES.txt",
+      "bytes": 5651,
+      "sha256": "523b08fca697abb4532f60a0f24404905d48be6b9bd09e6f4a509148ee49818b"
+    },
+    {
+      "path": "generation/scene/native_review.json",
+      "bytes": 152137,
+      "sha256": "0455d30e0af6856f3cbb22d9a7bac5265d296bc7ca5950d31377b43f9c7a3b3d"
+    },
+    {
+      "path": "generation/scene/plaster_weather_basecolor.png",
+      "bytes": 3736028,
+      "sha256": "2fee4ca9af34243f4e323358f6b54dde2776bfde8d456718e92fec3cc1be2eee"
+    },
+    {
+      "path": "generation/scene/renders/expansion_interior.png",
+      "bytes": 455474,
+      "sha256": "005f496a4fa414f15cfe7625fbcb332d2e1f1ed0a7223871a8bf02839bb4dbe9"
+    },
+    {
+      "path": "generation/scene/renders/expansion_overview.png",
+      "bytes": 559058,
+      "sha256": "f497e9837075c29c3ea0e10f87c45d7095eaae415d140115f3639656b43e73d2"
+    },
+    {
+      "path": "generation/scene/renders/expansion_street.png",
+      "bytes": 389352,
+      "sha256": "565a3026de430ce955e920b928a5c51ec621890a0558c5c3c56a84c2212ee77c"
+    },
+    {
+      "path": "generation/scene/renders/expansion_terrain.png",
+      "bytes": 380533,
+      "sha256": "31f6cd0ff6b6c30939a18082d738e7fb1c0f6f3bd7b291c267edc961297cfecb"
+    },
+    {
+      "path": "generation/scene/retaining_review_final/expansion_overview.png",
+      "bytes": 981939,
+      "sha256": "436f95d998dd319160085abdf48a8b742b30af0ec064e042a202edbb4f2a472c"
+    },
+    {
+      "path": "generation/scene/retaining_review_final/render_manifest.json",
+      "bytes": 914,
+      "sha256": "376f6daf80fbf9e73dbb7f93041593a2d773fda913908cb62093dbb8e200cd90"
+    },
+    {
+      "path": "generation/scene/review/expansion_interior.png",
+      "bytes": 2157225,
+      "sha256": "959bf1c4a049e55ef5d7e032a428719893d2c86cc616e7ed0df893fe11b5f552"
+    },
+    {
+      "path": "generation/scene/review/expansion_overview.png",
+      "bytes": 2540135,
+      "sha256": "a4994c7601e7c3ed85a9acdbb1929b7cfd5fd48015c58c4416d4b1a4842b189e"
+    },
+    {
+      "path": "generation/scene/review/expansion_street.png",
+      "bytes": 1872880,
+      "sha256": "37d2c2162fe2b677e514f6803588e853936fbc8b507d24865af733ed3058108a"
+    },
+    {
+      "path": "generation/scene/review/expansion_terrain.png",
+      "bytes": 1824958,
+      "sha256": "b331683047e6d1b5a77a7bf5a13d42e8d26f4afb8555c1d365e88df52296e6c5"
+    },
+    {
+      "path": "generation/scene/review/render_manifest.json",
+      "bytes": 3560,
+      "sha256": "59cbfc1b53a1f60c5158822d78aa2c287b43edfbf031ad9600d7757b73c30859"
+    },
+    {
+      "path": "generation/scene/terrain_review/expansion_overview.png",
+      "bytes": 1017578,
+      "sha256": "8298877e632d23c7e2c5047520e6514bac0ed88790c9da906a1a2f59b6967bc0"
+    },
+    {
+      "path": "generation/scene/terrain_review/expansion_street.png",
+      "bytes": 952731,
+      "sha256": "445846e8a950d6f636ad011aa12bf1eea0a642a9288c0a0dcb5bd7f3cff17735"
+    },
+    {
+      "path": "generation/scene/terrain_review/expansion_terrain.png",
+      "bytes": 839002,
+      "sha256": "cdbd54cbc20ebbacaa35a456cd16d7c2ab84af257257e978f0e64c156c049bb5"
+    },
+    {
+      "path": "generation/scene/terrain_review/render_manifest.json",
+      "bytes": 3191,
+      "sha256": "d3a72771c6a7bf40cbcd555593f8f876184c6dd48047845b8d9e72a1d3e37509"
+    },
+    {
+      "path": "generation/terrain_review_cameras.json",
+      "bytes": 719,
+      "sha256": "7feac42656bcb56426fe053ee4d9de91be6e0dba44ed61f5d9636bf7277dd8d9"
+    },
+    {
+      "path": "generation/territory_map.png",
+      "bytes": 171055,
+      "sha256": "606efc8ca9a9773185d4484f646c6c4942df0c3882f69b3555c85f7d3dce4880"
+    },
+    {
+      "path": "generation/territory_plan.json",
+      "bytes": 21517913,
+      "sha256": "a43dcde7a7d0f8d66573dbf53c1be027d32aa7d2a25175f543c2caf69c7ad205"
+    },
+    {
+      "path": "generation/visual_review.json",
+      "bytes": 2668,
+      "sha256": "6dcb49628ef7bd905ac9beecd6759b015b575ded0e79f9116fa43d59b89fcc2f"
+    },
+    {
+      "path": "inspection/consumer_report.json",
+      "bytes": 28464,
+      "sha256": "a9757fd2f193855d76c04ac557f89281db19a4eac8aa47387ef2ed1b54369c00"
+    },
+    {
+      "path": "inspection/original_inspection.json",
+      "bytes": 16586,
+      "sha256": "1abaa223fb536b59b2c6067a826b71e2ec82d6faeaba814d5f67172e778da577"
+    },
+    {
+      "path": "inspection/still_captures/01_compound_overview.png",
+      "bytes": 1572728,
+      "sha256": "7113ca4b4e20299f5838f0c277728fd28d17ae488acb7be5794400ddba547d88"
+    },
+    {
+      "path": "inspection/still_captures/02_D06.png",
+      "bytes": 1435727,
+      "sha256": "22685df05f245b7ff83409607ad910e7bd096006676d93e2290507ef47227156"
+    },
+    {
+      "path": "inspection/still_captures/03_D07.png",
+      "bytes": 1680978,
+      "sha256": "76f6cb4337b603fae8dca2de5a373ea43f1d1b460eee6f64a3baff278ac61d81"
+    },
+    {
+      "path": "inspection/still_captures/04_D08.png",
+      "bytes": 1619987,
+      "sha256": "2b28e6e1c25053e24a8a5acc0cc838c243dc8a0238664ff2cd0d2b4abe51d25a"
+    },
+    {
+      "path": "inspection/still_captures/05_D09.png",
+      "bytes": 1691767,
+      "sha256": "a557f1b0bc38785dfc3e720e00fac0343414374e3e02801be5d9fc125646845b"
+    },
+    {
+      "path": "inspection/still_captures/06_D10.png",
+      "bytes": 1501356,
+      "sha256": "11af14c9cffd93111efa98e3de44e29412aa92055d891f19cc06061eb5fe5818"
+    },
+    {
+      "path": "inspection/still_captures/07_street_materials.png",
+      "bytes": 1212291,
+      "sha256": "89180546484521a15123ffc91ef92e094e62d8677914f40c5bd0778860181a88"
+    },
+    {
+      "path": "inspection/still_captures/08_furnished_interior.png",
+      "bytes": 1552503,
+      "sha256": "98ba95999e0c3aead69662c695b31d5fe6651bb6aa2e7f7b02fc6ff26a37a9af"
+    },
+    {
+      "path": "inspection/still_captures/09_terrain_and_reserve.png",
+      "bytes": 907858,
+      "sha256": "bd52e9e665d71613275d7f87be748c42c082a34625cbae410ee6ddb8fd4a31d4"
+    },
+    {
+      "path": "inspection/still_consumer_report.json",
+      "bytes": 36143,
+      "sha256": "e698e448ce9a83587acb32419eb1a8fbe67dbb3d8ac4186f77ee60ad9c42aa77"
+    },
+    {
+      "path": "inspection/still_inspection.json",
+      "bytes": 16590,
+      "sha256": "4149f67954932f1ef6003b2141949e566fb4e2843b792a3bddf9be38742efdc3"
+    },
+    {
+      "path": "media/captions.json",
+      "bytes": 14312,
+      "sha256": "fb5e1479b70bfe853200958df77528fef97abf718d8371d8e5d23aa0e68c68bf"
+    },
+    {
+      "path": "media/chapters.ffmetadata",
+      "bytes": 1033,
+      "sha256": "30e46e6170695be0493709fbdce8c3814534610deb2a352fabc88d74a79704ef"
+    },
+    {
+      "path": "media/composition_filters.txt",
+      "bytes": 207,
+      "sha256": "d43862e23199a6fdf2d73b493bd06445cf54b59898fb7c52266f1185e50f28f5"
+    },
+    {
+      "path": "media/composition_report.json",
+      "bytes": 10148,
+      "sha256": "1452ee927986a773969968fe2ddd696162db2c13b328950fef840defdfa5d366"
+    },
+    {
+      "path": "media/expanded_town_architectural_tour.mp4",
+      "bytes": 300376404,
+      "sha256": "8b4933989628ea7c0f2db10f570ebc3bcd91d66f4d008b2f508ba89aa82bf0de"
+    },
+    {
+      "path": "media/expanded_town_tour.gif",
+      "bytes": 6969721,
+      "sha256": "d9327e68f594acfd36cc78ca51da722c2062bb75e157d95d95945dc51db7f00c"
+    },
+    {
+      "path": "media/media_context.json",
+      "bytes": 998,
+      "sha256": "c4fce2447479e9514d4378d62105ab9a699fcd1a9ec63de8ae75eb74a5a855f3"
+    },
+    {
+      "path": "media/narration.ass",
+      "bytes": 8108,
+      "sha256": "e343ede41d790810ce9b73193d131bddd08b54311e9e300911de657300fa81a2"
+    },
+    {
+      "path": "media/narration.srt",
+      "bytes": 6617,
+      "sha256": "21792f04c309b2bdabd1858847c0b5c419eb2f21f3981c0eecee6554d28c8d8b"
+    },
+    {
+      "path": "media/narration.wav",
+      "bytes": 17280044,
+      "sha256": "ac2fe71e3f6a166986433100f231deb0658600e3354338fffc47c6bf58938589"
+    },
+    {
+      "path": "media/narration_normalized.wav",
+      "bytes": 17280078,
+      "sha256": "b7205d35760cb3f75a7e3affdf3a0935dc88fb94408b39cc4ef68399f8dd87ae"
+    },
+    {
+      "path": "media/narration_script.json",
+      "bytes": 6455,
+      "sha256": "f37b3706e3c7925769b76be64de9023c57a0b7cf1cc7aff92c1860b878413595"
+    },
+    {
+      "path": "media/qa_frames/frame_01.png",
+      "bytes": 386368,
+      "sha256": "e34e717ee7fe1b711365c11fe58718f1844a38e7304d276d1e073ac1a911395a"
+    },
+    {
+      "path": "media/qa_frames/frame_02.png",
+      "bytes": 380606,
+      "sha256": "6559fef6bd062b8a6461de0d952cc90b5d8a4c1df210d1005eeea97324739829"
+    },
+    {
+      "path": "media/qa_frames/frame_03.png",
+      "bytes": 425725,
+      "sha256": "267d8af8ed7ab0431b1596a07ecc416eba99eee2de1bdcc07b5f59ac881883e8"
+    },
+    {
+      "path": "media/qa_frames/frame_04.png",
+      "bytes": 422475,
+      "sha256": "10a5a398f34ee207204d03a10013670929369048e890bd0bd6284d1564cf3393"
+    },
+    {
+      "path": "media/qa_frames/frame_05.png",
+      "bytes": 507671,
+      "sha256": "a38a912b8d094335f2b9e17cbbbdced122f9ed627264c250e4431d21e80607a4"
+    },
+    {
+      "path": "media/qa_frames/frame_06.png",
+      "bytes": 484637,
+      "sha256": "8d4bcc0e0557aea68e99736b7840d5e12cfe1c3456414352461fc24c80d43608"
+    },
+    {
+      "path": "media/qa_frames/frame_07.png",
+      "bytes": 476659,
+      "sha256": "5be151ac0d586f4750daf80bdeeb440af662b055527fa84851b59563dbe843b3"
+    },
+    {
+      "path": "media/qa_frames/frame_08.png",
+      "bytes": 462383,
+      "sha256": "757936b9b0f648509af318b40aa1596c92630fb87c302f2ca23fac6733887d64"
+    },
+    {
+      "path": "media/qa_frames/frame_09.png",
+      "bytes": 488387,
+      "sha256": "ff3b80eb67c41790d31ad885d84ab86120720f176a8f9963197f3b7996784848"
+    },
+    {
+      "path": "media/qa_frames/frame_10.png",
+      "bytes": 484556,
+      "sha256": "8ab5eae730430bd4a82bd73e07e9a1e1f554bbda74c2dbedabb72056099b88d7"
+    },
+    {
+      "path": "media/qa_frames/frame_11.png",
+      "bytes": 449014,
+      "sha256": "2f57ca20ae95d3a67866dd5d4ab5aee3dcbd556a1c3ce1118762c0573b6c5386"
+    },
+    {
+      "path": "media/qa_frames/frame_12.png",
+      "bytes": 451851,
+      "sha256": "9381dbefafebe417c2197e962e9f5ca6a9dee9c426eadfe64f8d9d565091bb92"
+    },
+    {
+      "path": "media/qa_frames/frame_13.png",
+      "bytes": 307504,
+      "sha256": "22a4842e3c3d23a39d4f9ad3acb31e42451f63825a3dfa9a503ff6356884cd6e"
+    },
+    {
+      "path": "media/qa_frames/frame_14.png",
+      "bytes": 307089,
+      "sha256": "fe85d96133e9d18fa4e084fc2f76aecaadb3f8dba3aadbfabf27f07e07f33b0c"
+    },
+    {
+      "path": "media/qa_frames/frame_15.png",
+      "bytes": 367184,
+      "sha256": "c8ebace2f565857413f6cf1303c5787cc18e919f63dc62e2d602a3c9d01e99f6"
+    },
+    {
+      "path": "media/qa_frames/frame_16.png",
+      "bytes": 366451,
+      "sha256": "cd4fbedc90801a46cdebe1804c71041d50291f3fa03efd3c70c9c5e924631b51"
+    },
+    {
+      "path": "media/qa_frames/frame_17.png",
+      "bytes": 237003,
+      "sha256": "dba8757d38749c5dd86d4cc0663d023691884f06c1297f6e965ed2fd717faf50"
+    },
+    {
+      "path": "media/qa_frames/frame_18.png",
+      "bytes": 239514,
+      "sha256": "eaf748190f9191247fe28cf73ddd9b712ba00f3de8099aa442e98d07ca7e0543"
+    },
+    {
+      "path": "media/verification_report.json",
+      "bytes": 28348,
+      "sha256": "5161dd5c2f5987e839db88ee2f8abfdabbb8792e94cc7b9500f9fc85f2fc1699"
+    },
+    {
+      "path": "media/voice_report.json",
+      "bytes": 86037,
+      "sha256": "e672f20ce5df078db6c037b53aba361967e30e007b17175b836d655a10f56095"
+    },
+    {
+      "path": "tools/asset_refinement/component_licenses.json",
+      "bytes": 37829,
+      "sha256": "602b5fd1e9fc6e7745ae3d7a725d0e366844cbff70504a452a39ca48d894548a"
+    },
+    {
+      "path": "tools/asset_refinement/hero_foliage.py",
+      "bytes": 17099,
+      "sha256": "e1bc3999cdfca90b863395ffc12f0e1dd91524b151e35cf1783ecc09811f9b58"
+    },
+    {
+      "path": "tools/asset_refinement/hero_furniture.py",
+      "bytes": 32899,
+      "sha256": "48af2b5ebe48b13ae9cc820874e5f4a7722964b710cf52bf8031ec75e6b77dd6"
+    },
+    {
+      "path": "tools/asset_refinement/hero_pbr.py",
+      "bytes": 11235,
+      "sha256": "6c957c31f9542b5928a415e213496b40205ef5e5dabed92769eed30aa4204125"
+    },
+    {
+      "path": "tools/asset_refinement/hero_scene.py",
+      "bytes": 28826,
+      "sha256": "8fae46d5676fda4e76fcab2347972869204a49e70ce04794b52195e0491e9f1f"
+    },
+    {
+      "path": "tools/asset_refinement/hero_surfaces.py",
+      "bytes": 2283,
+      "sha256": "2aba550aecd58ccdbc64b6ad3e2112221f75d72bbfcf9a04db5cf79888ba503e"
+    },
+    {
+      "path": "tools/asset_refinement/hero_walls.py",
+      "bytes": 16092,
+      "sha256": "a48c9e0485ff69eaae2f460449ab10ab31b066e26a3318f2587f7d21ac322e75"
+    },
+    {
+      "path": "tools/asset_refinement/materials.py",
+      "bytes": 7733,
+      "sha256": "c98ca7441773df6d9db0e85bf814c9da3539aa00b48226026b699bc9e212df48"
+    },
+    {
+      "path": "tools/asset_refinement/prepare_scans.py",
+      "bytes": 8105,
+      "sha256": "4125a2dd168f4c4fe5831b9b20af14e331bd94aa5baa33939245742f4b02f1a3"
+    },
+    {
+      "path": "tools/build_town_walkthrough.py",
+      "bytes": 45349,
+      "sha256": "2a9ae48e88b12eab5d898c7cb74bcf22779254e22f99ab71273fdf2b4d9c4778"
+    },
+    {
+      "path": "tools/town_generation/INFINIGEN_NOTICES.txt",
+      "bytes": 5651,
+      "sha256": "523b08fca697abb4532f60a0f24404905d48be6b9bd09e6f4a509148ee49818b"
+    },
+    {
+      "path": "tools/town_generation/architecture_details.py",
+      "bytes": 8331,
+      "sha256": "cb114500409e4e5bc76dd2ceba8e0364e35b2ebe8f8871d430d802f983f2cace"
+    },
+    {
+      "path": "tools/town_generation/breton_summer.json",
+      "bytes": 2398,
+      "sha256": "22a78c2a0363611f9840790becc14d6b60045c5ab1b901ff903170323f95c01a"
+    },
+    {
+      "path": "tools/town_generation/build_expansion_scene.py",
+      "bytes": 126067,
+      "sha256": "d041139281360864d89dc2091e84ee7af218fa61b9d846ec456a88075dfbb214"
+    },
+    {
+      "path": "tools/town_generation/build_expansion_tour.py",
+      "bytes": 31972,
+      "sha256": "d0c6b469469600d65f6466b41d565887561d4b30d405e123834a80fd5a8f73b7"
+    },
+    {
+      "path": "tools/town_generation/compile_recipe.py",
+      "bytes": 13097,
+      "sha256": "92993498dc7faa28ec887e03e39888d98bd923681545a4926e5f67073dd0a248"
+    },
+    {
+      "path": "tools/town_generation/generate_town.py",
+      "bytes": 6647,
+      "sha256": "75fa2dffbea258ba7f216b04b25da218ee1ee72259cebc334e55f020febaa2ef"
+    },
+    {
+      "path": "tools/town_generation/godot_viewer/Main.tscn",
+      "bytes": 166,
+      "sha256": "c329611cedae99b7949bcedfc79df9e73dcd7c5ccdb52a62933f12bd20b596e3"
+    },
+    {
+      "path": "tools/town_generation/godot_viewer/main.gd",
+      "bytes": 14132,
+      "sha256": "4a9775ce30d63f0e99a6631932811a32717971bc848154196ec7e7c108cdad9c"
+    },
+    {
+      "path": "tools/town_generation/godot_viewer/project.godot",
+      "bytes": 728,
+      "sha256": "e071b36328721a24d5c760f8e5f6aacc5c9d98e7d6bb9590b007a704d5673b7f"
+    },
+    {
+      "path": "tools/town_generation/infinigen_worker.py",
+      "bytes": 21451,
+      "sha256": "0f5d5953d73462081faaa00d8a9ba4bc20f4e700f1814c007fc08935add44d9a"
+    },
+    {
+      "path": "tools/town_generation/inspect_expansion_native.py",
+      "bytes": 19490,
+      "sha256": "26a024b0fb1005e3513b2059e9b89a2eeace76301749f1587d0381c31118c38a"
+    },
+    {
+      "path": "tools/town_generation/interior_adapter.py",
+      "bytes": 19147,
+      "sha256": "dcec293723f4b844f2fcb08705cc847568ed4a05df6759dbc191687644836df0"
+    },
+    {
+      "path": "tools/town_generation/package_expansion.py",
+      "bytes": 26613,
+      "sha256": "ed791a250777a4e0a00f20e65c9a91be8a34b7462be2d3dd25f631483cc12aba"
+    },
+    {
+      "path": "tools/town_generation/prepare_inspection.py",
+      "bytes": 5628,
+      "sha256": "0336ae97d9ce34979526f29962fd590c865117e1f23ccd38836ec6f74ea0b8b6"
+    },
+    {
+      "path": "tools/town_generation/preview_territory.py",
+      "bytes": 7939,
+      "sha256": "6c2c21dd14b01685cbe66a8f3a9e83a0936ee2ac558985e64515a3a4549aa607"
+    },
+    {
+      "path": "tools/town_generation/render_expansion.py",
+      "bytes": 3881,
+      "sha256": "aa84dcab5f3f2b15c32506734de071353f254a458df5197fee554380c825ca1c"
+    },
+    {
+      "path": "tools/town_generation/territory.py",
+      "bytes": 69352,
+      "sha256": "4eba6454c6828cc234d7bab5289075526a8d1bfba7898655a7a3bc110012f1d8"
+    },
+    {
+      "path": "tools/town_generation/verify_expansion.py",
+      "bytes": 14268,
+      "sha256": "31bf9a63298ea377777021c761edf5e2234fa7f8c59a3a23ab249ae7b5e9f81c"
+    },
+    {
+      "path": "upstream/infinigen/INFINIGEN_NOTICES.txt",
+      "bytes": 5651,
+      "sha256": "523b08fca697abb4532f60a0f24404905d48be6b9bd09e6f4a509148ee49818b"
+    },
+    {
+      "path": "upstream/infinigen/courtyard_planter.blend",
+      "bytes": 6218004,
+      "sha256": "ad919d0a83b03a0b6205722dab6b2b7f90ffbe835d1f6420c70d00d06a2248c8"
+    },
+    {
+      "path": "upstream/infinigen/courtyard_planter.glb",
+      "bytes": 3496812,
+      "sha256": "def60617e933e83bbd2862551c83d2530051039e664df3af22182fd3f13dd8d4"
+    },
+    {
+      "path": "upstream/infinigen/courtyard_planter_preview.png",
+      "bytes": 291580,
+      "sha256": "ad2a5fc10069b8faa1c07804bef4b73d2ac5b7f32538b56cd7a00fa060f7a233"
+    },
+    {
+      "path": "upstream/infinigen/environment_audit.json",
+      "bytes": 57184,
+      "sha256": "4fb31a80808c98c0c602a7e1c398e51476294f72d3236dfb650e19e12cd100df"
+    },
+    {
+      "path": "upstream/infinigen/textures/leaf_basecolor.png",
+      "bytes": 256966,
+      "sha256": "272b1e6a36244afc2b927fb2f9865dff5c8515bd3e0f836350c328a4f8c6e065"
+    },
+    {
+      "path": "upstream/infinigen/textures/leaf_normal.png",
+      "bytes": 321069,
+      "sha256": "4d58981807c8bac8515bbf7071a15123681da8c76f658f8c4d74485bbb45f3c9"
+    },
+    {
+      "path": "upstream/infinigen/textures/leaf_orm.png",
+      "bytes": 200833,
+      "sha256": "79ded9961d845f9d7b4a143862e81141b871a586d1e41018074acf6492f32776"
+    },
+    {
+      "path": "upstream/infinigen/textures/soil_basecolor.png",
+      "bytes": 307001,
+      "sha256": "d30d992fc22202ce6f04e3686da7a36104c6e0230935305c4cfbdfaeef90c0c3"
+    },
+    {
+      "path": "upstream/infinigen/textures/soil_normal.png",
+      "bytes": 738090,
+      "sha256": "85c73a1c47f1db9a30dac2a6f5b593189c3fff8c153ced05feeefd450d4f8c35"
+    },
+    {
+      "path": "upstream/infinigen/textures/soil_orm.png",
+      "bytes": 143848,
+      "sha256": "664a982cdc8f6e71d1b19b25de8647fe266537d59f0dc79fa666f1d9e0c616f9"
+    },
+    {
+      "path": "upstream/infinigen/textures/terracotta_basecolor.png",
+      "bytes": 261211,
+      "sha256": "e021dead71d94d7a34a4c30040f3f3e441de55191f51a7ed4d1c950c9cf28eaf"
+    },
+    {
+      "path": "upstream/infinigen/textures/terracotta_normal.png",
+      "bytes": 651483,
+      "sha256": "c8c9cbe710d026ae069ae9b38e64a64c9c6100d583a5a6194e8fc1bce29d0425"
+    },
+    {
+      "path": "upstream/infinigen/textures/terracotta_orm.png",
+      "bytes": 174133,
+      "sha256": "e5e76618c31409e4c3bd356e8fdd5272d807edf8cf3056b00a44493d52e2f937"
+    },
+    {
+      "path": "upstream/infinigen/worker_result.json",
+      "bytes": 59577,
+      "sha256": "5c9e36fd920fb5cf797b81aa902252e20c8656dea123ff95ab3ddb7c7ef351b1"
+    }
+  ],
+  "payload_bytes": 1969965955,
+  "hash_policy": "Every payload is bound here. The detached package receipt additionally binds this manifest and every ZIP member, avoiding a circular manifest self-hash."
+}

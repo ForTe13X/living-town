@@ -34,7 +34,8 @@ jobs:
     # 互补性守卫 / import parse smoke）+ 第 6 步视觉门（GHA 上按 visual_gate.sh 的显式判断 SKIP，
     # 真正的视觉观测在下面独立的 visual_canary lane 里跑）。
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # Full territory fixtures include two seeds and triangle-level paving QA.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: ./.github/actions/lt-setup
@@ -46,7 +47,11 @@ jobs:
           set -euo pipefail
           python -m pip install --disable-pip-version-check "numpy>=1.26,<3"
           python -m unittest discover -s tools/tests -p 'test_*refinement*.py'
-          python -m unittest discover -s tools/tests -p 'test_town_generation_recipe.py'
+          python -m unittest discover -s tools/tests -p 'test_town_generation_*.py'
+          python -m unittest discover -s tools/tests -p 'test_town_territory.py'
+          python -m unittest discover -s tools/tests -p 'test_town_interior_adapter.py'
+          python -m unittest discover -s tools/tests -p 'test_town_expansion_exports.py'
+          python -m unittest discover -s tools/tests -p 'test_town_expansion_package.py'
       - name: CI lanes (lint + visual)
         env:
           GODOT: godot

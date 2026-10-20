@@ -1,0 +1,1279 @@
+{
+	"captures": [],
+	"checks": [
+		{
+			"detail": null,
+			"name": "real_render_driver",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_exists_living_town_game.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_sha_living_town_game.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "valid_glb_living_town_game.glb",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "gltf_import_living_town_game.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "scene_generated_living_town_game.glb",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 19353,
+				"expected": 19353
+			},
+			"name": "mesh_count_living_town_game.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370322441302376:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370322491634026:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370322390970726:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370322290307426:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370322340639076:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370322239975776:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370322139312476:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370322189644126:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370322088980826:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321988317526:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370322038649176:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321937985876:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321837322576:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321887654226:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321786990926:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321686327626:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321736659276:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321635995976:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321535332676:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321585664326:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321485001026:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321384337726:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321434669376:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321334006076:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321283674426:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321183011126:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321233342776:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321132679476:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321032016176:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370321082347826:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223370320981684526:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_exists_D06.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_sha_D06.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "valid_glb_D06.glb",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "gltf_import_D06.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "scene_generated_D06.glb",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 1404,
+				"expected": 1404
+			},
+			"name": "mesh_count_D06.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368760247626668:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368760297958314:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368760197295022:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368760096631730:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368760146963376:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368760046300084:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368759945636792:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368759995968438:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368759895305146:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368759794641854:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368759844973500:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368759744310208:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368759693978562:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368759643646916:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_exists_D07.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_sha_D07.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "valid_glb_D07.glb",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "gltf_import_D07.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "scene_generated_D07.glb",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 2411,
+				"expected": 2411
+			},
+			"name": "mesh_count_D07.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193764981507:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193815313153:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193714649861:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193613986569:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193664318215:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193563654923:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193462991631:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193513323277:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193412659985:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193311996693:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193362328339:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193261665047:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193211333401:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223368193161001755:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_exists_D08.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_sha_D08.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "valid_glb_D08.glb",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "gltf_import_D08.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "scene_generated_D08.glb",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 3033,
+				"expected": 3033
+			},
+			"name": "mesh_count_D08.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407601422090:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407651753740:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407551090440:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407450427140:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407500758790:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407400095490:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407299432190:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407349763840:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407249100540:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407148437240:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407198768890:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407098105590:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367407047773940:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223367406997442290:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_exists_D09.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_sha_D09.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "valid_glb_D09.glb",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "gltf_import_D09.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "scene_generated_D09.glb",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 2252,
+				"expected": 2252
+			},
+			"name": "mesh_count_D09.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703931363837:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703981695487:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703881032187:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703780368887:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703830700537:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703730037237:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703629373937:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703679705587:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703579042287:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703478378987:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703528710637:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703428047337:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703377715687:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366703327384037:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_exists_D10.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_sha_D10.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "valid_glb_D10.glb",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "gltf_import_D10.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "scene_generated_D10.glb",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 1850,
+				"expected": 1850
+			},
+			"name": "mesh_count_D10.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366141089324254:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366141139655900:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366141038992608:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366140938329316:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366140988660962:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366140887997670:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366140787334378:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366140837666024:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366140737002732:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366140636339440:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366140686671086:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366140586007794:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366140535676148:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223366140485344502:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_exists_expansion_public_realm.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_sha_expansion_public_realm.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "valid_glb_expansion_public_realm.glb",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "gltf_import_expansion_public_realm.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "scene_generated_expansion_public_realm.glb",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 2539,
+				"expected": 2539
+			},
+			"name": "mesh_count_expansion_public_realm.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846682730410:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846733062060:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846632398760:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846582067110:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846481403810:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846531735460:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846431072160:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846330408860:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846380740510:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846280077210:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846179413910:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846229745560:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365846129082260:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_exists_replacement_terrain.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "asset_sha_replacement_terrain.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "valid_glb_replacement_terrain.glb",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "gltf_import_replacement_terrain.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "scene_generated_replacement_terrain.glb",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 14,
+				"expected": 14
+			},
+			"name": "mesh_count_replacement_terrain.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365731003826301:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365731054157947:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730953494655:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730852831363:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730903163009:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730802499717:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730701836425:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730752168071:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730651504779:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730550841487:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730601173133:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730500509841:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730399846549:color",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730450178195:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mipmaps_-9223365730349514903:color",
+			"passed": true
+		},
+		{
+			"detail": {
+				"found": 248,
+				"requested": 248
+			},
+			"name": "all_requested_baseline_clearings_found",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 11,
+				"expected": 11.0
+			},
+			"name": "native_cutaway_front",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 5,
+				"expected": 5.0
+			},
+			"name": "native_cutaway_roof",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 73,
+				"expected": 73.0
+			},
+			"name": "native_cutaway_upper",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 77,
+				"expected": 77.0
+			},
+			"name": "native_cutaway_structure",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "input_unchanged_living_town_game.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "input_unchanged_D06.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "input_unchanged_D07.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "input_unchanged_D08.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "input_unchanged_D09.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "input_unchanged_D10.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "input_unchanged_expansion_public_realm.glb",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "input_unchanged_replacement_terrain.glb",
+			"passed": true
+		}
+	],
+	"config_sha256": "1abaa223fb536b59b2c6067a826b71e2ec82d6faeaba814d5f67172e778da577",
+	"consumer_source_sha256": "4a9775ce30d63f0e99a6631932811a32717971bc848154196ec7e7c108cdad9c",
+	"cutaway_layers": {
+		"front": 11,
+		"roof": 5,
+		"structure": 77,
+		"upper": 73
+	},
+	"display_server": "Windows",
+	"engine_version": {
+		"build": "official",
+		"hash": "71f334935c000924d403448e698df4441130df18",
+		"hex": 263682,
+		"major": 4,
+		"minor": 6,
+		"patch": 2,
+		"status": "stable",
+		"string": "4.6.2-stable (official)",
+		"timestamp": 0
+	},
+	"failure_count": 0,
+	"hidden_baseline_nodes": [
+		"Bocage_Field_Walls_and_Hedges_Granite",
+		"Bocage_Field_Walls_and_Hedges_Stone",
+		"Layered_Street_and_Orchard_Planting_Leaf",
+		"Layered_Street_and_Orchard_Planting_LeafDark",
+		"Layered_Street_and_Orchard_Planting_LeafLight",
+		"Layered_Street_and_Orchard_Planting_Trunk",
+		"Atlantic_Terrain_Grass",
+		"Reserve_Ferns_Heather_and_Fallen_Wood_BloomCream",
+		"Reserve_Ferns_Heather_and_Fallen_Wood_BloomPink",
+		"Reserve_Ferns_Heather_and_Fallen_Wood_LeafDark",
+		"Reserve_Ferns_Heather_and_Fallen_Wood_LeafLight",
+		"Reserve_Ferns_Heather_and_Fallen_Wood_LeafSilver",
+		"Reserve_Ferns_Heather_and_Fallen_Wood_Trunk",
+		"Reserve_Granite_Outcrops_and_Talus_NaturalRock",
+		"Reserve_Tree_2979_willow_0",
+		"Reserve_Tree_2979_willow_1",
+		"Reserve_Tree_3208_birch_0",
+		"Reserve_Tree_3208_birch_1",
+		"Reserve_Tree_3208_birch_2",
+		"Reserve_Tree_3208_birch_3",
+		"Reserve_Tree_3208_birch_4",
+		"Reserve_Tree_3211_birch_0",
+		"Reserve_Tree_3211_birch_1",
+		"Reserve_Tree_3211_birch_2",
+		"Reserve_Tree_3211_birch_3",
+		"Reserve_Tree_3211_birch_4",
+		"Reserve_Tree_3214_oak_0",
+		"Reserve_Tree_3214_oak_1",
+		"Reserve_Tree_3214_oak_2",
+		"Reserve_Tree_3214_oak_3",
+		"Reserve_Tree_3217_birch_0",
+		"Reserve_Tree_3217_birch_1",
+		"Reserve_Tree_3217_birch_2",
+		"Reserve_Tree_3217_birch_3",
+		"Reserve_Tree_3217_birch_4",
+		"Reserve_Tree_3221_rowan_0",
+		"Reserve_Tree_3221_rowan_1",
+		"Reserve_Tree_3221_rowan_2",
+		"Reserve_Tree_3221_rowan_3",
+		"Reserve_Tree_3224_oak_0",
+		"Reserve_Tree_3224_oak_1",
+		"Reserve_Tree_3224_oak_2",
+		"Reserve_Tree_3224_oak_3",
+		"Reserve_Tree_3225_rowan_0",
+		"Reserve_Tree_3225_rowan_1",
+		"Reserve_Tree_3225_rowan_2",
+		"Reserve_Tree_3225_rowan_3",
+		"Reserve_Tree_3231_birch_0",
+		"Reserve_Tree_3231_birch_1",
+		"Reserve_Tree_3231_birch_2",
+		"Reserve_Tree_3231_birch_3",
+		"Reserve_Tree_3231_birch_4",
+		"Reserve_Tree_3238_oak_0",
+		"Reserve_Tree_3238_oak_1",
+		"Reserve_Tree_3238_oak_2",
+		"Reserve_Tree_3238_oak_3",
+		"Reserve_Tree_3239_maritime_pine_0",
+		"Reserve_Tree_3239_maritime_pine_1",
+		"Reserve_Tree_3239_maritime_pine_2",
+		"Reserve_Tree_3242_oak_0",
+		"Reserve_Tree_3242_oak_1",
+		"Reserve_Tree_3242_oak_2",
+		"Reserve_Tree_3242_oak_3",
+		"Reserve_Tree_3252_birch_0",
+		"Reserve_Tree_3252_birch_1",
+		"Reserve_Tree_3252_birch_2",
+		"Reserve_Tree_3252_birch_3",
+		"Reserve_Tree_3252_birch_4",
+		"Reserve_Tree_3263_oak_0",
+		"Reserve_Tree_3263_oak_1",
+		"Reserve_Tree_3263_oak_2",
+		"Reserve_Tree_3263_oak_3",
+		"Reserve_Tree_3264_birch_0",
+		"Reserve_Tree_3264_birch_1",
+		"Reserve_Tree_3264_birch_2",
+		"Reserve_Tree_3264_birch_3",
+		"Reserve_Tree_3264_birch_4",
+		"Reserve_Tree_3265_oak_0",
+		"Reserve_Tree_3265_oak_1",
+		"Reserve_Tree_3265_oak_2",
+		"Reserve_Tree_3265_oak_3",
+		"Reserve_Tree_3276_maritime_pine_0",
+		"Reserve_Tree_3276_maritime_pine_1",
+		"Reserve_Tree_3276_maritime_pine_2",
+		"Reserve_Tree_3285_oak_0",
+		"Reserve_Tree_3285_oak_1",
+		"Reserve_Tree_3285_oak_2",
+		"Reserve_Tree_3285_oak_3",
+		"Reserve_Tree_3286_rowan_0",
+		"Reserve_Tree_3286_rowan_1",
+		"Reserve_Tree_3286_rowan_2",
+		"Reserve_Tree_3286_rowan_3",
+		"Reserve_Tree_3288_birch_0",
+		"Reserve_Tree_3288_birch_1",
+		"Reserve_Tree_3288_birch_2",
+		"Reserve_Tree_3288_birch_3",
+		"Reserve_Tree_3288_birch_4",
+		"Reserve_Tree_3289_maritime_pine_0",
+		"Reserve_Tree_3289_maritime_pine_1",
+		"Reserve_Tree_3289_maritime_pine_2",
+		"Reserve_Tree_3290_rowan_0",
+		"Reserve_Tree_3290_rowan_1",
+		"Reserve_Tree_3290_rowan_2",
+		"Reserve_Tree_3290_rowan_3",
+		"Reserve_Tree_3292_oak_0",
+		"Reserve_Tree_3292_oak_1",
+		"Reserve_Tree_3292_oak_2",
+		"Reserve_Tree_3292_oak_3",
+		"Reserve_Tree_3296_maritime_pine_0",
+		"Reserve_Tree_3296_maritime_pine_1",
+		"Reserve_Tree_3296_maritime_pine_2",
+		"Reserve_Tree_3300_oak_0",
+		"Reserve_Tree_3300_oak_1",
+		"Reserve_Tree_3300_oak_2",
+		"Reserve_Tree_3300_oak_3",
+		"Reserve_Tree_3304_birch_0",
+		"Reserve_Tree_3304_birch_1",
+		"Reserve_Tree_3304_birch_2",
+		"Reserve_Tree_3304_birch_3",
+		"Reserve_Tree_3304_birch_4",
+		"Reserve_Tree_3311_birch_0",
+		"Reserve_Tree_3311_birch_1",
+		"Reserve_Tree_3311_birch_2",
+		"Reserve_Tree_3311_birch_3",
+		"Reserve_Tree_3311_birch_4",
+		"Reserve_Tree_3314_maritime_pine_0",
+		"Reserve_Tree_3314_maritime_pine_1",
+		"Reserve_Tree_3314_maritime_pine_2",
+		"Reserve_Tree_3317_oak_0",
+		"Reserve_Tree_3317_oak_1",
+		"Reserve_Tree_3317_oak_2",
+		"Reserve_Tree_3317_oak_3",
+		"Reserve_Tree_3326_oak_0",
+		"Reserve_Tree_3326_oak_1",
+		"Reserve_Tree_3326_oak_2",
+		"Reserve_Tree_3326_oak_3",
+		"Reserve_Tree_3337_rowan_0",
+		"Reserve_Tree_3337_rowan_1",
+		"Reserve_Tree_3337_rowan_2",
+		"Reserve_Tree_3337_rowan_3",
+		"Reserve_Tree_3338_maritime_pine_0",
+		"Reserve_Tree_3338_maritime_pine_1",
+		"Reserve_Tree_3338_maritime_pine_2",
+		"Reserve_Tree_3339_rowan_0",
+		"Reserve_Tree_3339_rowan_1",
+		"Reserve_Tree_3339_rowan_2",
+		"Reserve_Tree_3339_rowan_3",
+		"Reserve_Tree_3354_maritime_pine_0",
+		"Reserve_Tree_3354_maritime_pine_1",
+		"Reserve_Tree_3354_maritime_pine_2",
+		"Reserve_Tree_3358_oak_0",
+		"Reserve_Tree_3358_oak_1",
+		"Reserve_Tree_3358_oak_2",
+		"Reserve_Tree_3358_oak_3",
+		"Reserve_Tree_3359_birch_0",
+		"Reserve_Tree_3359_birch_1",
+		"Reserve_Tree_3359_birch_2",
+		"Reserve_Tree_3359_birch_3",
+		"Reserve_Tree_3359_birch_4",
+		"Reserve_Tree_3361_oak_0",
+		"Reserve_Tree_3361_oak_1",
+		"Reserve_Tree_3361_oak_2",
+		"Reserve_Tree_3361_oak_3",
+		"Reserve_Tree_3369_maritime_pine_0",
+		"Reserve_Tree_3369_maritime_pine_1",
+		"Reserve_Tree_3369_maritime_pine_2",
+		"Reserve_Tree_3370_maritime_pine_0",
+		"Reserve_Tree_3370_maritime_pine_1",
+		"Reserve_Tree_3370_maritime_pine_2",
+		"Reserve_Tree_3380_oak_0",
+		"Reserve_Tree_3380_oak_1",
+		"Reserve_Tree_3380_oak_2",
+		"Reserve_Tree_3380_oak_3",
+		"Reserve_Tree_3383_maritime_pine_0",
+		"Reserve_Tree_3383_maritime_pine_1",
+		"Reserve_Tree_3383_maritime_pine_2",
+		"Reserve_Tree_3392_oak_0",
+		"Reserve_Tree_3392_oak_1",
+		"Reserve_Tree_3392_oak_2",
+		"Reserve_Tree_3392_oak_3",
+		"Reserve_Tree_3393_rowan_0",
+		"Reserve_Tree_3393_rowan_1",
+		"Reserve_Tree_3393_rowan_2",
+		"Reserve_Tree_3393_rowan_3",
+		"Reserve_Tree_3403_rowan_0",
+		"Reserve_Tree_3403_rowan_1",
+		"Reserve_Tree_3403_rowan_2",
+		"Reserve_Tree_3403_rowan_3",
+		"Reserve_Tree_3409_oak_0",
+		"Reserve_Tree_3409_oak_1",
+		"Reserve_Tree_3409_oak_2",
+		"Reserve_Tree_3409_oak_3",
+		"Reserve_Tree_3413_birch_0",
+		"Reserve_Tree_3413_birch_1",
+		"Reserve_Tree_3413_birch_2",
+		"Reserve_Tree_3413_birch_3",
+		"Reserve_Tree_3413_birch_4",
+		"Reserve_Tree_3414_maritime_pine_0",
+		"Reserve_Tree_3414_maritime_pine_1",
+		"Reserve_Tree_3414_maritime_pine_2",
+		"Reserve_Tree_3416_rowan_0",
+		"Reserve_Tree_3416_rowan_1",
+		"Reserve_Tree_3416_rowan_2",
+		"Reserve_Tree_3416_rowan_3",
+		"Reserve_Tree_3418_rowan_0",
+		"Reserve_Tree_3418_rowan_1",
+		"Reserve_Tree_3418_rowan_2",
+		"Reserve_Tree_3418_rowan_3",
+		"Reserve_Tree_3424_birch_0",
+		"Reserve_Tree_3424_birch_1",
+		"Reserve_Tree_3424_birch_2",
+		"Reserve_Tree_3424_birch_3",
+		"Reserve_Tree_3424_birch_4",
+		"Reserve_Tree_3442_oak_0",
+		"Reserve_Tree_3442_oak_1",
+		"Reserve_Tree_3442_oak_2",
+		"Reserve_Tree_3442_oak_3",
+		"Reserve_Tree_3462_oak_0",
+		"Reserve_Tree_3462_oak_1",
+		"Reserve_Tree_3462_oak_2",
+		"Reserve_Tree_3462_oak_3",
+		"Reserve_Tree_3465_birch_0",
+		"Reserve_Tree_3465_birch_1",
+		"Reserve_Tree_3465_birch_2",
+		"Reserve_Tree_3465_birch_3",
+		"Reserve_Tree_3465_birch_4",
+		"Reserve_Tree_3473_maritime_pine_0",
+		"Reserve_Tree_3473_maritime_pine_1",
+		"Reserve_Tree_3473_maritime_pine_2",
+		"Reserve_Tree_3484_maritime_pine_0",
+		"Reserve_Tree_3484_maritime_pine_1",
+		"Reserve_Tree_3484_maritime_pine_2",
+		"Reserve_Tree_3488_maritime_pine_0",
+		"Reserve_Tree_3488_maritime_pine_1",
+		"Reserve_Tree_3488_maritime_pine_2",
+		"Reserve_Tree_3495_birch_0",
+		"Reserve_Tree_3495_birch_1",
+		"Reserve_Tree_3495_birch_2",
+		"Reserve_Tree_3495_birch_3",
+		"Reserve_Tree_3495_birch_4",
+		"Reserve_Tree_3496_oak_0",
+		"Reserve_Tree_3496_oak_1",
+		"Reserve_Tree_3496_oak_2",
+		"Reserve_Tree_3496_oak_3",
+		"Reserve_Tree_3498_rowan_0",
+		"Reserve_Tree_3498_rowan_1",
+		"Reserve_Tree_3498_rowan_2",
+		"Reserve_Tree_3498_rowan_3"
+	],
+	"imported_meshes": 32856,
+	"movie_mode": true,
+	"movie_warmup_engine_frames": 11,
+	"project_sha256": "e071b36328721a24d5c760f8e5f6aacc5c9d98e7d6bb9590b007a704d5673b7f",
+	"schema": "living_town.territory_consumer.v1",
+	"scope": "Runtime imports, explicit baseline clearing and actual framebuffer capture. MovieWriter is offline capture; no real-time performance, game physics or navigation claim.",
+	"script_sha256": "4a9775ce30d63f0e99a6631932811a32717971bc848154196ec7e7c108cdad9c",
+	"status": "PASS",
+	"tour_frames": 6480
+}

@@ -1,0 +1,36 @@
+{
+  "schema": "living_town.expansion_review_renders.v1",
+  "status": "PASS",
+  "native_sha256": "1d0434d87063165a5e9e04312a88d13426375b9a3f80d7ba288bfdd164f18a82",
+  "source_unchanged": true,
+  "views": [
+    {
+      "view": "overview",
+      "path": "expansion_overview.png",
+      "sha256": "436f95d998dd319160085abdf48a8b742b30af0ec064e042a202edbb4f2a472c",
+      "camera": {
+        "position": [
+          -36,
+          78,
+          25
+        ],
+        "target": [
+          -17.3942,
+          93.6211,
+          5.672278347876376
+        ],
+        "ortho": 14,
+        "lens": 45,
+        "diagnostic_label": "Harbor garden retaining corner"
+      }
+    }
+  ],
+  "resolution": [
+    1000,
+    720
+  ],
+  "samples": 16,
+  "device": "CPU",
+  "threads": 6,
+  "scope": "Actual Cycles renders from the generated native. Quality acceptance is a separate visual review."
+}

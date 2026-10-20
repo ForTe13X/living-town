@@ -1,0 +1,65 @@
+{
+  "schema": "living_town.expansion_agent_visual_review.v1",
+  "status": "PASS",
+  "native_sha256": "1d0434d87063165a5e9e04312a88d13426375b9a3f80d7ba288bfdd164f18a82",
+  "reviewed_utc": "2026-10-20T15:31:45.126874+00:00",
+  "scope": "Agent visual inspection of actual Cycles renders and actual Godot import framebuffers; movie frames receive a separate review after composition.",
+  "reviews": [
+    {
+      "path": "scene/review/render_manifest.json",
+      "sha256": "59cbfc1b53a1f60c5158822d78aa2c287b43edfbf031ad9600d7757b73c30859",
+      "views": [
+        "overview",
+        "street",
+        "interior",
+        "terrain"
+      ],
+      "resolution": [
+        1400,
+        960
+      ]
+    },
+    {
+      "path": "scene/terrain_review/render_manifest.json",
+      "sha256": "d3a72771c6a7bf40cbcd555593f8f876184c6dd48047845b8d9e72a1d3e37509",
+      "inspected_views": [
+        "street",
+        "terrain"
+      ]
+    },
+    {
+      "path": "scene/retaining_review_final/render_manifest.json",
+      "sha256": "376f6daf80fbf9e73dbb7f93041593a2d773fda913908cb62093dbb8e200cd90",
+      "inspected_views": [
+        "overview"
+      ]
+    },
+    {
+      "path": "inspection/stills_report.json",
+      "sha256": "e698e448ce9a83587acb32419eb1a8fbe67dbb3d8ac4186f77ee60ad9c42aa77",
+      "captures": 9,
+      "cutaway_layers": {
+        "front": 11,
+        "roof": 5,
+        "structure": 77,
+        "upper": 73
+      },
+      "project_sha256": "e071b36328721a24d5c760f8e5f6aacc5c9d98e7d6bb9590b007a704d5673b7f"
+    }
+  ],
+  "findings": [
+    "Five connected irregular neighborhoods are visible within the retained coast and reserve.",
+    "Pale wall scan grain, limewash variation, granite and oak remain visible at close range.",
+    "Native and consumer cutaways retain stairs/circulation, correctly placed seating and the detailed cafe counter; upper furnishings are hidden.",
+    "The reviewed outer walks and banked street sections meet the ground without the earlier exposed gap/grass protrusion.",
+    "The tight rear pad has explicit granite support clear of the sidewalk; no black coplanar wall top remains.",
+    "All nine fresh Godot stills were inspected together after the recording audio rate correction; no scene/camera changes or visual regressions were observed."
+  ],
+  "physical_scope": {
+    "centerline_design_grade_limit": 0.08,
+    "localized_outer_strip_longitudinal_grade": 0.256,
+    "localized_transverse_grade": 0.201,
+    "retained_quay_paving_transition_m": 0.039074
+  },
+  "audio_listening": "Technical audio checks are separate; human listening remains pending."
+}

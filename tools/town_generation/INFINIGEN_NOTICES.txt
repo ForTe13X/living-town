@@ -1,0 +1,91 @@
+Living Town - isolated Infinigen factory experiment
+=================================================
+
+Executed-source target: PyPI infinigen 2.0.0a3, procfunc 0.37.0, Python 3.11.
+Infinigen wheel SHA256:
+7e9f096e4a9a6138af2a496826c8b97db62be9243157126b08776f364616f781
+ProcFunc wheel SHA256:
+85ac05b559a3d735e04dea3b50e348ec460d9eb4591b811fd4efecb507b9a660
+
+Upstream sources:
+https://pypi.org/project/infinigen/2.0.0a3/
+https://github.com/princeton-vl/infinigen
+https://pypi.org/project/procfunc/0.37.0/
+https://github.com/princeton-vl/procfunc
+
+Selected upstream factories: infinigen2.objects.plant_pot.plant_pot,
+infinigen2.objects.phyllo_plant.phyllo_plant, and
+infinigen2.objects.leaf.leaf_simple_rand. Their dependency factory modules
+remain unmodified in an isolated authoring environment, not vendored here.
+Individual selected factory headers also state Copyright (C) 2026,
+Princeton University, under the root BSD 3-Clause license.
+
+Living Town additions: constrained dimensions, leaf count and subdivision;
+own deterministic synthetic PBR PNGs; CPU-only background execution;
+socket network block; one-prototype native/GLB export and measurements.
+No external raster assets, models, pretrained checkpoints, tutorial static
+assets, ANT Landscape extension, or infinigen_gpl code are used.
+This is one selected upstream factory experiment, not execution of the
+upstream full-town, terrain, or scene CLI. The installed environment omits
+unused Infinigen default/terrain/sim dependencies. See worker_result.json
+for actual execution status and source hashes; a prepared environment alone
+is not evidence of generator execution.
+
+Authoring runtime boundary: bpy 4.2.0 package metadata identifies GPL-3.0.
+It is used as a separate local authoring runtime, not copied into this
+repository or into the engine-agnostic geometry/PBR asset distribution.
+The entire Infinigen repository is not represented as BSD-only: excluded
+submodules, addon dependencies and tutorial assets have separate licenses.
+Other authoring packages retain their own installed license files. Their
+versions and license metadata are recorded in environment_audit.json.
+
+When redistributing generated pilot assets, include this notice alongside
+them as conservative provenance. No claim is made that upstream code or
+the Blender runtime is public domain. PBR images in this pilot are newly
+authored deterministic data and contain no source scan or external images.
+
+Infinigen wheel LICENSE (verbatim)
+---------------------------------
+BSD 3-Clause License
+
+Copyright (c) 2023, Princeton University
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+ProcFunc wheel LICENSE.md (verbatim)
+----------------------------------
+
+Copyright 2026 Princeton University
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
