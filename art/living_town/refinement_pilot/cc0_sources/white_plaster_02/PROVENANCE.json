@@ -1,0 +1,171 @@
+{
+  "schema": "living_town.cc0_pbr_source.v1",
+  "status": "PASS",
+  "asset_id": "white_plaster_02",
+  "display_name": "White Plaster 02",
+  "source": "Poly Haven",
+  "asset_url": "https://polyhaven.com/a/white_plaster_02",
+  "license": "CC0-1.0",
+  "license_url": "https://polyhaven.com/license",
+  "legalcode_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+  "retrieved_utc": "2026-10-20T07:44:53.197955+00:00",
+  "authors": {
+    "Rob Tuytel": "All"
+  },
+  "physical_dimensions_mm": [
+    1000,
+    1000
+  ],
+  "physical_dimensions_metres": [
+    1.0,
+    1.0
+  ],
+  "legacy_scale_text": "1.5M x 1.5M",
+  "physical_scale_authority": "Current official API dimensions field (millimetres); asset page rounded display agrees. Legacy free-text scale may conflict and is retained separately.",
+  "normal_convention": "OpenGL tangent-space +Y",
+  "maps": {
+    "Diffuse": {
+      "file": "white_plaster_02_diff_4k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/4k/white_plaster_02/white_plaster_02_diff_4k.png",
+      "format": "PNG",
+      "resolution_label": "4k",
+      "dimensions": [
+        4096,
+        4096
+      ],
+      "pillow_mode": "RGBA",
+      "png_bit_depth": 16,
+      "png_color_type": 6,
+      "bytes": 107497608,
+      "sha256": "2422f57eced111f129b251b520f75760268a851def553557c4a51fd428bce9bf",
+      "md5": "36c4fdbe872c951c8cf94cd0b4c57344",
+      "upstream_size": 107497608,
+      "upstream_md5_as_provided": "36c4fdbe872c951c8cf94cd0b4c57344",
+      "upstream_md5_normalized_32_hex": "36c4fdbe872c951c8cf94cd0b4c57344",
+      "upstream_size_verified": true,
+      "upstream_md5_verified": true,
+      "color_space": "sRGB",
+      "original_unmodified": true
+    },
+    "Rough": {
+      "file": "white_plaster_02_rough_2k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/white_plaster_02/white_plaster_02_rough_2k.png",
+      "format": "PNG",
+      "resolution_label": "2k",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "pillow_mode": "RGBA",
+      "png_bit_depth": 16,
+      "png_color_type": 4,
+      "bytes": 9074539,
+      "sha256": "a7a4765eee08d3260c03f77e0ed596200298a9a2d1dcd8c70f4da62977e55129",
+      "md5": "3aa6655aa83e1d6ccd92eadc4e213b9a",
+      "upstream_size": 9074539,
+      "upstream_md5_as_provided": "3aa6655aa83e1d6ccd92eadc4e213b9a",
+      "upstream_md5_normalized_32_hex": "3aa6655aa83e1d6ccd92eadc4e213b9a",
+      "upstream_size_verified": true,
+      "upstream_md5_verified": true,
+      "color_space": "Non-Color",
+      "original_unmodified": true
+    },
+    "nor_gl": {
+      "file": "white_plaster_02_nor_gl_2k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/white_plaster_02/white_plaster_02_nor_gl_2k.png",
+      "format": "PNG",
+      "resolution_label": "2k",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "pillow_mode": "RGBA",
+      "png_bit_depth": 16,
+      "png_color_type": 6,
+      "bytes": 24664332,
+      "sha256": "097bd8bc72bcb5c75fd26bc11f981dad5944ceec4a5d02481b24915c76c34839",
+      "md5": "5ebaee84d0be9fce4e5047ab97d584ea",
+      "upstream_size": 24664332,
+      "upstream_md5_as_provided": "5ebaee84d0be9fce4e5047ab97d584ea",
+      "upstream_md5_normalized_32_hex": "5ebaee84d0be9fce4e5047ab97d584ea",
+      "upstream_size_verified": true,
+      "upstream_md5_verified": true,
+      "color_space": "Non-Color",
+      "original_unmodified": true
+    },
+    "Displacement": {
+      "file": "white_plaster_02_disp_2k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/white_plaster_02/white_plaster_02_disp_2k.png",
+      "format": "PNG",
+      "resolution_label": "2k",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "pillow_mode": "RGBA",
+      "png_bit_depth": 16,
+      "png_color_type": 4,
+      "bytes": 8351540,
+      "sha256": "3666a4aca5519215f9a53ae74bc7d326d0c1593e4bfe7a86f33ec6e06ce50419",
+      "md5": "5d1ba6863a8502c1576ca25f39979376",
+      "upstream_size": 8351540,
+      "upstream_md5_as_provided": "5d1ba6863a8502c1576ca25f39979376",
+      "upstream_md5_normalized_32_hex": "5d1ba6863a8502c1576ca25f39979376",
+      "upstream_size_verified": true,
+      "upstream_md5_verified": true,
+      "color_space": "Non-Color",
+      "original_unmodified": true
+    },
+    "AO": {
+      "file": "white_plaster_02_ao_2k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/white_plaster_02/white_plaster_02_ao_2k.png",
+      "format": "PNG",
+      "resolution_label": "2k",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "pillow_mode": "RGBA",
+      "png_bit_depth": 16,
+      "png_color_type": 4,
+      "bytes": 9479790,
+      "sha256": "fe9bbe992071cb0212fabdceca3d91380918057bbacae3feea15450de920fa30",
+      "md5": "16a194cff4c6af334d8af77728c1905e",
+      "upstream_size": 9479790,
+      "upstream_md5_as_provided": "16a194cff4c6af334d8af77728c1905e",
+      "upstream_md5_normalized_32_hex": "16a194cff4c6af334d8af77728c1905e",
+      "upstream_size_verified": true,
+      "upstream_md5_verified": true,
+      "color_space": "Non-Color",
+      "original_unmodified": true
+    }
+  },
+  "original_images_unmodified": true,
+  "ai_inference": false,
+  "api_user_agent": "LivingTown-AssetRefinement/1.0 (https://github.com/ForTe13X/living-town)",
+  "api_terms_url": "https://github.com/Poly-Haven/Public-API/blob/master/ToS.md",
+  "metadata": {
+    "info": {
+      "file": "api_info.json",
+      "url": "https://api.polyhaven.com/info/white_plaster_02",
+      "sha256": "29df04493a17417a7d2fe3b5a4c15ead690b9881eaedb6811ff446746afdb7c4"
+    },
+    "files": {
+      "file": "api_files.json",
+      "url": "https://api.polyhaven.com/files/white_plaster_02",
+      "sha256": "d25695d1a2a7ee4b3e6563bcb9c17dfe3d29a9b54e1e352555214b99c6803287"
+    }
+  },
+  "license_evidence": {
+    "file": "LICENSE_SOURCE.txt",
+    "sha256": "45c21a3ed7fa98a6781a2bf59b382e991060a11bfd3844c2cd960b42b3f5f12e"
+  },
+  "legalcode_file": {
+    "file": "CC0-1.0-LEGALCODE.txt",
+    "source_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+    "bytes": 7048,
+    "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+  },
+  "license_primary_statement": "Our assets are all licensed as CC0",
+  "license_statement_source_url": "https://polyhaven.com/license"
+}

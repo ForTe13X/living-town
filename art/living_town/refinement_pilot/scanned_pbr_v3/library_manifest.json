@@ -1,0 +1,254 @@
+{
+  "schema": "living_town.scanned_pbr_library.v1",
+  "generator_sha256": "4125a2dd168f4c4fe5831b9b20af14e331bd94aa5baa33939245742f4b02f1a3",
+  "roles": {
+    "cabinet_oak": "oak_veneer_01",
+    "plaster": "white_plaster_02",
+    "honed_granite": "Granite002A",
+    "cut_granite": "Granite002A_cut",
+    "interior_floor": "terrazzo_tiles"
+  },
+  "ai_inference_executed": false,
+  "materials": {
+    "Granite002A": {
+      "repeat_metres": [
+        0.5,
+        0.5
+      ],
+      "maps": {
+        "basecolor": {
+          "path": "Granite002A/basecolor.png",
+          "sha256": "e4aba6eceb81d3b24c6ebbe0c06fafbd93bc4ba22d8294dcd6c2a7bfe0f338bb",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "source_sha256": "0169df6c9038f40c8f84d8706eb8231c62e6c5fa5c466c5dd9e58ab1d9e3068f",
+          "color_space": "sRGB"
+        },
+        "roughness": {
+          "path": "Granite002A/roughness.png",
+          "sha256": "fdb3baf01218eacb42a814fedc3f2ed0451109d35ef47155841a6b224efc9e08",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "source_sha256": "81c1ffd7a7d30a8d0af2b9b0dac0825a6c8cab6ad54b5f95fb8e0ee55cd9dac6",
+          "color_space": "Non-Color"
+        },
+        "normal": {
+          "path": "Granite002A/normal.png",
+          "sha256": "db1329fb40d0b24a1fd32ab73345e32cb60683965bdac54f8898fcc8919f22c6",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "source_sha256": "3833fac51d4b0363fd4b0cf0d73f38635e03243b7de18233f5d193c3bf3d1305",
+          "color_space": "Non-Color"
+        }
+      },
+      "license": "CC0-1.0",
+      "asset_url": "https://ambientcg.com/a/Granite002A",
+      "source_provenance_sha256": "8150c1efa522715d71687208e1d44b10d501f2af31a85bcaf723083dd2a425ba",
+      "normal_convention": "OpenGL tangent-space +Y",
+      "source_kind": "See source provenance",
+      "physical_scale_authority": "ARTIST_AUTHORED",
+      "finish_recipe": "Authored honed counter roughness=.38+.5*source; no claim of measured roughness",
+      "painted_albedo": false,
+      "paint_recipe": null,
+      "preparation": "16-bit originals retained separately; RGB8/L8 PNG copies; Lanczos diffuse downsample when needed. Normal source resolution retained, no RGB-to-normal estimation."
+    },
+    "Granite002A_cut": {
+      "repeat_metres": [
+        0.5,
+        0.5
+      ],
+      "maps": {
+        "basecolor": {
+          "path": "Granite002A/basecolor.png",
+          "sha256": "e4aba6eceb81d3b24c6ebbe0c06fafbd93bc4ba22d8294dcd6c2a7bfe0f338bb",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "source_sha256": "0169df6c9038f40c8f84d8706eb8231c62e6c5fa5c466c5dd9e58ab1d9e3068f",
+          "color_space": "sRGB"
+        },
+        "roughness": {
+          "path": "Granite002A/cut_roughness.png",
+          "sha256": "4c0b7a62c387da4265a5fe3ee3ff30b4b1720a2c5fc0154694c499eb43177e08",
+          "source_sha256": "81c1ffd7a7d30a8d0af2b9b0dac0825a6c8cab6ad54b5f95fb8e0ee55cd9dac6",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "color_space": "Non-Color"
+        },
+        "normal": {
+          "path": "Granite002A/normal.png",
+          "sha256": "db1329fb40d0b24a1fd32ab73345e32cb60683965bdac54f8898fcc8919f22c6",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "source_sha256": "3833fac51d4b0363fd4b0cf0d73f38635e03243b7de18233f5d193c3bf3d1305",
+          "color_space": "Non-Color"
+        }
+      },
+      "license": "CC0-1.0",
+      "asset_url": "https://ambientcg.com/a/Granite002A",
+      "source_provenance_sha256": "8150c1efa522715d71687208e1d44b10d501f2af31a85bcaf723083dd2a425ba",
+      "normal_convention": "OpenGL tangent-space +Y",
+      "source_kind": "See source provenance",
+      "physical_scale_authority": "ARTIST_AUTHORED",
+      "finish_recipe": "Authored cut-stone trim roughness=.72+.28*source; source normal unchanged",
+      "painted_albedo": false,
+      "paint_recipe": null,
+      "preparation": "16-bit originals retained separately; RGB8/L8 PNG copies; Lanczos diffuse downsample when needed. Normal source resolution retained, no RGB-to-normal estimation."
+    },
+    "oak_veneer_01": {
+      "repeat_metres": [
+        1.8300000429153442,
+        1.8300000429153442
+      ],
+      "maps": {
+        "basecolor": {
+          "path": "oak_veneer_01/basecolor.png",
+          "sha256": "6064b628e227bd124e87e303d52ad8856799aa20da5e587c768df094cf7da87d",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "source_sha256": "6cc2cbd71014f217dc256cd7fed0461fbd62d32bfd0898b09a7fe738ff854356",
+          "color_space": "sRGB"
+        },
+        "roughness": {
+          "path": "oak_veneer_01/roughness.png",
+          "sha256": "fc155b78bfa5775d60cbf8a291e8d21447a94d88cd1ddb81f695efb2caf5c9be",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "source_sha256": "c721fe5abff3c3ec04281803e8477f3fc348d8b5882f5830c50709e838977e6f",
+          "color_space": "Non-Color"
+        },
+        "normal": {
+          "path": "oak_veneer_01/normal.png",
+          "sha256": "5fb488f60f005cb34c23c9c493a37e685bbc54a1aa3c95345f77146b7d24c5ba",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "source_sha256": "c26f922a75022c11243f351d348d1b5615e713f3787c76657fdb06047879b960",
+          "color_space": "Non-Color"
+        }
+      },
+      "license": "CC0-1.0",
+      "asset_url": "https://polyhaven.com/a/oak_veneer_01",
+      "source_provenance_sha256": "1e0f50930fa74ebbc403d5018b709a26531e47bce1125ee8fb57e439ffc5f686",
+      "normal_convention": "OpenGL tangent-space +Y",
+      "source_kind": "See source provenance",
+      "physical_scale_authority": "Current official API dimensions field (millimetres); asset page rounded display agrees. Legacy free-text scale may conflict and is retained separately.",
+      "finish_recipe": "Source finish retained",
+      "painted_albedo": false,
+      "paint_recipe": null,
+      "preparation": "16-bit originals retained separately; RGB8/L8 PNG copies; Lanczos diffuse downsample when needed. Normal source resolution retained, no RGB-to-normal estimation."
+    },
+    "terrazzo_tiles": {
+      "repeat_metres": [
+        2.0,
+        2.0
+      ],
+      "maps": {
+        "basecolor": {
+          "path": "terrazzo_tiles/basecolor.png",
+          "sha256": "bf1db414fdf3498067af124add8b6417bb48291152e7ce8793291e5c5101297d",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "source_sha256": "80cb813199412195523caf0e9e41bf96cf7e8cdf9a9ae91307bb8633c823b9e3",
+          "color_space": "sRGB"
+        },
+        "roughness": {
+          "path": "terrazzo_tiles/roughness.png",
+          "sha256": "e539202add3c0ab0e1a9d1473f47453d82e404940e87ffd22fb90de09629b1ee",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "source_sha256": "3928d7e6d0c0ce98ac53d80192830dedc04a80f4d9a30eb804d75d23e38ffda4",
+          "color_space": "Non-Color"
+        },
+        "normal": {
+          "path": "terrazzo_tiles/normal.png",
+          "sha256": "91eada77f4c409f37062cb1c50777d88a2b77011a958fa9e5f96cb9c6e55c894",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "source_sha256": "04a415bbf52c0cd293608fc40eed6bacb2cf6e3003f8ed28a94518a900fb834e",
+          "color_space": "Non-Color"
+        }
+      },
+      "license": "CC0-1.0",
+      "asset_url": "https://polyhaven.com/a/terrazzo_tiles",
+      "source_provenance_sha256": "20b9c2dc1bed60c097a9d322963b55bb822c9e959025053f599ed4d9a1a0a250",
+      "normal_convention": "OpenGL tangent-space +Y",
+      "source_kind": "See source provenance",
+      "physical_scale_authority": "Current official API dimensions",
+      "finish_recipe": "Source finish retained",
+      "painted_albedo": false,
+      "paint_recipe": null,
+      "preparation": "16-bit originals retained separately; RGB8/L8 PNG copies; Lanczos diffuse downsample when needed. Normal source resolution retained, no RGB-to-normal estimation."
+    },
+    "white_plaster_02": {
+      "repeat_metres": [
+        1.0,
+        1.0
+      ],
+      "maps": {
+        "basecolor": {
+          "path": "white_plaster_02/basecolor.png",
+          "sha256": "dc6999674fa0a34708c6c4c076c150b5df1bb1392d54dcdc4f93056090f4b081",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "source_sha256": "2422f57eced111f129b251b520f75760268a851def553557c4a51fd428bce9bf",
+          "color_space": "sRGB"
+        },
+        "roughness": {
+          "path": "white_plaster_02/roughness.png",
+          "sha256": "5a1f122e5ae0f238954b784c1bdaa0c6603544d3fe1733cd35d6f8fe5a38b38a",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "source_sha256": "a7a4765eee08d3260c03f77e0ed596200298a9a2d1dcd8c70f4da62977e55129",
+          "color_space": "Non-Color"
+        },
+        "normal": {
+          "path": "white_plaster_02/normal.png",
+          "sha256": "47bc555fa18b55e437c2b5d72da0a2a5b4e88e82b05377de465ad64635c5bdcc",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "source_sha256": "097bd8bc72bcb5c75fd26bc11f981dad5944ceec4a5d02481b24915c76c34839",
+          "color_space": "Non-Color"
+        }
+      },
+      "license": "CC0-1.0",
+      "asset_url": "https://polyhaven.com/a/white_plaster_02",
+      "source_provenance_sha256": "93eb8c24f289de716409abece528cc0d5df874ea6c2bae8e790033e6ee481568",
+      "normal_convention": "OpenGL tangent-space +Y",
+      "source_kind": "See source provenance",
+      "physical_scale_authority": "Current official API dimensions field (millimetres); asset page rounded display agrees. Legacy free-text scale may conflict and is retained separately.",
+      "finish_recipe": "Source finish retained",
+      "painted_albedo": true,
+      "paint_recipe": "Linear RGB mean shifted to sRGB224,218,204 with .65 source linear deviation. Photographed normal and roughness unchanged.",
+      "preparation": "16-bit originals retained separately; RGB8/L8 PNG copies; Lanczos diffuse downsample when needed. Normal source resolution retained, no RGB-to-normal estimation."
+    }
+  }
+}

@@ -1,0 +1,181 @@
+{
+  "schema": "living_town.concept_hero_static_verification.v1",
+  "status": "PASS",
+  "hero_manifest_sha256": "0a2c10b6ffda9aa4d1b5275cbd62088335735990cd9ce396ac16e6cbf89f943d",
+  "source_modules_current": true,
+  "native_container": {
+    "container": "Zstandard framed .blend",
+    "compression_magic_verified": true,
+    "native_header_verified": false,
+    "native_reopened": false,
+    "content_validation": "Requires independent Blender reopen; this static verifier does not decompress Zstandard."
+  },
+  "bound_file_count": 11,
+  "whole_glb": {
+    "status": "PASS",
+    "sha256": "14c0dc1fe0b99d4479b32f9bba8fbaa35c687bd7f53fb9e6720ac5df98dfa564",
+    "bytes": 181476196,
+    "meshes": 803,
+    "scene_nodes": 810,
+    "triangles_unique": 307072,
+    "degenerate_triangles_recorded": 0,
+    "embedded_images": 27,
+    "normal_mapped_primitives": 174,
+    "explicit_tangent_primitives": 174,
+    "expected_semantic_nodes": 150,
+    "semantic_bounds_gltf_m": [
+      [
+        -1.5,
+        0.0,
+        -4.498999893665314
+      ],
+      [
+        1.5,
+        1.5261399745941162,
+        -3.7599998712539673
+      ]
+    ],
+    "standalone_root_retained": false,
+    "extensions_used": [
+      "KHR_materials_transmission",
+      "KHR_materials_ior",
+      "KHR_texture_transform"
+    ],
+    "extensions_required": [
+      "KHR_texture_transform"
+    ],
+    "scope": "Dense embedded uncompressed glTF arrays, PBR texcoord/tangent coverage, indices, semantic child IDs and actual scene transforms"
+  },
+  "counter_glb": {
+    "status": "PASS",
+    "sha256": "15d6c0973fd06695368a65fdd69ed988a134aa246dc61046131d4bb4b4114fde",
+    "bytes": 33167720,
+    "meshes": 150,
+    "scene_nodes": 151,
+    "triangles_unique": 28456,
+    "degenerate_triangles_recorded": 0,
+    "embedded_images": 6,
+    "normal_mapped_primitives": 55,
+    "explicit_tangent_primitives": 55,
+    "expected_semantic_nodes": 150,
+    "semantic_bounds_gltf_m": [
+      [
+        -1.5,
+        0.0,
+        -4.498999893665314
+      ],
+      [
+        1.5,
+        1.5261399745941162,
+        -3.7599998712539673
+      ]
+    ],
+    "standalone_root_retained": true,
+    "extensions_used": [
+      "KHR_texture_transform"
+    ],
+    "extensions_required": [
+      "KHR_texture_transform"
+    ],
+    "scope": "Dense embedded uncompressed glTF arrays, PBR texcoord/tangent coverage, indices, semantic child IDs and actual scene transforms"
+  },
+  "conditioning_views": [
+    {
+      "view": "front",
+      "sha256": "7ed12b671acd3e55787aab17b49e68e73d4340b145d57ca5198ddcb57550e9fc",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "rgba": true,
+      "pixel_alpha_checked": true,
+      "alpha_extrema": [
+        0,
+        255
+      ]
+    },
+    {
+      "view": "left",
+      "sha256": "28740156fef1eaecdd45ff4a239b42e0bd3391b3a75b21f6f1fb0c24ddeb529f",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "rgba": true,
+      "pixel_alpha_checked": true,
+      "alpha_extrema": [
+        0,
+        255
+      ]
+    },
+    {
+      "view": "back",
+      "sha256": "fcb37382bb2b84d8ffb880c9e8a6e4ec09b0217dfdc5bacf60159ddce91c33ee",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "rgba": true,
+      "pixel_alpha_checked": true,
+      "alpha_extrema": [
+        0,
+        255
+      ]
+    },
+    {
+      "view": "right",
+      "sha256": "be015fffd40ca1149bbe2154f62450a8f22ea1dece92d10dfb49cf266e1560bd",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "rgba": true,
+      "pixel_alpha_checked": true,
+      "alpha_extrema": [
+        0,
+        255
+      ]
+    }
+  ],
+  "ai_inference_executed": false,
+  "visual_review_performed": false,
+  "scope": "Current source/file hashes, GLB dense geometry/PBR/semantic child IDs/transforms, four owned RGBA input records. Separate visual and engine checks remain required.",
+  "prepared": {
+    "status": "PASS",
+    "workflow_manifest_sha256": "2e6913cc3f9e3997e007da5cedce3e6db80060db1fdbfb78a848d9e0629081d9",
+    "inputs": {
+      "mesh": {
+        "sha256": "15d6c0973fd06695368a65fdd69ed988a134aa246dc61046131d4bb4b4114fde",
+        "bytes": 33167720
+      },
+      "reference": {
+        "sha256": "5a5d9b51c36dad5de9bf4a2aaca7acc832113e420b0d883a1013b63056fe8e9e",
+        "bytes": 362009
+      },
+      "sheet": {
+        "sha256": "6e79a0e345ac08ddf47b9f551b41b6e8213242af10e1525ce05f3192ccf14e18",
+        "bytes": 914658
+      },
+      "view_front": {
+        "sha256": "5a5d9b51c36dad5de9bf4a2aaca7acc832113e420b0d883a1013b63056fe8e9e",
+        "bytes": 362009
+      },
+      "view_left": {
+        "sha256": "655399a06b6e51df5f70408ac1917688f7123544b26c417448099f83c0d170cd",
+        "bytes": 106333
+      },
+      "view_back": {
+        "sha256": "97f3da37911a6ff8bb36744fc0843f738aaaa820ad48bcb4909e379f3195670f",
+        "bytes": 325366
+      },
+      "view_right": {
+        "sha256": "3af4001c1d23051168fc4e8673d31d79866a3bb4283b101cf45114e70e968ee9",
+        "bytes": 116180
+      }
+    },
+    "preparation_manifest_sha256": "12459442407692688036223421836144b4b09b8e1955e623ab36e794739475d8",
+    "sheet_pixels_and_original_alpha_checked": true,
+    "inference_performed": false,
+    "metric_uv_not_atlas": true
+  }
+}

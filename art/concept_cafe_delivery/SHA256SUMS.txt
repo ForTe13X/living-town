@@ -1,0 +1,2 @@
+d3c8966138c7277b39fd9cc93085514687ef6f5273efd0e190e1ab3fb231fb29  LivingTown_ConceptCafe_Pilot_v10.zip
+dd6a6328e41e46d0640bac009b040795f4266c0af59790d4fb715f18f999d3f9  LivingTown_ConceptCafe.manifest.json

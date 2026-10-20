@@ -1,0 +1,2187 @@
+{
+  "schema": "living_town.reconstructed_cafe_hero.v1",
+  "status": "BUILT_REQUIRES_VISUAL_REVIEW",
+  "ai_inference_executed": false,
+  "design_authority": "User-approved idealized concept; existing meshes may be replaced. This is a new cafe/street exemplar, not a regenerated whole town.",
+  "concept_sha256": "8b9495ff72b6cae6b890037ad6f5dc2f717b23eff3bf1811d315862e64218914",
+  "source_modules": {
+    "tools\\asset_refinement\\hero_scene.py": "0b94cf1e0bbedce815cd65a245fa20d4272a7c48a7b5de718d8f9f625eb32c70",
+    "tools\\asset_refinement\\hero_furniture.py": "48af2b5ebe48b13ae9cc820874e5f4a7722964b710cf52bf8031ec75e6b77dd6",
+    "tools\\asset_refinement\\hero_foliage.py": "e1bc3999cdfca90b863395ffc12f0e1dd91524b151e35cf1783ecc09811f9b58",
+    "tools\\asset_refinement\\hero_surfaces.py": "2aba550aecd58ccdbc64b6ad3e2112221f75d72bbfcf9a04db5cf79888ba503e",
+    "tools\\asset_refinement\\materials.py": "c98ca7441773df6d9db0e85bf814c9da3539aa00b48226026b699bc9e212df48",
+    "tools\\asset_refinement\\hero_pbr.py": "6c957c31f9542b5928a415e213496b40205ef5e5dabed92769eed30aa4204125"
+  },
+  "scanned_materials": [
+    {
+      "schema": "living_town.scanned_hero_material.v1",
+      "material": "Hero_CabinetOak_Scan",
+      "source_images": {
+        "basecolor": {
+          "path": "C:/Users/yp/.codex/worktrees/114e/living-town/art/living_town/refinement_pilot/scanned_pbr_v3/oak_veneer_01/basecolor.png",
+          "sha256": "6064b628e227bd124e87e303d52ad8856799aa20da5e587c768df094cf7da87d",
+          "bytes": 6112432,
+          "color_space": "sRGB",
+          "dimensions": [
+            2048,
+            2048
+          ]
+        },
+        "roughness": {
+          "path": "C:/Users/yp/.codex/worktrees/114e/living-town/art/living_town/refinement_pilot/scanned_pbr_v3/oak_veneer_01/roughness.png",
+          "sha256": "fc155b78bfa5775d60cbf8a291e8d21447a94d88cd1ddb81f695efb2caf5c9be",
+          "bytes": 3310082,
+          "color_space": "Non-Color",
+          "dimensions": [
+            2048,
+            2048
+          ]
+        },
+        "normal": {
+          "path": "C:/Users/yp/.codex/worktrees/114e/living-town/art/living_town/refinement_pilot/scanned_pbr_v3/oak_veneer_01/normal.png",
+          "sha256": "5fb488f60f005cb34c23c9c493a37e685bbc54a1aa3c95345f77146b7d24c5ba",
+          "bytes": 6037990,
+          "color_space": "Non-Color",
+          "dimensions": [
+            2048,
+            2048
+          ]
+        }
+      },
+      "license": "Not inferred from images or filenames. Caller must retain and verify the actual CC0 scan provenance.",
+      "uv": {
+        "layer": "MetricUV",
+        "basis_metres_per_uv_unit": 2.0,
+        "repeat_metres": [
+          1.8300000429153442,
+          1.8300000429153442
+        ],
+        "mapping_scale": [
+          1.0928961492338718,
+          1.0928961492338718
+        ],
+        "expected_export_extension": "KHR_texture_transform when scale differs from 1"
+      },
+      "tint_linear_multiplier": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "roughness": {
+        "requested_scale": 0.82,
+        "effective_scale": 0.82,
+        "scale_clamp": [
+          0.04,
+          1.0
+        ],
+        "pixel_floor_applied": false
+      },
+      "normal": {
+        "convention": "OpenGL tangent-space +Y supplied by caller",
+        "strength": 1.0,
+        "reconstructed_from_rgb": false
+      },
+      "context": {
+        "supplied": false,
+        "applied": false,
+        "uv_layer": "FacadeContextUV",
+        "bake_required_for_requested_context": false,
+        "proposed_bake_formula": "scan_linear_rgb * clamp(context_linear_luminance / mean_context_linear_luminance, .88, 1.0)",
+        "maximum_context_darkening": 0.12,
+        "notes": "Context node is an unlinked reference. No flat contextual color replaces the fine scan; apply contextual grime only after an explicit basecolor bake."
+      },
+      "current_surface_graph": "Single MetricUV, Mapping, scan image textures, constant linear factors and tangent normal; conventional glTF material pattern",
+      "export_verification_required": [
+        "Every assigned mesh has MetricUV",
+        "TANGENT coverage on normal-mapped primitives",
+        "Embedded images and physical UV scale retained",
+        "Tint/roughness factors retained in actual GLB"
+      ],
+      "inference_executed": false,
+      "source_asset": {
+        "repeat_metres": [
+          1.8300000429153442,
+          1.8300000429153442
+        ],
+        "maps": {
+          "basecolor": {
+            "path": "oak_veneer_01/basecolor.png",
+            "sha256": "6064b628e227bd124e87e303d52ad8856799aa20da5e587c768df094cf7da87d",
+            "dimensions": [
+              2048,
+              2048
+            ],
+            "source_sha256": "6cc2cbd71014f217dc256cd7fed0461fbd62d32bfd0898b09a7fe738ff854356",
+            "color_space": "sRGB"
+          },
+          "roughness": {
+            "path": "oak_veneer_01/roughness.png",
+            "sha256": "fc155b78bfa5775d60cbf8a291e8d21447a94d88cd1ddb81f695efb2caf5c9be",
+            "dimensions": [
+              2048,
+              2048
+            ],
+            "source_sha256": "c721fe5abff3c3ec04281803e8477f3fc348d8b5882f5830c50709e838977e6f",
+            "color_space": "Non-Color"
+          },
+          "normal": {
+            "path": "oak_veneer_01/normal.png",
+            "sha256": "5fb488f60f005cb34c23c9c493a37e685bbc54a1aa3c95345f77146b7d24c5ba",
+            "dimensions": [
+              2048,
+              2048
+            ],
+            "source_sha256": "c26f922a75022c11243f351d348d1b5615e713f3787c76657fdb06047879b960",
+            "color_space": "Non-Color"
+          }
+        },
+        "license": "CC0-1.0",
+        "asset_url": "https://polyhaven.com/a/oak_veneer_01",
+        "source_provenance_sha256": "1e0f50930fa74ebbc403d5018b709a26531e47bce1125ee8fb57e439ffc5f686",
+        "normal_convention": "OpenGL tangent-space +Y",
+        "source_kind": "See source provenance",
+        "physical_scale_authority": "Current official API dimensions field (millimetres); asset page rounded display agrees. Legacy free-text scale may conflict and is retained separately.",
+        "finish_recipe": "Source finish retained",
+        "painted_albedo": false,
+        "paint_recipe": null,
+        "preparation": "16-bit originals retained separately; RGB8/L8 PNG copies; Lanczos diffuse downsample when needed. Normal source resolution retained, no RGB-to-normal estimation."
+      }
+    },
+    {
+      "schema": "living_town.scanned_hero_material.v1",
+      "material": "Hero_HonedGranite_CC0",
+      "source_images": {
+        "basecolor": {
+          "path": "C:/Users/yp/.codex/worktrees/114e/living-town/art/living_town/refinement_pilot/scanned_pbr_v3/Granite002A/basecolor.png",
+          "sha256": "e4aba6eceb81d3b24c6ebbe0c06fafbd93bc4ba22d8294dcd6c2a7bfe0f338bb",
+          "bytes": 8299644,
+          "color_space": "sRGB",
+          "dimensions": [
+            2048,
+            2048
+          ]
+        },
+        "roughness": {
+          "path": "C:/Users/yp/.codex/worktrees/114e/living-town/art/living_town/refinement_pilot/scanned_pbr_v3/Granite002A/roughness.png",
+          "sha256": "fdb3baf01218eacb42a814fedc3f2ed0451109d35ef47155841a6b224efc9e08",
+          "bytes": 1325522,
+          "color_space": "Non-Color",
+          "dimensions": [
+            2048,
+            2048
+          ]
+        },
+        "normal": {
+          "path": "C:/Users/yp/.codex/worktrees/114e/living-town/art/living_town/refinement_pilot/scanned_pbr_v3/Granite002A/normal.png",
+          "sha256": "db1329fb40d0b24a1fd32ab73345e32cb60683965bdac54f8898fcc8919f22c6",
+          "bytes": 2255733,
+          "color_space": "Non-Color",
+          "dimensions": [
+            2048,
+            2048
+          ]
+        }
+      },
+      "license": "Not inferred from images or filenames. Caller must retain and verify the actual CC0 scan provenance.",
+      "uv": {
+        "layer": "MetricUV",
+        "basis_metres_per_uv_unit": 2.0,
+        "repeat_metres": [
+          0.5,
+          0.5
+        ],
+        "mapping_scale": [
+          4.0,
+          4.0
+        ],
+        "expected_export_extension": "KHR_texture_transform when scale differs from 1"
+      },
+      "tint_linear_multiplier": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "roughness": {
+        "requested_scale": 0.8,
+        "effective_scale": 0.8,
+        "scale_clamp": [
+          0.04,
+          1.0
+        ],
+        "pixel_floor_applied": false
+      },
+      "normal": {
+        "convention": "OpenGL tangent-space +Y supplied by caller",
+        "strength": 0.35,
+        "reconstructed_from_rgb": false
+      },
+      "context": {
+        "supplied": false,
+        "applied": false,
+        "uv_layer": "FacadeContextUV",
+        "bake_required_for_requested_context": false,
+        "proposed_bake_formula": "scan_linear_rgb * clamp(context_linear_luminance / mean_context_linear_luminance, .88, 1.0)",
+        "maximum_context_darkening": 0.12,
+        "notes": "Context node is an unlinked reference. No flat contextual color replaces the fine scan; apply contextual grime only after an explicit basecolor bake."
+      },
+      "current_surface_graph": "Single MetricUV, Mapping, scan image textures, constant linear factors and tangent normal; conventional glTF material pattern",
+      "export_verification_required": [
+        "Every assigned mesh has MetricUV",
+        "TANGENT coverage on normal-mapped primitives",
+        "Embedded images and physical UV scale retained",
+        "Tint/roughness factors retained in actual GLB"
+      ],
+      "inference_executed": false,
+      "source_asset": {
+        "repeat_metres": [
+          0.5,
+          0.5
+        ],
+        "maps": {
+          "basecolor": {
+            "path": "Granite002A/basecolor.png",
+            "sha256": "e4aba6eceb81d3b24c6ebbe0c06fafbd93bc4ba22d8294dcd6c2a7bfe0f338bb",
+            "dimensions": [
+              2048,
+              2048
+            ],
+            "source_sha256": "0169df6c9038f40c8f84d8706eb8231c62e6c5fa5c466c5dd9e58ab1d9e3068f",
+            "color_space": "sRGB"
+          },
+          "roughness": {
+            "path": "Granite002A/roughness.png",
+            "sha256": "fdb3baf01218eacb42a814fedc3f2ed0451109d35ef47155841a6b224efc9e08",
+            "dimensions": [
+              2048,
+              2048
+            ],
+            "source_sha256": "81c1ffd7a7d30a8d0af2b9b0dac0825a6c8cab6ad54b5f95fb8e0ee55cd9dac6",
+            "color_space": "Non-Color"
+          },
+          "normal": {
+            "path": "Granite002A/normal.png",
+            "sha256": "db1329fb40d0b24a1fd32ab73345e32cb60683965bdac54f8898fcc8919f22c6",
+            "dimensions": [
+              2048,
+              2048
+            ],
+            "source_sha256": "3833fac51d4b0363fd4b0cf0d73f38635e03243b7de18233f5d193c3bf3d1305",
+            "color_space": "Non-Color"
+          }
+        },
+        "license": "CC0-1.0",
+        "asset_url": "https://ambientcg.com/a/Granite002A",
+        "source_provenance_sha256": "8150c1efa522715d71687208e1d44b10d501f2af31a85bcaf723083dd2a425ba",
+        "normal_convention": "OpenGL tangent-space +Y",
+        "source_kind": "See source provenance",
+        "physical_scale_authority": "ARTIST_AUTHORED",
+        "finish_recipe": "Authored honed counter roughness=.38+.5*source; no claim of measured roughness",
+        "painted_albedo": false,
+        "paint_recipe": null,
+        "preparation": "16-bit originals retained separately; RGB8/L8 PNG copies; Lanczos diffuse downsample when needed. Normal source resolution retained, no RGB-to-normal estimation."
+      }
+    },
+    {
+      "schema": "living_town.scanned_hero_material.v1",
+      "material": "Hero_Limewash_Scan",
+      "source_images": {
+        "basecolor": {
+          "path": "C:/Users/yp/.codex/worktrees/114e/living-town/art/living_town/refinement_pilot/scanned_pbr_v3/white_plaster_02/basecolor.png",
+          "sha256": "dc6999674fa0a34708c6c4c076c150b5df1bb1392d54dcdc4f93056090f4b081",
+          "bytes": 6409983,
+          "color_space": "sRGB",
+          "dimensions": [
+            2048,
+            2048
+          ]
+        },
+        "roughness": {
+          "path": "C:/Users/yp/.codex/worktrees/114e/living-town/art/living_town/refinement_pilot/scanned_pbr_v3/white_plaster_02/roughness.png",
+          "sha256": "5a1f122e5ae0f238954b784c1bdaa0c6603544d3fe1733cd35d6f8fe5a38b38a",
+          "bytes": 2633057,
+          "color_space": "Non-Color",
+          "dimensions": [
+            2048,
+            2048
+          ]
+        },
+        "normal": {
+          "path": "C:/Users/yp/.codex/worktrees/114e/living-town/art/living_town/refinement_pilot/scanned_pbr_v3/white_plaster_02/normal.png",
+          "sha256": "47bc555fa18b55e437c2b5d72da0a2a5b4e88e82b05377de465ad64635c5bdcc",
+          "bytes": 7942075,
+          "color_space": "Non-Color",
+          "dimensions": [
+            2048,
+            2048
+          ]
+        }
+      },
+      "license": "Not inferred from images or filenames. Caller must retain and verify the actual CC0 scan provenance.",
+      "uv": {
+        "layer": "MetricUV",
+        "basis_metres_per_uv_unit": 2.0,
+        "repeat_metres": [
+          1.0,
+          1.0
+        ],
+        "mapping_scale": [
+          2.0,
+          2.0
+        ],
+        "expected_export_extension": "KHR_texture_transform when scale differs from 1"
+      },
+      "tint_linear_multiplier": [
+        0.98,
+        0.98,
+        0.98
+      ],
+      "roughness": {
+        "requested_scale": 1.0,
+        "effective_scale": 1.0,
+        "scale_clamp": [
+          0.04,
+          1.0
+        ],
+        "pixel_floor_applied": false
+      },
+      "normal": {
+        "convention": "OpenGL tangent-space +Y supplied by caller",
+        "strength": 0.5,
+        "reconstructed_from_rgb": false
+      },
+      "context": {
+        "supplied": false,
+        "applied": false,
+        "uv_layer": "FacadeContextUV",
+        "bake_required_for_requested_context": false,
+        "proposed_bake_formula": "scan_linear_rgb * clamp(context_linear_luminance / mean_context_linear_luminance, .88, 1.0)",
+        "maximum_context_darkening": 0.12,
+        "notes": "Context node is an unlinked reference. No flat contextual color replaces the fine scan; apply contextual grime only after an explicit basecolor bake."
+      },
+      "current_surface_graph": "Single MetricUV, Mapping, scan image textures, constant linear factors and tangent normal; conventional glTF material pattern",
+      "export_verification_required": [
+        "Every assigned mesh has MetricUV",
+        "TANGENT coverage on normal-mapped primitives",
+        "Embedded images and physical UV scale retained",
+        "Tint/roughness factors retained in actual GLB"
+      ],
+      "inference_executed": false,
+      "source_asset": {
+        "repeat_metres": [
+          1.0,
+          1.0
+        ],
+        "maps": {
+          "basecolor": {
+            "path": "white_plaster_02/basecolor.png",
+            "sha256": "dc6999674fa0a34708c6c4c076c150b5df1bb1392d54dcdc4f93056090f4b081",
+            "dimensions": [
+              2048,
+              2048
+            ],
+            "source_sha256": "2422f57eced111f129b251b520f75760268a851def553557c4a51fd428bce9bf",
+            "color_space": "sRGB"
+          },
+          "roughness": {
+            "path": "white_plaster_02/roughness.png",
+            "sha256": "5a1f122e5ae0f238954b784c1bdaa0c6603544d3fe1733cd35d6f8fe5a38b38a",
+            "dimensions": [
+              2048,
+              2048
+            ],
+            "source_sha256": "a7a4765eee08d3260c03f77e0ed596200298a9a2d1dcd8c70f4da62977e55129",
+            "color_space": "Non-Color"
+          },
+          "normal": {
+            "path": "white_plaster_02/normal.png",
+            "sha256": "47bc555fa18b55e437c2b5d72da0a2a5b4e88e82b05377de465ad64635c5bdcc",
+            "dimensions": [
+              2048,
+              2048
+            ],
+            "source_sha256": "097bd8bc72bcb5c75fd26bc11f981dad5944ceec4a5d02481b24915c76c34839",
+            "color_space": "Non-Color"
+          }
+        },
+        "license": "CC0-1.0",
+        "asset_url": "https://polyhaven.com/a/white_plaster_02",
+        "source_provenance_sha256": "93eb8c24f289de716409abece528cc0d5df874ea6c2bae8e790033e6ee481568",
+        "normal_convention": "OpenGL tangent-space +Y",
+        "source_kind": "See source provenance",
+        "physical_scale_authority": "Current official API dimensions field (millimetres); asset page rounded display agrees. Legacy free-text scale may conflict and is retained separately.",
+        "finish_recipe": "Source finish retained",
+        "painted_albedo": true,
+        "paint_recipe": "Linear RGB mean shifted to sRGB224,218,204 with .65 source linear deviation. Photographed normal and roughness unchanged.",
+        "preparation": "16-bit originals retained separately; RGB8/L8 PNG copies; Lanczos diffuse downsample when needed. Normal source resolution retained, no RGB-to-normal estimation."
+      }
+    },
+    {
+      "schema": "living_town.scanned_hero_material.v1",
+      "material": "Hero_CutGranite_CC0",
+      "source_images": {
+        "basecolor": {
+          "path": "C:/Users/yp/.codex/worktrees/114e/living-town/art/living_town/refinement_pilot/scanned_pbr_v3/Granite002A/basecolor.png",
+          "sha256": "e4aba6eceb81d3b24c6ebbe0c06fafbd93bc4ba22d8294dcd6c2a7bfe0f338bb",
+          "bytes": 8299644,
+          "color_space": "sRGB",
+          "dimensions": [
+            2048,
+            2048
+          ]
+        },
+        "roughness": {
+          "path": "C:/Users/yp/.codex/worktrees/114e/living-town/art/living_town/refinement_pilot/scanned_pbr_v3/Granite002A/cut_roughness.png",
+          "sha256": "4c0b7a62c387da4265a5fe3ee3ff30b4b1720a2c5fc0154694c499eb43177e08",
+          "bytes": 1007944,
+          "color_space": "Non-Color",
+          "dimensions": [
+            2048,
+            2048
+          ]
+        },
+        "normal": {
+          "path": "C:/Users/yp/.codex/worktrees/114e/living-town/art/living_town/refinement_pilot/scanned_pbr_v3/Granite002A/normal.png",
+          "sha256": "db1329fb40d0b24a1fd32ab73345e32cb60683965bdac54f8898fcc8919f22c6",
+          "bytes": 2255733,
+          "color_space": "Non-Color",
+          "dimensions": [
+            2048,
+            2048
+          ]
+        }
+      },
+      "license": "Not inferred from images or filenames. Caller must retain and verify the actual CC0 scan provenance.",
+      "uv": {
+        "layer": "MetricUV",
+        "basis_metres_per_uv_unit": 2.0,
+        "repeat_metres": [
+          0.5,
+          0.5
+        ],
+        "mapping_scale": [
+          4.0,
+          4.0
+        ],
+        "expected_export_extension": "KHR_texture_transform when scale differs from 1"
+      },
+      "tint_linear_multiplier": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "roughness": {
+        "requested_scale": 1.0,
+        "effective_scale": 1.0,
+        "scale_clamp": [
+          0.04,
+          1.0
+        ],
+        "pixel_floor_applied": false
+      },
+      "normal": {
+        "convention": "OpenGL tangent-space +Y supplied by caller",
+        "strength": 0.25,
+        "reconstructed_from_rgb": false
+      },
+      "context": {
+        "supplied": false,
+        "applied": false,
+        "uv_layer": "FacadeContextUV",
+        "bake_required_for_requested_context": false,
+        "proposed_bake_formula": "scan_linear_rgb * clamp(context_linear_luminance / mean_context_linear_luminance, .88, 1.0)",
+        "maximum_context_darkening": 0.12,
+        "notes": "Context node is an unlinked reference. No flat contextual color replaces the fine scan; apply contextual grime only after an explicit basecolor bake."
+      },
+      "current_surface_graph": "Single MetricUV, Mapping, scan image textures, constant linear factors and tangent normal; conventional glTF material pattern",
+      "export_verification_required": [
+        "Every assigned mesh has MetricUV",
+        "TANGENT coverage on normal-mapped primitives",
+        "Embedded images and physical UV scale retained",
+        "Tint/roughness factors retained in actual GLB"
+      ],
+      "inference_executed": false,
+      "source_asset": {
+        "repeat_metres": [
+          0.5,
+          0.5
+        ],
+        "maps": {
+          "basecolor": {
+            "path": "Granite002A/basecolor.png",
+            "sha256": "e4aba6eceb81d3b24c6ebbe0c06fafbd93bc4ba22d8294dcd6c2a7bfe0f338bb",
+            "dimensions": [
+              2048,
+              2048
+            ],
+            "source_sha256": "0169df6c9038f40c8f84d8706eb8231c62e6c5fa5c466c5dd9e58ab1d9e3068f",
+            "color_space": "sRGB"
+          },
+          "roughness": {
+            "path": "Granite002A/cut_roughness.png",
+            "sha256": "4c0b7a62c387da4265a5fe3ee3ff30b4b1720a2c5fc0154694c499eb43177e08",
+            "source_sha256": "81c1ffd7a7d30a8d0af2b9b0dac0825a6c8cab6ad54b5f95fb8e0ee55cd9dac6",
+            "dimensions": [
+              2048,
+              2048
+            ],
+            "color_space": "Non-Color"
+          },
+          "normal": {
+            "path": "Granite002A/normal.png",
+            "sha256": "db1329fb40d0b24a1fd32ab73345e32cb60683965bdac54f8898fcc8919f22c6",
+            "dimensions": [
+              2048,
+              2048
+            ],
+            "source_sha256": "3833fac51d4b0363fd4b0cf0d73f38635e03243b7de18233f5d193c3bf3d1305",
+            "color_space": "Non-Color"
+          }
+        },
+        "license": "CC0-1.0",
+        "asset_url": "https://ambientcg.com/a/Granite002A",
+        "source_provenance_sha256": "8150c1efa522715d71687208e1d44b10d501f2af31a85bcaf723083dd2a425ba",
+        "normal_convention": "OpenGL tangent-space +Y",
+        "source_kind": "See source provenance",
+        "physical_scale_authority": "ARTIST_AUTHORED",
+        "finish_recipe": "Authored cut-stone trim roughness=.72+.28*source; source normal unchanged",
+        "painted_albedo": false,
+        "paint_recipe": null,
+        "preparation": "16-bit originals retained separately; RGB8/L8 PNG copies; Lanczos diffuse downsample when needed. Normal source resolution retained, no RGB-to-normal estimation."
+      }
+    },
+    {
+      "schema": "living_town.scanned_hero_material.v1",
+      "material": "Hero_InteriorFloor_Scan",
+      "source_images": {
+        "basecolor": {
+          "path": "C:/Users/yp/.codex/worktrees/114e/living-town/art/living_town/refinement_pilot/scanned_pbr_v3/terrazzo_tiles/basecolor.png",
+          "sha256": "bf1db414fdf3498067af124add8b6417bb48291152e7ce8793291e5c5101297d",
+          "bytes": 9307214,
+          "color_space": "sRGB",
+          "dimensions": [
+            2048,
+            2048
+          ]
+        },
+        "roughness": {
+          "path": "C:/Users/yp/.codex/worktrees/114e/living-town/art/living_town/refinement_pilot/scanned_pbr_v3/terrazzo_tiles/roughness.png",
+          "sha256": "e539202add3c0ab0e1a9d1473f47453d82e404940e87ffd22fb90de09629b1ee",
+          "bytes": 2020676,
+          "color_space": "Non-Color",
+          "dimensions": [
+            2048,
+            2048
+          ]
+        },
+        "normal": {
+          "path": "C:/Users/yp/.codex/worktrees/114e/living-town/art/living_town/refinement_pilot/scanned_pbr_v3/terrazzo_tiles/normal.png",
+          "sha256": "91eada77f4c409f37062cb1c50777d88a2b77011a958fa9e5f96cb9c6e55c894",
+          "bytes": 2535869,
+          "color_space": "Non-Color",
+          "dimensions": [
+            2048,
+            2048
+          ]
+        }
+      },
+      "license": "Not inferred from images or filenames. Caller must retain and verify the actual CC0 scan provenance.",
+      "uv": {
+        "layer": "MetricUV",
+        "basis_metres_per_uv_unit": 2.0,
+        "repeat_metres": [
+          2.0,
+          2.0
+        ],
+        "mapping_scale": [
+          1.0,
+          1.0
+        ],
+        "expected_export_extension": "KHR_texture_transform when scale differs from 1"
+      },
+      "tint_linear_multiplier": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "roughness": {
+        "requested_scale": 1.0,
+        "effective_scale": 1.0,
+        "scale_clamp": [
+          0.04,
+          1.0
+        ],
+        "pixel_floor_applied": false
+      },
+      "normal": {
+        "convention": "OpenGL tangent-space +Y supplied by caller",
+        "strength": 1.0,
+        "reconstructed_from_rgb": false
+      },
+      "context": {
+        "supplied": false,
+        "applied": false,
+        "uv_layer": "FacadeContextUV",
+        "bake_required_for_requested_context": false,
+        "proposed_bake_formula": "scan_linear_rgb * clamp(context_linear_luminance / mean_context_linear_luminance, .88, 1.0)",
+        "maximum_context_darkening": 0.12,
+        "notes": "Context node is an unlinked reference. No flat contextual color replaces the fine scan; apply contextual grime only after an explicit basecolor bake."
+      },
+      "current_surface_graph": "Single MetricUV, Mapping, scan image textures, constant linear factors and tangent normal; conventional glTF material pattern",
+      "export_verification_required": [
+        "Every assigned mesh has MetricUV",
+        "TANGENT coverage on normal-mapped primitives",
+        "Embedded images and physical UV scale retained",
+        "Tint/roughness factors retained in actual GLB"
+      ],
+      "inference_executed": false,
+      "source_asset": {
+        "repeat_metres": [
+          2.0,
+          2.0
+        ],
+        "maps": {
+          "basecolor": {
+            "path": "terrazzo_tiles/basecolor.png",
+            "sha256": "bf1db414fdf3498067af124add8b6417bb48291152e7ce8793291e5c5101297d",
+            "dimensions": [
+              2048,
+              2048
+            ],
+            "source_sha256": "80cb813199412195523caf0e9e41bf96cf7e8cdf9a9ae91307bb8633c823b9e3",
+            "color_space": "sRGB"
+          },
+          "roughness": {
+            "path": "terrazzo_tiles/roughness.png",
+            "sha256": "e539202add3c0ab0e1a9d1473f47453d82e404940e87ffd22fb90de09629b1ee",
+            "dimensions": [
+              2048,
+              2048
+            ],
+            "source_sha256": "3928d7e6d0c0ce98ac53d80192830dedc04a80f4d9a30eb804d75d23e38ffda4",
+            "color_space": "Non-Color"
+          },
+          "normal": {
+            "path": "terrazzo_tiles/normal.png",
+            "sha256": "91eada77f4c409f37062cb1c50777d88a2b77011a958fa9e5f96cb9c6e55c894",
+            "dimensions": [
+              2048,
+              2048
+            ],
+            "source_sha256": "04a415bbf52c0cd293608fc40eed6bacb2cf6e3003f8ed28a94518a900fb834e",
+            "color_space": "Non-Color"
+          }
+        },
+        "license": "CC0-1.0",
+        "asset_url": "https://polyhaven.com/a/terrazzo_tiles",
+        "source_provenance_sha256": "20b9c2dc1bed60c097a9d322963b55bb822c9e959025053f599ed4d9a1a0a250",
+        "normal_convention": "OpenGL tangent-space +Y",
+        "source_kind": "See source provenance",
+        "physical_scale_authority": "Current official API dimensions",
+        "finish_recipe": "Source finish retained",
+        "painted_albedo": false,
+        "paint_recipe": null,
+        "preparation": "16-bit originals retained separately; RGB8/L8 PNG copies; Lanczos diffuse downsample when needed. Normal source resolution retained, no RGB-to-normal estimation."
+      }
+    }
+  ],
+  "pbr_library_sha256": "bb367d05a1cb15df5bf9238f642dfd91cbc0ab58b6723fc4d1154c6b6ecf0f70",
+  "functional_dimensions_m": {
+    "building_width": 8.6,
+    "building_depth": 6.4,
+    "ground_ceiling": 3.2,
+    "door_width": 1.25,
+    "door_height": 2.72,
+    "awning_clear_height": 2.15
+  },
+  "counter": {
+    "root": "Hero_Cafe_Counter",
+    "objects": [
+      "Hero_Cafe_Counter_recessed_toe_plinth",
+      "Hero_Cafe_Counter_carcass_bottom",
+      "Hero_Cafe_Counter_carcass_top_rail_support",
+      "Hero_Cafe_Counter_carcass_end_-1",
+      "Hero_Cafe_Counter_end_-1_inset_panel",
+      "Hero_Cafe_Counter_end_-1_frame_stile",
+      "Hero_Cafe_Counter_end_-1_frame_stile.001",
+      "Hero_Cafe_Counter_end_-1_frame_rail",
+      "Hero_Cafe_Counter_end_-1_frame_rail.001",
+      "Hero_Cafe_Counter_carcass_end_1",
+      "Hero_Cafe_Counter_end_1_inset_panel",
+      "Hero_Cafe_Counter_end_1_frame_stile",
+      "Hero_Cafe_Counter_end_1_frame_stile.001",
+      "Hero_Cafe_Counter_end_1_frame_rail",
+      "Hero_Cafe_Counter_end_1_frame_rail.001",
+      "Hero_Cafe_Counter_front_frame_stile_0",
+      "Hero_Cafe_Counter_front_frame_stile_1",
+      "Hero_Cafe_Counter_front_frame_stile_2",
+      "Hero_Cafe_Counter_front_frame_stile_3",
+      "Hero_Cafe_Counter_front_frame_stile_4",
+      "Hero_Cafe_Counter_front_continuous_rail",
+      "Hero_Cafe_Counter_front_continuous_rail.001",
+      "Hero_Cafe_Counter_front_recessed_panel_0",
+      "Hero_Cafe_Counter_front_panel_0_inner_bead",
+      "Hero_Cafe_Counter_front_panel_0_inner_bead.001",
+      "Hero_Cafe_Counter_front_recessed_panel_1",
+      "Hero_Cafe_Counter_front_panel_1_inner_bead",
+      "Hero_Cafe_Counter_front_panel_1_inner_bead.001",
+      "Hero_Cafe_Counter_front_recessed_panel_2",
+      "Hero_Cafe_Counter_front_panel_2_inner_bead",
+      "Hero_Cafe_Counter_front_panel_2_inner_bead.001",
+      "Hero_Cafe_Counter_front_recessed_panel_3",
+      "Hero_Cafe_Counter_front_panel_3_inner_bead",
+      "Hero_Cafe_Counter_front_panel_3_inner_bead.001",
+      "Hero_Cafe_Counter_staff_frame_stile_0",
+      "Hero_Cafe_Counter_staff_frame_stile_1",
+      "Hero_Cafe_Counter_staff_frame_stile_2",
+      "Hero_Cafe_Counter_staff_frame_stile_3",
+      "Hero_Cafe_Counter_staff_frame_stile_4",
+      "Hero_Cafe_Counter_staff_continuous_rail",
+      "Hero_Cafe_Counter_staff_continuous_rail.001",
+      "Hero_Cafe_Counter_staff_recessed_panel_0",
+      "Hero_Cafe_Counter_staff_panel_0_inner_bead",
+      "Hero_Cafe_Counter_staff_panel_0_inner_bead.001",
+      "Hero_Cafe_Counter_door_0_pull_mount",
+      "Hero_Cafe_Counter_door_0_pull_mount.001",
+      "Hero_Cafe_Counter_door_0_small_brass_pull",
+      "Hero_Cafe_Counter_staff_recessed_panel_1",
+      "Hero_Cafe_Counter_staff_panel_1_inner_bead",
+      "Hero_Cafe_Counter_staff_panel_1_inner_bead.001",
+      "Hero_Cafe_Counter_door_1_pull_mount",
+      "Hero_Cafe_Counter_door_1_pull_mount.001",
+      "Hero_Cafe_Counter_door_1_small_brass_pull",
+      "Hero_Cafe_Counter_staff_recessed_panel_2",
+      "Hero_Cafe_Counter_staff_panel_2_inner_bead",
+      "Hero_Cafe_Counter_staff_panel_2_inner_bead.001",
+      "Hero_Cafe_Counter_door_2_pull_mount",
+      "Hero_Cafe_Counter_door_2_pull_mount.001",
+      "Hero_Cafe_Counter_door_2_small_brass_pull",
+      "Hero_Cafe_Counter_staff_recessed_panel_3",
+      "Hero_Cafe_Counter_staff_panel_3_inner_bead",
+      "Hero_Cafe_Counter_staff_panel_3_inner_bead.001",
+      "Hero_Cafe_Counter_door_3_pull_mount",
+      "Hero_Cafe_Counter_door_3_pull_mount.001",
+      "Hero_Cafe_Counter_door_3_small_brass_pull",
+      "Hero_Cafe_Counter_continuous_honed_stone_worktop",
+      "Hero_Cafe_Counter_pastry_case_oak_plinth",
+      "Hero_Cafe_Counter_pastry_case_inclined_front_glass",
+      "Hero_Cafe_Counter_pastry_case_side_-1_glass",
+      "Hero_Cafe_Counter_pastry_case_-1_sloped_front_brass_post",
+      "Hero_Cafe_Counter_pastry_case_-1_rear_brass_post",
+      "Hero_Cafe_Counter_pastry_case_side_1_glass",
+      "Hero_Cafe_Counter_pastry_case_1_sloped_front_brass_post",
+      "Hero_Cafe_Counter_pastry_case_1_rear_brass_post",
+      "Hero_Cafe_Counter_pastry_case_glass_roof",
+      "Hero_Cafe_Counter_pastry_case_top_horizontal_brass",
+      "Hero_Cafe_Counter_pastry_case_top_horizontal_brass.001",
+      "Hero_Cafe_Counter_pastry_tray_0_base",
+      "Hero_Cafe_Counter_pastry_tray_0_side",
+      "Hero_Cafe_Counter_pastry_tray_0_side.001",
+      "Hero_Cafe_Counter_pastry_tray_0_end",
+      "Hero_Cafe_Counter_pastry_tray_0_end.001",
+      "Hero_Cafe_Counter_tray_0_pastry_0_0_crescent_layers",
+      "Hero_Cafe_Counter_tray_0_pastry_0_1_crescent_layers",
+      "Hero_Cafe_Counter_tray_0_pastry_1_0_crescent_layers",
+      "Hero_Cafe_Counter_tray_0_pastry_1_1_crescent_layers",
+      "Hero_Cafe_Counter_tray_0_pastry_2_0_crescent_layers",
+      "Hero_Cafe_Counter_tray_0_pastry_2_1_crescent_layers",
+      "Hero_Cafe_Counter_pastry_tray_1_base",
+      "Hero_Cafe_Counter_pastry_tray_1_side",
+      "Hero_Cafe_Counter_pastry_tray_1_side.001",
+      "Hero_Cafe_Counter_pastry_tray_1_end",
+      "Hero_Cafe_Counter_pastry_tray_1_end.001",
+      "Hero_Cafe_Counter_tray_1_pastry_0_0_crescent_layers",
+      "Hero_Cafe_Counter_tray_1_pastry_0_1_crescent_layers",
+      "Hero_Cafe_Counter_tray_1_pastry_1_0_crescent_layers",
+      "Hero_Cafe_Counter_tray_1_pastry_1_1_crescent_layers",
+      "Hero_Cafe_Counter_tray_1_pastry_2_0_crescent_layers",
+      "Hero_Cafe_Counter_tray_1_pastry_2_1_crescent_layers",
+      "Hero_Cafe_Counter_espresso_foot_-1_-1",
+      "Hero_Cafe_Counter_espresso_foot_-1_1",
+      "Hero_Cafe_Counter_espresso_foot_1_-1",
+      "Hero_Cafe_Counter_espresso_foot_1_1",
+      "Hero_Cafe_Counter_espresso_body_rounded_enamel",
+      "Hero_Cafe_Counter_espresso_front_brass_band",
+      "Hero_Cafe_Counter_espresso_drip_tray",
+      "Hero_Cafe_Counter_espresso_drip_grid_0",
+      "Hero_Cafe_Counter_espresso_drip_grid_1",
+      "Hero_Cafe_Counter_espresso_drip_grid_2",
+      "Hero_Cafe_Counter_espresso_drip_grid_3",
+      "Hero_Cafe_Counter_espresso_drip_grid_4",
+      "Hero_Cafe_Counter_espresso_drip_grid_5",
+      "Hero_Cafe_Counter_espresso_drip_grid_6",
+      "Hero_Cafe_Counter_espresso_drip_grid_7",
+      "Hero_Cafe_Counter_espresso_drip_grid_8",
+      "Hero_Cafe_Counter_espresso_drip_grid_9",
+      "Hero_Cafe_Counter_espresso_drip_grid_10",
+      "Hero_Cafe_Counter_espresso_group_0",
+      "Hero_Cafe_Counter_espresso_portafilter_0",
+      "Hero_Cafe_Counter_espresso_spout_0",
+      "Hero_Cafe_Counter_espresso_waiting_cup_0_hollow_cup",
+      "Hero_Cafe_Counter_espresso_waiting_cup_0_open_handle",
+      "Hero_Cafe_Counter_espresso_group_1",
+      "Hero_Cafe_Counter_espresso_portafilter_1",
+      "Hero_Cafe_Counter_espresso_spout_1",
+      "Hero_Cafe_Counter_espresso_waiting_cup_1_hollow_cup",
+      "Hero_Cafe_Counter_espresso_waiting_cup_1_open_handle",
+      "Hero_Cafe_Counter_espresso_pressure_dial_brass",
+      "Hero_Cafe_Counter_espresso_pressure_dial_face",
+      "Hero_Cafe_Counter_espresso_pressure_dial_needle",
+      "Hero_Cafe_Counter_espresso_control_button",
+      "Hero_Cafe_Counter_espresso_control_button.001",
+      "Hero_Cafe_Counter_espresso_control_button.002",
+      "Hero_Cafe_Counter_espresso_control_button.003",
+      "Hero_Cafe_Counter_espresso_curved_steam_wand",
+      "Hero_Cafe_Counter_espresso_cup_warming_top",
+      "Hero_Cafe_Counter_espresso_warming_cup_0_hollow_cup",
+      "Hero_Cafe_Counter_espresso_warming_cup_0_open_handle",
+      "Hero_Cafe_Counter_espresso_warming_cup_1_hollow_cup",
+      "Hero_Cafe_Counter_espresso_warming_cup_1_open_handle",
+      "Hero_Cafe_Counter_espresso_warming_cup_2_hollow_cup",
+      "Hero_Cafe_Counter_espresso_warming_cup_2_open_handle",
+      "Hero_Cafe_Counter_service_saucer_0",
+      "Hero_Cafe_Counter_service_cup_0_hollow_cup",
+      "Hero_Cafe_Counter_service_cup_0_open_handle",
+      "Hero_Cafe_Counter_service_cup_0_coffee_surface",
+      "Hero_Cafe_Counter_service_saucer_1",
+      "Hero_Cafe_Counter_service_cup_1_hollow_cup",
+      "Hero_Cafe_Counter_service_cup_1_open_handle",
+      "Hero_Cafe_Counter_small_oak_payment_tray"
+    ],
+    "bounds": {
+      "min": [
+        -1.5,
+        3.7599997520446777,
+        0.0
+      ],
+      "max": [
+        1.5,
+        4.499000072479248,
+        1.5261399745941162
+      ],
+      "dimensions": [
+        3.0,
+        0.7390003204345703,
+        1.5261399745941162
+      ]
+    },
+    "triangles": 28456,
+    "materials": {
+      "cabinet_oak": "Hero_CabinetOak_Scan",
+      "honed_granite": "Hero_HonedGranite_CC0",
+      "iron": "Hero_Iron",
+      "brass": "Hero_Brass",
+      "glass": "Hero_Glass",
+      "ceramic": "Hero_Ceramic",
+      "cane": "Hero_Cane",
+      "pastry": "Hero_Pastry",
+      "coffee": "HeroFurniture_coffee",
+      "bottle_green": "HeroFurniture_bottle_green"
+    },
+    "style": {
+      "counter_dimensions_m": [
+        3.0,
+        0.72,
+        1.05
+      ],
+      "front": "-Y",
+      "staff_side": "+Y",
+      "craft": [
+        "framed recessed panels",
+        "18mm panel setback",
+        "recessed toe plinth",
+        "small staff-side brass pulls",
+        "continuous honed stone slab"
+      ],
+      "service_grouping": "Pastry case left; espresso right; collection cups and payment tray between",
+      "pastry_case_service_access": "Rear opening toward +Y"
+    },
+    "original_geometry": true,
+    "uv_contract": "2m dominant-face metric UVs; atlas must be created and audited separately"
+  },
+  "backbar_shelves": [
+    {
+      "root": "Hero_Cafe_Backbar",
+      "objects": [
+        "Hero_Cafe_Backbar_shelf_0_oak_board",
+        "Hero_Cafe_Backbar_shelf_0_wall_bracket",
+        "Hero_Cafe_Backbar_shelf_0_diagonal_brace",
+        "Hero_Cafe_Backbar_shelf_0_wall_bracket.001",
+        "Hero_Cafe_Backbar_shelf_0_diagonal_brace.001",
+        "Hero_Cafe_Backbar_shelf_1_oak_board",
+        "Hero_Cafe_Backbar_shelf_1_wall_bracket",
+        "Hero_Cafe_Backbar_shelf_1_diagonal_brace",
+        "Hero_Cafe_Backbar_shelf_1_wall_bracket.001",
+        "Hero_Cafe_Backbar_shelf_1_diagonal_brace.001",
+        "Hero_Cafe_Backbar_shelf_cup_0_hollow_cup",
+        "Hero_Cafe_Backbar_shelf_cup_0_open_handle",
+        "Hero_Cafe_Backbar_shelf_cup_1_hollow_cup",
+        "Hero_Cafe_Backbar_shelf_cup_1_open_handle",
+        "Hero_Cafe_Backbar_shelf_cup_2_hollow_cup",
+        "Hero_Cafe_Backbar_shelf_cup_2_open_handle",
+        "Hero_Cafe_Backbar_shelf_cup_3_hollow_cup",
+        "Hero_Cafe_Backbar_shelf_cup_3_open_handle",
+        "Hero_Cafe_Backbar_shelf_green_bottle_0",
+        "Hero_Cafe_Backbar_shelf_bottle_cork_0",
+        "Hero_Cafe_Backbar_shelf_green_bottle_1",
+        "Hero_Cafe_Backbar_shelf_bottle_cork_1",
+        "Hero_Cafe_Backbar_shelf_green_bottle_2",
+        "Hero_Cafe_Backbar_shelf_bottle_cork_2",
+        "Hero_Cafe_Backbar_shelf_plate_stack_0",
+        "Hero_Cafe_Backbar_shelf_plate_stack_1",
+        "Hero_Cafe_Backbar_shelf_plate_stack_2",
+        "Hero_Cafe_Backbar_shelf_plate_stack_3",
+        "Hero_Cafe_Backbar_shelf_plate_stack_4"
+      ],
+      "bounds": {
+        "min": [
+          -2.1599998474121094,
+          5.005000114440918,
+          1.3300000429153442
+        ],
+        "max": [
+          -0.08000004291534424,
+          5.255000114440918,
+          2.36299991607666
+        ],
+        "dimensions": [
+          2.079999804496765,
+          0.25,
+          1.032999873161316
+        ]
+      },
+      "triangles": 8604,
+      "materials": {
+        "cabinet_oak": "Hero_CabinetOak_Scan",
+        "honed_granite": "Hero_HonedGranite_CC0",
+        "iron": "Hero_Iron",
+        "brass": "Hero_Brass",
+        "glass": "Hero_Glass",
+        "ceramic": "Hero_Ceramic",
+        "cane": "Hero_Cane",
+        "pastry": "Hero_Pastry",
+        "coffee": "HeroFurniture_coffee",
+        "bottle_green": "HeroFurniture_bottle_green"
+      },
+      "style": {
+        "wall_side": "+Y",
+        "shelf_heights_m": [
+          1.55,
+          2.03
+        ],
+        "grouping": "Lower shelf: cups near service reach. Upper shelf: spare plates and bottles.",
+        "mounting_note": "Place +Y edge against a supporting wall; origin is floor datum."
+      },
+      "original_geometry": true,
+      "uv_contract": "2m dominant-face metric UVs; atlas must be created and audited separately"
+    },
+    {
+      "root": "Hero_Cafe_Backbar.001",
+      "objects": [
+        "Hero_Cafe_Backbar.001_shelf_0_oak_board",
+        "Hero_Cafe_Backbar.001_shelf_0_wall_bracket",
+        "Hero_Cafe_Backbar.001_shelf_0_diagonal_brace",
+        "Hero_Cafe_Backbar.001_shelf_0_wall_bracket.001",
+        "Hero_Cafe_Backbar.001_shelf_0_diagonal_brace.001",
+        "Hero_Cafe_Backbar.001_shelf_1_oak_board",
+        "Hero_Cafe_Backbar.001_shelf_1_wall_bracket",
+        "Hero_Cafe_Backbar.001_shelf_1_diagonal_brace",
+        "Hero_Cafe_Backbar.001_shelf_1_wall_bracket.001",
+        "Hero_Cafe_Backbar.001_shelf_1_diagonal_brace.001",
+        "Hero_Cafe_Backbar.001_shelf_cup_0_hollow_cup",
+        "Hero_Cafe_Backbar.001_shelf_cup_0_open_handle",
+        "Hero_Cafe_Backbar.001_shelf_cup_1_hollow_cup",
+        "Hero_Cafe_Backbar.001_shelf_cup_1_open_handle",
+        "Hero_Cafe_Backbar.001_shelf_cup_2_hollow_cup",
+        "Hero_Cafe_Backbar.001_shelf_cup_2_open_handle",
+        "Hero_Cafe_Backbar.001_shelf_cup_3_hollow_cup",
+        "Hero_Cafe_Backbar.001_shelf_cup_3_open_handle",
+        "Hero_Cafe_Backbar.001_shelf_green_bottle_0",
+        "Hero_Cafe_Backbar.001_shelf_bottle_cork_0",
+        "Hero_Cafe_Backbar.001_shelf_green_bottle_1",
+        "Hero_Cafe_Backbar.001_shelf_bottle_cork_1",
+        "Hero_Cafe_Backbar.001_shelf_green_bottle_2",
+        "Hero_Cafe_Backbar.001_shelf_bottle_cork_2",
+        "Hero_Cafe_Backbar.001_shelf_plate_stack_0",
+        "Hero_Cafe_Backbar.001_shelf_plate_stack_1",
+        "Hero_Cafe_Backbar.001_shelf_plate_stack_2",
+        "Hero_Cafe_Backbar.001_shelf_plate_stack_3",
+        "Hero_Cafe_Backbar.001_shelf_plate_stack_4"
+      ],
+      "bounds": {
+        "min": [
+          0.08000004291534424,
+          5.005000114440918,
+          1.3300000429153442
+        ],
+        "max": [
+          2.1599998474121094,
+          5.255000114440918,
+          2.36299991607666
+        ],
+        "dimensions": [
+          2.079999804496765,
+          0.25,
+          1.032999873161316
+        ]
+      },
+      "triangles": 8604,
+      "materials": {
+        "cabinet_oak": "Hero_CabinetOak_Scan",
+        "honed_granite": "Hero_HonedGranite_CC0",
+        "iron": "Hero_Iron",
+        "brass": "Hero_Brass",
+        "glass": "Hero_Glass",
+        "ceramic": "Hero_Ceramic",
+        "cane": "Hero_Cane",
+        "pastry": "Hero_Pastry",
+        "coffee": "HeroFurniture_coffee",
+        "bottle_green": "HeroFurniture_bottle_green"
+      },
+      "style": {
+        "wall_side": "+Y",
+        "shelf_heights_m": [
+          1.55,
+          2.03
+        ],
+        "grouping": "Lower shelf: cups near service reach. Upper shelf: spare plates and bottles.",
+        "mounting_note": "Place +Y edge against a supporting wall; origin is floor datum."
+      },
+      "original_geometry": true,
+      "uv_contract": "2m dominant-face metric UVs; atlas must be created and audited separately"
+    }
+  ],
+  "bistro_sets": [
+    {
+      "root": "Hero_Bistro_Set",
+      "objects": [
+        "Hero_Bistro_Set_continuous_honed_round_tabletop",
+        "Hero_Bistro_Set_cast_iron_pedestal",
+        "Hero_Bistro_Set_pedestal_turned_base_collar",
+        "Hero_Bistro_Set_curved_pedestal_foot_0",
+        "Hero_Bistro_Set_pedestal_leveling_pad_0",
+        "Hero_Bistro_Set_tabletop_radial_support_0",
+        "Hero_Bistro_Set_curved_pedestal_foot_1",
+        "Hero_Bistro_Set_pedestal_leveling_pad_1",
+        "Hero_Bistro_Set_tabletop_radial_support_1",
+        "Hero_Bistro_Set_curved_pedestal_foot_2",
+        "Hero_Bistro_Set_pedestal_leveling_pad_2",
+        "Hero_Bistro_Set_tabletop_radial_support_2",
+        "Hero_Bistro_Set_curved_pedestal_foot_3",
+        "Hero_Bistro_Set_pedestal_leveling_pad_3",
+        "Hero_Bistro_Set_tabletop_radial_support_3",
+        "Hero_Bistro_Set_south_chair_steam_bent_seat_ring",
+        "Hero_Bistro_Set_south_chair_open_cane_0_-7",
+        "Hero_Bistro_Set_south_chair_open_cane_0_-6",
+        "Hero_Bistro_Set_south_chair_open_cane_0_-5",
+        "Hero_Bistro_Set_south_chair_open_cane_0_-4",
+        "Hero_Bistro_Set_south_chair_open_cane_0_-3",
+        "Hero_Bistro_Set_south_chair_open_cane_0_-2",
+        "Hero_Bistro_Set_south_chair_open_cane_0_-1",
+        "Hero_Bistro_Set_south_chair_open_cane_0_0",
+        "Hero_Bistro_Set_south_chair_open_cane_0_1",
+        "Hero_Bistro_Set_south_chair_open_cane_0_2",
+        "Hero_Bistro_Set_south_chair_open_cane_0_3",
+        "Hero_Bistro_Set_south_chair_open_cane_0_4",
+        "Hero_Bistro_Set_south_chair_open_cane_0_5",
+        "Hero_Bistro_Set_south_chair_open_cane_0_6",
+        "Hero_Bistro_Set_south_chair_open_cane_0_7",
+        "Hero_Bistro_Set_south_chair_open_cane_1_-7",
+        "Hero_Bistro_Set_south_chair_open_cane_1_-6",
+        "Hero_Bistro_Set_south_chair_open_cane_1_-5",
+        "Hero_Bistro_Set_south_chair_open_cane_1_-4",
+        "Hero_Bistro_Set_south_chair_open_cane_1_-3",
+        "Hero_Bistro_Set_south_chair_open_cane_1_-2",
+        "Hero_Bistro_Set_south_chair_open_cane_1_-1",
+        "Hero_Bistro_Set_south_chair_open_cane_1_0",
+        "Hero_Bistro_Set_south_chair_open_cane_1_1",
+        "Hero_Bistro_Set_south_chair_open_cane_1_2",
+        "Hero_Bistro_Set_south_chair_open_cane_1_3",
+        "Hero_Bistro_Set_south_chair_open_cane_1_4",
+        "Hero_Bistro_Set_south_chair_open_cane_1_5",
+        "Hero_Bistro_Set_south_chair_open_cane_1_6",
+        "Hero_Bistro_Set_south_chair_open_cane_1_7",
+        "Hero_Bistro_Set_south_chair_bent_leg_-1_-1",
+        "Hero_Bistro_Set_south_chair_floor_glide_-1_-1",
+        "Hero_Bistro_Set_south_chair_bent_leg_-1_1",
+        "Hero_Bistro_Set_south_chair_floor_glide_-1_1",
+        "Hero_Bistro_Set_south_chair_bent_leg_1_-1",
+        "Hero_Bistro_Set_south_chair_floor_glide_1_-1",
+        "Hero_Bistro_Set_south_chair_bent_leg_1_1",
+        "Hero_Bistro_Set_south_chair_floor_glide_1_1",
+        "Hero_Bistro_Set_south_chair_bentwood_lower_stretcher",
+        "Hero_Bistro_Set_south_chair_continuous_bent_back_hoop",
+        "Hero_Bistro_Set_south_chair_back_post_-1",
+        "Hero_Bistro_Set_south_chair_back_post_1",
+        "Hero_Bistro_Set_south_chair_open_back_spindle_0",
+        "Hero_Bistro_Set_south_chair_open_back_spindle_1",
+        "Hero_Bistro_Set_south_chair_open_back_spindle_2",
+        "Hero_Bistro_Set_north_chair_steam_bent_seat_ring",
+        "Hero_Bistro_Set_north_chair_open_cane_0_-7",
+        "Hero_Bistro_Set_north_chair_open_cane_0_-6",
+        "Hero_Bistro_Set_north_chair_open_cane_0_-5",
+        "Hero_Bistro_Set_north_chair_open_cane_0_-4",
+        "Hero_Bistro_Set_north_chair_open_cane_0_-3",
+        "Hero_Bistro_Set_north_chair_open_cane_0_-2",
+        "Hero_Bistro_Set_north_chair_open_cane_0_-1",
+        "Hero_Bistro_Set_north_chair_open_cane_0_0",
+        "Hero_Bistro_Set_north_chair_open_cane_0_1",
+        "Hero_Bistro_Set_north_chair_open_cane_0_2",
+        "Hero_Bistro_Set_north_chair_open_cane_0_3",
+        "Hero_Bistro_Set_north_chair_open_cane_0_4",
+        "Hero_Bistro_Set_north_chair_open_cane_0_5",
+        "Hero_Bistro_Set_north_chair_open_cane_0_6",
+        "Hero_Bistro_Set_north_chair_open_cane_0_7",
+        "Hero_Bistro_Set_north_chair_open_cane_1_-7",
+        "Hero_Bistro_Set_north_chair_open_cane_1_-6",
+        "Hero_Bistro_Set_north_chair_open_cane_1_-5",
+        "Hero_Bistro_Set_north_chair_open_cane_1_-4",
+        "Hero_Bistro_Set_north_chair_open_cane_1_-3",
+        "Hero_Bistro_Set_north_chair_open_cane_1_-2",
+        "Hero_Bistro_Set_north_chair_open_cane_1_-1",
+        "Hero_Bistro_Set_north_chair_open_cane_1_0",
+        "Hero_Bistro_Set_north_chair_open_cane_1_1",
+        "Hero_Bistro_Set_north_chair_open_cane_1_2",
+        "Hero_Bistro_Set_north_chair_open_cane_1_3",
+        "Hero_Bistro_Set_north_chair_open_cane_1_4",
+        "Hero_Bistro_Set_north_chair_open_cane_1_5",
+        "Hero_Bistro_Set_north_chair_open_cane_1_6",
+        "Hero_Bistro_Set_north_chair_open_cane_1_7",
+        "Hero_Bistro_Set_north_chair_bent_leg_-1_-1",
+        "Hero_Bistro_Set_north_chair_floor_glide_-1_-1",
+        "Hero_Bistro_Set_north_chair_bent_leg_-1_1",
+        "Hero_Bistro_Set_north_chair_floor_glide_-1_1",
+        "Hero_Bistro_Set_north_chair_bent_leg_1_-1",
+        "Hero_Bistro_Set_north_chair_floor_glide_1_-1",
+        "Hero_Bistro_Set_north_chair_bent_leg_1_1",
+        "Hero_Bistro_Set_north_chair_floor_glide_1_1",
+        "Hero_Bistro_Set_north_chair_bentwood_lower_stretcher",
+        "Hero_Bistro_Set_north_chair_continuous_bent_back_hoop",
+        "Hero_Bistro_Set_north_chair_back_post_-1",
+        "Hero_Bistro_Set_north_chair_back_post_1",
+        "Hero_Bistro_Set_north_chair_open_back_spindle_0",
+        "Hero_Bistro_Set_north_chair_open_back_spindle_1",
+        "Hero_Bistro_Set_north_chair_open_back_spindle_2",
+        "Hero_Bistro_Set_table_saucer_0",
+        "Hero_Bistro_Set_table_cup_0_hollow_cup",
+        "Hero_Bistro_Set_table_cup_0_open_handle",
+        "Hero_Bistro_Set_table_cup_0_coffee_surface",
+        "Hero_Bistro_Set_table_saucer_1",
+        "Hero_Bistro_Set_table_cup_1_hollow_cup",
+        "Hero_Bistro_Set_table_cup_1_open_handle",
+        "Hero_Bistro_Set_table_cup_1_coffee_surface"
+      ],
+      "bounds": {
+        "min": [
+          -2.4456357955932617,
+          -3.088885545730591,
+          0.0
+        ],
+        "max": [
+          -1.754364013671875,
+          -1.3111145496368408,
+          0.8759999871253967
+        ],
+        "dimensions": [
+          0.6912717819213867,
+          1.77777099609375,
+          0.8759999871253967
+        ]
+      },
+      "triangles": 25124,
+      "materials": {
+        "cabinet_oak": "Hero_CabinetOak_Scan",
+        "honed_granite": "Hero_HonedGranite_CC0",
+        "iron": "Hero_Iron",
+        "brass": "Hero_Brass",
+        "glass": "Hero_Glass",
+        "ceramic": "Hero_Ceramic",
+        "cane": "Hero_Cane",
+        "pastry": "Hero_Pastry",
+        "coffee": "HeroFurniture_coffee",
+        "bottle_green": "HeroFurniture_bottle_green"
+      },
+      "style": {
+        "table_diameter_m": 0.64,
+        "tabletop_height_m": 0.744,
+        "seat_height_m": 0.462,
+        "chair_overall_height_m": 0.876,
+        "chair_centers_local_m": [
+          [
+            0,
+            -0.68,
+            0
+          ],
+          [
+            0,
+            0.68,
+            0
+          ]
+        ],
+        "seat_front_to_table_edge_m": 0.149,
+        "facing": "Both chairs face the table center, never outward",
+        "chair_craft": [
+          "continuous steam-bent upper back hoop",
+          "three back spindles",
+          "four splayed legs",
+          "bentwood lower stretcher",
+          "open cane lattice seat"
+        ],
+        "activity": "Two seated guests; drinks within reach; pedestal avoids a four-leg knee conflict",
+        "placement_note": "Reserve an external circulation aisle around the occupied furniture bounds"
+      },
+      "original_geometry": true,
+      "uv_contract": "2m dominant-face metric UVs; atlas must be created and audited separately"
+    },
+    {
+      "root": "Hero_Bistro_Set.001",
+      "objects": [
+        "Hero_Bistro_Set.001_continuous_honed_round_tabletop",
+        "Hero_Bistro_Set.001_cast_iron_pedestal",
+        "Hero_Bistro_Set.001_pedestal_turned_base_collar",
+        "Hero_Bistro_Set.001_curved_pedestal_foot_0",
+        "Hero_Bistro_Set.001_pedestal_leveling_pad_0",
+        "Hero_Bistro_Set.001_tabletop_radial_support_0",
+        "Hero_Bistro_Set.001_curved_pedestal_foot_1",
+        "Hero_Bistro_Set.001_pedestal_leveling_pad_1",
+        "Hero_Bistro_Set.001_tabletop_radial_support_1",
+        "Hero_Bistro_Set.001_curved_pedestal_foot_2",
+        "Hero_Bistro_Set.001_pedestal_leveling_pad_2",
+        "Hero_Bistro_Set.001_tabletop_radial_support_2",
+        "Hero_Bistro_Set.001_curved_pedestal_foot_3",
+        "Hero_Bistro_Set.001_pedestal_leveling_pad_3",
+        "Hero_Bistro_Set.001_tabletop_radial_support_3",
+        "Hero_Bistro_Set.001_south_chair_steam_bent_seat_ring",
+        "Hero_Bistro_Set.001_south_chair_open_cane_0_-7",
+        "Hero_Bistro_Set.001_south_chair_open_cane_0_-6",
+        "Hero_Bistro_Set.001_south_chair_open_cane_0_-5",
+        "Hero_Bistro_Set.001_south_chair_open_cane_0_-4",
+        "Hero_Bistro_Set.001_south_chair_open_cane_0_-3",
+        "Hero_Bistro_Set.001_south_chair_open_cane_0_-2",
+        "Hero_Bistro_Set.001_south_chair_open_cane_0_-1",
+        "Hero_Bistro_Set.001_south_chair_open_cane_0_0",
+        "Hero_Bistro_Set.001_south_chair_open_cane_0_1",
+        "Hero_Bistro_Set.001_south_chair_open_cane_0_2",
+        "Hero_Bistro_Set.001_south_chair_open_cane_0_3",
+        "Hero_Bistro_Set.001_south_chair_open_cane_0_4",
+        "Hero_Bistro_Set.001_south_chair_open_cane_0_5",
+        "Hero_Bistro_Set.001_south_chair_open_cane_0_6",
+        "Hero_Bistro_Set.001_south_chair_open_cane_0_7",
+        "Hero_Bistro_Set.001_south_chair_open_cane_1_-7",
+        "Hero_Bistro_Set.001_south_chair_open_cane_1_-6",
+        "Hero_Bistro_Set.001_south_chair_open_cane_1_-5",
+        "Hero_Bistro_Set.001_south_chair_open_cane_1_-4",
+        "Hero_Bistro_Set.001_south_chair_open_cane_1_-3",
+        "Hero_Bistro_Set.001_south_chair_open_cane_1_-2",
+        "Hero_Bistro_Set.001_south_chair_open_cane_1_-1",
+        "Hero_Bistro_Set.001_south_chair_open_cane_1_0",
+        "Hero_Bistro_Set.001_south_chair_open_cane_1_1",
+        "Hero_Bistro_Set.001_south_chair_open_cane_1_2",
+        "Hero_Bistro_Set.001_south_chair_open_cane_1_3",
+        "Hero_Bistro_Set.001_south_chair_open_cane_1_4",
+        "Hero_Bistro_Set.001_south_chair_open_cane_1_5",
+        "Hero_Bistro_Set.001_south_chair_open_cane_1_6",
+        "Hero_Bistro_Set.001_south_chair_open_cane_1_7",
+        "Hero_Bistro_Set.001_south_chair_bent_leg_-1_-1",
+        "Hero_Bistro_Set.001_south_chair_floor_glide_-1_-1",
+        "Hero_Bistro_Set.001_south_chair_bent_leg_-1_1",
+        "Hero_Bistro_Set.001_south_chair_floor_glide_-1_1",
+        "Hero_Bistro_Set.001_south_chair_bent_leg_1_-1",
+        "Hero_Bistro_Set.001_south_chair_floor_glide_1_-1",
+        "Hero_Bistro_Set.001_south_chair_bent_leg_1_1",
+        "Hero_Bistro_Set.001_south_chair_floor_glide_1_1",
+        "Hero_Bistro_Set.001_south_chair_bentwood_lower_stretcher",
+        "Hero_Bistro_Set.001_south_chair_continuous_bent_back_hoop",
+        "Hero_Bistro_Set.001_south_chair_back_post_-1",
+        "Hero_Bistro_Set.001_south_chair_back_post_1",
+        "Hero_Bistro_Set.001_south_chair_open_back_spindle_0",
+        "Hero_Bistro_Set.001_south_chair_open_back_spindle_1",
+        "Hero_Bistro_Set.001_south_chair_open_back_spindle_2",
+        "Hero_Bistro_Set.001_north_chair_steam_bent_seat_ring",
+        "Hero_Bistro_Set.001_north_chair_open_cane_0_-7",
+        "Hero_Bistro_Set.001_north_chair_open_cane_0_-6",
+        "Hero_Bistro_Set.001_north_chair_open_cane_0_-5",
+        "Hero_Bistro_Set.001_north_chair_open_cane_0_-4",
+        "Hero_Bistro_Set.001_north_chair_open_cane_0_-3",
+        "Hero_Bistro_Set.001_north_chair_open_cane_0_-2",
+        "Hero_Bistro_Set.001_north_chair_open_cane_0_-1",
+        "Hero_Bistro_Set.001_north_chair_open_cane_0_0",
+        "Hero_Bistro_Set.001_north_chair_open_cane_0_1",
+        "Hero_Bistro_Set.001_north_chair_open_cane_0_2",
+        "Hero_Bistro_Set.001_north_chair_open_cane_0_3",
+        "Hero_Bistro_Set.001_north_chair_open_cane_0_4",
+        "Hero_Bistro_Set.001_north_chair_open_cane_0_5",
+        "Hero_Bistro_Set.001_north_chair_open_cane_0_6",
+        "Hero_Bistro_Set.001_north_chair_open_cane_0_7",
+        "Hero_Bistro_Set.001_north_chair_open_cane_1_-7",
+        "Hero_Bistro_Set.001_north_chair_open_cane_1_-6",
+        "Hero_Bistro_Set.001_north_chair_open_cane_1_-5",
+        "Hero_Bistro_Set.001_north_chair_open_cane_1_-4",
+        "Hero_Bistro_Set.001_north_chair_open_cane_1_-3",
+        "Hero_Bistro_Set.001_north_chair_open_cane_1_-2",
+        "Hero_Bistro_Set.001_north_chair_open_cane_1_-1",
+        "Hero_Bistro_Set.001_north_chair_open_cane_1_0",
+        "Hero_Bistro_Set.001_north_chair_open_cane_1_1",
+        "Hero_Bistro_Set.001_north_chair_open_cane_1_2",
+        "Hero_Bistro_Set.001_north_chair_open_cane_1_3",
+        "Hero_Bistro_Set.001_north_chair_open_cane_1_4",
+        "Hero_Bistro_Set.001_north_chair_open_cane_1_5",
+        "Hero_Bistro_Set.001_north_chair_open_cane_1_6",
+        "Hero_Bistro_Set.001_north_chair_open_cane_1_7",
+        "Hero_Bistro_Set.001_north_chair_bent_leg_-1_-1",
+        "Hero_Bistro_Set.001_north_chair_floor_glide_-1_-1",
+        "Hero_Bistro_Set.001_north_chair_bent_leg_-1_1",
+        "Hero_Bistro_Set.001_north_chair_floor_glide_-1_1",
+        "Hero_Bistro_Set.001_north_chair_bent_leg_1_-1",
+        "Hero_Bistro_Set.001_north_chair_floor_glide_1_-1",
+        "Hero_Bistro_Set.001_north_chair_bent_leg_1_1",
+        "Hero_Bistro_Set.001_north_chair_floor_glide_1_1",
+        "Hero_Bistro_Set.001_north_chair_bentwood_lower_stretcher",
+        "Hero_Bistro_Set.001_north_chair_continuous_bent_back_hoop",
+        "Hero_Bistro_Set.001_north_chair_back_post_-1",
+        "Hero_Bistro_Set.001_north_chair_back_post_1",
+        "Hero_Bistro_Set.001_north_chair_open_back_spindle_0",
+        "Hero_Bistro_Set.001_north_chair_open_back_spindle_1",
+        "Hero_Bistro_Set.001_north_chair_open_back_spindle_2",
+        "Hero_Bistro_Set.001_table_saucer_0",
+        "Hero_Bistro_Set.001_table_cup_0_hollow_cup",
+        "Hero_Bistro_Set.001_table_cup_0_open_handle",
+        "Hero_Bistro_Set.001_table_cup_0_coffee_surface",
+        "Hero_Bistro_Set.001_table_saucer_1",
+        "Hero_Bistro_Set.001_table_cup_1_hollow_cup",
+        "Hero_Bistro_Set.001_table_cup_1_open_handle",
+        "Hero_Bistro_Set.001_table_cup_1_coffee_surface"
+      ],
+      "bounds": {
+        "min": [
+          1.7706362009048462,
+          -3.0882022380828857,
+          0.0
+        ],
+        "max": [
+          2.429363489151001,
+          -1.3117977380752563,
+          0.8759999871253967
+        ],
+        "dimensions": [
+          0.6587272882461548,
+          1.7764045000076294,
+          0.8759999871253967
+        ]
+      },
+      "triangles": 25124,
+      "materials": {
+        "cabinet_oak": "Hero_CabinetOak_Scan",
+        "honed_granite": "Hero_HonedGranite_CC0",
+        "iron": "Hero_Iron",
+        "brass": "Hero_Brass",
+        "glass": "Hero_Glass",
+        "ceramic": "Hero_Ceramic",
+        "cane": "Hero_Cane",
+        "pastry": "Hero_Pastry",
+        "coffee": "HeroFurniture_coffee",
+        "bottle_green": "HeroFurniture_bottle_green"
+      },
+      "style": {
+        "table_diameter_m": 0.64,
+        "tabletop_height_m": 0.744,
+        "seat_height_m": 0.462,
+        "chair_overall_height_m": 0.876,
+        "chair_centers_local_m": [
+          [
+            0,
+            -0.68,
+            0
+          ],
+          [
+            0,
+            0.68,
+            0
+          ]
+        ],
+        "seat_front_to_table_edge_m": 0.149,
+        "facing": "Both chairs face the table center, never outward",
+        "chair_craft": [
+          "continuous steam-bent upper back hoop",
+          "three back spindles",
+          "four splayed legs",
+          "bentwood lower stretcher",
+          "open cane lattice seat"
+        ],
+        "activity": "Two seated guests; drinks within reach; pedestal avoids a four-leg knee conflict",
+        "placement_note": "Reserve an external circulation aisle around the occupied furniture bounds"
+      },
+      "original_geometry": true,
+      "uv_contract": "2m dominant-face metric UVs; atlas must be created and audited separately"
+    },
+    {
+      "root": "Hero_Bistro_Set.002",
+      "objects": [
+        "Hero_Bistro_Set.002_continuous_honed_round_tabletop",
+        "Hero_Bistro_Set.002_cast_iron_pedestal",
+        "Hero_Bistro_Set.002_pedestal_turned_base_collar",
+        "Hero_Bistro_Set.002_curved_pedestal_foot_0",
+        "Hero_Bistro_Set.002_pedestal_leveling_pad_0",
+        "Hero_Bistro_Set.002_tabletop_radial_support_0",
+        "Hero_Bistro_Set.002_curved_pedestal_foot_1",
+        "Hero_Bistro_Set.002_pedestal_leveling_pad_1",
+        "Hero_Bistro_Set.002_tabletop_radial_support_1",
+        "Hero_Bistro_Set.002_curved_pedestal_foot_2",
+        "Hero_Bistro_Set.002_pedestal_leveling_pad_2",
+        "Hero_Bistro_Set.002_tabletop_radial_support_2",
+        "Hero_Bistro_Set.002_curved_pedestal_foot_3",
+        "Hero_Bistro_Set.002_pedestal_leveling_pad_3",
+        "Hero_Bistro_Set.002_tabletop_radial_support_3",
+        "Hero_Bistro_Set.002_south_chair_steam_bent_seat_ring",
+        "Hero_Bistro_Set.002_south_chair_open_cane_0_-7",
+        "Hero_Bistro_Set.002_south_chair_open_cane_0_-6",
+        "Hero_Bistro_Set.002_south_chair_open_cane_0_-5",
+        "Hero_Bistro_Set.002_south_chair_open_cane_0_-4",
+        "Hero_Bistro_Set.002_south_chair_open_cane_0_-3",
+        "Hero_Bistro_Set.002_south_chair_open_cane_0_-2",
+        "Hero_Bistro_Set.002_south_chair_open_cane_0_-1",
+        "Hero_Bistro_Set.002_south_chair_open_cane_0_0",
+        "Hero_Bistro_Set.002_south_chair_open_cane_0_1",
+        "Hero_Bistro_Set.002_south_chair_open_cane_0_2",
+        "Hero_Bistro_Set.002_south_chair_open_cane_0_3",
+        "Hero_Bistro_Set.002_south_chair_open_cane_0_4",
+        "Hero_Bistro_Set.002_south_chair_open_cane_0_5",
+        "Hero_Bistro_Set.002_south_chair_open_cane_0_6",
+        "Hero_Bistro_Set.002_south_chair_open_cane_0_7",
+        "Hero_Bistro_Set.002_south_chair_open_cane_1_-7",
+        "Hero_Bistro_Set.002_south_chair_open_cane_1_-6",
+        "Hero_Bistro_Set.002_south_chair_open_cane_1_-5",
+        "Hero_Bistro_Set.002_south_chair_open_cane_1_-4",
+        "Hero_Bistro_Set.002_south_chair_open_cane_1_-3",
+        "Hero_Bistro_Set.002_south_chair_open_cane_1_-2",
+        "Hero_Bistro_Set.002_south_chair_open_cane_1_-1",
+        "Hero_Bistro_Set.002_south_chair_open_cane_1_0",
+        "Hero_Bistro_Set.002_south_chair_open_cane_1_1",
+        "Hero_Bistro_Set.002_south_chair_open_cane_1_2",
+        "Hero_Bistro_Set.002_south_chair_open_cane_1_3",
+        "Hero_Bistro_Set.002_south_chair_open_cane_1_4",
+        "Hero_Bistro_Set.002_south_chair_open_cane_1_5",
+        "Hero_Bistro_Set.002_south_chair_open_cane_1_6",
+        "Hero_Bistro_Set.002_south_chair_open_cane_1_7",
+        "Hero_Bistro_Set.002_south_chair_bent_leg_-1_-1",
+        "Hero_Bistro_Set.002_south_chair_floor_glide_-1_-1",
+        "Hero_Bistro_Set.002_south_chair_bent_leg_-1_1",
+        "Hero_Bistro_Set.002_south_chair_floor_glide_-1_1",
+        "Hero_Bistro_Set.002_south_chair_bent_leg_1_-1",
+        "Hero_Bistro_Set.002_south_chair_floor_glide_1_-1",
+        "Hero_Bistro_Set.002_south_chair_bent_leg_1_1",
+        "Hero_Bistro_Set.002_south_chair_floor_glide_1_1",
+        "Hero_Bistro_Set.002_south_chair_bentwood_lower_stretcher",
+        "Hero_Bistro_Set.002_south_chair_continuous_bent_back_hoop",
+        "Hero_Bistro_Set.002_south_chair_back_post_-1",
+        "Hero_Bistro_Set.002_south_chair_back_post_1",
+        "Hero_Bistro_Set.002_south_chair_open_back_spindle_0",
+        "Hero_Bistro_Set.002_south_chair_open_back_spindle_1",
+        "Hero_Bistro_Set.002_south_chair_open_back_spindle_2",
+        "Hero_Bistro_Set.002_north_chair_steam_bent_seat_ring",
+        "Hero_Bistro_Set.002_north_chair_open_cane_0_-7",
+        "Hero_Bistro_Set.002_north_chair_open_cane_0_-6",
+        "Hero_Bistro_Set.002_north_chair_open_cane_0_-5",
+        "Hero_Bistro_Set.002_north_chair_open_cane_0_-4",
+        "Hero_Bistro_Set.002_north_chair_open_cane_0_-3",
+        "Hero_Bistro_Set.002_north_chair_open_cane_0_-2",
+        "Hero_Bistro_Set.002_north_chair_open_cane_0_-1",
+        "Hero_Bistro_Set.002_north_chair_open_cane_0_0",
+        "Hero_Bistro_Set.002_north_chair_open_cane_0_1",
+        "Hero_Bistro_Set.002_north_chair_open_cane_0_2",
+        "Hero_Bistro_Set.002_north_chair_open_cane_0_3",
+        "Hero_Bistro_Set.002_north_chair_open_cane_0_4",
+        "Hero_Bistro_Set.002_north_chair_open_cane_0_5",
+        "Hero_Bistro_Set.002_north_chair_open_cane_0_6",
+        "Hero_Bistro_Set.002_north_chair_open_cane_0_7",
+        "Hero_Bistro_Set.002_north_chair_open_cane_1_-7",
+        "Hero_Bistro_Set.002_north_chair_open_cane_1_-6",
+        "Hero_Bistro_Set.002_north_chair_open_cane_1_-5",
+        "Hero_Bistro_Set.002_north_chair_open_cane_1_-4",
+        "Hero_Bistro_Set.002_north_chair_open_cane_1_-3",
+        "Hero_Bistro_Set.002_north_chair_open_cane_1_-2",
+        "Hero_Bistro_Set.002_north_chair_open_cane_1_-1",
+        "Hero_Bistro_Set.002_north_chair_open_cane_1_0",
+        "Hero_Bistro_Set.002_north_chair_open_cane_1_1",
+        "Hero_Bistro_Set.002_north_chair_open_cane_1_2",
+        "Hero_Bistro_Set.002_north_chair_open_cane_1_3",
+        "Hero_Bistro_Set.002_north_chair_open_cane_1_4",
+        "Hero_Bistro_Set.002_north_chair_open_cane_1_5",
+        "Hero_Bistro_Set.002_north_chair_open_cane_1_6",
+        "Hero_Bistro_Set.002_north_chair_open_cane_1_7",
+        "Hero_Bistro_Set.002_north_chair_bent_leg_-1_-1",
+        "Hero_Bistro_Set.002_north_chair_floor_glide_-1_-1",
+        "Hero_Bistro_Set.002_north_chair_bent_leg_-1_1",
+        "Hero_Bistro_Set.002_north_chair_floor_glide_-1_1",
+        "Hero_Bistro_Set.002_north_chair_bent_leg_1_-1",
+        "Hero_Bistro_Set.002_north_chair_floor_glide_1_-1",
+        "Hero_Bistro_Set.002_north_chair_bent_leg_1_1",
+        "Hero_Bistro_Set.002_north_chair_floor_glide_1_1",
+        "Hero_Bistro_Set.002_north_chair_bentwood_lower_stretcher",
+        "Hero_Bistro_Set.002_north_chair_continuous_bent_back_hoop",
+        "Hero_Bistro_Set.002_north_chair_back_post_-1",
+        "Hero_Bistro_Set.002_north_chair_back_post_1",
+        "Hero_Bistro_Set.002_north_chair_open_back_spindle_0",
+        "Hero_Bistro_Set.002_north_chair_open_back_spindle_1",
+        "Hero_Bistro_Set.002_north_chair_open_back_spindle_2",
+        "Hero_Bistro_Set.002_table_saucer_0",
+        "Hero_Bistro_Set.002_table_cup_0_hollow_cup",
+        "Hero_Bistro_Set.002_table_cup_0_open_handle",
+        "Hero_Bistro_Set.002_table_cup_0_coffee_surface",
+        "Hero_Bistro_Set.002_table_saucer_1",
+        "Hero_Bistro_Set.002_table_cup_1_hollow_cup",
+        "Hero_Bistro_Set.002_table_cup_1_open_handle",
+        "Hero_Bistro_Set.002_table_cup_1_coffee_surface"
+      ],
+      "bounds": {
+        "min": [
+          -2.5199995040893555,
+          1.3124430179595947,
+          0.0
+        ],
+        "max": [
+          -1.8800005912780762,
+          3.087557077407837,
+          0.8759999871253967
+        ],
+        "dimensions": [
+          0.6399989128112793,
+          1.7751140594482422,
+          0.8759999871253967
+        ]
+      },
+      "triangles": 25124,
+      "materials": {
+        "cabinet_oak": "Hero_CabinetOak_Scan",
+        "honed_granite": "Hero_HonedGranite_CC0",
+        "iron": "Hero_Iron",
+        "brass": "Hero_Brass",
+        "glass": "Hero_Glass",
+        "ceramic": "Hero_Ceramic",
+        "cane": "Hero_Cane",
+        "pastry": "Hero_Pastry",
+        "coffee": "HeroFurniture_coffee",
+        "bottle_green": "HeroFurniture_bottle_green"
+      },
+      "style": {
+        "table_diameter_m": 0.64,
+        "tabletop_height_m": 0.744,
+        "seat_height_m": 0.462,
+        "chair_overall_height_m": 0.876,
+        "chair_centers_local_m": [
+          [
+            0,
+            -0.68,
+            0
+          ],
+          [
+            0,
+            0.68,
+            0
+          ]
+        ],
+        "seat_front_to_table_edge_m": 0.149,
+        "facing": "Both chairs face the table center, never outward",
+        "chair_craft": [
+          "continuous steam-bent upper back hoop",
+          "three back spindles",
+          "four splayed legs",
+          "bentwood lower stretcher",
+          "open cane lattice seat"
+        ],
+        "activity": "Two seated guests; drinks within reach; pedestal avoids a four-leg knee conflict",
+        "placement_note": "Reserve an external circulation aisle around the occupied furniture bounds"
+      },
+      "original_geometry": true,
+      "uv_contract": "2m dominant-face metric UVs; atlas must be created and audited separately"
+    },
+    {
+      "root": "Hero_Bistro_Set.003",
+      "objects": [
+        "Hero_Bistro_Set.003_continuous_honed_round_tabletop",
+        "Hero_Bistro_Set.003_cast_iron_pedestal",
+        "Hero_Bistro_Set.003_pedestal_turned_base_collar",
+        "Hero_Bistro_Set.003_curved_pedestal_foot_0",
+        "Hero_Bistro_Set.003_pedestal_leveling_pad_0",
+        "Hero_Bistro_Set.003_tabletop_radial_support_0",
+        "Hero_Bistro_Set.003_curved_pedestal_foot_1",
+        "Hero_Bistro_Set.003_pedestal_leveling_pad_1",
+        "Hero_Bistro_Set.003_tabletop_radial_support_1",
+        "Hero_Bistro_Set.003_curved_pedestal_foot_2",
+        "Hero_Bistro_Set.003_pedestal_leveling_pad_2",
+        "Hero_Bistro_Set.003_tabletop_radial_support_2",
+        "Hero_Bistro_Set.003_curved_pedestal_foot_3",
+        "Hero_Bistro_Set.003_pedestal_leveling_pad_3",
+        "Hero_Bistro_Set.003_tabletop_radial_support_3",
+        "Hero_Bistro_Set.003_south_chair_steam_bent_seat_ring",
+        "Hero_Bistro_Set.003_south_chair_open_cane_0_-7",
+        "Hero_Bistro_Set.003_south_chair_open_cane_0_-6",
+        "Hero_Bistro_Set.003_south_chair_open_cane_0_-5",
+        "Hero_Bistro_Set.003_south_chair_open_cane_0_-4",
+        "Hero_Bistro_Set.003_south_chair_open_cane_0_-3",
+        "Hero_Bistro_Set.003_south_chair_open_cane_0_-2",
+        "Hero_Bistro_Set.003_south_chair_open_cane_0_-1",
+        "Hero_Bistro_Set.003_south_chair_open_cane_0_0",
+        "Hero_Bistro_Set.003_south_chair_open_cane_0_1",
+        "Hero_Bistro_Set.003_south_chair_open_cane_0_2",
+        "Hero_Bistro_Set.003_south_chair_open_cane_0_3",
+        "Hero_Bistro_Set.003_south_chair_open_cane_0_4",
+        "Hero_Bistro_Set.003_south_chair_open_cane_0_5",
+        "Hero_Bistro_Set.003_south_chair_open_cane_0_6",
+        "Hero_Bistro_Set.003_south_chair_open_cane_0_7",
+        "Hero_Bistro_Set.003_south_chair_open_cane_1_-7",
+        "Hero_Bistro_Set.003_south_chair_open_cane_1_-6",
+        "Hero_Bistro_Set.003_south_chair_open_cane_1_-5",
+        "Hero_Bistro_Set.003_south_chair_open_cane_1_-4",
+        "Hero_Bistro_Set.003_south_chair_open_cane_1_-3",
+        "Hero_Bistro_Set.003_south_chair_open_cane_1_-2",
+        "Hero_Bistro_Set.003_south_chair_open_cane_1_-1",
+        "Hero_Bistro_Set.003_south_chair_open_cane_1_0",
+        "Hero_Bistro_Set.003_south_chair_open_cane_1_1",
+        "Hero_Bistro_Set.003_south_chair_open_cane_1_2",
+        "Hero_Bistro_Set.003_south_chair_open_cane_1_3",
+        "Hero_Bistro_Set.003_south_chair_open_cane_1_4",
+        "Hero_Bistro_Set.003_south_chair_open_cane_1_5",
+        "Hero_Bistro_Set.003_south_chair_open_cane_1_6",
+        "Hero_Bistro_Set.003_south_chair_open_cane_1_7",
+        "Hero_Bistro_Set.003_south_chair_bent_leg_-1_-1",
+        "Hero_Bistro_Set.003_south_chair_floor_glide_-1_-1",
+        "Hero_Bistro_Set.003_south_chair_bent_leg_-1_1",
+        "Hero_Bistro_Set.003_south_chair_floor_glide_-1_1",
+        "Hero_Bistro_Set.003_south_chair_bent_leg_1_-1",
+        "Hero_Bistro_Set.003_south_chair_floor_glide_1_-1",
+        "Hero_Bistro_Set.003_south_chair_bent_leg_1_1",
+        "Hero_Bistro_Set.003_south_chair_floor_glide_1_1",
+        "Hero_Bistro_Set.003_south_chair_bentwood_lower_stretcher",
+        "Hero_Bistro_Set.003_south_chair_continuous_bent_back_hoop",
+        "Hero_Bistro_Set.003_south_chair_back_post_-1",
+        "Hero_Bistro_Set.003_south_chair_back_post_1",
+        "Hero_Bistro_Set.003_south_chair_open_back_spindle_0",
+        "Hero_Bistro_Set.003_south_chair_open_back_spindle_1",
+        "Hero_Bistro_Set.003_south_chair_open_back_spindle_2",
+        "Hero_Bistro_Set.003_north_chair_steam_bent_seat_ring",
+        "Hero_Bistro_Set.003_north_chair_open_cane_0_-7",
+        "Hero_Bistro_Set.003_north_chair_open_cane_0_-6",
+        "Hero_Bistro_Set.003_north_chair_open_cane_0_-5",
+        "Hero_Bistro_Set.003_north_chair_open_cane_0_-4",
+        "Hero_Bistro_Set.003_north_chair_open_cane_0_-3",
+        "Hero_Bistro_Set.003_north_chair_open_cane_0_-2",
+        "Hero_Bistro_Set.003_north_chair_open_cane_0_-1",
+        "Hero_Bistro_Set.003_north_chair_open_cane_0_0",
+        "Hero_Bistro_Set.003_north_chair_open_cane_0_1",
+        "Hero_Bistro_Set.003_north_chair_open_cane_0_2",
+        "Hero_Bistro_Set.003_north_chair_open_cane_0_3",
+        "Hero_Bistro_Set.003_north_chair_open_cane_0_4",
+        "Hero_Bistro_Set.003_north_chair_open_cane_0_5",
+        "Hero_Bistro_Set.003_north_chair_open_cane_0_6",
+        "Hero_Bistro_Set.003_north_chair_open_cane_0_7",
+        "Hero_Bistro_Set.003_north_chair_open_cane_1_-7",
+        "Hero_Bistro_Set.003_north_chair_open_cane_1_-6",
+        "Hero_Bistro_Set.003_north_chair_open_cane_1_-5",
+        "Hero_Bistro_Set.003_north_chair_open_cane_1_-4",
+        "Hero_Bistro_Set.003_north_chair_open_cane_1_-3",
+        "Hero_Bistro_Set.003_north_chair_open_cane_1_-2",
+        "Hero_Bistro_Set.003_north_chair_open_cane_1_-1",
+        "Hero_Bistro_Set.003_north_chair_open_cane_1_0",
+        "Hero_Bistro_Set.003_north_chair_open_cane_1_1",
+        "Hero_Bistro_Set.003_north_chair_open_cane_1_2",
+        "Hero_Bistro_Set.003_north_chair_open_cane_1_3",
+        "Hero_Bistro_Set.003_north_chair_open_cane_1_4",
+        "Hero_Bistro_Set.003_north_chair_open_cane_1_5",
+        "Hero_Bistro_Set.003_north_chair_open_cane_1_6",
+        "Hero_Bistro_Set.003_north_chair_open_cane_1_7",
+        "Hero_Bistro_Set.003_north_chair_bent_leg_-1_-1",
+        "Hero_Bistro_Set.003_north_chair_floor_glide_-1_-1",
+        "Hero_Bistro_Set.003_north_chair_bent_leg_-1_1",
+        "Hero_Bistro_Set.003_north_chair_floor_glide_-1_1",
+        "Hero_Bistro_Set.003_north_chair_bent_leg_1_-1",
+        "Hero_Bistro_Set.003_north_chair_floor_glide_1_-1",
+        "Hero_Bistro_Set.003_north_chair_bent_leg_1_1",
+        "Hero_Bistro_Set.003_north_chair_floor_glide_1_1",
+        "Hero_Bistro_Set.003_north_chair_bentwood_lower_stretcher",
+        "Hero_Bistro_Set.003_north_chair_continuous_bent_back_hoop",
+        "Hero_Bistro_Set.003_north_chair_back_post_-1",
+        "Hero_Bistro_Set.003_north_chair_back_post_1",
+        "Hero_Bistro_Set.003_north_chair_open_back_spindle_0",
+        "Hero_Bistro_Set.003_north_chair_open_back_spindle_1",
+        "Hero_Bistro_Set.003_north_chair_open_back_spindle_2",
+        "Hero_Bistro_Set.003_table_saucer_0",
+        "Hero_Bistro_Set.003_table_cup_0_hollow_cup",
+        "Hero_Bistro_Set.003_table_cup_0_open_handle",
+        "Hero_Bistro_Set.003_table_cup_0_coffee_surface",
+        "Hero_Bistro_Set.003_table_saucer_1",
+        "Hero_Bistro_Set.003_table_cup_1_hollow_cup",
+        "Hero_Bistro_Set.003_table_cup_1_open_handle",
+        "Hero_Bistro_Set.003_table_cup_1_coffee_surface"
+      ],
+      "bounds": {
+        "min": [
+          1.8800005912780762,
+          1.3124430179595947,
+          0.0
+        ],
+        "max": [
+          2.5199995040893555,
+          3.087557077407837,
+          0.8759999871253967
+        ],
+        "dimensions": [
+          0.6399989128112793,
+          1.7751140594482422,
+          0.8759999871253967
+        ]
+      },
+      "triangles": 25124,
+      "materials": {
+        "cabinet_oak": "Hero_CabinetOak_Scan",
+        "honed_granite": "Hero_HonedGranite_CC0",
+        "iron": "Hero_Iron",
+        "brass": "Hero_Brass",
+        "glass": "Hero_Glass",
+        "ceramic": "Hero_Ceramic",
+        "cane": "Hero_Cane",
+        "pastry": "Hero_Pastry",
+        "coffee": "HeroFurniture_coffee",
+        "bottle_green": "HeroFurniture_bottle_green"
+      },
+      "style": {
+        "table_diameter_m": 0.64,
+        "tabletop_height_m": 0.744,
+        "seat_height_m": 0.462,
+        "chair_overall_height_m": 0.876,
+        "chair_centers_local_m": [
+          [
+            0,
+            -0.68,
+            0
+          ],
+          [
+            0,
+            0.68,
+            0
+          ]
+        ],
+        "seat_front_to_table_edge_m": 0.149,
+        "facing": "Both chairs face the table center, never outward",
+        "chair_craft": [
+          "continuous steam-bent upper back hoop",
+          "three back spindles",
+          "four splayed legs",
+          "bentwood lower stretcher",
+          "open cane lattice seat"
+        ],
+        "activity": "Two seated guests; drinks within reach; pedestal avoids a four-leg knee conflict",
+        "placement_note": "Reserve an external circulation aisle around the occupied furniture bounds"
+      },
+      "original_geometry": true,
+      "uv_contract": "2m dominant-face metric UVs; atlas must be created and audited separately"
+    }
+  ],
+  "tree": {
+    "objects": [
+      "Hero_Plane_Branchwork",
+      "Hero_Plane_LeafSpray_Prototype_00",
+      "Hero_Plane_LeafSpray_Prototype_01",
+      "Hero_Plane_LeafSpray_Prototype_02",
+      "Hero_Plane_LeafSpray_Prototype_03",
+      "Hero_Plane_LeafSpray_Prototype_04",
+      "Hero_Plane_LeafSpray_Prototype_05",
+      "Hero_Plane_LeafSpray_Prototype_06",
+      "Hero_Plane_LeafSpray_Prototype_07",
+      "Hero_Plane_LeafSpray_008",
+      "Hero_Plane_LeafSpray_009",
+      "Hero_Plane_LeafSpray_010",
+      "Hero_Plane_LeafSpray_011",
+      "Hero_Plane_LeafSpray_012",
+      "Hero_Plane_LeafSpray_013",
+      "Hero_Plane_LeafSpray_014",
+      "Hero_Plane_LeafSpray_015",
+      "Hero_Plane_LeafSpray_016",
+      "Hero_Plane_LeafSpray_017",
+      "Hero_Plane_LeafSpray_018",
+      "Hero_Plane_LeafSpray_019",
+      "Hero_Plane_LeafSpray_020",
+      "Hero_Plane_LeafSpray_021",
+      "Hero_Plane_LeafSpray_022",
+      "Hero_Plane_LeafSpray_023",
+      "Hero_Plane_LeafSpray_024",
+      "Hero_Plane_LeafSpray_025",
+      "Hero_Plane_LeafSpray_026",
+      "Hero_Plane_LeafSpray_027",
+      "Hero_Plane_LeafSpray_028",
+      "Hero_Plane_LeafSpray_029",
+      "Hero_Plane_LeafSpray_030",
+      "Hero_Plane_LeafSpray_031",
+      "Hero_Plane_LeafSpray_032",
+      "Hero_Plane_LeafSpray_033",
+      "Hero_Plane_LeafSpray_034",
+      "Hero_Plane_LeafSpray_035",
+      "Hero_Plane_LeafSpray_036",
+      "Hero_Plane_LeafSpray_037",
+      "Hero_Plane_LeafSpray_038",
+      "Hero_Plane_LeafSpray_039",
+      "Hero_Plane_LeafSpray_040",
+      "Hero_Plane_LeafSpray_041",
+      "Hero_Plane_LeafSpray_042",
+      "Hero_Plane_LeafSpray_043",
+      "Hero_Plane_LeafSpray_044",
+      "Hero_Plane_LeafSpray_045",
+      "Hero_Plane_LeafSpray_046",
+      "Hero_Plane_LeafSpray_047",
+      "Hero_Plane_LeafSpray_048",
+      "Hero_Plane_LeafSpray_049",
+      "Hero_Plane_LeafSpray_050",
+      "Hero_Plane_LeafSpray_051",
+      "Hero_Plane_LeafSpray_052",
+      "Hero_Plane_LeafSpray_053",
+      "Hero_Plane_LeafSpray_054",
+      "Hero_Plane_LeafSpray_055",
+      "Hero_Plane_LeafSpray_056",
+      "Hero_Plane_LeafSpray_057",
+      "Hero_Plane_LeafSpray_058",
+      "Hero_Plane_LeafSpray_059",
+      "Hero_Plane_LeafSpray_060",
+      "Hero_Plane_LeafSpray_061",
+      "Hero_Plane_LeafSpray_062",
+      "Hero_Plane_LeafSpray_063",
+      "Hero_Plane_LeafSpray_064",
+      "Hero_Plane_LeafSpray_065",
+      "Hero_Plane_LeafSpray_066",
+      "Hero_Plane_LeafSpray_067",
+      "Hero_Plane_LeafSpray_068",
+      "Hero_Plane_LeafSpray_069",
+      "Hero_Plane_LeafSpray_070",
+      "Hero_Plane_LeafSpray_071",
+      "Hero_Plane_LeafSpray_072",
+      "Hero_Plane_LeafSpray_073",
+      "Hero_Plane_LeafSpray_074",
+      "Hero_Plane_LeafSpray_075",
+      "Hero_Plane_LeafSpray_076",
+      "Hero_Plane_LeafSpray_077",
+      "Hero_Plane_LeafSpray_078",
+      "Hero_Plane_LeafSpray_079",
+      "Hero_Plane_LeafSpray_080",
+      "Hero_Plane_LeafSpray_081",
+      "Hero_Plane_LeafSpray_082",
+      "Hero_Plane_LeafSpray_083",
+      "Hero_Plane_LeafSpray_084",
+      "Hero_Plane_LeafSpray_085",
+      "Hero_Plane_LeafSpray_086",
+      "Hero_Plane_LeafSpray_087",
+      "Hero_Plane_LeafSpray_088",
+      "Hero_Plane_LeafSpray_089",
+      "Hero_Plane_LeafSpray_090",
+      "Hero_Plane_LeafSpray_091",
+      "Hero_Plane_LeafSpray_092",
+      "Hero_Plane_LeafSpray_093",
+      "Hero_Plane_LeafSpray_094",
+      "Hero_Plane_LeafSpray_095",
+      "Hero_Plane_LeafSpray_096"
+    ],
+    "kind": "plane_tree_artistic_approximation",
+    "seed": 20261019,
+    "origin_m": [
+      -6.0,
+      -3.299999952316284,
+      -0.03999999910593033
+    ],
+    "bounds_world_m": [
+      [
+        -8.512959,
+        -6.396776,
+        -0.050536
+      ],
+      [
+        -2.823214,
+        -0.773804,
+        6.032757
+      ]
+    ],
+    "height_actual_m": 6.083293,
+    "expanded_triangles": 68812,
+    "triangle_budget": 100000,
+    "unique_meshes": 9,
+    "style": "Original refined stylized botanical geometry; opaque individual leaves with negative canopy gaps",
+    "source": "tools/asset_refinement/hero_foliage.py; original mathematical geometry, no external assets",
+    "height_requested_m": 6.2,
+    "crown_radius_requested_m": 2.65,
+    "leaf_prototypes": 8,
+    "spray_instances": 97,
+    "individual_leaves_expanded": 4268,
+    "prototype_leaf_count": 44,
+    "alpha_textures": false
+  },
+  "hydrangeas": [
+    {
+      "objects": [
+        "Hero_Hydrangea_Leaves_And_FourPetal_Florets"
+      ],
+      "kind": "hydrangea_artistic_approximation",
+      "seed": 200,
+      "origin_m": [
+        -4.0,
+        -0.65,
+        0.43
+      ],
+      "bounds_world_m": [
+        [
+          -4.379088,
+          -1.069159,
+          0.439227
+        ],
+        [
+          -3.576618,
+          -0.27874,
+          1.117924
+        ]
+      ],
+      "height_actual_m": 0.678697,
+      "expanded_triangles": 10764,
+      "triangle_budget": 30000,
+      "unique_meshes": 1,
+      "style": "Original refined stylized botanical geometry; opaque individual leaves with negative canopy gaps",
+      "source": "tools/asset_refinement/hero_foliage.py; original mathematical geometry, no external assets",
+      "radius_requested_m": 0.43,
+      "flower_heads": 9,
+      "individual_four_petal_florets": 378,
+      "individual_leaves": 36,
+      "leaf_prototypes": 0,
+      "alpha_textures": false
+    },
+    {
+      "objects": [
+        "Hero_Hydrangea_Leaves_And_FourPetal_Florets.001"
+      ],
+      "kind": "hydrangea_artistic_approximation",
+      "seed": 201,
+      "origin_m": [
+        4.0,
+        -0.65,
+        0.43
+      ],
+      "bounds_world_m": [
+        [
+          3.57177,
+          -0.990571,
+          0.439129
+        ],
+        [
+          4.421427,
+          -0.347703,
+          1.175526
+        ]
+      ],
+      "height_actual_m": 0.736397,
+      "expanded_triangles": 10764,
+      "triangle_budget": 30000,
+      "unique_meshes": 1,
+      "style": "Original refined stylized botanical geometry; opaque individual leaves with negative canopy gaps",
+      "source": "tools/asset_refinement/hero_foliage.py; original mathematical geometry, no external assets",
+      "radius_requested_m": 0.43,
+      "flower_heads": 9,
+      "individual_four_petal_florets": 378,
+      "individual_leaves": 36,
+      "leaf_prototypes": 0,
+      "alpha_textures": false
+    }
+  ],
+  "renders": [
+    {
+      "image": "renders/01_cafe_street.png",
+      "sha256": "662c53d7c701c9faafe7aee5f047d85e3bfa3cb0082da43c1db83bbb8853d5ab",
+      "position_blender_m": [
+        10,
+        -16,
+        3.8
+      ],
+      "target_blender_m": [
+        0,
+        1.1,
+        3.9
+      ],
+      "lens_mm": 43
+    },
+    {
+      "image": "renders/02_cafe_interior.png",
+      "sha256": "3fb4c5b9ac2b37f2c385edff3c27cc9bce55f4a0339b1f96fd4c9b5863c5c093",
+      "position_blender_m": [
+        1,
+        -10,
+        10
+      ],
+      "target_blender_m": [
+        0,
+        2.8,
+        1.0
+      ],
+      "lens_mm": 47
+    },
+    {
+      "image": "renders/03_counter_detail.png",
+      "sha256": "7f3c00b3f0c27ad311d6dfa3cb941d7a3f93d47a0dfea53080e6c2a7732aa9f5",
+      "position_blender_m": [
+        2.9,
+        1.0,
+        1.85
+      ],
+      "target_blender_m": [
+        0,
+        4.12,
+        1.2
+      ],
+      "lens_mm": 50
+    },
+    {
+      "image": "renders/04_facade_detail.png",
+      "sha256": "a9d741c3b690df574f88f8b9c102fb5e62651435e93ff21a620e52d784965162",
+      "position_blender_m": [
+        3.1,
+        -6.5,
+        3.1
+      ],
+      "target_blender_m": [
+        1.2,
+        0,
+        3.8
+      ],
+      "lens_mm": 50
+    }
+  ],
+  "conditioning_views": [
+    {
+      "name": "front",
+      "image": "input/front.png",
+      "sha256": "174f653183a29b9ebf6dd84ae1ebec82d4655889ca160b114e9b131cc420402d",
+      "camera_position_blender_m": [
+        0,
+        -2,
+        0.6
+      ],
+      "ortho_scale_m": 3.8
+    },
+    {
+      "name": "left",
+      "image": "input/left.png",
+      "sha256": "628a36f31e30e1770801fd28aec8f64a1fadb126b11c0464cf1a954d28392d76",
+      "camera_position_blender_m": [
+        -5,
+        4.12,
+        0.6
+      ],
+      "ortho_scale_m": 3.8
+    },
+    {
+      "name": "back",
+      "image": "input/back.png",
+      "sha256": "120f5d565cd88eccf5409456bbdbf0145d171714cd36785b2ebabfd10dd19b4b",
+      "camera_position_blender_m": [
+        0,
+        10,
+        0.6
+      ],
+      "ortho_scale_m": 3.8
+    },
+    {
+      "name": "right",
+      "image": "input/right.png",
+      "sha256": "d635916b2d78765280f5d1822191caecaa7faeb8657f402718de613916546eb2",
+      "camera_position_blender_m": [
+        5,
+        4.12,
+        0.6
+      ],
+      "ortho_scale_m": 3.8
+    }
+  ],
+  "input_provenance": {
+    "HDRI": {
+      "asset": "Kloofendal 48d Partly Cloudy (Pure Sky)",
+      "asset_id": "kloofendal_48d_partly_cloudy_puresky",
+      "file": "kloofendal_48d_partly_cloudy_puresky_2k.hdr",
+      "format": "Radiance HDR",
+      "resolution": "2048x1024 (2K equirectangular)",
+      "bytes": 5451493,
+      "sha256": "5244534e9cf5b606f2ff513aa00ddb161b0a4826ffd88a0d3bd03ac29247d198",
+      "md5_verified_against_official": "2eba3a4d7eeb23cbfbeca364c97e7980",
+      "source_url": "https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky",
+      "download_url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/kloofendal_48d_partly_cloudy_puresky_2k.hdr",
+      "metadata_url": "https://api.polyhaven.com/info/kloofendal_48d_partly_cloudy_puresky",
+      "file_metadata_url": "https://api.polyhaven.com/files/kloofendal_48d_partly_cloudy_puresky",
+      "authors": {
+        "Greg Zaal": "Original",
+        "Jarod Guest": "Sky edits"
+      },
+      "license": "CC0 1.0 Universal",
+      "license_url": "https://polyhaven.com/license",
+      "legal_code_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrieved_utc": "2026-10-12T02:50:39.5845983Z",
+      "intended_use": "Offline Blender environment lighting; keep portable exported PBR materials independent of Blender world",
+      "modifications": "Original downloaded file, unmodified",
+      "notes": "Download verified against official byte count and MD5. No addon installed. Attribution retained for provenance although CC0 does not require it."
+    },
+    "font": {
+      "project": "Adobe Source Serif 4",
+      "license": "SIL Open Font License 1.1",
+      "modified": false,
+      "files": [
+        {
+          "file": "SourceSerif4-Regular.ttf",
+          "source": "https://raw.githubusercontent.com/adobe-fonts/source-serif/release/TTF/SourceSerif4-Regular.ttf",
+          "sha256": "e5a4ee6a3d87bb9024796be390c6771e2a0eb1883dae25effaf57ca01668e24b",
+          "bytes": 261868
+        },
+        {
+          "file": "LICENSE.md",
+          "source": "https://raw.githubusercontent.com/adobe-fonts/source-serif/release/LICENSE.md",
+          "sha256": "c21d7293d87b6d7ab1d0229a2f55b77f33a7613a6a4e66f6693d68d7d8d09464",
+          "bytes": 4491
+        }
+      ]
+    }
+  },
+  "files": {
+    "cafe_hero.blend": {
+      "sha256": "859399aac5a3413dfe457b5a452cedc1537d9c7d721009e5e71b1099901f5b2f",
+      "bytes": 69117736
+    },
+    "cafe_hero.glb": {
+      "sha256": "cf4eb396f060086327738395f9d6626f1a3444820bbf64ad7c88c4ea7128fdaa",
+      "bytes": 97473648
+    },
+    "input\\back.png": {
+      "sha256": "120f5d565cd88eccf5409456bbdbf0145d171714cd36785b2ebabfd10dd19b4b",
+      "bytes": 590573
+    },
+    "input\\counter.glb": {
+      "sha256": "15d6c0973fd06695368a65fdd69ed988a134aa246dc61046131d4bb4b4114fde",
+      "bytes": 33167720
+    },
+    "input\\front.png": {
+      "sha256": "174f653183a29b9ebf6dd84ae1ebec82d4655889ca160b114e9b131cc420402d",
+      "bytes": 626680
+    },
+    "input\\left.png": {
+      "sha256": "628a36f31e30e1770801fd28aec8f64a1fadb126b11c0464cf1a954d28392d76",
+      "bytes": 374898
+    },
+    "input\\right.png": {
+      "sha256": "d635916b2d78765280f5d1822191caecaa7faeb8657f402718de613916546eb2",
+      "bytes": 387237
+    },
+    "renders\\01_cafe_street.png": {
+      "sha256": "662c53d7c701c9faafe7aee5f047d85e3bfa3cb0082da43c1db83bbb8853d5ab",
+      "bytes": 3096482
+    },
+    "renders\\02_cafe_interior.png": {
+      "sha256": "3fb4c5b9ac2b37f2c385edff3c27cc9bce55f4a0339b1f96fd4c9b5863c5c093",
+      "bytes": 3177725
+    },
+    "renders\\03_counter_detail.png": {
+      "sha256": "7f3c00b3f0c27ad311d6dfa3cb941d7a3f93d47a0dfea53080e6c2a7732aa9f5",
+      "bytes": 3069822
+    },
+    "renders\\04_facade_detail.png": {
+      "sha256": "a9d741c3b690df574f88f8b9c102fb5e62651435e93ff21a620e52d784965162",
+      "bytes": 2857192
+    }
+  }
+}

@@ -1,0 +1,184 @@
+{
+  "schema": "living_town.contextual_wall_bake.v1",
+  "status": "BAKED_REQUIRES_RENDER_REVIEW",
+  "generator_sha256": "a48c9e0485ff69eaae2f460449ab10ab31b066e26a3318f2587f7d21ac322e75",
+  "ai_inference_executed": false,
+  "seed": 20261020,
+  "source_library_sha256": "bb367d05a1cb15df5bf9238f642dfd91cbc0ab58b6723fc4d1154c6b6ecf0f70",
+  "source_asset": "white_plaster_02",
+  "source_asset_url": "https://polyhaven.com/a/white_plaster_02",
+  "source_license": "CC0-1.0",
+  "source_provenance_sha256": "93eb8c24f289de716409abece528cc0d5df874ea6c2bae8e790033e6ee481568",
+  "sources": {
+    "basecolor": {
+      "path": "C:/Users/yp/.codex/worktrees/114e/living-town/art/living_town/refinement_pilot/scanned_pbr_v3/white_plaster_02/basecolor.png",
+      "sha256": "dc6999674fa0a34708c6c4c076c150b5df1bb1392d54dcdc4f93056090f4b081",
+      "source_sha256": "2422f57eced111f129b251b520f75760268a851def553557c4a51fd428bce9bf",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "filtered_tile_dimensions": [
+        476,
+        630
+      ]
+    },
+    "roughness": {
+      "path": "C:/Users/yp/.codex/worktrees/114e/living-town/art/living_town/refinement_pilot/scanned_pbr_v3/white_plaster_02/roughness.png",
+      "sha256": "5a1f122e5ae0f238954b784c1bdaa0c6603544d3fe1733cd35d6f8fe5a38b38a",
+      "source_sha256": "a7a4765eee08d3260c03f77e0ed596200298a9a2d1dcd8c70f4da62977e55129",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "filtered_tile_dimensions": [
+        476,
+        630
+      ]
+    },
+    "normal": {
+      "path": "C:/Users/yp/.codex/worktrees/114e/living-town/art/living_town/refinement_pilot/scanned_pbr_v3/white_plaster_02/normal.png",
+      "sha256": "47bc555fa18b55e437c2b5d72da0a2a5b4e88e82b05377de465ad64635c5bdcc",
+      "source_sha256": "097bd8bc72bcb5c75fd26bc11f981dad5944ceec4a5d02481b24915c76c34839",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "filtered_tile_dimensions": [
+        476,
+        630
+      ]
+    }
+  },
+  "authored_context": true,
+  "scan_repeat_metres": [
+    1.0,
+    1.0
+  ],
+  "facade_dimensions_metres": [
+    8.6,
+    6.5
+  ],
+  "palette_srgb": [
+    224.0,
+    218.0,
+    204.0
+  ],
+  "windows_api": "(centre_x_m, sill_z_m, width_m, height_m); x centred on facade, z above ground",
+  "windows": [
+    [
+      -2.55,
+      3.975,
+      1.08,
+      1.55
+    ],
+    [
+      0.0,
+      3.975,
+      1.08,
+      1.55
+    ],
+    [
+      2.55,
+      3.975,
+      1.08,
+      1.55
+    ],
+    [
+      -2.55,
+      0.675,
+      2.05,
+      1.95
+    ],
+    [
+      2.55,
+      0.675,
+      2.05,
+      1.95
+    ]
+  ],
+  "image_coordinates": "Top image row z=height_m; bottom z=0. Facade image UV=(x/width_m+.5,z/height_m).",
+  "metric_uv_mapping": "For MetricUV=((x+width_m/2)/2,z/2), use Mapping scale=(2/width_m,2/height_m,1).",
+  "normal_convention": "OpenGL tangent-space +Y; photographed normal plus authored physical height slopes, normalized",
+  "height_encoding": {
+    "minimum_metres": 0.0007,
+    "maximum_metres": 0.004,
+    "decode": "minimum_metres + uint16_value/65535*(maximum_metres-minimum_metres)",
+    "surface_direction": "For front outward -Y, y=original_y-decoded_height_m",
+    "physical_scale_authority": "ARTIST_AUTHORED_NOT_MEASURED",
+    "coarse_mesh_note": "Shared-vertex displacement represents coarse relief. Normal includes the full authored relief plus fine scan; reduce normal strength if also displacing the mesh to avoid overstating relief."
+  },
+  "recipe": {
+    "macro_control_spacing_metres": [
+      0.55,
+      1.3,
+      2.8
+    ],
+    "relief_control_spacing_metres": 0.2,
+    "linear_tone_clamp": [
+      -0.29,
+      0.25
+    ],
+    "style": "Pale maintained limewash, restrained warm/cool replastering, sill runoff, eave shelter and lower-wall grime. No rust, abandonment or uniform overlay.",
+    "source_normal": "Photographic OpenGL scan retained at original physical repeat; no diffuse-to-normal inference.",
+    "roughness": "Photographed roughness plus small authored mineral/context variation, clamped [.58,1]."
+  },
+  "image_metrics": {
+    "downsample_dimensions": [
+      950,
+      600
+    ],
+    "downsample_rgb_standard_deviation_8bit": [
+      10.608156204223633,
+      10.286025047302246,
+      9.753432273864746
+    ],
+    "downsample_luminance_p02_p98_8bit": [
+      193.6666717529297,
+      234.6666717529297
+    ],
+    "authored_runoff_max_linear_darkening": 0.14734068512916565
+  },
+  "maps": {
+    "basecolor": {
+      "path": "facade_basecolor.png",
+      "sha256": "f52bad74b3eb50ca633cfbc5812dcd8b615dde27df5628ae2a8aae0d2ed51b2c",
+      "dimensions": [
+        4096,
+        4096
+      ],
+      "color_space": "sRGB",
+      "bit_depth": 8
+    },
+    "roughness": {
+      "path": "facade_roughness.png",
+      "sha256": "62e706e3b3f521511dec0a2959a2720237329fb527aa9e87754a577a96c4f0a8",
+      "dimensions": [
+        4096,
+        4096
+      ],
+      "color_space": "Non-Color",
+      "bit_depth": 8
+    },
+    "normal": {
+      "path": "facade_normal.png",
+      "sha256": "58805970b1da262af6066fa2c1093b274315eea5ab277f38ed908708d18af802",
+      "dimensions": [
+        4096,
+        4096
+      ],
+      "color_space": "Non-Color",
+      "bit_depth": 8
+    },
+    "height": {
+      "path": "facade_height.png",
+      "sha256": "cc67501f579ce23e86e84369eb9bc858b8f45b785d27790bbf640e65dbf2dc34",
+      "dimensions": [
+        4096,
+        4096
+      ],
+      "color_space": "Non-Color",
+      "bit_depth": 16
+    }
+  }
+}

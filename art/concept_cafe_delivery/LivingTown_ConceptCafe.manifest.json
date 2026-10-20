@@ -1,0 +1,657 @@
+{
+  "schema": "living_town.concept_cafe_delivery.v1",
+  "scope": "Three-frontage limewash revision and reconstructed cafe pilot; not whole-town migration or validated model-generated material",
+  "hero_manifest_sha256": "0a2c10b6ffda9aa4d1b5275cbd62088335735990cd9ce396ac16e6cbf89f943d",
+  "member_count": 162,
+  "manifest_self_excluded_from_inventory": true,
+  "files": {
+    "art/living_town/concept/01_idealized_presentation.png": {
+      "bytes": 3456518,
+      "sha256": "8b9495ff72b6cae6b890037ad6f5dc2f717b23eff3bf1811d315862e64218914"
+    },
+    "art/living_town/external_assets/fonts/LICENSE.md": {
+      "bytes": 4491,
+      "sha256": "c21d7293d87b6d7ab1d0229a2f55b77f33a7613a6a4e66f6693d68d7d8d09464"
+    },
+    "art/living_town/external_assets/fonts/PROVENANCE.json": {
+      "bytes": 655,
+      "sha256": "2017efa3bbc5d7e85ccdec1ae5da6e9da6d6df31c6aaf9a0785dfe735bcada91"
+    },
+    "art/living_town/external_assets/fonts/SourceSerif4-Regular.ttf": {
+      "bytes": 261868,
+      "sha256": "e5a4ee6a3d87bb9024796be390c6771e2a0eb1883dae25effaf57ca01668e24b"
+    },
+    "art/living_town/external_assets/polyhaven/kloofendal_48d_partly_cloudy_puresky_2k.hdr": {
+      "bytes": 5451493,
+      "sha256": "5244534e9cf5b606f2ff513aa00ddb161b0a4826ffd88a0d3bd03ac29247d198"
+    },
+    "art/living_town/external_assets/polyhaven/PROVENANCE.json": {
+      "bytes": 1456,
+      "sha256": "c61f6dee43abcd725b87f39e4925daeec9b96db1bd75ff293a7cbaa3e140f097"
+    },
+    "art/living_town/external_assets/polyhaven/source_file.json": {
+      "bytes": 181,
+      "sha256": "69072a265a429fee67777cbb829e8fc7f643b0f85eb737a828e133ebb17cfd45"
+    },
+    "art/living_town/external_assets/polyhaven/source_info.json": {
+      "bytes": 1523,
+      "sha256": "7f09921abea06b7a455cf435f657829492468ce68cc386a5938dcb668a5b43f0"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/Granite002A/CC0-1.0-LEGALCODE.txt": {
+      "bytes": 7048,
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/Granite002A/Granite002A_2K-PNG_Color.png": {
+      "bytes": 8549613,
+      "sha256": "0169df6c9038f40c8f84d8706eb8231c62e6c5fa5c466c5dd9e58ab1d9e3068f"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/Granite002A/Granite002A_2K-PNG_NormalGL.png": {
+      "bytes": 14224327,
+      "sha256": "3833fac51d4b0363fd4b0cf0d73f38635e03243b7de18233f5d193c3bf3d1305"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/Granite002A/Granite002A_2K-PNG_Roughness.png": {
+      "bytes": 1570023,
+      "sha256": "81c1ffd7a7d30a8d0af2b9b0dac0825a6c8cab6ad54b5f95fb8e0ee55cd9dac6"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/Granite002A/license_source.html": {
+      "bytes": 34106,
+      "sha256": "60138e09b277c89977841462634b36e99d7bae5b77174777813502069c59461c"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/Granite002A/LICENSE_SOURCE.txt": {
+      "bytes": 1278,
+      "sha256": "0440ee894338095a05c58871f4402805d9151002f2d5bcf452dca753a7afdba5"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/Granite002A/PROVENANCE.json": {
+      "bytes": 4882,
+      "sha256": "8150c1efa522715d71687208e1d44b10d501f2af31a85bcaf723083dd2a425ba"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/Granite002A/selected_api_asset.json": {
+      "bytes": 9386,
+      "sha256": "792edee7843e5a1ac7b5d7c1376dd6357297f4109e92f13853106a298d2eafbd"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/oak_veneer_01/api_files.json": {
+      "bytes": 33790,
+      "sha256": "7468b2ef3a0cc08dfcba7683cd9c500da5506640bd84da250e68da9b6f4b036f"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/oak_veneer_01/api_info.json": {
+      "bytes": 905,
+      "sha256": "9c56837129c0aefef5d4b62a377e0f756c7794fc718a5407b64a733021bc5e80"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/oak_veneer_01/CC0-1.0-LEGALCODE.txt": {
+      "bytes": 7048,
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/oak_veneer_01/LICENSE_SOURCE.txt": {
+      "bytes": 608,
+      "sha256": "0fabae5a3d6dc2e6ed099a42c22fdf03b111798636dc37fe21380f3ea0f75812"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/oak_veneer_01/oak_veneer_01_ao_2k.png": {
+      "bytes": 6988077,
+      "sha256": "f96b828fdb7686a69eb7c25e2217aec69ea0d613614430fd6fe097c396ab1713"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/oak_veneer_01/oak_veneer_01_diff_4k.png": {
+      "bytes": 89764173,
+      "sha256": "6cc2cbd71014f217dc256cd7fed0461fbd62d32bfd0898b09a7fe738ff854356"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/oak_veneer_01/oak_veneer_01_disp_2k.png": {
+      "bytes": 1429785,
+      "sha256": "49ebd2370bd364a0f83cc83a7188202fa8f9792d21c29827073d85c8e6d65a07"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/oak_veneer_01/oak_veneer_01_nor_gl_2k.png": {
+      "bytes": 20978522,
+      "sha256": "c26f922a75022c11243f351d348d1b5615e713f3787c76657fdb06047879b960"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/oak_veneer_01/oak_veneer_01_rough_2k.png": {
+      "bytes": 10588499,
+      "sha256": "c721fe5abff3c3ec04281803e8477f3fc348d8b5882f5830c50709e838977e6f"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/oak_veneer_01/PROVENANCE.json": {
+      "bytes": 6546,
+      "sha256": "1e0f50930fa74ebbc403d5018b709a26531e47bce1125ee8fb57e439ffc5f686"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/terrazzo_tiles/api_files.json": {
+      "bytes": 33250,
+      "sha256": "e3d74f2f49b2a5985f220d6d9d8906cf0968ae2a88fc87ab603aef6792fcb3ad"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/terrazzo_tiles/api_info.json": {
+      "bytes": 873,
+      "sha256": "21b571da0bad41761f668a7f1d229b64afcec15cb4fc8a312a64ab6e72c6b39d"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/terrazzo_tiles/CC0-1.0-LEGALCODE.txt": {
+      "bytes": 7048,
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/terrazzo_tiles/LICENSE_SOURCE.txt": {
+      "bytes": 337,
+      "sha256": "1e17e1571a481c7f09426099a6cf6519869622b75ae09be0710e5925f4c6f8f0"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/terrazzo_tiles/PROVENANCE.json": {
+      "bytes": 4391,
+      "sha256": "20b9c2dc1bed60c097a9d322963b55bb822c9e959025053f599ed4d9a1a0a250"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/terrazzo_tiles/terrazzo_tiles_diff_2k.png": {
+      "bytes": 27115185,
+      "sha256": "80cb813199412195523caf0e9e41bf96cf7e8cdf9a9ae91307bb8633c823b9e3"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/terrazzo_tiles/terrazzo_tiles_nor_gl_2k.png": {
+      "bytes": 16550494,
+      "sha256": "04a415bbf52c0cd293608fc40eed6bacb2cf6e3003f8ed28a94518a900fb834e"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/terrazzo_tiles/terrazzo_tiles_rough_2k.png": {
+      "bytes": 6962525,
+      "sha256": "3928d7e6d0c0ce98ac53d80192830dedc04a80f4d9a30eb804d75d23e38ffda4"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/white_plaster_02/api_files.json": {
+      "bytes": 33673,
+      "sha256": "d25695d1a2a7ee4b3e6563bcb9c17dfe3d29a9b54e1e352555214b99c6803287"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/white_plaster_02/api_info.json": {
+      "bytes": 932,
+      "sha256": "29df04493a17417a7d2fe3b5a4c15ead690b9881eaedb6811ff446746afdb7c4"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/white_plaster_02/CC0-1.0-LEGALCODE.txt": {
+      "bytes": 7048,
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/white_plaster_02/LICENSE_SOURCE.txt": {
+      "bytes": 602,
+      "sha256": "45c21a3ed7fa98a6781a2bf59b382e991060a11bfd3844c2cd960b42b3f5f12e"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/white_plaster_02/PROVENANCE.json": {
+      "bytes": 6551,
+      "sha256": "93eb8c24f289de716409abece528cc0d5df874ea6c2bae8e790033e6ee481568"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/white_plaster_02/white_plaster_02_ao_2k.png": {
+      "bytes": 9479790,
+      "sha256": "fe9bbe992071cb0212fabdceca3d91380918057bbacae3feea15450de920fa30"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/white_plaster_02/white_plaster_02_diff_4k.png": {
+      "bytes": 107497608,
+      "sha256": "2422f57eced111f129b251b520f75760268a851def553557c4a51fd428bce9bf"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/white_plaster_02/white_plaster_02_disp_2k.png": {
+      "bytes": 8351540,
+      "sha256": "3666a4aca5519215f9a53ae74bc7d326d0c1593e4bfe7a86f33ec6e06ce50419"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/white_plaster_02/white_plaster_02_nor_gl_2k.png": {
+      "bytes": 24664332,
+      "sha256": "097bd8bc72bcb5c75fd26bc11f981dad5944ceec4a5d02481b24915c76c34839"
+    },
+    "art/living_town/refinement_pilot/cc0_sources/white_plaster_02/white_plaster_02_rough_2k.png": {
+      "bytes": 9074539,
+      "sha256": "a7a4765eee08d3260c03f77e0ed596200298a9a2d1dcd8c70f4da62977e55129"
+    },
+    "art/living_town/refinement_pilot/godot_v10.json": {
+      "bytes": 79501,
+      "sha256": "f1a38e2212ae75f5cdfdcd1db92a8f50058a7ba9637cc4fa8e9e27706a61cd12"
+    },
+    "art/living_town/refinement_pilot/godot_v10.png": {
+      "bytes": 1097148,
+      "sha256": "6ef7073ecb29ef6f72f8dc7e9e1f0966532bc6fe1fdfaf591a496800cfdf8dc3"
+    },
+    "art/living_town/refinement_pilot/hero_surfaces/facade_limewash_basecolor.png": {
+      "bytes": 620823,
+      "sha256": "94a9288fab57202554d2aa27f4a7bf49d033d311c0b5483a86cddc15d463cc72"
+    },
+    "art/living_town/refinement_pilot/hero_surfaces/facade_limewash_roughness.png": {
+      "bytes": 531595,
+      "sha256": "604abb5f133faf5ed0d47c523c607de4277972a13d33333bef3115da712d8a5a"
+    },
+    "art/living_town/refinement_pilot/hero_surfaces/manifest.json": {
+      "bytes": 1274,
+      "sha256": "f8debeb8b278e4695ad41882c89806ca5838ed064052767db29db134814edd97"
+    },
+    "art/living_town/refinement_pilot/hero_surfaces/split_slate_basecolor.png": {
+      "bytes": 593853,
+      "sha256": "dd84b5f0a3cdae1e690e1d3c3e6e2c8cca6c34b485a1ff3eb4714564f3045c42"
+    },
+    "art/living_town/refinement_pilot/hero_surfaces/split_slate_roughness.png": {
+      "bytes": 533367,
+      "sha256": "1013d05d74bf9436014a065eba3e40931293ef1ce73e4fef303734bd79505e4d"
+    },
+    "art/living_town/refinement_pilot/hero_v10/cafe_hero.blend": {
+      "bytes": 143879236,
+      "sha256": "ff19e877204f2cd26113e9c54a52fc443eec0f6c4e0d655f327dfb551c0e1fb9"
+    },
+    "art/living_town/refinement_pilot/hero_v10/cafe_hero.glb": {
+      "bytes": 181476196,
+      "sha256": "14c0dc1fe0b99d4479b32f9bba8fbaa35c687bd7f53fb9e6720ac5df98dfa564"
+    },
+    "art/living_town/refinement_pilot/hero_v10/hero_manifest.json": {
+      "bytes": 126747,
+      "sha256": "0a2c10b6ffda9aa4d1b5275cbd62088335735990cd9ce396ac16e6cbf89f943d"
+    },
+    "art/living_town/refinement_pilot/hero_v10/input/back.png": {
+      "bytes": 590573,
+      "sha256": "fcb37382bb2b84d8ffb880c9e8a6e4ec09b0217dfdc5bacf60159ddce91c33ee"
+    },
+    "art/living_town/refinement_pilot/hero_v10/input/counter.glb": {
+      "bytes": 33167720,
+      "sha256": "15d6c0973fd06695368a65fdd69ed988a134aa246dc61046131d4bb4b4114fde"
+    },
+    "art/living_town/refinement_pilot/hero_v10/input/front.png": {
+      "bytes": 626680,
+      "sha256": "7ed12b671acd3e55787aab17b49e68e73d4340b145d57ca5198ddcb57550e9fc"
+    },
+    "art/living_town/refinement_pilot/hero_v10/input/left.png": {
+      "bytes": 374898,
+      "sha256": "28740156fef1eaecdd45ff4a239b42e0bd3391b3a75b21f6f1fb0c24ddeb529f"
+    },
+    "art/living_town/refinement_pilot/hero_v10/input/right.png": {
+      "bytes": 387237,
+      "sha256": "be015fffd40ca1149bbe2154f62450a8f22ea1dece92d10dfb49cf266e1560bd"
+    },
+    "art/living_town/refinement_pilot/hero_v10/renders/01_cafe_street.png": {
+      "bytes": 3138033,
+      "sha256": "c042a97d2a37ac99a438ddee20c08d20b4e5fea2b878a5af2b1a9f964541d04a"
+    },
+    "art/living_town/refinement_pilot/hero_v10/renders/02_cafe_interior.png": {
+      "bytes": 3177725,
+      "sha256": "f2217325037776dc46371c9219110f9412359f5c38e4d49f1f3f33aa4e8dc451"
+    },
+    "art/living_town/refinement_pilot/hero_v10/renders/03_counter_detail.png": {
+      "bytes": 3069822,
+      "sha256": "ffc917320a14a85bacb8a863cdb056ac9e4d3c93739141419058aa6d1c100944"
+    },
+    "art/living_town/refinement_pilot/hero_v10/renders/04_facade_detail.png": {
+      "bytes": 2862728,
+      "sha256": "3889a6ca6460201da5ba5df4d494a1191cbca6097befa8c9e6f1b53be422639c"
+    },
+    "art/living_town/refinement_pilot/hero_v9/renders/01_cafe_street.png": {
+      "bytes": 3096482,
+      "sha256": "662c53d7c701c9faafe7aee5f047d85e3bfa3cb0082da43c1db83bbb8853d5ab"
+    },
+    "art/living_town/refinement_pilot/materials/cabinet_oak_basecolor.png": {
+      "bytes": 97138,
+      "sha256": "da7c4fa12f0c2e64f3a7bd11da0efc2776b6326271474943896070fc9167884a"
+    },
+    "art/living_town/refinement_pilot/materials/cabinet_oak_normal.png": {
+      "bytes": 24030,
+      "sha256": "9c0b14cf9abac5fd74dae531511cfa907f479ae125307764b396e4cb7e12c333"
+    },
+    "art/living_town/refinement_pilot/materials/cabinet_oak_roughness.png": {
+      "bytes": 38081,
+      "sha256": "e02a48e030d4a590b0cb7f622c45ee0c9326ff5a9eefa9dc3af90a7f780be263"
+    },
+    "art/living_town/refinement_pilot/materials/honed_granite_basecolor.png": {
+      "bytes": 288044,
+      "sha256": "936271dae84104efa66557a36d02130d9e84abaad749ee596601467f7898f001"
+    },
+    "art/living_town/refinement_pilot/materials/honed_granite_normal.png": {
+      "bytes": 79962,
+      "sha256": "1df23178859ceb529ac45744eb3ef07da2d65769c3ca47e38fda81aeef396a36"
+    },
+    "art/living_town/refinement_pilot/materials/honed_granite_roughness.png": {
+      "bytes": 87933,
+      "sha256": "e270af8fa65e72535e6ad6d224bf51cdfc8a330dc8f96c7094ec76d03e97bfb3"
+    },
+    "art/living_town/refinement_pilot/materials/material_manifest.json": {
+      "bytes": 4475,
+      "sha256": "5a98f5329f467e69250cc064c5cda7a7104b3c877f031728f84394845be8d709"
+    },
+    "art/living_town/refinement_pilot/model_slate_v1/interruption_receipt.json": {
+      "bytes": 2830,
+      "sha256": "79812fc820b533a4b17ab82f7967421077dada06fd448ce3a6c9cb217534dfe3"
+    },
+    "art/living_town/refinement_pilot/model_slate_v1/runtime.log": {
+      "bytes": 11894,
+      "sha256": "d51b462b04cf30b7fd65e61fb3b9300fcdc01acac384e61216aec66bc0879956"
+    },
+    "art/living_town/refinement_pilot/native_reopen_v10.json": {
+      "bytes": 1073,
+      "sha256": "0aae16e64c8cbee6f926b00611d751cbecb82fdce1b8be9ec8fe7a8637d44bd0"
+    },
+    "art/living_town/refinement_pilot/prepared_v10/back.png": {
+      "bytes": 325366,
+      "sha256": "97f3da37911a6ff8bb36744fc0843f738aaaa820ad48bcb4909e379f3195670f"
+    },
+    "art/living_town/refinement_pilot/prepared_v10/counter.glb": {
+      "bytes": 33167720,
+      "sha256": "15d6c0973fd06695368a65fdd69ed988a134aa246dc61046131d4bb4b4114fde"
+    },
+    "art/living_town/refinement_pilot/prepared_v10/front.png": {
+      "bytes": 362009,
+      "sha256": "5a5d9b51c36dad5de9bf4a2aaca7acc832113e420b0d883a1013b63056fe8e9e"
+    },
+    "art/living_town/refinement_pilot/prepared_v10/left.png": {
+      "bytes": 106333,
+      "sha256": "655399a06b6e51df5f70408ac1917688f7123544b26c417448099f83c0d170cd"
+    },
+    "art/living_town/refinement_pilot/prepared_v10/preparation_manifest.json": {
+      "bytes": 2481,
+      "sha256": "12459442407692688036223421836144b4b09b8e1955e623ab36e794739475d8"
+    },
+    "art/living_town/refinement_pilot/prepared_v10/right.png": {
+      "bytes": 116180,
+      "sha256": "3af4001c1d23051168fc4e8673d31d79866a3bb4283b101cf45114e70e968ee9"
+    },
+    "art/living_town/refinement_pilot/prepared_v10/turnaround_sheet.png": {
+      "bytes": 914658,
+      "sha256": "6e79a0e345ac08ddf47b9f551b41b6e8213242af10e1525ce05f3192ccf14e18"
+    },
+    "art/living_town/refinement_pilot/scanned_export_v10.json": {
+      "bytes": 35434,
+      "sha256": "59d21cee3101757cf326193b1d4dcbbbd313ec439c50c801a793106f9ba0fb59"
+    },
+    "art/living_town/refinement_pilot/scanned_pbr_v3/Granite002A/basecolor.png": {
+      "bytes": 8299644,
+      "sha256": "e4aba6eceb81d3b24c6ebbe0c06fafbd93bc4ba22d8294dcd6c2a7bfe0f338bb"
+    },
+    "art/living_town/refinement_pilot/scanned_pbr_v3/Granite002A/cut_roughness.png": {
+      "bytes": 1007944,
+      "sha256": "4c0b7a62c387da4265a5fe3ee3ff30b4b1720a2c5fc0154694c499eb43177e08"
+    },
+    "art/living_town/refinement_pilot/scanned_pbr_v3/Granite002A/normal.png": {
+      "bytes": 2255733,
+      "sha256": "db1329fb40d0b24a1fd32ab73345e32cb60683965bdac54f8898fcc8919f22c6"
+    },
+    "art/living_town/refinement_pilot/scanned_pbr_v3/Granite002A/roughness.png": {
+      "bytes": 1325522,
+      "sha256": "fdb3baf01218eacb42a814fedc3f2ed0451109d35ef47155841a6b224efc9e08"
+    },
+    "art/living_town/refinement_pilot/scanned_pbr_v3/Granite002A/SOURCE_PROVENANCE.json": {
+      "bytes": 4882,
+      "sha256": "8150c1efa522715d71687208e1d44b10d501f2af31a85bcaf723083dd2a425ba"
+    },
+    "art/living_town/refinement_pilot/scanned_pbr_v3/library_manifest.json": {
+      "bytes": 10550,
+      "sha256": "bb367d05a1cb15df5bf9238f642dfd91cbc0ab58b6723fc4d1154c6b6ecf0f70"
+    },
+    "art/living_town/refinement_pilot/scanned_pbr_v3/oak_veneer_01/basecolor.png": {
+      "bytes": 6112432,
+      "sha256": "6064b628e227bd124e87e303d52ad8856799aa20da5e587c768df094cf7da87d"
+    },
+    "art/living_town/refinement_pilot/scanned_pbr_v3/oak_veneer_01/normal.png": {
+      "bytes": 6037990,
+      "sha256": "5fb488f60f005cb34c23c9c493a37e685bbc54a1aa3c95345f77146b7d24c5ba"
+    },
+    "art/living_town/refinement_pilot/scanned_pbr_v3/oak_veneer_01/roughness.png": {
+      "bytes": 3310082,
+      "sha256": "fc155b78bfa5775d60cbf8a291e8d21447a94d88cd1ddb81f695efb2caf5c9be"
+    },
+    "art/living_town/refinement_pilot/scanned_pbr_v3/oak_veneer_01/SOURCE_PROVENANCE.json": {
+      "bytes": 6546,
+      "sha256": "1e0f50930fa74ebbc403d5018b709a26531e47bce1125ee8fb57e439ffc5f686"
+    },
+    "art/living_town/refinement_pilot/scanned_pbr_v3/terrazzo_tiles/basecolor.png": {
+      "bytes": 9307214,
+      "sha256": "bf1db414fdf3498067af124add8b6417bb48291152e7ce8793291e5c5101297d"
+    },
+    "art/living_town/refinement_pilot/scanned_pbr_v3/terrazzo_tiles/normal.png": {
+      "bytes": 2535869,
+      "sha256": "91eada77f4c409f37062cb1c50777d88a2b77011a958fa9e5f96cb9c6e55c894"
+    },
+    "art/living_town/refinement_pilot/scanned_pbr_v3/terrazzo_tiles/roughness.png": {
+      "bytes": 2020676,
+      "sha256": "e539202add3c0ab0e1a9d1473f47453d82e404940e87ffd22fb90de09629b1ee"
+    },
+    "art/living_town/refinement_pilot/scanned_pbr_v3/terrazzo_tiles/SOURCE_PROVENANCE.json": {
+      "bytes": 4391,
+      "sha256": "20b9c2dc1bed60c097a9d322963b55bb822c9e959025053f599ed4d9a1a0a250"
+    },
+    "art/living_town/refinement_pilot/scanned_pbr_v3/white_plaster_02/basecolor.png": {
+      "bytes": 6409983,
+      "sha256": "dc6999674fa0a34708c6c4c076c150b5df1bb1392d54dcdc4f93056090f4b081"
+    },
+    "art/living_town/refinement_pilot/scanned_pbr_v3/white_plaster_02/normal.png": {
+      "bytes": 7942075,
+      "sha256": "47bc555fa18b55e437c2b5d72da0a2a5b4e88e82b05377de465ad64635c5bdcc"
+    },
+    "art/living_town/refinement_pilot/scanned_pbr_v3/white_plaster_02/roughness.png": {
+      "bytes": 2633057,
+      "sha256": "5a1f122e5ae0f238954b784c1bdaa0c6603544d3fe1733cd35d6f8fe5a38b38a"
+    },
+    "art/living_town/refinement_pilot/scanned_pbr_v3/white_plaster_02/SOURCE_PROVENANCE.json": {
+      "bytes": 6551,
+      "sha256": "93eb8c24f289de716409abece528cc0d5df874ea6c2bae8e790033e6ee481568"
+    },
+    "art/living_town/refinement_pilot/verification_v10.json": {
+      "bytes": 5391,
+      "sha256": "72d722a0c31241869460329bc5c7f87cb0024940e5358db08ea3db42e6d6da1d"
+    },
+    "art/living_town/refinement_pilot/visual_review_v10.json": {
+      "bytes": 4207,
+      "sha256": "2e4dd23bc3487eb488dd66a7a2cdb5d064806c6ec4f899ee158d0bf1d26566ff"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/cafe/facade_basecolor.png": {
+      "bytes": 19069649,
+      "sha256": "f52bad74b3eb50ca633cfbc5812dcd8b615dde27df5628ae2a8aae0d2ed51b2c"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/cafe/facade_height.png": {
+      "bytes": 18985632,
+      "sha256": "cc67501f579ce23e86e84369eb9bc858b8f45b785d27790bbf640e65dbf2dc34"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/cafe/facade_normal.png": {
+      "bytes": 25052652,
+      "sha256": "58805970b1da262af6066fa2c1093b274315eea5ab277f38ed908708d18af802"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/cafe/facade_roughness.png": {
+      "bytes": 7961101,
+      "sha256": "62e706e3b3f521511dec0a2959a2720237329fb527aa9e87754a577a96c4f0a8"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/cafe/wall_manifest.json": {
+      "bytes": 5664,
+      "sha256": "a59783b1d6cb62cced21b4ed95128a425cb3864e04fbfa241846faae3343167a"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/left/facade_basecolor.png": {
+      "bytes": 4866968,
+      "sha256": "359db9eeb7f799d246a25b279445a969c519acb4c6267bc58d0540908462c76a"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/left/facade_height.png": {
+      "bytes": 5275550,
+      "sha256": "1fda5375136f0c207170a3c19b54791a2b4385abde334e612e3499373015eec7"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/left/facade_normal.png": {
+      "bytes": 4902852,
+      "sha256": "52a95c3334b5ac14c68c555d152a0f29c06bc9d86a5b7053bcfef7c6517ff21a"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/left/facade_roughness.png": {
+      "bytes": 1654761,
+      "sha256": "3cdd314a68b4fd8588b277ac401dd2d22a9275686796d32c1e6b486addb1b866"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/left/wall_manifest.json": {
+      "bytes": 5580,
+      "sha256": "9410646bf5b909b295ebfaa1931f2efc0d8ff47293280b67dbfd25ed059c7971"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/right/facade_basecolor.png": {
+      "bytes": 4271821,
+      "sha256": "17689cd4a683db9227e3b69e767f9de1afc3fb0fb334033139d2ac4c23a5a82f"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/right/facade_height.png": {
+      "bytes": 5299100,
+      "sha256": "a05432ebfb63bf91f622174aaffafb6d160b5ce37f97def34d17c88f9dc017d7"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/right/facade_normal.png": {
+      "bytes": 4903751,
+      "sha256": "e17d99a8dc2820dd6071f54c49e1af8826858f3eb761cefec3cfa94661d10fe1"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/right/facade_roughness.png": {
+      "bytes": 1656849,
+      "sha256": "4cc1726b9c31d88d725c93daf988cee8dc9cc5167a10edad5d7f4a5dbcec7928"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/right/wall_manifest.json": {
+      "bytes": 5579,
+      "sha256": "362bd366521efb445a80e3533ac8b6bf944dded5597bc13816cb151fef9c5ec9"
+    },
+    "art/living_town/refinement_pilot/wall_comparison_v10.png": {
+      "bytes": 1182540,
+      "sha256": "1ae38dfc9d0cf698e0b2bfcfcfb09133d395068fb2abec0a6482030e08a0a965"
+    },
+    "art/living_town/refinement_pilot/wall_export_v10.json": {
+      "bytes": 6458,
+      "sha256": "819f96059dd4aba53e2aecb9f9677da558f0585f4e6e9de3dfba1cefd5e0214b"
+    },
+    "art/living_town/refinement_pilot/workflows_v10/multiview_owned_views.json": {
+      "bytes": 223615,
+      "sha256": "cd260d4933866f5ba890b2c174c01f92bfccf7124ecbacd48302644141dc5412"
+    },
+    "art/living_town/refinement_pilot/workflows_v10/multiview_qwen_research_BLOCKED.json": {
+      "bytes": 221586,
+      "sha256": "2837b6b0b54c322926c06943af003e2bc059e5aec8c53bc0e772f38b2bdfd4e8"
+    },
+    "art/living_town/refinement_pilot/workflows_v10/ultratex_standard_9b_BLOCKED.json": {
+      "bytes": 31451,
+      "sha256": "8fd6ab12a17ba6cc8de2705d7a97f87f38f9f748a68a1e994af9c7f433401ea1"
+    },
+    "art/living_town/refinement_pilot/workflows_v10/workflow_manifest.json": {
+      "bytes": 9496,
+      "sha256": "2e6913cc3f9e3997e007da5cedce3e6db80060db1fdbfb78a848d9e0629081d9"
+    },
+    "art/living_town/textures/cobbles_basecolor.png": {
+      "bytes": 742768,
+      "sha256": "859b0100d7429c9795c7c072ce8294782b6e52868f4228500d30bd7b4414aeab"
+    },
+    "art/living_town/textures/cobbles_normal.png": {
+      "bytes": 327127,
+      "sha256": "37e0c41210d02d703e8c21fe5e91ea688f9f2295d383cbb2e20232af0bf9a182"
+    },
+    "art/living_town/textures/cobbles_roughness.png": {
+      "bytes": 125565,
+      "sha256": "c5355e9bbd41d44673bb8ba5646461f53dc58de920f6aa7ccb0e229aecc50008"
+    },
+    "docs/CONCEPT_REFINEMENT_PILOT.md": {
+      "bytes": 10312,
+      "sha256": "3d292e09dea8c44ce694190cfdb8591dc8bd9f8a9c9370c96c748e7360e7e33f"
+    },
+    "docs/PIXELARTISTRY_COMPONENT_REVIEW.md": {
+      "bytes": 19121,
+      "sha256": "f4bf3e853fe94f8f8c9e94c9af9f90fbd53289f82c569eda6d085c35ab8d9006"
+    },
+    "LICENSE": {
+      "bytes": 1393,
+      "sha256": "b00b825c50272c31e447cabbc0cdc7695f26795cd8d4fd7341163240e414349b"
+    },
+    "third_party/pixelartistry/PixelArtistry-Pixal3D-MultiView/LICENSE": {
+      "bytes": 1070,
+      "sha256": "95bdac4f86eb398017eb69ee75488ddf54200edb0569f960bf7bffbe54d02c29"
+    },
+    "third_party/pixelartistry/PixelArtistry-Pixal3D-MultiView/workflows/PixelArtistry_Qwen2.1_Turnaround_to_Pixal3D_Multiview.json": {
+      "bytes": 277375,
+      "sha256": "d22cdfccfe1ca72c69bc27ce4664ac2ade1e718b0f18c0d3c81a2a1362a294f6"
+    },
+    "third_party/pixelartistry/PixelArtistry-UltraTex/LICENSE": {
+      "bytes": 1377,
+      "sha256": "c5a8cf1fecea4a01a03802831f529b1474c7b72bde15c01356395ccf17ec73d8"
+    },
+    "third_party/pixelartistry/PixelArtistry-UltraTex/workflows/UltraTex - 1 Standard 6 views PBR.json": {
+      "bytes": 25724,
+      "sha256": "bdc592e8804e502ae4e8db584bb3b1f2e8804f43d2ef13aef3b106604303133c"
+    },
+    "third_party/pixelartistry/provenance.json": {
+      "bytes": 2827,
+      "sha256": "8dfea97b9dcb5130685c52285a825af92b74c2b7a061f1bf5481c368b5fa59d2"
+    },
+    "tools/asset_refinement/component_licenses.json": {
+      "bytes": 37829,
+      "sha256": "602b5fd1e9fc6e7745ae3d7a725d0e366844cbff70504a452a39ca48d894548a"
+    },
+    "tools/asset_refinement/godot_preview/main.gd": {
+      "bytes": 18397,
+      "sha256": "df5126a66188481f2bd9235f236a97471f70d883bdc7413a19b7d21070043288"
+    },
+    "tools/asset_refinement/godot_preview/Main.tscn": {
+      "bytes": 169,
+      "sha256": "cbd5b0e9ddc7f67c9e2b26307505e415e232cdacec1a5791ef519a1a7c5aa52c"
+    },
+    "tools/asset_refinement/godot_preview/project.godot": {
+      "bytes": 757,
+      "sha256": "c26e12b4d2c49321468f97236ac43cf5dc5b03a802691c789a1b4498412c78fd"
+    },
+    "tools/asset_refinement/hero_foliage.py": {
+      "bytes": 17099,
+      "sha256": "e1bc3999cdfca90b863395ffc12f0e1dd91524b151e35cf1783ecc09811f9b58"
+    },
+    "tools/asset_refinement/hero_furniture.py": {
+      "bytes": 32899,
+      "sha256": "48af2b5ebe48b13ae9cc820874e5f4a7722964b710cf52bf8031ec75e6b77dd6"
+    },
+    "tools/asset_refinement/hero_pbr.py": {
+      "bytes": 11235,
+      "sha256": "6c957c31f9542b5928a415e213496b40205ef5e5dabed92769eed30aa4204125"
+    },
+    "tools/asset_refinement/hero_scene.py": {
+      "bytes": 28826,
+      "sha256": "8fae46d5676fda4e76fcab2347972869204a49e70ce04794b52195e0491e9f1f"
+    },
+    "tools/asset_refinement/hero_surfaces.py": {
+      "bytes": 2283,
+      "sha256": "2aba550aecd58ccdbc64b6ad3e2112221f75d72bbfcf9a04db5cf79888ba503e"
+    },
+    "tools/asset_refinement/hero_walls.py": {
+      "bytes": 16092,
+      "sha256": "a48c9e0485ff69eaae2f460449ab10ab31b066e26a3318f2587f7d21ac322e75"
+    },
+    "tools/asset_refinement/inspect_native.py": {
+      "bytes": 3547,
+      "sha256": "9df9eea8a7286c7b60b6baa844f21d113572d38f6da7a1fb3f9b55e1d20f1fd2"
+    },
+    "tools/asset_refinement/materials.py": {
+      "bytes": 7733,
+      "sha256": "c98ca7441773df6d9db0e85bf814c9da3539aa00b48226026b699bc9e212df48"
+    },
+    "tools/asset_refinement/model_benchmark.py": {
+      "bytes": 6854,
+      "sha256": "6869de138aa3c0b75980eeb981e343830c028412f36ca34cbe17e9a1abb1d1e2"
+    },
+    "tools/asset_refinement/prepare_inputs.py": {
+      "bytes": 4768,
+      "sha256": "ef6d03033efcbd902bfc9710b9107a5359dcc0c7fa6b85c2fcee1b26a09d4c82"
+    },
+    "tools/asset_refinement/prepare_scans.py": {
+      "bytes": 8105,
+      "sha256": "4125a2dd168f4c4fe5831b9b20af14e331bd94aa5baa33939245742f4b02f1a3"
+    },
+    "tools/asset_refinement/prompts/slate_material.txt": {
+      "bytes": 686,
+      "sha256": "c44d63deeea3969608da7ef62bb40ac9137cb13db872a0cc61bd582701026bf6"
+    },
+    "tools/asset_refinement/README.md": {
+      "bytes": 17246,
+      "sha256": "a55889c35fedbac7f448d37c4f872587707187b37a6392c52023ffa6cacede41"
+    },
+    "tools/asset_refinement/verify_outputs.py": {
+      "bytes": 29239,
+      "sha256": "5129bf9a8a914b150d04e6d71815cafd6b5389379d2ce70863b6faee5c3c723f"
+    },
+    "tools/asset_refinement/verify_scanned_exports.py": {
+      "bytes": 14210,
+      "sha256": "c4f511437b45949af7ea030e15c25f6da64d09a92ee454e93a24257f7c576ee3"
+    },
+    "tools/asset_refinement/verify_wall_exports.py": {
+      "bytes": 18937,
+      "sha256": "5a6b56977dea3458952163309cbc0e6b75a42c63a41bd9132f842922bb7be8f1"
+    },
+    "tools/asset_refinement/workflows.py": {
+      "bytes": 26908,
+      "sha256": "7461c67ebc6c005baa3ce1544b71329f12750e5e436c3fb2d25ee2c60b8a688c"
+    },
+    "tools/tests/test_asset_refinement_outputs.py": {
+      "bytes": 15375,
+      "sha256": "42863b0a54268b7c4e17b1a1f0b4cea15f451a0ef9992749aa0a193823554769"
+    },
+    "tools/tests/test_asset_refinement_workflows.py": {
+      "bytes": 12949,
+      "sha256": "bf98249c089a6b04771683b224e5e79345029788600cf03279abba3854bc6263"
+    },
+    "tools/tests/test_refinement_materials.py": {
+      "bytes": 4900,
+      "sha256": "0ec5da41d8c9bef411cecbaa02bb1b4659c3f07617dd1bbf248e8025864a48e4"
+    },
+    "tools/tests/test_refinement_model_guard.py": {
+      "bytes": 875,
+      "sha256": "47ae1fe3586d1c50988e04f44865ed6c8356d88b61f320e9e275dfd2db4a8af7"
+    },
+    "tools/tests/test_refinement_scan_conversion.py": {
+      "bytes": 822,
+      "sha256": "f9f5bb15dba81debdb65f8964b4a65d0a682b442fa6ddaaca7367f3259e11145"
+    },
+    "tools/tests/test_refinement_wall_bake.py": {
+      "bytes": 6992,
+      "sha256": "bbcf10b76e46a2b896ce394730d0e31b9b17a2f668c26b27c481494c30a99b9e"
+    },
+    "tools/tests/test_refinement_wall_exports.py": {
+      "bytes": 3985,
+      "sha256": "b09bf72eca7e2eb7182f2f01b51defa79f8391199702f612eba190e603594ea3"
+    }
+  }
+}

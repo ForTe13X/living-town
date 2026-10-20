@@ -1,0 +1,45 @@
+{
+  "generator_sha256": "2aba550aecd58ccdbc64b6ad3e2112221f75d72bbfcf9a04db5cf79888ba503e",
+  "original": true,
+  "ai_inference": false,
+  "seed": 20261019,
+  "facade_dimensions_m": [
+    8.6,
+    6.5
+  ],
+  "notes": "Contextual facade colour is not a periodic general material. Roof has no painted tile grid; tile overlaps are mesh geometry.",
+  "files": {
+    "facade_limewash_basecolor.png": {
+      "sha256": "94a9288fab57202554d2aa27f4a7bf49d033d311c0b5483a86cddc15d463cc72",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "color_space": "sRGB"
+    },
+    "facade_limewash_roughness.png": {
+      "sha256": "604abb5f133faf5ed0d47c523c607de4277972a13d33333bef3115da712d8a5a",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "color_space": "Non-Color"
+    },
+    "split_slate_basecolor.png": {
+      "sha256": "dd84b5f0a3cdae1e690e1d3c3e6e2c8cca6c34b485a1ff3eb4714564f3045c42",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "color_space": "sRGB"
+    },
+    "split_slate_roughness.png": {
+      "sha256": "1013d05d74bf9436014a065eba3e40931293ef1ce73e4fef303734bd79505e4d",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "color_space": "Non-Color"
+    }
+  }
+}

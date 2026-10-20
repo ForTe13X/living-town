@@ -40,6 +40,13 @@ jobs:
       - uses: ./.github/actions/lt-setup
       - name: In-game capture safety
         run: python3 tools/in_game_capture/test_capture_safety.py
+      - name: Offline asset refinement contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check "numpy>=1.26,<3"
+          python -m unittest discover -s tools/tests -p 'test_*refinement*.py'
+          python -m unittest discover -s tools/tests -p 'test_town_generation_recipe.py'
       - name: CI lanes (lint + visual)
         env:
           GODOT: godot

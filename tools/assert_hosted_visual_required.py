@@ -17,6 +17,13 @@ NEGATIVE = re.compile(
     r"VISUAL_NEGATIVE verdict=(\S+) shot_rc=(\d+) assert_rc=(\d+) "
     r"a1=(\d+) a2=(\d+) gate=(\d+) runtime_errors=(\d+)"
 )
+RUNTIME_PREFIXES = {
+    "RUNNER_IMAGE ", "GODOT_ARCHIVE ", "GODOT_BINARY ", "PYTHON ",
+    "VISUAL_PACKAGE libgl1=", "VISUAL_PACKAGE libgl1-mesa-dri=",
+    "VISUAL_PACKAGE libglx-mesa0=", "VISUAL_PACKAGE mesa-utils=",
+    "VISUAL_PACKAGE xauth=", "VISUAL_PACKAGE xvfb=",
+    "OpenGL vendor string: ", "OpenGL renderer string: ", "OpenGL version string: ",
+}
 
 
 def _read(path: Path, label: str, issues: list[str]) -> str | None:
@@ -71,30 +78,91 @@ def check_negative(path: Path, issues: list[str]) -> None:
         issues.append(f"negative: unexpected tooth receipt {' '.join(receipt)}")
 
 
-def check_runtime(runtime_path: Path, policy_path: Path, issues: list[str]) -> None:
+def _unique_object(pairs: list[tuple[str, object]]) -> dict:
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate policy JSON key {key!r}")
+        result[key] = value
+    return result
+
+
+def _runtime_profiles(policy: object) -> list[dict]:
+    if not isinstance(policy, dict):
+        raise ValueError("policy must be an object")
+    schema = policy.get("schema")
+    if schema == "lt-hosted-visual-required/v1":
+        # Historical single-profile policies remain usable as written.
+        profiles = [{"name": "legacy-v1", "required_lines": policy.get("required_lines")}]
+    elif schema == "lt-hosted-visual-required/v2":
+        profiles = policy.get("runtime_profiles")
+        if "required_lines" in policy or not isinstance(profiles, list) or not profiles:
+            raise ValueError("v2 requires explicit runtime_profiles without a fallback mapping")
+    else:
+        raise ValueError("unsupported schema")
+    names, signatures = set(), set()
+    for profile in profiles:
+        if not isinstance(profile, dict):
+            raise ValueError("runtime profile must be an object")
+        name = profile.get("name")
+        if not isinstance(name, str) or re.fullmatch(r"[a-z0-9][a-z0-9._-]{0,100}", name) is None or name in names:
+            raise ValueError("invalid or duplicate runtime profile name")
+        names.add(name)
+        required = profile.get("required_lines")
+        if not isinstance(required, dict) or not required or any(
+            not isinstance(prefix, str) or not prefix or not isinstance(expected, str)
+            or not expected.startswith(prefix) or "\n" in expected or "\r" in expected
+            for prefix, expected in required.items()
+        ):
+            raise ValueError("invalid required_lines mapping")
+        if schema.endswith("/v2"):
+            if set(required) != RUNTIME_PREFIXES:
+                raise ValueError("each v2 profile must contain every required runtime identity")
+            for key in ("source_run_id", "reviewed_artifact_id"):
+                if type(profile.get(key)) is not int or profile[key] <= 0:
+                    raise ValueError(f"profile {name!r} lacks positive {key}")
+            for key, length in (("reviewed_pr_head", 40), ("reviewed_event_sha", 40),
+                                ("reviewed_artifact_sha256", 64)):
+                if not isinstance(profile.get(key), str) or re.fullmatch("[0-9a-f]{" + str(length) + "}", profile[key]) is None:
+                    raise ValueError(f"profile {name!r} lacks exact {key}")
+        signature = tuple(sorted(required.items()))
+        if signature in signatures:
+            raise ValueError("duplicate complete runtime profile")
+        signatures.add(signature)
+    return profiles
+
+
+def check_runtime(runtime_path: Path, policy_path: Path, issues: list[str]) -> str | None:
     try:
-        policy = json.loads(policy_path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        policy = json.loads(policy_path.read_text(encoding="utf-8"), object_pairs_hook=_unique_object)
+        profiles = _runtime_profiles(policy)
+    except (OSError, UnicodeError, ValueError) as exc:
         issues.append(f"runtime policy: missing or malformed ({exc})")
-        return
-    if policy.get("schema") != "lt-hosted-visual-required/v1":
-        issues.append("runtime policy: unsupported schema")
-        return
-    required = policy.get("required_lines")
-    if not isinstance(required, dict) or not required or any(
-        not isinstance(prefix, str) or not prefix or not isinstance(expected, str)
-        or not expected.startswith(prefix) for prefix, expected in required.items()
-    ):
-        issues.append("runtime policy: invalid required_lines mapping")
         return
     content = _read(runtime_path, "runtime", issues)
     if content is None:
         return
     lines = content.splitlines()
-    for prefix, expected in required.items():
-        found = [line for line in lines if line.startswith(prefix)]
-        if found != [expected]:
-            issues.append(f"runtime: {prefix!r} expected exactly once as {expected!r}; found {found!r}")
+    evaluations = []
+    for profile in profiles:
+        mismatches = []
+        for prefix, expected in profile["required_lines"].items():
+            found = [line for line in lines if line.startswith(prefix)]
+            if found != [expected]:
+                mismatches.append(f"runtime: {prefix!r} expected exactly once as {expected!r}; found {found!r}")
+        evaluations.append((profile["name"], mismatches))
+    matched = [name for name, mismatches in evaluations if not mismatches]
+    if len(matched) == 1:
+        return matched[0]
+    if matched:
+        issues.append("runtime: ambiguous complete reviewed profiles")
+        return
+    issues.append("runtime: no complete reviewed profile matched")
+    # Preserve precise drift diagnostics without treating per-field alternatives
+    # as interchangeable. A single COMPLETE profile must match the whole receipt.
+    closest_name, closest = min(evaluations, key=lambda item: len(item[1]))
+    issues.append(f"runtime: nearest reviewed profile={closest_name}")
+    issues.extend(closest)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -107,12 +175,13 @@ def main(argv: list[str] | None = None) -> int:
     issues: list[str] = []
     check_positive(args.positive, issues)
     check_negative(args.negative, issues)
-    check_runtime(args.runtime, args.policy, issues)
+    runtime_profile = check_runtime(args.runtime, args.policy, issues)
     if issues:
         for issue in issues:
             print(f"HOSTED_VISUAL_REQUIRED FAIL {issue}", file=sys.stderr)
         return 1
-    print("HOSTED_VISUAL_REQUIRED PASS positive=pass negative=caught_expected_daynight_fault runtime=reviewed")
+    print("HOSTED_VISUAL_REQUIRED PASS positive=pass negative=caught_expected_daynight_fault "
+          f"runtime=reviewed profile={runtime_profile}")
     return 0
 
 

@@ -1,0 +1,46 @@
+{
+  "schema": "living-town.pixelartistry-static-sources.v1",
+  "retrieval": "Pinned raw GitHub source bytes; no installer, code, dependencies, models or example images downloaded.",
+  "files": [
+    {
+      "path": "PixelArtistry-UltraTex/LICENSE",
+      "source_url": "https://raw.githubusercontent.com/pixelartistry/PixelArtistry-UltraTex/64eb9ad10454a51be1c88a7a879b839ced0475c9/LICENSE",
+      "repository": "https://github.com/pixelartistry/PixelArtistry-UltraTex",
+      "commit": "64eb9ad10454a51be1c88a7a879b839ced0475c9",
+      "sha256": "c5a8cf1fecea4a01a03802831f529b1474c7b72bde15c01356395ccf17ec73d8",
+      "bytes": 1377,
+      "license": "MIT",
+      "scope": "Workflow repository source only; dependencies and model weights have separate licenses."
+    },
+    {
+      "path": "PixelArtistry-UltraTex/workflows/UltraTex - 1 Standard 6 views PBR.json",
+      "source_url": "https://raw.githubusercontent.com/pixelartistry/PixelArtistry-UltraTex/64eb9ad10454a51be1c88a7a879b839ced0475c9/workflows/UltraTex%20-%201%20Standard%206%20views%20PBR.json",
+      "repository": "https://github.com/pixelartistry/PixelArtistry-UltraTex",
+      "commit": "64eb9ad10454a51be1c88a7a879b839ced0475c9",
+      "sha256": "bdc592e8804e502ae4e8db584bb3b1f2e8804f43d2ef13aef3b106604303133c",
+      "bytes": 25724,
+      "license": "MIT",
+      "scope": "Workflow repository source only; dependencies and model weights have separate licenses."
+    },
+    {
+      "path": "PixelArtistry-Pixal3D-MultiView/LICENSE",
+      "source_url": "https://raw.githubusercontent.com/pixelartistry/PixelArtistry-Pixal3D-MultiView/7cbc1269705d8ba508f6e7a44ffdee44d0ab8f0c/LICENSE",
+      "repository": "https://github.com/pixelartistry/PixelArtistry-Pixal3D-MultiView",
+      "commit": "7cbc1269705d8ba508f6e7a44ffdee44d0ab8f0c",
+      "sha256": "95bdac4f86eb398017eb69ee75488ddf54200edb0569f960bf7bffbe54d02c29",
+      "bytes": 1070,
+      "license": "MIT",
+      "scope": "Workflow repository source only; dependencies and model weights have separate licenses."
+    },
+    {
+      "path": "PixelArtistry-Pixal3D-MultiView/workflows/PixelArtistry_Qwen2.1_Turnaround_to_Pixal3D_Multiview.json",
+      "source_url": "https://raw.githubusercontent.com/pixelartistry/PixelArtistry-Pixal3D-MultiView/7cbc1269705d8ba508f6e7a44ffdee44d0ab8f0c/workflows/PixelArtistry_Qwen2.1_Turnaround_to_Pixal3D_Multiview.json",
+      "repository": "https://github.com/pixelartistry/PixelArtistry-Pixal3D-MultiView",
+      "commit": "7cbc1269705d8ba508f6e7a44ffdee44d0ab8f0c",
+      "sha256": "d22cdfccfe1ca72c69bc27ce4664ac2ade1e718b0f18c0d3c81a2a1362a294f6",
+      "bytes": 277375,
+      "license": "MIT",
+      "scope": "Workflow repository source only; dependencies and model weights have separate licenses."
+    }
+  ]
+}

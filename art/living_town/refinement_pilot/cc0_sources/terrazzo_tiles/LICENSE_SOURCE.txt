@@ -1,0 +1,6 @@
+Source asset library: Poly Haven
+Asset: https://polyhaven.com/a/terrazzo_tiles
+License: CC0 1.0 Universal
+Primary statement: https://polyhaven.com/license
+Author: Amal Kumar
+Downloadable asset files may be modified and redistributed commercially. Website preview renders are not included. Original source images remain unmodified.
