@@ -1,0 +1,27 @@
+; Independent visual consumer; no playable-game scene or asset import is changed.
+config_version=5
+
+[application]
+config/name="Living Town Asset Refinement Preview"
+run/main_scene="res://Main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+run/max_fps=30
+
+[display]
+window/size/viewport_width=1440
+window/size/viewport_height=1000
+window/size/window_width_override=1440
+window/size/window_height_override=1000
+
+[editor]
+import/use_multiple_threads=false
+
+[threading]
+worker_pool/max_threads=6
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+anti_aliasing/quality/msaa_3d=2
+lights_and_shadows/directional_shadow/size=4096
+textures/default_filters/anisotropic_filtering_level=2

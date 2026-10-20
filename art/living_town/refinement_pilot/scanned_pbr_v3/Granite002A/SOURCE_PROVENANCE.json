@@ -1,0 +1,115 @@
+{
+  "schema": "living_town.cc0_pbr_source.v1",
+  "status": "PASS",
+  "asset_id": "Granite002A",
+  "display_name": "Granite 002 A",
+  "source": "ambientCG",
+  "source_creation_method_as_provided": "PBRProcedural",
+  "asset_url": "https://ambientcg.com/a/Granite002A",
+  "license": "CC0-1.0",
+  "license_url": "https://docs.ambientcg.com/license/",
+  "legalcode_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+  "retrieved_utc": "2026-10-20T08:50:08.248200+00:00",
+  "physical_dimensions_metres": [
+    0.5,
+    0.5
+  ],
+  "physical_scale_authority": "ARTIST_AUTHORED",
+  "upstream_dimensions_raw": [
+    0,
+    0,
+    0
+  ],
+  "physical_scale_note": "The source API reports zero dimensions; a 0.5 by 0.5 metre texture repeat is an authored countertop presentation scale based on grain, not calibrated source measurement.",
+  "normal_convention": "OpenGL tangent-space +Y",
+  "maps": {
+    "Diffuse": {
+      "file": "Granite002A_2K-PNG_Color.png",
+      "url": "https://ambientcg.com/get?file=Granite002A_2K-PNG.zip",
+      "archive_member": "Granite002A_2K-PNG_Color.png",
+      "format": "PNG",
+      "resolution_label": "2k",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "png_bit_depth": 8,
+      "bytes": 8549613,
+      "sha256": "0169df6c9038f40c8f84d8706eb8231c62e6c5fa5c466c5dd9e58ab1d9e3068f",
+      "color_space": "sRGB",
+      "original_unmodified": true
+    },
+    "Rough": {
+      "file": "Granite002A_2K-PNG_Roughness.png",
+      "url": "https://ambientcg.com/get?file=Granite002A_2K-PNG.zip",
+      "archive_member": "Granite002A_2K-PNG_Roughness.png",
+      "format": "PNG",
+      "resolution_label": "2k",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "png_bit_depth": 8,
+      "bytes": 1570023,
+      "sha256": "81c1ffd7a7d30a8d0af2b9b0dac0825a6c8cab6ad54b5f95fb8e0ee55cd9dac6",
+      "color_space": "Non-Color",
+      "original_unmodified": true
+    },
+    "nor_gl": {
+      "file": "Granite002A_2K-PNG_NormalGL.png",
+      "url": "https://ambientcg.com/get?file=Granite002A_2K-PNG.zip",
+      "archive_member": "Granite002A_2K-PNG_NormalGL.png",
+      "format": "PNG",
+      "resolution_label": "2k",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "png_bit_depth": 16,
+      "bytes": 14224327,
+      "sha256": "3833fac51d4b0363fd4b0cf0d73f38635e03243b7de18233f5d193c3bf3d1305",
+      "color_space": "Non-Color",
+      "original_unmodified": true
+    }
+  },
+  "original_images_unmodified": true,
+  "ai_inference": false,
+  "upstream_finish": "polished; source roughness is low, mean approximately 0.0227",
+  "honed_finish_recommendation": {
+    "kind": "ARTIST_AUTHORED_RECOMMENDATION_NOT_APPLIED_TO_SOURCE_MAPS",
+    "roughness_shader_remap": "0.28 + 0.5 * original_roughness",
+    "note": "Review under neutral lighting; retain original grain/color/normal. Do not describe the source as calibrated honed stone."
+  },
+  "source_metadata_ambiguity": "API creationMethod is PBRProcedural, while its creationMethodName and creationMethodDescription display photogrammetry labels. Preserve raw metadata; use procedural classification per requested API identifier and do not assert photographic capture.",
+  "archive": {
+    "download_url": "https://ambientcg.com/get?file=Granite002A_2K-PNG.zip",
+    "bytes": 45702521,
+    "sha256": "120a3f845b08d04cb8e71b24ef42b6c91208ddc084f893dc63c33619f8a298bf",
+    "upstream_size": 45702521,
+    "upstream_size_verified": true,
+    "archive_distributed": false
+  },
+  "metadata": {
+    "asset": {
+      "file": "selected_api_asset.json",
+      "url": "https://ambientcg.com/api/v2/full_json?type=Material&q=granite&include=downloadData",
+      "sha256": "792edee7843e5a1ac7b5d7c1376dd6357297f4109e92f13853106a298d2eafbd"
+    }
+  },
+  "license_evidence": {
+    "file": "LICENSE_SOURCE.txt",
+    "sha256": "0440ee894338095a05c58871f4402805d9151002f2d5bcf452dca753a7afdba5",
+    "html_file": "license_source.html",
+    "html_sha256": "60138e09b277c89977841462634b36e99d7bae5b77174777813502069c59461c"
+  },
+  "legalcode_file": {
+    "file": "CC0-1.0-LEGALCODE.txt",
+    "source_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+    "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+  },
+  "visual_source_review": {
+    "kind": "agent_actual_decoded_2048_png_maps_and_full_resolution_color_crop",
+    "observations": "Continuous grey/ivory/black salt-and-pepper crystalline granite with irregular mineral grains. No grout lattice, paving joints, or rectangular masonry strips. Original normal is nearly flat and original roughness is low, consistent with polished appearance. Honed shader remap is an artistic option requiring render review.",
+    "preview_saved_or_distributed": false
+  }
+}

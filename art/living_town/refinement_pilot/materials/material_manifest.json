@@ -1,0 +1,138 @@
+{
+  "schema": "living_town.original_refinement_materials.v1",
+  "generator": "tools/asset_refinement/materials.py",
+  "generator_sha256": "c98ca7441773df6d9db0e85bf814c9da3539aa00b48226026b699bc9e212df48",
+  "source": "Original deterministic mathematical synthesis; no external media, AI inference or model weights",
+  "seed": 20261019,
+  "numpy_version": "2.3.5",
+  "pillow_version": "12.3.0",
+  "normal_convention": "OpenGL tangent-space +Y",
+  "normal_derivation": "Periodic central height differences in metres; image rows point opposite to tangent +V",
+  "edge_policy": "Periodic U/V; duplicated final edge pixels match the opposite edges exactly",
+  "materials": {
+    "cabinet_oak": {
+      "tile_size_metres": 2.0,
+      "palette_base_srgb": "#976f41",
+      "description": "Warm rubbed continuous cabinet oak grain, without plank joints",
+      "lighting_baked": false,
+      "metallic": 0.0,
+      "roughness_range": [
+        0.473636,
+        0.595306
+      ],
+      "height_range_metres": [
+        -0.000121089,
+        9.5712e-05
+      ],
+      "maps": {
+        "basecolor": {
+          "file": "cabinet_oak_basecolor.png",
+          "sha256": "da7c4fa12f0c2e64f3a7bd11da0efc2776b6326271474943896070fc9167884a",
+          "dimensions": [
+            512,
+            512
+          ],
+          "channels": 3,
+          "color_space": "sRGB",
+          "seam_checks": {
+            "opposite_rows_equal": true,
+            "opposite_columns_equal": true
+          }
+        },
+        "roughness": {
+          "file": "cabinet_oak_roughness.png",
+          "sha256": "e02a48e030d4a590b0cb7f622c45ee0c9326ff5a9eefa9dc3af90a7f780be263",
+          "dimensions": [
+            512,
+            512
+          ],
+          "channels": 1,
+          "color_space": "Non-Color",
+          "seam_checks": {
+            "opposite_rows_equal": true,
+            "opposite_columns_equal": true
+          }
+        },
+        "normal": {
+          "file": "cabinet_oak_normal.png",
+          "sha256": "9c0b14cf9abac5fd74dae531511cfa907f479ae125307764b396e4cb7e12c333",
+          "dimensions": [
+            512,
+            512
+          ],
+          "channels": 3,
+          "color_space": "Non-Color",
+          "seam_checks": {
+            "opposite_rows_equal": true,
+            "opposite_columns_equal": true
+          }
+        }
+      },
+      "basecolor": "cabinet_oak_basecolor.png",
+      "roughness": "cabinet_oak_roughness.png",
+      "normal": "cabinet_oak_normal.png"
+    },
+    "honed_granite": {
+      "tile_size_metres": 2.0,
+      "palette_base_srgb": "#848479",
+      "description": "Continuous fine-mineral honed granite, without mortar or slab joints",
+      "lighting_baked": false,
+      "metallic": 0.0,
+      "roughness_range": [
+        0.373275,
+        0.466279
+      ],
+      "height_range_metres": [
+        -4.5543e-05,
+        4.5445e-05
+      ],
+      "maps": {
+        "basecolor": {
+          "file": "honed_granite_basecolor.png",
+          "sha256": "936271dae84104efa66557a36d02130d9e84abaad749ee596601467f7898f001",
+          "dimensions": [
+            512,
+            512
+          ],
+          "channels": 3,
+          "color_space": "sRGB",
+          "seam_checks": {
+            "opposite_rows_equal": true,
+            "opposite_columns_equal": true
+          }
+        },
+        "roughness": {
+          "file": "honed_granite_roughness.png",
+          "sha256": "e270af8fa65e72535e6ad6d224bf51cdfc8a330dc8f96c7094ec76d03e97bfb3",
+          "dimensions": [
+            512,
+            512
+          ],
+          "channels": 1,
+          "color_space": "Non-Color",
+          "seam_checks": {
+            "opposite_rows_equal": true,
+            "opposite_columns_equal": true
+          }
+        },
+        "normal": {
+          "file": "honed_granite_normal.png",
+          "sha256": "1df23178859ceb529ac45744eb3ef07da2d65769c3ca47e38fda81aeef396a36",
+          "dimensions": [
+            512,
+            512
+          ],
+          "channels": 3,
+          "color_space": "Non-Color",
+          "seam_checks": {
+            "opposite_rows_equal": true,
+            "opposite_columns_equal": true
+          }
+        }
+      },
+      "basecolor": "honed_granite_basecolor.png",
+      "roughness": "honed_granite_roughness.png",
+      "normal": "honed_granite_normal.png"
+    }
+  }
+}

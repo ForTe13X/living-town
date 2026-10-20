@@ -1,0 +1,80 @@
+{
+  "schema": "living_town.owned_view_preparation.v1",
+  "source_hero_manifest_sha256": "e9f1e0cc6db859fdae56125c1c4984ec4631ca105b143e5aa8bfaaa438956309",
+  "view_order": [
+    "front",
+    "left",
+    "back",
+    "right"
+  ],
+  "ai_inference_executed": false,
+  "views": [
+    {
+      "name": "front",
+      "source_path": "../hero_v9/input/front.png",
+      "source_sha256": "174f653183a29b9ebf6dd84ae1ebec82d4655889ca160b114e9b131cc420402d",
+      "path": "front.png",
+      "sha256": "5a5d9b51c36dad5de9bf4a2aaca7acc832113e420b0d883a1013b63056fe8e9e",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "name": "left",
+      "source_path": "../hero_v9/input/left.png",
+      "source_sha256": "628a36f31e30e1770801fd28aec8f64a1fadb126b11c0464cf1a954d28392d76",
+      "path": "left.png",
+      "sha256": "655399a06b6e51df5f70408ac1917688f7123544b26c417448099f83c0d170cd",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "name": "back",
+      "source_path": "../hero_v9/input/back.png",
+      "source_sha256": "120f5d565cd88eccf5409456bbdbf0145d171714cd36785b2ebabfd10dd19b4b",
+      "path": "back.png",
+      "sha256": "97f3da37911a6ff8bb36744fc0843f738aaaa820ad48bcb4909e379f3195670f",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA"
+    },
+    {
+      "name": "right",
+      "source_path": "../hero_v9/input/right.png",
+      "source_sha256": "d635916b2d78765280f5d1822191caecaa7faeb8657f402718de613916546eb2",
+      "path": "right.png",
+      "sha256": "3af4001c1d23051168fc4e8673d31d79866a3bb4283b101cf45114e70e968ee9",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "mode": "RGBA"
+    }
+  ],
+  "mesh": {
+    "path": "counter.glb",
+    "source_path": "../hero_v9/input/counter.glb",
+    "sha256": "15d6c0973fd06695368a65fdd69ed988a134aa246dc61046131d4bb4b4114fde"
+  },
+  "sheet": {
+    "path": "turnaround_sheet.png",
+    "sha256": "6e79a0e345ac08ddf47b9f551b41b6e8213242af10e1525ce05f3192ccf14e18",
+    "dimensions": [
+      4096,
+      1024
+    ]
+  },
+  "rgb_background": "White composite; original alpha retained; ComfyUI IMAGE takes RGB and MASK is separate.",
+  "atlas_validated": false,
+  "limitations": [
+    "Views are prepared inputs, not generated AI outputs.",
+    "Repeating metric UVs are not a validated unique 0..1 atlas."
+  ]
+}

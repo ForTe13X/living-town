@@ -1,0 +1,36 @@
+{
+  "schema": "living_town.concept_texture_visual_review.v1",
+  "status": "REVIEWED_COMPARISON_NOT_USER_ART_APPROVAL",
+  "hero_manifest_sha256": "e9f1e0cc6db859fdae56125c1c4984ec4631ca105b143e5aa8bfaaa438956309",
+  "images_reviewed": {
+    "hero_v9/renders/01_cafe_street.png": "662c53d7c701c9faafe7aee5f047d85e3bfa3cb0082da43c1db83bbb8853d5ab",
+    "hero_v9/renders/02_cafe_interior.png": "3fb4c5b9ac2b37f2c385edff3c27cc9bce55f4a0339b1f96fd4c9b5863c5c093",
+    "hero_v9/renders/03_counter_detail.png": "7f3c00b3f0c27ad311d6dfa3cb941d7a3f93d47a0dfea53080e6c2a7732aa9f5",
+    "hero_v9/renders/04_facade_detail.png": "a9d741c3b690df574f88f8b9c102fb5e62651435e93ff21a620e52d784965162",
+    "prepared_v9/turnaround_sheet.png": "6e79a0e345ac08ddf47b9f551b41b6e8213242af10e1525ce05f3192ccf14e18",
+    "godot_v9b.png": "830398de3e8e69e4b1773a1ba2440634e9c19e10a909b8b80604a1544540633e"
+  },
+  "evidence": {
+    "verification_v9.json": "e1efead2848b0756275b1c14549a79461c0d426201d1a81d33892cf5eb52e7f9",
+    "native_reopen_v9.json": "eb6efc6366dd480f15813c9dbb08576e8bcb24db4e2961ba90caa43694851b62",
+    "scanned_export_v9.json": "31b3924af9b73a8d4132eb5e030f3b5d585aafe1769b84abae0cb68368109592",
+    "godot_v9b.json": "5a7aba2a6b7811ea3a4c80da7ea731e00ad28e5162cd4c9cb8b84f6e7f601279",
+    "scanned_pbr_v3/library_manifest.json": "bb367d05a1cb15df5bf9238f642dfd91cbc0ab58b6723fc4d1154c6b6ecf0f70"
+  },
+  "observations": [
+    "Continuous photographed oak grain replaces broad procedural waves; upright panels and lengthwise rails/shelves now follow joinery.",
+    "Continuous coherent CC0 granite avoids mortar joints; its .5m repeat and honed/cut roughness finishes are explicitly authored.",
+    "Photographed 1m plaster microdetail and baked pale paint retain source roughness/normal; indoor2mterrazzo differs from outdoorcobbles.",
+    "Exterior feet/entrance and indoorfloor sharez0 with no coplanar terrain overlap.",
+    "ActualGodotimport retains sourceUVscale/offset and originalPBRtextures; procedural daylight is a separate presentation from BlenderAgX."
+  ],
+  "limitations": [
+    "This is one cafe/street exemplar, not a rebuilt whole town or migrated playable scene.",
+    "Shutters/canvas/context neighbors remain simplified; no end-grain texture, upstairs rooms, complete service layout, collision/navigation/performance certification.",
+    "Small roof/shadow aliasing remains in the GLCompatibility overview; no claim of renderer/art parity.",
+    "The fullprecisionpermissivemodeltest was interrupted by an unexpectedhostrebootat7/50steps. NoAI-producedmaterialisused, no quality-equivalenceclaim or GPU retry.",
+    "User aesthetic acceptance remains open; technicalchecks do not establish concept-image parity."
+  ],
+  "model_interruption_sha256": "79812fc820b533a4b17ab82f7967421077dada06fd448ce3a6c9cb217534dfe3",
+  "original_town_native_sha256": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191"
+}

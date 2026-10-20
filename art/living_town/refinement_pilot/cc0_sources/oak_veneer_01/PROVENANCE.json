@@ -1,0 +1,171 @@
+{
+  "schema": "living_town.cc0_pbr_source.v1",
+  "status": "PASS",
+  "asset_id": "oak_veneer_01",
+  "display_name": "Oak Veneer 01",
+  "source": "Poly Haven",
+  "asset_url": "https://polyhaven.com/a/oak_veneer_01",
+  "license": "CC0-1.0",
+  "license_url": "https://polyhaven.com/license",
+  "legalcode_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+  "retrieved_utc": "2026-10-20T07:44:05.976663+00:00",
+  "authors": {
+    "Jenelle van Heerden": "All"
+  },
+  "physical_dimensions_mm": [
+    1830.0000429153442,
+    1830.0000429153442
+  ],
+  "physical_dimensions_metres": [
+    1.8300000429153442,
+    1.8300000429153442
+  ],
+  "legacy_scale_text": null,
+  "physical_scale_authority": "Current official API dimensions field (millimetres); asset page rounded display agrees. Legacy free-text scale may conflict and is retained separately.",
+  "normal_convention": "OpenGL tangent-space +Y",
+  "maps": {
+    "Diffuse": {
+      "file": "oak_veneer_01_diff_4k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/4k/oak_veneer_01/oak_veneer_01_diff_4k.png",
+      "format": "PNG",
+      "resolution_label": "4k",
+      "dimensions": [
+        4096,
+        4096
+      ],
+      "pillow_mode": "RGB",
+      "png_bit_depth": 16,
+      "png_color_type": 2,
+      "bytes": 89764173,
+      "sha256": "6cc2cbd71014f217dc256cd7fed0461fbd62d32bfd0898b09a7fe738ff854356",
+      "md5": "89580d44fbcde46d67894a020c8ea5d4",
+      "upstream_size": 89764173,
+      "upstream_md5_as_provided": "89580d44fbcde46d67894a020c8ea5d4",
+      "upstream_md5_normalized_32_hex": "89580d44fbcde46d67894a020c8ea5d4",
+      "upstream_size_verified": true,
+      "upstream_md5_verified": true,
+      "color_space": "sRGB",
+      "original_unmodified": true
+    },
+    "Rough": {
+      "file": "oak_veneer_01_rough_2k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/oak_veneer_01/oak_veneer_01_rough_2k.png",
+      "format": "PNG",
+      "resolution_label": "2k",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "pillow_mode": "RGB",
+      "png_bit_depth": 16,
+      "png_color_type": 2,
+      "bytes": 10588499,
+      "sha256": "c721fe5abff3c3ec04281803e8477f3fc348d8b5882f5830c50709e838977e6f",
+      "md5": "6870047fdf4ea7ab97e523119f8d04d1",
+      "upstream_size": 10588499,
+      "upstream_md5_as_provided": "6870047fdf4ea7ab97e523119f8d04d1",
+      "upstream_md5_normalized_32_hex": "6870047fdf4ea7ab97e523119f8d04d1",
+      "upstream_size_verified": true,
+      "upstream_md5_verified": true,
+      "color_space": "Non-Color",
+      "original_unmodified": true
+    },
+    "nor_gl": {
+      "file": "oak_veneer_01_nor_gl_2k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/oak_veneer_01/oak_veneer_01_nor_gl_2k.png",
+      "format": "PNG",
+      "resolution_label": "2k",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "pillow_mode": "RGB",
+      "png_bit_depth": 16,
+      "png_color_type": 2,
+      "bytes": 20978522,
+      "sha256": "c26f922a75022c11243f351d348d1b5615e713f3787c76657fdb06047879b960",
+      "md5": "c67eef8573d4beb46519c89200b79a1e",
+      "upstream_size": 20978522,
+      "upstream_md5_as_provided": "c67eef8573d4beb46519c89200b79a1e",
+      "upstream_md5_normalized_32_hex": "c67eef8573d4beb46519c89200b79a1e",
+      "upstream_size_verified": true,
+      "upstream_md5_verified": true,
+      "color_space": "Non-Color",
+      "original_unmodified": true
+    },
+    "Displacement": {
+      "file": "oak_veneer_01_disp_2k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/oak_veneer_01/oak_veneer_01_disp_2k.png",
+      "format": "PNG",
+      "resolution_label": "2k",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "pillow_mode": "I;16",
+      "png_bit_depth": 16,
+      "png_color_type": 0,
+      "bytes": 1429785,
+      "sha256": "49ebd2370bd364a0f83cc83a7188202fa8f9792d21c29827073d85c8e6d65a07",
+      "md5": "2a4e7feb025f230d5e18354df01cdaa7",
+      "upstream_size": 1429785,
+      "upstream_md5_as_provided": "2a4e7feb025f230d5e18354df01cdaa7",
+      "upstream_md5_normalized_32_hex": "2a4e7feb025f230d5e18354df01cdaa7",
+      "upstream_size_verified": true,
+      "upstream_md5_verified": true,
+      "color_space": "Non-Color",
+      "original_unmodified": true
+    },
+    "AO": {
+      "file": "oak_veneer_01_ao_2k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/oak_veneer_01/oak_veneer_01_ao_2k.png",
+      "format": "PNG",
+      "resolution_label": "2k",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "pillow_mode": "I;16",
+      "png_bit_depth": 16,
+      "png_color_type": 0,
+      "bytes": 6988077,
+      "sha256": "f96b828fdb7686a69eb7c25e2217aec69ea0d613614430fd6fe097c396ab1713",
+      "md5": "2c6826cde8aaf32c7f81129b251af452",
+      "upstream_size": 6988077,
+      "upstream_md5_as_provided": "2c6826cde8aaf32c7f81129b251af452",
+      "upstream_md5_normalized_32_hex": "2c6826cde8aaf32c7f81129b251af452",
+      "upstream_size_verified": true,
+      "upstream_md5_verified": true,
+      "color_space": "Non-Color",
+      "original_unmodified": true
+    }
+  },
+  "original_images_unmodified": true,
+  "ai_inference": false,
+  "api_user_agent": "LivingTown-AssetRefinement/1.0 (https://github.com/ForTe13X/living-town)",
+  "api_terms_url": "https://github.com/Poly-Haven/Public-API/blob/master/ToS.md",
+  "metadata": {
+    "info": {
+      "file": "api_info.json",
+      "url": "https://api.polyhaven.com/info/oak_veneer_01",
+      "sha256": "9c56837129c0aefef5d4b62a377e0f756c7794fc718a5407b64a733021bc5e80"
+    },
+    "files": {
+      "file": "api_files.json",
+      "url": "https://api.polyhaven.com/files/oak_veneer_01",
+      "sha256": "7468b2ef3a0cc08dfcba7683cd9c500da5506640bd84da250e68da9b6f4b036f"
+    }
+  },
+  "license_evidence": {
+    "file": "LICENSE_SOURCE.txt",
+    "sha256": "0fabae5a3d6dc2e6ed099a42c22fdf03b111798636dc37fe21380f3ea0f75812"
+  },
+  "legalcode_file": {
+    "file": "CC0-1.0-LEGALCODE.txt",
+    "source_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+    "bytes": 7048,
+    "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+  },
+  "license_primary_statement": "Our assets are all licensed as CC0",
+  "license_statement_source_url": "https://polyhaven.com/license"
+}

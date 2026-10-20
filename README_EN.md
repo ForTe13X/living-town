@@ -18,6 +18,7 @@ The large model is a checksum-verified release download. On Windows, use `./tool
 
 ## Latest changes
 
+- A concept-led café pilot rebuilds furniture and fine foliage with source-bound CC0 PBR materials and PixelArtistry MIT workflow adaptations. The local model texture trial was interrupted; town-wide migration remains pending. [Pilot, close-up renders and checks](docs/CONCEPT_REFINEMENT_PILOT.md).
 - The Blender asset source adds a wooded reserve and camping services: recomposed furniture, furnished trailers, shops, baths, public toilets, a lunch car, ridge trails, bridges, and a running loop. See the [reserve asset edition and validation](docs/RESERVE_EDITION.md). The existing recorded game tour covers the integrated urban life mode.
 - The Blender 3D coastal town now connects to resident life mode, with layered interiors, a harbor, graded pond banks, and planting, plus a ten-minute narrated in-engine walkthrough.
 - Rebuilt coastal streets, courtyards, passages, tree belts, and gardens using detailed PixelLab assets.

@@ -1,0 +1,8 @@
+Source asset library: Poly Haven
+Asset page: https://polyhaven.com/a/oak_veneer_01
+License: CC0 1.0 Universal
+Primary license statement: https://polyhaven.com/license
+CC0 legal code: https://creativecommons.org/publicdomain/zero/1.0/legalcode
+Verified 2026-10-20 from the primary library license page. Its asset section explicitly permits commercial use, modification and redistribution without attribution. This record describes the downloadable asset files only, not website artwork, logos, or preview renders.
+Author(s): Jenelle van Heerden
+No source image manipulation or AI inference performed.
