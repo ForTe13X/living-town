@@ -18,7 +18,7 @@ import struct
 REPO = Path(__file__).resolve().parents[2]
 VIEW_ORDER = ("front", "left", "back", "right")
 SOURCE_MODULES = {f"tools/asset_refinement/{name}.py" for name in (
-    "hero_scene", "hero_furniture", "hero_foliage", "hero_surfaces", "materials", "hero_pbr"
+    "hero_scene", "hero_furniture", "hero_foliage", "hero_surfaces", "materials", "hero_pbr", "hero_walls"
 )}
 TYPES = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4, "MAT4": 16}
 COMPONENTS = {5120: ("b", 1), 5121: ("B", 1), 5122: ("h", 2),

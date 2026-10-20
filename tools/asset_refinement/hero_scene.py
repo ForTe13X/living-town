@@ -82,10 +82,70 @@ class Batch:
         return result
 
 
+def wall_skin(name, collection, bake_dir, *, center_x, front_y, width, height, holes, library_sha):
+    """One shared-vertex outer plaster skin, retaining true aperture rectangles.
+
+    Existing wall boxes provide thickness and independently mapped returns. The
+    skin has planar XZ UVs; no box return is collapsed into a facade projection.
+    """
+    import numpy as np
+    path=bake_dir/'wall_manifest.json';record=json.loads(path.read_text(encoding='utf-8'))
+    assert record['schema']=='living_town.contextual_wall_bake.v1'
+    assert record['source_library_sha256']==library_sha
+    assert record['generator_sha256']==sha(HERE/'hero_walls.py')
+    assert record['facade_dimensions_metres']==[width,height]
+    files={key:bake_dir/row['path'] for key,row in record['maps'].items()}
+    for key,file in files.items():assert sha(file)==record['maps'][key]['sha256'],file
+    mat,scan=module('pbr').build_scanned_material('Hero_'+name+'_BakedLimewash',
+        **{key:files[key] for key in ['basecolor','roughness','normal']},
+        repeat_metres=(width,height),normal_strength=.7)
+    scan['source_asset']={'license':'CC0-1.0','kind':'CC0 scan plus authored contextual bake',
+                         'wall_bake_manifest_sha256':sha(path),'wall_bake':record}
+    # Load linear uint16 height, reduce only the geometry sampling copy, and
+    # discard it afterwards. PBR images remain at their full baked resolution.
+    image=bpy.data.images.load(str(files['height']),check_existing=False)
+    image.colorspace_settings.name='Non-Color';image.scale(256,256)
+    pixels=np.empty(256*256*4,dtype=np.float32);image.pixels.foreach_get(pixels)
+    field=pixels.reshape(256,256,4)[:,:,0].copy();bpy.data.images.remove(image)
+    low=record['height_encoding']['minimum_metres'];high=record['height_encoding']['maximum_metres']
+    xs=sorted(set(np.linspace(-width/2,width/2,math.ceil(width/.085)+1).tolist()+
+                  [x+s*w/2 for x,z,w,h in holes for s in [-1,1]]))
+    zs=sorted(set(np.linspace(0,height,math.ceil(height/.085)+1).tolist()+
+                  [z+s*h/2 for x,z,w,h in holes for s in [-1,1]]))
+    def relief(x,z):
+        u=(x/width+.5)*255;v=z/height*255
+        i,j=min(254,int(u)),min(254,int(v));du,dv=u-i,v-j
+        sample=(field[j,i]*(1-du)+field[j,i+1]*du)*(1-dv)+(field[j+1,i]*(1-du)+field[j+1,i+1]*du)*dv
+        return low+float(sample)*(high-low)
+    verts=[(x+center_x,front_y-relief(x,z),z) for z in zs for x in xs];faces=[]
+    for j,(z0,z1) in enumerate(zip(zs,zs[1:])):
+        for i,(x0,x1) in enumerate(zip(xs,xs[1:])):
+            x,z=(x0+x1)/2,(z0+z1)/2
+            if any(abs(x-cx)<w/2-1e-8 and abs(z-cz)<h/2-1e-8 for cx,cz,w,h in holes):continue
+            a=j*len(xs)+i;faces.append((a,a+1,a+1+len(xs),a+len(xs)))
+    mesh=bpy.data.meshes.new(name);mesh.from_pydata(verts,[],faces);mesh.materials.append(mat);mesh.update()
+    uv=mesh.uv_layers.new(name='MetricUV')
+    for face in mesh.polygons:
+        face.use_smooth=True
+        for index in face.loop_indices:
+            x,y,z=verts[mesh.loops[index].vertex_index];uv.data[index].uv=((x-center_x+width/2)/2,z/2)
+    ob=bpy.data.objects.new(name,mesh);collection.objects.link(ob)
+    ob['authored_asset_version']='contextual-wall-10';ob['height_authority']='ARTIST_AUTHORED_NOT_MEASURED'
+    ob['wall_bake_manifest_sha256']=sha(path);ob['shared_vertex_skin']=True
+    geometry={'object':name,'wall_manifest_sha256':sha(path),'width_m':width,'height_m':height,
+              'base_front_y_m':front_y,'mesh_vertex_count':len(verts),'mesh_quad_count':len(faces),
+              'maximum_grid_spacing_m':.085,'height_range_m':[low,high],
+              'actual_displacement_range_m':[min(front_y-v[1] for v in verts),max(front_y-v[1] for v in verts)],
+              'apertures_x_z_width_height_m':holes,'normal_strength':.7,
+              'surface_contract':'Shared vertices; true opening rectangles; outward -Y; no displaced disconnected wall boxes; separate scanned wall returns.'}
+    return scan,geometry
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True);p.add_argument('--materials',type=Path,required=True);p.add_argument('--surfaces',type=Path,required=True)
     p.add_argument('--samples',type=int,default=32);p.add_argument('--width',type=int,default=1800)
     p.add_argument('--pbr-library',type=Path,help='Prepared CC0 library manifest; replaces provisional smooth materials')
+    p.add_argument('--wall-bake',type=Path,help='Directory containing cafe/left/right contextual wall bakes')
     a=p.parse_args(sys.argv[sys.argv.index('--')+1:]);out=a.output.resolve()
     if out.exists():raise FileExistsError(out)
     out.mkdir(parents=True);(out/'renders').mkdir();(out/'input').mkdir()
@@ -98,7 +158,7 @@ def main():
     maps=lambda family:{slot:a.materials.resolve()/(family+'_'+slot+'.png') for slot in ['basecolor','roughness','normal']}
     oak=material('CabinetOak',(.6,.42,.23),files=maps('cabinet_oak'))
     granite=material('HonedGranite',(.54,.54,.49),files=maps('honed_granite'))
-    scan_reports=[];library=None
+    scan_reports=[];wall_reports=[];library=None
     if a.pbr_library:
         library_path=a.pbr_library.resolve();library=json.loads(library_path.read_text(encoding='utf-8'))
         assert library['schema']=='living_town.scanned_pbr_library.v1'
@@ -217,6 +277,15 @@ def main():
                 A.box((xx+dx,-.20,z-.82),(1.4,.28,.14),M['granite'])
                 A.box((xx+dx,-.19,z),(.045,.08,1.45),M['cream']);A.box((xx+dx,-.19,z+.03),(1.04,.08,.045),M['cream'])
         R.poly([(xx-2.8,-.2,6.1),(xx+2.8,-.2,6.1),(xx+2.8,3.1,8.0),(xx-2.8,3.1,8.0),(xx-2.8,6.4,6.1),(xx+2.8,6.4,6.1)],[(0,1,2,3),(3,2,5,4)],slates[1])
+    if a.wall_bake:
+        assert library,'Contextual wall bakes require their prepared CC0 source library'
+        contexts=[('cafe',0,-.08,8.6,6.5,holes),
+                  ('left',-7.2,-.10,5.4,6.1,[(x,z,1.1,1.5) for x in [-1.45,1.45] for z in [1.65,4.55]]),
+                  ('right',7.2,-.10,5.4,6.1,[(x,z,1.1,1.5) for x in [-1.45,1.45] for z in [1.65,4.55]])]
+        for key,cx,y,w,h,openings in contexts:
+            scan,geometry=wall_skin('WallSkin_'+key,collections['FrontCover'],a.wall_bake.resolve()/key,
+                center_x=cx,front_y=y,width=w,height=h,holes=openings,library_sha=sha(a.pbr_library.resolve()))
+            scan_reports.append(scan);wall_reports.append(geometry)
     # A rear service partition and lit backbar anchor the interior activity.
     I.box((0,5.4,1.35),(8.1,.18,2.7),M['lime']);I.box((0,5.26,1.45),(4.9,.20,1.95),M['blue'])
     S.box((-3.35,-2.50,.64),(.56,.06,.82),M['chalk'])
@@ -306,7 +375,8 @@ def main():
     bpy.ops.file.pack_all();bpy.ops.wm.save_as_mainfile(filepath=str(out/'cafe_hero.blend'))
     report={'schema':'living_town.reconstructed_cafe_hero.v1','status':'BUILT_REQUIRES_VISUAL_REVIEW','ai_inference_executed':False,
             'design_authority':'User-approved idealized concept; existing meshes may be replaced. This is a new cafe/street exemplar, not a regenerated whole town.',
-            'concept_sha256':sha(ART/'concept/01_idealized_presentation.png'),'source_modules':{str(f.relative_to(ROOT)):sha(f) for f in [Path(__file__),HERE/'hero_furniture.py',HERE/'hero_foliage.py',HERE/'hero_surfaces.py',HERE/'materials.py',HERE/'hero_pbr.py']},
+            'concept_sha256':sha(ART/'concept/01_idealized_presentation.png'),'source_modules':{str(f.relative_to(ROOT)):sha(f) for f in [Path(__file__),HERE/'hero_furniture.py',HERE/'hero_foliage.py',HERE/'hero_surfaces.py',HERE/'materials.py',HERE/'hero_pbr.py',HERE/'hero_walls.py']},
+            'contextual_wall_skins':wall_reports,
             'scanned_materials':scan_reports,'pbr_library_sha256':sha(a.pbr_library.resolve()) if library else None,
             'functional_dimensions_m':{'building_width':8.6,'building_depth':6.4,'ground_ceiling':3.2,'door_width':1.25,'door_height':2.72,'awning_clear_height':2.15},
             'counter':counter,'backbar_shelves':shelves,'bistro_sets':sets,'tree':tree,'hydrangeas':plants,'renders':shots,'conditioning_views':views,

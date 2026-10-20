@@ -1,8 +1,8 @@
 {
   "schema": "living_town.concept_cafe_delivery.v1",
-  "scope": "Reviewable reconstructed cafe texture pilot; not whole-town migration or validated model-generated material",
-  "hero_manifest_sha256": "e9f1e0cc6db859fdae56125c1c4984ec4631ca105b143e5aa8bfaaa438956309",
-  "member_count": 140,
+  "scope": "Three-frontage limewash revision and reconstructed cafe pilot; not whole-town migration or validated model-generated material",
+  "hero_manifest_sha256": "0a2c10b6ffda9aa4d1b5275cbd62088335735990cd9ce396ac16e6cbf89f943d",
+  "member_count": 162,
   "manifest_self_excluded_from_inventory": true,
   "files": {
     "art/living_town/concept/01_idealized_presentation.png": {
@@ -181,13 +181,13 @@
       "bytes": 9074539,
       "sha256": "a7a4765eee08d3260c03f77e0ed596200298a9a2d1dcd8c70f4da62977e55129"
     },
-    "art/living_town/refinement_pilot/godot_v9b.json": {
-      "bytes": 67862,
-      "sha256": "5a7aba2a6b7811ea3a4c80da7ea731e00ad28e5162cd4c9cb8b84f6e7f601279"
+    "art/living_town/refinement_pilot/godot_v10.json": {
+      "bytes": 79501,
+      "sha256": "f1a38e2212ae75f5cdfdcd1db92a8f50058a7ba9637cc4fa8e9e27706a61cd12"
     },
-    "art/living_town/refinement_pilot/godot_v9b.png": {
-      "bytes": 1038908,
-      "sha256": "830398de3e8e69e4b1773a1ba2440634e9c19e10a909b8b80604a1544540633e"
+    "art/living_town/refinement_pilot/godot_v10.png": {
+      "bytes": 1097148,
+      "sha256": "6ef7073ecb29ef6f72f8dc7e9e1f0966532bc6fe1fdfaf591a496800cfdf8dc3"
     },
     "art/living_town/refinement_pilot/hero_surfaces/facade_limewash_basecolor.png": {
       "bytes": 620823,
@@ -209,53 +209,57 @@
       "bytes": 533367,
       "sha256": "1013d05d74bf9436014a065eba3e40931293ef1ce73e4fef303734bd79505e4d"
     },
-    "art/living_town/refinement_pilot/hero_v9/cafe_hero.blend": {
-      "bytes": 69117736,
-      "sha256": "859399aac5a3413dfe457b5a452cedc1537d9c7d721009e5e71b1099901f5b2f"
+    "art/living_town/refinement_pilot/hero_v10/cafe_hero.blend": {
+      "bytes": 143879236,
+      "sha256": "ff19e877204f2cd26113e9c54a52fc443eec0f6c4e0d655f327dfb551c0e1fb9"
     },
-    "art/living_town/refinement_pilot/hero_v9/cafe_hero.glb": {
-      "bytes": 97473648,
-      "sha256": "cf4eb396f060086327738395f9d6626f1a3444820bbf64ad7c88c4ea7128fdaa"
+    "art/living_town/refinement_pilot/hero_v10/cafe_hero.glb": {
+      "bytes": 181476196,
+      "sha256": "14c0dc1fe0b99d4479b32f9bba8fbaa35c687bd7f53fb9e6720ac5df98dfa564"
     },
-    "art/living_town/refinement_pilot/hero_v9/hero_manifest.json": {
-      "bytes": 91294,
-      "sha256": "e9f1e0cc6db859fdae56125c1c4984ec4631ca105b143e5aa8bfaaa438956309"
+    "art/living_town/refinement_pilot/hero_v10/hero_manifest.json": {
+      "bytes": 126747,
+      "sha256": "0a2c10b6ffda9aa4d1b5275cbd62088335735990cd9ce396ac16e6cbf89f943d"
     },
-    "art/living_town/refinement_pilot/hero_v9/input/back.png": {
+    "art/living_town/refinement_pilot/hero_v10/input/back.png": {
       "bytes": 590573,
-      "sha256": "120f5d565cd88eccf5409456bbdbf0145d171714cd36785b2ebabfd10dd19b4b"
+      "sha256": "fcb37382bb2b84d8ffb880c9e8a6e4ec09b0217dfdc5bacf60159ddce91c33ee"
     },
-    "art/living_town/refinement_pilot/hero_v9/input/counter.glb": {
+    "art/living_town/refinement_pilot/hero_v10/input/counter.glb": {
       "bytes": 33167720,
       "sha256": "15d6c0973fd06695368a65fdd69ed988a134aa246dc61046131d4bb4b4114fde"
     },
-    "art/living_town/refinement_pilot/hero_v9/input/front.png": {
+    "art/living_town/refinement_pilot/hero_v10/input/front.png": {
       "bytes": 626680,
-      "sha256": "174f653183a29b9ebf6dd84ae1ebec82d4655889ca160b114e9b131cc420402d"
+      "sha256": "7ed12b671acd3e55787aab17b49e68e73d4340b145d57ca5198ddcb57550e9fc"
     },
-    "art/living_town/refinement_pilot/hero_v9/input/left.png": {
+    "art/living_town/refinement_pilot/hero_v10/input/left.png": {
       "bytes": 374898,
-      "sha256": "628a36f31e30e1770801fd28aec8f64a1fadb126b11c0464cf1a954d28392d76"
+      "sha256": "28740156fef1eaecdd45ff4a239b42e0bd3391b3a75b21f6f1fb0c24ddeb529f"
     },
-    "art/living_town/refinement_pilot/hero_v9/input/right.png": {
+    "art/living_town/refinement_pilot/hero_v10/input/right.png": {
       "bytes": 387237,
-      "sha256": "d635916b2d78765280f5d1822191caecaa7faeb8657f402718de613916546eb2"
+      "sha256": "be015fffd40ca1149bbe2154f62450a8f22ea1dece92d10dfb49cf266e1560bd"
+    },
+    "art/living_town/refinement_pilot/hero_v10/renders/01_cafe_street.png": {
+      "bytes": 3138033,
+      "sha256": "c042a97d2a37ac99a438ddee20c08d20b4e5fea2b878a5af2b1a9f964541d04a"
+    },
+    "art/living_town/refinement_pilot/hero_v10/renders/02_cafe_interior.png": {
+      "bytes": 3177725,
+      "sha256": "f2217325037776dc46371c9219110f9412359f5c38e4d49f1f3f33aa4e8dc451"
+    },
+    "art/living_town/refinement_pilot/hero_v10/renders/03_counter_detail.png": {
+      "bytes": 3069822,
+      "sha256": "ffc917320a14a85bacb8a863cdb056ac9e4d3c93739141419058aa6d1c100944"
+    },
+    "art/living_town/refinement_pilot/hero_v10/renders/04_facade_detail.png": {
+      "bytes": 2862728,
+      "sha256": "3889a6ca6460201da5ba5df4d494a1191cbca6097befa8c9e6f1b53be422639c"
     },
     "art/living_town/refinement_pilot/hero_v9/renders/01_cafe_street.png": {
       "bytes": 3096482,
       "sha256": "662c53d7c701c9faafe7aee5f047d85e3bfa3cb0082da43c1db83bbb8853d5ab"
-    },
-    "art/living_town/refinement_pilot/hero_v9/renders/02_cafe_interior.png": {
-      "bytes": 3177725,
-      "sha256": "3fb4c5b9ac2b37f2c385edff3c27cc9bce55f4a0339b1f96fd4c9b5863c5c093"
-    },
-    "art/living_town/refinement_pilot/hero_v9/renders/03_counter_detail.png": {
-      "bytes": 3069822,
-      "sha256": "7f3c00b3f0c27ad311d6dfa3cb941d7a3f93d47a0dfea53080e6c2a7732aa9f5"
-    },
-    "art/living_town/refinement_pilot/hero_v9/renders/04_facade_detail.png": {
-      "bytes": 2857192,
-      "sha256": "a9d741c3b690df574f88f8b9c102fb5e62651435e93ff21a620e52d784965162"
     },
     "art/living_town/refinement_pilot/materials/cabinet_oak_basecolor.png": {
       "bytes": 97138,
@@ -293,41 +297,41 @@
       "bytes": 11894,
       "sha256": "d51b462b04cf30b7fd65e61fb3b9300fcdc01acac384e61216aec66bc0879956"
     },
-    "art/living_town/refinement_pilot/native_reopen_v9.json": {
+    "art/living_town/refinement_pilot/native_reopen_v10.json": {
       "bytes": 1073,
-      "sha256": "eb6efc6366dd480f15813c9dbb08576e8bcb24db4e2961ba90caa43694851b62"
+      "sha256": "0aae16e64c8cbee6f926b00611d751cbecb82fdce1b8be9ec8fe7a8637d44bd0"
     },
-    "art/living_town/refinement_pilot/prepared_v9/back.png": {
+    "art/living_town/refinement_pilot/prepared_v10/back.png": {
       "bytes": 325366,
       "sha256": "97f3da37911a6ff8bb36744fc0843f738aaaa820ad48bcb4909e379f3195670f"
     },
-    "art/living_town/refinement_pilot/prepared_v9/counter.glb": {
+    "art/living_town/refinement_pilot/prepared_v10/counter.glb": {
       "bytes": 33167720,
       "sha256": "15d6c0973fd06695368a65fdd69ed988a134aa246dc61046131d4bb4b4114fde"
     },
-    "art/living_town/refinement_pilot/prepared_v9/front.png": {
+    "art/living_town/refinement_pilot/prepared_v10/front.png": {
       "bytes": 362009,
       "sha256": "5a5d9b51c36dad5de9bf4a2aaca7acc832113e420b0d883a1013b63056fe8e9e"
     },
-    "art/living_town/refinement_pilot/prepared_v9/left.png": {
+    "art/living_town/refinement_pilot/prepared_v10/left.png": {
       "bytes": 106333,
       "sha256": "655399a06b6e51df5f70408ac1917688f7123544b26c417448099f83c0d170cd"
     },
-    "art/living_town/refinement_pilot/prepared_v9/preparation_manifest.json": {
-      "bytes": 2476,
-      "sha256": "5a963141e932cf939d1f1b31ba8cd22f2e7f756ce38b5c8504f8ad530484abc0"
+    "art/living_town/refinement_pilot/prepared_v10/preparation_manifest.json": {
+      "bytes": 2481,
+      "sha256": "12459442407692688036223421836144b4b09b8e1955e623ab36e794739475d8"
     },
-    "art/living_town/refinement_pilot/prepared_v9/right.png": {
+    "art/living_town/refinement_pilot/prepared_v10/right.png": {
       "bytes": 116180,
       "sha256": "3af4001c1d23051168fc4e8673d31d79866a3bb4283b101cf45114e70e968ee9"
     },
-    "art/living_town/refinement_pilot/prepared_v9/turnaround_sheet.png": {
+    "art/living_town/refinement_pilot/prepared_v10/turnaround_sheet.png": {
       "bytes": 914658,
       "sha256": "6e79a0e345ac08ddf47b9f551b41b6e8213242af10e1525ce05f3192ccf14e18"
     },
-    "art/living_town/refinement_pilot/scanned_export_v9.json": {
-      "bytes": 25256,
-      "sha256": "31b3924af9b73a8d4132eb5e030f3b5d585aafe1769b84abae0cb68368109592"
+    "art/living_town/refinement_pilot/scanned_export_v10.json": {
+      "bytes": 35434,
+      "sha256": "59d21cee3101757cf326193b1d4dcbbbd313ec439c50c801a793106f9ba0fb59"
     },
     "art/living_town/refinement_pilot/scanned_pbr_v3/Granite002A/basecolor.png": {
       "bytes": 8299644,
@@ -401,29 +405,97 @@
       "bytes": 6551,
       "sha256": "93eb8c24f289de716409abece528cc0d5df874ea6c2bae8e790033e6ee481568"
     },
-    "art/living_town/refinement_pilot/verification_v9.json": {
-      "bytes": 5390,
-      "sha256": "e1efead2848b0756275b1c14549a79461c0d426201d1a81d33892cf5eb52e7f9"
+    "art/living_town/refinement_pilot/verification_v10.json": {
+      "bytes": 5391,
+      "sha256": "72d722a0c31241869460329bc5c7f87cb0024940e5358db08ea3db42e6d6da1d"
     },
-    "art/living_town/refinement_pilot/visual_review_v9.json": {
-      "bytes": 2971,
-      "sha256": "2c3481800cd30db0e7b7b7726787e302cce072af57d0b77d4404ac94fb747a9d"
+    "art/living_town/refinement_pilot/visual_review_v10.json": {
+      "bytes": 4207,
+      "sha256": "2e4dd23bc3487eb488dd66a7a2cdb5d064806c6ec4f899ee158d0bf1d26566ff"
     },
-    "art/living_town/refinement_pilot/workflows_v9/multiview_owned_views.json": {
+    "art/living_town/refinement_pilot/wall_bakes_v10/cafe/facade_basecolor.png": {
+      "bytes": 19069649,
+      "sha256": "f52bad74b3eb50ca633cfbc5812dcd8b615dde27df5628ae2a8aae0d2ed51b2c"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/cafe/facade_height.png": {
+      "bytes": 18985632,
+      "sha256": "cc67501f579ce23e86e84369eb9bc858b8f45b785d27790bbf640e65dbf2dc34"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/cafe/facade_normal.png": {
+      "bytes": 25052652,
+      "sha256": "58805970b1da262af6066fa2c1093b274315eea5ab277f38ed908708d18af802"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/cafe/facade_roughness.png": {
+      "bytes": 7961101,
+      "sha256": "62e706e3b3f521511dec0a2959a2720237329fb527aa9e87754a577a96c4f0a8"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/cafe/wall_manifest.json": {
+      "bytes": 5664,
+      "sha256": "a59783b1d6cb62cced21b4ed95128a425cb3864e04fbfa241846faae3343167a"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/left/facade_basecolor.png": {
+      "bytes": 4866968,
+      "sha256": "359db9eeb7f799d246a25b279445a969c519acb4c6267bc58d0540908462c76a"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/left/facade_height.png": {
+      "bytes": 5275550,
+      "sha256": "1fda5375136f0c207170a3c19b54791a2b4385abde334e612e3499373015eec7"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/left/facade_normal.png": {
+      "bytes": 4902852,
+      "sha256": "52a95c3334b5ac14c68c555d152a0f29c06bc9d86a5b7053bcfef7c6517ff21a"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/left/facade_roughness.png": {
+      "bytes": 1654761,
+      "sha256": "3cdd314a68b4fd8588b277ac401dd2d22a9275686796d32c1e6b486addb1b866"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/left/wall_manifest.json": {
+      "bytes": 5580,
+      "sha256": "9410646bf5b909b295ebfaa1931f2efc0d8ff47293280b67dbfd25ed059c7971"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/right/facade_basecolor.png": {
+      "bytes": 4271821,
+      "sha256": "17689cd4a683db9227e3b69e767f9de1afc3fb0fb334033139d2ac4c23a5a82f"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/right/facade_height.png": {
+      "bytes": 5299100,
+      "sha256": "a05432ebfb63bf91f622174aaffafb6d160b5ce37f97def34d17c88f9dc017d7"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/right/facade_normal.png": {
+      "bytes": 4903751,
+      "sha256": "e17d99a8dc2820dd6071f54c49e1af8826858f3eb761cefec3cfa94661d10fe1"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/right/facade_roughness.png": {
+      "bytes": 1656849,
+      "sha256": "4cc1726b9c31d88d725c93daf988cee8dc9cc5167a10edad5d7f4a5dbcec7928"
+    },
+    "art/living_town/refinement_pilot/wall_bakes_v10/right/wall_manifest.json": {
+      "bytes": 5579,
+      "sha256": "362bd366521efb445a80e3533ac8b6bf944dded5597bc13816cb151fef9c5ec9"
+    },
+    "art/living_town/refinement_pilot/wall_comparison_v10.png": {
+      "bytes": 1182540,
+      "sha256": "1ae38dfc9d0cf698e0b2bfcfcfb09133d395068fb2abec0a6482030e08a0a965"
+    },
+    "art/living_town/refinement_pilot/wall_export_v10.json": {
+      "bytes": 6458,
+      "sha256": "819f96059dd4aba53e2aecb9f9677da558f0585f4e6e9de3dfba1cefd5e0214b"
+    },
+    "art/living_town/refinement_pilot/workflows_v10/multiview_owned_views.json": {
       "bytes": 223615,
       "sha256": "cd260d4933866f5ba890b2c174c01f92bfccf7124ecbacd48302644141dc5412"
     },
-    "art/living_town/refinement_pilot/workflows_v9/multiview_qwen_research_BLOCKED.json": {
+    "art/living_town/refinement_pilot/workflows_v10/multiview_qwen_research_BLOCKED.json": {
       "bytes": 221586,
       "sha256": "2837b6b0b54c322926c06943af003e2bc059e5aec8c53bc0e772f38b2bdfd4e8"
     },
-    "art/living_town/refinement_pilot/workflows_v9/ultratex_standard_9b_BLOCKED.json": {
+    "art/living_town/refinement_pilot/workflows_v10/ultratex_standard_9b_BLOCKED.json": {
       "bytes": 31451,
       "sha256": "8fd6ab12a17ba6cc8de2705d7a97f87f38f9f748a68a1e994af9c7f433401ea1"
     },
-    "art/living_town/refinement_pilot/workflows_v9/workflow_manifest.json": {
-      "bytes": 9489,
-      "sha256": "14777c5dc44e778235b637fda4b4d2374ff07e05b978e64080b0ec8f164bce46"
+    "art/living_town/refinement_pilot/workflows_v10/workflow_manifest.json": {
+      "bytes": 9496,
+      "sha256": "2e6913cc3f9e3997e007da5cedce3e6db80060db1fdbfb78a848d9e0629081d9"
     },
     "art/living_town/textures/cobbles_basecolor.png": {
       "bytes": 742768,
@@ -438,8 +510,8 @@
       "sha256": "c5355e9bbd41d44673bb8ba5646461f53dc58de920f6aa7ccb0e229aecc50008"
     },
     "docs/CONCEPT_REFINEMENT_PILOT.md": {
-      "bytes": 7079,
-      "sha256": "9c9a94c2618e7bfdd3c742ffc4e062706e3d79760673b850beec4fb1a81b7dd6"
+      "bytes": 10312,
+      "sha256": "3d292e09dea8c44ce694190cfdb8591dc8bd9f8a9c9370c96c748e7360e7e33f"
     },
     "docs/PIXELARTISTRY_COMPONENT_REVIEW.md": {
       "bytes": 19121,
@@ -498,12 +570,16 @@
       "sha256": "6c957c31f9542b5928a415e213496b40205ef5e5dabed92769eed30aa4204125"
     },
     "tools/asset_refinement/hero_scene.py": {
-      "bytes": 23918,
-      "sha256": "0b94cf1e0bbedce815cd65a245fa20d4272a7c48a7b5de718d8f9f625eb32c70"
+      "bytes": 28826,
+      "sha256": "8fae46d5676fda4e76fcab2347972869204a49e70ce04794b52195e0491e9f1f"
     },
     "tools/asset_refinement/hero_surfaces.py": {
       "bytes": 2283,
       "sha256": "2aba550aecd58ccdbc64b6ad3e2112221f75d72bbfcf9a04db5cf79888ba503e"
+    },
+    "tools/asset_refinement/hero_walls.py": {
+      "bytes": 16092,
+      "sha256": "a48c9e0485ff69eaae2f460449ab10ab31b066e26a3318f2587f7d21ac322e75"
     },
     "tools/asset_refinement/inspect_native.py": {
       "bytes": 3547,
@@ -530,16 +606,20 @@
       "sha256": "c44d63deeea3969608da7ef62bb40ac9137cb13db872a0cc61bd582701026bf6"
     },
     "tools/asset_refinement/README.md": {
-      "bytes": 13151,
-      "sha256": "587fcb93a0b5fe32a5ca8f0764fae2abacd2ca3c7de2a0f090b7b790b19dc50c"
+      "bytes": 17246,
+      "sha256": "a55889c35fedbac7f448d37c4f872587707187b37a6392c52023ffa6cacede41"
     },
     "tools/asset_refinement/verify_outputs.py": {
-      "bytes": 29225,
-      "sha256": "6b234fb082fa1084b05aa375246eb9b0d5d9e597eee3af35b80c371f72cf6e58"
+      "bytes": 29239,
+      "sha256": "5129bf9a8a914b150d04e6d71815cafd6b5389379d2ce70863b6faee5c3c723f"
     },
     "tools/asset_refinement/verify_scanned_exports.py": {
       "bytes": 14210,
       "sha256": "c4f511437b45949af7ea030e15c25f6da64d09a92ee454e93a24257f7c576ee3"
+    },
+    "tools/asset_refinement/verify_wall_exports.py": {
+      "bytes": 18937,
+      "sha256": "5a6b56977dea3458952163309cbc0e6b75a42c63a41bd9132f842922bb7be8f1"
     },
     "tools/asset_refinement/workflows.py": {
       "bytes": 26908,
@@ -564,6 +644,14 @@
     "tools/tests/test_refinement_scan_conversion.py": {
       "bytes": 822,
       "sha256": "f9f5bb15dba81debdb65f8964b4a65d0a682b442fa6ddaaca7367f3259e11145"
+    },
+    "tools/tests/test_refinement_wall_bake.py": {
+      "bytes": 6992,
+      "sha256": "bbcf10b76e46a2b896ce394730d0e31b9b17a2f668c26b27c481494c30a99b9e"
+    },
+    "tools/tests/test_refinement_wall_exports.py": {
+      "bytes": 3985,
+      "sha256": "b09bf72eca7e2eb7182f2f01b51defa79f8391199702f612eba190e603594ea3"
     }
   }
 }

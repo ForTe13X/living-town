@@ -1,0 +1,40 @@
+{
+  "schema": "living_town.hero_native_reopen.v1",
+  "status": "PASS",
+  "native_sha256": "ff19e877204f2cd26113e9c54a52fc443eec0f6c4e0d655f327dfb551c0e1fb9",
+  "inspector_sha256": "9df9eea8a7286c7b60b6baa844f21d113572d38f6da7a1fb3f9b55e1d20f1fd2",
+  "scene": "Living_Town_Concept_Cafe_Hero",
+  "objects": 814,
+  "all_named_material_uvs_resolve": true,
+  "floor_contact_metres": {
+    "terrace": {
+      "min": [
+        -12.5,
+        -6.599999904632568,
+        -0.23999999463558197
+      ],
+      "max": [
+        12.5,
+        0.0,
+        0.0
+      ]
+    },
+    "interior": {
+      "min": [
+        -4.300000190734863,
+        0.0,
+        -0.20000000298023224
+      ],
+      "max": [
+        4.300000190734863,
+        6.400000095367432,
+        0.0
+      ]
+    },
+    "shared_feet_datum_z": 0.0,
+    "coplanar_overlap": false
+  },
+  "packed_images": 36,
+  "blender_version": "5.2.2 LTS",
+  "scope": "Independent native reopen, scene identity and all mesh material named UV/normal-map bindings. No whole-town/gameplay claim."
+}
